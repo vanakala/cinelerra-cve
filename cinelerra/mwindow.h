@@ -10,6 +10,7 @@
 #include "brender.inc"
 #include "cache.inc"
 #include "channel.inc"
+#include "channeldb.inc"
 #include "cwindow.inc"
 #include "defaults.inc"
 #include "edit.inc"
@@ -50,7 +51,7 @@
 #include "transportque.inc"
 #include "videowindow.inc"
 #include "vwindow.inc"
-
+#include "bcwindowbase.inc"
 
 #include <stdint.h>
 
@@ -70,7 +71,6 @@ public:
 	void show_splash();
 	void hide_splash();
 	void start();
-	static void init_tuner(ArrayList<Channel*> &channeldb, char *path);
 
 	int run_script(FileXML *script);
 	int new_project();
@@ -128,14 +128,18 @@ public:
 		int is_theme,
 		ArrayList<PluginServer*> &plugindb);
 // Find the plugin whose title matches title and return it
-	PluginServer* scan_plugindb(char *title);
+	PluginServer* scan_plugindb(char *title,
+		int data_type);
 	void dump_plugins();
 
 
 
 	
 	int load_filenames(ArrayList<char*> *filenames, 
-		int load_mode = LOAD_REPLACE);
+		int load_mode = LOAD_REPLACE,
+// Cause the project filename on the top of the window to be updated.
+// Not wanted for loading backups.
+		int update_filename = 1);
 	
 	int interrupt_indexes();  // Stop index building
 
@@ -286,7 +290,7 @@ public:
 	void paste_audio_transition();
 	void paste_video_transition();
 	void rebuild_indices();
-	void redo_entry(int is_mwindow);
+	void redo_entry(BC_WindowBase *calling_window_gui);
 // Asset removal
 	void remove_assets_from_project(int push_undo = 0);
 	void remove_assets_from_disk();
@@ -304,7 +308,7 @@ public:
 	void sync_parameters(int change_type = CHANGE_PARAMS);
 	void to_clip();
 	int toggle_label(int is_mwindow);
-	void undo_entry(int is_mwindow);
+	void undo_entry(BC_WindowBase *calling_window_gui);
 
 	int cut_automation();
 	int copy_automation();
@@ -366,7 +370,9 @@ public:
 
 	int reset_meters();
 
-
+// Channel DB for playback only.  Record channel DB's are in record.C
+	ChannelDB *channeldb_buz;
+	ChannelDB *channeldb_v4l2jpeg;
 
 // ====================================== plugins ==============================
 
@@ -376,11 +382,10 @@ public:
 	ArrayList<PluginServer*> *plugin_guis;
 
 
-// TV stations to record from
-	ArrayList<Channel*> channeldb_v4l;
-	ArrayList<Channel*> channeldb_buz;
 // Adjust sample position to line up with frames.
-	int fix_timing(int64_t &samples_out, int64_t &frames_out, int64_t samples_in);     
+	int fix_timing(int64_t &samples_out, 
+		int64_t &frames_out, 
+		int64_t samples_in);
 
 
 	BatchRenderThread *batch_render;
@@ -403,6 +408,8 @@ public:
 // Lock during creation and destruction of brender so playback doesn't use it.
 	Mutex *brender_lock;
 
+// Initialize channel DB's for playback
+	void init_channeldb();
 	void init_render();
 // These three happen synchronously with each other
 // Make sure this is called after synchronizing EDL's.
@@ -442,7 +449,6 @@ public:
 	void init_playbackcursor();
 	void delete_plugins();
 	void clean_indexes();
-	void save_tuner(ArrayList<Channel*> &channeldb, char *path);
 //	TimeBomb timebomb;
 	SigHandler *sighandler;
 };

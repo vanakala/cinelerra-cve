@@ -877,7 +877,7 @@ int EditUndo::keypress_event()
 }
 int EditUndo::handle_event()
 {
-	mwindow->undo_entry(panel->is_mwindow);
+	mwindow->undo_entry(panel->subwindow);
 	return 1;
 }
 
@@ -899,7 +899,7 @@ int EditRedo::keypress_event()
 }
 int EditRedo::handle_event()
 {
-	mwindow->redo_entry(panel->is_mwindow);
+	mwindow->redo_entry(panel->subwindow);
 	return 1;
 }
 

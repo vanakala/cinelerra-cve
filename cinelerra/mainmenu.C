@@ -500,7 +500,7 @@ Undo::Undo(MWindow *mwindow) : BC_MenuItem(_("Undo"), "z", 'z')
 }
 int Undo::handle_event()
 { 
-	mwindow->undo_entry(1);
+	mwindow->undo_entry(mwindow->gui);
 	return 1;
 }
 int Undo::update_caption(char *new_caption)
@@ -519,7 +519,7 @@ Redo::Redo(MWindow *mwindow) : BC_MenuItem(_("Redo"), "Shift+Z", 'Z')
 
 int Redo::handle_event()
 { 
-	mwindow->redo_entry(1);
+	mwindow->redo_entry(mwindow->gui);
 
 	return 1;
 }

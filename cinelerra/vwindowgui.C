@@ -215,6 +215,8 @@ int VWindowGUI::create_objects()
 	update_sources(_("None"));
 
 //printf("VWindowGUI::create_objects 2\n");
+	deactivate();
+	slider->activate();
 	return 0;
 }
 
@@ -289,8 +291,13 @@ int VWindowGUI::keypress_event()
 			close_event();
 			result = 1;
 			break;
+		case 'z':
+			mwindow->undo_entry(this);
+			break;
+		case 'Z':
+			mwindow->redo_entry(this);
+			break;
 	}
-	
 	if(!result) result = transport->keypress_event();
 	
 	return result;

@@ -1598,13 +1598,11 @@ void MWindow::paste_video_transition()
 	gui->update(0, 1, 0, 0, 0, 0, 0);
 }
 
-void MWindow::redo_entry(int is_mwindow)
-{
-	if(is_mwindow)
-		gui->unlock_window();
-	else
-		cwindow->gui->unlock_window();
 
+void MWindow::redo_entry(BC_WindowBase *calling_window_gui)
+{
+
+	calling_window_gui->unlock_window();
 
 	cwindow->playback_engine->que->send_command(STOP,
 		CHANGE_NONE, 
@@ -1619,6 +1617,7 @@ void MWindow::redo_entry(int is_mwindow)
 
 
 	cwindow->gui->lock_window("MWindow::redo_entry");
+	vwindow->gui->lock_window("MWindow::undo_entry 2");
 	gui->lock_window();
 
 	undo->redo(); 
@@ -1630,10 +1629,12 @@ void MWindow::redo_entry(int is_mwindow)
 	gui->update(1, 2, 1, 1, 1, 1, 0);
 	cwindow->update(1, 1, 1, 1, 1);
 
-	if(is_mwindow)
+	if (calling_window_gui != cwindow->gui) 
 		cwindow->gui->unlock_window();
-	else
+	if (calling_window_gui != gui)
 		gui->unlock_window();
+	if (calling_window_gui != vwindow->gui)
+		vwindow->gui->unlock_window();
 
 	cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
 	    		   CHANGE_ALL,
@@ -1884,12 +1885,13 @@ void MWindow::trim_selection()
 
 
 
-void MWindow::undo_entry(int is_mwindow)
+void MWindow::undo_entry(BC_WindowBase *calling_window_gui)
 {
-	if(is_mwindow)
-		gui->unlock_window();
-	else
-		cwindow->gui->unlock_window();
+//	if(is_mwindow)
+//		gui->unlock_window();
+//	else
+//		cwindow->gui->unlock_window();
+	calling_window_gui->unlock_window();
 
 	cwindow->playback_engine->que->send_command(STOP,
 		CHANGE_NONE, 
@@ -1903,6 +1905,7 @@ void MWindow::undo_entry(int is_mwindow)
 	vwindow->playback_engine->interrupt_playback(0);
 
 	cwindow->gui->lock_window("MWindow::undo_entry 1");
+	vwindow->gui->lock_window("MWindow::undo_entry 4");
 	gui->lock_window("MWindow::undo_entry 2");
 
 	undo->undo(); 
@@ -1914,10 +1917,17 @@ void MWindow::undo_entry(int is_mwindow)
 	gui->update(1, 2, 1, 1, 1, 1, 0);
 	cwindow->update(1, 1, 1, 1, 1);
 
-	if(is_mwindow)
+//	if(is_mwindow)
+//		cwindow->gui->unlock_window();
+//	else
+//		gui->unlock_window();
+	if (calling_window_gui != cwindow->gui) 
 		cwindow->gui->unlock_window();
-	else
+	if (calling_window_gui != gui)
 		gui->unlock_window();
+	if (calling_window_gui != vwindow->gui)
+		vwindow->gui->unlock_window();
+	
 
 	awindow->gui->lock_window("MWindow::undo_entry 3");
 	awindow->gui->update_assets();
