@@ -271,13 +271,13 @@ LIBAVCODEC_LIBS=-lavcodec
 AC_SUBST(LIBAVCODEC_CFLAGS)
 AC_SUBST(LIBAVCODEC_LIBS)
 
-AH_TEMPLATE([USE_FFMPEG],
+AH_TEMPLATE([DV_USE_FFMPEG],
 [Define to 1 to use ffmpeg to decode/encode quicktime DV files])
 
 AC_ARG_WITH(ffmpeg,
 [ --with-ffmpeg Use FFMPEG for Quicktime DV encoding/decoding ],
 [
-	AC_DEFINE(USE_FFMPEG)
+	AC_DEFINE(DV_USE_FFMPEG)
 ])
 
 ############## END OF FFMPEG
