@@ -619,6 +619,7 @@ void Track::optimize()
 		if(plugin_set.values[i]->total() <= 0)
 		{
 			remove_pluginset(plugin_set.values[i]);
+			i--;  // so we evaluate the next track that is now in this position!
 		}
 	}
 }
