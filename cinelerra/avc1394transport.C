@@ -207,7 +207,7 @@ AVC1394GUIPlay::~AVC1394GUIPlay()
 int AVC1394GUIPlay::handle_event()
 {
 	if(mode == 0)
-/	{
+	{
 		avc->play();
 		set_tooltip(_("Pause"));
 		mode = 1;
