@@ -4316,6 +4316,9 @@ int TrackCanvas::test_plugins(int cursor_x,
 	{
 		for(int i = 0; i < track->plugin_set.total && !done; i++)
 		{
+			// first check if plugins are visible at all
+			if (!track->expand_view)
+				continue;
 			PluginSet *plugin_set = track->plugin_set.values[i];
 			for(plugin = (Plugin*)plugin_set->first;
 				plugin && !done;
