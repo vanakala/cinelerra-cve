@@ -197,6 +197,7 @@ int FileDV::write_samples(double **buffer, int64_t len)
 	int frame_num = (int) (audio_offset / output_size);
 // How many samples do we write this frame?
 // This should be enclosed with #ifdef DV_HAS_SAMPLE_CALCULATOR and #endif
+// and an alternative included.
 	int samples = dv_calculate_samples(encoder, asset->sample_rate, frame_num);
 
 	int samples_written = 0;
@@ -227,14 +228,21 @@ TRACE("FileDV::write_samples 20")
 		// Need case handling for bitsize ?
 		for(j = 0; j < len; j++)
 		{
-			temp_buffers[i][j + samples_in_buffer] = (int16_t) (buffer[i][j] * 32767);
+			if(samples_in_buffer > 0)
+				temp_buffers[i][j + samples_in_buffer - 1] = (int16_t) (buffer[i][j] * 32767);
+			else
+				temp_buffers[i][j] = (int16_t) (buffer[i][j] * 32767);
 		}
 	}
 
+	samples_in_buffer += len;
+
 TRACE("FileDV::write_samples 30")
 
-// We can only write the number of frames that write_frames has written since our last write
-	for(i = 0; i < frames_written && samples_written < len + samples_in_buffer; i++)
+// We can only write the number of frames that write_frames has written
+// since our last audio write, and we can't write more than the
+// samples we have available from the last write and this one
+	for(i = 0; i < frames_written && samples_written + samples <= samples_in_buffer; i++)
 	{
 // Position ourselves to where we last wrote audio
 		audio_offset = lseek(fd, audio_offset, SEEK_SET);
@@ -270,13 +278,15 @@ TRACE("FileDV::write_samples 60")
 // Get number of frames we didn't write to
 	frames_written -= i;
 
-	if(samples_written < len + samples_in_buffer)
+	if(samples_written < samples_in_buffer)
 	{
 	// move the rest of the buffer to the front
 TRACE("FileDV::write_samples 70")
+		samples_in_buffer -= samples_written;
 		for(i = 0; i < asset->channels; i++)
-			memmove(audio_buffer[i], temp_buffers[i], len + samples_in_buffer - samples_written);
-		samples_in_buffer = len + samples_in_buffer - samples_written;
+		{
+			memmove(audio_buffer[i], temp_buffers[i], asset->sample_rate * 2 - samples_written);
+		}
 	}
 	else
 	{
@@ -384,6 +394,8 @@ int FileDV::write_compressed_frame(VFrame *buffer)
 
 	lseek(fd, video_offset, SEEK_SET);
 	video_offset += write(fd, buffer->get_data(), buffer->get_compressed_size());
+
+	frames_written++;
 
 	return result;
 }
