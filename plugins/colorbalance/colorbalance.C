@@ -520,15 +520,12 @@ for(i = 0; i < max; i++) \
 
 	if(config.cyan != 0 || config.magenta != 0 || config.yellow != 0)
 	{
-		int64_t row_step = input_ptr->get_h() / total_engines + 1;
-		for(int i = 0; i < input_ptr->get_h(); i += row_step)
+		for(int i = 0; i < total_engines; i++)
 		{
-			if(i + row_step > input_ptr->get_h()) 
-				row_step = input_ptr->get_h() - i;
 			engine[i]->start_process_frame(output_ptr, 
 				input_ptr, 
-				i, 
-				i + row_step);
+				input_ptr->get_h()*i/total_engines, 
+				input_ptr->get_h()*(i+1)/total_engines);
 		}
 
 		for(int i = 0; i < total_engines; i++)
