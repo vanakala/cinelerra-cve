@@ -1,16 +1,16 @@
 SUBDIRS=encore50 
 
 
-lib_LTLIBRARIES = libquicktime.la
-libquicktime_la_CFLAGS = $(CPU_CFLAGS) $(FIREWIRE_CFLAGS) $(OGG_CFLAGS) $(VORBIS_CFLAGS) $(LIBAVCODEC_CFLAGS) -DENCORE_INCLUDE=\"encore50/encore.h\"
-libquicktime_la_LDFLAGS = -version-info 1:0:0 -release 1.6.0 -Wl,--no-undefined 
+lib_LTLIBRARIES = libquicktimehv.la
+libquicktimehv_la_CFLAGS = $(CPU_CFLAGS) $(FIREWIRE_CFLAGS) $(OGG_CFLAGS) $(VORBIS_CFLAGS) $(LIBAVCODEC_CFLAGS) -DENCORE_INCLUDE=\"encore50/encore.h\"
+libquicktimehv_la_LDFLAGS = -version-info 1:0:0 -release 1.6.0 -Wl,--no-undefined 
 
-libquicktime_la_LIBADD = $(FIREWIRE_LDFLAGS) -ldv -lxvidcore -ljpeg -lpng \
+libquicktimehv_la_LIBADD = $(FIREWIRE_LDFLAGS) -ldv -lxvidcore -ljpeg -lpng \
                                                  -logg -lvorbis -lvorbisenc -lmp3lame $(LIBAVCODEC_LIBS) \
                                                  encore50/libencore.la \
-                                                $(top_builddir)/libmpeg3/libmpeg3.la -lpthread -lm
+                                                $(top_builddir)/libmpeg3/libmpeg3hv.la -lpthread -lm
 
-libquicktime_la_SOURCES = atom.c avi_hdrl.c avi_idx1.c avi_movi.c avi_strl.c \
+libquicktimehv_la_SOURCES = atom.c avi_hdrl.c avi_idx1.c avi_movi.c avi_strl.c \
 			  avi_odml.c avi_ix.c avi_indx.c avi_riff.c \
 													cmodel_default.c cmodel_yuv420p.c cmodel_yuv422.c codecs.c colormodels.c \
 													ctab.c dinf.c dref.c dv.c edts.c elst.c graphics.c hdlr.c \

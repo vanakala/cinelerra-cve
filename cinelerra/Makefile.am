@@ -545,9 +545,9 @@ noinst_HEADERS = aattachmentpoint.h \
 		$(srcdir)/*.inc
 		 
 cinelerra_LDADD = \
-	$(top_builddir)/quicktime/libquicktime.la \
+	$(top_builddir)/quicktime/libquicktimehv.la \
 	$(top_builddir)/guicast/libguicast.la \
-	$(top_builddir)/libmpeg3/libmpeg3.la \
+	$(top_builddir)/libmpeg3/libmpeg3hv.la \
 	$(top_builddir)/libsndfile/src/libsndfilehv.la \
 	-lX11 -logg -lvorbis -lvorbisfile -lvorbisenc -la52 \
 	-lpng -lXv -lXext -ljpeg -lmp3lame -ltiff -lesd -lz \
