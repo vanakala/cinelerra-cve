@@ -255,6 +255,24 @@ AC_SUBST(LIBAVCODEC_LIBS)
 
 ############## END OF FFMPEG
 
+############## .png TO .o CONVERSION
+
+AC_CHECK_TOOL(OBJCOPY, objcopy)
+if test "x$OBJCOPY" = "x"; then
+	AC_MSG_ERROR("objcopy from GNU binutils >= 2.11.90 not found")
+fi
+AC_MSG_CHECKING(for object target)
+dnl extract target and architecture
+octarget=`objcopy --info | head -2 | tail -1`
+AC_MSG_RESULT($octarget)
+AC_MSG_CHECKING(for object architecture)
+ocarch=`objcopy --info | grep '^  ' | head -1`
+AC_MSG_RESULT($ocarch)
+AC_SUBST(OBJCOPYTARGET, $octarget)
+AC_SUBST(OBJCOPYARCH, $ocarch)
+
+############## END of .png TO .o CONVERSION
+
 AC_OUTPUT(Makefile po/Makefile.in \
 	m4/Makefile \
 					libmpeg3/Makefile libmpeg3/video/Makefile libmpeg3/audio/Makefile \
@@ -262,9 +280,12 @@ AC_OUTPUT(Makefile po/Makefile.in \
 					quicktime/encore50/Makefile \
 					mpeg2enc/Makefile toolame-02l/Makefile\
 					guicast/Makefile cinelerra/Makefile \
+	cinelerra/data/Makefile \
 					mplexhi/Makefile mplexlo/Makefile \
 					plugins/defaulttheme/Makefile \
+	plugins/defaulttheme/data/Makefile \
 					plugins/microtheme/Makefile \
+	plugins/microtheme/data/Makefile \
 					plugins/colors/Makefile \
 					plugins/libfourier/Makefile \
 					plugins/libeffecttv/Makefile \

@@ -4,6 +4,7 @@
 #include <stdint.h>
 
 //#include "bccounter.h"
+#include "bcsignals.h"
 #include "clip.h"
 #include "colormodels.h"
 #include "vframe.h"
@@ -34,6 +35,15 @@ public:
 
 
 VFrame::VFrame(unsigned char *png_data)
+{
+//printf("VFrame::VFrame 1\n");
+	reset_parameters();
+//printf("VFrame::VFrame 1\n");
+	read_png(png_data);
+//printf("VFrame::VFrame 2\n");
+}
+
+VFrame::VFrame(const PngData& png_data)
 {
 //printf("VFrame::VFrame 1\n");
 	reset_parameters();
@@ -105,6 +115,14 @@ VFrame::~VFrame()
 //	counter.down();
 }
 
+int VFrame::equivalent(VFrame *src)
+{
+	return (src->get_color_model() == get_color_model() &&
+		src->get_w() == get_w() &&
+		src->get_h() == get_h() &&
+		src->bytes_per_line == bytes_per_line);
+}
+
 long VFrame::set_shm_offset(long offset)
 {
 	shm_offset = offset;
@@ -151,9 +169,9 @@ int VFrame::clear_objects()
 //printf("VFrame::clear_objects 1 %p %d\n", this, shared);
 	if(!shared)
 	{
-		int size = calculate_data_size(this->w, this->h, this->bytes_per_line, this->color_model);
-//printf("VFrame::clear_objects %p %d %d\n", this, this->w, this->h);
-//if(size > 1000000) printf("VFrame::clear_objects %d\n", size);
+int size = calculate_data_size(this->w, this->h, this->bytes_per_line, this->color_model);
+if(size > 2560 * 1920)
+UNBUFFER(data);
 		if(data) delete [] data;
 		data = 0;
 	}
@@ -281,6 +299,10 @@ int VFrame::allocate_data(unsigned char *data,
 		shared = 0;
 		int size = calculate_data_size(this->w, this->h, this->bytes_per_line, this->color_model);
 		this->data = new unsigned char[size];
+
+if(size > 2560 * 1920)
+BUFFER(size, this->data, "VFrame::allocate_data");
+
 if(!this->data)
 printf("VFrame::allocate_data %dx%d: memory exhausted.\n", this->w, this->h);
 
@@ -332,16 +354,11 @@ int VFrame::allocate_compressed_data(long bytes)
 // Want to preserve original contents
 	if(data && compressed_allocated < bytes)
 	{
-//printf("VFrame::allocate_compressed_data 1 %d\n", bytes);
 		unsigned char *new_data = new unsigned char[bytes];
-//printf("VFrame::allocate_compressed_data 1\n");
 		bcopy(data, new_data, compressed_allocated);
-//printf("VFrame::allocate_compressed_data 1\n");
 		delete [] data;
-//printf("VFrame::allocate_compressed_data 1\n");
 		data = new_data;
 		compressed_allocated = bytes;
-//printf("VFrame::allocate_compressed_data 2\n");
 	}
 	else
 	if(!data)
@@ -356,16 +373,24 @@ int VFrame::allocate_compressed_data(long bytes)
 
 int VFrame::read_png(unsigned char *data)
 {
+	PngData d;
+	d.size = (((unsigned long)data[0]) << 24) | 
+		(((unsigned long)data[1]) << 16) | 
+		(((unsigned long)data[2]) << 8) | 
+		(unsigned char)data[3];
+	d.data = data + 4;
+	read_png(d);
+}
+
+int VFrame::read_png(const PngData& data)
+{
 	png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
 	png_infop info_ptr = png_create_info_struct(png_ptr);
 	int new_color_model;
 
 	image_offset = 0;
-	image = data + 4;
-	image_size = (((unsigned long)data[0]) << 24) | 
-		(((unsigned long)data[1]) << 16) | 
-		(((unsigned long)data[2]) << 8) | 
-		(unsigned char)data[3];
+	image = data.data;
+	image_size = data.size;
 	png_set_read_fn(png_ptr, this, PngReadFunction::png_read_function);
 	png_read_info(png_ptr, info_ptr);
 

@@ -45,7 +45,7 @@ public:
 		int w, 
 		int h);
 	virtual void get_vwindow_sizes(VWindowGUI *gui);
-	virtual void get_cwindow_sizes(CWindowGUI *gui);
+	virtual void get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls);
 	virtual void get_awindow_sizes(AWindowGUI *gui);
 	virtual void get_rmonitor_sizes(int do_audio, 
 		int do_video,
@@ -96,7 +96,7 @@ public:
 // Tools for building widgets
 	void overlay(VFrame *dst, VFrame *src, int in_x1 = -1, int in_x2 = -1);
 	void build_transport(VFrame** &data,
-		unsigned char *png_overlay,
+		const PngData& png_overlay,
 		VFrame **bg_data,
 		int region);
 	void build_patches(VFrame** &data,

@@ -71,6 +71,7 @@ Theme::Theme()
 	build_menus();
 
 
+#include "data/register_images.h"
 }
 
 
@@ -97,9 +98,6 @@ void Theme::flush_images()
 
 void Theme::initialize()
 {
-// Force to use executable for images
-	unset_path();
-
 	new_image("mode_add", "mode_add.png");
 	new_image("mode_divide", "mode_divide.png");
 	new_image("mode_multiply", "mode_multiply.png");
@@ -302,11 +300,11 @@ void Theme::overlay(VFrame *dst, VFrame *src, int in_x1, int in_x2)
 }
 
 void Theme::build_transport(VFrame** &data,
-	unsigned char *png_overlay,
+	const PngData& png_overlay,
 	VFrame **bg_data,
 	int third)
 {
-	if(!png_overlay) return;
+	if(!png_overlay.data) return;
 	VFrame default_data(png_overlay);
 	data = new VFrame*[3];
 	data[0] = new VFrame(0, default_data.get_w(), default_data.get_h(), BC_RGBA8888);
@@ -562,7 +560,7 @@ void Theme::get_vwindow_sizes(VWindowGUI *gui)
 {
 }
 
-void Theme::get_cwindow_sizes(CWindowGUI *gui)
+void Theme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 {
 }
 

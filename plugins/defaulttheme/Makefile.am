@@ -1,6 +1,8 @@
+SUBDIRS = data
+
 plugin_LTLIBRARIES = defaulttheme.la
 defaulttheme_la_LDFLAGS = -avoid-version -module -shared 
-defaulttheme_la_LIBADD = 
+defaulttheme_la_LIBADD = data/libimagedata.a
 defaulttheme_la_SOURCES = defaulttheme.C 
 AM_CFLAGS = 
 AM_CXXFLAGS = 
@@ -10,7 +12,7 @@ LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
 
 noinst_HEADERS = defaulttheme.h 
 
-EXTRA_DIST = data
+EXTRA_DIST = \
 	buttons.xcf.bz2 \
 	cwindow.xcf.bz2 \
 	cwindow2.xcf.bz2 \
@@ -27,7 +29,3 @@ EXTRA_DIST = data
 	tumbler.xcf.bz2 \
 	vscrollbar.xcf.bz2 \
 	vwindow.xcf.bz2
-
-dist-hook:
-	-rm -rf $(distdir)/data/CVS
-

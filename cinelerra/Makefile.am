@@ -1,3 +1,5 @@
+SUBDIRS = data
+
 bin_PROGRAMS = cinelerra
 cinelerra_SOURCES = aattachmentpoint.C \
 		    aautomation.C \
@@ -250,7 +252,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    workarounds.C \
 		    zoombar.C \
 		    zoompanel.C
-		    
+
 # set the include path found by configure
 # note that a private, modified copy of libsndfile is used,
 # and that its sndfile.h is a built file that is found in $(builddir)!
@@ -268,7 +270,6 @@ cinelerra_LDFLAGS = -export-dynamic ../mpeg2enc/libmpeg2enc.la ../toolame-02l/li
 AM_CFLAGS = 
 AM_CXXFLAGS = 
 AM_FFLAGS = 
-SUBDIRS = 
 cinelerra_DEPENDENCIES = 
 noinst_HEADERS = aattachmentpoint.h \
 		 aautomation.h \
@@ -550,6 +551,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		$(srcdir)/*.inc
 		 
 cinelerra_LDADD = \
+	data/libimagedata.a \
 	$(top_builddir)/quicktime/libquicktimehv.la \
 	$(top_builddir)/guicast/libguicast.la \
 	$(top_builddir)/libmpeg3/libmpeg3hv.la \
@@ -559,13 +561,3 @@ cinelerra_LDADD = \
 	$(SOUND_LDFLAGS) \
 	$(FIREWIRE_LDFLAGS) -ldv \
 	-luuid $(AVIFILE_LDFLAGS)
-
-EXTRA_DIST = data
-
-dist-hook:
-	-rm -rf $(distdir)/Blond/CVS
-	-rm -rf $(distdir)/data/CVS
-
-install-exec-hook:
-	@echo "Postprocessing $(DESTDIR)$(bindir)/cinelerra"
-	$(top_builddir)/guicast/bootstrap $(DESTDIR)$(bindir)/cinelerra $(srcdir)/data/mode_*.png

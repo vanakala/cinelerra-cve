@@ -1,3 +1,4 @@
+SUBDIRS = data
 ## disabled plugin_LTLIBRARIES = microtheme.la
 ## disabled microtheme_la_LDFLAGS = -avoid-version -module -shared 
 ## disabled microtheme_la_LIBADD = 
@@ -10,7 +11,7 @@ LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
 
 noinst_HEADERS = microtheme.h 
 
-EXTRA_DIST = data \
+EXTRA_DIST = \
 	microtheme.C \
 	apply.xcf.bz2 \
 	buttonbars.xcf.bz2 \
@@ -27,7 +28,3 @@ EXTRA_DIST = data \
 	slider.xcf.bz2 \
 	statusbar_cancel.xcf.bz2 \
 	transportbuttons.xcf.bz2
-
-dist-hook:
-	-rm -rf $(distdir)/data/CVS
-

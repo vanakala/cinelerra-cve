@@ -53,7 +53,6 @@ char* DefaultThemeMain::plugin_title()
 Theme* DefaultThemeMain::new_theme()
 {
 	theme = new DefaultTheme;
-	theme->set_path(PluginClient::get_path());
 	return theme;
 }
 
@@ -67,6 +66,7 @@ Theme* DefaultThemeMain::new_theme()
 DefaultTheme::DefaultTheme()
  : Theme()
 {
+#include "data/register_images.h"
 }
 
 DefaultTheme::~DefaultTheme()

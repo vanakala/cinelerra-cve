@@ -11,96 +11,20 @@
 
 BC_Theme::BC_Theme()
 {
-	char *path_env = getenv("PATH");
-	char executable_name[BCTEXTLEN];
-	char *path_ptr = path_env;
-
-// Get location of executable
-	FILE *fd = fopen("/proc/self/cmdline", "r");
-	if(!fd)
-	{
-		perror(_("BC_Theme::BC_Theme: can't open /proc/self/cmdline.\n"));
-		return;
-	}
-	else
-	{
-		fread(executable_name, 1, BCTEXTLEN, fd);
-		strcpy(path, executable_name);
-		fclose(fd);
-	}
-
-	int done = 0;
-	fd = 0;
-
-// Search path environment for executable
-	do
-	{
-		FileSystem fs;
-// Ignore directories
-		if(!fs.is_dir(path))
-			fd = 0;
-		else
-			fd = fopen(path, "r");
-
-
-		if(!fd)
-		{
-// Get next entry out of path_env
-			while(*path_ptr)
-			{
-				if(*path_ptr != ':') 
-					break;
-				else
-					path_ptr++;
-			}
-
-			if(!*path_ptr) break;
-
-			char *new_ptr = path;
-			while(*path_ptr)
-			{
-				if(*path_ptr == ':')
-					break;
-				else
-					*new_ptr++ = *path_ptr++;
-			}
-
-			*new_ptr = 0;
-			if(new_ptr - path > 0 && *(new_ptr - 1) != '/')
-			{
-				*new_ptr++ = '/';
-				*new_ptr = 0;
-			}
-			strcat(path, executable_name);
-		}
-		else
-		{
-			fclose(fd);
-			done = 1;
-		}
-	}while(!done);
-
-	strcpy(default_path, path);
-	data_buffer = 0;
-	contents_buffer = 0;
-	last_image = 0;
 }
 
 BC_Theme::~BC_Theme()
 {
 	image_sets.remove_all_objects();
-	if(data_buffer) delete [] data_buffer;
-	if(contents_buffer) delete [] contents_buffer;
 }
 
 void BC_Theme::dump()
 {
-	printf("BC_Theme::dump 1 image_sets=%d path=%s contents=%d\n", 
+	printf("BC_Theme::dump 1 image_sets=%d contents=%d\n", 
 		image_sets.total, 
-		path, 
-		contents.total);
-	for(int i = 0; i < contents.total; i++)
-		printf("    %s %x\n", contents.values[i], offsets.values[i]);
+		titles.total);
+	for(int i = 0; i < titles.total; i++)
+		printf("    %s %x %ld\n", titles.values[i], image_datas.values[i].data, image_datas.values[i].size);
 }
 
 BC_Resources* BC_Theme::get_resources()
@@ -346,113 +270,31 @@ void BC_Theme::overlay(VFrame *dst, VFrame *src, int in_x1, int in_x2)
 	}
 }
 
-void BC_Theme::set_path(char *path)
+void BC_Theme::register_image(const char* title, unsigned char* data, long size)
 {
-	strcpy(this->path, path);
+	PngData d;
+	d.data = data;
+	d.size = size;
+	titles.append(title);
+	image_datas.append(d);
+	used.append(0);
 }
 
-void BC_Theme::unset_path()
+const PngData& BC_Theme::get_image_data(char *title)
 {
-	strcpy(this->path, default_path);
-	if(data_buffer) delete [] data_buffer;
-	if(contents_buffer) delete [] contents_buffer;
-	data_buffer = 0;
-	contents_buffer = 0;
-	last_image = 0;
-	contents.remove_all();
-	offsets.remove_all();
-	used.remove_all();
-}
-
-unsigned char* BC_Theme::get_image_data(char *title)
-{
-// Read contents
-	if(!data_buffer)
+// Search for image.
+	for(int i = 0; i < titles.total; i++)
 	{
-		FileSystem fs;
-		if(!fs.is_dir(path))
+		if(!strcasecmp(titles.values[i], title))
 		{
-			fprintf(stderr, _("Theme::get_image: %s is a directory.\n"), path);
-			return 0;
-		}
-		FILE *fd = fopen(path, "r");
-		int result = 0;
-
-		if(!fd)
-		{
-			fprintf(stderr, _("Theme::get_image: %s when opening %s\n"), strerror(errno), path);
-		}
-		int data_offset, contents_offset;
-		int total_bytes;
-		int data_size;
-		int contents_size;
-
-		if(fseek(fd, -8, SEEK_END) < 0)
-		{
-			fprintf(stderr, _("BC_Theme::get_image_data fseek %s\n"), strerror(errno));
-			return 0;
-		}
-		total_bytes = ftell(fd);
-		if(fread(&data_offset, 1, 4, fd) != 4)
-		{
-			fprintf(stderr, _("BC_Theme::get_image_data fread 1 %s\n"), strerror(errno));
-			return 0;
-		}
-		if(fread(&contents_offset, 1, 4, fd) != 4)
-		{
-			fprintf(stderr, _("BC_Theme::get_image_data fread 2 %s\n"), strerror(errno));
-			return 0;
-		}
-
-
-		fseek(fd, data_offset, SEEK_SET);
-		data_size = contents_offset - data_offset;
-		data_buffer = new char[data_size];
-		fread(data_buffer, 1, data_size, fd);
-
-		fseek(fd, contents_offset, SEEK_SET);
-		contents_size = total_bytes - contents_offset;
-		contents_buffer = new char[contents_size];
-		fread(contents_buffer, 1, contents_size, fd);
-
-		char *start_of_title = contents_buffer;
-		for(int i = 0; i < contents_size; )
-		{
-			if(contents_buffer[i] == 0)
-			{
-				contents.append(start_of_title);
-				i++;
-				offsets.append(*(int*)(contents_buffer + i));
-				i += 4;
-				start_of_title = contents_buffer + i;
-				used.append(0);
-			}
-			else
-				i++;
-		}
-		fclose(fd);
-	}
-
-// Image is the same as the last one
-	if(last_image && !strcasecmp(last_image, title))
-	{
-		return (unsigned char*)(data_buffer + last_offset);
-	}
-	else
-// Search for image anew.
-	for(int i = 0; i < contents.total; i++)
-	{
-		if(!strcasecmp(contents.values[i], title))
-		{
-			last_offset = offsets.values[i];
-			last_image = contents.values[i];
 			used.values[i] = 1;
-			return (unsigned char*)(data_buffer + offsets.values[i]);
+			return image_datas.values[i];
 		}
 	}
 
 	fprintf(stderr, _("Theme::get_image: %s not found.\n"), title);
-	return 0;
+	static const PngData nullPng = { 0 };
+	return nullPng;
 }
 
 void BC_Theme::check_used()
@@ -466,7 +308,7 @@ return;
 		{
 			if(!got_it)
 				printf(_("BC_Theme::check_used: Images aren't used.\n"));
-			printf("%s ", contents.values[i]);
+			printf("%s ", titles.values[i]);
 			got_it = 1;
 		}
 	}

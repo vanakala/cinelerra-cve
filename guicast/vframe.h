@@ -6,6 +6,12 @@
 
 class PngReadFunction;
 
+struct PngData
+{
+	unsigned char* data;
+	long size;
+};
+
 class VFrame
 {
 public:
@@ -26,6 +32,7 @@ public:
 		long bytes_per_line = -1);
 // Create a frame with the png image
 	VFrame(unsigned char *png_data);
+	VFrame(const PngData& png_data);
 	VFrame(VFrame &vframe);
 // Create new frame for compressed data.
 // Can't share data because the data is dynamically allocated.
@@ -33,6 +40,9 @@ public:
 	~VFrame();
 
 	friend class PngReadFunction;
+
+// Return 1 if the colormodel and dimensions are the same
+	int equivalent(VFrame *src);
 
 // Reallocate a frame without deleting the class
 	int reallocate(unsigned char *data, 
@@ -51,6 +61,7 @@ public:
 
 // Read a PNG into the frame with alpha
 	int read_png(unsigned char *data);
+	int read_png(const PngData& png_data);
 
 // if frame points to the same data as this return 1
 	int equals(VFrame *frame);

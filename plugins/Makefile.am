@@ -92,11 +92,3 @@ SUBDIRS= \
 AUTOMAKE_OPTIONS=foreign
 
 EXTRA_DIST = 
-
-install-exec-hook:
-	@echo "Postprocessing plugins in $(DESTDIR)$(plugindir)"
-	list="$(THEMES)"; \
-	for theme in $$list; do \
-	echo $(DESTDIR)$(plugindir)/$$theme.so; \
-	$(top_builddir)/guicast/bootstrap $(DESTDIR)$(plugindir)/$$theme.so $(srcdir)/$$theme/data/*.png; \
-	done
