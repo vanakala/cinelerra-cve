@@ -189,9 +189,6 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 	int edit_labels,  // Ignored
 	int edit_plugins)  // Ignored
 {
-	int current_aedit = 0;
-	int current_vedit = 0;
-
 //printf("Tracks::move_edits 1\n");
 	for(Track *dest_track = track; dest_track; dest_track = dest_track->next)
 	{
@@ -202,9 +199,9 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 			Edit *source_edit = 0;
 			Track *source_track = 0;
 // Get source track
-			if(dest_track->data_type == TRACK_AUDIO &&
-				current_aedit < edits->total)
+			if(dest_track->data_type == TRACK_AUDIO)
 			{
+				int current_aedit = 0;
 				while(current_aedit < edits->total &&
 					edits->values[current_aedit]->track->data_type != TRACK_AUDIO)
 					current_aedit++;
@@ -213,13 +210,13 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 				{
 					source_edit = edits->values[current_aedit];
 					source_track = source_edit->track;
-					current_aedit++;
+					edits->remove_number(current_aedit);
 				}
 			}
 			else
-			if(dest_track->data_type == TRACK_VIDEO &&
-				current_vedit < edits->total)
+			if(dest_track->data_type == TRACK_VIDEO)
 			{
+				int current_vedit = 0;
 				while(current_vedit < edits->total &&
 					edits->values[current_vedit]->track->data_type != TRACK_VIDEO)
 					current_vedit++;
@@ -228,7 +225,7 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 				{
 					source_edit = edits->values[current_vedit];
 					source_track = source_edit->track;
-					current_vedit++;
+					edits->remove_number(current_vedit);
 				}
 			}
 

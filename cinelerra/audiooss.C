@@ -323,7 +323,7 @@ int AudioOSS::close_all()
 		}
 		
 		if(thread[i]) delete thread[i];
-		if(data[i]) delete data[i];
+		if(data[i]) delete [] data[i];
 	}
 	return 0;
 }
@@ -383,7 +383,7 @@ int AudioOSS::read_buffer(char *buffer, int bytes)
 
 			if(data[i] && data_allocated[i] < bytes)
 			{
-				delete data[i];
+				delete [] data[i];
 				data[i] = 0;
 			}
 			if(!data[i])
@@ -440,7 +440,7 @@ int AudioOSS::write_buffer(char *buffer, int bytes)
 			int out_frame_size = device->out_config->oss_out_channels[i] * sample_size;
 			if(data[i] && data_allocated[i] < bytes)
 			{
-				delete data[i];
+				delete [] data[i];
 				data[i] = 0;
 			}
 			if(!data[i])
