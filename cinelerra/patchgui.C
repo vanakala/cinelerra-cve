@@ -39,6 +39,8 @@ PatchGUI::PatchGUI(MWindow *mwindow,
 	mute = 0;
 	expand = 0;
 	change_source = 0;
+	track_id = -1;
+	if(track) track_id = track->get_id();
 }
 
 PatchGUI::~PatchGUI()

@@ -65,12 +65,12 @@ int VRender::flash_output()
 }
 
 int VRender::process_buffer(VFrame **video_out, 
-	long input_position, 
+	int64_t input_position, 
 	int last_buffer)
 {
 // process buffer for non realtime
 	int i, j;
-	long render_len = 1;
+	int64_t render_len = 1;
 	int reconfigure = 0;
 
 
@@ -94,7 +94,7 @@ int VRender::process_buffer(VFrame **video_out,
 }
 
 
-int VRender::process_buffer(long input_position)
+int VRender::process_buffer(int64_t input_position)
 {
 	Edit *playable_edit = 0;
 	int colormodel;
@@ -135,7 +135,7 @@ int VRender::process_buffer(long input_position)
 			File *file = renderengine->get_vcache()->check_out(asset);
 			if(file)
 			{
-				long corrected_position = current_position;
+				int64_t corrected_position = current_position;
 				if(renderengine->command->get_direction() == PLAY_REVERSE)
 					corrected_position--;
 
@@ -178,7 +178,7 @@ int VRender::process_buffer(long input_position)
 
 // Determine if virtual console is needed
 int VRender::get_use_vconsole(Edit* &playable_edit, 
-	long position,
+	int64_t position,
 	int &use_brender)
 {
 	Track *playable_track;
@@ -228,6 +228,7 @@ int VRender::get_colormodel(Edit* &playable_edit,
 {
 	int colormodel = renderengine->edl->session->color_model;
 
+//printf("VRender::get_colormodel 1\n");
 	if(!use_vconsole && !renderengine->command->single_frame())
 	{
 // Get best colormodel supported by the file
@@ -244,14 +245,20 @@ int VRender::get_colormodel(Edit* &playable_edit,
 			asset = playable_edit->asset;
 		}
 
+//printf("VRender::get_colormodel 1\n");
 		file = renderengine->get_vcache()->check_out(asset);
+//printf("VRender::get_colormodel 10\n");
 
 		if(file)
 		{
+//printf("VRender::get_colormodel 20n");
 			colormodel = file->get_best_colormodel(driver);
+//printf("VRender::get_colormodel 30\n");
 			renderengine->get_vcache()->check_in(asset);
+//printf("VRender::get_colormodel 40\n");
 		}
 	}
+//printf("VRender::get_colormodel 100\n");
 	return colormodel;
 }
 
@@ -270,15 +277,15 @@ void VRender::run()
 // Then use this number to predict the next frame that should be rendered.
 // Be suspicious of frames that render late so have a countdown
 // before we start dropping.
-	long current_sample, start_sample, end_sample; // Absolute counts.
-	long next_frame;  // Actual position.
-	long last_delay = 0;  // delay used before last frame
-	long skip_countdown = VRENDER_THRESHOLD;    // frames remaining until drop
-	long delay_countdown = VRENDER_THRESHOLD;  // Frames remaining until delay
+	int64_t current_sample, start_sample, end_sample; // Absolute counts.
+	int64_t next_frame;  // Actual position.
+	int64_t last_delay = 0;  // delay used before last frame
+	int64_t skip_countdown = VRENDER_THRESHOLD;    // frames remaining until drop
+	int64_t delay_countdown = VRENDER_THRESHOLD;  // Frames remaining until delay
 // Number of frames before next reconfigure
-	long current_input_length;
+	int64_t current_input_length;
 // Number of frames to skip.
-	long frame_step = 1;
+	int64_t frame_step = 1;
 
 // Number of frames since start of rendering
 	session_frame = 0;
@@ -323,7 +330,7 @@ void VRender::run()
 		{
 // Determine the delay until the frame needs to be shown.
 //printf("VRender:run 9\n");
-			current_sample = (long)(renderengine->sync_position() * 
+			current_sample = (int64_t)(renderengine->sync_position() * 
 				renderengine->command->get_speed());
 // latest sample at which the frame can be shown.
 			end_sample = Units::tosamples(session_frame, 
@@ -359,10 +366,10 @@ void VRender::run()
 // Get the frames to skip.
 					delay_countdown = VRENDER_THRESHOLD;
 					frame_step = 1;
-					frame_step += (long)Units::toframes(current_sample, 
+					frame_step += (int64_t)Units::toframes(current_sample, 
 							renderengine->edl->session->sample_rate, 
 							renderengine->edl->session->frame_rate);
-					frame_step -= (long)Units::toframes(end_sample, 
+					frame_step -= (int64_t)Units::toframes(end_sample, 
 								renderengine->edl->session->sample_rate, 
 								renderengine->edl->session->frame_rate);
 				}
@@ -384,7 +391,7 @@ void VRender::run()
 					if(start_sample > current_sample)
 					{
 // Came before the earliest sample so delay
-						timer.delay((long)((float)(start_sample - current_sample) * 
+						timer.delay((int64_t)((float)(start_sample - current_sample) * 
 							1000 / 
 							renderengine->edl->session->sample_rate));
 					}
@@ -521,15 +528,15 @@ int VRender::wait_for_startup()
 
 
 
-long VRender::tounits(double position, int round)
+int64_t VRender::tounits(double position, int round)
 {
 	if(round)
 		return Units::round(position * renderengine->edl->session->frame_rate);
 	else
-		return Units::to_long(position * renderengine->edl->session->frame_rate);
+		return Units::to_int64(position * renderengine->edl->session->frame_rate);
 }
 
-double VRender::fromunits(long position)
+double VRender::fromunits(int64_t position)
 {
 	return (double)position / renderengine->edl->session->frame_rate;
 }

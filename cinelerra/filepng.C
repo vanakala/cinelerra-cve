@@ -71,7 +71,7 @@ void FilePNG::get_parameters(BC_WindowBase *parent_window,
 
 
 
-int FilePNG::can_copy_from(Edit *edit, long position)
+int FilePNG::can_copy_from(Edit *edit, int64_t position)
 {
 	if(edit->asset->format == FILE_MOV)
 	{

@@ -26,14 +26,12 @@
 VirtualAConsole::VirtualAConsole(RenderEngine *renderengine, ARender *arender)
  : VirtualConsole(renderengine, arender, TRACK_AUDIO)
 {
-//printf("VirtualAConsole::VirtualAConsole\n");
 	this->arender = arender;
 }
 
 VirtualAConsole::~VirtualAConsole()
 {
-	delete_virtual_console();
-	delete_input_buffers();
+//printf("VirtualAConsole::~VirtualAConsole 1\n");
 }
 
 int VirtualAConsole::total_ring_buffers()
@@ -100,10 +98,10 @@ int VirtualAConsole::stop_rendering(int duplicate)
 }
 
 
-int VirtualAConsole::process_buffer(long input_len,
-	long input_position,
+int VirtualAConsole::process_buffer(int64_t input_len,
+	int64_t input_position,
 	int last_buffer,
-	long absolute_position)
+	int64_t absolute_position)
 {
 	int result = 0;
 // wait for an input_buffer to become available
@@ -155,18 +153,18 @@ void VirtualAConsole::process_console()
 	int i, j, k;
 // length and lowest numbered sample of fragment in input buffer
 	int buffer = current_vconsole_buffer;
-	long fragment_len, fragment_position;	
+	int64_t fragment_len, fragment_position;	
 // generic buffer
 	double *current_buffer;
 // starting sample of fragment in project
-	long real_position;
+	int64_t real_position;
 // info for meters
 	double min, max, peak;
-	long meter_render_end;    // end of current meter fragment for getting levels
-	long current_fragment_peak; // first meter peak in fragment
-	long input_len = this->input_len[buffer];
-	long input_position = this->input_position[buffer];
-	long absolute_position = this->absolute_position[buffer];
+	int64_t meter_render_end;    // end of current meter fragment for getting levels
+	int64_t current_fragment_peak; // first meter peak in fragment
+	int64_t input_len = this->input_len[buffer];
+	int64_t input_position = this->input_position[buffer];
+	int64_t absolute_position = this->absolute_position[buffer];
 
 
 
@@ -279,7 +277,7 @@ void VirtualAConsole::process_console()
 		if(renderengine->command->realtime && !interrupt)
 		{
 // speed parameters
-			long real_output_len; // length compensated for speed
+			int64_t real_output_len; // length compensated for speed
 			double sample;       // output sample
 			int k;
 			double *audio_out_packed[MAX_CHANNELS];
@@ -296,8 +294,8 @@ void VirtualAConsole::process_console()
 				i < renderengine->config->aconfig->total_playable_channels(); 
 				i++)
 			{
-				long in, out;
-				long fragment_end;
+				int64_t in, out;
+				int64_t fragment_end;
 
 				current_buffer = audio_out_packed[i];
 

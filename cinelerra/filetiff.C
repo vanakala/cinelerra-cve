@@ -6,6 +6,7 @@
 
 #include <stdint.h>
 #include <string.h>
+#include <unistd.h>
 
 FileTIFF::FileTIFF(Asset *asset, File *file)
  : FileList(asset, file, "TIFFLIST", ".tif", FILE_TIFF, FILE_TIFF_LIST)
@@ -61,7 +62,7 @@ int FileTIFF::check_sig(Asset *asset)
 	return 0;
 }
 
-int FileTIFF::can_copy_from(Edit *edit, long position)
+int FileTIFF::can_copy_from(Edit *edit, int64_t position)
 {
 	if(edit->asset->format == FILE_TIFF_LIST ||
 		edit->asset->format == FILE_TIFF)
@@ -165,6 +166,7 @@ static toff_t tiff_seek(thandle_t ptr, toff_t off, int whence)
 			tiff_unit->offset = tiff_unit->data->get_compressed_size() + off;
 			break;
 	}
+//printf("tiff_seek 2\n");
 	return tiff_unit->offset;
 }
 
@@ -181,9 +183,11 @@ static toff_t tiff_size(thandle_t ptr)
 
 static int tiff_mmap(thandle_t ptr, tdata_t* pbase, toff_t* psize)
 {
+//printf("tiff_mmap 1\n");
 	FileTIFFUnit *tiff_unit = (FileTIFFUnit*)ptr;
 	*pbase = tiff_unit->data->get_data();
 	*psize = tiff_unit->data->get_compressed_size();
+//printf("tiff_mmap 10\n");
 	return 0;
 }
 
@@ -198,7 +202,7 @@ int FileTIFF::read_frame(VFrame *output, VFrame *input)
 	unit->offset = 0;
 	unit->data = input;
 
-	stream = TIFFClientOpen("hello world", 
+	stream = TIFFClientOpen("FileTIFF", 
 		"r",
 	    (void*)unit,
 	    tiff_read, 
@@ -214,7 +218,7 @@ int FileTIFF::read_frame(VFrame *output, VFrame *input)
 		output->get_color_model() == BC_RGB888)
 	{
 //printf("FileTIFF::read_frame 2\n");
-		for(int i = asset->height - 1; i >= 0; i--)
+		for(int i = 0; i < asset->height; i++)
 		{
 			TIFFReadScanline(stream, output->get_rows()[i], i, 0);
 		}
@@ -244,7 +248,7 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 //printf("FileTIFF::write_frame 1\n");
 	TIFFConfigVideo::fix_codec(asset->vcodec);
 //printf("FileTIFF::write_frame 1\n");
-	stream = TIFFClientOpen("hello world", 
+	stream = TIFFClientOpen("FileTIFF", 
 		"w",
 	    (void*)tiff_unit,
 	    tiff_read, 
@@ -255,8 +259,6 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 	    tiff_mmap, 
 		tiff_unmap);
 
-// 	stream = TIFFOpen("test.tif", 
-// 		"w");
 //printf("FileTIFF::write_frame 1\n");
 	int depth, color_model;
 	if(!strcmp(asset->vcodec, TIFF_RGBA))
@@ -285,7 +287,9 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 	{
 		for(int i = 0; i < asset->height; i++)
 		{
+//printf("FileTIFF::write_frame 2 %d\n", i);
 			TIFFWriteScanline(stream, frame->get_rows()[i], i, 0);
+//printf("FileTIFF::write_frame 3\n");
 		}
 	}
 	else
@@ -327,13 +331,15 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 			frame->get_w(),
 			frame->get_w());
 //printf("FileTIFF::write_frame 5\n");
-		for(int i = asset->height - 1; i >= 0; i--)
+		for(int i = 0; i < asset->height; i++)
 		{
 			TIFFWriteScanline(stream, tiff_unit->temp->get_rows()[i], i, 0);
 		}
 //printf("FileTIFF::write_frame 6\n");
 	}
 //printf("FileTIFF::write_frame 7\n");
+//sleep(1);
+//printf("FileTIFF::write_frame 71\n");
 
 	TIFFClose(stream);
 //printf("FileTIFF::write_frame 8\n");

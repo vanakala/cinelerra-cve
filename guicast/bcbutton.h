@@ -5,7 +5,7 @@
 #include "bcsubwindow.h"
 #include "vframe.inc"
 
-
+#include <stdint.h>
 
 
 class BC_Button : public BC_SubWindow
@@ -18,7 +18,7 @@ public:
 	friend class BC_GenericButton;
 
 	virtual int handle_event() { return 0; };
-	int repeat_event(long repeat_id);
+	int repeat_event(int64_t repeat_id);
 	virtual int draw_face();
 
 	int initialize();
@@ -30,6 +30,7 @@ public:
 	int cursor_motion_event();
 	int update_bitmaps(VFrame **data);
 	int reposition_window(int x, int y);
+	void set_underline(int number);
 
 private:
 
@@ -37,6 +38,7 @@ private:
 	VFrame **data;
 	int status;
 	int w_argument;
+	int underline_number;
 };
 
 

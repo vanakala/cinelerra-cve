@@ -15,7 +15,7 @@ public:
 
 	int operator==(Auto &that);
 	void load(FileXML *file);
-	void copy(long start, long end, FileXML *file, int default_auto);
+	void copy(int64_t start, int64_t end, FileXML *file, int default_auto);
 	void copy_from(Auto *that);
 	void dump();
 	void rechannel();

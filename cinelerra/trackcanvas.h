@@ -41,18 +41,18 @@ public:
 	void draw_overlays();
 	void update_handles();
 // Convert edit coords to transition coords
-	void get_transition_coords(long &x, long &y, long &w, long &h);
+	void get_transition_coords(int64_t &x, int64_t &y, int64_t &w, int64_t &h);
 	void get_handle_coords(Edit *edit, 
-		long &x, 
-		long &y, 
-		long &w, 
-		long &h, 
+		int64_t &x, 
+		int64_t &y, 
+		int64_t &w, 
+		int64_t &h, 
 		int side);
 	void draw_title(Edit *edit, 
-		long edit_x, 
-		long edit_y, 
-		long edit_w, 
-		long edit_h);
+		int64_t edit_x, 
+		int64_t edit_y, 
+		int64_t edit_w, 
+		int64_t edit_h);
 	void draw_automation();
 	void draw_inout_points();
 	void draw_auto(Auto *current, 
@@ -95,7 +95,7 @@ public:
 		FloatAuto *previous,
 		FloatAuto *current,
 		FloatAutos *autos,
-		long unit_start,
+		int64_t unit_start,
 		double zoom_units,
 		double yscale,
 		int ax,
@@ -105,7 +105,7 @@ public:
 		int color);
 	int test_floatline(int center_pixel, 
 		FloatAutos *autos,
-		long unit_start,
+		int64_t unit_start,
 		double zoom_units,
 		double yscale,
 		int x1,
@@ -166,9 +166,9 @@ public:
 
 	void calculate_viewport(Track *track, 
 		double &view_start,
-		long &unit_start,
+		int64_t &unit_start,
 		double &view_end,
-		long &unit_end,
+		int64_t &unit_end,
 		double &yscale,
 		int &center_pixel,
 		double &zoom_sample,
@@ -179,20 +179,20 @@ public:
 	void draw_transitions();
 	void draw_drag_handle();
 	void draw_plugins();
-	void update_edit_handles(Edit *edit, long edit_x, long edit_y, long edit_w, long edit_h);
+	void update_edit_handles(Edit *edit, int64_t edit_x, int64_t edit_y, int64_t edit_w, int64_t edit_h);
 	void update_transitions();
 	void update_keyframe_handles(Track *track);
-	void get_keyframe_sizes(Track *track, BezierAuto *current, long &x, long &y, long &w, long &h);
+	void get_keyframe_sizes(Track *track, BezierAuto *current, int64_t &x, int64_t &y, int64_t &w, int64_t &h);
 // Draw everything to synchronize with the view
 	void draw(int force = 0, int hide_cursor = 1);
 // Draw resources during index building
 	void draw_indexes(Asset *asset);
 // Get location of edit on screen without boundary checking
-	void edit_dimensions(Edit *edit, long &x, long &y, long &w, long &h);
-	void track_dimensions(Track *track, long &x, long &y, long &w, long &h);
-	void plugin_dimensions(Plugin *plugin, long &x, long &y, long &w, long &h);
-	void get_pixmap_size(Edit *edit, long edit_x, long edit_w, long &pixmap_x, long &pixmap_w, long &pixmap_h);
-	ResourcePixmap* create_pixmap(Edit *edit, long edit_x, long pixmap_x, long pixmap_w, long pixmap_h);
+	void edit_dimensions(Edit *edit, int64_t &x, int64_t &y, int64_t &w, int64_t &h);
+	void track_dimensions(Track *track, int64_t &x, int64_t &y, int64_t &w, int64_t &h);
+	void plugin_dimensions(Plugin *plugin, int64_t &x, int64_t &y, int64_t &w, int64_t &h);
+	void get_pixmap_size(Edit *edit, int64_t edit_x, int64_t edit_w, int64_t &pixmap_x, int64_t &pixmap_w, int64_t &pixmap_h);
+	ResourcePixmap* create_pixmap(Edit *edit, int64_t edit_x, int64_t pixmap_x, int64_t pixmap_w, int64_t pixmap_h);
 	int set_index_file(int flash, Asset *asset);
 	void update_cursor();
 // Get edit and handle the cursor is over
@@ -234,7 +234,7 @@ public:
 	int cursor_motion_event();
 	int activate();
 	int deactivate();
-	int repeat_event(long duration);
+	int repeat_event(int64_t duration);
 	void start_dragscroll();
 	void stop_dragscroll();
 	int start_selection(double position);
@@ -294,7 +294,7 @@ public:
 // event handlers
 	int button_release();
 	int draw_playback_cursor(int pixel, int flash = 1);
-	int draw_loop_point(long position, int flash);
+	int draw_loop_point(int64_t position, int flash);
 	void draw_paste_destination();
 
 	int draw_floating_handle(int flash);
@@ -311,8 +311,8 @@ private:
 								// 1 if not floating yet
 								// 2 if floating
 	int which_handle;           // 1 left or 2 right handle
-	long handle_oldposition;       // original position of handle
-	long handle_position;           // current position of handle
+	int64_t handle_oldposition;       // original position of handle
+	int64_t handle_position;           // current position of handle
 	int handle_pixel;                // original pixel position of pointer in window
 	int handle_mode;   // Determined by which button was pressed
 
@@ -321,9 +321,9 @@ private:
 	int region_selected;         // 1 if region selected
 	int selection_type;  // Whether an edit or a sample is selected
 
-	int auto_reposition(int &cursor_x, int &cursor_y, long cursor_position);
-	int update_selection(long cursor_position);
-	int update_handle_selection(long cursor_position);
+	int auto_reposition(int &cursor_x, int &cursor_y, int64_t cursor_position);
+	int update_selection(int64_t cursor_position);
+	int update_handle_selection(int64_t cursor_position);
 };
 
 #endif

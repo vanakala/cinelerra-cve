@@ -285,7 +285,7 @@ int CDRipMain::stop_loop()
 	return 0;
 }
 
-int CDRipMain::process_loop(double **plugin_buffer, long &write_length)
+int CDRipMain::process_loop(double **plugin_buffer, int64_t &write_length)
 {
 	int result = 0;
 //printf("CDRipMain::process_loop 1\n");

@@ -31,7 +31,6 @@ Module::Module(RenderEngine *renderengine,
 	total_attachments = 0;
 	new_total_attachments = 0;
 	new_attachments = 0;
-//printf("Module::Module 1\n");
 }
 
 Module::~Module()
@@ -72,7 +71,7 @@ EDL* Module::get_edl()
 
 void Module::create_new_attachments()
 {
-// Not needed in pluginarray
+// Not used in pluginarray
 	if(commonrender)
 	{
 		new_total_attachments = track->plugin_set.total;
@@ -159,7 +158,8 @@ AttachmentPoint* Module::attachment_of(Plugin *plugin)
 }
 
 
-// Test plugins for reconfiguration
+// Test plugins for reconfiguration.
+// Used in playback
 int Module::test_plugins()
 {
 	if(total_attachments != track->plugin_set.total) return 1;
@@ -189,7 +189,7 @@ int Module::test_plugins()
 	return 0;
 }
 
-void Module::update_transition(long current_position, int direction)
+void Module::update_transition(int64_t current_position, int direction)
 {
 //printf("Module::update_transition 1\n");
 	Plugin *transition = track->get_current_transition(current_position, 

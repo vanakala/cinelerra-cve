@@ -70,8 +70,8 @@ MWindowGUI::~MWindowGUI()
 void MWindowGUI::get_scrollbars()
 {
 //printf("MWindowGUI::get_scrollbars 1\n");
-	long h_needed = mwindow->edl->get_tracks_height(mwindow->theme);
-	long w_needed = mwindow->edl->get_tracks_width();
+	int64_t h_needed = mwindow->edl->get_tracks_height(mwindow->theme);
+	int64_t w_needed = mwindow->edl->get_tracks_width();
 	int need_xscroll = 0;
 	int need_yscroll = 0;
 	view_w = mwindow->theme->mcanvas_w;
@@ -161,6 +161,7 @@ int MWindowGUI::create_objects()
 {
 //printf("MWindowGUI::create_objects 1\n");
 	set_icon(mwindow->theme->mwindow_icon);
+	
 //printf("MWindowGUI::create_objects 1\n");
 
 	cursor = 0;
@@ -208,6 +209,8 @@ int MWindowGUI::create_objects()
 		mwindow->theme->mclock_x,
  		mwindow->theme->mclock_y,
 		mwindow->theme->mclock_w));
+	mainclock->update(0);
+
 //printf("MWindowGUI::create_objects 1\n");
 
 	cursor = new MainCursor(mwindow, this);
@@ -292,7 +295,7 @@ void MWindowGUI::update(int scrollbars,
 	if(buttonbar) mbuttons->update();
 }
 
-int MWindowGUI::visible(long x1, long x2, long view_x1, long view_x2)
+int MWindowGUI::visible(int64_t x1, int64_t x2, int64_t view_x1, int64_t view_x2)
 {
 	return (x1 >= view_x1 && x1 < view_x2) ||
 		(x2 > view_x1 && x2 <= view_x2) ||
@@ -395,7 +398,7 @@ void MWindowGUI::default_positions()
 
 
 
-int MWindowGUI::repeat_event(long duration)
+int MWindowGUI::repeat_event(int64_t duration)
 {
 	return cursor->repeat_event(duration);
 }

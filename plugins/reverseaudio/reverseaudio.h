@@ -17,14 +17,14 @@ public:
 	int is_realtime();
 	VFrame* new_picon();
 	int start_loop();
-	int process_loop(double *buffer, long &write_length);
+	int process_loop(double *buffer, int64_t &write_length);
 	int stop_loop();
 
 	Defaults *defaults;
 	MainProgressBar *progress;
 
-	long current_position;
-	long total_written;
+	int64_t current_position;
+	int64_t total_written;
 };
 
 

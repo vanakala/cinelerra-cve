@@ -485,7 +485,7 @@ int RecordGUI::resize_event(int w, int h)
 	
 	transport_title->reposition_window(mwindow->theme->recordgui_transport_x, 
 		mwindow->theme->recordgui_transport_y);
-	record_transport->reposition_window(mwindow->theme->recordgui_transport_x + transport_title->get_w() + 5,
+	record_transport->reposition_window(mwindow->theme->recordgui_batchcaption_x,
 		mwindow->theme->recordgui_transport_y + 5);
 	
 	x = mwindow->theme->recordgui_buttons_x;
@@ -947,13 +947,9 @@ RecordGUIStartBatches::RecordGUIStartBatches(MWindow *mwindow, Record *record, i
 }
 int RecordGUIStartBatches::handle_event()
 {
-//printf("RecordGUIStartBatches::handle_event 1\n");
 	unlock_window();
-//printf("RecordGUIStartBatches::handle_event 2\n");
 	record->start_recording(0, CONTEXT_BATCH);
-//printf("RecordGUIStartBatches::handle_event 3\n");
 	lock_window();
-//printf("RecordGUIStartBatches::handle_event 4\n");
 	return 1;
 }
 
@@ -989,6 +985,7 @@ RecordGUILabel::RecordGUILabel(MWindow *mwindow, Record *record, int x, int y)
 { 
 	this->mwindow = mwindow;
 	this->record = record;
+	set_underline(0);
 }
 
 

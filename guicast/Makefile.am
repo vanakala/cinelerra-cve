@@ -7,7 +7,7 @@ libguicast_la_SOURCES = bcbitmap.C bcbutton.C bccapture.C bcclipboard.C bcdispla
 												bcprogressbox.C bcrepeater.C bcresources.C bcscrollbar.C bcsignals.C bcslider.C bcsubwindow.C \
 												bctextbox.C bctitle.C bctoggle.C bctumble.C bcwindow.C bcwindowbase.C bcwindowdraw.C errorbox.C \
 												defaults.C filesystem.C mutex.C rotateframe.C sema.C stringfile.C thread.C timer.C units.C \
-												vframe.C workarounds.C bclistboxitem.C bctheme.C
+												vframe.C workarounds.C bclistboxitem.C bctheme.C condition.C
 noinst_HEADERS = arraylist.h bcbitmap.h bcbitmap.inc bcbutton.h bcbutton.inc bccapture.h bccapture.inc bcclipboard.h \
 								 bcclipboard.inc bcdisplayinfo.h bcdisplayinfo.inc bcdragwindow.h bcdragwindow.inc bcfilebox.h \
 								 bcfilebox.inc bcipc.h bclistbox.h bclistbox.inc bcmenubar.h bcmenubar.inc bcmeter.h bcmeter.inc \
@@ -19,6 +19,6 @@ noinst_HEADERS = arraylist.h bcbitmap.h bcbitmap.inc bcbutton.h bcbutton.inc bcc
 								 bcwindow.h bcwindow.inc clip.h colors.h cursors.h defaults.h defaults.inc errorbox.h errorbox.inc \
 								 filesystem.h filesystem.inc fonts.h guicast.h keys.h linklist.h mutex.h mutex.inc rotateframe.h \
 								 rotateframe.inc sema.h sema.inc sizes.h stringfile.h stringfile.inc testobject.h thread.h timer.h \
-								 timer.inc units.h vframe.h vframe.inc workarounds.h bclistboxitem.h bctheme.h
+								 timer.inc units.h vframe.h vframe.inc workarounds.h bclistboxitem.h bctheme.h condition.h
 
 INCLUDES = -I$(top_srcdir)/quicktime -I/usr/include/qt

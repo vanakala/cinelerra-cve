@@ -40,7 +40,7 @@ public:
 	virtual int button_press_event();
 	virtual int button_release_event();
 	int cursor_motion_event();
-	int repeat_event(long repeat_id);
+	int repeat_event(int64_t repeat_id);
 	int draw_face();
 
 private:

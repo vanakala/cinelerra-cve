@@ -1,12 +1,6 @@
 #ifndef QUICKTIME_TWOS_H
 #define QUICKTIME_TWOS_H
 
-
-typedef struct
-{
-	char *work_buffer;
-	long buffer_size;
-} quicktime_twos_codec_t;
-
+extern void quicktime_init_codec_twos(quicktime_audio_map_t *);
 
 #endif

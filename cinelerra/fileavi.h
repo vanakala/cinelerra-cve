@@ -34,14 +34,14 @@ public:
 	int open_file(int rd, int wr);
 	int close_file();
 	void reset();
-	int set_audio_position(long x);
-	int set_video_position(long x);
-	int write_samples(double **buffer, long len);
+	int set_audio_position(int64_t x);
+	int set_video_position(int64_t x);
+	int write_samples(double **buffer, int64_t len);
 	int write_frames(VFrame ***frames, int len);
 	int write_compressed_frame(VFrame *buffer);
 	int read_compressed_frame(VFrame *buffer);
-	long compressed_frame_size();
-	int read_samples(double *buffer, long len);
+	int64_t compressed_frame_size();
+	int read_samples(double *buffer, int64_t len);
 	int read_frame(VFrame *frame);
 	static char* vcodec_to_fourcc(char *input, char *output);
 	static char* fourcc_to_vcodec(char *input, char *output);
@@ -90,7 +90,7 @@ private:
 
 
 	unsigned char *temp_audio;
-	long temp_allocated;
+	int64_t temp_allocated;
 	int source_cmodel;
 };
 

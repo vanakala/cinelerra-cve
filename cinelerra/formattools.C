@@ -56,6 +56,13 @@ int FormatTools::create_objects(int &init_x,
 	this->lock_compressor = lock_compressor;
 	this->recording = recording;
 	this->use_brender = brender;
+	this->do_audio = do_audio;
+	this->do_video = do_video;
+	this->prompt_audio = prompt_audio;
+	this->prompt_audio_channels = prompt_audio_channels;
+	this->prompt_video = prompt_video;
+	this->prompt_video_compression = prompt_video_compression;
+	this->strategy = strategy;
 
 //printf("FormatTools::create_objects 1\n");
 
@@ -99,7 +106,7 @@ int FormatTools::create_objects(int &init_x,
 	y += 35;
 
 //printf("FormatTools::create_objects 3\n");
-	window->add_subwindow(new BC_Title(x, y, "File Format:"));
+	window->add_subwindow(format_title = new BC_Title(x, y, "File Format:"));
 	x += 90;
 	window->add_subwindow(format_text = new BC_TextBox(x, 
 		y, 
@@ -118,7 +125,7 @@ int FormatTools::create_objects(int &init_x,
 	y += format_button->get_h() + 10;
 	if(do_audio)
 	{
-		window->add_subwindow(new BC_Title(x, y, "Audio:", LARGEFONT, RED));
+		window->add_subwindow(audio_title = new BC_Title(x, y, "Audio:", LARGEFONT, RED));
 		x += 80;
 		window->add_subwindow(aparams_button = new FormatAParams(mwindow, this, x, y));
 		x += aparams_button->get_w() + 10;
@@ -133,12 +140,13 @@ int FormatTools::create_objects(int &init_x,
 // Audio channels only used for recording.
 		if(prompt_audio_channels)
 		{
-			window->add_subwindow(new BC_Title(x, y, "Number of audio channels to record:"));
+			window->add_subwindow(channels_title = new BC_Title(x, y, "Number of audio channels to record:"));
 			x += 260;
 			window->add_subwindow(channels_button = new FormatChannels(x, y, asset));
 			x += channels_button->get_w() + 5;
 			window->add_subwindow(channels_tumbler = new BC_ITumbler(channels_button, 1, MAXCHANNELS, x, y));
 			y += channels_button->get_h() + 20;
+			x = init_x;
 		}
 
 //printf("FormatTools::create_objects 6\n");
@@ -146,12 +154,11 @@ int FormatTools::create_objects(int &init_x,
 	}
 
 //printf("FormatTools::create_objects 7\n");
-	x = init_x;
 	if(do_video)
 	{
 
 //printf("FormatTools::create_objects 8\n");
-		window->add_subwindow(new BC_Title(x, y, "Video:", LARGEFONT, RED));
+		window->add_subwindow(video_title = new BC_Title(x, y, "Video:", LARGEFONT, RED));
 		x += 80;
 		if(prompt_video_compression)
 		{
@@ -180,8 +187,8 @@ int FormatTools::create_objects(int &init_x,
 	x = init_x;
 	if(strategy)
 	{
-		BC_WindowBase *tool = window->add_subwindow(new FormatMultiple(mwindow, x, y, strategy));
-		y += tool->get_h() + 10;
+		window->add_subwindow(multiple_files = new FormatMultiple(mwindow, x, y, strategy));
+		y += multiple_files->get_h() + 10;
 	}
 
 //printf("FormatTools::create_objects 12\n");
@@ -189,6 +196,83 @@ int FormatTools::create_objects(int &init_x,
 	init_y = y;
 	return 0;
 }
+
+void FormatTools::reposition_window(int &init_x, int &init_y)
+{
+	int x = init_x;
+	int y = init_y;
+
+	path_textbox->reposition_window(x, y);
+	x += 305;
+	path_button->reposition_window(x, y);
+
+	x -= 305;
+	y += 35;
+	format_title->reposition_window(x, y);
+	x += 90;
+	format_text->reposition_window(x, y);
+	x += format_text->get_w();
+	format_button->reposition_window(x, y);
+
+	x = init_x;
+	y += format_button->get_h() + 10;
+
+	if(do_audio)
+	{
+		audio_title->reposition_window(x, y);
+		x += 80;
+		aparams_button->reposition_window(x, y);
+		x += aparams_button->get_w() + 10;
+		if(prompt_audio) audio_switch->reposition_window(x, y);
+
+		x = init_x;
+		y += aparams_button->get_h() + 20;
+		if(prompt_audio_channels)
+		{
+			channels_title->reposition_window(x, y);
+			x += 260;
+			channels_button->reposition_window(x, y);
+			x += channels_button->get_w() + 5;
+			channels_tumbler->reposition_window(x, y);
+			y += channels_button->get_h() + 20;
+			x = init_x;
+		}
+	}
+
+
+	if(do_video)
+	{
+		video_title->reposition_window(x, y);
+		x += 80;
+		if(prompt_video_compression)
+		{
+			vparams_button->reposition_window(x, y);
+			x += vparams_button->get_w() + 10;
+		}
+
+		if(prompt_video)
+		{
+			video_switch->reposition_window(x, y);
+			y += video_switch->get_h();
+		}
+		else
+		{
+			y += vparams_button->get_h();
+		}
+
+		y += 10;
+		x = init_x;
+	}
+
+	if(strategy)
+	{
+		multiple_files->reposition_window(x, y);
+		y += multiple_files->get_h() + 10;
+	}
+
+	init_y = y;
+}
+
 
 int FormatTools::set_audio_options()
 {

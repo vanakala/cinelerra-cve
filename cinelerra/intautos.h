@@ -12,8 +12,8 @@ public:
 	~IntAutos();
 	
 	Auto* new_auto();
-	int automation_is_constant(long start, long end);       
-	double get_automation_constant(long start, long end);
+	int automation_is_constant(int64_t start, int64_t end);       
+	double get_automation_constant(int64_t start, int64_t end);
 	void dump();
 };
 

@@ -35,7 +35,7 @@ public:
 	virtual int decrease_value() { return 0; };
 
 	int reposition_window(int x, int y);
-	int repeat_event(long repeat_id);
+	int repeat_event(int64_t repeat_id);
 	int cursor_enter_event();
 	int cursor_leave_event();
 	int button_press_event();
@@ -56,7 +56,7 @@ private:
 	BC_Pixmap *images[POT_STATES];
 	char caption[BCTEXTLEN], temp_tooltip_text[BCTEXTLEN];
 	int status;
-	long keypress_tooltip_timer;
+	int64_t keypress_tooltip_timer;
 	float angle_offset;
 	float start_cursor_angle;
 	float start_needle_angle;
@@ -93,9 +93,9 @@ class BC_IPot : public BC_Pot
 public:
 	BC_IPot(int x, 
 		int y, 
-		long value, 
-		long minvalue, 
-		long maxvalue, 
+		int64_t value, 
+		int64_t minvalue, 
+		int64_t maxvalue, 
 		VFrame **data = 0);
 	~BC_IPot();
 
@@ -104,11 +104,11 @@ public:
 	int decrease_value();
 	float get_percentage();
 	int percentage_to_value(float percentage);
-	long get_value();
-	void update(long value);
+	int64_t get_value();
+	void update(int64_t value);
 
 private:
-	long value, minvalue, maxvalue;
+	int64_t value, minvalue, maxvalue;
 };
 
 class BC_QPot : public BC_Pot
@@ -116,7 +116,7 @@ class BC_QPot : public BC_Pot
 public:
 	BC_QPot(int x, 
 		int y, 
-		long value,      // Units of frequencies
+		int64_t value,      // Units of frequencies
 		VFrame **data = 0);
 	~BC_QPot();
 
@@ -126,13 +126,13 @@ public:
 	float get_percentage();
 	int percentage_to_value(float percentage);
 // Units of frequencies
-	long get_value();
+	int64_t get_value();
 // Units of frequencies
-	void update(long value);
+	void update(int64_t value);
 
 private:
 // Units of frequency index
-	long value, minvalue, maxvalue;
+	int64_t value, minvalue, maxvalue;
 };
 
 class BC_PercentagePot : public BC_Pot

@@ -51,7 +51,7 @@ void CommonRender::reset_parameters()
 
 void CommonRender::arm_command()
 {
-	long temp_length = 1;
+	int64_t temp_length = 1;
 
 //printf("CommonRender::arm_command 1 %f\n", renderengine->command->playbackstart);
 	current_position = tounits(renderengine->command->playbackstart, 0);
@@ -133,7 +133,7 @@ void CommonRender::start_plugins()
 //printf("CommonRender::start_plugins 2\n");
 }
 
-int CommonRender::test_reconfigure(long position, long &length)
+int CommonRender::test_reconfigure(int64_t position, int64_t &length)
 {
 	if(!vconsole) return 1;
 	if(!modules) return 1;
@@ -189,12 +189,12 @@ void CommonRender::delete_vconsole()
 	vconsole = 0;
 }
 
-int CommonRender::get_boundaries(long &current_render_length)
+int CommonRender::get_boundaries(int64_t &current_render_length)
 {
-	long loop_end = tounits(renderengine->edl->local_session->loop_end, 1);
-	long loop_start = tounits(renderengine->edl->local_session->loop_start, 0);
-	long start_position = tounits(renderengine->command->start_position, 0);
-	long end_position = tounits(renderengine->command->end_position, 1);
+	int64_t loop_end = tounits(renderengine->edl->local_session->loop_end, 1);
+	int64_t loop_start = tounits(renderengine->edl->local_session->loop_start, 0);
+	int64_t start_position = tounits(renderengine->command->start_position, 0);
+	int64_t end_position = tounits(renderengine->command->end_position, 1);
 
 
 //printf("CommonRender::get_boundaries 1 %d %d %d %d\n", 
@@ -240,7 +240,7 @@ int CommonRender::get_boundaries(long &current_render_length)
 
 		if(renderengine->command->get_direction() == PLAY_FORWARD)
 		{
-			long segment_end = current_position + current_render_length;
+			int64_t segment_end = current_position + current_render_length;
 			if(segment_end > loop_end)
 			{
 				current_render_length = loop_end - current_position;
@@ -248,7 +248,7 @@ int CommonRender::get_boundaries(long &current_render_length)
 		}
 		else
 		{
-			long segment_end = current_position - current_render_length;
+			int64_t segment_end = current_position - current_render_length;
 			if(segment_end < loop_start)
 			{
 				current_render_length = current_position - loop_start;
@@ -313,10 +313,10 @@ int CommonRender::wait_for_completion()
 
 
 
-int CommonRender::advance_position(long current_render_length)
+int CommonRender::advance_position(int64_t current_render_length)
 {
-	long loop_end = tounits(renderengine->edl->local_session->loop_end, 1);
-	long loop_start = tounits(renderengine->edl->local_session->loop_start, 0);
+	int64_t loop_end = tounits(renderengine->edl->local_session->loop_end, 1);
+	int64_t loop_start = tounits(renderengine->edl->local_session->loop_start, 0);
 
 // advance the playback position
 	if(renderengine->command->get_direction() == PLAY_REVERSE)
@@ -343,12 +343,12 @@ int CommonRender::advance_position(long current_render_length)
 	return 0;
 }
 
-long int CommonRender::tounits(double position, int round)
+int64_t CommonRender::tounits(double position, int round)
 {
-	return (long)position;
+	return (int64_t)position;
 }
 
-double CommonRender::fromunits(long position)
+double CommonRender::fromunits(int64_t position)
 {
 	return (double)position;
 }

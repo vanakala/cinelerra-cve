@@ -719,7 +719,7 @@ Clear::Clear(MWindow *mwindow)
 int Clear::handle_event()
 {
 	mwindow->cwindow->gui->lock_window();
-	mwindow->clear();
+	mwindow->clear_entry();
 	mwindow->cwindow->gui->unlock_window();
 	return 1;
 }
@@ -806,7 +806,7 @@ AddAudioTrack::AddAudioTrack(MWindow *mwindow)
 
 int AddAudioTrack::handle_event()
 {
-	mwindow->add_audio_track_entry();
+	mwindow->add_audio_track_entry(0, 0);
 	return 1;
 }
 

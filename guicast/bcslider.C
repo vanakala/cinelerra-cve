@@ -147,7 +147,7 @@ void BC_Slider::show_value_tooltip()
 }
 
 
-int BC_Slider::repeat_event(long duration)
+int BC_Slider::repeat_event(int64_t duration)
 {
 	if(duration == top_level->get_resources()->tooltip_delay)
 	{
@@ -354,9 +354,9 @@ BC_ISlider::BC_ISlider(int x,
 			int vertical,
 			int pixels, 
 			int pointer_motion_range, 
-			long minvalue, 
-			long maxvalue, 
-			long value,
+			int64_t minvalue, 
+			int64_t maxvalue, 
+			int64_t value,
 			int use_caption,
 			VFrame **data,
 			int *output)
@@ -389,7 +389,7 @@ int BC_ISlider::value_to_pixel()
 	}
 }
 
-int BC_ISlider::update(long value)
+int BC_ISlider::update(int64_t value)
 {
 	if(this->value != value)
 	{
@@ -402,9 +402,9 @@ int BC_ISlider::update(long value)
 }
 
 int BC_ISlider::update(int pointer_motion_range, 
-	long value, 
-	long minvalue, 
-	long maxvalue)
+	int64_t value, 
+	int64_t minvalue, 
+	int64_t maxvalue)
 {
 	this->minvalue = minvalue;
 	this->maxvalue = maxvalue;
@@ -418,12 +418,12 @@ int BC_ISlider::update(int pointer_motion_range,
 }
 
 
-long BC_ISlider::get_value()
+int64_t BC_ISlider::get_value()
 {
 	return value;
 }
 
-long BC_ISlider::get_length()
+int64_t BC_ISlider::get_length()
 {
 	return maxvalue - minvalue;
 }
@@ -468,18 +468,18 @@ int BC_ISlider::init_selection(int cursor_x, int cursor_y)
 
 int BC_ISlider::update_selection(int cursor_x, int cursor_y)
 {
-	long old_value = value;
+	int64_t old_value = value;
 
 	if(vertical)
 	{
-		value = (long)((1.0 - (double)(cursor_y - min_pixel) / 
+		value = (int64_t)((1.0 - (double)(cursor_y - min_pixel) / 
 			pointer_motion_range) * 
 			(maxvalue - minvalue) +
 			minvalue);
 	}
 	else
 	{
-		value = (long)((double)(cursor_x - min_pixel) / 
+		value = (int64_t)((double)(cursor_x - min_pixel) / 
 			pointer_motion_range * 
 			(maxvalue - minvalue) +
 			minvalue);

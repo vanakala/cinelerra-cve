@@ -25,9 +25,8 @@ int FileSndFile::check_sig(Asset *asset)
 	SF_INFO fd_config;
 	fd_config.format = 0;
 //printf("FileSndFile::check_sig 1\n");
-//	SNDFILE *fd = sf_open_read(asset->path, &fd_config);
-	SNDFILE *fd = sf_open(asset->path, SFM_READ, &fd_config);
-//printf("FileSndFile::check_sig 1\n");
+	SNDFILE *fd = sf_open_read(asset->path, &fd_config);
+//printf("FileSndFile::check_sig 1 %p\n", fd);
 
 	if(fd)
 	{
@@ -59,33 +58,28 @@ void FileSndFile::asset_to_format()
 		case BITSLINEAR24:
 			if(asset->format != FILE_PCM)
 			{
-				fd_config.format |= SF_FORMAT_PCM_24;
+				fd_config.format |= SF_FORMAT_PCM;
 			}
 			else
 			{
 				if(asset->byte_order)
-//					fd_config.format |= SF_FORMAT_PCM_LE;
-					fd_config.format |= SF_ENDIAN_LITTLE;
+					fd_config.format |= SF_FORMAT_PCM_LE;
 				else
-//					fd_config.format |= SF_FORMAT_PCM_BE;
-					fd_config.format |= SF_ENDIAN_BIG;
+					fd_config.format |= SF_FORMAT_PCM_BE;
 			}
-//			fd_config.pcmbitwidth = asset->bits;
-
+			fd_config.pcmbitwidth = asset->bits;
 //printf("FileSndFile::asset_to_format 1 %x %d\n", fd_config.format, fd_config.pcmbitwidth);
 			break;
 
 		case BITSULAW: 
 			fd_config.format |= SF_FORMAT_ULAW; 
-//			fd_config.pcmbitwidth = 16;
-			fd_config.format |= SF_FORMAT_PCM_16;
+			fd_config.pcmbitwidth = 16;
 			break;
 
 		case BITSFLOAT: 
 //printf("FileSndFile::asset_to_format 1\n");
 			fd_config.format |= SF_FORMAT_FLOAT; 
-//			fd_config.pcmbitwidth = 16;
-			fd_config.format |= SF_FORMAT_PCM_16;
+			fd_config.pcmbitwidth = 16;
 			break;
 
 		case BITS_ADPCM: 
@@ -93,8 +87,7 @@ void FileSndFile::asset_to_format()
 				fd_config.format |= SF_FORMAT_MS_ADPCM;
 			else
 				fd_config.format |= SF_FORMAT_IMA_ADPCM; 
-//			fd_config.pcmbitwidth = 16;
-			fd_config.format |= SF_FORMAT_PCM_16;
+			fd_config.pcmbitwidth = 16;
 			break;
 	}
 
@@ -120,7 +113,7 @@ void FileSndFile::format_to_asset()
 				break;
 			case SF_FORMAT_AIFF: asset->format = FILE_AIFF; break;
 			case SF_FORMAT_AU:   asset->format = FILE_AU;   break;
-//			case SF_FORMAT_AULE: asset->format = FILE_AU;   break;
+			case SF_FORMAT_AULE: asset->format = FILE_AU;   break;
 			case SF_FORMAT_RAW:  asset->format = FILE_PCM;  break;
 			case SF_FORMAT_PAF:  asset->format = FILE_SND;  break;
 			case SF_FORMAT_SVX:  asset->format = FILE_SND;  break;
@@ -139,26 +132,17 @@ void FileSndFile::format_to_asset()
 		case SF_FORMAT_MS_ADPCM:
 			asset->bits = BITS_ADPCM;
 			break;
-		case SF_FORMAT_PCM_16:
-			asset->signed_ = 1;
-			asset->bits = 16;
+		case SF_FORMAT_PCM:
+			asset->bits = fd_config.pcmbitwidth;
 			break;
-		case SF_FORMAT_PCM_24:
-			asset->signed_ = 1;
-			asset->bits = 24;
-			break;
-		case SF_FORMAT_PCM_32:
-			asset->signed_ = 1;
-			asset->bits = 32;
-			break;
-/*		case SF_FORMAT_PCM_BE:
+		case SF_FORMAT_PCM_BE:
 			asset->byte_order = 0;
 			asset->bits = fd_config.pcmbitwidth;
 			break;
 		case SF_FORMAT_PCM_LE:
 			asset->byte_order = 1;
 			asset->bits = fd_config.pcmbitwidth;
-			break; */
+			break;
 		case SF_FORMAT_PCM_S8:
 			asset->signed_ = 1;
 			asset->bits = BITSLINEAR8;
@@ -168,18 +152,9 @@ void FileSndFile::format_to_asset()
 			asset->bits = BITSLINEAR8;
 			break;
 	}
-	switch(fd_config.format & SF_FORMAT_ENDMASK)
-	{
-		case SF_ENDIAN_LITTLE:
-			asset->byte_order = 1;
-			break;
-		case SF_ENDIAN_BIG:
-			asset->byte_order = 0;
-			break;
-	}
+
 	asset->audio_data = 1;
-//	asset->audio_length = fd_config.samples;
-	asset->audio_length = fd_config.frames;
+	asset->audio_length = fd_config.samples;
 	if(!asset->sample_rate)
 		asset->sample_rate = fd_config.samplerate;
 	asset->channels = fd_config.channels;
@@ -198,14 +173,12 @@ int FileSndFile::open_file(int rd, int wr)
 		if(asset->format == FILE_PCM)
 		{
 			asset_to_format();
-//			fd = sf_open_read(asset->path, &fd_config);
-			fd = sf_open(asset->path, SFM_READ, &fd_config);
+			fd = sf_open_read(asset->path, &fd_config);
 			format_to_asset();
 		}
 		else
 		{
-//			fd = sf_open_read(asset->path, &fd_config);
-			fd = sf_open(asset->path, SFM_READ, &fd_config);
+			fd = sf_open_read(asset->path, &fd_config);
 // Doesn't calculate the length
 			format_to_asset();
 		}
@@ -216,8 +189,7 @@ int FileSndFile::open_file(int rd, int wr)
 //printf("FileSndFile::open_file 1\n");
 		asset_to_format();
 //printf("FileSndFile::open_file 1\n");
-//		fd = sf_open_write(asset->path, &fd_config);
-		fd = sf_open(asset->path, SFM_WRITE, &fd_config);
+		fd = sf_open_write(asset->path, &fd_config);
 //printf("FileSndFile::open_file 2 %p\n", fd);
 	}
 
@@ -240,20 +212,20 @@ int FileSndFile::close_file()
 	return 0;
 }
 
-int FileSndFile::set_audio_position(long sample)
+int FileSndFile::set_audio_position(int64_t sample)
 {
 //printf("FileSndFile::set_audio_position %ld\n", sample);
 // Commented out /* && psf->dataoffset */ in sndfile.c: 761
 	if(sf_seek(fd, sample, SEEK_SET) < 0)
 	{
-		printf("FileSndFile::set_audio_position %ld: failed\n", sample);
+		printf("FileSndFile::set_audio_position %lld: failed\n", sample);
 		sf_perror(fd);
 		return 1;
 	}
 	return 0;
 }
 
-int FileSndFile::read_samples(double *buffer, long len)
+int FileSndFile::read_samples(double *buffer, int64_t len)
 {
 	int result = 0;
 
@@ -281,8 +253,7 @@ int FileSndFile::read_samples(double *buffer, long len)
 	}
 
 //printf("FileSndFile::read_samples 3\n");
-//	result = !sf_read_double(fd, temp_double, len * asset->channels, 1);
-	result = !sf_read_double(fd, temp_double, len * asset->channels);
+	result = !sf_read_double(fd, temp_double, len * asset->channels, 1);
 //printf("FileSndFile::read_samples 4\n");
 
 	if(result)
@@ -302,7 +273,7 @@ int FileSndFile::read_samples(double *buffer, long len)
 	return result;
 }
 
-int FileSndFile::write_samples(double **buffer, long len)
+int FileSndFile::write_samples(double **buffer, int64_t len)
 {
 	int result = 0;
 
@@ -335,8 +306,7 @@ int FileSndFile::write_samples(double **buffer, long len)
 		}
 	}
 	
-//	result = !sf_writef_double(fd, temp_double, len, 1);
-	result = !sf_writef_double(fd, temp_double, len);
+	result = !sf_writef_double(fd, temp_double, len, 1);
 
 	return result;
 }

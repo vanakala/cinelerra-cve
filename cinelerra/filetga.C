@@ -113,7 +113,7 @@ char* FileTGA::str_to_compression(char *string)
 	return TGA_RGB;
 }
 
-int FileTGA::can_copy_from(Edit *edit, long position)
+int FileTGA::can_copy_from(Edit *edit, int64_t position)
 {
 	if(edit->asset->format == FILE_TGA_LIST ||
 		edit->asset->format == FILE_TGA)
@@ -214,7 +214,7 @@ void FileTGA::read_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp)
 // Read header
 	unsigned char *footer, *header;
 	int input_cmodel;
-	long file_offset = 0;
+	int64_t file_offset = 0;
 
 	footer = data->get_data() + 
 		data->get_compressed_size() - 
@@ -394,7 +394,7 @@ void FileTGA::write_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp
 {
 	unsigned char header[18];
 	unsigned char footer[26];
-	long file_offset = 0;
+	int64_t file_offset = 0;
 	int out_bpp = 0;
 	int rle = 0;
 	int dest_cmodel = BC_RGB888;
@@ -537,8 +537,8 @@ void FileTGA::write_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp
 
 void FileTGA::write_data(unsigned char *buffer, 
 	VFrame *data, 
-	long &file_offset,
-	long len)
+	int64_t &file_offset,
+	int64_t len)
 {
 //printf("FileTGA::write_data 1 %d\n", len);
 	if(data->get_compressed_allocated() <= data->get_compressed_size() + len)
@@ -557,7 +557,7 @@ void FileTGA::write_data(unsigned char *buffer,
 
 void FileTGA::read_line(unsigned char *row,
 	unsigned char *data,
-	long &file_offset,
+	int64_t &file_offset,
 	int image_type,
 	int bpp,
 	int image_compression,
@@ -629,7 +629,7 @@ void FileTGA::flip_line(unsigned char *row, int bytes, int width)
 
 void FileTGA::rle_read(unsigned char *row,
 	unsigned char *data,
-	long &file_offset,
+	int64_t &file_offset,
 	int bytes,
 	int width)
 {
@@ -685,7 +685,7 @@ void FileTGA::rle_write(unsigned char *buffer,
 	int width, 
 	int bytes, 
 	VFrame *frame, 
-	long &file_offset)
+	int64_t &file_offset)
 {
 	int repeat = 0;
   	int direct = 0;

@@ -22,9 +22,9 @@ public:
 	int equivalent(ChromaKeyConfig &src);
 	void interpolate(ChromaKeyConfig &prev, 
 		ChromaKeyConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame);
+		int64_t prev_frame, 
+		int64_t next_frame, 
+		int64_t current_frame);
 
 	float hue;
 	float threshold;

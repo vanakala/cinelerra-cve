@@ -114,7 +114,7 @@ int mpeg3video_getintrablock(mpeg3_slice_t *slice,
 		int comp, 
 		int dc_dct_pred[])
 {
-	int val, i, j, sign;
+	int val, i, j = 8, sign;
 	unsigned int code;
 	mpeg3_DCTtab_t *tab = 0;
 	short *bp = slice->block[comp];

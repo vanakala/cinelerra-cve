@@ -183,17 +183,17 @@ YUV::YUV()
 	for(int i = 0; i < 0x100; i++)
 	{
 // compression
-		rtoy_tab_8[i] = (long)( 0.2990 * 0x100 * i);
-		rtou_tab_8[i] = (long)(-0.1687 * 0x100 * i);
-		rtov_tab_8[i] = (long)( 0.5000 * 0x100 * i);
+		rtoy_tab_8[i] = (int)( 0.2990 * 0x100 * i);
+		rtou_tab_8[i] = (int)(-0.1687 * 0x100 * i);
+		rtov_tab_8[i] = (int)( 0.5000 * 0x100 * i);
 
-		gtoy_tab_8[i] = (long)( 0.5870 * 0x100 * i);
-		gtou_tab_8[i] = (long)(-0.3320 * 0x100 * i);
-		gtov_tab_8[i] = (long)(-0.4187 * 0x100 * i);
+		gtoy_tab_8[i] = (int)( 0.5870 * 0x100 * i);
+		gtou_tab_8[i] = (int)(-0.3320 * 0x100 * i);
+		gtov_tab_8[i] = (int)(-0.4187 * 0x100 * i);
 
-		btoy_tab_8[i] = (long)( 0.1140 * 0x100 * i);
-		btou_tab_8[i] = (long)( 0.5000 * 0x100 * i) + 0x8000;
-		btov_tab_8[i] = (long)(-0.0813 * 0x100 * i) + 0x8000;
+		btoy_tab_8[i] = (int)( 0.1140 * 0x100 * i);
+		btou_tab_8[i] = (int)( 0.5000 * 0x100 * i) + 0x8000;
+		btov_tab_8[i] = (int)(-0.0813 * 0x100 * i) + 0x8000;
 	}
 
 	vtor_8 = &(vtor_tab_8[(0x100) / 2]);
@@ -204,27 +204,27 @@ YUV::YUV()
 	for(int i = (-0x100) / 2; i < (0x100) / 2; i++)
 	{
 // decompression
-		vtor_8[i] = (long)( 1.4020 * 0x100 * i);
-		vtog_8[i] = (long)(-0.7141 * 0x100 * i);
+		vtor_8[i] = (int)( 1.4020 * 0x100 * i);
+		vtog_8[i] = (int)(-0.7141 * 0x100 * i);
 
-		utog_8[i] = (long)(-0.3441 * 0x100 * i);
-		utob_8[i] = (long)( 1.7720 * 0x100 * i);
+		utog_8[i] = (int)(-0.3441 * 0x100 * i);
+		utob_8[i] = (int)( 1.7720 * 0x100 * i);
 	}
 
 	for(int i = 0; i < 0x10000; i++)
 	{
 // compression
-		rtoy_tab_16[i] = (long)( 0.2990 * 0x100 * i);
-		rtou_tab_16[i] = (long)(-0.1687 * 0x100 * i);
-		rtov_tab_16[i] = (long)( 0.5000 * 0x100 * i);
+		rtoy_tab_16[i] = (int)( 0.2990 * 0x100 * i);
+		rtou_tab_16[i] = (int)(-0.1687 * 0x100 * i);
+		rtov_tab_16[i] = (int)( 0.5000 * 0x100 * i);
 
-		gtoy_tab_16[i] = (long)( 0.5870 * 0x100 * i);
-		gtou_tab_16[i] = (long)(-0.3320 * 0x100 * i);
-		gtov_tab_16[i] = (long)(-0.4187 * 0x100 * i);
+		gtoy_tab_16[i] = (int)( 0.5870 * 0x100 * i);
+		gtou_tab_16[i] = (int)(-0.3320 * 0x100 * i);
+		gtov_tab_16[i] = (int)(-0.4187 * 0x100 * i);
 
-		btoy_tab_16[i] = (long)( 0.1140 * 0x100 * i);
-		btou_tab_16[i] = (long)( 0.5000 * 0x100 * i) + 0x800000;
-		btov_tab_16[i] = (long)(-0.0813 * 0x100 * i) + 0x800000;
+		btoy_tab_16[i] = (int)( 0.1140 * 0x100 * i);
+		btou_tab_16[i] = (int)( 0.5000 * 0x100 * i) + 0x800000;
+		btov_tab_16[i] = (int)(-0.0813 * 0x100 * i) + 0x800000;
 	}
 
 	vtor_16 = &(vtor_tab_16[(0x10000) / 2]);
@@ -235,11 +235,11 @@ YUV::YUV()
 	for(int i = (-0x10000) / 2; i < (0x10000) / 2; i++)
 	{
 // decompression
-		vtor_16[i] = (long)( 1.4020 * 0x100 * i);
-		vtog_16[i] = (long)(-0.7141 * 0x100 * i);
+		vtor_16[i] = (int)( 1.4020 * 0x100 * i);
+		vtog_16[i] = (int)(-0.7141 * 0x100 * i);
 
-		utog_16[i] = (long)(-0.3441 * 0x100 * i);
-		utob_16[i] = (long)( 1.7720 * 0x100 * i);
+		utog_16[i] = (int)(-0.3441 * 0x100 * i);
+		utob_16[i] = (int)( 1.7720 * 0x100 * i);
 	}
 }
 

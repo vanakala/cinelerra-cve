@@ -234,7 +234,7 @@ int Labels::save(FileXML *xml)
 	return 0;
 }
 
-int Labels::load(FileXML *xml, unsigned long load_flags)
+int Labels::load(FileXML *xml, uint32_t load_flags)
 {
 	int result = 0;
 	char string1[BCTEXTLEN], string2[BCTEXTLEN];

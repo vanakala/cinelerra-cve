@@ -41,6 +41,7 @@ void avcodec_register_all(void)
 #endif
 #ifdef CONFIG_VORBIS
     register_avcodec(&oggvorbis_encoder);
+    register_avcodec(&oggvorbis_decoder);
 #endif
     register_avcodec(&mpeg1video_encoder);
     register_avcodec(&h263_encoder);
@@ -52,7 +53,8 @@ void avcodec_register_all(void)
     register_avcodec(&msmpeg4v2_encoder);
     register_avcodec(&msmpeg4v3_encoder);
     register_avcodec(&wmv1_encoder);
-    register_avcodec(&wmv2_encoder);
+//    register_avcodec(&wmv2_encoder);
+    register_avcodec(&huffyuv_encoder);
 #endif /* CONFIG_ENCODERS */
     register_avcodec(&rawvideo_codec);
 
@@ -64,7 +66,7 @@ void avcodec_register_all(void)
     register_avcodec(&msmpeg4v2_decoder);
     register_avcodec(&msmpeg4v3_decoder);
     register_avcodec(&wmv1_decoder);
-    register_avcodec(&wmv2_decoder);
+//    register_avcodec(&wmv2_decoder);
     register_avcodec(&mpeg_decoder);
     register_avcodec(&h263i_decoder);
     register_avcodec(&rv10_decoder);
@@ -72,12 +74,14 @@ void avcodec_register_all(void)
     register_avcodec(&dvvideo_decoder);
     //    register_avcodec(&dvaudio_decoder);
     register_avcodec(&mjpeg_decoder);
+    register_avcodec(&mjpegb_decoder);
     register_avcodec(&mp2_decoder);
     register_avcodec(&mp3_decoder);
     register_avcodec(&wmav1_decoder);
     register_avcodec(&wmav2_decoder);
     register_avcodec(&mace3_decoder);
     register_avcodec(&mace6_decoder);
+    register_avcodec(&huffyuv_decoder);
 #ifdef CONFIG_AC3
     register_avcodec(&ac3_decoder);
 #endif

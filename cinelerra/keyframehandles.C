@@ -6,7 +6,7 @@
 KeyframeHandle::KeyframeHandle(MWindow *mwindow, 
 		TrackCanvas *trackcanvas,
 		Track *track,
-		long position, 
+		int64_t position, 
 		int x,
 		int y)
  : CanvasTool(mwindow,

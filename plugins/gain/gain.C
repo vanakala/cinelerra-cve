@@ -32,9 +32,9 @@ void GainConfig::copy_from(GainConfig &that)
 
 void GainConfig::interpolate(GainConfig &prev, 
 	GainConfig &next, 
-	long prev_frame, 
-	long next_frame, 
-	long current_frame)
+	int64_t prev_frame, 
+	int64_t next_frame, 
+	int64_t current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
@@ -70,13 +70,13 @@ RAISE_WINDOW_MACRO(Gain)
 NEW_PICON_MACRO(Gain)
 LOAD_CONFIGURATION_MACRO(Gain, GainConfig)
 
-int Gain::process_realtime(long size, double *input_ptr, double *output_ptr)
+int Gain::process_realtime(int64_t size, double *input_ptr, double *output_ptr)
 {
 	load_configuration();
 
 	double gain = db.fromdb(config.level);
 
-	for(long i = 0; i < size; i++)
+	for(int64_t i = 0; i < size; i++)
 	{
 		output_ptr[i] = input_ptr[i] * gain;
 	}

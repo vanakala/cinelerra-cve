@@ -21,7 +21,7 @@ public:
 	
 	
 	int read_frame(VFrame *video_out, 
-			long input_position, 
+			int64_t input_position, 
 			int direction,
 			CICache *cache);
 	
@@ -35,11 +35,11 @@ public:
 
 // ========================================= editing
 
-	int copy_properties_derived(FileXML *xml, long length_in_selection);
+	int copy_properties_derived(FileXML *xml, int64_t length_in_selection);
 
 
 	int dump_derived();
-	long get_source_end(long default_);
+	int64_t get_source_end(int64_t default_);
 
 private:
 	VEdits *vedits;

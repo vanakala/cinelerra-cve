@@ -135,7 +135,7 @@ Tracks& Tracks::operator=(Tracks &tracks)
 	return *this;
 }
 
-int Tracks::load(FileXML *xml, int &track_offset, unsigned long load_flags)
+int Tracks::load(FileXML *xml, int &track_offset, uint32_t load_flags)
 {
 // add the appropriate type of track
 	char string[BCTEXTLEN];

@@ -12,7 +12,7 @@ public:
 	~MainCursor();
 
 	void create_objects();
-	int repeat_event(long duration);
+	int repeat_event(int64_t duration);
 	void draw();
 	void hide();
 	void flash();
@@ -26,9 +26,9 @@ public:
 	MWindowGUI *gui;
 	int visible;
 	double selectionstart, selectionend;
-	long zoom_sample;
+	int64_t zoom_sample;
 	double view_start;
-	long pixel2, pixel1;
+	int64_t pixel2, pixel1;
 	int active;
 	int playing_back;
 };

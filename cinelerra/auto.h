@@ -24,7 +24,7 @@ public:
 	virtual Auto& operator=(Auto &that);
 	virtual int operator==(Auto &that);
 	virtual void copy_from(Auto *that);
-	virtual void copy(long start, long end, FileXML *file, int default_only);
+	virtual void copy(int64_t start, int64_t end, FileXML *file, int default_only);
 
 	virtual void load(FileXML *file);
 
@@ -39,7 +39,7 @@ public:
 	int WIDTH, HEIGHT;
 // Units native to the track
 	int is_default;
-	long position;
+	int64_t position;
 
 private:
 	virtual int value_to_str(char *string, float value) {};

@@ -26,15 +26,21 @@ public:
 		long next_frame, 
 		long current_frame);
 	int enabled;
+	int line_double;
 };
 
 class FreezeFrameToggle : public BC_CheckBox
 {
 public:
-	FreezeFrameToggle(FreezeFrameMain *client, int x, int y);
+	FreezeFrameToggle(FreezeFrameMain *client, 
+		int *value, 
+		int x, 
+		int y,
+		char *text);
 	~FreezeFrameToggle();
 	int handle_event();
 	FreezeFrameMain *client;
+	int *value;
 };
 
 class FreezeFrameWindow : public BC_Window
@@ -48,6 +54,7 @@ public:
 	
 	FreezeFrameMain *client;
 	FreezeFrameToggle *enabled;
+	FreezeFrameToggle *line_double;
 };
 
 PLUGIN_THREAD_HEADER(FreezeFrameMain, FreezeFrameThread, FreezeFrameWindow)

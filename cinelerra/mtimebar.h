@@ -21,7 +21,7 @@ public:
 	void stop_playback();
 	int resize_event();
 	int test_preview(int buttonpress);
-	long position_to_pixel(double position);
+	int64_t position_to_pixel(double position);
 	void select_label(double position);
 
 	MWindowGUI *gui;

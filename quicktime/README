@@ -1,28 +1,36 @@
 Quicktime for Linux
 
-Author: Heroine Virtual (Motion picture solutions for Linux)    broadcast@earthling.net
+by
+
+Heroine Virtual Ltd. (Motion picture solutions for Linux)    
+Send harrassment to: broadcast@earthling.net
 Homepage: heroinewarrior.com/quicktime
-Requires: libpthread
+Requires libmpeg3 from heroinewarrior.com
 ------------------------------------------------------------------------
 
-***** 
+This is a Quicktime front end for UNIX in a library.
 
-This is a Quicktime library for UNIX in a freely redistributable,
-statically linkable library.  
 
-*****
 
 Building:
-type "make" in the quicktime/quicktime directory.
-type "make util" to get some Small Utilities.
+Quicktime for Linux requires a built copy of of libmpeg3 in a directory next to itself.
+This is used for the mp3 interface.
 
-Configuration:
+Your directory structure should thus be:
+/my_directory
+/my_directory/libmpeg3-*.*.*
+/my_directory/quicktime4linux-*.*.*
 
-libdv must be hacked to compile on Compaq C.
 
-Replace ... with enumeration.
-Replace run:, len: with proper order.
+type "make" in the libmpeg3 directory.
+type "make" in the quicktime directory.
+type "make util" to get quicktime to build some utilities.
 
+
+The makefiles automatically configure themselves.  The library is in
+i686/libquicktime.a. You should manually set the CFLAGS environment
+variable with the optimum optimization parameters for your i686
+derivative.
 
 
 

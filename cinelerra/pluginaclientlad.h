@@ -18,9 +18,9 @@ public:
 	void copy_from(PluginAClientConfig &that);
 	void interpolate(PluginAClientConfig &prev, 
 		PluginAClientConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame);
+		int64_t prev_frame, 
+		int64_t next_frame, 
+		int64_t current_frame);
 	void reset();
 	void delete_objects();
 // Create the port tables based on the LAD descriptor
@@ -125,10 +125,10 @@ public:
 	PluginAClientLAD(PluginServer *server);
 	~PluginAClientLAD();
 
-	int process_realtime(long size, 
+	int process_realtime(int64_t size, 
 		double *input_ptr, 
 		double *output_ptr);
-	int process_realtime(long size, 
+	int process_realtime(int64_t size, 
 		double **input_ptr, 
 		double **output_ptr);
 // Update output pointers as well

@@ -147,9 +147,9 @@ void ResizeTrackWindow::update(int changed_scale,
 	if(changed_scale || changed_all)
 	{
 		thread->w = (int)(thread->w1 * thread->w_scale);
-		w->update((long)thread->w);
+		w->update((int64_t)thread->w);
 		thread->h = (int)(thread->h1 * thread->h_scale);
-		h->update((long)thread->h);
+		h->update((int64_t)thread->h);
 	}
 	else
 	if(changed_size || changed_all)

@@ -28,14 +28,26 @@ public:
 		char *up_path, 
 		char *hi_path, 
 		char *dn_path);
+	VFrame** new_button(char *overlay_path,
+		VFrame *up,
+		VFrame *hi,
+		VFrame *dn);
 	VFrame** new_toggle(char *overlay_path,
 		char *up_path,
 		char *hi_path,
 		char *checked_path,
 		char *dn_path,
 		char *checkedhi_path);
+	VFrame** new_toggle(char *overlay_path,
+		VFrame *up,
+		VFrame *hi,
+		VFrame *checked,
+		VFrame *dn,
+		VFrame *checkedhi);
 // Decompresses image and puts on images table before returning it.
 	VFrame* new_image(char *title);
+// Verify all images have been used after initialization.
+	void check_used();
 
 	void dump();
 	BC_Resources* get_resources();
@@ -58,6 +70,7 @@ private:
 	char *contents_buffer;
 	ArrayList<char*> contents;
 	ArrayList<int> offsets;
+	ArrayList<int> used;
 	char *last_image;
 	int last_offset;
 };

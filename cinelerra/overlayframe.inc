@@ -1,6 +1,7 @@
 #ifndef OVERLAYFRAME_INC
 #define OVERLAYFRAME_INC
 
+// Modes
 
 #define TRANSFER_NORMAL       0
 #define TRANSFER_ADDITION     1
@@ -11,12 +12,11 @@
 
 // Interpolation types
 
-#define INTERPOLATION_TYPES 3
 
 #define NEAREST_NEIGHBOR 0        // Nearest for enlargement and reduction
 #define CUBIC_CUBIC      1        // Bicubic enlargement and reduction
 #define CUBIC_LINEAR     2        // Bicubic enlargement and linear reduction
-#define LINEAR_LINEAR    3        // Linear enlargement and reduction
+#define LINEAR_LINEAR    3        // Not explicitely called but used for user
 
 class OverlayFrame;
 

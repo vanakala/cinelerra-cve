@@ -3,6 +3,7 @@
 #include "batch.h"
 #include "channel.h"
 #include "channelpicker.h"
+#include "clip.h"
 #include "defaults.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -14,6 +15,7 @@
 #include "filethread.h"
 #include "formatcheck.h"
 #include "indexfile.h"
+#include "localsession.h"
 #include "mainundo.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
@@ -31,6 +33,7 @@
 #include "recordvideo.h"
 #include "recordwindow.h"
 #include "mainsession.h"
+#include "sighandler.h"
 #include "testobject.h"
 #include "theme.h"
 #include "timebar.h"
@@ -455,7 +458,7 @@ void Record::run()
 //printf("Record::run 1\n");
 	int result = 0, format_error = 0;
 //printf("Record::run 1\n");
-	long start, end;
+	int64_t start, end;
 	record_gui = 0;
 //printf("Record::run 1\n");
 
@@ -629,6 +632,13 @@ void Record::run()
 		{
 			mwindow->undo->update_undo_before("render", LOAD_ALL);
 //printf("Record::run 6\n");
+
+// For pasting, clear the active region
+			if(load_mode == LOAD_PASTE)
+			{
+				mwindow->clear(0);
+			}
+
 			mwindow->paste_edls(&new_edls, 
 				load_mode,
 				0,
@@ -751,10 +761,20 @@ int Record::delete_output_file()
 		if(batch && (test = fopen(batch->get_current_asset()->path, "r")))
 		{
 			fclose(test);
-			sprintf(batch->news, "Deleting");
+
 			record_gui->lock_window();
+
+// Update GUI
+			sprintf(batch->news, "Deleting");
 			record_gui->update_batches();
+
+// Remove it
 			remove(batch->get_current_asset()->path);
+
+// Update GUI
+			sprintf(batch->news, "OK");
+			record_gui->update_batches();
+
 			record_gui->unlock_window();
 		}
 	}
@@ -786,6 +806,7 @@ int Record::open_output_file()
 		}
 		else
 		{
+			mwindow->sighandler->push_file(file);
 			IndexFile::delete_index(mwindow->preferences, batch->get_current_asset());
 			file->set_processors(mwindow->edl->session->smp + 1);
 			batch->calculate_news();
@@ -806,6 +827,7 @@ int Record::init_next_file()
 
 	if(file)
 	{
+		mwindow->sighandler->pull_file(file);
 		file->close_file();
 		delete file;
 		file = 0;
@@ -845,6 +867,7 @@ void Record::start_over()
 	Batch *batch = get_current_batch();
 	if(file)
 	{
+		mwindow->sighandler->pull_file(file);
 		file->close_file();
 		delete file;
 		file = 0;
@@ -864,6 +887,7 @@ void Record::close_output_file()
 //printf("Record::close_output_file 1\n");
 	if(file)
 	{
+		mwindow->sighandler->pull_file(file);
 		file->close_file();
 		delete file;
 		file = 0;
@@ -877,7 +901,7 @@ void Record::toggle_label()
 	record_gui->update_labels(current_display_position());
 }
 
-void Record::get_audio_write_length(long &buffer_size, long &fragment_size)
+void Record::get_audio_write_length(int64_t &buffer_size, int64_t &fragment_size)
 {
 	fragment_size = 1;
 	while(fragment_size < default_asset->sample_rate / mwindow->edl->session->record_speed) 
@@ -925,28 +949,28 @@ char* Record::current_mode()
 	return Batch::mode_to_text(get_current_batch()->record_mode);
 }
 
-long Record::batch_video_offset()
+int64_t Record::batch_video_offset()
 {
-	return (long)((double)get_current_batch()->file_offset * 
+	return (int64_t)((double)get_current_batch()->file_offset * 
 		default_asset->frame_rate + 0.5);
 }
 
-long Record::current_audio_position()
+int64_t Record::current_audio_position()
 {
 	if(file)
 	{
-		return (long)(file->get_audio_position(default_asset->sample_rate) + 
+		return (int64_t)(file->get_audio_position(default_asset->sample_rate) + 
 			get_current_batch()->file_offset + 0.5);
 	}
 	return 0;
 }
 
-long Record::current_video_position()
+int64_t Record::current_video_position()
 {
 	if(file)
 	{
 		return file->get_video_position(default_asset->frame_rate) + 
-			(long)((double)get_current_batch()->file_offset / 
+			(int64_t)((double)get_current_batch()->file_offset / 
 				default_asset->sample_rate * 
 				default_asset->frame_rate + 
 				0.5);
@@ -1029,14 +1053,14 @@ double* Record::current_duration()
 	return &batches.values[current_batch]->duration;
 }
 
-long Record::current_duration_samples()
+int64_t Record::current_duration_samples()
 {
-	return (long)((float)batches.values[current_batch]->duration * default_asset->sample_rate + 0.5);
+	return (int64_t)((float)batches.values[current_batch]->duration * default_asset->sample_rate + 0.5);
 }
 
-long Record::current_duration_frames()
+int64_t Record::current_duration_frames()
 {
-	return (long)((float)batches.values[current_batch]->duration * default_asset->frame_rate + 0.5);
+	return (int64_t)((float)batches.values[current_batch]->duration * default_asset->frame_rate + 0.5);
 }
 
 int* Record::current_offset_type()
@@ -1052,7 +1076,7 @@ ArrayList<char*>* Record::get_video_inputs()
 		return 0;
 }
 
-long Record::sync_position()
+int64_t Record::sync_position()
 {
 	switch(capture_state)
 	{
@@ -1208,6 +1232,13 @@ int Record::start_recording(int duplex, int context)
 		else
 			capture_state = IS_RECORDING;
 
+// Toggle once to cue the user that we're not dead.
+		if(context == CONTEXT_BATCH)
+		{
+			record_gui->lock_window();
+			record_gui->flash_batch();
+			record_gui->unlock_window();
+		}
 		record_engine->start_recording(0, context);
 	}
 	return 0;
@@ -1277,7 +1308,7 @@ int Record::stop_operation(int resume_monitor)
 // Return the size of the fragments to read from the audio device.
 int Record::get_in_length() 
 {
-	long fragment_size = 1;
+	int64_t fragment_size = 1;
 	while(fragment_size < default_asset->sample_rate / mwindow->edl->session->record_speed) fragment_size *= 2;
 	fragment_size /= 2;
 	return fragment_size;
@@ -1366,7 +1397,7 @@ float Record::get_frame_rate()
 //	return mwindow->session->frame_rate;
 }
 
-int Record::set_loop_duration(long value)
+int Record::set_loop_duration(int64_t value)
 {
 	loop_duration = value; 
 	return 0;
@@ -1383,10 +1414,10 @@ int Record::get_everyframe() { return mwindow->edl->session->video_every_frame; 
 
 int Record::get_out_length() { return mwindow->edl->session->playback_buffer; }
 int Record::get_software_positioning() { return mwindow->edl->session->record_software_position; }
-long Record::get_out_buffersize() { return mwindow->edl->session->playback_buffer; }
-long Record::get_in_buffersize() { return mwindow->edl->session->record_write_length; }
+int64_t Record::get_out_buffersize() { return mwindow->edl->session->playback_buffer; }
+int64_t Record::get_in_buffersize() { return mwindow->edl->session->record_write_length; }
 int Record::get_realtime() { return realtime; }
 int Record::get_meter_speed() { return mwindow->edl->session->record_speed; }
 
 int Record::enable_duplex() { return mwindow->edl->session->enable_duplex; }
-long Record::get_playback_buffer() { return mwindow->edl->session->playback_buffer; }
+int64_t Record::get_playback_buffer() { return mwindow->edl->session->playback_buffer; }

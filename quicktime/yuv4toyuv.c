@@ -11,7 +11,7 @@ int main(int argc, char *argv[])
 {
 	quicktime_t *file;
 	FILE *output;
-	longest length, width, height, bytes;
+	int64_t length, width, height, bytes;
 	char *buffer_in, *y_out, *u_out, *v_out;
 	char *y_out1, *y_out2, *u_out1, *v_out1;
 	char *input_row;

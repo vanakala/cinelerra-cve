@@ -14,7 +14,7 @@ public:
 	~CrossfadeMain();
 
 // required for all realtime plugins
-	int process_realtime(long size, double *input_ptr, double *output_ptr);
+	int process_realtime(int64_t size, double *input_ptr, double *output_ptr);
 	int uses_gui();
 	int is_transition();
 	char* plugin_title();

@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include "funcprotos.h"
 #include "quicktime.h"
-
+#include "workarounds.h"
 
 
 
@@ -39,9 +39,9 @@ static unsigned long read_size(char *data)
 	return result;
 }
 
-static longest read_size64(char *data)
+static int64_t read_size64(char *data)
 {
-	ulongest result, a, b, c, d, e, f, g, h;
+	uint64_t result, a, b, c, d, e, f, g, h;
 
 	a = (unsigned char)data[0];
 	b = (unsigned char)data[1];
@@ -62,7 +62,7 @@ static longest read_size64(char *data)
 		h;
 
 	if(result < HEADER_LENGTH) result = HEADER_LENGTH;
-	return (longest)result;
+	return (int64_t)result;
 }
 
 static int reset(quicktime_atom_t *atom)
@@ -95,7 +95,7 @@ int quicktime_atom_read_header(quicktime_t *file, quicktime_atom_t *atom)
 	}
 	else
 	{
-		longest size2;
+		int64_t size2;
 
 		reset(atom);
 
@@ -110,7 +110,7 @@ int quicktime_atom_read_header(quicktime_t *file, quicktime_atom_t *atom)
  * 	atom->type[0], atom->type[1], atom->type[2], atom->type[3],
  * 	atom->start, atom->size, atom->end,
  * 	file->file_position,
- * 	(longest)FTELL(file->stream));
+ * 	(int64_t)FTELL(file->stream));
  */
 
 /* Skip placeholder atom */
@@ -166,6 +166,7 @@ int quicktime_atom_write_header(quicktime_t *file,
 	char *text)
 {
 	int result = 0;
+
 	if(file->use_avi)
 	{
 		reset(atom);
@@ -181,6 +182,7 @@ int quicktime_atom_write_header(quicktime_t *file,
 		if(!result) result = !quicktime_write_char32(file, text);
 		atom->use_64 = 0;
 	}
+
 	return result;
 }
 

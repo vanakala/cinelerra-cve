@@ -21,7 +21,7 @@ public:
 	int get_parameters(); 
 	int start_loop();
 	int stop_loop();
-	int process_loop(double **plugin_buffer, long &write_length);
+	int process_loop(double **plugin_buffer, int64_t &write_length);
 	int load_defaults();  
 	int save_defaults();  
 
@@ -30,7 +30,7 @@ public:
 // parameters needed
 	int track1, min1, sec1, track2, min2, sec2;
 	char device[BCTEXTLEN];
-	long startlba, endlba;
+	int64_t startlba, endlba;
 	int cdrom;
 	int get_toc();
 	int open_drive();
@@ -40,13 +40,13 @@ public:
 	struct cdrom_read_audio arg;
 	int FRAME;    // 2 bytes 2 channels
 	int previewing;     // defeat bug in hardware
-	long fragment_length;
-	long total_length;
+	int64_t fragment_length;
+	int64_t total_length;
 	int endofselection;
 	int i, j, k, l, attempts;
-	long fragment_samples;
-	long currentlength;
-	long startlba_fragment;
+	int64_t fragment_samples;
+	int64_t currentlength;
+	int64_t startlba_fragment;
 	char *buffer;   // Temp buffer for int16 data
 	int16_t *buffer_channel;
 	double *output_buffer;

@@ -217,7 +217,7 @@ int File::set_processors(int cpus)   // Set the number of cpus for certain codec
 	return 0;
 }
 
-int File::set_preload(long size)
+int File::set_preload(int64_t size)
 {
 	this->playback_preload = size;
 	return 0;
@@ -227,12 +227,11 @@ int File::open_file(ArrayList<PluginServer*> *plugindb,
 	Asset *asset, 
 	int rd, 
 	int wr,
-	long base_samplerate,
+	int64_t base_samplerate,
 	float base_framerate)
 {
 	*this->asset = *asset;
 	file = 0;
-
 
 
 //printf("File::open_file 1 %s %d\n", asset->path, asset->format);
@@ -252,12 +251,12 @@ int File::open_file(ArrayList<PluginServer*> *plugindb,
 			char test[16];
 			fread(test, 16, 1, stream);
 
-			if(FileAVI::check_sig(this->asset))
-			{
-				fclose(stream);
-				file = new FileAVI(this->asset, this);
-			}
-			else
+// 			if(FileAVI::check_sig(this->asset))
+// 			{
+// 				fclose(stream);
+// 				file = new FileAVI(this->asset, this);
+// 			}
+// 			else
 			if(FileSndFile::check_sig(this->asset))
 			{
 // libsndfile
@@ -304,7 +303,7 @@ int File::open_file(ArrayList<PluginServer*> *plugindb,
 			{
 // MPEG file
 				fclose(stream);
-				file = new FileMPEG(this->asset, this, plugindb);
+				file = new FileMPEG(this->asset, this);
 			}
 			else
 			if(test[0] == '<' && test[1] == 'E' && test[2] == 'D' && test[3] == 'L' && test[4] == '>' ||
@@ -368,7 +367,7 @@ int File::open_file(ArrayList<PluginServer*> *plugindb,
 		case FILE_MPEG:
 		case FILE_AMPEG:
 		case FILE_VMPEG:
-			file = new FileMPEG(this->asset, this, plugindb);
+			file = new FileMPEG(this->asset, this);
 			break;
 
 		case FILE_VORBIS:
@@ -401,7 +400,7 @@ int File::open_file(ArrayList<PluginServer*> *plugindb,
 	}
 
 
-// Fix writing parameters
+// Set extra writing parameters to mandatory settings.
 	if(file && wr)
 	{
 		if(this->asset->dither) file->set_dither();
@@ -417,14 +416,14 @@ int File::open_file(ArrayList<PluginServer*> *plugindb,
 		return FILE_NOT_FOUND;
 }
 
-int File::close_file()
+int File::close_file(int ignore_thread)
 {
-//printf("File::close_file 1\n");
-	stop_audio_thread();
-//printf("File::close_file 1\n");
-	stop_video_thread();
+	if(!ignore_thread)
+	{
+		stop_audio_thread();
+		stop_video_thread();
+	}
 
-//printf("File::close_file 2\n");
 	if(file) 
 	{
 // The file's asset is a copy of the argument passed to open_file so the
@@ -434,28 +433,24 @@ int File::close_file()
 			asset->audio_length = current_sample;
 			asset->video_length = current_frame;
 		}
-//printf("File::close_file 3 %d %d\n", asset->audio_length, asset->video_length);
-//		close_file is called in destructor of file
-//		file->close_file();
+		file->close_file();
 		delete file;
 	}
 
 	if(resample) delete resample;
-//printf("File::close_file 4\n");
 
 	reset_parameters();
-//printf("File::close_file 5\n");
 	return 0;
 }
 
-int File::start_audio_thread(long buffer_size, int ring_buffers)
+int File::start_audio_thread(int64_t buffer_size, int ring_buffers)
 {
 	audio_thread = new FileThread(this, 1, 0);
 	audio_thread->start_writing(buffer_size, 0, ring_buffers, 0);
 	return 0;
 }
 
-int File::start_video_thread(long buffer_size, 
+int File::start_video_thread(int64_t buffer_size, 
 	int color_model, 
 	int ring_buffers, 
 	int compressed)
@@ -475,11 +470,8 @@ int File::stop_audio_thread()
 //printf("File::stop_audio_thread 1\n");
 	if(audio_thread)
 	{
-//printf("File::stop_audio_thread 2\n");
 		audio_thread->stop_writing();
-//printf("File::stop_audio_thread 3\n");
 		delete audio_thread;
-//printf("File::stop_audio_thread 4\n");
 		audio_thread = 0;
 	}
 	return 0;
@@ -490,9 +482,7 @@ int File::stop_video_thread()
 //printf("File::stop_video_thread 1\n");
 	if(video_thread)
 	{
-//printf("File::stop_video_thread 2\n");
 		video_thread->stop_writing();
-//printf("File::stop_video_thread 3\n");
 		delete video_thread;
 		video_thread = 0;
 	}
@@ -527,19 +517,20 @@ int File::set_layer(int layer)
 	if(file && layer < asset->layers)
 	{
 		current_layer = layer;
+//printf("File::set_layer 1 %d\n", layer);
 		return 0; 
 	}
 	else
 		return 1;
 }
 
-long File::get_audio_length(long base_samplerate) 
+int64_t File::get_audio_length(int64_t base_samplerate) 
 { 
-	long result = asset->audio_length;
+	int64_t result = asset->audio_length;
 	if(result > 0)
 	{
 		if(base_samplerate > 0)
-			return (long)((double)result / asset->sample_rate * base_samplerate + 0.5);
+			return (int64_t)((double)result / asset->sample_rate * base_samplerate + 0.5);
 		else
 			return result;
 	}
@@ -547,13 +538,13 @@ long File::get_audio_length(long base_samplerate)
 		return -1;
 }
 
-long File::get_video_length(float base_framerate)
+int64_t File::get_video_length(float base_framerate)
 { 
-	long result = asset->video_length;
+	int64_t result = asset->video_length;
 	if(result > 0)
 	{
 		if(base_framerate > 0)
-			return (long)((double)result / asset->frame_rate * base_framerate + 0.5); 
+			return (int64_t)((double)result / asset->frame_rate * base_framerate + 0.5); 
 		else
 			return result;
 	}
@@ -562,22 +553,22 @@ long File::get_video_length(float base_framerate)
 }
 
 
-long File::get_video_position(float base_framerate) 
+int64_t File::get_video_position(float base_framerate) 
 {
 	if(base_framerate > 0)
-		return (long)((double)current_frame / asset->frame_rate * base_framerate + 0.5);
+		return (int64_t)((double)current_frame / asset->frame_rate * base_framerate + 0.5);
 	else
 		return current_frame;
 }
 
-long File::get_audio_position(long base_samplerate) 
+int64_t File::get_audio_position(int64_t base_samplerate) 
 { 
 	if(base_samplerate > 0)
 	{
 		if(normalized_sample_rate == base_samplerate)
 			return normalized_sample;
 		else
-			return (long)((double)current_sample / 
+			return (int64_t)((double)current_sample / 
 				asset->sample_rate * 
 				base_samplerate + 
 				0.5);
@@ -591,7 +582,7 @@ long File::get_audio_position(long base_samplerate)
 // The base samplerate must be nonzero if the base samplerate in the calling
 // function is expected to change as this forces the resampler to reset.
 
-int File::set_audio_position(long position, float base_samplerate) 
+int File::set_audio_position(int64_t position, float base_samplerate) 
 {
 	int result = 0;
 
@@ -617,7 +608,7 @@ int File::set_audio_position(long position, float base_samplerate)
 				resample->reset(-1);
 
 			normalized_sample = position;
-			normalized_sample_rate = (long)((base_samplerate > 0) ? 
+			normalized_sample_rate = (int64_t)((base_samplerate > 0) ? 
 				base_samplerate : 
 				asset->sample_rate);
 
@@ -648,7 +639,7 @@ int File::set_audio_position(long position, float base_samplerate)
 	return result;
 }
 
-int File::set_video_position(long position, float base_framerate) 
+int File::set_video_position(int64_t position, float base_framerate) 
 {
 	int result = 0;
 	if(!file) return 0;
@@ -656,7 +647,7 @@ int File::set_video_position(long position, float base_framerate)
 
 // Convert to file's rate
 	if(base_framerate > 0)
-		position = (long)((double)position / base_framerate * asset->frame_rate + 0.5);
+		position = (int64_t)((double)position / base_framerate * asset->frame_rate + 0.5);
 //printf("File::set_video_position 2 %d\n", position);
 
 	if(current_frame != position && file)
@@ -670,7 +661,7 @@ int File::set_video_position(long position, float base_framerate)
 }
 
 // No resampling here.
-int File::write_samples(double **buffer, long len)
+int File::write_samples(double **buffer, int64_t len)
 { 
 	int result = 1;
 	
@@ -723,7 +714,7 @@ int File::write_compressed_frame(VFrame *buffer)
 }
 
 
-int File::write_audio_buffer(long len)
+int File::write_audio_buffer(int64_t len)
 {
 	int result = 0;
 	if(audio_thread)
@@ -733,7 +724,7 @@ int File::write_audio_buffer(long len)
 	return result;
 }
 
-int File::write_video_buffer(long len)
+int File::write_video_buffer(int64_t len)
 {
 	int result = 0;
 	if(video_thread)
@@ -757,7 +748,7 @@ VFrame*** File::get_video_buffer()
 }
 
 
-int File::read_samples(double *buffer, long len, long base_samplerate)
+int File::read_samples(double *buffer, int64_t len, int64_t base_samplerate)
 {
 	int result = 0;
 //printf("File::read_samples 1\n");
@@ -811,7 +802,7 @@ int File::read_compressed_frame(VFrame *buffer)
 	return result;
 }
 
-long File::compressed_frame_size()
+int64_t File::compressed_frame_size()
 {
 	if(file)
 		return file->compressed_frame_size();
@@ -935,7 +926,7 @@ int File::read_frame(VFrame *frame)
 		return 1;
 }
 
-int File::can_copy_from(Edit *edit, long position, int output_w, int output_h)
+int File::can_copy_from(Edit *edit, int64_t position, int output_w, int output_h)
 {
 	if(file)
 	{

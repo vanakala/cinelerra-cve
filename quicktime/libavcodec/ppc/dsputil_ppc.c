@@ -23,6 +23,8 @@
 #include "dsputil_altivec.h"
 #endif
 
+int mm_flags = 0;
+
 void dsputil_init_ppc(DSPContext* c, unsigned mask)
 {
     // Common optimisations whether Altivec or not
@@ -31,9 +33,16 @@ void dsputil_init_ppc(DSPContext* c, unsigned mask)
 
 #if HAVE_ALTIVEC
     if (has_altivec()) {
+        mm_flags |= MM_ALTIVEC;
+        
         // Altivec specific optimisations
-	c->pix_abs16x16 = pix_abs16x16_altivec;
+        c->pix_abs16x16_x2 = pix_abs16x16_x2_altivec;
+        c->pix_abs16x16_y2 = pix_abs16x16_y2_altivec;
+        c->pix_abs16x16_xy2 = pix_abs16x16_xy2_altivec;
+        c->pix_abs16x16 = pix_abs16x16_altivec;
         c->pix_abs8x8 = pix_abs8x8_altivec;
+        c->pix_norm1 = pix_norm1_altivec;
+        c->pix_norm = pix_norm_altivec;
         c->pix_sum = pix_sum_altivec;
         c->diff_pixels = diff_pixels_altivec;
         c->get_pixels = get_pixels_altivec;

@@ -116,7 +116,7 @@ int ZoomBar::update_clocks()
 	return 0;
 }
 
-int ZoomBar::update_playback(long new_position)
+int ZoomBar::update_playback(int64_t new_position)
 {
 	if(new_position != old_position)
 	{
@@ -271,7 +271,7 @@ SampleZoomPanel::~SampleZoomPanel()
 }
 int SampleZoomPanel::handle_event()
 {
-	mwindow->zoom_sample((long)get_value());
+	mwindow->zoom_sample((int64_t)get_value());
 	return 1;
 }
 
@@ -304,7 +304,7 @@ AmpZoomPanel::~AmpZoomPanel()
 }
 int AmpZoomPanel::handle_event()
 {
-	mwindow->zoom_amp((long)get_value());
+	mwindow->zoom_amp((int64_t)get_value());
 	return 1;
 }
 
@@ -327,7 +327,7 @@ TrackZoomPanel::~TrackZoomPanel()
 }
 int TrackZoomPanel::handle_event()
 {
-	mwindow->zoom_track((long)get_value());
+	mwindow->zoom_track((int64_t)get_value());
 	zoombar->amp_zoom->update(mwindow->edl->local_session->zoom_y);
 	return 1;
 }

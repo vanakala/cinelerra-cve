@@ -26,9 +26,9 @@ public:
 	int equivalent(ScaleConfig &src);
 	void interpolate(ScaleConfig &prev, 
 		ScaleConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame);
+		int64_t prev_frame, 
+		int64_t next_frame, 
+		int64_t current_frame);
 
 	float w, h;
 	int constrain;

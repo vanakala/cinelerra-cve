@@ -38,9 +38,9 @@ void PanAuto::rechannel()
 void PanAuto::load(FileXML *file)
 {
 	bzero(values, MAXCHANNELS * sizeof(float));
-	position = file->tag.get_property("POSITION", (long)0);
-	handle_x = file->tag.get_property("HANDLE_X", (long)handle_x);
-	handle_y = file->tag.get_property("HANDLE_Y", (long)handle_y);
+	position = file->tag.get_property("POSITION", (int64_t)0);
+	handle_x = file->tag.get_property("HANDLE_X", (int64_t)handle_x);
+	handle_y = file->tag.get_property("HANDLE_Y", (int64_t)handle_y);
 	for(int i = 0; i < edl->session->audio_channels; i++)
 	{
 		char string[BCTEXTLEN];
@@ -49,15 +49,15 @@ void PanAuto::load(FileXML *file)
 	}
 }
 
-void PanAuto::copy(long start, long end, FileXML *file, int default_auto)
+void PanAuto::copy(int64_t start, int64_t end, FileXML *file, int default_auto)
 {
 	file->tag.set_title("AUTO");
 	if(default_auto)
 		file->tag.set_property("POSITION", 0);
 	else
 		file->tag.set_property("POSITION", position - start);
-	file->tag.set_property("HANDLE_X", (long)handle_x);
-	file->tag.set_property("HANDLE_Y", (long)handle_y);
+	file->tag.set_property("HANDLE_X", (int64_t)handle_x);
+	file->tag.set_property("HANDLE_Y", (int64_t)handle_y);
 	for(int i = 0; i < edl->session->audio_channels; i++)
 	{
 		char  string[BCTEXTLEN];

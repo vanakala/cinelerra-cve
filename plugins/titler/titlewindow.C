@@ -17,7 +17,7 @@ TitleThread::~TitleThread()
 // Window always deleted here
 	delete window;
 }
-	
+
 void TitleThread::run()
 {
 	BC_DisplayInfo info;
@@ -60,7 +60,9 @@ TitleWindow::~TitleWindow()
 	sizes.remove_all_objects();
 	encodings.remove_all_objects();
 	delete color_thread;
+#ifdef USE_OUTLINE
 	delete color_stroke_thread;
+#endif
 	delete title_x;
 	delete title_y;
 }
@@ -177,13 +179,15 @@ int TitleWindow::create_objects()
 	sprintf(string, "%d", client->config.size);
 	size = new TitleSize(client, this, x, y + 20, string);
 	size->create_objects();
-	x += 130;
+	x += 140;
 
 	add_tool(style_title = new BC_Title(x, y, "Style:"));
 	add_tool(italic = new TitleItalic(client, this, x, y + 20));
 	add_tool(bold = new TitleBold(client, this, x, y + 50));
-	x += 80;
-
+#ifdef USE_OUTLINE
+	add_tool(stroke = new TitleStroke(client, this, x, y + 80));
+#endif
+	x += 90;
 	add_tool(justify_title = new BC_Title(x, y, "Justify:"));
 	add_tool(left = new TitleLeft(client, this, x, y + 20));
 	add_tool(center = new TitleCenter(client, this, x, y + 50));
@@ -245,16 +249,30 @@ int TitleWindow::create_objects()
 	color_y = y + 20;
 	color_thread = new TitleColorThread(client, this);
 
-	x = 265;
+	x = 10;
 	y += 50;
-	add_tool(strokewidth_title = new BC_Title(x, y, "Stroke width:"));
-	add_tool(stroke_width = new TitleFade(client, this, &client->config.stroke_width, x, y + 20));
+	add_tool(encoding_title = new BC_Title(x, y + 3, "Encoding:"));
+	encoding = new TitleEncoding(client, this, x, y + 20);
+	encoding->create_objects();
 
-	x += 120;
-	add_tool(color_stroke_button = new TitleColorStrokeButton(client, this, x, y + 20));
+#ifdef USE_OUTLINE
+	x += 160;
+	add_tool(strokewidth_title = new BC_Title(x, y, "Outline width:"));
+	stroke_width = new TitleStrokeW(client, 
+		this, 
+		x, 
+		y + 20);
+	stroke_width->create_objects();
+
+	x += 210;
+	add_tool(color_stroke_button = new TitleColorStrokeButton(client, 
+		this, 
+		x, 
+		y + 20));
 	color_stroke_x = color_x;
 	color_stroke_y = y + 20;
 	color_stroke_thread = new TitleColorStrokeThread(client, this);
+#endif
 
 
 	x = 10;
@@ -262,13 +280,9 @@ int TitleWindow::create_objects()
 
 	add_tool(text_title = new BC_Title(x, y + 3, "Text:"));
 
-	x += 130;
-	add_tool(encoding_title = new BC_Title(x, y + 3, "Encoding:"));
-	encoding = new TitleEncoding(client, this, x + 80, y);
-	encoding->create_objects();
-
-	x += 280;
+	x += 100;
 	add_tool(timecode = new TitleTimecode(client, x, y));
+
 
 
 	x = 10;
@@ -304,12 +318,17 @@ int TitleWindow::resize_event(int w, int h)
 	style_title->reposition_window(style_title->get_x(), style_title->get_y());
 	italic->reposition_window(italic->get_x(), italic->get_y());
 	bold->reposition_window(bold->get_x(), bold->get_y());
+#ifdef USE_OUTLINE
+	stroke->reposition_window(stroke->get_x(), stroke->get_y());
+#endif
 	size_title->reposition_window(size_title->get_x(), size_title->get_y());
 	size->reposition_window(size->get_x(), size->get_y());
 	encoding_title->reposition_window(encoding_title->get_x(), encoding_title->get_y());
 	encoding->reposition_window(encoding->get_x(), encoding->get_y());
 	color_button->reposition_window(color_button->get_x(), color_button->get_y());
+#ifdef USE_OUTLINE
 	color_stroke_button->reposition_window(color_stroke_button->get_x(), color_stroke_button->get_y());
+#endif
 	motion_title->reposition_window(motion_title->get_x(), motion_title->get_y());
 	motion->reposition_window(motion->get_x(), motion->get_y());
 	loop->reposition_window(loop->get_x(), loop->get_y());
@@ -320,8 +339,10 @@ int TitleWindow::resize_event(int w, int h)
 	fadeout_title->reposition_window(fadeout_title->get_x(), fadeout_title->get_y());
 	fade_out->reposition_window(fade_out->get_x(), fade_out->get_y());
 	text_title->reposition_window(text_title->get_x(), text_title->get_y());
+#ifdef USE_OUTLINE
 	stroke_width->reposition_window(stroke_width->get_x(), stroke_width->get_y());
 	strokewidth_title->reposition_window(strokewidth_title->get_x(), strokewidth_title->get_y());
+#endif
 	timecode->reposition_window(timecode->get_x(), timecode->get_y());
 
 	text->reposition_window(text->get_x(), 
@@ -397,9 +418,11 @@ void TitleWindow::update_color()
 	set_color(client->config.color);
 	draw_box(color_x, color_y, 100, 30);
 	flash(color_x, color_y, 100, 30);
+#ifdef USE_OUTLINE
 	set_color(client->config.color_stroke);
 	draw_box(color_stroke_x, color_stroke_y, 100, 30);
 	flash(color_stroke_x, color_stroke_y, 100, 30);
+#endif
 }
 
 void TitleWindow::update_justification()
@@ -414,10 +437,13 @@ void TitleWindow::update_justification()
 
 void TitleWindow::update()
 {
-	title_x->update((long)client->config.x);
-	title_y->update((long)client->config.y);
+	title_x->update((int64_t)client->config.x);
+	title_y->update((int64_t)client->config.y);
 	italic->update(client->config.style & FONT_ITALIC);
 	bold->update(client->config.style & FONT_BOLD);
+#ifdef USE_OUTLINE
+	stroke->update(client->config.style & FONT_OUTLINE);
+#endif
 	size->update(client->config.size);
 	encoding->update(client->config.encoding);
 	motion->update(TitleMain::motion_to_text(client->config.motion_strategy));
@@ -425,7 +451,9 @@ void TitleWindow::update()
 	dropshadow->update((float)client->config.dropshadow);
 	fade_in->update((float)client->config.fade_in);
 	fade_out->update((float)client->config.fade_out);
+#ifdef USE_OUTLINE
 	stroke_width->update((float)client->config.stroke_width);
+#endif
 	font->update(client->config.font);
 	text->update(client->config.text);
 	speed->update(client->config.pixels_per_second);
@@ -478,6 +506,24 @@ int TitleItalic::handle_event()
 	client->send_configure_change();
 	return 1;
 }
+
+TitleStroke::TitleStroke(TitleMain *client, TitleWindow *window, int x, int y)
+ : BC_CheckBox(x, y, client->config.style & FONT_OUTLINE, "Outline")
+{
+	this->client = client;
+	this->window = window;
+}
+
+int TitleStroke::handle_event()
+{
+	client->config.style = 
+		(client->config.style & ~FONT_OUTLINE) | 
+		(get_value() ? FONT_OUTLINE : 0);
+	client->send_configure_change();
+	return 1;
+}
+
+
 
 TitleSize::TitleSize(TitleMain *client, TitleWindow *window, int x, int y, char *text)
  : BC_PopupTextBox(window, 
@@ -543,14 +589,16 @@ int TitleColorButton::handle_event()
 }
 
 TitleColorStrokeButton::TitleColorStrokeButton(TitleMain *client, TitleWindow *window, int x, int y)
- : BC_GenericButton(x, y, "Stroke color...")
+ : BC_GenericButton(x, y, "Outline color...")
 {
 	this->client = client;
 	this->window = window;
 }
 int TitleColorStrokeButton::handle_event()
 {
+#ifdef USE_OUTLINE
 	window->color_stroke_thread->start_window(client->config.color_stroke, 0);
+#endif
 	return 1;
 }
 
@@ -597,7 +645,11 @@ int TitleTimecode::handle_event()
 	return 1;
 }
 
-TitleFade::TitleFade(TitleMain *client, TitleWindow *window, double *value, int x, int y)
+TitleFade::TitleFade(TitleMain *client, 
+	TitleWindow *window, 
+	double *value, 
+	int x, 
+	int y)
  : BC_TextBox(x, y, 90, 1, (float)*value)
 {
 	this->client = client;
@@ -659,9 +711,9 @@ int TitleText::handle_event()
 
 TitleDropShadow::TitleDropShadow(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_TumbleTextBox(window,
- 	(long)client->config.dropshadow,
-	(long)0,
-	(long)1000,
+ 	(int64_t)client->config.dropshadow,
+	(int64_t)0,
+	(int64_t)1000,
 	x, 
 	y, 
 	70)
@@ -679,9 +731,9 @@ int TitleDropShadow::handle_event()
 
 TitleX::TitleX(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_TumbleTextBox(window,
- 	(long)client->config.x,
-	(long)-2048,
-	(long)2048,
+ 	(int64_t)client->config.x,
+	(int64_t)-2048,
+	(int64_t)2048,
 	x, 
 	y, 
 	60)
@@ -698,9 +750,9 @@ int TitleX::handle_event()
 
 TitleY::TitleY(TitleMain *client, TitleWindow *window, int x, int y)
  : BC_TumbleTextBox(window,
- 	(long)client->config.y, 
-	(long)-2048,
-	(long)2048,
+ 	(int64_t)client->config.y, 
+	(int64_t)-2048,
+	(int64_t)2048,
 	x, 
 	y, 
 	60)
@@ -711,6 +763,28 @@ TitleY::TitleY(TitleMain *client, TitleWindow *window, int x, int y)
 int TitleY::handle_event()
 {
 	client->config.y = atol(get_text());
+	client->send_configure_change();
+	return 1;
+}
+
+TitleStrokeW::TitleStrokeW(TitleMain *client, 
+	TitleWindow *window, 
+	int x, 
+	int y)
+ : BC_TumbleTextBox(window,
+ 	(float)client->config.stroke_width,
+	(float)-2048,
+	(float)2048,
+	x, 
+	y, 
+	60)
+{
+	this->client = client;
+	this->window = window;
+}
+int TitleStrokeW::handle_event()
+{
+	client->config.stroke_width = atof(get_text());
 	client->send_configure_change();
 	return 1;
 }

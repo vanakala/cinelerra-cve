@@ -33,8 +33,9 @@ VirtualConsole::VirtualConsole(RenderEngine *renderengine,
 
 VirtualConsole::~VirtualConsole()
 {
-// Destructor always calls default methods so can't put deletions in here
-// Deletions have been moved to downmost destructors
+//printf("VirtualConsole::~VirtualConsole 1\n");
+	delete_virtual_console();
+	delete_input_buffers();
 
 	delete startup_lock;
 	if(playable_tracks) delete playable_tracks;
@@ -125,7 +126,6 @@ Module* VirtualConsole::module_number(int track_number)
 
 int VirtualConsole::allocate_input_buffers()
 {
-//printf("VirtualConsole::allocate_input_buffers 1\n");
 	if(!ring_buffers)
 	{
 		ring_buffers = total_ring_buffers();
@@ -173,7 +173,7 @@ int VirtualConsole::sort_virtual_console()
 {
 // sort the console
 	int done = 0, result = 0;
-	long attempts = 0;
+	int64_t attempts = 0;
 	int i;
 
 //printf("VirtualConsole::sort_virtual_console 1\n");
@@ -215,8 +215,8 @@ void VirtualConsole::dump()
 }
 
 
-int VirtualConsole::test_reconfigure(long position, 
-	long &length, 
+int VirtualConsole::test_reconfigure(int64_t position, 
+	int64_t &length, 
 	int &last_playback)
 {
 	int result = 0;
@@ -266,9 +266,9 @@ int VirtualConsole::test_reconfigure(long position,
 
 	int direction = renderengine->command->get_direction();
 // GCC 3.2 requires this or optimization error results.
-	long longest_duration1;
-	long longest_duration2;
-	long longest_duration3;
+	int64_t longest_duration1;
+	int64_t longest_duration2;
+	int64_t longest_duration3;
 
 //printf("VirtualConsole::test_reconfigure 6 %d %d\n", length, result);
 // Length of time until next transition, edit, or effect change.
@@ -286,14 +286,16 @@ int VirtualConsole::test_reconfigure(long position,
 				direction == PLAY_REVERSE, 
 				1);
 
+//printf("VirtualConsole::test_reconfigure 10 %d\n", length);
 
 // Test the edits
 			longest_duration2 = current_track->edit_change_duration(
 				commonrender->current_position, 
 				length, 
-				direction == PLAY_REVERSE, 
+				direction, 
 				0);
 
+//printf("VirtualConsole::test_reconfigure 20 %d\n", length);
 
 // Test the plugins
 			longest_duration3 = current_track->plugin_change_duration(
@@ -306,13 +308,11 @@ int VirtualConsole::test_reconfigure(long position,
 				length = longest_duration1;
 				last_playback = 0;
 			}
-//printf("VirtualConsole::test_reconfigure 10 %d\n", length);
 			if(longest_duration2 < length)
 			{
 				length = longest_duration2;
 				last_playback = 0;
 			}
-//printf("VirtualConsole::test_reconfigure 20 %d\n", length);
 			if(longest_duration3 < length)
 			{
 				length = longest_duration3;
@@ -356,12 +356,11 @@ void VirtualConsole::run()
 int VirtualConsole::delete_virtual_console()
 {
 // delete the virtual modules
-//printf("delete_virtual_console 1 %i %p\n", total_tracks);
 	for(int i = 0; i < total_tracks; i++)
 	{
 		delete virtual_modules[i];
 	}
-	// even when calling new[0] (when total_tracks == 0), pointer gets allocated 
+// Seems to get allocated even if new[0].
 	if(virtual_modules) delete [] virtual_modules;
 	virtual_modules = 0;
 
@@ -372,7 +371,6 @@ int VirtualConsole::delete_virtual_console()
 int VirtualConsole::delete_input_buffers()
 {
 // delete input buffers
-//printf("VirtualConsole::delete_input_buffers 1\n");
 	for(int buffer = 0; buffer < ring_buffers; buffer++)
 	{
 		delete_input_buffer(buffer);

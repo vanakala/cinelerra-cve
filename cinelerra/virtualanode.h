@@ -35,12 +35,12 @@ public:
 
 // need *arender for peak updating
 	int render(double **audio_out, 
-				long audio_out_position, 
+				int64_t audio_out_position, 
 				int double_buffer,
-				long fragment_position,
-				long fragment_len, 
-				long real_position, 
-				long source_length, 
+				int64_t fragment_position,
+				int64_t fragment_len, 
+				int64_t real_position, 
+				int64_t source_length, 
 				int reverse,
 				ARender *arender);
 
@@ -51,31 +51,31 @@ public:
 private:
 // need *arender for peak updating
 	int render_as_module(double **audio_out, 
-				long audio_out_position, 
+				int64_t audio_out_position, 
 				int ring_buffer,
-				long fragment_position,
-				long fragment_len, 
-				long real_position, 
+				int64_t fragment_position,
+				int64_t fragment_len, 
+				int64_t real_position, 
 				ARender *arender);
-	void render_as_plugin(long real_position, 
-		long fragment_position, 
-		long fragment_len,
+	void render_as_plugin(int64_t real_position, 
+		int64_t fragment_position, 
+		int64_t fragment_len,
 		int ring_buffer);
 
 	int render_fade(double *input,        // start of input fragment
 				double *output,        // start of output fragment
-				long buffer_len,      // fragment length in input scale
-				long input_position, // starting sample of input buffer in project
+				int64_t buffer_len,      // fragment length in input scale
+				int64_t input_position, // starting sample of input buffer in project
 				Autos *autos);     // DB not used in pan
 	int render_pan(double *input,        // start of input fragment
 				double *output,        // start of output fragment
-				long fragment_len,      // fragment length in input scale
-				long input_position, // starting sample of input buffer in project
+				int64_t fragment_len,      // fragment length in input scale
+				int64_t input_position, // starting sample of input buffer in project
 				Autos *autos,
 				int channel);
 
-	double* get_module_input(int double_buffer, long fragment_position);
-	double* get_module_output(int double_buffer, long fragment_position);
+	double* get_module_input(int double_buffer, int64_t fragment_position);
+	double* get_module_output(int double_buffer, int64_t fragment_position);
 
 	DB db;
 

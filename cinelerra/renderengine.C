@@ -189,7 +189,7 @@ Workarounds::clamp(vconfig->do_channel[i], 0, 1);
 	{
 // Larger of audio_module_fragment and fragment length adjusted for speed
 // Extra memory must be allocated for rendering slow motion.
-		adjusted_fragment_len = (long)((float)edl->session->audio_module_fragment / 
+		adjusted_fragment_len = (int64_t)((float)edl->session->audio_module_fragment / 
 			command->get_speed() + 0.5);
 		if(adjusted_fragment_len < edl->session->audio_module_fragment)
 			adjusted_fragment_len = edl->session->audio_module_fragment;
@@ -255,7 +255,7 @@ int RenderEngine::brender_available(int position, int direction)
 {
 	if(playback_engine)
 	{
-		long corrected_position = position;
+		int64_t corrected_position = position;
 		if(direction == PLAY_REVERSE)
 			corrected_position--;
 		return playback_engine->brender_available(corrected_position);
@@ -317,24 +317,41 @@ int RenderEngine::open_output()
 //printf("RenderEngine::open_output 1\n");
 	if(command->realtime)
 	{
-// Retool playback configuration for 
+// Allocate devices
 		if(do_audio)
 		{
 			audio = new AudioDevice;
-//printf("RenderEngine::open_output 2 %d %d\n", do_audio, do_video);
+		}
+		if(do_video)
+		{
+			video = new VideoDevice;
+		}
+
+// Initialize sharing
+
+
+// Start playback
+		if(do_audio && do_video)
+		{
+			video->set_adevice(audio);
+			audio->set_vdevice(video);
+		}
+
+
+
+// Retool playback configuration
+		if(do_audio)
+		{
 			audio->open_output(config->aconfig, 
 				edl->session->sample_rate, 
 				adjusted_fragment_len,
 				edl->session->real_time_playback);
 			audio->set_software_positioning(edl->session->playback_software_position);
 			audio->start_playback();
-//printf("RenderEngine::open_output 3 %d %d\n", do_audio, do_video);
 		}
 
 		if(do_video)
 		{
-			video = new VideoDevice;
-//printf("RenderEngine::open_output 1 %d\n", config->vconfig->driver);
 			video->open_output(config->vconfig, 
 				edl->session->frame_rate,
 				get_output_w(),
@@ -356,7 +373,7 @@ int RenderEngine::open_output()
 	return 0;
 }
 
-long RenderEngine::session_position()
+int64_t RenderEngine::session_position()
 {
 	if(do_audio)
 	{
@@ -365,14 +382,14 @@ long RenderEngine::session_position()
 
 	if(do_video)
 	{
-		return (long)((double)vrender->session_frame / 
+		return (int64_t)((double)vrender->session_frame / 
 				edl->session->frame_rate * 
 				edl->session->sample_rate /
 				command->get_speed() + 0.5);
 	}
 }
 
-long RenderEngine::sync_position()
+int64_t RenderEngine::sync_position()
 {
 	switch(edl->session->playback_strategy)
 	{
@@ -530,7 +547,7 @@ int RenderEngine::close_output()
 	return 0;
 }
 
-void RenderEngine::get_output_levels(double *levels, long position)
+void RenderEngine::get_output_levels(double *levels, int64_t position)
 {
 	if(do_audio)
 	{
@@ -544,7 +561,7 @@ void RenderEngine::get_output_levels(double *levels, long position)
 	}
 }
 
-void RenderEngine::get_module_levels(ArrayList<double> *module_levels, long position)
+void RenderEngine::get_module_levels(ArrayList<double> *module_levels, int64_t position)
 {
 	if(do_audio)
 	{
@@ -669,9 +686,9 @@ int RenderEngine::reset_parameters()
 	done = 0;
 }
 
-int RenderEngine::arm_playback_common(long start_sample, 
-			long end_sample,
-			long current_sample,
+int RenderEngine::arm_playback_common(int64_t start_sample, 
+			int64_t end_sample,
+			int64_t current_sample,
 			int reverse, 
 			float speed, 
 			int follow_loop,
@@ -686,10 +703,10 @@ int RenderEngine::arm_playback_common(long start_sample,
 	if(infinite) this->follow_loop = 0;
 }
 
-int RenderEngine::arm_playback_audio(long input_length, 
-			long amodule_render_fragment, 
-			long playback_buffer, 
-			long output_length, 
+int RenderEngine::arm_playback_audio(int64_t input_length, 
+			int64_t amodule_render_fragment, 
+			int64_t playback_buffer, 
+			int64_t output_length, 
 			int audio_channels)
 {
 	this->audio_channels = audio_channels;
@@ -705,8 +722,8 @@ int RenderEngine::arm_playback_audio(long input_length,
 }
 
 int RenderEngine::arm_playback_video(int every_frame, 
-			long read_length, 
-			long output_length,
+			int64_t read_length, 
+			int64_t output_length,
 			int track_w,
 			int track_h,
 			int output_w,
@@ -734,11 +751,11 @@ int RenderEngine::start_video()
 }
 
 
-long RenderEngine::get_correction_factor(int reset)
+int64_t RenderEngine::get_correction_factor(int reset)
 {
 	if(!every_frame)
 	{
-		long x;
+		int64_t x;
 //		x = playbackengine->correction_factor;
 //		if(reset) playbackengine->correction_factor = 0;
 		return x;

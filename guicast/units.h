@@ -4,7 +4,10 @@
 #include "sizes.h"
 
 #include <math.h>
+#include <stdint.h>
 #include <stdio.h>
+
+
 #define INFINITYGAIN -40
 #define MAXGAIN 50
 #define TOTALFREQS 1024
@@ -87,16 +90,16 @@ public:
 	Units() {};
 
 	// No rounding.
-	static float toframes(long samples, int sample_rate, float framerate);
+	static float toframes(int64_t samples, int sample_rate, float framerate);
 	// Round up if > .5
-	static long toframes_round(long samples, int sample_rate, float framerate);
+	static int64_t toframes_round(int64_t samples, int sample_rate, float framerate);
 	static double fix_framerate(double value);
 	static double atoframerate(char *text);
 
 
-	static long tosamples(float frames, int sample_rate, float framerate);
+	static int64_t tosamples(float frames, int sample_rate, float framerate);
 	static char* totext(char *text, 
-				long samples, 
+				int64_t samples, 
 				int time_format, 
 				int samplerate, 
 				float frame_rate = 0, 
@@ -107,7 +110,7 @@ public:
 				int sample_rate = 0,
 				float frame_rate = 0, 
 				float frames_per_foot = 0);    // give text representation as time
-	static longest fromtext(char *text, 
+	static int64_t fromtext(char *text, 
 				int samplerate, 
 				int time_format, 
 				float frame_rate, 
@@ -125,13 +128,16 @@ public:
 
 // Numbers < 0 round down if next digit is < 5
 // Numbers > 0 round up if next digit is > 5
-	static long round(double result);
+	static int64_t round(double result);
 
 // Flooring type converter rounded to nearest .001
-	static long to_long(double result);
+	static int64_t to_int64(double result);
 
 	static float quantize10(float value);
 	static float quantize(float value, float precision);
+
+	static void* int64_to_ptr(uint64_t value);
+	static uint64_t ptr_to_int64(void *ptr);
 };
 
 #endif

@@ -39,7 +39,7 @@ public:
 	VirtualNode* create_plugin(Plugin *real_plugin);
 	void arm_attachmentpoint();
 
-	int render(VFrame **video_out, long input_position);
+	int render(VFrame **video_out, int64_t input_position);
 
 
 // Pointers to data, whether drive read buffers or temp buffers
@@ -48,16 +48,16 @@ public:
 
 
 private:
-	int render_as_module(VFrame **video_out, long input_position);
-	void render_as_plugin(long input_position);
+	int render_as_module(VFrame **video_out, int64_t input_position);
+	void render_as_plugin(int64_t input_position);
 
 	int render_projector(VFrame *input,
 			VFrame **output,
-			long real_position);  // Start of input fragment in project if forward.  End of input fragment if reverse.
+			int64_t real_position);  // Start of input fragment in project if forward.  End of input fragment if reverse.
 
 	int render_fade(VFrame *input,         // start of input fragment
 			VFrame *output,        // start of output fragment
-			long input_position,  // start of input fragment in project if forward / end of input fragment if reverse
+			int64_t input_position,  // start of input fragment in project if forward / end of input fragment if reverse
 			Autos *autos);
 
 // overlay on the frame with scaling

@@ -11,8 +11,8 @@ TransportCommand::TransportCommand()
 // in the middle of a job.
 	edl = new EDL;
 	edl->create_objects();
-	command = 0;
 	reset();
+	command = 0;
 	change_type = 0;
 }
 
@@ -124,10 +124,10 @@ void TransportCommand::set_playback_range(EDL *edl)
 				end_position = edl->tracks->total_playable_length();
 			else
 				end_position = edl->local_session->selectionend;
-//printf("TransportCommand::set_playback_range 1 %f %f\n", start_position, end_position);
-// this prevents a crush if start position is after the loop when playing forwards
-			if (edl->local_session->loop_playback && start_position > edl->local_session->loop_end) {       
-					start_position = edl->local_session->loop_start;
+// this prevents a crash if start position is after the loop when playing forwards
+ 		    if (edl->local_session->loop_playback && start_position > edl->local_session->loop_end)  
+ 			{
+				    start_position = edl->local_session->loop_start;
 			}
 			break;
 		
@@ -139,8 +139,9 @@ void TransportCommand::set_playback_range(EDL *edl)
 				start_position = 0;
 			else
 				start_position = edl->local_session->selectionstart;
-// this prevents a crush if start position is before the loop when playing backwards
-			if (edl->local_session->loop_playback && start_position <= edl->local_session->loop_start) {
+// this prevents a crash if start position is before the loop when playing backwards
+			if (edl->local_session->loop_playback && start_position <= edl->local_session->loop_start)
+			{
 					start_position = edl->local_session->loop_end;
 					end_position = edl->local_session->loop_end;
 			}

@@ -41,12 +41,12 @@ public:
 
 // Called by Edits::equivalent_output to override the keyframe behavior and check
 // title.
-	void equivalent_output(Edit *edit, long *result);
+	void equivalent_output(Edit *edit, int64_t *result);
 
 // Called by playable tracks to test for playable server.
 // Descends the plugin tree without creating a virtual console.
 	int is_synthesis(RenderEngine *renderengine, 
-		long position, 
+		int64_t position, 
 		int direction);
 
 	virtual int operator==(Plugin& that);
@@ -61,7 +61,7 @@ public:
 	int identical_location(Plugin *that);
 	virtual void synchronize_params(Edit *edit);
 // Used by Edits::insert_edits and Plugin::shift to shift plugin keyframes
-	void shift_keyframes(long position);
+	void shift_keyframes(int64_t position);
 
 	void change_plugin(char *title, 
 		SharedLocation *shared_location, 
@@ -69,24 +69,24 @@ public:
 // For synchronizing parameters
 	void copy_keyframes(Plugin *plugin);
 // For copying to clipboard
-	void copy_keyframes(long start, 
-		long end, 
+	void copy_keyframes(int64_t start, 
+		int64_t end, 
 		FileXML *file, 
 		int default_only,
 		int autos_only);
 // For editing automation.  
 // Returns the point to restart background rendering at.
 // -1 means nothing changed.
-	void clear_keyframes(long start, long end);
-	void copy(long start, long end, FileXML *file);
+	void clear_keyframes(int64_t start, int64_t end);
+	void copy(int64_t start, int64_t end, FileXML *file);
 	void paste(FileXML *file);
 	void load(FileXML *file);
 // Shift in time
-	void shift(long difference);
+	void shift(int64_t difference);
 	void dump();
 // Get keyframes for configuring plugin
-	KeyFrame* get_prev_keyframe(long position);
-	KeyFrame* get_next_keyframe(long position);
+	KeyFrame* get_prev_keyframe(int64_t position);
+	KeyFrame* get_next_keyframe(int64_t position);
 // If this is a standalone plugin fill its location in the result.
 // If it's shared copy the shared location into the result
 	void get_shared_location(SharedLocation *result);

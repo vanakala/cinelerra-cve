@@ -19,14 +19,14 @@ public:
 	Edits(EDL *edl, Track *track);
 	virtual ~Edits();	
 
-	void equivalent_output(Edits *edits, long *result);
+	void equivalent_output(Edits *edits, int64_t *result);
 	virtual Edits& operator=(Edits& edits);
 // Editing
-	void insert_edits(Edits *edits, long position);
-	void insert_asset(Asset *asset, long length, long sample, int track_number);
+	void insert_edits(Edits *edits, int64_t position);
+	void insert_asset(Asset *asset, int64_t length, int64_t sample, int track_number);
 // Split edit containing position.
 // Return the second edit in the split.
-	Edit* split_edit(long position);
+	Edit* split_edit(int64_t position);
 // Create a blank edit in the native data format
 	int clear_handle(double start, 
 		double end, 
@@ -34,25 +34,25 @@ public:
 		double &distance);
 	virtual Edit* create_edit() { return 0; };
 // Insert a 0 length edit at the position
-	Edit* insert_new_edit(long sample);
+	Edit* insert_new_edit(int64_t sample);
 	int save(FileXML *xml, char *output_path);
-	int copy(long start, long end, FileXML *xml, char *output_path);
+	int copy(int64_t start, int64_t end, FileXML *xml, char *output_path);
 // Clear region of edits
-	virtual void clear(long start, long end);
+	virtual void clear(int64_t start, int64_t end);
 // Clear edits and plugins for a handle modification
-	virtual void clear_recursive(long start, 
-		long end, 
+	virtual void clear_recursive(int64_t start, 
+		int64_t end, 
 		int edit_edits,
 		int edit_labels, 
 		int edit_plugins);
-	virtual void shift_keyframes_recursive(long position, long length);
-	virtual void shift_effects_recursive(long position, long length);
+	virtual void shift_keyframes_recursive(int64_t position, int64_t length);
+	virtual void shift_effects_recursive(int64_t position, int64_t length);
 // Returns the newly created edit
-	Edit* paste_silence(long start, long end);
+	Edit* paste_silence(int64_t start, int64_t end);
 	void resample(double old_rate, double new_rate);
 // Shift edits on or after position by distance
 // Return the edit now on the position.
-	virtual Edit* shift(long position, long difference);
+	virtual Edit* shift(int64_t position, int64_t difference);
 
 	EDL *edl;
 	Track *track;
@@ -72,7 +72,7 @@ public:
 // ================================== file operations
 
 	int load(FileXML *xml, int track_offset);
-	int load_edit(FileXML *xml, long &startproject, int track_offset);
+	int load_edit(FileXML *xml, int64_t &startproject, int track_offset);
 
 	virtual Edit* append_new_edit() {};
 	virtual Edit* insert_edit_after(Edit *previous_edit) { return 0; };
@@ -81,11 +81,11 @@ public:
 
 // ==================================== accounting
 
-	Edit* editof(long position, int direction);
+	Edit* editof(int64_t position, int direction);
 // Return an edit if position is over an edit and the edit has a source file
-	Edit* get_playable_edit(long position);
-//	long total_length();
-	long length();         // end position of last edit
+	Edit* get_playable_edit(int64_t position);
+//	int64_t total_length();
+	int64_t length();         // end position of last edit
 
 // ==================================== editing
 

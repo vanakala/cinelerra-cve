@@ -91,7 +91,7 @@ int ARender::init_meters()
 // not providing enough peaks results in peaks that are ahead of the sound
 //printf("ARender::init_meters 1\n");
 	if(level_samples) delete [] level_samples;
-	level_samples = new long[history_size()];
+	level_samples = new int64_t[history_size()];
 	for(int i = 0; i < MAXCHANNELS;i++)
 	{
 		current_level[i] = 0;
@@ -142,30 +142,30 @@ VirtualConsole* ARender::new_vconsole_object()
 	return new VirtualAConsole(renderengine, this);
 }
 
-long ARender::tounits(double position, int round)
+int64_t ARender::tounits(double position, int round)
 {
 	if(round)
 		return Units::round(position * renderengine->edl->session->sample_rate);
 	else
-		return (long)(position * renderengine->edl->session->sample_rate);
+		return (int64_t)(position * renderengine->edl->session->sample_rate);
 }
 
-double ARender::fromunits(long position)
+double ARender::fromunits(int64_t position)
 {
 	return (double)position / renderengine->edl->session->sample_rate;
 }
 
 
 int ARender::process_buffer(double **buffer_out, 
-	long input_len, 
-	long input_position, 
+	int64_t input_len, 
+	int64_t input_position, 
 	int last_buffer)
 {
 	int result = 0;
 //printf("ARender::process_buffer 1\n");
 	this->last_playback = last_buffer;
-	long fragment_position = 0;
-	long fragment_len = input_len;
+	int64_t fragment_position = 0;
+	int64_t fragment_len = input_len;
 	int reconfigure = 0;
 	current_position = input_position;
 
@@ -217,7 +217,7 @@ int ARender::process_buffer(double **buffer_out,
 }
 
 
-int ARender::process_buffer(long input_len, long input_position)
+int ARender::process_buffer(int64_t input_len, int64_t input_position)
 {
 //printf("ARender::process_buffer 1\n");
 	int result = ((VirtualAConsole*)vconsole)->process_buffer(input_len,
@@ -249,11 +249,11 @@ int ARender::restart_playback()
 	return 0;
 }
 
-int ARender::get_history_number(long *table, long position)
+int ARender::get_history_number(int64_t *table, int64_t position)
 {
 // Get the entry closest to position
 	int result = 0;
-	long min_difference = 0x7fffffff;
+	int64_t min_difference = 0x7fffffff;
 	for(int i = 0; i < history_size(); i++)
 	{
 //printf("%d %d ", i, table[i]);
@@ -279,7 +279,7 @@ int ARender::wait_device_completion()
 
 void ARender::run()
 {
-	long current_input_length = 0;
+	int64_t current_input_length;
 	int reconfigure = 0;
 //printf("ARender::run 1\n");
 
@@ -290,17 +290,17 @@ void ARender::run()
 	while(!done && !interrupt && !last_playback)
 	{
 		current_input_length = renderengine->edl->session->audio_read_length;
-// printf("ARender::run 2 %d\n", current_input_length);
+//printf("ARender::run 2 %d\n", current_input_length);
 		get_boundaries(current_input_length);
-// printf("ARender::run 3 %d\n", current_input_length);
+//printf("ARender::run 3 %d\n", current_input_length);
 
 		if(current_input_length)
 		{
-// printf("ARender::run 4 %d\n", current_input_length);
+//printf("ARender::run 4 %d\n", current_input_length);
 			reconfigure = vconsole->test_reconfigure(current_position, 
 				current_input_length,
 				last_playback);
-// printf("ARender::run 5 %d %d\n", reconfigure, current_input_length);
+//printf("ARender::run 5 %d %d\n", reconfigure, current_input_length);
 			
 			
 			
@@ -377,11 +377,11 @@ int ARender::get_datatype()
 	return TRACK_AUDIO;
 }
 
-int ARender::arm_playback(long current_position,
-			long input_length, 
-			long amodule_render_fragment, 
-			long playback_buffer, 
-			long output_length)
+int ARender::arm_playback(int64_t current_position,
+			int64_t input_length, 
+			int64_t amodule_render_fragment, 
+			int64_t playback_buffer, 
+			int64_t output_length)
 {
 	this->current_position = current_position;
 	this->input_length = input_length;
@@ -425,9 +425,9 @@ int ARender::send_reconfigure_buffer()
 	return 0;
 }
 
-int ARender::reverse_buffer(double *buffer, long len)
+int ARender::reverse_buffer(double *buffer, int64_t len)
 {
-	register long start, end;
+	register int64_t start, end;
 	double temp;
 
 	for(start = 0, end = len - 1; end > start; start++, end--)
@@ -445,7 +445,7 @@ int ARender::get_next_peak(int current_peak)
 	return current_peak;
 }
 
-long ARender::get_render_length(long current_render_length)
+int64_t ARender::get_render_length(int64_t current_render_length)
 {
 	return current_render_length;
 }

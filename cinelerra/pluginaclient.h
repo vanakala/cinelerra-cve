@@ -16,21 +16,21 @@ public:
 	int init_realtime_parameters();
 	void plugin_process_realtime(double **input, 
 		double **output, 
-		long current_position, 
-		long fragment_size,
-		long total_len);
+		int64_t current_position, 
+		int64_t fragment_size,
+		int64_t total_len);
 	int is_audio();
-	virtual int process_realtime(long size, 
+	virtual int process_realtime(int64_t size, 
 		double *input_ptr, 
 		double *output_ptr) { return 0; };
-	virtual int process_realtime(long size, 
+	virtual int process_realtime(int64_t size, 
 		double **input_ptr, 
 		double **output_ptr) { return 0; };
-	virtual int process_loop(double *buffer, long &write_length) { return 1; };
-	virtual int process_loop(double **buffers, long &write_length) { return 1; };
-	int plugin_process_loop(double **buffers, long &write_length);
-	int read_samples(double *buffer, int channel, long start_position, long total_samples);
-	int read_samples(double *buffer, long start_position, long total_samples);
+	virtual int process_loop(double *buffer, int64_t &write_length) { return 1; };
+	virtual int process_loop(double **buffers, int64_t &write_length) { return 1; };
+	int plugin_process_loop(double **buffers, int64_t &write_length);
+	int read_samples(double *buffer, int channel, int64_t start_position, int64_t total_samples);
+	int read_samples(double *buffer, int64_t start_position, int64_t total_samples);
 	void send_render_gui(void *data, int size);
 	void plugin_render_gui(void *data, int size);
 	virtual void render_gui(void *data, int size) {};

@@ -1,16 +1,29 @@
 #include "colormodels.h"
 #include "funcprotos.h"
+#include <png.h>
+#include "quicktime.h"
 #include "qtpng.h"
+
+typedef struct
+{
+	int compression_level;
+	unsigned char *buffer;
+// Read position
+	long buffer_position;
+// Frame size
+	long buffer_size;
+// Buffer allocation
+	long buffer_allocated;
+	int quality;
+	unsigned char *temp_frame;
+} quicktime_png_codec_t;
 
 static int delete_codec(quicktime_video_map_t *vtrack)
 {
 	quicktime_png_codec_t *codec = ((quicktime_codec_t*)vtrack->codec)->priv;
-//printf("quicktime_delete_codec_png 1\n");
 	if(codec->buffer) free(codec->buffer);
 	if(codec->temp_frame) free(codec->temp_frame);
-//printf("quicktime_delete_codec_png 1\n");
 	free(codec);
-//printf("quicktime_delete_codec_png 2\n");
 	return 0;
 }
 
@@ -70,7 +83,7 @@ static void flush_function(png_structp png_ptr)
 static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 {
 	int result = 0;
-	longest i;
+	int64_t i;
 	quicktime_video_map_t *vtrack = &(file->vtracks[track]);
 	quicktime_trak_t *trak = vtrack->track;
 	png_structp png_ptr;
@@ -162,9 +175,12 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 	return result;
 }
 
+
+
+
 static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 {
-	longest offset = quicktime_position(file);
+	int64_t offset = quicktime_position(file);
 	int result = 0;
 	int i;
 	quicktime_video_map_t *vtrack = &(file->vtracks[track]);
@@ -175,6 +191,7 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 	png_structp png_ptr;
 	png_infop info_ptr;
 	int cmodel = source_cmodel(file, track);
+	quicktime_atom_t chunk_atom;
 
 	codec->buffer_size = 0;
 	codec->buffer_position = 0;
@@ -201,37 +218,60 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 	png_write_end(png_ptr, info_ptr);
 	png_destroy_write_struct(&png_ptr, &info_ptr);
 
+	quicktime_write_chunk_header(file, trak, &chunk_atom);
 	result = !quicktime_write_data(file, 
 				codec->buffer, 
 				codec->buffer_size);
+	quicktime_write_chunk_footer(file, 
+		trak,
+		vtrack->current_chunk,
+		&chunk_atom, 
+		1);
 
-//printf("quicktime_encode_png %d\n", codec->buffer_size);
-	quicktime_update_tables(file,
-						file->vtracks[track].track,
-						offset,
-						file->vtracks[track].current_chunk,
-						file->vtracks[track].current_position,
-						1,
-						codec->buffer_size);
-
-	file->vtracks[track].current_chunk++;
+	vtrack->current_chunk++;
 	return result;
 }
 
+static int set_parameter(quicktime_t *file, 
+		int track, 
+		char *key, 
+		void *value)
+{
+	quicktime_video_map_t *vtrack = &(file->vtracks[track]);
+	quicktime_codec_t *codec_base = (quicktime_codec_t*)vtrack->codec;
+	quicktime_png_codec_t *codec = codec_base->priv;
+
+	if(!strcasecmp(key, "compression_level"))
+		codec->compression_level = *(int*)value;
+}
+
+static int reads_colormodel(quicktime_t *file, 
+		int colormodel, 
+		int track)
+{
+	return (colormodel == BC_RGB888 ||
+		colormodel == BC_BGR8888);
+}
 
 void quicktime_init_codec_png(quicktime_video_map_t *vtrack)
 {
+	quicktime_codec_t *codec_base = (quicktime_codec_t*)vtrack->codec;
 	quicktime_png_codec_t *codec;
 
 /* Init public items */
-	((quicktime_codec_t*)vtrack->codec)->priv = calloc(1, sizeof(quicktime_png_codec_t));
-	((quicktime_codec_t*)vtrack->codec)->delete_vcodec = delete_codec;
-	((quicktime_codec_t*)vtrack->codec)->decode_video = decode;
-	((quicktime_codec_t*)vtrack->codec)->encode_video = encode;
-	((quicktime_codec_t*)vtrack->codec)->decode_audio = 0;
-	((quicktime_codec_t*)vtrack->codec)->encode_audio = 0;
+	codec_base->priv = calloc(1, sizeof(quicktime_png_codec_t));
+	codec_base->delete_vcodec = delete_codec;
+	codec_base->decode_video = decode;
+	codec_base->encode_video = encode;
+	codec_base->decode_audio = 0;
+	codec_base->encode_audio = 0;
+	codec_base->reads_colormodel = reads_colormodel;
+	codec_base->set_parameter = set_parameter;
+	codec_base->fourcc = QUICKTIME_PNG;
+	codec_base->title = "PNG";
+	codec_base->desc = "Lossless RGB compression";
 
 /* Init private items */
-	codec = ((quicktime_codec_t*)vtrack->codec)->priv;
+	codec = codec_base->priv;
 	codec->compression_level = 9;
 }

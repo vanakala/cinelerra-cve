@@ -248,6 +248,10 @@ typedef struct RL_VLC_ELEM {
     uint8_t run;
 } RL_VLC_ELEM;
 
+#ifdef ARCH_SPARC64
+#define UNALIGNED_STORES_ARE_BAD
+#endif
+
 /* used to avoid missaligned exceptions on some archs (alpha, ...) */
 #ifdef ARCH_X86
 #    define unaligned32(a) (*(UINT32*)(a))
@@ -294,6 +298,14 @@ static inline void put_bits(PutBitContext *s, int n, unsigned int value)
     } else {
 	bit_buf<<=bit_left;
         bit_buf |= value >> (n - bit_left);
+#ifdef UNALIGNED_STORES_ARE_BAD
+        if (3 & (int) s->buf_ptr) {
+            s->buf_ptr[0] = bit_buf >> 24;
+            s->buf_ptr[1] = bit_buf >> 16;
+            s->buf_ptr[2] = bit_buf >>  8;
+            s->buf_ptr[3] = bit_buf      ;
+        } else
+#endif
         *(UINT32 *)s->buf_ptr = be2me_32(bit_buf);
         //printf("bitbuf = %08x\n", bit_buf);
         s->buf_ptr+=4;
@@ -836,11 +848,13 @@ static inline int ff_sqrt(int a)
 /**
  * converts fourcc string to int
  */
-static inline int ff_get_fourcc(char *s){
+static inline int ff_get_fourcc(const char *s){
     assert( strlen(s)==4 );
     
     return (s[0]) + (s[1]<<8) + (s[2]<<16) + (s[3]<<24);
 }
+
+void ff_float2fraction(int *nom_arg, int *denom_arg, double f, int max);
 
 
 #ifdef ARCH_X86

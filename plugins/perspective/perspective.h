@@ -29,9 +29,9 @@ public:
 	void copy_from(PerspectiveConfig &that);
 	void interpolate(PerspectiveConfig &prev, 
 		PerspectiveConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame);
+		int64_t prev_frame, 
+		int64_t next_frame, 
+		int64_t current_frame);
 
 	float x1, y1, x2, y2, x3, y3, x4, y4;
 	int mode;

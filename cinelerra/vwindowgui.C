@@ -39,10 +39,7 @@ VWindowGUI::VWindowGUI(MWindow *mwindow, VWindow *vwindow)
 	100,
 	1,
 	1,
-	1,
-	-1,
-	Preferences::get_alternate_display("CINELERRA_VIEWER_DISPLAY",
-                mwindow->preferences->screen_viewer))
+	1)
 {
 	this->mwindow = mwindow;
 	this->vwindow = vwindow;

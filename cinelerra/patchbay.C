@@ -267,7 +267,7 @@ int PatchBay::update()
 
 		if(patches.total > patch_count)
 		{
-			if(patches.values[patch_count]->track->id != current->id)
+			if(patches.values[patch_count]->track_id != current->get_id())
 			{
 				delete patches.values[patch_count];
 

@@ -92,6 +92,7 @@ int RecordTransport::keypress_event()
 {
 	if(window->get_keypress() == ' ')
 	{
+//printf("RecordTransport::keypress_event 1\n");
 		switch(record->capture_state)
 		{
 			case IS_RECORDING:
@@ -103,10 +104,11 @@ int RecordTransport::keypress_event()
 
 			default:
 				window->unlock_window();
-				record->start_recording(0);
+				record->start_recording(0, CONTEXT_INTERACTIVE);
 				window->lock_window();
 				break;
 		}
+//printf("RecordTransport::keypress_event 2\n");
 		return 1;
 	}
 	return 0;

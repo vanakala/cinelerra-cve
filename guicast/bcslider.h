@@ -37,7 +37,7 @@ public:
 	int button_release_event();
 	int get_pointer_motion_range();
 	int cursor_motion_event();
-	int repeat_event(long repeat_id);
+	int repeat_event(int64_t repeat_id);
 	int reposition_window(int x, int y, int w = -1, int h = -1);
 	int activate();
 	int deactivate();
@@ -86,17 +86,17 @@ public:
 			int vertical,
 			int pixels, 
 			int pointer_motion_range, 
-			long minvalue, 
-			long maxvalue, 
-			long value,
+			int64_t minvalue, 
+			int64_t maxvalue, 
+			int64_t value,
 			int use_caption = 0,
 			VFrame **data = 0,
 			int *output = 0);
 
-	int update(long value);
-	int update(int pointer_motion_range, long value, long minvalue, long maxvalue);
-	long get_value();
-	long get_length();
+	int update(int64_t value);
+	int update(int pointer_motion_range, int64_t value, int64_t minvalue, int64_t maxvalue);
+	int64_t get_value();
+	int64_t get_length();
 	int increase_value();
 	int decrease_value();
 	virtual int handle_event();
@@ -106,7 +106,7 @@ private:
 	int value_to_pixel();
 	int init_selection(int cursor_x, int cursor_y);
 	int update_selection(int cursor_x, int cursor_y);
-	long minvalue, maxvalue, value;
+	int64_t minvalue, maxvalue, value;
 	int *output;
 };
 

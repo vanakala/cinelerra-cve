@@ -419,8 +419,8 @@ static int read_transport(mpeg3_demuxer_t *demuxer)
 //printf("read_transport 5 %x\n", demuxer->pid);
     if (demuxer->pid == 0x1fff)
 	{
+//		return 0;
 		demuxer->is_padding = 1;  /* padding; just go to next */
-		return 0;
     }
 	else
 	{
@@ -428,7 +428,7 @@ static int read_transport(mpeg3_demuxer_t *demuxer)
 	}
 
 //printf("read_transport 6 %x\n", demuxer->pid);
-/* Get pid */
+/* Get pid from table */
 	for(table_entry = 0, result = 0; 
 		table_entry < demuxer->total_pids; 
 		table_entry++)
@@ -450,10 +450,11 @@ static int read_transport(mpeg3_demuxer_t *demuxer)
 		demuxer->pid_table[table_entry] = demuxer->pid;
 		demuxer->continuity_counters[table_entry] = demuxer->continuity_counter;  /* init */
 		demuxer->total_pids++;
-//printf("read_transport program id detected %x\n", demuxer->pid);
 	}
 	result = 0;
 
+/* Abort if padding.  Should abort after demuxer->pid == 0x1fff for speed. */
+	if(demuxer->is_padding) return 0;
 
 
 #if 0
@@ -957,7 +958,7 @@ int mpeg3demux_read_program(mpeg3_demuxer_t *demuxer)
 	int pack_count = 0;
 
 	demuxer->data_size = 0;
-//printf("mpeg3demux_read_program 1 %d %x %llx\n", result, title->fs->current_byte, title->fs->total_bytes);
+//printf("mpeg3demux_read_program 1 %d %llx %llx\n", result, title->fs->current_byte, title->fs->total_bytes);
 
 	if(mpeg3io_eof(title->fs)) return 1;
 

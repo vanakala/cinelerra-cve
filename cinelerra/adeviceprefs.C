@@ -528,8 +528,8 @@ void ADriverMenu::create_objects()
 
 	if(!do_input) add_item(new ADriverItem(this, AUDIO_ESOUND_TITLE, AUDIO_ESOUND));
 //	add_item(new ADriverItem(this, AUDIO_NAS_TITLE, AUDIO_NAS));
-	if(do_input) 
-		add_item(new ADriverItem(this, AUDIO_1394_TITLE, AUDIO_1394));
+//	if(do_input) 
+	add_item(new ADriverItem(this, AUDIO_1394_TITLE, AUDIO_1394));
 }
 
 char* ADriverMenu::adriver_to_string(int driver)

@@ -49,7 +49,7 @@ public:
 	MWindow *mwindow;
 	Render *render;
 	
-	long last_value;
+	int64_t last_value;
 };
 
 
@@ -63,7 +63,7 @@ public:
 	
 	int get_result();
 	void set_result(int value);
-	void set_progress(long value);
+	void set_progress(int64_t value);
 	int progress_cancelled();
 
 	Render *render;
@@ -97,9 +97,9 @@ public:
 		int &total_digits,
 		int min_digits = 3);
 	static int test_existence(MWindow *mwindow, Asset *asset);
-	int direct_frame_copy(EDL *edl, long &render_video_position, File *file);
+	int direct_frame_copy(EDL *edl, int64_t &render_video_position, File *file);
 	int direct_copy_possible(EDL *edl, 
-			long current_position, 
+			int64_t current_position, 
 			Track* playable_track,  // The one track which is playable
 			Edit* &playable_edit, // The edit which is playing
 			File *file);   // Output file
@@ -132,7 +132,7 @@ public:
 // Total samples updated by the render farm and the local renderer.
 // This avoids rounding errors and complies with the use of samples for
 // timing.
-	long total_rendered;
+	int64_t total_rendered;
 // Speed for the master node
 	double frames_per_second;
 };

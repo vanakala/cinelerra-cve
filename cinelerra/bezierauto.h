@@ -19,7 +19,7 @@ public:
 	void copy_from(Auto *that);
 	void copy_from(BezierAuto *that);
 	void load(FileXML *file);
-	void copy(long start, long end, FileXML *file, int default_only);
+	void copy(int64_t start, int64_t end, FileXML *file, int default_only);
 	int draw(BC_SubWindow *canvas, 
 					int x, 
 					int center_pixel, 

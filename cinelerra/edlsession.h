@@ -18,16 +18,18 @@ public:
 	EDLSession(EDL *edl);
 	~EDLSession();
 
-	int load_xml(FileXML *xml, int append_mode, unsigned long load_flags);
+	int load_xml(FileXML *xml, int append_mode, uint32_t load_flags);
 	int save_xml(FileXML *xml);
 	int copy(EDLSession *session);
 	int calculate_smp();
-	int load_audio_config(FileXML *file, int append_mode, unsigned long load_flags);
+	int load_audio_config(FileXML *file, int append_mode, uint32_t load_flags);
     int save_audio_config(FileXML *xml);
-	int load_video_config(FileXML *file, int append_mode, unsigned long load_flags);
+	int load_video_config(FileXML *file, int append_mode, uint32_t load_flags);
     int save_video_config(FileXML *xml);
 	int load_defaults(Defaults *defaults);
 	int save_defaults(Defaults *defaults);
+// Used by CWindowGUI during initialization.
+	char* get_cwindow_display();
 	void boundaries();
 
 	void equivalent_output(EDLSession *session, double *result);
@@ -47,9 +49,9 @@ public:
     float aspect_h;
 	int audio_channels;
 // Samples to send through console
-	long audio_module_fragment;
+	int64_t audio_module_fragment;
 // Samples to read from disk at a time
-	long audio_read_length;
+	int64_t audio_read_length;
 	int audio_tracks;
 // automation follows edits during editing
  	int autos_follow_edits;
@@ -109,11 +111,14 @@ public:
 	float min_meter_db;
     int output_w;
     int output_h;
-	long playback_buffer;
-// Global playback
+	int64_t playback_buffer;
+// Global playback.  This is loaded from defaults but not from XML probably
+// because it was discovered to be the most convenient.
+// It is part of the EDL probably because the playback setting was 
+// going to be bound to the EDL.
 	ArrayList<PlaybackConfig*> playback_config[PLAYBACK_STRATEGIES];
 	int playback_cursor_visible;
-	long playback_preload;
+	int64_t playback_preload;
 	int playback_software_position;
 	int playback_strategy;
 // Play audio in realtime priority
@@ -126,10 +131,10 @@ public:
 // Speed of meters
 	int record_speed;
 // Samples to write to disk at a time
-	long record_write_length;
+	int64_t record_write_length;
 // Show title and action safe regions in CWindow
 	int safe_regions;
-    long sample_rate;
+    int64_t sample_rate;
 	float scrub_speed;
 // Show titles in resources
 	int show_titles;

@@ -33,10 +33,10 @@ public:
 	void create_objects();
 	CICache* get_cache();
 	int render(double *buffer, 
-		long input_len, 
-		long input_position,
+		int64_t input_len, 
+		int64_t input_position,
 		int direction);
-	void reverse_buffer(double *buffer, long len);
+	void reverse_buffer(double *buffer, int64_t len);
 	int get_buffer_size();
 
 	AttachmentPoint* new_attachment(Plugin *plugin);
@@ -50,7 +50,7 @@ public:
 
 
 	double *level_history;
-	long *level_samples;
+	int64_t *level_samples;
 	int current_level;
 
 // Temporary buffer for rendering transitions

@@ -1,14 +1,7 @@
-#ifndef QUICKTIME_YUV2_H
-#define QUICKTIME_YUV2_H
+#ifndef QUICKTIME_YV12_H
+#define QUICKTIME_YV12_H
 
-#include "colormodels.h"
-#include "quicktime.h"
 
-typedef struct
-{
-	cmodel_yuv_t yuv_table;
-	int coded_w, coded_h;
-	unsigned char *work_buffer;
-} quicktime_yv12_codec_t;
+extern void quicktime_init_codec_yv12(quicktime_video_map_t *);
 
 #endif

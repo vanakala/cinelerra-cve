@@ -128,9 +128,9 @@ public:
 	int equivalent(CompressorConfig &that);
 	void interpolate(CompressorConfig &prev, 
 		CompressorConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame);
+		int64_t prev_frame, 
+		int64_t next_frame, 
+		int64_t current_frame);
 
 	int total_points();
 	void remove_point(int number);
@@ -162,7 +162,7 @@ public:
 	int is_realtime();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
-	int process_realtime(long size, double **input_ptr, double **output_ptr);
+	int process_realtime(int64_t size, double **input_ptr, double **output_ptr);
 
 
 
@@ -176,11 +176,11 @@ public:
 	PLUGIN_CLASS_MEMBERS(CompressorConfig, CompressorThread)
 
 	double **input_buffer;
-	long input_size;
-	long input_allocated;
+	int64_t input_size;
+	int64_t input_allocated;
 	double *reaction_buffer;
-	long reaction_allocated;
-	long reaction_position;
+	int64_t reaction_allocated;
+	int64_t reaction_position;
 	double current_coef;
 	double previous_slope;
 	double previous_intercept;
@@ -191,8 +191,8 @@ public:
 
 // Same coefs are applied to all channels
 	double *coefs;
-	long coefs_allocated;
-	long last_peak_age;
+	int64_t coefs_allocated;
+	int64_t last_peak_age;
 	double last_peak;
 };
 

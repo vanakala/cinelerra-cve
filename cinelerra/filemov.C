@@ -9,10 +9,9 @@
 #include "vframe.h"
 #include "videodevice.inc"
 
-#define DIVX_NAME "OpenDIVX"
+#define DIVX_NAME "MPEG-4"
 #define HV60_NAME "Heroine 60"
 #define DIV3_NAME "Microsoft MPEG-4"
-#define DIV4_NAME "MPEG-4"
 #define DV_NAME "DV"
 #define PNG_NAME "PNG"
 #define PNGA_NAME "PNG with Alpha"
@@ -85,19 +84,19 @@ void FileMOV::get_parameters(BC_WindowBase *parent_window,
 
 void FileMOV::fix_codecs(Asset *asset)
 {
-	if(asset->format == FILE_MOV)
-	{
-		if(!strcasecmp(asset->acodec, QUICKTIME_MP3))
-			strcpy(asset->acodec, QUICKTIME_TWOS);
-	}
-	else
-	{
-		if(strcasecmp(asset->vcodec, QUICKTIME_DIV3))
-		{
-			strcpy(asset->vcodec, QUICKTIME_DIV3);
-		}
-		strcpy(asset->acodec, QUICKTIME_MP3);
-	}
+// 	if(asset->format == FILE_MOV)
+// 	{
+// 		if(!strcasecmp(asset->acodec, QUICKTIME_MP3))
+// 			strcpy(asset->acodec, QUICKTIME_TWOS);
+// 	}
+// 	else
+// 	{
+// 		if(strcasecmp(asset->vcodec, QUICKTIME_DIV3))
+// 		{
+// 			strcpy(asset->vcodec, QUICKTIME_DIV3);
+// 		}
+// 		strcpy(asset->acodec, QUICKTIME_MP3);
+// 	}
 }
 
 int FileMOV::check_sig(Asset *asset)
@@ -129,6 +128,7 @@ int FileMOV::open_file(int rd, int wr)
 {
 	this->rd = rd;
 	this->wr = wr;
+
 
 	if(suffix_number == 0) strcpy(prefix_path, asset->path);
 
@@ -199,36 +199,27 @@ void FileMOV::asset_to_format()
 {
 	if(!fd) return;
 	char audio_codec[5];
-//printf("FileMOV::asset_to_format 1 %s %s\n", asset->acodec, asset->vcodec);
 
 	fix_codecs(asset);
 
-//printf("FileMOV::asset_to_format 2 %s %s\n", asset->acodec, asset->vcodec);
 // Fix up the Quicktime file.
 	quicktime_set_copyright(fd, "Made with Cinelerra for Linux");
 	quicktime_set_info(fd, "Quicktime for Linux");
 
-//printf("FileMOV::asset_to_format 1 %s\n", asset->acodec);
 	if(asset->audio_data)
 	{
-//printf("FileMOV::asset_to_format 1\n");
 		quicktime_atracks = quicktime_set_audio(fd, 
 				asset->channels, 
 				asset->sample_rate, 
 				asset->bits, 
 				asset->acodec);
-//printf("FileMOV::asset_to_format 1\n");
 		quicktime_set_parameter(fd, "vorbis_vbr", &asset->vorbis_vbr);
 		quicktime_set_parameter(fd, "vorbis_min_bitrate", &asset->vorbis_min_bitrate);
-//printf("FileMOV::asset_to_format 1\n");
 		quicktime_set_parameter(fd, "vorbis_bitrate", &asset->vorbis_bitrate);
-//printf("FileMOV::asset_to_format 1\n");
 		quicktime_set_parameter(fd, "vorbis_max_bitrate", &asset->vorbis_max_bitrate);
 		quicktime_set_parameter(fd, "mp3_bitrate", &asset->mp3_bitrate);
-//printf("FileMOV::asset_to_format 1\n");
 	}
 
-//printf("FileMOV::asset_to_format 2\n");
 	if(asset->video_data)
 	{
 		char string[16];
@@ -256,7 +247,6 @@ void FileMOV::asset_to_format()
 			depth = 24;
 		}
 
-//printf("FileMOV::asset_to_format 3.1\n");
 		quicktime_vtracks = quicktime_set_video(fd, 
 					asset->layers, 
 					asset->width, 
@@ -264,7 +254,6 @@ void FileMOV::asset_to_format()
 					asset->frame_rate,
 					string);
 
-//printf("FileMOV::asset_to_format 3.2\n");
 
 
 		for(int i = 0; i < asset->layers; i++)
@@ -308,6 +297,8 @@ void FileMOV::asset_to_format()
 void FileMOV::format_to_asset()
 {
 	if(!fd) return;
+
+	if(quicktime_is_avi(fd)) asset->format = FILE_AVI;
 	asset->audio_data = quicktime_has_audio(fd);
 	if(asset->audio_data)
 	{
@@ -410,7 +401,7 @@ int FileMOV::get_best_colormodel(Asset *asset, int driver)
 	return BC_RGB888;
 }
 
-int FileMOV::can_copy_from(Edit *edit, long position)
+int FileMOV::can_copy_from(Edit *edit, int64_t position)
 {
 	if(!fd) return 0;
 
@@ -429,15 +420,15 @@ int FileMOV::can_copy_from(Edit *edit, long position)
 }
 
 
-long FileMOV::get_audio_length()
+int64_t FileMOV::get_audio_length()
 {
 	if(!fd) return 0;
-	long result = quicktime_audio_length(fd, 0) + samples_correction;
+	int64_t result = quicktime_audio_length(fd, 0) + samples_correction;
 
 	return result;
 }
 
-int FileMOV::set_audio_position(long x)
+int FileMOV::set_audio_position(int64_t x)
 {
 	if(!fd) return 1;
 // quicktime sets positions for each track seperately so store position in audio_position
@@ -447,7 +438,7 @@ int FileMOV::set_audio_position(long x)
 		return 1;
 }
 
-int FileMOV::set_video_position(long x)
+int FileMOV::set_video_position(int64_t x)
 {
 	if(!fd) return 1;
 //printf("FileMOV::set_video_position 1 %d %d\n", x, asset->video_length);
@@ -458,7 +449,7 @@ int FileMOV::set_video_position(long x)
 }
 
 
-void FileMOV::new_audio_temp(long len)
+void FileMOV::new_audio_temp(int64_t len)
 {
 	if(temp_allocated && temp_allocated < len)
 	{
@@ -479,10 +470,10 @@ void FileMOV::new_audio_temp(long len)
 
 
 
-int FileMOV::write_samples(double **buffer, long len)
+int FileMOV::write_samples(double **buffer, int64_t len)
 {
 	int i, j;
-	long bytes;
+	int64_t bytes;
 	int result = 0, track_channels = 0;
 	int chunk_size;
 
@@ -539,42 +530,47 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 
 
 
-//printf("FileMOV::write_frames 2\n");
 
 
-
+// Fix direct copy cases for format conversions.
 		if(frames[i][0]->get_color_model() == BC_COMPRESSED)
 		{
 			default_compressor = 0;
 			for(j = 0; j < len && !result; j++)
 			{
+				VFrame *frame = frames[i][j];
+
+
+
 // Special handling for DIVX
 // Determine keyframe status.
 // Write VOL header in the first frame if none exists
 				if(!strcmp(asset->vcodec, QUICKTIME_DIVX) ||
 					!strcmp(asset->vcodec, QUICKTIME_HV60))
 				{
-					if(quicktime_divx_is_key(frames[i][j]->get_data(), frames[i][j]->get_compressed_size()))
+					if(quicktime_mpeg4_is_key(frame->get_data(), 
+						frame->get_compressed_size(),
+						asset->vcodec))
 						quicktime_insert_keyframe(fd, file->current_frame + j, i);
 
 
 
 					if(!(file->current_frame + j) && 
-						!quicktime_divx_has_vol(frames[i][j]->get_data()))
+						!quicktime_mpeg4_has_vol(frame->get_data()))
 					{
 						VFrame *temp_frame = new VFrame;
 
-						temp_frame->allocate_compressed_data(frames[i][j]->get_compressed_size() + 
+						temp_frame->allocate_compressed_data(frame->get_compressed_size() + 
 							0xff);
-						int bytes = quicktime_divx_write_vol(temp_frame->get_data(),
+						int bytes = quicktime_mpeg4_write_vol(temp_frame->get_data(),
 							asset->width, 
 							asset->height, 
 							30000, 
 							asset->frame_rate);
 						memcpy(temp_frame->get_data() + bytes, 
-							frames[i][j]->get_data(), 
-							frames[i][j]->get_compressed_size());
-						temp_frame->set_compressed_size(frames[i][j]->get_compressed_size() + bytes);
+							frame->get_data(), 
+							frame->get_compressed_size());
+						temp_frame->set_compressed_size(frame->get_compressed_size() + bytes);
 
 						result = quicktime_write_frame(fd,
 							temp_frame->get_data(),
@@ -588,26 +584,61 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 					else
 					{
 						result = quicktime_write_frame(fd,
-							frames[i][j]->get_data(),
-							frames[i][j]->get_compressed_size(),
+							frame->get_data(),
+							frame->get_compressed_size(),
 							i);
 					}
 				}
 				else
 				if(!strcmp(asset->vcodec, QUICKTIME_DIV3))
 				{
-					if(quicktime_div3_is_key(frames[i][j]->get_data(), 
-						frames[i][j]->get_compressed_size()))
+					if(quicktime_mpeg4_is_key(frame->get_data(), 
+						frame->get_compressed_size(),
+						asset->vcodec))
 						quicktime_insert_keyframe(fd, file->current_frame + j, i);
 					result = quicktime_write_frame(fd,
-						frames[i][j]->get_data(),
-						frames[i][j]->get_compressed_size(),
+						frame->get_data(),
+						frame->get_compressed_size(),
+						i);
+				}
+				else
+				if(!strcmp(asset->vcodec, QUICKTIME_MJPA))
+				{
+					long field2_offset;
+// Create extra space for markers
+					if(frame->get_compressed_allocated() - frame->get_compressed_size() < 0x100)
+						frame->allocate_compressed_data(frame->get_compressed_size() + 0x100);
+
+					unsigned char *data = frame->get_data();
+					long data_size = frame->get_compressed_size();
+					long data_allocated = frame->get_compressed_allocated();
+
+					if(asset->format == FILE_MOV)
+					{
+						mjpeg_insert_quicktime_markers(&data,
+							&data_size,
+							&data_allocated,
+							2,
+							&field2_offset);
+					}
+					else
+					{
+						mjpeg_insert_avi_markers(&data,
+							&data_size,
+							&data_allocated,
+							2,
+							&field2_offset);
+					}
+					frame->set_compressed_size(data_size);
+					result = quicktime_write_frame(fd,
+						frame->get_data(),
+						frame->get_compressed_size(),
 						i);
 				}
 				else
 					result = quicktime_write_frame(fd,
-						frames[i][j]->get_data(),
-						frames[i][j]->get_compressed_size(),
+						frame->get_data(),
+						frame->get_compressed_size(),
 						i);
 				
 				
@@ -622,20 +653,21 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 			default_compressor = 0;
 			for(j = 0; j < len && !result; j++)
 			{
-//printf("FileMOV::write_frames 1 %d\n", frames[i][j]->get_color_model());
-				quicktime_set_cmodel(fd, frames[i][j]->get_color_model());
-//printf("FileMOV::write_frames 1 %d\n", cmodel_is_planar(frames[i][j]->get_color_model()));
-				if(cmodel_is_planar(frames[i][j]->get_color_model()))
+				VFrame *frame = frames[i][j];
+//printf("FileMOV::write_frames 1 %d\n", frame->get_color_model());
+				quicktime_set_cmodel(fd, frame->get_color_model());
+//printf("FileMOV::write_frames 1 %d\n", cmodel_is_planar(frame->get_color_model()));
+				if(cmodel_is_planar(frame->get_color_model()))
 				{
 					unsigned char *planes[3];
-					planes[0] = frames[i][j]->get_y();
-					planes[1] = frames[i][j]->get_u();
-					planes[2] = frames[i][j]->get_v();
+					planes[0] = frame->get_y();
+					planes[1] = frame->get_u();
+					planes[2] = frame->get_v();
 					result = quicktime_encode_video(fd, planes, i);
 				}
 				else
 				{
-					result = quicktime_encode_video(fd, frames[i][j]->get_rows(), i);
+					result = quicktime_encode_video(fd, frame->get_rows(), i);
 //printf("FileMOV::write_frames 2 %d\n", result);
 				}
 //printf("FileMOV::write_frames 2\n");
@@ -673,7 +705,8 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 // Load thread frame structures with new frames.
 			for(j = 0; j < len; j++)
 			{
-				threadframes.values[j]->input = frames[i][j];
+				VFrame *frame = frames[i][j];
+				threadframes.values[j]->input = frame;
 				threadframes.values[j]->completion_lock.lock();
 			}
 			total_threadframes = len;
@@ -700,29 +733,40 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 				}
 			}
 		}
-//printf("FileMOV::write_frames 3\n");
 
 		if(default_compressor)
+		{
+//printf("FileMOV::write_frames 3\n");
 // Use the library's built in compressor.
 			for(j = 0; j < len && !result; j++)
 			{
-				quicktime_set_cmodel(fd, frames[i][j]->get_color_model());
-				if(cmodel_is_planar(frames[i][j]->get_color_model()))
+//printf("FileMOV::write_frames 4\n");
+				VFrame *frame = frames[i][j];
+				quicktime_set_cmodel(fd, frame->get_color_model());
+//printf("FileMOV::write_frames 5\n");
+				if(cmodel_is_planar(frame->get_color_model()))
 				{
 					unsigned char *planes[3];
-					planes[0] = frames[i][j]->get_y();
-					planes[1] = frames[i][j]->get_u();
-					planes[2] = frames[i][j]->get_v();
+					planes[0] = frame->get_y();
+					planes[1] = frame->get_u();
+					planes[2] = frame->get_v();
+//printf("FileMOV::write_frames 6\n");
 					result = quicktime_encode_video(fd, planes, i);
+//printf("FileMOV::write_frames 7\n");
 				}
 				else
 				{
-					result = quicktime_encode_video(fd, frames[i][j]->get_rows(), i);
+//printf("FileMOV::write_frames 8\n");
+					result = quicktime_encode_video(fd, frame->get_rows(), i);
+//printf("FileMOV::write_frames 9\n");
 				}
 			}
+		}
 //printf("FileMOV::write_frames 4\n");
 	}
-//printf("FileMOV::write_frames 5\n");
+
+
+//printf("FileMOV::write_frames 100 %d\n", result);
 	return result;
 }
 
@@ -739,7 +783,9 @@ int FileMOV::read_frame(VFrame *frame)
 		case BC_COMPRESSED:
 			frame->allocate_compressed_data(quicktime_frame_size(fd, file->current_frame, file->current_layer));
 			frame->set_compressed_size(quicktime_frame_size(fd, file->current_frame, file->current_layer));
-			result = quicktime_read_frame(fd, frame->get_data(), file->current_layer);
+			result = quicktime_read_frame(fd, 
+				frame->get_data(), 
+				file->current_layer);
 			break;
 
 // Progressive
@@ -751,14 +797,8 @@ int FileMOV::read_frame(VFrame *frame)
 			row_pointers[1] = frame->get_u();
 			row_pointers[2] = frame->get_v();
 
-			quicktime_decode_scaled(fd, 
-				0,
-				0,
-				asset->width,
-				asset->height,
-				frame->get_w(), 
-				frame->get_h(),
-				frame->get_color_model(),
+			quicktime_set_cmodel(fd, frame->get_color_model());
+			quicktime_decode_video(fd, 
 				row_pointers,
 				file->current_layer);
 		}
@@ -766,29 +806,23 @@ int FileMOV::read_frame(VFrame *frame)
 
 // Packed
 		default:
-			result = quicktime_decode_scaled(fd, 
-				0,
-				0,
-				asset->width,
-				asset->height,
-				frame->get_w(),
-				frame->get_h(),
-				frame->get_color_model(), 
+			quicktime_set_cmodel(fd, frame->get_color_model());
+			result = quicktime_decode_video(fd, 
 				frame->get_rows(),
 				file->current_layer);
+//for(int i = 0; i < 10000; i++) frame->get_rows()[0][i] = 0xff;
 			break;
 	}
 
 
-//printf("FileMOV::read_frame 2 %d\n", result);
 
-
+//printf("FileMOV::read_frame 100\n");
 	return result;
 }
 
 
 
-long FileMOV::compressed_frame_size()
+int64_t FileMOV::compressed_frame_size()
 {
 	if(!fd) return 0;
 	return quicktime_frame_size(fd, file->current_frame, file->current_layer);
@@ -796,7 +830,7 @@ long FileMOV::compressed_frame_size()
 
 int FileMOV::read_compressed_frame(VFrame *buffer)
 {
-	long result;
+	int64_t result;
 	if(!fd) return 0;
 
 //printf("FileMOV::read_compressed_frame 1\n");
@@ -828,7 +862,7 @@ int FileMOV::read_raw(VFrame *frame,
 		float out_x1, float out_y1, float out_x2, float out_y2, 
 		int use_float, int interpolate)
 {
-	long i, color_channels, result = 0;
+	int64_t i, color_channels, result = 0;
 	if(!fd) return 0;
 	quicktime_set_video_position(fd, file->current_frame, file->current_layer);
 // Develop importing strategy
@@ -858,15 +892,13 @@ int FileMOV::read_raw(VFrame *frame,
 }
 
 // Overlay samples
-int FileMOV::read_samples(double *buffer, long len)
+int FileMOV::read_samples(double *buffer, int64_t len)
 {
 	int qt_track, qt_channel;
 
 	if(!fd) return 0;
 
-// printf("FileMOV::read_samples 1 %d %d\n", 
-// file->current_channel, 
-// asset->channels);
+//printf("FileMOV::read_samples 1\n");
 	if(quicktime_track_channels(fd, 0) > file->current_channel &&
 		quicktime_supported_audio(fd, 0))
 	{
@@ -895,6 +927,7 @@ int FileMOV::read_samples(double *buffer, long len)
 //printf("FileMOV::read_samples 4 %ld %ld\n", file->current_sample, quicktime_audio_position(fd, 0));
 	}
 
+//printf("FileMOV::read_samples 100\n");
 	return 0;
 }
 
@@ -904,7 +937,6 @@ char* FileMOV::strtocompression(char *string)
 	if(!strcasecmp(string, DIVX_NAME)) return QUICKTIME_DIVX;
 	if(!strcasecmp(string, HV60_NAME)) return QUICKTIME_HV60;
 	if(!strcasecmp(string, DIV3_NAME)) return QUICKTIME_DIV3;
-	if(!strcasecmp(string, DIV4_NAME)) return QUICKTIME_DIV4;
 	if(!strcasecmp(string, DV_NAME)) return QUICKTIME_DV;
 	if(!strcasecmp(string, PNG_NAME)) return QUICKTIME_PNG;
 	if(!strcasecmp(string, PNGA_NAME)) return MOV_PNGA;
@@ -936,7 +968,6 @@ char* FileMOV::compressiontostr(char *string)
 	if(match4(string, QUICKTIME_DIVX)) return DIVX_NAME;
 	if(match4(string, QUICKTIME_HV60)) return HV60_NAME;
 	if(match4(string, QUICKTIME_DIV3)) return DIV3_NAME;
-	if(match4(string, QUICKTIME_DIV4)) return DIV4_NAME;
 	if(match4(string, QUICKTIME_DV)) return DV_NAME;
 	if(match4(string, MOV_PNGA)) return PNGA_NAME;
 	if(match4(string, QUICKTIME_RAW)) return RGB_NAME;
@@ -954,12 +985,12 @@ char* FileMOV::compressiontostr(char *string)
 
 
 
-	if(!strcasecmp(string, QUICKTIME_TWOS)) return TWOS_NAME;
-	if(!strcasecmp(string, QUICKTIME_RAW)) return RAW_NAME;
-	if(!strcasecmp(string, QUICKTIME_IMA4)) return IMA4_NAME;
-	if(!strcasecmp(string, QUICKTIME_ULAW)) return ULAW_NAME;
-	if(!strcasecmp(string, QUICKTIME_MP3)) return MP3_NAME;
-	if(!strcasecmp(string, QUICKTIME_VORBIS)) return VORBIS_NAME;
+	if(match4(string, QUICKTIME_TWOS)) return TWOS_NAME;
+	if(match4(string, QUICKTIME_RAW)) return RAW_NAME;
+	if(match4(string, QUICKTIME_IMA4)) return IMA4_NAME;
+	if(match4(string, QUICKTIME_ULAW)) return ULAW_NAME;
+	if(match4(string, QUICKTIME_MP3)) return MP3_NAME;
+	if(match4(string, QUICKTIME_VORBIS)) return VORBIS_NAME;
 
 
 
@@ -1053,17 +1084,18 @@ void FileMOVThread::run()
 // Frame is available to process.
 				input_lock.unlock();
 				threadframe = filemov->threadframes.values[filemov->current_threadframe];
+				VFrame *frame = threadframe->input;
+
 				filemov->current_threadframe++;
 				filemov->threadframe_lock.unlock();
 
-//printf("FileMOVThread 1 %p\n", this);
 //printf("FileMOVThread 1 %02x%02x\n", mjpeg_output_buffer(mjpeg)[0], mjpeg_output_buffer(mjpeg)[1]);
 				mjpeg_compress(mjpeg, 
-					threadframe->input->get_rows(), 
-					threadframe->input->get_y(), 
-					threadframe->input->get_u(), 
-					threadframe->input->get_v(),
-					threadframe->input->get_color_model(),
+					frame->get_rows(), 
+					frame->get_y(), 
+					frame->get_u(), 
+					frame->get_v(),
+					frame->get_color_model(),
 					1);
 
 //printf("FileMOVThread 1 %02x%02x\n", mjpeg_output_buffer(mjpeg)[0], mjpeg_output_buffer(mjpeg)[1]);
@@ -1071,11 +1103,31 @@ void FileMOVThread::run()
 				if(fields > 1)
 				{
 					long field2_offset;
-					mjpeg_insert_quicktime_markers(&mjpeg->output_data,
-						&mjpeg->output_size,
-						&mjpeg->output_allocated,
-						fields,
-						&field2_offset);
+// Create extra space for markers
+					if(frame->get_compressed_allocated() - frame->get_compressed_size() < 0x100)
+						frame->allocate_compressed_data(frame->get_compressed_size() + 0x100);
+
+					unsigned char *data = frame->get_data();
+					long data_size = frame->get_compressed_size();
+					long data_allocated = frame->get_compressed_allocated();
+
+					if(filemov->asset->format == FILE_MOV)
+					{
+						mjpeg_insert_quicktime_markers(&data,
+							&data_size,
+							&data_allocated,
+							2,
+							&field2_offset);
+					}
+					else
+					{
+						mjpeg_insert_avi_markers(&data,
+							&data_size,
+							&data_allocated,
+							2,
+							&field2_offset);
+					}
+					frame->set_compressed_size(data_size);
 				}
 				threadframe->load_output(mjpeg);
 //printf("FileMOVThread 2 %02x%02x\n", mjpeg_output_buffer(mjpeg)[0], mjpeg_output_buffer(mjpeg)[1]);
@@ -1132,12 +1184,15 @@ int MOVConfigAudio::create_objects()
 		compression_items.append(new BC_ListBoxItem(TWOS_NAME));
 		compression_items.append(new BC_ListBoxItem(RAW_NAME));
 		compression_items.append(new BC_ListBoxItem(IMA4_NAME));
+		compression_items.append(new BC_ListBoxItem(MP3_NAME));
 		compression_items.append(new BC_ListBoxItem(ULAW_NAME));
 		compression_items.append(new BC_ListBoxItem(VORBIS_NAME));
 	}
 	else
 	{
+		compression_items.append(new BC_ListBoxItem(TWOS_NAME));
 		compression_items.append(new BC_ListBoxItem(MP3_NAME));
+		compression_items.append(new BC_ListBoxItem(VORBIS_NAME));
 	}
 
 	add_tool(new BC_Title(x, y, "Compression:"));
@@ -1206,6 +1261,7 @@ void MOVConfigAudio::update_parameters()
 			x, 
 			y, 
 			&asset->mp3_bitrate);
+		mp3_bitrate->set_increment(1000);
 		mp3_bitrate->create_objects();
 	}
 	else
@@ -1279,9 +1335,9 @@ int MOVConfigAudioToggle::handle_event()
 
 MOVConfigAudioNum::MOVConfigAudioNum(MOVConfigAudio *popup, char *title_text, int x, int y, int *output)
  : BC_TumbleTextBox(popup, 
-		(long)*output,
-		(long)-1,
-		(long)25000000,
+		(int64_t)*output,
+		(int64_t)-1,
+		(int64_t)25000000,
 		x + 150, 
 		y, 
 		100)
@@ -1384,7 +1440,6 @@ int MOVConfigVideo::create_objects()
 		compression_items.append(new BC_ListBoxItem(DIVX_NAME));
 		compression_items.append(new BC_ListBoxItem(HV60_NAME));
 		compression_items.append(new BC_ListBoxItem(DIV3_NAME));
-		compression_items.append(new BC_ListBoxItem(DIV4_NAME));
 		compression_items.append(new BC_ListBoxItem(DV_NAME));
 		compression_items.append(new BC_ListBoxItem(QTJPEG_NAME));
 		compression_items.append(new BC_ListBoxItem(MJPA_NAME));
@@ -1400,13 +1455,18 @@ int MOVConfigVideo::create_objects()
 	}
 	else
 	{
+		compression_items.append(new BC_ListBoxItem(DIVX_NAME));
+		compression_items.append(new BC_ListBoxItem(HV60_NAME));
 		compression_items.append(new BC_ListBoxItem(DIV3_NAME));
-		compression_items.append(new BC_ListBoxItem(DIV4_NAME));
+		compression_items.append(new BC_ListBoxItem(DV_NAME));
 		compression_items.append(new BC_ListBoxItem(QTJPEG_NAME));
+		compression_items.append(new BC_ListBoxItem(MJPA_NAME));
+		compression_items.append(new BC_ListBoxItem(PNG_NAME));
 	}
 
 	add_subwindow(new BC_Title(x, y, "Compression:"));
 	y += 25;
+
 	if(!lock_compressor)
 	{
 		compression_popup = new MOVConfigVideoPopup(this, x, y);
@@ -1494,8 +1554,8 @@ void MOVConfigVideo::update_parameters()
 
 	reset();
 
-	if(!strcmp(asset->vcodec, QUICKTIME_DIV3) ||
-		!strcmp(asset->vcodec, QUICKTIME_DIV4))
+// ffmpeg parameters
+	if(!strcmp(asset->vcodec, QUICKTIME_DIV3))
 	{
 		int x = param_x, y = param_y;
 		ms_bitrate = new MOVConfigVideoNum(this, 
@@ -1503,6 +1563,7 @@ void MOVConfigVideo::update_parameters()
 			x, 
 			y, 
 			&asset->ms_bitrate);
+		ms_bitrate->set_increment(1000000);
 		ms_bitrate->create_objects();
 		add_subwindow(ms_fix_bitrate = new MOVConfigVideoFixBitrate(x + 260, 
 				y,
@@ -1545,6 +1606,7 @@ void MOVConfigVideo::update_parameters()
 		ms_gop_size->create_objects();
 	}
 	else
+// OpenDivx parameters
 	if(!strcmp(asset->vcodec, QUICKTIME_DIVX) ||
 		!strcmp(asset->vcodec, QUICKTIME_HV60))
 	{
@@ -1554,6 +1616,7 @@ void MOVConfigVideo::update_parameters()
 			x, 
 			y, 
 			&asset->divx_bitrate);
+		divx_bitrate->set_increment(1000000);
 		divx_bitrate->create_objects();
 		add_subwindow(divx_fix_bitrate = 
 			new MOVConfigVideoFixBitrate(x + 260, 
@@ -1649,9 +1712,9 @@ void MOVConfigVideo::update_parameters()
 
 MOVConfigVideoNum::MOVConfigVideoNum(MOVConfigVideo *popup, char *title_text, int x, int y, int *output)
  : BC_TumbleTextBox(popup, 
-		(long)*output,
-		(long)1,
-		(long)25000000,
+		(int64_t)*output,
+		(int64_t)1,
+		(int64_t)25000000,
 		x + 130, 
 		y, 
 		100)

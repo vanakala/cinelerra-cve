@@ -94,7 +94,7 @@ int FileXML::reallocate_string(long new_available)
 		char *new_string = new char[new_available];
 		for(int i = 0; i < position; i++) new_string[i] = string[i];
 		available = new_available;
-		delete [] string;
+		delete string;
 		string = new_string;
 	}
 	return 0;
@@ -383,6 +383,7 @@ int XMLTag::read_tag(char *input, long &position, long length)
 // find the start
 	while(position < length &&
 		(input[position] == ' ' ||         // skip spaces
+		input[position] == '\n' ||	 // also skip new lines
 		input[position] == left_delimiter))           // skip <
 		position++;
 
@@ -423,6 +424,7 @@ int XMLTag::read_tag(char *input, long &position, long length)
 // find the start
 		while(position < length &&
 			(input[position] == ' ' ||         // skip spaces
+			input[position] == '\n' ||         // also skip new lines
 			input[position] == left_delimiter))           // skip <
 			position++;
 
@@ -432,6 +434,7 @@ int XMLTag::read_tag(char *input, long &position, long length)
 			position < length &&
 			input[position] != right_delimiter &&
 			input[position] != ' ' &&
+			input[position] != '\n' &&	// also new line ends it
 			input[position] != '=';
 			j++, position++)
 		{
@@ -447,6 +450,7 @@ int XMLTag::read_tag(char *input, long &position, long length)
 // find the start of the value
 		while(position < length &&
 			(input[position] == ' ' ||         // skip spaces
+			input[position] == '\n' ||         // also skip new lines
 			input[position] == '='))           // skip =
 			position++;
 
@@ -570,18 +574,19 @@ char* XMLTag::get_property(char *property)
 }
 
 
-long XMLTag::get_property(char *property, long default_)
+int32_t XMLTag::get_property(char *property, int32_t default_)
 {
 	temp_string[0] = 0;
 	get_property(property, temp_string);
-	if(temp_string[0] == 0) return default_;
-	else return atol(temp_string);
+	if(temp_string[0] == 0) 
+		return default_;
+	else 
+		return atol(temp_string);
 }
 
-#ifndef __alpha__
-longest XMLTag::get_property(char *property, longest default_)
+int64_t XMLTag::get_property(char *property, int64_t default_)
 {
-	longest result;
+	int64_t result;
 	temp_string[0] = 0;
 	get_property(property, temp_string);
 	if(temp_string[0] == 0) 
@@ -592,16 +597,15 @@ longest XMLTag::get_property(char *property, longest default_)
 	}
 	return result;
 }
-#endif
-
-int XMLTag::get_property(char *property, int default_)
-{
-	temp_string[0] = 0;
-	get_property(property, temp_string);
-	if(temp_string[0] == 0) return default_;
-	else return atol(temp_string);
-}
-
+// 
+// int XMLTag::get_property(char *property, int default_)
+// {
+// 	temp_string[0] = 0;
+// 	get_property(property, temp_string);
+// 	if(temp_string[0] == 0) return default_;
+// 	else return atol(temp_string);
+// }
+// 
 float XMLTag::get_property(char *property, float default_)
 {
 	temp_string[0] = 0;
@@ -628,28 +632,26 @@ int XMLTag::set_title(char *text)       // set the title field
 	return 0;
 }
 
-int XMLTag::set_property(char *text, long value)
+int XMLTag::set_property(char *text, int32_t value)
 {
 	sprintf(temp_string, "%ld", value);
 	set_property(text, temp_string);
 	return 0;
 }
 
-#ifndef __alpha__
-int XMLTag::set_property(char *text, longest value)
+int XMLTag::set_property(char *text, int64_t value)
 {
 	sprintf(temp_string, "%lld", value);
 	set_property(text, temp_string);
 	return 0;
 }
-#endif
 
-int XMLTag::set_property(char *text, int value)
-{
-	sprintf(temp_string, "%d", value);
-	set_property(text, temp_string);
-	return 0;
-}
+// int XMLTag::set_property(char *text, int value)
+// {
+// 	sprintf(temp_string, "%d", value);
+// 	set_property(text, temp_string);
+// 	return 0;
+// }
 
 int XMLTag::set_property(char *text, float value)
 {

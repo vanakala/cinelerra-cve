@@ -53,7 +53,7 @@ public:
 
 	Defaults *defaults;
 	MainProgressBar *progress;
-	long current_position;
+	int64_t current_position;
 };
 
 

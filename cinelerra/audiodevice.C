@@ -257,7 +257,7 @@ AudioLowLevel* AudioDevice::get_lowlevel_in()
 	return 0;
 }
 
-long AudioDevice::get_irate()
+int AudioDevice::get_irate()
 {
 	if(r) return in_samplerate;
 	else
@@ -272,7 +272,7 @@ int AudioDevice::get_orealtime()
 }
 
 
-long AudioDevice::get_orate()
+int AudioDevice::get_orate()
 {
 	if(w) return out_samplerate;
 	else if(d) return duplex_samplerate;

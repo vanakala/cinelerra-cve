@@ -44,7 +44,9 @@ int ParametricBand::equivalent(ParametricBand &that)
 		EQUIV(quality, that.quality) && 
 		EQUIV(magnitude, that.magnitude) &&
 		mode == that.mode)
+	{
 		return 1;
+	}
 	else
 		return 0;
 }
@@ -55,6 +57,7 @@ void ParametricBand::copy_from(ParametricBand &that)
 	freq = that.freq;
 	quality = that.quality;
 	magnitude = that.magnitude;
+	mode = that.mode;
 }
 
 void ParametricBand::interpolate(ParametricBand &prev, 
@@ -65,6 +68,7 @@ void ParametricBand::interpolate(ParametricBand &prev,
 	freq = (int)(prev.freq * prev_scale + next.freq * next_scale + 0.5);
 	quality = prev.quality * prev_scale + next.quality * next_scale;
 	magnitude = prev.magnitude * prev_scale + next.magnitude * next_scale;
+	mode = prev.mode;
 }
 
 
@@ -95,9 +99,9 @@ void ParametricConfig::copy_from(ParametricConfig &that)
 
 void ParametricConfig::interpolate(ParametricConfig &prev, 
 		ParametricConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame)
+		int64_t prev_frame, 
+		int64_t next_frame, 
+		int64_t current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
@@ -675,16 +679,15 @@ double ParametricEQ::gauss(double sigma, double a, double x)
 			(2 * sigma * sigma));
 }
 
-int ParametricEQ::process_realtime(long size, double *input_ptr, double *output_ptr)
+int ParametricEQ::process_realtime(int64_t size, 
+	double *input_ptr, 
+	double *output_ptr)
 {
 	need_reconfigure |= load_configuration();
 	if(need_reconfigure) reconfigure();
-//printf("ParametricEQ::process_realtime 1 %d %p\n", need_reconfigure, fft);
 	
-//printf("ParametricEQ::process_realtime 1 %d %p %p\n", size, input_ptr, output_ptr);
 	
 	fft->process_fifo(size, input_ptr, output_ptr);
-//printf("ParametricEQ::process_realtime 2\n");
 }
 
 

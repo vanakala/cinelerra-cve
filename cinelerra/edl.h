@@ -57,14 +57,14 @@ public:
 	int create_default_tracks();
 	int load_xml(ArrayList<PluginServer*> *plugindb, 
 		FileXML *file, 
-		unsigned long load_flags);
+		uint32_t load_flags);
 	int save_xml(ArrayList<PluginServer*> *plugindb,
 		FileXML *xml, 
 		char *output_path,
 		int is_clip,
 		int is_vwindow);
-    int load_audio_config(FileXML *file, int append_mode, unsigned long load_flags);
-    int load_video_config(FileXML *file, int append_mode, unsigned long load_flags);
+    int load_audio_config(FileXML *file, int append_mode, uint32_t load_flags);
+    int load_video_config(FileXML *file, int append_mode, uint32_t load_flags);
 
 
 
@@ -166,7 +166,7 @@ public:
 
 
     int get_tracks_height(Theme *theme);
-    long get_tracks_width();
+    int64_t get_tracks_width();
 // Return the dimension for a single pane if single_channel is set.
 // Otherwise add all panes.
 	int calculate_output_w(int single_channel);

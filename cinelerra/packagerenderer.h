@@ -8,6 +8,7 @@
 #include "edit.inc"
 #include "edl.inc"
 #include "file.inc"
+#include "maxchannels.h"
 #include "mwindow.inc"
 #include "playabletracks.inc"
 #include "playbackconfig.inc"
@@ -16,8 +17,11 @@
 #include "renderengine.inc"
 #include "track.inc"
 #include "transportque.inc"
+#include "vframe.inc"
 #include "videodevice.inc"
 
+
+#include <stdint.h>
 
 class RenderPackage
 {
@@ -29,10 +33,10 @@ public:
 	char path[BCTEXTLEN];
 
 // Range not including preroll
-	long audio_start;
-	long audio_end;
-	long video_start;
-	long video_end;
+	int64_t audio_start;
+	int64_t audio_end;
+	int64_t video_start;
+	int64_t video_end;
 	int done;
 	int use_brender;
 };
@@ -58,21 +62,21 @@ public:
 	int render_package(RenderPackage *package);
 
 	int direct_copy_possible(EDL *edl,
-		long current_position, 
+		int64_t current_position, 
 		Track* playable_track,  // The one track which is playable
 		Edit* &playable_edit, // The edit which is playing
 		File *file);   // Output file
 	int direct_frame_copy(EDL *edl, 
-		long &video_position, 
+		int64_t &video_position, 
 		File *file,
 		int &result);
 
 // Get result status from server
 	virtual int get_result();
 	virtual void set_result(int value);
-	virtual void set_progress(long total_samples);
+	virtual void set_progress(int64_t total_samples);
 // Used by background rendering
-	virtual void set_video_map(long position, int value);
+	virtual void set_video_map(int64_t position, int value);
 	virtual int progress_cancelled();
 
 	void create_output();
@@ -93,9 +97,9 @@ public:
 // Created locally
 	Asset *asset;
 	double **audio_output;
-	long audio_position;
-	long audio_preroll;
-	long audio_read_length;
+	int64_t audio_position;
+	int64_t audio_preroll;
+	int64_t audio_read_length;
 	File *file;
 	int result;
 	VFrame ***video_output;
@@ -114,11 +118,11 @@ public:
 	int direct_frame_copying;
 	VideoDevice *video_device;
 	VFrame *video_output_ptr[MAX_CHANNELS];
-	long video_preroll;
-	long video_position;
-	long video_read_length;
-	long video_write_length;
-	long video_write_position;
+	int64_t video_preroll;
+	int64_t video_position;
+	int64_t video_read_length;
+	int64_t video_write_length;
+	int64_t video_write_position;
 };
 
 

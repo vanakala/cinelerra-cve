@@ -138,12 +138,12 @@ int AudioESound::close_all()
 }
 
 // No position on ESD
-long AudioESound::device_position()
+int64_t AudioESound::device_position()
 {
 	return -1;
 }
 
-int AudioESound::read_buffer(char *buffer, long size)
+int AudioESound::read_buffer(char *buffer, int size)
 {
 	if(esd_in_fd > 0)
 		return read(esd_in_fd, buffer, size);
@@ -151,7 +151,7 @@ int AudioESound::read_buffer(char *buffer, long size)
 		return 1;
 }
 
-int AudioESound::write_buffer(char *buffer, long size)
+int AudioESound::write_buffer(char *buffer, int size)
 {
 	if(esd_out_fd > 0)
 		return write(esd_out_fd, buffer, size);

@@ -124,7 +124,7 @@ int FloatAuto::value_to_str(char *string, float value)
 	return 0;
 }
 
-void FloatAuto::copy(long start, long end, FileXML *file, int default_auto)
+void FloatAuto::copy(int64_t start, int64_t end, FileXML *file, int default_auto)
 {
 	file->tag.set_title("AUTO");
 	if(default_auto)

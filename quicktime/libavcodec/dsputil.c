@@ -144,6 +144,31 @@ static int pix_norm1_c(UINT8 * pix, int line_size)
 }
 
 
+static int pix_norm_c(UINT8 * pix1, UINT8 * pix2, int line_size)
+{
+    int s, i, j;
+    UINT32 *sq = squareTbl + 256;
+
+    s = 0;
+    for (i = 0; i < 16; i++) {
+        for (j = 0; j < 16; j += 8) {
+            s += sq[pix1[0] - pix2[0]];
+            s += sq[pix1[1] - pix2[1]];
+            s += sq[pix1[2] - pix2[2]];
+            s += sq[pix1[3] - pix2[3]];
+            s += sq[pix1[4] - pix2[4]];
+            s += sq[pix1[5] - pix2[5]];
+            s += sq[pix1[6] - pix2[6]];
+            s += sq[pix1[7] - pix2[7]];
+            pix1 += 8;
+            pix2 += 8;
+        }
+        pix1 += line_size - 16;
+        pix2 += line_size - 16;
+    }
+    return s;
+}
+
 static void get_pixels_c(DCTELEM *restrict block, const UINT8 *pixels, int line_size)
 {
     int i;
@@ -1322,7 +1347,7 @@ void ff_block_permute(INT16 *block, UINT8 *permutation, const UINT8 *scantable, 
     INT16 temp[64];
     
     if(last<=0) return;
-    if(permutation[1]==1) return; //FIXME its ok but not clean and might fail for some perms
+    //if(permutation[1]==1) return; //FIXME its ok but not clean and might fail for some perms
 
     for(i=0; i<=last; i++){
         const int j= scantable[i];
@@ -1340,6 +1365,38 @@ void ff_block_permute(INT16 *block, UINT8 *permutation, const UINT8 *scantable, 
 static void clear_blocks_c(DCTELEM *blocks)
 {
     memset(blocks, 0, sizeof(DCTELEM)*6*64);
+}
+
+static void add_bytes_c(uint8_t *dst, uint8_t *src, int w){
+    int i;
+    for(i=0; i+7<w; i++){
+        dst[i+0] += src[i+0];
+        dst[i+1] += src[i+1];
+        dst[i+2] += src[i+2];
+        dst[i+3] += src[i+3];
+        dst[i+4] += src[i+4];
+        dst[i+5] += src[i+5];
+        dst[i+6] += src[i+6];
+        dst[i+7] += src[i+7];
+    }
+    for(; i<w; i++)
+        dst[i+0] += src[i+0];
+}
+
+static void diff_bytes_c(uint8_t *dst, uint8_t *src1, uint8_t *src2, int w){
+    int i;
+    for(i=0; i+7<w; i++){
+        dst[i+0] = src1[i+0]-src2[i+0];
+        dst[i+1] = src1[i+1]-src2[i+1];
+        dst[i+2] = src1[i+2]-src2[i+2];
+        dst[i+3] = src1[i+3]-src2[i+3];
+        dst[i+4] = src1[i+4]-src2[i+4];
+        dst[i+5] = src1[i+5]-src2[i+5];
+        dst[i+6] = src1[i+6]-src2[i+6];
+        dst[i+7] = src1[i+7]-src2[i+7];
+    }
+    for(; i<w; i++)
+        dst[i+0] = src1[i+0]-src2[i+0];
 }
 
 void dsputil_init(DSPContext* c, unsigned mask)
@@ -1372,6 +1429,7 @@ void dsputil_init(DSPContext* c, unsigned mask)
     c->clear_blocks = clear_blocks_c;
     c->pix_sum = pix_sum_c;
     c->pix_norm1 = pix_norm1_c;
+    c->pix_norm = pix_norm_c;
 
     /* TODO [0] 16  [1] 8 */
     c->pix_abs16x16     = pix_abs16x16_c;
@@ -1431,6 +1489,9 @@ void dsputil_init(DSPContext* c, unsigned mask)
     /* dspfunc(avg_no_rnd_qpel, 1, 8); */
 #undef dspfunc
 
+    c->add_bytes= add_bytes_c;
+    c->diff_bytes= diff_bytes_c;
+
 #ifdef HAVE_MMX
     dsputil_init_mmx(c, mask);
     if (ff_bit_exact)
@@ -1467,37 +1528,3 @@ void avcodec_set_bit_exact(void)
 //    dsputil_set_bit_exact_mmx();
 #endif
 }
-
-void get_psnr(UINT8 *orig_image[3], UINT8 *coded_image[3],
-              int orig_linesize[3], int coded_linesize,
-              AVCodecContext *avctx)
-{
-    int quad, diff, x, y;
-    UINT8 *orig, *coded;
-    UINT32 *sq = squareTbl + 256;
-    
-    quad = 0;
-    diff = 0;
-    
-    /* Luminance */
-    orig = orig_image[0];
-    coded = coded_image[0];
-    
-    for (y=0;y<avctx->height;y++) {
-        for (x=0;x<avctx->width;x++) {
-            diff = *(orig + x) - *(coded + x);
-            quad += sq[diff];
-        }
-        orig += orig_linesize[0];
-        coded += coded_linesize;
-    }
-   
-    avctx->psnr_y = (float) quad / (float) (avctx->width * avctx->height);
-    
-    if (avctx->psnr_y) {
-        avctx->psnr_y = (float) (255 * 255) / avctx->psnr_y;
-        avctx->psnr_y = 10 * (float) log10 (avctx->psnr_y); 
-    } else
-        avctx->psnr_y = 99.99;
-}
-

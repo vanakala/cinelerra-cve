@@ -57,9 +57,9 @@ int PluginAClient::init_realtime_parameters()
 
 void PluginAClient::plugin_process_realtime(double **input, 
 		double **output, 
-		long current_position, 
-		long fragment_size,
-		long total_len)
+		int64_t current_position, 
+		int64_t fragment_size,
+		int64_t total_len)
 {
 //printf("PluginAClient::plugin_process_realtime 1\n");
 	this->source_position = current_position;
@@ -73,7 +73,7 @@ void PluginAClient::plugin_process_realtime(double **input,
 
 
 
-int PluginAClient::plugin_process_loop(double **buffers, long &write_length)
+int PluginAClient::plugin_process_loop(double **buffers, int64_t &write_length)
 {
 	write_length = 0;
 
@@ -83,13 +83,13 @@ int PluginAClient::plugin_process_loop(double **buffers, long &write_length)
 		return process_loop(buffers[0], write_length);
 }
 
-int PluginAClient::read_samples(double *buffer, int channel, long start_position, long total_samples)
+int PluginAClient::read_samples(double *buffer, int channel, int64_t start_position, int64_t total_samples)
 {
 //printf("PluginAClient::read_samples 1\n");
 	return server->read_samples(buffer, channel, start_position, total_samples);
 }
 
-int PluginAClient::read_samples(double *buffer, long start_position, long total_samples)
+int PluginAClient::read_samples(double *buffer, int64_t start_position, int64_t total_samples)
 {
 //printf("PluginAClient::read_samples 1\n");
 	return server->read_samples(buffer, start_position, total_samples);

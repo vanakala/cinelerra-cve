@@ -121,8 +121,41 @@ void BC_WindowBase::draw_text(int x, int y, char *text, int length, BC_Pixmap *p
 					case ':':
 						image = get_resources()->medium_7segment[10];
 						break;
-					default:
+					case '.':
 						image = get_resources()->medium_7segment[11];
+						break;
+					case 'a':
+					case 'A':
+						image = get_resources()->medium_7segment[12];
+						break;
+					case 'b':
+					case 'B':
+						image = get_resources()->medium_7segment[13];
+						break;
+					case 'c':
+					case 'C':
+						image = get_resources()->medium_7segment[14];
+						break;
+					case 'd':
+					case 'D':
+						image = get_resources()->medium_7segment[15];
+						break;
+					case 'e':
+					case 'E':
+						image = get_resources()->medium_7segment[16];
+						break;
+					case 'f':
+					case 'F':
+						image = get_resources()->medium_7segment[17];
+						break;
+					case ' ':
+						image = get_resources()->medium_7segment[18];
+						break;
+					case '-':
+						image = get_resources()->medium_7segment[19];
+						break;
+					default:
+						image = get_resources()->medium_7segment[18];
 						break;
 				}
 
@@ -169,8 +202,8 @@ void BC_WindowBase::draw_text(int x, int y, char *text, int length, BC_Pixmap *p
 				}
 				if(boldface) set_color(color);
 			}
-		}
 			break;
+		}
 	}
 }
 

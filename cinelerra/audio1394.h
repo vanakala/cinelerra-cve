@@ -2,6 +2,9 @@
 #define AUDIO1394_H
 
 #include "audiodevice.h"
+#include "device1394input.inc"
+#include "device1394output.inc"
+
 
 #ifdef HAVE_FIREWIRE
 
@@ -12,23 +15,27 @@ class Audio1394 : public AudioLowLevel
 public:
 	Audio1394(AudioDevice *device);
 	~Audio1394();
-	
-	int open_input();
-	int close_all();
-	int read_buffer(char *buffer, long size);
-	int interrupt_crash();
-	
-private:
+
 	int initialize();
 
-	dv_t *dv;
-	dv_grabber_t *grabber;
-	unsigned char *ring_buffer;
-// Number of samples loaded in the ring buffer
-	long ring_buffer_size;
-	int frames;
+	int open_input();
+	int open_output();
+	int close_all();
+	int read_buffer(char *buffer, int bytes);
+	int write_buffer(char *buffer, int bytes);
+	int64_t device_position();
+	int flush_device();
+	int interrupt_playback();
+	Device1394Input *input_thread;
+	Device1394Output *output_thread;
+
+	
+private:
 	int bytes_per_sample;
 };
 
 #endif
+
+
+
 #endif

@@ -55,7 +55,7 @@ int AudioInPrefs::create_objects()
 	y += ADevicePrefs::get_h();
 	BC_TextBox *textbox;
 	add_subwindow(new BC_Title(x, y, "Samples to write to disk at a time:"));
-	sprintf(string, "%ld", pwindow->thread->edl->session->record_write_length);
+	sprintf(string, "%lld", pwindow->thread->edl->session->record_write_length);
 	add_subwindow(textbox = new RecordWriteLength(mwindow, pwindow, x + 240, y, string));
 
 	y += 30;

@@ -27,9 +27,9 @@ BandSlideCount::BandSlideCount(BandSlideMain *plugin,
 	int x,
 	int y)
  : BC_TumbleTextBox(window, 
-		(long)plugin->bands,
-		(long)0,
-		(long)1000,
+		(int64_t)plugin->bands,
+		(int64_t)0,
+		(int64_t)1000,
 		x, 
 		y, 
 		50)

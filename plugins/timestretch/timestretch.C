@@ -1,9 +1,11 @@
 #include "bcdisplayinfo.h"
+#include "clip.h"
 #include "defaults.h"
 #include "mainprogress.h"
 #include "picon_png.h"
 #include "resample.h"
 #include "timestretch.h"
+#include "timestretchengine.h"
 #include "vframe.h"
 
 #define WINDOW_SIZE 8192
@@ -30,6 +32,47 @@ int TimeStretchFraction::handle_event()
 }
 
 
+
+
+
+TimeStretchFreq::TimeStretchFreq(TimeStretch *plugin, 
+	TimeStretchWindow *gui, 
+	int x, 
+	int y)
+ : BC_Radial(x, y, plugin->use_fft, "Use fast fourier transform")
+{
+	this->plugin = plugin;
+	this->gui = gui;
+}
+
+int TimeStretchFreq::handle_event()
+{
+	plugin->use_fft = 1;
+	update(1);
+	gui->time->update(0);
+}
+
+
+
+
+
+
+TimeStretchTime::TimeStretchTime(TimeStretch *plugin, 
+	TimeStretchWindow *gui, 
+	int x, 
+	int y)
+ : BC_Radial(x, y, !plugin->use_fft, "Use overlapping windows")
+{
+	this->plugin = plugin;
+	this->gui = gui;
+}
+
+int TimeStretchTime::handle_event()
+{
+	plugin->use_fft = 0;
+	update(1);
+	gui->freq->update(0);
+}
 
 
 
@@ -69,6 +112,12 @@ void TimeStretchWindow::create_objects()
 	add_subwindow(new BC_Title(x, y, "Fraction of original length:"));
 	y += 20;
 	add_subwindow(new TimeStretchFraction(plugin, x, y));
+
+	y += 30;
+	add_subwindow(freq = new TimeStretchFreq(plugin, this, x, y));
+	y += 20;
+	add_subwindow(time = new TimeStretchTime(plugin, this, x, y));
+
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
 	show_window();
@@ -163,6 +212,11 @@ TimeStretch::TimeStretch(PluginServer *server)
 {
 	load_defaults();
 	temp = 0;
+	pitch = 0;
+	resample = 0;
+	stretch = 0;
+	input = 0;
+	input_allocated = 0;
 }
 
 
@@ -171,6 +225,10 @@ TimeStretch::~TimeStretch()
 	save_defaults();
 	delete defaults;
 	if(temp) delete [] temp;
+	if(input) delete [] input;
+	if(pitch) delete pitch;
+	if(resample) delete resample;
+	if(stretch) delete stretch;
 }
 
 	
@@ -203,18 +261,31 @@ int TimeStretch::start_loop()
 		char string[BCTEXTLEN];
 		sprintf(string, "%s...", plugin_title());
 		progress = start_progress(string, 
-			(long)((double)(PluginClient::end - PluginClient::start) * scale));
+			(int64_t)((double)(PluginClient::end - PluginClient::start) * scale));
 	}
 
 	current_position = PluginClient::start;
 	total_written = 0;
+
+
+
+// The FFT case
+	if(use_fft)
+	{
+		pitch = new PitchEngine(this);
+		pitch->initialize(WINDOW_SIZE);
+		resample = new Resample(0, 1);
+	}
+	else
+// The windowing case
+	{
+// Must be short enough to mask beating but long enough to mask humming.
+		stretch = new TimeStretchEngine(scale, PluginAClient::project_sample_rate);
+	}
+
+
+
 	
-	pitch = new PitchEngine(this);
-	pitch->initialize(WINDOW_SIZE);
-
-//printf("TimeStretch::start_loop %d %d\n", (int)(PluginAClient::in_buffer_size * scale + 0.5), WINDOW_SIZE);
-
-	resample = new Resample(0, 1);
 	return 0;
 }
 
@@ -228,73 +299,93 @@ int TimeStretch::stop_loop()
 	return 0;
 }
 
-int TimeStretch::process_loop(double *buffer, long &write_length)
+int TimeStretch::process_loop(double *buffer, int64_t &write_length)
 {
+//printf("TimeStretch::process_loop 1\n");
 	int result = 0;
-
 // Length to read based on desired output size
-	long size = (long)((double)PluginAClient::in_buffer_size / scale);
-	long predicted_total = (long)((double)(PluginClient::end - PluginClient::start) * scale + 0.5);
+	int64_t size = (int64_t)((double)PluginAClient::in_buffer_size / scale);
+	int64_t predicted_total = (int64_t)((double)(PluginClient::end - PluginClient::start) * scale + 0.5);
+	int samples_rendered = 0;
 
-	double *input = new double[size];
+	if(input_allocated < size)
+	{
+		if(input) delete [] input;
+		input = new double[size];
+		input_allocated = size;
+	}
 
 	read_samples(input, 0, current_position, size);
 	current_position += size;
 
-	resample->resample_chunk(input, 
-		size, 
-		1000000, 
-		(int)(1000000.0 * scale), 
-		0);
 
-
-	if(resample->get_output_size(0))
+// The FFT case
+	if(use_fft)
 	{
-		long output_size = resample->get_output_size(0);
-		if(temp && temp_allocated < output_size)
+
+		resample->resample_chunk(input, 
+			size, 
+			1000000, 
+			(int)(1000000.0 * scale), 
+			0);
+
+
+		if(resample->get_output_size(0))
 		{
-			delete [] temp;
-			temp = 0;
+			int64_t output_size = resample->get_output_size(0);
+			if(temp && temp_allocated < output_size)
+			{
+				delete [] temp;
+				temp = 0;
+			}
+
+			if(!temp)
+			{
+				temp = new double[output_size];
+				temp_allocated = output_size;
+			}
+			resample->read_output(temp, 0, output_size);
+
+
+			samples_rendered = pitch->process_fifo(output_size, 
+				temp, 
+				buffer);
+
+
 		}
-
-		if(!temp)
-		{
-			temp = new double[output_size];
-			temp_allocated = output_size;
-		}
-		resample->read_output(temp, 0, output_size);
-		int samples_rendered = 0;
-
-
-//printf("TimeStretch::process_loop 1 %d %d\n", output_size, PluginClient::out_buffer_size);
-		samples_rendered = pitch->process_fifo(output_size, 
-			temp, 
-			buffer);
-//printf("TimeStretch::process_loop 2 %d %d\n", output_size, PluginClient::out_buffer_size);
-
-
+	}
+	else
+// The windowing case
+	{
+//printf("TimeStretch::process_loop 10\n");
+		samples_rendered = stretch->process(input, size);
+//printf("TimeStretch::process_loop 20 %d\n", samples_rendered);
 		if(samples_rendered)
 		{
-			total_written += samples_rendered;
+			samples_rendered = MIN(samples_rendered, PluginAClient::in_buffer_size);
+			stretch->read_output(buffer, samples_rendered);
 		}
-
-// Trim output to predicted length of stretched selection.
-		if(total_written > predicted_total)
-		{
-			samples_rendered -= total_written - predicted_total;
-			result = 1;
-		}
-
-
-		write_length = samples_rendered;
-		
+//printf("TimeStretch::process_loop 30\n");
 	}
 
-	if(PluginClient::interactive) result = progress->update(total_written);
-//printf("TimeStretch::process_loop 1\n");
 
-	delete [] input;
-//printf("TimeStretch::process_loop 2\n");
+	if(samples_rendered)
+	{
+		total_written += samples_rendered;
+	}
+
+// Trim output to predicted length of stretched selection.
+	if(total_written > predicted_total)
+	{
+		samples_rendered -= total_written - predicted_total;
+		result = 1;
+	}
+
+
+	write_length = samples_rendered;
+	if(PluginClient::interactive) result = progress->update(total_written);
+//printf("TimeStretch::process_loop 100\n");
+
 	return result;
 }
 
@@ -311,12 +402,14 @@ int TimeStretch::load_defaults()
 	defaults->load();
 
 	scale = defaults->get("SCALE", (double)1);
+	use_fft = defaults->get("USE_FFT", 0);
 	return 0;
 }
 
 int TimeStretch::save_defaults()
 {
 	defaults->update("SCALE", scale);
+	defaults->update("USE_FFT", use_fft);
 	defaults->save();
 	return 0;
 }

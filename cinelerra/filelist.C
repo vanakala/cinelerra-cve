@@ -4,6 +4,7 @@
 #include "guicast.h"
 #include "mwindow.inc"
 #include "render.h"
+#include "renderfarmfsserver.inc"
 #include "vframe.h"
 
 #include <ctype.h>
@@ -141,19 +142,34 @@ int FileList::close_file()
 int FileList::write_list_header()
 {
 	FILE *stream = fopen(asset->path, "w");
-	fprintf(stream, "%s\n", list_prefix);
-	fprintf(stream, "# First line is always %s\n", list_prefix);
-	fprintf(stream, "# Frame rate:\n");
-	fprintf(stream, "%f\n", asset->frame_rate);
-	fprintf(stream, "# Width:\n");
-	fprintf(stream, "%d\n", asset->width);
-	fprintf(stream, "# Height:\n");
-	fprintf(stream, "%d\n", asset->height);
-	fprintf(stream, "# List of image files follows\n");
+// Use sprintf for VFS.
+	char string[BCTEXTLEN];
+	sprintf(string, "%s\n", list_prefix);
+	fwrite(string, strlen(string), 1, stream);
+	sprintf(string, "# First line is always %s\n", list_prefix);
+	fwrite(string, strlen(string), 1, stream);
+	sprintf(string, "# Frame rate:\n");
+	fwrite(string, strlen(string), 1, stream);
+	sprintf(string, "%f\n", asset->frame_rate);
+	fwrite(string, strlen(string), 1, stream);
+	sprintf(string, "# Width:\n");
+	fwrite(string, strlen(string), 1, stream);
+	sprintf(string, "%d\n", asset->width);
+	fwrite(string, strlen(string), 1, stream);
+	sprintf(string, "# Height:\n");
+	fwrite(string, strlen(string), 1, stream);
+	sprintf(string, "%d\n", asset->height);
+	fwrite(string, strlen(string), 1, stream);
+	sprintf(string, "# List of image files follows\n");
+	fwrite(string, strlen(string), 1, stream);
 
 	for(int i = 0; i < path_list.total; i++)
 	{
-		fprintf(stream, "%s\n", path_list.values[i]);
+// Fix path for VFS
+		if(!strncmp(path_list.values[i], RENDERFARM_FS_PREFIX, strlen(RENDERFARM_FS_PREFIX)))
+			sprintf(string, "%s", path_list.values[i] + strlen(RENDERFARM_FS_PREFIX) + 1);
+		else
+			sprintf(string, "%s\n", path_list.values[i]);
 	}
 	fclose(stream);
 	return 0;
@@ -239,14 +255,19 @@ int FileList::read_frame(VFrame *frame)
 		FILE *in;
 
 
-		if(!(in = fopen(path, "rb")))
+// Fix path for VFS
+		if(!strncmp(asset->path, RENDERFARM_FS_PREFIX, strlen(RENDERFARM_FS_PREFIX)))
+			sprintf(string, "%s%s", RENDERFARM_FS_PREFIX, path);
+
+
+		if(!(in = fopen(string, "rb")))
 		{
-			fprintf(stderr, "FileList::read_frame %s: %s\n", path, strerror(errno));
+			fprintf(stderr, "FileList::read_frame %s: %s\n", string, strerror(errno));
 		}
 		else
 		{
 			struct stat ostat;
-			stat(path, &ostat);
+			stat(string, &ostat);
 
 			switch(frame->get_color_model())
 			{

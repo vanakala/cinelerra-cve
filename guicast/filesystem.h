@@ -50,6 +50,9 @@ public:
 
 	int move_up();
 	char *get_current_dir();
+// Syntax of filter is
+// single filter without [].
+// multiple filters enclosed in [].
 	int set_filter(char *new_filter);
 	int set_show_all();     // show hidden files
 	int set_want_directory();

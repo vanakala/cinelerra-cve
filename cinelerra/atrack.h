@@ -28,14 +28,14 @@ public:
 	int vertical_span(Theme *theme);
 	int save_header(FileXML *file);
 	int save_derived(FileXML *file);
-	int load_header(FileXML *file, unsigned long load_flags);
-	int load_derived(FileXML *file, unsigned long load_flags);
+	int load_header(FileXML *file, uint32_t load_flags);
+	int load_derived(FileXML *file, uint32_t load_flags);
 	int copy_settings(Track *track);
-	int identical(long sample1, long sample2);
+	int identical(int64_t sample1, int64_t sample2);
 	void synchronize_params(Track *track);
-	long to_units(double position, int round);
+	int64_t to_units(double position, int round);
 	double to_doubleunits(double position);
-	double from_units(long position);
+	double from_units(int64_t position);
 
 
 
@@ -51,12 +51,12 @@ public:
 
 
 // ===================================== editing
-	int paste_derived(long start, long end, long total_length, FileXML *xml, int &current_channel);
+	int paste_derived(int64_t start, int64_t end, int64_t total_length, FileXML *xml, int &current_channel);
 
 
-	int modify_handles(long oldposition, long newposition, int currentend);
+	int modify_handles(int64_t oldposition, int64_t newposition, int currentend);
 
-	long length();
+	int64_t length();
 	int get_dimensions(double &view_start, 
 		double &view_units, 
 		double &zoom_units);

@@ -224,10 +224,7 @@ AWindowGUI::AWindowGUI(MWindow *mwindow, AWindow *awindow)
     100,
     1,
     1,
-    1,
-    -1,
-    Preferences::get_alternate_display("CINELERRA_RESOURCES_DISPLAY",
-		mwindow->preferences->screen_resources))
+    1)
 {
 // printf("AWindowGUI::AWindowGUI %d %d %d %d\n",
 // mwindow->session->awindow_x, 

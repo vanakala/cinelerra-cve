@@ -26,7 +26,7 @@ public:
 	PluginArray* create_plugin_array();
 	int fix_menu(char *title);
 
-	long to_units(double position, int round);
+	int64_t to_units(double position, int round);
 };
 
 class MenuVEffectItem : public MenuEffectItem

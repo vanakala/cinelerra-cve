@@ -232,14 +232,14 @@ int FileBase::ima4_encode_sample(int *last_sample, int *last_index, int *nibble,
 
 // Convert the number of samples in a chunk into the number of bytes in that
 // chunk.  The number of samples in a chunk should end on a block boundary.
-long FileBase::ima4_samples_to_bytes(long samples, int channels)
+int64_t FileBase::ima4_samples_to_bytes(int64_t samples, int channels)
 {
-	long bytes = (long)(samples / ima4_block_samples) * ima4_block_size * channels;
+	int64_t bytes = (int64_t)(samples / ima4_block_samples) * ima4_block_size * channels;
 	return bytes;
 }
 
-long FileBase::ima4_bytes_to_samples(long bytes, int channels)
+int64_t FileBase::ima4_bytes_to_samples(int64_t bytes, int channels)
 {
-	long samples = (long)(bytes / channels / ima4_block_size) * ima4_block_samples;
+	int64_t samples = (int64_t)(bytes / channels / ima4_block_size) * ima4_block_samples;
 	return samples;
 }

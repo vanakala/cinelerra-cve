@@ -26,14 +26,14 @@ public:
 	int update(char *name, Freq value); // update a value if it exists
 	int update(char *name, double value); // update a value if it exists
 	int update(char *name, float value); // update a value if it exists
-	int update(char *name, int value); // update a value if it exists
-	int update(char *name, long value); // update a value if it exists
+	int update(char *name, int32_t value); // update a value if it exists
+	int update(char *name, int64_t value); // update a value if it exists
 	int update(char *name, char *value); // create it if it doesn't
 
 	double get(char *name, double default_);   // retrieve a value if it exists
 	float get(char *name, float default_);   // retrieve a value if it exists
-	int get(char *name, int default_);   // retrieve a value if it exists
-	long get(char *name, long default_);   // retrieve a value if it exists
+	int32_t get(char *name, int32_t default_);   // retrieve a value if it exists
+	int64_t get(char *name, int64_t default_);   // retrieve a value if it exists
 	char* get(char *name, char *default_); // return 1 if it doesn't
 	
 	char *names[1024];  // list of string names

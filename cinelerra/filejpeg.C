@@ -71,7 +71,7 @@ void FileJPEG::get_parameters(BC_WindowBase *parent_window,
 }
 
 
-int FileJPEG::can_copy_from(Edit *edit, long position)
+int FileJPEG::can_copy_from(Edit *edit, int64_t position)
 {
 //printf("FileJPEG::can_copy_from %d %s\n", asset->format, asset->vcodec);
 	if(edit->asset->format == FILE_MOV)

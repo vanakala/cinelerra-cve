@@ -21,10 +21,10 @@ public:
 	Module* new_module(Track *track);
 
 // set up and start thread
-	int arm_playback(long current_position,
-				long input_length, 
-				long module_render_fragment, 
-				long playback_buffer, 
+	int arm_playback(int64_t current_position,
+				int64_t input_length, 
+				int64_t module_render_fragment, 
+				int64_t playback_buffer, 
 				int track_w,
 				int track_h,
 				int output_w,
@@ -40,52 +40,52 @@ public:
 
 // process frames to put in buffer_out
 	int process_buffer(VFrame **video_out, 
-		long input_position, 
+		int64_t input_position, 
 		int last_buffer);
 // load an array of buffers for each track to send to the thread
-	int process_buffer(long input_position);
+	int process_buffer(int64_t input_position);
 // Flash the output on the display
 	int flash_output();
 // Determine if data can be copied directly from the file to the output device.
 	void VRender::get_render_strategy(Edit* &playable_edit, 
 		int &colormodel, 
 		int &use_vconsole,
-		long position);
+		int64_t position);
 	int get_use_vconsole(Edit* &playable_edit, 
-		long position,
+		int64_t position,
 		int &get_use_vconsole);
 	int get_colormodel(Edit* &playable_edit, 
 		int use_vconsole,
 		int use_brender);
 
-	long tounits(double position, int round);
-	double fromunits(long position);
+	int64_t tounits(double position, int round);
+	double fromunits(int64_t position);
 
 // frames since start of playback
-	long session_frame;           
+	int64_t session_frame;           
 
 // console dimensions
 	int track_w, track_h;    
 // video device dimensions
 	int output_w, output_h;    
 // frames to send to console fragment
-	long vmodule_render_fragment;    
+	int64_t vmodule_render_fragment;    
 // frames to send to video device (1)
-	long playback_buffer;            
+	int64_t playback_buffer;            
 // Output frame
 	VFrame *video_out[MAX_CHANNELS];
 // Byte offset of video_out
-	long output_offset;
+	int64_t output_offset;
 	
 	
-	long source_length;  // Total number of frames to render for transitions
+	int64_t source_length;  // Total number of frames to render for transitions
 
 private:
 	int init_device_buffers();
 	Timer timer;
 
 // for getting actual framerate
-	long framerate_counter;
+	int64_t framerate_counter;
 	Timer framerate_timer;
 	int render_strategy;
 };

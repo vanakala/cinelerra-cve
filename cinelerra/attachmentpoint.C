@@ -170,7 +170,7 @@ int AttachmentPoint::singlechannel()
 void AttachmentPoint::render(long current_position, long fragment_size)
 {
 // All buffers must be armed before proceeding
-//printf("AttachmentPoint::render %p %d %d %d\n", plugin_server, plugin_server->multichannel, current_buffer, total_input_buffers - 1);
+//printf("AttachmentPoint::render 1 %p %s\n", plugin_server, plugin_server->title);
 	if(plugin_server)
 	{
 		if(current_buffer == total_input_buffers - 1 ||
@@ -184,6 +184,7 @@ void AttachmentPoint::render(long current_position, long fragment_size)
 
 	current_buffer++;
 	if(current_buffer >= total_input_buffers) current_buffer = 0;
+//printf("AttachmentPoint::render 10\n");
 }
 
 

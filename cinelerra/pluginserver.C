@@ -215,6 +215,7 @@ int PluginServer::open_plugin(int master,
 
 	if(!new_plugin && !lad_descriptor)
 	{
+//printf("%p %p\n", dlsym(RTLD_NEXT, "open"), dlsym(RTLD_NEXT, "open64"));
 		new_plugin = (PluginClient* (*)(PluginServer*))dlsym(plugin_fd, "new_plugin");
 
 // Probably a LAD plugin but we're not going to instantiate it here anyway.
@@ -332,8 +333,8 @@ int PluginServer::init_realtime(int realtime_sched,
 
 void PluginServer::process_realtime(VFrame **input, 
 		VFrame **output, 
-		long current_position,
-		long total_len)
+		int64_t current_position,
+		int64_t total_len)
 {
 //printf("PluginServer::process_realtime 1 %d\n", plugin_open);
 	if(!plugin_open) return;
@@ -347,9 +348,9 @@ void PluginServer::process_realtime(VFrame **input,
 
 void PluginServer::process_realtime(double **input, 
 		double **output,
-		long current_position, 
-		long fragment_size,
-		long total_len)
+		int64_t current_position, 
+		int64_t fragment_size,
+		int64_t total_len)
 {
 	if(!plugin_open) return;
 
@@ -382,7 +383,7 @@ void PluginServer::render_gui(void *data, int size)
 	if(client) client->plugin_render_gui(data, size);
 }
 
-MainProgressBar* PluginServer::start_progress(char *string, long length)
+MainProgressBar* PluginServer::start_progress(char *string, int64_t length)
 {
 	mwindow->gui->lock_window();
 	MainProgressBar *result = mwindow->mainprogress->start_progress(string, length);
@@ -390,13 +391,13 @@ MainProgressBar* PluginServer::start_progress(char *string, long length)
 	return result;
 }
 
-long PluginServer::get_written_samples()
+int64_t PluginServer::get_written_samples()
 {
 	if(!plugin_open) return 0;
 	return written_samples;
 }
 
-long PluginServer::get_written_frames()
+int64_t PluginServer::get_written_frames()
 {
 	if(!plugin_open) return 0;
 	return written_frames;
@@ -446,19 +447,19 @@ int PluginServer::set_realtime_sched()
 }
 
 
-int PluginServer::process_loop(VFrame **buffers, long &write_length)
+int PluginServer::process_loop(VFrame **buffers, int64_t &write_length)
 {
 	if(!plugin_open) return 1;
 	return client->plugin_process_loop(buffers, write_length);
 }
 
-int PluginServer::process_loop(double **buffers, long &write_length)
+int PluginServer::process_loop(double **buffers, int64_t &write_length)
 {
 	if(!plugin_open) return 1;
 	return client->plugin_process_loop(buffers, write_length);
 }
 
-int PluginServer::start_loop(long start, long end, long buffer_size, int total_buffers)
+int PluginServer::start_loop(int64_t start, int64_t end, int64_t buffer_size, int total_buffers)
 {
 	if(!plugin_open) return 0;
 	client->plugin_start_loop(start, end, buffer_size, total_buffers);
@@ -471,7 +472,7 @@ int PluginServer::stop_loop()
 	return client->plugin_stop_loop();
 }
 
-int PluginServer::read_frame(VFrame *buffer, int channel, long start_position)
+int PluginServer::read_frame(VFrame *buffer, int channel, int64_t start_position)
 {
 //printf("PluginServer::read_frame 1 %p\n", modules);
 //printf("PluginServer::read_frame 1 %p\n", modules->values[channel]);
@@ -483,7 +484,7 @@ int PluginServer::read_frame(VFrame *buffer, int channel, long start_position)
 	return 0;
 }
 
-int PluginServer::read_samples(double *buffer, int channel, long start_position, long total_samples)
+int PluginServer::read_samples(double *buffer, int channel, int64_t start_position, int64_t total_samples)
 {
 //printf("PluginServer::read_samples 1\n");
 	((AModule*)modules->values[channel])->render(buffer, 
@@ -494,7 +495,7 @@ int PluginServer::read_samples(double *buffer, int channel, long start_position,
 	return 0;
 }
 
-int PluginServer::read_samples(double *buffer, long start_position, long total_samples)
+int PluginServer::read_samples(double *buffer, int64_t start_position, int64_t total_samples)
 {
 	((AModule*)modules->values[0])->render(buffer, 
 		total_samples, 
@@ -540,11 +541,11 @@ void PluginServer::update_gui()
 //printf("PluginServer::update_gui 2\n");
 
 	if(video)
-		client->source_position = Units::to_long(
+		client->source_position = Units::to_int64(
 			mwindow->edl->local_session->selectionstart * mwindow->edl->session->frame_rate);
 	else
 	if(audio)
-		client->source_position = Units::to_long(
+		client->source_position = Units::to_int64(
 			mwindow->edl->local_session->selectionstart * mwindow->edl->session->sample_rate);
 	client->update_gui();
 }
@@ -636,8 +637,8 @@ int PluginServer::detach_buffers()
 }
 
 int PluginServer::arm_buffer(int buffer_number, 
-		long offset_in, 
-		long offset_out,
+		int64_t offset_in, 
+		int64_t offset_out,
 		int double_buffer_in,
 		int double_buffer_out)
 {
@@ -664,7 +665,7 @@ void PluginServer::save_data(KeyFrame *keyframe)
 	client->save_data(keyframe);
 }
 
-KeyFrame* PluginServer::get_prev_keyframe(long position)
+KeyFrame* PluginServer::get_prev_keyframe(int64_t position)
 {
 	KeyFrame *result = 0;
 	if(plugin)
@@ -674,7 +675,7 @@ KeyFrame* PluginServer::get_prev_keyframe(long position)
 	return result;
 }
 
-KeyFrame* PluginServer::get_next_keyframe(long position)
+KeyFrame* PluginServer::get_next_keyframe(int64_t position)
 {
 	KeyFrame *result = 0;
 	if(plugin)
@@ -684,7 +685,7 @@ KeyFrame* PluginServer::get_next_keyframe(long position)
 	return result;
 }
 
-long PluginServer::get_source_start()
+int64_t PluginServer::get_source_start()
 {
 	if(plugin)
 		return plugin->startproject;
@@ -708,7 +709,12 @@ KeyFrame* PluginServer::get_keyframe()
 
 Theme* PluginServer::new_theme()
 {
-	return client->new_theme();
+	if(theme)
+	{
+		return client->new_theme();
+	}
+	else
+		return 0;
 }
 
 

@@ -42,10 +42,10 @@ void VTracking::update_tracker(double position)
 
 	vwindow->gui->unlock_window();
 
-	update_meters((long)(position * mwindow->edl->session->frame_rate));
+	update_meters((int64_t)(position * mwindow->edl->session->frame_rate));
 }
 
-void VTracking::update_meters(long position)
+void VTracking::update_meters(int64_t position)
 {
 	double output_levels[MAXCHANNELS];
 	int do_audio = get_playback_engine()->get_output_levels(output_levels, position);

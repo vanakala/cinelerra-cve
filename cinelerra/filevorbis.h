@@ -30,9 +30,9 @@ public:
 	int open_file(int rd, int wr);
 	int close_file();
 	int write_samples(double **buffer, 
-			long len);
+			int64_t len);
 
-	int read_samples(double *buffer, long len);
+	int read_samples(double *buffer, int64_t len);
 
 // Decoding
 	OggVorbis_File vf;

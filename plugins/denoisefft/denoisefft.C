@@ -5,7 +5,7 @@
 #include "filexml.h"
 #include "guicast.h"
 #include "mutex.h"
-#include <fourier.h>
+#include "fourier.h"
 #include "picon_png.h"
 #include "pluginaclient.h"
 #include "units.h"
@@ -36,9 +36,9 @@ public:
 	int equivalent(DenoiseFFTConfig &that);
 	void interpolate(DenoiseFFTConfig &prev, 
 		DenoiseFFTConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame);
+		int64_t prev_frame, 
+		int64_t next_frame, 
+		int64_t current_frame);
 
 	int window_size;
 	int collecting;
@@ -121,7 +121,7 @@ public:
 	int is_realtime();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
-	int process_realtime(long size, double *input_ptr, double *output_ptr);
+	int process_realtime(int64_t size, double *input_ptr, double *output_ptr);
 
 
 
@@ -185,9 +185,9 @@ int DenoiseFFTConfig::equivalent(DenoiseFFTConfig &that)
 
 void DenoiseFFTConfig::interpolate(DenoiseFFTConfig &prev, 
 	DenoiseFFTConfig &next, 
-	long prev_frame, 
-	long next_frame, 
-	long current_frame)
+	int64_t prev_frame, 
+	int64_t next_frame, 
+	int64_t current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
@@ -430,12 +430,12 @@ void DenoiseFFTEffect::update_gui()
 		thread->window->lock_window();
 		thread->window->level->update(config.level);
 		thread->window->collect->update(config.collecting);
-//		thread->window->size->update((long)config.window_size);
+//		thread->window->size->update((int64_t)config.window_size);
 		thread->window->unlock_window();
 	}
 }
 
-int DenoiseFFTEffect::process_realtime(long size, double *input_ptr, double *output_ptr)
+int DenoiseFFTEffect::process_realtime(int64_t size, double *input_ptr, double *output_ptr)
 {
 	load_configuration();
 

@@ -25,7 +25,7 @@ public:
 	int get_derived_attributes(Asset *asset, Defaults *defaults);
 	int save_derived_attributes(Asset *asset, Defaults *defaults);
 	PluginArray* create_plugin_array();
-	long to_units(double position, int round);
+	int64_t to_units(double position, int round);
 	int fix_menu(char *title);
 };
 

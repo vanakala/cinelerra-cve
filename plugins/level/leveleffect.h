@@ -20,9 +20,9 @@ public:
 	int equivalent(SoundLevelConfig &that);
 	void interpolate(SoundLevelConfig &prev, 
 		SoundLevelConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame);
+		int64_t prev_frame, 
+		int64_t next_frame, 
+		int64_t current_frame);
 	float duration;
 };
 
@@ -66,7 +66,7 @@ public:
 	int is_realtime();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
-	int process_realtime(long size, double *input_ptr, double *output_ptr);
+	int process_realtime(int64_t size, double *input_ptr, double *output_ptr);
 
 
 

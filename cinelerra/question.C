@@ -38,6 +38,7 @@ QuestionYesButton::QuestionYesButton(MWindow *mwindow, QuestionWindow *window, i
  : BC_GenericButton(x, y, "Yes")
 {
 	this->window = window;
+	set_underline(0);
 }
 
 int QuestionYesButton::handle_event()
@@ -55,6 +56,7 @@ QuestionNoButton::QuestionNoButton(MWindow *mwindow, QuestionWindow *window, int
  : BC_GenericButton(x, y, "No")
 {
 	this->window = window;
+	set_underline(0);
 }
 
 int QuestionNoButton::handle_event()

@@ -1,5 +1,26 @@
 #include "funcprotos.h"
 #include "ima4.h"
+#include "quicktime.h"
+
+typedef struct
+{
+/* During decoding the work_buffer contains the most recently read chunk. */
+/* During encoding the work_buffer contains interlaced overflow samples  */
+/* from the last chunk written. */
+	int16_t *work_buffer;
+	unsigned char *read_buffer;    /* Temporary buffer for drive reads. */
+
+/* Starting information for all channels during encoding. */
+	int *last_samples, *last_indexes;
+	long chunk; /* Number of chunk in work buffer */
+	int buffer_channel; /* Channel of work buffer */
+
+/* Number of samples in largest chunk read. */
+/* Number of samples plus overflow in largest chunk write, interlaced. */
+	long work_size;     
+	long work_overflow; /* Number of overflow samples from the last chunk written. */
+	long read_size;     /* Size of read buffer. */
+} quicktime_ima4_codec_t;
 
 static int ima4_step[89] = 
 {
@@ -281,8 +302,8 @@ static int decode(quicktime_t *file,
 					int channel)
 {
 	int result = 0;
-	longest chunk, chunk_sample, chunk_bytes, chunk_samples;
-	longest i, chunk_start, chunk_end;
+	int64_t chunk, chunk_sample, chunk_bytes, chunk_samples;
+	int64_t i, chunk_start, chunk_end;
 	quicktime_trak_t *trak = file->atracks[track].track;
 	quicktime_ima4_codec_t *codec = ((quicktime_codec_t*)file->atracks[track].codec)->priv;
 
@@ -345,21 +366,23 @@ static int encode(quicktime_t *file,
 						long samples)
 {
 	int result = 0;
-	longest i, j, step;
-	longest chunk_bytes;
-	longest overflow_start;
-	longest offset;
-	longest chunk_samples; /* Samples in the current chunk to be written */
+	int64_t i, j, step;
+	int64_t chunk_bytes;
+	int64_t overflow_start;
+	int64_t offset;
+	int64_t chunk_samples; /* Samples in the current chunk to be written */
 	quicktime_audio_map_t *track_map = &(file->atracks[track]);
 	quicktime_ima4_codec_t *codec = ((quicktime_codec_t*)track_map->codec)->priv;
+	quicktime_trak_t *trak = track_map->track;
 	int16_t *input_ptr;
 	unsigned char *output_ptr;
+	quicktime_atom_t chunk_atom;
 
 /* Get buffer sizes */
 	if(codec->work_buffer && codec->work_size < (samples + codec->work_overflow + 1) * track_map->channels)
 	{
 /* Create new buffer */
-		longest new_size = (samples + codec->work_overflow + 1) * track_map->channels;
+		int64_t new_size = (samples + codec->work_overflow + 1) * track_map->channels;
 		int16_t *new_buffer = malloc(sizeof(int16_t) * new_size);
 
 /* Copy overflow */
@@ -458,24 +481,27 @@ static int encode(quicktime_t *file,
 	}
 
 /* Write to disk */
-	chunk_samples = (longest)((samples + codec->work_overflow) / SAMPLES_PER_BLOCK) * SAMPLES_PER_BLOCK;
+	chunk_samples = (int64_t)((samples + codec->work_overflow) / SAMPLES_PER_BLOCK) * SAMPLES_PER_BLOCK;
 
 /*printf("quicktime_encode_ima4 1 %ld\n", chunk_samples); */
 /* The block division may result in 0 samples getting encoded. */
 /* Don't write 0 samples. */
 	if(chunk_samples)
 	{
-		offset = quicktime_position(file);
+		quicktime_write_chunk_header(file, trak, &chunk_atom);
 		result = quicktime_write_data(file, codec->read_buffer, chunk_bytes);
-		if(result) result = 0; else result = 1; /* defeat fwrite's return */
-		quicktime_update_tables(file,
-							track_map->track, 
-							offset, 
-							track_map->current_chunk, 
-							track_map->current_position, 
-							chunk_samples, 
-							0);
-		file->atracks[track].current_chunk++;
+		quicktime_write_chunk_footer(file, 
+			trak,
+			track_map->current_chunk,
+			&chunk_atom, 
+			1);
+
+		if(result) 
+			result = 0; 
+		else 
+			result = 1; /* defeat fwrite's return */
+
+		track_map->current_chunk++;
 	}
 
 /* Move the last overflow to the front */
@@ -516,26 +542,22 @@ void flush(quicktime_t *file, int track)
 
 void quicktime_init_codec_ima4(quicktime_audio_map_t *atrack)
 {
+	quicktime_codec_t *codec_base = (quicktime_codec_t*)atrack->codec;
 	quicktime_ima4_codec_t *codec;
 
 /* Init public items */
-	((quicktime_codec_t*)atrack->codec)->priv = calloc(1, sizeof(quicktime_ima4_codec_t));
-	((quicktime_codec_t*)atrack->codec)->delete_acodec = delete_codec;
-	((quicktime_codec_t*)atrack->codec)->decode_video = 0;
-	((quicktime_codec_t*)atrack->codec)->encode_video = 0;
-	((quicktime_codec_t*)atrack->codec)->decode_audio = decode;
-	((quicktime_codec_t*)atrack->codec)->encode_audio = encode;
-	((quicktime_codec_t*)atrack->codec)->flush = flush;
+	codec_base->priv = calloc(1, sizeof(quicktime_ima4_codec_t));
+	codec_base->delete_acodec = delete_codec;
+	codec_base->decode_video = 0;
+	codec_base->encode_video = 0;
+	codec_base->decode_audio = decode;
+	codec_base->encode_audio = encode;
+	codec_base->flush = flush;
+	codec_base->fourcc = QUICKTIME_IMA4;
+	codec_base->title = "IMA 4";
+	codec_base->desc = "IMA 4";
+	codec_base->wav_id = 0x11;
 
 /* Init private items */
-	codec = ((quicktime_codec_t*)atrack->codec)->priv;
-	codec->work_buffer = 0;
-	codec->read_buffer = 0;
-	codec->chunk = 0;
-	codec->buffer_channel = 0;
-	codec->work_overflow = 0;
-	codec->work_size = 0;
-	codec->read_size = 0;
-	codec->last_samples = 0;
-	codec->last_indexes = 0;
+	codec = codec_base->priv;
 }

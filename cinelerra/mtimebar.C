@@ -28,9 +28,9 @@ MTimeBar::MTimeBar(MWindow *mwindow,
 }
 
 
-long MTimeBar::position_to_pixel(double position)
+int64_t MTimeBar::position_to_pixel(double position)
 {
-	return (long)(position * 
+	return (int64_t)(position * 
 		mwindow->edl->session->sample_rate / 
 		mwindow->edl->local_session->zoom_sample - 
 		mwindow->edl->local_session->view_start);
@@ -52,7 +52,7 @@ void MTimeBar::draw_time()
 //printf("TimeBar::draw_time 2\n");
 
 // fit the time
-	long windowspan, timescale1, timescale2, sample_rate, sample;
+	int64_t windowspan, timescale1, timescale2, sample_rate, sample;
 	float timescale3;
 	int pixel;
 	char string[256];
@@ -79,15 +79,15 @@ void MTimeBar::draw_time()
 	for(timescale3 = timescale1; timescale3 > timescale2; timescale3 /= 2)
 		;
 
-	timescale1 = (long)(timescale3 * 2);
+	timescale1 = (int64_t)(timescale3 * 2);
 
-	sample = (long)(mwindow->edl->local_session->view_start * 
+	sample = (int64_t)(mwindow->edl->local_session->view_start * 
 		mwindow->edl->local_session->zoom_sample + 
 		0.5);
 
 	sample /= timescale1;
 	sample *= timescale1;
-	pixel = (long)(sample / 
+	pixel = (int64_t)(sample / 
 		mwindow->edl->local_session->zoom_sample - 
 		mwindow->edl->local_session->view_start);
 

@@ -23,9 +23,9 @@ public:
 	void copy_from(ColorBalanceConfig &that);
 	void interpolate(ColorBalanceConfig &prev, 
 		ColorBalanceConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame);
+		int64_t prev_frame, 
+		int64_t next_frame, 
+		int64_t current_frame);
 
 	float cyan;
 	float magenta;

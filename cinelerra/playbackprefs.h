@@ -58,7 +58,7 @@ public:
 	PlaybackBilinearBilinear *linear_linear;
 	PlaybackDeblock *mpeg4_deblock;
 
-	long current_head;
+	int64_t current_head;
 	BC_Title *head_title;
 	BC_Title *host_title;
 	BC_Title *head_count_title;

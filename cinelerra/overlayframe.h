@@ -416,7 +416,7 @@ public:
 		float out_y1, 
 		float out_x2, 
 		float out_y2, 
-		float alpha, 
+		float alpha,        // 0 - 1
 		int mode,
 		int interpolation_type);
 	int use_alpha, use_float, mode, interpolate;

@@ -203,10 +203,16 @@ static int read_toc(mpeg3_t *file)
 	int atracks;
 	int vtracks;
 	int i, j;
-
+	int is_vfs = 0;
+	if(!strncmp(file->fs->path, RENDERFARM_FS_PREFIX, strlen(RENDERFARM_FS_PREFIX)))
+		is_vfs = 1;
+//printf("read_toc 10\n");
 	buffer = malloc(mpeg3io_total_bytes(file->fs));
+//printf("read_toc 10\n");
 	mpeg3io_seek(file->fs, 0);
+//printf("read_toc 10\n");
 	mpeg3io_read_data(buffer, mpeg3io_total_bytes(file->fs), file->fs);
+//printf("read_toc 10\n");
 
 
 //printf("read_toc %lld\n", mpeg3io_total_bytes(file->fs));
@@ -229,6 +235,7 @@ static int read_toc(mpeg3_t *file)
 			break;
 	}
 
+//printf("read_toc 10\n");
 
 // Stream ID's
 	while((stream_type = buffer[position]) != TITLE_PATH)
@@ -254,6 +261,7 @@ static int read_toc(mpeg3_t *file)
 
 
 
+//printf("read_toc 10\n");
 
 
 // Titles
@@ -264,6 +272,11 @@ static int read_toc(mpeg3_t *file)
 		mpeg3_title_t *title;
 
 		position++;
+		if(is_vfs)
+		{
+			strcpy(string, RENDERFARM_FS_PREFIX);
+			string_len = strlen(string);
+		}
 		while(buffer[position] != 0) string[string_len++] = buffer[position++];
 		string[string_len++] = 0;
 		position++;
@@ -286,6 +299,7 @@ static int read_toc(mpeg3_t *file)
 			title->timecode_table[i].program = read_int32(buffer, &position);
 		}
 	}
+//printf("read_toc 10\n");
 
 
 
@@ -293,10 +307,12 @@ static int read_toc(mpeg3_t *file)
 // Skip ATRACK_COUNT
 	position++;
 	atracks = read_int32(buffer, &position);
+//printf("read_toc 10\n");
 
 // Skip VTRACK_COUNT
 	position++;
 	vtracks = read_int32(buffer, &position);
+//printf("read_toc 10\n");
 
 
 	if(atracks)
@@ -317,6 +333,7 @@ static int read_toc(mpeg3_t *file)
 			}
 		}
 	}
+//printf("read_toc 10\n");
 
 	if(vtracks)
 	{
@@ -344,13 +361,16 @@ static int read_toc(mpeg3_t *file)
 			}
 		}
 	}
+//printf("read_toc 10\n");
 
 	free(buffer);
+//printf("read_toc 10\n");
 
 
 
 //printf("read_toc 1\n");
 	mpeg3demux_open_title(file->demuxer, 0);
+//printf("read_toc 10\n");
 
 //printf("read_toc 2 %llx\n", mpeg3demux_tell(file->demuxer));
 	return 0;
@@ -374,7 +394,7 @@ mpeg3_t* mpeg3_open_copy(char *path, mpeg3_t *old_file)
 
 
 
-//printf("mpeg3_open_copy %s\n", path);
+//printf("mpeg3_open_copy 1 %s\n", path);
 
 /* Need to perform authentication before reading a single byte. */
 	if(mpeg3io_open_file(file->fs))
@@ -404,17 +424,20 @@ mpeg3_t* mpeg3_open_copy(char *path, mpeg3_t *old_file)
 /* Table of contents for another title set */
 		if(!old_file)
 		{
-//printf("libmpeg3 1\n");
+//printf("libmpeg3 10\n");
 			if(read_toc(file))
 			{
-//printf("libmpeg3 1\n");
+//printf("libmpeg3 20\n");
 				mpeg3io_close_file(file->fs);
+//printf("libmpeg3 21n");
 				mpeg3_delete(file);
+//printf("libmpeg3 22\n");
 				return 0;
 			}
-//printf("libmpeg3 1\n");
+//printf("libmpeg3 30\n");
 		}
 		mpeg3io_close_file(file->fs);
+//printf("libmpeg3 40\n");
 	}
 	else
 // IFO file
@@ -483,8 +506,14 @@ mpeg3_t* mpeg3_open_copy(char *path, mpeg3_t *old_file)
 		return 0;
 	}
 
-//printf("mpeg3_open 2 %p %d %d %d %d\n", 
-//	old_file, file->is_transport_stream, file->is_program_stream, file->is_video_stream, file->is_audio_stream);
+/*
+ * printf("mpeg3_open 2 %p %d %d %d %d\n", 
+ * old_file, 
+ * file->is_transport_stream, 
+ * file->is_program_stream, 
+ * file->is_video_stream, 
+ * file->is_audio_stream);
+ */
 
 
 
@@ -492,7 +521,7 @@ mpeg3_t* mpeg3_open_copy(char *path, mpeg3_t *old_file)
 
 
 
-
+//printf("mpeg3_open 20\n");
 
 
 
@@ -542,7 +571,7 @@ mpeg3_t* mpeg3_open_copy(char *path, mpeg3_t *old_file)
 
 
 
-//printf("mpeg3_open 2\n");
+//printf("mpeg3_open 50\n");
 
 
 
@@ -573,6 +602,8 @@ mpeg3_t* mpeg3_open_copy(char *path, mpeg3_t *old_file)
  * }
  */
 
+
+//printf("mpeg3_open 3\n");
 		for(i = 0; i < MPEG3_MAX_STREAMS; i++)
 		{
 			if(file->demuxer->vstream_table[i])
@@ -589,6 +620,7 @@ mpeg3_t* mpeg3_open_copy(char *path, mpeg3_t *old_file)
 			}
 		}
 
+//printf("mpeg3_open 4\n");
 /* Create audio tracks */
 		for(i = 0; i < MPEG3_MAX_STREAMS; i++)
 		{
@@ -602,6 +634,7 @@ mpeg3_t* mpeg3_open_copy(char *path, mpeg3_t *old_file)
 				if(file->atrack[file->total_astreams]) file->total_astreams++;
 			}
 		}
+//printf("mpeg3_open 5\n");
 	}
 	else
 	if(file->is_video_stream)
@@ -630,11 +663,12 @@ mpeg3_t* mpeg3_open_copy(char *path, mpeg3_t *old_file)
 		if(file->atrack[0]) file->total_astreams++;
 	}
 
-//printf("mpeg3_open 5\n");
+//printf("mpeg3_open 100\n");
 
 
 
 	mpeg3io_close_file(file->fs);
+//printf("mpeg3_open 120\n");
 	return file;
 }
 
@@ -774,7 +808,7 @@ float mpeg3_aspect_ratio(mpeg3_t *file, int stream)
 	return 0;
 }
 
-float mpeg3_frame_rate(mpeg3_t *file,
+double mpeg3_frame_rate(mpeg3_t *file,
 		int stream)
 {
 	if(file->total_vstreams)

@@ -73,6 +73,12 @@ int Track::copy_settings(Track *track)
 	return 0;
 }
 
+int Track::get_id()
+{
+	return id;
+}
+
+
 int Track::load_defaults(Defaults *defaults)
 {
 	return 0;
@@ -87,7 +93,7 @@ void Track::equivalent_output(Track *track, double *result)
 		*result = 0;
 
 // Convert result to track units
-	long result2 = -1;
+	int64_t result2 = -1;
 	automation->equivalent_output(track->automation, &result2);
 //printf("Track::equivalent_output 3 %d\n", result2);
 	edits->equivalent_output(track->edits, &result2);
@@ -123,7 +129,7 @@ void Track::equivalent_output(Track *track, double *result)
 
 
 int Track::is_synthesis(RenderEngine *renderengine, 
-	long position, 
+	int64_t position, 
 	int direction)
 {
 	int is_synthesis = 0;
@@ -222,7 +228,7 @@ double Track::get_length()
 
 void Track::get_source_dimensions(double position, int &w, int &h)
 {
-	long native_position = to_units(position, 0);
+	int64_t native_position = to_units(position, 0);
 	for(Edit *current = edits->first; current; current = NEXT)
 	{
 		if(current->startproject <= native_position &&
@@ -237,16 +243,16 @@ void Track::get_source_dimensions(double position, int &w, int &h)
 }
 
 
-long Track::horizontal_span()
+int64_t Track::horizontal_span()
 {
-	return (long)(get_length() * 
+	return (int64_t)(get_length() * 
 		edl->session->sample_rate / 
 		edl->local_session->zoom_sample + 
 		0.5);
 }
 
 
-int Track::load(FileXML *file, int track_offset, unsigned long load_flags)
+int Track::load(FileXML *file, int track_offset, uint32_t load_flags)
 {
 	int result = 0;
 	int current_channel = 0;
@@ -546,8 +552,8 @@ void Track::shift_keyframes(double position, double length, int convert_units)
 		length = to_units(length, 0);
 	}
 
-	automation->paste_silence(Units::to_long(position), 
-		Units::to_long(position + length));
+	automation->paste_silence(Units::to_int64(position), 
+		Units::to_int64(position + length));
 // Effect keyframes are shifted in shift_effects
 }
 
@@ -561,7 +567,7 @@ void Track::shift_effects(double position, double length, int convert_units)
 
 	for(int i = 0; i < plugin_set.total; i++)
 	{
-		plugin_set.values[i]->shift_effects(Units::to_long(position), Units::to_long(length));
+		plugin_set.values[i]->shift_effects(Units::to_int64(position), Units::to_int64(length));
 	}
 }
 
@@ -577,8 +583,8 @@ void Track::detach_effect(Plugin *plugin)
 		{
 			if(dest == plugin)
 			{
-				long start = plugin->startproject;
-				long end = plugin->startproject + plugin->length;
+				int64_t start = plugin->startproject;
+				int64_t end = plugin->startproject + plugin->length;
 
 				plugin_set->clear(start, end);
 				plugin_set->paste_silence(start, end);
@@ -811,8 +817,8 @@ int Track::copy_automation(double selectionstart,
 	int default_only,
 	int autos_only)
 {
-	long start = to_units(selectionstart, 0);
-	long end = to_units(selectionend, 0);
+	int64_t start = to_units(selectionstart, 0);
+	int64_t end = to_units(selectionend, 0);
 
 	file->tag.set_title("TRACK");
 // Video or audio
@@ -847,13 +853,13 @@ int Track::copy_automation(double selectionstart,
 int Track::paste_automation(double selectionstart, 
 	double total_length, 
 	double frame_rate,
-	long sample_rate,
+	int64_t sample_rate,
 	FileXML *file,
 	int default_only)
 {
 // Only used for pasting automation alone.
-	long start;
-	long length;
+	int64_t start;
+	int64_t length;
 	int result;
 	int current_pluginset;
 	double scale;
@@ -914,8 +920,8 @@ void Track::clear_automation(double selectionstart,
 	int shift_autos,
 	int default_only)
 {
-	long start = to_units(selectionstart, 0);
-	long end = to_units(selectionend, 0);
+	int64_t start = to_units(selectionstart, 0);
+	int64_t end = to_units(selectionend, 0);
 
 	automation->clear(start, end, edl->session->auto_conf, 0);
 
@@ -938,8 +944,8 @@ int Track::copy(double start,
 //printf("Track::copy 1\n");
 // Use a copy of the selection in converted units
 // So copy_automation doesn't reconvert.
-	long start_unit = to_units(start, 0);
-	long end_unit = to_units(end, 1);
+	int64_t start_unit = to_units(start, 0);
+	int64_t end_unit = to_units(end, 1);
 
 
 
@@ -1013,7 +1019,7 @@ int Track::copy_assets(double start,
 	start = to_units(start, 0);
 	end = to_units(end, 0);
 
-	Edit *current = edits->editof((long)start, PLAY_FORWARD);
+	Edit *current = edits->editof((int64_t)start, PLAY_FORWARD);
 
 // Search all edits
 	while(current && current->startproject < end)
@@ -1055,14 +1061,14 @@ int Track::clear(double start,
 	}
 
 	if(edit_edits)
-		automation->clear((long)start, (long)end, 0, 1);
+		automation->clear((int64_t)start, (int64_t)end, 0, 1);
 
 	if(edit_plugins)
 		for(int i = 0; i < plugin_set.total; i++)
-			plugin_set.values[i]->clear((long)start, (long)end);
+			plugin_set.values[i]->clear((int64_t)start, (int64_t)end);
 
 	if(edit_edits)
-		edits->clear((long)start, (long)end);
+		edits->clear((int64_t)start, (int64_t)end);
 	return 0;
 }
 
@@ -1126,7 +1132,7 @@ int Track::paste_silence(double start, double end, int edit_plugins)
 	start = to_units(start, 0);
 	end = to_units(end, 1);
 
-	edits->paste_silence((long)start, (long)end);
+	edits->paste_silence((int64_t)start, (int64_t)end);
 	shift_keyframes(start, end - start, 0);
 	if(edit_plugins) shift_effects(start, end - start, 0);
 
@@ -1142,7 +1148,7 @@ int Track::select_edit(int cursor_x,
 	return 0;
 }
 
-int Track::scale_time(float rate_scale, int scale_edits, int scale_autos, long start, long end)
+int Track::scale_time(float rate_scale, int scale_edits, int scale_autos, int64_t start, int64_t end)
 {
 	return 0;
 }
@@ -1215,7 +1221,7 @@ int Track::delete_module_pointers(int deleted_track)
 	return 0;
 }
 
-int Track::playable_edit(long position, int direction)
+int Track::playable_edit(int64_t position, int direction)
 {
 	int result = 0;
 	if(direction == PLAY_REVERSE) position--;
@@ -1238,28 +1244,27 @@ int Track::need_edit(Edit *current, int test_transitions)
 		(!test_transitions && current->asset));
 }
 
-long Track::plugin_change_duration(long input_position,
-	long input_length,
+int64_t Track::plugin_change_duration(int64_t input_position,
+	int64_t input_length,
 	int reverse)
 {
 	for(int i = 0; i < plugin_set.total; i++)
 	{
-		long new_duration = plugin_set.values[i]->plugin_change_duration(
+		int64_t new_duration = plugin_set.values[i]->plugin_change_duration(
 			input_position, 
 			input_length, 
 			reverse);
 		if(new_duration < input_length) input_length = new_duration;
 	}
-	return input_length;
 }
 
-long Track::edit_change_duration(long input_position, 
-	long input_length, 
+int64_t Track::edit_change_duration(int64_t input_position, 
+	int64_t input_length, 
 	int reverse, 
 	int test_transitions)
 {
 	Edit *current;
-	long edit_length = input_length;
+	int64_t edit_length = input_length;
 
 	if(reverse)
 	{
@@ -1389,13 +1394,13 @@ int Track::asset_used(Asset *asset)
 	return result;
 }
 
-int Track::channel_is_playable(long position, int direction, int *do_channel)
+int Track::channel_is_playable(int64_t position, int direction, int *do_channel)
 {
 	return 1;
 }
 
 
-int Track::plugin_used(long position, long direction)
+int Track::plugin_used(int64_t position, int64_t direction)
 {
 //printf("Track::plugin_used 1 %d\n", this->plugin_set.total);
 	for(int i = 0; i < this->plugin_set.total; i++)
@@ -1415,14 +1420,14 @@ int Track::plugin_used(long position, long direction)
 }
 
 // Audio is always rendered through VConsole
-int Track::direct_copy_possible(long start, int direction)
+int Track::direct_copy_possible(int64_t start, int direction)
 {
 	return 1;
 }
 
-long Track::to_units(double position, int round)
+int64_t Track::to_units(double position, int round)
 {
-	return (long)position;
+	return (int64_t)position;
 }
 
 double Track::to_doubleunits(double position)
@@ -1430,7 +1435,7 @@ double Track::to_doubleunits(double position)
 	return position;
 }
 
-double Track::from_units(long position)
+double Track::from_units(int64_t position)
 {
 	return (double)position;
 }

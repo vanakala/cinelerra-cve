@@ -87,14 +87,17 @@ int TimeAvgMain::process_realtime(VFrame *input, VFrame *output)
 			VFrame **history2;
 			history2 = new VFrame*[config.frames];
 
+// Copy existing frames over
 			int i, j;
 			for(i = 0, j = 0; i < config.frames && j < history_size; i++, j++)
 				history2[i] = history[j];
 
+// Delete extra previous frames
 			for( ; j < history_size; j++)
 				delete history[j];
 			delete [] history;
 
+// Create new frames
 			for( ; i < config.frames; i++)
 				history2[i] = new VFrame(0, w, h, color_model);
 

@@ -36,8 +36,8 @@ public:
 	Module* module_number(int track_number);
 // Test for reconfiguration.
 // If reconfiguration is coming up, truncate length and reset last_playback.
-	int test_reconfigure(long position, 
-		long &length,
+	int test_reconfigure(int64_t position, 
+		int64_t &length,
 		int &last_playback);
 
 	virtual void run();
@@ -103,10 +103,10 @@ public:
 // information for each buffer
 	int last_playback[MAX_BUFFERS];      // last buffer in playback range
 	int last_reconfigure[MAX_BUFFERS];   // last buffer before deletion and reconfiguration
-	long input_len[MAX_BUFFERS];         // number of samples to render from this buffer
-	long input_position[MAX_BUFFERS];    // highest numbered sample of this buffer in project
+	int64_t input_len[MAX_BUFFERS];         // number of samples to render from this buffer
+	int64_t input_position[MAX_BUFFERS];    // highest numbered sample of this buffer in project
 										// or frame of this buffer in project
-	long absolute_position[MAX_BUFFERS];  // Absolute position at start of buffer for peaks.
+	int64_t absolute_position[MAX_BUFFERS];  // Absolute position at start of buffer for peaks.
 	int current_vconsole_buffer;           // input buffer being rendered by vconsole
 };
 

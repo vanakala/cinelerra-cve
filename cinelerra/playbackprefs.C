@@ -124,9 +124,10 @@ int PlaybackPrefs::create_objects()
 	add_subwindow(new BC_Title(x, y, "Preload buffer for Quicktime:", MEDIUMFONT, BLACK));
 	sprintf(string, "%d", pwindow->thread->edl->session->playback_preload);
 	add_subwindow(new PlaybackPreload(x + 210, y, pwindow, this, string));
-	y += 30;
 
-	add_subwindow(new PlaybackDeblock(pwindow, 10, y));
+//	y += 30;
+//	add_subwindow(new PlaybackDeblock(pwindow, 10, y));
+
 	y += 35;
 	add_subwindow(vdevice_title = new BC_Title(x, y, "Video Driver:"));
 	video_device = new VDevicePrefs(x + 100, 
@@ -317,8 +318,8 @@ PlaybackHead::PlaybackHead(PlaybackPrefs *prefs,
 	int y)
  : BC_TumbleTextBox(prefs, 
 		prefs->current_head,
-		0, 
-		prefs->current_config_list()->total - 1, 
+		(int64_t)0, 
+		(int64_t)prefs->current_config_list()->total - 1, 
 		x,
 		y,
 		100)
@@ -583,21 +584,21 @@ int VideoEveryFrame::handle_event()
 
 
 
-PlaybackDeblock::PlaybackDeblock(PreferencesWindow *pwindow, int x, int y)
- : BC_CheckBox(x, 
- 	y, 
-	pwindow->thread->edl->session->mpeg4_deblock, 
-	"MPEG-4 Deblocking")
-{
-	this->pwindow = pwindow;
-}
-
-int PlaybackDeblock::handle_event()
-{
-	pwindow->thread->edl->session->mpeg4_deblock = get_value();
-	return 1;
-}
-
+// PlaybackDeblock::PlaybackDeblock(PreferencesWindow *pwindow, int x, int y)
+//  : BC_CheckBox(x, 
+//  	y, 
+// 	pwindow->thread->edl->session->mpeg4_deblock, 
+// 	"MPEG-4 Deblocking")
+// {
+// 	this->pwindow = pwindow;
+// }
+// 
+// int PlaybackDeblock::handle_event()
+// {
+// 	pwindow->thread->edl->session->mpeg4_deblock = get_value();
+// 	return 1;
+// }
+// 
 
 
 

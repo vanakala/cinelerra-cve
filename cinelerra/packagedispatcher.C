@@ -48,10 +48,10 @@ int PackageDispatcher::create_packages(MWindow *mwindow,
 	this->total_end = total_end;
 
 	nodes = preferences->get_enabled_nodes();
-	audio_position = Units::to_long(total_start * default_asset->sample_rate);
-	video_position = Units::to_long(total_start * default_asset->frame_rate);
-	audio_end = Units::to_long(total_end * default_asset->sample_rate);
-	video_end = Units::to_long(total_end * default_asset->frame_rate);
+	audio_position = Units::to_int64(total_start * default_asset->sample_rate);
+	video_position = Units::to_int64(total_start * default_asset->frame_rate);
+	audio_end = Units::to_int64(total_end * default_asset->sample_rate);
+	video_end = Units::to_int64(total_end * default_asset->frame_rate);
 	current_package = 0;
 
 // sleep(1);
@@ -139,13 +139,13 @@ int PackageDispatcher::create_packages(MWindow *mwindow,
 
 			if(!label)
 			{
-				package->audio_end = Units::to_long(total_end * default_asset->sample_rate);
-				package->video_end = Units::to_long(total_end * default_asset->frame_rate);
+				package->audio_end = Units::to_int64(total_end * default_asset->sample_rate);
+				package->video_end = Units::to_int64(total_end * default_asset->frame_rate);
 			}
 			else
 			{
-				package->audio_end = Units::to_long(label->position * default_asset->sample_rate);
-				package->video_end = Units::to_long(label->position * default_asset->frame_rate);
+				package->audio_end = Units::to_int64(label->position * default_asset->sample_rate);
+				package->video_end = Units::to_int64(label->position * default_asset->frame_rate);
 			}
 
 			if(package->audio_end > audio_end)
@@ -300,9 +300,9 @@ RenderPackage* PackageDispatcher::get_package(double frames_per_second,
 
 //printf("PackageDispatcher::get_package 7\n");
 				result->audio_end = result->audio_start + 
-					Units::to_long(scaled_len * default_asset->sample_rate);
+					Units::to_int64(scaled_len * default_asset->sample_rate);
 				result->video_end = result->video_start +
-					Units::to_long(scaled_len * default_asset->frame_rate);
+					Units::to_int64(scaled_len * default_asset->frame_rate);
 
 //printf("PackageDispatcher::get_package 8\n");
 				result->audio_end = MIN(audio_end, result->audio_end);
@@ -377,9 +377,9 @@ RenderPackage* PackageDispatcher::get_package(double frames_per_second,
 			result->audio_start = audio_position;
 			result->video_start = video_position;
 			result->audio_end = result->audio_start + 
-				Units::to_long(scaled_len * default_asset->sample_rate);
+				Units::to_int64(scaled_len * default_asset->sample_rate);
 			result->video_end = result->video_start + 
-				Units::to_long(scaled_len * default_asset->frame_rate);
+				Units::to_int64(scaled_len * default_asset->frame_rate);
 			if(result->video_end == result->video_start) result->video_end++;
 			audio_position = result->audio_end;
 			video_position = result->video_end;

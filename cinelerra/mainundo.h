@@ -6,6 +6,7 @@
 #include "mwindow.inc"
 #include "undostack.h"
 
+#include <stdint.h>
 
 class MainUndo
 {
@@ -13,7 +14,7 @@ public:
 	MainUndo(MWindow *mwindow);
 	~MainUndo();
 
-	void update_undo_before(char *description, unsigned long load_flags);
+	void update_undo_before(char *description, uint32_t load_flags);
 	void update_undo_after();
 
 
@@ -21,7 +22,7 @@ public:
 	int redo();
 
 private:
-	int load_from_undo(FileXML *file, unsigned long load_flags);    // loads undo from the stringfile to the project
+	int load_from_undo(FileXML *file, uint32_t load_flags);    // loads undo from the stringfile to the project
 
 	UndoStack undo_stack;
 	UndoStackItem* current_entry; // for setting the after buffer

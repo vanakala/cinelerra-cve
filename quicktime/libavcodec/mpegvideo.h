@@ -28,14 +28,17 @@ enum OutputFormat {
     FMT_MJPEG, 
 };
 
+#define EDGE_WIDTH 16
+
 #define MPEG_BUF_SIZE (16 * 1024)
 
 #define QMAT_SHIFT_MMX 16
 #define QMAT_SHIFT 22
 
 #define MAX_FCODE 7
-#define MAX_MV 8192
-#define REORDER_BUFFER_SIZE (FF_MAX_B_FRAMES+2)
+#define MAX_MV 2048
+
+#define MAX_PICTURE_COUNT 15
 
 #define ME_MAP_SIZE 64
 #define ME_MAP_SHIFT 3
@@ -44,6 +47,11 @@ enum OutputFormat {
 /* run length table */
 #define MAX_RUN    64
 #define MAX_LEVEL  64
+
+#define I_TYPE FF_I_TYPE  // Intra
+#define P_TYPE FF_P_TYPE  // Predicted
+#define B_TYPE FF_B_TYPE  // Bi-dir predicted
+#define S_TYPE FF_S_TYPE  // S(GMC)-VOP MPEG4
 
 typedef struct Predictor{
     double coeff;
@@ -90,14 +98,6 @@ typedef struct RateControlContext{
     int last_non_b_pict_type;
 }RateControlContext;
 
-typedef struct ReorderBuffer{
-    UINT8 *picture[3];
-    int pict_type;
-    int qscale;
-    int force_type;
-    int picture_number;
-    int picture_in_gop_number;
-} ReorderBuffer;
 
 typedef struct ScanTable{
     const UINT8 *scantable;
@@ -108,6 +108,17 @@ typedef struct ScanTable{
     UINT8 __align8 inverse[64];
 #endif
 } ScanTable;
+
+typedef struct Picture{
+    FF_COMMON_FRAME
+
+    int mb_var_sum;             /* sum of MB variance for current frame */
+    int mc_mb_var_sum;          /* motion compensated MB variance for current frame */
+    uint16_t *mb_var;           /* Table for MB variances */
+    uint16_t *mc_mb_var;        /* Table for motion compensated MB variances */
+    uint8_t *mb_mean;           /* Table for MB luminance */
+    int b_frame_score;          /* */
+} Picture;
 
 typedef struct ParseContext{
     UINT8 *buffer;
@@ -145,7 +156,6 @@ typedef struct MpegEncContext {
     int max_qdiff;    /* max qscale difference between frames */
     int encoding;     /* true if we are encoding (vs decoding) */
     int flags;        /* AVCodecContext.flags (HQ, MV4, ...) */
-    int force_input_type;/* 0= no force, otherwise I_TYPE, P_TYPE, ... */
     int max_b_frames; /* max number of b-frames for encoding */
     int b_frame_strategy;
     int luma_elim_threshold;
@@ -160,10 +170,7 @@ typedef struct MpegEncContext {
     /* sequence parameters */
     int context_initialized;
     int input_picture_number;
-    int input_picture_in_gop_number; /* 0-> first pic in gop, ... */
     int picture_number;
-    int fake_picture_number; /* picture number at the bitstream frame rate */
-    int gop_picture_number;  /* index of the first picture of a GOP based on fake_pic_num & mpeg1 specific */
     int picture_in_gop_number; /* 0-> first pic in gop, ... */
     int b_frames_since_non_b;  /* used for encoding, relative to not yet reordered input */
     int mb_width, mb_height;   /* number of MBs horizontally & vertically */
@@ -171,21 +178,13 @@ typedef struct MpegEncContext {
     int mb_num;                /* number of MBs of a picture */
     int linesize;              /* line size, in bytes, may be different from width */
     int uvlinesize;            /* line size, for chroma in bytes, may be different from width */
-    UINT8 *new_picture[3];     /* picture to be compressed */
-    UINT8 *picture_buffer[REORDER_BUFFER_SIZE][3]; /* internal buffers used for reordering of input pictures */
-    int picture_buffer_index;
-    ReorderBuffer coded_order[REORDER_BUFFER_SIZE];
-    UINT8 *last_picture[3];      /* previous picture */
-    UINT8 *last_picture_base[3]; /* real start of the picture */
-    UINT8 *next_picture[3];      /* previous picture (for bidir pred) */
-    UINT8 *next_picture_base[3]; /* real start of the picture */
-    UINT8 *aux_picture[3];       /* aux picture (for B frames only) */
-    UINT8 *aux_picture_base[3];  /* real start of the picture */
-    UINT8 *current_picture[3];   /* buffer to store the decompressed current picture */
-    void *last_dr_opaque;
-    void *next_dr_opaque;
-    int ip_buffer_count;         /* number of buffers, currently only >2 if dr1 is used */
-    int num_available_buffers;   /* is 0 at the start & after seeking, after the first I frame its 1 after next I/P 2 */
+    Picture picture[MAX_PICTURE_COUNT]; /* main picture buffer */
+    Picture *input_picture[MAX_PICTURE_COUNT]; /* next pictures on display order for encoding*/
+    Picture *reordered_input_picture[MAX_PICTURE_COUNT]; /* pointer to the next pictures in codedorder for encoding*/
+    Picture last_picture;       /* previous picture */
+    Picture next_picture;       /* previous picture (for bidir pred) */
+    Picture new_picture;        /* source picture for encoding */
+    Picture current_picture;    /* buffer to store the decompressed current picture */
     int last_dc[3];              /* last DC values for MPEG1 */
     INT16 *dc_val[3];            /* used for mpeg4 DC prediction, all 3 arrays must be continuous */
     int y_dc_scale, c_dc_scale;
@@ -200,17 +199,10 @@ typedef struct MpegEncContext {
     UINT8 *mbintra_table;       /* used to avoid setting {ac, dc, cbp}-pred stuff to zero on inter MB decoding */
     UINT8 *cbp_table;           /* used to store cbp, ac_pred for partitioned decoding */
     UINT8 *pred_dir_table;      /* used to store pred_dir for partitioned decoding */
-    INT8 *qscale_table;         /* used to store qscale */
-    INT8 *aux_qscale_table;
-    INT8 *next_qscale_table;
-    INT8 *last_qscale_table;     //FIXME move these into some picture struct (MpegEncContext.aux.qscale_table[])
     UINT8 *edge_emu_buffer;
 
-    int input_qscale;           /* qscale prior to reordering of frames */
-    int input_pict_type;        /* pict_type prior to reordering of frames */
-    int force_type;             /* 0= no force, otherwise I_TYPE, P_TYPE, ... */
     int qscale;                 /* QP */
-    float frame_qscale;         /* qscale from the frame level rc */
+    float frame_qscale;         /* qscale from the frame level rc FIXME remove*/
     int adaptive_quant;         /* use adaptive quantization */
     int dquant;                 /* qscale difference to prev qscale */ 
     int pict_type;              /* I_TYPE, P_TYPE, B_TYPE, ... */
@@ -261,7 +253,6 @@ typedef struct MpegEncContext {
     UINT16 (*mv_penalty)[MAX_MV*2+1]; /* amount of bits needed to encode a MV, used for ME */
     UINT8 *fcode_tab; /* smallest fcode needed for each MV */
 
-    int has_b_frames;
     int no_rounding; /* apply no rounding to motion compensation (MPEG4, msmpeg4, ...) 
                         for b-frames rounding mode is allways 0 */
 
@@ -272,9 +263,6 @@ typedef struct MpegEncContext {
     int mb_x, mb_y;
     int mb_incr;
     int mb_intra;
-    UINT16 *mb_var;       /* Table for MB variances */
-    UINT16 *mc_mb_var;    /* Table for motion compensated MB variances */
-    UINT8 *mb_mean;       /* Table for MB luminance */
     UINT8 *mb_type;       /* Table for MB type */
 #define MB_TYPE_INTRA    0x01
 #define MB_TYPE_INTER    0x02
@@ -325,8 +313,6 @@ typedef struct MpegEncContext {
 
     /* bit rate control */
     int I_frame_bits; //FIXME used in mpeg12 ...
-    int mb_var_sum;          /* sum of MB variance for current frame */
-    int mc_mb_var_sum;       /* motion compensated MB variance for current frame */
     INT64 wanted_bits;
     INT64 total_bits;
     int frame_bits;        /* bits used for the current frame */
@@ -476,6 +462,10 @@ typedef struct MpegEncContext {
     /* decompression specific */
     GetBitContext gb;
 
+    /* Mpeg1 specific */
+    int fake_picture_number; /* picture number at the bitstream frame rate */
+    int gop_picture_number;  /* index of the first picture of a GOP based on fake_pic_num & mpeg1 specific */
+    
     /* MPEG2 specific - I wish I had not to support this mess. */
     int progressive_sequence;
     int mpeg_f_code[2][2];
@@ -498,7 +488,6 @@ typedef struct MpegEncContext {
     int mpeg2;
     int full_pel[2];
     int interlaced_dct;
-    int last_qscale;
     int first_slice;
     
     /* RTP specific */
@@ -551,6 +540,9 @@ void MPV_common_init_mlib(MpegEncContext *s);
 #ifdef HAVE_MMI
 void MPV_common_init_mmi(MpegEncContext *s);
 #endif
+#ifdef ARCH_ARMV4L
+void MPV_common_init_armv4l(MpegEncContext *s);
+#endif
 #ifdef ARCH_POWERPC
 void MPV_common_init_ppc(MpegEncContext *s);
 #endif
@@ -561,6 +553,8 @@ void ff_clean_intra_table_entries(MpegEncContext *s);
 void ff_init_scantable(MpegEncContext *s, ScanTable *st, const UINT8 *src_scantable);
 void ff_error_resilience(MpegEncContext *s);
 void ff_draw_horiz_band(MpegEncContext *s);
+char ff_get_pict_type_char(int pict_type);
+
 
 extern int ff_bit_exact;
 

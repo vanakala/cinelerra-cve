@@ -59,7 +59,7 @@ void TransitionHandles::update()
 		{
 			if(edit->transition)
 			{
-				long edit_x, edit_y, edit_w, edit_h;
+				int64_t edit_x, edit_y, edit_w, edit_h;
 				trackcanvas->edit_dimensions(edit, edit_x, edit_y, edit_w, edit_h);
 				trackcanvas->get_transition_coords(edit_x, edit_y, edit_w, edit_h);
 				

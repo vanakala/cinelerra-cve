@@ -178,8 +178,8 @@ PLUGIN_THREAD_OBJECT(SwapMain, SwapThread, SwapWindow)
 SwapMain::SwapMain(PluginServer *server)
  : PluginVClient(server)
 {
-	PLUGIN_CONSTRUCTOR_MACRO
 	reset();
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 SwapMain::~SwapMain()
@@ -192,8 +192,6 @@ SwapMain::~SwapMain()
 void SwapMain::reset()
 {
 	temp = 0;
-	thread = 0;
-	defaults = 0;
 }
 
 int SwapMain::is_realtime() 

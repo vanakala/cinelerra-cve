@@ -73,11 +73,11 @@ public:
 
 // Get last contiguous frame from map, with locking.
 // Only needed by BRenderThread::start but nothing really uses it.
-	int get_last_contiguous(long brender_start);
+	int get_last_contiguous(int64_t brender_start);
 // Allocate map with locking
-	void allocate_map(long brender_start, long start, long end);
+	void allocate_map(int64_t brender_start, int64_t start, int64_t end);
 // Mark a frame as finished
-	void set_video_map(long position, int value);
+	void set_video_map(int64_t position, int value);
 
 	void initialize();
 	void run();
@@ -91,7 +91,7 @@ public:
 
 // Simple map of finished chunks
 	unsigned char *map;
-	long map_size;
+	int64_t map_size;
 	Mutex *map_lock;
 
 // Status of each map entry.  This way we get the last contiguous as well as the
@@ -174,7 +174,7 @@ public:
 	int farm_result;
 	double fps_result;
 // Not used
-	long total_frames;
+	int64_t total_frames;
 	Mutex *total_frames_lock;
 	int done;
 };

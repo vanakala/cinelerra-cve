@@ -1,9 +1,9 @@
 #ifndef MPEG3PRIVATE_H
 #define MPEG3PRIVATE_H
 
+#include <pthread.h>
 #include <stdint.h>
 #include <stdio.h>
-#include <pthread.h>
 
 
 
@@ -12,8 +12,9 @@
 
 #define MPEG3_MAJOR   1
 #define MPEG3_MINOR   5
-#define MPEG3_RELEASE 1
+#define MPEG3_RELEASE 2
 
+#define RENDERFARM_FS_PREFIX "vfs://"
 
 
 #define MPEG3_FLOAT32 float
@@ -21,7 +22,7 @@
 #define MPEG3_TOC_PREFIX                 0x544f4320
 #define MPEG3_ID3_PREFIX                 0x494433
 #define MPEG3_IFO_PREFIX                 0x44564456
-#define MPEG3_IO_SIZE                    0x800        /* Bytes read by mpeg3io at a time */
+#define MPEG3_IO_SIZE                    0x100000     /* Bytes read by mpeg3io at a time */
 #define MPEG3_RIFF_CODE                  0x52494646
 #define MPEG3_PROC_CPUINFO               "/proc/cpuinfo"
 #define MPEG3_RAW_SIZE                   0x100000     /* Largest possible packet */
@@ -33,7 +34,7 @@
 #define MPEG3_SEQUENCE_END_CODE          0x000001b7
 #define MPEG3_SYSTEM_START_CODE          0x000001bb
 #define MPEG3_STRLEN                     1024
-#define MPEG3_PIDMAX                     20             /* Maximum number of PIDs in one stream */
+#define MPEG3_PIDMAX                     256             /* Maximum number of PIDs in one stream */
 #define MPEG3_PROGRAM_ASSOCIATION_TABLE  0x00
 #define MPEG3_CONDITIONAL_ACCESS_TABLE   0x01
 #define MPEG3_PACKET_START_CODE_PREFIX   0x000001
@@ -755,7 +756,7 @@ typedef struct
 	int lltempref, llx0, lly0, llprog_frame, llfieldsel;
 	int matrix_coefficients;
 	int framerate_code;
-	float frame_rate;
+	double frame_rate;
 	long *cr_to_r, *cr_to_g, *cb_to_g, *cb_to_b;
 	long *cr_to_r_ptr, *cr_to_g_ptr, *cb_to_g_ptr, *cb_to_b_ptr;
 	int have_mmx;
@@ -785,7 +786,7 @@ typedef struct
 {
 	int width;
 	int height;
-	float frame_rate;
+	double frame_rate;
 	float aspect_ratio;
 	mpeg3_demuxer_t *demuxer;
 	mpeg3video_t *video;
@@ -845,7 +846,7 @@ typedef struct
 	int is_ifo_file;
 	int is_audio_stream;         /* Elemental stream */
 	int is_video_stream;         /* Elemental stream */
-// > 0 if known otherwise determine empirically for every packet
+/* > 0 if known otherwise determine empirically for every packet */
 	long packet_size;
 /* Type and stream for getting current percentage */
 	int last_type_read;  /* 1 - audio   2 - video */

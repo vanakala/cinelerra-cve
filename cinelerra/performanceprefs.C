@@ -122,11 +122,11 @@ int PerformancePrefs::create_objects()
 		this, 
 		x, 
 		y));
-	PrefsRenderFarmPort *port = new PrefsRenderFarmPort(pwindow, 
+	edit_port = new PrefsRenderFarmPort(pwindow, 
 		this, 
 		x + xmargin3, 
 		y);
-	port->create_objects();
+	edit_port->create_objects();
 
 	y += 30;
 
@@ -156,14 +156,6 @@ int PerformancePrefs::create_objects()
 	y += 35;
 	add_subwindow(new BC_Title(x, 
 		y, 
-		"Filesystem prefix on remote nodes:"));
-	add_subwindow(new PrefsRenderFarmMountpoint(pwindow, 
-		this, 
-		x + xmargin3, 
-		y));
-	y += 30;
-	add_subwindow(new BC_Title(x, 
-		y, 
 		"Total jobs to create:"));
 	add_subwindow(new BC_Title(x, 
 		y + 30, 
@@ -173,6 +165,19 @@ int PerformancePrefs::create_objects()
 		x + xmargin3, 
 		y);
 	jobs->create_objects();
+	y += 55;
+	add_subwindow(new PrefsRenderFarmVFS(pwindow,
+		this,
+		x,
+		y));
+// 	add_subwindow(new BC_Title(x, 
+// 		y, 
+// 		"Filesystem prefix on remote nodes:"));
+// 	add_subwindow(new PrefsRenderFarmMountpoint(pwindow, 
+// 		this, 
+// 		x + xmargin3, 
+// 		y));
+// 	y += 30;
 
 	return 0;
 }
@@ -267,9 +272,9 @@ PrefsBRenderFragment::PrefsBRenderFragment(PreferencesWindow *pwindow,
 	int x, 
 	int y)
  : BC_TumbleTextBox(subwindow, 
- 	(long)pwindow->thread->preferences->brender_fragment,
-	(long)1, 
-	(long)65535,
+ 	(int64_t)pwindow->thread->preferences->brender_fragment,
+	(int64_t)1, 
+	(int64_t)65535,
 	x,
 	y,
 	100)
@@ -317,7 +322,7 @@ CICacheSize::CICacheSize(int x, int y, PreferencesWindow *pwindow, char *text)
 
 int CICacheSize::handle_event()
 {
-	long result;
+	int64_t result;
 
 	result = atol(get_text());
 	pwindow->thread->preferences->cache_size = result;
@@ -354,9 +359,9 @@ PrefsBRenderPreroll::PrefsBRenderPreroll(PreferencesWindow *pwindow,
 		int x, 
 		int y)
  : BC_TumbleTextBox(subwindow, 
- 	(long)pwindow->thread->preferences->brender_preroll,
-	(long)0, 
-	(long)100,
+ 	(int64_t)pwindow->thread->preferences->brender_preroll,
+	(int64_t)0, 
+	(int64_t)100,
 	x,
 	y,
 	100)
@@ -448,9 +453,9 @@ PrefsRenderFarmPort::PrefsRenderFarmPort(PreferencesWindow *pwindow,
 	int x, 
 	int y)
  : BC_TumbleTextBox(subwindow, 
- 	(long)pwindow->thread->preferences->renderfarm_port,
-	(long)1, 
-	(long)65535,
+ 	(int64_t)pwindow->thread->preferences->renderfarm_port,
+	(int64_t)1, 
+	(int64_t)65535,
 	x,
 	y,
 	100)
@@ -502,6 +507,7 @@ int PrefsRenderFarmNodes::handle_event()
 	{
 		subwindow->hot_node = get_selection_number(1, 0);
 		subwindow->edit_node->update(get_selection(1, 0)->get_text());
+		subwindow->edit_port->update(get_selection(2, 0)->get_text());
 		if(get_cursor_x() < widths[0])
 		{
 			pwindow->thread->preferences->renderfarm_enabled.values[subwindow->hot_node] = 
@@ -579,7 +585,7 @@ int PrefsRenderFarmNewNode::handle_event()
 
 
 PrefsRenderFarmReplaceNode::PrefsRenderFarmReplaceNode(PreferencesWindow *pwindow, PerformancePrefs *subwindow, int x, int y)
- : BC_GenericButton(x, y, "Replace Node")
+ : BC_GenericButton(x, y, "Apply Changes")
 {
 	this->pwindow = pwindow;
 	this->subwindow = subwindow;
@@ -693,9 +699,9 @@ PrefsRenderFarmJobs::PrefsRenderFarmJobs(PreferencesWindow *pwindow,
 		int x, 
 		int y)
  : BC_TumbleTextBox(subwindow, 
- 	(long)pwindow->thread->preferences->renderfarm_job_count,
-	(long)1, 
-	(long)100,
+ 	(int64_t)pwindow->thread->preferences->renderfarm_job_count,
+	(int64_t)1, 
+	(int64_t)100,
 	x,
 	y,
 	100)
@@ -732,6 +738,25 @@ PrefsRenderFarmMountpoint::~PrefsRenderFarmMountpoint()
 int PrefsRenderFarmMountpoint::handle_event()
 {
 	strcpy(pwindow->thread->preferences->renderfarm_mountpoint, get_text());
+	return 1;
+}
+
+
+
+
+PrefsRenderFarmVFS::PrefsRenderFarmVFS(PreferencesWindow *pwindow,
+	PerformancePrefs *subwindow,
+	int x,
+	int y)
+ : BC_CheckBox(x, y, pwindow->thread->preferences->renderfarm_vfs, "Use virtual filesystem")
+{
+	this->pwindow = pwindow;
+	this->subwindow = subwindow;
+}
+
+int PrefsRenderFarmVFS::handle_event()
+{
+	pwindow->thread->preferences->renderfarm_vfs = get_value();
 	return 1;
 }
 

@@ -61,7 +61,7 @@ Automation& Automation::operator=(Automation& automation)
 	return *this;
 }
 
-void Automation::equivalent_output(Automation *automation, long *result)
+void Automation::equivalent_output(Automation *automation, int64_t *result)
 {
 	mute_autos->equivalent_output(automation->mute_autos, 0, result);
 	if(camera_autos) camera_autos->equivalent_output(automation->camera_autos, 0, result);
@@ -136,8 +136,8 @@ int Automation::load(FileXML *file)
 	return 0;
 }
 
-void Automation::paste(long start, 
-	long length, 
+void Automation::paste(int64_t start, 
+	int64_t length, 
 	double scale,
 	FileXML *file, 
 	int default_only,
@@ -191,12 +191,13 @@ void Automation::paste(long start,
 	}
 }
 
-int Automation::copy(long start, 
-	long end, 
+int Automation::copy(int64_t start, 
+	int64_t end, 
 	FileXML *file, 
 	int default_only,
 	int autos_only)
 {
+//printf("Automation::copy 1\n");
 // Always save these to save default
 	if(mute_autos /* && mute_autos->total() */)
 	{
@@ -213,6 +214,7 @@ int Automation::copy(long start,
 		file->append_newline();
 	}
 
+//printf("Automation::copy 1\n");
 	if(fade_autos /* && fade_autos->total() */)
 	{
 		file->tag.set_title("FADEAUTOS");
@@ -228,6 +230,7 @@ int Automation::copy(long start,
 		file->append_newline();
 	}
 
+//printf("Automation::copy 1\n");
 	if(camera_autos)
 	{
 		file->tag.set_title("CAMERAAUTOS");
@@ -243,6 +246,7 @@ int Automation::copy(long start,
 		file->append_newline();
 	}
 
+//printf("Automation::copy 1\n");
 	if(projector_autos)
 	{
 		file->tag.set_title("PROJECTORAUTOS");
@@ -258,6 +262,7 @@ int Automation::copy(long start,
 		file->append_newline();
 	}
 
+//printf("Automation::copy 1\n");
 	if(pan_autos)
 	{
 		file->tag.set_title("PANAUTOS");
@@ -274,6 +279,7 @@ int Automation::copy(long start,
 		file->append_newline();
 	}
 
+//printf("Automation::copy 1\n");
 	if(mode_autos)
 	{
 		file->tag.set_title("MODEAUTOS");
@@ -289,6 +295,7 @@ int Automation::copy(long start,
 		file->append_newline();
 	}
 
+//printf("Automation::copy 1\n");
 	if(mask_autos)
 	{
 		file->tag.set_title("MASKAUTOS");
@@ -304,6 +311,7 @@ int Automation::copy(long start,
 		file->append_newline();
 	}
 
+//printf("Automation::copy 1\n");
 	if(czoom_autos)
 	{
 		file->tag.set_title("CZOOMAUTOS");
@@ -319,6 +327,7 @@ int Automation::copy(long start,
 		file->append_newline();
 	}
 
+//printf("Automation::copy 1\n");
 	if(pzoom_autos)
 	{
 		file->tag.set_title("PZOOMAUTOS");
@@ -334,12 +343,13 @@ int Automation::copy(long start,
 		file->append_newline();
 	}
 
+//printf("Automation::copy 100\n");
 	return 0;
 }
 
 
-void Automation::clear(long start, 
-	long end, 
+void Automation::clear(int64_t start, 
+	int64_t end, 
 	AutoConf *autoconf, 
 	int shift_autos)
 {
@@ -382,7 +392,7 @@ void Automation::clear(long start,
 	if(temp_autoconf) delete temp_autoconf;
 }
 
-void Automation::paste_silence(long start, long end)
+void Automation::paste_silence(int64_t start, int64_t end)
 {
 // Unit conversion done in calling routine
 	mute_autos->paste_silence(start, end);
@@ -408,8 +418,8 @@ void Automation::paste_silence(long start, long end)
 // when inserting the first EDL of a load operation we need to replace
 // the default keyframe.
 void Automation::insert_track(Automation *automation, 
-	long start_unit, 
-	long length_units,
+	int64_t start_unit, 
+	int64_t length_units,
 	int replace_default)
 {
 	mute_autos->insert_track(automation->mute_autos, 
@@ -466,17 +476,17 @@ void Automation::resample(double old_rate, double new_rate)
 
 
 
-int Automation::direct_copy_possible(long start, int direction)
+int Automation::direct_copy_possible(int64_t start, int direction)
 {
 	return 1;
 }
 
 
 
-long Automation::get_length()
+int64_t Automation::get_length()
 {
-	long length = 0;
-	long total_length = 0;
+	int64_t length = 0;
+	int64_t total_length = 0;
 
 	if(length > total_length) total_length = length;
 

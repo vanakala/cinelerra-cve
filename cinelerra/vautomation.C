@@ -66,12 +66,12 @@ int VAutomation::create_objects()
 	return 0;
 }
 
-int VAutomation::direct_copy_possible(long start, int direction)
+int VAutomation::direct_copy_possible(int64_t start, int direction)
 {
 	BezierAuto *before = 0, *after = 0;
 	FloatAuto *previous = 0, *next = 0;
 	float x, y, z;
-	long end = (direction == PLAY_FORWARD) ? (start + 1) : (start - 1);
+	int64_t end = (direction == PLAY_FORWARD) ? (start + 1) : (start - 1);
 
 	if(!Automation::direct_copy_possible(start, direction))
 		return 0;
@@ -137,7 +137,7 @@ int VAutomation::direct_copy_possible(long start, int direction)
 				&before, 
 				&after);
 
-//printf("VAutomation::direct_copy_possible 8 %f %f %f\n", x, y, z);
+//printf("VAutomation::direct_copy_possible 8 %f %f\n", x, y);
 // Translation no longer used
 	if(!EQUIV(x, 0) || 
 		!EQUIV(y, 0)) return 0;

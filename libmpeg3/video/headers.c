@@ -15,6 +15,7 @@ int mpeg3video_getseqhdr(mpeg3video_t *video)
 	int constrained_parameters_flag;
 	int load_intra_quantizer_matrix, load_non_intra_quantizer_matrix;
 
+//printf("mpeg3video_getseqhdr 1\n");
 	video->horizontal_size = mpeg3bits_getbits(video->vstream, 12);
 	video->vertical_size = mpeg3bits_getbits(video->vstream, 12);
 	aspect_ratio = mpeg3bits_getbits(video->vstream, 4);
@@ -56,6 +57,7 @@ int mpeg3video_getseqhdr(mpeg3video_t *video)
    	 	video->chroma_non_intra_quantizer_matrix[i] = video->non_intra_quantizer_matrix[i];
   	}
 
+//printf("mpeg3video_getseqhdr 100\n");
 	return 0;
 }
 
@@ -371,6 +373,7 @@ int mpeg3video_getgophdr(mpeg3video_t *video)
 {
 	int drop_flag, closed_gop, broken_link;
 
+//printf("mpeg3video_getgophdr 1\n");
 	video->has_gops = 1;
 	drop_flag = mpeg3bits_getbit_noptr(video->vstream);
 	video->gop_timecode.hour = mpeg3bits_getbits(video->vstream, 5);
@@ -381,6 +384,7 @@ int mpeg3video_getgophdr(mpeg3video_t *video)
 	closed_gop = mpeg3bits_getbit_noptr(video->vstream);
 	broken_link = mpeg3bits_getbit_noptr(video->vstream);
 
+//printf("mpeg3video_getgophdr 100\n");
 /*
  * printf("%d:%d:%d:%d %d %d %d\n", video->gop_timecode.hour, video->gop_timecode.minute, video->gop_timecode.second, video->gop_timecode.frame, 
  *  	drop_flag, closed_gop, broken_link);
@@ -458,7 +462,7 @@ int mpeg3video_get_header(mpeg3video_t *video, int dont_repeat)
 /* look for startcode */
     	code = mpeg3bits_next_startcode(video->vstream);
 
-//printf("mpeg3video_get_header 20\n");
+//printf("mpeg3video_get_header 20 %08x\n", code);
 
 /*
  * printf("mpeg3video_get_header 2 %llx %llx %08x\n", 
@@ -467,16 +471,21 @@ int mpeg3video_get_header(mpeg3video_t *video, int dont_repeat)
  * code);
  */
 
-//printf("mpeg3video_get_header 2 %d\n", mpeg3bits_eof(video->vstream));
+//printf("mpeg3video_get_header 2 %p\n", video->vstream->demuxer);
 		if(mpeg3bits_eof(video->vstream)) return 1;
+//printf("mpeg3video_get_header 1\n");
 		if(code != MPEG3_SEQUENCE_END_CODE) mpeg3bits_refill(video->vstream);
  
+//printf("mpeg3video_get_header 1\n");
     	switch(code)
 		{
     		case MPEG3_SEQUENCE_START_CODE:
     			video->found_seqhdr = 1;
+//printf("mpeg3video_get_header 1\n");
     			mpeg3video_getseqhdr(video);  
+//printf("mpeg3video_get_header 1\n");
     			mpeg3video_ext_user_data(video);
+//printf("mpeg3video_get_header 100\n");
     			break;
 
     		case MPEG3_GOP_START_CODE:

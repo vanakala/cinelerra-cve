@@ -1,5 +1,25 @@
+#include "qtprivate.h"
 #include "quicktime.h"
 #include "wmx2.h"
+
+typedef struct
+{
+/* During decoding the work_buffer contains the most recently read chunk. */
+/* During encoding the work_buffer contains interlaced overflow samples  */
+/* from the last chunk written. */
+	int16_t *write_buffer;
+	unsigned char *read_buffer;    /* Temporary buffer for drive reads. */
+
+/* Starting information for all channels during encoding a chunk. */
+	int *last_samples, *last_indexes;
+	long chunk; /* Number of chunk in work buffer */
+	int buffer_channel; /* Channel of work buffer */
+
+/* Number of samples in largest chunk read. */
+/* Number of samples plus overflow in largest chunk write, interlaced. */
+	long write_size;     /* Size of write buffer. */
+	long read_size;     /* Size of read buffer. */
+} quicktime_wmx2_codec_t;
 
 static int quicktime_wmx2_step[89] = 
 {
@@ -332,8 +352,10 @@ static int encode(quicktime_t *file,
 	long offset;
 	quicktime_audio_map_t *track_map = &(file->atracks[track]);
 	quicktime_wmx2_codec_t *codec = ((quicktime_codec_t*)track_map->codec)->priv;
+	quicktime_trak_t *trak = track_map->track;
 	int16_t *input_ptr;
 	unsigned char *output_ptr;
+	quicktime_atom_t chunk_atom;
 
 /* Get buffer sizes */
 	if(codec->write_buffer && codec->write_size < samples * track_map->channels)
@@ -426,16 +448,18 @@ static int encode(quicktime_t *file,
 	if(samples)
 	{
 		offset = quicktime_position(file);
+		quicktime_write_chunk_header(file, trak, &chunk_atom);
 		result = quicktime_write_data(file, codec->read_buffer, chunk_bytes);
-		if(result) result = 0; else result = 1; /* defeat fwrite's return */
-		quicktime_update_tables(file,
-							track_map->track, 
-							offset, 
-							track_map->current_chunk, 
-							track_map->current_position, 
-							samples, 
-							0);
-		file->atracks[track].current_chunk++;
+		if(result)
+			result = 0; 
+		else 
+			result = 1; /* defeat fwrite's return */
+		quicktime_write_chunk_footer(file, 
+			trak,
+			track_map->current_chunk,
+			&chunk_atom, 
+			1);
+		track_map->current_chunk++;
 	}
 
 	return result;
@@ -462,24 +486,17 @@ static int delete_codec(quicktime_audio_map_t *atrack)
 
 void quicktime_init_codec_wmx2(quicktime_audio_map_t *atrack)
 {
-	quicktime_wmx2_codec_t *codec;
+	quicktime_codec_t *codec_base = (quicktime_codec_t*)atrack->codec;
 
 /* Init public items */
-	((quicktime_codec_t*)atrack->codec)->priv = calloc(1, sizeof(quicktime_wmx2_codec_t));
-	((quicktime_codec_t*)atrack->codec)->delete_acodec = delete_codec;
-	((quicktime_codec_t*)atrack->codec)->decode_video = 0;
-	((quicktime_codec_t*)atrack->codec)->encode_video = 0;
-	((quicktime_codec_t*)atrack->codec)->decode_audio = decode;
-	((quicktime_codec_t*)atrack->codec)->encode_audio = encode;
-
-/* Init private items */
-	codec = ((quicktime_codec_t*)atrack->codec)->priv;
-	codec->write_buffer = 0;
-	codec->read_buffer = 0;
-	codec->chunk = 0;
-	codec->buffer_channel = 0;
-	codec->write_size = 0;
-	codec->read_size = 0;
-	codec->last_samples = 0;
-	codec->last_indexes = 0;
+	codec_base->priv = calloc(1, sizeof(quicktime_wmx2_codec_t));
+	codec_base->delete_acodec = delete_codec;
+	codec_base->decode_video = 0;
+	codec_base->encode_video = 0;
+	codec_base->decode_audio = decode;
+	codec_base->encode_audio = encode;
+	codec_base->fourcc = QUICKTIME_WMX2;
+	codec_base->title = "IMA4 on steroids";
+	codec_base->desc = "IMA4 on steroids. (Not standardized)";
+	codec_base->wav_id = 0x11;
 }

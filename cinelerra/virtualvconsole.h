@@ -26,11 +26,11 @@ public:
 
 	int stop_rendering(int duplicate);
 
-	int process_buffer(long input_position); // start of buffer in project if forward / end of buffer if reverse
+	int process_buffer(int64_t input_position); // start of buffer in project if forward / end of buffer if reverse
 
 	int send_last_output_buffer();
 
-	long absolute_frame;        // absolute frame the buffer starts on
+	int64_t absolute_frame;        // absolute frame the buffer starts on
 // Pointers to frames to read from disk.  Single ring buffer
 // (VFrame*)(Track*)
 	VFrame **buffer_in;

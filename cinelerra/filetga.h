@@ -24,7 +24,7 @@ public:
 	static void read_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp);
 	static void write_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp);
 
-	int can_copy_from(Edit *edit, long position);
+	int can_copy_from(Edit *edit, int64_t position);
 	static int get_best_colormodel(Asset *asset, int driver);
 	int colormodel_supported(int colormodel);
 	int read_frame(VFrame *frame, VFrame *data);
@@ -37,11 +37,11 @@ public:
 private:
 	static void write_data(unsigned char *buffer, 
 		VFrame *data, 
-		long &file_offset,
-		long len);
+		int64_t &file_offset,
+		int64_t len);
 	static void read_line(unsigned char *row,
 		unsigned char *data,
-		long &file_offset,
+		int64_t &file_offset,
 		int image_type,
 		int bpp,
 		int image_compression,
@@ -53,14 +53,14 @@ private:
 	static void flip_line(unsigned char *row, int bytes, int width);
 	static void rle_read(unsigned char *row,
 		unsigned char *data,
-		long &file_offset,
+		int64_t &file_offset,
 		int bytes,
 		int width);
 	static void rle_write(unsigned char *buffer, 
 		int width, 
 		int bytes, 
 		VFrame *frame, 
-		long &file_offset);
+		int64_t &file_offset);
 	static void bgr2rgb(unsigned char *dest,
 		 unsigned char *src,
 		 int width,

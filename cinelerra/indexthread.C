@@ -17,8 +17,8 @@ IndexThread::IndexThread(MWindow *mwindow,
 						IndexFile *index_file,
 						Asset *asset,
 						char *index_filename,
-						long buffer_size, 
-						long length_source)
+						int64_t buffer_size, 
+						int64_t length_source)
 {
 	this->asset = asset;
 	this->buffer_size = buffer_size;
@@ -28,14 +28,14 @@ IndexThread::IndexThread(MWindow *mwindow,
 	this->index_file = index_file;
 
 // initialize output data
-	long index_size = mwindow->preferences->index_size / 
+	int64_t index_size = mwindow->preferences->index_size / 
 		sizeof(float) + 1;      // size of output file in floats
 	if(asset->index_buffer) delete asset->index_buffer;
 	if(asset->index_offsets) delete asset->index_offsets;
 // buffer used for drawing during the build.  This is not deleted in the asset
 	asset->index_buffer = new float[index_size];  
 // This is deleted in the asset's destructor
-	asset->index_offsets = new long[asset->channels];
+	asset->index_offsets = new int64_t[asset->channels];
 	bzero(asset->index_buffer, index_size * sizeof(float));
 //printf("IndexThread::IndexThread %d\n", index_size);
 
@@ -87,19 +87,19 @@ void IndexThread::run()
 	int done = 0;
 
 // current high samples in index
-	long *highpoint;            
+	int64_t *highpoint;            
 // current low samples in the index
-	long *lowpoint;             
+	int64_t *lowpoint;             
 // position in current indexframe
-	long *frame_position;
+	int64_t *frame_position;
 	int first_point = 1;
 
-	highpoint = new long[asset->channels];
-	lowpoint = new long[asset->channels];
-	frame_position = new long[asset->channels];
+	highpoint = new int64_t[asset->channels];
+	lowpoint = new int64_t[asset->channels];
+	frame_position = new int64_t[asset->channels];
 
 // predict first highpoint for each channel plus padding and initialize it
-	for(long channel = 0; channel < asset->channels; channel++)
+	for(int64_t channel = 0; channel < asset->channels; channel++)
 	{
 		highpoint[channel] = 
 			asset->index_offsets[channel] = 
@@ -113,11 +113,11 @@ void IndexThread::run()
 		frame_position[channel] = 0;
 	}
 
-	long index_start = 0;    // end of index during last edit update
+	int64_t index_start = 0;    // end of index during last edit update
 	asset->index_end = 0;      // samples in source completed
 	asset->old_index_end = 0;
 	asset->index_status = 2;
-	long zoomx = asset->index_zoom;
+	int64_t zoomx = asset->index_zoom;
 	float *index_buffer = asset->index_buffer;    // output of index build
 
 //	index_file->redraw_edits();
@@ -130,17 +130,17 @@ void IndexThread::run()
 		if(!interrupt_flag && !done)
 		{
 // process buffer
-			long fragment_size = input_len[current_buffer];
+			int64_t fragment_size = input_len[current_buffer];
 
 //printf("IndexThread::run 1\n");
 			for(int channel = 0; channel < asset->channels; channel++)
 			{
-				long *highpoint_channel = &highpoint[channel];
-				long *lowpoint_channel = &lowpoint[channel];
-				long *frame_position_channel = &frame_position[channel];
+				int64_t *highpoint_channel = &highpoint[channel];
+				int64_t *lowpoint_channel = &lowpoint[channel];
+				int64_t *frame_position_channel = &frame_position[channel];
 				double *buffer_source = buffer_in[current_buffer][channel];
 
-				for(long i = 0; i < fragment_size; i++)
+				for(int64_t i = 0; i < fragment_size; i++)
 				{
 					if(*frame_position_channel == zoomx)
 					{
@@ -202,7 +202,7 @@ void IndexThread::run()
 	else
 	{
 		FileXML xml;
-		fwrite((char*)&(asset->index_start), sizeof(long), 1, file);
+		fwrite((char*)&(asset->index_start), sizeof(int64_t), 1, file);
 
 		asset->index_status = INDEX_READY;
 		asset->write(mwindow->plugindb, 
@@ -212,7 +212,7 @@ void IndexThread::run()
 		xml.write_to_file(file);
 		asset->index_start = ftell(file);
 		fseek(file, 0, SEEK_SET);
-		fwrite((char*)&(asset->index_start), sizeof(long), 1, file);
+		fwrite((char*)&(asset->index_start), sizeof(int64_t), 1, file);
 		fseek(file, asset->index_start, SEEK_SET);
 		
 		fwrite(asset->index_buffer, (lowpoint[asset->channels - 1] + 1) * sizeof(float), 1, file);

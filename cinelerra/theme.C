@@ -34,6 +34,7 @@
 
 
 Theme::Theme()
+ : BC_Theme()
 {
 	this->mwindow = 0;
 	theme_title = DEFAULT_THEME;
@@ -83,143 +84,143 @@ Theme::~Theme()
 	zoom_values.remove_all_objects();
 
 
-
-	delete about_bg;
-	delete about_microsoft;
-	delete [] appendasset_data;
-	delete [] append_data;
-	delete [] arrow_data;
-	delete [] asset_append_data;
-	delete [] asset_disk_data;
-	delete [] asset_index_data;
-	delete [] asset_info_data;
-	delete [] asset_project_data;
-	delete [] autokeyframe_data;
-	delete awindow_icon;
-	delete [] bottom_justify;
-	delete [] browse_data;
-	delete [] calibrate_data;
-	delete [] camera_data;
-	delete camerakeyframe_data;
-	delete [] cancel_data;
-	delete [] center_justify;
-	delete [] chain_data;
-	delete channel_bg_data;
-	delete [] channel_data;
-	delete channel_position_data;
-	delete clip_icon;
-	delete [] copy_data;
-	delete [] crop_data;
-	delete [] cut_data;
-	delete cwindow_icon;
-	delete [] delete_all_indexes_data;
-	delete [] deletebin_data;
-	delete [] delete_data;
-	delete [] deletedisk_data;
-	delete [] deleteproject_data;
-	delete [] detach_data;
-	delete [] dntriangle_data;
-	delete [] drawpatch_data;
-	delete [] duplex_data;
-	delete [] edit_data;
-	delete [] edithandlein_data;
-	delete [] edithandleout_data;
-	delete [] end_data;
-	delete [] expandpatch_data;
-	delete [] extract_data;
-	delete [] fastfwd_data;
-	delete [] fastrev_data;
-	delete [] fit_data;
-	delete [] forward_data;
-	delete [] framefwd_data;
-	delete [] framerev_data;
-	delete [] gangpatch_data;
-	delete [] ibeam_data;
-	delete [] in_data;
-	delete [] indelete_data;
-	delete [] infoasset_data;
-	delete [] in_point;
-	delete [] insert_data;
-	delete keyframe_data;
-	delete [] labelbutton_data;
-	delete [] label_toggle;
-	delete [] left_justify;
-	delete [] lift_data;
-	delete [] magnify_button_data;
-	delete [] magnify_data;
-	delete [] mask_data;
-	delete maskkeyframe_data;
-	delete [] middle_justify;
-	delete modekeyframe_data;
-	delete [] movedn_data;
-	delete [] moveup_data;
-	delete [] mutepatch_data;
-	delete mwindow_icon;
-	delete [] newbin_data;
-	delete [] nextlabel_data;
-	delete [] no_data;
-	delete [] options_data;
-	delete [] out_data;
-	delete [] outdelete_data;
-	delete [] out_point;
-	delete [] over_button;
-	delete [] overwrite_data;
-	delete pankeyframe_data;
-	delete [] pasteasset_data;
-	delete [] paste_data;
-	delete patchbay_bg;
-	delete [] pause_data;
-	delete [] paused_data;
-	delete [] picture_data;
-	delete [] playpatch_data;
-	delete plugin_bg_data;
-	delete [] presentation_data;
-	delete [] presentation_loop;
-	delete [] presentation_stop;
-	delete [] prevlabel_data;
-	delete [] proj_data;
-	delete projectorkeyframe_data;
-	delete [] protect_data;
-	delete [] rec_data;
-	delete [] recframe_data;
-	delete record_icon;
-	delete [] recordpatch_data;
-	delete [] redo_data;
-	delete [] redrawindex_data;
-	delete [] renamebin_data;
-	delete [] reset_data;
-	delete resource1024_bg_data;
-	delete resource128_bg_data;
-	delete resource256_bg_data;
-	delete resource32_bg_data;
-	delete resource512_bg_data;
-	delete resource64_bg_data;
-	delete [] reverse_data;
-	delete [] rewind_data;
-	delete [] right_justify;
-	delete [] select_data;
-	delete [] show_meters;
-	delete [] splice_data;
-	delete [] start_over_data;
-	delete [] statusbar_cancel_data;
-	delete [] stop_data;
-	delete [] stoprec_data;
-	delete timebar_bg_data;
-	delete timebar_brender_data;
-	delete timebar_view_data;
-	delete title_bg_data;
-	delete [] titlesafe_data;
-	delete [] toclip_data;
-	delete [] tool_data;
-	delete [] top_justify;
-	delete [] transition_data;
-	delete [] undo_data;
-	delete [] uptriangle_data;
-	delete [] viewasset_data;
-	delete vtimebar_bg_data;
-	delete vwindow_icon;
-	delete [] wrench_data;
-	delete [] yes_data;
+// 
+// 	delete about_bg;
+// 	delete about_microsoft;
+// 	delete [] appendasset_data;
+// 	delete [] append_data;
+// 	delete [] arrow_data;
+// 	delete [] asset_append_data;
+// 	delete [] asset_disk_data;
+// 	delete [] asset_index_data;
+// 	delete [] asset_info_data;
+// 	delete [] asset_project_data;
+// 	delete [] autokeyframe_data;
+// 	delete awindow_icon;
+// 	delete [] bottom_justify;
+// 	delete [] browse_data;
+// 	delete [] calibrate_data;
+// 	delete [] camera_data;
+// 	delete camerakeyframe_data;
+// 	delete [] cancel_data;
+// 	delete [] center_justify;
+// 	delete [] chain_data;
+// 	delete channel_bg_data;
+// 	delete [] channel_data;
+// 	delete channel_position_data;
+// 	delete clip_icon;
+// 	delete [] copy_data;
+// 	delete [] crop_data;
+// 	delete [] cut_data;
+// 	delete cwindow_icon;
+// 	delete [] delete_all_indexes_data;
+// 	delete [] deletebin_data;
+// 	delete [] delete_data;
+// 	delete [] deletedisk_data;
+// 	delete [] deleteproject_data;
+// 	delete [] detach_data;
+// 	delete [] dntriangle_data;
+// 	delete [] drawpatch_data;
+// 	delete [] duplex_data;
+// 	delete [] edit_data;
+// 	delete [] edithandlein_data;
+// 	delete [] edithandleout_data;
+// 	delete [] end_data;
+// 	delete [] expandpatch_data;
+// 	delete [] extract_data;
+// 	delete [] fastfwd_data;
+// 	delete [] fastrev_data;
+// 	delete [] fit_data;
+// 	delete [] forward_data;
+// 	delete [] framefwd_data;
+// 	delete [] framerev_data;
+// 	delete [] gangpatch_data;
+// 	delete [] ibeam_data;
+// 	delete [] in_data;
+// 	delete [] indelete_data;
+// 	delete [] infoasset_data;
+// 	delete [] in_point;
+// 	delete [] insert_data;
+// 	delete keyframe_data;
+// 	delete [] labelbutton_data;
+// 	delete [] label_toggle;
+// 	delete [] left_justify;
+// 	delete [] lift_data;
+// 	delete [] magnify_button_data;
+// 	delete [] magnify_data;
+// 	delete [] mask_data;
+// 	delete maskkeyframe_data;
+// 	delete [] middle_justify;
+// 	delete modekeyframe_data;
+// 	delete [] movedn_data;
+// 	delete [] moveup_data;
+// 	delete [] mutepatch_data;
+// 	delete mwindow_icon;
+// 	delete [] newbin_data;
+// 	delete [] nextlabel_data;
+// 	delete [] no_data;
+// 	delete [] options_data;
+// 	delete [] out_data;
+// 	delete [] outdelete_data;
+// 	delete [] out_point;
+// 	delete [] over_button;
+// 	delete [] overwrite_data;
+// 	delete pankeyframe_data;
+// 	delete [] pasteasset_data;
+// 	delete [] paste_data;
+// 	delete patchbay_bg;
+// 	delete [] pause_data;
+// 	delete [] paused_data;
+// 	delete [] picture_data;
+// 	delete [] playpatch_data;
+// 	delete plugin_bg_data;
+// 	delete [] presentation_data;
+// 	delete [] presentation_loop;
+// 	delete [] presentation_stop;
+// 	delete [] prevlabel_data;
+// 	delete [] proj_data;
+// 	delete projectorkeyframe_data;
+// 	delete [] protect_data;
+// 	delete [] rec_data;
+// 	delete [] recframe_data;
+// 	delete record_icon;
+// 	delete [] recordpatch_data;
+// 	delete [] redo_data;
+// 	delete [] redrawindex_data;
+// 	delete [] renamebin_data;
+// 	delete [] reset_data;
+// 	delete resource1024_bg_data;
+// 	delete resource128_bg_data;
+// 	delete resource256_bg_data;
+// 	delete resource32_bg_data;
+// 	delete resource512_bg_data;
+// 	delete resource64_bg_data;
+// 	delete [] reverse_data;
+// 	delete [] rewind_data;
+// 	delete [] right_justify;
+// 	delete [] select_data;
+// 	delete [] show_meters;
+// 	delete [] splice_data;
+// 	delete [] start_over_data;
+// 	delete [] statusbar_cancel_data;
+// 	delete [] stop_data;
+// 	delete [] stoprec_data;
+// 	delete timebar_bg_data;
+// 	delete timebar_brender_data;
+// 	delete timebar_view_data;
+// 	delete title_bg_data;
+// 	delete [] titlesafe_data;
+// 	delete [] toclip_data;
+// 	delete [] tool_data;
+// 	delete [] top_justify;
+// 	delete [] transition_data;
+// 	delete [] undo_data;
+// 	delete [] uptriangle_data;
+// 	delete [] viewasset_data;
+// 	delete vtimebar_bg_data;
+// 	delete vwindow_icon;
+// 	delete [] wrench_data;
+// 	delete [] yes_data;
 //printf("Theme::~Theme 2\n");
 }
 
@@ -316,6 +317,7 @@ void Theme::build_menus()
 	aspect_ratios.append(new BC_ListBoxItem("2.10:1"));
 	aspect_ratios.append(new BC_ListBoxItem("2.20:1"));
 	aspect_ratios.append(new BC_ListBoxItem("2.25:1"));
+	aspect_ratios.append(new BC_ListBoxItem("2.30:1"));
 	aspect_ratios.append(new BC_ListBoxItem("2.35:1"));
 	aspect_ratios.append(new BC_ListBoxItem("2.66:1"));
 	frame_sizes.append(new BC_ListBoxItem("160x120"));
@@ -328,7 +330,9 @@ void Theme::build_menus()
 	frame_sizes.append(new BC_ListBoxItem("720x480"));
 	frame_sizes.append(new BC_ListBoxItem("720x576"));
 	frame_sizes.append(new BC_ListBoxItem("1280x720"));
+	frame_sizes.append(new BC_ListBoxItem("960x1080"));
 	frame_sizes.append(new BC_ListBoxItem("1920x1080"));
+	frame_sizes.append(new BC_ListBoxItem("1920x1088"));
 	sample_rates.append(new BC_ListBoxItem("8000"));
 	sample_rates.append(new BC_ListBoxItem("16000"));
 	sample_rates.append(new BC_ListBoxItem("22050"));
@@ -733,15 +737,16 @@ void Theme::get_recordmonitor_sizes(int do_audio,
 		rmonitor_meter_x = mwindow->session->rmonitor_w;
 	}
 
-	if(do_video)
-	{
+// 	if(do_video)
+// 	{
 		rmonitor_canvas_x = 0;
 		rmonitor_canvas_y = 35;
-		rmonitor_canvas_w = rmonitor_meter_x - rmonitor_canvas_x - 10;
+		rmonitor_canvas_w = rmonitor_meter_x - rmonitor_canvas_x;
+		if(do_audio) rmonitor_canvas_w -= 10;
 		rmonitor_canvas_h = mwindow->session->rmonitor_h - rmonitor_canvas_y;
 		rmonitor_channel_x = 220;
 		rmonitor_channel_y = 5;
-	}
+//	}
 }
 
 void Theme::get_recordgui_sizes(RecordGUI *gui, int w, int h)
@@ -796,6 +801,30 @@ void Theme::get_plugindialog_sizes()
 	plugindialog_sharedattach_y = plugindialog_shared_y + plugindialog_shared_h + 10;
 	plugindialog_moduleattach_x = plugindialog_module_x + 20;
 	plugindialog_moduleattach_y = plugindialog_module_y + plugindialog_module_h + 10;
+}
+
+void Theme::get_menueffect_sizes(int use_list)
+{
+	if(use_list)
+	{
+		menueffect_list_x = 10;
+		menueffect_list_y = 10;
+		menueffect_list_w = mwindow->session->menueffect_w - 400;
+		menueffect_list_h = mwindow->session->menueffect_h - 70;
+	}
+	else
+	{
+		menueffect_list_x = 0;
+		menueffect_list_y = 10;
+		menueffect_list_w = 0;
+		menueffect_list_h = 0;
+	}
+
+	menueffect_file_x = menueffect_list_x + menueffect_list_w + 10;
+	menueffect_file_y = 10;
+
+	menueffect_tools_x = menueffect_file_x;
+	menueffect_tools_y = menueffect_file_y + 20;
 }
 
 void Theme::get_preferences_sizes()

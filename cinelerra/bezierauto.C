@@ -67,7 +67,7 @@ void BezierAuto::copy_from(BezierAuto *that)
 	control_out_z = that->control_out_z;
 }
 
-void BezierAuto::copy(long start, long end, FileXML *file, int default_auto)
+void BezierAuto::copy(int64_t start, int64_t end, FileXML *file, int default_auto)
 {
 	file->tag.set_title("AUTO");
 	if(default_auto)

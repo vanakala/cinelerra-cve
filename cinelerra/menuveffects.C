@@ -78,12 +78,12 @@ PluginArray* MenuVEffectThread::create_plugin_array()
 	return new VPluginArray();
 }
 
-long MenuVEffectThread::to_units(double position, int round)
+int64_t MenuVEffectThread::to_units(double position, int round)
 {
 	if(round)
 		return Units::round(position * mwindow->edl->session->frame_rate);
 	else
-		return (long)(position * mwindow->edl->session->frame_rate);
+		return (int64_t)(position * mwindow->edl->session->frame_rate);
 		
 	return 0;
 }

@@ -1,16 +1,34 @@
 /* config.h.in.  Generated from configure.in by autoheader.  */
 
+/* "Do you have asm?" */
+#undef HAVE_ASM_NASM
+
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
 
+/* Define to 1 if you have the <lame/lame.h> header file. */
+#undef HAVE_LAME_LAME_H
+
 /* Define to 1 if you have the `asound' library (-lasound). */
 #undef HAVE_LIBASOUND
 
+/* Define to 1 if you have the `sndfile' library (-lsndfile). */
+#undef HAVE_LIBSNDFILE
+
+/* Define to 1 if you have the `uuid' library (-luuid). */
+#undef HAVE_LIBUUID
+
+/* Define to 1 if you have the `xvidcore' library (-lxvidcore). */
+#undef HAVE_LIBXVIDCORE
+
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
+
+/* Define to 1 if you have the <sndfile.h> header file. */
+#undef HAVE_SNDFILE_H
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
@@ -32,6 +50,12 @@
 
 /* Define to 1 if you have the <unistd.h> header file. */
 #undef HAVE_UNISTD_H
+
+/* Define to 1 if you have the <uuid/uuid.h> header file. */
+#undef HAVE_UUID_UUID_H
+
+/* Define to 1 if you have the <xvid.h> header file. */
+#undef HAVE_XVID_H
 
 /* Name of package */
 #undef PACKAGE

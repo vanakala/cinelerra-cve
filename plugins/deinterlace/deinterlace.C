@@ -46,9 +46,9 @@ void DeInterlaceConfig::copy_from(DeInterlaceConfig &that)
 
 void DeInterlaceConfig::interpolate(DeInterlaceConfig &prev, 
 	DeInterlaceConfig &next, 
-	long prev_frame, 
-	long next_frame, 
-	long current_frame)
+	int64_t prev_frame, 
+	int64_t next_frame, 
+	int64_t current_frame)
 {
 	copy_from(prev);
 }
@@ -163,6 +163,11 @@ int DeInterlaceMain::is_realtime() { return 1; }
 	{ \
 		output->copy_from(temp); \
 		changed_rows = 240; \
+	} \
+	else \
+	{ \
+		output->copy_from(input); \
+		changed_rows = 0; \
 	} \
  \
 }

@@ -394,7 +394,7 @@ void IVTCMain::update_gui()
 	{
 		load_configuration();
 		thread->window->lock_window();
-		thread->window->frame_offset->update((long)config.frame_offset);
+		thread->window->frame_offset->update((int64_t)config.frame_offset);
 		thread->window->first_field->update(config.first_field);
 		thread->window->automatic->update(config.automatic);
 		thread->window->pattern[0]->update(config.pattern == 0);

@@ -49,10 +49,10 @@
 
 
 
-void MWindow::add_audio_track_entry(Track *dst)
+void MWindow::add_audio_track_entry(int above, Track *dst)
 {
 	undo->update_undo_before("add track", LOAD_ALL);
-	add_audio_track(0, dst);
+	add_audio_track(1, dst);
 	save_backup();
 	undo->update_undo_after();
 
@@ -133,15 +133,10 @@ void MWindow::asset_to_size()
 
 
 
-
-
-void MWindow::clear()
+void MWindow::clear_entry()
 {
 	undo->update_undo_before("clear", LOAD_EDITS | LOAD_TIMEBAR);
-	edl->clear(edl->local_session->get_selectionstart(), 
-		edl->local_session->get_selectionend(), 
-		edl->session->labels_follow_edits, 
-		edl->session->plugins_follow_edits);
+	clear(1);
 
 	edl->optimize();
 	save_backup();
@@ -155,7 +150,19 @@ void MWindow::clear()
 	    		   CHANGE_EDL,
 	    		   edl,
 	    		   1);
+}
 
+void MWindow::clear(int clear_handle)
+{
+	double start = edl->local_session->get_selectionstart();
+	double end = edl->local_session->get_selectionend();
+	if(clear_handle || !EQUIV(start, end))
+	{
+		edl->clear(start, 
+			end, 
+			edl->session->labels_follow_edits, 
+			edl->session->plugins_follow_edits);
+	}
 }
 
 void MWindow::clear_automation()
@@ -483,31 +490,21 @@ void MWindow::insert(double position,
 // For splice, overwrite, and dragging need same session to get the assets.
 	EDL edl(parent_edl);
 	ArrayList<EDL*> new_edls;
-	unsigned long load_flags = LOAD_ALL;
+	uint32_t load_flags = LOAD_ALL;
 
 	new_edls.append(&edl);
 	edl.create_objects();
 
 
-//printf("MWindow::insert 1 %p\n", edl.local_session);
 
 	if(parent_edl) load_flags &= ~LOAD_SESSION;
 	if(!edl.session->autos_follow_edits) load_flags &= ~LOAD_AUTOMATION;
-//printf("MWindow::insert 2 %p\n", vwindow->get_edl());
 	if(!edl.session->labels_follow_edits) load_flags &= ~LOAD_TIMEBAR;
-//printf("MWindow::insert 3 %d\n", this->edl->session->sample_rate);
 	edl.load_xml(plugindb, file, load_flags);
-//printf("MWindow::insert 4 %d\n", this->edl->session->sample_rate);
 
 
 
 
-//file->dump();
-//edl.dump();
-// if(vwindow->edl)
-// printf("MWindow::insert 4 %f %f\n", 
-// vwindow->edl->local_session->in_point,
-// vwindow->edl->local_session->out_point);
 
 	paste_edls(&new_edls, 
 		LOAD_PASTE, 
@@ -770,7 +767,7 @@ void MWindow::move_edits(ArrayList<Edit*> *edits,
 void MWindow::move_effect(Plugin *plugin,
 	PluginSet *dest_plugin_set,
 	Track *dest_track,
-	long dest_position)
+	int64_t dest_position)
 {
 	undo->update_undo_before("move effect", LOAD_ALL);
 
@@ -969,13 +966,7 @@ int MWindow::paste(double start,
 	int edit_plugins)
 {
 //printf("MWindow::paste 1\n");
-	if(!EQUIV(start, end))
-	{
-		edl->clear(start, 
-			end,
-			edit_labels,
-			edit_plugins);
-	}
+	clear(0);
 
 // Want to insert with assets shared with the master EDL.
 	insert(start, 
@@ -993,7 +984,7 @@ void MWindow::paste()
 {
 	double start = edl->local_session->get_selectionstart();
 	double end = edl->local_session->get_selectionend();
-	long len = gui->get_clipboard()->clipboard_len(SECONDARY_SELECTION);
+	int64_t len = gui->get_clipboard()->clipboard_len(SECONDARY_SELECTION);
 	char *string = new char[len + 1];
 
 	gui->get_clipboard()->from_clipboard(string, 
@@ -1005,15 +996,7 @@ void MWindow::paste()
 
 	undo->update_undo_before("paste", LOAD_EDITS | LOAD_TIMEBAR);
 
-
-	if(!EQUIV(start, end))
-	{
-		edl->clear(start, 
-			end, 
-			edl->session->labels_follow_edits, 
-			edl->session->plugins_follow_edits);
-	}
-
+	clear(0);
 	insert(start, 
 		&file, 
 		edl->session->labels_follow_edits, 
@@ -1038,15 +1021,12 @@ int MWindow::paste_assets(double position, Track *dest_track)
 {
 	int result = 0;
 
-//printf("MWindow::paste_assets 1\n");
 	undo->update_undo_before("paste assets", LOAD_EDITS);
-//printf("MWindow::paste_assets 2\n");
 
 
 
 	if(session->drag_assets->total)
 	{
-//printf("MWindow::paste_assets 3\n");
 		load_assets(session->drag_assets, 
 			position, 
 			LOAD_PASTE,
@@ -1057,10 +1037,6 @@ int MWindow::paste_assets(double position, Track *dest_track)
 		result = 1;
 	}
 
-
-
-//printf("TrackCanvas::drag_stop 4 %d\n", session->drag_clips->total);
-//printf("MWindow::paste_assets 4\n");
 
 	if(session->drag_clips->total)
 	{
@@ -1076,10 +1052,8 @@ int MWindow::paste_assets(double position, Track *dest_track)
 
 	save_backup();
 
-//printf("MWindow::paste_assets 5\n");
 	undo->update_undo_after();
 	restart_brender();
-//printf("MWindow::paste_assets 6\n");
 	gui->update(1, 
 		2,
 		1,
@@ -1139,7 +1113,7 @@ void MWindow::load_assets(ArrayList<Asset*> *new_assets,
 
 int MWindow::paste_automation()
 {
-	long len = gui->get_clipboard()->clipboard_len(SECONDARY_SELECTION);
+	int64_t len = gui->get_clipboard()->clipboard_len(SECONDARY_SELECTION);
 
 	char *string = new char[len + 1];
 	gui->get_clipboard()->from_clipboard(string, 
@@ -1172,7 +1146,7 @@ int MWindow::paste_automation()
 
 int MWindow::paste_default_keyframe()
 {
-	long len = gui->get_clipboard()->clipboard_len(SECONDARY_SELECTION);
+	int64_t len = gui->get_clipboard()->clipboard_len(SECONDARY_SELECTION);
 	char *string = new char[len + 1];
 	gui->get_clipboard()->from_clipboard(string, 
 		len, 
@@ -1305,13 +1279,14 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 			{
 				destination_tracks.append(current);
 
-				if(load_mode == LOAD_PASTE)
-					current->clear(edl->local_session->get_selectionstart(),
-						edl->local_session->get_selectionend(),
-						1,
-						edl->session->labels_follow_edits, 
-						edl->session->plugins_follow_edits,
-						1);
+// This should be done in the caller so we don't get recursive clear disease.
+// 				if(load_mode == LOAD_PASTE)
+// 					current->clear(edl->local_session->get_selectionstart(),
+// 						edl->local_session->get_selectionend(),
+// 						1,
+// 						edl->session->labels_follow_edits, 
+// 						edl->session->plugins_follow_edits,
+// 						1);
 			}
 		}
 	}
@@ -1401,10 +1376,17 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 		if(load_mode != LOAD_RESOURCESONLY)
 		{
 // Insert labels
-			edl->labels->insert_labels(new_edl->labels, 
-				current_position,
-				edl_length,
-				edit_labels);
+//printf("MWindow::paste_edls %f %f\n", current_position, edl_length);
+			if(load_mode == LOAD_PASTE)
+				edl->labels->insert_labels(new_edl->labels, 
+					destination_tracks.total ? paste_position[0] : 0.0,
+					edl_length,
+					edit_labels);
+			else
+				edl->labels->insert_labels(new_edl->labels, 
+					current_position,
+					edl_length,
+					edit_labels);
 
 			for(Track *new_track = new_edl->tracks->first; 
 				new_track; 
@@ -1460,7 +1442,7 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 	}
 //printf("MWindow::paste_edls 3\n");
 
-	delete [] paste_position;
+	if(paste_position) delete [] paste_position;
 
 // This is already done in load_filenames and everything else that uses paste_edls
 //	update_project(load_mode);

@@ -15,6 +15,8 @@
 #include "intautos.inc"
 #include "track.inc"
 
+#include <stdint.h>
+
 class Automation
 {
 public:
@@ -22,22 +24,22 @@ public:
 	virtual ~Automation();
 
 	virtual int create_objects();
-	void equivalent_output(Automation *automation, long *result);
+	void equivalent_output(Automation *automation, int64_t *result);
 	virtual Automation& operator=(Automation& automation);
 	virtual void copy_from(Automation *automation);
 	int load(FileXML *file);
 // For copy automation, copy, and save
-	int copy(long start, 
-		long end, 
+	int copy(int64_t start, 
+		int64_t end, 
 		FileXML *xml, 
 		int default_only,
 		int autos_only);
 	virtual void dump();
-	virtual int direct_copy_possible(long start, int direction);
-	virtual int direct_copy_possible_derived(long start, int direction) { return 1; };
+	virtual int direct_copy_possible(int64_t start, int direction);
+	virtual int direct_copy_possible_derived(int64_t start, int direction) { return 1; };
 // For paste automation only
-	void paste(long start, 
-		long length, 
+	void paste(int64_t start, 
+		int64_t length, 
 		double scale,
 		FileXML *file, 
 		int default_only,
@@ -45,17 +47,17 @@ public:
 
 // Returns the point to restart background rendering at.
 // -1 means nothing changed.
-	void clear(long start, 
-		long end, 
+	void clear(int64_t start, 
+		int64_t end, 
 		AutoConf *autoconf, 
 		int shift_autos);
-	void paste_silence(long start, long end);
+	void paste_silence(int64_t start, int64_t end);
 	void insert_track(Automation *automation, 
-		long start_unit, 
-		long length_units,
+		int64_t start_unit, 
+		int64_t length_units,
 		int replace_default);
 	void resample(double old_rate, double new_rate);
-	long get_length();
+	int64_t get_length();
 
 	IntAutos *mute_autos;
 	BezierAutos *camera_autos;

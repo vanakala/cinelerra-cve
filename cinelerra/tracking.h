@@ -28,7 +28,7 @@ public:
 // Update position displayed
 	virtual void update_tracker(double position);
 // Update meters
-	virtual void update_meters(long position);
+	virtual void update_meters(int64_t position);
 	virtual void stop_meters();
 	int get_pixel(double position);
 
@@ -54,7 +54,7 @@ public:
 
 
 
-	void show_playback_cursor(long position);
+	void show_playback_cursor(int64_t position);
 	int wait_for_startup();
 	int view_follows_playback;
 // Stop cursor loop when not playing
@@ -69,7 +69,7 @@ public:
 	MWindowGUI *gui;
 	double last_position;
 	int follow_loop;
-	long current_offset;
+	int64_t current_offset;
 	int reverse;
 	int double_speed;
 	Timer timer;

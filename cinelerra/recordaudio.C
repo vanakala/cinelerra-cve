@@ -120,7 +120,7 @@ void RecordAudio::run()
 		!write_result)
 	{
 // Handle data from the audio device.
-//printf("RecordAudio::run 2\n");
+//printf("RecordAudio::run 3\n");
 			if(!record_thread->monitor)
 			{
 // Read into file's buffer for recording.
@@ -141,7 +141,7 @@ void RecordAudio::run()
 				grab_result = record->adevice->read_buffer(input, fragment_size, record_channels, over, max, 0);
 //printf("RecordAudio::run 2 %d\n", grab_result);
 			}
-//printf("RecordAudio::run 3\n");
+//printf("RecordAudio::run 3 %d\n", fragment_size);
 
 // Update timer for synchronization
 			timer_lock.lock();
@@ -223,7 +223,7 @@ void RecordAudio::run()
 					}
 				}
 			}
-//printf("RecordAudio::run 3 %d %d\n", batch_done, write_result);
+//printf("RecordAudio::run 4 %d %d\n", batch_done, write_result);
 	}
 
 //printf("RecordAudio::run 4\n");
@@ -236,7 +236,7 @@ void RecordAudio::run()
 		error_box.run_window();
 		batch_done = 1;
 	}
-//printf("RecordAudio::run 4\n");
+//printf("RecordAudio::run 10\n");
 
 	if(!record_thread->monitor)
 	{
@@ -254,7 +254,7 @@ void RecordAudio::run()
 		delete input;
 		input = 0;
 	}
-//printf("RecordAudio::run 4\n");
+//printf("RecordAudio::run 11\n");
 
 // reset meter
 	gui->lock_window();
@@ -262,7 +262,7 @@ void RecordAudio::run()
 	{
 		record->record_monitor->window->meters->meters.values[channel]->reset();
 	}
-//printf("RecordAudio::run 4\n");
+//printf("RecordAudio::run 12\n");
 
 	gui->unlock_window();
 	delete max;
@@ -280,9 +280,9 @@ void RecordAudio::write_buffer(int skip_new)
 	if(!skip_new && !write_result) input = record->file->get_audio_buffer();
 }
 
-long RecordAudio::sync_position()
+int64_t RecordAudio::sync_position()
 {
-	long result;
+	int64_t result;
 	if(!batch_done)
 	{
 //printf("RecordAudio::sync_position 1\n");
@@ -294,10 +294,10 @@ long RecordAudio::sync_position()
 		}
 		else
 		{
+//printf("RecordAudio::sync_position 1 %d\n", record->get_current_batch()->session_samples);
 			result = record->get_current_batch()->session_samples +
 				timer.get_scaled_difference(record->default_asset->sample_rate);
 		}
-//printf("RecordAudio::sync_position 1\n");
 		timer_lock.unlock();
 //printf("RecordAudio::sync_position 2\n");
 		return result;

@@ -324,12 +324,12 @@ int AudioALSA::close_all()
 }
 
 // Undocumented
-long AudioALSA::device_position()
+int64_t AudioALSA::device_position()
 {
 	return -1;
 }
 
-int AudioALSA::read_buffer(char *buffer, long size)
+int AudioALSA::read_buffer(char *buffer, int size)
 {
 //printf("AudioALSA::read_buffer 1\n");
 	snd_pcm_readi(get_input(), 
@@ -339,7 +339,7 @@ int AudioALSA::read_buffer(char *buffer, long size)
 	return 0;
 }
 
-int AudioALSA::write_buffer(char *buffer, long size)
+int AudioALSA::write_buffer(char *buffer, int size)
 {
 // Buffers written must be equal to period_time
 	if(snd_pcm_writei(get_output(), 

@@ -14,10 +14,10 @@ public:
 	int open_input();
 	int open_output();
 	int open_duplex();
-	int write_buffer(char *buffer, long size);
-	int read_buffer(char *buffer, long size);
+	int write_buffer(char *buffer, int size);
+	int read_buffer(char *buffer, int size);
 	int close_all();
-	long device_position();
+	int64_t device_position();
 	int flush_device();
 	int interrupt_playback();
 

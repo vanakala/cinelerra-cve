@@ -16,9 +16,9 @@ public:
 	void copy_from(DespikeConfig &that);
 	void interpolate(DespikeConfig &prev, 
 		DespikeConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame);
+		int64_t prev_frame, 
+		int64_t next_frame, 
+		int64_t current_frame);
 
 	double level;
 	double slope;
@@ -41,7 +41,7 @@ public:
 	char* plugin_title();
 	VFrame* new_picon();
 	int is_realtime();
-	int process_realtime(long size, double *input_ptr, double *output_ptr);
+	int process_realtime(int64_t size, double *input_ptr, double *output_ptr);
 	int show_gui();
 	int set_string();
 	void save_data(KeyFrame *keyframe);

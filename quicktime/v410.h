@@ -1,11 +1,8 @@
-#ifndef QUICKTIME_V410_H
-#define QUICKTIME_V410_H
+#ifndef QUICKTIME_V408_H
+#define QUICKTIME_V408_H
 
 // 10 bit YUV 444
 
-typedef struct
-{
-	unsigned char *work_buffer;
-} quicktime_v410_codec_t;
+extern void quicktime_init_codec_v410(quicktime_video_map_t *);
 
 #endif

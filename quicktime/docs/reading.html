@@ -94,9 +94,9 @@ per pixel.  The only two values Quicktime for Linux returns are 24 and
 32 and the 32 bit depth is only returned when the format has an alpha
 channel.  There's no reason to use 16 or 8.<P>
 
-<B>quicktime_reads_cmodel</B> allows you to determine the optimum color
-model for decompression output.  It requires a colormodel #define from
-colormodels.h.  If the codec can generate the desired colormodel
+<CODE>quicktime_reads_cmodel</CODE> allows you to determine the optimum
+color model for decompression output.  It requires a colormodel #define
+from colormodels.h.  If the codec can generate the desired colormodel
 without downsampling it returns 1.  If downsampling is required it
 returns 0.  You can assume all colormodels in colormodels.h are
 supported, whether they require downsampling or not.<P>
@@ -130,14 +130,7 @@ Then use<P>
 
 <CODE>
 <PRE>
-long quicktime_decode_scaled(quicktime_t *file, 
-	int in_x,                    /* Location of input frame to take picture */
-	int in_y,
-	int in_w,
-	int in_h,
-	int out_w,                   /* Dimensions of output frame */
-	int out_h,
-	int color_model,             /* One of the color models defined above */
+long quicktime_decode_video(quicktime_t *file, 
 	unsigned char **row_pointers, 
 	int track);<BR>
 </PRE>
@@ -145,24 +138,71 @@ long quicktime_decode_scaled(quicktime_t *file,
 <P>
 
 to decompress a frame at the current position of the track into
-**row_pointers and advance the current position.  The array of rows
-must have enough space allocated for the entire frame, depending on the
-colormodel.  Planar colormodels use only the first 3 row pointers, each
-pointing to one of the planes.<P>
+<CODE>**row_pointers</CODE> and advance the current position.  The
+array of rows must have enough space allocated for the entire frame,
+depending on the colormodel.  Planar colormodels use only the first 3
+row pointers, each pointing to one of the planes.<P>
+
+Several parameters determine the decoder output.  They may be set
+before the call to <CODE>quicktime_decode_video</CODE>.<P>
+
+<CODE>
+<PRE>
+void quicktime_set_cmodel(quicktime_t *file, int colormodel);
+</PRE>
+</CODE>
+<P>
+
+Set the colormodel of the output frame to a value in colormodels.h. 
+The default is <CODE>BC_RGB888</CODE>.<P>
+
+<CODE>
+<PRE>
+void quicktime_set_row_span(quicktime_t *file, int row_span);
+</PRE>
+</CODE>
+<P>
+
+Set the number of bytes in a row.  The default is the row width * bytes
+per pixel.<P>
+
+<CODE>
+<PRE>
+void quicktime_set_window(quicktime_t *file,
+	int in_x,                    /* Location of input frame to take picture */
+	int in_y,
+	int in_w,
+	int in_h,
+	int out_w,                   /* Dimensions of output frame */
+	int out_h);
+</PRE>
+</CODE>
+<P>
+
 
 
 The decoder "sees" a region of the movie screen defined by <CODE>in_x,
 in_y, in_w, in_h</CODE> and transfers it to the frame buffer defined by
-<CODE>**row_pointers</CODE>.  The size of the frame buffer is defined by
-<CODE>out_w, out_h</CODE>.<P>
+<CODE>**row_pointers</CODE>.  The size of the frame buffer is defined
+by <CODE>out_w, out_h</CODE>.  The default is a 1:1 transfer from the
+codec to the output frame.<P>
 
 
 For more about the track's current position go to <A
 HREF="positioning.html">positioning</A><P>
 
-There are other routines for reading compressed data and chunks, but
-unless you want to write a codec, you'd better focus on more important
-things.<P>
+
+
+
+
+
+
+<H2>RAW ACCESS</H2><P>
+
+
+There are other routines for reading compressed data and chunks without
+a codec.  These allow you to perform direct copying of video data from
+one movie to the other after editing it, without recompressing it.<P>
 
 <A NAME="Decodingaudio">
 <H1>Decoding audio</H1>
@@ -239,20 +279,26 @@ track even if you haven't read the frame yet.  Frame numbers start on
 <H1>Accessing Keyframes</H1>
 
 Quicktime offers very simple support for keyframes: a table of all the
-keyframe numbers in a track.  Many students think there's a massive
-keyframe programming language in Quicktime.  Really all there is is a
-table.<P>
-
-There are two things you can do with the keyframe table: insert
-keyframe numbers and retrieve keyframe numbers.<P>
+keyframe numbers in a track.  There are two things you can do with the
+keyframe table: insert keyframe numbers and retrieve keyframe
+numbers.<P>
 
 <CODE>
 long quicktime_get_keyframe_before(quicktime_t *file, long frame, int track)
 </CODE>
 <P>
 
-Gets the keyframe number before the <B>frame</B> argument.  The frame
-argument starts on 0.<P>
+Gets the keyframe number before the <B>frame</B> argument.  The frames
+start on 0.<P>
+
+<CODE>
+long quicktime_get_keyframe_after(quicktime_t *file, long frame, int track);
+</CODE>
+<P>
+
+Gets the keyframe number after the <B>frame</B> argument.  The frames
+start on 0.<P>
+
 
 <CODE>
 void quicktime_insert_keyframe(quicktime_t *file, long frame, int track)
@@ -261,29 +307,17 @@ void quicktime_insert_keyframe(quicktime_t *file, long frame, int track)
 
 Inserts a keyframe into the table.  The frame argument starts on 0.<P>
 
+<CODE>
+int quicktime_has_keyframes(quicktime_t *file, int track);
+</CODE>
+<P>
+
+Returns TRUE if the track has keyframes.  The track starts on 0.<P>
+
 
 <A NAME="Readingrawaudio">
 <H1>Reading raw audio</H1>
 
-This functionality is obsolete and there's no reason to use it.  A
-future interface may provide raw audio support but for now you're
-better off writing a codec into the library.<P>
-
-These commands are good for reading raw sample data.  They should only
-be used for codecs not supported in the library and only work for
-interleaved, linear PCM data.<P>
-
-<CODE>
-long quicktime_read_audio(quicktime_t *file, char *audio_buffer, long samples, int track);
-</CODE>
-<P>
-
-<B>quicktime_read_audio</B> requires a number of samples of raw audio data to
-read.  Then it reads that corresponding number of bytes on the
-specified track and returns the equivalent number of bytes read or 0 if
-error.  The data read is PCM audio data of interleaved channels
-depending on the format of the track.
-
-Be aware that Quicktime for Linux tries to guess the number of bytes by
-the codec type, so attempts to read most nonlinear codecs will crash.
-
+There is no simple read or write access to raw audio.  Due to vagaries
+in the audio indexing and the lack of benefit in direct audio copying,
+you're better off using a codec.<P>

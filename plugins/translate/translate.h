@@ -19,9 +19,9 @@ public:
 	void copy_from(TranslateConfig &that);
 	void interpolate(TranslateConfig &prev, 
 		TranslateConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame);
+		int64_t prev_frame, 
+		int64_t next_frame, 
+		int64_t current_frame);
 
 	float in_x, in_y, in_w, in_h, out_x, out_y, out_w, out_h;
 };

@@ -132,8 +132,8 @@ void DelayAudio::save_data(KeyFrame *keyframe)
 
 void DelayAudio::reconfigure()
 {
-	input_start = (long)(config.length * PluginAClient::project_sample_rate + 0.5);
-	long new_allocation = input_start + PluginClient::in_buffer_size;
+	input_start = (int64_t)(config.length * PluginAClient::project_sample_rate + 0.5);
+	int64_t new_allocation = input_start + PluginClient::in_buffer_size;
 	double *new_buffer = new double[new_allocation];
 	bzero(new_buffer, sizeof(double) * new_allocation);
 
@@ -161,7 +161,7 @@ void DelayAudio::reconfigure()
 	need_reconfigure = 0;
 }
 
-int DelayAudio::process_realtime(long size, double *input_ptr, double *output_ptr)
+int DelayAudio::process_realtime(int64_t size, double *input_ptr, double *output_ptr)
 {
 	load_configuration();
 	if(need_reconfigure) reconfigure();

@@ -10,12 +10,14 @@ mpeg3_vtrack_t* mpeg3_new_vtrack(mpeg3_t *file,
 {
 	int result = 0;
 	mpeg3_vtrack_t *new_vtrack;
+
+//printf("mpeg3_new_vtrack 1\n");
 	new_vtrack = calloc(1, sizeof(mpeg3_vtrack_t));
 	new_vtrack->demuxer = mpeg3_new_demuxer(file, 0, 1, stream_id);
 	if(new_vtrack->demuxer) mpeg3demux_copy_titles(new_vtrack->demuxer, demuxer);
 	new_vtrack->current_position = 0;
 
-//printf("mpeg3_new_vtrack 1\n");
+//printf("mpeg3_new_vtrack 10\n");
 // Copy pointers
 	if(file->frame_offsets)
 	{
@@ -25,7 +27,7 @@ mpeg3_vtrack_t* mpeg3_new_vtrack(mpeg3_t *file,
 		new_vtrack->total_keyframe_numbers = file->total_keyframe_numbers[number];
 	}
 
-//printf("mpeg3_new_vtrack 1\n");
+//printf("mpeg3_new_vtrack 20\n");
 //printf("mpeg3_new_vtrack %llx\n", mpeg3demux_tell(new_vtrack->demuxer));
 /* Get information about the track here. */
 	new_vtrack->video = mpeg3video_new(file, new_vtrack);
@@ -36,7 +38,7 @@ mpeg3_vtrack_t* mpeg3_new_vtrack(mpeg3_t *file,
 		new_vtrack = 0;
 	}
 
-//printf("mpeg3_new_vtrack 2\n");
+//printf("mpeg3_new_vtrack 100\n");
 
 	return new_vtrack;
 }

@@ -127,7 +127,7 @@ int BC_Toggle::draw_face()
 }
 
 
-int BC_Toggle::repeat_event(long duration)
+int BC_Toggle::repeat_event(int64_t duration)
 {
 	if(duration == top_level->get_resources()->tooltip_delay &&
 		tooltip_text[0] != 0 &&

@@ -304,7 +304,7 @@ int VDevicePrefs::create_x11_objs()
 	char *output_char;
 	int x1 = x + menu->get_w() + 5;
 	output_char = out_config->x11_host;
-	dialog->add_subwindow(device_title = new BC_Title(x1, y, "Display:", MEDIUMFONT, BLACK));
+	dialog->add_subwindow(device_title = new BC_Title(x1, y, "Display for compositor:", MEDIUMFONT, BLACK));
 	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y + 20, output_char));
 	return 0;
 }

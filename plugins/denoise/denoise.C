@@ -200,17 +200,17 @@ double DenoiseEffect::dot_product(double *data, double *filter, char filtlen)
 }
 
 int DenoiseEffect::convolve_dec_2(double *input_sequence, 
-	long length,
+	int64_t length,
 	double *filter, 
 	int filtlen, 
 	double *output_sequence)
 {
 // convolve the input sequence with the filter and decimate by two
 	int i, shortlen, offset;
-	long lengthp4 = length + 4;
-	long lengthm4 = length - 4;
-	long lengthp5 = length + 5;
-	long lengthp8 = length + 8;
+	int64_t lengthp4 = length + 4;
+	int64_t lengthm4 = length - 4;
+	int64_t lengthp5 = length + 5;
+	int64_t lengthp8 = length + 8;
 
 	for(i = 0; (i <= lengthp8) && ((i - filtlen) <= lengthp8); i += 2)
 	{
@@ -230,8 +230,8 @@ int DenoiseEffect::convolve_dec_2(double *input_sequence,
 	return 0;
 }
 
-long DenoiseEffect::decompose_branches(double *in_data, 
-	long length, 
+int64_t DenoiseEffect::decompose_branches(double *in_data, 
+	int64_t length, 
 	WaveletFilters *decomp_filter, 
 	double *out_low, 
 	double *out_high)
@@ -244,7 +244,7 @@ long DenoiseEffect::decompose_branches(double *in_data,
 }
 
 int DenoiseEffect::wavelet_decomposition(double *in_data, 
-	long in_length, 
+	int64_t in_length, 
 	double **out_data)
 {
 	for(int i = 0; i < levels; i++)
@@ -351,7 +351,7 @@ double DenoiseEffect::dot_product_odd(double *data, double *filter, int filtlen)
 }
 
 int DenoiseEffect::convolve_int_2(double *input_sequence, 
-	long length, 
+	int64_t length, 
 	double *filter, 
 	int filtlen, 
 	int sum_output, 
@@ -390,9 +390,9 @@ int DenoiseEffect::convolve_int_2(double *input_sequence,
 }
 
 
-long DenoiseEffect::reconstruct_branches(double *in_low, 
+int64_t DenoiseEffect::reconstruct_branches(double *in_low, 
 	double *in_high, 
-	long in_length,
+	int64_t in_length,
 	WaveletFilters *recon_filter, 
 	double *output)
 {
@@ -406,7 +406,7 @@ long DenoiseEffect::reconstruct_branches(double *in_low,
 }
 
 int DenoiseEffect::wavelet_reconstruction(double **in_data, 
-	long in_length, 
+	int64_t in_length, 
 	double *out_data)
 {
 	double *output;
@@ -460,13 +460,13 @@ void DenoiseEffect::process_window()
 
 
 
-int DenoiseEffect::process_realtime(long size, double *input_ptr, double *output_ptr)
+int DenoiseEffect::process_realtime(int64_t size, double *input_ptr, double *output_ptr)
 {
 	load_configuration();
 
 	if(!initialized)
 	{
-		long size_factor = (int)(pow(2, levels));
+		int64_t size_factor = (int)(pow(2, levels));
 		dsp_in = new double[window_size * size_factor];
 		dsp_out = new double[window_size * 2];
 		dsp_iteration = new double[window_size * 2];
@@ -528,7 +528,7 @@ int DenoiseEffect::process_realtime(long size, double *input_ptr, double *output
 
 
 // Crossfade into the output buffer
-		long new_allocation = output_size + window_size;
+		int64_t new_allocation = output_size + window_size;
 		if(new_allocation > output_allocation)
 		{
 			double *new_output = new double[new_allocation];
@@ -736,9 +736,9 @@ int DenoiseConfig::equivalent(DenoiseConfig &that)
 
 void DenoiseConfig::interpolate(DenoiseConfig &prev, 
 	DenoiseConfig &next, 
-	long prev_frame, 
-	long next_frame, 
-	long current_frame)
+	int64_t prev_frame, 
+	int64_t next_frame, 
+	int64_t current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);

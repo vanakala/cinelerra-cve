@@ -24,6 +24,7 @@ BC_Button::BC_Button(int x,
 	if(!data) printf("BC_Button::BC_Button data == 0\n");
 	status = BUTTON_UP;
 	this->w_argument = 0;
+	underline_number = -1;
 }
 
 BC_Button::BC_Button(int x, 
@@ -37,6 +38,7 @@ BC_Button::BC_Button(int x,
 	for(int i = 0; i < 3; i++) images[i] = 0;
 	if(!data) printf("BC_Button::BC_Button data == 0\n");
 	status = BUTTON_UP;
+	underline_number = -1;
 }
 
 
@@ -77,6 +79,11 @@ int BC_Button::update_bitmaps(VFrame **data)
 	return 0;
 }
 
+void BC_Button::set_underline(int number)
+{
+	this->underline_number = number;
+}
+
 int BC_Button::set_images(VFrame **data)
 {
 	for(int i = 0; i < 3; i++)
@@ -108,7 +115,7 @@ int BC_Button::draw_face()
 	return 0;
 }
 
-int BC_Button::repeat_event(long duration)
+int BC_Button::repeat_event(int64_t duration)
 {
 	if(duration == top_level->get_resources()->tooltip_delay &&
 		tooltip_text[0] != 0 &&
@@ -311,15 +318,37 @@ int BC_GenericButton::set_images(VFrame **data)
 
 int BC_GenericButton::draw_face()
 {
-	draw_top_background(parent_window, 0, 0, w, h);
-	draw_3segmenth(0, 0, w, images[status]);
+	int x, y, w;
+	draw_top_background(parent_window, 0, 0, get_w(), get_h());
+	draw_3segmenth(0, 0, get_w(), images[status]);
 
 	set_color(BLACK);
 	set_font(MEDIUMFONT);
-	draw_center_text(get_w() / 2, 
-		(int)((float)get_h() / 2 + get_text_ascent(MEDIUMFONT) / 2 - 2), 
+	y = (int)((float)get_h() / 2 + get_text_ascent(MEDIUMFONT) / 2 - 2);
+	w = get_text_width(current_font, text, strlen(text));
+	x = get_w() / 2 - w / 2;
+	draw_text(x, 
+		y, 
 		text);
+
+	if(underline_number >= 0)
+	{
+		y++;
+		int x1 = get_text_width(current_font, text, underline_number) + x;
+		int x2 = get_text_width(current_font, text, underline_number + 1) + x;
+		draw_line(x1, y, x2, y);
+		draw_line(x1, y + 1, (x2 + x1) / 2, y + 1);
+	}
 
 	flash();
 	return 0;
 }
+
+
+
+
+
+
+
+
+

@@ -38,7 +38,7 @@ int Auto::operator==(Auto &that)
 	return 0;
 }
 
-void Auto::copy(long start, long end, FileXML *file, int default_only)
+void Auto::copy(int64_t start, int64_t end, FileXML *file, int default_only)
 {
 	printf("Auto::copy called\n");
 }

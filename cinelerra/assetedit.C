@@ -67,9 +67,11 @@ void AssetEdit::run()
  		{
  			if(!asset->equivalent(*new_asset, 1, 1))
  			{
-//printf("AssetEdit::run 1\n");
-				*asset = *new_asset;
 				mwindow->gui->lock_window();
+// Omit index status from copy since an index rebuild may have been
+// happening when new_asset was created but not be happening anymore.
+				asset->copy_from(new_asset, 0);
+
 				mwindow->gui->update(0,
 					2,
 					0,
@@ -77,14 +79,22 @@ void AssetEdit::run()
 					0, 
 					0,
 					0);
+
+// Start index rebuilding
 				if(asset->audio_data)
 				{
+					char source_filename[BCTEXTLEN];
+					char index_filename[BCTEXTLEN];
+					IndexFile::get_index_filename(source_filename, 
+						mwindow->preferences->index_directory,
+						index_filename, 
+						asset->path);
+					remove(index_filename);
 					asset->index_status = INDEX_NOTTESTED;
 					mwindow->mainindexes->add_next_asset(asset);
 					mwindow->mainindexes->start_build();
 				}
 				mwindow->gui->unlock_window();
-//printf("AssetEdit::run 2\n");
 
 
 				mwindow->awindow->gui->lock_window();
@@ -93,7 +103,6 @@ void AssetEdit::run()
 
 				mwindow->restart_brender();
 				mwindow->sync_parameters(CHANGE_ALL);
-//printf("AssetEdit::run 3\n");
  			}
  		}
 
@@ -120,10 +129,7 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
 	500,
 	0,
 	0,
-	1,
-	-1,
-	Preferences::get_alternate_display("CINELERRA_RESOURCES_DISPLAY",
-		mwindow->preferences->screen_resources))
+	1)
 {
 	this->mwindow = mwindow;
 	this->asset_edit = asset_edit;
@@ -289,9 +295,15 @@ int AssetEditWindow::create_objects()
 		if(allow_edits)
 		{
 			x = x2;
-			add_subwindow(lohi = new AssetEditByteOrderLOHI(this, asset->byte_order, x, y));
+			add_subwindow(hilo = new AssetEditByteOrderHILO(this, 
+				!asset->byte_order, 
+				x, 
+				y));
 			x += 70;
-			add_subwindow(hilo = new AssetEditByteOrderHILO(this, asset->byte_order ^ 1, x, y));
+			add_subwindow(lohi = new AssetEditByteOrderLOHI(this, 
+				asset->byte_order, 
+				x, 
+				y));
 			y += vmargin;
 		}
 		else
@@ -379,9 +391,9 @@ AssetEditChannels::AssetEditChannels(AssetEditWindow *fwindow,
 	int x,
 	int y)
  : BC_TumbleTextBox(fwindow, 
-		(long)atol(text),
-		(long)1,
-		(long)MAXCHANNELS,
+		(int)atol(text),
+		(int)1,
+		(int)MAXCHANNELS,
 		x, 
 		y, 
 		50)
@@ -442,8 +454,9 @@ AssetEditByteOrderLOHI::AssetEditByteOrderLOHI(AssetEditWindow *fwindow,
 
 int AssetEditByteOrderLOHI::handle_event()
 {
-	fwindow->asset->byte_order = get_value();
-	fwindow->hilo->update(get_value() ^ 1);
+	fwindow->asset->byte_order = 1;
+	fwindow->hilo->update(0);
+	update(1);
 	return 1;
 }
 
@@ -458,8 +471,9 @@ AssetEditByteOrderHILO::AssetEditByteOrderHILO(AssetEditWindow *fwindow,
 
 int AssetEditByteOrderHILO::handle_event()
 {
-	fwindow->asset->byte_order = get_value() ^ 1;
-	fwindow->lohi->update(get_value() ^ 1);
+	fwindow->asset->byte_order = 0;
+	fwindow->lohi->update(0);
+	update(1);
 	return 1;
 }
 

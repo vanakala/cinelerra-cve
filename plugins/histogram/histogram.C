@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "bcdisplayinfo.h"
+#include "bcsignals.h"
 #include "clip.h"
 #include "defaults.h"
 #include "filexml.h"
@@ -41,9 +42,9 @@ public:
 	void copy_from(HistogramConfig &that);
 	void interpolate(HistogramConfig &prev, 
 		HistogramConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame);
+		int64_t prev_frame, 
+		int64_t next_frame, 
+		int64_t current_frame);
 	void reset(int do_mode);
 
 	int input_min[5];
@@ -321,9 +322,9 @@ void HistogramConfig::copy_from(HistogramConfig &that)
 
 void HistogramConfig::interpolate(HistogramConfig &prev, 
 	HistogramConfig &next, 
-	long prev_frame, 
-	long next_frame, 
-	long current_frame)
+	int64_t prev_frame, 
+	int64_t next_frame, 
+	int64_t current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
@@ -430,7 +431,7 @@ int HistogramWindow::create_objects()
 		y,
 		&plugin->config.input_mid[subscript]);
 	input_mid->create_objects();
-	input_mid->update((long)plugin->config.input_mid[subscript]);
+	input_mid->update((int64_t)plugin->config.input_mid[subscript]);
 	x += 90;
 	add_subwindow(new BC_Title(x, y, "Max:"));
 	x += 40;
@@ -522,7 +523,7 @@ WINDOW_CLOSE_EVENT(HistogramWindow)
 void HistogramWindow::update(int do_input)
 {
 	automatic->update(plugin->config.automatic);
-	threshold->update((long)plugin->config.threshold);
+	threshold->update((int64_t)plugin->config.threshold);
 	update_mode();
 
 	if(do_input) update_input();
@@ -533,17 +534,17 @@ void HistogramWindow::update_input()
 {
 	int subscript = plugin->config.mode;
 	input->update();
-	input_min->update((long)plugin->config.input_min[subscript]);
-	input_mid->update((long)plugin->config.input_mid[subscript]);
-	input_max->update((long)plugin->config.input_max[subscript]);
+	input_min->update((int64_t)plugin->config.input_min[subscript]);
+	input_mid->update((int64_t)plugin->config.input_mid[subscript]);
+	input_max->update((int64_t)plugin->config.input_max[subscript]);
 }
 
 void HistogramWindow::update_output()
 {
 	int subscript = plugin->config.mode;
 	output->update();
-	output_min->update((long)plugin->config.output_min[subscript]);
-	output_max->update((long)plugin->config.output_max[subscript]);
+	output_min->update((int64_t)plugin->config.output_min[subscript]);
+	output_max->update((int64_t)plugin->config.output_max[subscript]);
 }
 
 void HistogramWindow::update_mode()
@@ -955,9 +956,9 @@ HistogramText::HistogramText(HistogramMain *plugin,
 	int y,
 	int *output)
  : BC_TumbleTextBox(gui, 
-		(long)*output,
-		(long)0,
-		(long)0xff,
+		(int64_t)*output,
+		(int64_t)0,
+		(int64_t)0xff,
 		x, 
 		y, 
 		60)
@@ -1377,8 +1378,9 @@ void HistogramMain::calculate_automatic(VFrame *data)
 int HistogramMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
 //printf("HistogramMain::process_realtime 1\n");
-	int need_reconfigure = load_configuration();
+TRON("HistogramMain::process_realtime");
 //printf("HistogramMain::process_realtime 1\n");
+	int need_reconfigure = load_configuration();
 
 
 	if(!engine) engine = new HistogramEngine(this,
@@ -1443,6 +1445,7 @@ int HistogramMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 //printf("HistogramMain::process_realtime 100\n");
 
 
+TROFF("HistogramMain::process_realtime");
 
 	return 0;
 }

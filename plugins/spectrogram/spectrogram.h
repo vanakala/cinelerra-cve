@@ -7,7 +7,7 @@
 
 
 #include "defaults.inc"
-#include <fourier.h>
+#include "fourier.h"
 #include "guicast.h"
 #include "mutex.h"
 #include "pluginaclient.h"
@@ -81,7 +81,7 @@ public:
 	VFrame* new_picon();
 	char* plugin_title();
 	int is_realtime();
-	int process_realtime(long size, double *input_ptr, double *output_ptr);
+	int process_realtime(int64_t size, double *input_ptr, double *output_ptr);
 	int show_gui();
 	void raise_window();
 	int set_string();

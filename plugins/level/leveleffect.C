@@ -48,9 +48,9 @@ int SoundLevelConfig::equivalent(SoundLevelConfig &that)
 
 void SoundLevelConfig::interpolate(SoundLevelConfig &prev, 
 	SoundLevelConfig &next, 
-	long prev_frame, 
-	long next_frame, 
-	long current_frame)
+	int64_t prev_frame, 
+	int64_t next_frame, 
+	int64_t current_frame)
 {
 	duration = prev.duration;
 }
@@ -252,7 +252,7 @@ void SoundLevelEffect::update_gui()
 //printf("SoundLevelEffect::update_gui 2\n");
 }
 
-int SoundLevelEffect::process_realtime(long size, double *input_ptr, double *output_ptr)
+int SoundLevelEffect::process_realtime(int64_t size, double *input_ptr, double *output_ptr)
 {
 	load_configuration();
 

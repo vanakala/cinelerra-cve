@@ -65,9 +65,9 @@ ScaleWidth::ScaleWidth(ScaleWin *win,
 	int x, 
 	int y)
  : BC_TumbleTextBox(win,
- 	client->config.w,
-	0,
-	100,
+ 	(float)client->config.w,
+	(float)0,
+	(float)100,
 	x, 
 	y, 
 	100)
@@ -102,9 +102,9 @@ int ScaleWidth::handle_event()
 
 ScaleHeight::ScaleHeight(ScaleWin *win, ScaleMain *client, int x, int y)
  : BC_TumbleTextBox(win,
- 	client->config.h,
-	0,
-	100,
+ 	(float)client->config.h,
+	(float)0,
+	(float)100,
 	x, 
 	y, 
 	100)

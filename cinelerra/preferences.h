@@ -44,7 +44,7 @@ public:
 // directory to look in for indexes
 	char index_directory[BCTEXTLEN];   
 // size of index file in bytes
-	long index_size;                  
+	int64_t index_size;                  
 	int index_count;
 // Use thumbnails in AWindow assets.
 	int use_thumbnails;
@@ -58,7 +58,7 @@ public:
 // Number of frames in a brender job.
 	int brender_fragment;
 // Number of items to store in cache
-	long cache_size;
+	int64_t cache_size;
 	int use_renderfarm;
 	int renderfarm_port;
 // If the node starts with a / it's on the localhost using a path as the socket.
@@ -69,6 +69,8 @@ public:
 // Rate of master node
 	float local_rate;
 	char renderfarm_mountpoint[BCTEXTLEN];
+// Use virtual filesystem
+	int renderfarm_vfs;
 // Jobs per node
 	int renderfarm_job_count;
 // Consolidate output files
@@ -77,12 +79,6 @@ public:
 // ====================================== Plugin Set ==============================
 	char global_plugin_dir[BCTEXTLEN];
 	char local_plugin_dir[BCTEXTLEN];
-
-// ====================================== Multihead ==============================
-	int screen_compositor;	// -1 uses default display
-	int screen_viewer;	// ditto
-	int screen_resources;	// ditto
-	static char* get_alternate_display(char* envname, int screen);
 
 // Required when updating renderfarm rates
 	Mutex *preferences_lock;

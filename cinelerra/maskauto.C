@@ -286,7 +286,7 @@ void MaskAuto::load(FileXML *file)
 //	dump();
 }
 
-void MaskAuto::copy(long start, long end, FileXML *file, int default_auto)
+void MaskAuto::copy(int64_t start, int64_t end, FileXML *file, int default_auto)
 {
 	file->tag.set_title("AUTO");
 	file->tag.set_property("MODE", mode);

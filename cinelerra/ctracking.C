@@ -69,13 +69,9 @@ int CTracking::update_scroll(double position)
 			double right_boundary = midpoint + half_canvas;
 
 			if(position > left_boundary &&
-				position < right_boundary &&
-// when we are looping - if start and end position of the loop are on screen, don't move canvas! 
-			  !(mwindow->edl->local_session->loop_playback &&            
-                            midpoint - half_canvas < mwindow->edl->local_session->loop_start && 
-			    midpoint + half_canvas > mwindow->edl->local_session->loop_end)) 
+				position < right_boundary)
 			{
-				int pixels = Units::to_long((position - midpoint) * 
+				int pixels = Units::to_int64((position - midpoint) * 
 					mwindow->edl->session->sample_rate /
 					mwindow->edl->local_session->zoom_sample);
 				if(pixels) 
@@ -93,13 +89,9 @@ int CTracking::update_scroll(double position)
 
 			if(position < right_boundary &&
 				position > left_boundary && 
-				mwindow->edl->local_session->view_start > 0 &&
-// when we are looping - if start and end position of the loop are on screen, don't move canvas! 
-			  !(mwindow->edl->local_session->loop_playback &&            
-                            midpoint - half_canvas < mwindow->edl->local_session->loop_start && 
-			    midpoint + half_canvas > mwindow->edl->local_session->loop_end)) 
+				mwindow->edl->local_session->view_start > 0)
 			{
-				int pixels = Units::to_long((midpoint - position) * 
+				int pixels = Units::to_int64((midpoint - position) * 
 						mwindow->edl->session->sample_rate /
 						mwindow->edl->local_session->zoom_sample);
 				if(pixels) 
@@ -153,7 +145,7 @@ void CTracking::update_tracker(double position)
 	mwindow->update_plugin_guis();
 
 
-	update_meters((long)(position * mwindow->edl->session->sample_rate));
+	update_meters((int64_t)(position * mwindow->edl->session->sample_rate));
 }
 
 void CTracking::draw()

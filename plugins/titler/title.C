@@ -1,5 +1,5 @@
 // Originally developed by Heroine Virtual Ltd.
-// Support for multiple encodings by 
+// Support for multiple encodings, outline (stroke) by 
 // Andraz Tori <Andraz.tori1@guest.arnes.si>
 
 
@@ -7,14 +7,14 @@
 #include "colormodels.h"
 #include "filexml.h"
 #include "filesystem.h"
+#include "freetype/ftbbox.h"
+#include "freetype/ftglyph.h"
+#include "freetype/ftoutln.h"
+#include "freetype/ftstroker.h"
 #include "picon_png.h"
 #include "plugincolors.h"
 #include "title.h"
 #include "titlewindow.h"
-#include "freetype/ftglyph.h"
-#include "freetype/ftbbox.h"
-#include "freetype/ftoutln.h"
-#include "freetype/ftstroke.h"
 
 
 #include <errno.h>
@@ -25,8 +25,9 @@
 #include <byteswap.h>
 #include <iconv.h>
 
+#define ZERO (1.0 / 64.0)
 
-#define FONT_SEARCHPATH "/usr/lib/cinelerra/fonts"
+#define FONT_SEARCHPATH "fonts"
 //#define FONT_SEARCHPATH "/usr/X11R6/lib/X11/fonts"
 
 
@@ -50,7 +51,8 @@ TitleConfig::TitleConfig()
 	dropshadow = 10;
 	sprintf(font, "fixed");
 	sprintf(text, "hello world");
-	sprintf(encoding, "ISO8859-1");
+#define DEFAULT_ENCODING "ISO8859-1"
+	sprintf(encoding, DEFAULT_ENCODING);
 	pixels_per_second = 1.0;
 	timecode = 0;
 	stroke_width = 1.0;
@@ -99,9 +101,9 @@ void TitleConfig::copy_from(TitleConfig &that)
 
 void TitleConfig::interpolate(TitleConfig &prev, 
 	TitleConfig &next, 
-	long prev_frame, 
-	long next_frame, 
-	long current_frame)
+	int64_t prev_frame, 
+	int64_t next_frame, 
+	int64_t current_frame)
 {
 	strcpy(font, prev.font);
 	strcpy(encoding, prev.encoding);
@@ -269,11 +271,15 @@ void GlyphUnit::process_package(LoadPackage *package)
 	if(!result)
 	{
 		int gindex = FT_Get_Char_Index(freetype_face, glyph->char_code);
-//		if(FT_Load_Char(freetype_face, glyph->char_code, FT_LOAD_RENDER))
+
+//printf("GlyphUnit::process_package 1 %c\n", glyph->char_code);
+// Char not found
 		if (gindex == 0) 
 		{
-			if (glyph->char_code != 10)  // carrige return
-				printf("GlyphUnit::process_package FT_Load_Char failed - char: %i.\n",glyph->char_code);
+// carrige return
+			if (glyph->char_code != 10)  
+				printf("GlyphUnit::process_package FT_Load_Char failed - char: %i.\n",
+					glyph->char_code);
 // Prevent a crash here
 			glyph->width = 8;
 			glyph->height = 8;
@@ -289,17 +295,28 @@ void GlyphUnit::process_package(LoadPackage *package)
 				8);
 			glyph->data->clear_frame();
 			glyph->data_stroke = 0;
-			if (plugin->config.stroke_width >= 1.0/64) // effectively zero
-			{	glyph->data_stroke = new VFrame(0,
+
+
+
+// create outline glyph
+			if (plugin->config.stroke_width >= ZERO && 
+				(plugin->config.style & FONT_OUTLINE))
+			{
+				glyph->data_stroke = new VFrame(0,
 					8,
 					8,
 					BC_A8,
 					8);
 				glyph->data_stroke->clear_frame();
 			}
+
+
+
 		}
 		else
-		if (plugin->config.stroke_width < 1.0/64) // effectively zero
+// char found and no outline desired
+		if (plugin->config.stroke_width < ZERO ||
+			!(plugin->config.style & FONT_OUTLINE)) 
 		{
 			FT_Glyph glyph_image;
 			FT_BBox bbox;
@@ -337,7 +354,10 @@ void GlyphUnit::process_package(LoadPackage *package)
 				&((FT_OutlineGlyph) glyph_image)->outline,
 				&bm);
 			FT_Done_Glyph(glyph_image);
-		} else {
+		}
+		else 
+// Outline desired and glyph found
+		{
 			FT_Glyph glyph_image;
 			int no_outline = 0;
 			FT_Stroker stroker;
@@ -345,7 +365,12 @@ void GlyphUnit::process_package(LoadPackage *package)
 			FT_Bitmap bm;
 			FT_BBox bbox;
 			FT_UInt npoints, ncontours;	
-			typedef struct  FT_LibraryRec_ {    FT_Memory          memory; } FT_LibraryRec;
+
+			typedef struct  FT_LibraryRec_ 
+			{    
+				FT_Memory memory; 
+			} FT_LibraryRec;
+
 			FT_Load_Glyph(freetype_face, gindex, FT_LOAD_DEFAULT);
 			FT_Get_Glyph(freetype_face->glyph, &glyph_image);
 
@@ -360,14 +385,16 @@ void GlyphUnit::process_package(LoadPackage *package)
 				glyph->height=0;
 				glyph->top=0;
 				glyph->left=0;
-				glyph->advance_w =((int)(freetype_face->glyph->advance.x + plugin->config.stroke_width*64)) >> 6;
+				glyph->advance_w =((int)(freetype_face->glyph->advance.x + 
+					plugin->config.stroke_width * 64)) >> 6;
 				return;
 			}
 			FT_Stroker_New(((FT_LibraryRec *)freetype_library)->memory, &stroker);
-			FT_Stroker_Set(stroker, (int)(plugin->config.stroke_width*64), FT_STROKER_LINECAP_ROUND, FT_STROKER_LINEJOIN_ROUND, 0);
+			FT_Stroker_Set(stroker, (int)(plugin->config.stroke_width * 64), FT_STROKER_LINECAP_ROUND, FT_STROKER_LINEJOIN_ROUND, 0);
 			FT_Stroker_ParseOutline(stroker, &((FT_OutlineGlyph) glyph_image)->outline,1);
 			FT_Stroker_GetCounts(stroker,&npoints, &ncontours);
-			if (npoints ==0 && ncontours == 0) {
+			if (npoints ==0 && ncontours == 0) 
+			{
 // this never happens, but FreeType has a bug regarding Linotype's Palatino font
 				FT_Stroker_Done(stroker);
 				FT_Done_Glyph(glyph_image);
@@ -377,7 +404,8 @@ void GlyphUnit::process_package(LoadPackage *package)
 				glyph->height=0;
 				glyph->top=0;
 				glyph->left=0;
-				glyph->advance_w =((int)(freetype_face->glyph->advance.x + plugin->config.stroke_width*64)) >> 6;
+				glyph->advance_w =((int)(freetype_face->glyph->advance.x + 
+					plugin->config.stroke_width * 64)) >> 6;
 				return;
 			};
 
@@ -407,7 +435,8 @@ void GlyphUnit::process_package(LoadPackage *package)
 			if (glyph->left < 0) glyph->left = 0;
 			glyph->top = (bbox.yMax + 31) >> 6;
 			glyph->freetype_index = gindex;
-			int real_advance = ((int)ceil((float)freetype_face->glyph->advance.x + plugin->config.stroke_width*64) >> 6);
+			int real_advance = ((int)ceil((float)freetype_face->glyph->advance.x + 
+				plugin->config.stroke_width * 64) >> 6);
 			glyph->advance_w = glyph->width + glyph->left;
 			if (real_advance > glyph->advance_w) 
 				glyph->advance_w = real_advance;
@@ -435,8 +464,8 @@ void GlyphUnit::process_package(LoadPackage *package)
 				&bm);	
 			bm.buffer=glyph->data_stroke->get_data();
 			FT_Outline_Get_Bitmap( freetype_library,
-               		&outline,
-			&bm);
+           		&outline,
+				&bm);
 			FT_Outline_Done(freetype_library,&outline);
 			FT_Stroker_Done(stroker);
 			FT_Done_Glyph(glyph_image);
@@ -544,7 +573,9 @@ void TitleUnit::process_package(LoadPackage *package)
 			if(glyph->c == pkg->c)
 			{
 				draw_glyph(plugin->text_mask, glyph, pkg->x, pkg->y);
-				if (plugin->config.stroke_width >= 1.0/64) {
+				if(plugin->config.stroke_width >= ZERO &&
+					(plugin->config.style & FONT_OUTLINE)) 
+				{
 					VFrame *tmp = glyph->data;
 					glyph->data = glyph->data_stroke;
 					draw_glyph(plugin->text_mask_stroke, glyph, pkg->x, pkg->y);
@@ -998,7 +1029,19 @@ void TitleMain::build_fonts()
 	if(!fonts)
 	{
 		fonts = new ArrayList<FontEntry*>;
-		FILE *in = popen("find " FONT_SEARCHPATH " -name 'fonts.dir' -print -exec cat {} \\;", "r");
+// Construct path from location of the plugin
+		char search_path[BCTEXTLEN];
+		strcpy(search_path, PluginClient::get_path());
+		char *ptr = strrchr(search_path, '/');
+		strcpy(ptr + 1, FONT_SEARCHPATH);
+		char command_line[BCTEXTLEN];
+
+		sprintf(command_line, 
+			"find %s -name 'fonts.dir' -print -exec cat {} \\;", 
+			search_path);
+//printf("TitleMain::build_fonts %s\n", command_line);
+
+		FILE *in = popen(command_line, "r");
 		char current_dir[BCTEXTLEN];
 		FT_Library freetype_library = 0;      	// Freetype library
 		FT_Face freetype_face = 0;
@@ -1335,7 +1378,9 @@ FontEntry* TitleMain::get_font()
 int TitleMain::get_char_height()
 {
 // this is height above the zero line, but does not include characters that go below
-	return config.size+ (int)ceil(config.stroke_width*2);
+	int result = config.size;
+	if((config.style & FONT_OUTLINE)) result += (int)ceil(config.stroke_width * 2);
+	return result;
 }
 
 int TitleMain::get_char_advance(int current, int next)
@@ -1390,9 +1435,11 @@ void TitleMain::draw_glyphs()
 	int total_packages = 0;
 	iconv_t cd;
 	cd = iconv_open ("UCS-4", config.encoding);
+
+
 	if (cd == (iconv_t) -1)
 	{
-			/* Something went wrong.  */
+/* Something went wrong.  */
 		fprintf (stderr, "Iconv conversion from %s to Unicode UCS-4 not available\n",config.encoding);
 	};
 
@@ -1401,24 +1448,27 @@ void TitleMain::draw_glyphs()
 		FT_ULong char_code;	
 		int c = config.text[i];
 		int exists = 0;
-		/* if iconv is working ok for current encoding */
+
+/* if iconv is working ok for current encoding */
 		if (cd != (iconv_t) -1)
 		{
 
 			size_t inbytes,outbytes;
 			char inbuf;
 			char *inp = (char*)&inbuf, *outp = (char *)&char_code;
-			
+
 			inbuf = (char)c;
 			inbytes = 1;
 			outbytes = 4;
 	
 			iconv (cd, &inp, &inbytes, &outp, &outbytes);
 #if     __BYTE_ORDER == __LITTLE_ENDIAN
-				char_code = bswap_32(char_code);
+			char_code = bswap_32(char_code);
 #endif                          /* Big endian.  */
 
-		} else {
+		}
+		else 
+		{
 			char_code = c;
 		}
 
@@ -1679,7 +1729,6 @@ int TitleMain::draw_mask()
 	text_x1 += config.x;
 
 
-//printf("TitleMain::draw_mask %d %d\n", visible_row1, visible_row2);
 	visible_char1 = visible_char2 = 0;
 	int got_char1 = 0;
 	for(int i = 0; i < text_len; i++)
@@ -1706,9 +1755,10 @@ int TitleMain::draw_mask()
 	int need_redraw = 0;
 	if(text_mask &&
 		(text_mask->get_w() != text_w ||
-		text_mask->get_h() != visible_rows * get_char_height() - rows_bottom[visible_row2-1]))
+		text_mask->get_h() != visible_rows * get_char_height() - rows_bottom[visible_row2 - 1]))
 	{
 		delete text_mask;
+		delete text_mask_stroke;
 		text_mask = 0;
 		text_mask_stroke = 0;
 	}
@@ -1723,36 +1773,26 @@ int TitleMain::draw_mask()
 			text_w,
 			visible_rows * get_char_height() - rows_bottom[visible_row2-1],
 			BC_A8);
-			
+
 		need_redraw = 1;
 	}
 
-//printf("TitleMain::draw_mask %d %d\n", text_w, visible_rows * get_char_height());
 
 
-//printf("TitleMain::draw_mask 1\n");
 // Draw on text mask if different
 	if(old_visible_row1 != visible_row1 ||
 		old_visible_row2 != visible_row2 ||
 		need_redraw)
 	{
-//printf("TitleMain::draw_mask 2\n");
 		text_mask->clear_frame();
 		text_mask_stroke->clear_frame();
 
-// for(int i = 0; i < text_mask->get_h(); i++)
-// 	for(int j = 0; j < text_mask->get_w(); j++)
-// 		text_mask->get_rows()[i][j] = 0x80;
 
-//printf("TitleMain::draw_mask 2\n");
 		if(!title_engine)
 			title_engine = new TitleEngine(this, PluginClient::smp + 1);
-//printf("TitleMain::draw_mask 2\n");
 
 		title_engine->set_package_count(visible_char2 - visible_char1);
-//printf("TitleMain::draw_mask 2\n");
 		title_engine->process_packages();
-//printf("TitleMain::draw_mask 3\n");
 	}
 
 	return 0;
@@ -1762,7 +1802,6 @@ int TitleMain::draw_mask()
 void TitleMain::overlay_mask()
 {
 
-//printf("TitleMain::overlay_mask 1\n");
 	alpha = 0x100;
 	if(!EQUIV(config.fade_in, 0))
 	{
@@ -1771,10 +1810,6 @@ void TitleMain::overlay_mask()
 /*			get_source_start() -   */
 			config.prev_keyframe_position;
 
-// printf("TitleMain::overlay_mask %d %d %d\n", 
-// get_source_position(), 
-// get_source_start(), 
-// config.prev_keyframe_position);
 
 		if(fade_position >= 0 && fade_position < fade_len)
 		{
@@ -1783,7 +1818,6 @@ void TitleMain::overlay_mask()
 				fade_len + 0.5);
 		}
 	}
-//printf("TitleMain::overlay_mask 1\n");
 
 	if(!EQUIV(config.fade_out, 0))
 	{
@@ -1793,11 +1827,6 @@ void TitleMain::overlay_mask()
 			get_source_position();
 
 
-// printf("TitleMain::overlay_mask %d %d %d\n", 
-// get_source_start() + config.next_keyframe_position,
-// get_source_position(), 
-// source_end);
-
 		if(fade_position > 0 && fade_position < fade_len)
 		{
 			alpha = (int)((float)0x100 *
@@ -1805,7 +1834,6 @@ void TitleMain::overlay_mask()
 				fade_len + 0.5);
 		}
 	}
-//printf("TitleMain::overlay_mask 1\n");
 
 	if(config.dropshadow)
 	{
@@ -1828,14 +1856,14 @@ void TitleMain::overlay_mask()
 		mask_y1 -= config.dropshadow;
 		mask_y2 -= config.dropshadow;
 	}
-//printf("TitleMain::overlay_mask 1\n");
 
 	if(text_x1 < input->get_w() && text_x1 + text_w > 0 &&
 		mask_y1 < input->get_h() && mask_y2 > 0)
 	{
 		if(!translate) translate = new TitleTranslate(this, PluginClient::smp + 1);
 		translate->process_packages();
-		if (config.stroke_width >= 1.0/64) 
+		if (config.stroke_width >= ZERO &&
+			(config.style & FONT_OUTLINE)) 
 		{
 			int temp_color = config.color;
 			VFrame *tmp_text_mask = this->text_mask;
@@ -1847,7 +1875,6 @@ void TitleMain::overlay_mask()
 			this->text_mask = tmp_text_mask;
 		}
 	}
-//printf("TitleMain::overlay_mask 200\n");
 }
 
 void TitleMain::clear_glyphs()
@@ -1890,7 +1917,6 @@ int TitleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	output = output_ptr;
 
 	need_reconfigure |= load_configuration();
-//printf("TitleMain::process_realtime 1\n");
 
 
 // Always synthesize text and redraw it for timecode
@@ -1905,12 +1931,14 @@ int TitleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		need_reconfigure = 1;
 	}
 
-	if(config.size <= 0 || config.size >= 2048) return 0;
-	if(config.stroke_width < 0 || config.stroke_width >= 512) return 0;
+// Check boundaries
+	if(config.size <= 0 || config.size >= 2048) config.size = 72;
+	if(config.stroke_width < 0 || 
+		config.stroke_width >= 512) config.stroke_width = 0.0;
 	if(!strlen(config.text)) return 0;
-	if(!strlen(config.encoding)) return 0;
+	if(!strlen(config.encoding)) strcpy(config.encoding, DEFAULT_ENCODING);
 
-//printf("TitleMain::process_realtime 10\n");
+//printf("TitleMain::process_realtime 4\n");
 
 // Handle reconfiguration
 	if(need_reconfigure)
@@ -2041,7 +2069,7 @@ int TitleMain::load_defaults()
 
 	defaults->get("FONT", config.font);
 	defaults->get("ENCODING", config.encoding);
-	config.style = defaults->get("STYLE", (long)config.style);
+	config.style = defaults->get("STYLE", (int64_t)config.style);
 	config.size = defaults->get("SIZE", config.size);
 	config.color = defaults->get("COLOR", config.color);
 	config.color_stroke = defaults->get("COLOR_STROKE", config.color_stroke);
@@ -2057,7 +2085,7 @@ int TitleMain::load_defaults()
 	config.y = defaults->get("TITLE_Y", config.y);
 	config.dropshadow = defaults->get("DROPSHADOW", config.dropshadow);
 	config.timecode = defaults->get("TIMECODE", config.timecode);
-	window_w = defaults->get("WINDOW_W", 640);
+	window_w = defaults->get("WINDOW_W", 660);
 	window_h = defaults->get("WINDOW_H", 480);
 
 // Store text in separate path to isolate special characters
@@ -2068,7 +2096,7 @@ int TitleMain::load_defaults()
 	if(fd)
 	{
 		fseek(fd, 0, SEEK_END);
-		long len = ftell(fd);
+		int64_t len = ftell(fd);
 		fseek(fd, 0, SEEK_SET);
 		fread(config.text, len, 1, fd);
 		config.text[len] = 0;
@@ -2086,7 +2114,7 @@ int TitleMain::save_defaults()
 
 	defaults->update("FONT", config.font);
 	defaults->update("ENCODING", config.encoding);
-	defaults->update("STYLE", (long)config.style);
+	defaults->update("STYLE", (int64_t)config.style);
 	defaults->update("SIZE", config.size);
 	defaults->update("COLOR", config.color);
 	defaults->update("COLOR_STROKE", config.color_stroke);
@@ -2187,7 +2215,7 @@ void TitleMain::save_data(KeyFrame *keyframe)
 	output.tag.set_title("TITLE");
 	output.tag.set_property("FONT", config.font);
 	output.tag.set_property("ENCODING", config.encoding);
-	output.tag.set_property("STYLE", (long)config.style);
+	output.tag.set_property("STYLE", (int64_t)config.style);
 	output.tag.set_property("SIZE", config.size);
 	output.tag.set_property("COLOR", config.color);
 	output.tag.set_property("COLOR_STROKE", config.color_stroke);
@@ -2238,7 +2266,7 @@ void TitleMain::read_data(KeyFrame *keyframe)
 			{
 				input.tag.get_property("FONT", config.font);
 				input.tag.get_property("ENCODING", config.encoding);
-				config.style = input.tag.get_property("STYLE", (long)config.style);
+				config.style = input.tag.get_property("STYLE", (int64_t)config.style);
 				config.size = input.tag.get_property("SIZE", config.size);
 				config.color = input.tag.get_property("COLOR", config.color);
 				config.color_stroke = input.tag.get_property("COLOR_STROKE", config.color_stroke);

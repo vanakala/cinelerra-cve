@@ -192,7 +192,7 @@ EditPopupAddTrack::EditPopupAddTrack(MWindow *mwindow, EditPopup *popup)
 int EditPopupAddTrack::handle_event()
 {
 	if(popup->track->data_type == TRACK_AUDIO)
-		mwindow->add_audio_track_entry(popup->track);
+		mwindow->add_audio_track_entry(1, popup->track);
 	else
 		mwindow->add_video_track_entry(popup->track);
 	return 1;

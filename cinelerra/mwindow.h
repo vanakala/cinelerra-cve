@@ -12,6 +12,7 @@
 #include "defaults.inc"
 #include "edit.inc"
 #include "edl.inc"
+#include "filesystem.inc"
 #include "filexml.inc"
 #include "levelwindow.inc"
 #include "loadmode.inc"
@@ -34,6 +35,7 @@
 #include "recordlabel.inc"
 #include "render.inc"
 #include "sharedlocation.inc"
+#include "sighandler.inc"
 #include "splashgui.inc"
 #include "theme.inc"
 #include "threadloader.inc"
@@ -47,6 +49,8 @@
 #include "videowindow.inc"
 #include "vwindow.inc"
 
+
+#include <stdint.h>
 
 // All entry points for commands except for window locking should be here.
 // This allows scriptability.
@@ -91,8 +95,9 @@ public:
 // Returns 1 if the vectors were full
 	int paste_assets(double position, Track *dest_track);
 	
-// Insert the assets at a point in the EDL.  Called by effect rendering,
-// rendering, and CWindow drops but recording calls paste_edls directly.
+// Insert the assets at a point in the EDL.  Called by menueffects,
+// render, and CWindow drop but recording calls paste_edls directly for
+// labels.
 	void load_assets(ArrayList<Asset*> *new_assets, 
 		double position, 
 		int load_mode,
@@ -139,18 +144,18 @@ public:
 	int reposition_timebar(int new_pixel, int new_height);
 	int expand_sample();
 	int zoom_in_sample();
-	int zoom_sample(long zoom_sample);
-	void zoom_amp(long zoom_amp);
-	void zoom_track(long zoom_track);
+	int zoom_sample(int64_t zoom_sample);
+	void zoom_amp(int64_t zoom_amp);
+	void zoom_track(int64_t zoom_track);
 	int fit_sample();
-	int move_left(long distance = 0);
-	int move_right(long distance = 0);
-	void move_up(long distance = 0);
-	void move_down(long distance = 0);
+	int move_left(int64_t distance = 0);
+	int move_right(int64_t distance = 0);
+	void move_up(int64_t distance = 0);
+	void move_down(int64_t distance = 0);
 	int next_label();   // seek to labels
 	int prev_label();
 	void trackmovement(int track_start);
-	int samplemovement(long view_start);     // view_start is pixels
+	int samplemovement(int64_t view_start);     // view_start is pixels
 	void select_all();
 	int goto_start();
 	int goto_end();
@@ -177,14 +182,19 @@ public:
 
 // ============================= editing commands ========================
 
-	void add_audio_track_entry(Track *dst = 0);
+	void add_audio_track_entry(int above, Track *dst);
 	int add_audio_track(int above, Track *dst);
 	void add_clip_to_edl(EDL *edl);
 	void add_video_track_entry(Track *dst = 0);
 	int add_video_track(int above, Track *dst);
 
 	void asset_to_size();
-	void clear();
+// Entry point for clear operations.
+	void clear_entry();
+// Clears active region in EDL.
+// If clear_handle, edit boundaries are cleared if the range is 0.
+// Called by paste, record, menueffects, render, and CWindow drop.
+	void clear(int clear_handle);
 	void clear_labels();
 	int clear_labels(double start, double end);
 	void concatenate_tracks();
@@ -201,8 +211,8 @@ public:
 	void delete_track(Track *track);
 	void delete_tracks();
 	void detach_transition(Transition *transition);
-	int feather_edits(long feather_samples, int audio, int video);
-	long get_feather(int audio, int video);
+	int feather_edits(int64_t feather_samples, int audio, int video);
+	int64_t get_feather(int audio, int video);
 	float get_aspect_ratio();
 	void insert(double position, 
 		FileXML *file,
@@ -238,7 +248,7 @@ public:
 	void move_effect(Plugin *plugin,
 		PluginSet *plugin_set,
 		Track *track,
-		long position);
+		int64_t position);
 	void move_plugins_up(PluginSet *plugin_set);
 	void move_plugins_down(PluginSet *plugin_set);
 	void move_track_down(Track *track);
@@ -256,12 +266,12 @@ public:
 		FileXML *file,
 		int edit_labels,
 		int edit_plugins);
-	int paste_output(long startproject, 
-				long endproject, 
-				long startsource_sample, 
-				long endsource_sample, 
-				long startsource_frame,
-				long endsource_frame,
+	int paste_output(int64_t startproject, 
+				int64_t endproject, 
+				int64_t startsource_sample, 
+				int64_t endsource_sample, 
+				int64_t startsource_frame,
+				int64_t endsource_frame,
 				Asset *asset, 
 				RecordLabels *new_labels);
 	void paste_silence();
@@ -367,7 +377,7 @@ public:
 	ArrayList<Channel*> channeldb_v4l;
 	ArrayList<Channel*> channeldb_buz;
 // Adjust sample position to line up with frames.
-	int fix_timing(long &samples_out, long &frames_out, long samples_in);     
+	int fix_timing(int64_t &samples_out, int64_t &frames_out, int64_t samples_in);     
 
 
 
@@ -408,12 +418,15 @@ public:
 	void init_awindow();
 // Used by MWindow and RenderFarmClient
 	static void init_plugins(Preferences *preferences, 
-		ArrayList<PluginServer*>* &plugindb);
+		ArrayList<PluginServer*>* &plugindb,
+		SplashGUI *splash_window);
 	static void init_plugin_path(Preferences *preferences, 
 		ArrayList<PluginServer*>* &plugindb,
-		char *directory,
-		char *suffix);
+		FileSystem *fs,
+		SplashGUI *splash_window,
+		int *counter);
 	void init_preferences();
+	void init_signals();
 	void init_theme();
 	void init_compositor();
 	void init_levelwindow();
@@ -427,6 +440,7 @@ public:
 	void clean_indexes();
 	void save_tuner(ArrayList<Channel*> &channeldb, char *path);
 //	TimeBomb timebomb;
+	SigHandler *sighandler;
 };
 
 #endif

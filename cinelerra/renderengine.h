@@ -52,8 +52,8 @@ public:
 	void set_acache(CICache *cache);
 	void set_vcache(CICache *cache);
 // Get levels for tracking
-	void get_output_levels(double *levels, long position);
-	void get_module_levels(ArrayList<double> *module_levels, long position);
+	void get_output_levels(double *levels, int64_t position);
+	void get_module_levels(ArrayList<double> *module_levels, int64_t position);
 
 	void run();
 // Sends the command sequence, compensating for network latency
@@ -66,9 +66,9 @@ public:
 	int open_output();
 	int close_output();
 // return position to synchronize video against
-	long sync_position();
+	int64_t sync_position();
 // return samples since start of playback
-	long session_position();
+	int64_t session_position();
 
 // Update preferences window
 	void update_framerate(float framerate);
@@ -109,7 +109,7 @@ public:
 	ArrayList<Channel*> *channeldb;
 
 // length to send to audio device after speed adjustment
-	long adjusted_fragment_len;              
+	int64_t adjusted_fragment_len;              
 // Lock out interrupts before and after renderengine is active
 	Mutex interrupt_lock;
 // CICaches for use if no playbackengine exists
@@ -140,29 +140,29 @@ public:
 // buffersize is in samples
 	int reset_parameters();
 
-	int arm_playback_common(long start_sample, 
-			long end_sample,
-			long current_sample,
+	int arm_playback_common(int64_t start_sample, 
+			int64_t end_sample,
+			int64_t current_sample,
 			int reverse, 
 			float speed, 
 			int follow_loop,
 			int infinite);
 
-	int arm_playback_audio(long input_length, 
-			long amodule_render_fragment, 
-			long playback_buffer, 
-			long output_length, 
+	int arm_playback_audio(int64_t input_length, 
+			int64_t amodule_render_fragment, 
+			int64_t playback_buffer, 
+			int64_t output_length, 
 			int audio_channels);
 
 	int arm_playback_video(int every_frame, 
-			long read_length, 
-			long output_length,
+			int64_t read_length, 
+			int64_t output_length,
 			int track_w,
 			int track_h,
 			int output_w,
 			int output_h);
 
-	long get_correction_factor(int reset);     // calling it resets the correction factor
+	int64_t get_correction_factor(int reset);     // calling it resets the correction factor
 
 // start video since vrender is the master
 	int start_video();
@@ -175,9 +175,9 @@ public:
 	int follow_loop;       // loop if mwindow is looped
 	int infinite;          // don't stop rendering at the end of the range or loops
 
-	long start_position;      // lowest numbered sample in playback range
-	long end_position;        // highest numbered sample in playback range
-	long current_sample;
+	int64_t start_position;      // lowest numbered sample in playback range
+	int64_t end_position;        // highest numbered sample in playback range
+	int64_t current_sample;
 	int audio_channels;
 	int every_frame;
 

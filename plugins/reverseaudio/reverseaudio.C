@@ -56,10 +56,10 @@ int ReverseAudio::stop_loop()
 	return 0;
 }
 
-int ReverseAudio::process_loop(double *buffer, long &write_length)
+int ReverseAudio::process_loop(double *buffer, int64_t &write_length)
 {
 	int result = 0;
-	long fragment_len;
+	int64_t fragment_len;
 //printf("ReverseAudio::process_loop 1\n");
 
 	fragment_len = PluginClient::in_buffer_size;

@@ -18,8 +18,8 @@ public:
 		IndexFile *index_file, 
 		Asset *asset,
 		char *index_filename,
-		long buffer_size, 
-		long length_source);
+		int64_t buffer_size, 
+		int64_t length_source);
 	~IndexThread();
 
 	friend class IndexFile;
@@ -32,7 +32,7 @@ public:
 	MWindow *mwindow;
 	Asset *asset;
 	char *index_filename;
-	long buffer_size, length_source;
+	int64_t buffer_size, length_source;
 	int current_buffer;
 
 private:
@@ -40,7 +40,7 @@ private:
 	double **buffer_in[TOTAL_BUFFERS];
 	Mutex input_lock[TOTAL_BUFFERS], output_lock[TOTAL_BUFFERS];
 	int last_buffer[TOTAL_BUFFERS];
-	long input_len[TOTAL_BUFFERS];
+	int64_t input_len[TOTAL_BUFFERS];
 };
 
 

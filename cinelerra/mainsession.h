@@ -95,6 +95,7 @@ public:
 	int afolders_w;
 	int show_vwindow, show_awindow, show_cwindow, show_lwindow;
 	int plugindialog_w, plugindialog_h;
+	int menueffect_w, menueffect_h;
 
 	MWindow *mwindow;
 };

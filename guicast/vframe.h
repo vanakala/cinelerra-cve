@@ -24,7 +24,6 @@ public:
 		int h, 
 		int color_model = BC_RGBA8888, 
 		long bytes_per_line = -1);
-	bool IsPAL(void) const;
 // Create a frame with the png image
 	VFrame(unsigned char *png_data);
 	VFrame(VFrame &vframe);
@@ -107,6 +106,9 @@ public:
 	void rotate270();
 	void rotate90();
 	void flip_vert();
+
+// Convenience storage.
+// Returns -1 if not set.
 	int get_field2_offset();
 	int set_field2_offset(int value);
 // Overlay src onto this with blending and translation of input.

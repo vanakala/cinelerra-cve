@@ -91,7 +91,13 @@ int EDLSession::calculate_smp()
 	return result - 1;
 }
 
-
+char* EDLSession::get_cwindow_display()
+{
+	if(playback_config[PLAYBACK_LOCALHOST].values[0]->vconfig->x11_host[0])
+		return playback_config[PLAYBACK_LOCALHOST].values[0]->vconfig->x11_host;
+	else
+		return 0;
+}
 
 
 
@@ -320,7 +326,7 @@ int EDLSession::save_defaults(Defaults *defaults)
     for(int i = 0; i < 1 /* PLAYBACK_STRATEGIES */; i++)
     {
         sprintf(string, "PLAYBACK_CONFIGS_%d", i);
-        defaults->update(string, playback_config[i].total);
+        defaults->update(string, (int32_t)playback_config[i].total);
         for(int j = 0; j < playback_config[i].total; j++)
         {
             playback_config[i].values[j]->save_defaults(defaults);
@@ -398,7 +404,7 @@ void EDLSession::boundaries()
 
 
 
-int EDLSession::load_video_config(FileXML *file, int append_mode, unsigned long load_flags)
+int EDLSession::load_video_config(FileXML *file, int append_mode, uint32_t load_flags)
 {
 	char string[1024];
 	if(append_mode) return 0;
@@ -424,12 +430,12 @@ int EDLSession::load_video_config(FileXML *file, int append_mode, unsigned long 
 	return 0;
 }
 
-int EDLSession::load_audio_config(FileXML *file, int append_mode, unsigned long load_flags)
+int EDLSession::load_audio_config(FileXML *file, int append_mode, uint32_t load_flags)
 {
 	char string[32];
 // load channels setting
 	if(append_mode) return 0;
-	audio_channels = file->tag.get_property("CHANNELS", (long)audio_channels);
+	audio_channels = file->tag.get_property("CHANNELS", (int64_t)audio_channels);
 
 
 	for(int i = 0; i < audio_channels; i++)
@@ -438,17 +444,16 @@ int EDLSession::load_audio_config(FileXML *file, int append_mode, unsigned long 
 		achannel_positions[i] = file->tag.get_property(string, achannel_positions[i]);
 	}
 
-	sample_rate = file->tag.get_property("SAMPLERATE", (long)sample_rate);
+	sample_rate = file->tag.get_property("SAMPLERATE", (int64_t)sample_rate);
 	return 0;
 }
 
 int EDLSession::load_xml(FileXML *file, 
 	int append_mode, 
-	unsigned long load_flags)
+	uint32_t load_flags)
 {
 	char string[BCTEXTLEN];
 
-//printf("EDLSession::load_xml 1\n");
 	if(append_mode)
 	{
 	}
@@ -596,8 +601,8 @@ int EDLSession::save_audio_config(FileXML *file)
 {
 	char string[1024];
 	file->tag.set_title("AUDIO");
-	file->tag.set_property("SAMPLERATE", (long)sample_rate);
-	file->tag.set_property("CHANNELS", (long)audio_channels);
+	file->tag.set_property("SAMPLERATE", (int64_t)sample_rate);
+	file->tag.set_property("CHANNELS", (int64_t)audio_channels);
 	
 	for(int i = 0; i < audio_channels; i++)
 	{

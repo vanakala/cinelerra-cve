@@ -10,9 +10,6 @@
 #include "overlayframe.h"
 #include "vframe.h"
 
-//#include "timer.h"
-
-
 #if 1
 	#define use_float 1
 #else
@@ -62,57 +59,57 @@ OverlayFrame::~OverlayFrame()
 
 // Branch prediction 4 U
 
-#define BLEND_3(max, int_type, type, chroma_offset) \
+#define BLEND_3(max, temp_type, type, chroma_offset) \
 { \
-	int_type r, g, b; \
+	temp_type r, g, b; \
  \
 /* if(mode != TRANSFER_NORMAL) printf("BLEND mode = %d\n", mode); */ \
 	switch(mode) \
 	{ \
 		case TRANSFER_DIVIDE: \
-			r = output[0] ? (((int_type)input1 * max) / output[0]) : max; \
+			r = output[0] ? (((temp_type)input1 * max) / output[0]) : max; \
 			if(chroma_offset) \
 			{ \
-				g = labs((int)input2 - chroma_offset) > labs((int_type)output[1] - chroma_offset) ? input2 : output[1]; \
-				b = labs((int)input3 - chroma_offset) > labs((int_type)output[2] - chroma_offset) ? input3 : output[2]; \
+				g = labs((int)input2 - chroma_offset) > labs((temp_type)output[1] - chroma_offset) ? input2 : output[1]; \
+				b = labs((int)input3 - chroma_offset) > labs((temp_type)output[2] - chroma_offset) ? input3 : output[2]; \
 			} \
 			else \
 			{ \
-				g = output[1] ? (int_type)input2 * max / (int_type)output[1] : max; \
-				b = output[2] ? (int_type)input3 * max / (int_type)output[2] : max; \
+				g = output[1] ? (temp_type)input2 * max / (temp_type)output[1] : max; \
+				b = output[2] ? (temp_type)input3 * max / (temp_type)output[2] : max; \
 			} \
-			r = (r * opacity + (int_type)output[0] * transparency) / max; \
-			g = (g * opacity + (int_type)output[1] * transparency) / max; \
-			b = (b * opacity + (int_type)output[2] * transparency) / max; \
+			r = (r * opacity + (temp_type)output[0] * transparency) / max; \
+			g = (g * opacity + (temp_type)output[1] * transparency) / max; \
+			b = (b * opacity + (temp_type)output[2] * transparency) / max; \
 			break; \
 		case TRANSFER_MULTIPLY: \
-			r = ((int_type)input1 * output[0]) / max; \
+			r = ((temp_type)input1 * output[0]) / max; \
 			if(chroma_offset) \
 			{ \
-				g = labs((int_type)input2 - chroma_offset) > labs((int_type)output[1] - chroma_offset) ? input2 : output[1]; \
-				b = labs((int_type)input3 - chroma_offset) > labs((int_type)output[2] - chroma_offset) ? input3 : output[2]; \
+				g = labs((temp_type)input2 - chroma_offset) > labs((temp_type)output[1] - chroma_offset) ? input2 : output[1]; \
+				b = labs((temp_type)input3 - chroma_offset) > labs((temp_type)output[2] - chroma_offset) ? input3 : output[2]; \
 			} \
 			else \
 			{ \
-				g = (int_type)input2 * (int_type)output[1] / max; \
-				b = (int_type)input3 * (int_type)output[2] / max; \
+				g = (temp_type)input2 * (temp_type)output[1] / max; \
+				b = (temp_type)input3 * (temp_type)output[2] / max; \
 			} \
-			r = (r * opacity + (int_type)output[0] * transparency) / max; \
-			g = (g * opacity + (int_type)output[1] * transparency) / max; \
-			b = (b * opacity + (int_type)output[2] * transparency) / max; \
+			r = (r * opacity + (temp_type)output[0] * transparency) / max; \
+			g = (g * opacity + (temp_type)output[1] * transparency) / max; \
+			b = (b * opacity + (temp_type)output[2] * transparency) / max; \
 			break; \
 		case TRANSFER_SUBTRACT: \
-			r = (int_type)input1 - output[0]; \
-			g = (int_type)input2 - ((int_type)output[1] - chroma_offset); \
-			b = (int_type)input3 - ((int_type)output[2] - chroma_offset); \
+			r = (temp_type)input1 - output[0]; \
+			g = (temp_type)input2 - ((temp_type)output[1] - chroma_offset); \
+			b = (temp_type)input3 - ((temp_type)output[2] - chroma_offset); \
 			r = (r * opacity + output[0] * transparency) / max; \
 			g = (g * opacity + output[1] * transparency) / max; \
 			b = (b * opacity + output[2] * transparency) / max; \
 			break; \
 		case TRANSFER_ADDITION: \
-			r = (int_type)input1 + output[0]; \
-			g = (int_type)input2 - chroma_offset + output[1]; \
-			b = (int_type)input3 - chroma_offset + output[2]; \
+			r = (temp_type)input1 + output[0]; \
+			g = (temp_type)input2 - chroma_offset + output[1]; \
+			b = (temp_type)input3 - chroma_offset + output[2]; \
 			r = (r * opacity + output[0] * transparency) / max; \
 			g = (g * opacity + output[1] * transparency) / max; \
 			b = (b * opacity + output[2] * transparency) / max; \
@@ -123,9 +120,9 @@ OverlayFrame::~OverlayFrame()
 			b = input3; \
 			break; \
 		case TRANSFER_NORMAL: \
-			r = ((int_type)input1 * opacity + output[0] * transparency) / max; \
-			g = ((int_type)input2 * opacity + output[1] * transparency) / max; \
-			b = ((int_type)input3 * opacity + output[2] * transparency) / max; \
+			r = ((temp_type)input1 * opacity + output[0] * transparency) / max; \
+			g = ((temp_type)input2 * opacity + output[1] * transparency) / max; \
+			b = ((temp_type)input3 * opacity + output[2] * transparency) / max; \
 			break; \
 	} \
  \
@@ -139,22 +136,22 @@ OverlayFrame::~OverlayFrame()
 
 
 // Blending equations are drastically different for 3 and 4 components
-#define BLEND_4(max, int_type, type, chroma_offset) \
+#define BLEND_4(max, temp_type, type, chroma_offset) \
 { \
-	int_type r, g, b, a; \
-	int_type pixel_opacity, pixel_transparency; \
-	int_type output1 = output[0]; \
-	int_type output2 = output[1]; \
-	int_type output3 = output[2]; \
-	int_type output4 = output[3]; \
+	temp_type r, g, b, a; \
+	temp_type pixel_opacity, pixel_transparency; \
+	temp_type output1 = output[0]; \
+	temp_type output2 = output[1]; \
+	temp_type output3 = output[2]; \
+	temp_type output4 = output[3]; \
  \
 	pixel_opacity = opacity * input4; \
-	pixel_transparency = (int_type)max * max - pixel_opacity; \
+	pixel_transparency = (temp_type)max * max - pixel_opacity; \
  \
 	switch(mode) \
 	{ \
 		case TRANSFER_DIVIDE: \
-			r = output1 ? (((int_type)input1 * max) / output1) : max; \
+			r = output1 ? (((temp_type)input1 * max) / output1) : max; \
 			if(chroma_offset) \
 			{ \
 				g = labs((int)input2 - chroma_offset) > labs((int)output2 - chroma_offset) ? input2 : output2; \
@@ -162,44 +159,44 @@ OverlayFrame::~OverlayFrame()
 			} \
 			else \
 			{ \
-				g = output2 ? (int_type)input2 * max / (int_type)output2 : max; \
-				b = output3 ? (int_type)input3 * max / (int_type)output3 : max; \
+				g = output2 ? (temp_type)input2 * max / (temp_type)output2 : max; \
+				b = output3 ? (temp_type)input3 * max / (temp_type)output3 : max; \
 			} \
-			r = (r * pixel_opacity + (int_type)output1 * pixel_transparency) / max / max; \
-			g = (g * pixel_opacity + (int_type)output2 * pixel_transparency) / max / max; \
-			b = (b * pixel_opacity + (int_type)output3 * pixel_transparency) / max / max; \
+			r = (r * pixel_opacity + (temp_type)output1 * pixel_transparency) / max / max; \
+			g = (g * pixel_opacity + (temp_type)output2 * pixel_transparency) / max / max; \
+			b = (b * pixel_opacity + (temp_type)output3 * pixel_transparency) / max / max; \
 			a = input4 > output4 ? input4 : output4; \
 			break; \
 		case TRANSFER_MULTIPLY: \
-			r = ((int_type)input1 * output1) / max; \
+			r = ((temp_type)input1 * output1) / max; \
 			if(chroma_offset) \
 			{ \
-				g = labs((int_type)input2 - chroma_offset) > labs((int_type)output2 - chroma_offset) ? input2 : output2; \
-				b = labs((int_type)input3 - chroma_offset) > labs((int_type)output3 - chroma_offset) ? input3 : output3; \
+				g = labs((temp_type)input2 - chroma_offset) > labs((temp_type)output2 - chroma_offset) ? input2 : output2; \
+				b = labs((temp_type)input3 - chroma_offset) > labs((temp_type)output3 - chroma_offset) ? input3 : output3; \
 			} \
 			else \
 			{ \
-				g = (int_type)input2 * (int_type)output2 / max; \
-				b = (int_type)input3 * (int_type)output3 / max; \
+				g = (temp_type)input2 * (temp_type)output2 / max; \
+				b = (temp_type)input3 * (temp_type)output3 / max; \
 			} \
-			r = (r * pixel_opacity + (int_type)output1 * pixel_transparency) / max / max; \
-			g = (g * pixel_opacity + (int_type)output2 * pixel_transparency) / max / max; \
-			b = (b * pixel_opacity + (int_type)output3 * pixel_transparency) / max / max; \
+			r = (r * pixel_opacity + (temp_type)output1 * pixel_transparency) / max / max; \
+			g = (g * pixel_opacity + (temp_type)output2 * pixel_transparency) / max / max; \
+			b = (b * pixel_opacity + (temp_type)output3 * pixel_transparency) / max / max; \
 			a = input4 > output4 ? input4 : output4; \
 			break; \
 		case TRANSFER_SUBTRACT: \
-			r = (int_type)input1 - output1; \
-			g = (int_type)input2 - ((int_type)output2 - chroma_offset); \
-			b = (int_type)input3 - ((int_type)output3 - chroma_offset); \
+			r = (temp_type)input1 - output1; \
+			g = (temp_type)input2 - ((temp_type)output2 - chroma_offset); \
+			b = (temp_type)input3 - ((temp_type)output3 - chroma_offset); \
 			r = (r * pixel_opacity + output1 * pixel_transparency) / max / max; \
 			g = (g * pixel_opacity + output2 * pixel_transparency) / max / max; \
 			b = (b * pixel_opacity + output3 * pixel_transparency) / max / max; \
 			a = input4 > output4 ? input4 : output4; \
 			break; \
 		case TRANSFER_ADDITION: \
-			r = (int_type)input1 + output1; \
-			g = (int_type)input2 - chroma_offset + output2; \
-			b = (int_type)input3 - chroma_offset + output3; \
+			r = (temp_type)input1 + output1; \
+			g = (temp_type)input2 - chroma_offset + output2; \
+			b = (temp_type)input3 - chroma_offset + output3; \
 			r = (r * pixel_opacity + output1 * pixel_transparency) / max / max; \
 			g = (g * pixel_opacity + output2 * pixel_transparency) / max / max; \
 			b = (b * pixel_opacity + output3 * pixel_transparency) / max / max; \
@@ -1868,7 +1865,7 @@ void TranslateUnit::translation_array_i(transfer_table_i* &table,
 
 
 
-#define TRANSLATE(max, int_type, type, components, chroma_offset) \
+#define TRANSLATE(max, temp_type, type, components, chroma_offset) \
 { \
  \
 	type **in_rows = (type**)input->get_rows(); \
@@ -1877,8 +1874,8 @@ void TranslateUnit::translation_array_i(transfer_table_i* &table,
 /* printf("OverlayFrame::translate 1  %.2f %.2f %.2f %.2f -> %.2f %.2f %.2f %.2f\n",  */ \
 /* 	(in_x1),  in_y1,  in_x2,  in_y2,  out_x1,  out_y1, out_x2,  out_y2); */ \
  \
-	int_type master_opacity = (int_type)(alpha * max + 0.5); \
-	int_type master_transparency = max - master_opacity; \
+	temp_type master_opacity = (temp_type)(alpha * max + 0.5); \
+	temp_type master_transparency = max - master_opacity; \
  \
 /* printf("TRANSLATE %d\n", mode); */ \
  \
@@ -2041,27 +2038,27 @@ void TranslateUnit::translation_array_i(transfer_table_i* &table,
 						in_row2[in_x2 * components + 3] * fraction4) / 0xffffffff); \
 			} \
  \
-			int_type opacity; \
+			temp_type opacity; \
 			if(use_float) \
-				opacity = (int_type)(master_opacity *  \
+				opacity = (temp_type)(master_opacity *  \
 					y_output_fraction_f *  \
 					x_output_fraction_f + 0.5); \
 			else \
-				opacity = (int_type)((int64_t)master_opacity *  \
+				opacity = (temp_type)((int64_t)master_opacity *  \
 					y_output_fraction_i *  \
 					x_output_fraction_i / \
 					0xffffffff); \
-			int_type transparency = max - opacity; \
+			temp_type transparency = max - opacity; \
  \
 /* printf("TRANSLATE 2 %x %d %d\n", opacity, j, i); */ \
  \
 			if(components == 3) \
 			{ \
-				BLEND_3(max, int_type, type, chroma_offset); \
+				BLEND_3(max, temp_type, type, chroma_offset); \
 			} \
 			else \
 			{ \
-				BLEND_4(max, int_type, type, chroma_offset); \
+				BLEND_4(max, temp_type, type, chroma_offset); \
 			} \
 		} \
 	} \
@@ -2254,10 +2251,10 @@ LoadPackage* TranslateEngine::new_package()
 
 
 
-#define SCALE_TRANSLATE(max, int_type, type, components, chroma_offset) \
+#define SCALE_TRANSLATE(max, temp_type, type, components, chroma_offset) \
 { \
-	int_type opacity = (int_type)(alpha * max + 0.5); \
-	int_type transparency = max - opacity; \
+	temp_type opacity = (temp_type)(alpha * max + 0.5); \
+	temp_type transparency = max - opacity; \
 	int out_w = out_x2 - out_x1; \
  \
 	for(int i = pkg->out_row1; i < pkg->out_row2; i++) \
@@ -2272,7 +2269,7 @@ LoadPackage* TranslateEngine::new_package()
 			for(int j = 0; j < out_w; j++) \
 			{ \
 				type *in_row_plus_x = in_row + x_table[j] * components; \
-				int_type input1, input2, input3, input4; \
+				temp_type input1, input2, input3, input4; \
 	 \
  				input1 = in_row_plus_x[0]; \
 				input2 = in_row_plus_x[1]; \
@@ -2282,11 +2279,11 @@ LoadPackage* TranslateEngine::new_package()
 	 \
 				if(components == 3) \
 				{ \
-					BLEND_3(max, int_type, type, chroma_offset); \
+					BLEND_3(max, temp_type, type, chroma_offset); \
 				} \
 				else \
 				{ \
-					BLEND_4(max, int_type, type, chroma_offset); \
+					BLEND_4(max, temp_type, type, chroma_offset); \
 				} \
 				output += components; \
 			} \
@@ -2296,7 +2293,7 @@ LoadPackage* TranslateEngine::new_package()
 		{ \
 			for(int j = 0; j < out_w; j++) \
 			{ \
-				int_type input1, input2, input3, input4; \
+				temp_type input1, input2, input3, input4; \
 	 \
  				input1 = in_row[0]; \
 				input2 = in_row[1]; \
@@ -2306,11 +2303,11 @@ LoadPackage* TranslateEngine::new_package()
 	 \
 				if(components == 3) \
 				{ \
-					BLEND_3(max, int_type, type, chroma_offset); \
+					BLEND_3(max, temp_type, type, chroma_offset); \
 				} \
 				else \
 				{ \
-					BLEND_4(max, int_type, type, chroma_offset); \
+					BLEND_4(max, temp_type, type, chroma_offset); \
 				} \
 				in_row += components; \
 				output += components; \
@@ -2524,10 +2521,10 @@ ScaleTranslatePackage::ScaleTranslatePackage()
 
 
 
-#define BLEND_ONLY(int_type, type, max, components, chroma_offset) \
+#define BLEND_ONLY(temp_type, type, max, components, chroma_offset) \
 { \
-	int_type opacity = (int_type)(alpha * max + 0.5); \
-	int_type transparency = max - opacity; \
+	temp_type opacity = (temp_type)(alpha * max + 0.5); \
+	temp_type transparency = max - opacity; \
  \
 	type** output_rows = (type**)output->get_rows(); \
 	type** input_rows = (type**)input->get_rows(); \
@@ -2541,7 +2538,7 @@ ScaleTranslatePackage::ScaleTranslatePackage()
  \
 		for(int j = 0; j < w; j++) \
 		{ \
-			int_type input1, input2, input3, input4; \
+			temp_type input1, input2, input3, input4; \
 			input1 = in_row[0]; \
 			input2 = in_row[1]; \
 			input3 = in_row[2]; \
@@ -2550,11 +2547,11 @@ ScaleTranslatePackage::ScaleTranslatePackage()
  \
  			if(components == 3) \
 			{ \
-				BLEND_3(max, int_type, type, chroma_offset); \
+				BLEND_3(max, temp_type, type, chroma_offset); \
 			} \
 			else \
 			{ \
-				BLEND_4(max, int_type, type, chroma_offset); \
+				BLEND_4(max, temp_type, type, chroma_offset); \
 			} \
  \
 			in_row += components; \
@@ -2580,10 +2577,11 @@ ScaleTranslatePackage::ScaleTranslatePackage()
 }
 
 // components is always 4
-#define BLEND_ONLY_4_NORMAL(int_type, type, chroma_offset, maxbits) \
+#define BLEND_ONLY_4_NORMAL(temp_type, type, max, chroma_offset) \
 { \
-	int_type opacity = (int_type)(alpha * (((int_type) 1) << maxbits) + 0.5); \
-	int_type maxsq = ((int_type) 1) << (maxbits * 2) ; \
+	temp_type opacity = (temp_type)(alpha * max + 0.5); \
+	temp_type transparency = max - opacity; \
+	temp_type maxsq = ((temp_type)max) * max; \
  \
 	type** output_rows = (type**)output->get_rows(); \
 	type** input_rows = (type**)input->get_rows(); \
@@ -2597,21 +2595,25 @@ ScaleTranslatePackage::ScaleTranslatePackage()
  \
 		for(int j = 0; j < w; j++) \
 		{ \
-			int_type pixel_opacity, pixel_transparency; \
+			temp_type pixel_opacity, pixel_transparency; \
 			pixel_opacity = opacity * in_row[3]; \
-			pixel_transparency = (int_type)maxsq - pixel_opacity; \
+			pixel_transparency = (temp_type)maxsq - pixel_opacity; \
 		 \
 		 \
-			output[0] = (type)(((int_type)in_row[0] * pixel_opacity + \
-				(int_type)output[0] * pixel_transparency) >> (maxbits * 2)); \
-			output[1] = (type)(((((int_type)in_row[1] - chroma_offset) * pixel_opacity + \
-				((int_type)output[1] - chroma_offset) * pixel_transparency) \
-				>> (maxbits * 2)) + \
-				chroma_offset); \
-			output[2] = (type)(((((int_type)in_row[2] - chroma_offset) * pixel_opacity + \
-				((int_type)output[2] - chroma_offset) * pixel_transparency) \
-				>> (maxbits * 2)) + \
-				chroma_offset); \
+		 	temp_type r,g,b; \
+			r = ((temp_type)in_row[0] * pixel_opacity + \
+				(temp_type)output[0] * pixel_transparency) / max / max; \
+			output[0] = (type)CLIP(r, 0, max); \
+			g = (((temp_type)in_row[1] - chroma_offset) * pixel_opacity + \
+				((temp_type)output[1] - chroma_offset) * pixel_transparency) \
+				/ max / max + \
+				chroma_offset; \
+			output[1] = (type)CLIP(g, 0, max); \
+			b = (((temp_type)in_row[2] - chroma_offset) * pixel_opacity + \
+				((temp_type)output[2] - chroma_offset) * pixel_transparency) \
+				/ max / max + \
+				chroma_offset; \
+			output[2] = (type)CLIP(b, 0, max); \
 			output[3] = (type)(in_row[3] > output[3] ? in_row[3] : output[3]); \
  \
 			in_row += 4; \
@@ -2619,12 +2621,12 @@ ScaleTranslatePackage::ScaleTranslatePackage()
 		} \
 	} \
 }
-
+ 
 // components is always 3
-#define BLEND_ONLY_3_NORMAL(int_type, type, chroma_offset, maxbits) \
+#define BLEND_ONLY_3_NORMAL(temp_type, type, max, chroma_offset) \
 { \
-	int_type opacity = (int_type)(alpha * (((int_type) 1) << maxbits) + 0.5); \
-	int_type transparency = (((int_type) 1) << maxbits) - opacity; \
+	temp_type opacity = (temp_type)(alpha * max + 0.5); \
+	temp_type transparency = max - opacity; \
  \
 	type** output_rows = (type**)output->get_rows(); \
 	type** input_rows = (type**)input->get_rows(); \
@@ -2638,12 +2640,13 @@ ScaleTranslatePackage::ScaleTranslatePackage()
  \
 		for(int j = 0; j < w; j++) /* w = 3x width! */ \
 		{ \
-			*output = (type)((int_type)*in_row * opacity + *output * transparency) >> maxbits; \
+			*output = (type)CLIP(((temp_type)*in_row * opacity + *output * transparency) / max, 0, max); \
 			in_row ++; \
 			output ++; \
 		} \
 	} \
 }
+
 
 BlendUnit::BlendUnit(BlendEngine *server, OverlayFrame *overlay)
  : LoadClient(server)
@@ -2664,11 +2667,10 @@ void BlendUnit::process_package(LoadPackage *package)
 	VFrame *output = blend_engine->output;
 	VFrame *input = blend_engine->input;
 	float alpha = blend_engine->alpha;
-	if (alpha > 1.0) alpha = 1.0;
 	int mode = blend_engine->mode;
-//	Timer a;
-//	a.update();
-	if (mode == TRANSFER_REPLACE) {
+
+	if (mode == TRANSFER_REPLACE) 
+	{
 		switch(input->get_color_model())
 		{
 			case BC_RGB888:
@@ -2688,36 +2690,39 @@ void BlendUnit::process_package(LoadPackage *package)
 				BLEND_ONLY_TRANSFER_REPLACE(uint16_t, 4);
 				break;
 		}
-	} else
-	if (mode == TRANSFER_NORMAL) {
+	} 
+	else
+	if (mode == TRANSFER_NORMAL) 
+	{
 		switch(input->get_color_model())
 		{
 			case BC_RGB888:
-				BLEND_ONLY_3_NORMAL(uint32_t, unsigned char, 0, 8);
+				BLEND_ONLY_3_NORMAL(uint32_t, unsigned char, 0xff, 0);
 				break;
 			case BC_YUV888:
-				BLEND_ONLY_3_NORMAL(int32_t, unsigned char, 0x80, 8);
+				BLEND_ONLY_3_NORMAL(int32_t, unsigned char, 0xff, 0x80);
 				break;
 			case BC_RGBA8888:
-				BLEND_ONLY_4_NORMAL(uint32_t, unsigned char, 0, 8);
+				BLEND_ONLY_4_NORMAL(uint32_t, unsigned char, 0xff, 0);
 				break;
 			case BC_YUVA8888:
-				BLEND_ONLY_4_NORMAL(int32_t, unsigned char, 0x80, 8);
+				BLEND_ONLY_4_NORMAL(int32_t, unsigned char, 0xff, 0x80);
 				break;
 			case BC_RGB161616:
-				BLEND_ONLY_3_NORMAL(uint64_t, uint16_t, 0, 16);
+				BLEND_ONLY_3_NORMAL(uint64_t, uint16_t, 0xffff, 0);
 				break;
 			case BC_YUV161616:
-				BLEND_ONLY_3_NORMAL(int64_t, uint16_t, 0x8000, 16);
+				BLEND_ONLY_3_NORMAL(int64_t, uint16_t, 0xffff, 0x8000);
 				break;
 			case BC_RGBA16161616:
-				BLEND_ONLY_4_NORMAL(uint64_t, uint16_t, 0, 16);
+				BLEND_ONLY_4_NORMAL(uint64_t, uint16_t, 0xffff, 0);
 				break;
 			case BC_YUVA16161616:
-				BLEND_ONLY_4_NORMAL(int64_t, uint16_t, 0x8000, 16);
+				BLEND_ONLY_4_NORMAL(int64_t, uint16_t, 0xffff, 0x8000);
 				break;
 		}
-	} else
+	} 
+	else
 	switch(input->get_color_model())
 	{
 		case BC_RGB888:
@@ -2745,7 +2750,6 @@ void BlendUnit::process_package(LoadPackage *package)
 			BLEND_ONLY(int64_t, uint16_t, 0xffff, 4, 0x8000);
 			break;
 	}
-//	printf("blend mode %i, took %li ms\n", mode, a.get_difference());
 }
 
 

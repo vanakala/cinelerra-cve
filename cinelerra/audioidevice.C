@@ -10,13 +10,13 @@ int AudioDevice::set_record_dither(int bits)
 }
 
 
-int AudioDevice::get_dc_offset(long *output, RecordGUIDCOffsetText **dc_offset_text)
+int AudioDevice::get_dc_offset(int *output, RecordGUIDCOffsetText **dc_offset_text)
 {
 	dc_offset_thread->calibrate_dc_offset(output, dc_offset_text, get_ichannels());
 	return 0;
 }
 
-int AudioDevice::set_dc_offset(long dc_offset, int channel)
+int AudioDevice::set_dc_offset(int dc_offset, int channel)
 {
 	dc_offset_thread->dc_offset[channel] = dc_offset;
 	return 0;
@@ -95,23 +95,23 @@ if(over_count < 3) over_count = 0;
 sample /= 0x7fffffff;
 
 int AudioDevice::read_buffer(double **input, 
-	long samples, 
+	int samples, 
 	int channels, 
 	int *over, 
 	double *max, 
-	long input_offset)
+	int input_offset)
 {
 	int i, j, k, frame, bits;
 	double sample, denominator;
 	double min_sample[MAXCHANNELS], max_sample[MAXCHANNELS];
-	long sample_int;
+	int sample_int;
 	int over_count;
 	int dither_value, dither_scale;
 	int input_channels;
 	int result = 0;
 	double *input_channel;
-	long *dc_offset_total;
-	long dc_offset_value;
+	int *dc_offset_total;
+	int dc_offset_value;
 
 	is_recording = 1;
 	record_timer.update();
@@ -208,7 +208,7 @@ int AudioDevice::read_buffer(double **input,
 					for(j = 0, k = i; j < samples; j++)
 					{
 						GET_8BIT_SAMPLE_MACRO1
-						(*dc_offset_total) += (long)sample;
+						(*dc_offset_total) += (int)sample;
 						GET_8BIT_SAMPLE_MACRO2
 						GET_PEAK_MACRO
 					}
@@ -235,7 +235,7 @@ int AudioDevice::read_buffer(double **input,
 						for(j = 0, k = i; j < samples; j++)
 						{
 							GET_16BIT_SAMPLE_MACRO1
-							(*dc_offset_total) += (long)sample;
+							(*dc_offset_total) += (int)sample;
 							GET_16BIT_SAMPLE_MACRO2
 							GET_PEAK_MACRO
 						}
@@ -261,7 +261,7 @@ int AudioDevice::read_buffer(double **input,
 						for(j = 0, k = i * 3; j < samples; j++)
 						{
 							GET_24BIT_SAMPLE_MACRO1
-							(*dc_offset_total) += (long)sample;
+							(*dc_offset_total) += (int)sample;
 							GET_24BIT_SAMPLE_MACRO2
 							GET_PEAK_MACRO
 						}
@@ -286,7 +286,7 @@ int AudioDevice::read_buffer(double **input,
 						for(j = 0, k = i * 4; j < samples; j++)
 						{
 							GET_32BIT_SAMPLE_MACRO1
-							(*dc_offset_total) += (long)sample;
+							(*dc_offset_total) += (int)sample;
 							GET_32BIT_SAMPLE_MACRO2
 							GET_PEAK_MACRO
 						}

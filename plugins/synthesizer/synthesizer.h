@@ -449,13 +449,13 @@ public:
 	void copy_from(SynthConfig &that);
 	void interpolate(SynthConfig &prev, 
 		SynthConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame);
+		int64_t prev_frame, 
+		int64_t next_frame, 
+		int64_t current_frame);
 	void reset();
 	
 	float wetness;
-	long base_freq;         // base frequency for oscillators
+	int64_t base_freq;         // base frequency for oscillators
 	int wavefunction;        // SINE, SAWTOOTH, etc
 	ArrayList<SynthOscillatorConfig*> oscillator_config;
 };
@@ -481,7 +481,7 @@ public:
 	int show_gui();
 	void raise_window();
 	int set_string();
-	int process_realtime(long size, double *input_ptr, double *output_ptr);
+	int process_realtime(int64_t size, double *input_ptr, double *output_ptr);
 
 
 
@@ -507,7 +507,7 @@ public:
 	double function_sawtooth(double x);
 	double function_triangle(double x);
 	void reconfigure();
-	int overlay_synth(long start, long length, double *input, double *output);
+	int overlay_synth(int64_t start, int64_t length, double *input, double *output);
 	void update_gui();
 	void reset();
 
@@ -520,9 +520,9 @@ public:
 	SynthConfig config;
 	int w, h;
 	DB db;
-	long waveform_length;           // length of loop buffer
-	long waveform_sample;           // current sample in waveform of loop
-	long samples_rendered;          // samples of the dsp_buffer rendered since last buffer redo
+	int64_t waveform_length;           // length of loop buffer
+	int64_t waveform_sample;           // current sample in waveform of loop
+	int64_t samples_rendered;          // samples of the dsp_buffer rendered since last buffer redo
 	float period;            // number of samples in a period for this frequency
 };
 

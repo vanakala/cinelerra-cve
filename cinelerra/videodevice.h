@@ -94,11 +94,11 @@ public:
 	int get_best_colormodel(Asset *asset);
 
 // Unlocks the device if being shared with audio
-	int stop_sharing();
+//	int stop_sharing();
 // Specify the audio device opened concurrently with this video device
 	int set_adevice(AudioDevice *adevice);
 // Called by the audio device to share a buffer
-	int get_shared_data(unsigned char *data, long size);
+//	int get_shared_data(unsigned char *data, long size);
 // Return 1 if capturing locked up
 	int get_failed();  
 // Interrupt a crashed DV device

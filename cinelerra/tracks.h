@@ -24,7 +24,7 @@ public:
 	virtual ~Tracks();
 
 	Tracks& operator=(Tracks &tracks);
-	int load(FileXML *xml, int &track_offset, unsigned long load_flags);
+	int load(FileXML *xml, int &track_offset, uint32_t load_flags);
 	void move_edits(ArrayList<Edit*> *edits, 
 		Track *track,
 		double position,
@@ -33,7 +33,7 @@ public:
 	void move_effect(Plugin *plugin,
 		PluginSet *plugin_set,
 		Track *track, 
-		long position);
+		int64_t position);
 
 // Construct a list of all the recordable edits which start on position
 	void get_affected_edits(ArrayList<Edit*> *drag_edits, 
@@ -155,14 +155,14 @@ public:
 		FileXML *xml,
 		int default_only);
 	int paste_default_keyframe(FileXML *file);
-	int paste(long start, long end);
+	int paste(int64_t start, int64_t end);
 // all units are samples by default
-	int paste_output(long startproject, 
-				long endproject, 
-				long startsource_sample, 
-				long endsource_sample, 
-				long startsource_frame, 
-				long endsource_frame, 
+	int paste_output(int64_t startproject, 
+				int64_t endproject, 
+				int64_t startsource_sample, 
+				int64_t endsource_sample, 
+				int64_t startsource_frame, 
+				int64_t endsource_frame, 
 				Asset *asset);
 	int paste_silence(double start, 
 		double end, 
@@ -186,11 +186,11 @@ public:
 		int edit_labels);
 	int select_handles();
 	int select_region();
-	int select_edit(long cursor_position, int cursor_x, int cursor_y, long &new_start, long &new_end);
-	int feather_edits(long start, long end, long samples, int audio, int video);
-	long get_feather(long selectionstart, long selectionend, int audio, int video);
+	int select_edit(int64_t cursor_position, int cursor_x, int cursor_y, int64_t &new_start, int64_t &new_end);
+	int feather_edits(int64_t start, int64_t end, int64_t samples, int audio, int video);
+	int64_t get_feather(int64_t selectionstart, int64_t selectionend, int audio, int video);
 // Move edit boundaries and automation during a framerate change
-	int scale_time(float rate_scale, int ignore_record, int scale_edits, int scale_autos, long start, long end);
+	int scale_time(float rate_scale, int ignore_record, int scale_edits, int scale_autos, int64_t start, int64_t end);
 
 // ================================== accounting
 

@@ -40,9 +40,9 @@ BezierAutos::~BezierAutos()
 {
 }
 
-int BezierAutos::paste_derived(FileXML *xml, long start)
+int BezierAutos::paste_derived(FileXML *xml, int64_t start)
 {
-	long frame = xml->tag.get_property("FRAME", 0);
+	int64_t frame = xml->tag.get_property("FRAME", 0);
 	BezierAuto* current = (BezierAuto*)add_auto(frame + start, 0, 0, 1);
 	current->load(xml);
 	current->position += start;   // fix the position loaded by load()
@@ -58,7 +58,7 @@ int BezierAutos::draw(BC_SubWindow *canvas,
 	return 0;
 }
 
-int BezierAutos::get_auto_pixel(long position, float view_start, float units_per_pixel, int frame_half)
+int BezierAutos::get_auto_pixel(int64_t position, float view_start, float units_per_pixel, int frame_half)
 {
 	int result;
 
@@ -67,11 +67,11 @@ int BezierAutos::get_auto_pixel(long position, float view_start, float units_per
 	return result;
 }
 
-long BezierAutos::get_auto_frame(int position, float view_start, float units_per_pixel, int frame_half)
+int64_t BezierAutos::get_auto_frame(int position, float view_start, float units_per_pixel, int frame_half)
 {
-	long result;
+	int64_t result;
 
-	result = (long)((position) * units_per_pixel + view_start);
+	result = (int64_t)((position) * units_per_pixel + view_start);
 
 	return result;
 }
@@ -92,7 +92,7 @@ int BezierAutos::get_center(float &x,
 			BezierAuto **after)
 {
 	frame = (direction == PLAY_FORWARD) ? frame : (frame - 1);
-	get_neighbors((long)frame, (long)frame, (Auto**)before, (Auto**)after);
+	get_neighbors((int64_t)frame, (int64_t)frame, (Auto**)before, (Auto**)after);
 
 //printf("BezierAutos::get_center %p %p\n", *before, *after);
 	if(*before == 0 && *after == 0)
@@ -185,7 +185,7 @@ int BezierAutos::get_center(float &x,
 
 
 // printf("BezierAutos::get_center 3 %d %f %f %f\n", 
-// 	(long)frame,
+// 	(int64_t)frame,
 // 	x,
 // 	y,
 // 	z);
@@ -271,7 +271,7 @@ int BezierAutos::draw_floating_autos(BC_SubWindow *canvas,
 		frame2 = after ? after->position : view_end;
 		if(frame1 < view_start) frame1 = view_start;
 		if(frame2 > view_end) frame2 = view_end;
-		x = get_auto_pixel((long)frame1, view_start, units_per_pixel, get_frame_half(scale, vertical, units_per_pixel));
+		x = get_auto_pixel((int64_t)frame1, view_start, units_per_pixel, get_frame_half(scale, vertical, units_per_pixel));
 		before = 0;
 		after = 0;
 
@@ -355,13 +355,13 @@ int BezierAutos::select_auto(BC_SubWindow *canvas,
 	frame = get_auto_frame(cursor_x, view_start, units_per_pixel, vertical);
 
 // test autos for selection
-	current = (BezierAuto*)autoof((long)view_start);
+	current = (BezierAuto*)autoof((int64_t)view_start);
 	while(current && current->position <= view_end && !selection_type)
 	{
 		x = get_auto_pixel(current->position, view_start, units_per_pixel, get_frame_half(scale, vertical, units_per_pixel));
 
 		selection_type = ((BezierAuto*)current)->select(canvas, 
-										(long)x, 
+										(int64_t)x, 
 										center_pixel, 
 										scale, 
 										cursor_x, 
@@ -395,7 +395,7 @@ int BezierAutos::select_auto(BC_SubWindow *canvas,
 
 		if(cursor_y > miny && cursor_y < maxy)
 		{
-			selected = add_auto((long)frame, center_x, center_y, center_z);
+			selected = add_auto((int64_t)frame, center_x, center_y, center_z);
 
 // copy values from neighbor if possible
 			BezierAuto *neighbor = 0, *bezier_selected = (BezierAuto*)selected;
@@ -517,7 +517,7 @@ int BezierAutos::move_auto(BC_SubWindow *canvas,
 	if(selected)
 	{
 		BezierAuto* current = (BezierAuto*)selected;
-		long position;
+		int64_t position;
 		float scale = (float)zoom_track / (vertical ? frame_w : frame_h);
 // Frame auto is on.
 		position = get_auto_frame(cursor_x, view_start, units_per_pixel, vertical);
@@ -577,7 +577,7 @@ int BezierAutos::release_auto_derived()
 }
 
 
-Auto* BezierAutos::add_auto(long frame, float x, float y, float z)
+Auto* BezierAutos::add_auto(int64_t frame, float x, float y, float z)
 {
 	BezierAuto* current = (BezierAuto*)autoof(frame);
 	BezierAuto* new_auto;
@@ -591,7 +591,7 @@ Auto* BezierAutos::add_auto(long frame, float x, float y, float z)
 	new_auto->center_y = y;
 	new_auto->center_z = z;
 
-//printf("BezierAutos::add_auto %ld\n", new_auto->position);
+//printf("BezierAutos::add_auto %lld\n", new_auto->position);
 	return (Auto*)new_auto;
 }
 
@@ -616,14 +616,14 @@ int BezierAutos::scale_video(float scale, int *offsets)
 int BezierAutos::dump()
 {
 	printf("	BezierAutos::dump %p\n", this);
-	printf("	Default: position %ld x %f y %f z %f\n", 
+	printf("	Default: position %lld x %f y %f z %f\n", 
 		default_auto->position, 
 		((BezierAuto*)default_auto)->center_x,
 		((BezierAuto*)default_auto)->center_y,
 		((BezierAuto*)default_auto)->center_z);
 	for(Auto* current = first; current; current = NEXT)
 	{
-		printf("	position %ld x %f y %f z %f\n", 
+		printf("	position %lld x %f y %f z %f\n", 
 			current->position, 
 			((BezierAuto*)current)->center_x,
 			((BezierAuto*)current)->center_y,

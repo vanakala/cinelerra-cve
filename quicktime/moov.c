@@ -1,5 +1,6 @@
 #include "funcprotos.h"
 #include "quicktime.h"
+#include "workarounds.h"
 
 
 
@@ -88,7 +89,7 @@ void quicktime_write_moov(quicktime_t *file, quicktime_moov_t *moov)
 {
 	quicktime_atom_t atom;
 	int i;
-	long longest_duration = 0;
+	long int64_t_duration = 0;
 	long duration, timescale;
 	int result;
 
@@ -100,12 +101,12 @@ void quicktime_write_moov(quicktime_t *file, quicktime_moov_t *moov)
 // Disk full.  Rewind and try again
 	if(result)
 	{
-		quicktime_set_position(file, file->mdat.atom.end - (longest)0x100000);
+		quicktime_set_position(file, file->mdat.atom.end - (int64_t)0x100000);
 		file->mdat.atom.end = quicktime_position(file);
 		quicktime_atom_write_header(file, &atom, "moov");
 	}
 
-/* get the duration from the longest track in the mvhd's timescale */
+/* get the duration from the int64_t track in the mvhd's timescale */
 	for(i = 0; i < moov->total_tracks; i++)
 	{
 		quicktime_trak_fix_counts(file, moov->trak[i]);
@@ -113,13 +114,13 @@ void quicktime_write_moov(quicktime_t *file, quicktime_moov_t *moov)
 
 		duration = (long)((float)duration / timescale * moov->mvhd.time_scale);
 
-		if(duration > longest_duration)
+		if(duration > int64_t_duration)
 		{
-			longest_duration = duration;
+			int64_t_duration = duration;
 		}
 	}
-	moov->mvhd.duration = longest_duration;
-	moov->mvhd.selection_duration = longest_duration;
+	moov->mvhd.duration = int64_t_duration;
+	moov->mvhd.selection_duration = int64_t_duration;
 
 	quicktime_write_mvhd(file, &(moov->mvhd));
 	quicktime_write_udta(file, &(moov->udta));
@@ -139,7 +140,7 @@ void quicktime_update_durations(quicktime_moov_t *moov)
 	
 }
 
-int quicktime_shift_offsets(quicktime_moov_t *moov, longest offset)
+int quicktime_shift_offsets(quicktime_moov_t *moov, int64_t offset)
 {
 	int i;
 	for(i = 0; i < moov->total_tracks; i++)

@@ -21,6 +21,8 @@
 #include "pluginserver.inc"
 #include "preferences.inc"
 
+#include <stdint.h>
+
 class CICacheItem : public ListItem<CICacheItem>
 {
 public:
@@ -30,7 +32,7 @@ public:
 	~CICacheItem();
 
 	File *file;
-	long counter;     // number of age calls ago this asset was last needed
+	int64_t counter;     // number of age calls ago this asset was last needed
 	                  // assets used in the last render have counter == 1
 	Asset *asset;     // Copy of asset.  CICache should outlive EDLs.
 	Mutex item_lock;
@@ -78,7 +80,7 @@ public:
 private:
 	int delete_oldest();        // returns 0 if successful
 	                        // 1 if nothing was old
-	long get_memory_usage();
+	int64_t get_memory_usage();
 
 // for deleting items
 	int lock_all();

@@ -54,7 +54,7 @@ with the BUZ driver with PCM audio.
 
 
 
-#define SEARCH_FRAGMENT (longest)0x100000
+#define SEARCH_FRAGMENT (int64_t)0x100000
 //#define SEARCH_PAD 8
 #define SEARCH_PAD 16
 
@@ -222,7 +222,7 @@ int main(int argc, char *argv[])
 		HEIGHT, 
 		FRAMERATE, 
 		VCODEC);
-	audio_start = (longest)0x10;
+	audio_start = (int64_t)0x10;
 	ftell_byte = 0;
 
 	if(fstat(fileno(in), &status))

@@ -52,7 +52,9 @@ char* DefaultThemeMain::plugin_title()
 
 Theme* DefaultThemeMain::new_theme()
 {
-	return theme = new DefaultTheme;
+	theme = new DefaultTheme;
+	theme->set_path(PluginClient::get_path());
+	return theme;
 }
 
 
@@ -73,146 +75,114 @@ DefaultTheme::~DefaultTheme()
 
 void DefaultTheme::initialize()
 {
-
-	static VFrame *default_button_images[] = 
-	{
-		new VFrame(get_image("generic_up.png")), new VFrame(get_image("generic_hi.png")), new VFrame(get_image("generic_dn.png"))
-	};
-	BC_WindowBase::get_resources()->generic_button_images = default_button_images;
-
-	static VFrame *default_hslider_data[] = 
-	{
-		new VFrame(get_image("hslider_fg_up.png")),
-		new VFrame(get_image("hslider_fg_hi.png")),
-		new VFrame(get_image("hslider_fg_dn.png")),
-		new VFrame(get_image("hslider_bg_up.png")),
-		new VFrame(get_image("hslider_bg_hi.png")),
-		new VFrame(get_image("hslider_bg_dn.png")),
-	};
-	BC_WindowBase::get_resources()->horizontal_slider_data = default_hslider_data;
-
-
-	static VFrame* default_progress_images[] = 
-	{
-		new VFrame(get_image("progress_bg.png")),
-		new VFrame(get_image("progress_hi.png"))
-	};
-	BC_WindowBase::get_resources()->progress_images = default_progress_images;
-
-	static VFrame* default_tumbler_data[] = 
-	{
-		new VFrame(get_image("tumble_up.png")),
-		new VFrame(get_image("tumble_hi.png")),
-		new VFrame(get_image("tumble_botdn.png")),
-		new VFrame(get_image("tumble_topdn.png"))
-	};
-	BC_WindowBase::get_resources()->tumble_data = default_tumbler_data;
-
-	static VFrame* default_listbox_data[] =
-	{
-		new VFrame(get_image("listbox_button_up.png")),
-		new VFrame(get_image("listbox_button_hi.png")),
-		new VFrame(get_image("listbox_button_dn.png"))
-	};
-	BC_WindowBase::get_resources()->listbox_button = default_listbox_data;
-
-
-	static VFrame* default_pan_data[] = 
-	{
-		new VFrame(get_image("pan_up.png")), 
-		new VFrame(get_image("pan_hi.png")), 
-		new VFrame(get_image("pan_popup.png")), 
-		new VFrame(get_image("pan_channel.png")), 
-		new VFrame(get_image("pan_stick.png")), 
-		new VFrame(get_image("pan_channel_small.png")), 
-		new VFrame(get_image("pan_stick_small.png"))
-	};
-	BC_WindowBase::get_resources()->pan_data = default_pan_data;
+	BC_WindowBase::get_resources()->generic_button_images = new_image_set(3, 
+			"generic_up.png", 
+			"generic_hi.png", 
+			"generic_dn.png");
+	BC_WindowBase::get_resources()->horizontal_slider_data = new_image_set(6,
+			"hslider_fg_up.png",
+			"hslider_fg_hi.png",
+			"hslider_fg_dn.png",
+			"hslider_bg_up.png",
+			"hslider_bg_hi.png",
+			"hslider_bg_dn.png");
+	BC_WindowBase::get_resources()->progress_images = new_image_set(2,
+			"progress_bg.png",
+			"progress_hi.png");
+	BC_WindowBase::get_resources()->tumble_data = new_image_set(4,
+		"tumble_up.png",
+		"tumble_hi.png",
+		"tumble_botdn.png",
+		"tumble_topdn.png");
+	BC_WindowBase::get_resources()->listbox_button = new_image_set(3,
+		"listbox_button_up.png",
+		"listbox_button_hi.png",
+		"listbox_button_dn.png");
+	BC_WindowBase::get_resources()->pan_data = new_image_set(7,
+			"pan_up.png", 
+			"pan_hi.png", 
+			"pan_popup.png", 
+			"pan_channel.png", 
+			"pan_stick.png", 
+			"pan_channel_small.png", 
+			"pan_stick_small.png");
 	BC_WindowBase::get_resources()->pan_text_color = WHITE;
 
-	static VFrame* default_hscroll_data[] = 
-	{
-		new VFrame(get_image("hscroll_center_up.png")),
-		new VFrame(get_image("hscroll_center_hi.png")),
-		new VFrame(get_image("hscroll_center_dn.png")),
-		new VFrame(get_image("hscroll_bg.png")),
-		new VFrame(get_image("hscroll_back_up.png")),
-		new VFrame(get_image("hscroll_back_hi.png")),
-		new VFrame(get_image("hscroll_back_dn.png")),
-		new VFrame(get_image("hscroll_fwd_up.png")),
-		new VFrame(get_image("hscroll_fwd_hi.png")),
-		new VFrame(get_image("hscroll_fwd_dn.png")),
-	};
-	BC_WindowBase::get_resources()->hscroll_data = default_hscroll_data;
+	BC_WindowBase::get_resources()->hscroll_data = new_image_set(10,
+			"hscroll_center_up.png",
+			"hscroll_center_hi.png",
+			"hscroll_center_dn.png",
+			"hscroll_bg.png",
+			"hscroll_back_up.png",
+			"hscroll_back_hi.png",
+			"hscroll_back_dn.png",
+			"hscroll_fwd_up.png",
+			"hscroll_fwd_hi.png",
+			"hscroll_fwd_dn.png");
 
-	static VFrame* default_vscroll_data[] = 
-	{
-		new VFrame(get_image("vscroll_center_up.png")),
-		new VFrame(get_image("vscroll_center_hi.png")),
-		new VFrame(get_image("vscroll_center_dn.png")),
-		new VFrame(get_image("vscroll_bg.png")),
-		new VFrame(get_image("vscroll_back_up.png")),
-		new VFrame(get_image("vscroll_back_hi.png")),
-		new VFrame(get_image("vscroll_back_dn.png")),
-		new VFrame(get_image("vscroll_fwd_up.png")),
-		new VFrame(get_image("vscroll_fwd_hi.png")),
-		new VFrame(get_image("vscroll_fwd_dn.png")),
-	};
-	BC_WindowBase::get_resources()->vscroll_data = default_vscroll_data;
+	BC_WindowBase::get_resources()->vscroll_data = new_image_set(10,
+			"vscroll_center_up.png",
+			"vscroll_center_hi.png",
+			"vscroll_center_dn.png",
+			"vscroll_bg.png",
+			"vscroll_back_up.png",
+			"vscroll_back_hi.png",
+			"vscroll_back_dn.png",
+			"vscroll_fwd_up.png",
+			"vscroll_fwd_hi.png",
+			"vscroll_fwd_dn.png");
 
-	build_button(BC_WindowBase::get_resources()->ok_images,
-		get_image("ok.png"), 
-		default_button_images[0],
-		default_button_images[1],
-		default_button_images[2]);
+	BC_WindowBase::get_resources()->ok_images = new_button("ok.png", 
+			"generic_up.png",
+			"generic_hi.png",
+			"generic_dn.png");
 
-	build_button(BC_WindowBase::get_resources()->cancel_images,
-		get_image("cancel.png"), 
-		default_button_images[0],
-		default_button_images[1],
-		default_button_images[2]);
+	BC_WindowBase::get_resources()->cancel_images = new_button("cancel.png", 
+			"generic_up.png",
+			"generic_hi.png",
+			"generic_dn.png");
 
 
 // Record windows
-	rgui_batch = new VFrame(get_image("recordgui_batch.png"));
-	rgui_controls = new VFrame(get_image("recordgui_controls.png"));
-	rgui_list = new VFrame(get_image("recordgui_list.png"));
-	rmonitor_panel = new VFrame(get_image("recordmonitor_panel.png"));
-	rmonitor_meters = new VFrame(get_image("recordmonitor_meters.png"));
+	rgui_batch = new_image("recordgui_batch.png");
+	rgui_controls = new_image("recordgui_controls.png");
+	rgui_list = new_image("recordgui_list.png");
+	rmonitor_panel = new_image("recordmonitor_panel.png");
+	rmonitor_meters = new_image("recordmonitor_meters.png");
 
 
 // MWindow
-	mbutton_left = new VFrame(get_image("mbutton_left.png"));
-	mbutton_right = new VFrame(get_image("mbutton_right.png"));
-	timebar_bg_data = new VFrame(get_image("timebar_bg.png"));
-	timebar_brender_data = new VFrame(get_image("timebar_brender.png"));
-	clock_bg = new VFrame(get_image("mclock.png"));
-	patchbay_bg = new VFrame(get_image("patchbay_bg.png"));
-	tracks_bg = new VFrame(get_image("tracks_bg.png"));
-	zoombar_left = new VFrame(get_image("zoombar_left.png"));
-	zoombar_right = new VFrame(get_image("zoombar_right.png"));
-	statusbar_left = new VFrame(get_image("statusbar_left.png"));
-	statusbar_right = new VFrame(get_image("statusbar_right.png"));
+	mbutton_left = new_image("mbutton_left.png");
+	mbutton_right = new_image("mbutton_right.png");
+	timebar_bg_data = new_image("timebar_bg.png");
+	timebar_brender_data = new_image("timebar_brender.png");
+	clock_bg = new_image("mclock.png");
+	patchbay_bg = new_image("patchbay_bg.png");
+	tracks_bg = new_image("tracks_bg.png");
+	zoombar_left = new_image("zoombar_left.png");
+	zoombar_right = new_image("zoombar_right.png");
+	statusbar_left = new_image("statusbar_left.png");
+	statusbar_right = new_image("statusbar_right.png");
 
 // CWindow
-	cpanel_bg = new VFrame(get_image("cpanel_bg.png"));
-	cbuttons_left = new VFrame(get_image("cbuttons_left.png"));
-	cbuttons_right = new VFrame(get_image("cbuttons_right.png"));
-	cmeter_bg = new VFrame(get_image("cmeter_bg.png"));
+	cpanel_bg = new_image("cpanel_bg.png");
+	cbuttons_left = new_image("cbuttons_left.png");
+	cbuttons_right = new_image("cbuttons_right.png");
+	cmeter_bg = new_image("cmeter_bg.png");
 
 // VWindow
-	vbuttons_left = new VFrame(get_image("vbuttons_left.png"));
-	vbuttons_right = new VFrame(get_image("vbuttons_right.png"));
-	vmeter_bg = new VFrame(get_image("vmeter_bg.png"));
+	vbuttons_left = new_image("vbuttons_left.png");
+	vbuttons_right = new_image("vbuttons_right.png");
+	vmeter_bg = new_image("vmeter_bg.png");
 
-	preferences_bg = new VFrame(get_image("preferences_bg.png"));
-
-
-	new_bg = new VFrame(get_image("new_bg.png"));
-	setformat_bg = new VFrame(get_image("setformat_bg.png"));
+	preferences_bg = new_image("preferences_bg.png");
 
 
-	timebar_view_data = new VFrame(get_image("timebar_view.png"));
+	new_bg = new_image("new_bg.png");
+	setformat_bg = new_image("setformat_bg.png");
+
+
+	timebar_view_data = new_image("timebar_view.png");
 
 	setformat_x1 = 15;
 	setformat_x2 = 100;
@@ -242,65 +212,87 @@ void DefaultTheme::initialize()
 
 
 
-	VFrame editpanel_up(get_image("editpanel_up.png"));
-	VFrame editpanel_hi(get_image("editpanel_hi.png"));
-	VFrame editpanel_dn(get_image("editpanel_dn.png"));
-	VFrame editpanel_checked(get_image("editpanel_checked.png"));
-	VFrame editpanel_checkedhi(get_image("editpanel_checkedhi.png"));
+	out_point = new_image_set(5,
+		"out_up.png", 
+		"out_hi.png", 
+		"out_checked.png", 
+		"out_dn.png", 
+		"out_checkedhi.png");
+	in_point = new_image_set(5,
+		"in_up.png", 
+		"in_hi.png", 
+		"in_checked.png", 
+		"in_dn.png", 
+		"in_checkedhi.png");
 
-	static VFrame *default_outpoint[] = { new VFrame(get_image("out_up.png")), new VFrame(get_image("out_hi.png")), new VFrame(get_image("out_checked.png")), new VFrame(get_image("out_dn.png")), new VFrame(get_image("out_checkedhi.png")) };
-	static VFrame *default_labeltoggle[] = { new VFrame(get_image("labeltoggle_up.png")), new VFrame(get_image("labeltoggle_uphi.png")), new VFrame(get_image("label_checked.png")), new VFrame(get_image("labeltoggle_dn.png")), new VFrame(get_image("label_checkedhi.png")) };
-	static VFrame *default_inpoint[] = { new VFrame(get_image("in_up.png")), new VFrame(get_image("in_hi.png")), new VFrame(get_image("in_checked.png")), new VFrame(get_image("in_dn.png")), new VFrame(get_image("in_checkedhi.png")) };
-	static VFrame *default_wrench_data[] = { new VFrame(get_image("wrench_up.png")), new VFrame(get_image("wrench_hi.png")), new VFrame(get_image("wrench_dn.png")) };
-	static VFrame *transport_bg[] = { new VFrame(get_image("transportup.png")), new VFrame(get_image("transporthi.png")), new VFrame(get_image("transportdn.png")) };
-
-	static VFrame *default_statusbar_cancel[] = 
-	{
-		new VFrame(get_image("statusbar_cancel_up.png")),
-		new VFrame(get_image("statusbar_cancel_hi.png")),
-		new VFrame(get_image("statusbar_cancel_dn.png"))
-	};
-	statusbar_cancel_data = default_statusbar_cancel;
+	label_toggle = new_image_set(5,
+		"labeltoggle_up.png", 
+		"labeltoggle_uphi.png", 
+		"label_checked.png", 
+		"labeltoggle_dn.png", 
+		"label_checkedhi.png");
 
 
-	build_button(bottom_justify, get_image("bottom_justify.png"), &editpanel_up, &editpanel_hi, &editpanel_dn);
-	build_button(center_justify, get_image("center_justify.png"), &editpanel_up, &editpanel_hi, &editpanel_dn);
-	build_button(channel_data, get_image("channel.png"), &editpanel_up, &editpanel_hi, &editpanel_dn);
-	build_button(copy_data, get_image("copy.png"), &editpanel_up, &editpanel_hi, &editpanel_dn);
-	build_button(cut_data, get_image("cut.png"), &editpanel_up, &editpanel_hi, &editpanel_dn);
-	build_button(fit_data, get_image("fit.png"), &editpanel_up, &editpanel_hi, &editpanel_dn);
-	build_button(in_data, get_image("inpoint.png"), &editpanel_up, &editpanel_hi, &editpanel_dn);
-	build_button(indelete_data, get_image("clearinpoint.png"), &editpanel_up, &editpanel_hi, &editpanel_dn);
-	build_button(labelbutton_data, get_image("label.png"), &editpanel_up, &editpanel_hi, &editpanel_dn);
-	build_button(left_justify, get_image("left_justify.png"), &editpanel_up, &editpanel_hi, &editpanel_dn);
-	build_button(magnify_button_data, get_image("magnify.png"), &editpanel_up, &editpanel_hi, &editpanel_dn);
-	build_button(middle_justify, get_image("middle_justify.png"), &editpanel_up, &editpanel_hi, &editpanel_dn);
-	build_button(nextlabel_data, get_image("nextlabel.png"), &editpanel_up, &editpanel_hi, &editpanel_dn);
-	build_button(out_data, get_image("outpoint.png"), &editpanel_up, &editpanel_hi, &editpanel_dn);
-	build_button(outdelete_data, get_image("clearoutpoint.png"), &editpanel_up, &editpanel_hi, &editpanel_dn);
-	build_button(over_button, get_image("over.png"), &editpanel_up, &editpanel_hi, &editpanel_dn);
-	build_button(overwrite_data, get_image("overwrite.png"), &editpanel_up, &editpanel_hi, &editpanel_dn);
-	build_button(paste_data, get_image("paste.png"), &editpanel_up, &editpanel_hi, &editpanel_dn);
-	build_button(prevlabel_data, get_image("prevlabel.png"), &editpanel_up, &editpanel_hi, &editpanel_dn);
-	build_button(redo_data, get_image("redo.png"), &editpanel_up, &editpanel_hi, &editpanel_dn);
-	build_button(right_justify, get_image("right_justify.png"), &editpanel_up, &editpanel_hi, &editpanel_dn);
-	build_button(splice_data, get_image("splice.png"), &editpanel_up, &editpanel_hi, &editpanel_dn);
-	build_button(toclip_data, get_image("toclip.png"), &editpanel_up, &editpanel_hi, &editpanel_dn);
-	build_button(top_justify, get_image("top_justify.png"), &editpanel_up, &editpanel_hi, &editpanel_dn);
-	build_button(undo_data, get_image("undo.png"), &editpanel_up, &editpanel_hi, &editpanel_dn);
-	build_button(wrench_data, get_image("wrench.png"), &editpanel_up, &editpanel_hi, &editpanel_dn);
-	build_toggle(arrow_data, get_image("arrow.png"), &editpanel_up, &editpanel_hi, &editpanel_checked, &editpanel_dn, &editpanel_checkedhi);
-	build_toggle(autokeyframe_data, get_image("autokeyframe.png"), &editpanel_up, &editpanel_hi, &editpanel_checked, &editpanel_dn, &editpanel_checkedhi);
-	build_toggle(camera_data, get_image("camera.png"), &editpanel_up, &editpanel_hi, &editpanel_checked, &editpanel_dn, &editpanel_checkedhi);
-	build_toggle(crop_data, get_image("crop.png"), &editpanel_up, &editpanel_hi, &editpanel_checked, &editpanel_dn, &editpanel_checkedhi);
-	build_toggle(ibeam_data, get_image("ibeam.png"), &editpanel_up, &editpanel_hi, &editpanel_checked, &editpanel_dn, &editpanel_checkedhi);
-	build_toggle(magnify_data, get_image("magnify.png"), &editpanel_up, &editpanel_hi, &editpanel_checked, &editpanel_dn, &editpanel_checkedhi);
-	build_toggle(mask_data, get_image("mask.png"), &editpanel_up, &editpanel_hi, &editpanel_checked, &editpanel_dn, &editpanel_checkedhi);
-	build_toggle(proj_data, get_image("projector.png"), &editpanel_up, &editpanel_hi, &editpanel_checked, &editpanel_dn, &editpanel_checkedhi);
-	build_toggle(protect_data, get_image("protect.png"), &editpanel_up, &editpanel_hi, &editpanel_checked, &editpanel_dn, &editpanel_checkedhi);
-	build_toggle(show_meters, get_image("show_meters.png"), &editpanel_up, &editpanel_hi, &editpanel_checked, &editpanel_dn, &editpanel_checkedhi);
-	build_toggle(titlesafe_data, get_image("titlesafe.png"), &editpanel_up, &editpanel_hi, &editpanel_checked, &editpanel_dn, &editpanel_checkedhi);
-	build_toggle(tool_data, get_image("toolwindow.png"), &editpanel_up, &editpanel_hi, &editpanel_checked, &editpanel_dn, &editpanel_checkedhi);
+	statusbar_cancel_data = new_image_set(3,
+		"statusbar_cancel_up.png",
+		"statusbar_cancel_hi.png",
+		"statusbar_cancel_dn.png");
+
+
+	VFrame *editpanel_up = new_image("editpanel_up.png");
+	VFrame *editpanel_hi = new_image("editpanel_hi.png");
+	VFrame *editpanel_dn = new_image("editpanel_dn.png");
+	VFrame *editpanel_checked = new_image("editpanel_checked.png");
+	VFrame *editpanel_checkedhi = new_image("editpanel_checkedhi.png");
+
+	bottom_justify = new_button("bottom_justify.png", editpanel_up, editpanel_hi, editpanel_dn);
+	center_justify = new_button("center_justify.png", editpanel_up, editpanel_hi, editpanel_dn);
+	channel_data = new_button("channel.png", editpanel_up, editpanel_hi, editpanel_dn);
+	copy_data = new_button("copy.png", editpanel_up, editpanel_hi, editpanel_dn);
+	cut_data = new_button("cut.png", editpanel_up, editpanel_hi, editpanel_dn);
+	fit_data = new_button("fit.png", editpanel_up, editpanel_hi, editpanel_dn);
+	in_data = new_button("inpoint.png", editpanel_up, editpanel_hi, editpanel_dn);
+	indelete_data = new_button("clearinpoint.png", editpanel_up, editpanel_hi, editpanel_dn);
+	labelbutton_data = new_button("label.png", editpanel_up, editpanel_hi, editpanel_dn);
+	left_justify = new_button("left_justify.png", editpanel_up, editpanel_hi, editpanel_dn);
+	magnify_button_data = new_button("magnify.png", editpanel_up, editpanel_hi, editpanel_dn);
+	middle_justify = new_button("middle_justify.png", editpanel_up, editpanel_hi, editpanel_dn);
+	nextlabel_data = new_button("nextlabel.png", editpanel_up, editpanel_hi, editpanel_dn);
+	out_data = new_button("outpoint.png", editpanel_up, editpanel_hi, editpanel_dn);
+	outdelete_data = new_button("clearoutpoint.png", editpanel_up, editpanel_hi, editpanel_dn);
+	over_button = new_button("over.png", editpanel_up, editpanel_hi, editpanel_dn);
+	overwrite_data = new_button("overwrite.png", editpanel_up, editpanel_hi, editpanel_dn);
+	paste_data = new_button("paste.png", editpanel_up, editpanel_hi, editpanel_dn);
+	prevlabel_data = new_button("prevlabel.png", editpanel_up, editpanel_hi, editpanel_dn);
+	redo_data = new_button("redo.png", editpanel_up, editpanel_hi, editpanel_dn);
+	right_justify = new_button("right_justify.png", editpanel_up, editpanel_hi, editpanel_dn);
+	splice_data = new_button("splice.png", editpanel_up, editpanel_hi, editpanel_dn);
+	toclip_data = new_button("toclip.png", editpanel_up, editpanel_hi, editpanel_dn);
+	top_justify = new_button("top_justify.png", editpanel_up, editpanel_hi, editpanel_dn);
+	undo_data = new_button("undo.png", editpanel_up, editpanel_hi, editpanel_dn);
+	wrench_data = new_button("wrench.png", editpanel_up, editpanel_hi, editpanel_dn);
+
+
+	arrow_data = new_toggle("arrow.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
+	autokeyframe_data = new_toggle("autokeyframe.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
+	camera_data = new_toggle("camera.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
+	crop_data = new_toggle("crop.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
+	ibeam_data = new_toggle("ibeam.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
+	magnify_data = new_toggle("magnify.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
+	mask_data = new_toggle("mask.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
+	proj_data = new_toggle("projector.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
+	protect_data = new_toggle("protect.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
+	show_meters = new_toggle("show_meters.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
+	titlesafe_data = new_toggle("titlesafe.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
+	tool_data = new_toggle("toolwindow.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
+
+
+
+
+	static VFrame **transport_bg = new_image_set(3,
+		"transportup.png", 
+		"transporthi.png", 
+		"transportdn.png");
 	build_transport(duplex_data, get_image("duplex.png"), transport_bg, 1);
 	build_transport(end_data, get_image("end.png"), transport_bg, 2);
 	build_transport(fastfwd_data, get_image("fastfwd.png"), transport_bg, 1);
@@ -315,9 +307,6 @@ void DefaultTheme::initialize()
 	build_transport(rewind_data, get_image("rewind.png"), transport_bg, 0);
 	build_transport(stop_data, get_image("stop.png"), transport_bg, 1);
 	build_transport(stoprec_data, get_image("stoprec.png"), transport_bg, 2);
-	in_point = default_inpoint;
-	label_toggle = default_labeltoggle;
-	out_point = default_outpoint;
 	flush_images();
 
 	title_font = MEDIUMFONT_3D;
@@ -338,9 +327,9 @@ void DefaultTheme::get_mwindow_sizes(MWindowGUI *gui, int w, int h)
 	mbuttons_y = gui->mainmenu->get_h();
 	mbuttons_w = w;
 	mbuttons_h = mbutton_left->get_h();
-	mclock_x = 0;
+	mclock_x = 10;
 	mclock_y = mbuttons_y + mbuttons_h + CWINDOW_METER_MARGIN;
-	mclock_w = clock_bg->get_w() - 30;
+	mclock_w = clock_bg->get_w() - 40;
 	mclock_h = clock_bg->get_h();
 	mtimebar_x = patchbay_bg->get_w();
 	mtimebar_y = mbuttons_y + mbuttons_h;
@@ -593,12 +582,18 @@ void DefaultTheme::draw_rwindow_bg(RecordGUI *gui)
 
 void DefaultTheme::draw_rmonitor_bg(RecordMonitorGUI *gui)
 {
-	int margin = 35;
+	int margin = 45;
 	int panel_w = 300;
-	int x = rmonitor_canvas_w - margin;
+	int x = rmonitor_meter_x - margin;
+	int w = mwindow->session->rmonitor_w - x;
+	if(w < rmonitor_meters->get_w()) w = rmonitor_meters->get_w();
+	gui->clear_box(0, 
+		0, 
+		mwindow->session->rmonitor_w, 
+		mwindow->session->rmonitor_h);
 	gui->draw_9segment(x,
 		0,
-		mwindow->session->rmonitor_w - x,
+		w,
 		mwindow->session->rmonitor_h,
 		rmonitor_meters);
 }

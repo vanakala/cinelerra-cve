@@ -47,9 +47,9 @@ void TranslateConfig::copy_from(TranslateConfig &that)
 
 void TranslateConfig::interpolate(TranslateConfig &prev, 
 	TranslateConfig &next, 
-	long prev_frame, 
-	long next_frame, 
-	long current_frame)
+	int64_t prev_frame, 
+	int64_t next_frame, 
+	int64_t current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);

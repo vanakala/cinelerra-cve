@@ -46,7 +46,7 @@ void MainCursor::deactivate()
 	}
 }
 
-int MainCursor::repeat_event(long duration)
+int MainCursor::repeat_event(int64_t duration)
 {
 	if(!active) return 0;
 //printf("MainCursor::repeat_event 1 %d\n", duration);
@@ -75,11 +75,11 @@ void MainCursor::draw()
 		view_start = mwindow->edl->local_session->view_start;
 		zoom_sample = mwindow->edl->local_session->zoom_sample;
 
-		pixel1 = Units::to_long((selectionstart * 
+		pixel1 = Units::to_int64((selectionstart * 
 			mwindow->edl->session->sample_rate / 
 			zoom_sample - 
 			view_start));
-		pixel2 = Units::to_long((selectionend *
+		pixel2 = Units::to_int64((selectionend *
 			mwindow->edl->session->sample_rate / 
 			zoom_sample - 
 			view_start));

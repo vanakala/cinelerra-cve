@@ -15,9 +15,9 @@ public:
 	void copy_from(GainConfig &that);
 	void interpolate(GainConfig &prev, 
 		GainConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame);
+		int64_t prev_frame, 
+		int64_t next_frame, 
+		int64_t current_frame);
 
 	double level;
 };
@@ -28,7 +28,7 @@ public:
 	Gain(PluginServer *server);
 	~Gain();
 
-	int process_realtime(long size, double *input_ptr, double *output_ptr);
+	int process_realtime(int64_t size, double *input_ptr, double *output_ptr);
 
 	PLUGIN_CLASS_MEMBERS(GainConfig, GainThread)
 	void save_data(KeyFrame *keyframe);
@@ -48,15 +48,15 @@ public:
 	GainEngine(Gain *plugin);
 	~GainEngine();
 
-	int process_overlay(double *in, double *out, double &out1, double &out2, double level, long lowpass, long samplerate, long size);
-	int process_overlays(int output_buffer, long size);
+	int process_overlay(double *in, double *out, double &out1, double &out2, double level, int64_t lowpass, int64_t samplerate, int64_t size);
+	int process_overlays(int output_buffer, int64_t size);
 	int wait_process_overlays();
 	void run();
 
 	Mutex input_lock, output_lock;
 	int completed;
 	int output_buffer;
-	long size;
+	int64_t size;
 	Gain *plugin;
 };
 

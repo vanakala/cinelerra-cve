@@ -45,9 +45,9 @@ void DelayVideoConfig::copy_from(DelayVideoConfig &that)
 
 void DelayVideoConfig::interpolate(DelayVideoConfig &prev, 
 		DelayVideoConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame)
+		int64_t prev_frame, 
+		int64_t next_frame, 
+		int64_t current_frame)
 {
 	this->length = prev.length;
 }

@@ -262,7 +262,7 @@ VideoOutConfig::VideoOutConfig(int playback_strategy, int engine_number)
 	sprintf(buz_out_device, "/dev/video0");
 	this->playback_strategy = playback_strategy;
 	this->engine_number = engine_number;
-	driver = PLAYBACK_X11;
+	driver = PLAYBACK_X11_XV;
 	for(int i = 0; i < MAX_CHANNELS; i++) do_channel[i] = 0;
 	buz_out_channel = 0;
 	buz_swap_fields = 0;
@@ -361,13 +361,13 @@ int VideoOutConfig::load_defaults(Defaults *defaults)
 	sprintf(string, "X11_OUT_DEVICE_%d_%d", playback_strategy, engine_number);
 	defaults->get(string, x11_host);
 	x11_use_fields = defaults->get("X11_USE_FIELDS", x11_use_fields);
-	sprintf(string, "FIREWIRE_OUT_CHANNEL_%d_%d", playback_strategy, engine_number);
+	sprintf(string, "VFIREWIRE_OUT_CHANNEL_%d_%d", playback_strategy, engine_number);
 	firewire_channel = defaults->get(string, firewire_channel);
-	sprintf(string, "FIREWIRE_OUT_PORT_%d_%d", playback_strategy, engine_number);
+	sprintf(string, "VFIREWIRE_OUT_PORT_%d_%d", playback_strategy, engine_number);
 	firewire_port = defaults->get(string, firewire_port);
-	sprintf(string, "FIREWIRE_OUT_PATH_%d_%d", playback_strategy, engine_number);
+	sprintf(string, "VFIREWIRE_OUT_PATH_%d_%d", playback_strategy, engine_number);
 	defaults->get(string, firewire_path);
-	sprintf(string, "FIREWIRE_OUT_SYT_%d_%d", playback_strategy, engine_number);
+	sprintf(string, "VFIREWIRE_OUT_SYT_%d_%d", playback_strategy, engine_number);
 	firewire_syt = defaults->get(string, firewire_syt);
 	return 0;
 }
@@ -388,13 +388,13 @@ int VideoOutConfig::save_defaults(Defaults *defaults)
 	sprintf(string, "X11_OUT_DEVICE_%d_%d", playback_strategy, engine_number);
 	defaults->update(string, x11_host);
 	defaults->update("X11_USE_FIELDS", x11_use_fields);
-	sprintf(string, "FIREWIRE_OUT_CHANNEL_%d_%d", playback_strategy, engine_number);
+	sprintf(string, "VFIREWIRE_OUT_CHANNEL_%d_%d", playback_strategy, engine_number);
 	defaults->update(string, firewire_channel);
-	sprintf(string, "FIREWIRE_OUT_PORT_%d_%d", playback_strategy, engine_number);
+	sprintf(string, "VFIREWIRE_OUT_PORT_%d_%d", playback_strategy, engine_number);
 	defaults->update(string, firewire_port);
-	sprintf(string, "FIREWIRE_OUT_PATH_%d_%d", playback_strategy, engine_number);
+	sprintf(string, "VFIREWIRE_OUT_PATH_%d_%d", playback_strategy, engine_number);
 	defaults->update(string, firewire_path);
-	sprintf(string, "FIREWIRE_OUT_SYT_%d_%d", playback_strategy, engine_number);
+	sprintf(string, "VFIREWIRE_OUT_SYT_%d_%d", playback_strategy, engine_number);
 	defaults->update(string, firewire_syt);
 	return 0;
 }

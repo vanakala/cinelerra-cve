@@ -716,7 +716,6 @@ static int read_ifo(mpeg3_t *file,
 
 			if(cell_start + length - title_start_byte > title->total_bytes)
 				length = title->total_bytes - cell_start + title_start_byte;
-//printf("read_ifo 3 %llx - %llx + %llx = %llx\n", title->total_bytes, cell_start, title_start_byte, length);
 
 
 // Should never fail.  If it does it means the length of the cells and the
@@ -724,6 +723,12 @@ static int read_ifo(mpeg3_t *file,
 // the cells won't line up.
 			if(length)
 			{
+/*
+ * printf("read_ifo title=%d start=%lx end=%lx\n", 
+ * current_title, 
+ * (long)(cell_start - title_start_byte), 
+ * (long)(cell_start - title_start_byte + length));
+ */
 				mpeg3_new_timecode(title, 
 					(long)(cell_start - title_start_byte), 
 					0,
@@ -735,7 +740,15 @@ static int read_ifo(mpeg3_t *file,
 			}
 			else
 			{
-				fprintf(stderr, "read_ifo: cell length and title length don't match.\n");
+				fprintf(stderr, 
+					"read_ifo: cell length and title length don't match! title=%d cell_start=%llx cell_end=%llx.\n",
+					current_title,
+					cell_start - title_start_byte,
+					cell_end - title_start_byte);
+
+// Try this out.  It works for Contact where one VOB is 0x800 bytes longer than 
+// the cells in it but the next cell aligns perfectly with the next VOB.
+				current_cell--;
 			}
 
 // Advance title

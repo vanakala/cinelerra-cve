@@ -15,7 +15,7 @@ int IntAuto::value_to_str(char *string, float value)
 		else sprintf(string, "OFF");
 }
 
-void IntAuto::copy(long start, long end, FileXML *file, int default_auto)
+void IntAuto::copy(int64_t start, int64_t end, FileXML *file, int default_auto)
 {
 	
 }

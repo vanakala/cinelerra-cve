@@ -1,17 +1,25 @@
 #ifndef SIGHANDLER_H
 #define SIGHANDLER_H
 
-#include <signal.h>
+#include "bcsignals.h"
+#include "file.h"
 
-class SigHandler
+class SigHandler : public BC_Signals
 {
-private:
-  static void* entrypoint();
-protected:
-  virtual void signal_handler() = 0;
 public:
-	SigHandler(int signal_);
-	~SigHandler();
+	SigHandler();
+	void signal_handler(int signum);
+
+
+// Put file pointer on table
+	void push_file(File *file);
+// Remove file pointer from table
+	void pull_file(File *file);
+
+// Files currently open for writing.
+// During a crash, the sighandler should close them all.
+	ArrayList<File*> files;
 };
+
 
 #endif

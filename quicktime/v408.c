@@ -7,12 +7,17 @@
 #include <stdint.h>
 #include <stdlib.h>
 
+typedef struct
+{
+	unsigned char *work_buffer;
+} quicktime_v408_codec_t;
+
 static int delete_codec(quicktime_video_map_t *vtrack)
 {
 	quicktime_v408_codec_t *codec;
 
 	codec = ((quicktime_codec_t*)vtrack->codec)->priv;
-	free(codec->work_buffer);
+	if(codec->work_buffer) free(codec->work_buffer);
 	free(codec);
 	return 0;
 }
@@ -65,13 +70,19 @@ static int writes_colormodel(quicktime_t *file,
 static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 {
 	int i;
-	longest bytes;
+	int64_t bytes;
 	int result = 0;
 	quicktime_video_map_t *vtrack = &(file->vtracks[track]);
 	quicktime_v408_codec_t *codec = ((quicktime_codec_t*)vtrack->codec)->priv;
 	int width = vtrack->track->tkhd.track_width;
 	int height = vtrack->track->tkhd.track_height;
 	unsigned char **input_rows;
+	if(!codec->work_buffer)
+		codec->work_buffer = malloc(vtrack->track->tkhd.track_width * 
+			vtrack->track->tkhd.track_height *
+			4);
+
+
 	quicktime_set_video_position(file, vtrack->current_position, track);
 	bytes = quicktime_frame_size(file, vtrack->current_position, track);
 	result = !quicktime_read_data(file, codec->work_buffer, bytes);
@@ -117,15 +128,21 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 
 static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 {
-	longest offset = quicktime_position(file);
+	int64_t offset = quicktime_position(file);
 	quicktime_video_map_t *vtrack = &(file->vtracks[track]);
 	quicktime_v408_codec_t *codec = ((quicktime_codec_t*)vtrack->codec)->priv;
+	quicktime_trak_t *trak = vtrack->track;
 	int width = vtrack->track->tkhd.track_width;
 	int height = vtrack->track->tkhd.track_height;
 	int bytes = width * height * 4;
 	int result = 0;
 	unsigned char **output_rows;
 	int i;
+	quicktime_atom_t chunk_atom;
+	if(!codec->work_buffer)
+		codec->work_buffer = malloc(vtrack->track->tkhd.track_width * 
+			vtrack->track->tkhd.track_height *
+			4);
 
 
 	output_rows = malloc(sizeof(unsigned char*) * height);
@@ -154,17 +171,15 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 		width,
 		width);
 
+	quicktime_write_chunk_header(file, trak, &chunk_atom);
 	result = !quicktime_write_data(file, codec->work_buffer, bytes);
-	quicktime_update_tables(file,
-						file->vtracks[track].track,
-						offset,
-						file->vtracks[track].current_chunk,
-						file->vtracks[track].current_position,
-						1,
-						bytes);
-//printf("quicktime_encode_yv12 2\n");
+	quicktime_write_chunk_footer(file, 
+		trak,
+		vtrack->current_chunk,
+		&chunk_atom, 
+		1);
 
-	file->vtracks[track].current_chunk++;
+	vtrack->current_chunk++;
 	
 	free(output_rows);
 	return result;
@@ -172,25 +187,19 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 
 void quicktime_init_codec_v408(quicktime_video_map_t *vtrack)
 {
-	int i;
-	quicktime_v408_codec_t *codec;
+	quicktime_codec_t *codec_base = (quicktime_codec_t*)vtrack->codec;
 
-//printf("quicktime_init_codec_yv12 1\n");
 /* Init public items */
-	((quicktime_codec_t*)vtrack->codec)->priv = calloc(1, sizeof(quicktime_v408_codec_t));
-	((quicktime_codec_t*)vtrack->codec)->delete_vcodec = delete_codec;
-	((quicktime_codec_t*)vtrack->codec)->decode_video = decode;
-	((quicktime_codec_t*)vtrack->codec)->encode_video = encode;
-	((quicktime_codec_t*)vtrack->codec)->decode_audio = 0;
-	((quicktime_codec_t*)vtrack->codec)->encode_audio = 0;
-	((quicktime_codec_t*)vtrack->codec)->reads_colormodel = reads_colormodel;
-	((quicktime_codec_t*)vtrack->codec)->writes_colormodel = writes_colormodel;
-
-/* Init private items */
-	codec = ((quicktime_codec_t*)vtrack->codec)->priv;
-	codec->work_buffer = malloc(vtrack->track->tkhd.track_width * 
-		vtrack->track->tkhd.track_height *
-		4);
-//printf("quicktime_init_codec_yv12 2\n");
+	codec_base->priv = calloc(1, sizeof(quicktime_v408_codec_t));
+	codec_base->delete_vcodec = delete_codec;
+	codec_base->decode_video = decode;
+	codec_base->encode_video = encode;
+	codec_base->decode_audio = 0;
+	codec_base->encode_audio = 0;
+	codec_base->reads_colormodel = reads_colormodel;
+	codec_base->writes_colormodel = writes_colormodel;
+	codec_base->fourcc = QUICKTIME_YUVA4444;
+	codec_base->title = "Component Y'CbCrA 8-bit 4:4:4:4";
+	codec_base->desc = "Component Y'CbCrA 8-bit 4:4:4:4";
 }
 

@@ -16,7 +16,7 @@ Auto* IntAutos::new_auto()
 	return new IntAuto(edl, this);
 }
 
-int IntAutos::automation_is_constant(long start, long end)
+int IntAutos::automation_is_constant(int64_t start, int64_t end)
 {
 	Auto *current_auto, *before = 0, *after = 0;
 	int result;
@@ -48,7 +48,7 @@ int IntAutos::automation_is_constant(long start, long end)
 	return result;
 }
 
-double IntAutos::get_automation_constant(long start, long end)
+double IntAutos::get_automation_constant(int64_t start, int64_t end)
 {
 	Auto *current_auto, *before = 0, *after = 0;
 	

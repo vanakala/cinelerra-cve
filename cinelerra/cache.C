@@ -61,8 +61,10 @@ File* CICache::check_out(Asset *asset)
 
 	check_out_lock.lock();
 
+//printf("CICache::check_out 1 %s\n", asset->path);
 // search for it in the cache
 	CICacheItem *current, *new_item = 0;
+//printf("CICache::check_out 1 %s\n", asset->path);
 
 	for(current = first; current && !new_item; current = NEXT)
 	{
@@ -72,6 +74,7 @@ File* CICache::check_out(Asset *asset)
 			new_item = current;
 		}
 	}
+//printf("CICache::check_out 1 %s\n", asset->path);
 
 // didn't find it so create a new one
 	if(!new_item)
@@ -79,6 +82,7 @@ File* CICache::check_out(Asset *asset)
 		new_item = append(new CICacheItem(this, asset));
 	}
 
+//printf("CICache::check_out 1 %s\n", asset->path);
 	if(new_item)
 	{
 		if(new_item->file)
@@ -96,8 +100,10 @@ File* CICache::check_out(Asset *asset)
 			new_item = 0;
 		}
 	}
+//printf("CICache::check_out 1 %s\n", asset->path);
 
 	check_out_lock.unlock();
+//printf("CICache::check_out 100 %s\n", asset->path);
 
 	return result;
 }
@@ -173,7 +179,7 @@ int CICache::age()
 	}
 
 // delete old assets if memory usage is exceeded
-	long memory_usage;
+	int64_t memory_usage;
 	int result = 0;
 	do
 	{
@@ -188,10 +194,10 @@ int CICache::age()
 	check_out_lock.unlock();
 }
 
-long CICache::get_memory_usage()
+int64_t CICache::get_memory_usage()
 {
 	CICacheItem *current;
-	long result = 0;
+	int64_t result = 0;
 	
 	for(current = first; current; current = NEXT)
 	{
@@ -239,10 +245,10 @@ int CICache::dump()
 		printf("cache item %x\n", current);
 		printf("	asset %x\n", current->asset);
 		printf("	%s\n", current->asset->path);
-		printf("	counter %ld\n", current->counter);
+		printf("	counter %lld\n", current->counter);
 	}
 	
-	printf("total size %ld\n", get_memory_usage());
+	printf("total size %lld\n", get_memory_usage());
 	unlock_all();
 }
 
@@ -272,23 +278,30 @@ int CICache::unlock_all()
 CICacheItem::CICacheItem(CICache *cache, Asset *asset)
  : ListItem<CICacheItem>()
 {
+//printf("CICacheItem::CICacheItem 1\n");
 	int result = 0;
 	counter = 0;
 	this->asset = new Asset;
 	
 // Must copy Asset since this belongs to an EDL which won't exist forever.
+//printf("CICacheItem::CICacheItem 1\n");
 	*this->asset = *asset;
+//printf("CICacheItem::CICacheItem 1\n");
 	this->cache = cache;
 	checked_out = 0;
 
 	file = new File;
+//printf("CICacheItem::CICacheItem 1\n");
 	file->set_processors(cache->edl->session->smp ? 2: 1);
+//printf("CICacheItem::CICacheItem 1\n");
 	file->set_preload(cache->edl->session->playback_preload);
+//printf("CICacheItem::CICacheItem 1\n");
 
 
 // Copy decoding parameters from session to asset so file can see them.
 	this->asset->divx_use_deblocking = cache->edl->session->mpeg4_deblock;
 
+//printf("CICacheItem::CICacheItem 1\n");
 
 
 	if(result = file->open_file(cache->plugindb, this->asset, 1, 0, -1, -1))

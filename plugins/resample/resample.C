@@ -138,7 +138,7 @@ int ResampleEffect::start_loop()
 		char string[BCTEXTLEN];
 		sprintf(string, "%s...", plugin_title());
 		progress = start_progress(string, 
-			(long)((double)(PluginClient::end - PluginClient::start) * scale));
+			(int64_t)((double)(PluginClient::end - PluginClient::start) * scale));
 	}
 
 	current_position = PluginClient::start;
@@ -158,13 +158,13 @@ int ResampleEffect::stop_loop()
 	return 0;
 }
 
-int ResampleEffect::process_loop(double *buffer, long &write_length)
+int ResampleEffect::process_loop(double *buffer, int64_t &write_length)
 {
 	int result = 0;
 
 // Length to read based on desired output size
-	long size = (long)((double)PluginAClient::in_buffer_size / scale);
-	long predicted_total = (long)((double)(PluginClient::end - PluginClient::start) * scale + 0.5);
+	int64_t size = (int64_t)((double)PluginAClient::in_buffer_size / scale);
+	int64_t predicted_total = (int64_t)((double)(PluginClient::end - PluginClient::start) * scale + 0.5);
 
 	double *input = new double[size];
 
@@ -180,7 +180,7 @@ int ResampleEffect::process_loop(double *buffer, long &write_length)
 
 	if(resample->get_output_size(0))
 	{
-		long output_size = resample->get_output_size(0);
+		int64_t output_size = resample->get_output_size(0);
 
 		if(output_size)
 		{

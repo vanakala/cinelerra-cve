@@ -14,13 +14,13 @@ public:
 	APluginArray();
 	~APluginArray();
 
-	long get_bufsize();
+	int64_t get_bufsize();
 	void create_buffers();
 	void create_modules();
-	void load_module(int module, long input_position, long len);
-	void process_realtime(int module, long input_position, long len);
-	int process_loop(int module, long &write_length);
-	int write_buffers(long len);
+	void load_module(int module, int64_t input_position, int64_t len);
+	void process_realtime(int module, int64_t input_position, int64_t len);
+	int process_loop(int module, int64_t &write_length);
+	int write_buffers(int64_t len);
 	int total_tracks();
 	void get_recordable_tracks();
 	Track* track_number(int number);

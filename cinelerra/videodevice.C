@@ -288,26 +288,26 @@ int VideoDevice::set_adevice(AudioDevice *adevice)
 }
 
 
-int VideoDevice::stop_sharing()
-{
-	if(sharing)
-	{
-		sharing_lock.lock();
-		done_sharing = 1;
-		if(input_base) input_base->stop_sharing();
-	}
-	return 0;
-}
+// int VideoDevice::stop_sharing()
+// {
+// 	if(sharing)
+// 	{
+// 		sharing_lock.lock();
+// 		done_sharing = 1;
+// 		if(input_base) input_base->stop_sharing();
+// 	}
+// 	return 0;
+// }
+// 
 
-
-int VideoDevice::get_shared_data(unsigned char *data, long size)
-{
-	if(input_base)
-	{
-		input_base->get_shared_data(data, size);
-	}
-	return 0;
-}
+// int VideoDevice::get_shared_data(unsigned char *data, long size)
+// {
+// 	if(input_base)
+// 	{
+// 		input_base->get_shared_data(data, size);
+// 	}
+// 	return 0;
+// }
 
 void VideoDevice::create_channeldb(ArrayList<Channel*> *channeldb)
 {

@@ -42,7 +42,7 @@ public:
 
 
 // expand plugins
-	int expand(int persistant_plugins, long current_position);
+	int expand(int persistant_plugins, int64_t current_position);
 // create buffers and convenience pointers
 	int expand_buffers();
 // create convenience pointers to shared memory depending on the data type
@@ -51,26 +51,26 @@ public:
 	int attach_virtual_module(Plugin *plugin, 
 		int plugin_number, 
 		int duplicate, 
-		long current_position);
+		int64_t current_position);
 // create a node for a plugin
 	int attach_virtual_plugin(Plugin *plugin, 
 		int plugin_number, 
 		int duplicate, 
-		long current_position);
+		int64_t current_position);
 	virtual VirtualNode* create_module(Plugin *real_plugin, 
 							Module *real_module, 
 							Track *track) { return 0; };
 	virtual VirtualNode* create_plugin(Plugin *real_plugin) { return 0; };
 
-	int render_as_plugin(long source_len,
-						long source_position,
+	int render_as_plugin(int64_t source_len,
+						int64_t source_position,
 						int ring_buffer,
-						long fragment_position,
-						long fragment_len);
+						int64_t fragment_position,
+						int64_t fragment_len);
 
-	int get_plugin_input(int &double_buffer_in, long &fragment_position_in,
-					int &double_buffer_out, long &fragment_position_out,
-					int double_buffer, long fragment_position);
+	int get_plugin_input(int &double_buffer_in, int64_t &fragment_position_in,
+					int &double_buffer_out, int64_t &fragment_position_out,
+					int double_buffer, int64_t fragment_position);
 
 // Get the order to render modules and plugins attached to this.
 // Return 1 if not completed after this pass.
@@ -99,8 +99,8 @@ public:
 	int input_is_master;
 	int output_is_master;
 	int ring_buffers;       // number of buffers for master buffers
-	long buffer_size;         // number of units in a master segment
-	long fragment_size;       // number of units in a node segment
+	int64_t buffer_size;         // number of units in a master segment
+	int64_t fragment_size;       // number of units in a node segment
 	int plugin_type;          // type of plugin in case user changes it
 	int render_count;         // times this plugin has been added to the render list
 	int waiting_real_plugin;  //  real plugin tests this to see if virtual plugin is waiting on it when sorting
@@ -118,34 +118,34 @@ public:
 // Mute automation.
 // Return whether the next samples are muted and store the duration
 // of the next status in fragment_len
-	void get_mute_fragment(long input_position,
+	void get_mute_fragment(int64_t input_position,
 				int &mute_constant, 
-				long &fragment_len, 
+				int64_t &fragment_len, 
 				Autos *autos);
 
 // convenience routines for fade automation
 	void get_fade_automation(double &slope,
 		double &intercept,
-		long input_position,
-		long &slope_len,
+		int64_t input_position,
+		int64_t &slope_len,
 		Autos *autos);
 	void get_pan_automation(double &slope,
 		double &intercept,
-		long input_position,
-		long &slope_len,
+		int64_t input_position,
+		int64_t &slope_len,
 		Autos *autos,
 		int channel);
 
 	int init_automation(int &automate, 
 				double &constant, 
-				long input_position,
-				long buffer_len,
+				int64_t input_position,
+				int64_t buffer_len,
 				Autos *autos,
 				Auto **before, 
 				Auto **after);
 
 	int init_slope(Autos *autos, Auto **before, Auto **after);
-	int get_slope(Autos *autos, long buffer_len, long buffer_position);
+	int get_slope(Autos *autos, int64_t buffer_len, int64_t buffer_position);
 	int advance_slope(Autos *autos);
 
 protected:
@@ -164,13 +164,13 @@ protected:
 	double value;
 
 	int reverse;  // Temporary set for each render
-	long input_start, input_end;
-	long buffer_position; // position in both input and output buffer
+	int64_t input_start, input_end;
+	int64_t buffer_position; // position in both input and output buffer
 
 private:
 	int sort_as_module(ArrayList<VirtualNode*>*render_list, int &result, int &total_result);
 	int sort_as_plugin(ArrayList<VirtualNode*>*render_list, int &result, int &total_result);
-	int expand_as_module(int duplicate, long current_position);
+	int expand_as_module(int duplicate, int64_t current_position);
 	int expand_as_plugin(int duplicate);
 };
 

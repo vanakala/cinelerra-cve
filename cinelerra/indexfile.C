@@ -191,17 +191,17 @@ int IndexFile::open_source(File *source)
 	}
 }
 
-long IndexFile::get_required_scale(File *source)
+int64_t IndexFile::get_required_scale(File *source)
 {
-	long result = 1;
+	int64_t result = 1;
 // total length of input file
-	long length_source = source->get_audio_length(0);  
+	int64_t length_source = source->get_audio_length(0);  
 
 // get scale of index file
 //	if(length_source > mwindow->preferences->index_size)
 //	{
 // Total peaks which may be stored in buffer
-		long peak_count = mwindow->preferences->index_size / (2 * sizeof(float) * asset->channels);
+		int64_t peak_count = mwindow->preferences->index_size / (2 * sizeof(float) * asset->channels);
 		for(result = 1; 
 			length_source / result > peak_count; 
 			result *= 2)
@@ -284,10 +284,10 @@ int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 //printf("IndexFile::create_index 2\n");
 
 // total length of input file
-	long length_source = source.get_audio_length(0);  
+	int64_t length_source = source.get_audio_length(0);  
 
 // get amount to read at a time in floats
-	long buffersize = 65536;
+	int64_t buffersize = 65536;
 	char string[1024];
 	get_index_filename(source_filename, 
 		mwindow->preferences->index_directory, 
@@ -308,8 +308,8 @@ int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 		length_source);
 	index_thread->start_build();
 
-	long position = 0;            // current sample in source file
-	long fragment_size = buffersize;
+	int64_t position = 0;            // current sample in source file
+	int64_t fragment_size = buffersize;
 	int current_buffer = 0;
 //printf("IndexFile::create_index 3\n");
 
@@ -392,7 +392,7 @@ int IndexFile::create_index(MWindow *mwindow,
 
 int IndexFile::redraw_edits(int force)
 {
-	long difference = redraw_timer->get_scaled_difference(1000);
+	int64_t difference = redraw_timer->get_scaled_difference(1000);
 
 //printf("IndexFile::redraw_edits 1 %d %d\n", difference, force);
 	if(difference > 250 || force)
@@ -419,7 +419,6 @@ int IndexFile::redraw_edits(int force)
 int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 {
 // check against index_end when being built
-//printf("IndexFile::draw_index 1 %d\n", asset->index_zoom);
 	if(asset->index_zoom == 0)
 	{
 		printf("IndexFile::draw_index: index has 0 zoom\n");
@@ -429,11 +428,11 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 // samples in segment to draw relative to asset
 	double asset_over_session = (double)edit->asset->sample_rate / 
 		mwindow->edl->session->sample_rate;
-	long startsource = (long)(((pixmap->pixmap_x - pixmap->edit_x + x) * 
+	int64_t startsource = (int64_t)(((pixmap->pixmap_x - pixmap->edit_x + x) * 
 		mwindow->edl->local_session->zoom_sample + 
 		edit->startsource) * 
 		asset_over_session);
-	long length = (long)(w * 
+	int64_t length = (int64_t)(w * 
 		mwindow->edl->local_session->zoom_sample * 
 		asset_over_session);
 
@@ -444,11 +443,11 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 	}
 
 // length of index to read in samples * 2
-	long lengthindex = length / asset->index_zoom * 2; 
+	int64_t lengthindex = length / asset->index_zoom * 2; 
 // start of data in samples
-	long startindex = startsource / asset->index_zoom * 2;  
-	long length_read;   // Actual length read from file in bytes
-	long startfile, lengthfile;    // Start and length of fragment to read from file in bytes.
+	int64_t startindex = startsource / asset->index_zoom * 2;  
+	int64_t length_read;   // Actual length read from file in bytes
+	int64_t startfile, lengthfile;    // Start and length of fragment to read from file in bytes.
 	float *buffer = 0;
 	int buffer_shared = 0;
 	int i;
@@ -462,14 +461,12 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 		asset->index_zoom * 
 		asset_over_session;
 
-//printf("IndexFile::draw_index 1 %d %f\n", asset->index_zoom, index_frames_per_pixel);
 // test channel number
 	if(edit->channel > asset->channels) return 1;
 
 // get channel offset
 	startindex += asset->get_index_offset(edit->channel);
 
-//printf("IndexFile::draw_index 1 %d\n", startindex);
 
 	if(asset->index_status == INDEX_BUILDING)
 	{
@@ -485,11 +482,9 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 		startfile = asset->index_start + startindex * sizeof(float);
 		lengthfile = lengthindex * sizeof(float);
 		length_read = 0;
-//printf("IndexFile::draw_index 2 %d %d\n", startfile, file_length);
 
 		if(startfile < file_length)
 		{
-//printf("IndexFile::draw_index 2 %d\n", startfile);
 			fseek(file, startfile, SEEK_SET);
 
 			length_read = lengthfile;
@@ -510,27 +505,49 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 
 	pixmap->canvas->set_color(mwindow->theme->audio_color);
 
-//printf("IndexFile::draw_index 1 %p\n", buffer);
 
 	double current_frame = 0;
 	float highsample = buffer[0];
 	float lowsample = buffer[1];
-//printf("IndexFile::draw_index 1 %d\n", lengthindex);
+	int prev_y1 = center_pixel;
+	int prev_y2 = center_pixel;
+	int first_frame = 1;
 
 	for(int bufferposition = 0; 
 		bufferposition < lengthindex; 
 		bufferposition += 2)
 	{
-		long next_frame;
-
 		if(current_frame >= index_frames_per_pixel)
 		{
-			y1 = (int)(center_pixel - highsample * mwindow->edl->local_session->zoom_y / 2);
-			y2 = (int)(center_pixel - lowsample * mwindow->edl->local_session->zoom_y / 2);
-			pixmap->canvas->draw_line(x1 + x, y1, x1 + x, y2, pixmap);
+			int next_y1 = (int)(center_pixel - highsample * mwindow->edl->local_session->zoom_y / 2);
+			int next_y2 = (int)(center_pixel - lowsample * mwindow->edl->local_session->zoom_y / 2);
+			int y1 = next_y1;
+			int y2 = next_y2;
 
+// A different algorithm has to be used if it's 1 sample per pixel and the
+// index is used.  Now the min and max values are equal so we join the max samples.
+			if(mwindow->edl->local_session->zoom_sample == 1)
+			{
+				pixmap->canvas->draw_line(x1 + x - 1, prev_y1, x1 + x, y1, pixmap);
+			}
+			else
+			{
+// Extend line height if it doesn't connect to previous line
+				if(!first_frame)
+				{
+					if(y1 > prev_y2) y1 = prev_y2 + 1;
+					if(y2 < prev_y1) y2 = prev_y1 - 1;
+				}
+				else
+				{
+					first_frame = 0;
+				}
+				pixmap->canvas->draw_line(x1 + x, y1, x1 + x, y2, pixmap);
+			}
 			current_frame -= index_frames_per_pixel;
 			x1++;
+			prev_y1 = next_y1;
+			prev_y2 = next_y2;
 			highsample = buffer[bufferposition];
 			lowsample = buffer[bufferposition + 1];
 		}
@@ -551,7 +568,6 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 
 
 
-//printf("IndexFile::draw_index 3\n");
 	if(!buffer_shared) delete [] buffer;
 	return 0;
 }
@@ -582,14 +598,14 @@ int IndexFile::read_info(Asset *test_asset)
 	if(test_asset->index_status == INDEX_NOTTESTED)
 	{
 // read start of index data
-		fread((char*)&(test_asset->index_start), sizeof(long), 1, file);
+		fread((char*)&(test_asset->index_start), sizeof(int64_t), 1, file);
 
 // read test_asset info from index
 		char *data;
 		
 		data = new char[test_asset->index_start];
-		fread(data, test_asset->index_start - sizeof(long), 1, file);
-		data[test_asset->index_start - sizeof(long)] = 0;
+		fread(data, test_asset->index_start - sizeof(int64_t), 1, file);
+		data[test_asset->index_start - sizeof(int64_t)] = 0;
 		FileXML xml;
 		xml.read_from_string(data);
 		test_asset->read(mwindow->plugindb, &xml);

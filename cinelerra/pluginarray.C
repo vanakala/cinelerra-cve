@@ -36,8 +36,8 @@ int PluginArray::start_plugins(MWindow *mwindow,
 	EDL *edl, 
 	PluginServer *plugin_server, 
 	KeyFrame *keyframe,
-	long start,
-	long end,
+	int64_t start,
+	int64_t end,
 	File *file)
 {
 	this->mwindow = mwindow;
@@ -147,14 +147,14 @@ int PluginArray::run_plugins()
 {
 	int i, j, result;
 // Length to write after process_loop
-	long write_length;
+	int64_t write_length;
 
 	done = 0;     // for when done
 	error = 0;
 //printf("PluginArray::run_plugins 1\n");
 	if(plugin_server->realtime)
 	{
-		long len;
+		int64_t len;
 		MainProgressBar *progress;
 		char string[BCTEXTLEN], string2[BCTEXTLEN];
 

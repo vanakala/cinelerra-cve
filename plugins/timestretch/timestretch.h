@@ -2,17 +2,20 @@
 #define TIMESTRETCH_H
 
 #include "defaults.inc"
-#include <fourier.h>
+#include "fourier.h"
 #include "guicast.h"
 #include "mainprogress.inc"
 #include "pluginaclient.h"
 #include "resample.inc"
+#include "timestretchengine.inc"
 #include "vframe.inc"
 
 
 
 
 class TimeStretch;
+class TimeStretchWindow;
+
 
 
 
@@ -25,6 +28,24 @@ public:
 };
 
 
+class TimeStretchFreq : public BC_Radial
+{
+public:
+	TimeStretchFreq(TimeStretch *plugin, TimeStretchWindow *gui, int x, int y);
+	int handle_event();
+	TimeStretch *plugin;
+	TimeStretchWindow *gui;
+};
+
+class TimeStretchTime : public BC_Radial
+{
+public:
+	TimeStretchTime(TimeStretch *plugin, TimeStretchWindow *gui, int x, int y);
+	int handle_event();
+	TimeStretch *plugin;
+	TimeStretchWindow *gui;
+};
+
 
 class TimeStretchWindow : public BC_Window
 {
@@ -35,6 +56,8 @@ public:
 	void create_objects();
 
 	TimeStretch *plugin;
+	TimeStretchFreq *freq;
+	TimeStretchTime *time;
 };
 
 
@@ -49,8 +72,6 @@ public:
 	TimeStretch *plugin;
 };
 
-
-
 class TimeStretch : public PluginAClient
 {
 public:
@@ -62,7 +83,7 @@ public:
 	int get_parameters();
 	VFrame* new_picon();
 	int start_loop();
-	int process_loop(double *buffer, long &write_length);
+	int process_loop(double *buffer, int64_t &write_length);
 	int stop_loop();
 	
 	int load_defaults();
@@ -75,12 +96,17 @@ public:
 	Resample *resample;
 	double *temp;
 	int temp_allocated;
+	double *input;
+	int input_allocated;
+
+	int use_fft;
+	TimeStretchEngine *stretch;
 
 	Defaults *defaults;
 	MainProgressBar *progress;
 	double scale;
-	long current_position;
-	long total_written;
+	int64_t current_position;
+	int64_t total_written;
 };
 
 

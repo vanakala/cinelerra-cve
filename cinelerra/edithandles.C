@@ -130,7 +130,7 @@ void EditHandles::update()
 		for(Edit *edit = current->edits->first; edit; edit = edit->next)
 		{
 // Test in point
-			long handle_x, handle_y, handle_w, handle_h;
+			int64_t handle_x, handle_y, handle_w, handle_h;
 			trackcanvas->get_handle_coords(edit, handle_x, handle_y, handle_w, handle_h, EDIT_IN);
 
 			if(visible(handle_x, handle_y, handle_w, handle_h))

@@ -32,8 +32,14 @@ void quicktime_mdia_init_audio(quicktime_t *file,
 							int bits, 
 							char *compressor)
 {
-	quicktime_mdhd_init_audio(file, &(mdia->mdhd), channels, sample_rate, bits, compressor);
-	quicktime_minf_init_audio(file, &(mdia->minf), channels, sample_rate, bits, compressor);
+	quicktime_mdhd_init_audio(&(mdia->mdhd), 
+		sample_rate);
+	quicktime_minf_init_audio(file, 
+		&(mdia->minf), 
+		channels, 
+		sample_rate, 
+		bits, 
+		compressor);
 	quicktime_hdlr_init_audio(&(mdia->hdlr));
 }
 

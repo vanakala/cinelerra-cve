@@ -25,8 +25,7 @@ VirtualVConsole::VirtualVConsole(RenderEngine *renderengine, VRender *vrender)
 
 VirtualVConsole::~VirtualVConsole()
 {
-	delete_virtual_console();
-	delete_input_buffers();
+//printf("VirtualVConsole::~VirtualVConsole 1\n");
 }
 
 int VirtualVConsole::total_ring_buffers()
@@ -47,7 +46,6 @@ void VirtualVConsole::new_input_buffer(int ring_buffer)
 {
 	buffer_in = new VFrame*[total_tracks];
 //printf("VirtualVConsole::new_input_buffer 1\n");
-
 	for(int i = 0; i < total_tracks; i++)
 	{
 		buffer_in[i] = new VFrame(0,
@@ -60,7 +58,6 @@ void VirtualVConsole::new_input_buffer(int ring_buffer)
 
 void VirtualVConsole::delete_input_buffer(int ring_buffer)
 {
-//printf("VirtualVConsole::delete_input_buffer 1\n");
 	for(int i = 0; i < total_tracks; i++)
 	{
 		delete buffer_in[i];
@@ -87,7 +84,7 @@ VirtualNode* VirtualVConsole::new_toplevel_node(Track *track,
 }
 
 // start of buffer in project if forward / end of buffer if reverse
-int VirtualVConsole::process_buffer(long input_position)
+int VirtualVConsole::process_buffer(int64_t input_position)
 {
 	int i, j, k;
 	int result = 0;

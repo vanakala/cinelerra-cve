@@ -3,9 +3,6 @@
 
 // 8 bit YUVA 4444
 
-typedef struct
-{
-	unsigned char *work_buffer;
-} quicktime_v408_codec_t;
+extern void quicktime_init_codec_v408(quicktime_video_map_t *);
 
 #endif

@@ -18,23 +18,23 @@ public:
 
 	void resize(int w, int h);
 	void draw_data(Edit *edit,
-		long edit_x,
-		long edit_w, 
-		long pixmap_x, 
-		long pixmap_w,
-		long pixmap_h,
+		int64_t edit_x,
+		int64_t edit_w, 
+		int64_t pixmap_x, 
+		int64_t pixmap_w,
+		int64_t pixmap_h,
 		int force,
 		int indexes_only);
 	void draw_audio_resource(Edit *edit, int x, int w);
 	void draw_video_resource(Edit *edit, 
-		long edit_x, 
-		long edit_w, 
-		long pixmap_x,
-		long pixmap_w,
+		int64_t edit_x, 
+		int64_t edit_w, 
+		int64_t pixmap_x,
+		int64_t pixmap_w,
 		int refresh_x, 
 		int refresh_w);
 	void draw_audio_source(Edit *edit, int x, int w);
-	void draw_title(Edit *edit, long edit_x, long edit_w, long pixmap_x, long pixmap_w);
+	void draw_title(Edit *edit, int64_t edit_x, int64_t edit_w, int64_t pixmap_x, int64_t pixmap_w);
 	void reset();
 
 	void dump();
@@ -44,12 +44,12 @@ public:
 // Visible in entire track canvas
 	int visible;
 // Section drawn
-	long edit_id;
-	long edit_x, pixmap_x, pixmap_w, pixmap_h;
-	long zoom_sample, zoom_track, zoom_y;
-	long startsource;
+	int64_t edit_id;
+	int64_t edit_x, pixmap_x, pixmap_w, pixmap_h;
+	int64_t zoom_sample, zoom_track, zoom_y;
+	int64_t startsource;
 	double source_framerate, project_framerate;
-	long source_samplerate, project_samplerate;
+	int64_t source_samplerate, project_samplerate;
 	int data_type;
 };
 

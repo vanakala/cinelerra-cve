@@ -113,7 +113,7 @@ void VirtualANode::new_input_buffer()
 	buffer_in[0] = new double[renderengine->edl->session->audio_module_fragment];
 }
 
-double* VirtualANode::get_module_input(int ring_buffer, long fragment_offset)
+double* VirtualANode::get_module_input(int ring_buffer, int64_t fragment_offset)
 {
 	double *result;
 	if(data_in_input)
@@ -133,7 +133,7 @@ double* VirtualANode::get_module_input(int ring_buffer, long fragment_offset)
 	return result;
 }
 
-double* VirtualANode::get_module_output(int ring_buffer, long fragment_position)
+double* VirtualANode::get_module_output(int ring_buffer, int64_t fragment_position)
 {
 	double *result;
 
@@ -146,12 +146,12 @@ double* VirtualANode::get_module_output(int ring_buffer, long fragment_position)
 }
 
 int VirtualANode::render(double **audio_out, 
-				long audio_out_position, 
+				int64_t audio_out_position, 
 				int ring_buffer,
-				long fragment_position,
-				long fragment_len, 
-				long real_position, 
-				long source_length, 
+				int64_t fragment_position,
+				int64_t fragment_len, 
+				int64_t real_position, 
+				int64_t source_length, 
 				int reverse,
 				ARender *arender)
 {
@@ -177,9 +177,9 @@ int VirtualANode::render(double **audio_out,
 	return 0;
 }
 
-void VirtualANode::render_as_plugin(long real_position, 
-	long fragment_position, 
-	long fragment_len,
+void VirtualANode::render_as_plugin(int64_t real_position, 
+	int64_t fragment_position, 
+	int64_t fragment_len,
 	int ring_buffer)
 {
 //printf("VirtualANode::render_as_plugin 1\n");
@@ -190,11 +190,11 @@ void VirtualANode::render_as_plugin(long real_position,
 }
 
 int VirtualANode::render_as_module(double **audio_out, 
-				long audio_out_position, 
+				int64_t audio_out_position, 
 				int ring_buffer,
-				long fragment_position,
-				long fragment_len, 
-				long real_position, 
+				int64_t fragment_position,
+				int64_t fragment_len, 
+				int64_t real_position, 
 				ARender *arender)
 {
 	int in_output = 0;
@@ -224,9 +224,9 @@ int VirtualANode::render_as_module(double **audio_out,
 	{
 		ARender *arender = ((VirtualAConsole*)vconsole)->arender;
 		double max = 0, min = 0, peak;
-		long meter_render_start; // Starting sample of meter block
-		long meter_render_end;   // Ending sample of meter block
-		long current_level = ((AModule*)real_module)->current_level;
+		int64_t meter_render_start; // Starting sample of meter block
+		int64_t meter_render_end;   // Ending sample of meter block
+		int64_t current_level = ((AModule*)real_module)->current_level;
 
 //printf("VirtualANode::render_as_module 1 %p %p\n", ((AModule*)real_module), ((AModule*)real_module)->level_samples);
 // Scan fragment in meter sized fragments
@@ -266,8 +266,8 @@ int VirtualANode::render_as_module(double **audio_out,
 // process pans and copy the output to the output channels
 // Keep rendering unmuted fragments until finished.
 	int mute_constant;
-	long mute_fragment;
-	long mute_position = 0;
+	int64_t mute_fragment;
+	int64_t mute_position = 0;
 
 	for(int i = 0; i < fragment_len; )
 	{
@@ -312,8 +312,8 @@ int VirtualANode::render_as_module(double **audio_out,
 
 int VirtualANode::render_fade(double *input,        // start of input fragment
 								double *output,        // start of output fragment
-								long fragment_len,      // fragment length in input scale
-								long input_position, // starting sample of input buffer in project
+								int64_t fragment_len,      // fragment length in input scale
+								int64_t input_position, // starting sample of input buffer in project
 								Autos *autos)
 {
 	double value, fade_value;
@@ -332,7 +332,7 @@ int VirtualANode::render_fade(double *input,        // start of input fragment
 			value = 0;
 		else
 			value = DB::fromdb(fade_value);
-		for(long i = 0; i < fragment_len; i++)
+		for(int64_t i = 0; i < fragment_len; i++)
 		{
 			output[i] = input[i] * value;
 		}
@@ -340,9 +340,9 @@ int VirtualANode::render_fade(double *input,        // start of input fragment
 	else
 	{
 //printf("VirtualANode::render_fade 10 %d\n", input_position);
-		for(long i = 0; i < fragment_len; i++)
+		for(int64_t i = 0; i < fragment_len; i++)
 		{
-			long slope_len = fragment_len - i;
+			int64_t slope_len = fragment_len - i;
 
 			fade_value = ((FloatAutos*)autos)->get_value(input_position, 
 				direction,
@@ -405,17 +405,17 @@ int VirtualANode::render_fade(double *input,        // start of input fragment
 
 int VirtualANode::render_pan(double *input,        // start of input fragment
 								double *output,        // start of output fragment
-								long fragment_len,      // fragment length in input scale
-								long input_position, // starting sample of input buffer in project
+								int64_t fragment_len,      // fragment length in input scale
+								int64_t input_position, // starting sample of input buffer in project
 								Autos *autos,
 								int channel)
 {
 	double slope, intercept;
 	int direction = renderengine->command->get_direction();
 
-	for(long i = 0; i < fragment_len; )
+	for(int64_t i = 0; i < fragment_len; )
 	{
-		long slope_len = fragment_len - i;
+		int64_t slope_len = fragment_len - i;
 
 // Get slope intercept formula for next fragment
 		get_pan_automation(slope, 

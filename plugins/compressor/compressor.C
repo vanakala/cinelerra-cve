@@ -226,7 +226,7 @@ LOAD_CONFIGURATION_MACRO(CompressorEffect, CompressorConfig)
 
 
 
-int CompressorEffect::process_realtime(long size, double **input_ptr, double **output_ptr)
+int CompressorEffect::process_realtime(int64_t size, double **input_ptr, double **output_ptr)
 {
 //printf("CompressorEffect::process_realtime 1 %f\n", DB::fromdb(-100));
 	load_configuration();
@@ -320,8 +320,8 @@ int CompressorEffect::process_realtime(long size, double **input_ptr, double **o
 //printf("CompressorEffect::process_realtime 7\n");
 // Calculate coef buffer for current size
 		double max = 0, min = 0;
-		long max_age = 0;
-		long min_age = 0;
+		int64_t max_age = 0;
+		int64_t min_age = 0;
 		for(int i = 0; i < size; i++)
 		{
 // Put new sample in reaction buffer
@@ -501,9 +501,9 @@ int CompressorConfig::equivalent(CompressorConfig &that)
 
 void CompressorConfig::interpolate(CompressorConfig &prev, 
 	CompressorConfig &next, 
-	long prev_frame, 
-	long next_frame, 
-	long current_frame)
+	int64_t prev_frame, 
+	int64_t next_frame, 
+	int64_t current_frame)
 {
 	copy_from(prev);
 }
@@ -807,7 +807,7 @@ void CompressorWindow::update()
 void CompressorWindow::update_textboxes()
 {
 	preview->update((float)plugin->config.preview_len);
-	trigger->update((long)plugin->config.trigger);
+	trigger->update((int64_t)plugin->config.trigger);
 	reaction->update((float)plugin->config.reaction_len);
 	if(canvas->current_operation == CompressorCanvas::DRAG)
 	{
@@ -1035,7 +1035,7 @@ int CompressorY::handle_event()
 
 
 CompressorTrigger::CompressorTrigger(CompressorEffect *plugin, int x, int y) 
- : BC_TextBox(x, y, 100, 1, (long)plugin->config.trigger)
+ : BC_TextBox(x, y, (int64_t)100, (int64_t)1, (int64_t)plugin->config.trigger)
 {
 	this->plugin = plugin;
 }

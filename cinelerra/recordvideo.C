@@ -168,9 +168,9 @@ void RecordVideo::run()
 		!write_result)
 	{
 // Synchronize with audio or timer
-//printf("RecordVideo::run 1\n");
+//printf("RecordVideo::run 1 %d\n", batch_done);
 		dropped_frames = 0;
-		next_sample = (long)((float)record->get_current_batch()->session_frames / 
+		next_sample = (int64_t)((float)record->get_current_batch()->session_frames / 
 			record->default_asset->frame_rate * 
 			record->default_asset->sample_rate);
 //printf("RecordVideo::run 1\n");
@@ -182,7 +182,7 @@ void RecordVideo::run()
 		if(current_sample < next_sample && current_sample > 0)
 		{
 // Too early.
-			delay = (long)((float)(next_sample - current_sample) / 
+			delay = (int64_t)((float)(next_sample - current_sample) / 
 				record->default_asset->sample_rate * 
 				1000  
 //              / 2
@@ -196,7 +196,7 @@ void RecordVideo::run()
 		if(current_sample > 0 && !record_thread->monitor)
 		{
 // Too late.
-			dropped_frames = (long)((float)(current_sample - next_sample) / 
+			dropped_frames = (int64_t)((float)(current_sample - next_sample) / 
 				record->default_asset->sample_rate * 
 				record->default_asset->frame_rate);
 			if(dropped_frames != last_dropped_frames)
@@ -363,18 +363,19 @@ void RecordVideo::read_buffer()
 		record->vdevice->is_compressed())
 	{
 		unsigned char *data = capture_frame->get_data();
-		long size = capture_frame->get_compressed_size();
-		long allocation = capture_frame->get_compressed_allocated();
+		int64_t size = capture_frame->get_compressed_size();
+		int64_t allocation = capture_frame->get_compressed_allocated();
 
 //printf("RecordVideo::read_buffer 20 %d\n", size);
 		if(data)
 		{
-			long field2_offset;
-			mjpeg_insert_quicktime_markers(&data, 
-				&size, 
-				&allocation,
-				2,
-				&field2_offset);
+			int64_t field2_offset = mjpeg_get_field2(data, size);
+// Markers are added in the file in direct copy more.
+// 			mjpeg_insert_quicktime_markers(&data, 
+// 				&size, 
+// 				&allocation,
+// 				2,
+// 				&field2_offset);
 			capture_frame->set_compressed_size(size);
 			capture_frame->set_field2_offset(field2_offset);
 		}

@@ -253,7 +253,7 @@ char* FieldFrame::plugin_title()
 	return "Fields to frames";
 }
 
-NEW_PICON_MACRO(FieldFrame) 
+NEW_PICON_MACRO(FieldFrame)
 
 double FieldFrame::get_framerate()
 {

@@ -48,9 +48,9 @@ private:
 
 	int open_file();
 	int open_source(File *source);
-	long get_required_scale(File *source);
+	int64_t get_required_scale(File *source);
 	FILE *file;
-	long file_length;   // Length of index file in bytes
+	int64_t file_length;   // Length of index file in bytes
 	int interrupt_flag;    // Flag set when index building is interrupted
 };
 

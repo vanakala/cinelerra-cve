@@ -82,7 +82,7 @@ void VirtualNode::dump(int indent)
 	}
 }
 
-int VirtualNode::expand(int persistant_plugins, long current_position)
+int VirtualNode::expand(int persistant_plugins, int64_t current_position)
 {
 	expand_buffers();
 
@@ -129,7 +129,7 @@ int VirtualNode::expand_buffers()
 	return 0;
 }
 
-int VirtualNode::expand_as_module(int duplicate, long current_position)
+int VirtualNode::expand_as_module(int duplicate, int64_t current_position)
 {
 	Transition *transition = 0;
 
@@ -262,7 +262,7 @@ int VirtualNode::expand_as_plugin(int duplicate)
 int VirtualNode::attach_virtual_module(Plugin *plugin, 
 	int plugin_number, 
 	int duplicate, 
-	long current_position)
+	int64_t current_position)
 {
 	if(plugin->on)
 	{
@@ -299,7 +299,7 @@ int VirtualNode::attach_virtual_module(Plugin *plugin,
 int VirtualNode::attach_virtual_plugin(Plugin *plugin, 
 	int plugin_number, 
 	int duplicate, 
-	long current_position)
+	int64_t current_position)
 {
 	if(plugin->on)
 	{
@@ -446,9 +446,9 @@ int VirtualNode::sort_as_plugin(ArrayList<VirtualNode*>*render_list,
 	return 0;
 }
 
-int VirtualNode::get_plugin_input(int &ring_buffer_in, long &fragment_position_in,
-							int &ring_buffer_out, long &fragment_position_out,
-							int ring_buffer, long fragment_position)
+int VirtualNode::get_plugin_input(int &ring_buffer_in, int64_t &fragment_position_in,
+							int &ring_buffer_out, int64_t &fragment_position_out,
+							int ring_buffer, int64_t fragment_position)
 {
 	if(input_is_master)
 	{
@@ -473,16 +473,16 @@ int VirtualNode::get_plugin_input(int &ring_buffer_in, long &fragment_position_i
 	}
 }
 
-int VirtualNode::render_as_plugin(long source_len,
-		long source_position,
+int VirtualNode::render_as_plugin(int64_t source_len,
+		int64_t source_position,
 		int ring_buffer,
-		long fragment_position,
-		long fragment_len)
+		int64_t fragment_position,
+		int64_t fragment_len)
 {
 // need numbers for actual buffers
 	int direction = renderengine->command->get_direction();
 	int ring_buffer_in, ring_buffer_out;
-	long fragment_position_in, fragment_position_out;
+	int64_t fragment_position_in, fragment_position_out;
 	int multichannel = 0;
 //printf("VirtualNode::render_as_plugin 1 %p\n", attachment);
 
@@ -496,12 +496,12 @@ int VirtualNode::render_as_plugin(long source_len,
 
 
 
-void VirtualNode::get_mute_fragment(long input_position,
+void VirtualNode::get_mute_fragment(int64_t input_position,
 				int &mute_constant, 
-				long &fragment_len, 
+				int64_t &fragment_len, 
 				Autos *autos)
 {
-	long mute_len;
+	int64_t mute_len;
 	int direction = renderengine->command->get_direction();
 
 	IntAuto *prev_keyframe = 0;
@@ -547,8 +547,8 @@ void VirtualNode::get_mute_fragment(long input_position,
 
 void VirtualNode::get_fade_automation(double &slope,
 	double &intercept,
-	long input_position,
-	long &slope_len,
+	int64_t input_position,
+	int64_t &slope_len,
 	Autos *autos)
 {
 	int direction = renderengine->command->get_direction();
@@ -561,8 +561,8 @@ void VirtualNode::get_fade_automation(double &slope,
 
 void VirtualNode::get_pan_automation(double &slope,
 	double &intercept,
-	long input_position,
-	long &slope_len,
+	int64_t input_position,
+	int64_t &slope_len,
 	Autos *autos,
 	int channel)
 {
@@ -620,8 +620,8 @@ void VirtualNode::get_pan_automation(double &slope,
 
 int VirtualNode::init_automation(int &automate, 
 				double &constant, 
-				long input_position,
-				long buffer_len,
+				int64_t input_position,
+				int64_t buffer_len,
 				Autos *autos,
 				Auto **before, 
 				Auto **after)
@@ -653,7 +653,7 @@ int VirtualNode::init_slope(Autos *autos, Auto **before, Auto **after)
 				reverse);
 }
 
-int VirtualNode::get_slope(Autos *autos, long buffer_len, long buffer_position)
+int VirtualNode::get_slope(Autos *autos, int64_t buffer_len, int64_t buffer_position)
 {
 	return autos->get_slope(&current_auto, 
 				slope_start, 

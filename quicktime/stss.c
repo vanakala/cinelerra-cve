@@ -73,3 +73,4 @@ void quicktime_write_stss(quicktime_t *file, quicktime_stss_t *stss)
 		quicktime_atom_write_footer(file, &atom);
 	}
 }
+

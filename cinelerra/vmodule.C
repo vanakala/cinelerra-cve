@@ -68,10 +68,10 @@ CICache* VModule::get_cache()
 
 int VModule::import_frame(VFrame *output,
 	VEdit *current_edit,
-	long input_position,
+	int64_t input_position,
 	int direction)
 {
-	long corrected_position = input_position;
+	int64_t corrected_position = input_position;
 	if(direction == PLAY_REVERSE) corrected_position--;
 // Translation of edit
 	float in_x1;
@@ -240,7 +240,7 @@ int VModule::import_frame(VFrame *output,
 
 
 int VModule::render(VFrame *output,
-	long input_position,
+	int64_t input_position,
 	int direction)
 {
 	int result = 0;
@@ -309,8 +309,8 @@ int VModule::render(VFrame *output,
 			direction);
 	}
 
-	return result;
 //printf("VModule::render 5\n");
+	return result;
 }
 
 

@@ -15,14 +15,14 @@ int main(int argc, char *argv[])
 	FILE *output;
 	int result = 0;
 	int i, j;
-	longest length;
+	int64_t length;
 	char string[1024], *prefix = 0, *input = 0;
 	char *data = 0;
 	int bytes = 0, old_bytes = 0;
 	float output_rate = 0;
 	float input_rate;
-	longest input_frame;
-	longest new_length;
+	int64_t input_frame;
+	int64_t new_length;
 	int width, height;
 	int rgb_to_ppm = 0;
 
@@ -94,7 +94,7 @@ int main(int argc, char *argv[])
 		}
 
 /* Get input frame */
-		input_frame = (longest)(input_rate / output_rate * i);
+		input_frame = (int64_t)(input_rate / output_rate * i);
 		bytes = quicktime_frame_size(file, input_frame, 0);
 
 		if(data)

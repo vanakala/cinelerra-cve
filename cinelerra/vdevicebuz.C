@@ -17,8 +17,10 @@
 #include "videodevice.h"
 
 #include <errno.h>
+#include <stdint.h>
 #include <linux/kernel.h>
-#include "videodev2.h"
+//#include "videodev2.h"
+#include <linux/videodev.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
@@ -374,8 +376,7 @@ int VDeviceBUZ::read_buffer(VFrame *frame)
 	input_thread->get_buffer(&buffer, &buffer_size);
 
 	
-// Give 0xc0 extra for markers
-	frame->allocate_compressed_data(buffer_size + 0xc0);
+	frame->allocate_compressed_data(buffer_size);
 	frame->set_compressed_size(buffer_size);
 
 // Transfer fields to frame

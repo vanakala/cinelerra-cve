@@ -137,7 +137,7 @@ void MainPackageRenderer::set_result(int value)
 		render->result = value;
 }
 
-void MainPackageRenderer::set_progress(long value)
+void MainPackageRenderer::set_progress(int64_t value)
 {
 	render->counter_lock->lock();
 	render->total_rendered += audio_read_length;
@@ -216,9 +216,9 @@ void Render::start_progress()
 
 // Don't bother with the filename since renderfarm defeats the meaning
 	progress = mwindow->mainprogress->start_progress("Rendering...", 
-		Units::to_long(default_asset->sample_rate * 
+		Units::to_int64(default_asset->sample_rate * 
 			(total_end - total_start)) +
-		Units::to_long(preferences->render_preroll * 
+		Units::to_int64(preferences->render_preroll * 
 			packages->total_allocated * 
 			default_asset->sample_rate));
 	render_progress = new RenderProgress(mwindow, this);
@@ -575,6 +575,8 @@ void Render::run()
 
 
 		ArrayList<Asset*> *assets = packages->get_asset_list();
+		if(load_mode == LOAD_PASTE)
+			mwindow->clear(0);
 		mwindow->load_assets(assets, 
 			-1, 
 			load_mode,

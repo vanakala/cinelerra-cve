@@ -1,6 +1,8 @@
 #ifndef PLUGINSET_H
 #define PLUGINSET_H
 
+#include <stdint.h>
+
 #include "edits.h"
 #include "edl.inc"
 #include "keyframe.inc"
@@ -21,28 +23,28 @@ public:
 	virtual Plugin* create_plugin() { return 0; };
 // Returns the point to restart background rendering at.
 // -1 means nothing changed.
-	void clear_keyframes(long start, long end);
+	void clear_keyframes(int64_t start, int64_t end);
 // Clear edits only for a handle modification
-	void clear_recursive(long start, long end);
-	void shift_keyframes_recursive(long position, long length);
-	void shift_effects_recursive(long position, long length);
-	void clear(long start, long end);
+	void clear_recursive(int64_t start, int64_t end);
+	void shift_keyframes_recursive(int64_t position, int64_t length);
+	void shift_effects_recursive(int64_t position, int64_t length);
+	void clear(int64_t start, int64_t end);
 	void copy_from(PluginSet *src);
-	void copy(long start, long end, FileXML *file);
-	void copy_keyframes(long start, 
-		long end, 
+	void copy(int64_t start, int64_t end, FileXML *file);
+	void copy_keyframes(int64_t start, 
+		int64_t end, 
 		FileXML *file, 
 		int default_only,
 		int autos_only);
-	void paste_keyframes(long start, 
-		long length, 
+	void paste_keyframes(int64_t start, 
+		int64_t length, 
 		FileXML *file, 
 		int default_only);
 // Return the nearest boundary of any kind in the plugin edits
-	long plugin_change_duration(long input_position, 
-		long input_length, 
+	int64_t plugin_change_duration(int64_t input_position, 
+		int64_t input_length, 
 		int reverse);
-	void shift_effects(long start, long length);
+	void shift_effects(int64_t start, int64_t length);
 	Edit* insert_edit_after(Edit *previous_edit);
 	Edit* create_edit();
 // For testing output equivalency when a new pluginset is added.
@@ -50,14 +52,14 @@ public:
 // The plugin set number in the track
 	int get_number();
 	void save(FileXML *file);
-	void load(FileXML *file, unsigned long load_flags);
+	void load(FileXML *file, uint32_t load_flags);
 	void dump();
 	int optimize();
 
 // Insert a new plugin
 	Plugin* insert_plugin(char *title, 
-		long unit_position, 
-		long unit_length,
+		int64_t unit_position, 
+		int64_t unit_length,
 		int plugin_type,
 		SharedLocation *shared_location,
 		KeyFrame *default_keyframe,

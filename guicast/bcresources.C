@@ -291,7 +291,15 @@ BC_Resources::BC_Resources()
 #include "images/7seg_small/8_png.h"
 #include "images/7seg_small/9_png.h"
 #include "images/7seg_small/colon_png.h"
+#include "images/7seg_small/period_png.h"
+#include "images/7seg_small/a_png.h"
+#include "images/7seg_small/b_png.h"
+#include "images/7seg_small/c_png.h"
+#include "images/7seg_small/d_png.h"
+#include "images/7seg_small/e_png.h"
+#include "images/7seg_small/f_png.h"
 #include "images/7seg_small/space_png.h"
+#include "images/7seg_small/dash_png.h"
 	static VFrame* default_medium_7segment[] = 
 	{
 		new VFrame(_0_png),
@@ -305,7 +313,15 @@ BC_Resources::BC_Resources()
 		new VFrame(_8_png),
 		new VFrame(_9_png),
 		new VFrame(colon_png),
-		new VFrame(space_png)
+		new VFrame(period_png),
+		new VFrame(a_png),
+		new VFrame(b_png),
+		new VFrame(c_png),
+		new VFrame(d_png),
+		new VFrame(e_png),
+		new VFrame(f_png),
+		new VFrame(space_png),
+		new VFrame(dash_png)
 	};
 
 #include "images/tumble_bottomdn_png.h"
@@ -490,6 +506,8 @@ BC_Resources::BC_Resources()
 	if(use_fontset) setlocale(LC_ALL, "");
 	drag_radius = 10;
 	recursive_resizing = 1;
+
+	
 }
 
 BC_Resources::~BC_Resources()

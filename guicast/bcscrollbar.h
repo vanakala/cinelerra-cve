@@ -44,9 +44,9 @@ public:
 		int y, 
 		int orientation, 
 		int pixels, 
-		long length, 
-		long position, 
-		long handlelength,
+		int64_t length, 
+		int64_t position, 
+		int64_t handlelength,
 		VFrame **data = 0);
 	virtual ~BC_ScrollBar();
 
@@ -59,16 +59,16 @@ public:
 	int cursor_enter_event();
 	int button_press_event();
 	int button_release_event();
-	int repeat_event(long repeat_id);
-	long get_value();
-	long get_position();
-	long get_length();
-	long get_handlelength();
+	int repeat_event(int64_t repeat_id);
+	int64_t get_value();
+	int64_t get_position();
+	int64_t get_length();
+	int64_t get_handlelength();
 	int get_pixels();
 	void set_images(VFrame **data);
 	int in_use();
-	int update_value(long value);
-	int update_length(long length, long position, long handlelength);
+	int update_value(int64_t value);
+	int update_length(int64_t length, int64_t position, int64_t handlelength);
 	int reposition_window(int x, int y, int pixels);
 	int get_span();
 	static int get_span(int orientation);
@@ -81,12 +81,12 @@ private:
 	void get_handle_dimensions();
 	int get_cursor_zone(int cursor_x, int cursor_y);
 
-	long length, position, handlelength;   // handle position and size
+	int64_t length, position, handlelength;   // handle position and size
 	int selection_status, highlight_status;
 	int orientation, pixels;
 	int handle_pixel, handle_pixels;
 	int min_pixel, max_pixel;
-	long repeat_count;
+	int64_t repeat_count;
 // Don't deactivate if bound to another tool
 	BC_WindowBase *bound_to;
 	VFrame **data;

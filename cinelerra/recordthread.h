@@ -22,7 +22,7 @@ public:
 	int stop_recording(int resume_monitor);
 	int pause_recording();
 	int resume_recording();
-	long sync_position();
+	int64_t sync_position();
 	void do_cron();
 
 	void run();
@@ -48,6 +48,8 @@ private:
 	Record *record;
 	File *file;
 	Mutex pause_lock, startup_lock, completion_lock, loop_lock;
+// Lock termination variables to positions where batches aren't being started.
+	Mutex state_lock;
 // Override the operating system
 	DriveSync *drivesync;
 };

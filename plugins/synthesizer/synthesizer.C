@@ -389,7 +389,7 @@ double Synth::function_triangle(double x)
 	return (x < .5) ? 1 - x * 4 : -3 + x * 4;
 }
 
-int Synth::process_realtime(long size, double *input_ptr, double *output_ptr)
+int Synth::process_realtime(int64_t size, double *input_ptr, double *output_ptr)
 {
 
 
@@ -402,8 +402,8 @@ int Synth::process_realtime(long size, double *input_ptr, double *output_ptr)
 	for(int j = 0; j < size; j++)
 		output_ptr[j] = input_ptr[j] * wetness;
 
-	long fragment_len;
-	for(long i = 0; i < size; i += fragment_len)
+	int64_t fragment_len;
+	for(int64_t i = 0; i < size; i += fragment_len)
 	{
 		fragment_len = size;
 		if(i + fragment_len > size) fragment_len = size - i;
@@ -417,7 +417,7 @@ int Synth::process_realtime(long size, double *input_ptr, double *output_ptr)
 	return 0;
 }
 
-int Synth::overlay_synth(long start, long length, double *input, double *output)
+int Synth::overlay_synth(int64_t start, int64_t length, double *input, double *output)
 {
 	if(waveform_sample + length > waveform_length) 
 		length = waveform_length - waveform_sample;
@@ -428,7 +428,7 @@ int Synth::overlay_synth(long start, long length, double *input, double *output)
 // only calculate what's needed to speed it up
 	if(waveform_sample + length > samples_rendered)
 	{
-		long start = waveform_sample, end = waveform_sample + length;
+		int64_t start = waveform_sample, end = waveform_sample + length;
 		for(int i = start; i < end; i++) dsp_buffer[i] = 0;
 		
 		double normalize_constant = 1 / get_total_power();
@@ -672,7 +672,7 @@ void SynthWindow::update_gui()
 {
 	char string[BCTEXTLEN];
 	freqpot->update(synth->config.base_freq);
-	base_freq->update((long)synth->config.base_freq);
+	base_freq->update((int64_t)synth->config.base_freq);
 	wetness->update(synth->config.wetness);
 	waveform_to_text(string, synth->config.wavefunction);
 	waveform->set_text(string);
@@ -718,10 +718,10 @@ void SynthWindow::update_oscillators()
 			gui->level->update(config->level);
 
 			gui->phase->reposition_window(gui->phase->get_x(), y);
-			gui->phase->update((long)(config->phase * 360));
+			gui->phase->update((int64_t)(config->phase * 360));
 
 			gui->freq->reposition_window(gui->freq->get_x(), y);
-			gui->freq->update((long)(config->freq_factor));
+			gui->freq->update((int64_t)(config->freq_factor));
 		}
 		y += OSCILLATORHEIGHT;
 	}
@@ -813,7 +813,7 @@ int SynthOscGUILevel::handle_event()
 SynthOscGUIPhase::SynthOscGUIPhase(Synth *synth, SynthOscGUI *gui, int y)
  : BC_IPot(125, 
  	y, 
-	(long)(synth->config.oscillator_config.values[gui->number]->phase * 360), 
+	(int64_t)(synth->config.oscillator_config.values[gui->number]->phase * 360), 
 	0, 
 	360)
 {
@@ -839,7 +839,7 @@ int SynthOscGUIPhase::handle_event()
 SynthOscGUIFreq::SynthOscGUIFreq(Synth *synth, SynthOscGUI *gui, int y)
  : BC_IPot(200, 
  	y, 
-	(long)(synth->config.oscillator_config.values[gui->number]->freq_factor), 
+	(int64_t)(synth->config.oscillator_config.values[gui->number]->freq_factor), 
 	1, 
 	100)
 {
@@ -1703,9 +1703,9 @@ void SynthConfig::copy_from(SynthConfig& that)
 
 void SynthConfig::interpolate(SynthConfig &prev, 
 	SynthConfig &next, 
-	long prev_frame, 
-	long next_frame, 
-	long current_frame)
+	int64_t prev_frame, 
+	int64_t next_frame, 
+	int64_t current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);

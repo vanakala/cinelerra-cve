@@ -51,7 +51,7 @@ public:
 	RecordGUI *gui;
 	int single_frame;
 	int buffer_size;    // number of frames to write to disk at a time
-	long buffer_position;   // Position in output buffer being captured to
+	int64_t buffer_position;   // Position in output buffer being captured to
 	VFrame *capture_frame;   // Output frame for preview mode
 	Timer delayer;
 // result of every disk write
@@ -60,14 +60,14 @@ public:
 	int grab_result;  
 // Capture frame
 	VFrame ***frame_ptr;
-	long current_sample;   // Sample in time of the start of the capture
-	long next_sample;      // Sample of next frame
-	long total_dropped_frames;  // Total number of frames behind
-	long dropped_frames;  // Number of frames currently behind
-	long last_dropped_frames;  // Number of dropped frames during the last calculation
-	long delay;
+	int64_t current_sample;   // Sample in time of the start of the capture
+	int64_t next_sample;      // Sample of next frame
+	int64_t total_dropped_frames;  // Total number of frames behind
+	int64_t dropped_frames;  // Number of frames currently behind
+	int64_t last_dropped_frames;  // Number of dropped frames during the last calculation
+	int64_t delay;
 // Frame start of this recording in the file
-	long record_start;     
+	int64_t record_start;     
 // Want one thread to dictate the other during shared device recording.
 // Done with batch
 	int batch_done;

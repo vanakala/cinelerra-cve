@@ -144,7 +144,7 @@ VFrame* VirtualVNode::get_module_output()
 	return result;
 }
 
-int VirtualVNode::render(VFrame **video_out, long input_position)
+int VirtualVNode::render(VFrame **video_out, int64_t input_position)
 {
 //printf("VirtualVNode::render 1\n");
 	if(real_module)
@@ -162,7 +162,7 @@ int VirtualVNode::render(VFrame **video_out, long input_position)
 	return 0;
 }
 
-void VirtualVNode::render_as_plugin(long input_position)
+void VirtualVNode::render_as_plugin(int64_t input_position)
 {
 	if(!attachment ||
 		!real_plugin ||
@@ -174,7 +174,7 @@ void VirtualVNode::render_as_plugin(long input_position)
 }
 
 
-int VirtualVNode::render_as_module(VFrame **video_out, long input_position)
+int VirtualVNode::render_as_module(VFrame **video_out, int64_t input_position)
 {
 	this->reverse = reverse;
 	VFrame *buffer_in = get_module_input();
@@ -207,8 +207,8 @@ int VirtualVNode::render_as_module(VFrame **video_out, long input_position)
 // overlay on the final output
 // Get mute status
 	int mute_constant;
-	long mute_fragment = 1;
-	long mute_position = 0;
+	int64_t mute_fragment = 1;
+	int64_t mute_position = 0;
 
 //printf("VirtualVNode::render_as_module 3\n");
 // Is frame muted?
@@ -232,11 +232,11 @@ int VirtualVNode::render_as_module(VFrame **video_out, long input_position)
 
 int VirtualVNode::render_fade(VFrame *input,         // start of input fragment
 			VFrame *output,        // start of output fragment
-			long input_position,  // start of input fragment in project if forward / end of input fragment if reverse
+			int64_t input_position,  // start of input fragment in project if forward / end of input fragment if reverse
 			Autos *autos)
 {
 	double slope, intercept;
-	long slope_len = 1;
+	int64_t slope_len = 1;
 	int direction = renderengine->command->get_direction();
 	FloatAuto *previous = 0;
 	FloatAuto *next = 0;
@@ -272,7 +272,7 @@ int VirtualVNode::render_fade(VFrame *input,         // start of input fragment
 // Start of input fragment in project if forward.  End of input fragment if reverse.
 int VirtualVNode::render_projector(VFrame *input,
 			VFrame **output,
-			long input_position)
+			int64_t input_position)
 {
 	float in_x1, in_y1, in_x2, in_y2;
 	float out_x1, out_y1, out_x2, out_y2;
@@ -283,7 +283,7 @@ int VirtualVNode::render_projector(VFrame *input,
 		if(output[i])
 		{
 			((VTrack*)track)->calculate_output_transfer(i,
-				(long)float_input_position,
+				(int64_t)float_input_position,
 				renderengine->command->get_direction(),
 				in_x1, 
 				in_y1, 

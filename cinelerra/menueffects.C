@@ -22,6 +22,8 @@
 #include "pluginserver.h"
 #include "preferences.h"
 #include "render.h"
+#include "sighandler.h"
+#include "theme.h"
 #include "tracks.h"
 
 MenuEffects::MenuEffects(MWindow *mwindow)
@@ -273,9 +275,9 @@ void MenuEffectThread::run()
 
 //printf("MenuEffectThread::run 1\n");
 // Units are now in the track's units.
-	long total_length = (long)total_end - (long)total_start;
+	int64_t total_length = (int64_t)total_end - (int64_t)total_start;
 // length of output file
-	long output_start, output_end;        
+	int64_t output_start, output_end;        
 
 	if(!result && total_length <= 0)
 	{
@@ -363,8 +365,8 @@ void MenuEffectThread::run()
 		current_number,
 		number_start, 
 		total_digits);
-	for(long fragment_start = (long)total_start, fragment_end; 
-		fragment_start < (long)total_end && !result; 
+	for(int64_t fragment_start = (int64_t)total_start, fragment_end; 
+		fragment_start < (int64_t)total_end && !result; 
 		fragment_start = fragment_end)
 	{
 // Get fragment end
@@ -375,13 +377,13 @@ void MenuEffectThread::run()
 					current_label = current_label->next;
 
 			if(!current_label)
-				fragment_end = (long)total_end;
+				fragment_end = (int64_t)total_end;
 			else
 				fragment_end = to_units(current_label->position, 0);
 		}
 		else
 		{
-			fragment_end = (long)total_end;
+			fragment_end = (int64_t)total_end;
 		}
 
 // Create asset
@@ -422,7 +424,10 @@ void MenuEffectThread::run()
 					result = 1;
 				}
 				else
+				{
+					mwindow->sighandler->push_file(file);
 					IndexFile::delete_index(mwindow->preferences, asset);
+				}
 			}
 
 //printf("MenuEffectThread::run 10\n");
@@ -448,6 +453,7 @@ void MenuEffectThread::run()
 
 //printf("MenuEffectThread::run 13\n");
 				plugin_array->stop_plugins();
+				mwindow->sighandler->pull_file(file);
 				file->close_file();
 				asset->audio_length = file->asset->audio_length;
 				asset->video_length = file->asset->video_length;
@@ -459,7 +465,7 @@ void MenuEffectThread::run()
 			delete file;
 		}
 	}
-printf("MenuEffectThread::run 16 %d\n", result);
+//printf("MenuEffectThread::run 16 %d\n", result);
 
 
 // paste output to tracks
@@ -470,6 +476,8 @@ printf("MenuEffectThread::run 16 %d\n", result);
 		mwindow->undo->update_undo_before(title, LOAD_ALL);
 
 //printf("MenuEffectThread::run 18\n");
+		if(load_mode == LOAD_PASTE)
+			mwindow->clear(0);
 		mwindow->load_assets(&assets,
 			-1,
 			load_mode,
@@ -535,10 +543,12 @@ MenuEffectWindow::MenuEffectWindow(MWindow *mwindow,
 	Asset *asset)
  : BC_Window(PROGRAM_NAME ": Render effect", 
  		mwindow->gui->get_abs_cursor_x(),
-		mwindow->gui->get_abs_cursor_y() - calculate_h((int)plugin_list) / 2,
-		calculate_w((int)plugin_list), calculate_h((int)plugin_list), 
-		calculate_w((int)plugin_list), calculate_h((int)plugin_list),
-		0,
+		mwindow->gui->get_abs_cursor_y() - mwindow->session->menueffect_h / 2,
+		mwindow->session->menueffect_w, 
+		mwindow->session->menueffect_h, 
+		580,
+		350,
+		1,
 		0,
 		1)
 { 
@@ -552,48 +562,49 @@ MenuEffectWindow::~MenuEffectWindow()
 {
 	delete format_tools;
 }
-
-int MenuEffectWindow::calculate_w(int use_plugin_list)
-{
-	return use_plugin_list ? 580 : 420;
-}
-
-int MenuEffectWindow::calculate_h(int use_plugin_list)
-{
-	return 350;
-}
+// 
+// int MenuEffectWindow::calculate_w(int use_plugin_list)
+// {
+// 	return use_plugin_list ? 580 : 420;
+// }
+// 
+// int MenuEffectWindow::calculate_h(int use_plugin_list)
+// {
+// 	return 350;
+// }
 
 
 int MenuEffectWindow::create_objects()
 {
 	int x, y;
 	result = -1;
+	mwindow->theme->get_menueffect_sizes(plugin_list ? 1 : 0);
 
-	x = 10;
-	y = 5;
-//printf("MenuEffectWindow::create_objects 1\n");
 // only add the list if needed
 	if(plugin_list)
 	{
-		add_subwindow(new BC_Title(x, y, "Select an effect"));
-		add_subwindow(list = new MenuEffectWindowList(this, x, plugin_list));
-		x += 180;
-		y += 30;
+		add_subwindow(list_title = new BC_Title(mwindow->theme->menueffect_list_x, 
+			mwindow->theme->menueffect_list_y, 
+			"Select an effect"));
+		add_subwindow(list = new MenuEffectWindowList(this, 
+			mwindow->theme->menueffect_list_x, 
+			mwindow->theme->menueffect_list_y + 20, 
+			mwindow->theme->menueffect_list_w,
+			mwindow->theme->menueffect_list_h,
+			plugin_list));
 	}
-//printf("MenuEffectWindow::create_objects 1\n");
 
-	add_subwindow(new BC_Title(x, 
-		y, 
+	add_subwindow(file_title = new BC_Title(mwindow->theme->menueffect_file_x, 
+		mwindow->theme->menueffect_file_y, 
 		(char*)((menueffects->strategy == FILE_PER_LABEL  || menueffects->strategy == FILE_PER_LABEL_FARM) ? 
 			"Select the first file to render to:" : 
 			"Select a file to render to:")));
-//printf("MenuEffectWindow::create_objects 1\n");
 
-	y += 20;
+	x = mwindow->theme->menueffect_tools_x;
+	y = mwindow->theme->menueffect_tools_y;
 	format_tools = new FormatTools(mwindow,
 					this, 
 					asset);
-//printf("MenuEffectWindow::create_objects 1\n");
 	format_tools->create_objects(x, 
 					y, 
 					asset->audio_data, 
@@ -607,17 +618,46 @@ int MenuEffectWindow::create_objects()
 					&menueffects->strategy,
 					0);
 
-	loadmode = new LoadMode(mwindow, this, x, y, &menueffects->load_mode, 1);
+	loadmode = new LoadMode(mwindow, 
+		this, 
+		x, 
+		y, 
+		&menueffects->load_mode, 
+		1);
 	loadmode->create_objects();
 
 	add_subwindow(new MenuEffectWindowOK(this));
 	add_subwindow(new MenuEffectWindowCancel(this));
-//printf("MenuEffectWindow::create_objects 1\n");
 	show_window();
 	flush();
-//printf("MenuEffectWindow::create_objects 2\n");
 	return 0;
 }
+
+int MenuEffectWindow::resize_event(int w, int h)
+{
+	mwindow->session->menueffect_w = w;
+	mwindow->session->menueffect_h = h;
+	mwindow->theme->get_menueffect_sizes(plugin_list ? 1 : 0);
+
+	if(plugin_list)
+	{
+		list_title->reposition_window(mwindow->theme->menueffect_list_x, 
+			mwindow->theme->menueffect_list_y);
+		list->reposition_window(mwindow->theme->menueffect_list_x, 
+			mwindow->theme->menueffect_list_y + 20, 
+			mwindow->theme->menueffect_list_w,
+			mwindow->theme->menueffect_list_h);
+	}
+
+	file_title->reposition_window(mwindow->theme->menueffect_file_x, 
+		mwindow->theme->menueffect_file_y);
+	int x = mwindow->theme->menueffect_tools_x;
+	int y = mwindow->theme->menueffect_tools_y;
+	format_tools->reposition_window(x, y);
+	loadmode->reposition_window(x, y);
+}
+
+
 
 MenuEffectWindowOK::MenuEffectWindowOK(MenuEffectWindow *window)
  : BC_OKButton(window)
@@ -664,11 +704,16 @@ int MenuEffectWindowCancel::keypress_event()
 	return 0;
 }
 
-MenuEffectWindowList::MenuEffectWindowList(MenuEffectWindow *window, int x, ArrayList<BC_ListBoxItem*> *plugin_list)
+MenuEffectWindowList::MenuEffectWindowList(MenuEffectWindow *window, 
+	int x, 
+	int y, 
+	int w, 
+	int h, 
+	ArrayList<BC_ListBoxItem*> *plugin_list)
  : BC_ListBox(x, 
- 		30, 
-		170, 
-		270, 
+ 		y, 
+		w, 
+		h, 
 		LISTBOX_TEXT, 
 		plugin_list)
 { 

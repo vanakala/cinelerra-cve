@@ -23,7 +23,7 @@ public:
 		int audio_options,
 		int video_options);
 	static int check_sig(Asset *asset);
-	int can_copy_from(Edit *edit, long position);
+	int can_copy_from(Edit *edit, int64_t position);
 	int colormodel_supported(int colormodel);
 	int get_best_colormodel(Asset *asset, int driver);
 	int read_frame_header(char *path);

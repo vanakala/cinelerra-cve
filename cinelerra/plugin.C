@@ -85,7 +85,7 @@ int Plugin::silence()
 		return 1;
 }
 
-void Plugin::clear_keyframes(long start, long end)
+void Plugin::clear_keyframes(int64_t start, int64_t end)
 {
 	keyframes->clear(start, end, 0);
 }
@@ -117,8 +117,8 @@ void Plugin::copy_keyframes(Plugin *plugin)
 	keyframes->copy_from(plugin->keyframes);
 }
 
-void Plugin::copy_keyframes(long start, 
-	long end, 
+void Plugin::copy_keyframes(int64_t start, 
+	int64_t end, 
 	FileXML *file, 
 	int default_only,
 	int autos_only)
@@ -137,7 +137,7 @@ void Plugin::synchronize_params(Edit *edit)
 	copy_keyframes(plugin);
 }
 
-void Plugin::shift_keyframes(long position)
+void Plugin::shift_keyframes(int64_t position)
 {
 	for(KeyFrame *keyframe = (KeyFrame*)keyframes->first;
 		keyframe; 
@@ -148,7 +148,7 @@ void Plugin::shift_keyframes(long position)
 }
 
 
-void Plugin::equivalent_output(Edit *edit, long *result)
+void Plugin::equivalent_output(Edit *edit, int64_t *result)
 {
 	Plugin *plugin = (Plugin*)edit;
 // End of plugin changed
@@ -178,7 +178,7 @@ void Plugin::equivalent_output(Edit *edit, long *result)
 
 
 int Plugin::is_synthesis(RenderEngine *renderengine, 
-		long position, 
+		int64_t position, 
 		int direction)
 {
 	switch(plugin_type)
@@ -272,7 +272,7 @@ void Plugin::change_plugin(char *title,
 
 
 
-KeyFrame* Plugin::get_prev_keyframe(long position)
+KeyFrame* Plugin::get_prev_keyframe(int64_t position)
 {
 	KeyFrame *current = 0;
 
@@ -309,7 +309,7 @@ printf("Plugin::get_prev_keyframe position < 0\n");
 	return current;
 }
 
-KeyFrame* Plugin::get_next_keyframe(long position)
+KeyFrame* Plugin::get_next_keyframe(int64_t position)
 {
 	KeyFrame *current;
 
@@ -371,23 +371,23 @@ KeyFrame* Plugin::get_keyframe()
 	return 0;
 }
 
-void Plugin::copy(long start, long end, FileXML *file)
+void Plugin::copy(int64_t start, int64_t end, FileXML *file)
 {
-	long endproject = startproject + length;
+	int64_t endproject = startproject + length;
 
 	if((startproject >= start && startproject <= end) ||  // startproject in range
 		 (endproject <= end && endproject >= start) ||	   // endproject in range
 		 (startproject <= start && endproject >= end))    // range in project
 	{
 // edit is in range
-		long startproject_in_selection = startproject; // start of edit in selection in project
-		long startsource_in_selection = startsource; // start of source in selection in source
-		long endsource_in_selection = startsource + length; // end of source in selection
-		long length_in_selection = length;             // length of edit in selection
+		int64_t startproject_in_selection = startproject; // start of edit in selection in project
+		int64_t startsource_in_selection = startsource; // start of source in selection in source
+		int64_t endsource_in_selection = startsource + length; // end of source in selection
+		int64_t length_in_selection = length;             // length of edit in selection
 
 		if(startproject < start)
 		{         // start is after start of edit in project
-			long length_difference = start - startproject;
+			int64_t length_difference = start - startproject;
 
 			startsource_in_selection += length_difference;
 			startproject_in_selection += length_difference;
@@ -508,7 +508,7 @@ void Plugin::load(FileXML *file)
 // Override default keyframe
 				{
 					KeyFrame *keyframe = (KeyFrame*)keyframes->append(new KeyFrame(edl, keyframes));
-					keyframe->position = file->tag.get_property("POSITION", (long)0);
+					keyframe->position = file->tag.get_property("POSITION", (int64_t)0);
 					keyframe->load(file);
 				}
 			}
@@ -567,7 +567,7 @@ void Plugin::calculate_title(char *string)
 
 void Plugin::paste(FileXML *file)
 {
-	length = file->tag.get_property("LENGTH", (long)0);
+	length = file->tag.get_property("LENGTH", (int64_t)0);
 }
 
 void Plugin::resample(double old_rate, double new_rate)
@@ -576,7 +576,7 @@ void Plugin::resample(double old_rate, double new_rate)
 	keyframes->resample(old_rate, new_rate);
 }
 
-void Plugin::shift(long difference)
+void Plugin::shift(int64_t difference)
 {
 	Edit::shift(difference);
 	shift_keyframes(difference);

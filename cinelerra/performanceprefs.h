@@ -11,6 +11,7 @@ class PrefsSMP;
 
 class PrefsRenderFarmEditNode;
 class PrefsRenderFarmNodes;
+class PrefsRenderFarmPort;
 
 class PerformancePrefs : public PreferencesDialog
 {
@@ -30,6 +31,7 @@ public:
 
 	ArrayList<BC_ListBoxItem*> nodes[4];
 	PrefsRenderFarmEditNode *edit_node;
+	PrefsRenderFarmPort *edit_port;
 	PrefsRenderFarmNodes *node_list;
 	FormatTools *brender_tools;
 	BC_Title *master_rate;
@@ -164,6 +166,18 @@ public:
 	
 	int handle_event();
 	
+	PreferencesWindow *pwindow;
+	PerformancePrefs *subwindow;
+};
+
+class PrefsRenderFarmVFS : public BC_CheckBox
+{
+public:
+	PrefsRenderFarmVFS(PreferencesWindow *pwindow,
+		PerformancePrefs *subwindow,
+		int x,
+		int y);
+	int handle_event();
 	PreferencesWindow *pwindow;
 	PerformancePrefs *subwindow;
 };

@@ -35,7 +35,7 @@ public:
 	~BezierAutos();
 
 	Auto* new_auto();
-	int paste_derived(FileXML *xml, long start);
+	int paste_derived(FileXML *xml, int64_t start);
 
 	int draw(BC_SubWindow *canvas, 
 				int pixel, 
@@ -86,13 +86,13 @@ public:
 	int scale_video(float scale, int *offsets);
 	int dump();
 
-	Auto* add_auto(long frame, float x, float y, float z);
+	Auto* add_auto(int64_t frame, float x, float y, float z);
 	Auto* append_auto();
 	int get_frame_half(float scale, int vertical, float units_per_pixel);
 // Get the pixel on the track display of the center of an auto
-	int get_auto_pixel(long position, float view_start, float units_per_pixel, int frame_half);
+	int get_auto_pixel(int64_t position, float view_start, float units_per_pixel, int frame_half);
 // Get the frame on the track of the cursor pixel
-	long get_auto_frame(int position, float view_start, float units_per_pixel, int vertical);
+	int64_t get_auto_frame(int position, float view_start, float units_per_pixel, int vertical);
 
 // need frame dimensions here so same auto can be camera or projector
 	float frame_w, frame_h;

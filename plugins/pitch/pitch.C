@@ -172,7 +172,7 @@ int PitchEffect::set_string()
 	return 0;
 }
 
-int PitchEffect::process_realtime(long size, double *input_ptr, double *output_ptr)
+int PitchEffect::process_realtime(int64_t size, double *input_ptr, double *output_ptr)
 {
 	load_configuration();
 	if(!fft) fft = new PitchFFT(this);
@@ -266,9 +266,9 @@ void PitchConfig::copy_from(PitchConfig &that)
 
 void PitchConfig::interpolate(PitchConfig &prev, 
 	PitchConfig &next, 
-	long prev_frame, 
-	long next_frame, 
-	long current_frame)
+	int64_t prev_frame, 
+	int64_t next_frame, 
+	int64_t current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);

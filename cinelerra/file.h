@@ -39,7 +39,7 @@ public:
 
 // ===================================== start here
 	int set_processors(int cpus);   // Set the number of cpus for certain codecs.
-	int set_preload(long size);     // Set the number of bytes to preload during reads.
+	int set_preload(int64_t size);     // Set the number of bytes to preload during reads.
 // When loading, the asset is deleted and a copy created in the EDL.
 	void set_asset(Asset *asset);
 
@@ -48,13 +48,13 @@ public:
 		Asset *asset, 
 		int rd, 
 		int wr,
-		long base_samplerate,
+		int64_t base_samplerate,
 		float base_framerate);
 
 // start a thread for writing to avoid blocking during record
-	int start_audio_thread(long buffer_size, int ring_buffers);
+	int start_audio_thread(int64_t buffer_size, int ring_buffers);
 	int stop_audio_thread();
-	int start_video_thread(long buffer_size, 
+	int start_video_thread(int64_t buffer_size, 
 		int color_model, 
 		int ring_buffers, 
 		int compressed);
@@ -63,7 +63,8 @@ public:
 	int unlock_read();
 
 // write any headers and close file
-	int close_file();
+// ignore_thread is used by SigHandler to break out of the threads.
+	int close_file(int ignore_thread = 0);
 
 // set channel for buffer accesses
 	int set_channel(int channel);
@@ -72,24 +73,24 @@ public:
 	int set_layer(int layer);
 
 // get length of file normalized to base samplerate
-	long get_audio_length(long base_samplerate = -1);
-	long get_video_length(float base_framerate = -1);
+	int64_t get_audio_length(int64_t base_samplerate = -1);
+	int64_t get_video_length(float base_framerate = -1);
 
 // get current position
-	long get_audio_position(long base_samplerate = -1);
-	long get_video_position(float base_framerate = -1);
+	int64_t get_audio_position(int64_t base_samplerate = -1);
+	int64_t get_video_position(float base_framerate = -1);
 	
 
 // set position in samples
-	int set_audio_position(long position, float base_samplerate);
+	int set_audio_position(int64_t position, float base_samplerate);
 // set position in frames
-	int set_video_position(long position, float base_framerate);
+	int set_video_position(int64_t position, float base_framerate);
 
 // write samples for the current channel
 // written to disk and file pointer updated after last channel is written
 // return 1 if failed
 // subsequent writes must be <= than first write's size because of buffers
-	int write_samples(double **buffer, long len);
+	int write_samples(double **buffer, int64_t len);
 
 // Only called by filethread
 	int write_frames(VFrame ***frames, int len);
@@ -101,15 +102,15 @@ public:
 
 // Schedule a buffer for writing on the thread.
 // thread calls write_samples
-	int write_audio_buffer(long len);
-	int write_video_buffer(long len);
+	int write_audio_buffer(int64_t len);
+	int write_video_buffer(int64_t len);
 
 // Read samples for one channel into a shared memory segment.
 // The offset is the offset in floats from the beginning of the buffer and the len
 // is the length in floats from the offset.
 // advances file pointer
 // return 1 if failed
-	int read_samples(double *buffer, long len, long base_samplerate);
+	int read_samples(double *buffer, int64_t len, int64_t base_samplerate);
 
 // Return a pointer to the frame in a video file for drawing or 0.
 // The following routine copies a frame once to a temporary buffer and either 
@@ -120,9 +121,9 @@ public:
 
 // The following involve no extra copies.
 // Direct copy routines for direct copy playback
-	int can_copy_from(Edit *edit, long position, int output_w, int output_h); // This file can copy frames directly from the asset
+	int can_copy_from(Edit *edit, int64_t position, int output_w, int output_h); // This file can copy frames directly from the asset
 	int get_render_strategy(ArrayList<int>* render_strategies);
-	long compressed_frame_size();
+	int64_t compressed_frame_size();
 	int read_compressed_frame(VFrame *buffer);
 	int write_compressed_frame(VFrame *buffer);
 
@@ -164,20 +165,20 @@ public:
 // A binary lock won't do.  We need a FIFO lock.
 	Sema write_lock;
 	int cpus;
-	long playback_preload;
+	int64_t playback_preload;
 
 // Position information is migrated here to allow samplerate conversion.
 // Current position in file's samplerate.
 // Can't normalize to base samplerate because this would 
 // require fractional positioning to know if the file's position changed.
-	long current_sample;
-	long current_frame;
+	int64_t current_sample;
+	int64_t current_frame;
 	int current_channel;
 	int current_layer;
 
 // Position information normalized
-	long normalized_sample;
-	long normalized_sample_rate;
+	int64_t normalized_sample;
+	int64_t normalized_sample_rate;
 
 private:
 	void reset_parameters();

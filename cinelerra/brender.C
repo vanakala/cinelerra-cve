@@ -184,7 +184,7 @@ void BRender::stop()
 
 
 
-int BRender::get_last_contiguous(long brender_start)
+int BRender::get_last_contiguous(int64_t brender_start)
 {
 	int result;
 	map_lock->lock();
@@ -196,7 +196,7 @@ int BRender::get_last_contiguous(long brender_start)
 	return result;
 }
 
-void BRender::allocate_map(long brender_start, long start, long end)
+void BRender::allocate_map(int64_t brender_start, int64_t start, int64_t end)
 {
 	map_lock->lock();
 	unsigned char *old_map = map;
@@ -220,7 +220,7 @@ void BRender::allocate_map(long brender_start, long start, long end)
 	map_lock->unlock();
 }
 
-void BRender::set_video_map(long position, int value)
+void BRender::set_video_map(int64_t position, int value)
 {
 	int update_gui = 0;
 	map_lock->lock();
@@ -404,9 +404,7 @@ void BRenderThread::run()
 	while(!is_done(1))
 	{
 		BRenderCommand *new_command = 0;
-//printf("BRenderThread::run 1\n");
 		thread_lock->lock();
-//printf("BRenderThread::run 2\n");
 
 // Got new command
 		if(command_queue)
@@ -452,7 +450,6 @@ void BRenderThread::run()
 		if(new_command->command == BRenderCommand::BRENDER_RESTART)
 		{
 // Compare EDL's and get last equivalent position in new EDL
-//printf("BRenderThread::run 1\n");
 			if(command && command->edl)
 				new_command->position = 
 					new_command->edl->equivalent_output(command->edl);
@@ -460,42 +457,25 @@ void BRenderThread::run()
 				new_command->position = 0;
 
 
-// printf("BRenderThread::run 3 %d %f %p\n", 
-// new_command->edl->tracks->total_video_tracks(),
-// new_command->position,
-// farm_server);
-// Don't start if there are no video tracks
-//			if(new_command->position >= 0)
-//			if(new_command->edl->tracks->total_video_tracks())
-			{
-				stop();
+			stop();
 //printf("BRenderThread::run 4\n");
-				brender->completion_lock->lock();
+			brender->completion_lock->lock();
 //printf("BRenderThread::run 5\n");
 
-				if(new_command->edl->tracks->total_playable_vtracks())
-				{
-					if(command) delete command;
-					command = new_command;
+			if(new_command->edl->tracks->total_playable_vtracks())
+			{
+				if(command) delete command;
+				command = new_command;
 //printf("BRenderThread::run 6\n");
-					start();
+				start();
 //printf("BRenderThread::run 7\n");
-				}
-				else
-				{
-//printf("BRenderThread::run 8 %p\n", farm_server);
-					delete new_command;
-					new_command = 0;
-				}
 			}
-// 			else
-// 			{
-// 				stop();
-// 				brender->completion_lock->lock();
-// 				delete new_command;
-// 				new_command = 0;
-// 			}
-//printf("BRenderThread::run 9\n");
+			else
+			{
+//printf("BRenderThread::run 8 %p\n", farm_server);
+				delete new_command;
+				new_command = 0;
+			}
 		}
 	}
 }
@@ -505,15 +485,10 @@ void BRenderThread::stop()
 	if(farm_server)
 	{
 		farm_result = 1;
-//printf("BRenderThread::stop 1\n");
 		farm_server->wait_clients();
-//printf("BRenderThread::stop 2\n");
 		delete farm_server;
-//printf("BRenderThread::stop 3\n");
 		delete packages;
-//printf("BRenderThread::stop 4\n");
 		delete preferences;
-//printf("BRenderThread::stop 5\n");
 		farm_server = 0;
 		packages = 0;
 		preferences = 0;
@@ -563,7 +538,7 @@ void BRenderThread::start()
 		if(last_good < 0) last_good = last_contiguous;
 		int start_frame = MIN(last_contiguous, last_good);
 		start_frame = MAX(start_frame, brender_start);
-		long end_frame = Units::round(command->edl->tracks->total_video_length() * 
+		int64_t end_frame = Units::round(command->edl->tracks->total_video_length() * 
 			command->edl->session->frame_rate);
 		if(end_frame < start_frame) end_frame = start_frame;
 printf("BRenderThread::start 1 map=%d equivalent=%d brender_start=%d result=%d end=%d\n", 

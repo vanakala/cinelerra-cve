@@ -27,7 +27,7 @@ int CrossfadeMain::uses_gui() { return 0; }
 NEW_PICON_MACRO(CrossfadeMain)
 
 
-int CrossfadeMain::process_realtime(long size, 
+int CrossfadeMain::process_realtime(int64_t size, 
 	double *outgoing, 
 	double *incoming)
 {

@@ -27,6 +27,8 @@
 #include "tracks.inc"
 #include "transition.inc"
 
+#include <stdint.h>
+
 // UNITS ARE SAMPLES FOR ALL
 
 class Track : public ListItem<Track>
@@ -37,17 +39,18 @@ public:
 	virtual ~Track();
 
 	int create_objects();
+	int get_id();
 	virtual int load_defaults(Defaults *defaults);
-	int load(FileXML *file, int track_offset, unsigned long load_flags);
+	int load(FileXML *file, int track_offset, uint32_t load_flags);
 	virtual int save_header(FileXML *file) { return 0; };
 	virtual int save_derived(FileXML *file) { return 0; };
-	virtual int load_header(FileXML *file, unsigned long load_flags) { return 0; };
-	virtual int load_derived(FileXML *file, unsigned long load_flags) { return 0; };
+	virtual int load_header(FileXML *file, uint32_t load_flags) { return 0; };
+	virtual int load_derived(FileXML *file, uint32_t load_flags) { return 0; };
 	void equivalent_output(Track *track, double *result);
 // Called by playable tracks to test for playable server.
 // Descends the plugin tree without creating a virtual console.
 	int is_synthesis(RenderEngine *renderengine, 
-		long position, 
+		int64_t position, 
 		int direction);
 	Track& operator=(Track& track);
 	virtual PluginSet* new_plugins() { return 0; };
@@ -56,7 +59,7 @@ public:
 
 // Get number of pixels to display
 	virtual int vertical_span(Theme *theme);
-	long horizontal_span();
+	int64_t horizontal_span();
 	void resample(double old_rate, double new_rate);
 
 // Get length of track in seconds
@@ -85,7 +88,7 @@ public:
 		int edit_plugins);
 // Optimize editing
 	void optimize();
-	int is_muted(long position, int direction);  // Test muting status
+	int is_muted(int64_t position, int direction);  // Test muting status
 
 	void move_plugins_up(PluginSet *plugin_set);
 	void move_plugins_down(PluginSet *plugin_set);
@@ -94,15 +97,15 @@ public:
 
 // Used for determining a selection for editing so leave as int.
 // converts the selection to SAMPLES OR FRAMES and stores in value
-	virtual long to_units(double position, int round);
+	virtual int64_t to_units(double position, int round);
 // For drawing
 	virtual double to_doubleunits(double position);
-	virtual double from_units(long position);
+	virtual double from_units(int64_t position);
 
 
 
 // Positions are identical for handle modifications
-    virtual int identical(long sample1, long sample2) { return 0; };
+    virtual int identical(int64_t sample1, int64_t sample2) { return 0; };
 // Get the plugin belonging to the set.
 	Plugin* get_current_plugin(double position, 
 		int plugin_set, 
@@ -111,10 +114,10 @@ public:
 	Plugin* get_current_transition(double position, 
 		int direction, 
 		int convert_units);
-	virtual int channel_is_playable(long position, int direction, int *do_channel);
+	virtual int channel_is_playable(int64_t position, int direction, int *do_channel);
 // Test direct copy conditions common to all the rendering routines
-	virtual int direct_copy_possible(long start, int direction);
-	int plugin_used(long position, long direction);
+	virtual int direct_copy_possible(int64_t start, int direction);
+	int plugin_used(int64_t position, int64_t direction);
 	virtual int copy_settings(Track *track);
 	void shift_keyframes(double position, double length, int convert_units);
 	void shift_effects(double position, double length, int convert_units);
@@ -147,8 +150,6 @@ public:
 	int record;
 // TRACK_AUDIO or TRACK_VIDEO
 	int data_type;     
-// Identification of the track
-	int id;
 
 
 
@@ -184,8 +185,8 @@ public:
 	int copy_assets(double start, 
 		double end, 
 		ArrayList<Asset*> *asset_list);
-	virtual int copy_derived(long start, long end, FileXML *file) { return 0; };
-	virtual int paste_derived(long start, long end, long total_length, FileXML *file, int &current_channel) { return 0; };
+	virtual int copy_derived(int64_t start, int64_t end, FileXML *file) { return 0; };
+	virtual int paste_derived(int64_t start, int64_t end, int64_t total_length, FileXML *file, int &current_channel) { return 0; };
 	int clear(double start, 
 		double end, 
 		int edit_edits,
@@ -217,7 +218,7 @@ public:
 	int paste_automation(double selectionstart, 
 		double total_length, 
 		double frame_rate,
-		long sample_rate,
+		int64_t sample_rate,
 		FileXML *file,
 		int default_only);
 	virtual int paste_automation_derived(double selectionstart, 
@@ -227,9 +228,9 @@ public:
 		int shift_autos, 
 		int &current_pan) { return 0; };
 	int paste_auto_silence(double start, double end);
-	virtual int paste_auto_silence_derived(long start, long end) { return 0; };
-	int scale_time(float rate_scale, int scale_edits, int scale_autos, long start, long end);
-	virtual int scale_time_derived(float rate_scale, int scale_edits, int scale_autos, long start, long end) { return 0; };
+	virtual int paste_auto_silence_derived(int64_t start, int64_t end) { return 0; };
+	int scale_time(float rate_scale, int scale_edits, int scale_autos, int64_t start, int64_t end);
+	virtual int scale_time_derived(float rate_scale, int scale_edits, int scale_autos, int64_t start, int64_t end) { return 0; };
 	int purge_asset(Asset *asset);
 	int asset_used(Asset *asset);
 	int clear_handle(double start, 
@@ -247,8 +248,8 @@ public:
 	int release_auto();
 	virtual int release_auto_derived() { return 0; };
 // Return whether automation would prevent direct frame copies.  Not fully implemented.
-	int automation_is_used(long start, long end);
-	virtual int automation_is_used_derived(long start, long end) { return 0; }
+	int automation_is_used(int64_t start, int64_t end);
+	virtual int automation_is_used_derived(int64_t start, int64_t end) { return 0; }
 
 	int popup_transition(int cursor_x, int cursor_y);
 
@@ -269,9 +270,9 @@ public:
 		double &new_start, 
 		double &new_end);
 	virtual int end_translation() { return 0; };
-	virtual int reset_translation(long start, long end) { return 0; };
-	int feather_edits(long start, long end, long units);
-	long get_feather(long selectionstart, long selectionend);
+	virtual int reset_translation(int64_t start, int64_t end) { return 0; };
+	int feather_edits(int64_t start, int64_t end, int64_t units);
+	int64_t get_feather(int64_t selectionstart, int64_t selectionend);
 	int shift_module_pointers(int deleted_track);
 
 
@@ -284,24 +285,31 @@ public:
 		double &view_units, 
 		double &zoom_units) { return 0; };   
 // Longest time from current_position in which nothing changes
-	long edit_change_duration(long input_position, 
-		long input_length, 
+	int64_t edit_change_duration(int64_t input_position, 
+		int64_t input_length, 
 		int reverse, 
 		int test_transitions);
-	long plugin_change_duration(long input_position,
-		long input_length,
+	int64_t plugin_change_duration(int64_t input_position,
+		int64_t input_length,
 		int reverse);
 // Utility for edit_change_duration.
 	int need_edit(Edit *current, int test_transitions);
 // If the edit under position is playable
-	int playable_edit(long position, int direction);
+	int playable_edit(int64_t position, int direction);
 
 // ===================================== for handles, titles, etc
 
-	long old_view_start;
+	int64_t old_view_start;
 	int pixel;   // pixel position from top of track view
 // Dimensions of this track if video
 	int track_w, track_h;
+
+
+
+
+private:
+// Identification of the track
+	int id;
 };
 
 #endif

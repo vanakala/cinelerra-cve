@@ -20,7 +20,7 @@ IntAutos::~IntAutos()
 {
 }
 
-int IntAutos::slope_adjustment(long ax, float slope)
+int IntAutos::slope_adjustment(int64_t ax, float slope)
 {
 	return 0;
 }
@@ -62,7 +62,7 @@ int IntAutos::draw_joining_line(BC_SubWindow *canvas, int vertical, int center_p
 }
 
 
-Auto* IntAutos::add_auto(long position, float value)
+Auto* IntAutos::add_auto(int64_t position, float value)
 {
 	IntAuto* current = (IntAuto*)autoof(position);
 	IntAuto* new_auto;

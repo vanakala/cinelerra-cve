@@ -19,7 +19,7 @@ MainUndo::~MainUndo()
 {
 }
 
-void MainUndo::update_undo_before(char *description, unsigned long load_flags)
+void MainUndo::update_undo_before(char *description, uint32_t load_flags)
 {
 	if(!undo_before_updated)
 	{
@@ -119,7 +119,7 @@ int MainUndo::redo()
 
 
 // Here the master EDL loads 
-int MainUndo::load_from_undo(FileXML *file, unsigned long load_flags)
+int MainUndo::load_from_undo(FileXML *file, uint32_t load_flags)
 {
 	mwindow->edl->load_xml(mwindow->plugindb, file, load_flags);
 	for(Asset *asset = mwindow->edl->assets->first;

@@ -2,71 +2,71 @@
 #include "funcprotos.h"
 #include "quicktime.h"
 
-static int quicktime_delete_vcodec_stub(quicktime_video_map_t *vtrack)
+static int delete_vcodec_stub(quicktime_video_map_t *vtrack)
 {
-	printf("quicktime_delete_vcodec_stub called\n");
+	printf("delete_vcodec_stub called\n");
 	return 0;
 }
 
-static int quicktime_delete_acodec_stub(quicktime_audio_map_t *atrack)
+static int delete_acodec_stub(quicktime_audio_map_t *atrack)
 {
-	printf("quicktime_delete_acodec_stub called\n");
+	printf("delete_acodec_stub called\n");
 	return 0;
 }
 
-static int quicktime_decode_video_stub(quicktime_t *file, 
+static int decode_video_stub(quicktime_t *file, 
 				unsigned char **row_pointers, 
 				int track)
 {
-	printf("quicktime_decode_video_stub called\n");
+	printf("decode_video_stub called\n");
 	return 1;
 }
 
-static int quicktime_encode_video_stub(quicktime_t *file, 
+static int encode_video_stub(quicktime_t *file, 
 				unsigned char **row_pointers, 
 				int track)
 {
-	printf("quicktime_encode_video_stub called\n");
+	printf("encode_video_stub called\n");
 	return 1;
 }
 
-static int quicktime_decode_audio_stub(quicktime_t *file, 
+static int decode_audio_stub(quicktime_t *file, 
 					int16_t *output_i, 
 					float *output_f, 
 					long samples, 
 					int track, 
 					int channel)
 {
-	printf("quicktime_decode_audio_stub called\n");
+	printf("decode_audio_stub called\n");
 	return 1;
 }
 
-static int quicktime_encode_audio_stub(quicktime_t *file, 
+static int encode_audio_stub(quicktime_t *file, 
 				int16_t **input_i, 
 				float **input_f, 
 				int track, 
 				long samples)
 {
-	printf("quicktime_encode_audio_stub called\n");
+	printf("encode_audio_stub called\n");
 	return 1;
 }
 
 
-static int quicktime_reads_colormodel_stub(quicktime_t *file, 
+static int reads_colormodel_stub(quicktime_t *file, 
 		int colormodel, 
 		int track)
 {
 	return (colormodel == BC_RGB888);
 }
 
-static int quicktime_writes_colormodel_stub(quicktime_t *file, 
+static int writes_colormodel_stub(quicktime_t *file, 
 		int colormodel, 
 		int track)
 {
 	return (colormodel == BC_RGB888);
 }
 
-static void quicktime_flush_codec_stub(quicktime_t *file, int track)
+static void flush_codec_stub(quicktime_t *file, int track)
 {
 }
 
@@ -98,105 +98,101 @@ int quicktime_codec_to_id(char *codec)
 		printf("quicktime_codec_to_id: unknown codec %c%c%c%c\n", codec[0], codec[1], codec[2], codec[3]);
 }
 
-int quicktime_codec_defaults(quicktime_codec_t *codec)
+
+static quicktime_codec_t* new_codec()
 {
-	codec->delete_vcodec = quicktime_delete_vcodec_stub;
-	codec->delete_acodec = quicktime_delete_acodec_stub;
-	codec->decode_video = quicktime_decode_video_stub;
-	codec->encode_video = quicktime_encode_video_stub;
-	codec->decode_audio = quicktime_decode_audio_stub;
-	codec->encode_audio = quicktime_encode_audio_stub;
-	codec->reads_colormodel = quicktime_reads_colormodel_stub;
-	codec->writes_colormodel = quicktime_writes_colormodel_stub;
-	codec->flush = quicktime_flush_codec_stub;
+	quicktime_codec_t *codec = calloc(1, sizeof(quicktime_codec_t));
+	codec->delete_vcodec = delete_vcodec_stub;
+	codec->delete_acodec = delete_acodec_stub;
+	codec->decode_video = decode_video_stub;
+	codec->encode_video = encode_video_stub;
+	codec->decode_audio = decode_audio_stub;
+	codec->encode_audio = encode_audio_stub;
+	codec->reads_colormodel = reads_colormodel_stub;
+	codec->writes_colormodel = writes_colormodel_stub;
+	codec->flush = flush_codec_stub;
+	return codec;
+}
+
+int new_vcodec(quicktime_video_map_t *vtrack)
+{
+	quicktime_codec_t *codec_base = vtrack->codec = new_codec();
+	char *compressor = vtrack->track->mdia.minf.stbl.stsd.table[0].format;
+	int result = quicktime_find_vcodec(vtrack);
+
+	if(result)
+	{
+		fprintf(stderr, 
+			"new_vcodec: couldn't find codec for ""%c%c%c%c""\n",
+			compressor[0],
+			compressor[1],
+			compressor[2],
+			compressor[3]);
+		free(codec_base);
+		vtrack->codec = 0;
+		return 1;
+	}
+
 	return 0;
 }
 
-static int get_vcodec_index(char *compressor)
+int new_acodec(quicktime_audio_map_t *atrack)
 {
-	int index;
-/* Initialize internal codecs on the first call */
-	if(quicktime_vcodec_size() == 0)
-		quicktime_register_internal_vcodec();
+	quicktime_codec_t *codec_base = atrack->codec = new_codec();
+	char *compressor = atrack->track->mdia.minf.stbl.stsd.table[0].format;
+	int result = quicktime_find_acodec(atrack);
 
-/* Try internal codec */
-	index = quicktime_find_vcodec(compressor);
-
-//printf("get_vcodec_index %d\n", index);
-/* Try external codec */
-	if(index < 0)
+	if(result)
 	{
-		index = quicktime_register_external_vcodec(compressor);
+		fprintf(stderr, 
+			"new_acodec: couldn't find codec for ""%c%c%c%c""\n",
+			compressor[0],
+			compressor[1],
+			compressor[2],
+			compressor[3]);
+		free(codec_base);
+		atrack->codec = 0;
+		return 1;
 	}
 
-	if(index < 0)
-		return -1;
-	return index;
+	return 0;
 }
-
-static int get_acodec_index(char *compressor)
-{
-	int index;
-/* Initialize internal codecs on the first call */
-	if(quicktime_acodec_size() == 0)
-		quicktime_register_internal_acodec();
-
-/* Try internal codec */
-	index = quicktime_find_acodec(compressor);
-
-/* Try external codec */
-	if(index < 0)
-	{
-		index = quicktime_register_external_acodec(compressor);
-	}
-
-	if(index < 0)
-		return -1;
-	return index;
-}
-
 
 int quicktime_init_vcodec(quicktime_video_map_t *vtrack)
 {
-	char *compressor = vtrack->track->mdia.minf.stbl.stsd.table[0].format;
-  	int index;
-	vtrack->codec = calloc(1, sizeof(quicktime_codec_t));
-	quicktime_codec_defaults((quicktime_codec_t*)vtrack->codec);
-
-//printf("quicktime_init_vcodec %s\n", compressor);
-	if((index = get_vcodec_index(compressor)) < 0) return -1;
-
-/* Initialize the codec */
-	return quicktime_init_vcodec_core(index, vtrack);
+	int result = new_vcodec(vtrack);
+	return result;
 }
 
 int quicktime_init_acodec(quicktime_audio_map_t *atrack)
 {
-	char *compressor = atrack->track->mdia.minf.stbl.stsd.table[0].format;
-	int index;
-
-	atrack->codec = calloc(1, sizeof(quicktime_codec_t));
-	quicktime_codec_defaults((quicktime_codec_t*)atrack->codec);
-
-	if((index = get_acodec_index(compressor)) < 0) return -1;
-
-/* Initialize the codec */
-	return quicktime_init_acodec_core(index, atrack);
+	int result = new_acodec(atrack);
+	return result;
 }
 
 
 int quicktime_delete_vcodec(quicktime_video_map_t *vtrack)
 {
-	((quicktime_codec_t*)vtrack->codec)->delete_vcodec(vtrack);
-	free(vtrack->codec);
+	if(vtrack->codec)
+	{
+		quicktime_codec_t *codec_base = vtrack->codec;
+		if(codec_base->priv)
+			codec_base->delete_vcodec(vtrack);
+		free(vtrack->codec);
+	}
 	vtrack->codec = 0;
 	return 0;
 }
 
 int quicktime_delete_acodec(quicktime_audio_map_t *atrack)
 {
-	((quicktime_codec_t*)atrack->codec)->delete_acodec(atrack);
-	free(atrack->codec);
+	if(atrack->codec)
+	{
+		quicktime_codec_t *codec_base = atrack->codec;
+		if(codec_base->priv)
+			codec_base->delete_acodec(atrack);
+		free(atrack->codec);
+	}
 	atrack->codec = 0;
 	return 0;
 }
@@ -205,9 +201,12 @@ int quicktime_supported_video(quicktime_t *file, int track)
 {
 	if(track < file->total_vtracks)
 	{
-		char *compressor = quicktime_video_compressor(file, track);
-		if((get_vcodec_index(compressor)) < 0) return 0;
-		return 1;
+		quicktime_video_map_t *video_map = &file->vtracks[track];
+
+		if(video_map->codec)
+			return 1;
+		else
+			return 0;
 	}
 	return 0;
 }
@@ -216,74 +215,79 @@ int quicktime_supported_audio(quicktime_t *file, int track)
 {
 	if(track < file->total_atracks)
 	{
-		char *compressor = quicktime_audio_compressor(file, track);
-		if((get_acodec_index(compressor)) < 0) return 0;
-		return 1;
+		quicktime_audio_map_t *audio_map = &file->atracks[track];
+		if(audio_map->codec)
+			return 1;
+		else
+			return 0;
 	}
 	return 0;
+	
 }
 
-int quicktime_decode_video(quicktime_t *file, unsigned char **row_pointers, int track)
-{
-	int result;
-	quicktime_trak_t *trak = file->vtracks[track].track;
-	int track_height = trak->tkhd.track_height;
-	int track_width = trak->tkhd.track_width;
 
-//printf("quicktime_decode_video 1\n");
-// Fake scaling parameters
-	file->do_scaling = 0;
-	file->color_model = BC_RGB888;
-	file->in_x = 0;
-	file->in_y = 0;
-	file->in_w = track_width;
-	file->in_h = track_height;
-	file->out_w = track_width;
-	file->out_h = track_height;
-
-//printf("quicktime_decode_video 1\n");
-	result = ((quicktime_codec_t*)file->vtracks[track].codec)->decode_video(file, row_pointers, track);
-	file->vtracks[track].current_position++;
-//printf("quicktime_decode_video 2\n");
-	return result;
-}
-
-long quicktime_decode_scaled(quicktime_t *file, 
-	int in_x,                    /* Location of input frame to take picture */
-	int in_y,
-	int in_w,
-	int in_h,
-	int out_w,                   /* Dimensions of output frame */
-	int out_h,
-	int color_model,             /* One of the color models defined above */
+long quicktime_decode_video(quicktime_t *file, 
 	unsigned char **row_pointers, 
 	int track)
 {
 	int result;
 
-	file->do_scaling = 1;
-	file->color_model = color_model;
-	file->in_x = in_x;
-	file->in_y = in_y;
-	file->in_w = in_w;
-	file->in_h = in_h;
-	file->out_w = out_w;
-	file->out_h = out_h;
+	if(track < 0 || track >= file->total_vtracks)
+	{
+		fprintf(stderr, "quicktime_decode_video: track %d out of range %d - %d\n",
+			track,
+			0,
+			file->total_vtracks);
+		return 1;
+	}
 
-	result = ((quicktime_codec_t*)file->vtracks[track].codec)->decode_video(file, row_pointers, track);
+/* Get dimensions from first video track */
+	if(!file->do_scaling)
+	{
+		quicktime_video_map_t *video_map = &file->vtracks[track];
+		quicktime_trak_t *trak = video_map->track;
+		int track_width = trak->tkhd.track_width;
+		int track_height = trak->tkhd.track_height;
+
+		file->in_x = 0;
+		file->in_y = 0;
+		file->in_w = track_width;
+		file->in_h = track_height;
+		file->out_w = track_width;
+		file->out_h = track_height;
+	}
+
+	result = ((quicktime_codec_t*)file->vtracks[track].codec)->decode_video(file, 
+		row_pointers, 
+		track);
 	file->vtracks[track].current_position++;
 	return result;
 }
 
+void quicktime_set_parameter(quicktime_t *file, char *key, void *value)
+{
+	int i;
+	for(i = 0; i < file->total_vtracks; i++)
+	{
+		quicktime_codec_t *codec = (quicktime_codec_t*)file->vtracks[i].codec;
+		if(codec)
+			if(codec->set_parameter) codec->set_parameter(file, i, key, value);
+	}
+
+	for(i = 0; i < file->total_atracks; i++)
+	{
+		quicktime_codec_t *codec = (quicktime_codec_t*)file->atracks[i].codec;
+		if(codec)
+			if(codec->set_parameter) codec->set_parameter(file, i, key, value);
+	}
+}
 
 int quicktime_encode_video(quicktime_t *file, 
 	unsigned char **row_pointers, 
 	int track)
 {
 	int result;
-//printf("quicktime_encode_video 1 %p\n", ((quicktime_codec_t*)file->vtracks[track].codec)->encode_video);
 	result = ((quicktime_codec_t*)file->vtracks[track].codec)->encode_video(file, row_pointers, track);
-//printf("quicktime_encode_video 2\n");
 	file->vtracks[track].current_position++;
 	return result;
 }
@@ -358,7 +362,7 @@ void quicktime_flush_vcodec(quicktime_t *file, int track)
 	((quicktime_codec_t*)file->vtracks[track].codec)->flush(file, track);
 }
 
-longest quicktime_samples_to_bytes(quicktime_trak_t *track, long samples)
+int64_t quicktime_samples_to_bytes(quicktime_trak_t *track, long samples)
 {
 	char *compressor = track->mdia.minf.stbl.stsd.table[0].format;
 	int channels = track->mdia.minf.stbl.stsd.table[0].channels;

@@ -74,14 +74,14 @@ public:
 	void copy_from(TitleConfig &that);
 	void interpolate(TitleConfig &prev, 
 		TitleConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame);
+		int64_t prev_frame, 
+		int64_t next_frame, 
+		int64_t current_frame);
 
 
 // Font information
 	char font[BCTEXTLEN];
-	long style;
+	int64_t style;
 	int size;
 	int color;
 	int color_stroke;
@@ -100,8 +100,8 @@ public:
 // Pixels down and right of dropshadow
 	int dropshadow;
 // Calculated during every frame for motion strategy
-	long prev_keyframe_position;
-	long next_keyframe_position;
+	int64_t prev_keyframe_position;
+	int64_t next_keyframe_position;
 // Stamp timecode
 	int timecode;
 

@@ -14,7 +14,7 @@ class BC_TextBox : public BC_SubWindow
 {
 public:
 	BC_TextBox(int x, int y, int w, int rows, char *text, int has_border = 1, int font = MEDIUMFONT);
-	BC_TextBox(int x, int y, int w, int rows, long text, int has_border = 1, int font = MEDIUMFONT);
+	BC_TextBox(int x, int y, int w, int rows, int64_t text, int has_border = 1, int font = MEDIUMFONT);
 	BC_TextBox(int x, int y, int w, int rows, int text, int has_border = 1, int font = MEDIUMFONT);
 	BC_TextBox(int x, int y, int w, int rows, float text, int has_border = 1, int font = MEDIUMFONT);
 	virtual ~BC_TextBox();
@@ -24,7 +24,7 @@ public:
 // Whenever the position of the text changes
 	virtual int motion_event() { return 0; };
 	int update(char *text);
-	int update(long value);
+	int update(int64_t value);
 	int update(float value);
 	void disable();
 	void enable();
@@ -35,7 +35,7 @@ public:
 	int cursor_motion_event();
 	int button_press_event();
 	int button_release_event();
-	int repeat_event(long repeat_id);
+	int repeat_event(int64_t repeat_id);
 	int keypress_event();
 	int activate();
 	int deactivate();
@@ -214,9 +214,16 @@ class BC_TumbleTextBox
 {
 public:
 	BC_TumbleTextBox(BC_WindowBase *parent_window, 
-		long default_value,
-		long min,
-		long max,
+		int64_t default_value,
+		int64_t min,
+		int64_t max,
+		int x, 
+		int y, 
+		int text_w);
+	BC_TumbleTextBox(BC_WindowBase *parent_window, 
+		int default_value,
+		int min,
+		int max,
 		int x, 
 		int y, 
 		int text_w);
@@ -230,29 +237,32 @@ public:
 	virtual ~BC_TumbleTextBox();
 
 	int create_objects();
+	void reset();
 	virtual int handle_event();
 	char* get_text();
 	int update(char *value);
-	int update(long value);
+	int update(int64_t value);
 	int update(float value);
 	int get_x();
 	int get_y();
 	int get_w();
 	int get_h();
 	void reposition_window(int x, int y);
-	void set_boundaries(long min, long max);
+	void set_boundaries(int64_t min, int64_t max);
 	void set_boundaries(float min, float max);
 	void set_precision(int precision);
+	void set_increment(float value);
 
 	friend class BC_TumbleTextBoxText;
 	friend class BC_TumbleTextBoxTumble;
 
 private:
 	int x, y, text_w;
-	long default_value, min, max;
+	int64_t default_value, min, max;
 	float default_value_f, min_f, max_f;
 	int use_float;
 	int precision;
+	float increment;
 	BC_TumbleTextBoxText *textbox;
 	BC_Tumbler *tumbler;
 	BC_WindowBase *parent_window;
@@ -262,9 +272,9 @@ class BC_TumbleTextBoxText : public BC_TextBox
 {
 public:
 	BC_TumbleTextBoxText(BC_TumbleTextBox *popup, 
-		long default_value,
-		long min,
-		long max,
+		int64_t default_value,
+		int64_t min,
+		int64_t max,
 		int x, 
 		int y);
 	BC_TumbleTextBoxText(BC_TumbleTextBox *popup, 

@@ -41,7 +41,7 @@ RAISE_WINDOW_MACRO(Despike)
 LOAD_CONFIGURATION_MACRO(Despike, DespikeConfig)
 
 
-int Despike::process_realtime(long size, double *input_ptr, double *output_ptr)
+int Despike::process_realtime(int64_t size, double *input_ptr, double *output_ptr)
 {
 	load_configuration();
 
@@ -49,7 +49,7 @@ int Despike::process_realtime(long size, double *input_ptr, double *output_ptr)
 	double change = db.fromdb(config.slope);
 
 //printf("Despike::process_realtime 1\n");
-	for(long i = 0; i < size; i++)
+	for(int64_t i = 0; i < size; i++)
 	{
 		if(fabs(input_ptr[i]) > threshold || 
 			fabs(input_ptr[i]) - fabs(last_sample) > change) 
@@ -177,9 +177,9 @@ void DespikeConfig::copy_from(DespikeConfig &that)
 
 void DespikeConfig::interpolate(DespikeConfig &prev, 
 		DespikeConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame)
+		int64_t prev_frame, 
+		int64_t next_frame, 
+		int64_t current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);

@@ -61,9 +61,9 @@ void PerspectiveConfig::copy_from(PerspectiveConfig &that)
 
 void PerspectiveConfig::interpolate(PerspectiveConfig &prev, 
 	PerspectiveConfig &next, 
-	long prev_frame, 
-	long next_frame, 
-	long current_frame)
+	int64_t prev_frame, 
+	int64_t next_frame, 
+	int64_t current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
@@ -184,12 +184,7 @@ int PerspectiveWindow::create_objects()
 	return 0;
 }
 
-int PerspectiveWindow::close_event()
-{
-// Set result to 1 to indicate a plugin side close
-	set_done(1);
-	return 1;
-}
+WINDOW_CLOSE_EVENT(PerspectiveWindow)
 
 int PerspectiveWindow::resize_event(int w, int h)
 {

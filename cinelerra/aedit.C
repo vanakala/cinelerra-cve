@@ -25,13 +25,13 @@ AEdit::~AEdit() { }
 
 int AEdit::load_properties_derived(FileXML *xml)
 {
-	channel = xml->tag.get_property("CHANNEL", (long)0);
+	channel = xml->tag.get_property("CHANNEL", (int32_t)0);
 	return 0;
 }
 
 // ========================================== editing
 
-int AEdit::copy_properties_derived(FileXML *xml, long length_in_selection)
+int AEdit::copy_properties_derived(FileXML *xml, int64_t length_in_selection)
 {
 	return 0;
 }
@@ -43,10 +43,10 @@ int AEdit::dump_derived()
 }
 
 
-long AEdit::get_source_end(long default_)
+int64_t AEdit::get_source_end(int64_t default_)
 {
 	if(!asset) return default_;   // Infinity
 
-	return (long)((double)asset->audio_length / asset->sample_rate * edl->session->sample_rate + 0.5);
+	return (int64_t)((double)asset->audio_length / asset->sample_rate * edl->session->sample_rate + 0.5);
 }
 

@@ -32,15 +32,5 @@ on http://lpnotfr.free.fr/cinelerra-libs
 	- libaudiofile (0.2.3)
 	- libraw1394 (0.9.0)
 	- libavc1394 (0.4.1)
-Since quicktime is not in sync with the latest API changes of ffmpeg, it is 
-included now
-	
-	
-	
-
-	
-	
-
-	
-	
-	
+	- libuuid
+	- nasm (for mmx optimization)

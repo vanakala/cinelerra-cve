@@ -238,9 +238,9 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 // Copy keyframes
 				FileXML temp;
 				AutoConf temp_autoconf;
-				long position_i = source_track->to_units(position, 0);
+				int64_t position_i = source_track->to_units(position, 0);
 // Source edit changes
-				long source_length = source_edit->length;
+				int64_t source_length = source_edit->length;
 
 				temp_autoconf.set_all();
 				source_track->automation->copy(source_edit->startproject, 
@@ -278,8 +278,8 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 //dest_track->dump();
 
 // Clear source
-				long clear_start = source_edit->startproject;
-				long clear_end = clear_start + source_length;
+				int64_t clear_start = source_edit->startproject;
+				int64_t clear_end = clear_start + source_length;
 
 //printf("Tracks::move_edits 7 %d %d\n", clear_start, clear_end);
 				source_track->edits->clear(clear_start, 
@@ -307,7 +307,7 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 void Tracks::move_effect(Plugin *plugin,
 	PluginSet *dest_plugin_set,
 	Track *dest_track, 
-	long dest_position)
+	int64_t dest_position)
 {
 	Track *source_track = plugin->track;
 	Plugin *result = 0;
@@ -627,7 +627,7 @@ void Tracks::paste_audio_transition(PluginServer *server)
 		if(current->data_type == TRACK_AUDIO &&
 			current->record)
 		{
-			long position = current->to_units(
+			int64_t position = current->to_units(
 				edl->local_session->get_selectionstart(), 0);
 			Edit *current_edit = current->edits->editof(position, PLAY_FORWARD);
 			if(current_edit)
@@ -647,7 +647,7 @@ void Tracks::paste_automation(double selectionstart,
 	int result = 0;
 	double length;
 	double frame_rate = edl->session->frame_rate;
-	long sample_rate = edl->session->sample_rate;
+	int64_t sample_rate = edl->session->sample_rate;
 	char string[BCTEXTLEN];
 	sprintf(string, "");
 
@@ -752,7 +752,7 @@ void Tracks::paste_video_transition(PluginServer *server, int first_track)
 		if(current->data_type == TRACK_VIDEO &&
 			current->record)
 		{
-			long position = current->to_units(
+			int64_t position = current->to_units(
 				edl->local_session->get_selectionstart(), 0);
 			Edit *current_edit = current->edits->editof(position, PLAY_FORWARD);
 			if(current_edit)
@@ -873,7 +873,7 @@ int Tracks::asset_used(Asset *asset)
 	return result;
 }
 
-int Tracks::scale_time(float rate_scale, int ignore_record, int scale_edits, int scale_autos, long start, long end)
+int Tracks::scale_time(float rate_scale, int ignore_record, int scale_edits, int scale_autos, int64_t start, int64_t end)
 {
 	Track *current_track;
 

@@ -33,7 +33,7 @@ void VPluginArray::get_recordable_tracks()
 	tracks = new RecordableVTracks(mwindow->edl->tracks);
 }
 
-long VPluginArray::get_bufsize()
+int64_t VPluginArray::get_bufsize()
 {
 	return 1;
 }
@@ -60,7 +60,7 @@ void VPluginArray::create_modules()
 	}
 }
 
-void VPluginArray::load_module(int module, long input_position, long len)
+void VPluginArray::load_module(int module, int64_t input_position, int64_t len)
 {
 //printf("VPluginArray::load_module 1 %d\n", module);
 	if(module == 0) realtime_buffers = file->get_video_buffer();
@@ -71,7 +71,7 @@ void VPluginArray::load_module(int module, long input_position, long len)
 //printf("VPluginArray::load_module 2\n");
 }
 
-void VPluginArray::process_realtime(int module, long input_position, long len)
+void VPluginArray::process_realtime(int module, int64_t input_position, int64_t len)
 {
 // Convert from array of frames to array of tracks
 	VFrame **temp_buffer;
@@ -87,7 +87,7 @@ void VPluginArray::process_realtime(int module, long input_position, long len)
 	delete [] temp_buffer;
 }
 
-int VPluginArray::process_loop(int module, long &write_length)
+int VPluginArray::process_loop(int module, int64_t &write_length)
 {
 	if(!realtime_buffers) realtime_buffers = file->get_video_buffer();
 
@@ -104,7 +104,7 @@ int VPluginArray::process_loop(int module, long &write_length)
 	return result;
 }
 
-int VPluginArray::write_buffers(long len)
+int VPluginArray::write_buffers(int64_t len)
 {
 	int result = file->write_video_buffer(len);
 	realtime_buffers = 0;

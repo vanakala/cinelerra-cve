@@ -69,9 +69,9 @@ void PluginAClientConfig::copy_from(PluginAClientConfig &that)
 
 void PluginAClientConfig::interpolate(PluginAClientConfig &prev, 
 	PluginAClientConfig &next, 
-	long prev_frame, 
-	long next_frame, 
-	long current_frame)
+	int64_t prev_frame, 
+	int64_t next_frame, 
+	int64_t current_frame)
 {
 	copy_from(prev);
 }
@@ -838,7 +838,7 @@ void PluginAClientLAD::init_plugin(int total_in, int total_out, int size)
 //printf("PluginAClientLAD::init_plugin 10\n");
 }
 
-int PluginAClientLAD::process_realtime(long size, 
+int PluginAClientLAD::process_realtime(int64_t size, 
 	double *input_ptr, 
 	double *output_ptr)
 {
@@ -869,7 +869,7 @@ int PluginAClientLAD::process_realtime(long size,
 	return size;
 }
 
-int PluginAClientLAD::process_realtime(long size, 
+int PluginAClientLAD::process_realtime(int64_t size, 
 	double **input_ptr, 
 	double **output_ptr)
 {

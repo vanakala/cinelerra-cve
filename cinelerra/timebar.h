@@ -31,7 +31,7 @@ class LabelGUI : public BC_Toggle
 public:
 	LabelGUI(MWindow *mwindow, 
 		TimeBar *timebar, 
-		long pixel, 
+		int64_t pixel, 
 		int y, 
 		double position,
 		VFrame **data = 0);
@@ -45,7 +45,7 @@ public:
 	MWindow *mwindow;
 	VWindowGUI *gui;
 	TimeBar *timebar;
-	long pixel;
+	int64_t pixel;
 	double position;
 };
 
@@ -54,7 +54,7 @@ class TestPointGUI : public LabelGUI
 public:
 	TestPointGUI(MWindow *mwindow, 
 		TimeBar *timebar, 
-		long pixel, 
+		int64_t pixel, 
 		double position);
 };
 
@@ -63,7 +63,7 @@ class InPointGUI : public LabelGUI
 public:
 	InPointGUI(MWindow *mwindow, 
 		TimeBar *timebar, 
-		long pixel, 
+		int64_t pixel, 
 		double position);
 	virtual ~InPointGUI();
 	static int get_y(MWindow *mwindow, TimeBar *timebar);
@@ -74,7 +74,7 @@ class OutPointGUI : public LabelGUI
 public:
 	OutPointGUI(MWindow *mwindow, 
 		TimeBar *timebar, 
-		long pixel, 
+		int64_t pixel, 
 		double position);
 	virtual ~OutPointGUI();
 	static int get_y(MWindow *mwindow, TimeBar *timebar);
@@ -85,7 +85,7 @@ class PresentationGUI : public LabelGUI
 public:
 	PresentationGUI(MWindow *mwindow, 
 		TimeBar *timebar, 
-		long pixel, 
+		int64_t pixel, 
 		double position);
 	~PresentationGUI();
 };
@@ -106,7 +106,7 @@ public:
 	int button_press_event();
 	int button_release_event();
 	int cursor_motion_event();
-	int repeat_event(long duration);
+	int repeat_event(int64_t duration);
 
 // Synchronize label, in/out, presentation display with master EDL
 	void update(int do_range = 1, int do_others = 1);
@@ -118,7 +118,7 @@ public:
 	virtual EDL* get_edl();
 	virtual int test_preview(int buttonpress);
 	virtual void update_preview();
-	virtual long position_to_pixel(double position);
+	virtual int64_t position_to_pixel(double position);
 	int move_preview(int &redraw);
 
 
@@ -143,12 +143,12 @@ public:
 
 // ========================================= editing
 
-	int copy(long start, long end, FileXML *xml);
-	int paste(long start, long end, long sample_length, FileXML *xml);
-	int paste_output(long startproject, long endproject, long startsource, long endsource, RecordLabels *new_labels);
-	int clear(long start, long end);
-	int paste_silence(long start, long end);
-	int modify_handles(long oldposition, long newposition, int currentend);
+	int copy(int64_t start, int64_t end, FileXML *xml);
+	int paste(int64_t start, int64_t end, int64_t sample_length, FileXML *xml);
+	int paste_output(int64_t startproject, int64_t endproject, int64_t startsource, int64_t endsource, RecordLabels *new_labels);
+	int clear(int64_t start, int64_t end);
+	int paste_silence(int64_t start, int64_t end);
+	int modify_handles(int64_t oldposition, int64_t newposition, int currentend);
 	int select_region(double position);
 	void get_edl_length();
 

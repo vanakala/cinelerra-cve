@@ -95,10 +95,10 @@ int NormalizeMain::start_loop()
 }
 
 
-int NormalizeMain::process_loop(double **buffer, long &write_length)
+int NormalizeMain::process_loop(double **buffer, int64_t &write_length)
 {
 	int result = 0;
-	long fragment_len;
+	int64_t fragment_len;
 
 //printf("NormalizeMain::process_loop 1\n");
 	if(writing)

@@ -77,7 +77,16 @@ int BC_Bitmap::initialize(BC_WindowBase *parent_window,
 	last_pixmap_used = 0;
 	last_pixmap = 0;
 	current_ringbuffer = 0;
-	ring_buffers = 1;
+// Set ring buffers based on total memory used.
+// The program icon must use multiple buffers but larger bitmaps may not fit
+// in memory.
+	int pixelsize = cmodel_calculate_pixelsize(color_model);
+	int buffer_size = w * h * pixelsize;
+
+	if(buffer_size < 0x40000)
+		ring_buffers = 4;
+	else
+		ring_buffers = 1;
 
 	allocate_data();
 	return 0;

@@ -1,4 +1,6 @@
 /* Concatenate elementary streams */
+/* Mpeg3cat is useful for extracting elementary streams from program streams. */
+
 
 #include "libmpeg3.h"
 #include "mpeg3protos.h"

@@ -242,8 +242,8 @@ public:
 	virtual int delete_nonrealtime_parameters();
 	virtual int start_plugin();         // run a non realtime plugin
 	virtual int get_parameters();     // get information from user before non realtime processing
-	virtual long get_in_buffers(long recommended_size);  // return desired size for input buffers
-	virtual long get_out_buffers(long recommended_size);     // return desired size for output buffers
+	virtual int64_t get_in_buffers(int64_t recommended_size);  // return desired size for input buffers
+	virtual int64_t get_out_buffers(int64_t recommended_size);     // return desired size for output buffers
 	virtual int start_loop();
 	virtual int process_loop();
 	virtual int stop_loop();
@@ -270,25 +270,29 @@ public:
 	int get_configure_change();                             // get propogated configuration change from a send_configure_change
 	virtual void plugin_process_realtime(double **input, 
 		double **output, 
-		long current_position, 
-		long fragment_size,
-		long total_len) {};
+		int64_t current_position, 
+		int64_t fragment_size,
+		int64_t total_len) {};
 	virtual void plugin_process_realtime(VFrame **input, 
 		VFrame **output, 
-		long current_position,
-		long total_len) {};
+		int64_t current_position,
+		int64_t total_len) {};
 // Called by plugin server to update GUI with rendered data.
 	virtual void plugin_render_gui(void *data) {};
 	virtual void plugin_render_gui(void *data, int size) {};
-	virtual int plugin_process_loop(VFrame **buffers, long &write_length) { return 1; };
-	virtual int plugin_process_loop(double **buffers, long &write_length) { return 1; };
+	virtual int plugin_process_loop(VFrame **buffers, int64_t &write_length) { return 1; };
+	virtual int plugin_process_loop(double **buffers, int64_t &write_length) { return 1; };
 	virtual int init_realtime_parameters();     // get parameters depending on video or audio
 	int get_gui_status();
 	char* get_gui_string();
 
+// Used by themes
+// Used by plugins which need to know where they are.
+	char* get_path();
+
 // Return keyframe objects.  If position -1 use edl selection
-	KeyFrame* get_prev_keyframe(long position);
-	KeyFrame* get_next_keyframe(long position);
+	KeyFrame* get_prev_keyframe(int64_t position);
+	KeyFrame* get_next_keyframe(int64_t position);
 
 // The meaning of these changes depending on the plugin type.
 
@@ -297,20 +301,20 @@ public:
 
 // For realtime plugins the source_len is 0 and is calculated in 
 // *AttachmentPoint.    This may not be used at all.
-	long get_source_len();
+	int64_t get_source_len();
 
 // For realtime plugins gets the start of the plugin
-	long get_source_start();
+	int64_t get_source_start();
 
 // Length of source.  For effects it's the plugin length.  For transitions
 // it's the transition length.
-	long get_total_len();
+	int64_t get_total_len();
 
 // For transitions the source_position is the playback position relative
 // to the start of the transition.
 
 // For plugins the source_position is relative to the start of the plugin.
-	long get_source_position();
+	int64_t get_source_position();
 
 // Get interpolation used by EDL
 	int get_interpolation_type();
@@ -319,7 +323,7 @@ public:
 	int automation_used();
 // Get the automation value for the position in the current fragment
 // The position is relative to the current fragment
-	float get_automation_value(long position);
+	float get_automation_value(int64_t position);
 
 
 
@@ -344,20 +348,18 @@ public:
 
 
 // Non realtime operations for signal processors.
-	int plugin_start_loop(long start, long end, long buffer_size, int total_buffers);
+	int plugin_start_loop(int64_t start, int64_t end, int64_t buffer_size, int total_buffers);
 	int plugin_stop_loop();
 	int plugin_process_loop();
-	MainProgressBar* start_progress(char *string, long length);
-	int get_project_samplerate();            // get samplerate of project data before processing
-	float get_project_framerate();         // get framerate of project data before processing
-	int get_gui_visible();     // Get the GUI status from the server before processing
-	int get_project_framesize(int &frame_w, int &frame_h); // get frame size of project data before processing
-	int get_use_float();
-	int get_use_alpha();
+	MainProgressBar* start_progress(char *string, int64_t length);
+// get samplerate of project data before processing
+	int get_project_samplerate();
+// get framerate of project data before processing
+	double get_project_framerate();
 	int get_project_smp();
 	int get_aspect_ratio(float &aspect_w, float &aspect_h);
-	int write_frames(long total_frames);  // returns 1 for failure / tells the server that all output channel buffers are ready to go
-	int write_samples(long total_samples);  // returns 1 for failure / tells the server that all output channel buffers are ready to go
+	int write_frames(int64_t total_frames);  // returns 1 for failure / tells the server that all output channel buffers are ready to go
+	int write_samples(int64_t total_samples);  // returns 1 for failure / tells the server that all output channel buffers are ready to go
 	int plugin_get_parameters();
 	char* get_defaultdir();     // Directory defaults should be stored in
 	void set_interactive();
@@ -395,13 +397,13 @@ public:
 	ArrayList<int> double_buffers_out;
 // When arming buffers need to know the offsets in all the buffers and which
 // double buffers for each channel before rendering.
-	ArrayList<long> offset_in_render;
-	ArrayList<long> offset_out_render;
-	ArrayList<long> double_buffer_in_render;
-	ArrayList<long> double_buffer_out_render;
+	ArrayList<int64_t> offset_in_render;
+	ArrayList<int64_t> offset_out_render;
+	ArrayList<int64_t> double_buffer_in_render;
+	ArrayList<int64_t> double_buffer_out_render;
 // total size of each buffer depends on if it's a master or node
-	ArrayList<long> realtime_in_size;
-	ArrayList<long> realtime_out_size;
+	ArrayList<int64_t> realtime_in_size;
+	ArrayList<int64_t> realtime_out_size;
 
 // ================================= Automation ===========================
 
@@ -416,7 +418,7 @@ public:
 
 	int show_initially;             // set to show a realtime plugin initially
 // range in project for processing
-	long start, end;                
+	int64_t start, end;                
 	int interactive;                // for the progress bar plugin
 	int success;
 	int total_out_buffers;          // total send buffers allocated by the server
@@ -425,9 +427,9 @@ public:
 
 // These give the largest fragment the plugin is expected to handle.
 // size of a send buffer to the server
-	long out_buffer_size;  
+	int64_t out_buffer_size;  
 // size of a recieve buffer from the server
-	long in_buffer_size;   
+	int64_t in_buffer_size;   
 // Local parameters of plugin
 	int sample_rate;
 	double frame_rate;
@@ -435,9 +437,9 @@ public:
 	int realtime_priority;
 
 // For transient plugins.
-	long source_len;
-	long source_position;
-	long total_len;
+	int64_t source_len;
+	int64_t source_position;
+	int64_t total_len;
 // Total number of processors available
 	int smp;  
 	PluginServer *server;

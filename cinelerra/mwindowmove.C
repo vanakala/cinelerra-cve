@@ -55,7 +55,7 @@ int MWindow::zoom_in_sample()
 	return 0;
 }
 
-int MWindow::zoom_sample(long zoom_sample)
+int MWindow::zoom_sample(int64_t zoom_sample)
 {
 	CLIP(zoom_sample, 1, 0x100000);
 	edl->local_session->zoom_sample = zoom_sample;
@@ -118,7 +118,7 @@ void MWindow::fit_selection()
 	zoom_sample(edl->local_session->zoom_sample);
 }
 
-void MWindow::zoom_amp(long zoom_amp)
+void MWindow::zoom_amp(int64_t zoom_amp)
 {
 	edl->local_session->zoom_y = zoom_amp;
 	gui->canvas->draw(0, 0);
@@ -127,9 +127,9 @@ void MWindow::zoom_amp(long zoom_amp)
 	gui->flush();
 }
 
-void MWindow::zoom_track(long zoom_track)
+void MWindow::zoom_track(int64_t zoom_track)
 {
-	edl->local_session->zoom_y = (long)((float)edl->local_session->zoom_y * 
+	edl->local_session->zoom_y = (int64_t)((float)edl->local_session->zoom_y * 
 		zoom_track / 
 		edl->local_session->zoom_track);
 	CLAMP(edl->local_session->zoom_y, MIN_AMP_ZOOM, MAX_AMP_ZOOM);
@@ -150,7 +150,7 @@ void MWindow::trackmovement(int track_start)
 	gui->flush();
 }
 
-void MWindow::move_up(long distance)
+void MWindow::move_up(int64_t distance)
 {
 	if(!gui->trackscroll) return;
 	if(distance == 0) distance = edl->local_session->zoom_track;
@@ -158,7 +158,7 @@ void MWindow::move_up(long distance)
 	trackmovement(edl->local_session->track_start);
 }
 
-void MWindow::move_down(long distance)
+void MWindow::move_down(int64_t distance)
 {
 	if(!gui->trackscroll) return;
 	if(distance == 0) distance = edl->local_session->zoom_track;
@@ -168,7 +168,7 @@ void MWindow::move_down(long distance)
 
 int MWindow::goto_end()
 {
-	long old_view_start = edl->local_session->view_start;
+	int64_t old_view_start = edl->local_session->view_start;
 
 	if(edl->tracks->total_length() > (double)gui->canvas->get_w() * 
 		edl->local_session->zoom_sample / 
@@ -211,7 +211,7 @@ int MWindow::goto_end()
 
 int MWindow::goto_start()
 {
-	long old_view_start = edl->local_session->view_start;
+	int64_t old_view_start = edl->local_session->view_start;
 
 	edl->local_session->view_start = 0;
 	if(gui->shift_down())
@@ -237,7 +237,7 @@ int MWindow::goto_start()
 	return 0;
 }
 
-int MWindow::samplemovement(long view_start)
+int MWindow::samplemovement(int64_t view_start)
 {
 //printf("MWindow::samplemovement 1\n");
 	edl->local_session->view_start = view_start;
@@ -260,22 +260,22 @@ int MWindow::samplemovement(long view_start)
 	return 0;
 }
 
-int MWindow::move_left(long distance)
+int MWindow::move_left(int64_t distance)
 {
 	if(!distance) 
 		distance = gui->canvas->get_w() / 
-			5;
+			10;
 	edl->local_session->view_start -= distance;
 	if(edl->local_session->view_start < 0) edl->local_session->view_start = 0;
 	samplemovement(edl->local_session->view_start);
 	return 0;
 }
 
-int MWindow::move_right(long distance)
+int MWindow::move_right(int64_t distance)
 {
 	if(!distance) 
 		distance = gui->canvas->get_w() / 
-			5;
+			10;
 	edl->local_session->view_start += distance;
 	samplemovement(edl->local_session->view_start);
 	return 0;
@@ -329,7 +329,7 @@ int MWindow::next_label()
 			edl->local_session->zoom_sample /
 			edl->session->sample_rate)
 		{
-			samplemovement((long)(edl->local_session->selectionend *
+			samplemovement((int64_t)(edl->local_session->selectionend *
 				edl->session->sample_rate /
 				edl->local_session->zoom_sample - 
 				gui->canvas->get_w() / 
@@ -396,7 +396,7 @@ int MWindow::prev_label()
 			edl->local_session->zoom_sample /
 			edl->session->sample_rate)
 		{
-			samplemovement((long)(edl->local_session->selectionstart *
+			samplemovement((int64_t)(edl->local_session->selectionstart *
 				edl->session->sample_rate /
 				edl->local_session->zoom_sample - 
 				gui->canvas->get_w() / 

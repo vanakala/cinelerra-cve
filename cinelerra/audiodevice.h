@@ -35,9 +35,9 @@ public:
 	virtual int open_duplex() { return 1; };
 	virtual int close_all() { return 1; };
 	virtual int interrupt_crash() { return 0; };
-	virtual long device_position() { return -1; };
-	virtual int write_buffer(char *buffer, long size) { return 1; };
-	virtual int read_buffer(char *buffer, long size) { return 1; };
+	virtual int64_t device_position() { return -1; };
+	virtual int write_buffer(char *buffer, int size) { return 1; };
+	virtual int read_buffer(char *buffer, int size) { return 1; };
 	virtual int flush_device() { return 1; };
 	virtual int interrupt_playback() { return 1; };
 	
@@ -72,11 +72,11 @@ public:
 // read from the record device
 // Conversion between double and int is done in AudioDevice
 	int read_buffer(double **input, 
-		long samples, 
+		int samples, 
 		int channels, 
 		int *over, 
 		double *max, 
-		long input_offset = 0);  
+		int input_offset = 0);  
 	int set_record_dither(int value);
 
 	int stop_recording();
@@ -86,11 +86,11 @@ public:
 // ================================== dc offset
 
 // get and set offset
-	int get_dc_offset(long *output, RecordGUIDCOffsetText **dc_offset_text);
+	int get_dc_offset(int *output, RecordGUIDCOffsetText **dc_offset_text);
 // set new offset
-	int set_dc_offset(long dc_offset, int channel);
+	int set_dc_offset(int dc_offset, int channel);
 // writes to whichever buffer is free or blocks until one becomes free
-	int write_buffer(double **output, long samples, int channels = -1); 
+	int write_buffer(double **output, int samples, int channels = -1); 
 
 // play back buffers
 	void run();           
@@ -112,25 +112,26 @@ public:
 // set software positioning on or off
 	int set_software_positioning(int status = 1);
 // total samples played
-	long current_position();
+	int64_t current_position();
 // If interrupted
 	int get_interrupted();
 	int get_device_buffer();
+// Used by video devices to share audio devices
+	AudioLowLevel* get_lowlevel_out();
+	AudioLowLevel* get_lowlevel_in();
 
 private:
 	int initialize();
 // Create a lowlevel driver out of the driver ID
 	int create_lowlevel(AudioLowLevel* &lowlevel, int driver);
-	int arm_buffer(int buffer, double **output, long samples, int channels);
-	AudioLowLevel* get_lowlevel_out();
+	int arm_buffer(int buffer, double **output, int samples, int channels);
 	int get_obits();
 	int get_ochannels();
 	int get_ibits();
 	int get_ichannels();
-	long get_orate();
-	long get_irate();
+	int get_orate();
+	int get_irate();
 	int get_orealtime();
-	AudioLowLevel* get_lowlevel_in();
 
 	DC_Offset *dc_offset_thread;
 // Override configured parameters depending on the driver
@@ -142,7 +143,7 @@ private:
 // Access mode
 	int r, w, d;
 // Samples per buffer
-	long osamples, isamples, dsamples;
+	int osamples, isamples, dsamples;
 // Video device to pass data to if the same device handles video
 	VideoDevice *vdevice;
 // OSS < 3.9   --> playback before recording
@@ -158,7 +159,7 @@ private:
 	int play_dither;        
 	int sharing;
 
-	long buffer_size[TOTAL_BUFFERS];
+	int buffer_size[TOTAL_BUFFERS];
 	int last_buffer[TOTAL_BUFFERS];    // not written to device
 // formatted buffers for output
 	char *buffer[TOTAL_BUFFERS], *input_buffer;
@@ -167,9 +168,9 @@ private:
 	int arm_buffer_num;
 
 // for position information
-	long total_samples, last_buffer_size, position_correction;
-	long device_buffer;
-	long last_position;  // prevent the counter from going backwards
+	int total_samples, last_buffer_size, position_correction;
+	int device_buffer;
+	int last_position;  // prevent the counter from going backwards
 	Timer playback_timer, record_timer;
 // Current operation
 	int is_playing_back, is_recording, global_timer_started, software_position_info;
@@ -184,7 +185,7 @@ private:
 
 private:
 	int thread_buffer_num, thread_result;
-	long total_samples_read;
+	int64_t total_samples_read;
 };
 
 

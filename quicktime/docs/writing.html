@@ -30,6 +30,7 @@ type, for sanity reasons.<P>
 
 Once these routines are called you can optionally call <P>
 
+
 <CODE>
 void quicktime_set_parameter(quicktime_t *file, char *key, void *value);<P>
 </CODE><P>
@@ -53,6 +54,18 @@ become available in the future.<P>
 
 If you don't call quicktime_set_parameter the codecs will use default
 parameters.<P>
+
+
+<H2>NOTE FOR AVI FILES</H2><P>
+
+After the above sequence and only after it, call
+<CODE>quicktime_set_avi</CODE> to make the library generate an AVI
+file.<P>
+
+
+
+
+
 
 <A NAME="Encodingvideo">
 <H1>Encoding video</H1>
@@ -95,6 +108,10 @@ return value is always 1 for failure and 0 for success.  The row
 pointers must point to rows stored in the colormodel.  Planar
 colormodels use only the first 3 row pointers, each pointing to one of
 the planes.<P>
+
+
+
+
 
 
 
@@ -188,20 +205,8 @@ the table.<P>
 <H1>Writing raw audio data</H1>
 
 This functionality is obsolete due to the idiosyncracies in compressed
-audio handling.  If you want to write an audio codec you should put it
-into the library.<P>
-
-Writing audio involves writing the raw audio data exactly the way the
-read operations are going to see it.<P>
-
-<CODE>
-int quicktime_write_audio(quicktime_t *file, char *audio_buffer, long samples, int track);
-</CODE>
-<P>
-
-The library automatically converts the sample count to the number of
-bytes of data in the buffer, based on channels and bits values you
-passed to quicktime_set_audio.<P>
+audio handling.  If you want to write uncompressed audio, use the
+<B>twos</B> codec.<P>
 
 When you're done, call quicktime_close to close the file.<P>
 

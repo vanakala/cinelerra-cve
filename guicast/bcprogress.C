@@ -10,13 +10,15 @@
 #include "bcpixmap.h"
 #include "bcresources.h"
 
-BC_ProgressBar::BC_ProgressBar(int x, int y, int w, long length)
+BC_ProgressBar::BC_ProgressBar(int x, int y, int w, long length, int do_text)
  : BC_SubWindow(x, y, w, 0, -1)
 {
 	this->length = length;
+	this->do_text = do_text;
 	position = 0;
 	pixel = 0;
 	for(int i = 0; i < 2; i++) images[i] = 0;
+	do_text = 1;
 }
 
 BC_ProgressBar::~BC_ProgressBar()
@@ -33,6 +35,11 @@ int BC_ProgressBar::initialize()
 	BC_SubWindow::initialize();
 	draw(1);
 	return 0;
+}
+
+void BC_ProgressBar::set_do_text(int value)
+{
+	this->do_text = value;
 }
 
 int BC_ProgressBar::set_images()
@@ -63,10 +70,14 @@ int BC_ProgressBar::draw(int force)
 		draw_3segmenth(0, 0, pixel, 0, get_w(), images[PROGRESS_HI]);
 		draw_3segmenth(pixel, 0, get_w() - pixel, 0, get_w(), images[PROGRESS_UP]);
 
-		set_font(MEDIUMFONT);
-		set_color(BLACK);     // draw decimal percentage
-		sprintf(string, "%d%%", (int)(100 * (float)position / length + 0.5 / w));
-		draw_center_text(w / 2, h / 2 + get_text_ascent(MEDIUMFONT) / 2, string);
+
+		if(do_text)
+		{
+			set_font(MEDIUMFONT);
+			set_color(BLACK);     // draw decimal percentage
+			sprintf(string, "%d%%", (int)(100 * (float)position / length + 0.5 / w));
+			draw_center_text(w / 2, h / 2 + get_text_ascent(MEDIUMFONT) / 2, string);
+		}
 		flash();
 	}
 	return 0;

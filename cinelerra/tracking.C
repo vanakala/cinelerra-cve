@@ -94,14 +94,14 @@ double Tracking::get_tracking_position()
 
 int Tracking::get_pixel(double position)
 {
-	return (long)((position - mwindow->edl->local_session->view_start) *
+	return (int64_t)((position - mwindow->edl->local_session->view_start) *
 		mwindow->edl->session->sample_rate / 
 		mwindow->edl->local_session->zoom_sample + 
 		0.5);
 }
 
 
-void Tracking::update_meters(long position)
+void Tracking::update_meters(int64_t position)
 {
 	double output_levels[MAXCHANNELS];
 //printf("Tracking::update_meters 1\n");
@@ -183,10 +183,10 @@ int Tracking::wait_for_startup()
 void Tracking::run()
 {
 	double position;
-	long last_peak = -1;
-	long last_peak_number = 0; // for zeroing peaks
-	long *peak_samples;
-	long current_peak = 0, starting_peak;
+	int64_t last_peak = -1;
+	int64_t last_peak_number = 0; // for zeroing peaks
+	int64_t *peak_samples;
+	int64_t current_peak = 0, starting_peak;
 	int total_peaks;
 	int i, j, pass;
 	int audio_on = 0;

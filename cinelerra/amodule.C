@@ -63,7 +63,7 @@ void AModule::create_objects()
 	if(commonrender)
 	{
 		level_history = new double[((ARender*)commonrender)->history_size()];
-		level_samples = new long[((ARender*)commonrender)->history_size()];
+		level_samples = new int64_t[((ARender*)commonrender)->history_size()];
 		current_level = 0;
 
 		for(int i = 0; i < ((ARender*)commonrender)->history_size(); i++)
@@ -80,9 +80,9 @@ int AModule::get_buffer_size()
 	return get_edl()->session->audio_module_fragment;
 }
 
-void AModule::reverse_buffer(double *buffer, long len)
+void AModule::reverse_buffer(double *buffer, int64_t len)
 {
-	register long start, end;
+	register int64_t start, end;
 	double temp;
 
 	for(start = 0, end = len - 1; end > start; start++, end--)
@@ -103,14 +103,14 @@ CICache* AModule::get_cache()
 }
 
 int AModule::render(double *buffer, 
-	long input_len, 
-	long input_position,
+	int64_t input_len, 
+	int64_t input_position,
 	int direction)
 {
 	AEdit *playable_edit;
-	long start_project = input_position;
-	long end_project = input_position + input_len;
-	long buffer_offset = 0;
+	int64_t start_project = input_position;
+	int64_t end_project = input_position + input_len;
+	int64_t buffer_offset = 0;
 	int result = 0;
 
 
@@ -151,7 +151,7 @@ int AModule::render(double *buffer,
 // Fill output one fragment at a time
 	while(start_project < end_project)
 	{
-		long fragment_len = input_len;
+		int64_t fragment_len = input_len;
 
 //printf("AModule::render 4 %d\n", fragment_len);
 		if(fragment_len + start_project > end_project)

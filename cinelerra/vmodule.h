@@ -41,10 +41,10 @@ public:
 	CICache* get_cache();
 	int import_frame(VFrame *output,
 		VEdit *current_edit,
-		long input_position,
+		int64_t input_position,
 		int direction);
 	int render(VFrame *output,
-		long input_position,
+		int64_t input_position,
 		int direction);
 
 // synchronization with tracks

@@ -149,7 +149,7 @@ public:
 	int activate();
 	virtual int keypress_event();
 	int translation_event();
-	int repeat_event(long repeat_id);
+	int repeat_event(int64_t repeat_id);
 	BC_DragWindow* get_drag_popup();
 
 // change the contents
@@ -295,7 +295,9 @@ private:
 		int top_level);
 
 	int get_items_width();
-	int get_items_height(ArrayList<BC_ListBoxItem*> *data, int columns, int top_level);
+	int get_items_height(ArrayList<BC_ListBoxItem*> *data, 
+		int columns, 
+		int *result = 0);
 	int get_icon_w(BC_ListBoxItem *item);
 	int get_icon_h(BC_ListBoxItem *item);
 	int get_item_x(BC_ListBoxItem *item);

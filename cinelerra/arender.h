@@ -19,31 +19,31 @@ public:
 	Module* new_module(Track *track);
 
 // set up and start thread
-	int arm_playback(long current_position,
-				long input_length, 
-				long module_render_fragment, 
-				long playback_buffer, 
-				long output_length);
+	int arm_playback(int64_t current_position,
+				int64_t input_length, 
+				int64_t module_render_fragment, 
+				int64_t playback_buffer, 
+				int64_t output_length);
 	int wait_for_startup();
-	long tounits(double position, int round);
-	double fromunits(long position);
+	int64_t tounits(double position, int round);
+	double fromunits(int64_t position);
 
 	void run();
 // Calculate number of samples
 	int history_size();
 // Get subscript of history entry corresponding to sample
-	int get_history_number(long *table, long position);
+	int get_history_number(int64_t *table, int64_t position);
 
 // output buffers for audio device
 	double *audio_out[MAXCHANNELS];
 // information for meters
 	int get_next_peak(int current_peak);
 // samples to use for one meter update
-	long meter_render_fragment;
+	int64_t meter_render_fragment;
 // Level history of output buffers
 	double *level_history[MAXCHANNELS];
 // sample position of each level
-	long *level_samples;
+	int64_t *level_samples;
 // total entries in level_history
 	int total_peaks;
 // Next level to store value in
@@ -67,29 +67,29 @@ public:
 // process a buffer
 // renders into buffer_out argument when no audio device
 // handles playback autos
-	int process_buffer(double **buffer_out, long input_len, long input_position, int last_buffer);
+	int process_buffer(double **buffer_out, int64_t input_len, int64_t input_position, int last_buffer);
 // renders to a device when there's a device
-	int process_buffer(long input_len, long input_position);
+	int process_buffer(int64_t input_len, int64_t input_position);
 
 	int wait_device_completion();
 
 // reverse the data in a buffer	
-	int reverse_buffer(double *buffer, long len);
+	int reverse_buffer(double *buffer, int64_t len);
 // advance the buffer count
 	int swap_current_buffer();
-	long get_render_length(long current_render_length);
+	int64_t get_render_length(int64_t current_render_length);
 
-//	long playback_buffer;            // maximum length to send to audio device
-//	long output_length;              // maximum length to send to audio device after speed
+//	int64_t playback_buffer;            // maximum length to send to audio device
+//	int64_t output_length;              // maximum length to send to audio device after speed
 
 
-	long source_length;  // Total number of frames to render for transitions
+	int64_t source_length;  // Total number of frames to render for transitions
 
 private:
 // initialize buffer_out
 	int init_meters();
 // Samples since start of playback
-	long session_position;
+	int64_t session_position;
 	Mutex startup_lock;
 };
 

@@ -2,6 +2,7 @@
 #define ASSETS_H
 
 #include <stdio.h>
+#include <stdint.h>
 
 #include "arraylist.h"
 #include "assets.inc"
@@ -20,8 +21,12 @@ public:
 	Assets(EDL *edl);
 	virtual ~Assets();
 
-	int load(ArrayList<PluginServer*> *plugindb, FileXML *xml, unsigned long load_flags);
-	int save(ArrayList<PluginServer*> *plugindb, FileXML *xml, char *output_path);
+	int load(ArrayList<PluginServer*> *plugindb, 
+		FileXML *xml, 
+		uint32_t load_flags);
+	int save(ArrayList<PluginServer*> *plugindb, 
+		FileXML *xml, 
+		char *output_path);
 	Assets& operator=(Assets &assets);
 
 // Enter a new asset into the table.
@@ -84,9 +89,11 @@ public:
 	int init_values();
 	int dump();
 
-	void copy_format(Asset *asset);
+	void copy_from(Asset *asset, int do_index);
+	void copy_location(Asset *asset);
+	void copy_format(Asset *asset, int do_index = 1);
 	void copy_index(Asset *asset);
-	long get_index_offset(int channel);
+	int64_t get_index_offset(int channel);
 
 
 // Load and save just compression parameters for a render dialog
@@ -146,7 +153,7 @@ public:
 	char acodec[BCTEXTLEN];
 
 
-	long audio_length;
+	int64_t audio_length;
 
 
 
@@ -168,7 +175,7 @@ public:
 	char vcodec[BCTEXTLEN];
 
 // Length in units of asset
-	long video_length;
+	int64_t video_length;
 
 
 
@@ -250,11 +257,11 @@ public:
 
 // index info
 	int index_status;     // 0 ready  1 not tested  2 being built  3 small source
-	long index_zoom;      // zoom factor of index data
-	long index_start;     // byte start of index data in the index file
-	longest index_bytes;     // Total bytes in source file for comparison before rebuilding the index
-	long index_end, old_index_end;    // values for index build
-	long* index_offsets;  // offsets of channels in index file in floats
+	int64_t index_zoom;      // zoom factor of index data
+	int64_t index_start;     // byte start of index data in the index file
+	int64_t index_bytes;     // Total bytes in source file for comparison before rebuilding the index
+	int64_t index_end, old_index_end;    // values for index build
+	int64_t* index_offsets;  // offsets of channels in index file in floats
 	float* index_buffer;  
 	int id;
 };

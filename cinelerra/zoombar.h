@@ -30,7 +30,7 @@ public:
 	void redraw_time_dependancies();
 	int update();          // redraw the current values
 	int update_clocks();
-	int update_playback(long new_position);       // update the playback position
+	int update_playback(int64_t new_position);       // update the playback position
 	int set_selection(int which_one);
 
 	MWindow *mwindow;
@@ -44,7 +44,7 @@ public:
 	FromTextBox *from_value;
 	ToTextBox *to_value;
 	char string[256], string2[256];
-	long old_position;
+	int64_t old_position;
 };
 
 class SampleZoomPanel : public ZoomPanel

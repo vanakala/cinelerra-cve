@@ -48,6 +48,7 @@ int RecordThread::create_objects()
 
 int RecordThread::start_recording(int monitor, int context)
 {
+//printf("RecordThread::start_recording 1\n");
 	engine_done = 0;
 	this->monitor = monitor;
 	this->context = context;
@@ -62,29 +63,33 @@ int RecordThread::start_recording(int monitor, int context)
 	Thread::start();
 	startup_lock.lock();
 	startup_lock.unlock();
+//printf("RecordThread::start_recording 10\n");
 	return 0;
 }
 
 int RecordThread::stop_recording(int resume_monitor)
 {
+// Stop RecordThread while waiting for batch
+	state_lock.lock();
 	engine_done = 1;
+
 	this->resume_monitor = resume_monitor;
 // In the monitor engine, stops the engine.
 // In the recording engine, causes the monitor engine not to be restarted.
 // Video thread stops the audio thread itself
+// printf("RecordThread::stop_recording 1\n");
 	if(record_video)
 	{
-//printf("RecordThread::stop_recording 1\n");
 		record_video->batch_done = 1;
-//printf("RecordThread::stop_recording 1\n");
+		state_lock.unlock();
 		record_video->stop_recording();
-//printf("RecordThread::stop_recording 2\n");
 	}
 	else
 	if(record_audio && context != CONTEXT_SINGLEFRAME) 
 	{
 //printf("RecordThread::stop_recording 3\n");
 		record_audio->batch_done = 1;
+		state_lock.unlock();
 //printf("RecordThread::stop_recording 4\n");
 		record_audio->stop_recording();
 //printf("RecordThread::stop_recording 5\n");
@@ -94,7 +99,7 @@ int RecordThread::stop_recording(int resume_monitor)
 //printf("RecordThread::stop_recording 6\n");
 	completion_lock.lock();
 	completion_lock.unlock();
-//printf("RecordThread::stop_recording 7\n");
+//printf("RecordThread::stop_recording 100\n");
 	return 0;
 }
 
@@ -105,6 +110,7 @@ int RecordThread::pause_recording()
 	pause_lock.lock();
 //printf("RecordThread::pause_recording 1\n");
 
+	state_lock.lock();
 	if(record->default_asset->video_data)
 	{
 		record_video->batch_done = 1;
@@ -113,6 +119,7 @@ int RecordThread::pause_recording()
 	{
 		record_audio->batch_done = 1;
 	}
+	state_lock.unlock();
 //printf("RecordThread::pause_recording 1\n");
 // Stop the recordings
 	if(record->default_asset->audio_data && context != CONTEXT_SINGLEFRAME)
@@ -151,12 +158,12 @@ int RecordThread::resume_recording()
 	return 0;
 }
 
-long RecordThread::sync_position()
+int64_t RecordThread::sync_position()
 {
 	if(record->default_asset->audio_data)
 		return record_audio->sync_position();
 	else
-		return (long)((float)record_timer->get_difference() / 
+		return (int64_t)((float)record_timer->get_difference() / 
 			1000 * 
 			record->default_asset->sample_rate + 0.5);
 }
@@ -225,9 +232,11 @@ void RecordThread::run()
 			do_cron();
 		}
 
-// Stopped while waiting
+		state_lock.lock();
+// Test for stopped while waiting
 		if(!engine_done)
 		{
+			
 			rewinding_loop = 0;
 //printf("RecordThread::run 6\n");
 
@@ -264,7 +273,7 @@ void RecordThread::run()
 				if(record->default_asset->audio_data && 
 					context != CONTEXT_SINGLEFRAME)
 				{
-					long buffer_size, fragment_size;
+					int64_t buffer_size, fragment_size;
 					record->get_audio_write_length(buffer_size, fragment_size);
 					record->file->start_audio_thread(buffer_size, RING_BUFFERS);
 				}
@@ -288,6 +297,7 @@ void RecordThread::run()
 			if(record->default_asset->video_data)
 				record_video->arm_recording();
 //printf("RecordThread::run 9\n");
+			state_lock.unlock();
 
 // Trigger loops
 
@@ -300,6 +310,7 @@ void RecordThread::run()
 
 			if(record->default_asset->audio_data && context != CONTEXT_SINGLEFRAME)
 				record_audio->join();
+//printf("RecordThread::run 10\n");
 			if(record->default_asset->video_data)
 				record_video->join();
 //printf("RecordThread::run 11\n");
@@ -348,6 +359,10 @@ void RecordThread::run()
 				if(drivesync) delete drivesync;
 			}
 //printf("RecordThread::run 12\n");
+		}
+		else
+		{
+			state_lock.unlock();
 		}
 
 // Wait for thread to stop before closing devices

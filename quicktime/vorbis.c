@@ -48,7 +48,7 @@ typedef struct
 	float **output;
 
 // Number of last sample relative to file
-	longest output_position;
+	int64_t output_position;
 // Number of last sample relative to output buffer
 	long output_end;
 // Number of samples in output buffer
@@ -56,7 +56,7 @@ typedef struct
 // Number of samples allocated in output buffer
 	long output_allocated;
 // Current reading position in file
-	longest chunk;
+	int64_t chunk;
 // Number of samples decoded in the current chunk
 	int chunk_samples;
 } quicktime_vorbis_codec_t;
@@ -112,7 +112,7 @@ static int delete_codec(quicktime_audio_map_t *atrack)
 
 #define SEGMENT_OFFSET 0x1a
 #define LACE_OFFSET 0x1b
-static int chunk_len(quicktime_t *file, longest offset, longest next_chunk)
+static int chunk_len(quicktime_t *file, int64_t offset, int64_t next_chunk)
 {
 	int result = 0;
 	unsigned char buffer[BUFFER_FRAGMENT];
@@ -164,8 +164,8 @@ static int chunk_len(quicktime_t *file, longest offset, longest next_chunk)
 // Calculates the chunk size based on ogg pages.
 #define READ_CHUNK(chunk) \
 { \
-	longest offset1 = quicktime_chunk_to_offset(file, trak, (chunk)); \
-	longest offset2 = quicktime_chunk_to_offset(file, trak, (chunk) + 1); \
+	int64_t offset1 = quicktime_chunk_to_offset(file, trak, (chunk)); \
+	int64_t offset2 = quicktime_chunk_to_offset(file, trak, (chunk) + 1); \
 	int size = 0; \
 	if(offset2 == offset1) \
 		result = 1; \
@@ -659,7 +659,7 @@ static int encode(quicktime_t *file,
 							long samples)
 {
 	int result = 0;
-	longest offset = quicktime_position(file);
+	int64_t offset = quicktime_position(file);
 	quicktime_audio_map_t *track_map = &(file->atracks[track]);
 	quicktime_trak_t *trak = track_map->track;
 	quicktime_vorbis_codec_t *codec = ((quicktime_codec_t*)track_map->codec)->priv;
@@ -683,6 +683,8 @@ static int encode(quicktime_t *file,
 
 
 		codec->encode_initialized = 1;
+		if(file->use_avi)
+			trak->mdia.minf.stbl.stsd.table[0].sample_size = 0;
   		vorbis_info_init(&codec->enc_vi);
 
 		if(codec->use_vbr)
@@ -804,7 +806,7 @@ static void flush(quicktime_t *file, int track)
 {
 	int result = 0;
 	int size = 0;
-	longest offset = quicktime_position(file);
+	int64_t offset = quicktime_position(file);
 	quicktime_audio_map_t *track_map = &(file->atracks[track]);
 	quicktime_vorbis_codec_t *codec = ((quicktime_codec_t*)track_map->codec)->priv;
 	long output_position = codec->enc_vd.granulepos;
@@ -829,30 +831,25 @@ static void flush(quicktime_t *file, int track)
 		track_map->current_chunk++;
 		codec->next_chunk_size = 0;
 	}
-/*
- * 	quicktime_update_tables(file,
- * 						track_map->track, 
- * 						offset, 
- * 						track_map->current_chunk, 
- * 						track_map->current_chunk, 
- * 						codec->enc_vd.granulepos - output_position, 
- * 						0);
- */
 }
 
 void quicktime_init_codec_vorbis(quicktime_audio_map_t *atrack)
 {
+	quicktime_codec_t *codec_base = (quicktime_codec_t*)atrack->codec;
 	quicktime_vorbis_codec_t *codec;
 
 /* Init public items */
-	((quicktime_codec_t*)atrack->codec)->priv = calloc(1, sizeof(quicktime_vorbis_codec_t));
-	((quicktime_codec_t*)atrack->codec)->delete_acodec = delete_codec;
-	((quicktime_codec_t*)atrack->codec)->decode_audio = decode;
-	((quicktime_codec_t*)atrack->codec)->encode_audio = encode;
-	((quicktime_codec_t*)atrack->codec)->set_parameter = set_parameter;
-	((quicktime_codec_t*)atrack->codec)->flush = flush;
+	codec_base->priv = calloc(1, sizeof(quicktime_vorbis_codec_t));
+	codec_base->delete_acodec = delete_codec;
+	codec_base->decode_audio = decode;
+	codec_base->encode_audio = encode;
+	codec_base->set_parameter = set_parameter;
+	codec_base->flush = flush;
+	codec_base->fourcc = QUICKTIME_VORBIS;
+	codec_base->title = "OGG Vorbis";
+	codec_base->desc = "OGG Vorbis for video. (Not standardized)";
 
-	codec = ((quicktime_codec_t*)atrack->codec)->priv;
+	codec = codec_base->priv;
 	codec->nominal_bitrate = 128000;
 	codec->max_bitrate = -1;
 	codec->min_bitrate = -1;

@@ -706,54 +706,55 @@ int BC_ListBox::get_items_width()
 
 int BC_ListBox::get_items_height(ArrayList<BC_ListBoxItem*> *data, 
 	int columns,
-	int top_level)
+	int *result)
 {
+	int temp = 0;
+	int top_level = 0;
 	int highest = 0;
-
-	for(int i = 0; i < columns; i++)
+	if(!result)
 	{
-		for(int j = 0; j < (data ? data[i].total : 0); j++)
+		result = &temp;
+		top_level = 1;
+	}
+
+
+
+
+
+	for(int j = 0; j < (data ? data[0].total : 0); j++)
+	{
+		int y1, x, y, w, h;
+		BC_ListBoxItem *item = data[0].values[j];
+
+		if(display_format == LISTBOX_ICONS)
 		{
-			int y1, x, y, w, h;
-			BC_ListBoxItem *item = data[i].values[j];
-			
-			if(display_format == LISTBOX_ICONS && i == 0)
-			{
-				y1 = item->icon_y;
-				if(icon_position == ICON_LEFT)
-				{
-					x += get_icon_w(item) + ICON_MARGIN * 2;
-					y1 += get_icon_h(item) - get_text_height(MEDIUMFONT); - ICON_MARGIN * 2;
-				}
-				else
-				{
-					y1 += get_icon_h(item) + ICON_MARGIN;
-				}
-				get_text_mask(item, x, y, w, h);
-				if(y1 + h > highest) highest = y1 + h;
-			}
-			else
-			{
-				y1 = item->text_y;
-				get_text_mask(item, x, y, w, h);
-				if(y1 + h > highest) highest = y1 + h;
+			get_icon_mask(item, x, y, w, h);
+			if(y + h > highest) highest = y + h;
+
+			get_text_mask(item, x, y, w, h);
+			if(y + h > highest) highest = y + h;
+		}
+		else
+		{
+			get_text_mask(item, x, y, w, h);
+			*result += h;
 
 
 // Descend into sublist
-				if(i == 0 && 
-					item->get_sublist() &&
-					item->get_columns() &&
-					item->get_expand())
-				{
-					h = get_items_height(item->get_sublist(), 
-						item->get_columns(), 
-						0);
-					if(y1 + h > highest) highest = y1 + h;
-				}
+			if(item->get_sublist() &&
+				item->get_expand())
+			{
+				get_items_height(item->get_sublist(), 
+					item->get_columns(), 
+					result);
 			}
 		}
 	}
-	if(display_format == LISTBOX_TEXT && top_level) highest += LISTBOX_MARGIN;
+	if(display_format == LISTBOX_TEXT && top_level) 
+	{
+		highest = LISTBOX_MARGIN + *result;
+	}
+
 
 	return highest;
 }
@@ -1388,8 +1389,8 @@ void BC_ListBox::fix_positions()
 {
 	if(yposition < 0) yposition = 0;
 	else
-	if(yposition > get_items_height(data, columns, 1) - view_h)
-		yposition = get_items_height(data, columns, 1) - view_h;
+	if(yposition > get_items_height(data, columns) - view_h)
+		yposition = get_items_height(data, columns) - view_h;
 
 	if(yposition < 0) yposition = 0;
 
@@ -1466,7 +1467,7 @@ int BC_ListBox::center_selection(int selection,
 
 void BC_ListBox::update_scrollbars()
 {
-	int h_needed = get_items_height(data, columns, 1);
+	int h_needed = get_items_height(data, columns);
 	int w_needed = get_items_width();
 
 	if(xscrollbar)
@@ -1850,7 +1851,7 @@ int BC_ListBox::cursor_item(ArrayList<BC_ListBoxItem*> *data,
 	return -1;
 }
 
-int BC_ListBox::repeat_event(long duration)
+int BC_ListBox::repeat_event(int64_t duration)
 {
 	if(duration == top_level->get_resources()->tooltip_delay &&
 		tooltip_text[0] != 0 &&
@@ -3106,8 +3107,10 @@ int BC_ListBox::keypress_event()
 
 int BC_ListBox::get_scrollbars()
 {
-	int h_needed = get_items_height(data, columns, 1);
+	int h_needed = get_items_height(data, columns);
 	int w_needed = get_items_width();
+
+
 
 	title_h = get_title_h();
 

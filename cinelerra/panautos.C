@@ -19,7 +19,7 @@ Auto* PanAutos::new_auto()
 
 void PanAutos::get_handle(int &handle_x,
 		int &handle_y,
-		long position, 
+		int64_t position, 
 		int direction,
 		PanAuto* &previous,
 		PanAuto* &next)
@@ -37,7 +37,7 @@ void PanAutos::get_handle(int &handle_x,
 	}
 
 // Interpolate
-	long total = labs(next->position - previous->position);
+	int64_t total = labs(next->position - previous->position);
 	double fraction;
 	if(direction == PLAY_FORWARD)
 	{

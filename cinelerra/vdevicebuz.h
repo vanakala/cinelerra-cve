@@ -12,9 +12,6 @@
 #include "vdevicebuz.inc"
 #include "vframe.inc"
 
-// ./quicktime
-#include "jpeg.h"
-#include "quicktime.h"
 
 #define INPUT_BUFFER_SIZE 0x40000
 

@@ -17,7 +17,7 @@ MaskAutos::~MaskAutos()
 }
 
 
-void MaskAutos::get_points(ArrayList<MaskPoint*> *points, int submask, long position, int direction)
+void MaskAutos::get_points(ArrayList<MaskPoint*> *points, int submask, int64_t position, int direction)
 {
 	MaskAuto *begin = 0, *end = 0;
 	position = (direction == PLAY_FORWARD) ? position : (position - 1);
@@ -69,9 +69,9 @@ void MaskAutos::get_points(ArrayList<MaskPoint*> *points, int submask, long posi
 void MaskAutos::avg_points(MaskPoint *output, 
 		MaskPoint *input1, 
 		MaskPoint *input2, 
-		long output_position,
-		long position1, 
-		long position2)
+		int64_t output_position,
+		int64_t position1, 
+		int64_t position2)
 {
 	if(position2 == position1)
 	{
@@ -114,7 +114,7 @@ int MaskAutos::dump()
 	return 0;
 }
 
-int MaskAutos::mask_exists(long position, int direction)
+int MaskAutos::mask_exists(int64_t position, int direction)
 {
 	Auto *current = 0;
 	position = (direction == PLAY_FORWARD) ? position : (position - 1);
@@ -132,7 +132,7 @@ int MaskAutos::mask_exists(long position, int direction)
 	return 0;
 }
 
-int MaskAutos::total_submasks(long position, int direction)
+int MaskAutos::total_submasks(int64_t position, int direction)
 {
 	position = (direction == PLAY_FORWARD) ? position : (position - 1);
 	for(MaskAuto* current = (MaskAuto*)last; 

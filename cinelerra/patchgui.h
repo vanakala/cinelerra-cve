@@ -43,6 +43,9 @@ public:
 	MWindow *mwindow;
 	PatchBay *patchbay;
 	Track *track;
+// Used by update routines so non-existent track doesn't need to be dereferenced
+// to know it doesn't match the current EDL.
+	int track_id;
 	int data_type;
 	int x, y;
 // Don't synchronize the fader if this is true.

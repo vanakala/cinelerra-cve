@@ -39,10 +39,10 @@ public:
 	void sort();
 
 	TYPE* values;
-	long total;
+	int total;
 
 private:
-	long available;
+	int available;
 	int array_delete;
 };
 

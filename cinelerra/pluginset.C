@@ -55,8 +55,8 @@ Plugin* PluginSet::get_first_plugin()
 	return 0;
 }
 
-long PluginSet::plugin_change_duration(long input_position, 
-	long input_length, 
+int64_t PluginSet::plugin_change_duration(int64_t input_position, 
+	int64_t input_length, 
 	int reverse)
 {
 	int result = input_length;
@@ -116,8 +116,8 @@ void PluginSet::synchronize_params(PluginSet *plugin_set)
 }
 
 Plugin* PluginSet::insert_plugin(char *title, 
-	long unit_position, 
-	long unit_length,
+	int64_t unit_position, 
+	int64_t unit_length,
 	int plugin_type,
 	SharedLocation *shared_location,
 	KeyFrame *default_keyframe,
@@ -161,7 +161,7 @@ int PluginSet::get_number()
 	return track->plugin_set.number_of(this);
 }
 
-void PluginSet::clear(long start, long end)
+void PluginSet::clear(int64_t start, int64_t end)
 {
 // Clear keyframes
 	for(Plugin *current = (Plugin*)first;
@@ -175,25 +175,25 @@ void PluginSet::clear(long start, long end)
 	Edits::clear(start, end);
 }
 
-void PluginSet::clear_recursive(long start, long end)
+void PluginSet::clear_recursive(int64_t start, int64_t end)
 {
 //printf("PluginSet::clear_recursive 1\n");
 	clear(start, end);
 }
 
-void PluginSet::shift_keyframes_recursive(long position, long length)
+void PluginSet::shift_keyframes_recursive(int64_t position, int64_t length)
 {
 // Plugin keyframes are shifted in shift_effects
 }
 
-void PluginSet::shift_effects_recursive(long position, long length)
+void PluginSet::shift_effects_recursive(int64_t position, int64_t length)
 {
 // Effects are shifted in length extension
 //	shift_effects(position, length);
 }
 
 
-void PluginSet::clear_keyframes(long start, long end)
+void PluginSet::clear_keyframes(int64_t start, int64_t end)
 {
 	for(Plugin *current = (Plugin*)first; current; current = (Plugin*)NEXT)
 	{
@@ -201,8 +201,8 @@ void PluginSet::clear_keyframes(long start, long end)
 	}
 }
 
-void PluginSet::copy_keyframes(long start, 
-	long end, 
+void PluginSet::copy_keyframes(int64_t start, 
+	int64_t end, 
 	FileXML *file, 
 	int default_only,
 	int autos_only)
@@ -223,8 +223,8 @@ void PluginSet::copy_keyframes(long start,
 	file->append_newline();
 }
 
-void PluginSet::paste_keyframes(long start, 
-	long length, 
+void PluginSet::paste_keyframes(int64_t start, 
+	int64_t length, 
 	FileXML *file, 
 	int default_only)
 {
@@ -242,7 +242,7 @@ void PluginSet::paste_keyframes(long start,
 			else
 			if(file->tag.title_is("KEYFRAME"))
 			{
-				long position = file->tag.get_property("POSITION", 0);
+				int64_t position = file->tag.get_property("POSITION", 0);
 				position += start;
 
 // Get plugin owning keyframe
@@ -276,7 +276,7 @@ void PluginSet::paste_keyframes(long start,
 	}
 }
 
-void PluginSet::shift_effects(long start, long length)
+void PluginSet::shift_effects(int64_t start, int64_t length)
 {
 	for(Plugin *current = (Plugin*)first;
 		current;
@@ -301,7 +301,7 @@ void PluginSet::shift_effects(long start, long length)
 	}
 }
 
-void PluginSet::copy(long start, long end, FileXML *file)
+void PluginSet::copy(int64_t start, int64_t end, FileXML *file)
 {
 	file->tag.set_title("PLUGINSET");	
 	file->tag.set_property("RECORD", record);
@@ -323,12 +323,12 @@ void PluginSet::save(FileXML *file)
 	copy(0, length(), file);
 }
 
-void PluginSet::load(FileXML *file, unsigned long load_flags)
+void PluginSet::load(FileXML *file, uint32_t load_flags)
 {
 	int result = 0;
 // Current plugin being amended
 	Plugin *plugin = (Plugin*)first;
-	long startproject = 0;
+	int64_t startproject = 0;
 
 	record = file->tag.get_property("RECORD", record);
 	do{
@@ -344,7 +344,7 @@ void PluginSet::load(FileXML *file, unsigned long load_flags)
 			else
 			if(file->tag.title_is("PLUGIN"))
 			{
-				long length = file->tag.get_property("LENGTH", (long)0);
+				int64_t length = file->tag.get_property("LENGTH", (int64_t)0);
 				int plugin_type = file->tag.get_property("TYPE", 1);
 				char title[BCTEXTLEN];
 				title[0] = 0;

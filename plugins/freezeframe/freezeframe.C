@@ -17,16 +17,19 @@ REGISTER_PLUGIN(FreezeFrameMain)
 FreezeFrameConfig::FreezeFrameConfig()
 {
 	enabled = 0;
+	line_double = 0;
 }
 
 void FreezeFrameConfig::copy_from(FreezeFrameConfig &that)
 {
 	enabled = that.enabled;
+	line_double = that.line_double;
 }
 
 int FreezeFrameConfig::equivalent(FreezeFrameConfig &that)
 {
-	return enabled == that.enabled;
+	return enabled == that.enabled &&
+		line_double == that.line_double;
 }
 
 void FreezeFrameConfig::interpolate(FreezeFrameConfig &prev, 
@@ -36,6 +39,7 @@ void FreezeFrameConfig::interpolate(FreezeFrameConfig &prev,
 	long current_frame)
 {
 	this->enabled = prev.enabled;
+	this->line_double = prev.line_double;
 }
 
 
@@ -51,9 +55,9 @@ FreezeFrameWindow::FreezeFrameWindow(FreezeFrameMain *client, int x, int y)
  : BC_Window(client->get_gui_string(),
  	x,
 	y,
+	200,
 	100,
-	100,
-	100,
+	200,
 	100,
 	0,
 	0,
@@ -70,18 +74,22 @@ int FreezeFrameWindow::create_objects()
 {
 	int x = 10, y = 10;
 	add_tool(enabled = new FreezeFrameToggle(client, 
+		&client->config.enabled,
 		x, 
-		y));
+		y,
+		"Enabled"));
+	y += 30;
+	add_tool(line_double = new FreezeFrameToggle(client, 
+		&client->config.line_double,
+		x, 
+		y,
+		"Line double"));
 	show_window();
 	flush();
 	return 0;
 }
 
-int FreezeFrameWindow::close_event()
-{
-	set_done(1);
-	return 1;
-}
+WINDOW_CLOSE_EVENT(FreezeFrameWindow)
 
 
 
@@ -92,17 +100,22 @@ PLUGIN_THREAD_OBJECT(FreezeFrameMain, FreezeFrameThread, FreezeFrameWindow)
 
 
 
-FreezeFrameToggle::FreezeFrameToggle(FreezeFrameMain *client, int x, int y)
- : BC_CheckBox(x, y, client->config.enabled, "Enabled")
+FreezeFrameToggle::FreezeFrameToggle(FreezeFrameMain *client, 
+	int *value, 
+	int x, 
+	int y,
+	char *text)
+ : BC_CheckBox(x, y, *value, text)
 {
 	this->client = client;
+	this->value = value;
 }
 FreezeFrameToggle::~FreezeFrameToggle()
 {
 }
 int FreezeFrameToggle::handle_event()
 {
-	client->config.enabled = get_value();
+	*value = get_value();
 	client->send_configure_change();
 	return 1;
 }
@@ -157,6 +170,7 @@ void FreezeFrameMain::update_gui()
 		load_configuration();
 		thread->window->lock_window();
 		thread->window->enabled->update(config.enabled);
+		thread->window->line_double->update(config.line_double);
 		thread->window->unlock_window();
 	}
 }
@@ -174,6 +188,11 @@ void FreezeFrameMain::save_data(KeyFrame *keyframe)
 		output.tag.set_title("ENABLED");
 		output.append_tag();
 	}
+	if(config.line_double)
+	{
+		output.tag.set_title("LINE_DOUBLE");
+		output.append_tag();
+	}
 	output.terminate_string();
 // data is now in *text
 }
@@ -186,6 +205,7 @@ void FreezeFrameMain::read_data(KeyFrame *keyframe)
 
 	int result = 0;
 	config.enabled = 0;
+	config.line_double = 0;
 
 	while(!result)
 	{
@@ -196,6 +216,10 @@ void FreezeFrameMain::read_data(KeyFrame *keyframe)
 			if(input.tag.title_is("ENABLED"))
 			{
 				config.enabled = 1;
+			}
+			if(input.tag.title_is("LINE_DOUBLE"))
+			{
+				config.line_double = 1;
 			}
 		}
 	}
@@ -212,12 +236,14 @@ int FreezeFrameMain::load_defaults()
 	defaults->load();
 
 	config.enabled = defaults->get("ENABLED", config.enabled);
+	config.line_double = defaults->get("LINE_DOUBLE", config.line_double);
 	return 0;
 }
 
 int FreezeFrameMain::save_defaults()
 {
 	defaults->update("ENABLED", config.enabled);
+	defaults->update("LINE_DOUBLE", config.line_double);
 	defaults->save();
 	return 0;
 }
@@ -262,6 +288,20 @@ int FreezeFrameMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	{
 		output_ptr->copy_from(first_frame);
 	}
+
+
+	if(config.line_double && config.enabled)
+	{
+		for(int i = 0; i < output_ptr->get_h() - 1; i += 2)
+		{
+			memcpy(output_ptr->get_rows()[i + 1], 
+				output_ptr->get_rows()[i], 
+				output_ptr->get_bytes_per_line());
+		}
+	}
+
+
+
 	return 0;
 }
 

@@ -78,9 +78,9 @@ char* Reverb::plugin_title() { return "Heroine College Concert Hall"; }
 int Reverb::is_realtime() { return 1; }
 int Reverb::is_multichannel() { return 1; }
 
-int Reverb::process_realtime(long size, double **input_ptr, double **output_ptr)
+int Reverb::process_realtime(int64_t size, double **input_ptr, double **output_ptr)
 {
-	long new_dsp_length, i, j;
+	int64_t new_dsp_length, i, j;
 	main_in = input_ptr;
 	main_out = output_ptr;
 //printf("Reverb::process_realtime 1\n");
@@ -93,20 +93,20 @@ int Reverb::process_realtime(long size, double **input_ptr, double **output_ptr)
 	if(!initialized)
 	{
 		dsp_in = new double*[total_in_buffers];
-		ref_channels = new long*[total_in_buffers];
-		ref_offsets = new long*[total_in_buffers];
+		ref_channels = new int64_t*[total_in_buffers];
+		ref_offsets = new int64_t*[total_in_buffers];
 		ref_levels = new double*[total_in_buffers];
-		ref_lowpass = new long*[total_in_buffers];
+		ref_lowpass = new int64_t*[total_in_buffers];
 		lowpass_in1 = new double*[total_in_buffers];
 		lowpass_in2 = new double*[total_in_buffers];
 
 		for(i = 0; i < total_in_buffers; i++)
 		{
 			dsp_in[i] = new double[1];
-			ref_channels[i] = new long[1];
-			ref_offsets[i] = new long[1];
+			ref_channels[i] = new int64_t[1];
+			ref_offsets[i] = new int64_t[1];
 			ref_levels[i] = new double[1];
-			ref_lowpass[i] = new long[1];
+			ref_lowpass[i] = new int64_t[1];
 			lowpass_in1[i] = new double[1];
 			lowpass_in2[i] = new double[1];
 		}
@@ -157,9 +157,9 @@ int Reverb::process_realtime(long size, double **input_ptr, double **output_ptr)
 			delete [] lowpass_in1[i];
 			delete [] lowpass_in2[i];
 			
-			ref_channels[i] = new long[config.ref_total + 1];
-			ref_offsets[i] = new long[config.ref_total + 1];
-			ref_lowpass[i] = new long[config.ref_total + 1];
+			ref_channels[i] = new int64_t[config.ref_total + 1];
+			ref_offsets[i] = new int64_t[config.ref_total + 1];
+			ref_lowpass[i] = new int64_t[config.ref_total + 1];
 			ref_levels[i] = new double[config.ref_total + 1];
 			lowpass_in1[i] = new double[config.ref_total + 1];
 			lowpass_in2[i] = new double[config.ref_total + 1];
@@ -181,7 +181,7 @@ int Reverb::process_realtime(long size, double **input_ptr, double **output_ptr)
 			lowpass_in1[i][1] = 0;
 			lowpass_in2[i][1] = 0;
 
-			long ref_division = config.ref_length * project_sample_rate / 1000 / (config.ref_total + 1);
+			int64_t ref_division = config.ref_length * project_sample_rate / 1000 / (config.ref_total + 1);
 			for(j = 2; j < config.ref_total + 1; j++)
 			{
 // set random channels for remaining reflections
@@ -196,7 +196,7 @@ int Reverb::process_realtime(long size, double **input_ptr, double **output_ptr)
 				//ref_levels[i][j] /= 100;
 
 // set changing lowpass as linear
-				ref_lowpass[i][j] = (long)(config.lowpass1 + (double)(config.lowpass2 - config.lowpass1) / (config.ref_total - 1) * (j - 2));
+				ref_lowpass[i][j] = (int64_t)(config.lowpass1 + (double)(config.lowpass2 - config.lowpass1) / (config.ref_total - 1) * (j - 2));
 				lowpass_in1[i][j] = 0;
 				lowpass_in2[i][j] = 0;
 			}
@@ -227,7 +227,7 @@ int Reverb::process_realtime(long size, double **input_ptr, double **output_ptr)
 
 		for(j = 0; j < size; j++) current_out[j] = current_in[j];
 
-		long k;
+		int64_t k;
 		for(k = 0; j < dsp_in_length; j++, k++) current_in[k] = current_in[j];
 		
 		for(; k < dsp_in_length; k++) current_in[k] = 0;
@@ -449,7 +449,7 @@ ReverbEngine::~ReverbEngine()
 	join();
 }
 
-int ReverbEngine::process_overlays(int output_buffer, long size)
+int ReverbEngine::process_overlays(int output_buffer, int64_t size)
 {
 	this->output_buffer = output_buffer;
 	this->size = size;
@@ -461,7 +461,7 @@ int ReverbEngine::wait_process_overlays()
 	output_lock.lock();
 }
 	
-int ReverbEngine::process_overlay(double *in, double *out, double &out1, double &out2, double level, long lowpass, long samplerate, long size)
+int ReverbEngine::process_overlay(double *in, double *out, double &out1, double &out2, double level, int64_t lowpass, int64_t samplerate, int64_t size)
 {
 // Modern niquist frequency is 44khz but pot limit is 20khz so can't use
 // niquist
@@ -553,9 +553,9 @@ void ReverbConfig::copy_from(ReverbConfig &that)
 
 void ReverbConfig::interpolate(ReverbConfig &prev, 
 	ReverbConfig &next, 
-	long prev_frame, 
-	long next_frame, 
-	long current_frame)
+	int64_t prev_frame, 
+	int64_t next_frame, 
+	int64_t current_frame)
 {
 	level_init = prev.level_init;
 	delay_init = prev.delay_init;

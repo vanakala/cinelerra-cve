@@ -5,8 +5,6 @@
 extern "C" {
 #endif
 
-#include <stdio.h>
-#include <stdlib.h>
 
 #include "qtprivate.h"
 
@@ -19,13 +17,23 @@ extern "C" {
 
 /* ===== compression formats for which codecs exist ====== */
 
+/* Straight MPEG-4 */
 #define QUICKTIME_DIVX "DIVX"
+
+/* Basterdization of MPEG-4 which encodes alternating fields in series */
+/* NOT STANDARD */
 #define QUICKTIME_HV60 "HV60"
 
+/* McRoesoft MPEG-4 */
 #define QUICKTIME_DIV3 "DIV3"
-#define QUICKTIME_DIV4 "DIV4"
+#define QUICKTIME_DIV3_LOWER "div3"
 
+/* Mormon MPEG-4 */
+#define QUICKTIME_SVQ1 "SVQ1"
+
+/* Dee Vee */
 #define QUICKTIME_DV "dvc "
+#define QUICKTIME_DVSD "dvsd"
 
 /* RGB uncompressed.  Allows alpha */
 #define QUICKTIME_RAW  "raw "
@@ -42,37 +50,43 @@ extern "C" {
 /* YUV 4:2:2 */
 #define QUICKTIME_YUV2 "yuv2"
 
-/* YUV 4:2:0  NOT COMPATIBLE WITH STANDARD QUICKTIME */
+/* Crazy YUV 4:2:0 configuration for early tests.  NOT STANDARD. */
 #define QUICKTIME_YUV4 "yuv4"
 
-
-/* ======== compression for which no codec exists ========== */
-/* These are traditionally converted in hardware or not at all */
-
+/* The following don't seem to work in Win but are documented. Only use
+   for intermediate storage since the documentation may be wrong. */
 /* 8 bit Planar YUV 4:2:0 */
 #define QUICKTIME_YUV420  "yv12"
+
 /* 8 bit Planar YUV 4:1:1 */
 #define QUICKTIME_YUV411  "y411"
+
 /* 8 bit Packed YUV 4:2:2 */
 #define QUICKTIME_YUV422 "yuv2"
+
 /* 8 bit Planar YUV 4:4:4 */
 #define QUICKTIME_YUV444  "v308"
+
 /* 8 bit Planar YUVA 4:4:4:4 */
 #define QUICKTIME_YUVA4444 "v408"
+
 /* 10 bit Planar YUV 4:4:4 */
 #define QUICKTIME_YUV444_10bit  "v410"
 
+/* ======== compression for which no codec exists ========== */
+/* These are traditionally converted in hardware or not at all */
 /* ======== Studies in different algorithms =============== */
 
-/* YUV9.  What on earth for? */
+/* YUV9.  Too horrible to look at. */
 #define QUICKTIME_YUV9 "YVU9"
 
 /* RTjpeg, proprietary but fast? */
+/* This is theoretically what nipple video uses.  May get integrated later. */
 #define QUICKTIME_RTJ0 "RTJ0"
 
 /* =================== Audio formats ======================= */
 
-/* Unsigned 8 bit */
+/* Unsigned 8 bit but it uses the same fourcc as RGB uncompressed */
 #ifndef QUICKTIME_RAW
 #define QUICKTIME_RAW "raw "
 #endif
@@ -86,18 +100,25 @@ extern "C" {
 /* ulaw */
 #define QUICKTIME_ULAW "ulaw"
 
+/* OGG Vorbis.  NOT STANDARD */
 #define QUICKTIME_VORBIS "OggS"
 
+/* MP3 Doesn't play in Win for some reason */
 #define QUICKTIME_MP3 ".mp3"
+
+/* Mike Row Soft */
+/* AVI decode only */
 #define QUICKTIME_WMA "WMA "
+
+/* Some crazy derivative on ima4.  NOT STANDARD */
 #define QUICKTIME_WMX2 "wmx2"
 
-/* =========================== public interface ========================= // */
+/* =========================== public interface ========================= */
 
 /* Get version information */
-int quicktime_major();
-int quicktime_minor();
-int quicktime_release();
+int quicktime_major(void);
+int quicktime_minor(void);
+int quicktime_release(void);
 
 /* return 1 if the file is a quicktime file */
 int quicktime_check_sig(char *path);
@@ -105,12 +126,17 @@ int quicktime_check_sig(char *path);
 /* call this first to open the file and create all the objects */
 quicktime_t* quicktime_open(char *filename, int rd, int wr);
 
-/* After quicktime_open and setting up the audio and video call this */
+/* After quicktime_open and quicktime_set for the audio and video call this */
 /* to generate a Microsoft AVI file. */
-/* The all mighty requires the codec information in the beginning of the file */
-/* while the index can either be in the beginning or the end.  This */
-/* erases whatever is in the beginning of the file and writes an AVI header. */
+/* The allmighty requires the codec information in the beginning of the file */
+/* while the index can either be in the beginning or the end.  Thus */
+/* You need to set the audio and video first. */
 void quicktime_set_avi(quicktime_t *file, int value);
+int quicktime_is_avi(quicktime_t *file);
+
+/* Another Microsoft file format */
+void quicktime_set_asf(quicktime_t *file, int value);
+
 
 /* make the quicktime file streamable */
 int quicktime_make_streamable(char *in_path, char *out_path);
@@ -162,16 +188,11 @@ void quicktime_set_depth(quicktime_t *file,
 	int depth, 
 	int track);
 
-/* Set the colormodel for encoder input */
-void quicktime_set_cmodel(quicktime_t *file, int colormodel);
-/* Set row span for decoder output */
-void quicktime_set_row_span(quicktime_t *file, int row_span);
 
 /* close the file and delete all the objects */
 int quicktime_close(quicktime_t *file);
 
 /* get length information */
-/* channel numbers start on 1 for audio and video */
 long quicktime_audio_length(quicktime_t *file, int track);
 long quicktime_video_length(quicktime_t *file, int track);
 
@@ -184,16 +205,28 @@ int quicktime_video_tracks(quicktime_t *file);
 int quicktime_audio_tracks(quicktime_t *file);
 
 int quicktime_has_audio(quicktime_t *file);
+
+/* Get the samples per second */
 long quicktime_sample_rate(quicktime_t *file, int track);
+
+/* Get the number of bits for the twos codec */
 int quicktime_audio_bits(quicktime_t *file, int track);
+
+/* Get the number of audio channels in an audio track */
 int quicktime_track_channels(quicktime_t *file, int track);
 char* quicktime_audio_compressor(quicktime_t *file, int track);
 
 int quicktime_has_video(quicktime_t *file);
 int quicktime_video_width(quicktime_t *file, int track);
 int quicktime_video_height(quicktime_t *file, int track);
+
+/* Number of bytes per pixel for the raw codec */
 int quicktime_video_depth(quicktime_t *file, int track);
+
+/* Frames per second */
 double quicktime_frame_rate(quicktime_t *file, int track);
+
+/* FourCC of the video compressor */
 char* quicktime_video_compressor(quicktime_t *file, int track);
 
 /* number of bytes of raw data in this frame */
@@ -208,19 +241,27 @@ int quicktime_seek_end(quicktime_t *file);
 int quicktime_seek_start(quicktime_t *file);
 
 /* set position of file descriptor relative to a track */
-int quicktime_set_audio_position(quicktime_t *file, longest sample, int track);
-int quicktime_set_video_position(quicktime_t *file, longest frame, int track);
+int quicktime_set_audio_position(quicktime_t *file, int64_t sample, int track);
+int quicktime_set_video_position(quicktime_t *file, int64_t frame, int track);
 
 /* ========================== Access to raw data follows. */
 /* write data for one quicktime track */
 /* the user must handle conversion to the channels in this track */
-int quicktime_write_audio(quicktime_t *file, char *audio_buffer, long samples, int track);
-int quicktime_write_frame(quicktime_t *file, unsigned char *video_buffer, longest bytes, int track);
+/*
+ * int quicktime_write_audio(quicktime_t *file, 
+ * 	char *audio_buffer, 
+ * 	long samples, 
+ * 	int track);
+ */
+int quicktime_write_frame(quicktime_t *file, 
+	unsigned char *video_buffer, 
+	int64_t bytes, 
+	int track);
 
 /* Read an entire chunk. */
 /* read the number of bytes starting at the byte_start in the specified chunk */
 /* You must provide enough space to store the chunk. */
-int quicktime_read_chunk(quicktime_t *file, char *output, int track, longest chunk, longest byte_start, longest byte_len);
+int quicktime_read_chunk(quicktime_t *file, char *output, int track, int64_t chunk, int64_t byte_start, int64_t byte_len);
 
 /* read raw data */
 long quicktime_read_audio(quicktime_t *file, char *audio_buffer, long samples, int track);
@@ -232,9 +273,12 @@ int quicktime_read_frame_init(quicktime_t *file, int track);
 int quicktime_read_frame_end(quicktime_t *file, int track);
 
 /* One keyframe table for each track */
+/* Returns -1 if no keyframe exists.  In AVI this always returns -1 */
+/* if the frame offset is over 1 Gig.  McRowsoft you know. */
 long quicktime_get_keyframe_before(quicktime_t *file, long frame, int track);
 long quicktime_get_keyframe_after(quicktime_t *file, long frame, int track);
 void quicktime_insert_keyframe(quicktime_t *file, long frame, int track);
+
 /* Track has keyframes */
 int quicktime_has_keyframes(quicktime_t *file, int track);
 
@@ -244,6 +288,10 @@ int quicktime_has_keyframes(quicktime_t *file, int track);
 int quicktime_supported_video(quicktime_t *file, int track);
 int quicktime_supported_audio(quicktime_t *file, int track);
 
+
+
+/* The codecs can all support RGB in and out. */
+/* To find out if other color models are supported, use these functions. */
 /* The codec can generate the color model with no downsampling */
 int quicktime_reads_cmodel(quicktime_t *file, 
 		int colormodel, 
@@ -255,46 +303,68 @@ int quicktime_writes_cmodel(quicktime_t *file,
 		int track);
 
 
-/* Hacks for temporal codecs */
-int quicktime_divx_is_key(unsigned char *data, long size);
-int quicktime_divx_write_vol(unsigned char *data_start,
+/* Utilities for direct copy of MPEG-4 */
+int quicktime_mpeg4_is_key(unsigned char *data, long size, char *codec_id);
+int quicktime_mpeg4_write_vol(unsigned char *data_start,
 	int vol_width, 
 	int vol_height, 
 	int time_increment_resolution, 
 	double frame_rate);
-int quicktime_divx_has_vol(unsigned char *data);
-
-int quicktime_div3_is_key(unsigned char *data, long size);
+int quicktime_mpeg4_has_vol(unsigned char *data);
 
 
-/* Decode or encode the frame into a frame buffer. */
-/* All the frame buffers passed to these functions are unsigned char */
-/* rows with 3 bytes per pixel.  The byte order per 3 byte pixel is */
-/* RGB. */
-int quicktime_encode_video(quicktime_t *file, 
-	unsigned char **row_pointers, 
-	int track);
 
-// Decodes RGB only
-int quicktime_decode_video(quicktime_t *file, 
-	unsigned char **row_pointers, 
-	int track);
-long quicktime_decode_scaled(quicktime_t *file, 
+
+
+
+
+
+
+/* These should be called right before a decode or encode function */
+/* Set the colormodel for the encoder and decoder interface */
+void quicktime_set_cmodel(quicktime_t *file, int colormodel);
+
+/* Set row span in bytes for the encoder and decoder interface */
+void quicktime_set_row_span(quicktime_t *file, int row_span);
+
+/* Set the decoding window for the decoder interface.  If the dimensions are */
+/* all -1, no scaling is used.  The default is no scaling. */
+void quicktime_set_window(quicktime_t *file,
 	int in_x,                    /* Location of input frame to take picture */
 	int in_y,
 	int in_w,
 	int in_h,
 	int out_w,                   /* Dimensions of output frame */
-	int out_h,
-	int color_model,             /* One of the color models defined above */
+	int out_h);
+
+/* Encode the frame into a frame buffer. */
+int quicktime_encode_video(quicktime_t *file, 
+	unsigned char **row_pointers, 
+	int track);
+
+/* Decode a frame */
+long quicktime_decode_video(quicktime_t *file, 
 	unsigned char **row_pointers, 
 	int track);
 
 /* Decode or encode audio for a single channel into the buffer. */
 /* Pass a buffer for the _i or the _f argument if you want int16 or float data. */
 /* Notice that encoding requires an array of pointers to each channel. */
-int quicktime_decode_audio(quicktime_t *file, int16_t *output_i, float *output_f, long samples, int channel);
-int quicktime_encode_audio(quicktime_t *file, int16_t **input_i, float **input_f, long samples);
+int quicktime_decode_audio(quicktime_t *file, 
+	int16_t *output_i, 
+	float *output_f, 
+	long samples, 
+	int channel);
+int quicktime_encode_audio(quicktime_t *file, 
+	int16_t **input_i, 
+	float **input_f, 
+	long samples);
+
+
+
+
+
+
 
 /* Dump the file structures for the currently opened file. */
 int quicktime_dump(quicktime_t *file);
@@ -306,9 +376,9 @@ int quicktime_set_cpus(quicktime_t *file, int cpus);
 /* preload is the number of bytes to read ahead. */
 /* This is no longer functional to the end user but is used to accelerate */
 /* reading the header internally. */
-void quicktime_set_preload(quicktime_t *file, longest preload);
+void quicktime_set_preload(quicktime_t *file, int64_t preload);
 
-longest quicktime_byte_position(quicktime_t *file);
+int64_t quicktime_byte_position(quicktime_t *file);
 
 
 

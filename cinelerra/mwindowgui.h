@@ -55,14 +55,14 @@ public:
 	int show_message(char *message, int color = BLACK);
 // Pop up a box if the statusbar is taken and show an error.
 	void show_error(char *message, int color = BLACK);
-	int repeat_event(long duration);
+	int repeat_event(int64_t duration);
 // Entry point for drag events in all windows
 	int drag_motion();
 	int drag_stop();
 	void default_positions();
 
 // Return if the area bounded by x1 and x2 is visible between view_x1 and view_x2
-	static int visible(long x1, long x2, long view_x1, long view_x2);
+	static int visible(int64_t x1, int64_t x2, int64_t view_x1, int64_t view_x2);
 
 	MWindow *mwindow;
 

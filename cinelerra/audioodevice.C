@@ -2,7 +2,7 @@
 
 #include <string.h>
 
-int AudioDevice::write_buffer(double **output, long samples, int channels)
+int AudioDevice::write_buffer(double **output, int samples, int channels)
 {
 // find free buffer to fill
 	if(interrupt) return 0;
@@ -27,15 +27,15 @@ int AudioDevice::set_last_buffer()
 // must send maximum size buffer the first time or risk reallocation while threaded
 int AudioDevice::arm_buffer(int buffer_num, 
 	double **output, 
-	long samples, 
+	int samples, 
 	int channels)
 {
 	int bits;
-	long new_size;
+	int new_size;
 
-	long i, j;
-	register long input_offset;
-	register long output_offset;
+	int i, j;
+	int input_offset;
+	int output_offset;
 	int output_advance;
 	int channel, last_input_channel;
 	double sample;
@@ -117,7 +117,7 @@ int AudioDevice::arm_buffer(int buffer_num,
 					{
 						sample = buffer_in_channel[input_offset];
 						sample *= 0x7fff;
-						int_sample = (long)sample;
+						int_sample = (int)sample;
 						dither_value = rand() % 255;
 						int_sample -= dither_value;
 						int_sample /= 0x100;
@@ -130,7 +130,7 @@ int AudioDevice::arm_buffer(int buffer_num,
 					{
 						sample = buffer_in_channel[input_offset];
 						sample *= 0x7f;
-						int_sample = (long)sample;
+						int_sample = (int)sample;
 						buffer_num_buffer[output_offset] = int_sample;
 					}
 				}
@@ -146,7 +146,7 @@ int AudioDevice::arm_buffer(int buffer_num,
 					{
 						sample = buffer_in_channel[input_offset];
 						sample *= 0x7fffff;
-						int_sample = (long)sample;
+						int_sample = (int)sample;
 						dither_value = rand() % 255;
 						int_sample -= dither_value;
 						int_sample /= 0x100;
@@ -161,7 +161,7 @@ int AudioDevice::arm_buffer(int buffer_num,
 					{
 						sample = buffer_in_channel[input_offset];
 						sample *= 0x7fff;
-						int_sample = (long)sample;
+						int_sample = (int)sample;
 						buffer_num_buffer[output_offset++] = (int_sample & 0xff);
 						buffer_num_buffer[output_offset] = (int_sample & 0xff00) >> 8;
 					}
@@ -176,7 +176,7 @@ int AudioDevice::arm_buffer(int buffer_num,
 				{
 					sample = buffer_in_channel[input_offset];
 					sample *= 0x7fffff;
-					int_sample = (long)sample;
+					int_sample = (int)sample;
 					buffer_num_buffer[output_offset++] = (int_sample & 0xff);
 					buffer_num_buffer[output_offset++] = (int_sample & 0xff00) >> 8;
 					buffer_num_buffer[output_offset++] = (int_sample & 0xff0000) >> 16;
@@ -191,7 +191,7 @@ int AudioDevice::arm_buffer(int buffer_num,
 				{
 					sample = buffer_in_channel[input_offset];
 					sample *= 0x7fffffff;
-					int_sample = (long)sample;
+					int_sample = (int)sample;
 					buffer_num_buffer[output_offset++] = (int_sample & 0xff);
 					buffer_num_buffer[output_offset++] = (int_sample & 0xff00) >> 8;
 					buffer_num_buffer[output_offset++] = (int_sample & 0xff0000) >> 16;
@@ -268,9 +268,8 @@ int AudioDevice::interrupt_playback()
 // cancel thread
 		is_playing_back = 0;
 		get_lowlevel_out()->interrupt_playback();
-		Thread::cancel();
+//		Thread::cancel();
 // Completion is waited for in arender
-//		wait_for_completion();
 	}
 
 // unlock everything
@@ -296,18 +295,16 @@ int AudioDevice::wait_for_startup()
 
 int AudioDevice::wait_for_completion()
 {
-//printf("AudioDevice::wait_for_completion 1\n");
 	Thread::join();
-//printf("AudioDevice::wait_for_completion 2\n");
 	return 0;
 }
 
 
 
-long AudioDevice::current_position()
+int64_t AudioDevice::current_position()
 {
 // try to get OSS position
-	long hardware_result = 0, software_result = 0, frame;
+	int64_t hardware_result = 0, software_result = 0, frame;
 
 	if(w)
 	{
@@ -356,7 +353,6 @@ void AudioDevice::run()
 
 	startup_lock.unlock();
 	playback_timer.update();
-//printf("AudioDevice::run 1\n");
 
 	while(is_playing_back && !interrupt && !last_buffer[thread_buffer_num])
 	{
@@ -388,16 +384,11 @@ void AudioDevice::run()
 			timer_lock.unlock();
 
 // write buffer
-//printf("AudioDevice::run 2\n");
-			Thread::enable_cancel();
 			thread_result = get_lowlevel_out()->write_buffer(buffer[thread_buffer_num], buffer_size[thread_buffer_num]);
-			Thread::disable_cancel();
 
-//printf("AudioDevice::run 3\n");
 // allow writing to the buffer
 			arm_mutex[thread_buffer_num].unlock();
 
-//printf("AudioDevice::run 2\n");
 // inform user if the buffer write failed
 			if(thread_result < 0)
 			{
@@ -418,5 +409,4 @@ void AudioDevice::run()
 			get_lowlevel_out()->flush_device();
 		}
 	}
-//printf("AudioDevice::run 10\n");
 }

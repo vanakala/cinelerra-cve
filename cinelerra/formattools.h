@@ -20,6 +20,7 @@ class FormatPathText;
 class FormatFormat;
 class FormatAudio;
 class FormatVideo;
+class FormatMultiple;
 
 class FormatTools
 {
@@ -41,6 +42,7 @@ public:
 						int recording, // Change captions for recording
 						int *strategy,  // If nonzero, prompt for insertion strategy
 						int brender); // Supply file formats for background rendering
+	void reposition_window(int &init_x, int &init_y);
 
 	int set_audio_options();
 	int set_video_options();
@@ -54,18 +56,33 @@ public:
 	FormatVThread *vparams_thread;
 	BrowseButton *path_button;
 	FormatPathText *path_textbox;
+	BC_Title *format_title;
 	FormatFormat *format_button;
 	BC_TextBox *format_text;
 	BC_ITumbler *channels_tumbler;
 
+	BC_Title *audio_title;
+	BC_Title *channels_title;
 	FormatChannels *channels_button;
 	FormatAudio *audio_switch;
+
+	BC_Title *video_title;
 	FormatVideo *video_switch;
+
+	FormatMultiple *multiple_files;
+
 	ArrayList<PluginServer*> *plugindb;
 	MWindow *mwindow;
 	int lock_compressor;
 	int recording;
 	int use_brender;
+	int do_audio;
+	int do_video;
+	int prompt_audio;
+	int prompt_audio_channels;
+	int prompt_video;
+	int prompt_video_compression;
+	int *strategy;
 };
 
 

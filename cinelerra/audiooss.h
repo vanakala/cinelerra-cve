@@ -14,8 +14,8 @@ public:
 	~OSSThread();
 	
 	void run();
-	void write_data(int fd, unsigned char *data, long bytes);
-	void read_data(int fd, unsigned char *data, long bytes);
+	void write_data(int fd, unsigned char *data, int bytes);
+	void read_data(int fd, unsigned char *data, int bytes);
 // Must synchronize reads and writes
 	void wait_read();
 	void wait_write();
@@ -23,7 +23,7 @@ public:
 	Mutex input_lock, output_lock, read_lock, write_lock;
 	int rd, wr, fd;
 	unsigned char *data;
-	long bytes;
+	int bytes;
 	int done;
 	AudioOSS *device;
 };
@@ -37,10 +37,10 @@ public:
 	int open_input();
 	int open_output();
 	int open_duplex();
-	int write_buffer(char *buffer, long size);
-	int read_buffer(char *buffer, long size);
+	int write_buffer(char *buffer, int bytes);
+	int read_buffer(char *buffer, int bytes);
 	int close_all();
-	long device_position();
+	int64_t device_position();
 	int flush_device(int number);
 	int interrupt_playback();
 
@@ -55,7 +55,7 @@ private:
 // Temp for each device
 	unsigned char *data[MAXDEVICES];
 // Bytes allocated
-	long data_allocated[MAXDEVICES];
+	int data_allocated[MAXDEVICES];
 };
 
 #endif

@@ -12,6 +12,7 @@ public:
 	void create_objects();
 	BC_Title *operation;
 	VFrame *bg;
+	BC_ProgressBar *progress;
 };
 
 

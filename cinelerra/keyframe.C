@@ -32,7 +32,7 @@ void KeyFrame::load(FileXML *file)
 //printf("KeyFrame::load 2 data=\n%s\nend of data\n", data);
 }
 
-void KeyFrame::copy(long start, long end, FileXML *file, int default_auto)
+void KeyFrame::copy(int64_t start, int64_t end, FileXML *file, int default_auto)
 {
 //printf("KeyFrame::copy 1 %d\n%s\n", position - start, data);
 	file->tag.set_title("KEYFRAME");
@@ -90,6 +90,6 @@ int KeyFrame::operator==(KeyFrame &that)
 
 void KeyFrame::dump()
 {
-	printf("     position: %ld\n", position);
+	printf("     position: %lld\n", position);
 	printf("     data: %s\n", data);
 }

@@ -275,6 +275,11 @@ int mpeg3video_delete_struct(mpeg3video_t *video)
 		free(video->x_table);
 		free(video->y_table);
 	}
+	if(video->total_slice_decoders)
+	{
+		for(i = 0; i < video->total_slice_decoders; i++)
+			mpeg3_delete_slice_decoder(&(video->slice_decoders[i]));
+	}
 	for(i = 0; i < video->slice_buffers_initialized; i++)
 		mpeg3_delete_slice_buffer(&(video->slice_buffers[i]));
 
@@ -521,19 +526,13 @@ mpeg3video_t* mpeg3video_new(mpeg3_t *file, mpeg3_vtrack_t *track)
 		mpeg3video_delete(video);
 		video = 0;
 	}
-//printf("mpeg3video_new 4 %p\n", video);
+//printf("mpeg3video_new 100 %p\n", video);
 
 	return video;
 }
 
 int mpeg3video_delete(mpeg3video_t *video)
 {
-	int i;
-	if(video->total_slice_decoders)
-	{
-		for(i = 0; i < video->total_slice_decoders; i++)
-			mpeg3_delete_slice_decoder(&(video->slice_decoders[i]));
-	}
 	if(video->decoder_initted)
 	{
 		mpeg3video_deletedecoder(video);

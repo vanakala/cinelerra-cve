@@ -61,10 +61,6 @@ int PluginClient::plugin_init(int argc, char *argv[])
 	return 0;
 }
 
-int PluginClient::plugin_get_range()
-{
-	messages->read_message(&start, &end);
-}
 
 
 // For realtime plugins initialize buffers
@@ -88,7 +84,7 @@ int PluginClient::plugin_init_realtime(int realtime_priority,
 	return 0;
 }
 
-int PluginClient::plugin_start_loop(long start, long end, long buffer_size, int total_buffers)
+int PluginClient::plugin_start_loop(int64_t start, int64_t end, int64_t buffer_size, int total_buffers)
 {
 	this->start = start;
 	this->end = end;
@@ -111,7 +107,7 @@ int PluginClient::plugin_stop_loop()
 	return stop_loop();
 }
 
-MainProgressBar* PluginClient::start_progress(char *string, long length)
+MainProgressBar* PluginClient::start_progress(char *string, int64_t length)
 {
 	return server->start_progress(string, length);
 }
@@ -162,12 +158,12 @@ void PluginClient::set_interactive()
 	interactive = 1;
 }
 
-long PluginClient::get_in_buffers(long recommended_size)
+int64_t PluginClient::get_in_buffers(int64_t recommended_size)
 {
 	return recommended_size;
 }
 
-long PluginClient::get_out_buffers(long recommended_size)
+int64_t PluginClient::get_out_buffers(int64_t recommended_size)
 {
 	return recommended_size;
 }
@@ -215,7 +211,7 @@ int PluginClient::get_project_samplerate()
 	return server->get_project_samplerate();
 }
 
-float PluginClient::get_project_framerate()
+double PluginClient::get_project_framerate()
 {
 	return server->get_project_framerate();
 }
@@ -230,6 +226,12 @@ void PluginClient::update_display_title()
 char* PluginClient::get_gui_string()
 {
 	return gui_string;
+}
+
+
+char* PluginClient::get_path()
+{
+	return server->path;
 }
 
 int PluginClient::set_string_client(char *string)
@@ -252,12 +254,12 @@ int PluginClient::load_data_client()
 	return 0;
 }
 
-KeyFrame* PluginClient::get_prev_keyframe(long position)
+KeyFrame* PluginClient::get_prev_keyframe(int64_t position)
 {
 	return server->get_prev_keyframe(position);
 }
 
-KeyFrame* PluginClient::get_next_keyframe(long position)
+KeyFrame* PluginClient::get_next_keyframe(int64_t position)
 {
 	return server->get_next_keyframe(position);
 }
@@ -273,7 +275,7 @@ int PluginClient::automation_used()    // If automation is used
 	return 0;
 }
 
-float PluginClient::get_automation_value(long position)     // Get the automation value for the position in the current fragment
+float PluginClient::get_automation_value(int64_t position)     // Get the automation value for the position in the current fragment
 {
 	int i;
 	for(i = automation.total - 1; i >= 0; i--)
@@ -286,22 +288,22 @@ float PluginClient::get_automation_value(long position)     // Get the automatio
 	return 0;
 }
 
-long PluginClient::get_source_len()
+int64_t PluginClient::get_source_len()
 {
 	return source_len;
 }
 
-long PluginClient::get_source_position()
+int64_t PluginClient::get_source_position()
 {
 	return source_position;
 }
 
-long PluginClient::get_source_start()
+int64_t PluginClient::get_source_start()
 {
 	return server->get_source_start();
 }
 
-long PluginClient::get_total_len()
+int64_t PluginClient::get_total_len()
 {
 	return total_len;
 }
@@ -319,44 +321,11 @@ int PluginClient::get_project_smp()
 	return smp;
 }
 
-int PluginClient::get_gui_visible()
-{
-	int result;
-	messages->write_message(GET_GUI_STATUS);
-	result = messages->read_message();
-	return result;
-}
-
 char* PluginClient::get_defaultdir()
 {
 	return BCASTDIR;
 }
 
-int PluginClient::get_use_float()
-{
-	int result;
-	messages->write_message(GET_USE_FLOAT);
-	result = messages->read_message();
-	return result;
-}
-
-int PluginClient::get_use_alpha()
-{
-	int result;
-	messages->write_message(GET_USE_ALPHA);
-	result = messages->read_message();
-	return result;
-}
-
-int PluginClient::get_aspect_ratio(float &aspect_w, float &aspect_h)
-{
-	long result1, result2;
-	messages->write_message(GET_ASPECT_RATIO);
-	messages->read_message(&result1, &result2);
-	aspect_w = (float)result1;
-	aspect_h = (float)result2;
-	return 0;
-}
 
 int PluginClient::send_completed()
 {
@@ -388,7 +357,7 @@ int PluginClient::send_configure_change()
 	return 0;
 }
 
-int PluginClient::write_frames(long total_frames)
+int PluginClient::write_frames(int64_t total_frames)
 {
 // buffers are preloaded by client
 	messages->write_message(WRITE_FRAMES);
@@ -399,7 +368,7 @@ int PluginClient::write_frames(long total_frames)
 	else return 1;
 }
 
-int PluginClient::write_samples(long total_samples)
+int PluginClient::write_samples(int64_t total_samples)
 {
 // buffers are preloaded by client
 	messages->write_message(WRITE_SAMPLES);

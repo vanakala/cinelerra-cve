@@ -236,7 +236,7 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 
 static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 {
-	longest offset = quicktime_position(file);
+	int64_t offset = quicktime_position(file);
 	quicktime_video_map_t *vtrack = &(file->vtracks[track]);
 	quicktime_dv_codec_t *codec = ((quicktime_codec_t*)vtrack->codec)->priv;
 	quicktime_trak_t *trak = vtrack->track;
@@ -246,11 +246,12 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 	int height_i = (height <= 480) ? 480 : 576;
 	int i;
 	unsigned char **input_rows;
-	int isPAL = (height_i == 480) ? 0 : 1;
-	int data_length = isPAL ? DV_PAL_SIZE : DV_NTSC_SIZE;
+	int is_pal = (height_i == 480) ? 0 : 1;
+	int data_length = is_pal ? DV_PAL_SIZE : DV_NTSC_SIZE;
 	int result = 0;
 	int encode_colormodel = 0;
 	dv_color_space_t encode_dv_colormodel = 0;
+	quicktime_atom_t chunk_atom;
 
 	if( codec->dv_encoder != NULL && codec->parameters_changed )
 	{
@@ -292,11 +293,11 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 			{
 				case BC_YUV422:
 					encode_dv_colormodel = e_dv_color_yuv;
-					//printf( "dv.c encode: e_dv_color_yuv\n" );
+//printf( "dv.c encode: e_dv_color_yuv\n" );
 					break;
 				case BC_RGB888:
 					encode_dv_colormodel = e_dv_color_rgb;
-					//printf( "dv.c encode: e_dv_color_rgb\n" );
+//printf( "dv.c encode: e_dv_color_rgb\n" );
 					break;
 				default:
 					return 0;
@@ -305,12 +306,14 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 		}
 		else
 		{
+// The best colormodel for encoding is YUV 422
+
 			if(!codec->temp_frame)
 			{
-				codec->temp_frame = malloc(720 * 576 * 3);
+				codec->temp_frame = malloc(720 * 576 * 2);
 				codec->temp_rows = malloc(sizeof(unsigned char*) * 576);
 				for(i = 0; i < 576; i++)
-					codec->temp_rows[i] = codec->temp_frame + 720 * 3 * i;
+					codec->temp_rows[i] = codec->temp_frame + 720 * 2 * i;
 			}
 		
 			cmodel_transfer(codec->temp_rows, /* Leave NULL if non existent */
@@ -330,23 +333,23 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 							MIN(width, width_i), 
 							MIN(height, height_i),
 							file->color_model, 
-							BC_RGB888,
+							BC_YUV422,
 							0,    /* When transfering BC_RGBA8888 to non-alpha this is the background color in 0xRRGGBB hex */
 							width,  /* For planar use the luma rowspan */
 							width_i);
 
 
 			input_rows = codec->temp_rows;
-			encode_colormodel = BC_RGB888;
-			encode_dv_colormodel = e_dv_color_rgb;
+			encode_colormodel = BC_YUV422;
+			encode_dv_colormodel = e_dv_color_yuv;
 		}
 
-		// Setup the encoder
+// Setup the encoder
 		codec->dv_encoder->is16x9 = codec->anamorphic16x9;
 		codec->dv_encoder->vlc_encode_passes = codec->vlc_encode_passes;
 		codec->dv_encoder->static_qno = 0;
 		codec->dv_encoder->force_dct = DV_DCT_AUTO;
-		codec->dv_encoder->isPAL = isPAL;
+		codec->dv_encoder->isPAL = is_pal;
 
 
 //printf("dv.c encode: 1 %d %d %d\n", width_i, height_i, encode_dv_colormodel);
@@ -354,15 +357,14 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 							  input_rows, encode_dv_colormodel, codec->data );
 //printf("dv.c encode: 2 %d %d\n", width_i, height_i);
 
+		quicktime_write_chunk_header(file, trak, &chunk_atom);
 		result = !quicktime_write_data(file, codec->data, data_length);
-		quicktime_update_tables(file,
-								file->vtracks[track].track,
-								offset,
-								file->vtracks[track].current_chunk,
-								file->vtracks[track].current_position,
-								1,
-								data_length);
-		file->vtracks[track].current_chunk++;
+		quicktime_write_chunk_footer(file, 
+			trak,
+			vtrack->current_chunk,
+			&chunk_atom, 
+			1);
+		vtrack->current_chunk++;
 //printf("encode 3\n");
 	}
 
@@ -427,26 +429,30 @@ static int set_parameter(quicktime_t *file,
 	return 0;
 }
 
-void quicktime_init_codec_dv(quicktime_video_map_t *vtrack)
+static void init_codec_common(quicktime_video_map_t *vtrack, char *fourcc)
 {
+	quicktime_codec_t *codec_base = (quicktime_codec_t*)vtrack->codec;
 	quicktime_dv_codec_t *codec;
 	int i;
 
 /* Init public items */
-	((quicktime_codec_t*)vtrack->codec)->priv = calloc(1, sizeof(quicktime_dv_codec_t));
-	((quicktime_codec_t*)vtrack->codec)->delete_vcodec = delete_codec;
-	((quicktime_codec_t*)vtrack->codec)->decode_video = decode;
-	((quicktime_codec_t*)vtrack->codec)->encode_video = encode;
-	((quicktime_codec_t*)vtrack->codec)->decode_audio = 0;
-	((quicktime_codec_t*)vtrack->codec)->encode_audio = 0;
-	((quicktime_codec_t*)vtrack->codec)->reads_colormodel = colormodel_dv;
-	((quicktime_codec_t*)vtrack->codec)->writes_colormodel = colormodel_dv;
-	((quicktime_codec_t*)vtrack->codec)->set_parameter = set_parameter;
+	codec_base->priv = calloc(1, sizeof(quicktime_dv_codec_t));
+	codec_base->delete_vcodec = delete_codec;
+	codec_base->decode_video = decode;
+	codec_base->encode_video = encode;
+	codec_base->decode_audio = 0;
+	codec_base->encode_audio = 0;
+	codec_base->reads_colormodel = colormodel_dv;
+	codec_base->writes_colormodel = colormodel_dv;
+	codec_base->set_parameter = set_parameter;
+	codec_base->fourcc = fourcc;
+	codec_base->title = "DV";
+	codec_base->desc = "DV";
 
 
 	/* Init private items */
 
-	codec = ((quicktime_codec_t*)vtrack->codec)->priv;
+	codec = codec_base->priv;
 	
 	codec->dv_decoder = NULL;
 	codec->dv_encoder = NULL;
@@ -456,6 +462,17 @@ void quicktime_init_codec_dv(quicktime_video_map_t *vtrack)
 	codec->clamp_luma = codec->clamp_chroma = 0;
 	codec->add_ntsc_setup = 0;
 	codec->parameters_changed = 0;
-	
+
+// Allocate extra to work around some libdv overrun
 	codec->data = calloc(1, 144008);
+}
+
+void quicktime_init_codec_dv(quicktime_video_map_t *vtrack)
+{
+	init_codec_common(vtrack, QUICKTIME_DV);
+}
+
+void quicktime_init_codec_dvsd(quicktime_video_map_t *vtrack)
+{
+	init_codec_common(vtrack, QUICKTIME_DVSD);
 }

@@ -74,7 +74,7 @@ int VPatchGUI::update(int x, int y)
 			unit_position = mwindow->edl->align_to_frame(unit_position, 0);
 			unit_position = vtrack->to_units(unit_position, 0);
 			int value = (int)((FloatAutos*)vtrack->automation->fade_autos)->get_value(
-				(long)unit_position,
+				(int64_t)unit_position,
 				PLAY_FORWARD, 
 				previous, 
 				next);
@@ -129,7 +129,7 @@ void VPatchGUI::synchronize_fade(float value_change)
 {
 	if(fade && !change_source) 
 	{
-		fade->update(Units::to_long(fade->get_value() + value_change));
+		fade->update(Units::to_int64(fade->get_value() + value_change));
 		fade->update_edl();
 	}
 }
@@ -143,7 +143,7 @@ VFadePatch::VFadePatch(MWindow *mwindow, VPatchGUI *patch, int x, int y, int w)
 			w, 
 			0, 
 			MAX_VIDEO_FADE, 
-			(long)get_keyframe(mwindow, patch)->value)
+			(int64_t)get_keyframe(mwindow, patch)->value)
 {
 	this->mwindow = mwindow;
 	this->patch = patch;
@@ -208,7 +208,7 @@ FloatAuto* VFadePatch::get_keyframe(MWindow *mwindow, VPatchGUI *patch)
 	Auto *current = 0;
 	
 	return (FloatAuto*)patch->vtrack->automation->fade_autos->get_prev_auto(
-		(long)unit_position, 
+		(int64_t)unit_position, 
 		PLAY_FORWARD,
 		current);
 }
@@ -263,7 +263,7 @@ IntAuto* VModePatch::get_keyframe(MWindow *mwindow, VPatchGUI *patch)
 	unit_position = patch->vtrack->to_units(unit_position, 0);
 
 	return (IntAuto*)patch->vtrack->automation->mode_autos->get_prev_auto(
-		(long)unit_position, 
+		(int64_t)unit_position, 
 		PLAY_FORWARD,
 		current);
 }

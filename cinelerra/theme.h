@@ -2,6 +2,7 @@
 #define THEME_H
 
 #include "awindowgui.inc"
+#include "bctheme.h"
 #include "cwindowgui.inc"
 #include "guicast.h"
 #include "levelwindowgui.inc"
@@ -31,7 +32,7 @@
 
 
 
-class Theme
+class Theme : public BC_Theme
 {
 public:
 	Theme();
@@ -51,6 +52,7 @@ public:
 		int w,
 		int h);
 	virtual void get_plugindialog_sizes();
+	virtual void get_menueffect_sizes(int use_list);
 	virtual void draw_rwindow_bg(RecordGUI *gui);
 	virtual void draw_rmonitor_bg(RecordMonitorGUI *gui);
 	virtual void draw_awindow_bg(AWindowGUI *gui);
@@ -157,6 +159,12 @@ public:
 	int plugindialog_sharedattach_x, plugindialog_sharedattach_y;
 	int plugindialog_moduleattach_x, plugindialog_moduleattach_y;
 
+	int menueffect_list_x, menueffect_list_y, menueffect_list_w, menueffect_list_h;
+	int menueffect_file_x, menueffect_file_y;
+	int menueffect_tools_x, menueffect_tools_y;
+
+
+
 	int recordgui_batches_w, recordgui_batches_h;
 	int recordgui_batches_x, recordgui_batches_y;
 	int recordgui_batch_x, recordgui_batch_y, recordgui_batchcaption_x;
@@ -188,8 +196,6 @@ public:
 	int vtime_x, vtime_y, vtime_w;
 	int vtransport_x, vtransport_y;
 	int vzoom_x, vzoom_y;
-
-
 
 
 

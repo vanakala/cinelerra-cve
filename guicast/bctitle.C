@@ -115,6 +115,7 @@ int BC_Title::draw()
 	}
 	set_font(MEDIUMFONT);    // reset
 	flash();
+	flush();
 	return 0;
 }
 

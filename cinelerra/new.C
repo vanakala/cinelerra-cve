@@ -8,10 +8,10 @@
 #include "mainundo.h"
 #include "mainmenu.h"
 #include "mwindow.h"
-#include "patchbay.h"
 #include "mwindowgui.h"
 #include "new.h"
 #include "mainsession.h"
+#include "patchbay.h"
 #include "theme.h"
 #include "transportque.h"
 #include "videowindow.h"
@@ -57,7 +57,6 @@ void New::create_new_edl()
 
 int New::create_new_project()
 {
-//printf("New::create_new_project 1\n");
 	mwindow->cwindow->playback_engine->que->send_command(STOP,
 		CHANGE_NONE, 
 		0,
@@ -70,23 +69,18 @@ int New::create_new_project()
 	mwindow->vwindow->playback_engine->interrupt_playback(0);
 
 	mwindow->gui->lock_window();
-//printf("New::create_new_project 1\n");
 	mwindow->undo->update_undo_before("New", LOAD_ALL);
 
-//printf("New::create_new_project 1\n");
 	new_edl->session->boundaries();
 	new_edl->create_default_tracks();
 
-//printf("New::create_new_project 1\n");
 	mwindow->set_filename("");
 	mwindow->undo->update_undo_after();
 
-//printf("New::create_new_project 1\n");
 	mwindow->hide_plugins();
 	delete mwindow->edl;
-	// patches are pointing to vtracks, that have been just deleted
-	// so patches have to be deleted also
- 	mwindow->patches->delete_all_patches();    
+// Delete patches which are pointing to tracks which have been just deleted.
+ 	mwindow->patches->delete_all_patches();
 	mwindow->edl = new_edl;
 	mwindow->save_defaults();
 
@@ -94,7 +88,6 @@ int New::create_new_project()
 	mwindow->update_project(LOAD_REPLACE);
 	mwindow->session->changes_made = 0;
 	mwindow->gui->unlock_window();
-//printf("New::create_new_project 2\n");
 	return 0;
 }
 
@@ -205,7 +198,7 @@ void NewWindow::create_presets(int &x, int &y)
 	item = new NewPresetItem(mwindow, this, "User Defined");
 	preset_items.append(item);
 
-	item = new NewPresetItem(mwindow, this, "1080P");
+	item = new NewPresetItem(mwindow, this, "1080 Progressive");
 	item->edl->session->audio_channels = 2;
 	item->edl->session->audio_tracks = 2;
 	item->edl->session->sample_rate = 48000;
@@ -220,7 +213,22 @@ void NewWindow::create_presets(int &x, int &y)
 	item->edl->session->aspect_h = 9;
 	preset_items.append(item);
 
-	item = new NewPresetItem(mwindow, this, "720P");
+	item = new NewPresetItem(mwindow, this, "1080 Interlaced");
+	item->edl->session->audio_channels = 2;
+	item->edl->session->audio_tracks = 2;
+	item->edl->session->sample_rate = 48000;
+	item->edl->session->video_channels = 1;
+	item->edl->session->video_tracks = 1;
+	item->edl->session->frame_rate = (double)60000.0 / 1001;
+// 	item->edl->session->track_w = 1920;
+// 	item->edl->session->track_h = 1080;
+	item->edl->session->output_w = 1920;
+	item->edl->session->output_h = 1080;
+	item->edl->session->aspect_w = 16;
+	item->edl->session->aspect_h = 9;
+	preset_items.append(item);
+
+	item = new NewPresetItem(mwindow, this, "720 Progressive");
 	item->edl->session->audio_channels = 2;
 	item->edl->session->audio_tracks = 2;
 	item->edl->session->sample_rate = 48000;
@@ -235,13 +243,28 @@ void NewWindow::create_presets(int &x, int &y)
 	item->edl->session->aspect_h = 9;
 	preset_items.append(item);
 
-	item = new NewPresetItem(mwindow, this, "Full D-1 NTSC");
+	item = new NewPresetItem(mwindow, this, "480 Progressive");
 	item->edl->session->audio_channels = 2;
 	item->edl->session->audio_tracks = 2;
 	item->edl->session->sample_rate = 48000;
 	item->edl->session->video_channels = 1;
 	item->edl->session->video_tracks = 1;
 	item->edl->session->frame_rate = (double)30000.0 / 1001;
+// 	item->edl->session->track_w = 720;
+// 	item->edl->session->track_h = 480;
+	item->edl->session->output_w = 720;
+	item->edl->session->output_h = 480;
+	item->edl->session->aspect_w = 4;
+	item->edl->session->aspect_h = 3;
+	preset_items.append(item);
+
+	item = new NewPresetItem(mwindow, this, "480 Interlaced");
+	item->edl->session->audio_channels = 2;
+	item->edl->session->audio_tracks = 2;
+	item->edl->session->sample_rate = 48000;
+	item->edl->session->video_channels = 1;
+	item->edl->session->video_tracks = 1;
+	item->edl->session->frame_rate = (double)60000.0 / 1001;
 // 	item->edl->session->track_w = 720;
 // 	item->edl->session->track_h = 480;
 	item->edl->session->output_w = 720;
@@ -265,17 +288,17 @@ void NewWindow::create_presets(int &x, int &y)
 	item->edl->session->aspect_h = 3;
 	preset_items.append(item);
 
-	item = new NewPresetItem(mwindow, this, "Realvideo");
+	item = new NewPresetItem(mwindow, this, "Internet");
 	item->edl->session->audio_channels = 1;
 	item->edl->session->audio_tracks = 1;
 	item->edl->session->sample_rate = 22050;
 	item->edl->session->video_channels = 1;
 	item->edl->session->video_tracks = 1;
 	item->edl->session->frame_rate = 15;
-// 	item->edl->session->track_w = 240;
-// 	item->edl->session->track_h = 180;
-	item->edl->session->output_w = 240;
-	item->edl->session->output_h = 180;
+// 	item->edl->session->track_w = 320;
+// 	item->edl->session->track_h = 240;
+	item->edl->session->output_w = 320;
+	item->edl->session->output_h = 240;
 	item->edl->session->aspect_w = 4;
 	item->edl->session->aspect_h = 3;
 	preset_items.append(item);
@@ -284,6 +307,21 @@ void NewWindow::create_presets(int &x, int &y)
 	item->edl->session->audio_channels = 2;
 	item->edl->session->audio_tracks = 2;
 	item->edl->session->sample_rate = 44100;
+	item->edl->session->video_channels = 1;
+	item->edl->session->video_tracks = 0;
+	item->edl->session->frame_rate = (double)30000.0 / 1001;
+// 	item->edl->session->track_w = 720;
+// 	item->edl->session->track_h = 480;
+	item->edl->session->output_w = 720;
+	item->edl->session->output_h = 480;
+	item->edl->session->aspect_w = 4;
+	item->edl->session->aspect_h = 3;
+	preset_items.append(item);
+
+	item = new NewPresetItem(mwindow, this, "DAT Audio");
+	item->edl->session->audio_channels = 2;
+	item->edl->session->audio_tracks = 2;
+	item->edl->session->sample_rate = 48000;
 	item->edl->session->video_channels = 1;
 	item->edl->session->video_tracks = 0;
 	item->edl->session->frame_rate = (double)30000.0 / 1001;
@@ -440,16 +478,16 @@ int NewWindow::create_objects()
 int NewWindow::update()
 {
 	char string[BCTEXTLEN];
-	atracks->update((long)new_edl->session->audio_tracks);
-	achannels->update((long)new_edl->session->audio_channels);
-	sample_rate->update((long)new_edl->session->sample_rate);
-	vtracks->update((long)new_edl->session->video_tracks);
-//	vchannels->update((long)new_edl->session->video_channels);
+	atracks->update((int64_t)new_edl->session->audio_tracks);
+	achannels->update((int64_t)new_edl->session->audio_channels);
+	sample_rate->update((int64_t)new_edl->session->sample_rate);
+	vtracks->update((int64_t)new_edl->session->video_tracks);
+//	vchannels->update((int64_t)new_edl->session->video_channels);
 	frame_rate->update((float)new_edl->session->frame_rate);
-// 	canvas_w_text->update((long)new_edl->session->track_w);
-// 	canvas_h_text->update((long)new_edl->session->track_h);
-	output_w_text->update((long)new_edl->session->output_w);
-	output_h_text->update((long)new_edl->session->output_h);
+// 	canvas_w_text->update((int64_t)new_edl->session->track_w);
+// 	canvas_h_text->update((int64_t)new_edl->session->track_h);
+	output_w_text->update((int64_t)new_edl->session->output_w);
+	output_h_text->update((int64_t)new_edl->session->output_h);
 	aspect_w_text->update((float)new_edl->session->aspect_w);
 	aspect_h_text->update((float)new_edl->session->aspect_h);
 	return 0;
@@ -785,7 +823,7 @@ int FrameSizePulldown::handle_event()
 {
 	char *text = get_selection(0, 0)->get_text();
 	char string[BCTEXTLEN];
-	long w, h;
+	int64_t w, h;
 	char *ptr;
 	
 	strcpy(string, text);
@@ -985,8 +1023,8 @@ NewCloneToggle::NewCloneToggle(MWindow *mwindow, NewWindow *nwindow, int x, int 
 
 int NewCloneToggle::handle_event()
 {
-	nwindow->canvas_w_text->update((long)nwindow->new_edl->session->track_w);
-	nwindow->canvas_h_text->update((long)nwindow->new_edl->session->track_h);
+	nwindow->canvas_w_text->update((int64_t)nwindow->new_edl->session->track_w);
+	nwindow->canvas_h_text->update((int64_t)nwindow->new_edl->session->track_h);
 	nwindow->new_edl->session->output_w = nwindow->new_edl->session->track_w;
 	nwindow->new_edl->session->output_h = nwindow->new_edl->session->track_h;
 	nwindow->new_thread->update_aspect();

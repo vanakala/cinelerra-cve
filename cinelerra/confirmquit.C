@@ -44,6 +44,7 @@ int ConfirmQuitWindow::create_objects(char *string)
 ConfirmQuitYesButton::ConfirmQuitYesButton(MWindow *mwindow, int x, int y)
  : BC_GenericButton(x, y, "Yes")
 {
+	set_underline(0);
 }
 
 int ConfirmQuitYesButton::handle_event()
@@ -61,6 +62,7 @@ int ConfirmQuitYesButton::keypress_event()
 ConfirmQuitNoButton::ConfirmQuitNoButton(MWindow *mwindow, int x, int y)
  : BC_GenericButton(x, y, "No")
 {
+	set_underline(0);
 }
 
 int ConfirmQuitNoButton::handle_event()

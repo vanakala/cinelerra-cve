@@ -340,6 +340,7 @@ double PlaybackEngine::get_tracking_position()
 					1000.0;
 
 // Compensate for loop
+//printf("PlaybackEngine::get_tracking_position 1 %d\n", command->get_edl()->local_session->loop_playback);
 				if(command->get_edl()->local_session->loop_playback)
 				{
 					while(result > loop_end) result -= loop_size;

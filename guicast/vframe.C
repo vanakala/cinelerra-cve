@@ -126,7 +126,7 @@ int VFrame::params_match(int w, int h, int color_model)
 
 int VFrame::reset_parameters()
 {
-	field2_offset = 0;
+	field2_offset = -1;
 	shared = 0;
 	shm_offset = 0;
 	bytes_per_line = 0;
@@ -848,20 +848,5 @@ long VFrame::get_number()
 }
 
 
-/** checks whether the frame is in PAL or NTSC format
- 
-    \todo function can't handle "empty" frame
-    \return true for PAL frame, false for a NTSC frame
-*/
 
-bool VFrame::IsPAL(void) const
-{
-    unsigned char dsf = data[3] & 0x80;
-    bool pal = (dsf == 0) ? false : true;
-#ifdef HAVE_LIBDV
-    if (!pal) {
-        pal = (dv_system_50_fields (decoder) == 1) ? true : pal;
-    }
-#endif
-    return pal;
-}
+

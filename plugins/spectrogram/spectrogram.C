@@ -247,7 +247,7 @@ int Spectrogram::is_realtime()
 	return 1;
 }
 
-int Spectrogram::process_realtime(long size, double *input_ptr, double *output_ptr)
+int Spectrogram::process_realtime(int64_t size, double *input_ptr, double *output_ptr)
 {
 //printf("Spectrogram::process_realtime 1\n");
 	send_render_gui(input_ptr, size);

@@ -1,5 +1,19 @@
 #include "funcprotos.h"
+#include "quicktime.h"
 #include "ulaw.h"
+#include <stdint.h>
+
+typedef struct
+{
+	float *ulawtofloat_table;
+	float *ulawtofloat_ptr;
+	int16_t *ulawtoint16_table;
+	int16_t *ulawtoint16_ptr;
+	unsigned char *int16toulaw_table;
+	unsigned char *int16toulaw_ptr;
+	unsigned char *read_buffer;
+	long read_size;
+} quicktime_ulaw_codec_t;
 
 /* ==================================== private for ulaw */
 
@@ -144,7 +158,7 @@ int ulaw_get_read_buffer(quicktime_t *file, int track, long samples)
 	
 	if(!codec->read_buffer) 
 	{
-		longest bytes = samples * file->atracks[track].channels;
+		int64_t bytes = samples * file->atracks[track].channels;
 		codec->read_size = samples;
 		if(!(codec->read_buffer = malloc(bytes))) return 1;
 	}
@@ -254,9 +268,11 @@ static int quicktime_encode_ulaw(quicktime_t *file,
 {
 	int result = 0;
 	int channel, step;
-	longest offset;
-	longest i;
+	int64_t i;
 	quicktime_ulaw_codec_t *codec = ((quicktime_codec_t*)file->atracks[track].codec)->priv;
+	quicktime_atom_t chunk_atom;
+	quicktime_audio_map_t *track_map = &file->atracks[track];
+	quicktime_trak_t *trak = track_map->track;
 
 	result = ulaw_init_int16toulaw(file, track);
 	result += ulaw_get_read_buffer(file, track, samples);
@@ -297,16 +313,22 @@ static int quicktime_encode_ulaw(quicktime_t *file,
 			}
 		}
 
-		offset = quicktime_position(file);
-		result = quicktime_write_data(file, codec->read_buffer, samples * file->atracks[track].channels);
-		if(result) result = 0; else result = 1; /* defeat fwrite's return */
-		quicktime_update_tables(file,
-							file->atracks[track].track, 
-							offset, 
-							file->atracks[track].current_chunk, 
-							file->atracks[track].current_position, 
-							samples, 
-							0);
+		quicktime_write_chunk_header(file, trak, &chunk_atom);
+		result = quicktime_write_data(file, 
+			codec->read_buffer, 
+			samples * file->atracks[track].channels);
+		quicktime_write_chunk_footer(file, 
+						trak,
+						track_map->current_chunk,
+						&chunk_atom, 
+						samples);
+
+/* defeat fwrite's return */
+		if(result) 
+			result = 0; 
+		else 
+			result = 1; 
+
 		file->atracks[track].current_chunk++;		
 	}
 
@@ -316,21 +338,21 @@ static int quicktime_encode_ulaw(quicktime_t *file,
 
 void quicktime_init_codec_ulaw(quicktime_audio_map_t *atrack)
 {
+	quicktime_codec_t *codec_base = (quicktime_codec_t*)atrack->codec;
 	quicktime_ulaw_codec_t *codec;
 
 /* Init public items */
-	((quicktime_codec_t*)atrack->codec)->priv = calloc(1, sizeof(quicktime_ulaw_codec_t));
-	((quicktime_codec_t*)atrack->codec)->delete_acodec = quicktime_delete_codec_ulaw;
-	((quicktime_codec_t*)atrack->codec)->decode_video = 0;
-	((quicktime_codec_t*)atrack->codec)->encode_video = 0;
-	((quicktime_codec_t*)atrack->codec)->decode_audio = quicktime_decode_ulaw;
-	((quicktime_codec_t*)atrack->codec)->encode_audio = quicktime_encode_ulaw;
+	codec_base->priv = calloc(1, sizeof(quicktime_ulaw_codec_t));
+	codec_base->delete_acodec = quicktime_delete_codec_ulaw;
+	codec_base->decode_video = 0;
+	codec_base->encode_video = 0;
+	codec_base->decode_audio = quicktime_decode_ulaw;
+	codec_base->encode_audio = quicktime_encode_ulaw;
+	codec_base->fourcc = QUICKTIME_ULAW;
+	codec_base->title = "uLaw";
+	codec_base->desc = "uLaw";
+	codec_base->wav_id = 0x07;
 
 /* Init private items */
 	codec = ((quicktime_codec_t*)atrack->codec)->priv;
-	codec->int16toulaw_table = 0;
-	codec->ulawtoint16_table = 0;
-	codec->ulawtofloat_table = 0;
-	codec->read_buffer = 0;
-	codec->read_size = 0;
 }

@@ -140,6 +140,62 @@ VFrame** BC_Theme::new_button(char *overlay_path,
 }
 
 
+VFrame** BC_Theme::new_button(char *overlay_path, 
+	VFrame *up,
+	VFrame *hi,
+	VFrame *dn)
+{
+	VFrame default_data(get_image_data(overlay_path));
+	BC_ThemeSet *result = new BC_ThemeSet(3);
+
+	result->data[0] = new VFrame(*up);
+	result->data[1] = new VFrame(*hi);
+	result->data[2] = new VFrame(*dn);
+	for(int i = 0; i < 3; i++)
+		overlay(result->data[i], &default_data);
+	return result->data;
+}
+
+
+VFrame** BC_Theme::new_toggle(char *overlay_path, 
+	char *up_path,
+	char *hi_path,
+	char *checked_path,
+	char *dn_path,
+	char *checkedhi_path)
+{
+	VFrame default_data(get_image_data(overlay_path));
+	BC_ThemeSet *result = new BC_ThemeSet(5);
+
+	result->data[0] = new_image(up_path);
+	result->data[1] = new_image(hi_path);
+	result->data[2] = new_image(checked_path);
+	result->data[3] = new_image(dn_path);
+	result->data[4] = new_image(checkedhi_path);
+	for(int i = 0; i < 5; i++)
+		overlay(result->data[i], &default_data);
+	return result->data;
+}
+
+VFrame** BC_Theme::new_toggle(char *overlay_path, 
+	VFrame *up,
+	VFrame *hi,
+	VFrame *checked,
+	VFrame *dn,
+	VFrame *checkedhi)
+{
+	VFrame default_data(get_image_data(overlay_path));
+	BC_ThemeSet *result = new BC_ThemeSet(5);
+
+	result->data[0] = new VFrame(*up);
+	result->data[1] = new VFrame(*hi);
+	result->data[2] = new VFrame(*checked);
+	result->data[3] = new VFrame(*dn);
+	result->data[4] = new VFrame(*checkedhi);
+	for(int i = 0; i < 5; i++)
+		overlay(result->data[i], &default_data);
+	return result->data;
+}
 void BC_Theme::overlay(VFrame *dst, VFrame *src, int in_x1, int in_x2)
 {
 	int w;
@@ -261,6 +317,7 @@ unsigned char* BC_Theme::get_image_data(char *title)
 				offsets.append(*(int*)(contents_buffer + i));
 				i += 4;
 				start_of_title = contents_buffer + i;
+				used.append(0);
 			}
 			else
 				i++;
@@ -268,17 +325,20 @@ unsigned char* BC_Theme::get_image_data(char *title)
 		fclose(fd);
 	}
 
+// Image is the same as the last one
 	if(last_image && !strcasecmp(last_image, title))
 	{
 		return (unsigned char*)(data_buffer + last_offset);
 	}
 	else
+// Search for image anew.
 	for(int i = 0; i < contents.total; i++)
 	{
 		if(!strcasecmp(contents.values[i], title))
 		{
 			last_offset = offsets.values[i];
 			last_image = contents.values[i];
+			used.values[i] = 1;
 			return (unsigned char*)(data_buffer + offsets.values[i]);
 		}
 	}
@@ -286,6 +346,25 @@ unsigned char* BC_Theme::get_image_data(char *title)
 	fprintf(stderr, "Theme::get_image: %s not found.\n", title);
 	return 0;
 }
+
+void BC_Theme::check_used()
+{
+// Can't use because some images are gotten the old fashioned way.
+return;
+	int got_it = 0;
+	for(int i = 0; i < used.total; i++)
+	{
+		if(!used.values[i])
+		{
+			if(!got_it)
+				printf("BC_Theme::check_used: Images aren't used.\n");
+			printf("%s ", contents.values[i]);
+			got_it = 1;
+		}
+	}
+	if(got_it) printf("\n");
+}
+
 
 
 

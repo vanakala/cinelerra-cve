@@ -13,7 +13,7 @@ public:
 
 	int create_objects();
 
-	int direct_copy_possible(long start, int direction);
+	int direct_copy_possible(int64_t start, int direction);
 };
 
 

@@ -25,7 +25,7 @@ Assets::~Assets()
 
 int Assets::load(ArrayList<PluginServer*> *plugindb, 
 	FileXML *file, 
-	unsigned long load_flags)
+	uint32_t load_flags)
 {
 	int result = 0;
 
@@ -81,21 +81,14 @@ int Assets::save(ArrayList<PluginServer*> *plugindb, FileXML *file, char *path)
 
 Assets& Assets::operator=(Assets &assets)
 {
-//printf("Assets::operator= 1 %p\n", last);
 	while(last) delete last;
 
-//printf("Assets::operator= 2\n");
 	for(Asset *current = assets.first; current; current = NEXT)
 	{
-//printf("Assets::operator= 3\n");
 		Asset *new_asset;
-//printf("Assets::operator= 4\n");
 		append(new_asset = new Asset);
-//printf("Assets::operator= 5\n");
-		*new_asset = *current;
-//printf("Assets::operator= 6\n");
+		new_asset->copy_from(current, 1);
 	}
-//printf("Assets::operator= 7\n");
 
 	return *this;
 }
@@ -354,12 +347,22 @@ int Asset::reset_index()
 	return 0;
 }
 
-void Asset::copy_format(Asset *asset)
+void Asset::copy_from(Asset *asset, int do_index)
 {
-//printf("Asset::copy_format 1\n");
-	update_index(asset);
+	copy_location(asset);
+	copy_format(asset, do_index);
+}
 
-//printf("Asset::copy_format 1\n");
+void Asset::copy_location(Asset *asset)
+{
+	strcpy(this->path, asset->path);
+	strcpy(this->folder, asset->folder);
+}
+
+void Asset::copy_format(Asset *asset, int do_index)
+{
+	if(do_index) update_index(asset);
+
 	audio_data = asset->audio_data;
 	format = asset->format;
 	channels = asset->channels;
@@ -434,7 +437,7 @@ void Asset::copy_format(Asset *asset)
 	png_use_alpha = asset->png_use_alpha;
 }
 
-long Asset::get_index_offset(int channel)
+int64_t Asset::get_index_offset(int channel)
 {
 	if(channel < channels && index_offsets)
 		return index_offsets[channel];
@@ -444,8 +447,7 @@ long Asset::get_index_offset(int channel)
 
 Asset& Asset::operator=(Asset &asset)
 {
-	strcpy(this->path, asset.path);
-	strcpy(this->folder, asset.folder);
+	copy_location(&asset);
 	copy_format(&asset);
 	return *this;
 }
@@ -678,14 +680,14 @@ int Asset::read_video(FileXML *file)
 int Asset::read_index(FileXML *file)
 {
 	if(index_offsets) delete [] index_offsets;
-	index_offsets = new long[channels];
+	index_offsets = new int64_t[channels];
 	for(int i = 0; i < channels; i++) index_offsets[i] = 0;
 
 	int current_offset = 0;
 	int result = 0;
 
 	index_zoom = file->tag.get_property("ZOOM", 1);
-	index_bytes = file->tag.get_property("BYTES", (longest)0);
+	index_bytes = file->tag.get_property("BYTES", (int64_t)0);
 
 	while(!result)
 	{
@@ -1054,7 +1056,7 @@ int Asset::update_path(char *new_path)
 void Asset::update_index(Asset *asset)
 {
 //printf("Asset::update_index 1 %d\n", index_status);
-	index_status = asset->index_status;     // 0 ready  1 not tested  2 being built  3 small source
+	index_status = asset->index_status;
 	index_zoom = asset->index_zoom; 	 // zoom factor of index data
 	index_start = asset->index_start;	 // byte start of index data in the index file
 	index_bytes = asset->index_bytes;	 // Total bytes in source file for comparison before rebuilding the index
@@ -1070,7 +1072,7 @@ void Asset::update_index(Asset *asset)
 	
 	if(asset->index_offsets)
 	{
-		index_offsets = new long[asset->channels];
+		index_offsets = new int64_t[asset->channels];
 //printf("Asset::update_index 1\n");
 
 		int i;
@@ -1094,9 +1096,9 @@ int Asset::dump()
 	printf("   format %d\n", format);
 	printf("   audio_data %d channels %d samplerate %d bits %d byte_order %d signed %d header %d dither %d acodec %c%c%c%c\n",
 		audio_data, channels, sample_rate, bits, byte_order, signed_, header, dither, acodec[0], acodec[1], acodec[2], acodec[3]);
-	printf("   audio_length %ld\n", audio_length);
+	printf("   audio_length %lld\n", audio_length);
 	printf("   video_data %d layers %d framerate %f width %d height %d vcodec %c%c%c%c\n",
 		video_data, layers, frame_rate, width, height, vcodec[0], vcodec[1], vcodec[2], vcodec[3]);
-	printf("   video_length %ld \n", video_length);
+	printf("   video_length %lld \n", video_length);
 	return 0;
 }

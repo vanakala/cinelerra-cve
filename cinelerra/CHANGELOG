@@ -1257,3 +1257,109 @@ decode_lock is static because it shouldn't be deleted.
 Rest has no effect.
 
 
+
+
+
+
+
+
+
+
+
+
+5/16/03
+
+Audio and video playback through firewire.  Can't get a playable
+audio stream for the camcorder in realtime but the interface is there.
+
+Quicktime: Libraw1394 and grabbing removed.  Didn't serve any purpose
+since  playback requires a completely different mechanism than record.
+
+Quicktime, XMovie, Cinelerra: ffmpeg decoder used in MPEG-4.  This
+gives slightly faster playback but is lousy at seeking.
+
+More file writing recovery from crashes.
+
+Cinelerra: Module dereferences renderengine less often in nonrealtime
+effects where renderengine is 0.
+
+Quicktime: Importing of dvgrab and lavtools AVI files.
+Cinelerra: Hitting space rapidly doesn't lock up recording as much.
+Cinelerra: Resize Render effect window.
+Cinelerra: Changing parameters for PCM file works more often.
+
+Cinelerra: tiff upgraded to 3.1.7
+Firehose: Fixed bug in firehose reciever.
+Cinelerra: Virtual file system for renderfarm.
+ - The filesystem prefix for rendering nodes was decidedly useless so it was
+discontinued.
+Cinelerra: Time stretch based on overlapping windows instead of FFT.
+Cinelerra: Freeze frame has line doubling option.
+
+Integrated mpeg2enc, toolame, lame encoding as libraries.
+Toolame refurbishment:
+ - converted exit to return in main.
+ - put prototypes in filempeg.h
+ - created input buffer management.
+ - forced stdin at all times
+ - created error and eof variables.
+ - freq2bark -> toolame_freq2bark
+mpeg2enc symbol conflicts:
+ - putbits -> mpeg2enc_putbits
+ - SmpFrqIndex -> toolame_SmpFrqIndex
+ - BitrateIndex -> toolame_BitrateIndex
+
+edit and effect titles stay visible at all times.  We'll see how long
+this lasts.
+
+long replaced with int64 wherever possible.  After many years of
+assuming long would automatically scale to whatever it was compiled on,
+it appears more of a pain than a scalability point in matters of
+function overloading.
+
+Default configuration should run on stock Redhat 9.0 system.
+
+
+
+Patches:
+loop-crush.diff applied
+exit-crush.diff too much code for no effect
+splash-leak.diff applied
+overlay-speedup.diff applied
+overlay-speedup2.diff applied
+titler-stroke.diff
+titler-stroke2.diff applied but disabled due to SMP crash. (crush)
+	Added Outline style and tumbler.
+	Reduced number of exits due to bounds checking errors.
+
+
+quicktime_leak.diff applied
+small-clean2.diff file may be closed and reopened without calling destructor.
+
+patchbay_free.diff applied but the real problem was PatchBay::update() 
+	dereferenced non-existent tracks to get the ID.
+
+
+perspective_alpha_stretch.diff applied
+virtualconsole_leak.diff applied but the default destructors seem to be 
+	getting called.
+dvlib_bug_workaround.diff applied
+debian_new_dvlib_compile.diff applied
+
+multihead_compositor-1.1.5.diff rejected  The X11 parameter in Playback
+preferences is the compositor display.
+
+filexml.diff applied
+paste-outpoints.diff needs testing
+
+paste-outpoints.diff rejected.  Broke other paste behavior.  The paste
+behavior is not a uniform case but the result of trying behaviors on a
+case by case basis and deciding which behavior is the most convenient. 
+Most of the time what's convenient is not the most scientific.
+
+
+
+
+
+
+

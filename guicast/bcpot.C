@@ -163,7 +163,7 @@ void BC_Pot::show_value_tooltip()
 	keypress_tooltip_timer = 2000;
 }
 
-int BC_Pot::repeat_event(long duration)
+int BC_Pot::repeat_event(int64_t duration)
 {
 	if(duration == top_level->get_resources()->tooltip_delay)
 	{
@@ -439,9 +439,9 @@ void BC_FPot::update(float value)
 
 BC_IPot::BC_IPot(int x, 
 	int y, 
-	long value, 
-	long minvalue, 
-	long maxvalue, 
+	int64_t value, 
+	int64_t minvalue, 
+	int64_t maxvalue, 
 	VFrame **data)
  : BC_Pot(x, y, data)
 {
@@ -481,20 +481,20 @@ float BC_IPot::get_percentage()
 
 int BC_IPot::percentage_to_value(float percentage)
 {
-	long old_value = value;
-	value = (long)(percentage * (maxvalue - minvalue) + minvalue);
+	int64_t old_value = value;
+	value = (int64_t)(percentage * (maxvalue - minvalue) + minvalue);
 	if(value < minvalue) value = minvalue;
 	if(value > maxvalue) value = maxvalue;
 	if(value != old_value) return 1;
 	return 0;
 }
 
-long BC_IPot::get_value()
+int64_t BC_IPot::get_value()
 {
 	return value;
 }
 
-void BC_IPot::update(long value)
+void BC_IPot::update(int64_t value)
 {
 	if(this->value != value)
 	{
@@ -511,7 +511,7 @@ void BC_IPot::update(long value)
 
 BC_QPot::BC_QPot(int x, 
 	int y, 
-	long value, 
+	int64_t value, 
 	VFrame **data)
  : BC_Pot(x, y, data)
 {
@@ -551,20 +551,20 @@ float BC_QPot::get_percentage()
 
 int BC_QPot::percentage_to_value(float percentage)
 {
-	long old_value = value;
-	value = (long)(percentage * (maxvalue - minvalue) + minvalue);
+	int64_t old_value = value;
+	value = (int64_t)(percentage * (maxvalue - minvalue) + minvalue);
 	if(value < minvalue) value = minvalue;
 	if(value > maxvalue) value = maxvalue;
 	if(value != old_value) return 1;
 	return 0;
 }
 
-long BC_QPot::get_value()
+int64_t BC_QPot::get_value()
 {
 	return Freq::tofreq(value);
 }
 
-void BC_QPot::update(long value)
+void BC_QPot::update(int64_t value)
 {
 	if(this->value != value)
 	{

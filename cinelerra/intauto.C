@@ -35,7 +35,7 @@ void IntAuto::load(FileXML *file)
 //printf("IntAuto::load 1 %d\n", value);
 }
 
-void IntAuto::copy(long start, long end, FileXML *file, int default_auto)
+void IntAuto::copy(int64_t start, int64_t end, FileXML *file, int default_auto)
 {
 	file->tag.set_title("AUTO");
 	if(default_auto)

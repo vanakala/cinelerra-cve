@@ -45,6 +45,7 @@ public:
 	int firewire_channels;
 	int firewire_channel;
 	int firewire_port;
+	int firewire_frames;
 	char firewire_path[BCTEXTLEN];
 	int firewire_syt;
 };

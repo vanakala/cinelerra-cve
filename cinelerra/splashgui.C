@@ -24,15 +24,21 @@ SplashGUI::SplashGUI(VFrame *bg, int x, int y)
 
 SplashGUI::~SplashGUI()
 {
+	delete bg;
 }
 
 void SplashGUI::create_objects()
 {
 	draw_vframe(bg, 0, 0);
-// 	add_subwindow(operation = 
-// 		new BC_Title(0, 
-// 			get_h() - get_text_height(MEDIUMFONT),
-// 			"Loading..."));
+	add_subwindow(progress = new BC_ProgressBar(5, 
+		get_h() - get_resources()->progress_images[0]->get_h() - 5,
+		get_w() - 10,
+		0,
+		0));
+	add_subwindow(operation = 
+		new BC_Title(5, 
+			progress->get_y() - get_text_height(MEDIUMFONT) - 5,
+			"Loading..."));
 	flash();
 	show_window();
 }

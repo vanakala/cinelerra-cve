@@ -1,12 +1,12 @@
 #include "qtprivate.h"
 #include "workarounds.h"
 
-longest quicktime_add(longest a, longest b)
+int64_t quicktime_add(int64_t a, int64_t b)
 {
 	return a + b;
 }
 
-longest quicktime_add3(longest a, longest b, longest c)
+int64_t quicktime_add3(int64_t a, int64_t b, int64_t c)
 {
 	return a + b + c;
 }

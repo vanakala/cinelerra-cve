@@ -1,6 +1,7 @@
 #ifndef LABEL_H
 #define LABEL_H
 
+#include <stdint.h>
 
 #include "edl.inc"
 #include "guicast.h"
@@ -51,8 +52,11 @@ public:
 	int toggle_label(double start, double end);
 	int delete_all();
 	int save(FileXML *xml);
-	int load(FileXML *xml, unsigned long load_flags);
-	void insert_labels(Labels *labels, double start, double length, int paste_silence = 1);
+	int load(FileXML *xml, uint32_t load_flags);
+	void insert_labels(Labels *labels, 
+		double start, 
+		double length, 
+		int paste_silence = 1);
 
 	int modify_handles(double oldposition, 
 		double newposition, 

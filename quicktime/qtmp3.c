@@ -1,8 +1,4 @@
 #include "funcprotos.h"
-
-#undef MMX
-/* We HAVE to fix all the #ifdef so that
- * something like HAVE_MMX is used EVERYWHERE */
 #include "lame.h"
 #include "mpeg3private.h"
 #include "mpeg3protos.h"
@@ -11,7 +7,6 @@
 
 #define CLAMP(x, y, z) ((x) = ((x) <  (y) ? (y) : ((x) > (z) ? (z) : (x))))
 
-// Attempts to read more samples than this will crash
 #define OUTPUT_ALLOCATION 0x100000
 
 //static FILE *test = 0;
@@ -27,24 +22,21 @@ typedef struct
 
 
 // Number of first sample in output relative to file
-	longest output_position;
+	int64_t output_position;
 // Number of samples in output buffer
 	long output_size;
 // Number of samples allocated in output buffer
 	long output_allocated;
 // Current reading position in file
-	longest chunk;
-// Number of samples decoded in the current chunk
-	int chunk_samples;
+	int64_t chunk;
 	int decode_initialized;
 	float **output;
-// Signal the decoder loop
-	int done;
 
 
 
 // mp3 encoder
 	lame_global_flags *lame_global;
+// This calculates the number of samples per chunk
 	mpeg3_layer_t *encoded_header;
 	int encode_initialized;
 	float **input;
@@ -78,6 +70,7 @@ static int delete_codec(quicktime_audio_map_t *atrack)
 	{
 		lame_close(codec->lame_global);
 	}
+
 	if(codec->input)
 	{
 		int i;
@@ -87,17 +80,22 @@ static int delete_codec(quicktime_audio_map_t *atrack)
 		}
 		free(codec->input);
 	}
+
 	if(codec->encoder_output)
 		free(codec->encoder_output);
-	if(codec->encoded_header)  mpeg3_delete_layer(codec->encoded_header);
+
+	if(codec->encoded_header)
+		mpeg3_delete_layer(codec->encoded_header);
+
 	free(codec);
+
 	return 0;
 }
 
 static int chunk_len(quicktime_t *file,
 	quicktime_mp3_codec_t *codec,
-	longest offset,
-	longest next_chunk)
+	int64_t offset,
+	int64_t next_chunk)
 {
 	int result = 0;
 	unsigned char header[4];
@@ -155,21 +153,21 @@ static int decode(quicktime_t *file,
 	long end_position = current_position + samples;
 	float *pcm;
 	int i, j, k;
-	longest offset1;
-	longest offset2;
+	int64_t offset1;
+	int64_t offset2;
 	int chunk_size;
 	int new_size;
 	int frame_size;
 	int try = 0;
 	float **temp_output;
 
+	if(samples > OUTPUT_ALLOCATION)
+		printf("decode: can't read more than %d samples at a time.\n", OUTPUT_ALLOCATION);
 
-//printf(__FUNCTION__ " mp3 1\n");
+
+//printf("decode 1\n");
 	if(output_i) bzero(output_i, sizeof(int16_t) * samples);
 	if(output_f) bzero(output_f, sizeof(float) * samples);
-
-	if(samples > OUTPUT_ALLOCATION)
-		printf(__FUNCTION__ ": can't read more than %d samples at a time.\n", OUTPUT_ALLOCATION);
 
 	temp_output = malloc(sizeof(float*) * track_map->channels);
 
@@ -185,8 +183,9 @@ static int decode(quicktime_t *file,
 
 // We know the first mp3 packet in the chunk has a pcm_offset from the encoding.
 		codec->output_size = 0;
-		codec->chunk_samples = 0;
+//printf("decode 1 %lld %d\n", codec->output_position, quicktime_chunk_samples(trak, codec->chunk));
 		codec->output_position = quicktime_sample_of_chunk(trak, codec->chunk);
+//printf("decode 2 %lld\n", codec->output_position);
 
 // Initialize and load initial buffer for decoding
 		if(!codec->decode_initialized)
@@ -220,7 +219,7 @@ static int decode(quicktime_t *file,
 		if(codec->packet_allocated < chunk_size && 
 			codec->packet_buffer)
 		{
-			if(codec->packet_buffer) free(codec->packet_buffer);
+			free(codec->packet_buffer);
 			codec->packet_buffer = 0;
 		}
 
@@ -324,7 +323,7 @@ static int decode(quicktime_t *file,
 	}
 
 	free(temp_output);
-//printf(__FUNCTION__ " mp3 2\n");
+//printf("decode 100\n");
 	return 0;
 }
 
@@ -377,7 +376,7 @@ static int write_frames(quicktime_t *file,
 			if(i + frame_size <= codec->encoder_output_size)
 			{
 // Write the chunk
-				longest offset;
+				int64_t offset;
 				int frame_samples = mpeg3audio_dolayer3(codec->encoded_header, 
 					header, 
 					frame_size, 
@@ -451,8 +450,10 @@ static int encode(quicktime_t *file,
 		lame_set_in_samplerate(codec->lame_global, 
 			trak->mdia.minf.stbl.stsd.table[0].sample_rate);
 		if((result = lame_init_params(codec->lame_global)) < 0)
-			printf(__FUNCTION__ " lame_init_params returned %d\n", result);
+			printf("encode: lame_init_params returned %d\n", result);
 		codec->encoded_header = mpeg3_new_layer();
+		if(file->use_avi)
+			trak->mdia.minf.stbl.stsd.table[0].sample_size = 0;
 	}
 
 
@@ -538,7 +539,7 @@ static int set_parameter(quicktime_t *file,
 static void flush(quicktime_t *file, int track)
 {
 	int result = 0;
-	longest offset = quicktime_position(file);
+	int64_t offset = quicktime_position(file);
 	quicktime_audio_map_t *track_map = &(file->atracks[track]);
 	quicktime_trak_t *trak = track_map->track;
 	quicktime_mp3_codec_t *codec = ((quicktime_codec_t*)track_map->codec)->priv;
@@ -559,16 +560,25 @@ static void flush(quicktime_t *file, int track)
 
 void quicktime_init_codec_mp3(quicktime_audio_map_t *atrack)
 {
+	quicktime_codec_t *codec_base = (quicktime_codec_t*)atrack->codec;
 	quicktime_mp3_codec_t *codec;
 
 /* Init public items */
-	((quicktime_codec_t*)atrack->codec)->priv = calloc(1, sizeof(quicktime_mp3_codec_t));
-	((quicktime_codec_t*)atrack->codec)->delete_acodec = delete_codec;
-	((quicktime_codec_t*)atrack->codec)->decode_audio = decode;
-	((quicktime_codec_t*)atrack->codec)->encode_audio = encode;
-	((quicktime_codec_t*)atrack->codec)->set_parameter = set_parameter;
-	((quicktime_codec_t*)atrack->codec)->flush = flush;
+	codec_base->priv = calloc(1, sizeof(quicktime_mp3_codec_t));
+	codec_base->delete_acodec = delete_codec;
+	codec_base->decode_audio = decode;
+	codec_base->encode_audio = encode;
+	codec_base->set_parameter = set_parameter;
+	codec_base->flush = flush;
+	codec_base->fourcc = QUICKTIME_MP3;
+	codec_base->title = "MP3";
+	codec_base->desc = "MP3 for video";
+	codec_base->wav_id = 0x55;
 
-	codec = ((quicktime_codec_t*)atrack->codec)->priv;
+	codec = codec_base->priv;
 	codec->bitrate = 256000;
 }
+
+
+
+

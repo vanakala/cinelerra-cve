@@ -54,7 +54,7 @@ void TimeEntry::time_to_seconds(char *result, double time)
 {
 	int hour = (int)(time / 3600);
 	int minute = (int)(time / 60 - hour * 60);
-	float second = (float)time - (long)hour * 3600 - (long)minute * 60;
+	float second = (float)time - (int64_t)hour * 3600 - (int64_t)minute * 60;
 	sprintf(result, "%.3f", second);
 }
 

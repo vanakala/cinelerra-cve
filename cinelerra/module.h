@@ -38,7 +38,7 @@ public:
 	AttachmentPoint* attachment_of(Plugin *plugin);
 	void dump();
 	int render_init();
-	void update_transition(long current_position, int direction);
+	void update_transition(int64_t current_position, int direction);
 	EDL* get_edl();
 
 // CICache used during effect

@@ -36,10 +36,10 @@ public:
 	ArrayList<Asset*>* get_asset_list();
 
 	EDL *edl;
-	long audio_position;
-	long video_position;
-	long audio_end;
-	long video_end;
+	int64_t audio_position;
+	int64_t video_position;
+	int64_t audio_end;
+	int64_t video_end;
 	double total_start;
 	double total_end;
 	double total_len;
@@ -51,8 +51,8 @@ public:
 	int total_digits;      // Total number of digits including padding the user specified.
 	double package_len;    // Target length of a single package
 	double min_package_len; // Minimum package length after load balancing
-	long total_packages;   // Total packages to base calculations on
-	long total_allocated;  // Total packages to test the existence of
+	int64_t total_packages;   // Total packages to base calculations on
+	int64_t total_allocated;  // Total packages to test the existence of
 	int nodes;
 	MWindow *mwindow;
 	RenderPackage **packages;

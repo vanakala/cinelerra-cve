@@ -42,7 +42,12 @@ void quicktime_minf_init_audio(quicktime_t *file,
 {
 	minf->is_audio = 1;
 /* smhd doesn't store anything worth initializing */
-	quicktime_stbl_init_audio(file, &(minf->stbl), channels, sample_rate, bits, compressor);
+	quicktime_stbl_init_audio(file, 
+		&(minf->stbl), 
+		channels, 
+		sample_rate, 
+		bits, 
+		compressor);
 	quicktime_hdlr_init_data(&(minf->hdlr));
 	quicktime_dinf_init_all(&(minf->dinf));
 }

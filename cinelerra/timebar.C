@@ -30,7 +30,7 @@
 
 LabelGUI::LabelGUI(MWindow *mwindow, 
 	TimeBar *timebar, 
-	long pixel, 
+	int64_t pixel, 
 	int y, 
 	double position,
 	VFrame **data)
@@ -87,7 +87,7 @@ int LabelGUI::handle_event()
 
 InPointGUI::InPointGUI(MWindow *mwindow, 
 	TimeBar *timebar, 
-	long pixel, 
+	int64_t pixel, 
 	double position)
  : LabelGUI(mwindow, 
  	timebar, 
@@ -112,7 +112,7 @@ int InPointGUI::get_y(MWindow *mwindow, TimeBar *timebar)
 
 OutPointGUI::OutPointGUI(MWindow *mwindow, 
 	TimeBar *timebar, 
-	long pixel, 
+	int64_t pixel, 
 	double position)
  : LabelGUI(mwindow, 
  	timebar, 
@@ -135,7 +135,7 @@ int OutPointGUI::get_y(MWindow *mwindow, TimeBar *timebar)
 
 PresentationGUI::PresentationGUI(MWindow *mwindow, 
 	TimeBar *timebar, 
-	long pixel, 
+	int64_t pixel, 
 	double position)
  : LabelGUI(mwindow, timebar, pixel, get_y(mwindow, timebar), position)
 {
@@ -181,10 +181,10 @@ int TimeBar::create_objects()
 }
 
 
-long TimeBar::position_to_pixel(double position)
+int64_t TimeBar::position_to_pixel(double position)
 {
 	get_edl_length();
-	return (long)(position / time_per_pixel);
+	return (int64_t)(position / time_per_pixel);
 }
 
 
@@ -201,7 +201,7 @@ void TimeBar::update_labels()
 			current = NEXT)
 		{
 //printf("TimeBar::update_labels 1 %p\n", current);
-			long pixel = position_to_pixel(current->position);
+			int64_t pixel = position_to_pixel(current->position);
 //printf("TimeBar::update_labels 2 %d\n", pixel);
 
 			if(pixel >= 0 && pixel < get_w())
@@ -293,7 +293,7 @@ void TimeBar::update_highlights()
 void TimeBar::update_points()
 {
 	EDL *edl = get_edl();
-	long pixel;
+	int64_t pixel;
 
 	if(edl) pixel = position_to_pixel(edl->local_session->in_point);
 //printf("TimeBar::update_points 1 %d\n", pixel);
@@ -439,8 +439,8 @@ void TimeBar::draw_range()
 		EDL *edl;
 		if(edl = get_edl())
 		{
-			long pixel = position_to_pixel(edl->local_session->selectionstart);
-// Draw insertion point position if this timebar belongs to a window which 
+			int64_t pixel = position_to_pixel(edl->local_session->selectionstart);
+// Draw insertion point position if this timebar beint64_ts to a window which 
 // has something other than the master EDL.
 //printf("TimeBar::draw_range %f\n", edl->local_session->selectionstart);
 			set_color(RED);
@@ -733,7 +733,7 @@ int TimeBar::button_press_event()
 	return 0;
 }
 
-int TimeBar::repeat_event(long duration)
+int TimeBar::repeat_event(int64_t duration)
 {
 	if(!mwindow->gui->canvas->drag_scroll) return 0;
 	if(duration != BC_WindowBase::get_resources()->scroll_repeat) return 0;
@@ -913,37 +913,37 @@ int TimeBar::select_region(double position)
 	return 0;
 }
 
-int TimeBar::copy(long start, long end, FileXML *xml)
+int TimeBar::copy(int64_t start, int64_t end, FileXML *xml)
 {
 //	labels->copy(start, end, xml);
 	return 0;
 }
 
-int TimeBar::paste(long start, long end, long sample_length, FileXML *xml)
+int TimeBar::paste(int64_t start, int64_t end, int64_t sample_length, FileXML *xml)
 {
 //	labels->paste(start, end, sample_length, xml);
 	return 0;
 }
 
-int TimeBar::paste_output(long startproject, long endproject, long startsource, long endsource, RecordLabels *new_labels)
+int TimeBar::paste_output(int64_t startproject, int64_t endproject, int64_t startsource, int64_t endsource, RecordLabels *new_labels)
 {
 //	labels->paste_output(startproject, endproject, startsource, endsource, new_labels);
 	return 0;
 }
 
-int TimeBar::clear(long start, long end)
+int TimeBar::clear(int64_t start, int64_t end)
 { 
 //labels->clear(start, end); 	
 	return 0;
 }
 
-int TimeBar::paste_silence(long start, long end)
+int TimeBar::paste_silence(int64_t start, int64_t end)
 { 
 //labels->paste_silence(start, end); 	
 	return 0;
 }
 
-int TimeBar::modify_handles(long oldposition, long newposition, int currentend)
+int TimeBar::modify_handles(int64_t oldposition, int64_t newposition, int currentend)
 { 
 //labels->modify_handles(oldposition, newposition, currentend); 	
 	return 0;

@@ -60,6 +60,7 @@ int mpeg3io_open_file(mpeg3_fs_t *fs)
 /* Need to perform authentication before reading a single byte. */
 	mpeg3_get_keys(fs->css, fs->path);
 
+//printf("mpeg3io_open_file 1 %s\n", fs->path);
 	if(!(fs->fd = fopen64(fs->path, "rb")))
 	{
 		perror("mpeg3io_open_file");
@@ -90,7 +91,7 @@ int mpeg3io_read_data(unsigned char *buffer, long bytes, mpeg3_fs_t *fs)
 {
 	int result = 0, i, fragment_size;
 	
-//fprintf(stderr, "mpeg3io_read_data 1 %d\n", bytes);
+//printf("mpeg3io_read_data 1 %d\n", bytes);
 	for(i = 0; bytes > 0 && !result; )
 	{
 		result = mpeg3io_sync_buffer(fs);
@@ -108,9 +109,10 @@ int mpeg3io_read_data(unsigned char *buffer, long bytes, mpeg3_fs_t *fs)
 		fs->current_byte += fragment_size;
 		i += fragment_size;
 		bytes -= fragment_size;
+//printf("mpeg3io_read_data 10 %d\n", bytes);
 	}
 
-//fprintf(stderr, "mpeg3io_read_data 2 %d\n", bytes);
+//printf("mpeg3io_read_data 100 %d\n", bytes);
 	return (result && bytes);
 }
 
@@ -138,9 +140,11 @@ void mpeg3io_read_buffer(mpeg3_fs_t *fs)
 		fs->buffer_size = fs->current_byte - fs->buffer_position + 1;
 		fs->buffer_offset = fs->buffer_size - 1;
 
-//printf(__FUNCTION__ " 1 %x %x\n", fs->current_byte, fs->buffer_position);
+//printf("mpeg3io_read_buffer 1 %x %x\n", fs->current_byte, fs->buffer_position);
 		fseeko64(fs->fd, fs->buffer_position, SEEK_SET);
+//printf("mpeg3io_read_buffer 10\n");
 		fs->buffer_size = fread(fs->buffer, 1, fs->buffer_size, fs->fd);
+//printf("mpeg3io_read_buffer 100\n");
 	}
 	else
 // Sequential forward buffer or random seek
@@ -149,8 +153,11 @@ void mpeg3io_read_buffer(mpeg3_fs_t *fs)
 		fs->buffer_position = fs->current_byte;
 		fs->buffer_offset = 0;
 
+//printf("mpeg3io_read_buffer 200\n");
 		result = fseeko64(fs->fd, fs->buffer_position, SEEK_SET);
+//printf("mpeg3io_read_buffer 210\n");
 		fs->buffer_size = fread(fs->buffer, 1, MPEG3_IO_SIZE, fs->fd);
+//printf("mpeg3io_read_buffer 220\n");
 /*
  * printf(__FUNCTION__ " 2 result=%d ftell=%llx buffer_position=%llx %02x%02x%02x%02x%02x%02x%02x%02x %02x%02x\n", 
  * result,

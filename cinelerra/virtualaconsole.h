@@ -19,22 +19,22 @@ public:
 	void get_playable_tracks();
 	void run();
 
-	int process_buffer(long input_len,
-		long input_position,
+	int process_buffer(int64_t input_len,
+		int64_t input_position,
 		int last_buffer,
-		long absolute_position);
+		int64_t absolute_position);
 		void process_console();
 
 // set up virtual console and buffers
 	int init_rendering(int duplicate);
-//	int build_virtual_console(int duplicate, long current_position);
+//	int build_virtual_console(int duplicate, int64_t current_position);
 	VirtualNode* new_toplevel_node(Track *track, Module *module, int track_number);
 
 // delete buffers, tables, and mutexes
 	int stop_rendering(int duplicate);
 
 // process a buffer
-	int process_buffer(int buffer, long input_len, long input_position, long absolute_position);
+	int process_buffer(int buffer, int64_t input_len, int64_t input_position, int64_t absolute_position);
 	int send_last_output_buffer();  // cause audio device to quit
 
 // pointers to audio to read from disk

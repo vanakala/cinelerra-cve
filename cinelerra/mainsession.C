@@ -180,6 +180,8 @@ int MainSession::load_defaults(Defaults *defaults)
 
 	plugindialog_w = defaults->get("PLUGINDIALOG_W", 510);
 	plugindialog_h = defaults->get("PLUGINDIALOG_H", 415);
+	menueffect_w = defaults->get("MENUEFFECT_W", 580);
+	menueffect_h = defaults->get("MENUEFFECT_H", 350);
 
 	boundaries();
 	return 0;
@@ -230,6 +232,9 @@ int MainSession::save_defaults(Defaults *defaults)
 
 	defaults->update("PLUGINDIALOG_W", plugindialog_w);
 	defaults->update("PLUGINDIALOG_H", plugindialog_h);
+
+	defaults->update("MENUEFFECT_W", menueffect_w);
+	defaults->update("MENUEFFECT_H", menueffect_h);
 
 
 

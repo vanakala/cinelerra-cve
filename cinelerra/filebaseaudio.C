@@ -4,9 +4,9 @@
 #include "filebase.h"
 
 
-long FileBase::samples_to_raw(char *out_buffer, 
+int64_t FileBase::samples_to_raw(char *out_buffer, 
 							float **in_buffer,
-							long input_len, 
+							int64_t input_len, 
 							int bits, 
 							int channels,
 							int byte_order,
@@ -16,10 +16,10 @@ long FileBase::samples_to_raw(char *out_buffer,
 	float *buffer_channel;    // channel in input buffer
 	float *buffer_channel_end;
 	int channel;
-	long int_sample, int_sample2;
+	int64_t int_sample, int_sample2;
 	float float_sample;
-	long dither_value, dither_scale = 255;
-	long bytes = input_len * channels * (file->bytes_per_sample(bits));
+	int64_t dither_value, dither_scale = 255;
+	int64_t bytes = input_len * channels * (file->bytes_per_sample(bits));
 	int machine_byte_order = get_byte_order();
 
 	switch(bits)
@@ -39,7 +39,7 @@ long FileBase::samples_to_raw(char *out_buffer,
 						for( ; buffer_channel < buffer_channel_end; buffer_channel++)
 						{
 							float_sample = *buffer_channel * 0x7fff;
-							int_sample = (long)float_sample;
+							int_sample = (int64_t)float_sample;
 							if(int_sample > -0x7f00) { dither_value = rand() % dither_scale; int_sample -= dither_value; }
 							int_sample /= 0x100;  // rotating bits screws up the signs
 							*output_ptr = int_sample;
@@ -84,7 +84,7 @@ long FileBase::samples_to_raw(char *out_buffer,
 						for( ; buffer_channel < buffer_channel_end; buffer_channel++)
 						{
 							float_sample = *buffer_channel * 0x7fffff;
-							int_sample = (long)float_sample;
+							int_sample = (int64_t)float_sample;
 							if(int_sample > -0x7fff00) { dither_value = rand() % dither_scale; int_sample -= dither_value; }
 							int_sample /= 0x100;
 							*output_ptr = int_sample;
@@ -118,7 +118,7 @@ long FileBase::samples_to_raw(char *out_buffer,
 					for( ; buffer_channel < buffer_channel_end; buffer_channel++)
 					{
 						float_sample = *buffer_channel * 0x7fffff;
-						int_sample = (long)float_sample;
+						int_sample = (int64_t)float_sample;
 						int_sample2 = int_sample & 0xff0000;
 						*output_ptr++ = (int_sample & 0xff);
 						int_sample &= 0xff00;
@@ -210,11 +210,11 @@ long FileBase::samples_to_raw(char *out_buffer,
 				}
 
 int FileBase::raw_to_samples(float *out_buffer, char *in_buffer, 
-		long samples, int bits, int channels, int channel, int feather, 
+		int64_t samples, int bits, int channels, int channel, int feather, 
 		float lfeather_len, float lfeather_gain, float lfeather_slope)
 {
-	long output_current = 0;  // position in output buffer
-	long input_len = samples;     // length of input buffer
+	int64_t output_current = 0;  // position in output buffer
+	int64_t input_len = samples;     // length of input buffer
 // The following are floats because they are multiplied by the slope to get the gain.
 	float feather_current;     // input position for feather
 
@@ -347,10 +347,10 @@ int FileBase::raw_to_samples(float *out_buffer, char *in_buffer,
 }
 
 int FileBase::overlay_float_buffer(float *out_buffer, float *in_buffer, 
-		long samples, 
+		int64_t samples, 
 		float lfeather_len, float lfeather_gain, float lfeather_slope)
 {
-	long output_current = 0;
+	int64_t output_current = 0;
 	float sample, current_gain;
 	float feather_current;     // input position for feather
 
@@ -366,9 +366,9 @@ int FileBase::overlay_float_buffer(float *out_buffer, float *in_buffer,
 }
 
 
-int FileBase::get_audio_buffer(char **buffer, long len, long bits, long channels)
+int FileBase::get_audio_buffer(char **buffer, int64_t len, int64_t bits, int64_t channels)
 {
-	long bytes = len * channels * (file->bytes_per_sample(bits));
+	int64_t bytes = len * channels * (file->bytes_per_sample(bits));
 	if(*buffer && bytes > prev_bytes) 
 	{ 
 		delete [] *buffer; 
@@ -379,7 +379,7 @@ int FileBase::get_audio_buffer(char **buffer, long len, long bits, long channels
 	if(!*buffer) *buffer = new char[bytes];
 }
 
-int FileBase::get_float_buffer(float **buffer, long len)
+int FileBase::get_float_buffer(float **buffer, int64_t len)
 {
 	if(*buffer && len > prev_len) 
 	{ 

@@ -76,6 +76,7 @@ int FileVorbis::open_file(int rd, int wr)
 //printf("FileVorbis::open_file 1\n");
 	if(rd)
 	{
+//printf("FileVorbis::open_file 1\n");
 		if(!(fd = fopen(asset->path, "rb")))
 		{
 			printf("FileVorbis::open_file %s: %s\n", asset->path, strerror(errno));
@@ -83,7 +84,7 @@ int FileVorbis::open_file(int rd, int wr)
 		}
 		else
 		{
-//printf("FileVorbis::open_file 1 %p %p\n", fd, vf);
+//printf("FileVorbis::open_file 2 %p %p\n", fd, vf);
 			if(ov_open(fd, &vf, NULL, 0) < 0)
 			{
 				printf("FileVorbis::open_file %s: invalid bitstream.\n", asset->path);
@@ -234,7 +235,7 @@ int FileVorbis::close_file()
 }
 
 
-int FileVorbis::write_samples(double **buffer, long len)
+int FileVorbis::write_samples(double **buffer, int64_t len)
 {
 	if(!fd) return 0;
 	int result = 0;
@@ -256,7 +257,7 @@ int FileVorbis::write_samples(double **buffer, long len)
 	return result;
 }
 
-int FileVorbis::read_samples(double *buffer, long len)
+int FileVorbis::read_samples(double *buffer, int64_t len)
 {
 	if(!fd) return 0;
 

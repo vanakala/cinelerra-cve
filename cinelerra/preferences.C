@@ -12,8 +12,6 @@
 #include "videoconfig.h"
 #include "videodevice.inc"
 #include <string.h>
-#include <ctype.h>
-#include <stdlib.h>	// getenv
 
 //#define CLAMP(x, y, z) (x) = ((x) < (y) ? (y) : ((x) > (z) ? (z) : (x)))
 
@@ -47,6 +45,7 @@ Preferences::Preferences()
 	render_preroll = 0.5;
 	brender_preroll = 0;
 	renderfarm_mountpoint[0] = 0;
+	renderfarm_vfs = 1;
 	renderfarm_job_count = 1;
 	brender_asset = new Asset;
 	brender_asset->audio_data = 0;
@@ -54,9 +53,6 @@ Preferences::Preferences()
 	use_brender = 0;
 	brender_fragment = 1;
 	local_rate = 0.0;
-    	screen_compositor = -1;	// use standard display
-    	screen_viewer = -1;	// ditto
-    	screen_resources = -1;	// ditto
 }
 
 Preferences::~Preferences()
@@ -113,9 +109,6 @@ Preferences& Preferences::operator=(Preferences &that)
 	strcpy(global_plugin_dir, that.global_plugin_dir);
 	strcpy(local_plugin_dir, that.local_plugin_dir);
 	strcpy(theme, that.theme);
-	screen_compositor = that.screen_compositor;
-	screen_viewer = that.screen_viewer;
-	screen_resources = that.screen_resources;
 
 	cache_size = that.cache_size;
 	renderfarm_nodes.remove_all_objects();
@@ -135,6 +128,7 @@ Preferences& Preferences::operator=(Preferences &that)
 	render_preroll = that.render_preroll;
 	brender_preroll = that.brender_preroll;
 	renderfarm_job_count = that.renderfarm_job_count;
+	renderfarm_vfs = that.renderfarm_vfs;
 	strcpy(renderfarm_mountpoint, that.renderfarm_mountpoint);
 	renderfarm_consolidate = that.renderfarm_consolidate;
 	use_brender = that.use_brender;
@@ -183,9 +177,6 @@ int Preferences::load_defaults(Defaults *defaults)
 	defaults->get("GLOBAL_PLUGIN_DIR", global_plugin_dir);
 	defaults->get("LOCAL_PLUGIN_DIR", local_plugin_dir);
 	defaults->get("THEME", theme);
-	screen_compositor = defaults->get("SCREEN_COMPOSITOR", screen_compositor);
-	screen_viewer = defaults->get("SCREEN_VIEWER", screen_viewer);
-	screen_resources = defaults->get("SCREEN_RESOURCES", screen_resources);
 
 	sprintf(brender_asset->path, "/tmp/brender");
 	brender_asset->format = FILE_JPEG_LIST;
@@ -201,6 +192,7 @@ int Preferences::load_defaults(Defaults *defaults)
 	brender_preroll = defaults->get("BRENDER_PREROLL", brender_preroll);
 	renderfarm_job_count = defaults->get("RENDERFARM_JOBS_COUNT", renderfarm_job_count);
 	renderfarm_consolidate = defaults->get("RENDERFARM_CONSOLIDATE", renderfarm_consolidate);
+	renderfarm_vfs = defaults->get("RENDERFARM_VFS", renderfarm_vfs);
 	defaults->get("RENDERFARM_MOUNTPOINT", renderfarm_mountpoint);
 	int renderfarm_total = defaults->get("RENDERFARM_TOTAL", 0);
 
@@ -244,9 +236,6 @@ int Preferences::save_defaults(Defaults *defaults)
 	defaults->update("GLOBAL_PLUGIN_DIR", global_plugin_dir);
 	defaults->update("LOCAL_PLUGIN_DIR", local_plugin_dir);
 	defaults->update("THEME", theme);
-	defaults->update("SCREEN_COMPOSITOR", screen_compositor);
-	defaults->update("SCREEN_VIEWER", screen_viewer);
-	defaults->update("SCREEN_RESOURCES", screen_resources);
 
 
 
@@ -258,10 +247,11 @@ int Preferences::save_defaults(Defaults *defaults)
 	defaults->update("RENDERFARM_PORT", renderfarm_port);
 	defaults->update("RENDERFARM_PREROLL", render_preroll);
 	defaults->update("BRENDER_PREROLL", brender_preroll);
+	defaults->update("RENDERFARM_VFS", renderfarm_vfs);
 	defaults->update("RENDERFARM_MOUNTPOINT", renderfarm_mountpoint);
 	defaults->update("RENDERFARM_JOBS_COUNT", renderfarm_job_count);
 	defaults->update("RENDERFARM_CONSOLIDATE", renderfarm_consolidate);
-	defaults->update("RENDERFARM_TOTAL", renderfarm_nodes.total);
+	defaults->update("RENDERFARM_TOTAL", (int64_t)renderfarm_nodes.total);
 	for(int i = 0; i < renderfarm_nodes.total; i++)
 	{
 		sprintf(string, "RENDERFARM_NODE%d", i);
@@ -478,46 +468,17 @@ int Preferences::get_node_port(int number)
 	return -1;
 }
 
-char* Preferences::get_alternate_display(char* envname, int screen)
-{
-	char* dpy = getenv(envname);
-//printf("Preferences::get_alternate_display: env: %s=%s\n", envname, dpy);
-	if (dpy != 0)
-		return dpy;
 
-	dpy = getenv("DISPLAY");
 
-//printf("Preferences::get_alternate_display: user: %d dpy %s\n", screen, dpy);
-	if (screen < 0 || dpy == 0)
-		return 0;	// default display
 
-	static char display[BCTEXTLEN];
-	strncpy(display, dpy, BCTEXTLEN);
-	display[BCTEXTLEN] = '\0';
 
-	// find dot in the display name
-	// replace the existing screen number
-	int i = strlen(display)-1;
-	while (i >= 0 && isdigit(display[i]))
-		--i;
-	if (i < 0)
-		return 0;	// parse error, use default
-	if (display[i] == ':') {
-		i = strlen(display);	// no dot; append display
-		display[i++] = '.';
-	} else if (display[i] == '.') {
-		++i;
-	} else {
-		return 0;	// parse error, use default
-	}
-//printf("Preferences::get_alternate_display: i=%d\n", i);
-	sprintf(display+i, "%d", screen);
-//printf("Preferences::get_alternate_display: result: %s\n", display);
 
-	// verify that the result will work
-	if (Display* d = XOpenDisplay(display))
-		XCloseDisplay(d);	// ok!
-	else
-		return 0;		// bad luck, use default
-	return display;
-}
+
+
+
+
+
+
+
+
+

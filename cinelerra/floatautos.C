@@ -39,7 +39,7 @@ int FloatAutos::draw_joining_line(BC_SubWindow *canvas, int vertical, int center
 	canvas->draw_line(x1, center_pixel + y1, x2, center_pixel + y2);
 }
 
-Auto* FloatAutos::add_auto(long position, float value)
+Auto* FloatAutos::add_auto(int64_t position, float value)
 {
 	FloatAuto* current = (FloatAuto*)autoof(position);
 	FloatAuto* new_auto;
@@ -91,13 +91,13 @@ int FloatAutos::get_testy(float slope, int cursor_x, int ax, int ay)
 	return (int)(slope * (cursor_x - ax)) + ay;
 }
 
-int FloatAutos::automation_is_constant(long start, 
-	long length, 
+int FloatAutos::automation_is_constant(int64_t start, 
+	int64_t length, 
 	int direction,
 	double &constant)
 {
 	int total_autos = total();
-	long end;
+	int64_t end;
 	if(direction == PLAY_FORWARD)
 	{
 		end = start + length;
@@ -139,7 +139,7 @@ int FloatAutos::automation_is_constant(long start,
 	}
 
 // Scan sequentially
-	long prev_position = -1;
+	int64_t prev_position = -1;
 	for(Auto *current = first; current; current = NEXT)
 	{
 		int test_current_next = 0;
@@ -218,7 +218,7 @@ int FloatAutos::automation_is_constant(long start,
 	return 1;
 }
 
-double FloatAutos::get_automation_constant(long start, long end)
+double FloatAutos::get_automation_constant(int64_t start, int64_t end)
 {
 	Auto *current_auto, *before = 0, *after = 0;
 	
@@ -238,14 +238,14 @@ double FloatAutos::get_automation_constant(long start, long end)
 }
 
 
-float FloatAutos::get_value(long position, 
+float FloatAutos::get_value(int64_t position, 
 	int direction, 
 	FloatAuto* &previous, 
 	FloatAuto* &next)
 {
 	double slope;
 	double intercept;
-	long slope_len;
+	int64_t slope_len;
 // Calculate bezier equation at position
 	float y0, y1, y2, y3;
  	float t;
@@ -344,8 +344,8 @@ float FloatAutos::get_value(long position,
 
 void FloatAutos::get_fade_automation(double &slope,
 	double &intercept,
-	long input_position,
-	long &slope_len,
+	int64_t input_position,
+	int64_t &slope_len,
 	int direction)
 {
 	Auto *current = 0;
@@ -353,7 +353,7 @@ void FloatAutos::get_fade_automation(double &slope,
 		(FloatAuto*)get_prev_auto(input_position, direction, current);
 	FloatAuto *next_keyframe = 
 		(FloatAuto*)get_next_auto(input_position, direction, current);
-	long new_slope_len;
+	int64_t new_slope_len;
 
 	if(direction == PLAY_FORWARD)
 	{
@@ -411,12 +411,12 @@ float FloatAutos::value_to_percentage(float value)
 int FloatAutos::dump()
 {
 	printf("	FloatAutos::dump %p\n", this);
-	printf("	Default: position %ld value=%f\n", 
+	printf("	Default: position %lld value=%f\n", 
 		default_auto->position, 
 		((FloatAuto*)default_auto)->value);
 	for(Auto* current = first; current; current = NEXT)
 	{
-		printf("	position %ld value=%f invalue=%f outvalue=%f\n", 
+		printf("	position %lld value=%f invalue=%f outvalue=%f\n", 
 			current->position, 
 			((FloatAuto*)current)->value,
 			((FloatAuto*)current)->control_in_value,

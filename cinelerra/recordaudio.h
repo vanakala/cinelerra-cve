@@ -33,8 +33,8 @@ public:
 	void reset_parameters();
 
 // seek to a new location in the file 
-	int set_position(long position);     
-	long sync_position();
+	int set_position(int64_t position);     
+	int64_t sync_position();
 
 	void write_buffer(int skip_new = 0);           // write the buffer
 // Want one thread to dictate the other during shared device recording.
@@ -50,7 +50,7 @@ private:
 	int *over;
 	double **input;
 	RecordGUI *gui;
-	long buffer_size, fragment_size, fragment_position;
+	int64_t buffer_size, fragment_size, fragment_position;
 	int record_channels;
 	Mutex timer_lock;
 	Mutex trigger_lock;

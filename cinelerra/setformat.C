@@ -170,7 +170,7 @@ void SetFormatThread::update_window()
 		if(ratio_modified && !constrain_ratio)
 		{
 			dimension[modified_item] = (int)(orig_dimension[modified_item] * ratio[modified_item]);
-			window->dimension[modified_item]->update((long)dimension[modified_item]);
+			window->dimension[modified_item]->update((int64_t)dimension[modified_item]);
 		}
 
 		for(i = 0; i < 2; i++)
@@ -188,7 +188,7 @@ void SetFormatThread::update_window()
 				if(constrain_ratio) 
 				{
 					dimension[i] = (int)(orig_dimension[i] * ratio[modified_item]);
-					window->dimension[i]->update((long)dimension[i]);
+					window->dimension[i]->update((int64_t)dimension[i]);
 				}
 			}
 		}
@@ -425,7 +425,7 @@ void SetFormatWindow::create_objects()
 
 
 SetSampleRateTextBox::SetSampleRateTextBox(SetFormatThread *thread, int x, int y)
- : BC_TextBox(x, y, 100, 1, (long)thread->new_settings->session->sample_rate)
+ : BC_TextBox(x, y, 100, 1, (int64_t)thread->new_settings->session->sample_rate)
 {
 	this->thread = thread;
 }

@@ -23,6 +23,8 @@
 #include "preferences.h"
 #include "render.h"
 #include "renderengine.h"
+#include "renderfarmfsserver.h"
+#include "sighandler.h"
 #include "tracks.h"
 #include "transportque.h"
 #include "vedit.h"
@@ -127,12 +129,22 @@ void PackageRenderer::create_output()
 
 //printf("PackageRenderer::create_output 1\n");
 
-	if(mwindow)
-		strcpy(asset->path, package->path);
+
+// Tag output paths for VFS here.
+	if(!mwindow && preferences->renderfarm_vfs)
+		sprintf(asset->path, RENDERFARM_FS_PREFIX "%s", package->path);
 	else
-		fs.join_names(asset->path, preferences->renderfarm_mountpoint, package->path);
+		strcpy(asset->path, package->path);
+
+
+
+//	if(mwindow)
+//		strcpy(asset->path, package->path);
+//	else
+//		fs.join_names(asset->path, preferences->renderfarm_mountpoint, package->path);
 //asset->dump();
 	
+
 //printf("PackageRenderer::create_output 2\n");
 	file = new File;
 
@@ -164,6 +176,7 @@ void PackageRenderer::create_output()
 	else
 	if(mwindow)
 	{
+		mwindow->sighandler->push_file(file);
 //printf("PackageRenderer::create_output 8\n");
 		IndexFile::delete_index(preferences, asset);
 //printf("PackageRenderer::create_output 9\n");
@@ -200,16 +213,16 @@ void PackageRenderer::create_engine()
 
 	if(package->use_brender)
 	{
-		audio_preroll = Units::to_long((double)preferences->brender_preroll /
+		audio_preroll = Units::to_int64((double)preferences->brender_preroll /
 			default_asset->frame_rate *
 			default_asset->sample_rate);
 		video_preroll = preferences->brender_preroll;
 	}
 	else
 	{
-		audio_preroll = Units::to_long(preferences->render_preroll * 
+		audio_preroll = Units::to_int64(preferences->render_preroll * 
 			default_asset->sample_rate);
-		video_preroll = Units::to_long(preferences->render_preroll * 
+		video_preroll = Units::to_int64(preferences->render_preroll * 
 			default_asset->frame_rate);
 	}
 	audio_position = package->audio_start - audio_preroll;
@@ -291,7 +304,7 @@ void PackageRenderer::do_audio()
 
 
 // Fix buffers for preroll
-		long output_length = audio_read_length;
+		int64_t output_length = audio_read_length;
 		if(audio_preroll > 0)
 		{
 			if(audio_preroll >= output_length)
@@ -329,7 +342,7 @@ void PackageRenderer::do_video()
 	if(asset->video_data)
 	{
 // get the absolute video position from the audio position
-		long video_end = video_position + video_read_length;
+		int64_t video_end = video_position + video_read_length;
 
 		if(video_end > package->video_end)
 			video_end = package->video_end;
@@ -493,6 +506,8 @@ void PackageRenderer::stop_output()
 void PackageRenderer::close_output()
 {
 //printf("PackageRenderer::close_output 1\n");
+	if(mwindow)
+		mwindow->sighandler->pull_file(file);
 	file->close_file();
 //printf("PackageRenderer::close_output 1\n");
 	delete file;
@@ -565,7 +580,7 @@ int PackageRenderer::render_package(RenderPackage *package)
 				else
 // Guide video with audio
 				{
-					video_read_length = Units::to_long(
+					video_read_length = Units::to_int64(
 						(double)(audio_position + audio_read_length) / 
 						asset->sample_rate * 
 						asset->frame_rate) - 
@@ -581,11 +596,11 @@ int PackageRenderer::render_package(RenderPackage *package)
 				need_video = 1;
 			}
 
-//printf("PackageRenderer::render_package 7 %d %d\n", video_read_length, audio_read_length);
-			if(need_video) do_video();
-//printf("PackageRenderer::render_package 8\n");
-			if(need_audio) do_audio();
-//printf("PackageRenderer::render_package 9\n");
+//printf("PackageRenderer::render_package 7 %d\n", result);
+			if(need_video && !result) do_video();
+//printf("PackageRenderer::render_package 8 %d\n", result);
+			if(need_audio && !result) do_audio();
+//printf("PackageRenderer::render_package 9 %d\n", result);
 
 
 			if(!result) set_progress(samples_rendered);
@@ -639,13 +654,13 @@ int PackageRenderer::render_package(RenderPackage *package)
 // Try to copy the compressed frame directly from the input to output files
 // Return 1 on failure and 0 on success
 int PackageRenderer::direct_frame_copy(EDL *edl, 
-	long &video_position, 
+	int64_t &video_position, 
 	File *file,
 	int &error)
 {
 	Track *playable_track;
 	Edit *playable_edit;
-	long frame_size;
+	int64_t frame_size;
 	int result = 0;
 
 //printf("Render::direct_frame_copy 1\n");
@@ -704,7 +719,7 @@ int PackageRenderer::direct_frame_copy(EDL *edl,
 }
 
 int PackageRenderer::direct_copy_possible(EDL *edl,
-				long current_position, 
+				int64_t current_position, 
 				Track* playable_track,  // The one track which is playable
 				Edit* &playable_edit, // The edit which is playing
 				File *file)   // Output file
@@ -787,11 +802,11 @@ void PackageRenderer::set_result(int value)
 {
 }
 
-void PackageRenderer::set_progress(long value)
+void PackageRenderer::set_progress(int64_t value)
 {
 }	
 
-void PackageRenderer::set_video_map(long position, int value)
+void PackageRenderer::set_video_map(int64_t position, int value)
 {
 }
 

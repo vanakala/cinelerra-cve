@@ -3,16 +3,32 @@
 
 <H1>Step 1: Build the library</H1><P>
 
+
+Quicktime for Linux requires a copy of of libmpeg3 in a directory next to itself.
+This provides the mp3 interface.<P>
+
+Your directory structure should thus be:<P>
+<PRE><TT>
+/my_directory
+/my_directory/libmpeg3-*.*.*
+/my_directory/quicktime4linux-*.*.*
+</TT></PRE>
+
+type "make" in the libmpeg3 directory.<BR>
+type "make" in the quicktime directory.<BR>
+type "make util" to get quicktime to build some utilities.<P>
+
+The makefiles automatically configure themselves.  The library is in
+i686/libquicktime.a. You should manually set the CFLAGS environment
+variable with the optimum optimization parameters for your i686
+derivative.<P>
+
 The entire source code tree should be positioned in a location where
 every application that needs it can access it.  There is no provision
 for standard include files and normally it's much to difficult for
 users to match versions to use it as a shared library.  Those of you
-who were around in 1997 may remember QT doing this.<P>
+who were born before 1997 may remember QT doing this.<P>
 
-Run make.  Make automatically configures itself.  The output is put in
-i686/libquicktime.a.  You should manually set the CFLAGS environment
-variable with the optimum optimization parameters for your i686
-derivative.<P>
 
 <P>
 <P>

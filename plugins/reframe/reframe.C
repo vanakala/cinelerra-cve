@@ -101,14 +101,14 @@ int ReFrame::process_loop(VFrame *buffer)
 {
 	int result = 0;
 	
-	long input_offset = Units::to_long((double)current_position * 
+	int64_t input_offset = Units::to_int64((double)current_position * 
 		scale + 
 		PluginClient::start);
 
 	read_frame(buffer, input_offset);
 
 	current_position++;
-	input_offset = Units::to_long((double)current_position * 
+	input_offset = Units::to_int64((double)current_position * 
 		scale + 
 		PluginClient::start);
 

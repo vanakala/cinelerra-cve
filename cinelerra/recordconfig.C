@@ -152,9 +152,9 @@ int AudioInConfig::save_defaults(Defaults *defaults)
 VideoInConfig::VideoInConfig()
 {
 	driver = VIDEO4LINUX;
-	sprintf(v4l_in_device, "/dev/video");
+	sprintf(v4l_in_device, "/dev/video0");
 	sprintf(lml_in_device, "/dev/mvideo/stream");
-	sprintf(buz_in_device, "/dev/video");
+	sprintf(buz_in_device, "/dev/video0");
 	sprintf(screencapture_display, "");
 	firewire_port = 0;
 	firewire_channel = 63;

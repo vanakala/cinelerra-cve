@@ -17,11 +17,11 @@ BC_TextBox::BC_TextBox(int x, int y, int w, int rows, char *text, int has_border
 	strcpy(this->text, text);
 }
 
-BC_TextBox::BC_TextBox(int x, int y, int w, int rows, long text, int has_border, int font)
+BC_TextBox::BC_TextBox(int x, int y, int w, int rows, int64_t text, int has_border, int font)
  : BC_SubWindow(x, y, w, 0, -1)
 {
 	reset_parameters(rows, has_border, font);
-	sprintf(this->text, "%ld", text);
+	sprintf(this->text, "%lld", text);
 }
 
 BC_TextBox::BC_TextBox(int x, int y, int w, int rows, float text, int has_border, int font)
@@ -122,10 +122,10 @@ int BC_TextBox::update(char *text)
 	return 0;
 }
 
-int BC_TextBox::update(long value)
+int BC_TextBox::update(int64_t value)
 {
 	char string[BCTEXTLEN];
-	sprintf(string, "%ld", value);
+	sprintf(string, "%lld", value);
 
 
 	update(string);
@@ -513,7 +513,7 @@ int BC_TextBox::deactivate()
 	return 0;
 }
 
-int BC_TextBox::repeat_event(long duration)
+int BC_TextBox::repeat_event(int64_t duration)
 {
 	if(duration == top_level->get_resources()->blink_rate && 
 		active)
@@ -1437,9 +1437,9 @@ void BC_PopupTextBox::reposition_window(int x, int y)
 
 
 BC_TumbleTextBoxText::BC_TumbleTextBoxText(BC_TumbleTextBox *popup, 
-	long default_value,
-	long min,
-	long max,
+	int64_t default_value,
+	int64_t min,
+	int64_t max,
 	int x, 
 	int y)
  : BC_TextBox(x, 
@@ -1463,7 +1463,6 @@ BC_TumbleTextBoxText::BC_TumbleTextBoxText(BC_TumbleTextBox *popup,
 	1, 
 	default_value)
 {
-//printf("BC_TumbleTextBoxText::BC_TumbleTextBoxText %f\n", default_value);
 	this->popup = popup;
 }
 
@@ -1485,14 +1484,40 @@ int BC_TumbleTextBoxText::handle_event()
 	return 1;
 }
 
+
+
+
+
+
 BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window, 
-		long default_value,
-		long min,
-		long max,
+		int64_t default_value,
+		int64_t min,
+		int64_t max,
 		int x, 
 		int y, 
 		int text_w)
 {
+	reset();
+	this->x = x;
+	this->y = y;
+	this->min = min;
+	this->max = max;
+	this->default_value = default_value;
+	this->text_w = text_w;
+	this->parent_window = parent_window;
+	use_float = 0;
+	precision = 4;
+}
+
+BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window, 
+		int default_value,
+		int min,
+		int max,
+		int x, 
+		int y, 
+		int text_w)
+{
+	reset();
 	this->x = x;
 	this->y = y;
 	this->min = min;
@@ -1512,6 +1537,7 @@ BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window,
 		int y, 
 		int text_w)
 {
+	reset();
 	this->x = x;
 	this->y = y;
 	this->min_f = min_f;
@@ -1527,18 +1553,33 @@ BC_TumbleTextBox::~BC_TumbleTextBox()
 {
 // Recursive delete.  Normally ~BC_TumbleTextBox is never called but textbox
 // is deleted anyway by the windowbase so textbox deletes this.
-	delete tumbler;
+	if(tumbler) delete tumbler;
+	tumbler = 0;
 // Don't delete text here if we were called by ~BC_TumbleTextBoxText
 	if(textbox)
 	{
 		textbox->popup = 0;
 		delete textbox;
 	}
+	textbox = 0;
+}
+
+void BC_TumbleTextBox::reset()
+{
+	textbox = 0;
+	tumbler = 0;
+	increment = 1.0;
 }
 
 void BC_TumbleTextBox::set_precision(int precision)
 {
 	this->precision = precision;
+}
+
+void BC_TumbleTextBox::set_increment(float value)
+{
+	this->increment = value;
+	if(tumbler) tumbler->set_increment(value);
 }
 
 int BC_TumbleTextBox::create_objects()
@@ -1578,6 +1619,7 @@ int BC_TumbleTextBox::create_objects()
 			x, 
 			y));
 
+	tumbler->set_increment(precision);
 	return 0;
 }
 
@@ -1592,7 +1634,7 @@ int BC_TumbleTextBox::update(char *value)
 	return 0;
 }
 
-int BC_TumbleTextBox::update(long value)
+int BC_TumbleTextBox::update(int64_t value)
 {
 	textbox->update(value);
 	return 0;
@@ -1644,7 +1686,7 @@ void BC_TumbleTextBox::reposition_window(int x, int y)
 }
 
 
-void BC_TumbleTextBox::set_boundaries(long min, long max)
+void BC_TumbleTextBox::set_boundaries(int64_t min, int64_t max)
 {
 	tumbler->set_boundaries(min, max);
 }

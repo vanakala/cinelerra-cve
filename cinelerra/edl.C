@@ -133,7 +133,6 @@ void EDL::boundaries()
 
 int EDL::create_default_tracks()
 {
-//printf("EDL::create_default_tracks %d %d\n", audio_tracks, video_tracks);
 
 	for(int i = 0; i < session->video_tracks; i++)
 	{
@@ -148,7 +147,7 @@ int EDL::create_default_tracks()
 
 int EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 	FileXML *file, 
-	unsigned long load_flags)
+	uint32_t load_flags)
 {
 	int result = 0;
 // Track numbering offset for replacing undo data.
@@ -708,7 +707,10 @@ int EDL::clear(double start,
 		presentations->clear(start, end);
 	}
 
-	local_session->selectionend = local_session->selectionstart = 
+// Need to put at beginning so a subsequent paste operation starts at the
+// right position.
+	local_session->selectionend = 
+		local_session->selectionstart = 
 		local_session->get_selectionstart();
 	return 0;
 }
@@ -825,14 +827,14 @@ int EDL::get_tracks_height(Theme *theme)
 	return total_pixels;
 }
 
-long EDL::get_tracks_width()
+int64_t EDL::get_tracks_width()
 {
-	long total_pixels = 0;
+	int64_t total_pixels = 0;
 	for(Track *current = tracks->first;
 		current;
 		current = NEXT)
 	{
-		long pixels = current->horizontal_span();
+		int64_t pixels = current->horizontal_span();
 		if(pixels > total_pixels) total_pixels = pixels;
 	}
 //printf("EDL::get_tracks_width %d\n", total_pixels);
@@ -1124,7 +1126,7 @@ double EDL::align_to_frame(double position, int round)
 // 				temp -= 0.5;
 // 			}
 // 			else
-				temp = Units::to_long(temp);
+				temp = Units::to_int64(temp);
 		}
 //printf("EDL::align_to_frame 3 %f\n", temp);
 

@@ -1,4 +1,11 @@
+#include "quicktime.h"
 #include "rawaudio.h"
+
+typedef struct
+{
+	char *work_buffer;
+	long buffer_size;
+} quicktime_rawaudio_codec_t;
 
 /* =================================== private for rawaudio */
 
@@ -298,18 +305,21 @@ static int quicktime_encode_rawaudio(quicktime_t *file,
 
 void quicktime_init_codec_rawaudio(quicktime_audio_map_t *atrack)
 {
+	quicktime_codec_t *codec_base = (quicktime_codec_t*)atrack->codec;
 	quicktime_rawaudio_codec_t *codec;
 
 /* Init public items */
-	((quicktime_codec_t*)atrack->codec)->priv = calloc(1, sizeof(quicktime_rawaudio_codec_t));
-	((quicktime_codec_t*)atrack->codec)->delete_acodec = quicktime_delete_codec_rawaudio;
-	((quicktime_codec_t*)atrack->codec)->decode_video = 0;
-	((quicktime_codec_t*)atrack->codec)->encode_video = 0;
-	((quicktime_codec_t*)atrack->codec)->decode_audio = quicktime_decode_rawaudio;
-	((quicktime_codec_t*)atrack->codec)->encode_audio = quicktime_encode_rawaudio;
+	codec_base->priv = calloc(1, sizeof(quicktime_rawaudio_codec_t));
+	codec_base->delete_acodec = quicktime_delete_codec_rawaudio;
+	codec_base->decode_video = 0;
+	codec_base->encode_video = 0;
+	codec_base->decode_audio = quicktime_decode_rawaudio;
+	codec_base->encode_audio = quicktime_encode_rawaudio;
+	codec_base->fourcc = QUICKTIME_RAW;
+	codec_base->title = "8 bit unsigned";
+	codec_base->desc = "8 bit unsigned for video";
+	codec_base->wav_id = 0x01;
 
 /* Init private items */
-	codec = ((quicktime_codec_t*)atrack->codec)->priv;
-	codec->work_buffer = 0;
-	codec->buffer_size = 0;
+	codec = codec_base->priv;
 }

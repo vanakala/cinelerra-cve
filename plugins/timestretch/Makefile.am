@@ -1,7 +1,7 @@
 plugin_LTLIBRARIES = timestretch.la
 timestretch_la_LDFLAGS = -avoid-version -module -shared 
 timestretch_la_LIBADD = ../libfourier/libfourier.la
-timestretch_la_SOURCES = timestretch.C 
+timestretch_la_SOURCES = timestretch.C timestretchengine.C
 AM_CFLAGS = 
 AM_CXXFLAGS = 
 

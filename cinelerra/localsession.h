@@ -59,16 +59,16 @@ public:
 	double loop_start;
 	double loop_end;
 // Vertical start of track view
-	long track_start;
+	int64_t track_start;
 // Start of view in pixels.  This has to be pixels since either
 // samples or seconds would require drawing in fractional pixels.
-	long view_start;
+	int64_t view_start;
 // Zooming of the timeline.  Number of samples per pixel.  
-	long zoom_sample;
+	int64_t zoom_sample;
 // Amplitude zoom
-	long zoom_y;
+	int64_t zoom_y;
 // Track zoom
-	long zoom_track;
+	int64_t zoom_track;
 
 // Range for CWindow and VWindow in seconds
 	double preview_start;

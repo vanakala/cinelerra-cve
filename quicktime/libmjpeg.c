@@ -76,7 +76,9 @@
 #define   M_ERROR   0x100
 
 #define QUICKTIME_MARKER_SIZE 0x2c
+#define AVI_MARKER_SIZE 0x12
 #define QUICKTIME_JPEG_TAG 0x6d6a7067
+#define QUICKTIME_AVI_TAG 0x41564931
 
 
 METHODDEF(void) mjpeg_error_exit (j_common_ptr cinfo)
@@ -1219,7 +1221,7 @@ static inline int nextbyte(unsigned char *data, long *offset, long length)
 	return (unsigned char)data[*offset - 1];
 }
 
-static inline int next_int32(unsigned char *data, long *offset, long length)
+static inline int read_int32(unsigned char *data, long *offset, long length)
 {
 	if(length - *offset < 4)
 	{
@@ -1246,6 +1248,18 @@ static inline int read_int16(unsigned char *data, long *offset, long length)
 		(((unsigned int)data[*offset - 1])));
 }
 
+static inline unsigned char read_char(unsigned char *data, long *offset, long length)
+{
+	if(length - *offset < 1)	
+	{
+		*offset = length;
+		return 0;
+	}
+
+	*offset += 1;
+	return (unsigned char)data[*offset - 1];
+}
+
 static inline int next_int16(unsigned char *data, long *offset, long length)
 {
 	if(length - *offset < 2)	
@@ -1270,6 +1284,18 @@ static inline void write_int32(unsigned char *data, long *offset, long length, u
 	data[(*offset)++] = (unsigned int)(value & 0xff0000) >> 16;
 	data[(*offset)++] = (unsigned int)(value & 0xff00) >> 8;
 	data[(*offset)++] = (unsigned char)(value & 0xff);
+	return;
+}
+
+static inline void write_char(unsigned char *data, long *offset, long length, unsigned char value)
+{
+	if(length - *offset < 1)
+	{
+		*offset = length;
+		return;
+	}
+
+	data[(*offset)++] = value;
 	return;
 }
 
@@ -1303,9 +1329,7 @@ static int find_marker(unsigned char *buffer,
 
 	while(!result && *offset < buffer_size - 1)
 	{
-//printf("find_marker 1 %d %d\n", *offset, buffer_size);
 		int marker = next_marker(buffer, offset, buffer_size);
-//printf("find_marker 2\n");
 		if(marker == (marker_type & 0xff)) result = 1;
 	}
 
@@ -1323,7 +1347,14 @@ typedef struct
 	int image_offset;
 	int scan_offset;
 	int data_offset;
-} mjpeg_qt_hdr;
+} qt_hdr_t;
+
+typedef struct
+{
+	int field_number;
+	int field_size;
+	int unpadded_field_size;
+} avi_hdr_t;
 
 #define LML_MARKER_SIZE 0x2c
 #define LML_MARKER_TAG 0xffe3
@@ -1350,23 +1381,23 @@ void insert_lml33_markers(unsigned char **buffer,
 	}
 }
 
-static void table_offsets(unsigned char *buffer, 
+static int qt_table_offsets(unsigned char *buffer, 
 	long buffer_size, 
-	mjpeg_qt_hdr *header)
+	qt_hdr_t *header)
 {
 	int done = 0;
 	long offset = 0;
 	int marker = 0;
 	int field = 0;
 	int len;
+	int result = 0;
 
-	bzero(header, sizeof(mjpeg_qt_hdr) * 2);
+	bzero(header, sizeof(qt_hdr_t) * 2);
 
 // Read every marker to get the offsets for the headers
 	for(field = 0; field < 2; field++)
 	{
 		done = 0;
-//printf("table_offsets 1 %d %d\n", field, offset);
 		while(!done)
 		{
 			marker = next_marker(buffer, 
@@ -1385,11 +1416,21 @@ static void table_offsets(unsigned char *buffer,
 							offset - 2;
 					}
 					len = 0;
-//printf("table_offsets 1 %x %d\n", header[0].next_offset, field);
+					break;
+
+				case M_APP1:
+// Quicktime marker already exists.  Abort.
+					if(buffer[offset + 6] == 'm' &&
+						buffer[offset + 7] == 'j' &&
+						buffer[offset + 8] == 'p' &&
+						buffer[offset + 9] == 'a')
+					{
+						result = 1;
+						done = 1;
+					}
 					break;
 
 				case M_DQT:
-//printf("table_offsets M_DQT %d %d\n", field, offset);
 					if(!header[field].quant_offset)
 					{
 						header[field].quant_offset = offset - 2;
@@ -1465,12 +1506,14 @@ static void table_offsets(unsigned char *buffer,
 			if(!done) offset += len;
 		}
 	}
+
+	return result;
 }
 
 static void insert_quicktime_marker(unsigned char *buffer, 
 	long buffer_size, 
 	long offset, 
-	mjpeg_qt_hdr *header)
+	qt_hdr_t *header)
 {
 	write_int32(buffer, &offset, buffer_size, 0xff000000 | 
 			((unsigned long)M_APP1 << 16) | 
@@ -1494,15 +1537,26 @@ void mjpeg_insert_quicktime_markers(unsigned char **buffer,
 	int fields,
 	long *field2_offset)
 {
-	mjpeg_qt_hdr header[2];
+	qt_hdr_t header[2];
+	long offset = 0;
+	int exists = 0;
+	*field2_offset = -1;
 
 	if(fields < 2) return;
+
+
 // Get offsets for tables in both fields
-	table_offsets(*buffer, *buffer_size, header);
+	exists = qt_table_offsets(*buffer, *buffer_size, header);
+
+// APP1 for quicktime already exists
+	if(exists) return;
+
 //printf("mjpeg_insert_quicktime_markers %x %02x %02x\n", 
 //	header[0].next_offset, (*buffer)[*field2_offset], (*buffer)[*field2_offset + 1]);
 //if(*field2_offset == 0)
 //	fwrite(*buffer, *buffer_size, 1, stdout);
+
+
 
 	header[0].field_size += QUICKTIME_MARKER_SIZE;
 	header[0].padded_field_size += QUICKTIME_MARKER_SIZE;
@@ -1547,9 +1601,128 @@ void mjpeg_insert_quicktime_markers(unsigned char **buffer,
 }
 
 
+static int avi_table_offsets(unsigned char *buffer, 
+	long buffer_size, 
+	avi_hdr_t *header)
+{
+	int field2 = mjpeg_get_field2(buffer, buffer_size);
+
+	header[0].field_number = 1;
+	header[0].field_size = field2;
+	header[0].unpadded_field_size = field2;
+
+	header[1].field_number = 2;
+	header[1].field_size = buffer_size - field2;
+	header[1].unpadded_field_size = buffer_size - field2;
+	return 0;
+}
+
+static void insert_avi_marker(unsigned char *buffer, 
+	long buffer_size, 
+	long offset, 
+	avi_hdr_t *header)
+{
+	write_int32(buffer, &offset, buffer_size, 0xff000000 | 
+			((unsigned long)M_APP0 << 16) | 
+			(AVI_MARKER_SIZE - 2));
+	write_int32(buffer, &offset, buffer_size, QUICKTIME_AVI_TAG);
+
+// One version of McRoweSoft only allows field polarity while
+// another version allows field size.
+	write_char(buffer, &offset, buffer_size, header->field_number);
+	write_char(buffer, &offset, buffer_size, 0);
+	write_int32(buffer, &offset, buffer_size, header->field_size);
+	write_int32(buffer, &offset, buffer_size, header->unpadded_field_size);
+}
+
+void mjpeg_insert_avi_markers(unsigned char **buffer, 
+	long *buffer_size, 
+	long *buffer_allocated,
+	int fields,
+	long *field2_offset)
+{
+	avi_hdr_t header[2];
+	long offset = 0;
+	*field2_offset = -1;
+
+
+// Test for existing marker
+	if(!find_marker(*buffer, &offset, *buffer_size, M_APP0))
+	{
+		if((*buffer)[offset + 2] == 'A' &&
+			(*buffer)[offset + 3] == 'V' &&
+			(*buffer)[offset + 4] == 'I' &&
+			(*buffer)[offset + 5] == '1')
+			return;
+	}
+
+
+	avi_table_offsets(*buffer, *buffer_size, header);
+
+	header[0].field_size += AVI_MARKER_SIZE;
+	header[0].unpadded_field_size += AVI_MARKER_SIZE;
+	header[1].field_size += AVI_MARKER_SIZE;
+	header[1].unpadded_field_size += AVI_MARKER_SIZE;
+	*field2_offset = header[0].field_size;
+
+// Insert APP0 marker into field 1
+	insert_space(buffer, 
+		buffer_size, 
+		buffer_allocated,
+		2,
+		AVI_MARKER_SIZE);
+	insert_avi_marker(*buffer, 
+		*buffer_size, 
+		2, 
+		&header[0]);
+
+	insert_space(buffer, 
+		buffer_size, 
+		buffer_allocated,
+		*field2_offset + 2,
+		AVI_MARKER_SIZE);
+	insert_avi_marker(*buffer, 
+		*buffer_size, 
+		*field2_offset + 2, 
+		&header[1]);
+
+
+
+}
+
+
+static void read_avi_markers(unsigned char *buffer,
+	long buffer_size,
+	avi_hdr_t *header)
+{
+	long offset = 0;
+	int marker_count = 0;
+	int result = 0;
+	while(marker_count < 2 && offset < buffer_size && !result)
+	{
+		result = find_marker(buffer, 
+			&offset, 
+			buffer_size,
+			M_APP0);
+
+		if(!result)
+		{
+// Marker size, AVI1
+			offset += 6;
+// field polarity
+			header[marker_count].field_number = read_char(buffer, &offset, buffer_size);
+			read_char(buffer, &offset, buffer_size);
+			header[marker_count].field_size = read_int32(buffer, &offset, buffer_size);
+			header[marker_count].unpadded_field_size = read_int32(buffer, &offset, buffer_size);
+			marker_count++;
+		}
+	}
+}
+
+
 static void read_quicktime_markers(unsigned char *buffer, 
 	long buffer_size, 
-	mjpeg_qt_hdr *header)
+	qt_hdr_t *header)
 {
 	long offset = 0;
 	int marker_count = 0;
@@ -1557,30 +1730,28 @@ static void read_quicktime_markers(unsigned char *buffer,
 
 	while(marker_count < 2 && offset < buffer_size && !result)
 	{
-//printf(__FUNCTION__ " 1\n");
 		result = find_marker(buffer, 
 			&offset, 
 			buffer_size,
 			M_APP1);
-//printf(__FUNCTION__ " 2\n");
 
 		if(!result)
 		{
 // Marker size
 			read_int16(buffer, &offset, buffer_size);
 // Zero
-			next_int32(buffer, &offset, buffer_size);
+			read_int32(buffer, &offset, buffer_size);
 // MJPA
-			next_int32(buffer, &offset, buffer_size);
+			read_int32(buffer, &offset, buffer_size);
 // Information
-			header[marker_count].field_size = next_int32(buffer, &offset, buffer_size);
-			header[marker_count].padded_field_size = next_int32(buffer, &offset, buffer_size);
-			header[marker_count].next_offset = next_int32(buffer, &offset, buffer_size);
-			header[marker_count].quant_offset = next_int32(buffer, &offset, buffer_size);
-			header[marker_count].huffman_offset = next_int32(buffer, &offset, buffer_size);
-			header[marker_count].image_offset = next_int32(buffer, &offset, buffer_size);
-			header[marker_count].scan_offset = next_int32(buffer, &offset, buffer_size);
-			header[marker_count].data_offset = next_int32(buffer, &offset, buffer_size);
+			header[marker_count].field_size = read_int32(buffer, &offset, buffer_size);
+			header[marker_count].padded_field_size = read_int32(buffer, &offset, buffer_size);
+			header[marker_count].next_offset = read_int32(buffer, &offset, buffer_size);
+			header[marker_count].quant_offset = read_int32(buffer, &offset, buffer_size);
+			header[marker_count].huffman_offset = read_int32(buffer, &offset, buffer_size);
+			header[marker_count].image_offset = read_int32(buffer, &offset, buffer_size);
+			header[marker_count].scan_offset = read_int32(buffer, &offset, buffer_size);
+			header[marker_count].data_offset = read_int32(buffer, &offset, buffer_size);
 			marker_count++;
 		}
 	}
@@ -1589,11 +1760,33 @@ static void read_quicktime_markers(unsigned char *buffer,
 
 long mjpeg_get_quicktime_field2(unsigned char *buffer, long buffer_size)
 {
-	mjpeg_qt_hdr header[2];
-	bzero(&header, sizeof(mjpeg_qt_hdr) * 2);
+	qt_hdr_t header[2];
+	bzero(&header, sizeof(qt_hdr_t) * 2);
 
 	read_quicktime_markers(buffer, buffer_size, header);
 	return header[0].next_offset;
+}
+
+long mjpeg_get_avi_field2(unsigned char *buffer, 
+	long buffer_size, 
+	int *field_dominance)
+{
+	avi_hdr_t header[2];
+	bzero(&header, sizeof(avi_hdr_t) * 2);
+	read_avi_markers(buffer, buffer_size, header);
+
+	*field_dominance = (header[0].field_number == 1) ? 1 : 2;
+
+// One version of McRoweSoft only allows field polarity while
+// another version allows field size.
+	if(header[0].field_size)
+	{
+		return header[0].field_size;
+	}
+	else
+	{
+		return mjpeg_get_field2(buffer, buffer_size);
+	}
 }
 
 long mjpeg_get_field2(unsigned char *buffer, long buffer_size)

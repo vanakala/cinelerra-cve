@@ -28,7 +28,9 @@ int main(int argc, char *argv[])
 	char outfile[1024];
 	int decompress_audio = 0, decompress_video = 0;
 	int audio_track = 0;
-	int print_offsets = 0;
+/* Print cell offsets */
+	int print_offsets = 1;
+	int print_pids = 1;
 
 	outfile[0] = 0;
 	if(argc < 2)
@@ -167,6 +169,19 @@ int main(int argc, char *argv[])
 			}
 		}
 
+
+
+// Pids
+		if(print_pids)
+		{
+			mpeg3_demuxer_t *demuxer = file->demuxer;
+			printf("Total PIDs=%d\n", demuxer->total_pids);
+			for(i = 0; i < demuxer->total_pids; i++)
+			{
+				printf("0x%04x ", demuxer->pid_table[i]);
+			}
+			printf("\n");
+		}
 
 
 

@@ -102,7 +102,7 @@ int mpeg3_total_vstreams(mpeg3_t *file);            /* Number of multiplexed vid
 int mpeg3_video_width(mpeg3_t *file, int stream);
 int mpeg3_video_height(mpeg3_t *file, int stream);
 float mpeg3_aspect_ratio(mpeg3_t *file, int stream); /* aspect ratio.  0 if none */
-float mpeg3_frame_rate(mpeg3_t *file, int stream);  /* Frames/sec */
+double mpeg3_frame_rate(mpeg3_t *file, int stream);  /* Frames/sec */
 
 /* Total length.   */
 /* For DVD files, this is 1 indicating only percentage seeking is available. */

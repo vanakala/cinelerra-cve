@@ -27,6 +27,7 @@
 #include "vframe.inc"
 
 #include <stdio.h>
+#include <stdint.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -66,9 +67,9 @@ public:
 // Generate title for display
 	void generate_display_title(char *string);
 // Get keyframes for configuration
-	KeyFrame* get_prev_keyframe(long position);
-	KeyFrame* get_next_keyframe(long position);
-	long get_source_start();
+	KeyFrame* get_prev_keyframe(int64_t position);
+	KeyFrame* get_next_keyframe(int64_t position);
+	int64_t get_source_start();
 // Get interpolation used by EDL
 	int get_interpolation_type();
 // Get or create keyframe for writing, depending on editing status
@@ -105,13 +106,13 @@ public:
 // process the data in the buffers
 	void process_realtime(VFrame **input, 
 			VFrame **output, 
-			long current_position,
-			long total_len);  // Total len for transitions
+			int64_t current_position,
+			int64_t total_len);  // Total len for transitions
 	void process_realtime(double **input, 
 			double **output,
-			long current_position, 
-			long fragment_size,
-			long total_len);
+			int64_t current_position, 
+			int64_t fragment_size,
+			int64_t total_len);
 // Called by rendering client to cause the GUI to display something with the data.
 	void send_render_gui(void *data);
 	void send_render_gui(void *data, int size);
@@ -126,8 +127,8 @@ public:
 
 // set the fragment position of a buffer before rendering
 	int arm_buffer(int buffer_number, 
-				long in_fragment_position, 
-				long out_fragment_position,
+				int64_t in_fragment_position, 
+				int64_t out_fragment_position,
 				int double_buffer_in,
 				int double_buffer_out);
 // Detach all the shared buffers.
@@ -143,14 +144,14 @@ public:
 
 // ============================ for non realtime plugins
 // start processing data in plugin
-	int start_loop(long start, long end, long buffer_size, int total_buffers);
+	int start_loop(int64_t start, int64_t end, int64_t buffer_size, int total_buffers);
 // Do one iteration of a nonrealtime plugin and return if finished
-	int process_loop(VFrame **buffers, long &write_length);
-	int process_loop(double **buffers, long &write_length);
+	int process_loop(VFrame **buffers, int64_t &write_length);
+	int process_loop(double **buffers, int64_t &write_length);
 	int stop_loop();
-	int read_frame(VFrame *buffer, int channel, long start_position);
-	int read_samples(double *buffer, int channel, long start_position, long total_samples);
-	int read_samples(double *buffer, long start_position, long total_samples);
+	int read_frame(VFrame *buffer, int channel, int64_t start_position);
+	int read_samples(double *buffer, int channel, int64_t start_position, int64_t total_samples);
+	int read_samples(double *buffer, int64_t start_position, int64_t total_samples);
 
 // For non realtime, prompt user for parameters, waits for plugin to finish and returns a result
 	int get_parameters();
@@ -173,15 +174,15 @@ public:
 // add track to the list of affected tracks for a non realtime plugin
 	int set_module(Module *module);
 	int set_error();         // flag to send plugin an error on next request
-	MainProgressBar* start_progress(char *string, long length);
+	MainProgressBar* start_progress(char *string, int64_t length);
 
-	int long get_written_samples();   // after samples are written, get the number written
-	int long get_written_frames();   // after frames are written, get the number written
+	int64_t get_written_samples();   // after samples are written, get the number written
+	int64_t get_written_frames();   // after frames are written, get the number written
 
 
 // buffers
-	long out_buffer_size;   // size of a send buffer to the plugin
-	long in_buffer_size;    // size of a recieve buffer from the plugin
+	int64_t out_buffer_size;   // size of a send buffer to the plugin
+	int64_t in_buffer_size;    // size of a recieve buffer from the plugin
 	int total_in_buffers;
 	int total_out_buffers;
 
@@ -194,15 +195,15 @@ public:
 	int reverse;
 
 // size of each buffer
-	ArrayList<long> realtime_in_size;
-	ArrayList<long> realtime_out_size;
+	ArrayList<int64_t> realtime_in_size;
+	ArrayList<int64_t> realtime_out_size;
 
 // When arming buffers need to know the offsets in all the buffers and which
 // double buffers for each channel before rendering.
-	ArrayList<long> offset_in_render;
-	ArrayList<long> offset_out_render;
-	ArrayList<long> double_buffer_in_render;
-	ArrayList<long> double_buffer_out_render;
+	ArrayList<int64_t> offset_in_render;
+	ArrayList<int64_t> offset_out_render;
+	ArrayList<int64_t> double_buffer_in_render;
+	ArrayList<int64_t> double_buffer_out_render;
 
 // don't delete buffers if they belong to a virtual module
 	int shared_buffers;
@@ -222,8 +223,8 @@ public:
 // Plugin is a transition
 	int transition;
 // name of plugin in english.  Compared against the title value in the plugin.
-	char *title;               
-	long written_samples, written_frames;
+	char *title;
+	int64_t written_samples, written_frames;
 	char *path;           // location of plugin on disk
 	char *data_text;      // pointer to the data that was requested by a save_data command
 	char *args[4];

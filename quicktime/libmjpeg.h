@@ -182,7 +182,14 @@ void mjpeg_video_size(unsigned char *data, long data_size, int *w, int *h);
 // Calculate marker contents and insert them into a buffer.
 // Reallocates the buffer if it isn't big enough so make sure it's big enough
 // when passing VFrames.
+// field2_offset is set to -1 if the markers already exist or the field offset
+// if markers don't already exist.
 void mjpeg_insert_quicktime_markers(unsigned char **buffer, 
+	long *buffer_size, 
+	long *buffer_allocated,
+	int fields,
+	long *field2_offset);
+void mjpeg_insert_avi_markers(unsigned char **buffer, 
 	long *buffer_size, 
 	long *buffer_allocated,
 	int fields,
@@ -192,6 +199,11 @@ void mjpeg_insert_quicktime_markers(unsigned char **buffer,
 long mjpeg_get_buz_field2(unsigned char *buffer, long buffer_size);
 long mjpeg_get_lml33_field2(unsigned char *buffer, long buffer_size);
 long mjpeg_get_quicktime_field2(unsigned char *buffer, long buffer_size);
+// Field dominance is retrieved for the jpeg decoder.  AVI stores field
+// dominance in each field.
+long mjpeg_get_avi_field2(unsigned char *buffer, 
+	long buffer_size,
+	int *field_dominance);
 long mjpeg_get_field2(unsigned char *buffer, long buffer_size);
 
 #ifdef __cplusplus

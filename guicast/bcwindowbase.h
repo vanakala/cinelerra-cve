@@ -45,6 +45,7 @@
 #include "vframe.inc"
 
 
+#include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <X11/Xatom.h>
@@ -130,7 +131,7 @@ public:
 	virtual int close_event() { return 0; };
 	virtual int resize_event(int w, int h);
 	virtual int cursor_motion_event() { return 0; };
-	virtual int repeat_event(long duration) { return 0; };
+	virtual int repeat_event(int64_t duration) { return 0; };
 	virtual int button_press_event() { return 0; };
 	virtual int button_release_event() { return 0; };
 	virtual int cursor_leave_event();
@@ -149,9 +150,9 @@ public:
 // Get color model adjusted for byte order and pixel size
 	int get_color_model();
 // return the colormap pixel of the color for all bit depths
-	int get_color(long color);
+	int get_color(int64_t color);
 // return the currently selected color
-	long get_color();
+	int64_t get_color();
 	int show_window();
 	int hide_window();
 	int get_hidden();
@@ -233,7 +234,7 @@ public:
 
 
 // Set the gc to the color
-	void set_color(long color);
+	void set_color(int64_t color);
 	int get_bgcolor();
 	void set_font(int font);
 	void set_cursor(int cursor);
@@ -414,9 +415,9 @@ public:
 	int set_tooltips(int tooltips_enabled);
 	int resize_window(int w, int h);
 	int reposition_window(int x, int y, int w = -1, int h = -1);
-//	long get_repeat_id();
-	int set_repeat(long duration);
-	int unset_repeat(long id);
+//	int64_t get_repeat_id();
+	int set_repeat(int64_t duration);
+	int unset_repeat(int64_t id);
 	int set_tooltip(char *text);
 	int show_tooltip(int w = -1, int h = -1);
 	int hide_tooltip();
@@ -467,9 +468,9 @@ private:
 	int init_gc();
 	int init_fonts();
 	int get_color_rgb8(int color);
-	long get_color_rgb16(int color);
-	long get_color_bgr16(int color);
-	long get_color_bgr24(int color);
+	int64_t get_color_rgb16(int color);
+	int64_t get_color_bgr16(int color);
+	int64_t get_color_bgr24(int color);
 	XFontStruct* get_font_struct(int font);
 	Cursor get_cursor_struct(int cursor);
     XFontSet get_fontset(int font);
@@ -482,7 +483,7 @@ private:
 	int trigger_tooltip();
 	int untrigger_tooltip();
 	void draw_tooltip();
-	int arm_repeat(long duration);
+	int arm_repeat(int64_t duration);
 // delete all repeater opjects for a close
 	int unset_all_repeaters();
 
@@ -490,8 +491,8 @@ private:
 	int dispatch_resize_event(int w, int h);
 	int dispatch_motion_event();
 	int dispatch_keypress_event();
-	int dispatch_repeat_event(long duration);
-	int dispatch_repeat_event_master(long duration);
+	int dispatch_repeat_event(int64_t duration);
+	int dispatch_repeat_event_master(int64_t duration);
 	int dispatch_button_press();
 	int dispatch_button_release();
 	int dispatch_cursor_leave();
@@ -571,7 +572,7 @@ private:
 // Button status information
 	int button_down, button_number;
 // When button was pressed and whether it qualifies as a double click
-	unsigned long button_time1, button_time2;
+	uint64_t button_time1, button_time2;
 	int double_click;
 // Which button is down
 	int button_pressed;
@@ -583,13 +584,13 @@ private:
 	static BC_Resources resources;
 // Array of repeaters for multiple repeating objects.
 	ArrayList<BC_Repeater*> repeaters;
-//	long next_repeat_id;
+//	int64_t next_repeat_id;
 // Text for tooltip if one exists
 	char tooltip_text[BCTEXTLEN];
 // If the current window's tooltip is visible
 	int tooltip_on;
 // Repeat ID of tooltip
-//	long tooltip_id;
+//	int64_t tooltip_id;
 // Popup window for tooltip
 	BC_Popup *tooltip_popup;
 // If this subwindow has already shown a tooltip since the last EnterNotify
@@ -598,7 +599,7 @@ private:
 	int persistant_tooltip;
 	int current_font;
     XFontSet largefontset, mediumfontset, smallfontset, curr_fontset;
-	long current_color;
+	int64_t current_color;
 // Coordinate of drag start
 	int drag_x, drag_y;
 // Boundaries the cursor must pass to start a drag

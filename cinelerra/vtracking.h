@@ -14,7 +14,7 @@ public:
 
 	PlaybackEngine* get_playback_engine();
 	void update_tracker(double position);
-	void update_meters(long position);
+	void update_meters(int64_t position);
 	void stop_meters();
 	void draw();
 

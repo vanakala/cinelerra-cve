@@ -60,11 +60,12 @@ public:
 	void close_output_file();
 	void delete_batch(int number);
 	void swap_batches(int number1, int number2);
-	void get_audio_write_length(long &buffer_size, long &fragment_size);
+	void get_audio_write_length(int64_t &buffer_size, int64_t &fragment_size);
 	int open_input_devices(int duplex, int context);
 	int close_input_devices();
 	void start_file_threads();
-	int start_recording(int duplex, int context = CONTEXT_INTERACTIVE);
+	int start_recording(int duplex, 
+		int context /* = CONTEXT_INTERACTIVE */);
 	int record_frame();
 	int start_monitor();
 	int pause_monitor();
@@ -133,16 +134,16 @@ public:
 	Asset* current_asset();
 	int* current_offset_type();
 // Total number of samples since record sequence started
-	long sync_position();
+	int64_t sync_position();
 // Current position for GUI relative to batch
 	double current_display_position();
 	double current_display_length();
-	long current_audio_position();
-	long current_duration_samples();
-	long current_video_position();
-	long current_duration_frames();
+	int64_t current_audio_position();
+	int64_t current_duration_samples();
+	int64_t current_video_position();
+	int64_t current_duration_frames();
 // Number of frames between the current file and the start of the batch
-	long batch_video_offset();
+	int64_t batch_video_offset();
 // Rewind the current file in the current batch
 	void start_over();
 
@@ -223,30 +224,30 @@ public:
 	int get_vu_format();
 	int get_rec_mode();
 	int set_rec_mode(int value);
-	int set_loop_duration(long value);
+	int set_loop_duration(int64_t value);
 	int use_floatingpoint();
 
 	int get_out_length();   // Length to write during playback
-	long get_out_buffersize();  // Same as get_out_length
+	int64_t get_out_buffersize();  // Same as get_out_length
 	int get_software_positioning();
-	long get_in_buffersize();      // Length to write to disk at a time
+	int64_t get_in_buffersize();      // Length to write to disk at a time
 	int get_video_buffersize();    // Number of frames to write to disk at a time
 	int get_video_capturesize();    // Number of frames to read from device at a time
 	int get_meter_over_hold(int divisions);
 	int get_meter_peak_hold(int divisions);
 	int get_meter_speed();
 
-	long get_playback_buffer();
+	int64_t get_playback_buffer();
 	int enable_duplex();
 
 	int realtime;
 	int to_tracks;
-	long loop_duration;
-	long startsource_sample;           // start in source file of this recording
-	long endsource_sample;
-	long startsource_frame;
-	long endsource_frame;
-	long dc_offset[MAXCHANNELS];
+	int64_t loop_duration;
+	int64_t startsource_sample;           // start in source file of this recording
+	int64_t endsource_sample;
+	int64_t startsource_frame;
+	int64_t endsource_frame;
+	int64_t dc_offset[MAXCHANNELS];
 	int append_to_file;
 	int record_mode;
 	int frame_w;

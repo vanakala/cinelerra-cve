@@ -86,8 +86,8 @@ int PluginVClient::init_realtime_parameters()
 
 void PluginVClient::plugin_process_realtime(VFrame **input, 
 		VFrame **output, 
-		long current_position,
-		long total_len)
+		int64_t current_position,
+		int64_t total_len)
 {
 	this->source_position = current_position;
 	this->total_len = total_len;
@@ -111,7 +111,7 @@ void PluginVClient::send_render_gui(void *data)
 	server->send_render_gui(data);
 }
 
-int PluginVClient::plugin_process_loop(VFrame **buffers, long &write_length)
+int PluginVClient::plugin_process_loop(VFrame **buffers, int64_t &write_length)
 {
 	int result = 0;
 
@@ -127,12 +127,12 @@ int PluginVClient::plugin_process_loop(VFrame **buffers, long &write_length)
 }
 
 
-int PluginVClient::read_frame(VFrame *buffer, int channel, long start_position)
+int PluginVClient::read_frame(VFrame *buffer, int channel, int64_t start_position)
 {
 	return server->read_frame(buffer, channel, start_position);
 }
 
-int PluginVClient::read_frame(VFrame *buffer, long start_position)
+int PluginVClient::read_frame(VFrame *buffer, int64_t start_position)
 {
 	return server->read_frame(buffer, 0, start_position);
 }

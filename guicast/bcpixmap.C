@@ -18,7 +18,7 @@ BC_Pixmap::BC_Pixmap(BC_WindowBase *parent_window,
 					frame->get_w(), 
 					frame->get_h(), 
 					parent_window->get_color_model(), 
-					1);
+					0);
 		opaque_bitmap->set_bg_color(parent_window->get_bg_color());
 		opaque_bitmap->read_frame(frame, 
 			0, 
@@ -33,7 +33,7 @@ BC_Pixmap::BC_Pixmap(BC_WindowBase *parent_window,
 				frame->get_w(), 
 				frame->get_h(), 
 				BC_TRANSPARENCY, 
-				1);
+				0);
 
 		alpha_bitmap->read_frame(frame, 
 			0, 

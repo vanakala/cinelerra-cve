@@ -11,9 +11,9 @@ BC_ScrollBar::BC_ScrollBar(int x,
 	int y, 
 	int orientation, 
 	int pixels, 
-	long length, 
-	long position, 
-	long handlelength,
+	int64_t length, 
+	int64_t position, 
+	int64_t handlelength,
 	VFrame **data)
  : BC_SubWindow(x, y, 0, 0, -1)
 {
@@ -346,13 +346,13 @@ void BC_ScrollBar::get_handle_dimensions()
 //printf("BC_ScrollBar::get_handle_dimensions %ld\n", length);
 	if(length > 0)
 	{
-		handle_pixels = (long)((double)handlelength / 
+		handle_pixels = (int64_t)((double)handlelength / 
 			length * 
 			total_pixels + 
 			.5);
 
 
-		handle_pixel = (long)((double)position / length * total_pixels + .5) + 
+		handle_pixel = (int64_t)((double)position / length * total_pixels + .5) + 
 			get_arrow_pixels();
 
 		if(handle_pixels < MINHANDLE) handle_pixels = MINHANDLE;
@@ -430,10 +430,10 @@ int BC_ScrollBar::cursor_motion_event()
 		{
 //printf("BC_ScrollBar::cursor_motion_event 1\n");
 			double total_pixels = pixels - get_arrow_pixels() * 2;
-			long cursor_pixel = (orientation == SCROLL_HORIZ) ? 
+			int64_t cursor_pixel = (orientation == SCROLL_HORIZ) ? 
 				top_level->cursor_x : 
 				top_level->cursor_y;
-			long new_position = (long)((double)(cursor_pixel - min_pixel) / 
+			int64_t new_position = (int64_t)((double)(cursor_pixel - min_pixel) / 
 				total_pixels * length);
 //printf("BC_ScrollBar::cursor_motion_event 2\n");
 
@@ -483,8 +483,8 @@ int BC_ScrollBar::button_press_event()
 			if(selection_status == SCROLL_HANDLE)
 			{
 				double total_pixels = pixels - get_arrow_pixels() * 2;
-				long cursor_pixel = (orientation == SCROLL_HORIZ) ? top_level->cursor_x : top_level->cursor_y;
-				min_pixel = cursor_pixel - (long)((double)position / length * total_pixels + .5);
+				int64_t cursor_pixel = (orientation == SCROLL_HORIZ) ? top_level->cursor_x : top_level->cursor_y;
+				min_pixel = cursor_pixel - (int64_t)((double)position / length * total_pixels + .5);
 				max_pixel = (int)(cursor_pixel + total_pixels);
 				draw();
 			}
@@ -502,14 +502,14 @@ int BC_ScrollBar::button_press_event()
 	return 0;
 }
 
-int BC_ScrollBar::repeat_event(long duration)
+int BC_ScrollBar::repeat_event(int64_t duration)
 {
 	if(duration == top_level->get_resources()->scroll_repeat && 
 		selection_status)
 	{
 		repeat_count++;
 		if(repeat_count == 2) return 0;
-		long new_position = position;
+		int64_t new_position = position;
 		switch(selection_status)
 		{
 			case SCROLL_BACKPAGE:
@@ -594,17 +594,17 @@ int BC_ScrollBar::activate()
 	return 0;
 }
 
-long BC_ScrollBar::get_value()
+int64_t BC_ScrollBar::get_value()
 {
 	return position;
 }
 
-long BC_ScrollBar::get_position()
+int64_t BC_ScrollBar::get_position()
 {
 	return position;
 }
 
-long BC_ScrollBar::get_length()
+int64_t BC_ScrollBar::get_length()
 {
 	return length;
 }
@@ -619,19 +619,19 @@ int BC_ScrollBar::in_use()
 	return selection_status != 0;
 }
 
-long BC_ScrollBar::get_handlelength()
+int64_t BC_ScrollBar::get_handlelength()
 {
 	return handlelength;
 }
 
-int BC_ScrollBar::update_value(long value)
+int BC_ScrollBar::update_value(int64_t value)
 {
 	this->position = value;
 	draw();
 	return 0;
 }
 
-int BC_ScrollBar::update_length(long length, long position, long handlelength)
+int BC_ScrollBar::update_length(int64_t length, int64_t position, int64_t handlelength)
 {
 	this->length = length;
 	this->position = position;

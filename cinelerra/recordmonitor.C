@@ -67,7 +67,7 @@ int RecordMonitor::create_objects()
 	{
 // Configure the output for record monitoring
 		VideoOutConfig config(PLAYBACK_LOCALHOST, 0);
-		device = new VideoDevice();
+		device = new VideoDevice;
 //printf("RecordMonitor::create_objects 4\n");
 
 
@@ -388,6 +388,7 @@ int RecordMonitorGUI::resize_event(int w, int h)
 	mwindow->theme->get_recordmonitor_sizes(record->default_asset->audio_data, 
 		record->default_asset->video_data);
 	mwindow->theme->draw_rmonitor_bg(this);
+	flash();
 
 
 	record_transport->reposition_window(mwindow->theme->rmonitor_tx_x,

@@ -29,21 +29,17 @@ public:
 	float get_property_float(int number);
 	char *get_property(char *property);
 	char* get_property(char *property, char *value);
-	long get_property(char *property, long default_);
-#ifndef __alpha__
-	longest get_property(char *property, longest default_);
-#endif
-	int get_property(char *property, int default_);
+	int32_t get_property(char *property, int32_t default_);
+	int64_t get_property(char *property, int64_t default_);
+//	int get_property(char *property, int default_);
 	float get_property(char *property, float default_);
 	double get_property(char *property, double default_);
 
 	int set_title(char *text);       // set the title field
 	int set_property(char *text, char *value);
-	int set_property(char *text, long value);
-#ifndef __alpha__
-	int set_property(char *text, longest value);
-#endif
-	int set_property(char *text, int value);
+	int set_property(char *text, int32_t value);
+	int set_property(char *text, int64_t value);
+//	int set_property(char *text, int value);
 	int set_property(char *text, float value);
 	int set_property(char *text, double value);
 	int write_tag();

@@ -7,8 +7,7 @@ class TitleThread;
 class TitleWindow;
 class TitleInterlace;
 
-#include <colorpicker.h>
-
+#include "colorpicker.h"
 #include "filexml.h"
 #include "mutex.h"
 #include "title.h"
@@ -36,6 +35,8 @@ class TitleSize;
 class TitleEncoding;
 class TitleColorButton;
 class TitleColorStrokeButton;
+class TitleStroke;
+class TitleStrokeW;
 class TitleDropShadow;
 class TitleMotion;
 class TitleLoop;
@@ -46,8 +47,7 @@ class TitleX;
 class TitleY;
 class TitleLeft;
 class TitleCenter;
-class TitleRight;
-class TitleTop;
+class TitleRight;class TitleTop;
 class TitleMid;
 class TitleBottom;
 class TitleColorThread;
@@ -84,14 +84,23 @@ public:
 	BC_Title *style_title;
 	TitleItalic *italic;
 	TitleBold *bold;
+
+#ifdef USE_OUTLINE
+	TitleStroke *stroke;
+	TitleColorStrokeButton *color_stroke_button;
+	TitleColorStrokeThread *color_stroke_thread;
+	BC_Title *strokewidth_title;
+	TitleStrokeW *stroke_width;
+	int color_stroke_x, color_stroke_y;
+#endif
+
+	int color_x, color_y;
 	BC_Title *size_title;
 	BC_Title *encoding_title;
 	TitleSize *size;
 	TitleEncoding *encoding;
 	TitleColorButton *color_button;
 	TitleColorThread *color_thread;
-	TitleColorStrokeButton *color_stroke_button;
-	TitleColorStrokeThread *color_stroke_thread;
 	BC_Title *motion_title;
 	TitleMotion *motion;
 	TitleLoop *loop;
@@ -99,8 +108,6 @@ public:
 	TitleFade *fade_in;
 	BC_Title *fadeout_title;
 	TitleFade *fade_out;
-	BC_Title *strokewidth_title;
-	TitleFade *stroke_width;
 	BC_Title *text_title;
 	TitleText *text;
 	BC_Title *justify_title;
@@ -115,7 +122,6 @@ public:
 	TitleTimecode *timecode;
 
 // Color preview
-	int color_x, color_y, color_stroke_x, color_stroke_y;
 	ArrayList<BC_ListBoxItem*> sizes;
 	ArrayList<BC_ListBoxItem*> encodings;
 	ArrayList<BC_ListBoxItem*> paths;
@@ -151,6 +157,17 @@ public:
 	TitleMain *client;
 	TitleWindow *window;
 };
+
+class TitleStroke : public BC_CheckBox
+{
+public:
+	TitleStroke(TitleMain *client, TitleWindow *window, int x, int y);
+	int handle_event();
+	TitleMain *client;
+	TitleWindow *window;
+};
+
+
 class TitleSize : public BC_PopupTextBox
 {
 public:
@@ -252,6 +269,14 @@ class TitleY : public BC_TumbleTextBox
 {
 public:
 	TitleY(TitleMain *client, TitleWindow *window, int x, int y);
+	int handle_event();
+	TitleMain *client;
+	TitleWindow *window;
+};
+class TitleStrokeW : public BC_TumbleTextBox
+{
+public:
+	TitleStrokeW(TitleMain *client, TitleWindow *window, int x, int y);
 	int handle_event();
 	TitleMain *client;
 	TitleWindow *window;

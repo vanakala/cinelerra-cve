@@ -5,6 +5,7 @@
 #include "brender.h"
 #include "cache.h"
 #include "channel.h"
+#include "clip.h"
 #include "colormodels.h"
 #include "cplayback.h"
 #include "ctimebar.h"
@@ -44,6 +45,7 @@
 #include "recordlabel.h"
 #include "render.h"
 #include "samplescroll.h"
+#include "sighandler.h"
 #include "splashgui.h"
 #include "statusbar.h"
 #include "theme.h"
@@ -75,22 +77,22 @@ extern "C"
 
 // Hack for libdv to remove glib dependancy
 
-void
-g_log (const char    *log_domain,
-       int  log_level,
-       const char    *format,
-       ...)
-{
-}
-
-void
-g_logv (const char    *log_domain,
-       int  log_level,
-       const char    *format,
-       ...)
-{
-}
-
+// void
+// g_log (const char    *log_domain,
+//        int  log_level,
+//        const char    *format,
+//        ...)
+// {
+// }
+// 
+// void
+// g_logv (const char    *log_domain,
+//        int  log_level,
+//        const char    *format,
+//        ...)
+// {
+// }
+// 
 
 
 // Hack for XFree86 4.1.0
@@ -182,52 +184,38 @@ void MWindow::init_defaults(Defaults* &defaults)
 
 void MWindow::init_plugin_path(Preferences *preferences, 
 	ArrayList<PluginServer*>* &plugindb,
-	char *directory,
-	char *suffix)
+	FileSystem *fs,
+	SplashGUI *splash_window,
+	int *counter)
 {
-	FileSystem fs;
-	int result = 1;
+	int result = 0;
 	PluginServer *newplugin;
-//printf("MWindow::init_plugin_path 1\n");
-	fs.set_filter(suffix);
-//printf("MWindow::init_plugin_path 2\n");
-	result = fs.update(directory);
-//printf("MWindow::init_plugin_path 3\n");
 
 	if(!result)
 	{
-//printf("MWindow::init_plugins 1 %d\n", fs.dir_list.total);
-		for(int i = 0; i < fs.dir_list.total; i++)
+		for(int i = 0; i < fs->dir_list.total; i++)
 		{
 			char path[BCTEXTLEN];
-//printf("MWindow::init_plugins 2\n");
-			strcpy(path, fs.dir_list.values[i]->path);
-// printf("                                                                            \r");
-// printf("MWindow::init_plugins 2 %s\r", path);
-// fflush(stdout);
+			strcpy(path, fs->dir_list.values[i]->path);
 
 // File is a directory
-			if(!fs.is_dir(path))
+			if(!fs->is_dir(path))
 			{
 				continue;
 			}
 			else
 			{
 // Try to query the plugin
-//printf("MWindow::init_plugins 3 %s\n", path);
-				fs.complete_path(path);
-//printf("MWindow::init_plugins 4 %s\n", path);
+				fs->complete_path(path);
 				PluginServer *new_plugin = new PluginServer(path);
-//printf("MWindow::init_plugins 5\n", path);
 				int result = new_plugin->open_plugin(1, 0, 0);
 
 				if(!result)
 				{
-//printf("MWindow::init_plugins 4 %s\n", path);
 					plugindb->append(new_plugin);
-//printf("MWindow::init_plugins 5 %s\n", path);
 					new_plugin->close_plugin();
-//printf("MWindow::init_plugins 6 %s\n", path);
+					if(splash_window)
+						splash_window->operation->update(new_plugin->title);
 				}
 				else
 				if(result == PLUGINSERVER_IS_LAD)
@@ -247,9 +235,10 @@ void MWindow::init_plugin_path(Preferences *preferences,
 						{
 							plugindb->append(new_plugin);
 							new_plugin->close_plugin();
+							if(splash_window)
+								splash_window->operation->update(new_plugin->title);
 						}
 					}while(!result);
-//printf("MWindow::init_plugins 7\n");
 				}
 				else
 				{
@@ -257,42 +246,36 @@ void MWindow::init_plugin_path(Preferences *preferences,
 					delete new_plugin;
 				}
 			}
+			if(splash_window) splash_window->progress->update((*counter)++);
 		}
 	}
-	else
-// notify user of failed directory search
-	{
-		printf("MWindow::init_plugins: Couldn't open %s plugin directory.\n",
-			directory);  
-	}
-//printf("\n");
 }
 
 void MWindow::init_plugins(Preferences *preferences, 
-	ArrayList<PluginServer*>* &plugindb)
+	ArrayList<PluginServer*>* &plugindb,
+	SplashGUI *splash_window)
 {
 	plugindb = new ArrayList<PluginServer*>;
 
+	FileSystem cinelerra_fs;
+	ArrayList<FileSystem*> lad_fs;
+	int result = 0;
 
+// Get directories
+	cinelerra_fs.set_filter("[*.plugin][*.so]");
+	result = cinelerra_fs.update(preferences->global_plugin_dir);
 
-
-
-	init_plugin_path(preferences,
-		plugindb,
-		preferences->global_plugin_dir,
-		"*.plugin");
-// LAD
-	init_plugin_path(preferences,
-		plugindb,
-		preferences->global_plugin_dir,
-		"*.so");
+	if(result)
+	{
+		fprintf(stderr, 
+			"MWindow::init_plugins: couldn't open %s directory\n",
+			preferences->global_plugin_dir);
+	}
 
 // Parse LAD environment variable
 	char *env = getenv("LADSPA_PATH");
-//printf("MWindow::init_plugins 1 %p\n", env);
 	if(env)
 	{
-//printf("MWindow::init_plugins 2 %s\n", env);
 		char string[BCTEXTLEN];
 		char *ptr1 = env;
 		while(ptr1)
@@ -313,12 +296,19 @@ void MWindow::init_plugins(Preferences *preferences,
 				int len = end - ptr1;
 				memcpy(string, ptr1, len);
 				string[len] = 0;
-//printf("MWindow::init_plugins 2 %s\n", string);
-				init_plugin_path(preferences,
-					plugindb,
-					string,
-					"*.so");
-//printf("MWindow::init_plugins 3\n");
+
+
+				FileSystem *fs = new FileSystem;
+				lad_fs.append(fs);
+				fs->set_filter("*.so");
+				result = fs->update(string);
+
+				if(result)
+				{
+					fprintf(stderr, 
+						"MWindow::init_plugins: couldn't open %s directory\n",
+						string);
+				}
 			}
 
 			if(ptr)
@@ -327,6 +317,29 @@ void MWindow::init_plugins(Preferences *preferences,
 				ptr1 = ptr;
 		};
 	}
+
+	int total = cinelerra_fs.total_files();
+	int counter = 0;
+	for(int i = 0; i < lad_fs.total; i++)
+		total += lad_fs.values[i]->total_files();
+	if(splash_window) splash_window->progress->update_length(total);
+
+// Cinelerra
+	init_plugin_path(preferences,
+		plugindb,
+		&cinelerra_fs,
+		splash_window,
+		&counter);
+
+// LAD
+	for(int i = 0; i < lad_fs.total; i++)
+		init_plugin_path(preferences,
+			plugindb,
+			lad_fs.values[i],
+			splash_window,
+			&counter);
+
+	lad_fs.remove_all_objects();
 }
 
 void MWindow::delete_plugins()
@@ -485,21 +498,17 @@ void MWindow::init_theme()
 
 //printf("MWindow::init_theme 3 %p\n", theme);
 	theme->initialize();
+	theme->check_used();
 //printf("MWindow::init_theme 4\n");
 }
 
 void MWindow::init_edl()
 {
 	edl = new EDL;
-//printf("MWindow::init_edl 1\n");
 	edl->create_objects();
-//printf("MWindow::init_edl 1\n");
     edl->load_defaults(defaults);
-//printf("MWindow::init_edl 1\n");
 	edl->create_default_tracks();
-//printf("MWindow::init_edl 1\n");
 	edl->tracks->update_y_pixels(theme);
-//printf("MWindow::init_edl 2\n");
 }
 
 void MWindow::init_compositor()
@@ -609,6 +618,11 @@ void MWindow::init_gui()
 	gui->load_defaults(defaults);
 }
 
+void MWindow::init_signals()
+{
+	sighandler = new SigHandler;
+}
+
 void MWindow::init_render()
 {
 	render = new Render(this);
@@ -683,6 +697,7 @@ void MWindow::set_brender_start()
 
 int MWindow::load_filenames(ArrayList<char*> *filenames, int load_mode)
 {
+TRON("MWindow::load_filenames\n");
 	ArrayList<EDL*> new_edls;
 	ArrayList<Asset*> new_assets;
 //printf("load_filenames 1\n");
@@ -714,10 +729,14 @@ int MWindow::load_filenames(ArrayList<char*> *filenames, int load_mode)
 
 //printf("load_filenames 1\n");
 		new_edl->create_objects();
+//printf("load_filenames 1\n");
 		new_edl->copy_session(edl);
+//printf("load_filenames 1\n");
 
 		sprintf(string, "Loading %s", new_asset->path);
+//printf("load_filenames 1\n");
 		gui->show_message(string, BLACK);
+//printf("load_filenames 1\n");
 		result = new_file->open_file(plugindb, new_asset, 1, 0, 0, 0);
 //printf("load_filenames 2\n");
 
@@ -897,9 +916,26 @@ int MWindow::load_filenames(ArrayList<char*> *filenames, int load_mode)
 //printf("MWindow::load_filenames 7 %d\n", new_edls.total);
 
 
-// Don't back up here
+
+
+
+
+// Paste them.
+// Don't back up here.
 	if(new_edls.total)
 	{
+// For pasting, clear the active region
+		if(load_mode == LOAD_PASTE)
+		{
+			double start = edl->local_session->get_selectionstart();
+			double end = edl->local_session->get_selectionend();
+			if(!EQUIV(start, end))
+				edl->clear(start, 
+					end,
+					edl->session->labels_follow_edits,
+					edl->session->plugins_follow_edits);
+		}
+
 		paste_edls(&new_edls, 
 			load_mode,
 			0,
@@ -907,6 +943,13 @@ int MWindow::load_filenames(ArrayList<char*> *filenames, int load_mode)
 			edl->session->labels_follow_edits, 
 			edl->session->plugins_follow_edits);
 	}
+
+
+
+
+
+
+
 //printf("MWindow::load_filenames 8 %d\n", new_edls.total);
 //sleep(10);
 
@@ -936,6 +979,7 @@ int MWindow::load_filenames(ArrayList<char*> *filenames, int load_mode)
 		load_mode == LOAD_REPLACE_CONCATENATE)
 		session->changes_made = 0;
 
+TROFF("MWindow::load_filenames\n");
 	return 0;
 }
 
@@ -944,12 +988,10 @@ void MWindow::create_objects(int want_gui, int want_new)
 	char string[1024];
 	FileSystem fs;
 
-// Work around X bug
-//	BC_WindowBase::get_resources()->use_xvideo = 0;
-
 	edl = 0;
 
 	show_splash();
+	init_signals();
 
 	init_menus();
 //printf("MWindow::create_objects 1\n");
@@ -957,7 +999,8 @@ void MWindow::create_objects(int want_gui, int want_new)
 //printf("MWindow::create_objects 1\n");
 	init_preferences();
 //printf("MWindow::create_objects 1\n");
-	init_plugins(preferences, plugindb);
+	init_plugins(preferences, plugindb, splash_window);
+	splash_window->operation->update("Initializing GUI");
 //printf("MWindow::create_objects 1\n");
 	init_theme();
 // Default project created here
@@ -1024,8 +1067,8 @@ void MWindow::create_objects(int want_gui, int want_new)
 
 void MWindow::show_splash()
 {
-#include "data/heroine_logo10_png.h"
-	VFrame *frame = new VFrame(heroine_logo10_png);
+#include "data/heroine_logo11_png.h"
+	VFrame *frame = new VFrame(heroine_logo11_png);
 	BC_DisplayInfo display_info;
 	splash_window = new SplashGUI(frame, 
 		display_info.get_root_w() / 2 - frame->get_w() / 2,
@@ -1035,7 +1078,6 @@ void MWindow::show_splash()
 
 void MWindow::hide_splash()
 {
-	delete splash_window->bg;
 	delete splash_window;
 }
 
@@ -1392,6 +1434,7 @@ int MWindow::asset_to_edl(EDL *new_edl,
 //printf("MWindow::asset_to_edl 2 %d %d\n", new_edl->session->video_tracks, new_edl->session->audio_tracks);
 
 	new_edl->create_default_tracks();
+//printf("MWindow::asset_to_edl 2 %d %d\n", new_edl->session->video_tracks, new_edl->session->audio_tracks);
 
 // Disable drawing if the file format isn't fast enough.
 	if(new_asset->format == FILE_MPEG)

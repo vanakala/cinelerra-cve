@@ -19,8 +19,8 @@ public:
 	int is_video();
 	void plugin_process_realtime(VFrame **input, 
 		VFrame **output, 
-		long current_position,
-		long total_len);
+		int64_t current_position,
+		int64_t total_len);
 	virtual int process_realtime(VFrame **input, 
 		VFrame **output) { return 0; };
 	virtual int process_realtime(VFrame *input, 
@@ -32,9 +32,9 @@ public:
 	void send_render_gui(void *data);
 	virtual int process_loop(VFrame **buffers) { return 1; };
 	virtual int process_loop(VFrame *buffer) { return 1; };
-	int plugin_process_loop(VFrame **buffers, long &write_length);
-	int read_frame(VFrame *buffer, int channel, long start_position);
-	int read_frame(VFrame *buffer, long start_position);
+	int plugin_process_loop(VFrame **buffers, int64_t &write_length);
+	int read_frame(VFrame *buffer, int channel, int64_t start_position);
+	int read_frame(VFrame *buffer, int64_t start_position);
 
 
 

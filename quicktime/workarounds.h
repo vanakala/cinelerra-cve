@@ -3,7 +3,7 @@
 
 // Work around gcc bugs by forcing external linkage
 
-longest quicktime_add(longest a, longest b);
-longest quicktime_add3(longest a, longest b, longest c);
+int64_t quicktime_add(int64_t a, int64_t b);
+int64_t quicktime_add3(int64_t a, int64_t b, int64_t c);
 
 #endif

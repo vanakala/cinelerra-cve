@@ -27,8 +27,8 @@ SharedLocation::SharedLocation(int module, int plugin)
 void SharedLocation::save(FileXML *file)
 {
 	file->tag.set_title("SHARED_LOCATION");
-	if(module >= 0) file->tag.set_property("SHARED_MODULE", (long)module);
-	if(plugin >= 0) file->tag.set_property("SHARED_PLUGIN", (long)plugin);
+	if(module >= 0) file->tag.set_property("SHARED_MODULE", (int64_t)module);
+	if(plugin >= 0) file->tag.set_property("SHARED_PLUGIN", (int64_t)plugin);
 	file->append_tag();
 	file->tag.set_title("/SHARED_LOCATION");
 	file->append_tag();
@@ -40,8 +40,8 @@ void SharedLocation::load(FileXML *file)
 	module = -1;
 	plugin = -1;
 
-	module = file->tag.get_property("SHARED_MODULE", (long)module);
-	plugin = file->tag.get_property("SHARED_PLUGIN", (long)plugin);
+	module = file->tag.get_property("SHARED_MODULE", (int64_t)module);
+	plugin = file->tag.get_property("SHARED_PLUGIN", (int64_t)plugin);
 }
 
 int SharedLocation::get_type()

@@ -691,7 +691,7 @@ static int dequantize_sample(mpeg3_layer_t *audio,
 	else 
 	if(part2remain < 0) 
 	{
-      	printf(__FUNCTION__ ": can't rewind stream %d bits! data=%02x%02x%02x%02x\n", 
+      	printf("dequantize_sample: can't rewind stream %d bits! data=%02x%02x%02x%02x\n", 
 		-part2remain,
 		(unsigned char)audio->stream->input_ptr[-3], 
 		(unsigned char)audio->stream->input_ptr[-2], 

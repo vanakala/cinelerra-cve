@@ -23,8 +23,8 @@ public:
 
 	VFrame *input;
 	unsigned char *output;  // Output buffer
-	long output_size;        // Size of output buffer
-	long output_allocated;  // Allocation of output buffer
+	int64_t output_size;        // Size of output buffer
+	int64_t output_allocated;  // Allocation of output buffer
 	Mutex completion_lock;
 };
 
@@ -48,24 +48,24 @@ public:
 	int close_file();
 	void asset_to_format();
 	void format_to_asset();
-	long get_video_length();
-	long get_audio_length();
-	int set_video_position(long x);
-	int set_audio_position(long x);
+	int64_t get_video_length();
+	int64_t get_audio_length();
+	int set_video_position(int64_t x);
+	int set_audio_position(int64_t x);
 	int write_samples(double **buffer, 
-			long len);
+			int64_t len);
 	int write_frames(VFrame ***frames, int len);
-	long compressed_frame_size();
+	int64_t compressed_frame_size();
 	int read_compressed_frame(VFrame *buffer);
 	int write_compressed_frame(VFrame *buffer);
 
 	int read_frame(VFrame *frame);
-	int read_samples(double *buffer, long len);
+	int read_samples(double *buffer, int64_t len);
 
 // Direct copy routines
 	static int get_best_colormodel(Asset *asset, int driver);
 	int colormodel_supported(int colormodel);
-	int can_copy_from(Edit *edit, long position); // This file can copy frames directly from the asset
+	int can_copy_from(Edit *edit, int64_t position); // This file can copy frames directly from the asset
 	static char *strtocompression(char *string);
 	static char *compressiontostr(char *string);
 
@@ -73,9 +73,9 @@ public:
 	static void fix_codecs(Asset *asset);
 
 private:
-	void new_audio_temp(long len);
+	void new_audio_temp(int64_t len);
 // read raw audio data
-	int read_raw(char *buffer, long samples, int track);  
+	int read_raw(char *buffer, int64_t samples, int track);  
 // overlay raw frame from the current layer and position
 	int read_raw(VFrame *frame, 
 		float in_x1, float in_y1, float in_x2, float in_y2,
@@ -91,8 +91,8 @@ private:
 // Temporary storage for color conversions
 	VFrame *temp_frame;
 	int depth;        // Depth in bits per pixel
-	long frames_correction;  // Correction after 32bit overflow
-	long samples_correction;  // Correction after 32bit overflow
+	int64_t frames_correction;  // Correction after 32bit overflow
+	int64_t samples_correction;  // Correction after 32bit overflow
 
 // An array of frames for threads to look up and compress on their own.
 	ArrayList<ThreadStruct*> threadframes;
@@ -107,7 +107,7 @@ private:
 
 // Temp buffers for converting from double to float
 	float **temp_float;
-	long temp_allocated;
+	int64_t temp_allocated;
 };
 
 

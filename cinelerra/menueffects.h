@@ -55,7 +55,7 @@ public:
 	virtual int get_derived_attributes(Asset *asset, Defaults *defaults) { return 0; };
 	virtual int save_derived_attributes(Asset *asset, Defaults *defaults) { return 0; };
 	virtual PluginArray* create_plugin_array() { return 0; };
-	virtual long to_units(double position, int round) { return 0; };
+	virtual int64_t to_units(double position, int round) { return 0; };
 	virtual int fix_menu(char *title) {};
 	int test_existence(Asset *asset);
 
@@ -95,19 +95,24 @@ public:
 		Asset *asset);
 	virtual ~MenuEffectWindow();
 
-	static int calculate_w(int use_plugin_list);
-	static int calculate_h(int use_plugin_list);
+/*
+ * 	static int calculate_w(int use_plugin_list);
+ * 	static int calculate_h(int use_plugin_list);
+ */
 	int create_objects();
+	int resize_event(int w, int h);
 
+	BC_Title *list_title;
+	MenuEffectWindowList *list;
 	LoadMode *loadmode;
+	BC_Title *file_title;
+	FormatTools *format_tools;
 	MenuEffectThread *menueffects;
 	MWindow *mwindow;
 	ArrayList<BC_ListBoxItem*> *plugin_list;
 	Asset *asset;
 
 	int result;
-	FormatTools *format_tools;
-	MenuEffectWindowList *list;
 };
 
 class MenuEffectWindowOK : public BC_OKButton
@@ -135,7 +140,12 @@ public:
 class MenuEffectWindowList : public BC_ListBox
 {
 public:
-	MenuEffectWindowList(MenuEffectWindow *window, int x, ArrayList<BC_ListBoxItem*> *plugin_list);
+	MenuEffectWindowList(MenuEffectWindow *window, 
+		int x, 
+		int y, 
+		int w, 
+		int h, 
+		ArrayList<BC_ListBoxItem*> *plugin_list);
 
 	int handle_event();
 	MenuEffectWindow *window;

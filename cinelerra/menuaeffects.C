@@ -89,12 +89,12 @@ PluginArray* MenuAEffectThread::create_plugin_array()
 	return new APluginArray();
 }
 
-long MenuAEffectThread::to_units(double position, int round)
+int64_t MenuAEffectThread::to_units(double position, int round)
 {
 	if(round)
 		return Units::round(position * mwindow->edl->session->sample_rate);
 	else
-		return (long)(position * mwindow->edl->session->sample_rate);
+		return (int64_t)(position * mwindow->edl->session->sample_rate);
 		
 	return 0;
 }

@@ -84,7 +84,7 @@ int BC_Tumbler::draw_face()
 	return 0;
 }
 
-int BC_Tumbler::repeat_event(long duration)
+int BC_Tumbler::repeat_event(int64_t duration)
 {
 //printf("BC_Tumbler::repeat_event 1 %d\n", duration);
 	if(duration == top_level->get_resources()->tooltip_delay)
@@ -226,7 +226,7 @@ int BC_Tumbler::cursor_motion_event()
 
 
 
-BC_ITumbler::BC_ITumbler(BC_TextBox *textbox, long min, long max, int x, int y)
+BC_ITumbler::BC_ITumbler(BC_TextBox *textbox, int64_t min, int64_t max, int x, int y)
  : BC_Tumbler(x, y)
 {
 	this->textbox = textbox;
@@ -240,7 +240,7 @@ BC_ITumbler::~BC_ITumbler()
 
 int BC_ITumbler::handle_up_event()
 {
-	long value = atol(textbox->get_text());
+	int64_t value = atol(textbox->get_text());
 	value++;
 	if(value > max) value = max;
 	textbox->update(value);
@@ -250,7 +250,7 @@ int BC_ITumbler::handle_up_event()
 
 int BC_ITumbler::handle_down_event()
 {
-	long value = atol(textbox->get_text());
+	int64_t value = atol(textbox->get_text());
 	value--;
 	if(value < min) value = min;
 	textbox->update(value);
@@ -258,7 +258,7 @@ int BC_ITumbler::handle_down_event()
 	return 1;
 }
 
-void BC_ITumbler::set_boundaries(long min, long max)
+void BC_ITumbler::set_boundaries(int64_t min, int64_t max)
 {
 	this->min = min;
 	this->max = max;
@@ -283,6 +283,7 @@ BC_FTumbler::BC_FTumbler(BC_TextBox *textbox,
 	this->textbox = textbox;
 	this->min = min;
 	this->max = max;
+	this->increment = 1.0;
 }
 
 BC_FTumbler::~BC_FTumbler()
@@ -292,7 +293,7 @@ BC_FTumbler::~BC_FTumbler()
 int BC_FTumbler::handle_up_event()
 {
 	float value = atof(textbox->get_text());
-	value += 0.1;
+	value += increment;
 	if(value > max) value = max;
 	textbox->update(value);
 	textbox->handle_event();
@@ -302,7 +303,7 @@ int BC_FTumbler::handle_up_event()
 int BC_FTumbler::handle_down_event()
 {
 	float value = atof(textbox->get_text());
-	value -= 0.1;
+	value -= increment;
 	if(value < min) value = min;
 	textbox->update(value);
 	textbox->handle_event();
@@ -315,7 +316,8 @@ void BC_FTumbler::set_boundaries(float min, float max)
 	this->max = max;
 }
 
-
-
-
+void BC_FTumbler::set_increment(float value)
+{
+	this->increment = increment;
+}
 

@@ -6,20 +6,45 @@
 #include "filebase.h"
 #include "libmpeg3.h"
 #include "mutex.h"
-#include "resample.inc"
 #include "thread.h"
-#include "threadfork.inc"
+
+
+#include <lame/lame.h>
+
+
+extern "C"
+{
+
+
+// Mpeg2enc prototypes
+void mpeg2enc_init_buffers();
+int mpeg2enc(int argc, char *argv[]);
+void mpeg2enc_set_w(int width);
+void mpeg2enc_set_h(int height);
+void mpeg2enc_set_rate(double rate);
+void mpeg2enc_set_input_buffers(int eof, char *y, char *u, char *v);
 
 
 
+// Toolame prototypes
+void toolame_init_buffers();
+int toolame(int argc, char **argv);
+int toolame_send_buffer(char *data, int bytes);
 
 
+}
+
+class FileMPEGVideo;
+class FileMPEGAudio;
 
 class FileMPEG : public FileBase
 {
 public:
-	FileMPEG(Asset *asset, File *file, ArrayList<PluginServer*> *plugindb);
+	FileMPEG(Asset *asset, File *file);
 	~FileMPEG();
+
+	friend class FileMPEGVideo;
+	friend class FileMPEGAudio;
 
 	static void get_parameters(BC_WindowBase *parent_window, 
 		Asset *asset, 
@@ -30,20 +55,20 @@ public:
 	static int check_sig(Asset *asset);
 	int open_file(int rd, int wr);
 	int close_file();
-	int set_video_position(long x);
-	int set_audio_position(long x);
+	int set_video_position(int64_t x);
+	int set_audio_position(int64_t x);
 	int write_samples(double **buffer, 
-			long len);
+			int64_t len);
 	int write_frames(VFrame ***frames, int len);
 
 	int read_frame(VFrame *frame);
-	int read_samples(double *buffer, long len);
+	int read_samples(double *buffer, int64_t len);
 
 // Direct copy routines
 	static int get_best_colormodel(Asset *asset, int driver);
 	int colormodel_supported(int colormodel);
 // This file can copy frames directly from the asset
-	int can_copy_from(Edit *edit, long position); 
+	int can_copy_from(Edit *edit, int64_t position); 
 	static char *strtocompression(char *string);
 	static char *compressiontostr(char *string);
 
@@ -53,20 +78,59 @@ private:
 // File descriptor for decoder
 	mpeg3_t *fd;
 
-// Fork for video encoder
-	ThreadFork *video_out;
+// Thread for video encoder
+	FileMPEGVideo *video_out;
+// Command line for video encoder
+	ArrayList<char*> vcommand_line;
+	void append_vcommand_line(const char *string);
 
-// Fork for audio encoder
-	ThreadFork *audio_out;
+// Thread for audio encoder
+	FileMPEGAudio *audio_out;
+// Command line for audio encoder
+	ArrayList<char*> acommand_line;
+	void append_acommand_line(const char *string);
 	
-	ArrayList<PluginServer*> *plugindb;
 
 // Temporary for color conversion
 	VFrame *temp_frame;
-//	long last_sample;
 	
-	unsigned char *audio_temp;
-	long audio_allocation;
+	unsigned char *toolame_temp;
+	int toolame_allocation;
+	int toolame_result;
+
+
+	float *lame_temp[2];
+	int lame_allocation;
+	char *lame_output;
+	int lame_output_allocation;
+	FILE *lame_fd;
+// Lame puts 0 before stream
+	int lame_started;
+
+	lame_global_flags *lame_global;
+};
+
+
+class FileMPEGVideo : public Thread
+{
+public:
+	FileMPEGVideo(FileMPEG *file);
+	~FileMPEGVideo();
+
+	void run();
+
+	FileMPEG *file;
+};
+
+class FileMPEGAudio : public Thread
+{
+public:
+	FileMPEGAudio(FileMPEG *file);
+	~FileMPEGAudio();
+
+	void run();
+
+	FileMPEG *file;
 };
 
 

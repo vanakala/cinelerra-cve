@@ -41,9 +41,9 @@ void ColorBalanceConfig::copy_from(ColorBalanceConfig &that)
 
 void ColorBalanceConfig::interpolate(ColorBalanceConfig &prev, 
 	ColorBalanceConfig &next, 
-	long prev_frame, 
-	long next_frame, 
-	long current_frame)
+	int64_t prev_frame, 
+	int64_t next_frame, 
+	int64_t current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
@@ -372,19 +372,19 @@ int ColorBalanceMain::synchronize_params(ColorBalanceSlider *slider, float diffe
         {
         	config.cyan += difference;
             test_boundary(config.cyan);
-        	thread->window->cyan->update((int)config.cyan);
+        	thread->window->cyan->update((int64_t)config.cyan);
         }
 	    if(slider != thread->window->magenta)
         {
         	config.magenta += difference;
             test_boundary(config.magenta);
-        	thread->window->magenta->update((int)config.magenta);
+        	thread->window->magenta->update((int64_t)config.magenta);
         }
 	    if(slider != thread->window->yellow)
         {
         	config.yellow += difference;
             test_boundary(config.yellow);
-        	thread->window->yellow->update((int)config.yellow);
+        	thread->window->yellow->update((int64_t)config.yellow);
         }
     }
 	return 0;
@@ -441,7 +441,7 @@ for(i = 0; i < max; i++) \
 
 	if(config.cyan != 0 || config.magenta != 0 || config.yellow != 0)
 	{
-		long row_step = input_ptr->get_h() / total_engines + 1;
+		int64_t row_step = input_ptr->get_h() / total_engines + 1;
 		for(int i = 0; i < input_ptr->get_h(); i += row_step)
 		{
 			if(i + row_step > input_ptr->get_h()) 

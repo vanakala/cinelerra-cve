@@ -18,7 +18,7 @@ DC_Offset::~DC_Offset()
 	delete dc_offset_lock;
 }
 
-int DC_Offset::calibrate_dc_offset(long *output, RecordGUIDCOffsetText **dc_offset_text, int input_channels)
+int DC_Offset::calibrate_dc_offset(int *output, RecordGUIDCOffsetText **dc_offset_text, int input_channels)
 {
 	this->output = output;
 	this->dc_offset_text = dc_offset_text;

@@ -147,7 +147,6 @@ BC_WindowBase::~BC_WindowBase()
 
 	if(bg_pixmap && !shared_bg_pixmap) delete bg_pixmap;
 	if(icon_pixmap) delete icon_pixmap;
-
 	if (temp_bitmap) delete temp_bitmap;
 
 	if(window_type == MAIN_WINDOW) 
@@ -487,10 +486,22 @@ Display* BC_WindowBase::init_display(char *display_name)
 	if(display_name && display_name[0] == 0) display_name = NULL;
 	if((display = XOpenDisplay(display_name)) == NULL)
 	{
-  		printf("BC_WindowBase::create_window: cannot connect to X server.\n");
+  		printf("BC_WindowBase::create_window: cannot connect to X server %s\n", 
+			display_name);
   		if(getenv("DISPLAY") == NULL)
-    		printf("'DISPLAY' environment variable not set.\n");
-  		exit(1);
+    	{
+			printf("'DISPLAY' environment variable not set.\n");
+  			exit(1);
+		}
+		else
+// Try again with default display.
+		{
+			if((display = XOpenDisplay(0)) == NULL)
+			{
+				printf("BC_WindowBase::create_window: cannot connect to default X server.\n");
+				exit(1);
+			}
+		}
  	}
 	return display;
 }
@@ -1060,7 +1071,7 @@ int BC_WindowBase::dispatch_button_release()
 // 	return result;
 // }
 
-int BC_WindowBase::dispatch_repeat_event(long duration)
+int BC_WindowBase::dispatch_repeat_event(int64_t duration)
 {
 // all repeat event handlers get called and decide based on activity and duration
 // whether to respond
@@ -1255,7 +1266,7 @@ int BC_WindowBase::set_tooltip(char *text)
 }
 
 // signal the event handler to repeat
-int BC_WindowBase::set_repeat(long duration)
+int BC_WindowBase::set_repeat(int64_t duration)
 {
 	if(duration <= 0)
 	{
@@ -1283,7 +1294,7 @@ int BC_WindowBase::set_repeat(long duration)
 	return 0;
 }
 
-int BC_WindowBase::unset_repeat(long duration)
+int BC_WindowBase::unset_repeat(int64_t duration)
 {
 	if(window_type != MAIN_WINDOW) return top_level->unset_repeat(duration);
 
@@ -1317,7 +1328,7 @@ int BC_WindowBase::unset_all_repeaters()
 // 	return top_level->next_repeat_id++;
 // }
 
-int BC_WindowBase::arm_repeat(long duration)
+int BC_WindowBase::arm_repeat(int64_t duration)
 {
 	XEvent event;
 	XClientMessageEvent *ptr = (XClientMessageEvent*)&event;
@@ -1594,7 +1605,7 @@ int BC_WindowBase::init_fonts()
 	return 0;
 }
 
-int BC_WindowBase::get_color(long color) 
+int BC_WindowBase::get_color(int64_t color) 
 {
 // return pixel of color
 // use this only for drawing subwindows not for bitmaps
@@ -1674,9 +1685,9 @@ int BC_WindowBase::get_color_rgb8(int color)
 	return pixel;
 }
 
-long BC_WindowBase::get_color_rgb16(int color)
+int64_t BC_WindowBase::get_color_rgb16(int color)
 {
-	long result;
+	int64_t result;
 	result = (color & 0xf80000) >> 8;
 	result += (color & 0xfc00) >> 5;
 	result += (color & 0xf8) >> 3;
@@ -1684,9 +1695,9 @@ long BC_WindowBase::get_color_rgb16(int color)
 	return result;
 }
 
-long BC_WindowBase::get_color_bgr16(int color)
+int64_t BC_WindowBase::get_color_bgr16(int color)
 {
-	long result;
+	int64_t result;
 	result = (color & 0xf80000) >> 19;
 	result += (color & 0xfc00) >> 5;
 	result += (color & 0xf8) << 8;
@@ -1694,9 +1705,9 @@ long BC_WindowBase::get_color_bgr16(int color)
 	return result;
 }
 
-long BC_WindowBase::get_color_bgr24(int color)
+int64_t BC_WindowBase::get_color_bgr24(int color)
 {
-	long result;
+	int64_t result;
 	result = (color & 0xff) << 16;
 	result += (color & 0xff00);
 	result += (color & 0xff0000) >> 16;
@@ -1723,12 +1734,12 @@ void BC_WindowBase::stop_video()
 
 
 
-long BC_WindowBase::get_color()
+int64_t BC_WindowBase::get_color()
 {
 	return top_level->current_color;
 }
 
-void BC_WindowBase::set_color(long color)
+void BC_WindowBase::set_color(int64_t color)
 {
 	top_level->current_color = color;
 	XSetForeground(top_level->display, 
@@ -2905,6 +2916,9 @@ int BC_WindowBase::set_icon(VFrame *data)
 	wm_hints.icon_pixmap = icon_pixmap->get_pixmap();
 	wm_hints.icon_mask = icon_pixmap->get_alpha();
 	wm_hints.icon_window = icon_window->win;
+// for(int i = 0; i < 1000; i++)
+// printf("02x ", icon_pixmap->get_alpha()->get_row_pointers()[0][i]);
+// printf("\n");
 
 	XSetWMHints(top_level->display, top_level->win, &wm_hints);
 	XSync(top_level->display, 0);

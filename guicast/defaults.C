@@ -85,28 +85,30 @@ int Defaults::save_string(char* &string)
 
 
 
-int Defaults::get(char *name, int default_)
+int32_t Defaults::get(char *name, int32_t default_)
 {
 	for(int i = 0; i < total; i++)
 	{
 		if(!strcmp(names[i], name))
 		{
-			return (int)atol(values[i]);
+			return (int32_t)atol(values[i]);
 		}
 	}
 	return default_;  // failed
 }
 
-long Defaults::get(char *name, long default_)
+int64_t Defaults::get(char *name, int64_t default_)
 {
+	int64_t result = default_;
 	for(int i = 0; i < total; i++)
 	{
 		if(!strcmp(names[i], name))
 		{
-			return atol(values[i]);
+			sscanf(values[i], "%lld", &result);
+			return result;
 		}
 	}
-	return default_;  // failed
+	return result;
 }
 
 double Defaults::get(char *name, double default_)
@@ -160,17 +162,17 @@ int Defaults::update(char *name, float value) // update a value if it exists
 	return update(name, string);
 }
 
-int Defaults::update(char *name, int value) // update a value if it exists
+int32_t Defaults::update(char *name, int32_t value) // update a value if it exists
 {
 	char string[1024];
 	sprintf(string, "%d", value);
 	return update(name, string);
 }
 
-int Defaults::update(char *name, long value) // update a value if it exists
+int Defaults::update(char *name, int64_t value) // update a value if it exists
 {
 	char string[1024];
-	sprintf(string, "%ld", value);
+	sprintf(string, "%lld", value);
 	return update(name, string);
 }
 

@@ -7,8 +7,6 @@
 #include "filempeg.h"
 #include "guicast.h"
 #include "mwindow.inc"
-#include "pluginserver.h"
-#include "threadfork.h"
 #include "vframe.h"
 #include "videodevice.inc"
 
@@ -16,18 +14,14 @@
 #include <string.h>
 #include <unistd.h>
 
-#define MPEG_VIDEO_ENCODER "mpeg2enc.plugin"
-#define MPEG2_AUDIO_ENCODER "toolame.plugin"
-#define MPEG3_AUDIO_ENCODER "lame.plugin"
 
-FileMPEG::FileMPEG(Asset *asset, File *file, ArrayList<PluginServer*> *plugindb)
+FileMPEG::FileMPEG(Asset *asset, File *file)
  : FileBase(asset, file)
 {
 	reset_parameters();
 // May also be VMPEG or AMPEG if write status.
 	if(asset->format == FILE_UNKNOWN) asset->format = FILE_MPEG;
 	asset->byte_order = 0;
-	this->plugindb = plugindb;
 }
 
 FileMPEG::~FileMPEG()
@@ -72,9 +66,17 @@ int FileMPEG::reset_parameters_derived()
 	audio_out = 0;
 	prev_track = 0;
 	temp_frame = 0;
-	audio_temp = 0;
-	audio_allocation = 0;
-//	last_sample = -1;
+	toolame_temp = 0;
+	toolame_allocation = 0;
+	toolame_result = 0;
+	lame_temp[0] = 0;
+	lame_temp[1] = 0;
+	lame_allocation = 0;
+	lame_global = 0;
+	lame_output = 0;
+	lame_output_allocation = 0;
+	lame_fd = 0;
+	lame_started = 0;
 }
 
 
@@ -85,7 +87,7 @@ int FileMPEG::open_file(int rd, int wr)
 	int result = 0;
 	this->rd = rd;
 	this->wr = wr;
-//printf("FileMPEG::open_file: %d %d %d\n", rd, wr, asset->format);
+//printf("FileMPEG::open_file: 1 %d %d %d\n", rd, wr, asset->format);
 
 	if(rd)
 	{
@@ -133,65 +135,44 @@ int FileMPEG::open_file(int rd, int wr)
 	
 	if(wr && asset->format == FILE_VMPEG)
 	{
-		char command_line[BCTEXTLEN];
 		char bitrate_string[BCTEXTLEN];
 		char quant_string[BCTEXTLEN];
 		char iframe_string[BCTEXTLEN];
-		char encoder_string[BCTEXTLEN];
 
-		encoder_string[0] = 0;
-		sprintf(bitrate_string, " -b %d", asset->vmpeg_bitrate);
-		sprintf(quant_string, " -q %d", asset->vmpeg_quantization);
-		sprintf(iframe_string, " -n %d", asset->vmpeg_iframe_distance);
+		sprintf(bitrate_string, "%d", asset->vmpeg_bitrate);
+		sprintf(quant_string, "%d", asset->vmpeg_quantization);
+		sprintf(iframe_string, "%d", asset->vmpeg_iframe_distance);
 
-// Look up executable plugin
-		for(int i = 0; i < plugindb->total; i++)
-		{
-			if(strstr(plugindb->values[i]->title, MPEG_VIDEO_ENCODER))
-				strcpy(encoder_string, plugindb->values[i]->title);
-		}
-
-		if(!strlen(encoder_string))
-		{
-			printf("FileMPEG::open_file: couldn't find %s plugin.\n", MPEG_VIDEO_ENCODER);
-			result = 1;
-		}
-		
+// Construct command line
 		if(!result)
 		{
-			sprintf(command_line, "%s%s%s%s%s%s%s%s%s%s - %s",
-				encoder_string, 
-				asset->vmpeg_derivative == 1 ? " -1" : "",
-				asset->vmpeg_cmodel == 1 ? " -422" : "",
-				asset->vmpeg_fix_bitrate ? bitrate_string : "",
-				!asset->vmpeg_fix_bitrate ? quant_string : "",
-				iframe_string,
-				asset->vmpeg_progressive ? " -p" : "",
-				asset->vmpeg_denoise ? " -d" : "",
-				file->cpus <= 1 ? " -u" : "",
-				asset->vmpeg_seq_codes ? " -g" : "",
-				asset->path);
+			append_vcommand_line("mpeg2enc");
+			append_vcommand_line(asset->vmpeg_derivative == 1 ? "-1" : "");
+			append_vcommand_line(asset->vmpeg_cmodel == 1 ? "-422" : "");
+			if(asset->vmpeg_fix_bitrate)
+			{
+				append_vcommand_line("-b");
+				append_vcommand_line(bitrate_string);
+			}
+			else
+			{
+				append_vcommand_line("-q");
+				append_vcommand_line(quant_string);
+			}
+			append_vcommand_line(!asset->vmpeg_fix_bitrate ? quant_string : "");
+			append_vcommand_line("-n");
+			append_vcommand_line(iframe_string);
+			append_vcommand_line(asset->vmpeg_progressive ? "-p" : "");
+			append_vcommand_line(asset->vmpeg_denoise ? "-d" : "");
+			append_vcommand_line(file->cpus <= 1 ? "-u" : "");
+			append_vcommand_line(asset->vmpeg_seq_codes ? "-g" : "");
+			append_vcommand_line(asset->path);
 
-			video_out = new ThreadFork;
-			video_out->start_command(command_line, 1);
-		}
-
-		if(!video_out) 
-		{
-			result = 1;
-		}
-		else
-		{
-//printf("FileMPEG::open_file 4\n");
-			fprintf(video_out->get_stdin(), "%d\n", asset->width);
-			fprintf(video_out->get_stdin(), "%d\n", asset->height);
-			fprintf(video_out->get_stdin(), "%.16e\n", asset->frame_rate);
-//printf("FileMPEG::open_file 4\n");
-//sleep(5);
+			video_out = new FileMPEGVideo(this);
+			video_out->start();
 		}
 	}
-	
-	
+
 	if(wr && asset->format == FILE_AMPEG)
 	{
 		char command_line[BCTEXTLEN];
@@ -203,106 +184,121 @@ int FileMPEG::open_file(int rd, int wr)
 
 		if(asset->ampeg_derivative == 2)
 		{
-// Look up executable plugin
-			for(int i = 0; i < plugindb->total; i++)
-			{
-				if(strstr(plugindb->values[i]->title, MPEG2_AUDIO_ENCODER))
-					strcpy(encoder_string, plugindb->values[i]->title);
-			}
+			char string[BCTEXTLEN];
+			append_acommand_line("toolame");
+			append_acommand_line("-m");
+			append_acommand_line((asset->channels >= 2) ? "j" : "m");
+			sprintf(string, "%f", (float)asset->sample_rate / 1000);
+			append_acommand_line("-s");
+			append_acommand_line(string);
+			sprintf(string, "%d", asset->ampeg_bitrate);
+			append_acommand_line("-b");
+			append_acommand_line(string);
+			append_acommand_line("-");
+			append_acommand_line(asset->path);
 
-			sprintf(argument_string, " %s -s %f -b %d - %s", 
-				(asset->channels >= 2) ? "-m j" : "-m m", 
-				(float)asset->sample_rate / 1000,
-				asset->ampeg_bitrate,
-				asset->path);
+			audio_out = new FileMPEGAudio(this);
+			audio_out->start();
 		}
 		else
 		if(asset->ampeg_derivative == 3)
 		{
-// Look up executable plugin
-			for(int i = 0; i < plugindb->total; i++)
+			lame_global = lame_init();
+			lame_set_brate(lame_global, asset->ampeg_bitrate / 1000);
+			lame_set_quality(lame_global, 0);
+			lame_set_in_samplerate(lame_global, 
+				asset->sample_rate);
+			if((result = lame_init_params(lame_global)) < 0)
 			{
-// toolame is inclusive of lame
-				if(strstr(plugindb->values[i]->title, MPEG3_AUDIO_ENCODER) &&
-					!strstr(plugindb->values[i]->title, MPEG2_AUDIO_ENCODER))
-					strcpy(encoder_string, plugindb->values[i]->title);
+				printf("encode: lame_init_params returned %d\n", result);
+				lame_close(lame_global);
+				lame_global = 0;
 			}
-
-			sprintf(argument_string, " -h %s -s %f -b %d - %s",
-				(asset->channels >= 2) ? "-m j" : "-m m",
-				(float)asset->sample_rate / 1000,
-				asset->ampeg_bitrate,
-				asset->path);
+			else
+			if(!(lame_fd = fopen(asset->path, "w")))
+			{
+				perror("FileMPEG::open_file");
+				lame_close(lame_global);
+				lame_global = 0;
+			}
 		}
 		else
 		{
 			printf("FileMPEG::open_file: ampeg_derivative=%d\n", asset->ampeg_derivative);
 			result = 1;
 		}
-
-// Look up executable plugin
-		if(!result)
-		{
-			if(!strlen(encoder_string))
-			{
-				printf("FileMPEG::open_file: couldn't find %s plugin.\n", encoder_string);
-				result = 1;
-			}
-		}
-
-		if(!result)
-		{
-			sprintf(command_line, "%s%s", encoder_string, argument_string);
-//printf("FileMPEG::open_file: %s\n", command_line);
-			audio_out = new ThreadFork;
-			audio_out->start_command(command_line, 1);
-		}
 	}
 
+//asset->dump();
+//printf("FileMPEG::open_file 100\n");
 	return result;
 }
 
+void FileMPEG::append_vcommand_line(const char *string)
+{
+	if(string[0])
+	{
+		char *argv = strdup(string);
+		vcommand_line.append(argv);
+	}
+}
+
+void FileMPEG::append_acommand_line(const char *string)
+{
+	if(string[0])
+	{
+		char *argv = strdup(string);
+		acommand_line.append(argv);
+	}
+}
+
+
 int FileMPEG::close_file()
 {
-//printf("FileMPEG::close_file_derived 1\n");
+//printf("FileMPEG::close_file 1\n");
 	if(fd)
 	{
 		mpeg3_close(fd);
 	}
-	
+
 	if(video_out)
 	{
 // End of sequence signal
-		unsigned char data[5];
-		data[0] = data[1] = data[2] = data[3] = 0xff;
-		fwrite(data, 4, 1, video_out->get_stdin());
-		fflush(video_out->get_stdin());
-		
+		mpeg2enc_set_input_buffers(1, 0, 0, 0);
 		delete video_out;
 		video_out = 0;
 	}
 
+	vcommand_line.remove_all_objects();
+	acommand_line.remove_all_objects();
+
 	if(audio_out)
 	{
-		fflush(audio_out->get_stdin());
+		toolame_send_buffer(0, 0);
 		delete audio_out;
 		audio_out = 0;
 	}
 
-//printf("FileMPEG::close_file_derived 1\n");
+	if(lame_global)
+		lame_close(lame_global);
+
 	if(temp_frame) delete temp_frame;
+	if(toolame_temp) delete [] toolame_temp;
 
-	if(audio_temp) delete audio_temp;
+	if(lame_temp[0]) delete [] lame_temp[0];
+	if(lame_temp[1]) delete [] lame_temp[1];
+	if(lame_output) delete [] lame_output;
+	if(lame_fd) fclose(lame_fd);
 
-//printf("FileMPEG::close_file_derived 1\n");
 	reset_parameters();
 	FileBase::close_file();
-//printf("FileMPEG::close_file_derived 2\n");
+//printf("FileMPEG::close_file 100\n");
 	return 0;
 }
 
 int FileMPEG::get_best_colormodel(Asset *asset, int driver)
 {
+//printf("FileMPEG::get_best_colormodel 1\n");
 	switch(driver)
 	{
 		case PLAYBACK_X11:
@@ -334,6 +330,7 @@ int FileMPEG::get_best_colormodel(Asset *asset, int driver)
 			return BC_YUV422P;
 			break;
 	}
+//printf("FileMPEG::get_best_colormodel 100\n");
 }
 
 int FileMPEG::colormodel_supported(int colormodel)
@@ -342,13 +339,13 @@ int FileMPEG::colormodel_supported(int colormodel)
 }
 
 
-int FileMPEG::can_copy_from(Edit *edit, long position)
+int FileMPEG::can_copy_from(Edit *edit, int64_t position)
 {
 	if(!fd) return 0;
 	return 0;
 }
 
-int FileMPEG::set_audio_position(long sample)
+int FileMPEG::set_audio_position(int64_t sample)
 {
 #if 0
 	if(!fd) return 1;
@@ -372,7 +369,7 @@ int FileMPEG::set_audio_position(long sample)
 	return 0;
 }
 
-int FileMPEG::set_video_position(long x)
+int FileMPEG::set_video_position(int64_t x)
 {
 	if(!fd) return 1;
 	if(x >= 0 && x < asset->video_length)
@@ -382,59 +379,102 @@ int FileMPEG::set_video_position(long x)
 }
 
 
-int FileMPEG::write_samples(double **buffer, long len)
+int FileMPEG::write_samples(double **buffer, int64_t len)
 {
 	int result = 0;
 
-	if(audio_out)
+//printf("FileMPEG::write_samples 1\n");
+	if(asset->ampeg_derivative == 2)
 	{
 // Convert to int16
 		int channels = MIN(asset->channels, 2);
-		long audio_size = len * channels * 2;
-		if(audio_allocation < audio_size)
+		int64_t audio_size = len * channels * 2;
+		if(toolame_allocation < audio_size)
 		{
-			if(audio_temp) delete [] audio_temp;
-			audio_temp = new unsigned char[audio_size];
-			audio_allocation = audio_size;
+			if(toolame_temp) delete [] toolame_temp;
+			toolame_temp = new unsigned char[audio_size];
+			toolame_allocation = audio_size;
 		}
 
-		if(asset->ampeg_derivative == 2)
+		for(int i = 0; i < channels; i++)
 		{
-			for(int i = 0; i < channels; i++)
+			int16_t *output = ((int16_t*)toolame_temp) + i;
+			double *input = buffer[i];
+			for(int j = 0; j < len; j++)
 			{
-				int16_t *output = ((int16_t*)audio_temp) + i;
-				double *input = buffer[i];
-				for(int j = 0; j < len; j++)
-				{
-					int sample = (int)(*input * 0x7fff);
-					*output = (int16_t)(CLIP(sample, -0x8000, 0x7fff));
-					output += channels;
-					input++;
-				}
+				int sample = (int)(*input * 0x7fff);
+				*output = (int16_t)(CLIP(sample, -0x8000, 0x7fff));
+				output += channels;
+				input++;
 			}
+		}
+		result = toolame_send_buffer((char*)toolame_temp, audio_size);
+	}
+	else
+	if(asset->ampeg_derivative == 3)
+	{
+		int channels = MIN(asset->channels, 2);
+		int64_t audio_size = len * channels;
+		if(!lame_global) return 1;
+		if(!lame_fd) return 1;
+		if(lame_allocation < audio_size)
+		{
+			if(lame_temp[0]) delete [] lame_temp[0];
+			if(lame_temp[1]) delete [] lame_temp[1];
+			lame_temp[0] = new float[audio_size];
+			lame_temp[1] = new float[audio_size];
+			lame_allocation = audio_size;
+		}
+
+		if(lame_output_allocation < audio_size * 4)
+		{
+			if(lame_output) delete [] lame_output;
+			lame_output_allocation = audio_size * 4;
+			lame_output = new char[lame_output_allocation];
+		}
+
+		for(int i = 0; i < channels; i++)
+		{
+			float *output = lame_temp[i];
+			double *input = buffer[i];
+			for(int j = 0; j < len; j++)
+			{
+				*output++ = *input++ * (float)32768;
+			}
+		}
+
+		result = lame_encode_buffer_float(lame_global,
+			lame_temp[0],
+			(channels > 1) ? lame_temp[1] : lame_temp[0],
+			len,
+			(unsigned char*)lame_output,
+			lame_output_allocation);
+		if(result > 0)
+		{
+			char *real_output = lame_output;
+			int bytes = result;
+			if(!lame_started)
+			{
+				for(int i = 0; i < bytes; i++)
+					if(lame_output[i])
+					{
+						real_output = &lame_output[i];
+						lame_started = 1;
+						bytes -= i;
+						break;
+					}
+			}
+			if(bytes > 0 && lame_started)
+			{
+				result = !fwrite(real_output, 1, bytes, lame_fd);
+				if(result)
+					perror("FileMPEG::write_samples");
+			}
+			else
+				result = 0;
 		}
 		else
-		{
-			for(int i = 0; i < channels; i++)
-			{
-				unsigned char *output = audio_temp + i * 2;
-				double *input = buffer[i];
-				for(int j = 0; j < len; j++)
-				{
-					int sample = (int)(*input * 0x7fff);
-					CLAMP(sample, -0x8000, 0x7fff);
-					output[0] = (sample & 0xff00) >> 8;
-					output[1] = sample & 0xff;
-					output += channels * 2;
-					input++;
-				}
-			}
-		}
-
-		result = !fwrite(audio_temp, 
-			audio_size, 
-			1, 
-			audio_out->get_stdin());
+			result = 1;
 	}
 
 	return result;
@@ -458,7 +498,7 @@ int FileMPEG::write_frames(VFrame ***frames, int len)
 		else
 			temp_h = (int)((asset->height + 31) / 32) * 32;
 
-//printf("FileMPEG::write_frames 1 %d %d\n", temp_w, temp_h);
+//printf("FileMPEG::write_frames 1\n");
 		
 // Only 1 layer is supported in MPEG output
 		for(int i = 0; i < 1; i++)
@@ -473,15 +513,15 @@ int FileMPEG::write_frames(VFrame ***frames, int len)
 					frame->get_h() == temp_h &&
 					frame->get_color_model() == output_cmodel)
 				{
-					result = !fwrite(frame->get_data(), 
-						frame->get_data_size(), 
-						1, 
-						video_out->get_stdin());
+					mpeg2enc_set_input_buffers(0, 
+						(char*)frame->get_y(),
+						(char*)frame->get_u(),
+						(char*)frame->get_v());
 				}
 				else
 				{
 //printf("FileMPEG::write_frames 2\n");
-					if(temp_frame&&
+					if(temp_frame &&
 						(temp_frame->get_w() != temp_w ||
 						temp_frame->get_h() != temp_h ||
 						temp_frame->get_color_model() || output_cmodel))
@@ -522,28 +562,16 @@ int FileMPEG::write_frames(VFrame ***frames, int len)
 						frame->get_w(),
 						temp_w);
 
-//printf("FileMPEG::write_frames %d %d\n", frame->get_color_model(), temp_frame->get_color_model());
-
-// printf("FileMPEG::write_frames %p %d %d %d %d\n", temp_frame->get_data(), 
-// 						temp_frame->get_data_size(),
-// 						temp_frame->get_color_model(),
-// 						temp_frame->get_w(),
-// 						temp_frame->get_h());
-
-// Not end of sequence signal
-					unsigned char data[5];
-					data[0] = data[1] = data[2] = data[3] = 0x0;
-					fwrite(data, 4, 1, video_out->get_stdin());
-					result = !fwrite(temp_frame->get_data(), 
-						temp_frame->get_data_size(), 
-						1, 
-						video_out->get_stdin());
-//printf("FileMPEG::write_frames 5\n");
+					mpeg2enc_set_input_buffers(0, 
+						(char*)temp_frame->get_y(),
+						(char*)temp_frame->get_u(),
+						(char*)temp_frame->get_v());
 				}
 			}
 		}
 	}
 
+//printf("FileMPEG::write_frames 100\n");
 
 
 	return result;
@@ -554,7 +582,8 @@ int FileMPEG::read_frame(VFrame *frame)
 	if(!fd) return 1;
 	int result = 0;
 	int src_cmodel;
-	
+
+//printf("FileMPEG::read_frame 1\n");
 	if(mpeg3_colormodel(fd, 0) == MPEG3_YUV420P)
 		src_cmodel = BC_YUV420P;
 	else
@@ -633,7 +662,7 @@ int FileMPEG::read_frame(VFrame *frame)
 	}
 //for(int i = 0; i < frame->get_w() * 3 * 20; i++) 
 //	((u_int16_t*)frame->get_rows()[0])[i] = 0xffff;
-//printf("FileMPEG::read_frame 3\n");
+//printf("FileMPEG::read_frame 100\n");
 	return result;
 }
 
@@ -646,7 +675,7 @@ void FileMPEG::to_streamchannel(int channel, int &stream_out, int &channel_out)
 	;
 }
 
-int FileMPEG::read_samples(double *buffer, long len)
+int FileMPEG::read_samples(double *buffer, int64_t len)
 {
 	if(!fd) return 0;
 
@@ -675,6 +704,7 @@ int FileMPEG::read_samples(double *buffer, long len)
 	for(int i = 0; i < len; i++) buffer[i] = temp_float[i];
 
 	delete [] temp_float;
+//printf("FileMPEG::read_samples 100\n");
 	return 0;
 }
 
@@ -689,6 +719,54 @@ char* FileMPEG::compressiontostr(char *string)
 }
 
 
+
+
+
+
+
+FileMPEGVideo::FileMPEGVideo(FileMPEG *file)
+ : Thread(1, 0, 0)
+{
+	this->file = file;
+	mpeg2enc_init_buffers();
+	mpeg2enc_set_w(file->asset->width);
+	mpeg2enc_set_h(file->asset->height);
+	mpeg2enc_set_rate(file->asset->frame_rate);
+}
+
+FileMPEGVideo::~FileMPEGVideo()
+{
+	Thread::join();
+}
+
+void FileMPEGVideo::run()
+{
+	mpeg2enc(file->vcommand_line.total, file->vcommand_line.values);
+}
+
+
+
+
+
+
+
+
+FileMPEGAudio::FileMPEGAudio(FileMPEG *file)
+ : Thread(1, 0, 0)
+{
+	this->file = file;
+	toolame_init_buffers();
+}
+
+FileMPEGAudio::~FileMPEGAudio()
+{
+	Thread::join();
+}
+
+void FileMPEGAudio::run()
+{
+	file->toolame_result = toolame(file->acommand_line.total, file->acommand_line.values);
+}
 
 
 
@@ -1031,9 +1109,9 @@ int MPEGBitrate::handle_event()
 
 MPEGQuant::MPEGQuant(int x, int y, MPEGConfigVideo *gui)
  : BC_TumbleTextBox(gui, 
- 	(long)gui->asset->vmpeg_quantization, 
-	(long)1,
-	(long)100,
+ 	(int64_t)gui->asset->vmpeg_quantization, 
+	(int64_t)1,
+	(int64_t)100,
 	x, 
 	y,
 	100)
@@ -1077,9 +1155,9 @@ int MPEGFixedQuant::handle_event()
 
 MPEGIFrameDistance::MPEGIFrameDistance(int x, int y, MPEGConfigVideo *gui)
  : BC_TumbleTextBox(gui, 
- 	(long)gui->asset->vmpeg_iframe_distance, 
-	(long)1,
-	(long)100,
+ 	(int64_t)gui->asset->vmpeg_iframe_distance, 
+	(int64_t)1,
+	(int64_t)100,
 	x, 
 	y,
 	50)

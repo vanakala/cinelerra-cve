@@ -18,9 +18,9 @@ public:
 	void copy_from(BrightnessConfig &that);
 	void interpolate(BrightnessConfig &prev, 
 		BrightnessConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame);
+		int64_t prev_frame, 
+		int64_t next_frame, 
+		int64_t current_frame);
 
 	float brightness;
 	float contrast;

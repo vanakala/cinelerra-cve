@@ -21,7 +21,7 @@ public:
 	int identical(FloatAuto *src);
 	void copy_from(Auto *that);
 	void copy_from(FloatAuto *that);
-	void copy(long start, long end, FileXML *file, int default_only);
+	void copy(int64_t start, int64_t end, FileXML *file, int default_only);
 	void load(FileXML *xml);
 	float value_to_percentage();
 	float invalue_to_percentage();
@@ -33,7 +33,7 @@ public:
 // Control values relative to value
 	float value, control_in_value, control_out_value;
 // Control positions relative to value position
-	long control_in_position, control_out_position;
+	int64_t control_in_position, control_out_position;
 
 private:
 	int value_to_str(char *string, float value);

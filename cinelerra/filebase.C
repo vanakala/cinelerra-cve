@@ -114,7 +114,7 @@ int FileBase::get_video_buffer(unsigned char **buffer, int depth)
 	if(!*buffer)
 	{
 // Video compression is entirely done in the library.
-		long bytes = asset->width * asset->height * depth;
+		int64_t bytes = asset->width * asset->height * depth;
 		*buffer = new unsigned char[bytes];
 	}
 	return 0;

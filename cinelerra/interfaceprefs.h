@@ -15,7 +15,6 @@ class MeterVUDB;
 class MeterVUInt;
 class ViewBehaviourText;
 class ViewThumbnails;
-class ScreenChoice;
 
 #include "browsebutton.h"
 #include "deleteallindexes.inc"
@@ -33,7 +32,6 @@ public:
 // must delete each derived class
 	int update(int new_value);
 	char* behavior_to_text(int mode);
-	static char* screen_to_text(int screen);
 
 	BrowseButton *ipath;
 	IndexSize *isize;
@@ -50,7 +48,7 @@ public:
 
 	MeterMinDB *min_db;
 	MeterVUDB *vu_db;
-	MeterVUInt *vu_int;
+//	MeterVUInt *vu_int;
 	ViewBehaviourText *button1, *button2, *button3;
 	ViewThumbnails *thumbnails;
 };
@@ -159,7 +157,7 @@ class MeterVUDB : public BC_Radial
 public:
 	MeterVUDB(PreferencesWindow *pwindow, char *text, int y);
 	int handle_event();
-	MeterVUInt *vu_int;
+//	MeterVUInt *vu_int;
 	PreferencesWindow *pwindow;
 };
 
@@ -225,33 +223,6 @@ public:
 	ViewThemeItem(ViewTheme *popup, char *text);
 	int handle_event();
 	ViewTheme *popup;
-};
-
-class ScreenChoice : public BC_PopupMenu
-{
-public:
-	ScreenChoice(int x, 
-		int y, 
-		char *text, 
-		PreferencesWindow *pwindow, 
-		int *output);
-	~ScreenChoice();
-
-	int handle_event();  // user copies text to value here
-	int create_objects();         // add initial items
-	InterfacePrefs *tfwindow;
-	int *output;
-};
-
-class ScreenChoiceItem : public BC_MenuItem
-{
-public:
-	ScreenChoiceItem(ScreenChoice *popup, char *text, int screen);
-	~ScreenChoiceItem();
-
-	int handle_event();
-	ScreenChoice *popup;
-	int screen;
 };
 
 
