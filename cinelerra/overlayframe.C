@@ -2577,11 +2577,10 @@ ScaleTranslatePackage::ScaleTranslatePackage()
 }
 
 // components is always 4
-#define BLEND_ONLY_4_NORMAL(temp_type, type, max, chroma_offset) \
+#define BLEND_ONLY_4_NORMAL(temp_type, type, chroma_offset, maxbits) \
 { \
-	temp_type opacity = (temp_type)(alpha * max + 0.5); \
-	temp_type transparency = max - opacity; \
-	temp_type maxsq = ((temp_type)max) * max; \
+	temp_type opacity = (temp_type)(alpha * (((temp_type) 1) << maxbits) + 0.5); \
+	temp_type maxsq = ((temp_type) 1) << (maxbits * 2) ; \
  \
 	type** output_rows = (type**)output->get_rows(); \
 	type** input_rows = (type**)input->get_rows(); \
@@ -2600,20 +2599,16 @@ ScaleTranslatePackage::ScaleTranslatePackage()
 			pixel_transparency = (temp_type)maxsq - pixel_opacity; \
 		 \
 		 \
-		 	temp_type r,g,b; \
-			r = ((temp_type)in_row[0] * pixel_opacity + \
-				(temp_type)output[0] * pixel_transparency) / max / max; \
-			output[0] = (type)CLIP(r, 0, max); \
-			g = (((temp_type)in_row[1] - chroma_offset) * pixel_opacity + \
+			output[0] = (type)(((temp_type)in_row[0] * pixel_opacity + \
+				(temp_type)output[0] * pixel_transparency) >> (maxbits * 2)); \
+			output[1] = (type)(((((temp_type)in_row[1] - chroma_offset) * pixel_opacity + \
 				((temp_type)output[1] - chroma_offset) * pixel_transparency) \
-				/ max / max + \
-				chroma_offset; \
-			output[1] = (type)CLIP(g, 0, max); \
-			b = (((temp_type)in_row[2] - chroma_offset) * pixel_opacity + \
+				>> (maxbits * 2)) + \
+				chroma_offset); \
+			output[2] = (type)(((((temp_type)in_row[2] - chroma_offset) * pixel_opacity + \
 				((temp_type)output[2] - chroma_offset) * pixel_transparency) \
-				/ max / max + \
-				chroma_offset; \
-			output[2] = (type)CLIP(b, 0, max); \
+				>> (maxbits * 2)) + \
+				chroma_offset); \
 			output[3] = (type)(in_row[3] > output[3] ? in_row[3] : output[3]); \
  \
 			in_row += 4; \
@@ -2623,10 +2618,10 @@ ScaleTranslatePackage::ScaleTranslatePackage()
 }
  
 // components is always 3
-#define BLEND_ONLY_3_NORMAL(temp_type, type, max, chroma_offset) \
+#define BLEND_ONLY_3_NORMAL(temp_type, type, chroma_offset, maxbits) \
 { \
-	temp_type opacity = (temp_type)(alpha * max + 0.5); \
-	temp_type transparency = max - opacity; \
+	temp_type opacity = (temp_type)(alpha * (((temp_type) 1) << maxbits) + 0.5); \
+	temp_type transparency = (((temp_type) 1) << maxbits) - opacity; \
  \
 	type** output_rows = (type**)output->get_rows(); \
 	type** input_rows = (type**)input->get_rows(); \
@@ -2640,7 +2635,7 @@ ScaleTranslatePackage::ScaleTranslatePackage()
  \
 		for(int j = 0; j < w; j++) /* w = 3x width! */ \
 		{ \
-			*output = (type)CLIP(((temp_type)*in_row * opacity + *output * transparency) / max, 0, max); \
+			*output = (type)((temp_type)*in_row * opacity + *output * transparency) >> maxbits; \
 			in_row ++; \
 			output ++; \
 		} \
@@ -2667,6 +2662,7 @@ void BlendUnit::process_package(LoadPackage *package)
 	VFrame *output = blend_engine->output;
 	VFrame *input = blend_engine->input;
 	float alpha = blend_engine->alpha;
+	if (alpha > 1.0) alpha = 1.0;
 	int mode = blend_engine->mode;
 
 	if (mode == TRANSFER_REPLACE) 
@@ -2697,28 +2693,28 @@ void BlendUnit::process_package(LoadPackage *package)
 		switch(input->get_color_model())
 		{
 			case BC_RGB888:
-				BLEND_ONLY_3_NORMAL(uint32_t, unsigned char, 0xff, 0);
+				BLEND_ONLY_3_NORMAL(uint32_t, unsigned char, 0, 8);
 				break;
 			case BC_YUV888:
-				BLEND_ONLY_3_NORMAL(int32_t, unsigned char, 0xff, 0x80);
+				BLEND_ONLY_3_NORMAL(int32_t, unsigned char, 0x80, 8);
 				break;
 			case BC_RGBA8888:
-				BLEND_ONLY_4_NORMAL(uint32_t, unsigned char, 0xff, 0);
+				BLEND_ONLY_4_NORMAL(uint32_t, unsigned char, 0, 8);
 				break;
 			case BC_YUVA8888:
-				BLEND_ONLY_4_NORMAL(int32_t, unsigned char, 0xff, 0x80);
+				BLEND_ONLY_4_NORMAL(int32_t, unsigned char, 0x80, 8);
 				break;
 			case BC_RGB161616:
-				BLEND_ONLY_3_NORMAL(uint64_t, uint16_t, 0xffff, 0);
+				BLEND_ONLY_3_NORMAL(uint64_t, uint16_t, 0, 16);
 				break;
 			case BC_YUV161616:
-				BLEND_ONLY_3_NORMAL(int64_t, uint16_t, 0xffff, 0x8000);
+				BLEND_ONLY_3_NORMAL(int64_t, uint16_t, 0x8000, 16);
 				break;
 			case BC_RGBA16161616:
-				BLEND_ONLY_4_NORMAL(uint64_t, uint16_t, 0xffff, 0);
+				BLEND_ONLY_4_NORMAL(uint64_t, uint16_t, 0, 16);
 				break;
 			case BC_YUVA16161616:
-				BLEND_ONLY_4_NORMAL(int64_t, uint16_t, 0xffff, 0x8000);
+				BLEND_ONLY_4_NORMAL(int64_t, uint16_t, 0x8000, 16);
 				break;
 		}
 	} 
