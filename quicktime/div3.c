@@ -2,7 +2,7 @@
 #include "colormodels.h"
 #include "funcprotos.h"
 #include "quicktime.h"
-
+#define FRAME_RATE_BASE 10000
 
 #include <pthread.h>
 
