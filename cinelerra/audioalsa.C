@@ -79,9 +79,9 @@ void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title)
 
 			if(pcm_title)
 			{
-//				sprintf(string, "plug:%d,%d", card, dev);
+				sprintf(string, "plughw:%d,%d", card, dev);
 printf("AudioALSA::list_devices: %s\n", snd_ctl_card_info_get_name(info));
-				strcpy(string, "cards.pcm.front");
+//				strcpy(string, "cards.pcm.front");
 			}
 			else
 			{
