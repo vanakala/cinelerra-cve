@@ -23,10 +23,18 @@
 #include "zoombar.h"
 
 
+
+
 PluginClient* new_plugin(PluginServer *server)
 {
 	return new BlueDotThemeMain(server);
 }
+
+
+
+
+
+
 
 BlueDotThemeMain::BlueDotThemeMain(PluginServer *server)
  : PluginTClient(server)
@@ -68,49 +76,50 @@ BlueDotTheme::~BlueDotTheme()
 
 void BlueDotTheme::initialize()
 {
-	BC_WindowBase::get_resources()->generic_button_images = new_image_set(3, 
+	BC_Resources *resources = BC_WindowBase::get_resources();
+	resources->generic_button_images = new_image_set(3, 
 			"generic_up.png", 
 			"generic_hi.png", 
 			"generic_dn.png");
-	BC_WindowBase::get_resources()->horizontal_slider_data = new_image_set(6,
+	resources->horizontal_slider_data = new_image_set(6,
 			"hslider_fg_up.png",
 			"hslider_fg_hi.png",
 			"hslider_fg_dn.png",
 			"hslider_bg_up.png",
 			"hslider_bg_hi.png",
 			"hslider_bg_dn.png");
-	BC_WindowBase::get_resources()->vertical_slider_data = new_image_set(6,
+	resources->vertical_slider_data = new_image_set(6,
 			"vertical_slider_fg_up.png",
 			"vertical_slider_fg_hi.png",
 			"vertical_slider_fg_dn.png",
 			"vertical_slider_bg_up.png",
 			"vertical_slider_bg_hi.png",
 			"vertical_slider_bg_dn.png");
-	BC_WindowBase::get_resources()->progress_images = new_image_set(2,
+	resources->progress_images = new_image_set(2,
 			"progress_bg.png",
 			"progress_hi.png");
-	BC_WindowBase::get_resources()->tumble_data = new_image_set(4,
+	resources->tumble_data = new_image_set(4,
 		"tumble_up.png",
 		"tumble_hi.png",
 		"tumble_botdn.png",
 		"tumble_topdn.png");
-	BC_WindowBase::get_resources()->listbox_button = new_image_set(3,
+	resources->listbox_button = new_image_set(3,
 		"listbox_button_up.png",
 		"listbox_button_hi.png",
 		"listbox_button_dn.png");
-	BC_WindowBase::get_resources()->listbox_column = new_image_set(3,
+	resources->listbox_column = new_image_set(3,
 		"listbox_column_up.png",
 		"listbox_column_hi.png",
 		"listbox_column_dn.png");
-	BC_WindowBase::get_resources()->listbox_expand = new_image_set(5,
+	resources->listbox_expand = new_image_set(5,
 		"listbox_expandup.png",
 		"listbox_expanduphi.png",
 		"listbox_expandchecked.png",
 		"listbox_expanddn.png",
         	"listbox_expandcheckedhi.png");
-	BC_WindowBase::get_resources()->listbox_up = new_image("listbox_up.png");
-	BC_WindowBase::get_resources()->listbox_dn = new_image("listbox_dn.png");
-	BC_WindowBase::get_resources()->pan_data = new_image_set(7,
+	resources->listbox_up = new_image("listbox_up.png");
+	resources->listbox_dn = new_image("listbox_dn.png");
+	resources->pan_data = new_image_set(7,
 			"pan_up.png", 
 			"pan_hi.png", 
 			"pan_popup.png", 
@@ -118,9 +127,25 @@ void BlueDotTheme::initialize()
 			"pan_stick.png", 
 			"pan_channel_small.png", 
 			"pan_stick_small.png");
-	BC_WindowBase::get_resources()->pan_text_color = WHITE;
+	resources->pan_text_color = WHITE;
 
-	BC_WindowBase::get_resources()->hscroll_data = new_image_set(10,
+
+	resources->xmeter_images = new_image_set(6, 
+		"xmeter_normal.png",
+		"xmeter_green.png",
+		"xmeter_red.png",
+		"xmeter_yellow.png",
+		"xmeter_normal.png",
+		"xmeter_over.png");			
+	resources->ymeter_images = new_image_set(6, 
+		"ymeter_normal.png",
+		"ymeter_green.png",
+		"ymeter_red.png",
+		"ymeter_yellow.png",
+		"ymeter_normal.png",
+		"ymeter_over.png");
+
+	resources->hscroll_data = new_image_set(10,
 			"hscroll_center_up.png",
 			"hscroll_center_hi.png",
 			"hscroll_center_dn.png",
@@ -132,7 +157,7 @@ void BlueDotTheme::initialize()
 			"hscroll_fwd_hi.png",
 			"hscroll_fwd_dn.png");
 
-	BC_WindowBase::get_resources()->vscroll_data = new_image_set(10,
+	resources->vscroll_data = new_image_set(10,
 			"vscroll_center_up.png",
 			"vscroll_center_hi.png",
 			"vscroll_center_dn.png",
@@ -144,12 +169,12 @@ void BlueDotTheme::initialize()
 			"vscroll_fwd_hi.png",
 			"vscroll_fwd_dn.png");
 
-	BC_WindowBase::get_resources()->ok_images = new_button("ok.png", 
+	resources->ok_images = new_button("ok.png", 
 			"generic_up.png",
 			"generic_hi.png",
 			"generic_dn.png");
 
-	BC_WindowBase::get_resources()->cancel_images = new_button("cancel.png", 
+	resources->cancel_images = new_button("cancel.png", 
 			"generic_up.png",
 			"generic_hi.png",
 			"generic_dn.png");
@@ -345,46 +370,46 @@ void BlueDotTheme::initialize()
 	recordgui_variable_color = RED;
 
 	channel_position_color = MEYELLOW;
-	BC_WindowBase::get_resources()->meter_title_w = 25;
+	resources->meter_title_w = 25;
 
 	// (asset) edit info text color
 	edit_font_color = BLACK;
 
 	//bgcolor
-	BC_WindowBase::get_resources()->bg_color = FGGREY;
+	resources->bg_color = FGGREY;
 
 	//menu
-	BC_WindowBase::get_resources()->menu_light = FTGREY;
-	BC_WindowBase::get_resources()->menu_highlighted = MNBLUE;
-	BC_WindowBase::get_resources()->menu_down = FGGREY;
-	BC_WindowBase::get_resources()->menu_up = FGGREY;
-	BC_WindowBase::get_resources()->menu_shadow = FTGREY;
-	BC_WindowBase::get_resources()->medium_font = N_("-*-helvetica-medium-r-normal-*-14-*");
+	resources->menu_light = FTGREY;
+	resources->menu_highlighted = MNBLUE;
+	resources->menu_down = FGGREY;
+	resources->menu_up = FGGREY;
+	resources->menu_shadow = FTGREY;
+	resources->medium_font = N_("-*-helvetica-medium-r-normal-*-14-*");
 	
-	BC_WindowBase::get_resources()->menu_item_text = BLACK;
-	BC_WindowBase::get_resources()->menu_highlighted_fontcolor = WHITE;
+	resources->menu_item_text = BLACK;
+	resources->menu_highlighted_fontcolor = WHITE;
 
 	//meter
-	BC_WindowBase::get_resources()->meter_font = SMALLFONT;
-	BC_WindowBase::get_resources()->meter_font_color = BLACK;
-	BC_WindowBase::get_resources()->meter_3d = 0;
+	resources->meter_font = SMALLFONT;
+	resources->meter_font_color = BLACK;
+	resources->meter_3d = 0;
 
 	//clock
-	BC_WindowBase::get_resources()->draw_clock_background = 0;
+	resources->draw_clock_background = 0;
 
 	//buttons
-	BC_WindowBase::get_resources()->button_highlighted = LTGREY;
-	BC_WindowBase::get_resources()->button_uphighlighted = DKGREY;
-	BC_WindowBase::get_resources()->button_light = WHITE;   
-	BC_WindowBase::get_resources()->button_up = LTGREY;
-	BC_WindowBase::get_resources()->button_shadow = DKGREY;
-	BC_WindowBase::get_resources()->button_down = MDGREY;
+	resources->button_highlighted = LTGREY;
+	resources->button_uphighlighted = DKGREY;
+	resources->button_light = WHITE;   
+	resources->button_up = LTGREY;
+	resources->button_shadow = DKGREY;
+	resources->button_down = MDGREY;
 
 	//listbox
-	BC_WindowBase::get_resources()->listboxitemselected_color = ORANGE;
+	resources->listboxitemselected_color = ORANGE;
 
 	//checkbox
- 	BC_WindowBase::get_resources()->checkbox_images = new_image_set(5,
+ 	resources->checkbox_images = new_image_set(5,
   		"checkbox_up.png", 
   		"checkbox_uphi.png", 
   		"checkbox_checked.png", 
@@ -392,7 +417,7 @@ void BlueDotTheme::initialize()
   		"checkbox_checkedhi.png");
 
 	//radiobox
- 	BC_WindowBase::get_resources()->radial_images = new_image_set(5,
+ 	resources->radial_images = new_image_set(5,
   		"radial_up.png", 
   		"radial_uphi.png", 
   		"radial_checked.png", 
@@ -400,7 +425,7 @@ void BlueDotTheme::initialize()
   		"radial_checkedhi.png");
 	
 	//labels
- 	BC_WindowBase::get_resources()->label_images = new_image_set(5,
+ 	resources->label_images = new_image_set(5,
   		"radial_up.png", 
   		"radial_uphi.png", 
   		"radial_checked.png", 
@@ -408,63 +433,49 @@ void BlueDotTheme::initialize()
   		"radial_checkedhi.png");
 
 	//filebox
-  	BC_WindowBase::get_resources()->filebox_text_images = new_image_set(3,
+  	resources->filebox_text_images = new_image_set(3,
   		"file_text_up.png", 
   		"file_text_uphi.png", 
   		"file_text_dn.png");
-  	BC_WindowBase::get_resources()->filebox_icons_images = new_image_set(3,
+  	resources->filebox_icons_images = new_image_set(3,
   		"file_icons_up.png", 
   		"file_icons_uphi.png", 
   		"file_icons_dn.png");
-  	BC_WindowBase::get_resources()->filebox_updir_images = new_image_set(3,
+  	resources->filebox_updir_images = new_image_set(3,
   		"file_updir_up.png", 
   		"file_updir_uphi.png", 
   		"file_updir_dn.png");
-  	BC_WindowBase::get_resources()->filebox_newfolder_images = new_image_set(3,
+  	resources->filebox_newfolder_images = new_image_set(3,
   		"file_newfolder_up.png", 
   		"file_newfolder_uphi.png", 
-		"file_newfolder_dn.png");
+  		"file_newfolder_dn.png");
 
-	BC_WindowBase::get_resources()->type_to_icon = new_image_set(5,
-	        "file_folder.png",
-		"file_unknown.png",
-        	"file_film.png",
-	        "file_sound.png",
-                "file_column.png");
-
-	BC_WindowBase::get_resources()->xmeter_images = new_image_set(6,
-		"xmeter_normal.png",
-		"xmeter_green.png",
-		"xmeter_red.png",
-		"xmeter_yellow.png",
-		"xmeter_normal.png",
-        	"xmeter_over.png");
-				
-	BC_WindowBase::get_resources()->ymeter_images = new_image_set(6,
-		"ymeter_normal.png",
-		"ymeter_green.png",
-		"ymeter_red.png",
-		"ymeter_yellow.png",
-		"ymeter_normal.png",
-        	"ymeter_over.png");
-
-	BC_WindowBase::get_resources()->meter_font = SMALLFONT;
-	BC_WindowBase::get_resources()->meter_font_color = BLACK;
-	BC_WindowBase::get_resources()->meter_title_w = 20;
-	BC_WindowBase::get_resources()->meter_3d = 0;
+	resources->type_to_icon = new_image_set(5,
+  		"file_folder.png",
+  		"file_unknown.png",
+  		"file_film.png",
+  		"file_sound.png",
+  		"file_column.png");
 
 
-	BC_WindowBase::get_resources()->audiovideo_color = DKGREY;
+
+	resources->meter_font = SMALLFONT;
+	resources->meter_font_color = BLACK;
+	resources->meter_title_w = 20;
+	resources->meter_3d = 0;
+
+
+	resources->audiovideo_color = DKGREY;
 
 	//listbox
-	BC_WindowBase::get_resources()->listbox_bg = new_image("list_bg.png");
+	resources->listbox_bg = new_image("list_bg.png");
 
 	//clock font
-	BC_WindowBase::get_resources()->medium_7segment =  new_image_set(20,
-                 "black_0.png", "black_1.png",  "black_2.png",  "black_3.png",  "black_4.png",  "black_5.png",  "black_6.png",  "black_7.png",  "black_8.png",  "black_9.png",  "black_colon.png",    "black_period.png",    "black_a.png",  "black_b.png",  "black_c.png",  "black_d.png",  "black_e.png",  "black_f.png",  "black_space.png",  "black_dash.png");      
+	resources->medium_7segment =  new_image_set(20,
+  		"black_0.png", "black_1.png",  "black_2.png",  "black_3.png",  "black_4.png",  "black_5.png",  "black_6.png",  "black_7.png",  "black_8.png",  "black_9.png",  "black_colon.png",    "black_period.png",    "black_a.png",  "black_b.png",  "black_c.png",  "black_d.png",  "black_e.png",  "black_f.png",  "black_space.png",  "black_dash.png");      
 
 	//tooltip
-	BC_WindowBase::get_resources()->tooltip_bg_color = 0xfff7e3;
+	resources->tooltip_bg_color = 0xfff7e3;
 }
 
 
@@ -514,32 +525,32 @@ void BlueDotTheme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 {
 	if(cwindow_controls)
 	{
-	  ccomposite_x = 0;
-	  ccomposite_y = 5;
-	  ccomposite_w = cpanel_bg->get_w();
-	  ccomposite_h = mwindow->session->cwindow_h - cbuttons_left->get_h();
-	  cslider_x = 5;
-	  cslider_y = ccomposite_h + 23;
-	  cedit_x = 10;
-	  cedit_y = cslider_y + 17;
-	  ctransport_x = 10;
-	  ctransport_y = mwindow->session->cwindow_h - autokeyframe_data[0]->get_h();
-	  ccanvas_x = ccomposite_x + ccomposite_w;
-	  ccanvas_y = 0;
-	  ccanvas_h = ccomposite_h;
+		ccomposite_x = 0;
+		ccomposite_y = 5;
+		ccomposite_w = cpanel_bg->get_w();
+		ccomposite_h = mwindow->session->cwindow_h - cbuttons_left->get_h();
+		cslider_x = 5;
+		cslider_y = ccomposite_h + 23;
+		cedit_x = 10;
+		cedit_y = cslider_y + 17;
+		ctransport_x = 10;
+		ctransport_y = mwindow->session->cwindow_h - autokeyframe_data[0]->get_h();
+		ccanvas_x = ccomposite_x + ccomposite_w;
+		ccanvas_y = 0;
+		ccanvas_h = ccomposite_h;
 
 
-	  if(mwindow->edl->session->cwindow_meter)
-	    {
-		cmeter_x = mwindow->session->cwindow_w - MeterPanel::get_meters_width(mwindow->edl->session->audio_channels, 
-			mwindow->edl->session->cwindow_meter);
-		ccanvas_w = cmeter_x - ccanvas_x - 5;
-	    }
-	  else
-	    {
-		cmeter_x = mwindow->session->cwindow_w;
-		ccanvas_w = cmeter_x - ccanvas_x;
-	    }
+		if(mwindow->edl->session->cwindow_meter)
+		{
+			cmeter_x = mwindow->session->cwindow_w - MeterPanel::get_meters_width(mwindow->edl->session->audio_channels, 
+				mwindow->edl->session->cwindow_meter);
+			ccanvas_w = cmeter_x - ccanvas_x - 5;
+		}
+		else
+		{
+			cmeter_x = mwindow->session->cwindow_w;
+			ccanvas_w = cmeter_x - ccanvas_x;
+		}
 	}
 	else
 	{
@@ -561,6 +572,7 @@ void BlueDotTheme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 		cmeter_x = mwindow->session->cwindow_w;
 	}
 
+
 	czoom_x = ctransport_x + PlayTransport::get_transport_width(mwindow) + 20;
 	czoom_y = ctransport_y + 5;
 
@@ -573,6 +585,7 @@ void BlueDotTheme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 	ctimebar_y = ccanvas_y + ccanvas_h;
 	ctimebar_w = ccanvas_w;
 	ctimebar_h = 16;
+
 
 // Not used
 	ctime_x = ctransport_x + PlayTransport::get_transport_width(mwindow);
