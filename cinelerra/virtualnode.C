@@ -272,6 +272,10 @@ int VirtualNode::attach_virtual_module(Plugin *plugin,
 //printf("VirtualNode::attach_virtual_module 1\n");
 		Module *real_module = vconsole->module_number(real_module_number);
 //printf("VirtualNode::attach_virtual_module 1\n");
+
+// If a track is deleted real_module is not found
+		if(!real_module) return 1;
+
 		Track *track = real_module->track;
 
 // Switch off if circular reference.  This happens if a track is deleted.
