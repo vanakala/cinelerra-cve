@@ -62,14 +62,14 @@ void Canvas::calculate_sizes(float aspect_ratio,
 // Horizontal stretch
 	if((float)output_w / output_h <= aspect_ratio)
 	{
-		w = (int)((float)output_h * aspect_ratio * zoom + 1);
-		h = (int)((float)output_h * zoom + 1);
+		w = (int)((float)output_h * aspect_ratio * zoom);
+		h = (int)((float)output_h * zoom);
 	}
 	else
 // Vertical stretch
 	{
-		h = (int)((float)output_w / aspect_ratio * zoom + 1);
-		w = (int)((float)output_w * zoom + 1);
+		h = (int)((float)output_w / aspect_ratio * zoom);
+		w = (int)((float)output_w * zoom);
 	}
 }
 
@@ -83,8 +83,9 @@ float Canvas::get_x_offset(EDL *edl,
 	{
 		if(xscroll) 
 		{
-			if(conformed_w < w_visible)
-				return -(float)(w_visible - conformed_w) / 2;
+// If the projection is smaller than the canvas, this forces it in the center.
+//			if(conformed_w < w_visible)
+//				return -(float)(w_visible - conformed_w) / 2;
 
 			return (float)get_xscroll();
 		}
@@ -122,8 +123,9 @@ float Canvas::get_y_offset(EDL *edl,
 	{
 		if(yscroll)
 		{
-			if(conformed_h < h_visible)
-				return -(float)(h_visible - conformed_h) / 2;
+// If the projection is smaller than the canvas, this forces it in the center.
+//			if(conformed_h < h_visible)
+//				return -(float)(h_visible - conformed_h) / 2;
 
 			return (float)get_yscroll();
 		}
@@ -277,8 +279,8 @@ void Canvas::get_transfers(EDL *edl,
 		canvas_to_output(edl, 0, in_x1, in_y1);
 		canvas_to_output(edl, 0, in_x2, in_y2);
 
-// printf("Canvas::get_transfers 1 %.0f %.0f %.0f %.0f -> %.0f %.0f %.0f %.0f\n",
-// 			in_x1, in_y1, in_x2, in_y2, out_x1, out_y1, out_x2, out_y2);
+//printf("Canvas::get_transfers 1 %.0f %.0f %.0f %.0f -> %.0f %.0f %.0f %.0f\n",
+//in_x1, in_y1, in_x2, in_y2, out_x1, out_y1, out_x2, out_y2);
 
 		if(in_x1 < 0)
 		{
@@ -745,6 +747,7 @@ void CanvasPopup::create_objects()
 	{
 		add_item(new CanvasPopupResetCamera(canvas));
 		add_item(new CanvasPopupResetProjector(canvas));
+		add_item(toggle_controls = new CanvasToggleControls(canvas));
 	}
 	if(canvas->use_rwindow)
 	{
@@ -810,6 +813,28 @@ int CanvasPopupResetTranslation::handle_event()
 {
 	canvas->reset_translation();
 	return 1;
+}
+
+
+
+CanvasToggleControls::CanvasToggleControls(Canvas *canvas)
+ : BC_MenuItem(calculate_text(canvas->get_cwindow_controls()))
+{
+	this->canvas = canvas;
+}
+int CanvasToggleControls::handle_event()
+{
+	canvas->toggle_controls();
+	set_text(calculate_text(canvas->get_cwindow_controls()));
+	return 1;
+}
+
+char* CanvasToggleControls::calculate_text(int cwindow_controls)
+{
+	if(!cwindow_controls) 
+		return _("Show controls");
+	else
+		return _("Hide controls");
 }
 
 
