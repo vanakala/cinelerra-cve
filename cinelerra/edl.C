@@ -470,6 +470,7 @@ int EDL::copy(double start,
 	else
 	{
 		file->tag.set_title("EDL");
+		file->tag.set_property("PRODUCER_VERSION", CINELERRA_VERSION);
 // Save path for restoration of the project title from a backup.
 		if(this->project_path[0])
 		{
