@@ -68,6 +68,8 @@ int AVC1394Transport::create_objects()
 //printf("AVC1394Transport::create_objects(): 4\n");
    x += stop_button->get_w();
 //printf("AVC1394Transport::create_objects(): 5\n");
+	window->add_subwindow(pause_button = new AVC1394GUIPause(mwindow, avc, x, y));
+	x += pause_button->get_w();
 	window->add_subwindow(play_button = new  AVC1394GUIPlay(mwindow, avc, x, y));
 //printf("AVC1394Transport::create_objects(): 6\n");
    x += play_button->get_w();
@@ -94,6 +96,8 @@ void AVC1394Transport::reposition_window(int x, int y)
    x += reverse_button->get_w();
 	stop_button->reposition_window(x, y);
    x += stop_button->get_w();
+	pause_button->reposition_window(x, y);
+	x += pause_button->get_w();
 	play_button->reposition_window(x, y);
    x += play_button->get_w();
 	fforward_button->reposition_window(x, y);
@@ -206,18 +210,7 @@ AVC1394GUIPlay::~AVC1394GUIPlay()
 
 int AVC1394GUIPlay::handle_event()
 {
-	if(mode == 0)
-	{
-		avc->play();
-		set_tooltip(_("Pause"));
-		mode = 1;
-	}
-	else
-	{
-		avc->pause();
-		set_tooltip(_("Play"));
-		mode = 0;
-	}
+	avc->play();
 	return 1;
 }
 
@@ -226,8 +219,30 @@ int AVC1394GUIPlay::keypress_event()
 	return 0;
 }
 
-AVC1394GUIFForward::AVC1394GUIFForward(MWindow *mwindow, AVC1394 *avc, int x, int
-y)
+AVC1394GUIPause::AVC1394GUIPause(MWindow *mwindow, AVC1394 *avc, int x,
+int y)
+ : BC_Button(x, y, mwindow->theme->pause_data)
+{
+	this->avc = avc;
+	set_tooltip(_("Pause"));
+}
+
+AVC1394GUIPause::~AVC1394GUIPause()
+{
+}
+
+int AVC1394GUIPause::handle_event()
+{
+   avc->pause();
+   return 1;
+}
+
+int AVC1394GUIPause::keypress_event()
+{
+   return 0;
+}
+
+AVC1394GUIFForward::AVC1394GUIFForward(MWindow *mwindow, AVC1394 *avc, int x, int y)
  : BC_Button(x, y, mwindow->theme->fastfwd_data)
 {
    this->avc = avc;
