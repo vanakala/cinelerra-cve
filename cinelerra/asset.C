@@ -783,7 +783,10 @@ int Asset::write_video(FileXML *file)
 	file->tag.set_property("TCFORMAT", tcformat);
 
 	file->append_tag();
-	file->tag.set_title("/VIDEO");
+	if(video_data)
+		file->tag.set_title("/VIDEO");
+	else
+		file->tag.set_title("/VIDEO_OMIT");
 	file->append_tag();
 	file->append_newline();
 	return 0;
