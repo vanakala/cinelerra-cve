@@ -33,8 +33,12 @@ you distrib. Not joking):
 	- libfreetype (>=2.1.4)
 	- xlib-dev
 		
-The others are maybe part of your distrib. If they aren't, you can find them
-on http://lpnotfr.free.fr/cinelerra-libs
+The others are maybe part of your distrib. If they aren't, 
+you can find most of them on ftp://ftp.nerim.net/debian-marillat/
+and the rest on http://www.kiberpipa.org/~minmax/cinelerra/builds/
+(if not, please complain to cinelerra@skolelinux.no!)
+
+http://lpnotfr.free.fr/cinelerra-libs
 	- libdv (0.99)
 	- xvid (cvs 20020822)
 	- liba52 (0.7.4)
