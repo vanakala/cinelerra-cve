@@ -1,6 +1,8 @@
 #ifndef ARRAYLIST_H
 #define ARRAYLIST_H
 
+#include <stdio.h>
+
 // designed for lists of track numbers
 
 template<class TYPE>
@@ -50,7 +52,7 @@ template<class TYPE>
 ArrayList<TYPE>::ArrayList()
 {
 	total = 0;
-	available = 1;
+	available = 16;
 	array_delete = 0;
 	values = new TYPE[available];
 }
@@ -61,12 +63,13 @@ ArrayList<TYPE>::~ArrayList()
 {
 // Just remove the pointer
 	delete [] values;
+	values = 0;
 }
 
 template<class TYPE>
 void ArrayList<TYPE>::set_array_delete()
 {
-   array_delete = 1;
+    array_delete = 1;
 }
 
 

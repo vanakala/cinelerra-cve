@@ -1004,7 +1004,7 @@ RecVideoDVThread::~RecVideoDVThread()
 
 int RecVideoDVThread::start_rendering()
 {
-	((dv_t*)dv) = dv_new();
+	dv = (void*)dv_new();
 	return 0;
 }
 

@@ -108,7 +108,6 @@ int FloatAutos::automation_is_constant(int64_t start,
 		start -= length;
 	}
 
-//printf("FloatAutos::automation_is_constant 1 %d %d\n", start, end);
 
 // No keyframes on track
 	if(total_autos == 0)
@@ -250,8 +249,8 @@ float FloatAutos::get_value(int64_t position,
 	float y0, y1, y2, y3;
  	float t;
 
-	previous = (FloatAuto*)get_prev_auto(position, direction, (Auto*)previous, 0);
-	next = (FloatAuto*)get_next_auto(position, direction, (Auto*)next, 0);
+	previous = (FloatAuto*)get_prev_auto(position, direction, (Auto*&)previous, 0);
+	next = (FloatAuto*)get_next_auto(position, direction, (Auto*&)next, 0);
 
 // Constant
 	if(!next && !previous)

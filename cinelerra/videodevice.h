@@ -1,22 +1,24 @@
 #ifndef VIDEODEVICE_H
 #define VIDEODEVICE_H
 
+#include "../hvirtual_config.h"
 #include "asset.inc"
 #include "assets.inc"
 #include "audio1394.inc"
 #include "audiodevice.inc"
-#include "guicast.h"
 #include "bccapture.inc"
+#include "bctimer.h"
 #include "canvas.inc"
 #include "channel.inc"
 #include "device1394output.inc"
 #include "edl.inc"
+#include "guicast.h"
 #include "mwindow.inc"
-#include "mutex.h"
+#include "mutex.inc"
 #include "preferences.inc"
 #include "recordmonitor.inc"
 #include "thread.h"
-#include "timer.h"
+#include "picture.inc"
 #include "vdevicebase.inc"
 #include "vdevice1394.inc"
 #include "vdevicebuz.inc"
@@ -55,7 +57,7 @@ public:
 	int failed;
 	int interrupted;
 	VideoDevice *device;
-	Mutex startup_lock;
+	Mutex *startup_lock;
 	int capturing;
 };
 
@@ -66,19 +68,7 @@ public:
 	VideoDevice();
 	~VideoDevice();
 
-	friend class VDeviceLML;
-	friend class VDeviceX11;
-	friend class VDevice1394;
-	friend class VDeviceBUZInput;
-	friend class VDeviceBUZ;
-	friend class VDeviceBase;
-	friend class VDeviceV4L;
-	friend class Audio1394;
-	friend class Device1394Output;
-
 	int close_all();
-// Create a default channeldb, erasing the old one
-	void create_channeldb(ArrayList<Channel*> *channeldb);
 
 // ===================================== Recording
 	int open_input(VideoInConfig *config, 
@@ -86,22 +76,27 @@ public:
 		int input_y, 
 		float input_z,
 		float frame_rate);
-// Return if the data is compressed
-	static int is_compressed(int driver);
+
+
+
+// Return 1 if the data is compressed.
+// Called by Record::run to determine if compression option is fixed.
+// Called by RecordVideo::rewind_file to determine if FileThread should call
+// write_compressed_frames or write_frames.
+	static int is_compressed(int driver, int use_file, int use_fixed);
+	int is_compressed(int use_file, int use_fixed);
+
+
+
 // Return codec to store on disk if compressed
 	static char* get_vcodec(int driver);
 	static char* drivertostr(int driver);
-	int is_compressed();
 // Get the best colormodel for recording given the file format
 // Must be called between open_input and read_buffer
 	int get_best_colormodel(Asset *asset);
 
-// Unlocks the device if being shared with audio
-//	int stop_sharing();
 // Specify the audio device opened concurrently with this video device
 	int set_adevice(AudioDevice *adevice);
-// Called by the audio device to share a buffer
-//	int get_shared_data(unsigned char *data, long size);
 // Return 1 if capturing locked up
 	int get_failed();  
 // Interrupt a crashed DV device
@@ -117,18 +112,19 @@ public:
 // Set frames to clear after translation change.
 	int set_latency_counter(int value);
 // Values from -100 to 100
-	int set_picture(int brightness, 
-		int hue, 
-		int color, 
-		int contrast, 
-		int whiteness);
+	int set_picture(Picture *picture);
 	int capture_frame(int frame_number);  // Start the frame_number capturing
 	int read_buffer(VFrame *frame);  // Read the next frame off the device
 	int frame_to_vframe(VFrame *frame, unsigned char *input); // Translate the captured frame to a VFrame
 	int initialize();
-	ArrayList<char *>* get_inputs();
+	ArrayList<Channel*>* get_inputs();
+// Create new input source if it doesn't match device_name.  
+// Otherwise return it.
+	Channel* new_input_source(char *device_name);
 	BC_Bitmap* get_bitmap();
 
+// Used by all devices to cause fd's to be not copied in fork operations.
+	int set_cloexec_flag(int desc, int value);
 
 // ================================== Playback
 	int open_output(VideoOutConfig *config, 
@@ -154,6 +150,12 @@ public:
 // The EDL parameter is passed to Canvas and can be 0.
 	int write_buffer(VFrame **outputs, EDL *edl);   
 
+
+
+
+
+
+
 // Flag when output is interrupted
 	int interrupt;
 // Compression format in use by the output device
@@ -165,7 +167,7 @@ public:
 	int sharing;
 // Synchronize the close devices
 	int done_sharing;
-	Mutex sharing_lock;
+	Mutex *sharing_lock;
 
 // frame rates
 	float orate, irate;               
@@ -200,15 +202,28 @@ public:
 	int latency_counter;
 	int capturing;
 	int swap_bytes;
+
+
 // All the input sources on the device
-	ArrayList<char *> input_sources;
+	ArrayList<Channel*> input_sources;
 	int odd_field_first;
 // Quality for the JPEG compressor
 	int quality;
 // Single frame mode for playback
 	int single_frame;
 
-private:
+// Copy of the most recent channel set by set_channel
+	Channel *channel;
+// Flag for subdevice to change channels when it has a chance
+	int channel_changed;
+	Mutex *channel_lock;
+
+// Copy of the most recent picture controls
+	int picture_changed;
+	Picture *picture;
+	Mutex *picture_lock;
+
+
 // Change the capture size when ready
 	int update_translation();  
 

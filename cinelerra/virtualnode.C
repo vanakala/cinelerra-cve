@@ -476,8 +476,8 @@ void VirtualNode::get_mute_fragment(int64_t input_position,
 
 	IntAuto *prev_keyframe = 0;
 	IntAuto *next_keyframe = 0;
-	prev_keyframe = (IntAuto*)autos->get_prev_auto(input_position, direction, (Auto*)prev_keyframe);
-	next_keyframe = (IntAuto*)autos->get_next_auto(input_position, direction, (Auto*)next_keyframe);
+	prev_keyframe = (IntAuto*)autos->get_prev_auto(input_position, direction, (Auto*&)prev_keyframe);
+	next_keyframe = (IntAuto*)autos->get_next_auto(input_position, direction, (Auto*&)next_keyframe);
 
 	if(direction == PLAY_FORWARD)
 	{

@@ -24,8 +24,8 @@ void PanAutos::get_handle(int &handle_x,
 		PanAuto* &previous,
 		PanAuto* &next)
 {
-	previous = (PanAuto*)get_prev_auto(position, direction, (Auto*)previous);
-	next = (PanAuto*)get_next_auto(position, direction, (Auto*)next);
+	previous = (PanAuto*)get_prev_auto(position, direction, (Auto*&)previous);
+	next = (PanAuto*)get_next_auto(position, direction, (Auto*&)next);
 
 // Constant
 	if(previous->handle_x == next->handle_x &&

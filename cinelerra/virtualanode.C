@@ -5,6 +5,7 @@
 #include "automation.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "clip.h"
 #include "floatautos.h"
 #include "mwindow.h"
 #include "module.h"
@@ -25,30 +26,14 @@ VirtualANode::VirtualANode(RenderEngine *renderengine,
 		Module *real_module, 
 		Plugin *real_plugin,
 		Track *track, 
-		VirtualNode *parent_module, 
-		double *buffer_in[],
-		double *buffer_out[],
-		int input_is_master,
-		int output_is_master,
-		int in,
-		int out)
+		VirtualNode *parent_module)
  : VirtualNode(renderengine, 
  		vconsole, 
 		real_module, 
 		real_plugin,
 		track, 
-		parent_module, 
-		input_is_master,
-		output_is_master,
-		in,
-		out)
+		parent_module)
 {
-	for(int i = 0; i < RING_BUFFERS; i++)
-	{
-		this->buffer_in[i] = buffer_in[i];
-		this->buffer_out[i] = buffer_out[i];
-	}
-
 	for(int i = 0; i < MAXCHANNELS; i++)
 	{
 		pan_before[i] = pan_after[i] = 0;
@@ -57,12 +42,7 @@ VirtualANode::VirtualANode(RenderEngine *renderengine,
 
 VirtualANode::~VirtualANode()
 {
-	if(!shared_output) delete [] buffer_out[0];
-	if(!shared_input) delete [] buffer_in[0];
 }
-
-
-
 
 
 
@@ -77,13 +57,7 @@ VirtualNode* VirtualANode::create_module(Plugin *real_plugin,
 		real_module,
 		0,
 		track,
-		this,
-		data_in_input ? buffer_in : buffer_out,
-		buffer_out,
-		data_in_input ? input_is_master : output_is_master,
-		output_is_master,
-		real_plugin->in,
-		real_plugin->out);
+		this);
 }
 
 
@@ -94,146 +68,189 @@ VirtualNode* VirtualANode::create_plugin(Plugin *real_plugin)
 		0,
 		real_plugin,
 		track,
-		this,
-		data_in_input ? buffer_in : buffer_out,
-		buffer_out,
-		data_in_input ? input_is_master : output_is_master,
-		output_is_master,
-		real_plugin->in,
-		real_plugin->out);
+		this);
 }
 
 
-void VirtualANode::new_output_buffer()
-{
-	buffer_out[0] = new double[renderengine->edl->session->audio_module_fragment];
-}
 
-void VirtualANode::new_input_buffer()
+int VirtualANode::read_data(double *output_temp,
+	int64_t start_position,
+	int64_t len,
+	int64_t sample_rate)
 {
-	buffer_in[0] = new double[renderengine->edl->session->audio_module_fragment];
-}
+	VirtualNode *previous_plugin = 0;
 
-double* VirtualANode::get_module_input(int ring_buffer, int64_t fragment_offset)
-{
-	double *result;
-	if(data_in_input)
+//printf("VirtualANode::read_data 1 %p\n", this);
+// This is a plugin on parent module with a preceeding effect.
+// Get data from preceeding effect on parent module.
+	if(parent_node && (previous_plugin = parent_node->get_previous_plugin(this)))
 	{
-		if(input_is_master) 
-			result = buffer_in[ring_buffer] + fragment_offset;
-		else
-			result = buffer_in[0];
+//printf("VirtualANode::read_data 2\n");
+		((VirtualANode*)previous_plugin)->render(output_temp,
+			start_position,
+			len,
+			sample_rate);
+//printf("VirtualANode::read_data 3\n");
 	}
 	else
+// First plugin on parent module.
+// Read data from parent module
+	if(parent_node)
 	{
-		if(output_is_master)
-			result = buffer_out[ring_buffer] + fragment_offset;
-		else
-			result = buffer_out[0];
+		((VirtualANode*)parent_node)->read_data(output_temp,
+			start_position,
+			len,
+			sample_rate);
 	}
-	return result;
-}
-
-double* VirtualANode::get_module_output(int ring_buffer, int64_t fragment_position)
-{
-	double *result;
-
-	if(output_is_master)
-		result = buffer_out[ring_buffer] + fragment_position;
 	else
-		result = buffer_out[0];
-
-	return result;
+// This is the first node in the tree
+	{
+//printf("VirtualANode::read_data 8\n");
+		((AModule*)real_module)->render(output_temp,
+			start_position,
+			len,
+			renderengine->command->get_direction(),
+			sample_rate,
+			0);
+//printf("VirtualANode::read_data 9\n");
+	}
+//printf("VirtualANode::read_data 100 %p\n", this);
+	return 0;
 }
 
-int VirtualANode::render(double **audio_out, 
-				int64_t audio_out_position, 
-				int ring_buffer,
-				int64_t fragment_position,
-				int64_t fragment_len, 
-				int64_t real_position, 
-				int64_t source_length, 
-				int reverse,
-				ARender *arender)
+int VirtualANode::render(double *output_temp,
+	int64_t start_position,
+	int64_t len,
+	int64_t sample_rate)
 {
+	ARender *arender = ((VirtualAConsole*)vconsole)->arender;
 	if(real_module)
 	{
-		render_as_module(audio_out, 
-				audio_out_position, 
-				ring_buffer,
-				fragment_position,
-				fragment_len, 
-				real_position, 
-				arender);
+//printf("VirtualANode::render 1\n");
+		render_as_module(arender->audio_out, 
+			output_temp,
+			start_position, 
+			len,
+			sample_rate);
+//printf("VirtualANode::render 2\n");
 	}
 	else
 	if(real_plugin)
 	{
-		render_as_plugin(real_position,
-				fragment_position,
-				fragment_len,
-				ring_buffer);
+//printf("VirtualANode::render 3\n");
+		render_as_plugin(output_temp,
+			start_position,
+			len,
+			sample_rate);
+//printf("VirtualANode::render 4\n");
 	}
 	return 0;
 }
 
-void VirtualANode::render_as_plugin(int64_t real_position, 
-	int64_t fragment_position, 
-	int64_t fragment_len,
-	int ring_buffer)
+void VirtualANode::render_as_plugin(double *output_temp,
+	int64_t start_position, 
+	int64_t len,
+	int64_t sample_rate)
 {
-	real_position += track->nudge;
-	((AAttachmentPoint*)attachment)->render(buffer_in[ring_buffer] + fragment_position, 
-		buffer_out[ring_buffer] + fragment_position, 
-		fragment_len, 
-	  	real_position);
+//printf("VirtualANode::render_as_plugin 1 %p\n", this);
+	if(!attachment ||
+		!real_plugin ||
+		!real_plugin->on) return;
+
+//printf("VirtualANode::render_as_plugin 2 %p\n", output_temp);
+// If we're the first plugin in the parent module, data needs to be read from 
+// what comes before the parent module.  Otherwise, data needs to come from the
+// previous plugin.
+	((AAttachmentPoint*)attachment)->render(
+		output_temp, 
+		plugin_buffer_number,
+		start_position,
+		len, 
+	  	sample_rate);
+//printf("VirtualANode::render_as_plugin 100 %p\n", this);
 }
 
 int VirtualANode::render_as_module(double **audio_out, 
-				int64_t audio_out_position, 
-				int ring_buffer,
-				int64_t fragment_position,
-				int64_t fragment_len, 
-				int64_t real_position, 
-				ARender *arender)
+				double *output_temp,
+				int64_t start_position,
+				int64_t len, 
+				int64_t sample_rate)
 {
 	int in_output = 0;
-	double *buffer_in = get_module_input(ring_buffer, fragment_position);
-	double *buffer_out = get_module_output(ring_buffer, fragment_position);
 	int direction = renderengine->command->get_direction();
+	EDL *edl = vconsole->renderengine->edl;
 
-// Render fade
-	render_fade(buffer_in, 
-				buffer_out,
-				fragment_len,
-				real_position,
+//printf("VirtualANode::render_as_module 1 %p\n", this);
+
+// Process last subnode.  This calls read_data, propogates up the chain 
+// of subnodes, and finishes the chain.
+	if(subnodes.total)
+	{
+		VirtualANode *node = (VirtualANode*)subnodes.values[subnodes.total - 1];
+		node->render(output_temp,
+			start_position,
+			len,
+			sample_rate);
+	}
+	else
+// Read data from previous entity
+	{
+		read_data(output_temp,
+			start_position,
+			len,
+			sample_rate);
+	}
+
+
+	render_fade(output_temp,
+				len,
+				start_position,
+				sample_rate,
 				track->automation->fade_autos,
 				direction,
-				1);
+				0);
 
 // Get the peak but don't limit
+// Calculate position relative to project for meters
+	int64_t project_sample_rate = edl->session->sample_rate;
+	int64_t start_position_project = start_position * 
+		project_sample_rate /
+		sample_rate;
 	if(real_module && renderengine->command->realtime)
 	{
 		ARender *arender = ((VirtualAConsole*)vconsole)->arender;
 		double max = 0, min = 0, peak;
-		int64_t meter_render_start; // Starting sample of meter block
-		int64_t meter_render_end;   // Ending sample of meter block
+// Starting sample of meter block
+		int64_t meter_render_start;
+// Ending sample of meter block
+		int64_t meter_render_end;
 		int64_t current_level = ((AModule*)real_module)->current_level;
+// Number of samples in each meter fragment normalized to requested rate
+		int meter_render_fragment = arender->meter_render_fragment * 
+			sample_rate /
+			project_sample_rate;
 
 // Scan fragment in meter sized fragments
-		for(int i = 0; i < fragment_len; )
+		for(int i = 0; i < len; )
 		{
 			meter_render_start = i;
-			meter_render_end = i + arender->meter_render_fragment;
-			if(meter_render_end > fragment_len) meter_render_end = fragment_len;
+			meter_render_end = i + meter_render_fragment;
+			if(meter_render_end > len) 
+				meter_render_end = len;
 			max = 0;
 			min = 0;
-			
+// Number of samples into the fragment this meter sized fragment is,
+// normalized to project sample rate.
+			int64_t meter_render_start_project = meter_render_start *
+				project_sample_rate /
+				sample_rate;
+
+// Scan meter sized fragment
 			for( ; i < meter_render_end; i++)
 			{
-				if(buffer_out[i] > max) max = buffer_out[i];
+				if(output_temp[i] > max) max = output_temp[i];
 				else
-				if(buffer_out[i] < min) min = buffer_out[i];
+				if(output_temp[i] < min) min = output_temp[i];
 			}
 
 			if(fabs(max) > fabs(min)) 
@@ -244,9 +261,9 @@ int VirtualANode::render_as_module(double **audio_out,
 			((AModule*)real_module)->level_history[current_level] = 
 				peak;
 			((AModule*)real_module)->level_samples[current_level] = 
-				(renderengine->command->get_direction() == PLAY_FORWARD) ?
-				(real_position + meter_render_start) :
-				(real_position - meter_render_start);
+				(direction == PLAY_FORWARD) ?
+				(start_position_project + meter_render_start_project) :
+				(start_position_project - meter_render_start_project);
 			((AModule*)real_module)->current_level = 
 				arender->get_next_peak(((AModule*)real_module)->current_level);
 		}
@@ -254,88 +271,124 @@ int VirtualANode::render_as_module(double **audio_out,
 
 // process pans and copy the output to the output channels
 // Keep rendering unmuted fragments until finished.
-	int mute_constant;
-	int64_t mute_fragment;
 	int64_t mute_position = 0;
 
-	for(int i = 0; i < fragment_len; )
+	for(int i = 0; i < len; )
 	{
-		mute_fragment = fragment_len - i;
+		int mute_constant;
+		int64_t mute_fragment = len - i;
+		int64_t mute_fragment_project = mute_fragment *
+			project_sample_rate /
+			sample_rate;
+		start_position_project = start_position + 
+			((direction == PLAY_FORWARD) ? i : -i);
+		start_position_project = start_position_project *
+			project_sample_rate / 
+			sample_rate;
 
 // How many samples until the next mute?
-		get_mute_fragment(real_position,
+		get_mute_fragment(start_position_project,
 				mute_constant, 
-				mute_fragment,
+				mute_fragment_project,
 				(Autos*)track->automation->mute_autos,
 				direction,
-				1);
-
+				0);
 // Fragment is playable
 		if(!mute_constant)
 		{
-			for(int i = 0; 
-				i < MAX_CHANNELS; 
-				i++)
+			for(int j = 0; 
+				j < MAX_CHANNELS; 
+				j++)
 			{
-				if(audio_out[i])
+				if(audio_out[j])
 				{
-					double *buffer = audio_out[i];
+					double *buffer = audio_out[j];
 
-					render_pan(buffer_out + mute_position, 
-								buffer + audio_out_position + mute_position,
+// printf("VirtualANode::render_as_module 4.3 %p %p %lld %lld %lld %lld %p %d %d\n", 
+// output_temp,
+// buffer,
+// mute_position, 
+// mute_fragment,
+// start_position + 
+// 	((direction == PLAY_FORWARD) ? i : -i),
+// sample_rate,
+// (Autos*)track->automation->pan_autos,
+// j,
+// direction);
+					render_pan(output_temp + mute_position, 
+								buffer + mute_position,
 								mute_fragment,
-								real_position,
+								start_position,
+								sample_rate,
 								(Autos*)track->automation->pan_autos,
-								i,
+								j,
 								direction,
-								1);
+								0);
 				}
 			}
 		}
+//printf("VirtualANode::render_as_module 4.4\n");
 
-		fragment_len -= mute_fragment;
-		real_position += (direction == PLAY_REVERSE) ? -mute_fragment : mute_fragment;
+		len -= mute_fragment;
+		i += mute_fragment;
 		mute_position += mute_fragment;
 	}
 
+//printf("VirtualANode::render_as_module 100 %p\n", this);
 	return 0;
 }
 
-int VirtualANode::render_fade(double *input,        // start of input fragment
-								double *output,        // start of output fragment
-								int64_t fragment_len,      // fragment length in input scale
-								int64_t input_position, // starting sample of input buffer in project
-								Autos *autos,
-								int direction,
-								int use_nudge)
+int VirtualANode::render_fade(double *buffer,
+				int64_t len,
+				int64_t input_position,
+				int64_t sample_rate,
+				Autos *autos,
+				int direction,
+				int use_nudge)
 {
 	double value, fade_value;
 	FloatAuto *previous = 0;
 	FloatAuto *next = 0;
-	if(use_nudge) input_position += track->nudge;
+	EDL *edl = vconsole->renderengine->edl;
+	int64_t project_sample_rate = edl->session->sample_rate;
+	if(use_nudge) input_position += track->nudge * 
+		sample_rate / 
+		project_sample_rate;
 
+// Normalize input position to project sample rate here.
+// Automation functions are general to video and audio so it 
+// can't normalize itself.
+	int64_t input_position_project = input_position * 
+		project_sample_rate / 
+		sample_rate;
+	int64_t len_project = len * 
+		project_sample_rate / 
+		sample_rate;
 
-	if(((FloatAutos*)autos)->automation_is_constant(input_position, 
-		fragment_len,
+	if(((FloatAutos*)autos)->automation_is_constant(input_position_project, 
+		len_project,
 		direction,
 		fade_value))
 	{
-		if(fade_value <= INFINITYGAIN) 
+		if(fade_value <= INFINITYGAIN)
 			value = 0;
 		else
 			value = DB::fromdb(fade_value);
-		for(int64_t i = 0; i < fragment_len; i++)
+		for(int64_t i = 0; i < len; i++)
 		{
-			output[i] = input[i] * value;
+			buffer[i] *= value;
 		}
 	}
 	else
 	{
-		for(int64_t i = 0; i < fragment_len; i++)
+		for(int64_t i = 0; i < len; i++)
 		{
-			int64_t slope_len = fragment_len - i;
+			int64_t slope_len = len - i;
+			input_position_project = input_position * 
+				project_sample_rate / 
+				sample_rate;
 
-			fade_value = ((FloatAutos*)autos)->get_value(input_position, 
+			fade_value = ((FloatAutos*)autos)->get_value(input_position_project, 
 				direction,
 				previous,
 				next);
@@ -345,81 +398,59 @@ int VirtualANode::render_fade(double *input,        // start of input fragment
 			else
 				value = DB::fromdb(fade_value);
 
-			output[i] = input[i] * value;
+			buffer[i] *= value;
 
 			if(direction == PLAY_FORWARD)
 				input_position++;
-
 			else
 				input_position--;
 		}
 	}
 
-// Get slope intercept formula for next fragment
-// 		get_fade_automation(slope, 
-// 						intercept, 
-// 						input_position,
-// 						slope_len,
-// 						autos);
-// 
-// 		if(slope != 0)
-// 		{
-// 			for(double j = 0; 
-// 				j < slope_len; 
-// 				j++, i++)
-// 			{
-// 				value = slope * j + intercept;
-// 				value = DB::fromdb(value);
-// 				output[i] = input[i] * value;
-// 			}
-// 		}
-// 		else
-// 		{
-// 			double value = DB::fromdb(intercept);
-// 			for(int j = 0; 
-// 				j < slope_len; 
-// 				j++, i++)
-// 			{
-// 				output[i] = input[i] * value;
-// 			}
-// 		}
-// 
-// 
-// 		if(direction == PLAY_FORWARD)
-// 			input_position += slope_len;
-// 		else
-// 			input_position -= slope_len;
-// 	}
-
 	return 0;
 }
 
-int VirtualANode::render_pan(double *input,        // start of input fragment
-								double *output,        // start of output fragment
-								int64_t fragment_len,      // fragment length in input scale
-								int64_t input_position, // starting sample of input buffer in project
-								Autos *autos,
-								int channel,
-								int direction,
-								int use_nudge)
+int VirtualANode::render_pan(double *input, // start of input fragment
+	double *output,            // start of output fragment
+	int64_t fragment_len,      // fragment length in input scale
+	int64_t input_position,    // starting sample of input buffer in project
+	int64_t sample_rate,       // sample rate of input_position
+	Autos *autos,
+	int channel,
+	int direction,
+	int use_nudge)
 {
-	double slope, intercept;
-	if(use_nudge) input_position += track->nudge;
+	double slope = 0.0;
+	double intercept = 1.0;
+	EDL *edl = vconsole->renderengine->edl;
+	int64_t project_sample_rate = edl->session->sample_rate;
+	if(use_nudge) input_position += track->nudge * 
+		sample_rate / 
+		project_sample_rate;
 
-	for(int64_t i = 0; i < fragment_len; )
+	for(int i = 0; i < fragment_len; )
 	{
-		int64_t slope_len = fragment_len - i;
+		int64_t slope_len = (fragment_len - i)  *
+							project_sample_rate /
+							sample_rate;
 
 // Get slope intercept formula for next fragment
 		get_pan_automation(slope, 
 						intercept, 
-						input_position,
+						input_position * 
+							project_sample_rate / 
+							sample_rate,
 						slope_len,
 						autos,
 						channel,
 						direction);
 
-		if(slope != 0)
+		slope_len = slope_len * sample_rate / project_sample_rate;
+		slope = slope * sample_rate / project_sample_rate;
+		slope_len = MIN(slope_len, fragment_len - i);
+
+//printf("VirtualANode::render_pan 3 %d %lld %f %p %p\n", i, slope_len, slope, output, input);
+		if(!EQUIV(slope, 0))
 		{
 			for(double j = 0; j < slope_len; j++, i++)
 			{
@@ -440,6 +471,8 @@ int VirtualANode::render_pan(double *input,        // start of input fragment
 			input_position += slope_len;
 		else
 			input_position -= slope_len;
+
+//printf("VirtualANode::render_pan 4\n");
 	}
 
 	return 0;
@@ -459,8 +492,8 @@ void VirtualANode::get_pan_automation(double &slope,
 
 	PanAuto *prev_keyframe = 0;
 	PanAuto *next_keyframe = 0;
-	prev_keyframe = (PanAuto*)autos->get_prev_auto(input_position, direction, (Auto*)prev_keyframe);
-	next_keyframe = (PanAuto*)autos->get_next_auto(input_position, direction, (Auto*)next_keyframe);
+	prev_keyframe = (PanAuto*)autos->get_prev_auto(input_position, direction, (Auto*&)prev_keyframe);
+	next_keyframe = (PanAuto*)autos->get_next_auto(input_position, direction, (Auto*&)next_keyframe);
 	
 	if(direction == PLAY_FORWARD)
 	{
