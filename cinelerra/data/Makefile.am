@@ -1,5 +1,5 @@
 noinst_LIBRARIES = libimagedata.a
-libimagedata_a_SOURCES = $(PNGS)
+libimagedata_a_SOURCES =
 nodist_libimagedata_a_SOURCES = theme.data
 
 PNGS = \
@@ -21,6 +21,7 @@ clean-local:
 	rm -f theme.data
 
 EXTRA_DIST = \
+	$(PNGS) \
 	about.png \
 	about.xcf.bz2 \
 	about_bg.png \

@@ -1,5 +1,5 @@
 noinst_LIBRARIES = libimagedata.a
-libimagedata_a_SOURCES = $(PNGS)
+libimagedata_a_SOURCES =
 nodist_libimagedata_a_SOURCES = bluedottheme.data
 
 PNGS = \
@@ -324,5 +324,4 @@ bluedottheme.data: $(PNGS)
 clean-local:
 	rm -f bluedottheme.data
 
-EXTRA_DIST = 
-
+EXTRA_DIST = $(PNGS)

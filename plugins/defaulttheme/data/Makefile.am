@@ -1,5 +1,5 @@
 noinst_LIBRARIES = libimagedata.a
-libimagedata_a_SOURCES = $(PNGS)
+libimagedata_a_SOURCES =
 nodist_libimagedata_a_SOURCES = defaulttheme.data
 
 PNGS = \
@@ -541,6 +541,7 @@ clean-local:
 	rm -f defaulttheme.data
  
 EXTRA_DIST = \
+	$(PNGS) \
 	about.xcf.bz2 \
 	asset_button.xcf.bz2 \
 	batchrender.xcf.bz2 \
