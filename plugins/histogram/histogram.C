@@ -962,7 +962,7 @@ HistogramText::HistogramText(HistogramMain *plugin,
  : BC_TumbleTextBox(gui, 
 		(int64_t)*output,
 		(int64_t)0,
-		(int64_t)0xff,
+		(int64_t)0xffff,
 		x, 
 		y, 
 		60)
