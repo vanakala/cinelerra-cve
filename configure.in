@@ -265,13 +265,16 @@ AC_CHECK_TOOL(OBJCOPY, objcopy)
 if test "x$OBJCOPY" = "x"; then
 	AC_MSG_ERROR("objcopy from GNU binutils >= 2.11.90 not found")
 fi
-AC_MSG_CHECKING(for object target)
-dnl extract target and architecture
-octarget=`objcopy --info | head -2 | tail -1`
-AC_MSG_RESULT($octarget)
-AC_MSG_CHECKING(for object architecture)
-ocarch=`objcopy --info | grep '^  ' | head -1`
-AC_MSG_RESULT($ocarch)
+AC_CHECK_TOOL(OBJDUMP, objdump)
+dnl extract target and architecture if objdump was found
+if test "x$OBJDUMP" = "x"; then :; else
+  AC_MSG_CHECKING(for object target)
+  octarget=`$OBJDUMP --info | sed -ne '2{p;q}'` # extract line 2
+  AC_MSG_RESULT($octarget)
+  AC_MSG_CHECKING(for object architecture)
+  ocarch=`$OBJDUMP --info | sed -ne '/^  /{p;q}'` # extract 1st matching line
+  AC_MSG_RESULT($ocarch)
+fi
 AC_SUBST(OBJCOPYTARGET, $octarget)
 AC_SUBST(OBJCOPYARCH, $ocarch)
 
