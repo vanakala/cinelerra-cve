@@ -12,4 +12,4 @@ shapewipedir = $(plugindir)/shapewipe
 shapewipe_DATA = heart.png
 
 noinst_HEADERS = shapewipe.h picon_png.h 
-EXTRA_DIST = picon.png
+EXTRA_DIST = picon.png heart.png

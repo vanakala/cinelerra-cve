@@ -65,6 +65,7 @@ SUBDIRS= \
 	polar \
 	radialblur \
 	reframe \
+	reframert \
 	resample \
 	reverb \
 	reverseaudio \

@@ -5,7 +5,7 @@ Summary: Cinelerra CVS
 Name: cinelerra
 #Version: 1.2.0.cvs.cobra
 Version: @VERSION@.cvs.%{build_nick}
-Release: 8
+Release: %(date '+%Y%m%d')
 License: GPL
 Group: X11
 URL: http://cvs.cinelerra.org
@@ -25,9 +25,9 @@ Cinelerra unofficial cvs package
 %setup -n %{name}-@VERSION@
 
 %build
-./configure --prefix=%prefix
+./configure --prefix=%{prefix}
 #./configure
-make
+%{__make} %{?_smp_mflags} %{?mflags}
 
 %install
 rm -rf $RPM_BUILD_ROOT
@@ -60,6 +60,7 @@ rm -rf $RPM_BUILD_ROOT
 %exclude %{prefix}/include/*
 
 %{prefix}/lib/cinelerra/*.so
+%{prefix}/lib/cinelerra/shapewipe/*
 # remove below for no static libs
 # %exclude %{prefix}/lib/cinelerra/*.a
 %exclude %{prefix}/lib/cinelerra/*.la
@@ -74,6 +75,48 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Thu Dec 2 2004 Kevin Brosius <cobra@compuserve.com> - 1.2.1.cvs.cobra-date
+- enable reframert, shapewipe added, libxvidcore configure cleanups
+- small fix for initialization, colorpicker fixes, gradient fixes
+- fixes to plugins/titler & colors, debug message changes
+- audiodevice cleanups, utf8 hack, avi index fix, armed track dragging
+- buzz fix, X grouping fixups, bug98: transition underflow
+- bug51: recordmonitor/bclistbox keypress, cache memleak fix
+- bug103: audio render crash, alsa oss emu fix, transitions nudge fix
+- autoconf improvements, grayscale tiff import fix
+- bunch of leak and audio fixes from Nate
+- remove interpolateall, bug122, misc alloc fixes/minmax, shift key edit
+- codefest fixups, locking fix, ffmpeg/libavcodec support
+- pulldown support, french translation, alsa to 1.0.2 and fixups
+- YUV4MPEG and pipes support, theme packaging, powerpc arch
+- setformat image, big-endian fixups, gradient fixes
+- selection priority over in/out, project box height fix
+- quicktime/avi fixes, ffmpeg dv, dv vfs compat.
+- bug110 YUV8/16 & black w/alpha, bug105 Xv & avi
+- bug106 Xv and scroll windows
+
+* Fri Aug 20 2004 Kevin Brosius <cobra@compuserve.com> - 1.2.1.cvs.cobra-1
+- Support RGB-16 to YUV-16 conversions [Bug 107]
+- Fix colormodels for quicktime dv [Bug 76]
+- Add RGB-16 and RGBA-16 to RGB-FLOAT conversions
+- Support for all types of PNGs.
+- Merged the official release 1.2.1.
+- Add check wheather proper plugins exist when loading file
+- Sort the list of plugins according to i18n language
+- i18n batch recording dialog
+- update libdv dependency to libdv4 0.103
+- Added option to load an image as a specified duration or a single frame.
+-   Under settings->preferences->recording
+- Temp fix to prevent 16 bit PNG crash
+- gcc 3.4 and misc build fixes
+
+* Sat Jul 31 2004 Kevin Brosius <cobra@compuserve.com> - 1.2.0.cvs.cobra-10
+- Theme the asset info window text color - fix blue dot text display
+
+* Thu Jul 29 2004 Kevin Brosius <cobra@compuserve.com> - 1.2.0.cvs.cobra-9
+- Fix build with libdv 0.103
+- Blue Dot theme fix for clip boundary display, add pause.png to record gui
+
 * Sun Jul 25 2004 Kevin Brosius <cobra@compuserve.com> - 1.2.0.cvs.cobra-8
 - Move blondtheme contents back to defaulttheme dir
 - create .spec.in and setup versioning, add:
