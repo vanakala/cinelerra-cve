@@ -1,20 +1,61 @@
 #!/bin/sh
 
+# Clean symlinks created with previous versions of automake
+rm -f install-sh
+rm -f missing
+rm -f compile
+
 # autogen.sh for Cinelerra Unofficial CVS
-# This script allows you to create a ./configure script#
-# Please refer to README.BUILD for the needed versions and dependencies
+# 
+# This script allows you to create a ./configure script
+# It is only needed when building from CVS when no ./configure script is provided
+#
+# WARNING: Recent versions of automake and autoconf are needed.
+# You will need at least automake 1.7 and autoconf 2.57.
+#
+# If the script is not able to locate the needed versions,
+# use variables to define absolute paths to the executables.
+#
+# The available variables are:
+# AUTOMAKE=/path/to/automake 
+# ACLOCAL=/path/to/aclocal
+# AUTOCONF=/path/to/autoconf
+# AUTOHEADER=/path/to/autoheader
+#
+# Example (needed for Debian SID):
+#
+# export AUTOMAKE=/usr/bin/automake-1.7 
+# export ACLOCAL=/usr/bin/aclocal-1.7
+# sh autogen.sh
 
-# Automake wrappers
-AUTOMAKE=automake
-ACLOCAL=aclocal
+echo "User defined paths to the preferred autoconf and automake versions."
+echo "Read the script if you would like to modify them."
 
-# Autoconf wrappers
-AUTOCONF=autoconf
-AUTOHEADER=autoheader
+if test "$AUTOMAKE" = ""; then
+  AUTOMAKE=automake
+fi
+echo 'AUTOMAKE'"=$AUTOMAKE"
+
+if test "$ACLOCAL" = ""; then
+  ACLOCAL=aclocal
+fi
+echo 'ACLOCAL'=$ACLOCAL
+
+if test "$AUTOCONF" = ""; then
+  AUTOCONF=autoconf
+fi
+echo 'AUTOCONF'=$AUTOCONF
+
+if test "$AUTOHEADER" = ""; then
+  AUTOHEADER=autoheader
+fi
+echo 'AUTOHEADER'=$AUTOHEADER
 
 #
 # You should not be modifying anything from here
 #
+
+echo "Now building the ./configure script..."
 
 # check for recent automake >= 1.7
 amversion=`$AUTOMAKE --version | grep "automake (GNU automake)" | cut -b 25-`
