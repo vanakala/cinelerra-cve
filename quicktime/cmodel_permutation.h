@@ -610,6 +610,15 @@ static inline void transfer_RGBA8888_to_RGBA8888(unsigned char *(*output), unsig
 	(*output) += 4;
 }
 
+static inline void transfer_RGBA8888_to_ARGB8888(unsigned char *(*output), unsigned char *input)
+{
+	(*output)[0] = input[3];
+	(*output)[1] = input[0];
+	(*output)[2] = input[1];
+	(*output)[3] = input[2];
+	(*output) += 4;
+}
+
 static inline void transfer_RGBA8888_to_RGB161616(uint16_t *(*output), unsigned char *input)
 {
 	int y, u, v, opacity, r, g, b;
