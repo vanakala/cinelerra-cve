@@ -1,0 +1,5109 @@
+# translation of nb.po to 
+# translation of nb.po to
+# translation of Cinelerra.po to
+# This file is distributed under the same license as the PACKAGE package.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER, 2004.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: nb\n"
+"POT-Creation-Date: 2004-03-27 15:37+0100\n"
+"PO-Revision-Date: 2004-03-28 17:37+0200\n"
+"Last-Translator: \n"
+"Language-Team:  <i18n-no@lister.ping.uio.no>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Generator: KBabel 1.3.1\n"
+
+#: cinelerra/aboutprefs.C:32
+msgid "Cinelerra "
+msgstr "Cinelerra "
+
+#: cinelerra/aboutprefs.C:41
+msgid ""
+"(c) 2003 Heroine Virtual Ltd.\n"
+"\n"
+msgstr ""
+"(c) 2003 Heroine Virtual Ltd.\n"
+"\n"
+
+#: cinelerra/aboutprefs.C:42
+msgid "Build date: "
+msgstr "Byggdato: "
+
+#: cinelerra/aboutprefs.C:53
+#, c-format
+msgid ""
+"Quicktime version %d.%d.%d\n"
+"Libmpeg3 version %d.%d.%d\n"
+msgstr ""
+"Quicktime-versjon %d.%d.%d\n"
+"Libmpeg3-versjon %d.%d.%d\n"
+
+#: cinelerra/aboutprefs.C:91
+msgid ""
+"This program is free software; you can redistribute it and/or modify it "
+"under the terms\n"
+"of the GNU General Public License as published by the Free Software "
+"Foundation; either version\n"
+"2 of the License, or (at your option) any later version.\n"
+"\n"
+"This program is distributed in the hope that it will be useful, but WITHOUT "
+"ANY WARRANTY;\n"
+"without even the implied warranty of MERCHANTABILITY or FITNESS FOR A "
+"PARTICULAR\n"
+"PURPOSE.  See the GNU General Public License for more details.\n"
+"\n"
+msgstr ""
+"Dette programmet er fri programvare; du kan spre det videre og/eller "
+"endre det under vilkårene\n"
+"i GNU General Public License, slik den er offentliggjort av Free Software "
+"Foundation; enten versjon\n"
+"2 av lisensen, eller (som du velger selv) en hver senere versjon.\n"
+"\n"
+"Dette programmet er distribuert i håp om at det vil være nyttig, "
+"men UTEN NOEN GARANTI;\n"
+"selv uten den innforståtte garantien om \"MERCHANTABILITY\" "
+"(\"salgbarhet\"?) eller egnethet for et bestemt formål.\n"
+"Se GNU General Public License for detaljer.\n"
+"\n"
+
+#: cinelerra/adeviceprefs.C:235 cinelerra/vdeviceprefs.C:167
+#: cinelerra/vdeviceprefs.C:188 cinelerra/vdeviceprefs.C:304
+msgid "Device path:"
+msgstr "Sti til enheten: "
+
+#: cinelerra/adeviceprefs.C:257 cinelerra/adeviceprefs.C:343
+#: cinelerra/assetedit.C:263 cinelerra/fileformat.C:71
+#: cinelerra/formatwindow.C:27
+msgid "Bits:"
+msgstr "Bits:"
+
+#: cinelerra/adeviceprefs.C:283 cinelerra/adeviceprefs.C:368
+#: cinelerra/adeviceprefs.C:497 cinelerra/assetedit.C:226
+#: cinelerra/fileformat.C:59 cinelerra/new.C:374 cinelerra/setformat.C:274
+msgid "Channels:"
+msgstr "Kanaler:"
+
+#: cinelerra/adeviceprefs.C:322
+msgid "Device:"
+msgstr "Enhet: "
+
+#: cinelerra/adeviceprefs.C:394
+msgid "Server:"
+msgstr "Tjener:"
+
+#: cinelerra/adeviceprefs.C:410 cinelerra/adeviceprefs.C:459
+#: cinelerra/performanceprefs.C:120 cinelerra/vdeviceprefs.C:254
+msgid "Port:"
+msgstr "Port:"
+
+#: cinelerra/adeviceprefs.C:438 cinelerra/vdeviceprefs.C:236
+msgid "Device Path:"
+msgstr "Sti til enhet:"
+
+#: cinelerra/adeviceprefs.C:477 cinelerra/vdeviceprefs.C:272
+msgid "Channel:"
+msgstr "Kanal:"
+
+#: cinelerra/adeviceprefs.C:518 cinelerra/vdeviceprefs.C:292F
+#, fuzzy
+msgid "Syt Offset:"
+msgstr "Syt Offset:"
+
+#. couldn't open source file / skip the edit
+#: cinelerra/amodule.C:217 cinelerra/amodule.C:296
+#, c-format
+#, fuzzy
+msgid "VirtualAConsole::load_track Couldn't open %s.\n"
+msgstr "VirtualAConsole::load_track Kunne ikke åpne %s.\n"
+
+#: cinelerra/apanel.C:26
+msgid "Automation"
+msgstr "Automatisering"
+
+#: cinelerra/apanel.C:30
+#, c-format
+msgid "Plugin %d"
+msgstr "Plugin %d"
+
+#: cinelerra/apanel.C:69
+#, fuzzy
+msgid "Mute"
+msgstr "Mute"
+
+#: cinelerra/apanel.C:81
+msgid "Play"
+msgstr "Spill av"
+
+#: cinelerra/apatchgui.C:217 cinelerra/patchbay.C:450
+#: cinelerra/vpatchgui.C:183
+#, fuzzy
+msgid "fade"
+msgstr "fade"
+
+#: cinelerra/apatchgui.C:293
+#, fuzzy
+msgid "pan"
+msgstr "pan"
+
+#: cinelerra/assetedit.C:175
+msgid "Select a file for this asset:"
+msgstr ""
+
+#: cinelerra/assetedit.C:178
+msgid "File format:"
+msgstr "Filformat:"
+
+#: cinelerra/assetedit.C:185
+msgid "Bytes:"
+msgstr "Byter:"
+
+#: cinelerra/assetedit.C:208 cinelerra/formattools.C:134
+msgid "Audio:"
+msgstr "Lyd:"
+
+#: cinelerra/assetedit.C:214 cinelerra/assetedit.C:350
+#: cinelerra/filemov.C:1231 cinelerra/filemov.C:1500
+#: cinelerra/filesndfile.C:396 cinelerra/filetga.C:904
+#: cinelerra/formatwindow.C:87
+msgid "Compression:"
+msgstr "Kompresjon:"
+
+#: cinelerra/assetedit.C:243 cinelerra/fileformat.C:65
+msgid "Sample rate:"
+msgstr "Samplerate: "
+
+#: cinelerra/assetedit.C:284 cinelerra/fileformat.C:84
+msgid "Header length:"
+msgstr ""
+
+#. printf("FileFormat::create_objects_ 1 %d\n", asset->byte_order);
+#: cinelerra/assetedit.C:296 cinelerra/fileformat.C:91
+#: cinelerra/filesndfile.C:415 cinelerra/formatwindow.C:43
+msgid "Byte order:"
+msgstr "Byterekkefølge:"
+
+#: cinelerra/assetedit.C:317 cinelerra/assetedit.C:454
+msgid "Lo-Hi"
+msgstr ""
+
+#: cinelerra/assetedit.C:319 cinelerra/assetedit.C:471
+msgid "Hi-Lo"
+msgstr ""
+
+#: cinelerra/assetedit.C:333
+msgid "Values are unsigned"
+msgstr "Verdier er uten fortegn"
+
+#: cinelerra/assetedit.C:335 cinelerra/assetedit.C:488
+#: cinelerra/fileformat.C:174
+msgid "Values are signed"
+msgstr "Verdier har fortegn"
+
+#. printf("FormatTools::create_objects 8\n");
+#: cinelerra/assetedit.C:344 cinelerra/formattools.C:167
+msgid "Video:"
+msgstr "Video:"
+
+#: cinelerra/assetedit.C:362 cinelerra/setformat.C:314
+msgid "Frame rate:"
+msgstr "Bildefrekvens:"
+
+#: cinelerra/assetedit.C:372 cinelerra/scale.C:189 cinelerra/scale.C:193
+#: cinelerra/setformat.C:329 plugins/freeverb/freeverb.C:327
+msgid "Width:"
+msgstr "Bredde:"
+
+#: cinelerra/assetedit.C:379 cinelerra/scale.C:199 cinelerra/scale.C:203
+#: cinelerra/setformat.C:336
+msgid "Height:"
+msgstr "Høyde:"
+
+#: cinelerra/assetedit.h:66
+msgid "Select a file"
+msgstr "Velg en fil"
+
+#: cinelerra/assetpopup.C:92
+msgid "Info..."
+msgstr "Info..."
+
+#: cinelerra/assetpopup.C:134
+msgid "Rebuild index"
+msgstr "Bygg indeks påny"
+
+#: cinelerra/assetpopup.C:158 cinelerra/awindowmenu.C:82
+msgid "Sort items"
+msgstr "Sort elementer"
+
+#. set scrubbing speed
+#. 	ScrubSpeed *scrub_speed;
+#. 	settingsmenu->add_item(scrub_speed = new ScrubSpeed(mwindow));
+#. 	if(mwindow->edl->session->scrub_speed == .5)
+#. 		scrub_speed->set_text(_("Fast Shuttle"));
+#: cinelerra/assetpopup.C:181 cinelerra/mainmenu.C:161
+msgid "View"
+msgstr "Vis"
+
+#: cinelerra/assetpopup.C:214 cinelerra/mainmenu.C:702
+msgid "Paste"
+msgstr "Lim inn"
+
+#: cinelerra/assetpopup.C:238
+msgid "Match project size"
+msgstr ""
+
+#: cinelerra/assetpopup.C:268
+#, fuzzy
+msgid "Remove from project"
+msgstr "Fjern fra prosjektet"
+
+#: cinelerra/assetpopup.C:290
+#, fuzzy
+msgid "Remove from disk"
+msgstr "Fjern fra disken"
+
+#: cinelerra/assetremove.C:25
+msgid "Permanently remove from disk?"
+msgstr "Vil du slette dette fra disken?"
+
+#: cinelerra/atrack.C:119
+#, c-format
+msgid "Audio %d"
+msgstr "Lyd %d"
+
+#. printf("AWindowGUI::create_objects 1\n");
+#: cinelerra/awindowgui.C:268 plugins/titler/title.C:1025
+#, fuzzy
+msgid "Title"
+msgstr "Teksting"
+
+#: cinelerra/awindowgui.C:269
+msgid "Comments"
+msgstr "Kommentarer"
+
+#: cinelerra/awindowgui.C:1270
+msgid "New bin"
+msgstr ""
+
+#: cinelerra/awindowgui.C:1284
+msgid "Delete bin"
+msgstr ""
+
+#: cinelerra/awindowgui.C:1302
+msgid "Rename bin"
+msgstr ""
+
+#: cinelerra/awindowgui.C:1315
+msgid "Delete asset from disk"
+msgstr "Slett åndsverket fra disken"
+
+#: cinelerra/awindowgui.C:1328
+msgid "Delete asset from project"
+msgstr "Slett åndsverket fra prosjektet"
+
+#: cinelerra/awindowgui.C:1341
+msgid "Edit information on asset"
+msgstr "Rediger info om åndsverk"
+
+#: cinelerra/awindowgui.C:1355
+msgid "Redraw index"
+msgstr ""
+
+#: cinelerra/awindowgui.C:1368
+#, fuzzy
+msgid "Paste asset on recordable tracks"
+msgstr "Slett åndsverk på opptagbare spor"
+
+#: cinelerra/awindowgui.C:1381
+msgid "Append asset in new tracks"
+msgstr "Legg til åndsverk i nye spor"
+
+#: cinelerra/awindowgui.C:1394
+msgid "View asset"
+msgstr "Se på åndsverk"
+
+#: cinelerra/awindowmenu.C:56 cinelerra/awindowmenu.C:122
+#: guicast/bcfilebox.C:378
+msgid "Display icons"
+msgstr "Vis ikoner"
+
+#: cinelerra/awindowmenu.C:56 cinelerra/awindowmenu.C:122
+#: guicast/bcfilebox.C:365
+msgid "Display text"
+msgstr "Vis tekst"
+
+#: cinelerra/batchrender.C:29 plugins/freezeframe/freezeframe.C:82
+msgid "Enabled"
+msgstr "Slått på"
+
+#: cinelerra/batchrender.C:30
+msgid "Output"
+msgstr ""
+
+#: cinelerra/batchrender.C:31
+msgid "EDL"
+msgstr ""
+
+#: cinelerra/batchrender.C:32
+#, fuzzy
+msgid "Elapsed"
+msgstr "Forløpt"
+
+#: cinelerra/batchrender.C:44
+msgid "Batch Render..."
+msgstr ""
+
+#: cinelerra/batchrender.C:347
+#, c-format
+msgid "EDL %s not found.\n"
+msgstr ""
+
+#. output file
+#: cinelerra/batchrender.C:614
+msgid "Output path:"
+msgstr ""
+
+#: cinelerra/batchrender.C:641
+msgid "EDL Path:"
+msgstr ""
+
+#: cinelerra/batchrender.C:658
+msgid "Input EDL"
+msgstr ""
+
+#: cinelerra/batchrender.C:659
+msgid "Select an EDL to load:"
+msgstr ""
+
+#: cinelerra/batchrender.C:677
+msgid "Batches to render:"
+msgstr ""
+
+#: cinelerra/batchrender.C:808 cinelerra/file.C:1358 cinelerra/filemov.C:1039
+#: cinelerra/loadmode.C:58
+msgid "Unknown"
+msgstr "Ukjent"
+
+#: cinelerra/batchrender.C:917 cinelerra/new.C:73 cinelerra/recordgui.C:912
+msgid "New"
+msgstr "Ny"
+
+#: cinelerra/batchrender.C:931 cinelerra/channeledit.C:416
+#: cinelerra/cwindowtool.C:1185 cinelerra/recordgui.C:927
+#: plugins/synthesizer/synthesizer.C:896
+msgid "Delete"
+msgstr "Slett"
+
+#: cinelerra/batchrender.C:1050
+msgid "batch_render_start"
+msgstr ""
+
+#: cinelerra/batchrender.C:1066
+msgid "batch_render_stop"
+msgstr ""
+
+#: cinelerra/batchrender.C:1085
+msgid "batch_render_cancel"
+msgstr ""
+
+#: cinelerra/brender.C:125
+msgid "BRender::fork_background: can't open /proc/self/cmdline.\n"
+msgstr ""
+
+#: cinelerra/brender.C:235
+msgid "BRender::set_video_map called to set NOT_SCANNED\n"
+msgstr ""
+
+#: cinelerra/brender.C:252
+#, c-format
+msgid "BRender::set_video_map %d: attempt to set beyond end of map %d.\n"
+msgstr ""
+
+#: cinelerra/browsebutton.C:29
+msgid "Look for file"
+msgstr "Se etter fil"
+
+#: cinelerra/canvas.C:742
+msgid "Zoom 25%"
+msgstr "Zoom 25%"
+
+#: cinelerra/canvas.C:743
+msgid "Zoom 50%"
+msgstr "Zoom 50%"
+
+#: cinelerra/canvas.C:744 cinelerra/recordmonitor.C:663
+msgid "Zoom 100%"
+msgstr "Zoom 100%"
+
+#: cinelerra/canvas.C:745
+msgid "Zoom 200%"
+msgstr "Zoom 200%"
+
+#: cinelerra/canvas.C:782
+msgid "Reset camera"
+msgstr "Nullstill kamera"
+
+#: cinelerra/canvas.C:795
+msgid "Reset projector"
+msgstr "Nullstill fremviser"
+
+#: cinelerra/canvas.C:808
+#, fuzzy
+msgid "Reset translation"
+msgstr "Nullstill forskyvning"
+
+#: cinelerra/canvas.C:835
+#, fuzzy
+msgid "Show controls"
+msgstr "Vis kontroller"
+
+#: cinelerra/canvas.C:837
+#, fuzzy
+msgid "Hide controls"
+msgstr "Skjul kontroller"
+
+#: cinelerra/canvas.C:844
+msgid "Close source"
+msgstr ""
+
+#: cinelerra/channeledit.C:341
+msgid "Select"
+msgstr "Velg"
+
+#: cinelerra/channeledit.C:355
+msgid "Add..."
+msgstr "Legg til..."
+
+#: cinelerra/channeledit.C:386 cinelerra/editpopup.C:93
+#: cinelerra/pluginpopup.C:208
+msgid "Move up"
+msgstr "Flytt opp"
+
+#: cinelerra/channeledit.C:401 cinelerra/editpopup.C:110
+#: cinelerra/pluginpopup.C:223
+msgid "Move down"
+msgstr "Flytt ned"
+
+#: cinelerra/channeledit.C:429
+msgid "Edit..."
+msgstr "Rediger..."
+
+#: cinelerra/channeledit.C:442
+msgid "Picture..."
+msgstr "Bilde..."
+
+#: cinelerra/channeledit.C:505
+msgid "NTSC_BCAST"
+msgstr ""
+
+#: cinelerra/channeledit.C:508
+msgid "NTSC_CABLE"
+msgstr ""
+
+#: cinelerra/channeledit.C:511
+msgid "NTSC_HRC"
+msgstr ""
+
+#: cinelerra/channeledit.C:514
+msgid "NTSC_BCAST_JP"
+msgstr ""
+
+#: cinelerra/channeledit.C:517
+msgid "NTSC_CABLE_JP"
+msgstr ""
+
+#: cinelerra/channeledit.C:520
+msgid "PAL_AUSTRALIA"
+msgstr ""
+
+#: cinelerra/channeledit.C:523
+msgid "PAL_EUROPE"
+msgstr ""
+
+#: cinelerra/channeledit.C:526
+msgid "PAL_E_EUROPE"
+msgstr ""
+
+#: cinelerra/channeledit.C:529
+msgid "PAL_ITALY"
+msgstr ""
+
+#: cinelerra/channeledit.C:532
+msgid "PAL_IRELAND"
+msgstr ""
+
+#: cinelerra/channeledit.C:535
+msgid "PAL_NEWZEALAND"
+msgstr ""
+
+#: cinelerra/channeledit.C:545
+msgid "NTSC"
+msgstr ""
+
+#: cinelerra/channeledit.C:548
+msgid "PAL"
+msgstr ""
+
+#: cinelerra/channeledit.C:551
+msgid "SECAM"
+msgstr ""
+
+#. no plugin
+#: cinelerra/channeledit.C:561 cinelerra/plugindialog.C:211
+#: cinelerra/record.C:313 cinelerra/recordgui.C:225
+#: cinelerra/sharedlocation.C:106 cinelerra/sharedlocation.C:111
+#: cinelerra/sharedlocation.C:124 cinelerra/vwindowgui.C:215
+#: plugins/parametric/parametric.C:256
+msgid "None"
+msgstr ""
+
+#: cinelerra/channeledit.C:673 cinelerra/clipedit.C:156
+msgid "Title:"
+msgstr "Tittel:"
+
+#: cinelerra/channeledit.C:676 cinelerra/recordgui.C:265
+msgid "Source:"
+msgstr ""
+
+#: cinelerra/channeledit.C:683
+msgid "Fine:"
+msgstr ""
+
+#: cinelerra/channeledit.C:686
+msgid "Norm:"
+msgstr ""
+
+#: cinelerra/channeledit.C:692
+msgid "Frequency table:"
+msgstr ""
+
+#: cinelerra/channeledit.C:698
+msgid "Input:"
+msgstr ""
+
+#: cinelerra/channeledit.C:956 plugins/brightness/brightnesswindow.C:39
+msgid "Brightness:"
+msgstr "Lysstyrke:"
+
+#: cinelerra/channeledit.C:959 plugins/brightness/brightnesswindow.C:45
+msgid "Contrast:"
+msgstr "Kontrast:"
+
+#: cinelerra/channeledit.C:962
+msgid "Color:"
+msgstr ""
+
+#: cinelerra/channeledit.C:965 plugins/chromakey/chromakey.C:102
+#: plugins/huesaturation/huesaturation.C:290
+msgid "Hue:"
+msgstr "Glød:"
+
+#: cinelerra/channeledit.C:968
+msgid "Whiteness:"
+msgstr "Hvithet:"
+
+#: cinelerra/channelpicker.C:336
+msgid "Channel"
+msgstr "Kanal"
+
+#: cinelerra/channelpicker.C:368
+msgid "Edit channels"
+msgstr "Rediger kanaler"
+
+#: cinelerra/clipedit.C:160
+msgid "Comments:"
+msgstr "Kommentarer:"
+
+#: cinelerra/compresspopup.C:18 cinelerra/filemov.C:18
+msgid "DV"
+msgstr "DV"
+
+#: cinelerra/compresspopup.C:19 cinelerra/file.inc:53
+msgid "JPEG"
+msgstr "JPEG"
+
+#: cinelerra/compresspopup.C:20
+msgid "MJPA"
+msgstr "MJPA"
+
+#: cinelerra/compresspopup.C:21 cinelerra/file.inc:58 cinelerra/filemov.C:19
+msgid "PNG"
+msgstr "PNG"
+
+#: cinelerra/compresspopup.C:22
+msgid "PNG-Alpha"
+msgstr "PNG-Alpha"
+
+#: cinelerra/compresspopup.C:23
+msgid "RGB"
+msgstr "RGB"
+
+#: cinelerra/compresspopup.C:24
+msgid "RGB-Alpha"
+msgstr "RGB-Alpha"
+
+#: cinelerra/compresspopup.C:25
+msgid "YUV420"
+msgstr "YUV420"
+
+#: cinelerra/compresspopup.C:26
+msgid "YUV422"
+msgstr "YUV422"
+
+#. printf("ConfirmQuitWindow::create_objects 1\n");
+#: cinelerra/confirmquit.C:34
+msgid "( Answering No will destroy changes )"
+msgstr "(Svarer du \"Nei\", vil alle endringer gå tapt)"
+
+#: cinelerra/confirmquit.C:49 cinelerra/question.C:43 cinelerra/reindex.C:71
+msgid "Yes"
+msgstr "Ja"
+
+#: cinelerra/confirmquit.C:67 cinelerra/question.C:61 cinelerra/reindex.C:88
+msgid "No"
+msgstr "Nei"
+
+#: cinelerra/confirmsave.C:104
+#, fuzzy
+msgid "The following files exist.  Overwrite them?"
+msgstr "De følgende filene finnes fra før. Overskrive?"
+
+#: cinelerra/cpanel.C:107
+#, fuzzy
+msgid "Protect video from changes"
+msgstr "Beskytt video mot endringer"
+
+#: cinelerra/cpanel.C:131
+#, fuzzy
+msgid "Edit mask"
+msgstr "Rediger maske"
+
+#: cinelerra/cpanel.C:151
+msgid "Zoom view"
+msgstr "Zoom visning"
+
+#: cinelerra/cpanel.C:171
+msgid "Adjust camera automation"
+msgstr ""
+
+#: cinelerra/cpanel.C:191
+msgid "Adjust projector automation"
+msgstr ""
+
+#: cinelerra/cpanel.C:211
+msgid "Crop a layer or output"
+msgstr ""
+
+#: cinelerra/cpanel.C:233
+msgid "Show tool info"
+msgstr "Vis verktøyinfo"
+
+#: cinelerra/cpanel.C:254
+msgid "Show safe regions"
+msgstr ""
+
+#: cinelerra/cropvideo.C:14
+msgid "Crop Video..."
+msgstr "Beskjær bilde..."
+
+#: cinelerra/cropvideo.C:89
+msgid "Select a region to crop in the video output window"
+msgstr ""
+
+#: cinelerra/cwindowgui.C:336 cinelerra/cwindowgui.C:351
+msgid "insert assets"
+msgstr "Sett in åndsverk"
+
+#: cinelerra/cwindowgui.C:1178
+msgid "mask point"
+msgstr ""
+
+#: cinelerra/cwindowgui.C:1391 cinelerra/cwindowgui.C:2340
+#: cinelerra/cwindowgui.C:2353 cinelerra/cwindowgui.C:2372
+#: cinelerra/cwindowgui.C:2390 cinelerra/trackcanvas.C:3024
+msgid "tweek"
+msgstr ""
+
+#: cinelerra/cwindowgui.C:2281 cinelerra/patchbay.C:270
+#: cinelerra/patchgui.C:567 cinelerra/trackcanvas.C:2161
+#: cinelerra/trackcanvas.C:2222
+msgid "keyframe"
+msgstr ""
+
+#: cinelerra/cwindowtool.C:263
+msgid "Do it"
+msgstr ""
+
+#: cinelerra/cwindowtool.C:311
+msgid "X1:"
+msgstr "X1:"
+
+#: cinelerra/cwindowtool.C:317
+msgid "Y1:"
+msgstr "Y1:"
+
+#: cinelerra/cwindowtool.C:324
+msgid "X2:"
+msgstr "X2:"
+
+#: cinelerra/cwindowtool.C:330
+msgid "Y2:"
+msgstr "Y2:"
+
+#: cinelerra/cwindowtool.C:403 cinelerra/cwindowtool.C:772
+#: cinelerra/cwindowtool.C:1523 plugins/radialblur/radialblur.C:258
+#: plugins/titler/titlewindow.C:192 plugins/zoomblur/zoomblur.C:264
+msgid "X:"
+msgstr "X:"
+
+#: cinelerra/cwindowtool.C:412 cinelerra/cwindowtool.C:781
+#: cinelerra/cwindowtool.C:1531 plugins/perspective/perspective.C:136
+#: plugins/radialblur/radialblur.C:262 plugins/titler/titlewindow.C:197
+#: plugins/yuv/yuv.C:176 plugins/yuv/yuvwindow.C:52
+#: plugins/zoomblur/zoomblur.C:268
+msgid "Y:"
+msgstr "Y:"
+
+#: cinelerra/cwindowtool.C:421 cinelerra/cwindowtool.C:790
+msgid "Z:"
+msgstr "Z:"
+
+#: cinelerra/cwindowtool.C:545 cinelerra/cwindowtool.C:948
+msgid "Left justify"
+msgstr "Venstrejuster"
+
+#: cinelerra/cwindowtool.C:580 cinelerra/cwindowtool.C:974
+msgid "Center horizontal"
+msgstr "Midtstill vannrett"
+
+#: cinelerra/cwindowtool.C:605 cinelerra/cwindowtool.C:999
+msgid "Right justify"
+msgstr "Høyrejuster"
+
+#: cinelerra/cwindowtool.C:639 cinelerra/cwindowtool.C:1025
+msgid "Top justify"
+msgstr "Toppjuster"
+
+#: cinelerra/cwindowtool.C:673 cinelerra/cwindowtool.C:1051
+msgid "Center vertical"
+msgstr "Midtstill i høyden"
+
+#: cinelerra/cwindowtool.C:698 cinelerra/cwindowtool.C:1076
+msgid "Bottom justify"
+msgstr "Bunnjuster"
+
+#: cinelerra/cwindowtool.C:1129 cinelerra/cwindowtool.C:1142
+msgid "Multiply alpha"
+msgstr ""
+
+#: cinelerra/cwindowtool.C:1133 cinelerra/cwindowtool.C:1137
+#: cinelerra/cwindowtool.C:1145
+msgid "Subtract alpha"
+msgstr ""
+
+#: cinelerra/cwindowtool.C:1272
+msgid "Cycle next"
+msgstr ""
+
+#: cinelerra/cwindowtool.C:1314
+msgid "Cycle prev"
+msgstr ""
+
+#: cinelerra/cwindowtool.C:1490 cinelerra/recordgui.C:269
+#: plugins/denoisemjpeg/denoisemjpeg.C:392 plugins/motion/motion.C:117
+msgid "Mode:"
+msgstr ""
+
+#: cinelerra/cwindowtool.C:1499 cinelerra/fileavi.C:918
+#: plugins/chromakey/chromakey.C:114 plugins/huesaturation/huesaturation.C:296
+msgid "Value:"
+msgstr ""
+
+#. 	add_subwindow(next_point = new CWindowMaskCycleNext(mwindow, this, x, y));
+#. 	y += 30;
+#. 	add_subwindow(prev_point = new CWindowMaskCyclePrev(mwindow, this, x, y));
+#. 	y += 40;
+#: cinelerra/cwindowtool.C:1508
+msgid "Mask number:"
+msgstr ""
+
+#: cinelerra/cwindowtool.C:1516
+msgid "Feather:"
+msgstr ""
+
+#: cinelerra/dcoffset.C:40
+msgid "DC Offset"
+msgstr ""
+
+#: cinelerra/deleteallindexes.C:17
+msgid "Delete existing indexes"
+msgstr "Slett eksisterende indekser"
+
+#: cinelerra/deleteallindexes.C:40
+#, c-format
+msgid "Delete all indexes in %s?"
+msgstr "Fjern alle indekser i %s?"
+
+#: cinelerra/editpanel.C:463
+msgid "In point ( [ )"
+msgstr "Innpunkt ( [ )"
+
+#: cinelerra/editpanel.C:488
+msgid "Out point ( ] )"
+msgstr "Utpunkt ( ] )"
+
+#: cinelerra/editpanel.C:513
+msgid "Delete in point"
+msgstr "Slett innpunkt"
+
+#: cinelerra/editpanel.C:538
+msgid "Delete out point"
+msgstr "Slett utpunkt"
+
+#: cinelerra/editpanel.C:568
+msgid "Next label ( ctrl -> )"
+msgstr ""
+
+#: cinelerra/editpanel.C:595
+msgid "Previous label ( ctrl <- )"
+msgstr ""
+
+#: cinelerra/editpanel.C:617
+msgid "Lift"
+msgstr ""
+
+#: cinelerra/editpanel.C:632
+msgid "Overwrite ( b )"
+msgstr ""
+
+#: cinelerra/editpanel.C:657
+msgid "Extract"
+msgstr ""
+
+#: cinelerra/editpanel.C:673
+msgid "To clip"
+msgstr "Til klipp"
+
+#: cinelerra/editpanel.C:689
+msgid "Splice ( v )"
+msgstr "Skjøt ( v )"
+
+#: cinelerra/editpanel.C:714
+msgid "Cut ( x )"
+msgstr "Klipp ( x )"
+
+#: cinelerra/editpanel.C:739
+msgid "Copy ( c )"
+msgstr "Kopier ( c )"
+
+#: cinelerra/editpanel.C:762
+msgid "Append to end of track"
+msgstr "Legg til slutten på spor"
+
+#: cinelerra/editpanel.C:780
+msgid "Insert before beginning of track"
+msgstr "Sett inn før begynnelsen på spor"
+
+#: cinelerra/editpanel.C:799
+msgid "Paste ( v )"
+msgstr "Lim inn ( v )"
+
+#: cinelerra/editpanel.C:826
+msgid "Set transition"
+msgstr "Sett inn en overgang"
+
+#: cinelerra/editpanel.C:841
+msgid "Set presentation up to current position"
+msgstr ""
+
+#: cinelerra/editpanel.C:856
+msgid "Undo ( z )"
+msgstr "Angre ( z )"
+
+#: cinelerra/editpanel.C:878
+msgid "Redo ( shift Z )"
+msgstr "Gjør igjen ( shift Z )"
+
+#: cinelerra/editpanel.C:904
+msgid "Toggle label at current position ( l )"
+msgstr "Slå av/på merke der du står ( l )"
+
+#: cinelerra/editpanel.C:933
+msgid "Fit selection to display ( f )"
+msgstr "Tilpass utvalg til skjermen ( f )"
+
+#: cinelerra/editpanel.C:966
+msgid "Drag and drop editing mode"
+msgstr "Dra-og-slipp-modus"
+
+#: cinelerra/editpanel.C:991
+msgid "Cut and paste editing mode"
+msgstr "Klipp-og-lim-modus"
+
+#: cinelerra/editpanel.C:1014
+msgid "Generate keyframes while tweeking"
+msgstr ""
+
+#: cinelerra/editpopup.C:71
+msgid "Attach effect..."
+msgstr "Legg på effekt..."
+
+#: cinelerra/editpopup.C:128
+msgid "Resize track..."
+msgstr ""
+
+#: cinelerra/editpopup.C:152
+msgid "Match output size"
+msgstr ""
+
+#: cinelerra/editpopup.C:174 cinelerra/mainmenu.C:814 cinelerra/mainmenu.C:857
+msgid "Delete track"
+msgstr "Slett spor"
+
+#: cinelerra/editpopup.C:191 cinelerra/mainmenu.C:802 cinelerra/mainmenu.C:843
+msgid "Add track"
+msgstr "Legg til spor"
+
+#: cinelerra/featheredits.C:79
+msgid "Feather by how many samples:"
+msgstr ""
+
+#: cinelerra/featheredits.C:81
+msgid "Feather by how many frames:"
+msgstr ""
+
+#: cinelerra/file.C:453
+msgid "This format doesn't support audio."
+msgstr "Dette formatet støtter ikke lyd."
+
+#: cinelerra/file.C:456
+msgid "This format doesn't support video."
+msgstr "Dette formatet støtter ikke bilde."
+
+#: cinelerra/file.C:1414 cinelerra/file.C:1420 cinelerra/fileformat.C:146
+#: cinelerra/filesndfile.C:447
+msgid "Lo Hi"
+msgstr ""
+
+#: cinelerra/file.C:1421 cinelerra/fileformat.C:160
+#: cinelerra/filesndfile.C:432
+msgid "Hi Lo"
+msgstr ""
+
+#: cinelerra/file.inc:43
+msgid "Apple/SGI AIFF"
+msgstr "Apple/SGI AIFF"
+
+#: cinelerra/file.inc:44
+msgid "MPEG Audio"
+msgstr "MPEG Audio"
+
+#. For encoding only
+#: cinelerra/file.inc:45
+msgid "Sun/NeXT AU"
+msgstr "Sun/NeXT AU"
+
+#: cinelerra/file.inc:46
+msgid "Microsoft AVI"
+msgstr "Microsoft AVI"
+
+#: cinelerra/file.inc:47
+msgid "Microsoft WAV"
+msgstr "Microsoft WAV"
+
+#: cinelerra/file.inc:48
+msgid "AVI Arne Type 1"
+msgstr "AVI Arne Type 1"
+
+#: cinelerra/file.inc:49
+msgid "AVI DV Type 2"
+msgstr "AVI DV Type 2"
+
+#: cinelerra/file.inc:50
+msgid "AVI Avifile"
+msgstr "AVI Avifile"
+
+#: cinelerra/file.inc:51
+msgid "AVI Lavtools"
+msgstr "AVI Lavtools"
+
+#: cinelerra/file.inc:52
+msgid "JPEG Sequence"
+msgstr "Serie med JPEG-bilder"
+
+#: cinelerra/file.inc:54
+msgid "Quicktime for Linux"
+msgstr "Quicktime for Linux"
+
+#: cinelerra/file.inc:55
+msgid "MPEG"
+msgstr "MPEG"
+
+#. For decoding only
+#: cinelerra/file.inc:56
+msgid "Raw PCM"
+msgstr "Rå PCM"
+
+#: cinelerra/file.inc:57
+msgid "PNG Sequence"
+msgstr "Serie med PNG-bilder"
+
+#: cinelerra/file.inc:59
+msgid "Unknown sound"
+msgstr "Ukjent lyd"
+
+#: cinelerra/file.inc:60
+msgid "TGA Sequence"
+msgstr "Serie med TGA-bilder"
+
+#: cinelerra/file.inc:61
+msgid "TGA"
+msgstr "TGA"
+
+#: cinelerra/file.inc:62
+msgid "TIFF"
+msgstr "TIFF"
+
+#: cinelerra/file.inc:63
+msgid "TIFF Sequence"
+msgstr "Serie med TIFF-bilder"
+
+#: cinelerra/file.inc:64
+msgid "MPEG Video"
+msgstr "MPEG Video"
+
+#. For encoding only
+#: cinelerra/file.inc:65
+msgid "OGG Vorbis"
+msgstr "OGG Vorbis"
+
+#: cinelerra/file.inc:102
+msgid "8 Bit Linear"
+msgstr "8 bits lineær"
+
+#: cinelerra/file.inc:103
+msgid "16 Bit Linear"
+msgstr "16 bits lineær"
+
+#: cinelerra/file.inc:104
+msgid "24 Bit Linear"
+msgstr "24 bits lineær"
+
+#: cinelerra/file.inc:105
+msgid "32 Bit Linear"
+msgstr "32 bits lineær"
+
+#: cinelerra/file.inc:106
+msgid "u Law"
+msgstr "u Law"
+
+#: cinelerra/file.inc:107
+msgid "IMA 4"
+msgstr "IMA 4"
+
+#: cinelerra/file.inc:108
+msgid "ADPCM"
+msgstr "ADPCM"
+
+#: cinelerra/file.inc:109
+msgid "Float"
+msgstr "Flyttall"
+
+#. Video formats not part of Quicktime
+#: cinelerra/file.inc:112
+msgid "RGB ALPHA"
+msgstr "RGB ALPHA"
+
+#: cinelerra/file.inc:113
+msgid "PNG ALPHA"
+msgstr "PNG ALPHA"
+
+#: cinelerra/fileavi.C:765 cinelerra/fileavi.C:909
+msgid "Codec: "
+msgstr "Kodek:"
+
+#: cinelerra/fileavi.C:774
+msgid "Compressor: 16 bit PCM"
+msgstr "Kompressor: 16 bits PCM"
+
+#: cinelerra/fileavi.C:914
+msgid "Attributes:"
+msgstr ""
+
+#: cinelerra/fileavi.C:925
+#, fuzzy
+msgid "Compressor: Consumer DV"
+msgstr "Kompressor: 25 mbps DV"
+
+#: cinelerra/fileformat.C:56
+msgid "Assuming raw PCM:"
+msgstr "Antar at det er rå PCM:"
+
+#: cinelerra/filejpeg.C:277 cinelerra/filejpeglist.C:150
+#: cinelerra/filemov.C:1717 cinelerra/filemov.C:1727
+#: cinelerra/formatwindow.C:91 cinelerra/formatwindow.C:102
+msgid "Quality:"
+msgstr "Kvalitet:"
+
+#: cinelerra/filejpeglist.C:29
+#, fuzzy
+msgid "JPEGLIST"
+msgstr "JPEGLIST"
+
+#: cinelerra/filemov.C:15
+msgid "MPEG-4"
+msgstr "MPEG-4"
+
+#: cinelerra/filemov.C:16
+msgid "Heroine 60"
+msgstr "Heroine 60"
+
+#: cinelerra/filemov.C:17
+msgid "Microsoft MPEG-4"
+msgstr "Microsoft MPEG-4"
+
+#: cinelerra/filemov.C:20
+#, fuzzy
+msgid "PNG with Alpha"
+msgstr "PNG med alfa"
+
+#: cinelerra/filemov.C:21
+msgid "Uncompressed RGB"
+msgstr "Ukomprimert RGB"
+
+#: cinelerra/filemov.C:22
+msgid "Uncompressed RGBA"
+msgstr "Ukomprimert RGBA"
+
+#: cinelerra/filemov.C:23
+msgid "YUV 4:2:0 Planar"
+msgstr ""
+
+#: cinelerra/filemov.C:24
+msgid "Component Video"
+msgstr ""
+
+#: cinelerra/filemov.C:25
+msgid "YUV 4:1:1 Packed"
+msgstr ""
+
+#: cinelerra/filemov.C:26
+msgid "Component Y'CbCr 8-bit 4:4:4"
+msgstr ""
+
+#: cinelerra/filemov.C:27
+msgid "Component Y'CbCrA 8-bit 4:4:4:4"
+msgstr ""
+
+#: cinelerra/filemov.C:28
+msgid "Component Y'CbCr 10-bit 4:4:4"
+msgstr ""
+
+#: cinelerra/filemov.C:29
+msgid "JPEG Photo"
+msgstr "JPEG foto"
+
+#: cinelerra/filemov.C:30
+msgid "Motion JPEG A"
+msgstr "Motion JPEG A"
+
+#: cinelerra/filemov.C:33
+msgid "Twos complement"
+msgstr ""
+
+#: cinelerra/filemov.C:34
+msgid "Unsigned"
+msgstr "Uten fortegn"
+
+#: cinelerra/filemov.C:35
+msgid "IMA-4"
+msgstr "IMA-4"
+
+#: cinelerra/filemov.C:36
+msgid "U-Law"
+msgstr "U-Law"
+
+#: cinelerra/filemov.C:37
+msgid "Vorbis"
+msgstr "Vorbis"
+
+#: cinelerra/filemov.C:38
+msgid "MP3"
+msgstr "MP3"
+
+#: cinelerra/filemov.C:165
+#, c-format
+msgid "FileMOV::open_file %s: No such file or directory\n"
+msgstr "FileMOV::open_file %s: Ingen slik fil eller katalog\n"
+
+#. Fix up the Quicktime file.
+#: cinelerra/filemov.C:242
+msgid "Made with Cinelerra for Linux"
+msgstr "Lagd med Cinelerra for Linux"
+
+#: cinelerra/filemov.C:1271
+msgid "Bits per channel:"
+msgstr "Bits per kanal:"
+
+#: cinelerra/filemov.C:1283 cinelerra/filesndfile.C:409
+#: cinelerra/formatwindow.C:176
+msgid "Dither"
+msgstr ""
+
+#: cinelerra/filemov.C:1293 cinelerra/filemov.C:1595 cinelerra/filemov.C:1648
+#: cinelerra/filempeg.C:1023
+msgid "Bitrate:"
+msgstr "Bitrate:"
+
+#: cinelerra/filemov.C:1308 cinelerra/filevorbis.C:477
+msgid "Variable bitrate"
+msgstr "Variabel bitrate"
+
+#: cinelerra/filemov.C:1314 cinelerra/filevorbis.C:434
+msgid "Min bitrate:"
+msgstr "Minimal bitrate:"
+
+#: cinelerra/filemov.C:1320 cinelerra/filevorbis.C:438
+msgid "Avg bitrate:"
+msgstr "Gjennomsnittlig bitrate:"
+
+#: cinelerra/filemov.C:1326 cinelerra/filevorbis.C:443
+msgid "Max bitrate:"
+msgstr "Maks bitrate:"
+
+#: cinelerra/filemov.C:1608
+#, fuzzy
+msgid "Bitrate tolerance:"
+msgstr "Slingringsmonn:"
+
+#: cinelerra/filemov.C:1615 cinelerra/filempeg.C:1028
+msgid "Quantization:"
+msgstr "Kvantisering:"
+
+#: cinelerra/filemov.C:1629 plugins/denoisemjpeg/denoisemjpeg.C:279
+msgid "Interlaced"
+msgstr "Mellomlinjert"
+
+#: cinelerra/filemov.C:1635
+msgid "Keyframe interval:"
+msgstr ""
+
+#: cinelerra/filemov.C:1661
+msgid "Quantizer:"
+msgstr ""
+
+#: cinelerra/filemov.C:1675
+msgid "RC Period:"
+msgstr ""
+
+#: cinelerra/filemov.C:1682
+msgid "Reaction Ratio:"
+msgstr ""
+
+#: cinelerra/filemov.C:1689
+msgid "Reaction Period:"
+msgstr ""
+
+#: cinelerra/filemov.C:1696
+msgid "Max Key Interval:"
+msgstr ""
+
+#: cinelerra/filemov.C:1703
+msgid "Max Quantizer:"
+msgstr ""
+
+#: cinelerra/filemov.C:1710
+msgid "Min Quantizer:"
+msgstr ""
+
+#: cinelerra/filemov.C:1809
+msgid "Fix bitrate"
+msgstr "Fast bitrate"
+
+#: cinelerra/filemov.C:1834
+msgid "Fix quantization"
+msgstr "Fast kvantisering"
+
+#: cinelerra/filempeg.C:228
+#, c-format
+msgid "encode: lame_init_params returned %d\n"
+msgstr ""
+
+#: cinelerra/filempeg.C:829
+msgid "Layer:"
+msgstr "Lag:"
+
+#: cinelerra/filempeg.C:834
+msgid "Kbits per second:"
+msgstr "Kilobits per sekund:"
+
+#: cinelerra/filempeg.C:891 cinelerra/filempeg.C:899
+msgid "II"
+msgstr "II"
+
+#: cinelerra/filempeg.C:895
+msgid "III"
+msgstr "III"
+
+#: cinelerra/filempeg.C:1018
+msgid "Derivative:"
+msgstr ""
+
+#: cinelerra/filempeg.C:1034
+msgid "I frame distance:"
+msgstr ""
+
+#: cinelerra/filempeg.C:1040 cinelerra/new.C:468 cinelerra/setformat.C:368
+msgid "Color model:"
+msgstr "Fargemodell:"
+
+#. 	add_subwindow(new BC_Title(x, y, _("P frame distance:")));
+#. 	y += 30;
+#: cinelerra/filempeg.C:1049
+#, fuzzy
+msgid "Progressive frames"
+msgstr "Progressive bilder"
+
+#: cinelerra/filempeg.C:1051 plugins/denoise/denoise.C:119
+msgid "Denoise"
+msgstr ""
+
+#: cinelerra/filempeg.C:1053
+msgid "Sequence start codes in every GOP"
+msgstr ""
+
+#: cinelerra/filempeg.C:1102 cinelerra/filempeg.C:1110
+msgid "MPEG-1"
+msgstr "MPEG-1"
+
+#: cinelerra/filempeg.C:1106
+msgid "MPEG-2"
+msgstr "MPEG-2"
+
+#: cinelerra/filempeg.C:1154 cinelerra/filevorbis.C:465
+msgid "Fixed bitrate"
+msgstr "Fast bitrate"
+
+#: cinelerra/filempeg.C:1168
+msgid "Fixed quantization"
+msgstr "Fast kvantisering"
+
+#: cinelerra/filempeg.C:1233 cinelerra/filempeg.C:1241
+msgid "YUV 4:2:0"
+msgstr "YUV 4:2:0"
+
+#: cinelerra/filempeg.C:1237
+msgid "YUV 4:2:2"
+msgstr "YUV 4:2:2"
+
+#: cinelerra/filepng.C:356 cinelerra/filetiff.C:449
+#, fuzzy
+msgid "Use alpha"
+msgstr "Bruk alfa"
+
+#: cinelerra/filesndfile.C:413 cinelerra/formatwindow.C:188
+msgid "Signed"
+msgstr "Med fortegn"
+
+#: cinelerra/filetga.C:93
+msgid "RGB compressed"
+msgstr "RGB, komprimert"
+
+#: cinelerra/filetga.C:94
+msgid "RGBA compressed"
+msgstr "RGBA, komprimert"
+
+#: cinelerra/filetga.C:95
+msgid "RGB uncompressed"
+msgstr "RGB, ukomprimert"
+
+#: cinelerra/filetga.C:96
+msgid "RGBA uncompressed"
+msgstr "RGBA, ukomprimert"
+
+#: cinelerra/filevorbis.C:111
+#, c-format
+msgid "FileVorbis::open_file %s: invalid bitstream.\n"
+msgstr "FileVorbis::open_file %s: ugyldig bitstrøm.\n"
+
+#: cinelerra/flipbook.C:11
+msgid "Flipbook..."
+msgstr ""
+
+#: cinelerra/formatcheck.C:31
+msgid "The format you selected doesn't support video."
+msgstr "Formatet du valgte støtter ikke bilde."
+
+#: cinelerra/formatcheck.C:42
+msgid "The format you selected doesn't support audio."
+msgstr "Formatet du valgte støtter ikke lyd."
+
+#: cinelerra/formatcheck.C:50
+msgid "IMA4 compression is only available in Quicktime movies."
+msgstr "IMA4-kompresjon er bare tilgjengelig i Quicktime."
+
+#: cinelerra/formatcheck.C:60
+msgid ""
+"ULAW compression is only available in\n"
+"Quicktime Movies and PCM files."
+msgstr ""
+"ULAW-kompresjon er bare tilgjengelig i\n"
+"Quicktime- og PCM-filer."
+
+#: cinelerra/formatpopup.C:29
+msgid "Change file format"
+msgstr "Endre filformat"
+
+#: cinelerra/formattools.C:106
+msgid "Output to file"
+msgstr ""
+
+#: cinelerra/formattools.C:107
+msgid "Select a file to write to:"
+msgstr "Velg en fil å skrive til:"
+
+#. printf("FormatTools::create_objects 3\n");
+#: cinelerra/formattools.C:116
+msgid "File Format:"
+msgstr "Filformat:"
+
+#: cinelerra/formattools.C:149
+msgid "Number of audio channels to record:"
+msgstr "Antall lydkanaler å ta opp:"
+
+#: cinelerra/formattools.C:355
+#, fuzzy
+msgid "Configure audio compression"
+msgstr "Sett opp lydkompresjon"
+
+#: cinelerra/formattools.C:369
+#, fuzzy
+msgid "Configure video compression"
+msgstr "Sett opp videokompresjon"
+
+#: cinelerra/formattools.C:451
+msgid "Record audio tracks"
+msgstr "Ta opp lydspor"
+
+#: cinelerra/formattools.C:451
+msgid "Render audio tracks"
+msgstr "Ta med lydspor"
+
+#: cinelerra/formattools.C:466
+msgid "Record video tracks"
+msgstr "Spill inn videospor"
+
+#: cinelerra/formattools.C:466
+msgid "Render video tracks"
+msgstr "Ta med videospor"
+
+#: cinelerra/formattools.C:524
+msgid "Overwrite project with output"
+msgstr ""
+
+#: cinelerra/formattools.C:542
+msgid "Create new file at each label"
+msgstr "Lag ny fil ved hvert merke"
+
+#: cinelerra/formatwindow.C:25
+msgid "Set parameters for this audio format:"
+msgstr "Still inn valg for dette lydformatet:"
+
+#: cinelerra/formatwindow.C:45
+msgid "HiLo:"
+msgstr ""
+
+#: cinelerra/formatwindow.C:48
+msgid "LoHi:"
+msgstr ""
+
+#: cinelerra/formatwindow.C:85 cinelerra/formatwindow.C:100
+msgid "Set parameters for this video format:"
+msgstr "Still inn valg for dette videoformatet:"
+
+#: cinelerra/formatwindow.C:110
+msgid "Video is not supported in this format."
+msgstr "Bilde er ikke støttet for dette formatet."
+
+#: cinelerra/indexfile.C:301
+#, c-format
+msgid "Creating %s."
+msgstr "Lager %s"
+
+#: cinelerra/indexfile.C:429
+msgid "IndexFile::draw_index: index has 0 zoom\n"
+msgstr ""
+
+#. failed to create it
+#: cinelerra/indexthread.C:209
+#, c-format
+msgid "IndexThread::run() Couldn't write index file %s to disk.\n"
+msgstr ""
+
+#: cinelerra/interfaceprefs.C:15
+#, fuzzy
+msgid "Drag all following edits"
+msgstr "Dra alle etterfølgende klipp"
+
+#: cinelerra/interfaceprefs.C:16
+#, fuzzy
+msgid "Drag only one edit"
+msgstr "Dra bare ett klipp"
+
+#: cinelerra/interfaceprefs.C:17
+#, fuzzy
+msgid "Drag source only"
+msgstr "Bare dra kilden"
+
+#: cinelerra/interfaceprefs.C:18
+msgid "No effect"
+msgstr "Ingen effekter"
+
+#. 	add_border(get_resources()->get_bg_shadow1(),
+#. 		get_resources()->get_bg_shadow2(),
+#. 		get_resources()->get_bg_color(),
+#. 		get_resources()->get_bg_light2(),
+#. 		get_resources()->get_bg_light1());
+#: cinelerra/interfaceprefs.C:40 cinelerra/preferencesthread.C:227
+msgid "Interface"
+msgstr "Grensesnitt"
+
+#: cinelerra/interfaceprefs.C:79
+msgid "frames per foot"
+msgstr "bilder per fot"
+
+#: cinelerra/interfaceprefs.C:89
+msgid "Index files"
+msgstr "Indeksfiler"
+
+#: cinelerra/interfaceprefs.C:95
+msgid "Index files go here:"
+msgstr "Indeksfiler lagres her:"
+
+#: cinelerra/interfaceprefs.C:106
+msgid "Index Path"
+msgstr "Indeks-sti"
+
+#: cinelerra/interfaceprefs.C:107
+msgid "Select the directory for index files"
+msgstr "Velg katalogen for indeksfiler"
+
+#: cinelerra/interfaceprefs.C:113
+msgid "Size of index file:"
+msgstr "Størrelse på indeksfil:"
+
+#: cinelerra/interfaceprefs.C:119
+msgid "Number of index files to keep:"
+msgstr "Antall indeksfiler du vil beholde:"
+
+#: cinelerra/interfaceprefs.C:130
+msgid "Editing"
+msgstr "Redigering"
+
+#: cinelerra/interfaceprefs.C:137
+msgid "Clicking on in/out points does what:"
+msgstr "Klikking på in/ut-punkter gjør dette:"
+
+#: cinelerra/interfaceprefs.C:139
+msgid "Button 1:"
+msgstr "Knapp 1:"
+
+#: cinelerra/interfaceprefs.C:149
+msgid "Button 2:"
+msgstr "Knapp 2:"
+
+#: cinelerra/interfaceprefs.C:157
+msgid "Button 3:"
+msgstr "Knapp 3:"
+
+#: cinelerra/interfaceprefs.C:166
+msgid "Min DB for meter:"
+msgstr ""
+
+#: cinelerra/interfaceprefs.C:178
+msgid "Theme:"
+msgstr ""
+
+#: cinelerra/interfaceprefs.C:323
+msgid "Use Hours:Minutes:Seconds.xxx"
+msgstr "Bruk Timer.Minutter.Sekunder.xxx"
+
+#: cinelerra/interfaceprefs.C:333
+msgid "Use Hours:Minutes:Seconds:Frames"
+msgstr "Bruk Timer.Minutter.Sekunder.Bilder"
+
+#: cinelerra/interfaceprefs.C:342
+msgid "Use Samples"
+msgstr "Bruk samples"
+
+#: cinelerra/interfaceprefs.C:351
+msgid "Use Frames"
+msgstr "Bruk bilder"
+
+#: cinelerra/interfaceprefs.C:360
+msgid "Use Hex Samples"
+msgstr ""
+
+#: cinelerra/interfaceprefs.C:369
+#, fuzzy
+msgid "Use Feet-frames"
+msgstr "Bruk fot-bilder"
+
+#: cinelerra/interfaceprefs.C:540
+#, fuzzy
+msgid "Use thumbnails in resource window"
+msgstr "Bruk miniatyrer i ressurs-vinduet"
+
+#: cinelerra/labelnavigate.C:43
+msgid "Previous label"
+msgstr "Forrige merke"
+
+#: cinelerra/labelnavigate.C:61
+msgid "Next label"
+msgstr "Neste merke"
+
+#: cinelerra/loadfile.C:28
+msgid "Load files..."
+msgstr "Last filer..."
+
+#: cinelerra/loadfile.C:125
+msgid "load"
+msgstr "last"
+
+#: cinelerra/loadfile.C:154
+msgid "Select files to load:"
+msgstr "Velg filer å laste:"
+
+#: cinelerra/loadfile.C:202
+#, fuzzy
+msgid "Replace current project."
+msgstr "Erstatt det åpne prosjektet"
+
+#: cinelerra/loadfile.C:219
+#, fuzzy
+msgid "Replace current project and concatenate tracks."
+msgstr "Erstatt det åpne prosjektet og legg spor etter hverandre."
+
+#: cinelerra/loadfile.C:236
+msgid "Append in new tracks."
+msgstr "Legg til i nye spor."
+
+#: cinelerra/loadfile.C:253
+msgid "Concatenate to existing tracks."
+msgstr "Legg til eksisterende spor."
+
+#: cinelerra/loadfile.C:270
+msgid "Create new resources only."
+msgstr "Lag bare nye ressurser."
+
+#: cinelerra/loadfile.C:324
+msgid "load previous"
+msgstr "last forrige"
+
+#: cinelerra/loadfile.C:363
+#, fuzzy
+msgid "Load backup"
+msgstr "Last backup"
+
+#: cinelerra/loadfile.C:381
+#, fuzzy
+msgid "load backup"
+msgstr "last backup"
+
+#: cinelerra/loadmode.C:32
+#, fuzzy
+msgid "Insert nothing"
+msgstr "Ikke sett inn noe"
+
+#: cinelerra/loadmode.C:33
+msgid "Replace current project"
+msgstr "Erstatt det åpne prosjektet"
+
+#: cinelerra/loadmode.C:34
+msgid "Replace current project and concatenate tracks"
+msgstr "Erstatt det åpne prosjektet og legg spor etter hverandre"
+
+#: cinelerra/loadmode.C:35
+msgid "Append in new tracks"
+msgstr "Legg til i nye spor"
+
+#: cinelerra/loadmode.C:36
+msgid "Concatenate to existing tracks"
+msgstr "Legg til eksisterende spor"
+
+#: cinelerra/loadmode.C:37
+msgid "Paste at insertion point"
+msgstr "Lim inn der markøren står"
+
+#: cinelerra/loadmode.C:38
+msgid "Create new resources only"
+msgstr "Lag bare nye ressurser"
+
+#: cinelerra/loadmode.C:67
+#, fuzzy
+msgid "Insertion strategy:"
+msgstr "Innsettingsstrategi:"
+
+#: cinelerra/main.C:162
+msgid ""
+"\n"
+"Usage:\n"
+msgstr ""
+
+#: cinelerra/main.C:163
+#, c-format
+msgid ""
+"%s [-f] [-c configuration] [-d port] [-n nice] [-r batch file] [filenames]\n"
+"\n"
+msgstr ""
+
+#: cinelerra/main.C:164
+msgid ""
+"-d = Run in the background as renderfarm client.  The port (400) is "
+"optional.\n"
+msgstr ""
+
+#: cinelerra/main.C:165
+#, fuzzy
+msgid "-f = Run in the foreground as renderfarm client.  Substitute for -d.\n"
+msgstr "-f = Kjør i forgrunnen som renderfarm-klient.  Erstatning for -d.\n"
+
+#: cinelerra/main.C:166
+#, fuzzy
+msgid "-n = Nice value if running as renderfarm client. (20)\n"
+msgstr "-n = Nice-verdi for renderfarm-klient. (20)\n"
+
+#: cinelerra/main.C:167
+#, c-format
+msgid "-c = Configuration file to use instead of %s%s.\n"
+msgstr "-c = Oppsettfil Cinelerra skal bruke i stedet for %s%s.\n"
+
+#: cinelerra/main.C:170
+#, c-format
+msgid ""
+"-r = batch render the contents of the batch file (%s%s) with no GUI.  batch "
+"file is optional.\n"
+msgstr ""
+
+#: cinelerra/main.C:173
+msgid ""
+"filenames = files to load\n"
+"\n"
+"\n"
+msgstr ""
+
+#: cinelerra/mainindexes.C:167 cinelerra/threadindexer.C:115
+msgid "Building Indexes..."
+msgstr ""
+
+#: cinelerra/mainmenu.C:66 plugins/reverb/reverbwindow.C:234
+msgid "File"
+msgstr "Fil"
+
+#: cinelerra/mainmenu.C:94 plugins/svg/svgwin.C:263
+msgid "Edit"
+msgstr "Rediger"
+
+#: cinelerra/mainmenu.C:110
+msgid "Keyframes"
+msgstr ""
+
+#: cinelerra/mainmenu.C:122 cinelerra/new.C:362 cinelerra/setformat.C:252
+msgid "Audio"
+msgstr "Lyd"
+
+#: cinelerra/mainmenu.C:127 cinelerra/new.C:390 cinelerra/setformat.C:308
+msgid "Video"
+msgstr "Bilde"
+
+#: cinelerra/mainmenu.C:132
+msgid "Tracks"
+msgstr "Spor"
+
+#: cinelerra/mainmenu.C:139
+msgid "Settings"
+msgstr "Innstillinger"
+
+#: cinelerra/mainmenu.C:177
+msgid "Window"
+msgstr "Vindu"
+
+#: cinelerra/mainmenu.C:487
+msgid "Dump CICache"
+msgstr ""
+
+#: cinelerra/mainmenu.C:496
+msgid "Dump EDL"
+msgstr ""
+
+#: cinelerra/mainmenu.C:510
+msgid "Dump Plugins"
+msgstr ""
+
+#: cinelerra/mainmenu.C:525
+msgid "Dump Assets"
+msgstr ""
+
+#. ================================================= edit
+#: cinelerra/mainmenu.C:535
+msgid "Undo"
+msgstr "Angre"
+
+#: cinelerra/mainmenu.C:547
+#, c-format
+msgid "Undo %s"
+msgstr "Angre %s"
+
+#: cinelerra/mainmenu.C:552
+msgid "Redo"
+msgstr "Gjør om"
+
+#: cinelerra/mainmenu.C:567
+#, c-format
+msgid "Redo %s"
+msgstr "Gjør om %s"
+
+#: cinelerra/mainmenu.C:572
+msgid "Cut keyframes"
+msgstr "Klipp kontrollbilder"
+
+#: cinelerra/mainmenu.C:584
+msgid "Copy keyframes"
+msgstr "Kopier kontrollbilder"
+
+#: cinelerra/mainmenu.C:597
+msgid "Paste keyframes"
+msgstr "Lim inn kontrollbilder"
+
+#: cinelerra/mainmenu.C:609
+msgid "Clear keyframes"
+msgstr "Fjern kontrollbilder"
+
+#: cinelerra/mainmenu.C:626
+#, fuzzy
+msgid "Cut default keyframe"
+msgstr "Klipp standard kontrollbilde"
+
+#: cinelerra/mainmenu.C:639
+#, fuzzy
+msgid "Copy default keyframe"
+msgstr "Kopier standard kontrollbilde"
+
+#: cinelerra/mainmenu.C:652
+msgid "Paste default keyframe"
+msgstr "Lim inn standard kontrollbilde"
+
+#: cinelerra/mainmenu.C:665
+#, fuzzy
+msgid "Clear default keyframe"
+msgstr "Fjern standard kontrollbilde"
+
+#: cinelerra/mainmenu.C:678
+msgid "Cut"
+msgstr "Klipp"
+
+#: cinelerra/mainmenu.C:690
+msgid "Copy"
+msgstr "Kopier"
+
+#: cinelerra/mainmenu.C:714 plugins/compressor/compressor.C:1059
+#: plugins/synthesizer/synthesizer.C:967
+#, fuzzy
+msgid "Clear"
+msgstr "Fjern"
+
+#: cinelerra/mainmenu.C:728
+#, fuzzy
+msgid "Paste silence"
+msgstr "Lim inn stillhet"
+
+#: cinelerra/mainmenu.C:741
+msgid "Select All"
+msgstr "Velg alt"
+
+#: cinelerra/mainmenu.C:752
+msgid "Clear labels"
+msgstr "Slett merker"
+
+#: cinelerra/mainmenu.C:764
+msgid "Mute Region"
+msgstr ""
+
+#: cinelerra/mainmenu.C:777
+#, fuzzy
+msgid "Trim Selection"
+msgstr "Juster utvalg"
+
+#: cinelerra/mainmenu.C:825 cinelerra/mainmenu.C:883
+#, fuzzy
+msgid "Default Transition"
+msgstr "Standard overgang"
+
+#: cinelerra/mainmenu.C:870
+msgid "Reset Translation"
+msgstr "Nullstill overgang"
+
+#: cinelerra/mainmenu.C:911
+msgid "Delete tracks"
+msgstr "Slett spor"
+
+#: cinelerra/mainmenu.C:923
+msgid "Delete last track"
+msgstr "Slett siste spor"
+
+#: cinelerra/mainmenu.C:935
+msgid "Move tracks up"
+msgstr "Flytt spor opp"
+
+#: cinelerra/mainmenu.C:947
+msgid "Move tracks down"
+msgstr "Flytt spor ned"
+
+#: cinelerra/mainmenu.C:962
+#, fuzzy
+msgid "Concatenate tracks"
+msgstr "Sett sammen spor"
+
+#: cinelerra/mainmenu.C:979
+#, fuzzy
+msgid "Loop Playback"
+msgstr "Spill i løkke"
+
+#: cinelerra/mainmenu.C:998
+msgid "Set background render"
+msgstr ""
+
+#: cinelerra/mainmenu.C:1016
+msgid "Edit labels"
+msgstr ""
+
+#: cinelerra/mainmenu.C:1032
+msgid "Edit effects"
+msgstr "Rediger effekter"
+
+#: cinelerra/mainmenu.C:1048
+msgid "Autos follow edits"
+msgstr ""
+
+#: cinelerra/mainmenu.C:1062
+msgid "Align cursor on frames"
+msgstr "Sentrer markør på bilder'"
+
+#: cinelerra/mainmenu.C:1075 cinelerra/mainmenu.C:1085
+msgid "Slow Shuttle"
+msgstr ""
+
+#: cinelerra/mainmenu.C:1090
+msgid "Fast Shuttle"
+msgstr ""
+
+#: cinelerra/mainmenu.C:1094
+msgid "Save settings now"
+msgstr "Lagre innstillinger nå"
+
+#: cinelerra/mainmenu.C:1103
+msgid "Saved settings."
+msgstr "Lagrede instillinger"
+
+#: cinelerra/mainmenu.C:1116
+msgid "Show Viewer"
+msgstr "Vis fremviser"
+
+#: cinelerra/mainmenu.C:1128
+msgid "Show Resources"
+msgstr "Vis ressurser"
+
+#: cinelerra/mainmenu.C:1140
+msgid "Show Compositor"
+msgstr ""
+
+#: cinelerra/mainmenu.C:1153
+msgid "Show Levels"
+msgstr "Vis nivåer"
+
+#: cinelerra/mainmenu.C:1165
+msgid "Default positions"
+msgstr ""
+
+#: cinelerra/mainprogress.C:145
+#, c-format
+#, fuzzy
+msgid "%s ETA: %s"
+msgstr "%s Gjenstår: %s"
+
+#: cinelerra/menueffects.C:33
+msgid "Render effect..."
+msgstr ""
+
+#: cinelerra/menueffects.C:109
+#, fuzzy
+msgid "No recordable tracks specified."
+msgstr "Ingen opptagbare spor er angitt."
+
+#: cinelerra/menueffects.C:119
+#, fuzzy
+msgid "No plugins available."
+msgstr "Ingen plugins er tilgjengelige."
+
+#: cinelerra/menueffects.C:220
+msgid "No output file specified."
+msgstr ""
+
+#: cinelerra/menueffects.C:228
+msgid "No effect selected."
+msgstr "Ingen effekt er valgt."
+
+#: cinelerra/menueffects.C:270
+msgid "No selected range to process."
+msgstr ""
+
+#. open failed
+#: cinelerra/menueffects.C:425 cinelerra/packagerenderer.C:159
+#: cinelerra/savefile.C:85
+#, c-format
+msgid "Couldn't open %s"
+msgstr "Klarte ikke åpne %s"
+
+#: cinelerra/menueffects.C:580
+msgid "Select an effect"
+msgstr "Velg en effekt"
+
+#: cinelerra/menueffects.C:592 cinelerra/render.C:997
+msgid "Select the first file to render to:"
+msgstr ""
+
+#: cinelerra/menueffects.C:593 cinelerra/render.C:998
+msgid "Select a file to render to:"
+msgstr ""
+
+#: cinelerra/menueffects.C:744
+msgid "Set up effect panel and hit \"OK\""
+msgstr ""
+
+#: cinelerra/messages.C:51 cinelerra/messages.C:67 cinelerra/messages.C:88
+msgid "recieve message failed\n"
+msgstr ""
+
+#: cinelerra/messages.C:159 cinelerra/messages.C:167 cinelerra/messages.C:176
+msgid "send message failed\n"
+msgstr ""
+
+#: cinelerra/messages.C:184 cinelerra/messages.C:192
+msgid "Messages::write_message"
+msgstr ""
+
+#: cinelerra/meterpanel.C:247
+msgid "Show meters"
+msgstr ""
+
+#: cinelerra/mwindow.C:280 cinelerra/mwindow.C:318
+#, c-format
+msgid "MWindow::init_plugins: couldn't open %s directory\n"
+msgstr "MWindow::init_plugins: klarte ikke åpne katalogen %s \n"
+
+#: cinelerra/mwindow.C:504
+#, c-format
+msgid "MWindow::init_theme: theme %s not found.\n"
+msgstr ""
+
+#: cinelerra/mwindow.C:782
+#, c-format
+msgid "Failed to open %s"
+msgstr "Klarte ikke åpne %s"
+
+#: cinelerra/mwindow.C:830
+msgid "'s format couldn't be determined."
+msgstr ""
+
+#: cinelerra/mwindow.C:1021
+msgid "Initializing GUI"
+msgstr ""
+
+#: cinelerra/mwindow.C:1578
+#, c-format
+msgid "Couldn't open %s for writing."
+msgstr "Klarte ikke åpne %s for skriving."
+
+#: cinelerra/mwindow.C:1603
+msgid "remove assets"
+msgstr "fjern åndsverk"
+
+#: cinelerra/mwindow.C:1785
+#, c-format
+msgid "Using %s."
+msgstr ""
+
+#: cinelerra/mwindowedit.C:56 cinelerra/mwindowedit.C:76
+msgid "add track"
+msgstr "legg til spor"
+
+#: cinelerra/mwindowedit.C:125
+msgid "asset to size"
+msgstr ""
+
+#: cinelerra/mwindowedit.C:140 cinelerra/mwindowedit.C:206
+msgid "clear"
+msgstr ""
+
+#: cinelerra/mwindowedit.C:172
+#, fuzzy
+msgid "clear keyframes"
+msgstr "fjern kontrollbilder"
+
+#: cinelerra/mwindowedit.C:189
+#, fuzzy
+msgid "clear default keyframe"
+msgstr "fjern standard kontrollbilde"
+
+#: cinelerra/mwindowedit.C:224
+#, fuzzy
+msgid "concatenate tracks"
+msgstr "legg spor etter hverandre"
+
+#: cinelerra/mwindowedit.C:301
+msgid "crop"
+msgstr "beskjær"
+
+#: cinelerra/mwindowedit.C:344
+msgid "cut"
+msgstr "klipp"
+
+#: cinelerra/mwindowedit.C:371
+msgid "cut keyframes"
+msgstr "klipp kontrollbilder"
+
+#: cinelerra/mwindowedit.C:393
+#, fuzzy
+msgid "cut default keyframe"
+msgstr "klipp standard kontrollbilde"
+
+#: cinelerra/mwindowedit.C:425 cinelerra/mwindowedit.C:458
+msgid "delete track"
+msgstr "slett spor"
+
+#: cinelerra/mwindowedit.C:441
+msgid "delete tracks"
+msgstr "slett sporene"
+
+#: cinelerra/mwindowedit.C:474
+#, fuzzy
+msgid "detach transition"
+msgstr "fjern overgang"
+
+#: cinelerra/mwindowedit.C:544 cinelerra/mwindowedit.C:570
+msgid "insert effect"
+msgstr "sett inn effekt"
+
+#: cinelerra/mwindowedit.C:662 cinelerra/mwindowedit.C:684
+#, fuzzy
+msgid "drag handle"
+msgstr "dra håndtak"
+
+#: cinelerra/mwindowedit.C:740
+msgid "match output size"
+msgstr ""
+
+#: cinelerra/mwindowedit.C:755
+msgid "move edit"
+msgstr ""
+
+#: cinelerra/mwindowedit.C:787
+msgid "move effect"
+msgstr "flytt effekt"
+
+#: cinelerra/mwindowedit.C:815
+msgid "move effect up"
+msgstr "flytt effekt opp"
+
+#: cinelerra/mwindowedit.C:834
+msgid "move effect down"
+msgstr "flytt effekt ned"
+
+#: cinelerra/mwindowedit.C:853
+msgid "move track down"
+msgstr "flytt spor ned"
+
+#: cinelerra/mwindowedit.C:866
+msgid "move tracks down"
+msgstr "flytt sporene ned"
+
+#: cinelerra/mwindowedit.C:879
+msgid "move track up"
+msgstr "flytt spor opp"
+
+#: cinelerra/mwindowedit.C:891
+msgid "move tracks up"
+msgstr "flytt sporene opp"
+
+#: cinelerra/mwindowedit.C:907
+#, fuzzy
+msgid "mute"
+msgstr "slå av"
+
+#: cinelerra/mwindowedit.C:944
+msgid "overwrite"
+msgstr "overskriv"
+
+#: cinelerra/mwindowedit.C:1016
+msgid "paste"
+msgstr "lim inn"
+
+#: cinelerra/mwindowedit.C:1044
+msgid "paste assets"
+msgstr "lim inn åndsverk"
+
+#: cinelerra/mwindowedit.C:1147
+msgid "paste keyframes"
+msgstr "lim inn kontrollbilder"
+
+#: cinelerra/mwindowedit.C:1182
+#, fuzzy
+msgid "paste default keyframe"
+msgstr "lim inn standard kontrollbilde"
+
+#: cinelerra/mwindowedit.C:1498
+#, fuzzy
+msgid "silence"
+msgstr "stillhet"
+
+#: cinelerra/mwindowedit.C:1519 cinelerra/mwindowedit.C:1537
+msgid "transition"
+msgstr "overgang"
+
+#: cinelerra/mwindowedit.C:1552 cinelerra/mwindowedit.C:1572
+#, c-format
+msgid "No default transition %s found."
+msgstr ""
+
+#: cinelerra/mwindowedit.C:1557 cinelerra/mwindowedit.C:1578
+msgid "paste transition"
+msgstr "lim inn overgang"
+
+#: cinelerra/mwindowedit.C:1635
+msgid "resize track"
+msgstr ""
+
+#: cinelerra/mwindowedit.C:1648
+msgid "in point"
+msgstr "innpunkt"
+
+#: cinelerra/mwindowedit.C:1679
+msgid "out point"
+msgstr "utpunkt"
+
+#: cinelerra/mwindowedit.C:1722
+#, fuzzy
+msgid "splice"
+msgstr "skjøt"
+
+#: cinelerra/mwindowedit.C:1782 cinelerra/vwindowgui.C:571
+#, c-format
+msgid "Clip %d\n"
+msgstr "Klipp %d\n"
+
+#. printf("MWindow::toggle_label 1\n");
+#: cinelerra/mwindowedit.C:1798
+msgid "label"
+msgstr "merke"
+
+#: cinelerra/mwindowedit.C:1853
+msgid "trim selection"
+msgstr ""
+
+#: cinelerra/mwindowedit.C:1923 cinelerra/mwindowedit.C:1933
+msgid "new folder"
+msgstr "Ny mappe"
+
+#: cinelerra/new.C:25
+msgid "New..."
+msgstr "Ny..."
+
+#: cinelerra/new.C:173
+msgid "Cinelerra: New Project"
+msgstr "Cinelerra: Nytt prosjekt"
+
+#: cinelerra/new.C:177
+msgid ": New Project"
+msgstr ": Nytt prosjekt"
+
+#: cinelerra/new.C:202
+msgid "Presets:"
+msgstr "Forvalg:"
+
+#: cinelerra/new.C:206
+msgid "User Defined"
+msgstr "Selvvalgt"
+
+#: cinelerra/new.C:209
+msgid "1080P"
+msgstr "1080P"
+
+#: cinelerra/new.C:224
+msgid "1080I"
+msgstr "1080I"
+
+#: cinelerra/new.C:239
+msgid "720P"
+msgstr "720P"
+
+#: cinelerra/new.C:254
+msgid "480P"
+msgstr "480P"
+
+#: cinelerra/new.C:269
+msgid "480I"
+msgstr "480I"
+
+#: cinelerra/new.C:284
+msgid "Half D-1 NTSC"
+msgstr ""
+
+#: cinelerra/new.C:299
+msgid "Internet"
+msgstr "Internett"
+
+#: cinelerra/new.C:314
+msgid "CD Audio"
+msgstr "CD Audio"
+
+#: cinelerra/new.C:329
+msgid "DAT Audio"
+msgstr "DAT Audio"
+
+#: cinelerra/new.C:357
+msgid "Parameters for the new project:"
+msgstr ""
+
+#: cinelerra/new.C:366 cinelerra/new.C:393
+msgid "Tracks:"
+msgstr "Spor:"
+
+#: cinelerra/new.C:382 cinelerra/recordgui.C:160 cinelerra/setformat.C:257
+#: cinelerra/setformat.C:262
+#, fuzzy
+msgid "Samplerate:"
+msgstr "Samplerate:"
+
+#: cinelerra/new.C:408 cinelerra/recordgui.C:188
+msgid "Framerate:"
+msgstr "Billedfrekvens:"
+
+#: cinelerra/new.C:434 cinelerra/setformat.C:326
+msgid "Canvas size:"
+msgstr ""
+
+#: cinelerra/new.C:450 cinelerra/scale.C:249 cinelerra/setformat.C:385
+msgid "Aspect ratio:"
+msgstr "Sideforhold:"
+
+#: cinelerra/new.C:1031
+msgid "Auto aspect ratio"
+msgstr "Automatisk sideforhold"
+
+#: cinelerra/newfolder.C:39 guicast/bcfilebox.C:38
+msgid "Enter the name of the folder:"
+msgstr "Skriv inn navnet på mappen:"
+
+#: cinelerra/newfolder.C:41 cinelerra/pluginclient.C:102
+#: guicast/bcfilebox.C:40
+msgid "Untitled"
+msgstr "Uten navn"
+
+#: cinelerra/patchgui.C:353
+msgid "Play track"
+msgstr "Spill av spor"
+
+#: cinelerra/patchgui.C:404
+msgid "Arm track"
+msgstr ""
+
+#: cinelerra/patchgui.C:454
+msgid "Gang faders"
+msgstr ""
+
+#: cinelerra/patchgui.C:504
+msgid "Draw media"
+msgstr ""
+
+#: cinelerra/patchgui.C:553
+msgid "Don't send to output"
+msgstr ""
+
+#: cinelerra/patchgui.C:709
+msgid "Nudge"
+msgstr ""
+
+#. 	add_border(get_resources()->get_bg_shadow1(),
+#. 		get_resources()->get_bg_shadow2(),
+#. 		get_resources()->get_bg_color(),
+#. 		get_resources()->get_bg_light2(),
+#. 		get_resources()->get_bg_light1());
+#: cinelerra/performanceprefs.C:47 cinelerra/preferencesthread.C:224
+msgid "Performance"
+msgstr "Ytelse"
+
+#: cinelerra/performanceprefs.C:50
+msgid "Cache items:"
+msgstr ""
+
+#: cinelerra/performanceprefs.C:54
+msgid "Cache size per item (Mb):"
+msgstr ""
+
+#: cinelerra/performanceprefs.C:58
+msgid "Seconds to preroll renders:"
+msgstr ""
+
+#: cinelerra/performanceprefs.C:70
+msgid "Background Rendering"
+msgstr ""
+
+#: cinelerra/performanceprefs.C:78
+msgid "Frames per background rendering job:"
+msgstr ""
+
+#: cinelerra/performanceprefs.C:84
+msgid "Frames to preroll background:"
+msgstr ""
+
+#: cinelerra/performanceprefs.C:93
+msgid "Output for background rendering:"
+msgstr ""
+
+#: cinelerra/performanceprefs.C:113
+msgid "Render Farm"
+msgstr "Renderfarm"
+
+#: cinelerra/performanceprefs.C:117
+#, fuzzy
+msgid "Nodes:"
+msgstr "Noder:"
+
+#: cinelerra/performanceprefs.C:119 cinelerra/playbackprefs.C:256
+msgid "Hostname:"
+msgstr "Vertsnavn:"
+
+#: cinelerra/performanceprefs.C:126
+#, c-format
+msgid "Master node framerate: %0.3f"
+msgstr ""
+
+#: cinelerra/performanceprefs.C:172
+msgid "Total jobs to create:"
+msgstr ""
+
+#: cinelerra/performanceprefs.C:175
+msgid "(overridden if new file at each label is checked)"
+msgstr ""
+
+#: cinelerra/performanceprefs.C:231 cinelerra/pluginpopup.C:188
+#: cinelerra/recordgui.C:70 cinelerra/transitionpopup.C:199
+msgid "On"
+msgstr "På"
+
+#: cinelerra/performanceprefs.C:232
+msgid "Hostname"
+msgstr "Vertsnavn"
+
+#: cinelerra/performanceprefs.C:233
+msgid "Port"
+msgstr "Port"
+
+#: cinelerra/performanceprefs.C:234
+msgid "Framerate"
+msgstr "Billedfrekvens"
+
+#: cinelerra/performanceprefs.C:265
+msgid "Use background rendering"
+msgstr ""
+
+#: cinelerra/performanceprefs.C:402
+#, fuzzy
+msgid "Use render farm"
+msgstr "Bruk renderfarm"
+
+#: cinelerra/performanceprefs.C:422
+msgid "Force single processor use"
+msgstr "Bruk bare én prosessor"
+
+#: cinelerra/performanceprefs.C:445
+msgid "Consolidate output files on completion"
+msgstr ""
+
+#: cinelerra/performanceprefs.C:571
+#, fuzzy
+msgid "Add Node"
+msgstr "Legg til node"
+
+#: cinelerra/performanceprefs.C:599
+msgid "Apply Changes"
+msgstr ""
+
+#: cinelerra/performanceprefs.C:626
+#, fuzzy
+msgid "Delete Node"
+msgstr "Slett node"
+
+#: cinelerra/performanceprefs.C:654
+#, fuzzy
+msgid "Sort nodes"
+msgstr "Sorter noder"
+
+#: cinelerra/performanceprefs.C:681
+msgid "Reset rates"
+msgstr ""
+
+#: cinelerra/performanceprefs.C:762
+msgid "Use virtual filesystem"
+msgstr "Bruk virtuelt filsystem"
+
+#: cinelerra/playbackprefs.C:42 cinelerra/playbackprefs.C:176
+#: cinelerra/playbackprefs.C:185
+msgid "Local Host"
+msgstr ""
+
+#: cinelerra/playbackprefs.C:43 cinelerra/playbackprefs.C:179
+msgid "Multihead"
+msgstr ""
+
+#: cinelerra/playbackprefs.C:44 cinelerra/playbackprefs.C:182
+msgid "Blond Symphony"
+msgstr ""
+
+#. Global playback options
+#. All strategies use these
+#: cinelerra/playbackprefs.C:49
+msgid "Audio Out"
+msgstr ""
+
+#. 	add_subwindow(title1 = new BC_Title(x, y, _("Samples to read from disk at a time:"), MEDIUMFONT, BLACK));
+#: cinelerra/playbackprefs.C:56
+msgid "Samples to send to console at a time:"
+msgstr ""
+
+#: cinelerra/playbackprefs.C:84
+msgid "Audio Driver:"
+msgstr "Lyddriver:"
+
+#: cinelerra/playbackprefs.C:101
+msgid "Video Out"
+msgstr "Video ut"
+
+#: cinelerra/playbackprefs.C:106
+#, fuzzy
+msgid "Framerate achieved:"
+msgstr "Oppnådd billedfrekvens:"
+
+#: cinelerra/playbackprefs.C:107 cinelerra/zoombar.C:64 cinelerra/zoombar.C:66
+msgid "--"
+msgstr "--"
+
+#: cinelerra/playbackprefs.C:111
+msgid "Scaling equation:"
+msgstr ""
+
+#: cinelerra/playbackprefs.C:132
+msgid "Preload buffer for Quicktime:"
+msgstr ""
+
+#: cinelerra/playbackprefs.C:140
+msgid "Timecode offset:"
+msgstr ""
+
+#: cinelerra/playbackprefs.C:143 cinelerra/playbackprefs.C:146
+#: cinelerra/playbackprefs.C:149 cinelerra/scale.C:255
+#: cinelerra/setformat.C:393
+msgid ":"
+msgstr ""
+
+#: cinelerra/playbackprefs.C:154 cinelerra/playbackprefs.C:237
+#: cinelerra/playbackprefs.C:260
+msgid "Video Driver:"
+msgstr "Videodriver:"
+
+#: cinelerra/playbackprefs.C:228 cinelerra/playbackprefs.C:248
+msgid "Head:"
+msgstr ""
+
+#: cinelerra/playbackprefs.C:232 cinelerra/playbackprefs.C:252
+msgid "Total Heads:"
+msgstr ""
+
+#: cinelerra/playbackprefs.C:476
+#, fuzzy
+msgid "View follows playback"
+msgstr "Visning følger avspilling"
+
+#: cinelerra/playbackprefs.C:491 cinelerra/recordprefs.C:285
+msgid "Use software for positioning information"
+msgstr ""
+
+#: cinelerra/playbackprefs.C:506
+#, fuzzy
+msgid "Audio playback in real time priority (root only)"
+msgstr "Lydavspilling med sanntidsprioritet (kun root)"
+
+#: cinelerra/playbackprefs.C:524
+msgid "Nearest neighbor enlarge and reduce"
+msgstr ""
+
+#: cinelerra/playbackprefs.C:540
+msgid "Bicubic enlarge and reduce"
+msgstr ""
+
+#: cinelerra/playbackprefs.C:555
+msgid "Bicubic enlarge and bilinear reduce"
+msgstr ""
+
+#: cinelerra/playbackprefs.C:572
+msgid "Bilinear enlarge and bilinear reduce"
+msgstr ""
+
+#: cinelerra/playbackprefs.C:604
+msgid "Play every frame"
+msgstr "Spill hvert eneste bilde"
+
+#: cinelerra/playtransport.C:354
+msgid "Rewind"
+msgstr "Spol tilbake"
+
+#: cinelerra/playtransport.C:367
+msgid "Fast reverse ( + )"
+msgstr "Fort baklengs ( + )"
+
+#: cinelerra/playtransport.C:382
+msgid "Normal reverse ( 6 )"
+msgstr "Normal baklengs ( 6 )"
+
+#: cinelerra/playtransport.C:397
+msgid "Frame reverse ( 4 )"
+msgstr "Ett bilde bakover ( 4 )"
+
+#: cinelerra/playtransport.C:412
+msgid "Normal forward ( 3 )"
+msgstr "Normal forlengs ( 3 )"
+
+#: cinelerra/playtransport.C:431
+msgid "Frame forward ( 1 )"
+msgstr "Ett bilde forover ( 1 )"
+
+#: cinelerra/playtransport.C:446
+msgid "Fast forward ( Enter )"
+msgstr "Fort forlengs ( Enter )"
+
+#: cinelerra/playtransport.C:459
+msgid "Jump to end"
+msgstr "Hopp til slutten"
+
+#: cinelerra/playtransport.C:472
+msgid "Stop ( 0 )"
+msgstr "Stopp ( 0 )"
+
+#: cinelerra/pluginaclientlad.C:458
+#, c-format
+msgid "Author: %s"
+msgstr ""
+
+#: cinelerra/pluginaclientlad.C:461
+#, c-format
+msgid "License: %s"
+msgstr ""
+
+#: cinelerra/pluginarray.C:165
+#, c-format
+msgid "%s..."
+msgstr ""
+
+#: cinelerra/pluginarray.C:196
+#, c-format
+msgid "%s took %s"
+msgstr ""
+
+#: cinelerra/pluginclient.C:145
+msgid "No processing defined for this plugin.\n"
+msgstr ""
+
+#: cinelerra/plugindialog.C:100
+msgid "attach effect"
+msgstr ""
+
+#: cinelerra/plugindialog.C:273
+msgid "Plugins:"
+msgstr ""
+
+#: cinelerra/plugindialog.C:294
+msgid "Shared effects:"
+msgstr "Delte effekter:"
+
+#: cinelerra/plugindialog.C:316
+msgid "Shared tracks:"
+msgstr "Delte spor:"
+
+#: cinelerra/plugindialog.C:442 cinelerra/pluginpopup.C:88
+#: cinelerra/transitionpopup.C:181
+msgid "Detach"
+msgstr ""
+
+#: cinelerra/plugindialog.C:500 cinelerra/plugindialog.C:556
+#: cinelerra/plugindialog.C:614
+msgid "Attach"
+msgstr ""
+
+#: cinelerra/plugindialog.C:640 cinelerra/pluginpopup.C:124
+msgid "Send"
+msgstr ""
+
+#: cinelerra/plugindialog.C:669 cinelerra/pluginpopup.C:146
+msgid "Receive"
+msgstr ""
+
+#: cinelerra/plugindialog.C:698
+msgid "Thru"
+msgstr ""
+
+#: cinelerra/pluginpopup.C:62 cinelerra/transitionpopup.C:159
+msgid "Attach..."
+msgstr ""
+
+#: cinelerra/pluginpopup.C:101
+msgid "detach effect"
+msgstr ""
+
+#: cinelerra/pluginpopup.C:168 cinelerra/transitionpopup.C:222
+#, fuzzy
+msgid "Show"
+msgstr "Vis"
+
+#. 	add_border(get_resources()->get_bg_shadow1(),
+#. 		get_resources()->get_bg_shadow2(),
+#. 		get_resources()->get_bg_color(),
+#. 		get_resources()->get_bg_light2(),
+#. 		get_resources()->get_bg_light1());
+#: cinelerra/pluginprefs.C:36
+msgid "Plugin Set"
+msgstr ""
+
+#: cinelerra/pluginprefs.C:38
+msgid "Look for global plugins here"
+msgstr ""
+
+#: cinelerra/pluginprefs.C:47
+msgid "Global Plugin Path"
+msgstr ""
+
+#: cinelerra/pluginprefs.C:48 cinelerra/pluginprefs.C:62
+#, fuzzy
+msgid "Select the directory for plugins"
+msgstr "Velg katalogen for plugins"
+
+#: cinelerra/pluginprefs.C:52
+msgid "Look for personal plugins here"
+msgstr ""
+
+#: cinelerra/pluginprefs.C:61
+msgid "Personal Plugin Path"
+msgstr ""
+
+#: cinelerra/preferencesthread.C:36
+#, fuzzy
+msgid "Preferences..."
+msgstr "Brukervalg..."
+
+#: cinelerra/preferencesthread.C:218
+msgid "Playback"
+msgstr "Avspilling"
+
+#: cinelerra/preferencesthread.C:221
+msgid "Recording"
+msgstr "Opptak"
+
+#: cinelerra/preferencesthread.C:233
+msgid "About"
+msgstr "Om"
+
+#: cinelerra/preferencesthread.C:414 cinelerra/setformat.C:736
+msgid "Apply"
+msgstr ""
+
+#: cinelerra/quit.C:25
+msgid "Quit"
+msgstr "Avslutt"
+
+#: cinelerra/quit.C:64
+msgid "Can't quit while a recording is in progress."
+msgstr "Kan ikke avslutte mens opptak pågår."
+
+#: cinelerra/quit.C:74
+msgid "Can't quit while a render is in progress."
+msgstr ""
+
+#. printf("Quit::run 2\n");
+#: cinelerra/quit.C:87
+#, fuzzy
+msgid "Save edit list before exiting?"
+msgstr "Lagre klippliste før du avslutter?"
+
+#: cinelerra/recconfirmdelete.C:28
+#, c-format
+msgid "Delete this file and %s?"
+msgstr "Slett denne fila og %s?"
+
+#: cinelerra/record.C:50
+msgid "Record..."
+msgstr "Ta opp..."
+
+#: cinelerra/record.C:471 cinelerra/render.C:789
+msgid "render"
+msgstr ""
+
+#. Update GUI
+#: cinelerra/record.C:600
+msgid "Deleting"
+msgstr ""
+
+#. Update GUI
+#: cinelerra/record.C:607
+msgid "OK"
+msgstr "OK"
+
+#: cinelerra/recordaudio.C:243 cinelerra/recordvideo.C:329
+msgid "No space left on disk."
+msgstr "Disken er full."
+
+#: cinelerra/recordengine.C:676 cinelerra/recordengine.C:684
+#: cinelerra/recordgui.C:1266
+msgid "Untimed"
+msgstr ""
+
+#: cinelerra/recordengine.C:677 cinelerra/recordengine.C:685
+#: cinelerra/recordgui.C:1267
+msgid "Timed"
+msgstr ""
+
+#: cinelerra/recordengine.C:678 cinelerra/recordengine.C:686
+#: plugins/titler/titlewindow.C:611
+#, fuzzy
+msgid "Loop"
+msgstr "Løkke"
+
+#: cinelerra/recordgui.C:71
+msgid "Path"
+msgstr "Sti"
+
+#: cinelerra/recordgui.C:72
+msgid "News"
+msgstr ""
+
+#: cinelerra/recordgui.C:73
+msgid "Start time"
+msgstr "Starttid"
+
+#: cinelerra/recordgui.C:74
+msgid "Duration"
+msgstr "Varighet"
+
+#: cinelerra/recordgui.C:75
+msgid "Source"
+msgstr "Kilde"
+
+#: cinelerra/recordgui.C:76 plugins/parametric/parametric.C:361
+#, fuzzy
+msgid "Mode"
+msgstr "Modus"
+
+#: cinelerra/recordgui.C:141
+msgid "Format:"
+msgstr "Format:"
+
+#: cinelerra/recordgui.C:152
+msgid "Audio compression:"
+msgstr "Lydkompresjon:"
+
+#: cinelerra/recordgui.C:169
+msgid "Clipped samples:"
+msgstr ""
+
+#: cinelerra/recordgui.C:180
+msgid "Video compression:"
+msgstr "Videokompresjon:"
+
+#: cinelerra/recordgui.C:197
+msgid "Frames behind:"
+msgstr "Bilder på etterskudd:"
+
+#: cinelerra/recordgui.C:206
+#, fuzzy
+msgid "Position:"
+msgstr "Posisjon:"
+
+#: cinelerra/recordgui.C:214
+msgid "End:"
+msgstr ""
+
+#: cinelerra/recordgui.C:222
+msgid "Prev label:"
+msgstr "Forrige merke:"
+
+#: cinelerra/recordgui.C:242
+msgid "Path:"
+msgstr "Sti:"
+
+#. printf("RecordWindow::create_objects 1\n");
+#: cinelerra/recordgui.C:251 cinelerra/recordwindow.C:47
+msgid "Select a file to record to:"
+msgstr "Velg en fil å ta opp til:"
+
+#: cinelerra/recordgui.C:255
+msgid "Start time:"
+msgstr "Starttid:"
+
+#: cinelerra/recordgui.C:260
+msgid "Duration time:"
+msgstr "Varighet:"
+
+#: cinelerra/recordgui.C:276
+msgid "Transport:"
+msgstr ""
+
+#: cinelerra/recordgui.C:654
+msgid "Close"
+msgstr "Lukk"
+
+#: cinelerra/recordgui.C:656
+msgid "Save the recording and quit."
+msgstr "Lagre opptaket og avslutt."
+
+#: cinelerra/recordgui.C:679
+msgid "Cancel"
+msgstr "Avbryt "
+
+#: cinelerra/recordgui.C:681
+msgid "Quit without pasting into project."
+msgstr ""
+
+#: cinelerra/recordgui.C:705
+msgid "Start Over"
+msgstr ""
+
+#: cinelerra/recordgui.C:707
+msgid "Rewind the current file and erase."
+msgstr ""
+
+#: cinelerra/recordgui.C:723
+msgid "Fill frames"
+msgstr ""
+
+#: cinelerra/recordgui.C:727
+msgid "Write extra frames when behind."
+msgstr ""
+
+#: cinelerra/recordgui.C:738
+msgid "Monitor video"
+msgstr ""
+
+#: cinelerra/recordgui.C:762
+msgid "Monitor audio"
+msgstr ""
+
+#: cinelerra/recordgui.C:816
+msgid "Offset"
+msgstr ""
+
+#: cinelerra/recordgui.C:916
+msgid "Create new clip."
+msgstr "Lag nytt klipp."
+
+#: cinelerra/recordgui.C:931
+msgid "Delete clip."
+msgstr "Slett klipp."
+
+#: cinelerra/recordgui.C:942
+msgid "Start"
+msgstr "Start"
+
+#: cinelerra/recordgui.C:946
+msgid ""
+"Start batch recording\n"
+"from the current position."
+msgstr ""
+
+#: cinelerra/recordgui.C:958
+msgid "Stop"
+msgstr "Stopp"
+
+#: cinelerra/recordgui.C:970
+#, fuzzy
+msgid "Activate"
+msgstr "Aktiver"
+
+#: cinelerra/recordgui.C:974
+msgid ""
+"Make the highlighted\n"
+"clip active."
+msgstr ""
+
+#: cinelerra/recordgui.C:984
+msgid "Label"
+msgstr "Merke"
+
+#: cinelerra/recordgui.C:1052
+msgid "Quit without pasting into project?"
+msgstr ""
+
+#: cinelerra/recordgui.C:1084
+msgid "Rewind batch and overwrite?"
+msgstr ""
+
+#: cinelerra/recordmonitor.C:241
+msgid "Device Transport:"
+msgstr ""
+
+#: cinelerra/recordmonitor.C:254
+msgid "00:00:00:00"
+msgstr ""
+
+#: cinelerra/recordmonitor.C:522 cinelerra/vdeviceprefs.C:196
+#, fuzzy
+msgid "Swap fields"
+msgstr "Bytt delbilder"
+
+#: cinelerra/recordprefs.C:36
+msgid "Audio In"
+msgstr "Lyd inn"
+
+#: cinelerra/recordprefs.C:40 cinelerra/recordprefs.C:83
+msgid "Record Driver:"
+msgstr ""
+
+#: cinelerra/recordprefs.C:55
+msgid "Samples to write to disk at a time:"
+msgstr ""
+
+#: cinelerra/recordprefs.C:56
+msgid "Sample rate for recording:"
+msgstr ""
+
+#: cinelerra/recordprefs.C:80
+msgid "Video In"
+msgstr "Video inn"
+
+#: cinelerra/recordprefs.C:97
+msgid "Frames to record to disk at a time:"
+msgstr ""
+
+#: cinelerra/recordprefs.C:102
+msgid "Frames to buffer in device:"
+msgstr ""
+
+#: cinelerra/recordprefs.C:117
+msgid "Size of captured frame:"
+msgstr ""
+
+#: cinelerra/recordprefs.C:133
+msgid "Frame rate for recording:"
+msgstr "Billedfrekvens for opptaket:"
+
+#: cinelerra/recordprefs.C:159
+msgid "Record in realtime priority (root only)"
+msgstr "Ta opp med sanntidsprioritet (kun root)"
+
+#: cinelerra/recordprefs.C:299
+msgid "Sync drives automatically"
+msgstr ""
+
+#: cinelerra/recordtransport.C:128
+msgid ""
+"Start interactive recording\n"
+"from current position"
+msgstr ""
+
+#: cinelerra/recordtransport.C:152
+msgid "Record single frame"
+msgstr "Ta opp ett bilde"
+
+#. 	this->engine = engine;
+#: cinelerra/recordtransport.C:176
+msgid "Preview recording"
+msgstr ""
+
+#: cinelerra/recordtransport.C:201
+msgid "Stop operation"
+msgstr ""
+
+#: cinelerra/recordtransport.C:251
+msgid "Fast rewind"
+msgstr ""
+
+#: cinelerra/recordtransport.C:314
+msgid "Fast forward"
+msgstr ""
+
+#: cinelerra/recordtransport.C:374
+msgid "Seek to end of recording"
+msgstr ""
+
+#: cinelerra/reindex.C:11
+msgid "Redraw Indexes"
+msgstr ""
+
+#: cinelerra/reindex.C:65
+msgid "Redraw all indexes for the current project?"
+msgstr ""
+
+#: cinelerra/render.C:58
+msgid "Render..."
+msgstr ""
+
+#: cinelerra/render.C:477
+#, c-format
+msgid "Rendering %s..."
+msgstr ""
+
+#. Don't bother with the filename since renderfarm defeats the meaning
+#: cinelerra/render.C:480
+msgid "Rendering..."
+msgstr ""
+
+#: cinelerra/render.C:498
+#, c-format
+msgid "Rendering took %s"
+msgstr ""
+
+#: cinelerra/render.C:635
+msgid "Starting render farm"
+msgstr ""
+
+#: cinelerra/render.C:662
+msgid "Failed to start render farm"
+msgstr ""
+
+#: cinelerra/render.C:762
+msgid "Error rendering data."
+msgstr ""
+
+#: cinelerra/renderfarm.C:145
+msgid "RenderFarmServerThread::start_loop: socket\n"
+msgstr ""
+
+#. printf("RenderFarmServerThread::start_loop 4 %s\n", hostname);
+#: cinelerra/renderfarm.C:171 cinelerra/renderfarm.C:214
+#, c-format
+msgid "RenderFarmServerThread::start_loop: %s: %s\n"
+msgstr ""
+
+#: cinelerra/renderfarm.C:191
+msgid "RenderFarmServerThread::start_loop: socket"
+msgstr ""
+
+#: cinelerra/renderfarm.C:204
+#, c-format
+msgid "RenderFarmServerThread::start_loop: unknown host %s.\n"
+msgstr ""
+
+#: cinelerra/renderfarm.C:419
+#, c-format
+msgid "RenderFarmServerThread::run: unknown request %02x\n"
+msgstr ""
+
+#: cinelerra/renderfarmclient.C:87 cinelerra/renderfarmclient.C:112
+msgid "RenderFarmClient::main_loop: socket"
+msgstr ""
+
+#: cinelerra/renderfarmclient.C:96
+#, c-format
+msgid "RenderFarmClient::main_loop: bind port %d: %s"
+msgstr ""
+
+#: cinelerra/renderfarmclient.C:121
+#, c-format
+msgid "RenderFarmClient::main_loop: bind path %s: %s\n"
+msgstr ""
+
+#: cinelerra/renderfarmclient.C:134
+msgid "RenderFarmClient::main_loop: listen"
+msgstr ""
+
+#: cinelerra/renderfarmclient.C:150 cinelerra/renderfarmclient.C:167
+msgid "RenderFarmClient::main_loop: accept"
+msgstr ""
+
+#. printf("RenderFarmClientThread::run 12\n");
+#: cinelerra/renderfarmclient.C:565
+msgid "RenderFarmClientThread::run: Session finished.\n"
+msgstr ""
+
+#: cinelerra/resizetrackthread.C:104 plugins/titler/titlewindow.C:164
+msgid "Size:"
+msgstr "Størrelse:"
+
+#: cinelerra/resizetrackthread.C:111 cinelerra/resizetrackthread.C:133
+#: plugins/compressor/compressor.C:729
+msgid "x"
+msgstr "x"
+
+#: cinelerra/resizetrackthread.C:126 plugins/pitch/pitch.C:295
+#, fuzzy
+msgid "Scale:"
+msgstr "Skaler:"
+
+#: cinelerra/resourcepixmap.C:476
+#, c-format
+msgid "ResourcePixmap::draw_audio_source: failed to check out %s for drawing.\n"
+msgstr ""
+
+#: cinelerra/savefile.C:31
+#, fuzzy
+msgid "Save backup"
+msgstr "Lagre backup"
+
+#: cinelerra/savefile.C:38
+#, fuzzy
+msgid "Saved backup."
+msgstr "Lagret backup."
+
+#: cinelerra/savefile.C:52
+msgid "Save"
+msgstr "Lagre"
+
+#: cinelerra/savefile.C:96 cinelerra/savefile.C:195
+#, c-format
+msgid "\"%s\" %dC written"
+msgstr ""
+
+#: cinelerra/savefile.C:113
+msgid "Save as..."
+msgstr "Lagre som..."
+
+#. update the project name
+#: cinelerra/savefile.C:184 plugins/reverb/reverb.C:396
+#, c-format
+msgid "Couldn't open %s."
+msgstr ""
+
+#: cinelerra/savefile.C:220
+msgid "Enter a filename to save as"
+msgstr ""
+
+#: cinelerra/scale.C:15
+msgid "Resize..."
+msgstr ""
+
+#: cinelerra/scale.C:186
+msgid "New camera size:"
+msgstr ""
+
+#: cinelerra/scale.C:187
+msgid "New projector size:"
+msgstr ""
+
+#: cinelerra/scale.C:209 cinelerra/scale.C:213 cinelerra/setformat.C:350
+msgid "W Ratio:"
+msgstr ""
+
+#: cinelerra/scale.C:219 cinelerra/scale.C:223 cinelerra/setformat.C:359
+msgid "H Ratio:"
+msgstr ""
+
+#: cinelerra/scale.C:342 plugins/scale/scalewin.C:144
+msgid "Constrain ratio"
+msgstr ""
+
+#: cinelerra/scale.C:351
+msgid "Scale data"
+msgstr ""
+
+#: cinelerra/scale.C:362 cinelerra/setformat.C:701
+msgid "Auto"
+msgstr ""
+
+#: cinelerra/setformat.C:27
+msgid "Format..."
+msgstr "Format..."
+
+#: cinelerra/setformat.C:101
+#, fuzzy
+msgid "set format"
+msgstr "sett format"
+
+#: cinelerra/setformat.C:287
+msgid "Channel positions:"
+msgstr ""
+
+#: cinelerra/setformat.C:533
+#, c-format
+msgid "%d degrees"
+msgstr "%d grader"
+
+#: cinelerra/splashgui.C:45
+msgid "Loading..."
+msgstr ""
+
+#: cinelerra/statusbar.C:89
+msgid "Welcome to Cinelerra."
+msgstr "Velkommen til Cinelerra"
+
+#: cinelerra/statusbar.C:97
+msgid "Cancel operation"
+msgstr ""
+
+#: cinelerra/threadindexer.C:69
+#, c-format
+msgid "Where is %s?"
+msgstr "Hvor er %s?"
+
+#: cinelerra/toggleauto.C:15
+msgid "ON"
+msgstr "PÅ"
+
+#: cinelerra/toggleauto.C:16
+msgid "OFF"
+msgstr "AV"
+
+#: cinelerra/transitionpopup.C:61
+msgid "Seconds:"
+msgstr "Sekunder:"
+
+#: cinelerra/transitionpopup.C:246
+msgid "Length"
+msgstr ""
+
+#: cinelerra/vdevicelml.C:251
+msgid "VDeviceLML::read_buffer: driver crash\n"
+msgstr ""
+
+#: cinelerra/vdevicelml.C:255
+msgid "VDeviceLML::read_buffer: reopened\n"
+msgstr ""
+
+#: cinelerra/vdeviceprefs.C:201
+msgid "Output channel:"
+msgstr ""
+
+#: cinelerra/vdeviceprefs.C:314
+#, fuzzy
+msgid "Display:"
+msgstr "Skjerm:"
+
+#: cinelerra/vdeviceprefs.C:324
+msgid "Display for compositor:"
+msgstr ""
+
+#: cinelerra/viewmenu.C:13
+msgid "Show edits"
+msgstr ""
+
+#: cinelerra/viewmenu.C:26
+msgid "Show titles"
+msgstr ""
+
+#: cinelerra/viewmenu.C:47 cinelerra/viewmenu.C:192
+msgid "Plugin keyframes"
+msgstr ""
+
+#: cinelerra/viewmenu.C:59
+msgid "Show transitions"
+msgstr "Vis overganger"
+
+#: cinelerra/viewmenu.C:76
+msgid "Fade keyframes"
+msgstr ""
+
+#: cinelerra/viewmenu.C:93
+msgid "Play keyframes"
+msgstr ""
+
+#: cinelerra/viewmenu.C:111
+msgid "Camera keyframes"
+msgstr ""
+
+#: cinelerra/viewmenu.C:128
+msgid "Projector keyframes"
+msgstr ""
+
+#: cinelerra/viewmenu.C:145
+msgid "Draw Output"
+msgstr ""
+
+#: cinelerra/viewmenu.C:159
+msgid "Mute keyframes"
+msgstr ""
+
+#: cinelerra/viewmenu.C:176
+msgid "Pan keyframes"
+msgstr ""
+
+#: cinelerra/viewmenu.C:208
+msgid "Mode keyframes"
+msgstr ""
+
+#: cinelerra/viewmenu.C:224
+msgid "Mask keyframes"
+msgstr ""
+
+#: cinelerra/viewmenu.C:240
+msgid "Camera Zoom"
+msgstr ""
+
+#: cinelerra/viewmenu.C:256
+msgid "Projector Zoom"
+msgstr ""
+
+#: cinelerra/vpatchgui.C:275
+msgid "mode"
+msgstr ""
+
+#: cinelerra/vpatchgui.C:330 cinelerra/vpatchgui.C:354
+msgid "Normal"
+msgstr ""
+
+#: cinelerra/vpatchgui.C:334
+msgid "Replace"
+msgstr ""
+
+#: cinelerra/vpatchgui.C:338
+msgid "Addition"
+msgstr ""
+
+#: cinelerra/vpatchgui.C:342
+msgid "Subtract"
+msgstr ""
+
+#: cinelerra/vpatchgui.C:346
+msgid "Multiply"
+msgstr ""
+
+#: cinelerra/vpatchgui.C:350
+msgid "Divide"
+msgstr ""
+
+#: cinelerra/vtrack.C:99
+#, c-format
+msgid "Video %d"
+msgstr ""
+
+#: cinelerra/vwindow.C:202 cinelerra/vwindow.C:209
+msgid "Viewer"
+msgstr ""
+
+#: guicast/bccapture.C:44
+msgid "cannot connect to X server.\n"
+msgstr ""
+
+#: guicast/bccapture.C:46
+msgid "'DISPLAY' environment variable not set.\n"
+msgstr ""
+
+#: guicast/bcfilebox.C:270
+msgid "Change the filter"
+msgstr ""
+
+#: guicast/bcfilebox.C:295
+msgid "Cancel the operation"
+msgstr ""
+
+#: guicast/bcfilebox.C:322
+msgid "Submit the directory"
+msgstr ""
+
+#: guicast/bcfilebox.C:343
+msgid "Submit the file"
+msgstr ""
+
+#: guicast/bcfilebox.C:391
+msgid "Create new folder"
+msgstr "Lag ny mappe"
+
+#: guicast/bcfilebox.C:403
+msgid "Up a directory"
+msgstr ""
+
+#. Need a temp so submit_file can expand it
+#: guicast/bcfilebox.C:408
+msgid ".."
+msgstr ".."
+
+#: guicast/bcfilebox.C:961
+msgid ": New folder"
+msgstr ""
+
+#: guicast/bcresources.C:42
+msgid "-*-helvetica-medium-r-normal-*-10-*"
+msgstr ""
+
+#: guicast/bcresources.C:43
+msgid "-*-helvetica-bold-r-normal-*-14-*"
+msgstr ""
+
+#: guicast/bcresources.C:44
+msgid "-*-helvetica-bold-r-normal-*-18-*"
+msgstr ""
+
+#: guicast/bcresources.C:50 guicast/bcresources.C:51 guicast/bcresources.C:52
+msgid "-microsoft-verdana-*-*-*-*-*-*-*-*-*-*-*-*"
+msgstr ""
+
+#: guicast/bctheme.C:22
+msgid "BC_Theme::BC_Theme: can't open /proc/self/cmdline.\n"
+msgstr ""
+
+#: guicast/bctheme.C:375
+#, c-format
+msgid "Theme::get_image: %s is a directory.\n"
+msgstr ""
+
+#: guicast/bctheme.C:383
+#, c-format
+msgid "Theme::get_image: %s when opening %s\n"
+msgstr ""
+
+#: guicast/bctheme.C:392
+#, c-format
+msgid "BC_Theme::get_image_data fseek %s\n"
+msgstr ""
+
+#: guicast/bctheme.C:398
+#, c-format
+msgid "BC_Theme::get_image_data fread 1 %s\n"
+msgstr ""
+
+#: guicast/bctheme.C:403
+#, c-format
+msgid "BC_Theme::get_image_data fread 2 %s\n"
+msgstr ""
+
+#: guicast/bctheme.C:454
+#, c-format
+msgid "Theme::get_image: %s not found.\n"
+msgstr ""
+
+#: guicast/bctheme.C:468
+msgid "BC_Theme::check_used: Images aren't used.\n"
+msgstr ""
+
+#: guicast/test.C:157
+msgid ""
+"Mary Egbert\n"
+"had a little lamb."
+msgstr ""
+
+#: guicast/test.C:159
+msgid "Hello world"
+msgstr "Hallo verden"
+
+#: plugins/1080to480/1080to480.C:83 plugins/720to480/720to480.C:60
+#: plugins/ivtc/ivtcwindow.C:101
+msgid "Odd field first"
+msgstr "Odde delbilder først"
+
+#: plugins/1080to480/1080to480.C:85 plugins/720to480/720to480.C:62
+msgid "Even field first"
+msgstr "Like delbilder først"
+
+#: plugins/1080to480/1080to480.C:156
+msgid "1080 to 480"
+msgstr "1080 til 480"
+
+#: plugins/720to480/720to480.C:178
+msgid "720 to 480"
+msgstr "720 til 480"
+
+#: plugins/aging/aging.C:59
+msgid "AgingTV"
+msgstr ""
+
+#: plugins/aging/agingwindow.C:39
+msgid ""
+"Film aging from EffectTV\n"
+"Copyright (C) 2001 FUKUCHI Kentarou"
+msgstr ""
+
+#: plugins/aging/agingwindow.C:77
+msgid "Grain"
+msgstr ""
+
+#: plugins/aging/agingwindow.C:92
+msgid "Scratch"
+msgstr ""
+
+#: plugins/aging/agingwindow.C:134
+msgid "Pits"
+msgstr ""
+
+#: plugins/aging/agingwindow.C:176
+msgid "Dust"
+msgstr ""
+
+#: plugins/bandslide/bandslide.C:59 plugins/bandwipe/bandwipe.C:61
+#: plugins/irissquare/irissquare.C:33 plugins/slide/slide.C:76
+msgid "In"
+msgstr ""
+
+#: plugins/bandslide/bandslide.C:81 plugins/bandwipe/bandwipe.C:83
+#: plugins/irissquare/irissquare.C:55 plugins/slide/slide.C:98
+msgid "Out"
+msgstr ""
+
+#: plugins/bandslide/bandslide.C:128 plugins/bandwipe/bandwipe.C:129
+msgid "Bands:"
+msgstr ""
+
+#: plugins/bandslide/bandslide.C:138 plugins/irissquare/irissquare.C:102
+#: plugins/slide/slide.C:145 plugins/slide/slide.C:159 plugins/wipe/wipe.C:98
+msgid "Direction:"
+msgstr ""
+
+#: plugins/bandslide/bandslide.C:177
+msgid "BandSlide"
+msgstr ""
+
+#: plugins/bandwipe/bandwipe.C:177
+msgid "BandWipe"
+msgstr ""
+
+#: plugins/blur/blur.C:111 plugins/blur/blurwindow.C:39
+msgid "Blur"
+msgstr ""
+
+#: plugins/blur/blurwindow.C:46 plugins/oilpainting/oilwindow.C:51
+#: plugins/whirl/whirl.C:243 plugins/whirl/whirlwindow.C:62
+msgid "Radius"
+msgstr ""
+
+#: plugins/blur/blurwindow.C:91 plugins/downsample/downsample.C:273
+#: plugins/flip/flipwindow.C:41
+msgid "Vertical"
+msgstr ""
+
+#: plugins/blur/blurwindow.C:109 plugins/downsample/downsample.C:255
+#: plugins/flip/flipwindow.C:47
+msgid "Horizontal"
+msgstr ""
+
+#: plugins/blur/blurwindow.C:127
+msgid "Blur alpha"
+msgstr ""
+
+#: plugins/blur/blurwindow.C:139
+msgid "Blur red"
+msgstr ""
+
+#: plugins/blur/blurwindow.C:151
+msgid "Blur green"
+msgstr ""
+
+#: plugins/blur/blurwindow.C:163
+msgid "Blur blue"
+msgstr ""
+
+#: plugins/blurzoom/blurzoom.C:59
+msgid "RadioacTV"
+msgstr ""
+
+#: plugins/blurzoom/blurzoomwindow.C:67
+msgid ""
+"RadioacTV from EffectTV\n"
+"Copyright (C) 2001 FUKUCHI Kentarou"
+msgstr ""
+
+#: plugins/brightness/brightness.C:81 plugins/brightness/brightnesswindow.C:37
+msgid "Brightness/Contrast"
+msgstr ""
+
+#: plugins/brightness/brightnesswindow.C:98
+msgid "Boost luminance only"
+msgstr ""
+
+#: plugins/burn/burn.C:61
+msgid "BurningTV"
+msgstr ""
+
+#: plugins/burn/burnwindow.C:38
+msgid ""
+"BurningTV from EffectTV\n"
+"Copyright (C) 2001 FUKUCHI Kentarou"
+msgstr ""
+
+#: plugins/cdripper/cdripper.C:37
+msgid "CD Ripper"
+msgstr ""
+
+#: plugins/cdripper/cdripper.C:115
+msgid "Can't open cdrom drive."
+msgstr ""
+
+#: plugins/cdripper/cdripper.C:147
+msgid "Can't get total from table of contents."
+msgstr ""
+
+#: plugins/cdripper/cdripper.C:163
+msgid "Can't get table of contents entry."
+msgstr ""
+
+#: plugins/cdripper/cdripper.C:179
+msgid "Can't get table of contents leadout."
+msgstr ""
+
+#: plugins/cdripper/cdripper.C:194
+msgid "Start track is out of range."
+msgstr ""
+
+#: plugins/cdripper/cdripper.C:206
+msgid "End track is out of range."
+msgstr ""
+
+#: plugins/cdripper/cdripper.C:218
+msgid "End position is out of range."
+msgstr ""
+
+#: plugins/cdripper/cdripwindow.C:33
+msgid "Select the range to transfer:"
+msgstr ""
+
+#: plugins/cdripper/cdripwindow.C:34 plugins/cdripper/cdripwindow.C:38
+#: plugins/motion/motion.C:281
+msgid "Track"
+msgstr ""
+
+#: plugins/cdripper/cdripwindow.C:35 plugins/cdripper/cdripwindow.C:39
+msgid "Min"
+msgstr ""
+
+#: plugins/cdripper/cdripwindow.C:36 plugins/cdripper/cdripwindow.C:40
+msgid "Sec"
+msgstr ""
+
+#: plugins/cdripper/cdripwindow.C:57
+msgid "From"
+msgstr ""
+
+#: plugins/cdripper/cdripwindow.C:59
+msgid "To"
+msgstr ""
+
+#: plugins/cdripper/cdripwindow.C:62
+msgid "CD Device:"
+msgstr ""
+
+#: plugins/chromakey/chromakey.C:118
+msgid "Slope:"
+msgstr ""
+
+#: plugins/chromakey/chromakey.C:122 plugins/denoisevideo/denoisevideo.C:178
+#: plugins/histogram/histogram.C:511
+msgid "Threshold:"
+msgstr ""
+
+#: plugins/chromakey/chromakey.C:223
+msgid "Use value"
+msgstr ""
+
+#: plugins/chromakey/chromakey.C:489
+msgid "Chroma key"
+msgstr ""
+
+#: plugins/colorbalance/colorbalance.C:321
+#: plugins/colorbalance/colorbalancewindow.C:42
+msgid "Color Balance"
+msgstr ""
+
+#. printf("ColorBalanceWindow::create_objects 1\n");
+#: plugins/colorbalance/colorbalancewindow.C:45
+msgid "Cyan"
+msgstr ""
+
+#. printf("ColorWindow::create_objects 1\n");
+#: plugins/colorbalance/colorbalancewindow.C:47
+#: plugins/colors/colorpicker.C:145 plugins/denoisevideo/denoisevideo.C:182
+#: plugins/downsample/downsample.C:295 plugins/histogram/histogram.C:399
+#: plugins/linearblur/linearblur.C:271 plugins/radialblur/radialblur.C:274
+#: plugins/swapchannels/swapchannels.C:437
+#: plugins/swapchannels/swapchannels.C:462 plugins/zoomblur/zoomblur.C:280
+msgid "Red"
+msgstr ""
+
+#. printf("ColorBalanceWindow::create_objects 1\n");
+#: plugins/colorbalance/colorbalancewindow.C:50
+msgid "Magenta"
+msgstr ""
+
+#. printf("ColorWindow::create_objects 1\n");
+#: plugins/colorbalance/colorbalancewindow.C:52
+#: plugins/colors/colorpicker.C:151 plugins/denoisevideo/denoisevideo.C:184
+#: plugins/downsample/downsample.C:301 plugins/histogram/histogram.C:405
+#: plugins/linearblur/linearblur.C:273 plugins/radialblur/radialblur.C:276
+#: plugins/swapchannels/swapchannels.C:440
+#: plugins/swapchannels/swapchannels.C:463 plugins/zoomblur/zoomblur.C:282
+msgid "Green"
+msgstr ""
+
+#. printf("ColorBalanceWindow::create_objects 1\n");
+#: plugins/colorbalance/colorbalancewindow.C:55
+msgid "Yellow"
+msgstr ""
+
+#. printf("ColorWindow::create_objects 1\n");
+#: plugins/colorbalance/colorbalancewindow.C:57
+#: plugins/colors/colorpicker.C:157 plugins/denoisevideo/denoisevideo.C:186
+#: plugins/downsample/downsample.C:307 plugins/histogram/histogram.C:411
+#: plugins/linearblur/linearblur.C:275 plugins/radialblur/radialblur.C:278
+#: plugins/swapchannels/swapchannels.C:443
+#: plugins/swapchannels/swapchannels.C:464 plugins/zoomblur/zoomblur.C:284
+msgid "Blue"
+msgstr ""
+
+#: plugins/colorbalance/colorbalancewindow.C:103
+msgid "Preserve luminosity"
+msgstr ""
+
+#: plugins/colorbalance/colorbalancewindow.C:122
+msgid "Lock parameters"
+msgstr ""
+
+#: plugins/colors/colorpicker.C:60
+msgid "Color Picker"
+msgstr ""
+
+#: plugins/colors/colorpicker.C:127 plugins/huesaturation/huewindow.C:52
+msgid "Hue"
+msgstr ""
+
+#. printf("ColorWindow::create_objects 1\n");
+#: plugins/colors/colorpicker.C:133 plugins/huesaturation/huewindow.C:57
+msgid "Saturation"
+msgstr ""
+
+#. printf("ColorWindow::create_objects 1\n");
+#: plugins/colors/colorpicker.C:139 plugins/histogram/histogram.C:393
+#: plugins/huesaturation/huewindow.C:62
+msgid "Value"
+msgstr ""
+
+#: plugins/colors/colorpicker.C:165 plugins/denoisevideo/denoisevideo.C:188
+#: plugins/downsample/downsample.C:313 plugins/histogram/histogram.C:417
+#: plugins/linearblur/linearblur.C:277 plugins/radialblur/radialblur.C:280
+#: plugins/swapchannels/swapchannels.C:446
+#: plugins/swapchannels/swapchannels.C:465 plugins/zoomblur/zoomblur.C:286
+msgid "Alpha"
+msgstr ""
+
+#: plugins/compressor/compressor.C:88
+msgid "Compressor"
+msgstr ""
+
+#: plugins/compressor/compressor.C:710
+msgid "Preview secs:"
+msgstr ""
+
+#: plugins/compressor/compressor.C:714
+msgid "Reaction secs:"
+msgstr ""
+
+#: plugins/compressor/compressor.C:718
+msgid "Trigger:"
+msgstr ""
+
+#: plugins/compressor/compressor.C:725
+msgid "Point:"
+msgstr ""
+
+#: plugins/crossfade/crossfade.C:25
+msgid "Crossfade"
+msgstr ""
+
+#: plugins/deinterlace/deinterlace.C:77
+#: plugins/denoisemjpeg/denoisemjpeg.C:238
+msgid "Deinterlace"
+msgstr ""
+
+#: plugins/deinterlace/deinterwindow.C:39
+msgid "Select lines to keep"
+msgstr ""
+
+#: plugins/deinterlace/deinterwindow.C:41
+msgid "Do nothing"
+msgstr ""
+
+#: plugins/deinterlace/deinterwindow.C:43
+msgid "Odd lines"
+msgstr "Odde linjer"
+
+#: plugins/deinterlace/deinterwindow.C:45
+msgid "Even lines"
+msgstr "Like linjer"
+
+#: plugins/deinterlace/deinterwindow.C:47
+msgid "Average lines"
+msgstr ""
+
+#: plugins/deinterlace/deinterwindow.C:49
+msgid "Swap odd fields"
+msgstr ""
+
+#: plugins/deinterlace/deinterwindow.C:51
+msgid "Swap even fields"
+msgstr ""
+
+#: plugins/deinterlace/deinterwindow.C:53
+msgid "Average even lines"
+msgstr ""
+
+#: plugins/deinterlace/deinterwindow.C:58
+msgid "Average odd lines"
+msgstr ""
+
+#: plugins/deinterlace/deinterwindow.C:77
+#, c-format
+msgid "Changed rows: %d\n"
+msgstr ""
+
+#: plugins/deinterlace/deinterwindow.C:123
+msgid "Adaptive"
+msgstr ""
+
+#: plugins/delayaudio/delayaudio.C:54
+msgid "Delay audio"
+msgstr "Forsink lyd"
+
+#: plugins/delayaudio/delayaudio.C:298 plugins/delayvideo/delayvideo.C:86
+msgid "Delay seconds:"
+msgstr "Sekunder forsinkning:"
+
+#: plugins/delayvideo/delayvideo.C:296
+msgid "Delay Video"
+msgstr "Forsink video"
+
+#: plugins/denoise/denoise.C:791 plugins/gain/gainwindow.C:39
+#: plugins/spectrogram/spectrogram.C:99
+msgid "Level:"
+msgstr ""
+
+#: plugins/denoisefft/denoisefft.C:231
+msgid "Denoise power:"
+msgstr ""
+
+#: plugins/denoisefft/denoisefft.C:234
+msgid "Number of samples for reference:"
+msgstr ""
+
+#: plugins/denoisefft/denoisefft.C:236
+msgid "The keyframe is the start of the reference"
+msgstr ""
+
+#: plugins/denoisefft/denoisefft.C:309
+msgid "DenoiseFFT"
+msgstr ""
+
+#: plugins/denoisemjpeg/denoisemjpeg.C:260
+msgid "Progressive"
+msgstr "Progressiv"
+
+#: plugins/denoisemjpeg/denoisemjpeg.C:298
+msgid "Fast"
+msgstr ""
+
+#: plugins/denoisemjpeg/denoisemjpeg.C:364 plugins/motion/motion.C:93
+msgid "Search radius:"
+msgstr ""
+
+#: plugins/denoisemjpeg/denoisemjpeg.C:368
+msgid "Pass 1 threshold:"
+msgstr ""
+
+#: plugins/denoisemjpeg/denoisemjpeg.C:372
+msgid "Pass 2 threshold:"
+msgstr ""
+
+#: plugins/denoisemjpeg/denoisemjpeg.C:376
+msgid "Sharpness:"
+msgstr "Skarphet:"
+
+#: plugins/denoisemjpeg/denoisemjpeg.C:380
+msgid "Luma contrast:"
+msgstr ""
+
+#: plugins/denoisemjpeg/denoisemjpeg.C:384
+msgid "Chroma contrast:"
+msgstr ""
+
+#: plugins/denoisemjpeg/denoisemjpeg.C:388
+msgid "Delay frames:"
+msgstr ""
+
+#: plugins/denoisemjpeg/denoisemjpeg.C:467
+msgid "Denoise video2"
+msgstr ""
+
+#: plugins/denoisevideo/denoisevideo.C:174
+msgid "Frames to accumulate:"
+msgstr ""
+
+#: plugins/denoisevideo/denoisevideo.C:324
+msgid "Denoise video"
+msgstr ""
+
+#: plugins/despike/despike.C:36
+msgid "Despike"
+msgstr ""
+
+#: plugins/despike/despikewindow.C:41
+msgid "Maximum level:"
+msgstr ""
+
+#: plugins/despike/despikewindow.C:45
+msgid "Maximum rate of change:"
+msgstr ""
+
+#: plugins/dissolve/dissolve.C:33
+msgid "Dissolve"
+msgstr ""
+
+#: plugins/dot/dot.C:68
+msgid "DotTV"
+msgstr ""
+
+#: plugins/dot/dotwindow.C:39
+msgid ""
+"DotTV from EffectTV\n"
+"Copyright (C) 2001 FUKUCHI Kentarou"
+msgstr ""
+
+#: plugins/downsample/downsample.C:264
+msgid "Horizontal offset"
+msgstr ""
+
+#: plugins/downsample/downsample.C:282
+msgid "Vertical offset"
+msgstr ""
+
+#: plugins/downsample/downsample.C:402
+msgid "Downsample"
+msgstr ""
+
+#: plugins/fieldframe/fieldframe.C:198 plugins/framefield/framefield.C:213
+msgid "Top field first"
+msgstr ""
+
+#: plugins/fieldframe/fieldframe.C:223 plugins/framefield/framefield.C:238
+msgid "Bottom field first"
+msgstr ""
+
+#: plugins/fieldframe/fieldframe.C:248
+msgid "First frame is first field"
+msgstr ""
+
+#: plugins/fieldframe/fieldframe.C:272
+msgid "Second frame is first field"
+msgstr ""
+
+#: plugins/fieldframe/fieldframe.C:324
+msgid "Fields to frames"
+msgstr ""
+
+#: plugins/flash/flash.C:31
+msgid "Flash"
+msgstr ""
+
+#: plugins/flip/flip.C:72
+msgid "Flip"
+msgstr ""
+
+#: plugins/framefield/framefield.C:263
+msgid "Average empty rows"
+msgstr ""
+
+#: plugins/framefield/framefield.C:551
+msgid "Frames to fields"
+msgstr ""
+
+#: plugins/freeverb/freeverb.C:266
+msgid "Freeze"
+msgstr ""
+
+#: plugins/freeverb/freeverb.C:307
+msgid "Gain:"
+msgstr ""
+
+#: plugins/freeverb/freeverb.C:311
+msgid "Roomsize:"
+msgstr ""
+
+#: plugins/freeverb/freeverb.C:315
+msgid "Damp:"
+msgstr ""
+
+#: plugins/freeverb/freeverb.C:319
+msgid "Wet:"
+msgstr ""
+
+#: plugins/freeverb/freeverb.C:323
+msgid "Dry:"
+msgstr ""
+
+#: plugins/freeverb/freeverb.C:473
+msgid "Freeverb"
+msgstr ""
+
+#: plugins/freezeframe/freezeframe.C:88
+msgid "Line double"
+msgstr ""
+
+#: plugins/freezeframe/freezeframe.C:150
+msgid "Freeze Frame"
+msgstr ""
+
+#: plugins/gain/gain.C:64
+msgid "Gain"
+msgstr ""
+
+#: plugins/gradient/gradient.C:144 plugins/linearblur/linearblur.C:263
+#: plugins/polar/polar.C:207 plugins/radialblur/radialblur.C:266
+msgid "Angle:"
+msgstr ""
+
+#: plugins/gradient/gradient.C:147
+msgid "Inner radius:"
+msgstr ""
+
+#: plugins/gradient/gradient.C:150
+msgid "Outer radius:"
+msgstr ""
+
+#: plugins/gradient/gradient.C:261
+msgid "Inner color:"
+msgstr ""
+
+#: plugins/gradient/gradient.C:277
+msgid "Outer color:"
+msgstr ""
+
+#: plugins/gradient/gradient.C:295
+msgid "Inner color"
+msgstr ""
+
+#: plugins/gradient/gradient.C:327
+msgid "Outer color"
+msgstr ""
+
+#: plugins/gradient/gradient.C:384
+msgid "Gradient"
+msgstr ""
+
+#: plugins/histogram/histogram.C:421
+msgid "Input min:"
+msgstr ""
+
+#: plugins/histogram/histogram.C:430
+msgid "Mid:"
+msgstr ""
+
+#: plugins/histogram/histogram.C:440 plugins/histogram/histogram.C:477
+msgid "Max:"
+msgstr ""
+
+#: plugins/histogram/histogram.C:468
+msgid "Output min:"
+msgstr ""
+
+#: plugins/histogram/histogram.C:638 plugins/perspective/perspective.C:509
+msgid "Reset"
+msgstr ""
+
+#: plugins/histogram/histogram.C:914
+msgid "Automatic"
+msgstr ""
+
+#: plugins/histogram/histogram.C:1032
+msgid "Histogram"
+msgstr ""
+
+#: plugins/holo/holo.C:67
+msgid "HolographicTV"
+msgstr ""
+
+#: plugins/holo/holowindow.C:38
+msgid ""
+"HolographicTV from EffectTV\n"
+"Copyright (C) 2001 FUKUCHI Kentarou"
+msgstr ""
+
+#: plugins/huesaturation/huesaturation.C:293
+msgid "Saturation:"
+msgstr ""
+
+#: plugins/huesaturation/huesaturation.C:533
+msgid "Hue saturation"
+msgstr ""
+
+#: plugins/huesaturation/huewindow.C:118 plugins/polar/polarwindow.C:89
+#: plugins/whirl/whirlwindow.C:118 plugins/yuv/yuvwindow.C:118
+msgid "Automate"
+msgstr ""
+
+#: plugins/interpolate/interpolate.C:326
+#: plugins/interpolateall/interpolateall.C:83 plugins/rotate/rotate.C:236
+msgid "Interpolate"
+msgstr ""
+
+#: plugins/invertaudio/invert.C:27
+msgid "Invert Audio"
+msgstr ""
+
+#: plugins/invertvideo/invert.C:170
+msgid "Invert R"
+msgstr ""
+
+#: plugins/invertvideo/invert.C:172
+msgid "Invert G"
+msgstr ""
+
+#: plugins/invertvideo/invert.C:174
+msgid "Invert B"
+msgstr ""
+
+#: plugins/invertvideo/invert.C:176
+msgid "Invert A"
+msgstr ""
+
+#: plugins/invertvideo/invert.C:216
+msgid "Invert Video"
+msgstr ""
+
+#: plugins/invertvideo/invertwindow.C:47
+#: plugins/synthesizer/synthesizer.C:1268
+#: plugins/synthesizer/synthesizer.C:1315
+msgid "Invert"
+msgstr ""
+
+#: plugins/irissquare/irissquare.C:139
+msgid "IrisSquare"
+msgstr ""
+
+#: plugins/ivtc/ivtc.C:48
+msgid "Inverse Telecine"
+msgstr ""
+
+#: plugins/ivtc/ivtcwindow.C:41
+msgid "Pattern offset:"
+msgstr ""
+
+#: plugins/ivtc/ivtcwindow.C:49
+msgid "Pattern:"
+msgstr ""
+
+#: plugins/ivtc/ivtcwindow.C:117
+msgid "Automatic IVTC"
+msgstr ""
+
+#: plugins/level/leveleffect.C:114
+msgid "Duration (seconds):"
+msgstr ""
+
+#: plugins/level/leveleffect.C:117
+msgid "Max soundlevel (dB):"
+msgstr ""
+
+#: plugins/level/leveleffect.C:120
+msgid "RMS soundlevel (dB):"
+msgstr ""
+
+#: plugins/level/leveleffect.C:188
+msgid "SoundLevel"
+msgstr ""
+
+#: plugins/linearblur/linearblur.C:259
+msgid "Length:"
+msgstr ""
+
+#: plugins/linearblur/linearblur.C:267 plugins/radialblur/radialblur.C:270
+#: plugins/zoomblur/zoomblur.C:276
+msgid "Steps:"
+msgstr ""
+
+#: plugins/linearblur/linearblur.C:374
+msgid "Linear Blur"
+msgstr ""
+
+#: plugins/motion/motion.C:99
+msgid "Block size:"
+msgstr ""
+
+#: plugins/motion/motion.C:105
+msgid "Maximum absolute offset:"
+msgstr ""
+
+#: plugins/motion/motion.C:111
+msgid "Stabilizer settling time:"
+msgstr ""
+
+#: plugins/motion/motion.C:256
+msgid "Stabilize"
+msgstr ""
+
+#: plugins/motion/motion.C:306
+msgid "Draw vectors"
+msgstr ""
+
+#: plugins/motion/motion.C:358
+msgid "Motion"
+msgstr ""
+
+#: plugins/normalize/normalize.C:37 plugins/synthesizer/synthesizer.C:1188
+msgid "Normalize"
+msgstr ""
+
+#: plugins/normalize/normalizewindow.C:32
+msgid "Enter the DB to overload by:"
+msgstr ""
+
+#: plugins/normalize/normalizewindow.C:68
+msgid "Treat tracks independantly"
+msgstr ""
+
+#: plugins/oilpainting/oil.C:226
+msgid "Use intensity"
+msgstr ""
+
+#: plugins/oilpainting/oil.C:265 plugins/zoomblur/zoomblur.C:272
+msgid "Radius:"
+msgstr ""
+
+#: plugins/oilpainting/oil.C:317
+msgid "Oil painting"
+msgstr ""
+
+#: plugins/oilpainting/oilwindow.C:47
+msgid "Oil Painting"
+msgstr ""
+
+#: plugins/oilpainting/oilwindow.C:79
+msgid "Use Intensity"
+msgstr ""
+
+#: plugins/parametric/parametric.C:247
+msgid "Lowpass"
+msgstr ""
+
+#: plugins/parametric/parametric.C:250
+msgid "Highpass"
+msgstr ""
+
+#: plugins/parametric/parametric.C:253
+msgid "Bandpass"
+msgstr ""
+
+#: plugins/parametric/parametric.C:358
+msgid "Freq"
+msgstr ""
+
+#: plugins/parametric/parametric.C:359
+msgid "Qual"
+msgstr ""
+
+#: plugins/parametric/parametric.C:360 plugins/synthesizer/synthesizer.C:566
+#: plugins/synthesizer/synthesizer.C:624
+msgid "Level"
+msgstr ""
+
+#: plugins/parametric/parametric.C:369 plugins/synthesizer/synthesizer.C:615
+msgid "Wetness:"
+msgstr ""
+
+#: plugins/parametric/parametric.C:630
+msgid "EQ Parametric"
+msgstr ""
+
+#: plugins/perspective/perspective.C:126
+msgid "Current X:"
+msgstr ""
+
+#: plugins/perspective/perspective.C:153 plugins/perspective/perspective.C:605
+msgid "Perspective"
+msgstr ""
+
+#: plugins/perspective/perspective.C:159
+msgid "Sheer"
+msgstr ""
+
+#: plugins/perspective/perspective.C:166
+msgid "Stretch"
+msgstr ""
+
+#: plugins/perspective/perspective.C:170
+msgid "Perspective direction:"
+msgstr ""
+
+#: plugins/perspective/perspective.C:176
+msgid "Forward"
+msgstr ""
+
+#: plugins/perspective/perspective.C:182
+msgid "Reverse"
+msgstr ""
+
+#: plugins/pitch/pitch.C:42
+msgid "Pitch shift"
+msgstr ""
+
+#: plugins/polar/polar.C:204
+msgid "Depth:"
+msgstr ""
+
+#: plugins/polar/polar.C:293
+msgid "Polar"
+msgstr ""
+
+#: plugins/polar/polarwindow.C:42
+msgid "Depth"
+msgstr ""
+
+#: plugins/polar/polarwindow.C:47 plugins/rotate/rotate.C:374
+#: plugins/rotate/rotatewindow.C:65 plugins/whirl/whirl.C:251
+#: plugins/whirl/whirlwindow.C:52
+msgid "Angle"
+msgstr ""
+
+#: plugins/quark/quark.C:42
+msgid "Quark"
+msgstr ""
+
+#: plugins/quark/quarkwindow.C:66 plugins/sharpen/sharpenwindow.C:40
+msgid "Sharpness"
+msgstr ""
+
+#: plugins/quark/quarkwindow.C:117 plugins/sharpen/sharpenwindow.C:91
+msgid "Interlace"
+msgstr ""
+
+#: plugins/quark/quarkwindow.C:135 plugins/sharpen/sharpenwindow.C:109
+msgid "Horizontal only"
+msgstr ""
+
+#: plugins/quark/quarkwindow.C:152 plugins/sharpen/sharpenwindow.C:126
+msgid "Luminance only"
+msgstr ""
+
+#: plugins/radialblur/radialblur.C:370
+msgid "Radial Blur"
+msgstr ""
+
+#: plugins/reframe/reframe.C:40
+msgid "Reframe"
+msgstr ""
+
+#: plugins/reframe/reframe.C:176 plugins/resample/resample.C:56
+msgid "Scale factor:"
+msgstr ""
+
+#: plugins/resample/resample.C:87
+msgid "Resample"
+msgstr ""
+
+#: plugins/reverb/reverb.C:78
+msgid "Heroine College Concert Hall"
+msgstr ""
+
+#: plugins/reverb/reverb.C:430
+#, c-format
+msgid "Couldn't save %s."
+msgstr ""
+
+#: plugins/reverb/reverbwindow.C:40
+msgid "Initial signal level:"
+msgstr ""
+
+#: plugins/reverb/reverbwindow.C:42
+msgid "ms before reflections:"
+msgstr ""
+
+#: plugins/reverb/reverbwindow.C:44
+msgid "First reflection level:"
+msgstr ""
+
+#: plugins/reverb/reverbwindow.C:46
+msgid "Last reflection level:"
+msgstr ""
+
+#: plugins/reverb/reverbwindow.C:48
+msgid "Number of reflections:"
+msgstr ""
+
+#: plugins/reverb/reverbwindow.C:50
+msgid "ms of reflections:"
+msgstr ""
+
+#: plugins/reverb/reverbwindow.C:52
+msgid "Start band for lowpass:"
+msgstr ""
+
+#: plugins/reverb/reverbwindow.C:54
+msgid "End band for lowpass:"
+msgstr ""
+
+#: plugins/reverb/reverbwindow.C:331
+msgid "Load..."
+msgstr ""
+
+#: plugins/reverb/reverbwindow.C:348
+msgid "Save..."
+msgstr ""
+
+#: plugins/reverb/reverbwindow.C:365
+msgid "Set default"
+msgstr ""
+
+#: plugins/reverb/reverbwindow.C:426
+msgid "Save reverb"
+msgstr ""
+
+#: plugins/reverb/reverbwindow.C:427
+msgid "Select the reverb file to save as"
+msgstr ""
+
+#: plugins/reverb/reverbwindow.C:509
+msgid "Load reverb"
+msgstr ""
+
+#: plugins/reverb/reverbwindow.C:510
+msgid "Select the reverb file to load from"
+msgstr ""
+
+#: plugins/reverseaudio/reverseaudio.C:166
+msgid "Reverse audio"
+msgstr ""
+
+#: plugins/reversevideo/reversevideo.C:164
+msgid "Reverse video"
+msgstr ""
+
+#: plugins/rgb601/rgb601.C:37
+msgid "RGB - 601"
+msgstr ""
+
+#: plugins/rgb601/rgb601window.C:43
+msgid "RGB -> 601"
+msgstr ""
+
+#: plugins/rgb601/rgb601window.C:45
+msgid "601 -> RGB"
+msgstr ""
+
+#: plugins/rotate/rotate.C:330 plugins/rotate/rotate.C:474
+#: plugins/rotate/rotatewindow.C:48
+msgid "Rotate"
+msgstr ""
+
+#: plugins/rotate/rotatewindow.C:51
+msgid "0"
+msgstr ""
+
+#: plugins/rotate/rotatewindow.C:54
+msgid "90"
+msgstr ""
+
+#: plugins/rotate/rotatewindow.C:57
+msgid "180"
+msgstr ""
+
+#: plugins/rotate/rotatewindow.C:60
+msgid "270"
+msgstr ""
+
+#: plugins/rotate/rotatewindow.C:67
+msgid "(Automated)"
+msgstr ""
+
+#: plugins/scale/scale.C:74
+msgid "Scale"
+msgstr ""
+
+#: plugins/scale/scalewin.C:46
+msgid "X Scale:"
+msgstr ""
+
+#: plugins/scale/scalewin.C:51
+msgid "Y Scale:"
+msgstr ""
+
+#: plugins/sharpen/sharpen.C:103
+msgid "Sharpen"
+msgstr ""
+
+#: plugins/shiftinterlace/shiftinterlace.C:185
+msgid "Odd offset:"
+msgstr ""
+
+#: plugins/shiftinterlace/shiftinterlace.C:188
+msgid "Even offset:"
+msgstr ""
+
+#: plugins/shiftinterlace/shiftinterlace.C:270
+msgid "ShiftInterlace"
+msgstr ""
+
+#: plugins/slide/slide.C:32 plugins/titler/titlewindow.C:806
+#: plugins/wipe/wipe.C:29
+msgid "Left"
+msgstr ""
+
+#: plugins/slide/slide.C:54 plugins/titler/titlewindow.C:834
+#: plugins/wipe/wipe.C:51
+msgid "Right"
+msgstr ""
+
+#: plugins/slide/slide.C:198
+msgid "Slide"
+msgstr ""
+
+#: plugins/spectrogram/spectrogram.C:204
+msgid "Spectrogram"
+msgstr ""
+
+#: plugins/svg/svg.C:123
+msgid "SVG via Sodipodi"
+msgstr ""
+
+#: plugins/svg/svg.C:257
+#, c-format
+msgid "Running command %s\n"
+msgstr ""
+
+#: plugins/svg/svg.C:263
+#, c-format
+msgid "Export of %s to %s failed\n"
+msgstr ""
+
+#: plugins/svg/svg.C:277
+#, c-format
+msgid ""
+"The file %s that was generated from %s is not in RAWC format. Try to delete "
+"all *.raw files.\n"
+msgstr ""
+
+#: plugins/svg/svg.C:284
+#, c-format
+msgid ""
+"Unsupported version of RAWC file %s. This means your Sodipodi uses newer "
+"RAWC format than Cinelerra. Please upgrade Cinelerra.\n"
+msgstr ""
+
+#: plugins/svg/svgwin.C:85 plugins/translate/translatewin.C:73
+msgid "Out X:"
+msgstr ""
+
+#: plugins/svg/svgwin.C:91 plugins/translate/translatewin.C:79
+msgid "Out Y:"
+msgstr ""
+
+#: plugins/svg/svgwin.C:159
+msgid "New/Open SVG..."
+msgstr ""
+
+#: plugins/svg/svgwin.C:341
+msgid "Sodipodi has exited\n"
+msgstr ""
+
+#: plugins/svg/svgwin.C:344
+msgid "Plugin window has closed\n"
+msgstr ""
+
+#: plugins/svg/svgwin.C:381
+#, c-format
+msgid "Running external SVG editor: %s\n"
+msgstr ""
+
+#: plugins/svg/svgwin.C:384
+msgid "External SVG editor finished\n"
+msgstr ""
+
+#: plugins/svg/svgwin.C:401
+msgid "SVG Plugin: Pick SVG file"
+msgstr ""
+
+#: plugins/svg/svgwin.C:402
+msgid "Open an existing SVG file or create a new one"
+msgstr ""
+
+#: plugins/swapchannels/swapchannels.C:90
+#: plugins/swapchannels/swapchannels.C:209
+msgid "Swap channels"
+msgstr ""
+
+#: plugins/swapchannels/swapchannels.C:92
+msgid "-> Red"
+msgstr ""
+
+#: plugins/swapchannels/swapchannels.C:96
+msgid "-> Green"
+msgstr ""
+
+#: plugins/swapchannels/swapchannels.C:100
+msgid "-> Blue"
+msgstr ""
+
+#: plugins/swapchannels/swapchannels.C:104
+msgid "-> Alpha"
+msgstr ""
+
+#: plugins/swapchannels/swapchannels.C:449
+#: plugins/swapchannels/swapchannels.C:466
+msgid "0%"
+msgstr ""
+
+#: plugins/swapchannels/swapchannels.C:452
+#: plugins/swapchannels/swapchannels.C:467
+msgid "100%"
+msgstr ""
+
+#: plugins/synthesizer/synthesizer.C:60
+msgid "Synthesizer"
+msgstr ""
+
+#: plugins/synthesizer/synthesizer.C:567 plugins/synthesizer/synthesizer.C:626
+msgid "Phase"
+msgstr ""
+
+#: plugins/synthesizer/synthesizer.C:568 plugins/synthesizer/synthesizer.C:628
+msgid "Harmonic"
+msgstr ""
+
+#: plugins/synthesizer/synthesizer.C:589
+msgid "Waveform"
+msgstr ""
+
+#: plugins/synthesizer/synthesizer.C:591
+msgid "Wave Function"
+msgstr ""
+
+#: plugins/synthesizer/synthesizer.C:606
+msgid "Base Frequency:"
+msgstr ""
+
+#: plugins/synthesizer/synthesizer.C:746
+msgid "DC"
+msgstr ""
+
+#. 	add_item(new SynthWaveFormItem(synth, _("DC"), DC));
+#: plugins/synthesizer/synthesizer.C:747
+#: plugins/synthesizer/synthesizer.C:1000
+#: plugins/synthesizer/synthesizer.C:1289
+#: plugins/synthesizer/synthesizer.C:1356
+msgid "Sine"
+msgstr ""
+
+#: plugins/synthesizer/synthesizer.C:748
+#: plugins/synthesizer/synthesizer.C:1001
+msgid "Sawtooth"
+msgstr ""
+
+#: plugins/synthesizer/synthesizer.C:749
+#: plugins/synthesizer/synthesizer.C:1002
+msgid "Square"
+msgstr ""
+
+#: plugins/synthesizer/synthesizer.C:750
+#: plugins/synthesizer/synthesizer.C:1003
+msgid "Triangle"
+msgstr ""
+
+#: plugins/synthesizer/synthesizer.C:751
+#: plugins/synthesizer/synthesizer.C:1004
+msgid "Pulse"
+msgstr ""
+
+#: plugins/synthesizer/synthesizer.C:752
+#: plugins/synthesizer/synthesizer.C:1005
+msgid "Noise"
+msgstr ""
+
+#: plugins/synthesizer/synthesizer.C:875
+msgid "Add"
+msgstr ""
+
+#: plugins/synthesizer/synthesizer.C:1147
+#: plugins/synthesizer/synthesizer.C:1336
+msgid "Zero"
+msgstr ""
+
+#: plugins/synthesizer/synthesizer.C:1168
+msgid "Maximum"
+msgstr ""
+
+#: plugins/synthesizer/synthesizer.C:1224
+msgid "Slope"
+msgstr ""
+
+#: plugins/synthesizer/synthesizer.C:1247
+#: plugins/synthesizer/synthesizer.C:1379
+#: plugins/synthesizer/synthesizer.C:1404
+msgid "Random"
+msgstr ""
+
+#: plugins/synthesizer/synthesizer.C:1425
+msgid "Enumerate"
+msgstr ""
+
+#: plugins/synthesizer/synthesizer.C:1445
+msgid "Even"
+msgstr ""
+
+#: plugins/synthesizer/synthesizer.C:1468
+msgid "Odd"
+msgstr ""
+
+#: plugins/synthesizer/synthesizer.C:1486
+msgid "Fibonnacci"
+msgstr ""
+
+#: plugins/synthesizer/synthesizer.C:1510
+msgid "Prime"
+msgstr ""
+
+#: plugins/timeavg/timeavg.C:60
+msgid "Time Average"
+msgstr ""
+
+#: plugins/timeavg/timeavgwindow.C:38
+msgid "Frames to average"
+msgstr ""
+
+#: plugins/timestretch/timestretch.C:46
+msgid "Use fast fourier transform"
+msgstr ""
+
+#: plugins/timestretch/timestretch.C:68
+msgid "Use overlapping windows"
+msgstr ""
+
+#: plugins/timestretch/timestretch.C:116
+msgid "Fraction of original length:"
+msgstr ""
+
+#: plugins/timestretch/timestretch.C:302
+msgid "Time stretch"
+msgstr ""
+
+#: plugins/titler/title.C:62
+msgid "hello world"
+msgstr ""
+
+#: plugins/titler/title.C:271
+msgid "GlyphUnit::process_package FT_New_Face failed.\n"
+msgstr ""
+
+#: plugins/titler/title.C:290
+#, c-format
+msgid "GlyphUnit::process_package FT_Load_Char failed - char: %i.\n"
+msgstr ""
+
+#: plugins/titler/title.C:1340
+#, c-format
+msgid "TitleMain::load_freetype_face %s failed.\n"
+msgstr ""
+
+#. Something went wrong.
+#: plugins/titler/title.C:1463
+#, c-format
+msgid "Iconv conversion from %s to Unicode UCS-4 not available\n"
+msgstr ""
+
+#: plugins/titler/title.C:1903
+msgid "No motion"
+msgstr ""
+
+#: plugins/titler/title.C:1904
+msgid "Bottom to top"
+msgstr ""
+
+#: plugins/titler/title.C:1905
+msgid "Top to bottom"
+msgstr ""
+
+#: plugins/titler/title.C:1906
+msgid "Right to left"
+msgstr ""
+
+#: plugins/titler/title.C:1907
+msgid "Left to right"
+msgstr ""
+
+#: plugins/titler/titlewindow.C:157
+msgid "Font:"
+msgstr ""
+
+#: plugins/titler/titlewindow.C:170
+msgid "Style:"
+msgstr ""
+
+#: plugins/titler/titlewindow.C:177
+msgid "Justify:"
+msgstr ""
+
+#: plugins/titler/titlewindow.C:202
+msgid "Motion type:"
+msgstr ""
+
+#: plugins/titler/titlewindow.C:214
+msgid "Drop shadow:"
+msgstr ""
+
+#: plugins/titler/titlewindow.C:219
+msgid "Fade in (sec):"
+msgstr ""
+
+#: plugins/titler/titlewindow.C:223
+msgid "Fade out (sec):"
+msgstr ""
+
+#: plugins/titler/titlewindow.C:227
+msgid "Speed:"
+msgstr ""
+
+#: plugins/titler/titlewindow.C:240
+msgid "Encoding:"
+msgstr ""
+
+#: plugins/titler/titlewindow.C:246
+msgid "Outline width:"
+msgstr ""
+
+#: plugins/titler/titlewindow.C:267
+msgid "Text:"
+msgstr ""
+
+#: plugins/titler/titlewindow.C:470
+msgid "Bold"
+msgstr ""
+
+#: plugins/titler/titlewindow.C:484
+msgid "Italic"
+msgstr ""
+
+#: plugins/titler/titlewindow.C:497
+msgid "Outline"
+msgstr ""
+
+#: plugins/titler/titlewindow.C:566
+msgid "Color..."
+msgstr ""
+
+#: plugins/titler/titlewindow.C:578
+msgid "Outline color..."
+msgstr ""
+
+#: plugins/titler/titlewindow.C:623
+msgid "Stamp timecode"
+msgstr ""
+
+#: plugins/titler/titlewindow.C:820
+msgid "Center"
+msgstr ""
+
+#: plugins/titler/titlewindow.C:850
+msgid "Top"
+msgstr ""
+
+#: plugins/titler/titlewindow.C:864
+msgid "Mid"
+msgstr ""
+
+#: plugins/titler/titlewindow.C:878
+msgid "Bottom"
+msgstr ""
+
+#: plugins/translate/translate.C:97
+msgid "Translate"
+msgstr ""
+
+#: plugins/translate/translatewin.C:46
+msgid "In X:"
+msgstr ""
+
+#: plugins/translate/translatewin.C:52
+msgid "In Y:"
+msgstr ""
+
+#: plugins/translate/translatewin.C:58
+msgid "In W:"
+msgstr ""
+
+#: plugins/translate/translatewin.C:64
+msgid "In H:"
+msgstr ""
+
+#: plugins/translate/translatewin.C:85
+msgid "Out W:"
+msgstr ""
+
+#: plugins/translate/translatewin.C:91
+msgid "Out H:"
+msgstr ""
+
+#: plugins/videoscope/videoscope.C:358
+msgid "VideoScope"
+msgstr ""
+
+#: plugins/wave/wave.C:258
+msgid "Smear"
+msgstr ""
+
+#: plugins/wave/wave.C:275
+msgid "Blacken"
+msgstr ""
+
+#: plugins/wave/wave.C:294
+msgid "Reflective"
+msgstr ""
+
+#. 	add_subwindow(new BC_Title(x, y, _("Mode:")));
+#. 	add_subwindow(smear = new WaveSmear(plugin, this, x1, y));
+#. 	y += 20;
+#. 	add_subwindow(blacken = new WaveBlacken(plugin, this, x1, y));
+#. 	y += 30;
+#. 	add_subwindow(reflective = new WaveReflective(plugin, x1, y));
+#. 	y += 30;
+#: plugins/wave/wave.C:403
+msgid "Amplitude:"
+msgstr ""
+
+#: plugins/wave/wave.C:406
+msgid "Phase:"
+msgstr ""
+
+#: plugins/wave/wave.C:409
+msgid "Wavelength:"
+msgstr ""
+
+#: plugins/wave/wave.C:463
+msgid "Wave"
+msgstr ""
+
+#: plugins/whirl/whirl.C:247 plugins/whirl/whirlwindow.C:57
+msgid "Pinch"
+msgstr ""
+
+#: plugins/whirl/whirl.C:377
+msgid "Whirl"
+msgstr ""
+
+#: plugins/wipe/wipe.C:135
+msgid "Wipe"
+msgstr ""
+
+#: plugins/yuv/yuv.C:179 plugins/yuv/yuvwindow.C:57
+msgid "U:"
+msgstr ""
+
+#: plugins/yuv/yuv.C:182 plugins/yuv/yuvwindow.C:62
+msgid "V:"
+msgstr ""
+
+#: plugins/yuv/yuv.C:223
+msgid "YUV"
+msgstr ""
+
+#: plugins/zoomblur/zoomblur.C:383
+msgid "Zoom Blur"
+msgstr ""
+
