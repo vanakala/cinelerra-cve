@@ -1,6 +1,14 @@
 # translation of sl.po to 
 # translation of sl.po to
+# translation of sl.po to
 # translation of sl.po to slovenian language
+# , 2003.
+# , 2003.
+# , 2003.
+# , 2003.
+# , 2003.
+# , 2003.
+# , 2003.
 # , 2003.
 # , 2003.
 # , 2003.
@@ -28,8 +36,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: sl\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2003-10-12 19:14+0200\n"
-"PO-Revision-Date: 2003-10-12 23:14+0200\n"
+"POT-Creation-Date: 2003-10-12 23:32+0200\n"
+"PO-Revision-Date: 2003-10-13 00:17+0200\n"
 "Last-Translator: \n"
 "Language-Team:  <sl@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -937,13 +945,13 @@ msgstr "vstavi sredstva"
 
 #: cinelerra/cwindowgui.C:1207
 msgid "mask point"
-msgstr "maskiraj toèka"
+msgstr "maskiraj toèko"
 
 #: cinelerra/cwindowgui.C:1408 cinelerra/cwindowgui.C:2320
 #: cinelerra/cwindowgui.C:2333 cinelerra/cwindowgui.C:2352
 #: cinelerra/cwindowgui.C:2370 cinelerra/trackcanvas.C:3024
 msgid "tweek"
-msgstr ""
+msgstr "Prilagajanje"
 
 #: cinelerra/cwindowgui.C:2261 cinelerra/patchbay.C:154
 #: cinelerra/patchgui.C:530 cinelerra/trackcanvas.C:2161
@@ -1163,7 +1171,7 @@ msgstr "Naèin urejanja izreèi in prilepi"
 
 #: cinelerra/editpanel.C:1014
 msgid "Generate keyframes while tweeking"
-msgstr "Ustvarjaj kljuène slike med premikanjem"
+msgstr "Ustvarjaj kljuène slike med prilagajanjem"
 
 #: cinelerra/editpopup.C:71
 msgid "Attach effect..."
@@ -1647,7 +1655,7 @@ msgstr "FileVorbis::open_file %s: neveljaven bitni tok.\n"
 
 #: cinelerra/flipbook.C:11
 msgid "Flipbook..."
-msgstr ""
+msgstr "Knjiga slika..."
 
 #: cinelerra/formatcheck.C:31
 msgid "The format you selected doesn't support video."
@@ -1945,11 +1953,11 @@ msgstr ""
 msgid "Building Indexes..."
 msgstr "Ustvarjam kazala..."
 
-#: cinelerra/mainmenu.C:72
+#: cinelerra/mainmenu.C:72 plugins/reverb/reverbwindow.C:234
 msgid "File"
 msgstr "Datoteka"
 
-#: cinelerra/mainmenu.C:99
+#: cinelerra/mainmenu.C:99 plugins/svg/svgwin.C:281
 msgid "Edit"
 msgstr "Uredi"
 
@@ -2199,7 +2207,7 @@ msgstr "Izberi uèinek"
 
 #: cinelerra/menueffects.C:758
 msgid "Set up effect panel and hit \"OK\""
-msgstr "Nastavite uèinek in pritisnite \"V redu\""
+msgstr "Nastavi uèinek in pritisni \"V redu\""
 
 #: cinelerra/messages.C:51 cinelerra/messages.C:67 cinelerra/messages.C:88
 msgid "recieve message failed\n"
@@ -2226,6 +2234,11 @@ msgstr "MWindow::init_plugins: ni ibl omogoèe odpreti direktorija %s\n"
 #, c-format
 msgid "MWindow::init_theme: theme %s not found.\n"
 msgstr "MWindow::init_theme: Tema %s ni bila najdena.\n"
+
+#: cinelerra/mwindow.C:772
+#, c-format
+msgid "Failed to open %s"
+msgstr "Ni bilo mogoèe odpreti %s"
 
 #: cinelerra/mwindow.C:820
 msgid "'s format couldn't be determined."
@@ -3188,7 +3201,7 @@ msgstr "Vezano razmerje"
 
 #: cinelerra/scale.C:351 cinelerra/setframerate.C:94
 msgid "Scale data"
-msgstr ""
+msgstr "Podatki poveèave"
 
 #: cinelerra/scale.C:362 cinelerra/setformat.C:702 cinelerra/setvideo.C:448
 msgid "Auto"
@@ -3549,7 +3562,7 @@ msgstr "Praskanje"
 
 #: plugins/aging/agingwindow.C:134
 msgid "Pits"
-msgstr ""
+msgstr "Navpiène èrte"
 
 #: plugins/aging/agingwindow.C:176
 msgid "Dust"
@@ -3580,7 +3593,7 @@ msgstr "Copyright"
 
 #: plugins/bandwipe/bandwipe.C:177
 msgid "BandWipe"
-msgstr ""
+msgstr "Pasovni prehod"
 
 #: plugins/blur/blur.C:111 plugins/blur/blurwindow.C:39
 msgid "Blur"
@@ -4193,7 +4206,7 @@ msgstr "Obrni"
 
 #: plugins/irissquare/irissquare.C:139
 msgid "IrisSquare"
-msgstr "Kvadratni prehod"
+msgstr "Kvadratna zaslonka"
 
 #: plugins/ivtc/ivtc.C:49
 msgid "Inverse Telecine"
@@ -4428,6 +4441,66 @@ msgstr "Koncertna dvorana kolid¾a Heroine"
 msgid "Couldn't save %s."
 msgstr "Ne morem shraniti %s."
 
+#: plugins/reverb/reverbwindow.C:40
+msgid "Initial signal level:"
+msgstr "Zaèetni nivo signala:"
+
+#: plugins/reverb/reverbwindow.C:42
+msgid "ms before reflections:"
+msgstr "ms pred odbojem:"
+
+#: plugins/reverb/reverbwindow.C:44
+msgid "First reflection level:"
+msgstr "Prvi nivo odboja:"
+
+#: plugins/reverb/reverbwindow.C:46
+msgid "Last reflection level:"
+msgstr "Zadnji nivo odboja:"
+
+#: plugins/reverb/reverbwindow.C:48
+msgid "Number of reflections:"
+msgstr "©tevilo odbojev:"
+
+#: plugins/reverb/reverbwindow.C:50
+msgid "ms of reflections:"
+msgstr "ms odbojev:"
+
+#: plugins/reverb/reverbwindow.C:52
+msgid "Start band for lowpass:"
+msgstr "Frekv. spodnjega pasu:"
+
+#: plugins/reverb/reverbwindow.C:54
+msgid "End band for lowpass:"
+msgstr "Frekv. zgornjega pasu:"
+
+#: plugins/reverb/reverbwindow.C:331
+msgid "Load..."
+msgstr "Odpri..."
+
+#: plugins/reverb/reverbwindow.C:348
+msgid "Save..."
+msgstr "Shrani..."
+
+#: plugins/reverb/reverbwindow.C:365
+msgid "Set default"
+msgstr "Privzete nastavitve"
+
+#: plugins/reverb/reverbwindow.C:426
+msgid "Save reverb"
+msgstr "Shrani reverb"
+
+#: plugins/reverb/reverbwindow.C:427
+msgid "Select the reverb file to save as"
+msgstr "Izberi reverb datoteko za shranjenje"
+
+#: plugins/reverb/reverbwindow.C:509
+msgid "Load reverb"
+msgstr "Odpri reverb"
+
+#: plugins/reverb/reverbwindow.C:510
+msgid "Select the reverb file to load from"
+msgstr "Izberi reverb datoteko za odprtje"
+
 #: plugins/reverseaudio/reverseaudio.C:27
 msgid "Reverse audio"
 msgstr "Zvok previj nazaj"
@@ -4519,6 +4592,71 @@ msgstr "Drsenje"
 msgid "Spectrogram"
 msgstr "Spektogram"
 
+#: plugins/svg/svg.C:108
+msgid "SVG via Sodipodi"
+msgstr "SVG preko Sodipodija"
+
+#: plugins/svg/svg.C:255
+#, c-format
+msgid "Error calling stat() on svg file: %s\n"
+msgstr ""
+"Napaka v klicanju funkcije stat()\n"
+"na datoteko svg: %s\n"
+
+#: plugins/svg/svg.C:264
+#, c-format
+msgid "Running command %s\n"
+msgstr "Izvajam ukaz %s\n"
+
+#: plugins/svg/svgwin.C:75 plugins/translate/translatewin.C:73
+msgid "Out X:"
+msgstr "Izhod X:"
+
+#: plugins/svg/svgwin.C:81 plugins/translate/translatewin.C:79
+msgid "Out Y:"
+msgstr "Izhod Y:"
+
+#: plugins/svg/svgwin.C:87 plugins/translate/translatewin.C:85
+msgid "Out W:"
+msgstr "Izhod W:"
+
+#: plugins/svg/svgwin.C:93 plugins/translate/translatewin.C:91
+msgid "Out H:"
+msgstr "Izhod H:"
+
+#: plugins/svg/svgwin.C:149
+msgid "New/Open SVG..."
+msgstr "Nov/Odpri SVG..."
+
+#: plugins/svg/svgwin.C:234
+#, c-format
+msgid ""
+"SVG Width is currently only supported in milimeters: %s, falling back to "
+"100\n"
+msgstr "Navajanje SVG ¹irine je trenutno podprto le v milimetrih: %s, uporabljam vrednost 100\n"
+
+#: plugins/svg/svgwin.C:245
+#, c-format
+msgid ""
+"SVG Height is currently only supported in milimeters: %s, falling back to "
+"100\n"
+msgstr ""
+"Navajanje SVG vi¹ine je trenutno podprto le v milimetrih: %s, uporabljam "
+"vrednost 100\n"
+
+#: plugins/svg/svgwin.C:366
+#, c-format
+msgid "Running external SVG editor: %s\n"
+msgstr "Poganjam zunanji urejevalnik SVG: %s\n"
+
+#: plugins/svg/svgwin.C:380
+msgid "SVG Plugin: Pick SVG file"
+msgstr "Vtiènik SVG: Izberi datoteko SVG"
+
+#: plugins/svg/svgwin.C:381
+msgid "Open an existing SVG file or create a new one"
+msgstr "Odpri obstojeèo datoteko SVG ali ustvari novo"
+
 #: plugins/swapchannels/swapchannels.C:90
 #: plugins/swapchannels/swapchannels.C:209
 msgid "Swap channels"
@@ -4558,6 +4696,10 @@ msgstr "Sintetizator"
 msgid "Phase"
 msgstr "Faza"
 
+#: plugins/synthesizer/synthesizer.C:568 plugins/synthesizer/synthesizer.C:628
+msgid "Harmonic"
+msgstr "Harmon."
+
 #: plugins/synthesizer/synthesizer.C:589
 msgid "Waveform"
 msgstr "Zvoèni vzorec"
@@ -4569,10 +4711,6 @@ msgstr "Funk. zvoè. vzorca"
 #: plugins/synthesizer/synthesizer.C:606
 msgid "Base Frequency:"
 msgstr "Osnovna frekv.:"
-
-#: plugins/synthesizer/synthesizer.C:628
-msgid "Harmonic"
-msgstr "Harmon."
 
 #: plugins/synthesizer/synthesizer.C:746
 msgid "DC"
@@ -4826,29 +4964,13 @@ msgstr "Vhod W:"
 msgid "In H:"
 msgstr "Vhod H:"
 
-#: plugins/translate/translatewin.C:73
-msgid "Out X:"
-msgstr "Izhod X:"
-
-#: plugins/translate/translatewin.C:79
-msgid "Out Y:"
-msgstr "Izhod Y:"
-
-#: plugins/translate/translatewin.C:85
-msgid "Out W:"
-msgstr "Izhod W:"
-
-#: plugins/translate/translatewin.C:91
-msgid "Out H:"
-msgstr "Izhod H:"
-
 #: plugins/videoscope/videoscope.C:358
 msgid "VideoScope"
 msgstr "Videoskop"
 
 #: plugins/wave/wave.C:258
 msgid "Smear"
-msgstr ""
+msgstr "Razpalamudi"
 
 #: plugins/wave/wave.C:275
 msgid "Blacken"

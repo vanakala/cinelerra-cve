@@ -293,7 +293,7 @@ int DelayVideo::is_realtime()
 
 char* DelayVideo::plugin_title()
 {
-	return "Delay Video";
+	return _("Delay Video");
 }
 
 SET_STRING_MACRO(DelayVideo)
