@@ -2,7 +2,7 @@ SUBDIRS=encore50
 
 
 lib_LTLIBRARIES = libquicktime.la
-libquicktime_la_CFLAGS = $(GLIB_CFLAGS) $(CPU_CFLAGS) $(FIREWIRE_CFLAGS) $(OGG_CFLAGS) $(VORBIS_CFLAGS) $(LIBAVCODEC_CFLAGS) -DENCORE_INCLUDE=\"encore50/encore.h\"
+libquicktime_la_CFLAGS = $(CPU_CFLAGS) $(FIREWIRE_CFLAGS) $(OGG_CFLAGS) $(VORBIS_CFLAGS) $(LIBAVCODEC_CFLAGS) -DENCORE_INCLUDE=\"encore50/encore.h\"
 libquicktime_la_LDFLAGS = -version-info 1:0:0 -release 1.6.0 -Wl,--no-undefined 
 
 libquicktime_la_LIBADD = $(FIREWIRE_LDFLAGS) -ldv -lxvidcore -ljpeg -lpng \

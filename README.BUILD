@@ -21,7 +21,6 @@ with these. If you want to use another, don't mail me if it doesn't work.
 Some of them are part of every distribution (if they aren't in yours, change
 you distrib. Not joking):
 	- alsa libs (>= 0.9)
-	- glib (1.2)
 	- libvorbis (1.0)
 	- libogg (1.0)
 	- libpng
