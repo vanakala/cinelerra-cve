@@ -1,0 +1,103 @@
+#ifndef FILEEXR_H
+#define FILEEXR_H
+
+
+#include "file.inc"
+#include "filelist.h"
+#include "vframe.inc"
+
+class FileEXR : public FileList
+{
+public:
+	FileEXR(Asset *asset, File *file);
+	~FileEXR();
+
+	static int check_sig(Asset *asset, char *test);
+	static void get_parameters(BC_WindowBase *parent_window, 
+		Asset *asset, 
+		BC_WindowBase* &format_window,
+		int audio_options,
+		int video_options);
+	static int get_best_colormodel(Asset *asset, int driver);
+	int colormodel_supported(int colormodel);
+	int read_frame_header(char *path);
+	int read_frame(VFrame *frame, VFrame *data);
+	int get_memory_usage();
+	int write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit);
+	FrameWriterUnit* new_writer_unit(FrameWriter *writer);
+
+// exr_compression values
+	enum
+	{
+		NONE,
+		PIZ,
+		ZIP,
+		ZIPS,
+		RLE,
+		PXR24
+	};
+
+	static char* compression_to_str(int compression);
+	static int str_to_compression(char *string);
+	static int compression_to_exr(int compression);
+
+	int native_cmodel;
+	int is_yuv;
+	float *temp_y;
+	float *temp_u;
+	float *temp_v;
+};
+
+class EXRUnit : public FrameWriterUnit
+{
+public:
+	EXRUnit(FileEXR *file, FrameWriter *writer);
+	~EXRUnit();
+	
+	FileEXR *file;
+	VFrame *temp_frame;
+};
+
+
+
+class EXRConfigVideo : public BC_Window
+{
+public:
+	EXRConfigVideo(BC_WindowBase *parent_window, Asset *asset);
+	~EXRConfigVideo();
+
+	int create_objects();
+	int close_event();
+
+	BC_WindowBase *parent_window;
+	Asset *asset;
+};
+
+
+class EXRUseAlpha : public BC_CheckBox
+{
+public:
+	EXRUseAlpha(EXRConfigVideo *gui, int x, int y);
+	int handle_event();
+	EXRConfigVideo *gui;
+};
+
+class EXRCompression : public BC_PopupMenu
+{
+public:
+	EXRCompression(EXRConfigVideo *gui, int x, int y, int w);
+	void create_objects();
+	int handle_event();
+	EXRConfigVideo *gui;
+};
+
+class EXRCompressionItem : public BC_MenuItem
+{
+public:
+	EXRCompressionItem(EXRConfigVideo *gui, int value);
+	int handle_event();
+	EXRConfigVideo *gui;
+	int value;
+};
+
+#endif

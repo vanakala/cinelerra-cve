@@ -1,0 +1,15 @@
+$(OBJDIR)/$(FAAC_DIR)/libfaac/aacquant.o:	  $(FAAC_DIR)/libfaac/aacquant.c
+$(OBJDIR)/$(FAAC_DIR)/libfaac/backpred.o:	  $(FAAC_DIR)/libfaac/backpred.c
+$(OBJDIR)/$(FAAC_DIR)/libfaac/bitstream.o:	  $(FAAC_DIR)/libfaac/bitstream.c
+$(OBJDIR)/$(FAAC_DIR)/libfaac/channels.o:	  $(FAAC_DIR)/libfaac/channels.c
+$(OBJDIR)/$(FAAC_DIR)/libfaac/fft.o:		  $(FAAC_DIR)/libfaac/fft.c
+$(OBJDIR)/$(FAAC_DIR)/libfaac/filtbank.o:	  $(FAAC_DIR)/libfaac/filtbank.c
+$(OBJDIR)/$(FAAC_DIR)/libfaac/frame.o:		  $(FAAC_DIR)/libfaac/frame.c
+$(OBJDIR)/$(FAAC_DIR)/libfaac/huffman.o:	  $(FAAC_DIR)/libfaac/huffman.c
+$(OBJDIR)/$(FAAC_DIR)/libfaac/ltp.o:		  $(FAAC_DIR)/libfaac/ltp.c
+$(OBJDIR)/$(FAAC_DIR)/libfaac/midside.o:	  $(FAAC_DIR)/libfaac/midside.c
+$(OBJDIR)/$(FAAC_DIR)/libfaac/psychkni.o:	  $(FAAC_DIR)/libfaac/psychkni.c
+$(OBJDIR)/$(FAAC_DIR)/libfaac/tns.o:		  $(FAAC_DIR)/libfaac/tns.c
+$(OBJDIR)/$(FAAC_DIR)/libfaac/util.o:		  $(FAAC_DIR)/libfaac/util.c
+
+

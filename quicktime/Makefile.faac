@@ -1,0 +1,23 @@
+FAAC_OBJS := \
+	$(OBJDIR)/$(FAAC_DIR)/libfaac/aacquant.o \
+	$(OBJDIR)/$(FAAC_DIR)/libfaac/backpred.o \
+	$(OBJDIR)/$(FAAC_DIR)/libfaac/bitstream.o \
+	$(OBJDIR)/$(FAAC_DIR)/libfaac/channels.o \
+	$(OBJDIR)/$(FAAC_DIR)/libfaac/fft.o \
+	$(OBJDIR)/$(FAAC_DIR)/libfaac/filtbank.o \
+	$(OBJDIR)/$(FAAC_DIR)/libfaac/frame.o \
+	$(OBJDIR)/$(FAAC_DIR)/libfaac/huffman.o \
+	$(OBJDIR)/$(FAAC_DIR)/libfaac/ltp.o \
+	$(OBJDIR)/$(FAAC_DIR)/libfaac/midside.o \
+	$(OBJDIR)/$(FAAC_DIR)/libfaac/psychkni.o \
+	$(OBJDIR)/$(FAAC_DIR)/libfaac/tns.o \
+	$(OBJDIR)/$(FAAC_DIR)/libfaac/util.o
+
+
+
+FAAC_CFLAGS := $(CFLAGS) -I$(FAAC_DIR) -I$(FAAC_DIR)/libfaac -I$(FAAC_DIR)/include -DHAVE_CONFIG_H
+
+DIRS += $(OBJDIR)/$(FAAC_DIR) $(OBJDIR)/$(FAAC_DIR)/libfaac
+
+
+
