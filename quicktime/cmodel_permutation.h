@@ -775,9 +775,9 @@ static inline void transfer_RGBA888_to_YUV422(unsigned char *(*output),
 	int y, u, v, a, r, g, b;
 	
 	a = input[3];
-	r = (input[0] * a) / 0xff;
-	g = (input[1] * a) / 0xff;
-	b = (input[2] * a) / 0xff;
+	r = lrintf((input[0] * a) / 0xff);
+	g = lrintf((input[1] * a) / 0xff);
+	b = lrintf((input[2] * a) / 0xff);
 
 	RGB_TO_YUV(y, u, v, r, g, b);
 
