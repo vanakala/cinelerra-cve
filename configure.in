@@ -4,6 +4,8 @@ AC_CANONICAL_SYSTEM
 
 AM_INIT_AUTOMAKE(Cinelerra, "1.1.7")
 AM_CONFIG_HEADER(config.h)
+AM_GNU_GETTEXT([external])
+AM_GNU_GETTEXT_VERSION(0.11)
 
 AC_LANG_CPLUSPLUS
 AC_LANG_C
@@ -187,7 +189,7 @@ AC_SUBST(LIBAVCODEC_LIBS)
 
 ############## END OF FFMPEG
 
-AC_OUTPUT(Makefile \
+AC_OUTPUT(Makefile po/Makefile.in \
 					libmpeg3/Makefile libmpeg3/video/Makefile libmpeg3/audio/Makefile \
 					quicktime/Makefile quicktime/encore50/Makefile quicktime/decore50/Makefile \
 					mpeg2enc/Makefile toolame-02l/Makefile\

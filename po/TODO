@@ -1,0 +1,8 @@
+Things needing to get fixed regarding translations:
+
+- in performanceprefs.C fix titles static array so it will be translatable
+- same in recordgui.C
+- same in timeentry.C (day_table)
+- same in bcfilebox.C (column_titles)
+- fix vdevicebuz.C to be able to handle translated messages
+- PROGRAM_NAME constant should be handled differently
