@@ -79,7 +79,7 @@ int VAutomation::direct_copy_possible(int64_t start, int direction)
 //printf("VAutomation::direct_copy_possible 1\n");
 // Automation is constant
 	double constant;
-	if(fade_autos->automation_is_constant(start, end, direction, constant))
+	if(fade_autos->automation_is_constant(start, 1, direction, constant))
 	{
 //printf("VAutomation::direct_copy_possible 2 %f\n", fade_autos->get_automation_constant(start, end));
 		if(!EQUIV(constant, 100))
