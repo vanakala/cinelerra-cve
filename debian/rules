@@ -5,7 +5,8 @@
 package=hvirtual
 export DH_COMPAT=4
 
-CFLAGS=-ffast-math -O3 -mmmx -march=pentium-mmx
+#CFLAGS=-ffast-math -O3 -mmmx -march=pentium-mmx
+CFLAGS=-ffast-math -g -mmmx -march=pentium-mmx
 CXXFLAGS=$(CFLAGS) -fno-check-new
 
 MAKEFLAGS= -j2
@@ -53,7 +54,9 @@ binary-arch: checkroot build-stamp
 	dh_strip -a
 	strip -x -s -R .comment -R .note debian/cinelerra/usr/lib/cinelerra/*.so
 	guicast/bootstrap debian/cinelerra/usr/lib/cinelerra/defaulttheme.so plugins/defaulttheme/data/*.png
-	guicast/bootstrap debian/cinelerra/usr/lib/cinelerra/microtheme.so plugins/microtheme/data/*.png
+	guicast/bootstrap debian/cinelerra/usr/bin/cinelerra cinelerra/data/mode_*.png
+# not present anymore?
+#	guicast/bootstrap debian/cinelerra/usr/lib/cinelerra/microtheme.so plugins/microtheme/data/*.png
 
 	dh_makeshlibs -V -a
 	dh_shlibdeps -a
