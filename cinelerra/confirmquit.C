@@ -10,8 +10,8 @@
 
 ConfirmQuitWindow::ConfirmQuitWindow(MWindow *mwindow)
  : BC_Window(PROGRAM_NAME ": Question", 
- 	mwindow->gui->get_abs_cursor_x(), 
-	mwindow->gui->get_abs_cursor_y(), 
+ 	mwindow->gui->get_abs_cursor_x(1), 
+	mwindow->gui->get_abs_cursor_y(1), 
 	375, 
 	160)
 {

@@ -15,14 +15,6 @@ public:
 	int get_render_ptrs();
 	int init_realtime_parameters();
 
-// Replaced by pull method
-/*
- * 	void plugin_process_realtime(double **input, 
- * 		double **output, 
- * 		int64_t current_position, 
- * 		int64_t fragment_size,
- * 		int64_t total_len);
- */
 	int is_audio();
 // These should return 1 if error or 0 if success.
 // Multichannel buffer process for backwards compatibility

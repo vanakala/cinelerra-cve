@@ -1,7 +1,8 @@
 #ifndef LOADBALANCE_H
 #define LOADBALANCE_H
 
-#include "mutex.h"
+#include "condition.inc"
+#include "mutex.inc"
 #include "thread.h"
 
 
@@ -22,7 +23,7 @@ public:
 	LoadPackage();
 	virtual ~LoadPackage();
 	
-	Mutex completion_lock;
+	Condition *completion_lock;
 };
 
 
@@ -38,7 +39,8 @@ public:
 
 	int done;
 	int package_number;
-	Mutex input_lock, completion_lock;
+	Condition *input_lock;
+	Condition *completion_lock;
 	LoadServer *server;
 };
 
@@ -84,7 +86,7 @@ public:
 	int total_packages;
 	LoadClient **clients;
 	int total_clients;
-	Mutex client_lock;
+	Mutex *client_lock;
 };
 
 

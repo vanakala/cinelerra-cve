@@ -11,8 +11,8 @@
 
 RecConfirmDelete::RecConfirmDelete(MWindow *mwindow)
  : BC_Window(PROGRAM_NAME ": Confirm", 
- 	mwindow->gui->get_abs_cursor_x(),
-	mwindow->gui->get_abs_cursor_y(),
+ 	mwindow->gui->get_abs_cursor_x(1),
+	mwindow->gui->get_abs_cursor_y(1),
  	320, 100)
 {
 }

@@ -102,7 +102,8 @@ void quicktime_read_stsd(quicktime_t *file, quicktime_minf_t *minf, quicktime_st
 	for(i = 0; i < stsd->total_entries; i++)
 	{
 		quicktime_stsd_table_init(&(stsd->table[i]));
-		quicktime_read_stsd_table(file, minf, &(stsd->table[i]));
+//		quicktime_read_stsd_table(file, minf, &(stsd->table[i]));
+		quicktime_read_stsd_table(file, minf, &(stsd->table[0]));
 	}
 }
 

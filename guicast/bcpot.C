@@ -68,7 +68,7 @@ int BC_Pot::draw()
 	int x1, y1, x2, y2;
 	draw_top_background(parent_window, 0, 0, get_w(), get_h());
 	draw_pixmap(images[status]);
-	set_color(BLACK);
+	set_color(get_resources()->pot_needle_color);
 
 	angle_to_coords(x1, y1, x2, y2, percentage_to_angle(get_percentage()));
 	draw_line(x1, y1, x2, y2);

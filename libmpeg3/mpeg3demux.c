@@ -471,7 +471,9 @@ demuxer->dump = 0;
 //printf("read_transport 4 %x\n", demuxer->pid);
 	if(demuxer->transport_error_indicator)
 	{
-		fprintf(stderr, "demuxer->transport_error_indicator\n");
+		fprintf(stderr, 
+			"demuxer->transport_error_indicator at %llx\n", 
+			mpeg3io_tell(title->fs));
 		demuxer->absolute_byte = mpeg3io_tell(title->fs) + 
 			title->start_byte;
 		return 1;
@@ -556,14 +558,12 @@ demuxer->dump = 0;
 
 
 
-    if(demuxer->adaptation_field_control == 2 || 
-		demuxer->adaptation_field_control == 3)
+    if(demuxer->adaptation_field_control & 0x2)
     	result = get_adaptation_field(demuxer);
 
 // Need to enter in astream and vstream table:
 // PID ored with stream_id
-    if(demuxer->adaptation_field_control == 1 || 
-		demuxer->adaptation_field_control == 3)
+    if(demuxer->adaptation_field_control & 0x1)
     	result = get_payload(demuxer);
 
 	demuxer->absolute_byte = mpeg3io_tell(title->fs) + 

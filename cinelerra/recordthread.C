@@ -278,8 +278,9 @@ TRACE("RecordThread::run 6");
 				if(record->default_asset->audio_data && 
 					context != CONTEXT_SINGLEFRAME)
 				{
-					int64_t buffer_size, fragment_size;
-					record->get_audio_write_length(buffer_size, fragment_size);
+					int buffer_size, fragment_size;
+					record->get_audio_write_length(buffer_size, 
+						fragment_size);
 					record->file->start_audio_thread(buffer_size, RING_BUFFERS);
 				}
 TRACE("RecordThread::run 7");

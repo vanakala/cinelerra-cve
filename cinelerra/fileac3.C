@@ -196,8 +196,8 @@ int FileAC3::write_samples(double **buffer, int64_t len)
 AC3ConfigAudio::AC3ConfigAudio(BC_WindowBase *parent_window,
 	Asset *asset)
  : BC_Window(PROGRAM_NAME ": Audio Compression",
- 	parent_window->get_abs_cursor_x(),
- 	parent_window->get_abs_cursor_y(),
+ 	parent_window->get_abs_cursor_x(1),
+ 	parent_window->get_abs_cursor_y(1),
 	500,
 	300,
 	-1,

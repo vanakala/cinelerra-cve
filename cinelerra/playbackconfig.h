@@ -11,12 +11,13 @@
 class AudioOutConfig
 {
 public:
-	AudioOutConfig(int playback_strategy, int engine_number, int duplex);
+	AudioOutConfig(int duplex);
 	~AudioOutConfig();
 
 	int operator!=(AudioOutConfig &that);
 	int operator==(AudioOutConfig &that);
 	AudioOutConfig& operator=(AudioOutConfig &that);
+	void copy_from(AudioOutConfig *src);
 	int load_defaults(Defaults *defaults);
 	int save_defaults(Defaults *defaults);
 // Total channels in do_channels
@@ -29,8 +30,6 @@ public:
 
 // Change default titles for duplex
 	int duplex;
-	int playback_strategy;
-	int engine_number;
 	int driver;
 	int oss_enable[MAXDEVICES];
 	char oss_out_device[MAXDEVICES][BCTEXTLEN];
@@ -66,19 +65,18 @@ public:
 class VideoOutConfig
 {
 public:
-	VideoOutConfig(int playback_strategy, int engine_number);
+	VideoOutConfig();
 	~VideoOutConfig();
 
 	int operator!=(VideoOutConfig &that);
 	int operator==(VideoOutConfig &that);
 	VideoOutConfig& operator=(VideoOutConfig &that);
+	void copy_from(VideoOutConfig *src);
 	int load_defaults(Defaults *defaults);
 	int save_defaults(Defaults *defaults);
 	int total_playable_channels();
 	char* get_path();
 
-	int playback_strategy;
-	int engine_number;
 	int driver;
 	char lml_out_device[BCTEXTLEN];
 	char buz_out_device[BCTEXTLEN];
@@ -124,18 +122,17 @@ public:
 class PlaybackConfig
 {
 public:
-	PlaybackConfig(int playback_strategy, int engine_number);
+	PlaybackConfig();
 	~PlaybackConfig();
 
 	PlaybackConfig& operator=(PlaybackConfig &that);
+	void copy_from(PlaybackConfig *src);
 	int load_defaults(Defaults *defaults);
 	int save_defaults(Defaults *defaults);
 
 	char hostname[BCTEXTLEN];
 	int port;
 
-	int playback_strategy;
-	int engine_number;
 	AudioOutConfig *aconfig;
 	VideoOutConfig *vconfig;
 };

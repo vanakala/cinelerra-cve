@@ -1,3 +1,4 @@
+#include "bcsignals.h"
 #include "datatype.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -36,29 +37,6 @@ void VirtualVConsole::get_playable_tracks()
 			1);
 }
 
-// void VirtualVConsole::new_input_buffer(int ring_buffer)
-// {
-// 	buffer_in = new VFrame*[total_tracks];
-// //printf("VirtualVConsole::new_input_buffer 1\n");
-// 	for(int i = 0; i < total_tracks; i++)
-// 	{
-// 		buffer_in[i] = new VFrame(0,
-// 			playable_tracks->values[i]->track_w,
-// 			playable_tracks->values[i]->track_h,
-// 			renderengine->edl->session->color_model,
-// 			-1);
-// 	}
-// }
-// 
-// void VirtualVConsole::delete_input_buffer(int ring_buffer)
-// {
-// 	for(int i = 0; i < total_tracks; i++)
-// 	{
-// 		delete buffer_in[i];
-// 	}
-// 	delete [] buffer_in;
-// }
-
 VirtualNode* VirtualVConsole::new_entry_node(Track *track, 
 	Module *module,
 	int track_number)
@@ -77,7 +55,11 @@ int VirtualVConsole::process_buffer(int64_t input_position)
 	int i, j, k;
 	int result = 0;
 
-//printf("VirtualVConsole::process_buffer 1\n");
+
+
+
+
+	if(debug_tree) printf("VirtualVConsole::process_buffer begin\n");
 // clear output buffers
 	for(i = 0; i < MAX_CHANNELS; i++)
 	{
@@ -114,11 +96,13 @@ int VirtualVConsole::process_buffer(int64_t input_position)
 				-1);
 		}
 
+//printf("VirtualVConsole::process_buffer %p\n", output_temp->get_rows());
 		result |= node->render(output_temp,
 			input_position + track->nudge,
 			renderengine->edl->session->frame_rate);
 	}
 
+	if(debug_tree) printf("VirtualVConsole::process_buffer end\n");
 	return result;
 }
 

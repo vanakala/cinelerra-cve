@@ -1,3 +1,5 @@
+#include "condition.h"
+#include "mutex.h"
 #include "loadbalance.h"
 
 
@@ -5,10 +7,11 @@
 
 LoadPackage::LoadPackage()
 {
-	completion_lock.lock();
+	completion_lock = new Condition(0, "LoadPackage::completion_lock");
 }
 LoadPackage::~LoadPackage()
 {
+	delete completion_lock;
 }
 
 
@@ -26,15 +29,17 @@ LoadClient::LoadClient(LoadServer *server)
 	this->server = server;
 	done = 0;
 	package_number = 0;
-	input_lock.lock();
-	completion_lock.lock();
+	input_lock = new Condition(0, "LoadClient::input_lock");
+	completion_lock = new Condition(0, "LoadClient::completion_lock");
 }
 
 LoadClient::~LoadClient()
 {
 	done = 1;
-	input_lock.unlock();
+	input_lock->unlock();
 	Thread::join();
+	delete input_lock;
+	delete completion_lock;
 }
 
 int LoadClient::get_package_number()
@@ -47,7 +52,7 @@ void LoadClient::run()
 {
 	while(!done)
 	{
-		input_lock.lock();
+		input_lock->lock("LoadClient::run");
 
 		if(!done)
 		{
@@ -55,22 +60,22 @@ void LoadClient::run()
 			LoadPackage *package;
 			
 			
-			server->client_lock.lock();
+			server->client_lock->lock("LoadClient::run");
 			if(server->current_package < server->total_packages)
 			{
 				package_number = server->current_package;
 				package = server->packages[server->current_package++];
-				server->client_lock.unlock();
-				input_lock.unlock();
+				server->client_lock->unlock();
+				input_lock->unlock();
 
 				process_package(package);
 
-				package->completion_lock.unlock();
+				package->completion_lock->unlock();
 			}
 			else
 			{
-				completion_lock.unlock();
-				server->client_lock.unlock();
+				completion_lock->unlock();
+				server->client_lock->unlock();
 			}
 		}
 	}
@@ -92,12 +97,14 @@ LoadServer::LoadServer(int total_clients, int total_packages)
 	current_package = 0;
 	clients = 0;
 	packages = 0;
+	client_lock = new Mutex("LoadServer::client_lock");
 }
 
 LoadServer::~LoadServer()
 {
 	delete_clients();
 	delete_packages();
+	delete client_lock;
 }
 
 void LoadServer::delete_clients()
@@ -187,19 +194,19 @@ void LoadServer::process_packages()
 // Start all clients
 	for(int i = 0; i < total_clients; i++)
 	{
-		clients[i]->input_lock.unlock();
+		clients[i]->input_lock->unlock();
 	}
 	
 // Wait for packages to get finished
 	for(int i = 0; i < total_packages; i++)
 	{
-		packages[i]->completion_lock.lock();
+		packages[i]->completion_lock->lock("LoadServer::process_packages 1");
 	}
 
 // Wait for clients to finish before allowing changes to packages
 	for(int i = 0; i < total_clients; i++)
 	{
-		clients[i]->completion_lock.lock();
+		clients[i]->completion_lock->lock("LoadServer::process_packages 2");
 	}
 }
 

@@ -13,6 +13,7 @@ public:
 	~AutoConf() {};
 
 	AutoConf& operator=(AutoConf &that);
+	void copy_from(AutoConf *src);
 	int load_defaults(Defaults* defaults);
 	int save_defaults(Defaults* defaults);
 	void load_xml(FileXML *file);

@@ -63,7 +63,9 @@ int VDevice1394::open_input()
 			device->in_config->capture_length,
 			2,
 			48000,
-			16);
+			16,
+			device->in_config->w,
+			device->in_config->h);
 		if(result)
 		{
 			delete input_thread;

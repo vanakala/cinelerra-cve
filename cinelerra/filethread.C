@@ -108,15 +108,12 @@ TRACE("FileThread::run 5");
 					result = 0;
 					if(compressed)
 					{
-TRACE("FileThread::run 6");
 						for(j = 0; j < file->asset->layers && !result; j++)
 							for(i = 0; i < output_size[local_buffer] && !result; i++)
 								result = file->write_compressed_frame(video_buffer[local_buffer][j][i]);
-TRACE("FileThread::run 7");
 					}
 					else
 					{
-//printf("FileThread::run 1 %d %p %p\n", local_buffer, video_buffer, video_buffer[local_buffer]);
 						result = file->write_frames(video_buffer[local_buffer], 
 							output_size[local_buffer]);
 					}
@@ -156,7 +153,7 @@ int FileThread::stop_writing()
 	swap_buffer();
 
 // wait for thread to finish
-	join();
+	Thread::join();
 
 // delete buffers
 	file_lock->lock("FileThread::stop_writing 2");

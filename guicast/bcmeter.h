@@ -11,7 +11,9 @@
 #define METER_INT 1
 #define METER_VERT 0
 #define METER_HORIZ 1
-#define METER_MARGIN 4
+
+// Distance from subwindow border to top and bottom tick mark
+#define METER_MARGIN 0
 
 class BC_Meter : public BC_SubWindow
 {
@@ -20,11 +22,14 @@ public:
 		int y, 
 		int orientation, 
 		int pixels, 
-		float min = -40, 
-		int mode = METER_DB, 
-		int use_titles = 0,
-		long over_delay = 150,
-		long peak_delay = 15);
+		int min, /* = -40, */
+		int max,
+		int mode, /* = METER_DB, */
+		int use_titles, /* = 0, */
+// Number of updates before over dissappears
+		long over_delay, /* = 150, */
+// Number of updates before peak updates
+		long peak_delay /* = 15 */);
 	virtual ~BC_Meter();
 
 	int initialize();
@@ -40,7 +45,7 @@ public:
 	int reposition_window(int x, int y, int pixels);
 	int reset();
 	int reset_over();
-	int change_format(int mode, float min);
+	int change_format(int mode, int min, int max);
 
 private:
 	void draw_titles();
@@ -50,13 +55,17 @@ private:
 
 	BC_Pixmap *images[TOTAL_METER_IMAGES];
 	int orientation;
+// Number of pixels in the longest dimension
 	int pixels;
 	int low_division;
 	int medium_division;
+	int high_division;
 	int use_titles;
-	int *title_pixel;
-	char **db_titles;
-	int meter_titles;
+// Tick mark positions
+	ArrayList<int> tick_pixels;
+// Title positions
+	ArrayList<int> title_pixels;
+	ArrayList<char*> db_titles;
 	float level, peak;
 	int mode;
 	DB db;
@@ -69,7 +78,8 @@ private:
 
 	int peak_pixel, level_pixel, peak_pixel1, peak_pixel2;
 	int over_count, over_timer;
-	float min;
+	int min;
+	int max;
 	long over_delay;       // Number of updates the over warning lasts.
 	long peak_delay;       // Number of updates the peak lasts.
 };

@@ -20,7 +20,7 @@ public:
 
 // get difference in arbitrary units between now and last update    
 	int64_t get_scaled_difference(long denominator);        
-	int delay(long milliseconds);
+	static int delay(long milliseconds);
 
 private:
 	struct timeval current_time;

@@ -3,6 +3,7 @@
 
 #include "edl.inc"
 #include "guicast.h"
+#include "mutex.inc"
 #include "mwindow.inc"
 #include "preferences.inc"
 #include "preferencesthread.inc"
@@ -44,6 +45,7 @@ public:
 	int close_assets;
 	int reload_plugins;
 	PreferencesWindow *window;
+	Mutex *window_lock;
 	MWindow *mwindow;
 // Copy of mwindow preferences
 	Preferences *preferences;
@@ -68,7 +70,10 @@ class PreferencesCategory;
 class PreferencesWindow : public BC_Window
 {
 public:
-	PreferencesWindow(MWindow *mwindow, PreferencesThread *thread);
+	PreferencesWindow(MWindow *mwindow, 
+		PreferencesThread *thread,
+		int x,
+		int y);
 	~PreferencesWindow();
 
 	int create_objects();

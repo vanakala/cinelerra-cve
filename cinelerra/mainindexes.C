@@ -131,12 +131,9 @@ void MainIndexes::run()
 // Wait for new assets to be released
 		input_lock->lock("MainIndexes::run 1");
 		if(done) return;
-
 		interrupt_lock->lock("MainIndexes::run 2");
-//printf("MainIndexes::run 1 %d\n", next_assets.total);
 		load_next_assets();
 		interrupt_flag = 0;
-//printf("MainIndexes::run 2 %d\n", current_assets.total);
 
 
 
@@ -194,7 +191,6 @@ void MainIndexes::run()
 			}
 //printf("MainIndexes::run 9\n");
 		}
-//printf("MainIndexes::run 10\n");
 
 		if(progress)     // progress box is only created when an index is built
 		{
@@ -209,7 +205,6 @@ void MainIndexes::run()
 
 
 
-//printf("MainIndexes::run 11\n");
 
 		interrupt_lock->unlock();
 	}

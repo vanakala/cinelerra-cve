@@ -385,18 +385,12 @@ void TimeBar::update_presentations()
 
 void TimeBar::update(int do_range, int do_others)
 {
-//printf("TimeBar::update 1\n");
 	draw_time();
-//printf("TimeBar::update 1\n");
 // Need to redo these when range is drawn to get the background updated.
 	update_labels();
-//printf("TimeBar::update 1\n");
 	update_points();
-//printf("TimeBar::update 1\n");
 	update_presentations();
-//printf("TimeBar::update 1\n");
 	flash();
-//printf("TimeBar::update 10\n");
 }
 
 

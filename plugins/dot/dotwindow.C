@@ -1,10 +1,7 @@
 #include "bcdisplayinfo.h"
 #include "dotwindow.h"
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
+#include "language.h"
+#include "pluginclient.h"
 
 PLUGIN_THREAD_OBJECT(DotMain, DotThread, DotWindow)
 
@@ -45,12 +42,7 @@ int DotWindow::create_objects()
 	return 0;
 }
 
-int DotWindow::close_event()
-{
-// Set result to 1 to indicate a client side close
-	set_done(1);
-	return 1;
-}
+WINDOW_CLOSE_EVENT(DotWindow)
 
 
 

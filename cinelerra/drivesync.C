@@ -21,9 +21,7 @@ void DriveSync::run()
 // Task switching too slow on alpha
 	while(!done)
 	{
-//printf("DriveSync::run 1\n");
 		sync();
-//printf("DriveSync::run 10\n");
 		sleep(1);
 	}
 }

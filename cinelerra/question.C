@@ -1,21 +1,17 @@
+#include "language.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "question.h"
 #include "theme.h"
 
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
-
 #define WIDTH 375
 #define HEIGHT 160
 
 QuestionWindow::QuestionWindow(MWindow *mwindow)
  : BC_Window(PROGRAM_NAME ": Question", 
- 	mwindow->gui->get_abs_cursor_x() - WIDTH / 2, 
-	mwindow->gui->get_abs_cursor_y() - HEIGHT / 2, 
+ 	mwindow->gui->get_abs_cursor_x(1) - WIDTH / 2, 
+	mwindow->gui->get_abs_cursor_y(1) - HEIGHT / 2, 
 	WIDTH, 
 	HEIGHT)
 {

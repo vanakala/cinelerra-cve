@@ -20,7 +20,9 @@
 class AttachmentPoint
 {
 public:
-	AttachmentPoint(RenderEngine *renderengine, Plugin *plugin, int data_type);
+	AttachmentPoint(RenderEngine *renderengine, 
+		Plugin *plugin, 
+		int data_type);
 	virtual ~AttachmentPoint();
 
 	virtual int reset_parameters();
@@ -44,18 +46,9 @@ public:
 // check all the virtual plugins for waiting status
 // all virtual plugins attached to this must be waiting for a render
 //	int sort(VirtualNode *virtual_plugin);
-/*
- * 	void render(long current_position, 
- * 		long fragment_size);
- */
 // Called by plugin server to render GUI with data.
 	void render_gui(void *data);
 	void render_gui(void *data, int size);
-/*
- * 	virtual void dispatch_plugin_server(int buffer_number, 
- * 		long current_position, 
- * 		long fragment_size) {};
- */
 	virtual int get_buffer_size() { return 0; };
 
 // For unshared plugins, virtual plugins to send configuration events to and 
@@ -101,17 +94,6 @@ public:
 
 
 
-
-// For multichannel plugins store the fragment positions for each plugin
-// and render the plugin when the last fragment position is stored
-	int render(int double_buffer_in, int double_buffer_out, 
-				long fragment_position_in, long fragment_position_out,
-				long size, int node_number, 
-				long source_position, long source_len, 
-				FloatAutos *autos = 0,
-				FloatAuto **start_auto = 0,
-				FloatAuto **end_auto = 0,
-				int reverse = 0);
 
 	int multichannel_shared(int search_new);
 	int singlechannel();

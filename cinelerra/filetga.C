@@ -169,7 +169,7 @@ FrameWriterUnit* FileTGA::new_writer_unit(FrameWriter *writer)
 
 int FileTGA::get_memory_usage()
 {
-	int result = FileBase::get_memory_usage();
+	int result = FileList::get_memory_usage();
 	if(temp) result += temp->get_data_size();
 	return result;
 }
@@ -881,8 +881,8 @@ TGAUnit::~TGAUnit()
 
 TGAConfigVideo::TGAConfigVideo(BC_WindowBase *gui, Asset *asset)
  : BC_Window(PROGRAM_NAME ": Video Compression",
- 	gui->get_abs_cursor_x(),
- 	gui->get_abs_cursor_y(),
+ 	gui->get_abs_cursor_x(1),
+ 	gui->get_abs_cursor_y(1),
 	400,
 	100)
 {

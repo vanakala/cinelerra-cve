@@ -7,8 +7,8 @@
 class SharpenMain;
 #define MAXSHARPNESS 100
 
+#include "condition.inc"
 #include "defaults.h"
-#include "mutex.h"
 #include "pluginvclient.h"
 #include "sharpenwindow.h"
 
@@ -86,7 +86,6 @@ public:
 	void run();
 
 	void filter(int components,
-		int wordsize,
 		int vmax,
 		int w, 
 		unsigned char *src, 
@@ -95,7 +94,6 @@ public:
 		int *neg1, 
 		int *neg2);
 	void filter(int components,
-		int wordsize,
 		int vmax,
 		int w, 
 		u_int16_t *src, 
@@ -103,6 +101,14 @@ public:
 		int *neg0, 
 		int *neg1, 
 		int *neg2);
+	void filter(int components,
+		int vmax,
+		int w, 
+		float *src, 
+		float *dst,
+		float *neg0, 
+		float *neg1, 
+		float *neg2);
 
 
 	void filter_888(int w, 
@@ -130,11 +136,6 @@ public:
 		int *neg1, 
 		int *neg2);
 
-	void sharpen_888();
-	void sharpen_161616();
-	void sharpen_8888();
-	void sharpen_16161616();
-
 	int filter(int w, 
 		unsigned char *src, 
 		unsigned char *dst, 
@@ -142,13 +143,18 @@ public:
 		int *neg1, 
 		int *neg2);
 
+	float calculate_pos(float value);
+	float calculate_neg(float value);
+
+
 	SharpenMain *plugin;
 	int field;
 	VFrame *output, *input;
 	int last_frame;
-	Mutex input_lock, output_lock;
+	Condition *input_lock, *output_lock;
 	unsigned char *src_rows[4], *dst_row;
-	int *neg_rows[4];
+	unsigned char *neg_rows[4];
+	float sharpness_coef;
 };
 
 #endif

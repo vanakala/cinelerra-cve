@@ -53,7 +53,7 @@ RenderFarmServer::RenderFarmServer(ArrayList<PluginServer*> *plugindb,
 	this->default_asset = default_asset;
 	this->edl = edl;
 	this->brender = brender;
-	client_lock = new Mutex;
+	client_lock = new Mutex("RenderFarmServer::client_lock");
 }
 
 RenderFarmServer::~RenderFarmServer()
@@ -69,7 +69,7 @@ int RenderFarmServer::start_clients()
 
 	for(int i = 0; i < preferences->get_enabled_nodes() && !result; i++)
 	{
-		client_lock->lock();
+		client_lock->lock("RenderFarmServer::start_clients");
 		RenderFarmServerThread *client = new RenderFarmServerThread(plugindb, 
 			this, 
 			i);

@@ -8,6 +8,7 @@ Sema::Sema(int init_value, char *title)
 {
 	sem_init(&sem, 0, init_value);
 	this->title = title;
+	this->init_value = init_value;
 }
 
 Sema::~Sema()
@@ -21,6 +22,7 @@ void Sema::lock(char *location)
 {
 	SET_LOCK(this, title, location);
 	sem_wait(&sem);
+	SET_LOCK2
 }
 
 void Sema::unlock()
@@ -36,6 +38,12 @@ int Sema::get_value()
 	return result;
 }
 
+void Sema::reset()
+{
+	sem_destroy(&sem);
+	sem_init(&sem, 0, init_value);
+	UNSET_ALL_LOCKS(this)
+}
 
 
 

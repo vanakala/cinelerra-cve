@@ -11,18 +11,22 @@ An optimization error in GCC 3.3.2 causes RGB16 colormodels to crash.
  - Recompiling the cmodel files with just -O works.
 Drag effect before timeline is finished drawing after a load -> lockup
 Test 0 for loop video.
-Keyframes for effects are still displayed if edits are collapsed.
 Interpolate video shouldn't always use different frames if framerate is fractionally different
-Interpolate audio
 VFS broken on Opteron
-Crash when applying interpolateaudio to small segment and repeatedly playing.
 diffkey debug
-Transition lengths not adjusted for frame rate changes.
-Undo doesn't restore project title from previous load.
+Overlay doesn't handle different sized tracks
 Quicktime mp4a not decoded properly
 Quicktime mp3 needs standards check
-
-
+File format for effect is being shared with render again.
+Having shared plugin off but sharing instance on creates mono sound.
+Importing assets of the same name but different resolutions crashes because the
+formats aren't updated.
+Attach shared reverb to both tracks.  Attach different compressor on each track.
+ - Get artifacts in track with shared reverb.
+Default pan keyframe gets pasted when dragging edit from one track to another.
+Undo doesn't restore project title from previous load.
+ - New file can be saved under old filename if undo is used.
+ - Current title changes in save function and could not be restored in redo.
 
 Small bugs
 ----------------
@@ -36,12 +40,16 @@ List problems:
 
 Big Features
 ----------------
-Should restore EDL path from backup.
-Test pull console with LAD.
+Delete files function.
+Remove unused resources function.
+Document compressor.
+Document meter overload (headroom).  Soundcards only go to 0 DB.
+Flag indicating refresh in progress.
+Session management
+Hourglass
+Float colormodel
 Signal handling for non interactive rendering.
-Compressor using readahead buffer.
 Sound level using readahead buffer.
-hourglass
 color curves
 hide cursor when over video output
 SUV theme
@@ -74,58 +82,6 @@ Time domain pitch shift
 File sequence testing.
 Drag plugin handle should only affect plugins with matching handles.
 Independant record options for plugin sets.
-
-
-
-
-
-
-
-
-Patches
---------------------
-koen muylkens <koen.muylkens@esat.kuleuven.ac.be>
-newskin-cinelerra.diff
-
-
-
-Andraz Tori:
-masks_fixes.diff
-
-Fixes are:
-- when adding a point to the mask by just clicking and not dragging,
-mask is not rerendered (changes to cwindowgui.C)
-- when working with autokeyframes enabled with masks. If you have
-keyframe A at position 0 and keyframe B at position 100, when you
-would
-like to edit mask at position 50 and you add a new point or move
-previous one, the whole mask at position 50 snaps back to the position
-as specified in keyframe A (all changes except to cwindowgui.C)
-
-the first fix is pretty obvious, just rerendering was mising in a
-codepath
-
-the second one is more deep-trough, since it adds missing
-functionality
-to auto.h/C ... when autocreating keyframe, keyframe should be
-interpolated from frame before and after it (if they exist).
-
-masks_fixes.diff
-
-if there is more than one mask, they all have to be counted
-in order to figure y-bounding interval for redraw.
-
-maskengine4_fix.diff
-
-plugindialog_fix.diff - already done
-
-If there are only two video tracks, and one has a shared track effect
-from the other. and the other is deleted. cinelerra crushes.
-
-shared_track_deletion_crush.diff
-
-
-
 
 
 

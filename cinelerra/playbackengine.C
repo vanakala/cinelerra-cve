@@ -22,7 +22,7 @@
 
 
 PlaybackEngine::PlaybackEngine(MWindow *mwindow, Canvas *output)
- : Thread()
+ : Thread(1, 0, 0)
 {
 	this->mwindow = mwindow;
 	this->output = output;
@@ -32,11 +32,12 @@ PlaybackEngine::PlaybackEngine(MWindow *mwindow, Canvas *output)
 	audio_cache = 0;
 	video_cache = 0;
 	last_command = STOP;
-	Thread::set_synchronous(1);
 	tracking_lock = new Mutex("PlaybackEngine::tracking_lock");
 	tracking_done = new Condition(1, "PlaybackEngine::tracking_done");
 	pause_lock = new Condition(0, "PlaybackEngine::pause_lock");
 	start_lock = new Condition(0, "PlaybackEngine::start_lock");
+	render_engine = 0;
+	debug = 0;
 }
 
 PlaybackEngine::~PlaybackEngine()
@@ -52,9 +53,9 @@ PlaybackEngine::~PlaybackEngine()
 	delete preferences;
 	delete command;
 	delete que;
-	delete_render_engines();
-	if(audio_cache) delete audio_cache;
-	if(video_cache) delete video_cache;
+	delete_render_engine();
+	delete audio_cache;
+	delete video_cache;
 	delete tracking_lock;
 	delete tracking_done;
 	delete pause_lock;
@@ -80,8 +81,7 @@ int PlaybackEngine::create_objects()
 
 ChannelDB* PlaybackEngine::get_channeldb()
 {
-	int playback_strategy = command->get_edl()->session->playback_strategy;
-	PlaybackConfig *config = command->get_edl()->session->get_playback_config(playback_strategy, 0);
+	PlaybackConfig *config = command->get_edl()->session->playback_config;
 	switch(config->vconfig->driver)
 	{
 		case VIDEO4LINUX2JPEG:
@@ -94,68 +94,49 @@ ChannelDB* PlaybackEngine::get_channeldb()
 	return 0;
 }
 
-int PlaybackEngine::create_render_engines()
+int PlaybackEngine::create_render_engine()
 {
-//printf("PlaybackEngine::create_render_engines 1 %d\n", command->edl->session->playback_strategy);
 // Fix playback configurations
-	int playback_strategy = command->get_edl()->session->playback_strategy;
 	int current_vchannel = 0;
 	int current_achannel = 0;
 
-	delete_render_engines();
+	delete_render_engine();
 
 
-//printf("PlaybackEngine::create_render_engines %d\n", command->get_edl()->session->playback_config[playback_strategy].total);
-	for(int i = 0; 
-		i < command->get_edl()->session->get_playback_heads(playback_strategy); 
-		i++)
-	{
-		RenderEngine *engine = new RenderEngine(this,
-			preferences, 
-			command, 
-			output,
-			mwindow->plugindb,
-			get_channeldb(),
-			i);  
-		render_engines.append(engine);
-	}
+	render_engine = new RenderEngine(this,
+		preferences, 
+		command, 
+		output,
+		mwindow->plugindb,
+		get_channeldb());  
 	return 0;
 }
 
-void PlaybackEngine::delete_render_engines()
+void PlaybackEngine::delete_render_engine()
 {
-	render_engines.remove_all_objects();
+	delete render_engine;
+	render_engine = 0;
 }
 
-void PlaybackEngine::arm_render_engines()
+void PlaybackEngine::arm_render_engine()
 {
 	int current_achannel = 0, current_vchannel = 0;
-	for(int i = 0; i < render_engines.total; i++)
-	{
-//printf("PlaybackEngine::arm_render_engines %ld\n", command->playbackstart);
-		render_engines.values[i]->arm_command(command,
+	if(render_engine)
+		render_engine->arm_command(command,
 			current_achannel,
 			current_vchannel);
-	}
 }
 
-void PlaybackEngine::start_render_engines()
+void PlaybackEngine::start_render_engine()
 {
-//printf("PlaybackEngine::start_render_engines 1 %d\n", render_engines.total);
-	for(int i = 0; i < render_engines.total; i++)
-	{
-		render_engines.values[i]->start_command();
-	}
+	if(render_engine) render_engine->start_command();
 }
 
-void PlaybackEngine::wait_render_engines()
+void PlaybackEngine::wait_render_engine()
 {
-	if(command->realtime)
+	if(command->realtime && render_engine)
 	{
-		for(int i = 0; i < render_engines.total; i++)
-		{
-			render_engines.values[i]->join();
-		}
+		render_engine->join();
 	}
 }
 
@@ -186,12 +167,11 @@ void PlaybackEngine::perform_change()
 		case CHANGE_EDL:
 			audio_cache->set_edl(command->get_edl());
 			video_cache->set_edl(command->get_edl());
-			create_render_engines();
+			create_render_engine();
 		case CHANGE_PARAMS:
 			if(command->change_type != CHANGE_EDL &&
 				command->change_type != CHANGE_ALL)
-				for(int i = 0; i < render_engines.total; i++)
-					render_engines.values[i]->edl->synchronize_params(command->get_edl());
+				render_engine->edl->synchronize_params(command->get_edl());
 		case CHANGE_NONE:
 			break;
 	}
@@ -201,15 +181,14 @@ void PlaybackEngine::sync_parameters(EDL *edl)
 {
 // TODO: lock out render engine from keyframe deletions
 	command->get_edl()->synchronize_params(edl);
-	for(int i = 0; i < render_engines.total; i++)
-		render_engines.values[i]->edl->synchronize_params(edl);
+	if(render_engine) render_engine->edl->synchronize_params(edl);
 }
 
 
 void PlaybackEngine::interrupt_playback(int wait_tracking)
 {
-	for(int i = 0; i < render_engines.total; i++)
-		render_engines.values[i]->interrupt_playback();
+	if(render_engine)
+		render_engine->interrupt_playback();
 
 // Stop pausing
 	pause_lock->unlock();
@@ -227,13 +206,10 @@ void PlaybackEngine::interrupt_playback(int wait_tracking)
 int PlaybackEngine::get_output_levels(double *levels, long position)
 {
 	int result = 0;
-	for(int j = 0; j < render_engines.total; j++)
+	if(render_engine && render_engine->do_audio)
 	{
-		if(render_engines.values[j]->do_audio)
-		{
-			result = 1;
-			render_engines.values[j]->get_output_levels(levels, position);
-		}
+		result = 1;
+		render_engine->get_output_levels(levels, position);
 	}
 	return result;
 }
@@ -242,14 +218,10 @@ int PlaybackEngine::get_output_levels(double *levels, long position)
 int PlaybackEngine::get_module_levels(ArrayList<double> *module_levels, long position)
 {
 	int result = 0;
-	for(int j = 0; j < render_engines.total; j++)
+	if(render_engine && render_engine->do_audio)
 	{
-		if(render_engines.values[j]->do_audio)
-		{
-			result = 1;
-			render_engines.values[j]->get_module_levels(module_levels, position);
-			break;
-		}
+		result = 1;
+		render_engine->get_module_levels(module_levels, position);
 	}
 	return result;
 }
@@ -316,8 +288,8 @@ double PlaybackEngine::get_tracking_position()
 
 // Don't interpolate when every frame is played.
 		if(command->get_edl()->session->video_every_frame &&
-			render_engines.total &&
-			render_engines.values[0]->do_video)
+			render_engine &&
+			render_engine->do_video)
 		{
 			result = tracking_position;
 		}
@@ -387,14 +359,16 @@ void PlaybackEngine::run()
 // Wait for current command to finish
 		que->output_lock->lock("PlaybackEngine::run");
 
-		wait_render_engines();
+//printf("PlaybackEngine::run 1\n");
+		wait_render_engine();
+//printf("PlaybackEngine::run 2\n");
 
 
 // Read the new command
 		que->input_lock->lock("PlaybackEngine::run");
 		if(done) return;
 
-		*command = que->command;
+		command->copy_from(&que->command);
 		que->command.reset();
 		que->input_lock->unlock();
 
@@ -421,9 +395,9 @@ void PlaybackEngine::run()
 			case CURRENT_FRAME:
 				last_command = command->command;
 				perform_change();
-				arm_render_engines();
+				arm_render_engine();
 // Dispatch the command
-				start_render_engines();
+				start_render_engine();
 				break;
 
 			default:
@@ -436,14 +410,14 @@ void PlaybackEngine::run()
 				}
 
 				perform_change();
-				arm_render_engines();
+				arm_render_engine();
 
 // Start tracking after arming so the tracking position doesn't change.
 // The tracking for a single frame command occurs during PAUSE
 				init_tracking();
 
 // Dispatch the command
-				start_render_engines();
+				start_render_engine();
 				break;
 		}
 
@@ -453,160 +427,4 @@ void PlaybackEngine::run()
 }
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-int PlaybackEngine::reset_parameters()
-{
-// called before every playback
-	is_playing_back = 0;
-	follow_loop = 0;
-	speed = 1;
-	reverse = 0;
-	cursor = 0;
-	last_position = 0;
-	playback_start = playback_end = 0;
-	infinite = 0;
-	use_buttons = 0;
-	audio = 0;
-	video = 0;
-	shared_audio = 0;
-	return 0;
-}
-
-// int PlaybackEngine::init_parameters()
-// {
-// //	is_playing_back = 1;
-// 	update_button = 1;
-// 	correction_factor = 0;
-// 
-// // correct playback buffer sizes
-// 	input_length = 
-// 		playback_buffer = 
-// 		output_length = 
-// 		audio_module_fragment = 
-// 		command->get_edl()->session->audio_module_fragment;
-// 
-// // get maximum actual buffer size written to device plus padding
-// 	if(speed != 1) output_length = (long)(output_length / speed) + 16;   
-// 	if(output_length < playback_buffer) output_length = playback_buffer;
-// 
-// // samples to read at a time is a multiple of the playback buffer greater than read_length
-// 	while(input_length < command->get_edl()->session->audio_module_fragment)
-// 		input_length += playback_buffer;
-// 	return 0;
-// }
-
-int PlaybackEngine::init_audio_device()
-{
-	return 0;
-}
-
-int PlaybackEngine::init_video_device()
-{
-	return 0;
-}
-
-
-
-int PlaybackEngine::start_reconfigure()
-{
-	reconfigure_status = is_playing_back;
-//	if(is_playing_back) stop_playback(0);
-	return 0;
-}
-
-int PlaybackEngine::stop_reconfigure()
-{
-	return 0;
-}
-
-int PlaybackEngine::reset_buttons()
-{
-	return 0;
-}
-
-
-long PlaybackEngine::absolute_position(int sync_time)
-{
-	return 0;
-}
-
-long PlaybackEngine::get_position(int sync_time)
-{
-	long result;
-
-	switch(is_playing_back)
-	{
-		case 2:
-// playing back
-			result = absolute_position(sync_time);
-// adjust for speed
-			result = (long)(result * speed);
-
-// adjust direction and initial position
-			if(reverse)
-			{
-				result = playback_end - result;
-				result += loop_adjustment;
-
-// adjust for looping
-// 				while(mwindow->session->loop_playback && follow_loop && 
-// 					result < mwindow->session->loop_start)
-// 				{
-// 					result += mwindow->session->loop_end - mwindow->session->loop_start;
-// 					loop_adjustment += mwindow->session->loop_end - mwindow->session->loop_start;
-// 				}
-			}
-			else
-			{
-				result += playback_start;
-				result -= loop_adjustment;
-				
-// 				while(mwindow->session->loop_playback && follow_loop && 
-// 					result > mwindow->session->loop_end)
-// 				{
-// 					result -= mwindow->session->loop_end - mwindow->session->loop_start;
-// 					loop_adjustment += mwindow->session->loop_end - mwindow->session->loop_start;
-// 				}
-			}
-			break;
-
-		case 1:
-// paused
-			result = last_position;
-			break;
-
-		default:
-// no value
-			result = -1;
-			break;
-	}
-
-	return result;
-}
-
-
-int PlaybackEngine::move_right(long distance) 
-{ 
-	mwindow->move_right(distance); 
-	return 0;
-}
 

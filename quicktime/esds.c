@@ -85,3 +85,107 @@ void quicktime_read_esds(quicktime_t *file,
 		return;
 	}
 }
+
+
+
+void quicktime_write_esds(quicktime_t *file, 
+	quicktime_stsd_table_t *table,
+	int do_video,
+	int do_audio)
+{
+	quicktime_atom_t atom;
+	quicktime_atom_write_header(file, &atom, "esds");
+// version
+	quicktime_write_char(file, 0);
+// flags
+	quicktime_write_int24(file, 0);
+
+// elementary stream descriptor tag
+	quicktime_write_char(file, 0x3);
+
+// length placeholder
+	int64_t length1 = quicktime_position(file);
+//	quicktime_write_int32(file, 0x80808080);
+	quicktime_write_char(file, 0x00);
+
+// elementary stream id
+	quicktime_write_int16(file, 0);
+// stream priority
+	if(do_video)
+		quicktime_write_char(file, 0x1f);
+	else
+		quicktime_write_char(file, 0);
+
+
+// decoder configuration description tab
+	quicktime_write_char(file, 0x4);
+// length placeholder
+	int64_t length2 = quicktime_position(file);
+//	quicktime_write_int32(file, 0x80808080);
+	quicktime_write_char(file, 0x00);
+
+// video
+	if(do_video)
+	{
+// object type id
+		quicktime_write_char(file, 0x20);
+// stream type
+		quicktime_write_char(file, 0x11);
+// buffer size
+		quicktime_write_int24(file, 0x007b00);
+// max bitrate
+		quicktime_write_int32(file, 0x00014800);
+// average bitrate
+		quicktime_write_int32(file, 0x00014800);
+	}
+	else
+	{
+// object type id
+		quicktime_write_char(file, 0x40);
+// stream type
+		quicktime_write_char(file, 0x15);
+// buffer size
+		quicktime_write_int24(file, 0x001800);
+// max bitrate
+		quicktime_write_int32(file, 0x00004e20);
+// average bitrate
+		quicktime_write_int32(file, 0x00003e80);
+	}
+
+// decoder specific description tag
+	quicktime_write_char(file, 0x05);
+// length placeholder
+	int64_t length3 = quicktime_position(file);
+//	quicktime_write_int32(file, 0x80808080);
+	quicktime_write_char(file, 0x00);
+
+// mpeg4 sequence header
+	quicktime_write_data(file, table->mpeg4_header, table->mpeg4_header_size);
+
+
+	int64_t current_length2 = quicktime_position(file) - length2 - 4;
+	int64_t current_length3 = quicktime_position(file) - length3 - 4;
+
+// unknown tag, length and data
+	quicktime_write_char(file, 0x06);
+//	quicktime_write_int32(file, 0x80808001);
+	quicktime_write_char(file, 0x01);
+	quicktime_write_char(file, 0x02);
+
+
+// write lengths
+	int64_t current_length1 = quicktime_position(file) - length1 - 4;
+	quicktime_atom_write_footer(file, &atom);
+	int64_t current_position = quicktime_position(file);
+//	quicktime_set_position(file, length1 + 3);
+	quicktime_set_position(file, length1);
+	quicktime_write_char(file, current_length1);
+//	quicktime_set_position(file, length2 + 3);
+	quicktime_set_position(file, length2);
+	quicktime_write_char(file, current_length2);
+//	quicktime_set_position(file, length3 + 3);
+	quicktime_set_position(file, length3);
+	quicktime_write_char(file, current_length3);
+	quicktime_set_position(file, current_position);
+}
+

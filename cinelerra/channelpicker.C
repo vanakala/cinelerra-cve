@@ -438,6 +438,7 @@ ChannelText::ChannelText(MWindow *mwindow,
 	150, 
 	300)
 {
+
 	this->channel_picker = channel_picker;
 	this->mwindow = mwindow;
 }

@@ -9,7 +9,7 @@ class VPlayback : public PlaybackEngine
 public:
 	VPlayback(MWindow *mwindow, VWindow *vwindow, Canvas *output);
 
-	int create_render_engines();
+	int create_render_engine();
 	void init_cursor();
 	void stop_cursor();
 	void goto_start();

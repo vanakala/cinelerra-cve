@@ -74,7 +74,7 @@ void NewFolderThread::run()
 		mwindow->new_folder(window->get_text());
 	}
 
-	change_lock.lock();
+	change_lock.lock("NewFolderThread::run");
 	active = 0;
 	change_lock.unlock();
 	delete window;
@@ -83,7 +83,7 @@ void NewFolderThread::run()
 
 int NewFolderThread::interrupt()
 {
-	change_lock.lock();
+	change_lock.lock("NewFolderThread::interrupt");
 	if(active)
 	{
 		window->lock_window();
@@ -93,22 +93,25 @@ int NewFolderThread::interrupt()
 
 	change_lock.unlock();
 
-	completion_lock.lock();
+	completion_lock.lock("NewFolderThread::interrupt");
 	completion_lock.unlock();
 	return 0;
 }
 
 int NewFolderThread::start_new_folder()
 {
-	window = new NewFolder(mwindow, awindow, awindow->get_abs_cursor_x(), awindow->get_abs_cursor_y() - 120);
+	window = new NewFolder(mwindow, 
+		awindow, 
+		awindow->get_abs_cursor_x(1), 
+		awindow->get_abs_cursor_y(1) - 120);
 	window->create_objects();
 
-	change_lock.lock();
+	change_lock.lock("NewFolderThread::start_new_folder");
 	active = 1;
 	change_lock.unlock();
 
 	Thread::start();
 
-	completion_lock.lock();
+	completion_lock.lock("NewFolderThread::start_new_folder");
 	return 0;
 }

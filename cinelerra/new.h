@@ -7,11 +7,13 @@
 #include "filexml.inc"
 #include "guicast.h"
 #include "defaults.inc"
+#include "formatpresets.h"
 #include "mwindow.inc"
 #include "thread.h"
 
 class NewThread;
 class NewWindow;
+class NewPresets;
 
 class New : public BC_MenuItem
 {
@@ -48,25 +50,17 @@ public:
 	NewWindow *nwindow;
 	MWindow *mwindow;
 	New *new_project;
+	Mutex *window_lock;
 };
-
-class NewPresetsPulldown;
-class NewPresetItem;
-class NewPresetsText;
 
 class NewWindow : public BC_Window
 {
 public:
-	NewWindow(MWindow *mwindow, NewThread *new_thread);
+	NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y);
 	~NewWindow();
 	
-	void create_presets(int &x, int &y);
 	int create_objects();
 	int update();
-// Match the EDL configuration to a preset for displaying in the preset box.
-	int get_preset(EDL *edl);
-// Get the text for the preset returned by get_preset
-	char* get_preset_text();
 
 	MWindow *mwindow;
 	NewThread *new_thread;
@@ -78,45 +72,18 @@ public:
 	BC_TextBox *vchannels;
 	BC_TextBox *frame_rate;
 	BC_TextBox *aspect_w_text, *aspect_h_text;
-//	BC_TextBox *canvas_w_text, *canvas_h_text;
 	BC_TextBox *output_w_text, *output_h_text;
-	NewPresetsPulldown *presets;
-	NewPresetsText *presets_text;
-	ArrayList<NewPresetItem*> preset_items;
+	NewPresets *format_presets;
 };
 
-
-
-
-class NewPresetsText : public BC_TextBox
+class NewPresets : public FormatPresets
 {
 public:
-	NewPresetsText(MWindow *mwindow, NewWindow *window, int x, int y);
+	NewPresets(MWindow *mwindow, NewWindow *gui, int x, int y);
+	~NewPresets();
 	int handle_event();
-	MWindow *mwindow;
-	NewWindow *window;
+	EDL* get_edl();
 };
-
-class NewPresetsPulldown : public BC_ListBox
-{
-public:
-	NewPresetsPulldown(MWindow *mwindow, NewWindow *window, int x, int y);
-	int handle_event();
-	MWindow *mwindow;
-	NewWindow *window;
-};
-
-class NewPresetItem : public BC_ListBoxItem
-{
-public:
-	NewPresetItem(MWindow *mwindow, NewWindow *window, char *text);
-	~NewPresetItem();
-
-	MWindow *mwindow;
-	NewWindow *window;
-	EDL *edl;
-};
-
 
 
 

@@ -8,7 +8,7 @@
 
 
 // Maximum dimensions for a temporary frame a plugin should retain between 
-// process_buffer calls.
+// process_buffer calls.  This allows memory conservation.
 #define PLUGIN_MAX_W 2000
 #define PLUGIN_MAX_H 1000
 

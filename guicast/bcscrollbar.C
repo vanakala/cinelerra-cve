@@ -341,9 +341,9 @@ void BC_ScrollBar::draw()
 
 void BC_ScrollBar::get_handle_dimensions()
 {
-	double total_pixels = pixels - get_arrow_pixels() * 2;
+	int total_pixels = pixels - 
+		get_arrow_pixels() * 2;
 
-//printf("BC_ScrollBar::get_handle_dimensions %ld\n", length);
 	if(length > 0)
 	{
 		handle_pixels = (int64_t)((double)handlelength / 
@@ -351,16 +351,20 @@ void BC_ScrollBar::get_handle_dimensions()
 			total_pixels + 
 			.5);
 
+		if(handle_pixels < get_resources()->scroll_minhandle)
+			handle_pixels = get_resources()->scroll_minhandle;
 
-		handle_pixel = (int64_t)((double)position / length * total_pixels + .5) + 
+
+		handle_pixel = (int64_t)((double)position / 
+				length * 
+				total_pixels + .5) + 
 			get_arrow_pixels();
 
-		if(handle_pixels < MINHANDLE) handle_pixels = MINHANDLE;
 // Handle pixels is beyond minimum right position.  Clamp it.
-		if(handle_pixel > pixels - get_arrow_pixels() - MINHANDLE)
+		if(handle_pixel > pixels - get_arrow_pixels() - get_resources()->scroll_minhandle)
 		{
-			handle_pixel = pixels - get_arrow_pixels() - MINHANDLE;
-			handle_pixels = MINHANDLE;
+			handle_pixel = pixels - get_arrow_pixels() - get_resources()->scroll_minhandle;
+			handle_pixels = get_resources()->scroll_minhandle;
 		}
 // Shrink handle_pixels until it fits inside scrollbar
 		if(handle_pixel > pixels - get_arrow_pixels() - handle_pixels)
@@ -372,18 +376,21 @@ void BC_ScrollBar::get_handle_dimensions()
 			handle_pixels = handle_pixel + handle_pixels - get_arrow_pixels();
 			handle_pixel = get_arrow_pixels();
 		}
-		if(handle_pixels < MINHANDLE) handle_pixels = MINHANDLE;
+		if(handle_pixels < get_resources()->scroll_minhandle) handle_pixels = get_resources()->scroll_minhandle;
 	}
 	else
 	{
-		handle_pixels = (int)(total_pixels);
+		handle_pixels = total_pixels;
 		handle_pixel = get_arrow_pixels();
 	}
 
 	CLAMP(handle_pixel, get_arrow_pixels(), (int)(pixels - get_arrow_pixels()));
-	CLAMP(handle_pixels, 0, (int)total_pixels);
+	CLAMP(handle_pixels, 0, total_pixels);
 
-//printf("BC_ScrollBar::get_handle_dimensions %d %d %f\n", handle_pixel, handle_pixels, total_pixels);
+// printf("BC_ScrollBar::get_handle_dimensions %d %d %d\n", 
+// total_pixels, 
+// handle_pixel,
+// handle_pixels);
 }
 
 int BC_ScrollBar::cursor_enter_event()

@@ -20,7 +20,7 @@ BC_SubWindow::~BC_SubWindow()
 int BC_SubWindow::initialize()
 {
 	create_window(parent_window, 
-			"", 
+			"Sub Window", 
 			x, 
 			y, 
 			w, 

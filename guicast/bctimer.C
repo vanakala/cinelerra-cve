@@ -57,6 +57,7 @@ int64_t Timer::get_scaled_difference(long denominator)
 
 int Timer::delay(long milliseconds)
 {
+	struct timeval delay_duration;
 	delay_duration.tv_sec = 0;
 	delay_duration.tv_usec = milliseconds * 1000;
 	select(0,  NULL,  NULL, NULL, &delay_duration);

@@ -164,7 +164,6 @@ void RecordVideo::run()
 	trigger_lock->lock("RecordVideo::run");
 	trigger_lock->unlock();
 
-
 	while(!batch_done && 
 		!write_result)
 	{
@@ -176,15 +175,16 @@ void RecordVideo::run()
  		current_sample = record->sync_position();
 
 
-
 		if(current_sample < next_sample && current_sample > 0)
 		{
 // Too early.
 			delay = (int64_t)((float)(next_sample - current_sample) / 
 				record->default_asset->sample_rate * 
-				1000  
-				);
+				1000);
 // Sanity check and delay.
+// In 2.6.7 this doesn't work.  For some reason, probably buffer overflowing,
+// it causes the driver to hang up momentarily so we try to only delay
+// when really really far ahead.
 			if(delay < 2000 && delay > 0) delayer.delay(delay);
 			gui->update_dropped_frames(0);
 			last_dropped_frames = 0;
@@ -204,7 +204,8 @@ void RecordVideo::run()
 			last_dropped_frames = dropped_frames;
 		}
 
-//printf("RecordVideo::run 3\n");
+
+
 // Capture a frame
 		if(!batch_done)
 		{
@@ -235,8 +236,7 @@ void RecordVideo::run()
 			else
 // Brief pause to keep CPU from burning up
 			{
-				Timer timer;
-				timer.delay(250);
+				Timer::delay(250);
 			}
 		}
 
@@ -311,7 +311,7 @@ void RecordVideo::run()
 		}
 	}
 
-TRACE("RecordVideo::run 1");
+//TRACE("RecordVideo::run 1");
 // Update dependant threads
 	if(record->default_asset->audio_data)
 	{
@@ -319,15 +319,16 @@ TRACE("RecordVideo::run 1");
 // Interrupt driver for IEEE1394
 		record_thread->record_audio->stop_recording();
 	}
-TRACE("RecordVideo::run 2");
+
+//TRACE("RecordVideo::run 2");
 
 	if(write_result)
 	{
 		if(!record_thread->monitor)
 		{
 			ErrorBox error_box(PROGRAM_NAME ": Error",
-				mwindow->gui->get_abs_cursor_x(),
-				mwindow->gui->get_abs_cursor_y());
+				mwindow->gui->get_abs_cursor_x(1),
+				mwindow->gui->get_abs_cursor_y(1));
 			error_box.create_objects(_("No space left on disk."));
 			error_box.run_window();
 			batch_done = 1;
@@ -335,12 +336,11 @@ TRACE("RecordVideo::run 2");
 	}
 
 	cleanup_recording();
-TRACE("RecordVideo::run 100");
+//TRACE("RecordVideo::run 100");
 }
 
 void RecordVideo::read_buffer()
 {
-
 	grab_result = record->vdevice->read_buffer(capture_frame);
 
 
@@ -357,7 +357,6 @@ void RecordVideo::read_buffer()
 			int64_t field2_offset = mjpeg_get_field2(data, size);
 			capture_frame->set_compressed_size(size);
 			capture_frame->set_field2_offset(field2_offset);
-//printf("RecordVideo::read_buffer 1 %d\n", capture_frame->get_field2_offset());
 		}
 	}
 }

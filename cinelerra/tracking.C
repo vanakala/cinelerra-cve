@@ -185,7 +185,7 @@ void Tracking::run()
 	while(state != DONE)
 	{
 		Thread::enable_cancel();
-		timer.delay(100);
+		timer.delay(1000 / TRACKING_RATE);
 		Thread::disable_cancel();
 
 		if(state != DONE)

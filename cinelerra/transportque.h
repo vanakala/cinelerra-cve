@@ -27,6 +27,8 @@ public:
 
 	int single_frame();
 	EDL* get_edl();
+	void delete_edl();
+	void new_edl();
 
 	int command;
 	int change_type;

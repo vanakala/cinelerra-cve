@@ -16,7 +16,8 @@ public:
 		int y, 
 		int h,
 		int meter_count,
-		int use_meters);
+		int use_meters,
+		int use_recording = 0);
 	~MeterPanel();
 
 	int create_objects();
@@ -29,7 +30,7 @@ public:
 	int get_meter_w(int number);
 	void update(double *levels);
 	void stop_meters();
-	void change_format(int mode, float min);
+	void change_format(int mode, int min, int max);
 	virtual int change_status_event();
 	void reset_meters();
 
@@ -40,6 +41,7 @@ public:
 	int meter_count;
 	int use_meters;
 	int x, y, h;
+	int use_recording;
 };
 
 

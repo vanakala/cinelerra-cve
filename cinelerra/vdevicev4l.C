@@ -519,17 +519,14 @@ int VDeviceV4L::read_buffer(VFrame *frame)
 
 	if(shared_memory)
 	{
-//printf("VDeviceV4L::read_buffer 1\n");
 // Read the current frame
 		if(!got_first_frame) v4l1_start_capture();
 		wait_v4l_frame();
 		read_v4l_frame(frame);
 // Free this frame up for capturing
 		capture_frame(capture_frame_number);
-//printf("VDeviceV4L::read_buffer 6\n");
 // Advance the frame to capture.
 		capture_frame_number = next_frame(capture_frame_number);
-//printf("VDeviceV4L::read_buffer 7\n");
 	}
 	else
 	{
@@ -539,3 +536,14 @@ int VDeviceV4L::read_buffer(VFrame *frame)
 
 	return 0;
 }
+
+
+
+
+
+
+
+
+
+
+

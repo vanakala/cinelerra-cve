@@ -23,6 +23,7 @@ VAttachmentPoint::~VAttachmentPoint()
 
 void VAttachmentPoint::delete_buffer_vector()
 {
+	if(!this) printf("VAttachmentPoint::delete_buffer_vector NULL\n");
 	if(buffer_vector)
 	{
 		for(int i = 0; i < virtual_plugins.total; i++)
@@ -34,6 +35,7 @@ void VAttachmentPoint::delete_buffer_vector()
 
 void VAttachmentPoint::new_buffer_vector(int width, int height, int colormodel)
 {
+	if(!this) printf("VAttachmentPoint::new_buffer_vector NULL\n");
 	if(buffer_vector &&
 		(width != buffer_vector[0]->get_w() ||
 		height != buffer_vector[0]->get_h() ||
@@ -64,9 +66,16 @@ int VAttachmentPoint::get_buffer_size()
 void VAttachmentPoint::render(VFrame *output, 
 	int buffer_number,
 	long start_position,
-	double frame_rate)
+	double frame_rate,
+	int debug_render)
 {
+	if(!this) printf("VAttachmentPoint::render NULL\n");
 	if(!plugin_server || !plugin->on) return;
+
+	if(debug_render)
+		printf("    VAttachmentPoint::render %s %d\n", 
+			plugin_server->title,
+			plugin_server->multichannel);
 
 	if(plugin_server->multichannel)
 	{
@@ -112,10 +121,8 @@ void VAttachmentPoint::render(VFrame *output,
 	else
 // process single track
 	{
-//printf("VAttachmentPoint::render 1\n");
 		VFrame *output_temp[1];
 		output_temp[0] = output;
-//printf("VAttachmentPoint::render 1 %s\n", plugin_server->title);
 		plugin_servers.values[buffer_number]->process_buffer(output_temp,
 			start_position,
 			frame_rate,
@@ -123,7 +130,6 @@ void VAttachmentPoint::render(VFrame *output,
 				frame_rate / 
 				renderengine->edl->session->frame_rate),
 			renderengine->command->get_direction());
-//printf("VAttachmentPoint::render 100\n");
 	}
 }
 

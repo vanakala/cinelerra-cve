@@ -8,8 +8,9 @@
 #include "bcresources.inc"
 #include "bctextbox.h"
 #include "bcwindow.h"
+#include "condition.inc"
 #include "filesystem.inc"
-#include "mutex.h"
+#include "mutex.inc"
 #include "thread.h"
 
 
@@ -37,7 +38,8 @@ public:
 	int start_new_folder();
 
 private:
-	Mutex change_lock, completion_lock;
+	Mutex *change_lock;
+	Condition *completion_lock;
 	BC_FileBox *filebox;
 	BC_NewFolder *window;
 };

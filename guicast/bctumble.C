@@ -325,6 +325,6 @@ void BC_FTumbler::set_boundaries(float min, float max)
 
 void BC_FTumbler::set_increment(float value)
 {
-	this->increment = increment;
+	this->increment = value;
 }
 

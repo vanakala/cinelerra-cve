@@ -7,12 +7,13 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
+#include "audio1394.inc"
 #include "audioalsa.inc"
 #include "audioconfig.inc"
 #include "audiodevice.inc"
-#include "audio1394.inc"
 #include "audioesound.inc"
 #include "audiooss.inc"
+#include "bctimer.h"
 #include "binary.h"
 #include "condition.inc"
 #include "dcoffset.inc"
@@ -21,8 +22,8 @@
 #include "mutex.inc"
 #include "preferences.inc"
 #include "recordgui.inc"
+#include "sema.inc"
 #include "thread.h"
-#include "bctimer.h"
 #include "vdevice1394.inc"
 #include "videodevice.inc"
 
@@ -60,7 +61,10 @@ public:
 	friend class VDevice1394;
 	friend class Device1394Output;
 
-	int open_input(AudioInConfig *config, int rate, int samples);
+	int open_input(AudioInConfig *config, 
+		VideoInConfig *vconfig,
+		int rate, 
+		int samples);
 	int open_output(AudioOutConfig *config, int rate, int samples, int realtime);
 	int open_duplex(AudioOutConfig *config, int rate, int samples, int realtime);
 	int close_all();
@@ -167,8 +171,8 @@ private:
 	int last_buffer[TOTAL_BUFFERS];    // not written to device
 // formatted buffers for output
 	char *buffer[TOTAL_BUFFERS], *input_buffer;
-	Condition *play_lock[TOTAL_BUFFERS];
-	Condition *arm_lock[TOTAL_BUFFERS];
+	Sema *play_lock[TOTAL_BUFFERS];
+	Sema *arm_lock[TOTAL_BUFFERS];
 	Mutex *timer_lock;
 	int arm_buffer_num;
 
@@ -187,6 +191,8 @@ private:
 
 	AudioOutConfig *out_config;
 	AudioInConfig *in_config;
+// Extra configuration if shared with video
+	VideoInConfig *vconfig;
 
 private:
 	int thread_buffer_num, thread_result;

@@ -1,4 +1,5 @@
 #include "edl.h"
+#include "language.h"
 #include "mainundo.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
@@ -7,11 +8,6 @@
 #include "track.h"
 #include "tracks.h"
 
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 
@@ -52,8 +48,8 @@ void ResizeTrackThread::run()
 	ResizeTrackWindow *window = this->window = 
 		new ResizeTrackWindow(mwindow, 
 			this,
-			mwindow->gui->get_abs_cursor_x(),
-			mwindow->gui->get_abs_cursor_y());
+			mwindow->gui->get_abs_cursor_x(1),
+			mwindow->gui->get_abs_cursor_y(1));
 	window->create_objects();
 	int result = window->run_window();
 	this->window = 0;

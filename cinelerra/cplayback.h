@@ -9,7 +9,7 @@ class CPlayback : public PlaybackEngine
 public:
 	CPlayback(MWindow *mwindow, CWindow *cwindow, Canvas *output);
 
-	int create_render_engines();
+	int create_render_engine();
 	void init_cursor();
 	void stop_cursor();
 	int brender_available(long position);

@@ -187,6 +187,7 @@ int mpeg3demux_create_title(mpeg3_demuxer_t *demuxer,
 	title->end_byte = title->total_bytes;
 
 
+//printf("mpeg3demux_create_title 1 %d %d\n", file->is_transport_stream, file->is_program_stream, toc);
 
 /* Get information about file */
 	if(file->is_transport_stream || file->is_program_stream)
@@ -200,7 +201,11 @@ int mpeg3demux_create_title(mpeg3_demuxer_t *demuxer,
 /* Just get the first bytes if not building a toc to get the stream ID's. */
 			if(next_byte > 0x1000000 && 
 				(!cell_search || !toc)) done = 1;
-//printf("mpeg3demux_create_title 1 %lld %d %p\n", next_byte, cell_search, toc);
+/*
+ * printf("mpeg3demux_create_title 3 %lld %d %p\n", next_byte, cell_search, toc);
+ * printf("mpeg3demux_create_title 4 %d %d %d\n", 
+ * done, result, mpeg3io_eof(title->fs));
+ */
 		}
 
 /* Get the last cell */

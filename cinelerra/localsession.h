@@ -61,7 +61,7 @@ public:
 	double loop_end;
 // Vertical start of track view
 	int64_t track_start;
-// Start of view in pixels.  This has to be pixels since either
+// Horizontal start of view in pixels.  This has to be pixels since either
 // samples or seconds would require drawing in fractional pixels.
 	int64_t view_start;
 // Zooming of the timeline.  Number of samples per pixel.  

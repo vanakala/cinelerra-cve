@@ -12,6 +12,9 @@ BC_Pixmap::BC_Pixmap(BC_WindowBase *parent_window,
 	int icon_offset)
 {
 	BC_Bitmap *opaque_bitmap, *alpha_bitmap, *mask_bitmap;
+	if(frame->get_color_model() != BC_RGBA8888 &&
+		mode == PIXMAP_ALPHA)
+		mode = PIXMAP_OPAQUE;
 	this->mode = mode;
 
 // Temporary bitmaps

@@ -7,6 +7,7 @@ class BurnMain;
 #include "effecttv.inc"
 #include "loadbalance.h"
 #include "mutex.h"
+#include "plugincolors.inc"
 #include "pluginvclient.h"
 #include "burnwindow.h"
 #include <sys/types.h>
@@ -74,7 +75,14 @@ public:
 
 
 
-	void make_palette();
+	void BurnMain::HSItoRGB(double H, 
+		double S, 
+		double I, 
+		int *r, 
+		int *g, 
+		int *b,
+		int color_model);
+	void make_palette(int color_model);
 
 // a thread for the GUI
 	BurnThread *thread;
@@ -89,6 +97,7 @@ public:
 	EffectTV *effecttv;
 	Defaults *defaults;
 	VFrame *input_ptr, *output_ptr;
+	YUV *yuv;
 };
 
 

@@ -38,10 +38,6 @@ FAAD_OBJS := \
 
 FAAD_CFLAGS := $(CFLAGS) -I$(FAAD_DIR)/libfaad -I$(FAAD_DIR)/include -DHAVE_CONFIG_H
 
-ifeq ($(OBJDIR), i686)
-FAAD_CFLAGS += 
-endif
-
 
 DIRS += $(OBJDIR)/$(FAAD_DIR)/libfaad
 

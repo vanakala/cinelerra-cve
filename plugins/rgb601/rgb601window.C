@@ -1,11 +1,7 @@
 #include "bcdisplayinfo.h"
+#include "language.h"
 #include "rgb601window.h"
 
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 
@@ -55,12 +51,7 @@ void RGB601Window::update()
 	reverse->update(client->config.direction == 2);
 }
 
-int RGB601Window::close_event()
-{
-// Set result to 1 to indicate a client side close
-	set_done(1);
-	return 1;
-}
+WINDOW_CLOSE_EVENT(RGB601Window)
 
 RGB601Direction::RGB601Direction(RGB601Window *window, int x, int y, int *output, int true_value, char *text)
  : BC_CheckBox(x, y, *output == true_value, text)

@@ -1,15 +1,12 @@
 #include "edl.h"
 #include "edlsession.h"
+#include "language.h"
 #include "meterpanel.h"
 #include "mwindow.h"
 #include "preferences.h"
 #include "theme.h"
 #include "vframe.h"
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 MeterPanel::MeterPanel(MWindow *mwindow, 
@@ -18,7 +15,8 @@ MeterPanel::MeterPanel(MWindow *mwindow,
 	int y,
 	int h,
 	int meter_count,
-	int use_meters)
+	int use_meters,
+	int use_recording)
 {
 	this->subwindow = subwindow;
 	this->mwindow = mwindow;
@@ -27,6 +25,7 @@ MeterPanel::MeterPanel(MWindow *mwindow,
 	this->h = h;
 	this->meter_count = meter_count;
 	this->use_meters = use_meters;
+	this->use_recording = use_recording;
 }
 
 
@@ -159,11 +158,14 @@ void MeterPanel::reset_meters()
 }
 
 
-void MeterPanel::change_format(int mode, float min)
+void MeterPanel::change_format(int mode, int min, int max)
 {
 	for(int i = 0; i < meters.total; i++)
 	{
-		meters.values[i]->change_format(mode, min);
+		if(use_recording)
+			meters.values[i]->change_format(mode, min, 0);
+		else
+			meters.values[i]->change_format(mode, min, max);
 	}
 }
 
@@ -208,8 +210,11 @@ MeterMeter::MeterMeter(MWindow *mwindow,
 	METER_VERT,
 	h,
 	mwindow->edl->session->min_meter_db, 
+	panel->use_recording ? 0 : mwindow->edl->session->max_meter_db, 
 	mwindow->edl->session->meter_format,
-	titles)
+	titles,
+	TRACKING_RATE * 10,
+	TRACKING_RATE)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;

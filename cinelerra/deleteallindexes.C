@@ -70,8 +70,8 @@ void DeleteAllIndexes::run()
 
 ConfirmDeleteAllIndexes::ConfirmDeleteAllIndexes(MWindow *mwindow, char *string)
  : BC_Window(PROGRAM_NAME ": Delete All Indexes", 
- 		mwindow->gui->get_abs_cursor_x(), 
-		mwindow->gui->get_abs_cursor_y(), 
+ 		mwindow->gui->get_abs_cursor_x(1), 
+		mwindow->gui->get_abs_cursor_y(1), 
 		340, 
 		140)
 { 

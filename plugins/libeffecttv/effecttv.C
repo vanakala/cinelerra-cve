@@ -1,5 +1,6 @@
 #include "colormodels.h"
 #include "effecttv.h"
+#include "plugincolors.h"
 #include "vframe.h"
 
 #include <stdint.h> 
@@ -17,6 +18,7 @@ EffectTV::EffectTV(int w, int h)
 	diff = new unsigned char[w * h];
 	diff2 = new unsigned char[w * h];
 	yuv_init();
+	yuv = new YUV;
 }
 
 EffectTV::~EffectTV()
@@ -24,6 +26,7 @@ EffectTV::~EffectTV()
 	delete [] background;
 	delete [] diff;
 	delete [] diff2;
+	delete yuv;
 }
 
 
@@ -183,7 +186,8 @@ void EffectTV::image_set_threshold_y(int threshold)
 #define IMAGE_BGSUBTRACT_UPDATE_Y(result, \
 	input_rows,  \
 	type,  \
-	components) \
+	components, \
+	is_yuv) \
 { \
 	int i, j; \
 	int R, G, B; \
@@ -201,17 +205,41 @@ void EffectTV::image_set_threshold_y(int threshold)
  \
 		for(j = 0; j < w; j++) \
 		{ \
+			if(is_yuv && sizeof(type) == 2) \
+			{ \
+				R = G = B = (int)p[0] >> 8; \
+				R <<= 1; \
+				G <<= 2; \
+			} \
+			else \
+			if(is_yuv && sizeof(type) == 1) \
+			{ \
+				R = G = B = (int)p[0]; \
+				R <<= 1; \
+				G <<= 2; \
+			} \
+			else \
+			if(sizeof(type) == 4) \
+			{ \
+				R = (int)(p[0] * 0x1ff); \
+				G = (int)(p[1] * 0x3ff); \
+				B = (int)(p[2] * 0xff); \
+				CLAMP(R, 0, 0x1ff); \
+				CLAMP(G, 0, 0x3ff); \
+				CLAMP(B, 0, 0xff); \
+			} \
+			else \
 			if(sizeof(type) == 2) \
 			{ \
-				R = p[0] >> (8 - 1); \
-				G = p[1] >> (8 - 2); \
-				B = p[2] >> 8; \
+				R = (int)p[0] >> (8 - 1); \
+				G = (int)p[1] >> (8 - 2); \
+				B = (int)p[2] >> 8; \
 			} \
 			else \
 			{ \
-				R = p[0] << 1; \
-				G = p[1] << 2; \
-				B = p[2]; \
+				R = (int)p[0] << 1; \
+				G = (int)p[1] << 2; \
+				B = (int)p[2]; \
 			} \
  \
 			v = (R + G + B) - (int)(*q); \
@@ -243,32 +271,74 @@ unsigned char* EffectTV::image_bgsubtract_update_y(unsigned char **input_rows,
 	switch(color_model)
 	{
 		case BC_RGB888:
+			IMAGE_BGSUBTRACT_UPDATE_Y(diff, 
+				input_rows, 
+				uint8_t, 
+				3,
+				0);
+			break;
 		case BC_YUV888:
 			IMAGE_BGSUBTRACT_UPDATE_Y(diff, 
 				input_rows, 
 				uint8_t, 
-				3);
+				3,
+				1);
+			break;
+		case BC_RGB_FLOAT:
+			IMAGE_BGSUBTRACT_UPDATE_Y(diff, 
+				input_rows, 
+				float, 
+				3,
+				0);
 			break;
 		case BC_RGBA8888:
+			IMAGE_BGSUBTRACT_UPDATE_Y(diff, 
+				input_rows, 
+				uint8_t, 
+				4,
+				0);
+			break;
+		case BC_RGBA_FLOAT:
+			IMAGE_BGSUBTRACT_UPDATE_Y(diff, 
+				input_rows, 
+				float, 
+				4,
+				0);
+			break;
 		case BC_YUVA8888:
 			IMAGE_BGSUBTRACT_UPDATE_Y(diff, 
 				input_rows, 
 				uint8_t, 
-				4);
+				4,
+				1);
 			break;
 		case BC_RGB161616:
+			IMAGE_BGSUBTRACT_UPDATE_Y(diff, 
+				input_rows, 
+				uint16_t, 
+				3,
+				0);
+			break;
 		case BC_YUV161616:
 			IMAGE_BGSUBTRACT_UPDATE_Y(diff, 
 				input_rows, 
 				uint16_t, 
-				3);
+				3,
+				1);
 			break;
 		case BC_RGBA16161616:
+			IMAGE_BGSUBTRACT_UPDATE_Y(diff, 
+				input_rows, 
+				uint16_t, 
+				4,
+				0);
+			break;
 		case BC_YUVA16161616:
 			IMAGE_BGSUBTRACT_UPDATE_Y(diff, 
 				input_rows, 
 				uint16_t, 
-				4);
+				4,
+				1);
 			break;
 	}
 	
@@ -280,7 +350,7 @@ unsigned char* EffectTV::image_bgsubtract_update_y(unsigned char **input_rows,
 
 
 
-#define IMAGE_BGSUBTRACT_Y(type, components) \
+#define IMAGE_BGSUBTRACT_Y(type, components, is_yuv) \
 { \
 	int i, j; \
 	int R, G, B; \
@@ -292,17 +362,41 @@ unsigned char* EffectTV::image_bgsubtract_update_y(unsigned char **input_rows,
  \
 		for(j = 0; j < w; j++) \
 		{ \
+			if(is_yuv && sizeof(type) == 2) \
+			{ \
+				R = G = B = (int)p[0] >> 8; \
+				R <<= 1; \
+				G <<= 2; \
+			} \
+			else \
+			if(is_yuv && sizeof(type) == 1) \
+			{ \
+				R = G = B = (int)p[0]; \
+				R <<= 1; \
+				G <<= 2; \
+			} \
+			else \
+			if(sizeof(type) == 4) \
+			{ \
+				R = (int)(p[0] * 0x1ff); \
+				G = (int)(p[1] * 0x3ff); \
+				B = (int)(p[2] * 0xff); \
+				CLAMP(R, 0, 0x1ff); \
+				CLAMP(G, 0, 0x3ff); \
+				CLAMP(B, 0, 0xff); \
+			} \
+			else \
 			if(sizeof(type) == 2) \
 			{ \
-				R = p[0] >> (8 - 1); \
-				G = p[1] >> (8 - 2); \
-				B = p[2] >> 8; \
+				R = (int)p[0] >> (8 - 1); \
+				G = (int)p[1] >> (8 - 2); \
+				B = (int)p[2] >> 8; \
 			} \
 			else \
 			{ \
-				R = p[0] << 1; \
-				G = p[1] << 2; \
-				B = p[2]; \
+				R = (int)p[0] << 1; \
+				G = (int)p[1] << 2; \
+				B = (int)p[2]; \
 			} \
  \
 			v = (R + G + B) - (int)(*q); \
@@ -316,7 +410,8 @@ unsigned char* EffectTV::image_bgsubtract_update_y(unsigned char **input_rows,
 }
 
 
-unsigned char* EffectTV::image_bgsubtract_y(unsigned char **input_rows, int color_model)
+unsigned char* EffectTV::image_bgsubtract_y(unsigned char **input_rows, 
+	int color_model)
 {
 	int16_t *q;
 	unsigned char *r;
@@ -330,20 +425,34 @@ unsigned char* EffectTV::image_bgsubtract_y(unsigned char **input_rows, int colo
 	switch(color_model)
 	{
 		case BC_RGB888:
+			IMAGE_BGSUBTRACT_Y(uint8_t, 3, 0);
+			break;
 		case BC_YUV888:
-			IMAGE_BGSUBTRACT_Y(uint8_t, 3);
+			IMAGE_BGSUBTRACT_Y(uint8_t, 3, 1);
+			break;
+		case BC_RGB_FLOAT:
+			IMAGE_BGSUBTRACT_Y(float, 3, 0);
+			break;
+		case BC_RGBA_FLOAT:
+			IMAGE_BGSUBTRACT_Y(float, 4, 0);
 			break;
 		case BC_RGBA8888:
+			IMAGE_BGSUBTRACT_Y(uint8_t, 4, 0);
+			break;
 		case BC_YUVA8888:
-			IMAGE_BGSUBTRACT_Y(uint8_t, 4);
+			IMAGE_BGSUBTRACT_Y(uint8_t, 4, 1);
 			break;
 		case BC_RGB161616:
+			IMAGE_BGSUBTRACT_Y(uint16_t, 3, 0);
+			break;
 		case BC_YUV161616:
-			IMAGE_BGSUBTRACT_Y(uint16_t, 3);
+			IMAGE_BGSUBTRACT_Y(uint16_t, 3, 1);
 			break;
 		case BC_RGBA16161616:
+			IMAGE_BGSUBTRACT_Y(uint16_t, 4, 0);
+			break;
 		case BC_YUVA16161616:
-			IMAGE_BGSUBTRACT_Y(uint16_t, 4);
+			IMAGE_BGSUBTRACT_Y(uint16_t, 4, 1);
 			break;
 	}
 
@@ -410,7 +519,7 @@ unsigned char* EffectTV::image_diff_filter(unsigned char *diff)
 
 
 
-#define IMAGE_BGSET_Y(type, components) \
+#define IMAGE_BGSET_Y(type, components, is_yuv) \
 { \
 	int i, j; \
 	int R, G, B; \
@@ -429,17 +538,41 @@ unsigned char* EffectTV::image_diff_filter(unsigned char *diff)
  \
 		for(j = 0; j < width; j++) \
 		{ \
+			if(is_yuv && sizeof(type) == 2) \
+			{ \
+				R = G = B = (int)p[0] >> 8; \
+				R <<= 1; \
+				G <<= 2; \
+			} \
+			else \
+			if(is_yuv && sizeof(type) == 1) \
+			{ \
+				R = G = B = (int)p[0]; \
+				R <<= 1; \
+				G <<= 2; \
+			} \
+			else \
+			if(sizeof(type) == 4) \
+			{ \
+				R = (int)(p[0] * 0x1ff); \
+				G = (int)(p[1] * 0x3ff); \
+				B = (int)(p[2] * 0xff); \
+				CLAMP(R, 0, 0x1ff); \
+				CLAMP(G, 0, 0x3ff); \
+				CLAMP(B, 0, 0xff); \
+			} \
+			else \
 			if(sizeof(type) == 2) \
 			{ \
-				R = p[0] >> (8 - 1); \
-				G = p[1] >> (8 - 2); \
-				B = p[2] >> 8; \
+				R = (int)p[0] >> (8 - 1); \
+				G = (int)p[1] >> (8 - 2); \
+				B = (int)p[2] >> 8; \
 			} \
 			else \
 			{ \
-				R = p[0] << 1; \
-				G = p[1] << 2; \
-				B = p[2]; \
+				R = (int)p[0] << 1; \
+				G = (int)p[1] << 2; \
+				B = (int)p[2]; \
 			} \
  \
 			*q = (int16_t)(R + G + B); \
@@ -460,20 +593,34 @@ void EffectTV::image_bgset_y(VFrame *frame)
 	switch(frame->get_color_model())
 	{
 		case BC_RGB888:
+			IMAGE_BGSET_Y(uint8_t, 3, 0);
+			break;
+		case BC_RGB_FLOAT:
+			IMAGE_BGSET_Y(float, 3, 0);
+			break;
 		case BC_YUV888:
-			IMAGE_BGSET_Y(uint8_t, 3);
+			IMAGE_BGSET_Y(uint8_t, 3, 1);
 			break;
 		case BC_RGBA8888:
+			IMAGE_BGSET_Y(uint8_t, 3, 0);
+			break;
+		case BC_RGBA_FLOAT:
+			IMAGE_BGSET_Y(float, 3, 0);
+			break;
 		case BC_YUVA8888:
-			IMAGE_BGSET_Y(uint8_t, 4);
+			IMAGE_BGSET_Y(uint8_t, 3, 1);
 			break;
 		case BC_RGB161616:
+			IMAGE_BGSET_Y(uint16_t, 3, 0);
+			break;
 		case BC_YUV161616:
-			IMAGE_BGSET_Y(uint16_t, 3);
+			IMAGE_BGSET_Y(uint16_t, 3, 1);
 			break;
 		case BC_RGBA16161616:
+			IMAGE_BGSET_Y(uint16_t, 4, 0);
+			break;
 		case BC_YUVA16161616:
-			IMAGE_BGSET_Y(uint16_t, 4);
+			IMAGE_BGSET_Y(uint16_t, 4, 1);
 			break;
 	}
 }

@@ -87,7 +87,7 @@ public:
 	int blur_strip4(int &size);
 
 	int color_model;
-	int vmax;
+	float vmax;
 	pixel_f *val_p, *val_m, *vp, *vm;
 	pixel_f *sp_p, *sp_m;
     float n_p[5], n_m[5];

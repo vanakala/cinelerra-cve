@@ -50,7 +50,9 @@ int Audio1394::open_input()
 			30,
 			device->in_channels,
 			device->in_samplerate,
-			device->in_bits);
+			device->in_bits,
+			device->vconfig->w,
+			device->vconfig->h);
 		if(result)
 		{
 			delete input_thread;

@@ -1,5 +1,5 @@
 #include "formattools.h"
-//#include "loadmode.h"
+#include "language.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "record.h"
@@ -7,22 +7,16 @@
 #include "videodevice.inc"
 
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
-#define WIDTH 410
-#define HEIGHT 360
 
 
-RecordWindow::RecordWindow(MWindow *mwindow, Record *record)
+RecordWindow::RecordWindow(MWindow *mwindow, Record *record, int x, int y)
  : BC_Window(PROGRAM_NAME ": Record", 
- 	mwindow->gui->get_root_w() / 2 - WIDTH / 2,
-	mwindow->gui->get_root_h() / 2 - HEIGHT / 2,
- 	WIDTH, 
-	HEIGHT,
+	x,
+	y,
+ 	RECORD_WINDOW_WIDTH, 
+	RECORD_WINDOW_HEIGHT,
 	(int)BC_INFINITY,
 	(int)BC_INFINITY,
 	0,

@@ -110,8 +110,8 @@ void ThreadIndexer::run()
 // try to create now
 				if(!progress)
 				{
-					progress = new BC_ProgressBox(mwindow->gui->get_abs_cursor_x(),
-						mwindow->gui->get_abs_cursor_y(),
+					progress = new BC_ProgressBox(mwindow->gui->get_abs_cursor_x(1),
+						mwindow->gui->get_abs_cursor_y(1),
 						_("Building Indexes..."), 
 						1);
 					progress->start();

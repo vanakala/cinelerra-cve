@@ -7,8 +7,9 @@ class HoloThread;
 class HoloWindow;
 
 #include "filexml.h"
-#include "mutex.h"
 #include "holo.h"
+#include "mutex.h"
+#include "pluginclient.h"
 
 
 PLUGIN_THREAD_HEADER(HoloMain, HoloThread, HoloWindow)

@@ -146,10 +146,15 @@ void RecordAudio::run()
 			{
 // Read into monitor buffer for monitoring.
 //printf("RecordAudio::run 1\n");
-				grab_result = record->adevice->read_buffer(input, fragment_size, record_channels, over, max, 0);
+				grab_result = record->adevice->read_buffer(input, 
+					fragment_size, 
+					record_channels, 
+					over, 
+					max, 
+					0);
 //printf("RecordAudio::run 2 %d\n", grab_result);
 			}
-//printf("RecordAudio::run 3 %d\n", fragment_size);
+//printf("RecordAudio::run 3 %d %f\n", fragment_size, max);
 
 // Update timer for synchronization
 			timer_lock->lock("RecordAudio::run");
@@ -185,7 +190,9 @@ void RecordAudio::run()
 				record->record_monitor->window->lock_window("RecordAudio::run 1");
 				for(channel = 0; channel < record_channels; channel++)
 				{
-					record->record_monitor->window->meters->meters.values[channel]->update(max[channel], over[channel]);
+					record->record_monitor->window->meters->meters.values[channel]->update(
+						max[channel], 
+						over[channel]);
 				}
 				record->record_monitor->window->unlock_window();
 			}
@@ -237,8 +244,8 @@ TRACE("RecordAudio::run 4");
 	if(write_result && !record->default_asset->video_data)
 	{
 		ErrorBox error_box(PROGRAM_NAME ": Error",
-			mwindow->gui->get_abs_cursor_x(),
-			mwindow->gui->get_abs_cursor_y());
+			mwindow->gui->get_abs_cursor_x(1),
+			mwindow->gui->get_abs_cursor_y(1));
 		error_box.create_objects(_("No space left on disk."));
 		error_box.run_window();
 		batch_done = 1;

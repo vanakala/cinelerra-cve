@@ -13,9 +13,11 @@ public:
 	void lock(char *location = 0);
 	void unlock();
 	int get_value();
+	void reset();
 
 	sem_t sem;
 	char *title;
+	int init_value;
 };
 
 

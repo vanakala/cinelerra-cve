@@ -15,17 +15,14 @@ VPlayback::VPlayback(MWindow *mwindow, VWindow *vwindow, Canvas *output)
 	this->vwindow = vwindow;
 }
 
-int VPlayback::create_render_engines()
+int VPlayback::create_render_engine()
 {
-	command->get_edl()->session->playback_strategy = PLAYBACK_LOCALHOST;
-	return PlaybackEngine::create_render_engines();
+	return PlaybackEngine::create_render_engine();
 }
 
 void VPlayback::init_cursor()
 {
-//printf("VPlayback::init_cursor 1\n");
 	vwindow->playback_cursor->start_playback(tracking_position);
-//printf("VPlayback::init_cursor 2\n");
 }
 
 void VPlayback::stop_cursor()

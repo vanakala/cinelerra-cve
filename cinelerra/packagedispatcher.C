@@ -16,7 +16,7 @@
 PackageDispatcher::PackageDispatcher()
 {
 	packages = 0;
-	package_lock = new Mutex;
+	package_lock = new Mutex("PackageDispatcher::package_lock");
 }
 
 PackageDispatcher::~PackageDispatcher()
@@ -226,7 +226,7 @@ RenderPackage* PackageDispatcher::get_package(double frames_per_second,
 	int client_number,
 	int use_local_rate)
 {
-	package_lock->lock();
+	package_lock->lock("PackageDispatcher::get_package");
 // printf("PackageDispatcher::get_package 1 %f\n", 
 // frames_per_second);
 

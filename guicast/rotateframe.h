@@ -1,7 +1,7 @@
 #ifndef ROTATEFRAME_H
 #define ROTATEFRAME_H
 
-#include "mutex.h"
+#include "condition.inc"
 #include "thread.h"
 #include "vframe.inc"
 
@@ -74,7 +74,8 @@ public:
 	int do_matrix, do_rotation;
 	int done;
 	RotateFrame *plugin;
-	Mutex input_lock, output_lock;
+	Condition *input_lock;
+	Condition *output_lock;
 	VFrame *output;
 	VFrame *input;
 };

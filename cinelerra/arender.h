@@ -28,8 +28,9 @@ public:
 	double fromunits(int64_t position);
 
 	void run();
-// Calculate number of samples
-	int history_size();
+// Calculate number of samples in each meter fragment and how many
+// meter fragments to buffer.
+	int calculate_history_size();
 // Get subscript of history entry corresponding to sample
 	int get_history_number(int64_t *table, int64_t position);
 
@@ -37,7 +38,7 @@ public:
 	double *audio_out[MAXCHANNELS];
 // information for meters
 	int get_next_peak(int current_peak);
-// samples to use for one meter update
+// samples to use for one meter update.  Must be multiple of fragment_len
 	int64_t meter_render_fragment;
 // Level history of output buffers
 	double *level_history[MAXCHANNELS];

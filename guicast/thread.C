@@ -13,6 +13,7 @@ Thread::Thread(int synchronous, int realtime, int autodelete)
 	this->autodelete = autodelete;
 	tid = (pthread_t)-1;
 	thread_running = 0;
+	cancel_enabled = 0;
 }
 
 Thread::~Thread()
@@ -27,6 +28,7 @@ void* Thread::entrypoint(void *parameters)
 	pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, 0);
 // Disable cancellation by default.
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, 0);
+	thread->cancel_enabled = 0;
 //printf("Thread::entrypoint 1 %d\n", getpid());	
 
 	thread->run();
@@ -100,6 +102,7 @@ int Thread::join()   // join this thread
 
 int Thread::enable_cancel()
 {
+	cancel_enabled = 1;
 	pthread_setcancelstate(PTHREAD_CANCEL_ENABLE, NULL);
 	return 0;
 }
@@ -107,7 +110,13 @@ int Thread::enable_cancel()
 int Thread::disable_cancel()
 {
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, NULL);
+	cancel_enabled = 0;
 	return 0;
+}
+
+int Thread::get_cancel_enabled()
+{
+	return cancel_enabled;
 }
 
 int Thread::exit_thread()

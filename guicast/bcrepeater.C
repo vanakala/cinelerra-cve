@@ -1,4 +1,5 @@
 #include "bcrepeater.h"
+#include "bcsignals.h"
 #include "bcwindow.h"
 #include "condition.h"
 

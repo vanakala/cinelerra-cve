@@ -166,8 +166,11 @@ int BC_Button::cursor_leave_event()
 	if(status == BUTTON_UPHI)
 	{
 		status = BUTTON_UP;
+
 		draw_face();
+
 		hide_tooltip();
+
 	}
 	return 0;
 }
@@ -339,9 +342,9 @@ int BC_GenericButton::draw_face()
 	draw_3segmenth(0, 0, get_w(), images[status]);
 
 	if(enabled)
-		set_color(BLACK);
+		set_color(get_resources()->default_text_color);
 	else
-		set_color(MEGREY);
+		set_color(get_resources()->disabled_text_color);
 	set_font(MEDIUMFONT);
 	y = (int)((float)get_h() / 2 + get_text_ascent(MEDIUMFONT) / 2 - 2);
 	w = get_text_width(current_font, text, strlen(text));

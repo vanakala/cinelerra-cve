@@ -208,7 +208,7 @@ RenderFarmClientThread::RenderFarmClientThread(RenderFarmClient *client)
 	frames_per_second = 0;
 	Thread::set_synchronous(0);
 	fs_client = 0;
-	mutex_lock = new Mutex;
+	mutex_lock = new Mutex("RenderFarmClientThread::mutex_lock");
 }
 
 RenderFarmClientThread::~RenderFarmClientThread()
@@ -250,10 +250,10 @@ int RenderFarmClientThread::read_socket(char *data, int len, int timeout)
 		timeout);
 }
 
-void RenderFarmClientThread::lock()
+void RenderFarmClientThread::lock(char *location)
 {
 //printf("RenderFarmClientThread::lock 1 %p %p\n", this, mutex_lock);
-	mutex_lock->lock();
+	mutex_lock->lock(location);
 }
 
 void RenderFarmClientThread::unlock()
@@ -599,7 +599,7 @@ FarmPackageRenderer::~FarmPackageRenderer()
 
 int FarmPackageRenderer::get_result()
 {
-	thread->lock();
+	thread->lock("FarmPackageRenderer::get_result");
 	thread->send_request_header(RENDERFARM_GET_RESULT, 
 		0);
 	unsigned char data[1];
@@ -615,7 +615,7 @@ int FarmPackageRenderer::get_result()
 
 void FarmPackageRenderer::set_result(int value)
 {
-	thread->lock();
+	thread->lock("FarmPackageRenderer::set_result");
 	thread->send_request_header(RENDERFARM_SET_RESULT, 
 		1);
 	unsigned char data[1];
@@ -626,7 +626,7 @@ void FarmPackageRenderer::set_result(int value)
 
 void FarmPackageRenderer::set_progress(int64_t total_samples)
 {
-	thread->lock();
+	thread->lock("FarmPackageRenderer::set_progress");
 	thread->send_request_header(RENDERFARM_PROGRESS, 
 		4);
 	unsigned char datagram[4];
@@ -638,7 +638,7 @@ void FarmPackageRenderer::set_progress(int64_t total_samples)
 
 void FarmPackageRenderer::set_video_map(int64_t position, int value)
 {
-	thread->lock();
+	thread->lock("FarmPackageRenderer::set_video_map");
 	thread->send_request_header(RENDERFARM_SET_VMAP, 
 		8);
 	unsigned char datagram[8];

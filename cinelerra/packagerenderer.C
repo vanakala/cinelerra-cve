@@ -105,14 +105,14 @@ int PackageRenderer::initialize(MWindow *mwindow,
 	default_asset->sample_rate = command->get_edl()->session->sample_rate;
 	default_asset->aspect_ratio = (double)command->get_edl()->session->aspect_w /
 		command->get_edl()->session->aspect_h;
-	Render::check_asset(edl, *default_asset);
+	result = Render::check_asset(edl, *default_asset);
 
 	audio_cache = new CICache(command->get_edl(), preferences, plugindb);
 	video_cache = new CICache(command->get_edl(), preferences, plugindb);
 
-	PlaybackConfig *config = command->get_edl()->session->get_playback_config(PLAYBACK_LOCALHOST, 0);
-	aconfig = new AudioOutConfig(PLAYBACK_LOCALHOST, 0, 0);
-	vconfig = new VideoOutConfig(PLAYBACK_LOCALHOST, 0);
+	PlaybackConfig *config = command->get_edl()->session->playback_config;
+	aconfig = new AudioOutConfig(0);
+	vconfig = new VideoOutConfig;
 //	playback_config = new PlaybackConfig(PLAYBACK_LOCALHOST, 0);
 	for(int i = 0; i < MAX_CHANNELS; i++)
 	{
@@ -133,7 +133,7 @@ void PackageRenderer::create_output()
 
 
 // Tag output paths for VFS here.
-	if(!mwindow && preferences->renderfarm_vfs)
+	if(!mwindow && preferences->renderfarm_vfs && preferences->use_renderfarm)
 		sprintf(asset->path, RENDERFARM_FS_PREFIX "%s", package->path);
 	else
 		strcpy(asset->path, package->path);
@@ -160,8 +160,8 @@ void PackageRenderer::create_output()
 		char string[BCTEXTLEN];
 		sprintf(string, _("Couldn't open %s"), asset->path);
 		ErrorBox error(PROGRAM_NAME ": Error",
-			mwindow->gui->get_abs_cursor_x(),
-			mwindow->gui->get_abs_cursor_y());
+			mwindow->gui->get_abs_cursor_x(1),
+			mwindow->gui->get_abs_cursor_y(1));
 		error.create_objects(string);
 		error.run_window();
 	}
@@ -187,7 +187,6 @@ void PackageRenderer::create_engine()
 		command,
 		0,
 		plugindb,
-		0,
 		0);
 	render_engine->set_acache(audio_cache);
 	render_engine->set_vcache(video_cache);
@@ -356,12 +355,14 @@ void PackageRenderer::do_video()
 // Get a buffer for background writing.
 
 
+//printf("PackageRenderer::do_video 3\n");
 
 				if(video_write_position == 0)
 					video_output = file->get_video_buffer();
 
 
 
+//printf("PackageRenderer::do_video 4\n");
 
 
 // Construct layered output buffer
@@ -370,13 +371,13 @@ void PackageRenderer::do_video()
 						(i < asset->layers) ? 
 							video_output[i][video_write_position] : 
 							0;
-//printf("PackageRenderer::do_video 6\n");
  				result |= render_engine->vrender->process_buffer(
 					video_output_ptr, 
 					video_position, 
 					0);
 
 
+//printf("PackageRenderer::do_video 5\n");
 
  				if(mwindow && video_device->output_visible())
 				{
@@ -385,29 +386,30 @@ void PackageRenderer::do_video()
 
 					video_device->new_output_buffers(preview_output,
 						command->get_edl()->session->color_model);
-//printf("PackageRenderer::do_video 8\n");
 
 					for(int i = 0; i < MAX_CHANNELS; i++)
 						if(preview_output[i])
 							preview_output[i]->copy_from(video_output_ptr[i]);
-//printf("PackageRenderer::do_video 9\n");
 					video_device->write_buffer(preview_output, 
 						command->get_edl());
-//printf("PackageRenderer::do_video 10\n");
 				}
 
 
+//printf("PackageRenderer::do_video 6\n");
 
 // Write to file
 				if(video_preroll)
 				{
+//printf("PackageRenderer::do_video 6.1\n");
 					video_preroll--;
 // Keep the write position at 0 until ready to write real frames
 					result |= file->write_video_buffer(0);
+//printf("PackageRenderer::do_video 6.2\n");
 					video_write_position = 0;
 				}
 				else
 	 			{
+//printf("PackageRenderer::do_video 7\n");
 // Set background rendering parameters
 					if(package->use_brender)
 					{
@@ -415,10 +417,13 @@ void PackageRenderer::do_video()
 						video_output_ptr[0]->set_number(video_position);
 					}
 					video_write_position++;
+//printf("PackageRenderer::do_video 8\n");
 
 					if(video_write_position >= video_write_length)
 					{
+//printf("PackageRenderer::do_video 9\n");
 						result |= file->write_video_buffer(video_write_position);
+//printf("PackageRenderer::do_video 10\n");
 // Update the brender map after writing the files.
 						if(package->use_brender)
 							for(int i = 0; i < video_write_position; i++)
@@ -426,6 +431,7 @@ void PackageRenderer::do_video()
 									BRender::RENDERED);
 						video_write_position = 0;
 					}
+//printf("PackageRenderer::do_video 11\n");
 				}
 
 
@@ -461,15 +467,20 @@ void PackageRenderer::stop_output()
 
 	if(asset->video_data)
 	{
+//printf("PackageRenderer::stop_output 1\n");
 		delete compressed_output;
+//printf("PackageRenderer::stop_output 2\n");
 		if(video_write_position)
 			file->write_video_buffer(video_write_position);
+//printf("PackageRenderer::stop_output 3\n");
 		if(package->use_brender)
 			for(int i = 0; i < video_write_position; i++)
 				set_video_map(video_position - video_write_position + i, 
 					BRender::RENDERED);
+//printf("PackageRenderer::stop_output 4\n");
 		video_write_position = 0;	
 		file->stop_video_thread();
+//printf("PackageRenderer::stop_output 5\n");
 		if(mwindow)
 		{
 			video_device->stop_playback();
@@ -600,19 +611,25 @@ int PackageRenderer::render_package(RenderPackage *package)
 				result = get_result();
 		}
 
+//printf("PackageRenderer::render_package 10\n");
 		stop_engine();
+//printf("PackageRenderer::render_package 11\n");
 
 		stop_output();
+//printf("PackageRenderer::render_package 12\n");
 
 
 	}
 
 
 
+//printf("PackageRenderer::render_package 13\n");
 	close_output();
+//printf("PackageRenderer::render_package 14\n");
 
 
 	set_result(result);
+//printf("PackageRenderer::render_package 15\n");
 
 
 
@@ -674,7 +691,6 @@ int PackageRenderer::direct_frame_copy(EDL *edl,
 		else
 		if(!error)
 		{
-//printf("Render::direct_frame_copy 3\n");
 // Don't background render this one
 			if(package->use_brender)
 				set_video_map(video_position, BRender::SCANNED);

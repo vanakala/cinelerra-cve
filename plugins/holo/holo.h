@@ -6,10 +6,11 @@ class HoloEngine;
 
 #include "defaults.h"
 #include "effecttv.h"
+#include "holowindow.h"
 #include "loadbalance.h"
 #include "mutex.h"
+#include "plugincolors.inc"
 #include "pluginvclient.h"
-#include "holowindow.h"
 
 #include <stdint.h>
 
@@ -93,6 +94,7 @@ public:
 
 	unsigned int noisepattern[256];
 	VFrame *bgimage, *tmp;
+	YUV *yuv;
 	int total;
 };
 

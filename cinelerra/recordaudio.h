@@ -51,7 +51,8 @@ private:
 	int *over;
 	double **input;
 	RecordGUI *gui;
-	int64_t buffer_size, fragment_size, fragment_position;
+	int buffer_size, fragment_size;
+	int64_t fragment_position;
 	int record_channels;
 	Mutex *timer_lock;
 	Condition *trigger_lock;

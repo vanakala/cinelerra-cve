@@ -20,6 +20,7 @@ int Mutex::lock(char *location)
 {
 	SET_LOCK(this, title, location);
 	if(pthread_mutex_lock(&mutex)) perror("Mutex::lock");
+	SET_LOCK2
 	return 0;
 }
 
@@ -41,5 +42,6 @@ int Mutex::reset()
 	pthread_mutexattr_t attr;
 	pthread_mutexattr_init(&attr);
 	pthread_mutex_init(&mutex, &attr);
+	UNSET_ALL_LOCKS(this)
 	return 0;
 }

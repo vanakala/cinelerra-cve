@@ -62,14 +62,16 @@ public: \
 	void run(); \
 	window_class *window; \
 	plugin_class *plugin; \
+	Condition *completion; \
 };
 
 
 #define PLUGIN_THREAD_OBJECT(plugin_class, thread_class, window_class) \
 thread_class::thread_class(plugin_class *plugin) \
- : Thread(0, 0, 1) \
+ : Thread(0, 0, 0) \
 { \
 	this->plugin = plugin; \
+	completion = new Condition(0, "thread_class::completion"); \
 } \
  \
 thread_class::~thread_class() \
@@ -88,6 +90,8 @@ void thread_class::run() \
 /* Only set it here so tracking doesn't update it until everything is created. */ \
  	plugin->thread = this; \
 	int result = window->run_window(); \
+	completion->unlock(); \
+/* This is needed when the GUI is closed from itself */ \
 	if(result) plugin->client_side_close(); \
 }
 
@@ -113,8 +117,14 @@ void thread_class::run() \
 #define PLUGIN_DESTRUCTOR_MACRO \
 	if(thread) \
 	{ \
+/* This is needed when the GUI is closed from elsewhere than itself */ \
+		thread->window->lock_window("PLUGIN_DESTRUCTOR_MACRO"); \
 		thread->window->set_done(0); \
+		thread->window->unlock_window(); \
+		thread->completion->lock("PLUGIN_DESTRUCTOR_MACRO"); \
+		delete thread; \
 	} \
+ \
  \
 	if(defaults) save_defaults(); \
 	if(defaults) delete defaults;

@@ -14,7 +14,7 @@ BCCounter::~BCCounter()
 
 void BCCounter::up()
 {
-	mutex->lock();
+	mutex->lock("BCCounter::up");
 	value++;
 	printf("BCCounter::up %p %d\n", this, value);
 	mutex->unlock();
@@ -22,7 +22,7 @@ void BCCounter::up()
 
 void BCCounter::down()
 {
-	mutex->lock();
+	mutex->lock("BCCounter::down");
 	value--;
 	printf("BCCounter::down %p %d\n", this, value);
 	mutex->unlock();

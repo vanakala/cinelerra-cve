@@ -114,7 +114,7 @@ public:
 // of the next status in fragment_len
 	void get_mute_fragment(int64_t input_position,
 				int &mute_constant, 
-				int64_t &fragment_len, 
+				int &fragment_len, 
 				Autos *autos,
 				int direction,
 				int use_nudge);

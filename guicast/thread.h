@@ -28,6 +28,7 @@ public:
 	int exit_thread();   // exit this thread
 	int enable_cancel();
 	int disable_cancel();
+	int get_cancel_enabled();
 	int running();           // Return if thread is running
 	int set_synchronous(int value);
 	int set_realtime(int value = 1);
@@ -44,6 +45,7 @@ private:
 	int autodelete;          // set to 1 to autodelete when run() finishes
 	int thread_running;
   	pthread_t tid;
+	int cancel_enabled;
 };
 
 #endif

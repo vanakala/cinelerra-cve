@@ -47,7 +47,11 @@ public:
 	int write_list_header();
 	int write_frames(VFrame ***frames, int len);
 	VFrame* read_frame(int use_alpha, int use_float);
-	int get_memory_usage();
+	virtual int get_memory_usage();
+// Get the total writer units for calculating memory usage
+	int get_units();
+// Get a writer unit for retrieving temporary usage.
+	FrameWriterUnit* get_unit(int number);
 
 	virtual FrameWriterUnit* new_writer_unit(FrameWriter *writer);
 

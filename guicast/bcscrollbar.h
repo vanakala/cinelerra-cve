@@ -35,7 +35,6 @@
 
 
 
-#define MINHANDLE 10
 
 class BC_ScrollBar : public BC_SubWindow
 {

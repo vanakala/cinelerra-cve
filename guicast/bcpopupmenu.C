@@ -126,6 +126,10 @@ BC_MenuItem* BC_PopupMenu::get_item(int i)
 	return menu_popup->menu_items.values[i];
 }
 
+#define MARGIN 10
+#define TRIANGLE_W 10
+#define TRIANGLE_H 10
+
 int BC_PopupMenu::draw_title()
 {
 	if(!use_title) return 0;
@@ -139,14 +143,10 @@ int BC_PopupMenu::draw_title()
 	if(!icon)
 	{
 		set_font(MEDIUMFONT);
-		BC_WindowBase::draw_center_text(get_w() / 2, 
+		BC_WindowBase::draw_center_text((get_w() - MARGIN - TRIANGLE_W) / 2, 
 			(int)((float)get_h() / 2 + get_text_ascent(MEDIUMFONT) / 2 - 2), 
 			text);
 	}
-
-#define MARGIN 10
-#define TRIANGLE_W 10
-#define TRIANGLE_H 10
 
 	if(icon)
 	{
@@ -187,8 +187,8 @@ int BC_PopupMenu::activate_menu()
 		top_level->active_popup_menu = this;
 		if(!use_title)
 		{
-			x = top_level->get_abs_cursor_x() - get_w();
-			y = top_level->get_abs_cursor_y() - get_h();
+			x = top_level->get_abs_cursor_x(0) - get_w();
+			y = top_level->get_abs_cursor_y(0) - get_h();
 			button_press_x = top_level->cursor_x;
 			button_press_y = top_level->cursor_y;
 		}

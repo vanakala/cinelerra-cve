@@ -59,29 +59,34 @@ int AudioInConfig::is_duplex(AudioInConfig *in, AudioOutConfig *out)
 }
 
 
-AudioInConfig& AudioInConfig::operator=(AudioInConfig &that)
+void AudioInConfig::copy_from(AudioInConfig *src)
 {
-	driver = that.driver;
+	driver = src->driver;
 
-	firewire_port = that.firewire_port;
-	firewire_channel = that.firewire_channel;
-	strcpy(firewire_path, that.firewire_path);
+	firewire_port = src->firewire_port;
+	firewire_channel = src->firewire_channel;
+	strcpy(firewire_path, src->firewire_path);
 
-	strcpy(esound_in_server, that.esound_in_server);
-	esound_in_port = that.esound_in_port;
+	strcpy(esound_in_server, src->esound_in_server);
+	esound_in_port = src->esound_in_port;
 
 	for(int i = 0; i < MAXDEVICES; i++)
 	{
-		oss_enable[i] = that.oss_enable[i];
-		strcpy(oss_in_device[i], that.oss_in_device[i]);
-		oss_in_channels[i] = that.oss_in_channels[i];
-		oss_in_bits = that.oss_in_bits;
+		oss_enable[i] = src->oss_enable[i];
+		strcpy(oss_in_device[i], src->oss_in_device[i]);
+		oss_in_channels[i] = src->oss_in_channels[i];
+		oss_in_bits = src->oss_in_bits;
 	}
 
-	strcpy(alsa_in_device, that.alsa_in_device);
-	alsa_in_bits = that.alsa_in_bits;
-	alsa_in_channels = that.alsa_in_channels;
-	in_samplerate = that.in_samplerate;
+	strcpy(alsa_in_device, src->alsa_in_device);
+	alsa_in_bits = src->alsa_in_bits;
+	alsa_in_channels = src->alsa_in_channels;
+	in_samplerate = src->in_samplerate;
+}
+
+AudioInConfig& AudioInConfig::operator=(AudioInConfig &that)
+{
+	copy_from(&that);
 	return *this;
 }
 
@@ -193,22 +198,27 @@ char* VideoInConfig::get_path()
 	return v4l_in_device;
 }
 
+void VideoInConfig::copy_from(VideoInConfig *src)
+{
+	driver = src->driver;
+	strcpy(v4l_in_device, src->v4l_in_device);
+	strcpy(v4l2_in_device, src->v4l2_in_device);
+	strcpy(v4l2jpeg_in_device, src->v4l2jpeg_in_device);
+	strcpy(lml_in_device, src->lml_in_device);
+	strcpy(buz_in_device, src->buz_in_device);
+	strcpy(screencapture_display, src->screencapture_display);
+	firewire_port = src->firewire_port;
+	firewire_channel = src->firewire_channel;
+	strcpy(firewire_path, src->firewire_path);
+	capture_length = src->capture_length;
+	w = src->w;
+	h = src->h;
+	in_framerate = src->in_framerate;
+}
+
 VideoInConfig& VideoInConfig::operator=(VideoInConfig &that)
 {
-	driver = that.driver;
-	strcpy(v4l_in_device, that.v4l_in_device);
-	strcpy(v4l2_in_device, that.v4l2_in_device);
-	strcpy(v4l2jpeg_in_device, that.v4l2jpeg_in_device);
-	strcpy(lml_in_device, that.lml_in_device);
-	strcpy(buz_in_device, that.buz_in_device);
-	strcpy(screencapture_display, that.screencapture_display);
-	firewire_port = that.firewire_port;
-	firewire_channel = that.firewire_channel;
-	strcpy(firewire_path, that.firewire_path);
-	capture_length = that.capture_length;
-	w = that.w;
-	h = that.h;
-	in_framerate = that.in_framerate;
+	copy_from(&that);
 	return *this;
 }
 

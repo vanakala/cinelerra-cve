@@ -27,7 +27,20 @@ void quicktime_mjht_dump(quicktime_mjht_t *mjht)
 {
 }
 
+// Set esds header to a copy of the argument
+void quicktime_set_mpeg4_header(quicktime_stsd_table_t *table,
+	unsigned char *data, 
+	int size)
+{
+	if(table->mpeg4_header)
+	{
+		free(table->mpeg4_header);
+	}
 
+	table->mpeg4_header = calloc(1, size);
+	memcpy(table->mpeg4_header, data, size);
+	table->mpeg4_header_size = size;
+}
 
 static void read_wave(quicktime_t *file, 
 	quicktime_stsd_table_t *table, 
@@ -181,6 +194,8 @@ void quicktime_write_stsd_video(quicktime_t *file, quicktime_stsd_table_t *table
 	quicktime_write_int16(file, table->depth);
 	quicktime_write_int16(file, table->ctab_id);
 
+
+// Write field order for mjpa
 	if(table->fields)
 	{
 		quicktime_atom_t atom;
@@ -189,6 +204,12 @@ void quicktime_write_stsd_video(quicktime_t *file, quicktime_stsd_table_t *table
 		quicktime_write_char(file, table->fields);
 		quicktime_write_char(file, table->field_dominance);
 		quicktime_atom_write_footer(file, &atom);
+	}
+
+// Write header for mp4v
+	if(table->mpeg4_header_size && table->mpeg4_header)
+	{
+		quicktime_write_esds(file, table, 1, 0);
 	}
 }
 

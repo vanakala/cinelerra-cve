@@ -41,6 +41,7 @@ int AttachmentPoint::reset_parameters()
 
 void AttachmentPoint::reset_status()
 {
+	if(!this) printf("AttachmentPoint::reset_status NULL\n");
 	start_position = 0;
 	len = 0;
 	sample_rate = 0;
@@ -57,6 +58,7 @@ int AttachmentPoint::identical(AttachmentPoint *old)
 
 int AttachmentPoint::render_init()
 {
+	if(!this) printf("AttachmentPoint::render_init NULL\n");
 	if(plugin_server && plugin->on)
 	{
 // Start new plugin servers if the number of nodes changed.
@@ -122,6 +124,7 @@ int AttachmentPoint::render_init()
 
 int AttachmentPoint::render_stop(int duplicate)
 {
+	if(!this) printf("AttachmentPoint::render_stop NULL\n");
 // stop plugins
 // Can't use the on value here because it may have changed.
 	if(plugin_server && plugin->on && virtual_plugins.total && !duplicate)
@@ -141,6 +144,7 @@ int AttachmentPoint::render_stop(int duplicate)
 
 int AttachmentPoint::attach_virtual_plugin(VirtualNode *virtual_plugin)
 {
+	if(!this) printf("AttachmentPoint::attach_virtual_plugin NULL\n");
 	int buffer_number = 0;
 
 	if(plugin_server && plugin->on)
@@ -168,6 +172,7 @@ int AttachmentPoint::attach_virtual_plugin(VirtualNode *virtual_plugin)
 
 int AttachmentPoint::multichannel_shared(int search_new)
 {
+	if(!this) printf("AttachmentPoint::multichannel_shared NULL\n");
 	if(search_new)
 	{
 		if(new_virtual_plugins.total && 
@@ -185,6 +190,7 @@ int AttachmentPoint::multichannel_shared(int search_new)
 
 int AttachmentPoint::singlechannel()
 {
+	if(!this) printf("AttachmentPoint::singlechannel NULL\n");
 	if(plugin_server && !plugin_server->multichannel) return 1;
 	return 0;
 }
@@ -192,12 +198,14 @@ int AttachmentPoint::singlechannel()
 
 void AttachmentPoint::render_gui(void *data)
 {
+	if(!this) printf("AttachmentPoint::render_gui 1 NULL\n");
 	if(renderengine && renderengine->mwindow)
 		renderengine->mwindow->render_plugin_gui(data, plugin);
 }
 
 void AttachmentPoint::render_gui(void *data, int size)
 {
+	if(!this) printf("AttachmentPoint::render_gui 2 NULL\n");
 	if(renderengine && renderengine->mwindow)
 		renderengine->mwindow->render_plugin_gui(data, size, plugin);
 }
@@ -216,8 +224,15 @@ void AttachmentPoint::render_gui(void *data, int size)
 
 int AttachmentPoint::dump()
 {
-	printf("    Attachmentpoint %x virtual_plugins=%d\n", this, new_virtual_plugins.total);
-	if(plugin_server) plugin_server->dump();
+	if(this)
+	{
+		printf("    Attachmentpoint %x virtual_plugins=%d\n", this, new_virtual_plugins.total);
+		if(plugin_server) plugin_server->dump();
+	}
+	else
+	{
+		printf("    No Plugin\n");
+	}
 }
 
 

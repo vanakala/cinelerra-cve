@@ -11,7 +11,7 @@ BC_FullScreen::BC_FullScreen(BC_WindowBase *parent_window, int w, int h,
 #ifdef HAVE_LIBXXF86VM
    if (vm_scale) 
 	   create_window(parent_window,
-			   "", 
+			   "Fullscreen", 
 			   0,
 			   0,
 			   w, 
@@ -28,7 +28,7 @@ BC_FullScreen::BC_FullScreen(BC_WindowBase *parent_window, int w, int h,
    else
 #endif
    create_window(parent_window,
-			   "", 
+			   "Fullscreen", 
 			   0,
 			   0,
 			   w, 
@@ -61,7 +61,7 @@ BC_Popup::BC_Popup(BC_WindowBase *parent_window,
  : BC_WindowBase()
 {
 	create_window(parent_window,
-				"", 
+				"Popup", 
 				x,
 				y,
 				w, 

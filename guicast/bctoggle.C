@@ -23,9 +23,14 @@ BC_Toggle::BC_Toggle(int x, int y,
 	strcpy(this->caption, caption);
 	this->bottom_justify = bottom_justify;
 	this->font = font;
-	this->color = color;
+	if(color >= 0)
+		this->color = color;
+	else
+		this->color = get_resources()->default_text_color;
 	select_drag = 0;
 	enabled = 1;
+	underline = -1;
+	is_radial = 0;
 }
 
 
@@ -88,6 +93,12 @@ int BC_Toggle::set_images(VFrame **data)
 	return 0;
 }
 
+void BC_Toggle::set_underline(int number)
+{
+	this->underline = number;
+}
+
+
 void BC_Toggle::set_select_drag(int value)
 {
 	this->select_drag = value;
@@ -112,10 +123,22 @@ int BC_Toggle::draw_face()
 			set_color(MEGREY);
 		set_font(font);
 		draw_text(text_x, text_line, caption);
+
+
+		if(underline >= 0)
+		{
+			int x = text_x;
+			int y = text_line + 1;
+			int x1 = get_text_width(current_font, caption, underline) + x;
+			int x2 = get_text_width(current_font, caption, underline + 1) + x;
+			draw_line(x1, y, x2, y);
+			draw_line(x1, y + 1, (x2 + x1) / 2, y + 1);
+		}
 	}
 
 	draw_pixmap(images[status]);
 	flash();
+	flush();
 	return 0;
 }
 
@@ -168,12 +191,13 @@ int BC_Toggle::cursor_enter_event()
 int BC_Toggle::cursor_leave_event()
 {
 	hide_tooltip();
-	if(!value)
+	if(!value && status == BC_Toggle::TOGGLE_UPHI)
 	{
 		status = BC_Toggle::TOGGLE_UP;
 		draw_face();
 	}
 	else
+	if(status == BC_Toggle::TOGGLE_CHECKEDHI)
 	{
 		status = BC_Toggle::TOGGLE_CHECKED;
 		draw_face();
@@ -187,7 +211,20 @@ int BC_Toggle::button_press_event()
 	if(top_level->event_win == win && get_buttonpress() == 1 && enabled)
 	{
 		status = BC_Toggle::TOGGLE_DOWN;
-		top_level->toggle_value = !this->value;
+
+// Change value now for select drag mode.
+// Radial always goes to 1
+		if(select_drag)
+		{
+			if(!is_radial)
+				value = !value;
+			else
+				value = 1;
+			top_level->toggle_drag = 1;
+			top_level->toggle_value = value;
+			handle_event();
+		}
+
 		draw_face();
 		return 1;
 	}
@@ -196,35 +233,55 @@ int BC_Toggle::button_press_event()
 
 int BC_Toggle::button_release_event()
 {
+	int result = 0;
 	hide_tooltip();
-	if(top_level->event_win == win && status == BC_Toggle::TOGGLE_DOWN)
+
+	if(top_level->event_win == win)
 	{
-		if((!value && !select_drag) || (value && select_drag))
+// Keep value regardless of status if drag mode.
+		if(select_drag)
 		{
-			status = BC_Toggle::TOGGLE_CHECKEDHI;
-			value = 1;
+			if(value)
+				status = BC_Toggle::TOGGLE_CHECKEDHI;
+			else
+				status = BC_Toggle::TOGGLE_UPHI;
+			top_level->toggle_drag = 0;
 		}
 		else
+// Change value only if button down for default mode.
+		if(status == BC_Toggle::TOGGLE_DOWN)
 		{
-			status = BC_Toggle::TOGGLE_UPHI;
-			value = 0;
+// Radial always goes to 1.
+			if(!value || is_radial)
+			{
+				status = BC_Toggle::TOGGLE_CHECKEDHI;
+				value = 1;
+			}
+			else
+			{
+				status = BC_Toggle::TOGGLE_UPHI;
+				value = 0;
+			}
+			result = handle_event();
 		}
 		draw_face();
-		return handle_event();
+		return result;
 	}
 	return 0;
 }
 
 int BC_Toggle::cursor_motion_event()
 {
-	if(select_drag) return 0;
 	if(top_level->button_down && 
 		top_level->event_win == win && 
 		!cursor_inside())
 	{
 		if(status == BC_Toggle::TOGGLE_DOWN)
 		{
-			status = BC_Toggle::TOGGLE_UP;
+			if(value)
+				status = BC_Toggle::TOGGLE_CHECKED;
+			else
+				status = BC_Toggle::TOGGLE_UP;
 			draw_face();
 		}
 		else
@@ -306,6 +363,7 @@ BC_Radial::BC_Radial(int x,
 	font,
 	color)
 {
+	is_radial = 1;
 }
 
 BC_CheckBox::BC_CheckBox(int x, 

@@ -12,9 +12,25 @@
 // BC_Signals must be initialized at the start of every program using
 // debugging.
 #define ENABLE_TRACE
-#define TRACE_LOCKS
+//#define TRACE_LOCKS
+#ifdef TRACE_LOCKS
+#undef TRACE_LOCKS
+#endif
 //#define TRACE_MEMORY
 
+
+// Need to use structs to avoid the memory manager.
+// One of these tables is created every time someone locks a lock.
+// After successfully locking, the table is flagged as being the owner of the lock.
+// In the unlock function, the table flagged as the owner of the lock is deleted.
+typedef struct 
+{
+	void *ptr;
+	char *title;
+	char *location;
+	int is_owner;
+	int id;
+} bc_locktrace_t;
 
 class BC_Signals
 {
@@ -43,14 +59,25 @@ public:
 
 #ifdef TRACE_LOCKS
 
-#define SET_LOCK(ptr, title, location) BC_Signals::set_lock(ptr, title, location);
+// Before user acquires
+#define SET_LOCK(ptr, title, location) int table_id = BC_Signals::set_lock(ptr, title, location);
+// After successful acquisition
+#define SET_LOCK2 BC_Signals::set_lock2(table_id);
+// Release current lock table after failing to acquire
+#define UNSET_LOCK2 BC_Signals::unset_lock2(table_id);
+
+// Release current owner of lock
 #define UNSET_LOCK(ptr) BC_Signals::unset_lock(ptr);
+
+// Delete a lock
 #define UNSET_ALL_LOCKS(ptr) BC_Signals::unset_all_locks(ptr);
 
 #else
 
 #define SET_LOCK(ptr, title, location) ;
+#define SET_LOCK2 ;
 #define UNSET_LOCK(ptr) ;
+#define UNSET_LOCK2 ;
 #define UNSET_ALL_LOCKS(ptr) ;
 
 #endif
@@ -84,7 +111,9 @@ public:
 
 
 
-	static void set_lock(void *ptr, char *title, char *location);
+	static int set_lock(void *ptr, char *title, char *location);
+	static void set_lock2(int table_id);
+	static void unset_lock2(int table_id);
 	static void unset_lock(void *ptr);
 // Used in lock destructors so takes away all references
 	static void unset_all_locks(void *ptr);

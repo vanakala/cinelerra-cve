@@ -122,13 +122,13 @@ public:
 		switch(get_keypress())
 		{
 			case UP:
-				current_cursor += 2;
+				current_cursor += 1;
 				if(current_cursor >= XC_num_glyphs) current_cursor = 0;
 				break;
 			
 			case DOWN:
-				current_cursor -= 2;
-				if(current_cursor <= 0) current_cursor = XC_num_glyphs - 2;
+				current_cursor -= 1;
+				if(current_cursor <= 0) current_cursor = XC_num_glyphs - 1;
 				break;
 		}
 		printf("%d\n", current_cursor);

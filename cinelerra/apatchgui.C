@@ -21,8 +21,16 @@
 
 
 
-APatchGUI::APatchGUI(MWindow *mwindow, PatchBay *patchbay, ATrack *track, int x, int y)
- : PatchGUI(mwindow, patchbay, track, x, y)
+APatchGUI::APatchGUI(MWindow *mwindow, 
+	PatchBay *patchbay, 
+	ATrack *track, 
+	int x, 
+	int y)
+ : PatchGUI(mwindow, 
+ 	patchbay, 
+	track, 
+	x, 
+	y)
 {
 	data_type = TRACK_AUDIO;
 	this->atrack = track;
@@ -333,10 +341,11 @@ AMeterPatch::AMeterPatch(MWindow *mwindow, APatchGUI *patch, int x, int y)
 			METER_HORIZ, 
 			patch->patchbay->get_w() - 10, 
 			mwindow->edl->session->min_meter_db, 
+			mwindow->edl->session->max_meter_db, 
 			mwindow->edl->session->meter_format, 
 			0,
-			mwindow->edl->session->record_speed * 10,
-			mwindow->edl->session->record_speed)
+			TRACKING_RATE * 10,
+			TRACKING_RATE)
 {
 	this->mwindow = mwindow;
 	this->patch = patch;

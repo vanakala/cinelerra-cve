@@ -28,7 +28,7 @@ int BC_ProgressBox::update(long position)
 {
 	if(!cancelled)
 	{
-		pwindow->lock_window();
+		pwindow->lock_window("BC_ProgressBox::update");
 		pwindow->bar->update(position);
 		pwindow->unlock_window();
 	}
@@ -62,7 +62,7 @@ int BC_ProgressBox::stop_progress()
 
 void BC_ProgressBox::lock_window()
 {
-	pwindow->lock_window();
+	pwindow->lock_window("BC_ProgressBox::lock_window");
 }
 
 void BC_ProgressBox::unlock_window()

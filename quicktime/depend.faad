@@ -35,11 +35,3 @@ $(OBJDIR)/$(FAAD_DIR)/libfaad/ssr.o: 		   $(FAAD_DIR)/libfaad/ssr.c
 $(OBJDIR)/$(FAAD_DIR)/libfaad/syntax.o: 	   $(FAAD_DIR)/libfaad/syntax.c
 $(OBJDIR)/$(FAAD_DIR)/libfaad/tns.o: 		   $(FAAD_DIR)/libfaad/tns.c
 
-
-
-
-
-
-
-
-

@@ -82,18 +82,21 @@ int AutoConf::set_all()
 
 AutoConf& AutoConf::operator=(AutoConf &that)
 {
-	fade = that.fade;
-	pan = that.pan;
-	mute = that.mute;
-	transitions = that.transitions;
-	plugins = that.plugins;
-	camera = that.camera;
-	projector = that.projector;
-	mode = that.mode;
-	mask = that.mask;
-	czoom = that.czoom;
-	pzoom = that.pzoom;
+	copy_from(&that);
 	return *this;
 }
 
-
+void AutoConf::copy_from(AutoConf *src)
+{
+	fade = src->fade;
+	pan = src->pan;
+	mute = src->mute;
+	transitions = src->transitions;
+	plugins = src->plugins;
+	camera = src->camera;
+	projector = src->projector;
+	mode = src->mode;
+	mask = src->mask;
+	czoom = src->czoom;
+	pzoom = src->pzoom;
+}

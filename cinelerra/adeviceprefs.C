@@ -3,16 +3,12 @@
 #include "audiodevice.inc"
 #include "bitspopup.h"
 #include "edl.h"
+#include "language.h"
 #include "playbackconfig.h"
 #include "preferences.h"
 #include "preferencesthread.h"
 #include "recordconfig.h"
 #include <string.h>
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 #define DEVICE_H 25
 
@@ -349,7 +345,7 @@ int ADevicePrefs::create_alsa_objs()
 		0, 
 		0,
 		0,
-		0);
+		1);
 	alsa_bits->create_objects();
 
 	x1 += alsa_bits->get_w() + 5;

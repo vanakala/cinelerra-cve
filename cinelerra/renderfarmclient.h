@@ -62,7 +62,7 @@ public:
 	int write_socket(char *data, int len, int timeout);
 	int read_socket(char *data, int len, int timeout);
 	void read_string(int socket_fd, char* &string);
-	void lock();
+	void lock(char *location);
 	void unlock();
 
 

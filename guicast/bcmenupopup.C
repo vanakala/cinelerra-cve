@@ -189,8 +189,8 @@ int BC_MenuPopup::activate_menu(int x,
 {
 	Window tempwin;
 	int new_x, new_y, top_w, top_h;
-	top_w = top_level->get_root_w(1);
-	top_h = top_level->get_root_h();
+	top_w = top_level->get_root_w(1, 0);
+	top_h = top_level->get_root_h(0);
 
 	get_dimensions();
 

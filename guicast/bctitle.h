@@ -12,7 +12,7 @@ public:
 		int y, 
 		char *text, 
 		int font = MEDIUMFONT, 
-		int color = BLACK, 
+		int color = -1, 
 		int centered = 0,
 		int fixed_w = 0);
 	virtual ~BC_Title();

@@ -363,7 +363,13 @@ static void allocate_temps(mjpeg_t *mjpeg)
 	            mjpeg->temp_rows[0] = calloc(1, sizeof(unsigned char*) * mjpeg->coded_h);
 	            mjpeg->temp_rows[1] = calloc(1, sizeof(unsigned char*) * mjpeg->coded_h);
 	            mjpeg->temp_rows[2] = calloc(1, sizeof(unsigned char*) * mjpeg->coded_h);
-	            for(i = 0; i < mjpeg->coded_h; i++)
+	            if(mjpeg->greyscale)
+				{
+					memset(mjpeg->temp_data + mjpeg->coded_w * mjpeg->coded_h, 
+						0x80,
+						mjpeg->coded_w * mjpeg->coded_h * 2);
+				}
+				for(i = 0; i < mjpeg->coded_h; i++)
 	            {
 		            mjpeg->temp_rows[0][i] = mjpeg->temp_data + i * mjpeg->coded_w;
 		            mjpeg->temp_rows[1][i] = mjpeg->temp_data + mjpeg->coded_w * mjpeg->coded_h + i * mjpeg->coded_w;
@@ -636,6 +642,10 @@ static void decompress_field(mjpeg_compressor *engine)
 	else
 		mjpeg->jpeg_color_model = BC_YUV444P;
 
+	if(engine->jpeg_decompress.jpeg_color_space == JCS_GRAYSCALE)
+		mjpeg->greyscale = 1;
+
+//printf("%d %d\n", engine->jpeg_decompress.comp_info[0].h_samp_factor, engine->jpeg_decompress.comp_info[0].v_samp_factor);
 // Must be here because the color model isn't known until now
 	pthread_mutex_lock(&(mjpeg->decompress_init));
 	allocate_temps(mjpeg);
@@ -1038,8 +1048,7 @@ int mjpeg_decompress(mjpeg_t *mjpeg,
 
 // For dual CPUs, don't want second thread to start until temp data is allocated by the first.
 // For single CPUs, don't want two threads running simultaneously
-		if(mjpeg->cpus < 2 || !mjpeg->temp_data
-			/* && i < mjpeg->fields - 1 && !mjpeg->temp_data */)
+		if(mjpeg->cpus < 2 || !mjpeg->temp_data)
 		{
 			lock_compress_loop(mjpeg->decompressors[i]);
 			if(i == 0) got_first_thread = 1;
@@ -1074,14 +1083,19 @@ int mjpeg_decompress(mjpeg_t *mjpeg,
 		(mjpeg->temp_data || 
 		!mjpeg->error))
 	{
+		unsigned char *y_in = mjpeg->temp_rows[0][0];
+		unsigned char *u_in = mjpeg->temp_rows[1][0];
+		unsigned char *v_in = mjpeg->temp_rows[2][0];
+
+//printf("mjpeg_decompress %p\n", row_pointers);
 		cmodel_transfer(row_pointers, 
 			0,
 			y_plane,
 			u_plane,
 			v_plane,
-			mjpeg->temp_rows[0][0],
-			mjpeg->temp_rows[1][0],
-			mjpeg->temp_rows[2][0],
+			y_in,
+			u_in,
+			v_in,
 			0, 
 			0, 
 			mjpeg->output_w, 
@@ -1096,7 +1110,6 @@ int mjpeg_decompress(mjpeg_t *mjpeg,
 			mjpeg->coded_w,
 			mjpeg->rowspan ? mjpeg->rowspan : mjpeg->output_w);
 	}
-//printf("mjpeg_decompress 100\n");
 	return 0;
 }
 

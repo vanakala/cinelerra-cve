@@ -49,6 +49,8 @@ ARender::~ARender()
 
 void ARender::arm_command()
 {
+// Need the meter history now so AModule can allocate its own history
+	calculate_history_size();
 	CommonRender::arm_command();
 	asynchronous = 1;
 	init_meters();
@@ -65,14 +67,16 @@ Module* ARender::new_module(Track *track)
 	return new AModule(renderengine, this, 0, track);
 }
 
-int ARender::history_size()
+int ARender::calculate_history_size()
 {
 	if(total_peaks > 0)
 		return total_peaks;
 	else
 	{
 		meter_render_fragment = renderengine->fragment_len;
-		while(meter_render_fragment > renderengine->edl->session->sample_rate / 10) 
+// This number and the timer in tracking.C determine the rate
+		while(meter_render_fragment > 
+			renderengine->edl->session->sample_rate / TRACKING_RATE) 
 			meter_render_fragment /= 2;
 		total_peaks = 16 * 
 			renderengine->fragment_len / 
@@ -85,14 +89,15 @@ int ARender::init_meters()
 {
 // not providing enough peaks results in peaks that are ahead of the sound
 	if(level_samples) delete [] level_samples;
-	level_samples = new int64_t[history_size()];
+	calculate_history_size();
+	level_samples = new int64_t[total_peaks];
 	for(int i = 0; i < MAXCHANNELS;i++)
 	{
 		current_level[i] = 0;
 		if(audio_out[i] && !level_history[i]) level_history[i] = new double[total_peaks];
 	}
 
-	for(int i = 0; i < history_size(); i++)
+	for(int i = 0; i < total_peaks; i++)
 	{
 		level_samples[i] = -1;
 	}
@@ -100,7 +105,7 @@ int ARender::init_meters()
 	for(int j = 0; j < MAXCHANNELS; j++)
 	{
 		if(audio_out[j]) 
-			for(int i = 0; i < history_size(); i++)
+			for(int i = 0; i < total_peaks; i++)
 				level_history[j][i] = 0;
 	}
 	return 0;
@@ -232,7 +237,7 @@ int ARender::get_history_number(int64_t *table, int64_t position)
 // Get the entry closest to position
 	int result = 0;
 	int64_t min_difference = 0x7fffffff;
-	for(int i = 0; i < history_size(); i++)
+	for(int i = 0; i < total_peaks; i++)
 	{
 //printf("%d %d ", i, table[i]);
 		if(labs(table[i] - position) < min_difference)
@@ -412,7 +417,7 @@ int ARender::reverse_buffer(double *buffer, int64_t len)
 int ARender::get_next_peak(int current_peak)
 {
 	current_peak++;
-	if(current_peak == total_peaks) current_peak = 0;
+	if(current_peak >= total_peaks) current_peak = 0;
 	return current_peak;
 }
 

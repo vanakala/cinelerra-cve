@@ -1,10 +1,7 @@
 #include "bcdisplayinfo.h"
+#include "language.h"
 #include "holowindow.h"
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 PLUGIN_THREAD_OBJECT(HoloMain, HoloThread, HoloWindow)
@@ -44,13 +41,7 @@ int HoloWindow::create_objects()
 	return 0;
 }
 
-int HoloWindow::close_event()
-{
-// Set result to 1 to indicate a client side close
-	set_done(1);
-	return 1;
-}
-
+WINDOW_CLOSE_EVENT(HoloWindow)
 
 
 

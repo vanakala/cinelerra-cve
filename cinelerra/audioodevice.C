@@ -1,6 +1,7 @@
 #include "audiodevice.h"
 #include "condition.h"
 #include "mutex.h"
+#include "sema.h"
 
 #include <string.h>
 
@@ -241,17 +242,15 @@ int AudioDevice::interrupt_playback()
 // cancel thread
 		is_playing_back = 0;
 		get_lowlevel_out()->interrupt_playback();
-//		Thread::cancel();
 // Completion is waited for in arender
 	}
 
 // unlock everything
 	for(int i = 0; i < TOTAL_BUFFERS; i++)
 	{
-//		play_lock[i].reset();
-// Caused a crash when run() was waiting on it in original versions.
-// This is required now since thread cancelation is only possible during
-// write().
+// When TRACE_LOCKS is enabled, this
+// locks up when run() is waiting on it at just the right time.
+// Seems there may be a cancel after the trace lock is locked.
 		play_lock[i]->unlock();  
 		arm_lock[i]->unlock();
 	}
@@ -356,8 +355,9 @@ void AudioDevice::run()
 			timer_lock->unlock();
 
 
-// write buffer
-			thread_result = get_lowlevel_out()->write_buffer(buffer[thread_buffer_num], buffer_size[thread_buffer_num]);
+// write converted buffer synchronously
+			thread_result = get_lowlevel_out()->write_buffer(buffer[thread_buffer_num], 
+				buffer_size[thread_buffer_num]);
 
 // allow writing to the buffer
 			arm_lock[thread_buffer_num]->unlock();

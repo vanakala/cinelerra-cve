@@ -3,6 +3,7 @@
 
 #include "bcdialog.inc"
 #include "guicast.h"
+#include "mutex.inc"
 #include "thread.h"
 
 
@@ -29,6 +30,7 @@ public:
 private:
 	BC_Window *gui;
 	Mutex *startup_lock;
+	Mutex *window_lock;
 };
 
 

@@ -68,15 +68,25 @@ int RecordMenuItem::handle_event()
 		switch(current_state)
 		{
 			case RECORD_INTRO:
-				thread->record_window->lock_window("RecordMenuItem::handle_event 1");
-				thread->record_window->raise_window();
-				thread->record_window->unlock_window();
+				thread->window_lock->lock("RecordMenuItem::handle_event 1");
+				if(thread->record_window)
+				{
+					thread->record_window->lock_window("RecordMenuItem::handle_event 1");
+					thread->record_window->raise_window();
+					thread->record_window->unlock_window();
+				}
+				thread->window_lock->unlock();
 				break;
 			
 			case RECORD_CAPTURING:
-				thread->record_gui->lock_window("RecordMenuItem::handle_event 2");
-				thread->record_gui->raise_window();
-				thread->record_gui->unlock_window();
+				thread->window_lock->lock("RecordMenuItem::handle_event 2");
+				if(thread->record_gui)
+				{
+					thread->record_gui->lock_window("RecordMenuItem::handle_event 2");
+					thread->record_gui->raise_window();
+					thread->record_gui->unlock_window();
+				}
+				thread->window_lock->unlock();
 				break;
 		}
 		return 0;
@@ -110,16 +120,7 @@ Record::Record(MWindow *mwindow, RecordMenuItem *menu_item)
 	picture = new Picture;
 	channeldb = new ChannelDB;
 	master_channel = new Channel;
-
-// Initialize 601 to rgb tables
-// 	int _601_to_rgb_value;
-// 	for(int i = 0; i <= 255; i++)
-// 	{
-// 		_601_to_rgb_value = (int)(1.1644 * i - 255 * 0.0627 + 0.5);
-// 		if(_601_to_rgb_value < 0) _601_to_rgb_value = 0;
-// 		if(_601_to_rgb_value > 255) _601_to_rgb_value = 255;
-// 		_601_to_rgb_table[i] = _601_to_rgb_value;
-// 	}
+	window_lock = new Mutex("Record::window_lock");
 }
 
 Record::~Record()
@@ -127,6 +128,7 @@ Record::~Record()
 	delete picture;
 	delete channeldb;
 	delete master_channel;
+	delete window_lock;
 }
 
 
@@ -301,9 +303,11 @@ void Record::configure_batches()
 void Record::source_to_text(char *string, Batch *batch)
 {
 // Update source
+	strcpy(string, "Record::source_to_text: not implemented");
 	switch(mwindow->edl->session->vconfig_in->driver)
 	{
 		case VIDEO4LINUX:
+		case VIDEO4LINUX2:
 		case CAPTURE_BUZ:
 		case VIDEO4LINUX2JPEG:
 			if(batch->channel < 0 || batch->channel >= channeldb->size())
@@ -368,12 +372,22 @@ void Record::run()
 // Get information about the file format
 	do
 	{
-// Script did not contain "ok" so pop up a window.
-		record_window = new RecordWindow(mwindow, this);
+ 		int x = mwindow->gui->get_root_w(0, 1) / 2 - RECORD_WINDOW_WIDTH / 2;
+		int y = mwindow->gui->get_root_h(1) / 2 - RECORD_WINDOW_HEIGHT / 2;
+		
+		window_lock->lock("Record::run 1");
+		record_window = new RecordWindow(mwindow, this, x, y);
 		record_window->create_objects();
+		window_lock->unlock();
+
+
 		result = record_window->run_window();
+		window_lock->lock("Record::run 2");
 		delete record_window;
 		record_window = 0;
+		window_lock->unlock();
+
+
 
 		if(!result)
 		{
@@ -400,6 +414,7 @@ void Record::run()
 		edl->session->aspect_w = mwindow->edl->session->aspect_w;
 		edl->session->aspect_h = mwindow->edl->session->aspect_h;
 
+		window_lock->lock("Record::run 3");
 		record_gui = new RecordGUI(mwindow, this);
 		record_gui->load_defaults();
 		record_gui->create_objects();
@@ -426,6 +441,8 @@ void Record::run()
 
 		start_monitor();
 
+		window_lock->unlock();
+
 		result = record_gui->run_window();
 
 // Force monitor to quit without resuming
@@ -434,16 +451,20 @@ void Record::run()
 		else
 			monitor_engine->record_audio->batch_done = 1;
 
-		stop_operation(0);
+		stop_operation(0);;
 
 		close_output_file();
 
+		window_lock->lock("Record::run 4");
 		delete record_monitor;
+		record_monitor = 0;
 
 		record_gui->save_defaults();
 
 TRACE("Record::run 1");
 		delete record_gui;
+		record_gui = 0;
+		window_lock->unlock();
 
 TRACE("Record::run 2");
 		delete edl;
@@ -755,12 +776,14 @@ void Record::toggle_label()
 	record_gui->update_labels(current_display_position());
 }
 
-void Record::get_audio_write_length(int64_t &buffer_size, int64_t &fragment_size)
+void Record::get_audio_write_length(int &buffer_size, 
+	int &fragment_size)
 {
 	fragment_size = 1;
 	while(fragment_size < default_asset->sample_rate / mwindow->edl->session->record_speed) 
 		fragment_size *= 2;
 	fragment_size /= 2;
+	CLAMP(fragment_size, 1024, 32768);
 
 	for(buffer_size = fragment_size; 
 		buffer_size < mwindow->edl->session->record_write_length; 
@@ -996,8 +1019,9 @@ int Record::open_input_devices(int duplex, int context)
 		if(!audio_opened)
 		{
 			adevice->open_input(mwindow->edl->session->aconfig_in, 
-					default_asset->sample_rate, 
-					get_in_length());
+				mwindow->edl->session->vconfig_in, 
+				default_asset->sample_rate, 
+				get_in_length());
 		}
 	}
 
@@ -1176,11 +1200,14 @@ int Record::set_channel(int channel)
 		char string[BCTEXTLEN];
 		get_editing_batch()->channel = channel;
 		source_to_text(string, get_editing_batch());
+
+
 		record_gui->lock_window("Record::set_channel");
 		record_gui->batch_source->update(string);
 		record_monitor->window->channel_picker->channel_text->update(string);
 		record_gui->update_batches();
 		record_gui->unlock_window();
+
 
 		if(vdevice)
 		{

@@ -219,8 +219,8 @@ MainProgressBar* MainProgress::start_progress(char *text, long total_length)
 	{
 		result = new MainProgressBar(mwindow, this);
 		progress_bars.append(result);
-		result->progress_box = new BC_ProgressBox(gui->get_abs_cursor_x(), 
-			gui->get_abs_cursor_y(), 
+		result->progress_box = new BC_ProgressBox(gui->get_abs_cursor_x(1), 
+			gui->get_abs_cursor_y(1), 
 			text, 
 			total_length);
 	}

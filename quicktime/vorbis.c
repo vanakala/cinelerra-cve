@@ -671,6 +671,11 @@ static int encode(quicktime_t *file,
 	quicktime_atom_t chunk_atom;
 
 
+	if(samplerate < 32000)
+	{
+		printf("encode: sample rate %d not supported.\n", samplerate);
+		return 1;
+	}
 
 
 

@@ -370,8 +370,8 @@ void FileSndFile::get_parameters(BC_WindowBase *parent_window,
 
 SndFileConfig::SndFileConfig(BC_WindowBase *parent_window, Asset *asset)
  : BC_Window(PROGRAM_NAME ": Audio Compression",
- 	parent_window->get_abs_cursor_x(),
- 	parent_window->get_abs_cursor_y(),
+ 	parent_window->get_abs_cursor_x(1),
+ 	parent_window->get_abs_cursor_y(1),
 	250,
 	200)
 {

@@ -17,7 +17,7 @@ public:
 		char *caption = "",
 		int bottom_justify = 0,
 		int font = MEDIUMFONT,
-		int color = BLACK);
+		int color = -1);
 	virtual ~BC_Toggle();
 
 	virtual int handle_event() { return 0; };
@@ -32,6 +32,7 @@ public:
 
 	int initialize();
 	int set_images(VFrame **data);
+	void set_underline(int number);
 	int cursor_enter_event();
 	int cursor_leave_event();
 // In select drag mode these 3 need to be overridden and called back to.
@@ -69,6 +70,8 @@ public:
 	int color;
 	int select_drag;
 	int enabled;
+	int underline;
+	int is_radial;
 };
 
 class BC_Radial : public BC_Toggle
@@ -79,7 +82,7 @@ public:
 		int value, 
 		char *caption = "", 
 		int font = MEDIUMFONT,
-		int color = BLACK);
+		int color = -1);
 };
 
 class BC_CheckBox : public BC_Toggle
@@ -90,13 +93,13 @@ public:
 		int value, 
 		char *caption = "", 
 		int font = MEDIUMFONT,
-		int color = BLACK);
+		int color = -1);
 	BC_CheckBox(int x, 
 		int y, 
 		int *value, 
 		char *caption = "", 
 		int font = MEDIUMFONT,
-		int color = BLACK);
+		int color = -1);
 	virtual int handle_event();
 
 	int *value;
@@ -109,7 +112,7 @@ public:
 		int y, 
 		int value, 
 		int font = MEDIUMFONT,
-		int color = BLACK);
+		int color = -1);
 };
 
 #endif

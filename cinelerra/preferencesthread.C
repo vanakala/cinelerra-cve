@@ -16,6 +16,7 @@
 #include "levelwindow.h"
 #include "levelwindowgui.h"
 #include "meterpanel.h"
+#include "mutex.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "patchbay.h"
@@ -31,6 +32,12 @@
 #include "vwindowgui.h"
 
 #include <string.h>
+
+
+
+#define WIDTH 750
+#define HEIGHT 700
+
 
 PreferencesMenuitem::PreferencesMenuitem(MWindow *mwindow)
  : BC_MenuItem(_("Preferences..."), "Shift+P", 'P')
@@ -49,8 +56,23 @@ PreferencesMenuitem::~PreferencesMenuitem()
 
 int PreferencesMenuitem::handle_event() 
 {
-	if(thread->thread_running) return 1;
-	thread->start();
+	if(!thread->running())
+	{
+		thread->start();
+	}
+	else
+	{
+// window_lock has to be locked but window can't be locked until after
+// it is known to exist, so we neglect window_lock for now
+		if(thread->window)
+		{
+			thread->window_lock->lock("SetFormat::handle_event");
+			thread->window->lock_window("PreferencesMenuitem::handle_event");
+			thread->window->raise_window();
+			thread->window->unlock_window();
+			thread->window_lock->unlock();
+		}
+	}
 	return 1;
 }
 
@@ -63,10 +85,12 @@ PreferencesThread::PreferencesThread(MWindow *mwindow)
 	this->mwindow = mwindow;
 	window = 0;
 	thread_running = 0;
+	window_lock = new Mutex("PreferencesThread::window_lock");
 }
 
 PreferencesThread::~PreferencesThread()
 {
+	delete window_lock;
 }
 
 void PreferencesThread::run()
@@ -88,8 +112,14 @@ void PreferencesThread::run()
 	need_new_indexes = 0;
 	rerender = 0;
 
-	window = new PreferencesWindow(mwindow, this);
+ 	int x = mwindow->gui->get_root_w(0, 1) / 2 - WIDTH / 2;
+	int y = mwindow->gui->get_root_h(1) / 2 - HEIGHT / 2;
+
+	window_lock->lock("PreferencesThread::run 1");
+	window = new PreferencesWindow(mwindow, this, x, y);
 	window->create_objects();
+	window_lock->unlock();
+
 	thread_running = 1;
 	int result = window->run_window();
 
@@ -100,8 +130,10 @@ void PreferencesThread::run()
 		mwindow->save_defaults();
 	}
 
+	window_lock->lock("PreferencesThread::run 2");
 	delete window;
 	window = 0;
+	window_lock->unlock();
 	delete preferences;
 	delete edl;
 
@@ -122,10 +154,10 @@ int PreferencesThread::apply_settings()
 // Compare sessions 											
 
 
-	AudioOutConfig *this_aconfig = edl->session->get_playback_config(edl->session->playback_strategy, 0)->aconfig;
-	VideoOutConfig *this_vconfig = edl->session->get_playback_config(edl->session->playback_strategy, 0)->vconfig;
-	AudioOutConfig *aconfig = mwindow->edl->session->get_playback_config(edl->session->playback_strategy, 0)->aconfig;
-	VideoOutConfig *vconfig = mwindow->edl->session->get_playback_config(edl->session->playback_strategy, 0)->vconfig;
+	AudioOutConfig *this_aconfig = edl->session->playback_config->aconfig;
+	VideoOutConfig *this_vconfig = edl->session->playback_config->vconfig;
+	AudioOutConfig *aconfig = mwindow->edl->session->playback_config->aconfig;
+	VideoOutConfig *vconfig = mwindow->edl->session->playback_config->vconfig;
 
 
 	rerender = 
@@ -136,7 +168,6 @@ int PreferencesThread::apply_settings()
 		(edl->session->playback_software_position != mwindow->edl->session->playback_software_position) ||
 		(edl->session->test_playback_edits != mwindow->edl->session->test_playback_edits) ||
 		(edl->session->playback_buffer != mwindow->edl->session->playback_buffer) ||
-		(edl->session->playback_strategy != mwindow->edl->session->playback_strategy) ||
 		(preferences->force_uniprocessor != preferences->force_uniprocessor) ||
 		(*this_aconfig != *aconfig) ||
 		(*this_vconfig != *vconfig) ||
@@ -154,28 +185,32 @@ int PreferencesThread::apply_settings()
 	{
 		mwindow->cwindow->gui->lock_window("PreferencesThread::apply_settings");
 		mwindow->cwindow->gui->meters->change_format(edl->session->meter_format,
-			edl->session->min_meter_db);
+			edl->session->min_meter_db,
+			edl->session->max_meter_db);
 		mwindow->cwindow->gui->unlock_window();
 
 
 
 		mwindow->vwindow->gui->lock_window("PreferencesThread::apply_settings");
 		mwindow->vwindow->gui->meters->change_format(edl->session->meter_format,
-			edl->session->min_meter_db);
+			edl->session->min_meter_db,
+			edl->session->max_meter_db);
 		mwindow->vwindow->gui->unlock_window();
 
 
 
 		mwindow->gui->lock_window("PreferencesThread::apply_settings 1");
 		mwindow->gui->patchbay->change_meter_format(edl->session->meter_format,
-			edl->session->min_meter_db);
+			edl->session->min_meter_db,
+			edl->session->max_meter_db);
 		mwindow->gui->unlock_window();
 
 
 
 		mwindow->lwindow->gui->lock_window("PreferencesThread::apply_settings");
 		mwindow->lwindow->gui->panel->change_format(edl->session->meter_format,
-			edl->session->min_meter_db);
+			edl->session->min_meter_db,
+			edl->session->max_meter_db);
 		mwindow->lwindow->gui->unlock_window();
 	}
 
@@ -205,7 +240,9 @@ int PreferencesThread::apply_settings()
 
 	if(redraw_times || redraw_overlays)
 	{
+		mwindow->gui->lock_window("PreferencesThread::apply_settings 4");
 		mwindow->gui->flush();
+		mwindow->gui->unlock_window();
 	}
 	return 0;
 }
@@ -258,16 +295,13 @@ int PreferencesThread::text_to_category(char *category)
 
 
 
-
-
-#define WIDTH 750
-#define HEIGHT 700
-
 PreferencesWindow::PreferencesWindow(MWindow *mwindow, 
-	PreferencesThread *thread)
+	PreferencesThread *thread,
+	int x,
+	int y)
  : BC_Window(PROGRAM_NAME ": Preferences", 
- 	mwindow->gui->get_root_w() / 2 - WIDTH / 2,
-	mwindow->gui->get_root_h() / 2 - HEIGHT / 2,
+ 	x,
+	y,
  	WIDTH, 
 	HEIGHT,
 	(int)BC_INFINITY,

@@ -48,6 +48,8 @@ int quicktime_write_fixed16(quicktime_t *file, float number);
 
 /* Returns number of bytes written */
 int quicktime_write_data(quicktime_t *file, char *data, int size);
+/* Enable or disable presave */
+void quicktime_set_presave(quicktime_t *file, int value);
 /* Returns 1 if equal or 0 if different */
 int quicktime_match_32(char *input, char *output);
 int quicktime_match_24(char *input, char *output);
@@ -132,6 +134,14 @@ void quicktime_finalize_hdrl(quicktime_t *file, quicktime_hdrl_t *hdrl);
 void quicktime_read_esds(quicktime_t *file, 
 	quicktime_atom_t *parent_atom, 
 	quicktime_stsd_table_t *table);
+void quicktime_write_esds(quicktime_t *file, 
+	quicktime_stsd_table_t *table,
+	int do_video,
+	int do_audio);
+// Set esds header to a copy of the argument
+void quicktime_set_mpeg4_header(quicktime_stsd_table_t *table,
+	unsigned char *data, 
+	int size);
 
 
 

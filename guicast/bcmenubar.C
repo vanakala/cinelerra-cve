@@ -222,6 +222,7 @@ int BC_MenuBar::draw_face()
 	draw_line(0, h, w, h);
 
 	flash();
+	flush();
 	return 0;
 }
 

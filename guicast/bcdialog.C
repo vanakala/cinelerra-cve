@@ -9,12 +9,13 @@ BC_DialogThread::BC_DialogThread()
  : Thread(1, 0, 0)
 {
 	gui = 0;
-	startup_lock = new Mutex;
+	startup_lock = new Mutex("BC_DialogThread::startup_lock");
+	window_lock = new Mutex("BC_DialogThread::window_lock");
 }
 
 BC_DialogThread::~BC_DialogThread()
 {
-	startup_lock->lock();
+	startup_lock->lock("BC_DialogThread::~BC_DialogThread");
 	if(gui)
 	{
 		gui->lock_window();
@@ -25,27 +26,30 @@ BC_DialogThread::~BC_DialogThread()
 	Thread::join();
 
 	delete startup_lock;
+	delete window_lock;
 }
 
 void BC_DialogThread::start()
 {
 	if(Thread::running())
 	{
+		window_lock->lock("BC_DialogThread::start");
 		if(gui)
 		{
-			gui->lock_window();
+			gui->lock_window("BC_DialogThread::start");
 			gui->raise_window(1);
 			gui->unlock_window();
 		}
+		window_lock->unlock();
 		return;
 	}
 
 // Don't allow anyone else to create the window
-	startup_lock->lock();
+	startup_lock->lock("BC_DialogThread::start");
 	Thread::start();
 
 // Wait for startup
-	startup_lock->lock();
+	startup_lock->lock("BC_DialogThread::start");
 	startup_lock->unlock();
 }
 
@@ -55,10 +59,10 @@ void BC_DialogThread::run()
 	startup_lock->unlock();
 	int result = gui->run_window();
 
-	startup_lock->lock();
+	window_lock->lock("BC_DialogThread::run");
 	delete gui;
 	gui = 0;
-	startup_lock->unlock();
+	window_lock->unlock();
 
 	handle_close_event(result);
 }

@@ -27,11 +27,11 @@ public:
 	virtual ~PlaybackEngine();
 
 	int create_objects();
-	virtual int create_render_engines();
-	void delete_render_engines();
-	void arm_render_engines();
-	void start_render_engines();
-	void wait_render_engines();
+	virtual int create_render_engine();
+	void delete_render_engine();
+	void arm_render_engine();
+	void start_render_engine();
+	void wait_render_engine();
 	void create_cache();
 	void perform_change();
 	void sync_parameters(EDL *edl);
@@ -91,84 +91,14 @@ public:
 	int last_command;
 	int done;
 	int do_cwindow;
-// Render engine set
-	ArrayList<RenderEngine*> render_engines;
-
-
-
-
-
-
-
-
-
-
-
-
-
-	int reset_parameters();
-
-// ================= position information ======================
-// get exact position in samples corrected for speed and direction
-	long get_position(int sync_time = 1);
-// get total samples rendered since last start with no speed correction
-// Sync_time uses the video thread to get the current position.
-// Otherwise a timer or audio device is used.
-	long absolute_position(int sync_time = 1);
-
-// stop and start for user changes
-	int start_reconfigure();
-	int stop_reconfigure();
-
-// generic render routine
-	int render_audio();
-	int reset_buttons();
-
-// ============================ cursor
-	int lock_playback_cursor();
-	int unlock_playback_cursor();
-	int lock_playback_movement();
-	int unlock_playback_movement();
-	int move_right(long distance);
-
-	Tracking *cursor;
-
-
-// ============================== playback config
-	int infinite;        // for infinite playback	
-	int follow_loop;     // 1 if mwindow's looping setting is followed
-	int is_playing_back;    // 0 - no playback  1 - armed but stopped  2 - playing back
-	int reconfigure_status;    // 0 - no playback  1 - armed but stopped  2 - playing back
-							      // otherwise use DSP chip if audio tracks are being played
-	int update_button;            // flag for thread on exit
-	int use_buttons;              // flag to update buttons when done or not
-	long last_position;         // starting position for restarting playback
-	long playback_start, playback_end;  // range for current playback
-	int reverse;                // direction of current playback
-	float speed;                // speed of current playback.  A speed of FRAME_SPEED causes frame advance
-	long playback_buffer;
-	long audio_module_fragment;
-
-// ================================== audio config
-//	long input_length;        // number of samples to read from disk at a time
-//						      // multiple of playback_buffer greater than read_buffer
-//	long output_length;       // # of samples to write to device adjusted for speed
-	int shared_audio;    // for duplex audio recording
-
-// ================================== video config
-
-	long correction_factor;   // number of frames to skip to get synchronized
-
+// Render engine
 	RenderEngine *render_engine;
-	AudioDevice *audio;
-	VideoDevice *video;
 
-private:
-	int init_parameters();
-	int init_audio_device();
-	int init_video_device();
-	Timer timer;    // timer for position information
-	long loop_adjustment;       // for factoring loops into current position
+// Used by label commands to get current position
+	int is_playing_back;
+
+// General purpose debugging register
+	int debug;
 };
 
 

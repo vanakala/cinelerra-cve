@@ -20,7 +20,7 @@
 #include "virtualconsole.h"
 
 CommonRender::CommonRender(RenderEngine *renderengine)
- : Thread()
+ : Thread(1, 0, 0)
 {
 	this->renderengine = renderengine;
 	reset_parameters();
@@ -42,7 +42,6 @@ CommonRender::~CommonRender()
 void CommonRender::reset_parameters()
 {
 	total_modules = 0;
-	set_synchronous(1);
 	modules = 0;
 	vconsole = 0;
 	done = 0;

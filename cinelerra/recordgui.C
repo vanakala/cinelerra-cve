@@ -426,7 +426,8 @@ void RecordGUI::update_batch_sources()
 {
 //printf("RecordGUI::update_batch_sources 1\n");
 	if(record->record_monitor->window->channel_picker)
-		batch_source->update_list(&record->record_monitor->window->channel_picker->channel_listitems);
+		batch_source->update_list(
+			&record->record_monitor->window->channel_picker->channel_listitems);
 //printf("RecordGUI::update_batch_sources 2\n");
 }
 

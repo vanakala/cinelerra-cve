@@ -5,17 +5,13 @@
 #include "filexml.h"
 #include "indexfile.h"
 #include "indexthread.h"
+#include "language.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "preferences.h"
 #include "mainsession.h"
 #include "trackcanvas.h"
 #include "tracks.h"
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 // Read data from buffers and calculate peaks
 

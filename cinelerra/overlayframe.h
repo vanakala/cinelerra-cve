@@ -81,6 +81,7 @@ public:
 	~ScaleUnit();
 	
 	float cubic_bspline(float x);
+
 	void tabulate_bcubic_f(float* &coef_table, 
 		int* &coord_table,
 		float scale,

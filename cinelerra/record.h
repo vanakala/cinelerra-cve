@@ -62,7 +62,8 @@ public:
 	void close_output_file();
 	void delete_batch(int number);
 	void swap_batches(int number1, int number2);
-	void get_audio_write_length(int64_t &buffer_size, int64_t &fragment_size);
+	void get_audio_write_length(int &buffer_size, 
+		int &fragment_size);
 	int open_input_devices(int duplex, int context);
 	int close_input_devices();
 	void start_file_threads();
@@ -189,7 +190,7 @@ public:
 	int fill_frames;
 // Parameters for video monitor
 	EDL *edl;
-
+	Mutex *window_lock;
 
 
 

@@ -26,6 +26,7 @@ VirtualConsole::VirtualConsole(RenderEngine *renderengine,
 	total_entry_nodes = 0;
 	playable_tracks = 0;
 	entry_nodes = 0;
+	debug_tree = 0;
 }
 
 
@@ -33,7 +34,7 @@ VirtualConsole::~VirtualConsole()
 {
 	delete_virtual_console();
 
-	if(playable_tracks) delete playable_tracks;
+	delete playable_tracks;
 }
 
 

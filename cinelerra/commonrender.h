@@ -60,7 +60,7 @@ public:
 	int data_type;
 // If a VirtualConsole was created need to start plugins
 	int restart_plugins;
-	
+
 	
 
 

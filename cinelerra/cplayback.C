@@ -18,10 +18,9 @@ CPlayback::CPlayback(MWindow *mwindow, CWindow *cwindow, Canvas *output)
 	this->cwindow = cwindow;
 }
 
-int CPlayback::create_render_engines()
+int CPlayback::create_render_engine()
 {
-	command->get_edl()->session->playback_strategy = PLAYBACK_LOCALHOST;
-	return PlaybackEngine::create_render_engines();
+	return PlaybackEngine::create_render_engine();
 }
 
 void CPlayback::init_cursor()

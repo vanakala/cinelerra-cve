@@ -3,11 +3,15 @@
 
 
 #include "edl.inc"
+#include "formatpresets.h"
 #include "guicast.h"
 #include "mutex.inc"
 #include "mwindow.inc"
 #include "setformat.inc"
 #include "thread.h"
+
+
+class SetFormatPresets;
 
 
 
@@ -29,9 +33,12 @@ public:
 	void run();
 
 	void apply_changes();
+// Update image size based on ratio of dimensions to original.
 	void update_window();
+// Update automatic aspect ratio based in image size
 	void update_aspect();
-
+// Update all parameters from preset menu
+	void update();
 
 
 	Mutex *window_lock;
@@ -153,21 +160,47 @@ public:
 	SetFormatThread *thread;
 };
 
+class SetFormatPresets : public FormatPresets
+{
+public:
+	SetFormatPresets(MWindow *mwindow, SetFormatWindow *gui, int x, int y);
+	~SetFormatPresets();
+	int handle_event();
+	EDL* get_edl();
+};	
+	
 class SetFormatWindow : public BC_Window
 {
 public:
-	SetFormatWindow(MWindow *mwindow, SetFormatThread *thread);
+	SetFormatWindow(MWindow *mwindow, 
+		SetFormatThread *thread,
+		int x,
+		int y);
 
 	void create_objects();
+	char* get_preset_text();
 
 	MWindow *mwindow;
 	SetFormatThread *thread;
 	SetChannelsCanvas *canvas;
+// Screen size width, height
 	ScaleSizeText* dimension[2];
+// Size ratio width, height
 	ScaleRatioText* ratio[2];
+// Aspect ratio
 	ScaleAspectText *aspect_w;
 	ScaleAspectText *aspect_h;
+	SetSampleRateTextBox *sample_rate;
+	SetChannelsTextBox *channels;
+	SetFrameRateTextBox *frame_rate;
+	BC_TextBox *color_model;
+	SetFormatPresets *presets;
+	ScaleAspectAuto *auto_aspect;
 };
+
+	
+	
+	
 
 
 

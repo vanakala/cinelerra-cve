@@ -3,6 +3,6 @@
 
 class BC_Meter;
 
-#define TOTAL_METER_IMAGES 5
+#define TOTAL_METER_IMAGES 6
 
 #endif

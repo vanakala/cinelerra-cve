@@ -1,3 +1,4 @@
+#include "bcsignals.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "localsession.h"
@@ -59,7 +60,6 @@ void MainCursor::deactivate()
 int MainCursor::repeat_event(int64_t duration)
 {
 	if(!active || !gui->get_has_focus()) return 0;
-//printf("MainCursor::repeat_event 1 %d\n", duration);
 	if(duration != BC_WindowBase::get_resources()->blink_rate) return 0;
 
 // Only flash a single sample selection
@@ -71,7 +71,6 @@ int MainCursor::repeat_event(int64_t duration)
 			flash();
 		}
 	}
-//printf("MainCursor::repeat_event 2 %d\n", duration);
 	return 1;
 }
 
@@ -122,6 +121,7 @@ void MainCursor::update()
 void MainCursor::flash()
 {
 	gui->canvas->flash(pixel1, 0, pixel2 - pixel1 + 1, gui->canvas->get_h());
+	gui->flush();
 }
 
 void MainCursor::hide()

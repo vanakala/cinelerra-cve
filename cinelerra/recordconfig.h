@@ -13,6 +13,7 @@ public:
 	~AudioInConfig();
 	
 	AudioInConfig& operator=(AudioInConfig &that);
+	void copy_from(AudioInConfig *src);
 	int load_defaults(Defaults *defaults);
 	int save_defaults(Defaults *defaults);
 
@@ -44,6 +45,7 @@ public:
 	~VideoInConfig();
 	
 	VideoInConfig& operator=(VideoInConfig &that);
+	void copy_from(VideoInConfig *src);
 	int load_defaults(Defaults *defaults);
 	int save_defaults(Defaults *defaults);
 	char* get_path();

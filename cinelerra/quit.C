@@ -59,8 +59,8 @@ void Quit::run()
 	if(mwindow->gui->mainmenu->record->current_state == RECORD_CAPTURING)
 	{
 		ErrorBox error(PROGRAM_NAME ": Error", 
-			mwindow->gui->get_abs_cursor_x(), 
-			mwindow->gui->get_abs_cursor_y());
+			mwindow->gui->get_abs_cursor_x(1), 
+			mwindow->gui->get_abs_cursor_y(1));
 		error.create_objects(_("Can't quit while a recording is in progress."));
 		error.run_window();
 		return;
@@ -69,8 +69,8 @@ void Quit::run()
 	if(mwindow->render->running())
 	{
 		ErrorBox error(PROGRAM_NAME ": Error", 
-			mwindow->gui->get_abs_cursor_x(), 
-			mwindow->gui->get_abs_cursor_y());
+			mwindow->gui->get_abs_cursor_x(1), 
+			mwindow->gui->get_abs_cursor_y(1));
 		error.create_objects(_("Can't quit while a render is in progress."));
 		error.run_window();
 		return;
