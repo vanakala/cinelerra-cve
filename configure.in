@@ -198,7 +198,7 @@ AC_SUBST(LIBAVCODEC_LIBS)
 
 ############## END OF FFMPEG
 
-AC_OUTPUT(Makefile po/Makefile.in m4/Makefile \
+AC_OUTPUT(Makefile \
 					libmpeg3/Makefile libmpeg3/video/Makefile libmpeg3/audio/Makefile \
 					quicktime/Makefile quicktime/encore50/Makefile quicktime/decore50/Makefile \
 					mpeg2enc/Makefile toolame-02l/Makefile\
