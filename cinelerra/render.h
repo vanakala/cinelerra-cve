@@ -71,7 +71,7 @@ public:
 	Render *render;
 };
 
-
+class RenderWindow;
 
 
 class Render : public Thread
@@ -179,6 +179,9 @@ public:
 	double frames_per_second;
 // Time used in last render
 	double elapsed_time;
+
+// Current open RenderWindow
+	RenderWindow *render_window;
 
 // For non interactive mode, maintain progress here.
 	int64_t progress_max;

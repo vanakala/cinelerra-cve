@@ -236,11 +236,17 @@ void Render::start_interactive()
 	}
 	else
 	{
-		ErrorBox error_box(PROGRAM_NAME ": Error",
-			mwindow->gui->get_abs_cursor_x(1),
-			mwindow->gui->get_abs_cursor_y(1));
-		error_box.create_objects("Already rendering");
-		error_box.run_window();
+		// raise the window if rendering hasn't started yet
+		if (render_window && ! in_progress) {
+			render_window->raise_window();
+		}
+		else {
+			ErrorBox error_box(PROGRAM_NAME ": Error",
+					   mwindow->gui->get_abs_cursor_x(1),
+					   mwindow->gui->get_abs_cursor_y(1));
+			error_box.create_objects("Already rendering");
+			error_box.run_window();
+		}
 	}
 }
 
@@ -315,13 +321,15 @@ void Render::run()
 				result = 0;
 
 				{
-					RenderWindow window(mwindow, this, asset);
-					window.create_objects();
-					result = window.run_window();
+					render_window = new RenderWindow(mwindow, this, asset);
+					render_window->create_objects();
+					result = render_window->run_window();
 					if (! result) {
 						// add to recentlist only on OK
-						window.format_tools->path_recent->add_item(asset->format, asset->path);
+						render_window->format_tools->path_recent->add_item(asset->format, asset->path);
 					}
+					delete render_window;
+					render_window = 0;
 				}
 
 				if(!result)
