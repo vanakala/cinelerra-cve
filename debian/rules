@@ -5,9 +5,15 @@
 package=hvirtual
 export DH_COMPAT=4
 
-CFLAGS=-ffast-math -O3 -mmmx -march=pentium4 -msse -msse2
-# CFLAGS=-ffast-math -g -mmmx -march=pentium-mmx
-CXXFLAGS=$(CFLAGS) -fno-check-new
+CONFFLAGS=
+ARCH=$(DEB_HOST_ARCH)
+
+ifneq ($(ARCH),powerpc)
+	CFLAGS=-ffast-math -O3 -mmmx -march=pentium4 -msse -msse2
+	# CFLAGS=-ffast-math -g -mmmx -march=pentium-mmx
+	CXXFLAGS=$(CFLAGS) -fno-check-new
+	CONFFLAGS+=--enable-mmx --enable-x86 --without-pic
+endif
 
 ifneq (, $(findstring smp2,$(DEB_BUILD_OPTIONS)))
 	MAKEFLAGS=-j2
@@ -15,8 +21,10 @@ endif
 
 config.status: configure 
 	$(checkdir)
+	@if [ -z "$(CFLAGS)" ] ; then CFLAGS="$(CFLAGS)" ; fi ;
+	@if [ -z "$(CXXFLAGS)" ] ; then CXXFLAGS="$(CXXFLAGS)" ; fi ;
 	CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" \
-					./configure --prefix=/usr --enable-mmx --enable-x86 --without-pic
+					./configure --prefix=/usr $(CONFFLAGS)
 	
 build: build-stamp
 build-stamp: config.status
