@@ -323,6 +323,7 @@ void File::reset_parameters()
 	normalized_sample = 0;
 	normalized_sample_rate = 0;
 	resample = 0;
+	resample_float = 0;
 	frames_cache->reset();
 }
 
@@ -708,6 +709,7 @@ int File::close_file(int ignore_thread)
 	}
 
 	if(resample) delete resample;
+	if(resample_float) delete resample_float;
 
 	reset_parameters();
 	return 0;
@@ -1015,7 +1017,7 @@ VFrame*** File::get_video_buffer()
 }
 
 
-int File::read_samples(double *buffer, int64_t len, int64_t base_samplerate)
+int File::read_samples(double *buffer, int64_t len, int64_t base_samplerate, float *buffer_float)
 {
 	int result = 0;
 //printf("File::read_samples 1\n");
@@ -1030,27 +1032,55 @@ int File::read_samples(double *buffer, int64_t len, int64_t base_samplerate)
 		if(base_samplerate != asset->sample_rate)
 		{
 //printf("File::read_samples 3\n");
-			if(!resample)
+//struct timeval start_time;
+//gettimeofday(&start_time, 0);
+			if (!file->prefer_samples_float())
 			{
-//printf("File::read_samples 4\n");
-				resample = new Resample(this, asset->channels);
-			}
+				if(!resample)
+				{
+	//printf("File::read_samples 4\n");
+					resample = new Resample(this, asset->channels);
+				}
 
-//printf("File::read_samples 5\n");
-			current_sample += resample->resample(buffer, 
-				len, 
-				asset->sample_rate, 
-				base_samplerate,
-				current_channel,
-				current_sample,
-				normalized_sample);
-//printf("File::read_samples 6\n");
+	//printf("File::read_samples 5\n");
+				current_sample += resample->resample(buffer, 
+					len, 
+					asset->sample_rate, 
+					base_samplerate,
+					current_channel,
+					current_sample,
+					normalized_sample);
+	//printf("File::read_samples 6\n");
+			} else
+			{
+				if(!resample_float)
+				{
+	//printf("File::read_samples 4\n");
+					resample_float = new Resample_float(this, asset->channels);
+				}
+
+	//printf("File::read_samples 5\n");
+				current_sample += resample_float->resample(buffer, 
+					len, 
+					asset->sample_rate, 
+					base_samplerate,
+					current_channel,
+					current_sample,
+					normalized_sample);
+	//printf("File::read_samples 6\n");
+
+			}
+//printf("diff2: %lli\n", get_difference(&start_time));
+
 		}
 		else
 // Load directly
 		{
 //printf("File::read_samples 7\n");
-			result = file->read_samples(buffer, len);
+			if (buffer_float && file->prefer_samples_float())
+				result = file->read_samples_float(buffer_float, len);
+			else
+				result = file->read_samples(buffer, len);
 //printf("File::read_samples 8\n");
 			current_sample += len;
 		}
@@ -1160,7 +1190,9 @@ int File::read_frame(VFrame *frame, int cache_mode)
 
 
 				file->read_frame(temp_frame);
-
+//struct timeval start_time;
+//gettimeofday(&start_time, 0);
+//				printf("tarnsfering from : %i to %i\n", frame->get_color_model(),temp_frame->get_color_model());
 				cmodel_transfer(frame->get_rows(), 
 					temp_frame->get_rows(),
 					0,
@@ -1182,6 +1214,9 @@ int File::read_frame(VFrame *frame, int cache_mode)
 					0,
 					temp_frame->get_w(),
 					frame->get_w());
+//	int64_t dif= get_difference(&start_time);
+//	printf("diff: %lli\n", dif);
+
 //printf("File::read_frame 5\n");
 				frames_cache->add_frame(current_frame, current_layer, frame, cache_mode & CACHE_THIS_INSTANCE, 1);
 				current_frame++;

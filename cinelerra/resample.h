@@ -73,4 +73,71 @@ public:
 	long *last_out_end;
 };
 
+class Resample_float
+{
+public:
+	Resample_float(File *file, int channels);
+	~Resample_float();
+
+// Reset after seeking
+	void reset(int channel = -1);
+	float blackman(int i, float offset, float fcn, int l);
+// Query output temp
+	int get_output_size(int channel);
+	void read_output(double *output, int channel, int size);
+// Resamples input and dumps it to output_temp
+	void resample_chunk(float *input,
+		long in_len,
+		int in_rate,
+		int out_rate,
+		int channel);
+// Resample from the file handler and store in *output.
+// Returns the total samples read from the file handler.
+	int resample(double *output, 
+		long out_len,
+		int in_rate,
+		int out_rate,
+		int channel,
+		long in_position,      // Starting sample in input samplerate
+		long out_position);      // Starting sample in output samplerate
+	virtual void read_chunk(float *input, 
+		long len, 
+		int &reseek, 
+		int iteration);   // True once for every resample call
+
+// History buffer for resampling.
+	float **old;
+	float *itime;
+
+
+
+// Unaligned resampled output
+	double **output_temp;
+
+
+// Total samples in unaligned output
+// Tied to each channel independantly
+	long *output_size;
+
+
+// Sample start of output_temp in the resampled domain.
+	long *output_temp_start;
+// Allocation of unaligned output
+	long output_allocation;
+// input chunk
+	float *input;
+// Sample end of input chunks in the input domain.
+	long *input_chunk_end;
+	long input_size;
+	int channels;
+	int *resample_init;
+// Last sample ratio configured to
+	float last_ratio;
+	float blackfilt[2 * BPC + 1][BLACKSIZE];
+	File *file;
+// Determine whether to reset after a seek
+// Sample end of last buffer read for each channel
+	long *last_out_end;
+};
+
 #endif

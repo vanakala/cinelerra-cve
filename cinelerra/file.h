@@ -163,7 +163,7 @@ public:
 // is the length in floats from the offset.
 // advances file pointer
 // return 1 if failed
-	int read_samples(double *buffer, int64_t len, int64_t base_samplerate);
+	int read_samples(double *buffer, int64_t len, int64_t base_samplerate, float *buffer_float = 0);
 
 // Return a pointer to the frame in a video file for drawing or 0.
 // The following routine copies a frame once to a temporary buffer and either 
@@ -217,6 +217,7 @@ public:
 	VFrame *temp_frame;
 // Resampling engine
 	Resample *resample;
+	Resample_float *resample_float;
 
 // Lock writes while recording video and audio.
 // A binary lock won't do.  We need a FIFO lock.

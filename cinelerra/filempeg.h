@@ -63,6 +63,8 @@ public:
 
 	int read_frame(VFrame *frame);
 	int read_samples(double *buffer, int64_t len);
+	int read_samples_float(float *buffer, int64_t len);
+	int prefer_samples_float();
 
 // Direct copy routines
 	static int get_best_colormodel(Asset *asset, int driver);

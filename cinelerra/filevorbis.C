@@ -48,8 +48,25 @@ int FileVorbis::check_sig(Asset *asset)
 {
 	FILE *fd = fopen(asset->path, "rb");
 	OggVorbis_File vf;
+
+// Test for Quicktime since OGG misinterprets it
+	fseek(fd, 4, SEEK_SET);
+	char data[4];
+	fread(data, 4, 1, fd);
+	if(data[0] == 'm' &&
+		data[1] == 'd' &&
+		data[2] == 'a' &&
+		data[3] == 't')
+	{
+		fclose(fd);
+		return 0;
+	}
+	
+	fseek(fd, 0, SEEK_SET);
+
 	if(ov_open(fd, &vf, NULL, 0) < 0)
 	{
+// OGG failed.  Close file handle manually.
 		ov_clear(&vf);
 		if(fd) fclose(fd);
 		return 0;
@@ -66,6 +83,7 @@ int FileVorbis::reset_parameters_derived()
 	fd = 0;
 	bzero(&vf, sizeof(vf));
 	pcm_history = 0;
+	pcm_history_float = 0;
 }
 
 
@@ -232,6 +250,12 @@ int FileVorbis::close_file()
 			delete [] pcm_history[i];
 		delete [] pcm_history;
 	}
+	if(pcm_history_float)
+	{
+		for(int i = 0; i < asset->channels; i++)
+			delete [] pcm_history_float[i];
+		delete [] pcm_history_float;
+	}
 
 	reset_parameters();
 	FileBase::close_file();
@@ -363,6 +387,126 @@ int FileVorbis::read_samples(double *buffer, int64_t len)
 		history_start;
 	for(int i = 0; i < len; i++)
 		buffer[i] = input[i];
+
+// printf("FileVorbis::read_samples 2 %d %d %d %d\n", 
+// history_start, 
+// history_size,
+// file->current_sample,
+// len);
+
+	return 0;
+}
+
+int FileVorbis::prefer_samples_float() 
+{
+	return 1;
+}
+
+int FileVorbis::read_samples_float(float *buffer, int64_t len)
+{
+	if(!fd) return 0;
+
+// printf("FileVorbis::read_samples 1 %d %d %d %d\n", 
+// history_start, 
+// history_size,
+// file->current_sample,
+// len);
+	float **vorbis_output;
+	int bitstream;
+	int accumulation = 0;
+//printf("FileVorbis::read_samples 1\n");
+	int decode_start = 0;
+	int decode_len = 0;
+
+	if(len > 0x100000)
+	{
+		printf("FileVorbis::read_samples max samples=%d\n", HISTORY_MAX);
+		return 1;
+	}
+
+	if(!pcm_history_float)
+	{
+		pcm_history_float = new float*[asset->channels];
+		for(int i = 0; i < asset->channels; i++)
+			pcm_history_float[i] = new float[HISTORY_MAX];
+		history_start = 0;
+		history_size = 0;
+	}
+
+// Restart history.  Don't bother shifting history back.
+	if(file->current_sample < history_start ||
+		file->current_sample > history_start + history_size)
+	{
+		history_size = 0;
+		history_start = file->current_sample;
+		decode_start = file->current_sample;
+		decode_len = len;
+	}
+	else
+// Shift history forward to make room for new samples
+	if(file->current_sample + len > history_start + history_size)
+	{
+		if(file->current_sample + len > history_start + HISTORY_MAX)
+		{
+			int diff = file->current_sample + len - (history_start + HISTORY_MAX);
+			for(int i = 0; i < asset->channels; i++)
+			{
+				float *temp = pcm_history_float[i];
+//				for(int j = 0; j < HISTORY_MAX - diff; j++)
+//				{
+//					temp[j] = temp[j + diff];
+//				}
+				bcopy(temp, temp + diff, (HISTORY_MAX - diff) * sizeof(float));
+			}
+			history_start += diff;
+			history_size -= diff;
+		}
+
+// Decode more data
+		decode_start = history_start + history_size;
+		decode_len = file->current_sample + len - (history_start + history_size);
+	}
+
+
+// Fill history buffer
+	if(history_start + history_size != ov_pcm_tell(&vf))
+	{
+//printf("FileVorbis::read_samples %d %d\n", history_start + history_size, ov_pcm_tell(&vf));
+		ov_pcm_seek(&vf, history_start + history_size);
+	}
+
+	while(accumulation < decode_len)
+	{
+		int result = ov_read_float(&vf,
+			&vorbis_output,
+			decode_len - accumulation,
+			&bitstream);
+//printf("FileVorbis::read_samples 1 %d %d %d\n", result, len, accumulation);
+		if(!result) break;
+
+		for(int i = 0; i < asset->channels; i++)
+		{
+			float *output = pcm_history_float[i] + history_size;
+			float *input = vorbis_output[i];
+//			for(int j = 0; j < result; j++)
+//				output[j] = input[j];
+			bcopy(input, output, result * sizeof(float));
+		}
+		history_size += result;
+		accumulation += result;
+	}
+
+
+// printf("FileVorbis::read_samples 1 %d %d\n", 
+// file->current_sample,
+// history_start);
+
+	float *input = pcm_history_float[file->current_channel] + 
+		file->current_sample - 
+		history_start;
+//	for(int i = 0; i < len; i++)
+//		buffer[i] = input[i];
+	bcopy(input, buffer, len * sizeof(float));
 
 // printf("FileVorbis::read_samples 2 %d %d %d %d\n", 
 // history_start, 
