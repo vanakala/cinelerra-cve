@@ -42,6 +42,8 @@ public:
 		RGBA_8888,
 		RGB_FLOAT,
 		RGBA_FLOAT,
+		RGB_161616,
+		RGBA_16161616,
 		A_8,
 // values stored in Asset::tiff_compression
 // Compression types
