@@ -1,0 +1,1723 @@
+#include <math.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdint.h>
+
+#include "clip.h"
+#include "edl.inc"
+#include "overlayframe.h"
+#include "vframe.h"
+
+OverlayFrame::OverlayFrame(int cpus)
+{
+	temp_frame = 0;
+	blend_engine = 0;
+	scale_engine = 0;
+	scaletranslate_engine = 0;
+	translate_engine = 0;
+	this->cpus = cpus;
+}
+
+OverlayFrame::~OverlayFrame()
+{
+//printf("OverlayFrame::~OverlayFrame 1\n");
+	if(temp_frame) delete temp_frame;
+	if(scale_engine) delete scale_engine;
+	if(translate_engine) delete translate_engine;
+	if(blend_engine) delete blend_engine;
+	if(scaletranslate_engine) delete scaletranslate_engine;
+//printf("OverlayFrame::~OverlayFrame 2\n");
+}
+
+
+
+
+
+
+
+
+// Verification: 
+
+// (255 * 255 + 0 * 0) / 255 = 255
+// (255 * 127 + 255 * (255 - 127)) / 255 = 255
+
+// (65535 * 65535 + 0 * 0) / 65535 = 65535
+// (65535 * 32767 + 65535 * (65535 - 32767)) / 65535 = 65535
+
+
+// Branch prediction 4 U
+
+#define BLEND_3(max, type) \
+{ \
+	int64_t r, g, b; \
+ \
+/* if(mode != TRANSFER_NORMAL) printf("BLEND mode = %d\n", mode); */ \
+	switch(mode) \
+	{ \
+		case TRANSFER_DIVIDE: \
+			r = output[0] ? (((int64_t)input1 * max) / output[0]) : max; \
+			g = output[1] ? (((int64_t)input2 * max) / output[1]) : max; \
+			b = output[2] ? (((int64_t)input3 * max) / output[2]) : max; \
+			r = (r * opacity + output[0] * transparency) / max; \
+			g = (g * opacity + output[1] * transparency) / max; \
+			b = (b * opacity + output[2] * transparency) / max; \
+			break; \
+		case TRANSFER_MULTIPLY: \
+			r = ((int64_t)input1 * output[0]) / max; \
+			g = ((int64_t)input2 * output[1]) / max; \
+			b = ((int64_t)input3 * output[2]) / max; \
+			r = (r * opacity + output[0] * transparency) / max; \
+			g = (g * opacity + output[1] * transparency) / max; \
+			b = (b * opacity + output[2] * transparency) / max; \
+			break; \
+		case TRANSFER_SUBTRACT: \
+			r = (((int64_t)input1 - output[0]) * opacity + output[0] * transparency) / max; \
+			g = (((int64_t)input2 - output[1]) * opacity + output[1] * transparency) / max; \
+			b = (((int64_t)input3 - output[2]) * opacity + output[2] * transparency) / max; \
+			break; \
+		case TRANSFER_ADDITION: \
+			r = (((int64_t)input1 + output[0]) * opacity + output[0] * transparency) / max; \
+			g = (((int64_t)input2 + output[1]) * opacity + output[1] * transparency) / max; \
+			b = (((int64_t)input3 + output[2]) * opacity + output[2] * transparency) / max; \
+			break; \
+		case TRANSFER_REPLACE: \
+			r = input1; \
+			g = input2; \
+			b = input3; \
+			break; \
+		case TRANSFER_NORMAL: \
+			r = ((int64_t)input1 * opacity + output[0] * transparency) / max; \
+			g = ((int64_t)input2 * opacity + output[1] * transparency) / max; \
+			b = ((int64_t)input3 * opacity + output[2] * transparency) / max; \
+			break; \
+	} \
+ \
+	output[0] = (type)CLIP(r, 0, max); \
+	output[1] = (type)CLIP(g, 0, max); \
+	output[2] = (type)CLIP(b, 0, max); \
+}
+
+
+
+
+
+// Blending equations are drastically different for 3 and 4 components
+#define BLEND_4(max, type) \
+{ \
+	int64_t r, g, b, a; \
+	int64_t pixel_opacity, pixel_transparency; \
+ \
+	pixel_opacity = opacity * input4 / max; \
+	pixel_transparency = (max - pixel_opacity) * output[3] / max; \
+ \
+	switch(mode) \
+	{ \
+		case TRANSFER_DIVIDE: \
+			r = output[0] ? (((int64_t)input1 * max) / output[0]) : max; \
+			g = output[1] ? (((int64_t)input2 * max) / output[1]) : max; \
+			b = output[2] ? (((int64_t)input3 * max) / output[2]) : max; \
+			r = (r * pixel_opacity + output[0] * pixel_transparency) / max; \
+			g = (g * pixel_opacity + output[1] * pixel_transparency) / max; \
+			b = (b * pixel_opacity + output[2] * pixel_transparency) / max; \
+			a = input4 > output[3] ? input4 : output[3]; \
+			break; \
+		case TRANSFER_MULTIPLY: \
+			r = ((int64_t)input1 * output[0]) / max; \
+			g = ((int64_t)input2 * output[1]) / max; \
+			b = ((int64_t)input3 * output[2]) / max; \
+			r = (r * pixel_opacity + output[0] * pixel_transparency) / max; \
+			g = (g * pixel_opacity + output[1] * pixel_transparency) / max; \
+			b = (b * pixel_opacity + output[2] * pixel_transparency) / max; \
+			a = input4 > output[3] ? input4 : output[3]; \
+			break; \
+		case TRANSFER_SUBTRACT: \
+			r = (((int64_t)input1 - output[0]) * pixel_opacity + output[0] * pixel_transparency) / max; \
+			g = (((int64_t)input2 - output[1]) * pixel_opacity + output[1] * pixel_transparency) / max; \
+			b = (((int64_t)input3 - output[2]) * pixel_opacity + output[2] * pixel_transparency) / max; \
+			a = input4 > output[3] ? input4 : output[3]; \
+			break; \
+		case TRANSFER_ADDITION: \
+			r = (((int64_t)input1 + output[0]) * pixel_opacity + output[0] * pixel_transparency) / max; \
+			g = (((int64_t)input2 + output[1]) * pixel_opacity + output[1] * pixel_transparency) / max; \
+			b = (((int64_t)input3 + output[2]) * pixel_opacity + output[2] * pixel_transparency) / max; \
+			a = input4 > output[3] ? input4 : output[3]; \
+			break; \
+		case TRANSFER_REPLACE: \
+			r = input1; \
+			g = input2; \
+			b = input3; \
+			a = input4; \
+			break; \
+		case TRANSFER_NORMAL: \
+			r = ((int64_t)input1 * pixel_opacity + output[0] * pixel_transparency) / max; \
+			g = ((int64_t)input2 * pixel_opacity + output[1] * pixel_transparency) / max; \
+			b = ((int64_t)input3 * pixel_opacity + output[2] * pixel_transparency) / max; \
+			a = input4 > output[3] ? input4 : output[3]; \
+			break; \
+	} \
+ \
+	output[0] = (type)CLIP(r, 0, max); \
+	output[1] = (type)CLIP(g, 0, max); \
+	output[2] = (type)CLIP(b, 0, max); \
+	output[3] = (type)a; \
+}
+
+
+
+
+
+
+
+
+// Bicubic algorithm using multiprocessors
+// input -> scale nearest integer boundaries -> temp -> translation -> blend -> output
+
+// Nearest neighbor algorithm using multiprocessors for blending
+// input -> scale + translate -> blend -> output
+
+
+int OverlayFrame::overlay(VFrame *output, 
+	VFrame *input, 
+	float in_x1, 
+	float in_y1, 
+	float in_x2, 
+	float in_y2, 
+	float out_x1, 
+	float out_y1, 
+	float out_x2, 
+	float out_y2, 
+	float alpha,       // 0 - 1
+	int mode,
+	int interpolation_type)
+{
+	float w_scale = (out_x2 - out_x1) / (in_x2 - in_x1);
+	float h_scale = (out_y2 - out_y1) / (in_y2 - in_y1);
+
+//printf("OverlayFrame::overlay 1 %d %f\n", mode, alpha);
+// Limit values
+	if(in_x1 < 0)
+	{
+		out_x1 += -in_x1 * w_scale;
+		in_x1 = 0;
+	}
+	else
+	if(in_x1 >= input->get_w())
+	{
+		out_x1 -= (in_x1 - input->get_w()) * w_scale;
+		in_x1 = input->get_w();
+	}
+
+	if(in_y1 < 0)
+	{
+		out_y1 += -in_y1 * h_scale;
+		in_y1 = 0;
+	}
+	else
+	if(in_y1 >= input->get_h())
+	{
+		out_y1 -= (in_y1 - input->get_h()) * h_scale;
+		in_y1 = input->get_h();
+	}
+
+	if(in_x2 < 0)
+	{
+		out_x2 += -in_x2 * w_scale;
+		in_x2 = 0;
+	}
+	else
+	if(in_x2 >= input->get_w())
+	{
+		out_x2 -= (in_x2 - input->get_w()) * w_scale;
+		in_x2 = input->get_w();
+	}
+
+	if(in_y2 < 0)
+	{
+		out_y2 += -in_y2 * h_scale;
+		in_y2 = 0;
+	}
+	else
+	if(in_y2 >= input->get_h())
+	{
+		out_y2 -= (in_y2 - input->get_h()) * h_scale;
+		in_y2 = input->get_h();
+	}
+
+	if(out_x1 < 0)
+	{
+		in_x1 += -out_x1 / w_scale;
+		out_x1 = 0;
+	}
+	else
+	if(out_x1 >= output->get_w())
+	{
+		in_x1 -= (out_x1 - output->get_w()) / w_scale;
+		out_x1 = output->get_w();
+	}
+
+	if(out_y1 < 0)
+	{
+		in_y1 += -out_y1 / h_scale;
+		out_y1 = 0;
+	}
+	else
+	if(out_y1 >= output->get_h())
+	{
+		in_y1 -= (out_y1 - output->get_h()) / h_scale;
+		out_y1 = output->get_h();
+	}
+
+	if(out_x2 < 0)
+	{
+		in_x2 += -out_x2 / w_scale;
+		out_x2 = 0;
+	}
+	else
+	if(out_x2 >= output->get_w())
+	{
+		in_x2 -= (out_x2 - output->get_w()) / w_scale;
+		out_x2 = output->get_w();
+	}
+
+	if(out_y2 < 0)
+	{
+		in_y2 += -out_y2 / h_scale;
+		out_y2 = 0;
+	}
+	else
+	if(out_y2 >= output->get_h())
+	{
+		in_y2 -= (out_y2 - output->get_h()) / h_scale;
+		out_y2 = output->get_h();
+	}
+
+
+
+
+
+	float in_w = in_x2 - in_x1;
+	float in_h = in_y2 - in_y1;
+	float out_w = out_x2 - out_x1;
+	float out_h = out_y2 - out_y1;
+// Input for translation operation
+	VFrame *translation_input = input;
+
+
+
+// printf("OverlayFrame::overlay %f %f %f %f -> %f %f %f %f\n", in_x1,
+// 			in_y1,
+// 			in_x2,
+// 			in_y2,
+// 			out_x1,
+// 			out_y1,
+// 			out_x2,
+// 			out_y2);
+
+
+
+
+
+// ****************************************************************************
+// Transfer to temp buffer by scaling nearest integer boundaries
+// ****************************************************************************
+	if(interpolation_type != NEAREST_NEIGHBOR &&
+		(!EQUIV(w_scale, 1) || !EQUIV(h_scale, 1)))
+	{
+// Create integer boundaries for interpolation
+		int in_x1_int = (int)in_x1;
+		int in_y1_int = (int)in_y1;
+		int in_x2_int = MIN((int)ceil(in_x2), input->get_w());
+		int in_y2_int = MIN((int)ceil(in_y2), input->get_h());
+
+// Dimensions of temp frame.  Integer boundaries scaled.
+		int temp_w = (int)ceil(w_scale * (in_x2_int - in_x1_int));
+		int temp_h = (int)ceil(h_scale * (in_y2_int - in_y1_int));
+		VFrame *scale_output;
+
+
+
+#define NO_TRANSLATION1 \
+	(EQUIV(in_x1, 0) && \
+	EQUIV(in_y1, 0) && \
+	EQUIV(out_x1, 0) && \
+	EQUIV(out_y1, 0) && \
+	EQUIV(in_x2, in_x2_int) && \
+	EQUIV(in_y2, in_y2_int) && \
+	EQUIV(out_x2, temp_w) && \
+	EQUIV(out_y2, temp_h))
+
+
+#define NO_BLEND \
+	(EQUIV(alpha, 1) && \
+	(mode == TRANSFER_REPLACE || \
+	(mode == TRANSFER_NORMAL && cmodel_components(input->get_color_model()) == 3)))
+
+
+
+
+
+// Prepare destination for operation
+
+// No translation and no blending.  The blending operation is built into the
+// translation unit but not the scaling unit.
+// input -> output
+		if(NO_TRANSLATION1 &&
+			NO_BLEND)
+		{
+// printf("OverlayFrame::overlay input -> output\n");
+
+			scale_output = output;
+			translation_input = 0;
+		}
+		else
+// If translation or blending
+// input -> nearest integer boundary temp
+		{
+			if(temp_frame && 
+				(temp_frame->get_w() != temp_w ||
+					temp_frame->get_h() != temp_h))
+			{
+				delete temp_frame;
+				temp_frame = 0;
+			}
+
+			if(!temp_frame)
+			{
+				temp_frame = new VFrame(0,
+					temp_w,
+					temp_h,
+					input->get_color_model(),
+					-1);
+			}
+//printf("OverlayFrame::overlay input -> temp\n");
+
+
+			temp_frame->clear_frame();
+
+// printf("OverlayFrame::overlay 4 temp_w=%d temp_h=%d\n",
+// 	temp_w, temp_h);
+			scale_output = temp_frame;
+			translation_input = scale_output;
+
+// Adjust input coordinates to reflect new scaled coordinates.
+			in_x1 = (in_x1 - in_x1_int) * w_scale;
+			in_y1 = (in_y1 - in_y1_int) * h_scale;
+			in_x2 = (in_x2 - in_x1_int) * w_scale;
+			in_y2 = (in_y2 - in_y1_int) * h_scale;
+		}
+
+
+
+
+// Scale input -> scale_output
+		this->scale_output = scale_output;
+		this->scale_input = input;
+		this->w_scale = w_scale;
+		this->h_scale = h_scale;
+		this->in_x1_int = in_x1_int;
+		this->in_y1_int = in_y1_int;
+		this->out_w_int = temp_w;
+		this->out_h_int = temp_h;
+		this->interpolation_type = interpolation_type;
+
+//printf("OverlayFrame::overlay ScaleEngine 1 %d\n", out_h_int);
+		if(!scale_engine) scale_engine = new ScaleEngine(this, cpus);
+		scale_engine->process_packages();
+//printf("OverlayFrame::overlay ScaleEngine 2\n");
+
+
+
+	}
+
+// printf("OverlayFrame::overlay 1  %.2f %.2f %.2f %.2f -> %.2f %.2f %.2f %.2f\n", 
+// 	in_x1, 
+// 	in_y1, 
+// 	in_x2, 
+// 	in_y2, 
+// 	out_x1, 
+// 	out_y1, 
+// 	out_x2, 
+// 	out_y2);
+
+
+
+
+
+#define NO_TRANSLATION2 \
+	(EQUIV(in_x1, 0) && \
+	EQUIV(in_y1, 0) && \
+	EQUIV(in_x2, translation_input->get_w()) && \
+	EQUIV(in_y2, translation_input->get_h()) && \
+	EQUIV(out_x1, 0) && \
+	EQUIV(out_y1, 0) && \
+	EQUIV(out_x2, output->get_w()) && \
+	EQUIV(out_y2, output->get_h())) \
+
+#define NO_SCALE \
+	(EQUIV(out_x2 - out_x1, in_x2 - in_x1) && \
+	EQUIV(out_y2 - out_y1, in_y2 - in_y1))
+
+	
+
+
+//printf("OverlayFrame::overlay 4 %d\n", mode);
+
+
+
+
+	if(translation_input)
+	{
+// Direct copy
+		if( NO_TRANSLATION2 &&
+			NO_SCALE &&
+			NO_BLEND)
+		{
+//printf("OverlayFrame::overlay direct copy\n");
+			output->copy_from(translation_input);
+		}
+		else
+// Blend only
+		if( NO_TRANSLATION2 &&
+			NO_SCALE)
+		{
+			if(!blend_engine) blend_engine = new BlendEngine(this, cpus);
+
+
+			blend_engine->output = output;
+			blend_engine->input = translation_input;
+			blend_engine->alpha = alpha;
+			blend_engine->mode = mode;
+
+			blend_engine->process_packages();
+		}
+		else
+// Scale and translate using nearest neighbor
+// Translation is exactly on integer boundaries
+		if(interpolation_type == NEAREST_NEIGHBOR ||
+			EQUIV(in_x1, (int)in_x1) &&
+			EQUIV(in_y1, (int)in_y1) &&
+			EQUIV(in_x2, (int)in_x2) &&
+			EQUIV(in_y2, (int)in_y2) &&
+
+			EQUIV(out_x1, (int)out_x1) &&
+			EQUIV(out_y1, (int)out_y1) &&
+			EQUIV(out_x2, (int)out_x2) &&
+			EQUIV(out_y2, (int)out_y2))
+		{
+//printf("OverlayFrame::overlay NEAREST_NEIGHBOR 1\n");
+			if(!scaletranslate_engine) scaletranslate_engine = new ScaleTranslateEngine(this, cpus);
+
+
+			scaletranslate_engine->output = output;
+			scaletranslate_engine->input = translation_input;
+			scaletranslate_engine->in_x1 = (int)in_x1;
+			scaletranslate_engine->in_y1 = (int)in_y1;
+			scaletranslate_engine->in_x2 = (int)in_x2;
+			scaletranslate_engine->in_y2 = (int)in_y2;
+			scaletranslate_engine->out_x1 = (int)out_x1;
+			scaletranslate_engine->out_y1 = (int)out_y1;
+			scaletranslate_engine->out_x2 = (int)out_x2;
+			scaletranslate_engine->out_y2 = (int)out_y2;
+			scaletranslate_engine->alpha = alpha;
+			scaletranslate_engine->mode = mode;
+
+			scaletranslate_engine->process_packages();
+		}
+		else
+// Fractional translation
+		{
+// Use fractional translation
+// printf("OverlayFrame::overlay temp -> output  %.2f %.2f %.2f %.2f -> %.2f %.2f %.2f %.2f\n", 
+// 	in_x1, 
+// 	in_y1, 
+// 	in_x2, 
+// 	in_y2, 
+// 	out_x1, 
+// 	out_y1, 
+// 	out_x2, 
+// 	out_y2);
+			this->translate_output = output;
+			this->translate_input = translation_input;
+			this->translate_in_x1 = in_x1;
+			this->translate_in_y1 = in_y1;
+			this->translate_in_x2 = in_x2;
+			this->translate_in_y2 = in_y2;
+			this->translate_out_x1 = out_x1;
+			this->translate_out_y1 = out_y1;
+			this->translate_out_x2 = out_x2;
+			this->translate_out_y2 = out_y2;
+			this->translate_alpha = alpha;
+			this->translate_mode = mode;
+
+//printf("OverlayFrame::overlay 5 %d\n", mode);
+			if(!translate_engine) translate_engine = new TranslateEngine(this, cpus);
+			translate_engine->process_packages();
+
+		}
+	}
+//printf("OverlayFrame::overlay 2\n");
+
+	return 0;
+}
+
+
+
+
+
+
+
+ScalePackage::ScalePackage()
+{
+}
+
+
+
+
+ScaleUnit::ScaleUnit(ScaleEngine *server, OverlayFrame *overlay)
+ : LoadClient(server)
+{
+	this->overlay = overlay;
+}
+
+ScaleUnit::~ScaleUnit()
+{
+}
+
+
+
+#define BILINEAR(max, type, components) \
+{ \
+	float k_y = 1.0 / scale_h; \
+	float k_x = 1.0 / scale_w; \
+	type **in_rows = (type**)input->get_rows(); \
+	type **out_rows = (type**)output->get_rows(); \
+	type zero_r, zero_g, zero_b, zero_a; \
+	int in_h_int = input->get_h(); \
+	int in_w_int = input->get_w(); \
+ \
+	zero_r = 0; \
+	zero_g = ((max + 1) >> 1) * (do_yuv); \
+	zero_b = ((max + 1) >> 1) * (do_yuv); \
+	if(components == 4) zero_a = 0; \
+ \
+ \
+	for(int i = pkg->out_row1; i < pkg->out_row2; i++) \
+	{ \
+		float f_y = (float)i * k_y; \
+		int i_y = (int)floor(f_y); \
+		float a = f_y - floor(f_y); \
+		type *in_row1 = in_rows[i_y + in_y1_int]; \
+		type *in_row2 = (i_y + in_y1_int < in_h_int - 1) ?  \
+			in_rows[i_y + in_y1_int + 1] : \
+			0; \
+		type *out_row = out_rows[i]; \
+ \
+		for(int j = 0; j < out_w_int; j++) \
+		{ \
+			float f_x = (float)j * k_x; \
+			int i_x = (int)floor(f_x); \
+			float b = f_x - floor(f_x); \
+			int x = i_x + in_x1_int; \
+			float output1r, output1g, output1b, output1a; \
+			float output2r, output2g, output2b, output2a; \
+			float output3r, output3g, output3b, output3a; \
+			float output4r, output4g, output4b, output4a; \
+ \
+			output1r = in_row1[x * components]; \
+			output1g = in_row1[x * components + 1]; \
+			output1b = in_row1[x * components + 2]; \
+			if(components == 4) output1a = in_row1[x * components + 3]; \
+ \
+			if(x < in_w_int - 1) \
+			{ \
+				output2r = in_row1[x * components + components]; \
+				output2g = in_row1[x * components + components + 1]; \
+				output2b = in_row1[x * components + components + 2]; \
+				if(components == 4) output2a = in_row1[x * components + components + 3]; \
+ \
+ 				if(in_row2) \
+				{ \
+					output4r = in_row2[x * components + components]; \
+					output4g = in_row2[x * components + components + 1]; \
+					output4b = in_row2[x * components + components + 2]; \
+					if(components == 4) output4a = in_row2[x * components + components + 3]; \
+				} \
+				else \
+				{ \
+					output4r = zero_r; \
+					output4g = zero_g; \
+					output4b = zero_b; \
+					if(components == 4) output4a = zero_a; \
+				} \
+			} \
+			else \
+			{ \
+				output2r = zero_r; \
+				output2g = zero_g; \
+				output2b = zero_b; \
+				if(components == 4) output2a = zero_a; \
+				output4r = zero_r; \
+				output4g = zero_g; \
+				output4b = zero_b; \
+				if(components == 4) output4a = zero_a; \
+			} \
+ \
+			if(in_row2) \
+			{ \
+				output3r = in_row2[x * components]; \
+				output3g = in_row2[x * components + 1]; \
+				output3b = in_row2[x * components + 2]; \
+				if(components == 4) output3a = in_row2[x * components + 3]; \
+			} \
+			else \
+			{ \
+				output3r = zero_r; \
+				output3g = zero_g; \
+				output3b = zero_b; \
+				if(components == 4) output3a = zero_a; \
+			} \
+ \
+            float anti_a = 1.0F - a; \
+			float anti_b = 1.0F - b; \
+			out_row[j * components] =  \
+				(type)((anti_a) * (((anti_b) * output1r) +  \
+				(b * output2r)) +  \
+                a * (((anti_b) * output3r) +  \
+				(b * output4r))); \
+			out_row[j * components + 1] =   \
+				(type)((anti_a) * (((anti_b) * output1g) +  \
+				(b * output2g)) +  \
+                a * (((anti_b) * output3g) +  \
+				(b * output4g))); \
+			out_row[j * components + 2] =   \
+				(type)((anti_a) * (((anti_b) * output1b) +  \
+				(b * output2b)) +  \
+                a * (((anti_b) * output3b) +  \
+				(b * output4b))); \
+			if(components == 4) \
+				out_row[j * components + 3] =   \
+					(type)((anti_a) * (((anti_b) * output1a) +  \
+					(b * output2a)) +  \
+                	a * (((anti_b) * output3a) +  \
+					(b * output4a))); \
+		} \
+	} \
+ \
+ \
+}
+
+
+#define BICUBIC(max, type, components) \
+{ \
+	float k_y = 1.0 / scale_h; \
+	float k_x = 1.0 / scale_w; \
+	type **in_rows = (type**)input->get_rows(); \
+	type **out_rows = (type**)output->get_rows(); \
+	float *bspline_x, *bspline_y; \
+	int in_h_int = input->get_h(); \
+	int in_w_int = input->get_w(); \
+	type zero_r, zero_g, zero_b, zero_a; \
+ \
+ 	zero_r = 0; \
+	zero_b = ((max + 1) >> 1) * (do_yuv); \
+	zero_g = ((max + 1) >> 1) * (do_yuv); \
+	if(components == 4) \
+		zero_a = 0; \
+ \
+	tabulate_bspline(bspline_x,  \
+		k_x, \
+		out_w_int, \
+		-1); \
+ \
+	tabulate_bspline(bspline_y,  \
+		k_y, \
+		out_h_int, \
+		1); \
+ \
+	for(int i = pkg->out_row1; i < pkg->out_row2; i++) \
+	{ \
+		float f_y = (float)i * k_y; \
+		int i_y = (int)floor(f_y); \
+		float a = f_y - floor(f_y); \
+ \
+ \
+		for(int j = 0; j < out_w_int; j++) \
+		{ \
+			float f_x = (float)j * k_x; \
+			int i_x = (int)floor(f_x); \
+			float b = f_x - floor(f_x); \
+			float output1, output2, output3, output4; \
+			output1 = 0; \
+			output2 = 0; \
+			output3 = 0; \
+			if(components == 4) \
+				output4 = 0; \
+			int table_y = i * 4; \
+ \
+/* Kernel */ \
+			for(int m = -1; m < 3; m++) \
+			{ \
+				float r1 = bspline_y[table_y++]; \
+				int y = in_y1_int + i_y + m; \
+				int table_x = j * 4; \
+ \
+				for(int n = -1; n < 3; n++) \
+				{ \
+					float r2 = bspline_x[table_x++]; \
+					int x = in_x1_int + i_x + n; \
+					float r_square = r1 * r2; \
+ \
+/* Inside boundary. */ \
+					if(x >= 0 && \
+						x < in_w_int && \
+						y >= 0 && \
+						y < in_h_int) \
+					{ \
+						output1 += r_square * in_rows[y][x * components]; \
+						output2 += r_square * in_rows[y][x * components + 1]; \
+						output3 += r_square * in_rows[y][x * components + 2]; \
+						if(components == 4) \
+							output4 += r_square * in_rows[y][x * components + 3]; \
+					} \
+					else \
+					{ \
+						output1 += r_square * zero_r; \
+						output2 += r_square * zero_g; \
+						output3 += r_square * zero_b; \
+						if(components == 4) \
+							output4 += r_square * zero_a; \
+					} \
+				} \
+			} \
+ \
+ \
+			out_rows[i][j * components] = (type)output1; \
+			out_rows[i][j * components + 1] = (type)output2; \
+			out_rows[i][j * components + 2] = (type)output3; \
+			if(components == 4) \
+				out_rows[i][j * components + 3] = (type)output4; \
+ \
+		} \
+	} \
+ \
+	delete [] bspline_x; \
+	delete [] bspline_y; \
+}
+
+
+
+// Pow function is not thread safe in Compaqt C
+#define CUBE(x) ((x) * (x) * (x))
+
+float ScaleUnit::cubic_bspline(float x)
+{
+	float a, b, c, d;
+
+	if((x + 2.0F) <= 0.0F) 
+	{
+    	a = 0.0F;
+	}
+	else 
+	{
+    	a = CUBE(x + 2.0F);
+	}
+
+
+	if((x + 1.0F) <= 0.0F) 
+	{
+    	b = 0.0F;
+	}
+	else 
+	{
+    	b = CUBE(x + 1.0F);
+	}    
+
+	if(x <= 0) 
+	{
+    	c = 0.0F;
+	}
+	else 
+	{
+    	c = CUBE(x);
+	}  
+
+	if((x - 1.0F) <= 0.0F) 
+	{
+    	d = 0.0F;
+	}
+	else 
+	{
+    	d = CUBE(x - 1.0F);
+	}
+
+	return (a - (4.0F * b) + (6.0F * c) - (4.0F * d)) / 6.0;
+}
+
+
+void ScaleUnit::tabulate_bspline(float* &table, 
+	float scale,
+	int pixels,
+	float coefficient)
+{
+	table = new float[pixels * 4];
+
+	for(int i = 0, j = 0; i < pixels; i++)
+	{
+		float f_x = (float)i * scale;
+		float a = f_x - floor(f_x);
+		
+		for(float m = -1; m < 3; m++)
+		{
+			table[j++] = cubic_bspline(coefficient * (m - a));
+		}
+	}
+}
+
+void ScaleUnit::process_package(LoadPackage *package)
+{
+	ScalePackage *pkg = (ScalePackage*)package;
+
+// Arguments for macros
+	VFrame *output = overlay->scale_output;
+	VFrame *input = overlay->scale_input;
+	float scale_w = overlay->w_scale;
+	float scale_h = overlay->h_scale;
+	int in_x1_int = overlay->in_x1_int;
+	int in_y1_int = overlay->in_y1_int;
+	int out_h_int = overlay->out_h_int;
+	int out_w_int = overlay->out_w_int;
+	int do_yuv = 
+		(overlay->scale_input->get_color_model() == BC_YUV888 ||
+		overlay->scale_input->get_color_model() == BC_YUVA8888 ||
+		overlay->scale_input->get_color_model() == BC_YUV161616 ||
+		overlay->scale_input->get_color_model() == BC_YUVA16161616);
+
+	if(overlay->interpolation_type == CUBIC_CUBIC || 
+		(overlay->interpolation_type == CUBIC_LINEAR 
+			&& overlay->w_scale > 1 && 
+			overlay->h_scale > 1))
+	{
+	
+		switch(overlay->scale_input->get_color_model())
+		{
+			case BC_RGB888:
+			case BC_YUV888:
+				BICUBIC(0xff, unsigned char, 3);
+				break;
+
+			case BC_RGBA8888:
+			case BC_YUVA8888:
+				BICUBIC(0xff, unsigned char, 4);
+				break;
+
+			case BC_RGB161616:
+			case BC_YUV161616:
+				BICUBIC(0xffff, uint16_t, 3);
+				break;
+
+			case BC_RGBA16161616:
+			case BC_YUVA16161616:
+				BICUBIC(0xffff, uint16_t, 4);
+				break;
+		}
+	}
+	else
+// Perform bilinear scaling input -> scale_output
+	{
+		switch(overlay->scale_input->get_color_model())
+		{
+			case BC_RGB888:
+			case BC_YUV888:
+				BILINEAR(0xff, unsigned char, 3);
+				break;
+
+			case BC_RGBA8888:
+			case BC_YUVA8888:
+				BILINEAR(0xff, unsigned char, 4);
+				break;
+
+			case BC_RGB161616:
+			case BC_YUV161616:
+				BILINEAR(0xffff, uint16_t, 3);
+				break;
+
+			case BC_RGBA16161616:
+			case BC_YUVA16161616:
+				BILINEAR(0xffff, uint16_t, 4);
+				break;
+		}
+	}
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+ScaleEngine::ScaleEngine(OverlayFrame *overlay, int cpus)
+ : LoadServer(cpus, cpus)
+{
+	this->overlay = overlay;
+}
+
+ScaleEngine::~ScaleEngine()
+{
+}
+
+void ScaleEngine::init_packages()
+{
+	for(int i = 0; i < total_packages; i++)
+	{
+		ScalePackage *package = (ScalePackage*)packages[i];
+		package->out_row1 = overlay->out_h_int / total_packages * i;
+		package->out_row2 = package->out_row1 + overlay->out_h_int / total_packages;
+
+		if(i >= total_packages - 1)
+			package->out_row2 = overlay->out_h_int;
+	}
+}
+
+LoadClient* ScaleEngine::new_client()
+{
+	return new ScaleUnit(this, overlay);
+}
+
+LoadPackage* ScaleEngine::new_package()
+{
+	return new ScalePackage;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+TranslatePackage::TranslatePackage()
+{
+}
+
+
+
+TranslateUnit::TranslateUnit(TranslateEngine *server, OverlayFrame *overlay)
+ : LoadClient(server)
+{
+	this->overlay = overlay;
+}
+
+TranslateUnit::~TranslateUnit()
+{
+}
+
+
+
+void TranslateUnit::translation_array(transfer_table* &table, 
+	float out_x1, 
+	float out_x2,
+	float in_x1,
+	float in_x2,
+	int in_total, 
+	int out_total, 
+	int &out_x1_int,
+	int &out_x2_int)
+{
+	int out_w_int;
+	float offset = out_x1 - in_x1;
+
+	out_x1_int = (int)out_x1;
+	out_x2_int = MIN((int)ceil(out_x2), out_total);
+	out_w_int = out_x2_int - out_x1_int;
+
+	table = new transfer_table[out_w_int];
+	bzero(table, sizeof(transfer_table) * out_w_int);
+
+
+//printf("OverlayFrame::translation_array 1 %f %f -> %f %f\n", in_x1, in_x2, out_x1, out_x2);
+
+	float in_x = in_x1;
+	for(int out_x = out_x1_int; out_x < out_x2_int; out_x++)
+	{
+		transfer_table *entry = &table[out_x - out_x1_int];
+
+		entry->in_x1 = (int)in_x;
+		entry->in_x2 = (int)in_x + 1;
+
+// Get fraction of output pixel to fill
+		entry->output_fraction = 1;
+
+		if(out_x1 > out_x)
+		{
+			entry->output_fraction -= out_x1 - out_x;
+		}
+
+		if(out_x2 < out_x + 1)
+		{
+			entry->output_fraction = (out_x2 - out_x);
+		}
+
+// Advance in_x until out_x_fraction is filled
+		float out_x_fraction = entry->output_fraction;
+		float in_x_fraction = floor(in_x + 1) - in_x;
+
+		if(out_x_fraction <= in_x_fraction)
+		{
+			entry->in_fraction1 = out_x_fraction;
+			entry->in_fraction2 = 0.0;
+			in_x += out_x_fraction;
+		}
+		else
+		{
+			entry->in_fraction1 = in_x_fraction;
+			in_x += out_x_fraction;
+			entry->in_fraction2 = in_x - floor(in_x);
+		}
+
+// Clip in_x
+		if(entry->in_x2 >= in_total)
+		{
+			entry->in_x2 = in_total - 1;
+			entry->in_fraction2 = 0.0;
+		}
+		
+		if(entry->in_x1 >= in_total)
+		{
+			entry->in_x1 = in_total - 1;
+			entry->in_fraction1 = 0.0;
+		}
+// printf("OverlayFrame::translation_array 2 %d %d %d %f %f %f\n", 
+// 	out_x, 
+// 	entry->in_x1, 
+// 	entry->in_x2, 
+// 	entry->in_fraction1, 
+// 	entry->in_fraction2, 
+// 	entry->output_fraction);
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#define TRANSLATE(max, type, components) \
+{ \
+ \
+	type **in_rows = (type**)input->get_rows(); \
+	type **out_rows = (type**)output->get_rows(); \
+ \
+/* printf("OverlayFrame::translate 1  %.2f %.2f %.2f %.2f -> %.2f %.2f %.2f %.2f\n",  */ \
+/* 	(in_x1),  in_y1,  in_x2,  in_y2,  out_x1,  out_y1, out_x2,  out_y2); */ \
+ \
+	unsigned int master_opacity = (int)(alpha * max + 0.5); \
+	unsigned int master_transparency = max - master_opacity; \
+ \
+/* printf("TRANSLATE %d\n", mode); */ \
+ \
+	for(int i = row1; i < row2; i++) \
+	{ \
+		int in_y1 = y_table[i - out_y1_int].in_x1; \
+		int in_y2 = y_table[i - out_y1_int].in_x2; \
+		float y_fraction1 = y_table[i - out_y1_int].in_fraction1; \
+		float y_fraction2 = y_table[i - out_y1_int].in_fraction2; \
+		float y_output_fraction = y_table[i - out_y1_int].output_fraction; \
+		type *in_row1 = in_rows[(in_y1)]; \
+		type *in_row2 = in_rows[(in_y2)]; \
+		type *out_row = out_rows[i]; \
+ \
+		for(int j = out_x1_int; j < out_x2_int; j++) \
+		{ \
+			int in_x1 = x_table[j - out_x1_int].in_x1; \
+			int in_x2 = x_table[j - out_x1_int].in_x2; \
+			float x_fraction1 = x_table[j - out_x1_int].in_fraction1; \
+			float x_fraction2 = x_table[j - out_x1_int].in_fraction2; \
+			float x_output_fraction = x_table[j - out_x1_int].output_fraction; \
+			type *output = &out_row[j * components]; \
+			int input1, input2, input3, input4; \
+ \
+			input1 = (int)(in_row1[in_x1 * components] * x_fraction1 * y_fraction1 +  \
+				in_row1[in_x2 * components] * x_fraction2 * y_fraction1 +  \
+				in_row2[in_x1 * components] * x_fraction1 * y_fraction2 +  \
+				in_row2[in_x2 * components] * x_fraction2 * y_fraction2 + 0.5); \
+			input2 = (int)(in_row1[in_x1 * components + 1] * x_fraction1 * y_fraction1 +  \
+				in_row1[in_x2 * components + 1] * x_fraction2 * y_fraction1 +  \
+				in_row2[in_x1 * components + 1] * x_fraction1 * y_fraction2 +  \
+				in_row2[in_x2 * components + 1] * x_fraction2 * y_fraction2 + 0.5); \
+			input3 = (int)(in_row1[in_x1 * components + 2] * x_fraction1 * y_fraction1 +  \
+				in_row1[in_x2 * components + 2] * x_fraction2 * y_fraction1 +  \
+				in_row2[in_x1 * components + 2] * x_fraction1 * y_fraction2 +  \
+				in_row2[in_x2 * components + 2] * x_fraction2 * y_fraction2 + 0.5); \
+			if(components == 4) \
+				input4 = (int)(in_row1[in_x1 * components + 3] * x_fraction1 * y_fraction1 +  \
+					in_row1[in_x2 * components + 3] * x_fraction2 * y_fraction1 +  \
+					in_row2[in_x1 * components + 3] * x_fraction1 * y_fraction2 +  \
+					in_row2[in_x2 * components + 3] * x_fraction2 * y_fraction2 + 0.5); \
+ \
+			unsigned int opacity = (int)(master_opacity *  \
+				y_output_fraction *  \
+				x_output_fraction + 0.5); \
+			unsigned int transparency = max - opacity; \
+ \
+/* if(opacity != max) printf("TRANSLATE %x %d %d\n", opacity, j, i); */ \
+ \
+			if(components == 3) \
+			{ \
+				BLEND_3(max, type); \
+			} \
+			else \
+			{ \
+				BLEND_4(max, type); \
+			} \
+		} \
+	} \
+}
+
+void TranslateUnit::process_package(LoadPackage *package)
+{
+	TranslatePackage *pkg = (TranslatePackage*)package;
+	int out_y1_int; 
+	int out_y2_int; 
+	int out_x1_int; 
+	int out_x2_int; 
+
+
+// Variables for TRANSLATE
+	VFrame *input = overlay->translate_input;
+	VFrame *output = overlay->translate_output;
+	float in_x1 = overlay->translate_in_x1;
+	float in_y1 = overlay->translate_in_y1;
+	float in_x2 = overlay->translate_in_x2;
+	float in_y2 = overlay->translate_in_y2;
+	float out_x1 = overlay->translate_out_x1;
+	float out_y1 = overlay->translate_out_y1;
+	float out_x2 = overlay->translate_out_x2;
+	float out_y2 = overlay->translate_out_y2;
+	float alpha = overlay->translate_alpha;
+	int row1 = pkg->out_row1;
+	int row2 = pkg->out_row2;
+	int mode = overlay->translate_mode;
+
+	transfer_table *x_table; 
+	transfer_table *y_table; 
+ 
+	translation_array(x_table,  
+		out_x1,  
+		out_x2, 
+		in_x1, 
+		in_x2, 
+		input->get_w(),  
+		output->get_w(),  
+		out_x1_int, 
+		out_x2_int); 
+	translation_array(y_table,  
+		out_y1,  
+		out_y2, 
+		in_y1, 
+		in_y2, 
+		input->get_h(),  
+		output->get_h(),  
+		out_y1_int, 
+		out_y2_int); 
+ 
+	switch(overlay->translate_input->get_color_model())
+	{
+		case BC_RGB888:
+		case BC_YUV888:
+			TRANSLATE(0xff, unsigned char, 3);
+			break;
+
+		case BC_RGBA8888:
+		case BC_YUVA8888:
+			TRANSLATE(0xff, unsigned char, 4);
+			break;
+
+		case BC_RGB161616:
+		case BC_YUV161616:
+			TRANSLATE(0xffff, uint16_t, 3);
+			break;
+
+		case BC_RGBA16161616:
+		case BC_YUVA16161616:
+			TRANSLATE(0xffff, uint16_t, 4);
+			break;
+	}
+ 
+	delete [] x_table; 
+	delete [] y_table; 
+}
+
+
+
+
+
+
+
+
+
+
+TranslateEngine::TranslateEngine(OverlayFrame *overlay, int cpus)
+ : LoadServer(cpus, cpus)
+{
+	this->overlay = overlay;
+}
+
+TranslateEngine::~TranslateEngine()
+{
+}
+
+void TranslateEngine::init_packages()
+{
+	int out_y1_int = (int)overlay->translate_out_y1;
+	int out_y2_int = MIN((int)ceil(overlay->translate_out_y2), overlay->translate_output->get_h());
+	int out_h = out_y2_int - out_y1_int;
+
+	for(int i = 0; i < total_packages; i++)
+	{
+		TranslatePackage *package = (TranslatePackage*)packages[i];
+		package->out_row1 = (int)(out_y1_int + out_h / 
+			total_packages * 
+			i);
+		package->out_row2 = (int)((float)package->out_row1 + 
+			out_h / 
+			total_packages);
+		if(i >= total_packages - 1)
+			package->out_row2 = out_y2_int;
+	}
+}
+
+LoadClient* TranslateEngine::new_client()
+{
+	return new TranslateUnit(this, overlay);
+}
+
+LoadPackage* TranslateEngine::new_package()
+{
+	return new TranslatePackage;
+}
+
+
+
+
+
+
+
+
+#define SCALE_TRANSLATE(max, type, components) \
+{ \
+	int64_t opacity = (int)(alpha * max + 0.5); \
+	int64_t transparency = max - opacity; \
+	int out_w = out_x2 - out_x1; \
+ \
+	for(int i = pkg->out_row1; i < pkg->out_row2; i++) \
+	{ \
+		int in_y = y_table[i - out_y1]; \
+		type *in_row = (type*)in_rows[in_y] + in_x1 * components; \
+		type *out_row = (type*)out_rows[i] + out_x1 * components; \
+ \
+/* X direction is scaled and requires a table lookup */ \
+ 		if(out_w != in_x2 - in_x1) \
+		{ \
+			for(int j = 0; j < out_w; j++) \
+			{ \
+				int in_x = x_table[j]; \
+				int input1, input2, input3, input4; \
+				type *output = out_row + j * components; \
+	 \
+ 				input1 = in_row[in_x * components]; \
+				input2 = in_row[in_x * components + 1]; \
+				input3 = in_row[in_x * components + 2]; \
+				if(components == 4) \
+					input4 = in_row[in_x * components + 3]; \
+	 \
+				if(components == 3) \
+				{ \
+					BLEND_3(max, type); \
+				} \
+				else \
+				{ \
+					BLEND_4(max, type); \
+				} \
+			} \
+		} \
+		else \
+/* X direction is not scaled */ \
+		{ \
+			for(int j = 0; j < out_w; j++) \
+			{ \
+				int input1, input2, input3, input4; \
+				type *output = out_row + j * components; \
+	 \
+ 				input1 = in_row[j * components]; \
+				input2 = in_row[j * components + 1]; \
+				input3 = in_row[j * components + 2]; \
+				if(components == 4) \
+					input4 = in_row[j * components + 3]; \
+	 \
+				if(components == 3) \
+				{ \
+					BLEND_3(max, type); \
+				} \
+				else \
+				{ \
+					BLEND_4(max, type); \
+				} \
+			} \
+		} \
+	} \
+}
+
+
+
+ScaleTranslateUnit::ScaleTranslateUnit(ScaleTranslateEngine *server, OverlayFrame *overlay)
+ : LoadClient(server)
+{
+	this->overlay = overlay;
+	this->scale_translate = server;
+}
+
+ScaleTranslateUnit::~ScaleTranslateUnit()
+{
+}
+
+void ScaleTranslateUnit::scale_array(int* &table, 
+	int out_x1, 
+	int out_x2,
+	int in_x1,
+	int in_x2,
+	int is_x)
+{
+	float scale = (float)(out_x2 - out_x1) / (in_x2 - in_x1);
+
+	table = new int[out_x2 - out_x1];
+	
+	if(!is_x)
+	{
+		for(int i = 0; i < out_x2 - out_x1; i++)
+		{
+			table[i] = (int)((float)i / scale + in_x1);
+		}
+	}
+	else
+	{	
+		for(int i = 0; i < out_x2 - out_x1; i++)
+		{
+			table[i] = (int)((float)i / scale);
+		}
+	}
+}
+
+
+void ScaleTranslateUnit::process_package(LoadPackage *package)
+{
+	ScaleTranslatePackage *pkg = (ScaleTranslatePackage*)package;
+
+// Args for NEAREST_NEIGHBOR_MACRO
+	VFrame *output = scale_translate->output;
+	VFrame *input = scale_translate->input;
+	int in_x1 = scale_translate->in_x1;
+	int in_y1 = scale_translate->in_y1;
+	int in_x2 = scale_translate->in_x2;
+	int in_y2 = scale_translate->in_y2;
+	int out_x1 = scale_translate->out_x1;
+	int out_y1 = scale_translate->out_y1;
+	int out_x2 = scale_translate->out_x2;
+	int out_y2 = scale_translate->out_y2;
+	float alpha = scale_translate->alpha;
+	int mode = scale_translate->mode;
+
+	int *x_table;
+	int *y_table;
+	unsigned char **in_rows = input->get_rows();
+	unsigned char **out_rows = output->get_rows();
+
+	scale_array(x_table, 
+		out_x1, 
+		out_x2,
+		in_x1,
+		in_x2,
+		1);
+	scale_array(y_table, 
+		out_y1, 
+		out_y2,
+		in_y1,
+		in_y2,
+		0);
+
+
+	switch(input->get_color_model())
+	{
+		case BC_RGB888:
+		case BC_YUV888:
+			SCALE_TRANSLATE(0xff, uint8_t, 3);
+			break;
+
+		case BC_RGBA8888:
+		case BC_YUVA8888:
+			SCALE_TRANSLATE(0xff, uint8_t, 4);
+			break;
+
+
+		case BC_RGB161616:
+		case BC_YUV161616:
+			SCALE_TRANSLATE(0xffff, uint16_t, 3);
+			break;
+
+		case BC_RGBA16161616:
+		case BC_YUVA16161616:
+			SCALE_TRANSLATE(0xffff, uint16_t, 4);
+			break;
+	}
+	
+	delete [] x_table;
+	delete [] y_table;
+
+};
+
+
+
+
+
+
+
+
+
+ScaleTranslateEngine::ScaleTranslateEngine(OverlayFrame *overlay, int cpus)
+ : LoadServer(cpus, cpus)
+{
+	this->overlay = overlay;
+}
+
+ScaleTranslateEngine::~ScaleTranslateEngine()
+{
+}
+
+void ScaleTranslateEngine::init_packages()
+{
+	int out_h = out_y2 - out_y1;
+
+	for(int i = 0; i < total_packages; i++)
+	{
+		ScaleTranslatePackage *package = (ScaleTranslatePackage*)packages[i];
+		package->out_row1 = (int)(out_y1 + out_h / 
+			total_packages * 
+			i);
+		package->out_row2 = (int)((float)package->out_row1 + 
+			out_h / 
+			total_packages);
+		if(i >= total_packages - 1)
+			package->out_row2 = out_y2;
+	}
+}
+
+LoadClient* ScaleTranslateEngine::new_client()
+{
+	return new ScaleTranslateUnit(this, overlay);
+}
+
+LoadPackage* ScaleTranslateEngine::new_package()
+{
+	return new ScaleTranslatePackage;
+}
+
+
+ScaleTranslatePackage::ScaleTranslatePackage()
+{
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+#define BLEND_ONLY(type, max, components) \
+{ \
+	int64_t opacity = (int)(alpha * max + 0.5); \
+	int64_t transparency = max - opacity; \
+ \
+	type** output_rows = (type**)output->get_rows(); \
+	type** input_rows = (type**)input->get_rows(); \
+	int w = input->get_w(); \
+	int h = input->get_h(); \
+ \
+	for(int i = pkg->out_row1; i < pkg->out_row2; i++) \
+	{ \
+		type* in_row = input_rows[i]; \
+		type* output = output_rows[i]; \
+ \
+		for(int j = 0; j < w; j++) \
+		{ \
+			int input1, input2, input3, input4; \
+			input1 = in_row[j * components]; \
+			input2 = in_row[j * components + 1]; \
+			input3 = in_row[j * components + 2]; \
+			if(components == 4) input4 = in_row[j * components + 3]; \
+ \
+ \
+ 			if(components == 3) \
+			{ \
+				BLEND_3(max, type); \
+			} \
+			else \
+			{ \
+				BLEND_4(max, type); \
+			} \
+ \
+			input += components; \
+			output += components; \
+		} \
+	} \
+}
+
+
+
+
+BlendUnit::BlendUnit(BlendEngine *server, OverlayFrame *overlay)
+ : LoadClient(server)
+{
+	this->overlay = overlay;
+	this->blend_engine = server;
+}
+
+BlendUnit::~BlendUnit()
+{
+}
+
+void BlendUnit::process_package(LoadPackage *package)
+{
+	BlendPackage *pkg = (BlendPackage*)package;
+
+
+	VFrame *output = blend_engine->output;
+	VFrame *input = blend_engine->input;
+	float alpha = blend_engine->alpha;
+	int mode = blend_engine->mode;
+
+	switch(input->get_color_model())
+	{
+		case BC_RGB888:
+		case BC_YUV888:
+			BLEND_ONLY(unsigned char, 0xff, 3);
+			break;
+		case BC_RGBA8888:
+		case BC_YUVA8888:
+			BLEND_ONLY(unsigned char, 0xff, 4);
+			break;
+		case BC_RGB161616:
+		case BC_YUV161616:
+			BLEND_ONLY(uint16_t, 0xffff, 3);
+			break;
+		case BC_RGBA16161616:
+		case BC_YUVA16161616:
+			BLEND_ONLY(uint16_t, 0xffff, 4);
+			break;
+	}
+}
+
+
+
+BlendEngine::BlendEngine(OverlayFrame *overlay, int cpus)
+ : LoadServer(cpus, cpus)
+{
+	this->overlay = overlay;
+}
+
+BlendEngine::~BlendEngine()
+{
+}
+
+void BlendEngine::init_packages()
+{
+	for(int i = 0; i < total_packages; i++)
+	{
+		BlendPackage *package = (BlendPackage*)packages[i];
+		package->out_row1 = (int)(input->get_h() / 
+			total_packages * 
+			i);
+		package->out_row2 = (int)((float)package->out_row1 +
+			input->get_h() / 
+			total_packages);
+
+		if(i >= total_packages - 1)
+			package->out_row2 = input->get_h();
+	}
+}
+
+LoadClient* BlendEngine::new_client()
+{
+	return new BlendUnit(this, overlay);
+}
+
+LoadPackage* BlendEngine::new_package()
+{
+	return new BlendPackage;
+}
+
+
+BlendPackage::BlendPackage()
+{
+}
+
+

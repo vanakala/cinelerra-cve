@@ -1,0 +1,29 @@
+#ifndef QUICKTIME_DIVX_H
+#define QUICKTIME_DIVX_H
+
+// OpenDIVX
+
+#include DECORE_DIR
+#include <pthread.h>
+
+typedef struct
+{
+	unsigned char *work_buffer;
+	unsigned char *temp_frame;
+	long buffer_size;
+	int decode_initialized;
+	int encode_initialized;
+	int handle;
+	int bitrate;
+	long rc_period; // the intended rate control averaging period
+	long rc_reaction_period; // the reation period for rate control
+	long rc_reaction_ratio; // the ratio for down/up rate control
+	long max_key_interval; // the maximum interval between key frames
+	int max_quantizer; // the upper limit of the quantizer
+	int min_quantizer; // the lower limit of the quantizer
+	int search_range; // the forward search range for motion estimation
+	DEC_PARAM dec_param;
+
+} quicktime_divx_codec_t;
+
+#endif

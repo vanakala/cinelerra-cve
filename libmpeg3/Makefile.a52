@@ -1,0 +1,39 @@
+A52DIR := $(shell expr a52dec* )
+
+A52DIRS := \
+	$(OBJDIR)/$(A52DIR)/liba52/ \
+	$(OBJDIR)/$(A52DIR)/libao/ \
+	$(OBJDIR)/$(A52DIR)/src/ \
+	$(OBJDIR)/$(A52DIR)/test/
+	
+
+A52OBJS := \
+	$(OBJDIR)/$(A52DIR)/liba52/bit_allocate.o \
+	$(OBJDIR)/$(A52DIR)/liba52/bitstream.o \
+	$(OBJDIR)/$(A52DIR)/liba52/downmix.o \
+	$(OBJDIR)/$(A52DIR)/liba52/imdct.o \
+	$(OBJDIR)/$(A52DIR)/liba52/parse.o \
+	$(OBJDIR)/$(A52DIR)/libao/audio_out_float.o \
+	$(OBJDIR)/$(A52DIR)/libao/audio_out_null.o \
+	$(OBJDIR)/$(A52DIR)/libao/audio_out.o \
+	$(OBJDIR)/$(A52DIR)/libao/audio_out_oss.o \
+	$(OBJDIR)/$(A52DIR)/libao/audio_out_solaris.o \
+	$(OBJDIR)/$(A52DIR)/libao/audio_out_wav.o \
+	$(OBJDIR)/$(A52DIR)/libao/float2s16.o \
+	$(OBJDIR)/$(A52DIR)/src/a52dec.o \
+	$(OBJDIR)/$(A52DIR)/src/extract_a52.o \
+	$(OBJDIR)/$(A52DIR)/src/getopt.o \
+	$(OBJDIR)/$(A52DIR)/test/compare.o
+
+A52CFLAGS = \
+	$(CFLAGS) \
+	-DHAVE_CONFIG_H \
+	-I$(A52DIR)/ \
+	-I$(A52DIR)/include \
+	-I$(A52DIR)/liba52 \
+	-I$(A52DIR)/libao \
+	-I$(A52DIR)/src
+
+
+
+

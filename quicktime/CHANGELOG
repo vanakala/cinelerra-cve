@@ -1,0 +1,8 @@
+2.0.0
+
+More McRoweSoft support.
+Access to more libdv and lavtools AVI files than before.
+quicktime_decode_scaled replaced with quicktime_decode_video and friends.
+Raw audio routines are obsolete, but raw video routines are here to stay.
+Integrated firewire support removed.
+Documentation update.

@@ -1,0 +1,27 @@
+
+$(OBJDIR)/$(A52DIR)/liba52/imdct_mlib.o:		 $(A52DIR)/liba52/imdct_mlib.c
+$(OBJDIR)/$(A52DIR)/liba52/bitstream.o: 		 $(A52DIR)/liba52/bitstream.c
+$(OBJDIR)/$(A52DIR)/liba52/bit_allocate.o:		 $(A52DIR)/liba52/bit_allocate.c
+$(OBJDIR)/$(A52DIR)/liba52/imdct.o: 			 $(A52DIR)/liba52/imdct.c
+$(OBJDIR)/$(A52DIR)/liba52/downmix.o:			 $(A52DIR)/liba52/downmix.c
+$(OBJDIR)/$(A52DIR)/liba52/parse.o: 			 $(A52DIR)/liba52/parse.c
+$(OBJDIR)/$(A52DIR)/libao/audio_out.o:			 $(A52DIR)/libao/audio_out.c
+$(OBJDIR)/$(A52DIR)/libao/audio_out_solaris.o:	 $(A52DIR)/libao/audio_out_solaris.c
+$(OBJDIR)/$(A52DIR)/libao/float2s16.o:			 $(A52DIR)/libao/float2s16.c
+$(OBJDIR)/$(A52DIR)/libao/audio_out_null.o: 	 $(A52DIR)/libao/audio_out_null.c
+$(OBJDIR)/$(A52DIR)/libao/audio_out_float.o:	 $(A52DIR)/libao/audio_out_float.c
+$(OBJDIR)/$(A52DIR)/libao/audio_out_wav.o:		 $(A52DIR)/libao/audio_out_wav.c
+$(OBJDIR)/$(A52DIR)/libao/audio_out_oss.o:		 $(A52DIR)/libao/audio_out_oss.c
+$(OBJDIR)/$(A52DIR)/src/getopt.o:				 $(A52DIR)/src/getopt.c
+$(OBJDIR)/$(A52DIR)/src/extract_a52.o:			 $(A52DIR)/src/extract_a52.c
+$(OBJDIR)/$(A52DIR)/src/a52dec.o:				 $(A52DIR)/src/a52dec.c
+$(OBJDIR)/$(A52DIR)/test/compare.o: 			 $(A52DIR)/test/compare.c
+
+
+
+
+
+
+
+
+

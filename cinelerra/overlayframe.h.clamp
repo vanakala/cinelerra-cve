@@ -1,0 +1,381 @@
+#ifndef OVERLAYFRAME_H
+#define OVERLAYFRAME_H
+
+#include "loadbalance.h"
+#include "overlayframe.inc"
+#include "vframe.inc"
+
+
+// Issues encoutered with overlay
+
+// Floating point vs. int.  On alpha the floating point interpolation is about
+// 2x faster than integer interpolation.  Integer interpolation uses 32 
+// siginificant bits while floating point uses 24, however.
+
+// Single step vs. two step process.
+
+// A single step process would require performing blend with the output
+// of BILINEAR or BICUBIC and trimming the output to fractional pixels.
+// This is easy.  
+
+// However reading the input for
+// BILINEAR and BICUBIC would require trimming the input to fractional
+// pixels often repeatedly since the interpolation reads the same pixels more
+// than once.  This is hard.
+
+// In the two step process one step worries purely about scaling, ignoring 
+// trimming at the input and output so redundant trimming is not done here.
+
+// The translation engine focuses purely on trimming input pixels and
+// blending with the output.
+
+// Translation
+
+typedef struct
+{
+	int in_x1;
+	float in_fraction1;
+	int in_x2;       // Might be same as in_x1 for boundary
+	float in_fraction2;
+	float output_fraction;
+} transfer_table;
+
+
+class ScaleEngine;
+
+class ScalePackage : public LoadPackage
+{
+public:
+	ScalePackage();
+
+	int out_row1, out_row2;
+};
+
+class ScaleUnit : public LoadClient
+{
+public:
+	ScaleUnit(ScaleEngine *server, OverlayFrame *overlay);
+	~ScaleUnit();
+	
+	float cubic_bspline(float x);
+	void tabulate_bicubic(float* &coef_table, 
+		int* &coord_table,
+		float scale,
+		int start, 
+		int pixels,
+		int total_pixels,
+		float coefficient);
+	void tabulate_blinear(int* &table_int1,
+		int* &table_int2,
+		float* &table_frac,
+		float* &table_antifrac,
+		float scale,
+		int pixel1,
+		int pixel2,
+		int start,
+		int total_pixels);
+
+	void process_package(LoadPackage *package);
+	
+	OverlayFrame *overlay;
+	ScaleEngine *engine;
+};
+
+class ScaleEngine : public LoadServer
+{
+public:
+	ScaleEngine(OverlayFrame *overlay, int cpus);
+	~ScaleEngine();
+	
+	void init_packages();
+	LoadClient* new_client();
+	LoadPackage* new_package();
+	
+	OverlayFrame *overlay;
+// Global parameters for scaling units
+	VFrame *scale_output;
+	VFrame *scale_input;
+	float w_scale;
+	float h_scale;
+	int in_x1_int;
+	int in_y1_int;
+	int out_w_int;
+	int out_h_int;
+	int interpolation_type;
+};
+
+
+
+
+
+
+
+class TranslateEngine;
+
+class TranslatePackage : public LoadPackage
+{
+public:
+	TranslatePackage();
+
+	int out_row1, out_row2;
+};
+
+
+class TranslateUnit : public LoadClient
+{
+public:
+	TranslateUnit(TranslateEngine *server, OverlayFrame *overlay);
+	~TranslateUnit();
+
+	void process_package(LoadPackage *package);
+	void translation_array(transfer_table* &table, 
+		float out_x1, 
+		float out_x2,
+		float in_x1,
+		float in_x2,
+		int in_total, 
+		int out_total, 
+		int &out_x1_int,
+		int &out_x2_int);
+	void translate(VFrame *output, 
+			VFrame *input, 
+			float in_x1,
+			float in_y1,
+			float in_x2,
+			float in_y2,
+			float out_x1,
+			float out_y1,
+			float out_x2,
+			float out_y2,
+			float alpha,
+			int mode,
+			int row1,
+			int row2);
+
+	OverlayFrame *overlay;
+	TranslateEngine *engine;
+};
+
+class TranslateEngine : public LoadServer
+{
+public:
+	TranslateEngine(OverlayFrame *overlay, int cpus);
+	~TranslateEngine();
+	
+	void init_packages();
+	LoadClient* new_client();
+	LoadPackage* new_package();
+	
+	OverlayFrame *overlay;
+// Global parameters for translate units
+	VFrame *translate_output;
+	VFrame *translate_input;
+	float translate_in_x1;
+	float translate_in_y1;
+	float translate_in_x2;
+	float translate_in_y2;
+	float translate_out_x1;
+	float translate_out_y1;
+	float translate_out_x2;
+	float translate_out_y2;
+	float translate_alpha;
+	int translate_mode;
+};
+
+
+
+
+
+
+
+
+
+class ScaleTranslateEngine;
+
+class ScaleTranslatePackage : public LoadPackage
+{
+public:
+	ScaleTranslatePackage();
+
+	int out_row1, out_row2;
+};
+
+
+class ScaleTranslateUnit : public LoadClient
+{
+public:
+	ScaleTranslateUnit(ScaleTranslateEngine *server, OverlayFrame *overlay);
+	~ScaleTranslateUnit();
+
+	void process_package(LoadPackage *package);
+	void scale_array(int* &table, 
+		int out_x1, 
+		int out_x2,
+		int in_x1,
+		int in_x2,
+		int is_x);
+	
+	OverlayFrame *overlay;
+	ScaleTranslateEngine *scale_translate;
+};
+
+class ScaleTranslateEngine : public LoadServer
+{
+public:
+	ScaleTranslateEngine(OverlayFrame *overlay, int cpus);
+	~ScaleTranslateEngine();
+	
+	void init_packages();
+	LoadClient* new_client();
+	LoadPackage* new_package();
+	
+	OverlayFrame *overlay;
+	
+	
+// Arguments
+	VFrame *output;
+	VFrame *input;
+	int in_x1;
+	int in_y1;
+	int in_x2;
+	int in_y2;
+	int out_x1;
+	int out_y1;
+	int out_x2;
+	int out_y2;
+	float alpha;
+	int mode;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+class BlendEngine;
+
+class BlendPackage : public LoadPackage
+{
+public:
+	BlendPackage();
+
+	int out_row1, out_row2;
+};
+
+
+class BlendUnit : public LoadClient
+{
+public:
+	BlendUnit(BlendEngine *server, OverlayFrame *overlay);
+	~BlendUnit();
+
+	void process_package(LoadPackage *package);
+	void translation_array(transfer_table* &table, 
+		float out_x1, 
+		float out_x2,
+		float in_x1,
+		float in_x2,
+		int in_total, 
+		int out_total, 
+		int &out_x1_int,
+		int &out_x2_int);
+	void translate(VFrame *output, 
+			VFrame *input, 
+			float in_x1,
+			float in_y1,
+			float in_x2,
+			float in_y2,
+			float out_x1,
+			float out_y1,
+			float out_x2,
+			float out_y2,
+			float alpha,
+			int mode,
+			int row1,
+			int row2);
+
+	OverlayFrame *overlay;
+	BlendEngine *blend_engine;
+};
+
+class BlendEngine : public LoadServer
+{
+public:
+	BlendEngine(OverlayFrame *overlay, int cpus);
+	~BlendEngine();
+	
+	void init_packages();
+	LoadClient* new_client();
+	LoadPackage* new_package();
+	
+	OverlayFrame *overlay;
+	
+	
+// Arguments
+	VFrame *output;
+	VFrame *input;
+	float alpha;
+	int mode;
+};
+
+
+
+
+
+
+
+
+
+
+
+
+
+class OverlayFrame
+{
+public:
+	OverlayFrame(int cpus = 1);
+	virtual ~OverlayFrame();
+
+// Alpha is from 0 - 1
+	int overlay(VFrame *output, 
+		VFrame *input, 
+		float in_x1, 
+		float in_y1, 
+		float in_x2, 
+		float in_y2, 
+		float out_x1, 
+		float out_y1, 
+		float out_x2, 
+		float out_y2, 
+		float alpha, 
+		int mode,
+		int interpolation_type);
+
+	int overlay(VFrame *output, unsigned char *input,
+		float in_x1, float in_y1, float in_x2, float in_y2,
+		float out_x1, float out_y1, float out_x2, float out_y2, 
+		int alpha, int in_w, int in_h);
+	int use_alpha, use_float, mode, interpolate;
+	int color_model;
+
+	BlendEngine *blend_engine;
+	ScaleEngine *scale_engine;
+	TranslateEngine *translate_engine;
+	ScaleTranslateEngine *scaletranslate_engine;
+
+
+	VFrame *temp_frame;
+	int cpus;
+
+};
+
+#endif

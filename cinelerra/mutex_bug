@@ -1,0 +1,21 @@
+VEdit::render checking out
+Cache::check_out 1
+Cache::check_out 2
+			VEdit::draw checking out
+			Cache::check_out 1
+VEdit::render checking in
+						ATrack::render checking out
+						Cache::check_out 1
+Cache::check_in 1
+			Cache::check_out 2
+Cache::check_in 2
+VEdit::render done
+									VRender::process_buffer age video
+									Cache::age_type 1
+									Cache::lock_all 1
+									Cache::lock_all 2
+but ATrack::render has locked check_out at this point.
+			VEdit::draw checking in
+			Cache::check_in 1
+but Cache::age_type has locked check_in and check_out can't be unlocked until 
+VEdit completes
