@@ -17,6 +17,7 @@
 #include "track.inc"
 #include "tracks.inc"
 #include "transitionhandles.inc"
+#include "keyframe.inc"
 
 class TrackCanvas : public BC_SubWindow
 {
@@ -161,7 +162,9 @@ public:
 		int cursor_x, 
 		int cursor_y, 
 		int draw, 
-		int buttonpress);
+		int buttonpress,
+		Plugin *&keyframe_plugin,
+		KeyFrame *&keyframe_instance);
 
 
 	void calculate_viewport(Track *track, 

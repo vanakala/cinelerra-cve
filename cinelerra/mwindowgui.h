@@ -70,6 +70,7 @@ public:
 // Popup menus
 	EditPopup *edit_menu;
 	PluginPopup *plugin_menu;
+	KeyframePopup *keyframe_menu;
 	TransitionPopup *transition_menu;
 
 	MainClock *mainclock;

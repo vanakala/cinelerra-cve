@@ -1794,20 +1794,30 @@ int TrackCanvas::do_keyframes(int cursor_x,
 //printf("TrackCanvas::draw_keyframes 1 %d\n", result);
 		if(!result && session->auto_conf->plugins)
 		{
+			Plugin *plugin;
+			KeyFrame *keyframe;
 			result = do_plugin_autos(track,
 				cursor_x, 
 				cursor_y, 
 				draw, 
-				buttonpress);
+				buttonpress,
+				plugin,
+				keyframe);
 			if(result && mwindow->session->current_operation == DRAG_PLUGINKEY)
 			{
 				rerender = 1;
 			}
-			if(result && buttonpress)
+			if(result && (buttonpress == 1))
 			{
 				mwindow->session->current_operation = DRAG_PLUGINKEY_PRE;
 				update_drag_caption();
 				rerender = 1;
+			} else
+			if (result && (buttonpress == 3))
+			{
+				gui->keyframe_menu->update(plugin, keyframe);
+				gui->keyframe_menu->activate_menu();
+				rerender = 1; // the position changes
 			}
 		}
 //printf("TrackCanvas::draw_keyframes 1 %d\n", result);
@@ -2823,11 +2833,14 @@ int TrackCanvas::do_autos(Track *track,
 	return result;
 }
 
+// so this means it is always >0 when keyframe is found 
 int TrackCanvas::do_plugin_autos(Track *track, 
 		int cursor_x, 
 		int cursor_y, 
 		int draw, 
-		int buttonpress)
+		int buttonpress,
+		Plugin *&keyframe_plugin,
+		KeyFrame *&keyframe_instance)
 {
 	int result = 0;
 
@@ -2882,6 +2895,8 @@ int TrackCanvas::do_plugin_autos(Track *track,
 							cursor_y < y + keyframe_pixmap->get_h())
 						{
 							result = 1;
+							keyframe_plugin = plugin;
+							keyframe_instance = keyframe;
 
 							if(buttonpress)
 							{
@@ -4283,7 +4298,7 @@ int TrackCanvas::button_press_event()
 				if(do_keyframes(cursor_x, 
 					cursor_y, 
 					0, 
-					1, 
+					get_buttonpress(), 
 					new_cursor, 
 					update_cursor,
 					rerender))
@@ -4349,7 +4364,7 @@ int TrackCanvas::button_press_event()
 				if(do_keyframes(cursor_x, 
 					cursor_y, 
 					0, 
-					1, 
+					get_buttonpress(), 
 					new_cursor, 
 					update_cursor,
 					rerender))
