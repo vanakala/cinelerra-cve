@@ -1,6 +1,9 @@
 hvirtual (1:1.1.7-3) unstable; urgency=low
 
   * internationalization #2 & #3
+  * fix to track.C - crusher
+  * gettextialization
+  * no patch for 32bit counters anymore
 
  -- Andraz Tori <andraz.tori1@guest.arnes.si>  Fri, 10 Oct 2003 18:00:01 +0200
 
