@@ -163,26 +163,43 @@ int LocalSession::save_defaults(Defaults *defaults)
 }
 
 
+// prefer a complete current selection over in/out points
 double LocalSession::get_selectionstart()
 {
-	if(in_point >= 0)
-		return in_point;
-	else
-	if(out_point >= 0)
-		return out_point;
-	else
+	if (selectionstart >= 0 && 
+	    selectionend >= 0 && 
+	    selectionstart != selectionend) {
 		return selectionstart;
+	}
+	
+	if(in_point >= 0) {
+		return in_point;
+	}
+
+	if(out_point >= 0) {
+		return out_point;
+	}
+
+	return selectionstart;
 }
 
 double LocalSession::get_selectionend()
 {
-	if(out_point >= 0)
-		return out_point;
-	else
-	if(in_point >= 0)
-		return in_point;
-	else
+	if (selectionstart >= 0 && 
+	    selectionend >= 0 &&
+	    selectionstart != selectionend) {
 		return selectionend;
+	}
+
+	if(out_point >= 0) {
+		return out_point;
+	}
+
+	if(in_point >= 0) {
+		return in_point;
+	}
+	
+	return selectionend;
 }
 
 
