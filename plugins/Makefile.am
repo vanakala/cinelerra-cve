@@ -6,7 +6,9 @@ SUBDIRS=1080to480 720to480 denoisemjpeg motion libfourier libeffecttv \
 				 irissquare ivtc normalize oilpainting pitch polar reframe resample reverb reverseaudio \
 				 reversevideo rgb601 rotate scale sharpen shiftinterlace slide spectrogram swapchannels \
 				 synthesizer timeavg timestretch titler translate videoscope wave whirl wipe yuv microtheme \
-				 defaulttheme downsample flash gradient level linearblur perspective radialblur zoomblur fonts
+				 defaulttheme downsample flash gradient level linearblur \
+				 perspective radialblur zoomblur fonts \
+				 histogram
 
 AUTOMAKE_OPTIONS=foreign
 

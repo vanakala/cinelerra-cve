@@ -1,6 +1,6 @@
 plugin_LTLIBRARIES = histogram.la
 histogram_la_LDFLAGS = -avoid-version -module -shared 
-libhistogram_la_LIBADD = $(top_srcdir)/plugins/libcolors/colors.la
+histogram_la_LIBADD = $(top_srcdir)/plugins/libcolors/libcolors.la
 histogram_la_SOURCES = histogram.C 
 AM_CFLAGS = 
 AM_CXXFLAGS = 

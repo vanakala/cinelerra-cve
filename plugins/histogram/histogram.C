@@ -13,7 +13,7 @@
 #include "mid_picon_png.h"
 #include "min_picon_png.h"
 #include "picon_png.h"
-#include "../colors/plugincolors.h"
+#include "../libcolors/plugincolors.h"
 #include "pluginvclient.h"
 #include "vframe.h"
 
