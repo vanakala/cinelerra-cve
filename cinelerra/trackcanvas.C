@@ -4288,15 +4288,17 @@ int TrackCanvas::test_plugins(int cursor_x,
 					{
 						PluginServer *server = mwindow->scan_plugindb(plugin->title,
 							plugin->track->data_type);
-						VFrame *frame = server->picon;
+						if (server) 
+						{
+							VFrame *frame = server->picon;
 //printf("TrackCanvas::test_plugins 7\n");
-						drag_popup = new BC_DragWindow(gui, 
-							frame, 
-							get_abs_cursor_x() - frame->get_w() / 2,
-							get_abs_cursor_y() - frame->get_h() / 2);
+							drag_popup = new BC_DragWindow(gui, 
+								frame, 
+								get_abs_cursor_x() - frame->get_w() / 2,
+								get_abs_cursor_y() - frame->get_h() / 2);
+						}
 						break;
 					}
-					
 					case PLUGIN_SHAREDPLUGIN:
 					case PLUGIN_SHAREDMODULE:
 						drag_popup = new BC_DragWindow(gui, 
