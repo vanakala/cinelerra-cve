@@ -33,6 +33,8 @@ public:
 	DeInterlaceOption *average_fields;
 	DeInterlaceOption *swap_odd_fields;
 	DeInterlaceOption *swap_even_fields;
+	DeInterlaceOption *temporalswap_top_fields;
+	DeInterlaceOption *temporalswap_bottom_fields;
 	DeInterlaceOption *avg_even;
 	DeInterlaceOption *avg_odd;
 	DeInterlaceOption *none;

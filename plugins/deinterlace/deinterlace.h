@@ -22,6 +22,8 @@ enum
 	DEINTERLACE_AVG,
 	DEINTERLACE_SWAP_ODD,
 	DEINTERLACE_SWAP_EVEN,
+	DEINTERLACE_TEMPORALSWAP_TOP,
+	DEINTERLACE_TEMPORALSWAP_BOTTOM,
 	DEINTERLACE_AVG_ODD,
 	DEINTERLACE_AVG_EVEN
 };
@@ -53,7 +55,6 @@ public:
 
 	PLUGIN_CLASS_MEMBERS(DeInterlaceConfig, DeInterlaceThread)
 	
-
 // required for all realtime plugins
 	int process_realtime(VFrame *input, VFrame *output);
 	int is_realtime();
@@ -69,9 +70,11 @@ public:
 	void deinterlace_even(VFrame *input, VFrame *output, int dominance);
 	void deinterlace_avg(VFrame *input, VFrame *output);
 	void deinterlace_swap(VFrame *input, VFrame *output, int dominance);
+	void deinterlace_temporalswap(VFrame *input, VFrame *nextfrane, VFrame *output, int dominance);
 
 	int changed_rows;
 	VFrame *temp;
+	VFrame *temp_prevframe;
 };
 
 

@@ -18,9 +18,9 @@ DeInterlaceWindow::DeInterlaceWindow(DeInterlaceMain *client, int x, int y)
  : BC_Window(client->gui_string, 
  	x, 
 	y, 
-	200, 
+	300, 
 	400, 
-	200, 
+	300, 
 	400, 
 	0, 
 	0,
@@ -49,6 +49,11 @@ int DeInterlaceWindow::create_objects()
 	add_tool(swap_odd_fields = new DeInterlaceOption(client, this, DEINTERLACE_SWAP_ODD, x, y, _("Swap odd fields")));
 	y += 25;
 	add_tool(swap_even_fields = new DeInterlaceOption(client, this, DEINTERLACE_SWAP_EVEN, x, y, _("Swap even fields")));
+	y += 25;
+	add_tool(temporalswap_top_fields = new DeInterlaceOption(client, this, DEINTERLACE_TEMPORALSWAP_TOP, x, y, _("Temporal swap top field first")));
+
+	y += 25;
+	add_tool(temporalswap_bottom_fields = new DeInterlaceOption(client, this, DEINTERLACE_TEMPORALSWAP_BOTTOM, x, y, _("Temporal swap bottom field first")));
 	y += 25;
 	add_tool(avg_even = new DeInterlaceOption(client, this, DEINTERLACE_AVG_EVEN, x, y, _("Average even lines")));
 	draw_line(170, y + 5, 190, y + 5);
@@ -85,6 +90,8 @@ int DeInterlaceWindow::set_mode(int mode, int recursive)
 	average_fields->update(mode == DEINTERLACE_AVG);
 	swap_odd_fields->update(mode == DEINTERLACE_SWAP_ODD);
 	swap_even_fields->update(mode == DEINTERLACE_SWAP_EVEN);
+	temporalswap_top_fields->update(mode == DEINTERLACE_TEMPORALSWAP_TOP);
+	temporalswap_bottom_fields->update(mode == DEINTERLACE_TEMPORALSWAP_BOTTOM);
 	avg_even->update(mode == DEINTERLACE_AVG_EVEN);
 	avg_odd->update(mode == DEINTERLACE_AVG_ODD);
 

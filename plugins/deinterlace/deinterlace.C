@@ -63,12 +63,15 @@ DeInterlaceMain::DeInterlaceMain(PluginServer *server)
 {
 	PLUGIN_CONSTRUCTOR_MACRO
 	temp = 0;
+	temp_prevframe=0;
 }
 
 DeInterlaceMain::~DeInterlaceMain()
 {
 	PLUGIN_DESTRUCTOR_MACRO
 	if(temp) delete temp;
+	if(temp_prevframe) delete temp_prevframe;
+	
 }
 
 char* DeInterlaceMain::plugin_title() { return N_("Deinterlace"); }
@@ -220,6 +223,39 @@ int DeInterlaceMain::is_realtime() { return 1; }
 }
 
 
+#define DEINTERLACE_TEMPORALSWAP_MACRO(type, components, dominance) \
+{ \
+	int w = input->get_w(); \
+	int h = input->get_h(); \
+ \
+	for(int i = 0; i < h - 1; i += 2) \
+	{ \
+		type *input_row1;\
+		type *input_row2; \
+		type *output_row1 = (type*)output->get_rows()[i]; \
+		type *output_row2 = (type*)output->get_rows()[i + 1]; \
+		type temp1, temp2; \
+		\
+		if (dominance) { \
+			input_row1 = (type*)input->get_rows()[i]; \
+			input_row2 = (type*)prevframe->get_rows()[i+1]; \
+		} \
+		else  {\
+			input_row1 = (type*)prevframe->get_rows()[i]; \
+			input_row2 = (type*)input->get_rows()[i+1]; \
+		} \
+ \
+		for(int j = 0; j < w * components; j++) \
+		{ \
+			temp1 = input_row1[j]; \
+			temp2 = input_row2[j]; \
+			output_row1[j] = temp2; \
+			output_row2[j] = temp1; \
+		} \
+	} \
+}
+
+
 void DeInterlaceMain::deinterlace_even(VFrame *input, VFrame *output, int dominance)
 {
 	switch(input->get_color_model())
@@ -336,6 +372,35 @@ void DeInterlaceMain::deinterlace_swap(VFrame *input, VFrame *output, int domina
 	}
 }
 
+void DeInterlaceMain::deinterlace_temporalswap(VFrame *input, VFrame *prevframe, VFrame *output, int dominance)
+{
+	switch(input->get_color_model())
+	{
+		case BC_RGB888:
+		case BC_YUV888:
+			DEINTERLACE_TEMPORALSWAP_MACRO(unsigned char, 3, dominance);
+			break;
+		case BC_RGB_FLOAT:
+			DEINTERLACE_TEMPORALSWAP_MACRO(float, 3, dominance);
+			break;
+		case BC_RGBA8888:
+		case BC_YUVA8888:
+			DEINTERLACE_TEMPORALSWAP_MACRO(unsigned char, 4, dominance);
+			break;
+		case BC_RGBA_FLOAT:
+			DEINTERLACE_TEMPORALSWAP_MACRO(float, 4, dominance);
+			break;
+		case BC_RGB161616:
+		case BC_YUV161616:
+			DEINTERLACE_TEMPORALSWAP_MACRO(uint16_t, 3, dominance);
+			break;
+		case BC_RGBA16161616:
+		case BC_YUVA16161616:
+			DEINTERLACE_TEMPORALSWAP_MACRO(uint16_t, 4, dominance);
+			break;
+	}
+}
+
 
 int DeInterlaceMain::process_realtime(VFrame *input, VFrame *output)
 {
@@ -343,6 +408,12 @@ int DeInterlaceMain::process_realtime(VFrame *input, VFrame *output)
 	load_configuration();
 	if(!temp)
 		temp = new VFrame(0,
+			input->get_w(),
+			input->get_h(),
+			input->get_color_model());
+	
+	if(!temp_prevframe)
+		temp_prevframe = new VFrame(0,
 			input->get_w(),
 			input->get_h(),
 			input->get_color_model());
@@ -373,10 +444,25 @@ int DeInterlaceMain::process_realtime(VFrame *input, VFrame *output)
 		case DEINTERLACE_SWAP_EVEN:
 			deinterlace_swap(input, output, 0);
 			break;
+		case DEINTERLACE_TEMPORALSWAP_TOP:
+			if (get_source_position()==0)
+				read_frame(temp_prevframe,0, get_source_position(), get_framerate());
+			else 
+				read_frame(temp_prevframe,0, get_source_position()-1, get_framerate());
+			deinterlace_temporalswap(temp_prevframe, input, output, 1);
+			break; 
+		case DEINTERLACE_TEMPORALSWAP_BOTTOM:
+			if (get_source_position()==0)
+				read_frame(temp_prevframe,0, get_source_position(), get_framerate());
+			else 
+				read_frame(temp_prevframe,0, get_source_position()-1, get_framerate());
+			deinterlace_temporalswap(temp_prevframe, input ,output, 0);
+			break;
 	}
 	send_render_gui(&changed_rows);
 	return 0;
 }
+
 
 void DeInterlaceMain::render_gui(void *data)
 {
