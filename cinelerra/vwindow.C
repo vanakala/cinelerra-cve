@@ -44,12 +44,14 @@ void VWindow::delete_edl()
 //printf("VWindow::delete_edl 1\n");
 	if(mwindow->edl->vwindow_edl)
 	{
-		delete mwindow->edl->vwindow_edl;
+		if (!edl_shared) 
+			delete mwindow->edl->vwindow_edl;
 		mwindow->edl->vwindow_edl = 0;
 	}
 
 	if(asset) delete asset;
 	asset = 0;
+	edl_shared = 0;
 }
 
 
@@ -110,6 +112,7 @@ void VWindow::change_source()
 	{
 		if(asset) delete asset;
 		asset = 0;
+		edl_shared = 0;
 	}
 }
 
@@ -134,6 +137,7 @@ void VWindow::change_source(Asset *asset)
 	this->asset = new Asset;
 	*this->asset = *asset;
 	mwindow->edl->vwindow_edl = new EDL(mwindow->edl);
+	edl_shared = 0;
 	mwindow->edl->vwindow_edl->create_objects();
 	mwindow->asset_to_edl(mwindow->edl->vwindow_edl, asset);
 //printf("VWindow::change_source 1 %d %d\n", edl->local_session->loop_playback, mwindow->edl->local_session->loop_playback);
@@ -177,6 +181,8 @@ void VWindow::change_source(EDL *edl)
 	{
 		this->asset = 0;
 		mwindow->edl->vwindow_edl = edl;
+// in order not to later delete edl if it is shared
+		edl_shared = 1;
 //printf("VWindow::change_source 1\n");
 //edl->dump();
 //printf("VWindow::change_source 2\n");
