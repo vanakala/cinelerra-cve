@@ -1,7 +1,7 @@
 lib_LTLIBRARIES = libguicast.la
 noinst_PROGRAMS=bootstrap
 
-libguicast_la_LIBADD = -lXxf86vm -lX11 -lXv -lXext
+libguicast_la_LIBADD = -lXxf86vm -lXv -lXext -lX11 $(X_EXTRA_LIBS)
 libguicast_la_LDFLAGS = $(X_LIBS) -version-info 1:0:0 
 libguicast_la_SOURCES = \
 	bcbitmap.C \
@@ -129,8 +129,8 @@ noinst_HEADERS = arraylist.h bcbitmap.h bcbitmap.inc bcbutton.h bcbutton.inc bcc
 	workarounds.h \
 	condition.h
 
-INCLUDES = -I$(top_srcdir)/quicktime -I/usr/include/qt
-AM_CXXFLAGS = $(LARGEFILE_CFLAGS)
+INCLUDES = -I$(top_srcdir)/quicktime
+AM_CXXFLAGS = $(LARGEFILE_CFLAGS) $(X_CFLAGS)
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
 
 # special CFLAGS that can be set on the make command line

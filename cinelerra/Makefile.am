@@ -283,9 +283,7 @@ AM_CXXFLAGS = \
 	$(SOUND_CFLAGS) \
 	$(AVIFILE_CXXFLAGS) \
 	-DPLUGIN_DIR=\"$(plugindir)\"
-AM_LDFLAGS = -export-dynamic \
-	../mpeg2enc/libmpeg2enc.la \
-	../toolame-02l/libtoolame.la 
+AM_LDFLAGS = -export-dynamic
 
 noinst_HEADERS = aattachmentpoint.h \
 		 aautomation.h \
@@ -585,12 +583,14 @@ noinst_HEADERS = aattachmentpoint.h \
 		 
 cinelerra_LDADD = \
 	data/libimagedata.a \
+	$(top_builddir)/mpeg2enc/libmpeg2enc.la \
+	$(top_builddir)/toolame-02l/libtoolame.la \
 	$(top_builddir)/quicktime/libquicktimehv.la \
 	$(top_builddir)/guicast/libguicast.la \
 	$(top_builddir)/libmpeg3/libmpeg3hv.la \
 	$(top_builddir)/libsndfile/src/libsndfilehv.la \
-	-lX11 -logg -lvorbis -lvorbisfile -lvorbisenc -la52 \
-	-lpng -lXv -lXext -ljpeg -lmp3lame -ltiff -lesd -lz \
+	-lvorbisfile -lvorbisenc -la52 \
+	-lpng -ljpeg -ltiff -lz \
 	$(SOUND_LDFLAGS) \
 	$(FIREWIRE_LDFLAGS) -ldv \
 	-lIex -lIlmImf -lHalf \

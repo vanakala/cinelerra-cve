@@ -12,7 +12,7 @@ AM_CFLAGS = \
 	-DENCORE_INCLUDE=\"encore50/encore.h\"
 libquicktimehv_la_LDFLAGS = -version-info 1:0:0 -release 1.6.0 -Wl,--no-undefined 
 
-libquicktimehv_la_LIBADD = $(FIREWIRE_LDFLAGS) -ldv -ljpeg -lpng \
+libquicktimehv_la_LIBADD = -ldv -ljpeg -lpng \
                                                  -logg -lvorbis -lvorbisenc -lmp3lame $(LIBAVCODEC_LIBS) \
 	-lfaad \
                                                  encore50/libencore.la \
