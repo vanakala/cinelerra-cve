@@ -496,18 +496,16 @@ int VDevice1394::write_buffer(VFrame **frame, EDL *edl)
 //printf("VDevice1394::write_buffer 7\n");
 
 
-
-//	while(unused_buffers--)
-//	{
-		unused_buffers--;
+while(unused_buffers--)
+	{
 //printf("VDevice1394::write_buffer 8\n");
-		int is_pal = (ptr->get_h() == 576);
+		bool is_pal = ptr->IsPAL();
 		unsigned char *output = output_buffer + output_queue.buffer * output_mmap.buf_size;
 		int output_size = 320;
-		int packets_per_frame = (is_pal ? 300 : 250);
+		int packets_per_frame = (is_pal ? 300 : 250); 
 		int min_packet_size = output_mmap.packet_size;
-		long frame_size = packets_per_frame * 480;
-		int vdata = 0;
+		unsigned long frame_size = packets_per_frame * 480;
+		unsigned long vdata = 0;
 		unsigned char *data = ptr->get_data();
 		unsigned int *packet_sizes = this->packet_sizes;
 //printf("VDevice1394::write_buffer 9\n");
@@ -516,14 +514,14 @@ int VDevice1394::write_buffer(VFrame **frame, EDL *edl)
 		{
         	if(packets_per_frame == 250) 
 			{
-            	cip_n = CIP_N_NTSC;
-            	cip_d = CIP_D_NTSC;
+            	cip_n = (cip_n > 0) ? cip_n : CIP_N_NTSC;
+            	cip_d = (cip_d > 0) ? cip_d : CIP_D_NTSC;
             	f50_60 = 0x00;
         	}
 			else 
 			{
-            	cip_n = CIP_N_PAL;
-            	cip_d = CIP_D_PAL;
+            	cip_n = (cip_n > 0) ? cip_n : CIP_N_PAL;
+            	cip_d = (cip_d > 0) ? cip_d : CIP_D_PAL;
             	f50_60 = 0x80;
         	}
         	cip_counter = cip_n;
@@ -533,7 +531,7 @@ int VDevice1394::write_buffer(VFrame **frame, EDL *edl)
 		for(int i = 0; i < output_size && vdata < frame_size; i++)
 		{
         	unsigned char *p = output;
-        	int want_sync = (cip_counter > cip_d);
+        	bool want_sync = ((cip_counter + cip_n) > cip_d);
 
 /* Source node ID ! */
        	 	*p++ = 0x01; 
@@ -563,13 +561,12 @@ int VDevice1394::write_buffer(VFrame **frame, EDL *edl)
             	vdata += 480;
         	}
         	else
-            	cip_counter -= cip_d;
+            	cip_counter -= (cip_d - cip_n);
 
         	*packet_sizes++ = p - output;
         	output += min_packet_size;
 		}
    		*packet_sizes++ = 0;
-//printf("VDevice1394::write_buffer 13\n");
 
 // printf("VDevice1394::write_buffer 12 %02x %02x %02x %02x %02x %02x %02x %02x\n",
 // output[0],output[1], output[2], output[3], output[4], output[5], output[6], output[7]);
@@ -578,22 +575,20 @@ int VDevice1394::write_buffer(VFrame **frame, EDL *edl)
 		{
         	perror("VDevice1394::write_buffer VIDEO1394_TALK_QUEUE_BUFFER");
     	}
+//printf("VDevice1394::write_buffer 13\n");
 
-    	output_queue.buffer++;
-		if(output_queue.buffer >= output_mmap.nb_buffers) output_queue.buffer = 0;
-//	}
+    	output_queue.buffer++;		
+	output_queue.buffer %= output_mmap.nb_buffers;
+	}
 //printf("VDevice1394::write_buffer 14\n");
 
-	if(unused_buffers <= 0)
+    if (ioctl(output_fd, VIDEO1394_TALK_WAIT_BUFFER, &output_queue) < 0) 
 	{
-    	if (ioctl(output_fd, VIDEO1394_TALK_WAIT_BUFFER, &output_queue) < 0) 
-		{
-        	perror("VDevice1394::write_buffer VIDEO1394_TALK_WAIT_BUFFER");
-    	}
-		unused_buffers++;
-	}
+        perror("VDevice1394::write_buffer VIDEO1394_TALK_WAIT_BUFFER");
+    }
 //printf("VDevice1394::write_buffer 15\n");
 
+    unused_buffers = 1;
 
 
 	return 0;

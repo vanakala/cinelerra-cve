@@ -24,6 +24,7 @@ public:
 		int h, 
 		int color_model = BC_RGBA8888, 
 		long bytes_per_line = -1);
+	bool IsPAL(void) const;
 // Create a frame with the png image
 	VFrame(unsigned char *png_data);
 	VFrame(VFrame &vframe);
