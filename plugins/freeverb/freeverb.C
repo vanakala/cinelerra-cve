@@ -29,9 +29,9 @@ public:
 	void copy_from(FreeverbConfig &that);
 	void interpolate(FreeverbConfig &prev, 
 		FreeverbConfig &next, 
-		long prev_frame, 
-		long next_frame, 
-		long current_frame);
+		int64_t prev_frame, 
+		int64_t next_frame, 
+		int64_t current_frame);
 
 
 	float gain;
@@ -139,7 +139,7 @@ public:
 	int is_multichannel();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
-	int process_realtime(long size, double **input_ptr, double **output_ptr);
+	int process_realtime(int64_t size, double **input_ptr, double **output_ptr);
 
 
 
@@ -381,9 +381,9 @@ void FreeverbConfig::copy_from(FreeverbConfig &that)
 
 void FreeverbConfig::interpolate(FreeverbConfig &prev, 
 	FreeverbConfig &next, 
-	long prev_frame, 
-	long next_frame, 
-	long current_frame)
+	int64_t prev_frame, 
+	int64_t next_frame, 
+	int64_t current_frame)
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
@@ -577,7 +577,7 @@ void FreeverbEffect::update_gui()
 	}
 }
 
-int FreeverbEffect::process_realtime(long size, double **input_ptr, double **output_ptr)
+int FreeverbEffect::process_realtime(int64_t size, double **input_ptr, double **output_ptr)
 {
 	load_configuration();
 	if(!engine) engine = new revmodel;
