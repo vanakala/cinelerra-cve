@@ -1819,6 +1819,7 @@ void TitleMain::overlay_mask()
 	if(!EQUIV(config.fade_in, 0))
 	{
 		int fade_len = (int)(config.fade_in * PluginVClient::project_frame_rate);
+		printf("flen: %i, prev_keyframe: %lli, source: %lli\n", fade_len, config.prev_keyframe_position, get_source_position());
 		int fade_position = get_source_position() - 
 /*			get_source_start() -   */
 			config.prev_keyframe_position;
@@ -1834,8 +1835,10 @@ void TitleMain::overlay_mask()
 
 	if(!EQUIV(config.fade_out, 0))
 	{
+
 		int fade_len = (int)(config.fade_out * 
 			PluginVClient::project_frame_rate);
+		printf("flen: %i, next_keyframe: %lli, source: %lli\n", fade_len, config.next_keyframe_position, get_source_position());
 		int fade_position = config.next_keyframe_position - 
 			get_source_position();
 
@@ -2186,10 +2189,10 @@ int TitleMain::load_configuration()
 	config.next_keyframe_position = next_keyframe->position;
 
 	// if no previous keyframe exists, it should be start of the plugin, not start of the track
-	if (config.prev_keyframe_position == 0) 
-		config.prev_keyframe_position = get_source_start();
 	if(config.next_keyframe_position == config.prev_keyframe_position)
 		config.next_keyframe_position = get_source_start() + get_total_len();
+	if (config.prev_keyframe_position == 0) 
+		config.prev_keyframe_position = get_source_start();
 
 
 // printf("TitleMain::load_configuration 10 %d %d\n", 
