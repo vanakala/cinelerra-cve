@@ -38,7 +38,6 @@ void PanAuto::rechannel()
 void PanAuto::load(FileXML *file)
 {
 	bzero(values, MAXCHANNELS * sizeof(float));
-	position = file->tag.get_property("POSITION", (int64_t)0);
 	handle_x = file->tag.get_property("HANDLE_X", (int64_t)handle_x);
 	handle_y = file->tag.get_property("HANDLE_Y", (int64_t)handle_y);
 	for(int i = 0; i < edl->session->audio_channels; i++)
