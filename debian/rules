@@ -5,10 +5,10 @@
 package=hvirtual
 export DH_COMPAT=4
 
-CFLAGS=-ffast-math -O3 -mmmx -g
+CFLAGS=-ffast-math -O3 -mmmx -march=pentium-mmx
 CXXFLAGS=$(CFLAGS) -fno-check-new
 
-MAKEFLAGS=
+MAKEFLAGS= -j2
 ifneq (, $(findstring smp2,$(DEB_BUILD_OPTIONS)))
 	MAKEFLAGS=-j2
 endif
@@ -16,7 +16,6 @@ endif
 config.status: configure 
 	$(checkdir)
 	CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" \
-#					./configure --prefix=/usr --enable-x86 --without-pic
 					./configure --prefix=/usr --enable-mmx --enable-x86 --without-pic
 	
 build: build-stamp
@@ -30,7 +29,7 @@ build-stamp: config.status
 
 clean: 
 	$(checkdir)
-	-[ -r Makefile ] && $(MAKE) -i distclean
+	-$(MAKE) -i distclean
 	dh_clean -a
 	-rm -f debian/cinelerra.1
 	-rm -f debian/mplexhi.1
@@ -51,10 +50,10 @@ binary-arch: checkroot build-stamp
 	dh_fixperms -a
 	dh_compress -a
 	# Since Cinelerra is far from stable, I prefer leaving the debug info
-#	dh_strip -a
-#	strip -x -s -R .comment -R .note debian/cinelerra/usr/lib/cinelerra/*.plugin
-	plugins/bootstrap debian/cinelerra/usr/lib/cinelerra/defaulttheme.plugin plugins/defaulttheme/data/*.png
-	plugins/bootstrap debian/cinelerra/usr/lib/cinelerra/microtheme.plugin plugins/microtheme/data/*.png
+	dh_strip -a
+	strip -x -s -R .comment -R .note debian/cinelerra/usr/lib/cinelerra/*.so
+	guicast/bootstrap debian/cinelerra/usr/lib/cinelerra/defaulttheme.so plugins/defaulttheme/data/*.png
+	guicast/bootstrap debian/cinelerra/usr/lib/cinelerra/microtheme.so plugins/microtheme/data/*.png
 
 	dh_makeshlibs -V -a
 	dh_shlibdeps -a
