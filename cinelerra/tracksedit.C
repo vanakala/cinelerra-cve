@@ -827,7 +827,7 @@ int Tracks::modify_edithandles(double &oldposition,
 		{
 			current->modify_edithandles(oldposition, 
 				newposition, 
-				currentend, 
+				currentend,
 				handle_mode,
 				edit_labels,
 				edit_plugins);
