@@ -36,10 +36,11 @@ public:
 		FileXML *file, 
 		int default_only,
 		int autos_only);
-	void paste_keyframes(int64_t start, 
+	static void paste_keyframes(int64_t start, 
 		int64_t length, 
 		FileXML *file, 
-		int default_only);
+		int default_only,
+		Track *track);
 // Return the nearest boundary of any kind in the plugin edits
 	int64_t plugin_change_duration(int64_t input_position, 
 		int64_t input_length, 

@@ -851,14 +851,21 @@ int Track::copy_automation(double selectionstart,
 
 	if(edl->session->auto_conf->plugins)
 	{
+		file->tag.set_title("PLUGINSETS");
+		file->append_tag();
+		file->append_newline();
 		for(int i = 0; i < plugin_set.total; i++)
 		{
+		
 			plugin_set.values[i]->copy_keyframes(start, 
 				end, 
 				file, 
 				default_only,
 				autos_only);
 		}
+		file->tag.set_title("/PLUGINSETS");
+		file->append_tag();
+		file->append_newline();
 	}
 
 	file->tag.set_title("/TRACK");
@@ -882,7 +889,6 @@ int Track::paste_automation(double selectionstart,
 	int64_t start;
 	int64_t length;
 	int result;
-	int current_pluginset;
 	double scale;
 
 	if(data_type == TRACK_AUDIO)
@@ -894,7 +900,6 @@ int Track::paste_automation(double selectionstart,
 	start = to_units(selectionstart, 0);
 	length = to_units(total_length, 0);
 	result = 0;
-	current_pluginset = 0;
 //printf("Track::paste_automation 1\n");
 
 	while(!result)
@@ -916,17 +921,14 @@ int Track::paste_automation(double selectionstart,
 					0);
 			}
 			else
-			if(file->tag.title_is("PLUGINSET"))
+			if(file->tag.title_is("PLUGINSETS"))
 			{
-				if(current_pluginset < plugin_set.total)
-				{
 //printf("Track::paste_automation 2 %d\n", current_pluginset);
-					plugin_set.values[current_pluginset]->paste_keyframes(start, 
-						length, 
-						file,
-						default_only);
-					current_pluginset++;
-				}
+				PluginSet::paste_keyframes(start, 
+					length, 
+					file,
+					default_only,
+					this);
 			}
 		}
 	}
