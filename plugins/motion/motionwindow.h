@@ -1,0 +1,308 @@
+#include "guicast.h"
+#include "motion.inc"
+
+class MasterLayer : public BC_PopupMenu
+{
+public:
+	MasterLayer(MotionMain *plugin, MotionWindow *gui, int x, int y);
+	int handle_event();
+	void create_objects();
+	static int calculate_w(MotionWindow *gui);
+	static int from_text(char *text);
+	static char* to_text(int mode);
+	MotionMain *plugin;
+	MotionWindow *gui;
+};
+
+class Mode1 : public BC_PopupMenu
+{
+public:
+	Mode1(MotionMain *plugin, MotionWindow *gui, int x, int y);
+	int handle_event();
+	void create_objects();
+	static int calculate_w(MotionWindow *gui);
+	static int from_text(char *text);
+	static char* to_text(int mode);
+	MotionMain *plugin;
+	MotionWindow *gui;
+};
+
+class Mode2 : public BC_PopupMenu
+{
+public:
+	Mode2(MotionMain *plugin, MotionWindow *gui, int x, int y);
+	int handle_event();
+	void create_objects();
+	static int calculate_w(MotionWindow *gui);
+	static int from_text(char *text);
+	static char* to_text(int mode);
+	MotionMain *plugin;
+	MotionWindow *gui;
+};
+
+class TrackSingleFrame : public BC_Radial
+{
+public:
+	TrackSingleFrame(MotionMain *plugin, 
+		MotionWindow *gui,
+		int x, 
+		int y);
+	int handle_event();
+	MotionMain *plugin;
+	MotionWindow *gui;
+};
+
+class TrackFrameNumber : public BC_TextBox
+{
+public:
+	TrackFrameNumber(MotionMain *plugin, 
+		MotionWindow *gui,
+		int x, 
+		int y);
+	int handle_event();
+	MotionMain *plugin;
+	MotionWindow *gui;
+};
+
+class TrackPreviousFrame : public BC_Radial
+{
+public:
+	TrackPreviousFrame(MotionMain *plugin, 
+		MotionWindow *gui,
+		int x, 
+		int y);
+	int handle_event();
+	MotionMain *plugin;
+	MotionWindow *gui;
+};
+
+class PreviousFrameSameBlock : public BC_Radial
+{
+public:
+	PreviousFrameSameBlock(MotionMain *plugin, 
+		MotionWindow *gui,
+		int x, 
+		int y);
+	int handle_event();
+	MotionMain *plugin;
+	MotionWindow *gui;
+};
+
+class GlobalRange : public BC_IPot
+{
+public:
+	GlobalRange(MotionMain *plugin, 
+		int x, 
+		int y);
+	int handle_event();
+	MotionMain *plugin;
+};
+
+class RotationRange : public BC_IPot
+{
+public:
+	RotationRange(MotionMain *plugin, 
+		int x, 
+		int y);
+	int handle_event();
+	MotionMain *plugin;
+};
+
+class GlobalBlockSize : public BC_IPot
+{
+public:
+	GlobalBlockSize(MotionMain *plugin, 
+		int x, 
+		int y);
+	int handle_event();
+	MotionMain *plugin;
+};
+
+class RotationBlockSize : public BC_IPot
+{
+public:
+	RotationBlockSize(MotionMain *plugin, 
+		int x, 
+		int y);
+	int handle_event();
+	MotionMain *plugin;
+};
+
+class MotionBlockX : public BC_FPot
+{
+public:
+	MotionBlockX(MotionMain *plugin, 
+		MotionWindow *gui,
+		int x, 
+		int y);
+	int handle_event();
+	MotionWindow *gui;
+	MotionMain *plugin;
+};
+
+class MotionBlockY : public BC_FPot
+{
+public:
+	MotionBlockY(MotionMain *plugin, 
+		MotionWindow *gui,
+		int x, 
+		int y);
+	int handle_event();
+	MotionWindow *gui;
+	MotionMain *plugin;
+};
+
+class MotionBlockXText : public BC_TextBox
+{
+public:
+	MotionBlockXText(MotionMain *plugin, 
+		MotionWindow *gui,
+		int x, 
+		int y);
+	int handle_event();
+	MotionWindow *gui;
+	MotionMain *plugin;
+};
+
+class MotionBlockYText : public BC_TextBox
+{
+public:
+	MotionBlockYText(MotionMain *plugin, 
+		MotionWindow *gui,
+		int x, 
+		int y);
+	int handle_event();
+	MotionWindow *gui;
+	MotionMain *plugin;
+};
+
+class GlobalSearchPositions : public BC_PopupMenu
+{
+public:
+	GlobalSearchPositions(MotionMain *plugin, 
+		int x, 
+		int y,
+		int w);
+	void create_objects();
+	int handle_event();
+	MotionMain *plugin;
+};
+
+class RotationSearchPositions : public BC_PopupMenu
+{
+public:
+	RotationSearchPositions(MotionMain *plugin, 
+		int x, 
+		int y,
+		int w);
+	void create_objects();
+	int handle_event();
+	MotionMain *plugin;
+};
+
+class MotionMagnitude : public BC_IPot
+{
+public:
+	MotionMagnitude(MotionMain *plugin, 
+		int x, 
+		int y);
+	int handle_event();
+	MotionMain *plugin;
+};
+
+class MotionReturnSpeed : public BC_IPot
+{
+public:
+	MotionReturnSpeed(MotionMain *plugin, 
+		int x, 
+		int y);
+	int handle_event();
+	MotionMain *plugin;
+};
+
+
+
+class MotionDrawVectors : public BC_CheckBox
+{
+public:
+	MotionDrawVectors(MotionMain *plugin, 
+		MotionWindow *gui,
+		int x, 
+		int y);
+	int handle_event();
+	MotionMain *plugin;
+	MotionWindow *gui;
+};
+
+
+class MotionGlobal : public BC_CheckBox
+{
+public:
+	MotionGlobal(MotionMain *plugin, 
+		MotionWindow *gui,
+		int x, 
+		int y);
+	int handle_event();
+	MotionWindow *gui;
+	MotionMain *plugin;
+};
+
+class MotionRotate : public BC_CheckBox
+{
+public:
+	MotionRotate(MotionMain *plugin, 
+		MotionWindow *gui,
+		int x, 
+		int y);
+	int handle_event();
+	MotionWindow *gui;
+	MotionMain *plugin;
+};
+
+
+
+class MotionWindow : public BC_Window
+{
+public:
+	MotionWindow(MotionMain *plugin, int x, int y);
+	~MotionWindow();
+
+	int create_objects();
+	int close_event();
+	void update_mode();
+	char* get_radius_title();
+
+	GlobalRange *global_range;
+	RotationRange *rotation_range;
+	GlobalBlockSize *global_block_size;
+	RotationBlockSize *rotation_block_size;
+	MotionBlockX *block_x;
+	MotionBlockY *block_y;
+	MotionBlockXText *block_x_text;
+	MotionBlockYText *block_y_text;
+	GlobalSearchPositions *global_search_positions;
+	RotationSearchPositions *rotation_search_positions;
+	MotionMagnitude *magnitude;
+	MotionReturnSpeed *return_speed;
+	Mode1 *mode1;
+	MotionDrawVectors *vectors;
+	MotionGlobal *global;
+	MotionRotate *rotate;
+	TrackSingleFrame *track_single;
+	TrackFrameNumber *track_frame_number;
+	TrackPreviousFrame *track_previous;
+	PreviousFrameSameBlock *previous_same;
+	MasterLayer *master_layer;
+	Mode2 *mode2;
+
+	MotionMain *plugin;
+};
+
+
+
+PLUGIN_THREAD_HEADER(MotionMain, MotionThread, MotionWindow)
+
+
+
+
+
