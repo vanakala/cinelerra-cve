@@ -133,11 +133,11 @@ void PackageRenderer::create_output()
 
 
 // Tag output paths for VFS here.
-	if(!mwindow && preferences->renderfarm_vfs && preferences->use_renderfarm)
+//	if(!mwindow && preferences->renderfarm_vfs && preferences->use_renderfarm)
+	if(!get_master() && preferences->renderfarm_vfs && preferences->use_renderfarm)
 		sprintf(asset->path, RENDERFARM_FS_PREFIX "%s", package->path);
 	else
 		strcpy(asset->path, package->path);
-
 
 
 	
@@ -320,7 +320,6 @@ void PackageRenderer::do_audio()
 
 void PackageRenderer::do_video()
 {
-//printf("PackageRenderer::do_video 1\n");
 // Do video data
 	if(asset->video_data)
 	{
@@ -330,7 +329,6 @@ void PackageRenderer::do_video()
 		if(video_end > package->video_end)
 			video_end = package->video_end;
 
-//printf("PackageRenderer::do_video 1\n");
 		while(video_position < video_end && !result)
 		{
 // Try to copy the compressed frame directly from the input to output files
@@ -355,14 +353,12 @@ void PackageRenderer::do_video()
 // Get a buffer for background writing.
 
 
-//printf("PackageRenderer::do_video 3\n");
 
 				if(video_write_position == 0)
 					video_output = file->get_video_buffer();
 
 
 
-//printf("PackageRenderer::do_video 4\n");
 
 
 // Construct layered output buffer
@@ -377,7 +373,6 @@ void PackageRenderer::do_video()
 					0);
 
 
-//printf("PackageRenderer::do_video 5\n");
 
  				if(mwindow && video_device->output_visible())
 				{
@@ -411,13 +406,14 @@ void PackageRenderer::do_video()
 	 			{
 //printf("PackageRenderer::do_video 7\n");
 // Set background rendering parameters
-					if(package->use_brender)
-					{
+//					if(package->use_brender)
+//					{
 // Allow us to skip sections of the output file by setting the frame number.
+// Used by background render and render farm.
 						video_output_ptr[0]->set_number(video_position);
-					}
+//printf("PackageRenderer::do_video 8 %p %lld\n", video_output_ptr[0], video_position);
+//					}
 					video_write_position++;
-//printf("PackageRenderer::do_video 8\n");
 
 					if(video_write_position >= video_write_length)
 					{
@@ -467,20 +463,15 @@ void PackageRenderer::stop_output()
 
 	if(asset->video_data)
 	{
-//printf("PackageRenderer::stop_output 1\n");
 		delete compressed_output;
-//printf("PackageRenderer::stop_output 2\n");
 		if(video_write_position)
 			file->write_video_buffer(video_write_position);
-//printf("PackageRenderer::stop_output 3\n");
 		if(package->use_brender)
 			for(int i = 0; i < video_write_position; i++)
 				set_video_map(video_position - video_write_position + i, 
 					BRender::RENDERED);
-//printf("PackageRenderer::stop_output 4\n");
 		video_write_position = 0;	
 		file->stop_video_thread();
-//printf("PackageRenderer::stop_output 5\n");
 		if(mwindow)
 		{
 			video_device->stop_playback();
@@ -783,7 +774,10 @@ int PackageRenderer::direct_copy_possible(EDL *edl,
 
 
 
-
+int PackageRenderer::get_master()
+{
+	return 0;
+}
 
 // Get result status from server
 int PackageRenderer::get_result()

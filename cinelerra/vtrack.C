@@ -315,11 +315,13 @@ void VTrack::calculate_input_transfer(Asset *asset,
 	float camera_y = asset->height / 2;
 	float z[6], x[6], y[6];        // camera and output coords
 
+//printf("VTrack::calculate_input_transfer %lld\n", position);
+
 // get camera center in asset
 	automation->camera_autos->get_center(auto_x, 
 		auto_y, 
 		auto_z, 
-		(float)position, 
+		position, 
 		direction, 
 		&before, 
 		&after);
@@ -407,7 +409,7 @@ void VTrack::calculate_output_transfer(int channel,
 	automation->projector_autos->get_center(center_x, 
 		center_y, 
 		center_z, 
-		(float)position, 
+		position, 
 		direction, 
 		&before, 
 		&after);
@@ -480,7 +482,7 @@ int VTrack::get_projection(int channel,
 	automation->projector_autos->get_center(center_x, 
 		center_y, 
 		center_z, 
-		(float)real_position, 
+		real_position, 
 		direction, 
 		&before, 
 		&after);

@@ -242,10 +242,10 @@ static inline void transfer_YUV422_to_RGBA_FLOAT(float* *output,
 
 // Even pixel
 	if(!(column & 1))
-		y = (float)input[0];
+		y = (float)input[0] / 0xff;
 	else
 // Odd pixel
-		y = (float)input[2];
+		y = (float)input[2] / 0xff;
 	u = input[1];
 	v = input[3];
 	YUV_TO_FLOAT(y, u, v, r, g, b)

@@ -272,12 +272,12 @@ void ARender::run()
 	first_buffer = 1;
 
 	start_lock->unlock();
+//printf("ARender::run 1 %d\n", Thread::calculate_realtime());
 
 	while(!done && !interrupt && !last_playback)
 	{
 		current_input_length = renderengine->fragment_len;
 
-//printf("ARender::run 1 %p\n", renderengine->edl);
 		get_boundaries(current_input_length);
 
 //printf("ARender::run 10 %lld %lld\n", current_position, current_input_length);

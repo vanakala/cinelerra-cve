@@ -14,11 +14,9 @@
 
 class PerspectiveMain;
 class PerspectiveWindow;
-class PerspectiveEngine;
 
 
 
-#define OVERSAMPLE 2
 
 class PerspectiveConfig
 {
@@ -37,12 +35,6 @@ public:
 	int mode;
 	int window_w, window_h;
 	int current_point;
-	enum
-	{
-		PERSPECTIVE,
-		SHEER,
-		STRETCH
-	};
 	int forward;
 };
 
@@ -183,74 +175,8 @@ public:
 	void set_current_y(float value);
 	VFrame *input, *output;
 	VFrame *temp;
-	PerspectiveEngine *engine;
+	AffineEngine *engine;
 };
-
-
-class PerspectiveMatrix
-{
-public:
-	PerspectiveMatrix();
-	void identity();
-	void translate(double x, double y);
-	void scale(double x, double y);
-// Result is put in dst
-	void multiply(PerspectiveMatrix *dst);
-	void copy_from(PerspectiveMatrix *src);
-	void invert(PerspectiveMatrix *dst);
-	void transform_point(float x, float y, float *newx, float *newy);
-	double determinant();
-	void dump();
-	double values[3][3];
-};
-
-class PerspectivePackage : public LoadPackage
-{
-public:
-	PerspectivePackage();
-	int y1, y2;
-};
-
-class PerspectiveUnit : public LoadClient
-{
-public:
-	PerspectiveUnit(PerspectiveEngine *server, PerspectiveMain *plugin);
-	void process_package(LoadPackage *package);
-	void calculate_matrix(
-		double in_x1,
-		double in_y1,
-		double in_x2,
-		double in_y2,
-		double out_x1,
-		double out_y1,
-		double out_x2,
-		double out_y2,
-		double out_x3,
-		double out_y3,
-		double out_x4,
-		double out_y4,
-		PerspectiveMatrix *result);
-	float PerspectiveUnit::transform_cubic(float dx,
-    	float jm1,
-    	float j,
-    	float jp1,
-    	float jp2);
-	PerspectiveEngine *server;
-	PerspectiveMain *plugin;
-};
-
-class PerspectiveEngine : public LoadServer
-{
-public:
-	PerspectiveEngine(PerspectiveMain *plugin, 
-		int total_clients, 
-		int total_packages);
-	void init_packages();
-	LoadClient* new_client();
-	LoadPackage* new_package();
-	PerspectiveMain *plugin;
-};
-
 
 
 

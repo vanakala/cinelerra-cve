@@ -65,7 +65,7 @@ int VAttachmentPoint::get_buffer_size()
 
 void VAttachmentPoint::render(VFrame *output, 
 	int buffer_number,
-	long start_position,
+	int64_t start_position,
 	double frame_rate,
 	int debug_render)
 {
@@ -108,6 +108,7 @@ void VAttachmentPoint::render(VFrame *output,
 		}
 
 // Process plugin
+//printf("VAttachmentPoint::render 1 %d\n", buffer_number);
 		plugin_servers.values[0]->process_buffer(output_temp,
 			start_position,
 			frame_rate,
@@ -115,8 +116,10 @@ void VAttachmentPoint::render(VFrame *output,
 				frame_rate / 
 				renderengine->edl->session->frame_rate),
 			renderengine->command->get_direction());
+//printf("VAttachmentPoint::render 2\n");
 
 		delete [] output_temp;
+//printf("VAttachmentPoint::render 3\n");
 	}
 	else
 // process single track

@@ -7,17 +7,13 @@ Hitting space rapidly locks up recording sometimes.
 Drawing cache not cleared after recording.
 Stop immediately followed by paste in CWindow locks up
 Lockup when playing and interrupting in certain places.
-An optimization error in GCC 3.3.2 causes RGB16 colormodels to crash.
- - Recompiling the cmodel files with just -O works.
 Drag effect before timeline is finished drawing after a load -> lockup
 Test 0 for loop video.
 Interpolate video shouldn't always use different frames if framerate is fractionally different
-VFS broken on Opteron
 diffkey debug
 Overlay doesn't handle different sized tracks
 Quicktime mp4a not decoded properly
 Quicktime mp3 needs standards check
-File format for effect is being shared with render again.
 Having shared plugin off but sharing instance on creates mono sound.
 Importing assets of the same name but different resolutions crashes because the
 formats aren't updated.
@@ -27,6 +23,13 @@ Default pan keyframe gets pasted when dragging edit from one track to another.
 Undo doesn't restore project title from previous load.
  - New file can be saved under old filename if undo is used.
  - Current title changes in save function and could not be restored in redo.
+Not retaining picture settings after recording.
+Drag bezier keyframe doesn't work on dewopp.
+Load a sound file.  Change the file on the disk.  Crash on exit.
+Not loading mp4a in 64 bit mode.
+
+
+
 
 Small bugs
 ----------------
@@ -40,11 +43,17 @@ List problems:
 
 Big Features
 ----------------
+Put back mpeg3toc.
+Special asset for live audio.
+Seconds notation for time.
+Replace index size with factor to simplify usage.
+Show curves instead of camera, projector, pan icons.
+Show curves without assets.
+Min and max adjustment for curve display with fit.
 Delete files function.
+Favorite directories
 Remove unused resources function.
-Document compressor.
-Document meter overload (headroom).  Soundcards only go to 0 DB.
-Flag indicating refresh in progress.
+Document new time average features.
 Session management
 Hourglass
 Float colormodel
@@ -56,7 +65,6 @@ SUV theme
 Asset searches.
 Asset organization in subfolders.
 Field based reverse video.
-Motion compensation and tracking.
 Zoomblur transition
 Zoom transition
 

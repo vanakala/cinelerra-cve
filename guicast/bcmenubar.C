@@ -30,7 +30,7 @@ BC_MenuBar::~BC_MenuBar()
 int BC_MenuBar::initialize()
 {
 // Initialize dimensions
-	h = get_text_height(MEDIUMFONT) + 8;
+	h = calculate_height(this);
 	bg_color = top_level->get_resources()->menu_up;
 	
 
@@ -41,6 +41,11 @@ int BC_MenuBar::initialize()
 		set_background(top_level->get_resources()->menu_bg);
 	draw_face();
 	return 0;
+}
+
+int BC_MenuBar::calculate_height(BC_WindowBase *window)
+{
+	return window->get_text_height(MEDIUMFONT) + 8;
 }
 
 void BC_MenuBar::draw_items()

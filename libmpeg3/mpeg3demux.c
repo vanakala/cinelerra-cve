@@ -85,11 +85,10 @@ static int get_adaptation_field(mpeg3_demuxer_t *demuxer)
 	long length;
 	int pcr_flag;
 
-//printf("get_adaptation_field %d\n", demuxer->adaptation_field_control);
 	demuxer->adaptation_fields++;
 /* get adaptation field length */
 	length = packet_read_char(demuxer);
-
+	
 	if(length > 0)
 	{
 /* get first byte */
@@ -101,28 +100,21 @@ static int get_adaptation_field(mpeg3_demuxer_t *demuxer)
     		unsigned int clk_ref_ext = packet_read_int16(demuxer);
 
 			if (clk_ref_base > 0x7fffffff)
-			{   
-/* correct for invalid numbers */
+			{   /* correct for invalid numbers */
 				clk_ref_base = 0;               /* ie. longer than 32 bits when multiplied by 2 */
 				clk_ref_ext = 0;                /* multiplied by 2 corresponds to shift left 1 (<<=1) */
 			}
 			else 
 			{
-/* Create space for bit */
-				clk_ref_base <<= 1; 
+				clk_ref_base <<= 1; /* Create space for bit */
 				clk_ref_base |= (clk_ref_ext >> 15);          /* Take bit */
 				clk_ref_ext &= 0x01ff;                        /* Only lower 9 bits */
 			}
 			demuxer->time = ((double)clk_ref_base + clk_ref_ext / 300) / 90000;
 	    	if(length) packet_skip(demuxer, length - 7);
-
-			if(demuxer->dump)
-			{
-				printf(" pcr_flag=%x time=%f\n", pcr_flag, demuxer->time);
-			}
 		}
 		else
-			packet_skip(demuxer, length - 1);
+		packet_skip(demuxer, length - 1);
 	}
 
 	return 0;
@@ -135,13 +127,6 @@ static int get_program_association_table(mpeg3_demuxer_t *demuxer)
 	demuxer->section_length = packet_read_int16(demuxer) & 0xfff;
 	demuxer->transport_stream_id = packet_read_int16(demuxer);
 	packet_skip(demuxer, demuxer->raw_size - demuxer->raw_offset);
-	if(demuxer->dump)
-	{
-		printf(" table_id=0x%x section_length=%d transport_stream_id=0x%x\n",
-			demuxer->table_id,
-			demuxer->section_length,
-			demuxer->transport_stream_id);
-	}
 	return 0;
 }
 
@@ -156,9 +141,7 @@ static int get_data_buffer(mpeg3_demuxer_t *demuxer)
 	return 0;
 }
 
-static int get_pes_packet_header(mpeg3_demuxer_t *demuxer, 
-	unsigned long *pts, 
-	unsigned long *dts)
+static int get_pes_packet_header(mpeg3_demuxer_t *demuxer, unsigned long *pts, unsigned long *dts)
 {
 	unsigned int pes_header_bytes = 0;
 	unsigned int pts_dts_flags;
@@ -180,9 +163,8 @@ static int get_pes_packet_header(mpeg3_demuxer_t *demuxer,
 		*pts |= (packet_read_int16(demuxer) >> 1);
 		pes_header_bytes += 5;
 	}
-	else 
-	if(pts_dts_flags == 3)
-	{
+	else if(pts_dts_flags == 3)
+	{      
 		*pts = (packet_read_char(demuxer) >> 1) & 7;  /* Only low 4 bits (7==1111) */
 		*pts <<= 15;
 		*pts |= (packet_read_int16(demuxer) >> 1);
@@ -194,18 +176,10 @@ static int get_pes_packet_header(mpeg3_demuxer_t *demuxer,
 		*dts <<= 15;
 		*dts |= (packet_read_int16(demuxer) >> 1);
 		pes_header_bytes += 10;
-  	}
+  }
 
 	demuxer->time = (double)*pts / 90000;
-
-	if(demuxer->dump)
-	{
-		printf(" pts_dts_flags=0x%02x pts=%f dts=%f\n",
-			pts_dts_flags,
-			(double)*pts / 90000,
-			(double)*dts / 90000);
-	}
-
+//printf("get_pes_packet_header %f\n", demuxer->time);
 
 /* extract other stuff here! */
 	packet_skip(demuxer, pes_header_data_length - pes_header_bytes);
@@ -231,7 +205,6 @@ static int get_pes_packet_data(mpeg3_demuxer_t *demuxer, unsigned int stream_id)
 //printf("get_pes_packet_data %x\n", CUSTOM_ID(demuxer->pid, stream_id));
 	if(stream_id == 0xbd)
 	{
-//printf("get_pes_packet_data 1\n");
 // Don't know if the next byte is the true stream id like in program stream
 		stream_id = 0x0;
 
@@ -240,11 +213,6 @@ static int get_pes_packet_data(mpeg3_demuxer_t *demuxer, unsigned int stream_id)
 		if(demuxer->astream == -1)
 		    demuxer->astream = CUSTOM_ID(demuxer->pid, stream_id);
 
-		if(demuxer->dump)
-		{
-			printf(" 0x%x bytes AC3 audio\n", demuxer->raw_size - demuxer->raw_offset);
-		}
-
     	if(CUSTOM_ID(demuxer->pid, stream_id) == demuxer->astream && 
 			demuxer->do_audio)
 		{
@@ -252,7 +220,6 @@ static int get_pes_packet_data(mpeg3_demuxer_t *demuxer, unsigned int stream_id)
 			demuxer->audio_pid = demuxer->pid;
 			return get_data_buffer(demuxer);
     	}
-
 	}
 	else
 	if((stream_id >> 4) == 12 || (stream_id >> 4) == 13)
@@ -262,11 +229,6 @@ static int get_pes_packet_data(mpeg3_demuxer_t *demuxer, unsigned int stream_id)
 			demuxer->astream_table[CUSTOM_ID(demuxer->pid, stream_id)] = AUDIO_MPEG;
 		if(demuxer->astream == -1)
 		    demuxer->astream = CUSTOM_ID(demuxer->pid, stream_id);
-
-		if(demuxer->dump)
-		{
-			printf(" 0x%x bytes MP2 audio\n", demuxer->raw_size - demuxer->raw_offset);
-		}
 
     	if(CUSTOM_ID(demuxer->pid, stream_id) == demuxer->astream && 
 			demuxer->do_audio)
@@ -288,10 +250,6 @@ static int get_pes_packet_data(mpeg3_demuxer_t *demuxer, unsigned int stream_id)
 		if(demuxer->vstream == -1)
 			demuxer->vstream = (CUSTOM_ID(demuxer->pid, stream_id));
 
-		if(demuxer->dump)
-		{
-			printf(" 0x%x bytes video data\n", demuxer->raw_size - demuxer->raw_offset);
-		}
 
 //printf("get_pes_packet_data %x %d\n", stream_id, demuxer->payload_unit_start_indicator);
 		if(CUSTOM_ID(demuxer->pid, stream_id) == demuxer->vstream && 
@@ -336,10 +294,6 @@ static int get_pes_packet(mpeg3_demuxer_t *demuxer)
 	stream_id = packet_read_char(demuxer);
 
 
-	if(demuxer->dump)
-	{
-		printf(" stream_id=0x%02x\n", stream_id);
-	}
 
 /* Skip pes packet length */
 	packet_read_int16(demuxer);
@@ -376,7 +330,7 @@ static int get_payload(mpeg3_demuxer_t *demuxer)
 //printf("get_payload 1 %x %d\n", demuxer->pid, demuxer->payload_unit_start_indicator);
 	if(demuxer->payload_unit_start_indicator)
 	{
-    	if(demuxer->pid == 0) 
+    	if(demuxer->pid==0) 
 			get_program_association_table(demuxer);
     	else 
 		if(packet_next_int24(demuxer) == MPEG3_PACKET_START_CODE_PREFIX) 
@@ -386,11 +340,7 @@ static int get_payload(mpeg3_demuxer_t *demuxer)
 	}
 	else
 	{
-		if(demuxer->dump)
-		{
-			printf(" 0x%x bytes elementary data\n", demuxer->raw_size - demuxer->raw_offset);
-		}
-
+//printf("get_payload 2\n");
     	if(demuxer->pid == demuxer->audio_pid && demuxer->do_audio)
 		{
 			get_data_buffer(demuxer);
@@ -409,7 +359,6 @@ static int get_payload(mpeg3_demuxer_t *demuxer)
 /* Read a transport packet */
 static int read_transport(mpeg3_demuxer_t *demuxer)
 {
-demuxer->dump = 0;
 	mpeg3_t *file = (mpeg3_t*)demuxer->file;
 	mpeg3_title_t *title = demuxer->titles[demuxer->current_title];
 	int result = 0;
@@ -465,15 +414,12 @@ demuxer->dump = 0;
     demuxer->transport_scrambling_control = (bits >> 6) & 0x3;
     demuxer->adaptation_field_control = (bits >> 4) & 0x3;
     demuxer->continuity_counter = bits & 0xf;
-
-//printf("read_transport 1 %d\n", demuxer->transport_scrambling_control);
+//printf("read_transport 1 %llx %08x %d\n", mpeg3io_tell(title->fs), bits, demuxer->payload_unit_start_indicator);
 
 //printf("read_transport 4 %x\n", demuxer->pid);
 	if(demuxer->transport_error_indicator)
 	{
-		fprintf(stderr, 
-			"demuxer->transport_error_indicator at %llx\n", 
-			mpeg3io_tell(title->fs));
+		fprintf(stderr, "demuxer->transport_error_indicator\n");
 		demuxer->absolute_byte = mpeg3io_tell(title->fs) + 
 			title->start_byte;
 		return 1;
@@ -515,18 +461,6 @@ demuxer->dump = 0;
 	}
 	result = 0;
 
-	if(demuxer->dump)
-	{
-		printf("0x%llx pid=0x%02x continuity=0x%02x padding=%d adaptation=%d unit_start=%d\n", 
-			demuxer->absolute_byte,
-			demuxer->pid,
-			demuxer->continuity_counter,
-			demuxer->is_padding,
-			demuxer->adaptation_field_control,
-			demuxer->payload_unit_start_indicator);
-	}
-
-
 /* Abort if padding.  Should abort after demuxer->pid == 0x1fff for speed. */
 	if(demuxer->is_padding)
 	{
@@ -558,12 +492,14 @@ demuxer->dump = 0;
 
 
 
-    if(demuxer->adaptation_field_control & 0x2)
+    if(demuxer->adaptation_field_control == 2 || 
+		demuxer->adaptation_field_control == 3)
     	result = get_adaptation_field(demuxer);
 
 // Need to enter in astream and vstream table:
 // PID ored with stream_id
-    if(demuxer->adaptation_field_control & 0x1)
+    if(demuxer->adaptation_field_control == 1 || 
+		demuxer->adaptation_field_control == 3)
     	result = get_payload(demuxer);
 
 	demuxer->absolute_byte = mpeg3io_tell(title->fs) + 
@@ -700,37 +636,27 @@ static int get_ps_pes_packet(mpeg3_demuxer_t *demuxer, unsigned int header)
 /* Get Presentation and Decoding Time Stamps */
 			if(pts_dts_flags == 2)
 			{
-				pts = get_timestamp(demuxer);
-				if(demuxer->dump)
-				{
-					printf("pts=%d\n", pts);
-				}
+				pts = (mpeg3io_read_char(title->fs) >> 1) & 7;  /* Only low 4 bits (7==1111) */
+				pts <<= 15;
+				pts |= (mpeg3io_read_int16(title->fs) >> 1);
+				pts <<= 15;
+				pts |= (mpeg3io_read_int16(title->fs) >> 1);
 				pes_header_bytes += 5;
 			}
     		else 
 			if(pts_dts_flags == 3)
 			{
-				pts = get_timestamp(demuxer);
-				dts = get_timestamp(demuxer);
-				if(demuxer->dump)
-				{
-					printf("pts=%d dts=%d\n", pts, dts);
-				}
-/*
- *         		pts = (mpeg3io_read_char(title->fs) >> 1) & 7;
- *         		pts <<= 15;
- *         		pts |= (mpeg3io_read_int16(title->fs) >> 1);
- *         		pts <<= 15;
- *         		pts |= (mpeg3io_read_int16(title->fs) >> 1);
- */
+        		pts = (mpeg3io_read_char(title->fs) >> 1) & 7;  /* Only low 4 bits (7==1111) */
+        		pts <<= 15;
+        		pts |= (mpeg3io_read_int16(title->fs) >> 1);
+        		pts <<= 15;
+        		pts |= (mpeg3io_read_int16(title->fs) >> 1);
 
-/*
- *         		dts = (mpeg3io_read_char(title->fs) >> 1) & 7;
- *         		dts <<= 15;
- *         		dts |= (mpeg3io_read_int16(title->fs) >> 1);
- *         		dts <<= 15;
- *         		dts |= (mpeg3io_read_int16(title->fs) >> 1);
- */
+        		dts = (mpeg3io_read_char(title->fs) >> 1) & 7;  /* Only low 4 bits (7==1111) */
+        		dts <<= 15;
+        		dts |= (mpeg3io_read_int16(title->fs) >> 1);
+        		dts <<= 15;
+        		dts |= (mpeg3io_read_int16(title->fs) >> 1);
         		pes_header_bytes += 10;
     		}
 
@@ -808,10 +734,6 @@ static int get_ps_pes_packet(mpeg3_demuxer_t *demuxer, unsigned int header)
 			if((stream_id & 0x0f) == demuxer->astream && demuxer->do_audio)
 			{
 				decryption_offset = mpeg3io_tell(title->fs) - demuxer->last_packet_start;
-				if(demuxer->dump)
-				{
-					printf(" MP2 audio data size=%x\n", pes_packet_length);
-				}
 				mpeg3io_read_data(demuxer->data_buffer + demuxer->data_size, 
 					pes_packet_length, 
 					title->fs);
@@ -845,10 +767,6 @@ static int get_ps_pes_packet(mpeg3_demuxer_t *demuxer, unsigned int header)
 			{
 //printf(__FUNCTION__ " stream_id=%x size=%x\n", stream_id, pes_packet_length);
 				decryption_offset = mpeg3io_tell(title->fs) - demuxer->last_packet_start;
-				if(demuxer->dump)
-				{
-					printf(" video size=%x\n", pes_packet_length);
-				}
 				mpeg3io_read_data(demuxer->data_buffer + demuxer->data_size, 
 					pes_packet_length, 
 					title->fs);
@@ -857,10 +775,6 @@ static int get_ps_pes_packet(mpeg3_demuxer_t *demuxer, unsigned int header)
     	  	}
     		else 
 			{
-				if(demuxer->dump)
-				{
-					printf(" skipping video size=%x\n", pes_packet_length);
-				}
     			mpeg3io_seek_relative(title->fs, pes_packet_length);
     		}
     	}
@@ -907,10 +821,6 @@ static int get_ps_pes_packet(mpeg3_demuxer_t *demuxer, unsigned int header)
 				if(format == AUDIO_PCM) do_pcm = 1;
 //printf("get_ps_pes_packet 5 %x\n", decryption_offset);
 
-				if(demuxer->dump)
-				{
-					printf(" AC3 audio data size=%x\n", pes_packet_length);
-				}
 
 
 				mpeg3io_read_data(demuxer->data_buffer + demuxer->data_size, 
@@ -1061,13 +971,7 @@ int mpeg3demux_read_program(mpeg3_demuxer_t *demuxer)
 	int pack_count = 0;
 
 	demuxer->data_size = 0;
-/*
- * printf("mpeg3demux_read_program 1 %d %d %llx %llx\n", 
- * mpeg3io_eof(title->fs),
- * result, 
- * title->fs->current_byte, 
- * title->fs->total_bytes);
- */
+//printf("mpeg3demux_read_program 1 %d %llx %llx\n", result, title->fs->current_byte, title->fs->total_bytes);
 
 	if(mpeg3io_eof(title->fs)) return 1;
 

@@ -11,6 +11,10 @@
 
 class EditPopupResize;
 class EditPopupMatchSize;
+class EditPopupTitleText;
+class EditPopupTitleWindow;
+class EditPopupTitleButton;
+class EditPopupTitleButtonRes;
 
 class EditPopup : public BC_PopupMenu
 {
@@ -24,7 +28,7 @@ public:
 	MWindow *mwindow;
 	MWindowGUI *gui;
 // Acquired through the update command as the edit currently being operated on
-//	Edit *edit;
+	Edit *edit;
 	Track *track;
 	EditPopupResize *resize_option;
 	EditPopupMatchSize *matchsize_option;
@@ -106,5 +110,51 @@ public:
 	MWindow *mwindow;
 	EditPopup *popup;
 };
+
+
+class EditPopupTitle : public BC_MenuItem
+{
+public:
+	EditPopupTitle (MWindow *mwindow, EditPopup *popup);
+	~EditPopupTitle();
+
+	int handle_event();
+
+	MWindow *mwindow;
+	EditPopup *popup;
+	EditPopupTitleWindow *window;
+};
+
+class EditPopupTitleText : public BC_TextBox
+{
+public:
+	EditPopupTitleText (EditPopupTitleWindow *window,
+		MWindow *mwindow, int x, int y);
+	~EditPopupTitleText();
+
+	int handle_event();
+
+	EditPopupTitleWindow *window;
+	MWindow *mwindow;
+};
+
+
+class EditPopupTitleWindow : public BC_Window
+{
+public:
+	EditPopupTitleWindow (MWindow *mwindow, EditPopup *popup);
+	~EditPopupTitleWindow ();
+
+	int create_objects();
+	int close_event();
+
+	EditPopupTitleText *title_text;
+	Edit *edt;
+	MWindow *mwindow;
+	EditPopup *popup;
+	char new_text[BCTEXTLEN];
+};
+
+
 
 #endif

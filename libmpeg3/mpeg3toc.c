@@ -257,7 +257,6 @@ int main(int argc, char *argv[])
 				{
 					mpeg3_demuxer_t *demuxer = input->atrack[j]->demuxer;
 					mpeg3demux_seek_byte(demuxer, 0);
-//demuxer->dump = 1;
 				}
 
 				if(!mpeg3_end_of_audio(input, j))
@@ -267,6 +266,7 @@ int main(int argc, char *argv[])
 					int64_t result;
 
 					if(position < MPEG3_IO_SIZE) position = MPEG3_IO_SIZE;
+//					result = (title_number << 56) | (position - MPEG3_IO_SIZE);
 					result = position;
 
 					have_audio = 1;
@@ -292,7 +292,7 @@ int main(int argc, char *argv[])
 				if(j == atracks - 1)
 				{
 					total_samples += sample_count;
-					fprintf(stderr, "Audio: title=%lld total_samples=%d ", title_number, total_samples);
+					printf("Audio: title=%lld total_samples=%d ", title_number, total_samples);
 				}
 			}
 
@@ -338,8 +338,7 @@ int main(int argc, char *argv[])
 				{
 					if(!mpeg3_end_of_video(input, j))
 					{
-// Transport streams always return one packet after the start of the frame.
-						int64_t position = mpeg3demux_tell_byte(demuxer) - 2048;
+						int64_t position = mpeg3demux_tell_byte(demuxer);
 						int64_t result;
 						uint32_t code = 0;
 						int got_top = 0;
@@ -348,6 +347,7 @@ int main(int argc, char *argv[])
 						int fields = 0;
 
 						if(position < MPEG3_IO_SIZE) position = MPEG3_IO_SIZE;
+//						result = (title_number << 56) | (position - MPEG3_IO_SIZE);
 						result = position;
 						have_video = 1;
 
@@ -427,7 +427,7 @@ int main(int argc, char *argv[])
 						if(j == vtracks - 1 && l == frame_count - 1)
 						{
 							total_frames += frame_count;
-							fprintf(stderr, "Video: title=%lld total_frames=%d ", title_number, total_frames);
+							printf("Video: title=%lld total_frames=%d ", title_number, total_frames);
 						}
 					}
 				}
@@ -435,8 +435,8 @@ int main(int argc, char *argv[])
 
 			if(!have_audio && !have_video) done = 1;
 
-			fprintf(stderr, "\r");
-			fflush(stderr);
+			printf("\r");
+			fflush(stdout);
 /*
  * if(total_frames > 10000) 
  * {

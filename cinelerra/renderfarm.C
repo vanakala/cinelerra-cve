@@ -360,12 +360,12 @@ void RenderFarmServerThread::run()
 		}
 
 		int request_id = header[0];
-//printf("RenderFarmServerThread::run 1 %d\n", request_id);
 		int64_t request_size = (((u_int32_t)header[1]) << 24) |
 							(((u_int32_t)header[2]) << 16) |
 							(((u_int32_t)header[3]) << 8)  |
 							(u_int32_t)header[4];
 
+//printf("RenderFarmServerThread::run 1 %d %lld\n", request_id, request_size);
 		reallocate_buffer(request_size);
 
 // Get accompanying buffer
@@ -375,6 +375,7 @@ void RenderFarmServerThread::run()
 			continue;
 		}
 
+//printf("RenderFarmServerThread::run 1 %d\n", request_id);
 		switch(request_id)
 		{
 			case RENDERFARM_PREFERENCES:
@@ -415,15 +416,14 @@ void RenderFarmServerThread::run()
 
 
 			default:
-				if(!fs_server->handle_request(request_id, request_size, (char*)buffer))
+				if(!fs_server->handle_request(request_id, request_size, (unsigned char*)buffer))
 				{
 					printf(_("RenderFarmServerThread::run: unknown request %02x\n"), request_id);
 				}
 				break;
 		}
-//printf("RenderFarmServerThread::run 4\n");
-	}
 //printf("RenderFarmServerThread::run 5\n");
+	}
 	
 	if(buffer) delete [] buffer;
 	delete fs_server;

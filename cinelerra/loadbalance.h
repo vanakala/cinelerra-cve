@@ -24,6 +24,8 @@ public:
 	virtual ~LoadPackage();
 	
 	Condition *completion_lock;
+// Range to search in the total scan area
+	int pixel1, pixel2;
 };
 
 
@@ -36,6 +38,7 @@ public:
 	void run();
 	virtual void process_package(LoadPackage *package) {};
 	int get_package_number();
+	LoadServer* get_server();
 
 	int done;
 	int package_number;

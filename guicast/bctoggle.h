@@ -54,14 +54,19 @@ public:
 	int has_caption();
 
 	BC_Pixmap *images[5];
+	BC_Pixmap *bg_image;
 	VFrame **data;
 	char caption[BCTEXTLEN];
 	int status;
 	int value;
 	int toggle_x;
 	int toggle_y;
+// Start of text background
 	int text_x;
+// Start of text
+	int text_text_x;
 	int text_y;
+// Width of text background
 	int text_w;
 	int text_h;
 	int text_line;

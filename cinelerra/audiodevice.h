@@ -194,7 +194,6 @@ private:
 // Extra configuration if shared with video
 	VideoInConfig *vconfig;
 
-private:
 	int thread_buffer_num, thread_result;
 	int64_t total_samples_read;
 };

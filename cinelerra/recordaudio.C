@@ -76,9 +76,7 @@ int RecordAudio::stop_recording()
 // Device won't exist if interrupting a cron job
 	if(record->adevice)
 	{
-//printf("RecordAudio::stop_recording 1\n");
 		record->adevice->interrupt_crash();
-//printf("RecordAudio::stop_recording 2\n");
 		//Thread::join();
 	}
 	return 0;
@@ -93,6 +91,7 @@ void RecordAudio::run()
 	write_result = 0;
 	grab_result = 0;
 
+//printf("RecordAudio::run 1 %d\n", Thread::calculate_realtime());
 	over = new int[record_channels];
 	max = new double[record_channels];
 

@@ -688,13 +688,16 @@ void TimeBar::stop_playback()
 
 int TimeBar::button_press_event()
 {
-//printf("TimeBar::button_press_event 1\n");
 	if(is_event_win() && cursor_inside())
 	{
 // Change time format
 		if(ctrl_down())
 		{
-			mwindow->next_time_format();
+			if(get_buttonpress() == 1)
+				mwindow->next_time_format();
+			else
+			if(get_buttonpress() == 2)
+				mwindow->prev_time_format();
 			return 1;
 		}
 		else
@@ -719,14 +722,11 @@ int TimeBar::button_press_event()
 				return 1;
 			}
 			else
-	// Reposition highlight cursor
+// Reposition highlight cursor
 			if(is_event_win() && cursor_inside())
 			{
-	//printf("TimeBar::button_press_event 4\n");
 				update_cursor();
-	//printf("TimeBar::button_press_event 5\n");
 				mwindow->gui->canvas->activate();
-	//printf("TimeBar::button_press_event 6\n");
 				return 1;
 			}
 		}

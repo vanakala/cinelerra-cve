@@ -21,10 +21,10 @@ public:
 	void start();
 	void run();
 
-// After the window is closed
+// After the window is closed and deleted, this is called.
 	virtual void handle_close_event(int result);
 
-// Create the window and initialize it.
+// User creates the window and initializes it here.
 	virtual BC_Window* new_gui();
 
 private:

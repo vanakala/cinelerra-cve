@@ -31,7 +31,7 @@ static int source_cmodel(quicktime_t *file, int track)
 		return BC_ARGB8888;
 }
 
-static int quicktime_decode_raw(quicktime_t *file, unsigned char **row_pointers, int track)
+static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 {
 	int result = 0;
 	quicktime_trak_t *trak = file->vtracks[track].track;
@@ -111,7 +111,7 @@ static int quicktime_decode_raw(quicktime_t *file, unsigned char **row_pointers,
 	return result;
 }
 
-static int quicktime_encode_raw(quicktime_t *file, 
+static int encode(quicktime_t *file, 
 	unsigned char **row_pointers, 
 	int track)
 {
@@ -242,8 +242,8 @@ void quicktime_init_codec_raw(quicktime_video_map_t *vtrack)
 
 	codec_base->priv = calloc(1, sizeof(quicktime_raw_codec_t));
 	codec_base->delete_vcodec = quicktime_delete_codec_raw;
-	codec_base->decode_video = quicktime_decode_raw;
-	codec_base->encode_video = quicktime_encode_raw;
+	codec_base->decode_video = decode;
+	codec_base->encode_video = encode;
 	codec_base->decode_audio = 0;
 	codec_base->encode_audio = 0;
 	codec_base->reads_colormodel = reads_colormodel;

@@ -71,6 +71,8 @@ public:
 		File *file,
 		int &result);
 
+// Invoke behavior for master node
+	virtual int get_master();
 // Get result status from server
 	virtual int get_result();
 	virtual void set_result(int value);

@@ -90,18 +90,19 @@ float BC_Pot::angle_to_percentage(float angle)
 
 int BC_Pot::angle_to_coords(int &x1, int &y1, int &x2, int &y2, float angle)
 {
-	x1 = get_resources()->pot_x1;
-	y1 = get_resources()->pot_y1;
+	BC_Resources *resources = get_resources();
+	x1 = resources->pot_x1;
+	y1 = resources->pot_y1;
 	if(status == POT_DN)
 	{
-		x1 += 2;
-		y1 += 2;
+		x1 += resources->pot_offset;
+		y1 += resources->pot_offset;
 	}
 
 	while(angle < 0) angle += 360;
 
-	x2 = (int)(cos(angle / 360 * (2 * M_PI)) * get_resources()->pot_r + x1);
-	y2 = (int)(-sin(angle / 360 * (2 * M_PI)) * get_resources()->pot_r + y1);
+	x2 = (int)(cos(angle / 360 * (2 * M_PI)) * resources->pot_r + x1);
+	y2 = (int)(-sin(angle / 360 * (2 * M_PI)) * resources->pot_r + y1);
 	return 0;
 }
 
@@ -443,6 +444,19 @@ void BC_FPot::update(float value)
 	}
 }
 
+void BC_FPot::update(float value, float minvalue, float maxvalue)
+{
+	if(value != this->value ||
+		minvalue != this->minvalue ||
+		maxvalue != this->maxvalue)
+	{
+		this->value = value;
+		this->minvalue = minvalue;
+		this->maxvalue = maxvalue;
+		draw();
+	}
+}
+
 
 
 
@@ -516,6 +530,18 @@ void BC_IPot::update(int64_t value)
 	}
 }
 
+void BC_IPot::update(int64_t value, int64_t minvalue, int64_t maxvalue)
+{
+	if(this->value != value ||
+		this->minvalue != minvalue ||
+		this->maxvalue != maxvalue)
+	{
+		this->value = value;
+		this->minvalue = minvalue;
+		this->maxvalue = maxvalue;
+		draw();
+	}
+}
 
 
 

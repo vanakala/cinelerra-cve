@@ -6,7 +6,6 @@
 #include "guicast.h"
 #include "mutex.h"
 #include "pluginvclient.h"
-#include "rotateframe.inc"
 #include "vframe.inc"
 
 
@@ -143,7 +142,7 @@ public:
 
 
 	RotateConfig config;
-	RotateFrame *engine;
+	AffineEngine *engine;
 	RotateThread *thread;
 	Defaults *defaults;
 	int need_reconfigure;

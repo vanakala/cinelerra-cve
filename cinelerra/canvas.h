@@ -40,6 +40,18 @@ public:
 
 	int create_objects(EDL *edl);
 	void set_cursor(int cursor);
+// Start video playback
+	void start_video();
+	void stop_video();
+
+// Start single frame processing.  Causes the status indicator to update
+	void start_single();
+	void stop_single();
+
+// Processing or video playback changed.
+	virtual void status_event() {};
+
+
 	virtual void reset_camera() {};
 	virtual void reset_projector() {};
 	virtual void zoom_resize_window(float percentage) {};
@@ -133,6 +145,9 @@ public:
 	int h_needed;
 	int w_visible;
 	int h_visible;
+// For cases where video is not enabled on the canvas but processing is 
+// occurring for a single frame, this causes the status to update.
+	int is_processing;
 
 private:
 	void get_scrollbars(EDL *edl, 

@@ -20,6 +20,9 @@ typedef struct
 	mjpeg_t *mjpeg;
 	int jpeg_type;
 	unsigned char *temp_video;
+	int initialized;
+	int quality;
+	int use_float;
 } quicktime_jpeg_codec_t;
 
 static int delete_codec(quicktime_video_map_t *vtrack)
@@ -27,7 +30,7 @@ static int delete_codec(quicktime_video_map_t *vtrack)
 	quicktime_jpeg_codec_t *codec = ((quicktime_codec_t*)vtrack->codec)->priv;
 	int i;
 
-	mjpeg_delete(codec->mjpeg);
+	if(codec->mjpeg) mjpeg_delete(codec->mjpeg);
 	if(codec->buffer)
 		free(codec->buffer);
 	if(codec->temp_video)
@@ -41,6 +44,7 @@ void quicktime_set_jpeg(quicktime_t *file, int quality, int use_float)
 	int i;
 	char *compressor;
 
+printf("1\n");
 	for(i = 0; i < file->total_vtracks; i++)
 	{
 		if(quicktime_match_32(quicktime_video_compressor(file, i), QUICKTIME_JPEG) ||
@@ -48,9 +52,33 @@ void quicktime_set_jpeg(quicktime_t *file, int quality, int use_float)
 			quicktime_match_32(quicktime_video_compressor(file, i), QUICKTIME_RTJ0))
 		{
 			quicktime_jpeg_codec_t *codec = ((quicktime_codec_t*)file->vtracks[i].codec)->priv;
-			mjpeg_set_quality(codec->mjpeg, quality);
-			mjpeg_set_float(codec->mjpeg, use_float);
+			codec->quality = quality;
+			codec->use_float = use_float;
 		}
+	}
+printf("10\n");
+}
+
+
+static void initialize(quicktime_video_map_t *vtrack)
+{
+	quicktime_jpeg_codec_t *codec = ((quicktime_codec_t*)vtrack->codec)->priv;
+	if(!codec->initialized)
+	{
+/* Init private items */
+		codec->mjpeg = mjpeg_new(vtrack->track->tkhd.track_width, 
+			vtrack->track->tkhd.track_height, 
+			1 + (codec->jpeg_type == JPEG_MJPA || codec->jpeg_type == JPEG_MJPB));
+
+/* This information must be stored in the initialization routine because of */
+/* direct copy rendering.  Quicktime for Windows must have this information. */
+		if(codec->jpeg_type == JPEG_MJPA && 
+			!vtrack->track->mdia.minf.stbl.stsd.table[0].fields)
+		{
+			vtrack->track->mdia.minf.stbl.stsd.table[0].fields = 2;
+			vtrack->track->mdia.minf.stbl.stsd.table[0].field_dominance = 1;
+		}
+		codec->initialized = 1;
 	}
 }
 
@@ -59,6 +87,7 @@ static int decode(quicktime_t *file,
 	int track)
 {
 	quicktime_video_map_t *vtrack = &(file->vtracks[track]);
+	initialize(vtrack);
 	quicktime_jpeg_codec_t *codec = ((quicktime_codec_t*)vtrack->codec)->priv;
 	quicktime_trak_t *trak = vtrack->track;
 	mjpeg_t *mjpeg = codec->mjpeg;
@@ -217,8 +246,11 @@ static int decode(quicktime_t *file,
 static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 {
 	quicktime_video_map_t *vtrack = &(file->vtracks[track]);
+	initialize(vtrack);
 	quicktime_jpeg_codec_t *codec = ((quicktime_codec_t*)vtrack->codec)->priv;
 	quicktime_trak_t *trak = vtrack->track;
+	mjpeg_set_quality(codec->mjpeg, codec->quality);
+	mjpeg_set_float(codec->mjpeg, codec->use_float);
 	int64_t offset = quicktime_position(file);
 	int result = 0;
 	long field2_offset;
@@ -327,12 +359,12 @@ static int set_parameter(quicktime_t *file,
 	
 	if(!strcasecmp(key, "jpeg_quality"))
 	{
-		mjpeg_set_quality(codec->mjpeg, *(int*)value);
+		codec->quality = *(int*)value;
 	}
 	else
 	if(!strcasecmp(key, "jpeg_usefloat"))
 	{
-		mjpeg_set_float(codec->mjpeg, *(int*)value);
+		codec->use_float = *(int*)value;
 	}
 	return 0;
 }
@@ -341,15 +373,17 @@ static void init_codec_common(quicktime_video_map_t *vtrack, char *compressor)
 {
 	quicktime_codec_t *codec_base = (quicktime_codec_t*)vtrack->codec;
 	quicktime_jpeg_codec_t *codec;
-	int i, jpeg_type;
+	int i;
 
+	codec = codec_base->priv = calloc(1, sizeof(quicktime_jpeg_codec_t));
 	if(quicktime_match_32(compressor, QUICKTIME_JPEG))
-		jpeg_type = JPEG_PROGRESSIVE;
+		codec->jpeg_type = JPEG_PROGRESSIVE;
 	if(quicktime_match_32(compressor, QUICKTIME_MJPA))
-		jpeg_type = JPEG_MJPA;
+		codec->jpeg_type = JPEG_MJPA;
+	codec->quality = 80;
+	codec->use_float = 0;
 
 /* Init public items */
-	codec_base->priv = calloc(1, sizeof(quicktime_jpeg_codec_t));
 	codec_base->delete_vcodec = delete_codec;
 	codec_base->decode_video = decode;
 	codec_base->encode_video = encode;
@@ -359,24 +393,9 @@ static void init_codec_common(quicktime_video_map_t *vtrack, char *compressor)
 	codec_base->writes_colormodel = writes_colormodel;
 	codec_base->set_parameter = set_parameter;
 	codec_base->fourcc = compressor;
-	codec_base->title = jpeg_type == JPEG_PROGRESSIVE ? "JPEG Photo" : "Motion JPEG A";
+	codec_base->title = (codec->jpeg_type == JPEG_PROGRESSIVE ? "JPEG Photo" : "Motion JPEG A");
 	codec_base->desc = codec_base->title;
 
-/* Init private items */
-	codec = codec_base->priv;
-	codec->mjpeg = mjpeg_new(vtrack->track->tkhd.track_width, 
-		vtrack->track->tkhd.track_height, 
-		1 + (jpeg_type == JPEG_MJPA || jpeg_type == JPEG_MJPB));
-	codec->jpeg_type = jpeg_type;
-
-/* This information must be stored in the initialization routine because of */
-/* direct copy rendering.  Quicktime for Windows must have this information. */
-	if(jpeg_type == JPEG_MJPA && 
-		!vtrack->track->mdia.minf.stbl.stsd.table[0].fields)
-	{
-		vtrack->track->mdia.minf.stbl.stsd.table[0].fields = 2;
-		vtrack->track->mdia.minf.stbl.stsd.table[0].field_dominance = 1;
-	}
 }
 
 void quicktime_init_codec_jpeg(quicktime_video_map_t *vtrack)

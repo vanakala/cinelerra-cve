@@ -40,15 +40,15 @@ with the BUZ driver with PCM audio.
 #define FSEEK fseeko64
 
 
-#define WIDTH 640
+#define WIDTH 720
 #define HEIGHT 480
 #define FRAMERATE (double)30000/1001
 #define CHANNELS 2
 #define SAMPLERATE 48000
 #define BITS 16
 #define TEMP_FILE "/tmp/temp.mov"
-//#define VCODEC QUICKTIME_MJPA
-#define VCODEC QUICKTIME_JPEG
+#define VCODEC QUICKTIME_MJPA
+//#define VCODEC QUICKTIME_JPEG
 
 
 

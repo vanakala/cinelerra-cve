@@ -47,6 +47,11 @@ int LoadClient::get_package_number()
 	return package_number;
 }
 
+LoadServer* LoadClient::get_server()
+{
+	return server;
+}
+
 
 void LoadClient::run()
 {
@@ -109,7 +114,7 @@ LoadServer::~LoadServer()
 
 void LoadServer::delete_clients()
 {
-	if(clients) 
+	if(clients)
 	{
 		for(int i = 0; i < total_clients; i++)
 			delete clients[i];
@@ -125,7 +130,6 @@ void LoadServer::delete_packages()
 		for(int i = 0; i < total_packages; i++)
 			delete packages[i];
 		delete [] packages;
-		packages = 0;
 	}
 	packages = 0;
 }
@@ -134,6 +138,7 @@ void LoadServer::set_package_count(int total_packages)
 {
 	delete_packages();
 	this->total_packages = total_packages;
+	create_packages();
 }
 
 

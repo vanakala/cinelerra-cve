@@ -18,7 +18,11 @@ public:
 	RotateFrame(int cpus, int width, int height);
 	~RotateFrame();
 
-	void rotate(VFrame *output, VFrame *input, double angle, int interpolate);
+// angle is 0 - 360
+	void rotate(VFrame *output, 
+		VFrame *input, 
+		double angle, 
+		int interpolate);
 	int rotate_rightangle(VFrame *input, 
 		VFrame *output, 
 		int angle);

@@ -145,6 +145,8 @@ void CommonRender::start_command()
 {
 	if(renderengine->command->realtime)
 	{
+		Thread::set_realtime(renderengine->edl->session->real_time_playback &&
+			data_type == TRACK_AUDIO);
 		Thread::start();
 		start_lock->lock("CommonRender::start_command");
 	}

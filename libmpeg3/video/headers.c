@@ -248,32 +248,26 @@ int mpeg3video_picture_coding_extension(mpeg3video_t *video)
 
 	video->current_repeat = 0;
 
-/*
- * printf("%d %d %d %d\n", 
- * video->prog_seq ? 1 : 0, 
- * video->prog_frame ? 1 : 0, 
- * video->topfirst ? 1 : 0, 
- * video->repeatfirst ? 1 : 0);
- */
-
-
-
-	if(video->repeatfirst)
+	if(video->prog_seq)
 	{
-		if(video->prog_seq)
+		if(video->repeatfirst)
 		{
 			if(video->topfirst)
 				video->repeat_count += 200;
 			else
 				video->repeat_count += 100;
 		}
-		else
-		if(video->prog_frame)
+	}
+	else
+	if(video->prog_frame)
+	{
+		if(video->repeatfirst)
 		{
 			video->repeat_count += 50;
 		}
 	}
 
+//printf("mpeg3video_picture_coding_extension %d\n", video->repeat_count);
 	composite_display_flag = mpeg3bits_getbit_noptr(video->vstream);
 
 	if(composite_display_flag)
@@ -454,7 +448,7 @@ int mpeg3video_get_header(mpeg3video_t *video, int dont_repeat)
 // Case of no picture coding extension
 	if(video->repeat_count < 0) video->repeat_count = 0;
 /*
- * printf("mpeg3video_get_header 2 %llx %llx\n", 
+ * printf("mpeg3video_get_header 2 %lld %lld\n", 
  * video->vstream->demuxer->titles[0]->fs->current_byte, 
  * video->vstream->demuxer->titles[0]->fs->total_bytes);
  */

@@ -1,7 +1,7 @@
 Theme images stored as elf binaries instead of concatenated png files.
 Project filename restored from backups.
 Proper frame being read out of cache for frame advance.
-Automatically  repositions when loading new file to top left of timeline.
+Automatically repositions when loading new file to top left of timeline.
 Presets in Set Format for quick reconfiguration.
 Transition lengths adjusted for frame rate changes.
 Keyframes for effects are hidden if edits are collapsed.
@@ -11,6 +11,7 @@ Setting reaction time negative provides readahead now.  Also a
 smoothing only option renders the just loudness for academic uses.
 
 Realtime time stretch and reframe for video.
+Time average now supports accumulation and doesn't require reading ahead.
 
 ALSA buffer underruns handled better for 2.6.7.
 ALSA synchronization and interrupts handled better.
@@ -25,8 +26,8 @@ repeat events.
 Faster meter responsiveness.
 
 Migrated to DV1394 version 2.6.7 for DV capture.
-Migrated Video 4 Linux JPEG to Video 4 Linux 2 JPEG version 2.6.7.
-Partially supported uncompressed Video 4 Linux 2 but need new frequency table.
+Migrated the Video 4 Linux 2 JPEG driver to Video 4 Linux 2 JPEG version 2.6.7.
+Partially supported uncompressed Video 4 Linux 2 version 2.6.7 but need new frequency table.
 Linux 2.4 is depreciated.
 
 RGB floating point color space.
@@ -41,6 +42,7 @@ CD ripper accepts ending tracks higher than the total tracks.  Put in
 100 for the ending track to get the entire disk.
 
 Race conditions in certain dialog box openings removed.
+
 
 Quicktime: faster writing since write buffer is disabled while writing
 data.

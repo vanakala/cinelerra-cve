@@ -52,25 +52,29 @@ public:
 		int64_t oldposition,
 		int edit_edits,
 		int edit_labels,
-		int edit_plugins);
+		int edit_plugins,
+		Edits *trim_edits);
 	int shift_start_out(int edit_mode, 
 		int64_t newposition, 
 		int64_t oldposition,
 		int edit_edits,
 		int edit_labels,
-		int edit_plugins);
+		int edit_plugins,
+		Edits *trim_edits);
 	int shift_end_in(int edit_mode, 
 		int64_t newposition, 
 		int64_t oldposition,
 		int edit_edits,
 		int edit_labels,
-		int edit_plugins);
+		int edit_plugins,
+		Edits *trim_edits);
 	int shift_end_out(int edit_mode, 
 		int64_t newposition, 
 		int64_t oldposition,
 		int edit_edits,
 		int edit_labels,
-		int edit_plugins);
+		int edit_plugins,
+		Edits *trim_edits);
 
 	void insert_transition(char  *title);
 	void detach_transition();
@@ -91,6 +95,9 @@ public:
 	int channel;
 // ID for resource pixmaps
 	int id;
+// User defined title for timeline
+	char user_title[BCTEXTLEN];
+
 
 // Transition if one is present at the beginning of this edit
 // This stores the length of the transition

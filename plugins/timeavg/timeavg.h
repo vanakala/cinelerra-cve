@@ -16,8 +16,15 @@ public:
 	int equivalent(TimeAvgConfig *src);
 
 	int frames;
-	int accumulate;
+	int mode;
+	enum
+	{
+		AVERAGE,
+		ACCUMULATE,
+		OR
+	};
 	int paranoid;
+	int nosubtract;
 };
 
 
@@ -61,6 +68,8 @@ public:
 	int history_size;
 // Starting frame of history in requested framerate
 	int64_t history_start;
+// When subtraction is disabled, this detects no change for paranoid mode.
+	int64_t prev_frame;
 
 	Defaults *defaults;
 };

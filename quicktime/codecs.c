@@ -400,3 +400,4 @@ int quicktime_codecs_flush(quicktime_t *file)
 	}
 	return result;
 }
+

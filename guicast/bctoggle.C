@@ -1,8 +1,10 @@
 #include "bcpixmap.h"
 #include "bcresources.h"
 #include "bctoggle.h"
+#include "clip.h"
 #include "colors.h"
 #include "fonts.h"
+#include "vframe.h"
 
 #include <string.h>
 
@@ -18,6 +20,7 @@ BC_Toggle::BC_Toggle(int x, int y,
 	this->data = data;
 	for(int i = 0; i < 5; i++)
 		images[i] = 0;
+	bg_image = 0;
 	status = value ? BC_Toggle::TOGGLE_CHECKED : BC_Toggle::TOGGLE_UP;
 	this->value = value;
 	strcpy(this->caption, caption);
@@ -37,6 +40,7 @@ BC_Toggle::BC_Toggle(int x, int y,
 BC_Toggle::~BC_Toggle()
 {
 	for(int i = 0; i < 5; i++) if(images[i]) delete images[i];
+	delete bg_image;
 }
 
 
@@ -54,8 +58,16 @@ int BC_Toggle::initialize()
 // Expand subwindow for text
 	if(has_caption())
 	{
+		BC_Resources *resources = get_resources();
 		text_w = get_text_width(MEDIUMFONT, caption);
 		text_h = get_text_height(MEDIUMFONT);
+
+		if(resources->toggle_highlight_bg)
+		{
+			text_w += resources->toggle_text_margin * 2;
+			text_h = MAX(text_h, resources->toggle_highlight_bg->get_h());
+		}
+
 		if(text_h > h)
 		{
 			toggle_y = (text_h - h) >> 1;
@@ -85,10 +97,19 @@ int BC_Toggle::initialize()
 
 int BC_Toggle::set_images(VFrame **data)
 {
+	delete bg_image;
+	bg_image = 0;
 	for(int i = 0; i < 5; i++)
 	{
 		if(images[i]) delete images[i];
 		images[i] = new BC_Pixmap(top_level, data[i], PIXMAP_ALPHA);
+	}
+	BC_Resources *resources = get_resources();
+	if(resources->toggle_highlight_bg)
+	{
+		bg_image = new BC_Pixmap(top_level, 
+			resources->toggle_highlight_bg, 
+			PIXMAP_ALPHA);
 	}
 	return 0;
 }
@@ -106,14 +127,36 @@ void BC_Toggle::set_select_drag(int value)
 
 int BC_Toggle::draw_face()
 {
+	BC_Resources *resources = get_resources();
 	draw_top_background(parent_window, 0, 0, get_w(), get_h());
 	if(has_caption())
 	{
 		if(enabled &&
-			(status == BC_Toggle::TOGGLE_UPHI || status == BC_Toggle::TOGGLE_DOWN || status == BC_Toggle::TOGGLE_CHECKEDHI))
+			(status == BC_Toggle::TOGGLE_UPHI || 
+				status == BC_Toggle::TOGGLE_DOWN || 
+				status == BC_Toggle::TOGGLE_CHECKEDHI))
 		{
-			set_color(LTGREY);
-			draw_box(text_x, text_line - get_text_ascent(MEDIUMFONT), get_w() - text_x, get_text_height(MEDIUMFONT));
+// Draw highlight image
+			if(bg_image)
+			{
+				int x = text_x;
+				int y = text_line - get_text_ascent(MEDIUMFONT) / 2 - 
+						bg_image->get_h() / 2;
+				int w = text_w;
+				draw_3segmenth(x, 
+					y, 
+					w,
+					bg_image);
+			}
+			else
+// Draw a plain box
+			{
+				set_color(LTGREY);
+				draw_box(text_x, 
+					text_line - get_text_ascent(MEDIUMFONT), 
+					get_w() - text_x, 
+					get_text_height(MEDIUMFONT));
+			}
 		}
 
 		set_opaque();
@@ -122,12 +165,14 @@ int BC_Toggle::draw_face()
 		else
 			set_color(MEGREY);
 		set_font(font);
-		draw_text(text_x, text_line, caption);
+		draw_text(text_x + resources->toggle_text_margin, 
+			text_line, 
+			caption);
 
-
+// Draw underline
 		if(underline >= 0)
 		{
-			int x = text_x;
+			int x = text_x + resources->toggle_text_margin;
 			int y = text_line + 1;
 			int x1 = get_text_width(current_font, caption, underline) + x;
 			int x2 = get_text_width(current_font, caption, underline + 1) + x;

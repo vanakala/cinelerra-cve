@@ -1,4 +1,5 @@
 #include "audiodevice.h"
+#include "clip.h"
 #include "condition.h"
 #include "mutex.h"
 #include "sema.h"
@@ -95,6 +96,7 @@ int AudioDevice::arm_buffer(int buffer_num,
 					for(output_offset = channel, input_offset = 0; input_offset < samples; output_offset += output_advance, input_offset++)
 					{
 						sample = buffer_in_channel[input_offset];
+						CLAMP(sample, -1, 1);
 						sample *= 0x7fff;
 						int_sample = (int)sample;
 						dither_value = rand() % 255;
@@ -108,6 +110,7 @@ int AudioDevice::arm_buffer(int buffer_num,
 					for(output_offset = channel, input_offset = 0; input_offset < samples; output_offset += output_advance, input_offset++)
 					{
 						sample = buffer_in_channel[input_offset];
+						CLAMP(sample, -1, 1);
 						sample *= 0x7f;
 						int_sample = (int)sample;
 						buffer_num_buffer[output_offset] = int_sample;
@@ -124,6 +127,7 @@ int AudioDevice::arm_buffer(int buffer_num,
 						output_offset += output_advance, input_offset++)
 					{
 						sample = buffer_in_channel[input_offset];
+						CLAMP(sample, -1, 1);
 						sample *= 0x7fffff;
 						int_sample = (int)sample;
 						dither_value = rand() % 255;
@@ -139,6 +143,7 @@ int AudioDevice::arm_buffer(int buffer_num,
 						output_offset += output_advance, input_offset++)
 					{
 						sample = buffer_in_channel[input_offset];
+						CLAMP(sample, -1, 1);
 						sample *= 0x7fff;
 						int_sample = (int)sample;
 						buffer_num_buffer[output_offset++] = (int_sample & 0xff);
@@ -154,6 +159,7 @@ int AudioDevice::arm_buffer(int buffer_num,
 					output_offset += output_advance, input_offset++)
 				{
 					sample = buffer_in_channel[input_offset];
+					CLAMP(sample, -1, 1);
 					sample *= 0x7fffff;
 					int_sample = (int)sample;
 					buffer_num_buffer[output_offset++] = (int_sample & 0xff);
@@ -169,6 +175,7 @@ int AudioDevice::arm_buffer(int buffer_num,
 					output_offset += output_advance, input_offset++)
 				{
 					sample = buffer_in_channel[input_offset];
+					CLAMP(sample, -1, 1);
 					sample *= 0x7fffffff;
 					int_sample = (int)sample;
 					buffer_num_buffer[output_offset++] = (int_sample & 0xff);
@@ -325,6 +332,8 @@ void AudioDevice::run()
 	startup_lock->unlock();
 	playback_timer.update();
 
+
+//printf("AudioDevice::run 1 %d\n", Thread::calculate_realtime());
 	while(is_playing_back && !interrupt && !last_buffer[thread_buffer_num])
 	{
 // wait for buffer to become available

@@ -342,11 +342,12 @@ int FileSndFile::write_samples(double **buffer, int64_t len)
 			double sample = buffer[i][j];
 // Libsndfile does not limit values
 //if(sample > 1.0 || sample < -1.0) printf("FileSndFile::write_samples %f\n", sample);
-			CLAMP(sample, -1.0, (32767.0 / 32768.0));
+//printf("FileSndFile::write_samples %d %d\n", asset->bits, BITSFLOAT);
+			if(asset->bits != BITSFLOAT) CLAMP(sample, -1.0, (32767.0 / 32768.0));
 			temp_double[j * asset->channels + i] = sample;
 		}
 	}
-	
+
 	result = !sf_writef_double(fd, temp_double, len);
 
 	return result;

@@ -1,6 +1,7 @@
 #include "bcmenubar.h"
 #include "bcmenuitem.h"
 #include "bcmenupopup.h"
+#include "bcpixmap.h"
 #include "bcpopup.h"
 #include "bcresources.h"
 #include "bcwindowbase.h"
@@ -19,6 +20,10 @@
 
 BC_MenuPopup::BC_MenuPopup()
 {
+	window_bg = 0;
+	item_bg[0] = 0;
+	item_bg[1] = 0;
+	item_bg[2] = 0;
 }
 
 BC_MenuPopup::~BC_MenuPopup()
@@ -28,6 +33,10 @@ BC_MenuPopup::~BC_MenuPopup()
 // Each menuitem recursively removes itself from the arraylist
 		delete menu_items.values[0];
 	}
+	delete window_bg;
+	delete item_bg[0];
+	delete item_bg[1];
+	delete item_bg[2];
 }
 
 int BC_MenuPopup::initialize(BC_WindowBase *top_level, 
@@ -49,6 +58,18 @@ int BC_MenuPopup::initialize(BC_WindowBase *top_level,
 	if(menu) this->type = MENUPOPUP_MENUBAR;
 	else
 	if(popup_menu) this->type = MENUPOPUP_POPUP;
+
+	BC_Resources *resources = top_level->get_resources();
+	if(resources->menu_popup_bg)
+	{
+		window_bg = new BC_Pixmap(top_level, resources->menu_popup_bg);
+	}
+	if(resources->menu_item_bg)
+	{
+		item_bg[0] = new BC_Pixmap(top_level, resources->menu_item_bg[0]);
+		item_bg[1] = new BC_Pixmap(top_level, resources->menu_item_bg[1]);
+		item_bg[2] = new BC_Pixmap(top_level, resources->menu_item_bg[2]);
+	}
 
 	return 0;
 }
@@ -283,18 +304,30 @@ int BC_MenuPopup::draw_items()
 	else
 		popup->draw_top_tiles(popup, 0, 0, w, h);
 
-	popup->draw_3d_border(0, 0, w, h, 
-		top_level->get_resources()->menu_light,
-		top_level->get_resources()->menu_up,
-		top_level->get_resources()->menu_shadow,
-		BLACK);
+	if(window_bg)
+	{
+		popup->draw_9segment(0,
+			0,
+			w,
+			h,
+			window_bg);
+	}
+	else
+	{
+		popup->draw_3d_border(0, 0, w, h, 
+			top_level->get_resources()->menu_light,
+			top_level->get_resources()->menu_up,
+			top_level->get_resources()->menu_shadow,
+			BLACK);
+	}
 
 	for(int i = 0; i < menu_items.total; i++)
 	{
 		menu_items.values[i]->draw();
 	}
 	popup->flash();
-//printf("BC_MenuPopup::draw_items 1\n");
+
+
 	return 0;
 }
 

@@ -250,8 +250,7 @@ static int read_frame(mpeg3audio_t *audio, int render)
 					audio->framesize,
 					temp_output,
 					render);
-//printf("read_frame %d\n", samples);
-				break;
+				break;	
 
 			case AUDIO_MPEG:
 				switch(audio->layer_decoder->layer)

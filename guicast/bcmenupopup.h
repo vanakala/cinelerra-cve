@@ -65,6 +65,9 @@ private:
 	BC_Popup *popup; 
 	int active;
 	int type;
+// Images for backgrounds
+	BC_Pixmap *window_bg;
+	BC_Pixmap *item_bg[3];
 };
 
 class BC_SubMenu : public BC_MenuPopup

@@ -49,6 +49,7 @@ public:
 	void update_tool();
 	void drag_motion();
 	int drag_stop();
+	void draw_status();
 
 	MWindow *mwindow;
     CWindow *cwindow;
@@ -61,6 +62,8 @@ public:
 	CWindowTransport *transport;
 	CWindowCanvas *canvas;
 	CTimeBar *timebar;
+	BC_Pixmap *active;
+	BC_Pixmap *inactive;
 //	MainClock *clock;
 
 
@@ -189,6 +192,7 @@ class CWindowCanvas : public Canvas
 public:
 	CWindowCanvas(MWindow *mwindow, CWindowGUI *gui);
 
+	void status_event();
 	void zoom_resize_window(float percentage);
 	void update_zoom(int x, int y, float zoom);
 	int get_xscroll();

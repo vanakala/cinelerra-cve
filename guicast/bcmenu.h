@@ -10,7 +10,11 @@
 #include "bcwindowbase.inc"
 
 
-
+// Subscripts for menu images
+#define MENU_BG 0
+#define MENU_ITEM_UP 1
+#define MENU_ITEM_HI 1
+#define MENU_ITEM_DN 1
 
 
 
@@ -22,8 +26,9 @@ public:
 
 	friend class BC_MenuBar;
 
-// Called by user
+// Called by user to add items
 	int add_item(BC_MenuItem* menuitem);
+// Remove the item ptr and the object
 	int remove_item(BC_MenuItem* item = 0);
 	int total_menuitems();
 	int set_text(char *text);

@@ -1,5 +1,7 @@
 #include "edit.h"
 #include "editpopup.h"
+#include "language.h"
+#include "mainsession.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "plugindialog.h"
@@ -8,10 +10,8 @@
 #include "tracks.h"
 #include "trackcanvas.h"
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
+
+#include <string.h>
 
 EditPopup::EditPopup(MWindow *mwindow, MWindowGUI *gui)
  : BC_PopupMenu(0, 
@@ -35,12 +35,13 @@ void EditPopup::create_objects()
 	add_item(new EditMoveTrackDown(mwindow, this));
 	add_item(new EditPopupDeleteTrack(mwindow, this));
 	add_item(new EditPopupAddTrack(mwindow, this));
+//	add_item(new EditPopupTitle(mwindow, this));
 	resize_option = 0;
 }
 
 int EditPopup::update(Track *track, Edit *edit)
 {
-//	this->edit = edit;
+	this->edit = edit;
 	this->track = track;
 
 	if(track->data_type == TRACK_VIDEO && !resize_option)
@@ -208,7 +209,113 @@ int EditPopupAddTrack::handle_event()
 
 
 
+EditPopupTitle::EditPopupTitle(MWindow *mwindow, EditPopup *popup)
+ : BC_MenuItem(_("User title..."))
+{
+	this->mwindow = mwindow;
+	this->popup = popup;
+	window = 0;
+}
 
+EditPopupTitle::~EditPopupTitle()
+{
+	delete popup;
+}
+
+int EditPopupTitle::handle_event()
+{
+	int result;
+
+	Track *trc = mwindow->session->track_highlighted;
+
+	if (trc && trc->record)
+	{
+		Edit *edt = mwindow->session->edit_highlighted;
+		if(!edt) return 1;
+
+		window = new EditPopupTitleWindow (mwindow, popup);
+		window->create_objects();
+		result = window->run_window();
+
+
+		if(!result && edt)
+		{
+			strcpy(edt->user_title, window->title_text->get_text());
+		}
+
+		delete window;
+		window = 0;
+	}
+
+	return 1;
+}
+
+
+EditPopupTitleWindow::EditPopupTitleWindow (MWindow *mwindow, EditPopup *popup)
+ : BC_Window (PROGRAM_NAME ": Set edit title",
+	mwindow->gui->get_abs_cursor_x(0) - 400 / 2,
+	mwindow->gui->get_abs_cursor_y(0) - 500 / 2,
+	300,
+	100,
+	300,
+	100,
+	0,
+	0,
+	1)
+{
+	this->mwindow = mwindow;
+	this->popup = popup;
+	this->edt = this->mwindow->session->edit_highlighted;
+	if(this->edt)
+	{
+		strcpy(new_text, this->edt->user_title);
+	}
+}
+
+EditPopupTitleWindow::~EditPopupTitleWindow()
+{
+}
+
+int EditPopupTitleWindow::close_event()
+{
+	set_done(1);
+	return 1;
+}
+
+int EditPopupTitleWindow::create_objects()
+{
+	int x = 5;
+	int y = 10;
+
+	add_subwindow (new BC_Title (x, y, _("User title")));
+	add_subwindow (title_text = new EditPopupTitleText (this,
+		mwindow, x, y + 20));
+	add_tool(new BC_OKButton(this));
+	add_tool(new BC_CancelButton(this));
+
+
+	show_window();
+	flush();
+	return 0;
+}
+
+
+EditPopupTitleText::EditPopupTitleText (EditPopupTitleWindow *window, 
+	MWindow *mwindow, int x, int y)
+ : BC_TextBox(x, y, 250, 1, (char*)(window->edt ? window->edt->user_title : ""))
+{
+	this->window = window;
+	this->mwindow = mwindow;
+}
+
+EditPopupTitleText::~EditPopupTitleText() 
+{ 
+}
+ 
+int EditPopupTitleText::handle_event()
+{
+	return 1;
+}
 
 
 

@@ -613,7 +613,7 @@ mpeg3_t* mpeg3_open_copy(char *path, mpeg3_t *old_file)
 
 
 
-//printf("mpeg3_open 1 %d\n", file->demuxer->total_titles);
+//printf("mpeg3_open 1\n");
 
 /* Create titles */
 /* Copy timecodes from an old demuxer */

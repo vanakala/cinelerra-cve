@@ -131,9 +131,9 @@ TRACE("PatchGUI::reposition 11\n");
 
 int PatchGUI::update(int x, int y)
 {
-TRACE("PatchGUI::update 1");
+//TRACE("PatchGUI::update 1");
 	reposition(x, y);
-TRACE("PatchGUI::update 10");
+//TRACE("PatchGUI::update 10");
 
 	int h = track->vertical_span(mwindow->theme);
 	int y1 = 0;
@@ -209,7 +209,7 @@ TRACE("PatchGUI::update 10");
 	}
 	y1 += mwindow->theme->play_h;
 
-UNTRACE
+//UNTRACE
 	return y1;
 }
 

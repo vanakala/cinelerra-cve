@@ -319,6 +319,7 @@ BC_GenericButton::BC_GenericButton(int x, int y, int w, char *text, VFrame **dat
 
 int BC_GenericButton::set_images(VFrame **data)
 {
+	BC_Resources *resources = get_resources();
 	for(int i = 0; i < 3; i++)
 	{
 		if(images[i]) delete images[i];
@@ -328,7 +329,8 @@ int BC_GenericButton::set_images(VFrame **data)
 	if(w_argument)
 		w = w_argument;
 	else
-		w = get_text_width(MEDIUMFONT, text) + images[BUTTON_UP]->get_w() / 3;
+		w = get_text_width(MEDIUMFONT, text) + 
+			resources->generic_button_margin * 2;
 
 
 	h = images[BUTTON_UP]->get_h();
@@ -337,7 +339,6 @@ int BC_GenericButton::set_images(VFrame **data)
 
 int BC_GenericButton::draw_face()
 {
-	int x, y, w;
 	draw_top_background(parent_window, 0, 0, get_w(), get_h());
 	draw_3segmenth(0, 0, get_w(), images[status]);
 
@@ -346,9 +347,13 @@ int BC_GenericButton::draw_face()
 	else
 		set_color(get_resources()->disabled_text_color);
 	set_font(MEDIUMFONT);
+
+	int x, y, w;
+	BC_Resources *resources = get_resources();
 	y = (int)((float)get_h() / 2 + get_text_ascent(MEDIUMFONT) / 2 - 2);
-	w = get_text_width(current_font, text, strlen(text));
-	x = get_w() / 2 - w / 2;
+	w = get_text_width(current_font, text, strlen(text)) + 
+		resources->generic_button_margin * 2;
+	x = get_w() / 2 - w / 2 + resources->generic_button_margin;
 	draw_text(x, 
 		y, 
 		text);
@@ -356,8 +361,12 @@ int BC_GenericButton::draw_face()
 	if(underline_number >= 0)
 	{
 		y++;
-		int x1 = get_text_width(current_font, text, underline_number) + x;
-		int x2 = get_text_width(current_font, text, underline_number + 1) + x;
+		int x1 = get_text_width(current_font, text, underline_number) + 
+			x + 
+			resources->toggle_text_margin;
+		int x2 = get_text_width(current_font, text, underline_number + 1) + 
+			x +
+			resources->toggle_text_margin;
 		draw_line(x1, y, x2, y);
 		draw_line(x1, y + 1, (x2 + x1) / 2, y + 1);
 	}

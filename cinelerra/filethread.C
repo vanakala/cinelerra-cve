@@ -81,7 +81,6 @@ void FileThread::run()
 	int done = 0;
 	int i, j, result;
 
-//printf("FileThread::run 1 %d\n", getpid());
 	while(!done)
 	{
 		output_lock[local_buffer]->lock("FileThread::run 1");
@@ -140,6 +139,7 @@ TRACE("FileThread::run 5");
 
 int FileThread::stop_writing()
 {
+
 	int i, buffer, layer, frame;
 
 	swap_buffer();
@@ -191,6 +191,7 @@ int FileThread::stop_writing()
 		delete [] video_buffer;
 		video_buffer = 0;
 	}
+
 	file_lock->unlock();
 	return 0;
 }

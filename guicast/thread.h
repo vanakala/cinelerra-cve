@@ -34,8 +34,10 @@ public:
 	int set_realtime(int value = 1);
 	int set_autodelete(int value);
 	int get_autodelete();
-	int get_realtime();                 // Return realtime variable
-	static int calculate_realtime();    // Determine status by querying kernel
+// Return realtime variable
+	int get_realtime();                 
+// Return 1 if querying the kernel returned a realtime policy
+	static int calculate_realtime();    
 	int get_synchronous();
 	int get_tid();
 
@@ -45,6 +47,7 @@ private:
 	int autodelete;          // set to 1 to autodelete when run() finishes
 	int thread_running;
   	pthread_t tid;
+	int tid_valid;
 	int cancel_enabled;
 };
 

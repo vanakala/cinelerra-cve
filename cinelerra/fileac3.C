@@ -78,14 +78,23 @@ int FileAC3::open_file(int rd, int wr)
 				"FileAC3::open_file failed to open codec.\n");
 			return 1;
 		}
+
+		if(!(fd = fopen(asset->path, "w")))
+		{
+			perror("FileAC3::open_file");
+			return 1;
+		}
 	}
-
-
-	if(!(fd = fopen(asset->path, "w")))
+	else
 	{
-		perror("FileAC3::open_file");
-		return 1;
+		if(!(fd = fopen(asset->path, "r")))
+		{
+			perror("FileAC3::open_file");
+			return 1;
+		}
 	}
+
+
 
 
 	return 0;
@@ -137,6 +146,7 @@ int FileAC3::write_samples(double **buffer, int64_t len)
 		temp_raw_allocated = new_allocated;
 	}
 
+// Allocate compressed data buffer
 	if(temp_raw_allocated * asset->channels * 2 > compressed_allocated)
 	{
 		compressed_allocated = temp_raw_allocated * asset->channels * 2;

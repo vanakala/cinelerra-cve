@@ -83,6 +83,7 @@ public:
 	float get_value();
 	int percentage_to_value(float percentage);
 	void update(float value);
+	void update(float value, float minvalue, float maxvalue);
 	void set_precision(float value);
 
 private:
@@ -108,6 +109,7 @@ public:
 	int percentage_to_value(float percentage);
 	int64_t get_value();
 	void update(int64_t value);
+	void update(int64_t value, int64_t minvalue, int64_t maxvalue);
 
 private:
 	int64_t value, minvalue, maxvalue;

@@ -3,6 +3,7 @@
 #include "confirmsave.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "labels.h"
 #include "mutex.h"
 #include "mwindow.h"
 #include "packagedispatcher.h"
