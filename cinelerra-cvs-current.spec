@@ -4,7 +4,7 @@
 Summary: Cinelerra CVS
 Name: cinelerra
 Version: 1.2.0
-Release: 5
+Release: 6
 License: GPL
 Group: X11
 URL: http://cvs.cinelerra.org
@@ -67,22 +67,25 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
-* Wed Jun 30 2004 Kevin Brosius <cobra@sea.kevb.net> - 1.2.0-5
+* Sat Jul  3 2004 Kevin Brosius <cobra@compuserve.com> - 1.2.0-6
+- xml audio handling fix, delayvideo plugin cleanup
+
+* Wed Jun 30 2004 Kevin Brosius <cobra@compuserve.com> - 1.2.0-5
 - dv crash fix related to number of samples
 - allow libdv 0.99 build, dv asset info changes
 - fix avi file reading (reverted to 1.1.9)
 
-* Thu Jun 24 2004 Kevin Brosius <cobra@sea.kevb.net> - 1.2.0-4
+* Thu Jun 24 2004 Kevin Brosius <cobra@compuserve.com> - 1.2.0-4
 - raw DV/quicktime read/write support, DV audio read/write support
 
-* Sun Jun 20 2004 Kevin Brosius <cobra@sea.kevb.net> - 1.2.0-3
+* Sun Jun 20 2004 Kevin Brosius <cobra@compuserve.com> - 1.2.0-3
 - package mpeg3 utils as mpeg3toc.hv, mpeg3dump.hv, mpeg3cat.hv
 
-* Sat Jun 19 2004 Kevin Brosius <cobra@sea.kevb.net> - 1.2.0-2
+* Sat Jun 19 2004 Kevin Brosius <cobra@compuserve.com> - 1.2.0-2
 - move feather.h & codegen script, slovenian translation update
 - tab shortcut to arm track under cursor
 
-* Fri Jun 11 2004 Kevin Brosius <cobra@sea.kevb.net> - 1.2.0-1
+* Fri Jun 11 2004 Kevin Brosius <cobra@compuserve.com> - 1.2.0-1
 - Merge of 1.2.0 and current cvs
 - Feather speedups, tumbler/spinner limit fixes
 - spanish translation, buz driver fix

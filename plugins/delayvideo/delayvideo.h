@@ -30,7 +30,8 @@ public:
 		int64_t next_frame, 
 		int64_t current_frame);
 
-	double length;
+	// match defined update() type of float instead of double.
+	float length;
 };
 
 
@@ -61,20 +62,7 @@ public:
 };
 
 
-
-class DelayVideoThread : public Thread
-{
-public:
-	DelayVideoThread(DelayVideo *plugin);
-	~DelayVideoThread();
-	
-	void run();
-
-	DelayVideo *plugin;
-	DelayVideoWindow *window;
-	Mutex completion;
-};
-
+PLUGIN_THREAD_HEADER(DelayVideo, DelayVideoThread, DelayVideoWindow)
 
 
 
