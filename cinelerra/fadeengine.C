@@ -37,11 +37,9 @@ FadeUnit::~FadeUnit()
 				out_row[j * components] =  \
 					(type)lrintf(in_row[j * components] * alpha); \
 				out_row[j * components + 1] =  \
-					(type)lrintf(in_row[j * components + 1] * alpha +  \
-						chroma_zero * (1 - alpha)); \
+					(type)lrintf(alpha * (in_row[j * components + 1] - chroma_zero) + chroma_zero); \
 				out_row[j * components + 2] =  \
-					(type)lrintf(in_row[j * components + 2] * alpha +  \
-						chroma_zero * (1 - alpha)); \
+					(type)lrintf(alpha * (in_row[j * components + 2] - chroma_zero) + chroma_zero); \
 			} \
 			else \
 			{ \
