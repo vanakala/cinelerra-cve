@@ -453,7 +453,7 @@ WaveEffect::~WaveEffect()
 }
 
 
-char* WaveEffect::plugin_title() { return ("Wave"); }
+char* WaveEffect::plugin_title() { return N_("Wave"); }
 int WaveEffect::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(WaveEffect)

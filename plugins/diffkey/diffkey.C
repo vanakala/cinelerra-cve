@@ -188,7 +188,7 @@ DiffKeyMain::~DiffKeyMain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-char* DiffKeyMain::plugin_title() { return "DiffKey"; }
+char* DiffKeyMain::plugin_title() { return N_("DiffKey"); }
 int DiffKeyMain::is_realtime() { return 1; }
 	
 

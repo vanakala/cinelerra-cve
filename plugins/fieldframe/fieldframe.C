@@ -319,7 +319,7 @@ FieldFrame::~FieldFrame()
 	if(input) delete input;
 }
 
-char* FieldFrame::plugin_title() { return ("Fields to frames"); }
+char* FieldFrame::plugin_title() { return N_("Fields to frames"); }
 int FieldFrame::is_realtime() { return 1; }
 
 

@@ -195,7 +195,7 @@ SlideMain::~SlideMain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-char* SlideMain::plugin_title() { return ("Slide"); }
+char* SlideMain::plugin_title() { return N_("Slide"); }
 int SlideMain::is_video() { return 1; }
 int SlideMain::is_transition() { return 1; }
 int SlideMain::uses_gui() { return 1; }

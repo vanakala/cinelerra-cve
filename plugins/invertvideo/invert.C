@@ -207,7 +207,7 @@ InvertVideoEffect::~InvertVideoEffect()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-char* InvertVideoEffect::plugin_title() { return ("Invert Video"); }
+char* InvertVideoEffect::plugin_title() { return N_("Invert Video"); }
 int InvertVideoEffect::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(InvertVideoEffect)

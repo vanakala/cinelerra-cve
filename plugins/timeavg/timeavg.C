@@ -57,7 +57,7 @@ TimeAvgMain::~TimeAvgMain()
 	}
 }
 
-char* TimeAvgMain::plugin_title() { return ("Time Average"); }
+char* TimeAvgMain::plugin_title() { return N_("Time Average"); }
 int TimeAvgMain::is_realtime() { return 1; }
 
 

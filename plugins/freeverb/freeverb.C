@@ -468,7 +468,7 @@ RAISE_WINDOW_MACRO(FreeverbEffect)
 SET_STRING_MACRO(FreeverbEffect)
 
 
-char* FreeverbEffect::plugin_title() { return ("Freeverb"); }
+char* FreeverbEffect::plugin_title() { return N_("Freeverb"); }
 int FreeverbEffect::is_realtime() { return 1; }
 int FreeverbEffect::is_multichannel() { return 1; }
 

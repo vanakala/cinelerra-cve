@@ -602,7 +602,7 @@ PerspectiveMain::~PerspectiveMain()
 	if(temp) delete temp;
 }
 
-char* PerspectiveMain::plugin_title() { return ("Perspective"); }
+char* PerspectiveMain::plugin_title() { return N_("Perspective"); }
 int PerspectiveMain::is_realtime() { return 1; }
 
 

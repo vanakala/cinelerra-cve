@@ -45,7 +45,7 @@ IVTCMain::~IVTCMain()
 	}
 }
 
-char* IVTCMain::plugin_title() { return ("Inverse Telecine"); }
+char* IVTCMain::plugin_title() { return N_("Inverse Telecine"); }
 int IVTCMain::is_realtime() { return 1; }
 
 

@@ -480,7 +480,7 @@ int ChromaKey::process_realtime(VFrame *input, VFrame *output)
 	return 0;
 }
 
-char* ChromaKey::plugin_title() { return ("Chroma key"); }
+char* ChromaKey::plugin_title() { return N_("Chroma key"); }
 int ChromaKey::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(ChromaKey)

@@ -200,7 +200,7 @@ void SwapMain::reset()
 }
 
 
-char* SwapMain::plugin_title()  { return ("Swap channels"); }
+char* SwapMain::plugin_title()  { return N_("Swap channels"); }
 int SwapMain::is_synthesis() { return 1; }
 int SwapMain::is_realtime()  { return 1; }
 

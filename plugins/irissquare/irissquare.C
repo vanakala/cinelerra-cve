@@ -136,7 +136,7 @@ IrisSquareMain::~IrisSquareMain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-char* IrisSquareMain::plugin_title() { return ("IrisSquare"); }
+char* IrisSquareMain::plugin_title() { return N_("IrisSquare"); }
 int IrisSquareMain::is_video() { return 1; }
 int IrisSquareMain::is_transition() { return 1; }
 int IrisSquareMain::uses_gui() { return 1; }

@@ -525,7 +525,7 @@ int HueEffect::process_realtime(VFrame *input, VFrame *output)
 	return 0;
 }
 
-char* HueEffect::plugin_title() { return ("Hue saturation"); }
+char* HueEffect::plugin_title() { return N_("Hue saturation"); }
 int HueEffect::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(HueEffect)

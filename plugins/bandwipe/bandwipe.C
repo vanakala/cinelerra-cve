@@ -174,7 +174,7 @@ BandWipeMain::~BandWipeMain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-char* BandWipeMain::plugin_title() { return ("BandWipe"); }
+char* BandWipeMain::plugin_title() { return N_("BandWipe"); }
 int BandWipeMain::is_video() { return 1; }
 int BandWipeMain::is_transition() { return 1; }
 int BandWipeMain::uses_gui() { return 1; }

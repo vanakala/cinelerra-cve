@@ -153,7 +153,7 @@ _1080to480Main::~_1080to480Main()
 	if(temp) delete temp;
 }
 
-char* _1080to480Main::plugin_title() { return ("1080 to 480"); }
+char* _1080to480Main::plugin_title() { return N_("1080 to 480"); }
 int _1080to480Main::is_realtime() { return 1; }
 
 SHOW_GUI_MACRO(_1080to480Main, _1080to480Thread)

@@ -55,7 +55,7 @@ VFrame* Synth::new_picon()
 }
 
 
-char* Synth::plugin_title() { return ("Synthesizer"); }
+char* Synth::plugin_title() { return N_("Synthesizer"); }
 int Synth::is_realtime() { return 1; }
 int Synth::is_synthesis() { return 1; }
 

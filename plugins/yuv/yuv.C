@@ -214,7 +214,7 @@ YUVEffect::~YUVEffect()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-char* YUVEffect::plugin_title() { return ("YUV"); }
+char* YUVEffect::plugin_title() { return N_("YUV"); }
 int YUVEffect::is_realtime() { return 1; } 
 
 

@@ -367,7 +367,7 @@ RadialBlurMain::~RadialBlurMain()
 	if(temp) delete temp;
 }
 
-char* RadialBlurMain::plugin_title() { return ("Radial Blur"); }
+char* RadialBlurMain::plugin_title() { return N_("Radial Blur"); }
 int RadialBlurMain::is_realtime() { return 1; }
 
 

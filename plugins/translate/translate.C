@@ -94,7 +94,7 @@ TranslateMain::~TranslateMain()
 	overlayer = 0;
 }
 
-char* TranslateMain::plugin_title() { return ("Translate"); }
+char* TranslateMain::plugin_title() { return N_("Translate"); }
 int TranslateMain::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(TranslateMain)

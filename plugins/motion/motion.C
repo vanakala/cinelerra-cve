@@ -355,7 +355,7 @@ MotionMain::~MotionMain()
 	if(temp_frame) delete temp_frame;
 }
 
-char* MotionMain::plugin_title() { return ("Motion"); }
+char* MotionMain::plugin_title() { return N_("Motion"); }
 int MotionMain::is_realtime() { return 1; }
 int MotionMain::is_multichannel() { return 1; }
 

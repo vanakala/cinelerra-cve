@@ -74,7 +74,7 @@ DeInterlaceMain::~DeInterlaceMain()
 	if(temp) delete temp;
 }
 
-char* DeInterlaceMain::plugin_title() { return ("Deinterlace"); }
+char* DeInterlaceMain::plugin_title() { return N_("Deinterlace"); }
 int DeInterlaceMain::is_realtime() { return 1; }
 
 

@@ -33,7 +33,7 @@ Despike::~Despike()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-char* Despike::plugin_title() { return ("Despike"); }
+char* Despike::plugin_title() { return N_("Despike"); }
 int Despike::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(Despike)

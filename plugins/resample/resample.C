@@ -82,7 +82,7 @@ ResampleEffect::~ResampleEffect()
 	delete defaults;
 }
 
-char* ResampleEffect::plugin_title() { return ("Resample"); }
+char* ResampleEffect::plugin_title() { return N_("Resample"); }
 
 VFrame* ResampleEffect::new_picon()
 {

@@ -159,7 +159,7 @@ ReverseVideo::~ReverseVideo()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-char* ReverseVideo::plugin_title() { return ("Reverse video"); }
+char* ReverseVideo::plugin_title() { return N_("Reverse video"); }
 int ReverseVideo::is_realtime() { return 1; }
 
 #include "picon_png.h"

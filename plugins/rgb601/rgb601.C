@@ -34,7 +34,7 @@ RGB601Main::~RGB601Main()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-char* RGB601Main::plugin_title() { return ("RGB - 601"); }
+char* RGB601Main::plugin_title() { return N_("RGB - 601"); }
 int RGB601Main::is_realtime() { return 1; }
 
 

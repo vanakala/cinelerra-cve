@@ -368,7 +368,7 @@ WhirlEffect::~WhirlEffect()
 
 
 
-char* WhirlEffect::plugin_title() { return ("Whirl"); }
+char* WhirlEffect::plugin_title() { return N_("Whirl"); }
 int WhirlEffect::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(WhirlEffect)

@@ -469,7 +469,7 @@ RotateEffect::~RotateEffect()
 
 
 
-char* RotateEffect::plugin_title() { return ("Rotate"); }
+char* RotateEffect::plugin_title() { return N_("Rotate"); }
 int RotateEffect::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(RotateEffect)

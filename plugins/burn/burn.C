@@ -58,7 +58,7 @@ BurnMain::~BurnMain()
 	if(effecttv) delete effecttv;
 }
 
-char* BurnMain::plugin_title() { return ("BurningTV"); }
+char* BurnMain::plugin_title() { return N_("BurningTV"); }
 int BurnMain::is_realtime() { return 1; }
 
 

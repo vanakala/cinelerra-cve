@@ -349,7 +349,7 @@ VideoScopeEffect::~VideoScopeEffect()
 
 
 
-char* VideoScopeEffect::plugin_title() { return ("VideoScope"); }
+char* VideoScopeEffect::plugin_title() { return N_("VideoScope"); }
 int VideoScopeEffect::is_realtime() { return 1; }
 
 int VideoScopeEffect::load_configuration()

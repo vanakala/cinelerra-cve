@@ -61,7 +61,7 @@ Gain::~Gain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-char* Gain::plugin_title() { return ("Gain"); }
+char* Gain::plugin_title() { return N_("Gain"); }
 int Gain::is_realtime() { return 1; }
 
 

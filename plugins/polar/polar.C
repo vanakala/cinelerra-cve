@@ -284,7 +284,7 @@ PolarEffect::~PolarEffect()
 
 
 
-char* PolarEffect::plugin_title() { return ("Polar"); }
+char* PolarEffect::plugin_title() { return N_("Polar"); }
 int PolarEffect::is_realtime() { return 1; }
 
 
