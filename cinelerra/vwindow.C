@@ -107,7 +107,7 @@ void VWindow::change_source()
 	if(mwindow->edl->vwindow_edl)
 	{
 		this->edl = mwindow->edl->vwindow_edl;
-		gui->change_source(edl, "");
+		gui->change_source(edl, edl->local_session->clip_title);
 		update_position(CHANGE_ALL, 1, 1);
 	}
 	else
