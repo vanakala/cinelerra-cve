@@ -193,7 +193,7 @@ void AssetPicon::create_objects()
 	else
 	if(plugin)
 	{
-		strcpy(name, plugin->title);
+		strcpy(name, _(plugin->title));
 		set_text(name);
 		if(plugin->picon)
 		{
