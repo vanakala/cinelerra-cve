@@ -1,5 +1,6 @@
 #include "bcdisplayinfo.h"
 #include "colorpicker.h"
+#include "language.h"
 #include "mwindow.inc"
 #include "plugincolors.h"
 #include "vframe.h"
@@ -7,14 +8,11 @@
 #include <string.h>
 #include <unistd.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 ColorThread::ColorThread(int do_alpha, char *title)
  : Thread(),
- completion(1, "ColorThread::completion")
+ completion(1, "ColorThread::completion"),
+ mutex("ColorThread::mutex")
 {
 	window = 0;
 	this->title = title;
@@ -62,22 +60,29 @@ void ColorThread::run()
 
 
 
+	mutex.lock();
 	window = new ColorWindow(this, 
 		info.get_abs_cursor_x() - 200, 
 		info.get_abs_cursor_y() - 200,
 		window_title);
 //printf("ColorThread::run 1 %p\n", window);
 	window->create_objects();
+	mutex.unlock();
 //printf("ColorThread::run 1 %p\n", window);
 	window->run_window();
+
+	mutex.lock();
 	delete window;
 	window = 0;
+	mutex.unlock();
+
 	completion.unlock();
 //printf("ColorThread::run 2\n");
 }
 
 void ColorThread::update_gui(int output, int alpha)
 {
+	mutex.lock();
 	if (window)
 	{
 		this->output = output;
@@ -87,6 +92,7 @@ void ColorThread::update_gui(int output, int alpha)
 		window->update_display();
 		window->unlock_window();
 	}
+	mutex.unlock();
 }
 
 

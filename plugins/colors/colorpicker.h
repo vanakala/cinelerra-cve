@@ -30,6 +30,7 @@ public:
 	void update_gui(int output, int alpha);
 
 	Condition completion;
+	Mutex mutex;	// protects window
 	ColorWindow *window;
 // Starting color
 	int output;
