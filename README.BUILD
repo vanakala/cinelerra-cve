@@ -26,7 +26,7 @@ you distrib. Not joking):
 		
 The others are maybe part of your distrib. If they aren't, you can find them
 on http://lpnotfr.free.fr/cinelerra-libs
-	- libdv (0.95)
+	- libdv (0.99)
 	- xvid (cvs 20020822)
 	- liba52 (0.7.4)
 	- libsndfile (= 0.0.26) - Newest versions don't work !!!
