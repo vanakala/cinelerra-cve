@@ -139,6 +139,8 @@ int main(int argc, char *argv[])
 // Write data
 	fwrite(data_buffer, 1, data_size, dest);
 	fclose(dest);
+
+	return 0;
 }
 
 
