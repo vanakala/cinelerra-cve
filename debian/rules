@@ -46,6 +46,7 @@ binary-arch: checkroot build-stamp
 	dh_installdocs -XCVS
 	dh_installchangelogs -a
 	dh_installman
+	dh_installmenu
 
 	dh_fixperms -a
 	dh_compress -a
