@@ -1255,10 +1255,12 @@ MOVConfigAudio::MOVConfigAudio(BC_WindowBase *parent_window, Asset *asset)
 	vorbis_vbr = 0;
 	compression_popup = 0;
 	mp3_bitrate = 0;
+	exiting = 0;
 }
 
 MOVConfigAudio::~MOVConfigAudio()
 {
+	exiting = 1;
 	if(compression_popup) delete compression_popup;
 	if(bits_popup) delete bits_popup;
 	compression_items.remove_all_objects();
@@ -1445,7 +1447,8 @@ MOVConfigAudioNum::MOVConfigAudioNum(MOVConfigAudio *popup, char *title_text, in
 
 MOVConfigAudioNum::~MOVConfigAudioNum()
 {
-	delete title;
+	if (!popup->exiting) 
+		delete title;
 }
 
 void MOVConfigAudioNum::create_objects()
@@ -1515,12 +1518,13 @@ MOVConfigVideo::MOVConfigVideo(BC_WindowBase *parent_window,
 	this->asset = asset;
 	this->lock_compressor = lock_compressor;
 	compression_popup = 0;
-
+	exiting = 0;
 	reset();
 }
 
 MOVConfigVideo::~MOVConfigVideo()
 {
+	exiting = 1;
 	if(compression_popup) delete compression_popup;
 	compression_items.remove_all_objects();
 }
@@ -1824,7 +1828,8 @@ MOVConfigVideoNum::MOVConfigVideoNum(MOVConfigVideo *popup, char *title_text, in
 
 MOVConfigVideoNum::~MOVConfigVideoNum()
 {
-	delete title;
+	if (!popup->exiting) 
+		delete title;
 }
 
 void MOVConfigVideoNum::create_objects()

@@ -159,6 +159,7 @@ public:
 	MOVConfigAudioToggle *vorbis_vbr;
 
 	MOVConfigAudioNum *mp3_bitrate;
+	int exiting;
 };
 
 
@@ -256,6 +257,7 @@ public:
 	MOVConfigVideoNum *divx_quality;
 	MOVConfigVideoFixBitrate *divx_fix_bitrate;
 	MOVConfigVideoFixQuant *divx_fix_quant;
+	int exiting;
 };
 
 class MOVConfigVideoPopup : public BC_PopupTextBox
