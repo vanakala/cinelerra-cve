@@ -298,7 +298,7 @@ GradientInColorThread::GradientInColorThread(GradientMain *plugin,
 	this->window = window;
 }
 
-int GradientInColorThread::handle_event(int output)
+int GradientInColorThread::handle_new_color(int output, int alpha)
 {
 	plugin->config.in_r = (output & 0xff0000) >> 16;
 	plugin->config.in_g = (output & 0xff00) >> 8;
@@ -330,7 +330,7 @@ GradientOutColorThread::GradientOutColorThread(GradientMain *plugin,
 	this->window = window;
 }
 
-int GradientOutColorThread::handle_event(int output)
+int GradientOutColorThread::handle_new_color(int output, int alpha)
 {
 	plugin->config.out_r = (output & 0xff0000) >> 16;
 	plugin->config.out_g = (output & 0xff00) >> 8;

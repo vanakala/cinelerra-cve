@@ -93,7 +93,7 @@ class GradientInColorThread : public ColorThread
 {
 public:
 	GradientInColorThread(GradientMain *plugin, GradientWindow *window);
-	int handle_event(int output);
+	virtual int handle_new_color(int output, int alpha);
 	GradientMain *plugin;
 	GradientWindow *window;
 };
@@ -103,7 +103,7 @@ class GradientOutColorThread : public ColorThread
 {
 public:
 	GradientOutColorThread(GradientMain *plugin, GradientWindow *window);
-	int handle_event(int output);
+	virtual int handle_new_color(int output, int alpha);
 	GradientMain *plugin;
 	GradientWindow *window;
 };

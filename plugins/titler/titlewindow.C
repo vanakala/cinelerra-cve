@@ -897,7 +897,7 @@ TitleColorThread::TitleColorThread(TitleMain *client, TitleWindow *window)
 	this->window = window;
 }
 
-int TitleColorThread::handle_event(int output)
+int TitleColorThread::handle_new_color(int output, int /*alpha*/)
 {
 	client->config.color = output;
 	window->update_color();

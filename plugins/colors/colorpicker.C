@@ -32,8 +32,10 @@ ColorThread::~ColorThread()
 
 void ColorThread::start_window(int output, int alpha)
 {
+	mutex.lock();
 	this->output = output;
 	this->alpha = alpha;
+	mutex.unlock();
 	if(!running())
 	{
 		completion.lock();
@@ -256,8 +258,7 @@ int ColorWindow::handle_event()
 	float r, g, b;
 	HSV::hsv_to_rgb(r, g, b, h, s, v);
 	int result = (((int)(r * 255)) << 16) | (((int)(g * 255)) << 8) | ((int)(b * 255));
-	thread->alpha = (int)(a * 255);
-	thread->handle_event(result);
+	thread->handle_new_color(result, (int)(a * 255));
 	return 1;
 }
 

@@ -26,17 +26,19 @@ public:
 
 	void run();
 	void start_window(int output, int alpha);
-	virtual int handle_event(int output) { return 0; };
+	virtual int handle_new_color(int output, int alpha) = 0;
 	void update_gui(int output, int alpha);
 
+private:
 	Condition completion;
-	Mutex mutex;	// protects window
+	Mutex mutex;	// protects window, output, alpha
 	ColorWindow *window;
 // Starting color
 	int output;
 	int alpha;
 	int do_alpha;
 	char *title;
+	friend class ColorWindow;
 };
 
 class ColorWindow : public BC_Window

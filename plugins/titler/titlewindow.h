@@ -341,7 +341,7 @@ class TitleColorThread : public ColorThread
 {
 public:
 	TitleColorThread(TitleMain *client, TitleWindow *window);
-	int handle_event(int output);
+	virtual int handle_new_color(int output, int alpha);
 	TitleMain *client;
 	TitleWindow *window;
 };
