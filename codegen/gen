@@ -1,0 +1,203 @@
+#!/usr/bin/perl
+
+
+$MAXN = 30;
+
+$N = 3;
+
+	print "/* Only for odd N */\n";
+
+print "#define DO_FEATHER_MAX_N " . $MAXN . "\n\n";
+
+while ($N < $MAXN) {
+	my $i;
+
+	print "#define DO_FEATHER_" . $N . '(type, int_type, max, N); \
+{ \
+	int offset = N / 2; \
+        int frame_w = input->get_w(); \
+        int frame_h = input->get_h(); \
+        int start_in = start_out - offset; \
+        int end_in = end_out + offset; \
+        type **in_rows = (type**)input->get_rows(); \
+        type **out_rows = (type**)output->get_rows(); \
+        int i,j; \
+	int_type tmp1, tmp2; \
+';
+
+	print "	int_type ";
+	for ($i = 0; $i < $N - 2; $i++)
+		{ print "SR" . $i . ", "; }
+	print "SR" . $i . "; \\\n";
+	print "	int_type *SC0 = new int_type[(frame_w + offset * 2) * ". ($N - 1) . "]; \\\n";
+	print "	memset(SC0, 0, sizeof(int_type) * (frame_w  + offset * 2) * " . ($N - 1) . "); \\\n";
+	print '	for (i = start_in; i < end_in; i++) \
+	{ \
+		type *in_row; \
+		if (i < 0) \
+	           	in_row = in_rows[0]; \
+		else if (i >= frame_h) \
+			in_row = in_rows[frame_h - 1]; \
+		else \
+			in_row = in_rows[i]; \
+';
+
+	print "\t\t";
+	for ($i = 0; $i < $N - 1; $i++)
+		{ print "SR" . $i . " = "; }
+	print "0; \\\n";
+#	print '		if (i >= start_out && i <= end_out) \';
+print '              { \
+                        type *out_row; \
+                        if (i >= start_out + offset && i<= end_out + offset) \
+                        	out_row = out_rows[i - offset]; \
+                        else \
+                        	out_row = 0; \
+';
+$KERNEL ='			int_type *SC = SC0; \
+			for (j = 0; j < frame_w + offset * 2; j++) \
+                        { \
+                        	if (j < offset) \
+                           		tmp1 = in_row[0]; \
+                           	else if (j >= frame_w + offset) \
+                           		tmp1 = in_row[frame_w - 1]; \
+                           	else \
+                           		tmp1 = in_row[j - offset]; \
+'; 
+
+# row machine
+	$t1 = "tmp2";
+	$t2 = "tmp1";
+	for ($i = 0; $i < $N - 1; $i++)
+	{
+		$KERNEL .= "\t\t\t\t" . $t1 . " = SR" . $i . " + " . $t2 . "; \\\n";
+		$KERNEL .= "\t\t\t\tSR" . $i . " = " . $t2 . "; \\\n";
+		if ($t1 eq "tmp1")
+		{
+			$t1 = "tmp2";
+			$t2 = "tmp1";
+		} else 
+		{
+			$t1 = "tmp1";
+			$t2 = "tmp2";
+		} 
+	}
+# column machine
+	for ($i = 0; $i < $N - 2; $i++)
+	{
+		$KERNEL .= "\t\t\t\t" . $t1 . " = SC[" . $i . "] + " . $t2 . "; \\\n";
+		$KERNEL .= "\t\t\t\tSC[" . $i . "] = " . $t2 . "; \\\n";
+		if ($t1 eq "tmp1")
+		{
+			$t1 = "tmp2";
+			$t2 = "tmp1";
+		} else 
+		{
+			$t1 = "tmp1";
+			$t2 = "tmp2";
+		} 
+	}
+
+	print $KERNEL;
+
+# output 	
+	$POWER = ($N - 1) * 2;	
+	$HALF_N2 = 2  ** ($POWER - 1);
+	if ($HALF_N2 >= 134217728) 
+	{
+#		$HALF_N2 = "(uint64_t)" . $HALF_N2 . "L";
+		$HALF_N2 = "((uint64_t)1 <<" . ($POWER - 1) . ")"; 
+	}
+	print "\t\t\t\tif (j >= offset * 2) \\\n";
+
+	print "\t\t\t\t\tif (out_row) out_row[j - offset * 2] = (" . $HALF_N2 . " + SC[" . $i . "] + " . $t2 . ") >> " . $POWER . "; \\\n";
+	print "\t\t\t\tSC[" . $i . "] = " . $t2 . "; \\\n";
+	print "\t\t\t\tSC += " . ($N -1) . ";\\\n";
+	print "\t\t\t} \\\n";
+
+#print "\t\t} else { /* just fill in the SCs, no ouput... */ \\\n";
+
+#	print $KERNEL;
+#	print "\t\t\t\tSC[" . $i . "] = " . $t2 . " ;\\\n";
+#	print "\t\t\t\tSC += " . ($N -1) . ";\\\n";
+#	print "\t\t\t} \\\n";
+
+	$N += 2;
+
+print "\t\t} \\\n";
+print "\t} \\\n";
+print "\tdelete [] SC0; \\\n";
+print "}\n";
+
+
+
+
+};
+
+
+print '
+/* THIS WORKS ONLY FOR ODD N >= 3 */
+#define DO_FEATHER_N(type, int_type, max, N) \
+{ \
+';
+
+
+
+print	'	switch(input->get_color_model()) \
+        { \
+';
+
+$bits = 0;
+
+while ($bits < 16) {
+	$bits += 8;
+
+	printf "	        case BC_A". $bits .": \\\n";
+
+	if ($bits == 8) {
+		$type = "unsigned char";
+	} else
+	{
+		$type = "uint16_t";
+	}
+	print '			switch (N) \
+			{ \
+';
+
+	$N = 3;
+
+	while ($N < $MAXN) {
+		$POWER = ($N - 1) * 2;	
+		if ($POWER + $bits <= 16) 
+		{
+			$int_type = "uint16_t";
+		} elsif ($POWER + $bits <= 32)
+		{
+			$int_type = "uint32_t";		
+		} elsif ($POWER + $bits <= 64)
+		{
+			$int_type = "uint64_t";	
+		} 
+		else {
+			$N += 2;
+			$N = $MAXN;
+		}
+		if ($N < $MAXN) 
+		{
+			print "\t\t\t\tcase " . $N . ": \\\n";
+			print "\t\t\t\t\tDO_FEATHER_" . $N . "($type, $int_type, max, " . $N . "); \\\n"; 
+			print "\t\t\t\t\treturn 1; \\\n";
+		
+			print "\t\t\t\t\tbreak; \\\n";
+		}
+		$N += 2;
+	}
+print "\t\t\t\tdefault: \\\n\t\t\t\t\treturn 0; \\\n";
+	print "\t\t\t} \\\n";
+
+}
+	
+ print '	} \
+	return 0; \
+} 
+';
