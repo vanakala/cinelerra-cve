@@ -463,8 +463,8 @@ int OverlayFrame::overlay(VFrame *output,
 		int in_y2_int = MIN((int)ceil(in_y2), input->get_h());
 		int out_x1_int = (int)out_x1;
 		int out_y1_int = (int)out_y1;
-		int out_x2_int = MIN((int)ceil(out_x2), input->get_w());
-		int out_y2_int = MIN((int)ceil(out_y2), input->get_h());
+		int out_x2_int = MIN((int)ceil(out_x2), output->get_w());
+		int out_y2_int = MIN((int)ceil(out_y2), output->get_h());
 
 // Dimensions of temp frame.  Integer boundaries scaled.
 		int temp_w = (out_x2_int - out_x1_int);
