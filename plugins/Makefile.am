@@ -9,15 +9,12 @@ SUBDIRS= \
 	colors \
 	1080to480 \
 	720to480 \
-	denoisemjpeg \
-	motion \
-	parametric \
+	aging \
 	bandslide \
 	bandwipe \
 	blur \
 	brightness \
 	burn \
-	aging \
 	cdripper \
 	chromakey \
 	colorbalance \
@@ -27,22 +24,58 @@ SUBDIRS= \
 	deinterlace \
 	delayaudio \
 	delayvideo \
-				 denoise denoisefft denoisevideo despike dissolve dot fieldframe flip framefield \
-				 freeverb freezeframe gain holo huesaturation interpolateall invertaudio invertvideo \
+	denoise \
+	denoisefft \
+	denoisemjpeg \
+	denoisevideo \
+	despike \
+	diffkey \
+	dissolve \
+	dot \
+	downsample \
+	fieldframe \
+	flash \
+	flip \
+	framefield \
+	freeverb \
+	freezeframe \
+	gain \
+	gradient \
+	histogram \
+	holo \
+	huesaturation \
+	interpolateall \
+	invertaudio \
+	invertvideo \
 	irissquare \
 	ivtc \
+	level \
+	linearblur \
 	loopaudio \
 	loopvideo \
+	motion \
 	normalize \
 	oilpainting \
 	overlay \
+	parametric \
+	perspective \
 	pitch \
 	polar \
+	radialblur \
 	reframe \
 	resample \
 	reverb \
 	reverseaudio \
-				 reversevideo rgb601 rotate scale sharpen svg shiftinterlace slide spectrogram swapchannels \
+	reversevideo \
+	rgb601 \
+	rotate \
+	scale \
+	sharpen \
+	shiftinterlace \
+	slide \
+	spectrogram \
+	svg \
+	swapchannels \
 	synthesizer \
 	timeavg \
 	timestretch \
@@ -53,13 +86,7 @@ SUBDIRS= \
 	whirl \
 	wipe \
 	yuv \
-	downsample \
-	flash \
-	gradient \
-	level \
-	linearblur \
-				 perspective radialblur zoomblur \
-	histogram \
+	zoomblur \
 	fonts
 
 AUTOMAKE_OPTIONS=foreign
