@@ -26,7 +26,10 @@ void AVC1394TransportThread::run()
 		Thread::disable_cancel();
 		label->lock_window("AVC1394TransportThread::run 1");
 		// Sometimes text is set to NULL for some reason...
-		label->update(avc->timecode());
+		if(avc->timecode() == NULL)
+			label->update("Unknown");
+		else
+			label->update(avc->timecode());
 		label->unlock_window();
 		usleep(POLL_INTERVAL);
 		Thread::enable_cancel();
