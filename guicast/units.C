@@ -217,9 +217,10 @@ char* Units::totext(char *text,
   			hour = (int)(seconds / 3600);
   			minute = (int)(seconds / 60 - hour * 60);
   			second = (int)(seconds - hour * 3600 - minute * 60);
-  			frame = (int64_t)(frame_rate * 
-  	 			 (float)((float)seconds - (int64_t)hour * 3600 - (int64_t)minute * 60 - second));
-  			sprintf(text, "%01d:%02d:%02d:%02ld", hour, minute, second, frame);
+//  			frame = (int64_t)(frame_rate * 
+//	 			 (float)((float)seconds - (int64_t)hour * 3600 - (int64_t)minute * 60 - second));
+			frame = (int64_t)((double)frame_rate * seconds + 0.0000001) - (int64_t)((double)frame_rate * (hour * 3600 + minute * 60 + second) + 0.0000001);   
+			sprintf(text, "%01d:%02d:%02d:%02ld", hour, minute, second, frame);
 			return text;
 		}
 			break;
