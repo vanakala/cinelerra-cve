@@ -8,11 +8,11 @@ libmpeg3hv_la_SOURCES = bitstream.c libmpeg3.c mpeg3atrack.c mpeg3css.c \
 											mpeg3vtrack.c workarounds.c 
 bin_PROGRAMS = mpeg3dump mpeg3toc mpeg3cat
 mpeg3dump_SOURCES = mpeg3dump.c
-mpeg3dump_LDADD = libmpeg3.la
+mpeg3dump_LDADD = libmpeg3hv.la
 mpeg3toc_SOURCES = mpeg3toc.c
-mpeg3toc_LDADD = libmpeg3.la
+mpeg3toc_LDADD = libmpeg3hv.la
 mpeg3cat_SOURCES = mpeg3cat.c
-mpeg3cat_LDADD = libmpeg3.la
+mpeg3cat_LDADD = libmpeg3hv.la
 
 SUBDIRS = audio video 
 
