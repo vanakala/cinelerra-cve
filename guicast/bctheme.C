@@ -139,14 +139,14 @@ VFrame** BC_Theme::new_button(char *overlay_path,
 	char *dn_path)
 {
 	VFrame default_data(get_image_data(overlay_path));
-	BC_ThemeSet *result = new BC_ThemeSet(3, 1, "");
+	VFrame **data = new VFrame*[3];
 
-	result->data[0] = new_image(up_path);
-	result->data[1] = new_image(hi_path);
-	result->data[2] = new_image(dn_path);
+	data[0] = new_image(up_path);
+	data[1] = new_image(hi_path);
+	data[2] = new_image(dn_path);
 	for(int i = 0; i < 3; i++)
-		overlay(result->data[i], &default_data);
-	return result->data;
+		overlay(data[i], &default_data);
+	return data;
 }
 
 
@@ -156,14 +156,14 @@ VFrame** BC_Theme::new_button(char *overlay_path,
 	VFrame *dn)
 {
 	VFrame default_data(get_image_data(overlay_path));
-	BC_ThemeSet *result = new BC_ThemeSet(3, 0, "");
+	VFrame **data = new VFrame*[3];
 
-	result->data[0] = new VFrame(*up);
-	result->data[1] = new VFrame(*hi);
-	result->data[2] = new VFrame(*dn);
+	data[0] = new VFrame(*up);
+	data[1] = new VFrame(*hi);
+	data[2] = new VFrame(*dn);
 	for(int i = 0; i < 3; i++)
-		overlay(result->data[i], &default_data);
-	return result->data;
+		overlay(data[i], &default_data);
+	return data;
 }
 
 
@@ -175,16 +175,16 @@ VFrame** BC_Theme::new_toggle(char *overlay_path,
 	char *checkedhi_path)
 {
 	VFrame default_data(get_image_data(overlay_path));
-	BC_ThemeSet *result = new BC_ThemeSet(5, 1, "");
+	VFrame **data = new VFrame*[5];
 
-	result->data[0] = new_image(up_path);
-	result->data[1] = new_image(hi_path);
-	result->data[2] = new_image(checked_path);
-	result->data[3] = new_image(dn_path);
-	result->data[4] = new_image(checkedhi_path);
+	data[0] = new_image(up_path);
+	data[1] = new_image(hi_path);
+	data[2] = new_image(checked_path);
+	data[3] = new_image(dn_path);
+	data[4] = new_image(checkedhi_path);
 	for(int i = 0; i < 5; i++)
-		overlay(result->data[i], &default_data);
-	return result->data;
+		overlay(data[i], &default_data);
+	return data;
 }
 
 VFrame** BC_Theme::new_toggle(char *overlay_path, 
@@ -195,16 +195,16 @@ VFrame** BC_Theme::new_toggle(char *overlay_path,
 	VFrame *checkedhi)
 {
 	VFrame default_data(get_image_data(overlay_path));
-	BC_ThemeSet *result = new BC_ThemeSet(5, 0, "");
+	VFrame **data = new VFrame*[5];
 
-	result->data[0] = new VFrame(*up);
-	result->data[1] = new VFrame(*hi);
-	result->data[2] = new VFrame(*checked);
-	result->data[3] = new VFrame(*dn);
-	result->data[4] = new VFrame(*checkedhi);
+	data[0] = new VFrame(*up);
+	data[1] = new VFrame(*hi);
+	data[2] = new VFrame(*checked);
+	data[3] = new VFrame(*dn);
+	data[4] = new VFrame(*checkedhi);
 	for(int i = 0; i < 5; i++)
-		overlay(result->data[i], &default_data);
-	return result->data;
+		overlay(data[i], &default_data);
+	return data;
 }
 void BC_Theme::overlay(VFrame *dst, VFrame *src, int in_x1, int in_x2)
 {
