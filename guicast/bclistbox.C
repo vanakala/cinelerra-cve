@@ -9,9 +9,9 @@
 #include "keys.h"
 #include "timer.h"
 #include "vframe.h"
+#include "language.h"
 
 #include <string.h>
-
 
 // ====================================================== scrollbars
 
@@ -4284,7 +4284,7 @@ int BC_ListBox::draw_titles(int flash)
 			gui->set_color(BLACK);
 			gui->draw_text(-xposition + get_column_offset(i) + LISTBOX_MARGIN + LISTBOX_BORDER, 
 				LISTBOX_MARGIN + LISTBOX_BORDER + get_text_ascent(MEDIUMFONT), 
-				column_titles[i]);
+				_(column_titles[i]));
 		}
 		draw_border(0);
 	}

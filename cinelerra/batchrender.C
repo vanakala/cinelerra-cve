@@ -26,10 +26,10 @@
 
 static char *list_titles[] = 
 {
-	"Enabled", 
-	"Output",
-	"EDL",
-	"Elapsed"
+	N_("Enabled"), 
+	N_("Output"),
+	N_("EDL"),
+	N_("Elapsed")
 };
 
 static int list_widths[] =

@@ -1,6 +1,7 @@
 #ifndef BCFILEBOX_INC
 #define BCFILEBOX_INC
 
+#include "language.h"
 class BC_FileBox;
 
 
@@ -16,8 +17,8 @@ class BC_FileBox;
 #define FILEBOX_SIZE 1
 #define FILEBOX_DATE 2
 
-#define FILEBOX_NAME_TEXT "File"
-#define FILEBOX_SIZE_TEXT "Size"
-#define FILEBOX_DATE_TEXT "Date"
+#define FILEBOX_NAME_TEXT _("File")
+#define FILEBOX_SIZE_TEXT _("Size")
+#define FILEBOX_DATE_TEXT _("Date")
 
 #endif
