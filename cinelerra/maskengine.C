@@ -1,4 +1,5 @@
 #include "clip.h"
+#include "condition.h"
 #include "maskauto.h"
 #include "maskautos.h"
 #include "maskengine.h"
@@ -61,7 +62,7 @@ MaskUnit::~MaskUnit()
 	{
 		for (int i = 0; i < row_spans_h; i++) 
 			free(row_spans[i]);
-		delete row_spans;
+		delete [] row_spans;
 	}
 }
 
@@ -400,13 +401,12 @@ void MaskUnit::process_package(LoadPackage *package)
 		int local_first_nonempty_rowspan = SHRT_MIN;
 		int local_last_nonempty_rowspan = SHRT_MIN;
 
-		protect_data.lock(); // there was a race before...
 		if (!row_spans || row_spans_h != mask_h * OVERSAMPLE) {
 			int i;	
 			if (row_spans) {   /* size change */
 				for (i = 0; i < row_spans_h; i++) 
 					free(row_spans[i]);
-				delete row_spans;
+				delete [] row_spans;
 			}
 			row_spans_h = mask_h * OVERSAMPLE;
 			row_spans = new short *[mask_h * OVERSAMPLE]; 
@@ -417,7 +417,6 @@ void MaskUnit::process_package(LoadPackage *package)
 				row_spans[i][1] = NUM_SPANS;
 			}
 		}
-		protect_data.unlock();
 		
 //printf("MaskUnit::process_package 1 %d\n", engine->point_sets.total);
 		
@@ -649,12 +648,12 @@ void MaskUnit::process_package(LoadPackage *package)
 			}					
 			
 		}
-		protect_data.lock(); // there was a race before...
+		engine->protect_data.lock();
 		if (local_first_nonempty_rowspan < engine->first_nonempty_rowspan)
 			engine->first_nonempty_rowspan = local_first_nonempty_rowspan;
 		if (local_last_nonempty_rowspan > engine->last_nonempty_rowspan)
 			engine->last_nonempty_rowspan = local_last_nonempty_rowspan;
-		protect_data.unlock(); // there was a race before...
+		engine->protect_data.unlock();
 	
 
 //		int64_t dif= get_difference(&start_time);
@@ -668,13 +667,20 @@ void MaskUnit::process_package(LoadPackage *package)
 	if(engine->recalculate && engine->feather > 0) 
 	{	
 		/* first take care that all packages are already drawn onto mask */
-		protect_data.lock();
+		pthread_mutex_lock(&engine->stage1_finished_mutex);
 		engine->stage1_finished_count ++;
-		if (!engine->recalculate || !engine->feather || engine->stage1_finished_count == engine->get_total_packages())
-			engine->stage1_finished.unlock();
-		protect_data.unlock();
-		engine->stage1_finished.lock();   // if feather and this is last stage, it will block
-		engine->stage1_finished.unlock(); // let others pass also
+		if (engine->stage1_finished_count == engine->get_total_packages())
+		{
+			// let others pass
+			pthread_cond_broadcast(&engine->stage1_finished_cond);
+		}
+		else
+		{
+			// wait until all are finished
+			while (engine->stage1_finished_count < engine->get_total_packages())
+				pthread_cond_wait(&engine->stage1_finished_cond, &engine->stage1_finished_mutex);
+		}
+		pthread_mutex_unlock(&engine->stage1_finished_mutex);
 		
 		/* now do the feather */
 //printf("MaskUnit::process_package 3 %f\n", engine->feather);
@@ -903,10 +909,14 @@ MaskEngine::MaskEngine(int cpus)
 // : LoadServer(1, 2)
 {
 	mask = 0;
+	pthread_mutex_init(&stage1_finished_mutex, NULL);
+	pthread_cond_init(&stage1_finished_cond, NULL);
 }
 
 MaskEngine::~MaskEngine()
 {
+	pthread_cond_destroy(&stage1_finished_cond);
+	pthread_mutex_destroy(&stage1_finished_mutex);
 	if(mask) 
 	{
 		delete mask;
@@ -1085,8 +1095,6 @@ void MaskEngine::init_packages()
 	if(division < 1) division = 1;
 
 	stage1_finished_count = 0;
-	stage1_finished.reset();
-	stage1_finished.lock();
 	if (recalculate) {
 		last_nonempty_rowspan = SHRT_MIN;
 		first_nonempty_rowspan = SHRT_MAX;

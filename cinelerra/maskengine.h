@@ -2,6 +2,7 @@
 #define MASKENGINE_H
 
 
+#include "condition.inc"
 #include "loadbalance.h"
 #include "maskautos.inc"
 #include "maskauto.inc"
@@ -62,7 +63,6 @@ public:
 	MaskEngine *engine;
 	short **row_spans;
 	short row_spans_h;
-	Mutex protect_data;
 };
 
 
@@ -97,8 +97,10 @@ public:
 	float realfeather;          // real feather
 	int recalculate;
 	int value;
-	Mutex stage1_finished;
+	pthread_mutex_t stage1_finished_mutex;
+	pthread_cond_t stage1_finished_cond;
 	int stage1_finished_count;
+	Mutex protect_data;	// protects the following members
 	int first_nonempty_rowspan;
 	int last_nonempty_rowspan;
 };
