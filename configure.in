@@ -168,29 +168,6 @@ AC_SUBST(LIBDECORE_LIBADD)
 AC_SUBST(CPU_CFLAGS)
 ############## END OF MMX / 3DNOW
 
-############## NASM
-# From mjpegtool's configure.in
-
-AC_PATH_PROGS(CCAS, nasm nasmw)
-if test x$CCAS = x -o x$CCAS = x'"$CCAS"'; then
-	echo "NASM not found. mpeg2enc assembly code not built. This is a bad thing."
-	have_asm_mmx=false
-	have_asm_sse=false
-	have_asm_nasm=false
-else
-	AC_DEFINE(HAVE_ASM_NASM, , "Do you have asm?")
-	have_asm_nasm=true
-	CCASFLAGS="-f elf"
-	AC_SUBST(CCASFLAGS)
-fi
-
-AM_CONDITIONAL(HAVE_ASM_SSE, test x$have_asm_sse = xtrue)
-AM_CONDITIONAL(HAVE_ASM_MMX, test x$have_asm_mmx = xtrue)
-AM_CONDITIONAL(HAVE_ASM_NASM, test x$have_asm_nasm = xtrue)
-AM_CONDITIONAL(HAVE_X86CPU, test x$have_x86cpu = xtrue)
-
-# END OF NASM
-
 ############## FFMPEG
 dnl AM_CONDITIONAL(FFMPEG_AC3, true)
 dnl AM_CONDITIONAL(FFMPEG_A52BIN, false)
@@ -217,6 +194,7 @@ AC_OUTPUT(Makefile \
 					guicast/Makefile cinelerra/Makefile \
 					mplexhi/Makefile mplexlo/Makefile \
 					plugins/Makefile plugins/1080to480/Makefile \
+					plugins/histogram/Makefile \
 					plugins/720to480/Makefile \
 					plugins/blurzoom/Makefile \
 					plugins/denoisemjpeg/Makefile \
