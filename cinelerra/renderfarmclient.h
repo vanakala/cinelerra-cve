@@ -17,7 +17,10 @@
 class RenderFarmClient
 {
 public:
-	RenderFarmClient(int port, char *deamon_path, int nice_value, char *rcfile);
+	RenderFarmClient(int port, 
+		char *deamon_path, 
+		int nice_value,
+		char *config_path);
 	~RenderFarmClient();
 	
 	void main_loop();

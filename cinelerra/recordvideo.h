@@ -1,8 +1,9 @@
 #ifndef RECORDVIDEO_H
 #define RECORDVIDEO_H
 
+#include "condition.inc"
 #include "file.inc"
-#include "mutex.h"
+#include "mutex.inc"
 #include "mwindow.inc"
 #include "record.inc"
 #include "recordgui.inc"
@@ -75,8 +76,8 @@ public:
 
 	int is_recording;
 	int is_paused;
-	Mutex unhang_lock;
-	Mutex trigger_lock;
+	Mutex *unhang_lock;
+	Condition *trigger_lock;
 private:
 	int cleanup_recording();
 };

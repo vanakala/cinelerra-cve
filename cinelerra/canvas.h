@@ -10,6 +10,7 @@ class CanvasOutput;
 class CanvasXScroll;
 class CanvasYScroll;
 class CanvasPopup;
+class CanvasToggleControls;
 
 // The EDL arguments can be set to 0 if the canvas_w and canvas_h are used
 class Canvas
@@ -48,6 +49,8 @@ public:
 	virtual int button_press_event();
 	virtual int cursor_motion_event() { return 0; };
 	virtual void draw_overlays() { };
+	virtual void toggle_controls() { } ;
+	virtual int get_cwindow_controls() { return 0; };
 // Provide canvas dimensions since a BC_Bitmap containing obsolete dimensions
 // is often the output being transferred to
 	void get_transfers(EDL *edl, int &in_x, 
@@ -210,6 +213,7 @@ public:
 	void create_objects();
 
 	Canvas *canvas;
+	CanvasToggleControls *toggle_controls;
 };
 
 class CanvasPopupSize : public BC_MenuItem
@@ -235,6 +239,15 @@ class CanvasPopupResetProjector : public BC_MenuItem
 public:
 	CanvasPopupResetProjector(Canvas *canvas);
 	int handle_event();
+	Canvas *canvas;
+};
+
+class CanvasToggleControls : public BC_MenuItem
+{
+public:
+	CanvasToggleControls(Canvas *canvas);
+	int handle_event();
+	static char* calculate_text(int cwindow_controls);
 	Canvas *canvas;
 };
 

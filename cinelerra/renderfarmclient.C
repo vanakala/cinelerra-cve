@@ -5,6 +5,7 @@
 #include "edl.h"
 #include "filesystem.h"
 #include "filexml.h"
+#include "language.h"
 #include "mwindow.h"
 #include "pluginserver.h"
 #include "preferences.h"
@@ -27,15 +28,14 @@
 #include <unistd.h>
 
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 // The render client waits for connections from the server.
 // Then it starts a thread for each connection.
-RenderFarmClient::RenderFarmClient(int port, char *deamon_path, int nice_value, char *rcfile)
+RenderFarmClient::RenderFarmClient(int port, 
+	char *deamon_path, 
+	int nice_value,
+	char *config_path)
 {
 	this->port = port;
 	this->deamon_path = deamon_path;
@@ -47,7 +47,7 @@ RenderFarmClient::RenderFarmClient(int port, char *deamon_path, int nice_value, 
 
 	thread = new RenderFarmClientThread(this);
 
-	MWindow::init_defaults(boot_defaults, rcfile);
+	MWindow::init_defaults(boot_defaults, config_path);
 	boot_preferences = new Preferences;
 	boot_preferences->load_defaults(boot_defaults);
 	MWindow::init_plugins(boot_preferences, plugindb, 0);

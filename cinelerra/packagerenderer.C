@@ -14,6 +14,7 @@
 #include "file.h"
 #include "filesystem.h"
 #include "indexfile.h"
+#include "language.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "packagerenderer.h"
@@ -32,10 +33,6 @@
 #include "videodevice.h"
 #include "vrender.h"
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 
@@ -67,6 +64,11 @@ RenderPackage::~RenderPackage()
 // Used by RenderFarm and in the future, Render, to do packages.
 PackageRenderer::PackageRenderer()
 {
+	command = 0;
+	audio_cache = 0;
+	video_cache = 0;
+	aconfig = 0;
+	vconfig = 0;
 }
 
 PackageRenderer::~PackageRenderer()
@@ -74,7 +76,6 @@ PackageRenderer::~PackageRenderer()
 	delete command;
 	delete audio_cache;
 	delete video_cache;
-//	delete playback_config;
 	delete vconfig;
 }
 
@@ -86,40 +87,36 @@ int PackageRenderer::initialize(MWindow *mwindow,
 {
 	int result = 0;
 
-//printf("PackageRenderer::initialize 1\n");
 	this->mwindow = mwindow;
 	this->edl = edl;
 	this->preferences = preferences;
 	this->default_asset = default_asset;
 	this->plugindb = plugindb;
-//printf("PackageRenderer::initialize 1\n");
 
 	command = new TransportCommand;
 	command->command = NORMAL_FWD;
-	*command->get_edl() = *edl;
+	command->get_edl()->copy_all(edl);
 	command->change_type = CHANGE_ALL;
 	command->set_playback_range(edl);
 
 	default_asset->frame_rate = command->get_edl()->session->frame_rate;
 	default_asset->sample_rate = command->get_edl()->session->sample_rate;
+	default_asset->aspect_ratio = (double)command->get_edl()->session->aspect_w /
+		command->get_edl()->session->aspect_h;
 	Render::check_asset(edl, *default_asset);
-//printf("PackageRenderer::initialize 1 interpolation_type=%d\n",
-//	command->get_edl()->session->interpolation_type);
 
 	audio_cache = new CICache(command->get_edl(), preferences, plugindb);
 	video_cache = new CICache(command->get_edl(), preferences, plugindb);
-//printf("PackageRenderer::initialize 1\n");
 
+	PlaybackConfig *config = command->get_edl()->session->get_playback_config(PLAYBACK_LOCALHOST, 0);
+	aconfig = new AudioOutConfig(PLAYBACK_LOCALHOST, 0, 0);
 	vconfig = new VideoOutConfig(PLAYBACK_LOCALHOST, 0);
 //	playback_config = new PlaybackConfig(PLAYBACK_LOCALHOST, 0);
 	for(int i = 0; i < MAX_CHANNELS; i++)
 	{
 		vconfig->do_channel[i] = (i < command->get_edl()->session->video_channels);
-// 		playback_config->vconfig->do_channel[i] = (i < command->get_edl()->session->video_channels);
-// 		playback_config->aconfig->do_channel[i] = (i < command->get_edl()->session->audio_channels);
 	}
 
-//printf("PackageRenderer::initialize 2\n");
 
 	return result;
 }
@@ -131,7 +128,6 @@ void PackageRenderer::create_output()
 
 
 
-//printf("PackageRenderer::create_output 1\n");
 
 
 // Tag output paths for VFS here.
@@ -142,19 +138,11 @@ void PackageRenderer::create_output()
 
 
 
-//	if(mwindow)
-//		strcpy(asset->path, package->path);
-//	else
-//		fs.join_names(asset->path, preferences->renderfarm_mountpoint, package->path);
-//asset->dump();
 	
 
-//printf("PackageRenderer::create_output 2\n");
-	file = new File(preferences);
+	file = new File;
 
-//printf("PackageRenderer::create_output 3\n");
 	file->set_processors(preferences->processors);
-//printf("PackageRenderer::create_output 4 %s\n", asset->path);
 
 	result = file->open_file(plugindb, 
 					asset, 
@@ -162,15 +150,13 @@ void PackageRenderer::create_output()
 					1, 
 					command->get_edl()->session->sample_rate, 
 					command->get_edl()->session->frame_rate);
-//printf("PackageRenderer::create_output 5\n");
+//printf("PackageRenderer::create_output 10 %d\n", result);
 
 	if(result && mwindow)
 	{
 // open failed
 		char string[BCTEXTLEN];
-//printf("PackageRenderer::create_output 6\n");
 		sprintf(string, _("Couldn't open %s"), asset->path);
-//printf("PackageRenderer::create_output 7\n");
 		ErrorBox error(PROGRAM_NAME ": Error",
 			mwindow->gui->get_abs_cursor_x(),
 			mwindow->gui->get_abs_cursor_y());
@@ -181,11 +167,9 @@ void PackageRenderer::create_output()
 	if(mwindow)
 	{
 		mwindow->sighandler->push_file(file);
-//printf("PackageRenderer::create_output 8\n");
 		IndexFile::delete_index(preferences, asset);
-//printf("PackageRenderer::create_output 9\n");
 	}
-//printf("PackageRenderer::create_output 10\n");
+//printf("PackageRenderer::create_output 100 %d\n", result);
 }
 
 void PackageRenderer::create_engine()
@@ -193,13 +177,9 @@ void PackageRenderer::create_engine()
 	int current_achannel = 0, current_vchannel = 0;
 	audio_read_length = command->get_edl()->session->sample_rate;
 
-//printf("PackageRenderer::create_engine 1\n");
-	command->get_edl()->session->audio_module_fragment = 
-		command->get_edl()->session->audio_read_length = 
-		audio_read_length;
+	aconfig->fragment_size = audio_read_length;
 
 
-//printf("PackageRenderer::create_engine 1\n");
 	render_engine = new RenderEngine(0,
 		preferences,
 		command,
@@ -207,13 +187,9 @@ void PackageRenderer::create_engine()
 		plugindb,
 		0,
 		0);
-//printf("PackageRenderer::create_engine 1\n");
 	render_engine->set_acache(audio_cache);
-//printf("PackageRenderer::create_engine 1\n");
 	render_engine->set_vcache(video_cache);
-//printf("PackageRenderer::create_engine 1\n");
 	render_engine->arm_command(command, current_achannel, current_vchannel);
-//printf("PackageRenderer::create_engine 1\n");
 
 	if(package->use_brender)
 	{
@@ -266,7 +242,6 @@ void PackageRenderer::create_engine()
 				command->get_edl()->session->output_h, 
  				mwindow->cwindow->gui->canvas,
 				0);
-//printf("Render 14\n");
 			video_device->start_playback();
 		}
 	}
@@ -297,7 +272,6 @@ void PackageRenderer::do_audio()
 
 
 
-//printf("PackageRenderer::do_audio 2 %d %d\n", audio_read_length, audio_position);
 
 // Call render engine
 		result = render_engine->arender->process_buffer(audio_output_ptr, 
@@ -400,7 +374,6 @@ void PackageRenderer::do_video()
 					0);
 
 
-//printf("PackageRenderer::do_video 7\n");
 
  				if(mwindow && video_device->output_visible())
 				{
@@ -444,7 +417,6 @@ void PackageRenderer::do_video()
 					{
 						result |= file->write_video_buffer(video_write_position);
 // Update the brender map after writing the files.
-//printf("PackageRenderer::do_video 12 %d %d\n", package->use_brender, video_write_position);
 						if(package->use_brender)
 							for(int i = 0; i < video_write_position; i++)
 								set_video_map(video_position + 1 - video_write_position + i, 
@@ -457,9 +429,7 @@ void PackageRenderer::do_video()
 			}
 
 			video_position++;
-//printf("PackageRenderer::do_video 12\n");
 			if(get_result()) result = 1;
-//printf("PackageRenderer::do_video 13 %d %d\n", video_position, result);
 			if(!result && progress_cancelled()) result = 1;
 		}
 	}
@@ -545,7 +515,8 @@ int PackageRenderer::render_package(RenderPackage *package)
 	{
 		create_engine();
 
-//printf("PackageRenderer::render_package 5\n");
+//printf("PackageRenderer::render_package 5 %d\n", result);
+
 // Main loop
 		while((!audio_done || !video_done) && !result)
 		{
@@ -604,9 +575,9 @@ int PackageRenderer::render_package(RenderPackage *package)
 				need_video = 1;
 			}
 
-//printf("PackageRenderer::render_package 1 %lld %lld\n", audio_read_length, video_read_length);
+//printf("PackageRenderer::render_package 1 %d %lld %lld\n", result, audio_read_length, video_read_length);
 			if(need_video && !result) do_video();
-//printf("PackageRenderer::render_package 7 %d %d\n", samples_rendered, result);
+//printf("PackageRenderer::render_package 7 %d %d\n", result, samples_rendered);
 			if(need_audio && !result) do_audio();
 
 

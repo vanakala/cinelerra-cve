@@ -2,9 +2,10 @@
 #define RECORDAUDIO_H
 
 #include "audiodevice.inc"
+#include "condition.inc"
 #include "guicast.h"
 #include "file.inc"
-#include "mutex.h"
+#include "mutex.inc"
 #include "mwindow.inc"
 #include "record.inc"
 #include "recordgui.inc"
@@ -52,8 +53,8 @@ private:
 	RecordGUI *gui;
 	int64_t buffer_size, fragment_size, fragment_position;
 	int record_channels;
-	Mutex timer_lock;
-	Mutex trigger_lock;
+	Mutex *timer_lock;
+	Condition *trigger_lock;
 	Timer timer;
 	int write_result, grab_result;
 };

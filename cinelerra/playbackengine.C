@@ -70,7 +70,7 @@ int PlaybackEngine::create_objects()
 // Set the first change to maximum
 	que->command.change_type = CHANGE_ALL;
 
-	*preferences = *mwindow->preferences;
+	preferences->copy_from(mwindow->preferences);
 
 	done = 0;
 	Thread::start();
@@ -92,7 +92,7 @@ int PlaybackEngine::create_render_engines()
 
 //printf("PlaybackEngine::create_render_engines %d\n", command->get_edl()->session->playback_config[playback_strategy].total);
 	for(int i = 0; 
-		i < command->get_edl()->session->playback_config[playback_strategy].total; 
+		i < command->get_edl()->session->get_playback_heads(playback_strategy); 
 		i++)
 	{
 		RenderEngine *engine = new RenderEngine(this,
@@ -164,7 +164,6 @@ void PlaybackEngine::create_cache()
 
 void PlaybackEngine::perform_change()
 {
-//printf("PlaybackEngine::perform_change 1 %x\n", command->change_type);
 	switch(command->change_type)
 	{
 		case CHANGE_ALL:
@@ -172,16 +171,13 @@ void PlaybackEngine::perform_change()
 		case CHANGE_EDL:
 			audio_cache->set_edl(command->get_edl());
 			video_cache->set_edl(command->get_edl());
-//printf("PlaybackEngine::perform_change 1\n");
 			create_render_engines();
 		case CHANGE_PARAMS:
-//printf("PlaybackEngine::perform_change 1\n");
 			if(command->change_type != CHANGE_EDL &&
 				command->change_type != CHANGE_ALL)
 				for(int i = 0; i < render_engines.total; i++)
 					render_engines.values[i]->edl->synchronize_params(command->get_edl());
 		case CHANGE_NONE:
-//printf("PlaybackEngine::perform_change 2\n");
 			break;
 	}
 }
@@ -479,28 +475,28 @@ int PlaybackEngine::reset_parameters()
 	return 0;
 }
 
-int PlaybackEngine::init_parameters()
-{
-//	is_playing_back = 1;
-	update_button = 1;
-	correction_factor = 0;
-
-// correct playback buffer sizes
-	input_length = 
-		playback_buffer = 
-		output_length = 
-		audio_module_fragment = 
-		command->get_edl()->session->audio_module_fragment;
-
-// get maximum actual buffer size written to device plus padding
-	if(speed != 1) output_length = (long)(output_length / speed) + 16;   
-	if(output_length < playback_buffer) output_length = playback_buffer;
-
-// samples to read at a time is a multiple of the playback buffer greater than read_length
-	while(input_length < command->get_edl()->session->audio_read_length)
-		input_length += playback_buffer;
-	return 0;
-}
+// int PlaybackEngine::init_parameters()
+// {
+// //	is_playing_back = 1;
+// 	update_button = 1;
+// 	correction_factor = 0;
+// 
+// // correct playback buffer sizes
+// 	input_length = 
+// 		playback_buffer = 
+// 		output_length = 
+// 		audio_module_fragment = 
+// 		command->get_edl()->session->audio_module_fragment;
+// 
+// // get maximum actual buffer size written to device plus padding
+// 	if(speed != 1) output_length = (long)(output_length / speed) + 16;   
+// 	if(output_length < playback_buffer) output_length = playback_buffer;
+// 
+// // samples to read at a time is a multiple of the playback buffer greater than read_length
+// 	while(input_length < command->get_edl()->session->audio_module_fragment)
+// 		input_length += playback_buffer;
+// 	return 0;
+// }
 
 int PlaybackEngine::init_audio_device()
 {

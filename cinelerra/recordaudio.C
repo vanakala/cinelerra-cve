@@ -1,7 +1,9 @@
 #include "asset.h"
 #include "audiodevice.h"
 #include "batch.h"
+#include "bcsignals.h"
 #include "clip.h"
+#include "condition.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "errorbox.h"
@@ -9,6 +11,7 @@
 #include "filethread.h"
 #include "language.h"
 #include "meterpanel.h"
+#include "mutex.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "preferences.h"
@@ -25,17 +28,21 @@
 RecordAudio::RecordAudio(MWindow *mwindow,
 				Record *record, 
 				RecordThread *record_thread)
- : Thread()
+ : Thread(1, 0, 0)
 {
 	this->mwindow = mwindow;
 	this->record = record;
 	this->record_thread = record_thread; 
 	this->gui = record->record_gui;
 	fragment_position = 0;
+	timer_lock = new Mutex("RecordAudio::timer_lock");
+	trigger_lock = new Condition(1, "RecordAudio::trigger_lock");
 }
 
 RecordAudio::~RecordAudio()
 {
+	delete timer_lock;
+	delete trigger_lock;
 }
 
 void RecordAudio::reset_parameters()
@@ -55,14 +62,13 @@ int RecordAudio::arm_recording()
 	if(mwindow->edl->session->real_time_record) Thread::set_realtime();
 
 	timer.update();
-	set_synchronous(1);
-	trigger_lock.lock();
+	trigger_lock->lock("RecordAudio::arm_recording");
 	Thread::start();
 }
 
 void RecordAudio::start_recording()
 {
-	trigger_lock.unlock();
+	trigger_lock->unlock();
 }
 
 int RecordAudio::stop_recording()
@@ -113,8 +119,8 @@ void RecordAudio::run()
 
 
 // Wait for trigger
-	trigger_lock.lock();
-	trigger_lock.unlock();
+	trigger_lock->lock("RecordAudio::run");
+	trigger_lock->unlock();
 
 
 //printf("RecordAudio::run 2\n");
@@ -146,7 +152,7 @@ void RecordAudio::run()
 //printf("RecordAudio::run 3 %d\n", fragment_size);
 
 // Update timer for synchronization
-			timer_lock.lock();
+			timer_lock->lock("RecordAudio::run");
 			
 			if(!record_thread->monitor)
 			{
@@ -157,7 +163,7 @@ void RecordAudio::run()
 
 			record->get_current_batch()->session_samples += fragment_size;
 			timer.update();
-			timer_lock.unlock();
+			timer_lock->unlock();
 
 //printf("RecordAudio::run 2\n");
 // Get clipping status
@@ -176,7 +182,7 @@ void RecordAudio::run()
 				!batch_done && 
 				!grab_result)
 			{
-				record->record_monitor->window->lock_window();
+				record->record_monitor->window->lock_window("RecordAudio::run 1");
 				for(channel = 0; channel < record_channels; channel++)
 				{
 					record->record_monitor->window->meters->meters.values[channel]->update(max[channel], over[channel]);
@@ -228,7 +234,7 @@ void RecordAudio::run()
 //printf("RecordAudio::run 4 %d %d\n", batch_done, write_result);
 	}
 
-//printf("RecordAudio::run 4\n");
+TRACE("RecordAudio::run 4");
 	if(write_result && !record->default_asset->video_data)
 	{
 		ErrorBox error_box(PROGRAM_NAME ": Error",
@@ -238,7 +244,7 @@ void RecordAudio::run()
 		error_box.run_window();
 		batch_done = 1;
 	}
-//printf("RecordAudio::run 10\n");
+TRACE("RecordAudio::run 10\n");
 
 	if(!record_thread->monitor)
 	{
@@ -256,20 +262,20 @@ void RecordAudio::run()
 		delete [] input;
 		input = 0;
 	}
-//printf("RecordAudio::run 11\n");
+TRACE("RecordAudio::run 11\n");
 
 // reset meter
-	gui->lock_window();
+	gui->lock_window("RecordAudio::run 2");
 	for(channel = 0; channel < record_channels; channel++)
 	{
 		record->record_monitor->window->meters->meters.values[channel]->reset();
 	}
-//printf("RecordAudio::run 12\n");
+TRACE("RecordAudio::run 12\n");
 
 	gui->unlock_window();
 	delete [] max;
 	delete [] over;
-//printf("RecordAudio::run 5\n");
+TRACE("RecordAudio::run 100\n");
 }
 
 void RecordAudio::write_buffer(int skip_new)
@@ -288,7 +294,7 @@ int64_t RecordAudio::sync_position()
 	if(!batch_done)
 	{
 //printf("RecordAudio::sync_position 1\n");
-		timer_lock.lock();
+		timer_lock->lock("RecordAudio::sync_position");
 		if(!mwindow->edl->session->record_software_position)
 		{
 //printf("RecordAudio::sync_position 1\n");
@@ -300,7 +306,7 @@ int64_t RecordAudio::sync_position()
 			result = record->get_current_batch()->session_samples +
 				timer.get_scaled_difference(record->default_asset->sample_rate);
 		}
-		timer_lock.unlock();
+		timer_lock->unlock();
 //printf("RecordAudio::sync_position 2\n");
 		return result;
 	}

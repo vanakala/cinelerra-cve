@@ -156,7 +156,8 @@ public:
 	int mp3_bitrate;
 
 
-
+// Set by package render during file creation. -1 means square pixels.
+	double aspect_ratio;
 
 
 

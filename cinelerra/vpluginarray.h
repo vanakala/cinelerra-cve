@@ -18,7 +18,7 @@ public:
 	int64_t get_bufsize();
 	void create_buffers();
 	void create_modules();
-	void load_module(int module, int64_t input_position, int64_t len);
+//	void load_module(int module, int64_t input_position, int64_t len);
 	void process_realtime(int module, int64_t input_position, int64_t len);
 	int process_loop(int module, int64_t &write_length);
 	int write_buffers(int64_t len);

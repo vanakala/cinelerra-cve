@@ -29,6 +29,7 @@ public:
 		FileXML *xml, 
 		char *output_path);
 	Assets& operator=(Assets &assets);
+	void copy_from(Assets *assets);
 
 // Enter a new asset into the table.
 // If the asset already exists return the asset which exists.

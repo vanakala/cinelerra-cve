@@ -39,10 +39,11 @@ class RecordStartoverThread;
 class RecordCancelThread;
 
 #include "browsebutton.inc"
+#include "condition.inc"
 #include "guicast.h"
 #include "loadmode.inc"
 #include "maxchannels.h"
-#include "mutex.h"
+#include "mutex.inc"
 #include "mwindow.inc"
 #include "question.inc"
 #include "recordgui.inc"
@@ -286,7 +287,6 @@ public:
 
 	RecordGUI *gui;
 	Record *record;
-	Mutex completion_lock;
 	QuestionWindow *window;
 };
 
@@ -299,7 +299,6 @@ public:
 
 	RecordGUI *gui;
 	Record *record;
-	Mutex completion_lock;
 	QuestionWindow *window;
 };
 
@@ -455,7 +454,7 @@ public:
 	double new_length;
 	long new_clipped_samples;
 	int done;
-	Mutex input_lock;
+	Condition *input_lock;
 };
 
 

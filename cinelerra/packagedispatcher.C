@@ -206,8 +206,10 @@ int PackageDispatcher::create_packages(MWindow *mwindow,
 	}
 
 // Test existence of every output file.
-// Only if this isn't a background render.
-	if(strategy != BRENDER_FARM && test_overwrite)
+// Only if this isn't a background render or non interactive.
+	if(strategy != BRENDER_FARM && 
+		test_overwrite &&
+		mwindow)
 	{
 		ArrayList<char*> paths;
 		for(int i = 0; i < total_allocated; i++)
@@ -225,9 +227,11 @@ RenderPackage* PackageDispatcher::get_package(double frames_per_second,
 	int use_local_rate)
 {
 	package_lock->lock();
+// printf("PackageDispatcher::get_package 1 %f\n", 
+// frames_per_second);
 
 	preferences->set_rate(frames_per_second, client_number);
-	mwindow->preferences->copy_rates_from(preferences);
+	if(mwindow) mwindow->preferences->copy_rates_from(preferences);
 	float avg_frames_per_second = preferences->get_avg_rate(use_local_rate);
 
 	RenderPackage *result = 0;
@@ -244,18 +248,15 @@ RenderPackage* PackageDispatcher::get_package(double frames_per_second,
 	else
 	if(strategy == SINGLE_PASS_FARM)
 	{
-//printf("PackageDispatcher::get_package 1\n");
 		if(audio_position < audio_end ||
 			video_position < video_end)
 		{
 // Last package
-//printf("PackageDispatcher::get_package 2\n");
 			double scaled_len;
 			result = packages[current_package];
 			result->audio_start = audio_position;
 			result->video_start = video_position;
 
-//printf("PackageDispatcher::get_package 3\n");
 			if(current_package >= total_allocated - 1)
 			{
 				result->audio_end = audio_end;
@@ -264,19 +265,18 @@ RenderPackage* PackageDispatcher::get_package(double frames_per_second,
 				video_position = result->video_end;
 			}
 			else
-// No useful speed data
-			if(EQUIV(frames_per_second, 0) || 
+// No useful speed data.  May get infinity for real fast jobs.
+			if(frames_per_second > 0x7fffff || frames_per_second < 0 ||
+				EQUIV(frames_per_second, 0) || 
 				EQUIV(avg_frames_per_second, 0))
 			{
 				scaled_len = MAX(package_len, min_package_len);
 
-//printf("PackageDispatcher::get_package 4\n");
 				result->audio_end = audio_position + 
 					Units::round(scaled_len * default_asset->sample_rate);
 				result->video_end = video_position + 
 					Units::round(scaled_len * default_asset->frame_rate);
 
-//printf("PackageDispatcher::get_package 5\n");
 // If we get here without any useful speed data render the whole thing.
 				if(current_package >= total_packages - 1)
 				{
@@ -289,7 +289,6 @@ RenderPackage* PackageDispatcher::get_package(double frames_per_second,
 					result->video_end = MIN(video_end, result->video_end);
 				}
 
-//printf("PackageDispatcher::get_package 6\n");
 				audio_position = result->audio_end;
 				video_position = result->video_end;
 			}
@@ -302,21 +301,17 @@ RenderPackage* PackageDispatcher::get_package(double frames_per_second,
 					avg_frames_per_second;
 				scaled_len = MAX(scaled_len, min_package_len);
 
-//printf("PackageDispatcher::get_package 7\n");
 				result->audio_end = result->audio_start + 
 					Units::to_int64(scaled_len * default_asset->sample_rate);
 				result->video_end = result->video_start +
 					Units::to_int64(scaled_len * default_asset->frame_rate);
 
-//printf("PackageDispatcher::get_package 8\n");
 				result->audio_end = MIN(audio_end, result->audio_end);
 				result->video_end = MIN(video_end, result->video_end);
 
-//printf("PackageDispatcher::get_package 9\n");
 				audio_position = result->audio_end;
 				video_position = result->video_end;
 
-//printf("PackageDispatcher::get_package 10\n");
 // Package size is no longer touched between total_packages and total_allocated
 				if(current_package < total_packages - 1)
 				{
@@ -325,12 +320,14 @@ RenderPackage* PackageDispatcher::get_package(double frames_per_second,
 						(double)(total_packages - current_package);
 				}
 
-//printf("PackageDispatcher::get_package 11\n");
 			}
 
 			current_package++;
-//printf("Dispatcher::get_package 2 %d %d %d %d\n", 
-//result->audio_start, result->video_start, result->audio_end, result->video_end);
+// printf("Dispatcher::get_package 2 %lld %lld %lld %lld\n", 
+// result->audio_start, 
+// result->video_start, 
+// result->audio_end, 
+// result->video_end);
 		}
 	}
 	else

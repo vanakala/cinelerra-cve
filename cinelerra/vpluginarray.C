@@ -30,7 +30,7 @@ VPluginArray::~VPluginArray()
 
 void VPluginArray::get_recordable_tracks()
 {
-	tracks = new RecordableVTracks(mwindow->edl->tracks);
+	tracks = new RecordableVTracks(edl->tracks);
 }
 
 int64_t VPluginArray::get_bufsize()
@@ -41,7 +41,7 @@ int64_t VPluginArray::get_bufsize()
 void VPluginArray::create_buffers()
 {
 	file->start_video_thread(buffer_size,
-		mwindow->edl->session->color_model,
+		edl->session->color_model,
 		RING_BUFFERS,
 		0);
 //	if(!plugin_server->realtime) realtime_buffers = file->get_video_buffer();
@@ -60,29 +60,24 @@ void VPluginArray::create_modules()
 	}
 }
 
-void VPluginArray::load_module(int module, int64_t input_position, int64_t len)
-{
-	if(module == 0) realtime_buffers = file->get_video_buffer();
-	((VModule*)modules[module])->render(realtime_buffers[module][0],
-		input_position,
-		PLAY_FORWARD,
-		0);
-}
+// void VPluginArray::load_module(int module, int64_t input_position, int64_t len)
+// {
+// 	if(module == 0) realtime_buffers = file->get_video_buffer();
+// 	((VModule*)modules[module])->render(realtime_buffers[module][0],
+// 		input_position,
+// 		PLAY_FORWARD,
+// 		0);
+// }
 
-void VPluginArray::process_realtime(int module, int64_t input_position, int64_t len)
+void VPluginArray::process_realtime(int module, 
+	int64_t input_position, 
+	int64_t len)
 {
-// Convert from array of frames to array of tracks
-	VFrame **temp_buffer;
-	temp_buffer = new VFrame*[total_tracks()];
-	for(int i = 0; i < total_tracks(); i++)
-	{
-		temp_buffer[i] = realtime_buffers[i][0];
-	}
-	values[module]->process_realtime(&temp_buffer[module], 
-			realtime_buffers[module],
+	values[module]->process_buffer(realtime_buffers[module], 
 			input_position, 
-			0);
-	delete [] temp_buffer;
+			edl->session->frame_rate,
+			0,
+			PLAY_FORWARD);
 }
 
 int VPluginArray::process_loop(int module, int64_t &write_length)

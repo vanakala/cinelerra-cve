@@ -50,10 +50,11 @@ public:
 	int last_playback;  
 // if this media type is being rendered asynchronously by threads
 	int asynchronous;     
-// Module for every track to dispatch plugins in
+// Module for every track to dispatch plugins in whether the track is
+// playable or not.
 // Maintain module structures here instead of reusing the EDL so 
 // plugins persist if the EDL is replaced.
-// Modules persist after vconsole is restarted
+// Modules can persist after vconsole is restarted.
 	int total_modules;
 	Module **modules;
 	int data_type;

@@ -6,6 +6,7 @@
 #include "edlsession.h"
 #include "intauto.h"
 #include "intautos.h"
+#include "language.h"
 #include "localsession.h"
 #include "mainsession.h"
 #include "mainundo.h"
@@ -21,10 +22,6 @@
 #include "transportque.h"
 #include "vframe.h"
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 PatchGUI::PatchGUI(MWindow *mwindow, 
@@ -192,6 +189,7 @@ TRACE("PatchGUI::update 10");
 	if(h - y1 >= mwindow->theme->play_h)
 	{
 		patchbay->add_subwindow(play = new PlayPatch(mwindow, this, x1 + x, y1 + y));
+//printf("PatchGUI::update 1 %p %p\n", play, &play->status);
 		x1 += play->get_w();
 		patchbay->add_subwindow(record = new RecordPatch(mwindow, this, x1 + x, y1 + y));
 		x1 += record->get_w();
@@ -292,15 +290,20 @@ void PatchGUI::toggle_behavior(int type,
 
 }
 
-char* PatchGUI::calculate_nudge_text()
+char* PatchGUI::calculate_nudge_text(int *changed)
 {
+	if(changed) *changed = 0;
 	if(track->edl->session->nudge_seconds)
 	{
 		sprintf(string_return, "%.4f", track->from_units(track->nudge));
+		if(changed && nudge && atof(nudge->get_text()) - atof(string_return) != 0)
+			*changed = 1;
 	}
 	else
 	{
 		sprintf(string_return, "%d", track->nudge);
+		if(changed && nudge && atoi(nudge->get_text()) - atoi(string_return) != 0)
+			*changed = 1;
 	}
 	return string_return;
 }
@@ -699,7 +702,7 @@ NudgePatch::NudgePatch(MWindow *mwindow,
  	y,
 	w,
 	1,
-	patch->calculate_nudge_text())
+	patch->calculate_nudge_text(0))
 {
 	this->mwindow = mwindow;
 	this->patch = patch;
@@ -749,7 +752,10 @@ int NudgePatch::button_press_event()
 
 void NudgePatch::update()
 {
-	BC_TextBox::update(patch->calculate_nudge_text());
+	int changed;
+	char *string = patch->calculate_nudge_text(&changed);
+	if(changed)
+		BC_TextBox::update(string);
 }
 
 

@@ -16,6 +16,7 @@
 #include "filethread.h"
 #include "formatcheck.h"
 #include "indexfile.h"
+#include "language.h"
 #include "localsession.h"
 #include "mainundo.h"
 #include "mwindow.h"
@@ -43,10 +44,6 @@
 
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 RecordMenuItem::RecordMenuItem(MWindow *mwindow)
@@ -390,6 +387,7 @@ void Record::run()
 		edl->session->output_h = default_asset->height;
 		edl->session->aspect_w = mwindow->edl->session->aspect_w;
 		edl->session->aspect_h = mwindow->edl->session->aspect_h;
+
 		record_gui = new RecordGUI(mwindow, this);
 		record_gui->load_defaults();
 		record_gui->create_objects();
@@ -424,8 +422,11 @@ void Record::run()
 		close_output_file();
 		delete record_monitor;
 		record_gui->save_defaults();
+TRACE("Record::run 1");
 		delete record_gui;
+TRACE("Record::run 2");
 		delete edl;
+TRACE("Record::run 3");
 	}
 
 	menu_item->current_state = RECORD_NOTHING;
@@ -621,7 +622,7 @@ int Record::open_output_file()
 		Batch *batch = get_current_batch();
 		delete_output_file();
 
-		file = new File(mwindow->preferences);
+		file = new File;
 		result = file->open_file(mwindow->plugindb, 
 			batch->get_current_asset(), 
 			0, 

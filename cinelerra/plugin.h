@@ -86,13 +86,14 @@ public:
 // Shift in time
 	void shift(int64_t difference);
 	void dump();
-// Get keyframes for configuring plugin
-	KeyFrame* get_prev_keyframe(int64_t position);
-	KeyFrame* get_next_keyframe(int64_t position);
+// Called by PluginClient sequence to get rendering parameters
+	KeyFrame* get_prev_keyframe(int64_t position, int direction);
+	KeyFrame* get_next_keyframe(int64_t position, int direction);
 // If this is a standalone plugin fill its location in the result.
 // If it's shared copy the shared location into the result
 	void get_shared_location(SharedLocation *result);
-// Get keyframes for editing with automatic creation if enabled
+// Get keyframes for editing with automatic creation if enabled.
+// The direction is always assumed to be forward.
 	virtual KeyFrame* get_keyframe();
 	int silence();
 // Calculate title given plugin type.  Used by TrackCanvas::draw_plugins

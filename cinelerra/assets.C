@@ -80,17 +80,22 @@ int Assets::save(ArrayList<PluginServer*> *plugindb, FileXML *file, char *path)
 	return 0;
 }
 
-Assets& Assets::operator=(Assets &assets)
+void Assets::copy_from(Assets *assets)
 {
 	while(last) delete last;
 
-	for(Asset *current = assets.first; current; current = NEXT)
+	for(Asset *current = assets->first; current; current = NEXT)
 	{
 		Asset *new_asset;
 		append(new_asset = new Asset);
 		new_asset->copy_from(current, 1);
 	}
+}
 
+Assets& Assets::operator=(Assets &assets)
+{
+printf("Assets::operator= 1\n");
+	copy_from(&assets);
 	return *this;
 }
 

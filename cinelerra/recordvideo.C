@@ -2,12 +2,14 @@
 #include "batch.h"
 #include "bcsignals.h"
 #include "clip.h"
+#include "condition.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "errorbox.h"
 #include "file.h"
 #include "filethread.h"
 #include "language.h"
+#include "mutex.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "preferences.h"
@@ -28,17 +30,21 @@
 RecordVideo::RecordVideo(MWindow *mwindow,
 	Record *record, 
 	RecordThread *record_thread)
- : Thread()
+ : Thread(1, 0, 0)
 {
 	reset_parameters();
 	this->mwindow = mwindow;
 	this->record = record;
 	this->record_thread = record_thread; 
 	this->gui = record->record_gui;
+	unhang_lock = new Mutex("RecordVideo::unhang_lock");
+	trigger_lock = new Condition(1, "RecordVideo::trigger_lock");
 }
 
 RecordVideo::~RecordVideo()
 {
+	delete unhang_lock;
+	delete trigger_lock;
 }
 
 void RecordVideo::reset_parameters()
@@ -62,8 +68,7 @@ int RecordVideo::arm_recording()
 	else
 		buffer_size = mwindow->edl->session->video_write_length;
 
-	set_synchronous(1);
-	trigger_lock.lock();
+	trigger_lock->lock("RecordVideo::arm_recording");
 	Thread::start();
 
 	return 0;
@@ -71,7 +76,7 @@ int RecordVideo::arm_recording()
 
 void RecordVideo::start_recording()
 {
-	trigger_lock.unlock();
+	trigger_lock->unlock();
 }
 
 int RecordVideo::stop_recording()
@@ -79,24 +84,18 @@ int RecordVideo::stop_recording()
 // Device won't exist if interrupting a cron job
 	if(record->vdevice)
 	{
-//printf("RecordVideo::stop_recording 1 %p\n", record->vdevice);
 // Interrupt IEEE1394 crashes
 		record->vdevice->interrupt_crash();
-//printf("RecordVideo::stop_recording 1\n");
 
 // Interrupt video4linux crashes
 		if(record->vdevice->get_failed())
 		{
-//printf("RecordVideo::stop_recording 2\n");
 			Thread::end();
 			Thread::join();
-//printf("RecordVideo::stop_recording 3\n");
 
 			cleanup_recording();
-//printf("RecordVideo::stop_recording 4\n");
 		}
 	}
-//printf("RecordVideo::stop_recording 5\n");
 	return 0;
 }
 
@@ -145,8 +144,6 @@ void RecordVideo::run()
 	write_result = 0;
 	grab_result = 0;
 
-//printf("RecordVideo::run 1 %d\n", getpid());
-
 // Thread out the I/O
 	if(!record_thread->monitor)
 	{
@@ -164,8 +161,8 @@ void RecordVideo::run()
 
 
 // Wait for trigger
-	trigger_lock.lock();
-	trigger_lock.unlock();
+	trigger_lock->lock("RecordVideo::run");
+	trigger_lock->unlock();
 
 //printf("RecordVideo::run 1 %d\n", record_thread->monitor);
 
@@ -190,7 +187,6 @@ void RecordVideo::run()
 			delay = (int64_t)((float)(next_sample - current_sample) / 
 				record->default_asset->sample_rate * 
 				1000  
-//              / 2
 				);
 // Sanity check and delay.
 			if(delay < 2000 && delay > 0) delayer.delay(delay);
@@ -337,6 +333,7 @@ TRACE("RecordVideo::run 2");
 	}
 
 	cleanup_recording();
+TRACE("RecordVideo::run 100");
 }
 
 void RecordVideo::read_buffer()

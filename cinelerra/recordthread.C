@@ -2,10 +2,12 @@
 #include "audiodevice.h"
 #include "batch.h"
 #include "bcsignals.h"
+#include "condition.h"
 #include "drivesync.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "file.h"
+#include "mutex.h"
 #include "mwindow.h"
 #include "record.h"
 #include "recordaudio.h"
@@ -17,7 +19,7 @@
 
 
 RecordThread::RecordThread(MWindow *mwindow, Record *record)
- : Thread()
+ : Thread(1, 0, 0)
 {
 	this->mwindow = mwindow;
 	this->record = record;
@@ -25,11 +27,21 @@ RecordThread::RecordThread(MWindow *mwindow, Record *record)
 	record_timer = new Timer;
 	record_audio = 0;
 	record_video = 0;
+	pause_lock = new Condition(1, "RecordThread::pause_lock");
+	startup_lock = new Condition(1, "RecordThread::startup_lock");
+	loop_lock = new Condition(1, "RecordThread::loop_lock");
+	state_lock = new Mutex("RecordThread::state_lock");
 }
 
 RecordThread::~RecordThread()
 {
+TRACE("RecordThread::~RecordThread 1");
 	delete record_timer;
+	delete pause_lock;
+	delete startup_lock;
+	delete loop_lock;
+	delete state_lock;
+TRACE("RecordThread::~RecordThread 10");
 }
 
 int RecordThread::create_objects()
@@ -54,16 +66,14 @@ int RecordThread::start_recording(int monitor, int context)
 	this->monitor = monitor;
 	this->context = context;
 	resume_monitor = !monitor;
-	loop_lock.lock();
+	loop_lock->lock("RecordThread::start_recording");
 // Startup lock isn't 
-	startup_lock.lock();
-	completion_lock.lock();
+	startup_lock->lock("RecordThread::start_recording");
 
 
-	set_synchronous(0);
 	Thread::start();
-	startup_lock.lock();
-	startup_lock.unlock();
+	startup_lock->lock("RecordThread::start_recording");
+	startup_lock->unlock();
 //printf("RecordThread::start_recording 10\n");
 	return 0;
 }
@@ -71,7 +81,7 @@ int RecordThread::start_recording(int monitor, int context)
 int RecordThread::stop_recording(int resume_monitor)
 {
 // Stop RecordThread while waiting for batch
-	state_lock.lock();
+	state_lock->lock("RecordThread::stop_recording");
 	engine_done = 1;
 
 	this->resume_monitor = resume_monitor;
@@ -82,31 +92,27 @@ int RecordThread::stop_recording(int resume_monitor)
 	if(record_video)
 	{
 		record_video->batch_done = 1;
-		state_lock.unlock();
+		state_lock->unlock();
 		record_video->stop_recording();
 	}
 	else
 	if(record_audio && context != CONTEXT_SINGLEFRAME) 
 	{
 		record_audio->batch_done = 1;
-		state_lock.unlock();
+		state_lock->unlock();
 		record_audio->stop_recording();
 	}
 
-
-	completion_lock.lock();
-	completion_lock.unlock();
+	Thread::join();
 	return 0;
 }
 
 int RecordThread::pause_recording()
 {
 // Stop the thread before finishing the loop
-//printf("RecordThread::pause_recording 1\n");
-	pause_lock.lock();
-//printf("RecordThread::pause_recording 1\n");
+	pause_lock->lock("RecordThread::pause_recording");
 
-	state_lock.lock();
+	state_lock->lock("RecordThread::pause_recording");
 	if(record->default_asset->video_data)
 	{
 		record_video->batch_done = 1;
@@ -115,19 +121,16 @@ int RecordThread::pause_recording()
 	{
 		record_audio->batch_done = 1;
 	}
-	state_lock.unlock();
-//printf("RecordThread::pause_recording 1\n");
+	state_lock->unlock();
 // Stop the recordings
 	if(record->default_asset->audio_data && context != CONTEXT_SINGLEFRAME)
 		record_audio->stop_recording();
 	if(record->default_asset->video_data)
 		record_video->stop_recording();
-//printf("RecordThread::pause_recording 1\n");
 
 // Wait for thread to stop before closing devices
-	loop_lock.lock();
-	loop_lock.unlock();
-//printf("RecordThread::pause_recording 1\n");
+	loop_lock->lock("RecordThread::pause_recording");
+	loop_lock->unlock();
 
 
 
@@ -148,8 +151,8 @@ int RecordThread::resume_recording()
 	{
 		record_audio->batch_done = 0;
 	}
-	loop_lock.lock();
-	pause_lock.unlock();
+	loop_lock->lock("RecordThread::resume_recording");
+	pause_lock->unlock();
 //printf("RecordThread::resume_recording 2\n");
 	return 0;
 }
@@ -203,7 +206,7 @@ void RecordThread::do_cron()
 		if(!engine_done) usleep(BATCH_DELAY);
 		if(!engine_done)
 		{
-			record->record_gui->lock_window();
+			record->record_gui->lock_window("RecordThread::do_cron");
 			record->record_gui->flash_batch();
 			record->record_gui->unlock_window();
 		}
@@ -215,7 +218,7 @@ void RecordThread::do_cron()
 void RecordThread::run()
 {
 	int rewinding_loop = 0;
-	startup_lock.unlock();
+	startup_lock->unlock();
 	record->get_current_time(last_seconds, last_day);
 
 
@@ -228,7 +231,7 @@ void RecordThread::run()
 			do_cron();
 		}
 
-		state_lock.lock();
+		state_lock->lock("RecordThread::run");
 // Test for stopped while waiting
 		if(!engine_done)
 		{
@@ -300,7 +303,7 @@ TRACE("RecordThread::run 10");
 			if(record->default_asset->video_data)
 				record_video->arm_recording();
 TRACE("RecordThread::run 11");
-			state_lock.unlock();
+			state_lock->unlock();
 
 // Trigger loops
 
@@ -313,10 +316,10 @@ TRACE("RecordThread::run 13");
 
 
 			if(record->default_asset->audio_data && context != CONTEXT_SINGLEFRAME)
-				record_audio->join();
+				record_audio->Thread::join();
 TRACE("RecordThread::run 14");
 			if(record->default_asset->video_data)
-				record_video->join();
+				record_video->Thread::join();
 TRACE("RecordThread::run 15");
 
 // Stop file threads here to keep loop synchronized
@@ -369,16 +372,16 @@ TRACE("RecordThread::run 20");
 		}
 		else
 		{
-			state_lock.unlock();
+			state_lock->unlock();
 		}
 
 // Wait for thread to stop before closing devices
-		loop_lock.unlock();
+		loop_lock->unlock();
 		if(monitor)
 		{
 // Pause until monitor is resumed
-			pause_lock.lock();
-			pause_lock.unlock();
+			pause_lock->lock("RecordThread::run");
+			pause_lock->unlock();
 		}
 	}while(!engine_done);
 
@@ -394,6 +397,5 @@ TRACE("RecordThread::run 20");
 	{
 		record->capture_state = IS_DONE;
 	}
-	completion_lock.unlock();
 }
 

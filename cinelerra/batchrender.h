@@ -6,8 +6,10 @@
 #include "batchrender.inc"
 #include "bcdialog.h"
 #include "browsebutton.inc"
+#include "filexml.inc"
 #include "formattools.h"
 #include "mwindow.inc"
+#include "preferences.inc"
 #include "timeentry.h"
 
 #define BATCHRENDER_COLUMNS 4
@@ -28,7 +30,7 @@ public:
 class BatchRenderJob
 {
 public:
-	BatchRenderJob(MWindow *mwindow);
+	BatchRenderJob(Preferences *preferences);
 	~BatchRenderJob();
 
 	void copy_from(BatchRenderJob *src);
@@ -44,7 +46,7 @@ public:
 	int enabled;
 // Amount of time elapsed in last render operation
 	double elapsed;
-	MWindow *mwindow;
+	Preferences *preferences;
 };
 
 
@@ -58,15 +60,21 @@ class BatchRenderThread : public BC_DialogThread
 {
 public:
 	BatchRenderThread(MWindow *mwindow);
+	BatchRenderThread();
 	void handle_close_event(int result);
 	BC_Window* new_gui();
 
+	int test_edl_files();
+	void calculate_dest_paths(ArrayList<char*> *paths,
+		Preferences *preferences,
+		ArrayList<PluginServer*> *plugindb);
+
 // Load batch rendering jobs
-	void load_jobs();
+	void load_jobs(char *path, Preferences *preferences);
 // Not applicable to western civilizations
-	void save_jobs();
-	void load_defaults();
-	void save_defaults();
+	void save_jobs(char *path);
+	void load_defaults(Defaults *defaults);
+	void save_defaults(Defaults *defaults);
 // Create path for persistent storage functions
 	char* create_path(char *string);
 	void new_job();
@@ -75,6 +83,9 @@ public:
 	BatchRenderJob* get_current_job();
 	Asset* get_current_asset();
 	char* get_current_edl();
+// For command line usage
+	void start_rendering(char *config_path, char *batch_path);
+// For GUI usage
 	void start_rendering();
 	void stop_rendering();
 // Highlight the currently rendering job.

@@ -19,32 +19,21 @@
 VirtualConsole::VirtualConsole(RenderEngine *renderengine, 
 	CommonRender *commonrender,
 	int data_type)
- : Thread()
 {
 	this->renderengine = renderengine;
 	this->commonrender = commonrender;
 	this->data_type = data_type;
-	total_tracks = 0;
-	startup_lock = new Condition(1, "VirtualConsole::startup_lock");
+	total_entry_nodes = 0;
 	playable_tracks = 0;
-	ring_buffers = 0;
-	virtual_modules = 0;
+	entry_nodes = 0;
 }
 
 
 VirtualConsole::~VirtualConsole()
 {
-//printf("VirtualConsole::~VirtualConsole 1\n");
 	delete_virtual_console();
-	delete_input_buffers();
 
-	delete startup_lock;
 	if(playable_tracks) delete playable_tracks;
-}
-
-int VirtualConsole::total_ring_buffers()
-{
-	return 2;
 }
 
 
@@ -52,50 +41,29 @@ void VirtualConsole::create_objects()
 {
 	interrupt = 0;
 	done = 0;
-	current_input_buffer = 0;
-	current_vconsole_buffer = 0;
 
 	get_playable_tracks();
-	total_tracks = playable_tracks->total;
-	allocate_input_buffers();
+	total_entry_nodes = playable_tracks->total;
 	build_virtual_console(1);
-	sort_virtual_console();
 //dump();
-
 }
 
 void VirtualConsole::start_playback()
 {
-	done = 0;
 	interrupt = 0;
-	current_input_buffer = 0;
-	current_vconsole_buffer = 0;
-	if(renderengine->command->realtime && data_type == TRACK_AUDIO)
-	{
-// don't start a thread unless writing to an audio device
-		startup_lock->lock();
-		for(int ring_buffer = 0; ring_buffer < ring_buffers; ring_buffer++)
-		{
-			input_lock[ring_buffer]->reset();
-			output_lock[ring_buffer]->reset();
-			input_lock[ring_buffer]->lock("VirtualConsole::start_playback");
-		}
-		Thread::set_synchronous(1);   // prepare thread base class
-//printf("VirtualConsole::start_playback 2 %d\n", renderengine->edl->session->real_time_playback);
-		Thread::start();
-//printf("VirtualConsole::start_playback 3 %d\n", renderengine->edl->session->real_time_playback);
-		startup_lock->lock();
-		startup_lock->unlock();
-	}
+	done = 0;
 }
 
+void VirtualConsole::get_playable_tracks()
+{
+}
 
 Module* VirtualConsole::module_of(Track *track)
 {
 	for(int i = 0; i < commonrender->total_modules; i++)
 	{
-//printf("VirtualConsole::module_of %p %p\n", (Track*)commonrender->modules[i]->track, track); 
-		if(commonrender->modules[i]->track == track) return commonrender->modules[i];
+		if(commonrender->modules[i]->track == track) 
+			return commonrender->modules[i];
 	}
 	return 0;
 }
@@ -124,83 +92,48 @@ Module* VirtualConsole::module_number(int track_number)
 	return 0;
 }
 
-int VirtualConsole::allocate_input_buffers()
+void VirtualConsole::build_virtual_console(int persistent_plugins)
 {
-	if(!ring_buffers)
+// allocate the entry nodes
+	if(!entry_nodes)
 	{
-		ring_buffers = total_ring_buffers();
+		entry_nodes = new VirtualNode*[total_entry_nodes];
 
-// allocate the drive read buffers
-		for(int ring_buffer = 0; 
-			ring_buffer < ring_buffers; 
-			ring_buffer++)
+		for(int i = 0; i < total_entry_nodes; i++)
 		{
-			input_lock[ring_buffer] = new Condition(1, "VirtualConsole::input_lock");
-			output_lock[ring_buffer] = new Condition(1, "VirtualConsole::output_lock");
-			last_playback[ring_buffer] = 0;
-			new_input_buffer(ring_buffer);
-		}
-	}
-
-	return 0;
-}
-
-void VirtualConsole::build_virtual_console(int persistant_plugins)
-{
-// allocate the virtual modules
-//printf("VirtualConsole::build_virtual_console 1\n");
-	if(!virtual_modules)
-	{
-		virtual_modules = new VirtualNode*[total_tracks];
-
-//printf("VirtualConsole::build_virtual_console 2 %d %d\n", data_type, total_tracks);
-		for(int i = 0; i < total_tracks; i++)
-		{
-//printf("VirtualConsole::build_virtual_console 3\n");
-			virtual_modules[i] = new_toplevel_node(playable_tracks->values[i], 
+			entry_nodes[i] = new_entry_node(playable_tracks->values[i], 
 				module_of(playable_tracks->values[i]), 
 				i);
 
-// Expand the track
-			virtual_modules[i]->expand(persistant_plugins, commonrender->current_position);
-//printf("VirtualConsole::build_virtual_console 3\n");
+// Expand the trees
+			entry_nodes[i]->expand(persistent_plugins, 
+				commonrender->current_position);
 		}
 		commonrender->restart_plugins = 1;
 	}
+//dump();
 }
 
-int VirtualConsole::sort_virtual_console()
+VirtualNode* VirtualConsole::new_entry_node(Track *track, 
+	Module *module, 
+	int track_number)
 {
-// sort the console
-	int done = 0, result = 0;
-	int64_t attempts = 0;
-	int i;
-
-//printf("VirtualConsole::sort_virtual_console 1\n");
-	if(!render_list.total)
-	{
-		while(!done && attempts < 50)
-		{
-// Sort iteratively until all the remaining plugins can be rendered.
-// Iterate backwards so video is composited properly
-			done = 1;
-			for(i = total_tracks - 1; i >= 0; i--)
-			{
-				result = virtual_modules[i]->sort(&render_list);
-				if(result) done = 0;
-			}
-			attempts++;
-		}
-
-//printf("VirtualConsole::sort_virtual_console 2 %d\n", render_list.total);
-// prevent short circuts
-		if(attempts >= 50)
-		{
-			printf("VirtualConsole::sort_virtual_console: Recursive.\n");
-		}
-//printf("VirtualConsole::sort_virtual_console 2\n");
-	}
+	printf("VirtualConsole::new_entry_node should not be called\n");
 	return 0;
+}
+
+void VirtualConsole::append_exit_node(VirtualNode *node)
+{
+	node->is_exit = 1;
+	exit_nodes.append(node);
+}
+
+void VirtualConsole::reset_attachments()
+{
+	for(int i = 0; i < commonrender->total_modules; i++)
+	{
+		commonrender->modules[i]->reset_attachments();
+	}
 }
 
 void VirtualConsole::dump()
@@ -210,8 +143,8 @@ void VirtualConsole::dump()
 	for(int i = 0; i < commonrender->total_modules; i++)
 		commonrender->modules[i]->dump();
 	printf(" Nodes\n");
-	for(int i = 0; i < total_tracks; i++)
-		virtual_modules[i]->dump(0);
+	for(int i = 0; i < total_entry_nodes; i++)
+		entry_nodes[i]->dump(0);
 }
 
 
@@ -324,100 +257,21 @@ int VirtualConsole::test_reconfigure(int64_t position,
 	return result;
 }
 
-void VirtualConsole::run()
-{
-	startup_lock->unlock();
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
 
 int VirtualConsole::delete_virtual_console()
 {
-// delete the virtual modules
-	for(int i = 0; i < total_tracks; i++)
+// delete the virtual node tree
+	for(int i = 0; i < total_entry_nodes; i++)
 	{
-		delete virtual_modules[i];
+		delete entry_nodes[i];
 	}
 // Seems to get allocated even if new[0].
-	if(virtual_modules) delete [] virtual_modules;
-	virtual_modules = 0;
-
-// delete sort order
-	render_list.remove_all();
+	if(entry_nodes) delete [] entry_nodes;
+	entry_nodes = 0;
+	exit_nodes.remove_all();
 }
 
-int VirtualConsole::delete_input_buffers()
-{
-// delete input buffers
-	for(int buffer = 0; buffer < ring_buffers; buffer++)
-	{
-		delete_input_buffer(buffer);
-	}
-
-	for(int i = 0; i < ring_buffers; i++)
-	{
-		delete input_lock[i];
-		delete output_lock[i];
-	}
-
-	total_tracks = 0;
-	ring_buffers = 0;
-	return 0;
-}
-
-int VirtualConsole::start_rendering(int duplicate)
-{
-	this->interrupt = 0;
-
-	if(renderengine->command->realtime && commonrender->asynchronous)
-	{
-// don't start a thread unless writing to an audio device
-		startup_lock->lock();
-		set_synchronous(1);   // prepare thread base class
-		start();
-	}
-	return 0;
-}
-
-int VirtualConsole::wait_for_completion()
-{
-	if(renderengine->command->realtime && commonrender->asynchronous)
-	{
-		join();
-	}
-	return 0;
-}
-
-int VirtualConsole::swap_input_buffer()
-{
-	current_input_buffer++;
-	if(current_input_buffer >= total_ring_buffers()) current_input_buffer = 0;
-	return 0;
-}
-
-int VirtualConsole::swap_thread_buffer()
-{
-	current_vconsole_buffer++;
-	if(current_vconsole_buffer >= total_ring_buffers()) current_vconsole_buffer = 0;
-	return 0;
-}
 

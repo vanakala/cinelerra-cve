@@ -1,6 +1,5 @@
 Big bugs
------------
-Double click and drag item drags it but doesn't drop it.
+----------------
 Undo doesn't restore project title from previous load.
 Master node framerate not displaying.
 Need to stop building on first error.
@@ -8,15 +7,19 @@ Lockup when playing and interrupting in certain places.
 If region in VWindow and CWindow is 100% it should follow the timeline length.
 Autoplacement of new clips in AWindow doesn't work.
 Hitting space rapidly locks up recording sometimes.
-Test lame, toolame termination.
-Drawing cache not cleared if pcm parameters changed
 Drawing cache not cleared after recording.
-Lockup when render finishes and video is playing.
 Stop immediately followed by paste in CWindow locks up
-Test XMovie with DVD.
-Load shift_keyframes.xml then load slide.xml
-Load pan_photo.xml then load pan.xml
-Pinch doesn't work unless whirl is nonzero.
+Batch record lockup up after start near FileThread::get_buffer
+Double click and drag item drags it but doesn't drop it.
+An optimization error in GCC 3.3.2 causes RGB16 colormodels to crash.
+ - Recompiling the cmodel files with just -O works.
+Drag effect before timeline is finished drawing after a load -> lockup
+
+
+
+playlist.xml not playing all the way through
+
+
 
 Small bugs
 ----------------
@@ -30,11 +33,13 @@ List problems:
 
 Big Features
 ----------------
+Test pull console with LAD.
+Signal handling for non interactive rendering.
+Compressor using readahead buffer.
+Sound level using readahead buffer.
+Batch render from command line.
 hourglass
-time decimation
-Pitch shift and time stretch using single window.
 remote control in Video In
-Hide controls in Compositor and Record Monitor
 color curves
 hide cursor when over video output
 SUV theme
@@ -52,8 +57,6 @@ Zoom transition
 
 Small Features
 -----------------
-Pencil and chain instead of G and D.
-N for Normal overlay
 left and right arrow in track title
 
 
@@ -64,16 +67,60 @@ left and right arrow in track title
 
 Not going to happen
 ---------------------
+Hide controls in Record Monitor
 Time domain pitch shift
 File sequence testing.
 Drag plugin handle should only affect plugins with matching handles.
 Independant record options for plugin sets.
-12 bit DV recording test
 
 
 
 
 
+
+
+
+Patches
+--------------------
+koen muylkens <koen.muylkens@esat.kuleuven.ac.be>
+newskin-cinelerra.diff
+
+
+
+Andraz Tori:
+masks_fixes.diff
+
+Fixes are:
+- when adding a point to the mask by just clicking and not dragging,
+mask is not rerendered (changes to cwindowgui.C)
+- when working with autokeyframes enabled with masks. If you have
+keyframe A at position 0 and keyframe B at position 100, when you
+would
+like to edit mask at position 50 and you add a new point or move
+previous one, the whole mask at position 50 snaps back to the position
+as specified in keyframe A (all changes except to cwindowgui.C)
+
+the first fix is pretty obvious, just rerendering was mising in a
+codepath
+
+the second one is more deep-trough, since it adds missing
+functionality
+to auto.h/C ... when autocreating keyframe, keyframe should be
+interpolated from frame before and after it (if they exist).
+
+masks_fixes.diff
+
+if there is more than one mask, they all have to be counted
+in order to figure y-bounding interval for redraw.
+
+maskengine4_fix.diff
+
+plugindialog_fix.diff - already done
+
+If there are only two video tracks, and one has a shared track effect
+from the other. and the other is deleted. cinelerra crushes.
+
+shared_track_deletion_crush.diff
 
 
 

@@ -11,15 +11,18 @@ public:
 	VAttachmentPoint(RenderEngine *renderengine, Plugin *plugin);
 	~VAttachmentPoint();
 	
-	void delete_buffer_vectors();
-	void new_buffer_vectors();
-	void render(VFrame *video_in, VFrame *video_out, long current_position);
+	void delete_buffer_vector();
+	void new_buffer_vector(int width, int height, int colormodel);
+	void render(VFrame *output, 
+		int buffer_number,
+		long start_position,
+		double frame_rate);
 	void dispatch_plugin_server(int buffer_number, 
-		long current_position, 
-		long fragment_size);
+		int64_t current_position, 
+		int64_t fragment_size);
 	int get_buffer_size();
 
-	VFrame **buffer_in, **buffer_out;
+	VFrame **buffer_vector;
 };
 
 #endif

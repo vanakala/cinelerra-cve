@@ -39,7 +39,7 @@ public:
 	virtual int update(int x, int y);
 	virtual void synchronize_fade(float change) {};
 	void synchronize_faders(float change, int audio, int video);
-	char* calculate_nudge_text();
+	char* calculate_nudge_text(int *changed);
 	void set_nudge_value(char *string);
 
 	MWindow *mwindow;

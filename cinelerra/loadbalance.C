@@ -85,6 +85,8 @@ void LoadClient::run()
 
 LoadServer::LoadServer(int total_clients, int total_packages)
 {
+	if(total_clients <= 0)
+		printf("LoadServer::LoadServer total_clients == %d\n", total_clients);
 	this->total_clients = total_clients;
 	this->total_packages = total_packages;
 	current_package = 0;

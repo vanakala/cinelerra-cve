@@ -25,6 +25,8 @@ public:
 // Total channels device can handle
 	int total_output_channels();
 
+	int fragment_size;
+
 // Change default titles for duplex
 	int duplex;
 	int playback_strategy;

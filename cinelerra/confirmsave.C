@@ -43,9 +43,23 @@ int ConfirmSave::test_files(MWindow *mwindow,
 
 	if(list.total)
 	{
-		ConfirmSaveWindow window(mwindow, &list);
-		window.create_objects();
-		result = window.run_window();
+		if(mwindow)
+		{
+			ConfirmSaveWindow window(mwindow, &list);
+			window.create_objects();
+			result = window.run_window();
+		}
+		else
+		{
+			printf("The following files exist.\n");
+			for(int i = 0; i < list.total; i++)
+			{
+				printf("    %s\n", list.values[i]->get_text());
+			}
+			printf("It's so hard to configure non-interactive rendering that\n"
+				"we'll assume you didn't want to overwrite them and crash here.\n");
+			result = 1;
+		}
 		list.remove_all_objects();
 		return result;
 	}

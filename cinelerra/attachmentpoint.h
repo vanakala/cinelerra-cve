@@ -14,6 +14,8 @@
 #include "vframe.inc"
 #include "virtualnode.inc"
 
+#include <stdint.h>
+
 // Attachment points for Modules to attach plugins
 class AttachmentPoint
 {
@@ -22,46 +24,73 @@ public:
 	virtual ~AttachmentPoint();
 
 	virtual int reset_parameters();
+// Used by Module::swap_attachments before virtual console expansion.
+// Return 1 if the plugin id is the same
+	int identical(AttachmentPoint *old);
 
-// Attach a virtual plugin for realtime playback.
+// Move new_virtual_plugins to virtual_plugins.
+// Called after virtual console expansion.
+	int render_init();
+
+// Called before every buffer processing
+	void reset_status();
+
+// Attach a virtual plugin for realtime playback.  Returns the number
+// of the buffer assigned to a multichannel plugin.
 	int attach_virtual_plugin(VirtualNode *virtual_plugin);
-	virtual void new_buffer_vectors() {};
-	virtual void delete_buffer_vectors() {};
+	virtual void delete_buffer_vector() {};
 
 // return 0 if ready to render
 // check all the virtual plugins for waiting status
 // all virtual plugins attached to this must be waiting for a render
-	int sort(VirtualNode *virtual_plugin);
-
-// Move new_virtual_plugins to virtual_plugins if duplicate == 0.
-	int render_init();
-	void render(long current_position, 
-		long fragment_size);
+//	int sort(VirtualNode *virtual_plugin);
+/*
+ * 	void render(long current_position, 
+ * 		long fragment_size);
+ */
 // Called by plugin server to render GUI with data.
 	void render_gui(void *data);
 	void render_gui(void *data, int size);
-	virtual void dispatch_plugin_server(int buffer_number, 
-		long current_position, 
-		long fragment_size) {};
+/*
+ * 	virtual void dispatch_plugin_server(int buffer_number, 
+ * 		long current_position, 
+ * 		long fragment_size) {};
+ */
 	virtual int get_buffer_size() { return 0; };
 
-// For unshared plugins, virtual plugins to send configuration events to.
-// For shared plugins, virtual plugins to allocate buffers for.
+// For unshared plugins, virtual plugins to send configuration events to and 
+// read data from.
+// For shared plugins, virtual plugins to allocate buffers for and read 
+// data from.
 	ArrayList<VirtualNode*> virtual_plugins;
-// List for a new virtual console which is later transferred to virtual_plugins.
+
+// List for a new virtual console which is transferred to virtual_plugins after
+// virtual console expansion.
 	ArrayList<VirtualNode*> new_virtual_plugins;
+
 // Plugin servers to do signal processing
 	ArrayList<PluginServer*> plugin_servers;
-// For returning to the virtual module and determining if a new plugin must be started.
-	int total_input_buffers, new_total_input_buffers;
 
 // renderengine Plugindb entry
 	PluginServer *plugin_server;
-// Pointer to the plugin configuration in EDL
+// Pointer to the plugin object in EDL
 	Plugin *plugin;
+// ID of plugin object in EDL
+	int plugin_id;
 	RenderEngine *renderengine;
 // Current input buffer being loaded.  Determines when the plugin server is run
-	int current_buffer;
+//	int current_buffer;
+
+// Status of last buffer processed.
+// Used in shared multichannel plugin to tell of it's already been processed
+// or needs to be processed again for a different target.
+// start_position is the end of the range if playing in reverse.
+	int64_t start_position;
+	int64_t len;
+	int64_t sample_rate;
+	double frame_rate;
+	int is_processed;
+	
 
 
 
@@ -91,9 +120,6 @@ public:
 	int render_stop(int duplicate);
 
 
-
-
-	
 	int dump();
 
 };

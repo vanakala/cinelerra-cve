@@ -1,4 +1,5 @@
 #include "asset.h"
+#include "bcsignals.h"
 #include "condition.h"
 #include "file.h"
 #include "filethread.h"
@@ -84,13 +85,18 @@ void FileThread::run()
 		output_lock[local_buffer]->lock("FileThread::run 1");
 		return_value = 0;
 
+TRACE("FileThread::run 1");
+
 // Timer timer;
 // timer.update();
 		if(!last_buffer[local_buffer])
 		{
+TRACE("FileThread::run 2");
 			if(output_size[local_buffer])
 			{
+TRACE("FileThread::run 3");
 				file_lock->lock("FileThread::run 2");
+TRACE("FileThread::run 4");
 				if(do_audio)
 				{
 					result = file->write_samples(audio_buffer[local_buffer], 
@@ -123,6 +129,7 @@ void FileThread::run()
 		}
 		else
 			done = 1;
+TRACE("FileThread::run 10");
 
 //printf("FileThread::run %lld\n", timer.get_difference());
 		input_lock[local_buffer]->unlock();

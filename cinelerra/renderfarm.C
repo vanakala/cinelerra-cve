@@ -5,8 +5,9 @@
 #include "edl.h"
 #include "filesystem.h"
 #include "filexml.h"
+#include "language.h"
 #include "mutex.h"
-#include "mwindow.h"
+//#include "mwindow.h"
 #include "packagedispatcher.h"
 #include "preferences.h"
 #include "render.h"
@@ -29,13 +30,9 @@
 #include <unistd.h>
 
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
-RenderFarmServer::RenderFarmServer(MWindow *mwindow, 
+RenderFarmServer::RenderFarmServer(ArrayList<PluginServer*> *plugindb, 
 	PackageDispatcher *packages,
 	Preferences *preferences,
 	int use_local_rate,
@@ -46,7 +43,7 @@ RenderFarmServer::RenderFarmServer(MWindow *mwindow,
 	EDL *edl,
 	BRender *brender)
 {
-	this->mwindow = mwindow;
+	this->plugindb = plugindb;
 	this->packages = packages;
 	this->preferences = preferences;
 	this->use_local_rate = use_local_rate;
@@ -73,7 +70,7 @@ int RenderFarmServer::start_clients()
 	for(int i = 0; i < preferences->get_enabled_nodes() && !result; i++)
 	{
 		client_lock->lock();
-		RenderFarmServerThread *client = new RenderFarmServerThread(mwindow, 
+		RenderFarmServerThread *client = new RenderFarmServerThread(plugindb, 
 			this, 
 			i);
 		clients.append(client);
@@ -109,12 +106,12 @@ int RenderFarmServer::wait_clients()
 
 // Waits for requests from every client.
 // Joins when the client is finished.
-RenderFarmServerThread::RenderFarmServerThread(MWindow *mwindow, 
+RenderFarmServerThread::RenderFarmServerThread(ArrayList<PluginServer*> *plugindb, 
 	RenderFarmServer *server, 
 	int number)
  : Thread()
 {
-	this->mwindow = mwindow;
+	this->plugindb = plugindb;
 	this->server = server;
 	this->number = number;
 	socket_fd = -1;
@@ -467,7 +464,7 @@ void RenderFarmServerThread::send_asset()
 	FileXML file;
 //printf("RenderFarmServerThread::send_asset 1\n");
 
-	server->default_asset->write(mwindow->plugindb, 
+	server->default_asset->write(plugindb, 
 		&file, 
 		0, 
 		0);
@@ -484,7 +481,7 @@ void RenderFarmServerThread::send_edl()
 	FileXML file;
 
 // Save the XML
-	server->edl->save_xml(mwindow->plugindb,
+	server->edl->save_xml(plugindb,
 		&file, 
 		0,
 		0,

@@ -18,6 +18,7 @@ public:
 // Get the direction based on the command
 	int get_direction();
 	float get_speed();
+	void copy_from(TransportCommand *command);
 	TransportCommand& operator=(TransportCommand &command);
 // Get the range to play back from the EDL
 	void set_playback_range(EDL *edl = 0);

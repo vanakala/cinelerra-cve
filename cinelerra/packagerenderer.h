@@ -104,11 +104,13 @@ public:
 	int result;
 	VFrame ***video_output;
 // A nonzero mwindow signals master render engine to the engine.
+// A zero mwindow signals client or non interactive.
 	MWindow *mwindow;
 	double *audio_output_ptr[MAX_CHANNELS];
 	CICache *audio_cache;
 	CICache *video_cache;
 	VFrame *compressed_output;
+	AudioOutConfig *aconfig;
 	VideoOutConfig *vconfig;
 //	PlaybackConfig *playback_config;
 	PlayableTracks *playable_tracks;

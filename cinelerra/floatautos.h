@@ -24,6 +24,8 @@ public:
 	int draw_joining_line(BC_SubWindow *canvas, int vertical, int center_pixel, int x1, int y1, int x2, int y2);
 	float fix_value(float value);
 	int get_testy(float slope, int cursor_x, int ax, int ay);
+// Return 1 if the automation is constant.
+// constant - set to the value if it is constant
 	int automation_is_constant(int64_t start, 
 		int64_t length, 
 		int direction,

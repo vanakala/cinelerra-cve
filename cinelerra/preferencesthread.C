@@ -77,7 +77,7 @@ void PreferencesThread::run()
 	edl = new EDL;
 	edl->create_objects();
 	current_dialog = mwindow->defaults->get("DEFAULTPREF", 0);
-	*preferences = *mwindow->preferences;
+	preferences->copy_from(mwindow->preferences);
 	edl->copy_session(mwindow->edl);
 	redraw_indexes = 0;
 	redraw_meters = 0;
@@ -122,10 +122,10 @@ int PreferencesThread::apply_settings()
 // Compare sessions 											
 
 
-	AudioOutConfig *this_aconfig = edl->session->playback_config[edl->session->playback_strategy].values[0]->aconfig;
-	VideoOutConfig *this_vconfig = edl->session->playback_config[edl->session->playback_strategy].values[0]->vconfig;
-	AudioOutConfig *aconfig = mwindow->edl->session->playback_config[edl->session->playback_strategy].values[0]->aconfig;
-	VideoOutConfig *vconfig = mwindow->edl->session->playback_config[edl->session->playback_strategy].values[0]->vconfig;
+	AudioOutConfig *this_aconfig = edl->session->get_playback_config(edl->session->playback_strategy, 0)->aconfig;
+	VideoOutConfig *this_vconfig = edl->session->get_playback_config(edl->session->playback_strategy, 0)->vconfig;
+	AudioOutConfig *aconfig = mwindow->edl->session->get_playback_config(edl->session->playback_strategy, 0)->aconfig;
+	VideoOutConfig *vconfig = mwindow->edl->session->get_playback_config(edl->session->playback_strategy, 0)->vconfig;
 
 
 	rerender = 
@@ -136,8 +136,6 @@ int PreferencesThread::apply_settings()
 		(edl->session->playback_software_position != mwindow->edl->session->playback_software_position) ||
 		(edl->session->test_playback_edits != mwindow->edl->session->test_playback_edits) ||
 		(edl->session->playback_buffer != mwindow->edl->session->playback_buffer) ||
-		(edl->session->audio_module_fragment != mwindow->edl->session->audio_module_fragment) ||
-		(edl->session->audio_read_length != mwindow->edl->session->audio_read_length) ||
 		(edl->session->playback_strategy != mwindow->edl->session->playback_strategy) ||
 		(preferences->force_uniprocessor != preferences->force_uniprocessor) ||
 		(*this_aconfig != *aconfig) ||
@@ -149,7 +147,7 @@ int PreferencesThread::apply_settings()
 
 // TODO: Need to copy just the parameters in PreferencesThread
 	mwindow->edl->copy_session(edl);
-	*mwindow->preferences = *preferences;
+	mwindow->preferences->copy_from(preferences);
 	mwindow->init_brender();
 
 	if(redraw_meters)

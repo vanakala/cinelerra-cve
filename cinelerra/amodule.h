@@ -33,9 +33,10 @@ public:
 	void create_objects();
 	CICache* get_cache();
 	int render(double *buffer, 
-		int64_t input_len, 
 		int64_t input_position,
+		int input_len, 
 		int direction,
+		int sample_rate,
 		int use_nudge);
 	void reverse_buffer(double *buffer, int64_t len);
 	int get_buffer_size();
@@ -56,6 +57,7 @@ public:
 
 // Temporary buffer for rendering transitions
 	double *transition_temp;
+	int transition_temp_alloc;
 };
 
 

@@ -259,11 +259,6 @@ int VDeviceV4L::v4l2_init()
 		v4l2_params.fmt.pix.height = device->in_config->h;
 		v4l2_params.fmt.pix.depth = 24;
 		v4l2_params.fmt.pix.pixelformat = device_colormodel;
-// printf("VDeviceV4L::v4l2_init %c%c%c%c\n", 
-// 	((char*)&device_colormodel)[0],
-// 	((char*)&device_colormodel)[1],
-// 	((char*)&device_colormodel)[2],
-// 	((char*)&device_colormodel)[3]);
 		v4l2_params.fmt.pix.flags |= V4L2_FMT_FLAG_INTERLACED;
 		if(ioctl(input_fd, VIDIOC_S_FMT, &v4l2_params) < 0)
 			perror("VDeviceV4L::v4l2_init VIDIOC_S_FMT");
@@ -272,7 +267,6 @@ int VDeviceV4L::v4l2_init()
 
 		device->in_config->w = v4l2_params.fmt.pix.width;
 		device->in_config->h = v4l2_params.fmt.pix.height;
-//printf("VDeviceV4L::v4l2_init %d %d\n", device->in_config->w , device->in_config->h);
 
 // Set up buffers
 		if(cap.flags & V4L2_FLAG_STREAMING)

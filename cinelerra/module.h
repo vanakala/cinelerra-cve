@@ -31,13 +31,20 @@ public:
 
 	virtual void create_objects();
 	void create_new_attachments();
+// Swaps in changed plugin servers for old plugins servers during playback.
+// Allows data in unchanged plugins to continue.  Prepares pointers in
+// plugin server to be added in expansion.
 	void swap_attachments();
+// Reset processing status of attachments before every buffer is processed.
+	void reset_attachments();
 	virtual AttachmentPoint* new_attachment(Plugin *plugin) { return 0; };
 	virtual int get_buffer_size() { return 0; };
 	int test_plugins();
 	AttachmentPoint* attachment_of(Plugin *plugin);
 	void dump();
 	int render_init();
+// Current_position is relative to the EDL rate.
+// If direction is REVERSE, the object before current_position is tested.
 	void update_transition(int64_t current_position, int direction);
 	EDL* get_edl();
 
@@ -45,8 +52,11 @@ public:
 	CICache *cache;
 // EDL used during effect
 	EDL *edl;
+// Not available in menu effects
 	CommonRender *commonrender;
+// Not available in menu effects
 	RenderEngine *renderengine;
+// Not available in realtime playback
 	PluginArray *plugin_array;
 	Track *track;
 // TRACK_AUDIO or TRACK_VIDEO
@@ -56,6 +66,7 @@ public:
 	Plugin *transition;
 // PluginServer for transition
 	PluginServer *transition_server;
+
 // Currently active plugins.
 // Use one AttachmentPoint for every pluginset to allow shared plugins to create
 // extra plugin servers.

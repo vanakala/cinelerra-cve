@@ -2,9 +2,9 @@
 #define VRENDERTHREAD_H
 
 #include "guicast.h"
-#include "virtualconsole.h"
 #include "maxbuffers.h"
 #include "vframe.inc"
+#include "virtualconsole.h"
 #include "vrender.inc"
 #include "vtrack.inc"
 
@@ -15,25 +15,25 @@ public:
 	virtual ~VirtualVConsole();
 
 // Create ptrs to input buffers
-	void new_input_buffer(int ring_buffer);
-	void delete_input_buffer(int ring_buffer);
-	int total_ring_buffers();
+/*
+ * 	void new_input_buffer(int ring_buffer);
+ * 	void delete_input_buffer(int ring_buffer);
+ * 	int total_ring_buffers();
+ */
 	void get_playable_tracks();
-	VirtualNode* new_toplevel_node(Track *track, Module *module, int track_number);
+	VirtualNode* new_entry_node(Track *track, 
+		Module *module, 
+		int track_number);
 
-	int init_rendering(int duplicate);
+// Composite a frame
+// start_position - start of buffer in project if forward. end of buffer if reverse
+	int process_buffer(int64_t input_position);
 
+// absolute frame the buffer starts on
+	int64_t absolute_frame;        
 
-	int stop_rendering(int duplicate);
+	VFrame *output_temp;
 
-	int process_buffer(int64_t input_position); // start of buffer in project if forward / end of buffer if reverse
-
-	int send_last_output_buffer();
-
-	int64_t absolute_frame;        // absolute frame the buffer starts on
-// Pointers to frames to read from disk.  Single ring buffer
-// (VFrame*)(Track*)
-	VFrame **buffer_in;
 	VRender *vrender;
 };
 

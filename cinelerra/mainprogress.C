@@ -128,7 +128,12 @@ int MainProgressBar::update(long value)
 		double eta;
 
 		if(value > 0.001)
-			eta = (double)current_eta / 1000 * length / value - current_eta / 1000;
+			eta = (double)current_eta / 
+				1000 * 
+				length / 
+				value - 
+				current_eta / 
+				1000;
 		else
 			eta = 0;
 

@@ -111,7 +111,6 @@ void CommonRender::create_modules()
 
 void CommonRender::start_plugins()
 {
-//printf("CommonRender::start_plugins 1\n");
 // Only start if virtual console was created
 	if(restart_plugins)
 	{
@@ -120,7 +119,6 @@ void CommonRender::start_plugins()
 			modules[i]->render_init();
 		}
 	}
-//printf("CommonRender::start_plugins 2\n");
 }
 
 int CommonRender::test_reconfigure(int64_t position, int64_t &length)
@@ -158,7 +156,6 @@ int CommonRender::restart_playback()
 	delete_vconsole();
 	create_modules();
 	build_virtual_console();
-	vconsole->start_playback();
 	start_plugins();
 
 	done = 0;
@@ -233,6 +230,7 @@ int CommonRender::get_boundaries(int64_t &current_render_length)
 	if(renderengine->command->single_frame())
 		current_render_length = 1;
 
+	if(current_render_length < 0) current_render_length = 0;
 	return 0;
 }
 

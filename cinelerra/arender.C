@@ -41,7 +41,6 @@ ARender::~ARender()
 {
 	for(int i = 0; i < MAXCHANNELS; i++)
 	{
-//printf("ARender::~ARender %p %p\n", audio_out[i], level_history[i]);
 		if(audio_out[i]) delete [] audio_out[i];
 		if(level_history[i]) delete [] level_history[i];
 	}
@@ -50,13 +49,9 @@ ARender::~ARender()
 
 void ARender::arm_command()
 {
-//printf("ARender::arm_command  1\n");
 	CommonRender::arm_command();
-//printf("ARender::arm_command  1\n");
 	asynchronous = 1;
-//printf("ARender::arm_command  1\n");
 	init_meters();
-//printf("ARender::arm_command  2\n");
 }
 
 
@@ -67,21 +62,20 @@ int ARender::get_total_tracks()
 
 Module* ARender::new_module(Track *track)
 {
-//printf("VirtualAConsole::new_module %p\n", track);
 	return new AModule(renderengine, this, 0, track);
 }
 
 int ARender::history_size()
 {
-	if(total_peaks > 0) 
+	if(total_peaks > 0)
 		return total_peaks;
 	else
 	{
-		meter_render_fragment = renderengine->edl->session->audio_module_fragment;
+		meter_render_fragment = renderengine->fragment_len;
 		while(meter_render_fragment > renderengine->edl->session->sample_rate / 10) 
 			meter_render_fragment /= 2;
-		total_peaks = 2 * 
-			renderengine->edl->session->audio_read_length / 
+		total_peaks = 16 * 
+			renderengine->fragment_len / 
 			meter_render_fragment;
 		return total_peaks;
 	}
@@ -90,7 +84,6 @@ int ARender::history_size()
 int ARender::init_meters()
 {
 // not providing enough peaks results in peaks that are ahead of the sound
-//printf("ARender::init_meters 1\n");
 	if(level_samples) delete [] level_samples;
 	level_samples = new int64_t[history_size()];
 	for(int i = 0; i < MAXCHANNELS;i++)
@@ -99,7 +92,6 @@ int ARender::init_meters()
 		if(audio_out[i] && !level_history[i]) level_history[i] = new double[total_peaks];
 	}
 
-//printf("ARender::init_meters 2\n");
 	for(int i = 0; i < history_size(); i++)
 	{
 		level_samples[i] = -1;
@@ -116,7 +108,6 @@ int ARender::init_meters()
 
 void ARender::init_output_buffers()
 {
-//printf("ARender::init_output_buffers %d\n", renderengine->adjusted_fragment_len);
 	if(renderengine->command->realtime)
 	{
 		for(int i = 0; i < MAXCHANNELS; i++)
@@ -128,7 +119,6 @@ void ARender::init_output_buffers()
 				audio_out[i] = 0;
 			}
 
-//printf("ARender::init_output_buffers %d %d\n", i, renderengine->config->aconfig->do_channel[i]);
 			if(renderengine->config->aconfig->do_channel[i])
 			{
 				audio_out[i] = new double[renderengine->adjusted_fragment_len];
@@ -223,19 +213,19 @@ int ARender::process_buffer(int64_t input_len, int64_t input_position)
 	return result;
 }
 
-int ARender::restart_playback()
-{
-// Use for rebuilding the virtual console during playback.
-// Send last buffer to old thread.
-	if(vconsole)
-	{
-		send_reconfigure_buffer();
-		vconsole->wait_for_completion();
-	}
-
-	CommonRender::restart_playback();
-	return 0;
-}
+// int ARender::restart_playback()
+// {
+// // Use for rebuilding the virtual console during playback.
+// // Send last buffer to old thread.
+// 	if(vconsole)
+// 	{
+// 		send_reconfigure_buffer();
+// 		vconsole->wait_for_completion();
+// 	}
+// 
+// 	CommonRender::restart_playback();
+// 	return 0;
+// }
 
 int ARender::get_history_number(int64_t *table, int64_t position)
 {
@@ -257,6 +247,10 @@ int ARender::get_history_number(int64_t *table, int64_t position)
 	return result;
 }
 
+void ARender::send_last_buffer()
+{
+	renderengine->audio->set_last_buffer();
+}
 
 int ARender::wait_device_completion()
 {
@@ -270,25 +264,26 @@ void ARender::run()
 	int64_t current_input_length;
 	int reconfigure = 0;
 
+	first_buffer = 1;
+
 	start_lock->unlock();
 
 	while(!done && !interrupt && !last_playback)
 	{
-		current_input_length = renderengine->edl->session->audio_read_length;
+		current_input_length = renderengine->fragment_len;
+
+//printf("ARender::run 1 %p\n", renderengine->edl);
 		get_boundaries(current_input_length);
 
+//printf("ARender::run 10 %lld %lld\n", current_position, current_input_length);
 		if(current_input_length)
 		{
 			reconfigure = vconsole->test_reconfigure(current_position, 
 				current_input_length,
 				last_playback);
-
-
-
-
-
 			if(reconfigure) restart_playback();
 		}
+//printf("ARender::run 20 %lld %lld\n", current_position, current_input_length);
 
 
 // Update tracking if no video is playing.
@@ -312,15 +307,22 @@ void ARender::run()
 
 
 
+//printf("ARender::run 30 %lld\n", current_input_length);
 
 
 
 		process_buffer(current_input_length, current_position);
+//printf("ARender::run 40\n");
+
 
 		advance_position(get_render_length(current_input_length));
+//printf("ARender::run 50\n");
+
+
 		if(vconsole->interrupt) interrupt = 1;
 	}
 
+	if(!interrupt) send_last_buffer();
 	if(renderengine->command->realtime) wait_device_completion();
 	vconsole->stop_rendering(0);
 }
@@ -377,22 +379,22 @@ int ARender::arm_playback(int64_t current_position,
 	return 0;
 }
 
-int ARender::send_reconfigure_buffer()
-{
-	if(renderengine->command->realtime)
-	{
-		vconsole->output_lock[vconsole->current_input_buffer]->lock("ARender::send_reconfigure_buffer");
-
-		vconsole->input_len[vconsole->current_input_buffer] = 0;
-		vconsole->input_position[vconsole->current_input_buffer] = 0;
-		vconsole->last_playback[vconsole->current_input_buffer] = 0;
-		vconsole->last_reconfigure[vconsole->current_input_buffer] = 1;
-
-		vconsole->input_lock[vconsole->current_input_buffer]->unlock();
-		vconsole->swap_input_buffer();
-	}
-	return 0;
-}
+// int ARender::send_reconfigure_buffer()
+// {
+// 	if(renderengine->command->realtime)
+// 	{
+// 		vconsole->output_lock[vconsole->current_input_buffer]->lock("ARender::send_reconfigure_buffer");
+// 
+// 		vconsole->input_len[vconsole->current_input_buffer] = 0;
+// 		vconsole->input_position[vconsole->current_input_buffer] = 0;
+// 		vconsole->last_playback[vconsole->current_input_buffer] = 0;
+// 		vconsole->last_reconfigure[vconsole->current_input_buffer] = 1;
+// 
+// 		vconsole->input_lock[vconsole->current_input_buffer]->unlock();
+// 		vconsole->swap_input_buffer();
+// 	}
+// 	return 0;
+// }
 
 int ARender::reverse_buffer(double *buffer, int64_t len)
 {

@@ -1,7 +1,9 @@
 #include "asset.h"
 #include "batch.h"
+#include "bcsignals.h"
 #include "browsebutton.h"
 #include "channelpicker.h"
+#include "condition.h"
 #include "defaults.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -9,6 +11,7 @@
 #include "filemov.h"
 #include "filesystem.h"
 #include "keys.h"
+#include "language.h"
 #include "loadmode.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
@@ -29,10 +32,6 @@
 #include <time.h>
 
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 RecordGUI::RecordGUI(MWindow *mwindow, Record *record)
@@ -53,24 +52,16 @@ RecordGUI::RecordGUI(MWindow *mwindow, Record *record)
 
 RecordGUI::~RecordGUI()
 {
-//	delete batch_number;
-//printf("RecordGUI::~RecordGUI 1\n");
+TRACE("RecordGUI::~RecordGUI 1");
 	delete status_thread;
-//printf("RecordGUI::~RecordGUI 1\n");
 	delete batch_source;
-//printf("RecordGUI::~RecordGUI 1\n");
 	delete batch_mode;
-//printf("RecordGUI::~RecordGUI 1\n");
 	delete startover_thread;
-//printf("RecordGUI::~RecordGUI 1\n");
 	delete cancel_thread;
-//printf("RecordGUI::~RecordGUI 1\n");
 	delete batch_start;
-//printf("RecordGUI::~RecordGUI 1\n");
 	delete batch_duration;
-//printf("RecordGUI::~RecordGUI 1\n");
 	delete load_mode;
-//printf("RecordGUI::~RecordGUI 2\n");
+TRACE("RecordGUI::~RecordGUI 2");
 }
 
 
@@ -1035,7 +1026,7 @@ int RecordGUILabel::keypress_event()
 
 
 RecordCancelThread::RecordCancelThread(Record *record, RecordGUI *record_gui)
- : Thread()
+ : Thread(1, 0, 0)
 {
 	this->record = record;
 	this->gui = record_gui;
@@ -1048,17 +1039,13 @@ RecordCancelThread::~RecordCancelThread()
 		window->lock_window("RecordCancelThread::~RecordCancelThread");
 		window->set_done(1);
 		window->unlock_window();
+		Thread::join();
 	}
-	completion_lock.lock();
-	completion_lock.unlock();
 }
 
 
 void RecordCancelThread::run()
 {
-//printf("RecordCancelThread::run 1\n");
-	completion_lock.lock();
-//printf("RecordCancelThread::run 1\n");
 	if(record->prompt_cancel)
 	{
 		window = new QuestionWindow(record->mwindow);
@@ -1071,14 +1058,11 @@ void RecordCancelThread::run()
 	{
 		gui->set_done(1);
 	}
-//printf("RecordCancelThread::run 2\n");
-
-	completion_lock.unlock();
 }
 
 
 RecordStartoverThread::RecordStartoverThread(Record *record, RecordGUI *record_gui)
- : Thread()
+ : Thread(1, 0, 0)
 {
 	this->record = record;
 	this->gui = record_gui;
@@ -1090,20 +1074,17 @@ RecordStartoverThread::~RecordStartoverThread()
 		window->lock_window("RecordStartoverThread::~RecordStartoverThread");
 		window->set_done(1);
 		window->unlock_window();
+		Thread::join();
 	}
-	completion_lock.lock();
-	completion_lock.unlock();
 }
 
 void RecordStartoverThread::run()
 {
-	completion_lock.lock();
 	window = new QuestionWindow(record->mwindow);
 	window->create_objects(_("Rewind batch and overwrite?"), 0);
 	int result = window->run_window();
 	if(result == 2) record->start_over();
 	delete window;
-	completion_lock.unlock();
 }
 
 
@@ -1144,11 +1125,6 @@ int RecordGUI::set_translation(int x, int y, float z)
 	record->video_x = x;
 	record->video_y = y;
 	record->video_zoom = z;
-
-	//record->video_lock.lock();
-//	engine->vdevice->set_translation(x, y, z);
-//	engine->vdevice->set_latency_counter(record->get_video_buffersize() * 2);
-	//record->video_lock.unlock();
 }
 
 int RecordGUI::update_dropped_frames(long new_dropped)
@@ -1319,16 +1295,15 @@ int RecordGUIMode::handle_event()
 
 
 RecordStatusThread::RecordStatusThread(MWindow *mwindow, RecordGUI *gui)
- : Thread()
+ : Thread(1, 0, 0)
 {
-	set_synchronous(1);
 	this->mwindow = mwindow;
 	this->gui = gui;
 	new_dropped_frames = -1;
 	new_position = -1;
 	new_length = -1;
 	new_clipped_samples = -1;
-	input_lock.lock();
+	input_lock = new Condition(0, "RecordStatusThread::input_lock");
 	done = 0;
 }
 
@@ -1337,7 +1312,7 @@ RecordStatusThread::~RecordStatusThread()
 	if(Thread::running())
 	{
 		done = 1;
-		input_lock.unlock();
+		input_lock->unlock();
 		Thread::join();
 	}
 }
@@ -1345,29 +1320,27 @@ RecordStatusThread::~RecordStatusThread()
 void RecordStatusThread::update_dropped_frames(long value)
 {
 	new_dropped_frames = value;
-	input_lock.unlock();
+	input_lock->unlock();
 }
 
 void RecordStatusThread::update_position(double new_position, double total_length)
 {
 	this->new_position = new_position;
 	this->new_length = total_length;
-	input_lock.unlock();
+	input_lock->unlock();
 }
 
 void RecordStatusThread::update_clipped_samples(long new_clipped_samples)
 {
 	this->new_clipped_samples = new_clipped_samples;
-	input_lock.unlock();
+	input_lock->unlock();
 }
 
 void RecordStatusThread::run()
 {
 	while(!done)
 	{
-//printf("RecordStatusThread::run 1\n");
-		input_lock.lock();
-//printf("RecordStatusThread::run 2\n");
+		input_lock->lock("RecordStatusThread::run");
 		if(new_dropped_frames >= 0)
 		{
 			char string[1024];

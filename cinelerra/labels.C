@@ -196,17 +196,21 @@ int Labels::copy_length(long start, long end) // return number of Labels in sele
 	return result;
 }
 
+void Labels::copy_from(Labels *labels)
+{
+	while(last) delete last;
+
+	for(Label *current = labels->first; current; current = NEXT)
+	{
+		append(new Label(edl, this, current->position));
+	}
+}
 
 
 Labels& Labels::operator=(Labels &that)
 {
-	while(last) delete last;
-
-	for(Label *current = that.first; current; current = NEXT)
-	{
-		append(new Label(edl, this, current->position));
-	}
-
+	copy_from(&that);
+printf("Labels::operator= 1\n");
 	return *this;
 }
 

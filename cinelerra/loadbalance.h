@@ -8,7 +8,8 @@
 
 
 // Load balancing utils
-
+// There is no guarantee that all the load clients will be run in a 
+// processing operation.
 
 
 class LoadServer;
@@ -52,11 +53,15 @@ public:
 
 	friend class LoadClient;
 
+// Called first in process_packages.  Should also initialize clients.
 	virtual void init_packages() {};
 	virtual LoadClient* new_client() { return 0; };
 	virtual LoadPackage* new_package() { return 0; };
 
+// User calls this to do an iteration
 	void process_packages();
+
+
 	int get_total_packages();
 	int get_total_clients();
 	LoadPackage* get_package(int number);

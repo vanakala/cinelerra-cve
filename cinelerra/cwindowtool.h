@@ -32,7 +32,8 @@ public:
 	int current_tool;
 	Condition *input_lock;
 	Condition *output_lock;
-	
+// Lock run and update_values
+	Mutex *tool_gui_lock;
 };
 
 class CWindowToolGUI : public BC_Window

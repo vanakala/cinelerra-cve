@@ -10,6 +10,7 @@
 #include "mutex.inc"
 #include "mwindow.inc"
 #include "packagedispatcher.inc"
+#include "pluginserver.inc"
 #include "preferences.inc"
 #include "render.inc"
 #include "renderfarm.inc"
@@ -98,7 +99,7 @@ class RenderFarmServer
 {
 public:
 // MWindow is required to get the plugindb to save the EDL.
-	RenderFarmServer(MWindow *mwindow, 
+	RenderFarmServer(ArrayList<PluginServer*> *plugindb, 
 		PackageDispatcher *packages,
 		Preferences *preferences,
 		int use_local_rate,
@@ -121,7 +122,8 @@ public:
 
 
 	ArrayList<RenderFarmServerThread*> clients;
-	MWindow *mwindow;
+	ArrayList<PluginServer*> *plugindb;
+//	MWindow *mwindow;
 	PackageDispatcher *packages;
 	Preferences *preferences;
 // Use master node's framerate
@@ -141,7 +143,7 @@ public:
 class RenderFarmServerThread : public Thread
 {
 public:
-	RenderFarmServerThread(MWindow *mwindow, 
+	RenderFarmServerThread(ArrayList<PluginServer*> *plugindb, 
 		RenderFarmServer *server, 
 		int number);
 	~RenderFarmServerThread();
@@ -170,7 +172,8 @@ public:
 	
 	void run();
 	
-	MWindow *mwindow;
+//	MWindow *mwindow;
+	ArrayList<PluginServer*> *plugindb;
 	RenderFarmServer *server;
 	RenderFarmFSServer *fs_server;
 	int socket_fd;

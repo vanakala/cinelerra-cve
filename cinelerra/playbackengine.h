@@ -147,9 +147,9 @@ public:
 	long audio_module_fragment;
 
 // ================================== audio config
-	long input_length;        // number of samples to read from disk at a time
-						      // multiple of playback_buffer greater than read_buffer
-	long output_length;       // # of samples to write to device adjusted for speed
+//	long input_length;        // number of samples to read from disk at a time
+//						      // multiple of playback_buffer greater than read_buffer
+//	long output_length;       // # of samples to write to device adjusted for speed
 	int shared_audio;    // for duplex audio recording
 
 // ================================== video config

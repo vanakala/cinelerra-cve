@@ -168,20 +168,24 @@ int plugin_class::load_configuration() \
 	prev_keyframe = get_prev_keyframe(get_source_position()); \
 	next_keyframe = get_next_keyframe(get_source_position()); \
  \
+ 	int64_t next_position = edl_to_local(next_keyframe->position); \
+ 	int64_t prev_position = edl_to_local(prev_keyframe->position); \
+ \
 	config_class old_config, prev_config, next_config; \
 	old_config.copy_from(config); \
 	read_data(prev_keyframe); \
 	prev_config.copy_from(config); \
 	read_data(next_keyframe); \
 	next_config.copy_from(config); \
+ \
 	config.interpolate(prev_config,  \
 		next_config,  \
-		(next_keyframe->position == prev_keyframe->position) ? \
+		(next_position == prev_position) ? \
 			get_source_position() : \
-			prev_keyframe->position, \
-		(next_keyframe->position == prev_keyframe->position) ? \
+			prev_position, \
+		(next_position == prev_position) ? \
 			get_source_position() + 1 : \
-			next_keyframe->position, \
+			next_position, \
 		get_source_position()); \
  \
 	if(!config.equivalent(old_config)) \
@@ -222,8 +226,10 @@ public:
 
 
 // Non realtime signal processors define these.
-	virtual int get_samplerate();        // give the samplerate of the output for a non realtime plugin
-	virtual double get_framerate();         // give the framerate of the output for a non realtime plugin
+// give the samplerate of the output for a non realtime plugin
+	virtual int get_samplerate();
+// give the framerate of the output for a non realtime plugin
+	virtual double get_framerate();
 	virtual int delete_nonrealtime_parameters();
 	virtual int start_plugin();         // run a non realtime plugin
 	virtual int get_parameters();     // get information from user before non realtime processing
@@ -250,18 +256,21 @@ public:
 	virtual void save_data(KeyFrame *keyframe) {};    // write the plugin settings to text in text format
 	virtual void read_data(KeyFrame *keyframe) {};    // read the plugin settings from the text
 	int send_hide_gui();                                    // should be sent when the GUI recieves a close event from the user
-	int send_configure_change();                            // when this plugin is adjusted, propogate parameters to virtual plugins
 
 	int get_configure_change();                             // get propogated configuration change from a send_configure_change
-	virtual void plugin_process_realtime(double **input, 
-		double **output, 
-		int64_t current_position, 
-		int64_t fragment_size,
-		int64_t total_len) {};
-	virtual void plugin_process_realtime(VFrame **input, 
-		VFrame **output, 
-		int64_t current_position,
-		int64_t total_len) {};
+
+// Replaced by pull method
+/*
+ * 	virtual void plugin_process_realtime(double **input, 
+ * 		double **output, 
+ * 		int64_t current_position, 
+ * 		int64_t fragment_size,
+ * 		int64_t total_len) {};
+ * 	virtual void plugin_process_realtime(VFrame **input, 
+ * 		VFrame **output, 
+ * 		int64_t current_position,
+ * 		int64_t total_len) {};
+ */
 // Called by plugin server to update GUI with rendered data.
 	virtual void plugin_render_gui(void *data) {};
 	virtual void plugin_render_gui(void *data, int size) {};
@@ -275,40 +284,69 @@ public:
 // Used by plugins which need to know where they are.
 	char* get_path();
 
-// Return keyframe objects.  If position -1 use edl selection
-	KeyFrame* get_prev_keyframe(int64_t position);
-	KeyFrame* get_next_keyframe(int64_t position);
+// Return keyframe objects.  The position in the resulting object 
+// is relative to the EDL rate.  This is the only way to avoid copying the
+// data for every frame.
+// If the result is the default keyframe, the keyframe's position is 0.
+// position - relative to EDL rate or local rate to allow simple 
+//     passing of get_source_position.
+//     If -1 the tracking position in the edl is used.
+// is_local - if 1, the position is converted to the EDL rate.
+	KeyFrame* get_prev_keyframe(int64_t position, int is_local = 1);
+	KeyFrame* get_next_keyframe(int64_t position, int is_local = 1);
+// When this plugin is adjusted, propogate parameters back to EDL and virtual
+// console.  This gets a keyframe from the EDL, with the position set to the
+// EDL tracking position.
+	int send_configure_change();                            
 
-// The meaning of these changes depending on the plugin type.
 
-// For transitions the source_len is the length of the transition and
-// is calculated in *Module.
-
-// For realtime plugins the source_len is 0 and is calculated in 
-// *AttachmentPoint.    This may not be used at all.
-	int64_t get_source_len();
-
-// For realtime plugins gets the start of the plugin
-	int64_t get_source_start();
 
 // Length of source.  For effects it's the plugin length.  For transitions
-// it's the transition length.
+// it's the transition length.  Relative to the requested rate.
+// The only way to get smooth interpolation is to make all position queries
+// relative to the requested rate.
 	int64_t get_total_len();
+
+// For realtime plugins gets the lowest sample of the plugin in the requested
+// rate.  For others it's the start of the EDL selection in the EDL rate.
+	int64_t get_source_start();
+
+// Convert the position relative to the requested rate to the position 
+// relative to the EDL rate.  If the argument is < 0, it is not changed.
+// Used for interpreting keyframes.
+	virtual int64_t local_to_edl(int64_t position);
+
+// Convert the EDL position to the local position.
+	virtual int64_t edl_to_local(int64_t position);
 
 // For transitions the source_position is the playback position relative
 // to the start of the transition.
-
-// For plugins the source_position is relative to the start of the plugin.
+// For realtime effects, the start of the most recent process_buffer in forward
+// and the end of the range to process in reverse.  Relative to start of EDL in
+// the requested rate.
 	int64_t get_source_position();
 
-// Get interpolation used by EDL
+
+
+
+// Get the direction of the most recent process_buffer
+	int get_direction();
+
+// Get total tracks to process
+	int get_total_buffers();
+
+// Get size of buffer to fill in non-realtime plugin
+	int get_buffer_size();
+
+// Get interpolation used by EDL from overlayframe.inc
 	int get_interpolation_type();
 
-// If automation is used
-	int automation_used();
+// If automation is used.  Obsolete.
+//	int automation_used();
 // Get the automation value for the position in the current fragment
 // The position is relative to the current fragment
-	float get_automation_value(int64_t position);
+// Obsolete.
+//	float get_automation_value(int64_t position);
 
 
 
@@ -333,19 +371,25 @@ public:
 
 
 // Non realtime operations for signal processors.
-	int plugin_start_loop(int64_t start, int64_t end, int64_t buffer_size, int total_buffers);
+	virtual int plugin_start_loop(int64_t start, 
+		int64_t end, 
+		int64_t buffer_size, 
+		int total_buffers);
 	int plugin_stop_loop();
 	int plugin_process_loop();
 	MainProgressBar* start_progress(char *string, int64_t length);
-// get samplerate of project data before processing
+// get samplerate of EDL
 	int get_project_samplerate();
-// get framerate of project data before processing
+// get framerate of EDL
 	double get_project_framerate();
+// Total number of processors - 1
 	int get_project_smp();
 	int get_aspect_ratio(float &aspect_w, float &aspect_h);
+
+
 	int write_frames(int64_t total_frames);  // returns 1 for failure / tells the server that all output channel buffers are ready to go
 	int write_samples(int64_t total_samples);  // returns 1 for failure / tells the server that all output channel buffers are ready to go
-	int plugin_get_parameters();
+	virtual int plugin_get_parameters();
 	char* get_defaultdir();     // Directory defaults should be stored in
 	void set_interactive();
 
@@ -392,7 +436,7 @@ public:
 	ArrayList<PluginClientAuto> automation;
 
 // ================================== Messages ===========================
-	char gui_string[1024];          // string identifying module and plugin
+	char gui_string[BCTEXTLEN];          // string identifying module and plugin
 	int master_gui_on;              // Status of the master gui plugin
 	int client_gui_on;              // Status of this client's gui
 
@@ -410,15 +454,24 @@ public:
 	int64_t out_buffer_size;  
 // size of a recieve buffer from the server
 	int64_t in_buffer_size;   
-// Local parameters of plugin
-	int sample_rate;
-	double frame_rate;
+
+
+
+
+// Direction of most recent process_buffer
+	int direction;
+
 // Operating system scheduling
 	int realtime_priority;
 
-// For transient plugins.
-	int64_t source_len;
+// Position relative to start of EDL in requested rate.  Calculated for every process
+// command.  Used for keyframes.
 	int64_t source_position;
+// For realtime plugins gets the lowest sample of the plugin in the requested
+// rate.  For others it's always 0.
+	int64_t source_start;
+// Length of source.  For effects it's the plugin length.  For transitions
+// it's the transition length.  Relative to the requested rate.
 	int64_t total_len;
 // Total number of processors available - 1
 	int smp;  

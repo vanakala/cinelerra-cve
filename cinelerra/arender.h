@@ -47,8 +47,8 @@ public:
 	int total_peaks;
 // Next level to store value in
 	int current_level[MAXCHANNELS];
-
-
+// Make VirtualAConsole block before the first buffer until video is ready
+	int first_buffer;
 
 
 
@@ -60,8 +60,8 @@ public:
 	int get_datatype();
 
 // handle playback autos and transitions
-	int restart_playback();
-	int send_reconfigure_buffer();
+//	int restart_playback();
+//	int send_reconfigure_buffer();
 
 // process a buffer
 // renders into buffer_out argument when no audio device
@@ -70,6 +70,7 @@ public:
 // renders to a device when there's a device
 	int process_buffer(int64_t input_len, int64_t input_position);
 
+	void send_last_buffer();
 	int wait_device_completion();
 
 // reverse the data in a buffer	
@@ -83,6 +84,7 @@ public:
 
 
 	int64_t source_length;  // Total number of frames to render for transitions
+
 
 private:
 // initialize buffer_out

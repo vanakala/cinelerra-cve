@@ -1,8 +1,10 @@
 #ifndef RECORDTHREAD_H
 #define RECORDTHREAD_H
 
+#include "condition.inc"
 #include "drivesync.inc"
 #include "file.inc"
+#include "mutex.inc"
 #include "record.inc"
 #include "recordaudio.inc"
 #include "recordvideo.inc"
@@ -47,9 +49,9 @@ private:
 	MWindow *mwindow;
 	Record *record;
 	File *file;
-	Mutex pause_lock, startup_lock, completion_lock, loop_lock;
+	Condition *pause_lock, *startup_lock, *loop_lock;
 // Lock termination variables to positions where batches aren't being started.
-	Mutex state_lock;
+	Mutex *state_lock;
 // Override the operating system
 	DriveSync *drivesync;
 };
