@@ -53,14 +53,32 @@ FileDV::~FileDV()
 
 void FileDV::get_parameters(BC_WindowBase *parent_window,
 	Asset *asset,
-	BC_WindowBase *format_window,
+	BC_WindowBase* &format_window,
 	int audio_options,
 	int video_options)
 {
-	strcpy(asset->acodec, "Raw DV");
-	// No options yet for this format
-	// Should pop up a window that just says "Raw DV".
-	// maybe have some of the parameters that get passed to libdv? nah.
+	strcpy(asset->acodec, DV_NAME);
+	strcpy(asset->vcodec, DV_NAME);
+
+	if(audio_options)
+	{
+		DVConfigAudio *window = new DVConfigAudio(parent_window, asset);
+		format_window = window;
+		window->create_objects();
+		window->run_window();
+		delete window;
+	}
+	else
+	if(video_options)
+	{
+		DVConfigVideo *window = new DVConfigVideo(parent_window, asset);
+		format_window = window;
+		window->create_objects();
+		window->run_window();
+		delete window;
+	}
+
+
 }
 
 int FileDV::reset_parameters_derived()
@@ -465,5 +483,77 @@ int FileDV::get_best_colormodel(Asset *asset, int driver)
 	}
 	return BC_RGB888;
 }
+
+
+
+
+
+
+
+
+
+DVConfigAudio::DVConfigAudio(BC_WindowBase *parent_window, Asset *asset)
+ : BC_Window(PROGRAM_NAME ": Audio Compression",
+	parent_window->get_abs_cursor_x(),
+	parent_window->get_abs_cursor_y(),
+	350,
+	250)
+{
+	this->parent_window = parent_window;
+	this->asset = asset;
+}
+
+DVConfigAudio::~DVConfigAudio()
+{
+
+}
+
+int DVConfigAudio::create_objects()
+{
+	add_tool(new BC_Title(10, 10, _("There are no audio options for this format")));
+	add_subwindow(new BC_OKButton(this));
+	return 0;
+}
+
+int DVConfigAudio::close_event()
+{
+	set_done(0);
+	return 1;
+}
+
+
+
+
+
+
+DVConfigVideo::DVConfigVideo(BC_WindowBase *parent_window, Asset *asset)
+ : BC_Window(PROGRAM_NAME ": Video Compression",
+	parent_window->get_abs_cursor_x(),
+	parent_window->get_abs_cursor_y(),
+	350,
+	250)
+{
+	this->parent_window = parent_window;
+	this->asset = asset;
+}
+
+DVConfigVideo::~DVConfigVideo()
+{
+
+}
+
+int DVConfigVideo::create_objects()
+{
+	add_tool(new BC_Title(10, 10, _("There are no video options for this format")));
+	add_subwindow(new BC_OKButton(this));
+	return 0;
+}
+
+int DVConfigVideo::close_event()
+{
+	set_done(0);
+	return 1;
+}
+
 
 #endif

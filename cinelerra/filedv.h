@@ -16,7 +16,7 @@ public:
 
 	static void get_parameters(BC_WindowBase *parent_window,
 		Asset *asset,
-		BC_WindowBase *format_window,
+		BC_WindowBase* &format_window,
 		int audio_options,
 		int video_options);
 	
@@ -55,5 +55,37 @@ private:
 	int16_t **audio_buffer;
 	int samples_in_buffer;
 };
+
+
+class DVConfigAudio: public BC_Window
+{
+public:
+	DVConfigAudio(BC_WindowBase *parent_window, Asset *asset);
+	~DVConfigAudio();
+
+	int create_objects();
+	int close_event();
+
+private:
+	Asset *asset;
+	BC_WindowBase *parent_window;
+};
+
+
+
+class DVConfigVideo: public BC_Window
+{
+public:
+	DVConfigVideo(BC_WindowBase *parent_window, Asset *asset);
+	~DVConfigVideo();
+
+	int create_objects();
+	int close_event();
+
+private:
+	Asset *asset;
+	BC_WindowBase *parent_window;
+};
+
 
 #endif
