@@ -1,3 +1,10 @@
+hvirtual (1:1.2.0) unstable; urgency=low
+
+  * merge with 1.2.0 (by Johannes Sixt)
+  * added libfaad2 to dependencies
+
+ -- Andraz Tori <andraz.tori1@guest.arnes.si>  Tue, 1 Jun 2004 22:22:14 +0200
+
 hvirtual (1:1.1.9-1) unstable; urgency=low
 
   * fix libsndfilehv dependency (by Johannes Sixt)
