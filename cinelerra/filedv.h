@@ -1,8 +1,13 @@
 #ifndef FILEDV_H
 #define FILEDV_H
 
+#include "../config.h"
 #include "filebase.h"
 #include "file.inc"
+
+#ifdef DV_USE_FFMPEG
+#include <ffmpeg/avcodec.h>
+#endif
 
 #include <libdv/dv.h>
 
@@ -39,9 +44,15 @@ public:
 	int colormodel_supported(int colormodel);
 	int can_copy_from(Edit *edit, int64_t position);
 	static int get_best_colormodel(Asset *asset, int driver);
+	int calculate_samples(int frame_count);
 
 private:
 	FILE *stream;
+#ifdef DV_USE_FFMPEG
+	AVCodec *codec;
+	AVCodecContext *context;
+	AVFrame *picture;
+#endif // DV_USE_FFMPEG
 	dv_decoder_t *decoder;
 	dv_encoder_t *encoder;
 	int64_t audio_position;
@@ -55,6 +66,7 @@ private:
 	int frames_written;
 	int16_t **audio_buffer;
 	int samples_in_buffer;
+	int isPAL;
 };
 
 
