@@ -1,0 +1,8 @@
+Feel free to contribute code for any of the following 
+(they're listed in some sort of priority)
+	- Bring in some of LAME's gpsycho model
+	- fix the FLOAT, float, double definitions
+	- updated VBR mode. (improved VBR_a_bit_allocation)
+	- reading from stdin could be made less kludgy I suppose.
+	- psy-model speed ups
+	- a_bit_allocation optimization
