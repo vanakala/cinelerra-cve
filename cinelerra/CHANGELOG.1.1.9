@@ -1,0 +1,138 @@
+Command line option for alternate configure file.
+Pinch works if whirl is zero.
+Push method replaced by pull method in virtual console.
+ - less memory
+ - realtime time domain effects possible
+ - no distinction between amount to read from disk and amount to send through console
+Popup menu instead of text entry for playback fragment size.
+Video decimation
+Parametric EQ, pitch shift, time stretch have no delay.
+Synchronized start of video and audio playback.
+Controls can be hidden from compositor.
+Mov not improperly detected as OGG Vorbis 
+ - ov_open result also needs testing against first 8 bytes
+Fixed histogram crashes due to not all LoadClients being called.
+Attach button attaches shared effects properly.
+Automatic filename generation doesn't change directory.
+Nudge values updated when project rates change.
+Background rendering detects nudge change.
+Loading an EDL with the CWindow tool followed by loading an EDL without
+	the CWindow tool crashes less.
+PCM format configuration more reliable.
+Freeze frame freezes on the exact frame the effect starts 
+	or on the latest keyframe.
+Better alignment of fade out in Titler.
+Better text entry in titler.
+Video overlay effect.
+Realtime reverse video and audio.
+Loop audio and video effects.
+Colorbalance tabulation doesn't leave last entry empty
+Zoom menu goes towards center instead of top left of compositor.
+Middle mouse button scrolling works when compositor output is smaller than canvas.
+Aspect ratio saved in mpeg video.
+Default keyframe position stays at 0 after shifting effect right then left.
+Batch render from command line without GUI.
+Titler reverted to old freetype API.
+ - 400 less lines of code and better vertical alignment.
+ - the "stroker" outline looked terrible.  Outlines need to be done with a real
+     outline filter.
+Rendering load balancing tests for infinite frame rate.
+Frame -> fields optimized for pull console.
+Fields -> frame converted to realtime.
+Bounds checking in crop entry point.
+Credits screen.  Send omitted names to broadcast@earthling.net
+Memory debug system.
+An optimization error in GCC 3.3.2 causes RGB16 colormodels to crash.
+Easier changing of the nudge parameters during playback.
+
+quicktime: Memory leak in raw.c with temp_rows removed.
+	RLE decoding
+
+libmpeg3: multiple title stream handling and table of contents moved to
+absolute offsets
+- mpeg3toc takes -a to limit the number of audio streams scanned.
+
+
+Patches (Send whining to billg@microsoft.com):
+
+
+
+Andraz Tori:
+
+locale.diff more language bindings
+	applied
+bctheme_memfix.diff different arraylist handling
+	applied
+cinelerra-gettext-6.diff more language bindings
+	applied
+sharpen.diff engine debug
+	applied
+buttons.diff + buttons_pngs.tar.gz 3 segment replacement for text
+	rejected.  
+	Why don't you add support for picons in generic buttons
+	instead of requiring different 3segment bitmaps.
+	Set real x and y in the initialize() instead of guessing in the constructor.
+canvas_cache2.diff picon and rendering cache with preferences rejected.
+	Make File work without *preferences.
+	Caching picons should only involve FrameCache and ResourcePixmap.
+	Picon caching is good.  Playback caching is too slow.
+	Either require a total cache bytes or a total cache items but not both.
+libdv yuv->rgb conversion used again.
+version_define.diff version macro renamed
+	applied
+dv_in_32khz.diff 12 bit hack for 1394
+	applied
+alsa_fix.diff ALSA API change
+	applied
+crop_crush.diff new crop interface
+	Partially applied.  The corners shouldn't snap to the cursor.
+qt_mpeg_cleanup.diff:
+	Partially applied.  The temp rows are needed for packed colormodels.
+overlay-speedup5.diff TRANSFER_REPLACE overlay optimization: 
+	applied
+maskengine4* mask engine rewrite:
+	rejected - not SMP compatible
+masks_fixes.diff new rerendering test + interpolation rewrite
+	new rerendering test imported
+	new interpolation rejected.  This needs to be done with the existing API
+		instead of an orthogonal one.  Try confining it to CWindowGUI.
+		Mask points need to interpolate in every
+		previous and every next keyframe instead of just the previous.
+
+
+David Arendt <admin@prnet.org>
+
+xml.diff different xml syntax
+	rejected.  These standards points are ignored in 
+	most every web page anyway, and Cinelerra exports aren't used by 
+	anything else.
+render.diff rendering hack
+	rejected.  Command line rendering should run without a GUI and do
+	batches.
+
+
+
+Eric Seigne <eric.seigne@ryxeo.com>
+
+french translation imported
+
+
+
+ga <ga@kutxa.homeunix.org>
+
+drag.diff different drag behavior
+	rejected.  Most people seem to want arbitary dropping with an 
+	option to paste to arbitrary positions.
+spanish translation imported
+
+
+
+koen muylkens <koen.muylkens@esat.kuleuven.ac.be>
+
+newskin-cinelerra.diff - rejected.  Move Cinelerra specific settings
+from BC_Resources to Theme.  Put default values back in BC_Resources so
+it can be used by other applications.  Need button picons instead of 3
+segment button.  Make splash screen determined by a default field, set
+when the user sets a theme.
+
+
