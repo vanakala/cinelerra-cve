@@ -33,6 +33,11 @@ you distrib. Not joking):
 	- libfreetype (>=2.1.4)
 	- xlib-dev
 	- gettext
+
+Additional requirements for the CVS branch (this source code)
+	- automake 1.7
+	- autoconf
+	- libtool
 		
 The others are maybe part of your distrib. If they aren't, 
 you can find most of them on ftp://ftp.nerim.net/debian-marillat/
