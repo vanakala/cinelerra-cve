@@ -742,6 +742,7 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 	{
 		int cache_hit; // so we know whether to relase a lock at the end or was it already
 		VFrame *final_picon_frame;
+		long now_current_frame;
 		int64_t source_frame = project_frame + edit->startsource;
 		source->set_layer(edit->channel);
 		source->set_video_position(source_frame, 
@@ -762,9 +763,9 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 		{
 			source->frames_cache->unlock_cache(); // implicitly locked after a call to get_frame
 			cache_hit = 0;	
-			long now_current_frame = source->current_frame;
- //			Timer a;
- //			a.update();
+			now_current_frame = source->current_frame;    // remember current frame, due to (possible) change when using read_frame 			
+			Timer a;
+ 			a.update();
 			VFrame *src = source->read_frame(BC_RGB888);
 			if (src) 
 			{
@@ -794,12 +795,7 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 					src->get_w(),
 					picon_w);
 	
-				source->frames_cache->add_frame(now_current_frame,
-								source->current_layer,
-								final_picon_frame,
-								1, // do not do a copy of frame, keep this one
-								1); // force the caching, even if cache is disabled
- //				printf("Timer: %lli\n", a.get_difference());
+ 				printf("Timer: %lli\n", a.get_difference());
 	
 			} else 
 			{
@@ -809,8 +805,6 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 		
 
 
-//		if(src)
-//			draw_vframe(src, 
 		if(final_picon_frame)
 			draw_vframe(final_picon_frame, 
 				x, 
@@ -822,6 +816,20 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 
 		if (cache_hit) {
 			source->frames_cache->unlock_cache(); // cache is implicitly locked after a call to get_frame
+							      // when we don't need the picture, we relase the cache
+		} else {
+			// put the newly extracted frame into cache
+				if (final_picon_frame && !source->frames_cache->add_frame(now_current_frame,
+							source->current_layer,
+							final_picon_frame,
+							1, // do not do a copy of frame, keep this one
+							1) // force the caching, even if cache is disabled
+					)
+				{
+					// because do_not_copy_frame is used, 
+					// we have to take care of deletion in case of not adding the frame to cache
+					delete final_picon_frame;
+				}
 		}
 		
 		

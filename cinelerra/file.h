@@ -40,7 +40,9 @@ public:
 	FrameCache(int64_t cache_size = 0);   // chache size is in bytes
 	~FrameCache();
 	VFrame *get_frame(long frame_number, int frame_layer, int frame_width, int frame_height, int color_model, int force_cache = 0); // implicit lock
-	void add_frame(long frame_number, int frame_layer, VFrame *frame, int do_not_copy_frame = 0, int force_cache = 0); 
+
+	// returns 1 if frame was put into cache, 0 if it wasn't
+	int add_frame(long frame_number, int frame_layer, VFrame *frame, int do_not_copy_frame = 0, int force_cache = 0); 
 	void unlock_cache();
 	void lock_cache();
 	void reset();		

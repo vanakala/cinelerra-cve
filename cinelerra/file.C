@@ -175,10 +175,10 @@ VFrame *FrameCache::get_frame(long frame_number, int frame_layer, int frame_widt
  	return 0;
  } 
 
-void FrameCache::add_frame(long frame_number, int frame_layer, VFrame *frame, int do_not_copy_frame, int force_cache) 
+int FrameCache::add_frame(long frame_number, int frame_layer, VFrame *frame, int do_not_copy_frame, int force_cache) 
  {
  	
- 	if (!cache_enabled && !force_cache) return;
+ 	if (!cache_enabled && !force_cache) return 0;
  	change_lock.lock();
  	
  //	printf("%p, adding frame:  %li, layer: %i, w: %i, h:%i cm:%i\n",this, frame_number, frame_layer, frame->get_w(),frame->get_h(), frame->get_color_model());
@@ -188,15 +188,13 @@ void FrameCache::add_frame(long frame_number, int frame_layer, VFrame *frame, in
 	// what will be new size
  	int64_t new_memory_size = frame->get_data_size();
 
-	if (frame->get_w() == 720)
-		printf("balh\n");
  	// currently cache size can only grow, not shrink
  	while (memory_used + new_memory_size >= cache_size) 
  	{
 		// if we cannot fit the new image into cache, exit
  		if (memory_used == 0 && new_memory_size > cache_size) {
 			change_lock.unlock();
-			return;
+			return 0;
 		}
 		// delete the element that wansn't accessed for the longest time
  		FrameCacheTree_ByTime::iterator iterator_bytime = cache_tree_bytime.begin();
@@ -240,6 +238,7 @@ void FrameCache::add_frame(long frame_number, int frame_layer, VFrame *frame, in
  	cache_tree.insert(std::pair<long, FrameCacheElement *> (cache_element->frame_number, cache_element));
  	cache_tree_bytime.insert(std::pair<long long, FrameCacheElement *> (cache_element->time_diff, cache_element)); 
  	change_lock.unlock();
+	return 1;
 }
  
  void FrameCache::dump() 
