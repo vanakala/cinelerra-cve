@@ -307,7 +307,9 @@ AC_OUTPUT(Makefile po/Makefile.in \
 					plugins/downsample/Makefile plugins/flash/Makefile plugins/gradient/Makefile \
 					plugins/level/Makefile plugins/linearblur/Makefile \
 					plugins/perspective/Makefile plugins/radialblur/Makefile plugins/zoomblur/Makefile \
-					plugins/svg/Makefile plugins/fonts/Makefile)
+					plugins/svg/Makefile \
+					plugins/diffkey/Makefile \
+					plugins/fonts/Makefile)
 
 if test "$NOT_FOUND" = ""; then
 	AC_MSG_NOTICE([Configure found all libraries successfully.])
