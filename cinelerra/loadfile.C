@@ -125,21 +125,25 @@ void LoadFileThread::run()
 		return;
 	}
 
-	{
-		ReelWindow rwindow(mwindow);
-		rwindow.create_objects();
-		result = rwindow.run_window();
+//	{
+//		ReelWindow rwindow(mwindow);
+//		rwindow.create_objects();
+//		result = rwindow.run_window();
 
-		if(result)
-		{
-			return;
-		}
+//		if(result)
+//		{
+//			return;
+//		}
 		
-		reel_name = rwindow.reel_name->get_text();
-		reel_number = atol(rwindow.reel_number->get_text());
-		overwrite_reel = rwindow.overwrite_reel;
-	}
+//		reel_name = rwindow.reel_name->get_text();
+//		reel_number = atol(rwindow.reel_number->get_text());
+//		overwrite_reel = rwindow.overwrite_reel;
+//	}
 
+	reel_name = "none";
+	reel_number = 0;
+	overwrite_reel = 0;
+	
 	mwindow->undo->update_undo_before(_("load"), LOAD_ALL);
 	mwindow->interrupt_indexes();
 	mwindow->gui->lock_window();
