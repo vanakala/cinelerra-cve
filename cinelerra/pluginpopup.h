@@ -1,7 +1,7 @@
 #ifndef PLUGINPOPUP_H
 #define PLUGINPOPUP_H
 
-class PluginPopupAttach;
+class PluginPopupChange;
 class PluginPopupDetach;
 class PluginPopupIn;
 class PluginPopupOut;
@@ -36,7 +36,7 @@ public:
 
 
 
-	PluginPopupAttach *attach;
+	PluginPopupChange *change;
 	PluginPopupDetach *detach;
 //	PluginPopupIn *in;
 //	PluginPopupOut *out;
@@ -56,6 +56,20 @@ public:
 	PluginPopup *popup;
 	PluginDialogThread *dialog_thread;
 };
+
+class PluginPopupChange : public BC_MenuItem
+{
+public:
+   PluginPopupChange(MWindow *mwindow, PluginPopup *popup);
+   ~PluginPopupChange();
+
+   int handle_event();
+
+   MWindow *mwindow;
+   PluginPopup *popup;
+   PluginDialogThread *dialog_thread;
+};
+
 
 class PluginPopupDetach : public BC_MenuItem
 {

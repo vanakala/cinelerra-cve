@@ -26,7 +26,7 @@ PluginPopup::~PluginPopup()
 
 void PluginPopup::create_objects()
 {
-	add_item(attach = new PluginPopupAttach(mwindow, this));
+	add_item(change = new PluginPopupChange(mwindow, this));
 	add_item(detach = new PluginPopupDetach(mwindow, this));
 //	add_item(in = new PluginPopupIn(mwindow, this));
 //	add_item(out = new PluginPopupOut(mwindow, this));
@@ -55,25 +55,27 @@ int PluginPopup::update(Plugin *plugin)
 
 
 
-PluginPopupAttach::PluginPopupAttach(MWindow *mwindow, PluginPopup *popup)
- : BC_MenuItem(_("Attach..."))
+PluginPopupChange::PluginPopupChange(MWindow *mwindow, PluginPopup
+*popup)
+ : BC_MenuItem(_("Change..."))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
 	dialog_thread = new PluginDialogThread(mwindow);
 }
 
-PluginPopupAttach::~PluginPopupAttach()
+PluginPopupChange::~PluginPopupChange()
 {
 	delete dialog_thread;
 }
 
-int PluginPopupAttach::handle_event()
+int PluginPopupChange::handle_event()
 {
 	dialog_thread->start_window(popup->plugin->track,
-		popup->plugin, 
-		PROGRAM_NAME ": Attach Effect");
+		popup->plugin,
+		PROGRAM_NAME ": Change Effect");
 }
+
 
 
 

@@ -9,6 +9,9 @@ class PluginDialogModules;
 class PluginDialogAttachNew;
 class PluginDialogAttachShared;
 class PluginDialogAttachModule;
+class PluginDialogChangeNew;
+class PluginDialogChangeShared;
+class PluginDialogChangeModule;
 class PluginDialogIn;
 class PluginDialogOut;
 class PluginDialogThru;
@@ -86,6 +89,10 @@ public:
 	PluginDialogAttachShared *shared_attach;
 	PluginDialogAttachModule *module_attach;
 
+	PluginDialogChangeNew *standalone_change;
+	PluginDialogChangeShared *shared_change;
+	PluginDialogChangeModule *module_change;
+
 	PluginDialogThru *thru;
 	
 	PluginDialogThread *thread;
@@ -136,6 +143,17 @@ public:
 	int handle_event();
 	PluginDialog *dialog;
 };
+
+class PluginDialogChangeNew : public BC_GenericButton
+{
+public:
+   PluginDialogChangeNew(MWindow *mwindow, PluginDialog *dialog, int x, int y);
+   ~PluginDialogChangeNew();
+
+   int handle_event();
+   PluginDialog *dialog;
+};
+
 
 class PluginDialogNew : public BC_ListBox
 {
@@ -195,6 +213,17 @@ public:
 	PluginDialog *dialog;
 };
 
+class PluginDialogChangeShared : public BC_GenericButton
+{
+public:
+   PluginDialogChangeShared(MWindow *mwindow, PluginDialog *dialog, int x, int y);
+   ~PluginDialogChangeShared();
+
+   int handle_event();
+   PluginDialog *dialog;
+};
+
+
 class PluginDialogAttachModule : public BC_GenericButton
 {
 public:
@@ -204,6 +233,17 @@ public:
 	int handle_event();
 	PluginDialog *dialog;
 };
+
+class PluginDialogChangeModule : public BC_GenericButton
+{
+public:
+   PluginDialogChangeModule(MWindow *mwindow, PluginDialog *dialog, int x, int y);
+   ~PluginDialogChangeModule();
+
+   int handle_event();
+   PluginDialog *dialog;
+};
+
 
 class PluginDialogIn : public BC_CheckBox
 {
