@@ -9,7 +9,7 @@ CONFFLAGS=
 ARCH=$(DEB_HOST_ARCH)
 
 ifneq ($(ARCH),powerpc)
-	CFLAGS=-ffast-math -O3 -mmmx -march=pentium4 -msse -msse2
+	CFLAGS=-ffast-math -O3 -mmmx -march=pentium4 -msse -msse2 -minline-all-stringops -fprefetch-loop-arrays -funroll-loops
 	# CFLAGS=-ffast-math -g -mmmx -march=pentium-mmx
 	CXXFLAGS=$(CFLAGS) -fno-check-new
 	CONFFLAGS+=--enable-mmx --enable-x86 --without-pic
