@@ -11,6 +11,9 @@
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
+/* Define to 1 if you have the <ffmpeg/avcodec.h> header file. */
+#undef HAVE_FFMPEG_AVCODEC_H
+
 /* Define if the GNU gettext() function is already present or preinstalled. */
 #undef HAVE_GETTEXT
 
@@ -26,20 +29,26 @@
 /* Define to 1 if you have the `asound' library (-lasound). */
 #undef HAVE_LIBASOUND
 
-/* Define to 1 if you have the `sndfile' library (-lsndfile). */
-#undef HAVE_LIBSNDFILE
+/* Define to 1 if you have the `avc1394' library (-lavc1394). */
+#undef HAVE_LIBAVC1394
+
+/* Define to 1 if you have the `raw1394' library (-lraw1394). */
+#undef HAVE_LIBRAW1394
+
+/* Define to 1 if you have the `rom1394' library (-lrom1394). */
+#undef HAVE_LIBROM1394
 
 /* Define to 1 if you have the `uuid' library (-luuid). */
 #undef HAVE_LIBUUID
+
+/* Define to 1 if you have the `X11' library (-lX11). */
+#undef HAVE_LIBX11
 
 /* Define to 1 if you have the `xvidcore' library (-lxvidcore). */
 #undef HAVE_LIBXVIDCORE
 
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
-
-/* Define to 1 if you have the <sndfile.h> header file. */
-#undef HAVE_SNDFILE_H
 
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
@@ -64,6 +73,9 @@
 
 /* Define to 1 if you have the <uuid/uuid.h> header file. */
 #undef HAVE_UUID_UUID_H
+
+/* Define to 1 if you have the <X11/Xlib.h> header file. */
+#undef HAVE_X11_XLIB_H
 
 /* Define to 1 if you have the <xvid.h> header file. */
 #undef HAVE_XVID_H

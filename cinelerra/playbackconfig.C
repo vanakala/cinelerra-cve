@@ -30,6 +30,7 @@ AudioOutConfig::AudioOutConfig(int playback_strategy, int engine_number, int dup
 	firewire_port = 0;
 	strcpy(firewire_path, "/dev/video1394");
 	firewire_syt = 30000;
+	firewire_use_dv1394 = 0;
 
 	bzero(do_channel, sizeof(int) * MAX_CHANNELS);
 }
@@ -61,7 +62,8 @@ int AudioOutConfig::operator==(AudioOutConfig &that)
 		firewire_channel == that.firewire_channel &&
 		firewire_port == that.firewire_port &&
 		firewire_syt == that.firewire_syt &&
-		!strcmp(firewire_path, that.firewire_path);
+		!strcmp(firewire_path, that.firewire_path) &&
+		firewire_use_dv1394 == that.firewire_use_dv1394;
 }
 
 
@@ -88,6 +90,7 @@ AudioOutConfig& AudioOutConfig::operator=(AudioOutConfig &that)
 	firewire_port = that.firewire_port;
 	firewire_syt = that.firewire_syt;
 	strcpy(firewire_path, that.firewire_path);
+	firewire_use_dv1394 = that.firewire_use_dv1394;
 
 	for(int i = 0; i < MAXCHANNELS; i++)
 		do_channel[i] = that.do_channel[i];
@@ -142,6 +145,8 @@ int AudioOutConfig::load_defaults(Defaults *defaults)
 	defaults->get(string, firewire_path);
 	sprintf(string, "AFIREWIRE_OUT_SYT_%d_%d", playback_strategy, engine_number);
 	firewire_syt = defaults->get(string, firewire_syt);
+	sprintf(string, "AFIREWIRE_OUT_USE_DV1394_%d_%d", playback_strategy, engine_number);
+	firewire_use_dv1394 = defaults->get(string, firewire_use_dv1394);
 
 	return 0;
 }
@@ -191,7 +196,8 @@ int AudioOutConfig::save_defaults(Defaults *defaults)
 	defaults->update(string, firewire_path);
 	sprintf(string, "AFIREWIRE_OUT_SYT_%d_%d", playback_strategy, engine_number);
 	defaults->update(string, firewire_syt);
-
+	sprintf(string, "AFIREWIRE_OUT_USE_DV1394_%d_%d", playback_strategy, engine_number);
+	defaults->update(string, firewire_use_dv1394);
 	return 0;
 }
 
@@ -272,6 +278,7 @@ VideoOutConfig::VideoOutConfig(int playback_strategy, int engine_number)
 	firewire_port = 0;
 	strcpy(firewire_path, "/dev/video1394");
 	firewire_syt = 30000;
+	firewire_use_dv1394 = 0;
 }
 
 VideoOutConfig::~VideoOutConfig()
@@ -301,7 +308,8 @@ int VideoOutConfig::operator==(VideoOutConfig &that)
 		(firewire_channel == that.firewire_channel) &&
 		(firewire_port == that.firewire_port) &&
 		!strcmp(firewire_path, that.firewire_path) &&
-		(firewire_syt == that.firewire_syt);
+		(firewire_syt == that.firewire_syt) &&
+		(firewire_use_dv1394 == that.firewire_use_dv1394);
 }
 
 
@@ -324,6 +332,7 @@ VideoOutConfig& VideoOutConfig::operator=(VideoOutConfig &that)
 	firewire_port = that.firewire_port;
 	strcpy(firewire_path, that.firewire_path);
 	firewire_syt = that.firewire_syt;
+	firewire_use_dv1394 = that.firewire_use_dv1394;
 	return *this;
 }
 
@@ -369,6 +378,8 @@ int VideoOutConfig::load_defaults(Defaults *defaults)
 	defaults->get(string, firewire_path);
 	sprintf(string, "VFIREWIRE_OUT_SYT_%d_%d", playback_strategy, engine_number);
 	firewire_syt = defaults->get(string, firewire_syt);
+	sprintf(string, "VFIREWIRE_OUT_USE_DV1394_%d_%d", playback_strategy, engine_number);
+	firewire_use_dv1394 = defaults->get(string, firewire_use_dv1394);
 	return 0;
 }
 
@@ -396,6 +407,8 @@ int VideoOutConfig::save_defaults(Defaults *defaults)
 	defaults->update(string, firewire_path);
 	sprintf(string, "VFIREWIRE_OUT_SYT_%d_%d", playback_strategy, engine_number);
 	defaults->update(string, firewire_syt);
+   sprintf(string, "VFIREWIRE_OUT_USE_DV1394_%d_%d", playback_strategy, engine_number);
+   defaults->update(string, firewire_use_dv1394);
 	return 0;
 }
 

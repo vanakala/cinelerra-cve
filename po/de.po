@@ -6,7 +6,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cinelerra 1.1.7\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2003-10-16 18:18+0200\n"
+"POT-Creation-Date: 2003-11-10 01:09+0100\n"
 "PO-Revision-Date: 2003-10-15 15:00+0200\n"
 "Last-Translator: Jens Seidel <tux-master@web.de>\n"
 "Language-Team: de <de@li.org>\n"
@@ -86,8 +86,8 @@ msgstr "Audio"
 msgid "Tracks:"
 msgstr "Spuren:"
 
-#: cinelerra/new.C:375 cinelerra/adeviceprefs.C:281
-#: cinelerra/adeviceprefs.C:366 cinelerra/adeviceprefs.C:483
+#: cinelerra/new.C:375 cinelerra/adeviceprefs.C:287
+#: cinelerra/adeviceprefs.C:372 cinelerra/adeviceprefs.C:489
 #: cinelerra/assetedit.C:229 cinelerra/fileformat.C:58
 #: cinelerra/setaudio.C:185 cinelerra/setformat.C:275
 msgid "Channels:"
@@ -293,40 +293,44 @@ msgstr ""
 "Quicktime Version %d.%d.%d\n"
 "Libmpeg3 Version %d.%d.%d\n"
 
-#: cinelerra/adeviceprefs.C:233 cinelerra/vdeviceprefs.C:166
-#: cinelerra/vdeviceprefs.C:187 cinelerra/vdeviceprefs.C:291
+#: cinelerra/adeviceprefs.C:239 cinelerra/vdeviceprefs.C:168
+#: cinelerra/vdeviceprefs.C:189 cinelerra/vdeviceprefs.C:311
 msgid "Device path:"
 msgstr "Gerätepfad:"
 
-#: cinelerra/adeviceprefs.C:255 cinelerra/adeviceprefs.C:341
+#: cinelerra/adeviceprefs.C:261 cinelerra/adeviceprefs.C:347
 #: cinelerra/assetedit.C:266 cinelerra/fileformat.C:70
 #: cinelerra/formatwindow.C:27
 msgid "Bits:"
 msgstr "Bits:"
 
-#: cinelerra/adeviceprefs.C:320
+#: cinelerra/adeviceprefs.C:326
 msgid "Device:"
 msgstr "Gerät:"
 
-#: cinelerra/adeviceprefs.C:392
+#: cinelerra/adeviceprefs.C:398
 msgid "Server:"
 msgstr "Server:"
 
-#: cinelerra/adeviceprefs.C:408 cinelerra/adeviceprefs.C:451
-#: cinelerra/performanceprefs.C:116 cinelerra/vdeviceprefs.C:247
+#: cinelerra/adeviceprefs.C:414 cinelerra/adeviceprefs.C:457
+#: cinelerra/performanceprefs.C:116 cinelerra/vdeviceprefs.C:249
 msgid "Port:"
 msgstr "Port:"
 
-#: cinelerra/adeviceprefs.C:433 cinelerra/vdeviceprefs.C:232
+#: cinelerra/adeviceprefs.C:439 cinelerra/vdeviceprefs.C:234
 msgid "Device Path:"
 msgstr "Gerätepfad:"
 
-#: cinelerra/adeviceprefs.C:466 cinelerra/vdeviceprefs.C:262
+#: cinelerra/adeviceprefs.C:472 cinelerra/vdeviceprefs.C:264
 msgid "Channel:"
 msgstr "Kanal:"
 
-#: cinelerra/adeviceprefs.C:501 cinelerra/vdeviceprefs.C:279
+#: cinelerra/adeviceprefs.C:507 cinelerra/vdeviceprefs.C:281
 msgid "Syt Offset:"
+msgstr ""
+
+#: cinelerra/adeviceprefs.C:527 cinelerra/vdeviceprefs.C:300
+msgid "Use DV1394"
 msgstr ""
 
 #: cinelerra/amodule.C:193 cinelerra/amodule.C:269
@@ -466,22 +470,22 @@ msgstr "Soll es permanent von der Festplatte gelöscht werden?"
 msgid "Audio %d"
 msgstr "Audio %d"
 
-#: cinelerra/audiooutprefs.C:44 cinelerra/audiooutprefs.C:108
-#: cinelerra/audiooutprefs.C:117 cinelerra/playbackprefs.C:47
-#: cinelerra/playbackprefs.C:164 cinelerra/playbackprefs.C:173
+#: cinelerra/audiooutprefs.C:44 cinelerra/audiooutprefs.C:102
+#: cinelerra/audiooutprefs.C:111 cinelerra/playbackprefs.C:47
+#: cinelerra/playbackprefs.C:158 cinelerra/playbackprefs.C:167
 #: cinelerra/videooutprefs.C:40 cinelerra/videooutprefs.C:106
 #: cinelerra/videooutprefs.C:115
 msgid "Local Host"
 msgstr "Lokaler Rechner"
 
-#: cinelerra/audiooutprefs.C:45 cinelerra/audiooutprefs.C:111
-#: cinelerra/playbackprefs.C:48 cinelerra/playbackprefs.C:167
+#: cinelerra/audiooutprefs.C:45 cinelerra/audiooutprefs.C:105
+#: cinelerra/playbackprefs.C:48 cinelerra/playbackprefs.C:161
 #: cinelerra/videooutprefs.C:41 cinelerra/videooutprefs.C:109
 msgid "Multihead"
 msgstr ""
 
-#: cinelerra/audiooutprefs.C:46 cinelerra/audiooutprefs.C:114
-#: cinelerra/playbackprefs.C:49 cinelerra/playbackprefs.C:170
+#: cinelerra/audiooutprefs.C:46 cinelerra/audiooutprefs.C:108
+#: cinelerra/playbackprefs.C:49 cinelerra/playbackprefs.C:164
 #: cinelerra/videooutprefs.C:42 cinelerra/videooutprefs.C:112
 msgid "Blond Symphony"
 msgstr ""
@@ -494,58 +498,51 @@ msgstr "Audio-Ausgabe"
 msgid "Samples to read from disk at a time:"
 msgstr "Von der Platte pro Zeiteinheit zu lesende Samples:"
 
-#. TRANSLATORS:
-#. only the part before ':' is used, the rest is an explanation
-#: cinelerra/audiooutprefs.C:65 cinelerra/audiooutprefs.C:72
-#: cinelerra/playbackprefs.C:68 cinelerra/playbackprefs.C:75
-msgid "275: offset of 'Samples to read/send ...' labels"
-msgstr "400"
-
-#: cinelerra/audiooutprefs.C:68 cinelerra/playbackprefs.C:71
+#: cinelerra/audiooutprefs.C:65 cinelerra/playbackprefs.C:68
 msgid "Samples to send to console at a time:"
 msgstr "Auf die Konsole pro Zeiteinheit auszugebende Samples:"
 
-#: cinelerra/audiooutprefs.C:83 cinelerra/playbackprefs.C:86
+#: cinelerra/audiooutprefs.C:77 cinelerra/playbackprefs.C:80
 msgid "Audio Driver:"
 msgstr "Audiotreiber:"
 
-#: cinelerra/audiooutprefs.C:160 cinelerra/audiooutprefs.C:180
-#: cinelerra/playbackprefs.C:216 cinelerra/playbackprefs.C:236
+#: cinelerra/audiooutprefs.C:154 cinelerra/audiooutprefs.C:174
+#: cinelerra/playbackprefs.C:210 cinelerra/playbackprefs.C:230
 #: cinelerra/videooutprefs.C:167 cinelerra/videooutprefs.C:178
 msgid "Head:"
 msgstr "Kopf:"
 
-#: cinelerra/audiooutprefs.C:164 cinelerra/audiooutprefs.C:184
-#: cinelerra/playbackprefs.C:220 cinelerra/playbackprefs.C:240
+#: cinelerra/audiooutprefs.C:158 cinelerra/audiooutprefs.C:178
+#: cinelerra/playbackprefs.C:214 cinelerra/playbackprefs.C:234
 msgid "Total Heads:"
 msgstr "Gesamtzahl der Köpfe:"
 
-#: cinelerra/audiooutprefs.C:169 cinelerra/audiooutprefs.C:192
-#: cinelerra/playbackprefs.C:142 cinelerra/playbackprefs.C:225
-#: cinelerra/playbackprefs.C:248 cinelerra/videooutprefs.C:156
+#: cinelerra/audiooutprefs.C:163 cinelerra/audiooutprefs.C:186
+#: cinelerra/playbackprefs.C:136 cinelerra/playbackprefs.C:219
+#: cinelerra/playbackprefs.C:242 cinelerra/videooutprefs.C:156
 #: cinelerra/videooutprefs.C:190
 msgid "Video Driver:"
 msgstr "Videotreiber:"
 
-#: cinelerra/audiooutprefs.C:188 cinelerra/performanceprefs.C:115
-#: cinelerra/playbackprefs.C:244
+#: cinelerra/audiooutprefs.C:182 cinelerra/performanceprefs.C:115
+#: cinelerra/playbackprefs.C:238
 msgid "Hostname:"
 msgstr "Rechnername:"
 
-#: cinelerra/audiooutprefs.C:366 cinelerra/playbackprefs.C:439
+#: cinelerra/audiooutprefs.C:360 cinelerra/playbackprefs.C:433
 msgid "Disable tracks when no edits."
 msgstr "Deaktivieren der Spuren bei ausbleibender Änderung."
 
-#: cinelerra/audiooutprefs.C:381 cinelerra/playbackprefs.C:454
+#: cinelerra/audiooutprefs.C:375 cinelerra/playbackprefs.C:448
 msgid "View follows playback"
 msgstr "Ansicht folgt Wiedergabe"
 
-#: cinelerra/audiooutprefs.C:396 cinelerra/playbackprefs.C:469
-#: cinelerra/recordprefs.C:291 cinelerra/videoinprefs.C:174
+#: cinelerra/audiooutprefs.C:390 cinelerra/playbackprefs.C:463
+#: cinelerra/recordprefs.C:288 cinelerra/videoinprefs.C:174
 msgid "Use software for positioning information"
 msgstr "Software zu Positionierungsinformationen verwenden"
 
-#: cinelerra/audiooutprefs.C:411 cinelerra/playbackprefs.C:484
+#: cinelerra/audiooutprefs.C:405 cinelerra/playbackprefs.C:478
 msgid "Audio playback in real time priority (root only)"
 msgstr "Audio-Wiedergabe in Echtzeit-Priorität (nur root)"
 
@@ -2432,7 +2429,8 @@ msgid "Total jobs to create:"
 msgstr "Gesamtanzahl der zu erzeugenden Jobs:"
 
 #: cinelerra/performanceprefs.C:171
-msgid "(overridden if \"Create new file at each label\" is checked)"
+#, fuzzy
+msgid "(overridden if new file at each label is checked)"
 msgstr ""
 "(wird überschrieben, wenn \"Erzeuge neue Datei an jeder Markierung\" gewählt "
 "ist)"
@@ -2494,44 +2492,44 @@ msgstr "Raten zurücksetzen"
 msgid "Use virtual filesystem"
 msgstr "Virtuelles Dateisystem verwenden"
 
-#: cinelerra/playbackprefs.C:103
+#: cinelerra/playbackprefs.C:97
 msgid "Video Out"
 msgstr "Video Aus"
 
-#: cinelerra/playbackprefs.C:108 cinelerra/videooutprefs.C:58
+#: cinelerra/playbackprefs.C:102 cinelerra/videooutprefs.C:58
 msgid "Framerate achieved:"
 msgstr "Erreichte Framerate:"
 
-#: cinelerra/playbackprefs.C:109 cinelerra/videooutprefs.C:59
+#: cinelerra/playbackprefs.C:103 cinelerra/videooutprefs.C:59
 #: cinelerra/zoombar.C:65 cinelerra/zoombar.C:67
 msgid "--"
 msgstr "--"
 
-#: cinelerra/playbackprefs.C:113 cinelerra/videooutprefs.C:64
+#: cinelerra/playbackprefs.C:107 cinelerra/videooutprefs.C:64
 msgid "Scaling equation:"
 msgstr "Skalierungsformel:"
 
-#: cinelerra/playbackprefs.C:134 cinelerra/videooutprefs.C:79
+#: cinelerra/playbackprefs.C:128 cinelerra/videooutprefs.C:79
 msgid "Preload buffer for Quicktime:"
 msgstr "Vorlade-Puffer für Quicktime:"
 
-#: cinelerra/playbackprefs.C:502
+#: cinelerra/playbackprefs.C:496
 msgid "Nearest neighbor enlarge and reduce"
 msgstr "Nächster Nachbar für Vergrößerung und Reduzierung"
 
-#: cinelerra/playbackprefs.C:518
+#: cinelerra/playbackprefs.C:512
 msgid "Bicubic enlarge and reduce"
 msgstr "Bikubische Vergrößerung und Reduzierung"
 
-#: cinelerra/playbackprefs.C:533
+#: cinelerra/playbackprefs.C:527
 msgid "Bicubic enlarge and bilinear reduce"
 msgstr "Bikubische Vergrößerung und bilineare Reduzierung"
 
-#: cinelerra/playbackprefs.C:550
+#: cinelerra/playbackprefs.C:544
 msgid "Bilinear enlarge and bilinear reduce"
 msgstr "Bilineare Vergrößerung und bilineare Reduzierung"
 
-#: cinelerra/playbackprefs.C:582 cinelerra/videooutprefs.C:273
+#: cinelerra/playbackprefs.C:576 cinelerra/videooutprefs.C:273
 msgid "Play every frame"
 msgstr "Jeden Frame abspielen"
 
@@ -2881,7 +2879,7 @@ msgstr "Beenden ohne ins Projekt einzufügen?"
 msgid "Rewind batch and overwrite?"
 msgstr "Batch zurückspulen und überschreiben?"
 
-#: cinelerra/recordmonitor.C:471 cinelerra/vdeviceprefs.C:195
+#: cinelerra/recordmonitor.C:471 cinelerra/vdeviceprefs.C:197
 msgid "Swap fields"
 msgstr "Felder austauschen"
 
@@ -2889,7 +2887,7 @@ msgstr "Felder austauschen"
 msgid "Audio In"
 msgstr "Audio Eingabe"
 
-#: cinelerra/recordprefs.C:40 cinelerra/recordprefs.C:89
+#: cinelerra/recordprefs.C:40 cinelerra/recordprefs.C:86
 #: cinelerra/videoinprefs.C:37
 msgid "Record Driver:"
 msgstr "Aufnahmetreiber:"
@@ -2898,41 +2896,35 @@ msgstr "Aufnahmetreiber:"
 msgid "Samples to write to disk at a time:"
 msgstr "Samples die pro Zeiteinheit auf die Platte zu schreiben sind:"
 
-#. TRANSLATORS:
-#. * only the part before ':' is used, the rest is an explanation
-#: cinelerra/recordprefs.C:70
-msgid "240: offset of 'Samples to write ...' label"
-msgstr "450"
-
-#: cinelerra/recordprefs.C:77
+#: cinelerra/recordprefs.C:74
 msgid "Sample rate for recording:"
 msgstr "Abtastrate für die Aufnahme:"
 
-#: cinelerra/recordprefs.C:86 cinelerra/videoinprefs.C:34
+#: cinelerra/recordprefs.C:83 cinelerra/videoinprefs.C:34
 msgid "Video In"
 msgstr "Video Eingang"
 
-#: cinelerra/recordprefs.C:103 cinelerra/videoinprefs.C:51
+#: cinelerra/recordprefs.C:100 cinelerra/videoinprefs.C:51
 msgid "Frames to record to disk at a time:"
 msgstr "Frames die pro Zeiteinheit auf die Platte zu schreiben sind:"
 
-#: cinelerra/recordprefs.C:108 cinelerra/videoinprefs.C:56
+#: cinelerra/recordprefs.C:105 cinelerra/videoinprefs.C:56
 msgid "Frames to buffer in device:"
 msgstr "Zu puffernde Frames im Gerät:"
 
-#: cinelerra/recordprefs.C:123 cinelerra/videoinprefs.C:71
+#: cinelerra/recordprefs.C:120 cinelerra/videoinprefs.C:71
 msgid "Size of captured frame:"
 msgstr "Größe der erfassten Frame:"
 
-#: cinelerra/recordprefs.C:139
+#: cinelerra/recordprefs.C:136
 msgid "Frame rate for recording:"
 msgstr "Frame-Rate für die Aufnahme:"
 
-#: cinelerra/recordprefs.C:165
+#: cinelerra/recordprefs.C:162
 msgid "Record in realtime priority (root only)"
 msgstr "Aufnahme in Echtzeit-Priorität (nur root)"
 
-#: cinelerra/recordprefs.C:305 cinelerra/videoinprefs.C:188
+#: cinelerra/recordprefs.C:302 cinelerra/videoinprefs.C:188
 msgid "Sync drives automatically"
 msgstr "Manuelle Gerätesynchronisation"
 
@@ -3255,15 +3247,15 @@ msgstr "VDeviceLML::read_buffer: Treiber stürzte ab\n"
 msgid "VDeviceLML::read_buffer: reopened\n"
 msgstr "VDeviceLML::read_buffer: neu geöffnet\n"
 
-#: cinelerra/vdeviceprefs.C:200
+#: cinelerra/vdeviceprefs.C:202
 msgid "Output channel:"
 msgstr "Ausgabe-Kanal:"
 
-#: cinelerra/vdeviceprefs.C:301
+#: cinelerra/vdeviceprefs.C:321
 msgid "Display:"
 msgstr "Anzeige:"
 
-#: cinelerra/vdeviceprefs.C:311
+#: cinelerra/vdeviceprefs.C:331
 msgid "Display for compositor:"
 msgstr "Anzeige für Compositor:"
 
@@ -3351,9 +3343,10 @@ msgstr "Normal"
 msgid "Replace"
 msgstr "Ersetzen"
 
-#: cinelerra/vpatchgui.C:318 plugins/synthesizer/synthesizer.C:875
-msgid "Add"
-msgstr "Addiere"
+#: cinelerra/vpatchgui.C:318
+#, fuzzy
+msgid "Addition"
+msgstr "Bearbeitung"
 
 #: cinelerra/vpatchgui.C:322
 msgid "Subtract"
@@ -4661,6 +4654,10 @@ msgstr "Impuls"
 msgid "Noise"
 msgstr "Rauschen"
 
+#: plugins/synthesizer/synthesizer.C:875
+msgid "Add"
+msgstr "Addiere"
+
 #: plugins/synthesizer/synthesizer.C:1147
 #: plugins/synthesizer/synthesizer.C:1336
 msgid "Zero"
@@ -4930,3 +4927,9 @@ msgstr "YUV"
 #: plugins/zoomblur/zoomblur.C:383
 msgid "Zoom Blur"
 msgstr ""
+
+#~ msgid "275: offset of 'Samples to read/send ...' labels"
+#~ msgstr "400"
+
+#~ msgid "240: offset of 'Samples to write ...' label"
+#~ msgstr "450"

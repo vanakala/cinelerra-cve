@@ -80,7 +80,8 @@ int Audio1394::open_output()
 			device->out_channels, 
 			device->out_bits, 
 			device->out_samplerate,
-			device->out_config->firewire_syt);
+			device->out_config->firewire_syt,
+			device->out_config->firewire_use_dv1394);
 	}
 }
 

@@ -90,20 +90,43 @@ Device1394Output::~Device1394Output()
 	{
         output_queue.buffer = (output_mmap.nb_buffers + output_queue.buffer - 1) % output_mmap.nb_buffers;
 
-        if(ioctl(output_fd, VIDEO1394_TALK_WAIT_BUFFER, &output_queue) < 0) 
+		if(use_dv1394 == 1)
 		{
+			if(ioctl(output_fd, DV1394_WAIT_FRAMES, output_mmap.nb_buffers - 1) < 0)
+			{
+				fprintf(stderr,
+				"Device1394::close_all: DV1394_WAIT_FRAMES %i: %s",
+				output_mmap.nb_buffers,
+				strerror(errno));
+			}
+			munmap(output_buffer, status.init.n_frames * DV1394_NTSC_FRAME_SIZE);
+		}
+		else
+		{
+      	if(ioctl(output_fd, VIDEO1394_TALK_WAIT_BUFFER, &output_queue) < 0) 
+			{
             fprintf(stderr, 
 				"Device1394::close_all: VIDEO1394_TALK_WAIT_BUFFER %s: %s",
 				output_queue,
 				strerror(errno));
-        }
+      	}
         munmap(output_buffer, output_mmap.nb_buffers * output_mmap.buf_size);
+		}
 
-        if(ioctl(output_fd, VIDEO1394_UNTALK_CHANNEL, &output_mmap.channel) < 0)
+		if(use_dv1394 == 1)
 		{
+			if(ioctl(output_fd, DV1394_SHUTDOWN, NULL) < 0)
+			{
+				perror("Device1394::close_all: DV1394_SHUTDOWN");
+			}
+		}
+		else
+		{
+      	if(ioctl(output_fd, VIDEO1394_UNTALK_CHANNEL, &output_mmap.channel) < 0)
+			{
             perror("Device1394::close_all: VIDEO1394_UNTALK_CHANNEL");
-        }
-
+      	}
+		}
         close(output_fd);
 
 //		if(avc_handle)
@@ -126,13 +149,35 @@ int Device1394Output::open(char *path,
 	int channels, 
 	int bits, 
 	int samplerate,
-	int syt)
+	int syt,
+	int use_dv1394)
 {
+	int is_pal;
+	struct stat buf;
 	this->channels = channels;
 	this->bits = bits;
 	this->samplerate = samplerate;
 	this->total_buffers = length;
 	this->syt = syt;
+	this->use_dv1394 = use_dv1394;
+
+	stat(path, &buf);
+
+	if(strstr(path, "PAL") != NULL || minor(buf.st_rdev) == 34)
+		is_pal = 1;
+	else
+		is_pal = 0;
+
+   static struct dv1394_init setup = {
+      api_version: DV1394_API_VERSION,
+      channel:     channel,
+		n_frames:    length,
+      format:      is_pal ? DV1394_PAL : DV1394_NTSC,
+      cip_n:       0,
+      cip_d:       0,
+      syt_offset:  syt
+   };
+
 
 //printf("Device1394::open_output 2 %s %d %d %d %d\n", path, port, channel, length, syt);
 	if(output_fd < 0)
@@ -188,8 +233,6 @@ int Device1394Output::open(char *path,
 //		avc1394_vcr_record(avc_handle, avc_id);
 
 
-
-
         	output_mmap.channel = channel;
         	output_queue.channel = channel;
         	output_mmap.sync_tag = 0;
@@ -205,17 +248,44 @@ int Device1394Output::open(char *path,
 
 // printf("Device1394Output::open %d %d %d %d %d %d %d\n", 
 // output_mmap.channel, output_queue.channel, output_mmap.sync_tag, output_mmap.nb_buffers, output_mmap.buf_size, output_mmap.packet_size, output_mmap.syt_offset, output_mmap.flags);
-        	if(ioctl(output_fd, VIDEO1394_TALK_CHANNEL, &output_mmap) < 0)
+			if(use_dv1394 == 1)
 			{
-            	perror("Device1394Output::open VIDEO1394_TALK_CHANNEL:");
-        	}
+				if(ioctl(output_fd, DV1394_INIT, &setup) < 0)
+				{
+					perror("Device1394Output::open DV1394_INIT:");
+				}
+				if(ioctl(output_fd, DV1394_GET_STATUS, &setup) < 0)
+				{
+					perror("Device1394Output::open DV1394_GET_STATUS:");
+				}
+			}
+			else
+			{
+	        	if(ioctl(output_fd, VIDEO1394_TALK_CHANNEL, &output_mmap) < 0)
+				{
+      	      	perror("Device1394Output::open VIDEO1394_TALK_CHANNEL:");
+        		}
+			}
 
+			if(use_dv1394 == 1)
+			{
+				int out_size;
+         output_buffer = (unsigned char*)mmap(0,
+            output_mmap.nb_buffers * (is_pal ? DV1394_PAL_FRAME_SIZE : DV1394_NTSC_FRAME_SIZE),
+               PROT_READ | PROT_WRITE,
+            MAP_SHARED,
+            output_fd,
+            0);
+			}
+			else
+			{
         	output_buffer = (unsigned char*)mmap(0, 
 				output_mmap.nb_buffers * output_mmap.buf_size,
             	PROT_READ | PROT_WRITE, 
 				MAP_SHARED, 
 				output_fd, 
 				0);
+			}
         	if(output_buffer <= 0)
 			{
             	perror("Device1394Output::open mmap");
@@ -251,6 +321,10 @@ int Device1394Output::open(char *path,
 
 void Device1394Output::run()
 {
+	unsigned char *output;
+	char *out_buffer;
+	int out_size;
+
 	Thread::enable_cancel();
 	start_lock->lock();
 	Thread::disable_cancel();
@@ -267,10 +341,17 @@ void Device1394Output::run()
 		buffer_lock->lock();
 //printf("Device1394Output::run 10\n");
 
-		char *out_buffer = buffer[current_outbuffer];
-		int out_size = buffer_size[current_outbuffer];
-
-
+		if(use_dv1394 == 1)
+		{
+			out_buffer = buffer[status.first_clear_frame];
+			out_size = buffer_size[status.first_clear_frame];
+		}
+		else
+		{
+			out_buffer = buffer[current_outbuffer];
+			out_size = buffer_size[current_outbuffer];
+		}
+		
 
 
 
@@ -281,11 +362,21 @@ void Device1394Output::run()
 			out_size = sizeof(fake_ntsc_dv) - 4;
 			out_buffer = (char*)fake_ntsc_dv + 4;
 		}
-		unsigned char *output = output_buffer + 
+
+		if(use_dv1394 == 1)
+		{
+			output = output_buffer + 
+			out_size *
+			status.first_clear_frame;
+		}
+		else
+		{
+			output = output_buffer +
 			output_queue.buffer * 
 			output_mmap.buf_size;
-		int is_pal = (out_size == DV_PAL_SIZE);
+		}
 
+		int is_pal = (out_size == DV_PAL_SIZE);
 
 
 
@@ -321,14 +412,19 @@ void Device1394Output::run()
 
 				audio_lock->unlock();
 			}
-
 // Copy from current buffer to mmap buffer with firewire encryption
-			encrypt((unsigned char*)output, 
-				(unsigned char*)out_buffer, 
-				out_size);
+			if(use_dv1394 == 1)
+			{
+				memcpy(output, out_buffer, out_size);
+			}
+			else
+			{
+				encrypt((unsigned char*)output, 
+					(unsigned char*)out_buffer, 
+					out_size);
+			}
 			buffer_valid[current_outbuffer] = 0;
 		}
-
 // Advance buffer number if possible
 		increment_counter(&current_outbuffer);
 
@@ -343,33 +439,52 @@ void Device1394Output::run()
 			video_lock->unlock();
 		}
 
-
 		buffer_lock->unlock();
 //printf("Device1394Output::run 100\n");
 
-
-
 		if(out_size > 0)
 		{
-
 // Write mmap to device
 			Thread::enable_cancel();
 			unused_buffers--;
-			if(ioctl(output_fd, VIDEO1394_TALK_QUEUE_BUFFER, &output_queue) < 0)
+			if(use_dv1394 == 1)
 			{
-        		perror("Device1394Output::run VIDEO1394_TALK_QUEUE_BUFFER");
-    		}
-
+				if(ioctl(output_fd, DV1394_SUBMIT_FRAMES, 1) < 0)
+				{
+					perror("Device1394Output::run DV1394_SUBMIT_FRAMES:");
+				}
+				if(ioctl(output_fd, DV1394_GET_STATUS, &status) < 0)
+				{
+					perror("Device1394Output::run DV1394_GET_STATUS:");
+				}
+			}
+			else
+			{
+				if(ioctl(output_fd, VIDEO1394_TALK_QUEUE_BUFFER, &output_queue) < 0)
+				{
+      	  		perror("Device1394Output::run VIDEO1394_TALK_QUEUE_BUFFER");
+    			}
+			}
     		output_queue.buffer++;
 			if(output_queue.buffer >= output_mmap.nb_buffers) 
 				output_queue.buffer = 0;
 
 			if(unused_buffers <= 0)
 			{
-    			if(ioctl(output_fd, VIDEO1394_TALK_WAIT_BUFFER, &output_queue) < 0) 
+				if(use_dv1394 == 1)
 				{
-        			perror("Device1394::run VIDEO1394_TALK_WAIT_BUFFER");
-    			}
+					if(ioctl(output_fd, DV1394_WAIT_FRAMES, 1) < 0)
+					{
+						perror("Device1394Output::run DV1394_WAIT_FRAMES");
+					}
+				}
+				else
+				{
+	    			if(ioctl(output_fd, VIDEO1394_TALK_WAIT_BUFFER, &output_queue) < 0) 
+					{
+      	  			perror("Device1394::run VIDEO1394_TALK_WAIT_BUFFER");
+    				}
+				}
 				unused_buffers++;
 			}
 			Thread::disable_cancel();

@@ -11,6 +11,7 @@
 #include "thread.h"
 #include "vframe.inc"
 #include "video1394.h"
+#include <libdv/dv1394.h>
 
 // Common 1394 output for audio and video
 
@@ -29,7 +30,8 @@ public:
 		int channels, 
 		int bits, 
 		int samplerate,
-		int syt);
+		int syt,
+		int use_dv1394);
 	void start();
 	void run();
 
@@ -83,6 +85,7 @@ public:
 
 // Output
 	int output_fd;
+	struct dv1394_status status;
 	struct video1394_mmap output_mmap;
 	struct video1394_queue_variable output_queue;
 //	raw1394handle_t avc_handle;
@@ -107,6 +110,7 @@ public:
 	long audio_position;
 	int interrupted;
 	int have_video;
+	int use_dv1394;
 };
 
 

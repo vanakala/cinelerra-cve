@@ -10,16 +10,22 @@ libguicast_la_SOURCES = bcbitmap.C bcbutton.C bccapture.C bcclipboard.C bcdispla
 												vframe.C workarounds.C bclistboxitem.C bctheme.C condition.C
 noinst_HEADERS = arraylist.h bcbitmap.h bcbitmap.inc bcbutton.h bcbutton.inc bccapture.h bccapture.inc bcclipboard.h \
 								 bcclipboard.inc bcdisplayinfo.h bcdisplayinfo.inc bcdragwindow.h bcdragwindow.inc bcfilebox.h \
-								 bcfilebox.inc bcipc.h bclistbox.h bclistbox.inc bcmenubar.h bcmenubar.inc bcmeter.h bcmeter.inc \
-								 bcpan.h bcpan.inc bcpixmap.h bcpixmap.inc bcpopup.h bcpopup.inc bcpopuplistbox.h bcpopuplistbox.inc \
-								 bcpopupmenu.h bcpopupmenu.inc bcpot.h bcpot.inc bcprogressbox.h bcprogressbox.inc bcprogress.h \
+								 bcfilebox.inc bcipc.h bclistbox.h bclistbox.inc bclistboxitem.inc bcmenubar.h bcmenubar.inc bcmeter.h bcmeter.inc \
+								 bcpan.h bcpan.inc bcpixmap.h bcpixmap.inc bcpopup.h bcpopup.inc \
+								 bcpopupmenu.h bcpopupmenu.inc bcpopuplistbox.inc bcpot.h bcpot.inc bcprogressbox.h bcprogressbox.inc bcprogress.h \
 								 bcprogress.inc bcrepeater.h bcrepeater.inc bcresources.h bcresources.inc bcscrollbar.h bcscrollbar.inc \
 								 bcsignals.h bcsignals.inc bcslider.h bcslider.inc bcsubwindow.h bcsubwindow.inc bctextbox.h bctextbox.inc \
-								 bctitle.h bctitle.inc bctoggle.h bctoggle.inc bctumble.h bctumble.inc bcwindowbase.h bcwindowbase.inc \
-								 bcwindow.h bcwindow.inc clip.h colors.h cursors.h defaults.h defaults.inc errorbox.h errorbox.inc \
+								 bctheme.inc bctitle.h bctitle.inc bctoggle.h bctoggle.inc bctumble.h bctumble.inc bcwindowbase.h bcwindowbase.inc \
+								 bcwindow.h bcwindow.inc clip.h colors.h condition.inc cursors.h defaults.h defaults.inc errorbox.h errorbox.inc \
 								 filesystem.h filesystem.inc fonts.h guicast.h keys.h linklist.h mutex.h mutex.inc rotateframe.h \
 								 rotateframe.inc sema.h sema.inc sizes.h stringfile.h stringfile.inc testobject.h thread.h timer.h \
 								 timer.inc units.h vframe.h vframe.inc workarounds.h bclistboxitem.h bctheme.h condition.h
 
 INCLUDES = -I$(top_srcdir)/quicktime -I/usr/include/qt
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
+
+EXTRA_DIST = images pngtoh.c
+
+dist-hook:
+	-rm -rf $(distdir)/images/CVS
+	-rm -rf $(distdir)/images/7seg_small/CVS

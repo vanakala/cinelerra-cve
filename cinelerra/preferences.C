@@ -171,7 +171,7 @@ int Preferences::load_defaults(Defaults *defaults)
 	index_count = defaults->get("INDEX_COUNT", index_count);
 	use_thumbnails = defaults->get("USE_THUMBNAILS", use_thumbnails);
 
-	sprintf(global_plugin_dir, "/usr/lib/cinelerra");
+	sprintf(global_plugin_dir, PLUGINDIR);
 	sprintf(local_plugin_dir, "");
 	strcpy(theme, DEFAULT_THEME);
 	defaults->get("GLOBAL_PLUGIN_DIR", global_plugin_dir);

@@ -7,3 +7,26 @@ AM_CXXFLAGS =
 
 INCLUDES = -I$(top_srcdir)/guicast -I$(top_srcdir)/cinelerra -I$(top_srcdir)/quicktime
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
+
+noinst_HEADERS = microtheme.h 
+
+EXTRA_DIST = data \
+	apply.xcf.bz2 \
+	buttonbars.xcf.bz2 \
+	checkbox.xcf.bz2 \
+	expandpatch.xcf.bz2 \
+	generic_button.xcf.bz2 \
+	genericbutton.xcf.bz2 \
+	levels.xcf.bz2 \
+	pan.xcf.bz2 \
+	patches.xcf.bz2 \
+	radial.xcf.bz2 \
+	scrollbar.xcf.bz2 \
+	setaudio.xcf.bz2 \
+	slider.xcf.bz2 \
+	statusbar_cancel.xcf.bz2 \
+	transportbuttons.xcf.bz2
+
+dist-hook:
+	-rm -rf $(distdir)/data/CVS
+

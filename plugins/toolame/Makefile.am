@@ -8,3 +8,5 @@ AM_CXXFLAGS =
 
 INCLUDES = -I$(top_srcdir)/guicast -I$(top_srcdir)/cinelerra -I$(top_srcdir)/quicktime
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
+
+noinst_HEADERS = absthr.h alloc.h common.h critband.h encoder.h enwindow.h freqtable.h ieeefloat.h portableio.h 

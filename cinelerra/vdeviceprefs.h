@@ -58,6 +58,7 @@ private:
 	VDeviceIntBox *firewire_channels;
 	VDeviceIntBox *firewire_syt;
 	VDeviceTextBox *firewire_path;
+	VDeviceCheckBox *firewire_use_dv1394;
 	VDeviceCheckBox *buz_swap_channels;
 	int driver, mode;
 	int x;

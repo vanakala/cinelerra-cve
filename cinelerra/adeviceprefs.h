@@ -20,6 +20,7 @@ class ALSADevice;
 class ADriverMenu;
 class ADeviceTextBox;
 class ADeviceIntBox;
+class ADeviceCheckBox;
 
 class ADevicePrefs
 {
@@ -72,6 +73,7 @@ private:
 	ADeviceIntBox *firewire_channels;
 	ADeviceTextBox *firewire_path;
 	ADeviceIntBox *firewire_syt;
+	BC_CheckBox *firewire_use_dv1394;
 	ALSADevice *alsa_device;
 	BitsPopup *alsa_bits;
 	ADeviceIntBox *alsa_channels;
@@ -129,6 +131,15 @@ class ADeviceIntBox : public BC_TextBox
 {
 public:
 	ADeviceIntBox(int x, int y, int *output);
+	int handle_event();
+	int *output;
+};
+
+class ADeviceCheckBox : public BC_CheckBox
+{
+public:
+	ADeviceCheckBox(int x, int y, int *output, char *text);
+
 	int handle_event();
 	int *output;
 };

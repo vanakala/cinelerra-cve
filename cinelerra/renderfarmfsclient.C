@@ -379,7 +379,6 @@ __off64_t ftello64 (FILE *__stream)
 	return (*func)(__stream);
 }
 
-
 // Glibc inlines the stat functions and redirects them to __xstat functions
 int __xstat (int __ver, __const char *__filename,
 		    struct stat *__stat_buf)
@@ -391,7 +390,7 @@ int __xstat (int __ver, __const char *__filename,
 
   	if (!func)
     	func = (int(*)(int __ver, __const char *__filename,
-		    struct stat *__stat_buf))dlsym(RTLD_NEXT, "stat");
+		    struct stat *__stat_buf))dlsym(RTLD_NEXT, "__xstat");
 
 // VFS path
 	if(!strncmp(__filename, RENDERFARM_FS_PREFIX, strlen(RENDERFARM_FS_PREFIX)))

@@ -12,6 +12,28 @@ libdecore_la_SOURCES += basic_prediction.c
 endif
 INCLUDES=-I./
 
-
+noinst_HEADERS = basic_prediction.h \
+	clearblock.h \
+	debug.h \
+	decore.h \
+	gen_draw.h \
+	gen_usetime.h \
+	getbits.h \
+	global.h \
+	idct.h \
+	mp4_block.h \
+	mp4_decoder.h \
+	mp4_header.h \
+	mp4_iquant.h \
+	mp4_mblock.h \
+	mp4_predict.h \
+	mp4_vars.h \
+	mp4_vld.h \
+	portab.h \
+	postprocess.h \
+	store.h \
+	timer.h \
+	transferidct.h \
+	yuv2rgb.h
 
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTC_FLAGS)

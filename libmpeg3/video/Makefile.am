@@ -7,8 +7,15 @@ else
 libmpeg3_video_la_SOURCES +=
 endif
 
+noinst_HEADERS = idct.h \
+	layerdata.h \
+	mpeg3video.h \
+	mpeg3videoprotos.h \
+	slice.h \
+	vlc.h
+
 libmpeg3_video_la_LDFLAGS=-static
 AM_CFLAGS = $(CPU_CFLAGS) $(LARGEFILE_CFLAGS)
-INCLUDES=-I..
+INCLUDES=-I$(srcdir)/..
 
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTC_FLAGS)

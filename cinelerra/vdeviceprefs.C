@@ -141,6 +141,8 @@ int VDevicePrefs::delete_objects()
 				delete firewire_syt;
 				delete syt_title;
 			}
+			delete firewire_use_dv1394;
+			firewire_use_dv1394 = 0;
 			firewire_syt = 0;
 			break;
 	}
@@ -278,6 +280,24 @@ int VDevicePrefs::create_firewire_objs()
 	{
 		dialog->add_subwindow(syt_title = new BC_Title(x1, y, _("Syt Offset:"), MEDIUMFONT, BLACK));
 		dialog->add_subwindow(firewire_syt = new VDeviceIntBox(x1, y + 20, output_int));
+	}
+	x1 = x + menu->get_w() + 5;
+
+	switch(mode)
+	{
+		case MODEPLAY:
+			output_int = &out_config->firewire_use_dv1394;
+			break;
+		case MODERECORD:
+			//output_int = &in_config->firewire_use_dv1394;
+			output_int = 0;
+			break;
+	}
+
+	if(output_int)
+	{
+		dialog->add_subwindow(firewire_use_dv1394 =
+   	      new VDeviceCheckBox(x1, y + 45, output_int, _("Use DV1394")));
 	}
 
 	return 0;

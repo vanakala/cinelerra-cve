@@ -94,7 +94,8 @@ int VDevice1394::open_output()
 			2,
 			16,
 			48000,
-			device->out_config->firewire_syt);
+			device->out_config->firewire_syt,
+			device->out_config->firewire_use_dv1394);
 	}
 
 	return 0;

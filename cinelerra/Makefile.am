@@ -253,8 +253,8 @@ cinelerra_SOURCES = aattachmentpoint.C \
 INCLUDES = -I$(top_srcdir)/quicktime -I$(top_srcdir)/guicast -I$(top_srcdir)/libmpeg3 $(all_includes)
 
 # the library search path.
-cinelerra_CFLAGS = $(CFLAGS) $(FIREWIRE_CFLAGS) $(SOUND_CFLAGS) $(AVIFILE_CXXFLAGS)
-cinelerra_CXXFLAGS = $(CXXFLAGS) $(FIREWIRE_CFLAGS) $(SOUND_CFLAGS) $(AVIFILE_CXXFLAGS)
+cinelerra_CFLAGS = $(CFLAGS) $(FIREWIRE_CFLAGS) $(SOUND_CFLAGS) $(AVIFILE_CXXFLAGS) 
+cinelerra_CXXFLAGS = $(CXXFLAGS) $(FIREWIRE_CFLAGS) $(SOUND_CFLAGS) $(AVIFILE_CXXFLAGS) -DPLUGINDIR=\"$(libdir)/cinelerra/\"
 cinelerra_LDFLAGS = -export-dynamic ../mpeg2enc/libmpeg2enc.la ../toolame-02l/libtoolame.la 
 AM_CFLAGS = 
 AM_CXXFLAGS = 
@@ -345,10 +345,8 @@ noinst_HEADERS = aattachmentpoint.h \
 		 fileavi.h \
 		 filebase.h \
 		 fileformat.h \
-		 filegif.h \
 		 file.h \
 		 filejpeg.h \
-		 filejpeglist.h \
 		 filelist.h \
 		 filemov.h \
 		 filempeg.h \
@@ -359,7 +357,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 filetiff.h \
 		 filevorbis.h \
 		 filexml.h \
-		 flipbook.h \
 		 floatauto.h \
 		 floatautos.h \
 		 formatcheck.h \
@@ -432,7 +429,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 plugincommands.h \
 		 plugindialog.h \
 		 plugin.h \
-		 pluginmessages.h \
 		 pluginpopup.h \
 		 pluginprefs.h \
 		 pluginserver.h \
@@ -459,7 +455,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 recordtransport.h \
 		 recordvideo.h \
 		 recordwindow.h \
-		 reindex.h \
 		 renderengine.h \
 		 renderfarmclient.h \
 		 renderfarmfsclient.h \
@@ -492,7 +487,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 timebar.h \
 		 timebomb.h \
 		 timeentry.h \
-		 toggleauto.h \
 		 toggleautos.h \
 		 trackcanvas.h \
 		 track.h \
@@ -548,6 +542,13 @@ noinst_HEADERS = aattachmentpoint.h \
 		 vwindow.h \
 		 workarounds.h \
 		 zoombar.h \
-		 zoompanel.h
+		 zoompanel.h \
+		$(srcdir)/*.inc
 		 
 cinelerra_LDADD = $(top_builddir)/quicktime/libquicktime.la $(top_builddir)/guicast/libguicast.la $(top_builddir)/libmpeg3/libmpeg3.la -lX11 -lsndfile -logg -lvorbis -lvorbisfile -lvorbisenc -la52 -lpng -lXv -lXext -ljpeg -lmp3lame -ltiff -lesd -lz $(SOUND_LDFLAGS) $(FIREWIRE_LDFLAGS) -ldv -luuid $(AVIFILE_LDFLAGS)
+
+EXTRA_DIST = Blond data
+
+dist-hook:
+	-rm -rf $(distdir)/Blond/CVS
+	-rm -rf $(distdir)/data/CVS

@@ -36,6 +36,7 @@ ADevicePrefs::ADevicePrefs(int x,
 	firewire_channels = 0;
 	firewire_path = 0;
 	firewire_syt = 0;
+	firewire_use_dv1394 = 0;
 	syt_title = 0;
 	channels_title = 0;
 	path_title = 0;
@@ -174,6 +175,11 @@ int ADevicePrefs::delete_firewire_objs()
 		delete channels_title;
 	}
 	firewire_channels = 0;
+	if(firewire_use_dv1394)
+	{
+		delete firewire_use_dv1394;
+	}
+	firewire_use_dv1394 = 0;
 	return 0;
 }
 
@@ -503,6 +509,24 @@ int ADevicePrefs::create_firewire_objs()
 		x1 += firewire_syt->get_w() + 5;
 	}
 
+	x1 = x + menu->get_w() + 5;
+
+	switch(mode)
+	{
+		case MODEPLAY:
+			output_int = &out_config->firewire_use_dv1394;
+			break;
+		case MODERECORD:
+			output_int = 0;
+			break;
+	}
+
+	if(output_int)
+	{
+		dialog->add_subwindow(firewire_use_dv1394 =
+				new BC_CheckBox(x1, y + 45, output_int, _("Use DV1394")));
+	}
+
 	return 0;
 }
 
@@ -621,6 +645,17 @@ int ADeviceIntBox::handle_event()
 { 
 	*output = atol(get_text()); 
 	return 1;
+}
+
+ADeviceCheckBox::ADeviceCheckBox(int x, int y, int *output, char *text)
+ : BC_CheckBox(x, y, *output, text)
+{
+   this->output = output;
+}
+int ADeviceCheckBox::handle_event()
+{
+   *output = get_value();
+   return 1;
 }
 
 

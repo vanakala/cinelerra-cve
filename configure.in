@@ -113,7 +113,7 @@ fi
 
 ############## LIBAVCODEC
 AC_CHECK_HEADERS(ffmpeg/avcodec.h)
-AC_CHECK_LIB(avcodec, avcodec_init, ,[AC_MSG_NOTICE([libavcodec not found])
+AC_CHECK_LIB(avcodec, avcodec_init,[AC_MSG_NOTICE([libavcodec found])] ,[AC_MSG_NOTICE([libavcodec not found])
 	NOT_FOUND="$NOT_FOUND libavcodec"])
 # END LIBAVCODEC
 
@@ -277,12 +277,8 @@ AC_OUTPUT(Makefile po/Makefile.in \
 					plugins/Makefile plugins/1080to480/Makefile \
 					plugins/histogram/Makefile \
 					plugins/720to480/Makefile \
-					plugins/blurzoom/Makefile \
 					plugins/denoisemjpeg/Makefile \
-					plugins/graphic/Makefile \
-					plugins/interpolate/Makefile \
 					plugins/motion/Makefile \
-					plugins/quark/Makefile \
 					plugins/bandslide/Makefile \
 					plugins/libcolors/Makefile \
 					plugins/libfourier/Makefile \

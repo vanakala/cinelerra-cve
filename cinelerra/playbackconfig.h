@@ -48,6 +48,7 @@ public:
 	int firewire_frames;
 	char firewire_path[BCTEXTLEN];
 	int firewire_syt;
+	int firewire_use_dv1394;
 };
 
 // This structure is passed to the driver
@@ -101,6 +102,7 @@ public:
 	int firewire_port;
 	char firewire_path[BCTEXTLEN];
 	int firewire_syt;
+	int firewire_use_dv1394;
 };
 
 class PlaybackConfig

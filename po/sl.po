@@ -36,7 +36,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: sl\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2003-10-13 00:20+0200\n"
+"POT-Creation-Date: 2003-11-10 01:09+0100\n"
 "PO-Revision-Date: 2003-10-13 00:17+0200\n"
 "Last-Translator: \n"
 "Language-Team:  <sl@li.org>\n"
@@ -117,8 +117,8 @@ msgstr "Zvok"
 msgid "Tracks:"
 msgstr "Steze:"
 
-#: cinelerra/new.C:375 cinelerra/adeviceprefs.C:281
-#: cinelerra/adeviceprefs.C:366 cinelerra/adeviceprefs.C:483
+#: cinelerra/new.C:375 cinelerra/adeviceprefs.C:287
+#: cinelerra/adeviceprefs.C:372 cinelerra/adeviceprefs.C:489
 #: cinelerra/assetedit.C:229 cinelerra/fileformat.C:58
 #: cinelerra/setaudio.C:185 cinelerra/setformat.C:275
 msgid "Channels:"
@@ -129,15 +129,6 @@ msgstr "Kanali:"
 msgid "Samplerate:"
 msgstr "Frek. vzorè.:"
 
-#. 	add_subwindow(new BC_Title(x, y, _("Playback"), LARGEFONT, BLACK));
-#. 	x += 200;
-#. 	add_subwindow(new BC_Title(x, y, _("Strategy:")));
-#. 	popup = new PlaybackStrategy(this, x + 70, y);
-#. 	popup->create_objects();
-#. 	x = 10;
-#. 	y += popup->get_h() + 30;
-#. Global playback options
-#. All strategies use these
 #: cinelerra/new.C:391 cinelerra/mainmenu.C:132 cinelerra/setformat.C:309
 #: cinelerra/videooutprefs.C:55
 msgid "Video"
@@ -151,9 +142,6 @@ msgstr "Frekv. slik:"
 msgid "Canvas size:"
 msgstr "Platno:"
 
-#. 	add_subwindow(new ScaleConstrain(x, y, thread));
-#. 	x = 10;
-#. 	y += 80;
 #: cinelerra/new.C:451 cinelerra/scale.C:249 cinelerra/setformat.C:386
 #: cinelerra/setvideo.C:323
 msgid "Aspect ratio:"
@@ -221,7 +209,6 @@ msgstr "Snemanje..."
 msgid "Record::run_script: Unrecognized command: %s\n"
 msgstr "Record::run_script: Nepoznan ukaz: %s\n"
 
-#. no plugin
 #: cinelerra/record.C:441 cinelerra/channeledit.C:564
 #: cinelerra/plugindialog.C:211 cinelerra/recordgui.C:234
 #: cinelerra/sharedlocation.C:104 cinelerra/sharedlocation.C:109
@@ -234,12 +221,10 @@ msgstr "Brez"
 msgid "render"
 msgstr "upodabljanje"
 
-#. Update GUI
 #: cinelerra/record.C:774
 msgid "Deleting"
 msgstr "Bri¹em"
 
-#. Update GUI
 #: cinelerra/record.C:781
 msgid "OK"
 msgstr "V redu"
@@ -253,7 +238,6 @@ msgstr "Upodabljanje..."
 msgid "Rendering %s..."
 msgstr "Upodabljam %s..."
 
-#. Don't bother with the filename since renderfarm defeats the meaning
 #: cinelerra/render.C:224
 msgid "Rendering..."
 msgstr "Upodabljam..."
@@ -300,11 +284,12 @@ msgid "Build date: "
 msgstr "Datum izgradnje"
 
 #: cinelerra/aboutprefs.C:79
+#, fuzzy
 msgid ""
 "This program is free software; you can\n"
 "redistribute it and/or modify it under the terms\n"
 "of the GNU General Public License as published\n"
-"by  the Free Software Foundation; either version\n"
+"by the Free Software Foundation; either version\n"
 "2 of the License, or (at your option) any later\n"
 "version.\n"
 "\n"
@@ -337,43 +322,46 @@ msgstr ""
 "Razlièica Quicktime %d.%d.%d\n"
 "Razlièica Libmpeg3 %d.%d.%d\n"
 
-#: cinelerra/adeviceprefs.C:233 cinelerra/vdeviceprefs.C:166
-#: cinelerra/vdeviceprefs.C:187 cinelerra/vdeviceprefs.C:291
+#: cinelerra/adeviceprefs.C:239 cinelerra/vdeviceprefs.C:168
+#: cinelerra/vdeviceprefs.C:189 cinelerra/vdeviceprefs.C:311
 msgid "Device path:"
 msgstr "Pot naprave:"
 
-#: cinelerra/adeviceprefs.C:255 cinelerra/adeviceprefs.C:341
+#: cinelerra/adeviceprefs.C:261 cinelerra/adeviceprefs.C:347
 #: cinelerra/assetedit.C:266 cinelerra/fileformat.C:70
 #: cinelerra/formatwindow.C:27
 msgid "Bits:"
 msgstr "Biti:"
 
-#: cinelerra/adeviceprefs.C:320
+#: cinelerra/adeviceprefs.C:326
 msgid "Device:"
 msgstr "Naprava:"
 
-#: cinelerra/adeviceprefs.C:392
+#: cinelerra/adeviceprefs.C:398
 msgid "Server:"
 msgstr "Stre¾nik:"
 
-#: cinelerra/adeviceprefs.C:408 cinelerra/adeviceprefs.C:451
-#: cinelerra/performanceprefs.C:116 cinelerra/vdeviceprefs.C:247
+#: cinelerra/adeviceprefs.C:414 cinelerra/adeviceprefs.C:457
+#: cinelerra/performanceprefs.C:116 cinelerra/vdeviceprefs.C:249
 msgid "Port:"
 msgstr "Vrata:"
 
-#: cinelerra/adeviceprefs.C:433 cinelerra/vdeviceprefs.C:232
+#: cinelerra/adeviceprefs.C:439 cinelerra/vdeviceprefs.C:234
 msgid "Device Path:"
 msgstr "Pot naprave:"
 
-#: cinelerra/adeviceprefs.C:466 cinelerra/vdeviceprefs.C:262
+#: cinelerra/adeviceprefs.C:472 cinelerra/vdeviceprefs.C:264
 msgid "Channel:"
 msgstr "Kanal:"
 
-#: cinelerra/adeviceprefs.C:501 cinelerra/vdeviceprefs.C:279
+#: cinelerra/adeviceprefs.C:507 cinelerra/vdeviceprefs.C:281
 msgid "Syt Offset:"
 msgstr "Odmik syt:"
 
-#. couldn't open source file / skip the edit
+#: cinelerra/adeviceprefs.C:527 cinelerra/vdeviceprefs.C:300
+msgid "Use DV1394"
+msgstr ""
+
 #: cinelerra/amodule.C:193 cinelerra/amodule.C:269
 #, c-format
 msgid "VirtualAConsole::load_track Couldn't open %s.\n"
@@ -414,8 +402,8 @@ msgstr "Zvok:"
 
 #: cinelerra/assetedit.C:217 cinelerra/assetedit.C:352
 #: cinelerra/filemov.C:1231 cinelerra/filemov.C:1500
-#: cinelerra/filesndfile.C:360 cinelerra/filetga.C:904
-#: cinelerra/formatwindow.C:87
+#: cinelerra/filesndfile.C:363 cinelerra/filesndfile.C:815
+#: cinelerra/filetga.C:904 cinelerra/formatwindow.C:87
 msgid "Compression:"
 msgstr "Kompresija:"
 
@@ -428,7 +416,8 @@ msgid "Header length:"
 msgstr "Dol¾ina glave:"
 
 #: cinelerra/assetedit.C:299 cinelerra/fileformat.C:88
-#: cinelerra/filesndfile.C:379 cinelerra/formatwindow.C:43
+#: cinelerra/filesndfile.C:382 cinelerra/filesndfile.C:834
+#: cinelerra/formatwindow.C:43
 msgid "Byte order:"
 msgstr "Zapis bajtov:"
 
@@ -449,7 +438,6 @@ msgstr "Vrednosti so nepredznaèene"
 msgid "Values are signed"
 msgstr "Vrednosti so predznaèene"
 
-#. printf("FormatTools::create_objects 8\n");
 #: cinelerra/assetedit.C:346 cinelerra/formattools.C:166
 msgid "Video:"
 msgstr "Video:"
@@ -482,11 +470,6 @@ msgstr "Znova zgradi kazalo"
 msgid "Sort items"
 msgstr "Razvrsti predmete"
 
-#. set scrubbing speed
-#. 	ScrubSpeed *scrub_speed;
-#. 	settingsmenu->add_item(scrub_speed = new ScrubSpeed(mwindow));
-#. 	if(mwindow->edl->session->scrub_speed == .5)
-#. 		scrub_speed->set_text(_("Fast Shuttle"));
 #: cinelerra/assetpopup.C:184 cinelerra/mainmenu.C:166
 msgid "View"
 msgstr "Pogled"
@@ -536,15 +519,6 @@ msgstr "Veèglavno"
 msgid "Blond Symphony"
 msgstr "Blond Symphony"
 
-#. 	add_subwindow(new BC_Title(x, y, _("Playback"), LARGEFONT, BLACK));
-#. 	x += 200;
-#. 	add_subwindow(new BC_Title(x, y, _("Strategy:")));
-#. 	popup = new PlaybackStrategy(this, x + 70, y);
-#. 	popup->create_objects();
-#. 	x = 10;
-#. 	y += popup->get_h() + 30;
-#. Global playback options
-#. All strategies use these
 #: cinelerra/audiooutprefs.C:59 cinelerra/playbackprefs.C:62
 msgid "Audio Out"
 msgstr "Zvoèni izhod"
@@ -601,8 +575,7 @@ msgstr "Programsko ugotavljaj trenutno mesto predvajanja"
 msgid "Audio playback in real time priority (root only)"
 msgstr "Predvajaj zvok z realno èasovno prioriteto (le administrator)"
 
-#. printf("AWindowGUI::create_objects 1\n");
-#: cinelerra/awindowgui.C:270 plugins/titler/title.C:1024
+#: cinelerra/awindowgui.C:270 plugins/titler/title.C:1026
 msgid "Title"
 msgstr "Naslov"
 
@@ -881,7 +854,6 @@ msgstr "YUV420"
 msgid "YUV422"
 msgstr "YUV422"
 
-#. printf("ConfirmQuitWindow::create_objects 1\n");
 #: cinelerra/confirmquit.C:37
 msgid "( Answering No will destroy changes )"
 msgstr "( Odgovor \"Ne\" bo unièil spremembe ) "
@@ -1048,10 +1020,6 @@ msgstr "Naèin:"
 msgid "Value:"
 msgstr "Vrednost:"
 
-#. 	add_subwindow(next_point = new CWindowMaskCycleNext(mwindow, this, x, y));
-#. 	y += 30;
-#. 	add_subwindow(prev_point = new CWindowMaskCyclePrev(mwindow, this, x, y));
-#. 	y += 40;
 #: cinelerra/cwindowtool.C:1511
 msgid "Mask number:"
 msgstr "©tevilka maske:"
@@ -1217,25 +1185,25 @@ msgstr "Atributi:"
 msgid "Compressor: Consumer DV"
 msgstr "Kompresija: Consumer DV"
 
-#: cinelerra/file.C:200
+#: cinelerra/file.C:425
 msgid "This format doesn't support audio."
 msgstr "Ta format ne podpira zvoka."
 
-#: cinelerra/file.C:203
+#: cinelerra/file.C:428
 msgid "This format doesn't support video."
 msgstr "Ta format ne podpira videa."
 
-#: cinelerra/file.C:1076 cinelerra/filemov.C:1030 cinelerra/loadmode.C:58
+#: cinelerra/file.C:1324 cinelerra/filemov.C:1030 cinelerra/loadmode.C:58
 msgid "Unknown"
 msgstr "Neznan"
 
-#: cinelerra/file.C:1132 cinelerra/file.C:1138 cinelerra/fileformat.C:143
-#: cinelerra/filesndfile.C:411
+#: cinelerra/file.C:1380 cinelerra/file.C:1386 cinelerra/fileformat.C:143
+#: cinelerra/filesndfile.C:414 cinelerra/filesndfile.C:866
 msgid "Lo Hi"
 msgstr "Ni¾-Vi¹"
 
-#: cinelerra/file.C:1139 cinelerra/fileformat.C:155
-#: cinelerra/filesndfile.C:396
+#: cinelerra/file.C:1387 cinelerra/fileformat.C:155
+#: cinelerra/filesndfile.C:399 cinelerra/filesndfile.C:851
 msgid "Hi Lo"
 msgstr "Vi¹-Ni¾"
 
@@ -1247,7 +1215,6 @@ msgstr "Apple/SGI AIFF"
 msgid "MPEG Audio"
 msgstr "Zvok MPEG"
 
-#. For encoding only
 #: cinelerra/file.inc:49
 msgid "Sun/NeXT AU"
 msgstr "Sun/NeXT AU"
@@ -1288,7 +1255,6 @@ msgstr "Quicktime za Linux"
 msgid "MPEG"
 msgstr "MPEG"
 
-#. For decoding only
 #: cinelerra/file.inc:60
 msgid "Raw PCM"
 msgstr "Surov PCM"
@@ -1321,7 +1287,6 @@ msgstr "Zaporedje TIFF"
 msgid "MPEG Video"
 msgstr "Video MPEG"
 
-#. For encoding only
 #: cinelerra/file.inc:69
 msgid "OGG Vorbis"
 msgstr "OGG Vorbis"
@@ -1358,7 +1323,6 @@ msgstr "ADPCM"
 msgid "Float"
 msgstr "Plavajoèa vejica"
 
-#. Video formats not part of Quicktime
 #: cinelerra/file.inc:116
 msgid "RGB ALPHA"
 msgstr "RGB ALPHA"
@@ -1470,7 +1434,6 @@ msgstr "MP3"
 msgid "FileMOV::open_file %s: No such file or directory\n"
 msgstr "FileMOV::open_file %s: Datoteka ali imenik ne obstaja\n"
 
-#. Fix up the Quicktime file.
 #: cinelerra/filemov.C:239
 msgid "Made with Cinelerra for Linux"
 msgstr "Narejeno s Cinellero za Linux"
@@ -1479,8 +1442,8 @@ msgstr "Narejeno s Cinellero za Linux"
 msgid "Bits per channel:"
 msgstr "Bitov na kanal:"
 
-#: cinelerra/filemov.C:1283 cinelerra/filesndfile.C:373
-#: cinelerra/formatwindow.C:176
+#: cinelerra/filemov.C:1283 cinelerra/filesndfile.C:376
+#: cinelerra/filesndfile.C:828 cinelerra/formatwindow.C:176
 msgid "Dither"
 msgstr "Razpr¹evanje"
 
@@ -1586,8 +1549,6 @@ msgstr "Derivat:"
 msgid "I frame distance:"
 msgstr "Razd. med slik. I:"
 
-#. 	add_subwindow(new BC_Title(x, y, _("P frame distance:")));
-#. 	y += 30;
 #: cinelerra/filempeg.C:1028
 msgid "Progressive frames"
 msgstr "Progresivne slike"
@@ -1628,7 +1589,8 @@ msgstr "YUV 4:2:2"
 msgid "Use alpha"
 msgstr "Uporabi alfo"
 
-#: cinelerra/filesndfile.C:377 cinelerra/formatwindow.C:188
+#: cinelerra/filesndfile.C:380 cinelerra/filesndfile.C:832
+#: cinelerra/formatwindow.C:188
 msgid "Signed"
 msgstr "Predznaèen"
 
@@ -1685,7 +1647,6 @@ msgstr "Izhod v datoteko"
 msgid "Select a file to write to:"
 msgstr "Izberi datoteko v katero naj se pi¹e:"
 
-#. printf("FormatTools::create_objects 3\n");
 #: cinelerra/formattools.C:114
 msgid "File Format:"
 msgstr "Obl. zapisa:"
@@ -1755,7 +1716,6 @@ msgstr "Ustvarjam %s."
 msgid "IndexFile::draw_index: index has 0 zoom\n"
 msgstr "IndexFile::draw_index: kazalo ima poveèavo 0\n"
 
-#. failed to create it
 #: cinelerra/indexthread.C:205
 #, c-format
 msgid "IndexThread::run() Couldn't write index file %s to disk.\n"
@@ -1777,11 +1737,6 @@ msgstr "Vleci le izvor"
 msgid "No effect"
 msgstr "Brez uèinka"
 
-#. 	add_border(get_resources()->get_bg_shadow1(),
-#. 		get_resources()->get_bg_shadow2(),
-#. 		get_resources()->get_bg_color(),
-#. 		get_resources()->get_bg_light2(),
-#. 		get_resources()->get_bg_light1());
 #: cinelerra/interfaceprefs.C:40 cinelerra/preferencesthread.C:233
 msgid "Interface"
 msgstr "Vmesnik"
@@ -1993,7 +1948,6 @@ msgstr "Izpi¹i vtiènike"
 msgid "Dump Assets"
 msgstr "Izpi¹i sredstva"
 
-#. ================================================= edit
 #: cinelerra/mainmenu.C:540
 msgid "Undo"
 msgstr "Razveljavi"
@@ -2175,7 +2129,8 @@ msgid "Render effect..."
 msgstr "Upodobi uèinek..."
 
 #: cinelerra/menueffects.C:114
-msgid "No recorable tracks specified."
+#, fuzzy
+msgid "No recordable tracks specified."
 msgstr "Navedena ni nobena snemalna steza."
 
 #: cinelerra/menueffects.C:125
@@ -2194,7 +2149,6 @@ msgstr "Izbran ni noben uèinek."
 msgid "No selected range to process."
 msgstr "Ni izbranega obmoèja za procesiranje."
 
-#. open failed
 #: cinelerra/menueffects.C:426 cinelerra/packagerenderer.C:172
 #: cinelerra/savefile.C:85
 #, c-format
@@ -2420,7 +2374,6 @@ msgstr "zdru¾i"
 msgid "Clip %d\n"
 msgstr "Odsek %d\n"
 
-#. printf("MWindow::toggle_label 1\n");
 #: cinelerra/mwindowedit.C:1768
 msgid "label"
 msgstr "oznaka"
@@ -2457,11 +2410,6 @@ msgstr "Ri¹i medij"
 msgid "Don't send to output"
 msgstr "Ne po¹lji v izhod"
 
-#. 	add_border(get_resources()->get_bg_shadow1(),
-#. 		get_resources()->get_bg_shadow2(),
-#. 		get_resources()->get_bg_color(),
-#. 		get_resources()->get_bg_light2(),
-#. 		get_resources()->get_bg_light1());
 #: cinelerra/performanceprefs.C:47 cinelerra/preferencesthread.C:230
 msgid "Performance"
 msgstr "Zmogljivost"
@@ -2655,7 +2603,6 @@ msgstr "Avtor: %s"
 msgid "License: %s"
 msgstr "Licenca: %s"
 
-#. printf("PluginArray::run_plugins 2\n");
 #: cinelerra/pluginarray.C:166
 #, c-format
 msgid "%s..."
@@ -2728,11 +2675,6 @@ msgstr "odpni uèinek"
 msgid "Show"
 msgstr "Ka¾i"
 
-#. 	add_border(get_resources()->get_bg_shadow1(),
-#. 		get_resources()->get_bg_shadow2(),
-#. 		get_resources()->get_bg_color(),
-#. 		get_resources()->get_bg_light2(),
-#. 		get_resources()->get_bg_light1());
 #: cinelerra/pluginprefs.C:36
 msgid "Plugin Set"
 msgstr "Nabor vtiènikov"
@@ -2853,7 +2795,6 @@ msgstr "Prej¹nja oznaka:"
 msgid "Path:"
 msgstr "Pot:"
 
-#. printf("RecordWindow::create_objects 1\n");
 #: cinelerra/recordgui.C:260 cinelerra/recordwindow.C:47
 msgid "Select a file to record to:"
 msgstr "Izberi datoteko za snemanje:"
@@ -2962,7 +2903,7 @@ msgstr "Konèaj brez prilepljenja v projekt?"
 msgid "Rewind batch and overwrite?"
 msgstr "Previj paket in pi¹i preko?"
 
-#: cinelerra/recordmonitor.C:471 cinelerra/vdeviceprefs.C:195
+#: cinelerra/recordmonitor.C:471 cinelerra/vdeviceprefs.C:197
 msgid "Swap fields"
 msgstr "Zamenjaj polja"
 
@@ -3023,7 +2964,6 @@ msgstr ""
 msgid "Record single frame"
 msgstr "Posnami eno samo sliko"
 
-#. 	this->engine = engine;
 #: cinelerra/recordtransport.C:176
 msgid "Preview recording"
 msgstr "Predogled snemanja"
@@ -3056,7 +2996,6 @@ msgstr "Znova nari¹i vsa kazala trenutnega projekta?"
 msgid "RenderFarmServerThread::start_loop: socket\n"
 msgstr "RenderFarmServerThread::start_loop: vtiè\n"
 
-#. printf("RenderFarmServerThread::start_loop 4 %s\n", hostname);
 #: cinelerra/renderfarm.C:174 cinelerra/renderfarm.C:217
 #, c-format
 msgid "RenderFarmServerThread::start_loop: %s: %s\n"
@@ -3098,7 +3037,6 @@ msgstr "RenderFarmClient::main_loop: poslu¹aj"
 msgid "RenderFarmClient::main_loop: accept"
 msgstr "RenderFarmClient::main_loop: sprejmi"
 
-#. printf("RenderFarmClientThread::run 12\n");
 #: cinelerra/renderfarmclient.C:562
 msgid "RenderFarmClientThread::run: Session finished.\n"
 msgstr "RenderFarmClientThread::run: Seja zakljuèena.\n"
@@ -3134,7 +3072,6 @@ msgstr "Ne morem konèati dokler traja snemanje."
 msgid "Can't quit while a render is in progress."
 msgstr "Ne morem konèati dokler traja upodabljanje."
 
-#. printf("Quit::run 2\n");
 #: cinelerra/quit.C:87
 msgid "Save edit list before exiting?"
 msgstr "Pred izhodom shrani seznam urejanj?"
@@ -3160,7 +3097,6 @@ msgstr "\"%s\" %dC napisal"
 msgid "Save as..."
 msgstr "Shrani kot..."
 
-#. update the project name
 #: cinelerra/savefile.C:192 plugins/reverb/reverb.C:397
 #, c-format
 msgid "Couldn't open %s."
@@ -3333,15 +3269,15 @@ msgstr "VDeviceLML::read_buffer: sesutje gonilnika\n"
 msgid "VDeviceLML::read_buffer: reopened\n"
 msgstr "VDeviceLML::read_buffer: znova odprt\n"
 
-#: cinelerra/vdeviceprefs.C:200
+#: cinelerra/vdeviceprefs.C:202
 msgid "Output channel:"
 msgstr "Izhodni kanal:"
 
-#: cinelerra/vdeviceprefs.C:301
+#: cinelerra/vdeviceprefs.C:321
 msgid "Display:"
 msgstr "Zaslon:"
 
-#: cinelerra/vdeviceprefs.C:311
+#: cinelerra/vdeviceprefs.C:331
 msgid "Display for compositor:"
 msgstr "Zaslon skladatelja:"
 
@@ -3506,7 +3442,6 @@ msgstr "Ustvari novo mapo"
 msgid "Up a directory"
 msgstr "Imenik navzgor"
 
-#. Need a temp so submit_file can expand it
 #: guicast/bcfilebox.C:379
 msgid ".."
 msgstr ".."
@@ -3748,12 +3683,10 @@ msgstr "Barvni kljuè"
 msgid "Color Balance"
 msgstr "Barvno ravnovesje"
 
-#. printf("ColorBalanceWindow::create_objects 1\n");
 #: plugins/colorbalance/colorbalancewindow.C:45
 msgid "Cyan"
 msgstr "Sinja"
 
-#. printf("ColorWindow::create_objects 1\n");
 #: plugins/colorbalance/colorbalancewindow.C:47
 #: plugins/denoisevideo/denoisevideo.C:182 plugins/downsample/downsample.C:295
 #: plugins/histogram/histogram.C:402 plugins/libcolors/colorpicker.C:145
@@ -3763,12 +3696,10 @@ msgstr "Sinja"
 msgid "Red"
 msgstr "Rdeèa"
 
-#. printf("ColorBalanceWindow::create_objects 1\n");
 #: plugins/colorbalance/colorbalancewindow.C:50
 msgid "Magenta"
 msgstr "©krlatna"
 
-#. printf("ColorWindow::create_objects 1\n");
 #: plugins/colorbalance/colorbalancewindow.C:52
 #: plugins/denoisevideo/denoisevideo.C:184 plugins/downsample/downsample.C:301
 #: plugins/histogram/histogram.C:408 plugins/libcolors/colorpicker.C:151
@@ -3778,12 +3709,10 @@ msgstr "©krlatna"
 msgid "Green"
 msgstr "Zelena"
 
-#. printf("ColorBalanceWindow::create_objects 1\n");
 #: plugins/colorbalance/colorbalancewindow.C:55
 msgid "Yellow"
 msgstr "Rumena"
 
-#. printf("ColorWindow::create_objects 1\n");
 #: plugins/colorbalance/colorbalancewindow.C:57
 #: plugins/denoisevideo/denoisevideo.C:186 plugins/downsample/downsample.C:307
 #: plugins/histogram/histogram.C:414 plugins/libcolors/colorpicker.C:157
@@ -4105,7 +4034,6 @@ msgstr "Zunanja barva"
 msgid "Gradient"
 msgstr "Preliv"
 
-#. printf("ColorWindow::create_objects 1\n");
 #: plugins/histogram/histogram.C:396 plugins/huesaturation/huewindow.C:62
 #: plugins/libcolors/colorpicker.C:139
 msgid "Value"
@@ -4164,7 +4092,6 @@ msgstr "Odtenek in nasièenje"
 msgid "Hue"
 msgstr "Odtenek"
 
-#. printf("ColorWindow::create_objects 1\n");
 #: plugins/huesaturation/huewindow.C:57 plugins/libcolors/colorpicker.C:133
 msgid "Saturation"
 msgstr "Nasièenost"
@@ -4634,18 +4561,18 @@ msgid "New/Open SVG..."
 msgstr "Nov/Odpri SVG..."
 
 #: plugins/svg/svgwin.C:234
-#, c-format
+#, fuzzy, c-format
 msgid ""
-"SVG Width is currently only supported in milimeters: %s, falling back to "
+"SVG Width is currently only supported in millimeters: %s, falling back to "
 "100\n"
 msgstr ""
 "Navajanje SVG ¹irine je trenutno podprto le v milimetrih: %s, uporabljam "
 "vrednost 100\n"
 
 #: plugins/svg/svgwin.C:245
-#, c-format
+#, fuzzy, c-format
 msgid ""
-"SVG Height is currently only supported in milimeters: %s, falling back to "
+"SVG Height is currently only supported in millimeters: %s, falling back to "
 "100\n"
 msgstr ""
 "Navajanje SVG vi¹ine je trenutno podprto le v milimetrih: %s, uporabljam "
@@ -4723,7 +4650,6 @@ msgstr "Osnovna frekv.:"
 msgid "DC"
 msgstr "DC"
 
-#. 	add_item(new SynthWaveFormItem(synth, _("DC"), DC));
 #: plugins/synthesizer/synthesizer.C:747
 #: plugins/synthesizer/synthesizer.C:1000
 #: plugins/synthesizer/synthesizer.C:1289
@@ -4823,47 +4749,46 @@ msgstr "Del izvorne dol¾ine:"
 msgid "Time stretch"
 msgstr "Raztegnjen èas"
 
-#: plugins/titler/title.C:60
+#: plugins/titler/title.C:62
 msgid "hello world"
 msgstr "pozdravljen svet"
 
-#: plugins/titler/title.C:269
+#: plugins/titler/title.C:271
 msgid "GlyphUnit::process_package FT_New_Face failed.\n"
 msgstr "GlyphUnit::process_package FT_New_Face neuspe¹no.\n"
 
-#: plugins/titler/title.C:288
+#: plugins/titler/title.C:290
 #, c-format
 msgid "GlyphUnit::process_package FT_Load_Char failed - char: %i.\n"
 msgstr "GlyphUnit::process_package FT_Load_Char failed - znak: %i.\n"
 
-#: plugins/titler/title.C:1327
+#: plugins/titler/title.C:1329
 #, c-format
 msgid "TitleMain::load_freetype_face %s failed.\n"
 msgstr "TitleMain::load_freetype_face %s neuspe¹no.\n"
 
-#. Something went wrong.
-#: plugins/titler/title.C:1450
+#: plugins/titler/title.C:1452
 #, c-format
 msgid "Iconv conversion from %s to Unicode UCS-4 not available\n"
 msgstr "Pretvorba znakov Iconv iz %s v Unicode UCS-4 ni na voljo\n"
 
-#: plugins/titler/title.C:1897
+#: plugins/titler/title.C:1899
 msgid "No motion"
 msgstr "Brez gibanja"
 
-#: plugins/titler/title.C:1898
+#: plugins/titler/title.C:1900
 msgid "Bottom to top"
 msgstr "Od spodaj navzgor"
 
-#: plugins/titler/title.C:1899
+#: plugins/titler/title.C:1901
 msgid "Top to bottom"
 msgstr "Od zgoraj navzdol"
 
-#: plugins/titler/title.C:1900
+#: plugins/titler/title.C:1902
 msgid "Right to left"
 msgstr "Od desne proti levi"
 
-#: plugins/titler/title.C:1901
+#: plugins/titler/title.C:1903
 msgid "Left to right"
 msgstr "Od leve proti desni"
 
@@ -4987,13 +4912,6 @@ msgstr "Poèrni"
 msgid "Reflective"
 msgstr "Odbojen"
 
-#. 	add_subwindow(new BC_Title(x, y, _("Mode:")));
-#. 	add_subwindow(smear = new WaveSmear(plugin, this, x1, y));
-#. 	y += 20;
-#. 	add_subwindow(blacken = new WaveBlacken(plugin, this, x1, y));
-#. 	y += 30;
-#. 	add_subwindow(reflective = new WaveReflective(plugin, x1, y));
-#. 	y += 30;
 #: plugins/wave/wave.C:403
 msgid "Amplitude:"
 msgstr "Amplituda:"
