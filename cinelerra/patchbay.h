@@ -46,7 +46,7 @@ public:
 // =========================================== drawing
 
 	int resize_event(int top, int bottom);
-
+	Track *is_over_track();	// called from trackcanvas!
 
 	MWindow *mwindow;
 	MWindowGUI *gui;

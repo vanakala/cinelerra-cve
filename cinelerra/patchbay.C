@@ -193,6 +193,36 @@ int PatchBay::button_press_event()
 	return result;
 }
 
+
+Track *PatchBay::is_over_track()     // called from mwindow
+{
+	int cursor_x = get_relative_cursor_x();
+	int cursor_y = get_relative_cursor_y();
+	Track *over_track = 0;
+
+	if(get_cursor_over_window() &&
+		cursor_x >= 0 && 
+		cursor_y >= 0 && 
+		cursor_x < get_w() && 
+		cursor_y < get_h())
+	{
+// Get track we're inside of
+		for(Track *track = mwindow->edl->tracks->first;
+			track;
+			track = track->next)
+		{
+			int y = track->y_pixel;
+			int h = track->vertical_span(mwindow->theme);
+			if(cursor_y >= y && cursor_y < y + h)
+			{	
+				over_track = track;
+			}
+		}
+	}				
+	return (over_track);
+
+}
+
 int PatchBay::cursor_motion_event()
 {
 	int cursor_x = get_relative_cursor_x();
@@ -372,7 +402,6 @@ void PatchBay::stop_meters()
 
 int PatchBay::update()
 {
-//printf("PatchBay::update 1\n");
 	int patch_count = 0;
 
 // Every patch has a GUI regardless of whether or not it is visible.
@@ -429,7 +458,6 @@ int PatchBay::update()
 		patches.remove_number(patches.total - 1);
 	}
 
-//printf("PatchBay::update 10\n");
 	return 0;
 }
 

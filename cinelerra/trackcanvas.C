@@ -278,6 +278,9 @@ int TrackCanvas::drag_motion()
 		}
 	}
 
+	if (!over_track) 	// check for pastes from patchbay
+		over_track = mwindow->gui->patchbay->is_over_track();
+
 	if(mwindow->session->track_highlighted != over_track) 
 	{
 		mwindow->session->track_highlighted = over_track;
@@ -512,14 +515,14 @@ int TrackCanvas::drag_stop()
 						mwindow->edl->local_session->get_selectionstart();
 				}
 // Move to a point between two edits
-// 				else
-// 				if(mwindow->session->edit_highlighted)
-// 				{
-// 					start = mwindow->session->track_highlighted->from_units(
-// 						mwindow->session->edit_highlighted->startproject);
-// 					length = mwindow->session->track_highlighted->from_units(
-// 						mwindow->session->edit_highlighted->length);
-// 				}
+ 				else
+ 				if(mwindow->session->edit_highlighted)
+ 				{
+ 					start = mwindow->session->track_highlighted->from_units(
+ 						mwindow->session->edit_highlighted->startproject);
+ 					length = mwindow->session->track_highlighted->from_units(
+ 						mwindow->session->edit_highlighted->length);
+ 				}
 
 				mwindow->insert_effects_canvas(start, length);
 				redraw = 1;
@@ -895,8 +898,6 @@ void TrackCanvas::track_dimensions(Track *track, int64_t &x, int64_t &y, int64_t
 
 void TrackCanvas::draw_paste_destination()
 {
-	int cursor_x = get_cursor_x();
-	int cursor_y = get_cursor_y();
 	int current_atrack = 0;
 	int current_vtrack = 0;
 	int current_aedit = 0;
@@ -1264,16 +1265,16 @@ void TrackCanvas::draw_highlighting()
 							mwindow->edl->local_session->zoom_sample);
 					}
 // Put it in a new plugin set determined by an edit boundary
-//					else
-// 					if(mwindow->session->edit_highlighted)
-// 					{
-// 						int64_t temp_y, temp_h;
-// 						edit_dimensions(mwindow->session->edit_highlighted, 
-// 							x, 
-// 							temp_y, 
-// 							w, 
-// 							temp_h);
-// 					}
+					else
+ 					if(mwindow->session->edit_highlighted)
+ 					{
+ 						int64_t temp_y, temp_h;
+ 						edit_dimensions(mwindow->session->edit_highlighted, 
+ 							x, 
+ 							temp_y, 
+ 							w, 
+ 							temp_h);
+ 					}
 // Put it at the beginning of the track in a new plugin set
 				}
 
