@@ -73,6 +73,7 @@ SharpenMain::SharpenMain(PluginServer *server)
  : PluginVClient(server)
 {
 	PLUGIN_CONSTRUCTOR_MACRO
+	engine = 0;
 }
 
 SharpenMain::~SharpenMain()
