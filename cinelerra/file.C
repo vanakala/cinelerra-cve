@@ -863,6 +863,11 @@ int File::read_samples(double *buffer, int64_t len, int64_t base_samplerate, flo
 	int result = 0;
 //printf("File::read_samples 1\n");
 
+// Never try to read more samples than exist in the file
+	if (current_sample + len > asset->audio_length) {
+		len = asset->audio_length - current_sample;
+	}
+
 // Load with resampling	
 	if(file)
 	{
