@@ -1,0 +1,105 @@
+Compiling the backups<P>
+
+
+
+
+
+
+
+
+<P>Be aware the backups come with<P>
+
+NO WARRANTY<P>
+
+NO SUPPORT<P>
+
+NO GUARANTEE OF MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE<P>
+<P>
+
+Because installing software in Linux ranges from difficult to
+impossible you should consider first why you want to do this to
+yourself and second how much better your life will be if you
+succeed.<P>
+
+
+The reason for this system of backups instead of more traditional CVS,
+snapshot, IRC room, or rejected slashdot submission is 
+
+<BLOCKQUOTE>
+
+#1 The libraries and tools are very esoteric and useless to most
+consumers.  They are no substitute for bona-fide home entertainment
+systems.<P>
+
+#2 The libraries and tools are shared across many applications.  Many
+esoteric and useless applications, that is.  Changes to the libraries
+must be propagated to the applications without involving a hairball of
+standard lib directories or cp -a'ing the libraries after every
+change.<P>
+
+#3 People hate software that costs money.  People hate free software
+that doesn't have support even more.  Only people who like compiling
+software instead of retaliating for lack of support are going to bother
+compiling backups.<P>
+
+</BLOCKQUOTE>
+
+Enter the <I>symbolic linking</I> paradigm.  The biggest reason users
+can't understand our development tree structure is that Microsoft is
+king and symbolic linking doesn't exist in Windows.<P>
+
+When you symbolically link something, it appears in the directory just
+like the original file would, except it's really an illusion.  Changes
+made to the original file appear in every symbolic link to it, as if
+you changed many copies of the file.<P>
+
+Here's the development tree you need to re-enact on your computer to do
+development:<P>
+
+<PRE>
+./
+./libmpeg3
+./quicktime
+./cinelerra
+./xmovie
+</PRE>
+
+The first step in constructing this development tree is downloading the
+backups.  The latest version of the following files must be downloaded
+and decompressed into ./:<P>
+
+<B>
+<PRE>
+cinelerra.*.tar.bz2
+libmpeg3.*.tar.bz2
+quicktime.*.tar.bz2
+xmovie.*.tar.bz2
+</PRE>
+</B>
+
+<P>
+
+The CFLAGS environment variable must be set with optimization flags. 
+The best optimization flags are<P>
+
+<B>-O3 -march=i686 -fmessage-length=0
+-funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2
+-malign-functions=2</B><P>
+
+You compile Cinelerra by running <B>make</B> and <B>make install</B> in
+<B>./cinelerra</B>.<P>
+
+You compile XMovie by running <B>make</B> and <B>make install</B> in
+<B>./xmovie</B>.<P>
+
+The executables are currently:<P>
+
+<PRE>
+/usr/bin/cinelerra<BR>
+/usr/bin/xmovie
+</PRE>
+
+The plugins are currently:<P>
+<PRE>
+/usr/lib/cinelerra/*<BR>
+</PRE>

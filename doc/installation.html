@@ -1,0 +1,70 @@
+<TITLE>Secrets of Cinelerra: Installation</TITLE>
+<CENTER>
+<H1>Secrets of Cinelerra: Installation</H1>
+</CENTER><P>
+
+Cinelerra is best installed by downloading an RPM and running<P>
+
+<B>rpm -U --force --nodeps cinelerra*.rpm</B><P>
+
+on a RedHat system.<P>
+
+On systems which don't support RPM look for a utility called
+<B>rpm2cpio</B>.  Download a Cinelerra RPM and from the <B>/</B>
+directory run<P>
+
+<B>rpm2cpio cinelerra*.rpm | cpio -i --make-directories</B><P>
+
+It should be noted that the compiler used in building Cinelerra
+binaries is the free GNU compiler and although it can reorder
+instructions for Pentium I and use some the of Pentium II branch
+instructions it's 12 years behind most modern CPUs.  You can try
+different compilers and optimization flags by compiling the source.<P>
+
+Compiling the source is hard and there's no warranty if the source code
+fails to compile, but the method for compiling starts by downloading
+the source code and decompressing.<P>
+
+<B>tar jxf cinelerra*.tar.bz2</B><P>
+
+Enter the cinelerra directory<P>
+
+<B>cd cinelerra</B><P>
+
+and set some environment variables.  For Pentium II use:<P>
+
+<B>export CFLAGS='-O3 -march=i686 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include'</B><P>
+
+For Pentium I and old AMD's use:<P>
+
+<B>export CFLAGS='-O3 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include'</B><P>
+
+Then run<P>
+
+<B>make</B><P>
+
+The make procedure should run through all the directories and put
+binaries in the <B>i686</B> directories.  When we originally supported
+Alpha it was convenient to compile Alpha and i686 binaries
+simultaneously, in different directories.<P>
+
+Once finished run<P>
+
+<B>make install</B><P>
+
+to install the binaries.  The output goes as follows:<P>
+
+Binaries -> <B>/usr/bin</B><BR>
+Plugins  -> <B>/usr/lib/cinelerra</B><P>
+
+The main binaries are the Cinelerra executable and several utilities
+for reading MPEG transport streams.<P>
+
+Run Cinelerra by running<P>
+
+<B>/usr/bin/cinelerra</B><P>
+
+
+
+
+

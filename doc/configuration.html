@@ -1,0 +1,412 @@
+<TITLE>Secrets of Cinelerra: Configuration</TITLE>
+<CENTER>
+<H1>Secrets of Cinelerra: Configuration</H1>
+</CENTER><P>
+
+Because of the variety of uses, Cinelerra can not be run optimally
+without some intimate configuration for your specific needs. Very few
+parameters are adjustible at compile time.  Runtime configuration is
+the only option for most configuration because of the multitude of
+parameters.<P>
+
+Go to <B>settings->preferences</B> and run through the options.<P>
+
+<A NAME=playback>
+<HR>
+<CENTER>
+<H1>PLAYBACK</H1>
+</CENTER><P>
+
+<A NAME=audioout>
+<B>AUDIO OUT:</B><P>
+
+<BLOCKQUOTE>
+These determine what happens when you play sound from the timeline.<P>
+
+<B>SAMPLES TO READ FROM DISK:</B> Cinelerra uses a pipeline for
+rendering audio. The first stage is reading large chunks of audio from
+disk, the samples to read from disk.  This is followed by processing
+small fragments in a virtual console.<P>
+
+<B>SAMPLES TO SEND TO CONSOLE:</B> - The second stage is rendering
+small fragments through the virtual console to the sound driver. A
+larger value here causes more latency when you change mixing parameters
+but gives more reliable playback.<P>
+
+Some sound drivers don't allow changing of the console fragment so
+latency is unchanged no matter what this value is.<P>
+
+<B>VIEW FOLLOWS PLAYBACK:</B> - Causes the timeline window to scroll
+when the playback cursor moves out of view.  This can bog down the X
+Server.<P>
+
+<B>USE SOFTWARE FOR POSITIONING INFORMATION:</B> - Most soundcards and
+sound drivers don't give reliable information on the number of samples
+the card has played. When playing video you need this information for
+synchronization. This option causes the sound driver to be ignored and
+a software timer to be used for synchronization.<P>
+
+<B>AUDIO PLAYBACK IN REALTIME:</B> - Back in the days when 150Mhz was
+the maximum, this allowed uninterrupted playback on heavy loads. Now
+you'll probably only need it for playing video and audio when the load
+is to high for uninterrupted audio.<P>
+
+<B>AUDIO DRIVER:</B> - There are many sound drivers for Linux.  This
+allows selecting one and setting parameters specific to it.  Some of
+the common parameters for a sound driver are <P>
+
+<BLOCKQUOTE>
+
+<B>DEVICE PATH:</B> - Usually a file in the <B>/dev/</B> directory
+which controls the device.<P>
+
+<B>BITS:</B> - The number of bits of precision Cinelerra should set
+the device for.  This sometimes has a figuritive meaning.  Some sound
+drivers need to be set to 32 bits to perform 24 bit playback and won't
+play anything when set to 24 bits.  Some sound drivers need to be set
+to 24 bits for 24 bit playback.<P>
+
+<B>CHANNELS:</B> - The number of channels Cinelerra should set the
+device for.  Regardless of the number of channels in the project, the
+number of channels set here will be written to the device.  When this
+is set to 2 and the project has 1 channel you'll hear sound through the
+left speaker and not centered as expected for a monaural project.  When
+this is set to 1 and the project has 2 channels you'll hear the left
+channel centered and not 2 channels mixed together.<P>
+
+
+</BLOCKQUOTE>
+
+</BLOCKQUOTE>
+
+
+
+
+
+
+
+
+
+
+
+<A NAME=videoout>
+<B>VIDEO OUT</B><P>
+<BLOCKQUOTE>
+
+These determine what happens when you play video from the timeline.<P>
+
+<B>FRAMERATE ACHIEVED:</B> - The number of frames per second being
+displayed during playback.<P>
+
+<B>SCALING EQUATION:</B> - The algorithm used in all video resizing in
+the virtual console.  This doesn't affect scaling to the size of the
+compositor window.<P>
+
+<BLOCKQUOTE>
+
+<B>NEAREST NEIGHBOR ENLARGE AND REDUCE:</B> - lowest but fastest
+quality.  Produces jagged edges and uneven motion.<P>
+
+<B>BICUBIC ENLARGE AND BILINEAR REDUCE:</B> - highest but slowest
+quality.  For enlarging a bicubic interpolation is used, which blurs
+slightly but doesn't reveal stair steps.  For reduction a bilinear
+interpolation is used, which produces very sharp images and reduces
+noise.  The bilinear reduced images can be sharpened with a sharpen
+effect with less noise than a normal sized image.<P>
+
+<B>BILINEAR ENLARGE AND BILINEAR REDUCE:</B> - when slight enlargement
+is needed a bilinear enlargement looks better than a bicubic
+enlargement.<P>
+
+</BLOCKQUOTE>
+
+<B>PRELOAD BUFFER FOR QUICKTIME:</B> - The Quicktime/AVI decoder can
+handle CDROM sources better when this is around 1000000.  This reduces
+the amount of seeking.  For normal use this should be 0.<P>
+
+<B>VIDEO DRIVER:</B> - Normally video on the timeline goes to the
+compositor window during continuous playback and when the insertion
+point is repositioned.  Instead of sending video to the Compositor
+window the video driver can be set to send video to another output
+device during continuous playback.  This doesn't affect where video
+goes when the insertion point is repositioned, however.<P>
+
+Various parameters are given for Video Driver depending on the driver.<P>
+
+<BLOCKQUOTE> 
+
+<B>DISPLAY:</B> - The is intended for dual monitor
+displays.  Depending on the value of Display, the Compositor window
+will appear on a different monitor from the rest of the windows.<P>
+
+<B>DEVICE PATH:</B> - Usually a file in the <B>/dev/</B> directory
+which controls the device.<P>
+
+<B>SWAP FIELDS:</B> - Make the even lines odd and the odd lines even
+when sending to the device.  On an NTSC or 1080i monitor the fields may
+need to be swapped to prevent jittery motion.<P>
+
+<B>OUTPUT CHANNEL:</B> - Devices with multiple outputs may need a
+specific connector to send video on.<P>
+
+<B>PORT:</B> - The IEEE1394 standard specifies something known as the
+<B>port</B>.  This is probably the firewire card number in the system
+to use.<P>
+
+<B>CHANNEL:</B> - The IEEE1394 standard specifies something known as the
+<B>channel</B>.  For DV cameras it's always <B>63</B>.<P>
+
+
+</BLOCKQUOTE>
+
+</BLOCKQUOTE>
+
+
+
+<A NAME=recording>
+<HR>
+<CENTER>
+<H1>RECORDING</H1>
+</CENTER><P>
+
+<A NAME=audioin>
+<B>AUDIO IN:</B><P>
+
+These determine what happens when you record audio.<P>
+
+<BLOCKQUOTE>
+<B>RECORD DRIVER:</B> - This is used for recording audio in the Record
+window.  It may be shared with the Record Driver for video if the audio
+and video are wrapped in the same stream.  It takes variable parameters
+depending on the driver.  The parameters have the same meaning as they
+do for playback.<P>
+
+<BLOCKQUOTE>
+<B>DEVICE PATH:</B> - Usually a file in the <B>/dev/</B> directory
+which controls the device.<P>
+
+<B>BITS:</B> - The number of bits of precision Cinelerra should set the
+device for.  This sometimes has a figuritive meaning.  Some sound
+drivers need to be set to 32 bits to perform 24 bit recording and won't
+record anything when set to 24 bits.  Some sound drivers need to be set
+to 24 bits for 24 bit recording.<P>
+
+<B>CHANNELS:</B> - The number of channels Cinelerra should set the
+device for.  Regardless of the number of channels in the record
+operation, the number of channels set here will be read from the
+device.  When this is set to 2 and the record operation has 1 channel
+you'll record the left speaker and not a mix of the left and right
+speakers as expected for a monaural project.  When this is set to 1 and
+the project has 2 channels you'll record the left and right channels
+mixed into the left speaker and not 1 channel spead across two
+speakers.<P>
+</BLOCKQUOTE>
+
+<B>SAMPLES TO WRITE AT A TIME:</B> - Audio is first read in small
+fragments from the device.  Many small fragments are combined into a
+large fragment before writing to disk.  The disk writing process is
+done in a different thread.  The value here determines how large the
+combination of fragments is for each disk write.<P>
+
+<B>SAMPLE RATE FOR RECORDING:</B> - Regardless of what the project
+settings are.  This is the sample rate used for recording.  This should
+be the highest the audio device supports.<P>
+
+</BLOCKQUOTE>
+
+
+<A NAME=videoin>
+<B>VIDEO IN:</B><P>
+
+These determine what happens when you record video.<P>
+
+<BLOCKQUOTE>
+<B>RECORD DRIVER:</B> - This is used for recording video in the Record
+window.  It may be shared with the Record Driver for audio if the audio
+and video are wrapped in the same stream.  It takes variable parameters
+depending on the driver.  The parameters have the same meaning as they
+do for playback.<P>
+
+<B>FRAMES TO RECORD TO DISK AT A TIME:</B> - Frames are recorded in a
+pipeline.  First frames are buffered in the device.  Then they're read
+into a larger buffer for writing to disk.  The disk writing is done in
+a different thread as the device reading.  For certain codecs the disk
+writing uses multiple processors.  This value determines how many
+frames are written to disk at a time.<P>
+
+<B>FRAMES TO BUFFER IN DEVICE:</B> - The number of frames to store in
+the device before reading.  This determines how much latency there can
+be in the system before frames are dropped.<P>
+
+<B>USE SOFTWARE FOR POSITIONING INFORMATION:</B> - Video uses audio for
+synchronization but most soundcards don't give accurate position
+information.  This calculates an estimation of audio position in
+software instead of the hardware for synchronization.<P>
+
+<B>SYNC DRIVES AUTOMATICALLY:</B> - For high bitrate recording the
+drives may be fast enough to store the data but Linux may wait several
+minutes and stall as it writes several minutes of data at a time.  This
+forces Linux to flush its buffers every second instead of every few
+minutes and produce slightly better realtime behavior.<P>
+
+<B>SIZE OF CAPTURED FRAME:</B> - This is the size of the frames
+recorded.  It is independant of the project frame size because most
+video devices only record a fixed frame size.  If the frame size given
+here isn't supported by the device it might crash Cinelerra.<P>
+
+<B>FRAME RATE FOR RECORDING:</B> - The frame rate recorded is different
+from the project settings.  This sets the recorded frame rate.<P>
+
+</BLOCKQUOTE>
+
+
+
+
+
+
+
+
+
+<A NAME=performance>
+<HR>
+<CENTER>
+<H1>PERFORMANCE</H1>
+</CENTER><P>
+
+
+You'll spend most of your time configuring this section.<P>
+
+<BLOCKQUOTE> 
+
+<B>INDEX FILES GO HERE:</B> - Back in the days when 4 MB/sec was
+unearthly speed for a hard drive, index files were introduced to speed
+up drawing the audio tracks.  This option determines where index files
+are placed on the hard drive.<P>
+
+
+<B>SIZE OF INDEX FILE:</B> - Determines the size of an index file.
+Larger index sizes allow smaller files to be drawn faster while slowing
+down the drawing of large files. Smaller index sizes allow large files
+to be drawn faster while slowing down small files.<P>
+
+<B>NUMBER OF INDEX FILES TO KEEP:</B> - To keep the index directory from
+becoming unruly, old index files are deleted. This determines the
+maximum number of index files to keep in the directory.<P>
+
+<B>DELETE ALL INDEXES:</B> - When you change the index size or you want to
+clean out excessive index files, this deletes all the index files.<P>
+
+<B>CACHE ITEMS:</B> - To speed up rendering, several assets are kept
+open simultaneously. This determines how many are kept open.  A number
+too large may exhaust your memory pretty fast and result in a crash.  A
+number too small may result in slow playback as assets need to be
+reopened more frequently.<P>
+
+
+<B>SECONDS TO PREROLL RENDERS:</B> - Some effects need a certain amount
+of time to settle in.  This sets a number of seconds to render without
+writing to disk before the selected region is rendered.  When using the
+renderfarm you'll sometimes need to preroll to get seemless transitions
+between the jobs.  Every job in a renderfarm is prerolled by this
+value.<P>
+
+<B>FORCE SINGLE PROCESSOR USE:</B> - Cinelerra tries to use all
+processors on the system by default but sometimes you'll only want to
+use one processor, like in a renderfarm client.  This forces only one
+processer to be used.  The operating system, however, usually uses the
+second processor anyway for disk access so this option is really a 1.25
+processor mode.<P>
+
+<A NAME=renderfarm>
+
+<B>RENDER FARM:</B><P> To use the renderfarm set these options.  Ignore
+them for a standalone system.<P>
+
+<BLOCKQUOTE>
+
+<B>USE RENDER FARM FOR RENDERING:</B> - When selected, all the
+<B>file->render</B> operations use the renderfarm.<P>
+
+<B>NODES:</B> - Displays all the nodes on the renderfarm and which ones
+are active.  Select the <B>ON</B> column to activate and deactivate
+nodes.  Select the <B>HOSTNAME</B> and <B>PORT</B> columns to edit a
+node.  Computer freaks may be better off editing the
+<B>~/.bcast/.Cinelerra_rc</B> file than this if they have hundreds of
+nodes.<P>
+
+<B>HOSTNAME:</B> - Edit the hostname of an existing node or enter the
+hostname of a new node here.<P>
+
+<B>PORT:</B> - Edit the port of an existing node or enter the
+port of a new node here.<P>
+
+<B>REPLACE NODE:</B> - When editing an existing node, hit this to
+commit the changes to <B>HOSTNAME</B> and <B>PORT</B>.  The changes
+won't be committed if you don't hit this buttoin.<P>
+
+<B>ADD NODE:</B> - Create a new node with the <B>HOSTNAME</B> and
+<B>PORT</B> settings.<P>
+
+<B>DELETE NODE:</B> - Deletes whatever node is highlighted in the
+<B>NODES</B> list.<P>
+
+<B>SORT NODES:</B> - Sorts the <B>NODES</B> list based on the
+hostname.<P>
+
+<B>FILESYSTEM PREFIX ON REMOTE NODES:</B> - Sets the relative location
+of all the assets on the nodes.  If the assets are in <B>/mov</B> on
+the master and the master filesystem is mounted under <B>/mnt</B> on
+the nodes, the filesystem prefix should be <B>/mnt</B>.  Ideally the
+assets should appear under the same directory on the nodes as the
+master.  In this case the filesystem prefix can be <B>/</B>.<P>
+
+<B>TOTAL JOBS TO CREATE:</B> - Determines the number of jobs to
+dispatch to the renderfarm.  The more jobs you create, the more finely
+balanced the renderfarm becomes.<P>
+
+</BLOCKQUOTE>
+
+
+</BLOCKQUOTE>
+
+
+
+
+<A NAME=interface>
+<HR>
+<CENTER>
+<H1>INTERFACE</H1>
+</CENTER><P>
+
+These parameters affect purely how the user interface works.<P>
+
+<B>USE HOURS:MINUTES:SECONDS.XXX</B>Various representations of time are
+given.  Select the most convenient one.  The time representation can
+also be changed by <B>CTRL</B> clicking on the time ruler.<P>
+
+<B>USE THUMBNAILS:</B> - The Resource Window displays thumbnails of
+assets by default.  This can take a long time to set up.  This option
+disables the thumbnails.<P>
+
+<B>CLICKING IN/OUT POINTS DOES WHAT:</B> - Cinelerra not only allows
+you to perform editing by dragging in/out points but also defines three
+seperate operations which occur when you drag an in/out point. For each
+mouse button you select the behavior in this window. The usage of each
+editing mode is described in editing.<P>
+
+<B>MIN DB FOR METER:</B> - Some sound sources have a lower noise
+threshold than others.  Everything below the noise threshold is
+meaningless.  This option sets the meters to clip below a certain
+level.  Consumer soundcards usually bottom out at -65.  Professional
+soundcards bottom out at -90.<P>
+
+<B>FORMAT FOR METER:</B> - This option allows you to select the format
+for all the VU meters. If you're a CS major select percentage and if
+you're a EE major select DB.<P>
+
+<B>THEME:</B> - Cinelerra supports variable themes.  Select one here
+and restart Cinelerra to see it.<P>
+
+
+
+

@@ -1,0 +1,109 @@
+Because installing software in Linux ranges from difficult to
+impossible we've split up the distributions into three levels of
+difficulty:<P>
+
+<BLOCKQUOTE>
+
+Development trees:  virtually impossible to compile without software
+development experience but allow you to submit changes to the source
+code.  These are hosted in <A
+HREF="http://heroines.sourceforge.net">heroines.sourceforget.net</A>.<P>
+
+Source code distribution:  very hard to compile from scratch but doable
+in a single month.  It's very hard to submit changes to the source
+code.  These are hosted in <A
+HREF="http://heroinewarrior.com">Heroinewarrior.com</A><P>
+
+Binary distribution:  No thinking involved.  These are hosted on <A
+HREF="http://heroinewarrior.com">Heroinewarrior.com</A><P>
+</BLOCKQUOTE>
+
+The current state of heroines.sourceforge.net is the raw development
+trees.  There are scripts in the development trees which automatically
+package it into source code and binary distributions which users can
+download and install in less than a month.<P>
+
+The reason for this system is 
+
+<BLOCKQUOTE>
+
+#1 The libraries and tools are very esoteric and rapidly evolving.  It
+would be impossible for users to manually search and install every
+library and tool required to install Broadcast 2000.  Instead, as many
+libraries and tools as possible are statically built into the
+executables, isolating the user from the bird's nest of standard lib
+directories and Google searches.<P>
+
+#2 The libraries and tools are shared across many applications. 
+Changes to the libraries must be propagated to the applications without
+involving the hairball of standard lib directories and without cp
+-rd'ing the libraries after every change.<P>
+
+#3 Some of the applications can't be distributed in the same tarball as
+the libraries because of patents and licenses.<P>
+
+</BLOCKQUOTE>
+
+Enter the <I>symbolic linking</I> paradigm.  The biggest reason users
+can't understand our development tree structure is that Windows is king
+and symbolic linking doesn't exist in Windows.<P>
+
+When you symbolically link something, it appears in the directory just
+like the original file would, except it's really an illusion.  Changes
+made to the original file appear in every symbolic link to it, as if
+you changed many copies of the file.<P>
+
+Here's the development tree you need to re-enact on your computer to do
+development:<P>
+
+<PRE>
+./
+./libmpeg3
+./quicktime
+./cinelerra
+./xmovie
+</PRE>
+
+The first step in constructing this development tree is downloading the
+directories from <B>ftp://heroines.sourceforge.net/pub/heroines/</B>. 
+The following files must be downloaded and decompressed:<P>
+
+<B>
+<PRE>
+cinelerra.tar.bz2
+libmpeg3.tar.gz
+quicktime.tar.gz
+xmovie.tar.gz
+</PRE>
+</B>
+
+Don't expect to compile anything useful out of this.  When you compile
+this tree you get executables which run where they are for testing
+purposes.<P>
+
+You compile the tree by running <B>configure</B> and <B>make</B> in each of the four
+directories.<P>
+
+Enter <P> 
+
+<PRE>
+export LD_LIBRARY_PATH=.:$LD_LIBRARY_PATH<P> 
+</PRE>
+
+
+into your
+.bashrc, .bash_login, .bash_profile files and log into another Xterm.  Now you can cd
+into a directory and run an executable.<P>
+
+The executables are currently:<P>
+
+<PRE>
+./cinelerra/bcast/bcast2000<BR>
+./cinelerra/cinelerra/cinelerra<BR>
+./xmovie/xmovie/xmovie
+</PRE>
+
+The plugins are currently:<P>
+<PRE>
+./cinelerra/plugins<BR>
+</PRE>

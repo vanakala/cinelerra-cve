@@ -1,0 +1,38 @@
+Cinelerra 1.0 for Linux released
+
+
+Heroine Virtual Ltd. <A
+HREF="http://heroinewarrior.com">heroinewarrior.com</A> is pleased to
+announce Cinelerra 1.0 for Linux, one month earlier than planned. 
+Releases are normally done in September to coincide with an annual
+increase in Linux usage that occurs every September.  Current
+stability, desire to move forward with new major features, and level of
+interest from users were all deemed appropriate to do a release now
+instead of waiting.
+
+Cinelerra 1.0 is a significant advance in general purpose content
+creation based on native Linux software not only because of its feature
+set but because of the low cost to users.  Users can now expand their
+render farms with a minimal bottleneck due to software development
+costs.  At the same time, users are not restricted by the usage license
+and corporate agenda of their operating system vendor.  Cinelerra gives
+users complete ownership of the means to production.
+
+Cinelerra combines most of the basic functions needed to produce motion
+pictures with a capable compositing system.  Advanced editing, YUV
+compositing, and realtime effects are some of the things Cinelerra
+does.  Cinelerra's 16 bit YUV compositing engine has been optimized for
+multiple CPU's, reduces generation loss, and significantly reduces
+compression time.  Capturing from IEEE1394, Video4Linux, Motion JPEG,
+and screenshots is supported.
+
+Heroine Virtual has produced content creation software for power
+computing platforms since 1996.  The last six years have seen a steady
+increase in size and complexity of our products and we see continued
+expansion in this direction while others are shifting to simpler
+products.  While not mainstream, big software and power computing are
+becoming a cult industry, like monster trucks, pro wrestling and
+skyscrapers.  Cult software and a love of heroines is the common bond
+at Heroine Virtual.
+
+Cinelerra can be obtained from heroinewarrior.com.
