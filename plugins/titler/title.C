@@ -2079,6 +2079,7 @@ void TitleMain::update_gui()
 			thread->window->lock_window();
 			thread->window->update();
 			thread->window->unlock_window();
+			thread->window->color_thread->update_gui(config.color, 0);
 		}
 	}
 }

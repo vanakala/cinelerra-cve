@@ -26,6 +26,7 @@ public:
 	void run();
 	void start_window(int output, int alpha);
 	virtual int handle_event(int output) { return 0; };
+	void update_gui(int output, int alpha);
 
 	ColorWindow *window;
 	Mutex completion;
@@ -45,6 +46,7 @@ public:
 	int close_event();
 	void update_display();
 	void update_rgb();
+	void change_values();	// does not update the display
 	int handle_event();
 
 	ColorThread *thread;

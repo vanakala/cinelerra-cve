@@ -476,6 +476,8 @@ void GradientMain::update_gui()
 		thread->window->update_in_color();
 		thread->window->update_out_color();
 		thread->window->unlock_window();
+		thread->window->in_color_thread->update_gui(config.get_in_color(), config.in_a);
+		thread->window->out_color_thread->update_gui(config.get_out_color(), config.out_a);
 	}
 }
 

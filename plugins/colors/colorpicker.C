@@ -75,6 +75,19 @@ void ColorThread::run()
 //printf("ColorThread::run 2\n");
 }
 
+void ColorThread::update_gui(int output, int alpha)
+{
+	if (window)
+	{
+		this->output = output;
+		this->alpha = alpha;
+		window->change_values();
+		window->lock_window();
+		window->update_display();
+		window->unlock_window();
+	}
+}
+
 
 
 ColorWindow::ColorWindow(ColorThread *thread, int x, int y, char *title)
@@ -92,14 +105,19 @@ ColorWindow::ColorWindow(ColorThread *thread, int x, int y, char *title)
 	this->thread = thread;
 }
 
-void ColorWindow::create_objects()
+void ColorWindow::change_values()
 {
-	int x = 10, init_x = 10, y = 10, init_y = 10;
 	r = (float)((thread->output & 0xff0000) >> 16) / 255;
 	g = (float)((thread->output & 0xff00) >> 8) / 255;
 	b = (float)((thread->output & 0xff)) / 255;
 	HSV::rgb_to_hsv(r, g, b, h, s, v);
 	a = (float)thread->alpha / 255;
+}
+
+void ColorWindow::create_objects()
+{
+	int x = 10, init_x = 10, y = 10, init_y = 10;
+	change_values();
 	
 	
 	
