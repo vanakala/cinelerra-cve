@@ -296,6 +296,13 @@ int FilePNG::read_frame(VFrame *output, VFrame *input)
 	{
 		png_set_gray_to_rgb(png_ptr);
 	}
+	
+	// temporary fix to fix crashing. Will make a better change to use 16 bits.
+	// If we have a 16 bit per channel image, make libpng chop it to 8 bpc
+	if (png_get_bit_depth(png_ptr,info_ptr) == 16)
+	{
+		png_set_strip_16(png_ptr);
+	}
 
 /* read the image */
 	png_read_image(png_ptr, output->get_rows());
