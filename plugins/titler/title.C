@@ -1633,14 +1633,13 @@ int TitleMain::draw_mask()
 // Determine y of visible text
 	if(config.motion_strategy == BOTTOM_TO_TOP)
 	{
-// printf("TitleMain::draw_mask 1 %d %d %d %d\n", 
-// 	config.motion_strategy,
-// 	get_source_position(), 
-// 	get_source_start(),
-// 	config.prev_keyframe_position);
+ printf("TitleMain::draw_mask 1 %d %lld %lld %lld\n", 
+ 	config.motion_strategy,
+ 	get_source_position(), 
+ 	get_source_start(),
+ 	config.prev_keyframe_position);
 		float magnitude = config.pixels_per_second * 
-			((get_source_position() - get_source_start()) - 
-				(config.prev_keyframe_position - get_source_start())) / 
+			(get_source_position() - config.prev_keyframe_position) / 
 			PluginVClient::project_frame_rate;
 		if(config.loop)
 		{
@@ -1653,9 +1652,7 @@ int TitleMain::draw_mask()
 	if(config.motion_strategy == TOP_TO_BOTTOM)
 	{
 		float magnitude = config.pixels_per_second * 
-			(get_source_position() - 
-				get_source_start() -
-				config.prev_keyframe_position) / 
+			(get_source_position() - config.prev_keyframe_position) / 
 			PluginVClient::project_frame_rate;
 		if(config.loop)
 		{
@@ -1687,9 +1684,7 @@ int TitleMain::draw_mask()
 	if(config.motion_strategy == RIGHT_TO_LEFT)
 	{
 		float magnitude = config.pixels_per_second * 
-			(get_source_position() - 
-				get_source_start() - 
-				config.prev_keyframe_position) / 
+			(get_source_position() - config.prev_keyframe_position) / 
 			PluginVClient::project_frame_rate;
 		if(config.loop)
 		{
@@ -1702,9 +1697,7 @@ int TitleMain::draw_mask()
 	if(config.motion_strategy == LEFT_TO_RIGHT)
 	{
 		float magnitude = config.pixels_per_second * 
-			(get_source_position() - 
-				get_source_start() - 
-				config.prev_keyframe_position) / 
+			(get_source_position() - config.prev_keyframe_position) / 
 			PluginVClient::project_frame_rate;
 		if(config.loop)
 		{
@@ -2191,6 +2184,10 @@ int TitleMain::load_configuration()
 
 	config.prev_keyframe_position = prev_keyframe->position;
 	config.next_keyframe_position = next_keyframe->position;
+
+	// if no previous keyframe exists, it should be start of the plugin, not start of the track
+	if (config.prev_keyframe_position == 0) 
+		config.prev_keyframe_position = get_source_start();
 	if(config.next_keyframe_position == config.prev_keyframe_position)
 		config.next_keyframe_position = get_source_start() + get_total_len();
 
