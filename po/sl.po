@@ -2465,7 +2465,7 @@ msgstr "Ne po¹lji v izhod"
 
 #: cinelerra/patchgui.C:709
 msgid "Nudge"
-msgstr "Zamik
+msgstr "Zamik"
 
 #. add_border(get_resources()->get_bg_shadow1(),
 #. get_resources()->get_bg_shadow2(),
