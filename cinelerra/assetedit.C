@@ -14,6 +14,7 @@
 #include "mainindexes.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
+#include "theme.h"
 #include "new.h"
 #include "preferences.h"
 #include "transportque.h"
@@ -177,7 +178,7 @@ int AssetEditWindow::create_objects()
 
 	add_subwindow(new BC_Title(x, y, _("File format:")));
 	x = x2;
-	add_subwindow(new BC_Title(x, y, File::formattostr(mwindow->plugindb, asset->format), MEDIUMFONT, YELLOW));
+	add_subwindow(new BC_Title(x, y, File::formattostr(mwindow->plugindb, asset->format), MEDIUMFONT, mwindow->theme->edit_font_color));
 	x = x1;
 	y += 20;
 
@@ -198,7 +199,7 @@ int AssetEditWindow::create_objects()
 	}
 
 	x = x2;
-	add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, YELLOW));
+	add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
 	y += 30;
 	x = x1;
 
@@ -217,7 +218,7 @@ int AssetEditWindow::create_objects()
 				asset->acodec[2], 
 				asset->acodec[3]);
 			x = x2;
-			add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, YELLOW));
+			add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
 			y += vmargin;
 			x = x1;
 		}
@@ -234,7 +235,7 @@ int AssetEditWindow::create_objects()
 		}
 		else
 		{
-			add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, YELLOW));
+			add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
 			y += 20;
 		}
 
@@ -253,7 +254,7 @@ int AssetEditWindow::create_objects()
 		}
 		else
 		{
-			add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, YELLOW));
+			add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
 		}
 
 		y += 30;
@@ -275,7 +276,7 @@ int AssetEditWindow::create_objects()
 			bitspopup->create_objects();
 		}
 		else
-			add_subwindow(new BC_Title(x, y, File::bitstostr(asset->bits), MEDIUMFONT, YELLOW));
+			add_subwindow(new BC_Title(x, y, File::bitstostr(asset->bits), MEDIUMFONT, mwindow->theme->edit_font_color));
 
 
 		x = x1;
@@ -287,7 +288,7 @@ int AssetEditWindow::create_objects()
 		if(allow_edits)
 			add_subwindow(new AssetEditHeader(this, string, x, y));
 		else
-			add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, YELLOW));
+			add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
 
 		y += vmargin;
 		x = x1;
@@ -313,9 +314,9 @@ int AssetEditWindow::create_objects()
 		{
 			x = x2;
 			if(asset->byte_order)
-				add_subwindow(new BC_Title(x, y, _("Lo-Hi"), MEDIUMFONT, YELLOW));
+				add_subwindow(new BC_Title(x, y, _("Lo-Hi"), MEDIUMFONT, mwindow->theme->edit_font_color));
 			else
-				add_subwindow(new BC_Title(x, y, _("Hi-Lo"), MEDIUMFONT, YELLOW));
+				add_subwindow(new BC_Title(x, y, _("Hi-Lo"), MEDIUMFONT, mwindow->theme->edit_font_color));
 			y += vmargin;
 		}
 
@@ -353,7 +354,7 @@ int AssetEditWindow::create_objects()
 				asset->vcodec[2], 
 				asset->vcodec[3]);
 			x = x2;
-			add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, YELLOW));
+			add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
 			y += vmargin;
 			x = x1;
 		}
@@ -371,14 +372,14 @@ int AssetEditWindow::create_objects()
 		add_subwindow(new BC_Title(x, y, _("Width:")));
 		x = x2;
 		sprintf(string, "%d", asset->width);
-		add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, YELLOW));
+		add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
 		
 		y += vmargin;
 		x = x1;
 		add_subwindow(new BC_Title(x, y, _("Height:")));
 		x = x2;
 		sprintf(string, "%d", asset->height);
-		add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, YELLOW));
+		add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
 		y += 30;
 	}
 

@@ -196,6 +196,7 @@ public:
 	int setformat_channels_x, setformat_channels_y, setformat_channels_w, setformat_channels_h;
 	int title_h;
 	int title_font, title_color;
+	int edit_font_color;
 	int vcanvas_x, vcanvas_y, vcanvas_w, vcanvas_h;
 	int vedit_x, vedit_y;
 	int vmeter_x, vmeter_y, vmeter_h;

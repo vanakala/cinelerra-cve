@@ -345,6 +345,9 @@ void BlueDotTheme::initialize()
 	channel_position_color = MEYELLOW;
 	BC_WindowBase::get_resources()->meter_title_w = 25;
 
+	// (asset) edit info text color
+	edit_font_color = BLACK;
+
 	//bgcolor
 	BC_WindowBase::get_resources()->bg_color = FGGREY;
 

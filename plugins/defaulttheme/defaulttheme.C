@@ -355,6 +355,9 @@ void BlondTheme::initialize()
 	channel_position_color = MEYELLOW;
 	resources->meter_title_w = 25;
 
+	// (asset) edit info text color
+	edit_font_color = YELLOW;
+
 	//bgcolor
 	resources->bg_color = BLOND;
 
