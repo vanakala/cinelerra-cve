@@ -3,6 +3,7 @@
 #include "asset.h"
 #include "bcsignals.h"
 #include "byteorder.h"
+#include "dv1394.h"
 #include "edit.h"
 #include "file.h"
 #include "filedv.h"
@@ -18,7 +19,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
-#include <libdv/dv1394.h>
 #include <string.h>
 #include <errno.h>
 

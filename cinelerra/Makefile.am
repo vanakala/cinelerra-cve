@@ -354,6 +354,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 device1394input.h \
 		 device1394output.h \
 		 drivesync.h \
+		 dv1394.h \
 		 edit.h \
 		 edithandles.h \
 		 editpanel.h \

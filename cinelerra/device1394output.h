@@ -8,7 +8,7 @@
 #include "audiodevice.inc"
 #include "condition.inc"
 #include "libdv.h"
-#include "libdv/dv1394.h"
+#include "dv1394.h"
 #include "ieee1394-ioctl.h"
 #include "mutex.inc"
 #include "thread.h"
@@ -124,15 +124,6 @@ public:
 	AudioDevice *adevice;
 
 	// IOCTL # variables
-	      // dv1394
-   int dv1394_init;
-   int dv1394_shutdown;
-   int dv1394_submit_frames;
-   int dv1394_wait_frames;
-   int dv1394_receive_frames;
-   int dv1394_start_receive;
-   int dv1394_get_status;
-
    // video1394
    int video1394_listen_channel;
    int video1394_unlisten_channel;
