@@ -946,7 +946,7 @@ int PerspectiveMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 				chroma_offset; \
 			if(components == 4) \
 			{ \
-				out_row[2] = (in_row1[3] +  \
+				out_row[3] = (in_row1[3] +  \
 						in_row1[components + 3] +  \
 						in_row2[3] +  \
 						in_row2[components + 3]) /  \
