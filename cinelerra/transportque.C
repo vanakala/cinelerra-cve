@@ -1,3 +1,4 @@
+#include "bcsignals.h"
 #include "clip.h"
 #include "condition.h"
 #include "edl.h"
@@ -12,9 +13,9 @@ TransportCommand::TransportCommand()
 // in the middle of a job.
 	edl = new EDL;
 	edl->create_objects();
-	reset();
 	command = 0;
 	change_type = 0;
+	reset();
 }
 
 TransportCommand::~TransportCommand()
@@ -40,18 +41,34 @@ EDL* TransportCommand::get_edl()
 	return edl;
 }
 
+void TransportCommand::delete_edl()
+{
+	delete edl;
+	edl = 0;
+}
+
+void TransportCommand::new_edl()
+{
+	edl = new EDL;
+	edl->create_objects();
+}
+
+
+void TransportCommand::copy_from(TransportCommand *command)
+{
+	this->command = command->command;
+	this->change_type = command->change_type;
+	this->edl->copy_all(command->edl);
+	this->start_position = command->start_position;
+	this->end_position = command->end_position;
+	this->playbackstart = command->playbackstart;
+	this->realtime = command->realtime;
+	this->resume = command->resume;
+}
+
 TransportCommand& TransportCommand::operator=(TransportCommand &command)
 {
-	this->command = command.command;
-	this->change_type = command.change_type;
-//printf("TransportCommand::operator= 1\n");
-	*this->edl = *command.edl;
-//printf("TransportCommand::operator= 2\n");
-	this->start_position = command.start_position;
-	this->end_position = command.end_position;
-	this->playbackstart = command.playbackstart;
-	this->realtime = command.realtime;
-	this->resume = command.resume;
+	copy_from(&command);
 	return *this;
 }
 
@@ -248,7 +265,7 @@ int TransportQue::send_command(int command,
 			change_type == CHANGE_ALL)
 		{
 // Copy EDL
-			*this->command.get_edl() = *new_edl;
+			this->command.get_edl()->copy_all(new_edl);
 		}
 		else
 		if(change_type == CHANGE_PARAMS)
@@ -260,11 +277,9 @@ int TransportQue::send_command(int command,
 		this->command.set_playback_range(new_edl);
 	}
 
-//printf("TransportQue::send_command 3\n");
-//printf("TransportQue::send_command 2 %p %d %d\n", new_edl, this->command.playbackstart);
 	input_lock->unlock();
+
 	output_lock->unlock();
-//printf("TransportQue::send_command 4\n");
 	return 0;
 }
 

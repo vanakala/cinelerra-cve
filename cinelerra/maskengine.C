@@ -107,19 +107,20 @@ inline void MaskUnit::draw_line_clamped(
 			int x_i = CLIP(x, 0, w); 
 
 			/* now insert into span in order */
-			short index = 2;
 			short *span = row_spans[y_i + hoffset];	
-			while (index < span[0] && span[index] < x_i)
+			if (span[0] >= span[1]) { /* do the reallocation */
+				span[1] *= 2;
+				span = row_spans[y_i + hoffset] = (short *) realloc (span, span[1] * sizeof(short)); /* be careful! row_spans has to be updated! */
+			};
+
+			short index = 2;
+			while (index < span[0]  && span[index] < x_i)
 				index++;
 			for (int j = span[0]; j > index; j--) {       // move forward
 				span[j] = span[j-1];
 			}
 			span[index] = x_i;
 			span[0] ++;
-			if (span[0] > span[1]) { /* do the reallocation */
-				span[1] *= 2;
-				row_spans[y_i + hoffset] = (short *) realloc (span, span[1] * sizeof(short)); /* be careful! row_spans has to be updated! */
-			};
 		} 
 	} 
 }

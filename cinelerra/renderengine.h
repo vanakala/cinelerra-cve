@@ -9,6 +9,7 @@ class RenderEngine;
 #include "cache.inc"
 #include "canvas.inc"
 #include "channel.inc"
+#include "channeldb.inc"
 #include "condition.inc"
 #include "mutex.inc"
 #include "mwindow.inc"
@@ -28,8 +29,7 @@ public:
 		TransportCommand *command, 
 		Canvas *output,
 		ArrayList<PluginServer*> *plugindb,
-		ArrayList<Channel*> *channeldb,
-		int head_number);
+		ChannelDB *channeldb);
 	~RenderEngine();
 
 	int total_playable_channels();
@@ -48,7 +48,8 @@ public:
 	Channel* get_current_channel();
 	double get_tracking_position();
 // Find the plugin whose title matches title and return it
-	PluginServer* scan_plugindb(char *title);
+	PluginServer* scan_plugindb(char *title,
+		int data_type);
 	CICache* get_acache();
 	CICache* get_vcache();
 	void set_acache(CICache *cache);
@@ -69,13 +70,14 @@ public:
 	int close_output();
 // return position to synchronize video against
 	int64_t sync_position();
+// Called by VRender to reset the timers once the first frame is done.
+	void reset_sync_position();
 // return samples since start of playback
 	int64_t session_position();
 
 // Update preferences window
 	void update_framerate(float framerate);
 
-	int head_number;
 // Copy of command
 	TransportCommand *command;
 // EDL to be used by renderengine since not all commands involve an EDL change
@@ -95,6 +97,8 @@ public:
 // Lock out interrupts until started
 	Condition *start_lock;
 	Condition *output_lock;
+// Lock out audio and synchronization timers until first frame is done
+	Condition *first_frame_lock;
 // Lock out interrupts before and after renderengine is active
 	Mutex *interrupt_lock;
 
@@ -115,9 +119,11 @@ public:
 
 	ArrayList<PluginServer*> *plugindb;
 // Channels for the BUZ output
-	ArrayList<Channel*> *channeldb;
+	ChannelDB *channeldb;
 
-// length to send to audio device after speed adjustment
+// Samples in audio buffer to process
+	int64_t fragment_len;
+// Samples to send to audio device after speed adjustment
 	int64_t adjusted_fragment_len;              
 // CICaches for use if no playbackengine exists
 	CICache *audio_cache, *video_cache;
@@ -147,14 +153,6 @@ public:
 // buffersize is in samples
 	int reset_parameters();
 
-	int arm_playback_common(int64_t start_sample, 
-			int64_t end_sample,
-			int64_t current_sample,
-			int reverse, 
-			float speed, 
-			int follow_loop,
-			int infinite);
-
 	int arm_playback_audio(int64_t input_length, 
 			int64_t amodule_render_fragment, 
 			int64_t playback_buffer, 
@@ -176,7 +174,6 @@ public:
 
 
 // information for playback
-	int reverse;
 	int follow_loop;       // loop if mwindow is looped
 	int infinite;          // don't stop rendering at the end of the range or loops
 

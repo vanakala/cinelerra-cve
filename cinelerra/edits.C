@@ -684,7 +684,7 @@ int Edits::clear_handle(double start,
 {
 	Edit *current_edit;
 
-
+	distance = 0.0; // if nothing is found, distance is 0!
 	for(current_edit = first; 
 		current_edit && current_edit->next; 
 		current_edit = current_edit->next)

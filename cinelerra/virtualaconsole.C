@@ -4,7 +4,6 @@
 #include "assets.h"
 #include "atrack.h"
 #include "audiodevice.h"
-#include "cache.h"
 #include "condition.h"
 #include "edit.h"
 #include "edits.h"
@@ -28,17 +27,15 @@ VirtualAConsole::VirtualAConsole(RenderEngine *renderengine, ARender *arender)
  : VirtualConsole(renderengine, arender, TRACK_AUDIO)
 {
 	this->arender = arender;
+	output_temp = 0;
+	output_allocation = 0;
 }
 
 VirtualAConsole::~VirtualAConsole()
 {
-//printf("VirtualAConsole::~VirtualAConsole 1\n");
+	if(output_temp) delete [] output_temp;
 }
 
-int VirtualAConsole::total_ring_buffers()
-{
-	return renderengine->command->realtime ? 2 : 1;
-}
 
 void VirtualAConsole::get_playable_tracks()
 {
@@ -49,352 +46,218 @@ void VirtualAConsole::get_playable_tracks()
 			1);
 }
 
-void VirtualAConsole::new_input_buffer(int ring_buffer)
-{
-	buffer_in[ring_buffer] = new double*[total_tracks];
-	for(int i = 0; i < total_tracks; i++)
-	{
-		buffer_in[ring_buffer][i] = new double[renderengine->edl->session->audio_read_length];
-	}
-}
 
-void VirtualAConsole::delete_input_buffer(int ring_buffer)
-{
-	for(int i = 0; i < total_tracks; i++)
-	{
-		delete [] buffer_in[ring_buffer][i];
-	}
-	delete [] buffer_in[ring_buffer];
-}
-
-VirtualNode* VirtualAConsole::new_toplevel_node(Track *track, 
+VirtualNode* VirtualAConsole::new_entry_node(Track *track, 
 	Module *module,
 	int track_number)
 {
-	double *track_buffer[RING_BUFFERS];
-//printf("VirtualAConsole::new_toplevel_node %p\n", module);
-	for(int i = 0; i < total_ring_buffers(); i++)
-		track_buffer[i] = buffer_in[i][track_number];
 	return new VirtualANode(renderengine,
 		this, 
 		module,
 		0,
 		track,
-		0,
-		track_buffer,
-		track_buffer,
-		1,
-		1,
-		1,
-		1);
-	return 0;
-}
-
-int VirtualAConsole::stop_rendering(int duplicate)
-{
-	if(renderengine->command->realtime)
-	{
-		Thread::join();
-	}
+		0);
 	return 0;
 }
 
 
-int VirtualAConsole::process_buffer(int64_t input_len,
-	int64_t input_position,
+
+int VirtualAConsole::process_buffer(int64_t len,
+	int64_t start_position,
 	int last_buffer,
 	int64_t absolute_position)
 {
 	int result = 0;
-// wait for an input_buffer to become available
-	if(renderengine->command->realtime)
-		output_lock[current_input_buffer]->lock("VirtualAConsole::process_buffer");
-
-	if(!interrupt)
-	{
-// Load tracks
-		double **buffer_in = this->buffer_in[current_input_buffer];
-
-		for(int i = 0; i < total_tracks; i++)
-		{
-			result |= ((AModule*)virtual_modules[i]->real_module)->render(buffer_in[i],
-				input_len, 
-				input_position,
-				renderengine->command->get_direction(),
-				1);
-		}
-
-
-// Configure the range of the current ring buffer
-		this->input_len[current_input_buffer] = input_len;
-		this->input_position[current_input_buffer] = input_position;
-		this->last_playback[current_input_buffer] = last_buffer;
-		this->last_reconfigure[current_input_buffer] = 0;
-		this->absolute_position[current_input_buffer] = absolute_position;
-
-		if(renderengine->command->realtime)
-			input_lock[current_input_buffer]->unlock();
-		else
-			process_asynchronous();
-
-
-
-		swap_input_buffer();
-	}
-	return result;
-}
-
-void VirtualAConsole::process_asynchronous()
-{
-	int i, j, k;
-// length and lowest numbered sample of fragment in input buffer
-	int buffer = current_vconsole_buffer;
-	int64_t fragment_len, fragment_position;	
-// generic buffer
-	double *current_buffer;
-// starting sample of fragment in project
-	int64_t real_position;
-// info for meters
-	double min, max, peak;
-	int64_t meter_render_end;    // end of current meter fragment for getting levels
-	int64_t current_fragment_peak; // first meter peak in fragment
-	int64_t input_len = this->input_len[buffer];
-	int64_t input_position = this->input_position[buffer];
-	int64_t absolute_position = this->absolute_position[buffer];
-
-
-
-
-// process entire input buffer by filling one output buffer at a time
-	for(fragment_position = 0; 
-		fragment_position < input_len && !interrupt; )
-	{
-
-// test for end of input buffer
-		fragment_len = renderengine->edl->session->audio_module_fragment;
-		if(fragment_position + fragment_len > input_len)
-			fragment_len = input_len - fragment_position;
-//printf("VirtualAConsole::process_asynchronous %lld %lld\n", fragment_position, fragment_len);
-
 
 
 // clear output buffers
-		for(i = 0; i < MAX_CHANNELS; i++)
+	for(int i = 0; i < MAX_CHANNELS; i++)
+	{
+// printf("VirtualAConsole::process_buffer 2 %d %p %lld\n", 
+// i, 
+// arender->audio_out[i],
+// len);
+		if(arender->audio_out[i])
 		{
-			if(arender->audio_out[i])
-			{
-				bzero(arender->audio_out[i], fragment_len * sizeof(double));
-			}
+			bzero(arender->audio_out[i], len * sizeof(double));
 		}
+	}
 
+// Create temporary output
+	if(output_temp && output_allocation < len)
+	{
+		delete [] output_temp;
+		output_temp = 0;
+	}
 
+	if(!output_temp)
+	{
+		output_temp = new double[len];
+		output_allocation = len;
+	}
 
+// Reset plugin rendering status
+	reset_attachments();
+//printf("VirtualAConsole::process_buffer 1 %p\n", output_temp);
 
+// Render exit nodes
+	for(int i = 0; i < exit_nodes.total; i++)
+	{
+		VirtualANode *node = (VirtualANode*)exit_nodes.values[i];
+		Track *track = node->track;
 
-// get the start of the fragment in the project
-		real_position = 
-			(renderengine->command->get_direction() == PLAY_REVERSE) ? 
-				input_position - fragment_position : 
-				input_position + fragment_position;
+//printf("VirtualAConsole::process_buffer 2 %d %p\n", i, output_temp);
+		result |= node->render(output_temp, 
+			start_position + track->nudge,
+			len,
+			renderengine->edl->session->sample_rate);
+//printf("VirtualAConsole::process_buffer 3 %p\n", output_temp);
+	}
+//printf("VirtualAConsole::process_buffer 4\n");
 
-// render nodes in sorted list
-		for(i = 0; i < render_list.total; i++)
-		{
-			((VirtualANode*)render_list.values[i])->render(arender->audio_out, 
-					0, 
-					buffer,
-					fragment_position,
-					fragment_len, 
-					real_position, 
-					arender->source_length,
-					renderengine->reverse,
-					arender);
-		}
 
 // get peaks and limit volume in the fragment
-		for(i = 0; i < MAX_CHANNELS; i++)
+	for(int i = 0; i < MAX_CHANNELS; i++)
+	{
+		double *current_buffer = arender->audio_out[i];
+		if(current_buffer)
 		{
-			current_buffer = arender->audio_out[i];
-			if(current_buffer)
+
+			for(int j = 0; j < len; )
 			{
+				int meter_render_end;
+// Get length to test for meter and limit
+				if(renderengine->command->realtime)
+					meter_render_end = j + arender->meter_render_fragment;
+				else
+					meter_render_end = len;
 
-				for(j = 0; j < fragment_len; )
+				if(meter_render_end > len) 
+					meter_render_end =  len;
+
+				double peak = 0;
+
+				for( ; j < meter_render_end; j++)
 				{
-// Get length to test for meter
-					if(renderengine->command->realtime)
-						meter_render_end = j + arender->meter_render_fragment;
-					else
-						meter_render_end = fragment_len;
-
-					if(meter_render_end > fragment_len) 
-						meter_render_end =  fragment_len;
-
-					min = max = 0;
-
-					for( ; j < meter_render_end; j++)
-					{
 // Level history comes before clipping to get over status
-						if(current_buffer[j] > max) max = current_buffer[j];
-						else
-						if(current_buffer[j] < min) min = current_buffer[j];
-
-						if(current_buffer[j] > 1) current_buffer[j] = 1;
-						else
-						if(current_buffer[j] < -1) current_buffer[j] = -1;
-					}
-
-
-					if(fabs(max) > fabs(min))
-						peak = fabs(max);
+					double *sample = &current_buffer[j];
+// Clip it
+					if(fabs(*sample) > peak) peak = fabs(*sample);
+					if(*sample > 1) *sample = 1;
 					else
-						peak = fabs(min);
-
- 					if(renderengine->command->realtime)
- 					{
-						arender->level_history[i][arender->current_level[i]] = peak;
-						arender->level_samples[arender->current_level[i]] = 
-							(renderengine->command->get_direction() == PLAY_REVERSE) ? 
-							real_position - j : 
-							real_position + j;
- 						arender->current_level[i] = arender->get_next_peak(arender->current_level[i]);
- 					}
+					if(*sample < -1) *sample = -1;
 				}
 
+
+ 				if(renderengine->command->realtime)
+ 				{
+					arender->level_history[i][arender->current_level[i]] = peak;
+					arender->level_samples[arender->current_level[i]] = 
+						renderengine->command->get_direction() == PLAY_REVERSE ? 
+						start_position - j : 
+						start_position + j;
+ 					arender->current_level[i] = arender->get_next_peak(arender->current_level[i]);
+ 				}
 			}
 		}
+	}
 
 
-// advance fragment
-		fragment_position += fragment_len;
+
+//printf("VirtualAConsole::process_buffer 5\n");
+
 
 // Pack channels, fix speed and send to device.
-		if(renderengine->command->realtime && !interrupt)
-		{
+	if(renderengine->command->realtime && !interrupt)
+	{
 // speed parameters
 // length compensated for speed
-			int64_t real_output_len;
+		int real_output_len;
 // output sample
-			double sample;
-			int k;
-			double *audio_out_packed[MAX_CHANNELS];
+		double sample;
+		int k;
+		double *audio_out_packed[MAX_CHANNELS];
 
-			for(i = 0, j = 0; i < MAX_CHANNELS; i++)
+		for(int i = 0, j = 0; i < MAX_CHANNELS; i++)
+		{
+			if(renderengine->config->aconfig->do_channel[i])
 			{
-				if(renderengine->config->aconfig->do_channel[i])
-				{
-					audio_out_packed[j++] = arender->audio_out[i];
-				}
+				audio_out_packed[j++] = arender->audio_out[i];
 			}
+		}
 
-			for(i = 0; 
-				i < renderengine->config->aconfig->total_playable_channels(); 
-				i++)
-			{
-				int64_t in, out;
-				int64_t fragment_end;
+		for(int i = 0; 
+			i < renderengine->config->aconfig->total_playable_channels(); 
+			i++)
+		{
+			int in, out;
+			int fragment_end;
 
-				current_buffer = audio_out_packed[i];
+			double *current_buffer = audio_out_packed[i];
 
 // Time stretch the fragment to the real_output size
-				if(renderengine->command->get_speed() > 1)
-				{
-// Number of samples in real output buffer for each to sample rendered.
-					int interpolate_len = (int)renderengine->command->get_speed();
-					for(in = 0, out = 0; in < fragment_len; )
-					{
-						sample = 0;
-						for(k = 0; k < interpolate_len; k++)
-						{
-							sample += current_buffer[in++];
-						}
-						sample /= renderengine->command->get_speed();
-						current_buffer[out++] = sample;
-					}
-					real_output_len = out;
-				}
-				else
-				if(renderengine->command->get_speed() < 1)
-				{
-					int interpolate_len = (int)(1 / renderengine->command->get_speed()); // number of samples to skip
-					real_output_len = fragment_len * interpolate_len;
-
-					for(in = fragment_len - 1, out = real_output_len - 1; in >= 0; )
-					{
-						for(k = 0; k < interpolate_len; k++)
-						{
-							current_buffer[out--] = current_buffer[in];
-						}
-						in--;
-					}
-				}
-				else
-					real_output_len = fragment_len;
-			}
-
-			if(!renderengine->audio->get_interrupted())
+			if(renderengine->command->get_speed() > 1)
 			{
-				renderengine->audio->write_buffer(audio_out_packed, 
-					real_output_len, 
-					renderengine->config->aconfig->total_playable_channels());
+// Number of samples in real output buffer for each to sample rendered.
+				int interpolate_len = (int)renderengine->command->get_speed();
+				for(in = 0, out = 0; in < len; )
+				{
+					sample = 0;
+					for(k = 0; k < interpolate_len; k++)
+					{
+						sample += current_buffer[in++];
+					}
+					sample /= renderengine->command->get_speed();
+					current_buffer[out++] = sample;
+				}
+				real_output_len = out;
 			}
+			else
+			if(renderengine->command->get_speed() < 1)
+			{
+// number of samples to skip
+ 				int interpolate_len = (int)(1.0 / renderengine->command->get_speed());
+				real_output_len = len * interpolate_len;
 
-			if(renderengine->audio->get_interrupted()) interrupt = 1;
+				for(in = len - 1, out = real_output_len - 1; in >= 0; )
+				{
+					for(k = 0; k < interpolate_len; k++)
+					{
+						current_buffer[out--] = current_buffer[in];
+					}
+					in--;
+				}
+			}
+			else
+				real_output_len = len;
 		}
 
-
-// for(int i = 0; i < fragment_len; i++)
-// {
-// int16_t value = (int16_t)(arender->audio_out[0][i] * 32767);
-// fwrite(&value, 2, 1, stdout);
-// }
-	}
-}
-
-
-void VirtualAConsole::run()
-{
-	startup_lock->unlock();
-
-	while(!done && !interrupt)
-	{
-// wait for a buffer to render through console
-		input_lock[current_vconsole_buffer]->lock("VirtualAConsole::run");
-
-		if(!done && !interrupt && !last_reconfigure[current_vconsole_buffer])
+// Wait until video is ready
+		if(arender->first_buffer)
 		{
-// render it if not last buffer
-// send to output device or the previously set output buffer
-			process_asynchronous();
-
-// test for exit conditions tied to the buffer
-			if(last_playback[current_vconsole_buffer]) done = 1;
-
-// free up buffer for reading from disk
-			output_lock[current_vconsole_buffer]->unlock();
-
-// get next buffer
-			if(!done) swap_thread_buffer();
+			renderengine->first_frame_lock->lock("VirtualAConsole::process_buffer");
+			arender->first_buffer = 0;
 		}
-		else
-		if(last_reconfigure[current_vconsole_buffer])
-			done = 1;
-	}
-
-	if(interrupt)
-	{
-		for(int i = 0; i < total_ring_buffers(); i++)
+		if(!renderengine->audio->get_interrupted())
 		{
-			output_lock[i]->unlock();
+			renderengine->audio->write_buffer(audio_out_packed, 
+				real_output_len, 
+				renderengine->config->aconfig->total_playable_channels());
 		}
-	}
-	else
-	if(!last_reconfigure[current_vconsole_buffer])
-	{
-		if(renderengine->command->realtime)
-			send_last_output_buffer();
-	}
-}
 
+		if(renderengine->audio->get_interrupted()) interrupt = 1;
+	}
+
+
+
+
+//printf("VirtualAConsole::process_buffer 100\n");
+
+
+
+
+	return result;
+}
 
 
 

@@ -22,6 +22,7 @@ BC_TextBox::BC_TextBox(int x,
 	int font)
  : BC_SubWindow(x, y, w, 0, -1)
 {
+	skip_cursor = 0;
 	reset_parameters(rows, has_border, font);
 	strcpy(this->text, text);
 }
@@ -35,6 +36,7 @@ BC_TextBox::BC_TextBox(int x,
 	int font)
  : BC_SubWindow(x, y, w, 0, -1)
 {
+	skip_cursor = 0;
 	reset_parameters(rows, has_border, font);
 	sprintf(this->text, "%lld", text);
 }
@@ -48,6 +50,7 @@ BC_TextBox::BC_TextBox(int x,
 	int font)
  : BC_SubWindow(x, y, w, 0, -1)
 {
+	skip_cursor = 0;
 	reset_parameters(rows, has_border, font);
 	sprintf(this->text, "%0.4f", text);
 }
@@ -61,6 +64,7 @@ BC_TextBox::BC_TextBox(int x,
 	int font)
  : BC_SubWindow(x, y, w, 0, -1)
 {
+	skip_cursor = 0;
 	reset_parameters(rows, has_border, font);
 	sprintf(this->text, "%d", text);
 }
@@ -86,7 +90,8 @@ int BC_TextBox::reset_parameters(int rows, int has_border, int font)
 	enabled = 1;
 	highlighted = 0;
 	precision = 4;
-	skip_cursor = new Timer;
+	if (!skip_cursor)
+		skip_cursor = new Timer;
 	keypress_draw = 1;
 	last_keypress = 0;
 	separators = 0;
@@ -95,7 +100,8 @@ int BC_TextBox::reset_parameters(int rows, int has_border, int font)
 
 int BC_TextBox::initialize()
 {
-	skip_cursor = new Timer;
+	if (!skip_cursor)
+		skip_cursor = new Timer;
 	skip_cursor->update();
 // Get dimensions
 	text_ascent = get_text_ascent(font) + 1;

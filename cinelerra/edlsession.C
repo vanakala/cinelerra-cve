@@ -27,7 +27,29 @@ EDLSession::EDLSession(EDL *edl)
 
 	playback_config = new PlaybackConfig;
 	auto_conf = new AutoConf;
-	vwindow_folder[0] = 0;
+	strcpy(vwindow_folder, "");
+	strcpy(current_folder, "");
+	strcpy(default_atransition, "");
+	strcpy(default_vtransition, "");
+	default_transition_length = 1.0;
+	folderlist_format = ASSETS_ICONS;
+	frame_rate = 25; // just has to be something by default
+	autos_follow_edits = 1; // this is needed for predictability
+	labels_follow_edits = 1;
+	plugins_follow_edits = 1;
+	audio_tracks = -10;	// these insane values let us crash early if something is forgotten to be set
+	audio_channels = -10;
+	video_tracks = -10;
+	video_channels = -10;
+	sample_rate = -10;
+	frame_rate = -10;
+	frames_per_foot = -10;
+	min_meter_db = -1000;
+	max_meter_db = -1000;
+	output_w = -1000;
+	output_h = -1000;
+	video_write_length = -1000;
+	color_model = -100;
 }
 
 EDLSession::~EDLSession()

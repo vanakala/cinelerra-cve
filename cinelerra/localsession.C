@@ -20,6 +20,11 @@ LocalSession::LocalSession(EDL *edl)
 	clipboard_length = 0;
 	preview_start = preview_end = 0;
 	loop_playback = 0;
+	loop_start = 0;
+	loop_end = 0;
+	zoom_sample = 0;
+	zoom_y = 0;
+	zoom_track = 0;
 	view_start = 0;
 	track_start = 0;
 }

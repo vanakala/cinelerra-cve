@@ -2,6 +2,7 @@
 #include "arender.h"
 #include "asset.h"
 #include "audiodevice.h"
+#include "channeldb.h"
 #include "condition.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -25,18 +26,16 @@ RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
 	TransportCommand *command,
 	Canvas *output,
 	ArrayList<PluginServer*> *plugindb,
-	ArrayList<Channel*> *channeldb,
-	int head_number)
- : Thread()
+	ChannelDB *channeldb)
+ : Thread(1, 0, 0)
 {
 	this->playback_engine = playback_engine;
 	this->output = output;
 	this->plugindb = plugindb;
 	this->channeldb = channeldb;
-	this->head_number = head_number;
-	set_synchronous(1);
 	audio = 0;
 	video = 0;
+	config = new PlaybackConfig;
 	arender = 0;
 	vrender = 0;
 	do_audio = 0;
@@ -45,13 +44,13 @@ RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
 	actual_frame_rate = 0;
  	this->preferences = new Preferences;
  	this->command = new TransportCommand;
- 	*this->preferences = *preferences;
- 	*this->command = *command;
+ 	this->preferences->copy_from(preferences);
+ 	this->command->copy_from(command);
 	edl = new EDL;
 	edl->create_objects();
 // EDL only changed in construction.
 // The EDL contained in later commands is ignored.
-	*this->edl = *command->get_edl();
+	edl->copy_all(command->get_edl());
 	audio_cache = 0;
 	video_cache = 0;
 	if(playback_engine && playback_engine->mwindow)
@@ -63,6 +62,7 @@ RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
 	start_lock = new Condition(1, "RenderEngine::start_lock");
 	output_lock = new Condition(1, "RenderEngine::output_lock");
 	interrupt_lock = new Mutex("RenderEngine::interrupt_lock");
+	first_frame_lock = new Condition(1, "RenderEngine::first_frame_lock");
 }
 
 RenderEngine::~RenderEngine()
@@ -77,6 +77,8 @@ RenderEngine::~RenderEngine()
 	delete start_lock;
 	delete output_lock;
 	delete interrupt_lock;
+	delete first_frame_lock;
+	delete config;
 }
 
 int RenderEngine::arm_command(TransportCommand *command,
@@ -88,16 +90,11 @@ int RenderEngine::arm_command(TransportCommand *command,
 // be locked here as well as in the calling routine.
 
 
-//printf("RenderEngine::arm_command 1\n");
 	input_lock->lock("RenderEngine::arm_command");
-//printf("RenderEngine::arm_command 1\n");
 
 
-	*this->command = *command;
-	int playback_strategy = command->get_edl()->session->playback_strategy;
-	this->config = command->get_edl()->session->playback_config[playback_strategy].values[head_number];
+	this->command->copy_from(command);
 
-//printf("RenderEngine::arm_command 1\n");
 // Fix background rendering asset to use current dimensions and ignore
 // headers.
 	preferences->brender_asset->frame_rate = command->get_edl()->session->frame_rate;
@@ -107,11 +104,11 @@ int RenderEngine::arm_command(TransportCommand *command,
 	preferences->brender_asset->layers = 1;
 	preferences->brender_asset->video_data = 1;
 
-//printf("RenderEngine::arm_command 1\n");
 	done = 0;
 	interrupted = 0;
 
 // Retool configuration for this node
+	this->config->copy_from(command->get_edl()->session->playback_config);
 	VideoOutConfig *vconfig = this->config->vconfig;
 	AudioOutConfig *aconfig = this->config->aconfig;
 	if(command->realtime)
@@ -170,10 +167,7 @@ Workarounds::clamp(vconfig->do_channel[i], 0, 1);
 	}
 	else
 	{
-		this->config->playback_strategy = PLAYBACK_LOCALHOST;
 		vconfig->driver = PLAYBACK_X11;
-		vconfig->playback_strategy = PLAYBACK_LOCALHOST;
-		aconfig->playback_strategy = PLAYBACK_LOCALHOST;
 		for(int i = 0; i < MAX_CHANNELS; i++)
 		{
 			vconfig->do_channel[i] = (i < command->get_edl()->session->video_channels);
@@ -182,29 +176,37 @@ Workarounds::clamp(vconfig->do_channel[i], 0, 1);
 		}
 	}
 
-//printf("RenderEngine::arm_command 1\n");
 
 
 	get_duty();
 
-//printf("RenderEngine::arm_command 1 %d %d\n", do_audio, do_video);
 	if(do_audio)
 	{
+		fragment_len = aconfig->fragment_size;
 // Larger of audio_module_fragment and fragment length adjusted for speed
 // Extra memory must be allocated for rendering slow motion.
-		adjusted_fragment_len = (int64_t)((float)edl->session->audio_module_fragment / 
+		adjusted_fragment_len = (int64_t)((float)aconfig->fragment_size / 
 			command->get_speed() + 0.5);
-		if(adjusted_fragment_len < edl->session->audio_module_fragment)
-			adjusted_fragment_len = edl->session->audio_module_fragment;
+		if(adjusted_fragment_len < aconfig->fragment_size)
+			adjusted_fragment_len = aconfig->fragment_size;
 	}
 
-//printf("RenderEngine::arm_command 1\n");
+// Set lock so audio doesn't start until video has started.
+	if(do_video)
+	{
+		while(first_frame_lock->get_value() > 0) 
+			first_frame_lock->lock("RenderEngine::arm_command");
+	}
+	else
+// Set lock so audio doesn't wait for video which is never to come.
+	{
+		while(first_frame_lock->get_value() <= 0)
+			first_frame_lock->unlock();
+	}
+
 	open_output();
-//printf("RenderEngine::arm_command 1\n");
 	create_render_threads();
-//printf("RenderEngine::arm_command 1\n");
 	arm_render_threads();
-//printf("RenderEngine::arm_command 10\n");
 
 	return 0;
 }
@@ -247,12 +249,12 @@ void RenderEngine::create_render_threads()
 
 int RenderEngine::get_output_w()
 {
-	return edl->calculate_output_w(config->playback_strategy != PLAYBACK_LOCALHOST);
+	return edl->calculate_output_w(1);
 }
 
 int RenderEngine::get_output_h()
 {
-	return edl->calculate_output_h(config->playback_strategy != PLAYBACK_LOCALHOST);
+	return edl->calculate_output_h(1);
 }
 
 int RenderEngine::brender_available(int position, int direction)
@@ -272,10 +274,18 @@ Channel* RenderEngine::get_current_channel()
 {
 	if(channeldb)
 	{
-		if(config->vconfig->buz_out_channel >= 0 && 
-			config->vconfig->buz_out_channel < channeldb->total)
+		switch(config->vconfig->driver)
 		{
-			return channeldb->values[config->vconfig->buz_out_channel];
+			case PLAYBACK_BUZ:
+				if(config->vconfig->buz_out_channel >= 0 && 
+					config->vconfig->buz_out_channel < channeldb->size())
+				{
+					return channeldb->get(config->vconfig->buz_out_channel);
+				}
+				break;
+			case VIDEO4LINUX2JPEG:
+				
+				break;
 		}
 	}
 	return 0;
@@ -389,40 +399,38 @@ int64_t RenderEngine::session_position()
 	}
 }
 
+void RenderEngine::reset_sync_position()
+{
+	timer.update();
+}
+
 int64_t RenderEngine::sync_position()
 {
-	switch(edl->session->playback_strategy)
-	{
-		case PLAYBACK_LOCALHOST:
-		case PLAYBACK_MULTIHEAD:
 // Use audio device
 // No danger of race conditions because the output devices are closed after all
 // threads join.
-//printf("RenderEngine::sync_position 1\n");
-			if(do_audio)
-			{
-				return audio->current_position();
-			}
+	if(do_audio)
+	{
+		return audio->current_position();
+	}
 
-			if(do_video)
-			{
-				int64_t result = timer.get_scaled_difference(
-					edl->session->sample_rate);
-//printf("RenderEngine::sync_position 2 %lld\n", timer.get_difference());
-				return result;
-			}
-			break;
-
-		case PLAYBACK_BLONDSYMPHONY:
-			break;
+	if(do_video)
+	{
+		int64_t result = timer.get_scaled_difference(
+			edl->session->sample_rate);
+		return result;
 	}
 }
 
-PluginServer* RenderEngine::scan_plugindb(char *title)
+PluginServer* RenderEngine::scan_plugindb(char *title, 
+	int data_type)
 {
 	for(int i = 0; i < plugindb->total; i++)
 	{
-		if(!strcasecmp(plugindb->values[i]->title, title))
+		PluginServer *server = plugindb->values[i];
+		if(!strcasecmp(server->title, title) &&
+			((data_type == TRACK_AUDIO && server->audio) ||
+			(data_type == TRACK_VIDEO && server->video)))
 			return plugindb->values[i];
 	}
 	return 0;
@@ -430,7 +438,6 @@ PluginServer* RenderEngine::scan_plugindb(char *title)
 
 int RenderEngine::start_command()
 {
-//printf("RenderEngine::start_command 1 %d\n", command->realtime);
 	if(command->realtime)
 	{
 		interrupt_lock->lock("RenderEngine::start_command");
@@ -438,14 +445,12 @@ int RenderEngine::start_command()
 		Thread::start();
 		start_lock->lock("RenderEngine::start_command 2");
 		start_lock->unlock();
-//printf("RenderEngine::start_command 2 %p %d\n", this, Thread::get_tid());
 	}
 	return 0;
 }
 
 void RenderEngine::arm_render_threads()
 {
-//printf("RenderEngine::arm_render_threads 1 %d %d\n", do_audio, do_video);
 	if(do_audio)
 	{
 		arender->arm_command();
@@ -453,16 +458,14 @@ void RenderEngine::arm_render_threads()
 
 	if(do_video)
 	{
-//printf("RenderEngine::arm_render_threads 1 %d %d\n", do_audio, do_video);
 		vrender->arm_command();
-//printf("RenderEngine::arm_render_threads 2 %d %d\n", do_audio, do_video);
 	}
 }
 
 
 void RenderEngine::start_render_threads()
 {
-// Synchronization timer
+// Synchronization timer.  Gets reset once again after the first video frame.
 	timer.update();
 
 	if(do_audio)
@@ -488,24 +491,19 @@ void RenderEngine::wait_render_threads()
 	{
 		arender->Thread::join();
 	}
-//printf("RenderEngine::wait_render_threads 1\n");
 	if(do_video)
 	{
 		vrender->Thread::join();
 	}
-//printf("RenderEngine::wait_render_threads 2\n");
 }
 
 void RenderEngine::interrupt_playback()
 {
-//printf("RenderEngine::interrupt_playback 0 %p\n", this);
 	interrupt_lock->lock("RenderEngine::interrupt_playback");
 	interrupted = 1;
 	if(audio)
 	{
-//printf("RenderEngine::interrupt_playback 1 %p\n", this);
 		audio->interrupt_playback();
-//printf("RenderEngine::interrupt_playback 2 %p\n", this);
 	}
 	if(video)
 	{
@@ -576,7 +574,6 @@ void RenderEngine::get_module_levels(ArrayList<double> *module_levels, int64_t p
 
 void RenderEngine::run()
 {
-//printf("RenderEngine::run 1 %p\n", this);
 	start_render_threads();
 	start_lock->unlock();
 	interrupt_lock->unlock();
@@ -661,29 +658,11 @@ int RenderEngine::reset_parameters()
 	follow_loop = 0;
 	end_position = 0;
 	infinite = 0;
-	reverse = 0;
 	start_position = 0;
 	audio_channels = 0;
 	do_audio = 0;
 	do_video = 0;
 	done = 0;
-}
-
-int RenderEngine::arm_playback_common(int64_t start_sample, 
-			int64_t end_sample,
-			int64_t current_sample,
-			int reverse, 
-			float speed, 
-			int follow_loop,
-			int infinite)
-{
-	this->follow_loop = follow_loop;
-	this->start_position = start_sample;
-	this->end_position = end_sample;
-	this->reverse = reverse;
-	this->infinite = infinite;
-	this->current_sample = current_sample;
-	if(infinite) this->follow_loop = 0;
 }
 
 int RenderEngine::arm_playback_audio(int64_t input_length, 

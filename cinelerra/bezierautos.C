@@ -38,6 +38,8 @@ Auto* BezierAutos::new_auto()
 
 BezierAutos::~BezierAutos()
 {
+	delete old_selected;
+	delete new_selected;
 }
 
 int BezierAutos::paste_derived(FileXML *xml, int64_t start)

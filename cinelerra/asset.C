@@ -137,6 +137,8 @@ int Asset::init_values()
 	pipe[0] = 0;
 	use_pipe = 0;
 
+	strcpy(prefix, "");
+
 	return 0;
 }
 

@@ -142,8 +142,8 @@ void BC_Slider::show_value_tooltip()
 {
 //printf("BC_Slider::show_value_tooltip %s\n", get_caption());
 	set_tooltip(get_caption());
-	show_tooltip(50);
 	keypress_tooltip_timer = 2000;
+	show_tooltip(50);
 }
 
 

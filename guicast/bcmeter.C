@@ -8,12 +8,15 @@
 #include "vframe.h"
 #include <string.h>
 
+// Which source image to replicate
 #define METER_NORMAL 0
 #define METER_GREEN 1
 #define METER_RED 2
 #define METER_YELLOW 3
-#define METER_OVER 4
+#define METER_WHITE 4
+#define METER_OVER 5
 
+// Region of source image to replicate
 #define METER_LEFT 0
 #define METER_MID 1
 #define METER_RIGHT 3
@@ -23,7 +26,8 @@ BC_Meter::BC_Meter(int x,
 	int y, 
 	int orientation, 
 	int pixels, 
-	float min, 
+	int min, 
+	int max,
 	int mode, 
 	int use_titles,
 	long over_delay,
@@ -34,23 +38,19 @@ BC_Meter::BC_Meter(int x,
 	this->over_delay = over_delay;
 	this->peak_delay = peak_delay;
 	this->min = min;
+	this->max = max;
 	this->mode = mode;
 	this->orientation = orientation;
 	this->pixels = pixels;
 	for(int i = 0; i < TOTAL_METER_IMAGES; i++) images[i] = 0;
-	title_pixel = 0;
-	db_titles = 0;
-	meter_titles = 0;
+	db_titles.set_array_delete();
 }
 
 BC_Meter::~BC_Meter()
 {
-	if(db_titles)
-	{
-		for(int i = 0; i < meter_titles; i++) delete [] db_titles[i];
-		delete [] db_titles;
-	}
-	if(title_pixel) delete [] title_pixel;
+	db_titles.remove_all_objects();
+	title_pixels.remove_all();
+	tick_pixels.remove_all();
 	for(int i = 0; i < TOTAL_METER_IMAGES; i++) delete images[i];
 }
 
@@ -161,10 +161,11 @@ int BC_Meter::reset_over()
 	return 0;
 }
 
-int BC_Meter::change_format(int mode, float min)
+int BC_Meter::change_format(int mode, int min, int max)
 {
 	this->mode = mode;
 	this->min = min;
+	this->max = max;
 	reposition_window(get_x(), get_y(), pixels);
 	return 0;
 }
@@ -174,12 +175,15 @@ int BC_Meter::level_to_pixel(float level)
 	int result;
 	if(mode == METER_DB)
 	{
-		result = pixels - 4 - (int)((level / min) * (pixels - 4));
-		if(level == 0) result = pixels;
+		result = (int)(pixels * 
+			(level - min) / 
+			(max - min));
+		if(level <= min) result = 0;
 	}
 	else
 	{
-		result = (int)(level * (pixels - 4));
+// Not implemented anymore
+		result = 0;
 	}
 	
 	return result;
@@ -189,59 +193,77 @@ int BC_Meter::level_to_pixel(float level)
 void BC_Meter::get_divisions()
 {
 	int i;
-	float j, j_step;
-	float division, division_step;
-	char string[1024];
+	int j, j_step;
+	int division, division_step;
+	char string[BCTEXTLEN];
+	char *new_string;
 
-	if(db_titles)
+
+	db_titles.remove_all_objects();
+	title_pixels.remove_all();
+	tick_pixels.remove_all();
+
+	low_division = 0;
+	medium_division = 0;
+	high_division = pixels;
+
+	int current_pixel;
+// Create tick marks and titles in one pass
+	for(int current = min; current <= max; current++)
 	{
-		for(int i = 0; i < meter_titles; i++) delete [] db_titles[i];
-		delete [] db_titles;
-	}
-	if(title_pixel) delete [] title_pixel;
-
-	meter_titles = labs((int)(min / 5)) + 1;
-	title_pixel = new int[meter_titles];
-
-	if(use_titles)
-	{
-		db_titles = new char*[meter_titles];
-		for(i = 0; i < meter_titles; i++) db_titles[i] = 0;
-	}
-
-	division = METER_MARGIN;
-	division_step = (float)(pixels - METER_MARGIN * 3) / (meter_titles - 1);
-	j = 0;     // number for title
-	j_step = min / (meter_titles - 1);
-
-	for(i = 0; i < meter_titles; i++)
-	{
-
-		if(use_titles)
+		if(orientation == METER_VERT)
 		{
-			sprintf(string, "%.0f", fabs(-j));
-			db_titles[i] = new char[strlen(string) + 1];
-			strcpy(db_titles[i], string);
+// Create tick mark
+			current_pixel = (pixels - METER_MARGIN * 2 - 2) * 
+				(current - min) /
+				(max - min) + 2;
+			tick_pixels.append(current_pixel);
+
+// Create titles in selected positions
+			if(current == min || 
+				current == max ||
+				current == 0 ||
+				(current - min > 4 && max - current > 4 && !(current % 5)))
+			{
+				int title_pixel = (pixels - 
+					METER_MARGIN * 2) * 
+					(current - min) /
+					(max - min);
+				sprintf(string, "%d", labs(current));
+				new_string = new char[strlen(string) + 1];
+				strcpy(new_string, string);
+				db_titles.append(new_string);
+				title_pixels.append(title_pixel);
+			}
+		}
+		else
+		{
+			current_pixel = (pixels - METER_MARGIN * 2) *
+				(current - min) /
+				(max - min);
+			tick_pixels.append(current_pixel);
+// Titles not supported for horizontal
 		}
 
-		title_pixel[i] = (int)(division); 
-
-		division += division_step;
-		j += j_step;
+// Create color divisions
+		if(current == -20)
+		{
+			low_division = current_pixel;
+		}
+		else
+		if(current == -5)
+		{
+			medium_division = current_pixel;
+		}
+		else
+		if(current == 0)
+		{
+			high_division = current_pixel;
+		}
 	}
-
-// Fix divisions at 5 and 20
-	if(meter_titles > 4)
-	{
-		medium_division = pixels - title_pixel[1];
-		low_division = pixels - title_pixel[4];
-	}
-	else
-// Boundary condition
-	{
-		medium_division = pixels - title_pixel[(meter_titles - 1) * 1 / 6];
-		low_division = pixels - title_pixel[(meter_titles - 1) * 2 / 5];
-	}
+// if(orientation == METER_VERT)
+// printf("BC_Meter::get_divisions %d %d %d %d\n",
+// low_division, medium_division, high_division, pixels);
 }
 
 void BC_Meter::draw_titles()
@@ -254,9 +276,9 @@ void BC_Meter::draw_titles()
 	{
 		draw_top_background(parent_window, 0, 0, get_w(), get_title_w());
 
-		for(int i = 0; i < meter_titles; i++)
+		for(int i = 0; i < db_titles.total; i++)
 		{
-			draw_text(0, title_pixel[i], db_titles[i]);
+			draw_text(0, title_pixels.values[i], db_titles.values[i]);
 		}
 
 		flash(0, 0, get_w(), get_title_w());
@@ -266,50 +288,36 @@ void BC_Meter::draw_titles()
 	{
 		draw_top_background(parent_window, 0, 0, get_title_w(), get_h());
 
-
-		for(int i = 0; i < meter_titles; i++)
+// Titles
+		for(int i = 0; i < db_titles.total; i++)
 		{
-// Tick marks
-			if(i < meter_titles - 1)
-			{
-				for(int j = 0; j < 6; j++)
-				{
-					int y1;
-					int y2;
-					int y;
-
-					y1 = title_pixel[i];
-					y2 = title_pixel[i + 1];
-					y = (int)((float)(y2 - y1) * j / 5 + 0.5) + y1;
-
-					if(j == 0 || j == 5)
-					{
-						set_color(get_resources()->meter_font_color);
-						draw_line(get_title_w() - 10 - 1, y, get_title_w() - 1, y);
-						if(get_resources()->meter_3d)
-						{
-							set_color(BLACK);
-							draw_line(get_title_w() - 10, y + 1, get_title_w(), y + 1);
-						}
-					}
-					else
-					{
-						set_color(get_resources()->meter_font_color);
-						draw_line(get_title_w() - 5 - 1, y, get_title_w() - 1, y);
-						if(get_resources()->meter_3d)
-						{
-							set_color(BLACK);
-							draw_line(get_title_w() - 5, y + 1, get_title_w(), y + 1);
-						}
-					}
-				}
-			}
+			int title_y = pixels - 
+				title_pixels.values[i];
+			if(i == 0) 
+				title_y -= get_text_descent(SMALLFONT_3D);
+			else
+			if(i == db_titles.total - 1)
+				title_y += get_text_ascent(SMALLFONT_3D);
+			else
+				title_y += get_text_ascent(SMALLFONT_3D) / 2;
 
 			set_color(get_resources()->meter_font_color);
-			if(i == 0)
-				draw_text(0, title_pixel[i] + get_text_height(SMALLFONT_3D) / 2, db_titles[i]);
-			else
-				draw_text(0, title_pixel[i] + get_text_height(SMALLFONT_3D) / 2, db_titles[i]);
+			draw_text(0, 
+				title_y,
+				db_titles.values[i]);
+		}
+
+		for(int i = 0; i < tick_pixels.total; i++)
+		{
+// Tick marks
+			int tick_y = pixels - tick_pixels.values[i] - METER_MARGIN;
+			set_color(get_resources()->meter_font_color);
+			draw_line(get_title_w() - 10 - 1, tick_y, get_title_w() - 1, tick_y);
+			if(get_resources()->meter_3d)
+			{
+				set_color(BLACK);
+				draw_line(get_title_w() - 10, tick_y + 1, get_title_w(), tick_y + 1);
+			}
 		}
 
 		flash(0, 0, get_title_w(), get_h());
@@ -374,7 +382,10 @@ void BC_Meter::draw_face()
 			if(pixel < medium_division)
 				image_number = METER_YELLOW;
 			else
+			if(pixel < high_division)
 				image_number = METER_RED;
+			else
+				image_number = METER_WHITE;
 		}
 		else
 		{
@@ -421,6 +432,9 @@ void BC_Meter::draw_face()
 			else
 			if(image_number == METER_YELLOW && pixel + in_span > medium_division)
 				in_span = medium_division - pixel;
+			else
+			if(image_number == METER_RED && pixel + in_span > high_division)
+				in_span = high_division - pixel;
 
 // Clip length to regions
 			if(pixel < left_pixel && pixel + in_span > left_pixel)
@@ -450,6 +464,11 @@ void BC_Meter::draw_face()
 
 			pixel += in_span;
 		}
+		else
+		{
+// Sanity check
+			break;
+		}
 	}
 
 	if(over_timer)
@@ -470,6 +489,7 @@ void BC_Meter::draw_face()
 		flash(0, 0, pixels, get_h());
 	else
 		flash(x, 0, w, pixels);
+	flush();
 }
 
 int BC_Meter::update(float new_value, int over)
@@ -490,7 +510,8 @@ int BC_Meter::update(float new_value, int over)
 		peak_timer = 0;
 	}
 
-//printf("BC_Meter::update %f\n", level);
+// if(orientation == METER_HORIZ)
+// printf("BC_Meter::update %f\n", level);
 	if(over) over_timer = over_delay;	
 // only draw if window is visible
 
