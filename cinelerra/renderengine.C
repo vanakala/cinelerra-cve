@@ -63,6 +63,7 @@ RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
 	output_lock = new Condition(1, "RenderEngine::output_lock");
 	interrupt_lock = new Mutex("RenderEngine::interrupt_lock");
 	first_frame_lock = new Condition(1, "RenderEngine::first_frame_lock");
+	reset_parameters();
 }
 
 RenderEngine::~RenderEngine()
