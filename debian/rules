@@ -8,6 +8,11 @@ export DH_COMPAT=4
 CFLAGS=-ffast-math -O3 -mmmx -g
 CXXFLAGS=$(CFLAGS) -fno-check-new
 
+MAKEFLAGS=
+ifneq (, $(findstring smp2,$(DEB_BUILD_OPTIONS)))
+	MAKEFLAGS=-j2
+endif
+
 config.status: configure 
 	$(checkdir)
 	CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" \
@@ -16,7 +21,7 @@ config.status: configure
 build: build-stamp
 build-stamp: config.status
 	$(checkdir)
-	$(MAKE)
+	$(MAKE) $(MAKEFLAGS)
 	docbook-to-man debian/cinelerra.sgml > debian/cinelerra.1
 	docbook-to-man debian/mplexhi.sgml > debian/mplexhi.1
 	docbook-to-man debian/mplexlo.sgml > debian/mplexlo.1
