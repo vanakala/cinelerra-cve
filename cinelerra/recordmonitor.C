@@ -186,6 +186,7 @@ RecordMonitorGUI::RecordMonitorGUI(MWindow *mwindow,
 	this->thread = thread;
 	this->record = record;
 	avc = new AVC1394();
+	avc1394_transport = NULL;
 	bitmap = 0;
 	channel_picker = 0;
 	reverse_interlace = 0;
@@ -425,6 +426,7 @@ int RecordMonitorGUI::translation_event()
 int RecordMonitorGUI::resize_event(int w, int h)
 {
 //printf("RecordMonitorGUI::resize_event %d %d\n", w, h);
+	int offset = 0;
 	mwindow->session->rmonitor_x = get_x();
 	mwindow->session->rmonitor_y = get_y();
 	mwindow->session->rmonitor_w = w;
@@ -441,6 +443,13 @@ int RecordMonitorGUI::resize_event(int w, int h)
 
 // 	record_transport->reposition_window(mwindow->theme->rmonitor_tx_x,
 // 		mwindow->theme->rmonitor_tx_y);
+	if(avc1394_transport)
+	{
+		avc1394_transport->reposition_window(mwindow->theme->rmonitor_tx_x +
+				avc1394transport_title->get_w(),
+			mwindow->theme->rmonitor_tx_y);
+		offset += 30;
+	}
 	if(channel_picker) channel_picker->reposition();
 	if(reverse_interlace) reverse_interlace->reposition_window(reverse_interlace->get_x(),
 		reverse_interlace->get_y());
@@ -448,7 +457,7 @@ int RecordMonitorGUI::resize_event(int w, int h)
 	{
 		canvas->reposition_window(0,
 			mwindow->theme->rmonitor_canvas_x, 
-			mwindow->theme->rmonitor_canvas_y, 
+			mwindow->theme->rmonitor_canvas_y + offset, 
 			mwindow->theme->rmonitor_canvas_w, 
 			mwindow->theme->rmonitor_canvas_h);
 	}
