@@ -1,0 +1,6 @@
+#ifndef VDEVICEV4L2JPEG_INC
+#define VDEVICEV4L2JPEG_INC
+
+class VDeviceV4L2JPEG;
+
+#endif

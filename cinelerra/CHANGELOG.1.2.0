@@ -1,0 +1,56 @@
+I/O subsystems partially migrated to 2.6.3
+ - Video4Linux 2 JPEG capture
+ - ALSA migrated to alsa-lib 1.0.2
+Fixed rounding error in conversion between requested position and
+	project position in VModule::render
+Patchbay redrawn after rendering effect which adds tracks.
+Caching of picons and single frame playback.
+Caching based on total megabytes instead of total open files.
+Compression settings retained in batch render if the data type is not enabled.
+Batch render doesn't insert into project if an insertion strategy was selected in Render.
+More useful increments for compressed video bitrate and compressed audio bitrate.
+AC3 audio encoding.
+Key bindings for AVC transport.
+Realtime effect rendering debugged.
+Interpolate audio in realtime.
+Time based interpolate of video in realtime.
+	
+Shift dragging floatautos snaps to closest neighboring value if adjoined 
+by other autos.
+
+Quad CPU's debugged.  FileThread now limits the ring buffer count to 2
+and expands the frame number count to match the CPU's.
+
+Temporary file deletion on crash.
+
+Nudge forces update of PARAMS instead of EDL for audio.
+
+Default render jobs increased
+
+Automatic disabling of realtime priority for nonroot.
+Deck control for DV camcorders.
+DV playback debugs.
+Histogram crashes fixed.
+Slide optimization.
+More locale debugging.
+Context sensitive menu for effect keyframes.
+Double click on effect selects the region of the effect.
+Scrollbars in asset window improved.
+Drag and drop debugs.
+Optimizations in fade engine.
+Alignment buttons for camera and projector debugged.
+Fewer loopvideo crashes.
+Direct copy of more Quicktime DV files.
+Rounding changed to conform to PAL framerates.
+
+
+
+Quicktime:
+	Decoding of compressed headers.
+	Sorenson Video 1 & 3 playback supported through ffmpeg.
+	mp4v decoding
+
+Mix2000: signal handling fixed again so defaults get saved during X
+server crashes.
+
+

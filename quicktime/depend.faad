@@ -1,0 +1,45 @@
+
+$(OBJDIR)/$(FAAD_DIR)/libfaad/bits.o: 		   $(FAAD_DIR)/libfaad/bits.c
+$(OBJDIR)/$(FAAD_DIR)/libfaad/cfft.o: 		   $(FAAD_DIR)/libfaad/cfft.c
+$(OBJDIR)/$(FAAD_DIR)/libfaad/common.o: 	   $(FAAD_DIR)/libfaad/common.c
+$(OBJDIR)/$(FAAD_DIR)/libfaad/decoder.o: 	   $(FAAD_DIR)/libfaad/decoder.c
+$(OBJDIR)/$(FAAD_DIR)/libfaad/drc.o: 		   $(FAAD_DIR)/libfaad/drc.c
+$(OBJDIR)/$(FAAD_DIR)/libfaad/error.o:  	   $(FAAD_DIR)/libfaad/error.c
+$(OBJDIR)/$(FAAD_DIR)/libfaad/filtbank.o: 	   $(FAAD_DIR)/libfaad/filtbank.c
+$(OBJDIR)/$(FAAD_DIR)/libfaad/hcr.o: 		   $(FAAD_DIR)/libfaad/hcr.c
+$(OBJDIR)/$(FAAD_DIR)/libfaad/huffman.o: 	   $(FAAD_DIR)/libfaad/huffman.c
+$(OBJDIR)/$(FAAD_DIR)/libfaad/ic_predict.o:    $(FAAD_DIR)/libfaad/ic_predict.c
+$(OBJDIR)/$(FAAD_DIR)/libfaad/is.o: 		   $(FAAD_DIR)/libfaad/is.c
+$(OBJDIR)/$(FAAD_DIR)/libfaad/lt_predict.o:    $(FAAD_DIR)/libfaad/lt_predict.c
+$(OBJDIR)/$(FAAD_DIR)/libfaad/mdct.o: 		   $(FAAD_DIR)/libfaad/mdct.c
+$(OBJDIR)/$(FAAD_DIR)/libfaad/mp4.o: 		   $(FAAD_DIR)/libfaad/mp4.c
+$(OBJDIR)/$(FAAD_DIR)/libfaad/ms.o: 		   $(FAAD_DIR)/libfaad/ms.c
+$(OBJDIR)/$(FAAD_DIR)/libfaad/output.o: 	   $(FAAD_DIR)/libfaad/output.c
+$(OBJDIR)/$(FAAD_DIR)/libfaad/pns.o: 		   $(FAAD_DIR)/libfaad/pns.c
+$(OBJDIR)/$(FAAD_DIR)/libfaad/pulse.o:  	   $(FAAD_DIR)/libfaad/pulse.c
+$(OBJDIR)/$(FAAD_DIR)/libfaad/rvlc.o: 		   $(FAAD_DIR)/libfaad/rvlc.c
+$(OBJDIR)/$(FAAD_DIR)/libfaad/sbr_dct.o: 	   $(FAAD_DIR)/libfaad/sbr_dct.c
+$(OBJDIR)/$(FAAD_DIR)/libfaad/sbr_dec.o: 	   $(FAAD_DIR)/libfaad/sbr_dec.c
+$(OBJDIR)/$(FAAD_DIR)/libfaad/sbr_e_nf.o: 	   $(FAAD_DIR)/libfaad/sbr_e_nf.c
+$(OBJDIR)/$(FAAD_DIR)/libfaad/sbr_fbt.o: 	   $(FAAD_DIR)/libfaad/sbr_fbt.c
+$(OBJDIR)/$(FAAD_DIR)/libfaad/sbr_hfadj.o:     $(FAAD_DIR)/libfaad/sbr_hfadj.c
+$(OBJDIR)/$(FAAD_DIR)/libfaad/sbr_hfgen.o:     $(FAAD_DIR)/libfaad/sbr_hfgen.c
+$(OBJDIR)/$(FAAD_DIR)/libfaad/sbr_huff.o: 	   $(FAAD_DIR)/libfaad/sbr_huff.c
+$(OBJDIR)/$(FAAD_DIR)/libfaad/sbr_qmf.o: 	   $(FAAD_DIR)/libfaad/sbr_qmf.c
+$(OBJDIR)/$(FAAD_DIR)/libfaad/sbr_syntax.o:    $(FAAD_DIR)/libfaad/sbr_syntax.c
+$(OBJDIR)/$(FAAD_DIR)/libfaad/sbr_tf_grid.o:   $(FAAD_DIR)/libfaad/sbr_tf_grid.c
+$(OBJDIR)/$(FAAD_DIR)/libfaad/specrec.o: 	   $(FAAD_DIR)/libfaad/specrec.c
+$(OBJDIR)/$(FAAD_DIR)/libfaad/ssr_fb.o: 	   $(FAAD_DIR)/libfaad/ssr_fb.c
+$(OBJDIR)/$(FAAD_DIR)/libfaad/ssr_ipqf.o: 	   $(FAAD_DIR)/libfaad/ssr_ipqf.c
+$(OBJDIR)/$(FAAD_DIR)/libfaad/ssr.o: 		   $(FAAD_DIR)/libfaad/ssr.c
+$(OBJDIR)/$(FAAD_DIR)/libfaad/syntax.o: 	   $(FAAD_DIR)/libfaad/syntax.c
+$(OBJDIR)/$(FAAD_DIR)/libfaad/tns.o: 		   $(FAAD_DIR)/libfaad/tns.c
+
+
+
+
+
+
+
+
+

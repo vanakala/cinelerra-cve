@@ -1,0 +1,71 @@
+FAAD_OBJS := \
+	$(OBJDIR)/$(FAAD_DIR)/libfaad/bits.o \
+	$(OBJDIR)/$(FAAD_DIR)/libfaad/cfft.o \
+	$(OBJDIR)/$(FAAD_DIR)/libfaad/common.o \
+	$(OBJDIR)/$(FAAD_DIR)/libfaad/decoder.o \
+	$(OBJDIR)/$(FAAD_DIR)/libfaad/drc.o \
+	$(OBJDIR)/$(FAAD_DIR)/libfaad/error.o \
+	$(OBJDIR)/$(FAAD_DIR)/libfaad/filtbank.o \
+	$(OBJDIR)/$(FAAD_DIR)/libfaad/hcr.o \
+	$(OBJDIR)/$(FAAD_DIR)/libfaad/huffman.o \
+	$(OBJDIR)/$(FAAD_DIR)/libfaad/ic_predict.o \
+	$(OBJDIR)/$(FAAD_DIR)/libfaad/is.o \
+	$(OBJDIR)/$(FAAD_DIR)/libfaad/lt_predict.o \
+	$(OBJDIR)/$(FAAD_DIR)/libfaad/mdct.o \
+	$(OBJDIR)/$(FAAD_DIR)/libfaad/mp4.o \
+	$(OBJDIR)/$(FAAD_DIR)/libfaad/ms.o \
+	$(OBJDIR)/$(FAAD_DIR)/libfaad/output.o \
+	$(OBJDIR)/$(FAAD_DIR)/libfaad/pns.o \
+	$(OBJDIR)/$(FAAD_DIR)/libfaad/pulse.o \
+	$(OBJDIR)/$(FAAD_DIR)/libfaad/rvlc.o \
+	$(OBJDIR)/$(FAAD_DIR)/libfaad/sbr_dct.o \
+	$(OBJDIR)/$(FAAD_DIR)/libfaad/sbr_dec.o \
+	$(OBJDIR)/$(FAAD_DIR)/libfaad/sbr_e_nf.o \
+	$(OBJDIR)/$(FAAD_DIR)/libfaad/sbr_fbt.o \
+	$(OBJDIR)/$(FAAD_DIR)/libfaad/sbr_hfadj.o \
+	$(OBJDIR)/$(FAAD_DIR)/libfaad/sbr_hfgen.o \
+	$(OBJDIR)/$(FAAD_DIR)/libfaad/sbr_huff.o \
+	$(OBJDIR)/$(FAAD_DIR)/libfaad/sbr_qmf.o \
+	$(OBJDIR)/$(FAAD_DIR)/libfaad/sbr_syntax.o \
+	$(OBJDIR)/$(FAAD_DIR)/libfaad/sbr_tf_grid.o \
+	$(OBJDIR)/$(FAAD_DIR)/libfaad/specrec.o \
+	$(OBJDIR)/$(FAAD_DIR)/libfaad/ssr_fb.o \
+	$(OBJDIR)/$(FAAD_DIR)/libfaad/ssr_ipqf.o \
+	$(OBJDIR)/$(FAAD_DIR)/libfaad/ssr.o \
+	$(OBJDIR)/$(FAAD_DIR)/libfaad/syntax.o \
+	$(OBJDIR)/$(FAAD_DIR)/libfaad/tns.o
+
+
+FAAD_CFLAGS := $(CFLAGS) -I$(FAAD_DIR)/libfaad -I$(FAAD_DIR)/include -DHAVE_CONFIG_H
+
+ifeq ($(OBJDIR), i686)
+FAAD_CFLAGS += 
+endif
+
+
+DIRS += $(OBJDIR)/$(FAAD_DIR)/libfaad
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

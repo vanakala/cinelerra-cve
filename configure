@@ -1,0 +1,82 @@
+# configuration is being done in a script because starting with GCC-3.2
+# the compiler flags are changing too much between minor releases to detect
+# with Makefile scripts alone.  For now it just tells you if you have the
+# prerequisite compilers.
+
+ERROR=0
+
+# test for nasm
+
+if [ arch == i686 ];
+then
+
+	if [ -x /usr/bin/nasm -o -x /usr/local/bin/nasm ]; then HAVE_NASM=y; else HAVE_NASM=n; fi
+
+	if [ $HAVE_NASM == n ]; 
+	then echo " *** Nasm is required.  Download it from nasm.sourceforge.net"; 
+	ERROR=1
+	fi
+
+fi
+
+# test for videodev2.h
+
+rm -f a.out
+cat > conftest.c << EOF
+#include <linux/videodev2.h>
+int main()
+{
+	return 0;
+}
+EOF
+
+gcc conftest.c >& /dev/null
+
+if [ -x a.out ]; then HAVE_V4L2=y; else HAVE_V4L2=n; fi
+
+rm -f a.out conftest.c
+
+
+
+# test for -msse support
+
+rm -f a.out
+cat > conftest.c << EOF
+int main()
+{
+	return 0;
+}
+EOF
+
+gcc -msse conftest.c >& /dev/null
+
+if [ -x a.out ]; then HAVE_GCC=y; else HAVE_GCC=n; fi
+
+rm -f a.out conftest.c
+
+if [ $HAVE_GCC == n ]; 
+then echo " *** GCC 3.2.2 or greater is required.  Download it from gcc.gnu.org"; 
+ERROR=1
+fi
+
+
+
+# write configuration header
+cat > hvirtual_config.h << EOF
+// Configuration file made by configure.  Don't edit.
+EOF
+
+if [ $HAVE_V4L2 == y ];
+then echo "#define HAVE_V4L2" >> hvirtual_config.h
+fi
+
+
+
+
+# success
+if [ $ERROR == 0 ];
+then echo "Configured successfully.  Type 'make' to build it.";
+fi
+
+
+
