@@ -133,6 +133,9 @@ public:
 	int safe_regions;
     int64_t sample_rate;
 	float scrub_speed;
+// Load files as a duration
+	int si_useduration;
+	float si_duration;
 // Show titles in resources
 	int show_titles;
 // Test for data before rendering a track

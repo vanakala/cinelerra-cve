@@ -980,7 +980,12 @@ void EDL::insert_asset(Asset *asset,
 
 
 	if(new_asset->video_length < 0) 
+	{
+	if(session->si_useduration)
+		length = session->si_duration;
+	else	
 		length = 1.0 / session->frame_rate; 
+	}
 	else
 	if(new_asset->frame_rate > 0)
 		length = ((double)new_asset->video_length / new_asset->frame_rate);

@@ -195,6 +195,9 @@ int EDLSession::load_defaults(Defaults *defaults)
 	safe_regions = defaults->get("SAFE_REGIONS", 1);
 	sample_rate = defaults->get("SAMPLERATE", 48000);
 	scrub_speed = defaults->get("SCRUB_SPEED", (float)2);
+	si_useduration = defaults->get("SI_USEDURATION",0);
+	si_duration = defaults->get("SI_DURATION",5);
+	
 	show_titles = defaults->get("SHOW_TITLES", 1);
 //	test_playback_edits = defaults->get("TEST_PLAYBACK_EDITS", 1);
 	time_format = defaults->get("TIME_FORMAT", TIME_HMS);
@@ -313,6 +316,8 @@ int EDLSession::save_defaults(Defaults *defaults)
 	defaults->update("SAFE_REGIONS", safe_regions);
 	defaults->update("SAMPLERATE", sample_rate);
     defaults->update("SCRUB_SPEED", scrub_speed);
+    	defaults->update("SI_USEDURATION",si_useduration);
+	defaults->update("SI_DURATION",si_duration);
 	defaults->update("SHOW_TITLES", show_titles);
 //	defaults->update("TEST_PLAYBACK_EDITS", test_playback_edits);
 	defaults->update("TIME_FORMAT", time_format);
@@ -689,6 +694,8 @@ int EDLSession::copy(EDLSession *session)
 	safe_regions = session->safe_regions;
 	sample_rate = session->sample_rate;
 	scrub_speed = session->scrub_speed;
+	si_useduration = session->si_useduration;
+	si_duration = session->si_duration;
 	show_titles = session->show_titles;
 	test_playback_edits = session->test_playback_edits;
 	time_format = session->time_format;

@@ -135,6 +135,21 @@ int RecordPrefs::create_objects()
 	add_subwindow(textbox = new RecordFrameRate(pwindow, x, y));
 	x += 75;
 	add_subwindow(new FrameRatePulldown(mwindow, textbox, x, y));
+	y += 45;
+	x = 5;
+	
+	add_subwindow(new BC_Title(x, y, _("Images"), LARGEFONT, BLACK));
+	y += 25;
+	add_subwindow(new StillImageUseDuration(pwindow, 
+		pwindow->thread->edl->session->si_useduration, 
+		x, 
+		y));
+	x += 260;
+	y += 5;
+	add_subwindow(new StillImageDuration(pwindow, x, y));
+	x += 80;
+	y += 5;
+	add_subwindow(new BC_Title(x, y, _("Seconds")));
 	y += 30;
 
 	return 0;
@@ -307,5 +322,25 @@ int RecordSyncDrives::handle_event()
 	return 1;
 }
 
+StillImageUseDuration::StillImageUseDuration(PreferencesWindow *pwindow, int value, int x, int y)
+ : BC_CheckBox(x, y, value, _("Import images with a duration of"))
+{ 
+	this->pwindow = pwindow; 
+}
 
+int StillImageUseDuration::handle_event()
+{
+	pwindow->thread->edl->session->si_useduration = get_value();
+}
+
+StillImageDuration::StillImageDuration(PreferencesWindow *pwindow, int x, int y)
+ : BC_TextBox(x, y, 70, 1, pwindow->thread->edl->session->si_duration)
+{
+	this->pwindow = pwindow;
+}
+int StillImageDuration::handle_event()
+{
+	pwindow->thread->edl->session->si_duration = atof(get_text());
+	return 1;
+}
 

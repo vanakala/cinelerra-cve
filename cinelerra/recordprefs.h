@@ -138,4 +138,20 @@ class RecordFrameRateText : public BC_TextBox
 	PreferencesWindow *pwindow;
 };
 
+class StillImageUseDuration : public BC_CheckBox
+{
+public:
+	StillImageUseDuration(PreferencesWindow *pwindow, int value, int x, int y);
+	int handle_event();
+	PreferencesWindow *pwindow;
+};
+
+class StillImageDuration : public BC_TextBox
+{
+public:
+	StillImageDuration(PreferencesWindow *pwindow, int x, int y);
+	int handle_event();
+	PreferencesWindow *pwindow;
+};
+
 #endif
