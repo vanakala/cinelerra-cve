@@ -347,9 +347,15 @@ int64_t AudioOSS::device_position()
 	if(!ioctl(get_output(0), SNDCTL_DSP_GETOPTR, &info))
 	{
 //printf("AudioOSS::device_position %d %d %d\n", info.bytes, device->get_obits(), device->get_ochannels());
-		return info.bytes / 
-			(device->get_obits() / 8) / 
-			device->get_ochannels();
+// workaround for ALSA OSS emulation driver's bug
+// the problem is that if the first write to sound device was not full lenght fragment then 
+// _GETOPTR returns insanely large numbers at first moments of play
+		if (info.bytes > 2100000000) 
+			return 0;
+		else
+			return info.bytes / 
+				(device->get_obits() / 8) / 
+				device->get_ochannels();
 	}
 	return 0;
 }
