@@ -86,6 +86,8 @@ char* FileTIFF::cmodel_to_str(int value)
 		case FileTIFF::RGBA_8888: return "RGBA-8 Bit"; break;
 		case FileTIFF::RGB_FLOAT: return "RGB-FLOAT"; break;
 		case FileTIFF::RGBA_FLOAT: return "RGBA-FLOAT"; break;
+		case FileTIFF::RGB_161616: return "RGB-16 Bit"; break;
+		case FileTIFF::RGBA_16161616: return "RGBA-16 Bit"; break;
 		default: 
 			return "RGB-8 Bit"; 
 			break;
@@ -130,6 +132,12 @@ int FileTIFF::read_frame_header(char *path)
 	if(bitspersample == 8 && components == 4)
 		asset->tiff_cmodel = FileTIFF::RGBA_8888;
 	else
+	if(bitspersample == 16 && components == 3)
+		asset->tiff_cmodel = FileTIFF::RGB_161616;
+	else
+	if(bitspersample == 16 && components == 4)
+		asset->tiff_cmodel = FileTIFF::RGBA_16161616;
+	else
 	if(bitspersample == 32 && components == 3)
 		asset->tiff_cmodel = FileTIFF::RGB_FLOAT;
 	else
@@ -152,6 +160,8 @@ int FileTIFF::colormodel_supported(int colormodel)
 	{
 		case FileTIFF::RGB_888: return BC_RGB888; break;
 		case FileTIFF::RGBA_8888: return BC_RGBA8888; break;
+		case FileTIFF::RGB_161616: return BC_RGB161616; break;
+		case FileTIFF::RGBA_16161616: return BC_RGBA16161616; break;
 		case FileTIFF::RGB_FLOAT: return BC_RGB_FLOAT; break;
 		case FileTIFF::RGBA_FLOAT: return BC_RGBA_FLOAT; break;
 		default: return BC_RGB888; break;
@@ -164,6 +174,8 @@ int FileTIFF::get_best_colormodel(Asset *asset, int driver)
 	{
 		case FileTIFF::RGB_888: return BC_RGB888; break;
 		case FileTIFF::RGBA_8888: return BC_RGBA8888; break;
+		case FileTIFF::RGB_161616: return BC_RGB161616; break;
+		case FileTIFF::RGBA_16161616: return BC_RGBA16161616; break;
 		case FileTIFF::RGB_FLOAT: return BC_RGB_FLOAT; break;
 		case FileTIFF::RGBA_FLOAT: return BC_RGBA_FLOAT; break;
 		case FileTIFF::A_8: return BC_RGB888; break;
@@ -330,6 +342,20 @@ int FileTIFF::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 			bits = 8;
 			type = TIFF_BYTE;
 			bytesperrow = 4 * asset->width;
+			break;
+		case FileTIFF::RGB_161616: 
+			components = 3;
+			color_model = BC_RGB161616;
+			bits = 16;
+			type = TIFF_SHORT;
+			bytesperrow = 6 * asset->width;
+			break;
+		case FileTIFF::RGBA_16161616: 
+			components = 4;
+			color_model = BC_RGBA16161616;
+			bits = 16;
+			type = TIFF_SHORT;
+			bytesperrow = 8 * asset->width;
 			break;
 		case FileTIFF::RGB_FLOAT: 
 			components = 3;
@@ -540,6 +566,8 @@ void TIFFColorspace::create_objects()
 {
 	add_item(new TIFFColorspaceItem(gui, FileTIFF::RGB_888));
 	add_item(new TIFFColorspaceItem(gui, FileTIFF::RGBA_8888));
+	add_item(new TIFFColorspaceItem(gui, FileTIFF::RGB_161616));
+	add_item(new TIFFColorspaceItem(gui, FileTIFF::RGBA_16161616));
 	add_item(new TIFFColorspaceItem(gui, FileTIFF::RGB_FLOAT));
 	add_item(new TIFFColorspaceItem(gui, FileTIFF::RGBA_FLOAT));
 }
