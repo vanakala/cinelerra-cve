@@ -149,6 +149,7 @@ void ColorBalanceEngine::run()
             	b = input_rows[j][k + 2]; \
 			} \
  \
+            r = CLAMP(r, 0, max-1); g = CLAMP(g, 0, max-1); b = CLAMP(b, 0, max-1); \
             r_n = plugin->r_lookup[r]; \
             g_n = plugin->g_lookup[g]; \
             b_n = plugin->b_lookup[b]; \
