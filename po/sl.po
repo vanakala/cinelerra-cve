@@ -280,7 +280,7 @@ msgstr "Prilepi"
 
 #: cinelerra/assetpopup.C:238
 msgid "Match project size"
-msgstr "Prilagodi velikosti projekta"
+msgstr "Prilagodi velikost projekta"
 
 #: cinelerra/assetpopup.C:268
 msgid "Remove from project"
@@ -405,7 +405,7 @@ msgstr "Izberi EDL za odprtje:"
 
 #: cinelerra/batchrender.C:686
 msgid "Batches to render:"
-msgstr "Serije za upodobit:"
+msgstr "Posli za upodobit:"
 
 #: cinelerra/batchrender.C:817
 #: cinelerra/file.C:1132
