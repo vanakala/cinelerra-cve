@@ -7,6 +7,7 @@
 #include "colormodels.h"
 #include "filexml.h"
 #include "filesystem.h"
+#include "transportque.inc"
 #include "ft2build.h"
 #include FT_GLYPH_H
 #include FT_BBOX_H
@@ -1949,8 +1950,11 @@ int TitleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 // Always synthesize text and redraw it for timecode
 	if(config.timecode)
 	{
+		int64_t rendered_frame = get_source_position();
+		if (get_direction() == PLAY_REVERSE)
+			rendered_frame -= 1;
 		Units::totext(config.text, 
-				(double)get_source_position() / PluginVClient::project_frame_rate, 
+				(double)rendered_frame / PluginVClient::project_frame_rate, 
 				TIME_HMSF, 
 				0,
 				PluginVClient::project_frame_rate, 
