@@ -37,6 +37,8 @@ public:
 	Auto* get_next_auto(int64_t position, int direction, Auto* &current, int use_default = 1);
 // Determine if a keyframe exists before creating it.
 	int auto_exists_for_editing(double position);
+// Returns auto at exact position, null if non-existent. ignores autokeyframming and align on frames
+	Auto* get_auto_at_position(double position = -1);
 // Get keyframe for editing with automatic creation if enabled
 	Auto* get_auto_for_editing(double position = -1);
 // Insert keyframe at the point if it doesn't exist

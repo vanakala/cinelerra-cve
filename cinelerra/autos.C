@@ -224,18 +224,8 @@ int Autos::auto_exists_for_editing(double position)
 	{
 		double unit_position = position;
 		unit_position = edl->align_to_frame(unit_position, 0);
-		unit_position = track->to_units(unit_position, 0);
-
-		for(Auto *current = first; 
-			current; 
-			current = NEXT)
-		{
-			if(edl->equivalent(current->position, unit_position))
-			{
-				result = 1;
-				break;
-			}
-		}
+		if (get_auto_at_position(unit_position))
+			result = 1;
 	}
 	else
 	{
@@ -244,6 +234,23 @@ int Autos::auto_exists_for_editing(double position)
 
 	return result;
 }
+
+Auto* Autos::get_auto_at_position(double position)
+{
+	int64_t unit_position = track->to_units(position, 0);
+
+	for(Auto *current = first; 
+		current; 
+		current = NEXT)
+	{
+		if(edl->equivalent(current->position, unit_position))
+		{
+			return current;
+		}
+	}
+	return 0;
+}
+
 
 Auto* Autos::get_auto_for_editing(double position)
 {

@@ -2214,19 +2214,23 @@ void TrackCanvas::synchronize_autos(float change, Track *skip, FloatAuto *fauto,
 			{
 				FloatAutos *fade_autos = current->automation->fade_autos;
 				double position = skip->from_units(fauto->position);
-				int tmp_cursor_on_frames = mwindow->edl->session->cursor_on_frames;
-				mwindow->edl->session->cursor_on_frames = 0;
 				FloatAuto *previous = 0, *next = 0;
-				float init_value = fade_autos->get_value(fauto->position, PLAY_FORWARD, previous, next);
 
-				int update_undo = !fade_autos->auto_exists_for_editing(position);
+				float init_value = fade_autos->get_value(fauto->position, PLAY_FORWARD, previous, next);
+				FloatAuto *keyframe;
+				keyframe = (FloatAuto*)fade_autos->get_auto_at_position(position);
 				
-				FloatAuto *keyframe = (FloatAuto*)fade_autos->get_auto_for_editing(position);
-				mwindow->edl->session->cursor_on_frames = tmp_cursor_on_frames;		
-				if (update_undo)
+				if (!keyframe)
+				{
+					// create keyframe at exactly this point in time
+					keyframe = (FloatAuto*)fade_autos->insert_auto_for_editing(fauto->position);
 					keyframe->value = init_value;
-				else
+				} else
+				{ 
+					// keyframe exists, just change it
 					keyframe->value += change;		
+				} 
+				
 				keyframe->position = fauto->position;
 				keyframe->control_out_position = fauto->control_out_position;
 				keyframe->control_in_position = fauto->control_in_position;
@@ -3207,6 +3211,7 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 	UPDATE_DRAG_HEAD(mwindow->session->drag_handle == 0);
 
 	float value;
+	float old_value;
 //printf("TrackCanvas::update_drag_floatauto %ld %d\n", 
 //position, 
 //mwindow->session->drag_handle);
@@ -3216,6 +3221,7 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 // Center
 		case 0:
 // Snap to nearby values
+			old_value = current->value;
 			if(shift_down())
 			{
 				double value1;
@@ -3243,7 +3249,7 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 
 				if(!current->previous && !current->next)
 				{
-					value = ((FloatAutos*)current->autos)->default_;
+					current->value = ((FloatAutos*)current->autos)->default_;
 				}
 				value = current->value;
 			}
@@ -3251,10 +3257,10 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 				value = ((FloatAuto*)current)->percentage_to_value(percentage);
 
 //printf("TrackCanvas::update_drag_floatauto 1 %f\n", value);
-			if(value != current->value || position != current->position)
+			if(value != old_value || position != current->position)
 			{
 				result = 1;
-				float change = value - current->value;		
+				float change = value - old_value;		
 				current->value = value;
 				current->position = position;
 				synchronize_autos(change, current->autos->track, current, 0);
