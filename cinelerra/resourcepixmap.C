@@ -749,24 +749,24 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 //printf("ResourcePixmap::draw_video_resource 3 %p\n", source);
 //		VFrame *src = source->read_frame(BC_RGB888);
 //printf("ResourcePixmap::draw_video_resource 4 %p\n", src);
-		source->frames_cache->enable_cache();           // we do enabling and disabling of cache 
-								// on our own, so File doesn't use it's own caching
 		if ((final_picon_frame = source->frames_cache->get_frame(source->current_frame,
 									source->current_layer,
 									picon_w,
 									picon_h,
-									BC_RGB888)))
+									BC_RGB888,
+									1)))      // force cache
 		{
 			cache_hit = 1;
 			
 		} else
 		{
-			source->frames_cache->unlock_cache(); // implicitly locked
+			source->frames_cache->unlock_cache(); // implicitly locked after a call to get_frame
 			cache_hit = 0;	
 			long now_current_frame = source->current_frame;
-			source->frames_cache->disable_cache();
+ //			Timer a;
+ //			a.update();
 			VFrame *src = source->read_frame(BC_RGB888);
-					if (src) 
+			if (src) 
 			{
 				final_picon_frame = new VFrame (0, 
 							picon_w,
@@ -794,12 +794,12 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 					src->get_w(),
 					picon_w);
 	
-				source->frames_cache->enable_cache();
 				source->frames_cache->add_frame(now_current_frame,
 								source->current_layer,
 								final_picon_frame,
-								1); // do not do a copy of frame. keep this one
-				source->frames_cache->disable_cache();
+								1, // do not do a copy of frame, keep this one
+								1); // force the caching, even if cache is disabled
+ //				printf("Timer: %lli\n", a.get_difference());
 	
 			} else 
 			{
@@ -820,9 +820,9 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 				0, 
 				0);
 
-		if (cache_hit)
-			source->frames_cache->unlock_cache(); // implicitly locked
-
+		if (cache_hit) {
+			source->frames_cache->unlock_cache(); // cache is implicitly locked after a call to get_frame
+		}
 		
 		
 		

@@ -63,7 +63,10 @@ public:
 // Number of frames in a brender job.
 	int brender_fragment;
 // Number of items to store in cache
-	int64_t cache_size;
+	int64_t cache_items;
+// Number of megabytes for thumbnail cache - per item
+	int cache_size_per_item;
+
 	int use_renderfarm;
 	int renderfarm_port;
 // If the node starts with a / it's on the localhost using a path as the socket.

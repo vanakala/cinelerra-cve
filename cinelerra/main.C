@@ -49,6 +49,7 @@ int main(int argc, char *argv[])
 	setlocale (LC_MESSAGES, "");
 	setlocale (LC_CTYPE, "");
 
+
 	for(int i = 1; i < argc; i++)
 	{
 		if(!strcmp(argv[i], "-h"))

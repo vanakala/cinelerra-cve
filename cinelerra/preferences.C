@@ -35,7 +35,8 @@ Preferences::Preferences()
 	sprintf(index_directory, BCASTDIR);
 	if(strlen(index_directory))
 		fs.complete_path(index_directory);
-	cache_size = 5;
+	cache_items = 5;
+	cache_size_per_item = 2;
 	index_size = 3000000;
 	index_count = 100;
 	use_thumbnails = 1;
@@ -117,7 +118,8 @@ Preferences& Preferences::operator=(Preferences &that)
 	strcpy(global_plugin_dir, that.global_plugin_dir);
 	strcpy(theme, that.theme);
 
-	cache_size = that.cache_size;
+	cache_items = that.cache_items;
+	cache_size_per_item = that.cache_size_per_item;
 	force_uniprocessor = that.force_uniprocessor;
 	processors = calculate_processors();
 	renderfarm_nodes.remove_all_objects();
@@ -160,7 +162,8 @@ Preferences& Preferences::operator=(Preferences &that)
 	}
 	
 	renderfarm_job_count = MAX(renderfarm_job_count, 1);
-	CLAMP(cache_size, 1, 100);
+	CLAMP(cache_items, 1, 100);
+	CLAMP(cache_size_per_item, 0, 128);
 
 	return *this;
 }
@@ -199,7 +202,8 @@ int Preferences::load_defaults(Defaults *defaults)
 	processors = calculate_processors();
 	use_brender = defaults->get("USE_BRENDER", use_brender);
 	brender_fragment = defaults->get("BRENDER_FRAGMENT", brender_fragment);
-	cache_size = defaults->get("CACHE_SIZE", cache_size);
+	cache_items = defaults->get("CACHE_SIZE", cache_items);
+	cache_size_per_item = defaults->get("CACHE_SIZE_PER_ITEM", cache_size_per_item);
 	local_rate = defaults->get("LOCAL_RATE", local_rate);
 	use_renderfarm = defaults->get("USE_RENDERFARM", use_renderfarm);
 	renderfarm_port = defaults->get("RENDERFARM_PORT", renderfarm_port);
@@ -243,7 +247,8 @@ int Preferences::load_defaults(Defaults *defaults)
 int Preferences::save_defaults(Defaults *defaults)
 {
 	char string[BCTEXTLEN];
-	defaults->update("CACHE_SIZE", cache_size);
+	defaults->update("CACHE_SIZE", cache_items);
+	defaults->update("CACHE_SIZE_PER_ITEM", cache_size_per_item);
 	defaults->update("INDEX_DIRECTORY", index_directory);
 	defaults->update("INDEX_SIZE", index_size);
 	defaults->update("INDEX_COUNT", index_count);

@@ -741,7 +741,7 @@ TRACE("MWindow::load_filenames 1");
 	for(int i = 0; i < filenames->total; i++)
 	{
 // Get type of file
-		File *new_file = new File;
+		File *new_file = new File(preferences);
 		Asset *new_asset = new Asset(filenames->values[i]);
 		EDL *new_edl = new EDL;
 		char string[BCTEXTLEN];
@@ -860,7 +860,7 @@ TRACE("MWindow::load_filenames 1");
 				{
 // Recalculate length
 					delete new_file;
-					new_file = new File;
+					new_file = new File(preferences);
 					result = new_file->open_file(plugindb, new_asset, 1, 0, 0, 0);
 
 					if(load_mode != LOAD_RESOURCESONLY)

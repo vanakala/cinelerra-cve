@@ -48,8 +48,12 @@ int PerformancePrefs::create_objects()
 
 	y += 30;
 	add_subwindow(new BC_Title(x, y + 5, _("Cache items:"), MEDIUMFONT, BLACK));
-	sprintf(string, "%ld", pwindow->thread->preferences->cache_size);
-	add_subwindow(csize = new CICacheSize(x + 230, y, pwindow, string));
+	sprintf(string, "%ld", pwindow->thread->preferences->cache_items);
+	add_subwindow(citems = new CICacheItems(x + 230, y, pwindow, string));
+
+	add_subwindow(new BC_Title(x+ xmargin4, y + 5, _("Cache size per item (Mb):"), MEDIUMFONT, BLACK));
+	sprintf(string, "%ld", pwindow->thread->preferences->cache_size_per_item);
+	add_subwindow(cperitem = new CICachePerItem(x + 580, y, pwindow, string));
 	y += 30;
 	add_subwindow(new BC_Title(x, y + 5, _("Seconds to preroll renders:")));
 	PrefsRenderPreroll *preroll = new PrefsRenderPreroll(pwindow, 
@@ -306,18 +310,33 @@ int PrefsBRenderFragment::handle_event()
 
 
 
-CICacheSize::CICacheSize(int x, int y, PreferencesWindow *pwindow, char *text)
+CICacheItems::CICacheItems(int x, int y, PreferencesWindow *pwindow, char *text)
  : BC_TextBox(x, y, 100, 1, text)
 { 
 	this->pwindow = pwindow; 
 }
 
-int CICacheSize::handle_event()
+int CICacheItems::handle_event()
 {
 	int64_t result;
 
 	result = atol(get_text());
-	pwindow->thread->preferences->cache_size = result;
+	pwindow->thread->preferences->cache_items = result;
+	return 0;
+}
+
+CICachePerItem::CICachePerItem(int x, int y, PreferencesWindow *pwindow, char *text)
+ : BC_TextBox(x, y, 100, 1, text)
+{ 
+	this->pwindow = pwindow; 
+}
+
+int CICachePerItem::handle_event()
+{
+	int64_t result;
+
+	result = atol(get_text());
+	pwindow->thread->preferences->cache_size_per_item = result;
 	return 0;
 }
 

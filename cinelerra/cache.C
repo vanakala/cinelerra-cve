@@ -187,11 +187,11 @@ int CICache::age()
 	{
 		memory_usage = get_memory_usage();
 		
-		if(memory_usage > preferences->cache_size)
+		if(memory_usage > preferences->cache_items)
 		{
 			result = delete_oldest();
 		}
-	}while(memory_usage > preferences->cache_size && !result);
+	}while(memory_usage > preferences->cache_items && !result);
 
 	check_out_lock->unlock();
 }
@@ -290,7 +290,7 @@ CICacheItem::CICacheItem(CICache *cache, Asset *asset)
 	this->cache = cache;
 	checked_out = 0;
 
-	file = new File;
+	file = new File(cache->preferences);
 	file->set_processors(cache->preferences->processors);
 	file->set_preload(cache->edl->session->playback_preload);
 

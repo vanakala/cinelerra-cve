@@ -267,7 +267,7 @@ int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 	interrupt_flag = 0;
 
 // open the source file
-	File source;
+	File source(mwindow->preferences);
 	if(open_source(&source)) return 1;
 
 	asset->index_zoom = get_required_scale(&source);

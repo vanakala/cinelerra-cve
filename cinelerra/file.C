@@ -1,3 +1,4 @@
+
 #include "asset.h"
 #include "byteorder.h"
 #include "edit.h"
@@ -24,10 +25,11 @@
 
 
 
- FrameCache::FrameCache(int cache_size) 
+ FrameCache::FrameCache(int64_t cache_size) 
  {
  	cache_enabled = 0;
  	this->cache_size = cache_size;
+	memory_used = 0;
  	timer.update();
  }
  
@@ -46,6 +48,7 @@
 	}
  	cache_tree.clear();
  	cache_tree_bytime.clear();
+	memory_used = 0;
  	change_lock.unlock();
  }
  
@@ -133,11 +136,11 @@
  // implicitly locks the class, needs to be unlocked after the call
  // this is the best behaviour, everything else just complicates things and
  // causes races (because you don't know the state of cache_enabled during the call).
- VFrame *FrameCache::get_frame(long frame_number, int frame_layer, int frame_width, int frame_height, int frame_color_model)
+VFrame *FrameCache::get_frame(long frame_number, int frame_layer, int frame_width, int frame_height, int frame_color_model, int force_cache)
  {
  
  	change_lock.lock();
- 	if (!cache_enabled) return 0;
+ 	if (!cache_enabled && !force_cache) return 0;
  //	printf("Looking for - frame: %li, layer: %i, w: %i, h:%i, cm: %i\n", frame_number, frame_layer, frame_width, frame_height, frame_color_model);
  	FrameCacheTree::iterator iterator= find_element_byframe(frame_number, 
  								frame_layer,
@@ -172,20 +175,30 @@
  	return 0;
  } 
 
- void FrameCache::add_frame(long frame_number, int frame_layer, VFrame *frame, int do_not_copy_frame) 
+void FrameCache::add_frame(long frame_number, int frame_layer, VFrame *frame, int do_not_copy_frame, int force_cache) 
  {
  	
- 	if (!cache_enabled) return;
+ 	if (!cache_enabled && !force_cache) return;
  	change_lock.lock();
  	
  //	printf("%p, adding frame:  %li, layer: %i, w: %i, h:%i cm:%i\n",this, frame_number, frame_layer, frame->get_w(),frame->get_h(), frame->get_color_model());
  	
  	FrameCacheElement *cache_element;
- 
+
+	// what will be new size
+ 	int64_t new_memory_size = frame->get_data_size();
+
+	if (frame->get_w() == 720)
+		printf("balh\n");
  	// currently cache size can only grow, not shrink
- 	if (cache_tree.size() >= cache_size) 
+ 	while (memory_used + new_memory_size >= cache_size) 
  	{
- 		// delete the oldest element
+		// if we cannot fit the new image into cache, exit
+ 		if (memory_used == 0 && new_memory_size > cache_size) {
+			change_lock.unlock();
+			return;
+		}
+		// delete the element that wansn't accessed for the longest time
  		FrameCacheTree_ByTime::iterator iterator_bytime = cache_tree_bytime.begin();
  		cache_element = iterator_bytime->second;
  		FrameCacheTree::iterator iterator = find_element_byframe(cache_element->frame_number,
@@ -194,13 +207,13 @@
  									cache_element->frame->get_h(),
  									cache_element->frame->get_color_model());
  //	printf("Deleting oldest frame: - frame: %li, layer: %i, w: %i, h:%i, cm: %i\n", cache_element->frame_number, cache_element->frame_layer, cache_element->frame->get_w(), cache_element->frame->get_h(), cache_element->frame->get_color_model());
+		memory_used -= cache_element->frame->get_data_size();
  		delete cache_element->frame;
  		cache_tree.erase(iterator);
    		cache_tree_bytime.erase(iterator_bytime);
- 	} else
- 	{
- 		cache_element = new FrameCacheElement;
- 	}
+		delete cache_element;
+	}
+	cache_element = new FrameCacheElement;
  	
  	if (do_not_copy_frame) 
  	{
@@ -213,16 +226,21 @@
  					frame->get_color_model());
  		cache_element->frame->copy_from(frame);
  	}
+	memory_used += cache_element->frame->get_data_size();
  	cache_element->frame_layer = frame_layer;
  	cache_element->frame_number = frame_number;
  	cache_element->time_diff = timer.get_difference();
+
+//	printf("Adding frame: - frame: %li, layer: %i, w: %i, h:%i, cm: %i\n", cache_element->frame_number, cache_element->frame_layer, cache_element->frame->get_w(), cache_element->frame->get_h(), cache_element->frame->get_color_model());
+	
+//	printf("Memory used by cache: %p %lli\n", this, memory_used);
  
  // insert the same data into both trees under different keys
  	
  	cache_tree.insert(std::pair<long, FrameCacheElement *> (cache_element->frame_number, cache_element));
  	cache_tree_bytime.insert(std::pair<long long, FrameCacheElement *> (cache_element->time_diff, cache_element)); 
  	change_lock.unlock();
- }
+}
  
  void FrameCache::dump() 
 {	
@@ -247,11 +265,11 @@
  }
 
 
-File::File()
+File::File(Preferences *preferences)
 {
 	cpus = 1;
 	asset = new Asset;
-	frames_cache = new FrameCache();
+	frames_cache = new FrameCache(preferences->cache_size_per_item * 1024*1024);
 	reset_parameters();
 }
 
@@ -1127,11 +1145,11 @@ int File::read_frame(VFrame *frame)
 			{
 				delete temp_frame;
 				frame->copy_from(temp_frame2);
-				// cache is implicitly locked on cache hit
+				// cache is implicitly locked after a call to get_frame
 				frames_cache->unlock_cache();
 			} else
 			{
-				frames_cache->unlock_cache();
+				frames_cache->unlock_cache(); // cache is implicitly locked after a call to get_frame
 				file->read_frame(temp_frame);
 
 				cmodel_transfer(frame->get_rows(), 
@@ -1167,9 +1185,11 @@ printf("File::read_frame 6\n");
 			if (temp_frame2) 
 			{
 				frame->copy_from(temp_frame2);
+				// cache is implicitly locked after a call to get_frame
 				frames_cache->unlock_cache();
 			} else
 			{
+				// cache is implicitly locked after a call to get_frame				
 				frames_cache->unlock_cache();
 				file->read_frame(frame);
 				frames_cache->add_frame(current_frame, current_layer, frame);

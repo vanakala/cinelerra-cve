@@ -9,6 +9,7 @@
 #include "file.inc"
 #include "formatpopup.h"
 #include "mwindow.inc"
+#include "preferences.h"
 
 class FormatAParams;
 class FormatVParams;
@@ -140,7 +141,7 @@ public:
 class FormatAThread : public Thread
 {
 public:
-	FormatAThread(FormatTools *format);
+	FormatAThread(FormatTools *format, Preferences *preferences);
 	~FormatAThread();
 	
 	void run();
@@ -152,7 +153,7 @@ public:
 class FormatVThread : public Thread
 {
 public:
-	FormatVThread(FormatTools *format, int lock_compressor);
+	FormatVThread(FormatTools *format, int lock_compressor, Preferences *preferences);
 	~FormatVThread();
 	
 	void run();

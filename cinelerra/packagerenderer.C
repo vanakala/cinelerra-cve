@@ -150,7 +150,7 @@ void PackageRenderer::create_output()
 	
 
 //printf("PackageRenderer::create_output 2\n");
-	file = new File;
+	file = new File(preferences);
 
 //printf("PackageRenderer::create_output 3\n");
 	file->set_processors(preferences->processors);

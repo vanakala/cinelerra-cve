@@ -1,7 +1,8 @@
 #ifndef PERFORMANCEPREFS_H
 #define PERFORMANCEPREFS_H
 
-class CICacheSize;
+class CICacheItems;
+class CICachePerItem;
 
 #include "formattools.inc"
 #include "mwindow.inc"
@@ -25,7 +26,8 @@ public:
 
 	int hot_node;
 
-	CICacheSize *csize;
+	CICacheItems *citems;
+	CICachePerItem *cperitem;
 
 	ArrayList<BC_ListBoxItem*> nodes[4];
 	PrefsRenderFarmEditNode *edit_node;
@@ -277,16 +279,19 @@ public:
 
 
 
-
-
-
-
-
-
-class CICacheSize : public BC_TextBox
+class CICacheItems : public BC_TextBox
 {
 public:
-	CICacheSize(int x, int y, PreferencesWindow *pwindow, char *text);
+	CICacheItems(int x, int y, PreferencesWindow *pwindow, char *text);
+	int handle_event();
+	PreferencesWindow *pwindow;
+};
+
+
+class CICachePerItem : public BC_TextBox
+{
+public:
+	CICachePerItem(int x, int y, PreferencesWindow *pwindow, char *text);
 	int handle_event();
 	PreferencesWindow *pwindow;
 };

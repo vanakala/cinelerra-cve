@@ -16,6 +16,7 @@
 #include "resample.inc"
 #include "sema.h"
 #include "vframe.inc"
+#include "preferences.h"
 
 #include <map>
 #include "timer.h"
@@ -36,10 +37,10 @@ typedef std::multimap<long long, FrameCacheElement*> FrameCacheTree_ByTime;
 
 class FrameCache {
 public:
-	FrameCache(int cache_size = 100);
+	FrameCache(int64_t cache_size = 0);   // chache size is in bytes
 	~FrameCache();
-	VFrame *get_frame(long frame_number, int frame_layer, int frame_width, int frame_height, int color_model); // implicit lock
-	void add_frame(long frame_number, int frame_layer, VFrame *frame, int do_not_copy_frame = 0); 
+	VFrame *get_frame(long frame_number, int frame_layer, int frame_width, int frame_height, int color_model, int force_cache = 0); // implicit lock
+	void add_frame(long frame_number, int frame_layer, VFrame *frame, int do_not_copy_frame = 0, int force_cache = 0); 
 	void unlock_cache();
 	void lock_cache();
 	void reset();		
@@ -53,7 +54,8 @@ private:
 	FrameCacheTree_ByTime::iterator find_element_bytime(long long frame_time_diff, long frame_number, int frame_layer, int frame_width, int frame_height, int frame_color_model);
 	Mutex change_lock;
 	int cache_enabled;
-	int cache_size;
+	int64_t cache_size;              // maximum cache size in bytes
+	int64_t memory_used;         // used memory in bytes
 	FrameCacheTree cache_tree;
 	FrameCacheTree_ByTime cache_tree_bytime;
 	Timer timer;
@@ -64,7 +66,7 @@ private:
 class File
 {
 public:
-	File();
+	File(Preferences *preferences);
 	~File();
 
 // Get attributes for various file formats.

@@ -47,7 +47,7 @@ int FileFormat::create_objects(Asset *asset, char *string2)
 int FileFormat::create_objects_(char *string2)
 {
 	FileSystem dir;
-	File file;
+	File file(mwindow->preferences);
 	char string[1024];
 	int x1 = 10, x2 = 180;
 	int x = x1, y = 10;

@@ -621,7 +621,7 @@ int Record::open_output_file()
 		Batch *batch = get_current_batch();
 		delete_output_file();
 
-		file = new File;
+		file = new File(mwindow->preferences);
 		result = file->open_file(mwindow->plugindb, 
 			batch->get_current_asset(), 
 			0, 
