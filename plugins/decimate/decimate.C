@@ -418,20 +418,22 @@ Decimate::~Decimate()
 	}
 }
 
-#define DIFFERENCE_MACRO(type, components) \
+#define DIFFERENCE_MACRO(type, temp_type, components) \
 { \
+	temp_type result2 = 0; \
 	for(int i = 0; i < h; i++) \
 	{ \
 		type *row1 = (type*)frame1->get_rows()[i]; \
 		type *row2 = (type*)frame2->get_rows()[i]; \
 		for(int j = 0; j < w * components; j++) \
 		{ \
-			int64_t temp = *row1 - *row2; \
-			result += (temp > 0 ? temp : -temp); \
+			temp_type temp = *row1 - *row2; \
+			result2 += (temp > 0 ? temp : -temp); \
 			row1++; \
 			row2++; \
 		} \
 	} \
+	result = (int64_t)result2; \
 }
 
 int64_t Decimate::calculate_difference(VFrame *frame1, VFrame *frame2)
@@ -443,19 +445,25 @@ int64_t Decimate::calculate_difference(VFrame *frame1, VFrame *frame2)
 	{
 		case BC_RGB888:
 		case BC_YUV888:
-			DIFFERENCE_MACRO(unsigned char, 3);
+			DIFFERENCE_MACRO(unsigned char, int64_t, 3);
+			break;
+		case BC_RGB_FLOAT:
+			DIFFERENCE_MACRO(float, double, 3);
 			break;
 		case BC_RGBA8888:
 		case BC_YUVA8888:
-			DIFFERENCE_MACRO(unsigned char, 4);
+			DIFFERENCE_MACRO(unsigned char, int64_t, 4);
+			break;
+		case BC_RGBA_FLOAT:
+			DIFFERENCE_MACRO(float, double, 4);
 			break;
 		case BC_RGB161616:
 		case BC_YUV161616:
-			DIFFERENCE_MACRO(uint16_t, 3);
+			DIFFERENCE_MACRO(uint16_t, int64_t, 3);
 			break;
 		case BC_RGBA16161616:
 		case BC_YUVA16161616:
-			DIFFERENCE_MACRO(uint16_t, 4);
+			DIFFERENCE_MACRO(uint16_t, int64_t, 4);
 			break;
 	}
 	return result;

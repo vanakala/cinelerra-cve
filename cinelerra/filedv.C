@@ -686,8 +686,8 @@ int FileDV::get_best_colormodel(Asset *asset, int driver)
 
 DVConfigAudio::DVConfigAudio(BC_WindowBase *parent_window, Asset *asset)
  : BC_Window(PROGRAM_NAME ": Audio Compression",
-	parent_window->get_abs_cursor_x(),
-	parent_window->get_abs_cursor_y(),
+	parent_window->get_abs_cursor_x(1),
+	parent_window->get_abs_cursor_y(1),
 	350,
 	250)
 {
@@ -720,8 +720,8 @@ int DVConfigAudio::close_event()
 
 DVConfigVideo::DVConfigVideo(BC_WindowBase *parent_window, Asset *asset)
  : BC_Window(PROGRAM_NAME ": Video Compression",
-	parent_window->get_abs_cursor_x(),
-	parent_window->get_abs_cursor_y(),
+	parent_window->get_abs_cursor_x(1),
+	parent_window->get_abs_cursor_y(1),
 	350,
 	250)
 {

@@ -962,7 +962,6 @@ int Track::copy(double start,
 	FileXML *file, 
 	char *output_path)
 {
-//printf("Track::copy 1\n");
 // Use a copy of the selection in converted units
 // So copy_automation doesn't reconvert.
 	int64_t start_unit = to_units(start, 0);
@@ -972,12 +971,10 @@ int Track::copy(double start,
 
 
 	file->tag.set_title("TRACK");
-//	file->tag.set_property("PLAY", play);
 	file->tag.set_property("RECORD", record);
 	file->tag.set_property("NUDGE", nudge);
 	file->tag.set_property("PLAY", play);
 	file->tag.set_property("GANG", gang);
-//	file->tag.set_property("MUTE", mute);
 	file->tag.set_property("DRAW", draw);
 	file->tag.set_property("EXPAND", expand_view);
 	file->tag.set_property("TRACK_W", track_w);
@@ -994,36 +991,29 @@ int Track::copy(double start,
 	file->append_tag();
 	file->append_newline();
 
-//printf("Track::copy 1\n");
 
-//printf("Track::copy 1\n");
 
-//printf("Track::copy 2\n");
 	edits->copy(start_unit, end_unit, file, output_path);
-//printf("Track::copy 3\n");
 
 	AutoConf auto_conf;
 	auto_conf.set_all();
 	automation->copy(start_unit, end_unit, file, 0, 0);
 
-//printf("Track::copy 4\n");
 
 	for(int i = 0; i < plugin_set.total; i++)
 	{
 		plugin_set.values[i]->copy(start_unit, end_unit, file);
 	}
 
-//printf("Track::copy 5\n");
 	copy_derived(start_unit, end_unit, file);
 
-//printf("Track::copy 6\n");
 	file->tag.set_title("/TRACK");
 	file->append_tag();
 	file->append_newline();
 	file->append_newline();
 	file->append_newline();
 	file->append_newline();
-//printf("Track::copy 100\n");
+
 	return 0;
 }
 

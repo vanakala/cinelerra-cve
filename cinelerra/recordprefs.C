@@ -4,16 +4,13 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "new.h"
+#include "language.h"
 #include "preferences.h"
 #include "recordconfig.h"
 #include "recordprefs.h"
 #include "vdeviceprefs.h"
 
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 RecordPrefs::RecordPrefs(MWindow *mwindow, PreferencesWindow *pwindow)

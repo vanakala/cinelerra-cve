@@ -4,6 +4,7 @@
 #include "filexml.h"
 #include "guicast.h"
 #include "keyframe.h"
+#include "language.h"
 #include "picon_png.h"
 #include "vframe.h"
 
@@ -14,10 +15,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 
@@ -271,6 +268,7 @@ int DenoiseVideo::process_realtime(VFrame *input, VFrame *output)
 					*output_row = (type)(*accumulation_ptr); \
 				} \
 				else \
+				if(sizeof(type) < 4) \
 					*output_row = (type)CLIP((*accumulation_ptr), 0, max); \
 			} \
 			else \
@@ -297,9 +295,17 @@ int DenoiseVideo::process_realtime(VFrame *input, VFrame *output)
 			DENOISE_MACRO(unsigned char, 3, 0xff);
 			break;
 
+		case BC_RGB_FLOAT:
+			DENOISE_MACRO(float, 3, 1.0);
+			break;
+
 		case BC_RGBA8888:
 		case BC_YUVA8888:
 			DENOISE_MACRO(unsigned char, 4, 0xff);
+			break;
+
+		case BC_RGBA_FLOAT:
+			DENOISE_MACRO(float, 4, 1.0);
 			break;
 
 		case BC_RGB161616:

@@ -259,9 +259,15 @@ int WipeMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 
 	switch(incoming->get_color_model())
 	{
+		case BC_RGB_FLOAT:
+			WIPE(float, 3)
+			break;
 		case BC_RGB888:
 		case BC_YUV888:
 			WIPE(unsigned char, 3)
+			break;
+		case BC_RGBA_FLOAT:
+			WIPE(float, 4)
 			break;
 		case BC_RGBA8888:
 		case BC_YUVA8888:

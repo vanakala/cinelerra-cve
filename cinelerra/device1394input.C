@@ -1,9 +1,14 @@
 #include "condition.h"
 #include "device1394input.h"
+#include "ieee1394-ioctl.h"
 #include "mutex.h"
 #include "vframe.h"
 #include "video1394.h"
 
+#include <errno.h>
+#include <fcntl.h>
+#include <sys/ioctl.h>
+#include <sys/mman.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
@@ -17,31 +22,25 @@ Device1394Input::Device1394Input()
 {
 	buffer = 0;
 	buffer_valid = 0;
+	input_buffer = 0;
 	done = 0;
 	total_buffers = 0;
 	current_inbuffer = 0;
 	current_outbuffer = 0;
 	buffer_size = 0;
-	temp = 0;
-	bytes_read = 0;
 	audio_buffer = 0;
 	audio_samples = 0;
 	video_lock = 0;
 	audio_lock = 0;
 	buffer_lock = 0;
-	handle = 0;
 	decoder = 0;
+	fd = -1;
 }
 
 Device1394Input::~Device1394Input()
 {
-
 // Driver crashes if it isn't stopped before cancelling the thread.
 // May still crash during the cancel though.
-	if(handle > 0)
-	{
-		raw1394_stop_iso_rcv(handle, channel);
-	}
 
 	if(Thread::running())
 	{
@@ -58,19 +57,12 @@ Device1394Input::~Device1394Input()
 		delete [] buffer_valid;
 	}
 
-	if(temp)
-	{
-		delete [] temp;
-	}
+	if(input_buffer)
+		munmap(input_buffer, total_buffers * buffer_size);
 
 	if(audio_buffer)
 	{
 		delete [] audio_buffer;
-	}
-
-	if(handle > 0)
-	{
-		raw1394_destroy_handle(handle);
 	}
 
 	if(decoder)
@@ -81,6 +73,10 @@ Device1394Input::~Device1394Input()
 	if(video_lock) delete video_lock;
 	if(audio_lock) delete audio_lock;
 	if(buffer_lock) delete buffer_lock;
+	if(fd > 0)
+	{
+		close(fd);
+	}
 }
 
 int Device1394Input::open(int port,
@@ -88,7 +84,9 @@ int Device1394Input::open(int port,
 	int length,
 	int channels,
 	int samplerate,
-	int bits)
+	int bits,
+	int w,
+	int h)
 {
 	int result = 0;
 	this->channel = channel;
@@ -96,60 +94,59 @@ int Device1394Input::open(int port,
 	this->channels = channels;
 	this->samplerate = samplerate;
 	this->bits = bits;
+	this->w = w;
+	this->h = h;
+	is_pal = (h == 576);
+	buffer_size = is_pal ? DV_PAL_SIZE : DV_NTSC_SIZE;
+	total_buffers = length;
+
 
 // Initialize grabbing
-	if(!handle)
+	if(fd < 0)
 	{
-		int numcards;
-    	struct raw1394_portinfo pinf[16];
-
-    	if(!(handle = raw1394_new_handle()))
+#define PATH "/dev/dv1394"
+		if((fd = ::open(PATH, O_RDWR)) < 0)
 		{
-        	perror("Device1394::open_input: raw1394_get_handle");
-			handle = 0;
-        	return 1;
-    	}
-
-    	if((numcards = raw1394_get_port_info(handle, pinf, 16)) < 0)
+			printf("Device1394Input::open %s: %s\n", PATH, strerror(errno));
+		}
+		else
 		{
-        	perror("Device1394::open_input: raw1394_get_port_info");
- 			raw1394_destroy_handle(handle);
-			handle = 0;
-     	  	return 1;
-    	}
+#define CIP_N_NTSC   68000000
+#define CIP_D_NTSC 1068000000
 
-		if(!pinf[port].nodes)
-		{
-			printf("Device1394::open_input: pinf[port].nodes == 0\n");
-			raw1394_destroy_handle(handle);
-			handle = 0;
-			return 1;
+#define CIP_N_PAL  1
+#define CIP_D_PAL 16
+
+			struct dv1394_init init = 
+			{
+				api_version: DV1394_API_VERSION,
+				channel: channel,
+				n_frames: length,
+				format: is_pal ? DV1394_PAL: DV1394_NTSC,
+				cip_n: 0,
+				cip_d: 0,
+				syt_offset: 0
+			};
+			if(ioctl(fd, DV1394_IOC_INIT, &init) < 0)
+			{
+				printf("Device1394Input::open DV1394_IOC_INIT: %s\n", strerror(errno));
+			}
+
+			input_buffer = (unsigned char*)mmap(0,
+              	length * buffer_size,
+                PROT_READ | PROT_WRITE,
+              	MAP_SHARED,
+              	fd,
+              	0);
+
+			if(ioctl(fd, DV1394_IOC_START_RECEIVE, 0) < 0)
+			{
+				perror("Device1394Input::open DV1394_START_RECEIVE");
+			}
 		}
 
-    	if(raw1394_set_port(handle, port) < 0)
-		{
-        	perror("Device1394::open_input: raw1394_set_port");
-			raw1394_destroy_handle(handle);
-			handle = 0;
-        	return 1;
-    	}
-
-		raw1394_set_iso_handler(handle, channel, dv_iso_handler);
-//		raw1394_set_bus_reset_handler(handle, dv_reset_handler);
-		raw1394_set_userdata(handle, this);
-    	if(raw1394_start_iso_rcv(handle, channel) < 0)
-		{
-        	perror("Device1394::open_input: raw1394_start_iso_rcv");
-			raw1394_destroy_handle(handle);
-			handle = 0;
-        	return 1;
-    	}
 
 
-
-
-
-		total_buffers = length;
 		buffer = new char*[total_buffers];
 		buffer_valid = new int[total_buffers];
 		bzero(buffer_valid, sizeof(int) * total_buffers);
@@ -158,7 +155,6 @@ int Device1394Input::open(int port,
 			buffer[i] = new char[DV_PAL_SIZE];
 		}
 
-		temp = new char[DV_PAL_SIZE];
 
 		audio_buffer = new char[INPUT_SAMPLES * 2 * channels];
 
@@ -177,9 +173,103 @@ void Device1394Input::run()
 {
 	while(!done)
 	{
+// Wait for frame to arrive
+		struct dv1394_status status;
+
 		Thread::enable_cancel();
-		raw1394_loop_iterate(handle);
+		if(ioctl(fd, DV1394_IOC_WAIT_FRAMES, 1))
+		{
+			perror("Device1394Input::run DV1394_IOC_WAIT_FRAMES");
+			sleep(1);
+		}
+		else
+		if(ioctl(fd, DV1394_IOC_GET_STATUS, &status))
+		{
+			perror("Device1394Input::run DV1394_IOC_GET_STATUS");
+		}
 		Thread::disable_cancel();
+
+
+
+		buffer_lock->lock("Device1394Input::run 1");
+
+		for(int i = 0; i < status.n_clear_frames; i++)
+		{
+// Get a buffer to transfer to
+			char *dst = 0;
+			int is_overflow = 0;
+			if(!buffer_valid[current_inbuffer])
+				dst = buffer[current_inbuffer];
+			else
+				is_overflow = 1;
+
+			char *src = (char*)(input_buffer + buffer_size * status.first_clear_frame);
+static FILE *test = 0;
+if(!test) test = fopen("/tmp/test", "w");
+fwrite(src, buffer_size, 1, test);
+
+// Export the video
+			if(dst)
+			{
+				memcpy(dst, src, buffer_size);
+				buffer_valid[current_inbuffer] = 1;
+				video_lock->unlock();
+			}
+
+
+// Extract the audio
+			if(audio_samples < INPUT_SAMPLES - 2048)
+			{
+				int audio_result = dv_read_audio(decoder, 
+					(unsigned char*)audio_buffer + 
+						audio_samples * 2 * 2,
+					(unsigned char*)src,
+					buffer_size,
+ 					channels,
+					bits);
+				int real_freq = decoder->decoder->audio->frequency;
+ 				if (real_freq == 32000) 
+ 				{
+// do in-place _FAST_ && _SIMPLE_ upsampling to 48khz
+// i also think user should get a warning that his material is effectively 32khz
+// we take 16bit samples for both channels in one 32bit int
+ 					int *twosample = (int*) (audio_buffer + audio_samples * 2 * 2);
+ 					int from = audio_result - 1;
+ 					int new_result = audio_result * 48000 / real_freq;
+ 					for (int to = new_result - 1; to >=0; to--)
+ 					{	
+ 						if ((to % 3) == 0 || (to % 3) == 1) from --;
+ 						twosample[to] = twosample[from];
+ 					}
+ 					audio_result = new_result;
+ 				}
+
+
+				audio_samples += audio_result;
+
+// Export the audio
+				audio_lock->unlock();
+			}
+
+// Advance buffer
+			if(!is_overflow)
+				increment_counter(&current_inbuffer);
+
+
+			Thread::enable_cancel();
+			if(ioctl(fd, DV1394_IOC_RECEIVE_FRAMES, 1))
+			{
+				perror("Device1394Input::run DV1394_IOC_RECEIVE_FRAMES");
+			}
+
+			if(ioctl(fd, DV1394_IOC_GET_STATUS, &status))
+			{
+				perror("Device1394Input::run DV1394_IOC_GET_STATUS");
+			}
+			Thread::disable_cancel();
+		}
+
+		buffer_lock->unlock();
 	}
 }
 
@@ -262,148 +352,3 @@ int Device1394Input::read_audio(char *data, int samples)
 
 
 
-
-int Device1394Input::dv_iso_handler(raw1394handle_t handle, 
-		int channel, 
-		size_t length,
-		quadlet_t *data)
-{
-	Device1394Input *thread = (Device1394Input*)raw1394_get_userdata(handle);
-
-//printf("Device1394Input::dv_iso_handler 1\n");
-	thread->Thread::disable_cancel();
-
-#define BLOCK_SIZE 480
-	if(length > 16)
-	{
-		unsigned char *ptr = (unsigned char*)&data[3];
-		int section_type = ptr[0] >> 5;
-		int dif_sequence = ptr[1] >> 4;
-		int dif_block = ptr[2];
-
-// Frame completed
-		if(section_type == 0 && 
-			dif_sequence == 0 && 
-			thread->bytes_read)
-		{
-// Need to conform the frame size so our format detection is right
-//printf("Device1394Input::dv_iso_handler 10\n");
-			if(thread->bytes_read == DV_PAL_SIZE ||
-				thread->bytes_read == DV_NTSC_SIZE)
-			{
-// Copy frame to buffer
-//printf("Device1394Input::dv_iso_handler 20\n");
-				thread->buffer_size = thread->bytes_read;
-
-
-				thread->buffer_lock->lock("Device1394Input::dv_iso_handler");
-//printf("Device1394Input::dv_iso_handler 21 %p\n", thread->buffer[thread->current_inbuffer]);
-				memcpy(thread->buffer[thread->current_inbuffer],
-					thread->temp,
-					thread->bytes_read);
-//printf("Device1394Input::dv_iso_handler 22 %p\n", thread->buffer[thread->current_inbuffer]);
-				thread->buffer_valid[thread->current_inbuffer] = 1;
-				thread->video_lock->unlock();
-
-// Decode audio to audio store
-				if(thread->audio_samples < INPUT_SAMPLES - 2048)
-				{
-					int decode_result = dv_read_audio(thread->decoder, 
-						(unsigned char*)thread->audio_buffer + 
-							thread->audio_samples * 2 * 2,
-						(unsigned char*)thread->temp,
-						thread->bytes_read,
- 						thread->channels,
-						thread->bits);
- 					int real_freq=thread->decoder->decoder->audio->frequency;
- 	
- 					if (real_freq == 32000) 
- 					{
- 						// do in-place _FAST_ && _SIMPLE_ upsampling to 48khz
- 						// i also think user should get a warning that his material is effectively 32khz
- 
- 						// we take 16bit samples for both channels in one 32bit int
- 						int *twosample = (int*) (thread->audio_buffer + thread->audio_samples * 2 * 2);
- 						int from = decode_result - 1;
- 						int new_result = decode_result * 48000 / real_freq;
- 						for (int to = new_result - 1; to >=0; to--)
- 						{	
- 							if ((to % 3) == 0 || (to % 3) == 1) from --;
- 							twosample[to]=twosample[from];
- 						}
- 						decode_result = new_result;
-//						printf("decoder real_freq: %i, upsampled_samples_in_frame %i\n", real_freq, decode_result); 
- 					}
- 
-
-					thread->audio_samples += decode_result;
-
-//printf("Device1394Input::dv_iso_handler 25 %d\n", decode_result);
-					thread->audio_lock->unlock();
-				}
-
-// Advance buffer if possible
-				thread->increment_counter(&thread->current_inbuffer);
-				if(thread->buffer_valid[thread->current_inbuffer])
-					thread->decrement_counter(&thread->current_inbuffer);
-
-				thread->buffer_lock->unlock();
-//printf("Device1394Input::dv_iso_handler 30\n");
-			}
-			thread->bytes_read = 0;
-		}
-
-//printf("Device1394Input::dv_iso_handler 40\n");
-		switch(section_type)
-		{
-			case 0: // Header
-                memcpy(thread->temp + 
-					dif_sequence * 150 * 80, ptr, BLOCK_SIZE);
-				break;
-
-			case 1: // Subcode
-				memcpy(thread->temp + 
-					dif_sequence * 150 * 80 + (1 + dif_block) * 80, 
-					ptr, 
-					BLOCK_SIZE);
-				break;
-
-			case 2: // VAUX
-				memcpy(thread->temp + 
-					dif_sequence * 150 * 80 + (3 + dif_block) * 80, 
-					ptr, 
-					BLOCK_SIZE);
-				break;
-
-			case 3: // Audio block
-				memcpy(thread->temp + 
-					dif_sequence * 150 * 80 + (6 + dif_block * 16) * 80, 
-					ptr, 
-					BLOCK_SIZE);
-				break;
-
-			case 4: // Video block
-				memcpy(thread->temp + 
-					dif_sequence * 150 * 80 + (7 + (dif_block / 15) + dif_block) * 80, 
-					ptr, 
-					BLOCK_SIZE);
-				break;
-			
-			default:
-				break;
-		}
-//printf("Device1394Input::dv_iso_handler 50\n");
-
-		thread->bytes_read += BLOCK_SIZE;
-	}
-//printf("Device1394Input::dv_iso_handler 100\n");
-
-	return 0;
-}
-
-bus_reset_handler_t Device1394Input::dv_reset_handler(raw1394handle_t handle, 
-	unsigned int generation)
-{
-	printf("Device1394::dv_reset_handler: generation=%p\n", generation);
-    return 0;
-}

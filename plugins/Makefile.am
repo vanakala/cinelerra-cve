@@ -6,8 +6,8 @@ THEMES= \
 SUBDIRS= \
 	$(THEMES) \
 	libfourier \
-	libeffecttv \
 	colors \
+	libeffecttv \
 	1080to480 \
 	720to480 \
 	aging \

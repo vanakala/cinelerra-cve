@@ -98,6 +98,9 @@ typedef struct
 	int color_model;
 // Color model of compressed data.  Since MJPA streams use 4:2:0
     int jpeg_color_model;
+// To save on colormodel permutations, we flag grayscale separately and
+// just set U and V to 0x80.
+	int greyscale;
 // Error in compression process
 	int error;
 

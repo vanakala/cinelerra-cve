@@ -1,3 +1,4 @@
+#include "bcresources.h"
 #include "bctitle.h"
 #include "bcresources.h"
 #include <string.h>
@@ -13,7 +14,10 @@ BC_Title::BC_Title(int x,
  : BC_SubWindow(x, y, -1, -1, -1)
 {
 	this->font = font;
-	this->color = color;
+	if(color < 0) 
+		this->color = get_resources()->default_text_color;
+	else
+		this->color = color;
 	this->centered = centered;
 	this->fixed_w = fixed_w;
 	strcpy(this->text, text);

@@ -3,14 +3,10 @@
 #include "defaults.h"
 #include "guicast.h"
 #include "filexml.h"
+#include "language.h"
 #include "pluginaclient.h"
 
 #include <string.h>
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 
@@ -186,13 +182,7 @@ void InterpolateWindow::create_objects()
 	flush();
 }
 
-int InterpolateWindow::close_event()
-{
-// Set result to 1 to indicate a client side close
-	set_done(1);
-	return 1;
-}
-
+WINDOW_CLOSE_EVENT(InterpolateWindow)
 
 
 

@@ -55,23 +55,23 @@ public:
 	FieldFrameWindow *gui;
 };
 
-class FieldFrameFirst : public BC_Radial
-{
-public:
-	FieldFrameFirst(FieldFrame *plugin, FieldFrameWindow *gui, int x, int y);
-	int handle_event();
-	FieldFrame *plugin;
-	FieldFrameWindow *gui;
-};
-
-class FieldFrameSecond : public BC_Radial
-{
-public:
-	FieldFrameSecond(FieldFrame *plugin, FieldFrameWindow *gui, int x, int y);
-	int handle_event();
-	FieldFrame *plugin;
-	FieldFrameWindow *gui;
-};
+// class FieldFrameFirst : public BC_Radial
+// {
+// public:
+// 	FieldFrameFirst(FieldFrame *plugin, FieldFrameWindow *gui, int x, int y);
+// 	int handle_event();
+// 	FieldFrame *plugin;
+// 	FieldFrameWindow *gui;
+// };
+// 
+// class FieldFrameSecond : public BC_Radial
+// {
+// public:
+// 	FieldFrameSecond(FieldFrame *plugin, FieldFrameWindow *gui, int x, int y);
+// 	int handle_event();
+// 	FieldFrame *plugin;
+// 	FieldFrameWindow *gui;
+// };
 
 class FieldFrameWindow : public BC_Window
 {
@@ -82,8 +82,8 @@ public:
 	FieldFrame *plugin;
 	FieldFrameTop *top;
 	FieldFrameBottom *bottom;
-	FieldFrameFirst *first;
-	FieldFrameSecond *second;
+//	FieldFrameFirst *first;
+//	FieldFrameSecond *second;
 };
 
 
@@ -149,9 +149,9 @@ FieldFrameWindow::FieldFrameWindow(FieldFrame *plugin, int x, int y)
  	x, 
 	y, 
 	230, 
-	200, 
+	100, 
 	230, 
-	200, 
+	100, 
 	0, 
 	0,
 	1)
@@ -165,10 +165,10 @@ void FieldFrameWindow::create_objects()
 	add_subwindow(top = new FieldFrameTop(plugin, this, x, y));
 	y += 30;
 	add_subwindow(bottom = new FieldFrameBottom(plugin, this, x, y));
-	y += 30;
-	add_subwindow(first = new FieldFrameFirst(plugin, this, x, y));
-	y += 30;
-	add_subwindow(second = new FieldFrameSecond(plugin, this, x, y));
+// 	y += 30;
+// 	add_subwindow(first = new FieldFrameFirst(plugin, this, x, y));
+// 	y += 30;
+// 	add_subwindow(second = new FieldFrameSecond(plugin, this, x, y));
 
 	show_window();
 	flush();
@@ -238,50 +238,50 @@ int FieldFrameBottom::handle_event()
 
 
 
-FieldFrameFirst::FieldFrameFirst(FieldFrame *plugin, 
-	FieldFrameWindow *gui, 
-	int x, 
-	int y)
- : BC_Radial(x, 
-	y, 
-	plugin->config.first_frame == 0,
-	_("First frame is first field"))
-{
-	this->plugin = plugin;
-	this->gui = gui;
-}
-
-int FieldFrameFirst::handle_event()
-{
-	plugin->config.first_frame = 0;
-	gui->second->update(0);
-	plugin->send_configure_change();
-	return 1;
-}
-
-
-
-
-FieldFrameSecond::FieldFrameSecond(FieldFrame *plugin, 
-	FieldFrameWindow *gui, 
-	int x, 
-	int y)
- : BC_Radial(x, 
-	y, 
-	plugin->config.first_frame == 1,
-	_("Second frame is first field"))
-{
-	this->plugin = plugin;
-	this->gui = gui;
-}
-
-int FieldFrameSecond::handle_event()
-{
-	plugin->config.first_frame = 1;
-	gui->first->update(0);
-	plugin->send_configure_change();
-	return 1;
-}
+// FieldFrameFirst::FieldFrameFirst(FieldFrame *plugin, 
+// 	FieldFrameWindow *gui, 
+// 	int x, 
+// 	int y)
+//  : BC_Radial(x, 
+// 	y, 
+// 	plugin->config.first_frame == 0,
+// 	_("First frame is first field"))
+// {
+// 	this->plugin = plugin;
+// 	this->gui = gui;
+// }
+// 
+// int FieldFrameFirst::handle_event()
+// {
+// 	plugin->config.first_frame = 0;
+// 	gui->second->update(0);
+// 	plugin->send_configure_change();
+// 	return 1;
+// }
+// 
+// 
+// 
+// 
+// FieldFrameSecond::FieldFrameSecond(FieldFrame *plugin, 
+// 	FieldFrameWindow *gui, 
+// 	int x, 
+// 	int y)
+//  : BC_Radial(x, 
+// 	y, 
+// 	plugin->config.first_frame == 1,
+// 	_("Second frame is first field"))
+// {
+// 	this->plugin = plugin;
+// 	this->gui = gui;
+// }
+// 
+// int FieldFrameSecond::handle_event()
+// {
+// 	plugin->config.first_frame = 1;
+// 	gui->first->update(0);
+// 	plugin->send_configure_change();
+// 	return 1;
+// }
 
 
 
@@ -407,8 +407,8 @@ void FieldFrame::update_gui()
 			thread->window->lock_window();
 			thread->window->top->update(config.field_dominance == TOP_FIELD_FIRST);
 			thread->window->bottom->update(config.field_dominance == BOTTOM_FIELD_FIRST);
-			thread->window->first->update(config.first_frame == 0);
-			thread->window->second->update(config.first_frame == 1);
+//			thread->window->first->update(config.first_frame == 0);
+//			thread->window->second->update(config.first_frame == 1);
 			thread->window->unlock_window();
 		}
 	}
@@ -437,28 +437,31 @@ int FieldFrame::process_buffer(VFrame *frame,
 	}
 
 // Get input frames
-	int64_t field1_position = start_position * 2 + config.first_frame;
-	int64_t field2_position = start_position * 2 + config.first_frame;
-	if(config.field_dominance == TOP_FIELD_FIRST)
-		field2_position++;
-	else
-		field1_position++;
+	int64_t field1_position = start_position * 2;
+	int64_t field2_position = start_position * 2 + 1;
 
 
-//printf("FieldFrame::process_buffer %d %lld %lld\n", config.first_frame, field1_position, field2_position);
+// printf("FieldFrame::process_buffer %d %lld %lld\n", 
+// config.field_dominance, 
+// field1_position, 
+// field2_position);
 	read_frame(input, 
 		0, 
 		field1_position,
 		frame_rate * 2);
-
-	apply_field(frame, input, 0);
-
+	apply_field(frame, 
+		input, 
+		config.field_dominance == TOP_FIELD_FIRST ? 0 : 1);
 	read_frame(input, 
 		0, 
 		field2_position,
 		frame_rate * 2);
+	apply_field(frame, 
+		input, 
+		config.field_dominance == TOP_FIELD_FIRST ? 1 : 0);
 
-	apply_field(frame, input, 1);
+
+
 
 
 	return result;

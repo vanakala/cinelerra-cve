@@ -442,7 +442,7 @@ int FrameField::process_buffer(VFrame *frame,
 }
 
 // Averaging 2 pixels
-#define AVERAGE(type, components, offset) \
+#define AVERAGE(type, temp_type, components, offset) \
 { \
 	type **rows = (type**)frame->get_rows(); \
 	int w = frame->get_w(); \
@@ -455,8 +455,8 @@ int FrameField::process_buffer(VFrame *frame,
 		type *row3 = rows[i + 2]; \
 		for(int j = 0; j < row_size; j++) \
 		{ \
-			int64_t sum = (int64_t)*row1++ + (int64_t)*row3++; \
-			*row2++ = (sum >> 1); \
+			temp_type sum = (temp_type)*row1++ + (temp_type)*row3++; \
+			*row2++ = (sum / 2); \
 		} \
 	} \
 }
@@ -523,19 +523,25 @@ void FrameField::average_rows(int offset, VFrame *frame)
 	{
 		case BC_RGB888:
 		case BC_YUV888:
-			AVERAGE(unsigned char, 3, offset);
+			AVERAGE(unsigned char, int64_t, 3, offset);
+			break;
+		case BC_RGB_FLOAT:
+			AVERAGE(float, float, 3, offset);
 			break;
 		case BC_RGBA8888:
 		case BC_YUVA8888:
-			AVERAGE(unsigned char, 4, offset);
+			AVERAGE(unsigned char, int64_t, 4, offset);
+			break;
+		case BC_RGBA_FLOAT:
+			AVERAGE(float, float, 4, offset);
 			break;
 		case BC_RGB161616:
 		case BC_YUV161616:
-			AVERAGE(uint16_t, 3, offset);
+			AVERAGE(uint16_t, int64_t, 3, offset);
 			break;
 		case BC_RGBA16161616:
 		case BC_YUVA16161616:
-			AVERAGE(uint16_t, 4, offset);
+			AVERAGE(uint16_t, int64_t, 4, offset);
 			break;
 	}
 }

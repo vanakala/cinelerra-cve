@@ -1,5 +1,6 @@
 #include "asset.h"
 #include "batchrender.h"
+#include "bcsignals.h"
 #include "confirmsave.h"
 #include "defaults.h"
 #include "edl.h"
@@ -108,18 +109,29 @@ void BatchRenderJob::load(FileXML *file)
 
 void BatchRenderJob::save(FileXML *file)
 {
+TRACE("BatchRenderJob::save 1");
 	file->tag.set_property("EDL_PATH", edl_path);
+TRACE("BatchRenderJob::save 1");
 	file->tag.set_property("STRATEGY", strategy);
+TRACE("BatchRenderJob::save 1");
 	file->tag.set_property("ENABLED", enabled);
+TRACE("BatchRenderJob::save 1");
 	file->tag.set_property("ELAPSED", elapsed);
+TRACE("BatchRenderJob::save 1");
 	file->append_tag();
+TRACE("BatchRenderJob::save 1");
 	file->append_newline();
+TRACE("BatchRenderJob::save 1");
 	asset->write(file,
 		0,
 		"");
+TRACE("BatchRenderJob::save 1");
 	file->tag.set_title("/JOB");
+TRACE("BatchRenderJob::save 1");
 	file->append_tag();
+TRACE("BatchRenderJob::save 1");
 	file->append_newline();
+TRACE("BatchRenderJob::save 10");
 }
 
 void BatchRenderJob::fix_strategy()
@@ -159,21 +171,21 @@ BatchRenderThread::BatchRenderThread()
 void BatchRenderThread::handle_close_event(int result)
 {
 // Save settings
-printf("BatchRenderThread::handle_close_event 1\n");
+TRACE("BatchRenderThread::handle_close_event 1");
 	char path[BCTEXTLEN];
-printf("BatchRenderThread::handle_close_event 1\n");
+TRACE("BatchRenderThread::handle_close_event 1");
 	path[0] = 0;
-printf("BatchRenderThread::handle_close_event 1\n");
+TRACE("BatchRenderThread::handle_close_event 1");
 	save_jobs(path);
-printf("BatchRenderThread::handle_close_event 1\n");
+TRACE("BatchRenderThread::handle_close_event 1");
 	save_defaults(mwindow->defaults);
-printf("BatchRenderThread::handle_close_event 1\n");
+TRACE("BatchRenderThread::handle_close_event 1");
 	delete default_job;
-printf("BatchRenderThread::handle_close_event 1\n");
+TRACE("BatchRenderThread::handle_close_event 1");
 	default_job = 0;
-printf("BatchRenderThread::handle_close_event 1\n");
+TRACE("BatchRenderThread::handle_close_event 1");
 	jobs.remove_all_objects();
-printf("BatchRenderThread::handle_close_event 100\n");
+TRACE("BatchRenderThread::handle_close_event 100");
 }
 
 BC_Window* BatchRenderThread::new_gui()
@@ -357,8 +369,8 @@ int BatchRenderThread::test_edl_files()
 				if(mwindow)
 				{
 					ErrorBox error_box(PROGRAM_NAME ": Error",
-						mwindow->gui->get_abs_cursor_x(),
-						mwindow->gui->get_abs_cursor_y());
+						mwindow->gui->get_abs_cursor_x(1),
+						mwindow->gui->get_abs_cursor_y(1));
 					error_box.create_objects(string);
 					error_box.run_window();
 					gui->new_batch->enable();

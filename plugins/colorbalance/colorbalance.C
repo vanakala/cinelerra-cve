@@ -1,15 +1,11 @@
 #include "filexml.h"
 #include "colorbalance.h"
 #include "defaults.h"
+#include "language.h"
 #include "picon_png.h"
 
 #include <stdio.h>
 #include <string.h>
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 #define SQR(a) ((a) * (a))
 
@@ -102,6 +98,25 @@ int ColorBalanceEngine::wait_process_frame()
 	return 0;
 }
 
+float ColorBalanceEngine::calculate_highlight(float in)
+{
+	return 0.667 * (1.0 - SQR((in - 0.5) / 0.5));
+}
+
+float ColorBalanceEngine::calculate_r(float r)
+{
+	return r + cyan_f * calculate_highlight(r);
+}
+
+float ColorBalanceEngine::calculate_g(float g)
+{
+	return g + magenta_f * calculate_highlight(g);
+}
+
+float ColorBalanceEngine::calculate_b(float b)
+{
+	return b + yellow_f * calculate_highlight(b);
+}
 
 void ColorBalanceEngine::run()
 {
@@ -187,6 +202,53 @@ void ColorBalanceEngine::run()
 	} \
 }
 
+#define PROCESS_F(components) \
+{ \
+	int i, j, k; \
+	float y, cb, cr, r, g, b, r_n, g_n, b_n; \
+    float h, s, v, h_old, s_old, r_f, g_f, b_f; \
+	float **input_rows, **output_rows; \
+	input_rows = (float**)input->get_rows(); \
+	output_rows = (float**)output->get_rows(); \
+	cyan_f = (float)plugin->config.cyan / 100; \
+	magenta_f = (float)plugin->config.magenta / 100; \
+	yellow_f = (float)plugin->config.yellow / 100; \
+ \
+	for(j = row_start; j < row_end; j++) \
+	{ \
+		for(k = 0; k < input->get_w() * components; k += components) \
+		{ \
+            r = input_rows[j][k]; \
+            g = input_rows[j][k + 1]; \
+            b = input_rows[j][k + 2]; \
+ \
+            r_n = calculate_r(r); \
+            g_n = calculate_g(g); \
+            b_n = calculate_b(b); \
+ \
+			if(plugin->config.preserve) \
+            { \
+				HSV::rgb_to_hsv(r_n, g_n, b_n, h, s, v); \
+				HSV::rgb_to_hsv(r, g, b, h_old, s_old, v); \
+                HSV::hsv_to_rgb(r_f, g_f, b_f, h, s, v); \
+                r = (float)r_f; \
+                g = (float)g_f; \
+                b = (float)b_f; \
+			} \
+            else \
+            { \
+                r = r_n; \
+                g = g_n; \
+                b = b_n; \
+			} \
+ \
+            output_rows[j][k] = r; \
+            output_rows[j][k + 1] = g; \
+            output_rows[j][k + 2] = b; \
+		} \
+	} \
+}
+
 		switch(input->get_color_model())
 		{
 			case BC_RGB888:
@@ -201,6 +263,10 @@ void ColorBalanceEngine::run()
 					0);
 				break;
 
+			case BC_RGB_FLOAT:
+				PROCESS_F(3);
+				break;
+
 			case BC_YUV888:
 				PROCESS(yuv.yuv_to_rgb_8, 
 					yuv.rgb_to_yuv_8, 
@@ -213,6 +279,10 @@ void ColorBalanceEngine::run()
 					1);
 				break;
 			
+			case BC_RGBA_FLOAT:
+				PROCESS_F(4);
+				break;
+
 			case BC_RGBA8888:
 				PROCESS(yuv.yuv_to_rgb_8, 
 					yuv.rgb_to_yuv_8, 

@@ -4,15 +4,11 @@
 #include "filexml.h"
 #include "guicast.h"
 #include "keyframe.h"
+#include "language.h"
 #include "loadbalance.h"
 #include "picon_png.h"
 #include "pluginvclient.h"
 #include "vframe.h"
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 
@@ -794,9 +790,15 @@ void WhirlUnit::process_package(LoadPackage *package)
 
 	switch(plugin->input->get_color_model())
 	{
+		case BC_RGB_FLOAT:
+			WHIRL_MACRO(float, 1, 3);
+			break;
 		case BC_RGB888:
 		case BC_YUV888:
 			WHIRL_MACRO(unsigned char, 0xff, 3);
+			break;
+		case BC_RGBA_FLOAT:
+			WHIRL_MACRO(float, 1, 4);
 			break;
 		case BC_RGBA8888:
 		case BC_YUVA8888:

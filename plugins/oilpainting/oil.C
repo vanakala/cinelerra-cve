@@ -4,6 +4,7 @@
 #include "filexml.h"
 #include "guicast.h"
 #include "keyframe.h"
+#include "language.h"
 #include "loadbalance.h"
 #include "picon_png.h"
 #include "pluginvclient.h"
@@ -13,10 +14,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 
@@ -271,11 +268,7 @@ void OilWindow::create_objects()
 	flush();
 }
 
-int OilWindow::close_event()
-{
-	set_done(1);
-	return 1;
-}
+WINDOW_CLOSE_EVENT(OilWindow)
 
 
 
@@ -459,25 +452,34 @@ OilUnit::OilUnit(OilEffect *plugin, OilServer *server)
 									((p)[2] * 29)) >> 8)
 
 
-#define OIL_MACRO(type, max, components) \
+#define OIL_MACRO(type, hist_size, components) \
 { \
 	type *src, *dest; \
-	type Val[components]; \
-	type Cnt[components], Cnt2; \
-	type Hist[components][max + 1], Hist2[max + 1]; \
+	type val[components]; \
+	int count[components], count2; \
+	int *hist[components]; \
+	int *hist2; \
 	type **src_rows = (type**)plugin->input->get_rows(); \
  \
+	for(int i = 0; i < components; i++) \
+		hist[i] = new int[hist_size + 1]; \
+	hist2 = new int[hist_size + 1]; \
+ \
+printf("1\n"); \
 	for(int y1 = pkg->row1; y1 < pkg->row2; y1++) \
 	{ \
 		dest = (type*)plugin->output->get_rows()[y1]; \
  \
+printf("2 %d\n", y1); \
 		if(!plugin->config.use_intensity) \
 		{ \
 			for(int x1 = 0; x1 < w; x1++) \
 			{ \
-				bzero(Cnt, sizeof(Cnt)); \
-				bzero(Val, sizeof(Val)); \
-				bzero(Hist, sizeof(Hist)); \
+				bzero(count, sizeof(count)); \
+				bzero(val, sizeof(val)); \
+				bzero(hist[0], sizeof(int) * (hist_size + 1)); \
+				bzero(hist[1], sizeof(int) * (hist_size + 1)); \
+				bzero(hist[2], sizeof(int) * (hist_size + 1)); \
  \
 				int x3 = CLIP((x1 - n), 0, w - 1); \
 				int y3 = CLIP((y1 - n), 0, h - 1); \
@@ -490,48 +492,87 @@ OilUnit::OilUnit(OilEffect *plugin, OilServer *server)
 					for(int x2 = x3; x2 < x4; x2++) \
 					{ \
 						int c; \
-						if((c = ++Hist[0][src[x2 * components + 0]]) > Cnt[0]) \
+						int subscript; \
+						type value; \
+ \
+                        value = src[x2 * components + 0]; \
+						if(sizeof(type) == 4) \
 						{ \
-							Val[0] = src[x2 * components + 0]; \
-							Cnt[0] = c; \
+							subscript = (int)(value * hist_size); \
+							CLAMP(subscript, 0, hist_size); \
+						} \
+						else \
+							subscript = (int)value; \
+ \
+						if((c = ++hist[0][subscript]) > count[0]) \
+						{ \
+							val[0] = value; \
+							count[0] = c; \
 						} \
  \
-						if((c = ++Hist[1][src[x2 * components + 1]]) > Cnt[1]) \
+                        value = src[x2 * components + 1]; \
+						if(sizeof(type) == 4) \
 						{ \
-							Val[1] = src[x2 * components + 1]; \
-							Cnt[1] = c; \
+							subscript = (int)(value * hist_size); \
+							CLAMP(subscript, 0, hist_size); \
+						} \
+						else \
+							subscript = (int)value; \
+ \
+						if((c = ++hist[1][subscript]) > count[1]) \
+						{ \
+							val[1] = value; \
+							count[1] = c; \
 						} \
  \
-						if((c = ++Hist[2][src[x2 * components + 2]]) > Cnt[2]) \
+                        value = src[x2 * components + 2]; \
+						if(sizeof(type) == 4) \
 						{ \
-							Val[2] = src[x2 * components + 2]; \
-							Cnt[2] = c; \
+							subscript = (int)(value * hist_size); \
+							CLAMP(subscript, 0, hist_size); \
+						} \
+						else \
+							subscript = (int)value; \
+ \
+						if((c = ++hist[2][subscript]) > count[2]) \
+						{ \
+							val[2] = value; \
+							count[2] = c; \
 						} \
  \
 						if(components == 4) \
 						{ \
-							if((c = ++Hist[3][src[x2 * components + 3]]) > Cnt[3]) \
+                        	value = src[x2 * components + 3]; \
+							if(sizeof(type) == 4) \
 							{ \
-								Val[3] = src[x2 * components + 3]; \
-								Cnt[3] = c; \
+								subscript = (int)(value * hist_size); \
+								CLAMP(subscript, 0, hist_size); \
+							} \
+							else \
+								subscript = (int)value; \
+ \
+							if((c = ++hist[3][subscript]) > count[3]) \
+							{ \
+								val[3] = value; \
+								count[3] = c; \
 							} \
 						} \
 					} \
 				} \
  \
-				dest[x1 * components + 0] = Val[0]; \
-				dest[x1 * components + 1] = Val[1]; \
-				dest[x1 * components + 2] = Val[2]; \
-				if(components == 4) dest[x1 * components + 3] = Val[3]; \
+				dest[x1 * components + 0] = val[0]; \
+				dest[x1 * components + 1] = val[1]; \
+				dest[x1 * components + 2] = val[2]; \
+				if(components == 4) dest[x1 * components + 3] = val[3]; \
 			} \
 		} \
 		else \
 		{ \
 			for(int x1 = 0; x1 < w; x1++) \
 			{ \
-				Cnt2 = 0; \
-				bzero(Val, sizeof(Val)); \
-				bzero(Hist2, sizeof(Hist2)); \
+				count2 = 0; \
+				bzero(val, sizeof(val)); \
+				bzero(hist2, sizeof(int) * (hist_size + 1)); \
  \
 				int x3 = CLIP((x1 - n), 0, w - 1); \
 	    		int y3 = CLIP((y1 - n), 0, h - 1); \
@@ -544,24 +585,29 @@ OilUnit::OilUnit(OilEffect *plugin, OilServer *server)
 					for(int x2 = x3; x2 < x4; x2++) \
 					{ \
 						int c; \
-						if((c = ++Hist2[INTENSITY(src + x2 * components)]) > Cnt2) \
+						if((c = ++hist2[INTENSITY(src + x2 * components)]) > count2) \
 						{ \
-							Val[0] = src[x2 * components + 0]; \
-							Val[1] = src[x2 * components + 1]; \
-							Val[2] = src[x2 * components + 2]; \
-							if(components == 3) Val[3] = src[x2 * components + 3]; \
-							Cnt2 = c; \
+							val[0] = src[x2 * components + 0]; \
+							val[1] = src[x2 * components + 1]; \
+							val[2] = src[x2 * components + 2]; \
+							if(components == 3) val[3] = src[x2 * components + 3]; \
+							count2 = c; \
 						} \
 					} \
 				} \
  \
-				dest[x1 * components + 0] = Val[0]; \
-				dest[x1 * components + 1] = Val[1]; \
-				dest[x1 * components + 2] = Val[2]; \
-				if(components == 3) dest[x1 * components + 3] = Val[3]; \
+				dest[x1 * components + 0] = val[0]; \
+				dest[x1 * components + 1] = val[1]; \
+				dest[x1 * components + 2] = val[2]; \
+				if(components == 3) dest[x1 * components + 3] = val[3]; \
 			} \
 		} \
 	} \
+ \
+	for(int i = 0; i < components; i++) \
+		delete [] hist[i]; \
+	delete [] hist2; \
+printf("10\n"); \
 }
 
 
@@ -576,6 +622,9 @@ void OilUnit::process_package(LoadPackage *package)
 
 	switch(plugin->input->get_color_model())
 	{
+		case BC_RGB_FLOAT:
+			OIL_MACRO(float, 0xffff, 3)
+			break;
 		case BC_RGB888:
 		case BC_YUV888:
 			OIL_MACRO(unsigned char, 0xff, 3)
@@ -583,6 +632,9 @@ void OilUnit::process_package(LoadPackage *package)
 		case BC_RGB161616:
 		case BC_YUV161616:
 			OIL_MACRO(uint16_t, 0xffff, 3)
+			break;
+		case BC_RGBA_FLOAT:
+			OIL_MACRO(float, 0xffff, 4)
 			break;
 		case BC_RGBA8888:
 		case BC_YUVA8888:

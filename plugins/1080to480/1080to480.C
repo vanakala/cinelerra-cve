@@ -4,16 +4,11 @@
 #include "filexml.h"
 #include "bcdisplayinfo.h"
 #include "keyframe.h"
+#include "language.h"
 #include "overlayframe.h"
 #include "picon_png.h"
 #include "vframe.h"
 
-
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 
@@ -175,7 +170,7 @@ void _1080to480Main::reduce_field(VFrame *output, VFrame *input, int src_field, 
 	if(h > output->get_h()) h = output->get_h();
 	if(w > output->get_w()) h = output->get_w();
 
-#define REDUCE_MACRO(type, components) \
+#define REDUCE_MACRO(type, temp, components) \
 for(int i = 0; i < OUT_ROWS; i++) \
 { \
 	int in_number1 = dst_field * 2 + src_field + (int)(i * 9 / 4) * 2; \
@@ -198,10 +193,10 @@ for(int i = 0; i < OUT_ROWS; i++) \
  \
 	for(int j = 0; j < w * components; j++) \
 	{ \
-		*out_row++ = ((int64_t)*in_row1++ +  \
-			(int64_t)*in_row2++ +  \
-			(int64_t)*in_row3++ +  \
-			(int64_t)*in_row4++) >> 2; \
+		*out_row++ = ((temp)*in_row1++ +  \
+			(temp)*in_row2++ +  \
+			(temp)*in_row3++ +  \
+			(temp)*in_row4++) / 4; \
 	} \
 }
 
@@ -209,19 +204,25 @@ for(int i = 0; i < OUT_ROWS; i++) \
 	{
 		case BC_RGB888:
 		case BC_YUV888:
-			REDUCE_MACRO(unsigned char, 3);
+			REDUCE_MACRO(unsigned char, int64_t, 3);
+			break;
+		case BC_RGB_FLOAT:
+			REDUCE_MACRO(float, float, 3);
 			break;
 		case BC_RGBA8888:
 		case BC_YUVA8888:
-			REDUCE_MACRO(unsigned char, 4);
+			REDUCE_MACRO(unsigned char, int64_t, 4);
+			break;
+		case BC_RGBA_FLOAT:
+			REDUCE_MACRO(float, float, 4);
 			break;
 		case BC_RGB161616:
 		case BC_YUV161616:
-			REDUCE_MACRO(uint16_t, 3);
+			REDUCE_MACRO(uint16_t, int64_t, 3);
 			break;
 		case BC_RGBA16161616:
 		case BC_YUVA16161616:
-			REDUCE_MACRO(uint16_t, 4);
+			REDUCE_MACRO(uint16_t, int64_t, 4);
 			break;
 	}
 

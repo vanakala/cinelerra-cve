@@ -18,19 +18,14 @@ EDLSession::EDLSession(EDL *edl)
 	highlighted_track = 0;
 	playback_cursor_visible = 0;
 	aconfig_in = new AudioInConfig;
-	aconfig_duplex = new AudioOutConfig(PLAYBACK_LOCALHOST, 0, 1);
+	aconfig_duplex = new AudioOutConfig(1);
 	vconfig_in = new VideoInConfig;
-	playback_strategy = PLAYBACK_LOCALHOST;
 	interpolation_type = CUBIC_LINEAR;
 	test_playback_edits = 1;
 	brender_start = 0.0;
 	mpeg4_deblock = 1;
 
-	for(int i = 0; i < PLAYBACK_STRATEGIES; i++)
-	{
-		PlaybackConfig *config = new PlaybackConfig(i, 0);
-		playback_config[i].append(config);
-	}
+	playback_config = new PlaybackConfig;
 	auto_conf = new AutoConf;
 	vwindow_folder[0] = 0;
 }
@@ -41,39 +36,18 @@ EDLSession::~EDLSession()
 	delete aconfig_duplex;
 	delete auto_conf;
 	delete vconfig_in;
-	for(int i = 0; i < PLAYBACK_STRATEGIES; i++)
-	{
-		for(int j = 0; j < playback_config[i].total; j++)
-			delete playback_config[i].values[j];
-		playback_config[i].remove_all();
-	}
+	delete playback_config;
 }
 
 
 char* EDLSession::get_cwindow_display()
 {
-	if(playback_config[PLAYBACK_LOCALHOST].values[0]->vconfig->x11_host[0])
-		return playback_config[PLAYBACK_LOCALHOST].values[0]->vconfig->x11_host;
+	if(playback_config->vconfig->x11_host[0])
+		return playback_config->vconfig->x11_host;
 	else
 		return 0;
 }
 
-
-
-PlaybackConfig* EDLSession::get_playback_config(int strategy, int head)
-{
-	return playback_config[strategy].values[head];
-}
-
-ArrayList<PlaybackConfig*>* EDLSession::get_playback_config(int strategy)
-{
-	return &playback_config[strategy];
-}
-
-int EDLSession::get_playback_heads(int strategy)
-{
-	return playback_config[strategy].total;
-}
 
 
 void EDLSession::equivalent_output(EDLSession *session, double *result)
@@ -165,27 +139,17 @@ int EDLSession::load_defaults(Defaults *defaults)
 	plugins_follow_edits = defaults->get("PLUGINS_FOLLOW_EDITS", 1);
 	auto_keyframes = defaults->get("AUTO_KEYFRAMES", 0);
 	meter_format = defaults->get("METER_FORMAT", METER_DB);
-	min_meter_db = defaults->get("MIN_METER_DB", (float)-85);
+	min_meter_db = defaults->get("MIN_METER_DB", -85);
+	max_meter_db = defaults->get("MAX_METER_DB", 6);
 	mpeg4_deblock = defaults->get("MPEG4_DEBLOCK", mpeg4_deblock);
 	output_w = defaults->get("OUTPUTW", 720);
 	output_h = defaults->get("OUTPUTH", 480);
 	playback_buffer = defaults->get("PLAYBACK_BUFFER", 4096);
 	playback_preload = defaults->get("PLAYBACK_PRELOAD", 0);
 	playback_software_position = defaults->get("PLAYBACK_SOFTWARE_POSITION", 0);
-	playback_strategy = defaults->get("PLAYBACK_STRATEGY", playback_strategy);
-	for(int i = 0; i < 1 /* PLAYBACK_STRATEGIES */; i++)
-	{
-		playback_config[i].remove_all_objects();
-
-		sprintf(string, "PLAYBACK_CONFIGS_%d", i);
-		int playback_configs = defaults->get(string, 1);
-		for(int j = 0; j < playback_configs; j++)
-		{
-			PlaybackConfig *config = new PlaybackConfig(i, j);
-			playback_config[i].append(config);
-			config->load_defaults(defaults);
-		}
-	}
+	delete playback_config;
+	playback_config = new PlaybackConfig;
+	playback_config->load_defaults(defaults);
 	real_time_playback = defaults->get("PLAYBACK_REALTIME", 0);
 	real_time_record = defaults->get("REALTIME_RECORD", 0);
 	record_software_position = defaults->get("RECORD_SOFTWARE_POSITION", 1);
@@ -227,6 +191,7 @@ int EDLSession::load_defaults(Defaults *defaults)
 	vwindow_folder[0] = 0;
 	vwindow_source = -1;
 	vwindow_zoom = defaults->get("VWINDOW_ZOOM", (float)1);
+	boundaries();
 
 	return 0;
 }
@@ -291,22 +256,14 @@ int EDLSession::save_defaults(Defaults *defaults)
 	defaults->update("AUTO_KEYFRAMES", auto_keyframes);
     defaults->update("METER_FORMAT", meter_format);
     defaults->update("MIN_METER_DB", min_meter_db);
+    defaults->update("MAX_METER_DB", max_meter_db);
 	defaults->update("MPEG4_DEBLOCK", mpeg4_deblock);
 	defaults->update("OUTPUTW", output_w);
 	defaults->update("OUTPUTH", output_h);
     defaults->update("PLAYBACK_BUFFER", playback_buffer);
 	defaults->update("PLAYBACK_PRELOAD", playback_preload);
     defaults->update("PLAYBACK_SOFTWARE_POSITION", playback_software_position);
-    defaults->update("PLAYBACK_STRATEGY", playback_strategy);
-    for(int i = 0; i < 1 /* PLAYBACK_STRATEGIES */; i++)
-    {
-        sprintf(string, "PLAYBACK_CONFIGS_%d", i);
-        defaults->update(string, (int32_t)playback_config[i].total);
-        for(int j = 0; j < playback_config[i].total; j++)
-        {
-            playback_config[i].values[j]->save_defaults(defaults);
-        }
-    }
+	playback_config->save_defaults(defaults);
     defaults->update("PLAYBACK_REALTIME", real_time_playback);
 	defaults->update("REALTIME_RECORD", real_time_record);
     defaults->update("RECORD_SOFTWARE_POSITION", record_software_position);
@@ -361,7 +318,8 @@ void EDLSession::boundaries()
 	Workarounds::clamp(video_tracks, 0, (int)BC_INFINITY);
 	Workarounds::clamp(video_channels, 1, MAXCHANNELS - 1);
 	Workarounds::clamp(frame_rate, 1.0, (double)BC_INFINITY);
-	Workarounds::clamp(min_meter_db, -100, -1);
+	Workarounds::clamp(min_meter_db, -80, -20);
+	Workarounds::clamp(max_meter_db, 0, 10);
 	Workarounds::clamp(frames_per_foot, 1, 32);
 	Workarounds::clamp(output_w, 16, (int)BC_INFINITY);
 	Workarounds::clamp(output_h, 16, (int)BC_INFINITY);
@@ -492,6 +450,7 @@ int EDLSession::load_xml(FileXML *file,
 		file->tag.get_property("VWINDOW_FOLDER", vwindow_folder);
 		vwindow_source = file->tag.get_property("VWINDOW_SOURCE", vwindow_source);
 		vwindow_zoom = file->tag.get_property("VWINDOW_ZOOM", vwindow_zoom);
+		boundaries();
 	}
 	
 	return 0;
@@ -618,15 +577,15 @@ int EDLSession::copy(EDLSession *session)
 	{
 		achannel_positions[i] = session->achannel_positions[i];
 	}
-	*aconfig_duplex = *session->aconfig_duplex;
-	*aconfig_in = *session->aconfig_in;
+	aconfig_duplex->copy_from(session->aconfig_duplex);
+	aconfig_in->copy_from(session->aconfig_in);
 	actual_frame_rate = session->actual_frame_rate;
 	for(int i = 0; i < ASSET_COLUMNS; i++)
 	{
 		asset_columns[i] = session->asset_columns[i];
 	}
 	assetlist_format = session->assetlist_format;
-	*auto_conf = *session->auto_conf;
+	auto_conf->copy_from(session->auto_conf);
 	aspect_w = session->aspect_w;
 	aspect_h = session->aspect_h;
 	audio_channels = session->audio_channels;
@@ -667,24 +626,17 @@ int EDLSession::copy(EDLSession *session)
 //	last_playback_position = session->last_playback_position;
 	meter_format = session->meter_format;
 	min_meter_db = session->min_meter_db;
+	max_meter_db = session->max_meter_db;
 	mpeg4_deblock = session->mpeg4_deblock;
 	output_w = session->output_w;
 	output_h = session->output_h;
 	playback_buffer = session->playback_buffer;
-	for(int i = 0; i < PLAYBACK_STRATEGIES; i++)
-	{
-		playback_config[i].remove_all_objects();
-		for(int j = 0; j < session->playback_config[i].total; j++)
-		{
-			PlaybackConfig *config;
-			playback_config[i].append(config = new PlaybackConfig(i, j));
-			*config = *session->playback_config[i].values[j];
-		}
-	}
+	delete playback_config;
+	playback_config = new PlaybackConfig;
+	playback_config->copy_from(session->playback_config);
 	playback_cursor_visible = session->playback_cursor_visible;
 	playback_preload = session->playback_preload;
 	playback_software_position = session->playback_software_position;
-	playback_strategy = session->playback_strategy;
 	real_time_playback = session->real_time_playback;
 	real_time_record = session->real_time_record;
 	record_software_position = session->record_software_position;

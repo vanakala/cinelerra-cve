@@ -85,6 +85,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    filebaseulaw.C \
 		    file.C \
 		    filedv.C \
+		    fileexr.C \
 		    fileformat.C \
 		    filejpeg.C \
 		    filelist.C \
@@ -101,6 +102,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    floatautos.C \
 		    formatcheck.C \
 		    formatpopup.C \
+		    formatpresets.C \
 		    formattools.C \
 		    framecache.C \
 		    indexfile.C \
@@ -269,7 +271,7 @@ INCLUDES = \
 	-I$(top_srcdir)/guicast \
 	-I$(top_srcdir)/libmpeg3 \
 	-I$(top_builddir)/libsndfile/src \
-	$(all_includes)
+	-I@OPENEXR@
 
 # the library search path.
 cinelerra_CFLAGS = $(CFLAGS) $(FIREWIRE_CFLAGS) $(SOUND_CFLAGS) $(AVIFILE_CXXFLAGS) 
@@ -371,6 +373,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 fileformat.h \
 		 file.h \
 	    filedv.h \
+		 fileexr.h \
 		 filejpeg.h \
 		 filelist.h \
 		 filemov.h \
@@ -386,6 +389,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 floatautos.h \
 		 formatcheck.h \
 		 formatpopup.h \
+		 formatpresets.h \
 		 formattools.h \
 		 formatwindow.h \
 		 framecache.h \
@@ -434,6 +438,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 mwindow.h \
 		 newfolder.h \
 		 new.h \
+		 newpresets.h \
 		 overlayframe.h \
 		 packagedispatcher.h \
 		 packagerenderer.h \
@@ -578,6 +583,7 @@ cinelerra_LDADD = \
 	-lpng -lXv -lXext -ljpeg -lmp3lame -ltiff -lesd -lz \
 	$(SOUND_LDFLAGS) \
 	$(FIREWIRE_LDFLAGS) -ldv \
+	-lIex -lIlmImf -lHalf \
 	-luuid $(AVIFILE_LDFLAGS)
 
 EXTRA_DIST = gen-feather-h

@@ -20,11 +20,13 @@ public:
 	int write_buffer(char *buffer, int size);
 	int read_buffer(char *buffer, int size);
 	int close_all();
+	int close_input();
 	int64_t device_position();
 	int flush_device();
 	int interrupt_playback();
 
 private:
+	int close_output();
 	void translate_name(char *output, char *input);
 	snd_pcm_format_t translate_format(int format);
 	void set_params(snd_pcm_t *dsp, 
@@ -36,6 +38,11 @@ private:
 	snd_pcm_t* get_output();
 	snd_pcm_t* get_input();
 	snd_pcm_t *dsp_in, *dsp_out, *dsp_duplex;
+	int64_t samples_written;
+	Timer *timer;
+	int delay;
+	Mutex *timer_lock;
+	int interrupted;
 };
 
 #endif

@@ -339,11 +339,15 @@ void MWindow::init_plugins(Preferences *preferences,
 	if(splash_window) splash_window->progress->update_length(total);
 
 // Cinelerra
+#ifndef DO_STATIC
 	init_plugin_path(preferences,
 		plugindb,
 		&cinelerra_fs,
 		splash_window,
 		&counter);
+#else
+// Call automatically generated routine to get plugins
+#endif
 
 // LAD
 	for(int i = 0; i < lad_fs.total; i++)
@@ -575,10 +579,14 @@ void MWindow::init_menus()
 	colormodels.append(new ColormodelItem(string, BC_RGB888));
 	cmodel_to_text(string, BC_RGBA8888);
 	colormodels.append(new ColormodelItem(string, BC_RGBA8888));
-	cmodel_to_text(string, BC_RGB161616);
-	colormodels.append(new ColormodelItem(string, BC_RGB161616));
-	cmodel_to_text(string, BC_RGBA16161616);
-	colormodels.append(new ColormodelItem(string, BC_RGBA16161616));
+//	cmodel_to_text(string, BC_RGB161616);
+//	colormodels.append(new ColormodelItem(string, BC_RGB161616));
+//	cmodel_to_text(string, BC_RGBA16161616);
+//	colormodels.append(new ColormodelItem(string, BC_RGBA16161616));
+	cmodel_to_text(string, BC_RGB_FLOAT);
+	colormodels.append(new ColormodelItem(string, BC_RGB_FLOAT));
+	cmodel_to_text(string, BC_RGBA_FLOAT);
+	colormodels.append(new ColormodelItem(string, BC_RGBA_FLOAT));
 	cmodel_to_text(string, BC_YUV888);
 	colormodels.append(new ColormodelItem(string, BC_YUV888));
 	cmodel_to_text(string, BC_YUVA8888);
@@ -682,12 +690,13 @@ void MWindow::set_brender_start()
 
 
 
-int MWindow::load_filenames(ArrayList<char*> *filenames, int load_mode)
+int MWindow::load_filenames(ArrayList<char*> *filenames, 
+	int load_mode,
+	int update_filename)
 {
 TRACE("MWindow::load_filenames 1");
 	ArrayList<EDL*> new_edls;
 	ArrayList<Asset*> new_assets;
-//printf("load_filenames 1\n");
 
 // Need to stop playback since tracking depends on the EDL not getting
 // deleted.
@@ -714,39 +723,37 @@ TRACE("MWindow::load_filenames 1");
 		EDL *new_edl = new EDL;
 		char string[BCTEXTLEN];
 
-//printf("load_filenames 1\n");
 		new_edl->create_objects();
-//printf("load_filenames 1\n");
 		new_edl->copy_session(edl);
-//printf("load_filenames 1\n");
 
 		sprintf(string, "Loading %s", new_asset->path);
-//printf("load_filenames 1\n");
 		gui->show_message(string, BLACK);
-//printf("load_filenames 1\n");
 		result = new_file->open_file(plugindb, new_asset, 1, 0, 0, 0);
-//printf("load_filenames 2\n");
 
 		switch(result)
 		{
 // Convert media file to EDL
 			case FILE_OK:
-//printf("load_filenames 1.1\n");
 				if(load_mode != LOAD_RESOURCESONLY)
 				{
 					asset_to_edl(new_edl, new_asset);
-//printf("load_filenames 1.2\n");
 					new_edls.append(new_edl);
 					delete new_asset;
 				}
 				else
-//printf("load_filenames 1.3\n");
 				{
 					new_assets.append(new_asset);
 				}
+
+// Set filename to nothing for assets since save EDL would overwrite them.
 				if(load_mode == LOAD_REPLACE || 
 					load_mode == LOAD_REPLACE_CONCATENATE)
+				{
 					set_filename("");
+// Reset timeline position
+					new_edl->local_session->view_start = 0;
+					new_edl->local_session->track_start = 0;
+				}
 				result = 0;
 				break;
 
@@ -851,11 +858,9 @@ TRACE("MWindow::load_filenames 1");
 
 			case FILE_IS_XML:
 			{
-//printf("load_filenames 2\n");
 				FileXML xml_file;
 				xml_file.read_from_file(filenames->values[i]);
 // Load EDL for pasting
-//printf("load_filenames 3\n");
 				new_edl->load_xml(plugindb, &xml_file, LOAD_ALL);
 
 // Do a check weather plugins exist
@@ -915,44 +920,35 @@ TRACE("MWindow::load_filenames 1");
 
 
 
-//printf("load_filenames 3\n");
 				if(load_mode == LOAD_REPLACE || 
 					load_mode == LOAD_REPLACE_CONCATENATE)
 				{
 					strcpy(session->filename, filenames->values[i]);
 					strcpy(new_edl->local_session->clip_title, filenames->values[i]);
-					set_filename(new_edl->local_session->clip_title);
+					if(update_filename)
+						set_filename(new_edl->local_session->clip_title);
 				}
-//new_edl->dump();
-//printf("load_filenames 2\n");
+
 				new_edls.append(new_edl);
-//printf("load_filenames 4\n");
 				result = 0;
 				break;
 			}
 		}
-//printf("load_filenames 4\n");
 
 		if(result)
 		{
 			delete new_edl;
 			delete new_asset;
 		}
-//printf("load_filenames 5\n");
 
 		delete new_file;
-//printf("load_filenames 6\n");
-
 	}
-//printf("MWindow::load_filenames 5 %d\n", new_edls.total);
 
-//sleep(10);
 
 
 	if(!result) gui->statusbar->default_message();
 
 
-//printf("MWindow::load_filenames 7 %d\n", new_edls.total);
 
 
 
@@ -988,9 +984,6 @@ TRACE("MWindow::load_filenames 1");
 
 
 
-
-//printf("MWindow::load_filenames 8 %d\n", new_edls.total);
-//sleep(10);
 
 	if(new_assets.total)
 	{
@@ -1286,7 +1279,7 @@ void MWindow::show_plugin(Plugin *plugin)
 {
 	int done = 0;
 //printf("MWindow::show_plugin 1\n");
-	plugin_gui_lock->lock();
+	plugin_gui_lock->lock("MWindow::show_plugin");
 	for(int i = 0; i < plugin_guis->total; i++)
 	{
 // Pointer comparison
@@ -1325,14 +1318,12 @@ void MWindow::show_plugin(Plugin *plugin)
 
 void MWindow::hide_plugin(Plugin *plugin, int lock)
 {
-	if(lock) plugin_gui_lock->lock();
+	if(lock) plugin_gui_lock->lock("MWindow::hide_plugin");
 	plugin->show = 0;
 	for(int i = 0; i < plugin_guis->total; i++)
 	{
-//printf("MWindow::hide_plugin 1 %p %p\n", plugin, plugin_guis->values[i]->plugin);
 		if(plugin_guis->values[i]->plugin == plugin)
 		{
-//printf("MWindow::hide_plugin 2\n");
 			PluginServer *ptr = plugin_guis->values[i];
 			plugin_guis->remove(ptr);
 			if(lock) plugin_gui_lock->unlock();
@@ -1346,14 +1337,14 @@ void MWindow::hide_plugin(Plugin *plugin, int lock)
 
 void MWindow::hide_plugins()
 {
-	plugin_gui_lock->lock();
+	plugin_gui_lock->lock("MWindow::hide_plugins");
 	plugin_guis->remove_all_objects();
 	plugin_gui_lock->unlock();
 }
 
 void MWindow::update_plugin_guis()
 {
-	plugin_gui_lock->lock();
+	plugin_gui_lock->lock("MWindow::update_plugin_guis");
 
 	for(int i = 0; i < plugin_guis->total; i++)
 	{
@@ -1364,13 +1355,11 @@ void MWindow::update_plugin_guis()
 
 void MWindow::render_plugin_gui(void *data, Plugin *plugin)
 {
-//printf("MWindow::render_plugin_gui 1\n");
-	plugin_gui_lock->lock();
+	plugin_gui_lock->lock("MWindow::render_plugin_gui");
 	for(int i = 0; i < plugin_guis->total; i++)
 	{
 		if(plugin_guis->values[i]->plugin->identical_location(plugin))
 		{
-//printf("MWindow::render_plugin_gui 2\n");
 			plugin_guis->values[i]->render_gui(data);
 			break;
 		}
@@ -1380,13 +1369,11 @@ void MWindow::render_plugin_gui(void *data, Plugin *plugin)
 
 void MWindow::render_plugin_gui(void *data, int size, Plugin *plugin)
 {
-//printf("MWindow::render_plugin_gui 1\n");
-	plugin_gui_lock->lock();
+	plugin_gui_lock->lock("MWindow::render_plugin_gui");
 	for(int i = 0; i < plugin_guis->total; i++)
 	{
 		if(plugin_guis->values[i]->plugin->identical_location(plugin))
 		{
-//printf("MWindow::render_plugin_gui 2\n");
 			plugin_guis->values[i]->render_gui(data, size);
 			break;
 		}
@@ -1398,7 +1385,7 @@ void MWindow::render_plugin_gui(void *data, int size, Plugin *plugin)
 void MWindow::update_plugin_states()
 {
 	int result = 0;
-	plugin_gui_lock->lock();
+	plugin_gui_lock->lock("MWindow::update_plugin_states");
 	for(int i = 0; i < plugin_guis->total; i++)
 	{
 // Get a plugin GUI
@@ -1589,6 +1576,7 @@ void MWindow::rebuild_indices()
 void MWindow::save_backup()
 {
 	FileXML file;
+	edl->set_project_path(session->filename);
 	edl->save_xml(plugindb, 
 		&file, 
 		BACKUP_PATH,

@@ -720,8 +720,8 @@ int FileAVI::write_samples(double **buffer, int64_t len)
 
 AVIConfigAudio::AVIConfigAudio(BC_WindowBase *parent_window, Asset *asset)
  : BC_Window(PROGRAM_NAME ": Audio compression",
- 	parent_window->get_abs_cursor_x(),
-	parent_window->get_abs_cursor_y(),
+ 	parent_window->get_abs_cursor_x(1),
+	parent_window->get_abs_cursor_y(1),
 	calculate_w(asset->format),
 	calculate_h(asset->format))
 {
@@ -852,8 +852,8 @@ AVIConfigVideo::AVIConfigVideo(BC_WindowBase *parent_window,
 		Asset *asset, 
 		int lock_compressor)
  : BC_Window(PROGRAM_NAME ": Video Compression",
- 	parent_window->get_abs_cursor_x(),
- 	parent_window->get_abs_cursor_y(),
+ 	parent_window->get_abs_cursor_x(1),
+ 	parent_window->get_abs_cursor_y(1),
 	calculate_w(asset->format),
 	calculate_h(asset->format))
 {

@@ -30,6 +30,86 @@
 
 
 
+VDeviceV4L2Put::VDeviceV4L2Put(VDeviceV4L2Thread *thread)
+ : Thread(1, 0, 0)
+{
+	this->thread = thread;
+	done = 0;
+	lock = new Mutex("VDeviceV4L2Put::lock");
+	more_buffers = new Condition(0, "VDeviceV4L2Put::more_buffers");
+	putbuffers = new int[0xff];
+	total = 0;
+}
+
+VDeviceV4L2Put::~VDeviceV4L2Put()
+{
+	if(Thread::running())
+	{
+		done = 1;
+		more_buffers->unlock();
+		Thread::cancel();
+		Thread::join();
+	}
+	delete lock;
+	delete more_buffers;
+	delete [] putbuffers;
+}
+
+void VDeviceV4L2Put::run()
+{
+	while(!done)
+	{
+		more_buffers->lock("VDeviceV4L2Put::run");
+		if(done) break;
+		lock->lock("VDeviceV4L2Put::run");
+		int buffer = -1;
+		if(total)
+		{
+			buffer = putbuffers[0];
+			for(int i = 0; i < total - 1; i++)
+				putbuffers[i] = putbuffers[i + 1];
+			total--;
+		}
+		lock->unlock();
+
+		if(buffer >= 0)
+		{
+			struct v4l2_buffer arg;
+			bzero(&arg, sizeof(arg));
+			arg.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+			arg.index = buffer;
+			arg.memory = V4L2_MEMORY_MMAP;
+
+			Thread::enable_cancel();
+			thread->ioctl_lock->lock("VDeviceV4L2Put::run");
+// This locks up if there's no signal.
+			if(ioctl(thread->input_fd, VIDIOC_QBUF, &arg) < 0)
+				perror("VDeviceV4L2Put::run 1 VIDIOC_QBUF");
+			thread->ioctl_lock->unlock();
+// Delay to keep mutexes from getting stuck
+			usleep(1000000 * 1001 / 60000);
+			Thread::disable_cancel();
+		}
+	}
+}
+
+void VDeviceV4L2Put::put_buffer(int number)
+{
+	lock->lock("VDeviceV4L2Put::put_buffer");
+	putbuffers[total++] = number;
+	lock->unlock();
+	more_buffers->unlock();
+}
+
+
+
+
+
+
+
+
+
+
 
 VDeviceV4L2Thread::VDeviceV4L2Thread(VideoDevice *device, int color_model)
  : Thread(1, 0, 0)
@@ -39,6 +119,7 @@ VDeviceV4L2Thread::VDeviceV4L2Thread(VideoDevice *device, int color_model)
 
 	video_lock = new Condition(0, "VDeviceV4L2Thread::video_lock");
 	buffer_lock = new Mutex("VDeviceV4L2Thread::buffer_lock");
+	ioctl_lock = new Mutex("VDeviceV4L2Thread::ioctl_lock");
 	device_buffers = 0;
 	buffer_valid = 0;
 	current_inbuffer = 0;
@@ -48,6 +129,7 @@ VDeviceV4L2Thread::VDeviceV4L2Thread(VideoDevice *device, int color_model)
 	done = 0;
 	input_fd = 0;
 	total_valid = 0;
+	put_thread = 0;
 }
 
 VDeviceV4L2Thread::~VDeviceV4L2Thread()
@@ -58,6 +140,8 @@ VDeviceV4L2Thread::~VDeviceV4L2Thread()
 		Thread::cancel();
 		Thread::join();
 	}
+
+	if(put_thread) delete put_thread;
 
 	if(buffer_valid)
 	{
@@ -86,29 +170,54 @@ VDeviceV4L2Thread::~VDeviceV4L2Thread()
 		delete [] device_buffers;
 	}
 
+	if(input_fd > 0) 
+	{
+		int streamoff_arg = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+		if(ioctl(input_fd, VIDIOC_STREAMOFF, &streamoff_arg) < 0)
+			perror("VDeviceV4L2Thread::~VDeviceV4L2Thread VIDIOC_STREAMOFF");
+		close(input_fd);
+	}
+
 	delete video_lock;
 	delete buffer_lock;
-
-	if(input_fd > 0) close(input_fd);
+	delete ioctl_lock;
 }
 
 void VDeviceV4L2Thread::start()
 {
-// Allocate user space buffers
 	total_buffers = device->in_config->capture_length;
 	total_buffers = MAX(total_buffers, 2);
-	device_buffers = new VFrame*[total_buffers];
+	total_buffers = MIN(total_buffers, 0xff);
+	put_thread = new VDeviceV4L2Put(this);
+	put_thread->start();
+	Thread::start();
+}
+
+// Allocate user space buffers
+void VDeviceV4L2Thread::allocate_buffers(int number)
+{
+	if(number != total_buffers)
+	{
+		if(buffer_valid) delete [] buffer_valid;
+		if(device_buffers)
+		{
+			for(int i = 0; i < total_buffers; i++)
+			{
+				delete device_buffers[i];
+			}
+			delete [] device_buffers;
+		}
+	}
+
+	total_buffers = number;
 	buffer_valid = new int[total_buffers];
+	device_buffers = new VFrame*[total_buffers];
 	for(int i = 0; i < total_buffers; i++)
 	{
 		device_buffers[i] = new VFrame;
 	}
 	bzero(buffer_valid, sizeof(int) * total_buffers);
-
-	Thread::start();
 }
-
-
 
 void VDeviceV4L2Thread::run()
 {
@@ -176,6 +285,7 @@ void VDeviceV4L2Thread::run()
 			if(ioctl(input_fd, VIDIOC_G_PARM, &v4l2_parm) < 0)
 				perror("VDeviceV4L2Thread::run VIDIOC_G_PARM");
 		}
+
 
 // Set up data format
 		struct v4l2_format v4l2_params;
@@ -304,6 +414,7 @@ void VDeviceV4L2Thread::run()
 		Thread::disable_cancel();
 		struct v4l2_requestbuffers requestbuffers;
 
+printf("VDeviceV4L2Thread::run requested %d buffers\n", total_buffers);
 		requestbuffers.count = total_buffers;
 		requestbuffers.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
 		requestbuffers.memory = V4L2_MEMORY_MMAP;
@@ -314,7 +425,10 @@ void VDeviceV4L2Thread::run()
 		}
 		else
 		{
-			for(int i = 0; i < requestbuffers.count; i++)
+// The requestbuffers.count changes in the 2.6.5 version of the API
+			allocate_buffers(requestbuffers.count);
+printf("VDeviceV4L2Thread::run got %d buffers\n", total_buffers);
+			for(int i = 0; i < total_buffers; i++)
 			{
 				struct v4l2_buffer buffer;
 				buffer.type = requestbuffers.type;
@@ -360,15 +474,21 @@ void VDeviceV4L2Thread::run()
 							break;
 						case BC_YUV420P:
 						case BC_YUV411P:
-							u_offset = device->in_config->w * device->in_config->h;
-							v_offset = device->in_config->w * device->in_config->h + device->in_config->w * device->in_config->h / 4;
+// In 2.6.7, the v and u are inverted for 420 but not 422
+							v_offset = device->in_config->w * device->in_config->h;
+							u_offset = device->in_config->w * device->in_config->h + device->in_config->w * device->in_config->h / 4;
 							break;
 					}
 
-					frame->set_memory(data,
+					frame->reallocate(data,
 						y_offset,
 						u_offset,
-						v_offset);
+						v_offset,
+						device->in_config->w,
+						device->in_config->h,
+						color_model,
+						VFrame::calculate_bytes_per_pixel(color_model) *
+							device->in_config->w);
 				}
 			}
 		}
@@ -400,32 +520,35 @@ void VDeviceV4L2Thread::run()
 	Thread::disable_cancel();
 
 
-//printf("VDeviceV4L2Thread::run 1 %d\n", input_fd);
 // Read buffers continuously
 	first_frame = 0;
 	while(!done && !error)
 	{
-		Thread::enable_cancel();
 		struct v4l2_buffer buffer;
+		bzero(&buffer, sizeof(buffer));
 		buffer.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+		buffer.memory = V4L2_MEMORY_MMAP;
 
 // The driver returns the first buffer not queued, so only one buffer
 // can be unqueued at a time.
-		if(ioctl(input_fd, VIDIOC_DQBUF, &buffer) < 0)
+		Thread::enable_cancel();
+		ioctl_lock->lock("VDeviceV4L2Thread::run");
+		int result = ioctl(input_fd, VIDIOC_DQBUF, &buffer);
+		ioctl_lock->unlock();
+// Delay so the mutexes don't get stuck
+		usleep(1000000 * 1001 / 60000);
+		Thread::disable_cancel();
+
+
+		if(result < 0)
 		{
-			sleep(1);
-			Thread::disable_cancel();
 			perror("VDeviceV4L2Thread::run VIDIOC_DQBUF");
+			Thread::enable_cancel();
+			usleep(100000);
+			Thread::disable_cancel();
 		}
 		else
 		{
-			Thread::disable_cancel();
-// printf("VDeviceV4L2Thread::run 10 index=%d bytesused=%d field=%d length=%d\n",
-// buffer.index,
-// buffer.bytesused,
-// buffer.field,
-// buffer.length);
-
 			buffer_lock->lock("VDeviceV4L2Thread::run");
 
 // Set output frame as valid and set data size
@@ -452,6 +575,7 @@ void VDeviceV4L2Thread::run()
 				usleep(33000);
 			}
 		}
+//printf("VDeviceV4L2::run 100 %lld\n", timer.get_difference());
 	}
 }
 
@@ -461,7 +585,7 @@ VFrame* VDeviceV4L2Thread::get_buffer(int *timed_out)
 	*timed_out = 0;
 
 // Acquire buffer table
-	buffer_lock->lock("VDeviceV4L2Thread::read_frame 1");
+	buffer_lock->lock("VDeviceV4L2Thread::get_buffer 1");
 
 
 // Test for buffer availability
@@ -470,7 +594,7 @@ VFrame* VDeviceV4L2Thread::get_buffer(int *timed_out)
 		buffer_lock->unlock();
 		*timed_out = video_lock->timed_lock(BUFFER_TIMEOUT, 
 			"VDeviceV4L2Thread::read_frame 2");
-		buffer_lock->lock("VDeviceV4L2Thread::read_frame 3");
+		buffer_lock->lock("VDeviceV4L2Thread::get_buffer 3");
 	}
 
 // Copy frame
@@ -489,13 +613,8 @@ void VDeviceV4L2Thread::put_buffer()
 	buffer_lock->lock("VDeviceV4L2Thread::put_buffer");
 	buffer_valid[current_outbuffer] = 0;
 
-
-// Release buffer for capturing
-	struct v4l2_buffer buffer;
-	buffer.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
-	buffer.index = current_outbuffer;
-	if(ioctl(input_fd, VIDIOC_QBUF, &buffer) < 0)
-		perror("VDeviceV4L2Thread::put_buffer 1 VIDIOC_QBUF");
+// Release buffer for capturing.
+	put_thread->put_buffer(current_outbuffer);
 
 	current_outbuffer++;
 	total_valid--;

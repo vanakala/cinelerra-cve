@@ -834,8 +834,8 @@ void FileMPEGAudio::run()
 
 MPEGConfigAudio::MPEGConfigAudio(BC_WindowBase *parent_window, Asset *asset)
  : BC_Window(PROGRAM_NAME ": Audio Compression",
- 	parent_window->get_abs_cursor_x(),
- 	parent_window->get_abs_cursor_y(),
+ 	parent_window->get_abs_cursor_x(1),
+ 	parent_window->get_abs_cursor_y(1),
 	310,
 	120,
 	-1,
@@ -1021,8 +1021,8 @@ char* MPEGABitrate::bitrate_to_string(char *string, int bitrate)
 MPEGConfigVideo::MPEGConfigVideo(BC_WindowBase *parent_window, 
 	Asset *asset)
  : BC_Window(PROGRAM_NAME ": Video Compression",
- 	parent_window->get_abs_cursor_x(),
- 	parent_window->get_abs_cursor_y(),
+ 	parent_window->get_abs_cursor_x(1),
+ 	parent_window->get_abs_cursor_y(1),
 	500,
 	300,
 	-1,

@@ -192,7 +192,9 @@ public:
 
 	int batchrender_x1, batchrender_x2, batchrender_x3;
 
-	int setformat_x1, setformat_x2, setformat_x3, setformat_x4, setformat_y1, setformat_w, setformat_h, setformat_margin;
+	int setformat_x1, setformat_x2, setformat_x3, setformat_x4;
+	int setformat_y1, setformat_y2, setformat_y3;
+	int setformat_w, setformat_h, setformat_margin;
 	int setformat_channels_x, setformat_channels_y, setformat_channels_w, setformat_channels_h;
 	int title_h;
 	int title_font, title_color;

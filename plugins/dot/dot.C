@@ -5,24 +5,18 @@
 #include "dot.h"
 #include "dotwindow.h"
 #include "effecttv.h"
+#include "language.h"
 
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
-
-PluginClient* new_plugin(PluginServer *server)
-{
-	return new DotMain(server);
-}
 
 
 
 
+
+REGISTER_PLUGIN(DotMain)
 
 
 
@@ -282,6 +276,14 @@ DotClient::DotClient(DotServer *server)
 	} \
 	else \
 	{ \
+		if(sizeof(type) == 4) \
+		{ \
+			output[0] = (type)(pattern & 0xff0000) / 0xff0000; \
+			output[1] = (type)(pattern & 0xff00) / 0xff00; \
+			output[2] = (type)(pattern & 0xff) / 0xff; \
+			if(components > 3) output[3] = 1; \
+		} \
+		else \
 		if(sizeof(type) == 2) \
 		{ \
 			output[0] = (pattern & 0xff0000) >> 8; \
@@ -395,8 +397,16 @@ void DotClient::draw_dot(int xx,
 			DRAW_DOT(uint8_t, 3, 0x0);
 			break;
 
+		case BC_RGB_FLOAT:
+			DRAW_DOT(float, 3, 0x0);
+			break;
+
 		case BC_YUV888:
 			DRAW_DOT(uint8_t, 3, 0x80);
+			break;
+
+		case BC_RGBA_FLOAT:
+			DRAW_DOT(float, 4, 0x0);
 			break;
 
 		case BC_RGBA8888:
@@ -424,23 +434,45 @@ void DotClient::draw_dot(int xx,
 	}
 }
 
-#define RGB_TO_Y(type) \
+#define RGB_TO_Y(type, is_yuv) \
 { \
 	type *row_local = (type*)row; \
  \
+ 	if(sizeof(type) == 4) \
+	{ \
+		int r = (int)(row_local[0] * 0xff); \
+		int g = (int)(row_local[0] * 0xff); \
+		int b = (int)(row_local[0] * 0xff); \
+		CLAMP(r, 0, 0xff); \
+		CLAMP(g, 0, 0xff); \
+		CLAMP(b, 0, 0xff); \
+		i = plugin->effecttv->RtoY[r] + \
+			plugin->effecttv->RtoY[g] + \
+			plugin->effecttv->RtoY[b]; \
+	} \
+	else \
 	if(sizeof(type) == 2) \
 	{ \
-		i =  plugin->effecttv->RtoY[row_local[0] >> 8]; \
-		i += plugin->effecttv->GtoY[row_local[1] >> 8]; \
-		i += plugin->effecttv->BtoY[row_local[2] >> 8]; \
+		if(is_yuv) \
+			i = (int)row_local[0] >> 8; \
+		else \
+		{ \
+			i =  plugin->effecttv->RtoY[(int)row_local[0] >> 8]; \
+			i += plugin->effecttv->GtoY[(int)row_local[1] >> 8]; \
+			i += plugin->effecttv->BtoY[(int)row_local[2] >> 8]; \
+		} \
 	} \
 	else \
 	{ \
-		i =  plugin->effecttv->RtoY[row_local[0]]; \
-		i += plugin->effecttv->GtoY[row_local[1]]; \
-		i += plugin->effecttv->BtoY[row_local[2]]; \
+		if(is_yuv) \
+			i = (int)row_local[0]; \
+		else \
+		{ \
+			i =  plugin->effecttv->RtoY[(int)row_local[0]]; \
+			i += plugin->effecttv->GtoY[(int)row_local[1]]; \
+			i += plugin->effecttv->BtoY[(int)row_local[2]]; \
+		} \
 	} \
-/*printf("RGB_TO_Y %d %d %d %d\n", plugin->effecttv->RtoY[row_local[0]], plugin->effecttv->GtoY[row_local[1]], plugin->effecttv->BtoY[row_local[2]], i);*/ \
 }
 
 unsigned char DotClient::RGBtoY(unsigned char *row, int color_model)
@@ -450,20 +482,24 @@ unsigned char DotClient::RGBtoY(unsigned char *row, int color_model)
 	switch(color_model)
 	{
 		case BC_RGB888:
-		case BC_YUV888:
-			RGB_TO_Y(uint8_t);
-			break;
 		case BC_RGBA8888:
+			RGB_TO_Y(uint8_t, 0);
+			break;
+		case BC_RGB_FLOAT:
+		case BC_RGBA_FLOAT:
+			RGB_TO_Y(float, 0);
+			break;
+		case BC_YUV888:
 		case BC_YUVA8888:
-			RGB_TO_Y(uint8_t);
+			RGB_TO_Y(uint8_t, 1);
 			break;
 		case BC_RGB161616:
-		case BC_YUV161616:
-			RGB_TO_Y(uint16_t);
-			break;
 		case BC_RGBA16161616:
+			RGB_TO_Y(uint16_t, 0);
+			break;
+		case BC_YUV161616:
 		case BC_YUVA16161616:
-			RGB_TO_Y(uint16_t);
+			RGB_TO_Y(uint16_t, 1);
 			break;
 	}
 

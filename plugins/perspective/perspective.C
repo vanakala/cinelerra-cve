@@ -959,8 +959,14 @@ int PerspectiveMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 		switch(input_ptr->get_color_model())
 		{
+			case BC_RGB_FLOAT:
+				RESAMPLE(float, 3, 0)
+				break;
 			case BC_RGB888:
 				RESAMPLE(unsigned char, 3, 0)
+				break;
+			case BC_RGBA_FLOAT:
+				RESAMPLE(float, 4, 0)
 				break;
 			case BC_RGBA8888:
 				RESAMPLE(unsigned char, 4, 0)
@@ -1413,9 +1419,11 @@ void PerspectiveUnit::process_package(LoadPackage *package)
 //printf("PerspectiveUnit::process_package 1 %d %d %d %d %f %f\n", tx1, ty1, tx2, ty2, out_x4, out_y4);
 
 
-#define TRANSFORM(components, type, chroma_offset, max) \
+#define TRANSFORM(components, type, temp_type, chroma_offset, max) \
 { \
 	type **in_rows = (type**)plugin->input->get_rows(); \
+	float round_factor = 0.0; \
+	if(sizeof(type) < 4) round_factor = 0.5; \
 	for(int y = ty1; y < ty2; y++) \
 	{ \
 		type *out_row = (type*)plugin->output->get_rows()[y]; \
@@ -1517,35 +1525,37 @@ void PerspectiveUnit::process_package(LoadPackage *package)
 					type *row2_ptr = in_rows[row2]; \
 					type *row3_ptr = in_rows[row3]; \
 					type *row4_ptr = in_rows[row4]; \
-					int r, g, b, a; \
+					temp_type r, g, b, a; \
  \
-					r = (int)(transform_cubic(dy, \
+					r = (temp_type)(transform_cubic(dy, \
                     		 CUBIC_ROW(row1_ptr, 0x0), \
                     		 CUBIC_ROW(row2_ptr, 0x0), \
                     		 CUBIC_ROW(row3_ptr, 0x0), \
-                    		 CUBIC_ROW(row4_ptr, 0x0)) +  \
-							 0.5); \
+                    		 CUBIC_ROW(row4_ptr, 0x0)) + \
+							 round_factor); \
  \
 					row1_ptr++; \
 					row2_ptr++; \
 					row3_ptr++; \
 					row4_ptr++; \
-					g = ROUND(transform_cubic(dy, \
+					g = (temp_type)(transform_cubic(dy, \
                     		 CUBIC_ROW(row1_ptr, chroma_offset), \
                     		 CUBIC_ROW(row2_ptr, chroma_offset), \
                     		 CUBIC_ROW(row3_ptr, chroma_offset), \
-                    		 CUBIC_ROW(row4_ptr, chroma_offset))); \
+                    		 CUBIC_ROW(row4_ptr, chroma_offset)) + \
+							 round_factor); \
 					g += chroma_offset; \
  \
 					row1_ptr++; \
 					row2_ptr++; \
 					row3_ptr++; \
 					row4_ptr++; \
-					b = ROUND(transform_cubic(dy, \
+					b = (temp_type)(transform_cubic(dy, \
                     		 CUBIC_ROW(row1_ptr, chroma_offset), \
                     		 CUBIC_ROW(row2_ptr, chroma_offset), \
                     		 CUBIC_ROW(row3_ptr, chroma_offset), \
-                    		 CUBIC_ROW(row4_ptr, chroma_offset))); \
+                    		 CUBIC_ROW(row4_ptr, chroma_offset)) + \
+							 round_factor); \
 					b += chroma_offset; \
  \
 					if(components == 4) \
@@ -1554,18 +1564,28 @@ void PerspectiveUnit::process_package(LoadPackage *package)
 						row2_ptr++; \
 						row3_ptr++; \
 						row4_ptr++; \
-						a = (int)(transform_cubic(dy, \
+						a = (temp_type)(transform_cubic(dy, \
                     			 CUBIC_ROW(row1_ptr, 0x0), \
                     			 CUBIC_ROW(row2_ptr, 0x0), \
                     			 CUBIC_ROW(row3_ptr, 0x0), \
                     			 CUBIC_ROW(row4_ptr, 0x0)) +  \
-								 0.5); \
+								 round_factor); \
 					} \
  \
-					*out_row++ = CLIP(r, 0, max); \
-					*out_row++ = CLIP(g, 0, max); \
-					*out_row++ = CLIP(b, 0, max); \
-					if(components == 4) *out_row++ = CLIP(a, 0, max); \
+ 					if(sizeof(type) < 4) \
+					{ \
+						*out_row++ = CLIP(r, 0, max); \
+						*out_row++ = CLIP(g, 0, max); \
+						*out_row++ = CLIP(b, 0, max); \
+						if(components == 4) *out_row++ = CLIP(a, 0, max); \
+					} \
+					else \
+					{ \
+						*out_row++ = r; \
+						*out_row++ = g; \
+						*out_row++ = b; \
+						if(components == 4) *out_row++ = a; \
+					} \
                 } \
 				else \
 /* Fill with chroma */ \
@@ -1594,29 +1614,35 @@ void PerspectiveUnit::process_package(LoadPackage *package)
 
 		switch(plugin->input->get_color_model())
 		{
+			case BC_RGB_FLOAT:
+				TRANSFORM(3, float, float, 0x0, 1)
+				break;
 			case BC_RGB888:
-				TRANSFORM(3, unsigned char, 0x0, 0xff)
+				TRANSFORM(3, unsigned char, int, 0x0, 0xff)
+				break;
+			case BC_RGBA_FLOAT:
+				TRANSFORM(4, float, float, 0x0, 1)
 				break;
 			case BC_RGBA8888:
-				TRANSFORM(4, unsigned char, 0x0, 0xff)
+				TRANSFORM(4, unsigned char, int, 0x0, 0xff)
 				break;
 			case BC_YUV888:
-				TRANSFORM(3, unsigned char, 0x80, 0xff)
+				TRANSFORM(3, unsigned char, int, 0x80, 0xff)
 				break;
 			case BC_YUVA8888:
-				TRANSFORM(4, unsigned char, 0x80, 0xff)
+				TRANSFORM(4, unsigned char, int, 0x80, 0xff)
 				break;
 			case BC_RGB161616:
-				TRANSFORM(3, uint16_t, 0x0, 0xffff)
+				TRANSFORM(3, uint16_t, int, 0x0, 0xffff)
 				break;
 			case BC_RGBA16161616:
-				TRANSFORM(4, uint16_t, 0x0, 0xffff)
+				TRANSFORM(4, uint16_t, int, 0x0, 0xffff)
 				break;
 			case BC_YUV161616:
-				TRANSFORM(3, uint16_t, 0x8000, 0xffff)
+				TRANSFORM(3, uint16_t, int, 0x8000, 0xffff)
 				break;
 			case BC_YUVA16161616:
-				TRANSFORM(4, uint16_t, 0x8000, 0xffff)
+				TRANSFORM(4, uint16_t, int, 0x8000, 0xffff)
 				break;
 		}
 
@@ -1684,8 +1710,14 @@ void PerspectiveUnit::process_package(LoadPackage *package)
 
 		switch(plugin->input->get_color_model())
 		{
+			case BC_RGB_FLOAT:
+				PERSPECTIVE(float, 3)
+				break;
 			case BC_RGB888:
 				PERSPECTIVE(unsigned char, 3)
+				break;
+			case BC_RGBA_FLOAT:
+				PERSPECTIVE(float, 4)
 				break;
 			case BC_RGBA8888:
 				PERSPECTIVE(unsigned char, 4)

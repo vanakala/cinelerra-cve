@@ -32,6 +32,7 @@ extern "C" {
 /* Mormon MPEG-4 */
 #define QUICKTIME_SVQ1 "SVQ1"
 #define QUICKTIME_SVQ3 "SVQ3"
+#define QUICKTIME_H263 "h263"
 
 /* Dee Vee */
 #define QUICKTIME_DV "dvc "

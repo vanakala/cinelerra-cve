@@ -1,14 +1,11 @@
 #include "flash.h"
 #include "edl.inc"
 #include "overlayframe.h"
+#include "language.h"
 #include "picon_png.h"
 #include "vframe.h"
 #include <stdint.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 PluginClient* new_plugin(PluginServer *server)
 {
@@ -36,13 +33,14 @@ int FlashMain::uses_gui() { return 0; }
 NEW_PICON_MACRO(FlashMain)
 
 
-#define FLASH(type, components, max, chroma_offset) \
+#define FLASH(type, temp_type, components, max, chroma_offset) \
 { \
-	int foreground = (int)(fraction * max + 0.5); \
-	int chroma_foreground = foreground; \
+	float round_factor = (sizeof(type) < 4) ? 0.5 : 0; \
+	temp_type foreground = (temp_type)(fraction * max + round_factor); \
+	temp_type chroma_foreground = foreground; \
 	if(chroma_offset) chroma_foreground = foreground * chroma_offset / max; \
-	int transparency = max - foreground; \
-/* printf("FLASH %d %d %d\n", foreground, transparency, is_before); */\
+	temp_type transparency = max - foreground; \
+ \
 	for(int i = 0; i < h; i++) \
 	{ \
 		type *in_row = (type*)incoming->get_rows()[i]; \
@@ -100,28 +98,34 @@ int FlashMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 	switch(incoming->get_color_model())
 	{
 		case BC_RGB888:
-			FLASH(unsigned char, 3, 0xff, 0x0);
+			FLASH(unsigned char, int, 3, 0xff, 0x0);
+			break;
+		case BC_RGB_FLOAT:
+			FLASH(float, float, 3, 1.0, 0x0);
 			break;
 		case BC_RGBA8888:
-			FLASH(unsigned char, 4, 0xff, 0x0);
+			FLASH(unsigned char, int, 4, 0xff, 0x0);
+			break;
+		case BC_RGBA_FLOAT:
+			FLASH(float, float, 4, 1.0, 0x0);
 			break;
 		case BC_YUV888:
-			FLASH(unsigned char, 3, 0xff, 0x80);
+			FLASH(unsigned char, int, 3, 0xff, 0x80);
 			break;
 		case BC_YUVA8888:
-			FLASH(unsigned char, 4, 0xff, 0x80);
+			FLASH(unsigned char, int, 4, 0xff, 0x80);
 			break;
 		case BC_RGB161616:
-			FLASH(uint16_t, 3, 0xffff, 0x0);
+			FLASH(uint16_t, int, 3, 0xffff, 0x0);
 			break;
 		case BC_RGBA16161616:
-			FLASH(uint16_t, 4, 0xffff, 0x0);
+			FLASH(uint16_t, int, 4, 0xffff, 0x0);
 			break;
 		case BC_YUV161616:
-			FLASH(uint16_t, 3, 0xffff, 0x8000);
+			FLASH(uint16_t, int, 3, 0xffff, 0x8000);
 			break;
 		case BC_YUVA16161616:
-			FLASH(uint16_t, 4, 0xffff, 0x8000);
+			FLASH(uint16_t, int, 4, 0xffff, 0x8000);
 			break;
 	}
 

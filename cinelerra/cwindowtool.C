@@ -490,10 +490,13 @@ void CWindowCameraGUI::handle_event()
 	if(zoom_keyframe)
 	{
 		float zoom = atof(z->get_text());
-		if (zoom > 10) zoom = 10; 
-			else if (zoom < 0) zoom = 0;
-		if (zoom != atof(z->get_text())) 
-			z->update(zoom);
+		if(zoom > 10) zoom = 10; 
+		else
+		if(zoom < 0) zoom = 0;
+// Doesn't allow user to enter from scratch
+// 		if(zoom != atof(z->get_text())) 
+// 			z->update(zoom);
+
 		zoom_keyframe->value = zoom;
 		mwindow->gui->lock_window("CWindowCameraGUI::handle_event");
 		mwindow->gui->canvas->draw_overlays();
@@ -878,10 +881,11 @@ void CWindowProjectorGUI::handle_event()
 	if(zoom_keyframe)
 	{
 		float zoom = atof(z->get_text());
-		if (zoom > 10000) zoom = 10000; 
-			else if (zoom < 0) zoom = 0;
-		if (zoom != atof(z->get_text())) 
-			z->update(zoom);
+		if(zoom > 10000) zoom = 10000; 
+		else 
+		if(zoom < 0) zoom = 0;
+// 		if (zoom != atof(z->get_text())) 
+// 			z->update(zoom);
 		zoom_keyframe->value = zoom;
 		mwindow->gui->lock_window("CWindowProjectorGUI::handle_event");
 		mwindow->gui->canvas->draw_overlays();

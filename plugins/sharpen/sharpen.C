@@ -1,17 +1,14 @@
 #include "clip.h"
 #include "colormodels.h"
+#include "condition.h"
 #include "filexml.h"
+#include "language.h"
 #include "picon_png.h"
 #include "sharpen.h"
 #include "sharpenwindow.h"
 
 #include <stdio.h>
 #include <string.h>
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 REGISTER_PLUGIN(SharpenMain)
 
@@ -300,29 +297,32 @@ void SharpenMain::read_data(KeyFrame *keyframe)
 
 
 SharpenEngine::SharpenEngine(SharpenMain *plugin)
- : Thread()
+ : Thread(1, 0, 0)
 {
 	this->plugin = plugin;
+	input_lock = new Condition(0,"SharpenEngine::input_lock");
+	output_lock = new Condition(0, "SharpenEngine::output_lock");
 	last_frame = 0;
 	for(int i = 0; i < 4; i++)
 	{
-		neg_rows[i] = new int[plugin->input->get_w() * 4];
+		neg_rows[i] = new unsigned char[plugin->input->get_w() * 
+			4 * 
+			MAX(sizeof(float), sizeof(int))];
 	}
-	input_lock.lock();
-	output_lock.lock();
-	set_synchronous(1);
 }
 
 SharpenEngine::~SharpenEngine()
 {
 	last_frame = 1;
-	input_lock.unlock();
+	input_lock->unlock();
 	Thread::join();
 
 	for(int i = 0; i < 4; i++)
 	{
 		delete [] neg_rows[i];
 	}
+	delete input_lock;
+	delete output_lock;
 }
 
 int SharpenEngine::start_process_frame(VFrame *output, VFrame *input, int field)
@@ -330,19 +330,37 @@ int SharpenEngine::start_process_frame(VFrame *output, VFrame *input, int field)
 	this->output = output;
 	this->input = input;
 	this->field = field;
-	input_lock.unlock();
+
+// Get coefficient for floating point
+	sharpness_coef = 100 - plugin->config.sharpness;
+	if(plugin->config.horizontal) sharpness_coef /= 2;
+	if(sharpness_coef < 1) sharpness_coef = 1;
+	sharpness_coef = 800.0 / sharpness_coef;
+	
+	input_lock->unlock();
 	return 0;
 }
 
 int SharpenEngine::wait_process_frame()
 {
-	output_lock.lock();
+	output_lock->lock("SharpenEngine::wait_process_frame");
 	return 0;
 }
 
-#define FILTER(components, vmax, wordsize) \
+float SharpenEngine::calculate_pos(float value)
+{
+	return sharpness_coef * value;
+}
+
+float SharpenEngine::calculate_neg(float value)
+{
+	return (calculate_pos(value) - (value * 8)) / 8;
+}
+
+#define FILTER(components, vmax) \
 { \
 	int *pos_lut = plugin->pos_lut; \
+	const int wordsize = sizeof(*src); \
  \
 /* Skip first pixel in row */ \
 	memcpy(dst, src, components * wordsize); \
@@ -402,9 +420,6 @@ int SharpenEngine::wait_process_frame()
 		else \
 		dst[2] = pixel; \
  \
- 		if(components == 4) \
-			dst[3] = src[3]; \
- \
 		src += components; \
 		dst += components; \
  \
@@ -419,7 +434,6 @@ int SharpenEngine::wait_process_frame()
 }
 
 void SharpenEngine::filter(int components,
-	int wordsize,
 	int vmax,
 	int w, 
 	u_int16_t *src, 
@@ -428,11 +442,10 @@ void SharpenEngine::filter(int components,
 	int *neg1, 
 	int *neg2)
 {
-	FILTER(components, vmax, wordsize);
+	FILTER(components, vmax);
 }
 
 void SharpenEngine::filter(int components,
-	int wordsize,
 	int vmax,
 	int w, 
 	unsigned char *src, 
@@ -441,7 +454,74 @@ void SharpenEngine::filter(int components,
 	int *neg1, 
 	int *neg2)
 {
-	FILTER(components, vmax, wordsize);
+	FILTER(components, vmax);
+}
+
+void SharpenEngine::filter(int components,
+	int vmax,
+	int w, 
+	float *src, 
+	float *dst,
+	float *neg0, 
+	float *neg1, 
+	float *neg2)
+{
+	const int wordsize = sizeof(float);
+// First pixel in row
+	memcpy(dst, src, components * wordsize);
+	dst += components;
+	src += components;
+
+	w -= 2;
+	while(w > 0)
+	{
+		float pixel;
+		pixel = calculate_pos(src[0]) -
+			neg0[-components] -
+			neg0[0] - 
+			neg0[components] -
+			neg1[-components] -
+			neg1[components] -
+			neg2[-components] -
+			neg2[0] -
+			neg2[components];
+		pixel /= 8;
+		dst[0] = pixel;
+
+		pixel = calculate_pos(src[1]) -
+			neg0[-components + 1] -
+			neg0[1] - 
+			neg0[components + 1] -
+			neg1[-components + 1] -
+			neg1[components + 1] -
+			neg2[-components + 1] -
+			neg2[1] -
+			neg2[components + 1];
+		pixel /= 8;
+		dst[1] = pixel;
+
+		pixel = calculate_pos(src[2]) -
+			neg0[-components + 2] -
+			neg0[2] - 
+			neg0[components + 2] -
+			neg1[-components + 2] -
+			neg1[components + 2] -
+			neg2[-components + 2] -
+			neg2[2] -
+			neg2[components + 2];
+		pixel /= 8;
+		dst[2] = pixel;
+
+		src += components;
+		dst += components;
+		neg0 += components;
+		neg1 += components;
+		neg2 += components;
+		w--;
+	}
+
+/* Last pixel */
+	memcpy(dst, src, components * wordsize);
 }
 
 
@@ -450,9 +530,10 @@ void SharpenEngine::filter(int components,
 
 
 
-#define SHARPEN(components, wordsize, wordtype, vmax) \
+#define SHARPEN(components, type, temp_type, vmax) \
 { \
 	int count, row; \
+	int wordsize = sizeof(type); \
 	unsigned char **input_rows, **output_rows; \
 	int w = plugin->input->get_w(); \
 	int h = plugin->input->get_h(); \
@@ -466,8 +547,21 @@ void SharpenEngine::filter(int components,
  \
 	for(int j = 0; j < w; j++) \
 	{ \
+		temp_type *neg = (temp_type*)neg_rows[0]; \
+		type *src = (type*)src_rows[0]; \
 		for(int k = 0; k < components; k++) \
-			neg_rows[0][j * components + k] = plugin->neg_lut[((wordtype*)src_rows[0])[j * components + k]]; \
+		{ \
+			if(wordsize == 4) \
+			{ \
+				neg[j * components + k] = \
+					(temp_type)calculate_neg(src[j * components + k]); \
+			} \
+			else \
+			{ \
+				neg[j * components + k] = \
+					(temp_type)plugin->neg_lut[(int)src[j * components + k]]; \
+			} \
+		} \
 	} \
  \
 	row = 1; \
@@ -480,10 +574,24 @@ void SharpenEngine::filter(int components,
 			if(count >= 3) count--; \
 /* Arm next row */ \
 			src_rows[row] = input_rows[i + plugin->row_step]; \
+/* Calculate neg rows */ \
+			type *src = (type*)src_rows[row]; \
+			temp_type *neg = (temp_type*)neg_rows[row]; \
 			for(int k = 0; k < w; k++) \
 			{ \
 				for(int j = 0; j < components; j++) \
-					neg_rows[row][k * components + j] = plugin->neg_lut[((wordtype*)src_rows[row])[k * components + j]]; \
+				{ \
+					if(wordsize == 4) \
+					{ \
+						neg[k * components + j] = \
+							(temp_type)calculate_neg(src[k * components + j]); \
+					} \
+					else \
+					{ \
+						neg[k * components + j] = \
+							plugin->neg_lut[(int)src[k * components + j]]; \
+					} \
+				} \
 			} \
  \
 			count++; \
@@ -500,24 +608,22 @@ void SharpenEngine::filter(int components,
 /* Do the filter */ \
 			if(plugin->config.horizontal) \
 				filter(components, \
-					wordsize, \
 					vmax, \
 					w,  \
-					(wordtype*)src_rows[(row + 2) & 3],  \
-					(wordtype*)dst_row, \
-					neg_rows[(row + 2) & 3] + components, \
-					neg_rows[(row + 2) & 3] + components, \
-					neg_rows[(row + 2) & 3] + components); \
+					(type*)src_rows[(row + 2) & 3],  \
+					(type*)dst_row, \
+					(temp_type*)neg_rows[(row + 2) & 3] + components, \
+					(temp_type*)neg_rows[(row + 2) & 3] + components, \
+					(temp_type*)neg_rows[(row + 2) & 3] + components); \
 			else \
 				filter(components, \
-					wordsize, \
 					vmax, \
 					w,  \
-					(wordtype*)src_rows[(row + 2) & 3],  \
-					(wordtype*)dst_row, \
-					neg_rows[(row + 1) & 3] + components, \
-					neg_rows[(row + 2) & 3] + components, \
-					neg_rows[(row + 3) & 3] + components); \
+					(type*)src_rows[(row + 2) & 3],  \
+					(type*)dst_row, \
+					(temp_type*)neg_rows[(row + 1) & 3] + components, \
+					(temp_type*)neg_rows[(row + 2) & 3] + components, \
+					(temp_type*)neg_rows[(row + 3) & 3] + components); \
 		} \
 		else  \
 		if(count == 2) \
@@ -530,63 +636,52 @@ void SharpenEngine::filter(int components,
 	} \
 }
 
-void SharpenEngine::sharpen_888()
-{
-	SHARPEN(3, 1, unsigned char, 0xff);
-}
-
-void SharpenEngine::sharpen_8888()
-{
-	SHARPEN(4, 1, unsigned char, 0xff);
-}
-
-void SharpenEngine::sharpen_161616()
-{
-	SHARPEN(3, 2, u_int16_t, 0xffff);
-}
-
-void SharpenEngine::sharpen_16161616()
-{
-	SHARPEN(4, 2, u_int16_t, 0xffff);
-}
 
 
 void SharpenEngine::run()
 {
 	while(1)
 	{
-		input_lock.lock();
+		input_lock->lock("SharpenEngine::run");
 		if(last_frame)
 		{
-			output_lock.unlock();
+			output_lock->unlock();
 			return;
 		}
 
 
 		switch(input->get_color_model())
 		{
+			case BC_RGB_FLOAT:
+				SHARPEN(3, float, float, 1);
+				break;
+
 			case BC_RGB888:
 			case BC_YUV888:
-				sharpen_888();
+				SHARPEN(3, unsigned char, int, 0xff);
 				break;
 			
+			case BC_RGBA_FLOAT:
+				SHARPEN(4, float, float, 1);
+				break;
+
 			case BC_RGBA8888:
 			case BC_YUVA8888:
-				sharpen_8888();
+				SHARPEN(4, unsigned char, int, 0xff);
 				break;
 			
 			case BC_RGB161616:
 			case BC_YUV161616:
-				sharpen_161616();
+				SHARPEN(3, u_int16_t, int, 0xffff);
 				break;
 			
 			case BC_RGBA16161616:
 			case BC_YUVA16161616:
-				sharpen_16161616();
+				SHARPEN(4, u_int16_t, int, 0xffff);
 				break;
 		}
 
-		output_lock.unlock();
+		output_lock->unlock();
 	}
 }
 

@@ -1,8 +1,10 @@
+#include "condition.h"
 #include "rotateframe.h"
 #include "vframe.h"
 
 #include <math.h>
 #include <stdint.h>
+#include <unistd.h>
 
 #define SQR(x) ((x) * (x))
 
@@ -218,6 +220,12 @@ int RotateFrame::rotate_rightangle(VFrame *input,
 		case BC_RGBA8888:
 			ROTATE_RIGHTANGLE(unsigned char, 4);
 			break;
+		case BC_RGB_FLOAT:
+			ROTATE_RIGHTANGLE(float, 3);
+			break;
+		case BC_RGBA_FLOAT:
+			ROTATE_RIGHTANGLE(float, 4);
+			break;
 		case BC_YUV888:
 			ROTATE_RIGHTANGLE(unsigned char, 3);
 			break;
@@ -330,6 +338,12 @@ int RotateFrame::rotate_obliqueangle(VFrame *input,
 // Fill center pixel
 	switch(input->get_color_model())
 	{
+		case BC_RGB_FLOAT:
+			FILL_CENTER(float, 3)
+			break;
+		case BC_RGBA_FLOAT:
+			FILL_CENTER(float, 4)
+			break;
 		case BC_RGB888:
 		case BC_YUV888:
 			FILL_CENTER(unsigned char, 3)
@@ -365,24 +379,26 @@ RotateEngine::RotateEngine(RotateFrame *plugin, int row1, int row2) : Thread()
 	done = 0;
 	this->row1 = row1;
 	this->row2 = row2;
-	input_lock.lock();
-	output_lock.lock();
+	input_lock = new Condition(0, "RotateEngine::input_lock");
+	output_lock = new Condition(0, "RotateEngine::output_lock");
 }
 RotateEngine::~RotateEngine()
 {
 	if(!done)
 	{
 		done = 1;
-		input_lock.unlock();
+		input_lock->unlock();
 		join();
 	}
+	delete input_lock;
+	delete output_lock;
 }
 
 int RotateEngine::generate_matrix(int interpolate)
 {
 	this->do_matrix = 1;
 	this->interpolate = interpolate;
-	input_lock.unlock();
+	input_lock->unlock();
 	return 0;
 }
 
@@ -394,14 +410,14 @@ int RotateEngine::perform_rotation(VFrame *input,
 	this->output = output;
 	this->do_rotation = 1;
 	this->interpolate = interpolate;
-	input_lock.unlock();
+	input_lock->unlock();
 	return 0;
 }
 
 
 int RotateEngine::wait_completion()
 {
-	output_lock.lock();
+	output_lock->lock("RotateEngine::wait_completion");
 	return 0;
 }
 
@@ -547,8 +563,10 @@ int RotateEngine::create_matrix()
 		{ \
 			if(float_row[j].x < 0 || float_row[j].y < 0) \
 			{ \
-				for(int m = 0; m < components; m++) \
-					output_rows[i][j * components + m] = 0; \
+				output_rows[i][j * components + 0] = 0; \
+				output_rows[i][j * components + 1] = black_chroma; \
+				output_rows[i][j * components + 2] = black_chroma; \
+				if(components == 4) output_rows[i][j * components + 3] = 0; \
 			} \
 			else \
 			{ \
@@ -596,11 +614,17 @@ int RotateEngine::perform_rotation()
 			case BC_RGB888:
 				ROTATE_NEAREST(unsigned char, 3, 0x0);
 				break;
+			case BC_RGB_FLOAT:
+				ROTATE_NEAREST(float, 3, 0x0);
+				break;
 			case BC_YUV888:
 				ROTATE_NEAREST(unsigned char, 3, 0x80);
 				break;
 			case BC_RGBA8888:
 				ROTATE_NEAREST(unsigned char, 4, 0x0);
+				break;
+			case BC_RGBA_FLOAT:
+				ROTATE_NEAREST(float, 4, 0x0);
 				break;
 			case BC_YUVA8888:
 				ROTATE_NEAREST(unsigned char, 4, 0x80);
@@ -628,11 +652,17 @@ int RotateEngine::perform_rotation()
 			case BC_RGB888:
 				ROTATE_INTERPOLATE(unsigned char, 3, 0x0);
 				break;
+			case BC_RGB_FLOAT:
+				ROTATE_INTERPOLATE(float, 3, 0x0);
+				break;
 			case BC_YUV888:
 				ROTATE_INTERPOLATE(unsigned char, 3, 0x80);
 				break;
 			case BC_RGBA8888:
 				ROTATE_INTERPOLATE(unsigned char, 4, 0x0);
+				break;
+			case BC_RGBA_FLOAT:
+				ROTATE_INTERPOLATE(float, 4, 0x0);
 				break;
 			case BC_YUVA8888:
 				ROTATE_INTERPOLATE(unsigned char, 4, 0x80);
@@ -660,7 +690,7 @@ void RotateEngine::run()
 {
 	while(!done)
 	{
-		input_lock.lock();
+		input_lock->lock("RotateEngine::run");
 		if(done) return;
 
 		if(do_matrix)
@@ -675,6 +705,6 @@ void RotateEngine::run()
 
 		do_matrix = 0;
 		do_rotation = 0;
-		output_lock.unlock();
+		output_lock->unlock();
 	}
 }

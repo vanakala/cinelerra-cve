@@ -3,16 +3,13 @@
 #include "blurwindow.h"
 #include "defaults.h"
 #include "keyframe.h"
+#include "language.h"
 #include "picon_png.h"
 #include "vframe.h"
 
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 
@@ -481,9 +478,15 @@ void BlurEngine::run()
 			case BC_YUV888:
 				BLUR(unsigned char, 0xff, 3);
 				break;
+			case BC_RGB_FLOAT:
+				BLUR(float, 1.0, 3);
+				break;
 			case BC_RGBA8888:
 			case BC_YUVA8888:
 				BLUR(unsigned char, 0xff, 4);
+				break;
+			case BC_RGBA_FLOAT:
+				BLUR(float, 1.0, 4);
 				break;
 			case BC_RGB161616:
 			case BC_YUV161616:

@@ -4,14 +4,11 @@
 #include "deinterwindow.h"
 #include "filexml.h"
 #include "keyframe.h"
+#include "language.h"
 #include "picon_png.h"
 #include "vframe.h"
 
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 
@@ -79,7 +76,7 @@ int DeInterlaceMain::is_realtime() { return 1; }
 
 
 
-#define DEINTERLACE_EVEN_MACRO(type, components, dominance, max) \
+#define DEINTERLACE_EVEN_MACRO(type, components, dominance) \
 { \
 	int w = input->get_w(); \
 	int h = input->get_h(); \
@@ -94,7 +91,7 @@ int DeInterlaceMain::is_realtime() { return 1; }
 	} \
 }
 
-#define DEINTERLACE_AVG_EVEN_MACRO(type, components, dominance, max) \
+#define DEINTERLACE_AVG_EVEN_MACRO(type, temp_type, components, dominance) \
 { \
 	int w = input->get_w(); \
 	int h = input->get_h(); \
@@ -103,7 +100,7 @@ int DeInterlaceMain::is_realtime() { return 1; }
  	type **in_rows = (type**)input->get_rows(); \
 	type **out_rows = (type**)temp->get_rows(); \
 	int max_h = h - 1; \
-	int64_t abs_diff = 0, total = 0; \
+	temp_type abs_diff = 0, total = 0; \
  \
 	for(int i = 0; i < max_h; i += 2) \
 	{ \
@@ -121,8 +118,8 @@ int DeInterlaceMain::is_realtime() { return 1; }
 		type *input_row3 = in_rows[out_number2]; \
 		type *temp_row1 = out_rows[out_number1]; \
 		type *temp_row2 = out_rows[out_number2]; \
-		int64_t sum = 0; \
-		int64_t accum_r, accum_b, accum_g, accum_a; \
+		temp_type sum = 0; \
+		temp_type accum_r, accum_b, accum_g, accum_a; \
  \
 		memcpy(temp_row1, input_row1, w * components * sizeof(type)); \
 		for(int j = 0; j < w; j++) \
@@ -132,37 +129,37 @@ int DeInterlaceMain::is_realtime() { return 1; }
 			accum_b = (*input_row1++) + (*input_row2++); \
 			if(components == 4) \
 				accum_a = (*input_row1++) + (*input_row2++); \
-			accum_r >>= 1; \
-			accum_g >>= 1; \
-			accum_b >>= 1; \
-			accum_a >>= 1; \
+			accum_r /= 2; \
+			accum_g /= 2; \
+			accum_b /= 2; \
+			accum_a /= 2; \
  \
  			total += *input_row3; \
-			sum = ((int)*input_row3++) - accum_r; \
+			sum = ((temp_type)*input_row3++) - accum_r; \
 			abs_diff += (sum < 0 ? -sum : sum); \
 			*temp_row2++ = accum_r; \
  \
  			total += *input_row3; \
-			sum = ((int)*input_row3++) - accum_g; \
+			sum = ((temp_type)*input_row3++) - accum_g; \
 			abs_diff += (sum < 0 ? -sum : sum); \
 			*temp_row2++ = accum_g; \
  \
  			total += *input_row3; \
-			sum = ((int)*input_row3++) - accum_b; \
+			sum = ((temp_type)*input_row3++) - accum_b; \
 			abs_diff += (sum < 0 ? -sum : sum); \
 			*temp_row2++ = accum_b; \
  \
 			if(components == 4) \
 			{ \
 	 			total += *input_row3; \
-				sum = ((int)*input_row3++) - accum_a; \
+				sum = ((temp_type)*input_row3++) - accum_a; \
 				abs_diff += (sum < 0 ? -sum : sum); \
 				*temp_row2++ = accum_a; \
 			} \
 		} \
 	} \
  \
-	int64_t threshold = (int64_t)total * config.threshold / THRESHOLD_SCALAR; \
+	temp_type threshold = (temp_type)total * config.threshold / THRESHOLD_SCALAR; \
 /* printf("total=%lld threshold=%lld abs_diff=%lld\n", total, threshold, abs_diff); */ \
  	if(abs_diff > threshold || !config.adaptive) \
 	{ \
@@ -177,7 +174,7 @@ int DeInterlaceMain::is_realtime() { return 1; }
  \
 }
 
-#define DEINTERLACE_AVG_MACRO(type, components) \
+#define DEINTERLACE_AVG_MACRO(type, temp_type, components) \
 { \
 	int w = input->get_w(); \
 	int h = input->get_h(); \
@@ -192,7 +189,7 @@ int DeInterlaceMain::is_realtime() { return 1; }
  \
 		for(int j = 0; j < w * components; j++) \
 		{ \
-			result = ((uint64_t)input_row1[j] + input_row2[j]) >> 1; \
+			result = ((temp_type)input_row1[j] + input_row2[j]) / 2; \
 			output_row1[j] = result; \
 			output_row2[j] = result; \
 		} \
@@ -229,19 +226,25 @@ void DeInterlaceMain::deinterlace_even(VFrame *input, VFrame *output, int domina
 	{
 		case BC_RGB888:
 		case BC_YUV888:
-			DEINTERLACE_EVEN_MACRO(unsigned char, 3, dominance, 0xff);
+			DEINTERLACE_EVEN_MACRO(unsigned char, 3, dominance);
+			break;
+		case BC_RGB_FLOAT:
+			DEINTERLACE_EVEN_MACRO(float, 3, dominance);
 			break;
 		case BC_RGBA8888:
 		case BC_YUVA8888:
-			DEINTERLACE_EVEN_MACRO(unsigned char, 4, dominance, 0xff);
+			DEINTERLACE_EVEN_MACRO(unsigned char, 4, dominance);
+			break;
+		case BC_RGBA_FLOAT:
+			DEINTERLACE_EVEN_MACRO(float, 4, dominance);
 			break;
 		case BC_RGB161616:
 		case BC_YUV161616:
-			DEINTERLACE_EVEN_MACRO(uint16_t, 3, dominance, 0xffff);
+			DEINTERLACE_EVEN_MACRO(uint16_t, 3, dominance);
 			break;
 		case BC_RGBA16161616:
 		case BC_YUVA16161616:
-			DEINTERLACE_EVEN_MACRO(uint16_t, 4, dominance, 0xffff);
+			DEINTERLACE_EVEN_MACRO(uint16_t, 4, dominance);
 			break;
 	}
 }
@@ -252,19 +255,25 @@ void DeInterlaceMain::deinterlace_avg_even(VFrame *input, VFrame *output, int do
 	{
 		case BC_RGB888:
 		case BC_YUV888:
-			DEINTERLACE_AVG_EVEN_MACRO(unsigned char, 3, dominance, 0xff);
+			DEINTERLACE_AVG_EVEN_MACRO(unsigned char, int64_t, 3, dominance);
+			break;
+		case BC_RGB_FLOAT:
+			DEINTERLACE_AVG_EVEN_MACRO(float, double, 3, dominance);
 			break;
 		case BC_RGBA8888:
 		case BC_YUVA8888:
-			DEINTERLACE_AVG_EVEN_MACRO(unsigned char, 4, dominance, 0xff);
+			DEINTERLACE_AVG_EVEN_MACRO(unsigned char, int64_t, 4, dominance);
+			break;
+		case BC_RGBA_FLOAT:
+			DEINTERLACE_AVG_EVEN_MACRO(float, double, 4, dominance);
 			break;
 		case BC_RGB161616:
 		case BC_YUV161616:
-			DEINTERLACE_AVG_EVEN_MACRO(uint16_t, 3, dominance, 0xffff);
+			DEINTERLACE_AVG_EVEN_MACRO(uint16_t, int64_t, 3, dominance);
 			break;
 		case BC_RGBA16161616:
 		case BC_YUVA16161616:
-			DEINTERLACE_AVG_EVEN_MACRO(uint16_t, 4, dominance, 0xffff);
+			DEINTERLACE_AVG_EVEN_MACRO(uint16_t, int64_t, 4, dominance);
 			break;
 	}
 }
@@ -275,19 +284,25 @@ void DeInterlaceMain::deinterlace_avg(VFrame *input, VFrame *output)
 	{
 		case BC_RGB888:
 		case BC_YUV888:
-			DEINTERLACE_AVG_MACRO(unsigned char, 3);
+			DEINTERLACE_AVG_MACRO(unsigned char, uint64_t, 3);
+			break;
+		case BC_RGB_FLOAT:
+			DEINTERLACE_AVG_MACRO(float, double, 3);
 			break;
 		case BC_RGBA8888:
 		case BC_YUVA8888:
-			DEINTERLACE_AVG_MACRO(unsigned char, 4);
+			DEINTERLACE_AVG_MACRO(unsigned char, uint64_t, 4);
+			break;
+		case BC_RGBA_FLOAT:
+			DEINTERLACE_AVG_MACRO(float, double, 4);
 			break;
 		case BC_RGB161616:
 		case BC_YUV161616:
-			DEINTERLACE_AVG_MACRO(uint16_t, 3);
+			DEINTERLACE_AVG_MACRO(uint16_t, uint64_t, 3);
 			break;
 		case BC_RGBA16161616:
 		case BC_YUVA16161616:
-			DEINTERLACE_AVG_MACRO(uint16_t, 4);
+			DEINTERLACE_AVG_MACRO(uint16_t, uint64_t, 4);
 			break;
 	}
 }
@@ -300,9 +315,15 @@ void DeInterlaceMain::deinterlace_swap(VFrame *input, VFrame *output, int domina
 		case BC_YUV888:
 			DEINTERLACE_SWAP_MACRO(unsigned char, 3, dominance);
 			break;
+		case BC_RGB_FLOAT:
+			DEINTERLACE_SWAP_MACRO(float, 3, dominance);
+			break;
 		case BC_RGBA8888:
 		case BC_YUVA8888:
 			DEINTERLACE_SWAP_MACRO(unsigned char, 4, dominance);
+			break;
+		case BC_RGBA_FLOAT:
+			DEINTERLACE_SWAP_MACRO(float, 4, dominance);
 			break;
 		case BC_RGB161616:
 		case BC_YUV161616:

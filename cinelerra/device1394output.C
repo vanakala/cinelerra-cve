@@ -213,47 +213,6 @@ int Device1394Output::open(char *path,
 		}
 		else
 		{
-//         	avc_handle = raw1394_new_handle();
-// 			if(avc_handle == 0)
-// 				printf("Device1394::open_output avc_handle == 0\n");
-// 
-// 			struct raw1394_portinfo pinf[16];
-// 			int numcards = raw1394_get_port_info(avc_handle, pinf, 16);
-// 			if(numcards < 0)
-// 				printf("Device1394::open_output raw1394_get_port_info failed\n");
-// 			if(raw1394_set_port(avc_handle, out_config->firewire_port) < 0)
-// 				printf("Device1394::open_output raw1394_set_port\n");
-// 
-//     		int nodecount = raw1394_get_nodecount(avc_handle);
-// 			int itemcount = 0;
-//   	  		rom1394_directory rom1394_dir;
-// 
-// 			avc_id = -1;
-//     		for(int currentnode = 0; currentnode < nodecount; currentnode++) 
-// 			{
-//         		rom1394_get_directory(avc_handle, currentnode, &rom1394_dir);
-// 
-//         		if((rom1394_get_node_type(&rom1394_dir) == ROM1394_NODE_TYPE_AVC) &&
-//             		avc1394_check_subunit_type(avc_handle, currentnode, AVC1394_SUBUNIT_TYPE_VCR)) 
-// 				{
-//             		itemcount++;
-// // default the phyID to the first AVC node found
-//             		if(itemcount == 1) avc_id = currentnode;
-// 					break;
-//         		}
-// 
-//         		rom1394_free_directory(&rom1394_dir);
-//     		}
-// 
-// 			if(avc_id < 0)
-// 				printf("Device1394::open_output no avc_id found.\n");
-// 
-//printf("Device1394::open_output 1 %p %d\n", avc_handle, avc_id);
-//		avc1394_vcr_record(avc_handle, avc_id);
-
-
-
-
         	output_mmap.channel = channel;
         	output_queue.channel = channel;
         	output_mmap.sync_tag = 0;
@@ -272,12 +231,12 @@ int Device1394Output::open(char *path,
 			{
   				if(ioctl(output_fd, DV1394_IOC_INIT, &setup) < 0)
   				{
-  					perror("Device1394Output::open DV1394_INIT:");
+  					perror("Device1394Output::open DV1394_INIT");
   				}
 
   				if(ioctl(output_fd, DV1394_IOC_GET_STATUS, &status) < 0)
   				{
-  					perror("Device1394Output::open DV1394_GET_STATUS:");
+  					perror("Device1394Output::open DV1394_GET_STATUS");
   				}
 
            		output_buffer = (unsigned char*)mmap(0,
@@ -344,7 +303,7 @@ void Device1394Output::run()
   	int out_size;
 
 	Thread::enable_cancel();
-	start_lock->lock();
+	start_lock->lock("Device1394Output::run");
 	Thread::disable_cancel();
 
 //Timer timer;
@@ -417,7 +376,7 @@ void Device1394Output::run()
 					audio_buffer + samples_written * bits * channels / 8,
 					(audio_samples - samples_written) * bits * channels / 8);
 				audio_samples -= samples_written;
-				position_lock->lock();
+				position_lock->lock("Device1394Output::run");
 				audio_position += samples_written;
 				position_lock->unlock();
 
@@ -702,14 +661,14 @@ void Device1394Output::write_frame(VFrame *input)
 
 
 // Take over buffer table
-	buffer_lock->lock();
+	buffer_lock->lock("Device1394Output::write_frame 1");
 	have_video = 1;
 // Wait for buffer to become available with timeout
 	while(buffer_valid[current_inbuffer] && !result && !interrupted)
 	{
 		buffer_lock->unlock();
 		result = video_lock->timed_lock(BUFFER_TIMEOUT);
-		buffer_lock->lock();
+		buffer_lock->lock("Device1394Output::write_frame 2");
 	}
 
 
@@ -760,13 +719,13 @@ void Device1394Output::write_samples(char *data, int samples)
 
 //printf("Device1394Output::write_samples 3\n");
 // Take over buffer table
-	buffer_lock->lock();
+	buffer_lock->lock("Device1394Output::write_samples 1");
 // Wait for buffer to become available with timeout
 	while(audio_samples > OUTPUT_SAMPLES - samples && !result && !interrupted)
 	{
 		buffer_lock->unlock();
 		result = audio_lock->timed_lock(BUFFER_TIMEOUT);
-		buffer_lock->lock();
+		buffer_lock->lock("Device1394Output::write_samples 2");
 	}
 
 	if(!interrupted && audio_samples <= OUTPUT_SAMPLES - samples)
@@ -784,7 +743,7 @@ void Device1394Output::write_samples(char *data, int samples)
 
 long Device1394Output::get_audio_position()
 {
-	position_lock->lock();
+	position_lock->lock("Device1394Output::get_audio_position");
 	long result = audio_position;
 	position_lock->unlock();
 	return result;
@@ -828,8 +787,25 @@ void Device1394Output::set_ioctls()
 	// Get the kernel version so we can set the right ioctls
 	uname(&buf);
 
-	if(buf.release[2] == '6' ||
-		(buf.release[4] == '2' && buf.release[5] >= '3'))
+	char *ptr = strchr(buf.release, '.');
+	int major = 2;
+	int minor = 6;
+	int point = 7;
+	if(ptr)
+	{
+		*ptr++ = 0;
+		major = atoi(buf.release);
+		char *ptr2 = strchr(ptr, '.');
+		if(ptr2)
+		{
+			*ptr2++ = 0;
+			minor = atoi(ptr);
+			point = atoi(ptr2);
+		}
+	}
+
+	if(major >= 2 && minor >= 6 && point >= 0 ||
+		major >= 2 && minor >= 4 && point >= 23)
 	{
 		// video1394
 		video1394_listen_channel = VIDEO1394_IOC_LISTEN_CHANNEL;

@@ -1,25 +1,19 @@
 #include "clip.h"
 #include "colormodels.h"
+#include "effecttv.h"
 #include "filexml.h"
-#include "picon_png.h"
 #include "holo.h"
 #include "holowindow.h"
-#include "effecttv.h"
+#include "language.h"
+#include "picon_png.h"
+#include "plugincolors.h"
 
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
-PluginClient* new_plugin(PluginServer *server)
-{
-	return new HoloMain(server);
-}
-
+REGISTER_PLUGIN(HoloMain)
 
 
 
@@ -46,6 +40,7 @@ HoloMain::HoloMain(PluginServer *server)
 	effecttv = 0;
 	bgimage = 0;
 	do_reconfigure = 1;
+	yuv = new YUV;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
@@ -62,6 +57,7 @@ HoloMain::~HoloMain()
 
 	if(bgimage)
 		delete bgimage;
+	delete yuv;
 }
 
 char* HoloMain::plugin_title() { return N_("HolographicTV"); }
@@ -117,10 +113,27 @@ void HoloMain::reconfigure()
  \
 		for(int j = 0; j < w; j++) \
 		{ \
-			for(int k = 0; k < components; k++) \
+			for(int k = 0; k < 3; k++) \
 			{ \
-				*output_row = (*input_row & *output_row) +  \
-					((*input_row ^ *output_row) >> 1); \
+				if(sizeof(type) == 4) \
+				{ \
+					int in_temp = (int)(*input_row * 0xffff); \
+					int out_temp = (int)(*output_row * 0xffff); \
+					int temp = (in_temp & out_temp) + \
+						((in_temp ^ out_temp) >> 1); \
+					*output_row = (type)temp / 0xffff; \
+				} \
+				else \
+				{ \
+					*output_row = ((uint16_t)*input_row & (uint16_t)*output_row) + \
+						(((uint16_t)*input_row ^ (uint16_t)*output_row) >> 1); \
+				} \
+				output_row++; \
+				input_row++; \
+			} \
+ \
+			if(components == 4) \
+			{ \
 				output_row++; \
 				input_row++; \
 			} \
@@ -137,6 +150,12 @@ void HoloMain::add_frames(VFrame *output, VFrame *input)
 		case BC_RGB888:
 		case BC_YUV888:
 			ADD_FRAMES(uint8_t, 3);
+			break;
+		case BC_RGB_FLOAT:
+			ADD_FRAMES(float, 3);
+			break;
+		case BC_RGBA_FLOAT:
+			ADD_FRAMES(float, 4);
 			break;
 		case BC_RGBA8888:
 		case BC_YUVA8888:
@@ -158,6 +177,10 @@ void HoloMain::set_background()
 /*
  * grab 4 frames and composite them to get a quality background image
  */
+/**
+ * For Cinelerra, we make every frame a holograph and expect the user to
+ * provide a matte.
+ **/
 total = 0;
 
 	switch(total)
@@ -201,7 +224,6 @@ total = 0;
 
 int HoloMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
-//printf("HoloMain::process_realtime 1\n");
 	this->input_ptr = input_ptr;
 	this->output_ptr = output_ptr;
 
@@ -210,7 +232,6 @@ int HoloMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 	load_configuration();
 
-//printf("HoloMain::process_realtime 1\n");
 
 
 	if(do_reconfigure)
@@ -234,17 +255,13 @@ int HoloMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		reconfigure();
 	}
 
-//printf("HoloMain::process_realtime 1\n");
 	set_background();
-//printf("HoloMain::process_realtime 1\n");
 	
 	holo_server->process_packages();
-//printf("HoloMain::process_realtime 1\n");
 	
 	total++;
 	if(total >= config.recycle * project_frame_rate)
 		total = 0;
-//printf("HoloMain::process_realtime 2\n");
 
 	return 0;
 }
@@ -277,7 +294,6 @@ void HoloMain::raise_window()
 
 HoloServer::HoloServer(HoloMain *plugin, int total_clients, int total_packages)
  : LoadServer(total_clients, total_packages)
-// : LoadServer(1, 1)
 {
 	this->plugin = plugin;
 }
@@ -346,25 +362,58 @@ void HoloClient::process_package(LoadPackage *package)
 	input_rows++;
 
 
-
-#define STORE_PIXEL(type, components, dest, src) \
+// Convert discrete channels to a single 24 bit number
+#define STORE_PIXEL(type, components, dest, src, is_yuv) \
+if(sizeof(type) == 4) \
+{ \
+	int r = (int)(src[0] * 0xff); \
+	int g = (int)(src[1] * 0xff); \
+	int b = (int)(src[2] * 0xff); \
+	CLAMP(r, 0, 0xff); \
+	CLAMP(g, 0, 0xff); \
+	CLAMP(b, 0, 0xff); \
+	dest = (r << 16) | (g << 8) | b; \
+} \
+else \
 if(sizeof(type) == 2) \
 { \
-	dest = (src[0] << 8) | \
-		(src[1]) | \
-		(src[2]) >> 8; \
+	if(is_yuv) \
+	{ \
+		int r = (int)src[0] >> 8; \
+		int g = (int)src[1] >> 8; \
+		int b = (int)src[2] >> 8; \
+		plugin->yuv->yuv_to_rgb_8(r, g, b); \
+		dest = (r << 16) | (g << 8) | b; \
+	} \
+	else \
+	{ \
+		dest = (((uint32_t)src[0] << 8) & 0xff0000) | \
+			((uint32_t)src[1] & 0xff00) | \
+			((uint32_t)src[2]) >> 8; \
+	} \
 } \
 else \
 { \
-	dest = (src[0] << 16) | \
-		(src[1] << 8) | \
-		src[2]; \
+	if(is_yuv) \
+	{ \
+		int r = (int)src[0]; \
+		int g = (int)src[1]; \
+		int b = (int)src[2]; \
+		plugin->yuv->yuv_to_rgb_8(r, g, b); \
+		dest = (r << 16) | (g << 8) | b; \
+	} \
+	else \
+	{ \
+		dest = ((uint32_t)src[0] << 16) | \
+			((uint32_t)src[1] << 8) | \
+			(uint32_t)src[2]; \
+	} \
 }
 
 
 
 
-#define HOLO_CORE(type, components) \
+#define HOLO_CORE(type, components, is_yuv) \
 	for(y = 1; y < height - 1; y++) \
 	{ \
 		type *src = (type*)input_rows[y]; \
@@ -379,7 +428,7 @@ else \
 			{ \
 				if(*diff) \
 				{ \
-					STORE_PIXEL(type, components, s, src); \
+					STORE_PIXEL(type, components, s, src, is_yuv); \
  \
 					t = (s & 0xff) +  \
 						((s & 0xff00) >> 7) +  \
@@ -397,7 +446,7 @@ else \
 					if(r < 20) r = 20; \
 					if(g < 20) g = 20; \
  \
-					STORE_PIXEL(type, components, s, bg); \
+					STORE_PIXEL(type, components, s, bg, is_yuv); \
  \
 					r += (s & 0xff0000) >> 17; \
 					g += (s & 0xff00) >> 9; \
@@ -407,17 +456,32 @@ else \
 					if(g > 255) g = 255; \
 					if(b > 255) b = 255; \
  \
-					dest[0] = r; \
-					dest[1] = g; \
-					dest[2] = b; \
-					if(components == 4) dest[3] = src[3]; \
+ 					if(is_yuv) plugin->yuv->rgb_to_yuv_8(r, g, b); \
+					if(sizeof(type) == 4) \
+					{ \
+						dest[0] = (type)r / 0xff; \
+						dest[1] = (type)g / 0xff; \
+						dest[2] = (type)b / 0xff; \
+					} \
+					else \
+					if(sizeof(type) == 2) \
+					{ \
+						dest[0] = (r << 8) | r; \
+						dest[1] = (g << 8) | g; \
+						dest[2] = (b << 8) | b; \
+					} \
+					else \
+					{ \
+						dest[0] = r; \
+						dest[1] = g; \
+						dest[2] = b; \
+					} \
 				}  \
 				else  \
 				{ \
 					dest[0] = bg[0]; \
 					dest[1] = bg[1]; \
 					dest[2] = bg[2]; \
-					if(components == 4) dest[3] = bg[3]; \
 				} \
  \
 				diff++; \
@@ -432,7 +496,7 @@ else \
 			{ \
 				if(*diff) \
 				{ \
-					STORE_PIXEL(type, components, s, src); \
+					STORE_PIXEL(type, components, s, src, is_yuv); \
  \
  \
 					t = (s & 0xff) + ((s & 0xff00) >> 6) + ((s & 0xff0000) >> 16); \
@@ -449,7 +513,7 @@ else \
 					if(r < 0) r = 0; \
 					if(g < 0) g = 0; \
  \
-					STORE_PIXEL(type, components, s, bg); \
+					STORE_PIXEL(type, components, s, bg, is_yuv); \
  \
 					r += ((s & 0xff0000) >> 17) + 10; \
 					g += ((s & 0xff00) >> 9) + 10; \
@@ -459,17 +523,32 @@ else \
 					if(g > 255) g = 255; \
 					if(b > 255) b = 255; \
  \
-					dest[0] = r; \
-					dest[1] = g; \
-					dest[2] = b; \
-					if(components == 4) dest[3] = src[3]; \
+ 					if(is_yuv) plugin->yuv->rgb_to_yuv_8(r, g, b); \
+					if(sizeof(type) == 4) \
+					{ \
+						dest[0] = (type)r / 0xff; \
+						dest[1] = (type)g / 0xff; \
+						dest[2] = (type)b / 0xff; \
+					} \
+					else \
+					if(sizeof(type) == 2) \
+					{ \
+						dest[0] = (r << 8) | r; \
+						dest[1] = (g << 8) | g; \
+						dest[2] = (b << 8) | b; \
+					} \
+					else \
+					{ \
+						dest[0] = r; \
+						dest[1] = g; \
+						dest[2] = b; \
+					} \
 				}  \
 				else  \
 				{ \
 					dest[0] = bg[0]; \
 					dest[1] = bg[1]; \
 					dest[2] = bg[2]; \
-					if(components == 4) dest[3] = bg[3]; \
 				} \
  \
 				diff++; \
@@ -486,20 +565,34 @@ else \
 	switch(plugin->input_ptr->get_color_model())
 	{
 		case BC_RGB888:
+			HOLO_CORE(uint8_t, 3, 0);
+			break;
+		case BC_RGB_FLOAT:
+			HOLO_CORE(float, 3, 0);
+			break;
 		case BC_YUV888:
-			HOLO_CORE(uint8_t, 3);
+			HOLO_CORE(uint8_t, 3, 1);
+			break;
+		case BC_RGBA_FLOAT:
+			HOLO_CORE(float, 4, 0);
 			break;
 		case BC_RGBA8888:
+			HOLO_CORE(uint8_t, 4, 0);
+			break;
 		case BC_YUVA8888:
-			HOLO_CORE(uint8_t, 4);
+			HOLO_CORE(uint8_t, 4, 1);
 			break;
 		case BC_RGB161616:
+			HOLO_CORE(uint16_t, 3, 0);
+			break;
 		case BC_YUV161616:
-			HOLO_CORE(uint16_t, 3);
+			HOLO_CORE(uint16_t, 3, 1);
 			break;
 		case BC_RGBA16161616:
+			HOLO_CORE(uint16_t, 4, 0);
+			break;
 		case BC_YUVA16161616:
-			HOLO_CORE(uint16_t, 4);
+			HOLO_CORE(uint16_t, 4, 1);
 			break;
 	}
 

@@ -1,10 +1,13 @@
+#include "condition.h"
 #include "edl.h"
+#include "language.h"
 #include "localsession.h"
 #include "mainsession.h"
 #include "mainundo.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "module.h"
+#include "mutex.h"
 #include "plugin.h"
 #include "plugindialog.h"
 #include "pluginserver.h"
@@ -12,11 +15,6 @@
 #include "track.h"
 #include "tracks.h"
 #include "transition.h"
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 PluginDialogThread::PluginDialogThread(MWindow *mwindow)
@@ -26,6 +24,8 @@ PluginDialogThread::PluginDialogThread(MWindow *mwindow)
 	window = 0;
 	plugin = 0;
 	Thread::set_synchronous(0);
+	window_lock = new Mutex("PluginDialogThread::window_lock");
+	completion = new Condition(1, "PluginDialogThread::completion");
 }
 
 PluginDialogThread::~PluginDialogThread()
@@ -33,9 +33,11 @@ PluginDialogThread::~PluginDialogThread()
 	if(window)
 	{
 		window->set_done(1);
-		completion.lock();
-		completion.unlock();
+		completion->lock("PluginDialogThread::~PluginDialogThread");
+		completion->unlock();
 	}
+	delete window_lock;
+	delete completion;
 }
 
 void PluginDialogThread::start_window(Track *track,
@@ -44,8 +46,15 @@ void PluginDialogThread::start_window(Track *track,
 {
 	if(Thread::running())
 	{
-		window->raise_window();
-		window->flush();
+		window_lock->lock("PluginDialogThread::start_window");
+		if(window)
+		{
+			window->lock_window("PluginDialogThread::start_window");
+			window->raise_window();
+			window->flush();
+			window->unlock_window();
+		}
+		window_lock->unlock();
 	}
 	else
 	{
@@ -68,7 +77,7 @@ void PluginDialogThread::start_window(Track *track,
 		}
 
 		strcpy(this->window_title, title);
-		completion.lock();
+		completion->lock("PluginDialogThread::start_window");
 		Thread::start();
 	}
 }
@@ -83,19 +92,30 @@ void PluginDialogThread::run()
 {
 	int result = 0;
 
-	window = new PluginDialog(mwindow, this, window_title);
+ 	int x = mwindow->gui->get_abs_cursor_x(1) - mwindow->session->plugindialog_w / 2;
+	int y = mwindow->gui->get_abs_cursor_y(1) - mwindow->session->plugindialog_h / 2;
+
+	window_lock->lock("PluginDialogThread::run 1");	
+	window = new PluginDialog(mwindow, this, window_title, x, y);
 	window->create_objects();
+	window_lock->unlock();
+
 	result = window->run_window();
+
+
+	window_lock->lock("PluginDialogThread::run 2");
 	delete window;
 	window = 0;
-	completion.unlock();
+	window_lock->unlock();
+
+	completion->unlock();
 
 // Done at closing
 	if(!result)
 	{
 		if(plugin_type)
 		{
-			mwindow->gui->lock_window();
+			mwindow->gui->lock_window("PluginDialogThread::run 3");
 
 			mwindow->undo->update_undo_before(_("attach effect"), LOAD_EDITS | LOAD_PATCHES);
 
@@ -146,10 +166,12 @@ void PluginDialogThread::run()
 
 PluginDialog::PluginDialog(MWindow *mwindow, 
 	PluginDialogThread *thread, 
-	char *window_title)
+	char *window_title,
+	int x,
+	int y)
  : BC_Window(window_title, 
- 	mwindow->gui->get_abs_cursor_x() - mwindow->session->plugindialog_w / 2, 
-	mwindow->gui->get_abs_cursor_y() - mwindow->session->plugindialog_h / 2, 
+ 	x,
+	y,
 	mwindow->session->plugindialog_w, 
 	mwindow->session->plugindialog_h, 
 	510, 

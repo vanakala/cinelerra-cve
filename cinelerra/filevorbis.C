@@ -4,16 +4,13 @@
 #include "file.h"
 #include "filevorbis.h"
 #include "guicast.h"
+#include "language.h"
 #include "mwindow.inc"
 
 #include <errno.h>
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 FileVorbis::FileVorbis(Asset *asset, File *file)
  : FileBase(asset, file)
@@ -529,8 +526,8 @@ int FileVorbis::read_samples_float(float *buffer, int64_t len)
 VorbisConfigAudio::VorbisConfigAudio(BC_WindowBase *parent_window, 
 	Asset *asset)
  : BC_Window(PROGRAM_NAME ": Audio Compression",
- 	parent_window->get_abs_cursor_x(),
- 	parent_window->get_abs_cursor_y(),
+ 	parent_window->get_abs_cursor_x(1),
+ 	parent_window->get_abs_cursor_y(1),
 	350,
 	170,
 	-1,

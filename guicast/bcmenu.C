@@ -258,6 +258,7 @@ int BC_Menu::draw_title()
 	menu_bar->set_font(MEDIUMFONT);
 	menu_bar->draw_text(x + 10, h - menu_bar->get_text_descent(MEDIUMFONT), text);
 	menu_bar->flash();
+	menu_bar->flush();
 	return 0;
 }
 

@@ -194,8 +194,14 @@ int CDRipMain::get_toc()
 		window.run_window();
 		result = 1;
 	}
+
+// Clamp to highest track
+	if(track2 > tracks)
+	{
+		track2 = tracks;
+	}
 	
-	if(track2 < track1 || track2 <= 0 || track2 > tracks)
+	if(track2 < track1 || track2 <= 0)
 	{
 		ioctl(cdrom, CDROMSTOP);
 		close(cdrom);

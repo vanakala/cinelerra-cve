@@ -814,6 +814,15 @@ void TitleTranslateUnit::process_package(LoadPackage *package)
 			TRANSLATE(unsigned char, 0xff, 3, r_in, g_in, b_in);
 			break;
 		}
+		case BC_RGB_FLOAT:
+		{
+			float r, g, b;
+			r = (float)r_in / 0xff;
+			g = (float)g_in / 0xff;
+			b = (float)b_in / 0xff;
+			TRANSLATE(float, 0xff, 3, r, g, b);
+			break;
+		}
 		case BC_YUV888:
 		{
 			unsigned char y, u, v;
@@ -841,6 +850,15 @@ void TitleTranslateUnit::process_package(LoadPackage *package)
 				u, 
 				v);
 			TRANSLATE(uint16_t, 0xffff, 3, y, u, v);
+			break;
+		}
+		case BC_RGBA_FLOAT:
+		{
+			float r, g, b;
+			r = (float)r_in / 0xff;
+			g = (float)g_in / 0xff;
+			b = (float)b_in / 0xff;
+			TRANSLATE(float, 0xff, 4, r, g, b);
 			break;
 		}
 		case BC_RGBA8888:

@@ -17,9 +17,11 @@ class PluginDialogOut;
 class PluginDialogThru;
 class PluginDialog;
 
+#include "condition.inc"
 #include "guicast.h"
-#include "plugin.inc"
+#include "mutex.inc"
 #include "mwindow.inc"
+#include "plugin.inc"
 #include "sharedlocation.h"
 #include "thread.h"
 #include "transition.inc"
@@ -46,7 +48,8 @@ public:
 	PluginDialog *window;
 // Plugin being modified if there is one
 	Plugin *plugin;
-	Mutex completion;
+	Condition *completion;
+	Mutex *window_lock;
 	char window_title[BCTEXTLEN];
 
 
@@ -58,15 +61,16 @@ public:
 
 // Title of attached plugin if new
 	char plugin_title[BCTEXTLEN];
-
-// Routing
-//	int in, out;
 };
 
 class PluginDialog : public BC_Window
 {
 public:
-	PluginDialog(MWindow *mwindow, PluginDialogThread *thread, char *title);
+	PluginDialog(MWindow *mwindow, 
+		PluginDialogThread *thread, 
+		char *title,
+		int x,
+		int y);
 	~PluginDialog();
 
 	int create_objects();

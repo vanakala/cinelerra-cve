@@ -16,6 +16,7 @@
 
 
 #define BUFFER_TIMEOUT 250000
+//#define BUFFER_TIMEOUT 1000000
 
 
 // Isolate the application from the grabbing operation.
@@ -31,8 +32,11 @@ public:
 	void run();
 	VFrame* get_buffer(int *timed_out);
 	void put_buffer();
+	void allocate_buffers(int number);
 
 	Mutex *buffer_lock;
+// Some of the drivers in 2.6.7 can't handle simultaneous QBUF and DQBUF calls.
+	Mutex *ioctl_lock;
 	Condition *video_lock;
 	VideoDevice *device;
 	VFrame **device_buffers;
@@ -48,8 +52,28 @@ public:
 	int input_fd;
 // COMPRESSED or another color model the device should use.
 	int color_model;
+	VDeviceV4L2Put *put_thread;
 };
 
+
+// Another thread which puts back buffers asynchronously of the buffer
+// grabber.  Because 2.6.7 drivers block the buffer enqueuer.
+class VDeviceV4L2Put : public Thread
+{
+public:
+	VDeviceV4L2Put(VDeviceV4L2Thread *thread);
+	~VDeviceV4L2Put();
+	void run();
+// Release buffer for capturing.
+	void put_buffer(int number);
+	VDeviceV4L2Thread *thread;
+// List of buffers to requeue
+	Mutex *lock;
+	Condition *more_buffers;
+	int *putbuffers;
+	int total;
+	int done;
+};
 
 
 

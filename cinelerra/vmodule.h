@@ -48,7 +48,8 @@ public:
 		int64_t start_position,
 		int direction,
 		double frame_rate,
-		int use_nudge);
+		int use_nudge,
+		int debug_render);
 
 // synchronization with tracks
 	FloatAutos* get_fade_automation();       // get the fade automation for this module

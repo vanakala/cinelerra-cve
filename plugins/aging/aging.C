@@ -167,35 +167,41 @@ AgingClient::AgingClient(AgingServer *server)
 
 #define COLORAGE(type, components) \
 { \
-	type a, b; \
+	int a, b; \
 	int i, j, k; \
  \
 	for(i = 0; i < h; i++) \
 	{ \
 		for(j = 0; j < w; j++) \
 		{ \
-			for(k = 0; k < components; k++) \
+			for(k = 0; k < 3; k++) \
 			{ \
-				a = ((type**)input_rows)[i][j * components + k]; \
- \
-				if(k < 3) \
+				if(sizeof(type) == 4) \
 				{ \
-					if(sizeof(type) == 2) \
-					{ \
-						b = (a & 0xffff) >> 2; \
-						((type**)output_rows)[i][j * components + k] = \
-							a - b + 0x1800 + (EffectTV::fastrand() & 0x1000); \
-					} \
-					else \
-					{ \
-						b = (a & 0xff) >> 2; \
-						((type**)output_rows)[i][j * components + k] =  \
-							a - b + 0x18 + ((EffectTV::fastrand() >> 8) & 0x10); \
-					} \
+					a = (int)(((type**)input_rows)[i][j * components + k] * 0xffff); \
+					CLAMP(a, 0, 0xffff); \
+				} \
+				else \
+					a = (int)((type**)input_rows)[i][j * components + k]; \
+ \
+				if(sizeof(type) == 4) \
+				{ \
+					b = (a & 0xffff) >> 2; \
+					((type**)output_rows)[i][j * components + k] = \
+						(type)(a - b + 0x1800 + (EffectTV::fastrand() & 0x1000)) / 0xffff; \
+				} \
+				else \
+				if(sizeof(type) == 2) \
+				{ \
+					b = (a & 0xffff) >> 2; \
+					((type**)output_rows)[i][j * components + k] = \
+						(type)(a - b + 0x1800 + (EffectTV::fastrand() & 0x1000)); \
 				} \
 				else \
 				{ \
-					((type**)output_rows)[i][j * components + k] = a; \
+					b = (a & 0xff) >> 2; \
+					((type**)output_rows)[i][j * components + k] =  \
+						(type)(a - b + 0x18 + ((EffectTV::fastrand() >> 8) & 0x10)); \
 				} \
 			} \
 		} \
@@ -215,6 +221,14 @@ void AgingClient::coloraging(unsigned char **output_rows,
 			COLORAGE(uint8_t, 3);
 			break;
 		
+		case BC_RGB_FLOAT:
+			COLORAGE(float, 3);
+			break;
+			
+		case BC_RGBA_FLOAT:
+			COLORAGE(float, 4);
+			break;
+			
 		case BC_RGBA8888:
 		case BC_YUVA8888:
 			COLORAGE(uint8_t, 4);
@@ -240,7 +254,8 @@ void AgingClient::coloraging(unsigned char **output_rows,
 #define SCRATCHES(type, components, chroma) \
 { \
 	int i, j, y, y1, y2; \
-	type *p, a, b; \
+	type *p; \
+	int a, b; \
 	int w_256 = w * 256; \
  \
 	for(i = 0; i < plugin->config.scratch_lines; i++) \
@@ -282,19 +297,31 @@ void AgingClient::coloraging(unsigned char **output_rows,
 			{ \
 				for(j = 0; j < (chroma ? 1 : 3); j++) \
 				{ \
-					if(sizeof(type) == 2) \
+					if(sizeof(type) == 4) \
 					{ \
-						a = p[j] & 0xfeff; \
+						int temp = (int)(p[j] * 0xffff); \
+						CLAMP(temp, 0, 0xffff); \
+						a = temp & 0xfeff; \
 						a += 0x2000; \
 						b = a & 0x10000; \
-						p[j] = a | (b - (b >> 8)); \
+						p[j] = (type)(a | (b - (b >> 8))) / 0xffff; \
+					} \
+					else \
+					if(sizeof(type) == 2) \
+					{ \
+						int temp = (int)p[j]; \
+						a = temp & 0xfeff; \
+						a += 0x2000; \
+						b = a & 0x10000; \
+						p[j] = (type)(a | (b - (b >> 8))); \
 					} \
 					else \
 					{ \
-						a = p[j] & 0xfe; \
+						int temp = (int)p[j]; \
+						a = temp & 0xfe; \
 						a += 0x20; \
 						b = a & 0x100; \
-						p[j] = a | (b - (b >> 8)); \
+						p[j] = (type)(a | (b - (b >> 8))); \
 					} \
 				} \
  \
@@ -332,10 +359,18 @@ void AgingClient::scratching(unsigned char **output_rows,
 			SCRATCHES(uint8_t, 3, 0);
 			break;
 
+		case BC_RGB_FLOAT:
+			SCRATCHES(float, 3, 0);
+			break;
+
 		case BC_YUV888:
 			SCRATCHES(uint8_t, 3, 0x80);
 			break;
 		
+		case BC_RGBA_FLOAT:
+			SCRATCHES(float, 4, 0);
+			break;
+
 		case BC_RGBA8888:
 			SCRATCHES(uint8_t, 4, 0);
 			break;
@@ -364,7 +399,7 @@ void AgingClient::scratching(unsigned char **output_rows,
 
 
 
-#define PITS(type, components, chroma) \
+#define PITS(type, components, luma, chroma) \
 { \
 	int i, j, k; \
 	int pnum, size, pnumscale; \
@@ -401,7 +436,9 @@ void AgingClient::scratching(unsigned char **output_rows,
 			CLAMP(x, 0, w - 1); \
 			CLAMP(y, 0, h - 1); \
 			for(k = 0; k < (chroma ? 1 : 3); k++) \
-				((type**)output_rows)[y][x * components + k] = 0xc0; \
+			{ \
+				((type**)output_rows)[y][x * components + k] = luma; \
+			} \
  \
             if(chroma) \
 			{ \
@@ -426,37 +463,43 @@ void AgingClient::pits(unsigned char **output_rows,
 	switch(color_model)
 	{
 		case BC_RGB888:
-			PITS(uint8_t, 3, 0);
+			PITS(uint8_t, 3, 0xc0, 0);
+			break;
+		case BC_RGB_FLOAT:
+			PITS(float, 3, (float)0xc0 / 0xff, 0);
 			break;
 		case BC_YUV888:
-			PITS(uint8_t, 3, 0x80);
+			PITS(uint8_t, 3, 0xc0, 0x80);
 			break;
 		
+		case BC_RGBA_FLOAT:
+			PITS(float, 4, (float)0xc0 / 0xff, 0);
+			break;
 		case BC_RGBA8888:
-			PITS(uint8_t, 4, 0);
+			PITS(uint8_t, 4, 0xc0, 0);
 			break;
 		case BC_YUVA8888:
-			PITS(uint8_t, 4, 0x80);
+			PITS(uint8_t, 4, 0xc0, 0x80);
 			break;
 		
 		case BC_RGB161616:
-			PITS(uint16_t, 3, 0);
+			PITS(uint16_t, 3, 0xc000, 0);
 			break;
 		case BC_YUV161616:
-			PITS(uint16_t, 3, 0x8000);
+			PITS(uint16_t, 3, 0xc000, 0x8000);
 			break;
 		
 		case BC_RGBA16161616:
-			PITS(uint16_t, 4, 0);
+			PITS(uint16_t, 4, 0xc000, 0);
 			break;
 		case BC_YUVA16161616:
-			PITS(uint16_t, 4, 0x8000);
+			PITS(uint16_t, 4, 0xc000, 0x8000);
 			break;
 	}
 }
 
 
-#define DUSTS(type, components, chroma) \
+#define DUSTS(type, components, luma, chroma) \
 { \
 	int i, j, k; \
 	int dnum; \
@@ -486,7 +529,9 @@ void AgingClient::pits(unsigned char **output_rows,
 			CLAMP(x, 0, w - 1); \
 			CLAMP(y, 0, h - 1); \
 			for(k = 0; k < (chroma ? 1 : 3); k++) \
-				((type**)output_rows)[y][x * components + k] = 0x10; \
+			{ \
+				((type**)output_rows)[y][x * components + k] = luma; \
+			} \
  \
 			if(chroma) \
 			{ \
@@ -518,35 +563,43 @@ void AgingClient::dusts(unsigned char **output_rows,
 	switch(color_model)
 	{
 		case BC_RGB888:
-			DUSTS(uint8_t, 3, 0);
+			DUSTS(uint8_t, 3, 0x10, 0);
+			break;
+
+		case BC_RGB_FLOAT:
+			DUSTS(float, 3, (float)0x10 / 0xff, 0);
 			break;
 
 		case BC_YUV888:
-			DUSTS(uint8_t, 3, 0x80);
+			DUSTS(uint8_t, 3, 0x10, 0x80);
 			break;
 		
+		case BC_RGBA_FLOAT:
+			DUSTS(float, 4, (float)0x10 / 0xff, 0);
+			break;
+
 		case BC_RGBA8888:
-			DUSTS(uint8_t, 4, 0);
+			DUSTS(uint8_t, 4, 0x10, 0);
 			break;
 
 		case BC_YUVA8888:
-			DUSTS(uint8_t, 4, 0x80);
+			DUSTS(uint8_t, 4, 0x10, 0x80);
 			break;
 		
 		case BC_RGB161616:
-			DUSTS(uint16_t, 3, 0);
+			DUSTS(uint16_t, 3, 0x1000, 0);
 			break;
 
 		case BC_YUV161616:
-			DUSTS(uint16_t, 3, 0x8000);
+			DUSTS(uint16_t, 3, 0x1000, 0x8000);
 			break;
 		
 		case BC_RGBA16161616:
-			DUSTS(uint16_t, 4, 0);
+			DUSTS(uint16_t, 4, 0x1000, 0);
 			break;
 
 		case BC_YUVA16161616:
-			DUSTS(uint16_t, 4, 0x8000);
+			DUSTS(uint16_t, 4, 0x1000, 0x8000);
 			break;
 	}
 }

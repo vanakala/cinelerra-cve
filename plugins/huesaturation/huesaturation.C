@@ -3,6 +3,7 @@
 #include "defaults.h"
 #include "filexml.h"
 #include "guicast.h"
+#include "language.h"
 #include "loadbalance.h"
 #include "picon_png.h"
 #include "plugincolors.h"
@@ -12,10 +13,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 class HueEffect;
 
@@ -300,11 +297,11 @@ void HueWindow::create_objects()
 }
 
 
-int HueWindow::close_event()
-{
-	set_done(1);
-	return 1;
-}
+WINDOW_CLOSE_EVENT(HueWindow)
+
+
+
+
 
 
 
@@ -368,8 +365,8 @@ HueUnit::HueUnit(HueEffect *plugin, HueEngine *server)
 #define HUESATURATION(type, max, components, use_yuv) \
 { \
 	float h_offset = plugin->config.hue; \
-	float s_offset = ((float)plugin->config.saturation + -MINSATURATION) / MAXSATURATION; \
-	float v_offset = ((float)plugin->config.value + -MINVALUE) / MAXVALUE; \
+	float s_offset = ((float)plugin->config.saturation - MINSATURATION) / MAXSATURATION; \
+	float v_offset = ((float)plugin->config.value - MINVALUE) / MAXVALUE; \
 	for(int i = pkg->row1; i < pkg->row2; i++) \
 	{ \
 		type* in_row = (type*)plugin->input->get_rows()[i]; \
@@ -384,9 +381,9 @@ HueUnit::HueUnit(HueEffect *plugin, HueEngine *server)
  \
 			if(use_yuv) \
 			{ \
-				y = in_row[0]; \
-				u = in_row[1]; \
-				v = in_row[2]; \
+				y = (int)in_row[0]; \
+				u = (int)in_row[1]; \
+				v = (int)in_row[2]; \
 				if(max == 0xffff) \
 					yuv.yuv_to_rgb_16(r_i, g_i, b_i, y, u, v); \
 				else \
@@ -412,11 +409,14 @@ HueUnit::HueUnit(HueEffect *plugin, HueEngine *server)
 			va *= v_offset; \
  \
 			if(h >= 360) h -= 360; \
-			if(s > 1) s = 1; \
-			if(va > 1) va = 1; \
 			if(h < 0) h += 360; \
-			if(s < 0) s = 0; \
-			if(va < 0) va = 0; \
+			if(sizeof(type) < 4) \
+			{ \
+				if(s > 1) s = 1; \
+				if(va > 1) va = 1; \
+				if(s < 0) s = 0; \
+				if(va < 0) va = 0; \
+			} \
  \
 			if(use_yuv) \
 			{ \
@@ -428,17 +428,23 @@ HueUnit::HueUnit(HueEffect *plugin, HueEngine *server)
 			else \
 			{ \
 				HSV::hsv_to_rgb(r, g, b, h, s, va); \
-				r *= max; \
-				g *= max; \
-				b *= max; \
-				out_row[0] = (int)CLIP(r, 0, max); \
-				out_row[1] = (int)CLIP(g, 0, max); \
-				out_row[2] = (int)CLIP(b, 0, max); \
+				if(sizeof(type) < 4) \
+				{ \
+					r *= max; \
+					g *= max; \
+					b *= max; \
+					out_row[0] = (type)CLIP(r, 0, max); \
+					out_row[1] = (type)CLIP(g, 0, max); \
+					out_row[2] = (type)CLIP(b, 0, max); \
+				} \
+				else \
+				{ \
+					out_row[0] = (type)r; \
+					out_row[1] = (type)g; \
+					out_row[2] = (type)b; \
+				} \
 			} \
  \
- \
-			if(components == 4) \
-				out_row[3] = in_row[3]; \
 			in_row += components; \
 			out_row += components; \
 		} \
@@ -457,6 +463,10 @@ void HueUnit::process_package(LoadPackage *package)
 			HUESATURATION(unsigned char, 0xff, 3, 0)
 			break;
 
+		case BC_RGB_FLOAT:
+			HUESATURATION(float, 1, 3, 0)
+			break;
+
 		case BC_YUV888:
 			HUESATURATION(unsigned char, 0xff, 3, 1)
 			break;
@@ -467,6 +477,10 @@ void HueUnit::process_package(LoadPackage *package)
 
 		case BC_YUV161616:
 			HUESATURATION(uint16_t, 0xffff, 3, 1)
+			break;
+
+		case BC_RGBA_FLOAT:
+			HUESATURATION(float, 1, 4, 0)
 			break;
 
 		case BC_RGBA8888:

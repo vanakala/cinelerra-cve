@@ -1,20 +1,17 @@
 #include "bcdisplayinfo.h"
+#include "bcsignals.h"
 #include "clip.h"
 #include "compressor.h"
 #include "cursors.h"
 #include "defaults.h"
 #include "filexml.h"
+#include "language.h"
 #include "picon_png.h"
 #include "units.h"
 #include "vframe.h"
 
 #include <math.h>
 #include <string.h>
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 
@@ -24,6 +21,28 @@ REGISTER_PLUGIN(CompressorEffect)
 
 
 
+
+
+
+// More potential compressor algorithms:
+// Use single reaction time parameter.  Negative reaction time uses 
+// readahead.  Positive reaction time uses slope.
+
+// Smooth input stage if readahead.
+// Determine slope from current smoothed sample to every sample in readahead area.
+// Once highest slope is found, count of number of samples remaining until it is
+// reached.  Only search after this count for the next highest slope.
+// Use highest slope to determine smoothed value.
+
+// Smooth input stage if not readahead.
+// For every sample, calculate slope needed to reach current sample from 
+// current smoothed value in the reaction time.  If higher than current slope,
+// make it the current slope and count number of samples remaining until it is
+// reached.  If this count is met and no higher slopes are found, base slope
+// on current sample when count is met.
+
+// Gain stage.
+// For every sample, calculate gain from smoothed input value.
 
 
 
@@ -50,37 +69,26 @@ void CompressorEffect::delete_dsp()
 			delete [] input_buffer[i];
 		delete [] input_buffer;
 	}
-	if(coefs) delete [] coefs;
 
-	if(reaction_buffer) delete [] reaction_buffer;
 
 	input_buffer = 0;
-	coefs = 0;
 	input_size = 0;
 	input_allocated = 0;
-	reaction_buffer = 0;
-	reaction_allocated = 0;
-	reaction_position = 0;
 }
 
 
 void CompressorEffect::reset()
 {
 	input_buffer = 0;
-	coefs = 0;
 	input_size = 0;
 	input_allocated = 0;
-	coefs_allocated = 0;
-	reaction_buffer = 0;
-	reaction_allocated = 0;
-	reaction_position = 0;
-	current_coef = 1.0;
-	last_peak_age = 0;
-	last_peak = 0.0;
-	previous_intercept = 1.0;
-	previous_slope = 0.0;
-	previous_max = 0.0;
-	max_counter = 0;
+	input_start = 0;
+
+	next_target = 1.0;
+	previous_target = 1.0;
+	target_samples = 1;
+	target_current_sample = -1;
+	current_value = 1.0;
 }
 
 char* CompressorEffect::plugin_title() { return N_("Compressor"); }
@@ -104,9 +112,11 @@ void CompressorEffect::read_data(KeyFrame *keyframe)
 		{
 			if(input.tag.title_is("COMPRESSOR"))
 			{
-				config.preview_len = input.tag.get_property("PREVIEW_LEN", config.preview_len);
 				config.reaction_len = input.tag.get_property("REACTION_LEN", config.reaction_len);
+				config.decay_len = input.tag.get_property("DECAY_LEN", config.decay_len);
 				config.trigger = input.tag.get_property("TRIGGER", config.trigger);
+				config.smoothing_only = input.tag.get_property("SMOOTHING_ONLY", config.smoothing_only);
+				config.no_trigger = input.tag.get_property("NO_TRIGGER", config.no_trigger);
 			}
 			else
 			if(input.tag.title_is("LEVEL"))
@@ -127,9 +137,11 @@ void CompressorEffect::save_data(KeyFrame *keyframe)
 	output.set_shared_string(keyframe->data, MESSAGESIZE);
 
 	output.tag.set_title("COMPRESSOR");
-	output.tag.set_property("PREVIEW_LEN", config.preview_len);
 	output.tag.set_property("TRIGGER", config.trigger);
 	output.tag.set_property("REACTION_LEN", config.reaction_len);
+	output.tag.set_property("DECAY_LEN", config.decay_len);
+	output.tag.set_property("SMOOTHING_ONLY", config.smoothing_only);
+	output.tag.set_property("NO_TRIGGER", config.no_trigger);
 	output.append_tag();
 	output.append_newline();
 
@@ -154,9 +166,11 @@ int CompressorEffect::load_defaults()
 	defaults = new Defaults(directory);
 	defaults->load();
 
-	config.preview_len = defaults->get("PREVIEW_LEN", config.preview_len);
 	config.trigger = defaults->get("TRIGGER", config.trigger);
 	config.reaction_len = defaults->get("REACTION_LEN", config.reaction_len);
+	config.decay_len = defaults->get("DECAY_LEN", config.decay_len);
+	config.smoothing_only = defaults->get("SMOOTHING_ONLY", config.smoothing_only);
+	config.no_trigger = defaults->get("NO_TRIGGER", config.no_trigger);
 
 	config.levels.remove_all();
 	int total_levels = defaults->get("TOTAL_LEVELS", 0);
@@ -176,10 +190,12 @@ int CompressorEffect::save_defaults()
 {
 	char string[BCTEXTLEN];
 
-	defaults->update("PREVIEW_LEN", config.preview_len);
 	defaults->update("TRIGGER", config.trigger);
 	defaults->update("REACTION_LEN", config.reaction_len);
+	defaults->update("DECAY_LEN", config.decay_len);
+	defaults->update("SMOOTHING_ONLY", config.smoothing_only);
 	defaults->update("TOTAL_LEVELS", config.levels.total);
+	defaults->update("NO_TRIGGER", config.no_trigger);
 
 	defaults->update("TOTAL_LEVELS", config.levels.total);
 	for(int i = 0; i < config.levels.total; i++)
@@ -200,10 +216,12 @@ void CompressorEffect::update_gui()
 {
 	if(thread)
 	{
-		load_configuration();
-		thread->window->lock_window();
-		thread->window->update();
-		thread->window->unlock_window();
+		if(load_configuration())
+		{
+			thread->window->lock_window("CompressorEffect::update_gui");
+			thread->window->update();
+			thread->window->unlock_window();
+		}
 	}
 }
 
@@ -216,237 +234,308 @@ LOAD_CONFIGURATION_MACRO(CompressorEffect, CompressorConfig)
 
 
 
-int CompressorEffect::process_realtime(int64_t size, double **input_ptr, double **output_ptr)
+
+
+int CompressorEffect::process_buffer(int64_t size, 
+		double **buffer,
+		int64_t start_position,
+		int sample_rate)
 {
-//printf("CompressorEffect::process_realtime 1 %f\n", DB::fromdb(-100));
+
 	load_configuration();
 
-	if(coefs_allocated < size)
-	{
-		if(coefs) delete [] coefs;
-		coefs = new double[size];
-		coefs_allocated = size;
-	}
-
-//printf("CompressorEffect::process_realtime 2\n");
-	int preview_samples = (int)(config.preview_len * PluginAClient::project_sample_rate + 0.5);
-	int reaction_samples = (int)(config.reaction_len * PluginAClient::project_sample_rate + 0.5);
+	int reaction_samples = (int)(config.reaction_len * sample_rate + 0.5);
+	int decay_samples = (int)(config.decay_len * sample_rate + 0.5);
 	int trigger = CLIP(config.trigger, 0, PluginAClient::total_in_buffers - 1);
-//	trigger = PluginAClient::total_in_buffers - trigger - 1;
-	CLAMP(reaction_samples, 1, 128000000);
-	CLAMP(preview_samples, 1, 128000000);
 
-//printf("CompressorEffect::process_realtime 3\n");
+	CLAMP(reaction_samples, -1000000, 1000000);
+	CLAMP(decay_samples, reaction_samples, 1000000);
+	CLAMP(decay_samples, 1, 1000000);
+	if(labs(reaction_samples) < 1) reaction_samples = 1;
+	if(labs(decay_samples) < 1) decay_samples = 1;
 
-
-// Append input buffers
-	if(input_size + size > input_allocated)
+	int total_buffers = get_total_buffers();
+	if(reaction_samples > 0)
 	{
-		double **new_input = new double*[PluginClient::total_in_buffers];
-		for(int i = 0; i < PluginClient::total_in_buffers; i++)
-			new_input[i] = new double[input_size + size];
-
-		if(input_buffer)
+		if(target_current_sample < 0) target_current_sample = reaction_samples;
+		for(int i = 0; i < total_buffers; i++)
 		{
-			for(int i = 0; i < PluginClient::total_in_buffers; i++)
-			{
-				memcpy(new_input[i], input_buffer[i], sizeof(double) * input_size);
-				delete [] input_buffer[i];
-			}
-
-			delete [] input_buffer;
+			read_samples(buffer[i],
+				i,
+				sample_rate,
+				start_position,
+				size);
 		}
 
-		input_buffer = new_input;
-		input_allocated = input_size + size;
-	}
-
-//printf("CompressorEffect::process_realtime 4\n");
-	for(int i = 0; i < PluginClient::total_in_buffers; i++)
-		memcpy(input_buffer[i] + input_size, 
-			input_ptr[i], 
-			size * sizeof(double));
-	input_size += size;
-
-
-
-//printf("CompressorEffect::process_realtime 5 %d\n", size);
-
-
-
-
-// Have enough to send to output
-	if(input_size >= preview_samples)
-	{
-		int output_offset = 0;
-		if(input_size - preview_samples < size)
-		{
-			output_offset = size - (input_size - preview_samples);
-			size = input_size - preview_samples;
-			for(int i = 0; i < PluginAClient::total_in_buffers; i++)
-				bzero(output_ptr[i], output_offset * sizeof(double));
-		}
-			
-//printf("CompressorEffect::process_realtime 6 %d\n", reaction_samples);
-		if(reaction_allocated != reaction_samples)
-		{
-			double *new_buffer = new double[reaction_samples];
-			if(reaction_buffer)
-			{
-				memcpy(new_buffer, 
-					reaction_buffer, 
-					sizeof(double) * MIN(reaction_allocated, reaction_samples));
-				delete [] reaction_buffer;
-			}
-			if(reaction_samples - reaction_allocated > 0)
-				bzero(new_buffer + reaction_allocated, 
-					sizeof(double) * (reaction_samples - reaction_allocated));
-			reaction_buffer = new_buffer;
-			reaction_allocated = reaction_samples;
-			if(reaction_position >= reaction_allocated) reaction_position = 0;
-		}
-
-
-//printf("CompressorEffect::process_realtime 7\n");
-// Calculate coef buffer for current size
-		double max = 0, min = 0;
-		int64_t max_age = 0;
-		int64_t min_age = 0;
+		double current_slope = (next_target - previous_target) / 
+			reaction_samples;
+		double *trigger_buffer = buffer[trigger];
 		for(int i = 0; i < size; i++)
 		{
-// Put new sample in reaction buffer
-			reaction_buffer[reaction_position] = 
-				input_buffer[trigger][i + preview_samples];
-
-
-
-
-// Get peak in last reaction buffer size of samples
-			max = 0;
-			min = 0;
-// Try to optimize
-			if(last_peak_age < reaction_samples)
+// Get slope required to reach current sample from smoothed sample over reaction
+// length.
+			double sample;
+			if(config.no_trigger)
 			{
-				if(fabs(input_buffer[trigger][i + preview_samples]) > last_peak)
+				double max = 0;
+				for(int j = 0; j < total_buffers; j++)
 				{
-					last_peak = fabs(input_buffer[trigger][i + preview_samples]);
-					last_peak_age = 0;
+					sample = fabs(buffer[j][i]);
+					if(sample > max) max = sample;
 				}
-				max = last_peak;
+				sample = max;
 			}
 			else
 			{
-// Rescan history
-				for(int j = 0; j < reaction_samples; j++)
-				{
-					if(reaction_buffer[j] > max)
-					{
-						max = reaction_buffer[j];
-						max_age = (j <= reaction_position) ? 
-							(reaction_position - j) :
-							(reaction_samples - (j - reaction_position));
-					}
-					else
-					if(reaction_buffer[j] < min)
-					{
-						min = reaction_buffer[j];
-						min_age = (j <= reaction_position) ? 
-							(reaction_position - j) :
-							(reaction_samples - (j - reaction_position));
-					}
-				}
-
-				if(-min > max)
-				{
-					max = -min;
-					max_age = min_age;
-				}
-
-				last_peak = max;
-				last_peak_age = max_age;
+				sample = fabs(trigger_buffer[i]);
 			}
 
-// Here's the brain of the effect.
+			double new_slope = (sample - current_value) /
+				reaction_samples;
 
-// Test expiration of previous max.  If previous max is bigger than
-// current max and still valid, it replaces the current max.
-// Otherwise, the current max becomes the previous max and the counter
-// is reset.
-
-			if(max_counter > 0 && previous_max >= max)
+// Slope greater than current slope
+			if(new_slope >= current_slope && 
+				(current_slope >= 0 ||
+				new_slope >= 0))
 			{
-				;
+				next_target = sample;
+				previous_target = current_value;
+				target_current_sample = 0;
+				target_samples = reaction_samples;
+				current_slope = new_slope;
 			}
 			else
-			if(max > 0.00001)
+			if(sample > next_target && current_slope < 0)
 			{
-// Get new slope based on current coef, peak, and reaction len.
-// The slope has a counter which needs to expire before it can be
-// replaced with a less steep value.
-				double x_db = DB::todb(max);
-				double y_db = config.calculate_db(x_db);
-				double y_linear = DB::fromdb(y_db);
-				double new_coef = y_linear / max;
-				double slope = (new_coef - current_coef) / reaction_samples;
-				previous_slope = slope;
-				previous_max = max;
-				previous_intercept = current_coef;
-				max_counter = reaction_samples;
+				next_target = sample;
+				previous_target = current_value;
+				target_current_sample = 0;
+				target_samples = decay_samples;
+				current_slope = (sample - current_value) / decay_samples;
+			}
+// Current smoothed sample came up without finding higher slope
+			if(target_current_sample >= target_samples)
+			{
+				next_target = sample;
+				previous_target = current_value;
+				target_current_sample = 0;
+				target_samples = decay_samples;
+				current_slope = (sample - current_value) / decay_samples;
+			}
+
+// Update current value and store gain
+			current_value = (next_target * target_current_sample + 
+				previous_target * (target_samples - target_current_sample)) /
+				target_samples;
+
+			target_current_sample++;
+
+			if(config.smoothing_only)
+			{
+				for(int j = 0; j < total_buffers; j++)
+					buffer[j][i] = current_value;
 			}
 			else
 			{
-				previous_slope = 0.0;
-				previous_intercept = current_coef;
-				max_counter = 0;
-			}
-
-//printf("%f %f %f %d\n", current_coef, previous_slope, previous_intercept, max_counter);
-			max_counter--;
-			current_coef = previous_intercept + 
-				previous_slope * (reaction_samples - max_counter);
-			coefs[i] = current_coef;
-
-			last_peak_age++;
-			reaction_position++;
-			if(reaction_position >= reaction_allocated)
-				reaction_position = 0;
-		}
-
-//printf("CompressorEffect::process_realtime 8 %f %f\n", input_buffer[0][0], coefs[0]);
-// Multiply coef buffer by input buffer
-		for(int i = 0; i < PluginAClient::total_in_buffers; i++)
-		{
-			for(int j = 0; j < size; j++)
-			{
-				output_ptr[i][j + output_offset] = input_buffer[i][j] * coefs[j];
+				double gain = calculate_gain(current_value);
+				for(int j = 0; j < total_buffers; j++)
+				{
+					buffer[j][i] *= gain;
+				}
 			}
 		}
-
-//printf("CompressorEffect::process_realtime 9 %d\n", PluginAClient::total_in_buffers);
-// Shift input forward
-		for(int i = 0; i < PluginAClient::total_in_buffers; i++)
-		{
-			for(int j = 0, k = size; k < input_size; j++, k++)
-			{
-				input_buffer[i][j] = input_buffer[i][k];
-			}
-		}
-//printf("CompressorEffect::process_realtime 10\n");
-		input_size -= size;
 	}
 	else
 	{
-		for(int i = 0; i < PluginAClient::total_in_buffers; i++)
-			bzero(output_ptr[i], sizeof(double) * size);
+		if(target_current_sample < 0) target_current_sample = target_samples;
+		int64_t preview_samples = -reaction_samples;
+
+// Start of new buffer is outside the current buffer.  Start buffer over.
+		if(start_position < input_start ||
+			start_position >= input_start + input_size)
+		{
+			input_size = 0;
+			input_start = start_position;
+		}
+		else
+// Shift current buffer so the buffer starts on start_position
+		if(start_position > input_start &&
+			start_position < input_start + input_size)
+		{
+			if(input_buffer)
+			{
+				int len = input_start + input_size - start_position;
+				for(int i = 0; i < total_buffers; i++)
+				{
+					memcpy(input_buffer[i],
+						input_buffer[i] + (start_position - input_start),
+						len * sizeof(double));
+				}
+				input_size = len;
+				input_start = start_position;
+			}
+		}
+
+// Expand buffer to handle preview size
+		if(size + preview_samples > input_allocated)
+		{
+			double **new_input_buffer = new double*[total_buffers];
+			for(int i = 0; i < total_buffers; i++)
+			{
+				new_input_buffer[i] = new double[size + preview_samples];
+				if(input_buffer)
+				{
+					memcpy(new_input_buffer[i], 
+						input_buffer[i], 
+						input_size * sizeof(double));
+					delete [] input_buffer[i];
+				}
+			}
+			if(input_buffer) delete [] input_buffer;
+
+			input_allocated = size + preview_samples;
+			input_buffer = new_input_buffer;
+		}
+
+// Append data to input buffer to construct readahead area.
+#define MAX_FRAGMENT_SIZE 131072
+		while(input_size < size + preview_samples)
+		{
+			int fragment_size = MAX_FRAGMENT_SIZE;
+			if(fragment_size + input_size > size + preview_samples)
+				fragment_size = size + preview_samples - input_size;
+			for(int i = 0; i < total_buffers; i++)
+			{
+				read_samples(input_buffer[i] + input_size,
+					i,
+					sample_rate,
+					input_start + input_size,
+					fragment_size);
+			}
+			input_size += fragment_size;
+		}
+
+
+		double current_slope = (next_target - previous_target) /
+			target_samples;
+		double *trigger_buffer = input_buffer[trigger];
+		for(int i = 0; i < size; i++)
+		{
+// Get slope from current sample to every sample in preview_samples.
+// Take highest one or first one after target_samples are up.
+
+// For optimization, calculate the first slope we really need.
+// Assume every slope up to the end of preview_samples has been calculated and
+// found <= to current slope.
+            int first_slope = preview_samples - 1;
+// Need new slope immediately
+			if(target_current_sample >= target_samples)
+				first_slope = 1;
+			for(int j = first_slope; 
+				j < preview_samples; 
+				j++)
+			{
+				double sample;
+				if(config.no_trigger)
+				{
+					double max = 0;
+					for(int k = 0; k < total_buffers; k++)
+					{
+						sample = fabs(input_buffer[k][i + j]);
+						if(sample > max) max = sample;
+					}
+					sample = max;
+				}
+				else
+				{
+					sample = fabs(trigger_buffer[i + j]);
+				}
+
+
+
+
+
+				double new_slope = (sample - current_value) /
+					j;
+// Got equal or higher slope
+				if(new_slope >= current_slope && 
+					(current_slope >= 0 ||
+					new_slope >= 0))
+				{
+					target_current_sample = 0;
+					target_samples = j;
+					current_slope = new_slope;
+					next_target = sample;
+					previous_target = current_value;
+				}
+				else
+				if(sample > next_target && current_slope < 0)
+				{
+					target_current_sample = 0;
+					target_samples = decay_samples;
+					current_slope = (sample - current_value) /
+						decay_samples;
+					next_target = sample;
+					previous_target = current_value;
+				}
+
+// Hit end of current slope range without finding higher slope
+				if(target_current_sample >= target_samples)
+				{
+					target_current_sample = 0;
+					target_samples = decay_samples;
+					current_slope = (sample - current_value) / decay_samples;
+					next_target = sample;
+					previous_target = current_value;
+				}
+			}
+
+// Update current value and multiply gain
+			current_value = (next_target * target_current_sample +
+				previous_target * (target_samples - target_current_sample)) /
+				target_samples;
+//buffer[0][i] = current_value;
+			target_current_sample++;
+
+			if(config.smoothing_only)
+			{
+				for(int j = 0; j < total_buffers; j++)
+					buffer[j][i] = current_value;
+			}
+			else
+			{
+				double gain = calculate_gain(current_value);
+				for(int j = 0; j < total_buffers; j++)
+				{
+					buffer[j][i] = input_buffer[j][i] * gain;
+				}
+			}
+		}
+
+
+
 	}
 
-//printf("CompressorEffect::process_realtime 11\n");
+
+
+
 
 	return 0;
 }
 
 
-
+double CompressorEffect::calculate_gain(double input)
+{
+	double x_db = DB::todb(input);
+	double y_db = config.calculate_db(x_db);
+	double y_linear = DB::fromdb(y_db);
+	double gain;
+	if(input != 0)
+		gain = y_linear / input;
+	else
+		gain = 100000;
+	return gain;
+}
 
 
 
@@ -460,25 +549,29 @@ int CompressorEffect::process_realtime(int64_t size, double **input_ptr, double 
 CompressorConfig::CompressorConfig()
 {
 	reaction_len = 1.0;
-	preview_len = 1.0;
 	min_db = -80.0;
 	min_x = min_db;
 	min_y = min_db;
 	max_x = 0;
 	max_y = 0;
 	trigger = 0;
+	no_trigger = 1;
+	smoothing_only = 0;
+	decay_len = 1.0;
 }
 
 void CompressorConfig::copy_from(CompressorConfig &that)
 {
 	this->reaction_len = that.reaction_len;
-	this->preview_len = that.preview_len;
+	this->decay_len = that.decay_len;
 	this->min_db = that.min_db;
 	this->min_x = that.min_x;
 	this->min_y = that.min_y;
 	this->max_x = that.max_x;
 	this->max_y = that.max_y;
 	this->trigger = that.trigger;
+	this->no_trigger = that.no_trigger;
+	this->smoothing_only = that.smoothing_only;
 	levels.remove_all();
 	for(int i = 0; i < that.levels.total; i++)
 		this->levels.append(that.levels.values[i]);
@@ -486,7 +579,24 @@ void CompressorConfig::copy_from(CompressorConfig &that)
 
 int CompressorConfig::equivalent(CompressorConfig &that)
 {
-	return 0;
+	if(!EQUIV(this->reaction_len, that.reaction_len) ||
+		!EQUIV(this->decay_len, that.decay_len) ||
+		this->trigger != that.trigger ||
+		this->no_trigger != that.no_trigger ||
+		this->smoothing_only != that.smoothing_only)
+		return 0;
+	if(this->levels.total != that.levels.total) return 0;
+	for(int i = 0; 
+		i < this->levels.total && i < that.levels.total; 
+		i++)
+	{
+		compressor_point_t *this_level = &this->levels.values[i];
+		compressor_point_t *that_level = &that.levels.values[i];
+		if(!EQUIV(this_level->x, that_level->x) ||
+			!EQUIV(this_level->y, that_level->y))
+			return 0;
+	}
+	return 1;
 }
 
 void CompressorConfig::interpolate(CompressorConfig &prev, 
@@ -684,26 +794,32 @@ CompressorWindow::CompressorWindow(CompressorEffect *plugin, int x, int y)
 void CompressorWindow::create_objects()
 {
 	int x = 35, y = 10;
+	int control_margin = 120;
 
 	add_subwindow(canvas = new CompressorCanvas(plugin, 
 		x, 
 		y, 
-		get_w() - x - 120, 
+		get_w() - x - control_margin - 10, 
 		get_h() - y - 70));
 	canvas->set_cursor(CROSS_CURSOR);
-	x = get_w() - 110;
-	add_subwindow(new BC_Title(x, y, _("Preview secs:")));
-	y += 20;
-	add_subwindow(preview = new CompressorPreview(plugin, x, y));
-	y += 30;
+	x = get_w() - control_margin;
 	add_subwindow(new BC_Title(x, y, _("Reaction secs:")));
 	y += 20;
 	add_subwindow(reaction = new CompressorReaction(plugin, x, y));
+	y += 30;
+	add_subwindow(new BC_Title(x, y, _("Decay secs:")));
+	y += 20;
+	add_subwindow(decay = new CompressorDecay(plugin, x, y));
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Trigger:")));
 	y += 20;
 	add_subwindow(trigger = new CompressorTrigger(plugin, x, y));
 	y += 30;
+	add_subwindow(no_trigger = new CompressorNoTrigger(plugin, x, y));
+	if(plugin->config.no_trigger) trigger->disable();
+	y += 30;
+	add_subwindow(smooth = new CompressorSmooth(plugin, x, y));
+	y += 60;
 	add_subwindow(clear = new CompressorClear(plugin, x, y));
 	x = 10;
 	y = get_h() - 40;
@@ -796,9 +912,22 @@ void CompressorWindow::update()
 
 void CompressorWindow::update_textboxes()
 {
-	preview->update((float)plugin->config.preview_len);
-	trigger->update((int64_t)plugin->config.trigger);
-	reaction->update((float)plugin->config.reaction_len);
+	if(atol(trigger->get_text()) != plugin->config.trigger)
+		trigger->update((int64_t)plugin->config.trigger);
+	if(no_trigger->get_value() != plugin->config.no_trigger)
+		no_trigger->update(plugin->config.no_trigger);
+
+	if(plugin->config.no_trigger && trigger->get_enabled())
+		trigger->disable();
+	else
+	if(!plugin->config.no_trigger && !trigger->get_enabled())
+		trigger->enable();
+
+	if(!EQUIV(atof(reaction->get_text()), plugin->config.reaction_len))
+		reaction->update((float)plugin->config.reaction_len);
+	if(!EQUIV(atof(decay->get_text()), plugin->config.decay_len))
+		decay->update((float)plugin->config.decay_len);
+	smooth->update(plugin->config.smoothing_only);
 	if(canvas->current_operation == CompressorCanvas::DRAG)
 	{
 		x_text->update((float)plugin->config.levels.values[canvas->current_point].x);
@@ -806,7 +935,7 @@ void CompressorWindow::update_textboxes()
 	}
 }
 
-#define POINT_W 6
+#define POINT_W 10
 void CompressorWindow::update_canvas()
 {
 	int y1, y2;
@@ -822,9 +951,17 @@ void CompressorWindow::update_canvas()
 		int x = canvas->get_w() * i / DIVISIONS;
 		canvas->draw_line(x, 0, x, canvas->get_h());
 	}
-	
-	
-	
+
+
+	canvas->set_font(MEDIUMFONT);
+	canvas->draw_text(5, 
+		canvas->get_h() / 2 - 20, 
+		_("Output"));
+	canvas->draw_text(canvas->get_w() / 2 - canvas->get_text_width(MEDIUMFONT, _("Input level")) / 2, 
+		canvas->get_h() - canvas->get_text_height(MEDIUMFONT), 
+		_("Input"));
+
+
 	canvas->set_color(BLACK);
 	for(int i = 0; i < canvas->get_w(); i++)
 	{
@@ -956,19 +1093,6 @@ int CompressorCanvas::cursor_motion_event()
 
 
 
-CompressorPreview::CompressorPreview(CompressorEffect *plugin, int x, int y) 
- : BC_TextBox(x, y, 100, 1, (float)plugin->config.preview_len)
-{
-	this->plugin = plugin;
-}
-
-int CompressorPreview::handle_event()
-{
-	plugin->config.preview_len = atof(get_text());
-	plugin->send_configure_change();
-	return 1;
-}
-
 
 
 CompressorReaction::CompressorReaction(CompressorEffect *plugin, int x, int y) 
@@ -985,6 +1109,19 @@ int CompressorReaction::handle_event()
 //printf("CompressorReaction::handle_event 2\n");
 	return 1;
 }
+
+CompressorDecay::CompressorDecay(CompressorEffect *plugin, int x, int y) 
+ : BC_TextBox(x, y, 100, 1, (float)plugin->config.decay_len)
+{
+	this->plugin = plugin;
+}
+int CompressorDecay::handle_event()
+{
+	plugin->config.decay_len = atof(get_text());
+	plugin->send_configure_change();
+	return 1;
+}
+
 
 
 CompressorX::CompressorX(CompressorEffect *plugin, int x, int y) 
@@ -1024,6 +1161,9 @@ int CompressorY::handle_event()
 }
 
 
+
+
+
 CompressorTrigger::CompressorTrigger(CompressorEffect *plugin, int x, int y) 
  : BC_TextBox(x, y, (int64_t)100, (int64_t)1, (int64_t)plugin->config.trigger)
 {
@@ -1040,6 +1180,24 @@ int CompressorTrigger::handle_event()
 
 
 
+CompressorNoTrigger::CompressorNoTrigger(CompressorEffect *plugin, int x, int y) 
+ : BC_CheckBox(x, y, plugin->config.no_trigger, "No trigger")
+{
+	this->plugin = plugin;
+}
+int CompressorNoTrigger::handle_event()
+{
+	plugin->config.no_trigger = get_value();
+	plugin->thread->window->update();
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+
+
+
+
 CompressorClear::CompressorClear(CompressorEffect *plugin, int x, int y) 
  : BC_GenericButton(x, y, _("Clear"))
 {
@@ -1051,6 +1209,21 @@ int CompressorClear::handle_event()
 	plugin->config.levels.remove_all();
 //plugin->config.dump();
 	plugin->thread->window->update();
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+
+CompressorSmooth::CompressorSmooth(CompressorEffect *plugin, int x, int y) 
+ : BC_CheckBox(x, y, plugin->config.smoothing_only, _("Smooth only"))
+{
+	this->plugin = plugin;
+}
+
+int CompressorSmooth::handle_event()
+{
+	plugin->config.smoothing_only = get_value();
 	plugin->send_configure_change();
 	return 1;
 }

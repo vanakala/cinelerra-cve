@@ -2,6 +2,7 @@
 #include "defaults.h"
 #include "edl.inc"
 #include "filexml.h"
+#include "language.h"
 #include "overlayframe.h"
 #include "picon_png.h"
 #include "vframe.h"
@@ -10,11 +11,6 @@
 
 #include <stdint.h>
 #include <string.h>
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 REGISTER_PLUGIN(IrisSquareMain)
@@ -314,9 +310,15 @@ int IrisSquareMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 
 	switch(incoming->get_color_model())
 	{
+		case BC_RGB_FLOAT:
+			IRISSQUARE(float, 3);
+			break;
 		case BC_RGB888:
 		case BC_YUV888:
 			IRISSQUARE(unsigned char, 3)
+			break;
+		case BC_RGBA_FLOAT:
+			IRISSQUARE(float, 4);
 			break;
 		case BC_RGBA8888:
 		case BC_YUVA8888:

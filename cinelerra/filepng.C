@@ -2,26 +2,21 @@
 #include "edit.h"
 #include "file.h"
 #include "filepng.h"
+#include "language.h"
 #include "mwindow.inc"
 #include "quicktime.h"
 #include "vframe.h"
 #include "videodevice.inc"
 
 #include <png.h>
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 FilePNG::FilePNG(Asset *asset, File *file)
  : FileList(asset, file, "PNGLIST", ".png", FILE_PNG, FILE_PNG_LIST)
 {
-	temp = 0;
 }
 
 FilePNG::~FilePNG()
 {
-	if(temp) delete temp;
 }
 
 
@@ -136,21 +131,20 @@ int FilePNG::read_frame_header(char *path)
 //printf("FilePNG::read_frame_header 1\n");
 	asset->width = png_get_image_width(png_ptr, info_ptr);
 	asset->height = png_get_image_height(png_ptr, info_ptr);
-	int color_type = png_get_color_type(png_ptr, info_ptr);
-
-	// gray to rgb conversion is done automatically in read_frame 
-	switch (color_type)
-	{
-		case PNG_COLOR_TYPE_GRAY:
-			color_type = PNG_COLOR_TYPE_RGB;
-			break;
-		case PNG_COLOR_TYPE_GRAY_ALPHA: 
-			color_type = PNG_COLOR_TYPE_RGB_ALPHA;
-			break;
-	}
-
+ 	int png_color_type = png_get_color_type(png_ptr, info_ptr);
+ 
+// gray to rgb conversion is done automatically in read_frame 
+ 	switch (png_color_type)
+ 	{
+ 		case PNG_COLOR_TYPE_GRAY:
+ 			png_color_type = PNG_COLOR_TYPE_RGB;
+ 			break;
+ 		case PNG_COLOR_TYPE_GRAY_ALPHA: 
+ 			png_color_type = PNG_COLOR_TYPE_RGB_ALPHA;
+ 			break;
+ 	}
 	native_cmodel = 
-		color_type == PNG_COLOR_TYPE_RGB_ALPHA ?
+		png_color_type == PNG_COLOR_TYPE_RGB_ALPHA ?
 		BC_RGBA8888 :
 		BC_RGB888;
 
@@ -232,7 +226,10 @@ int FilePNG::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 	native_cmodel = asset->png_use_alpha ? BC_RGBA8888 : BC_RGB888;
 	if(frame->get_color_model() != native_cmodel)
 	{
-		if(!png_unit->temp_frame) png_unit->temp_frame = new VFrame(0, asset->width, asset->height, native_cmodel);
+		if(!png_unit->temp_frame) png_unit->temp_frame = new VFrame(0, 
+			asset->width, 
+			asset->height, 
+			native_cmodel);
 
 		cmodel_transfer(png_unit->temp_frame->get_rows(), /* Leave NULL if non existent */
 			frame->get_rows(),
@@ -288,7 +285,13 @@ int FilePNG::read_frame(VFrame *output, VFrame *input)
 	info_ptr = png_create_info_struct(png_ptr);
 	png_set_read_fn(png_ptr, input, (png_rw_ptr)read_function);
 	png_read_info(png_ptr, info_ptr);
-//printf("FilePNG::read_frame 2 %d\n", output->get_color_model());
+
+ 	int png_color_type = png_get_color_type(png_ptr, info_ptr);
+ 	if (png_color_type == PNG_COLOR_TYPE_GRAY ||
+         	png_color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
+ 	{
+ 		png_set_gray_to_rgb(png_ptr);
+ 	}
 
 	int color_type = png_get_color_type(png_ptr, info_ptr);
 	if (color_type == PNG_COLOR_TYPE_GRAY ||
@@ -352,9 +355,9 @@ PNGUnit::~PNGUnit()
 
 PNGConfigVideo::PNGConfigVideo(BC_WindowBase *parent_window, Asset *asset)
  : BC_Window(PROGRAM_NAME ": Video Compression",
- 	parent_window->get_abs_cursor_x(),
- 	parent_window->get_abs_cursor_y(),
-	400,
+ 	parent_window->get_abs_cursor_x(1),
+ 	parent_window->get_abs_cursor_y(1),
+	200,
 	100)
 {
 	this->parent_window = parent_window;

@@ -32,9 +32,19 @@ class HistogramWindow;
 #define HISTOGRAM_ALPHA 3
 #define HISTOGRAM_VALUE 4
 
-// range
-#define HISTOGRAM_RANGE 0x10000
+// Number of divisions in histogram.  
+// 65536 + min and max range to speed up the tabulation
+#define HISTOGRAM_RANGE 0x13333
+#define FLOAT_RANGE 1.2
+// Minimum value in percentage
+#define HISTOGRAM_MIN -10
+#define FLOAT_MIN -0.1
+// Maximum value in percentage
+#define HISTOGRAM_MAX 110
+#define FLOAT_MAX 1.1
 
+#define PRECISION 0.001
+#define DIGITS 3
 #define THRESHOLD_SCALE 1000
 
 class HistogramConfig
@@ -49,16 +59,19 @@ public:
 		int64_t prev_frame, 
 		int64_t next_frame, 
 		int64_t current_frame);
+// Used by constructor and reset button
 	void reset(int do_mode);
+	void boundaries();
 
-	int input_min[5];
-	int input_mid[5];
-	int input_max[5];
-	int output_min[5];
-	int output_max[5];
+// Range 0 - 1.0
+	float input_min[5];
+	float input_mid[5];
+	float input_max[5];
+	float output_min[5];
+	float output_max[5];
 	int automatic;
 	int mode;
-	int threshold;
+	float threshold;
 };
 
 
@@ -78,6 +91,7 @@ public:
 	int button_press_event();
 	int button_release_event();
 	int cursor_motion_event();
+	int input_to_pixel(float input);
 
 	int operation;
 	enum
@@ -134,10 +148,14 @@ public:
 		HistogramWindow *gui,
 		int x,
 		int y,
-		int *output);
+		float *output,
+		int subscript,
+		int operation);
 	int handle_event();
 	HistogramMain *plugin;
-	int *output;
+	float *output;
+	int subscript;
+	int operation;
 };
 
 class HistogramWindow : public BC_Window
@@ -151,12 +169,13 @@ public:
 	void update(int do_input);
 	void update_mode();
 	void update_canvas();
+	void draw_canvas_overlay();
 	void update_input();
 	void update_output();
 
 	HistogramSlider *input, *output;
 	HistogramAuto *automatic;
-	HistogramMode *mode_v, *mode_r, *mode_g, *mode_b,  *mode_a;
+	HistogramMode *mode_v, *mode_r, *mode_g, *mode_b /*,  *mode_a */;
 	HistogramText *input_min;
 	HistogramText *input_mid;
 	HistogramText *input_max;
@@ -165,6 +184,12 @@ public:
 	HistogramText *threshold;
 	BC_SubWindow *canvas;
 	HistogramMain *plugin;
+	int canvas_w;
+	int canvas_h;
+	int title1_x;
+	int title2_x;
+	int title3_x;
+	int title4_x;
 	BC_Pixmap *max_picon, *mid_picon, *min_picon;
 };
 
@@ -190,7 +215,7 @@ public:
 	PLUGIN_CLASS_MEMBERS(HistogramConfig, HistogramThread)
 
 // Convert input to input curve
-	float calculate_curve(float input, int mode);
+	float calculate_transfer(float input, int mode);
 // Calculate automatic settings
 	void calculate_automatic(VFrame *data);
 // Calculate histogram
@@ -234,6 +259,8 @@ public:
 	LoadClient* new_client();
 	LoadPackage* new_package();
 	HistogramMain *plugin;
+	int total_size;
+
 
 	int operation;
 	enum
@@ -276,34 +303,53 @@ void HistogramConfig::reset(int do_mode)
 {
 	for(int i = 0; i < 5; i++)
 	{
-		input_min[i] = 0;
-		input_mid[i] = 0x8000;
-		input_max[i] = 0xffff;
-		output_min[i] = 0;
-		output_max[i] = 0xffff;
+		input_min[i] = 0.0;
+		input_mid[i] = .5;
+		input_max[i] = 1.0;
+		output_min[i] = 0.0;
+		output_max[i] = 1.0;
 	}
 	if(do_mode) 
 	{
 		mode = HISTOGRAM_VALUE;
 		automatic = 0;
-		threshold = 10;
+		threshold = 0.1;
 	}
+}
+
+void HistogramConfig::boundaries()
+{
+	for(int i = 0; i < 5; i++)
+	{
+		CLAMP(input_min[i], FLOAT_MIN, FLOAT_MAX);
+		CLAMP(input_mid[i], FLOAT_MIN, FLOAT_MAX);
+		CLAMP(input_max[i], FLOAT_MIN, FLOAT_MAX);
+		CLAMP(output_min[i], FLOAT_MIN, FLOAT_MAX);
+		CLAMP(output_max[i], FLOAT_MIN, FLOAT_MAX);
+		input_min[i] = Units::quantize(input_min[i], PRECISION);
+// Can't quantize or it would screw up automatic calculation.
+//		input_mid[i] = Units::quantize(input_mid[i], PRECISION);
+		input_max[i] = Units::quantize(input_max[i], PRECISION);
+		output_min[i] = Units::quantize(output_min[i], PRECISION);
+		output_max[i] = Units::quantize(output_max[i], PRECISION);
+	}
+	CLAMP(threshold, 0, 1);
 }
 
 int HistogramConfig::equivalent(HistogramConfig &that)
 {
 	for(int i = 0; i < 5; i++)
 	{
-		if(input_min[i] != that.input_min[i] ||
-			input_mid[i] != that.input_mid[i] ||
-			input_max[i] != that.input_max[i] ||
-			output_min[i] != that.output_min[i] ||
-			output_max[i] != that.output_max[i]) return 0;
+		if(!EQUIV(input_min[i], that.input_min[i]) ||
+			!EQUIV(input_mid[i], that.input_mid[i]) ||
+			!EQUIV(input_max[i], that.input_max[i]) ||
+			!EQUIV(output_min[i], that.output_min[i]) ||
+			!EQUIV(output_max[i], that.output_max[i])) return 0;
 	}
 
 	if(automatic != that.automatic ||
 		mode != that.mode ||
-		threshold != that.threshold) return 0;
+		!EQUIV(threshold, that.threshold)) return 0;
 
 	return 1;
 }
@@ -335,13 +381,13 @@ void HistogramConfig::interpolate(HistogramConfig &prev,
 
 	for(int i = 0; i < 5; i++)
 	{
-		input_min[i] = (int)(prev.input_min[i] * prev_scale + next.input_min[i] * next_scale);
-		input_mid[i] = (int)(prev.input_mid[i] * prev_scale + next.input_mid[i] * next_scale);
-		input_max[i] = (int)(prev.input_max[i] * prev_scale + next.input_max[i] * next_scale);
-		output_min[i] = (int)(prev.output_min[i] * prev_scale + next.output_min[i] * next_scale);
-		output_max[i] = (int)(prev.output_max[i] * prev_scale + next.output_max[i] * next_scale);
+		input_min[i] = prev.input_min[i] * prev_scale + next.input_min[i] * next_scale;
+		input_mid[i] = prev.input_mid[i] * prev_scale + next.input_mid[i] * next_scale;
+		input_max[i] = prev.input_max[i] * prev_scale + next.input_max[i] * next_scale;
+		output_min[i] = prev.output_min[i] * prev_scale + next.output_min[i] * next_scale;
+		output_max[i] = prev.output_max[i] * prev_scale + next.output_max[i] * next_scale;
 	}
-	threshold = (int)(prev.threshold * prev_scale + next.threshold * next_scale);
+	threshold = prev.threshold * prev_scale + next.threshold * next_scale;
 	automatic = prev.automatic;
 	mode = prev.mode;
 }
@@ -409,12 +455,12 @@ int HistogramWindow::create_objects()
 		y,
 		HISTOGRAM_BLUE,
 		_("Blue")));
-	x += 70;
-	add_subwindow(mode_a = new HistogramMode(plugin, 
-		x, 
-		y,
-		HISTOGRAM_ALPHA,
-		_("Alpha")));
+// 	x += 70;
+// 	add_subwindow(mode_a = new HistogramMode(plugin, 
+// 		x, 
+// 		y,
+// 		HISTOGRAM_ALPHA,
+// 		_("Alpha")));
 
 	x = x1;
 	y += 30;
@@ -424,7 +470,9 @@ int HistogramWindow::create_objects()
 		this,
 		x,
 		y,
-		&plugin->config.input_min[subscript]);
+		&plugin->config.input_min[subscript],
+		subscript,
+		HistogramSlider::DRAG_MIN_INPUT);
 	input_min->create_objects();
 	x += 90;
 	add_subwindow(new BC_Title(x, y, _("Mid:")));
@@ -433,9 +481,11 @@ int HistogramWindow::create_objects()
 		this,
 		x,
 		y,
-		&plugin->config.input_mid[subscript]);
+		&plugin->config.input_mid[subscript],
+		subscript,
+		HistogramSlider::DRAG_MID_INPUT);
 	input_mid->create_objects();
-	input_mid->update((int64_t)plugin->config.input_mid[subscript]);
+	input_mid->update(plugin->config.input_mid[subscript]);
 	x += 90;
 	add_subwindow(new BC_Title(x, y, _("Max:")));
 	x += 40;
@@ -443,18 +493,42 @@ int HistogramWindow::create_objects()
 		this,
 		x,
 		y,
-		&plugin->config.input_max[subscript]);
+		&plugin->config.input_max[subscript],
+		subscript,
+		HistogramSlider::DRAG_MAX_INPUT);
 	input_max->create_objects();
 
 	x = x1;
 	y += 30;
+	canvas_w = get_w() - x - x;
+	canvas_h = get_h() - y - 170;
+	title1_x = x;
+	title2_x = x + (int)(canvas_w * -FLOAT_MIN / FLOAT_RANGE);
+	title3_x = x + (int)(canvas_w * (1.0 - FLOAT_MIN) / FLOAT_RANGE);
+	title4_x = x + (int)(canvas_w);
 	add_subwindow(canvas = new BC_SubWindow(x, 
 		y, 
-		get_w() - x - x, 
-		get_h() - y - 150,
+		canvas_w, 
+		canvas_h,
 		0xffffff));
+	draw_canvas_overlay();
+	canvas->flash();
 
-	y += canvas->get_h() + 10;
+	y += canvas->get_h() + 1;
+	add_subwindow(new BC_Title(title1_x, 
+		y, 
+		"-10%"));
+	add_subwindow(new BC_Title(title2_x,
+		y,
+		"0%"));
+	add_subwindow(new BC_Title(title3_x - get_text_width(MEDIUMFONT, "100"),
+		y,
+		"100%"));
+	add_subwindow(new BC_Title(title4_x - get_text_width(MEDIUMFONT, "110"),
+		y,
+		"110%"));
+
+	y += 20;
 	add_subwindow(input = new HistogramSlider(plugin, 
 		this,
 		x, 
@@ -471,7 +545,9 @@ int HistogramWindow::create_objects()
 		this,
 		x,
 		y,
-		&plugin->config.output_min[subscript]);
+		&plugin->config.output_min[subscript],
+		subscript,
+		HistogramSlider::DRAG_MIN_OUTPUT);
 	output_min->create_objects();
 	x += 90;
 	add_subwindow(new BC_Title(x, y, _("Max:")));
@@ -480,7 +556,9 @@ int HistogramWindow::create_objects()
 		this,
 		x,
 		y,
-		&plugin->config.output_max[subscript]);
+		&plugin->config.output_max[subscript],
+		subscript,
+		HistogramSlider::DRAG_MAX_OUTPUT);
 	output_max->create_objects();
 
 	x = x1;
@@ -514,7 +592,9 @@ int HistogramWindow::create_objects()
 		this,
 		x,
 		y,
-		&plugin->config.threshold);
+		&plugin->config.threshold,
+		0,
+		0);
 	threshold->create_objects();
 
 	show_window();
@@ -527,7 +607,7 @@ WINDOW_CLOSE_EVENT(HistogramWindow)
 void HistogramWindow::update(int do_input)
 {
 	automatic->update(plugin->config.automatic);
-	threshold->update((int64_t)plugin->config.threshold);
+	threshold->update(plugin->config.threshold);
 	update_mode();
 
 	if(do_input) update_input();
@@ -538,17 +618,17 @@ void HistogramWindow::update_input()
 {
 	int subscript = plugin->config.mode;
 	input->update();
-	input_min->update((int64_t)plugin->config.input_min[subscript]);
-	input_mid->update((int64_t)plugin->config.input_mid[subscript]);
-	input_max->update((int64_t)plugin->config.input_max[subscript]);
+	input_min->update(plugin->config.input_min[subscript]);
+	input_mid->update(plugin->config.input_mid[subscript]);
+	input_max->update(plugin->config.input_max[subscript]);
 }
 
 void HistogramWindow::update_output()
 {
 	int subscript = plugin->config.mode;
 	output->update();
-	output_min->update((int64_t)plugin->config.output_min[subscript]);
-	output_max->update((int64_t)plugin->config.output_max[subscript]);
+	output_min->update(plugin->config.output_min[subscript]);
+	output_max->update(plugin->config.output_max[subscript]);
 }
 
 void HistogramWindow::update_mode()
@@ -557,7 +637,7 @@ void HistogramWindow::update_mode()
 	mode_r->update(plugin->config.mode == HISTOGRAM_RED ? 1 : 0);
 	mode_g->update(plugin->config.mode == HISTOGRAM_GREEN ? 1 : 0);
 	mode_b->update(plugin->config.mode == HISTOGRAM_BLUE ? 1 : 0);
-	mode_a->update(plugin->config.mode == HISTOGRAM_ALPHA ? 1 : 0);
+//	mode_a->update(plugin->config.mode == HISTOGRAM_ALPHA ? 1 : 0);
 	input_min->output = &plugin->config.input_min[plugin->config.mode];
 	input_mid->output = &plugin->config.input_mid[plugin->config.mode];
 	input_max->output = &plugin->config.input_max[plugin->config.mode];
@@ -565,11 +645,39 @@ void HistogramWindow::update_mode()
 	output_max->output = &plugin->config.output_max[plugin->config.mode];
 }
 
+void HistogramWindow::draw_canvas_overlay()
+{
+	canvas->set_color(0x00ff00);
+	int y1;
+	for(int i = 0; i < canvas_w; i++)
+	{
+		float input = (float)i / 
+				canvas_w * 
+				FLOAT_RANGE + 
+				FLOAT_MIN;
+		float output = plugin->calculate_transfer(input, plugin->config.mode);
+		int y2 = canvas_h - (int)(output * canvas_h);
+		if(i > 0)
+		{
+			canvas->draw_line(i - 1, y1, i, y2);
+		}
+		y1 = y2;
+	}
+
+	canvas->set_color(0xff0000);
+	canvas->draw_line(title2_x - canvas->get_x(), 
+		0, 
+		title2_x - canvas->get_x(), 
+		canvas_h);
+	canvas->draw_line(title3_x - canvas->get_x(), 
+		0, 
+		title3_x - canvas->get_x(), 
+		canvas_h);
+}
+
 void HistogramWindow::update_canvas()
 {
 	int64_t *accum = plugin->accum[plugin->config.mode];
-	int canvas_w = canvas->get_w();
-	int canvas_h = canvas->get_h();
 	int accum_per_canvas_i = HISTOGRAM_RANGE / canvas_w + 1;
 	float accum_per_canvas_f = (float)HISTOGRAM_RANGE / canvas_w;
 	int normalize = 0;
@@ -596,7 +704,6 @@ void HistogramWindow::update_canvas()
 //			max = max * canvas_h / normalize;
 			max = (int)(log(max) / log(normalize) * canvas_h);
 
-
 			canvas->set_color(0xffffff);
 			canvas->draw_line(i, 0, i, canvas_h - max);
 			canvas->set_color(0x000000);
@@ -609,19 +716,7 @@ void HistogramWindow::update_canvas()
 		canvas->draw_box(0, 0, canvas_w, canvas_h);
 	}
 
-	canvas->set_color(0x00ff00);
-	int y1;
-	for(int i = 0; i < canvas_w; i++)
-	{
-		int y2 = canvas_h - (int)(plugin->calculate_curve((float)i / canvas_w * (HISTOGRAM_RANGE - 1), 
-			plugin->config.mode) * canvas_h / (HISTOGRAM_RANGE - 1));
-		if(i > 0)
-		{
-			canvas->draw_line(i - 1, y1, i, y2);
-		}
-		y1 = y2;
-	}
-
+	draw_canvas_overlay();
 	canvas->flash();
 }
 
@@ -670,6 +765,11 @@ HistogramSlider::HistogramSlider(HistogramMain *plugin,
 	operation = NONE;
 }
 
+int HistogramSlider::input_to_pixel(float input)
+{
+	return (int)((input - FLOAT_MIN) / FLOAT_RANGE * get_w());
+}
+
 int HistogramSlider::button_press_event()
 {
 	if(is_event_win() && cursor_inside())
@@ -683,7 +783,7 @@ int HistogramSlider::button_press_event()
 
 		if(is_input)
 		{
-			int x1 = (int)(plugin->config.input_mid[subscript] * w / 0xffff) - 
+			int x1 = input_to_pixel(plugin->config.input_mid[subscript]) - 
 				gui->mid_picon->get_w() / 2;
 			int x2 = x1 + gui->mid_picon->get_w();
 			if(get_cursor_x() >= x1 && get_cursor_x() < x2 &&
@@ -697,7 +797,7 @@ int HistogramSlider::button_press_event()
 		{
 			if(is_input)
 			{
-				int x1 = (int)(plugin->config.input_min[subscript] * w / 0xffff) - 
+				int x1 = input_to_pixel(plugin->config.input_min[subscript]) - 
 					gui->mid_picon->get_w() / 2;
 				int x2 = x1 + gui->mid_picon->get_w();
 				if(get_cursor_x() >= x1 && get_cursor_x() < x2 &&
@@ -708,7 +808,7 @@ int HistogramSlider::button_press_event()
 			}
 			else
 			{
-				int x1 = (int)(plugin->config.output_min[subscript] * w / 0xffff) - 
+				int x1 = input_to_pixel(plugin->config.output_min[subscript]) - 
 					gui->mid_picon->get_w() / 2;
 				int x2 = x1 + gui->mid_picon->get_w();
 				if(get_cursor_x() >= x1 && get_cursor_x() < x2 &&
@@ -723,7 +823,7 @@ int HistogramSlider::button_press_event()
 		{
 			if(is_input)
 			{
-				int x1 = (int)(plugin->config.input_max[subscript] * w / 0xffff) - 
+				int x1 = input_to_pixel(plugin->config.input_max[subscript]) - 
 					gui->mid_picon->get_w() / 2;
 				int x2 = x1 + gui->mid_picon->get_w();
 				if(get_cursor_x() >= x1 && get_cursor_x() < x2 &&
@@ -734,7 +834,7 @@ int HistogramSlider::button_press_event()
 			}
 			else
 			{
-				int x1 = (int)(plugin->config.output_max[subscript] * w / 0xffff) - 
+				int x1 = input_to_pixel(plugin->config.output_max[subscript]) - 
 					gui->mid_picon->get_w() / 2;
 				int x2 = x1 + gui->mid_picon->get_w();
 				if(get_cursor_x() >= x1 && get_cursor_x() < x2 &&
@@ -764,8 +864,8 @@ int HistogramSlider::cursor_motion_event()
 //printf("HistogramSlider::cursor_motion_event 1\n");
 	if(operation != NONE)
 	{
-		float value = (float)get_cursor_x() * 0xffff / get_w();
-		CLAMP(value, 0, 0xffff);
+		float value = (float)get_cursor_x() / get_w() * FLOAT_RANGE + FLOAT_MIN;
+		CLAMP(value, FLOAT_MIN, FLOAT_MAX);
 		int subscript = plugin->config.mode;
 		float input_min = plugin->config.input_min[subscript];
 		float input_max = plugin->config.input_max[subscript];
@@ -776,12 +876,14 @@ int HistogramSlider::cursor_motion_event()
 		{
 			case DRAG_MIN_INPUT:
 				input_min = MIN(input_max, value);
-				plugin->config.input_min[subscript] = (int)input_min;
+				plugin->config.input_min[subscript] = input_min;
 				input_mid = input_min + (input_max - input_min) * input_mid_fraction;
 				break;
 			case DRAG_MID_INPUT:
 				CLAMP(value, input_min, input_max);
-				input_mid = (int)value;
+// Quantize value here so automatic calculation doesn't get rounding errors.
+				value = Units::quantize(value, PRECISION);
+				input_mid = value;
 				break;
 			case DRAG_MAX_INPUT:
 				input_max = MAX(input_mid, value);
@@ -789,11 +891,11 @@ int HistogramSlider::cursor_motion_event()
 				break;
 			case DRAG_MIN_OUTPUT:
 				value = MIN(plugin->config.output_max[subscript], value);
-				plugin->config.output_min[subscript] = (int)value;
+				plugin->config.output_min[subscript] = value;
 				break;
 			case DRAG_MAX_OUTPUT:
 				value = MAX(plugin->config.output_min[subscript], value);
-				plugin->config.output_max[subscript] = (int)value;
+				plugin->config.output_max[subscript] = value;
 				break;
 		}
 	
@@ -801,21 +903,21 @@ int HistogramSlider::cursor_motion_event()
 			operation == DRAG_MID_INPUT ||
 			operation == DRAG_MAX_INPUT)
 		{
-			plugin->config.input_mid[subscript] = (int)input_mid;
-			plugin->config.input_min[subscript] = (int)input_min;
-			plugin->config.input_max[subscript] = (int)input_max;
+			plugin->config.input_mid[subscript] = input_mid;
+			plugin->config.input_min[subscript] = input_min;
+			plugin->config.input_max[subscript] = input_max;
+			plugin->config.boundaries();
 			gui->update_input();
 		}
 		else
 		{
+			plugin->config.boundaries();
 			gui->update_output();
 		}
 
 		gui->unlock_window();
 		plugin->send_configure_change();
-//printf("HistogramSlider::cursor_motion_event 2\n");
 		gui->lock_window("HistogramSlider::cursor_motion_event");
-//printf("HistogramSlider::cursor_motion_event 3\n");
 		return 1;
 	}
 	return 0;
@@ -858,7 +960,7 @@ void HistogramSlider::update()
 		if(is_input)
 		{
 			draw_line(i, quarter_h, i, half_h);
-			color = (int)plugin->calculate_curve(i * 0xffff / w, 
+			color = (int)plugin->calculate_transfer(i * 0xffff / w, 
 				subscript);
 			set_color(((r * color / 0xffff) << 16) | 
 				((g * color / 0xffff) << 8) | 
@@ -870,13 +972,13 @@ void HistogramSlider::update()
 
 	}
 
-	int min;
-	int max;
+	float min;
+	float max;
 	if(is_input)
 	{
 		
 		draw_pixmap(gui->mid_picon,
-			(int)(plugin->config.input_mid[subscript] * w / 0xffff) - 
+			input_to_pixel(plugin->config.input_mid[subscript]) - 
 				gui->mid_picon->get_w() / 2,
 			half_h + 1);
 		min = plugin->config.input_min[subscript];
@@ -889,10 +991,10 @@ void HistogramSlider::update()
 	}
 
 	draw_pixmap(gui->min_picon,
-		min * w / 0xffff - gui->min_picon->get_w() / 2,
+		input_to_pixel(min) - gui->min_picon->get_w() / 2,
 		half_h + 1);
 	draw_pixmap(gui->max_picon,
-		max * w / 0xffff - gui->max_picon->get_w() / 2,
+		input_to_pixel(max) - gui->max_picon->get_w() / 2,
 		half_h + 1);
 
 // printf("HistogramSlider::update %d %d\n", min, max);
@@ -940,6 +1042,8 @@ int HistogramMode::handle_event()
 {
 	plugin->config.mode = value;
 	plugin->thread->window->update_mode();
+	plugin->thread->window->update_input();
+	plugin->thread->window->update_output();
 	plugin->thread->window->input->update();
 	plugin->thread->window->output->update();
 	plugin->send_configure_change();
@@ -958,17 +1062,23 @@ HistogramText::HistogramText(HistogramMain *plugin,
 	HistogramWindow *gui,
 	int x,
 	int y,
-	int *output)
+	float *output,
+	int subscript,
+	int operation)
  : BC_TumbleTextBox(gui, 
-		(int64_t)*output,
-		(int64_t)0,
-		(int64_t)0xffff,
+		(float)*output,
+		(float)FLOAT_MIN,
+		(float)FLOAT_MAX,
 		x, 
 		y, 
 		60)
 {
 	this->plugin = plugin;
 	this->output = output;
+	this->subscript = subscript;
+	this->operation = operation;
+	set_precision(DIGITS);
+	set_increment(PRECISION);
 }
 
 
@@ -976,7 +1086,24 @@ int HistogramText::handle_event()
 {
 	if(output)
 	{
-		*output = atol(get_text());
+		float *input_min = &plugin->config.input_min[subscript];
+		float *input_max = &plugin->config.input_max[subscript];
+		float *input_mid = &plugin->config.input_mid[subscript];
+		float input_mid_fraction = (*input_mid - *input_min) / 
+			(*input_max - *input_min);
+
+		*output = atof(get_text());
+
+		if(operation != HistogramSlider::NONE &&
+			operation != HistogramSlider::DRAG_MID_INPUT &&
+			operation != HistogramSlider::DRAG_MIN_OUTPUT &&
+			operation != HistogramSlider::DRAG_MAX_OUTPUT)
+		{
+			*input_mid = *input_min + 
+				(*input_max - *input_min) * 
+				input_mid_fraction;
+			plugin->thread->window->update_input();
+		}
 	}
 	plugin->thread->window->input->update();
 	plugin->thread->window->output->update();
@@ -1104,11 +1231,11 @@ int HistogramMain::load_defaults()
 		config.output_min[i] = defaults->get(string, config.output_min[i]);
 		sprintf(string, "OUTPUT_MAX_%d", i);
 		config.output_max[i] = defaults->get(string, config.output_max[i]);
-//printf("HistogramMain::load_defaults %d %f %d\n", config.input_min[i], config.input_mid[i], config.input_max[i]);
 	}
 	config.automatic = defaults->get("AUTOMATIC", config.automatic);
 	config.mode = defaults->get("MODE", config.mode);
 	config.threshold = defaults->get("THRESHOLD", config.threshold);
+	config.boundaries();
 	return 0;
 }
 
@@ -1217,58 +1344,75 @@ void HistogramMain::read_data(KeyFrame *keyframe)
 			}
 		}
 	}
+	config.boundaries();
 }
 
-float HistogramMain::calculate_curve(float input, int subscript)
+float HistogramMain::calculate_transfer(float input, int subscript)
 {
 	float y1, y2, y3, y4;
-	float min = (float)config.input_min[subscript];
-	float max = (float)config.input_max[subscript];
-	float mid = (float)config.input_mid[subscript];
-	float half = (float)HISTOGRAM_RANGE / 2;
-	float output, output_perfect;
-	float control = 1.0 / M_PI;
+	float input_min = config.input_min[subscript];
+	float input_max = config.input_max[subscript];
+	float input_mid = config.input_mid[subscript];
+	float output_min = config.output_min[subscript];
+	float output_max = config.output_max[subscript];
+	float output;
+	float output_perfect;
 	float output_linear;
 
+// Expand input
 // Below minimum
-	if(input < min) return 0;
+	if(input < input_min) return output_min;
 
 // Above maximum
-	if(input >= max) return HISTOGRAM_RANGE - 1;
+	if(input >= input_max) return output_max;
 
-	float slope1 = half / (mid - min);
-	float slope2 = half / (max - mid);
+	float slope1 = 0.5 / (input_mid - input_min);
+	float slope2 = 0.5 / (input_max - input_mid);
 	float min_slope = MIN(slope1, slope2);
 
 // value of 45` diagonal with midpoint
-	output_perfect = half + min_slope * (input - mid);
+	output_perfect = 0.5 + min_slope * (input - input_mid);
 // Left hand side
-	if(input < mid)
+	if(input < input_mid)
 	{
 // Fraction of perfect diagonal to use
-		float mid_fraction = (input - min) / (mid - min);
+		float mid_fraction = (input - input_min) / (input_mid - input_min);
 // value of line connecting min to mid
-		output_linear = mid_fraction * half;
+		output_linear = mid_fraction * 0.5;
 // Blend perfect diagonal with linear
-		output = output_linear * (1.0 - mid_fraction) + output_perfect * mid_fraction;
+		output = output_linear * 
+			(1.0 - mid_fraction) + 
+			output_perfect * 
+			mid_fraction;
 	}
 	else
 	{
 // Fraction of perfect diagonal to use
-		float mid_fraction = (max - input) / (max - mid);
+		float mid_fraction = (input_max - input) / (input_max - input_mid);
 // value of line connecting max to mid
-		output_linear = half + (1.0 - mid_fraction) * half;
+		output_linear = 0.5 + (1.0 - mid_fraction) * 0.5;
 // Blend perfect diagonal with linear
-		output = output_linear * (1.0 - mid_fraction) + output_perfect * mid_fraction;
+		output = output_linear * 
+			(1.0 - mid_fraction) + 
+			output_perfect * 
+			mid_fraction;
 	}
 
 
 
+// Expand value
+	if(subscript != HISTOGRAM_VALUE)
+	{
+		output = calculate_transfer(output, HISTOGRAM_VALUE);
+	}
+
+// Compress output for value followed by channel
+	output = output_min + 
+		output * 
+		(output_max - output_min);
 
 
-
-
-// printf("HistogramMain::calculate_curve 1 %.0f %.0f %.0f %.0f %.0f\n",
+// printf("HistogramMain::calculate_transfer 1 %.0f %.0f %.0f %.0f %.0f\n",
 // output, 
 // input,
 // min,
@@ -1276,6 +1420,7 @@ float HistogramMain::calculate_curve(float input, int subscript)
 // max);
 	return output;
 }
+
 
 void HistogramMain::calculate_histogram(VFrame *data)
 {
@@ -1325,7 +1470,7 @@ void HistogramMain::calculate_automatic(VFrame *data)
 {
 	calculate_histogram(data);
 
-
+// Do each channel
 	for(int i = 0; i < 3; i++)
 	{
 		int64_t *accum = this->accum[i];
@@ -1336,28 +1481,37 @@ void HistogramMain::calculate_automatic(VFrame *data)
 			max = MAX(accum[j], max);
 		}
 
-		int threshold = config.threshold * max / THRESHOLD_SCALE;
+		int threshold = (int)(config.threshold * max);
 
 
-// Minimums
+// Minimum input
 		config.input_min[i] = 0;
-		for(int j = 0; j < HISTOGRAM_RANGE; j++)
+		for(int j = (int)(HISTOGRAM_RANGE * (0 - FLOAT_MIN) / (FLOAT_MAX - FLOAT_MIN)); 
+			j < (int)(HISTOGRAM_RANGE * (1 - FLOAT_MIN) / (FLOAT_MAX - FLOAT_MIN)); j++)
 		{
 			if(accum[j] > threshold)
 			{
-				config.input_min[i] = j;
+				config.input_min[i] = (float)j / 
+					HISTOGRAM_RANGE * 
+					FLOAT_RANGE +
+					FLOAT_MIN;
 				break;
 			}
 		}
 
 
 // Maximums
-		config.input_max[i] = 0xffff;
-		for(int j = HISTOGRAM_RANGE - 1; j >= 0; j--)
+		config.input_max[i] = 1.0;
+		for(int j = (int)(HISTOGRAM_RANGE * (1 - FLOAT_MIN) / (FLOAT_MAX - FLOAT_MIN)) - 1; 
+			j >= (int)(HISTOGRAM_RANGE * (0 - FLOAT_MIN) / (FLOAT_MAX - FLOAT_MIN)); 
+			j--)
 		{
 			if(accum[j] > threshold)
 			{
-				config.input_max[i] = j;
+				config.input_max[i] = (float)j / 
+					HISTOGRAM_RANGE * 
+					FLOAT_RANGE +
+					FLOAT_MIN;
 				break;
 			}
 		}
@@ -1373,7 +1527,6 @@ void HistogramMain::calculate_automatic(VFrame *data)
 
 int HistogramMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
-TRACE("HistogramMain::process_realtime");
 	int need_reconfigure = load_configuration();
 
 
@@ -1389,7 +1542,6 @@ TRACE("HistogramMain::process_realtime");
 	{
 		output_ptr->copy_from(input_ptr);
 	}
-//printf("HistogramMain::process_realtime 1\n");
 
 // Generate tables here.  The same table is used by many packages to render
 // each horizontal stripe.  Need to cover the entire output range in  each
@@ -1411,22 +1563,21 @@ TRACE("HistogramMain::process_realtime");
 
 
 // Convert 16 bit lookup table to 8 bits
-		switch(input->get_color_model())
-		{
-			case BC_RGB888:
-			case BC_RGBA8888:
-				for(int i = 0; i < 0x100; i++)
-				{
-					int subscript = (i << 8) | i;
-					lookup[0][i] = lookup[0][subscript];
-					lookup[1][i] = lookup[1][subscript];
-					lookup[2][i] = lookup[2][subscript];
-					lookup[3][i] = lookup[3][subscript];
-				}
-				break;
-		}
+// 		switch(input->get_color_model())
+// 		{
+// 			case BC_RGB888:
+// 			case BC_RGBA8888:
+// 				for(int i = 0; i < 0x100; i++)
+// 				{
+// 					int subscript = (i << 8) | i;
+// 					lookup[0][i] = lookup[0][subscript];
+// 					lookup[1][i] = lookup[1][subscript];
+// 					lookup[2][i] = lookup[2][subscript];
+// 					lookup[3][i] = lookup[3][subscript];
+// 				}
+// 				break;
+// 		}
 	}
-//printf("HistogramMain::process_realtime 1\n");
 
 
 
@@ -1434,10 +1585,6 @@ TRACE("HistogramMain::process_realtime");
 // Apply histogram
 	engine->process_packages(HistogramEngine::APPLY, input);
 
-//printf("HistogramMain::process_realtime 100\n");
-
-
-UNTRACE
 
 	return 0;
 }
@@ -1487,12 +1634,21 @@ void HistogramUnit::process_package(LoadPackage *package)
 		{
 
 #define HISTOGRAM_TAIL(components) \
+/*			v = (r * 76 + g * 150 + b * 29) >> 8; */ \
 			v = MAX(r, g); \
 			v = MAX(v, b); \
+			r += -HISTOGRAM_MIN * 0xffff / 100; \
+			g += -HISTOGRAM_MIN * 0xffff / 100; \
+			b += -HISTOGRAM_MIN * 0xffff / 100; \
+			v += -HISTOGRAM_MIN * 0xffff / 100; \
+			CLAMP(r, 0, HISTOGRAM_RANGE); \
+			CLAMP(g, 0, HISTOGRAM_RANGE); \
+			CLAMP(b, 0, HISTOGRAM_RANGE); \
+			CLAMP(v, 0, HISTOGRAM_RANGE); \
 			accum_r[r]++; \
 			accum_g[g]++; \
 			accum_b[b]++; \
-			if(components == 4) accum_a[row[3]]++; \
+/*			if(components == 4) accum_a[row[3]]++; */ \
 			accum_v[v]++; \
 			row += components; \
 		} \
@@ -1521,6 +1677,13 @@ void HistogramUnit::process_package(LoadPackage *package)
 				b = (row[2] << 8) | row[2];
 				HISTOGRAM_TAIL(3)
 				break;
+			case BC_RGB_FLOAT:
+				HISTOGRAM_HEAD(float)
+				r = (int)(row[0] * 0xffff);
+				g = (int)(row[1] * 0xffff);
+				b = (int)(row[2] * 0xffff);
+				HISTOGRAM_TAIL(3)
+				break;
 			case BC_YUV888:
 				HISTOGRAM_HEAD(unsigned char)
 				y = (row[0] << 8) | row[0];
@@ -1534,6 +1697,13 @@ void HistogramUnit::process_package(LoadPackage *package)
 				r = (row[0] << 8) | row[0];
 				g = (row[1] << 8) | row[1];
 				b = (row[2] << 8) | row[2];
+				HISTOGRAM_TAIL(4)
+				break;
+			case BC_RGBA_FLOAT:
+				HISTOGRAM_HEAD(float)
+				r = (int)(row[0] * 0xffff);
+				g = (int)(row[1] * 0xffff);
+				b = (int)(row[2] * 0xffff);
 				HISTOGRAM_TAIL(4)
 				break;
 			case BC_YUVA8888:
@@ -1592,7 +1762,6 @@ void HistogramUnit::process_package(LoadPackage *package)
 			row[0] = lookup_r[row[0]]; \
 			row[1] = lookup_g[row[1]]; \
 			row[2] = lookup_b[row[2]]; \
-			if(components == 4) row[3] = lookup_a[row[3]]; \
 			row += components; \
 		} \
 	} \
@@ -1611,14 +1780,12 @@ void HistogramUnit::process_package(LoadPackage *package)
 				y = (row[0] << 8) | row[0]; \
 				u = (row[1] << 8) | row[1]; \
 				v = (row[2] << 8) | row[2]; \
-				if(components == 4) a = (row[3] << 8) | row[3]; \
 			} \
 			else \
 			{ \
 				y = row[0]; \
 				u = row[1]; \
 				v = row[2]; \
-				if(components == 4) a = row[3]; \
 			} \
  \
 			plugin->yuv.yuv_to_rgb_16(r, g, b, y, u, v); \
@@ -1627,7 +1794,6 @@ void HistogramUnit::process_package(LoadPackage *package)
 			r = lookup_r[r]; \
 			g = lookup_g[g]; \
 			b = lookup_b[b]; \
-			if(components == 4) a = lookup_a[a]; \
  \
 /* Convert to 16 bit YUV */ \
 			plugin->yuv.rgb_to_yuv_16(r, g, b, y, u, v); \
@@ -1637,21 +1803,41 @@ void HistogramUnit::process_package(LoadPackage *package)
 				row[0] = y >> 8; \
 				row[1] = u >> 8; \
 				row[2] = v >> 8; \
-				if(components == 4) row[3] = a >> 8; \
 			} \
 			else \
 			{ \
 				row[0] = y; \
 				row[1] = u; \
 				row[2] = v; \
-				if(components == 4) row[3] = a; \
 			} \
 			row += components; \
 		} \
 	} \
 }
 
-
+#define PROCESS_FLOAT(components) \
+{ \
+	for(int i = pkg->start; i < pkg->end; i++) \
+	{ \
+		float *row = (float*)input->get_rows()[i]; \
+		for(int j = 0; j < w; j++) \
+		{ \
+			float r = row[0]; \
+			float g = row[1]; \
+			float b = row[2]; \
+ \
+			r = plugin->calculate_transfer(r, HISTOGRAM_RED); \
+			g = plugin->calculate_transfer(g, HISTOGRAM_GREEN); \
+			b = plugin->calculate_transfer(b, HISTOGRAM_BLUE); \
+ \
+ 			row[0] = r; \
+			row[1] = g; \
+			row[2] = b; \
+ \
+			row += components; \
+		} \
+	} \
+}
 
 
 		VFrame *input = plugin->input;
@@ -1668,8 +1854,14 @@ void HistogramUnit::process_package(LoadPackage *package)
 			case BC_RGB888:
 				PROCESS(unsigned char, 3)
 				break;
+			case BC_RGB_FLOAT:
+				PROCESS_FLOAT(3);
+				break;
 			case BC_RGBA8888:
 				PROCESS(unsigned char, 4)
+				break;
+			case BC_RGBA_FLOAT:
+				PROCESS_FLOAT(4);
 				break;
 			case BC_RGB161616:
 				PROCESS(uint16_t, 3)
@@ -1691,93 +1883,45 @@ void HistogramUnit::process_package(LoadPackage *package)
 				break;
 		}
 	}
+	else
 	if(server->operation == HistogramEngine::TABULATE)
 	{
-// Do conversion in 16 bit YUVA
-		int min_output_r = plugin->config.output_min[0];
-		int min_output_g = plugin->config.output_min[1];
-		int min_output_b = plugin->config.output_min[2];
-		int min_output_a = plugin->config.output_min[3];
-		int min_output_v = plugin->config.output_min[4];
-		int max_output_r = plugin->config.output_max[0];
-		int max_output_g = plugin->config.output_max[1];
-		int max_output_b = plugin->config.output_max[2];
-		int max_output_a = plugin->config.output_max[3];
-		int max_output_v = plugin->config.output_max[4];
 		int colormodel = plugin->input->get_color_model();
-
-		for(int i = pkg->start; i < pkg->end; i++)
+// Float uses direct calculation
+		if(colormodel != BC_RGB_FLOAT &&
+			colormodel != BC_RGBA_FLOAT)
 		{
-// Expand input
-			float r = plugin->calculate_curve((float)i, HISTOGRAM_RED);
-			float g = plugin->calculate_curve((float)i, HISTOGRAM_GREEN);
-			float b = plugin->calculate_curve((float)i, HISTOGRAM_BLUE);
-			float a = plugin->calculate_curve((float)i, HISTOGRAM_ALPHA);
-			int y, u, v;
-// Expand value
-			r = plugin->calculate_curve((float)r, HISTOGRAM_VALUE);
-			g = plugin->calculate_curve((float)g, HISTOGRAM_VALUE);
-			b = plugin->calculate_curve((float)b, HISTOGRAM_VALUE);
-// r = i;
-// g = i;
-// b = i;
-
-// Shrink output
-			r = (float)min_output_r + 
-				r * 
-				(max_output_r - min_output_r) / 
-				(HISTOGRAM_RANGE - 1);
-			g = min_output_g + 
-				g * 
-				(max_output_g - min_output_g) / 
-				(HISTOGRAM_RANGE - 1);
-			b = min_output_b + 
-				b * 
-				(max_output_b - min_output_b) / 
-				(HISTOGRAM_RANGE - 1);
-			a = min_output_a + 
-				a * 
-				(max_output_a - min_output_a) / 
-				(HISTOGRAM_RANGE - 1);
-// Shrink value
-//printf(" 1 %d -> ", r);
-			r = min_output_v + 
-				r * 
-				(max_output_v - min_output_v) / 
-				(HISTOGRAM_RANGE - 1);
-//printf("%d\n", r);
-			g = min_output_v + 
-				g * 
-				(max_output_v - min_output_v) / 
-				(HISTOGRAM_RANGE - 1);
-			b = min_output_v + 
-				b * 
-				(max_output_v - min_output_v) / 
-				(HISTOGRAM_RANGE - 1);
-			a = min_output_v + 
-				a * 
-				(max_output_v - min_output_v) / 
-				(HISTOGRAM_RANGE - 1);
-
-
-
-// Convert to desired colormodel
-			switch(colormodel)
+			for(int i = pkg->start; i < pkg->end; i++)
 			{
-				case BC_RGB888:
-				case BC_RGBA8888:
-					plugin->lookup[0][i] = ((int)r) >> 8;
-					plugin->lookup[1][i] = ((int)g) >> 8;
-					plugin->lookup[2][i] = ((int)b) >> 8;
-					plugin->lookup[3][i] = ((int)a) >> 8;
-					break;
-				default:
+// Fix input for legal integer range
+				float input = (float)i / server->total_size;
+
+// Expand input
+				float r = plugin->calculate_transfer(input, HISTOGRAM_RED);
+				float g = plugin->calculate_transfer(input, HISTOGRAM_GREEN);
+				float b = plugin->calculate_transfer(input, HISTOGRAM_BLUE);
+// Convert to desired colormodel
+				switch(colormodel)
+				{
+					case BC_RGB888:
+					case BC_RGBA8888:
+						plugin->lookup[0][i] = (int)(r * 0xff);
+						plugin->lookup[1][i] = (int)(g * 0xff);
+						plugin->lookup[2][i] = (int)(b * 0xff);
+						CLAMP(plugin->lookup[0][i], 0, 0xff);
+						CLAMP(plugin->lookup[1][i], 0, 0xff);
+						CLAMP(plugin->lookup[2][i], 0, 0xff);
+						break;
+					default:
 // Can't look up yuv.
-					plugin->lookup[0][i] = (int)r;
-					plugin->lookup[1][i] = (int)g;
-					plugin->lookup[2][i] = (int)b;
-					plugin->lookup[3][i] = (int)a;
-					break;
+						plugin->lookup[0][i] = (int)(r * 0xffff);
+						plugin->lookup[1][i] = (int)(g * 0xffff);
+						plugin->lookup[2][i] = (int)(b * 0xffff);
+						CLAMP(plugin->lookup[0][i], 0, 0xffff);
+						CLAMP(plugin->lookup[1][i], 0, 0xffff);
+						CLAMP(plugin->lookup[2][i], 0, 0xffff);
+						break;
+				}
 			}
 		}
 	}
@@ -1798,23 +1942,32 @@ HistogramEngine::HistogramEngine(HistogramMain *plugin,
 
 void HistogramEngine::init_packages()
 {
-	int total_size;
-
 	switch(operation)
 	{
 		case HISTOGRAM:
 			total_size = data->get_h();
 			break;
 		case TABULATE:
-			total_size = HISTOGRAM_RANGE;
+		{
+			int colormodel = plugin->input->get_color_model();
+// Tabulation only works for integer so we only do integer ranges
+			if(colormodel == BC_RGB888 |
+				colormodel == BC_RGBA8888)
+				total_size = 0x100;
+			else
+				total_size = 0x10000;
 			break;
+		}
 		case APPLY:
 			total_size = data->get_h();
 			break;
 	}
+
+
 	int package_size = (int)((float)total_size / 
 			get_total_packages() + 1);
 	int start = 0;
+
 	for(int i = 0; i < get_total_packages(); i++)
 	{
 		HistogramPackage *package = (HistogramPackage*)get_package(i);
@@ -1832,6 +1985,7 @@ void HistogramEngine::init_packages()
 		for(int i = 0; i < 5; i++)
 			bzero(unit->accum[i], sizeof(int64_t) * HISTOGRAM_RANGE);
 	}
+
 }
 
 LoadClient* HistogramEngine::new_client()

@@ -41,9 +41,12 @@
 #define BC_YUV422       19
 #define BC_A8           22
 #define BC_A16          23
+#define BC_A_FLOAT      31
 #define BC_YUV101010    24
 #define BC_VYU888       25
 #define BC_UYVA8888     26
+#define BC_RGB_FLOAT    29
+#define BC_RGBA_FLOAT   30
 // Planar
 #define BC_YUV420P      7
 #define BC_YUV422P      17
@@ -58,8 +61,12 @@
 #define FOURCC_YUV2 0x32595559  /* YUV2   YUV422 */
 #define FOURCC_I420 0x30323449  /* I420   Intel Indeo 4 */
 
-#undef RECLIP
-#define RECLIP(x, y, z) ((x) = ((x) < (y) ? (y) : ((x) > (z) ? (z) : (x))))
+#undef CLAMP
+#define CLAMP(x, y, z) ((x) = ((x) < (y) ? (y) : ((x) > (z) ? (z) : (x))))
+
+#undef CLIP
+#define CLIP(x, y, z) ((x) < (y) ? (y) : ((x) > (z) ? (z) : (x)))
+
 
 #ifdef __cplusplus
 extern "C" {
@@ -73,11 +80,16 @@ typedef struct
 
 	int vtor_tab[0x100], vtog_tab[0x100];
 	int utog_tab[0x100], utob_tab[0x100];
+// Used by init_yuv only
 	int *vtor, *vtog, *utog, *utob;
 	
 	short int vtor_tab8[0x100], vtog_tab8[0x100];
 	short int utog_tab8[0x100], utob_tab8[0x100];
 	short int *vtor8, *vtog8, *utog8, *utob8;
+
+	float vtor_float_tab[0x100], vtog_float_tab[0x100];
+	float utog_float_tab[0x100], utob_float_tab[0x100];
+	float *vtor_float, *vtog_float, *utog_float, *utob_float;
 
 	int rtoy_tab16[0x10000], gtoy_tab16[0x10000], btoy_tab16[0x10000];
 	int rtou_tab16[0x10000], gtou_tab16[0x10000], btou_tab16[0x10000];
@@ -86,6 +98,10 @@ typedef struct
 	int vtor_tab16[0x10000], vtog_tab16[0x10000];
 	int utog_tab16[0x10000], utob_tab16[0x10000];
 	int *vtor16, *vtog16, *utog16, *utob16;
+
+	float v16tor_float_tab[0x10000], v16tog_float_tab[0x10000];
+	float u16tog_float_tab[0x10000], u16tob_float_tab[0x10000];
+	float *v16tor_float, *v16tog_float, *u16tog_float, *u16tob_float;
 } cmodel_yuv_t;
 
 extern cmodel_yuv_t *yuv_table;

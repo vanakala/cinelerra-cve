@@ -336,191 +336,6 @@ int IVTCMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 
 
-#define DEINTERLACE_AVG_MACRO(type, components) \
-{ \
-	int w = input->get_w(); \
-	int h = input->get_h(); \
- 	type **in_rows = (type**)input->get_rows(); \
- 	type **out_rows = (type**)output->get_rows(); \
-	int max_h = h - 1; \
- \
-	for(int i = 0; i < max_h; i += 2) \
-	{ \
-		int in_number1 = dominance ? i - 1 : i + 0; \
-		int in_number2 = dominance ? i + 1 : i + 2; \
-		int out_number1 = dominance ? i - 1 : i; \
-		int out_number2 = dominance ? i : i + 1; \
-		in_number1 = MAX(in_number1, 0); \
-		in_number2 = MIN(in_number2, max_h); \
-		out_number1 = MAX(out_number1, 0); \
-		out_number2 = MIN(out_number2, max_h); \
- \
-		type *input_row1 = in_rows[in_number1]; \
-		type *input_row2 = in_rows[in_number2]; \
-		type *input_row3 = in_rows[out_number2]; \
-		type *output_row1 = out_rows[out_number1]; \
-		type *output_row2 = out_rows[out_number2]; \
-		int64_t accum_r, accum_b, accum_g, accum_a; \
- \
-/* Assume the dominant rows are never compared */ \
-/*		memcpy(output_row1, input_row1, w * components * sizeof(type)); */\
-		for(int j = 0; j < w; j++) \
-		{ \
-			accum_r = (*input_row1++) + (*input_row2++); \
-			accum_g = (*input_row1++) + (*input_row2++); \
-			accum_b = (*input_row1++) + (*input_row2++); \
-			if(components == 4) \
-				accum_a = (*input_row1++) + (*input_row2++); \
-			accum_r >>= 1; \
-			accum_g >>= 1; \
-			accum_b >>= 1; \
-			accum_a >>= 1; \
- \
-			*output_row2++ = accum_r; \
-			*output_row2++ = accum_g; \
-			*output_row2++ = accum_b; \
-			if(components == 4) \
-			{ \
-				*output_row2++ = accum_a; \
-			} \
-		} \
-	} \
-}
-
-
-void IVTCMain::deinterlace_avg(VFrame *output, 
-	VFrame *input, 
-	int dominance)
-{
-	switch(input->get_color_model())
-	{
-		case BC_RGB888:
-		case BC_YUV888:
-			DEINTERLACE_AVG_MACRO(unsigned char, 3);
-			break;
-		case BC_RGBA8888:
-		case BC_YUVA8888:
-			DEINTERLACE_AVG_MACRO(unsigned char, 4);
-			break;
-		case BC_RGB161616:
-		case BC_YUV161616:
-			DEINTERLACE_AVG_MACRO(uint16_t, 3);
-			break;
-		case BC_RGBA16161616:
-		case BC_YUVA16161616:
-			DEINTERLACE_AVG_MACRO(uint16_t, 4);
-			break;
-	}
-}
-
-
-#define COMPARE(type, components, is_yuv) \
-{ \
-	int w = current_avg->get_w(); \
-	int h = current_avg->get_h(); \
- 	type **in_rows = (type**)current_avg->get_rows(); \
- 	type **curr_rows = (type**)current_orig->get_rows(); \
- 	type **prev_rows = (type**)previous->get_rows(); \
-/* Components to skip for YUV */ \
-	int skip = components - 1; \
- \
-	for(int i = 0; i < h; i++) \
-	{ \
-		type *in_row = in_rows[i]; \
-		type *out_row; \
- \
-		switch(field) \
-		{ \
-			case 0: \
-/* Compare with previous even field */ \
-				if(!(i % 2)) \
-					out_row = prev_rows[i]; \
-				else \
-/* Compare with current odd field */ \
-/* Assume curr_rows is the averaged in_rows with odd dominance and skip. */ \
-					out_row = 0; \
-				break; \
-			case 1: \
-/* Compare with current even field */ \
-/* Assume curr_rows is the averaged in_rows with odd dominance and skip. */ \
-				if(!(i % 2)) \
-					out_row = 0; \
-				else \
-/* Compare with previous odd field */ \
-					out_row = prev_rows[i]; \
-				break; \
-			case 2: \
-/* Compare with current both fields */ \
-				out_row = curr_rows[i]; \
-				break; \
-		} \
- \
- 		if(out_row) \
-		{ \
-			if(is_yuv) \
-			{ \
-/* Compare the row luminance */ \
-				for(int j = 0; j < w; j++) \
-				{ \
-					int difference = labs(*in_row - *out_row); \
-					result += difference; \
-					in_row += skip; \
-					out_row += skip; \
-				} \
-			} \
-			else \
-			{ \
-/* Compare all channels */ \
-				for(int j = 0; j < w; j++) \
-				{ \
-					result += labs(in_row[0] - out_row[0]); \
-					result += labs(in_row[1] - out_row[1]); \
-					result += labs(in_row[2] - out_row[2]); \
-					in_row += components; \
-					out_row += components; \
-				} \
-			} \
-		} \
-	} \
-}
-
-int64_t IVTCMain::compare(VFrame *current_avg, 
-	VFrame *current_orig, 
-	VFrame *previous, 
-	int field)
-{
-	int64_t result = 0;
-	
-	switch(current_avg->get_color_model())
-	{
-		case BC_RGB888:
-			COMPARE(unsigned char, 3, 0);
-			break;
-		case BC_YUV888:
-			COMPARE(unsigned char, 3, 1);
-			break;
-		case BC_RGBA8888:
-			COMPARE(unsigned char, 4, 0);
-			break;
-		case BC_YUVA8888:
-			COMPARE(unsigned char, 4, 1);
-			break;
-		case BC_RGB161616:
-			COMPARE(uint16_t, 3, 0);
-			break;
-		case BC_YUV161616:
-			COMPARE(uint16_t, 3, 1);
-			break;
-		case BC_RGBA16161616:
-			COMPARE(uint16_t, 4, 0);
-			break;
-		case BC_YUVA16161616:
-			COMPARE(uint16_t, 4, 1);
-			break;
-	}
-	return result;
-}
-
 void IVTCMain::update_gui()
 {
 	if(thread)
@@ -551,18 +366,33 @@ void IVTCMain::update_gui()
 
 
 // labs returns different values on x86_64 causing our accumulators to explode
-#ifdef __x86_64__
-
 #define ABS local_abs
+
+
+#ifdef __x86_64__
 
 static int local_abs(int value)
 {
 	return (value < 0 ? -value : value);
 }
 
+static float local_abs(float value)
+{
+	return (value < 0 ? -value : value);
+}
+
 #else
 
-#define ABS labs
+static int local_abs(int value)
+{
+	return abs(value);
+}
+
+static float local_abs(float value)
+{
+	return fabsf(value);
+}
+
 
 #endif
 
@@ -584,7 +414,7 @@ IVTCUnit::IVTCUnit(IVTCEngine *server, IVTCMain *plugin)
 	this->plugin = plugin;
 }
 
-#define IVTC_MACRO(type, components, is_yuv) \
+#define IVTC_MACRO(type, temp_type, components, is_yuv) \
 { \
  	type **curr_rows = (type**)plugin->input->get_rows(); \
  	type **prev_rows = (type**)plugin->temp_frame[0]->get_rows(); \
@@ -605,12 +435,12 @@ IVTCUnit::IVTCUnit(IVTCEngine *server, IVTCMain *plugin)
 		type *current_row = curr_rows[i]; \
 		type *prev_row = prev_rows[i]; \
  \
-		int64_t current_difference = 0; \
-		int64_t prev_difference = 0; \
+		temp_type current_difference = 0; \
+		temp_type prev_difference = 0; \
 		for(int j = 0; j < w; j++) \
 		{ \
 /* Get pixel average */ \
-			uint32_t average = ((uint32_t)*input_row1 + *input_row2) >> 1; \
+			temp_type average = ((temp_type)*input_row1 + *input_row2) / 2; \
 /* Compare row to current */ \
 			current_difference += ABS(average - *current_row); \
 /* Compare row to previous */ \
@@ -619,10 +449,10 @@ IVTCUnit::IVTCUnit(IVTCEngine *server, IVTCMain *plugin)
 /* Do RGB channels */ \
 			if(!is_yuv) \
 			{ \
-				average = ((uint32_t)input_row1[1] + input_row2[1]) >> 1; \
+				average = ((temp_type)input_row1[1] + input_row2[1]) / 2; \
 				current_difference += ABS(average - current_row[1]); \
 				prev_difference += ABS(average - prev_row[1]); \
-				average = ((uint32_t)input_row1[2] + input_row2[2]) >> 1; \
+				average = ((temp_type)input_row1[2] + input_row2[2]) / 2; \
 				current_difference += ABS(average - current_row[2]); \
 				prev_difference += ABS(average - prev_row[2]); \
 			} \
@@ -635,15 +465,31 @@ IVTCUnit::IVTCUnit(IVTCEngine *server, IVTCMain *plugin)
 		} \
  \
 /* Store row differences in even or odd variables */ \
-		if(i % 2) \
+		if(sizeof(type) == 4) \
 		{ \
-			odd_vs_current += current_difference; \
-			odd_vs_prev += prev_difference; \
+			if(i % 2) \
+			{ \
+				odd_vs_current += (int64_t)(current_difference * 0xffff); \
+				odd_vs_prev += (int64_t)(prev_difference); \
+			} \
+			else \
+			{ \
+				even_vs_current += (int64_t)(current_difference); \
+				even_vs_prev += (int64_t)(prev_difference); \
+			} \
 		} \
 		else \
 		{ \
-			even_vs_current += current_difference; \
-			even_vs_prev += prev_difference; \
+			if(i % 2) \
+			{ \
+				odd_vs_current += (int64_t)current_difference; \
+				odd_vs_prev += (int64_t)prev_difference; \
+			} \
+			else \
+			{ \
+				even_vs_current += (int64_t)current_difference; \
+				even_vs_prev += (int64_t)prev_difference; \
+			} \
 		} \
 	} \
 }
@@ -664,29 +510,35 @@ void IVTCUnit::process_package(LoadPackage *package)
 
 	switch(plugin->input->get_color_model())
 	{
+		case BC_RGB_FLOAT:
+			IVTC_MACRO(float, float, 3, 0);
+			break;
 		case BC_RGB888:
-			IVTC_MACRO(unsigned char, 3, 0);
+			IVTC_MACRO(unsigned char, int, 3, 0);
 			break;
 		case BC_YUV888:
-			IVTC_MACRO(unsigned char, 3, 1);
+			IVTC_MACRO(unsigned char, int, 3, 1);
+			break;
+		case BC_RGBA_FLOAT:
+			IVTC_MACRO(float, float, 4, 0);
 			break;
 		case BC_RGBA8888:
-			IVTC_MACRO(unsigned char, 4, 0);
+			IVTC_MACRO(unsigned char, int, 4, 0);
 			break;
 		case BC_YUVA8888:
-			IVTC_MACRO(unsigned char, 4, 1);
+			IVTC_MACRO(unsigned char, int, 4, 1);
 			break;
 		case BC_RGB161616:
-			IVTC_MACRO(uint16_t, 3, 0);
+			IVTC_MACRO(uint16_t, int, 3, 0);
 			break;
 		case BC_YUV161616:
-			IVTC_MACRO(uint16_t, 3, 1);
+			IVTC_MACRO(uint16_t, int, 3, 1);
 			break;
 		case BC_RGBA16161616:
-			IVTC_MACRO(uint16_t, 4, 0);
+			IVTC_MACRO(uint16_t, int, 4, 0);
 			break;
 		case BC_YUVA16161616:
-			IVTC_MACRO(uint16_t, 4, 1);
+			IVTC_MACRO(uint16_t, int, 4, 1);
 			break;
 	}
 	

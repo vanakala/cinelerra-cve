@@ -4,6 +4,7 @@
 #include "filexml.h"
 #include "guicast.h"
 #include "keyframe.h"
+#include "language.h"
 #include "loadbalance.h"
 #include "picon_png.h"
 #include "pluginvclient.h"
@@ -13,10 +14,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 
@@ -798,6 +795,9 @@ void WaveUnit::process_package(LoadPackage *package)
 		case BC_RGB888:
 			WAVE(unsigned char, 3, 0x0);
 			break;
+		case BC_RGB_FLOAT:
+			WAVE(float, 3, 0x0);
+			break;
 		case BC_YUV888:
 			WAVE(unsigned char, 3, 0x80);
 			break;
@@ -806,6 +806,9 @@ void WaveUnit::process_package(LoadPackage *package)
 			break;
 		case BC_YUV161616:
 			WAVE(uint16_t, 3, 0x8000);
+			break;
+		case BC_RGBA_FLOAT:
+			WAVE(unsigned char, 4, 0x0);
 			break;
 		case BC_RGBA8888:
 			WAVE(unsigned char, 4, 0x0);

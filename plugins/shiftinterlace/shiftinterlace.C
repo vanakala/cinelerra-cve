@@ -411,8 +411,14 @@ void ShiftInterlaceMain::shift_row(VFrame *input_frame,
 		case BC_RGB888:
 			SHIFT_ROW_MACRO(3, unsigned char, 0x0)
 			break;
+		case BC_RGB_FLOAT:
+			SHIFT_ROW_MACRO(3, float, 0x0)
+			break;
 		case BC_YUV888:
 			SHIFT_ROW_MACRO(3, unsigned char, 0x80)
+			break;
+		case BC_RGBA_FLOAT:
+			SHIFT_ROW_MACRO(4, float, 0x0)
 			break;
 		case BC_RGBA8888:
 			SHIFT_ROW_MACRO(4, unsigned char, 0x0)

@@ -458,7 +458,8 @@ int TrackCanvas::drag_motion_event()
 
 int TrackCanvas::cursor_leave_event()
 {
-	// because drag motion calls get_cursor_over_window we can be sure that all highlights get deleted now
+// because drag motion calls get_cursor_over_window we can be sure that
+// all highlights get deleted now
 	drag_motion();
 	return 0;
 }
@@ -470,7 +471,6 @@ int TrackCanvas::drag_stop_event()
 
 	if(drag_popup)
 	{
-//printf("TrackCanvas::drag_stop_event 1 %p\n", drag_popup);
 		delete drag_popup;
 		drag_popup = 0;
 	}
@@ -2311,12 +2311,13 @@ void TrackCanvas::synchronize_autos(float change, Track *skip, FloatAuto *fauto,
 				
 				if (!keyframe)
 				{
-					// create keyframe at exactly this point in time
-					keyframe = (FloatAuto*)fade_autos->insert_auto_for_editing(fauto->position);
+// create keyframe at exactly this point in time
+					keyframe = (FloatAuto*)fade_autos->insert_auto(fauto->position);
 					keyframe->value = init_value;
-				} else
+				} 
+				else
 				{ 
-					// keyframe exists, just change it
+// keyframe exists, just change it
 					keyframe->value += change;		
 				} 
 				
@@ -3051,6 +3052,8 @@ int TrackCanvas::do_plugin_autos(Track *track,
 	double zoom_sample;
 	double zoom_units;
 
+	if(!track->expand_view) return 0;
+
 	calculate_viewport(track, 
 		view_start,
 		unit_start,
@@ -3061,7 +3064,8 @@ int TrackCanvas::do_plugin_autos(Track *track,
 		zoom_sample,
 		zoom_units);
 
-//printf("TrackCanvas::draw_plugin_autos 1 %d\n", track->plugin_set.total);
+
+
 	for(int i = 0; i < track->plugin_set.total && !result; i++)
 	{
 		PluginSet *plugin_set = track->plugin_set.values[i];
@@ -3069,8 +3073,7 @@ int TrackCanvas::do_plugin_autos(Track *track,
 			mwindow->edl->local_session->zoom_track +
 			(i + 0.5) * mwindow->theme->plugin_bg_data->get_h() + 
 			(mwindow->edl->session->show_titles ? mwindow->theme->title_bg_data->get_h() : 0));
-		
-//printf("TrackCanvas::draw_plugin_autos 2\n");
+
 		for(Plugin *plugin = (Plugin*)plugin_set->first; 
 			plugin && !result; 
 			plugin = (Plugin*)plugin->next)
@@ -3138,7 +3141,7 @@ int TrackCanvas::do_plugin_autos(Track *track,
 void TrackCanvas::draw_overlays()
 {
 	int new_cursor, update_cursor, rerender;
-TRACE("TrackCanvas::draw_overlays 1")
+//TRACE("TrackCanvas::draw_overlays 1")
 
 // Move background pixmap to foreground pixmap
 	draw_pixmap(background_pixmap, 
@@ -3148,29 +3151,29 @@ TRACE("TrackCanvas::draw_overlays 1")
 		get_h(),
 		0,
 		0);
-TRACE("TrackCanvas::draw_overlays 10")
+//TRACE("TrackCanvas::draw_overlays 10")
 
 // In/Out points
 	draw_inout_points();
 
-TRACE("TrackCanvas::draw_overlays 11");
+//TRACE("TrackCanvas::draw_overlays 11");
 // Transitions
 	if(mwindow->edl->session->auto_conf->transitions) draw_transitions();
 
-TRACE("TrackCanvas::draw_overlays 12");
+//TRACE("TrackCanvas::draw_overlays 12");
 // Plugins
 	draw_plugins();
 
-TRACE("TrackCanvas::draw_overlays 13");
+//TRACE("TrackCanvas::draw_overlays 13");
 // Loop points
 	draw_loop_points();
 	draw_brender_start();
 
-TRACE("TrackCanvas::draw_overlays 14");
+//TRACE("TrackCanvas::draw_overlays 14");
 // Highlighted areas
 	draw_highlighting();
 
-TRACE("TrackCanvas::draw_overlays 15");
+//TRACE("TrackCanvas::draw_overlays 15");
 // Automation
 	do_keyframes(0, 
 		0, 
@@ -3180,15 +3183,15 @@ TRACE("TrackCanvas::draw_overlays 15");
 		update_cursor,
 		rerender);
 
-TRACE("TrackCanvas::draw_overlays 16\n");
+//TRACE("TrackCanvas::draw_overlays 16\n");
 // Selection cursor
 	if(gui->cursor) gui->cursor->restore();
 
-TRACE("TrackCanvas::draw_overlays 17\n");
+//TRACE("TrackCanvas::draw_overlays 17\n");
 // Handle dragging
 	draw_drag_handle();
 
-TRACE("TrackCanvas::draw_overlays 20");
+//TRACE("TrackCanvas::draw_overlays 20");
 // Playback cursor
 	draw_playback_cursor();
 
@@ -3759,6 +3762,7 @@ int TrackCanvas::cursor_motion_event()
 	{
 		draw_overlays();
 		flash();
+		flush();
 	}
 
 
@@ -3960,11 +3964,13 @@ int TrackCanvas::button_release_event()
 	{
 		draw_overlays();
 		flash();
+		flush();
 	}
 	if(redraw)
 	{
 		draw();
 		flash();
+		flush();
 	}
 	return result;
 }
@@ -4255,8 +4261,8 @@ int TrackCanvas::test_edits(int cursor_x,
 
 						drag_popup = new BC_DragWindow(gui, 
 							mwindow->theme->clip_icon, 
-							get_abs_cursor_x() - mwindow->theme->clip_icon->get_w() / 2,
-							get_abs_cursor_y() - mwindow->theme->clip_icon->get_h() / 2);
+							get_abs_cursor_x(0) - mwindow->theme->clip_icon->get_w() / 2,
+							get_abs_cursor_y(0) - mwindow->theme->clip_icon->get_h() / 2);
 //printf("TrackCanvas::test_edits 3 %p\n", drag_popup);
 
 						result = 1;
@@ -4375,7 +4381,8 @@ int TrackCanvas::test_plugins(int cursor_x,
 				{
 					case PLUGIN_STANDALONE:
 					{
-						PluginServer *server = mwindow->scan_plugindb(plugin->title,
+						PluginServer *server = mwindow->scan_plugindb(
+							plugin->title,
 							plugin->track->data_type);
 						if (server) 
 						{
@@ -4383,8 +4390,8 @@ int TrackCanvas::test_plugins(int cursor_x,
 //printf("TrackCanvas::test_plugins 7\n");
 							drag_popup = new BC_DragWindow(gui, 
 								frame, 
-								get_abs_cursor_x() - frame->get_w() / 2,
-								get_abs_cursor_y() - frame->get_h() / 2);
+								get_abs_cursor_x(0) - frame->get_w() / 2,
+								get_abs_cursor_y(0) - frame->get_h() / 2);
 						}
 						break;
 					}
@@ -4392,8 +4399,8 @@ int TrackCanvas::test_plugins(int cursor_x,
 					case PLUGIN_SHAREDMODULE:
 						drag_popup = new BC_DragWindow(gui, 
 							mwindow->theme->clip_icon, 
-							get_abs_cursor_x() - mwindow->theme->clip_icon->get_w() / 2,
-							get_abs_cursor_y() - mwindow->theme->clip_icon->get_h() / 2);
+							get_abs_cursor_x(0) - mwindow->theme->clip_icon->get_w() / 2,
+							get_abs_cursor_y(0) - mwindow->theme->clip_icon->get_h() / 2);
 						break;
 //printf("test plugins %d %p\n", mwindow->edl->session->editing_mode, mwindow->session->drag_plugin);
 				}

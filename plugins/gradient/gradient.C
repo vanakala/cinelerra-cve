@@ -608,9 +608,14 @@ GradientUnit::GradientUnit(GradientServer *server, GradientMain *plugin)
 #define SQR(x) ((x) * (x))
 
 
-#define CREATE_GRADIENT(type, components, max) \
+#define CREATE_GRADIENT(type, components) \
 { \
 /* Synthesize linear gradient for lookups */ \
+ \
+ 	r_table = malloc(sizeof(type) * gradient_size); \
+ 	g_table = malloc(sizeof(type) * gradient_size); \
+ 	b_table = malloc(sizeof(type) * gradient_size); \
+ 	a_table = malloc(sizeof(type) * gradient_size); \
  \
 	for(int i = 0; i < gradient_size; i++) \
 	{ \
@@ -624,10 +629,10 @@ GradientUnit::GradientUnit(GradientServer *server, GradientMain *plugin)
 		else \
 			opacity = 1.0; \
 		transparency = 1.0 - opacity; \
-		r_table[i] = (int)(out1 * opacity + in1 * transparency); \
-		g_table[i] = (int)(out2 * opacity + in2 * transparency); \
-		b_table[i] = (int)(out3 * opacity + in3 * transparency); \
-		a_table[i] = (int)(out4 * opacity + in4 * transparency); \
+		((type*)r_table)[i] = (type)(out1 * opacity + in1 * transparency); \
+		((type*)g_table)[i] = (type)(out2 * opacity + in2 * transparency); \
+		((type*)b_table)[i] = (type)(out3 * opacity + in3 * transparency); \
+		((type*)a_table)[i] = (type)(out4 * opacity + in4 * transparency); \
 	} \
  \
 	for(int i = pkg->y1; i < pkg->y2; i++) \
@@ -684,10 +689,10 @@ GradientUnit::GradientUnit(GradientServer *server, GradientMain *plugin)
 			} \
 			else \
 			{ \
-				out_row[0] = r_table[input_y]; \
-				out_row[1] = g_table[input_y]; \
-				out_row[2] = b_table[input_y]; \
-				if(components == 4) out_row[3] = a_table[input_y]; \
+				out_row[0] = ((type*)r_table)[input_y]; \
+				out_row[1] = ((type*)g_table)[input_y]; \
+				out_row[2] = ((type*)b_table)[input_y]; \
+				if(components == 4) out_row[3] = ((type*)a_table)[input_y]; \
 			} \
  \
  			out_row += components; \
@@ -698,8 +703,6 @@ GradientUnit::GradientUnit(GradientServer *server, GradientMain *plugin)
 void GradientUnit::process_package(LoadPackage *package)
 {
 	GradientPackage *pkg = (GradientPackage*)package;
-	int in1, in2, in3, in4;
-	int out1, out2, out3, out4;
 	int h = plugin->input->get_h();
 	int w = plugin->input->get_w();
 	int half_w = w / 2;
@@ -708,10 +711,10 @@ void GradientUnit::process_package(LoadPackage *package)
 	int in_radius = (int)(plugin->config.in_radius / 100 * gradient_size);
 	int out_radius = (int)(plugin->config.out_radius / 100 * gradient_size);
 	double effect_angle = plugin->config.angle / 360 * 2 * M_PI;
-	int r_table[gradient_size];
-	int g_table[gradient_size];
-	int b_table[gradient_size];
-	int a_table[gradient_size];
+	void *r_table = 0;
+	void *g_table = 0;
+	void *b_table = 0;
+	void *a_table = 0;
 
 	if(in_radius > out_radius)
 	{
@@ -722,50 +725,93 @@ void GradientUnit::process_package(LoadPackage *package)
 	switch(plugin->input->get_color_model())
 	{
 		case BC_RGB888:
-			in1 = plugin->config.in_r;
-			in2 = plugin->config.in_g;
-			in3 = plugin->config.in_b;
-			in4 = plugin->config.in_a;
-			out1 = plugin->config.out_r;
-			out2 = plugin->config.out_g;
-			out3 = plugin->config.out_b;
-			out4 = plugin->config.out_a;
-			CREATE_GRADIENT(unsigned char, 3, 0xff)
+		{
+			int in1 = plugin->config.in_r;
+			int in2 = plugin->config.in_g;
+			int in3 = plugin->config.in_b;
+			int in4 = plugin->config.in_a;
+			int out1 = plugin->config.out_r;
+			int out2 = plugin->config.out_g;
+			int out3 = plugin->config.out_b;
+			int out4 = plugin->config.out_a;
+			CREATE_GRADIENT(unsigned char, 3)
 			break;
+		}
+
 		case BC_RGBA8888:
-			in1 = plugin->config.in_r;
-			in2 = plugin->config.in_g;
-			in3 = plugin->config.in_b;
-			in4 = plugin->config.in_a;
-			out1 = plugin->config.out_r;
-			out2 = plugin->config.out_g;
-			out3 = plugin->config.out_b;
-			out4 = plugin->config.out_a;
-			CREATE_GRADIENT(unsigned char, 4, 0xff)
+		{
+			int in1 = plugin->config.in_r;
+			int in2 = plugin->config.in_g;
+			int in3 = plugin->config.in_b;
+			int in4 = plugin->config.in_a;
+			int out1 = plugin->config.out_r;
+			int out2 = plugin->config.out_g;
+			int out3 = plugin->config.out_b;
+			int out4 = plugin->config.out_a;
+			CREATE_GRADIENT(unsigned char, 4)
 			break;
+		}
+
+		case BC_RGB_FLOAT:
+		{
+			float in1 = (float)plugin->config.in_r / 0xff;
+			float in2 = (float)plugin->config.in_g / 0xff;
+			float in3 = (float)plugin->config.in_b / 0xff;
+			float in4 = (float)plugin->config.in_a / 0xff;
+			float out1 = (float)plugin->config.out_r / 0xff;
+			float out2 = (float)plugin->config.out_g / 0xff;
+			float out3 = (float)plugin->config.out_b / 0xff;
+			float out4 = (float)plugin->config.out_a / 0xff;
+			CREATE_GRADIENT(float, 3)
+			break;
+		}
+
+		case BC_RGBA_FLOAT:
+		{
+			float in1 = (float)plugin->config.in_r / 0xff;
+			float in2 = (float)plugin->config.in_g / 0xff;
+			float in3 = (float)plugin->config.in_b / 0xff;
+			float in4 = (float)plugin->config.in_a / 0xff;
+			float out1 = (float)plugin->config.out_r / 0xff;
+			float out2 = (float)plugin->config.out_g / 0xff;
+			float out3 = (float)plugin->config.out_b / 0xff;
+			float out4 = (float)plugin->config.out_a / 0xff;
+			CREATE_GRADIENT(float, 4)
+			break;
+		}
+
 		case BC_RGB161616:
-			in1 = (plugin->config.in_r << 8) | plugin->config.in_r;
-			in2 = (plugin->config.in_g << 8) | plugin->config.in_g;
-			in3 = (plugin->config.in_b << 8) | plugin->config.in_b;
-			in4 = (plugin->config.in_a << 8) | plugin->config.in_a;
-			out1 = (plugin->config.out_r << 8) | plugin->config.out_r;
-			out2 = (plugin->config.out_g << 8) | plugin->config.out_g;
-			out3 = (plugin->config.out_b << 8) | plugin->config.out_b;
-			out4 = (plugin->config.out_a << 8) | plugin->config.out_a;
-			CREATE_GRADIENT(uint16_t, 3, 0xffff)
+		{
+			int in1 = (plugin->config.in_r << 8) | plugin->config.in_r;
+			int in2 = (plugin->config.in_g << 8) | plugin->config.in_g;
+			int in3 = (plugin->config.in_b << 8) | plugin->config.in_b;
+			int in4 = (plugin->config.in_a << 8) | plugin->config.in_a;
+			int out1 = (plugin->config.out_r << 8) | plugin->config.out_r;
+			int out2 = (plugin->config.out_g << 8) | plugin->config.out_g;
+			int out3 = (plugin->config.out_b << 8) | plugin->config.out_b;
+			int out4 = (plugin->config.out_a << 8) | plugin->config.out_a;
+			CREATE_GRADIENT(uint16_t, 3)
 			break;
+		}
+
 		case BC_RGBA16161616:
-			in1 = (plugin->config.in_r << 8) | plugin->config.in_r;
-			in2 = (plugin->config.in_g << 8) | plugin->config.in_g;
-			in3 = (plugin->config.in_b << 8) | plugin->config.in_b;
-			in4 = (plugin->config.in_a << 8) | plugin->config.in_a;
-			out1 = (plugin->config.out_r << 8) | plugin->config.out_r;
-			out2 = (plugin->config.out_g << 8) | plugin->config.out_g;
-			out3 = (plugin->config.out_b << 8) | plugin->config.out_b;
-			out4 = (plugin->config.out_a << 8) | plugin->config.out_a;
-			CREATE_GRADIENT(uint16_t, 4, 0xffff)
+		{
+			int in1 = (plugin->config.in_r << 8) | plugin->config.in_r;
+			int in2 = (plugin->config.in_g << 8) | plugin->config.in_g;
+			int in3 = (plugin->config.in_b << 8) | plugin->config.in_b;
+			int in4 = (plugin->config.in_a << 8) | plugin->config.in_a;
+			int out1 = (plugin->config.out_r << 8) | plugin->config.out_r;
+			int out2 = (plugin->config.out_g << 8) | plugin->config.out_g;
+			int out3 = (plugin->config.out_b << 8) | plugin->config.out_b;
+			int out4 = (plugin->config.out_a << 8) | plugin->config.out_a;
+			CREATE_GRADIENT(uint16_t, 4)
 			break;
+		}
+
 		case BC_YUV888:
+		{
+			int in1, in2, in3, in4;
+			int out1, out2, out3, out4;
 			yuv.rgb_to_yuv_8(plugin->config.in_r,
 				plugin->config.in_g,
 				plugin->config.in_b,
@@ -780,9 +826,14 @@ void GradientUnit::process_package(LoadPackage *package)
 				out2,
 				out3);
 			out4 = plugin->config.out_a;
-			CREATE_GRADIENT(unsigned char, 3, 0xff)
+			CREATE_GRADIENT(unsigned char, 3)
 			break;
+		}
+
 		case BC_YUVA8888:
+		{
+			int in1, in2, in3, in4;
+			int out1, out2, out3, out4;
 			yuv.rgb_to_yuv_8(plugin->config.in_r,
 				plugin->config.in_g,
 				plugin->config.in_b,
@@ -797,9 +848,14 @@ void GradientUnit::process_package(LoadPackage *package)
 				out2,
 				out3);
 			out4 = plugin->config.out_a;
-			CREATE_GRADIENT(unsigned char, 4, 0xff)
+			CREATE_GRADIENT(unsigned char, 4)
 			break;
+		}
+
 		case BC_YUV161616:
+		{
+			int in1, in2, in3, in4;
+			int out1, out2, out3, out4;
 			yuv.rgb_to_yuv_16(
 				(plugin->config.in_r << 8) | plugin->config.in_r,
 				(plugin->config.in_g << 8) | plugin->config.in_g,
@@ -816,9 +872,14 @@ void GradientUnit::process_package(LoadPackage *package)
 				out2,
 				out3);
 			out4 = (plugin->config.out_a << 8) | plugin->config.out_a;
-			CREATE_GRADIENT(uint16_t, 3, 0xffff)
+			CREATE_GRADIENT(uint16_t, 3)
 			break;
+		}
+
 		case BC_YUVA16161616:
+		{
+			int in1, in2, in3, in4;
+			int out1, out2, out3, out4;
 			yuv.rgb_to_yuv_16(
 				(plugin->config.in_r << 8) | plugin->config.in_r,
 				(plugin->config.in_g << 8) | plugin->config.in_g,
@@ -835,9 +896,15 @@ void GradientUnit::process_package(LoadPackage *package)
 				out2,
 				out3);
 			out4 = (plugin->config.out_a << 8) | plugin->config.out_a;
-			CREATE_GRADIENT(uint16_t, 4, 0xffff)
+			CREATE_GRADIENT(uint16_t, 4)
 			break;
+		}
 	}
+
+	if(r_table) free(r_table);
+	if(g_table) free(g_table);
+	if(b_table) free(b_table);
+	if(a_table) free(a_table);
 }
 
 

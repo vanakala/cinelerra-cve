@@ -37,6 +37,8 @@
 #define FILE_VMPEG      	  	17    // For encoding only
 #define FILE_VORBIS     	  	18
 #define FILE_WAV  	    		2
+#define FILE_EXR                26
+#define FILE_EXR_LIST           27
 
 // For formats supported by plugins, the format number is the plugin number in the 
 // plugin list ORed with 0x8000.
@@ -67,6 +69,8 @@ N_("TIFF")
 N_("TIFF Sequence")
 N_("MPEG Video")    // For encoding only
 N_("OGG Vorbis")
+N_("EXR")
+N_("EXR List")
 #endif
 
 #define AC3_NAME "AC3"
@@ -94,6 +98,8 @@ N_("OGG Vorbis")
 #define TIFF_LIST_NAME "TIFF Sequence"
 #define VMPEG_NAME "MPEG Video"    // For encoding only
 #define VORBIS_NAME "OGG Vorbis"
+#define EXR_NAME "EXR"
+#define EXR_LIST_NAME "EXR List"
 
 #define BITSLINEAR8    8
 #define BITSLINEAR16   16

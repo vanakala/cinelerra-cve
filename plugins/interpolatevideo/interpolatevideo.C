@@ -370,10 +370,10 @@ void InterpolateVideo::fill_border(double frame_rate, int64_t start_position)
 }
 
 
-#define AVERAGE(type, components, max) \
+#define AVERAGE(type, temp_type,components, max) \
 { \
-	int fraction0 = (int)(lowest_fraction * max); \
-	int fraction1 = (int)(highest_fraction * max); \
+	temp_type fraction0 = (temp_type)(lowest_fraction * max); \
+	temp_type fraction1 = (temp_type)(max - fraction0); \
  \
 	for(int i = 0; i < h; i++) \
 	{ \
@@ -426,24 +426,28 @@ int InterpolateVideo::process_buffer(VFrame *frame,
 		fill_border(frame_rate, start_position);
 
 // Fraction of lowest frame in output
-		int64_t requested_range_start = (int64_t)((double)range_start / 
-			config.input_rate * 
-			frame_rate);
-		int64_t requested_range_end = (int64_t)((double)range_end / 
-			config.input_rate * 
-			frame_rate);
+		int64_t requested_range_start = (int64_t)((double)range_start * 
+			frame_rate / 
+			config.input_rate);
+		int64_t requested_range_end = (int64_t)((double)range_end * 
+			frame_rate / 
+			config.input_rate);
 		float highest_fraction = (float)(start_position - requested_range_start) /
 			(requested_range_end - requested_range_start);
 
 // Fraction of highest frame in output
 		float lowest_fraction = 1.0 - highest_fraction;
+		CLAMP(highest_fraction, 0, 1);
+		CLAMP(lowest_fraction, 0, 1);
 
-// printf("InterpolateVideo::process_buffer %f %f %lld %lld %lld %f %f\n",
-// config.input_rate,
-// frame_rate,
+// printf("InterpolateVideo::process_buffer %lld %lld %lld %f %f %lld %lld %f %f\n",
+// range_start,
+// range_end,
 // requested_range_start,
 // requested_range_end,
 // start_position,
+// config.input_rate,
+// frame_rate,
 // lowest_fraction,
 // highest_fraction);
 
@@ -451,21 +455,27 @@ int InterpolateVideo::process_buffer(VFrame *frame,
 		int h = frame->get_h();
 		switch(frame->get_color_model())
 		{
+			case BC_RGB_FLOAT:
+				AVERAGE(float, float, 3, 1);
+				break;
 			case BC_RGB888:
 			case BC_YUV888:
-				AVERAGE(unsigned char, 3, 0xff);
+				AVERAGE(unsigned char, int, 3, 0xff);
+				break;
+			case BC_RGBA_FLOAT:
+				AVERAGE(float, float, 4, 1);
 				break;
 			case BC_RGBA8888:
 			case BC_YUVA8888:
-				AVERAGE(unsigned char, 4, 0xff);
+				AVERAGE(unsigned char, int, 4, 0xff);
 				break;
 			case BC_RGB161616:
 			case BC_YUV161616:
-				AVERAGE(uint16_t, 3, 0xffff);
+				AVERAGE(uint16_t, int, 3, 0xffff);
 				break;
 			case BC_RGBA16161616:
 			case BC_YUVA16161616:
-				AVERAGE(uint16_t, 4, 0xffff);
+				AVERAGE(uint16_t, int, 4, 0xffff);
 				break;
 		}
 	}

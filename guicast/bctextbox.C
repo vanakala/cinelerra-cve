@@ -173,7 +173,6 @@ int BC_TextBox::update(float value)
 	sprintf(string, "%f", value);
 	char *ptr = strchr(string, '.');
 
-//printf("BC_TextBox::update 1 %d\n", precision);
 	if(ptr) ptr[precision + 1] = 0;
 
 	update(string);
@@ -197,6 +196,11 @@ void BC_TextBox::enable()
 		enabled = 1;
 		draw();
 	}
+}
+
+int BC_TextBox::get_enabled()
+{
+	return enabled;
 }
 
 int BC_TextBox::pixels_to_rows(BC_WindowBase *window, int font, int pixels)
@@ -408,6 +412,7 @@ void BC_TextBox::draw()
 // Border
 	draw_border();
 	flash();
+	flush();   
 }
 
 int BC_TextBox::focus_in_event()
@@ -433,6 +438,7 @@ int BC_TextBox::cursor_enter_event()
 			highlighted = 1;
 			draw_border();
 			flash();
+			flush();   
 		}
 	}
 	return 0;
@@ -446,6 +452,7 @@ int BC_TextBox::cursor_leave_event()
 		draw_border();
 		hide_tooltip();
 		flash();
+		flush();   
 	}
 	return 0;
 }
@@ -606,6 +613,7 @@ int BC_TextBox::repeat_event(int64_t duration)
 		}
 		draw_cursor();
 		flash();
+		flush();   
 		result = 1;
 	}
 	return result;

@@ -213,9 +213,9 @@ DenoiseFFTWindow::DenoiseFFTWindow(DenoiseFFTEffect *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
  	x, 
 	y, 
-	220, 
+	300, 
 	120, 
-	220, 
+	300, 
 	120,
 	0, 
 	0,
@@ -445,7 +445,7 @@ void DenoiseFFTEffect::collect_noise()
 		step = -1;
 	}
 
-	for(int i = 0; i < config.samples; i++)
+	for(int i = 0; i < config.samples; i += WINDOW_SIZE)
 	{
 		collect_engine->process_buffer(collection_start,
 			WINDOW_SIZE,

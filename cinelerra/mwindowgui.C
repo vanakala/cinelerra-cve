@@ -164,6 +164,8 @@ void MWindowGUI::get_scrollbars()
 
 int MWindowGUI::create_objects()
 {
+//set_repeat(100);
+
 //printf("MWindowGUI::create_objects 1\n");
 	set_icon(mwindow->theme->mwindow_icon);
 	
@@ -303,19 +305,19 @@ void MWindowGUI::update(int scrollbars,
 	int clock,
 	int buttonbar)
 {
-TRACE("MWindowGUI::update 1");
+//TRACE("MWindowGUI::update 1");
 	mwindow->edl->tracks->update_y_pixels(mwindow->theme);
-TRACE("MWindowGUI::update 1");
+//TRACE("MWindowGUI::update 1");
 	if(scrollbars) this->get_scrollbars();
-TRACE("MWindowGUI::update 1");
+//TRACE("MWindowGUI::update 1");
 	if(timebar) this->timebar->update();
-TRACE("MWindowGUI::update 1");
+//TRACE("MWindowGUI::update 1");
 	if(zoombar) this->zoombar->update();
-TRACE("MWindowGUI::update 1");
+//TRACE("MWindowGUI::update 1");
 	if(patchbay) this->patchbay->update();
-TRACE("MWindowGUI::update 1");
+//TRACE("MWindowGUI::update 1");
 	if(clock) this->mainclock->update(mwindow->edl->local_session->selectionstart);
-TRACE("MWindowGUI::update 1");
+//TRACE("MWindowGUI::update 1");
 	if(canvas)
 	{
 		this->canvas->draw(canvas == 2);
@@ -323,9 +325,9 @@ TRACE("MWindowGUI::update 1");
 		this->canvas->flash();
 		this->canvas->activate();
 	}
-TRACE("MWindowGUI::update 1");
+//TRACE("MWindowGUI::update 1");
 	if(buttonbar) mbuttons->update();
-TRACE("MWindowGUI::update 100");
+//TRACE("MWindowGUI::update 100");
 }
 
 int MWindowGUI::visible(int64_t x1, int64_t x2, int64_t view_x1, int64_t view_x2)
@@ -433,6 +435,8 @@ void MWindowGUI::default_positions()
 
 int MWindowGUI::repeat_event(int64_t duration)
 {
+// if(duration == 100)
+// mwindow->sync_parameters(CHANGE_ALL);
 	return cursor->repeat_event(duration);
 }
 

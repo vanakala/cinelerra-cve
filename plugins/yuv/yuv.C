@@ -3,6 +3,7 @@
 #include "defaults.h"
 #include "filexml.h"
 #include "guicast.h"
+#include "language.h"
 #include "picon_png.h"
 #include "plugincolors.h"
 #include "pluginvclient.h"
@@ -10,11 +11,6 @@
 
 #include <stdint.h>
 #include <string.h>
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 class YUVEffect;
@@ -288,52 +284,72 @@ void YUVEffect::read_data(KeyFrame *keyframe)
 
 static YUV yuv_static;
 
-#define YUV_MACRO(type, max, components, use_yuv) \
+#define YUV_MACRO(type, temp_type, max, components, use_yuv) \
 { \
 	for(int i = 0; i < input->get_h(); i++) \
 	{ \
 		type *in_row = (type*)input->get_rows()[i]; \
 		type *out_row = (type*)output->get_rows()[i]; \
+		const float round = (sizeof(type) == 4) ? 0.0 : 0.5; \
  \
 		for(int j = 0; j < w; j++) \
 		{ \
 			if(use_yuv) \
 			{ \
-				int y = (int)((float)in_row[0] * y_scale + 0.5); \
-				int u = (int)((float)(in_row[1] - (max / 2 + 1)) * u_scale + 0.5) + (max / 2 + 1); \
-				int v = (int)((float)(in_row[2] - (max / 2 + 1)) * v_scale + 0.5) + (max / 2 + 1); \
+				int y = (int)((float)in_row[0] * y_scale + round); \
+				int u = (int)((float)(in_row[1] - (max / 2 + 1)) * u_scale + round) + (max / 2 + 1); \
+				int v = (int)((float)(in_row[2] - (max / 2 + 1)) * v_scale + round) + (max / 2 + 1); \
 				out_row[0] = CLIP(y, 0, max); \
 				out_row[1] = CLIP(u, 0, max); \
 				out_row[2] = CLIP(v, 0, max); \
 			} \
 			else \
 			{ \
-				int y, u, v, r, g, b; \
-				if(max == 0xff) \
-					yuv_static.rgb_to_yuv_8(in_row[0], in_row[1], in_row[2], y, u, v); \
+				temp_type y, u, v, r, g, b; \
+				if(sizeof(type) == 4) \
+				{ \
+					yuv_static.rgb_to_yuv_f(in_row[0], in_row[1], in_row[2], y, u, v); \
+				} \
 				else \
+				if(sizeof(type) == 2) \
+				{ \
 					yuv_static.rgb_to_yuv_16(in_row[0], in_row[1], in_row[2], y, u, v); \
- \
-				y = (int)((float)y * y_scale + 0.5); \
-				u = (int)((float)(u - (max / 2 + 1)) * u_scale + 0.5) + (max / 2 + 1); \
-				v = (int)((float)(v - (max / 2 + 1)) * v_scale + 0.5) + (max / 2 + 1); \
- \
-				CLAMP(y, 0, max); \
-				CLAMP(u, 0, max); \
-				CLAMP(v, 0, max); \
- \
-				if(max == 0xff) \
-					yuv_static.yuv_to_rgb_8(r, g, b, y, u, v); \
+				} \
 				else \
+				{ \
+					yuv_static.rgb_to_yuv_8(in_row[0], in_row[1], in_row[2], y, u, v); \
+				} \
+ \
+ 				if(sizeof(type) < 4) \
+				{ \
+					CLAMP(y, 0, max); \
+					CLAMP(u, 0, max); \
+					CLAMP(v, 0, max); \
+ \
+					y = temp_type((float)y * y_scale + round); \
+					u = temp_type((float)(u - (max / 2 + 1)) * u_scale + round) + (max / 2 + 1); \
+					v = temp_type((float)(v - (max / 2 + 1)) * v_scale + round) + (max / 2 + 1); \
+				} \
+				else \
+				{ \
+					y = temp_type((float)y * y_scale + round); \
+					u = temp_type((float)u * u_scale + round); \
+					v = temp_type((float)v * v_scale + round); \
+				} \
+ \
+				if(sizeof(type) == 4) \
+					yuv_static.yuv_to_rgb_f(r, g, b, y, u, v); \
+				else \
+				if(sizeof(type) == 2) \
 					yuv_static.yuv_to_rgb_16(r, g, b, y, u, v); \
+				else \
+					yuv_static.yuv_to_rgb_8(r, g, b, y, u, v); \
  \
 				out_row[0] = r; \
 				out_row[1] = g; \
 				out_row[2] = b; \
 			} \
 		 \
-			if(components == 4) \
-				out_row[3] = in_row[3]; \
 			in_row += components; \
 			out_row += components; \
 		} \
@@ -362,36 +378,44 @@ int YUVEffect::process_realtime(VFrame *input, VFrame *output)
 
 		switch(input->get_color_model())
 		{
+			case BC_RGB_FLOAT:
+				YUV_MACRO(float, float, 1, 3, 0)
+				break;
+
 			case BC_RGB888:
-				YUV_MACRO(unsigned char, 0xff, 3, 0)
+				YUV_MACRO(unsigned char, int, 0xff, 3, 0)
 				break;
 
 			case BC_YUV888:
-				YUV_MACRO(unsigned char, 0xff, 3, 1)
+				YUV_MACRO(unsigned char, int, 0xff, 3, 1)
 				break;
 
 			case BC_RGB161616:
-				YUV_MACRO(uint16_t, 0xffff, 3, 0)
+				YUV_MACRO(uint16_t, int, 0xffff, 3, 0)
 				break;
 
 			case BC_YUV161616:
-				YUV_MACRO(uint16_t, 0xffff, 3, 1)
+				YUV_MACRO(uint16_t, int, 0xffff, 3, 1)
+				break;
+
+			case BC_RGBA_FLOAT:
+				YUV_MACRO(float, float, 1, 4, 0)
 				break;
 
 			case BC_RGBA8888:
-				YUV_MACRO(unsigned char, 0xff, 4, 0)
+				YUV_MACRO(unsigned char, int, 0xff, 4, 0)
 				break;
 
 			case BC_YUVA8888:
-				YUV_MACRO(unsigned char, 0xff, 4, 1)
+				YUV_MACRO(unsigned char, int, 0xff, 4, 1)
 				break;
 
 			case BC_RGBA16161616:
-				YUV_MACRO(uint16_t, 0xffff, 4, 0)
+				YUV_MACRO(uint16_t, int, 0xffff, 4, 0)
 				break;
 
 			case BC_YUVA16161616:
-				YUV_MACRO(uint16_t, 0xffff, 4, 1)
+				YUV_MACRO(uint16_t, int, 0xffff, 4, 1)
 				break;
 		}
 

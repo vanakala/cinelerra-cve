@@ -1,6 +1,7 @@
 #include "clip.h"
 #include "colormodels.h"
 #include "filexml.h"
+#include "language.h"
 #include "picon_png.h"
 #include "rgb601.h"
 #include "rgb601window.h"
@@ -8,10 +9,6 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 REGISTER_PLUGIN(RGB601Main)
 
@@ -174,20 +171,37 @@ void RGB601Main::create_table(VFrame *input_ptr)
 /* Just do Y */ \
 			for(int j = 0; j < w; j++) \
 			{ \
-				out_row[j * components] = table[in_row[j * components]]; \
+				out_row[j * components] = table[(int)in_row[j * components]]; \
 				out_row[j * components + 1] = in_row[j * components + 1]; \
 				out_row[j * components + 2] = in_row[j * components + 2]; \
-				if(components == 4) out_row[j * components + 3] = in_row[j * components + 3]; \
+			} \
+		} \
+		else \
+		if(sizeof(type) == 4) \
+		{ \
+			for(int j = 0; j < w; j++) \
+			{ \
+				if(table == forward_table) \
+				{ \
+					out_row[j * components] = (type)(in_row[j * components] * 0.8588 + 0.0627); \
+					out_row[j * components + 1] = (type)(in_row[j * components + 1] * 0.8588 + 0.0627); \
+					out_row[j * components + 2] = (type)(in_row[j * components + 2] * 0.8588 + 0.0627); \
+				} \
+				else \
+				{ \
+					out_row[j * components] = (type)(in_row[j * components] * 1.1644 - 0.0627); \
+					out_row[j * components + 1] = (type)(in_row[j * components + 1] * 1.1644 - 0.0627); \
+					out_row[j * components + 2] = (type)(in_row[j * components + 2] * 1.1644 - 0.0627); \
+				} \
 			} \
 		} \
 		else \
 		{ \
-			for(int j = 0; j < bytes; j++) \
+			for(int j = 0; j < w; j++) \
 			{ \
-				out_row[j * components] = in_row[j * components]; \
-				out_row[j * components + 1] = table[in_row[j * components + 1]]; \
-				out_row[j * components + 2] = table[in_row[j * components + 2]]; \
-				if(components == 4) out_row[j * components + 3] = table[in_row[j * components + 3]]; \
+				out_row[j * components] = table[(int)in_row[j * components]]; \
+				out_row[j * components + 1] = table[(int)in_row[j * components + 1]]; \
+				out_row[j * components + 2] = table[(int)in_row[j * components + 2]]; \
 			} \
 		} \
 	} \
@@ -219,6 +233,12 @@ void RGB601Main::process(int *table, VFrame *input_ptr, VFrame *output_ptr)
 			case BC_RGBA8888:
 				PROCESS(forward_table, unsigned char, 4, 0);
 				break;
+			case BC_RGB_FLOAT:
+				PROCESS(forward_table, float, 3, 0);
+				break;
+			case BC_RGBA_FLOAT:
+				PROCESS(forward_table, float, 4, 0);
+				break;
 			case BC_RGB161616:
 				PROCESS(forward_table, u_int16_t, 3, 0);
 				break;
@@ -248,6 +268,12 @@ void RGB601Main::process(int *table, VFrame *input_ptr, VFrame *output_ptr)
 			case BC_RGBA8888:
 				PROCESS(reverse_table, unsigned char, 4, 0);
 				break;
+			case BC_RGB_FLOAT:
+				PROCESS(reverse_table, float, 3, 0);
+				break;
+			case BC_RGBA_FLOAT:
+				PROCESS(reverse_table, float, 4, 0);
+				break;
 			case BC_RGB161616:
 				PROCESS(reverse_table, u_int16_t, 3, 0);
 				break;
@@ -265,6 +291,7 @@ int RGB601Main::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	load_configuration();
 
 	create_table(input_ptr);
+
 	if(config.direction == 1)
 		process(forward_table, input_ptr, output_ptr);
 	else

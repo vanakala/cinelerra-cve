@@ -4,15 +4,11 @@
 #include "filexml.h"
 #include "flip.h"
 #include "flipwindow.h"
+#include "language.h"
 #include "picon_png.h"
 
 #include <stdint.h>
 #include <string.h>
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 REGISTER_PLUGIN(FlipMain)
 
@@ -73,25 +69,25 @@ char* FlipMain::plugin_title() { return N_("Flip"); }
 int FlipMain::is_realtime() { return 1; }
 	
 
-#define SWAP_PIXELS(components, in, out) \
+#define SWAP_PIXELS(type, components, in, out) \
 { \
-	in[0] ^= out[0]; \
-	out[0] ^= in[0]; \
-	in[0] ^= out[0]; \
+	type temp = in[0]; \
+	in[0] = out[0]; \
+	out[0] = temp; \
  \
-	in[1] ^= out[1]; \
-	out[1] ^= in[1]; \
-	in[1] ^= out[1]; \
+ 	temp = in[1]; \
+	in[1] = out[1]; \
+	out[1] = temp; \
  \
-	in[2] ^= out[2]; \
-	out[2] ^= in[2]; \
-	in[2] ^= out[2]; \
+ 	temp = in[2]; \
+	in[2] = out[2]; \
+	out[2] = temp; \
  \
 	if(components == 4) \
 	{ \
-		in[3] ^= out[3]; \
-		out[3] ^= in[3]; \
-		in[3] ^= out[3]; \
+ 		temp = in[3]; \
+		in[3] = out[3]; \
+		out[3] = temp; \
 	} \
 }
 
@@ -110,7 +106,7 @@ int FlipMain::is_realtime() { return 1; }
 			output_row = output_rows[j]; \
 			for(k = 0; k < w; k++) \
 			{ \
-				SWAP_PIXELS(components, output_row, input_row); \
+				SWAP_PIXELS(type, components, output_row, input_row); \
 				output_row += components; \
 				input_row += components; \
 			} \
@@ -125,7 +121,7 @@ int FlipMain::is_realtime() { return 1; }
 			output_row = output_rows[i] + (w - 1) * components; \
 			for(k = 0; k < w / 2; k++) \
 			{ \
-				SWAP_PIXELS(components, output_row, input_row); \
+				SWAP_PIXELS(type, components, output_row, input_row); \
 				input_row += components; \
 				output_row -= components; \
 			} \
@@ -147,6 +143,9 @@ int FlipMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		case BC_YUV888:
 			FLIP_MACRO(unsigned char, 3);
 			break;
+		case BC_RGB_FLOAT:
+			FLIP_MACRO(float, 3);
+			break;
 		case BC_RGB161616:
 		case BC_YUV161616:
 			FLIP_MACRO(uint16_t, 3);
@@ -154,6 +153,9 @@ int FlipMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		case BC_RGBA8888:
 		case BC_YUVA8888:
 			FLIP_MACRO(unsigned char, 4);
+			break;
+		case BC_RGBA_FLOAT:
+			FLIP_MACRO(float, 4);
 			break;
 		case BC_RGBA16161616:
 		case BC_YUVA16161616:

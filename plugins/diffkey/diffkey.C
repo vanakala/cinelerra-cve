@@ -4,6 +4,7 @@
 #include "filexml.h"
 #include "diffkey.h"
 #include "diffkeywindow.h"
+#include "language.h"
 #include "picon_png.h"
 #include "plugincolors.h"
 #include "language.h"
@@ -35,9 +36,9 @@ int add_key_frame = 0;
 
 DiffKeyConfig::DiffKeyConfig()
 {
-	#ifdef DEBUG
+#ifdef DEBUG
 	printf("\nDiffKeyConfig::DiffKeyConfig");
-	#endif
+#endif
 
 	hue_imp = 25;
 	sat_imp = 25;

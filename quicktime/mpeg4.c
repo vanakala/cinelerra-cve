@@ -447,6 +447,60 @@ int quicktime_mpeg4_write_vol(unsigned char *data_start,
 
 
 
+// Create the header for the esds block which is used in mp4v.
+// Taken from libavcodec
+// Returns the size
+static int write_mp4v_header(unsigned char *data,
+	int w, 
+	int h,
+	double frame_rate)
+{
+	unsigned char *start = data;
+// Advanced simple level 1
+	int profile_level = 0xf3;
+	int vo_version_id = 5;
+
+
+
+
+
+// VOS startcode
+	*data++ = 0x00;
+	*data++ = 0x00;
+	*data++ = 0x01;
+	*data++ = 0xb0;
+	*data++ = profile_level;
+
+// Visual object startcode
+	*data++ = 0x00;
+	*data++ = 0x00;
+	*data++ = 0x01;
+	*data++ = 0xb5;
+	*data++ = (1 << 7) ||
+		(vo_version_id << 3) ||
+// Priority
+		1;
+// visual object type
+	*data++ = (1 << 4) ||
+// Video signal type
+		0;
+	*data++ = 0x40;
+	*data++ = 0xc0;
+	*data++ = 0xcf;
+
+// video object
+	int vol_size = quicktime_mpeg4_write_vol(data,
+		w, 
+		h, 
+		60000, 
+		frame_rate);
+	data += vol_size;
+
+	return data - start;
+}
+
+
+
 
 
 
@@ -623,7 +677,6 @@ static int decode_wrapper(quicktime_t *file,
 		asm("emms");
 #endif
 	}
-//printf("decode_wrapper 4\n");
 
 	return result;
 }
@@ -883,7 +936,20 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 			encore(codec->encode_handle[current_field], 
 				ENC_OPT_INIT, 
 				&codec->enc_param[current_field], NULL);
-			
+
+
+// Create esds header
+			if(!strcmp(((quicktime_codec_t*)vtrack->codec)->fourcc, QUICKTIME_MP4V))
+			{
+				unsigned char temp[256];
+				int size = write_mp4v_header(temp,
+					width,
+					height,
+					quicktime_frame_rate(file, track));
+				quicktime_set_mpeg4_header(&trak->mdia.minf.stbl.stsd.table[0],
+					temp, 
+					size);
+			}
 		}
 		else
 // ffmpeg section
@@ -1337,6 +1403,15 @@ void quicktime_init_codec_svq3(quicktime_video_map_t *vtrack)
 		"Sorenson Version 3",
 		"From the chearch of codecs of yesterday's sights");
 	result->ffmpeg_id = CODEC_ID_SVQ3;
+}
+
+void quicktime_init_codec_h263(quicktime_video_map_t *vtrack)
+{
+    quicktime_mpeg4_codec_t *result = init_common(vtrack,
+        QUICKTIME_H263,
+        "h263",
+        "H.263");
+    result->ffmpeg_id = CODEC_ID_H263;
 }
 
 // field based MPEG-4

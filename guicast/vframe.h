@@ -77,10 +77,6 @@ public:
 
 // direct copy with no alpha
 	int copy_from(VFrame *frame);
-// Direct copy with alpha from 0 to 1.
-	int replace_from(VFrame *frame, float alpha);
-
-	int apply_fade(float alpha);
 // Required for YUV
 	int clear_frame();
 	int allocate_compressed_data(long bytes);

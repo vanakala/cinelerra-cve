@@ -20,6 +20,8 @@ LocalSession::LocalSession(EDL *edl)
 	clipboard_length = 0;
 	preview_start = preview_end = 0;
 	loop_playback = 0;
+	view_start = 0;
+	track_start = 0;
 }
 
 LocalSession::~LocalSession()
@@ -135,13 +137,11 @@ int LocalSession::load_defaults(Defaults *defaults)
 	loop_end = defaults->get("LOOP_END", (double)0);
 	selectionstart = defaults->get("SELECTIONSTART", selectionstart);
 	selectionend = defaults->get("SELECTIONEND", selectionend);
-	track_start = defaults->get("TRACK_START", 0);
-	view_start = defaults->get("VIEW_START", 0);
+//	track_start = defaults->get("TRACK_START", 0);
+//	view_start = defaults->get("VIEW_START", 0);
 	zoom_sample = defaults->get("ZOOM_SAMPLE", 1);
 	zoom_y = defaults->get("ZOOMY", 64);
 	zoom_track = defaults->get("ZOOM_TRACK", 64);
-//	preview_start = defaults->get("PREVIEW_START", preview_start);
-//	preview_end = defaults->get("PREVIEW_END", preview_end);
 	return 0;
 }
 

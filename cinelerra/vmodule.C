@@ -148,6 +148,7 @@ int VModule::import_frame(VFrame *output,
 				!EQUIV(in_w1, current_edit->asset->width) ||
 				!EQUIV(in_h1, current_edit->asset->height))
 			{
+//printf("VModule::import_frame 1\n");
 // Get temporary input buffer
 				VFrame **input = 0;
 // Realtime playback
@@ -293,10 +294,14 @@ int VModule::render(VFrame *output,
 	int64_t start_position,
 	int direction,
 	double frame_rate,
-	int use_nudge)
+	int use_nudge,
+	int debug_render)
 {
 	int result = 0;
 	double edl_rate = get_edl()->session->frame_rate;
+
+
+
 	if(use_nudge) start_position += (int64_t)(track->nudge * 
 		frame_rate / 
 		edl_rate);
@@ -307,8 +312,15 @@ int VModule::render(VFrame *output,
 		frame_rate + 
 		0.5);
 
+	if(debug_render)
+		printf("    VModule::render %d %lld %s\n", 
+			use_nudge, 
+			start_position_project,
+			track->title);
+
 	update_transition(start_position_project, 
 		direction);
+
 
 	VEdit* current_edit = (VEdit*)track->edits->editof(start_position_project, 
 		direction,

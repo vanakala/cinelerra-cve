@@ -8,6 +8,7 @@
 #include "filexml.h"
 #include "intauto.h"
 #include "intautos.h"
+#include "language.h"
 #include "localsession.h"
 #include "mainundo.h"
 #include "mwindow.h"
@@ -20,11 +21,6 @@
 #include "trackcanvas.h"
 #include "tracks.h"
 #include "vpatchgui.h"
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 
@@ -332,7 +328,7 @@ int PatchBay::cursor_motion_event()
 	return 0;
 }
 
-void PatchBay::change_meter_format(int mode, float min)
+void PatchBay::change_meter_format(int mode, int min, int max)
 {
 	for(int i = 0; i < patches.total; i++)
 	{
@@ -342,7 +338,7 @@ void PatchBay::change_meter_format(int mode, float min)
 			APatchGUI *apatchgui = (APatchGUI*)patchgui;
 			if(apatchgui->meter)
 			{
-				apatchgui->meter->change_format(mode, min);
+				apatchgui->meter->change_format(mode, min, max);
 			}
 		}
 	}

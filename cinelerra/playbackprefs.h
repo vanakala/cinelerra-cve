@@ -37,15 +37,16 @@ public:
 	~PlaybackPrefs();
 
 	int create_objects();
-	int set_strategy(int strategy);
+//	int set_strategy(int strategy);
 	int get_buffer_bytes();
 
 	static char* strategy_to_string(int strategy);
 	void delete_strategy();
 
-
-	ArrayList<PlaybackConfig*>* current_config_list();
-	PlaybackConfig* current_config();
+/*
+ * 	ArrayList<PlaybackConfig*>* current_config_list();
+ * 	PlaybackConfig* current_config();
+ */
 	void update(int interpolation);
 	int draw_framerate();
 
@@ -53,6 +54,7 @@ public:
 	VDevicePrefs *video_device;
 	ArrayList<BC_ListBoxItem*> strategies;
 
+	PlaybackConfig *playback_config;
 	BC_Title *framerate_title;
 	PlaybackNearest *nearest_neighbor;
 	PlaybackBicubicBicubic *cubic_cubic;
@@ -60,50 +62,52 @@ public:
 	PlaybackBilinearBilinear *linear_linear;
 	PlaybackDeblock *mpeg4_deblock;
 
-	int64_t current_head;
-	BC_Title *head_title;
-	BC_Title *host_title;
-	BC_Title *head_count_title;
+//	int64_t current_head;
+//	BC_Title *head_title;
+//	BC_Title *host_title;
+//	BC_Title *head_count_title;
 	BC_Title *vdevice_title;
-	PlaybackHead *head_text;
-	PlaybackHeadCount *head_count_text;
-	PlaybackHost *host_text;
+//	PlaybackHead *head_text;
+//	PlaybackHeadCount *head_count_text;
+//	PlaybackHost *host_text;
 };
 
 
-class PlaybackStrategy : public BC_PopupTextBox
-{
-public:
-	PlaybackStrategy(PlaybackPrefs *prefs, int x, int y);
-	int handle_event();
-	
-	PlaybackPrefs *prefs;
-};
-
-class PlaybackHead : public BC_TumbleTextBox
-{
-public:
-	PlaybackHead(PlaybackPrefs *prefs, int x, int y);
-	int handle_event();
-	PlaybackPrefs *prefs;
-};
-
-class PlaybackHeadCount : public BC_TumbleTextBox
-{
-public:
-	PlaybackHeadCount(PlaybackPrefs *prefs, int x, int y);
-	int handle_event();
-	PlaybackPrefs *prefs;
-};
-
-class PlaybackHost : public BC_TextBox
-{
-public:
-	PlaybackHost(PlaybackPrefs *prefs, int x, int y);
-	int handle_event();
-	PlaybackPrefs *prefs;
-};
-
+/*
+ * class PlaybackStrategy : public BC_PopupTextBox
+ * {
+ * public:
+ * 	PlaybackStrategy(PlaybackPrefs *prefs, int x, int y);
+ * 	int handle_event();
+ * 	
+ * 	PlaybackPrefs *prefs;
+ * };
+ * 
+ * class PlaybackHead : public BC_TumbleTextBox
+ * {
+ * public:
+ * 	PlaybackHead(PlaybackPrefs *prefs, int x, int y);
+ * 	int handle_event();
+ * 	PlaybackPrefs *prefs;
+ * };
+ * 
+ * class PlaybackHeadCount : public BC_TumbleTextBox
+ * {
+ * public:
+ * 	PlaybackHeadCount(PlaybackPrefs *prefs, int x, int y);
+ * 	int handle_event();
+ * 	PlaybackPrefs *prefs;
+ * };
+ * 
+ * class PlaybackHost : public BC_TextBox
+ * {
+ * public:
+ * 	PlaybackHost(PlaybackPrefs *prefs, int x, int y);
+ * 	int handle_event();
+ * 	PlaybackPrefs *prefs;
+ * };
+ * 
+ */
 /*
  * class PlaybackBufferSize : public BC_TextBox
  * {

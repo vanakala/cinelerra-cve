@@ -98,8 +98,10 @@ int main(int argc, char *argv[])
 			if(argc > i + 1)
 			{
 				if(atol(argv[i + 1]) > 0)
+				{
 					deamon_port = atol(argv[i + 1]);
-				i++;
+					i++;
+				}
 			}
 		}
 		else

@@ -4,6 +4,7 @@
 #include "filexml.h"
 #include "guicast.h"
 #include "keyframe.h"
+#include "language.h"
 #include "loadbalance.h"
 #include "picon_png.h"
 #include "pluginvclient.h"
@@ -14,10 +15,6 @@
 #include <string.h>
 #include <stdint.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 #define SQR(x) ((x) * (x))
 #define WITHIN(a, b, c) ((((a) <= (b)) && ((b) <= (c))) ? 1 : 0)
@@ -211,11 +208,7 @@ void PolarWindow::create_objects()
 	flush();
 }
 
-int PolarWindow::close_event()
-{
-	set_done(1);
-	return 1;
-}
+WINDOW_CLOSE_EVENT(PolarWindow)
 
 PLUGIN_THREAD_OBJECT(PolarEffect, PolarThread, PolarWindow)
 
@@ -776,6 +769,12 @@ void PolarUnit::process_package(LoadPackage *package)
 	
 	switch(plugin->input->get_color_model())
 	{
+		case BC_RGB_FLOAT:
+			POLAR_MACRO(float, 1, 3, 0x0)
+			break;
+		case BC_RGBA_FLOAT:
+			POLAR_MACRO(float, 1, 4, 0x0)
+			break;
 		case BC_RGB888:
 			POLAR_MACRO(unsigned char, 0xff, 3, 0x0)
 			break;

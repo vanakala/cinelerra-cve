@@ -32,7 +32,7 @@ Preferences::Preferences()
 // Set defaults
 	FileSystem fs;
 
-	preferences_lock = new Mutex;
+	preferences_lock = new Mutex("Preferences::preferences_lock");
 	sprintf(index_directory, BCASTDIR);
 	if(strlen(index_directory))
 		fs.complete_path(index_directory);
@@ -72,7 +72,7 @@ Preferences::~Preferences()
 
 void Preferences::copy_rates_from(Preferences *preferences)
 {
-	preferences_lock->lock();
+	preferences_lock->lock("Preferences::copy_rates_from");
 // Need to match node titles in case the order changed and in case
 // one of the nodes in the source is the master node.
 	local_rate = preferences->local_rate;
@@ -305,7 +305,7 @@ void Preferences::add_node(char *text, int port, int enabled, float rate)
 {
 	if(text[0] == 0) return;
 
-	preferences_lock->lock();
+	preferences_lock->lock("Preferences::add_node");
 	char *new_item = new char[strlen(text) + 1];
 	strcpy(new_item, text);
 	renderfarm_nodes.append(new_item);
@@ -317,7 +317,7 @@ void Preferences::add_node(char *text, int port, int enabled, float rate)
 
 void Preferences::delete_node(int number)
 {
-	preferences_lock->lock();
+	preferences_lock->lock("Preferences::delete_node");
 	if(number < renderfarm_nodes.total)
 	{
 		delete [] renderfarm_nodes.values[number];
@@ -331,7 +331,7 @@ void Preferences::delete_node(int number)
 
 void Preferences::delete_nodes()
 {
-	preferences_lock->lock();
+	preferences_lock->lock("Preferences::delete_nodes");
 	for(int i = 0; i < renderfarm_nodes.total; i++)
 		delete [] renderfarm_nodes.values[i];
 	renderfarm_nodes.remove_all();
@@ -374,7 +374,7 @@ void Preferences::set_rate(float rate, int node)
 
 float Preferences::get_avg_rate(int use_master_node)
 {
-	preferences_lock->lock();
+	preferences_lock->lock("Preferences::get_avg_rate");
 	float total = 0.0;
 	if(renderfarm_rate.total)
 	{

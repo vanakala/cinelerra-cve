@@ -1,5 +1,4 @@
 lib_LTLIBRARIES = libguicast.la
-noinst_PROGRAMS=bootstrap
 
 libguicast_la_LIBADD = -lXxf86vm -lX11 -lXv -lXext
 libguicast_la_LDFLAGS = $(X_LIBS) -version-info 1:0:0 
@@ -34,6 +33,7 @@ libguicast_la_SOURCES = \
 	bcwindow.C \
 	bcwindowbase.C \
 	bcwindowdraw.C \
+	bcwindowevents.C \
 	errorbox.C \
 	defaults.C \
 	filesystem.C \
@@ -85,6 +85,8 @@ noinst_HEADERS = arraylist.h bcbitmap.h bcbitmap.inc bcbutton.h bcbutton.inc bcc
 	bctumble.inc \
 	bcwindowbase.h \
 	bcwindowbase.inc \
+	bcwindowevents.h \
+	bcwindowevents.inc \
 								 bcwindow.h bcwindow.inc clip.h colors.h condition.inc cursors.h defaults.h defaults.inc errorbox.h errorbox.inc \
 	filesystem.h \
 	filesystem.inc \
@@ -113,10 +115,7 @@ noinst_HEADERS = arraylist.h bcbitmap.h bcbitmap.inc bcbutton.h bcbutton.inc bcc
 INCLUDES = -I$(top_srcdir)/quicktime -I/usr/include/qt
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
 
-bootstrap_SOURCES=bootstrap.c
-bootstrap_LDADD =
-
-EXTRA_DIST = images pngtoh.c
+EXTRA_DIST = images pngtoh.c bootstrap.c
 
 dist-hook:
 	-rm -rf $(distdir)/images/CVS

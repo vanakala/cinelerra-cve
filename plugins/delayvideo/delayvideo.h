@@ -30,7 +30,7 @@ public:
 		int64_t next_frame, 
 		int64_t current_frame);
 
-	// match defined update() type of float instead of double.
+	// kjb - match defined update() type of float instead of double.
 	float length;
 };
 

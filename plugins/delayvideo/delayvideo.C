@@ -3,14 +3,10 @@
 #include "defaults.h"
 #include "delayvideo.h"
 #include "filexml.h"
+#include "language.h"
 #include "picon_png.h"
 #include "vframe.h"
 
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 
@@ -127,7 +123,10 @@ int DelayVideoSlider::handle_event()
 
 
 
+
 PLUGIN_THREAD_OBJECT(DelayVideo, DelayVideoThread, DelayVideoWindow)
+
+
 
 
 
@@ -142,8 +141,7 @@ DelayVideo::DelayVideo(PluginServer *server)
 
 DelayVideo::~DelayVideo()
 {
-
-        PLUGIN_DESTRUCTOR_MACRO
+	PLUGIN_DESTRUCTOR_MACRO
 
 	if(buffer)
 	{

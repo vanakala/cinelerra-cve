@@ -1,4 +1,5 @@
 #include "asset.h"
+#include "bcsignals.h"
 #include "cache.h"
 #include "condition.h"
 #include "datatype.h"
@@ -104,20 +105,23 @@ int VRender::process_buffer(int64_t input_position)
 	int use_brender = 0;
 	int result = 0;
 
-//sleep(1);
+//TRACE("VRender::process_buffer 1");
 
 // Determine the rendering strategy for this frame.
 	use_vconsole = get_use_vconsole(playable_edit, 
 		input_position,
 		use_brender);
 
+//TRACE("VRender::process_buffer 2");
 
 // Negotiate color model
 	colormodel = get_colormodel(playable_edit, use_vconsole, use_brender);
+//TRACE("VRender::process_buffer 3");
 
 // Get output buffer from device
 	if(renderengine->command->realtime)
 		renderengine->video->new_output_buffers(video_out, colormodel);
+//TRACE("VRender::process_buffer 4");
 
 // Read directly from file to video_out
 	if(!use_vconsole)
@@ -133,11 +137,11 @@ int VRender::process_buffer(int64_t input_position)
 				if(renderengine->command->get_direction() == PLAY_REVERSE)
 					corrected_position--;
 
-				file->set_video_position(corrected_position, 
-					renderengine->edl->session->frame_rate);
 // Cache single frames only
 				if(renderengine->command->single_frame())
 					file->set_cache_frames(1);
+				file->set_video_position(corrected_position, 
+					renderengine->edl->session->frame_rate);
 				file->read_frame(video_out[0]);
 				if(renderengine->command->single_frame())
 					file->set_cache_frames(0);
@@ -160,7 +164,9 @@ int VRender::process_buffer(int64_t input_position)
 	{
 
 // process this buffer now in the virtual console
+//TRACE("VRender::process_buffer 5");
 		result = ((VirtualVConsole*)vconsole)->process_buffer(input_position);
+//TRACE("VRender::process_buffer 10");
 
 	}
 
@@ -304,9 +310,12 @@ void VRender::run()
 
 		process_buffer(current_position);
 
+//TRACE("VRender::run 1");
 		if(renderengine->command->single_frame())
 		{
+//TRACE("VRender::run 2");
 			flash_output();
+//TRACE("VRender::run 3");
 			frame_step = 1;
 			done = 1;
 		}
@@ -387,6 +396,7 @@ void VRender::run()
 				flash_output();
 			}
 		}
+//TRACE("VRender::run 4");
 
 // Trigger audio to start
 		if(first_frame)
@@ -395,6 +405,7 @@ void VRender::run()
 			first_frame = 0;
 			renderengine->reset_sync_position();
 		}
+//TRACE("VRender::run 5");
 
 		session_frame += frame_step;
 
@@ -412,6 +423,7 @@ void VRender::run()
 			frame_step -= current_input_length;
 			current_input_length = frame_step;
 		}
+//TRACE("VRender::run 6");
 
 // Update tracking.
 		if(renderengine->command->realtime &&
@@ -421,6 +433,7 @@ void VRender::run()
 			renderengine->playback_engine->update_tracking(fromunits(current_position));
 		}
 
+//TRACE("VRender::run 7");
 // Calculate the framerate counter
 		framerate_counter++;
 		if(framerate_counter >= renderengine->edl->session->frame_rate && 
@@ -431,6 +444,7 @@ void VRender::run()
 			framerate_counter = 0;
 			framerate_timer.update();
 		}
+//TRACE("VRender::run 8");
 	}
 
 // In case we were interrupted before the first loop

@@ -10,6 +10,7 @@
 #include "fileavi.h"
 #include "filedv.h"
 #include "filebase.h"
+#include "fileexr.h"
 #include "filexml.h"
 #include "filejpeg.h"
 #include "filemov.h"
@@ -52,7 +53,7 @@ File::~File()
 
 	if(temp_frame) delete temp_frame;
 
-	close_file();
+	close_file(0);
 	reset_parameters();
 	delete asset;
 	delete format_completion;
@@ -179,6 +180,14 @@ int File::get_options(BC_WindowBase *parent_window,
 				audio_options, 
 				video_options);
 			break;
+		case FILE_EXR:
+		case FILE_EXR_LIST:
+			FileEXR::get_parameters(parent_window, 
+				asset, 
+				format_window, 
+				audio_options, 
+				video_options);
+			break;
 		case FILE_PNG:
 		case FILE_PNG_LIST:
 			FilePNG::get_parameters(parent_window, 
@@ -217,8 +226,8 @@ int File::get_options(BC_WindowBase *parent_window,
 	if(!format_window)
 	{
 		ErrorBox *errorbox = new ErrorBox(PROGRAM_NAME ": Error",
-			parent_window->get_abs_cursor_x(),
-			parent_window->get_abs_cursor_y());
+			parent_window->get_abs_cursor_x(1),
+			parent_window->get_abs_cursor_y(1));
 		format_window = errorbox;
 		getting_options = 1;
 		if(audio_options)
@@ -334,6 +343,13 @@ int File::open_file(ArrayList<PluginServer*> *plugindb,
 				file = new FileJPEG(this->asset, this);
 			}
 			else
+			if(FileEXR::check_sig(this->asset, test))
+			{
+// JPEG file
+				fclose(stream);
+				file = new FileEXR(this->asset, this);
+			}
+			else
 			if(FileTGA::check_sig(this->asset))
 			{
 // TGA file
@@ -408,6 +424,11 @@ int File::open_file(ArrayList<PluginServer*> *plugindb,
 		case FILE_JPEG:
 		case FILE_JPEG_LIST:
 			file = new FileJPEG(this->asset, this);
+			break;
+
+		case FILE_EXR:
+		case FILE_EXR_LIST:
+			file = new FileEXR(this->asset, this);
 			break;
 
 		case FILE_TGA_LIST:
@@ -717,6 +738,7 @@ int File::set_video_position(int64_t position, float base_framerate)
 			asset->frame_rate + 
 			0.5);
 
+
 	if(current_frame != position && file)
 	{
 		current_frame = position;
@@ -912,6 +934,7 @@ int File::read_frame(VFrame *frame)
 	if(file)
 	{
 		int supported_colormodel = colormodel_supported(frame->get_color_model());
+		int advance_position = 1;
 
 
 // Test cache
@@ -920,7 +943,8 @@ int File::read_frame(VFrame *frame)
 				current_frame,
 				asset->frame_rate))
 		{
-			;
+// Can't advance position if cache used.
+			advance_position = 0;
 		}
 		else
 // Need temp
@@ -929,6 +953,8 @@ int File::read_frame(VFrame *frame)
 			frame->get_w() != asset->width ||
 			frame->get_h() != asset->height))
 		{
+
+// Can't advance position here because it needs to be added to cache
 			if(temp_frame)
 			{
 				if(!temp_frame->params_match(asset->width, asset->height, supported_colormodel))
@@ -977,14 +1003,16 @@ int File::read_frame(VFrame *frame)
 		}
 		else
 		{
+// Can't advance position here because it needs to be added to cache
 			file->read_frame(frame);
 		}
+
 		if(use_cache) frame_cache->put_frame(frame,
 			current_frame,
 			asset->frame_rate,
 			1);
 
-		current_frame++;
+		if(advance_position) current_frame++;
 		return 0;
 	}
 	else
@@ -1036,6 +1064,10 @@ int File::strtoformat(ArrayList<PluginServer*> *plugindb, char *format)
 	if(!strcasecmp(format, _(JPEG_NAME))) return FILE_JPEG;
 	else
 	if(!strcasecmp(format, _(JPEG_LIST_NAME))) return FILE_JPEG_LIST;
+	else
+	if(!strcasecmp(format, _(EXR_NAME))) return FILE_EXR;
+	else
+	if(!strcasecmp(format, _(EXR_LIST_NAME))) return FILE_EXR_LIST;
 	else
 	if(!strcasecmp(format, _(MPEG_NAME))) return FILE_MPEG;
 	else
@@ -1103,6 +1135,12 @@ char* File::formattostr(ArrayList<PluginServer*> *plugindb, int format)
 			break;
 		case FILE_JPEG_LIST:
 			return _(JPEG_LIST_NAME);
+			break;
+		case FILE_EXR:
+			return _(EXR_NAME);
+			break;
+		case FILE_EXR_LIST:
+			return _(EXR_LIST_NAME);
 			break;
 		case FILE_MPEG:
 			return _(MPEG_NAME);
@@ -1272,6 +1310,11 @@ int File::get_best_colormodel(Asset *asset, int driver)
 			return FileJPEG::get_best_colormodel(asset, driver);
 			break;
 		
+		case FILE_EXR:
+		case FILE_EXR_LIST:
+			return FileEXR::get_best_colormodel(asset, driver);
+			break;
+		
 		case FILE_PNG:
 		case FILE_PNG_LIST:
 			return FilePNG::get_best_colormodel(asset, driver);
@@ -1337,6 +1380,8 @@ int File::supports_video(int format)
 		case FILE_MOV:
 		case FILE_JPEG:
 		case FILE_JPEG_LIST:
+		case FILE_EXR:
+		case FILE_EXR_LIST:
 		case FILE_PNG:
 		case FILE_PNG_LIST:
 		case FILE_TGA:

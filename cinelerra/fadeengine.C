@@ -22,11 +22,18 @@ FadeUnit::~FadeUnit()
 }
 
 
-#define APPLY_FADE(equivalent, input_rows, output_rows, max, type, int_type, chroma_zero, components) \
+#define APPLY_FADE(equivalent, \
+	input_rows,  \
+	output_rows,  \
+	max,  \
+	type,  \
+	temp_type,  \
+	chroma_zero,  \
+	components) \
 { \
-	int_type opacity = (int_type)(alpha * max); \
-	int_type transparency = (int_type)(max - opacity); \
-	int_type product = (int_type) (chroma_zero * transparency); \
+	temp_type opacity = (temp_type)(alpha * max); \
+	temp_type transparency = (temp_type)(max - opacity); \
+	temp_type product = (temp_type) (chroma_zero * transparency); \
  \
 	for(int i = row1; i < row2; i++) \
 	{ \
@@ -38,12 +45,12 @@ FadeUnit::~FadeUnit()
 			if(components == 3) \
 			{ \
 				out_row[0] =  \
-					(type)((int_type)in_row[0] * opacity / max); \
+					(type)((temp_type)in_row[0] * opacity / max); \
 				out_row[1] =  \
-					(type)(((int_type)in_row[1] * opacity +  \
+					(type)(((temp_type)in_row[1] * opacity +  \
 						product) / max); \
 				out_row[2] =  \
-					(type)(((int_type)in_row[2] * opacity +  \
+					(type)(((temp_type)in_row[2] * opacity +  \
 						product) / max); \
 			} \
 			else \
@@ -59,7 +66,7 @@ FadeUnit::~FadeUnit()
 					out_row[3] = opacity; \
 				else \
 				out_row[3] =  \
-					(type)((int_type)in_row[3] * opacity / max); \
+					(type)((temp_type)in_row[3] * opacity / max); \
 			} \
 		} \
 	} \
@@ -88,6 +95,12 @@ void FadeUnit::process_package(LoadPackage *package)
 				break;
 			case BC_RGBA8888:
 				APPLY_FADE(1, out_rows, in_rows, 0xff, unsigned char, uint16_t, 0x0, 4);
+				break;
+			case BC_RGB_FLOAT:
+				APPLY_FADE(1, out_rows, in_rows, 1.0, float, float, 0x0, 3);
+				break;
+			case BC_RGBA_FLOAT:
+				APPLY_FADE(1, out_rows, in_rows, 1.0, float, float, 0x0, 4);
 				break;
 			case BC_RGB161616:
 				APPLY_FADE(1, out_rows, in_rows, 0xffff, uint16_t, uint32_t, 0x0, 3);
@@ -118,6 +131,12 @@ void FadeUnit::process_package(LoadPackage *package)
 				break;
 			case BC_RGBA8888:
 				APPLY_FADE(0, out_rows, in_rows, 0xff, unsigned char, uint16_t, 0x0, 4);
+				break;
+			case BC_RGB_FLOAT:
+				APPLY_FADE(0, out_rows, in_rows, 1.0, float, float, 0x0, 3);
+				break;
+			case BC_RGBA_FLOAT:
+				APPLY_FADE(0, out_rows, in_rows, 1.0, float, float, 0x0, 4);
 				break;
 			case BC_RGB161616:
 				APPLY_FADE(0, out_rows, in_rows, 0xffff, uint16_t, uint32_t, 0x0, 3);

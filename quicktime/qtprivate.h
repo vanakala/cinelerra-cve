@@ -6,7 +6,7 @@
 /* Version used internally.  You need to query it with the C functions */
 #define QUICKTIME_MAJOR 2
 #define QUICKTIME_MINOR 0
-#define QUICKTIME_RELEASE 3
+#define QUICKTIME_RELEASE 4
 
 
 #define HEADER_LENGTH 8
@@ -693,7 +693,7 @@ typedef struct
 	char *presave_buffer;
 /* Presave doesn't matter a whole lot, so its size is fixed */
 #define QUICKTIME_PRESAVE 0x100000
-
+	int use_presave;
 
 /* mapping of audio channels to movie tracks */
 /* one audio map entry exists for each channel */

@@ -1,14 +1,10 @@
 #include "bcdisplayinfo.h"
 #include "defaults.h"
+#include "language.h"
 #include "mainprogress.h"
 #include "picon_png.h"
 #include "reframe.h"
 
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 
@@ -183,12 +179,6 @@ void ReFrameWindow::create_objects()
 	flush();
 }
 
-int ReFrameWindow::close_event()
-{
-	set_done(1);
-	return 1;
-}
-
-
+WINDOW_CLOSE_EVENT(ReFrameWindow)
 
 

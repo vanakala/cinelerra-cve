@@ -49,6 +49,7 @@ static int decode(quicktime_t *file,
 	quicktime_vbr_t *vbr = &track_map->vbr;
 
 
+// Initialize decoder
 	if(!codec->initialized)
 	{
 		unsigned long samplerate = trak->mdia.minf.stbl.stsd.table[0].sample_rate;

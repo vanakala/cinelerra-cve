@@ -14,7 +14,12 @@ libquicktimehv_la_LIBADD = $(FIREWIRE_LDFLAGS) -ldv -lxvidcore -ljpeg -lpng \
 
 libquicktimehv_la_SOURCES = atom.c avi_hdrl.c avi_idx1.c avi_movi.c avi_strl.c \
 			  avi_odml.c avi_ix.c avi_indx.c avi_riff.c \
-													cmodel_default.c cmodel_yuv420p.c cmodel_yuv422.c codecs.c colormodels.c \
+	cmodel_default.c \
+	cmodel_float.c \
+	cmodel_yuv420p.c \
+	cmodel_yuv422.c \
+	codecs.c \
+	colormodels.c \
 	ctab.c \
 	dinf.c \
 	dref.c \

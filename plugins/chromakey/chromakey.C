@@ -5,6 +5,7 @@
 #include "filexml.h"
 #include "guicast.h"
 #include "keyframe.h"
+#include "language.h"
 #include "loadbalance.h"
 #include "picon_png.h"
 #include "plugincolors.h"
@@ -14,10 +15,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 
@@ -298,7 +295,6 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 	float max_h = plugin->config.hue + plugin->config.threshold * 3.60 / 2;
 	float min_v = (plugin->config.value - plugin->config.threshold / 2) / 100;
 	float max_v = (plugin->config.value + plugin->config.threshold / 2) / 100;
-	int a;
 
 	float run;
 	if(plugin->config.use_value)
@@ -309,9 +305,11 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 // printf("ChromaKeyUnit::process_package %f %f %f %f\n", 
 // 	min_h, max_h, min_v, max_v);
 
-#define CHROMAKEY(type, max, components, use_yuv) \
+#define CHROMAKEY(type, temp, max, components, use_yuv) \
 { \
-	int chroma_offset; \
+	temp chroma_offset; \
+	temp a; \
+ \
 	if(use_yuv) \
 		chroma_offset = max / 2 + 1; \
 	else \
@@ -348,14 +346,14 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 					if(va - min_v < max_v - va) \
 					{ \
 						if(va - min_v < run) \
-							a = (int)(max - (va - min_v) / run * max); \
+							a = (temp)(max - (va - min_v) / run * max); \
 						else \
 							a = 0; \
 					} \
 					else \
 					{ \
 						if(max_v - va < run) \
-							a = (int)(max - (max_v - va) / run * max); \
+							a = (temp)(max - (max_v - va) / run * max); \
 						else \
 							a = 0; \
 					} \
@@ -364,9 +362,9 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 						row[3] = MIN(a, row[3]); \
 					else \
 					{ \
-						row[0] = (a * row[0]) / max; \
-						row[1] = (a * row[1] + (max - a) * chroma_offset) / max; \
-						row[2] = (a * row[2] + (max - a) * chroma_offset) / max; \
+						row[0] = (type)((a * row[0]) / max); \
+						row[1] = (type)((a * row[1] + (max - a) * chroma_offset) / max); \
+						row[2] = (type)((a * row[2] + (max - a) * chroma_offset) / max); \
 					} \
 				} \
 			} \
@@ -377,14 +375,14 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 					if(h - min_h < max_h - h) \
 					{ \
 						if(h - min_h < run) \
-							a = (int)(max - (h - min_h) / run * max); \
+							a = (temp)(max - (h - min_h) / run * max); \
 						else \
 							a = 0; \
 					} \
 					else \
 					{ \
 						if(max_h - h < run) \
-							a = (int)(max - (max_h - h) / run * max); \
+							a = (temp)(max - (max_h - h) / run * max); \
 						else \
 							a = 0; \
 					} \
@@ -393,9 +391,9 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 						row[3] = MIN(a, row[3]); \
 					else \
 					{ \
-						row[0] = a * row[0] / max; \
-						row[1] = (a * row[1] + (max - a) * chroma_offset) / max; \
-						row[2] = (a * row[2] + (max - a) * chroma_offset) / max; \
+						row[0] = (type)(a * row[0] / max); \
+						row[1] = (type)((a * row[1] + (max - a) * chroma_offset) / max); \
+						row[2] = (type)((a * row[2] + (max - a) * chroma_offset) / max); \
 					} \
 				} \
 			} \
@@ -411,28 +409,34 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 	switch(plugin->input->get_color_model())
 	{
 		case BC_RGB888:
-			CHROMAKEY(unsigned char, 0xff, 3, 0);
+			CHROMAKEY(unsigned char, int, 0xff, 3, 0);
+			break;
+		case BC_RGB_FLOAT:
+			CHROMAKEY(float, float, 1.0, 3, 0);
 			break;
 		case BC_YUV888:
-			CHROMAKEY(unsigned char, 0xff, 3, 1);
+			CHROMAKEY(unsigned char, int, 0xff, 3, 1);
 			break;
 		case BC_RGBA8888:
-			CHROMAKEY(unsigned char, 0xff, 4, 0);
+			CHROMAKEY(unsigned char, int, 0xff, 4, 0);
+			break;
+		case BC_RGBA_FLOAT:
+			CHROMAKEY(float, float, 1.0, 4, 0);
 			break;
 		case BC_YUVA8888:
-			CHROMAKEY(unsigned char, 0xff, 4, 1);
+			CHROMAKEY(unsigned char, int, 0xff, 4, 1);
 			break;
 		case BC_RGB161616:
-			CHROMAKEY(uint16_t, 0xffff, 3, 0);
+			CHROMAKEY(uint16_t, int, 0xffff, 3, 0);
 			break;
 		case BC_YUV161616:
-			CHROMAKEY(uint16_t, 0xffff, 3, 1);
+			CHROMAKEY(uint16_t, int, 0xffff, 3, 1);
 			break;
 		case BC_RGBA16161616:
-			CHROMAKEY(uint16_t, 0xffff, 4, 0);
+			CHROMAKEY(uint16_t, int, 0xffff, 4, 0);
 			break;
 		case BC_YUVA16161616:
-			CHROMAKEY(uint16_t, 0xffff, 4, 1);
+			CHROMAKEY(uint16_t, int, 0xffff, 4, 1);
 			break;
 	}
 

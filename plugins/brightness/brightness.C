@@ -2,16 +2,12 @@
 #include "filexml.h"
 #include "brightness.h"
 #include "defaults.h"
+#include "language.h"
 #include "picon_png.h"
 
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 #define SQR(a) ((a) * (a))
 
@@ -411,10 +407,124 @@ void BrightnessUnit::process_package(LoadPackage *package)
 }
 
 
+
+#define DO_BRIGHTNESS_F(components) \
+{ \
+	float **input_rows = (float**)input->get_rows(); \
+	float **output_rows = (float**)output->get_rows(); \
+	int row1 = pkg->row1; \
+	int row2 = pkg->row2; \
+	int width = output->get_w(); \
+	float r, g, b; \
+ \
+	if(!EQUIV(plugin->config.brightness, 0)) \
+	{ \
+		float offset = plugin->config.brightness / 100; \
+ \
+		for(int i = row1; i < row2; i++) \
+		{ \
+			float *input_row = input_rows[i]; \
+			float *output_row = output_rows[i]; \
+ \
+			for(int j = 0; j < width; j++) \
+			{ \
+				r = input_row[j * components] + offset; \
+				g = input_row[j * components + 1] + offset; \
+				b = input_row[j * components + 2] + offset; \
+ \
+				output_row[j * components] = r; \
+				output_row[j * components + 1] = g; \
+				output_row[j * components + 2] = b; \
+ 				if(components == 4)  \
+					output_row[j * components + 3] = input_row[j * components + 3]; \
+			} \
+		} \
+ \
+/* Data to be processed is now in the output buffer */ \
+		input_rows = output_rows; \
+	} \
+ \
+	if(!EQUIV(plugin->config.contrast, 0)) \
+	{ \
+		float contrast = (plugin->config.contrast < 0) ?  \
+			(plugin->config.contrast + 100) / 100 :  \
+			(plugin->config.contrast + 25) / 25; \
+ \
+/* Shift black level down so shadows get darker instead of lighter */ \
+		float offset = 0.5 - contrast / 2; \
+		float y, u, v; \
+ \
+		for(int i = row1; i < row2; i++) \
+		{ \
+			float *input_row = input_rows[i]; \
+			float *output_row = output_rows[i]; \
+ \
+ 			if(plugin->config.luma) \
+			{ \
+				for(int j = 0; j < width; j++) \
+				{ \
+					r = input_row[j * components]; \
+					g = input_row[j * components + 1]; \
+					b = input_row[j * components + 2]; \
+					YUV::rgb_to_yuv_f( \
+						r,  \
+						g,  \
+						b,  \
+						y,  \
+						u,  \
+						v); \
+ \
+					y = y * contrast + offset; \
+ \
+ \
+					YUV::yuv_to_rgb_f( \
+						r,  \
+						g,  \
+						b,  \
+						y,  \
+						u,  \
+						v); \
+					input_row[j * components] = r; \
+					input_row[j * components + 1] = g; \
+					input_row[j * components + 2] = b; \
+ \
+ 					if(components == 4)  \
+						output_row[j * components + 3] = input_row[j * components + 3]; \
+				} \
+			} \
+			else \
+			{ \
+				for(int j = 0; j < width; j++) \
+				{ \
+					r = input_row[j * components]; \
+					g = input_row[j * components + 1]; \
+					b = input_row[j * components + 2]; \
+ \
+					r = r * contrast + offset; \
+					g = g * contrast + offset; \
+					b = b * contrast + offset; \
+ \
+					output_row[j * components] = r; \
+					output_row[j * components + 1] = g; \
+					output_row[j * components + 2] = b; \
+ \
+ 					if(components == 4)  \
+						output_row[j * components + 3] = input_row[j * components + 3]; \
+				} \
+			} \
+		} \
+	} \
+}
+
+
 	switch(input->get_color_model())
 	{
 		case BC_RGB888:
 			DO_BRIGHTNESS(0xff, unsigned char, 3, 0)
+			break;
+
+		case BC_RGB_FLOAT:
+			DO_BRIGHTNESS_F(3)
 			break;
 
 		case BC_YUV888:
@@ -423,6 +533,10 @@ void BrightnessUnit::process_package(LoadPackage *package)
 
 		case BC_RGBA8888:
 			DO_BRIGHTNESS(0xff, unsigned char, 4, 0)
+			break;
+
+		case BC_RGBA_FLOAT:
+			DO_BRIGHTNESS_F(4)
 			break;
 
 		case BC_YUVA8888:

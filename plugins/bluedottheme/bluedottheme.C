@@ -190,22 +190,24 @@ void BlueDotTheme::initialize()
 
 
 	new_bg = new_image("new_bg.png");
-	setformat_bg = new_image("setformat_bg.png");
+	setformat_bg = new_image("setformat_bg2.png");
 
 
 	timebar_view_data = new_image("timebar_view.png");
 
+	setformat_w = 600;
+	setformat_h = 560;
 	setformat_x1 = 15;
 	setformat_x2 = 100;
 
 	setformat_x3 = 315;
 	setformat_x4 = 415;
 	setformat_y1 = 20;
+	setformat_y2 = 85;
+	setformat_y3 = 125;
 	setformat_margin = 30;
-	setformat_w = 600;
-	setformat_h = 480;
 	setformat_channels_x = 25;
-	setformat_channels_y = 173;
+	setformat_channels_y = 242;
 	setformat_channels_w = 250;
 	setformat_channels_h = 250;
 
@@ -430,19 +432,21 @@ void BlueDotTheme::initialize()
 	        "file_sound.png",
                 "file_column.png");
 
-	BC_WindowBase::get_resources()->xmeter_images = new_image_set(5,
+	BC_WindowBase::get_resources()->xmeter_images = new_image_set(6,
 		"xmeter_normal.png",
 		"xmeter_green.png",
 		"xmeter_red.png",
 		"xmeter_yellow.png",
-        	"over_horiz.png");
+		"xmeter_normal.png",
+        	"xmeter_over.png");
 				
-	BC_WindowBase::get_resources()->ymeter_images = new_image_set(5,
+	BC_WindowBase::get_resources()->ymeter_images = new_image_set(6,
 		"ymeter_normal.png",
 		"ymeter_green.png",
 		"ymeter_red.png",
 		"ymeter_yellow.png",
-        	"over_vertical.png");
+		"ymeter_normal.png",
+        	"ymeter_over.png");
 
 	BC_WindowBase::get_resources()->meter_font = SMALLFONT;
 	BC_WindowBase::get_resources()->meter_font_color = BLACK;

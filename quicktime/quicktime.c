@@ -1233,9 +1233,11 @@ quicktime_t* quicktime_open(char *filename, int rd, int wr)
 /* also don't want to do this if making a streamable file */
 		if(wr)
 		{
+			quicktime_set_presave(new_file, 1);
 			quicktime_atom_write_header64(new_file, 
 				&new_file->mdat.atom, 
 				"mdat");
+			quicktime_set_presave(new_file, 0);
 		}
 	}
 	else
@@ -1257,6 +1259,8 @@ int quicktime_close(quicktime_t *file)
 	{
 		quicktime_codecs_flush(file);
 
+// Reenable buffer for quick header writing.
+		quicktime_set_presave(file, 1);
 		if(file->use_avi)
 		{
 			quicktime_atom_t junk_atom;

@@ -31,9 +31,9 @@ public:
 	char* get_cwindow_display();
 	void boundaries();
 
-	PlaybackConfig* get_playback_config(int strategy, int head);
-	ArrayList<PlaybackConfig*>* get_playback_config(int strategy);
-	int get_playback_heads(int strategy);
+//	PlaybackConfig* get_playback_config(int strategy, int head);
+//	ArrayList<PlaybackConfig*>* get_playback_config(int strategy);
+//	int get_playback_heads(int strategy);
 
 	void equivalent_output(EDLSession *session, double *result);
 	void dump();
@@ -110,14 +110,15 @@ public:
 	int mpeg4_deblock;
 	int plugins_follow_edits;
 	int meter_format;
-	float min_meter_db;
+	int min_meter_db;
+	int max_meter_db;
     int output_w;
     int output_h;
 	int64_t playback_buffer;
 	int playback_cursor_visible;
 	int64_t playback_preload;
 	int playback_software_position;
-	int playback_strategy;
+//	int playback_strategy;
 // Play audio in realtime priority
 	int real_time_playback;
 	int real_time_record;
@@ -169,13 +170,14 @@ public:
 	float vwindow_zoom;
 // Global ID counter
 	static int current_id;
+	PlaybackConfig* playback_config;
 
 private:
 // Global playback.  This is loaded from defaults but not from XML probably
 // because it was discovered to be the most convenient.
 // It is part of the EDL probably because the playback setting was 
 // going to be bound to the EDL.
-	ArrayList<PlaybackConfig*> playback_config[PLAYBACK_STRATEGIES];
+//	ArrayList<PlaybackConfig*> playback_config[PLAYBACK_STRATEGIES];
 };
 
 

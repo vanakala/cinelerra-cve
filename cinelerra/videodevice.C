@@ -98,7 +98,7 @@ int KeepaliveThread::stop()
 VideoDevice::VideoDevice()
 {
 	in_config = new VideoInConfig;
-	out_config = new VideoOutConfig(0, 0);
+	out_config = new VideoOutConfig;
 	channel = new Channel;
 	picture = new Picture;
 	sharing_lock = new Mutex("VideoDevice::sharing_lock");
@@ -160,6 +160,7 @@ int VideoDevice::open_input(VideoInConfig *config,
 	r = 1;
 	this->input_z = -1;   // Force initialization.
 	this->frame_rate = frame_rate;
+
 
 	switch(in_config->driver)
 	{

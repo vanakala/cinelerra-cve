@@ -3,6 +3,7 @@
 #include "defaults.h"
 #include "filexml.h"
 #include "guicast.h"
+#include "language.h"
 #include "loadbalance.h"
 #include "picon_png.h"
 #include "plugincolors.h"
@@ -15,12 +16,12 @@
 #include <string.h>
 
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
+#define FLOAT_MIN -0.1
+#define FLOAT_MAX 1.1
+#define WAVEFORM_DIVISIONS 12
+#define VECTORSCOPE_DIVISIONS 12
 
 
 class VideoScopeEffect;
@@ -233,8 +234,16 @@ void VideoScopeWindow::create_objects()
 {
 	calculate_sizes(get_w(), get_h());
 
-	add_subwindow(waveform = new VideoScopeWaveform(plugin, wave_x, wave_y, wave_w, wave_h));
-	add_subwindow(vectorscope = new VideoScopeVectorscope(plugin, vector_x, vector_y, vector_w, vector_h));
+	add_subwindow(waveform = new VideoScopeWaveform(plugin, 
+		wave_x, 
+		wave_y, 
+		wave_w, 
+		wave_h));
+	add_subwindow(vectorscope = new VideoScopeVectorscope(plugin, 
+		vector_x, 
+		vector_y, 
+		vector_w, 
+		vector_h));
 	allocate_bitmaps();
 	draw_overlays();
 
@@ -277,33 +286,50 @@ void VideoScopeWindow::draw_overlays()
 	set_color(GREEN);
 	set_font(SMALLFONT);
 
-	for(int i = 0; i <= 10; i++)
+// Waveform overlay
+	for(int i = 0; i <= WAVEFORM_DIVISIONS; i++)
 	{
-		int y = wave_h * i / 10;
-		int text_y = y + wave_y + 10;
+		int y = wave_h * i / WAVEFORM_DIVISIONS;
+		int text_y = y + wave_y + get_text_ascent(SMALLFONT) / 2;
 		int x = wave_x - 20;
 		char string[BCTEXTLEN];
-		sprintf(string, "%d", 100 - i * 10);
+		sprintf(string, "%d", 
+			(int)((FLOAT_MAX - 
+			i * (FLOAT_MAX - FLOAT_MIN) / WAVEFORM_DIVISIONS) * 100));
 		draw_text(x, text_y, string);
-		
-		if(i > 0) waveform->draw_line(0, y, wave_w, y);
+
+		waveform->draw_line(0, 
+			CLAMP(y, 0, waveform->get_h() - 1), 
+			wave_w, 
+			CLAMP(y, 0, waveform->get_h() - 1));
+//waveform->draw_rectangle(0, 0, wave_w, wave_h);
 	}
 
-#define DIVISIONS 5
+
+
+// Vectorscope overlay
 	int radius = MIN(vector_w / 2, vector_h / 2);
-	for(int i = 0; i <= DIVISIONS; i++)
+	for(int i = 1; i <= VECTORSCOPE_DIVISIONS - 1; i += 2)
 	{
-		int x = vector_w / 2 - radius * i / DIVISIONS;
-		int y = vector_h / 2 - radius * i / DIVISIONS;
-		int text_y = y + 20;
-		int w = radius * i / DIVISIONS * 2;
-		int h = radius * i / DIVISIONS * 2;
+		int x = vector_w / 2 - radius * i / VECTORSCOPE_DIVISIONS;
+		int y = vector_h / 2 - radius * i / VECTORSCOPE_DIVISIONS;
+		int text_x = vector_x - 20;
+		int text_y = y + vector_y + get_text_ascent(SMALLFONT) / 2;
+		int w = radius * i / VECTORSCOPE_DIVISIONS * 2;
+		int h = radius * i / VECTORSCOPE_DIVISIONS * 2;
 		char string[BCTEXTLEN];
 		
-		sprintf(string, "%d", i * 100 / DIVISIONS);
-		draw_text(vector_x - 20, text_y, string);
-		if(i > 0) vectorscope->draw_circle(x, y, w, h);
+		sprintf(string, "%d", 
+			(int)((FLOAT_MIN + 
+				(FLOAT_MAX - FLOAT_MIN) / VECTORSCOPE_DIVISIONS * i) * 100));
+		draw_text(text_x, text_y, string);
+		vectorscope->draw_circle(x, y, w, h);
+//vectorscope->draw_rectangle(0, 0, vector_w, vector_h);
 	}
+// 	vectorscope->draw_circle(vector_w / 2 - radius, 
+// 		vector_h / 2 - radius, 
+// 		radius * 2, 
+// 		radius * 2);
 	set_font(MEDIUMFONT);
 
 	waveform->flash();
@@ -475,7 +501,13 @@ VideoScopeUnit::VideoScopeUnit(VideoScopeEffect *plugin,
 									((p)[2] * 29)) >> 8)
 
 
-static void draw_point(unsigned char **rows, int color_model, int x, int y, int r, int g, int b)
+static void draw_point(unsigned char **rows, 
+	int color_model, 
+	int x, 
+	int y, 
+	int r, 
+	int g, 
+	int b)
 {
 	switch(color_model)
 	{
@@ -505,7 +537,7 @@ static void draw_point(unsigned char **rows, int color_model, int x, int y, int 
 
 
 
-#define VIDEOSCOPE(type, max, components, use_yuv) \
+#define VIDEOSCOPE(type, temp_type, max, components, use_yuv) \
 { \
 	for(int i = pkg->row1; i < pkg->row2; i++) \
 	{ \
@@ -519,16 +551,26 @@ static void draw_point(unsigned char **rows, int color_model, int x, int y, int 
 			if(use_yuv) intensity = (float)*in_pixel / max; \
  \
 			float h, s, v; \
-			int r, g, b; \
+			temp_type r, g, b; \
 			if(use_yuv) \
 			{ \
-				if(max == 0xffff) \
+				if(sizeof(type) == 2) \
 				{ \
-					yuv.yuv_to_rgb_16(r, g, b, in_pixel[0], in_pixel[1], in_pixel[2]); \
+					yuv.yuv_to_rgb_16(r, \
+						g, \
+						b, \
+						in_pixel[0], \
+						in_pixel[1], \
+						in_pixel[2]); \
 				} \
 				else \
 				{ \
-					yuv.yuv_to_rgb_8(r, g, b, in_pixel[0], in_pixel[1], in_pixel[2]); \
+					yuv.yuv_to_rgb_8(r, \
+						g, \
+						b, \
+						in_pixel[0], \
+						in_pixel[1], \
+						in_pixel[2]); \
 				} \
 			} \
 			else \
@@ -545,35 +587,54 @@ static void draw_point(unsigned char **rows, int color_model, int x, int y, int 
 					s, \
 					v); \
  \
-			if(max == 0xffff) \
-			{ \
-				r >>= 8; \
-				g >>= 8; \
-				b >>= 8; \
-			} \
- \
 /* Calculate waveform */ \
 			if(!use_yuv) intensity = v; \
-			intensity = intensity * \
+			intensity = (intensity - FLOAT_MIN) / (FLOAT_MAX - FLOAT_MIN) * \
 				waveform_h; \
 			int y = waveform_h - (int)intensity; \
 			int x = j * waveform_w / w; \
 			if(x >= 0 && x < waveform_w && y >= 0 && y < waveform_h) \
-				draw_point(waveform_rows, waveform_cmodel, x, y, 0xff, 0xff, 0xff); \
+				draw_point(waveform_rows, \
+					waveform_cmodel, \
+					x, \
+					y, \
+					0xff, \
+					0xff, \
+					0xff); \
  \
 /* Calculate vectorscope */ \
 			float adjacent = cos(h / 360 * 2 * M_PI); \
 			float opposite = sin(h / 360 * 2 * M_PI); \
 			x = (int)(vector_w / 2 +  \
-				adjacent * s * radius); \
+				adjacent * (s - FLOAT_MIN) / (FLOAT_MAX - FLOAT_MIN) * radius); \
  \
 			y = (int)(vector_h / 2 -  \
-				opposite * s * radius); \
+				opposite * (s - FLOAT_MIN) / (FLOAT_MAX - FLOAT_MIN) * radius); \
  \
  \
 			CLAMP(x, 0, vector_w - 1); \
 			CLAMP(y, 0, vector_h - 1); \
-			draw_point(vector_rows, vector_cmodel, x, y, r, g, b); \
+			if(sizeof(type) == 2) \
+			{ \
+				r /= 256; \
+				g /= 256; \
+				b /= 256; \
+			} \
+			else \
+			if(sizeof(type) == 4) \
+			{ \
+				r = CLIP(r, 0, 1) * 0xff; \
+				g = CLIP(g, 0, 1) * 0xff; \
+				b = CLIP(b, 0, 1) * 0xff; \
+			} \
+ \
+			draw_point(vector_rows, \
+				vector_cmodel, \
+				x, \
+				y, \
+				(int)r, \
+				(int)g, \
+				(int)b); \
  \
 		} \
 	} \
@@ -585,8 +646,8 @@ void VideoScopeUnit::process_package(LoadPackage *package)
 	VideoScopePackage *pkg = (VideoScopePackage*)package;
 	int w = plugin->input->get_w();
 	int h = plugin->input->get_h();
-	int waveform_h = window->waveform_bitmap->get_h();
-	int waveform_w = window->waveform_bitmap->get_w();
+	int waveform_h = window->wave_h;
+	int waveform_w = window->wave_w;
 	int waveform_cmodel = window->waveform_bitmap->get_color_model();
 	unsigned char **waveform_rows = window->waveform_bitmap->get_row_pointers();
 	int vector_h = window->vector_bitmap->get_h();
@@ -598,35 +659,43 @@ void VideoScopeUnit::process_package(LoadPackage *package)
 	switch(plugin->input->get_color_model())
 	{
 		case BC_RGB888:
-			VIDEOSCOPE(unsigned char, 0xff, 3, 0)
+			VIDEOSCOPE(unsigned char, int, 0xff, 3, 0)
+			break;
+
+		case BC_RGB_FLOAT:
+			VIDEOSCOPE(float, float, 1, 3, 0)
 			break;
 
 		case BC_YUV888:
-			VIDEOSCOPE(unsigned char, 0xff, 3, 1)
+			VIDEOSCOPE(unsigned char, int, 0xff, 3, 1)
 			break;
 
 		case BC_RGB161616:
-			VIDEOSCOPE(uint16_t, 0xffff, 3, 0)
+			VIDEOSCOPE(uint16_t, int, 0xffff, 3, 0)
 			break;
 
 		case BC_YUV161616:
-			VIDEOSCOPE(uint16_t, 0xffff, 3, 1)
+			VIDEOSCOPE(uint16_t, int, 0xffff, 3, 1)
 			break;
 
 		case BC_RGBA8888:
-			VIDEOSCOPE(unsigned char, 0xff, 4, 0)
+			VIDEOSCOPE(unsigned char, int, 0xff, 4, 0)
+			break;
+
+		case BC_RGBA_FLOAT:
+			VIDEOSCOPE(float, float, 1, 4, 0)
 			break;
 
 		case BC_YUVA8888:
-			VIDEOSCOPE(unsigned char, 0xff, 4, 1)
+			VIDEOSCOPE(unsigned char, int, 0xff, 4, 1)
 			break;
 
 		case BC_RGBA16161616:
-			VIDEOSCOPE(uint16_t, 0xffff, 4, 0)
+			VIDEOSCOPE(uint16_t, int, 0xffff, 4, 0)
 			break;
 
 		case BC_YUVA16161616:
-			VIDEOSCOPE(uint16_t, 0xffff, 4, 1)
+			VIDEOSCOPE(uint16_t, int, 0xffff, 4, 1)
 			break;
 	}
 }

@@ -3544,21 +3544,21 @@ int BC_ListBox::drag_start_event()
 					{
 						drag_popup = new BC_DragWindow(this, 
 							item_return->icon_vframe, 
-							get_abs_cursor_x() - item_return->icon_vframe->get_w() / 2,
-							get_abs_cursor_y() - item_return->icon_vframe->get_h() / 2);
+							get_abs_cursor_x(0) - item_return->icon_vframe->get_w() / 2,
+							get_abs_cursor_y(0) - item_return->icon_vframe->get_h() / 2);
 					}
 					else	
 // this probably works not!
 					if (item_return->icon)  
 						drag_popup = new BC_DragWindow(this, 
 							item_return->icon, 
-							get_abs_cursor_x() - item_return->icon->get_w() / 2,
-							get_abs_cursor_y() - item_return->icon->get_h() / 2);
+							get_abs_cursor_x(0) - item_return->icon->get_w() / 2,
+							get_abs_cursor_y(0) - item_return->icon->get_h() / 2);
 					else
 						drag_popup = new BC_DragWindow(this, 
 							drag_icon_vframe, 
-							get_abs_cursor_x() - drag_icon_vframe->get_w() / 2,
-							get_abs_cursor_y() - drag_icon_vframe->get_h() / 2);
+							get_abs_cursor_x(0) - drag_icon_vframe->get_w() / 2,
+							get_abs_cursor_y(0) - drag_icon_vframe->get_h() / 2);
 					current_operation = DRAG_ITEM;
 					return 1;
 				}
@@ -3570,8 +3570,8 @@ int BC_ListBox::drag_start_event()
 			{
 				drag_popup = new BC_DragWindow(this, 
 					drag_column_icon_vframe, 
-					get_abs_cursor_x() - drag_column_icon_vframe->get_w() / 2,
-					get_abs_cursor_y() - drag_column_icon_vframe->get_h() / 2);
+					get_abs_cursor_x(0) - drag_column_icon_vframe->get_w() / 2,
+					get_abs_cursor_y(0) - drag_column_icon_vframe->get_h() / 2);
 				dragged_title = highlighted_title;
 				current_operation = COLUMN_DRAG;
 				draw_titles(1);
@@ -3815,7 +3815,8 @@ int BC_ListBox::activate()
 				&tempwin);
 
 			if(new_x < 0) new_x = 0;
-			if(new_y + popup_h > top_level->get_root_h()) new_y -= get_h() + popup_h;
+			if(new_y + popup_h > top_level->get_root_h(0)) 
+				new_y -= get_h() + popup_h;
 
 //printf("BC_ListBox::activate %d %d\n", popup_w, popup_h);
 			add_subwindow(gui = new BC_Popup(this, 
@@ -4284,9 +4285,9 @@ int BC_ListBox::draw_titles(int flash)
 			{
 				BC_Pixmap *src;
 				if(sort_order == SORT_ASCENDING) 
-					src = column_sort_up;
-				else
 					src = column_sort_dn;
+				else
+					src = column_sort_up;
 
 				int x = column_offset + column_width - LISTBOX_BORDER;
 				if(x > items_w) x = items_w;

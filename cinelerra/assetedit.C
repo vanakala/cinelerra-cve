@@ -125,8 +125,8 @@ void AssetEdit::run()
 
 AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
  : BC_Window(PROGRAM_NAME ": Asset Info", 
- 	mwindow->gui->get_abs_cursor_x() - 400 / 2, 
-	mwindow->gui->get_abs_cursor_y() - 500 / 2, 
+ 	mwindow->gui->get_abs_cursor_x(1) - 400 / 2, 
+	mwindow->gui->get_abs_cursor_y(1) - 500 / 2, 
 	400, 
 	500,
 	400,

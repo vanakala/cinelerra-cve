@@ -21,6 +21,7 @@ noinst_HEADERS = bitstream.h \
 	libmpeg3.h \
 	mpeg3atrack.h \
 	mpeg3css.h \
+	mpeg3css_fake.c \
 	mpeg3demux.h \
 	mpeg3io.h \
 	mpeg3private.h \

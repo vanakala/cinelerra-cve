@@ -297,7 +297,10 @@ int VFrame::allocate_data(unsigned char *data,
 	else
 	{
 		shared = 0;
-		int size = calculate_data_size(this->w, this->h, this->bytes_per_line, this->color_model);
+		int size = calculate_data_size(this->w, 
+			this->h, 
+			this->bytes_per_line, 
+			this->color_model);
 		this->data = new unsigned char[size];
 
 if(size > 2560 * 1920)
@@ -355,7 +358,14 @@ int VFrame::reallocate(unsigned char *data,
 {
 	clear_objects();
 	reset_parameters();
-	allocate_data(data, y_offset, u_offset, v_offset, w, h, color_model, bytes_per_line);
+	allocate_data(data, 
+		y_offset, 
+		u_offset, 
+		v_offset, 
+		w, 
+		h, 
+		color_model, 
+		bytes_per_line);
 	return 0;
 }
 
@@ -595,125 +605,13 @@ void VFrame::flip_vert()
 }
 
 
-#define APPLY_FADE(equivalent, input_rows, output_rows, max, type, chroma_zero, components) \
-{ \
-	int64_t opacity = (int64_t)(alpha * max); \
-	int64_t transparency = (int64_t)(max - opacity); \
- \
-	for(int i = 0; i < h; i++) \
-	{ \
-		type *in_row = (type*)input_rows[i]; \
-		type *out_row = (type*)output_rows[i]; \
- \
-		for(int j = 0; j < w; j++) \
-		{ \
-			if(components == 3) \
-			{ \
-				out_row[j * components] =  \
-					(type)((int64_t)in_row[j * components] * opacity / max); \
-				out_row[j * components + 1] =  \
-					(type)(((int64_t)in_row[j * components + 1] * opacity +  \
-						(int64_t)chroma_zero * transparency) / max); \
-				out_row[j * components + 2] =  \
-					(type)(((int64_t)in_row[j * components + 2] * opacity +  \
-						(int64_t)chroma_zero * transparency) / max); \
-			} \
-			else \
-			{ \
-				if(!equivalent) \
-				{ \
-					out_row[j * components] = in_row[j * components]; \
-					out_row[j * components + 1] = in_row[j * components + 1]; \
-					out_row[j * components + 2] = in_row[j * components + 2]; \
-				} \
- \
-				out_row[j * components + 3] =  \
-					(type)((int64_t)in_row[j * components + 3] * opacity / max); \
-			} \
-		} \
-	} \
-}
-
-
-// Fade the frame but don't move data around
-int VFrame::apply_fade(float alpha)
-{
-printf("VFrame::apply_fade: Never call this.  Use FadeEngine instead.\n");
-	if(alpha != 1)
-	{
-		switch(color_model)
-		{
-			case BC_RGB888:
-				APPLY_FADE(1, rows, rows, 0xff, unsigned char, 0x0, 3);
-				break;
-			case BC_RGBA8888:
-				APPLY_FADE(1, rows, rows, 0xff, unsigned char, 0x0, 4);
-				break;
-			case BC_RGB161616:
-				APPLY_FADE(1, rows, rows, 0xffff, uint16_t, 0x0, 3);
-				break;
-			case BC_RGBA16161616:
-				APPLY_FADE(1, rows, rows, 0xffff, uint16_t, 0x0, 4);
-				break;
-			case BC_YUV888:
-				APPLY_FADE(1, rows, rows, 0xff, unsigned char, 0x80, 3);
-				break;
-			case BC_YUVA8888:
-				APPLY_FADE(1, rows, rows, 0xff, unsigned char, 0x80, 4);
-				break;
-			case BC_YUV161616:
-				APPLY_FADE(1, rows, rows, 0xffff, uint16_t, 0x8000, 3);
-				break;
-			case BC_YUVA16161616:
-				APPLY_FADE(1, rows, rows, 0xffff, uint16_t, 0x8000, 4);
-				break;
-		}
-	}
-	return 0;
-}
-
-// Fade the frame while moving data around
-int VFrame::replace_from(VFrame *frame, float alpha)
-{
-printf("VFrame::replace_from: Never call this.  Use FadeEngine instead.\n");
-	if(alpha != 1)
-	{
-		switch(color_model)
-		{
-			case BC_RGB888:
-				APPLY_FADE(0, rows, frame->get_rows(), 0xff, unsigned char, 0x0, 3);
-				break;
-			case BC_RGBA8888:
-				APPLY_FADE(0, rows, frame->get_rows(), 0xff, unsigned char, 0x0, 4);
-				break;
-			case BC_RGB161616:
-				APPLY_FADE(0, rows, frame->get_rows(), 0xffff, uint16_t, 0x0, 3);
-				break;
-			case BC_RGBA16161616:
-				APPLY_FADE(0, rows, frame->get_rows(), 0xffff, uint16_t, 0x0, 4);
-				break;
-			case BC_YUV888:
-				APPLY_FADE(0, rows, frame->get_rows(), 0xff, unsigned char, 0x80, 3);
-				break;
-			case BC_YUVA8888:
-				APPLY_FADE(0, rows, frame->get_rows(), 0xff, unsigned char, 0x80, 4);
-				break;
-			case BC_YUV161616:
-				APPLY_FADE(0, rows, frame->get_rows(), 0xffff, uint16_t, 0x8000, 3);
-				break;
-			case BC_YUVA16161616:
-				APPLY_FADE(0, rows, frame->get_rows(), 0xffff, uint16_t, 0x8000, 4);
-				break;
-		}
-	}
-	else
-		copy_from(frame);
-
-	return 0;
-}
 
 int VFrame::copy_from(VFrame *frame)
 {
+	int w = MIN(this->w, frame->get_w());
+	int h = MIN(this->h, frame->get_h());
+	
+
 	switch(frame->color_model)
 	{
 		case BC_COMPRESSED:

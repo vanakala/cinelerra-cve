@@ -466,12 +466,11 @@ VirtualNode* VirtualNode::get_previous_plugin(VirtualNode *current_node)
 
 void VirtualNode::get_mute_fragment(int64_t input_position,
 				int &mute_constant, 
-				int64_t &fragment_len, 
+				int &fragment_len, 
 				Autos *autos,
 				int direction,
 				int use_nudge)
 {
-	int64_t mute_len;
 	if(use_nudge) input_position += track->nudge;
 
 	IntAuto *prev_keyframe = 0;

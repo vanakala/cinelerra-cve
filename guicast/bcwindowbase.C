@@ -10,6 +10,7 @@
 #include "bcsignals.h"
 #include "bcsubwindow.h"
 #include "bcwindowbase.h"
+#include "bcwindowevents.h"
 #include "colormodels.h"
 #include "colors.h"
 #include "condition.h"
@@ -38,71 +39,10 @@ BC_ResizeCall::BC_ResizeCall(int w, int h)
 }
 
 
-BC_WindowTree::BC_WindowTree(Display* display, 
-	BC_WindowTree *parent_tree, 
-	Window root_win)
-{
-	Window temp_win;
-	Window *stack;
-	int stack_total;
-
-	this->display = display;
-	this->win = root_win;
-	this->parent_tree = parent_tree;
-
-	XQueryTree(display, 
-		root_win, 
-		&temp_win, 
-		&temp_win, 		&stack, 
-		(unsigned int*)&stack_total);
-
-	for(int i = 0; i < stack_total; i++)
-	{
-		windows.append(new BC_WindowTree(display, this, stack[i]));
-	}
-	XFree(stack);
-}
-
-BC_WindowTree::~BC_WindowTree()
-{
-	windows.remove_all_objects();
-}
-
-BC_WindowTree* BC_WindowTree::get_node(Window win)
-{
-//printf("BC_WindowTree::get_node 1\n");
-	for(int i = 0; i < windows.total; i++)
-	{
-		BC_WindowTree *result = 0;
-//printf("BC_WindowTree::get_node 2\n");
-		if(windows.values[i]->win == win)
-			return windows.values[i];
-		else
-		{
-//printf("BC_WindowTree::get_node 3\n");
-			result = windows.values[i]->get_node(win);
-//printf("BC_WindowTree::get_node 4\n");
-			if(result) return result;
-		}
-	}
-}
 
 
-void BC_WindowTree::dump(int indent, Window caller_win)
-{
-	XWindowAttributes attr;
-	XGetWindowAttributes(display,
-    		win,
-    		&attr);
-	for(int i = 0; i < indent; i++)
-		printf(" ");
-	printf("x=%d y=%d w=%d h=%d win=%x subwindows=%d ", 
-		attr.x, attr.y, attr.width, attr.height, win, windows.total);
-	if(caller_win == win) printf("**");
-	printf("\n");
-	for(int i = 0; i < windows.total; i++)
-		windows.values[i]->dump(indent + 1, caller_win);
-}
+
+
 
 
 
@@ -110,7 +50,6 @@ void BC_WindowTree::dump(int indent, Window caller_win)
 Mutex BC_WindowBase::opengl_lock;
 
 BC_Resources BC_WindowBase::resources;
-BC_WindowTree* BC_WindowBase::window_tree = 0;
 
 BC_WindowBase::BC_WindowBase()
 {
@@ -128,7 +67,6 @@ BC_WindowBase::~BC_WindowBase()
    }
 #endif
 
-//printf("BC_WindowBase::~BC_WindowBase 1\n");
 	hide_tooltip();
 	if(window_type != MAIN_WINDOW)
 	{
@@ -137,7 +75,6 @@ BC_WindowBase::~BC_WindowBase()
 		if(top_level->active_subwindow == this) top_level->active_subwindow = 0;
 		parent_window->subwindows->remove(this);
 	}
-//printf("BC_WindowBase::~BC_WindowBase 2\n");
 
 	if(subwindows)
 	{
@@ -145,46 +82,46 @@ BC_WindowBase::~BC_WindowBase()
 		{
 			delete subwindows->values[i];
 		}
-//printf("BC_WindowBase::~BC_WindowBase 2.5 %p\n", subwindows);
 		delete subwindows;
 	}
-//printf("BC_WindowBase::~BC_WindowBase 3\n");
 
 	XFreePixmap(top_level->display, pixmap);
 	XDestroyWindow(top_level->display, win);
 
-//printf("BC_WindowBase::~BC_WindowBase 4\n");
 	if(bg_pixmap && !shared_bg_pixmap) delete bg_pixmap;
 	if(icon_pixmap) delete icon_pixmap;
-	if (temp_bitmap) delete temp_bitmap;
-//printf("BC_WindowBase::~BC_WindowBase 5\n");
+	if(temp_bitmap) delete temp_bitmap;
 
 
 	if(window_type == MAIN_WINDOW) 
 	{
 		
-		XFreeGC(top_level->display, gc);
+		XFreeGC(display, gc);
 #ifdef HAVE_XFT
-		if(top_level->largefont_xft) 
-			XftFontClose (top_level->display, (XftFont*)top_level->largefont_xft);
-		if(top_level->mediumfont_xft) 
-			XftFontClose (top_level->display, (XftFont*)top_level->mediumfont_xft);
-		if(top_level->smallfont_xft) 
-			XftFontClose (top_level->display, (XftFont*)top_level->smallfont_xft);
+		if(largefont_xft) 
+			XftFontClose (display, (XftFont*)largefont_xft);
+		if(mediumfont_xft) 
+			XftFontClose (display, (XftFont*)mediumfont_xft);
+		if(smallfont_xft) 
+			XftFontClose (display, (XftFont*)smallfont_xft);
 #endif
 		flush();
 // Can't close display if another thread is waiting for events
-		XCloseDisplay(top_level->display);
+		XCloseDisplay(display);
+//		XCloseDisplay(event_display);
 		clipboard->stop_clipboard();
 		delete clipboard;
-
-
 	}
-//printf("BC_WindowBase::~BC_WindowBase 6\n");
+	else
+	{
+		flush();
+	}
 
 	resize_history.remove_all_objects();
+	common_events.remove_all_objects();
+	delete event_lock;
+	delete event_condition;
 	UNSET_ALL_LOCKS(this)
-//printf("BC_WindowBase::~BC_WindowBase 10\n");
 }
 
 int BC_WindowBase::initialize()
@@ -233,6 +170,7 @@ int BC_WindowBase::initialize()
 	tooltip_on = 0;
 	temp_cursor = 0;
 	toggle_value = 0;
+	toggle_drag = 0;
 	has_focus = 0;
 #ifdef HAVE_LIBXXF86VM
     vm_switched = 0;
@@ -241,6 +179,10 @@ int BC_WindowBase::initialize()
 	largefont_xft = 0;
 	mediumfont_xft = 0;
 	smallfont_xft = 0;
+// Need these right away since put_event is called before run_window sometimes.
+	event_lock = new Mutex("BC_WindowBase::event_lock");
+	event_condition = new Condition(0, "BC_WindowBase::event_condition");
+	event_thread = 0;
 
 	return 0;
 }
@@ -316,10 +258,11 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 
 // get the display connection
 		display = init_display(display_name);
+//		event_display = init_display(display_name);
 
 // Fudge window placement
-		root_w = get_root_w(1);
-		root_h = get_root_h();
+		root_w = get_root_w(1, 0);
+		root_h = get_root_h(0);
 		if(this->x + this->w > root_w) this->x = root_w - this->w;
 		if(this->y + this->h > root_h) this->y = root_h - this->h;
 		if(this->x < 0) this->x = 0;
@@ -539,7 +482,7 @@ Display* BC_WindowBase::init_display(char *display_name)
 	if(display_name && display_name[0] == 0) display_name = NULL;
 	if((display = XOpenDisplay(display_name)) == NULL)
 	{
-  		printf("BC_WindowBase::create_window: cannot connect to X server %s\n", 
+  		printf("BC_WindowBase::init_display: cannot connect to X server %s\n", 
 			display_name);
   		if(getenv("DISPLAY") == NULL)
     	{
@@ -551,7 +494,7 @@ Display* BC_WindowBase::init_display(char *display_name)
 		{
 			if((display = XOpenDisplay(0)) == NULL)
 			{
-				printf("BC_WindowBase::create_window: cannot connect to default X server.\n");
+				printf("BC_WindowBase::init_display: cannot connect to default X server.\n");
 				exit(1);
 			}
 		}
@@ -564,6 +507,9 @@ int BC_WindowBase::run_window()
 	done = 0;
 	return_value = 0;
 
+
+// Events may have been sent before run_window so can't initialize them here.
+
 // Start tooltips
 	if(window_type == MAIN_WINDOW)
 	{
@@ -571,27 +517,34 @@ int BC_WindowBase::run_window()
 		set_repeat(get_resources()->tooltip_delay);
 	}
 
+// Start X server events
+	event_thread = new BC_WindowEvents(this);
+	event_thread->start();
+
+// Start common events
 	while(!done)
 	{
 		dispatch_event();
 	}
-//printf("BC_WindowBase::run_window 3\n");
 
 	unset_all_repeaters();
-//printf("BC_WindowBase::run_window 4\n");
 	hide_tooltip();
+	delete event_thread;
+	event_thread = 0;
+	event_condition->reset();
+	common_events.remove_all_objects();
+	done = 0;
 
 	return return_value;
 }
 
-int BC_WindowBase::get_key_masks(XEvent &event)
+int BC_WindowBase::get_key_masks(XEvent *event)
 {
 // ctrl key down
-	ctrl_mask = (event.xkey.state & ControlMask) ? 1 : 0;
+	ctrl_mask = (event->xkey.state & ControlMask) ? 1 : 0;
 // shift key down
-	shift_mask = (event.xkey.state & ShiftMask) ? 1 : 0;
-	alt_mask = (event.xkey.state & Mod1Mask) ? 1 : 0;
-//printf("BC_WindowBase::get_key_masks %x\n", event.xkey.state);
+	shift_mask = (event->xkey.state & ShiftMask) ? 1 : 0;
+	alt_mask = (event->xkey.state & Mod1Mask) ? 1 : 0;
 	return 0;
 }
 
@@ -603,7 +556,7 @@ int BC_WindowBase::get_key_masks(XEvent &event)
 
 int BC_WindowBase::dispatch_event()
 {
-	XEvent event;
+	XEvent *event = 0;
     Window tempwin;
   	KeySym keysym;
   	char keys_return[2];
@@ -616,10 +569,12 @@ int BC_WindowBase::dispatch_event()
 
 // If an event is waiting get it, otherwise
 // wait for next event only if there are no compressed events.
-	if(XPending(display) || 
+	if(/* XPending(display) */ 
+		get_event_count() || 
 		(!motion_events && !resize_events && !translation_events))
 	{
-		XNextEvent(display, &event);
+//		XNextEvent(display, event);
+		event = get_event();
 // Lock out window deletions
 		lock_window("BC_WindowBase::dispatch_event 1");
 		get_key_masks(event);
@@ -641,7 +596,8 @@ int BC_WindowBase::dispatch_event()
 		return 0;
 	}
 
-	switch(event.type)
+//printf("1 %s %p %d\n", title, event, event->type);
+	switch(event->type)
 	{
 		case ClientMessage:
 // Clear the resize buffer
@@ -649,10 +605,9 @@ int BC_WindowBase::dispatch_event()
 // Clear the motion buffer since this can clear the window
 			if(motion_events) dispatch_motion_event();
 
-			ptr = (XClientMessageEvent*)&event;
+			ptr = (XClientMessageEvent*)event;
 
 
-//printf("BC_WindowBase::dispatch_event 3 %d\n", ptr->data.l[0]);
         	if(ptr->message_type == ProtoXAtom && 
 				ptr->data.l[0] == DelWinXAtom)
         	{
@@ -690,14 +645,14 @@ int BC_WindowBase::dispatch_event()
 			break;
 
 		case ButtonPress:
-			cursor_x = event.xbutton.x;
-			cursor_y = event.xbutton.y;
-			button_number = event.xbutton.button;
-			event_win = event.xany.window;
+			cursor_x = event->xbutton.x;
+			cursor_y = event->xbutton.y;
+			button_number = event->xbutton.button;
+			event_win = event->xany.window;
   			button_down = 1;
-			button_pressed = event.xbutton.button;
+			button_pressed = event->xbutton.button;
 			button_time1 = button_time2;
-			button_time2 = event.xbutton.time;
+			button_time2 = event->xbutton.time;
 			drag_x = cursor_x;
 			drag_y = cursor_y;
 			drag_win = event_win;
@@ -719,34 +674,30 @@ int BC_WindowBase::dispatch_event()
 			break;
 
 		case ButtonRelease:
-			button_number = event.xbutton.button;
-			event_win = event.xany.window;
+			button_number = event->xbutton.button;
+			event_win = event->xany.window;
   			button_down = 0;
 
   			dispatch_button_release();
 			break;
 
 		case Expose:
-			event_win = event.xany.window;
+			event_win = event->xany.window;
 			dispatch_expose_event();
 			break;
 
 		case MotionNotify:
 // Dispatch previous motion event if this is a subsequent motion from a different window
-{
-//Timer timer;
-//timer.update();
-
-			if(motion_events && last_motion_win != event.xany.window)
+			if(motion_events && last_motion_win != event->xany.window)
+			{
 				dispatch_motion_event();
+			}
 
 // Buffer the current motion
 			motion_events = 1;
-			last_motion_x = event.xmotion.x;
-			last_motion_y = event.xmotion.y;
-			last_motion_win = event.xany.window;
-//printf("BC_WindowBase::dispatch_event 1 %lld\n", timer.get_difference());
-}
+			last_motion_x = event->xmotion.x;
+			last_motion_y = event->xmotion.y;
+			last_motion_win = event->xany.window;
 			break;
 
 		case ConfigureNotify:
@@ -758,8 +709,8 @@ int BC_WindowBase::dispatch_event()
 				&last_translate_x, 
 				&last_translate_y, 
 				&tempwin);
-			last_resize_w = event.xconfigure.width;
-			last_resize_h = event.xconfigure.height;
+			last_resize_w = event->xconfigure.width;
+			last_resize_h = event->xconfigure.height;
 
 			cancel_resize = 0;
 			cancel_translation = 0;
@@ -797,7 +748,7 @@ int BC_WindowBase::dispatch_event()
 
 		case KeyPress:
   			keys_return[0] = 0;
-  			XLookupString((XKeyEvent*)&event, keys_return, 1, &keysym, 0);
+  			XLookupString((XKeyEvent*)event, keys_return, 1, &keysym, 0);
 //printf("BC_WindowBase::dispatch_event %08x\n", keys_return[0]);
 // block out control keys
 			if(keysym > 0xffe0 && keysym < 0xffff) break;
@@ -861,7 +812,7 @@ int BC_WindowBase::dispatch_event()
 					break;
 			}
 
-//printf("BC_WindowBase::run_window %d %d %x\n", shift_down(), alt_down(), key_pressed);
+//printf("BC_WindowBase::dispatch_event %d %d %x\n", shift_down(), alt_down(), key_pressed);
 			result = dispatch_keypress_event();
 // Handle some default keypresses
 			if(!result)
@@ -875,19 +826,21 @@ int BC_WindowBase::dispatch_event()
 			break;
 
 		case LeaveNotify:
-			event_win = event.xany.window;
+			event_win = event->xany.window;
 			dispatch_cursor_leave();
 			break;
 
 		case EnterNotify:
-			event_win = event.xany.window;
-			cursor_x = event.xcrossing.x;
-			cursor_y = event.xcrossing.y;
+			event_win = event->xany.window;
+			cursor_x = event->xcrossing.x;
+			cursor_y = event->xcrossing.y;
 			dispatch_cursor_enter();
 			break;
 	}
+//printf("100 %s %p %d\n", title, event, event->type);
 
 	unlock_window();
+	if(event) delete event;
 	return 0;
 }
 
@@ -956,7 +909,6 @@ int BC_WindowBase::dispatch_translation_event()
 		subwindows->values[i]->dispatch_translation_event();
 	}
 
-//printf("BC_WindowBase::dispatch_translation_event 1 %p\n", this);
 	translation_event();
 	return 0;
 }
@@ -970,11 +922,9 @@ int BC_WindowBase::dispatch_motion_event()
 		event_win = last_motion_win;
 		motion_events = 0;
 
-//printf("BC_WindowBase::dispatch_motion_event 1\n");
 // Test for grab
 		if(get_button_down() && !active_menubar && !active_popup_menu)
 		{
-//printf("BC_WindowBase::dispatch_motion_event 2\n");
 			if(!result) 
 			{
 				cursor_x = last_motion_x;
@@ -988,18 +938,6 @@ int BC_WindowBase::dispatch_motion_event()
 			{
 				cursor_x = drag_x;
 				cursor_y = drag_y;
-// 				if(window_tree)
-// 				{
-// 					delete window_tree;
-// 					window_tree = 0;
-// 				}
-// 				if(!window_tree)
-// 				{
-// 					window_tree = new BC_WindowTree(display, 
-// 						0, 
-// 						rootwin);
-// //window_tree->dump(0, win);
-// 				}
 
 				result = dispatch_drag_start();
 			}
@@ -1007,22 +945,17 @@ int BC_WindowBase::dispatch_motion_event()
 		cursor_x = last_motion_x;
 		cursor_y = last_motion_y;
 
-//printf("BC_WindowBase::dispatch_motion_event 3\n");
 		if(active_menubar && !result) result = active_menubar->dispatch_motion_event();
 		if(active_popup_menu && !result) result = active_popup_menu->dispatch_motion_event();
 		if(active_subwindow && !result) result = active_subwindow->dispatch_motion_event();
-//printf("BC_WindowBase::dispatch_motion_event 4\n");
 	}
 
-//printf("BC_WindowBase::dispatch_motion_event 5\n");
 	for(int i = 0; i < subwindows->total && !result; i++)
 	{
 		result = subwindows->values[i]->dispatch_motion_event();
 	}
-//printf("BC_WindowBase::dispatch_motion_event 6\n");
 
 	if(!result) result = cursor_motion_event();    // give to user
-//printf("BC_WindowBase::dispatch_motion_event 7\n");
 	return result;
 }
 
@@ -1191,6 +1124,7 @@ int BC_WindowBase::dispatch_cursor_leave()
 	{
 		subwindows->values[i]->dispatch_cursor_leave();
 	}
+
 	cursor_leave_event();
 	return 0;
 }
@@ -1321,6 +1255,7 @@ int BC_WindowBase::show_tooltip(int w, int h)
 		draw_tooltip();
 		tooltip_popup->set_font(MEDIUMFONT);
 		tooltip_popup->flash();
+		tooltip_popup->flush();
 	}
 	return 0;
 }
@@ -1400,14 +1335,11 @@ int BC_WindowBase::unset_repeat(int64_t duration)
 
 int BC_WindowBase::unset_all_repeaters()
 {
-//printf("BC_WindowBase::unset_all_repeaters 1\n");
 	for(int i = 0; i < repeaters.total; i++)
 	{
 		repeaters.values[i]->stop_repeating();
 	}
-//printf("BC_WindowBase::unset_all_repeaters 1\n");
 	repeaters.remove_all_objects();
-//printf("BC_WindowBase::unset_all_repeaters 2\n");
 	return 0;
 }
 
@@ -1418,15 +1350,21 @@ int BC_WindowBase::unset_all_repeaters()
 
 int BC_WindowBase::arm_repeat(int64_t duration)
 {
-	XEvent event;
-	XClientMessageEvent *ptr = (XClientMessageEvent*)&event;
+	XEvent *event = new XEvent;
+	XClientMessageEvent *ptr = (XClientMessageEvent*)event;
 	ptr->type = ClientMessage;
 	ptr->message_type = RepeaterXAtom;
 	ptr->format = 32;
 	ptr->data.l[0] = duration;
 
-	XSendEvent(display, win, 0, 0, &event);
-	flush();
+// Couldn't use XSendEvent since it locked up randomly.
+	put_event(event);
+// 	XSendEvent(top_level->event_display, 
+// 		top_level->win, 
+// 		0, 
+// 		0, 
+// 		event);
+// 	flush();
 	return 0;
 }
 
@@ -1448,8 +1386,8 @@ void BC_WindowBase::init_cursors()
 	vseparate_cursor = XCreateFontCursor(display, XC_sb_v_double_arrow);
 	hseparate_cursor = XCreateFontCursor(display, XC_sb_h_double_arrow);
 	move_cursor = XCreateFontCursor(display, XC_fleur);
-	left_cursor = XCreateFontCursor(display, XC_left_side);
-	right_cursor = XCreateFontCursor(display, XC_right_side);
+	left_cursor = XCreateFontCursor(display, XC_sb_left_arrow);
+	right_cursor = XCreateFontCursor(display, XC_sb_right_arrow);
 	upright_arrow_cursor = XCreateFontCursor(display, XC_arrow);
 	upleft_resize_cursor = XCreateFontCursor(display, XC_top_left_corner);
 	upright_resize_cursor = XCreateFontCursor(display, XC_top_right_corner);
@@ -1663,13 +1601,16 @@ int BC_WindowBase::init_gc()
 
 int BC_WindowBase::init_fonts()
 {
-	if((largefont = XLoadQueryFont(display, _(resources.large_font))) == NULL) 
+	if((largefont = XLoadQueryFont(display, _(resources.large_font))) == NULL &&
+		(largefont = XLoadQueryFont(display, _(resources.large_font2))) == NULL) 
 		largefont = XLoadQueryFont(display, "fixed"); 
 
-	if((mediumfont = XLoadQueryFont(display, _(resources.medium_font))) == NULL)
+	if((mediumfont = XLoadQueryFont(display, _(resources.medium_font))) == NULL &&
+		(mediumfont = XLoadQueryFont(display, _(resources.medium_font2))) == NULL)
 		mediumfont = XLoadQueryFont(display, "fixed"); 
 
-	if((smallfont = XLoadQueryFont(display, _(resources.small_font))) == NULL)
+	if((smallfont = XLoadQueryFont(display, _(resources.small_font))) == NULL &&
+		(smallfont = XLoadQueryFont(display, _(resources.small_font2))) == NULL)
 		smallfont = XLoadQueryFont(display, "fixed");
 
 #ifdef HAVE_XFT
@@ -2338,7 +2279,7 @@ int BC_WindowBase::grab_port_id(BC_WindowBase *window, int color_model)
 	}
 
 // Get adaptor with desired color model
-    for(i = 0; i < numAdapt && port_id == -1; i++)
+    for(i = 0; i < numAdapt && xvideo_port_id == -1; i++)
     {
 /* adaptor supports XvImages */
 		if(info[i].type & XvImageMask) 
@@ -2349,7 +2290,7 @@ int BC_WindowBase::grab_port_id(BC_WindowBase *window, int color_model)
 // for(j = 0; j < numFormats; j++)
 // 	printf("%08x\n", formats[j].id);
 
-	    	for(j = 0; j < numFormats; j++) 
+	    	for(j = 0; j < numFormats && xvideo_port_id < 0; j++) 
 	    	{
 /* this adaptor supports the desired format */
 				if(formats[j].id == x_color_model)
@@ -2363,7 +2304,7 @@ int BC_WindowBase::grab_port_id(BC_WindowBase *window, int color_model)
 							CurrentTime))
 						{
 //printf("BC_WindowBase::grab_port_id %llx\n", info[i].base_id);
-							port_id = info[i].base_id + k;
+							xvideo_port_id = info[i].base_id + k;
 							break;
 						}
 					}
@@ -2375,23 +2316,23 @@ int BC_WindowBase::grab_port_id(BC_WindowBase *window, int color_model)
 
     XvFreeAdaptorInfo(info);
 
-	return port_id;
+	return xvideo_port_id;
 }
 
 
-int BC_WindowBase::show_window() 
-{ 
+int BC_WindowBase::show_window(int flush) 
+{
 	XMapWindow(top_level->display, win); 
-	XFlush(top_level->display);
+	if(flush) XFlush(top_level->display);
 //	XSync(top_level->display, 0);
 	hidden = 0; 
 	return 0;
 }
 
-int BC_WindowBase::hide_window() 
+int BC_WindowBase::hide_window(int flush) 
 { 
-	XUnmapWindow(display, win); 
-	XFlush(top_level->display);
+	XUnmapWindow(top_level->display, win); 
+	if(flush) XFlush(top_level->display);
 	hidden = 1; 
 	return 0;
 }
@@ -2427,7 +2368,7 @@ BC_WindowBase* BC_WindowBase::add_tool(BC_WindowBase *subwindow)
 	return add_subwindow(subwindow);
 }
 
-int BC_WindowBase::flash(int x, int y, int w, int h)
+int BC_WindowBase::flash(int x, int y, int w, int h, int flush)
 {
 	set_opaque();
 	XSetWindowBackgroundPixmap(top_level->display, win, pixmap);
@@ -2439,7 +2380,15 @@ int BC_WindowBase::flash(int x, int y, int w, int h)
 	{
 		XClearWindow(top_level->display, win);
 	}
+
+	if(flush)
+		this->flush();
 	return 0;
+}
+
+int BC_WindowBase::flash(int flush)
+{
+	flash(-1, -1, -1, -1, flush);
 }
 
 void BC_WindowBase::flush()
@@ -2459,35 +2408,72 @@ int BC_WindowBase::get_window_lock()
 
 int BC_WindowBase::lock_window(char *location) 
 {
-	SET_LOCK(this, title, location);
-	XLockDisplay(top_level->display); 
-	top_level->window_lock = 1;
+	if(top_level && top_level != this)
+	{
+		top_level->lock_window(location);
+	}
+	else
+	if(top_level)
+	{
+		SET_LOCK(this, title, location);
+		XLockDisplay(top_level->display);
+		SET_LOCK2
+		top_level->window_lock = 1;
+	}
+	else
+	{
+		printf("BC_WindowBase::lock_window top_level NULL\n");
+	}
 	return 0;
 }
 
 int BC_WindowBase::unlock_window() 
 {
-	UNSET_LOCK(this);
-	top_level->window_lock = 0;
-	XUnlockDisplay(top_level->display); 
+	if(top_level && top_level != this)
+	{
+		top_level->unlock_window();
+	}
+	else
+	if(top_level)
+	{
+		UNSET_LOCK(this);
+		top_level->window_lock = 0;
+		XUnlockDisplay(top_level->display);
+	}
+	else
+	{
+		printf("BC_WindowBase::unlock_window top_level NULL\n");
+	}
 	return 0;
 }
 
 void BC_WindowBase::set_done(int return_value)
 {
-	if(window_type != MAIN_WINDOW) 
+	if(window_type != MAIN_WINDOW)
 		top_level->set_done(return_value);
 	else
+	if(event_thread)
 	{
-		XEvent event;
-		XClientMessageEvent *ptr = (XClientMessageEvent*)&event;
+		XEvent *event = new XEvent;
+		XClientMessageEvent *ptr = (XClientMessageEvent*)event;
 
-		event.type = ClientMessage;
+		event->type = ClientMessage;
 		ptr->message_type = SetDoneXAtom;
 		ptr->format = 32;
-		XSendEvent(top_level->display, top_level->win, 0, 0, &event);
-		top_level->return_value = return_value;
+		this->return_value = return_value;
+
+// May lock up here because XSendEvent doesn't work too well 
+// asynchronous with XNextEvent.
+// This causes BC_WindowEvents to forward a copy of the event to run_window where 
+// it is deleted.
+		event_thread->done = 1;
+		XSendEvent(display, 
+			win, 
+			0, 
+			0, 
+			event);
 		flush();
+		put_event(event);
 	}
 }
 
@@ -2511,19 +2497,25 @@ int BC_WindowBase::get_y()
 	return y;
 }
 
-int BC_WindowBase::get_root_w(int ignore_dualhead)
+int BC_WindowBase::get_root_w(int ignore_dualhead, int lock_display)
 {
+	if(lock_display) lock_window("BC_WindowBase::get_root_w");
 	Screen *screen_ptr = XDefaultScreenOfDisplay(display);
 	int result = WidthOfScreen(screen_ptr);
 // Wider than 16:9, narrower than dual head
 	if(!ignore_dualhead) if((float)result / HeightOfScreen(screen_ptr) > 1.8) result /= 2;
+
+	if(lock_display) unlock_window();
 	return result;
 }
 
-int BC_WindowBase::get_root_h()
+int BC_WindowBase::get_root_h(int lock_display)
 {
+	if(lock_display) lock_window("BC_WindowBase::get_root_h");
 	Screen *screen_ptr = XDefaultScreenOfDisplay(display);
-	return HeightOfScreen(screen_ptr);
+	int result = HeightOfScreen(screen_ptr);
+	if(lock_display) unlock_window();
+	return result;
 }
 
 // Bottom right corner
@@ -2756,31 +2748,34 @@ int BC_WindowBase::get_relative_cursor_y()
 	return y;
 }
 
-int BC_WindowBase::get_abs_cursor_x()
+int BC_WindowBase::get_abs_cursor_x(int lock_window)
 {
 	int abs_x, abs_y, win_x, win_y;
 	unsigned int temp_mask;
 	Window temp_win;
 
-	 XQueryPointer(top_level->display, 
-	 	top_level->win, 
+	if(lock_window) this->lock_window("BC_WindowBase::get_abs_cursor_x");
+	XQueryPointer(top_level->display, 
+		top_level->win, 
 		&temp_win, 
 		&temp_win,
-        &abs_x, 
+		&abs_x, 
 		&abs_y, 
 		&win_x, 
 		&win_y, 
 		&temp_mask);
+	if(lock_window) this->unlock_window();
 	return abs_x;
 }
 
-int BC_WindowBase::get_abs_cursor_y()
+int BC_WindowBase::get_abs_cursor_y(int lock_window)
 {
 	int abs_x, abs_y, win_x, win_y;
 	unsigned int temp_mask;
 	Window temp_win;
 
-	 XQueryPointer(top_level->display, 
+	if(lock_window) this->lock_window("BC_WindowBase::get_abs_cursor_y");
+	XQueryPointer(top_level->display, 
 	 	top_level->win, 
 		&temp_win, 
 		&temp_win,
@@ -2789,6 +2784,7 @@ int BC_WindowBase::get_abs_cursor_y()
 		&win_x, 
 		&win_y, 
 		&temp_mask);
+	if(lock_window) this->unlock_window();
 	return abs_y;
 }
 
@@ -2812,7 +2808,6 @@ int BC_WindowBase::get_cursor_over_window()
 	int abs_x, abs_y, win_x, win_y;
 	unsigned int temp_mask;
 	Window temp_win1, temp_win2;
-//printf("BC_WindowBase::get_cursor_over_window 2\n");
 
 	if (!XQueryPointer(display, 
 		win, 
@@ -2823,95 +2818,10 @@ int BC_WindowBase::get_cursor_over_window()
 		&win_x, 
 		&win_y, 
 		&temp_mask))
-	return(0);
-//printf("BC_WindowBase::get_cursor_over_window 3 %p\n", window_tree);
+		return 0;
 
 	int result = match_window(temp_win2)	;
-//	printf("t1: %p, t2: %p, win: %p, ret: %i\n", temp_win1, temp_win2, win, result);
-	return(result);
-/*------------------------previous attempts ------------
-// Get location in window tree
-	BC_WindowTree *tree_node = window_tree->get_node(win);
-
-// KDE -> Window is overlapped by a transparent window.
-// FVWM -> Window is bordered by different windows.
-	BC_WindowTree *parent_node = tree_node->parent_tree;
-	for( ; 
-		parent_node->parent_tree != window_tree; 
-		tree_node = parent_node, parent_node = parent_node->parent_tree)
-	{
-		;
-	}
-
-	int got_it = 0;
-	for(int i = 0; i < parent_node->windows.total; i++)
-	{
-		if(parent_node->windows.values[i] == tree_node)
-		{
-			got_it = 1;
-		}
-		else
-		if(got_it)
-		{
-			XWindowAttributes attr;
-			XGetWindowAttributes(display,
-    				parent_node->windows.values[i]->win,
-    				&attr);
-
-// Obstructed by overlapping window.
-			if(abs_x >= attr.x && abs_x < attr.x + attr.width &&
-				abs_y >= attr.y && abs_y < attr.y + attr.height &&
-				!attr.override_redirect)
-			{
-				return 0;
-			}
-		}
-	}
-*/
-# if 0
-// Test every window after current node in same parent node.
-// Test every parent node after current parent node.
-// These are the overlapping windows.
-	while(parent_node && parent_node != window_tree)
-	{
-//printf("BC_WindowBase::get_cursor_over_window 4\n");
-		if(parent_node
-		for(int i = 0; i < parent_node->windows.total; i++)
-		{
-//printf("BC_WindowBase::get_cursor_over_window 5\n");
-			if(parent_node->windows.values[i] == tree_node)
-			{
-//printf("BC_WindowBase::get_cursor_over_window 6\n");
-				got_it = 1;
-			}
-			else
-			if(got_it)
-			{
-//printf("BC_WindowBase::get_cursor_over_window 7\n");
-				XWindowAttributes attr;
-				XGetWindowAttributes(display,
-    					parent_node->windows.values[i]->win,
-    					&attr);
-
-// Obstructed by overlapping window.
-				if(abs_x >= attr.x && abs_x < attr.x + attr.width &&
-					abs_y >= attr.y && abs_y < attr.y + attr.height &&
-					!attr.override_redirect)
-				{
-					return 0;
-				}
-			}
-//printf("BC_WindowBase::get_cursor_over_window 8\n");
-		}
-		tree_node = parent_node;
-		parent_node = tree_node->parent_tree;
-	}
-//printf("BC_WindowBase::get_cursor_over_window 9\n");
-
-#endif
-
-// Didn't find obstruction
-	return 1;
+	return result;
 }
 
 int BC_WindowBase::relative_cursor_x(BC_WindowBase *pov)
@@ -3173,6 +3083,11 @@ int BC_WindowBase::get_toggle_value()
 	return toggle_value;
 }
 
+int BC_WindowBase::get_toggle_drag()
+{
+	return toggle_drag;
+}
+
 int BC_WindowBase::set_icon(VFrame *data)
 {
 	if(icon_pixmap) delete icon_pixmap;
@@ -3420,5 +3335,44 @@ void BC_WindowBase::flip_opengl()
 {
 	glXSwapBuffers(top_level->display, win);
 }
-
 #endif
+
+int BC_WindowBase::get_event_count()
+{
+	event_lock->lock("BC_WindowBase::get_event_count");
+	int result = common_events.total;
+	event_lock->unlock();
+	return result;
+}
+
+XEvent* BC_WindowBase::get_event()
+{
+	XEvent *result = 0;
+	while(!done && !result)
+	{
+		event_condition->lock("BC_WindowBase::get_event");
+		event_lock->lock("BC_WindowBase::get_event");
+		if(common_events.total && !done)
+		{
+			result = common_events.values[0];
+			common_events.remove_number(0);
+		}
+		event_lock->unlock();
+	}
+	return result;
+}
+
+void BC_WindowBase::put_event(XEvent *event)
+{
+	event_lock->lock("BC_WindowBase::put_event");
+	common_events.append(event);
+	event_lock->unlock();
+	event_condition->unlock();
+}
+
+
+
+
+
+
+

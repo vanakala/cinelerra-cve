@@ -7,6 +7,7 @@
 
 #include "condition.inc"
 #include "libdv.h"
+#include "dv1394.h"
 #include "mutex.inc"
 #include <libraw1394/raw1394.h>
 #include "thread.h"
@@ -26,7 +27,9 @@ public:
 		int length,
 		int channels,
 		int samplerate,
-		int bits);
+		int bits,
+		int w,
+		int h);
 	void run();
 	void increment_counter(int *counter);
 	void decrement_counter(int *counter);
@@ -47,10 +50,6 @@ public:
 
 	int read_audio(char *data, int samples);
 
-// Storage of currently downloading frame
-	char *temp;
-	int bytes_read;
-
 // Storage of all frames
 	char **buffer;
 	int *buffer_valid;
@@ -67,18 +66,22 @@ public:
 
 // number of next video buffer to read
 	int current_outbuffer;
+	unsigned char *input_buffer;
 
 	Mutex *buffer_lock;
 	Condition *video_lock;
 	Condition *audio_lock;
 	int done;
 
-	raw1394handle_t handle;
+	int fd;
 	int channel;
 	int length;
 	int channels;
 	int samplerate;
 	int bits;
+	int w;
+	int h;
+	int is_pal;
 };
 
 

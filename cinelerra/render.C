@@ -144,7 +144,7 @@ void MainPackageRenderer::set_result(int value)
 
 void MainPackageRenderer::set_progress(int64_t value)
 {
-	render->counter_lock->lock();
+	render->counter_lock->lock("MainPackageRenderer::set_progress");
 	render->total_rendered += value;
 
 // If non interactive, print progress out
@@ -201,7 +201,7 @@ int MainPackageRenderer::progress_cancelled()
 
 
 Render::Render(MWindow *mwindow)
- : Thread()
+ : Thread(0, 0, 0)
 {
 	this->mwindow = mwindow;
 	if(mwindow) plugindb = mwindow->plugindb;
@@ -237,8 +237,8 @@ void Render::start_interactive()
 	else
 	{
 		ErrorBox error_box(PROGRAM_NAME ": Error",
-			mwindow->gui->get_abs_cursor_x(),
-			mwindow->gui->get_abs_cursor_y());
+			mwindow->gui->get_abs_cursor_x(1),
+			mwindow->gui->get_abs_cursor_y(1));
 		error_box.create_objects("Already rendering");
 		error_box.run_window();
 	}
@@ -257,8 +257,8 @@ void Render::start_batches(ArrayList<BatchRenderJob*> *jobs)
 	else
 	{
 		ErrorBox error_box(PROGRAM_NAME ": Error",
-			mwindow->gui->get_abs_cursor_x(),
-			mwindow->gui->get_abs_cursor_y());
+			mwindow->gui->get_abs_cursor_x(1),
+			mwindow->gui->get_abs_cursor_y(1));
 		error_box.create_objects("Already rendering");
 		error_box.run_window();
 	}
@@ -307,24 +307,27 @@ void Render::run()
 		check_asset(mwindow->edl, *asset);
 
 // Get format from user
-		do
+		if(!result)
 		{
-			format_error = 0;
-			result = 0;
-
+			do
 			{
-				RenderWindow window(mwindow, this, asset);
-				window.create_objects();
-				result = window.run_window();
-			}
+				format_error = 0;
+				result = 0;
 
-			if(!result)
-			{
+				{
+					RenderWindow window(mwindow, this, asset);
+					window.create_objects();
+					result = window.run_window();
+				}
+
+				if(!result)
+				{
 // Check the asset format for errors.
-				FormatCheck format_check(asset);
-				format_error = format_check.check_format();
-			}
-		}while(format_error && !result);
+					FormatCheck format_check(asset);
+					format_error = format_check.check_format();
+				}
+			}while(format_error && !result);
+		}
 
 		save_defaults(asset);
 		mwindow->save_defaults();
@@ -433,7 +436,13 @@ int Render::check_asset(EDL *edl, Asset &asset)
 		asset.audio_data = 0;
 		asset.channels = 0;
 	}
-//printf("Render::check_asset 3\n");
+
+	if(!asset.audio_data &&
+		!asset.video_data)
+	{
+		return 1;
+	}
+	return 0;
 }
 
 int Render::fix_strategy(int strategy, int use_renderfarm)
@@ -555,8 +564,8 @@ int Render::render(int test_overwrite,
 
 
 // Configure preview monitor
-	VideoOutConfig vconfig(PLAYBACK_LOCALHOST, 0);
-	PlaybackConfig *playback_config = new PlaybackConfig(PLAYBACK_LOCALHOST, 0);
+	VideoOutConfig vconfig;
+	PlaybackConfig *playback_config = new PlaybackConfig;
 	for(int i = 0; i < MAX_CHANNELS; i++)
 	{
 		vconfig.do_channel[i] = (i < command->get_edl()->session->video_channels);
@@ -571,8 +580,8 @@ int Render::render(int test_overwrite,
 	default_asset->frame_rate = command->get_edl()->session->frame_rate;
 	default_asset->sample_rate = command->get_edl()->session->sample_rate;
 
-// Conform asset to EDL.
-	check_asset(command->get_edl(), *default_asset);
+// Conform asset to EDL.  Find out if any tracks are playable.
+	result = check_asset(command->get_edl(), *default_asset);
 
 	if(!result)
 	{
@@ -684,7 +693,7 @@ int Render::render(int test_overwrite,
 
 
 		MainPackageRenderer package_renderer(this);
-		package_renderer.initialize(mwindow,
+		result = package_renderer.initialize(mwindow,
 				command->get_edl(),   // Copy of master EDL
 				preferences, 
 				default_asset,
@@ -757,8 +766,8 @@ int Render::render(int test_overwrite,
 			if(mwindow)
 			{
 				ErrorBox error_box(PROGRAM_NAME ": Error",
-					mwindow->gui->get_abs_cursor_x(),
-					mwindow->gui->get_abs_cursor_y());
+					mwindow->gui->get_abs_cursor_x(1),
+					mwindow->gui->get_abs_cursor_y(1));
 				error_box.create_objects(_("Error rendering data."));
 				error_box.run_window();
 			}
@@ -967,8 +976,8 @@ int Render::save_defaults(Asset *asset)
 
 RenderWindow::RenderWindow(MWindow *mwindow, Render *render, Asset *asset)
  : BC_Window(PROGRAM_NAME ": Render", 
- 	mwindow->gui->get_root_w() / 2 - WIDTH / 2,
-	mwindow->gui->get_root_h() / 2 - HEIGHT / 2,
+ 	mwindow->gui->get_root_w(0, 1) / 2 - WIDTH / 2,
+	mwindow->gui->get_root_h(1) / 2 - HEIGHT / 2,
  	WIDTH, 
 	HEIGHT,
 	(int)BC_INFINITY,

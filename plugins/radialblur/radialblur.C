@@ -7,16 +7,12 @@
 #include "defaults.h"
 #include "filexml.h"
 #include "keyframe.h"
+#include "language.h"
 #include "loadbalance.h"
 #include "picon_png.h"
 #include "pluginvclient.h"
 #include "vframe.h"
 
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 class RadialBlurMain;
 class RadialBlurEngine;
@@ -285,13 +281,7 @@ int RadialBlurWindow::create_objects()
 	return 0;
 }
 
-int RadialBlurWindow::close_event()
-{
-// Set result to 1 to indicate a plugin side close
-	set_done(1);
-	return 1;
-}
-
+WINDOW_CLOSE_EVENT(RadialBlurWindow)
 
 
 
@@ -534,7 +524,7 @@ RadialBlurUnit::RadialBlurUnit(RadialBlurEngine *server,
 }
 
 
-#define BLEND_LAYER(COMPONENTS, TYPE, MAX, DO_YUV) \
+#define BLEND_LAYER(COMPONENTS, TYPE, TEMP_TYPE, MAX, DO_YUV) \
 { \
 	int chroma_offset = (DO_YUV ? ((MAX + 1) / 2) : 0); \
 	TYPE **in_rows = (TYPE**)plugin->input->get_rows(); \
@@ -553,10 +543,10 @@ RadialBlurUnit::RadialBlurUnit(RadialBlurEngine *server,
 		for(int j = 0, out_x = -center_x; j < w; j++, out_x++) \
 		{ \
 			double offset = 0; \
-			int accum_r = 0; \
-			int accum_g = 0; \
-			int accum_b = 0; \
-			int accum_a = 0; \
+			TEMP_TYPE accum_r = 0; \
+			TEMP_TYPE accum_g = 0; \
+			TEMP_TYPE accum_b = 0; \
+			TEMP_TYPE accum_a = 0; \
  \
 /* Output coordinate to polar */ \
 			double magnitude = sqrt(y_square + out_x * out_x); \
@@ -607,7 +597,7 @@ RadialBlurUnit::RadialBlurUnit(RadialBlurEngine *server,
 /* Accumulation to output */ \
 			if(do_r) \
 			{ \
-				*out_row++ = (accum_r * fraction) >> 16; \
+				*out_row++ = (accum_r * fraction) / 0x10000; \
 				in_row++; \
 			} \
 			else \
@@ -618,9 +608,9 @@ RadialBlurUnit::RadialBlurUnit(RadialBlurEngine *server,
 			if(do_g) \
 			{ \
 				if(DO_YUV) \
-					*out_row++ = ((accum_g * fraction) >> 16); \
+					*out_row++ = ((accum_g * fraction) / 0x10000); \
 				else \
-					*out_row++ = (accum_g * fraction) >> 16; \
+					*out_row++ = (accum_g * fraction) / 0x10000; \
 				in_row++; \
 			} \
 			else \
@@ -631,9 +621,9 @@ RadialBlurUnit::RadialBlurUnit(RadialBlurEngine *server,
 			if(do_b) \
 			{ \
 				if(DO_YUV) \
-					*out_row++ = ((accum_b * fraction) >> 16); \
+					*out_row++ = (accum_b * fraction) / 0x10000; \
 				else \
-					*out_row++ = (accum_b * fraction) >> 16; \
+					*out_row++ = (accum_b * fraction) / 0x10000; \
 				in_row++; \
 			} \
 			else \
@@ -645,7 +635,7 @@ RadialBlurUnit::RadialBlurUnit(RadialBlurEngine *server,
 			{ \
 				if(do_a) \
 				{ \
-					*out_row++ = (accum_a * fraction) >> 16; \
+					*out_row++ = (accum_a * fraction) / 0x10000; \
 					in_row++; \
 				} \
 				else \
@@ -673,28 +663,34 @@ void RadialBlurUnit::process_package(LoadPackage *package)
 	switch(plugin->input->get_color_model())
 	{
 		case BC_RGB888:
-			BLEND_LAYER(3, uint8_t, 0xff, 0)
+			BLEND_LAYER(3, uint8_t, int, 0xff, 0)
 			break;
 		case BC_RGBA8888:
-			BLEND_LAYER(4, uint8_t, 0xff, 0)
+			BLEND_LAYER(4, uint8_t, int, 0xff, 0)
+			break;
+		case BC_RGB_FLOAT:
+			BLEND_LAYER(3, float, float, 1, 0)
+			break;
+		case BC_RGBA_FLOAT:
+			BLEND_LAYER(4, float, float, 1, 0)
 			break;
 		case BC_RGB161616:
-			BLEND_LAYER(3, uint16_t, 0xffff, 0)
+			BLEND_LAYER(3, uint16_t, int, 0xffff, 0)
 			break;
 		case BC_RGBA16161616:
-			BLEND_LAYER(4, uint16_t, 0xffff, 0)
+			BLEND_LAYER(4, uint16_t, int, 0xffff, 0)
 			break;
 		case BC_YUV888:
-			BLEND_LAYER(3, uint8_t, 0xff, 1)
+			BLEND_LAYER(3, uint8_t, int, 0xff, 1)
 			break;
 		case BC_YUVA8888:
-			BLEND_LAYER(4, uint8_t, 0xff, 1)
+			BLEND_LAYER(4, uint8_t, int, 0xff, 1)
 			break;
 		case BC_YUV161616:
-			BLEND_LAYER(3, uint16_t, 0xffff, 1)
+			BLEND_LAYER(3, uint16_t, int, 0xffff, 1)
 			break;
 		case BC_YUVA16161616:
-			BLEND_LAYER(4, uint16_t, 0xffff, 1)
+			BLEND_LAYER(4, uint16_t, int, 0xffff, 1)
 			break;
 	}
 }

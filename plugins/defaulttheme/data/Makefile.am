@@ -117,9 +117,6 @@ checkbox_uphi.png \
 	clearoutpoint.png \
 	clip_icon.png \
 	cmeter_bg.png \
-	column_dn.png \
-	column_hi.png \
-	column_up.png \
 	configure.png \
 	copy.png \
 	cpanel_bg.png \
@@ -302,9 +299,6 @@ listbox_up.png \
 	mbutton_left.png \
 	mbutton_right.png \
 	mclock.png \
-	meterreset_dn.png \
-	meterreset_hi.png \
-	meterreset_up.png \
 	middle_justify.png \
 	modekeyframe.png \
 	move_checked.png \
@@ -344,14 +338,8 @@ listbox_up.png \
 	outpoint.png \
 	over.png \
 	over_dn.png \
-\
-over_horiz.png \
-\
 	over_up.png \
 	over_uphi.png \
-\
-over_vertical.png \
-\
 	overwrite.png \
 	pan_channel.png \
 	pan_channel_small.png \
@@ -365,7 +353,6 @@ over_vertical.png \
 	pasteasset_dn.png \
 	pasteasset_hi.png \
 	pasteasset_up.png \
-	patchbay.png \
 	patchbay_bg.png \
 \
 	pause.png \
@@ -450,6 +437,7 @@ radial_uphi.png \
 	select_hi.png \
 	select_up.png \
 	setformat_bg.png \
+	setformat_bg2.png \
 	show_meters.png \
 	singleframe.png \
 	slider_bg.png \
@@ -523,7 +511,9 @@ vertical_slider_fg_up.png \
 \
 xmeter_green.png \
 xmeter_normal.png \
+xmeter_over.png \
 xmeter_red.png \
+xmeter_white.png \
 xmeter_yellow.png \
 \
 	yes_dn.png \
@@ -532,7 +522,9 @@ xmeter_yellow.png \
 \
 ymeter_green.png \
 ymeter_normal.png \
+ymeter_over.png \
 ymeter_red.png \
+ymeter_white.png \
 ymeter_yellow.png \
 \
 	zoombar_left.png \
@@ -585,8 +577,6 @@ EXTRA_DIST = \
 	listbox_button.xcf.bz2 \
 	over_button.xcf.bz2 \
 	patch.xcf.bz2 \
-	patchbay.xcf.bz2 \
-	patchbay2.xcf.bz2 \
 	resource.xcf.bz2 \
 	statusbar.xcf.bz2 \
 	transport.xcf.bz2 \

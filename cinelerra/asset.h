@@ -198,6 +198,14 @@ public:
 // PNG video compression
 	int png_use_alpha;
 
+// EXR video compression
+	int exr_use_alpha;
+	int exr_compression;
+
+// TIFF video compression.  An enumeration from filetiff.h
+	int tiff_cmodel;
+	int tiff_compression;
+
 // Microsoft MPEG-4
 	int ms_bitrate;
 	int ms_bitrate_tolerance;

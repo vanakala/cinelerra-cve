@@ -180,7 +180,6 @@ int VirtualANode::render_as_module(double **audio_out,
 	int direction = renderengine->command->get_direction();
 	EDL *edl = vconsole->renderengine->edl;
 
-//printf("VirtualANode::render_as_module 1 %p\n", this);
 
 // Process last subnode.  This calls read_data, propogates up the chain 
 // of subnodes, and finishes the chain.
@@ -219,26 +218,25 @@ int VirtualANode::render_as_module(double **audio_out,
 	if(real_module && renderengine->command->realtime)
 	{
 		ARender *arender = ((VirtualAConsole*)vconsole)->arender;
-		double max = 0, min = 0, peak;
 // Starting sample of meter block
 		int64_t meter_render_start;
 // Ending sample of meter block
 		int64_t meter_render_end;
-		int64_t current_level = ((AModule*)real_module)->current_level;
 // Number of samples in each meter fragment normalized to requested rate
 		int meter_render_fragment = arender->meter_render_fragment * 
 			sample_rate /
 			project_sample_rate;
 
+
 // Scan fragment in meter sized fragments
 		for(int i = 0; i < len; )
 		{
+			int current_level = ((AModule*)real_module)->current_level;
+			double peak = 0;
 			meter_render_start = i;
 			meter_render_end = i + meter_render_fragment;
 			if(meter_render_end > len) 
 				meter_render_end = len;
-			max = 0;
-			min = 0;
 // Number of samples into the fragment this meter sized fragment is,
 // normalized to project sample rate.
 			int64_t meter_render_start_project = meter_render_start *
@@ -248,15 +246,9 @@ int VirtualANode::render_as_module(double **audio_out,
 // Scan meter sized fragment
 			for( ; i < meter_render_end; i++)
 			{
-				if(output_temp[i] > max) max = output_temp[i];
-				else
-				if(output_temp[i] < min) min = output_temp[i];
+				double sample = fabs(output_temp[i]);
+				if(sample > peak) peak = sample;
 			}
-
-			if(fabs(max) > fabs(min)) 
-				peak = fabs(max);
-			else
-				peak = fabs(min);
 
 			((AModule*)real_module)->level_history[current_level] = 
 				peak;
@@ -265,19 +257,19 @@ int VirtualANode::render_as_module(double **audio_out,
 				(start_position_project + meter_render_start_project) :
 				(start_position_project - meter_render_start_project);
 			((AModule*)real_module)->current_level = 
-				arender->get_next_peak(((AModule*)real_module)->current_level);
+				arender->get_next_peak(current_level);
 		}
 	}
 
 // process pans and copy the output to the output channels
 // Keep rendering unmuted fragments until finished.
-	int64_t mute_position = 0;
+	int mute_position = 0;
 
 	for(int i = 0; i < len; )
 	{
 		int mute_constant;
-		int64_t mute_fragment = len - i;
-		int64_t mute_fragment_project = mute_fragment *
+		int mute_fragment = len - i;
+		int mute_fragment_project = mute_fragment *
 			project_sample_rate /
 			sample_rate;
 		start_position_project = start_position + 
@@ -304,17 +296,6 @@ int VirtualANode::render_as_module(double **audio_out,
 				{
 					double *buffer = audio_out[j];
 
-// printf("VirtualANode::render_as_module 4.3 %p %p %lld %lld %lld %lld %p %d %d\n", 
-// output_temp,
-// buffer,
-// mute_position, 
-// mute_fragment,
-// start_position + 
-// 	((direction == PLAY_FORWARD) ? i : -i),
-// sample_rate,
-// (Autos*)track->automation->pan_autos,
-// j,
-// direction);
 					render_pan(output_temp + mute_position, 
 								buffer + mute_position,
 								mute_fragment,
@@ -327,14 +308,12 @@ int VirtualANode::render_as_module(double **audio_out,
 				}
 			}
 		}
-//printf("VirtualANode::render_as_module 4.4\n");
 
 		len -= mute_fragment;
 		i += mute_fragment;
 		mute_position += mute_fragment;
 	}
 
-//printf("VirtualANode::render_as_module 100 %p\n", this);
 	return 0;
 }
 

@@ -27,8 +27,11 @@ VFrame* BC_Resources::bg_image = 0;
 VFrame* BC_Resources::menu_bg = 0;
 
 char* BC_Resources::small_font = N_("-*-helvetica-medium-r-normal-*-10-*");
+char* BC_Resources::small_font2 = N_("-*-helvetica-medium-r-normal-*-11-*");
 char* BC_Resources::medium_font = N_("-*-helvetica-bold-r-normal-*-14-*");
+char* BC_Resources::medium_font2 = N_("-*-helvetica-bold-r-normal-*-14-*");
 char* BC_Resources::large_font = N_("-*-helvetica-bold-r-normal-*-18-*");
+char* BC_Resources::large_font2 = N_("-*-helvetica-bold-r-normal-*-20-*");
 
 char* BC_Resources::small_fontset = "6x12,*";
 char* BC_Resources::medium_fontset = "7x14,*";
@@ -201,6 +204,9 @@ static VFrame* type_to_icon = 0;
 	bg_light1 = WHITE;
 	bg_light2 = bg_color;
 
+	default_text_color = BLACK;
+	disabled_text_color = MEGREY;
+
 	button_light = WHITE;           // bright corner
 	button_highlighted = 0xffe000;  // face when highlighted
 	button_down = MDGREY;         // face when down
@@ -262,6 +268,7 @@ static VFrame* type_to_icon = 0;
 	pot_x1 = pot_images[0]->get_w() / 2 - 2;
 	pot_y1 = pot_images[0]->get_h() / 2 - 2;;
 	pot_r = pot_x1;
+	pot_needle_color = BLACK;
 
 	progress_images = default_progress_images;
 

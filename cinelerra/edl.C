@@ -39,6 +39,7 @@ EDL::EDL(EDL *parent_edl)
 	new_folder(CLIP_FOLDER);
 	new_folder(MEDIA_FOLDER);
 	id = next_id();
+	project_path[0] = 0;
 }
 
 
@@ -163,7 +164,7 @@ int EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 // The parent_edl test is required to make EDL loading work because
 // when loading an EDL the EDL tag is already read by the parent.
 
-	if(!parent_edl /* && (load_flags & LOAD_ALL) == LOAD_ALL */)
+	if(!parent_edl)
 	{
 		do{
 		  result = file->read_tag();
@@ -174,6 +175,10 @@ int EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 
 	if(!result)
 	{
+// Get path for backups
+		project_path[0] = 0;
+		file->tag.get_property("PROJECT_PATH", project_path);
+
 // Erase everything
 		if((load_flags & LOAD_ALL) == LOAD_ALL ||
 			(load_flags & LOAD_EDITS) == LOAD_EDITS)
@@ -371,6 +376,8 @@ void EDL::copy_assets(EDL *edl)
 
 void EDL::copy_session(EDL *edl)
 {
+	strcpy(this->project_path, edl->project_path);
+
 	folders.remove_all_objects();
 	for(int i = 0; i < edl->folders.total; i++)
 	{
@@ -461,7 +468,14 @@ int EDL::copy(double start,
 	if(is_vwindow)
 		file->tag.set_title("VWINDOW_EDL");
 	else
+	{
 		file->tag.set_title("EDL");
+// Save path for restoration of the project title from a backup.
+		if(this->project_path[0])
+		{
+			file->tag.set_property("PROJECT_PATH", project_path);
+		}
+	}
 
 	file->append_tag();
 	file->append_newline();
@@ -652,6 +666,11 @@ double EDL::equivalent_output(EDL *edl)
 	return result;
 }
 
+
+void EDL::set_project_path(char *path)
+{
+	strcpy(this->project_path, path);
+}
 
 void EDL::set_inpoint(double position)
 {

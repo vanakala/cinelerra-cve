@@ -538,8 +538,8 @@ MenuEffectWindow::MenuEffectWindow(MWindow *mwindow,
 	ArrayList<BC_ListBoxItem*> *plugin_list, 
 	Asset *asset)
  : BC_Window(PROGRAM_NAME ": Render effect", 
- 		mwindow->gui->get_abs_cursor_x(),
-		mwindow->gui->get_abs_cursor_y() - mwindow->session->menueffect_h / 2,
+ 		mwindow->gui->get_abs_cursor_x(1),
+		mwindow->gui->get_abs_cursor_y(1) - mwindow->session->menueffect_h / 2,
 		mwindow->session->menueffect_w, 
 		mwindow->session->menueffect_h, 
 		580,
@@ -726,8 +726,8 @@ int MenuEffectWindowList::handle_event()
 
 MenuEffectPrompt::MenuEffectPrompt(MWindow *mwindow)
  : BC_Window(PROGRAM_NAME ": Effect Prompt", 
- 		mwindow->gui->get_abs_cursor_x() - 260 / 2,
-		mwindow->gui->get_abs_cursor_y() - 300,
+ 		mwindow->gui->get_abs_cursor_x(1) - 260 / 2,
+		mwindow->gui->get_abs_cursor_y(1) - 300,
  		260, 
 		80, 
 		260,

@@ -40,6 +40,8 @@
 #include "bctumble.inc"
 #include "bcwindow.inc"
 #include "bcwindowbase.inc"
+#include "bcwindowevents.inc"
+#include "condition.inc"
 #include "defaults.inc"
 #include "linklist.h"
 #include "mutex.h"
@@ -73,21 +75,6 @@ class BC_ResizeCall
 public:
 	BC_ResizeCall(int w, int h);
 	int w, h;
-};
-
-class BC_WindowTree
-{
-public:
-	BC_WindowTree(Display* display, BC_WindowTree *parent_tree, Window root_win);
-	~BC_WindowTree();
-
-	void dump(int indent, Window caller_win = 0);
-	BC_WindowTree* get_node(Window win);
-	ArrayList<BC_WindowTree*> windows;
-
-	Display* display;
-	Window win;
-	BC_WindowTree *parent_tree;
 };
 
 
@@ -128,6 +115,7 @@ public:
 	friend class BC_Toggle;
 	friend class BC_Tumbler;
 	friend class BC_Window;
+	friend class BC_WindowEvents;
 
 // Main loop
 	int run_window();
@@ -159,8 +147,8 @@ public:
 	int get_color(int64_t color);
 // return the currently selected color
 	int64_t get_color();
-	int show_window();
-	int hide_window();
+	int show_window(int flush = 1);
+	int hide_window(int flush = 1);
 	int get_hidden();
 	void enable_opengl();
 	void disable_opengl();
@@ -168,7 +156,8 @@ public:
 	void unlock_opengl();
 	void flip_opengl();
 
-	int flash(int x = -1, int y = -1, int w = -1, int h = -1);
+	int flash(int x, int y, int w, int h, int flush = 1);
+	int flash(int flush = 1);
 	void flush();
 	void sync_display();
 // Lock out other threads
@@ -186,11 +175,11 @@ public:
 	virtual int get_h();
 	virtual int get_x();
 	virtual int get_y();
-	int get_root_w(int ignore_dualhead = 0);
-	int get_root_h();
+	int get_root_w(int ignore_dualhead = 0, int lock_display = 0);
+	int get_root_h(int lock_display);
 // Get current position
-	int get_abs_cursor_x();
-	int get_abs_cursor_y();
+	int get_abs_cursor_x(int lock_window);
+	int get_abs_cursor_y(int lock_window);
 	int get_relative_cursor_x();
 	int get_relative_cursor_y();
 // Return 1 if cursor is over an unobscured part of this window.
@@ -241,6 +230,8 @@ public:
 	void set_active_subwindow(BC_WindowBase *subwindow);
 // Get value of toggle value when dragging a selection
 	int get_toggle_value();
+// Get if toggle is being dragged
+	int get_toggle_drag();
 
 
 // Set the gc to the color
@@ -426,9 +417,11 @@ public:
 	int set_tooltips(int tooltips_enabled);
 	int resize_window(int w, int h);
 	int reposition_window(int x, int y, int w = -1, int h = -1);
-//	int64_t get_repeat_id();
+// Cause a repeat event to be dispatched every duration.
+// duration is milliseconds
 	int set_repeat(int64_t duration);
-	int unset_repeat(int64_t id);
+// Stop a repeat event from being dispatched.
+	int unset_repeat(int64_t duration);
 	int set_tooltip(char *text);
 	int show_tooltip(int w = -1, int h = -1);
 	int hide_tooltip();
@@ -493,7 +486,7 @@ private:
     void set_fontset(int font);	
 	int dispatch_event();
 
-	int get_key_masks(XEvent &event);
+	int get_key_masks(XEvent *event);
 
 	int trigger_tooltip();
 	int untrigger_tooltip();
@@ -501,6 +494,13 @@ private:
 	int arm_repeat(int64_t duration);
 // delete all repeater opjects for a close
 	int unset_all_repeaters();
+
+// Block and get event from common events.
+	XEvent* get_event();
+// Return number of events in table.
+	int get_event_count();
+// Put event in common events.
+	void put_event(XEvent *event);
 
 // Recursive event dispatchers
 	int dispatch_resize_event(int w, int h);
@@ -597,6 +597,7 @@ private:
 	int key_pressed;
 // During a selection drag involving toggles, set the same value for each toggle
 	int toggle_value;
+	int toggle_drag;
 // Whether the window has the focus
 	int has_focus;
 
@@ -645,9 +646,6 @@ private:
 	int shared_bg_pixmap;
 	char title[BCTEXTLEN];
 
-// Window tree for dragging operations
-	static BC_WindowTree *window_tree;
-
 // X Window parameters
 	int screen;
 	Window rootwin;
@@ -655,7 +653,10 @@ private:
  	Window event_win, drag_win;
 	Visual *vis;
 	Colormap cmap;
-	Display* display;
+// Display for all synchronous operations
+	Display *display;
+// Display to send events on
+	Display *event_display;
  	Window win;
 	Pixmap pixmap;
 #ifdef HAVE_GL
@@ -702,6 +703,16 @@ private:
    int vm_switched;
    XF86VidModeModeInfo orig_modeline;
 #endif
+
+// Common events coming from X server and repeater.
+	ArrayList<XEvent*> common_events;
+// Locks for common events
+// Locking order:
+// 1) event_condition
+// 2) event_lock
+	Mutex *event_lock;
+	Condition *event_condition;
+	BC_WindowEvents *event_thread;
 };
 
 

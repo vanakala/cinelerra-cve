@@ -742,7 +742,7 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 // Try displaying from source cache
 		FrameCache *frame_cache = source->get_frame_cache();
 		VFrame *picon_frame = 0;
-		int from_cache = 0;
+		int use_cache = 0;
 
 //frame_cache->dump();
 		if((picon_frame = frame_cache->get_frame_ptr(source_frame,
@@ -751,7 +751,7 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 			picon_w,
 			picon_h)) != 0)
 		{
-			from_cache = 1;
+			use_cache = 1;
 		}
 		else
 // Display from file and put in cache
@@ -809,7 +809,7 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 			0, 
 			0);
 
-		if (from_cache)
+		if(use_cache)
 			frame_cache->unlock();
 		
 		if(frames_per_picon > 1)

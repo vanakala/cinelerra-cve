@@ -3,6 +3,7 @@
 #include "defaults.h"
 #include "edl.inc"
 #include "filexml.h"
+#include "language.h"
 #include "overlayframe.h"
 #include "picon_png.h"
 #include "vframe.h"
@@ -11,9 +12,6 @@
 #include <stdint.h>
 #include <string.h>
 #include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 
@@ -361,9 +359,15 @@ int BandSlideMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 		case BC_YUV888:
 			BANDSLIDE(unsigned char, 3)
 			break;
+		case BC_RGB_FLOAT:
+			BANDSLIDE(float, 3);
+			break;
 		case BC_RGBA8888:
 		case BC_YUVA8888:
 			BANDSLIDE(unsigned char, 4)
+			break;
+		case BC_RGBA_FLOAT:
+			BANDSLIDE(float, 4);
 			break;
 		case BC_RGB161616:
 		case BC_YUV161616:

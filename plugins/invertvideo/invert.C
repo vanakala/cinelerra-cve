@@ -3,6 +3,7 @@
 #include "defaults.h"
 #include "filexml.h"
 #include "guicast.h"
+#include "language.h"
 #include "picon_png.h"
 #include "plugincolors.h"
 #include "pluginvclient.h"
@@ -11,10 +12,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 class InvertVideoEffect;
@@ -179,12 +176,7 @@ void InvertVideoWindow::create_objects()
 	flush();
 }
 
-int InvertVideoWindow::close_event()
-{
-// Set result to 1 to indicate a client side close
-	set_done(1);
-	return 1;
-}
+WINDOW_CLOSE_EVENT(InvertVideoWindow)
 
 
 
@@ -319,9 +311,15 @@ int InvertVideoEffect::process_realtime(VFrame *input, VFrame *output)
 
 		switch(input->get_color_model())
 		{
+			case BC_RGB_FLOAT:
+				INVERT_MACRO(float, 3, 1.0)
+				break;
 			case BC_RGB888:
 			case BC_YUV888:
 				INVERT_MACRO(unsigned char, 3, 0xff)
+				break;
+			case BC_RGBA_FLOAT:
+				INVERT_MACRO(float, 4, 1.0)
 				break;
 			case BC_RGBA8888:
 			case BC_YUVA8888:

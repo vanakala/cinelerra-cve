@@ -60,13 +60,13 @@ int RecordMonitor::create_objects()
 	if(record->default_asset->video_data)
 	{
 // Configure the output for record monitoring
-		VideoOutConfig config(PLAYBACK_LOCALHOST, 0);
+		VideoOutConfig config;
 		device = new VideoDevice;
 
 
 
 // Override default device for X11 drivers
-		if(mwindow->edl->session->get_playback_config(PLAYBACK_LOCALHOST, 0)->vconfig->driver ==
+		if(mwindow->edl->session->playback_config->vconfig->driver ==
 			PLAYBACK_X11_XV) config.driver = PLAYBACK_X11_XV;
 		config.x11_use_fields = 0;
 
@@ -333,6 +333,7 @@ printf("RecordMonitorGUI::create_objects %d %d\n", mwindow->theme->rmonitor_tx_x
 			mwindow->theme->rmonitor_meter_y,
 			mwindow->theme->rmonitor_meter_h,
 			record->default_asset->channels,
+			1,
 			1);
 		meters->create_objects();
 	}

@@ -37,8 +37,8 @@ void TransitionLengthThread::run()
 
 TransitionLengthDialog::TransitionLengthDialog(MWindow *mwindow, Transition *transition)
  : BC_Window(PROGRAM_NAME ": Transition length", 
-				mwindow->gui->get_abs_cursor_x() - 150,
-				mwindow->gui->get_abs_cursor_y() - 50,
+				mwindow->gui->get_abs_cursor_x(1) - 150,
+				mwindow->gui->get_abs_cursor_y(1) - 50,
 				300, 
 				100, 
 				-1, 

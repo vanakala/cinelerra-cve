@@ -38,13 +38,15 @@ public:
 		int64_t position,
 		double frame_rate);
 // Returns pointer to cache entry if frame exists or 0.
+// If a frame is found, the frame cache is left in the locked state until 
+// unlock is called.  If nothing is found, the frame cache is unlocked before
+// returning.  This keeps the item from being deleted.
 	VFrame* get_frame_ptr(int64_t position,
 		double frame_rate,
 		int color_model,
 		int w,
 		int h);
-	// to be used after get_frame_ptr data is not needed anymore
-	void unlock(); // 
+	void unlock();
 // Puts the frame in cache.
 // use_copy - if 1 a copy of the frame is made.  if 0 the argument is stored.
 // The copy of the frame is deleted by FrameCache in a future delete_oldest.

@@ -33,7 +33,7 @@ public:
 	void update_meters(ArrayList<double> *module_levels);
 	void stop_meters();
 	void synchronize_faders(float value, int data_type, Track *skip);
-	void change_meter_format(int mode, float min);
+	void change_meter_format(int mode, int min, int max);
 	void reset_meters();
 
 	ArrayList<PatchGUI*> patches;

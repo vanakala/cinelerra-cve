@@ -2,7 +2,9 @@
 #include "colormodels.h"
 #include "effecttv.h"
 #include "filexml.h"
+#include "language.h"
 #include "picon_png.h"
+#include "plugincolors.h"
 #include "burn.h"
 #include "burnwindow.h"
 
@@ -10,15 +12,9 @@
 #include <stdio.h>
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
-PluginClient* new_plugin(PluginServer *server)
-{
-	return new BurnMain(server);
-}
+
+REGISTER_PLUGIN(BurnMain)
 
 
 
@@ -46,6 +42,7 @@ BurnMain::BurnMain(PluginServer *server)
 	burn_server = 0;
 	buffer = 0;
 	effecttv = 0;
+	yuv = new YUV;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
@@ -56,6 +53,7 @@ BurnMain::~BurnMain()
 	if(buffer) delete [] buffer;
 	if(burn_server) delete burn_server;
 	if(effecttv) delete effecttv;
+	if(yuv) delete yuv;
 }
 
 char* BurnMain::plugin_title() { return N_("BurningTV"); }
@@ -95,12 +93,13 @@ void BurnMain::read_data(KeyFrame *keyframe)
 
 #define MAXCOLOR 120
 
-static void HSItoRGB(double H, 
+void BurnMain::HSItoRGB(double H, 
 	double S, 
 	double I, 
 	int *r, 
 	int *g, 
-	int *b)
+	int *b,
+	int color_model)
 {
 	double T, Rv, Gv, Bv;
 
@@ -116,7 +115,7 @@ static void HSItoRGB(double H,
 }
 
 
-void BurnMain::make_palette()
+void BurnMain::make_palette(int color_model)
 {
 	int i, r, g, b;
 
@@ -127,11 +126,12 @@ void BurnMain::make_palette()
 			(double)i / MAXCOLOR,  
 			&r, 
 			&g, 
-			&b);
+			&b, 
+			color_model);
 		palette[0][i] = r;
 		palette[1][i] = g;
 		palette[2][i] = b;
-//printf("BurnMain::make_palette %d\n", palette[0][i]);
+//printf("BurnMain::make_palette %d %d %d %d\n", i, palette[0][i], palette[1][i], palette[2][i]);
 	}
 
 
@@ -147,6 +147,7 @@ void BurnMain::make_palette()
 		palette[0][i] = r;
 		palette[1][i] = g;
 		palette[2][i] = b;
+//printf("BurnMain::make_palette %d %d %d %d\n", i, palette[0][i], palette[1][i], palette[2][i]);
 	}
 }
 
@@ -164,7 +165,7 @@ int BurnMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	{
 		effecttv = new EffectTV(input_ptr->get_w(), input_ptr->get_h());
 		buffer = (unsigned char *)new unsigned char[input_ptr->get_w() * input_ptr->get_h()];
-		make_palette();
+		make_palette(input_ptr->get_color_model());
 
 		effecttv->image_set_threshold_y(config.threshold);
 		total = 0;
@@ -241,34 +242,93 @@ BurnClient::BurnClient(BurnServer *server)
 
 
 
-#define BURN(type, components) \
+#define BURN(type, components, is_yuv) \
 { \
 	i = 1; \
+	type **rows = (type**)input_rows; \
 	for(y = 0; y < height; y++)  \
 	{ \
 		for(x = 1; x < width - 1; x++)  \
 		{ \
-			for(c = 0; c < components; c++) \
+			if(sizeof(type) == 4) \
 			{ \
-				if(c == 3) \
-					output_rows[0][i * components + c] = input_rows[0][i * components + c]; \
-				else \
-				if(sizeof(type) == 2) \
+				a1 = (int)(rows[0][i * components] * 0xff); \
+				a2 = (int)(rows[0][i * components + 1] * 0xff); \
+				a3 = (int)(rows[0][i * components + 2] * 0xff); \
+				CLAMP(a1, 0, 0xff); \
+				CLAMP(a2, 0, 0xff); \
+				CLAMP(a3, 0, 0xff); \
+				b1 = plugin->palette[0][plugin->buffer[i]]; \
+				b2 = plugin->palette[1][plugin->buffer[i]]; \
+				b3 = plugin->palette[2][plugin->buffer[i]]; \
+				a1 += b1; \
+				a2 += b2; \
+				a3 += b3; \
+				b1 = a1 & 0x100; \
+				b2 = a2 & 0x100; \
+				b3 = a3 & 0x100; \
+				rows[0][i * components] = (type)(a1 | (b1 - (b1 >> 8))) / 0xff; \
+				rows[0][i * components + 1] = (type)(a2 | (b2 - (b2 >> 8))) / 0xff; \
+				rows[0][i * components + 2] = (type)(a3 | (b3 - (b3 >> 8))) / 0xff; \
+			} \
+			else \
+			if(sizeof(type) == 2) \
+			{ \
+				a1 = ((int)rows[0][i * components + 0]) >> 8; \
+				a2 = ((int)rows[0][i * components + 1]) >> 8; \
+				a3 = ((int)rows[0][i * components + 2]) >> 8; \
+				b1 = plugin->palette[0][plugin->buffer[i]]; \
+				b2 = plugin->palette[1][plugin->buffer[i]]; \
+				b3 = plugin->palette[2][plugin->buffer[i]]; \
+				if(is_yuv) plugin->yuv->yuv_to_rgb_8(a1, a2, a3); \
+				a1 += b1; \
+				a2 += b2; \
+				a3 += b3; \
+				b1 = a1 & 0x100; \
+				b2 = a2 & 0x100; \
+				b3 = a3 & 0x100; \
+				a1 = (a1 | (b1 - (b1 >> 8))); \
+				a2 = (a2 | (b2 - (b2 >> 8))); \
+				a3 = (a3 | (b3 - (b3 >> 8))); \
+				if(is_yuv) \
 				{ \
-					a = (input_rows[0][i * components + c] & 0xffff) >> 8; \
-					b = plugin->palette[c][plugin->buffer[i]] & 0xff; \
-					a += b; \
-					b = a & 0x10000; \
-					output_rows[0][i * components + c] = a | (b - (b >> 16)); \
+					CLAMP(a1, 0, 0xff); \
+					CLAMP(a2, 0, 0xff); \
+					CLAMP(a3, 0, 0xff); \
+					plugin->yuv->rgb_to_yuv_8(a1, a2, a3); \
 				} \
-				else \
+				rows[0][i * components + 0] = a1 | (a1 << 8); \
+				rows[0][i * components + 1] = a2 | (a2 << 8); \
+				rows[0][i * components + 2] = a3 | (a3 << 8); \
+			} \
+			else \
+			{ \
+				a1 = (int)rows[0][i * components + 0]; \
+				a2 = (int)rows[0][i * components + 1]; \
+				a3 = (int)rows[0][i * components + 2]; \
+				b1 = plugin->palette[0][plugin->buffer[i]]; \
+				b2 = plugin->palette[1][plugin->buffer[i]]; \
+				b3 = plugin->palette[2][plugin->buffer[i]]; \
+				if(is_yuv) plugin->yuv->yuv_to_rgb_8(a1, a2, a3); \
+				a1 += b1; \
+				a2 += b2; \
+				a3 += b3; \
+				b1 = a1 & 0x100; \
+				b2 = a2 & 0x100; \
+				b3 = a3 & 0x100; \
+				a1 = (a1 | (b1 - (b1 >> 8))); \
+				a2 = (a2 | (b2 - (b2 >> 8))); \
+				a3 = (a3 | (b3 - (b3 >> 8))); \
+				if(is_yuv) \
 				{ \
-					a = input_rows[0][i * components + c] & 0xff; \
-					b = plugin->palette[c][plugin->buffer[i]] & 0xff; \
-					a += b; \
-					b = a & 0x100; \
-					output_rows[0][i * components + c] = a | (b - (b >> 8)); \
+					CLAMP(a1, 0, 0xff); \
+					CLAMP(a2, 0, 0xff); \
+					CLAMP(a3, 0, 0xff); \
+					plugin->yuv->rgb_to_yuv_8(a1, a2, a3); \
 				} \
+				rows[0][i * components + 0] = a1; \
+				rows[0][i * components + 1] = a2; \
+				rows[0][i * components + 2] = a3; \
 			} \
 			i++; \
 		} \
@@ -290,7 +350,9 @@ void BurnClient::process_package(LoadPackage *package)
 	int pitch = width * plugin->input_ptr->get_bytes_per_pixel();
 	int i, x, y;
 	unsigned int v, w;
-	int a, b, c;
+	int a1, b1, c1;
+	int a2, b2, c2;
+	int a3, b3, c3;
 
 
 	diff = plugin->effecttv->image_bgsubtract_y(input_rows, 
@@ -331,23 +393,39 @@ void BurnClient::process_package(LoadPackage *package)
 	switch(plugin->input_ptr->get_color_model())
 	{
 		case BC_RGB888:
+			BURN(uint8_t, 3, 0);
+			break;
 		case BC_YUV888:
-			BURN(uint8_t, 3);
+			BURN(uint8_t, 3, 1);
+			break;
+
+		case BC_RGB_FLOAT:
+			BURN(float, 3, 0);
+			break;
+
+		case BC_RGBA_FLOAT:
+			BURN(float, 4, 0);
 			break;
 
 		case BC_RGBA8888:
+			BURN(uint8_t, 4, 0);
+			break;
 		case BC_YUVA8888:
-			BURN(uint8_t, 4);
+			BURN(uint8_t, 4, 1);
 			break;
 
 		case BC_RGB161616:
+			BURN(uint16_t, 3, 0);
+			break;
 		case BC_YUV161616:
-			BURN(uint16_t, 3);
+			BURN(uint16_t, 3, 1);
 			break;
 
 		case BC_RGBA16161616:
+			BURN(uint16_t, 4, 0);
+			break;
 		case BC_YUVA16161616:
-			BURN(uint16_t, 4);
+			BURN(uint16_t, 4, 1);
 			break;
 	}
 

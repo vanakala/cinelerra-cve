@@ -93,17 +93,21 @@ VFrame* FrameCache::get_frame_ptr(int64_t position,
 		item->age = current_age;
 		current_age++;
 	}
-//	lock->unlock();
-// 	do not unlock, the caller has to unlock when he copies/uses the image
+
+
 	if(item)
 		return item->data;
-	else	
+	else
 	{
-		lock->unlock(); // unlock if nothing was used
+		lock->unlock();
 		return 0;
 	}
 }
 
+void FrameCache::unlock()
+{
+    lock->unlock();
+}
 
 // Puts frame in cache if enough space exists and the frame doesn't already
 // exist.
@@ -141,6 +145,7 @@ void FrameCache::put_frame(VFrame *frame,
 	item->position = position;
 	item->frame_rate = frame_rate;
 	item->age = current_age;
+
 	items.append(item);
 	current_age++;
 	lock->unlock();
@@ -228,11 +233,6 @@ int FrameCache::delete_oldest()
 	}
 	lock->unlock();
 	return 1;
-}
-
-void FrameCache::unlock()
-{
-	lock->unlock();
 }
 
 void FrameCache::dump()

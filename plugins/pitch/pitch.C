@@ -160,8 +160,8 @@ PitchFFT::PitchFFT(PitchEffect *plugin)
 int PitchFFT::signal_process()
 {
 	int min_freq = 
-		1 + (int)(20.0 / ((double)plugin->PluginAClient::project_sample_rate / window_size * 2) + 0.5);
-//printf("PitchFFT::signal_process %d\n", min_freq);
+		1 + (int)(20.0 / ((double)plugin->PluginAClient::project_sample_rate / 
+			window_size * 2) + 0.5);
 	if(plugin->config.scale < 1)
 	{
 		for(int i = min_freq; i < window_size / 2; i++)

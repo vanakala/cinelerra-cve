@@ -186,10 +186,8 @@ out_up.png \
 outpoint.png \
 over.png \
 over_dn.png \
-over_horiz.png \
 over_up.png \
 over_uphi.png \
-over_vertical.png \
 overwrite.png \
 pan_channel.png \
 pan_channel_small.png \
@@ -251,6 +249,7 @@ reverse.png \
 rewind.png \
 right_justify.png \
 setformat_bg.png \
+setformat_bg2.png \
 show_meters.png \
 singleframe.png \
 slider_bg.png \
@@ -303,10 +302,12 @@ vwindow_timebar.png \
 wrench.png \
 xmeter_green.png \
 xmeter_normal.png \
+xmeter_over.png \
 xmeter_red.png \
 xmeter_yellow.png \
 ymeter_green.png \
 ymeter_normal.png \
+ymeter_over.png \
 ymeter_red.png \
 ymeter_yellow.png \
 zoombar_left.png \

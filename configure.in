@@ -1,4 +1,4 @@
-AC_INIT(Cinelerra, 1.2.0)
+AC_INIT(Cinelerra, 1.2.1)
 
 AC_CANONICAL_SYSTEM
 
@@ -6,7 +6,7 @@ AC_CANONICAL_SYSTEM
 AC_PREREQ(2.57)
 
 AM_INIT_AUTOMAKE
-AM_CONFIG_HEADER(config.h)
+AC_CONFIG_HEADER(config.h)
 AM_GNU_GETTEXT([external])
 AM_GNU_GETTEXT_VERSION(0.12.1)
 
@@ -98,6 +98,23 @@ AC_CHECK_HEADERS(ffmpeg/avcodec.h)
 AC_CHECK_LIB(avcodec, avcodec_init, ,[AC_MSG_WARN([libavcodec not found])
 	NOT_FOUND="$NOT_FOUND libavcodec"])
 # END LIBAVCODEC
+
+############## OpenEXR
+if test "x$OPENEXR" = "x"; then
+  if test "x$prefix" != xNONE; then
+    OPENEXR=$prefix/include/OpenEXR
+  else
+    OPENEXR=$ac_default_prefix/include/OpenEXR
+  fi
+fi
+AC_LANG_PUSH(C++)
+save_CXXFLAGS="$CXXFLAGS"
+CXXFLAGS="$CXXFLAGS -I$OPENEXR"
+AC_CHECK_HEADER(ImfRgbaFile.h, :, NOT_FOUND="$NOT_FOUND OpenEXR")
+CXXFLAGS="$save_CXXFLAGS"
+AC_LANG_POP(C++)
+AC_SUBST(OPENEXR)
+# END OpenEXR
 
 ############## LIBFAAD
 AC_CHECK_HEADERS(faad.h)
@@ -349,4 +366,10 @@ else
 		AC_MSG_WARN([	$l])
 	done
 	AC_MSG_WARN([Compilation may fail!])
+	case $NOT_FOUND in
+	*OpenEXR*)
+	  AC_MSG_WARN([Use ./configure OPENEXR=/path/to/OpenEXR to specify])
+	  AC_MSG_WARN([the directory that contains the OpenEXR include files])
+	  AC_MSG_WARN([(default is \$prefix/include/OpenEXR).])
+	esac
 fi

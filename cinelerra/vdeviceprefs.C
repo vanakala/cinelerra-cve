@@ -1,4 +1,7 @@
 #include "channelpicker.h"
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
 #include "edl.h"
 #include "edlsession.h"
 #include "language.h"
@@ -419,8 +422,10 @@ int VDriverMenu::create_objects()
 	if(do_input)
 	{
 		add_item(new VDriverItem(this, VIDEO4LINUX_TITLE, VIDEO4LINUX));
+#ifdef HAVE_VIDEO4LINUX2
 		add_item(new VDriverItem(this, VIDEO4LINUX2_TITLE, VIDEO4LINUX2));
 		add_item(new VDriverItem(this, VIDEO4LINUX2JPEG_TITLE, VIDEO4LINUX2JPEG));
+#endif
 		add_item(new VDriverItem(this, SCREENCAPTURE_TITLE, SCREENCAPTURE));
 		add_item(new VDriverItem(this, CAPTURE_BUZ_TITLE, CAPTURE_BUZ));
 		add_item(new VDriverItem(this, CAPTURE_FIREWIRE_TITLE, CAPTURE_FIREWIRE));

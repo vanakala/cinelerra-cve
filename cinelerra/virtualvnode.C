@@ -82,6 +82,11 @@ int VirtualVNode::read_data(VFrame *output_temp,
 
 	if(!output_temp) printf("VirtualVNode::read_data output_temp=%p\n", output_temp);
 
+	if(vconsole->debug_tree) 
+		printf("  VirtualVNode::read_data position=%lld rate=%f title=%s\n", 
+			start_position,
+			frame_rate,
+			track->title);
 
 // This is a plugin on parent module with a preceeding effect.
 // Get data from preceeding effect on parent module.
@@ -107,7 +112,8 @@ int VirtualVNode::read_data(VFrame *output_temp,
 			start_position,
 			renderengine->command->get_direction(),
 			frame_rate,
-			0);
+			0,
+			vconsole->debug_tree);
 	}
 
 	return 0;
@@ -146,11 +152,16 @@ void VirtualVNode::render_as_plugin(VFrame *output_temp,
 		!real_plugin ||
 		!real_plugin->on) return;
 
+
+	if(vconsole->debug_tree) 
+		printf("  VirtualVNode::render_as_plugin title=%s\n", track->title);
+
 	((VAttachmentPoint*)attachment)->render(
 		output_temp,
 		plugin_buffer_number,
 		start_position,
-		frame_rate);
+		frame_rate,
+		vconsole->debug_tree);
 }
 
 
@@ -159,33 +170,30 @@ int VirtualVNode::render_as_module(VFrame **video_out,
 	int64_t start_position,
 	double frame_rate)
 {
-//printf("VirtualVNode::render_as_module 1\n");
+
 	int direction = renderengine->command->get_direction();
 	double edl_rate = renderengine->edl->session->frame_rate;
+
+	if(vconsole->debug_tree) 
+		printf("  VirtualVNode::render_as_module title=%s\n", track->title);
 
 // Process last subnode.  This propogates up the chain of subnodes and finishes
 // the chain.
 	if(subnodes.total)
 	{
-//printf("VirtualVNode::render_as_module 2\n");
 		VirtualVNode *node = (VirtualVNode*)subnodes.values[subnodes.total - 1];
 		node->render(output_temp,
 			start_position,
 			frame_rate);
-//printf("VirtualVNode::render_as_module 3\n");
 	}
 	else
 // Read data from previous entity
 	{
-//printf("VirtualVNode::render_as_module 5\n");
 		read_data(output_temp,
 			start_position,
 			frame_rate);
-//printf("VirtualVNode::render_as_module 6\n");
 	}
 
-
-//printf("VirtualVNode::render_as_module 10\n");
 	render_fade(output_temp,
 				start_position,
 				frame_rate,
@@ -204,7 +212,7 @@ int VirtualVNode::render_as_module(VFrame **video_out,
 // overlay on the final output
 // Get mute status
 	int mute_constant;
-	int64_t mute_fragment = 1;
+	int mute_fragment = 1;
 	int64_t mute_position = 0;
 
 
@@ -225,7 +233,6 @@ int VirtualVNode::render_as_module(VFrame **video_out,
 			frame_rate);
 	}
 
-//printf("VirtualVNode::render_as_module 100\n");
 	return 0;
 }
 
@@ -245,6 +252,9 @@ int VirtualVNode::render_fade(VFrame *output,
 	int64_t start_position_project = (int64_t)(start_position * 
 		edl_rate /
 		frame_rate);
+
+	if(vconsole->debug_tree) 
+		printf("  VirtualVNode::render_fade title=%s\n", track->title);
 
 	intercept = ((FloatAutos*)autos)->get_value(start_position_project, 
 		direction,
@@ -279,6 +289,8 @@ int VirtualVNode::render_projector(VFrame *input,
 		edl_rate /
 		frame_rate);
 	VRender *vrender = ((VirtualVConsole*)vconsole)->vrender;
+	if(vconsole->debug_tree) 
+		printf("  VirtualVNode::render_projector title=%s\n", track->title);
 
 	for(int i = 0; i < MAX_CHANNELS; i++)
 	{

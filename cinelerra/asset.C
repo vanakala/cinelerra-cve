@@ -120,6 +120,11 @@ int Asset::init_values()
 	ac3_bitrate = 128;
 
 	png_use_alpha = 0;
+	exr_use_alpha = 0;
+	exr_compression = 0;
+
+	tiff_cmodel = 0;
+	tiff_compression = 0;
 
 	use_header = 1;
 
@@ -233,6 +238,11 @@ void Asset::copy_format(Asset *asset, int do_index)
 	ac3_bitrate = asset->ac3_bitrate;
 	
 	png_use_alpha = asset->png_use_alpha;
+	exr_use_alpha = asset->exr_use_alpha;
+	exr_compression = asset->exr_compression;
+
+	tiff_cmodel = asset->tiff_cmodel;
+	tiff_compression = asset->tiff_compression;
 
 	frame_start = asset->frame_start;
 }
@@ -494,9 +504,11 @@ int Asset::read_video(FileXML *file)
 
 
 	png_use_alpha = file->tag.get_property("PNG_USE_ALPHA", png_use_alpha);
+	exr_use_alpha = file->tag.get_property("EXR_USE_ALPHA", exr_use_alpha);
+	exr_compression = file->tag.get_property("EXR_COMPRESSION", exr_compression);
 
-
-
+	tiff_cmodel = file->tag.get_property("TIFF_CMODEL", tiff_cmodel);
+	tiff_compression = file->tag.get_property("TIFF_COMPRESSION", tiff_compression);
 
 	return 0;
 }
@@ -716,7 +728,11 @@ int Asset::write_video(FileXML *file)
 
 	file->tag.set_property("PNG_USE_ALPHA", png_use_alpha);
 
+	file->tag.set_property("EXR_USE_ALPHA", exr_use_alpha);
+	file->tag.set_property("EXR_COMPRESSION", exr_compression);
 
+	file->tag.set_property("TIFF_CMODEL", tiff_cmodel);
+	file->tag.set_property("TIFF_COMPRESSION", tiff_compression);
 
 
 
@@ -862,6 +878,10 @@ void Asset::load_defaults(Defaults *defaults,
 	ac3_bitrate = GET_DEFAULT("AC3_BITRATE", ac3_bitrate);
 
 	png_use_alpha = GET_DEFAULT("PNG_USE_ALPHA", png_use_alpha);
+	exr_use_alpha = GET_DEFAULT("EXR_USE_ALPHA", exr_use_alpha);
+	exr_compression = GET_DEFAULT("EXR_COMPRESSION", exr_compression);
+	tiff_cmodel = GET_DEFAULT("TIFF_CMODEL", tiff_cmodel);
+	tiff_compression = GET_DEFAULT("TIFF_COMPRESSION", tiff_compression);
 }
 
 void Asset::save_defaults(Defaults *defaults, 
@@ -956,6 +976,10 @@ void Asset::save_defaults(Defaults *defaults,
 
 
 	UPDATE_DEFAULT("PNG_USE_ALPHA", png_use_alpha);
+	UPDATE_DEFAULT("EXR_USE_ALPHA", exr_use_alpha);
+	UPDATE_DEFAULT("EXR_COMPRESSION", exr_compression);
+	UPDATE_DEFAULT("TIFF_CMODEL", tiff_cmodel);
+	UPDATE_DEFAULT("TIFF_COMPRESSION", tiff_compression);
 }
 
 

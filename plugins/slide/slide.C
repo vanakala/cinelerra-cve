@@ -347,6 +347,12 @@ int SlideMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 
 	switch(incoming->get_color_model())
 	{
+		case BC_RGB_FLOAT:
+			SLIDE(float, 3)
+			break;
+		case BC_RGBA_FLOAT:
+			SLIDE(float, 4)
+			break;
 		case BC_RGB888:
 		case BC_YUV888:
 			SLIDE(unsigned char, 3)
