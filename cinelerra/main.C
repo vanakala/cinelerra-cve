@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
 		operation == DO_USAGE)
 	fprintf(stderr, 
 		PROGRAM_NAME " " 
-		VERSION " " 
+		CINELERRA_VERSION " " 
 		BUILDDATE 
 		" (C)2003 Heroine Virtual Ltd.\n\n"
 

@@ -41,7 +41,7 @@ int AboutPrefs::create_objects()
 	y += get_text_height(LARGEFONT) * 2;
 
 	char license1[BCTEXTLEN];
-	sprintf (license1, _("Cinelerra "), VERSION);
+	sprintf (license1, _("Cinelerra "), CINELERRA_VERSION);
 
 	set_font(LARGEFONT);
 	set_color(BLACK);
