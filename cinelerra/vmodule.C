@@ -116,9 +116,13 @@ int VModule::import_frame(VFrame *output,
 			int64_t edit_startsource = (int64_t)(current_edit->startsource *
 				frame_rate /
 				edl_rate);
-			source->set_video_position(corrected_position - 
+			uint64_t position = corrected_position - 
 				edit_startproject + 
-				edit_startsource,
+				edit_startsource;
+			// if we hit the end of stream, freeze at last frame
+			uint64_t max_position = source->get_video_length(frame_rate) - 1;
+			if (position > max_position) position = max_position;
+			source->set_video_position(position,
 				frame_rate);
 			source->set_layer(current_edit->channel);
 
