@@ -315,6 +315,7 @@ int ManualGotoNumber::keypress_event()
 	if ((key >= '0' && key <='9') ||
 	    (key == ESC) ||  (key == RETURN) ||  
 	    (key == TAB) ||  (key == LEFTTAB) ||  
+	    (key == '.') ||  
 	    (key == LEFT) || (key == RIGHT) ||  
 	    (key == UP) ||   (key == DOWN) ||  
 	    (key == PGUP) || (key == PGDN) ||  
@@ -328,7 +329,14 @@ int ManualGotoNumber::keypress_event()
  	
 	if (!ok_key) return 1;
 
-	
+
+// treat dot as tab - for use from numerical keypad
+	if (key == '.') 
+	{ 
+		cycle_textboxes(1); 
+		return 1; 
+	};
+ 	
 	int result = BC_TextBox::keypress_event();
 	int out_textlen = strlen(get_text());
 	// automatic cycle when we enter two numbers
