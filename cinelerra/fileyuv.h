@@ -6,7 +6,7 @@
 #include "filelist.h"
 #include "vframe.inc"
 #include "formattools.h"
-
+#include "ffmpeg.h"
 
 class FileYUV : public FileBase
 {
@@ -30,11 +30,15 @@ class FileYUV : public FileBase
 	int close_file();
 	int set_video_position(int64_t x);
 
-	
+	// below here are local routines not required by interface
+	void ensure_temp(int width, int height);
 
  private:
 	VFrame *temp;
 	YUVStream *stream;
+	Asset *incoming_asset;
+	FFMPEG *ffmpeg;
+	int pipe_latency;
 };
 
 

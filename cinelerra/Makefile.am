@@ -77,6 +77,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    edl.C \
 		    edlsession.C \
 		    fadeengine.C \
+                    ffmpeg.C \
 		    fileac3.C \
 		    fileavi.C \
 		    filebaseaudio.C \
@@ -370,6 +371,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 fadeengine.h \
 		 feather.h \
 		 featheredits.h \
+                 ffmpeg.h \
 		 fileac3.h \
 		 fileavi.h \
 		 filebase.h \

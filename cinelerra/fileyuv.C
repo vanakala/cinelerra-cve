@@ -6,6 +6,7 @@
 #include "defaults.h"
 #include "vframe.h"
 #include "edit.h"
+#include "quicktime.h"
 
 #include <ctype.h>
 #include <stdlib.h>
@@ -14,17 +15,19 @@
 #include <errno.h>
 
 FileYUV::FileYUV(Asset *asset, File *file)
- : FileBase(asset, file)
+	: FileBase(asset, file)
 {
 	if (asset->format == FILE_UNKNOWN) asset->format = FILE_YUV;
 	asset->byte_order = 0; // FUTURE: is this always correct?
 	temp = 0;
+	ffmpeg = 0;
 	stream = new YUVStream();
+	pipe_latency = 0;
 }
 
 FileYUV::~FileYUV()
 {
-	close_file();
+	// NOTE: close_file() is already called
 	delete stream;
 }
 	
@@ -83,7 +86,22 @@ int FileYUV::open_file(int should_read, int should_write)
 }
 
 int FileYUV::close_file() {
+  	if (pipe_latency && ffmpeg && stream) {
+		// deal with last frame still in the pipe
+		ensure_temp(incoming_asset->width,
+			    incoming_asset->height); 
+		if (ffmpeg->decode(NULL, 0, temp) == 0) {
+			uint8_t *yuv[3];
+			yuv[0] = temp->get_y();
+			yuv[1] = temp->get_u();
+			yuv[2] = temp->get_v();
+			stream->write_frame(yuv);
+		}
+		pipe_latency = 0;
+	}
 	stream->close_fd();
+	if (ffmpeg) delete ffmpeg;
+	ffmpeg = 0;
 	return 0;
 }
 
@@ -91,7 +109,7 @@ int FileYUV::close_file() {
 int FileYUV::set_video_position(int64_t frame_number) {
 	return stream->seek_frame(frame_number);
 }
-	
+
 int FileYUV::read_frame(VFrame *frame)
 {
 	int result;
@@ -111,22 +129,8 @@ int FileYUV::read_frame(VFrame *frame)
 	if (! cmodel_is_planar(frame->get_color_model()) ||
 	    (frame->get_w() != stream->get_width()) ||
 	    (frame->get_h() != stream->get_height())) {
-		
-		// make sure the temp is correct size and type
-		if (temp && (temp->get_w() != asset->width ||
-			     temp->get_h() != asset->height ||
-			     temp->get_color_model() != BC_YUV420P)) {
-			delete temp;
-			temp = 0;
-		}
-		
-		// create a correct temp frame if we don't have one
-		if (temp == 0) {
-			temp = new VFrame(0, stream->get_width(), 
-					  stream->get_height(), 
-					  BC_YUV420P);
-		}
-		
+		ensure_temp(stream->get_width(),
+			    stream->get_height());
 		input = temp;
 	}
 
@@ -139,29 +143,8 @@ int FileYUV::read_frame(VFrame *frame)
 
 	// transfer from the temp frame to the real one
 	if (input != frame) {
-		cmodel_transfer(frame->get_rows(), 
-				input->get_rows(),
-				frame->get_y(),
-				frame->get_u(),
-				frame->get_v(),
-				input->get_y(),
-				input->get_u(),
-				input->get_v(),
-				0,
-				0,
-				asset->width,
-				asset->height,
-				0,
-				0,
-				frame->get_w(),
-				frame->get_h(),
-				input->get_color_model(), 
-				frame->get_color_model(),
-				0, 
-				asset->width,
-				frame->get_w());
+		FFMPEG::convert_cmodel(input, frame);
 	}
-
 	
 	return 0;
 }
@@ -169,7 +152,6 @@ int FileYUV::read_frame(VFrame *frame)
 int FileYUV::write_frames(VFrame ***layers, int len)
 {
 	int result;
-	uint8_t *yuv[3];
 
 	// only one layer supported
 	VFrame **frames = layers[0];
@@ -182,53 +164,52 @@ int FileYUV::write_frames(VFrame ***layers, int len)
 		// short cut for direct copy routines
 		if (frame->get_color_model() == BC_COMPRESSED) {
 			long frame_size = frame->get_compressed_size();
-			return stream->write_frame_raw(frame->get_data(), 
-						      frame_size);
+			if (incoming_asset->format == FILE_YUV) {
+				return stream->write_frame_raw
+					(frame->get_data(), frame_size);
+			}
+
+			// decode and write an encoded frame
+			if (FFMPEG::codec_id(incoming_asset->vcodec) != CODEC_ID_NONE) {
+				if (! ffmpeg) {
+					ffmpeg = new FFMPEG(incoming_asset);
+					ffmpeg->init(incoming_asset->vcodec);
+				}
+				
+				ensure_temp(incoming_asset->width,
+					    incoming_asset->height); 
+				int result = ffmpeg->decode(frame->get_data(),
+							    frame_size, temp);
+
+				// some formats are decoded one frame later
+				if (result == FFMPEG_LATENCY) {
+					// remember to write the last frame
+					pipe_latency++;
+					return 0;
+				}
+
+				if (result) {
+					delete ffmpeg;
+					ffmpeg = 0;
+					return 1;
+				}
+
+
+				uint8_t *yuv[3];
+				yuv[0] = temp->get_y();
+				yuv[1] = temp->get_u();
+				yuv[2] = temp->get_v();
+				return stream->write_frame(yuv);
+			}
+
 		}
 
 		// process through a temp frame only if necessary
 		if (! cmodel_is_planar(frame->get_color_model()) ||
 		    (frame->get_w() != stream->get_width()) ||
 		    (frame->get_h() != stream->get_height())) {
-
-
-			// make sure the temp is correct size and type
-			if (temp && (temp->get_w() != asset->width ||
-				     temp->get_h() != asset->height ||
-				     temp->get_color_model() != BC_YUV420P)) {
-				delete temp;
-				temp = 0;
-			}
-			
-			// create a correct temp frame if we don't have one
-			if (temp == 0) {
-				temp = new VFrame(0, stream->get_width(), 
-						  stream->get_height(), 
-						  BC_YUV420P);
-			}
-			
-			cmodel_transfer(temp->get_rows(), 
-					frame->get_rows(),
-					temp->get_y(),
-					temp->get_u(),
-					temp->get_v(),
-					frame->get_y(),
-					frame->get_u(),
-					frame->get_v(),
-					0,
-					0,
-					asset->width,
-					asset->height,
-					0,
-					0,
-					asset->width,
-					asset->height,
-					frame->get_color_model(), 
-					temp->get_color_model(),
-					0, 
-					frame->get_w(),
-					temp->get_w());
-			
+			ensure_temp(asset->width, asset->height);
+			FFMPEG::convert_cmodel(frame, temp);
 			frame = temp;
 		}
 
@@ -293,7 +274,19 @@ int FileYUV::check_sig(Asset *asset)
 //       as such, I have no idea what one is supposed to do with position.
 int FileYUV::can_copy_from(Edit *edit, int64_t position)
 {	// NOTE: width and height already checked in file.C
+
+	// FUTURE: is the incoming asset already available somewhere?
+	incoming_asset = edit->asset;
+
 	if (edit->asset->format == FILE_YUV) return 1;
+
+	// if FFMPEG can decode it, we'll accept it
+	if (FFMPEG::codec_id(edit->asset->vcodec) != CODEC_ID_NONE) {
+		return 1;
+	}
+
+	incoming_asset = 0;
+
 	return 0;
 }
 
@@ -324,6 +317,24 @@ int FileYUV::colormodel_supported(int color_model)
     
 */
 	
+
+
+void FileYUV::ensure_temp(int width, int height) {
+	
+	// make sure the temp is correct size and type
+	if (temp && (temp->get_w() != width ||
+		     temp->get_h() != height ||
+		     temp->get_color_model() != BC_YUV420P)) {
+		delete temp;
+		temp = 0;
+	}
+	
+	// create a correct temp frame if we don't have one
+	if (temp == 0) {
+		temp = new VFrame(0, width, height, BC_YUV420P);
+	}
+}
+
 
 YUVConfigVideo::YUVConfigVideo(BC_WindowBase *parent_window, Asset *asset, 
 			       FormatTools *format)
