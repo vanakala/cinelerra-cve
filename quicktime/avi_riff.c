@@ -194,6 +194,18 @@ void quicktime_import_avi(quicktime_t *file)
 
 //printf("quicktime_import_avi 1\n");
 /* Convert idx1 to keyframes and load offsets and sizes */
+
+// This is a check from mplayer that gives us the right strategy
+// for calculating real offset.
+// but first the 
+	int index_format;
+	if((idx1->table[0].offset < first_riff->movi.atom.start ||
+            idx1->table[1].offset < first_riff->movi.atom.start)
+            && !file->is_odml)
+            	index_format = 1;
+        else 
+        	index_format = 0;
+            
 	for(i = 0; i < idx1->table_size; i++)
 	{
 		quicktime_idx1table_t *idx1table = idx1->table + i;
@@ -218,11 +230,14 @@ void quicktime_import_avi(quicktime_t *file)
 
 /* Enter the offset and size no matter what so the sample counts */
 /* can be used to set keyframes */
-			quicktime_update_stco(stco, 
-					stco->total_entries + 1, 
-					idx1table->offset + first_riff->movi.atom.start);
-// Lavtools 1.6.2 gives absolute offset
-//					idx1table->offset);
+			if (index_format == 1)
+				quicktime_update_stco(stco, 
+						stco->total_entries + 1, 
+						idx1table->offset + first_riff->movi.atom.start);
+			else	
+				quicktime_update_stco(stco, 
+						stco->total_entries + 1, 
+						idx1table->offset);
 
 			if(is_video)
 			{

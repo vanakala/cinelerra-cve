@@ -300,6 +300,7 @@ int quicktime_init(quicktime_t *file)
 	file->cpus = 1;
 	file->color_model = BC_RGB888;
 	file->current_frame = 0;
+	file->is_odml = 0;
 	return 0;
 }
 

@@ -714,6 +714,10 @@ typedef struct
 
 /* Adjustable timecode frame number */
 	int64_t current_frame;
+
+/* is odml file? */
+	int is_odml;
+
 } quicktime_t;
 
 
