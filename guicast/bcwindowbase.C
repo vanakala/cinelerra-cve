@@ -9,6 +9,7 @@
 #include "bcresources.h"
 #include "bcsubwindow.h"
 #include "bcwindowbase.h"
+#include "bcbutton.h"
 #include "colormodels.h"
 #include "colors.h"
 #include "cursors.h"
@@ -17,6 +18,7 @@
 #include "keys.h"
 #include "sizes.h"
 #include "vframe.h"
+#include "typeinfo"
 
 #ifdef HAVE_GL
 #include <GL/gl.h>
@@ -215,6 +217,7 @@ int BC_WindowBase::initialize()
 	tooltip_on = 0;
 	temp_cursor = 0;
 	toggle_value = 0;
+	cancel_button = 0;
 #ifdef HAVE_LIBXXF86VM
    vm_switched = 0;
 #endif
@@ -2146,12 +2149,26 @@ BC_MenuBar* BC_WindowBase::add_menubar(BC_MenuBar *menu_bar)
 	return menu_bar;
 }
 
+int BC_WindowBase::close_event() {
+ 	if (cancel_button) 
+		return(cancel_button->handle_event());
+	else
+		return (0);
+};
+
 BC_WindowBase* BC_WindowBase::add_subwindow(BC_WindowBase *subwindow)
 {
 //printf("BC_WindowBase::add_subwindow 1\n");
 	subwindows->append(subwindow);
 //printf("BC_WindowBase::add_subwindow 1\n");
 
+	// If cancel button is present, use it when closing window   
+//	if (typeid(*subwindow) == typeid(BC_CancelButton)) 
+// but typeid doesn't cover subclasses... we have to be smarter:
+	if (BC_CancelButton *cb = dynamic_cast<BC_CancelButton *>(subwindow))
+	{
+		cancel_button = cb;
+	}
 	if(subwindow->bg_color == -1) subwindow->bg_color = this->bg_color;
 //printf("BC_WindowBase::add_subwindow 1\n");
 

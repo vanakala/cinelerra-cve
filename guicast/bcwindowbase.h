@@ -127,8 +127,9 @@ public:
 
 // Main loop
 	int run_window();
+
 // Terminal event dispatchers
-	virtual int close_event() { return 0; };
+	virtual int close_event();
 	virtual int resize_event(int w, int h);
 	virtual int cursor_motion_event() { return 0; };
 	virtual int repeat_event(int64_t duration) { return 0; };
@@ -663,6 +664,10 @@ private:
 	BC_Bitmap *temp_bitmap;
 // Clipboard
 	BC_Clipboard *clipboard;
+
+// Cancel button, to be called on close window, if != NULL
+	BC_CancelButton *cancel_button;
+
 #ifdef HAVE_LIBXXF86VM
 // Mode switch information.
    int vm_switched;
