@@ -5,17 +5,6 @@ AC_CANONICAL_SYSTEM
 # Test for minimal version of autoconf
 AC_PREREQ(2.57)
 
-# Test for minimal versions of and automake
-
-if test `automake --version | grep "automake (GNU automake)" | cut -b 25-27` = "1.7"; then
-	echo "Checking for automake 1.7 ... found"
-else
-	echo "Checking for automake 1.7 ... not found"
-	echo "You are using a version of automake older than 1.7. That will not work."
-	echo " See README.BUILD for further instructions"
-	exit
-fi
-
 AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER(config.h)
 AM_GNU_GETTEXT([external])

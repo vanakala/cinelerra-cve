@@ -2,6 +2,18 @@
 
 # autogen.sh for Cinelerra Unofficial CVS
 
+# check for recent automake >= 1.7
+amversion=`automake --version | grep "automake (GNU automake)" | cut -b 25-`
+echo "checking for automake version... ${amversion:-unknown}"
+case "$amversion" in
+0.* | 1.[0-6] | 1.[0-6].* )
+	echo "You are using a version of automake older than 1.7. That will not work." 1>&2
+	echo "See README.BUILD for further instructions." 1>&2
+	exit 1
+	;;
+esac
+# automake ok
+
 echo "Running libtoolize ..."
 libtoolize --force &&
 
