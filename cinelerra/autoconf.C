@@ -64,19 +64,19 @@ void AutoConf::save_xml(FileXML *file)
 	file->tag.set_property("SHOW_PZOOM", pzoom);
 }
 
-int AutoConf::set_all()
+int AutoConf::set_all(int value)
 {
-	fade = 1;
-	pan = 1;
-	mute = 1;
-	transitions = 1;
-	plugins = 1;
-	camera = 1;
-	projector = 1;
-	mode = 1;
-	mask = 1;
-	czoom = 1;
-	pzoom = 1;
+	fade = value;
+	pan = value;
+	mute = value;
+	transitions = value;
+	plugins = value;
+	camera = value;
+	projector = value;
+	mode = value;
+	mask = value;
+	czoom = value;
+	pzoom = value;
 	return 0;
 }
 

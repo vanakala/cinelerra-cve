@@ -33,7 +33,8 @@ public:
 		int64_t end, 
 		FileXML *xml, 
 		int default_only,
-		int autos_only);
+		int autos_only,
+		AutoConf *autoconf = 0);
 	virtual void dump();
 	virtual int direct_copy_possible(int64_t start, int direction);
 	virtual int direct_copy_possible_derived(int64_t start, int direction) { return 1; };

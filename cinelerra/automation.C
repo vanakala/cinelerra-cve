@@ -57,6 +57,7 @@ int Automation::create_objects()
 
 Automation& Automation::operator=(Automation& automation)
 {
+printf("Automation::operator= 1\n");
 	copy_from(&automation);
 	return *this;
 }
@@ -195,11 +196,22 @@ int Automation::copy(int64_t start,
 	int64_t end, 
 	FileXML *file, 
 	int default_only,
-	int autos_only)
+	int autos_only,
+	AutoConf *autoconf)
 {
+
+	AutoConf *temp_autoconf = 0;
+
+	if(!autoconf)
+	{
+		temp_autoconf = new AutoConf;
+		temp_autoconf->set_all();
+		autoconf = temp_autoconf;
+	}
+
 //printf("Automation::copy 1\n");
 // Always save these to save default
-	if(mute_autos /* && mute_autos->total() */)
+	if(mute_autos && autoconf->mute /* && mute_autos->total() */)
 	{
 		file->tag.set_title("MUTEAUTOS");
 		file->append_tag();
@@ -215,7 +227,7 @@ int Automation::copy(int64_t start,
 	}
 
 //printf("Automation::copy 1\n");
-	if(fade_autos /* && fade_autos->total() */)
+	if(fade_autos && autoconf->fade  /* && fade_autos->total() */)
 	{
 		file->tag.set_title("FADEAUTOS");
 		file->append_tag();
@@ -231,7 +243,7 @@ int Automation::copy(int64_t start,
 	}
 
 //printf("Automation::copy 1\n");
-	if(camera_autos)
+	if(camera_autos && autoconf->camera )
 	{
 		file->tag.set_title("CAMERAAUTOS");
 		file->append_tag();
@@ -247,7 +259,7 @@ int Automation::copy(int64_t start,
 	}
 
 //printf("Automation::copy 1\n");
-	if(projector_autos)
+	if(projector_autos && autoconf->projector )
 	{
 		file->tag.set_title("PROJECTORAUTOS");
 		file->append_tag();
@@ -263,7 +275,7 @@ int Automation::copy(int64_t start,
 	}
 
 //printf("Automation::copy 1\n");
-	if(pan_autos)
+	if(pan_autos && autoconf->pan )
 	{
 		file->tag.set_title("PANAUTOS");
 		file->append_tag();
@@ -280,7 +292,7 @@ int Automation::copy(int64_t start,
 	}
 
 //printf("Automation::copy 1\n");
-	if(mode_autos)
+	if(mode_autos && autoconf->mode)
 	{
 		file->tag.set_title("MODEAUTOS");
 		file->append_tag();
@@ -296,7 +308,7 @@ int Automation::copy(int64_t start,
 	}
 
 //printf("Automation::copy 1\n");
-	if(mask_autos)
+	if(mask_autos && autoconf->mask)
 	{
 		file->tag.set_title("MASKAUTOS");
 		file->append_tag();
@@ -312,7 +324,7 @@ int Automation::copy(int64_t start,
 	}
 
 //printf("Automation::copy 1\n");
-	if(czoom_autos)
+	if(czoom_autos && autoconf->czoom)
 	{
 		file->tag.set_title("CZOOMAUTOS");
 		file->append_tag();
@@ -328,7 +340,7 @@ int Automation::copy(int64_t start,
 	}
 
 //printf("Automation::copy 1\n");
-	if(pzoom_autos)
+	if(pzoom_autos && autoconf->pzoom)
 	{
 		file->tag.set_title("PZOOMAUTOS");
 		file->append_tag();
@@ -342,6 +354,9 @@ int Automation::copy(int64_t start,
 		file->append_tag();
 		file->append_newline();
 	}
+
+	if (temp_autoconf) 
+		delete temp_autoconf;
 
 //printf("Automation::copy 100\n");
 	return 0;

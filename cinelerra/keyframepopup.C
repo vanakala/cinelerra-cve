@@ -16,6 +16,9 @@
 #include "track.h"
 #include "maincursor.h"
 #include "bcwindowbase.h"
+#include "filexml.h"
+#include "edlsession.h"
+#include "autoconf.h"
 
 KeyframePopup::KeyframePopup(MWindow *mwindow, MWindowGUI *gui)
  : BC_PopupMenu(0, 
@@ -63,11 +66,14 @@ int KeyframePopup::update(Automation *automation, Autos *autos, Auto *auto_keyfr
 	double new_position = keyframe_automation->track->from_units(keyframe_auto->position);
 	mwindow->edl->local_session->selectionstart = new_position;
 	mwindow->edl->local_session->selectionend = new_position;
-	mwindow->gui->cursor->hide();
-	mwindow->gui->cursor->draw();
 	if (current_position != new_position)
-		mwindow->cwindow->update(1, 0, 0, 0, 1);			
-
+	{
+		mwindow->edl->local_session->selectionstart = new_position;
+		mwindow->edl->local_session->selectionend = new_position;
+		mwindow->gui->lock_window();
+		mwindow->gui->update(1, 1, 1, 1, 1, 1, 0);	
+		mwindow->gui->unlock_window();
+	}
 	return 0;
 }
 
@@ -238,7 +244,88 @@ int KeyframePopupCopy::handle_event()
 	we want to copy just keyframe under cursor, NOT all keyframes at this frame
 	- very hard to do, so this is good approximation for now...
 */
-	mwindow->copy_automation();
+	
+	if (popup->keyframe_automation)
+	{
+		FileXML file;
+		EDL *edl = mwindow->edl;
+		Track *track = popup->keyframe_automation->track;
+		int64_t position = popup->keyframe_auto->position;
+		AutoConf autoconf;
+// first find out type of our auto
+		autoconf.set_all(0);
+		if (popup->keyframe_autos == (Autos *)popup->keyframe_automation->projector_autos)
+			autoconf.projector = 1;
+		else if (popup->keyframe_autos == (Autos *)popup->keyframe_automation->pzoom_autos)
+			autoconf.pzoom = 1;
+		else if (popup->keyframe_autos == (Autos *)popup->keyframe_automation->camera_autos)
+			autoconf.camera = 1;
+		else if (popup->keyframe_autos == (Autos *)popup->keyframe_automation->czoom_autos)
+			autoconf.czoom = 1;		
+		else if (popup->keyframe_autos == (Autos *)popup->keyframe_automation->mode_autos)
+		   	autoconf.mode = 1;
+		else if (popup->keyframe_autos == (Autos *)popup->keyframe_automation->mask_autos)
+			autoconf.mask = 1;
+		else if (popup->keyframe_autos == (Autos *)popup->keyframe_automation->pan_autos)
+			autoconf.pan = 1;		   
+		else if (popup->keyframe_autos == (Autos *)popup->keyframe_automation->fade_autos)
+			autoconf.fade = 1;
+		else if (popup->keyframe_autos == (Autos *)popup->keyframe_automation->mute_autos)
+			autoconf.mute = 1;		
+
+
+// now create a clipboard
+		file.tag.set_title("AUTO_CLIPBOARD");
+		file.tag.set_property("LENGTH", 0);
+		file.tag.set_property("FRAMERATE", edl->session->frame_rate);
+		file.tag.set_property("SAMPLERATE", edl->session->sample_rate);
+		file.append_tag();
+		file.append_newline();
+		file.append_newline();
+
+/*		track->copy_automation(position, 
+			position, 
+			&file,
+			0,
+			0);
+			*/
+		file.tag.set_title("TRACK");
+// Video or audio
+		track->save_header(&file);
+		file.append_tag();
+		file.append_newline();
+
+		track->automation->copy(position, 
+			position, 
+			&file,
+			0,
+			0,
+			&autoconf);
+		
+		
+		
+		file.tag.set_title("/TRACK");
+		file.append_tag();
+		file.append_newline();
+		file.append_newline();
+		file.append_newline();
+		file.append_newline();
+
+
+
+		file.tag.set_title("/AUTO_CLIPBOARD");
+		file.append_tag();
+		file.append_newline();
+		file.terminate_string();
+
+		mwindow->gui->lock_window();
+		mwindow->gui->get_clipboard()->to_clipboard(file.string, 
+			strlen(file.string), 
+			SECONDARY_SELECTION);
+		mwindow->gui->unlock_window();
+
+	} else
+		mwindow->copy_automation();
 	return 1;
 }
 

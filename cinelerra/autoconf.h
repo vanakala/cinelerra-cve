@@ -18,7 +18,7 @@ public:
 	int save_defaults(Defaults* defaults);
 	void load_xml(FileXML *file);
 	void save_xml(FileXML *file);
-	int set_all();  // set all parameters to 1
+	int set_all(int value = 1);  // set all parameters to value (default = 1)
 
 	int fade;
 	int pan;
