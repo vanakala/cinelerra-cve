@@ -43,6 +43,10 @@ void cmodel_init_yuv(cmodel_yuv_t *yuv_table)
 	yuv_table->vtog = &(yuv_table->vtog_tab[0x80]);
 	yuv_table->utog = &(yuv_table->utog_tab[0x80]);
 	yuv_table->utob = &(yuv_table->utob_tab[0x80]);
+	yuv_table->vtor8 = &(yuv_table->vtor_tab8[0x80]);
+	yuv_table->vtog8 = &(yuv_table->vtog_tab8[0x80]);
+	yuv_table->utog8 = &(yuv_table->utog_tab8[0x80]);
+	yuv_table->utob8 = &(yuv_table->utob_tab8[0x80]);
 	for(i = -0x80; i < 0x80; i++)
 	{
 /* decompression */
@@ -51,6 +55,13 @@ void cmodel_init_yuv(cmodel_yuv_t *yuv_table)
 
 		yuv_table->utog[i] = (int)(-0.3441 * 0x10000 * i);
 		yuv_table->utob[i] = (int)( 1.7720 * 0x10000 * i);
+
+		yuv_table->vtor8[i] = (int)( 1.4020 * i);
+		yuv_table->vtog8[i] = (int)(-0.7141 * i);
+
+		yuv_table->utog8[i] = (int)(-0.3441 * i);
+		yuv_table->utob8[i] = (int)( 1.7720 * i);
+
 	}
 
 	for(i = 0; i < 0x10000; i++)
@@ -221,7 +232,7 @@ static void get_scale_tables(int **column_table,
 	float hscale = w_in / w_out;
 	float vscale = h_in / h_out;
 
-	(*column_table) = malloc(sizeof(int) * w_out);
+	(*column_table) = malloc(sizeof(int) * (w_out + 1));    /* +1 so we don't overflow when calculating in advance */
 	(*row_table) = malloc(sizeof(int) * h_out);
 	for(i = 0; i < w_out; i++)
 	{
@@ -294,6 +305,7 @@ void cmodel_transfer(unsigned char **output_rows,
  * in_w, 
  * in_h);
  */
+//	printf("in: %i, out: %i\n", in_colormodel, out_colormodel);
 
 // Handle planar cmodels separately
 	switch(in_colormodel)

@@ -73,6 +73,10 @@ typedef struct
 	int vtor_tab[0x100], vtog_tab[0x100];
 	int utog_tab[0x100], utob_tab[0x100];
 	int *vtor, *vtog, *utog, *utob;
+	
+	short int vtor_tab8[0x100], vtog_tab8[0x100];
+	short int utog_tab8[0x100], utob_tab8[0x100];
+	short int *vtor8, *vtog8, *utog8, *utob8;
 
 	int rtoy_tab16[0x10000], gtoy_tab16[0x10000], btoy_tab16[0x10000];
 	int rtou_tab16[0x10000], gtou_tab16[0x10000], btou_tab16[0x10000];
