@@ -5,7 +5,7 @@
 #include "../config.h"
 
 #ifdef DV_USE_FFMPEG
-#include <avcodec.h>
+#include <ffmpeg/avcodec.h>
 #endif
 
 #include "colormodels.h"
