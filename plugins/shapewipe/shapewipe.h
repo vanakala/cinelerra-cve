@@ -53,7 +53,7 @@ public:
 		ShapeWipeWindow *window,
 		ShapeWipeFilename *filename,
 		int x,
-	int y);
+		int y);
 	int handle_event();
 	ShapeWipeMain *plugin;
 	ShapeWipeWindow *window;
@@ -66,8 +66,7 @@ public:
 	ShapeWipeAntiAlias(ShapeWipeMain *plugin,
 		ShapeWipeWindow *window,
 		int x,
-		int y,
-		int value);
+		int y);
 	int handle_event();
 	ShapeWipeMain *plugin;
 	ShapeWipeWindow *window;

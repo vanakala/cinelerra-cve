@@ -62,9 +62,8 @@ int ShapeWipeB2W::handle_event()
 ShapeWipeAntiAlias::ShapeWipeAntiAlias(ShapeWipeMain *plugin,
 	ShapeWipeWindow *window,
 	int x,
-	int y,
-	int value)
- : BC_CheckBox (x,y,plugin->antialias, "anti-aliasing")
+	int y)
+ : BC_CheckBox (x,y,plugin->antialias, _("Anti-aliasing"))
 {
 	this->plugin = plugin;
 	this->window = window;
@@ -180,7 +179,7 @@ void ShapeWipeWindow::create_objects()
 	x = 10; y += 25;
 	add_subwindow(new BC_Title(x, y, _("Shape:")));
 	x += 100;
-	plugin->load_defaults();
+
 	add_subwindow(filename_widget = new 
 	ShapeWipeFilename(plugin, 
 		this,
@@ -199,8 +198,7 @@ void ShapeWipeWindow::create_objects()
 		plugin, 
 		this,
 		x,
-		y,
-		plugin->antialias));
+		y));
 	show_window();
 	flush();
 }
@@ -212,6 +210,7 @@ ShapeWipeMain::ShapeWipeMain(PluginServer *server)
 {
 	direction = 0;
 	strcpy(filename, DEFAULT_SHAPE);	// is defined by a -D compiler instruction
+	last_read_filename[0] = '\0';
 	pattern_image = NULL;
 	min_value = 256;
 	max_value = 0;
@@ -221,6 +220,7 @@ ShapeWipeMain::ShapeWipeMain(PluginServer *server)
 
 ShapeWipeMain::~ShapeWipeMain()
 {
+	reset_pattern_image();
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
@@ -308,8 +308,6 @@ int ShapeWipeMain::read_pattern_image(int new_frame_width, int new_frame_height)
 	int scaled_col;
 	int pixel_width;
 	unsigned char value;
-	double row_factor;
-	double col_factor;
 	png_uint_32 width;
 	png_uint_32 height;
 	png_byte color_type;
@@ -320,8 +318,6 @@ int ShapeWipeMain::read_pattern_image(int new_frame_width, int new_frame_height)
 	png_bytep *image;
 	frame_width = new_frame_width;
 	frame_height = new_frame_height;
-
-	strncpy(last_read_filename, filename, BCTEXTLEN);
 
 	FILE *fp = fopen(filename, "rb");
 	if (!fp)
@@ -342,7 +338,7 @@ int ShapeWipeMain::read_pattern_image(int new_frame_width, int new_frame_height)
 
 	if (!png_ptr)
 	{
-	return 1;
+		return 1;
 	}
 
 	/* Tell libpng we already checked the first 8 bytes */
@@ -385,9 +381,9 @@ int ShapeWipeMain::read_pattern_image(int new_frame_width, int new_frame_height)
 	if (bit_depth < 8) png_set_packing(png_ptr);
 
 	/* Convert to grayscale */
-	if (color_type == PNG_COLOR_TYPE_RGB || 
-		color_type == PNG_COLOR_TYPE_RGB_ALPHA)
-	png_set_rgb_to_gray_fixed(png_ptr, 1, -1, -1);
+	if (color_type == PNG_COLOR_TYPE_RGB
+		|| color_type == PNG_COLOR_TYPE_RGB_ALPHA)
+		png_set_rgb_to_gray_fixed(png_ptr, 1, -1, -1);
 
 	/* Allocate memory to hold the original png image */
 	image = (png_bytep*)malloc(sizeof(png_bytep)*height);
@@ -404,16 +400,20 @@ int ShapeWipeMain::read_pattern_image(int new_frame_width, int new_frame_height)
 	png_read_image(png_ptr, image);
 	png_read_end(png_ptr, end_info);
 
-	/* Stretch (or shrink) the pattern image to fill the frame */
-	row_factor = (double)height/(double)frame_height;
-	col_factor = (double)width/(double)frame_width;
+	double row_factor, col_factor;
+	double row_offset = 0.5, col_offset = 0.5;	// for rounding
+
+	// Stretch (or shrink) the pattern image to fill the frame
+	row_factor = (double)(height-1)/(double)(frame_height-1);
+	col_factor = (double)(width-1)/(double)(frame_width-1);
+
 	for (scaled_row = 0; scaled_row < frame_height; scaled_row++)
 	{
-		row = (int)floor(row_factor*(double)scaled_row);
+		row = (int)(row_factor*scaled_row + row_offset);
 		pattern_image[scaled_row] = (unsigned char*)malloc(sizeof(unsigned char)*frame_width);
 		for (scaled_col = 0; scaled_col < frame_width; scaled_col++)
 		{
-			col = ((int)floor(col_factor*(double)scaled_col))*pixel_width;
+			col = (int)(col_factor*scaled_col + col_offset)*pixel_width;
 			value = image[row][col];
 			pattern_image[scaled_row][scaled_col] = value;
 			if (value < min_value) min_value = value;
@@ -444,6 +444,7 @@ void ShapeWipeMain::reset_pattern_image()
 		}
 		free (pattern_image);
 		pattern_image = NULL;
+		min_value = 256, max_value = 0;	// are recalc'd in read_pattern_image
 	}
 }
 
@@ -606,12 +607,14 @@ int ShapeWipeMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 	if (strncmp(filename,last_read_filename,BCTEXTLEN))
 		reset_pattern_image();
 
-	if (!pattern_image)
+	if (!pattern_image) {
 		read_pattern_image(w, h);
+		strncpy(last_read_filename, filename, BCTEXTLEN);
+	}
 
 	if (!pattern_image)
 	{
-		printf("No valid pattern image found for shape wipe!\n");
+		fprintf(stderr, "Shape Wipe: cannot load shape %s\n", filename);
 		return 0;
 	}
 
