@@ -137,8 +137,12 @@ LoopVideoFrames::LoopVideoFrames(LoopVideo *plugin,
 
 int LoopVideoFrames::handle_event()
 {
-	plugin->config.frames = atol(get_text());
-	plugin->send_configure_change();
+	long new_frames = atol(get_text());
+	if (new_frames >0) 
+	{
+		plugin->config.frames = new_frames;
+		plugin->send_configure_change();
+	}
 	return 1;
 }
 
