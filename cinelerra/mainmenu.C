@@ -606,7 +606,7 @@ int PasteKeyframes::handle_event()
 }
 
 ClearKeyframes::ClearKeyframes(MWindow *mwindow)
- : BC_MenuItem(_("Clear keyframes"), "Shift-Del", BACKSPACE)
+ : BC_MenuItem(_("Clear keyframes"), "Shift-Del", DELETE)
 {
 	set_shift(); 
 	this->mwindow = mwindow; 
@@ -662,7 +662,7 @@ int PasteDefaultKeyframe::handle_event()
 }
 
 ClearDefaultKeyframe::ClearDefaultKeyframe(MWindow *mwindow)
- : BC_MenuItem(_("Clear default keyframe"), "Alt-Del", BACKSPACE)
+ : BC_MenuItem(_("Clear default keyframe"), "Alt-Del", DELETE)
 {
 	set_alt(); 
 	this->mwindow = mwindow; 
@@ -711,7 +711,7 @@ int Paste::handle_event()
 }
 
 Clear::Clear(MWindow *mwindow)
- : BC_MenuItem(_("Clear"), "Del", BACKSPACE) 
+ : BC_MenuItem(_("Clear"), "Del", DELETE) 
 {
 	this->mwindow = mwindow; 
 }
