@@ -87,7 +87,20 @@ int FilePNG::can_copy_from(Edit *edit, int64_t position)
 
 int FilePNG::colormodel_supported(int colormodel)
 {
-	return native_cmodel;
+	if (((colormodel == BC_RGBA8888) && (native_cmodel == BC_RGBA16161616))
+	    || ((colormodel == BC_RGB161616) && (native_cmodel == BC_RGBA16161616))
+	    || (colormodel == BC_RGB888))
+	{
+	    return colormodel;
+	}
+	else if ((colormodel == BC_RGB161616)&&(native_cmodel == BC_RGBA8888))
+	{
+	    return BC_RGB888;
+	}
+	else
+	{
+	    return native_cmodel;
+	}
 }
 
 
@@ -105,8 +118,10 @@ int FilePNG::get_best_colormodel(Asset *asset, int driver)
 int FilePNG::read_frame_header(char *path)
 {
 	int result = 0;
-
-
+	int color_type;
+	int color_depth;
+	int num_trans = 0;
+	
 //printf("FilePNG::read_frame_header 1\n");
 	FILE *stream;
 
@@ -131,22 +146,31 @@ int FilePNG::read_frame_header(char *path)
 //printf("FilePNG::read_frame_header 1\n");
 	asset->width = png_get_image_width(png_ptr, info_ptr);
 	asset->height = png_get_image_height(png_ptr, info_ptr);
- 	int png_color_type = png_get_color_type(png_ptr, info_ptr);
- 
-// gray to rgb conversion is done automatically in read_frame 
- 	switch (png_color_type)
- 	{
- 		case PNG_COLOR_TYPE_GRAY:
- 			png_color_type = PNG_COLOR_TYPE_RGB;
- 			break;
- 		case PNG_COLOR_TYPE_GRAY_ALPHA: 
- 			png_color_type = PNG_COLOR_TYPE_RGB_ALPHA;
- 			break;
- 	}
-	native_cmodel = 
-		png_color_type == PNG_COLOR_TYPE_RGB_ALPHA ?
-		BC_RGBA8888 :
-		BC_RGB888;
+	color_type = png_get_color_type(png_ptr, info_ptr);
+	color_depth = png_get_bit_depth(png_ptr,info_ptr);
+	
+	png_get_tRNS(png_ptr, info_ptr, NULL, &num_trans, NULL);
+	
+	if (color_depth == 16)
+	{
+	    if (color_type & PNG_COLOR_MASK_ALPHA)
+	    {
+	        native_cmodel = BC_RGBA16161616;
+	    }
+	    else
+	    {
+	        native_cmodel = BC_RGB161616;
+	    }
+	}
+	else if ((color_type & PNG_COLOR_MASK_ALPHA)
+	        || (num_trans > 0))
+	{
+	    native_cmodel = BC_RGBA8888;
+	}
+	else
+	{
+	    native_cmodel = BC_RGB888;
+	}
 
 
 //printf("FilePNG::read_frame_header 1\n");
@@ -274,13 +298,14 @@ int FilePNG::read_frame(VFrame *output, VFrame *input)
 	png_infop info_ptr;
 	png_infop end_info = 0;	
 	int result = 0;
+	int color_type;
+	int color_depth;
+	int colormodel;
 	int size = input->get_compressed_size();
 	input->set_compressed_size(0);
 	
-
-
-
-//printf("FilePNG::read_frame 1 %d %d\n", native_cmodel, output->get_color_model());
+	
+	//printf("FilePNG::read_frame 1 %d %d\n", native_cmodel, output->get_color_model());
 	png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
 	info_ptr = png_create_info_struct(png_ptr);
 	png_set_read_fn(png_ptr, input, (png_rw_ptr)read_function);
@@ -293,18 +318,56 @@ int FilePNG::read_frame(VFrame *output, VFrame *input)
  		png_set_gray_to_rgb(png_ptr);
  	}
 
-	int color_type = png_get_color_type(png_ptr, info_ptr);
-	if (color_type == PNG_COLOR_TYPE_GRAY ||
-        	color_type == PNG_COLOR_TYPE_GRAY_ALPHA)
+	colormodel = output->get_color_model();
+	color_type = png_get_color_type(png_ptr, info_ptr);
+	color_depth = png_get_bit_depth(png_ptr,info_ptr);
+	
+	if (((native_cmodel == BC_RGBA16161616)||(native_cmodel == BC_RGB161616))
+	    && ((colormodel == BC_RGBA8888)||(colormodel == BC_RGB888)))
 	{
-		png_set_gray_to_rgb(png_ptr);
+	    png_set_strip_16(png_ptr);
+	}
+
+	/* If we're dropping the alpha channel, use the background color of the image
+	   otherwise, use black */
+	if (((native_cmodel == BC_RGBA16161616)||(native_cmodel == BC_RGBA8888))
+	    && ((colormodel == BC_RGB161616)||(colormodel == BC_RGB888)))
+	{
+	    png_color_16 my_background;
+	    png_color_16p image_background;
+	    
+	    memset(&my_background,0,sizeof(png_color_16));
+	    
+	    if (png_get_bKGD(png_ptr, info_ptr, &image_background))
+	    {
+	        png_set_background(png_ptr, image_background, PNG_BACKGROUND_GAMMA_FILE, 1, 1.0);
+	    }
+	    else
+	    {
+	        png_set_background(png_ptr, &my_background, PNG_BACKGROUND_GAMMA_SCREEN, 0, 1.0);
+	    }
 	}
 	
-	// temporary fix to fix crashing. Will make a better change to use 16 bits.
-	// If we have a 16 bit per channel image, make libpng chop it to 8 bpc
-	if (png_get_bit_depth(png_ptr,info_ptr) == 16)
+	/* Little endian */
+	if ((color_depth == 16)
+	    &&((colormodel == BC_RGBA16161616)||(colormodel == BC_RGB161616)))
 	{
-		png_set_strip_16(png_ptr);
+	    png_set_swap(png_ptr);
+	}
+	
+	if (!(color_type & PNG_COLOR_MASK_COLOR))
+	{
+	    png_set_gray_to_rgb(png_ptr);
+	}
+	
+	if (color_type & PNG_COLOR_MASK_PALETTE)
+	{
+	    png_set_palette_to_rgb(png_ptr);
+	}
+	
+	if (color_depth <= 8)
+	{
+	    png_set_expand(png_ptr);
 	}
 
 /* read the image */
