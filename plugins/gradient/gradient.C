@@ -641,34 +641,11 @@ GradientUnit::GradientUnit(GradientServer *server, GradientMain *plugin)
  \
 		for(int j = 0; j < w; j++) \
 		{ \
-/* Convert to polar coords */ \
 			int x = j - half_w; \
 			int y = -(i - half_h); \
-			double magnitude = sqrt(SQR(x) + SQR(y)); \
-			double angle; \
-			if(x != 0) \
-			{ \
-				angle = atan((float)y / x); \
-				if(x > 0 && y < 0) angle = M_PI / 2 - angle; \
-				if(x > 0 && y > 0) angle = M_PI / 2 - angle; \
-				if(x < 0 && y > 0) angle = -M_PI / 2 - angle; \
-				if(x < 0 && y < 0) angle = -M_PI / 2 - angle; \
-				if(y == 0 && x > 0) angle = M_PI / 2; \
-				if(y == 0 && x < 0) angle = -M_PI / 2; \
-			} \
-			else \
-			if(y > 0) \
-				angle = 0; \
-			else \
-				angle = M_PI; \
- \
- \
  \
 /* Rotate by effect angle */ \
-			angle -= effect_angle; \
- \
-/* Convert to cartesian coords */ \
-			int input_y = (int)(gradient_size / 2 - magnitude * cos(angle)); \
+			int input_y = (int)(gradient_size / 2 - (x*sin_angle + y*cos_angle)+0.5); \
  \
 /* Get gradient value from these coords */ \
  \
@@ -710,7 +687,8 @@ void GradientUnit::process_package(LoadPackage *package)
 	int gradient_size = (int)(sqrt(SQR(w) + SQR(h)) + 1);
 	int in_radius = (int)(plugin->config.in_radius / 100 * gradient_size);
 	int out_radius = (int)(plugin->config.out_radius / 100 * gradient_size);
-	double effect_angle = plugin->config.angle / 360 * 2 * M_PI;
+	double sin_angle = sin(plugin->config.angle * (M_PI / 180));
+	double cos_angle = cos(plugin->config.angle * (M_PI / 180));
 	void *r_table = 0;
 	void *g_table = 0;
 	void *b_table = 0;
@@ -718,7 +696,9 @@ void GradientUnit::process_package(LoadPackage *package)
 
 	if(in_radius > out_radius)
 	{
-		in_radius ^= out_radius ^= in_radius ^= out_radius;
+		in_radius ^= out_radius;
+		out_radius ^= in_radius;
+		in_radius ^= out_radius;
 	}
 
 
@@ -928,10 +908,9 @@ void GradientServer::init_packages()
 		package->y1 = plugin->input->get_h() * 
 			i / 
 			total_packages;
-		package->y2 = package->y1 +
-			plugin->input->get_h() /
+		package->y2 = plugin->input->get_h() * 
+			(i+1) /
 			total_packages;
-		if(i >= total_packages - 1) package->y2 = plugin->input->get_h();
 	}
 }
 
