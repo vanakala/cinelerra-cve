@@ -824,7 +824,7 @@ void AffineEngine::process(VFrame *output,
 		x = 0;
 		y = 0;
 		w = input->get_w();
-		h = input->get_w();
+		h = input->get_h();
 	}
 
 	process_packages();
