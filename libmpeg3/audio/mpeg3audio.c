@@ -498,6 +498,7 @@ static int seek(mpeg3audio_t *audio)
 	int result = 0;
 	mpeg3_t *file = audio->file;
 	mpeg3_atrack_t *track = audio->track;
+	mpeg3_demuxer_t *demuxer = track->demuxer;
 	int seeked = 0;
 
 /* Sample seek was requested */
@@ -535,8 +536,8 @@ static int seek(mpeg3audio_t *audio)
 			byte = track->sample_offsets[index] &
 				0xffffffffffffff;
 
-			mpeg3demux_open_title(track->demuxer, title_number);
-			mpeg3demux_seek_byte(track->demuxer, byte);
+			mpeg3demux_open_title(demuxer, title_number);
+			mpeg3demux_seek_byte(demuxer, byte);
 
 			audio->output_position = index * MPEG3_AUDIO_CHUNKSIZE;
 			audio->output_size = 0;
@@ -548,7 +549,7 @@ static int seek(mpeg3audio_t *audio)
 		{
 	   		double time_position = (double)audio->sample_seek / track->sample_rate;
 //printf(__FUNCTION__ " 4\n");
-			result |= mpeg3demux_seek_time(track->demuxer, time_position);
+			result |= mpeg3demux_seek_time(demuxer, time_position);
 	   		audio->output_position = audio->sample_seek;
 			audio->output_size = 0;
 			seeked = 1;
@@ -558,10 +559,10 @@ static int seek(mpeg3audio_t *audio)
 		{
 			int64_t byte = (int64_t)((double)audio->sample_seek / 
 				track->total_samples * 
-				mpeg3demuxer_total_bytes(track->demuxer));
+				mpeg3demuxer_total_bytes(demuxer));
 //printf(__FUNCTION__ " 5\n");
 
-			mpeg3demux_seek_byte(track->demuxer, byte);
+			mpeg3demux_seek_byte(demuxer, byte);
 	   		audio->output_position = audio->sample_seek;
 			audio->output_size = 0;
 			seeked = 1;
@@ -571,7 +572,20 @@ static int seek(mpeg3audio_t *audio)
 /* Percentage seek was requested */
 	if(audio->percentage_seek > -0.5)
 	{
-		mpeg3demux_seek_percentage(track->demuxer, audio->percentage_seek);
+		mpeg3demux_seek_percentage(demuxer, audio->percentage_seek);
+
+// Scan for pts if we're the first to seek.
+		if(file->percentage_pts < 0)
+		{
+			file->percentage_pts = mpeg3demux_scan_pts(demuxer);
+		}
+		else
+		{
+//printf(__FUNCTION__ " 1 %lld\n", mpeg3demux_tell_absolute(demuxer));
+			mpeg3demux_goto_pts(demuxer, file->percentage_pts);
+//printf(__FUNCTION__ " 2 %lld\n", mpeg3demux_tell_absolute(demuxer));
+		}
+
 	   	audio->output_position = 0;
 		audio->output_size = 0;
 		seeked = 1;
@@ -579,7 +593,7 @@ static int seek(mpeg3audio_t *audio)
 
 	if(seeked)
 	{
-		mpeg3demux_reset_pts(track->demuxer);
+		mpeg3demux_reset_pts(demuxer);
 		switch(track->format)
 		{
 			case AUDIO_MPEG:

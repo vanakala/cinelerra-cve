@@ -847,7 +847,7 @@ int BC_WindowBase::dispatch_resize_event(int w, int h)
 		clear_box(0, 0, w, h);
 	}
 
-// Propagate to menubar
+// Propagate to subwindows
 	for(int i = 0; i < subwindows->total; i++)
 	{
 		subwindows->values[i]->dispatch_resize_event(w, h);
@@ -2103,8 +2103,8 @@ int BC_WindowBase::grab_port_id(BC_WindowBase *window, int color_model)
 int BC_WindowBase::show_window() 
 { 
 	XMapWindow(top_level->display, win); 
-		XFlush(top_level->display);
-		XSync(top_level->display, 0);
+	XFlush(top_level->display);
+//	XSync(top_level->display, 0);
 	hidden = 0; 
 	return 0;
 }
@@ -2112,6 +2112,7 @@ int BC_WindowBase::show_window()
 int BC_WindowBase::hide_window() 
 { 
 	XUnmapWindow(display, win); 
+	XFlush(top_level->display);
 	hidden = 1; 
 	return 0;
 }
@@ -2848,6 +2849,7 @@ int BC_WindowBase::set_tooltips(int tooltips_enabled)
 int BC_WindowBase::raise_window()
 {
 	XRaiseWindow(top_level->display, win);
+	XFlush(top_level->display);
 	return 0;
 }
 

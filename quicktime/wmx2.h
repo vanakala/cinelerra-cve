@@ -1,14 +1,14 @@
 #ifndef QUICKTIME_WMX2_H
 #define QUICKTIME_WMX2_H
 
-#include "sizes.h"
+#include "qtprivate.h"
 
 typedef struct
 {
 /* During decoding the work_buffer contains the most recently read chunk. */
 /* During encoding the work_buffer contains interlaced overflow samples  */
 /* from the last chunk written. */
-	QUICKTIME_INT16 *write_buffer;
+	int16_t *write_buffer;
 	unsigned char *read_buffer;    /* Temporary buffer for drive reads. */
 
 /* Starting information for all channels during encoding a chunk. */

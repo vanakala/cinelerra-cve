@@ -33,6 +33,8 @@ public:
 		long next_frame, 
 		long current_frame);
 
+	int horizontal_x;
+	int vertical_y;
 	int horizontal;
 	int vertical;
 	int r;
@@ -61,7 +63,9 @@ public:
 	DownSampleSize(DownSampleMain *plugin, 
 		int x, 
 		int y, 
-		int *output);
+		int *output,
+		int min,
+		int max);
 	int handle_event();
 	DownSampleMain *plugin;
 	int *output;
@@ -77,7 +81,7 @@ public:
 	int close_event();
 
 	DownSampleToggle *r, *g, *b, *a;
-	DownSampleSize *h, *v;
+	DownSampleSize *h, *v, *h_x, *v_y;
 	DownSampleMain *plugin;
 };
 
@@ -158,6 +162,8 @@ DownSampleConfig::DownSampleConfig()
 {
 	horizontal = 2;
 	vertical = 2;
+	horizontal_x = 0;
+	vertical_y = 0;
 	r = 1;
 	g = 1;
 	b = 1;
@@ -169,6 +175,8 @@ int DownSampleConfig::equivalent(DownSampleConfig &that)
 	return 
 		horizontal == that.horizontal &&
 		vertical == that.vertical &&
+		horizontal_x == that.horizontal_x &&
+		vertical_y == that.vertical_y &&
 		r == that.r &&
 		g == that.g &&
 		b == that.b &&
@@ -179,6 +187,8 @@ void DownSampleConfig::copy_from(DownSampleConfig &that)
 {
 	horizontal = that.horizontal;
 	vertical = that.vertical;
+	horizontal_x = that.horizontal_x;
+	vertical_y = that.vertical_y;
 	r = that.r;
 	g = that.g;
 	b = that.b;
@@ -195,6 +205,8 @@ void DownSampleConfig::interpolate(DownSampleConfig &prev,
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
 	this->horizontal = (int)(prev.horizontal * prev_scale + next.horizontal * next_scale);
 	this->vertical = (int)(prev.vertical * prev_scale + next.vertical * next_scale);
+	this->horizontal_x = (int)(prev.horizontal_x * prev_scale + next.horizontal_x * next_scale);
+	this->vertical_y = (int)(prev.vertical_y * prev_scale + next.vertical_y * next_scale);
 	r = prev.r;
 	g = prev.g;
 	b = prev.b;
@@ -218,9 +230,9 @@ DownSampleWindow::DownSampleWindow(DownSampleMain *plugin, int x, int y)
  	x,
 	y,
 	230, 
-	250, 
+	380, 
 	230, 
-	250, 
+	380, 
 	0, 
 	1)
 {
@@ -237,19 +249,63 @@ int DownSampleWindow::create_objects()
 
 	add_subwindow(new BC_Title(x, y, "Horizontal"));
 	y += 30;
-	add_subwindow(h = new DownSampleSize(plugin, x, y, &plugin->config.horizontal));
+	add_subwindow(h = new DownSampleSize(plugin, 
+		x, 
+		y, 
+		&plugin->config.horizontal,
+		1,
+		100));
+	y += 30;
+	add_subwindow(new BC_Title(x, y, "Horizontal offset"));
+	y += 30;
+	add_subwindow(h_x = new DownSampleSize(plugin, 
+		x, 
+		y, 
+		&plugin->config.horizontal_x,
+		0,
+		100));
 	y += 30;
 	add_subwindow(new BC_Title(x, y, "Vertical"));
 	y += 30;
-	add_subwindow(v = new DownSampleSize(plugin, x, y, &plugin->config.vertical));
+	add_subwindow(v = new DownSampleSize(plugin, 
+		x, 
+		y, 
+		&plugin->config.vertical,
+		1,
+		100));
 	y += 30;
-	add_subwindow(r = new DownSampleToggle(plugin, x, y, &plugin->config.r, "Red"));
+	add_subwindow(new BC_Title(x, y, "Vertical offset"));
 	y += 30;
-	add_subwindow(g = new DownSampleToggle(plugin, x, y, &plugin->config.g, "Green"));
+	add_subwindow(v_y = new DownSampleSize(plugin, 
+		x, 
+		y, 
+		&plugin->config.vertical_y,
+		0,
+		100));
 	y += 30;
-	add_subwindow(b = new DownSampleToggle(plugin, x, y, &plugin->config.b, "Blue"));
+	add_subwindow(r = new DownSampleToggle(plugin, 
+		x, 
+		y, 
+		&plugin->config.r, 
+		"Red"));
 	y += 30;
-	add_subwindow(a = new DownSampleToggle(plugin, x, y, &plugin->config.a, "Alpha"));
+	add_subwindow(g = new DownSampleToggle(plugin, 
+		x, 
+		y, 
+		&plugin->config.g, 
+		"Green"));
+	y += 30;
+	add_subwindow(b = new DownSampleToggle(plugin, 
+		x, 
+		y, 
+		&plugin->config.b, 
+		"Blue"));
+	y += 30;
+	add_subwindow(a = new DownSampleToggle(plugin, 
+		x, 
+		y, 
+		&plugin->config.a, 
+		"Alpha"));
 	y += 30;
 
 	show_window();
@@ -300,8 +356,10 @@ int DownSampleToggle::handle_event()
 DownSampleSize::DownSampleSize(DownSampleMain *plugin, 
 	int x, 
 	int y, 
-	int *output)
- : BC_ISlider(x, y, 0, 200, 200, 1, 100, *output)
+	int *output,
+	int min,
+	int max)
+ : BC_ISlider(x, y, 0, 200, 200, min, max, *output)
 {
 	this->plugin = plugin;
 	this->output = output;
@@ -355,24 +413,19 @@ int DownSampleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
 	this->input = input_ptr;
 	this->output = output_ptr;
-//printf("DownSampleMain::process_realtime 1\n");
 	load_configuration();
-//printf("DownSampleMain::process_realtime 1\n");
 
 // Copy to destination
 	if(output->get_rows()[0] != input->get_rows()[0])
 	{
 		output->copy_from(input);
 	}
-//printf("DownSampleMain::process_realtime 1\n");
 
 // Process in destination
-//printf("DownSampleMain::process_realtime 1\n");
 	if(!engine) engine = new DownSampleServer(this,
 		get_project_smp() + 1,
 		get_project_smp() + 1);
 	engine->process_packages();
-//printf("DownSampleMain::process_realtime 2\n");
 
 	return 0;
 }
@@ -386,6 +439,8 @@ void DownSampleMain::update_gui()
 		thread->window->lock_window();
 		thread->window->h->update(config.horizontal);
 		thread->window->v->update(config.vertical);
+		thread->window->h_x->update(config.horizontal_x);
+		thread->window->v_y->update(config.vertical_y);
 		thread->window->r->update(config.r);
 		thread->window->g->update(config.g);
 		thread->window->b->update(config.b);
@@ -407,6 +462,8 @@ int DownSampleMain::load_defaults()
 
 	config.horizontal = defaults->get("HORIZONTAL", config.horizontal);
 	config.vertical = defaults->get("VERTICAL", config.vertical);
+	config.horizontal_x = defaults->get("HORIZONTAL_X", config.horizontal_x);
+	config.vertical_y = defaults->get("VERTICAL_Y", config.vertical_y);
 	config.r = defaults->get("R", config.r);
 	config.g = defaults->get("G", config.g);
 	config.b = defaults->get("B", config.b);
@@ -419,6 +476,8 @@ int DownSampleMain::save_defaults()
 {
 	defaults->update("HORIZONTAL", config.horizontal);
 	defaults->update("VERTICAL", config.vertical);
+	defaults->update("HORIZONTAL_X", config.horizontal_x);
+	defaults->update("VERTICAL_Y", config.vertical_y);
 	defaults->update("R", config.r);
 	defaults->update("G", config.g);
 	defaults->update("B", config.b);
@@ -439,6 +498,8 @@ void DownSampleMain::save_data(KeyFrame *keyframe)
 
 	output.tag.set_property("HORIZONTAL", config.horizontal);
 	output.tag.set_property("VERTICAL", config.vertical);
+	output.tag.set_property("HORIZONTAL_X", config.horizontal_x);
+	output.tag.set_property("VERTICAL_Y", config.vertical_y);
 	output.tag.set_property("R", config.r);
 	output.tag.set_property("G", config.g);
 	output.tag.set_property("B", config.b);
@@ -465,6 +526,8 @@ void DownSampleMain::read_data(KeyFrame *keyframe)
 			{
 				config.horizontal = input.tag.get_property("HORIZONTAL", config.horizontal);
 				config.vertical = input.tag.get_property("VERTICAL", config.vertical);
+				config.horizontal_x = input.tag.get_property("HORIZONTAL_X", config.horizontal_x);
+				config.vertical_y = input.tag.get_property("VERTICAL_Y", config.vertical_y);
 				config.r = input.tag.get_property("R", config.r);
 				config.g = input.tag.get_property("G", config.g);
 				config.b = input.tag.get_property("B", config.b);
@@ -508,60 +571,58 @@ DownSampleUnit::DownSampleUnit(DownSampleServer *server,
 	int do_g = plugin->config.g; \
 	int do_b = plugin->config.b; \
 	int do_a = plugin->config.a; \
-	int vertical = MAX(plugin->config.vertical, 1); \
+	type **rows = (type**)plugin->output->get_rows(); \
  \
-	for(int i = pkg->y1; i < pkg->y2; i += vertical) \
+	for(int i = pkg->y1; i < pkg->y2; i += plugin->config.vertical) \
 	{ \
-/*printf("DOWNSAMPLE 2 %d\n", i);*/ \
-		type **row1 = (type**)plugin->output->get_rows() + i; \
-		int horizontal = MAX(plugin->config.horizontal, 1); \
+		int y1 = MAX(i, 0); \
+		int y2 = MIN(i + plugin->config.vertical, h); \
  \
- 		if(pkg->y2 - i < vertical) \
-		{ \
-			vertical = pkg->y2 - i; \
-		} \
  \
-		int64_t scale = horizontal * vertical; \
-		for(int j = 0; j < w; j += horizontal) \
+		for(int j = plugin->config.horizontal_x - plugin->config.horizontal; \
+			j < w; \
+			j += plugin->config.horizontal) \
 		{ \
-			if(w - j < horizontal) \
+			int x1 = MAX(j, 0); \
+			int x2 = MIN(j + plugin->config.horizontal, w); \
+ \
+			int64_t scale = (x2 - x1) * (y2 - y1); \
+			if(x2 > x1 && y2 > y1) \
 			{ \
-				horizontal = w - j; \
-				scale = horizontal * vertical; \
-			} \
  \
 /* Read in values */ \
-			r = 0; \
-			g = 0; \
-			b = 0; \
-			if(components == 4) a = 0; \
+				r = 0; \
+				g = 0; \
+				b = 0; \
+				if(components == 4) a = 0; \
  \
-			for(int k = 0; k < vertical; k++) \
-			{ \
-				type *row2 = row1[k] + j * components; \
-				for(int l = 0; l < horizontal; l++) \
+				for(int k = y1; k < y2; k++) \
 				{ \
-					if(do_r) r += *row2++; else row2++; \
-					if(do_g) g += *row2++; else row2++;  \
-					if(do_b) b += *row2++; else row2++;  \
-					if(components == 4) if(do_a) a += *row2++; else row2++;  \
+					type *row = rows[k] + x1 * components; \
+					for(int l = x1; l < x2; l++) \
+					{ \
+						if(do_r) r += *row++; else row++; \
+						if(do_g) g += *row++; else row++;  \
+						if(do_b) b += *row++; else row++;  \
+						if(components == 4) if(do_a) a += *row++; else row++;  \
+					} \
 				} \
-			} \
  \
 /* Write average */ \
-			r /= scale; \
-			g /= scale; \
-			b /= scale; \
-			if(components == 4) a /= scale; \
-			for(int k = 0; k < vertical; k++) \
-			{ \
-				type *row2 = row1[k] + j * components; \
-				for(int l = 0; l < horizontal; l++) \
+				r /= scale; \
+				g /= scale; \
+				b /= scale; \
+				if(components == 4) a /= scale; \
+				for(int k = y1; k < y2; k++) \
 				{ \
-					if(do_r) *row2++ = r; else row2++; \
-					if(do_g) *row2++ = g; else row2++; \
-					if(do_b) *row2++ = b; else row2++; \
-					if(components == 4) if(do_a) *row2++ = a; else row2++; \
+					type *row = rows[k] + x1 * components; \
+					for(int l = x1; l < x2; l++) \
+					{ \
+						if(do_r) *row++ = r; else row++; \
+						if(do_g) *row++ = g; else row++; \
+						if(do_b) *row++ = b; else row++; \
+						if(components == 4) if(do_a) *row++ = a; else row++; \
+					} \
 				} \
 			} \
 		} \
@@ -620,20 +681,18 @@ DownSampleServer::DownSampleServer(DownSampleMain *plugin,
 
 void DownSampleServer::init_packages()
 {
-	int package_h = (int)((float)plugin->output->get_h() / 
-			total_packages + 1);
-	int y1 = 0;
+	int y1 = plugin->config.vertical_y - plugin->config.vertical;
+	int total_strips = (int)((float)plugin->output->get_h() / plugin->config.vertical + 1);
+	int strips_per_package = (int)((float)total_strips / total_packages + 1);
+
 	for(int i = 0; i < total_packages; i++)
 	{
 		DownSamplePackage *package = (DownSamplePackage*)packages[i];
 		package->y1 = y1;
-		package->y2 = y1 + 
-			(int)((float)package_h / plugin->config.vertical + 1) *
-			plugin->config.vertical;
+		package->y2 = y1 + strips_per_package * plugin->config.vertical;
 		package->y1 = MIN(plugin->output->get_h(), package->y1);
 		package->y2 = MIN(plugin->output->get_h(), package->y2);
 		y1 = package->y2;
-//printf("DownSampleServer::init_packages 1 %d %d %d\n",plugin->config.vertical, package->y1 , package->y2);
 	}
 }
 

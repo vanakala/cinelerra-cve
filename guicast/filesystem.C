@@ -24,17 +24,19 @@ FileItem::FileItem(char *path,
 	longest size, 
 	int month, 
 	int day, 
-	int year)
+	int year,
+	longest calendar_time)
 {
 	this->path = new char[strlen(path)];
 	this->name = new char[strlen(name)];
-	strcpy(this->path, path);
-	strcpy(this->name, name);
-	is_dir = is_dir;
-	size = size;
-	month = month;
-	day = day;
-	year = year;
+	if(this->path) strcpy(this->path, path);
+	if(this->name) strcpy(this->name, name);
+	this->is_dir = is_dir;
+	this->size = size;
+	this->month = month;
+	this->day = day;
+	this->year = year;
+	this->calendar_time = calendar_time;
 }
 
 FileItem::~FileItem()
@@ -44,8 +46,8 @@ FileItem::~FileItem()
 
 int FileItem::reset()
 {
-	if(this->path) delete this->path;
-	if(this->name) delete this->name;
+	if(this->path) delete [] this->path;
+	if(this->name) delete [] this->name;
 	path = 0;
 	name = 0;
 	is_dir = 0;
@@ -53,12 +55,13 @@ int FileItem::reset()
 	month = 0;
 	day = 0;
 	year = 0;
+	calendar_time = 0;
 	return 0;
 }
 
 int FileItem::set_path(char *path)
 {
-	if(this->path) delete this->path;
+	if(this->path) delete [] this->path;
 	this->path = new char[strlen(path) + 1];
 	strcpy(this->path, path);
 	return 0;
@@ -66,7 +69,7 @@ int FileItem::set_path(char *path)
 
 int FileItem::set_name(char *name)
 {
-	if(this->name) delete this->name;
+	if(this->name) delete [] this->name;
 	this->name = new char[strlen(name) + 1];
 	strcpy(this->name, name);
 	return 0;
@@ -324,16 +327,15 @@ int FileSystem::update(char *new_dir)
 			new_file->set_path(full_path);
 			new_file->set_name(name_only);
 
-//printf("FileSystem::update 1 %s\n", full_path);
 // Get information about the file.
 			if(!stat(full_path, &ostat))
 			{
-//printf("FileSystem::update 2 %s\n", full_path);
 				new_file->size = ostat.st_size;
 				mod_time = localtime(&(ostat.st_mtime));
 				new_file->month = mod_time->tm_mon + 1;
 				new_file->day = mod_time->tm_mday;
 				new_file->year = mod_time->tm_year + 1900;
+				new_file->calendar_time = ostat.st_mtime;
 
 				if(S_ISDIR(ostat.st_mode))
 				{

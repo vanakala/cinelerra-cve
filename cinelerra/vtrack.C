@@ -13,7 +13,6 @@
 #include "floatautos.h"
 #include "localsession.h"
 #include "patch.h"
-#include "selections.h"
 #include "mainsession.h"
 #include "theme.h"
 #include "trackcanvas.h"
@@ -32,13 +31,11 @@ VTrack::VTrack(EDL *edl, Tracks *tracks)
  : Track(edl, tracks)
 {
 	data_type = TRACK_VIDEO;
-	selections = 0;
 	draw = 1;
 }
 
 VTrack::~VTrack()
 {
-	if(selections) delete selections;
 }
 
 int VTrack::create_objects()
@@ -47,7 +44,6 @@ int VTrack::create_objects()
 	automation = new VAutomation(edl, this);
 	automation->create_objects();
 	edits = new VEdits(edl, this);
-	selections = new Selections(edl, this);
 	return 0;
 }
 

@@ -64,10 +64,10 @@ UndoStackItem::UndoStackItem() : ListItem<UndoStackItem>()
 
 UndoStackItem::~UndoStackItem()
 {
-	if(description) delete description;
-	if(type) delete type;
-	if(data_after) delete data_after;
-	if(data_before) delete data_before;
+	if(description) delete [] description;
+	if(type) delete [] type;
+	if(data_after) delete [] data_after;
+	if(data_before) delete [] data_before;
 }
 
 int UndoStackItem::set_description(char *description)

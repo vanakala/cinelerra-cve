@@ -45,11 +45,11 @@ BC_Meter::BC_Meter(int x,
 
 BC_Meter::~BC_Meter()
 {
-	if(use_titles)
+	if(db_titles)
 	{
 		for(int i = 0; i < meter_titles; i++) delete [] db_titles[i];
+		delete [] db_titles;
 	}
-	if(db_titles) delete [] db_titles;
 	if(title_pixel) delete [] title_pixel;
 	for(int i = 0; i < TOTAL_METER_IMAGES; i++) delete images[i];
 }
@@ -193,14 +193,21 @@ void BC_Meter::get_divisions()
 	float division, division_step;
 	char string[1024];
 
-	for(int i = 0; i < meter_titles; i++) delete [] db_titles[i];
-	if(db_titles) delete [] db_titles;
+	if(db_titles)
+	{
+		for(int i = 0; i < meter_titles; i++) delete [] db_titles[i];
+		delete [] db_titles;
+	}
 	if(title_pixel) delete [] title_pixel;
 
 	meter_titles = labs((int)(min / 5)) + 1;
 	title_pixel = new int[meter_titles];
-	db_titles = new char*[meter_titles];
-	for(i = 0; i < meter_titles; i++) db_titles[i] = 0;
+
+	if(use_titles)
+	{
+		db_titles = new char*[meter_titles];
+		for(i = 0; i < meter_titles; i++) db_titles[i] = 0;
+	}
 
 	division = METER_MARGIN;
 	division_step = (float)(pixels - METER_MARGIN * 3) / (meter_titles - 1);
@@ -209,9 +216,13 @@ void BC_Meter::get_divisions()
 
 	for(i = 0; i < meter_titles; i++)
 	{
-		sprintf(string, "%.0f", fabs(-j));
-		db_titles[i] = new char[strlen(string) + 1];
-		strcpy(db_titles[i], string);
+
+		if(use_titles)
+		{
+			sprintf(string, "%.0f", fabs(-j));
+			db_titles[i] = new char[strlen(string) + 1];
+			strcpy(db_titles[i], string);
+		}
 
 		title_pixel[i] = (int)(division); 
 
@@ -225,7 +236,6 @@ void BC_Meter::get_divisions()
 
 void BC_Meter::draw_titles()
 {
-//return;
 	if(!use_titles) return;
 
 	set_font(get_resources()->meter_font);

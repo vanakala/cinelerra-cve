@@ -1,24 +1,24 @@
 #include "amodule.h"
 #include "arender.h"
 #include "atrack.h"
-#include "virtualaconsole.h"
 #include "atrack.h"
 #include "audiodevice.h"
-#include "autos.h"
 #include "auto.h"
+#include "autos.h"
 #include "cache.h"
-#include "virtualconsole.h"
 #include "edit.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "levelwindow.h"
+#include "mainsession.h"
 #include "playabletracks.h"
 #include "playbackengine.h"
 #include "preferences.h"
 #include "renderengine.h"
-#include "mainsession.h"
 #include "tracks.h"
 #include "transportque.h"
+#include "virtualaconsole.h"
+#include "virtualconsole.h"
 #include "virtualnode.h"
 
 ARender::ARender(RenderEngine *renderengine)
@@ -279,7 +279,7 @@ int ARender::wait_device_completion()
 
 void ARender::run()
 {
-	long current_input_length;
+	long current_input_length = 0;
 	int reconfigure = 0;
 //printf("ARender::run 1\n");
 
@@ -290,17 +290,17 @@ void ARender::run()
 	while(!done && !interrupt && !last_playback)
 	{
 		current_input_length = renderengine->edl->session->audio_read_length;
-//printf("ARender::run 2 %d\n", current_input_length);
+// printf("ARender::run 2 %d\n", current_input_length);
 		get_boundaries(current_input_length);
-//printf("ARender::run 3 %d\n", current_input_length);
+// printf("ARender::run 3 %d\n", current_input_length);
 
 		if(current_input_length)
 		{
-//printf("ARender::run 4 %d\n", current_input_length);
+// printf("ARender::run 4 %d\n", current_input_length);
 			reconfigure = vconsole->test_reconfigure(current_position, 
 				current_input_length,
 				last_playback);
-//printf("ARender::run 5 %d\n", current_input_length);
+// printf("ARender::run 5 %d %d\n", reconfigure, current_input_length);
 			
 			
 			
@@ -314,8 +314,10 @@ void ARender::run()
 //printf("ARender::run 4 %d %d %d\n", current_position, current_input_length, reconfigure);
 
 
-// Update tracking
-		if(renderengine->command->realtime && renderengine->playback_engine)
+// Update tracking if no video is playing.
+		if(renderengine->command->realtime && 
+			renderengine->playback_engine &&
+			!renderengine->do_video)
 		{
 			double position = (double)renderengine->audio->current_position() / 
 				renderengine->edl->session->sample_rate * 
@@ -326,7 +328,9 @@ void ARender::run()
 			else
 				position = renderengine->command->playbackstart - position;
 
-//printf("ARender::run 6 %f\n", position);
+//printf("ARender::run 6 %f\n", renderengine->audio->current_position());
+// This number is not compensated for looping.  It's compensated in 
+// PlaybackEngine::get_tracking_position when interpolation also happens.
 			renderengine->playback_engine->update_tracking(position);
 		}
 //printf("ARender::run 7 %d\n", current_position);

@@ -86,7 +86,7 @@ int mpeg3_ac3_header(mpeg3_ac3_t *audio, unsigned char *header)
 				audio->channels += 2;
 				break;
 			default:
-				printf(__FUNCTION__ ": unknown channel code: %p\n", audio->flags & A52_CHANNEL_MASK);
+				printf("mpeg3_ac3_header: unknown channel code: %p\n", audio->flags & A52_CHANNEL_MASK);
 				break;
 		}
 //printf(__FUNCTION__ " 1 %d\n", audio->channels);

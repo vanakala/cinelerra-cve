@@ -13,9 +13,9 @@ typedef struct
 	int decode_initialized;
 	int encode_initialized;
     AVCodec *decoder;
-	AVCodecContext decoder_context;
- 	AVCodecContext encoder_context;
-    AVPicture picture;
+	AVCodecContext *decoder_context;
+ 	AVCodecContext *encoder_context;
+    AVFrame picture;
 	char *temp_frame;
 	char *work_buffer;
 	int buffer_size;
@@ -86,13 +86,15 @@ static int delete_codec(quicktime_video_map_t *vtrack)
 	if(codec->decode_initialized)
 	{
 		pthread_mutex_lock(&decode_mutex);
-    	avcodec_close(&codec->decoder_context);
+    	avcodec_close(codec->decoder_context);
+		free(codec->decoder_context);
 		pthread_mutex_unlock(&decode_mutex);
 	}
 	if(codec->encode_initialized)
 	{
 		pthread_mutex_lock(&encode_mutex);
-    	avcodec_close(&codec->encoder_context);
+    	avcodec_close(codec->encoder_context);
+		free(codec->encoder_context);
 		pthread_mutex_unlock(&encode_mutex);
 	}
 	if(codec->temp_frame) free(codec->temp_frame);
@@ -113,14 +115,17 @@ static int init_codec(quicktime_div3_codec_t *codec, int width_i, int height_i)
 	codec->decoder = avcodec_find_decoder(codec->derivative);
 	if(!codec->decoder)
 	{
-		printf("init_codec avcodec_find_decoder returned NULL.\n");
+		printf("init_codec: avcodec_find_decoder returned NULL.\n");
 		return 1;
 	}
 
-	bzero(&codec->decoder_context, sizeof(codec->decoder_context));
-	codec->decoder_context.width = width_i;
-	codec->decoder_context.height = height_i;
-	avcodec_open(&codec->decoder_context, codec->decoder);
+	codec->decoder_context = avcodec_alloc_context();
+	codec->decoder_context->width = width_i;
+	codec->decoder_context->height = height_i;
+	if(avcodec_open(codec->decoder_context, codec->decoder) < 0)
+	{
+		printf("init_codec: avcodec_open failed.\n");
+	}
 	return 0;
 }
 
@@ -151,7 +156,7 @@ static int decode_wrapper(quicktime_div3_codec_t *codec,
 
 	if(quicktime_div3_is_key(data, size)) codec->got_key = 1;
 
-	result = avcodec_decode_video(&codec->decoder_context, 
+	result = avcodec_decode_video(codec->decoder_context, 
 		&codec->picture,
 		&got_picture,
 		codec->work_buffer,
@@ -265,7 +270,7 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 
 
 	result = (result <= 0);
-	switch(codec->decoder_context.pix_fmt)
+	switch(codec->decoder_context->pix_fmt)
 	{
 		case PIX_FMT_YUV420P:
 			input_cmodel = BC_YUV420P;
@@ -281,30 +286,30 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 
 	if(!result)
 	{
-		int y_out_size = codec->decoder_context.width * 
-			codec->decoder_context.height;
-		int u_out_size = codec->decoder_context.width * 
-			codec->decoder_context.height / 
+		int y_out_size = codec->decoder_context->width * 
+			codec->decoder_context->height;
+		int u_out_size = codec->decoder_context->width * 
+			codec->decoder_context->height / 
 			4;
-		int v_out_size = codec->decoder_context.width * 
-			codec->decoder_context.height / 
+		int v_out_size = codec->decoder_context->width * 
+			codec->decoder_context->height / 
 			4;
 		int y_in_size = codec->picture.linesize[0] * 
-			codec->decoder_context.height;
+			codec->decoder_context->height;
 		int u_in_size = codec->picture.linesize[1] * 
-			codec->decoder_context.height / 
+			codec->decoder_context->height / 
 			4;
 		int v_in_size = codec->picture.linesize[2] * 
-			codec->decoder_context.height / 
+			codec->decoder_context->height / 
 			4;
 		input_rows = 
 			malloc(sizeof(unsigned char*) * 
-			codec->decoder_context.height);
+			codec->decoder_context->height);
 
-		for(i = 0; i < codec->decoder_context.height; i++)
+		for(i = 0; i < codec->decoder_context->height; i++)
 			input_rows[i] = codec->picture.data[0] + 
 				i * 
-				codec->decoder_context.width * 
+				codec->decoder_context->width * 
 				cmodel_calculate_pixelsize(input_cmodel);
 
 		if(!codec->temp_frame)
@@ -314,35 +319,37 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 				v_out_size);
 		}
 
-		for(i = 0; i < codec->decoder_context.height; i++)
+		if(codec->picture.data[0])
 		{
-			memcpy(codec->temp_frame + i * codec->decoder_context.width,
-				codec->picture.data[0] + i * codec->picture.linesize[0],
-				codec->decoder_context.width);
+			for(i = 0; i < codec->decoder_context->height; i++)
+			{
+				memcpy(codec->temp_frame + i * codec->decoder_context->width,
+					codec->picture.data[0] + i * codec->picture.linesize[0],
+					codec->decoder_context->width);
+			}
+
+			for(i = 0; i < codec->decoder_context->height; i += 2)
+			{
+				memcpy(codec->temp_frame + 
+						y_out_size + 
+						i / 2 * 
+						codec->decoder_context->width / 2,
+					codec->picture.data[1] + 
+						i / 2 * 
+						codec->picture.linesize[1],
+					codec->decoder_context->width / 2);
+
+				memcpy(codec->temp_frame + 
+						y_out_size + 
+						u_out_size + 
+						i / 2 * 
+						codec->decoder_context->width / 2,
+					codec->picture.data[2] + 
+						i / 2 * 
+						codec->picture.linesize[2],
+					codec->decoder_context->width / 2);
+			}
 		}
-
-		for(i = 0; i < codec->decoder_context.height; i += 2)
-		{
-			memcpy(codec->temp_frame + 
-					y_out_size + 
-					i / 2 * 
-					codec->decoder_context.width / 2,
-				codec->picture.data[1] + 
-					i / 2 * 
-					codec->picture.linesize[1],
-				codec->decoder_context.width / 2);
-
-			memcpy(codec->temp_frame + 
-					y_out_size + 
-					u_out_size + 
-					i / 2 * 
-					codec->decoder_context.width / 2,
-				codec->picture.data[2] + 
-					i / 2 * 
-					codec->picture.linesize[2],
-				codec->decoder_context.width / 2);
-		}
-
 
 		cmodel_transfer(row_pointers, /* Leave NULL if non existent */
 			input_rows,
@@ -363,13 +370,12 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 			input_cmodel, 
 			file->color_model,
 			0,         /* When transfering BC_RGBA8888 to non-alpha this is the background color in 0xRRGGBB hex */
-			codec->decoder_context.width,       /* For planar use the luma rowspan */
+			codec->decoder_context->width,       /* For planar use the luma rowspan */
 			width);
 
 		free(input_rows);
 	}
 
-//printf(__FUNCTION__ " div3 2\n");
 
 	return result;
 }
@@ -385,7 +391,7 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 	int result = 0;
 	int width_i = (int)((float)width / 16 + 0.5) * 16;
 	int height_i = (int)((float)height / 16 + 0.5) * 16;
-	AVPicture pict_tmp;
+	AVFrame pict_tmp;
 	int bytes;
 	quicktime_atom_t chunk_atom;
 //printf(__FUNCTION__ " 1\n");
@@ -404,44 +410,44 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
   			avcodec_init();
 			avcodec_register_all();
 		}
-
+;
 		codec->encoder = avcodec_find_encoder(codec->derivative);
 		if(!codec->encoder)
 		{
-			printf(__FUNCTION__ " avcodec_find_encoder returned NULL.\n");
+			printf("encode: avcodec_find_encoder returned NULL.\n");
 			pthread_mutex_unlock(&decode_mutex);
 			return 1;
 		}
 
-		bzero(&codec->encoder_context, sizeof(codec->encoder_context));
-		codec->encoder_context.frame_rate = FRAME_RATE_BASE *
+		codec->encoder_context = avcodec_alloc_context();
+		codec->encoder_context->frame_rate = FRAME_RATE_BASE *
 			quicktime_frame_rate(file, track);
-		codec->encoder_context.width = width_i;
-		codec->encoder_context.height = height_i;
-		codec->encoder_context.gop_size = codec->gop_size;
-		codec->encoder_context.pix_fmt = PIX_FMT_YUV420P;
-		codec->encoder_context.bit_rate = codec->bitrate;
-		codec->encoder_context.bit_rate_tolerance = codec->bitrate_tolerance;
-		codec->encoder_context.quality = codec->quantizer;
-		codec->encoder_context.rc_eq = video_rc_eq;
-		codec->encoder_context.qmin = 2;
-		codec->encoder_context.qmax = 31;
-		codec->encoder_context.max_qdiff = 3;
-		codec->encoder_context.qblur = 0.5;
-		codec->encoder_context.qcompress = 0.5;
-		codec->encoder_context.me_method = ME_FULL;
+		codec->encoder_context->width = width_i;
+		codec->encoder_context->height = height_i;
+		codec->encoder_context->gop_size = codec->gop_size;
+		codec->encoder_context->pix_fmt = PIX_FMT_YUV420P;
+		codec->encoder_context->bit_rate = codec->bitrate;
+		codec->encoder_context->bit_rate_tolerance = codec->bitrate_tolerance;
+		codec->encoder_context->rc_eq = video_rc_eq;
+		codec->encoder_context->qmin = 2;
+		codec->encoder_context->qmax = 31;
+		codec->encoder_context->max_qdiff = 3;
+		codec->encoder_context->qblur = 0.5;
+		codec->encoder_context->qcompress = 0.5;
+		codec->encoder_context->me_method = ME_FULL;
 
 		if(!codec->fix_bitrate)
 		{
-			codec->encoder_context.flags |= CODEC_FLAG_QSCALE;
+			codec->encoder_context->flags |= CODEC_FLAG_QSCALE;
 		}
+
 		if(codec->interlaced)
 		{
-			codec->encoder_context.flags |= CODEC_FLAG_INTERLACED_DCT;
+			codec->encoder_context->flags |= CODEC_FLAG_INTERLACED_DCT;
 		}
 
 
-		avcodec_open(&codec->encoder_context, codec->encoder);
+		avcodec_open(codec->encoder_context, codec->encoder);
 
 		codec->work_buffer = calloc(1, width_i * height_i * 3);
 		codec->buffer_size = width_i * height_i * 3;
@@ -502,14 +508,15 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 	}
 
 
-//printf(__FUNCTION__ " 1\n");
-
-	bytes = avcodec_encode_video(&codec->encoder_context, 
+//printf("encode 1\n");
+	if(codec->quantizer >= 0)
+		pict_tmp.quality = codec->quantizer;
+	bytes = avcodec_encode_video(codec->encoder_context, 
 		codec->work_buffer, 
         codec->buffer_size, 
         &pict_tmp);
 	pthread_mutex_unlock(&encode_mutex);
-//printf(__FUNCTION__ " 1\n");
+//printf("encode 100\n");
 
 	quicktime_write_chunk_header(file, trak, &chunk_atom);
 //printf(__FUNCTION__ " 1\n");
@@ -524,7 +531,7 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 					&chunk_atom, 
 					1);
 //printf(__FUNCTION__ " 1\n");
-	if(codec->encoder_context.key_frame)
+	if(pict_tmp.key_frame)
 		quicktime_insert_keyframe(file, 
 			vtrack->current_position, 
 			track);
@@ -582,6 +589,8 @@ void quicktime_init_codec_div3(quicktime_video_map_t *vtrack)
 
 	codec = ((quicktime_codec_t*)vtrack->codec)->priv;
 	codec->derivative = CODEC_ID_MSMPEG4V3;
+//	codec->derivative = CODEC_ID_MPEG4;
+	codec->quantizer = -1;
 }
 
 
@@ -602,6 +611,7 @@ void quicktime_init_codec_div4(quicktime_video_map_t *vtrack)
 
 	codec = ((quicktime_codec_t*)vtrack->codec)->priv;
 	codec->derivative = CODEC_ID_MPEG4;
+	codec->quantizer = -1;
 }
 
 

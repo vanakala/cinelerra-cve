@@ -3,7 +3,7 @@
 
 class LoadMode;
 
-// Load modes
+// Load modes for loading files, importing recordings, importing effects
 #define LOAD_NOTHING 0
 #define LOAD_REPLACE 1
 #define LOAD_REPLACE_CONCATENATE 2

@@ -7,6 +7,7 @@ class BC_ProgressBar : public BC_SubWindow
 {
 public:
 	BC_ProgressBar(int x, int y, int w, long length);
+	~BC_ProgressBar();
 
 	int initialize();
 

@@ -9,6 +9,7 @@
 
 
 // REMOVE
+// This is obsolete.
 class VideoConfig
 {
 public:

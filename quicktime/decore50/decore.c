@@ -57,9 +57,104 @@ static int flag_firstpicture = 1;
 
 /***/
 
+// Set global variables for a decoding session
+void decore_set_global(DEC_PARAM *param)
+{
+	DEC_BUFFERS *buffers;
+	int cc;
+
+	if(param)
+	{
+		buffers = &param->buffers;
+		mp4_state = (MP4_STATE*)buffers->mp4_state;
+		mp4_tables = (MP4_TABLES*)buffers->mp4_tables;
+		ld = (MP4_STREAM *)buffers->mp4_stream;
+		for(cc = 0; cc < 3; cc++)
+		{
+			edged_ref[cc] = buffers->edged_ref[cc];
+			edged_for[cc] = buffers->edged_for[cc];
+			frame_ref[cc] = buffers->frame_ref[cc];
+			frame_for[cc] = buffers->frame_for[cc];
+			display_frame[cc] = buffers->display_frame[cc];
+		}
+	}
+}
+
+void decore_save_global(DEC_PARAM *param)
+{
+	DEC_BUFFERS *buffers;
+	int cc;
+
+	if(param)
+	{
+		buffers = &param->buffers;
+		buffers->mp4_state = mp4_state;
+		buffers->mp4_tables = mp4_tables;
+		buffers->mp4_stream = ld;
+		for(cc = 0; cc < 3; cc++)
+		{
+			buffers->edged_ref[cc] = edged_ref[cc];
+			buffers->edged_for[cc] = edged_for[cc];
+			buffers->frame_ref[cc] = frame_ref[cc];
+			buffers->frame_for[cc] = frame_for[cc];
+			buffers->display_frame[cc] = display_frame[cc];
+		}
+	}
+}
+
+static int mmx_test()
+{
+	int result = 0;
+	FILE *proc;
+	char string[1024];
+
+
+#ifdef ARCH_X86
+	if(!(proc = fopen("/proc/cpuinfo", "r")))
+	{
+		fprintf(stderr, "mmx_test: failed to open /proc/cpuinfo\n");
+		return 0;
+	}
+	
+	while(!feof(proc))
+	{
+		fgets(string, 1024, proc);
+/* Got the flags line */
+		if(!strncasecmp(string, "flags", 5))
+		{
+			char *needle;
+			needle = strstr(string, "mmx");
+			if(!needle)
+            {
+            	fclose(proc);
+            	return 0;
+            }
+			if(!strncasecmp(needle, "mmx", 3))
+            {
+            	fclose(proc);
+            	return 1;
+            }
+		}
+	}
+   	fclose(proc);
+#endif
+
+	return 0;
+}
+
+
 int STDCALL decore(unsigned long handle, unsigned long dec_opt,
 	void *param1, void *param2)
 {
+	int cc;
+
+
+
+/*
+ * printf("decore 1 %p %p %p %p %p\n", 
+ * edged_ref[0], edged_for[0], frame_ref[0], frame_for[0], display_frame[0]);
+ */
+
 	if (handle) 
 	{
 		switch (dec_opt)
@@ -89,6 +184,7 @@ int STDCALL decore(unsigned long handle, unsigned long dec_opt,
 			{
 				DEC_PARAM *dec_param = (DEC_PARAM *) param1;
 
+//				have_mmx = mmx_test();
 				decore_init(dec_param->x_dim, 
 					dec_param->y_dim, 
 					dec_param->output_format,
@@ -113,8 +209,10 @@ int STDCALL decore(unsigned long handle, unsigned long dec_opt,
 				if ((postproc_level < 0) | (postproc_level > 100))
 					return DEC_BAD_FORMAT;
 
-				if (postproc_level < 1) {
+				if (postproc_level < 1) 
+				{
 					mp4_state->post_flag = 0;
+
 					return DEC_OK;
 				}
 				else 
@@ -159,11 +257,20 @@ int STDCALL decore(unsigned long handle, unsigned long dec_opt,
 			{
 				DEC_FRAME *dec_frame = (DEC_FRAME *) param1;
 
+
 				if (decore_frame(dec_frame->bitstream, dec_frame->length, 
 					dec_frame->bmp, dec_frame->stride, dec_frame->render_flag))
+				{
+/*
+ * printf("decore 2 %p %p %p %p %p\n", 
+ * edged_ref[0], edged_for[0], frame_ref[0], frame_for[0], display_frame[0]);
+ */
 					return DEC_OK;
+				}
 				else 
+				{
 					return DEC_EXIT;
+				}
 			}
 			break;
 		}
@@ -207,7 +314,7 @@ static int decore_init(int hor_size,
 	mp4_state->hdr.bits_per_pixel = 8;
 	
 	mp4_state->hdr.quant_type = 0;
-	
+
 	if (flag_firstpicture == 1) {
 		mp4_state->hdr.time_increment_resolution = 15;
 		flag_firstpicture = 0;
@@ -282,9 +389,9 @@ int decore_frame(unsigned char *stream, int length, unsigned char *bmp[],
 
 /***/
 
-static int decore_release()
+int decore_release()
 {
-	// closedecoder(); // [Ag][Review] 
+	closedecoder();
 
 	/*
 			I have to check and close the decoder only when it is really been opened: 

@@ -1,3 +1,10 @@
+// Originally developed by Heroine Virtual Ltd.
+// Support for multiple encodings by 
+// Andraz Tori <Andraz.tori1@guest.arnes.si>
+
+
+
+
 #include "clip.h"
 #include "colormodels.h"
 #include "filexml.h"
@@ -12,6 +19,9 @@
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
+#include <endian.h>
+#include <byteswap.h>
+#include <iconv.h>
 
 
 #define FONT_SEARCHPATH "/usr/lib/cinelerra/fonts"
@@ -37,6 +47,7 @@ TitleConfig::TitleConfig()
 	dropshadow = 10;
 	sprintf(font, "fixed");
 	sprintf(text, "hello world");
+	sprintf(encoding, "ISO8859-1");
 	pixels_per_second = 1.0;
 	timecode = 0;
 }
@@ -53,6 +64,7 @@ int TitleConfig::equivalent(TitleConfig &that)
 		vjustification == that.vjustification &&
 		EQUIV(pixels_per_second, that.pixels_per_second) &&
 		!strcasecmp(font, that.font) &&
+		!strcasecmp(encoding, that.encoding) &&
 		!strcmp(text, that.text);
 }
 
@@ -74,6 +86,7 @@ void TitleConfig::copy_from(TitleConfig &that)
 	dropshadow = that.dropshadow;
 	timecode = that.timecode;
 	strcpy(text, that.text);
+	strcpy(encoding, that.encoding);
 }
 
 void TitleConfig::interpolate(TitleConfig &prev, 
@@ -83,6 +96,7 @@ void TitleConfig::interpolate(TitleConfig &prev,
 	long current_frame)
 {
 	strcpy(font, prev.font);
+	strcpy(encoding, prev.encoding);
 	style = prev.style;
 	size = prev.size;
 	color = prev.color;
@@ -177,7 +191,8 @@ void FontEntry::dump()
 
 TitleGlyph::TitleGlyph()
 {
-	c = 0;
+	char_code = 0;
+	c=0;
 	data = 0;
 }
 
@@ -213,14 +228,11 @@ GlyphUnit::GlyphUnit(TitleMain *plugin, GlyphEngine *server)
 	current_font = 0;
 	freetype_library = 0;
 	freetype_face = 0;
-	face_buffer = 0;
-	face_size = 0;
 }
 
 GlyphUnit::~GlyphUnit()
 {
 	if(freetype_library) FT_Done_FreeType(freetype_library);
-	if(face_buffer) delete [] face_buffer;
 }
 
 void GlyphUnit::process_package(LoadPackage *package)
@@ -235,9 +247,7 @@ void GlyphUnit::process_package(LoadPackage *package)
 
 		if(plugin->load_freetype_face(freetype_library,
 			freetype_face,
-			current_font->path,
-			face_buffer,
-			face_size))
+			current_font->path))
 		{
 			printf("GlyphUnit::process_package FT_New_Face failed.\n");
 			result = 1;
@@ -250,7 +260,8 @@ void GlyphUnit::process_package(LoadPackage *package)
 
 	if(!result)
 	{
-		if(FT_Load_Char(freetype_face, glyph->c, FT_LOAD_RENDER))
+
+		if(FT_Load_Char(freetype_face, glyph->char_code, FT_LOAD_RENDER))
 		{
 			printf("GlyphUnit::process_package FT_Load_Char failed.\n");
 // Prevent a crash here
@@ -274,7 +285,7 @@ void GlyphUnit::process_package(LoadPackage *package)
 			glyph->pitch = freetype_face->glyph->bitmap.pitch;
 			glyph->left = freetype_face->glyph->bitmap_left;
 			glyph->top = freetype_face->glyph->bitmap_top;
-			glyph->freetype_index = FT_Get_Char_Index(freetype_face, glyph->c);
+			glyph->freetype_index = FT_Get_Char_Index(freetype_face, glyph->char_code);
 			glyph->advance_w = (freetype_face->glyph->advance.x >> 6);
 
 //printf("GlyphUnit::process_package 1 width=%d height=%d pitch=%d left=%d top=%d advance_w=%d freetype_index=%d\n", 
@@ -754,8 +765,6 @@ TitleMain::TitleMain(PluginServer *server)
 	char_positions = 0;
 	translate = 0;
 	need_reconfigure = 1;
-	face_buffer = 0;
-	face_size = 0;
 }
 
 TitleMain::~TitleMain()
@@ -769,7 +778,6 @@ TitleMain::~TitleMain()
 	if(title_engine) delete title_engine;
 	if(freetype_library) FT_Done_FreeType(freetype_library);
 	if(translate) delete translate;
-	if(face_buffer) delete [] face_buffer;
 }
 
 char* TitleMain::plugin_title() { return "Title"; }
@@ -997,15 +1005,11 @@ void TitleMain::build_fonts()
 // Add to list
 				if(strlen(entry->foundary))
 				{
-					char *face_buffer = 0;
-					int face_size = 0;
 //printf("TitleMain::build_fonts 1 %s\n", entry->path);
 // This takes a real long time to do.  Instead just take all fonts
 // 					if(!load_freetype_face(freetype_library, 
 // 						freetype_face,
-// 						entry->path,
-// 						face_buffer,
-// 						face_size))
+// 						entry->path))
 //					if(1)
 					if(entry->family[0])
 					{
@@ -1046,111 +1050,37 @@ void TitleMain::build_fonts()
 
 
 // for(int i = 0; i < fonts->total; i++)
-// 	fonts->values[i]->dump();
+//	fonts->values[i]->dump();
 
 
 }
 
 int TitleMain::load_freetype_face(FT_Library &freetype_library,
 	FT_Face &freetype_face,
-	char *path,
-	char* &face_buffer,
-	int &face_size)
+	char *path)
 {
 //printf("TitleMain::load_freetype_face 1\n");
 	if(!freetype_library) FT_Init_FreeType(&freetype_library);
 	if(freetype_face) FT_Done_Face(freetype_face);
-	if(face_buffer) delete [] face_buffer;
 	freetype_face = 0;
-	face_buffer = 0;
-	face_size = 0;
-	char string[BCTEXTLEN];
-	FILE *in;
-	int use_compression = 0;
 //printf("TitleMain::load_freetype_face 2\n");
 
-// Determine compression type
-	if(strlen(path) > 3 && 
-		path[strlen(path) - 3] == '.' &&
-		path[strlen(path) - 2] == 'g' &&
-		path[strlen(path) - 1] == 'z')
+// Use freetype's internal function for loading font
+	if(FT_New_Face(freetype_library, 
+		path, 
+		0,
+		&freetype_face))
 	{
-		sprintf(string, "cat %s | gunzip", path);
-		in = popen(string, "r");
-		use_compression = 1;
-	}
-	else
-	{
-		in = fopen(path, "rb");
-		use_compression = 0;
-	}
-//printf("TitleMain::load_freetype_face 3\n");
-
-	if(!in)
-	{
-		fprintf(stderr, "TitleMain::load_freetype_face %s: %s:\n", 
-			path, strerror(errno));
+		fprintf(stderr, "TitleMain::load_freetype_face %s failed.\n");
 		FT_Done_FreeType(freetype_library);
+		freetype_face = 0;
 		freetype_library = 0;
 		return 1;
-	}
-	else
+	} else
 	{
-		int bytes_read = 0;
-		int fragment_size = 65536;
-//printf("TitleMain::load_freetype_face 4\n");
-		do
-		{
-			if(!face_buffer) 
-			{
-//printf("TitleMain::load_freetype_face 4.1 %d\n", face_size);
-				face_buffer = new char[fragment_size];
-			}
-			else
-			{
-//printf("TitleMain::load_freetype_face 4.2 %d %d\n", face_size, fragment_size);
-				char *new_face_buffer = new char[face_size + fragment_size];
-//printf("TitleMain::load_freetype_face 4.3 %d\n", face_size);
-				memcpy(new_face_buffer, face_buffer, face_size);
-//printf("TitleMain::load_freetype_face 4.4 %d\n", face_size);
-				delete [] face_buffer;
-//printf("TitleMain::load_freetype_face 4.5 %d\n", face_size);
-				face_buffer = new_face_buffer;
-//printf("TitleMain::load_freetype_face 4.6 %d\n", face_size);
-			}
-
-//printf("TitleMain::load_freetype_face 4.7 %d\n", face_size);
-			bytes_read = fread(face_buffer + face_size,
-				1,
-				fragment_size,
-				in);
-			face_size += bytes_read;
-		}while(bytes_read == fragment_size);
-//printf("TitleMain::load_freetype_face 5\n");
-		if(use_compression)
-			pclose(in);
-		else
-			fclose(in);
-
-//printf("TitleMain::load_freetype_face 6\n");
-
-		if(FT_New_Memory_Face(freetype_library, 
-			(FT_Byte*)face_buffer, 
-			face_size, 
-			0,
-			&freetype_face))
-		{
-			fprintf(stderr, "TitleMain::load_freetype_face %s failed.\n", path);
-			FT_Done_FreeType(freetype_library);
-			freetype_face = 0;
-			freetype_library = 0;
-			return 1;
-		}
-		else
-		{
-			return 0;
-		}
+		return 0;
 	}
+
 //printf("TitleMain::load_freetype_face 4\n");
 }
 
@@ -1254,14 +1184,43 @@ void TitleMain::draw_glyphs()
 // Build table of all glyphs needed
 	int text_len = strlen(config.text);
 	int total_packages = 0;
+	iconv_t cd;
+	cd = iconv_open ("UCS-4", config.encoding);
+	if (cd == (iconv_t) -1)
+	{
+			/* Something went wrong.  */
+		fprintf (stderr, "Iconv conversion from %s to Unicode UCS-4 not available\n",config.encoding);
+	};
+
 	for(int i = 0; i < text_len; i++)
 	{
+		FT_ULong char_code;	
 		int c = config.text[i];
 		int exists = 0;
+		/* if iconv is working ok for current encoding */
+		if (cd != (iconv_t) -1)
+		{
+
+			size_t inbytes,outbytes;
+			char inbuf;
+			char *inp = (char*)&inbuf, *outp = (char *)&char_code;
+			
+			inbuf = (char)c;
+			inbytes = 1;
+			outbytes = 4;
+	
+			iconv (cd, &inp, &inbytes, &outp, &outbytes);
+#if     __BYTE_ORDER == __LITTLE_ENDIAN
+				char_code = bswap_32(char_code);
+#endif                          /* Big endian.  */
+
+		} else {
+			char_code = c;
+		}
 
 		for(int j = 0; j < glyphs.total; j++)
 		{
-			if(glyphs.values[j]->c == c)
+			if(glyphs.values[j]->char_code == char_code)
 			{
 				exists = 1;
 				break;
@@ -1276,8 +1235,10 @@ void TitleMain::draw_glyphs()
 //printf("TitleMain::draw_glyphs 2\n");
 			glyphs.append(glyph);
 			glyph->c = c;
+			glyph->char_code = char_code;
 		}
 	}
+	iconv_close(cd);
 
 	if(!glyph_engine)
 		glyph_engine = new GlyphEngine(this, PluginClient::smp + 1);
@@ -1565,37 +1526,51 @@ int TitleMain::draw_mask()
 
 void TitleMain::overlay_mask()
 {
+
+//printf("TitleMain::overlay_mask 1\n");
 	alpha = 0x100;
 	if(!EQUIV(config.fade_in, 0))
 	{
 		int fade_len = (int)(config.fade_in * PluginVClient::project_frame_rate);
 		int fade_position = get_source_position() - 
-			get_source_start() - 
+/*			get_source_start() -   */
 			config.prev_keyframe_position;
 
-		if(fade_position < fade_len)
+// printf("TitleMain::overlay_mask %d %d %d\n", 
+// get_source_position(), 
+// get_source_start(), 
+// config.prev_keyframe_position);
+
+		if(fade_position >= 0 && fade_position < fade_len)
 		{
 			alpha = (int)((float)0x100 * 
 				fade_position /
 				fade_len + 0.5);
 		}
 	}
+//printf("TitleMain::overlay_mask 1\n");
 
 	if(!EQUIV(config.fade_out, 0))
 	{
-		int fade_len = (int)(config.fade_out * PluginVClient::project_frame_rate);
+		int fade_len = (int)(config.fade_out * 
+			PluginVClient::project_frame_rate);
 		int fade_position = config.next_keyframe_position - 
-			get_source_position() -
-			get_source_start();
+			get_source_position();
 
-//printf("TitleMain::overlay_mask %d %d\n", config.next_keyframe_position, get_source_position());
-		if(fade_position < fade_len)
+
+// printf("TitleMain::overlay_mask %d %d %d\n", 
+// get_source_start() + config.next_keyframe_position,
+// get_source_position(), 
+// source_end);
+
+		if(fade_position > 0 && fade_position < fade_len)
 		{
 			alpha = (int)((float)0x100 *
 				fade_position /
 				fade_len + 0.5);
 		}
 	}
+//printf("TitleMain::overlay_mask 1\n");
 
 	if(config.dropshadow)
 	{
@@ -1618,6 +1593,7 @@ void TitleMain::overlay_mask()
 		mask_y1 -= config.dropshadow;
 		mask_y2 -= config.dropshadow;
 	}
+//printf("TitleMain::overlay_mask 1\n");
 
 	if(text_x1 < input->get_w() && text_x1 + text_w > 0 &&
 		mask_y1 < input->get_h() && mask_y2 > 0)
@@ -1625,7 +1601,7 @@ void TitleMain::overlay_mask()
 		if(!translate) translate = new TitleTranslate(this, PluginClient::smp + 1);
 		translate->process_packages();
 	}
-//printf("TitleMain::overlay_mask 2\n");
+//printf("TitleMain::overlay_mask 200\n");
 }
 
 void TitleMain::clear_glyphs()
@@ -1666,9 +1642,9 @@ int TitleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	int result = 0;
 	input = input_ptr;
 	output = output_ptr;
-//printf("TitleMain::process_realtime 1 %d\n", glyphs.total);
 
 	need_reconfigure |= load_configuration();
+//printf("TitleMain::process_realtime 1\n");
 
 
 // Always synthesize text and redraw it for timecode
@@ -1682,10 +1658,12 @@ int TitleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 				0);
 		need_reconfigure = 1;
 	}
-//printf("TitleMain::process_realtime 1\n");
 
 	if(config.size <= 0 || config.size >= 2048) return 0;
 	if(!strlen(config.text)) return 0;
+	if(!strlen(config.encoding)) return 0;
+
+//printf("TitleMain::process_realtime 10\n");
 
 // Handle reconfiguration
 	if(need_reconfigure)
@@ -1719,9 +1697,7 @@ int TitleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 //printf("TitleMain::process_realtime 2.1 %s\n", font->path);
 			if(load_freetype_face(freetype_library,
 				freetype_face,
-				font->path,
-				face_buffer,
-				face_size))
+				font->path))
 			{
 				printf("TitleMain::process_realtime %s: FT_New_Face failed.\n",
 					font->fixed_title);
@@ -1751,7 +1727,7 @@ int TitleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 // Determine region of text visible on the output and draw mask
 		result = draw_mask();
 	}
-//printf("TitleMain::process_realtime 5\n");
+//printf("TitleMain::process_realtime 50\n");
 
 
 // Overlay mask on output
@@ -1759,7 +1735,7 @@ int TitleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	{
 		overlay_mask();
 	}
-//printf("TitleMain::process_realtime 6 %d\n", glyphs.total);
+//printf("TitleMain::process_realtime 60 %d\n", glyphs.total);
 
 	return 0;
 }
@@ -1813,6 +1789,7 @@ int TitleMain::load_defaults()
 	defaults->load();
 
 	defaults->get("FONT", config.font);
+	defaults->get("ENCODING", config.encoding);
 	config.style = defaults->get("STYLE", (long)config.style);
 	config.size = defaults->get("SIZE", config.size);
 	config.color = defaults->get("COLOR", config.color);
@@ -1855,6 +1832,7 @@ int TitleMain::save_defaults()
 	char text_path[1024];
 
 	defaults->update("FONT", config.font);
+	defaults->update("ENCODING", config.encoding);
 	defaults->update("STYLE", (long)config.style);
 	defaults->update("SIZE", config.size);
 	defaults->update("COLOR", config.color);
@@ -1897,6 +1875,9 @@ int TitleMain::load_configuration()
 	prev_keyframe = get_prev_keyframe(get_source_position());
 	next_keyframe = get_next_keyframe(get_source_position());
 
+// printf("TitleMain::load_configuration 1 %d %d\n", 
+// prev_keyframe->position,
+// next_keyframe->position);
 
 	TitleConfig old_config, prev_config, next_config;
 	old_config.copy_from(config);
@@ -1908,9 +1889,13 @@ int TitleMain::load_configuration()
 	config.prev_keyframe_position = prev_keyframe->position;
 	config.next_keyframe_position = next_keyframe->position;
 	if(config.next_keyframe_position == config.prev_keyframe_position)
-		config.next_keyframe_position = get_total_len();
+		config.next_keyframe_position = get_source_start() + get_total_len();
 
-//printf("TitleMain::load_configuration 1 %d\n", get_total_len());
+
+// printf("TitleMain::load_configuration 10 %d %d\n", 
+// config.prev_keyframe_position,
+// config.next_keyframe_position);
+
 	config.interpolate(prev_config, 
 		next_config, 
 		(next_keyframe->position == prev_keyframe->position) ?
@@ -1946,6 +1931,7 @@ void TitleMain::save_data(KeyFrame *keyframe)
 	output.set_shared_string(keyframe->data, MESSAGESIZE);
 	output.tag.set_title("TITLE");
 	output.tag.set_property("FONT", config.font);
+	output.tag.set_property("ENCODING", config.encoding);
 	output.tag.set_property("STYLE", (long)config.style);
 	output.tag.set_property("SIZE", config.size);
 	output.tag.set_property("COLOR", config.color);
@@ -1994,6 +1980,7 @@ void TitleMain::read_data(KeyFrame *keyframe)
 			if(input.tag.title_is("TITLE"))
 			{
 				input.tag.get_property("FONT", config.font);
+				input.tag.get_property("ENCODING", config.encoding);
 				config.style = input.tag.get_property("STYLE", (long)config.style);
 				config.size = input.tag.get_property("SIZE", config.size);
 				config.color = input.tag.get_property("COLOR", config.color);

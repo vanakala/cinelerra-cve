@@ -70,7 +70,8 @@ void LoadFileThread::run()
 	ArrayList<BC_ListBoxItem*> *dirlist;
 	FileSystem fs;
 	ArrayList<char*> path_list;
-	char default_path[1024];
+	path_list.set_array_delete();
+	char default_path[BCTEXTLEN];
 
 	sprintf(default_path, "~");
 	mwindow->defaults->get("DEFAULT_LOADPATH", default_path);
@@ -304,6 +305,7 @@ LoadPrevious::LoadPrevious(MWindow *mwindow, Load *loadfile)
 int LoadPrevious::handle_event()
 {
 	ArrayList<char*> path_list;
+	path_list.set_array_delete();
 	char *out_path;
 	int load_mode = mwindow->defaults->get("LOAD_MODE", LOAD_REPLACE);
 
@@ -358,6 +360,7 @@ LoadBackup::LoadBackup(MWindow *mwindow)
 int LoadBackup::handle_event()
 {
 	ArrayList<char*> path_list;
+	path_list.set_array_delete();
 	char *out_path;
 	char string[BCTEXTLEN];
 	strcpy(string, BACKUP_PATH);

@@ -9,15 +9,7 @@
 #endif
 
 class OSSEnable;
-class OSSPath;
-class OSSChannels;
-class ESoundServer;
-class ESoundPort;
-class FirewirePort;
-class FirewireChannel;
-class FirewireChannels;
 class ALSADevice;
-class ALSAChannels;
 
 #include "bitspopup.inc"
 #include "guicast.h"
@@ -26,6 +18,8 @@ class ALSAChannels;
 #include "recordconfig.inc"
 
 class ADriverMenu;
+class ADeviceTextBox;
+class ADeviceIntBox;
 
 class ADevicePrefs
 {
@@ -66,19 +60,21 @@ private:
 	int y;
 	ADriverMenu *menu;
 	BC_Title *driver_title, *path_title, *bits_title, *channels_title;
-	BC_Title *server_title, *port_title, *channel_title;
+	BC_Title *server_title, *port_title, *channel_title, *syt_title;
 	OSSEnable *oss_enable[MAXDEVICES];
-	OSSPath *oss_path[MAXDEVICES];
+	ADeviceTextBox *oss_path[MAXDEVICES];
 	BitsPopup *oss_bits;
-	OSSChannels *oss_channels[MAXDEVICES];
-	ESoundServer *esound_server;
-	ESoundPort *esound_port;
-	FirewirePort *firewire_port;
-	FirewireChannel *firewire_channel;
-	FirewireChannels *firewire_channels;
+	ADeviceIntBox *oss_channels[MAXDEVICES];
+	ADeviceTextBox *esound_server;
+	ADeviceIntBox *esound_port;
+	ADeviceIntBox *firewire_port;
+	ADeviceIntBox *firewire_channel;
+	ADeviceIntBox *firewire_channels;
+	ADeviceTextBox *firewire_path;
+	ADeviceIntBox *firewire_syt;
 	ALSADevice *alsa_device;
 	BitsPopup *alsa_bits;
-	ALSAChannels *alsa_channels;
+	ADeviceIntBox *alsa_channels;
 	ArrayList<BC_ListBoxItem*> *alsa_drivers;
 };
 
@@ -119,58 +115,20 @@ public:
 	int *output;
 };
 
-class OSSPath : public BC_TextBox
+
+
+class ADeviceTextBox : public BC_TextBox
 {
 public:
-	OSSPath(int x, int y, char *output);
+	ADeviceTextBox(int x, int y, char *output);
 	int handle_event();
 	char *output;
 };
 
-class OSSChannels : public BC_TextBox
+class ADeviceIntBox : public BC_TextBox
 {
 public:
-	OSSChannels(int x, int y, int *output);
-	int handle_event();
-	int *output;
-};
-
-class ESoundServer : public BC_TextBox
-{
-public:
-	ESoundServer(int x, int y, char *output);
-	int handle_event();
-	char *output;
-};
-
-class ESoundPort : public BC_TextBox
-{
-public:
-	ESoundPort(int x, int y, int *output);
-	int handle_event();
-	int *output;
-};
-
-class FirewirePort : public BC_TextBox
-{
-public:
-	FirewirePort(int x, int y, int *output);
-	int handle_event();
-	int *output;
-};
-
-class FirewireChannel : public BC_TextBox
-{
-public:
-	FirewireChannel(int x, int y, int *output);
-	int handle_event();
-	int *output;
-};
-
-class FirewireChannels : public BC_TextBox
-{
-public:
-	FirewireChannels(int x, int y, int *output);
+	ADeviceIntBox(int x, int y, int *output);
 	int handle_event();
 	int *output;
 };
@@ -187,14 +145,6 @@ public:
 
 	int handle_event();
 	char *output;
-};
-
-class ALSAChannels : public BC_TextBox
-{
-public:
-	ALSAChannels(int x, int y, int *output);
-	int handle_event();
-	int *output;
 };
 
 #endif

@@ -27,7 +27,7 @@ AudioLowLevel::~AudioLowLevel()
 
 
 AudioDevice::AudioDevice()
- : Thread()
+ : Thread(1, 0, 0)
 {
 	initialize();
 	this->out_config = new AudioOutConfig(0, 0, 0);

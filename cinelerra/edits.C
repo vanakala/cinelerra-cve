@@ -113,7 +113,8 @@ void Edits::insert_edits(Edits *source_edits, long position)
 	long clipboard_end = position + clipboard_length;
 
 
-// Fill beginning with silence.  Can't call from insert_new_edit because it's recursive.
+// Fill region between end of edit table and beginning of pasted segment
+// with silence.  Can't call from insert_new_edit because it's recursive.
 	if(position > length())
 	{
 		paste_silence(length(), position);
@@ -132,12 +133,24 @@ void Edits::insert_edits(Edits *source_edits, long position)
 		dest_edit->copy_from(source_edit);
 		dest_edit->asset = dest_asset;
 		dest_edit->startproject = position + source_edit->startproject;
-// Shift keyframes for plugin case
+
+
+
+// Shift keyframes in source edit to their position in the
+// destination edit for plugin case
 		dest_edit->shift_keyframes(position);
+
+
+
+// Shift following edits and keyframes in following edits by length
+// in current source edit.
 		for(Edit *future_edit = dest_edit->next;
 			future_edit;
 			future_edit = future_edit->next)
+		{
 			future_edit->startproject += dest_edit->length;
+			future_edit->shift_keyframes(dest_edit->length);
+		}
 
 // Fill clipboard length with silence
 		if(!source_edit->next && 

@@ -7,15 +7,6 @@
 #include "colors.h"
 #include "colormodels.h"
 #include "fonts.h"
-
-#include "images/folder_png.h"
-#include "images/heroine_file_png.h"
-#include "images/list_bg_png.h"
-#include "images/listbox_button_dn_png.h"
-#include "images/listbox_button_hi_png.h"
-#include "images/listbox_button_up_png.h"
-#include "images/menu_bg_png.h"
-#include "images/window_bg_png.h"
 #include "vframe.h"
 
 #include <locale.h>
@@ -29,8 +20,6 @@ int BC_Resources::error = 0;
 
 VFrame* BC_Resources::bg_image = 0;
 VFrame* BC_Resources::menu_bg = 0;
-//VFrame* BC_Resources::bg_image = new VFrame(window_bg_png);
-//VFrame* BC_Resources::menu_bg = new VFrame(menu_bg_png);
 
 #include "images/file_film_png.h"
 #include "images/file_folder_png.h"
@@ -72,6 +61,8 @@ int BC_Resources::x_error_handler(Display *display, XErrorEvent *event)
 	BC_Resources::error = 1;
 	return 0;
 }
+
+
 
 BC_Resources::BC_Resources()
 {
@@ -185,14 +176,36 @@ BC_Resources::BC_Resources()
 		new VFrame(file_newfolder_dn_png)
 	};
 
+#include "images/listbox_button_dn_png.h"
+#include "images/listbox_button_hi_png.h"
+#include "images/listbox_button_up_png.h"
 	static VFrame* default_listbox_button[] = 
 	{
 		new VFrame(listbox_button_up_png),
 		new VFrame(listbox_button_hi_png),
 		new VFrame(listbox_button_dn_png)
 	};
+	listbox_button = default_listbox_button;
 
+#include "images/list_bg_png.h"
 	static VFrame* default_listbox_bg = new VFrame(list_bg_png);
+	listbox_bg = default_listbox_bg;
+
+#include "images/listbox_expandchecked_png.h"
+#include "images/listbox_expandcheckedhi_png.h"
+#include "images/listbox_expanddn_png.h"
+#include "images/listbox_expandup_png.h"
+#include "images/listbox_expanduphi_png.h"
+	static VFrame* default_listbox_expand[] = 
+	{
+		new VFrame(listbox_expandup_png),
+		new VFrame(listbox_expanduphi_png),
+		new VFrame(listbox_expandchecked_png),
+		new VFrame(listbox_expanddn_png),
+		new VFrame(listbox_expandcheckedhi_png),
+	};
+	listbox_expand = default_listbox_expand;
+
 
 #include "images/horizontal_slider_bg_up_png.h"
 #include "images/horizontal_slider_bg_hi_png.h"
@@ -458,8 +471,6 @@ BC_Resources::BC_Resources()
 	filebox_w = 640;
 	filebox_h = 480;
 
-	listbox_button = default_listbox_button;
-	listbox_bg = default_listbox_bg;
 
 	pot_images = default_pot_images;
 	pot_x1 = pot_images[0]->get_w() / 2 - 2;

@@ -29,6 +29,8 @@ VDevicePrefs::VDevicePrefs(int x,
 	this->x = x;
 	this->y = y;
 	menu = 0;
+	firewire_path = 0;
+	firewire_syt = 0;
 }
 
 VDevicePrefs::~VDevicePrefs()
@@ -124,6 +126,18 @@ int VDevicePrefs::delete_objects()
 			delete firewire_port;
 			delete channel_title;
 			delete firewire_channel;
+			if(firewire_path)
+			{
+				delete device_title;
+				delete firewire_path;
+			}
+			firewire_path = 0;
+			if(firewire_syt)
+			{
+				delete firewire_syt;
+				delete syt_title;
+			}
+			firewire_syt = 0;
 			break;
 	}
 
@@ -194,32 +208,74 @@ int VDevicePrefs::create_buz_objs()
 int VDevicePrefs::create_firewire_objs()
 {
 	int *output_int;
+	char *output_char;
 	int x1 = x + menu->get_w() + 5;
 
+// Firewire path
+	switch(mode)
+	{
+		case MODEPLAY:
+			output_char = out_config->firewire_path;
+			break;
+		case MODERECORD:
+// Our version of raw1394 doesn't support changing the input path
+			output_char = 0;
+			break;
+	}
+
+	if(output_char)
+	{
+		dialog->add_subwindow(device_title = new BC_Title(x1, y, "Device Path:", MEDIUMFONT, BLACK));
+		dialog->add_subwindow(firewire_path = new VDeviceTextBox(x1, y + 20, output_char));
+		x1 += firewire_path->get_w() + 5;
+	}
+
+// Firewire port
 	switch(mode)
 	{
 		case MODEPLAY:
 			output_int = &out_config->firewire_port;
 			break;
 		case MODERECORD:
-			output_int = &in_config->vfirewire_in_port;
+			output_int = &in_config->firewire_port;
 			break;
 	}
 	dialog->add_subwindow(port_title = new BC_Title(x1, y, "Port:", MEDIUMFONT, BLACK));
 	dialog->add_subwindow(firewire_port = new VDeviceIntBox(x1, y + 20, output_int));
-
 	x1 += firewire_port->get_w() + 5;
+
+// Firewire channel
 	switch(mode)
 	{
 		case MODEPLAY:
 			output_int = &out_config->firewire_channel;
 			break;
 		case MODERECORD:
-			output_int = &in_config->vfirewire_in_channel;
+			output_int = &in_config->firewire_channel;
 			break;
 	}
+
 	dialog->add_subwindow(channel_title = new BC_Title(x1, y, "Channel:", MEDIUMFONT, BLACK));
 	dialog->add_subwindow(firewire_channel = new VDeviceIntBox(x1, y + 20, output_int));
+	x1 += firewire_channel->get_w() + 5;
+
+
+// Firewire syt
+	switch(mode)
+	{
+		case MODEPLAY:
+			output_int = &out_config->firewire_syt;
+			break;
+		case MODERECORD:
+			output_int = 0;
+			break;
+	}
+	if(output_int)
+	{
+		dialog->add_subwindow(syt_title = new BC_Title(x1, y, "Syt Offset:", MEDIUMFONT, BLACK));
+		dialog->add_subwindow(firewire_syt = new VDeviceIntBox(x1, y + 20, output_int));
+	}
+
 	return 0;
 }
 

@@ -814,6 +814,8 @@ int mpeg3_set_frame(mpeg3_t *file,
 int mpeg3_seek_percentage(mpeg3_t *file, double percentage)
 {
 	int i;
+
+	file->percentage_pts = -1;
 	for(i = 0; i < file->total_vstreams; i++)
 	{
 		file->vtrack[i]->current_position = 0;
@@ -828,6 +830,16 @@ int mpeg3_seek_percentage(mpeg3_t *file, double percentage)
 
 	return 0;
 }
+
+double mpeg3_get_percentage_pts(mpeg3_t *file)
+{
+	return file->percentage_pts;
+}
+
+void mpeg3_set_percentage_pts(mpeg3_t *file, double pts)
+{
+}
+
 
 int mpeg3_previous_frame(mpeg3_t *file, int stream)
 {

@@ -166,6 +166,9 @@ int mpeg3video_read_frame(mpeg3video_t *video,
 		int out_w, 
 		int out_h, 
 		int color_model);
+void mpeg3video_dump(mpeg3video_t *video);
+
+
 
 /* FILESYSTEM */
 
@@ -209,9 +212,21 @@ unsigned int mpeg3demux_read_int24(mpeg3_demuxer_t *demuxer);
 unsigned int mpeg3demux_read_int16(mpeg3_demuxer_t *demuxer);
 double mpeg3demux_length(mpeg3_demuxer_t *demuxer);
 mpeg3_demuxer_t* mpeg3_get_demuxer(mpeg3_t *file);
+
+/* Give byte offset relative to current title */
 int64_t mpeg3demux_tell(mpeg3_demuxer_t *demuxer);
+
+/* Give byte offset relative to start of movie */
+int64_t mpeg3demux_tell_absolute(mpeg3_demuxer_t *demuxer);
+
+/* Give total number of bytes in all titles */
+int64_t mpeg3demux_movie_size(mpeg3_demuxer_t *demuxer);
+
 double mpeg3demux_tell_percentage(mpeg3_demuxer_t *demuxer);
+
+/* Return the current title */
 int mpeg3demux_tell_title(mpeg3_demuxer_t *demuxer);
+
 double mpeg3demux_get_time(mpeg3_demuxer_t *demuxer);
 int mpeg3demux_eof(mpeg3_demuxer_t *demuxer);
 int mpeg3demux_bof(mpeg3_demuxer_t *demuxer);
@@ -224,10 +239,20 @@ int64_t mpeg3demuxer_total_bytes(mpeg3_demuxer_t *demuxer);
 unsigned char mpeg3demux_read_char_packet(mpeg3_demuxer_t *demuxer);
 unsigned char mpeg3demux_read_prev_char_packet(mpeg3_demuxer_t *demuxer);
 int mpeg3demux_read_program(mpeg3_demuxer_t *demuxer);
+
+/* Get last pts read */
 double mpeg3demux_audio_pts(mpeg3_demuxer_t *demuxer);
+
 double mpeg3demux_video_pts(mpeg3_demuxer_t *demuxer);
+
+/* Set the last pts read to -1 for audio and video */
 void mpeg3demux_reset_pts(mpeg3_demuxer_t *demuxer);
 
+/* scan forward for next pts.  Used in percentage seeking to synchronize */
+double mpeg3demux_scan_pts(mpeg3_demuxer_t *demuxer);
+
+/* seek using sequential search to the pts given.  Used in percentage seeking. */
+int mpeg3demux_goto_pts(mpeg3_demuxer_t *demuxer, double pts);
 
 
 unsigned char mpeg3demux_read_char_packet(mpeg3_demuxer_t *demuxer);

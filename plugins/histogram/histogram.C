@@ -295,7 +295,6 @@ int HistogramConfig::equivalent(HistogramConfig &that)
 			output_min[i] != that.output_min[i] ||
 			output_max[i] != that.output_max[i]) return 0;
 	}
-//printf("HistogramConfig::equivalent 1 %d %d\n", mode, that.mode);
 
 	if(automatic != that.automatic ||
 		mode != that.mode ||
@@ -618,7 +617,6 @@ void HistogramWindow::update_canvas()
 		y1 = y2;
 	}
 
-//printf("HistogramWindow::update_canvas 2\n");
 	canvas->flash();
 }
 
@@ -1049,19 +1047,23 @@ void HistogramMain::render_gui(void *data)
 		thread->window->lock_window();
 //printf("HistogramMain::render_gui 2\n");
 		calculate_histogram((VFrame*)data);
+//printf("HistogramMain::render_gui 3\n");
 		if(config.automatic)
 		{
 			calculate_automatic((VFrame*)data);
 		}
+//printf("HistogramMain::render_gui 3\n");
 
 		thread->window->update_canvas();
+//printf("HistogramMain::render_gui 3\n");
 		if(config.automatic)
 		{
 			thread->window->update_input();
 		}
+//printf("HistogramMain::render_gui 3\n");
 		thread->window->unlock_window();
 	}
-//printf("HistogramMain::render_gui 3\n");
+//printf("HistogramMain::render_gui 4\n");
 }
 
 void HistogramMain::update_gui()
@@ -1374,7 +1376,10 @@ void HistogramMain::calculate_automatic(VFrame *data)
 
 int HistogramMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
+//printf("HistogramMain::process_realtime 1\n");
 	int need_reconfigure = load_configuration();
+//printf("HistogramMain::process_realtime 1\n");
+
 
 	if(!engine) engine = new HistogramEngine(this,
 		get_project_smp() + 1,
@@ -1384,11 +1389,13 @@ int HistogramMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 //printf("HistogramMain::process_realtime 1\n");
 	send_render_gui(input_ptr);
+//printf("HistogramMain::process_realtime 1\n");
 
 	if(input_ptr->get_rows()[0] != output_ptr->get_rows()[0])
 	{
 		output_ptr->copy_from(input_ptr);
 	}
+//printf("HistogramMain::process_realtime 1\n");
 
 // Generate tables here.  The same table is used by many packages to render
 // each horizontal stripe.  Need to cover the entire output range in  each
@@ -1425,6 +1432,7 @@ int HistogramMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 				break;
 		}
 	}
+//printf("HistogramMain::process_realtime 1\n");
 
 
 
@@ -1432,6 +1440,7 @@ int HistogramMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 // Apply histogram
 	engine->process_packages(HistogramEngine::APPLY, input);
 
+//printf("HistogramMain::process_realtime 100\n");
 
 
 

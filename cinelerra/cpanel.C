@@ -30,22 +30,14 @@ CPanel::~CPanel()
 int CPanel::create_objects()
 {
 	int x = this->x, y = this->y;
-//printf("CPanel 1\n");
 	subwindow->add_subwindow(operation[CWINDOW_PROTECT] = new CPanelProtect(mwindow, this, x, y));
-//printf("CPanel 1\n");
 	y += operation[CWINDOW_PROTECT]->get_h();
-//printf("CPanel 1\n");
 	subwindow->add_subwindow(operation[CWINDOW_ZOOM] = new CPanelMagnify(mwindow, this, x, y));
-//printf("CPanel 1\n");
 	y += operation[CWINDOW_ZOOM]->get_h();
 	subwindow->add_subwindow(operation[CWINDOW_MASK] = new CPanelMask(mwindow, this, x, y));
-//printf("CPanel 1\n");
 	y += operation[CWINDOW_MASK]->get_h();
-//printf("CPanel 1\n");
 	subwindow->add_subwindow(operation[CWINDOW_CAMERA] = new CPanelCamera(mwindow, this, x, y));
-//printf("CPanel 1\n");
 	y += operation[CWINDOW_CAMERA]->get_h();
-//printf("CPanel 1\n");
 	subwindow->add_subwindow(operation[CWINDOW_PROJECTOR] = new CPanelProj(mwindow, this, x, y));
 	y += operation[CWINDOW_PROJECTOR]->get_h();
 	subwindow->add_subwindow(operation[CWINDOW_CROP] = new CPanelCrop(mwindow, this, x, y));

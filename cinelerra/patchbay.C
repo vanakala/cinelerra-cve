@@ -42,6 +42,13 @@ PatchBay::~PatchBay()
 {
 }
 
+
+int PatchBay::delete_all_patches()
+{
+    patches.remove_all_objects();
+    return 0;
+}
+
 int PatchBay::create_objects()
 {
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h());

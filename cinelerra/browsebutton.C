@@ -23,10 +23,14 @@ BrowseButton::BrowseButton(MWindow *mwindow,
 	set_tooltip("Look for file");
 }
 
-BrowseButton::~BrowseButton()  
-{ }
+BrowseButton::~BrowseButton()
+{
+}
 
-int BrowseButton::handle_event() { start(); }
+int BrowseButton::handle_event()
+{
+	start(); 
+}
 
 void BrowseButton::run()
 {
@@ -61,7 +65,8 @@ void BrowseButton::run()
 
 
 
-BrowseButtonWindow::BrowseButtonWindow(MWindow *mwindow, BC_WindowBase *parent_window, 
+BrowseButtonWindow::BrowseButtonWindow(MWindow *mwindow, 
+	BC_WindowBase *parent_window, 
 	char *init_directory, 
 	char *title, 
 	char *caption, 

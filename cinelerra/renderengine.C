@@ -14,7 +14,7 @@
 #include "transportque.h"
 #include "videodevice.h"
 #include "vrender.h"
-
+#include "workarounds.h"
 
 
 
@@ -84,6 +84,8 @@ int RenderEngine::arm_command(TransportCommand *command,
 
 
 	input_lock.lock();
+
+
 //printf("RenderEngine::arm_command 1\n");
 	*this->command = *command;
 //this->command->get_edl()->dump();
@@ -122,9 +124,15 @@ int RenderEngine::arm_command(TransportCommand *command,
 		for(int i = 0; i < MAX_CHANNELS; i++)
 		{
 			vconfig->do_channel[i] = 
-				(i == current_vchannel && 
+				((i == current_vchannel) && 
 					device_channels &&
 					edl_channels);
+
+// GCC 3.2 optimization error causes do_channel[0] to always be 0 unless
+// we do this.
+Workarounds::clamp(vconfig->do_channel[i], 0, 1);
+
+//printf("RenderEngine::arm_command 1 %d\n", vconfig->do_channel[0]);
 			if(vconfig->do_channel[i])
 			{
 				current_vchannel++;
@@ -192,6 +200,7 @@ int RenderEngine::arm_command(TransportCommand *command,
 //printf("RenderEngine::arm_command 6 %d %d\n", do_audio, do_video);
 	create_render_threads();
 	arm_render_threads();
+
 //printf("RenderEngine::arm_command 8\n");
 	return 0;
 }

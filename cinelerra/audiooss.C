@@ -22,9 +22,8 @@
 // Synchronie multiple devices by using threads
 
 OSSThread::OSSThread(AudioOSS *device)
- : Thread()
+ : Thread(1, 0, 0)
 {
-	set_synchronous(1);
 	rd = 0;
 	wr = 0;
 	done = 0;
@@ -53,9 +52,14 @@ void OSSThread::run()
 		if(wr)
 		{
 //fwrite(data, bytes, 1, stdout);
-//printf("OSSThread::run %p\n", device);
 //printf("OSSThread::run %d %d\n", bytes, device->device->get_device_buffer());
+			if(done) return;
+//printf("OSSThread::run 1\n");
+			Thread::enable_cancel();
 			write(fd, data, bytes);
+			Thread::disable_cancel();
+//printf("OSSThread::run 10\n");
+			if(done) return;
 			write_lock.unlock();
 		}
 		output_lock.unlock();
@@ -345,10 +349,12 @@ long AudioOSS::device_position()
 
 int AudioOSS::interrupt_playback()
 {
+//printf("AudioOSS::interrupt_playback 1\n");
 	for(int i = 0; i < MAXDEVICES; i++)
 	{
-		if(thread[i]) thread[i]->end();
+		if(thread[i]) thread[i]->cancel();
 	}
+//printf("AudioOSS::interrupt_playback 100\n");
 	return 0;
 }
 

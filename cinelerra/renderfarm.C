@@ -196,7 +196,7 @@ int RenderFarmServerThread::start_loop()
    			addr.sin_family = AF_INET;
 			addr.sin_port = htons(server->preferences->get_node_port(number));
 			hostinfo = gethostbyname(hostname);
-			if(hostinfo == NULL) 
+			if(hostinfo == NULL)
     		{
     			fprintf(stderr, "RenderFarmServerThread::start_loop: unknown host %s.\n", 
 					server->preferences->get_node_hostname(number));

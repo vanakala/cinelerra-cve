@@ -65,11 +65,11 @@ VirtualNode::~VirtualNode()
 void VirtualNode::dump(int indent)
 {
 	PRINT_INDENT
-	printf("VirtualNode %s\n", track->title);
+	printf("VirtualNode title=%s\n", track->title);
 	if(real_module)
 	{
 		PRINT_INDENT
-		printf(" Plugins\n");
+		printf(" Plugins total=%d\n", vplugins.total);
 		for(int i = 0; i < vplugins.total; i++)
 		{
 			vplugins.values[i]->dump(indent + 2);
@@ -136,16 +136,24 @@ int VirtualNode::expand_as_module(int duplicate, long current_position)
 // create the plugins for this module
 	for(int i = 0; i < track->plugin_set.total; i++)
 	{
-//printf("VirtualNode::expand_as_module 1 %p\n", track);
 		Plugin *plugin = track->get_current_plugin(current_position, 
 			i, 
 			renderengine->command->get_direction(),
 			0);
 
+// printf("VirtualNode::expand_as_module 1 %d %d %p %p\n", 
+// i, 
+// track->plugin_set.total,
+// plugin, 
+// real_plugin);
+
+// Switch off if circular reference.  This happens if a plugin set or a track is deleted.
+		if(plugin == real_plugin) continue;
+
+
 //printf("VirtualNode::expand_as_module 2 %d %p\n", i, plugin);
 		if(plugin)
 		{
-//printf("VirtualNode::expand_as_module 3 %p %d\n", plugin, plugin->on);
 			if(plugin->on)
 			{
 				int plugin_type = plugin->plugin_type;
@@ -223,7 +231,9 @@ int VirtualNode::expand_as_plugin(int duplicate)
 	{
 // Get plugin server
 		Module *module = vconsole->module_of(track);
+
 		attachment = module->attachment_of(real_plugin);
+//printf("VirtualNode::expand_as_plugin 1 %p %p\n", attachment, real_plugin);
 	}
 
 
@@ -258,20 +268,27 @@ int VirtualNode::attach_virtual_module(Plugin *plugin,
 	{
 //printf("VirtualNode::attach_virtual_module 1 %p\n", plugin);
 		int real_module_number = plugin->shared_location.module;
-	//printf("VirtualNode::attach_virtual_module 1\n");
+//printf("VirtualNode::attach_virtual_module 1\n");
 		Module *real_module = vconsole->module_number(real_module_number);
-	//printf("VirtualNode::attach_virtual_module 1\n");
+//printf("VirtualNode::attach_virtual_module 1\n");
 		Track *track = real_module->track;
-	// working data is now in output
+
+// Switch off if circular reference.  This happens if a track is deleted.
+		if(track == this->real_module->track) return 1;
+
+
+
+
+// working data is now in output
 		if(plugin->out) data_in_input = 0;
-	//printf("VirtualNode::attach_virtual_module 1\n");
+//printf("VirtualNode::attach_virtual_module 1\n");
 		VirtualNode *virtual_module = create_module(plugin,
 			real_module,
 			track);
-	//printf("VirtualNode::attach_virtual_module 1\n");
+//printf("VirtualNode::attach_virtual_module 1\n");
 
 		vplugins.append(virtual_module);
-	//printf("VirtualNode::attach_virtual_module 1\n");
+//printf("VirtualNode::attach_virtual_module 1\n");
 		virtual_module->expand(duplicate, current_position);
 //printf("VirtualNode::attach_virtual_module 2\n");
 	}

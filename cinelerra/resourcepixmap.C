@@ -466,9 +466,7 @@ void ResourcePixmap::draw_audio_resource(Edit *edit, int x, int w)
 
 void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 {
-//printf("ResourcePixmap::draw_audio_source 1 %s\n", edit->asset->path);
 	File *source = mwindow->audio_cache->check_out(edit->asset);
-//printf("ResourcePixmap::draw_audio_source 2 %s\n", edit->asset->path);
 
 	if(!source)
 	{
@@ -487,14 +485,12 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 // Single sample zoom
 	if(mwindow->edl->local_session->zoom_sample == 1)
 	{
-//printf("ResourcePixmap::draw_audio_source 1\n");
 
 		double oldsample, newsample;
 		long total_source_samples = (long)((double)(source_len + 1) * 
 			asset_over_session);
 		double *buffer = new double[total_source_samples];
 
-//printf("ResourcePixmap::draw_audio_source 2 %p\n", buffer);
 		source->set_audio_position((int)((double)source_start *
 				asset_over_session), 
 			edit->asset->sample_rate);
@@ -506,9 +502,6 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 			edit->asset->sample_rate))
 		{
 			oldsample = newsample = *buffer;
-// printf("ResourcePixmap::draw_audio_source 3 %d %d\n", 
-// w,
-// (int)(center_pixel - newsample * mwindow->edl->local_session->zoom_y / 2));
 			for(int x1 = x, x2 = x + w, i = 0; 
 				x1 < x2; 
 				x1++, i++)
@@ -521,16 +514,13 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 					(int)(center_pixel - newsample * mwindow->edl->local_session->zoom_y / 2),
 					this);
 			}
-//printf("ResourcePixmap::draw_audio_source 4 %p\n", buffer);
 		}
 
 		delete [] buffer;
-//printf("ResourcePixmap::draw_audio_source 5\n");
 	}
 	else
 // Multiple sample zoom
 	{
-//printf("ResourcePixmap::draw_audio_source 2\n");
 		long fragmentsize;
 		long buffersize = fragmentsize = 65536;
 		double *buffer = new double[buffersize + 1];
@@ -540,14 +530,17 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 		double asset_samples_per_pixel = 
 			mwindow->edl->local_session->zoom_sample *
 			asset_over_session;
-//printf("ResourcePixmap::draw_audio_source 6 %p\n", buffer);
+		int first_pixel = 1;
+		int prev_y1 = -1;
+		int prev_y2 = -1;
+		int y1;
+		int y2;
 
 		source->set_audio_position((long)(source_start * asset_over_session), 
 			edit->asset->sample_rate);
 		source->set_channel(edit->channel);
 		canvas->set_color(mwindow->theme->audio_color);
 
-//printf("ResourcePixmap::draw_audio_source 5 %f\n", asset_samples_per_pixel);
 		for(long source_sample = 0; 
 			source_sample < total_source_samples; 
 			source_sample += buffersize)
@@ -561,18 +554,14 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 				highsample = buffer[0];
 				lowsample = buffer[0];
 			}
-//printf("ResourcePixmap::draw_audio_source 5 %p\n", buffer);
 
 			if(!source->read_samples(buffer, 
 				fragmentsize, 
 				edit->asset->sample_rate))
 			{
-//printf("ResourcePixmap::draw_audio_source 6 %p\n", buffer);
 
 
 // Draw samples for this buffer
-
-//				lowsample = highsample = buffer[0];
 				for(long bufferposition = 0; 
 					bufferposition < fragmentsize; 
 					bufferposition++)
@@ -584,32 +573,57 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 						int x2 = (int)(x + 1 / asset_samples_per_pixel);
 
 						highsample = lowsample = buffer[bufferposition];
-						canvas->draw_line(
-							x1, 
-							(int)(center_pixel - 
+						y1 = (int)(center_pixel - 
 								highsample * 
 								mwindow->edl->local_session->zoom_y / 
-								2),
-							x2,
-							(int)(center_pixel - 
+								2);
+						y2 = (int)(center_pixel - 
 								lowsample * 
 								mwindow->edl->local_session->zoom_y / 
-								2),
+								2);
+						canvas->draw_line(
+							x1, 
+							y1,
+							x2,
+							y2,
 							this);
 					}
 					else
 					if(asset_samples_per_pixel >= 1 &&
 						sample_of_pixel >= asset_samples_per_pixel)
 					{
-// draw column and reset
-						canvas->draw_line(x, 
-							(int)(center_pixel - highsample * mwindow->edl->local_session->zoom_y / 2),
-							x,
-							(int)(center_pixel - lowsample * mwindow->edl->local_session->zoom_y / 2),
-							this);
+// Draw column and reset
+						y1 = (int)(center_pixel - 
+							highsample * 
+							mwindow->edl->local_session->zoom_y / 
+							2);
+						y2 = (int)(center_pixel - 
+							lowsample * 
+							mwindow->edl->local_session->zoom_y / 
+							2);
+
+						int current_y1;
+						int current_y2;
+						if(first_pixel)
+						{
+							canvas->draw_line(x, 
+								y1,
+								x,
+								y2,
+								this);
+							first_pixel = 0;
+						}
+						else
+							canvas->draw_line(x, 
+								MIN(y1, prev_y2),
+								x,
+								MAX(y2, prev_y1),
+								this);
 						sample_of_pixel -= asset_samples_per_pixel;
 						x++;
 						lowsample = highsample = buffer[bufferposition];
+						prev_y1 = y1;
+						prev_y2 = y2;
 					}
 
 					if(sample_of_pixel >= 1)
@@ -636,7 +650,6 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 	}
 
 	mwindow->audio_cache->check_in(edit->asset);
-//printf("ResourcePixmap::draw_audio_source 3 %s\n", edit->asset->path);
 }
 
 

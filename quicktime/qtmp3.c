@@ -1,5 +1,8 @@
 #include "funcprotos.h"
+
 #undef MMX
+/* We HAVE to fix all the #ifdef so that
+ * something like HAVE_MMX is used EVERYWHERE */
 #include "lame.h"
 #include "mpeg3private.h"
 #include "mpeg3protos.h"

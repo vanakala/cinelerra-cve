@@ -34,10 +34,8 @@ VirtualConsole::VirtualConsole(RenderEngine *renderengine,
 VirtualConsole::~VirtualConsole()
 {
 // Destructor always calls default methods so can't put deletions in here
-	for(int i = 0; i < total_tracks; i++)
-		delete virtual_modules[i];
-
-	if(total_tracks) delete [] virtual_modules;
+	delete_virtual_console();
+	delete_input_buffers();
 
 	delete startup_lock;
 	if(playable_tracks) delete playable_tracks;
@@ -56,19 +54,13 @@ void VirtualConsole::create_objects()
 	current_input_buffer = 0;
 	current_vconsole_buffer = 0;
 
-//printf("VirtualConsole::create_objects 1\n");
 	get_playable_tracks();
-//printf("VirtualConsole::create_objects 2 %p\n", playable_tracks);
 	total_tracks = playable_tracks->total;
-//printf("VirtualConsole::create_objects 3\n");
 	allocate_input_buffers();
-//printf("VirtualConsole::create_objects 4\n");
 	build_virtual_console(1);
-//printf("VirtualConsole::create_objects 5\n");
 	sort_virtual_console();
-//printf("VirtualConsole::create_objects 6\n");
 //dump();
-//printf("VirtualConsole::create_objects 7\n");
+
 }
 
 void VirtualConsole::start_playback()
@@ -175,7 +167,6 @@ void VirtualConsole::build_virtual_console(int persistant_plugins)
 		}
 		commonrender->restart_plugins = 1;
 	}
-
 }
 
 int VirtualConsole::sort_virtual_console()
@@ -232,12 +223,7 @@ int VirtualConsole::test_reconfigure(long position,
 	Track *current_track;
 	Module *module;
 
-// printf("VirtualConsole::test_reconfigure 2 %d %p %p\n", 
-// renderengine->config->vconfig->do_channel[0],
-// renderengine->config->vconfig->do_channel,
-// playable_tracks->do_channel);
-
-//printf("VirtualConsole::test_reconfigure 1 %d\n", playable_tracks->total);
+//printf("VirtualConsole::test_reconfigure 1\n");
 
 // Test playback status against virtual console for current position.
 	for(current_track = renderengine->edl->tracks->first;
@@ -247,8 +233,6 @@ int VirtualConsole::test_reconfigure(long position,
 		if(current_track->data_type == data_type)
 		{
 // Playable status changed
-// printf("VirtualConsole::test_reconfigure 2 %d\n", 
-// current_track->data_type);
 			if(playable_tracks->is_playable(current_track, 
 				commonrender->current_position))
 			{
@@ -259,17 +243,14 @@ int VirtualConsole::test_reconfigure(long position,
 			if(playable_tracks->is_listed(current_track))
 			{
 				result = 1;
-//printf("VirtualConsole::test_reconfigure 3 %d\n", result);
 			}
 		}
 	}
 
-//printf("VirtualConsole::test_reconfigure 2 %d %d\n", length, result);
 // Test plugins against virtual console at current position
 	for(int i = 0; i < commonrender->total_modules && !result; i++)
 		result = commonrender->modules[i]->test_plugins();
 
-//printf("VirtualConsole::test_reconfigure 3 %d %d\n", length, result);
 
 
 
@@ -284,7 +265,10 @@ int VirtualConsole::test_reconfigure(long position,
 
 
 	int direction = renderengine->command->get_direction();
-	long longest_duration;
+// GCC 3.2 requires this or optimization error results.
+	long longest_duration1;
+	long longest_duration2;
+	long longest_duration3;
 
 //printf("VirtualConsole::test_reconfigure 6 %d %d\n", length, result);
 // Length of time until next transition, edit, or effect change.
@@ -293,29 +277,49 @@ int VirtualConsole::test_reconfigure(long position,
 		current_track;
 		current_track = current_track->next)
 	{
-//printf("VirtualConsole::test_reconfigure 7 %d %d\n", result, length);
 		if(current_track->data_type == data_type)
 		{
-//printf("VirtualConsole::test_reconfigure 8 %d %d\n", result, length);
-			longest_duration = current_track->edit_change_duration(commonrender->current_position, length, direction, 1);
+// Test the transitions
+			longest_duration1 = current_track->edit_change_duration(
+				commonrender->current_position, 
+				length, 
+				direction == PLAY_REVERSE, 
+				1);
 
-			if(longest_duration < length)
+
+// Test the edits
+			longest_duration2 = current_track->edit_change_duration(
+				commonrender->current_position, 
+				length, 
+				direction == PLAY_REVERSE, 
+				0);
+
+
+// Test the plugins
+			longest_duration3 = current_track->plugin_change_duration(
+				commonrender->current_position,
+				length,
+				direction == PLAY_REVERSE);
+
+			if(longest_duration1 < length)
 			{
-				length = longest_duration;
+				length = longest_duration1;
 				last_playback = 0;
 			}
-//printf("VirtualConsole::test_reconfigure 9 %d %d\n", result, length);
-
-			if(renderengine->edl->session->test_playback_edits)
+//printf("VirtualConsole::test_reconfigure 10 %d\n", length);
+			if(longest_duration2 < length)
 			{
-				longest_duration = current_track->edit_change_duration(commonrender->current_position, length, direction, 0);
-				if(longest_duration < length)
-				{
-					length = longest_duration;
-					last_playback = 0;
-				}
+				length = longest_duration2;
+				last_playback = 0;
 			}
-//printf("VirtualConsole::test_reconfigure 10 %d %d\n", result, length);
+//printf("VirtualConsole::test_reconfigure 20 %d\n", length);
+			if(longest_duration3 < length)
+			{
+				length = longest_duration3;
+				last_playback = 0;
+			}
+
+//printf("VirtualConsole::test_reconfigure 30 %d\n", length);
 		}
 	}
 //printf("VirtualConsole::test_reconfigure 11 %d %d\n", length, result);
@@ -356,7 +360,8 @@ int VirtualConsole::delete_virtual_console()
 	{
 		delete virtual_modules[i];
 	}
-	delete [] virtual_modules;
+	if(total_tracks) delete [] virtual_modules;
+	virtual_modules = 0;
 
 // delete sort order
 	render_list.remove_all();
@@ -365,19 +370,19 @@ int VirtualConsole::delete_virtual_console()
 int VirtualConsole::delete_input_buffers()
 {
 // delete input buffers
-	for(int buffer = 0; buffer < total_ring_buffers(); buffer++)
+	for(int buffer = 0; buffer < ring_buffers; buffer++)
 	{
 		delete_input_buffer(buffer);
 	}
 
-	for(int i = 0; i < total_ring_buffers(); i++)
+	for(int i = 0; i < ring_buffers; i++)
 	{
 		delete input_lock[i];
 		delete output_lock[i];
 	}
 
-	delete playable_tracks;
 	total_tracks = 0;
+	ring_buffers = 0;
 	return 0;
 }
 

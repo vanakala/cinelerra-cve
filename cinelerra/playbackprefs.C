@@ -93,13 +93,13 @@ int PlaybackPrefs::create_objects()
 	add_subwindow(new BC_Title(x, y, "Video Out", LARGEFONT, BLACK));
 	y += 30;
 
-	add_subwindow(new BC_Title(10, y, "Framerate achieved:"));
-	add_subwindow(framerate_title = new BC_Title(x + 150, y, "--", MEDIUMFONT, RED));
-	draw_framerate();
-	y += 30;
+	add_subwindow(new VideoEveryFrame(pwindow, x, y));
 
-	add_subwindow(new VideoEveryFrame(pwindow, 10, y));
-	y += 40;
+	add_subwindow(new BC_Title(x + 200, y + 10, "Framerate achieved:"));
+	add_subwindow(framerate_title = new BC_Title(x + 350, y + 10, "--", MEDIUMFONT, RED));
+	draw_framerate();
+
+	y += 35;
  	add_subwindow(new BC_Title(x, y, "Scaling equation:"));
 	y += 20;
 	add_subwindow(nearest_neighbor = new PlaybackNearest(pwindow, 

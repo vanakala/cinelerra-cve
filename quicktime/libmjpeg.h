@@ -30,7 +30,7 @@ extern "C" {
 
 
 #include <stdio.h>
-#include <jpeglib.h>
+#include "jpeglib.h"
 #include <png.h>       /* Need setjmp.h included by png.h */
 #include "pthread.h"
 
@@ -79,6 +79,7 @@ typedef struct
 	unsigned char **mcu_rows[3];
 /* Height of the field */
 	int field_h; 
+	int coded_field_h; 
 } mjpeg_compressor;
 
 typedef struct

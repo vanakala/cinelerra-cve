@@ -155,7 +155,8 @@ void FileSndFile::format_to_asset()
 
 	asset->audio_data = 1;
 	asset->audio_length = fd_config.samples;
-	asset->sample_rate = fd_config.samplerate;
+	if(!asset->sample_rate)
+		asset->sample_rate = fd_config.samplerate;
 	asset->channels = fd_config.channels;
 //printf("FileSndFile::format_to_asset %x %d %d %x\n", fd_config.format & SF_FORMAT_TYPEMASK, fd_config.pcmbitwidth, fd_config.samples, fd_config.format & SF_FORMAT_SUBMASK);
 //asset->dump();

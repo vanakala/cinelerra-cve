@@ -1,0 +1,2 @@
+fonts_DATA = arialbd.ttf arialbi.ttf ariali.ttf arial.ttf ariblk.ttf comicbd.ttf comic.ttf courbd.ttf courbi.ttf couri.ttf cour.ttf fonts.dir georgiab.ttf georgiai.ttf georgia.ttf georgiaz.ttf impact.ttf l_10646.ttf lucon.ttf micross.ttf old_engl.ttf palabi.ttf palab.ttf palai.ttf pala.ttf symbol.ttf tahomabd.ttf tahoma.ttf timesbd.ttf timesbi.ttf timesi.ttf times.ttf trebucbd.ttf trebucbi.ttf trebucit.ttf trebuc.ttf verdanab.ttf verdanai.ttf verdana.ttf verdanaz.ttf webdings.ttf wingding.ttf 
+

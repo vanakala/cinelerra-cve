@@ -59,7 +59,7 @@ int AboutPrefs::create_objects()
 
 
 	char *license2 = 
-"(c) 2002 Heroine Virtual Ltd.\n\n"
+"(c) 2003 Heroine Virtual Ltd.\n\n"
 "Build date: " BUILDDATE;
 	y += get_text_height(LARGEFONT) * 2;
 	set_font(MEDIUMFONT);

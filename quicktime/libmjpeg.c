@@ -409,9 +409,9 @@ static void get_rows(mjpeg_t *mjpeg, mjpeg_compressor *compressor)
 		{
 			if(!compressor->rows[0])
 			{
-				compressor->rows[0] = calloc(1, sizeof(unsigned char*) * compressor->field_h);
-				compressor->rows[1] = calloc(1, sizeof(unsigned char*) * compressor->field_h);
-				compressor->rows[2] = calloc(1, sizeof(unsigned char*) * compressor->field_h);
+				compressor->rows[0] = calloc(1, sizeof(unsigned char*) * compressor->coded_field_h);
+				compressor->rows[1] = calloc(1, sizeof(unsigned char*) * compressor->coded_field_h);
+				compressor->rows[2] = calloc(1, sizeof(unsigned char*) * compressor->coded_field_h);
 			}
 
 // User colormodel matches jpeg colormodel
@@ -419,7 +419,7 @@ static void get_rows(mjpeg_t *mjpeg, mjpeg_compressor *compressor)
 				mjpeg->output_w == mjpeg->coded_w &&
 				mjpeg->output_h == mjpeg->coded_h)
 			{
-				for(i = 0; i < compressor->field_h; i++)
+				for(i = 0; i < compressor->coded_field_h; i++)
 				{
 					int input_row = get_input_row(mjpeg, compressor, i);
 					compressor->rows[0][i] = mjpeg->y_argument + 
@@ -432,7 +432,7 @@ static void get_rows(mjpeg_t *mjpeg, mjpeg_compressor *compressor)
 			}
 			else
 			{
-				for(i = 0; i < compressor->field_h; i++)
+				for(i = 0; i < compressor->coded_field_h; i++)
 				{
 					int input_row = get_input_row(mjpeg, compressor, i);
 					compressor->rows[0][i] = mjpeg->temp_rows[0][input_row];
@@ -447,9 +447,9 @@ static void get_rows(mjpeg_t *mjpeg, mjpeg_compressor *compressor)
 		{
 			if(!compressor->rows[0])
 			{
-				compressor->rows[0] = calloc(1, sizeof(unsigned char*) * compressor->field_h);
-				compressor->rows[1] = calloc(1, sizeof(unsigned char*) * compressor->field_h);
-				compressor->rows[2] = calloc(1, sizeof(unsigned char*) * compressor->field_h);
+				compressor->rows[0] = calloc(1, sizeof(unsigned char*) * compressor->coded_field_h);
+				compressor->rows[1] = calloc(1, sizeof(unsigned char*) * compressor->coded_field_h);
+				compressor->rows[2] = calloc(1, sizeof(unsigned char*) * compressor->coded_field_h);
 			}
 
 	// User colormodel matches jpeg colormodel
@@ -457,7 +457,7 @@ static void get_rows(mjpeg_t *mjpeg, mjpeg_compressor *compressor)
 				mjpeg->output_w == mjpeg->coded_w &&
 				mjpeg->output_h == mjpeg->coded_h)
 			{
-				for(i = 0; i < compressor->field_h; i++)
+				for(i = 0; i < compressor->coded_field_h; i++)
 				{
 					int input_row = get_input_row(mjpeg, compressor, i);
 					compressor->rows[0][i] = mjpeg->y_argument + 
@@ -470,7 +470,7 @@ static void get_rows(mjpeg_t *mjpeg, mjpeg_compressor *compressor)
 			}
 			else
 			{
-				for(i = 0; i < compressor->field_h; i++)
+				for(i = 0; i < compressor->coded_field_h; i++)
 				{
 					int input_row = get_input_row(mjpeg, compressor, i);
 					compressor->rows[0][i] = mjpeg->temp_rows[0][input_row];
@@ -490,17 +490,17 @@ static void get_rows(mjpeg_t *mjpeg, mjpeg_compressor *compressor)
 				compressor->rows[2] = calloc(1, sizeof(unsigned char*) * mjpeg->coded_h / 2);
 			}
 
-	// User colormodel matches jpeg colormodel
+// User colormodel matches jpeg colormodel
 			if(mjpeg->color_model == BC_YUV420P &&
 				mjpeg->output_w == mjpeg->coded_w &&
 				mjpeg->output_h == mjpeg->coded_h)
 			{
-				for(i = 0; i < compressor->field_h; i++)
+				for(i = 0; i < compressor->coded_field_h; i++)
 				{
 					int input_row = get_input_row(mjpeg, compressor, i);
 					compressor->rows[0][i] = mjpeg->y_argument + 
 						mjpeg->coded_w * input_row;
-                	if(i < compressor->field_h / 2)
+                	if(i < compressor->coded_field_h / 2)
                 	{
 				    	compressor->rows[1][i] = mjpeg->u_argument + 
 					    	(mjpeg->coded_w / 2) * input_row;
@@ -511,11 +511,11 @@ static void get_rows(mjpeg_t *mjpeg, mjpeg_compressor *compressor)
 			}
 			else
 			{
-				for(i = 0; i < compressor->field_h; i++)
+				for(i = 0; i < compressor->coded_field_h; i++)
 				{
 					int input_row = get_input_row(mjpeg, compressor, i);
 					compressor->rows[0][i] = mjpeg->temp_rows[0][input_row];
-                	if(i < compressor->field_h / 2)
+                	if(i < compressor->coded_field_h / 2)
                 	{
 				    	compressor->rows[1][i] = mjpeg->temp_rows[1][input_row];
 				    	compressor->rows[2][i] = mjpeg->temp_rows[2][input_row];
@@ -580,7 +580,7 @@ static void get_mcu_rows(mjpeg_t *mjpeg,
 			scanline = start_row;
 			if(i > 0 && mjpeg->jpeg_color_model == BC_YUV420P) scanline /= 2;
 			scanline += j;
-			if(scanline >= engine->field_h) scanline = engine->field_h - 1;
+			if(scanline >= engine->coded_field_h) scanline = engine->coded_field_h - 1;
 			engine->mcu_rows[i][j] = engine->rows[i][scanline];
 		}
 	}
@@ -647,7 +647,7 @@ static void decompress_field(mjpeg_compressor *engine)
 		get_mcu_rows(mjpeg, engine, engine->jpeg_decompress.output_scanline);
 		jpeg_read_raw_data(&engine->jpeg_decompress, 
 			engine->mcu_rows, 
-			engine->field_h);
+			engine->coded_field_h);
 	}
 	jpeg_finish_decompress(&engine->jpeg_decompress);
 
@@ -690,7 +690,7 @@ static void compress_field(mjpeg_compressor *engine)
 
 		jpeg_write_raw_data(&engine->jpeg_compress, 
 			engine->mcu_rows, 
-			engine->field_h);
+			engine->coded_field_h);
 	}
 	jpeg_finish_compress(&engine->jpeg_compress);
 //printf("compress_field 2\n");
@@ -732,7 +732,9 @@ mjpeg_compressor* mjpeg_new_decompressor(mjpeg_t *mjpeg, int instance)
 	result->mjpeg = mjpeg;
 	result->instance = instance;
 	new_jpeg_objects(result);
-	result->field_h = mjpeg->coded_h / mjpeg->fields;
+	result->field_h = mjpeg->output_h / mjpeg->fields;
+	result->coded_field_h = (result->field_h % 16) ? 
+		result->field_h + (16 - (result->field_h % 16)) : result->field_h;
 
 	result->mcu_rows[0] = malloc(16 * sizeof(unsigned char*));
 	result->mcu_rows[1] = malloc(16 * sizeof(unsigned char*));
@@ -772,12 +774,14 @@ mjpeg_compressor* mjpeg_new_compressor(mjpeg_t *mjpeg, int instance)
 	pthread_mutexattr_t mutex_attr;
 	mjpeg_compressor *result = calloc(1, sizeof(mjpeg_compressor));
 
-	result->field_h = mjpeg->coded_h / mjpeg->fields;
+	result->field_h = mjpeg->output_h / mjpeg->fields;
+	result->coded_field_h = (result->field_h % 16) ? 
+		result->field_h + (16 - (result->field_h % 16)) : result->field_h;
 	result->mjpeg = mjpeg;
 	result->instance = instance;
 	result->jpeg_compress.err = jpeg_std_error(&(result->jpeg_error.pub));
 	jpeg_create_compress(&(result->jpeg_compress));
-	result->jpeg_compress.image_width = mjpeg->coded_w;
+	result->jpeg_compress.image_width = mjpeg->output_w;
 	result->jpeg_compress.image_height = result->field_h;
 	result->jpeg_compress.input_components = 3;
 	result->jpeg_compress.in_color_space = JCS_RGB;
@@ -902,7 +906,10 @@ int mjpeg_compress(mjpeg_t *mjpeg,
 		mjpeg->output_w != mjpeg->coded_w ||
 		mjpeg->output_h != mjpeg->coded_h)
 	{
-//printf("libmjpeg mjpeg->output_w=%d\n", mjpeg->output_w);
+/*
+ * printf("mjpeg_compress %d %d %d %d\n", 
+ * mjpeg->output_w, mjpeg->output_h, mjpeg->coded_w, mjpeg->coded_h);
+ */
 		cmodel_transfer(0, 
 			row_pointers,
 			mjpeg->temp_rows[0][0],

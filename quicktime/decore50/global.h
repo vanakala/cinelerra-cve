@@ -50,12 +50,10 @@
 
 #include "mp4_header.h"
 
-EXTERN int	juice_flag,
-						output_flag;
+EXTERN int	juice_flag, output_flag;
 EXTERN char * outputname;
 EXTERN int  flag_invert;
-EXTERN int	post_flag,
-						pp_options;
+EXTERN int	post_flag, pp_options;
 EXTERN mp4_header mp4_hdr;
 EXTERN struct _base
 {
@@ -84,9 +82,10 @@ EXTERN struct _ac_dc
 
 	int predict_dir;
 
-} ac_dc, *coeff_pred;
+} ac_dc;
+
 EXTERN unsigned char	*edged_ref[3],
-											*edged_for[3],
-											*frame_ref[3],
-											*frame_for[3],
-											*display_frame[3];
+						*edged_for[3],
+						*frame_ref[3],
+						*frame_for[3],
+						*display_frame[3];

@@ -27,20 +27,24 @@
 #if 1
 #define APPEND_VECTOR(data, size, allocation, track, value) \
 { \
-	if(!data[track] || allocation[track] <= size[track]) \
-	{ \
-		int64_t *new_data = calloc(1, sizeof(int64_t) * allocation[track] * 2); \
+	uint64_t **track_data = &(data)[(track)]; \
+	int *track_allocation = &(allocation)[(track)]; \
+	int *track_size = &(size)[(track)]; \
  \
-		if(data[track]) \
+	if(!(*track_data) || (*track_allocation) <= (*track_size)) \
+	{ \
+		int64_t *new_data = calloc(1, sizeof(int64_t) * (*track_allocation) * 2); \
+ \
+		if((*track_data)) \
 		{ \
-			memcpy(new_data, data[track], sizeof(int64_t) * allocation[track]); \
-			free(data[track]); \
+			memcpy(new_data, (*track_data), sizeof(int64_t) * (*track_allocation)); \
+			free((*track_data)); \
 		} \
-		allocation[track] *= 2; \
-		data[track] = new_data; \
+		(*track_allocation) *= 2; \
+		(*track_data) = new_data; \
 	} \
  \
-	data[track][size[track]++] = value; \
+	(*track_data)[(*track_size)++] = (value); \
 }
 #else
 #define APPEND_VECTOR(data, size, allocation, track, value) \
@@ -240,33 +244,34 @@ int main(int argc, char *argv[])
 //printf(__FUNCTION__ " 9 %d\n", vtracks);
 			for(j = 0; j < vtracks; j++)
 			{
+				mpeg3video_t *video = input->vtrack[j]->video;
+				mpeg3_demuxer_t *demuxer = input->vtrack[j]->demuxer;
 				if(rewind)
 				{
-					mpeg3_demuxer_t *demuxer = input->vtrack[j]->demuxer;
 					mpeg3demux_seek_byte(demuxer, 0);
 				}
 
 
-/*
- * printf(__FUNCTION__ " 10 %lld %lld %d\n", 
- * mpeg3io_tell(input->vtrack[j]->demuxer->titles[0]->fs), 
- * mpeg3io_total_bytes(input->vtrack[j]->demuxer->titles[0]->fs),
- * frame_count);
- */
 				for(l = 0; l < frame_count; l++)
 				{
 					if(!mpeg3_end_of_video(input, j))
 					{
-//printf(__FUNCTION__ " 1 %d\n", total_keyframe_numbers[j]);
-						int64_t title_number = mpeg3demux_tell_title(input->vtrack[j]->demuxer);
-						int64_t position = mpeg3demux_tell(input->vtrack[j]->demuxer);
+						int64_t title_number = mpeg3demux_tell_title(demuxer);
+						int64_t position = mpeg3demux_tell(demuxer);
 						int64_t result;
 						uint32_t code = 0;
+						int got_top = 0;
+						int got_bottom = 0;
+						int got_keyframe = 0;
+						int fields = 0;
 
 						if(position < MPEG3_IO_SIZE) position = MPEG3_IO_SIZE;
 						result = (title_number << 56) | (position - MPEG3_IO_SIZE);
 						have_video = 1;
 
+
+
+// Store offset of every frame in table
 						APPEND_VECTOR(frame_offsets, 
 							total_frame_offsets,
 							frame_offset_allocation,
@@ -278,7 +283,8 @@ int main(int argc, char *argv[])
 // Search for next frame start.
 						if(total_frame_offsets[j] == 1)
 						{
-// Assume first frame is an I-frame
+// Assume first frame is an I-frame and put its number in the keyframe number
+// table.
 							APPEND_VECTOR(keyframe_numbers,
 								total_keyframe_numbers,
 								keyframe_numbers_allocation,
@@ -288,19 +294,49 @@ int main(int argc, char *argv[])
 
 
 // Skip the first frame.
-							mpeg3video_get_header(input->vtrack[j]->video, 0);
-							input->vtrack[j]->video->current_repeat += 100;
+							mpeg3video_get_header(video, 0);
+							video->current_repeat += 100;
 						}
 
 
 
 
 // Get next frame
-						mpeg3video_get_header(input->vtrack[j]->video, 0);
-//printf(__FUNCTION__ " 2 %d\n", total_keyframe_numbers[j]);
-						input->vtrack[j]->video->current_repeat += 100;
+						do
+						{
+							mpeg3video_get_header(video, 0);
+							video->current_repeat += 100;
 
-						if(input->vtrack[j]->video->pict_type == I_TYPE)
+							if(video->pict_struct == TOP_FIELD)
+							{
+								got_top = 1;
+							}
+							else
+							if(video->pict_struct == BOTTOM_FIELD)
+							{
+								got_bottom = 1;
+							}
+							else
+							if(video->pict_struct == FRAME_PICTURE)
+							{
+								got_top = got_bottom = 1;
+							}
+							fields++;
+
+// The way we do it, the I frames have the top field but both the I frame and
+// subsequent P frame make the keyframe.
+							if(video->pict_type == I_TYPE)
+								got_keyframe = 1;
+//printf(__FUNCTION__ " 10 %d %d %d\n", video->pict_type, got_top, got_bottom);
+						}while(!mpeg3_end_of_video(input, j) && 
+							!got_bottom && 
+							total_frame_offsets[j] > 1);
+
+
+
+
+// Store number of a keyframe in the keyframe number table
+						if(got_keyframe)
 							APPEND_VECTOR(keyframe_numbers,
 								total_keyframe_numbers,
 								keyframe_numbers_allocation,
@@ -315,7 +351,6 @@ int main(int argc, char *argv[])
 					}
 				}
 			}
-//printf(__FUNCTION__ " 10 %d %d\n", have_audio, have_video);
 
 			if(!have_audio && !have_video) done = 1;
 

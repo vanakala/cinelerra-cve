@@ -26,13 +26,13 @@ PlayableTracks::PlayableTracks(RenderEngine *renderengine,
 		current_track; 
 		current_track = current_track->next)
 	{
-//printf("PlayableTracks::PlayableTracks 1 %d\n", is_playable(current_track, current_position));
 		if(is_playable(current_track, current_position))
 		{
+//printf("PlayableTracks::PlayableTracks 1 %p %d %d\n", this, total, current_position);
 			append(current_track);
 		}
 	}
-//printf("PlayableTracks::PlayableTracks %d %d\n", data_type, total);
+//printf("PlayableTracks::PlayableTracks %d %d %d\n", data_type, total, current_position);
 }
 
 PlayableTracks::~PlayableTracks()

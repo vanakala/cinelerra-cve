@@ -1100,6 +1100,7 @@ int SaveSettingsNow::handle_event()
 {
 	mwindow->save_defaults();
 	mwindow->save_backup();
+	mwindow->gui->show_message("Saved settings.");
 	return 1;
 }
 

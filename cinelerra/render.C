@@ -571,7 +571,7 @@ void Render::run()
 		mwindow->gui->lock_window();
 
 
-		mwindow->undo->update_undo_before("render", LOAD_EDITS | LOAD_TIMEBAR);
+		mwindow->undo->update_undo_before("render", LOAD_ALL);
 
 
 		ArrayList<Asset*> *assets = packages->get_asset_list();

@@ -5,6 +5,7 @@
 #include "meterpanel.h"
 #include "mwindow.h"
 #include "vplayback.h"
+#include "vtimebar.h"
 #include "vtracking.h"
 #include "vwindow.h"
 #include "vwindowgui.h"
@@ -34,6 +35,11 @@ void VTracking::update_tracker(double position)
 		position;
 	vwindow->gui->slider->update(position);
 	vwindow->gui->clock->update(position);
+
+// This is going to boost the latency but we need to update the timebar
+	vwindow->gui->timebar->draw_range();
+	vwindow->gui->timebar->flash();
+
 	vwindow->gui->unlock_window();
 
 	update_meters((long)(position * mwindow->edl->session->frame_rate));

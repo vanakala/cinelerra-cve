@@ -36,12 +36,10 @@ Module::Module(RenderEngine *renderengine,
 
 Module::~Module()
 {
-//printf("Module::~Module 1\n");
 	if(attachments)
 	{
 		for(int i = 0; i < track->plugin_set.total; i++)
 		{
-//printf("Module::~Module 2 %p\n", attachments[i]);
 			if(attachments[i])
 			{
 // For some reason it isn't used here.
@@ -77,35 +75,33 @@ void Module::create_new_attachments()
 // Not needed in pluginarray
 	if(commonrender)
 	{
-//printf("Module::create_new_attachments 1\n");
 		new_total_attachments = track->plugin_set.total;
-		new_attachments = new AttachmentPoint*[new_total_attachments];
-//printf("Module::create_new_attachments 2\n");
+		if(new_total_attachments)
+		{
+			new_attachments = new AttachmentPoint*[new_total_attachments];
+			for(int i = 0; i < new_total_attachments; i++)
+			{
+				Plugin *plugin = 
+					track->get_current_plugin(commonrender->current_position, 
+						i, 
+						renderengine->command->get_direction(),
+						0);
+
+				if(plugin && plugin->plugin_type != PLUGIN_NONE && plugin->on)
+					new_attachments[i] = new_attachment(plugin);
+				else
+					new_attachments[i] = 0;
+			}
+		}
+		else
+			new_attachments = 0;
 
 // Create plugin servers later when nodes attach
-		for(int i = 0; i < new_total_attachments; i++)
-		{
-//printf("Module::create_new_attachments 3\n");
-			Plugin *plugin = 
-				track->get_current_plugin(commonrender->current_position, 
-					i, 
-					renderengine->command->get_direction(),
-					0);
-//printf("Module::create_new_attachments 4\n");
-
-			if(plugin && plugin->plugin_type != PLUGIN_NONE && plugin->on)
-				new_attachments[i] = new_attachment(plugin);
-			else
-				new_attachments[i] = 0;
-//printf("Module::create_new_attachments 5 %p %p\n", plugin, new_attachments[i]);
-		}
-//printf("Module::create_new_attachments 6\n");
 	}
 }
 
 void Module::swap_attachments()
 {
-//printf("Module::swap_attachments 1\n");
 // None of this is used in a pluginarray
 	for(int new_attachment = 0, old_attachment = 0; 
 		new_attachment < new_total_attachments &&
@@ -123,34 +119,30 @@ void Module::swap_attachments()
 			attachments[old_attachment] = 0;
 		}
 	}
-//printf("Module::swap_attachments 1 %d\n", total_attachments);
 
 // Delete old attachments which weren't identical to new ones
 	for(int i = 0; i < total_attachments; i++)
 	{
 		if(attachments[i]) delete attachments[i];
 	}
-//printf("Module::swap_attachments 1\n");
-	if(attachments) delete attachments;
-//printf("Module::swap_attachments 1\n");
-	
-	if(new_total_attachments)
+
+	if(attachments)
 	{
-		attachments = new_attachments;
-		total_attachments = new_total_attachments;
+		delete [] attachments;
 	}
-//printf("Module::swap_attachments 2\n");
+	
+	attachments = new_attachments;
+	total_attachments = new_total_attachments;
 }
 
 int Module::render_init()
 {
-//printf("Module::render_init 1\n");
 	for(int i = 0; i < total_attachments; i++)
 	{
 		if(attachments[i])
 			attachments[i]->render_init();
 	}
-//printf("Module::render_init 2\n");
+
 	return 0;
 }
 
@@ -170,9 +162,7 @@ AttachmentPoint* Module::attachment_of(Plugin *plugin)
 // Test plugins for reconfiguration
 int Module::test_plugins()
 {
-//printf("Module::test_plugins 1\n");
 	if(total_attachments != track->plugin_set.total) return 1;
-//printf("Module::test_plugins 2\n");
 
 	for(int i = 0; i < total_attachments; i++)
 	{
@@ -181,7 +171,6 @@ int Module::test_plugins()
 			i, 
 			renderengine->command->get_direction(),
 			0);
-//printf("Module::test_plugins 3 %p %p\n", attachment, plugin);
 // One exists and one doesn't
 		int use_plugin = plugin &&
 			plugin->plugin_type != PLUGIN_NONE &&
@@ -189,7 +178,6 @@ int Module::test_plugins()
 
 		if((attachment && !use_plugin) || 
 			(!attachment && use_plugin)) return 1;
-//printf("Module::test_plugins 4 %p %p\n", attachment, plugin);
 
 // Plugin not the same
 		if(plugin && 
@@ -197,7 +185,6 @@ int Module::test_plugins()
 			attachment->plugin && 
 			!plugin->identical(attachment->plugin)) return 1;
 	}
-//printf("Module::test_plugins 5\n");
 
 	return 0;
 }
@@ -260,8 +247,8 @@ void Module::update_transition(long current_position, int direction)
 
 void Module::dump()
 {
-	printf("  Module\n");
-	printf("   Plugins\n");
+	printf("  Module title=%s\n", track->title);
+	printf("   Plugins total_attachments=%d\n", total_attachments);
 	for(int i = 0; i < total_attachments; i++)
 	{
 		if(attachments[i])

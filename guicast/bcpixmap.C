@@ -11,28 +11,21 @@ BC_Pixmap::BC_Pixmap(BC_WindowBase *parent_window,
 	BC_Bitmap *opaque_bitmap, *alpha_bitmap, *mask_bitmap;
 	this->mode = mode;
 
-//printf("BC_Pixmap::BC_Pixmap 1\n");
 // Temporary bitmaps
 	if(use_opaque())
 	{
-//printf("BC_Pixmap::BC_Pixmap 1 %d %d %d %p %p\n", frame->get_w(), 
-//					frame->get_h(), parent_window->get_color_model(), frame, parent_window);
 		opaque_bitmap = new BC_Bitmap(parent_window, 
 					frame->get_w(), 
 					frame->get_h(), 
 					parent_window->get_color_model(), 
-					0);
-//printf("BC_Pixmap::BC_Pixmap 1\n");
+					1);
 		opaque_bitmap->set_bg_color(parent_window->get_bg_color());
-//printf("BC_Pixmap::BC_Pixmap 1\n");
 		opaque_bitmap->read_frame(frame, 
 			0, 
 			0, 
 			frame->get_w(), 
 			frame->get_h());
-//printf("BC_Pixmap::BC_Pixmap 2\n");
 	}
-//printf("BC_Pixmap::BC_Pixmap 3\n");
 
 	if(use_alpha())
 	{
@@ -40,7 +33,7 @@ BC_Pixmap::BC_Pixmap(BC_WindowBase *parent_window,
 				frame->get_w(), 
 				frame->get_h(), 
 				BC_TRANSPARENCY, 
-				0);
+				1);
 
 		alpha_bitmap->read_frame(frame, 
 			0, 
@@ -48,13 +41,11 @@ BC_Pixmap::BC_Pixmap(BC_WindowBase *parent_window,
 			frame->get_w(), 
 			frame->get_h());
 	}
-//printf("BC_Pixmap::BC_Pixmap 1\n");
 
 	initialize(parent_window, 
 		frame->get_w(), 
 		frame->get_h(), 
 		mode);
-//printf("BC_Pixmap::BC_Pixmap 1\n");
 
 	if(use_opaque())
 	{
@@ -69,7 +60,6 @@ BC_Pixmap::BC_Pixmap(BC_WindowBase *parent_window,
 								1);
 		delete opaque_bitmap;
 	}
-//printf("BC_Pixmap::BC_Pixmap 1\n");
 
 	if(use_alpha())
 	{
@@ -87,7 +77,6 @@ BC_Pixmap::BC_Pixmap(BC_WindowBase *parent_window,
 
 		XSetClipMask(top_level->display, alpha_gc, alpha_pixmap);
 	}
-//printf("BC_Pixmap::BC_Pixmap 2\n");
 }
 
 BC_Pixmap::BC_Pixmap(BC_WindowBase *parent_window, int w, int h)

@@ -7,7 +7,7 @@
 
 #ifdef USE_AVIFILE
 #include "avifile.h"
-#include <vector>
+#include <vector.h>
 #endif
 
 //class IAviWriteFile;

@@ -218,7 +218,7 @@ int mpeg3video_picture_display_extension(mpeg3video_t *video)
 int mpeg3video_picture_coding_extension(mpeg3video_t *video)
 {
 	int chroma_420_type, composite_display_flag;
-	int v_axis = 0, field_sequence = 0, sub_carrier = 0, burst_amplitude = 0, sub_carrier_phase = 0;
+	int v_axis = 0, sub_carrier = 0, burst_amplitude = 0, sub_carrier_phase = 0;
 
 	video->h_forw_r_size = mpeg3bits_getbits(video->vstream, 4) - 1;
 	video->v_forw_r_size = mpeg3bits_getbits(video->vstream, 4) - 1;
@@ -271,7 +271,7 @@ int mpeg3video_picture_coding_extension(mpeg3video_t *video)
 	if(composite_display_flag)
 	{
     	v_axis = mpeg3bits_getbit_noptr(video->vstream);
-    	field_sequence = mpeg3bits_getbits(video->vstream, 3);
+    	video->field_sequence = mpeg3bits_getbits(video->vstream, 3);
     	sub_carrier = mpeg3bits_getbit_noptr(video->vstream);
     	burst_amplitude = mpeg3bits_getbits(video->vstream, 7);
     	sub_carrier_phase = mpeg3bits_getbyte_noptr(video->vstream);
@@ -371,7 +371,6 @@ int mpeg3video_getgophdr(mpeg3video_t *video)
 {
 	int drop_flag, closed_gop, broken_link;
 
-//printf("%x\n", mpeg3bits_tell(video->vstream));
 	video->has_gops = 1;
 	drop_flag = mpeg3bits_getbit_noptr(video->vstream);
 	video->gop_timecode.hour = mpeg3bits_getbits(video->vstream, 5);
@@ -425,6 +424,7 @@ int mpeg3video_get_header(mpeg3video_t *video, int dont_repeat)
 {
 	unsigned int code;
 
+//printf("mpeg3video_get_header 1\n");
 /* a sequence header should be found before returning from `getheader' the */
 /* first time (this is to set horizontal/vertical size properly) */
 
@@ -450,13 +450,15 @@ int mpeg3video_get_header(mpeg3video_t *video, int dont_repeat)
  * video->vstream->demuxer->titles[0]->fs->current_byte, 
  * video->vstream->demuxer->titles[0]->fs->total_bytes);
  */
+//printf("mpeg3video_get_header 10\n");
 
 	while(1)
 	{
-//printf("mpeg3video_get_header 1 %llx\n", mpeg3bits_tell(video->vstream));
+//printf("mpeg3video_get_header 10 %llx\n", mpeg3bits_tell(video->vstream));
 /* look for startcode */
     	code = mpeg3bits_next_startcode(video->vstream);
 
+//printf("mpeg3video_get_header 20\n");
 
 /*
  * printf("mpeg3video_get_header 2 %llx %llx %08x\n", 

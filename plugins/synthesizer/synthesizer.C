@@ -242,6 +242,8 @@ double Synth::get_total_power()
 {
 	double result = 0;
 
+	if(config.wavefunction == DC) return 1.0;
+
 	for(int i = 0; i < config.oscillator_config.total; i++)
 	{
 		result += db.fromdb(config.oscillator_config.values[i]->level);
@@ -272,6 +274,12 @@ double Synth::solve_eqn(double *output,
 
 	switch(this->config.wavefunction)
 	{
+		case DC:
+			for(sample = (int)x1, x = x3; x < x4; x++, sample++)
+			{
+				output[sample] += power;
+			}
+			break;
 		case SINE:
 			for(sample = (int)x1, x = x3; x < x4; x++, sample++)
 			{
@@ -328,6 +336,9 @@ double Synth::get_oscillator_point(float x,
 	double power = db.fromdb(config->level) * normalize_constant;
 	switch(this->config.wavefunction)
 	{
+		case DC:
+			return power;
+			break;
 		case SINE:
 			return sin((x + config->phase) * config->freq_factor * 2 * M_PI) * power;
 			break;
@@ -727,6 +738,7 @@ int SynthWindow::waveform_to_text(char *text, int waveform)
 {
 	switch(waveform)
 	{
+		case DC:              sprintf(text, "DC");           break;
 		case SINE:            sprintf(text, "Sine");           break;
 		case SAWTOOTH:        sprintf(text, "Sawtooth");       break;
 		case SQUARE:          sprintf(text, "Square");         break;
@@ -979,6 +991,7 @@ SynthWaveForm::~SynthWaveForm()
 
 int SynthWaveForm::create_objects()
 {
+//	add_item(new SynthWaveFormItem(synth, "DC", DC));
 	add_item(new SynthWaveFormItem(synth, "Sine", SINE));
 	add_item(new SynthWaveFormItem(synth, "Sawtooth", SAWTOOTH));
 	add_item(new SynthWaveFormItem(synth, "Square", SQUARE));

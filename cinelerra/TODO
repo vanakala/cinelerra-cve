@@ -1,20 +1,7 @@
 A
 -------
-Speed ramps.
 Undo doesn't restore project title from previous load.
 File sequence testing.
-Crash during failure to open output file for rendering.
-Delete track which is being shared causes crash.
- - not reproducible
-Quit freezes when background rendering is on.
- - No quit during slow effect with background rendering.
- - Not reproducible.
-Browse button for renderfarm path doesn't work.
- - Real slow ls.  Need to block preferencesthread.
-DVD authoring guide
-BRender should stop during rendered effect and during effect detach
- - test
-Renderfarm client runs without access to the filesystem and crashes.
 Rendering doesn't start sometimes.
 Drag plugin handle should only affect plugins with matching handles.
 Motion compensation.
@@ -22,16 +9,108 @@ Middle mouse button drag of edit doesn't affect plugin.
 Zoomblur transition
 Master node framerate not displaying.
 Independant record options for plugin sets.
+Double click and drag item drags it but doesn't drop it.
+Paste multiple tracks onto single track -> tracks get concatenated.
+If region in VWindow and CWindow is 100% it should follow the timeline length.
+Red bar insert in regions should follow slider.
+Can't increase number of channels in PCM file.
+Autoplacement of new clips in AWindow doesn't work.
+Asset organization in subfolders.
+Asset searches.
+Synthesizer doesn't turn off and on on edit boundaries.
+Use This doesn't work in directory selection unless text is in the textbox.
+Drawing cache not cleared after recording.
+a52.h include in libmpeg3 isn't the one included in libmpeg3
+Field based reverse video.
+Date, Size, Path sorting in file boxes.
+Can't play audio.mov
+12 bit DV recording
+AVI file PCM audio.
+
+
+
+List problems:
+	Click drag doesn't drag selection over sublists.
+	First column text not indented in sublist.
+	Can't unselect by shift-dragging.
+	Shift dragging to create multiple selections doesn't handle crossing over center of selection.
+
+
+
+
+
+
+
+
+
+
+
+> When I type 'xmovie heroinestatue_mpeg4.mov', press play, then pause,
+> then frame forward (or backward, or the slider), the picture screws up.
+> That is, each progressive scan line is shifted to the left just a
+> little bit more, resulting in a diagonal line (top right to bottom
+> left) with the picture wrapped from one side to the other. 
+
+
+
+> repeatedly call
+> 
+> quicktime_set_video_position then quicktime_decode_scaled on the same
+> position of a video file. (I am using colormodel 19 on a Component
+> video)
+> 
+> The resulting frames (occasionally) gets colours confused, and the
+> frame is short by a certain number of pixels.
+> 
+> repeated use makes the frame shorter and shorter, as though the frame
+> position pointer is actually moving forward by some bytes.
+> 
+> same behaviour occurs when 'bouncing' ......... ie. read frame 100 then
+> frame 101 then 100 again.
+> 
+
+16bpp test with shmem bitmaps.
+
+> After opening each file (which leaves the stream somewhere in the
+> middle), mpeg3cat does a mpeg3_demux_seek_stream back to 0. But the
+> video bit stream doesn't notice, so when mpeg3cat then calls
+> mpeg3_read_video_chunk it gets garbage from the middle of the stream
+> instead of data from the beginning. 
+> 
+> adding these lines after the mpeg3_demux_seek_stream call in mpeg3cat
+> will eliminate this specific instance of the problem:
+> in->vtrack[stream]->video->vstream->bit_number = 0;
+> in->vtrack[stream]->video->vstream->input_ptr = 0; 
+> 
+
+> quicktime_set_name/info/copyright seems to work (infos
+> appearing in the mov file) but the corresponding _get_
+> functions are providing only the default settings.
+
+
+
+Not reproducible
+----------------------
+Quit freezes when background rendering is on.
+ - No quit during slow effect with background rendering.
+ - Not reproducible.
+Delete track which is being shared causes crash.
+ - not reproducible
+Crash during failure to open output file for rendering.
+Dissolve transition quirks.
+Deadlock when CWindow handles events during load.
+
 
 
 
 
 Redo plugin keyframes.
-Undo Replace project doesn't work.
 Paste from load file after recording doesn't work.
 Changing channel count -> crash
+Close out of RecordGUI before firewire signal starts -> crash
 
 In/Out shifting locks up sometimes.
+ - More reproducable if building index of AC3 file
 Lockup of APatchPan if GUI is updated after every event and pan keyframes are visible.
 Plugin server locks up in sync_parameters when show plugin keyframes is on.
 Effect tweeking locks up if the time taken to render it is really long.
@@ -54,8 +133,6 @@ Shift matching surrounding keyframes.
 Popup in CWindow and VWindow to set maximum preview size.
 Shared effect resolution when pasting to different tracks than source EDL.
 Doesn't support window managers with user placement of windows.
-Libmpeg3 encoding for DV and higher quality input than MPEG-4 can handle.
-Libmpeg3 decode of fields.
 Compressor stops after 30 minutes.
 Compressor non-functional.
 Remember Asset list position.

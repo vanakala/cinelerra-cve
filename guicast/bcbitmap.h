@@ -20,7 +20,14 @@ class BC_Bitmap
 public:
 	BC_Bitmap(BC_WindowBase *parent_window, unsigned char *png_data);
 	BC_Bitmap(BC_WindowBase *parent_window, VFrame *frame);
-	BC_Bitmap(BC_WindowBase *parent_window, int w, int h, int color_model, int use_shm = 1);
+
+// Shared memory is a problem in X because it's asynchronous and there's
+// no easy way to join with the blitting process.
+	BC_Bitmap(BC_WindowBase *parent_window, 
+		int w, 
+		int h, 
+		int color_model, 
+		int use_shm = 1);
 	virtual ~BC_Bitmap();
 
 // transfer VFrame
@@ -31,7 +38,10 @@ public:
 	int read_frame(VFrame *frame, 
 		int x1, int y1, int x2, int y2);
 // Reset bitmap to match the new parameters
-	int match_params(int w, int h, int color_model, int use_shm);
+	int match_params(int w, 
+		int h, 
+		int color_model, 
+		int use_shm);
 // Test if bitmap already matches parameters
 	int params_match(int w, int h, int color_model, int use_shm);
 

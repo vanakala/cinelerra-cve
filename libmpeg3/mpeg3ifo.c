@@ -345,6 +345,7 @@ static void get_ifo_playlist(mpeg3_t *file, mpeg3_demuxer_t *demuxer)
 			}
 		}
 	}
+	closedir(dirstream);
 
 
 // Alphabetize titles.  Only problematic for guys who rip entire DVD's

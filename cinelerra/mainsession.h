@@ -94,6 +94,7 @@ public:
 	int rwindow_x, rwindow_y, rwindow_w, rwindow_h;
 	int afolders_w;
 	int show_vwindow, show_awindow, show_cwindow, show_lwindow;
+	int plugindialog_w, plugindialog_h;
 
 	MWindow *mwindow;
 };

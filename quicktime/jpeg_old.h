@@ -11,7 +11,7 @@ extern "C" {
 #endif
 
 
-#include <jpeglib.h>
+#include "jpeglib.h"
 #include <png.h>       /* Need setjmp.h included by png.h */
 #include "pthread.h"
 

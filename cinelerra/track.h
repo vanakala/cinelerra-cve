@@ -20,7 +20,6 @@
 #include "plugin.inc"
 #include "pluginset.inc"
 #include "renderengine.inc"
-#include "selections.inc"
 #include "sharedlocation.inc"
 #include "theme.inc"
 #include "intautos.inc"
@@ -134,8 +133,6 @@ public:
 // Plugin set uses key frames for automation
 	ArrayList<PluginSet*> plugin_set;
 	Automation *automation;
-// Only used by video track
-	Selections *selections;
 
 // Vertical offset from top of timeline
 	int y_pixel;
@@ -287,9 +284,15 @@ public:
 		double &view_units, 
 		double &zoom_units) { return 0; };   
 // Longest time from current_position in which nothing changes
-	long edit_change_duration(long input_position, long input_length, int reverse, int test_transitions);
+	long edit_change_duration(long input_position, 
+		long input_length, 
+		int reverse, 
+		int test_transitions);
+	long plugin_change_duration(long input_position,
+		long input_length,
+		int reverse);
 // Utility for edit_change_duration.
-	int edit_is_interesting(Edit *current, int test_transitions);
+	int need_edit(Edit *current, int test_transitions);
 // If the edit under position is playable
 	int playable_edit(long position, int direction);
 

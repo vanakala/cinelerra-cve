@@ -51,18 +51,27 @@ char* BC_NewFolder::get_text()
 
 
 BC_NewFolderThread::BC_NewFolderThread(BC_FileBox *filebox)
+ : Thread(0, 0, 0)
 {
 	this->filebox = filebox;
-	active = 0;
-	set_synchronous(0);
+	window = 0;
 }
 
 BC_NewFolderThread::~BC_NewFolderThread() 
 {
+ 	interrupt();
 }
 
 void BC_NewFolderThread::run()
 {
+	change_lock.lock();
+	window = new BC_NewFolder(filebox->get_abs_cursor_x(), 
+		filebox->get_abs_cursor_y(),
+		filebox);
+	window->create_objects();
+	change_lock.unlock();
+
+
 	int result = window->run_window();
 
 	if(!result)
@@ -70,19 +79,23 @@ void BC_NewFolderThread::run()
 		char new_folder[BCTEXTLEN];
 		filebox->fs->join_names(new_folder, filebox->fs->get_current_dir(), window->get_text());
 		mkdir(new_folder, S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
+		filebox->lock_window();
+		filebox->refresh();
+		filebox->unlock_window();
 	}
 
 	change_lock.lock();
-	active = 0;
-	change_lock.unlock();
 	delete window;
+	window = 0;
+	change_lock.unlock();
+
 	completion_lock.unlock();
 }
 
 int BC_NewFolderThread::interrupt()
 {
 	change_lock.lock();
-	if(active)
+	if(window)
 	{
 		window->lock_window();
 		window->set_done(1);
@@ -98,16 +111,24 @@ int BC_NewFolderThread::interrupt()
 
 int BC_NewFolderThread::start_new_folder()
 {
-	window = new BC_NewFolder(filebox->get_abs_cursor_x(), filebox->get_abs_cursor_y(), filebox);
-	window->create_objects();
-
 	change_lock.lock();
-	active = 1;
-	change_lock.unlock();
 
-	Thread::start();
+	if(window)
+	{
+		window->lock_window();
+		window->raise_window();
+		window->unlock_window();
+		change_lock.unlock();
+	}
+	else
+	{
+		change_lock.unlock();
+		completion_lock.lock();
 
-	completion_lock.lock();
+		Thread::start();
+	}
+
+
 	return 0;
 }
 
@@ -413,11 +434,13 @@ BC_FileBox::BC_FileBox(int x,
 
 BC_FileBox::~BC_FileBox()
 {
+// this has to be destroyed before tables, because it can call for an update!
+	delete newfolder_thread;  
 	delete fs;
 	delete_tables();
 	for(int i = 0; i < TOTAL_ICONS; i++)
 		delete icons[i];
-	delete newfolder_thread;
+	filter_list.remove_all_objects();
 }
 
 int BC_FileBox::create_objects()
@@ -469,8 +492,9 @@ int BC_FileBox::create_objects()
 	add_subwindow(filter_popup = 
 		new BC_FileBoxFilterMenu(x + filter_text->get_w(), y, this));
 
+// listbox has to be active because refresh might be called from newfolder_thread
+ 	listbox->activate();    
 	newfolder_thread = new BC_NewFolderThread(this);
-	listbox->activate();
 	
 	show_window();
 	return 0;
@@ -502,10 +526,11 @@ int BC_FileBox::resize_event(int w, int h)
 	draw_background(0, 0, w, h);
 	flash();
 
-//printf("BC_FileBox::resize_event %d %d\n", ok_button->get_w(), ok_button->get_h());
-	ok_button->reposition_window(ok_button->get_x(), 
-		h - (get_h() - ok_button->get_y()));
-	cancel_button->reposition_window(w - (get_w() - cancel_button->get_x()), h - (get_h() - cancel_button->get_y()));
+// OK button handles resize event itself
+// 	ok_button->reposition_window(ok_button->get_x(), 
+// 		h - (get_h() - ok_button->get_y()));
+// 	cancel_button->reposition_window(w - (get_w() - cancel_button->get_x()), 
+// 		h - (get_h() - cancel_button->get_y()));
 	if(want_directory)
 		usethis_button->reposition_window(w / 2 - 50, h - (get_h() - usethis_button->get_y()));
 	filter_popup->reposition_window(w - (get_w() - filter_popup->get_x()), 
@@ -596,9 +621,7 @@ int BC_FileBox::delete_tables()
 {
 	for(int j = 0; j < FILEBOX_COLUMNS; j++)
 	{
-		for(int i = 0; i < list_column[0].total; i++)
-			delete list_column[j].values[i];
-		list_column[j].remove_all();
+		list_column[j].remove_all_objects();
 	}
 	return 0;
 }
@@ -629,10 +652,8 @@ BC_Pixmap* BC_FileBox::get_icon(char *path, int is_dir)
 	return icons[icon_type];
 }
 
-int BC_FileBox::update_filter(char *filter)
+int BC_FileBox::refresh()
 {
-	fs->set_filter(filter);
-	fs->update();
 	create_tables();
 	listbox->update(list_column, 
 		column_titles, 
@@ -642,6 +663,15 @@ int BC_FileBox::update_filter(char *filter)
 		0,
 		-1, 
 		1);
+
+	return 0;
+}
+
+int BC_FileBox::update_filter(char *filter)
+{
+	fs->set_filter(filter);
+	fs->update();
+	refresh();
 	strcpy(get_resources()->filebox_filter, filter);
 
 	return 0;
@@ -655,15 +685,7 @@ int BC_FileBox::submit_file(char *path, int return_value, int use_this)
 	if(!fs->is_dir(path) && !use_this)
 	{
 		fs->change_dir(path);
-		create_tables();
-		listbox->update(list_column, 
-			column_titles, 
-			column_width,
-			FILEBOX_COLUMNS, 
-			0, 
-			0, 
-			-1, 
-			1);
+		refresh();
 		directory_title->update(fs->get_current_dir());
 		strcpy(this->path, fs->get_current_dir());
 		strcpy(this->directory, fs->get_current_dir());

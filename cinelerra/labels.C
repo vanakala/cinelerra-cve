@@ -401,7 +401,7 @@ int Labels::modify_handles(double oldposition,
 	if(edit_labels &&
 		handle_mode == MOVE_ALL_EDITS)
 	{
-		if(currentend == 1)          // left handle
+		if(currentend == 0)          // left handle
 		{
 			if(newposition < oldposition)
 			{

@@ -171,6 +171,20 @@ void TransportCommand::set_playback_range(EDL *edl)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 TransportQue::TransportQue()
 {
 	output_lock.lock();

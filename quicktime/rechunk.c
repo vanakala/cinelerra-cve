@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 	int result = 0;
 	int i, j;
 	longest length;
-	char string[1024], *prefix = 0, *output = 0;
+	char string[1024], *output = 0;
 	char *data = 0;
 	int bytes = 0, old_bytes = 0;
 	float output_rate = 0;
@@ -83,7 +83,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	if(!prefix || !input) usage();
+	if(!input) usage();
 
 	if(input = fopen(output, "rb"))
 	{

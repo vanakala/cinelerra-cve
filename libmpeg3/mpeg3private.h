@@ -3,15 +3,16 @@
 
 #include <stdint.h>
 #include <stdio.h>
-
 #include <pthread.h>
+
+
 
 
 /* Constants */
 
 #define MPEG3_MAJOR   1
 #define MPEG3_MINOR   5
-#define MPEG3_RELEASE 0
+#define MPEG3_RELEASE 1
 
 
 
@@ -55,6 +56,7 @@
 #define MPEG3_AUDIO_CHUNKSIZE            0x10000 /* Size of chunk of audio in table of contents */
 #define MPEG3_LITTLE_ENDIAN              ((*(uint32_t*)"x\0\0\0") & 0x000000ff)
 #define MPEG3_AUDIO_HISTORY              0x100000 /* Number of samples in audio history */
+#define MPEG3_PTS_RANGE                  0x100000 /* Range to scan for pts after percentage seek */
 
 /* Values for audio format */
 #define AUDIO_UNKNOWN 0
@@ -738,6 +740,7 @@ typedef struct
 	int coded_picture_width,  coded_picture_height;
 	int chroma_format, chrom_width, chrom_height, blk_cnt;
 	int pict_type;
+	int field_sequence;
 	int forw_r_size, back_r_size, full_forw, full_back;
 	int prog_seq, prog_frame;
 	int h_forw_r_size, v_forw_r_size, h_back_r_size, v_back_r_size;
@@ -848,10 +851,20 @@ typedef struct
 	int last_type_read;  /* 1 - audio   2 - video */
 	int last_stream_read;
 
-	int program;  /* Number of program to play */
+/* Number of program to play */
+	int program;
 	int cpus;
 	int have_mmx;
-	int seekable; /* Filesystem is seekable */
+
+/* Filesystem is seekable */
+	int seekable;
+
+/*
+ * After percentage seeking is called, this is set to -1.
+ * The first operation to seek needs to set it to the pts of the percentage seek.
+ * Then the next operation to seek needs to match its pts to this value.
+ */
+	double percentage_pts;
 } mpeg3_t;
 
 

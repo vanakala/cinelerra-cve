@@ -72,17 +72,20 @@ public:
 	int attach_shared(int number);
 	int attach_module(int number);
 	int save_settings();
+	int resize_event(int w, int h);
 
-//	PluginDialogTextBox *title;
-//	PluginDialogDetach *detach;
+	BC_Title *standalone_title;
 	PluginDialogNew *standalone_list;
+	BC_Title *shared_title;
 	PluginDialogShared *shared_list;
+	BC_Title *module_title;
 	PluginDialogModules *module_list;
+
+
 	PluginDialogAttachNew *standalone_attach;
 	PluginDialogAttachShared *shared_attach;
 	PluginDialogAttachModule *module_attach;
-//	PluginDialogIn *in;
-//	PluginDialogOut *out;
+
 	PluginDialogThru *thru;
 	
 	PluginDialogThread *thread;

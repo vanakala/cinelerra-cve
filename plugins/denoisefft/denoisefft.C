@@ -5,7 +5,7 @@
 #include "filexml.h"
 #include "guicast.h"
 #include "mutex.h"
-#include "../fourier/fourier.h"
+#include <fourier.h>
 #include "picon_png.h"
 #include "pluginaclient.h"
 #include "units.h"

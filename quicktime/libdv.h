@@ -22,7 +22,7 @@ extern "C" {
 #include <sys/time.h>
 
 #ifdef HAVE_FIREWIRE
-#include <libraw1394/raw1394.h>
+#include "raw1394.h"
 
 typedef struct
 {

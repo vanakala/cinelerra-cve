@@ -45,3 +45,4 @@ MP4_STATE	  *mp4_state;
 MP4_TABLES	*mp4_tables;
 MP4_STREAM  *ld;
 
+int have_mmx = 0;

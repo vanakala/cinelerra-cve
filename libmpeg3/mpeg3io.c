@@ -116,6 +116,7 @@ int mpeg3io_read_data(unsigned char *buffer, long bytes, mpeg3_fs_t *fs)
 
 int mpeg3io_seek(mpeg3_fs_t *fs, int64_t byte)
 {
+//printf("mpeg3io_seek 1 %llx\n", byte);
 	fs->current_byte = byte;
 	return (fs->current_byte < 0) || (fs->current_byte > fs->total_bytes);
 }

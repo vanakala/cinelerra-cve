@@ -43,7 +43,6 @@ public:
 
 private:
 	Mutex change_lock, completion_lock;
-	int active;
 	BC_FileBox *filebox;
 	BC_NewFolder *window;
 };
@@ -199,6 +198,8 @@ public:
 	virtual int create_objects();
 	virtual int keypress_event();
 	virtual int close_event();
+
+	int refresh();
 
 // Give the most recently selected path
 	char* get_path();

@@ -24,7 +24,10 @@ public:
 	char oss_in_device[MAXDEVICES][BCTEXTLEN];
 	int oss_in_channels[MAXDEVICES];
 	int oss_in_bits;
-	int afirewire_in_port, afirewire_in_channel;
+
+	int firewire_port, firewire_channel;
+	char firewire_path[BCTEXTLEN];
+
 	char esound_in_server[BCTEXTLEN];
 	int esound_in_port;
 	char alsa_in_device[BCTEXTLEN];
@@ -50,7 +53,11 @@ public:
 	char lml_in_device[BCTEXTLEN];
 	char buz_in_device[BCTEXTLEN];
 	char screencapture_display[BCTEXTLEN];
-	int vfirewire_in_port, vfirewire_in_channel;
+
+
+	int firewire_port, firewire_channel;
+	char firewire_path[BCTEXTLEN];
+
 // number of frames to read from device during video recording.
 	int capture_length;   
 // Dimensions of captured frame

@@ -109,6 +109,14 @@ typedef struct _DEC_BUFFERS_
 	void * mp4_state;
 	void * mp4_tables;
 	void * mp4_stream;
+
+
+// Global variables
+	unsigned char *edged_ref[3],
+				  *edged_for[3],
+				  *frame_ref[3],
+				  *frame_for[3],
+				  *display_frame[3];
 } DEC_BUFFERS;
 
 typedef struct _DEC_PARAM_ 
@@ -118,6 +126,7 @@ typedef struct _DEC_PARAM_
 	int output_format;	// output color format
 	int time_incr;
 	DEC_BUFFERS buffers;
+
 } DEC_PARAM;
 
 typedef struct _DEC_FRAME_
@@ -145,6 +154,12 @@ int STDCALL decore(
 			unsigned long dec_opt, // dec_opt - the option for docoding, see below
 			void *param1,	// param1	- the parameter 1 (it's actually meaning depends on dec_opt
 			void *param2);	// param2	- the parameter 2 (it's actually meaning depends on dec_opt
+
+// Set global variables for a decoding session
+void decore_set_global(DEC_PARAM *param);
+// Save global variables after a decoding session
+void decore_save_global(DEC_PARAM *param);
+
 
 #endif // _DECORE_H_
 #ifdef __cplusplus

@@ -96,37 +96,126 @@ int FloatAutos::automation_is_constant(long start,
 	int direction,
 	double &constant)
 {
-	FloatAuto *previous = 0;
-	FloatAuto *next = 0;
+	int total_autos = total();
+	long end;
+	if(direction == PLAY_FORWARD)
+	{
+		end = start + length;
+	}
+	else
+	{
+		end = start + 1;
+		start -= length;
+	}
 
-	previous = (FloatAuto*)get_prev_auto(start, direction, (Auto*)previous);
-	next = (FloatAuto*)get_next_auto(start, direction, (Auto*)next);
+//printf("FloatAutos::automation_is_constant 1 %d %d\n", start, end);
 
-	if(previous == next)
+// No keyframes on track
+	if(total_autos == 0)
 	{
-		constant = previous->value;
+		constant = ((FloatAuto*)default_auto)->value;
 		return 1;
 	}
 	else
-	if(direction == PLAY_FORWARD &&
-		EQUIV(previous->value, next->value) &&
-		EQUIV(previous->control_out_value, 0) &&
-		EQUIV(next->control_in_value, 0))
+// Only one keyframe on track.
+	if(total_autos == 1)
 	{
-		constant = previous->value;
+		constant = ((FloatAuto*)first)->value;
 		return 1;
 	}
 	else
-	if(direction == PLAY_REVERSE &&
-		EQUIV(previous->value, next->value) &&
-		EQUIV(previous->control_in_value, 0) &&
-		EQUIV(next->control_out_value, 0))
+// Last keyframe is before region
+	if(last->position <= start)
 	{
-		constant = previous->value;
+		constant = ((FloatAuto*)last)->value;
 		return 1;
 	}
 	else
-		return 0;
+// First keyframe is after region
+	if(first->position > end)
+	{
+		constant = ((FloatAuto*)first)->value;
+		return 1;
+	}
+
+// Scan sequentially
+	long prev_position = -1;
+	for(Auto *current = first; current; current = NEXT)
+	{
+		int test_current_next = 0;
+		int test_previous_current = 0;
+		FloatAuto *float_current = (FloatAuto*)current;
+
+// keyframes before and after region but not in region
+		if(prev_position >= 0 &&
+			prev_position < start && 
+			current->position >= end)
+		{
+// Get value now in case change doesn't occur
+			constant = float_current->value;
+			test_previous_current = 1;
+		}
+		prev_position = current->position;
+
+// Keyframe occurs in the region
+		if(!test_previous_current &&
+			current->position < end && 
+			current->position >= start)
+		{
+
+// Get value now in case change doesn't occur
+			constant = float_current->value;
+
+// Keyframe has neighbor
+			if(current->previous)
+			{
+				test_previous_current = 1;
+			}
+
+			if(current->next)
+			{
+				test_current_next = 1;
+			}
+		}
+
+		if(test_current_next)
+		{
+//printf("FloatAutos::automation_is_constant 1 %d\n", start);
+			FloatAuto *float_next = (FloatAuto*)current->next;
+
+// Change occurs between keyframes
+			if(!EQUIV(float_current->value, float_next->value) ||
+				!EQUIV(float_current->control_out_value, 0) ||
+				!EQUIV(float_next->control_in_value, 0))
+			{
+				return 0;
+			}
+		}
+
+		if(test_previous_current)
+		{
+			FloatAuto *float_previous = (FloatAuto*)current->previous;
+
+// Change occurs between keyframes
+			if(!EQUIV(float_current->value, float_previous->value) ||
+				!EQUIV(float_current->control_in_value, 0) ||
+				!EQUIV(float_previous->control_out_value, 0))
+			{
+// printf("FloatAutos::automation_is_constant %d %d %d %f %f %f %f\n", 
+// start, 
+// float_previous->position, 
+// float_current->position, 
+// float_previous->value, 
+// float_current->value, 
+// float_previous->control_out_value, 
+// float_current->control_in_value);
+				return 0;
+			}
+		}
+	}
+
+// Got nothing that changes in the region.
+	return 1;
 }
 
 double FloatAutos::get_automation_constant(long start, long end)
@@ -161,17 +250,50 @@ float FloatAutos::get_value(long position,
 	float y0, y1, y2, y3;
  	float t;
 
-	previous = (FloatAuto*)get_prev_auto(position, direction, (Auto*)previous);
-	next = (FloatAuto*)get_next_auto(position, direction, (Auto*)next);
+	previous = (FloatAuto*)get_prev_auto(position, direction, (Auto*)previous, 0);
+	next = (FloatAuto*)get_next_auto(position, direction, (Auto*)next, 0);
 
 // Constant
-	if(EQUIV(previous->value, next->value) &&
-		previous->control_in_value == next->control_in_value &&
-		previous->control_out_value == next->control_out_value)
+	if(!next && !previous)
+	{
+		return ((FloatAuto*)default_auto)->value;
+	}
+	else
+	if(!previous)
+	{
+		return next->value;
+	}
+	else
+	if(!next)
 	{
 		return previous->value;
 	}
+	else
+	if(next == previous)
+	{
+		return previous->value;
+	}
+	else
+	{
+		if(direction == PLAY_FORWARD &&
+			EQUIV(previous->value, next->value) &&
+			EQUIV(previous->control_out_value, 0) &&
+			EQUIV(next->control_in_value, 0))
+		{
+			return previous->value;
+		}
+		else
+		if(direction == PLAY_REVERSE &&
+			EQUIV(previous->value, next->value) &&
+			EQUIV(previous->control_in_value, 0) &&
+			EQUIV(next->control_out_value, 0))
+		{
+			return previous->value;
+		}
+	}
 
+
+// Interpolate
 	y0 = previous->value;
 	y3 = next->value;
 
@@ -181,6 +303,8 @@ float FloatAutos::get_value(long position,
 		y2 = next->value + next->control_in_value * 2;
 		t = (double)(position - previous->position) / 
 			(next->position - previous->position);
+// division by 0
+		if(next->position - previous->position == 0) return previous->value;
 	}
 	else
 	{
@@ -188,6 +312,8 @@ float FloatAutos::get_value(long position,
 		y2 = next->value + next->control_out_value * 2;
 		t = (double)(previous->position - position) / 
 			(previous->position - next->position);
+// division by 0
+		if(previous->position - next->position == 0) return previous->value;
 	}
 
  	float tpow2 = t * t;

@@ -16,8 +16,6 @@
 #include "patchbay.h"
 #include "plugin.h"
 #include "pluginset.h"
-#include "selection.h"
-#include "selections.h"
 #include "mainsession.h"
 #include "theme.h"
 #include "intautos.h"
@@ -58,7 +56,6 @@ Track::~Track()
 
 int Track::create_objects()
 {
-	selections = new Selections(edl, this);
 	return 0;
 }
 
@@ -168,7 +165,6 @@ Track& Track::operator=(Track& track)
 //printf("Track::operator= 1\n");
 	*this->automation = *track.automation;
 //printf("Track::operator= 1\n");
-	*this->selections = *track.selections;
 	this->track_w = track.track_w;
 	this->track_h = track.track_h;
 //printf("Track::operator= 2\n");
@@ -634,14 +630,17 @@ Plugin* Track::get_current_plugin(double position,
 	
 	if(plugin_set >= this->plugin_set.total || plugin_set < 0) return 0;
 
-//printf("Track::get_current_plugin 1 %d %d %d\n", position, plugin_set, direction);
+//printf("Track::get_current_plugin 1 %d %d %d\n", position, this->plugin_set.total, direction);
 	if(direction == PLAY_FORWARD)
 	{
 		for(current = (Plugin*)this->plugin_set.values[plugin_set]->last; 
 			current; 
 			current = (Plugin*)PREVIOUS)
 		{
-//printf("Track::get_current_plugin 2 %d %ld %ld %f\n", current->startproject + current->length > position, current->startproject, current->length, position);
+// printf("Track::get_current_plugin 2 %d %ld %ld\n", 
+// current->startproject, 
+// current->startproject + current->length, 
+// position);
 			if(current->startproject <= position && 
 				current->startproject + current->length > position)
 			{
@@ -1233,13 +1232,31 @@ int Track::playable_edit(long position, int direction)
 }
 
 
-int Track::edit_is_interesting(Edit *current, int test_transitions)
+int Track::need_edit(Edit *current, int test_transitions)
 {
 	return ((test_transitions && current->transition) ||
 		(!test_transitions && current->asset));
 }
 
-long Track::edit_change_duration(long input_position, long input_length, int reverse, int test_transitions)
+long Track::plugin_change_duration(long input_position,
+	long input_length,
+	int reverse)
+{
+	for(int i = 0; i < plugin_set.total; i++)
+	{
+		long new_duration = plugin_set.values[i]->plugin_change_duration(
+			input_position, 
+			input_length, 
+			reverse);
+		if(new_duration < input_length) input_length = new_duration;
+	}
+	return input_length;
+}
+
+long Track::edit_change_duration(long input_position, 
+	long input_length, 
+	int reverse, 
+	int test_transitions)
 {
 	Edit *current;
 	long edit_length = input_length;
@@ -1261,7 +1278,7 @@ long Track::edit_change_duration(long input_position, long input_length, int rev
 				;
 			}
 			else
-			if(edit_is_interesting(current, test_transitions))
+			if(need_edit(current, test_transitions))
 			{
 // Over an edit of interest.
 				if(input_position - current->startproject < input_length)
@@ -1274,12 +1291,12 @@ long Track::edit_change_duration(long input_position, long input_length, int rev
 				for(current = PREVIOUS ; 
 					current && 
 					current->startproject + current->length > input_position - input_length &&
-					!edit_is_interesting(current, test_transitions);
+					!need_edit(current, test_transitions);
 					current = PREVIOUS)
 					;
 
 					if(current && 
-						edit_is_interesting(current, test_transitions) &&
+						need_edit(current, test_transitions) &&
 						current->startproject + current->length > input_position - input_length)
                     	edit_length = input_position - current->startproject - current->length + 1;
 			}
@@ -1311,7 +1328,7 @@ long Track::edit_change_duration(long input_position, long input_length, int rev
 				;
 			}
 			else
-			if(edit_is_interesting(current, test_transitions))
+			if(need_edit(current, test_transitions))
 			{
 // Over an edit of interest.
 // Next edit is going to require a change.
@@ -1325,12 +1342,12 @@ long Track::edit_change_duration(long input_position, long input_length, int rev
 				for(current = NEXT ; 
 					current && 
 					current->startproject < input_position + input_length &&
-					!edit_is_interesting(current, test_transitions);
+					!need_edit(current, test_transitions);
 					current = NEXT)
 					;
 
 					if(current && 
-						edit_is_interesting(current, test_transitions) &&
+						need_edit(current, test_transitions) &&
 						current->startproject < input_position + input_length) 
 						edit_length = current->startproject - input_position;
 			}

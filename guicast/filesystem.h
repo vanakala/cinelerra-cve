@@ -15,7 +15,8 @@ public:
 		longest size, 
 		int month, 
 		int day, 
-		int year);
+		int year,
+		longest calendar_time);
 	~FileItem();
 
 	int set_path(char *path);
@@ -28,6 +29,7 @@ public:
 	int month;
 	int day;
 	int year;
+	longest calendar_time;
 };
 
 class FileSystem

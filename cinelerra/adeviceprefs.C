@@ -29,6 +29,11 @@ ADevicePrefs::ADevicePrefs(int x,
 	this->y = y;
 	menu = 0;
 	firewire_channels = 0;
+	firewire_path = 0;
+	firewire_syt = 0;
+	syt_title = 0;
+	channels_title = 0;
+	path_title = 0;
 }
 
 ADevicePrefs::~ADevicePrefs()
@@ -146,12 +151,24 @@ int ADevicePrefs::delete_firewire_objs()
 	delete channel_title;
 	delete firewire_port;
 	delete firewire_channel;
-	if(firewire_channels) delete firewire_channels;
+	if(firewire_path)
+	{
+		delete path_title;
+		delete firewire_path;
+	}
+	firewire_path = 0;
+	if(firewire_syt)
+	{
+		delete firewire_syt;
+		delete syt_title;
+	}
+	firewire_syt = 0;
+	if(firewire_channels)
+	{
+		delete firewire_channels;
+		delete channels_title;
+	}
 	firewire_channels = 0;
-	firewire_channel = 0;
-	firewire_port = 0;
-	channel_title = 0;
-	port_title = 0;
 	return 0;
 }
 
@@ -206,8 +223,14 @@ int ADevicePrefs::create_oss_objs()
 				output_char = out_config->oss_out_device[i];
 				break;
 		}
-		if(i == 0) dialog->add_subwindow(path_title = new BC_Title(x1, y, "Device path:", MEDIUMFONT, BLACK));
-		dialog->add_subwindow(oss_path[i] = new OSSPath(x1, y1 + 20, output_char));
+		if(i == 0) dialog->add_subwindow(path_title = new BC_Title(x1, 
+			y, 
+			"Device path:", 
+			MEDIUMFONT, 
+			BLACK));
+		dialog->add_subwindow(oss_path[i] = new ADeviceTextBox(x1, 
+			y1 + 20, 
+			output_char));
 
 		x1 += oss_path[i]->get_w() + 5;
 		if(i == 0)
@@ -251,7 +274,7 @@ int ADevicePrefs::create_oss_objs()
 				break;
 		}
 		if(i == 0) dialog->add_subwindow(channels_title = new BC_Title(x1, y1, "Channels:", MEDIUMFONT, BLACK));
-		dialog->add_subwindow(oss_channels[i] = new OSSChannels(x1, y1 + 20, output_int));
+		dialog->add_subwindow(oss_channels[i] = new ADeviceIntBox(x1, y1 + 20, output_int));
 		y1 += DEVICE_H;
 break;
 	}
@@ -336,7 +359,7 @@ int ADevicePrefs::create_alsa_objs()
 			break;
 	}
 	dialog->add_subwindow(channels_title = new BC_Title(x1, y, "Channels:", MEDIUMFONT, BLACK));
-	dialog->add_subwindow(alsa_channels = new ALSAChannels(x1, y1 + 20, output_int));
+	dialog->add_subwindow(alsa_channels = new ADeviceIntBox(x1, y1 + 20, output_int));
 	y1 += DEVICE_H;
 #endif
 
@@ -362,7 +385,7 @@ int ADevicePrefs::create_esound_objs()
 			break;
 	}
 	dialog->add_subwindow(server_title = new BC_Title(x1, y, "Server:", MEDIUMFONT, BLACK));
-	dialog->add_subwindow(esound_server = new ESoundServer(x1, y + 20, output_char));
+	dialog->add_subwindow(esound_server = new ADeviceTextBox(x1, y + 20, output_char));
 
 	switch(mode)
 	{
@@ -378,7 +401,7 @@ int ADevicePrefs::create_esound_objs()
 	}
 	x1 += esound_server->get_w() + 5;
 	dialog->add_subwindow(port_title = new BC_Title(x1, y, "Port:", MEDIUMFONT, BLACK));
-	dialog->add_subwindow(esound_port = new ESoundPort(x1, y + 20, output_int));
+	dialog->add_subwindow(esound_port = new ADeviceIntBox(x1, y + 20, output_int));
 	return 0;
 }
 
@@ -386,41 +409,93 @@ int ADevicePrefs::create_firewire_objs()
 {
 	int x1 = x + menu->get_w() + 5;
 	int *output_int;
+	char *output_char;
 
+// Firewire path
+	switch(mode)
+	{
+		case MODEPLAY:
+			output_char = out_config->firewire_path;
+			break;
+// Our version of raw1394 doesn't support changing the path
+		case MODERECORD:
+			output_char = 0;
+			break;
+	}
+
+	if(output_char)
+	{
+		dialog->add_subwindow(path_title = new BC_Title(x1, y, "Device Path:", MEDIUMFONT, BLACK));
+		dialog->add_subwindow(firewire_path = new ADeviceTextBox(x1, y + 20, output_char));
+		x1 += firewire_path->get_w() + 5;
+	}
+
+// Firewire port
 	switch(mode)
 	{
 		case MODEPLAY: 
-//			output_int = &out_config->afirewire_in_port;
+			output_int = &out_config->firewire_port;
 			break;
 		case MODERECORD:
-			output_int = &in_config->afirewire_in_port;
+			output_int = &in_config->firewire_port;
 			break;
 		case MODEDUPLEX:
 //			output_int = &out_config->afirewire_out_port;
 			break;
 	}
 	dialog->add_subwindow(port_title = new BC_Title(x1, y, "Port:", MEDIUMFONT, BLACK));
-	dialog->add_subwindow(firewire_port = new FirewirePort(x1, y + 20, output_int));
+	dialog->add_subwindow(firewire_port = new ADeviceIntBox(x1, y + 20, output_int));
 
 	x1 += firewire_port->get_w() + 5;
+
+// Firewire channel
 	switch(mode)
 	{
 		case MODEPLAY: 
 			output_int = &out_config->firewire_channel;
 			break;
 		case MODERECORD:
-			output_int = &in_config->afirewire_in_channel;
+			output_int = &in_config->firewire_channel;
 			break;
 	}
 	dialog->add_subwindow(channel_title = new BC_Title(x1, y, "Channel:", MEDIUMFONT, BLACK));
-	dialog->add_subwindow(firewire_channel = new FirewireChannel(x1, y + 20, output_int));
+	dialog->add_subwindow(firewire_channel = new ADeviceIntBox(x1, y + 20, output_int));
 	x1 += firewire_channel->get_w() + 5;
 
-	if(mode == MODEPLAY)
+// Playback channels
+	switch(mode)
 	{
-		output_int = &out_config->firewire_channels;
+		case MODEPLAY:
+			output_int = &out_config->firewire_channels;
+			break;
+		case MODERECORD:
+			output_int = 0;
+			break;
+	}
+
+	if(output_int)
+	{
 		dialog->add_subwindow(channels_title = new BC_Title(x1, y, "Channels:", MEDIUMFONT, BLACK));
-		dialog->add_subwindow(firewire_channels = new FirewireChannels(x1, y + 20, output_int));
+		dialog->add_subwindow(firewire_channels = new ADeviceIntBox(x1, y + 20, output_int));
+		x1 += firewire_channels->get_w() + 5;
+	}
+
+// Syt offset
+	switch(mode)
+	{
+		case MODEPLAY:
+			output_int = &out_config->firewire_syt;
+			break;
+		case MODERECORD:
+			output_int = 0;
+			break;
+	}
+
+	if(output_int)
+	{
+		dialog->add_subwindow(syt_title = new BC_Title(x1, y, "Syt Offset:", MEDIUMFONT, BLACK));
+		dialog->add_subwindow(firewire_syt = new ADeviceIntBox(x1, y + 20, output_int));
+		x1 += firewire_syt->get_w() + 5;
 	}
 
 	return 0;
@@ -453,7 +528,8 @@ void ADriverMenu::create_objects()
 
 	if(!do_input) add_item(new ADriverItem(this, AUDIO_ESOUND_TITLE, AUDIO_ESOUND));
 //	add_item(new ADriverItem(this, AUDIO_NAS_TITLE, AUDIO_NAS));
-	if(do_input) add_item(new ADriverItem(this, AUDIO_1394_TITLE, AUDIO_1394));
+	if(do_input) 
+		add_item(new ADriverItem(this, AUDIO_1394_TITLE, AUDIO_1394));
 }
 
 char* ADriverMenu::adriver_to_string(int driver)
@@ -518,85 +594,25 @@ int OSSEnable::handle_event()
 
 
 
-OSSPath::OSSPath(int x, int y, char *output)
+ADeviceTextBox::ADeviceTextBox(int x, int y, char *output)
  : BC_TextBox(x, y, 150, 1, output)
 { 
 	this->output = output; 
 }
 
-int OSSPath::handle_event() 
-{ 
-	strcpy(output, get_text()); 
+int ADeviceTextBox::handle_event() 
+{
+	strcpy(output, get_text());
+	return 1;
 }
 
-OSSChannels::OSSChannels(int x, int y, int *output)
- : BC_TextBox(x, y, 50, 1, *output)
+ADeviceIntBox::ADeviceIntBox(int x, int y, int *output)
+ : BC_TextBox(x, y, 80, 1, *output)
 { 
 	this->output = output;
 }
 
-int OSSChannels::handle_event() 
-{ 
-	*output = atol(get_text()); 
-	return 1;
-}
-
-ESoundServer::ESoundServer(int x, int y, char *output)
- : BC_TextBox(x, y, 150, 1, output)
-{ 
-	this->output = output; 
-}
-
-int ESoundServer::handle_event() 
-{ 
-	strcpy(output, get_text()); 
-	return 1;
-}
-
-ESoundPort::ESoundPort(int x, int y, int *output)
- : BC_TextBox(x, y, 50, 1, *output)
-{ 
-	this->output = output;
-}
-
-int ESoundPort::handle_event() 
-{ 
-	*output = atol(get_text()); 
-	return 1;
-}
-
-FirewirePort::FirewirePort(int x, int y, int *output)
- : BC_TextBox(x, y, 50, 1, *output)
-{ 
-	this->output = output;
-}
-
-int FirewirePort::handle_event() 
-{ 
-	*output = atol(get_text()); 
-	return 1;
-}
-
-FirewireChannel::FirewireChannel(int x, int y, int *output)
- : BC_TextBox(x, y, 50, 1, *output)
-{ 
-	this->output = output;
-}
-
-int FirewireChannel::handle_event() 
-{ 
-	*output = atol(get_text()); 
-	return 1;
-}
-
-
-FirewireChannels::FirewireChannels(int x, int y, int *output)
- : BC_TextBox(x, y, 50, 1, *output)
-{ 
-	this->output = output;
-}
-
-int FirewireChannels::handle_event() 
+int ADeviceIntBox::handle_event() 
 { 
 	*output = atol(get_text()); 
 	return 1;
@@ -626,17 +642,6 @@ ALSADevice::~ALSADevice()
 int ALSADevice::handle_event()
 {
 	strcpy(output, get_text());
-	return 1;
-}
-
-ALSAChannels::ALSAChannels(int x, int y, int *output)
- : BC_TextBox(x, y, 50, 1, *output)
-{
-	this->output = output;
-}
-int ALSAChannels::handle_event()
-{
-	*output = atol(get_text()); 
 	return 1;
 }
 

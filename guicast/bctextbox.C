@@ -387,7 +387,7 @@ int BC_TextBox::cursor_leave_event()
 
 int BC_TextBox::button_press_event()
 {
-	if(get_buttonpress() != 1) return 0;
+	if(get_buttonpress() > 2) return 0;
 
 	int cursor_letter = 0;
 	int text_len = strlen(text);
@@ -528,7 +528,8 @@ int BC_TextBox::repeat_event(long duration)
 void BC_TextBox::default_keypress(int &dispatch_event, int &result)
 {
     if((top_level->get_keypress() == RETURN) ||
-		(top_level->get_keypress() > 30 && top_level->get_keypress() < 127))
+//		(top_level->get_keypress() > 30 && top_level->get_keypress() < 127))
+		(top_level->get_keypress() > 30 && top_level->get_keypress() <= 255))
 	{
 // Substitute UNIX linefeed
 		if(top_level->get_keypress() == RETURN) 

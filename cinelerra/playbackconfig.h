@@ -7,7 +7,7 @@
 #include "maxchannels.h"
 #include "playbackconfig.inc"
 
-// This structure is passed to the driver
+// This structure is passed to the driver for configuration during playback
 class AudioOutConfig
 {
 public:
@@ -41,9 +41,12 @@ public:
 	char alsa_out_device[BCTEXTLEN];
 	int alsa_out_channels;
 	int alsa_out_bits;
+
 	int firewire_channels;
 	int firewire_channel;
 	int firewire_port;
+	char firewire_path[BCTEXTLEN];
+	int firewire_syt;
 };
 
 // This structure is passed to the driver
@@ -69,16 +72,34 @@ public:
 // Entry in the buz channel table
 	int buz_out_channel;
 	int buz_swap_fields;
+
+// X11 options
 	char x11_host[BCTEXTLEN];
+	int x11_use_fields;
+// Values for x11_use_fields
+	enum
+	{
+		USE_NO_FIELDS,
+		USE_EVEN_FIRST,
+		USE_ODD_FIRST
+	};
+
+
 // Which channels to send output to
 	int do_channel[MAXCHANNELS];
+
+// Picture quality
 	int brightness;
 	int hue;
 	int color;
 	int contrast;
 	int whiteness;
+
+// Firewire options
 	int firewire_channel;
 	int firewire_port;
+	char firewire_path[BCTEXTLEN];
+	int firewire_syt;
 };
 
 class PlaybackConfig

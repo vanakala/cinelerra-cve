@@ -8,6 +8,7 @@
 #include "vframe.h"
 
 #include <string.h>
+#include <stdint.h>
 
 #define TOP_FIELD_FIRST 0
 #define BOTTOM_FIELD_FIRST 1
@@ -21,7 +22,7 @@ class FrameFieldConfig
 public:
 	FrameFieldConfig();
 	int field_dominance;
-	int double_lines;
+	int avg;
 };
 
 
@@ -56,6 +57,24 @@ public:
 	FrameFieldWindow *gui;
 };
 
+class FrameFieldShift : public BC_CheckBox
+{
+public:
+	FrameFieldShift(FrameField *plugin, FrameFieldWindow *gui, int x, int y);
+	int handle_event();
+	FrameField *plugin;
+	FrameFieldWindow *gui;
+};
+
+class FrameFieldAvg : public BC_CheckBox
+{
+public:
+	FrameFieldAvg(FrameField *plugin, FrameFieldWindow *gui, int x, int y);
+	int handle_event();
+	FrameField *plugin;
+	FrameFieldWindow *gui;
+};
+
 class FrameFieldWindow : public BC_Window
 {
 public:
@@ -65,7 +84,7 @@ public:
 	FrameField *plugin;
 	FrameFieldTop *top;
 	FrameFieldBottom *bottom;
-	FrameFieldDouble *double_lines;
+	FrameFieldAvg *avg;
 };
 
 
@@ -93,6 +112,9 @@ public:
 	void raise_window();
 	void update_gui();
 
+
+	void average_rows(int offset, VFrame *frame);
+
 	int current_frame;
 	VFrame *prev_frame;
 	FrameFieldThread *thread;
@@ -114,7 +136,7 @@ public:
 FrameFieldConfig::FrameFieldConfig()
 {
 	field_dominance = TOP_FIELD_FIRST;
-	double_lines = 1;
+	avg = 1;
 }
 
 
@@ -147,7 +169,7 @@ void FrameFieldWindow::create_objects()
 	y += 30;
 	add_subwindow(bottom = new FrameFieldBottom(plugin, this, x, y));
 	y += 30;
-	add_subwindow(double_lines = new FrameFieldDouble(plugin, this, x, y));
+	add_subwindow(avg = new FrameFieldAvg(plugin, this, x, y));
 	show_window();
 	flush();
 }
@@ -217,22 +239,24 @@ int FrameFieldBottom::handle_event()
 
 
 
-FrameFieldDouble::FrameFieldDouble(FrameField *plugin, 
+
+
+FrameFieldAvg::FrameFieldAvg(FrameField *plugin, 
 	FrameFieldWindow *gui, 
 	int x, 
 	int y)
  : BC_CheckBox(x, 
 	y, 
-	plugin->config.double_lines,
-	"Double lines")
+	plugin->config.avg,
+	"Average empty rows")
 {
 	this->plugin = plugin;
 	this->gui = gui;
 }
 
-int FrameFieldDouble::handle_event()
+int FrameFieldAvg::handle_event()
 {
-	plugin->config.double_lines = get_value();
+	plugin->config.avg = get_value();
 	plugin->send_configure_change();
 	return 1;
 }
@@ -306,81 +330,137 @@ int FrameField::process_realtime(VFrame *input, VFrame *output)
 	unsigned char **prev_rows = prev_frame->get_rows();
 	unsigned char **output_rows = output->get_rows();
 
+// Calculate current frame based on absolute position so the algorithm isn't
+// relative to where playback started.
+	current_frame = get_source_position() % 2;
+
 	if(current_frame == 0)
 	{
-//printf("FrameField::process_realtime 1 %d\n", config.field_dominance);
 		if(config.field_dominance == TOP_FIELD_FIRST) 
 		{
-			for(int i = 0; i < input->get_h(); i += 2)
+			for(int i = 0; i < input->get_h() - 1; i += 2)
 			{
-				if(config.double_lines)
-				{
-					memcpy(output_rows[i], current_rows[i], row_size);
-					memcpy(output_rows[i + 1], current_rows[i], row_size);
-				}
-				else
-				{
-					memcpy(output_rows[i], current_rows[i], row_size);
-					memcpy(output_rows[i + 1], prev_rows[i + 1], row_size);
-				}
+// Copy even lines of current to both lines of output
+				memcpy(output_rows[i], current_rows[i], row_size);
+				if(!config.avg) memcpy(output_rows[i + 1], current_rows[i], row_size);
 			}
+
+// Average empty rows
+			if(config.avg) average_rows(0, output);
 		}
 		else
 		{
-			for(int i = 0; i < input->get_h(); i += 2)
+			for(int i = 0; i < input->get_h() - 1; i += 2)
 			{
-				if(config.double_lines)
-				{
-					memcpy(output_rows[i], current_rows[i + 1], row_size);
-					memcpy(output_rows[i + 1], current_rows[i + 1], row_size);
-				}
-				else
-				{
-					memcpy(output_rows[i], prev_rows[i], row_size);
-					memcpy(output_rows[i + 1], current_rows[i + 1], row_size);
-				}
+// Copy odd lines of current to both lines of output with shift up.
+				memcpy(output_rows[i + 1], current_rows[i + 1], row_size);
+				if(i < input->get_h() - 2 && !config.avg)
+					memcpy(output_rows[i + 2], current_rows[i + 1], row_size);
 			}
+
+// Average empty rows
+			if(config.avg) average_rows(1, output);
 		}
 	}
 	else
+// Odd frame
+// Copy input frame to prev_frame after the calculations using temp rows
 	{
-		if(config.double_lines)
+		unsigned char *temp_row1 = new unsigned char[row_size];
+		unsigned char *temp_row2 = new unsigned char[row_size];
+
+		if(config.field_dominance == TOP_FIELD_FIRST)
 		{
-			if(config.field_dominance == TOP_FIELD_FIRST) 
+			for(int i = 0; i < input->get_h() - 1; i += 2)
 			{
-				for(int i = 0; i < input->get_h(); i += 2)
-				{
-					if(config.double_lines)
-					{
-						memcpy(output_rows[i], current_rows[i + 1], row_size);
-						memcpy(output_rows[i + 1], current_rows[i + 1], row_size);
-					}
-				}
+// Copy lines to temporary for prev_frame
+				memcpy(temp_row1, output_rows[i], row_size);
+				memcpy(temp_row2, output_rows[i + 1], row_size);
+
+
+// Copy odd lines of input to both lines of output
+				memcpy(output_rows[i + 1], current_rows[i + 1], row_size);
+				if(i < input->get_h() - 2 && !config.avg)
+					memcpy(output_rows[i + 2], current_rows[i + 1], row_size);
+
+// Copy temporary to prev_frame
+				memcpy(prev_rows[i], temp_row1, row_size);
+				memcpy(prev_rows[i + 1], temp_row2, row_size);
 			}
-			else
-			{
-				for(int i = 0; i < input->get_h(); i += 2)
-				{
-					if(config.double_lines)
-					{
-						memcpy(output_rows[i], current_rows[i], row_size);
-						memcpy(output_rows[i + 1], current_rows[i], row_size);
-					}
-				}
-			}
+
+// Average empty rows
+			if(config.avg) average_rows(1, output);
 		}
 		else
 		{
-			prev_frame->copy_from(input);
-			output->copy_from(input);
+			for(int i = 0; i < input->get_h() - 1; i += 2)
+			{
+// Copy lines to temporary for prev_frame
+				memcpy(temp_row1, output_rows[i], row_size);
+				memcpy(temp_row2, output_rows[i + 1], row_size);
+
+// Copy even lines of input to both lines of output.
+				memcpy(output_rows[i], current_rows[i], row_size);
+				if(!config.avg) memcpy(output_rows[i + 1], current_rows[i], row_size);
+
+// Copy temporary to prev_frame
+				memcpy(prev_rows[i], temp_row1, row_size);
+				memcpy(prev_rows[i + 1], temp_row2, row_size);
+			}
+
+// Average empty rows
+			if(config.avg) average_rows(0, output);
 		}
+		delete [] temp_row1;
+		delete [] temp_row2;
 	}
-
-
-
 
 	current_frame = !current_frame;
 }
+
+#define AVERAGE(type, components, offset) \
+{ \
+	type **rows = (type**)frame->get_rows(); \
+	int w = frame->get_w(); \
+	int h = frame->get_h(); \
+	int row_size = components * w; \
+	for(int i = offset; i < h - 3; i += 2) \
+	{ \
+		type *row1 = rows[i]; \
+		type *row2 = rows[i + 1]; \
+		type *row3 = rows[i + 2]; \
+		for(int j = 0; j < row_size; j++) \
+		{ \
+			int64_t sum = (int64_t)*row1++ + (int64_t)*row3++; \
+			*row2++ = (sum >> 1); \
+		} \
+	} \
+}
+
+void FrameField::average_rows(int offset, VFrame *frame)
+{
+//printf("FrameField::average_rows 1 %d\n", offset);
+	switch(frame->get_color_model())
+	{
+		case BC_RGB888:
+		case BC_YUV888:
+			AVERAGE(unsigned char, 3, offset);
+			break;
+		case BC_RGBA8888:
+		case BC_YUVA8888:
+			AVERAGE(unsigned char, 4, offset);
+			break;
+		case BC_RGB161616:
+		case BC_YUV161616:
+			AVERAGE(uint16_t, 3, offset);
+			break;
+		case BC_RGBA16161616:
+		case BC_YUVA16161616:
+			AVERAGE(uint16_t, 4, offset);
+			break;
+	}
+}
+
 
 int FrameField::is_realtime()
 {
@@ -418,14 +498,14 @@ int FrameField::load_defaults()
 	defaults->load();
 
 	config.field_dominance = defaults->get("DOMINANCE", config.field_dominance);
-	config.double_lines = defaults->get("DOUBLE", config.double_lines);
+	config.avg = defaults->get("AVG", config.avg);
 	return 0;
 }
 
 int FrameField::save_defaults()
 {
 	defaults->update("DOMINANCE", config.field_dominance);
-	defaults->update("DOUBLE", config.double_lines);
+	defaults->update("AVG", config.avg);
 	defaults->save();
 	return 0;
 }
@@ -438,7 +518,7 @@ void FrameField::save_data(KeyFrame *keyframe)
 	output.set_shared_string(keyframe->data, MESSAGESIZE);
 	output.tag.set_title("FRAME_FIELD");
 	output.tag.set_property("DOMINANCE", config.field_dominance);
-	output.tag.set_property("DOUBLE", config.double_lines);
+	output.tag.set_property("AVG", config.avg);
 	output.append_tag();
 	output.terminate_string();
 }
@@ -456,7 +536,7 @@ void FrameField::read_data(KeyFrame *keyframe)
 		if(input.tag.title_is("FRAME_FIELD"))
 		{
 			config.field_dominance = input.tag.get_property("DOMINANCE", config.field_dominance);
-			config.double_lines = input.tag.get_property("DOUBLE", config.double_lines);
+			config.avg = input.tag.get_property("AVG", config.avg);
 		}
 	}
 }
@@ -468,7 +548,6 @@ void FrameField::update_gui()
 		thread->window->lock_window();
 		thread->window->top->update(config.field_dominance == TOP_FIELD_FIRST);
 		thread->window->bottom->update(config.field_dominance == BOTTOM_FIELD_FIRST);
-		thread->window->double_lines->update(config.double_lines);
 		thread->window->unlock_window();
 	}
 }

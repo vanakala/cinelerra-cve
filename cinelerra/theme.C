@@ -773,6 +773,31 @@ void Theme::get_recordgui_sizes(RecordGUI *gui, int w, int h)
 	recordgui_controls_y = h - 40;
 }
 
+void Theme::get_plugindialog_sizes()
+{
+	int x = 10, y = 30;
+	plugindialog_new_x = x;
+	plugindialog_new_y = y;
+	plugindialog_shared_x = mwindow->session->plugindialog_w / 3;
+	plugindialog_shared_y = y;
+	plugindialog_module_x = mwindow->session->plugindialog_w * 2 / 3;
+	plugindialog_module_y = y;
+
+	plugindialog_new_w = plugindialog_shared_x - plugindialog_new_x - 10;
+	plugindialog_new_h = mwindow->session->plugindialog_h - 110;
+	plugindialog_shared_w = plugindialog_module_x - plugindialog_shared_x - 10;
+	plugindialog_shared_h = mwindow->session->plugindialog_h - 110;
+	plugindialog_module_w = mwindow->session->plugindialog_w - plugindialog_module_x - 10;
+	plugindialog_module_h = mwindow->session->plugindialog_h - 110;
+
+	plugindialog_newattach_x = plugindialog_new_x + 20;
+	plugindialog_newattach_y = plugindialog_new_y + plugindialog_new_h + 10;
+	plugindialog_sharedattach_x = plugindialog_shared_x + 20;
+	plugindialog_sharedattach_y = plugindialog_shared_y + plugindialog_shared_h + 10;
+	plugindialog_moduleattach_x = plugindialog_module_x + 20;
+	plugindialog_moduleattach_y = plugindialog_module_y + plugindialog_module_h + 10;
+}
+
 void Theme::get_preferences_sizes()
 {
 }

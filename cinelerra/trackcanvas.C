@@ -2006,6 +2006,9 @@ int TrackCanvas::test_floatauto(Auto *current,
 	if(out_y1 < center_pixel + -zoom_track / 2) out_y1 = center_pixel + -zoom_track / 2;
 	if(out_y2 > center_pixel + zoom_track / 2) out_y2 = center_pixel + zoom_track / 2;
 
+
+
+//printf("TrackCanvas::test_floatauto %d %d %d %d %d %d\n", cursor_x, cursor_y, x1, x2, y1, y2);
 // Test value
 	if(!ctrl_down() &&
 		cursor_x >= x1 && 
@@ -2030,7 +2033,8 @@ int TrackCanvas::test_floatauto(Auto *current,
 		cursor_x >= in_x1 && 
 		cursor_x < in_x2 && 
 		cursor_y >= in_y1 && 
-		cursor_y < in_y2)
+		cursor_y < in_y2 &&
+		current->position > 0)
 	{
 		if(buttonpress)
 		{
@@ -2101,7 +2105,6 @@ void TrackCanvas::draw_floatline(int center_pixel,
 
 
 
-//printf("TrackCanvas::draw_floatline 1 %p %p\n", previous, next);
 
 	int prev_y;
 // Call by reference fails for some reason here
@@ -2113,7 +2116,6 @@ void TrackCanvas::draw_floatline(int center_pixel,
 
 		int y = (int)(center_pixel + 
 			(autos->value_to_percentage(value) - 0.5) * -yscale);
-//printf("TrackCanvas::draw_floatline 2 %ld %d %f\n", position, y, value);
 
 		if(x > x1)
 		{
@@ -2135,71 +2137,56 @@ void TrackCanvas::draw_floatline(int center_pixel,
 
 
 
-//printf("TrackCanvas::draw_floatline 3\n");
 
 }
 
-int TrackCanvas::test_floatline(Autos *autos,
-	int center_pixel, 
-	FloatAuto *previous,
-	FloatAuto *current,
-	int x1,
-	int y1,
-	int x2,
-	int y2, 
-	int cursor_x, 
-	int cursor_y, 
-	int buttonpress)
+int TrackCanvas::test_floatline(int center_pixel, 
+		FloatAutos *autos,
+		long unit_start,
+		double zoom_units,
+		double yscale,
+		int x1,
+		int x2,
+		int cursor_x, 
+		int cursor_y, 
+		int buttonpress)
 {
-//printf("TrackCanvas::test_floatline 1\n ");
 	int result = 0;
 
 
-// Not using slope intercept
-	x1 = MAX(0, x1);
+	long position = (long)(unit_start + cursor_x * zoom_units);
+// Call by reference fails for some reason here
+	FloatAuto *previous = 0, *next = 0;
+	float value = autos->get_value(position, PLAY_FORWARD, previous, next);
+	int y = (int)(center_pixel + 
+		(autos->value_to_percentage(value) - 0.5) * -yscale);
 
-
-	if(cursor_x >= x1 && cursor_x < x2)
+	if(cursor_x >= x1 && 
+		cursor_x < x2 &&
+		cursor_y >= y - HANDLE_W / 2 && 
+		cursor_y < y + HANDLE_W / 2 &&
+		!ctrl_down())
 	{
-		float slope = (float)(y2 - y1) / (x2 - x1);
-		int miny = center_pixel + y1 + (int)((cursor_x - x1) * slope) - HANDLE_W / 2;
-		int maxy = miny + HANDLE_W;
-	
-		if(cursor_y >= miny && cursor_y < maxy)
+		result = 1;
+
+
+		if(buttonpress)
 		{
-			result = 1;
+			mwindow->undo->update_undo_before("keyframe", LOAD_AUTOMATION);
 
 
-			if(buttonpress)
-			{
-				mwindow->undo->update_undo_before("keyframe", LOAD_AUTOMATION);
+			Auto *current;
+			current = mwindow->session->drag_auto = autos->insert_auto(position);
+			((FloatAuto*)current)->value = value;
+			mwindow->session->drag_start_percentage = current->value_to_percentage();
+			mwindow->session->drag_start_position = current->position;
+			mwindow->session->drag_origin_x = cursor_x;
+			mwindow->session->drag_origin_y = cursor_y;
+			mwindow->session->drag_handle = 0;
 
-
-				Auto *current;
-				FloatAuto *previous = 0, *next = 0;
-				double position = (double)(cursor_x +
-						mwindow->edl->local_session->view_start) * 
-					mwindow->edl->local_session->zoom_sample / 
-					mwindow->edl->session->sample_rate;
-				long unit_position = autos->track->to_units(position, 0);
-				float new_value = ((FloatAutos*)autos)->get_value(unit_position,
-					PLAY_FORWARD,
-					previous, 
-					next);
-//printf("TrackCanvas::test_floatline %ld\n", unit_position);
-
-				current = mwindow->session->drag_auto = autos->insert_auto(unit_position);
-				((FloatAuto*)current)->value = new_value;
-				mwindow->session->drag_start_percentage = current->value_to_percentage();
-				mwindow->session->drag_start_position = current->position;
-				mwindow->session->drag_origin_x = cursor_x;
-				mwindow->session->drag_origin_y = cursor_y;
-
-
-			}
 		}
 	}
-//printf("TrackCanvas::test_floatline 2\n ");
+
 
 	return result;
 }
@@ -2256,7 +2243,6 @@ int TrackCanvas::test_toggleline(Autos *autos,
 					mwindow->edl->session->sample_rate;
 				long unit_position = autos->track->to_units(position, 0);
 				int new_value = (int)((IntAutos*)autos)->get_automation_constant(unit_position, unit_position);
-//printf("TrackCanvas::test_floatline %ld\n", unit_position);
 
 				current = mwindow->session->drag_auto = autos->insert_auto(unit_position);
 				((IntAuto*)current)->value = new_value;
@@ -2320,6 +2306,7 @@ int TrackCanvas::do_float_autos(Track *track,
 	double zoom_units;
 	double ax, ay, ax2, ay2;
 	double in_x2, in_y2, out_x2, out_y2;
+	int draw_auto;
 	double slope;
 	int skip = 0;
 
@@ -2365,9 +2352,14 @@ int TrackCanvas::do_float_autos(Track *track,
 	}
 
 
+//printf("TrackCanvas::do_float_autos 1\n");
+
+
+
 	do
 	{
 		skip = 0;
+		draw_auto = 1;
 
 		if(current)
 		{
@@ -2395,6 +2387,7 @@ int TrackCanvas::do_float_autos(Track *track,
 
 		if(ax2 > get_w())
 		{
+			draw_auto = 0;
 			ax2 = get_w();
 			ay2 = ay + slope * (get_w() - ax);
 		}
@@ -2440,6 +2433,7 @@ int TrackCanvas::do_float_autos(Track *track,
 							buttonpress);
 				}
 				else
+				if(draw_auto)
 					draw_floatauto(current, 
 						(int)ax2, 
 						(int)ay2, 
@@ -2464,14 +2458,14 @@ int TrackCanvas::do_float_autos(Track *track,
 			{
 				if(track->record)
 				{
-					result = test_floatline(autos,
-						center_pixel, 
-						(FloatAuto*)previous,
-						(FloatAuto*)current,
-						(int)ax, 
-						(int)ay, 
-						(int)ax2, 
-						(int)ay2,
+					result = test_floatline(center_pixel, 
+						(FloatAutos*)autos,
+						unit_start,
+						zoom_units,
+						yscale,
+						(int)ax,
+// Exclude auto coverage from the end of the line.  The auto overlaps
+						(int)ax2 - HANDLE_W / 2,
 						cursor_x, 
 						cursor_y, 
 						buttonpress);
@@ -2512,6 +2506,7 @@ int TrackCanvas::do_float_autos(Track *track,
 		current->position <= unit_end && 
 		!result);
 
+//printf("TrackCanvas::do_float_autos 100\n");
 
 
 
@@ -2528,14 +2523,13 @@ int TrackCanvas::do_float_autos(Track *track,
 		{
 			if(track->record)
 			{
-				result = test_floatline(autos,
-					center_pixel, 
-					(FloatAuto*)previous,
-					(FloatAuto*)current,
-					(int)ax, 
-					(int)ay, 
-					(int)ax2, 
-					(int)ay2,
+				result = test_floatline(center_pixel, 
+					(FloatAutos*)autos,
+					unit_start,
+					zoom_units,
+					yscale,
+					(int)ax,
+					(int)ax2,
 					cursor_x, 
 					cursor_y, 
 					buttonpress);
@@ -3371,7 +3365,7 @@ int TrackCanvas::cursor_motion_event()
 				mwindow->edl->local_session->selectionend = selection_midpoint1;
 				mwindow->edl->local_session->selectionstart = position;
 // Que the CWindow
-				mwindow->cwindow->update(1, 0, 0);
+				mwindow->cwindow->update(1, 0, 0, 0, 1);
 // Update the faders
 				mwindow->update_plugin_guis();
 				gui->patchbay->update();
@@ -3399,12 +3393,12 @@ int TrackCanvas::cursor_motion_event()
 			{
 // Update clocks
 				cursor_x = get_cursor_x();
-				position = cursor_x * 
-					mwindow->edl->local_session->zoom_sample / 
-					mwindow->edl->session->sample_rate + 
-					mwindow->edl->local_session->view_start * 
-					mwindow->edl->local_session->zoom_sample / 
-					mwindow->edl->session->sample_rate;
+				position = (double)cursor_x * 
+					(double)mwindow->edl->local_session->zoom_sample / 
+					(double)mwindow->edl->session->sample_rate + 
+					(double)mwindow->edl->local_session->view_start * 
+					(double)mwindow->edl->local_session->zoom_sample / 
+					(double)mwindow->edl->session->sample_rate;
 				position = mwindow->edl->align_to_frame(position, 0);
 				update_clock = 1;
 
@@ -3478,7 +3472,7 @@ int TrackCanvas::cursor_motion_event()
 		mwindow->restart_brender();
 		mwindow->sync_parameters(CHANGE_PARAMS);
 		mwindow->update_plugin_guis();
-		mwindow->cwindow->update(1, 0, 0);
+		mwindow->cwindow->update(1, 0, 0, 0, 1);
 // Update faders
 		gui->patchbay->update();
 	}
@@ -3545,6 +3539,8 @@ int TrackCanvas::repeat_event(long duration)
 	long x_distance = 0;
 	long y_distance = 0;
 	double position = 0;
+	int result = 0;
+
 	switch(mwindow->session->current_operation)
 	{
 		case SELECT_REGION:
@@ -3572,6 +3568,7 @@ int TrackCanvas::repeat_event(long duration)
 				y_distance = get_cursor_y();
 				track_movement = 1;
 			}
+			result = 1;
 			break;
 	}
 
@@ -3612,12 +3609,14 @@ int TrackCanvas::repeat_event(long duration)
 		mwindow->samplemovement(mwindow->edl->local_session->view_start + 
 			x_distance);
 	}
+
 	if(track_movement)
 	{
 		mwindow->trackmovement(mwindow->edl->local_session->track_start + 
 			y_distance);
 	}
-	return 0;
+
+	return result;
 }
 
 int TrackCanvas::button_release_event()
@@ -4382,7 +4381,7 @@ int TrackCanvas::button_press_event()
 
 		if(rerender)
 		{
-			mwindow->cwindow->update(1, 0, 0);
+			mwindow->cwindow->update(1, 0, 0, 0, 1);
 // Update faders
 			mwindow->update_plugin_guis();
 			gui->patchbay->update();

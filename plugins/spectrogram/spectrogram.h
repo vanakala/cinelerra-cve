@@ -1,8 +1,13 @@
 #ifndef SPECTROGRAM_H
 #define SPECTROGRAM_H
 
+
+
+
+
+
 #include "defaults.inc"
-#include "../fourier/fourier.h"
+#include <fourier.h>
 #include "guicast.h"
 #include "mutex.h"
 #include "pluginaclient.h"

@@ -316,7 +316,7 @@ int VirtualANode::render_fade(double *input,        // start of input fragment
 								long input_position, // starting sample of input buffer in project
 								Autos *autos)
 {
-	double value, intercept;
+	double value, fade_value;
 	int direction = renderengine->command->get_direction();
 	FloatAuto *previous = 0;
 	FloatAuto *next = 0;
@@ -325,12 +325,13 @@ int VirtualANode::render_fade(double *input,        // start of input fragment
 	if(((FloatAutos*)autos)->automation_is_constant(input_position, 
 		fragment_len,
 		direction,
-		intercept))
+		fade_value))
 	{
-		if(intercept <= INFINITYGAIN) 
+//printf("VirtualANode::render_fade 1 %d %f\n", input_position, fade_value);
+		if(fade_value <= INFINITYGAIN) 
 			value = 0;
 		else
-			value = DB::fromdb(intercept);
+			value = DB::fromdb(fade_value);
 		for(long i = 0; i < fragment_len; i++)
 		{
 			output[i] = input[i] * value;
@@ -338,19 +339,20 @@ int VirtualANode::render_fade(double *input,        // start of input fragment
 	}
 	else
 	{
+//printf("VirtualANode::render_fade 10 %d\n", input_position);
 		for(long i = 0; i < fragment_len; i++)
 		{
 			long slope_len = fragment_len - i;
 
-			intercept = ((FloatAutos*)autos)->get_value(input_position, 
+			fade_value = ((FloatAutos*)autos)->get_value(input_position, 
 				direction,
 				previous,
 				next);
 
-			if(intercept <= INFINITYGAIN) 
+			if(fade_value <= INFINITYGAIN)
 				value = 0;
 			else
-				value = DB::fromdb(intercept);
+				value = DB::fromdb(fade_value);
 
 			output[i] = input[i] * value;
 

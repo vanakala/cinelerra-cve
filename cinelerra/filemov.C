@@ -10,6 +10,7 @@
 #include "videodevice.inc"
 
 #define DIVX_NAME "OpenDIVX"
+#define HV60_NAME "Heroine 60"
 #define DIV3_NAME "Microsoft MPEG-4"
 #define DIV4_NAME "MPEG-4"
 #define DV_NAME "DV"
@@ -359,6 +360,7 @@ int FileMOV::get_best_colormodel(Asset *asset, int driver)
 			if(match4(asset->vcodec, QUICKTIME_JPEG)) return BC_YUV420P;
 			if(match4(asset->vcodec, QUICKTIME_MJPA)) return BC_YUV422P;
 			if(match4(asset->vcodec, QUICKTIME_DV)) return BC_YUV422;
+			if(match4(asset->vcodec, QUICKTIME_HV60)) return BC_YUV420P;
 			if(match4(asset->vcodec, QUICKTIME_DIVX)) return BC_YUV420P;
 			if(match4(asset->vcodec, QUICKTIME_DIV3)) return BC_YUV420P;
 			break;
@@ -384,6 +386,8 @@ int FileMOV::get_best_colormodel(Asset *asset, int driver)
 			if(!strncasecmp(asset->vcodec, QUICKTIME_JPEG, 4)) return BC_YUV420P;
 			else
 			if(!strncasecmp(asset->vcodec, QUICKTIME_MJPA, 4)) return BC_YUV422P;
+			else
+			if(!strncasecmp(asset->vcodec, QUICKTIME_HV60, 4)) return BC_YUV420P;
 			else
 			if(!strncasecmp(asset->vcodec, QUICKTIME_DIVX, 4)) return BC_YUV420P;
 			else
@@ -547,7 +551,8 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 // Special handling for DIVX
 // Determine keyframe status.
 // Write VOL header in the first frame if none exists
-				if(!strcmp(asset->vcodec, QUICKTIME_DIVX))
+				if(!strcmp(asset->vcodec, QUICKTIME_DIVX) ||
+					!strcmp(asset->vcodec, QUICKTIME_HV60))
 				{
 					if(quicktime_divx_is_key(frames[i][j]->get_data(), frames[i][j]->get_compressed_size()))
 						quicktime_insert_keyframe(fd, file->current_frame + j, i);
@@ -794,8 +799,10 @@ int FileMOV::read_compressed_frame(VFrame *buffer)
 	long result;
 	if(!fd) return 0;
 
+//printf("FileMOV::read_compressed_frame 1\n");
 	result = quicktime_read_frame(fd, buffer->get_data(), file->current_layer);
 	buffer->set_compressed_size(result);
+//printf("FileMOV::read_compressed_frame 100\n");
 	result = !result;
 	return result;
 }
@@ -805,10 +812,12 @@ int FileMOV::write_compressed_frame(VFrame *buffer)
 	int result = 0;
 	if(!fd) return 0;
 
+//printf("FileMOV::write_compressed_frame 1\n");
 	result = quicktime_write_frame(fd, 
 		buffer->get_data(), 
 		buffer->get_compressed_size(), 
 		file->current_layer);
+//printf("FileMOV::write_compressed_frame 100\n");
 	return result;
 }
 
@@ -893,6 +902,7 @@ int FileMOV::read_samples(double *buffer, long len)
 char* FileMOV::strtocompression(char *string)
 {
 	if(!strcasecmp(string, DIVX_NAME)) return QUICKTIME_DIVX;
+	if(!strcasecmp(string, HV60_NAME)) return QUICKTIME_HV60;
 	if(!strcasecmp(string, DIV3_NAME)) return QUICKTIME_DIV3;
 	if(!strcasecmp(string, DIV4_NAME)) return QUICKTIME_DIV4;
 	if(!strcasecmp(string, DV_NAME)) return QUICKTIME_DV;
@@ -924,6 +934,7 @@ char* FileMOV::strtocompression(char *string)
 char* FileMOV::compressiontostr(char *string)
 {
 	if(match4(string, QUICKTIME_DIVX)) return DIVX_NAME;
+	if(match4(string, QUICKTIME_HV60)) return HV60_NAME;
 	if(match4(string, QUICKTIME_DIV3)) return DIV3_NAME;
 	if(match4(string, QUICKTIME_DIV4)) return DIV4_NAME;
 	if(match4(string, QUICKTIME_DV)) return DV_NAME;
@@ -1371,6 +1382,7 @@ int MOVConfigVideo::create_objects()
 	if(asset->format == FILE_MOV)
 	{
 		compression_items.append(new BC_ListBoxItem(DIVX_NAME));
+		compression_items.append(new BC_ListBoxItem(HV60_NAME));
 		compression_items.append(new BC_ListBoxItem(DIV3_NAME));
 		compression_items.append(new BC_ListBoxItem(DIV4_NAME));
 		compression_items.append(new BC_ListBoxItem(DV_NAME));
@@ -1533,7 +1545,8 @@ void MOVConfigVideo::update_parameters()
 		ms_gop_size->create_objects();
 	}
 	else
-	if(!strcmp(asset->vcodec, QUICKTIME_DIVX))
+	if(!strcmp(asset->vcodec, QUICKTIME_DIVX) ||
+		!strcmp(asset->vcodec, QUICKTIME_HV60))
 	{
 		int x = param_x, y = param_y;
 		divx_bitrate = new MOVConfigVideoNum(this, 

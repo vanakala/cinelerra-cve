@@ -46,11 +46,14 @@
  * conversions, and accommodated conversions involving +/- infinity,
  * NaN's, and denormalized numbers.
  *
- * $Id: portableio.h,v 1.1 2003/06/16 20:00:49 herman Exp $
+ * $Id: portableio.h,v 1.1.1.2 2003/06/16 20:01:21 herman Exp $
  *
  * $Log: portableio.h,v $
- * Revision 1.1  2003/06/16 20:00:49  herman
- * Initial revision
+ * Revision 1.1.1.2  2003/06/16 20:01:21  herman
+ * Importing 1.1.6 as a revision of 1.1.5
+ *
+ * Revision 1.1.1.1  2003/04/29 17:47:16  herman
+ * Importing source tree from Sylvain Joyeux
  *
  * Revision 1.1.1.1  2002/06/21 12:35:25  myrina
  *

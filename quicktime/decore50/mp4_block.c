@@ -54,6 +54,10 @@ static int getACdir();
 
 /***/
 
+// fps before -> 90 - 94
+// fps after -> 94 - 99
+#define CLEARBLOCK(x) bzero(x, 128);
+
 static int getDCsizeLum()
 {
 	int code;
@@ -179,7 +183,7 @@ int block(int block_num, int coded)
 		(mp4_state->hdr.derived_mb_type == INTRA_Q)) ? 1 : 0;
 	event_t event;
 
-	clearblock(ld->block); // clearblock
+	CLEARBLOCK(ld->block); // clearblock
 
 	if (intraFlag)
 	{
@@ -312,7 +316,7 @@ int blockIntra(int block_num, int coded)
 	event_t event;
 
 //printf("blockIntra 1\n");
-	clearblock(ld->block); // clearblock
+	CLEARBLOCK(ld->block); // clearblock
 //printf("blockIntra 1\n");
 
 
@@ -442,7 +446,7 @@ int blockInter(int block_num, int coded)
 	unsigned int * zigzag = mp4_tables->zig_zag_scan; // zigzag scan dir
 	int i;
 	
-	clearblock(ld->block); // clearblock
+	CLEARBLOCK(ld->block); // clearblock
 
 	// inverse quant type
 	if (mp4_state->hdr.quant_type == 0) 

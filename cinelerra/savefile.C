@@ -31,6 +31,7 @@ SaveBackup::SaveBackup(MWindow *mwindow)
 int SaveBackup::handle_event()
 {
 	mwindow->save_backup();
+	mwindow->gui->show_message("Saved backup.");
 	return 1;
 }
 

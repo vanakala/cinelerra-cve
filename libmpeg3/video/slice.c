@@ -228,7 +228,7 @@ static inline int mpeg3video_addblock(mpeg3_slice_t *slice,
             	"movq        %%mm0,         (%%eax)\n"
             	"movq        %%mm0,         (%%eax, %1)\n"
             	:
-            	: "D" (rfp), "c" (iincr), "r" (bp)
+            	: "D" (rfp), "c" (iincr), "b" (bp)
             	: "eax");
     		}
     		else 

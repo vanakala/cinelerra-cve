@@ -80,8 +80,8 @@ int VDevice1394::open_input()
 	{
 		grabber = dv_grabber_new();
 		if(dv_start_grabbing(grabber, 
-			device->in_config->vfirewire_in_port, 
-			device->in_config->vfirewire_in_channel, 
+			device->in_config->firewire_port, 
+			device->in_config->firewire_channel, 
 			device->in_config->capture_length))
 		{
 			dv_grabber_delete(grabber);
@@ -95,12 +95,15 @@ int VDevice1394::open_input()
 int VDevice1394::open_output()
 {
 //printf("VDevice1394::open_output 1\n");
-    output_fd = open("/dev/video1394", O_RDWR);
+    output_fd = open(device->out_config->firewire_path, O_RDWR);
 //printf("VDevice1394::open_output 2\n");
 
 	if(output_fd <= 0)
 	{
-		perror("VDevice1394::open_output /dev/video1394");
+		fprintf(stderr, 
+			"VDevice1394::open_output %s: %s", 
+			device->out_config->firewire_path,
+			strerror(errno));
 		return 1;
 	}
 	else
@@ -153,7 +156,10 @@ int VDevice1394::open_output()
         output_mmap.nb_buffers = 10;
         output_mmap.buf_size = 320 * 512;
         output_mmap.packet_size = 512;
-        output_mmap.syt_offset = 19000;
+// Shouldn't this be handled by the video1394 driver?
+// dvgrab originally used 19000
+// JVC DVL300 -> 30000
+        output_mmap.syt_offset = device->out_config->firewire_syt;
         output_mmap.flags = VIDEO1394_VARIABLE_PACKET_SIZE;
     
         if(ioctl(output_fd, VIDEO1394_TALK_CHANNEL, &output_mmap) < 0)
@@ -224,7 +230,7 @@ int VDevice1394::close_all()
 		dv_grabber_delete(grabber);
 	}
 
-	if(output_fd)
+	if(output_fd > 0)
 	{
         output_queue.buffer = (output_mmap.nb_buffers + output_queue.buffer - 1) % output_mmap.nb_buffers;
 
@@ -335,9 +341,9 @@ int VDevice1394::read_buffer(VFrame *frame)
 			memcpy(frame->get_data(), data, size);
 			frame->set_compressed_size(size);
 		}
-printf("VDevice1394::read_buffer 1\n");
+//printf("VDevice1394::read_buffer 1\n");
 		dv_unlock_frame(grabber);
-printf("VDevice1394::read_buffer 2\n");
+//printf("VDevice1394::read_buffer 2\n");
 	}
 
 	return result;
@@ -382,6 +388,8 @@ int VDevice1394::write_buffer(VFrame **frame, EDL *edl)
 {
 	VFrame *ptr = 0;
 	VFrame *input = frame[0];
+
+	if(output_fd <= 0) return 1;
 
 //printf("VDevice1394::write_buffer 1\n");
 	if(input->get_color_model() != BC_COMPRESSED)
@@ -489,8 +497,9 @@ int VDevice1394::write_buffer(VFrame **frame, EDL *edl)
 
 
 
-	while(unused_buffers--)
-	{
+//	while(unused_buffers--)
+//	{
+		unused_buffers--;
 //printf("VDevice1394::write_buffer 8\n");
 		int is_pal = (ptr->get_h() == 576);
 		unsigned char *output = output_buffer + output_queue.buffer * output_mmap.buf_size;
@@ -498,7 +507,7 @@ int VDevice1394::write_buffer(VFrame **frame, EDL *edl)
 		int packets_per_frame = (is_pal ? 300 : 250);
 		int min_packet_size = output_mmap.packet_size;
 		long frame_size = packets_per_frame * 480;
-		char vdata = 0;
+		int vdata = 0;
 		unsigned char *data = ptr->get_data();
 		unsigned int *packet_sizes = this->packet_sizes;
 //printf("VDevice1394::write_buffer 9\n");
@@ -560,6 +569,7 @@ int VDevice1394::write_buffer(VFrame **frame, EDL *edl)
         	output += min_packet_size;
 		}
    		*packet_sizes++ = 0;
+//printf("VDevice1394::write_buffer 13\n");
 
 // printf("VDevice1394::write_buffer 12 %02x %02x %02x %02x %02x %02x %02x %02x\n",
 // output[0],output[1], output[2], output[3], output[4], output[5], output[6], output[7]);
@@ -568,20 +578,22 @@ int VDevice1394::write_buffer(VFrame **frame, EDL *edl)
 		{
         	perror("VDevice1394::write_buffer VIDEO1394_TALK_QUEUE_BUFFER");
     	}
-//printf("VDevice1394::write_buffer 13\n");
 
     	output_queue.buffer++;
 		if(output_queue.buffer >= output_mmap.nb_buffers) output_queue.buffer = 0;
-	}
+//	}
 //printf("VDevice1394::write_buffer 14\n");
 
-    if (ioctl(output_fd, VIDEO1394_TALK_WAIT_BUFFER, &output_queue) < 0) 
+	if(unused_buffers <= 0)
 	{
-        perror("VDevice1394::write_buffer VIDEO1394_TALK_WAIT_BUFFER");
-    }
+    	if (ioctl(output_fd, VIDEO1394_TALK_WAIT_BUFFER, &output_queue) < 0) 
+		{
+        	perror("VDevice1394::write_buffer VIDEO1394_TALK_WAIT_BUFFER");
+    	}
+		unused_buffers++;
+	}
 //printf("VDevice1394::write_buffer 15\n");
 
-    unused_buffers = 1;
 
 
 	return 0;

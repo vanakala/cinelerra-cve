@@ -35,6 +35,8 @@ Canvas::~Canvas()
 {
 	if(refresh_frame) delete refresh_frame;
 	delete canvas_menu;
+ 	if(yscroll) delete yscroll;
+ 	if(xscroll) delete xscroll;
 }
 
 void Canvas::reset()

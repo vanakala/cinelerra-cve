@@ -440,6 +440,9 @@ void TimeBar::draw_range()
 		if(edl = get_edl())
 		{
 			long pixel = position_to_pixel(edl->local_session->selectionstart);
+// Draw insertion point position if this timebar belongs to a window which 
+// has something other than the master EDL.
+//printf("TimeBar::draw_range %f\n", edl->local_session->selectionstart);
 			set_color(RED);
 			draw_line(pixel, 0, pixel, get_h());
 		}
@@ -730,6 +733,41 @@ int TimeBar::button_press_event()
 	return 0;
 }
 
+int TimeBar::repeat_event(long duration)
+{
+	if(!mwindow->gui->canvas->drag_scroll) return 0;
+	if(duration != BC_WindowBase::get_resources()->scroll_repeat) return 0;
+
+	int distance = 0;
+	int x_movement = 0;
+	int relative_cursor_x = mwindow->gui->canvas->get_relative_cursor_x();
+	if(current_operation == TIMEBAR_DRAG)
+	{
+		if(relative_cursor_x >= mwindow->gui->canvas->get_w())
+		{
+			distance = relative_cursor_x - mwindow->gui->canvas->get_w();
+			x_movement = 1;
+		}
+		else
+		if(relative_cursor_x < 0)
+		{
+			distance = relative_cursor_x;
+			x_movement = 1;
+		}
+
+
+
+		if(x_movement)
+		{
+			update_cursor();
+			mwindow->samplemovement(mwindow->edl->local_session->view_start + 
+				distance);
+		}
+		return 1;
+	}
+	return 0;
+}
+
 int TimeBar::cursor_motion_event()
 {
 	int result = 0;
@@ -738,13 +776,27 @@ int TimeBar::cursor_motion_event()
 	switch(current_operation)
 	{
 		case TIMEBAR_DRAG:
+		{
 			update_cursor();
-			if(get_cursor_x() > get_w() || get_cursor_x() < 0)
+// printf("TimeBar::cursor_motion_event %d %d %d\n", 
+// get_cursor_x(), 
+// 0, 
+// get_w());
+			int relative_cursor_x = mwindow->gui->canvas->get_relative_cursor_x();
+			if(relative_cursor_x >= mwindow->gui->canvas->get_w() || 
+				relative_cursor_x < 0)
+			{
 				mwindow->gui->canvas->start_dragscroll();
+			}
 			else
+			if(relative_cursor_x < mwindow->gui->canvas->get_w() && 
+				relative_cursor_x >= 0)
+			{
 				mwindow->gui->canvas->stop_dragscroll();
+			}
 			result = 1;
 			break;
+		}
 
 
 		case TIMEBAR_DRAG_LEFT:

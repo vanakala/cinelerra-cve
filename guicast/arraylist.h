@@ -12,6 +12,7 @@ public:
 
 	TYPE append(TYPE value);
 	TYPE append();
+	TYPE insert(TYPE value, int number);
 
 // allocate
 	void allocate(int total);
@@ -23,6 +24,8 @@ public:
 	void remove(TYPE value);       
 // remove object and pointer to it from list
 	void remove_object(TYPE value);     
+// remove object and pointer to it from list
+	void remove_object_number(int number);     
 // remove pointer to item numbered
 	void remove_number(int number);
 // Return number of first object matching argument
@@ -31,6 +34,7 @@ public:
 // Remove pointer and objects for each array entry
 	void remove_all_objects();
 	TYPE last();
+	void set_array_delete();
 
 	void sort();
 
@@ -39,6 +43,7 @@ public:
 
 private:
 	long available;
+	int array_delete;
 };
 
 template<class TYPE>
@@ -46,6 +51,7 @@ ArrayList<TYPE>::ArrayList()
 {
 	total = 0;
 	available = 1;
+	array_delete = 0;
 	values = new TYPE[available];
 }
 
@@ -56,6 +62,13 @@ ArrayList<TYPE>::~ArrayList()
 // Just remove the pointer
 	delete [] values;
 }
+
+template<class TYPE>
+void ArrayList<TYPE>::set_array_delete()
+{
+   array_delete = 1;
+}
+
 
 template<class TYPE>
 void ArrayList<TYPE>::allocate(int total)
@@ -103,6 +116,17 @@ TYPE ArrayList<TYPE>::append()            // add to end of list
 }
 
 template<class TYPE>
+TYPE ArrayList<TYPE>::insert(TYPE value, int number)
+{
+	append(0);
+	for(int i = total - 1; i > number; i--)
+	{
+		values[i] = values[i - 1];
+	}
+	values[number] = value;
+}
+
+template<class TYPE>
 void ArrayList<TYPE>::remove(TYPE value)                   // remove value from anywhere in list
 {
 	int in, out;
@@ -130,16 +154,41 @@ template<class TYPE>
 void ArrayList<TYPE>::remove_object(TYPE value)                   // remove value from anywhere in list
 {
 	remove(value);
-	delete value;
+	if (array_delete) 
+		delete [] value;
+	else 
+		delete value;
 }
 
+template<class TYPE>
+void ArrayList<TYPE>::remove_object_number(int number)
+{
+	if(number < total)
+	{
+		if (array_delete) 
+			delete [] values[number];
+		else
+			delete values[number];
+		remove_number(number);
+	}
+	else
+		fprintf(stderr, "ArrayList<TYPE>::remove_object_number: number %d out of range %s.\n", number, total);
+}
 
 
 template<class TYPE>
 void ArrayList<TYPE>::remove_object()                   // remove value from anywhere in list
 {
-	delete values[total - 1];
-	remove();
+	if(total)
+	{
+		if (array_delete) 
+			delete [] values[total - 1];
+		else 
+			delete values[total - 1];
+		remove();
+	}
+	else
+		fprintf(stderr, "ArrayList<TYPE>::remove_object: array is 0 length.\n");
 }
 
 
@@ -150,15 +199,18 @@ void ArrayList<TYPE>::remove()
 	total--;
 }
 
+// remove pointer from anywhere in list
 template<class TYPE>
-void ArrayList<TYPE>::remove_number(int number)                   // remove value from anywhere in list
+void ArrayList<TYPE>::remove_number(int number)                   
 {
-	static int in, out;
-	
+	int in, out;
 	for(in = 0, out = 0; in < total;)
 	{
-		if(in != number) values[out++] = values[in++];
-		else  in++;       // need to delete it here
+		if(in != number)
+			values[out++] = values[in++];
+		else
+// need to delete it here
+			in++;       
 	}
 	total = out;
 }
@@ -167,7 +219,13 @@ template<class TYPE>
 void ArrayList<TYPE>::remove_all_objects()
 {
 //printf("ArrayList<TYPE>::remove_all_objects 1 %d\n", total);
-	for(int i = 0; i < total; i++) delete values[i];
+	for(int i = 0; i < total; i++)
+	{
+		if(array_delete)
+			delete [] values[i];
+		else
+			delete values[i];
+	}
 	total = 0;
 }
 
@@ -177,8 +235,9 @@ void ArrayList<TYPE>::remove_all()
 	total = 0;
 }
 
+// sort from least to greatest value
 template<class TYPE>
-void ArrayList<TYPE>::sort()                    // sort from least to greatest value
+void ArrayList<TYPE>::sort()
 {
 	int result = 1;
 	TYPE temp;

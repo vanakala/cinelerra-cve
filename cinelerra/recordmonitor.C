@@ -75,7 +75,7 @@ int RecordMonitor::create_objects()
 // Override default device for X11 drivers
 		if(mwindow->edl->session->playback_config[PLAYBACK_LOCALHOST].values[0]->vconfig->driver ==
 			PLAYBACK_X11_XV) config.driver = PLAYBACK_X11_XV;
-
+		config.x11_use_fields = 0;
 
 
 		device->open_output(&config, 

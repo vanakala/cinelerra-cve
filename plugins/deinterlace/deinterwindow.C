@@ -14,9 +14,9 @@ DeInterlaceWindow::DeInterlaceWindow(DeInterlaceMain *client, int x, int y)
  	x, 
 	y, 
 	200, 
-	300, 
+	400, 
 	200, 
-	300, 
+	400, 
 	0, 
 	0,
 	1)
@@ -41,7 +41,9 @@ int DeInterlaceWindow::create_objects()
 	y += 25;
 	add_tool(average_fields = new DeInterlaceOption(client, this, DEINTERLACE_AVG, x, y, "Average lines"));
 	y += 25;
-	add_tool(swap_fields = new DeInterlaceOption(client, this, DEINTERLACE_SWAP, x, y, "Swap fields"));
+	add_tool(swap_odd_fields = new DeInterlaceOption(client, this, DEINTERLACE_SWAP_ODD, x, y, "Swap odd fields"));
+	y += 25;
+	add_tool(swap_even_fields = new DeInterlaceOption(client, this, DEINTERLACE_SWAP_EVEN, x, y, "Swap even fields"));
 	y += 25;
 	add_tool(avg_even = new DeInterlaceOption(client, this, DEINTERLACE_AVG_EVEN, x, y, "Average even lines"));
 	draw_line(170, y + 5, 190, y + 5);
@@ -76,7 +78,8 @@ int DeInterlaceWindow::set_mode(int mode, int recursive)
 	odd_fields->update(mode == DEINTERLACE_EVEN);
 	even_fields->update(mode == DEINTERLACE_ODD);
 	average_fields->update(mode == DEINTERLACE_AVG);
-	swap_fields->update(mode == DEINTERLACE_SWAP);
+	swap_odd_fields->update(mode == DEINTERLACE_SWAP_ODD);
+	swap_even_fields->update(mode == DEINTERLACE_SWAP_EVEN);
 	avg_even->update(mode == DEINTERLACE_AVG_EVEN);
 	avg_odd->update(mode == DEINTERLACE_AVG_ODD);
 

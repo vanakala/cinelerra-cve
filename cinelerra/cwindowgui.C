@@ -65,6 +65,12 @@ CWindowGUI::CWindowGUI(MWindow *mwindow, CWindow *cwindow)
 CWindowGUI::~CWindowGUI()
 {
 	if(tool_panel) delete tool_panel;
+ 	delete meters;
+ 	delete composite_panel;
+ 	delete canvas;
+ 	delete transport;
+ 	delete edit_panel;
+ 	delete zoom_panel;
 }
 
 int CWindowGUI::create_objects()
@@ -201,6 +207,8 @@ int CWindowGUI::resize_event(int w, int h)
 	slider->reposition_window(mwindow->theme->cslider_x,
 		mwindow->theme->cslider_y, 
 		mwindow->theme->cslider_w);
+// Recalibrate pointer motion range
+	slider->set_position();
 //printf("CWindowGUI::resize_event 1\n");
 
 	transport->reposition_buttons(mwindow->theme->ctransport_x, 

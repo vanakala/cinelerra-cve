@@ -3,6 +3,7 @@
 
 #include "assets.inc"
 #include "audiodevice.inc"
+#include "arraylist.h"
 #include "awindow.inc"
 #include "brender.inc"
 #include "cache.inc"
@@ -12,7 +13,6 @@
 #include "edit.inc"
 #include "edl.inc"
 #include "filexml.inc"
-#include "guicast.h"
 #include "levelwindow.inc"
 #include "loadmode.inc"
 #include "mainindexes.inc"
@@ -34,6 +34,7 @@
 #include "recordlabel.inc"
 #include "render.inc"
 #include "sharedlocation.inc"
+#include "splashgui.inc"
 #include "theme.inc"
 #include "threadloader.inc"
 #include "timebar.inc"
@@ -58,6 +59,8 @@ public:
 
 // ======================================== initialization commands
 	void create_objects(int want_gui, int want_new);
+	void show_splash();
+	void hide_splash();
 	void start();
 	static void init_tuner(ArrayList<Channel*> &channeldb, char *path);
 
@@ -174,11 +177,11 @@ public:
 
 // ============================= editing commands ========================
 
-	void add_audio_track_entry();
-	int add_audio_track();
+	void add_audio_track_entry(Track *dst = 0);
+	int add_audio_track(int above, Track *dst);
 	void add_clip_to_edl(EDL *edl);
-	void add_video_track_entry();
-	int add_video_track();
+	void add_video_track_entry(Track *dst = 0);
+	int add_video_track(int above, Track *dst);
 
 	void asset_to_size();
 	void clear();
@@ -325,6 +328,7 @@ public:
 
 
 
+	SplashGUI *splash_window;
 	LevelWindow *level_window;
 	Tracks *tracks;
 	PatchBay *patches;

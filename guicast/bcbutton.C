@@ -216,6 +216,13 @@ int BC_OKButton::handle_event()
 	return 0;
 }
 
+int BC_OKButton::resize_event(int w, int h)
+{
+	reposition_window(10,
+		h - BC_WindowBase::get_resources()->cancel_images[0]->get_h() - 10);
+	return 1;
+}
+
 int BC_OKButton::keypress_event()
 {
 	if(get_keypress() == RETURN) return handle_event();
@@ -238,6 +245,13 @@ BC_CancelButton::BC_CancelButton(BC_WindowBase *parent_window)
 int BC_CancelButton::handle_event()
 {
 	get_top_level()->set_done(1);
+	return 1;
+}
+
+int BC_CancelButton::resize_event(int w,int h)
+{
+	reposition_window(w - BC_WindowBase::get_resources()->cancel_images[0]->get_w() - 10, 
+	 	h - BC_WindowBase::get_resources()->cancel_images[0]->get_h() - 10);
 	return 1;
 }
 

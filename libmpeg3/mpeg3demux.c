@@ -2064,18 +2064,13 @@ int mpeg3demux_seek_time(mpeg3_demuxer_t *demuxer, double new_time)
 
 int mpeg3demux_seek_percentage(mpeg3_demuxer_t *demuxer, double percentage)
 {
-	int64_t total_bytes = 0;
 	int64_t absolute_position;
 	int64_t relative_position;
 	int i, new_title;
 	mpeg3_title_t *title;
+	int64_t total_bytes = mpeg3demux_movie_size(demuxer);
 
 	demuxer->error_flag = 0;
-
-/* Get the absolute byte position; */
-	for(i = 0; i < demuxer->total_titles; i++)
-		total_bytes += demuxer->titles[i]->total_bytes;
-
 
 	absolute_position = (int64_t)(percentage * total_bytes);
 
@@ -2216,9 +2211,94 @@ void mpeg3demux_reset_pts(mpeg3_demuxer_t *demuxer)
 	demuxer->pes_video_time = -1;
 }
 
+double mpeg3demux_scan_pts(mpeg3_demuxer_t *demuxer)
+{
+	double start_percentage = mpeg3demux_tell_percentage(demuxer);
+	int64_t start_position = mpeg3demux_tell_absolute(demuxer);
+	int64_t end_position = start_position + MPEG3_PTS_RANGE;
+	int64_t current_position = start_position;
+	int result = 0;
+
+	mpeg3demux_reset_pts(demuxer);
+	while(!result && 
+		current_position < end_position &&
+		((demuxer->do_audio && demuxer->pes_audio_time < 0) ||
+		(demuxer->do_video && demuxer->pes_video_time < 0)))
+	{
+		result = mpeg3_read_next_packet(demuxer);
+		current_position = mpeg3demux_tell_absolute(demuxer);
+	}
+
+// Seek back to starting point
+	mpeg3demux_seek_percentage(demuxer, start_percentage);
+
+//printf("mpeg3demux_scan_pts %d %f\n", demuxer->do_audio, demuxer->pes_video_time);
+	if(demuxer->do_audio) return demuxer->pes_audio_time;
+	if(demuxer->do_video) return demuxer->pes_video_time;
+}
+
+int mpeg3demux_goto_pts(mpeg3_demuxer_t *demuxer, double pts)
+{
+	int64_t start_position = mpeg3demux_tell_absolute(demuxer);
+	int64_t end_position = start_position + MPEG3_PTS_RANGE;
+	int64_t current_position = start_position;
+	int result = 0;
+printf("mpeg3demux_goto_pts 1 %lld %f\n", mpeg3demux_tell_absolute(demuxer), pts);
+
+// Search forward for nearest pts
+	mpeg3demux_reset_pts(demuxer);
+	while(!result && current_position < end_position)
+	{
+		result = mpeg3_read_next_packet(demuxer);
+// printf("mpeg3demux_goto_pts 2 %lld %f %f\n", 
+// current_position, 
+// demuxer->pes_audio_time,
+// fabs(pts - demuxer->pes_audio_time));
+		if(demuxer->pes_audio_time > pts) break;
+		current_position = mpeg3demux_tell_absolute(demuxer);
+	}
+
+// Search backward for nearest pts
+	end_position = current_position - MPEG3_PTS_RANGE;
+	mpeg3_read_prev_packet(demuxer);
+	while(!result &&
+		current_position > end_position)
+	{
+		result = mpeg3_read_prev_packet(demuxer);
+// printf("mpeg3demux_goto_pts 3 %lld %f %f\n", 
+// current_position, 
+// demuxer->pes_audio_time,
+// fabs(pts - demuxer->pes_audio_time));
+		if(demuxer->pes_audio_time < pts) break;
+		current_position = mpeg3demux_tell_absolute(demuxer);
+	}
+printf("mpeg3demux_goto_pts 4 %lld %f\n", mpeg3demux_tell_absolute(demuxer), demuxer->pes_audio_time);
+}
+
+int64_t mpeg3demux_tell_absolute(mpeg3_demuxer_t *demuxer)
+{
+	int i;
+	int64_t result = 0;
+	for(i = 0; i < demuxer->current_title; i++)
+	{
+		result += demuxer->titles[i]->total_bytes;
+	}
+	result += mpeg3io_tell(demuxer->titles[demuxer->current_title]->fs);
+	return result;
+}
+
 int64_t mpeg3demux_tell(mpeg3_demuxer_t *demuxer)
 {
 	return mpeg3io_tell(demuxer->titles[demuxer->current_title]->fs);
+}
+
+int64_t mpeg3demux_movie_size(mpeg3_demuxer_t *demuxer)
+{
+	int64_t result = 0;
+	int i;
+	for(i = 0; i < demuxer->total_titles; i++)
+		result += demuxer->titles[i]->total_bytes;
+	return result;
 }
 
 int mpeg3demux_tell_title(mpeg3_demuxer_t *demuxer)

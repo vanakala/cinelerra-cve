@@ -29,8 +29,8 @@ FileXML::FileXML(char left_delimiter, char right_delimiter)
 
 FileXML::~FileXML()
 {
-	if(!share_string) delete string;
-	if(output_length) delete output;
+	if(!share_string) delete [] string;
+	if(output_length) delete [] output;
 }
 
 void FileXML::dump()
@@ -276,7 +276,7 @@ int FileXML::set_shared_string(char *shared_string, long available)
 	strcpy(this->filename, "");
 	if(!share_string)
 	{
-		delete string;
+		delete [] string;
 		share_string = 1;
 		string = shared_string;
 		this->available = available;
@@ -312,8 +312,8 @@ int XMLTag::set_delimiters(char left_delimiter, char right_delimiter)
 int XMLTag::reset_tag()     // clear all structures
 {
 	len = 0;
-	for(int i = 0; i < total_properties; i++) delete tag_properties[i];
-	for(int i = 0; i < total_properties; i++) delete tag_property_values[i];
+	for(int i = 0; i < total_properties; i++) delete [] tag_properties[i];
+	for(int i = 0; i < total_properties; i++) delete [] tag_property_values[i];
 	total_properties = 0;
 	return 0;
 }

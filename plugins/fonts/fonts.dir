@@ -1,4 +1,19 @@
-482
+487
+arial.ttf -monotype-Arial-medium-r-normal--0-0-0-0-p-0-ascii-0
+arial.ttf -monotype-Arial-medium-r-normal--0-0-0-0-p-0-fcd8859-15
+arial.ttf -monotype-Arial-medium-r-normal--0-0-0-0-p-0-iso8859-1
+arial.ttf -monotype-Arial-medium-r-normal--0-0-0-0-p-0-iso8859-10
+arial.ttf -monotype-Arial-medium-r-normal--0-0-0-0-p-0-iso8859-15
+arial.ttf -monotype-Arial-medium-r-normal--0-0-0-0-p-0-iso8859-2
+arial.ttf -monotype-Arial-medium-r-normal--0-0-0-0-p-0-iso8859-3
+arial.ttf -monotype-Arial-medium-r-normal--0-0-0-0-p-0-iso8859-4
+arial.ttf -monotype-Arial-medium-r-normal--0-0-0-0-p-0-iso8859-5
+arial.ttf -monotype-Arial-medium-r-normal--0-0-0-0-p-0-iso8859-6
+arial.ttf -monotype-Arial-medium-r-normal--0-0-0-0-p-0-iso8859-7
+arial.ttf -monotype-Arial-medium-r-normal--0-0-0-0-p-0-iso8859-8
+arial.ttf -monotype-Arial-medium-r-normal--0-0-0-0-p-0-iso8859-9
+arial.ttf -monotype-Arial-medium-r-normal--0-0-0-0-p-0-koi8-r
+arial.ttf -monotype-Arial-medium-r-normal--0-0-0-0-p-0-koi8-ru
 arialbd.ttf -monotype-Arial-bold-r-normal--0-0-0-0-p-0-ascii-0
 arialbd.ttf -monotype-Arial-bold-r-normal--0-0-0-0-p-0-fcd8859-15
 arialbd.ttf -monotype-Arial-bold-r-normal--0-0-0-0-p-0-iso8859-1
@@ -42,21 +57,6 @@ ariali.ttf -monotype-Arial-medium-i-normal--0-0-0-0-p-0-iso8859-8
 ariali.ttf -monotype-Arial-medium-i-normal--0-0-0-0-p-0-iso8859-9
 ariali.ttf -monotype-Arial-medium-i-normal--0-0-0-0-p-0-koi8-r
 ariali.ttf -monotype-Arial-medium-i-normal--0-0-0-0-p-0-koi8-ru
-arial.ttf -monotype-Arial-medium-r-normal--0-0-0-0-p-0-ascii-0
-arial.ttf -monotype-Arial-medium-r-normal--0-0-0-0-p-0-fcd8859-15
-arial.ttf -monotype-Arial-medium-r-normal--0-0-0-0-p-0-iso8859-1
-arial.ttf -monotype-Arial-medium-r-normal--0-0-0-0-p-0-iso8859-10
-arial.ttf -monotype-Arial-medium-r-normal--0-0-0-0-p-0-iso8859-15
-arial.ttf -monotype-Arial-medium-r-normal--0-0-0-0-p-0-iso8859-2
-arial.ttf -monotype-Arial-medium-r-normal--0-0-0-0-p-0-iso8859-3
-arial.ttf -monotype-Arial-medium-r-normal--0-0-0-0-p-0-iso8859-4
-arial.ttf -monotype-Arial-medium-r-normal--0-0-0-0-p-0-iso8859-5
-arial.ttf -monotype-Arial-medium-r-normal--0-0-0-0-p-0-iso8859-6
-arial.ttf -monotype-Arial-medium-r-normal--0-0-0-0-p-0-iso8859-7
-arial.ttf -monotype-Arial-medium-r-normal--0-0-0-0-p-0-iso8859-8
-arial.ttf -monotype-Arial-medium-r-normal--0-0-0-0-p-0-iso8859-9
-arial.ttf -monotype-Arial-medium-r-normal--0-0-0-0-p-0-koi8-r
-arial.ttf -monotype-Arial-medium-r-normal--0-0-0-0-p-0-koi8-ru
 ariblk.ttf -monotype-Arial Black-medium-r-normal--0-0-0-0-p-0-ascii-0
 ariblk.ttf -monotype-Arial Black-medium-r-normal--0-0-0-0-p-0-fcd8859-15
 ariblk.ttf -monotype-Arial Black-medium-r-normal--0-0-0-0-p-0-iso8859-1
@@ -70,19 +70,6 @@ ariblk.ttf -monotype-Arial Black-medium-r-normal--0-0-0-0-p-0-iso8859-7
 ariblk.ttf -monotype-Arial Black-medium-r-normal--0-0-0-0-p-0-iso8859-9
 ariblk.ttf -monotype-Arial Black-medium-r-normal--0-0-0-0-p-0-koi8-r
 ariblk.ttf -monotype-Arial Black-medium-r-normal--0-0-0-0-p-0-koi8-ru
-comicbd.ttf -microsoft-Comic Sans MS-bold-r-normal--0-0-0-0-p-0-ascii-0
-comicbd.ttf -microsoft-Comic Sans MS-bold-r-normal--0-0-0-0-p-0-fcd8859-15
-comicbd.ttf -microsoft-Comic Sans MS-bold-r-normal--0-0-0-0-p-0-iso8859-1
-comicbd.ttf -microsoft-Comic Sans MS-bold-r-normal--0-0-0-0-p-0-iso8859-10
-comicbd.ttf -microsoft-Comic Sans MS-bold-r-normal--0-0-0-0-p-0-iso8859-15
-comicbd.ttf -microsoft-Comic Sans MS-bold-r-normal--0-0-0-0-p-0-iso8859-2
-comicbd.ttf -microsoft-Comic Sans MS-bold-r-normal--0-0-0-0-p-0-iso8859-3
-comicbd.ttf -microsoft-Comic Sans MS-bold-r-normal--0-0-0-0-p-0-iso8859-4
-comicbd.ttf -microsoft-Comic Sans MS-bold-r-normal--0-0-0-0-p-0-iso8859-5
-comicbd.ttf -microsoft-Comic Sans MS-bold-r-normal--0-0-0-0-p-0-iso8859-7
-comicbd.ttf -microsoft-Comic Sans MS-bold-r-normal--0-0-0-0-p-0-iso8859-9
-comicbd.ttf -microsoft-Comic Sans MS-bold-r-normal--0-0-0-0-p-0-koi8-r
-comicbd.ttf -microsoft-Comic Sans MS-bold-r-normal--0-0-0-0-p-0-koi8-ru
 comic.ttf -microsoft-Comic Sans MS-medium-r-normal--0-0-0-0-p-0-ascii-0
 comic.ttf -microsoft-Comic Sans MS-medium-r-normal--0-0-0-0-p-0-fcd8859-15
 comic.ttf -microsoft-Comic Sans MS-medium-r-normal--0-0-0-0-p-0-iso8859-1
@@ -96,6 +83,34 @@ comic.ttf -microsoft-Comic Sans MS-medium-r-normal--0-0-0-0-p-0-iso8859-7
 comic.ttf -microsoft-Comic Sans MS-medium-r-normal--0-0-0-0-p-0-iso8859-9
 comic.ttf -microsoft-Comic Sans MS-medium-r-normal--0-0-0-0-p-0-koi8-r
 comic.ttf -microsoft-Comic Sans MS-medium-r-normal--0-0-0-0-p-0-koi8-ru
+comicbd.ttf -microsoft-Comic Sans MS-bold-r-normal--0-0-0-0-p-0-ascii-0
+comicbd.ttf -microsoft-Comic Sans MS-bold-r-normal--0-0-0-0-p-0-fcd8859-15
+comicbd.ttf -microsoft-Comic Sans MS-bold-r-normal--0-0-0-0-p-0-iso8859-1
+comicbd.ttf -microsoft-Comic Sans MS-bold-r-normal--0-0-0-0-p-0-iso8859-10
+comicbd.ttf -microsoft-Comic Sans MS-bold-r-normal--0-0-0-0-p-0-iso8859-15
+comicbd.ttf -microsoft-Comic Sans MS-bold-r-normal--0-0-0-0-p-0-iso8859-2
+comicbd.ttf -microsoft-Comic Sans MS-bold-r-normal--0-0-0-0-p-0-iso8859-3
+comicbd.ttf -microsoft-Comic Sans MS-bold-r-normal--0-0-0-0-p-0-iso8859-4
+comicbd.ttf -microsoft-Comic Sans MS-bold-r-normal--0-0-0-0-p-0-iso8859-5
+comicbd.ttf -microsoft-Comic Sans MS-bold-r-normal--0-0-0-0-p-0-iso8859-7
+comicbd.ttf -microsoft-Comic Sans MS-bold-r-normal--0-0-0-0-p-0-iso8859-9
+comicbd.ttf -microsoft-Comic Sans MS-bold-r-normal--0-0-0-0-p-0-koi8-r
+comicbd.ttf -microsoft-Comic Sans MS-bold-r-normal--0-0-0-0-p-0-koi8-ru
+cour.ttf -monotype-Courier New-medium-r-normal--0-0-0-0-m-0-ascii-0
+cour.ttf -monotype-Courier New-medium-r-normal--0-0-0-0-m-0-fcd8859-15
+cour.ttf -monotype-Courier New-medium-r-normal--0-0-0-0-m-0-iso8859-1
+cour.ttf -monotype-Courier New-medium-r-normal--0-0-0-0-m-0-iso8859-10
+cour.ttf -monotype-Courier New-medium-r-normal--0-0-0-0-m-0-iso8859-15
+cour.ttf -monotype-Courier New-medium-r-normal--0-0-0-0-m-0-iso8859-2
+cour.ttf -monotype-Courier New-medium-r-normal--0-0-0-0-m-0-iso8859-3
+cour.ttf -monotype-Courier New-medium-r-normal--0-0-0-0-m-0-iso8859-4
+cour.ttf -monotype-Courier New-medium-r-normal--0-0-0-0-m-0-iso8859-5
+cour.ttf -monotype-Courier New-medium-r-normal--0-0-0-0-m-0-iso8859-6
+cour.ttf -monotype-Courier New-medium-r-normal--0-0-0-0-m-0-iso8859-7
+cour.ttf -monotype-Courier New-medium-r-normal--0-0-0-0-m-0-iso8859-8
+cour.ttf -monotype-Courier New-medium-r-normal--0-0-0-0-m-0-iso8859-9
+cour.ttf -monotype-Courier New-medium-r-normal--0-0-0-0-m-0-koi8-r
+cour.ttf -monotype-Courier New-medium-r-normal--0-0-0-0-m-0-koi8-ru
 courbd.ttf -monotype-Courier New-bold-r-normal--0-0-0-0-m-0-ascii-0
 courbd.ttf -monotype-Courier New-bold-r-normal--0-0-0-0-m-0-fcd8859-15
 courbd.ttf -monotype-Courier New-bold-r-normal--0-0-0-0-m-0-iso8859-1
@@ -139,21 +154,19 @@ couri.ttf -monotype-Courier New-medium-i-normal--0-0-0-0-m-0-iso8859-8
 couri.ttf -monotype-Courier New-medium-i-normal--0-0-0-0-m-0-iso8859-9
 couri.ttf -monotype-Courier New-medium-i-normal--0-0-0-0-m-0-koi8-r
 couri.ttf -monotype-Courier New-medium-i-normal--0-0-0-0-m-0-koi8-ru
-cour.ttf -monotype-Courier New-medium-r-normal--0-0-0-0-m-0-ascii-0
-cour.ttf -monotype-Courier New-medium-r-normal--0-0-0-0-m-0-fcd8859-15
-cour.ttf -monotype-Courier New-medium-r-normal--0-0-0-0-m-0-iso8859-1
-cour.ttf -monotype-Courier New-medium-r-normal--0-0-0-0-m-0-iso8859-10
-cour.ttf -monotype-Courier New-medium-r-normal--0-0-0-0-m-0-iso8859-15
-cour.ttf -monotype-Courier New-medium-r-normal--0-0-0-0-m-0-iso8859-2
-cour.ttf -monotype-Courier New-medium-r-normal--0-0-0-0-m-0-iso8859-3
-cour.ttf -monotype-Courier New-medium-r-normal--0-0-0-0-m-0-iso8859-4
-cour.ttf -monotype-Courier New-medium-r-normal--0-0-0-0-m-0-iso8859-5
-cour.ttf -monotype-Courier New-medium-r-normal--0-0-0-0-m-0-iso8859-6
-cour.ttf -monotype-Courier New-medium-r-normal--0-0-0-0-m-0-iso8859-7
-cour.ttf -monotype-Courier New-medium-r-normal--0-0-0-0-m-0-iso8859-8
-cour.ttf -monotype-Courier New-medium-r-normal--0-0-0-0-m-0-iso8859-9
-cour.ttf -monotype-Courier New-medium-r-normal--0-0-0-0-m-0-koi8-r
-cour.ttf -monotype-Courier New-medium-r-normal--0-0-0-0-m-0-koi8-ru
+georgia.ttf -microsoft-Georgia-medium-r-normal--0-0-0-0-p-0-ascii-0
+georgia.ttf -microsoft-Georgia-medium-r-normal--0-0-0-0-p-0-fcd8859-15
+georgia.ttf -microsoft-Georgia-medium-r-normal--0-0-0-0-p-0-iso8859-1
+georgia.ttf -microsoft-Georgia-medium-r-normal--0-0-0-0-p-0-iso8859-10
+georgia.ttf -microsoft-Georgia-medium-r-normal--0-0-0-0-p-0-iso8859-15
+georgia.ttf -microsoft-Georgia-medium-r-normal--0-0-0-0-p-0-iso8859-2
+georgia.ttf -microsoft-Georgia-medium-r-normal--0-0-0-0-p-0-iso8859-3
+georgia.ttf -microsoft-Georgia-medium-r-normal--0-0-0-0-p-0-iso8859-4
+georgia.ttf -microsoft-Georgia-medium-r-normal--0-0-0-0-p-0-iso8859-5
+georgia.ttf -microsoft-Georgia-medium-r-normal--0-0-0-0-p-0-iso8859-7
+georgia.ttf -microsoft-Georgia-medium-r-normal--0-0-0-0-p-0-iso8859-9
+georgia.ttf -microsoft-Georgia-medium-r-normal--0-0-0-0-p-0-koi8-r
+georgia.ttf -microsoft-Georgia-medium-r-normal--0-0-0-0-p-0-koi8-ru
 georgiab.ttf -microsoft-Georgia-bold-r-normal--0-0-0-0-p-0-ascii-0
 georgiab.ttf -microsoft-Georgia-bold-r-normal--0-0-0-0-p-0-fcd8859-15
 georgiab.ttf -microsoft-Georgia-bold-r-normal--0-0-0-0-p-0-iso8859-1
@@ -180,19 +193,6 @@ georgiai.ttf -microsoft-Georgia-medium-i-normal--0-0-0-0-p-0-iso8859-7
 georgiai.ttf -microsoft-Georgia-medium-i-normal--0-0-0-0-p-0-iso8859-9
 georgiai.ttf -microsoft-Georgia-medium-i-normal--0-0-0-0-p-0-koi8-r
 georgiai.ttf -microsoft-Georgia-medium-i-normal--0-0-0-0-p-0-koi8-ru
-georgia.ttf -microsoft-Georgia-medium-r-normal--0-0-0-0-p-0-ascii-0
-georgia.ttf -microsoft-Georgia-medium-r-normal--0-0-0-0-p-0-fcd8859-15
-georgia.ttf -microsoft-Georgia-medium-r-normal--0-0-0-0-p-0-iso8859-1
-georgia.ttf -microsoft-Georgia-medium-r-normal--0-0-0-0-p-0-iso8859-10
-georgia.ttf -microsoft-Georgia-medium-r-normal--0-0-0-0-p-0-iso8859-15
-georgia.ttf -microsoft-Georgia-medium-r-normal--0-0-0-0-p-0-iso8859-2
-georgia.ttf -microsoft-Georgia-medium-r-normal--0-0-0-0-p-0-iso8859-3
-georgia.ttf -microsoft-Georgia-medium-r-normal--0-0-0-0-p-0-iso8859-4
-georgia.ttf -microsoft-Georgia-medium-r-normal--0-0-0-0-p-0-iso8859-5
-georgia.ttf -microsoft-Georgia-medium-r-normal--0-0-0-0-p-0-iso8859-7
-georgia.ttf -microsoft-Georgia-medium-r-normal--0-0-0-0-p-0-iso8859-9
-georgia.ttf -microsoft-Georgia-medium-r-normal--0-0-0-0-p-0-koi8-r
-georgia.ttf -microsoft-Georgia-medium-r-normal--0-0-0-0-p-0-koi8-ru
 georgiaz.ttf -microsoft-Georgia-bold-i-normal--0-0-0-0-p-0-ascii-0
 georgiaz.ttf -microsoft-Georgia-bold-i-normal--0-0-0-0-p-0-fcd8859-15
 georgiaz.ttf -microsoft-Georgia-bold-i-normal--0-0-0-0-p-0-iso8859-1
@@ -246,7 +246,6 @@ lucon.ttf -b&h-Lucida Console-medium-r-semi condensed--0-0-0-0-m-0-iso8859-7
 lucon.ttf -b&h-Lucida Console-medium-r-semi condensed--0-0-0-0-m-0-iso8859-9
 lucon.ttf -b&h-Lucida Console-medium-r-semi condensed--0-0-0-0-m-0-koi8-r
 lucon.ttf -b&h-Lucida Console-medium-r-semi condensed--0-0-0-0-m-0-koi8-ru
-marlett.ttf -microsoft-Marlett-medium-r-normal--0-0-0-0-p-0-microsoft-symbol
 micross.ttf -monotype-Microsoft Sans Serif-medium-r-normal--0-0-0-0-p-0-ascii-0
 micross.ttf -monotype-Microsoft Sans Serif-medium-r-normal--0-0-0-0-p-0-fcd8859-15
 micross.ttf -monotype-Microsoft Sans Serif-medium-r-normal--0-0-0-0-p-0-iso8859-1
@@ -262,45 +261,6 @@ micross.ttf -monotype-Microsoft Sans Serif-medium-r-normal--0-0-0-0-p-0-iso8859-
 micross.ttf -monotype-Microsoft Sans Serif-medium-r-normal--0-0-0-0-p-0-iso8859-9
 micross.ttf -monotype-Microsoft Sans Serif-medium-r-normal--0-0-0-0-p-0-koi8-r
 micross.ttf -monotype-Microsoft Sans Serif-medium-r-normal--0-0-0-0-p-0-koi8-ru
-palabi.ttf -linotype-Palatino Linotype-bold-i-normal--0-0-0-0-p-0-ascii-0
-palabi.ttf -linotype-Palatino Linotype-bold-i-normal--0-0-0-0-p-0-fcd8859-15
-palabi.ttf -linotype-Palatino Linotype-bold-i-normal--0-0-0-0-p-0-iso8859-1
-palabi.ttf -linotype-Palatino Linotype-bold-i-normal--0-0-0-0-p-0-iso8859-10
-palabi.ttf -linotype-Palatino Linotype-bold-i-normal--0-0-0-0-p-0-iso8859-15
-palabi.ttf -linotype-Palatino Linotype-bold-i-normal--0-0-0-0-p-0-iso8859-2
-palabi.ttf -linotype-Palatino Linotype-bold-i-normal--0-0-0-0-p-0-iso8859-3
-palabi.ttf -linotype-Palatino Linotype-bold-i-normal--0-0-0-0-p-0-iso8859-4
-palabi.ttf -linotype-Palatino Linotype-bold-i-normal--0-0-0-0-p-0-iso8859-5
-palabi.ttf -linotype-Palatino Linotype-bold-i-normal--0-0-0-0-p-0-iso8859-7
-palabi.ttf -linotype-Palatino Linotype-bold-i-normal--0-0-0-0-p-0-iso8859-9
-palabi.ttf -linotype-Palatino Linotype-bold-i-normal--0-0-0-0-p-0-koi8-r
-palabi.ttf -linotype-Palatino Linotype-bold-i-normal--0-0-0-0-p-0-koi8-ru
-palab.ttf -linotype-Palatino Linotype-bold-r-normal--0-0-0-0-p-0-ascii-0
-palab.ttf -linotype-Palatino Linotype-bold-r-normal--0-0-0-0-p-0-fcd8859-15
-palab.ttf -linotype-Palatino Linotype-bold-r-normal--0-0-0-0-p-0-iso8859-1
-palab.ttf -linotype-Palatino Linotype-bold-r-normal--0-0-0-0-p-0-iso8859-10
-palab.ttf -linotype-Palatino Linotype-bold-r-normal--0-0-0-0-p-0-iso8859-15
-palab.ttf -linotype-Palatino Linotype-bold-r-normal--0-0-0-0-p-0-iso8859-2
-palab.ttf -linotype-Palatino Linotype-bold-r-normal--0-0-0-0-p-0-iso8859-3
-palab.ttf -linotype-Palatino Linotype-bold-r-normal--0-0-0-0-p-0-iso8859-4
-palab.ttf -linotype-Palatino Linotype-bold-r-normal--0-0-0-0-p-0-iso8859-5
-palab.ttf -linotype-Palatino Linotype-bold-r-normal--0-0-0-0-p-0-iso8859-7
-palab.ttf -linotype-Palatino Linotype-bold-r-normal--0-0-0-0-p-0-iso8859-9
-palab.ttf -linotype-Palatino Linotype-bold-r-normal--0-0-0-0-p-0-koi8-r
-palab.ttf -linotype-Palatino Linotype-bold-r-normal--0-0-0-0-p-0-koi8-ru
-palai.ttf -linotype-Palatino Linotype-medium-i-normal--0-0-0-0-p-0-ascii-0
-palai.ttf -linotype-Palatino Linotype-medium-i-normal--0-0-0-0-p-0-fcd8859-15
-palai.ttf -linotype-Palatino Linotype-medium-i-normal--0-0-0-0-p-0-iso8859-1
-palai.ttf -linotype-Palatino Linotype-medium-i-normal--0-0-0-0-p-0-iso8859-10
-palai.ttf -linotype-Palatino Linotype-medium-i-normal--0-0-0-0-p-0-iso8859-15
-palai.ttf -linotype-Palatino Linotype-medium-i-normal--0-0-0-0-p-0-iso8859-2
-palai.ttf -linotype-Palatino Linotype-medium-i-normal--0-0-0-0-p-0-iso8859-3
-palai.ttf -linotype-Palatino Linotype-medium-i-normal--0-0-0-0-p-0-iso8859-4
-palai.ttf -linotype-Palatino Linotype-medium-i-normal--0-0-0-0-p-0-iso8859-5
-palai.ttf -linotype-Palatino Linotype-medium-i-normal--0-0-0-0-p-0-iso8859-7
-palai.ttf -linotype-Palatino Linotype-medium-i-normal--0-0-0-0-p-0-iso8859-9
-palai.ttf -linotype-Palatino Linotype-medium-i-normal--0-0-0-0-p-0-koi8-r
-palai.ttf -linotype-Palatino Linotype-medium-i-normal--0-0-0-0-p-0-koi8-ru
 pala.ttf -linotype-Palatino Linotype-medium-r-normal--0-0-0-0-p-0-ascii-0
 pala.ttf -linotype-Palatino Linotype-medium-r-normal--0-0-0-0-p-0-fcd8859-15
 pala.ttf -linotype-Palatino Linotype-medium-r-normal--0-0-0-0-p-0-iso8859-1
@@ -314,22 +274,46 @@ pala.ttf -linotype-Palatino Linotype-medium-r-normal--0-0-0-0-p-0-iso8859-7
 pala.ttf -linotype-Palatino Linotype-medium-r-normal--0-0-0-0-p-0-iso8859-9
 pala.ttf -linotype-Palatino Linotype-medium-r-normal--0-0-0-0-p-0-koi8-r
 pala.ttf -linotype-Palatino Linotype-medium-r-normal--0-0-0-0-p-0-koi8-ru
+palab.ttf -linotype-Palatino Linotype-bold-r-normal--0-0-0-0-p-0-ascii-0
+palab.ttf -linotype-Palatino Linotype-bold-r-normal--0-0-0-0-p-0-fcd8859-15
+palab.ttf -linotype-Palatino Linotype-bold-r-normal--0-0-0-0-p-0-iso8859-1
+palab.ttf -linotype-Palatino Linotype-bold-r-normal--0-0-0-0-p-0-iso8859-10
+palab.ttf -linotype-Palatino Linotype-bold-r-normal--0-0-0-0-p-0-iso8859-15
+palab.ttf -linotype-Palatino Linotype-bold-r-normal--0-0-0-0-p-0-iso8859-2
+palab.ttf -linotype-Palatino Linotype-bold-r-normal--0-0-0-0-p-0-iso8859-3
+palab.ttf -linotype-Palatino Linotype-bold-r-normal--0-0-0-0-p-0-iso8859-4
+palab.ttf -linotype-Palatino Linotype-bold-r-normal--0-0-0-0-p-0-iso8859-5
+palab.ttf -linotype-Palatino Linotype-bold-r-normal--0-0-0-0-p-0-iso8859-7
+palab.ttf -linotype-Palatino Linotype-bold-r-normal--0-0-0-0-p-0-iso8859-9
+palab.ttf -linotype-Palatino Linotype-bold-r-normal--0-0-0-0-p-0-koi8-r
+palab.ttf -linotype-Palatino Linotype-bold-r-normal--0-0-0-0-p-0-koi8-ru
+palabi.ttf -linotype-Palatino Linotype-bold-i-normal--0-0-0-0-p-0-ascii-0
+palabi.ttf -linotype-Palatino Linotype-bold-i-normal--0-0-0-0-p-0-fcd8859-15
+palabi.ttf -linotype-Palatino Linotype-bold-i-normal--0-0-0-0-p-0-iso8859-1
+palabi.ttf -linotype-Palatino Linotype-bold-i-normal--0-0-0-0-p-0-iso8859-10
+palabi.ttf -linotype-Palatino Linotype-bold-i-normal--0-0-0-0-p-0-iso8859-15
+palabi.ttf -linotype-Palatino Linotype-bold-i-normal--0-0-0-0-p-0-iso8859-2
+palabi.ttf -linotype-Palatino Linotype-bold-i-normal--0-0-0-0-p-0-iso8859-3
+palabi.ttf -linotype-Palatino Linotype-bold-i-normal--0-0-0-0-p-0-iso8859-4
+palabi.ttf -linotype-Palatino Linotype-bold-i-normal--0-0-0-0-p-0-iso8859-5
+palabi.ttf -linotype-Palatino Linotype-bold-i-normal--0-0-0-0-p-0-iso8859-7
+palabi.ttf -linotype-Palatino Linotype-bold-i-normal--0-0-0-0-p-0-iso8859-9
+palabi.ttf -linotype-Palatino Linotype-bold-i-normal--0-0-0-0-p-0-koi8-r
+palabi.ttf -linotype-Palatino Linotype-bold-i-normal--0-0-0-0-p-0-koi8-ru
+palai.ttf -linotype-Palatino Linotype-medium-i-normal--0-0-0-0-p-0-ascii-0
+palai.ttf -linotype-Palatino Linotype-medium-i-normal--0-0-0-0-p-0-fcd8859-15
+palai.ttf -linotype-Palatino Linotype-medium-i-normal--0-0-0-0-p-0-iso8859-1
+palai.ttf -linotype-Palatino Linotype-medium-i-normal--0-0-0-0-p-0-iso8859-10
+palai.ttf -linotype-Palatino Linotype-medium-i-normal--0-0-0-0-p-0-iso8859-15
+palai.ttf -linotype-Palatino Linotype-medium-i-normal--0-0-0-0-p-0-iso8859-2
+palai.ttf -linotype-Palatino Linotype-medium-i-normal--0-0-0-0-p-0-iso8859-3
+palai.ttf -linotype-Palatino Linotype-medium-i-normal--0-0-0-0-p-0-iso8859-4
+palai.ttf -linotype-Palatino Linotype-medium-i-normal--0-0-0-0-p-0-iso8859-5
+palai.ttf -linotype-Palatino Linotype-medium-i-normal--0-0-0-0-p-0-iso8859-7
+palai.ttf -linotype-Palatino Linotype-medium-i-normal--0-0-0-0-p-0-iso8859-9
+palai.ttf -linotype-Palatino Linotype-medium-i-normal--0-0-0-0-p-0-koi8-r
+palai.ttf -linotype-Palatino Linotype-medium-i-normal--0-0-0-0-p-0-koi8-ru
 symbol.ttf -monotype-Symbol-medium-r-normal--0-0-0-0-p-0-microsoft-symbol
-tahomabd.ttf -microsoft-Tahoma-bold-r-normal--0-0-0-0-p-0-ascii-0
-tahomabd.ttf -microsoft-Tahoma-bold-r-normal--0-0-0-0-p-0-fcd8859-15
-tahomabd.ttf -microsoft-Tahoma-bold-r-normal--0-0-0-0-p-0-iso8859-1
-tahomabd.ttf -microsoft-Tahoma-bold-r-normal--0-0-0-0-p-0-iso8859-10
-tahomabd.ttf -microsoft-Tahoma-bold-r-normal--0-0-0-0-p-0-iso8859-15
-tahomabd.ttf -microsoft-Tahoma-bold-r-normal--0-0-0-0-p-0-iso8859-2
-tahomabd.ttf -microsoft-Tahoma-bold-r-normal--0-0-0-0-p-0-iso8859-3
-tahomabd.ttf -microsoft-Tahoma-bold-r-normal--0-0-0-0-p-0-iso8859-4
-tahomabd.ttf -microsoft-Tahoma-bold-r-normal--0-0-0-0-p-0-iso8859-5
-tahomabd.ttf -microsoft-Tahoma-bold-r-normal--0-0-0-0-p-0-iso8859-6
-tahomabd.ttf -microsoft-Tahoma-bold-r-normal--0-0-0-0-p-0-iso8859-7
-tahomabd.ttf -microsoft-Tahoma-bold-r-normal--0-0-0-0-p-0-iso8859-8
-tahomabd.ttf -microsoft-Tahoma-bold-r-normal--0-0-0-0-p-0-iso8859-9
-tahomabd.ttf -microsoft-Tahoma-bold-r-normal--0-0-0-0-p-0-koi8-r
-tahomabd.ttf -microsoft-Tahoma-bold-r-normal--0-0-0-0-p-0-koi8-ru
 tahoma.ttf -microsoft-Tahoma-medium-r-normal--0-0-0-0-p-0-ascii-0
 tahoma.ttf -microsoft-Tahoma-medium-r-normal--0-0-0-0-p-0-fcd8859-15
 tahoma.ttf -microsoft-Tahoma-medium-r-normal--0-0-0-0-p-0-iso8859-1
@@ -345,6 +329,36 @@ tahoma.ttf -microsoft-Tahoma-medium-r-normal--0-0-0-0-p-0-iso8859-8
 tahoma.ttf -microsoft-Tahoma-medium-r-normal--0-0-0-0-p-0-iso8859-9
 tahoma.ttf -microsoft-Tahoma-medium-r-normal--0-0-0-0-p-0-koi8-r
 tahoma.ttf -microsoft-Tahoma-medium-r-normal--0-0-0-0-p-0-koi8-ru
+tahomabd.ttf -microsoft-Tahoma-bold-r-normal--0-0-0-0-p-0-ascii-0
+tahomabd.ttf -microsoft-Tahoma-bold-r-normal--0-0-0-0-p-0-fcd8859-15
+tahomabd.ttf -microsoft-Tahoma-bold-r-normal--0-0-0-0-p-0-iso8859-1
+tahomabd.ttf -microsoft-Tahoma-bold-r-normal--0-0-0-0-p-0-iso8859-10
+tahomabd.ttf -microsoft-Tahoma-bold-r-normal--0-0-0-0-p-0-iso8859-15
+tahomabd.ttf -microsoft-Tahoma-bold-r-normal--0-0-0-0-p-0-iso8859-2
+tahomabd.ttf -microsoft-Tahoma-bold-r-normal--0-0-0-0-p-0-iso8859-3
+tahomabd.ttf -microsoft-Tahoma-bold-r-normal--0-0-0-0-p-0-iso8859-4
+tahomabd.ttf -microsoft-Tahoma-bold-r-normal--0-0-0-0-p-0-iso8859-5
+tahomabd.ttf -microsoft-Tahoma-bold-r-normal--0-0-0-0-p-0-iso8859-6
+tahomabd.ttf -microsoft-Tahoma-bold-r-normal--0-0-0-0-p-0-iso8859-7
+tahomabd.ttf -microsoft-Tahoma-bold-r-normal--0-0-0-0-p-0-iso8859-8
+tahomabd.ttf -microsoft-Tahoma-bold-r-normal--0-0-0-0-p-0-iso8859-9
+tahomabd.ttf -microsoft-Tahoma-bold-r-normal--0-0-0-0-p-0-koi8-r
+tahomabd.ttf -microsoft-Tahoma-bold-r-normal--0-0-0-0-p-0-koi8-ru
+times.ttf -monotype-Times New Roman-medium-r-normal--0-0-0-0-p-0-ascii-0
+times.ttf -monotype-Times New Roman-medium-r-normal--0-0-0-0-p-0-fcd8859-15
+times.ttf -monotype-Times New Roman-medium-r-normal--0-0-0-0-p-0-iso8859-1
+times.ttf -monotype-Times New Roman-medium-r-normal--0-0-0-0-p-0-iso8859-10
+times.ttf -monotype-Times New Roman-medium-r-normal--0-0-0-0-p-0-iso8859-15
+times.ttf -monotype-Times New Roman-medium-r-normal--0-0-0-0-p-0-iso8859-2
+times.ttf -monotype-Times New Roman-medium-r-normal--0-0-0-0-p-0-iso8859-3
+times.ttf -monotype-Times New Roman-medium-r-normal--0-0-0-0-p-0-iso8859-4
+times.ttf -monotype-Times New Roman-medium-r-normal--0-0-0-0-p-0-iso8859-5
+times.ttf -monotype-Times New Roman-medium-r-normal--0-0-0-0-p-0-iso8859-6
+times.ttf -monotype-Times New Roman-medium-r-normal--0-0-0-0-p-0-iso8859-7
+times.ttf -monotype-Times New Roman-medium-r-normal--0-0-0-0-p-0-iso8859-8
+times.ttf -monotype-Times New Roman-medium-r-normal--0-0-0-0-p-0-iso8859-9
+times.ttf -monotype-Times New Roman-medium-r-normal--0-0-0-0-p-0-koi8-r
+times.ttf -monotype-Times New Roman-medium-r-normal--0-0-0-0-p-0-koi8-ru
 timesbd.ttf -monotype-Times New Roman-bold-r-normal--0-0-0-0-p-0-ascii-0
 timesbd.ttf -monotype-Times New Roman-bold-r-normal--0-0-0-0-p-0-fcd8859-15
 timesbd.ttf -monotype-Times New Roman-bold-r-normal--0-0-0-0-p-0-iso8859-1
@@ -388,21 +402,12 @@ timesi.ttf -monotype-Times New Roman-medium-i-normal--0-0-0-0-p-0-iso8859-8
 timesi.ttf -monotype-Times New Roman-medium-i-normal--0-0-0-0-p-0-iso8859-9
 timesi.ttf -monotype-Times New Roman-medium-i-normal--0-0-0-0-p-0-koi8-r
 timesi.ttf -monotype-Times New Roman-medium-i-normal--0-0-0-0-p-0-koi8-ru
-times.ttf -monotype-Times New Roman-medium-r-normal--0-0-0-0-p-0-ascii-0
-times.ttf -monotype-Times New Roman-medium-r-normal--0-0-0-0-p-0-fcd8859-15
-times.ttf -monotype-Times New Roman-medium-r-normal--0-0-0-0-p-0-iso8859-1
-times.ttf -monotype-Times New Roman-medium-r-normal--0-0-0-0-p-0-iso8859-10
-times.ttf -monotype-Times New Roman-medium-r-normal--0-0-0-0-p-0-iso8859-15
-times.ttf -monotype-Times New Roman-medium-r-normal--0-0-0-0-p-0-iso8859-2
-times.ttf -monotype-Times New Roman-medium-r-normal--0-0-0-0-p-0-iso8859-3
-times.ttf -monotype-Times New Roman-medium-r-normal--0-0-0-0-p-0-iso8859-4
-times.ttf -monotype-Times New Roman-medium-r-normal--0-0-0-0-p-0-iso8859-5
-times.ttf -monotype-Times New Roman-medium-r-normal--0-0-0-0-p-0-iso8859-6
-times.ttf -monotype-Times New Roman-medium-r-normal--0-0-0-0-p-0-iso8859-7
-times.ttf -monotype-Times New Roman-medium-r-normal--0-0-0-0-p-0-iso8859-8
-times.ttf -monotype-Times New Roman-medium-r-normal--0-0-0-0-p-0-iso8859-9
-times.ttf -monotype-Times New Roman-medium-r-normal--0-0-0-0-p-0-koi8-r
-times.ttf -monotype-Times New Roman-medium-r-normal--0-0-0-0-p-0-koi8-ru
+trebuc.ttf -microsoft-Trebuchet MS-medium-r-normal--0-0-0-0-p-0-ascii-0
+trebuc.ttf -microsoft-Trebuchet MS-medium-r-normal--0-0-0-0-p-0-fcd8859-15
+trebuc.ttf -microsoft-Trebuchet MS-medium-r-normal--0-0-0-0-p-0-iso8859-1
+trebuc.ttf -microsoft-Trebuchet MS-medium-r-normal--0-0-0-0-p-0-iso8859-15
+trebuc.ttf -microsoft-Trebuchet MS-medium-r-normal--0-0-0-0-p-0-iso8859-2
+trebuc.ttf -microsoft-Trebuchet MS-medium-r-normal--0-0-0-0-p-0-iso8859-9
 trebucbd.ttf -microsoft-Trebuchet MS-bold-r-normal--0-0-0-0-p-0-ascii-0
 trebucbd.ttf -microsoft-Trebuchet MS-bold-r-normal--0-0-0-0-p-0-fcd8859-15
 trebucbd.ttf -microsoft-Trebuchet MS-bold-r-normal--0-0-0-0-p-0-iso8859-1
@@ -421,12 +426,19 @@ trebucit.ttf -microsoft-Trebuchet MS-medium-i-normal--0-0-0-0-p-0-iso8859-1
 trebucit.ttf -microsoft-Trebuchet MS-medium-i-normal--0-0-0-0-p-0-iso8859-15
 trebucit.ttf -microsoft-Trebuchet MS-medium-i-normal--0-0-0-0-p-0-iso8859-2
 trebucit.ttf -microsoft-Trebuchet MS-medium-i-normal--0-0-0-0-p-0-iso8859-9
-trebuc.ttf -microsoft-Trebuchet MS-medium-r-normal--0-0-0-0-p-0-ascii-0
-trebuc.ttf -microsoft-Trebuchet MS-medium-r-normal--0-0-0-0-p-0-fcd8859-15
-trebuc.ttf -microsoft-Trebuchet MS-medium-r-normal--0-0-0-0-p-0-iso8859-1
-trebuc.ttf -microsoft-Trebuchet MS-medium-r-normal--0-0-0-0-p-0-iso8859-15
-trebuc.ttf -microsoft-Trebuchet MS-medium-r-normal--0-0-0-0-p-0-iso8859-2
-trebuc.ttf -microsoft-Trebuchet MS-medium-r-normal--0-0-0-0-p-0-iso8859-9
+verdana.ttf -microsoft-Verdana-medium-r-normal--0-0-0-0-p-0-ascii-0
+verdana.ttf -microsoft-Verdana-medium-r-normal--0-0-0-0-p-0-fcd8859-15
+verdana.ttf -microsoft-Verdana-medium-r-normal--0-0-0-0-p-0-iso8859-1
+verdana.ttf -microsoft-Verdana-medium-r-normal--0-0-0-0-p-0-iso8859-10
+verdana.ttf -microsoft-Verdana-medium-r-normal--0-0-0-0-p-0-iso8859-15
+verdana.ttf -microsoft-Verdana-medium-r-normal--0-0-0-0-p-0-iso8859-2
+verdana.ttf -microsoft-Verdana-medium-r-normal--0-0-0-0-p-0-iso8859-3
+verdana.ttf -microsoft-Verdana-medium-r-normal--0-0-0-0-p-0-iso8859-4
+verdana.ttf -microsoft-Verdana-medium-r-normal--0-0-0-0-p-0-iso8859-5
+verdana.ttf -microsoft-Verdana-medium-r-normal--0-0-0-0-p-0-iso8859-7
+verdana.ttf -microsoft-Verdana-medium-r-normal--0-0-0-0-p-0-iso8859-9
+verdana.ttf -microsoft-Verdana-medium-r-normal--0-0-0-0-p-0-koi8-r
+verdana.ttf -microsoft-Verdana-medium-r-normal--0-0-0-0-p-0-koi8-ru
 verdanab.ttf -microsoft-Verdana-bold-r-normal--0-0-0-0-p-0-ascii-0
 verdanab.ttf -microsoft-Verdana-bold-r-normal--0-0-0-0-p-0-fcd8859-15
 verdanab.ttf -microsoft-Verdana-bold-r-normal--0-0-0-0-p-0-iso8859-1
@@ -453,19 +465,6 @@ verdanai.ttf -microsoft-Verdana-medium-i-normal--0-0-0-0-p-0-iso8859-7
 verdanai.ttf -microsoft-Verdana-medium-i-normal--0-0-0-0-p-0-iso8859-9
 verdanai.ttf -microsoft-Verdana-medium-i-normal--0-0-0-0-p-0-koi8-r
 verdanai.ttf -microsoft-Verdana-medium-i-normal--0-0-0-0-p-0-koi8-ru
-verdana.ttf -microsoft-Verdana-medium-r-normal--0-0-0-0-p-0-ascii-0
-verdana.ttf -microsoft-Verdana-medium-r-normal--0-0-0-0-p-0-fcd8859-15
-verdana.ttf -microsoft-Verdana-medium-r-normal--0-0-0-0-p-0-iso8859-1
-verdana.ttf -microsoft-Verdana-medium-r-normal--0-0-0-0-p-0-iso8859-10
-verdana.ttf -microsoft-Verdana-medium-r-normal--0-0-0-0-p-0-iso8859-15
-verdana.ttf -microsoft-Verdana-medium-r-normal--0-0-0-0-p-0-iso8859-2
-verdana.ttf -microsoft-Verdana-medium-r-normal--0-0-0-0-p-0-iso8859-3
-verdana.ttf -microsoft-Verdana-medium-r-normal--0-0-0-0-p-0-iso8859-4
-verdana.ttf -microsoft-Verdana-medium-r-normal--0-0-0-0-p-0-iso8859-5
-verdana.ttf -microsoft-Verdana-medium-r-normal--0-0-0-0-p-0-iso8859-7
-verdana.ttf -microsoft-Verdana-medium-r-normal--0-0-0-0-p-0-iso8859-9
-verdana.ttf -microsoft-Verdana-medium-r-normal--0-0-0-0-p-0-koi8-r
-verdana.ttf -microsoft-Verdana-medium-r-normal--0-0-0-0-p-0-koi8-ru
 verdanaz.ttf -microsoft-Verdana-bold-i-normal--0-0-0-0-p-0-ascii-0
 verdanaz.ttf -microsoft-Verdana-bold-i-normal--0-0-0-0-p-0-fcd8859-15
 verdanaz.ttf -microsoft-Verdana-bold-i-normal--0-0-0-0-p-0-iso8859-1
@@ -481,3 +480,9 @@ verdanaz.ttf -microsoft-Verdana-bold-i-normal--0-0-0-0-p-0-koi8-r
 verdanaz.ttf -microsoft-Verdana-bold-i-normal--0-0-0-0-p-0-koi8-ru
 webdings.ttf -microsoft-Webdings-medium-r-normal--0-0-0-0-p-0-microsoft-symbol
 wingding.ttf -microsoft-Wingdings-medium-r-normal--0-0-0-0-p-0-microsoft-symbol
+old_engl.ttf -alltype-Old English-medium-r-normal--0-0-0-0-p-0-ascii-0
+old_engl.ttf -alltype-Old English-medium-r-normal--0-0-0-0-p-0-fcd8859-15
+old_engl.ttf -alltype-Old English-medium-r-normal--0-0-0-0-p-0-iso8859-1
+old_engl.ttf -alltype-Old English-medium-r-normal--0-0-0-0-p-0-iso8859-15
+old_engl.ttf -alltype-Old English-medium-r-normal--0-0-0-0-p-0-iso8859-2
+old_engl.ttf -alltype-Old English-medium-r-normal--0-0-0-0-p-0-iso8859-9

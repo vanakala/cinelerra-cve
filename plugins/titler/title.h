@@ -106,6 +106,8 @@ public:
 
 // Text to display
 	char text[BCTEXTLEN];
+// Encoding to convert from 
+	char encoding[BCTEXTLEN];
 };
 
 class FontEntry
@@ -140,7 +142,10 @@ class TitleGlyph
 public:
 	TitleGlyph();
 	~TitleGlyph();
+	// character in 8 bit charset
 	int c;
+	// character in UCS-4
+	FT_ULong char_code;
 	int width, height, pitch, advance_w, left, top, freetype_index;
 	VFrame *data;
 };
@@ -172,8 +177,6 @@ public:
 	FontEntry *current_font;       // Current font configured by freetype
 	FT_Library freetype_library;      	// Freetype library
 	FT_Face freetype_face;
-	char *face_buffer;
-	int face_size;
 };
 
 class GlyphEngine : public LoadServer
@@ -332,9 +335,7 @@ public:
 	void clear_glyphs();
 	int load_freetype_face(FT_Library &freetype_library,
 		FT_Face &freetype_face,
-		char *path,
-		char* &face_buffer,
-		int &face_size);
+		char *path);
 
 
 
@@ -364,8 +365,6 @@ public:
 // Necessary to get character width
 	FT_Library freetype_library;      	// Freetype library
 	FT_Face freetype_face;
-	char *face_buffer;
-	int face_size;
 
 // Visible area of all text present in the mask.
 // Horizontal characters aren't clipped because column positions are

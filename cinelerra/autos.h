@@ -28,10 +28,13 @@ public:
 	virtual Auto* new_auto();
 	virtual float value_to_percentage();
 // Get existing auto on or before position.
+// If use_default is true, return default_auto if none exists 
+// on or before position.
+// Return 0 if none exists and use_default is false.
 // If &current is nonzero it is used as a starting point for searching.
-	Auto* get_prev_auto(long position, int direction, Auto* &current);
+	Auto* get_prev_auto(long position, int direction, Auto* &current, int use_default = 1);
 	Auto* get_prev_auto(int direction, Auto* &current);
-	Auto* get_next_auto(long position, int direction, Auto* &current);
+	Auto* get_next_auto(long position, int direction, Auto* &current, int use_default = 1);
 // Determine if a keyframe exists before creating it.
 	int auto_exists_for_editing(double position);
 // Get keyframe for editing with automatic creation if enabled

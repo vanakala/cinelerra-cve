@@ -714,7 +714,9 @@ int mpeg3video_getpicture(mpeg3video_t *video, int framenum)
     	if(video->pict_struct == BOTTOM_FIELD)
 		{
 /* Only used if fields are in different pictures */
-    	    video->newframe[i] += (i == 0) ? video->coded_picture_width : video->chrom_width;
+    	    video->newframe[i] += (i == 0) ? 
+				video->coded_picture_width : 
+				video->chrom_width;
 		}
 	}
 
@@ -755,6 +757,7 @@ int mpeg3video_getpicture(mpeg3video_t *video, int framenum)
 		video->current_repeat += 100;
 	}
 
-  	if(video->pict_struct != FRAME_PICTURE) video->secondfield = !video->secondfield;
+  	if(video->pict_struct != FRAME_PICTURE) 
+		video->secondfield = !video->secondfield;
 	return result;
 }

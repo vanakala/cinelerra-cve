@@ -1091,3 +1091,169 @@ Import of Component Y'CbCr 10-bit 4:4:4 to RGB colorspaces.
 
 
 
+
+
+
+
+2/14/03
+
+
+Create fade keyframe inadverdently drags bezier handle less often.
+Float autos don't draw on right edge of timeline when keyframes are beyond right edge.
+Better float auto creation.
+Add track anywhere in timeline through track popup.
+Shared track references are automatically reconfigured after deleting or adding tracks.
+Libmpeg3: Better decoding of field-based MPEG video.
+Channels can be moved up or down in the Channel picker properly.
+Better handling of the long delay in deleting files without overflowing the recording buffers.
+Deinterlace really swaps fields instead of just saying it.
+Two line swapping combinations in deinterlace.
+Better listbox row sizing.
+Downsample offset.
+Faster window creation.
+Splash screen while you wait for it to start up.
+File deletion occurs before opening the driver instead of
+	after opening the driver for recording.
+Changing sample rate of WAV file in Asset window works.
+JPEG stills get saved with proper dimensions.
+Migrated to RedHat 8.0.
+ - e2fsprogs-devel is needed to compile the background render object.
+Fewer crashes due to OpenDivx global variables getting overwritten.
+Paste silence and clipboards also shifts effect keyframes properly.
+More checks for circular references in shared effects and shared tracks.
+Tracking during audio playback without video doesn't run past edge of loop boundaries.
+Better keyframing in Titler.
+Multiple language encodings in Titler.
+Undo of replace project after an effect works.
+Frame -> field conversion does line averaging and pixel shifting.
+Field -> frame conversion uses pixel shifting.
+Negative cursor selection is frame aligned.
+Documentation on video cleaning and deinterlacing tools.
+Buttons repositioned properly when filebox is resized vertically.
+Fade automation is more accurate.
+CWindow and VWindow slider position is less erratic after the window is resized.
+Timebars with regions track the playback position.
+More workarounds for buz driver lockups.
+Dragging the cursor on the timebar off the edges scrolls the timeline.
+IVTC uses luminance only in YUV colorspaces to improve accuracy.
+Quicktime: Tighter audio synchronization when encoding Quicktime with Vorbis audio.
+Start of audio effects is more accurate.
+Better IEEE1394 playback of video only.
+More IEEE1394 playback options.
+
+
+
+
+
+
+
+A lot of patches were rejected.  Some were accepted.  Most of these
+coding practices were done in 1997 but abandonned later because of high
+maintenance.  To save code size, the memory leak checker shouldn't flag
+single allocations as leaks and static pointers shouldn't be
+explicitely deleted on exit.
+
+
+titler-charsets.diff
+
+merged.
+
+
+cinelerra-loop-patch*
+
+The bugs in loops and audio positioning were fixed another way.
+
+
+cursor-patch.diff
+
+Too much maintenance in function indirection with no effect.
+
+Explicit declaration of the movement distance requires too much
+maintenance.  The move commands were separated for scalability reasons.
+
+
+
+mempatch-2.diff
+
+
+Units::topower was already static.  Patch has no effect and requires
+too much maintenance.
+
+
+mempatch-3.diff:
+
+DefaultTheme is intended to be replaced by a subclass of BC_Theme and
+use BC_Theme for all memory management.  No expansion of this file is
+maintainable.
+
+ArrayList::aray_delete was merged.
+
+Changes to BC_Meter, BC_Resources require too much maintainence and
+have no effect.
+
+static variables in BC_WindowBase prevent different windows in the same
+application from having different fonts.
+
+Deletion of pointers in AWindow, CWindow, VWindow, MWindow requires too 
+much maintenance.
+
+Buttons in AWindow may be used in the future and should not be deleted.
+
+Buttons in editpanel may be used in the future and should not be deleted.
+
+Selections were replaced by masks.  Deleted from VTrack.
+
+
+
+
+
+
+
+mempatch-5.diff
+
+BC_NewFolderThread expansion done differently.
+BC_FileBox widget deletion already done by BC_WindowBase.  Too much code for no effect.
+BC_ProgressBar::~BC_ProgressBar() implemented.
+BC_Resources changes have no effect.
+It's already a static object and if the images were overridden, their BC_Theme class would delete the lists.
+BC_WindowBase changes were preemptively rejected.
+Canvas::~Canvas merged.
+CPanel::~CPanel already done by BC_WindowBase.  Too much code.
+CWindowGUI::~CWindowGUI mostly done by BC_WindowBase.
+MeterPanel::~MeterPanel merged
+Module::create_new_attachments merged
+StatusBar::~StatusBar already done by BC_SubWindow.
+theme.C too much code.
+VirtualConsole::~VirtualConsole introduced too many bugs.
+ZoomBar::~ZoomBar partially merged.  Mostly done by BC_SubWindow.
+DefaultTheme::DeleteVFrames is done by BC_Theme.
+title.C fonts is a static variable because it shouldn't be deleted.
+
+
+
+
+mempatch-6.diff
+BC_FileBox done differently.  Lock_window is normally used when updating a GUI from a thread.
+
+mempatch-7.diff
+VirtualConsole refurbishment was handled differently.
+
+filevorbis.C asymetric fclose patch applied.
+
+
+
+
+
+
+
+mempatch-9.diff
+
+MWindow::load_filenames memory management applied.
+Rest has no effect.
+
+mempatch-10.diff
+
+decode_lock is static because it shouldn't be deleted.
+Rest has no effect.
+
+

@@ -63,6 +63,7 @@ void get_mp4picture (unsigned char *bmp[], unsigned int stride, int render_flag)
 	mp4_state->hdr.mb_xpos = 0;
 	mp4_state->hdr.mb_ypos = 0;
 
+
 //printf("get_mp4picture 1\n");
 	do {
 //printf("get_mp4picture 1.1\n");
@@ -93,6 +94,13 @@ void get_mp4picture (unsigned char *bmp[], unsigned int stride, int render_flag)
 			frame_for[i] = tmp;
 		}
 	}
+
+#ifdef ARCH_X86
+	if(have_mmx)
+	{
+		__asm__ __volatile__ ("emms");
+	}
+#endif
 //printf("get_mp4picture 5\n");
 }
 

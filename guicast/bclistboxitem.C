@@ -12,6 +12,7 @@ BC_ListBoxItem::BC_ListBoxItem()
 	initialize();
 	this->text = new char[1];
 	text[0] = 0;
+	selectable = 1;
 }
 
 BC_ListBoxItem::BC_ListBoxItem(char *text, 
@@ -24,6 +25,7 @@ BC_ListBoxItem::BC_ListBoxItem(char *text,
 
 	strcpy(this->text, text);
 	this->color = color;
+	selectable = 1;
 }
 
 BC_ListBoxItem::BC_ListBoxItem(char *text, int color)
@@ -32,11 +34,12 @@ BC_ListBoxItem::BC_ListBoxItem(char *text, int color)
 	this->text = new char[strlen(text) + 1];
 	strcpy(this->text, text);
 	this->color = color;
+	selectable = 1;
 }
 
 BC_ListBoxItem::~BC_ListBoxItem()
 {
-	if(text) delete text;
+	if(text) delete [] text;
 	if(sublist)
 	{
 		for(int i = 0; i < columns; i++)
@@ -59,6 +62,8 @@ int BC_ListBoxItem::initialize()
 	icon_y = -1;
 	searchable = 1;
 	sublist = 0;
+	columns = 0;
+	expand = 0;
 	return 0;
 }
 
@@ -116,6 +121,18 @@ void BC_ListBoxItem::set_searchable(int value)
 	this->searchable = value;
 }
 
+void BC_ListBoxItem::set_selectable(int value)
+{
+	this->selectable = value;
+}
+
+int BC_ListBoxItem::get_selectable()
+{
+	return selectable;
+}
+
+
+
 void BC_ListBoxItem::set_text_x(int x)
 {
 	text_x = x;
@@ -139,7 +156,7 @@ int BC_ListBoxItem::get_icon_h()
 
 void BC_ListBoxItem::set_text(char *new_text)
 {
-	if(this->text) delete this->text;
+	if(this->text) delete [] this->text;
 	this->text = 0;
 
 	if(new_text)
@@ -172,15 +189,37 @@ int BC_ListBoxItem::get_color()
 
 BC_ListBoxItem& BC_ListBoxItem::operator=(BC_ListBoxItem& item)
 {
-	if(item.text) set_text(item.text);
-	color = item.color;
-	text_x = item.text_x;
-	text_y = item.text_y;
-	icon_x = item.icon_x;
-	icon_y = item.icon_y;
+	copy_from(&item);
 	return *this;
 }
 
+void BC_ListBoxItem::copy_from(BC_ListBoxItem *item)
+{
+	if(item->text) set_text(item->text);
+	color = item->color;
+	text_x = item->text_x;
+	text_y = item->text_y;
+	icon_x = item->icon_x;
+	icon_y = item->icon_y;
+	selectable = item->selectable;
+	columns = item->columns;
+	if(item->sublist)
+	{
+		sublist = new ArrayList<BC_ListBoxItem*>[columns];
+		for(int i = 0; i < columns; i++)
+		{
+			ArrayList<BC_ListBoxItem*> *list = &item->get_sublist()[i];
+
+			for(int j = 0; j < list->total; j++)
+			{
+				BC_ListBoxItem *new_item = new BC_ListBoxItem;
+				BC_ListBoxItem *old_item = list->values[j];
+				sublist[i].append(new_item);
+				new_item->copy_from(old_item);
+			}
+		}
+	}
+}
 
 ArrayList<BC_ListBoxItem*>* BC_ListBoxItem::new_sublist(int columns)
 {
@@ -194,8 +233,20 @@ ArrayList<BC_ListBoxItem*>* BC_ListBoxItem::get_sublist()
 	return sublist;
 }
 
+int BC_ListBoxItem::get_columns()
+{
+	return columns;
+}
 
+int BC_ListBoxItem::get_expand()
+{
+	return expand;
+}
 
+void BC_ListBoxItem::set_expand(int value)
+{
+	expand = value;
+}
 
 
 

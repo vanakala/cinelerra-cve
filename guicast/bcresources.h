@@ -103,6 +103,7 @@ public:
 // Listbox
 	VFrame *listbox_bg;
 	VFrame **listbox_button;
+	VFrame **listbox_expand;
 
 // Sliders
 	VFrame **horizontal_slider_data;
@@ -166,6 +167,9 @@ private:
 	void init_sizes(BC_WindowBase *window);
 	static int x_error_handler(Display *display, XErrorEvent *event);
 	BC_DisplayInfo *display_info;
+ 	VFrame **list_pointers[100];
+ 	int list_lengths[100];
+ 	int list_total;
 };
 
 

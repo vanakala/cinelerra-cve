@@ -50,6 +50,7 @@ public:
 	virtual void get_recordgui_sizes(RecordGUI *gui,
 		int w,
 		int h);
+	virtual void get_plugindialog_sizes();
 	virtual void draw_rwindow_bg(RecordGUI *gui);
 	virtual void draw_rmonitor_bg(RecordMonitorGUI *gui);
 	virtual void draw_awindow_bg(AWindowGUI *gui);
@@ -148,6 +149,14 @@ public:
 	int pan_x;
 	int play_h;
 	int patchbay_x, patchbay_y, patchbay_w, patchbay_h;
+
+	int plugindialog_new_x, plugindialog_new_y, plugindialog_new_w, plugindialog_new_h;
+	int plugindialog_shared_x, plugindialog_shared_y, plugindialog_shared_w, plugindialog_shared_h;
+	int plugindialog_module_x, plugindialog_module_y, plugindialog_module_w, plugindialog_module_h;
+	int plugindialog_newattach_x, plugindialog_newattach_y;
+	int plugindialog_sharedattach_x, plugindialog_sharedattach_y;
+	int plugindialog_moduleattach_x, plugindialog_moduleattach_y;
+
 	int recordgui_batches_w, recordgui_batches_h;
 	int recordgui_batches_x, recordgui_batches_y;
 	int recordgui_batch_x, recordgui_batch_y, recordgui_batchcaption_x;

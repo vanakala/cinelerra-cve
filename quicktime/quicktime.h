@@ -20,6 +20,7 @@ extern "C" {
 /* ===== compression formats for which codecs exist ====== */
 
 #define QUICKTIME_DIVX "DIVX"
+#define QUICKTIME_HV60 "HV60"
 
 #define QUICKTIME_DIV3 "DIV3"
 #define QUICKTIME_DIV4 "DIV4"
@@ -89,6 +90,7 @@ extern "C" {
 
 #define QUICKTIME_MP3 ".mp3"
 #define QUICKTIME_WMA "WMA "
+#define QUICKTIME_WMX2 "wmx2"
 
 /* =========================== public interface ========================= // */
 

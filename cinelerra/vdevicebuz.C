@@ -24,11 +24,138 @@
 #include <sys/mman.h>
 #include <unistd.h>
 
-#define SOI 0xffd8
-#define APP3 0xffe3
-#define APP1 0xffe1
-#define APP0 0xffe0
-#define EOI  0xffd9
+
+
+VDeviceBUZInput::VDeviceBUZInput(VDeviceBUZ *device)
+ : Thread(1, 1, 0)
+{
+	this->device = device;
+	buffer = 0;
+	buffer_size = 0;
+	total_buffers = 0;
+	current_inbuffer = 0;
+	current_outbuffer = 0;
+	done = 0;
+	output_lock.lock();
+}
+
+VDeviceBUZInput::~VDeviceBUZInput()
+{
+	if(Thread::running())
+	{
+		done = 1;
+		Thread::cancel();
+//printf("VDeviceBUZInput::~VDeviceBUZInput 1\n");
+		Thread::join();
+//printf("VDeviceBUZInput::~VDeviceBUZInput 100\n");
+	}
+
+	if(buffer)
+	{
+		for(int i = 0; i < total_buffers; i++)
+		{
+			delete [] buffer[i];
+		}
+		delete [] buffer;
+		delete [] buffer_size;
+	}
+}
+
+void VDeviceBUZInput::start()
+{
+// Create buffers
+	total_buffers = device->device->in_config->capture_length;
+	buffer = new char*[total_buffers];
+	buffer_size = new int[total_buffers];
+	bzero(buffer_size, sizeof(int) * total_buffers);
+	for(int i = 0; i < total_buffers; i++)
+	{
+		buffer[i] = new char[INPUT_BUFFER_SIZE];
+	}
+
+	Thread::start();
+}
+
+void VDeviceBUZInput::run()
+{
+    struct buz_sync bsync;
+
+// Wait for frame
+	while(1)
+	{
+		Thread::enable_cancel();
+		if(ioctl(device->jvideo_fd, BUZIOC_SYNC, &bsync) < 0)
+		{
+			perror("VDeviceBUZInput::run BUZIOC_SYNC");
+			if(done) return;
+			Thread::disable_cancel();
+		}
+		else
+		{
+			Thread::disable_cancel();
+
+
+
+			int new_buffer = 0;
+			buffer_lock.lock();
+// Save only if the current buffer is free.
+			if(!buffer_size[current_inbuffer])
+			{
+				new_buffer = 1;
+// Copy to input buffer
+				memcpy(buffer[current_inbuffer], 
+					device->input_buffer + bsync.frame * device->breq.size,
+					bsync.length);
+
+// Advance input buffer number and decrease semaphore.
+				buffer_size[current_inbuffer] = bsync.length;
+				increment_counter(&current_inbuffer);
+			}
+
+			buffer_lock.unlock();
+
+			if(ioctl(device->jvideo_fd, BUZIOC_QBUF_CAPT, &bsync.frame))
+				perror("VDeviceBUZInput::run BUZIOC_QBUF_CAPT");
+
+			if(new_buffer) output_lock.unlock();
+		}
+	}
+}
+
+void VDeviceBUZInput::get_buffer(char **ptr, int *size)
+{
+// Increase semaphore to wait for buffer.
+	output_lock.lock();
+
+// Take over buffer table
+	buffer_lock.lock();
+	*ptr = buffer[current_outbuffer];
+	*size = buffer_size[current_outbuffer];
+	buffer_lock.unlock();
+}
+
+void VDeviceBUZInput::put_buffer()
+{
+	buffer_lock.lock();
+	buffer_size[current_outbuffer] = 0;
+	buffer_lock.unlock();
+	increment_counter(&current_outbuffer);
+}
+
+void VDeviceBUZInput::increment_counter(int *counter)
+{
+	(*counter)++;
+	if(*counter >= total_buffers) *counter = 0;
+}
+
+void VDeviceBUZInput::decrement_counter(int *counter)
+{
+	(*counter)--;
+	if(*counter < 0) *counter = total_buffers - 1;
+}
+
+
+
 
 VDeviceBUZ::VDeviceBUZ(VideoDevice *device)
  : VDeviceBase(device)
@@ -53,18 +180,24 @@ int VDeviceBUZ::reset_parameters()
 	frame_size = 0;
 	frame_allocated = 0;
 	input_error = 0;
-	input_position = INPUT_BUFFER_SIZE;
 	last_frame_no = 0;
 	temp_frame = 0;
 	user_frame = 0;
 	mjpeg = 0;
 	total_loops = 0;
 	output_number = 0;
+	input_thread = 0;
 }
 
 int VDeviceBUZ::close_input_core()
 {
 //printf("VDeviceBUZ::close_input_core 1\n");
+	if(input_thread)
+	{
+		delete input_thread;
+		input_thread = 0;
+	}
+
 
 	if(device->r)
 	{
@@ -193,7 +326,6 @@ int VDeviceBUZ::set_picture(int brightness,
 		int contrast, 
 		int whiteness)
 {
-//printf("VDeviceBUZ::set_picture %d\n", color);
 	tuner_lock.lock();
 
 	struct video_picture picture_params;
@@ -236,53 +368,32 @@ int VDeviceBUZ::read_buffer(VFrame *frame)
 	tuner_lock.lock();
 	if(!jvideo_fd) open_input_core(0);
 
-//printf("VDeviceBUZ::read_buffer 1 %d\n", bsync.frame);
-	if(ioctl(jvideo_fd, BUZIOC_SYNC, &bsync) < 0)
-		perror("VDeviceBUZ::read_buffer BUZIOC_SYNC");
+// Get buffer from thread
+	char *buffer;
+	int buffer_size;
+	input_thread->get_buffer(&buffer, &buffer_size);
+
+	
+// Give 0xc0 extra for markers
+	frame->allocate_compressed_data(buffer_size + 0xc0);
+	frame->set_compressed_size(buffer_size);
+
+// Transfer fields to frame
+	if(device->odd_field_first)
+	{
+		long field2_offset = mjpeg_get_field2((unsigned char*)buffer, buffer_size);
+		long field1_len = field2_offset;
+		long field2_len = buffer_size - field2_offset;
+
+		memcpy(frame->get_data(), buffer + field2_offset, field2_len);
+		memcpy(frame->get_data() + field2_len, buffer, field1_len);
+	}
 	else
 	{
-//printf("VDeviceBUZ::read_buffer 2 %d\n", bsync.frame);
-// Give 0xc0 extra for markers
-		frame->allocate_compressed_data(bsync.length + 0xc0);
-//printf("VDeviceBUZ::read_buffer 2 %d\n", bsync.frame);
-		frame->set_compressed_size(bsync.length);
-//printf("VDeviceBUZ::read_buffer 3 %d\n", bsync.frame);
-
-		char *buffer = input_buffer + bsync.frame * breq.size;
-// Transfer fields to frame
-//fwrite(buffer, bsync.length, 1, stdout);
-//printf("VDeviceBUZ::read_buffer 4 %d\n", bsync.length);
-		if(device->odd_field_first)
-		{
-//printf("VDeviceBUZ::read_buffer 5 %d\n", bsync.length);
-			long field2_offset = mjpeg_get_field2((unsigned char*)buffer, bsync.length);
-//printf("VDeviceBUZ::read_buffer 6 %d\n", bsync.length);
-			long field1_len = field2_offset;
-//printf("VDeviceBUZ::read_buffer 7 %d\n", bsync.length);
-			long field2_len = bsync.length - field2_offset;
-//printf("VDeviceBUZ::read_buffer 8.1 %d\n", bsync.frame);
-
-			memcpy(frame->get_data(), buffer + field2_offset, field2_len);
-//printf("VDeviceBUZ::read_buffer 9.2 %d\n", bsync.frame);
-			memcpy(frame->get_data() + field2_len, buffer, field1_len);
-//printf("VDeviceBUZ::read_buffer 10.3 %d\n", bsync.frame);
-// printf("VDeviceBUZ::read_buffer %d %02x%02x %02x%02x\n", 
-// 	field2_len, 
-// 	frame->get_data()[0], 
-// 	frame->get_data()[1],
-// 	frame->get_data()[field2_len], 
-// 	frame->get_data()[field2_len + 1]);
-		}
-		else
-		{
-			bcopy(buffer, frame->get_data(), bsync.length);
-		}
+		bcopy(buffer, frame->get_data(), buffer_size);
 	}
-//printf("VDeviceBUZ::read_buffer 11 %d\n", bsync.frame);
 
-	if(ioctl(jvideo_fd, BUZIOC_QBUF_CAPT, &bsync.frame))
-		perror("VDeviceBUZ::read_buffer BUZIOC_QBUF_CAPT");
-//printf("VDeviceBUZ::read_buffer 12 %d\n", bsync.frame);
+	input_thread->put_buffer();
 
 	tuner_lock.unlock();
 	return 0;
@@ -364,7 +475,7 @@ int VDeviceBUZ::open_input_core(Channel *channel)
 //     	bparm.quality);
 
 	breq.count = device->in_config->capture_length;
-	breq.size = 0x40000;
+	breq.size = INPUT_BUFFER_SIZE;
 	if(ioctl(jvideo_fd, BUZIOC_REQBUFS, &breq) < 0)
 		perror("VDeviceBUZ::open_input BUZIOC_REQBUFS");
 
@@ -384,6 +495,9 @@ int VDeviceBUZ::open_input_core(Channel *channel)
 			perror("VDeviceBUZ::open_input BUZIOC_QBUF_CAPT");
 	}
 
+
+	input_thread = new VDeviceBUZInput(this);
+	input_thread->start();
 //printf("VDeviceBUZ::open_input_core 2\n");
 	return 0;
 }
@@ -408,13 +522,12 @@ int VDeviceBUZ::open_output_core(Channel *channel)
 		vch.channel = channel->input;
 		vch.norm = get_norm(channel->norm);
 
-//printf("VDeviceBUZ::open_input_core 2 %d %d\n", vch.channel, vch.norm);
 		if(ioctl(jvideo_fd, VIDIOCSCHAN, &vch) < 0)
 			perror("VDeviceBUZ::open_output_core VIDIOCSCHAN ");
 	}
 
 	breq.count = 10;
-	breq.size = 0x40000;
+	breq.size = INPUT_BUFFER_SIZE;
 	if(ioctl(jvideo_fd, BUZIOC_REQBUFS, &breq) < 0)
 		perror("VDeviceBUZ::open_output BUZIOC_REQBUFS");
 	if((output_buffer = (char*)mmap(0, 

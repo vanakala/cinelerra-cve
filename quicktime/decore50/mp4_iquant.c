@@ -38,38 +38,65 @@
  *	inverse quantization for intra blocks
 **/
 
-#define _iquant_h263(coeff, q_2scale, q_add)	if ((coeff) != 0) {	\
-if ((coeff) > 0)	{	\
-(coeff) = ((q_2scale) * (coeff)) + (q_add);	}	\
-else if ((coeff) < 0)	{	\
-(coeff) *= -1;	\
-(coeff) = ((q_2scale) * (coeff)) + (q_add);	\
-(coeff) *= -1; }	\
-}
+#define _iquant_h263(coeff, q_2scale, q_add) \
+if ((coeff) > 0) \
+{	\
+	(coeff) = ((q_2scale) * (coeff)) + (q_add);	\
+}	\
+else \
+if ((coeff) < 0)\
+{	\
+	(coeff) *= -1;	\
+	(coeff) = ((q_2scale) * (coeff)) + (q_add);	\
+	(coeff) *= -1; \
+}	\
 
 /**
  *
 **/
 
 // iquant type h.263, not optimized
-//
+// intraFlag is 0 or 1
 __inline void iquant (short * psblock, int intraFlag)
 {
 	int i;
 	int q_scale = mp4_state->hdr.quantizer;
 	int q_2scale = q_scale << 1;
 	int q_add = (q_scale & 1) ? q_scale : (q_scale - 1);
+/*
+ * static int count = 0;
+ * count++;
+ * if(!(count % 1000))
+ * {
+ * 	printf("iquant %d\n", count);
+ * }
+ */
 
-	for (i = intraFlag; i < 64; i++)
-	{
-		_iquant_h263(psblock[i], q_2scale, q_add);
-	}
+	if(intraFlag)
+		for (i = 1; i < 64; i++)
+		{
+			_iquant_h263(psblock[i], q_2scale, q_add);
+		}
+	else
+		for (i = 0; i < 64; i++)
+		{
+			_iquant_h263(psblock[i], q_2scale, q_add);
+		}
 }
 
 
 void iquant_typefirst (short * psblock)
 {
 	int i;
+/*
+ * static int count = 0;
+ * count++;
+ * if(!(count % 1000))
+ * {
+ * 	printf("iquant_typefirst %d\n", count);
+ * }
+ */
+
 	for (i = 1; i < 64; i++)
 	{
 		if (psblock[i] != 0) {

@@ -28,6 +28,8 @@
 // The keepalive thread runs continuously during recording.
 // If the recording thread doesn't reset still_alive, failed is incremented.
 // Failed is set to 0 if the recording thread resets still_alive.
+// It calls goose_input in the VideoDevice.  The input driver should
+// trap goose_input and restart itself asynchronous of the recording thread.
 
 // Number of seconds for keepalive to freak out
 #define KEEPALIVE_DELAY 0.5
@@ -65,6 +67,7 @@ public:
 	friend class VDeviceLML;
 	friend class VDeviceX11;
 	friend class VDevice1394;
+	friend class VDeviceBUZInput;
 	friend class VDeviceBUZ;
 	friend class VDeviceBase;
 	friend class VDeviceV4L;
@@ -142,6 +145,7 @@ public:
 	int wait_for_completion();
 	int output_visible();     // Whether the output is visible or not.
 	int stop_playback();
+	void goose_input();
 	long current_position();     // last frame rendered
 // absolute frame of last frame in buffer.
 // The EDL parameter is passed to Canvas and can be 0.

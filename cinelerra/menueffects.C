@@ -459,7 +459,7 @@ void MenuEffectThread::run()
 			delete file;
 		}
 	}
-//printf("MenuEffectThread::run 16\n");
+printf("MenuEffectThread::run 16 %d\n", result);
 
 
 // paste output to tracks
@@ -467,7 +467,7 @@ void MenuEffectThread::run()
 	{
 		mwindow->gui->lock_window();
 //printf("MenuEffectThread::run 17\n");
-		mwindow->undo->update_undo_before(title, LOAD_EDITS | LOAD_TIMEBAR);
+		mwindow->undo->update_undo_before(title, LOAD_ALL);
 
 //printf("MenuEffectThread::run 18\n");
 		mwindow->load_assets(&assets,
@@ -482,6 +482,9 @@ void MenuEffectThread::run()
 
 		mwindow->save_backup();
 		mwindow->undo->update_undo_after();
+
+
+
 		mwindow->restart_brender();
 		mwindow->update_plugin_guis();
 		mwindow->gui->update(1, 

@@ -19,8 +19,9 @@ AudioInConfig::AudioInConfig()
 		oss_in_channels[i] = 2;
 	}
 	oss_in_bits = 16;
-	afirewire_in_port = 0;
-	afirewire_in_channel = 63;
+	firewire_port = 0;
+	firewire_channel = 63;
+	strcpy(firewire_path, "/dev/raw1394");
 	sprintf(esound_in_server, "");
 	esound_in_port = 0;
 
@@ -61,8 +62,11 @@ int AudioInConfig::is_duplex(AudioInConfig *in, AudioOutConfig *out)
 AudioInConfig& AudioInConfig::operator=(AudioInConfig &that)
 {
 	driver = that.driver;
-	afirewire_in_port = that.afirewire_in_port;
-	afirewire_in_channel = that.afirewire_in_channel;
+
+	firewire_port = that.firewire_port;
+	firewire_channel = that.firewire_channel;
+	strcpy(firewire_path, that.firewire_path);
+
 	strcpy(esound_in_server, that.esound_in_server);
 	esound_in_port = that.esound_in_port;
 
@@ -85,8 +89,9 @@ int AudioInConfig::load_defaults(Defaults *defaults)
 {
 	char string[BCTEXTLEN];
 	driver =                      defaults->get("AUDIOINDRIVER", driver);
-	afirewire_in_port =           defaults->get("AFIREWIRE_IN_PORT", afirewire_in_port);
-	afirewire_in_channel =        defaults->get("AFIREWIRE_IN_CHANNEL", afirewire_in_channel);
+	firewire_port =           defaults->get("AFIREWIRE_IN_PORT", firewire_port);
+	firewire_channel =        defaults->get("AFIREWIRE_IN_CHANNEL", firewire_channel);
+	defaults->get("AFIREWIRE_IN_PATH", firewire_path);
 	for(int i = 0; i < MAXDEVICES; i++)
 	{
 		sprintf(string, "OSS_ENABLE_%d", i);
@@ -112,8 +117,9 @@ int AudioInConfig::save_defaults(Defaults *defaults)
 {
 	char string[BCTEXTLEN];
 	defaults->update("AUDIOINDRIVER", driver);
-	defaults->update("AFIREWIRE_IN_PORT", afirewire_in_port);
-	defaults->update("AFIREWIRE_IN_CHANNEL", afirewire_in_channel);
+	defaults->update("AFIREWIRE_IN_PORT", firewire_port);
+	defaults->update("AFIREWIRE_IN_CHANNEL", firewire_channel);
+	defaults->update("AFIREWIRE_IN_PATH", firewire_path);
 
 	for(int i = 0; i < MAXDEVICES; i++)
 	{
@@ -150,8 +156,9 @@ VideoInConfig::VideoInConfig()
 	sprintf(lml_in_device, "/dev/mvideo/stream");
 	sprintf(buz_in_device, "/dev/video");
 	sprintf(screencapture_display, "");
-	vfirewire_in_port = 0;
-	vfirewire_in_channel = 63;
+	firewire_port = 0;
+	firewire_channel = 63;
+	sprintf(firewire_path, "/dev/raw1394");
 // number of frames to read from device during video recording.
 //	capture_length = 15;   
 	capture_length = 2;   
@@ -185,8 +192,9 @@ VideoInConfig& VideoInConfig::operator=(VideoInConfig &that)
 	strcpy(lml_in_device, that.lml_in_device);
 	strcpy(buz_in_device, that.buz_in_device);
 	strcpy(screencapture_display, that.screencapture_display);
-	vfirewire_in_port = that.vfirewire_in_port;
-	vfirewire_in_channel = that.vfirewire_in_channel;
+	firewire_port = that.firewire_port;
+	firewire_channel = that.firewire_channel;
+	strcpy(firewire_path, that.firewire_path);
 	capture_length = that.capture_length;
 	w = that.w;
 	h = that.h;
@@ -201,8 +209,9 @@ int VideoInConfig::load_defaults(Defaults *defaults)
 	defaults->get("LML_IN_DEVICE", lml_in_device);
 	defaults->get("BUZ_IN_DEVICE", buz_in_device);
 	defaults->get("SCREENCAPTURE_DISPLAY", screencapture_display);
-	vfirewire_in_port = defaults->get("VFIREWIRE_IN_PORT", vfirewire_in_port);
-	vfirewire_in_channel = defaults->get("VFIREWIRE_IN_CHANNEL", vfirewire_in_channel);
+	firewire_port = defaults->get("VFIREWIRE_IN_PORT", firewire_port);
+	firewire_channel = defaults->get("VFIREWIRE_IN_CHANNEL", firewire_channel);
+	defaults->get("VFIREWIRE_IN_PATH", firewire_path);
 	capture_length = defaults->get("VIDEO_CAPTURE_LENGTH", capture_length);
 	w = defaults->get("RECORD_W", w);
 	h = defaults->get("RECORD_H", h);
@@ -217,8 +226,9 @@ int VideoInConfig::save_defaults(Defaults *defaults)
 	defaults->update("LML_IN_DEVICE", lml_in_device);
 	defaults->update("BUZ_IN_DEVICE", buz_in_device);
 	defaults->update("SCREENCAPTURE_DISPLAY", screencapture_display);
-	defaults->update("VFIREWIRE_IN_PORT", vfirewire_in_port);
-	defaults->update("VFIREWIRE_IN_CHANNEL", vfirewire_in_channel);
+	defaults->update("VFIREWIRE_IN_PORT", firewire_port);
+	defaults->update("VFIREWIRE_IN_CHANNEL", firewire_channel);
+	defaults->update("VFIREWIRE_IN_PATH", firewire_path);
 	defaults->update("VIDEO_CAPTURE_LENGTH", capture_length);
 	defaults->update("RECORD_W", w);
 	defaults->update("RECORD_H", h);

@@ -11,62 +11,96 @@ AC_PROG_CXX
 
 AC_ENABLE_SHARED
 AC_ENABLE_STATIC
-AM_PROG_LIBTOOL
+AC_PROG_LIBTOOL
 
+# hack for using nasm for .S files
 CCAS="\$(top_srcdir)/admin/nasm"
 AC_SUBST(CCAS)
 AC_SUBST(CCASFLAGS)
 
-AM_PATH_GLIB(1.2.0)
 
-plugindir="\${exec_prefix}/lib/cinelerra"
+############## SPECIAL DIRECTORIES
+AC_ARG_WITH(plugindir,
+						AC_HELP_STRING([--with-plugindir], [sets the directory where the plugins should be installed]),
+						[ plugindir=$withval ],
+						[ plugindir="\${exec_prefix}/lib/cinelerra" ])
 AC_SUBST(plugindir)
 
+AC_ARG_WITH(fontsdir,
+						AC_HELP_STRING([--with-fontsdir], [sets the directory where the fonts should be installed]),
+						[ fontsdir=$withval ],
+						[ fontsdir="\${plugindir}/fonts" ])
+AC_SUBST(fontsdir)
+############## END OF SPECIAL DIRECTORIES
+
+
+############## MISC LIBRARIES
+AM_PATH_GLIB(1.2.0)
 AC_PATH_XTRA
+############## END OF MISC LIBRARIES
 
 LARGEFILE_CFLAGS="-D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64"
-CFLAGS="-pipe -D_REENTRANT -DHAVE_LIBXXF86VM $LARGEFILE_CFLAGS $CFLAGS"
-CXXFLAGS="-pipe -D_REENTRANT -DHAVE_LIBXXF86VM $LARGEFILE_CFLAGS $CXXFLAGS"
+CFLAGS="-D_REENTRANT -DHAVE_LIBXXF86VM $LARGEFILE_CFLAGS $CFLAGS"
+CXXFLAGS="-D_REENTRANT -DHAVE_LIBXXF86VM $LARGEFILE_CFLAGS $CXXFLAGS"
 
 ############## FIREWIRE
 # firewire settings are propagated through FIREWIRE_CFLAGS and FIREWIRE_LDFLAGS
-if test "x$enable_firewire" = "xyes" || test "x$enable_firewire" = "x"; then
+AC_ARG_ENABLE(firewire, 
+							AC_HELP_STRING([--disable-firewire], [disable support for firewire (default=enabled)]),
+							[ enable_firewire=$enableval ],
+							[ enable_firewire=yes ])
+
+if test "x$enable_firewire" = "xyes"; then
 	FIREWIRE_CFLAGS="-DHAVE_FIREWIRE -I/usr/include/libavc1394 -I/usr/include/libraw1394"
 	FIREWIRE_LDFLAGS="-lraw1394 -lavc1394 -lrom1394"
 fi
 AC_SUBST(FIREWIRE_CFLAGS)
 AC_SUBST(FIREWIRE_LDFLAGS)
-
-AC_ARG_ENABLE(firewire, [  --disable-firewire	disable support for firewire [default=enabled]])
 ############## END OF FIREWIRE
 
 ############## AVIFILE SUPPORT
-if test "x$enable_avifile" = "xyes"; then
-	AM_PATH_AVIFILE(0.7.0)
-	if test "x$HAVE_AVIFILE" = "xyes"; then
-		AVIFILE_CXXFLAGS="-DUSE_AVIFILE $AVIFILE_CXXFLAGS"
-	fi
-fi
-AC_ARG_ENABLE(avifile, [  --enable-avifile	enable support for avifile [default=no]])
+dnl if test "x$enable_avifile" = "xyes"; then
+dnl 	AM_PATH_AVIFILE(0.7.0)
+dnl 	if test "x$HAVE_AVIFILE" = "xyes"; then
+dnl 		AVIFILE_CXXFLAGS="-DUSE_AVIFILE $AVIFILE_CXXFLAGS"
+dnl 	fi
+dnl fi
+dnl AC_ARG_ENABLE(avifile, [  --enable-avifile	enable support for avifile [default=no]])
 ############## END OF AVIFILE SUPPORT
+
 ############# CSS SUPPORT IN LIBMPEG3
-if test "x$enable_css" = "xyes" || test "x$enable_css" = "x"; then
+if test "x$enable_css" = "xyes"; then
 	CSS_CFLAGS="-DHAVE_CSS"
 fi
 AC_SUBST(CSS_CFLAGS)
-AC_ARG_ENABLE(css, [  --disable-css	disable support for css in libmpeg3 [default=enabled]])
+AC_ARG_ENABLE(css, 
+							AC_HELP_STRING([--disable-css], [disable support for css in libmpeg3 (default=enabled)]),,
+							[ enable_css=$enableval ],
+							[ enable_css=yes ])
 ############## END OF CSS SUPPORT IN LIBMPEG3
 
 
 ############## SOUND
 # the sound options are propagated by SOUND_CFLAGS and SOUND_LDFLAGS
+AC_ARG_ENABLE(oss, 
+							AC_HELP_STRING([--disable-oss], [disable support for oss (default=enabled)]))
+AC_ARG_ENABLE(alsa, 
+							AC_HELP_STRING([--enable-alsa], [enable support for alsa (default=autodetect)]),
+							[ enable_alsa=$enableval ],
+							[ enable_alsa=default ])
+AC_ARG_ENABLE(esd, 
+							AC_HELP_STRING([--disable-esound], [disable support for esound (default=enabled)]))
+
 if test "x$enable_oss" = "xyes" || test "x$enable_oss" = "x"; then
 	SOUND_CFLAGS="-DHAVE_OSS $SOUND_CFLAGS"
 fi
-if test "x$enable_alsa" = "xyes" || test "x$enable_alsa" = "x"; then
-	AM_PATH_ALSA(0.9.0)
-	SOUND_CFLAGS="$ALSA_CFLAGS -DHAVE_ALSA $SOUND_CFLAGS"
-	SOUND_LDFLAGS="$ALSA_LIBS $SOUND_LDFLAGS"
+if test "x$enable_alsa" = "xdefault" || test "x$enable_alsa" = "xyes"; then
+	AM_PATH_ALSA(0.9.0,
+		[ SOUND_CFLAGS="$ALSA_CFLAGS -DHAVE_ALSA $SOUND_CFLAGS"
+			SOUND_LDFLAGS="$ALSA_LIBS $SOUND_LDFLAGS" ],
+		[ if test "x$enable_alsa" = "xyes"; then
+		 		AC_MSG_ERROR( [ alsa library >= 0.9.0 not found ] )
+			fi ])
 fi
 
 if test "x$enable_esd" = "xyes" || test "x$enable_esd" = "x"; then
@@ -76,18 +110,21 @@ if test "x$enable_esd" = "xyes" || test "x$enable_esd" = "x"; then
 fi
 AC_SUBST(SOUND_CFLAGS)
 AC_SUBST(SOUND_LDFLAGS)
-AC_ARG_ENABLE(oss, [  --disable-oss	disable support for oss [default=enabled]])
-AC_ARG_ENABLE(alsa, [  --disable-alsa	disable support for alsa [default=enabled]])
-AC_ARG_ENABLE(esd, [  --disable-esound	disable support for esound [default=enabled]])
 ############### END OF SOUND
 
 ############## MMX / 3DNOW
-AC_ARG_ENABLE(x86, [  --disable-x86	disable x86 specific features autodetection in libmpeg3 and mpeg2enc [default=enabled]],,
-							enable_x86=yes)
-AC_ARG_ENABLE(mmx, [  --disable-mmx	disable support for mmx [default=enabled]],,
-							enable_mmx=yes)
-AC_ARG_ENABLE(3dnow, [  --disable-3dnow	disable support for 3dnow [default=enabled]],,
-							enable_3dnow=yes)
+AC_ARG_ENABLE(x86, 
+							AC_HELP_STRING([--enable-x86], [enables x86 specific features autodetection in libmpeg3 and mpeg2enc (default is disabled)]),
+							[ enable_x86=$enableval ],
+							[ enable_x86=no ])
+AC_ARG_ENABLE(mmx, 
+							AC_HELP_STRING([--enable-mmx], [enables support for mmx (default is disabled)]), 
+							[ enable_mmx=$enableval ],
+							[ enable_mmx=no ])
+AC_ARG_ENABLE(3dnow, 
+							AC_HELP_STRING([--enable-3dnow], [enables support for 3dnow (default is disabled)]),
+							[ enable_3dnow=$enableval ],
+							[ enable_3dnow=no ])
 if test "x$enable_x86" = "xyes"; then
 	CPU_CFLAGS="-DX86_CPU $CPU_CFLAGS"
 fi
@@ -106,26 +143,31 @@ AC_SUBST(CPU_CFLAGS)
 ############## END OF MMX / 3DNOW
 
 ############## FFMPEG
-AM_CONDITIONAL(FFMPEG_AC3, true)
-AM_CONDITIONAL(FFMPEG_A52BIN, false)
-AM_CONDITIONAL(FFMPEG_MP3LAME, true)
-AM_CONDITIONAL(FFMPEG_VORBIS, true)
-AM_CONDITIONAL(FFMPEG_HAVE_MLIB, false)
-AM_CONDITIONAL(FFMPEG_TARGET_ARCH_ARMV4L, false)
-AM_CONDITIONAL(FFMPEG_TARGET_ARCH_ALPHA, false)
-AM_CONDITIONAL(FFMPEG_TARGET_ARCH_POWERPC, false)
-AM_CONDITIONAL(FFMPEG_TARGET_MMI, false)
-AM_CONDITIONAL(FFMPEG_TARGET_ALTIVEC, false)
+dnl AM_CONDITIONAL(FFMPEG_AC3, true)
+dnl AM_CONDITIONAL(FFMPEG_A52BIN, false)
+dnl AM_CONDITIONAL(FFMPEG_MP3LAME, true)
+dnl AM_CONDITIONAL(FFMPEG_VORBIS, true)
+dnl AM_CONDITIONAL(FFMPEG_HAVE_MLIB, false)
+dnl AM_CONDITIONAL(FFMPEG_TARGET_ARCH_ARMV4L, false)
+dnl AM_CONDITIONAL(FFMPEG_TARGET_ARCH_ALPHA, false)
+dnl AM_CONDITIONAL(FFMPEG_TARGET_ARCH_POWERPC, false)
+dnl AM_CONDITIONAL(FFMPEG_TARGET_MMI, false)
+dnl AM_CONDITIONAL(FFMPEG_TARGET_ALTIVEC, false)
+dnl 
+LIBAVCODEC_CFLAGS=-I/usr/include/ffmpeg
+LIBAVCODEC_LIBS=-lavcodec
+AC_SUBST(LIBAVCODEC_CFLAGS)
+AC_SUBST(LIBAVCODEC_LIBS)
 
 ############## END OF FFMPEG
 
 AC_OUTPUT(Makefile \
 					libmpeg3/Makefile libmpeg3/video/Makefile libmpeg3/audio/Makefile \
-					quicktime/Makefile quicktime/encore50/Makefile quicktime/decore50/Makefile quicktime/libavcodec/Makefile \
+					quicktime/Makefile quicktime/encore50/Makefile quicktime/decore50/Makefile \
 					guicast/Makefile cinelerra/Makefile \
 					mplexhi/Makefile mplexlo/Makefile \
-					plugins/Makefile plugins/colors/Makefile plugins/fourier/Makefile \
-					plugins/bandslide/Makefile \
+					plugins/Makefile plugins/bandslide/Makefile \
+					plugins/libcolors/Makefile plugins/libfourier/Makefile plugins/libeffecttv/Makefile \
 					plugins/bandwipe/Makefile plugins/blur/Makefile plugins/brightness/Makefile \
 					plugins/burn/Makefile plugins/parametric/Makefile plugins/aging/Makefile \
 					plugins/cdripper/Makefile plugins/chromakey/Makefile plugins/colorbalance/Makefile \
@@ -149,5 +191,5 @@ AC_OUTPUT(Makefile \
 					plugins/wipe/Makefile plugins/yuv/Makefile plugins/microtheme/Makefile \
 					plugins/downsample/Makefile plugins/flash/Makefile plugins/gradient/Makefile \
 					plugins/lame/Makefile plugins/level/Makefile plugins/linearblur/Makefile \
-					plugins/perspective/Makefile plugins/radialblur/Makefile plugins/zoomblur/Makefile plugins/toolame/Makefile
-					)
+					plugins/perspective/Makefile plugins/radialblur/Makefile plugins/zoomblur/Makefile plugins/toolame/Makefile \
+					plugins/fonts/Makefile)

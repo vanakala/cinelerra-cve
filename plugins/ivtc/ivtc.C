@@ -1,17 +1,13 @@
 #include "colormodels.h"
 #include "filexml.h"
-#include "picon_png.h"
 #include "ivtc.h"
 #include "ivtcwindow.h"
 
 #include <stdio.h>
 #include <string.h>
 
-PluginClient* new_plugin(PluginServer *server)
-{
-	return new IVTCMain(server);
-}
 
+REGISTER_PLUGIN(IVTCMain)
 
 IVTCConfig::IVTCConfig()
 {
@@ -25,24 +21,13 @@ IVTCConfig::IVTCConfig()
 IVTCMain::IVTCMain(PluginServer *server)
  : PluginVClient(server)
 {
-	thread = 0;
-	load_defaults();
-
+	PLUGIN_CONSTRUCTOR_MACRO
 	engine = 0;
 }
 
 IVTCMain::~IVTCMain()
 {
-	if(thread)
-	{
-// Set result to 0 to indicate a server side close
-		thread->window->set_done(0);
-		thread->completion.lock();
-		delete thread;
-	}
-
-	save_defaults();
-	delete defaults;
+	PLUGIN_DESTRUCTOR_MACRO
 
 	if(engine)
 	{
@@ -57,12 +42,9 @@ IVTCMain::~IVTCMain()
 }
 
 char* IVTCMain::plugin_title() { return "Inverse Telecine"; }
+
 int IVTCMain::is_realtime() { return 1; }
 
-VFrame* IVTCMain::new_picon()
-{
-	return new VFrame(picon_png);
-}
 
 int IVTCMain::load_defaults()
 {
@@ -93,6 +75,14 @@ int IVTCMain::save_defaults()
 	return 0;
 }
 
+#include "picon_png.h"
+NEW_PICON_MACRO(IVTCMain)
+SHOW_GUI_MACRO(IVTCMain, IVTCThread)
+SET_STRING_MACRO(IVTCMain)
+RAISE_WINDOW_MACRO(IVTCMain)
+
+
+
 int IVTCMain::load_configuration()
 {
 	KeyFrame *prev_keyframe;
@@ -103,7 +93,6 @@ int IVTCMain::load_configuration()
 
 	return 0;
 }
-
 
 void IVTCMain::save_data(KeyFrame *keyframe)
 {
@@ -399,29 +388,6 @@ int IVTCMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	return 0;
 }
 
-int IVTCMain::show_gui()
-{
-	load_configuration();
-	thread = new IVTCThread(this);
-	thread->start();
-	return 0;
-}
-
-int IVTCMain::set_string()
-{
-	if(thread) thread->window->set_title(gui_string);
-	return 0;
-}
-
-void IVTCMain::raise_window()
-{
-	if(thread)
-	{
-		thread->window->raise_window();
-		thread->window->flush();
-	}
-}
-
 void IVTCMain::update_gui()
 {
 	if(thread)
@@ -489,6 +455,30 @@ IVTCEngine::~IVTCEngine()
 	} \
 }
 
+#define COMPARE_FIELDS_YUV(rows1, rows2, type, width, height, components) \
+{ \
+	int w = width * components; \
+	int h = height; \
+	 \
+	for(int i = 0; i < h; i++) \
+	{ \
+		type *row1 = (type*)(rows1)[i]; \
+		type *row2 = (type*)(rows2)[i]; \
+ \
+		if(i & 1) \
+			for(int j = 0; j < w; j += components) \
+			{ \
+				field2 += labs(row1[j] - row2[j]); \
+			} \
+		else \
+			for(int j = 0; j < w; j += components) \
+			{ \
+				field1 += labs(row1[j] - row2[j]); \
+			} \
+	} \
+}
+
+
 void IVTCEngine::run()
 {
 	while(1)
@@ -505,8 +495,6 @@ void IVTCEngine::run()
 		switch(input->get_color_model())
 		{
 			case BC_RGB888:
-			case BC_YUV888:
-//printf("IVTCEngine::run %d %d\n", start_y, end_y);
 				COMPARE_FIELDS(input->get_rows() + start_y, 
 					output->get_rows() + start_y, 
 					unsigned char, 
@@ -514,9 +502,15 @@ void IVTCEngine::run()
 					end_y - start_y, 
 					3);
 				break;
-
-			   case BC_RGBA8888:
-			   case BC_YUVA8888:
+			case BC_YUV888:
+				COMPARE_FIELDS_YUV(input->get_rows() + start_y, 
+					output->get_rows() + start_y, 
+					unsigned char, 
+					input->get_w(),
+					end_y - start_y, 
+					3);
+				break;
+			case BC_RGBA8888:
 				COMPARE_FIELDS(input->get_rows() + start_y, 
 					output->get_rows() + start_y, 
 					unsigned char, 
@@ -524,9 +518,15 @@ void IVTCEngine::run()
 					end_y - start_y, 
 					4);
 					break;
-
+			case BC_YUVA8888:
+				COMPARE_FIELDS_YUV(input->get_rows() + start_y, 
+					output->get_rows() + start_y, 
+					unsigned char, 
+					input->get_w(),
+					end_y - start_y, 
+					4);
+					break;
 			case BC_RGB161616:
-			case BC_YUV161616:
 				COMPARE_FIELDS(input->get_rows() + start_y, 
 					output->get_rows() + start_y, 
 					u_int16_t, 
@@ -534,10 +534,24 @@ void IVTCEngine::run()
 					end_y - start_y, 
 					3);
 				break;
-
+			case BC_YUV161616:
+				COMPARE_FIELDS_YUV(input->get_rows() + start_y, 
+					output->get_rows() + start_y, 
+					u_int16_t, 
+					input->get_w(),
+					end_y - start_y, 
+					3);
+				break;
 			case BC_RGBA16161616:
-			case BC_YUVA16161616:
 				COMPARE_FIELDS(input->get_rows() + start_y, 
+					output->get_rows() + start_y, 
+					u_int16_t, 
+					input->get_w(),
+					end_y - start_y, 
+					4);
+				break;
+			case BC_YUVA16161616:
+				COMPARE_FIELDS_YUV(input->get_rows() + start_y, 
 					output->get_rows() + start_y, 
 					u_int16_t, 
 					input->get_w(),

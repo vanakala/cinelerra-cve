@@ -248,8 +248,6 @@ int AudioDevice::set_software_positioning(int status)
 int AudioDevice::start_playback()
 {
 // arm buffer before doing this
-	Thread::set_synchronous(1);
-	Thread::disable_cancel();
 	is_playing_back = 1;
 	interrupt = 0;
 // zero timers
@@ -270,7 +268,7 @@ int AudioDevice::interrupt_playback()
 // cancel thread
 		is_playing_back = 0;
 		get_lowlevel_out()->interrupt_playback();
-		Thread::end();
+		Thread::cancel();
 // Completion is waited for in arender
 //		wait_for_completion();
 	}
@@ -298,9 +296,9 @@ int AudioDevice::wait_for_startup()
 
 int AudioDevice::wait_for_completion()
 {
-//printf("AudioDevice::wait_for_completion 1 %d\n", get_tid());
+//printf("AudioDevice::wait_for_completion 1\n");
 	Thread::join();
-//printf("AudioDevice::wait_for_completion 2 %d\n", get_tid());
+//printf("AudioDevice::wait_for_completion 2\n");
 	return 0;
 }
 
@@ -387,16 +385,15 @@ void AudioDevice::run()
 			last_buffer_size = buffer_size[thread_buffer_num] / (get_obits() / 8) / get_ochannels();
 			total_samples += last_buffer_size;
 			playback_timer.update();
-
 			timer_lock.unlock();
 
 // write buffer
-//printf("AudioDevice::run 2 %02x %02x %02x %02x %02x\n", buffer[thread_buffer_num][0], buffer[thread_buffer_num][1], buffer[thread_buffer_num][2], buffer[thread_buffer_num][3], buffer[thread_buffer_num][4]);
+//printf("AudioDevice::run 2\n");
 			Thread::enable_cancel();
 			thread_result = get_lowlevel_out()->write_buffer(buffer[thread_buffer_num], buffer_size[thread_buffer_num]);
 			Thread::disable_cancel();
 
-//printf("AudioDevice::run 2\n");
+//printf("AudioDevice::run 3\n");
 // allow writing to the buffer
 			arm_mutex[thread_buffer_num].unlock();
 
@@ -408,7 +405,6 @@ void AudioDevice::run()
 				sleep(1);
 			}
 
-//printf("AudioDevice::run 3\n");
 			thread_buffer_num++;
 			if(thread_buffer_num >= TOTAL_BUFFERS) thread_buffer_num = 0;
 		}
@@ -422,4 +418,5 @@ void AudioDevice::run()
 			get_lowlevel_out()->flush_device();
 		}
 	}
+//printf("AudioDevice::run 10\n");
 }

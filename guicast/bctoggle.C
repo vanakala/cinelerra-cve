@@ -231,7 +231,7 @@ int BC_Toggle::get_value()
 	return value;
 }
 
-int BC_Toggle::set_value(int value)
+int BC_Toggle::set_value(int value, int draw)
 {
 	if(value != this->value)
 	{
@@ -258,14 +258,14 @@ int BC_Toggle::set_value(int value)
 				status = TOGGLE_UPHI;
 				break;
 		}
-		draw_face();
+		if(draw) draw_face();
 	}
 	return 0;
 }
 
-int BC_Toggle::update(int value)
+int BC_Toggle::update(int value, int draw)
 {
-	return set_value(value);
+	return set_value(value, draw);
 }
 
 void BC_Toggle::reposition_window(int x, int y)

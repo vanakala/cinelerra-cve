@@ -126,10 +126,11 @@ int VRender::process_buffer(long input_position)
 	if(!use_vconsole)
 	{
 
-// printf("VRender::process_buffer 4 %d %p %p %p\n", 
-// current_position, renderengine->get_vcache(), playable_edit, video_out[0]);		
+//printf("VRender::process_buffer 4 %d %p %p %p\n", 
+//current_position, renderengine->get_vcache(), playable_edit, video_out[0]); 	 
 		if(use_brender)
 		{
+//printf("VRender::process_buffer 4.1\n");
 			Asset *asset = renderengine->preferences->brender_asset;
 			File *file = renderengine->get_vcache()->check_out(asset);
 			if(file)
@@ -147,10 +148,12 @@ int VRender::process_buffer(long input_position)
 		else
 		if(playable_edit)
 		{
+//printf("VRender::process_buffer 4.2\n");
 			result = ((VEdit*)playable_edit)->read_frame(video_out[0], 
 				current_position, 
 				renderengine->command->get_direction(),
 				renderengine->get_vcache());
+//printf("VRender::process_buffer 4.3\n");
 		}
 
 //printf("VRender::process_buffer 5\n");
@@ -198,11 +201,12 @@ int VRender::get_use_vconsole(Edit* &playable_edit,
 // Test mutual conditions between render.C and this.
 	if(!playable_track->direct_copy_possible(position, renderengine->command->get_direction()))
 		return 1;
-//printf("VRender::get_use_vconsole 3\n");
 
+//printf("VRender::get_use_vconsole 3\n");
 	playable_edit = playable_track->edits->editof(position, renderengine->command->get_direction());
 // No edit at current location
 	if(!playable_edit) return 1;
+
 // Edit is silence
 	if(!playable_edit->asset) return 1;
 //printf("VRender::get_use_vconsole 4\n");
@@ -418,12 +422,12 @@ void VRender::run()
 			current_input_length = frame_step;
 		}
 
-//printf("VRender:run 17 %d\n", current_position);
-// Update tracking
+// Update tracking.
 		if(renderengine->command->realtime &&
 			renderengine->playback_engine &&
 			renderengine->command->command != CURRENT_FRAME)
 		{
+//printf("VRender:run 17 %d\n", current_position);
 			renderengine->playback_engine->update_tracking(fromunits(current_position));
 		}
 

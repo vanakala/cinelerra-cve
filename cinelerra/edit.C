@@ -375,7 +375,7 @@ int Edit::shift_start_in(int edit_mode,
 			startsource += cut_length;
 			length -= cut_length;
 			previous->length += cut_length;
-printf("Edit::shift_start_in 2\n");
+//printf("Edit::shift_start_in 2\n");
 		}
 		else
 		{		// Clear entire edit
@@ -526,7 +526,7 @@ int Edit::shift_end_in(int edit_mode,
 				next->startproject -= cut_length;
 				next->startsource -= cut_length;
 				next->length += cut_length;
-printf("Edit::shift_end_in 2 %d\n", cut_length);
+//printf("Edit::shift_end_in 2 %d\n", cut_length);
 			}
 			else
 			{
@@ -612,7 +612,7 @@ int Edit::shift_end_out(int edit_mode,
 				next->startproject += cut_length;
 				next->startsource += cut_length;
 				next->length -= cut_length;
-printf("Edit::shift_end_out 2 %d\n", cut_length);
+//printf("Edit::shift_end_out 2 %d\n", cut_length);
 			}
 			else
 			{

@@ -2,6 +2,7 @@
 #include "defaults.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "localsession.h"
 #include "mbuttons.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
@@ -292,7 +293,7 @@ void PlaybackEngine::stop_tracking()
 void PlaybackEngine::update_tracking(double position)
 {
 	tracking_lock.lock();
-//printf("PlaybackEngine::update_tracking %f\n", position);
+
 	tracking_position = position;
 
 // Signal that the timer is accurate.
@@ -314,6 +315,8 @@ double PlaybackEngine::get_tracking_position()
 	if(tracking_active == 2)
 	{
 //printf("PlaybackEngine::get_tracking_position %d %d %d\n", command->get_direction(), tracking_position, tracking_timer.get_scaled_difference(command->get_edl()->session->sample_rate));
+
+
 // Don't interpolate when every frame is played.
 		if(command->get_edl()->session->video_every_frame &&
 			render_engines.total &&
@@ -322,17 +325,41 @@ double PlaybackEngine::get_tracking_position()
 			result = tracking_position;
 		}
 		else
+// Interpolate
 		{
+			double loop_start = command->get_edl()->local_session->loop_start;
+			double loop_end = command->get_edl()->local_session->loop_end;
+			double loop_size = loop_end - loop_start;
+
 			if(command->get_direction() == PLAY_FORWARD)
+			{
+// Interpolate
 				result = tracking_position + 
 					command->get_speed() * 
 					tracking_timer.get_difference() /
 					1000.0;
+
+// Compensate for loop
+				if(command->get_edl()->local_session->loop_playback)
+				{
+					while(result > loop_end) result -= loop_size;
+				}
+			}
 			else
+			{
+// Interpolate
 				result = tracking_position - 
 					command->get_speed() * 
 					tracking_timer.get_difference() /
 					1000.0;
+
+// Compensate for loop
+				if(command->get_edl()->local_session->loop_playback)
+				{
+					while(result < loop_start) result += loop_size;
+				}
+			}
+
 		}
 	}
 	else

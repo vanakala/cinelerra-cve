@@ -27,6 +27,7 @@ MeterPanel::MeterPanel(MWindow *mwindow,
 
 MeterPanel::~MeterPanel()
 {
+	meters.remove_all_objects();
 }
 
 int MeterPanel::get_meters_width(int meter_count, int use_meters)

@@ -40,7 +40,11 @@ BC_Bitmap::BC_Bitmap(BC_WindowBase *parent_window, VFrame *frame)
 	read_frame(frame, 0, 0, w, h);
 }
 
-BC_Bitmap::BC_Bitmap(BC_WindowBase *parent_window, int w, int h, int color_model, int use_shm)
+BC_Bitmap::BC_Bitmap(BC_WindowBase *parent_window, 
+	int w, 
+	int h, 
+	int color_model, 
+	int use_shm)
 {
 	initialize(parent_window, 
 		w, 
@@ -81,8 +85,8 @@ int BC_Bitmap::initialize(BC_WindowBase *parent_window,
 
 int BC_Bitmap::match_params(int w, int h, int color_model, int use_shm)
 {
-	if(this->w != w ||
-		this->h != h ||
+	if(this->w /* != */ < w ||
+		this->h /* != */ < h ||
 		this->color_model != color_model ||
 		this->use_shm != use_shm)
 	{
@@ -136,7 +140,6 @@ int BC_Bitmap::allocate_data()
 				shm_info.shmid = shmget(IPC_PRIVATE, 
 					xv_image[0]->data_size * ring_buffers + 4, 
 					IPC_CREAT | 0777);
-//printf("BC_Bitmap %d\n", xv_image[0]->data_size * ring_buffers + 4);
 				if(shm_info.shmid < 0) perror("BC_Bitmap::allocate_data shmget");
 				data[0] = (unsigned char *)shmat(shm_info.shmid, NULL, 0);
 // setting ximage->data stops BadValue
@@ -146,7 +149,6 @@ int BC_Bitmap::allocate_data()
 // Get the real parameters
 				w = xv_image[0]->width;
 				h = xv_image[0]->height;
-//printf("BC_Bitmap::allocate_data %d %d\n", w, h);
 
 // Create remaining X Images
 				for(int i = 1; i < ring_buffers; i++)
@@ -174,7 +176,6 @@ int BC_Bitmap::allocate_data()
 					bits_per_pixel = 0;
 					want_row_pointers = 0;
 				}
-//printf("BC_Bitmap %d %d %d %d\n", color_model, xv_image[0]->data_size, bits_per_pixel, bytes_per_line);
 				break;
 
 			default:
@@ -184,7 +185,7 @@ int BC_Bitmap::allocate_data()
 		    	ximage[0] = XShmCreateImage(top_level->display, 
 					top_level->vis, 
 					get_default_depth(), 
-					ZPixmap, 
+					get_default_depth() == 1 ? XYBitmap : ZPixmap, 
 					(char*)NULL, 
 					&shm_info, 
 					w, 
@@ -211,7 +212,7 @@ int BC_Bitmap::allocate_data()
 					ximage[i] = XShmCreateImage(top_level->display, 
 											top_level->vis, 
 											get_default_depth(), 
-											ZPixmap, 
+											get_default_depth() == 1 ? XYBitmap : ZPixmap, 
 											(char*)data[i], 
 											&shm_info, 
 											w, 
@@ -317,7 +318,7 @@ int BC_Bitmap::delete_data()
 					for(int i = 0; i < ring_buffers; i++)
 					{
 						XDestroyImage(ximage[i]);
-						delete row_data[i];
+						delete [] row_data[i];
 					}
 					XShmDetach(top_level->display, &shm_info);
 
@@ -329,7 +330,7 @@ int BC_Bitmap::delete_data()
 		else
 		{
 			XDestroyImage(ximage[0]);
-			delete row_data[0];
+			delete [] row_data[0];
 		}
 
 // data is automatically freed by XDestroyImage
@@ -470,7 +471,7 @@ int BC_Bitmap::write_drawable(Drawable &pixmap,
 
 // Force the X server into processing all requests.
 // This allows the shared memory to be written to again.
-		if(!dont_wait) XSync(top_level->display, 0);
+		if(!dont_wait) XSync(top_level->display, False);
 	}
     else
 	{

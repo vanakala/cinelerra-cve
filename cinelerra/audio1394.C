@@ -48,8 +48,8 @@ int Audio1394::open_input()
 	frames = 30;
 
 	if(dv_start_grabbing(grabber, 
-			device->in_config->afirewire_in_port, 
-			device->in_config->afirewire_in_channel, 
+			device->in_config->firewire_port, 
+			device->in_config->firewire_channel, 
 			frames))
 	{
 		dv_grabber_delete(grabber);
@@ -58,7 +58,7 @@ int Audio1394::open_input()
 	else
 	{
 		bytes_per_sample = 4;
-		ring_buffer = new unsigned char[2 * frames * 2048 * bytes_per_sample];
+		ring_buffer = new unsigned char[2 * frames * SAMPLES_PER_FRAME * bytes_per_sample];
 	}
 
 	return 0;

@@ -28,7 +28,7 @@
 
 
 Tracking::Tracking(MWindow *mwindow)
- : Thread()
+ : Thread(1, 0, 0)
 {
 	this->gui = mwindow->gui;
 	this->mwindow = mwindow; 
@@ -36,7 +36,6 @@ Tracking::Tracking(MWindow *mwindow)
 	visible = 0;
 	pixel = 0;
 	state = PAUSED;
-	Thread::set_synchronous(1);
 }
 
 Tracking::~Tracking()

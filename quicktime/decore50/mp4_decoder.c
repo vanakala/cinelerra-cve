@@ -175,6 +175,10 @@ void initdecoder (DEC_BUFFERS buffers)
 		display_frame[cc] = (unsigned char *) buffers.mp4_display_buffers + offset;
 		assert(display_frame[cc]);
 	}
+
+
+
+
 }
 
 /***/
@@ -189,9 +193,12 @@ void closedecoder ()
 	free(clp);
 
 	for (cc = 0; cc < 3; cc++) {
-		free(display_frame[cc]);
-		free(edged_ref[cc]);
-		free(edged_for[cc]);
+		if(display_frame[cc]) free(display_frame[cc]);
+		display_frame[cc] = 0;
+		if(edged_ref[cc]) free(edged_ref[cc]);
+		edged_ref[cc] = 0;
+		if(edged_for[cc]) free(edged_for[cc]);
+		edged_for[cc] = 0;
 	}
 
 	***/

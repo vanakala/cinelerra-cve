@@ -1,4 +1,5 @@
 #include "cplayback.h"
+#include "ctimebar.h"
 #include "ctracking.h"
 #include "cwindow.h"
 #include "cwindowgui.h"
@@ -108,9 +109,13 @@ int CTracking::update_scroll(double position)
 void CTracking::update_tracker(double position)
 {
 	int updated_scroll = 0;
-// Update cwindow cursor
+// Update cwindow slider
 	cwindow->gui->lock_window();
 	cwindow->gui->slider->update(position);
+
+// This is going to boost the latency but we need to update the timebar
+	cwindow->gui->timebar->draw_range();
+	cwindow->gui->timebar->flash();
 	cwindow->gui->unlock_window();
 
 // Update mwindow cursor
@@ -136,14 +141,11 @@ void CTracking::update_tracker(double position)
 	}
 	mwindow->gui->unlock_window();
 
-// Plugin GUI's make lock on mwindow->gui here during user interface handlers.
+// Plugin GUI's hold lock on mwindow->gui here during user interface handlers.
 	mwindow->update_plugin_guis();
 
-//printf("CTracking::update_tracker 4\n");
 
 	update_meters((long)(position * mwindow->edl->session->sample_rate));
-
-//printf("CTracking::update_tracker 5\n");
 }
 
 void CTracking::draw()

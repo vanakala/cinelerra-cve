@@ -51,9 +51,13 @@ private:
 	int create_x11_objs();
 
 	VDriverMenu *menu;
-	BC_Title *device_title, *port_title, *channel_title, *output_title;
+	BC_Title *device_title, *port_title, *channel_title, *output_title, *syt_title;
 	VDeviceTextBox *device_text;
-	VDeviceIntBox *firewire_port, *firewire_channel, *firewire_channels;
+	VDeviceIntBox *firewire_port;
+	VDeviceIntBox *firewire_channel;
+	VDeviceIntBox *firewire_channels;
+	VDeviceIntBox *firewire_syt;
+	VDeviceTextBox *firewire_path;
 	VDeviceCheckBox *buz_swap_channels;
 	int driver, mode;
 	int x;

@@ -703,20 +703,17 @@ void BC_WindowBase::draw_vframe(VFrame *frame,
 	CLAMP(src_y, 0, frame->get_h() - 1);
 	if(src_x + src_w > frame->get_w()) src_w = frame->get_w() - src_x;
 	if(src_y + src_h > frame->get_h()) src_h = frame->get_h() - src_y;
-//printf("BC_WindowBase::draw_vframe 1\n");
 
 	if(!temp_bitmap) temp_bitmap = new BC_Bitmap(top_level, 
 		dest_w, 
 		dest_h, 
 		get_color_model(), 
 		1);
-//printf("BC_WindowBase::draw_vframe 2\n");
 
 	temp_bitmap->match_params(dest_w, 
 		dest_h, 
 		get_color_model(), 
 		1);
-//printf("BC_WindowBase::draw_vframe 3 %p %p\n", frame, temp_bitmap);
 
 	temp_bitmap->read_frame(frame, 
 		src_x, 
@@ -727,13 +724,6 @@ void BC_WindowBase::draw_vframe(VFrame *frame,
 		0, 
 		dest_w, 
 		dest_h);
-
-//  printf("BC_WindowBase::draw_vframe %d %d %d %d %d %d\n", dest_x, 
-//  		dest_y,
-//  		dest_w,
-//  		dest_h,
-//  		src_x,
-//  		src_y);
 
 	draw_bitmap(temp_bitmap, 
 		0, 
@@ -746,8 +736,6 @@ void BC_WindowBase::draw_vframe(VFrame *frame,
 		-1,
 		-1,
 		pixmap);
-
-//printf("BC_WindowBase::draw_vframe 5\n");
 }
 
 void BC_WindowBase::draw_tooltip()

@@ -19,6 +19,12 @@ BC_ProgressBar::BC_ProgressBar(int x, int y, int w, long length)
 	for(int i = 0; i < 2; i++) images[i] = 0;
 }
 
+BC_ProgressBar::~BC_ProgressBar()
+{
+    for(int i = 0; i < 2; i++)
+  	    if (images[i]) delete images[i];
+}
+
 int BC_ProgressBar::initialize()
 {
 	set_images();

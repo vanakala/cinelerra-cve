@@ -291,24 +291,60 @@ int mpeg3video_delete_struct(mpeg3video_t *video)
 int mpeg3video_read_frame_backend(mpeg3video_t *video, int skip_bframes)
 {
 	int result = 0;
+	int got_top = 0, got_bottom = 0;
+	int i = 0;
 
-	if(mpeg3bits_eof(video->vstream)) result = 1;
+//printf(__FUNCTION__ " 1\n");
+	do
+	{
+		if(mpeg3bits_eof(video->vstream)) result = 1;
+//printf(__FUNCTION__ " 1.1\n");
 
-	if(!result) result = mpeg3video_get_header(video, 0);
+		if(!result) result = mpeg3video_get_header(video, 0);
+//printf(__FUNCTION__ " 1\n");
 
-//printf("frame type %d\n", video->pict_type);
+
 /* skip_bframes is the number of bframes we can skip successfully. */
 /* This is in case a skipped B-frame is repeated and the second repeat happens */
 /* to be a B frame we need. */
-	video->skip_bframes = skip_bframes;
-//printf(__FUNCTION__ " %f\n", mpeg3demux_video_pts(video->vstream->demuxer));
+		video->skip_bframes = skip_bframes;
+//printf(__FUNCTION__ " 1\n");
 
-	if(!result)
-		result = mpeg3video_getpicture(video, video->framenum);
+		if(!result)
+			result = mpeg3video_getpicture(video, video->framenum);
+
+//printf(__FUNCTION__ " 1\n");
+
+		if(video->pict_struct == TOP_FIELD)
+		{
+			got_top == 1;
+		}
+		else
+		if(video->pict_struct == BOTTOM_FIELD)
+		{
+			got_bottom = 1;
+			video->secondfield = 0;
+		}
+		else
+		if(video->pict_struct == FRAME_PICTURE)
+		{
+			got_top = got_bottom = 1;
+		}
+//printf(__FUNCTION__ " 2\n");
+
+		i++;
+	}while(i < 2 && 
+		!got_bottom && 
+		video->framenum >= 0);
+// The way they do field based encoding, 
+// the I frames have the top field but both the I frame and
+// subsequent P frame make the keyframe.
+
+//printf(__FUNCTION__ " 3 %d %d\n", video->pict_type, video->pict_struct);
 
 #ifdef HAVE_MMX
-	if(video->have_mmx)
-		__asm__ __volatile__ ("emms");
+		if(video->have_mmx)
+			__asm__ __volatile__ ("emms");
 #endif
 
 	if(!result)
@@ -316,6 +352,8 @@ int mpeg3video_read_frame_backend(mpeg3video_t *video, int skip_bframes)
 		video->last_number = video->framenum;
 		video->framenum++;
 	}
+//printf(__FUNCTION__ " 100\n");
+
 	return result;
 }
 
@@ -552,7 +590,6 @@ int mpeg3video_read_frame(mpeg3video_t *video,
 	video->output_rows = output_rows;
 	video->color_model = color_model;
 
-//printf("mpeg3video_read_frame 1\n");
 /* Get scaling tables */
 	if(video->out_w != out_w || video->out_h != out_h ||
 		video->in_w != in_w || video->in_h != in_h ||
@@ -589,7 +626,6 @@ int mpeg3video_read_frame(mpeg3video_t *video,
 //printf("mpeg3video_read_frame 5\n");
 	if(video->output_src) mpeg3video_present_frame(video);
 
-//printf("mpeg3video_read_frame 6\n");
 	video->percentage_seek = -1;
 	return result;
 }
@@ -633,12 +669,15 @@ int mpeg3video_read_yuvframe_ptr(mpeg3video_t *video,
 					char **v_output)
 {
 	int result = 0;
+//printf("mpeg3video_read_yuvframe_ptr 1\n");
 
 	video->want_yvu = 1;
 
 	if(!result) result = mpeg3video_seek(video);
+//printf("mpeg3video_read_yuvframe_ptr 10\n");
 
 	if(!result) result = mpeg3video_read_frame_backend(video, 0);
+//printf("mpeg3video_read_yuvframe_ptr 20 %p\n", video->output_src);
 
 
 	*y_output = video->output_src[0];
@@ -648,6 +687,7 @@ int mpeg3video_read_yuvframe_ptr(mpeg3video_t *video,
 	video->want_yvu = 0;
 	video->percentage_seek = -1;
 
+//printf("mpeg3video_read_yuvframe_ptr 100\n");
 
 	return result;
 }
@@ -667,3 +707,24 @@ int mpeg3video_colormodel(mpeg3video_t *video)
 
 	return MPEG3_YUV420P;
 }
+
+void mpeg3video_dump(mpeg3video_t *video)
+{
+	printf("mpeg3video_dump 1\n");
+	printf(" *** sequence extension 1\n");
+	printf("prog_seq=%d\n", video->prog_seq);
+	printf(" *** picture header 1\n");
+	printf("pict_type=%d field_sequence=%d\n", video->pict_type, video->field_sequence);
+	printf(" *** picture coding extension 1\n");
+	printf("field_sequence=%d repeatfirst=%d prog_frame=%d pict_struct=%d\n", 
+		video->field_sequence,
+		video->repeatfirst, 
+		video->prog_frame,
+		video->pict_struct);
+}
+
+
+
+
+
+

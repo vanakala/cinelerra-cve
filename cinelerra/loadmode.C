@@ -41,6 +41,7 @@ LoadMode::~LoadMode()
 		delete load_modes.values[i];
 }
 
+
 char* LoadMode::mode_to_text()
 {
 	for(int i = 0; i < load_modes.total; i++)

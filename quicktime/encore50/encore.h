@@ -49,6 +49,10 @@ int encore(
 #define	ENC_MEMORY		1
 #define ENC_BAD_FORMAT	2
 
+
+// Set global variables for an encoding session
+void encore_set_global(ENC_PARAM *param);
+
 #ifdef __cplusplus
 }
 #endif 

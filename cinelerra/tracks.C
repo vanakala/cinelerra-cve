@@ -124,10 +124,10 @@ Tracks& Tracks::operator=(Tracks &tracks)
 		switch(current->data_type)
 		{
 			case TRACK_AUDIO: 
-				new_track = add_audio_track(); 
+				new_track = add_audio_track(0, 0); 
 				break;
 			case TRACK_VIDEO: 
-				new_track = add_video_track(); 
+				new_track = add_video_track(0, 0); 
 				break;
 		}
 		*new_track = *current;
@@ -149,11 +149,11 @@ int Tracks::load(FileXML *xml, int &track_offset, unsigned long load_flags)
 	{
 		if(!strcmp(string, "VIDEO"))
 		{
-			add_video_track();
+			add_video_track(0, 0);
 		}
 		else
 		{
-			add_audio_track();    // default to audio
+			add_audio_track(0, 0);    // default to audio
 		}
 		track = last;
 	}
@@ -169,33 +169,48 @@ int Tracks::load(FileXML *xml, int &track_offset, unsigned long load_flags)
 	return 0;
 }
 
-Track* Tracks::add_audio_track(int to_end)
+Track* Tracks::add_audio_track(int above, Track *dst_track)
 {
 	int pixel;
 	ATrack* new_track = new ATrack(edl, this);
-	Track* current;
-
-	if(to_end)
+	if(!dst_track)
 	{
-		current = last;
-		insert_after(current, (Track*)new_track);
+		dst_track = (above ? first : last);
+	}
+
+	if(above)
+	{
+		insert_before(dst_track, (Track*)new_track);
 	}
 	else
 	{
-		current = first;
-		insert_before(current, (Track*)new_track);
+		insert_after(dst_track, (Track*)new_track);
+// Shift effects referenced below the destination track
 	}
+
+// Shift effects referenced below the new track
+	for(Track *track = last; 
+		track && track != new_track; 
+		track = track->previous)
+	{
+		change_modules(number_of(track) - 1, number_of(track), 0);
+	}
+
+
 	new_track->create_objects();
 	new_track->set_default_title();
 
 	int current_pan = 0;
-	for(current = first; 
+	for(Track *current = first; 
 		current != (Track*)new_track; 
 		current = NEXT)
 	{
 		if(current->data_type == TRACK_AUDIO) current_pan++;
 		if(current_pan >= edl->session->audio_channels) current_pan = 0;
 	}
+
+
+
 	PanAuto* pan_auto = (PanAuto*)new_track->automation->pan_autos->default_auto;
 	pan_auto->values[current_pan] = 1.0;
 
@@ -209,25 +224,36 @@ Track* Tracks::add_audio_track(int to_end)
 	return new_track;
 }
 
-Track* Tracks::add_video_track(int to_end)
+Track* Tracks::add_video_track(int above, Track *dst_track)
 {
 	int pixel;
 	VTrack* new_track = new VTrack(edl, this);
-	Track* current;
+	if(!dst_track)
+		dst_track = (above ? first : last);
 
-	if(to_end)
+	if(above)
 	{
-		current = last;
-		insert_after(current, (Track*)new_track);
+		insert_before(dst_track, (Track*)new_track);
 	}
 	else
 	{
-		current = first;
-		insert_before(current, (Track*)new_track);
+		insert_after(dst_track, (Track*)new_track);
 	}
+
+
+
+// Shift effects referenced below the new track
+	for(Track *track = last; 
+		track && track != new_track; 
+		track = track->previous)
+	{
+		change_modules(number_of(track) - 1, number_of(track), 0);
+	}
+
+
+
 	new_track->create_objects();
 	new_track->set_default_title();
-//printf("Tracks::add_video_track 2\n");
 	return new_track;
 }
 
@@ -240,7 +266,16 @@ int Tracks::delete_track()
 
 int Tracks::delete_track(Track *track)
 {
+	int old_location = number_of(track);
+// Shift effects referenced below the deleted track
+	for(Track *current = last; 
+		current && current != track; 
+		current = PREVIOUS)
+	{
+		change_modules(number_of(current), number_of(current) - 1, 0);
+	}
 	if(track) delete track;
+
 	return 0;
 }
 

@@ -39,6 +39,10 @@ public:
 	virtual int start_playback() { return 1; };
 	virtual int stop_playback() { return 1; };
 	virtual BC_Bitmap* get_bitmap() { return 0; };
+// Most Linux video drivers don't work.
+// Called by KeepaliveThread when the device appears to be stuck.
+// Should restart the device if that's what it takes to get it to work.
+	virtual void goose_input() {};
 
 	VideoDevice *device;
 };

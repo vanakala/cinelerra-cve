@@ -9,4 +9,4 @@ libmpeg3_la_SOURCES = bitstream.c libmpeg3.c mpeg3atrack.c mpeg3css.c \
 SUBDIRS = audio video 
 
 pkgincludedir=$(includedir)/mpeg3
-pkginclude_HEADERS=mpeg3/libmpeg3.h mpeg3/mpeg3private.h
+pkginclude_HEADERS=libmpeg3.h mpeg3private.h

@@ -83,6 +83,13 @@ Int get_fcode (Int sr);
 int PutVoVolHeader(int vol_width, int vol_height, int time_increment_resolution, float frame_rate);
 int YUV2YUV (int x_dim, int y_dim, void *yuv, void *y_out, void *u_out, void *v_out);
 
+
+// Set global variables for an encoding session
+void encore_set_global(ENC_PARAM *param)
+{
+}
+
+
 int encore(unsigned long handle, 
 	unsigned long enc_opt, 
 	void *param1, 

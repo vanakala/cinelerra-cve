@@ -106,6 +106,7 @@ public:
 	int button_press_event();
 	int button_release_event();
 	int cursor_motion_event();
+	int repeat_event(long duration);
 
 // Synchronize label, in/out, presentation display with master EDL
 	void update(int do_range = 1, int do_others = 1);

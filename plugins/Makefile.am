@@ -1,4 +1,5 @@
-SUBDIRS= colors fourier parametric bandslide bandwipe blur brightness burn aging cdripper \
+SUBDIRS= fonts libcolors libfourier libeffecttv \
+				 parametric bandslide bandwipe blur brightness burn aging cdripper \
 				 chromakey colorbalance compressor crossfade deinterlace delayaudio delayvideo \
 				 denoise denoisefft denoisevideo despike dissolve dot fieldframe flip framefield \
 				 freeverb freezeframe gain holo huesaturation interpolateall invertaudio invertvideo \
@@ -16,5 +17,3 @@ bootstrap_SOURCES=bootstrap.c
 install-exec-hook:
 	./install_plugins $(DESTDIR)$(plugindir) 
 
-install-data-hook:
-	cp -af fonts $(DESTDIR)$(plugindir)

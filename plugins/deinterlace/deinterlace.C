@@ -189,24 +189,25 @@ int DeInterlaceMain::is_realtime() { return 1; }
 	} \
 }
 
-#define DEINTERLACE_SWAP_MACRO(type, components) \
+#define DEINTERLACE_SWAP_MACRO(type, components, dominance) \
 { \
 	int w = input->get_w(); \
 	int h = input->get_h(); \
  \
-	for(int i = 0; i < h - 1; i++) \
+	for(int i = dominance; i < h - 1; i += 2) \
 	{ \
 		type *input_row1 = (type*)input->get_rows()[i]; \
 		type *input_row2 = (type*)input->get_rows()[i + 1]; \
 		type *output_row1 = (type*)output->get_rows()[i]; \
 		type *output_row2 = (type*)output->get_rows()[i + 1]; \
-		type temp; \
+		type temp1, temp2; \
  \
 		for(int j = 0; j < w * components; j++) \
 		{ \
-			temp = input_row1[j]; \
-			output_row1[j] = input_row2[j]; \
-			output_row2[j] = temp; \
+			temp1 = input_row1[j]; \
+			temp2 = input_row2[j]; \
+			output_row1[j] = temp2; \
+			output_row2[j] = temp1; \
 		} \
 	} \
 }
@@ -281,25 +282,25 @@ void DeInterlaceMain::deinterlace_avg(VFrame *input, VFrame *output)
 	}
 }
 
-void DeInterlaceMain::deinterlace_swap(VFrame *input, VFrame *output)
+void DeInterlaceMain::deinterlace_swap(VFrame *input, VFrame *output, int dominance)
 {
 	switch(input->get_color_model())
 	{
 		case BC_RGB888:
 		case BC_YUV888:
-			DEINTERLACE_SWAP_MACRO(unsigned char, 3);
+			DEINTERLACE_SWAP_MACRO(unsigned char, 3, dominance);
 			break;
 		case BC_RGBA8888:
 		case BC_YUVA8888:
-			DEINTERLACE_SWAP_MACRO(unsigned char, 4);
+			DEINTERLACE_SWAP_MACRO(unsigned char, 4, dominance);
 			break;
 		case BC_RGB161616:
 		case BC_YUV161616:
-			DEINTERLACE_SWAP_MACRO(uint16_t, 3);
+			DEINTERLACE_SWAP_MACRO(uint16_t, 3, dominance);
 			break;
 		case BC_RGBA16161616:
 		case BC_YUVA16161616:
-			DEINTERLACE_SWAP_MACRO(uint16_t, 4);
+			DEINTERLACE_SWAP_MACRO(uint16_t, 4, dominance);
 			break;
 	}
 }
@@ -335,8 +336,11 @@ int DeInterlaceMain::process_realtime(VFrame *input, VFrame *output)
 		case DEINTERLACE_AVG_ODD:
 			deinterlace_avg_even(input, output, 1);
 			break;
-		case DEINTERLACE_SWAP:
-			deinterlace_swap(input, output);
+		case DEINTERLACE_SWAP_ODD:
+			deinterlace_swap(input, output, 1);
+			break;
+		case DEINTERLACE_SWAP_EVEN:
+			deinterlace_swap(input, output, 0);
 			break;
 	}
 	send_render_gui(&changed_rows);

@@ -29,6 +29,7 @@ void EditPopup::create_objects()
 	add_item(new EditMoveTrackUp(mwindow, this));
 	add_item(new EditMoveTrackDown(mwindow, this));
 	add_item(new EditPopupDeleteTrack(mwindow, this));
+	add_item(new EditPopupAddTrack(mwindow, this));
 	resize_option = 0;
 }
 
@@ -175,3 +176,38 @@ int EditPopupDeleteTrack::handle_event()
 	mwindow->delete_track(popup->track);
 	return 1;
 }
+
+
+
+
+
+
+EditPopupAddTrack::EditPopupAddTrack(MWindow *mwindow, EditPopup *popup)
+ : BC_MenuItem("Add track")
+{
+	this->mwindow = mwindow;
+	this->popup = popup;
+}
+
+int EditPopupAddTrack::handle_event()
+{
+	if(popup->track->data_type == TRACK_AUDIO)
+		mwindow->add_audio_track_entry(popup->track);
+	else
+		mwindow->add_video_track_entry(popup->track);
+	return 1;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+

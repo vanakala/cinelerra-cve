@@ -49,10 +49,10 @@
 
 
 
-void MWindow::add_audio_track_entry()
+void MWindow::add_audio_track_entry(Track *dst)
 {
 	undo->update_undo_before("add track", LOAD_ALL);
-	add_audio_track();
+	add_audio_track(0, dst);
 	save_backup();
 	undo->update_undo_after();
 
@@ -69,10 +69,10 @@ void MWindow::add_audio_track_entry()
 							1);
 }
 
-void MWindow::add_video_track_entry()
+void MWindow::add_video_track_entry(Track *dst)
 {
 	undo->update_undo_before("add track", LOAD_ALL);
-	add_video_track();
+	add_video_track(1, dst);
 	undo->update_undo_after();
 
 	restart_brender();
@@ -90,17 +90,17 @@ void MWindow::add_video_track_entry()
 }
 
 
-int MWindow::add_audio_track()
+int MWindow::add_audio_track(int above, Track *dst)
 {
-	edl->tracks->add_audio_track(1);
+	edl->tracks->add_audio_track(above, dst);
 	edl->tracks->update_y_pixels(theme);
 	save_backup();
 	return 0;
 }
 
-int MWindow::add_video_track()
+int MWindow::add_video_track(int above, Track *dst)
 {
-	edl->tracks->add_video_track(0);
+	edl->tracks->add_video_track(above, dst);
 	edl->tracks->update_y_pixels(theme);
 	save_backup();
 	return 0;
@@ -686,17 +686,23 @@ int MWindow::modify_pluginhandles()
 // Common to edithandles and plugin handles
 void MWindow::finish_modify_handles()
 {
-
+	int edit_mode = edl->session->edit_handle_mode[session->drag_button];
 
 //printf("TrackCanvas::end_handle_selection 1\n");
-	if(session->drag_handle == 1) 
+	if((session->drag_handle == 1 && edit_mode != MOVE_NO_EDITS) ||
+		(session->drag_handle == 0 && edit_mode == MOVE_ONE_EDIT))
+	{
 		edl->local_session->selectionstart = 
 			edl->local_session->selectionend = 
 			session->drag_position;
+	}
 	else
+	if(edit_mode != MOVE_NO_EDITS)
+	{
 		edl->local_session->selectionstart = 
 			edl->local_session->selectionend = 
 			session->drag_start;
+	}
 
 //printf("TrackCanvas::end_handle_selection 1\n");
 	if(edl->local_session->selectionstart < 0) 
@@ -1212,6 +1218,9 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 	{
 		edl->save_defaults(defaults);
 		hide_plugins();
+// this has to be cleaned because patches[x]->track points nowhere 
+// after next call
+ 		patches->delete_all_patches();    
 		delete edl;
 		edl = new EDL;
 		edl->create_objects();
@@ -1260,14 +1269,14 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 			{
 				if(current->data_type == TRACK_VIDEO)
 				{
-					edl->tracks->add_video_track(1);
+					edl->tracks->add_video_track(0, 0);
 					if(current->draw) edl->tracks->last->draw = 1;
 					destination_tracks.append(edl->tracks->last);
 				}
 				else
 				if(current->data_type == TRACK_AUDIO)
 				{
-					edl->tracks->add_audio_track(1);
+					edl->tracks->add_audio_track(0, 0);
 					destination_tracks.append(edl->tracks->last);
 				}
 				edl->session->highlighted_track = edl->tracks->total() - 1;
@@ -1317,7 +1326,6 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 
 
 
-//printf("MWindow::paste_edls 2\n");
 // Iterate through the edls
 	for(int i = 0; i < new_edls->total; i++)
 	{
@@ -1325,6 +1333,10 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 		double edl_length = new_edl->local_session->clipboard_length ?
 			new_edl->local_session->clipboard_length :
 			new_edl->tracks->total_length();
+// printf("MWindow::paste_edls 2\n");
+// new_edl->dump();
+
+
 
 // Resample EDL to master rates
 		new_edl->resample(new_edl->session->sample_rate, 

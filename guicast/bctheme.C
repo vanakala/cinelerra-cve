@@ -10,14 +10,68 @@
 
 BC_Theme::BC_Theme()
 {
+	char *path_env = getenv("PATH");
+	char default_path[BCTEXTLEN];
+	char *path_ptr = path_env;
+
+// Get location of executable
 	FILE *fd = fopen("/proc/self/cmdline", "r");
-	if(fd)
+	if(!fd)
 	{
-		fread(path, 1, BCTEXTLEN, fd);
-		fclose(fd);
+		perror("BC_Theme::BC_Theme: can't open /proc/self/cmdline.\n");
+		return;
 	}
 	else
-		perror("BC_Theme::BC_Theme: can't open /proc/self/cmdline.\n");
+	{
+		fread(default_path, 1, BCTEXTLEN, fd);
+		strcpy(path, default_path);
+		fclose(fd);
+	}
+
+	int done = 0;
+	fd = 0;
+	do
+	{
+		fd = fopen(path, "r");
+
+
+		if(!fd)
+		{
+// Get next entry out of path_env
+			while(*path_ptr)
+			{
+				if(*path_ptr != ':') 
+					break;
+				else
+					path_ptr++;
+			}
+
+			if(!*path_ptr) break;
+
+			char *new_ptr = path;
+			while(*path_ptr)
+			{
+				if(*path_ptr == ':')
+					break;
+				else
+					*new_ptr++ = *path_ptr++;
+			}
+
+			*new_ptr = 0;
+			if(new_ptr - path > 0 && *(new_ptr - 1) != '/')
+			{
+				*new_ptr++ = '/';
+				*new_ptr = 0;
+			}
+			strcat(path, default_path);
+		}
+		else
+		{
+			fclose(fd);
+			done = 1;
+		}
+	}while(!done);
+
 
 	data_buffer = 0;
 	contents_buffer = 0;

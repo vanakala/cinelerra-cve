@@ -60,6 +60,15 @@ public:
 	EditPopup *popup;
 };
 
+class EditPopupAddTrack : public BC_MenuItem
+{
+public:
+	EditPopupAddTrack(MWindow *mwindow, EditPopup *popup);
+	int handle_event();
+	MWindow *mwindow;
+	EditPopup *popup;
+};
+
 
 class EditAttachEffect : public BC_MenuItem
 {

@@ -7,7 +7,8 @@ class TitleThread;
 class TitleWindow;
 class TitleInterlace;
 
-#include "../colors/colorpicker.h"
+#include <colorpicker.h>
+
 #include "filexml.h"
 #include "mutex.h"
 #include "title.h"
@@ -32,6 +33,7 @@ class TitleFontTumble;
 class TitleItalic;
 class TitleBold;
 class TitleSize;
+class TitleEncoding;
 class TitleColorButton;
 class TitleDropShadow;
 class TitleMotion;
@@ -81,7 +83,9 @@ public:
 	TitleItalic *italic;
 	TitleBold *bold;
 	BC_Title *size_title;
+	BC_Title *encoding_title;
 	TitleSize *size;
+	TitleEncoding *encoding;
 	TitleColorButton *color_button;
 	TitleColorThread *color_thread;
 	BC_Title *motion_title;
@@ -107,6 +111,7 @@ public:
 // Color preview
 	int color_x, color_y;
 	ArrayList<BC_ListBoxItem*> sizes;
+	ArrayList<BC_ListBoxItem*> encodings;
 	ArrayList<BC_ListBoxItem*> paths;
 	ArrayList<BC_ListBoxItem*> fonts;
 };
@@ -147,6 +152,15 @@ public:
 	~TitleSize();
 	int handle_event();
 	void update(int size);
+	TitleMain *client;
+	TitleWindow *window;
+};
+class TitleEncoding : public BC_PopupTextBox
+{
+public:
+	TitleEncoding(TitleMain *client, TitleWindow *window, int x, int y);
+	~TitleEncoding();
+	int handle_event();
 	TitleMain *client;
 	TitleWindow *window;
 };

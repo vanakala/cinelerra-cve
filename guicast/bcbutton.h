@@ -59,6 +59,7 @@ class BC_OKButton : public BC_Button
 public:
 	BC_OKButton(int x, int y);
 	BC_OKButton(BC_WindowBase *parent_window);
+	virtual int resize_event(int w, int h);
 	virtual int handle_event();
 	virtual int keypress_event();
 };
@@ -68,6 +69,7 @@ class BC_CancelButton : public BC_Button
 public:
 	BC_CancelButton(int x, int y);
 	BC_CancelButton(BC_WindowBase *parent_window);
+	virtual int resize_event(int w, int h);
 	virtual int handle_event();
 	virtual int keypress_event();
 };

@@ -243,6 +243,7 @@ void quicktime_register_internal_acodec()
 
 	quicktime_register_acodec(QUICKTIME_VORBIS, quicktime_init_codec_vorbis);
 	quicktime_register_acodec(QUICKTIME_MP3, quicktime_init_codec_mp3);
+	quicktime_register_acodec(QUICKTIME_WMX2, quicktime_init_codec_wmx2);
 }
 
 #include "raw.h"
@@ -255,6 +256,7 @@ void quicktime_register_internal_vcodec()
 	quicktime_register_vcodec(QUICKTIME_RAW, quicktime_init_codec_raw);
 
 	quicktime_register_vcodec(QUICKTIME_DIVX, quicktime_init_codec_divx); 
+	quicktime_register_vcodec(QUICKTIME_HV60, quicktime_init_codec_hv60); 
 	quicktime_register_vcodec(QUICKTIME_DIV3, quicktime_init_codec_div3); 
 	quicktime_register_vcodec(QUICKTIME_DIV4, quicktime_init_codec_div4); 
 	quicktime_register_vcodec(QUICKTIME_DV, quicktime_init_codec_dv); 

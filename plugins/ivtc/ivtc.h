@@ -33,21 +33,13 @@ public:
 // required for all realtime plugins
 	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
 	int is_realtime();
-	char* plugin_title();
-	int show_gui();
-	void raise_window();
-	int set_string();
-	void update_gui();
-	int load_configuration();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	
+	PLUGIN_CLASS_MEMBERS(IVTCConfig, IVTCThread)
+	void update_gui();
+
 	int load_defaults();
 	int save_defaults();
-	VFrame* new_picon();
-
-// a thread for the GUI
-	IVTCThread *thread;
 
 	void compare_fields(VFrame *frame1, 
 		VFrame *frame2, 
@@ -60,10 +52,8 @@ public:
 // New field detected in state 2
 	int new_field;
 	int64_t average, total_average;
-	IVTCConfig config;
 	VFrame *temp_frame[2];
 
-	Defaults *defaults;
 	IVTCEngine **engine;
 };
 

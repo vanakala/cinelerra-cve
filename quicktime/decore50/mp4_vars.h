@@ -177,15 +177,15 @@ MP4_TABLES;
 **/
 
 extern unsigned char	*edged_ref[3],
-											*edged_for[3],
-											*frame_ref[3],
-											*frame_for[3],
-											*display_frame[3];
+						*edged_for[3],
+						*frame_ref[3],
+						*frame_for[3],
+						*display_frame[3];
 
 extern MP4_STATE	 *mp4_state;
 extern MP4_TABLES	 *mp4_tables;
 extern MP4_STREAM	 *ld;
-
+extern int           have_mmx;
 
 /** 
  *	prototypes of global functions

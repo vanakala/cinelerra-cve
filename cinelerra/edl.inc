@@ -3,7 +3,7 @@
 
 class EDL;
 
-// Load flags
+// Load flags for undo
 #define LOAD_ALL        0xffffffff
 #define LOAD_EDITS      0x00000001
 #define LOAD_AUTOMATION 0x00000002

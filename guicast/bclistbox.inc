@@ -16,6 +16,7 @@
 #define LISTBOX_MARGIN   4
 #define LISTBOX_BORDER   2
 #define ICON_MARGIN      1
+#define LISTBOX_INDENT   10
 
 class BC_ListBoxItem;
 class BC_ListBox;

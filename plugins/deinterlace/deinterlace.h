@@ -20,7 +20,8 @@ enum
 	DEINTERLACE_EVEN,
 	DEINTERLACE_ODD,
 	DEINTERLACE_AVG,
-	DEINTERLACE_SWAP,
+	DEINTERLACE_SWAP_ODD,
+	DEINTERLACE_SWAP_EVEN,
 	DEINTERLACE_AVG_ODD,
 	DEINTERLACE_AVG_EVEN
 };
@@ -67,7 +68,7 @@ public:
 	void deinterlace_even(VFrame *input, VFrame *output, int dominance);
 	void deinterlace_avg_even(VFrame *input, VFrame *output, int dominance);
 	void deinterlace_avg(VFrame *input, VFrame *output);
-	void deinterlace_swap(VFrame *input, VFrame *output);
+	void deinterlace_swap(VFrame *input, VFrame *output, int dominance);
 
 	int changed_rows;
 	VFrame *temp;

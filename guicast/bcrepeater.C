@@ -13,6 +13,7 @@ BC_Repeater::BC_Repeater(BC_WindowBase *top_level, long delay)
 	pause_lock.lock();
 	startup_lock.lock();
 	start();
+// This is important.  It doesn't unblock until the thread is running.
 	startup_lock.lock();
 	startup_lock.unlock();
 }

@@ -68,10 +68,12 @@ public:
 		int value);
 	void translate_camera(float offset_x, float offset_y);
 	void translate_projector(float offset_x, float offset_y);
-	int total_of(int type);
+		int total_of(int type);
 // add a track
-	Track* add_audio_track(int to_end = 1);
-	Track* add_video_track(int to_end = 1);
+	Track* add_audio_track(int above, Track *dst_track);
+	Track* add_video_track(int above, Track *dst_track);
+//	Track* add_audio_track(int to_end = 1);
+//	Track* add_video_track(int to_end = 1);
 	int delete_track();     // delete last track
 	int delete_track(Track* track);        // delete any track
 
@@ -192,8 +194,8 @@ public:
 
 // ================================== accounting
 
-	int handles, titles;               // show handles or titles
-	int show_output;          // what type of video to draw
+	int handles, titles;     // show handles or titles
+	int show_output;         // what type of video to draw
 	AutoConf auto_conf;      // which autos are visible
 	int overlays_visible;
 	double total_playable_length();     // Longest track.

@@ -2,34 +2,8 @@
 #include "ivtcwindow.h"
 
 
-IVTCThread::IVTCThread(IVTCMain *client)
- : Thread()
-{
-	this->client = client;
-	set_synchronous(0);
-	gui_started.lock();
-	completion.lock();
-}
 
-IVTCThread::~IVTCThread()
-{
-// Window always deleted here
-	delete window;
-}
-	
-void IVTCThread::run()
-{
-	BC_DisplayInfo info;
-	window = new IVTCWindow(client, 
-		info.get_abs_cursor_x() - 105, 
-		info.get_abs_cursor_y() - 100);
-	window->create_objects();
-	gui_started.unlock();
-	int result = window->run_window();
-	completion.unlock();
-// Last command executed in thread
-	if(result) client->client_side_close();
-}
+PLUGIN_THREAD_OBJECT(IVTCMain, IVTCThread, IVTCWindow)
 
 
 
@@ -94,12 +68,7 @@ int IVTCWindow::create_objects()
 	return 0;
 }
 
-int IVTCWindow::close_event()
-{
-// Set result to 1 to indicate a client side close
-	set_done(1);
-	return 1;
-}
+WINDOW_CLOSE_EVENT(IVTCWindow)
 
 IVTCOffset::IVTCOffset(IVTCMain *client, int x, int y)
  : BC_TextBox(x, 

@@ -47,7 +47,7 @@ StringFile::StringFile(char *filename)
 
 StringFile::~StringFile()
 {
-	delete string;
+	delete [] string;
 }
 
 int StringFile::write_to_file(char *filename)
@@ -70,7 +70,7 @@ int StringFile::read_from_string(char *string)
 {
 	int i;
 	
-	delete this->string;
+	delete [] this->string;
 	length = strlen(string);
 	available = length;
 	this->string = new char[length + 5];

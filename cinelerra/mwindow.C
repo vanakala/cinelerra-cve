@@ -1,6 +1,7 @@
 #include "assets.h"
 #include "awindowgui.h"
 #include "awindow.h"
+#include "bcdisplayinfo.h"
 #include "brender.h"
 #include "cache.h"
 #include "channel.h"
@@ -43,6 +44,7 @@
 #include "recordlabel.h"
 #include "render.h"
 #include "samplescroll.h"
+#include "splashgui.h"
 #include "statusbar.h"
 #include "theme.h"
 #include "threadloader.h"
@@ -53,6 +55,7 @@
 #include "trackscroll.h"
 #include "tracks.h"
 #include "transportque.h"
+#include "vframe.h"
 #include "videodevice.inc"
 #include "videowindow.h"
 #include "vplayback.h"
@@ -110,6 +113,7 @@ MWindow::MWindow()
 	plugin_gui_lock = new Mutex;
 	brender_lock = new Mutex;
 	brender = 0;
+	session = 0;
 }
 
 MWindow::~MWindow()
@@ -268,6 +272,10 @@ void MWindow::init_plugins(Preferences *preferences,
 	ArrayList<PluginServer*>* &plugindb)
 {
 	plugindb = new ArrayList<PluginServer*>;
+
+
+
+
 
 	init_plugin_path(preferences,
 		plugindb,
@@ -723,6 +731,7 @@ int MWindow::load_filenames(ArrayList<char*> *filenames, int load_mode)
 					asset_to_edl(new_edl, new_asset);
 //printf("load_filenames 1.2\n");
 					new_edls.append(new_edl);
+					delete new_asset;
 				}
 				else
 //printf("load_filenames 1.3\n");
@@ -822,6 +831,7 @@ int MWindow::load_filenames(ArrayList<char*> *filenames, int load_mode)
 //printf("MWindow::load_filenames 1 %d %d\n", new_asset->video_length, new_asset->audio_length);
 //new_edl->dump();
 						new_edls.append(new_edl);
+						delete new_asset;
 					}
 					else
 					{
@@ -939,6 +949,8 @@ void MWindow::create_objects(int want_gui, int want_new)
 
 	edl = 0;
 
+	show_splash();
+
 	init_menus();
 //printf("MWindow::create_objects 1\n");
 	init_defaults(defaults);
@@ -1004,10 +1016,28 @@ void MWindow::create_objects(int want_gui, int want_new)
 	gui->raise_window();
 //printf("MWindow::create_objects 1\n");
 	gui->show_window();
-//printf("MWindow::create_objects 1\n");
-	gui->flush();
+
+	hide_splash();
 //printf("MWindow::create_objects 2\n");
 }
+
+
+void MWindow::show_splash()
+{
+#include "data/heroine_logo10_png.h"
+	VFrame *frame = new VFrame(heroine_logo10_png);
+	BC_DisplayInfo display_info;
+	splash_window = new SplashGUI(frame, 
+		display_info.get_root_w() / 2 - frame->get_w() / 2,
+		display_info.get_root_h() / 2 - frame->get_h() / 2);
+	splash_window->create_objects();
+}
+
+void MWindow::hide_splash()
+{
+	delete splash_window;
+}
+
 
 void MWindow::start()
 {
@@ -1528,6 +1558,11 @@ void MWindow::remove_assets_from_project(int push_undo)
 		audio_cache->delete_entry(session->drag_assets->values[i]);
 		video_cache->delete_entry(session->drag_assets->values[i]);
 	}
+
+printf("MWindow::remove_assets_from_project 1\n");
+video_cache->dump();
+audio_cache->dump();
+printf("MWindow::remove_assets_from_project 100\n");
 
 // Remove from VWindow.
 	for(int i = 0; i < session->drag_clips->total; i++)

@@ -4,7 +4,7 @@
 #include "filexml.h"
 #include "guicast.h"
 #include "picon_png.h"
-#include "../colors/plugincolors.h"
+#include <plugincolors.h>
 #include "pluginvclient.h"
 #include "vframe.h"
 

@@ -5,7 +5,7 @@
 package=hvirtual
 export DH_COMPAT=4
 
-CFLAGS=-ffast-math -O3 -mmmx 
+CFLAGS=-ffast-math -O3 -mmmx -g
 CXXFLAGS=$(CFLAGS) -fno-check-new
 
 include /usr/share/dpatch/dpatch.make
@@ -13,7 +13,7 @@ include /usr/share/dpatch/dpatch.make
 config.status: configure 
 	$(checkdir)
 	CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" \
-					./configure --prefix=/usr --without-pic
+					./configure --prefix=/usr --enable-mmx --enable-x86
 	
 build: build-stamp
 build-stamp: config.status patch-stamp
@@ -24,7 +24,7 @@ build-stamp: config.status patch-stamp
 	docbook-to-man debian/mplexlo.sgml > debian/mplexlo.1
 	touch build-stamp
 
-clean: unpatch
+clean: unpatch 
 	$(checkdir)
 	-$(MAKE) -i distclean
 	dh_clean -a
@@ -46,8 +46,9 @@ binary-arch: checkroot build-stamp
 
 	dh_fixperms -a
 	dh_compress -a
-	dh_strip -a
-	strip -x -s -R .comment -R .note debian/cinelerra/usr/lib/cinelerra/*.plugin
+	# Since Cinelerra is far from stable, I prefer leaving the debug info
+#	dh_strip -a
+#	strip -x -s -R .comment -R .note debian/cinelerra/usr/lib/cinelerra/*.plugin
 	plugins/bootstrap debian/cinelerra/usr/lib/cinelerra/defaulttheme.plugin plugins/defaulttheme/data/*.png
 	plugins/bootstrap debian/cinelerra/usr/lib/cinelerra/microtheme.plugin plugins/microtheme/data/*.png
 

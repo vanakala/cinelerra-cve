@@ -106,6 +106,8 @@ static void idctrow (short *blk)
     blk[0] = blk[1] = blk[2] = blk[3] = blk[4] = blk[5] = blk[6] = blk[7] = blk[0] << 3;
     return;
   }
+
+
   x0 = (blk[0] << 11) + 128;    /* for proper rounding in the fourth stage */
 
   /* first stage */
@@ -222,12 +224,22 @@ void idct (short *block)
 {
   int i;
 
-//printf("idct 1 %p\n", block);
-  for (i = 0; i < 8; i++)
-    idctrow (block + 8 * i);
-//printf("idct 2\n");
+#ifdef ARCH_X86
+	if(have_mmx)
+	{
+// This is also used by libdv
+		idct_block_mmx(block);
+	}
+	else
+	{
+#else
+	{
+#endif
 
-  for (i = 0; i < 8; i++)
-    idctcol (block + i);
-//printf("idct 3\n");
+	  for (i = 0; i < 8; i++)
+    	idctrow (block + 8 * i);
+
+	  for (i = 0; i < 8; i++)
+    	idctcol (block + i);
+	}
 }

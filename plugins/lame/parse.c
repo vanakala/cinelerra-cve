@@ -19,7 +19,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-/* $Id: parse.c,v 1.1 2003/06/16 20:00:49 herman Exp $ */
+/* $Id: parse.c,v 1.1.1.2 2003/06/16 20:01:21 herman Exp $ */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>
@@ -923,13 +923,13 @@ char* const inPath, char* const outPath, char **nogap_inPath, int *num_nogap)
 //                    argUsed=1;          //  1:Gaby, 2:Robert, 3:Jon, else:off
 //                    lame_set_adjust_type( gfp, atoi(nextArg) );
 
-                T_ELIF ("adapt-thres-type")
-                    argUsed=1;
-                    lame_set_adapt_thres_type( gfp, atoi(nextArg) );
-
-                T_ELIF ("adapt-thres-level")
-                    argUsed=1;
-                    lame_set_adapt_thres_level( gfp, atof(nextArg) );
+//                T_ELIF ("adapt-thres-type")
+//                    argUsed=1;
+//                    lame_set_adapt_thres_type( gfp, atoi(nextArg) );
+//
+//                T_ELIF ("adapt-thres-level")
+//                    argUsed=1;
+//                    lame_set_adapt_thres_level( gfp, atof(nextArg) );
 
                 T_ELIF ("scale")
                     argUsed=1;

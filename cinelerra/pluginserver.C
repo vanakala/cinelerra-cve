@@ -87,17 +87,11 @@ PluginServer::PluginServer(PluginServer &that)
 
 PluginServer::~PluginServer()
 {
-//printf("PluginServer::~PluginServer 1\n");
 	close_plugin();
-//printf("PluginServer::~PluginServer 1\n");
-	if(path) delete path;
-//printf("PluginServer::~PluginServer 1\n");
-	if(title) delete title;
-//printf("PluginServer::~PluginServer 1\n");
+	if(path) delete [] path;
+	if(title) delete [] title;
 	if(modules) delete modules;
-//printf("PluginServer::~PluginServer 1\n");
 	if(picon) delete picon;
-//printf("PluginServer::~PluginServer 2\n");
 }
 
 // Done only once at creation
@@ -167,14 +161,14 @@ void PluginServer::set_prompt(MenuEffectPrompt *prompt)
 
 int PluginServer::set_path(char *path)
 {
-	if(this->path) delete this->path;
+	if(this->path) delete [] this->path;
 	this->path = new char[strlen(path) + 1];
 	strcpy(this->path, path);
 }
 
 void PluginServer::set_title(char *string)
 {
-	if(title) delete title;
+	if(title) delete [] title;
 	title = new char[strlen(string) + 1];
 	strcpy(title, string);
 }
@@ -297,9 +291,7 @@ int PluginServer::close_plugin()
 	if(!plugin_open) return 0;
 
 	int plugin_status, result;
-//printf("PluginServer::close_plugin 1\n");
 	if(client) delete client;
-//printf("PluginServer::close_plugin 1 %p\n", plugin_fd);
 
 // shared object is persistent since plugin deletion would unlink its own object
 //	dlclose(plugin_fd);

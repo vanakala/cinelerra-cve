@@ -118,6 +118,14 @@ long mpeg3_get_frame(mpeg3_t *file, int stream);            /* Tell current posi
 /* give frame accuracy. */
 int mpeg3_seek_percentage(mpeg3_t *file, double percentage);
 double mpeg3_tell_percentage(mpeg3_t *file);
+
+/* To synchronize audio and video in percentage seeking mode, these must */
+/* be called after percentage seeking the video file and before */
+/* percentage seeking the audio file.  Then when the audio file is percentage */
+/* seeked it will search for the nearest pts to file->percentage_pts. */
+double mpeg3_get_percentage_pts(mpeg3_t *file);
+void mpeg3_set_percentage_pts(mpeg3_t *file, double pts);
+
 int mpeg3_previous_frame(mpeg3_t *file, int stream);
 int mpeg3_end_of_audio(mpeg3_t *file, int stream);
 int mpeg3_end_of_video(mpeg3_t *file, int stream);

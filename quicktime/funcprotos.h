@@ -65,6 +65,7 @@ extern void quicktime_init_codec_twos(quicktime_audio_map_t *);
 extern void quicktime_init_codec_rawaudio(quicktime_audio_map_t *);
 extern void quicktime_init_codec_ima4(quicktime_audio_map_t *); 
 extern void quicktime_init_codec_ulaw(quicktime_audio_map_t *); 
+extern void quicktime_init_codec_wmx2(quicktime_audio_map_t *);
 
 /* Graphics */
 quicktime_scaletable_t* quicktime_new_scaletable(int input_w, int input_h, int output_w, int output_h);

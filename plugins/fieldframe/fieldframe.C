@@ -46,6 +46,15 @@ public:
 	FieldFrameWindow *gui;
 };
 
+class FieldFrameAvg : public BC_CheckBox
+{
+public:
+	FieldFrameAvg(FieldFrame *plugin, FieldFrameWindow *gui, int x, int y);
+	int handle_event();
+	FieldFrame *plugin;
+	FieldFrameWindow *gui;
+};
+
 class FieldFrameWindow : public BC_Window
 {
 public:
@@ -78,7 +87,7 @@ public:
 
 	int current_field;
 	long input_position;
-	VFrame *prev_frame;
+	VFrame *prev_frame, *next_frame;
 	FieldFrameConfig config;
 	Defaults *defaults;
 	MainProgressBar *progress;
@@ -212,6 +221,11 @@ int FieldFrameBottom::handle_event()
 
 
 
+
+
+
+
+
 REGISTER_PLUGIN(FieldFrame)
 
 
@@ -219,6 +233,7 @@ FieldFrame::FieldFrame(PluginServer *server)
  : PluginVClient(server)
 {
 	prev_frame = 0;
+	next_frame = 0;
 	current_field = 0;
 	load_defaults();
 }
@@ -230,6 +245,7 @@ FieldFrame::~FieldFrame()
 	delete defaults;
 
 	if(prev_frame) delete prev_frame;
+	if(next_frame) delete next_frame;
 }
 
 char* FieldFrame::plugin_title()
@@ -307,24 +323,35 @@ int FieldFrame::process_loop(VFrame *output)
 	{
 		prev_frame = new VFrame(0, output->get_w(), output->get_h(), output->get_color_model());
 	}
+	if(!next_frame)
+	{
+		next_frame = new VFrame(0, output->get_w(), output->get_h(), output->get_color_model());
+	}
 
 	read_frame(prev_frame, input_position);
 	input_position++;
-	read_frame(output, input_position);
+	read_frame(next_frame, input_position);
 	input_position++;
 
-	int start_row;
+	unsigned char **input_rows1;
+	unsigned char **input_rows2;
 	if(config.field_dominance == TOP_FIELD_FIRST)
-		start_row = 0;
+	{
+		input_rows1 = prev_frame->get_rows();
+		input_rows2 = next_frame->get_rows();
+	}
 	else
-		start_row = 1;
+	{
+		input_rows1 = next_frame->get_rows();
+		input_rows2 = prev_frame->get_rows();
+	}
 
-	unsigned char **input_rows = prev_frame->get_rows();
 	unsigned char **output_rows = output->get_rows();
 	int row_size = VFrame::calculate_bytes_per_pixel(output->get_color_model()) * output->get_w();
-	for(int i = start_row; i < output->get_h(); i += 2)
+	for(int i = 0; i < output->get_h() - 1; i += 2)
 	{
-		memcpy(output_rows[i], input_rows[i], row_size);
+		memcpy(output_rows[i], input_rows1[i], row_size);
+		memcpy(output_rows[i + 1], input_rows2[i + 1], row_size);
 	}
 
 

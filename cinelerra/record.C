@@ -627,7 +627,7 @@ void Record::run()
 
 		if(new_edls.total)
 		{
-			mwindow->undo->update_undo_before("render", LOAD_EDITS | LOAD_TIMEBAR);
+			mwindow->undo->update_undo_before("render", LOAD_ALL);
 //printf("Record::run 6\n");
 			mwindow->paste_edls(&new_edls, 
 				load_mode,
@@ -648,7 +648,7 @@ void Record::run()
 				2,
 				1,
 				1,
-				0,
+				1,
 				1,
 				0);
 			mwindow->sync_parameters(CHANGE_ALL);
@@ -738,31 +738,38 @@ Batch* Record::new_batch()
 	return result;
 }
 
+int Record::delete_output_file()
+{
+	FILE *test;
+
+
+
+// Delete old file
+	if(!file)
+	{
+		Batch *batch = get_current_batch();
+		if(batch && (test = fopen(batch->get_current_asset()->path, "r")))
+		{
+			fclose(test);
+			sprintf(batch->news, "Deleting");
+			record_gui->lock_window();
+			record_gui->update_batches();
+			remove(batch->get_current_asset()->path);
+			record_gui->unlock_window();
+		}
+	}
+	return 0;
+}
+
 int Record::open_output_file()
 {
 	int result = 0;
 // Create initial file for the batch
 	if(!file)
 	{
-//printf("Record::open_output_file 1\n");
 		Batch *batch = get_current_batch();
-		FILE *test;
-//printf("Record::open_output_file 1\n");
+		delete_output_file();
 
-//		if(current_batch == editing_batch) record_gui->batch_path->disable();
-
-// Delete old file
-		if((test = fopen(batch->get_current_asset()->path, "r")))
-		{
-			fclose(test);
-			sprintf(batch->news, "Deleting");
-			record_gui->lock_window();
-			record_gui->update_batches();
-			record_gui->unlock_window();
-			remove(batch->get_current_asset()->path);
-		}
-
-//printf("Record::open_output_file 1\n");
 		file = new File;
 		result = file->open_file(mwindow->plugindb, 
 			batch->get_current_asset(), 
@@ -1088,6 +1095,7 @@ int Record::open_input_devices(int duplex, int context)
 		adevice->set_vdevice(vdevice);
 	}
 
+//printf("Record::open_input_devices 1\n");
 // Configure audio
 	if(adevice)
 	{
@@ -1145,6 +1153,7 @@ int Record::open_input_devices(int duplex, int context)
 		set_channel(get_current_channel());
 		set_video_picture();
 	}
+//printf("Record::open_input_devices 2\n");
 
 	return 0;
 }
@@ -1178,6 +1187,11 @@ int Record::start_recording(int duplex, int context)
 	{
 		pause_monitor();
 
+// Want the devices closed during file deletion to avoid buffer overflow
+		delete_output_file();
+
+// These two contexts need to open the device here to allow full duplex.  
+// Batch context opens them in RecordThread::run
 		if(context == CONTEXT_INTERACTIVE ||
 			context == CONTEXT_SINGLEFRAME)
 			open_input_devices(duplex, context);

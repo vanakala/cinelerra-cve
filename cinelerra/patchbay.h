@@ -18,6 +18,7 @@ public:
 	PatchBay(MWindow *mwindow, MWindowGUI *gui);
 	~PatchBay();
 
+	int delete_all_patches();
 	int create_objects();
 	void resize_event();
 	int button_press_event();

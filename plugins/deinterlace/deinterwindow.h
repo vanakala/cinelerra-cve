@@ -31,7 +31,8 @@ public:
 	DeInterlaceOption *odd_fields;
 	DeInterlaceOption *even_fields;
 	DeInterlaceOption *average_fields;
-	DeInterlaceOption *swap_fields;
+	DeInterlaceOption *swap_odd_fields;
+	DeInterlaceOption *swap_even_fields;
 	DeInterlaceOption *avg_even;
 	DeInterlaceOption *avg_odd;
 	DeInterlaceOption *none;

@@ -230,6 +230,8 @@ int VWindowGUI::resize_event(int w, int h)
 	slider->reposition_window(mwindow->theme->vslider_x, 
         mwindow->theme->vslider_y, 
         mwindow->theme->vslider_w);
+// Recalibrate pointer motion range
+	slider->set_position();
 	timebar->resize_event();
 	transport->reposition_buttons(mwindow->theme->vtransport_x, 
 		mwindow->theme->vtransport_y);

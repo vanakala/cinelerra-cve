@@ -42,25 +42,17 @@ void FileVorbis::get_parameters(BC_WindowBase *parent_window,
 
 int FileVorbis::check_sig(Asset *asset)
 {
-//printf("FileVorbis::check_sig 1\n");
 	FILE *fd = fopen(asset->path, "rb");
 	OggVorbis_File vf;
 	if(ov_open(fd, &vf, NULL, 0) < 0)
 	{
-//printf("FileVorbis::check_sig 2\n");
 		ov_clear(&vf);
-//printf("FileVorbis::check_sig 3\n");
-//		if(fd) fclose(fd);
-//printf("FileVorbis::check_sig 4\n");
+		if(fd) fclose(fd);
 		return 0;
 	}
 	else
 	{
-//printf("FileVorbis::check_sig 5\n");
 		ov_clear(&vf);
-//printf("FileVorbis::check_sig 6\n");
-//		if(fd) fclose(fd);
-//printf("FileVorbis::check_sig 7\n");
 		return 1;
 	}
 }

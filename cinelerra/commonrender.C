@@ -34,7 +34,6 @@ CommonRender::~CommonRender()
 			delete modules[i];
 	 	delete [] modules;
 	}
-//printf("CommonRender::~CommonRender 1\n");
 }
 
 void CommonRender::reset_parameters()
@@ -171,17 +170,11 @@ void CommonRender::start_command()
 
 int CommonRender::restart_playback()
 {
-//printf("CommonRender::restart_playback 1\n");
 	delete_vconsole();
-//printf("CommonRender::restart_playback 2\n");
 	create_modules();
-//printf("CommonRender::restart_playback 3\n");
 	build_virtual_console();
-//printf("CommonRender::restart_playback 4\n");
 	vconsole->start_playback();
-//printf("CommonRender::restart_playback 5\n");
 	start_plugins();
-//printf("CommonRender::restart_playback 6\n");
 
 	done = 0;
 	interrupt = 0;

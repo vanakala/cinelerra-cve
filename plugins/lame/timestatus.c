@@ -19,7 +19,7 @@
  * Boston, MA 02111-1307, USA.
  */
 
-/* $Id: timestatus.c,v 1.1 2003/06/16 20:00:49 herman Exp $ */
+/* $Id: timestatus.c,v 1.1.1.2 2003/06/16 20:01:21 herman Exp $ */
 
 #ifdef HAVE_CONFIG_H
 # include <config.h>

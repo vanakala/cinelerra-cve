@@ -148,12 +148,10 @@ int AssetEditWindow::create_objects()
 	int hmargin1 = 180, hmargin2 = 290;
 	FileSystem fs;
 
-//printf("AssetEditWindow::create_objects 1\n");
 	if(allow_edits) 
 		vmargin = 30;
 	else
 		vmargin = 20;
-//printf("AssetEditWindow::create_objects 1\n");
 
 	add_subwindow(path_text = new AssetEditPathText(this, y));
 	add_subwindow(path_button = new AssetEditPath(mwindow, 
@@ -163,13 +161,11 @@ int AssetEditWindow::create_objects()
 		asset->path, 
 		PROGRAM_NAME ": Asset path", "Select a file for this asset:"));
 	y += 30;
-//printf("AssetEditWindow::create_objects 1\n");
 
 	add_subwindow(new BC_Title(x, y, "File format:"));
 	x = x2;
 	File file;
 	add_subwindow(new BC_Title(x, y, file.formattostr(mwindow->plugindb, asset->format), MEDIUMFONT, YELLOW));
-//printf("AssetEditWindow::create_objects 1\n");
 	x = x1;
 	y += 20;
 
@@ -188,18 +184,15 @@ int AssetEditWindow::create_objects()
 
 		string[i] = string[j];
 	}
-//printf("AssetEditWindow::create_objects 1\n");
 
 	x = x2;
 	add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, YELLOW));
 	y += 30;
 	x = x1;
-//printf("AssetEditWindow::create_objects 1\n");
 
 	if(asset->audio_data)
 	{
 		add_subwindow(new BC_Title(x, y, "Audio:", LARGEFONT, RED));
-//printf("AssetEditWindow::create_objects 1\n");
 
 		y += 30;
 
@@ -219,7 +212,6 @@ int AssetEditWindow::create_objects()
 
 		add_subwindow(new BC_Title(x, y, "Channels:"));
 		sprintf(string, "%d", asset->channels);
-//printf("AssetEditWindow::create_objects 1\n");
 
 		x = x2;
 		if(allow_edits)
@@ -233,12 +225,10 @@ int AssetEditWindow::create_objects()
 			add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, YELLOW));
 			y += 20;
 		}
-//printf("AssetEditWindow::create_objects 1\n");
 
 		x = x1;
 		add_subwindow(new BC_Title(x, y, "Sample rate:"));
 		sprintf(string, "%d", asset->sample_rate);
-//printf("AssetEditWindow::create_objects 1\n");
 
 		x = x2;
 //		if(allow_edits)
@@ -253,7 +243,6 @@ int AssetEditWindow::create_objects()
 		{
 			add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, YELLOW));
 		}
-//printf("AssetEditWindow::create_objects 1\n");
 
 		y += 30;
 		x = x1;
@@ -275,27 +264,23 @@ int AssetEditWindow::create_objects()
 		}
 		else
 			add_subwindow(new BC_Title(x, y, File::bitstostr(asset->bits), MEDIUMFONT, YELLOW));
-//printf("AssetEditWindow::create_objects 1\n");
 
 
 		x = x1;
 		y += vmargin;
 		add_subwindow(new BC_Title(x, y, "Header length:"));
 		sprintf(string, "%d", asset->header);
-//printf("AssetEditWindow::create_objects 1\n");
 
 		x = x2;
 		if(allow_edits)
 			add_subwindow(new AssetEditHeader(this, string, x, y));
 		else
 			add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, YELLOW));
-//printf("AssetEditWindow::create_objects 1\n");
 
 		y += vmargin;
 		x = x1;
 
 		add_subwindow(new BC_Title(x, y, "Byte order:"));
-//printf("AssetEditWindow::create_objects 1\n");
 
 		if(allow_edits)
 		{
@@ -315,7 +300,6 @@ int AssetEditWindow::create_objects()
 			y += vmargin;
 		}
 
-//printf("AssetEditWindow::create_objects 1\n");
 
 		x = x1;
 		if(allow_edits)
@@ -330,11 +314,9 @@ int AssetEditWindow::create_objects()
 			else
 				add_subwindow(new BC_Title(x, y, "Values are signed"));
 		}
-//printf("AssetEditWindow::create_objects 2\n");
 
 		y += 30;
 	}
-//printf("AssetEditWindow::create_objects 3\n");
 
 	x = x1;
 	if(asset->video_data)
@@ -381,10 +363,8 @@ int AssetEditWindow::create_objects()
 		y += 30;
 	}
 
-//printf("AssetEditWindow::create_objects 4\n");
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
-//printf("AssetEditWindow::create_objects 5\n");
 	show_window();
 	flush();
 	return 0;

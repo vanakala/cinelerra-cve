@@ -58,6 +58,7 @@ TitleWindow::TitleWindow(TitleMain *client, int x, int y)
 TitleWindow::~TitleWindow()
 {
 	sizes.remove_all_objects();
+	encodings.remove_all_objects();
 	delete color_thread;
 	delete title_x;
 	delete title_y;
@@ -66,6 +67,25 @@ TitleWindow::~TitleWindow()
 int TitleWindow::create_objects()
 {
 	int x = 10, y = 10;
+	
+	encodings.append(new BC_ListBoxItem("ISO8859-1"));
+	encodings.append(new BC_ListBoxItem("ISO8859-2"));
+	encodings.append(new BC_ListBoxItem("ISO8859-3"));
+	encodings.append(new BC_ListBoxItem("ISO8859-4"));
+	encodings.append(new BC_ListBoxItem("ISO8859-5"));
+	encodings.append(new BC_ListBoxItem("ISO8859-6"));
+	encodings.append(new BC_ListBoxItem("ISO8859-7"));
+	encodings.append(new BC_ListBoxItem("ISO8859-8"));
+	encodings.append(new BC_ListBoxItem("ISO8859-9"));
+	encodings.append(new BC_ListBoxItem("ISO8859-10"));
+	encodings.append(new BC_ListBoxItem("ISO8859-11"));
+	encodings.append(new BC_ListBoxItem("ISO8859-12"));
+	encodings.append(new BC_ListBoxItem("ISO8859-13"));
+	encodings.append(new BC_ListBoxItem("ISO8859-14"));
+	encodings.append(new BC_ListBoxItem("ISO8859-15"));
+	encodings.append(new BC_ListBoxItem("KOI8"));
+
+
 
 	sizes.append(new BC_ListBoxItem("8"));
 	sizes.append(new BC_ListBoxItem("9"));
@@ -150,7 +170,6 @@ int TitleWindow::create_objects()
 	font->create_objects();
 	x += 230;
 	add_subwindow(font_tumbler = new TitleFontTumble(client, this, x, y + 20));
-
 	x += 30;
 	char string[BCTEXTLEN];
 	add_tool(size_title = new BC_Title(x, y, "Size:"));
@@ -228,9 +247,16 @@ int TitleWindow::create_objects()
 	x = 10;
 	y += 50;
 
-	add_tool(text_title = new BC_Title(x, y, "Text:"));
-	x += 150;
+	add_tool(text_title = new BC_Title(x, y + 3, "Text:"));
+
+	x += 130;
+	add_tool(encoding_title = new BC_Title(x, y + 3, "Encoding:"));
+	encoding = new TitleEncoding(client, this, x + 80, y);
+	encoding->create_objects();
+
+	x += 280;
 	add_tool(timecode = new TitleTimecode(client, x, y));
+
 
 	x = 10;
 	y += 30;
@@ -267,6 +293,8 @@ int TitleWindow::resize_event(int w, int h)
 	bold->reposition_window(bold->get_x(), bold->get_y());
 	size_title->reposition_window(size_title->get_x(), size_title->get_y());
 	size->reposition_window(size->get_x(), size->get_y());
+	encoding_title->reposition_window(encoding_title->get_x(), encoding_title->get_y());
+	encoding->reposition_window(encoding->get_x(), encoding->get_y());
 	color_button->reposition_window(color_button->get_x(), color_button->get_y());
 	motion_title->reposition_window(motion_title->get_x(), motion_title->get_y());
 	motion->reposition_window(motion->get_x(), motion->get_y());
@@ -372,6 +400,7 @@ void TitleWindow::update()
 	italic->update(client->config.style & FONT_ITALIC);
 	bold->update(client->config.style & FONT_BOLD);
 	size->update(client->config.size);
+	encoding->update(client->config.encoding);
 	motion->update(TitleMain::motion_to_text(client->config.motion_strategy));
 	loop->update(client->config.loop);
 	dropshadow->update((float)client->config.dropshadow);
@@ -457,6 +486,28 @@ void TitleSize::update(int size)
 	char string[BCTEXTLEN];
 	sprintf(string, "%d", size);
 	BC_PopupTextBox::update(string);
+}
+TitleEncoding::TitleEncoding(TitleMain *client, TitleWindow *window, int x, int y)
+ : BC_PopupTextBox(window, 
+		&window->encodings,
+		client->config.encoding,
+		x, 
+		y, 
+		100,
+		300)
+{
+	this->client = client;
+	this->window = window;
+}
+
+TitleEncoding::~TitleEncoding()
+{
+}
+int TitleEncoding::handle_event()
+{
+	strcpy(client->config.encoding, get_text());
+	client->send_configure_change();
+	return 1;
 }
 
 TitleColorButton::TitleColorButton(TitleMain *client, TitleWindow *window, int x, int y)

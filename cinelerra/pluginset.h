@@ -38,6 +38,10 @@ public:
 		long length, 
 		FileXML *file, 
 		int default_only);
+// Return the nearest boundary of any kind in the plugin edits
+	long plugin_change_duration(long input_position, 
+		long input_length, 
+		int reverse);
 	void shift_effects(long start, long length);
 	Edit* insert_edit_after(Edit *previous_edit);
 	Edit* create_edit();

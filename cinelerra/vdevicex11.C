@@ -523,6 +523,18 @@ int VDeviceX11::write_buffer(VFrame **output_channels, EDL *edl)
 // 			out_h);
 
 
+// Select field if using field mode.  This may be a useful feature later on
+// but currently it's being superceded by the heroine 60 encoding.
+// Doing time base conversion in the display routine produces 
+// pretty big compression artifacts.  It also requires implementing a
+// different transform for each X visual.
+	if(device->out_config->x11_use_fields)
+	{
+	}
+
+
+
+// Cause X server to display it
 	if(bitmap->hardware_scaling())
 	{
 		output->canvas->draw_bitmap(bitmap,

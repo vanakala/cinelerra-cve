@@ -555,6 +555,7 @@ int BC_FSlider::update(float value)
 		this->value = value;
 		int old_pixel = button_pixel;
 		button_pixel = value_to_pixel();
+//printf("BC_FSlider::update 1 %f %d\n", value, button_pixel);
 		if(button_pixel != old_pixel) draw_face();
 	}
 	return 0;
@@ -625,6 +626,7 @@ int BC_FSlider::update_selection(int cursor_x, int cursor_y)
 {
 	float old_value = value;
 
+
 	if(vertical)
 	{
 		value = ((1.0 - (double)(cursor_y - min_pixel) / 
@@ -644,6 +646,12 @@ int BC_FSlider::update_selection(int cursor_x, int cursor_y)
 	if(value > maxvalue) value = maxvalue;
 	if(value < minvalue) value = minvalue;
 	button_pixel = value_to_pixel();
+// printf("BC_FSlider::update_selection 1 %d %d %d %d %f\n", 
+// pointer_motion_range, 
+// min_pixel,
+// max_pixel,
+// cursor_x, 
+// value);
 
 	if(old_value != value)
 	{

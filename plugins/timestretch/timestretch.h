@@ -2,7 +2,7 @@
 #define TIMESTRETCH_H
 
 #include "defaults.inc"
-#include "../fourier/fourier.h"
+#include <fourier.h>
 #include "guicast.h"
 #include "mainprogress.inc"
 #include "pluginaclient.h"

@@ -21,4 +21,5 @@ done
 #colors is only a library
 mv libcolors.plugin libcolors.so
 mv libfourier.plugin libfourier.so
+mv libeffecttv.plugin libeffecttv.so
 cd -

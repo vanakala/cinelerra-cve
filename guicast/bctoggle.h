@@ -27,9 +27,9 @@ public:
 
 	virtual int handle_event() { return 0; };
 	int get_value();
-	int set_value(int value);
+	int set_value(int value, int draw = 1);
 	void set_select_drag(int value);
-	int update(int value);
+	int update(int value, int draw = 1);
 	void reposition_window(int x, int y);
 
 	int initialize();

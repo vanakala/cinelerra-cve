@@ -281,10 +281,18 @@ int ChannelEditWindow::move_channel_up()
 		temp = thread->new_channels->values[number1];
 		thread->new_channels->values[number1] = thread->new_channels->values[number2];
 		thread->new_channels->values[number2] = temp;
+
 		temp_text = channel_list.values[number1];
 		channel_list.values[number1] = channel_list.values[number2];
 		channel_list.values[number2] = temp_text;
-		list_box->update(&channel_list, 0, 0, 1, list_box->get_yposition(), number1);
+		list_box->update(&channel_list, 
+			0, 
+			0, 
+			1, 
+			list_box->get_xposition(), 
+			list_box->get_yposition(), 
+			number1,
+			1);
 	}
 	return 0;
 }
@@ -306,7 +314,14 @@ int ChannelEditWindow::move_channel_down()
 		temp_text = channel_list.values[number1];
 		channel_list.values[number1] = channel_list.values[number2];
 		channel_list.values[number2] = temp_text;
-		list_box->update(&channel_list, 0, 0, 1, list_box->get_yposition(), number1);
+		list_box->update(&channel_list, 
+			0, 
+			0, 
+			1, 
+			list_box->get_xposition(), 
+			list_box->get_yposition(), 
+			number1,
+			1);
 	}
 	return 0;
 }

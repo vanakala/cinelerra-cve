@@ -51,11 +51,8 @@ void PluginDialogThread::start_window(Track *track,
 		if(plugin)
 		{
 			plugin->calculate_title(plugin_title);
-//			strcpy(plugin_title, plugin->title);
 			this->shared_location = plugin->shared_location;
 			this->plugin_type = plugin->plugin_type;
-//			this->in = plugin->in;
-//			this->out = plugin->out;
 		}
 		else
 		{
@@ -63,8 +60,6 @@ void PluginDialogThread::start_window(Track *track,
 			this->shared_location.plugin = -1;
 			this->shared_location.module = -1;
 			this->plugin_type = PLUGIN_NONE;
-//			this->in = 1;
-//			this->out = 1;
 		}
 
 		strcpy(this->window_title, title);
@@ -148,13 +143,13 @@ PluginDialog::PluginDialog(MWindow *mwindow,
 	PluginDialogThread *thread, 
 	char *window_title)
  : BC_Window(window_title, 
- 	mwindow->gui->get_abs_cursor_x(), 
-	mwindow->gui->get_abs_cursor_y(), 
-	510, 
-	415, 
+ 	mwindow->gui->get_abs_cursor_x() - mwindow->session->plugindialog_w / 2, 
+	mwindow->gui->get_abs_cursor_y() - mwindow->session->plugindialog_h / 2, 
+	mwindow->session->plugindialog_w, 
+	mwindow->session->plugindialog_h, 
 	510, 
 	415,
-	0,
+	1,
 	0,
 	1)
 {
@@ -196,18 +191,14 @@ PluginDialog::~PluginDialog()
 int PluginDialog::create_objects()
 {
 	int use_default = 1;
-	char string[1024];
+	char string[BCTEXTLEN];
 	int module_number;
-	int x = 10, y = 10;
+	mwindow->theme->get_plugindialog_sizes();
 
-//printf("PluginDialog::create_objects 1\n");
  	if(thread->plugin)
 	{
-// user wants in and out
 		strcpy(string, thread->plugin->title);
 		use_default = 1;
-//		if(thread->in == 1 || thread->out == 1)
-//			use_default = 0;
 	}
 	else
 	{
@@ -270,104 +261,129 @@ int PluginDialog::create_objects()
 
 
 
-
-
-
-//	add_subwindow(new BC_Title(x, y, "Current:"));
-//	x += 100;
-//	add_subwindow(title = new PluginDialogTextBox(this, string, x, y));
-//	x += 210;
-//	add_subwindow(detach = new PluginDialogDetach(mwindow, this, x, y));
-
-
-
-
-
-
-//printf("PluginDialog::create_objects 1\n");
-	x = 10;
-//	y = 45;
-	add_subwindow(new BC_Title(x, y, "Plugins:"));
+// Create widgets
+	add_subwindow(standalone_title = new BC_Title(mwindow->theme->plugindialog_new_x, 
+		mwindow->theme->plugindialog_new_y - 20, 
+		"Plugins:"));
 	add_subwindow(standalone_list = new PluginDialogNew(this, 
 		&standalone_data, 
-		x, 
-		y + 20,
-		150,
-		300));
+		mwindow->theme->plugindialog_new_x, 
+		mwindow->theme->plugindialog_new_y,
+		mwindow->theme->plugindialog_new_w,
+		mwindow->theme->plugindialog_new_h));
 	add_subwindow(standalone_attach = new PluginDialogAttachNew(mwindow, 
 		this, 
-		x + 20, 
-		y + 330));
+		mwindow->theme->plugindialog_newattach_x, 
+		mwindow->theme->plugindialog_newattach_y));
 
 
 
 
 
 
-//printf("PluginDialog::create_objects 1\n");
-	x = 170;
-	add_subwindow(new BC_Title(x, y, "Shared effects:"));
+
+
+	add_subwindow(shared_title = new BC_Title(mwindow->theme->plugindialog_shared_x, 
+		mwindow->theme->plugindialog_shared_y - 20, 
+		"Shared effects:"));
 	add_subwindow(shared_list = new PluginDialogShared(this, 
 		&shared_data, 
-		x, 
-		y + 20,
-		150,
-		300));
+		mwindow->theme->plugindialog_shared_x, 
+		mwindow->theme->plugindialog_shared_y,
+		mwindow->theme->plugindialog_shared_w,
+		mwindow->theme->plugindialog_shared_h));
 	add_subwindow(shared_attach = new PluginDialogAttachShared(mwindow, 
 		this, 
-		x + 20, 
-		y + 330));
+		mwindow->theme->plugindialog_sharedattach_x, 
+		mwindow->theme->plugindialog_sharedattach_y));
 
 
 
 
 
 
-//printf("PluginDialog::create_objects 1\n");
-	x = 340;
-	add_subwindow(new BC_Title(x, y, "Shared tracks:"));
+
+
+
+	add_subwindow(module_title = new BC_Title(mwindow->theme->plugindialog_module_x, 
+		mwindow->theme->plugindialog_module_y - 20, 
+		"Shared tracks:"));
 	add_subwindow(module_list = new PluginDialogModules(this, 
 		&module_data, 
-		x, 
-		y + 20,
-		150,
-		300));
+		mwindow->theme->plugindialog_module_x, 
+		mwindow->theme->plugindialog_module_y,
+		mwindow->theme->plugindialog_module_w,
+		mwindow->theme->plugindialog_module_h));
 	add_subwindow(module_attach = new PluginDialogAttachModule(mwindow, 
 		this, 
-		x + 20, 
-		y + 330));
+		mwindow->theme->plugindialog_moduleattach_x, 
+		mwindow->theme->plugindialog_moduleattach_y));
 
 
 
 
 
-//printf("PluginDialog::create_objects 1\n");
-	x = 160;
-	y = 330;
-//	add_subwindow(in = new PluginDialogIn(this, use_default ? 1 : (thread->plugin ? thread->plugin->in : 0), x, y));
-//	x += 100;
-//	add_subwindow(out = new PluginDialogOut(this, use_default ? 1 : (thread->plugin ? thread->plugin->out : 0), x, y));
 
-//	add_subwindow(new BC_OKButton(this));
+
 	add_subwindow(new BC_CancelButton(this));
 
-//printf("PluginDialog::create_objects 1\n");
 	selected_available = -1;
 	selected_shared = -1;
 	selected_modules = -1;
 	
-//printf("PluginDialog::create_objects 1\n");
 	show_window();
 	flush();
-//printf("PluginDialog::create_objects 2\n");
 	return 0;
+}
+
+int PluginDialog::resize_event(int w, int h)
+{
+	mwindow->session->plugindialog_w = w;
+	mwindow->session->plugindialog_h = h;
+	mwindow->theme->get_plugindialog_sizes();
+
+
+	standalone_title->reposition_window(mwindow->theme->plugindialog_new_x, 
+		mwindow->theme->plugindialog_new_y - 20);
+	standalone_list->reposition_window(mwindow->theme->plugindialog_new_x, 
+		mwindow->theme->plugindialog_new_y,
+		mwindow->theme->plugindialog_new_w,
+		mwindow->theme->plugindialog_new_h);
+	standalone_attach->reposition_window(mwindow->theme->plugindialog_newattach_x, 
+		mwindow->theme->plugindialog_newattach_y);
+
+
+
+
+
+	shared_title->reposition_window(mwindow->theme->plugindialog_shared_x, 
+		mwindow->theme->plugindialog_shared_y - 20);
+	shared_list->reposition_window(mwindow->theme->plugindialog_shared_x, 
+		mwindow->theme->plugindialog_shared_y,
+		mwindow->theme->plugindialog_shared_w,
+		mwindow->theme->plugindialog_shared_h);
+	shared_attach->reposition_window(mwindow->theme->plugindialog_sharedattach_x, 
+		mwindow->theme->plugindialog_sharedattach_y);
+
+
+
+
+
+	module_title->reposition_window(mwindow->theme->plugindialog_module_x, 
+		mwindow->theme->plugindialog_module_y - 20);
+	module_list->reposition_window(mwindow->theme->plugindialog_module_x, 
+		mwindow->theme->plugindialog_module_y,
+		mwindow->theme->plugindialog_module_w,
+		mwindow->theme->plugindialog_module_h);
+	module_attach->reposition_window(mwindow->theme->plugindialog_moduleattach_x, 
+		mwindow->theme->plugindialog_moduleattach_y);
+	flush();
 }
 
 int PluginDialog::attach_new(int number)
 {
 	if(number > -1 && number < standalone_data.total) 
 	{
-//		title->update(standalone_data.values[number]->get_text());
 		strcpy(thread->plugin_title, standalone_data.values[number]->get_text());
 		thread->plugin_type = PLUGIN_STANDALONE;         // type is plugin
 	}
@@ -378,7 +394,6 @@ int PluginDialog::attach_shared(int number)
 {
 	if(number > -1 && number < shared_data.total) 
 	{
-//		title->update(shared_data.values[number]->get_text());
 		thread->plugin_type = PLUGIN_SHAREDPLUGIN;         // type is shared plugin
 		thread->shared_location = *(plugin_locations.values[number]); // copy location
 	}

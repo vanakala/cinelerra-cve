@@ -22,6 +22,7 @@ class SynthWindow;
 #define TRIANGLE 3
 #define PULSE 4
 #define NOISE 5
+#define DC    6
 
 
 class SynthCanvas;

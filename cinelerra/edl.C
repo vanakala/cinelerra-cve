@@ -34,6 +34,7 @@ EDL::EDL(EDL *parent_edl)
 	presentations = 0;
 	vwindow_edl = 0;
 
+	folders.set_array_delete();
 	new_folder(CLIP_FOLDER);
 	new_folder(MEDIA_FOLDER);
 	id = next_id();
@@ -136,11 +137,11 @@ int EDL::create_default_tracks()
 
 	for(int i = 0; i < session->video_tracks; i++)
 	{
-		tracks->add_video_track();
+		tracks->add_video_track(0, 0);
 	}
 	for(int i = 0; i < session->audio_tracks; i++)
 	{
-		tracks->add_audio_track();
+		tracks->add_audio_track(0, 0);
 	}
 	return 0;
 }
@@ -153,7 +154,6 @@ int EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 // Track numbering offset for replacing undo data.
 	int track_offset = 0;
 
-//printf("EDL::load_xml 1\n");
 	folders.remove_all_objects();
 
 // Search for start of master EDL.
@@ -172,7 +172,6 @@ int EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 			!file->tag.title_is("XML") && 
 			!file->tag.title_is("EDL"));
 	}
-//printf("EDL::load_xml 2 %x\n", load_flags & LOAD_TIMEBAR);
 
 	if(!result)
 	{
@@ -337,17 +336,11 @@ int EDL::save_xml(ArrayList<PluginServer*> *plugindb,
 
 int EDL::copy_all(EDL *edl)
 {
-//printf("EDL::copy_all 1\n");
 	copy_session(edl);
-//printf("EDL::copy_all 1\n");
 	copy_assets(edl);
-//printf("EDL::copy_all 1\n");
 	copy_clips(edl);
-//printf("EDL::copy_all 2\n");
 	*this->tracks = *edl->tracks;
-//printf("EDL::copy_all 2\n");
 	*this->labels = *edl->labels;
-//printf("EDL::copy_all 2\n");
 	return 0;
 }
 
@@ -1103,7 +1096,7 @@ void EDL::get_shared_tracks(Track *track, ArrayList<SharedLocation*> *module_loc
 // Convert position to frames if cursor alignment is enabled
 double EDL::align_to_frame(double position, int round)
 {
-//printf("EDL::align_to_frame 1 %d\n", position);
+//printf("EDL::align_to_frame 1 %f\n", position);
 	if(session->cursor_on_frames)
 	{
 // Seconds -> Frames
@@ -1126,9 +1119,11 @@ double EDL::align_to_frame(double position, int round)
 		}
 		else
 		{
-			if(temp < 0)
-				temp -= 0.5;
-			else
+// 			if(temp < 0)
+// 			{
+// 				temp -= 0.5;
+// 			}
+// 			else
 				temp = Units::to_long(temp);
 		}
 //printf("EDL::align_to_frame 3 %f\n", temp);

@@ -182,6 +182,12 @@ public:
 	long reaction_allocated;
 	long reaction_position;
 	double current_coef;
+	double previous_slope;
+	double previous_intercept;
+	double previous_max;
+	double previous_coef;
+	int max_counter;
+	int total_samples;
 
 // Same coefs are applied to all channels
 	double *coefs;

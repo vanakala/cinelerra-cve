@@ -125,6 +125,9 @@ int RecordThread::pause_recording()
 	loop_lock.lock();
 	loop_lock.unlock();
 //printf("RecordThread::pause_recording 1\n");
+
+
+
 	record->close_input_devices();
 //printf("RecordThread::pause_recording 2\n");
 	record->capture_state = IS_DONE;
@@ -228,10 +231,15 @@ void RecordThread::run()
 			rewinding_loop = 0;
 //printf("RecordThread::run 6\n");
 
-// Devices are already opened for interactive recording to allow duplex
+// Batch context needs to open the device here.  Interactive and singleframe
+// contexts need to open in Record::start_recording to allow full duplex.
 			if(context == CONTEXT_BATCH)
+			{
+// Delete output file before opening the devices to avoid buffer overflow.
+				record->delete_output_file();
 				record->open_input_devices(0, context);
-printf("RecordThread::run 7 %d\n", monitor);
+			}
+//printf("RecordThread::run 7 %d\n", monitor);
 
 // Switch interactive recording to batch recording
 // to get delay before next batch
@@ -267,7 +275,7 @@ printf("RecordThread::run 7 %d\n", monitor);
 						RING_BUFFERS,
 						record->vdevice->is_compressed());
 			}
-printf("RecordThread::run 8\n");
+//printf("RecordThread::run 8\n");
 
 // Reset synchronization  counters
 			record->get_current_batch()->session_samples = 0;

@@ -29,6 +29,9 @@ ZoomBar::ZoomBar(MWindow *mwindow, MWindowGUI *gui)
 
 ZoomBar::~ZoomBar()
 {
+	delete sample_zoom;
+	delete amp_zoom;
+	delete track_zoom;
 }
 
 int ZoomBar::create_objects()

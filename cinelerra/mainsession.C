@@ -64,7 +64,6 @@ void MainSession::default_window_positions()
 // Get defaults based on root window size
 	BC_DisplayInfo display_info;
 
-//printf("MainSession::default_window_positions %p\n", mwindow->gui);
 	int root_x = 0;
 	int root_y = 0;
 	int root_w = display_info.get_root_w();
@@ -82,11 +81,6 @@ void MainSession::default_window_positions()
 // Wider than 16:9, narrower than dual head
 	if((float)root_w / root_h > 1.8) root_w /= 2;
 
-// Make room for control panels
-// 	root_x += 50;
-// 	root_y += 50;
-// 	root_w -= 100;
-// 	root_h -= 100;
 
 
 	vwindow_x = root_x;
@@ -94,11 +88,6 @@ void MainSession::default_window_positions()
 	vwindow_w = root_w / 2 - border_left - border_right;
 	vwindow_h = root_h * 6 / 10 - border_top - border_bottom;
 
-// printf("MainSession::default_window_positions %d %d %d %d\n",
-// vwindow_x,
-// vwindow_y,
-// vwindow_w,
-// vwindow_h);
 	cwindow_x = root_x + root_w / 2;
 	cwindow_y = root_y;
 	cwindow_w = vwindow_w;
@@ -187,6 +176,11 @@ int MainSession::load_defaults(Defaults *defaults)
 	show_awindow = defaults->get("SHOW_AWINDOW", 1);
 	show_cwindow = defaults->get("SHOW_CWINDOW", 1);
 	show_lwindow = defaults->get("SHOW_LWINDOW", 0);
+
+
+	plugindialog_w = defaults->get("PLUGINDIALOG_W", 510);
+	plugindialog_h = defaults->get("PLUGINDIALOG_H", 415);
+
 	boundaries();
 	return 0;
 }
@@ -194,7 +188,6 @@ int MainSession::load_defaults(Defaults *defaults)
 int MainSession::save_defaults(Defaults *defaults)
 {
 
-//printf("MainSession::save_defaults 1\n");
 // Window positions
 	defaults->update("MWINDOW_X", mwindow_x);
 	defaults->update("MWINDOW_Y", mwindow_y);
@@ -233,5 +226,12 @@ int MainSession::save_defaults(Defaults *defaults)
 	defaults->update("SHOW_AWINDOW", show_awindow);
 	defaults->update("SHOW_CWINDOW", show_cwindow);
 	defaults->update("SHOW_LWINDOW", show_lwindow);
+
+
+	defaults->update("PLUGINDIALOG_W", plugindialog_w);
+	defaults->update("PLUGINDIALOG_H", plugindialog_h);
+
+
+
 	return 0;
 }

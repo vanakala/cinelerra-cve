@@ -23,8 +23,8 @@ Defaults::~Defaults()
 {
 	for(int i = 0; i < total; i++)
 	{
-		delete names[i];
-		delete values[i];
+		delete [] names[i];
+		delete [] values[i];
 	}
 }
 
@@ -180,7 +180,7 @@ int Defaults::update(char *name, char *value)
 	{
 		if(!strcmp(names[i], name))
 		{
-			delete values[i];
+			delete [] values[i];
 			values[i] = new char[strlen(value) + 1];
 			strcpy(values[i], value);
 			return 0;

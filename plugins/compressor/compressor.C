@@ -72,6 +72,10 @@ void CompressorEffect::reset()
 	current_coef = 1.0;
 	last_peak_age = 0;
 	last_peak = 0.0;
+	previous_intercept = 1.0;
+	previous_slope = 0.0;
+	previous_max = 0.0;
+	max_counter = 0;
 }
 
 char* CompressorEffect::plugin_title()
@@ -224,7 +228,7 @@ LOAD_CONFIGURATION_MACRO(CompressorEffect, CompressorConfig)
 
 int CompressorEffect::process_realtime(long size, double **input_ptr, double **output_ptr)
 {
-//printf("CompressorEffect::process_realtime 1\n");
+//printf("CompressorEffect::process_realtime 1 %f\n", DB::fromdb(-100));
 	load_configuration();
 
 	if(coefs_allocated < size)
@@ -238,6 +242,7 @@ int CompressorEffect::process_realtime(long size, double **input_ptr, double **o
 	int preview_samples = (int)(config.preview_len * PluginAClient::project_sample_rate + 0.5);
 	int reaction_samples = (int)(config.reaction_len * PluginAClient::project_sample_rate + 0.5);
 	int trigger = CLIP(config.trigger, 0, PluginAClient::total_in_buffers - 1);
+//	trigger = PluginAClient::total_in_buffers - trigger - 1;
 	CLAMP(reaction_samples, 1, 128000000);
 	CLAMP(preview_samples, 1, 128000000);
 
@@ -275,7 +280,7 @@ int CompressorEffect::process_realtime(long size, double **input_ptr, double **o
 
 
 
-//printf("CompressorEffect::process_realtime 5\n");
+//printf("CompressorEffect::process_realtime 5 %d\n", size);
 
 
 
@@ -320,7 +325,8 @@ int CompressorEffect::process_realtime(long size, double **input_ptr, double **o
 		for(int i = 0; i < size; i++)
 		{
 // Put new sample in reaction buffer
-			reaction_buffer[reaction_position] = input_buffer[trigger][i + preview_samples];
+			reaction_buffer[reaction_position] = 
+				input_buffer[trigger][i + preview_samples];
 
 
 
@@ -370,21 +376,45 @@ int CompressorEffect::process_realtime(long size, double **input_ptr, double **o
 				last_peak_age = max_age;
 			}
 
-// Get new slope based on current coef, peak, and reaction len.
-			if(max > 0)
+// Here's the brain of the effect.
+
+// Test expiration of previous max.  If previous max is bigger than
+// current max and still valid, it replaces the current max.
+// Otherwise, the current max becomes the previous max and the counter
+// is reset.
+
+			if(max_counter > 0 && previous_max >= max)
 			{
+				;
+			}
+			else
+			if(max > 0.00001)
+			{
+// Get new slope based on current coef, peak, and reaction len.
+// The slope has a counter which needs to expire before it can be
+// replaced with a less steep value.
 				double x_db = DB::todb(max);
 				double y_db = config.calculate_db(x_db);
 				double y_linear = DB::fromdb(y_db);
 				double new_coef = y_linear / max;
-				double slope = (new_coef - current_coef) / 
-					reaction_samples;
-
-				current_coef += slope;
+				double slope = (new_coef - current_coef) / reaction_samples;
+				previous_slope = slope;
+				previous_max = max;
+				previous_intercept = current_coef;
+				max_counter = reaction_samples;
+			}
+			else
+			{
+				previous_slope = 0.0;
+				previous_intercept = current_coef;
+				max_counter = 0;
 			}
 
+//printf("%f %f %f %d\n", current_coef, previous_slope, previous_intercept, max_counter);
+			max_counter--;
+			current_coef = previous_intercept + 
+				previous_slope * (reaction_samples - max_counter);
 			coefs[i] = current_coef;
-
 
 			last_peak_age++;
 			reaction_position++;
@@ -402,7 +432,7 @@ int CompressorEffect::process_realtime(long size, double **input_ptr, double **o
 			}
 		}
 
-//printf("CompressorEffect::process_realtime 9\n");
+//printf("CompressorEffect::process_realtime 9 %d\n", PluginAClient::total_in_buffers);
 // Shift input forward
 		for(int i = 0; i < PluginAClient::total_in_buffers; i++)
 		{
@@ -521,6 +551,8 @@ double CompressorConfig::get_x(int number)
 // Returns linear output given linear input
 double CompressorConfig::calculate_db(double x)
 {
+	if(x > -0.001) return 0.0;
+
 	for(int i = levels.total - 1; i >= 0; i--)
 	{
 		if(levels.values[i].x <= x)

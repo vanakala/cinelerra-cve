@@ -45,6 +45,12 @@ void recon_comp (unsigned char *src, unsigned char *dst,
   int xint, xh, yint, yh;
   unsigned char *s, *d;
 
+
+/*
+ * static int count = 0;
+ * static int totals[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+ */
+
   xint = dx >> 1;
   xh = dx & 1;
   yint = dy >> 1;
@@ -62,12 +68,24 @@ void recon_comp (unsigned char *src, unsigned char *dst,
 
 
 //printf("recon_comp 1 %x\n", mc_driver);
+/*
+ * totals[mc_driver]++;
+ * count++;
+ * if(!(count % 65536))
+ * {
+ * 	int i;
+ * 	for(i = 0; i < 16; i++)
+ * 		printf(" %d=%d", i, totals[i]);
+ * 	printf("\n");
+ * }
+ */
 		switch (mc_driver)
 		{
 		// block
 			 // no round
+// Most often called
 			case 0: case 4:
- 			  CopyBlock(s, d, lx);
+ 			  	CopyBlock(s, d, lx);
 			  break;
 			case 1:
 				CopyBlockHor(s, d, lx);
@@ -90,6 +108,7 @@ void recon_comp (unsigned char *src, unsigned char *dst,
 				break;
 		// macroblock
 			// no round
+// Second most often called
 			case 8: case 12:
 				CopyMBlock(s, d, lx);
 				break;

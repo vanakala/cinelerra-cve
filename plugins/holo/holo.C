@@ -41,30 +41,24 @@ HoloMain::HoloMain(PluginServer *server)
 	thread = 0;
 	defaults = 0;
 	effecttv = 0;
+	bgimage = 0;
 	do_reconfigure = 1;
 	load_defaults();
 }
 
 HoloMain::~HoloMain()
 {
-	if(thread)
-	{
-// Set result to 0 to indicate a server side close
-		thread->window->set_done(0);
-		thread->completion.lock();
-		delete thread;
-	}
-
-	save_defaults();
-	if(defaults) delete defaults;
+	PLUGIN_DESTRUCTOR_MACRO
 
 
 	if(effecttv)
 	{
 		delete holo_server;
 		delete effecttv;
-		delete [] bgimage;
 	}
+
+	if(bgimage)
+		delete bgimage;
 }
 
 char* HoloMain::plugin_title() { return "HolographicTV"; }

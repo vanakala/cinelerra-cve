@@ -353,7 +353,12 @@ void RecordVideo::run()
 
 void RecordVideo::read_buffer()
 {
+//printf("RecordVideo::read_buffer 1\n");
+
 	grab_result = record->vdevice->read_buffer(capture_frame);
+
+//printf("RecordVideo::read_buffer 10\n");
+
 	if(!strncmp(record->default_asset->vcodec, QUICKTIME_MJPA, 4) &&
 		record->vdevice->is_compressed())
 	{
@@ -361,6 +366,7 @@ void RecordVideo::read_buffer()
 		long size = capture_frame->get_compressed_size();
 		long allocation = capture_frame->get_compressed_allocated();
 
+//printf("RecordVideo::read_buffer 20 %d\n", size);
 		if(data)
 		{
 			long field2_offset;
@@ -372,7 +378,9 @@ void RecordVideo::read_buffer()
 			capture_frame->set_compressed_size(size);
 			capture_frame->set_field2_offset(field2_offset);
 		}
+//printf("RecordVideo::read_buffer 30\n");
 	}
+//printf("RecordVideo::read_buffer 100\n");
 }
 
 void RecordVideo::write_buffer(int skip_new)

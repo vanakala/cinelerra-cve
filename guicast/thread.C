@@ -22,8 +22,11 @@ void* Thread::entrypoint(void *parameters)
 {
 	Thread *thread = (Thread*)parameters;
 
-// allow thread to be cancelled in the middle of something
+// allow thread to be cancelled at any point during a region where it is enabled.
 	pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, 0);
+// Disable cancellation by default.
+	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, 0);
+	
 
 	thread->run();
 
@@ -46,10 +49,15 @@ void Thread::start()
 	if(realtime)
 	{
 		if(pthread_attr_setschedpolicy(&attr, SCHED_FIFO) < 0)
-			printf("Couldn't set realtime thread.\n");
+			perror("PFCThread::start pthread_attr_setschedpolicy");
 		param.sched_priority = 50;
 		if(pthread_attr_setschedparam(&attr, &param) < 0)
-			printf("Couldn't set realtime thread.\n");;
+			perror("PFCThread::start pthread_attr_setschedparam");
+	}
+	else
+	{
+		if(pthread_attr_setinheritsched(&attr, PTHREAD_INHERIT_SCHED) < 0)
+			perror("Thread::start pthread_attr_setinheritsched");
 	}
 
 	pthread_create(&tid, &attr, Thread::entrypoint, this);

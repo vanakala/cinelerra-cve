@@ -55,6 +55,56 @@ Plugin* PluginSet::get_first_plugin()
 	return 0;
 }
 
+long PluginSet::plugin_change_duration(long input_position, 
+	long input_length, 
+	int reverse)
+{
+	int result = input_length;
+	Edit *current;
+
+	if(reverse)
+	{
+		int input_start = input_position - input_length;
+		for(current = last; current; current = PREVIOUS)
+		{
+			int start = current->startproject;
+			int end = start + current->length;
+			if(end > input_start && end < input_position)
+			{
+				result = input_position - end;
+				return result;
+			}
+			else
+			if(start > input_start && start < input_position)
+			{
+				result = input_position - start;
+				return result;
+			}
+		}
+	}
+	else
+	{
+		int input_end = input_position + input_length;
+		for(current = first; current; current = NEXT)
+		{
+			int start = current->startproject;
+			int end = start + current->length;
+			if(start > input_position && start < input_end)
+			{
+				result = start - input_position;
+				return result;
+			}
+			else
+			if(end > input_position && end < input_end)
+			{
+				result = end - input_position;
+				return result;
+			}
+		}
+	}
+	return input_length;
+}
+
 void PluginSet::synchronize_params(PluginSet *plugin_set)
 {
 	for(Plugin *this_plugin = (Plugin*)first, *that_plugin = (Plugin*)plugin_set->first;
@@ -232,18 +282,22 @@ void PluginSet::shift_effects(long start, long length)
 		current;
 		current = (Plugin*)NEXT)
 	{
+// Shift beginning of this effect
 		if(current->startproject >= start)
 		{
 			current->startproject += length;
-			if(current->keyframes->default_auto->position >= start)
-				current->keyframes->default_auto->position += length;
-			current->keyframes->paste_silence(start, start + length);
 		}
 		else
+// Extend end of this effect
 		if(current->startproject + current->length >= start)
 		{
 			current->length += length;
 		}
+
+// Shift keyframes in this effect
+		if(current->keyframes->default_auto->position >= start)
+			current->keyframes->default_auto->position += length;
+		current->keyframes->paste_silence(start, start + length);
 	}
 }
 

@@ -43,7 +43,7 @@
  * conversions, and accommodated conversions involving +/- infinity,
  * NaN's, and denormalized numbers.
  *
- * $Id: portableio.c,v 1.1 2003/06/16 20:00:49 herman Exp $
+ * $Id: portableio.c,v 1.1.1.2 2003/06/16 20:01:21 herman Exp $
  */
 
 #ifdef HAVE_CONFIG_H

@@ -531,6 +531,11 @@ int VideoDevice::stop_playback()
 	return 0;
 }
 
+void VideoDevice::goose_input()
+{
+	if(input_base) input_base->goose_input();
+}
+
 void VideoDevice::new_output_buffers(VFrame **outputs, int colormodel)
 {
 	for(int i = 0; i < MAX_CHANNELS; i++)

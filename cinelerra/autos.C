@@ -159,7 +159,7 @@ void Autos::insert_track(Autos *automation,
 	}
 }
 
-Auto* Autos::get_prev_auto(long position, int direction, Auto* &current)
+Auto* Autos::get_prev_auto(long position, int direction, Auto* &current, int use_default)
 {
 // Get on or before position
 	if(direction == PLAY_FORWARD)
@@ -177,7 +177,7 @@ Auto* Autos::get_prev_auto(long position, int direction, Auto* &current)
 				current && current->position > position; 
 				current = PREVIOUS) ;
 		}
-		if(!current) current = (first ? first : default_auto);
+		if(!current && use_default) current = (first ? first : default_auto);
 	}
 	else
 // Get on or after position
@@ -196,7 +196,7 @@ Auto* Autos::get_prev_auto(long position, int direction, Auto* &current)
 				current = NEXT) ;
 		}
 
-		if(!current) current = (last ? last : default_auto);
+		if(!current && use_default) current = (last ? last : default_auto);
 	}
 
 	return current;
@@ -271,7 +271,7 @@ Auto* Autos::get_auto_for_editing(double position)
 }
 
 
-Auto* Autos::get_next_auto(long position, int direction, Auto* &current)
+Auto* Autos::get_next_auto(long position, int direction, Auto* &current, int use_default)
 {
 	if(direction == PLAY_FORWARD)
 	{
@@ -289,7 +289,7 @@ Auto* Autos::get_next_auto(long position, int direction, Auto* &current)
 				;
 		}
 
-		if(!current) current = (last ? last : default_auto);
+		if(!current && use_default) current = (last ? last : default_auto);
 	}
 	else
 	if(direction == PLAY_REVERSE)
@@ -308,7 +308,7 @@ Auto* Autos::get_next_auto(long position, int direction, Auto* &current)
 				;
 		}
 
-		if(!current) current = (first ? first : default_auto);
+		if(!current && use_default) current = (first ? first : default_auto);
 	}
 
 	return current;

@@ -87,6 +87,8 @@ public:
 	void source_to_text(char *string, Batch *batch);
 // Create first file in batch
 	int open_output_file();
+// Delete the output file for overwrite if it exists.
+	int delete_output_file();
 // Create next file in batch
 	int init_next_file();
 	void rewind_file();

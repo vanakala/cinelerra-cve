@@ -10,19 +10,9 @@ class IVTCWindow;
 #include "mutex.h"
 #include "ivtc.h"
 
-class IVTCThread : public Thread
-{
-public:
-	IVTCThread(IVTCMain *client);
-	~IVTCThread();
 
-	void run();
+PLUGIN_THREAD_HEADER(IVTCMain, IVTCThread, IVTCWindow)
 
-// prevent loading data until the GUI is started
- 	Mutex gui_started, completion;
-	IVTCMain *client;
-	IVTCWindow *window;
-};
 
 class IVTCOffset;
 class IVTCFieldOrder;
