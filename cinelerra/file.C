@@ -44,6 +44,7 @@
  	change_lock.lock();
  	FrameCacheTree::iterator iterator = cache_tree.begin();
  	while (iterator != cache_tree.end()) {
+		delete iterator->second->frame;
  		delete iterator->second;
  		iterator++;
 	}
