@@ -625,7 +625,6 @@ int BC_TextBox::repeat_event(int64_t duration)
 // duration);
 			return 1;
 		}
-
 		draw_cursor();
 		flash();
 		flush();   
