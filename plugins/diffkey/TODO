@@ -1,0 +1,19 @@
+===================
+DiffKey TODO list
+
+ [*]   Fix bypassed GUI code in diffkey.C
+ [*]   Fix problem with sliders lagging behind by 1 frame
+ [*]   Allow switching on and off of each channel
+ [*]   Implement desaturation threshold
+ [*]   Write documentation
+ [ ]   Toggle display of background on and off
+ [ ]   Key frame always contains floating point HSV, RGB, and YMV channels
+ [ ]   Store key frame on disk
+ [ ]   Allow averaging of multiple frames for key
+ [ ]   Radial blur of alpha channel
+ [ ]   Shrink edges
+ [ ]   Remove noise
+ [ ]   Implement all global parameters for each channel
+ [ ]   All parameters can be turned on and off
+ [ ]   Make new icon for DiffKey
+ [ ]   Test render farm and SMP support

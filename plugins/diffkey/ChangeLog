@@ -1,0 +1,27 @@
+2003-11-25 Benjamin Flaming  <diffkey@solobanjo.com>
+
+	* Built binary against 1.1.8 instead of 1.1.7
+	* Added documentation on how to use the plugin
+	* Cleaned up interface for new file release
+
+2003-11-21 Benjamin Flaming  <diffkey@solobanjo.com>
+
+	* Added desaturation threshold
+	* Cleaned up code
+	* Turned off debugging messages for now
+	* Removed last traces of Flip plugin
+	* Fixed broken/unimplemented GUI and parameter code
+	* Fixed bug with parameters lagging behind GUI by one frame
+	* Implemented switching on and off of all parameters
+	* Started work on higher-control GUI
+	* Changed all "float" references to "ftype", to allow future change of resolution
+
+2003-11-18  Benjamin Flaming  <diffkey@solobanjo.com>
+
+	* Removed unneeded files from tarball
+	* Fixed text files so lines wrap properly in console
+
+2003-11-12  Benjamin Flaming  <diffkey@solobanjo.com>
+
+	* Applied for SourceForge.net project, and started cleaning up files
+	  for import into CVS
