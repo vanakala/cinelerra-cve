@@ -357,7 +357,7 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 							  input_rows, encode_dv_colormodel, codec->data );
 		dv_encode_timecode(codec->data, codec->dv_encoder->isPAL,
 								file->current_frame);
-		file->curent_frame++;
+		file->current_frame++;
 //printf("dv.c encode: 2 %d %d\n", width_i, height_i);
 
 		quicktime_write_chunk_header(file, trak, &chunk_atom);
