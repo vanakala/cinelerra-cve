@@ -203,7 +203,7 @@ int FileDV::close_file_derived()
 
 int64_t FileDV::get_video_position()
 {
-	return video_offset;
+	return video_offset / output_size;
 }
 
 int64_t FileDV::get_audio_position()
