@@ -651,7 +651,8 @@ int BC_WindowBase::dispatch_event()
 			cursor_y = event->xbutton.y;
 			button_number = event->xbutton.button;
 			event_win = event->xany.window;
-  			button_down = 1;
+			if (button_number != 4 && button_number != 5)
+	  			button_down = 1;
 			button_pressed = event->xbutton.button;
 			button_time1 = button_time2;
 			button_time2 = event->xbutton.time;
@@ -678,9 +679,11 @@ int BC_WindowBase::dispatch_event()
 		case ButtonRelease:
 			button_number = event->xbutton.button;
 			event_win = event->xany.window;
-  			button_down = 0;
+			if (button_number != 4 && button_number != 5) 
+				button_down = 0;
 
-  			dispatch_button_release();
+			dispatch_button_release();
+
 			break;
 
 		case Expose:
@@ -1039,7 +1042,8 @@ int BC_WindowBase::dispatch_button_release()
 //printf("BC_WindowBase::dispatch_button_release 2 %p %d\n", active_subwindow, result);
 		if(active_subwindow && !result) result = active_subwindow->dispatch_button_release();
 //printf("BC_WindowBase::dispatch_button_release 3 %d\n", result);
-		if(!result) result = dispatch_drag_stop();
+		if(!result && button_number != 4 && button_number != 5)
+			result = dispatch_drag_stop();
 	}
 //printf("BC_WindowBase::dispatch_button_release 4 %d\n", result);
 

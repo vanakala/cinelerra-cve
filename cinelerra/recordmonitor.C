@@ -348,7 +348,7 @@ int RecordMonitorGUI::button_press()
 	}
 	else
 // Right button
-	if(get_button_down() == 3)
+	if(get_buttonpress() == 3)
 	{
 		monitor_menu->activate_menu();
 		return 1;

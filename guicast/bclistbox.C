@@ -2759,7 +2759,7 @@ int BC_ListBox::button_press_event()
 		}
 
 // Wheel mouse pressed
-		if(get_buttonpress() == 4)
+		if(get_buttonpress() == 4 && current_operation == NO_OPERATION)
 		{
 			current_operation = WHEEL;
 			if(yscrollbar)
@@ -2777,7 +2777,7 @@ int BC_ListBox::button_press_event()
 			}
 		}
 		else
-		if(get_buttonpress() == 5)
+		if(get_buttonpress() == 5 && current_operation == NO_OPERATION)
 		{
 			current_operation = WHEEL;
 			if(yscrollbar)
