@@ -321,8 +321,10 @@ int BC_MenuItem::draw()
 			}
 			menu_popup->get_popup()->set_color(top_level->get_resources()->menu_highlighted_fontcolor);
 		}
-
-		menu_popup->get_popup()->set_color(BC_WindowBase::get_resources()->menu_item_text);
+		else
+		  {
+		    menu_popup->get_popup()->set_color(top_level->get_resources()->menu_item_text);
+		  }
 		if(checked)
 		{
 			menu_popup->get_popup()->draw_check(10, y + 2);
