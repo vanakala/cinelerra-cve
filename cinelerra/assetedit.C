@@ -14,6 +14,7 @@
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "new.h"
+#include "preferences.h"
 #include "transportque.h"
 
 #include <string.h>
@@ -119,7 +120,10 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
 	500,
 	0,
 	0,
-	1)
+	1,
+	-1,
+	Preferences::get_alternate_display("CINELERRA_RESOURCES_DISPLAY",
+		mwindow->preferences->screen_resources))
 {
 	this->mwindow = mwindow;
 	this->asset_edit = asset_edit;

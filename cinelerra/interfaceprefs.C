@@ -114,6 +114,7 @@ int InterfacePrefs::create_objects()
 
 
 	y += 35;
+	int y_mh = y;
 
 	add_subwindow(new BC_Title(x, y, "Editing", LARGEFONT, BLACK));
 
@@ -167,6 +168,38 @@ int InterfacePrefs::create_objects()
 	x += 60;
 	add_subwindow(theme = new ViewTheme(x, y, pwindow));
 	theme->create_objects();
+
+	y = y_mh;
+	x = 400;
+	add_subwindow(new BC_Title(x, y, "Multiple screens", LARGEFONT, BLACK));
+
+	y += 35;
+	add_subwindow(new BC_Title(x, y, "Place the Compositor window on:"));
+	ScreenChoice *scr;
+	y += 25;
+	add_subwindow(scr = new ScreenChoice(x, y,
+		screen_to_text(pwindow->thread->preferences->screen_compositor),
+			pwindow, 
+			&pwindow->thread->preferences->screen_compositor));
+	scr->create_objects();
+
+	y += 35;
+	add_subwindow(new BC_Title(x, y, "Place the Viewer window on:"));
+	y += 25;
+	add_subwindow(scr = new ScreenChoice(x, y,
+		screen_to_text(pwindow->thread->preferences->screen_viewer),
+			pwindow, 
+			&pwindow->thread->preferences->screen_viewer));
+	scr->create_objects();
+
+	y += 35;
+	add_subwindow(new BC_Title(x, y, "Place the Resources window on:"));
+	y += 25;
+	add_subwindow(scr = new ScreenChoice(x, y,
+		screen_to_text(pwindow->thread->preferences->screen_resources),
+			pwindow, 
+			&pwindow->thread->preferences->screen_resources));
+	scr->create_objects();
 	return 0;
 }
 
@@ -189,6 +222,20 @@ char* InterfacePrefs::behavior_to_text(int mode)
 		default:
 			return "";
 			break;
+	}
+}
+
+char* InterfacePrefs::screen_to_text(int screen)
+{
+	static char buf[30];
+	if (screen >= 0)
+	{
+		sprintf(buf, "Screen %d", screen);
+		return buf;
+	}
+	else
+	{
+		return "Same screen as Program window";
 	}
 }
 
@@ -536,3 +583,47 @@ int ViewThumbnails::handle_event()
 	return 1;
 }
 
+ScreenChoice::ScreenChoice(int x, 
+	int y, 
+	char *text, 
+	PreferencesWindow *pwindow, 
+	int *output)
+ : BC_PopupMenu(x, y, 270, text)
+{
+	this->output = output;
+}
+
+ScreenChoice::~ScreenChoice()
+{
+}
+
+int ScreenChoice::handle_event()
+{
+}
+
+int ScreenChoice::create_objects()
+{
+	for (int i = -1; i < 4; i++)
+	{
+		add_item(new ScreenChoiceItem(this, InterfacePrefs::screen_to_text(i), i));
+	}
+	return 0;
+}
+
+
+ScreenChoiceItem::ScreenChoiceItem(ScreenChoice *popup, char *text, int screen)
+ : BC_MenuItem(text)
+{
+	this->popup = popup;
+	this->screen = screen;
+}
+
+ScreenChoiceItem::~ScreenChoiceItem()
+{
+}
+
+int ScreenChoiceItem::handle_event()
+{
+	popup->set_text(get_text());
+	*(popup->output) = screen;
+}

@@ -7,6 +7,7 @@
 #include "mainsession.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
+#include "preferences.h"
 #include "vwindow.h"
 #include "vwindowgui.h"
 
@@ -131,7 +132,10 @@ ClipEditWindow::ClipEditWindow(MWindow *mwindow, ClipEdit *thread)
 	430,
 	0,
 	0,
-	1)
+	1,
+	-1,
+	Preferences::get_alternate_display("CINELERRA_RESOURCES_DISPLAY",
+		mwindow->preferences->screen_resources))
 {
 	this->mwindow = mwindow;
 	this->thread = thread;

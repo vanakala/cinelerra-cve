@@ -17,6 +17,7 @@
 #include "maskautos.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
+#include "preferences.h"
 #include "theme.h"
 #include "track.h"
 #include "trackcanvas.h"
@@ -178,7 +179,10 @@ CWindowToolGUI::CWindowToolGUI(MWindow *mwindow,
 	h,
 	0,
 	0,
-	1)
+	1,
+	-1,
+	Preferences::get_alternate_display("CINELERRA_COMPOSITOR_DISPLAY",
+		mwindow->preferences->screen_compositor))
 {
 	this->mwindow = mwindow;
 	this->thread = thread;

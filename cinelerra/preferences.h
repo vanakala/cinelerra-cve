@@ -78,6 +78,12 @@ public:
 	char global_plugin_dir[BCTEXTLEN];
 	char local_plugin_dir[BCTEXTLEN];
 
+// ====================================== Multihead ==============================
+	int screen_compositor;	// -1 uses default display
+	int screen_viewer;	// ditto
+	int screen_resources;	// ditto
+	static char* get_alternate_display(char* envname, int screen);
+
 // Required when updating renderfarm rates
 	Mutex *preferences_lock;
 };

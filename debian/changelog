@@ -1,7 +1,17 @@
+hvirtual (1:1.1.6-4) unstable; urgency=low
+
+  * Johannes Sixt's patch for multihead display
+  * fix for quicktime leak
+  * fix virtualconsole leak
+  * patchbay invalid memory access fix
+  * fix for perspective plugin when using alpha mode
+
+ -- Andraz Tori <andraz.tori1@guest.arnes.si>  Thu, 31 Jul 2003 18:00:01 +0200
+
 hvirtual (1:1.1.6-3) unstable; urgency=low
 
   * workaround for libdv bug
-  * fix to build with latest libdv
+  * fix to build with latest libavcodec
   * second overlaying speedup
 
  -- Andraz Tori <andraz.tori1@guest.arnes.si>  Thu, 17 Jul 2003 18:00:01 +0200

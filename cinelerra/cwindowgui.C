@@ -29,6 +29,7 @@
 #include "mwindow.h"
 #include "mwindow.h"
 #include "playtransport.h"
+#include "preferences.h"
 #include "theme.h"
 #include "trackcanvas.h"
 #include "tracks.h"
@@ -46,7 +47,9 @@ CWindowGUI::CWindowGUI(MWindow *mwindow, CWindow *cwindow)
     1,
     1,
     1,
-	BLACK)
+	BLACK,
+    Preferences::get_alternate_display("CINELERRA_COMPOSITOR_DISPLAY",
+		mwindow->preferences->screen_compositor))
 {
 	this->mwindow = mwindow;
     this->cwindow = cwindow;
