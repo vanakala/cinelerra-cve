@@ -457,5 +457,5 @@ void quicktime_init_codec_dv(quicktime_video_map_t *vtrack)
 	codec->add_ntsc_setup = 0;
 	codec->parameters_changed = 0;
 	
-	codec->data = calloc(1, 144000);
+	codec->data = calloc(1, 144008);
 }
