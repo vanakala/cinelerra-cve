@@ -1,0 +1,93 @@
+$(OBJDIR)/$(MAD_DIR)/libid3tag/version.o: 	$(MAD_DIR)/libid3tag/version.c
+$(OBJDIR)/$(MAD_DIR)/libid3tag/ucs4.o: 		$(MAD_DIR)/libid3tag/ucs4.c
+$(OBJDIR)/$(MAD_DIR)/libid3tag/utf16.o: 	$(MAD_DIR)/libid3tag/utf16.c
+$(OBJDIR)/$(MAD_DIR)/libid3tag/latin1.o:  	$(MAD_DIR)/libid3tag/latin1.c
+$(OBJDIR)/$(MAD_DIR)/libid3tag/utf8.o: 		$(MAD_DIR)/libid3tag/utf8.c
+$(OBJDIR)/$(MAD_DIR)/libid3tag/parse.o: 	$(MAD_DIR)/libid3tag/parse.c
+$(OBJDIR)/$(MAD_DIR)/libid3tag/render.o:  	$(MAD_DIR)/libid3tag/render.c
+$(OBJDIR)/$(MAD_DIR)/libid3tag/field.o: 	$(MAD_DIR)/libid3tag/field.c
+$(OBJDIR)/$(MAD_DIR)/libid3tag/compat.o:  	$(MAD_DIR)/libid3tag/compat.c
+$(OBJDIR)/$(MAD_DIR)/libid3tag/genre.o: 	$(MAD_DIR)/libid3tag/genre.c
+$(OBJDIR)/$(MAD_DIR)/libid3tag/frametype.o: $(MAD_DIR)/libid3tag/frametype.c
+$(OBJDIR)/$(MAD_DIR)/libid3tag/frame.o: 	$(MAD_DIR)/libid3tag/frame.c
+$(OBJDIR)/$(MAD_DIR)/libid3tag/crc.o: 		$(MAD_DIR)/libid3tag/crc.c
+$(OBJDIR)/$(MAD_DIR)/libid3tag/util.o: 		$(MAD_DIR)/libid3tag/util.c
+$(OBJDIR)/$(MAD_DIR)/libid3tag/file.o: 		$(MAD_DIR)/libid3tag/file.c
+$(OBJDIR)/$(MAD_DIR)/libid3tag/tag.o: 		$(MAD_DIR)/libid3tag/tag.c
+$(OBJDIR)/$(MAD_DIR)/libmad/fixed.o:  		$(MAD_DIR)/libmad/fixed.c
+$(OBJDIR)/$(MAD_DIR)/libmad/version.o: 		$(MAD_DIR)/libmad/version.c
+$(OBJDIR)/$(MAD_DIR)/libmad/bit.o: 			$(MAD_DIR)/libmad/bit.c
+$(OBJDIR)/$(MAD_DIR)/libmad/stream.o: 		$(MAD_DIR)/libmad/stream.c
+$(OBJDIR)/$(MAD_DIR)/libmad/timer.o:  		$(MAD_DIR)/libmad/timer.c
+$(OBJDIR)/$(MAD_DIR)/libmad/frame.o:  		$(MAD_DIR)/libmad/frame.c
+$(OBJDIR)/$(MAD_DIR)/libmad/layer12.o: 		$(MAD_DIR)/libmad/layer12.c
+$(OBJDIR)/$(MAD_DIR)/libmad/decoder.o: 		$(MAD_DIR)/libmad/decoder.c
+$(OBJDIR)/$(MAD_DIR)/libmad/synth.o:  		$(MAD_DIR)/libmad/synth.c
+$(OBJDIR)/$(MAD_DIR)/libmad/huffman.o: 		$(MAD_DIR)/libmad/huffman.c
+$(OBJDIR)/$(MAD_DIR)/libmad/layer3.o: 		$(MAD_DIR)/libmad/layer3.c
+$(OBJDIR)/$(MAD_DIR)/version.o: 			$(MAD_DIR)/version.c
+$(OBJDIR)/$(MAD_DIR)/audio_cdda.o: 			$(MAD_DIR)/audio_cdda.c
+$(OBJDIR)/$(MAD_DIR)/audio_wave.o: 			$(MAD_DIR)/audio_wave.c
+$(OBJDIR)/$(MAD_DIR)/audio_aiff.o: 			$(MAD_DIR)/audio_aiff.c
+$(OBJDIR)/$(MAD_DIR)/audio_null.o: 			$(MAD_DIR)/audio_null.c
+$(OBJDIR)/$(MAD_DIR)/audio_raw.o: 			$(MAD_DIR)/audio_raw.c
+$(OBJDIR)/$(MAD_DIR)/audio_snd.o: 			$(MAD_DIR)/audio_snd.c
+$(OBJDIR)/$(MAD_DIR)/resample.o:  			$(MAD_DIR)/resample.c
+$(OBJDIR)/$(MAD_DIR)/audio.o: 				$(MAD_DIR)/audio.c
+$(OBJDIR)/$(MAD_DIR)/filter.o: 				$(MAD_DIR)/filter.c
+$(OBJDIR)/$(MAD_DIR)/xing.o:  				$(MAD_DIR)/xing.c
+$(OBJDIR)/$(MAD_DIR)/equalizer.o: 			$(MAD_DIR)/equalizer.c
+$(OBJDIR)/$(MAD_DIR)/getopt.o: 				$(MAD_DIR)/getopt.c
+$(OBJDIR)/$(MAD_DIR)/getopt1.o: 			$(MAD_DIR)/getopt1.c
+$(OBJDIR)/$(MAD_DIR)/madplay.o: 			$(MAD_DIR)/madplay.c
+$(OBJDIR)/$(MAD_DIR)/audio_oss.o: 			$(MAD_DIR)/audio_oss.c
+$(OBJDIR)/$(MAD_DIR)/player.o: 				$(MAD_DIR)/player.c
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,262 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+
+<HEAD>
+	<TITLE>
+	libsndfile : Frequently Asked Questsions.
+	</TITLE>
+	<META NAME="Author"      CONTENT="Erik de Castro Lopo (erikd AT zip DOT com DOT au)">
+	<META NAME="Version"     CONTENT="Version 1.0.5">
+	<!-- Another version at the bottom of the page.  -->
+	<META NAME="Description" CONTENT="The libsndfile FAQ.">
+	<META NAME="Keywords"    CONTENT="WAV AIFF AU libsndfile sound audio dsp Linux">
+	<LINK REL=StyleSheet HREF="libsndfile.css" TYPE="text/css" MEDIA="all">
+</HEAD>
+
+<BODY TEXT="#FFFFFF" BGCOLOR="#000000" LINK="#5050FF" VLINK="#5050FF" ALINK="#FF00FF">
+
+<H1><B>libsndfile : Frequently Asked Questsions.</B></H1>
+<P>
+<A HREF="#Q001">Q1 : On Linux, sf_open returns weird info about files. Why?</A><BR>
+<A HREF="#Q002">Q2 : In version 0 the SF_INFO struct had a pcmbitwidth field
+		but version 1 does not. Why?</A><BR>
+<A HREF="#Q003">Q3 : Compiling is really slow on MacOSX. Why?</A><BR>
+<A HREF="#Q004">Q4 : When trying to compile libsndfile on Solaris I get a "bad
+		substitution" error during linking. What can I do to fix this?</A><BR>
+<A HREF="#Q005">Q5 : Why doesn't libsndfile do interleaving/de-interleaving?</A><BR>
+<A HREF="#Q006">Q6 : What's the best format for storing temporary files?</A><BR>
+<A HREF="#Q007">Q7 : On Linux/Unix/MaxOSX, what's the best way of detecting the
+	presence of libsndfile?</A><BR>
+<A HREF="#Q008">Q8 : How about adding the ability to write/read sound files to/from
+	memory buffers?</A><BR>
+<HR>
+
+<!-- ========================================================================= -->
+<A NAME="Q001"></A>
+<H2><BR><B>Q1 : On Linux, sf_open returns weird info about files. Why?</B></H2>
+<P>
+	This simple call to sf_open :
+</P>
+<PRE>
+        file = sf_open (filename, SFM_READ, &amp;sfinfo) ;
+
+        printf ("srate    : %d\n", sfinfo.samplerate) ;
+        printf ("frames   : %d\n", sfinfo.frames) ;
+        printf ("channels : %d\n", sfinfo.channels) ;
+        printf ("format   : %d\n", sfinfo.format) ;
+        printf ("sections : %d\n", sfinfo.sections);
+        printf ("seekable : %d\n", sfinfo.seekable) ;
+</PRE>
+<P>
+returns this weird info:
+</P>
+<PRE>
+        srate     : 0
+        frames    : 1445760
+        channels  : 44100
+        format    : 2
+        sections  : 65538
+        seekable  : 1
+
+</PRE>
+<H2><B>Answer</B></H2>
+<P>
+This is only a problem on Linux and other 32 bit OSes (possibly 32 bit Solaris)
+which require special compiler command line options to allow access to files
+greater than 2 Gig in size.
+<A HREF="pkgconfig.html">These instructions</A> should show you a way around this
+problem.
+</P>
+
+<!-- ========================================================================= -->
+<A NAME="Q002"></A>
+<H2><BR><B>Q2 : In version 0 the SF_INFO struct had a pcmbitwidth field
+		but version 1 does not. Why?</B></H2>
+<P>
+	This was dropped for a number of reasons:
+</P>
+<UL>
+	<LI> pcmbitwidth makes little sense on compressed or floating point formats
+	<LI> with the new API you really don't need to know it
+</UL>
+<P>
+As documented
+    <A HREF="http://www.zip.com.au/~erikd/libsndfile/api.html#note1">here</A>
+there is now a well defined behaviour which ensures that no matter what the
+bit width of the source file, the scaling always does something sensible.
+This makes it safe to read 8, 16, 24 and 32 bit PCM files using sf_read_short()
+and always have the optimal behaviour.
+</P>
+
+<!-- ========================================================================= -->
+<A NAME="Q003"></A>
+<H2><BR><B>Q3 : Compiling is really slow on MacOSX. Why?</B></H2>
+<P>
+When you configure and compile libsndfile, it uses the Bourne shell for a number
+of tasks (ie configure script and libtool).
+However, Apple has decided to ship their system with a really crappy Bourne shell.
+</P>
+<P>
+To fix this I suggest that you install the GNU Bash shell, rename /bin/sh to
+/bin/sh.old and make a softlink from /bin/sh to the bash shell.
+Bash is designed to behave as a Bourne shell when is is called as /bin/sh.
+</P>
+<P>
+When I did this on my iBook running MacOSX, compile times dropped from 13 mintes to 3
+minutes.
+</P>
+
+<!-- ========================================================================= -->
+<A NAME="Q004"></A>
+<H2><BR><B>Q4 : When trying to compile libsndfile on Solaris I get a "bad
+		substitution" error on linking. Why?</B></H2>
+<P>
+It seems that the Solaris Bourne shell disagrees with GNU libtool.
+</P>
+<P>
+To fix this I suggest that you install the GNU Bash shell, rename /bin/sh to
+/bin/sh.old and make a softlink from /bin/sh to the bash shell.
+Bash is designed to behave as a Bourne shell when is is called as /bin/sh.
+</P>
+
+<!-- ========================================================================= -->
+<A NAME="Q005"></A>
+<H2><BR><B>Q5 : Why doesn't libsndfile do interleaving/de-interleaving?</B></H2>
+<P>
+This problem is bigger than it may seem at first.
+</P>
+<P>
+For a stereo file, it a pretty safe bet that a simple interleaving/de-interleaving
+could satisfy most users.
+However, for file with more than 2 channels this is unlikely to be the case.
+If the user has a 4 channel file and want to play that file on a stereo output 
+sound card they either want the fitst two channels or they want some mixed combination 
+of the 4 channels.
+</P>
+<P>
+When you add more channels, the combinations grow exponentially and it becomes
+increasingly difficult to cover even a sensible subset of the possible combinations.
+On top of that, coding any one style of interleaver/de-interleaver is trivial, while
+coding one that can cover all combinations is far from trivial.
+This means that this feature will not be added any time soon.
+</P>
+
+<!-- ========================================================================= -->
+<A NAME="Q006"></A>
+<H2><BR><B>Q6 : What's the best format for storing temporary files?</B></H2>
+
+<P>
+When you want to store temporary data there are a number of requirements;
+</P>
+<UL>
+	<LI> A simple, easy to parse header.
+	<LI> The format must provide the fastest possible read and write rates (ie
+		avoid conversions and encoding/decoding).
+	<LI> The file format must be reasonably common and playable by most players.
+	<LI> Able to store data in either endian-ness.
+</UL>
+<P>
+The format which best means these requirements is AU, which allows data to be
+stored in any one of short, int, float and double (among others).
+</P>
+<P>
+For instance, if an application uses float data internally, it temporary files
+should use a format of (SF_ENDIAN_CPU | SF_FORMAT_AU | SF_FORMAT_FLOAT) which
+will store big endian float data in big endian CPUs and little float endian data
+on little endian CPUs.
+Reading and writing this format will not require any conversions or byte swapping
+regardless of the host CPU.
+</P>
+
+<!-- ========================================================================= -->
+
+<A NAME="Q007"></A>
+<H2><BR><B>Q7 : On Linux/Unix/MaxOSX, what's the best way of detecting the presence
+	of libsndfile using autoconf?</B></H2>
+
+<P>
+libsndfile uses the pkg-config (man pkg-config) method of registering itself with the
+host system.
+The best way of detecting its presence is using something like this in configure.ac
+(or configure.in):
+</P>
+<PRE>
+        PKG_CHECK_MODULES(SNDFILE, sndfile >= 1.0.2, ac_cv_sndfile=1, ac_cv_sndfile=0)
+
+        AC_DEFINE_UNQUOTED([HAVE_SNDFILE],${ac_cv_sndfile},
+			[Set to 1 if you have libsndfile.])
+
+        AC_SUBST(SNDFILE_CFLAGS)
+        AC_SUBST(SNDFILE_LIBS)
+</PRE>
+<P>
+This will automatically set the <B>SNDFILE_CFLAGS</B> and <B>SNDFILE_LIBS</B>
+variables which can be used in Makefile.am like this:
+</P>
+<PRE>
+        SNDFILE_CFLAGS = @SNDFILE_CFLAGS@
+        SNDFILE_LIBS = @SNDFILE_LIBS@
+</PRE>
+<P>
+If you install libsndfile from source, you will probably need to set the
+<B>PKG_CONFIG_PATH</B> environment variableas suggested at the end of the
+libsndfile configure process. For instance on my system I get this:
+</P>
+<PRE>
+        -=-=-=-=-=-=-=-=-=-= Configuration Complete =-=-=-=-=-=-=-=-=-=-
+
+          Configuration summary :
+
+            Version : ..................... 1.0.5
+            Experimental code : ........... no
+
+          Tools :
+
+            Compiler is GCC : ............. yes
+            GCC major version : ........... 2
+
+            ** This compiler version allows applications to write
+            ** to static strings within the library.
+            ** Compile with GCC version 3.X to avoid this problem.
+
+          Installation directories :
+
+            Library directory : ........... /usr/local/lib
+            Program directory : ........... /usr/local/bin
+            Pkgconfig directory : ......... /usr/local/lib/pkgconfig
+
+        Compiling some other packages against libsndfile may require
+        the addition of "/usr/local/lib/pkgconfig" to the
+        PKG_CONFIG_PATH environment variable.
+</PRE>
+
+<!-- ========================================================================= -->
+
+<A NAME="Q008"></A>
+<H2><BR><B>Q8 : Q8 : How about adding the ability to write/read sound files to/from
+	memory buffers?</B></H2>
+
+<P>
+I have a had a number of requests like this over the last 18 months.
+As yet, no-one has been able to justify why this is a good idea and why this
+cannot be done a different way.
+</P>
+<P>
+One example of different way is temproary files stored on a temporary file
+systems (ie tmpfs on both Linux and Solaris).
+These require not changes to libsndfile, no extra code in libsndfile, achieve
+exactly what is required and work now.
+</P>
+
+<!-- ========================================================================= -->
+<HR>
+<P>
+	The libsndfile home page is here :
+		<A HREF="http://www.zip.com.au/~erikd/libsndfile/">
+			http://www.zip.com.au/~erikd/libsndfile/</A>.
+<BR>
+Version : 1.0.5
+</P>
+
+</BODY>
+</HTML>

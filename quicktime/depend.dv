@@ -1,0 +1,21 @@
+
+
+$(OBJDIR)/$(DV_DIR)/libdv/audio.o:		      $(DV_DIR)/libdv/audio.c
+$(OBJDIR)/$(DV_DIR)/libdv/bitstream.o:		  $(DV_DIR)/libdv/bitstream.c
+$(OBJDIR)/$(DV_DIR)/libdv/dct.o: 		  	  $(DV_DIR)/libdv/dct.c
+$(OBJDIR)/$(DV_DIR)/libdv/dv.o:			      $(DV_DIR)/libdv/dv.c
+$(OBJDIR)/$(DV_DIR)/libdv/dv_workaround.o:	  $(DV_DIR)/libdv/dv_workaround.c
+$(OBJDIR)/$(DV_DIR)/libdv/enc_input.o:        $(DV_DIR)/libdv/enc_input.c
+$(OBJDIR)/$(DV_DIR)/libdv/encode.o:           $(DV_DIR)/libdv/encode.c
+$(OBJDIR)/$(DV_DIR)/libdv/enc_output.o:       $(DV_DIR)/libdv/enc_output.c
+$(OBJDIR)/$(DV_DIR)/libdv/headers.o:          $(DV_DIR)/libdv/headers.c
+$(OBJDIR)/$(DV_DIR)/libdv/idct_248.o:		  $(DV_DIR)/libdv/idct_248.c
+$(OBJDIR)/$(DV_DIR)/libdv/parse.o:		      $(DV_DIR)/libdv/parse.c
+$(OBJDIR)/$(DV_DIR)/libdv/place.o:		      $(DV_DIR)/libdv/place.c
+$(OBJDIR)/$(DV_DIR)/libdv/quant.o:		      $(DV_DIR)/libdv/quant.c
+$(OBJDIR)/$(DV_DIR)/libdv/rgb.o: 		  	  $(DV_DIR)/libdv/rgb.c
+$(OBJDIR)/$(DV_DIR)/libdv/util.o:		  	  $(DV_DIR)/libdv/util.c
+$(OBJDIR)/$(DV_DIR)/libdv/vlc.o: 		  	  $(DV_DIR)/libdv/vlc.c
+$(OBJDIR)/$(DV_DIR)/libdv/weighting.o:		  $(DV_DIR)/libdv/weighting.c
+$(OBJDIR)/$(DV_DIR)/libdv/YUY2.o:		  	  $(DV_DIR)/libdv/YUY2.c
+$(OBJDIR)/$(DV_DIR)/libdv/YV12.o:		  	  $(DV_DIR)/libdv/YV12.c

@@ -1,0 +1,65 @@
+$(OBJDIR)/$(OGG_DIR)/src/bitwise.o: $(OGG_DIR)/src/bitwise.c
+$(OBJDIR)/$(OGG_DIR)/src/framing.o: $(OGG_DIR)/src/framing.c
+
+$(OBJDIR)/$(VORBIS_DIR)/lib/analysis.o:    $(VORBIS_DIR)/lib/analysis.c
+$(OBJDIR)/$(VORBIS_DIR)/lib/barkmel.o:	   $(VORBIS_DIR)/lib/barkmel.c
+$(OBJDIR)/$(VORBIS_DIR)/lib/bitrate.o:	   $(VORBIS_DIR)/lib/bitrate.c
+$(OBJDIR)/$(VORBIS_DIR)/lib/block.o:	   $(VORBIS_DIR)/lib/block.c
+$(OBJDIR)/$(VORBIS_DIR)/lib/codebook.o:    $(VORBIS_DIR)/lib/codebook.c
+$(OBJDIR)/$(VORBIS_DIR)/lib/envelope.o:    $(VORBIS_DIR)/lib/envelope.c
+$(OBJDIR)/$(VORBIS_DIR)/lib/floor0.o:	   $(VORBIS_DIR)/lib/floor0.c
+$(OBJDIR)/$(VORBIS_DIR)/lib/floor1.o:	   $(VORBIS_DIR)/lib/floor1.c
+$(OBJDIR)/$(VORBIS_DIR)/lib/iir.o:		   $(VORBIS_DIR)/lib/iir.c
+$(OBJDIR)/$(VORBIS_DIR)/lib/info.o: 	   $(VORBIS_DIR)/lib/info.c
+$(OBJDIR)/$(VORBIS_DIR)/lib/lookup.o:	   $(VORBIS_DIR)/lib/lookup.c
+$(OBJDIR)/$(VORBIS_DIR)/lib/lpc.o:		   $(VORBIS_DIR)/lib/lpc.c
+$(OBJDIR)/$(VORBIS_DIR)/lib/lsp.o:		   $(VORBIS_DIR)/lib/lsp.c
+$(OBJDIR)/$(VORBIS_DIR)/lib/mapping0.o:    $(VORBIS_DIR)/lib/mapping0.c
+$(OBJDIR)/$(VORBIS_DIR)/lib/mdct.o: 	   $(VORBIS_DIR)/lib/mdct.c
+$(OBJDIR)/$(VORBIS_DIR)/lib/psy.o:		   $(VORBIS_DIR)/lib/psy.c
+$(OBJDIR)/$(VORBIS_DIR)/lib/psytune.o:	   $(VORBIS_DIR)/lib/psytune.c
+$(OBJDIR)/$(VORBIS_DIR)/lib/registry.o:    $(VORBIS_DIR)/lib/registry.c
+$(OBJDIR)/$(VORBIS_DIR)/lib/res0.o: 	   $(VORBIS_DIR)/lib/res0.c
+$(OBJDIR)/$(VORBIS_DIR)/lib/sharedbook.o:  $(VORBIS_DIR)/lib/sharedbook.c
+$(OBJDIR)/$(VORBIS_DIR)/lib/smallft.o:	   $(VORBIS_DIR)/lib/smallft.c
+$(OBJDIR)/$(VORBIS_DIR)/lib/synthesis.o:   $(VORBIS_DIR)/lib/synthesis.c
+$(OBJDIR)/$(VORBIS_DIR)/lib/time0.o:	   $(VORBIS_DIR)/lib/time0.c
+$(OBJDIR)/$(VORBIS_DIR)/lib/tone.o: 	   $(VORBIS_DIR)/lib/tone.c
+$(OBJDIR)/$(VORBIS_DIR)/lib/vorbisenc.o:   $(VORBIS_DIR)/lib/vorbisenc.c
+$(OBJDIR)/$(VORBIS_DIR)/lib/vorbisfile.o:  $(VORBIS_DIR)/lib/vorbisfile.c
+$(OBJDIR)/$(VORBIS_DIR)/lib/window.o:	   $(VORBIS_DIR)/lib/window.c
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

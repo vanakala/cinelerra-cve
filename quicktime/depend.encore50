@@ -1,0 +1,70 @@
+
+
+$(OBJDIR)/$(DECORE_DIR)/debug.o: 		    $(DECORE_DIR)/debug.c
+$(OBJDIR)/$(DECORE_DIR)/basic_prediction.o: 	    $(DECORE_DIR)/basic_prediction.c
+$(OBJDIR)/$(DECORE_DIR)/clearblock.o: 		    $(DECORE_DIR)/clearblock.c
+$(OBJDIR)/$(DECORE_DIR)/decore.o: 		    $(DECORE_DIR)/decore.c
+$(OBJDIR)/$(DECORE_DIR)/gen_draw.o: 		    $(DECORE_DIR)/gen_draw.c
+$(OBJDIR)/$(DECORE_DIR)/getbits.o: 		    $(DECORE_DIR)/getbits.c
+$(OBJDIR)/$(DECORE_DIR)/gen_usetime.o:  	    $(DECORE_DIR)/gen_usetime.c
+$(OBJDIR)/$(DECORE_DIR)/idct.o: 		    $(DECORE_DIR)/idct.c
+$(OBJDIR)/$(DECORE_DIR)/mp4_vars.o: 		    $(DECORE_DIR)/mp4_vars.c
+$(OBJDIR)/$(DECORE_DIR)/mp4_block.o: 		    $(DECORE_DIR)/mp4_block.c
+$(OBJDIR)/$(DECORE_DIR)/mp4_decoder.o:  	    $(DECORE_DIR)/mp4_decoder.c
+$(OBJDIR)/$(DECORE_DIR)/mp4_header.o: 		    $(DECORE_DIR)/mp4_header.c
+$(OBJDIR)/$(DECORE_DIR)/mp4_iquant.o: 		    $(DECORE_DIR)/mp4_iquant.c
+$(OBJDIR)/$(DECORE_DIR)/mp4_mblock.o: 		    $(DECORE_DIR)/mp4_mblock.c
+$(OBJDIR)/$(DECORE_DIR)/mp4_picture.o:  	    $(DECORE_DIR)/mp4_picture.c
+$(OBJDIR)/$(DECORE_DIR)/mp4_predict.o:  	    $(DECORE_DIR)/mp4_predict.c
+$(OBJDIR)/$(DECORE_DIR)/mp4_recon.o: 		    $(DECORE_DIR)/mp4_recon.c
+$(OBJDIR)/$(DECORE_DIR)/mp4_tables.o: 		    $(DECORE_DIR)/mp4_tables.c
+$(OBJDIR)/$(DECORE_DIR)/mp4_vld.o: 		    $(DECORE_DIR)/mp4_vld.c
+$(OBJDIR)/$(DECORE_DIR)/store.o: 		    $(DECORE_DIR)/store.c
+$(OBJDIR)/$(DECORE_DIR)/postprocess.o:  	    $(DECORE_DIR)/postprocess.c
+$(OBJDIR)/$(DECORE_DIR)/yuv2rgb.o: 		    $(DECORE_DIR)/yuv2rgb.c
+$(OBJDIR)/$(DECORE_DIR)/transferidct.o: 	    $(DECORE_DIR)/transferidct.c
+
+
+
+
+$(OBJDIR)/$(ENCORE_DIR)/bitstream.o: 	   $(ENCORE_DIR)/bitstream.c
+$(OBJDIR)/$(ENCORE_DIR)/encore.o: 	   $(ENCORE_DIR)/encore.c
+$(OBJDIR)/$(ENCORE_DIR)/mom_access.o: 	   $(ENCORE_DIR)/mom_access.c
+$(OBJDIR)/$(ENCORE_DIR)/mom_util.o: 	   $(ENCORE_DIR)/mom_util.c
+$(OBJDIR)/$(ENCORE_DIR)/mot_code.o: 	   $(ENCORE_DIR)/mot_code.c
+$(OBJDIR)/$(ENCORE_DIR)/mot_est_comp.o:    $(ENCORE_DIR)/mot_est_comp.c
+$(OBJDIR)/$(ENCORE_DIR)/mot_est_mb.o: 	   $(ENCORE_DIR)/mot_est_mb.c
+$(OBJDIR)/$(ENCORE_DIR)/mot_util.o: 	   $(ENCORE_DIR)/mot_util.c
+$(OBJDIR)/$(ENCORE_DIR)/putvlc.o: 	   $(ENCORE_DIR)/putvlc.c
+$(OBJDIR)/$(ENCORE_DIR)/rate_ctl.o: 	   $(ENCORE_DIR)/rate_ctl.c
+$(OBJDIR)/$(ENCORE_DIR)/text_bits.o: 	   $(ENCORE_DIR)/text_bits.c
+$(OBJDIR)/$(ENCORE_DIR)/text_code.o: 	   $(ENCORE_DIR)/text_code.c
+$(OBJDIR)/$(ENCORE_DIR)/text_code_mb.o:    $(ENCORE_DIR)/text_code_mb.c
+$(OBJDIR)/$(ENCORE_DIR)/text_dct.o: 	   $(ENCORE_DIR)/text_dct.c
+$(OBJDIR)/$(ENCORE_DIR)/vop_code.o:	   $(ENCORE_DIR)/vop_code.c
+
+
+$(OBJDIR)/$(DECORE_DIR)/mmxidct.o:               $(DECORE_DIR)/mmxidct.S
+
+$(OBJDIR)/$(DECORE_DIR)/intel_mmx/IDCT_MMX.o:			   $(DECORE_DIR)/intel_mmx/IDCT_MMX.C
+$(OBJDIR)/$(DECORE_DIR)/intel_mmx/basic_prediction_mmx.o:	   $(DECORE_DIR)/intel_mmx/basic_prediction_mmx.c
+$(OBJDIR)/$(DECORE_DIR)/intel_mmx/clearblock_mmx.o:		   $(DECORE_DIR)/intel_mmx/clearblock_mmx.c
+$(OBJDIR)/$(DECORE_DIR)/intel_mmx/transferIDCT_mmx.o:		   $(DECORE_DIR)/intel_mmx/transferIDCT_mmx.c
+$(OBJDIR)/$(DECORE_DIR)/intel_mmx/yuv2rgb_mmx.o:		   $(DECORE_DIR)/intel_mmx/yuv2rgb_mmx.c
+$(OBJDIR)/$(DECORE_DIR)/intel_mmx/DO_EMMS.o:			   $(DECORE_DIR)/intel_mmx/DO_EMMS.C
+$(OBJDIR)/$(DECORE_DIR)/intel_mmx/deblock_horiz.o:		   $(DECORE_DIR)/intel_mmx/deblock_horiz.c
+$(OBJDIR)/$(DECORE_DIR)/intel_mmx/deblock_horiz_DC_on.o:	   $(DECORE_DIR)/intel_mmx/deblock_horiz_DC_on.c
+$(OBJDIR)/$(DECORE_DIR)/intel_mmx/deblock_horiz_default_filter.o:  $(DECORE_DIR)/intel_mmx/deblock_horiz_default_filter.c
+$(OBJDIR)/$(DECORE_DIR)/intel_mmx/deblock_horiz_lpf9.o: 	   $(DECORE_DIR)/intel_mmx/deblock_horiz_lpf9.c
+$(OBJDIR)/$(DECORE_DIR)/intel_mmx/deblock_horiz_useDC.o:	   $(DECORE_DIR)/intel_mmx/deblock_horiz_useDC.c
+$(OBJDIR)/$(DECORE_DIR)/intel_mmx/deblock_vert.o:		   $(DECORE_DIR)/intel_mmx/deblock_vert.c
+$(OBJDIR)/$(DECORE_DIR)/intel_mmx/deblock_vert_DC_on.o: 	   $(DECORE_DIR)/intel_mmx/deblock_vert_DC_on.c
+$(OBJDIR)/$(DECORE_DIR)/intel_mmx/deblock_vert_choose_p1p2.o:	   $(DECORE_DIR)/intel_mmx/deblock_vert_choose_p1p2.c
+$(OBJDIR)/$(DECORE_DIR)/intel_mmx/deblock_vert_copy_and_unpack.o:  $(DECORE_DIR)/intel_mmx/deblock_vert_copy_and_unpack.c
+$(OBJDIR)/$(DECORE_DIR)/intel_mmx/deblock_vert_default_filter.o:   $(DECORE_DIR)/intel_mmx/deblock_vert_default_filter.c
+$(OBJDIR)/$(DECORE_DIR)/intel_mmx/deblock_vert_lpf9.o:		   $(DECORE_DIR)/intel_mmx/deblock_vert_lpf9.c
+$(OBJDIR)/$(DECORE_DIR)/intel_mmx/deblock_vert_useDC.o: 	   $(DECORE_DIR)/intel_mmx/deblock_vert_useDC.c
+$(OBJDIR)/$(DECORE_DIR)/intel_mmx/fast_copy.o:			   $(DECORE_DIR)/intel_mmx/fast_copy.c
+$(OBJDIR)/$(DECORE_DIR)/intel_mmx/postprocess.o:		   $(DECORE_DIR)/intel_mmx/postprocess.c
+
+

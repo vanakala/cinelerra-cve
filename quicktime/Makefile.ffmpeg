@@ -1,0 +1,116 @@
+FFMPEG_DIR := ffmpeg-0.4.8
+
+FFMPEG_OBJS := \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/4xm.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/ac3enc.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/a52dec.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/adpcm.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/allcodecs.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/asv1.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/avcodec.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/cabac.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/cljr.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/common.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/cyuv.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/dpcm.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/dsputil.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/dv.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/error_resilience.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/eval.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/fdctref.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/fft.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/ffv1.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/golomb.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/h263.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/h263dec.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/h264.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/huffyuv.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/imgconvert.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/imgresample.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/indeo3.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/interplayvideo.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/jfdctfst.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/jfdctint.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/jrevdct.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/mace.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/mdct.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/mem.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/mjpeg.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/motion_est.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/mpeg12.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/mpegaudio.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/mpegaudiodec.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/mpegvideo.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/msmpeg4.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/oggvorbis.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/opts.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/pcm.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/ra144.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/ra288.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/ratecontrol.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/raw.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/resample.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/roqvideo.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/rv10.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/simple_idct.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/svq1.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/utils.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/vcr1.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/vp3.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/wmadec.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/xan.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/xvmcvideo.o
+
+
+
+
+
+ifeq ($(OBJDIR), i686)
+
+
+FFMPEGIA32_OBJS := \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/i386/cputest.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/i386/dsputil_mmx.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/i386/fdct_mmx.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/i386/fft_sse.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/i386/idct_mmx.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/i386/motion_est_mmx.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/i386/mpegvideo_mmx.o \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/i386/simple_idct_mmx.o 
+endif
+
+
+
+
+ifeq ($(OBJDIR), x86_64)
+FFMPEG_CFLAGS := 
+endif
+ 
+ifeq ($(OBJDIR), i686)
+FFMPEG_CFLAGS := -O2 -fomit-frame-pointer -funroll-all-loops -msse
+endif
+ 
+ 
+FFMPEG_CFLAGS += \
+	-I$(FFMPEG_DIR)/ \
+	-I$(FFMPEG_DIR)/libavcodec \
+	-I$(FFMPEG_DIR)/libavcodec/i386 \
+	-I$(FFMPEG_DIR)/libavcodec/libac3 \
+	-I$(FFMPEG_DIR)/libavcodec/mpglib \
+	-I$(FFMPEG_DIR)/libavformat \
+	-I$(OGG_DIR)/include \
+	-I$(VORBIS_DIR)/include \
+	-DHAVE_AV_CONFIG_H \
+	-D_GNU_SOURCE \
+	-I$(VORBIS_DIR)/include
+
+FFMPEG_DIRS := \
+	$(OBJDIR)/$(FFMPEG_DIR)/ \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/i386 \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/liba52 \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavcodec/mpglib \
+	$(OBJDIR)/$(FFMPEG_DIR)/libavformat
+
+DIRS += $(FFMPEG_DIRS)
+

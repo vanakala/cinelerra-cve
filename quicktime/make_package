@@ -1,0 +1,19 @@
+#!/bin/sh
+VERSION=1.6
+DEST=/tmp
+
+# CLEAN SOURCE DIRECTORIES
+make clean
+
+# CREATE DIRECTORIES
+rm -r $DEST/quicktime4linux-$VERSION
+mkdir $DEST/quicktime4linux-$VERSION
+
+cp -rd * $DEST/quicktime4linux-$VERSION
+
+
+
+# MAKE TARBALL
+
+cd $DEST/
+tar zcf quicktime4linux-$VERSION.tar.gz quicktime4linux-$VERSION

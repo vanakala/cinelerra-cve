@@ -1,0 +1,56 @@
+DV_DIR := libdv-0.99
+
+DV_OBJS := \
+	$(OBJDIR)/$(DV_DIR)/libdv/audio.o \
+	$(OBJDIR)/$(DV_DIR)/libdv/bitstream.o \
+	$(OBJDIR)/$(DV_DIR)/libdv/dct.o \
+	$(OBJDIR)/$(DV_DIR)/libdv/dv.o \
+	$(OBJDIR)/$(DV_DIR)/libdv/dv_workaround.o \
+	$(OBJDIR)/$(DV_DIR)/libdv/enc_input.o \
+	$(OBJDIR)/$(DV_DIR)/libdv/enc_output.o \
+	$(OBJDIR)/$(DV_DIR)/libdv/encode.o \
+	$(OBJDIR)/$(DV_DIR)/libdv/headers.o \
+	$(OBJDIR)/$(DV_DIR)/libdv/idct_248.o \
+	$(OBJDIR)/$(DV_DIR)/libdv/parse.o \
+	$(OBJDIR)/$(DV_DIR)/libdv/place.o \
+	$(OBJDIR)/$(DV_DIR)/libdv/quant.o \
+	$(OBJDIR)/$(DV_DIR)/libdv/rgb.o \
+	$(OBJDIR)/$(DV_DIR)/libdv/util.o \
+	$(OBJDIR)/$(DV_DIR)/libdv/vlc.o \
+	$(OBJDIR)/$(DV_DIR)/libdv/weighting.o \
+	$(OBJDIR)/$(DV_DIR)/libdv/YUY2.o \
+	$(OBJDIR)/$(DV_DIR)/libdv/YV12.o
+
+
+CFLAGS += -I$(DV_DIR) \
+	-I$(DV_DIR)/libdv
+
+
+ifeq ($(USE_MMX), 1)
+
+
+CFLAGS += -DARCH_X86
+
+
+DVMMXHEADER = $(DV_DIR)/libdv/asmoff.h
+
+DVMMXOBJS = \
+  $(OBJDIR)/$(DV_DIR)/libdv/dct_block_mmx.o \
+  $(OBJDIR)/$(DV_DIR)/libdv/encode_x86.o \
+  $(OBJDIR)/$(DV_DIR)/libdv/idct_block_mmx.o \
+  $(OBJDIR)/$(DV_DIR)/libdv/vlc_x86.o \
+  $(OBJDIR)/$(DV_DIR)/libdv/quant_x86.o \
+  $(OBJDIR)/$(DV_DIR)/libdv/rgbtoyuv.o \
+  $(OBJDIR)/$(DV_DIR)/libdv/transpose_x86.o
+
+
+
+
+endif
+
+
+DIRS += $(OBJDIR)/$(DV_DIR)/libdv
+
+
+
+

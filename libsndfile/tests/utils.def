@@ -1,0 +1,41 @@
+autogen definitions utils.tpl;
+
+io_type = { 
+	io_element	= short ;
+	format_str		= "\"% d\\n\"" ;
+	};
+
+io_type = { 
+	io_element	= int ;
+	format_str		= "\"% d\\n\"" ;
+	};
+
+io_type = { 
+	io_element	= float ;
+	format_str		= "\"% g\\n\"" ;
+	};
+
+io_type = { 
+	io_element 	= double ;
+	format_str		= "\"% g\\n\"" ;
+	};
+
+io_operation = { 
+	op_element	= read ;
+	count_name	= items ;
+	};
+
+io_operation = { 
+	op_element	= readf ;
+	count_name	= frames ;
+	};
+
+io_operation = { 
+	op_element	= write ;
+	count_name	= items ;
+	};
+
+io_operation = { 
+	op_element	= writef ;
+	count_name	= frames ;
+	};

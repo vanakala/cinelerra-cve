@@ -1,0 +1,25 @@
+# configuration is being done in a script because starting with GCC-3.2
+# the compiler flags are changing too much between minor releases to detect
+# with Makefile scripts alone.  For now it just tells you if you have the
+# prerequisite compilers.
+
+ERROR=0
+
+# test for nasm
+
+if [ -x /usr/bin/nasm -o -x /usr/local/bin/nasm ]; then HAVE_NASM=y; else HAVE_NASM=n; fi
+
+if [ $HAVE_NASM == n ]; 
+then echo " *** Nasm is required.  Download it from nasm.sourceforge.net"; 
+ERROR=1
+fi
+
+
+
+# success
+if [ $ERROR == 0 ];
+then echo "Configured successfully.  Type 'make' to build it.";
+fi
+
+
+

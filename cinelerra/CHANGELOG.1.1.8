@@ -1,0 +1,94 @@
+Date, Size, Path sorting in file boxes.
+
+libsndfile upgraded
+ - libsndfile.diff applied
+ - Debugged libsndfile patches.
+ - Modified libsndfile to support VFS
+MJPEG software encoding debug on AVI and Quicktime.
+Better drawing of highly oversampled waves.
+Better rendering of MPEG video where the framerate is oversampled.
+Overlay mode displayed as icon.
+Date, Size, Path sorting in file boxes.
+Track nudge.
+Tool tips for nudge, pan, overlay mode.
+Context menu for seconds or samples/frames for nudge
+Better handling of mpeg table of contents files with relative paths.
+MPEG-4 decoding starts on right frame more often.
+Cursors deactivate when window not focused
+Pan positions load properly.
+Short audio clips play in their entirety.
+Text conforming in time textboxes.
+Troubleshooting guide for recording slow framerates.
+Crash when cancelling some Vorbis Quicktime rendering fixed.
+Better synchronization for fixed bitrate Vorbis Quicktime movies.
+Home and End keys go to start and end of timeline.
+Patternless Inverse Telecine.
+Better drag select behavior for patches.
+Single confirmation dialog instead of multiple dialogs for file overwrites.
+Batch rendering.
+Force single processor is a preferences option not an EDL parameter.
+Simple lock debugging and tracing.
+ESound migrated to new GCC syntax.
+Video In transport control removed due to lockups.  Should be a remote control there.
+DV1394 implemented as new driver.
+Titler: More redundancy when scanning font dir.
+Tracking::stop_playback stops the thread entirely instead of capturing loop_lock.
+ - In the NPTL, a mutex can't be locked unless the other user delays 
+   between unlocking and locking.
+ - In the NPTL, cancelling a select operation crashes.
+libmpeg3: seek_percentage replaced by seek_byte
+          mpeg3_previous_frame really gets previous frame
+		  more accurate decoding of start of video
+		  faster seeking
+xmovie: previous frame really gets previous frame in MPEG 1&2
+		Quit during playback -> fewer crashes
+		Workaround for NPTL cancel.
+		MMX disabled due to compiler changes.
+quicktime: ffmpeg upgraded to 0.4.8
+Configure script implemented to error out in an unsuitable build environment.
+Foreign languages implemented but disabled due to new bugs.
+Buz recording migrated to 2.4.22.
+Assorted locks migrated to NPTL.
+Boundary tests in EDL::load_xml.
+
+
+Jens Seidel:
+German translation
+
+
+
+
+
+Andraz Tori:
+
+Slovanian translation
+
+Fixed crash when slave plugin extended past master plugin with no asset
+in track.
+
+bcsignal_new_delete.diff - the meters need to have separations at 5 and
+20, not 1/6 and 2/5.
+
+bcmeter_illegal_access.diff - this function shouldn't copy the string
+at all.
+
+
+overlay-speedup3.diff applied
+
+overlay-speedup4.diff rejected
+	- pixel_transparency is still taken from the alpha of the pixel, which is 0 - max.
+	  Bit shifting reduces the result by 1.
+
+imagesequence.patch applied
+
+framecache1.diff rejected
+	- The cache explodes when handling HDTV.  Can't use it until you've
+	finished the options in preferences and the absolute size.
+
+close_window.diff rejected
+	- too much work for something that a set_done call would do.
+
+quicktime debug
+
+
+

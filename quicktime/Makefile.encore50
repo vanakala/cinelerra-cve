@@ -1,0 +1,91 @@
+
+#OBJS += \
+#	$(OBJDIR)/$(DECORE_DIR)/debug.o \
+#	$(OBJDIR)/$(DECORE_DIR)/decore.o \
+#	$(OBJDIR)/$(DECORE_DIR)/getbits.o \
+#	$(OBJDIR)/$(DECORE_DIR)/mp4_vars.o \
+#	$(OBJDIR)/$(DECORE_DIR)/mp4_block.o \
+#	$(OBJDIR)/$(DECORE_DIR)/mp4_decoder.o \
+#	$(OBJDIR)/$(DECORE_DIR)/mp4_header.o \
+#	$(OBJDIR)/$(DECORE_DIR)/mp4_iquant.o \
+#	$(OBJDIR)/$(DECORE_DIR)/mp4_mblock.o \
+#	$(OBJDIR)/$(DECORE_DIR)/mp4_picture.o \
+#	$(OBJDIR)/$(DECORE_DIR)/mp4_predict.o \
+#	$(OBJDIR)/$(DECORE_DIR)/mp4_recon.o \
+#	$(OBJDIR)/$(DECORE_DIR)/mp4_tables.o \
+#	$(OBJDIR)/$(DECORE_DIR)/mp4_vld.o
+#
+#
+#
+#
+##ifeq ($(USE_MMX), 1)
+#ifeq (1, 0)
+#
+#DECOREMMX_OBJS += \
+#	$(OBJDIR)/$(DECORE_DIR)/intel_mmx/IDCT_MMX.o \
+#	$(OBJDIR)/$(DECORE_DIR)/intel_mmx/DO_EMMS.o
+#
+#
+#
+#OBJS += \
+#	$(OBJDIR)/$(DECORE_DIR)/intel_mmx/basic_prediction_mmx.o \
+#	$(OBJDIR)/$(DECORE_DIR)/intel_mmx/clearblock_mmx.o \
+#	$(OBJDIR)/$(DECORE_DIR)/intel_mmx/transferIDCT_mmx.o \
+#	$(OBJDIR)/$(DECORE_DIR)/intel_mmx/yuv2rgb_mmx.o \
+#	$(OBJDIR)/$(DECORE_DIR)/intel_mmx/deblock_horiz.o \
+#	$(OBJDIR)/$(DECORE_DIR)/intel_mmx/deblock_horiz_DC_on.o \
+#	$(OBJDIR)/$(DECORE_DIR)/intel_mmx/deblock_horiz_default_filter.o \
+#	$(OBJDIR)/$(DECORE_DIR)/intel_mmx/deblock_horiz_lpf9.o \
+#	$(OBJDIR)/$(DECORE_DIR)/intel_mmx/deblock_horiz_useDC.o \
+#	$(OBJDIR)/$(DECORE_DIR)/intel_mmx/deblock_vert.o \
+#	$(OBJDIR)/$(DECORE_DIR)/intel_mmx/deblock_vert_DC_on.o \
+#	$(OBJDIR)/$(DECORE_DIR)/intel_mmx/deblock_vert_choose_p1p2.o \
+#	$(OBJDIR)/$(DECORE_DIR)/intel_mmx/deblock_vert_copy_and_unpack.o \
+#	$(OBJDIR)/$(DECORE_DIR)/intel_mmx/deblock_vert_default_filter.o \
+#	$(OBJDIR)/$(DECORE_DIR)/intel_mmx/deblock_vert_lpf9.o \
+#	$(OBJDIR)/$(DECORE_DIR)/intel_mmx/deblock_vert_useDC.o \
+#	$(OBJDIR)/$(DECORE_DIR)/intel_mmx/fast_copy.o \
+#	$(OBJDIR)/$(DECORE_DIR)/intel_mmx/postprocess.o
+#
+#else
+#
+#OBJS += \
+#	$(OBJDIR)/$(DECORE_DIR)/basic_prediction.o \
+#	$(OBJDIR)/$(DECORE_DIR)/clearblock.o \
+#	$(OBJDIR)/$(DECORE_DIR)/idct.o \
+#	$(OBJDIR)/$(DECORE_DIR)/postprocess.o \
+#	$(OBJDIR)/$(DECORE_DIR)/transferidct.o \
+#	$(OBJDIR)/$(DECORE_DIR)/yuv2rgb.o \
+#
+#endif
+
+
+
+
+
+
+
+
+
+
+OBJS += \
+	$(OBJDIR)/$(ENCORE_DIR)/bitstream.o \
+	$(OBJDIR)/$(ENCORE_DIR)/encore.o \
+	$(OBJDIR)/$(ENCORE_DIR)/mom_access.o \
+	$(OBJDIR)/$(ENCORE_DIR)/mom_util.o \
+	$(OBJDIR)/$(ENCORE_DIR)/mot_code.o \
+	$(OBJDIR)/$(ENCORE_DIR)/mot_est_comp.o \
+	$(OBJDIR)/$(ENCORE_DIR)/mot_est_mb.o \
+	$(OBJDIR)/$(ENCORE_DIR)/mot_util.o \
+	$(OBJDIR)/$(ENCORE_DIR)/putvlc.o \
+	$(OBJDIR)/$(ENCORE_DIR)/rate_ctl.o \
+	$(OBJDIR)/$(ENCORE_DIR)/text_bits.o \
+	$(OBJDIR)/$(ENCORE_DIR)/text_code.o \
+	$(OBJDIR)/$(ENCORE_DIR)/text_code_mb.o \
+	$(OBJDIR)/$(ENCORE_DIR)/text_dct.o \
+	$(OBJDIR)/$(ENCORE_DIR)/vop_code.o
+
+
+
+
+

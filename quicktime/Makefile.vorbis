@@ -1,0 +1,44 @@
+OGG_DIR := $(shell expr libogg-1.0 )
+VORBIS_DIR := $(shell expr libvorbis-1.0 )
+
+
+OBJS += \
+	$(OBJDIR)/$(OGG_DIR)/src/bitwise.o \
+	$(OBJDIR)/$(OGG_DIR)/src/framing.o \
+	$(OBJDIR)/$(VORBIS_DIR)/lib/analysis.o \
+	$(OBJDIR)/$(VORBIS_DIR)/lib/barkmel.o \
+	$(OBJDIR)/$(VORBIS_DIR)/lib/bitrate.o \
+	$(OBJDIR)/$(VORBIS_DIR)/lib/block.o \
+	$(OBJDIR)/$(VORBIS_DIR)/lib/codebook.o \
+	$(OBJDIR)/$(VORBIS_DIR)/lib/envelope.o \
+	$(OBJDIR)/$(VORBIS_DIR)/lib/floor0.o \
+	$(OBJDIR)/$(VORBIS_DIR)/lib/floor1.o \
+	$(OBJDIR)/$(VORBIS_DIR)/lib/info.o \
+	$(OBJDIR)/$(VORBIS_DIR)/lib/lookup.o \
+	$(OBJDIR)/$(VORBIS_DIR)/lib/lpc.o \
+	$(OBJDIR)/$(VORBIS_DIR)/lib/lsp.o \
+	$(OBJDIR)/$(VORBIS_DIR)/lib/mapping0.o \
+	$(OBJDIR)/$(VORBIS_DIR)/lib/mdct.o \
+	$(OBJDIR)/$(VORBIS_DIR)/lib/psy.o \
+	$(OBJDIR)/$(VORBIS_DIR)/lib/registry.o \
+	$(OBJDIR)/$(VORBIS_DIR)/lib/res0.o \
+	$(OBJDIR)/$(VORBIS_DIR)/lib/sharedbook.o \
+	$(OBJDIR)/$(VORBIS_DIR)/lib/smallft.o \
+	$(OBJDIR)/$(VORBIS_DIR)/lib/synthesis.o \
+	$(OBJDIR)/$(VORBIS_DIR)/lib/tone.o \
+	$(OBJDIR)/$(VORBIS_DIR)/lib/vorbisenc.o \
+	$(OBJDIR)/$(VORBIS_DIR)/lib/vorbisfile.o \
+	$(OBJDIR)/$(VORBIS_DIR)/lib/window.o
+
+
+#	$(OBJDIR)/$(VORBIS_DIR)/lib/iir.o \
+#	$(OBJDIR)/$(VORBIS_DIR)/lib/time0.o \
+
+
+CFLAGS += -I$(OGG_DIR)/include \
+	-I$(VORBIS_DIR)/include \
+	-I$(VORBIS_DIR)/lib
+
+
+DIRS += $(OBJDIR)/$(OGG_DIR)/src \
+	$(OBJDIR)/$(VORBIS_DIR)/lib

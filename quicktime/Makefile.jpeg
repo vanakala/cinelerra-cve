@@ -1,0 +1,146 @@
+
+ifeq ($(OBJDIR), i686)
+USE_MMX = 1
+JPEG_DIR := $(shell expr jpeg-mmx* )
+JPEG = \
+	$(OBJDIR)/$(JPEG_DIR)/cdjpeg.o \
+	$(OBJDIR)/$(JPEG_DIR)/cpu_accel.o \
+	$(OBJDIR)/$(JPEG_DIR)/fdctdata.o \
+	$(OBJDIR)/$(JPEG_DIR)/jcapimin.o \
+	$(OBJDIR)/$(JPEG_DIR)/jcapistd.o \
+	$(OBJDIR)/$(JPEG_DIR)/jccoefct.o \
+	$(OBJDIR)/$(JPEG_DIR)/jccolor.o \
+	$(OBJDIR)/$(JPEG_DIR)/jcdctmgr.o \
+	$(OBJDIR)/$(JPEG_DIR)/jchuff.o \
+	$(OBJDIR)/$(JPEG_DIR)/jcinit.o \
+	$(OBJDIR)/$(JPEG_DIR)/jcmainct.o \
+	$(OBJDIR)/$(JPEG_DIR)/jcmarker.o \
+	$(OBJDIR)/$(JPEG_DIR)/jcmaster.o \
+	$(OBJDIR)/$(JPEG_DIR)/jcomapi.o \
+	$(OBJDIR)/$(JPEG_DIR)/jcparam.o \
+	$(OBJDIR)/$(JPEG_DIR)/jcphuff.o \
+	$(OBJDIR)/$(JPEG_DIR)/jcprepct.o \
+	$(OBJDIR)/$(JPEG_DIR)/jcsample.o \
+	$(OBJDIR)/$(JPEG_DIR)/jctrans.o \
+	$(OBJDIR)/$(JPEG_DIR)/jdapimin.o \
+	$(OBJDIR)/$(JPEG_DIR)/jdapistd.o \
+	$(OBJDIR)/$(JPEG_DIR)/jdatadst.o \
+	$(OBJDIR)/$(JPEG_DIR)/jdatasrc.o \
+	$(OBJDIR)/$(JPEG_DIR)/jdcoefct.o \
+	$(OBJDIR)/$(JPEG_DIR)/jdcolor.o \
+	$(OBJDIR)/$(JPEG_DIR)/jddctmgr.o \
+	$(OBJDIR)/$(JPEG_DIR)/jdhuff.o \
+	$(OBJDIR)/$(JPEG_DIR)/jdinput.o \
+	$(OBJDIR)/$(JPEG_DIR)/jdmainct.o \
+	$(OBJDIR)/$(JPEG_DIR)/jdmarker.o \
+	$(OBJDIR)/$(JPEG_DIR)/jdmaster.o \
+	$(OBJDIR)/$(JPEG_DIR)/jdmerge.o \
+	$(OBJDIR)/$(JPEG_DIR)/jdphuff.o \
+	$(OBJDIR)/$(JPEG_DIR)/jdpostct.o \
+	$(OBJDIR)/$(JPEG_DIR)/jdtrans.o \
+	$(OBJDIR)/$(JPEG_DIR)/jerror.o \
+	$(OBJDIR)/$(JPEG_DIR)/jfdctflt.o \
+	$(OBJDIR)/$(JPEG_DIR)/jfdctfst.o \
+	$(OBJDIR)/$(JPEG_DIR)/jfdctint.o \
+	$(OBJDIR)/$(JPEG_DIR)/jidctflt.o \
+	$(OBJDIR)/$(JPEG_DIR)/jidctfst.o \
+	$(OBJDIR)/$(JPEG_DIR)/jidctint.o \
+	$(OBJDIR)/$(JPEG_DIR)/jidctred.o \
+	$(OBJDIR)/$(JPEG_DIR)/jmemmgr.o \
+	$(OBJDIR)/$(JPEG_DIR)/jmemnobs.o \
+	$(OBJDIR)/$(JPEG_DIR)/jquant1.o \
+	$(OBJDIR)/$(JPEG_DIR)/jquant2.o \
+	$(OBJDIR)/$(JPEG_DIR)/jutils.o \
+	$(OBJDIR)/$(JPEG_DIR)/rdbmp.o \
+	$(OBJDIR)/$(JPEG_DIR)/rdcolmap.o \
+	$(OBJDIR)/$(JPEG_DIR)/rdgif.o \
+	$(OBJDIR)/$(JPEG_DIR)/rdjpgcom.o \
+	$(OBJDIR)/$(JPEG_DIR)/rdppm.o \
+	$(OBJDIR)/$(JPEG_DIR)/rdrle.o \
+	$(OBJDIR)/$(JPEG_DIR)/rdswitch.o \
+	$(OBJDIR)/$(JPEG_DIR)/rdtarga.o \
+	$(OBJDIR)/$(JPEG_DIR)/transupp.o \
+	$(OBJDIR)/$(JPEG_DIR)/wrbmp.o \
+	$(OBJDIR)/$(JPEG_DIR)/wrgif.o \
+	$(OBJDIR)/$(JPEG_DIR)/wrppm.o \
+	$(OBJDIR)/$(JPEG_DIR)/wrrle.o \
+	$(OBJDIR)/$(JPEG_DIR)/wrtarga.o
+
+JPEG_NASM = \
+	$(OBJDIR)/$(JPEG_DIR)/fdct_mmx.o \
+	$(OBJDIR)/$(JPEG_DIR)/quant_mmx.o
+
+
+
+
+JPEG_FAIL = \
+	$(OBJDIR)/$(JPEG_DIR)/jdsample.o \
+	$(OBJDIR)/$(JPEG_DIR)/jquant_x86simd.o
+
+OBJS += $(JPEG)
+
+
+
+else
+
+
+
+
+JPEG_DIR := jpeg
+
+JPEG = \
+	$(OBJDIR)/$(JPEG_DIR)/jcapimin.o \
+	$(OBJDIR)/$(JPEG_DIR)/jcapistd.o \
+	$(OBJDIR)/$(JPEG_DIR)/jctrans.o \
+	$(OBJDIR)/$(JPEG_DIR)/jcparam.o \
+	$(OBJDIR)/$(JPEG_DIR)/jdatadst.o \
+	$(OBJDIR)/$(JPEG_DIR)/jcinit.o \
+	$(OBJDIR)/$(JPEG_DIR)/jcmaster.o \
+	$(OBJDIR)/$(JPEG_DIR)/jcmarker.o \
+	$(OBJDIR)/$(JPEG_DIR)/jcmainct.o \
+	$(OBJDIR)/$(JPEG_DIR)/jcprepct.o \
+	$(OBJDIR)/$(JPEG_DIR)/jccoefct.o \
+	$(OBJDIR)/$(JPEG_DIR)/jccolor.o \
+	$(OBJDIR)/$(JPEG_DIR)/jcsample.o \
+	$(OBJDIR)/$(JPEG_DIR)/jchuff.o \
+	$(OBJDIR)/$(JPEG_DIR)/jcphuff.o \
+	$(OBJDIR)/$(JPEG_DIR)/jcdctmgr.o \
+	$(OBJDIR)/$(JPEG_DIR)/jfdctfst.o \
+	$(OBJDIR)/$(JPEG_DIR)/jfdctflt.o \
+	$(OBJDIR)/$(JPEG_DIR)/jfdctint.o \
+	$(OBJDIR)/$(JPEG_DIR)/jdapimin.o \
+	$(OBJDIR)/$(JPEG_DIR)/jdapistd.o \
+	$(OBJDIR)/$(JPEG_DIR)/jdtrans.o \
+	$(OBJDIR)/$(JPEG_DIR)/jdatasrc.o \
+	$(OBJDIR)/$(JPEG_DIR)/jdmaster.o \
+	$(OBJDIR)/$(JPEG_DIR)/jdinput.o \
+	$(OBJDIR)/$(JPEG_DIR)/jdmarker.o \
+	$(OBJDIR)/$(JPEG_DIR)/jdhuff.o \
+	$(OBJDIR)/$(JPEG_DIR)/jdphuff.o \
+	$(OBJDIR)/$(JPEG_DIR)/jdmainct.o \
+	$(OBJDIR)/$(JPEG_DIR)/jdcoefct.o \
+	$(OBJDIR)/$(JPEG_DIR)/jdpostct.o \
+	$(OBJDIR)/$(JPEG_DIR)/jddctmgr.o \
+	$(OBJDIR)/$(JPEG_DIR)/jidctfst.o \
+	$(OBJDIR)/$(JPEG_DIR)/jidctflt.o \
+	$(OBJDIR)/$(JPEG_DIR)/jidctint.o \
+	$(OBJDIR)/$(JPEG_DIR)/jidctred.o \
+	$(OBJDIR)/$(JPEG_DIR)/jdsample.o \
+	$(OBJDIR)/$(JPEG_DIR)/jdcolor.o \
+	$(OBJDIR)/$(JPEG_DIR)/jquant1.o \
+	$(OBJDIR)/$(JPEG_DIR)/jquant2.o \
+	$(OBJDIR)/$(JPEG_DIR)/jdmerge.o \
+	$(OBJDIR)/$(JPEG_DIR)/jcomapi.o \
+	$(OBJDIR)/$(JPEG_DIR)/jutils.o \
+	$(OBJDIR)/$(JPEG_DIR)/jerror.o \
+	$(OBJDIR)/$(JPEG_DIR)/jmemmgr.o \
+	$(OBJDIR)/$(JPEG_DIR)/jmemnobs.o
+
+
+OBJS += $(JPEG)
+endif
+
+
+
+
+DIRS += $(OBJDIR)/$(JPEG_DIR)

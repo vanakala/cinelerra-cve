@@ -1,0 +1,39 @@
+LAME_DIR := lame-3.93.1
+
+
+LAME_OBJS := \
+		$(OBJDIR)/$(LAME_DIR)/libmp3lame/bitstream.o \
+		$(OBJDIR)/$(LAME_DIR)/libmp3lame/encoder.o \
+		$(OBJDIR)/$(LAME_DIR)/libmp3lame/fft.o \
+		$(OBJDIR)/$(LAME_DIR)/libmp3lame/id3tag.o \
+		$(OBJDIR)/$(LAME_DIR)/libmp3lame/lame.o \
+		$(OBJDIR)/$(LAME_DIR)/libmp3lame/mpglib_interface.o \
+		$(OBJDIR)/$(LAME_DIR)/libmp3lame/newmdct.o \
+		$(OBJDIR)/$(LAME_DIR)/libmp3lame/presets.o \
+		$(OBJDIR)/$(LAME_DIR)/libmp3lame/psymodel.o \
+		$(OBJDIR)/$(LAME_DIR)/libmp3lame/quantize.o \
+		$(OBJDIR)/$(LAME_DIR)/libmp3lame/quantize_pvt.o \
+		$(OBJDIR)/$(LAME_DIR)/libmp3lame/reservoir.o \
+		$(OBJDIR)/$(LAME_DIR)/libmp3lame/set_get.o \
+		$(OBJDIR)/$(LAME_DIR)/libmp3lame/tables.o \
+		$(OBJDIR)/$(LAME_DIR)/libmp3lame/takehiro.o \
+		$(OBJDIR)/$(LAME_DIR)/libmp3lame/util.o \
+		$(OBJDIR)/$(LAME_DIR)/libmp3lame/vbrquantize.o \
+		$(OBJDIR)/$(LAME_DIR)/libmp3lame/VbrTag.o \
+		$(OBJDIR)/$(LAME_DIR)/libmp3lame/version.o \
+		$(OBJDIR)/$(LAME_DIR)/libmp3lame/vorbis_interface.o
+
+
+
+LAME_CFLAGS := $(CFLAGS) \
+	-I$(LAME_DIR)/ \
+	-I$(LAME_DIR)/include \
+	-I$(LAME_DIR)/libmp3lame \
+	-I$(LAME_DIR)/mpglib \
+	-DHAVE_CONFIG_H
+
+LAME_DIRS := \
+	$(OBJDIR)/$(LAME_DIR)/libmp3lame/
+
+DIRS += $(LAME_DIRS)
+

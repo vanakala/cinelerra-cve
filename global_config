@@ -1,0 +1,97 @@
+HAVE_ALSA := n
+HAVE_LIBXXF86VM := $(shell if [ -f /usr/X11R6/include/X11/extensions/xf86vmode.h ]; then echo y; fi )
+HAVE_XFT := n
+HAVE_ESOUND := y
+HAVE_AVIFILE := n
+HAVE_FIREWIRE := y
+HAVE_OSS := y
+HAVE_GL := n
+
+
+
+
+OBJDIR := $(shell uname --machine)
+
+ifeq ($(origin CFLAGS), environment)
+HAVE_CFLAGS := y
+else
+HAVE_CFLAGS := n
+endif
+
+
+
+############################# C++ and C COMPILERS
+
+############################# FINAL DESTINATION FOR INSTALLATION BINARIES
+
+PREFIX = /usr/
+LIBPREFIX = $(PREFIX)/lib
+
+########################## THE COMPILER
+
+CC = g++
+GCC = gcc
+PLUGINDIR := /usr/lib/cinelerra
+
+ifneq ($(HAVE_CFLAGS), y)
+CFLAGS = -O2 -fomit-frame-pointer -falign-loops=2 -falign-jumps=2 -falign-functions=2
+endif
+
+ifeq ($(HAVE_GL), y)
+GLLIBS := -lGL
+CFLAGS += -DHAVE_GL
+endif
+
+
+ifeq ($(HAVE_LIBXXF86VM), y)
+CFLAGS += -DHAVE_LIBXXF86VM
+XXF86VM = -lXxf86vm
+endif
+
+
+ifeq ($(HAVE_ESOUND), y)
+ESOUNDCFLAGS = -DHAVE_ESOUND -I../esound
+ESOUNDLIBS = ../esound/$(OBJDIR)/libesound.a
+endif
+
+
+#CFLAGS += -g
+CFLAGS += -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64
+#CFLAGS += -I.      # Caused fileavi.C to fail
+
+FREETYPE_DIR = ../../freetype-2.1.4
+CFLAGS += -I$(FREETYPE_DIR)/include -I../../
+
+ifeq ($(HAVE_OSS), y)
+CFLAGS += -DHAVE_OSS
+endif
+
+ifeq ($(HAVE_FIREWIRE), y)
+CFLAGS += -DHAVE_FIREWIRE
+endif
+
+ifeq ($(HAVE_ALSA), y)
+CFLAGS += $(ALSA_CFLAGS)
+endif
+
+ifeq ($(OBJDIR), alpha)
+CXXREPOSITORY = cxx_repository/*.o
+endif
+
+$(shell sh -c 'if ! test -d $(OBJDIR)\; then mkdir $(OBJDIR)\; fi' )
+
+########################## LINKER
+
+LFLAGS = -L/usr/X11R6/lib
+PLUGINLFLAGS = -L../../bcbase/$(OBJDIR)/ -L/usr/X11R6/lib
+LDLINKER = g++ -shared 
+
+
+############### MAKEFILE MACROS
+
+LOOP_BEGIN = @ for i in $(DIRS) ; \
+	do \
+	
+
+LOOP_END = done
+

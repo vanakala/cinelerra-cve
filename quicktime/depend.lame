@@ -1,0 +1,48 @@
+$(OBJDIR)/$(LAME_DIR)/libmp3lame/fft.o: 			 $(LAME_DIR)/libmp3lame/fft.c
+$(OBJDIR)/$(LAME_DIR)/libmp3lame/VbrTag.o:  		 $(LAME_DIR)/libmp3lame/VbrTag.c
+$(OBJDIR)/$(LAME_DIR)/libmp3lame/encoder.o: 		 $(LAME_DIR)/libmp3lame/encoder.c
+$(OBJDIR)/$(LAME_DIR)/libmp3lame/bitstream.o: 		 $(LAME_DIR)/libmp3lame/bitstream.c
+$(OBJDIR)/$(LAME_DIR)/libmp3lame/id3tag.o:  		 $(LAME_DIR)/libmp3lame/id3tag.c
+$(OBJDIR)/$(LAME_DIR)/libmp3lame/lame.o: 			 $(LAME_DIR)/libmp3lame/lame.c
+$(OBJDIR)/$(LAME_DIR)/libmp3lame/newmdct.o: 		 $(LAME_DIR)/libmp3lame/newmdct.c
+$(OBJDIR)/$(LAME_DIR)/libmp3lame/presets.o: 		 $(LAME_DIR)/libmp3lame/presets.c
+$(OBJDIR)/$(LAME_DIR)/libmp3lame/quantize_pvt.o: 	 $(LAME_DIR)/libmp3lame/quantize_pvt.c
+$(OBJDIR)/$(LAME_DIR)/libmp3lame/quantize.o: 		 $(LAME_DIR)/libmp3lame/quantize.c
+$(OBJDIR)/$(LAME_DIR)/libmp3lame/reservoir.o: 		 $(LAME_DIR)/libmp3lame/reservoir.c
+$(OBJDIR)/$(LAME_DIR)/libmp3lame/psymodel.o: 		 $(LAME_DIR)/libmp3lame/psymodel.c
+$(OBJDIR)/$(LAME_DIR)/libmp3lame/set_get.o: 		 $(LAME_DIR)/libmp3lame/set_get.c
+$(OBJDIR)/$(LAME_DIR)/libmp3lame/tables.o:  		 $(LAME_DIR)/libmp3lame/tables.c
+$(OBJDIR)/$(LAME_DIR)/libmp3lame/takehiro.o: 		 $(LAME_DIR)/libmp3lame/takehiro.c
+$(OBJDIR)/$(LAME_DIR)/libmp3lame/util.o: 			 $(LAME_DIR)/libmp3lame/util.c
+$(OBJDIR)/$(LAME_DIR)/libmp3lame/version.o: 		 $(LAME_DIR)/libmp3lame/version.c
+$(OBJDIR)/$(LAME_DIR)/libmp3lame/mpglib_interface.o: $(LAME_DIR)/libmp3lame/mpglib_interface.c
+$(OBJDIR)/$(LAME_DIR)/libmp3lame/vbrquantize.o: 	 $(LAME_DIR)/libmp3lame/vbrquantize.c
+$(OBJDIR)/$(LAME_DIR)/libmp3lame/vorbis_interface.o: $(LAME_DIR)/libmp3lame/vorbis_interface.c
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

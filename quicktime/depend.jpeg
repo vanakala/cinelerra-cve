@@ -1,0 +1,127 @@
+$(OBJDIR)/$(JPEG_DIR)/cdjpeg.o: 	$(JPEG_DIR)/cdjpeg.c
+$(OBJDIR)/$(JPEG_DIR)/cpu_accel.o: 	$(JPEG_DIR)/cpu_accel.c
+$(OBJDIR)/$(JPEG_DIR)/fdctdata.o: 	$(JPEG_DIR)/fdctdata.c
+$(OBJDIR)/$(JPEG_DIR)/jcapimin.o: 	$(JPEG_DIR)/jcapimin.c
+$(OBJDIR)/$(JPEG_DIR)/jcapistd.o: 	$(JPEG_DIR)/jcapistd.c
+$(OBJDIR)/$(JPEG_DIR)/jccoefct.o: 	$(JPEG_DIR)/jccoefct.c
+$(OBJDIR)/$(JPEG_DIR)/jccolor.o: 	$(JPEG_DIR)/jccolor.c
+$(OBJDIR)/$(JPEG_DIR)/jcdctmgr.o: 	$(JPEG_DIR)/jcdctmgr.c
+$(OBJDIR)/$(JPEG_DIR)/jchuff.o: 	$(JPEG_DIR)/jchuff.c
+$(OBJDIR)/$(JPEG_DIR)/jcinit.o: 	$(JPEG_DIR)/jcinit.c
+$(OBJDIR)/$(JPEG_DIR)/jcmainct.o: 	$(JPEG_DIR)/jcmainct.c
+$(OBJDIR)/$(JPEG_DIR)/jcmarker.o: 	$(JPEG_DIR)/jcmarker.c
+$(OBJDIR)/$(JPEG_DIR)/jcmaster.o: 	$(JPEG_DIR)/jcmaster.c
+$(OBJDIR)/$(JPEG_DIR)/jcomapi.o: 	$(JPEG_DIR)/jcomapi.c
+$(OBJDIR)/$(JPEG_DIR)/jcparam.o: 	$(JPEG_DIR)/jcparam.c
+$(OBJDIR)/$(JPEG_DIR)/jcphuff.o: 	$(JPEG_DIR)/jcphuff.c
+$(OBJDIR)/$(JPEG_DIR)/jcprepct.o: 	$(JPEG_DIR)/jcprepct.c
+$(OBJDIR)/$(JPEG_DIR)/jcsample.o: 	$(JPEG_DIR)/jcsample.c
+$(OBJDIR)/$(JPEG_DIR)/jctrans.o: 	$(JPEG_DIR)/jctrans.c
+$(OBJDIR)/$(JPEG_DIR)/jdapimin.o: 	$(JPEG_DIR)/jdapimin.c
+$(OBJDIR)/$(JPEG_DIR)/jdapistd.o: 	$(JPEG_DIR)/jdapistd.c
+$(OBJDIR)/$(JPEG_DIR)/jdatadst.o: 	$(JPEG_DIR)/jdatadst.c
+$(OBJDIR)/$(JPEG_DIR)/jdatasrc.o: 	$(JPEG_DIR)/jdatasrc.c
+$(OBJDIR)/$(JPEG_DIR)/jdcoefct.o: 	$(JPEG_DIR)/jdcoefct.c
+$(OBJDIR)/$(JPEG_DIR)/jdcolor.o: 	$(JPEG_DIR)/jdcolor.c
+$(OBJDIR)/$(JPEG_DIR)/jddctmgr.o: 	$(JPEG_DIR)/jddctmgr.c
+$(OBJDIR)/$(JPEG_DIR)/jdhuff.o: 	$(JPEG_DIR)/jdhuff.c
+$(OBJDIR)/$(JPEG_DIR)/jdinput.o: 	$(JPEG_DIR)/jdinput.c
+$(OBJDIR)/$(JPEG_DIR)/jdmainct.o: 	$(JPEG_DIR)/jdmainct.c
+$(OBJDIR)/$(JPEG_DIR)/jdmarker.o: 	$(JPEG_DIR)/jdmarker.c
+$(OBJDIR)/$(JPEG_DIR)/jdmaster.o: 	$(JPEG_DIR)/jdmaster.c
+$(OBJDIR)/$(JPEG_DIR)/jdmerge.o: 	$(JPEG_DIR)/jdmerge.c
+$(OBJDIR)/$(JPEG_DIR)/jdphuff.o: 	$(JPEG_DIR)/jdphuff.c
+$(OBJDIR)/$(JPEG_DIR)/jdpostct.o: 	$(JPEG_DIR)/jdpostct.c
+$(OBJDIR)/$(JPEG_DIR)/jdtrans.o: 	$(JPEG_DIR)/jdtrans.c
+$(OBJDIR)/$(JPEG_DIR)/jerror.o: 	$(JPEG_DIR)/jerror.c
+$(OBJDIR)/$(JPEG_DIR)/jfdctflt.o: 	$(JPEG_DIR)/jfdctflt.c
+$(OBJDIR)/$(JPEG_DIR)/jfdctfst.o: 	$(JPEG_DIR)/jfdctfst.c
+$(OBJDIR)/$(JPEG_DIR)/jfdctint.o: 	$(JPEG_DIR)/jfdctint.c
+$(OBJDIR)/$(JPEG_DIR)/jidctflt.o: 	$(JPEG_DIR)/jidctflt.c
+$(OBJDIR)/$(JPEG_DIR)/jidctfst.o: 	$(JPEG_DIR)/jidctfst.c
+$(OBJDIR)/$(JPEG_DIR)/jidctint.o: 	$(JPEG_DIR)/jidctint.c
+$(OBJDIR)/$(JPEG_DIR)/jidctred.o: 	$(JPEG_DIR)/jidctred.c
+$(OBJDIR)/$(JPEG_DIR)/jmemmgr.o: 	$(JPEG_DIR)/jmemmgr.c
+$(OBJDIR)/$(JPEG_DIR)/jmemnobs.o: 	$(JPEG_DIR)/jmemnobs.c
+$(OBJDIR)/$(JPEG_DIR)/jpegtran.o: 	$(JPEG_DIR)/jpegtran.c
+$(OBJDIR)/$(JPEG_DIR)/jquant1.o: 	$(JPEG_DIR)/jquant1.c
+$(OBJDIR)/$(JPEG_DIR)/jquant2.o: 	$(JPEG_DIR)/jquant2.c
+$(OBJDIR)/$(JPEG_DIR)/jutils.o: 	$(JPEG_DIR)/jutils.c
+$(OBJDIR)/$(JPEG_DIR)/rdbmp.o:  	$(JPEG_DIR)/rdbmp.c
+$(OBJDIR)/$(JPEG_DIR)/rdcolmap.o: 	$(JPEG_DIR)/rdcolmap.c
+$(OBJDIR)/$(JPEG_DIR)/rdgif.o:  	$(JPEG_DIR)/rdgif.c
+$(OBJDIR)/$(JPEG_DIR)/rdjpgcom.o: 	$(JPEG_DIR)/rdjpgcom.c
+$(OBJDIR)/$(JPEG_DIR)/rdppm.o:  	$(JPEG_DIR)/rdppm.c
+$(OBJDIR)/$(JPEG_DIR)/rdrle.o:  	$(JPEG_DIR)/rdrle.c
+$(OBJDIR)/$(JPEG_DIR)/rdswitch.o: 	$(JPEG_DIR)/rdswitch.c
+$(OBJDIR)/$(JPEG_DIR)/rdtarga.o: 	$(JPEG_DIR)/rdtarga.c
+$(OBJDIR)/$(JPEG_DIR)/transupp.o: 	$(JPEG_DIR)/transupp.c
+$(OBJDIR)/$(JPEG_DIR)/wrbmp.o:  	$(JPEG_DIR)/wrbmp.c
+$(OBJDIR)/$(JPEG_DIR)/wrgif.o:  	$(JPEG_DIR)/wrgif.c
+$(OBJDIR)/$(JPEG_DIR)/wrjpgcom.o: 	$(JPEG_DIR)/wrjpgcom.c
+$(OBJDIR)/$(JPEG_DIR)/wrppm.o:  	$(JPEG_DIR)/wrppm.c
+$(OBJDIR)/$(JPEG_DIR)/wrrle.o:  	$(JPEG_DIR)/wrrle.c
+$(OBJDIR)/$(JPEG_DIR)/wrtarga.o: 	$(JPEG_DIR)/wrtarga.c
+
+$(OBJDIR)/$(JPEG_DIR)/jquant_x86simd.o: $(JPEG_DIR)/jquant_x86simd.c
+
+$(OBJDIR)/$(JPEG_DIR)/fdct_mmx.o: 	$(JPEG_DIR)/fdct_mmx.s
+$(OBJDIR)/$(JPEG_DIR)/quant_mmx.o: 	$(JPEG_DIR)/quant_mmx.s
+
+
+
+
+
+
+
+
+
+#$(OBJDIR)/jpeg/jcapimin.o:		  jpeg/jcapimin.c
+#$(OBJDIR)/jpeg/jcapistd.o:		  jpeg/jcapistd.c
+#$(OBJDIR)/jpeg/jctrans.o:		  jpeg/jctrans.c
+#$(OBJDIR)/jpeg/jcparam.o:		  jpeg/jcparam.c
+#$(OBJDIR)/jpeg/jdatadst.o:		  jpeg/jdatadst.c
+#$(OBJDIR)/jpeg/jcinit.o:		  jpeg/jcinit.c
+#$(OBJDIR)/jpeg/jcmaster.o:		  jpeg/jcmaster.c
+#$(OBJDIR)/jpeg/jcmarker.o:		  jpeg/jcmarker.c
+#$(OBJDIR)/jpeg/jcmainct.o:		  jpeg/jcmainct.c
+#$(OBJDIR)/jpeg/jcprepct.o:		  jpeg/jcprepct.c
+#$(OBJDIR)/jpeg/jccoefct.o:		  jpeg/jccoefct.c
+#$(OBJDIR)/jpeg/jccolor.o:		  jpeg/jccolor.c
+#$(OBJDIR)/jpeg/jcsample.o:		  jpeg/jcsample.c
+#$(OBJDIR)/jpeg/jchuff.o:		  jpeg/jchuff.c
+#$(OBJDIR)/jpeg/jcphuff.o:		  jpeg/jcphuff.c
+#$(OBJDIR)/jpeg/jcdctmgr.o:		  jpeg/jcdctmgr.c
+#$(OBJDIR)/jpeg/jfdctfst.o:		  jpeg/jfdctfst.c
+#$(OBJDIR)/jpeg/jfdctflt.o:		  jpeg/jfdctflt.c
+#$(OBJDIR)/jpeg/jfdctint.o:		  jpeg/jfdctint.c
+#$(OBJDIR)/jpeg/jdapimin.o:		  jpeg/jdapimin.c
+#$(OBJDIR)/jpeg/jdapistd.o:		  jpeg/jdapistd.c
+#$(OBJDIR)/jpeg/jdtrans.o:		  jpeg/jdtrans.c
+#$(OBJDIR)/jpeg/jdatasrc.o:		  jpeg/jdatasrc.c
+#$(OBJDIR)/jpeg/jdmaster.o:		  jpeg/jdmaster.c
+#$(OBJDIR)/jpeg/jdinput.o:		  jpeg/jdinput.c
+#$(OBJDIR)/jpeg/jdmarker.o:		  jpeg/jdmarker.c
+#$(OBJDIR)/jpeg/jdhuff.o:		  jpeg/jdhuff.c
+#$(OBJDIR)/jpeg/jdphuff.o:		  jpeg/jdphuff.c
+#$(OBJDIR)/jpeg/jdmainct.o:		  jpeg/jdmainct.c
+#$(OBJDIR)/jpeg/jdcoefct.o:		  jpeg/jdcoefct.c
+#$(OBJDIR)/jpeg/jdpostct.o:		  jpeg/jdpostct.c
+#$(OBJDIR)/jpeg/jddctmgr.o:		  jpeg/jddctmgr.c
+#$(OBJDIR)/jpeg/jidctfst.o:		  jpeg/jidctfst.c
+#$(OBJDIR)/jpeg/jidctflt.o:		  jpeg/jidctflt.c
+#$(OBJDIR)/jpeg/jidctint.o:		  jpeg/jidctint.c
+#$(OBJDIR)/jpeg/jidctred.o:		  jpeg/jidctred.c
+#$(OBJDIR)/jpeg/jdsample.o:		  jpeg/jdsample.c
+#$(OBJDIR)/jpeg/jdcolor.o:		  jpeg/jdcolor.c
+#$(OBJDIR)/jpeg/jquant1.o:		  jpeg/jquant1.c
+#$(OBJDIR)/jpeg/jquant2.o:		  jpeg/jquant2.c
+#$(OBJDIR)/jpeg/jdmerge.o:		  jpeg/jdmerge.c
+#$(OBJDIR)/jpeg/jcomapi.o:		  jpeg/jcomapi.c
+#$(OBJDIR)/jpeg/jutils.o:		  jpeg/jutils.c
+#$(OBJDIR)/jpeg/jerror.o:		  jpeg/jerror.c
+#$(OBJDIR)/jpeg/jmemmgr.o:		  jpeg/jmemmgr.c
+#$(OBJDIR)/jpeg/jmemnobs.o:		  jpeg/jmemnobs.c
+
+
+

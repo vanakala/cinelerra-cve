@@ -1,0 +1,21 @@
+OBJDIR := $(shell uname --machine)
+HAVE_CFLAGS := $(shell if [ -n "$CFLAGS" ]; then echo y; fi )
+USE_MMX = 0
+CC = gcc
+
+ifneq ($(HAVE_CFLAGS), y)
+
+
+ifeq ($(OBJDIR), alpha)
+  CFLAGS = -O4 -arch ev67 -ieee -accept c99_keywords -gcc_messages
+endif
+
+ifeq ($(OBJDIR), i686)
+  CFLAGS = -O3 -fmessage-length=0 -funroll-all-loops -fomit-frame-pointer -malign-loops=2 -malign-jumps=2 -malign-functions=2 -I/usr/local/include
+endif
+
+
+
+
+
+endif

@@ -1,0 +1,71 @@
+MAD_DIR := $(shell expr mad* )
+
+
+MAD_OBJS := \
+	$(OBJDIR)/$(MAD_DIR)/libid3tag/version.o \
+	$(OBJDIR)/$(MAD_DIR)/libid3tag/ucs4.o \
+	$(OBJDIR)/$(MAD_DIR)/libid3tag/utf16.o \
+	$(OBJDIR)/$(MAD_DIR)/libid3tag/latin1.o \
+	$(OBJDIR)/$(MAD_DIR)/libid3tag/utf8.o \
+	$(OBJDIR)/$(MAD_DIR)/libid3tag/parse.o \
+	$(OBJDIR)/$(MAD_DIR)/libid3tag/render.o \
+	$(OBJDIR)/$(MAD_DIR)/libid3tag/field.o \
+	$(OBJDIR)/$(MAD_DIR)/libid3tag/compat.o \
+	$(OBJDIR)/$(MAD_DIR)/libid3tag/genre.o \
+	$(OBJDIR)/$(MAD_DIR)/libid3tag/frametype.o \
+	$(OBJDIR)/$(MAD_DIR)/libid3tag/frame.o \
+	$(OBJDIR)/$(MAD_DIR)/libid3tag/crc.o \
+	$(OBJDIR)/$(MAD_DIR)/libid3tag/util.o \
+	$(OBJDIR)/$(MAD_DIR)/libid3tag/file.o \
+	$(OBJDIR)/$(MAD_DIR)/libid3tag/tag.o \
+	$(OBJDIR)/$(MAD_DIR)/libmad/fixed.o \
+	$(OBJDIR)/$(MAD_DIR)/libmad/version.o \
+	$(OBJDIR)/$(MAD_DIR)/libmad/bit.o \
+	$(OBJDIR)/$(MAD_DIR)/libmad/stream.o \
+	$(OBJDIR)/$(MAD_DIR)/libmad/timer.o \
+	$(OBJDIR)/$(MAD_DIR)/libmad/frame.o \
+	$(OBJDIR)/$(MAD_DIR)/libmad/layer12.o \
+	$(OBJDIR)/$(MAD_DIR)/libmad/decoder.o \
+	$(OBJDIR)/$(MAD_DIR)/libmad/synth.o \
+	$(OBJDIR)/$(MAD_DIR)/libmad/huffman.o \
+	$(OBJDIR)/$(MAD_DIR)/libmad/layer3.o \
+	$(OBJDIR)/$(MAD_DIR)/version.o \
+	$(OBJDIR)/$(MAD_DIR)/audio_cdda.o \
+	$(OBJDIR)/$(MAD_DIR)/audio_wave.o \
+	$(OBJDIR)/$(MAD_DIR)/audio_aiff.o \
+	$(OBJDIR)/$(MAD_DIR)/audio_null.o \
+	$(OBJDIR)/$(MAD_DIR)/audio_raw.o \
+	$(OBJDIR)/$(MAD_DIR)/audio_snd.o \
+	$(OBJDIR)/$(MAD_DIR)/resample.o \
+	$(OBJDIR)/$(MAD_DIR)/audio.o \
+	$(OBJDIR)/$(MAD_DIR)/filter.o \
+	$(OBJDIR)/$(MAD_DIR)/xing.o \
+	$(OBJDIR)/$(MAD_DIR)/equalizer.o \
+	$(OBJDIR)/$(MAD_DIR)/getopt.o \
+	$(OBJDIR)/$(MAD_DIR)/getopt1.o \
+	$(OBJDIR)/$(MAD_DIR)/audio_oss.o \
+	$(OBJDIR)/$(MAD_DIR)/player.o
+
+
+MAD_CFLAGS := \
+	$(CFLAGS) \
+	-I$(MAD_DIR)/ \
+	-I$(MAD_DIR)/intl \
+	-I$(MAD_DIR)/libid3tag \
+	-I$(MAD_DIR)/libmad \
+	-I$(MAD_DIR)/libz \
+	-I$(MAD_DIR)/msvc++/libmad/ \
+	-I$(MAD_DIR)/winamp \
+	-DHAVE_CONFIG_H \
+	-DFPM_INTEL \
+	-DASO_ZEROCHECK \
+	-DLOCALEDIR=\"/usr/share/locale\"
+
+MAD_DIRS := \
+	$(OBJDIR)/$(MAD_DIR)/ \
+	$(OBJDIR)/$(MAD_DIR)/libmad/ \
+	$(OBJDIR)/$(MAD_DIR)/libid3tag/
+
+
+$(shell echo  $(MAD_CFLAGS) > $(OBJDIR)/mad_flags)
+
