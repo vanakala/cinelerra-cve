@@ -143,11 +143,9 @@ int DelayVideoSlider::handle_event()
 
 
 DelayVideoThread::DelayVideoThread(DelayVideo *plugin)
- : Thread()
+ : Thread(0,0,1)
 {
 	this->plugin = plugin;
-	set_synchronous(0);
-	completion.lock();
 }
 
 
@@ -165,8 +163,8 @@ void DelayVideoThread::run()
 		info.get_abs_cursor_x() - 105, 
 		info.get_abs_cursor_y() - 60);
 	window->create_objects();
+	plugin->thread = this;
 	int result = window->run_window();
-	completion.unlock();
 // Last command executed in thread
 	if(result) plugin->client_side_close();
 }
@@ -194,8 +192,6 @@ DelayVideo::~DelayVideo()
 	if(thread)
 	{
 		thread->window->set_done(0);
-		thread->completion.lock();
-		delete thread;
 	}
 //printf("DelayVideo::~DelayVideo 1\n");
 
