@@ -413,7 +413,7 @@ void MaskUnit::process_package(LoadPackage *package)
 			unsigned char max = k + 1;
 			ArrayList<MaskPoint*> *points = engine->point_sets.values[k];
 
-			if(points->total < 3) continue;
+			if(points->total < 2) continue;
 //printf("MaskUnit::process_package 2 %d %d\n", k, points->total);
 			for(int i = 0; i < points->total; i++)
 			{
