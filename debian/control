@@ -29,6 +29,13 @@ Description: A toolkit library
  libguicast is a toolkit library mainly used by HeroineVirtual's
  softwares
 
+Package: libsndfilehv
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: A custom modified Cinelerra's libsndfile library
+ custom modified Cinelerra's libsndfile library
+
 Package: libquicktime1
 Section: libs
 Depends: ${shlibs:Depends}
