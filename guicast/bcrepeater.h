@@ -5,7 +5,7 @@
 #include "bcwindowbase.inc"
 #include "condition.inc"
 #include "thread.h"
-#include "timer.h"
+#include "bctimer.h"
 
 class BC_Repeater : public Thread
 {

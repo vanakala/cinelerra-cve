@@ -16,9 +16,10 @@
 
 
 
-PluginArray::PluginArray()
+PluginArray::PluginArray(int data_type)
  : ArrayList<PluginServer*>()
 {
+	this->data_type = data_type;
 }
 
 PluginArray::~PluginArray()
@@ -30,7 +31,7 @@ PluginArray::~PluginArray()
 
 PluginServer* PluginArray::scan_plugindb(char *title)
 {
-	return mwindow->scan_plugindb(title);
+	return mwindow->scan_plugindb(title, data_type);
 }
 
 int PluginArray::start_plugins(MWindow *mwindow, 
@@ -120,6 +121,7 @@ int PluginArray::start_plugins(MWindow *mwindow,
 					mwindow->edl, 
 					0,
 					-1);
+				plugin->get_parameters(start, end, 1);
 				plugin->init_realtime(0, 1, get_bufsize());
 			}
 		}
@@ -137,6 +139,7 @@ int PluginArray::start_plugins(MWindow *mwindow,
 				mwindow->edl, 
 				0,
 				-1);
+			plugin->get_parameters(start, end, total_tracks());
 			plugin->init_realtime(0, total_tracks(), get_bufsize());
 		}
 	}
@@ -172,13 +175,8 @@ int PluginArray::run_plugins()
 			len = buffer_size;
 			if(current_position + len > end) len = end - current_position;
 
-// // Arm buffers
-// 			for(i = 0; i < total_tracks(); i++)
-// 			{
-// 				load_module(i, current_position, len);
-// 			}
-
 // Process in plugin.  This pulls data from the modules
+			get_buffers();
 			for(i = 0; i < total; i++)
 			{
 				process_realtime(i, current_position, len);

@@ -5,6 +5,7 @@
 #include "assets.inc"
 #include "audiodevice.inc"
 #include "batch.inc"
+#include "channeldb.inc"
 #include "guicast.h"
 #include "bitspopup.h"
 #include "browsebutton.h"
@@ -19,6 +20,7 @@
 #include "loadmode.inc"
 #include "mwindow.inc"
 #include "maxchannels.h"
+#include "picture.inc"
 #include "playbackengine.inc"
 #include "record.inc"
 #include "recordengine.inc"
@@ -79,9 +81,11 @@ public:
 	int set_video_picture();
 // Set screencapture translation
 	void set_translation(int x, int y);
-// Set the channel in the current batch
+
+// Set the channel in the current batch and the picture controls
 	int set_channel(int channel);
 	void set_channel(Channel *channel);
+
 	void toggle_label();
 // Set values in batch structures
 	void configure_batches();
@@ -93,10 +97,10 @@ public:
 // Create next file in batch
 	int init_next_file();
 	void rewind_file();
-// Get the channeldb used by the device
-	ArrayList<Channel*>* current_channeldb();
-	ArrayList<char*>* get_video_inputs();
-
+// Get the inputs supported by the device
+	ArrayList<Channel*>* get_video_inputs();
+// Don't write to the returned string.
+	char* get_channeldb_prefix();
 
 // Copied to each batch for the files
 	Asset *default_asset;
@@ -137,7 +141,6 @@ public:
 	int64_t sync_position();
 // Current position for GUI relative to batch
 	double current_display_position();
-	double current_display_length();
 	int64_t current_audio_position();
 	int64_t current_duration_samples();
 	int64_t current_video_position();
@@ -146,6 +149,13 @@ public:
 	int64_t batch_video_offset();
 // Rewind the current file in the current batch
 	void start_over();
+
+
+// User defined TV stations and inputs to record from.
+	ChannelDB *channeldb;
+// Structure which stores what parameters the device supports
+	Channel *master_channel;
+
 
 	LoadMode *loadmode;
 	MWindow *mwindow;
@@ -173,12 +183,8 @@ public:
 	int reverse_interlace;     // Reverse the interlace in the video window display only
 // Color model for uncompressed device interface
 	int color_model;
-// Picture quality
-	int video_brightness;
-	int video_hue;
-	int video_color;
-	int video_contrast;
-	int video_whiteness;
+// Picture quality and parameters the device supports
+	Picture *picture;
 // Fill dropped frames with duplicates
 	int fill_frames;
 // Parameters for video monitor

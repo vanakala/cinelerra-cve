@@ -21,7 +21,7 @@
 class PluginArray : public ArrayList<PluginServer*>
 {
 public:
-	PluginArray();
+	PluginArray(int data_type);
 	virtual ~PluginArray();
 
 	PluginServer* scan_plugindb(char *title);
@@ -36,6 +36,7 @@ public:
 	int stop_plugins();
 	virtual void create_modules() {};
 	virtual void create_buffers() {};
+	virtual void get_buffers() {};
 /*
  * 	virtual void load_module(int module, 
  * 		int64_t input_position, 
@@ -70,6 +71,7 @@ public:
 	int64_t start, end;
 	int done;
 	int error;
+	int data_type;
 };
 
 

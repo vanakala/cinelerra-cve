@@ -49,7 +49,7 @@ void quicktime_elst_init_all(quicktime_elst_t *elst)
 	if(!elst->total_entries)
 	{
 		elst->total_entries = 1;
-		elst->table = (quicktime_elst_table_t*)malloc(sizeof(quicktime_elst_table_t) * elst->total_entries);
+		elst->table = (quicktime_elst_table_t*)calloc(1, sizeof(quicktime_elst_table_t) * elst->total_entries);
 		quicktime_elst_table_init(&(elst->table[0]));
 	}
 }

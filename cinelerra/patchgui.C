@@ -715,12 +715,11 @@ int NudgePatch::handle_event()
 	patch->set_nudge_value(get_text());
 	mwindow->undo->update_undo_after();
 
-// Need to change the EDL because the nudge is done in the render stage,
-// not the virtual console.  It would take too long for audio.
 	if(patch->track->data_type == TRACK_AUDIO)
 	{
 		mwindow->gui->unlock_window();
-		mwindow->sync_parameters(CHANGE_EDL);
+//		mwindow->sync_parameters(CHANGE_EDL);
+		mwindow->sync_parameters(CHANGE_PARAMS);
 		mwindow->gui->lock_window("NudgePatch::handle_event 1");
 	}
 	else

@@ -25,7 +25,7 @@ AudioInConfig::AudioInConfig()
 	sprintf(esound_in_server, "");
 	esound_in_port = 0;
 
-	sprintf(alsa_in_device, "");
+	sprintf(alsa_in_device, "default");
 	alsa_in_channels = 2;
 	alsa_in_bits = 16;
 	in_samplerate = 48000;
@@ -153,6 +153,8 @@ VideoInConfig::VideoInConfig()
 {
 	driver = VIDEO4LINUX;
 	sprintf(v4l_in_device, "/dev/video0");
+	sprintf(v4l2_in_device, "/dev/video0");
+	sprintf(v4l2jpeg_in_device, "/dev/video0");
 	sprintf(lml_in_device, "/dev/mvideo/stream");
 	sprintf(buz_in_device, "/dev/video0");
 	sprintf(screencapture_display, "");
@@ -178,6 +180,12 @@ char* VideoInConfig::get_path()
 		case VIDEO4LINUX:
 			return v4l_in_device;
 			break;
+		case VIDEO4LINUX2:
+			return v4l2_in_device;
+			break;
+		case VIDEO4LINUX2JPEG:
+			return v4l2jpeg_in_device;
+			break;
 		case CAPTURE_BUZ:
 			return buz_in_device;
 			break;
@@ -189,6 +197,8 @@ VideoInConfig& VideoInConfig::operator=(VideoInConfig &that)
 {
 	driver = that.driver;
 	strcpy(v4l_in_device, that.v4l_in_device);
+	strcpy(v4l2_in_device, that.v4l2_in_device);
+	strcpy(v4l2jpeg_in_device, that.v4l2jpeg_in_device);
 	strcpy(lml_in_device, that.lml_in_device);
 	strcpy(buz_in_device, that.buz_in_device);
 	strcpy(screencapture_display, that.screencapture_display);
@@ -206,6 +216,8 @@ int VideoInConfig::load_defaults(Defaults *defaults)
 {
 	driver = defaults->get("VIDEO_IN_DRIVER", driver);
 	defaults->get("V4L_IN_DEVICE", v4l_in_device);
+	defaults->get("V4L2_IN_DEVICE", v4l2_in_device);
+	defaults->get("V4L2JPEG_IN_DEVICE", v4l2jpeg_in_device);
 	defaults->get("LML_IN_DEVICE", lml_in_device);
 	defaults->get("BUZ_IN_DEVICE", buz_in_device);
 	defaults->get("SCREENCAPTURE_DISPLAY", screencapture_display);
@@ -223,6 +235,8 @@ int VideoInConfig::save_defaults(Defaults *defaults)
 {
 	defaults->update("VIDEO_IN_DRIVER", driver);
 	defaults->update("V4L_IN_DEVICE", v4l_in_device);
+	defaults->update("V4L2_IN_DEVICE", v4l2_in_device);
+	defaults->update("V4L2JPEG_IN_DEVICE", v4l2jpeg_in_device);
 	defaults->update("LML_IN_DEVICE", lml_in_device);
 	defaults->update("BUZ_IN_DEVICE", buz_in_device);
 	defaults->update("SCREENCAPTURE_DISPLAY", screencapture_display);

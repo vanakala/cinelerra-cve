@@ -5,7 +5,6 @@
 #include "device1394output.inc"
 #include "guicast.h"
 #include "libdv.h"
-#include "mutex.h"
 #include "quicktime.h"
 #include "sema.h"
 #include "vdevicebase.h"

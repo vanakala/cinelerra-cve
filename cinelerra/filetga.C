@@ -167,7 +167,12 @@ FrameWriterUnit* FileTGA::new_writer_unit(FrameWriter *writer)
 	return new TGAUnit(this, writer);
 }
 
-
+int FileTGA::get_memory_usage()
+{
+	int result = FileBase::get_memory_usage();
+	if(temp) result += temp->get_data_size();
+	return result;
+}
 
 
 
@@ -221,7 +226,6 @@ int FileTGA::read_frame_header(char *path)
 
 void FileTGA::read_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp)
 {
-//printf("FileTGA::read_tga 1\n");
 // Read header
 	unsigned char *footer, *header;
 	int input_cmodel;
@@ -398,7 +402,6 @@ void FileTGA::read_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp)
 			width,
 			frame->get_w());
 	}
-//printf("FileTGA::read_tga 2 %d %d\n", frame->get_color_model(), output_frame->get_color_model());
 }
 
 void FileTGA::write_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp)

@@ -12,24 +12,17 @@ class FileThread : public Thread
 {
 public:
 	FileThread(File *file, int do_audio, int do_video);
-	FileThread(File *file, 
-		int do_audio, 
-		int do_video,
-		long buffer_size, 
-		int color_model, 
-		int ring_buffers, 
-		int compressed);
 	~FileThread();
 
 	void create_objects(File *file, 
 		int do_audio, 
-		int do_video,
-		long buffer_size, 
-		int color_model, 
-		int ring_buffers, 
-		int compressed);
+		int do_video);
+	void delete_objects();
+	void reset();
 	int start_writing();
-// Allocate the buffers and start loop
+// Allocate the buffers and start loop.
+// compressed - if 1 write_compressed_frames is called in the file
+//            - if 0 write_frames is called
 	int start_writing(long buffer_size, 
 			int color_model, 
 			int ring_buffers, 
@@ -45,17 +38,18 @@ public:
 	void run();
 	int swap_buffer();
 
-	double **audio_buffer[RING_BUFFERS];
+	double ***audio_buffer;
 // (VFrame*)(VFrame array *)(Track *)[ring buffer]
-	VFrame ***video_buffer[RING_BUFFERS];      
-	long output_size[RING_BUFFERS];  // Number of frames or samples to write
-	int is_compressed[RING_BUFFERS]; // Whether to use the compressed data in the frame
-	Condition *output_lock[RING_BUFFERS], *input_lock[RING_BUFFERS];
+	VFrame ****video_buffer;      
+	long *output_size;  // Number of frames or samples to write
+// Not used
+	int *is_compressed; // Whether to use the compressed data in the frame
+	Condition **output_lock, **input_lock;
 // Lock access to the file to allow it to be changed without stopping the loop
 	Mutex *file_lock;
 	int current_buffer;
 	int local_buffer;
-	int last_buffer[RING_BUFFERS];
+	int *last_buffer;  // last_buffer[ring buffer]
 	int return_value;
 	int do_audio;
 	int do_video;
@@ -64,6 +58,7 @@ public:
 	int buffer_size;    // Frames or samples per ring buffer
 // Color model of frames
 	int color_model;
+// Whether to use the compressed data in the frame
 	int compressed;
 };
 

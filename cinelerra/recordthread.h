@@ -9,7 +9,7 @@
 #include "recordaudio.inc"
 #include "recordvideo.inc"
 #include "thread.h"
-#include "timer.inc"
+#include "bctimer.inc"
 
 // Synchronously handle recording and monitoring
 

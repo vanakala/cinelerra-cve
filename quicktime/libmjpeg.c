@@ -1004,7 +1004,7 @@ int mjpeg_decompress(mjpeg_t *mjpeg,
 	int i, result = 0;
 	int got_first_thread = 0;
 
-//printf("mjpeg_decompress 1 %ld %ld\n", buffer_len, input_field2);
+//printf("mjpeg_decompress 1 %d %d\n", buffer_len, input_field2);
 	if(buffer_len == 0) return 1;
 	if(input_field2 == 0 && mjpeg->fields > 1) return 1;
 
@@ -1096,6 +1096,7 @@ int mjpeg_decompress(mjpeg_t *mjpeg,
 			mjpeg->coded_w,
 			mjpeg->rowspan ? mjpeg->rowspan : mjpeg->output_w);
 	}
+//printf("mjpeg_decompress 100\n");
 	return 0;
 }
 
@@ -1406,12 +1407,10 @@ static int qt_table_offsets(unsigned char *buffer,
 
 		while(!done)
 		{
-//printf("qt_table_offsets 2\n");
 			marker = next_marker(buffer, 
 				&offset, 
 				buffer_size);
 
-//printf("qt_table_offsets 3 %d %d %02x\n", offset, buffer_size, marker);
 			len = 0;
 
 			switch(marker)
@@ -1513,6 +1512,7 @@ static int qt_table_offsets(unsigned char *buffer,
 			}
 
 			if(!done) offset += len;
+			if(offset >= buffer_size) done = 1;
 		}
 //printf("qt_table_offsets 10 %d\n", field);
 	}
@@ -1593,6 +1593,7 @@ void mjpeg_insert_quicktime_markers(unsigned char **buffer,
 		buffer_allocated,
 		2,
 		QUICKTIME_MARKER_SIZE);
+
 	insert_quicktime_marker(*buffer, 
 		*buffer_size, 
 		2, 
@@ -1603,6 +1604,7 @@ void mjpeg_insert_quicktime_markers(unsigned char **buffer,
 		buffer_allocated,
 		header[0].next_offset + 2,
 		QUICKTIME_MARKER_SIZE);
+
 	header[1].next_offset = 0;
 	insert_quicktime_marker(*buffer, 
 		*buffer_size, 
@@ -1708,14 +1710,17 @@ static void read_avi_markers(unsigned char *buffer,
 	long offset = 0;
 	int marker_count = 0;
 	int result = 0;
+	int marker_size = 0;
 	while(marker_count < 2 && offset < buffer_size && !result)
 	{
 		result = find_marker(buffer, 
 			&offset, 
 			buffer_size,
 			M_APP0);
+		marker_size = ((unsigned char)buffer[offset] << 8) | (unsigned char)buffer[offset];
 
-		if(!result)
+		
+		if(!result && marker_size >= 16)
 		{
 // Marker size, AVI1
 			offset += 6;
@@ -1797,6 +1802,7 @@ long mjpeg_get_avi_field2(unsigned char *buffer,
 	{
 		return mjpeg_get_field2(buffer, buffer_size);
 	}
+	return 0;
 }
 
 long mjpeg_get_field2(unsigned char *buffer, long buffer_size)

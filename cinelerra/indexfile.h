@@ -10,7 +10,7 @@
 #include "mwindow.inc"
 #include "preferences.inc"
 #include "resourcepixmap.inc"
-#include "timer.inc"
+#include "bctimer.inc"
 #include "tracks.inc"
 
 class IndexFile

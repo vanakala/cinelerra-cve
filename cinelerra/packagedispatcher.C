@@ -235,6 +235,7 @@ RenderPackage* PackageDispatcher::get_package(double frames_per_second,
 	float avg_frames_per_second = preferences->get_avg_rate(use_local_rate);
 
 	RenderPackage *result = 0;
+//printf("PackageDispatcher::get_package 1 %d\n", strategy);
 	if(strategy == SINGLE_PASS || 
 		strategy == FILE_PER_LABEL || 
 		strategy == FILE_PER_LABEL_FARM)
@@ -248,6 +249,9 @@ RenderPackage* PackageDispatcher::get_package(double frames_per_second,
 	else
 	if(strategy == SINGLE_PASS_FARM)
 	{
+
+//printf("PackageDispatcher::get_package %ld %ld %ld %ld\n", audio_position, video_position, audio_end, video_end);
+
 		if(audio_position < audio_end ||
 			video_position < video_end)
 		{
@@ -323,11 +327,11 @@ RenderPackage* PackageDispatcher::get_package(double frames_per_second,
 			}
 
 			current_package++;
-// printf("Dispatcher::get_package 2 %lld %lld %lld %lld\n", 
-// result->audio_start, 
-// result->video_start, 
-// result->audio_end, 
-// result->video_end);
+//printf("Dispatcher::get_package 50 %lld %lld %lld %lld\n", 
+//result->audio_start, 
+//result->video_start, 
+//result->audio_end, 
+//result->video_end);
 		}
 	}
 	else
@@ -400,6 +404,7 @@ RenderPackage* PackageDispatcher::get_package(double frames_per_second,
 
 	package_lock->unlock();
 
+//printf("PackageDispatcher::get_package %p\n", result);
 	return result;
 }
 

@@ -48,6 +48,7 @@ int quicktime_write_fixed16(quicktime_t *file, float number);
 
 /* Returns number of bytes written */
 int quicktime_write_data(quicktime_t *file, char *data, int size);
+/* Returns 1 if equal or 0 if different */
 int quicktime_match_32(char *input, char *output);
 int quicktime_match_24(char *input, char *output);
 void quicktime_write_pascal(quicktime_t *file, char *data);
@@ -128,7 +129,9 @@ void quicktime_read_hdrl(quicktime_t *file,
 	quicktime_atom_t *parent_atom);
 void quicktime_init_hdrl(quicktime_t *file, quicktime_hdrl_t *hdrl);
 void quicktime_finalize_hdrl(quicktime_t *file, quicktime_hdrl_t *hdrl);
-
+void quicktime_read_esds(quicktime_t *file, 
+	quicktime_atom_t *parent_atom, 
+	quicktime_stsd_table_t *table);
 
 
 
@@ -277,6 +280,10 @@ long quicktime_offset_to_sample(quicktime_trak_t *trak, int64_t offset);
 quicktime_trak_t* quicktime_add_trak(quicktime_t *file);
 
 
+int quicktime_time_to_sample(quicktime_stts_t *stts,
+	int64_t *start_time);
+
+
 void quicktime_write_chunk_header(quicktime_t *file, 
 	quicktime_trak_t *trak, 
 	quicktime_atom_t *chunk);
@@ -301,7 +308,7 @@ void quicktime_update_stsz(quicktime_stsz_t *stsz, long sample, long sample_size
 int quicktime_update_stsc(quicktime_stsc_t *stsc, long chunk, long samples);
 int quicktime_trak_duration(quicktime_trak_t *trak, long *duration, long *timescale);
 int quicktime_trak_fix_counts(quicktime_t *file, quicktime_trak_t *trak);
-
+int quicktime_sample_size(quicktime_trak_t *trak, int sample);
 
 /* number of samples in the chunk */
 long quicktime_chunk_samples(quicktime_trak_t *trak, long chunk);
@@ -384,11 +391,35 @@ unsigned long quicktime_current_time(void);
 
 
 
+// Utility functions for vbr audio codecs
 
+// Delete buffers from the vbr structure when finished
+void quicktime_clear_vbr(quicktime_vbr_t  *ptr);
+void quicktime_vbr_set_channels(quicktime_vbr_t *ptr, int channels);
+void quicktime_init_vbr(quicktime_vbr_t *ptr, int channels);
 
+// Shift the output buffer and fix pointers for the given range.
+// Return 1 if not possible to handle the sample count.
+int quicktime_align_vbr(quicktime_audio_map_t *atrack, 
+	int samples);
+// The current endpoint of the buffer
+int64_t quicktime_vbr_end(quicktime_vbr_t  *ptr);
+unsigned char* quicktime_vbr_input(quicktime_vbr_t *ptr);
+int quicktime_vbr_input_size(quicktime_vbr_t *ptr);
+// Read the next sample/frame of compressed data and advance the counters.
+int quicktime_read_vbr(quicktime_t *file,
+	quicktime_audio_map_t *atrack);
+// Put the next sample/frame of uncompressed data in the buffer and advance the
+// counters
+void quicktime_store_vbr_float(quicktime_audio_map_t *atrack,
+	float *samples,
+	int sample_count);
 
-
-
+void quicktime_copy_vbr_float(quicktime_vbr_t *vbr,
+	int64_t start_position, 
+	int samples,
+	float *output, 
+	int channel);
 
 
 #endif

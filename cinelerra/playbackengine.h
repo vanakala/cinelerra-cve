@@ -5,6 +5,7 @@
 #include "audiodevice.inc"
 #include "cache.inc"
 #include "canvas.inc"
+#include "channeldb.inc"
 #include "condition.inc"
 #include "defaults.inc"
 #include "edl.inc"
@@ -15,7 +16,7 @@
 #include "preferences.inc"
 #include "renderengine.inc"
 #include "thread.h"
-#include "timer.h"
+#include "bctimer.h"
 #include "transportque.inc"
 #include "videodevice.inc"
 
@@ -55,6 +56,8 @@ public:
 	virtual void update_transport(int command, int paused);
 // The render engines call this to update tracking variables in the playback engine.
 	void update_tracking(double position);
+// Get the output channel table for the current device or 0 if none exists.
+	ChannelDB* get_channeldb();
 
 	void run();
 

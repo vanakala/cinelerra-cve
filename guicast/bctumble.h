@@ -42,9 +42,11 @@ public:
 
 	int handle_up_event();
 	int handle_down_event();
+	void set_increment(float value);
 	void set_boundaries(int64_t min, int64_t max);
 
 	int64_t min, max;
+	int64_t increment;
 	BC_TextBox *textbox;
 };
 

@@ -3,6 +3,7 @@
 #include "audiodevice.h"
 #include "batch.h"
 #include "channel.h"
+#include "channeldb.h"
 #include "channelpicker.h"
 #include "clip.h"
 #include "defaults.h"
@@ -21,6 +22,7 @@
 #include "mainundo.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
+#include "picture.h"
 #include "playbackengine.h"
 #include "preferences.h"
 #include "quicktime.h"
@@ -61,34 +63,26 @@ RecordMenuItem::~RecordMenuItem()
 
 int RecordMenuItem::handle_event()
 {
-//printf("RecordMenuItem::handle_event 1 %d\n", thread->running());
 	if(thread->running()) 
 	{
-//printf("RecordMenuItem::handle_event 2\n");
 		switch(current_state)
 		{
 			case RECORD_INTRO:
-//printf("RecordMenuItem::handle_event 3\n");
 				thread->record_window->lock_window("RecordMenuItem::handle_event 1");
 				thread->record_window->raise_window();
 				thread->record_window->unlock_window();
-//printf("RecordMenuItem::handle_event 4\n");
 				break;
 			
 			case RECORD_CAPTURING:
-//printf("RecordMenuItem::handle_event 5\n");
 				thread->record_gui->lock_window("RecordMenuItem::handle_event 2");
 				thread->record_gui->raise_window();
 				thread->record_gui->unlock_window();
-//printf("RecordMenuItem::handle_event 6\n");
 				break;
 		}
 		return 0;
 	}
-//printf("RecordMenuItem::handle_event 7 %d\n", thread->running());
 
 	thread->start();
-//printf("RecordMenuItem::handle_event 8\n");
 	return 1;
 }
 
@@ -113,6 +107,9 @@ Record::Record(MWindow *mwindow, RecordMenuItem *menu_item)
 	file = 0;
 	editing_batch = 0;
 	current_batch = 0;
+	picture = new Picture;
+	channeldb = new ChannelDB;
+	master_channel = new Channel;
 
 // Initialize 601 to rgb tables
 // 	int _601_to_rgb_value;
@@ -127,6 +124,9 @@ Record::Record(MWindow *mwindow, RecordMenuItem *menu_item)
 
 Record::~Record()
 {
+	delete picture;
+	delete channeldb;
+	delete master_channel;
 }
 
 
@@ -159,7 +159,8 @@ int Record::load_defaults()
 
 // These are locked by a specific driver.
 	if(mwindow->edl->session->vconfig_in->driver == CAPTURE_LML ||
-		mwindow->edl->session->vconfig_in->driver == CAPTURE_BUZ)
+		mwindow->edl->session->vconfig_in->driver == CAPTURE_BUZ ||
+		mwindow->edl->session->vconfig_in->driver == VIDEO4LINUX2JPEG)
 		strncpy(default_asset->vcodec, QUICKTIME_MJPA, 4);
 	else
 	if(mwindow->edl->session->vconfig_in->driver == CAPTURE_FIREWIRE)
@@ -203,11 +204,9 @@ int Record::load_defaults()
 	video_x = defaults->get("RECORD_VIDEO_X", 0);
 	video_y = defaults->get("RECORD_VIDEO_Y", 0);
 	video_zoom = defaults->get("RECORD_VIDEO_Z", (float)1);
-	video_brightness = defaults->get("VIDEO_BRIGHTNESS", 0);
-	video_hue = defaults->get("VIDEO_HUE", 0);
-	video_color = defaults->get("VIDEO_COLOR", 0);
-	video_contrast = defaults->get("VIDEO_CONTRAST", 0);
-	video_whiteness = defaults->get("VIDEO_WHITENESS", 0);
+
+	picture->load_defaults(defaults);
+
 	reverse_interlace = defaults->get("REVERSE_INTERLACE", 0);
 	for(int i = 0; i < MAXCHANNELS; i++) 
 	{
@@ -272,11 +271,8 @@ int Record::save_defaults()
 	defaults->update("RECORD_VIDEO_X", video_x);
 	defaults->update("RECORD_VIDEO_Y", video_y);
 	defaults->update("RECORD_VIDEO_Z", video_zoom);
-	defaults->update("VIDEO_BRIGHTNESS", video_brightness);
-	defaults->update("VIDEO_HUE", video_hue);
-	defaults->update("VIDEO_COLOR", video_color);
-	defaults->update("VIDEO_CONTRAST", video_contrast);
-	defaults->update("VIDEO_WHITENESS", video_whiteness);
+	
+	picture->save_defaults(defaults);
 	defaults->update("REVERSE_INTERLACE", reverse_interlace);
 	for(int i = 0; i < MAXCHANNELS; i++)
 	{
@@ -309,26 +305,36 @@ void Record::source_to_text(char *string, Batch *batch)
 	{
 		case VIDEO4LINUX:
 		case CAPTURE_BUZ:
-			if(batch->channel < 0 || batch->channel >= current_channeldb()->total)
+		case VIDEO4LINUX2JPEG:
+			if(batch->channel < 0 || batch->channel >= channeldb->size())
 				sprintf(string, _("None"));
 			else
-				sprintf(string, current_channeldb()->values[batch->channel]->title);
+				sprintf(string, channeldb->get(batch->channel)->title);
 			break;
 	}
 }
 
-ArrayList<Channel*>* Record::current_channeldb()
+
+char* Record::get_channeldb_prefix()
 {
+	char *path = "";
 	switch(mwindow->edl->session->vconfig_in->driver)
 	{
 		case VIDEO4LINUX:
-			return &mwindow->channeldb_v4l;
+			path = "channels_v4l";
+			break;
+		case VIDEO4LINUX2:
+			path = "channels_v4l2";
+			break;
+		case VIDEO4LINUX2JPEG:
+			path = "channels_v4l2jpeg";
 			break;
 		case CAPTURE_BUZ:
-			return &mwindow->channeldb_buz;
+			path = "channels_buz";
 			break;
 	}
-	return 0;
+
+	return path;
 }
 
 void Record::run()
@@ -336,13 +342,18 @@ void Record::run()
 	int result = 0, format_error = 0;
 	int64_t start, end;
 	record_gui = 0;
-//printf("Record::run 1 %d\n", getpid());
 
 // Default asset forms the first path in the batch capture
 // and the file format for all operations.
 	default_asset = new Asset;
 	prompt_cancel = 0;
-	fixed_compression = VideoDevice::is_compressed(mwindow->edl->session->vconfig_in->driver);
+
+// Determine information about the device.
+	channeldb->load(get_channeldb_prefix());
+	fixed_compression = VideoDevice::is_compressed(
+		mwindow->edl->session->vconfig_in->driver,
+		0,
+		1);
 	load_defaults();
 
 	if(fixed_compression)
@@ -371,6 +382,7 @@ void Record::run()
 		}
 	}while(format_error && !result);
 
+	channeldb->save(get_channeldb_prefix());
 	save_defaults();
 	mwindow->save_defaults();
 
@@ -411,21 +423,31 @@ void Record::run()
 			record_monitor->window->raise_window();
 			record_monitor->window->flush();
 		}
+
 		start_monitor();
+
 		result = record_gui->run_window();
+
 // Force monitor to quit without resuming
 		if(monitor_engine->record_video) 
 			monitor_engine->record_video->batch_done = 1;
 		else
 			monitor_engine->record_audio->batch_done = 1;
+
 		stop_operation(0);
+
 		close_output_file();
+
 		delete record_monitor;
+
 		record_gui->save_defaults();
+
 TRACE("Record::run 1");
 		delete record_gui;
+
 TRACE("Record::run 2");
 		delete edl;
+
 TRACE("Record::run 3");
 	}
 
@@ -519,8 +541,7 @@ void Record::activate_batch(int number, int stop_operation)
 
 		current_batch = number;
 		record_gui->update_batches();
-		record_gui->update_position(current_display_position(), current_display_length());
-		record_gui->update_total_length(0);
+		record_gui->update_position(current_display_position());
 		record_gui->update_batch_tools();
 	}
 }
@@ -639,7 +660,8 @@ int Record::open_output_file()
 		else
 		{
 			mwindow->sighandler->push_file(file);
-			IndexFile::delete_index(mwindow->preferences, batch->get_current_asset());
+			IndexFile::delete_index(mwindow->preferences, 
+				batch->get_current_asset());
 			file->set_processors(mwindow->preferences->processors);
 			batch->calculate_news();
 			record_gui->lock_window("Record::open_output_file");
@@ -688,7 +710,7 @@ void Record::rewind_file()
 	get_current_batch()->current_sample = 0;
 	get_current_batch()->current_frame = 0;
 	record_gui->lock_window("Record::rewind_file");
-	record_gui->update_position(0, current_display_length());
+	record_gui->update_position(0);
 	record_gui->unlock_window();
 }
 
@@ -708,7 +730,7 @@ void Record::start_over()
 	get_current_batch()->start_over();
 
 	record_gui->lock_window("Record::start_over");
-	record_gui->update_position(0, 0);
+	record_gui->update_position(0);
 	record_gui->update_batches();
 	record_gui->unlock_window();
 }
@@ -826,17 +848,6 @@ double Record::current_display_position()
 	return 0;
 }
 
-double Record::current_display_length()
-{
-	if(default_asset->video_data)
-		return (double)get_current_batch()->total_frames / 
-			default_asset->frame_rate;
-	else
-		return (double)get_current_batch()->total_samples / 
-			default_asset->sample_rate;
-	return 0;
-}
-
 char* Record::current_source()
 {
 	return get_current_batch()->get_source_text();
@@ -869,13 +880,10 @@ int Record::get_editing_channel()
 
 Channel* Record::get_current_channel_struct()
 {
-	if(current_channeldb())
+	int channel = get_current_channel();
+	if(channel >= 0 && channel < channeldb->size())
 	{
-		int channel = get_current_channel();
-		if(channel >= 0 && channel < current_channeldb()->total)
-		{
-			return current_channeldb()->values[channel];
-		}
+		return channeldb->get(channel);
 	}
 	return 0;
 }
@@ -900,7 +908,7 @@ int* Record::current_offset_type()
 	return &batches.values[current_batch]->start_type;
 }
 
-ArrayList<char*>* Record::get_video_inputs() 
+ArrayList<Channel*>* Record::get_video_inputs() 
 { 
 	if(default_asset->video_data && vdevice) 
 		return vdevice->get_inputs();
@@ -1003,9 +1011,14 @@ int Record::open_input_devices(int duplex, int context)
 			video_y, 
 			video_zoom,
 			default_asset->frame_rate);
+
+// Get configuration parameters from device probe
 		color_model = vdevice->get_best_colormodel(default_asset);
+		master_channel->copy_usage(vdevice->channel);
+		picture->copy_usage(vdevice->picture);
 		vdevice->set_field_order(reverse_interlace);
-// This also calls set_picture
+
+// Set the device configuration
 		set_channel(get_current_channel());
 	}
 
@@ -1142,13 +1155,8 @@ int Record::get_in_length()
 
 int Record::set_video_picture()
 {
-//printf("Record::set_video_picture 1 %d\n", video_color);
 	if(default_asset->video_data && vdevice)
-		vdevice->set_picture(video_brightness,
-			video_hue,
-			video_color,
-			video_contrast,
-			video_whiteness);
+		vdevice->set_picture(picture);
 	return 0;
 }
 
@@ -1163,24 +1171,21 @@ void Record::set_translation(int x, int y)
 
 int Record::set_channel(int channel)
 {
-	if(current_channeldb())
+	if(channel >= 0 && channel < channeldb->size())
 	{
-		if(channel >= 0 && channel < current_channeldb()->total)
-		{
-			char string[BCTEXTLEN];
-			get_editing_batch()->channel = channel;
-			source_to_text(string, get_editing_batch());
-			record_gui->lock_window("Record::set_channel");
-			record_gui->batch_source->update(string);
-			record_monitor->window->channel_picker->channel_text->update(string);
-			record_gui->update_batches();
-			record_gui->unlock_window();
+		char string[BCTEXTLEN];
+		get_editing_batch()->channel = channel;
+		source_to_text(string, get_editing_batch());
+		record_gui->lock_window("Record::set_channel");
+		record_gui->batch_source->update(string);
+		record_monitor->window->channel_picker->channel_text->update(string);
+		record_gui->update_batches();
+		record_gui->unlock_window();
 
-			if(vdevice)
-			{
-				vdevice->set_channel(current_channeldb()->values[channel]);
-				set_video_picture();
-			}
+		if(vdevice)
+		{
+			vdevice->set_channel(channeldb->get(channel));
+			set_video_picture();
 		}
 	}
 	return 0;

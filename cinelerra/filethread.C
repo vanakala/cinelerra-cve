@@ -11,67 +11,69 @@
 FileThread::FileThread(File *file, int do_audio, int do_video)
  : Thread(1, 0, 0)
 {
+	reset();
 	create_objects(file,
 		do_audio,
-		do_video,
-		0,
-		0,
-		0,
-		0);
+		do_video);
 }
 
-FileThread::FileThread(File *file, 
-		int do_audio, 
-		int do_video,
-		long buffer_size, 
-		int color_model, 
-		int ring_buffers, 
-		int compressed)
+FileThread::~FileThread()
 {
-	create_objects(file, 
-		do_audio, 
-		do_video,
-		buffer_size, 
-		color_model, 
-		ring_buffers, 
-		compressed);
+	delete_objects();
+
+
+
+	delete file_lock;
 }
+
+void FileThread::reset()
+{
+	audio_buffer = 0;
+	video_buffer = 0;
+	output_size = 0;
+	input_lock = 0;
+	output_lock = 0;
+	last_buffer = 0;
+}
+
 
 void FileThread::create_objects(File *file, 
 		int do_audio, 
-		int do_video,
-		long buffer_size, 
-		int color_model, 
-		int ring_buffers, 
-		int compressed)
+		int do_video)
 {
 	this->file = file;
 	this->do_audio = do_audio;
 	this->do_video = do_video;
 	file_lock = new Mutex("FileThread::file_lock");
-	for(int i = 0; i < RING_BUFFERS; i++)
-	{
-		output_lock[i] = new Condition(0, "FileThread::output_lock");
-		input_lock[i] = new Condition(1, "FileThread::input_lock");
-	}
-	this->ring_buffers = ring_buffers;
-	this->buffer_size = buffer_size;
-	this->color_model = color_model;
-	this->compressed = compressed;
-// Buffer is swapped before first get
-	current_buffer = ring_buffers - 1;
-	return_value = 0;
-	local_buffer = 0;
 }
 
-FileThread::~FileThread()
+
+void FileThread::delete_objects()
 {
-	delete file_lock;
-	for(int i = 0; i < RING_BUFFERS; i++)
+	if(output_lock)
 	{
-		delete output_lock[i];
-		delete input_lock[i];
+		for(int i = 0; i < ring_buffers; i++)
+		{
+			delete output_lock[i];
+		}
+		delete [] output_lock;
 	}
+
+	if(input_lock)
+	{
+		for(int i = 0; i < ring_buffers; i++)
+		{
+			delete input_lock[i];
+		}
+		delete [] input_lock;
+	}
+
+
+	if(last_buffer)
+		delete [] last_buffer;
+
+
+	reset();
 }
 
 void FileThread::run()
@@ -85,22 +87,20 @@ void FileThread::run()
 		output_lock[local_buffer]->lock("FileThread::run 1");
 		return_value = 0;
 
-TRACE("FileThread::run 1");
 
 // Timer timer;
 // timer.update();
 		if(!last_buffer[local_buffer])
 		{
-TRACE("FileThread::run 2");
 			if(output_size[local_buffer])
 			{
-TRACE("FileThread::run 3");
 				file_lock->lock("FileThread::run 2");
-TRACE("FileThread::run 4");
 				if(do_audio)
 				{
+TRACE("FileThread::run 4");
 					result = file->write_samples(audio_buffer[local_buffer], 
 						output_size[local_buffer]);
+TRACE("FileThread::run 5");
 				}
 				else
 				if(do_video)
@@ -108,12 +108,15 @@ TRACE("FileThread::run 4");
 					result = 0;
 					if(compressed)
 					{
+TRACE("FileThread::run 6");
 						for(j = 0; j < file->asset->layers && !result; j++)
 							for(i = 0; i < output_size[local_buffer] && !result; i++)
 								result = file->write_compressed_frame(video_buffer[local_buffer][j][i]);
+TRACE("FileThread::run 7");
 					}
 					else
 					{
+//printf("FileThread::run 1 %d %p %p\n", local_buffer, video_buffer, video_buffer[local_buffer]);
 						result = file->write_frames(video_buffer[local_buffer], 
 							output_size[local_buffer]);
 					}
@@ -129,9 +132,7 @@ TRACE("FileThread::run 4");
 		}
 		else
 			done = 1;
-TRACE("FileThread::run 10");
 
-//printf("FileThread::run %lld\n", timer.get_difference());
 		input_lock[local_buffer]->unlock();
 		local_buffer++;
 		if(local_buffer >= ring_buffers) local_buffer = 0;
@@ -167,6 +168,8 @@ int FileThread::stop_writing()
 				delete [] audio_buffer[buffer][i];
 			delete [] audio_buffer[buffer];
 		}
+		delete [] audio_buffer;
+		audio_buffer = 0;
 	}
 
 // printf("FileThread::stop_writing %d %d %d %d\n", 
@@ -188,17 +191,10 @@ int FileThread::stop_writing()
 			}
 			delete [] video_buffer[buffer];
 		}
+		delete [] video_buffer;
+		video_buffer = 0;
 	}
 	file_lock->unlock();
-	return 0;
-}
-
-int FileThread::start_writing()
-{
-	start_writing(buffer_size, 
-		color_model, 
-		ring_buffers, 
-		compressed);
 	return 0;
 }
 
@@ -213,10 +209,37 @@ int FileThread::start_writing(long buffer_size,
 
 	this->ring_buffers = ring_buffers;
 	this->buffer_size = buffer_size;
+	this->color_model = color_model;
+	this->compressed = compressed;
+	this->current_buffer = ring_buffers - 1;
+	return_value = 0;
+	local_buffer = 0;
 
 	file_lock->lock("FileThread::start_writing 1");
+
+
+
+
+// Buffer is swapped before first get
+	last_buffer = new int[ring_buffers];
+	output_size = new long[ring_buffers];
+
+
+	output_lock = new Condition*[ring_buffers];
+	input_lock = new Condition*[ring_buffers];
+	for(int i = 0; i < ring_buffers; i++)
+	{
+		output_lock[i] = new Condition(0, "FileThread::output_lock");
+		input_lock[i] = new Condition(1, "FileThread::input_lock");
+		last_buffer[i] = 0;
+		output_size[i] = 0;
+	}
+
+
+
 	if(do_audio)
 	{
+		audio_buffer = new double**[ring_buffers];
 		for(buffer = 0; buffer < ring_buffers; buffer++)
 		{
 			audio_buffer[buffer] = new double*[file->asset->channels];
@@ -236,6 +259,12 @@ int FileThread::start_writing(long buffer_size,
 			-1,
 			color_model);
 
+		video_buffer = new VFrame***[ring_buffers];
+// printf("FileThread::start_writing 1 %d %d %d %p\n", 
+// ring_buffers,
+// file->asset->layers,
+// buffer_size,
+// video_buffer);
 		for(buffer = 0; buffer < ring_buffers; buffer++)
 		{
 			video_buffer[buffer] = new VFrame**[file->asset->layers];
@@ -253,19 +282,22 @@ int FileThread::start_writing(long buffer_size,
 								file->asset->width, 
 								file->asset->height, 
 								color_model);
+// printf("FileThread::start_writing 4 %d %d %d %p\n", 
+// buffer, 
+// layer, 
+// frame, 
+// video_buffer[buffer][layer]);
 					}
 				}
 			}
 		}
 	}
-//printf("FileThread::start_writing 1\n");
 	file_lock->unlock();
 
 	for(int i = 0; i < ring_buffers; i++)
 	{
 		last_buffer[i] = 0;
 	}
-//printf("FileThread::start_writing 1\n");
 
 
 	start();

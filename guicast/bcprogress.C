@@ -84,7 +84,7 @@ int BC_ProgressBar::draw(int force)
 		if(do_text)
 		{
 			set_font(MEDIUMFONT);
-			set_color(BLACK);     // draw decimal percentage
+			set_color(get_resources()->progress_text);     // draw decimal percentage
 			sprintf(string, "%d%%", (int)(100 * (float)position / length + 0.5 / w));
 			draw_center_text(w / 2, h / 2 + get_text_ascent(MEDIUMFONT) / 2, string);
 		}

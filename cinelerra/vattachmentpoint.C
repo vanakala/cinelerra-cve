@@ -1,5 +1,6 @@
 #include "bcsignals.h"
 #include "clip.h"
+#include "datatype.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "plugin.h"
@@ -10,7 +11,7 @@
 #include "vframe.h"
 
 VAttachmentPoint::VAttachmentPoint(RenderEngine *renderengine, Plugin *plugin)
-: AttachmentPoint(renderengine, plugin)
+: AttachmentPoint(renderengine, plugin, TRACK_VIDEO)
 {
 	buffer_vector = 0;
 }

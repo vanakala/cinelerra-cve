@@ -48,6 +48,8 @@ private:
 	int create_firewire_objs();
 	int create_dv1394_objs();
 	int create_v4l_objs();
+	int create_v4l2_objs();
+	int create_v4l2jpeg_objs();
 	int create_screencap_objs();
 	int create_buz_objs();
 	int create_x11_objs();

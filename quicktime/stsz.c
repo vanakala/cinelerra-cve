@@ -155,3 +155,14 @@ void quicktime_update_stsz(quicktime_stsz_t *stsz,
 
 //printf("quicktime_update_stsz 5 %d %d\n", sample, sample_size);
 }
+
+
+int quicktime_sample_size(quicktime_trak_t *trak, int sample)
+{
+	quicktime_stsz_t *stsz = &trak->mdia.minf.stbl.stsz;
+	if(stsz->sample_size) return stsz->sample_size;
+	if(sample < stsz->total_entries && sample >= 0)
+		return stsz->table[sample].size;
+	return 0;
+	
+}

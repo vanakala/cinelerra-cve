@@ -2,16 +2,8 @@
 #define VDEVICEV4L_H
 
 #include "vdevicebase.h"
-#include <linux/kernel.h>
+#include <linux/videodev.h>
 #include "videodevice.inc"
-#include "videodev2.h"
-
-// Structure for video4linux2
-struct tag_vimage
-{
-	struct v4l2_buffer vidbuf;
-	char *data;
-};
 
 class VDeviceV4L : public VDeviceBase
 {
@@ -25,11 +17,7 @@ public:
 	int read_buffer(VFrame *frame);
 	int get_best_colormodel(Asset *asset);
 	int set_channel(Channel *channel);
-	int set_picture(int brightness, 
-		int hue, 
-		int color, 
-		int contrast, 
-		int whiteness);
+	int set_picture(Picture *picture);
 
 private:
 	int set_cloexec_flag(int desc, int value);
@@ -39,28 +27,17 @@ private:
 	unsigned long translate_colormodel(int colormodel);
 	int v4l1_set_channel(Channel *channel);
 	int v4l1_get_norm(int norm);
-	int v4l1_set_picture(int brightness, 
-		int hue, 
-		int color, 
-		int contrast, 
-		int whiteness);
+	int v4l1_set_picture(Picture *picture);
 	void v4l1_start_capture();
 	int capture_frame(int capture_frame_number);
 	int wait_v4l_frame();
-	int wait_v4l2_frame();
 	int read_v4l_frame(VFrame *frame);
-	int read_v4l2_frame(VFrame *frame);
-	void v4l2_start_capture();
 	int frame_to_vframe(VFrame *frame, unsigned char *input);
 	int next_frame(int previous_frame);
 	int close_v4l();
-	int close_v4l2();
 	int unmap_v4l_shmem();
-	int unmap_v4l2_shmem();
 	int v4l_init();
-	int v4l2_init();
 
-	int derivative;
 	int input_fd, output_fd;
 // FourCC Colormodel for device
 	unsigned long device_colormodel;
@@ -72,13 +49,6 @@ private:
 	struct video_window window_params;
 	struct video_picture picture_params;
 	struct video_mbuf capture_params;  // Capture for Video4Linux
-
-// Video4Linux 2
-	struct v4l2_capability cap2;
-	struct v4l2_requestbuffers v4l2_buffers;
-	struct v4l2_format v4l2_params;
-	struct tag_vimage *v4l2_buffer_list;
-	struct v4l2_streamparm v4l2_parm;
 
 // Common
 	char *capture_buffer;      // sequentual capture buffers for v4l1 or read buffer for v4l2

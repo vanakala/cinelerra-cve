@@ -65,6 +65,14 @@ public:
 	int menu_up;
 	int menu_shadow;
 
+// color of popup title
+	int popup_title_text;
+// color for item text
+	int menu_item_text;
+// color for progress text
+	int progress_text;
+
+
 // ms for double click
 	long double_click;
 // ms for cursor flash

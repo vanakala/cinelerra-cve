@@ -64,12 +64,8 @@ public:
 	ArrayList<int>* get_render_strategies();
 	int set_channel(Channel *channel);
 	int get_norm(int norm);
-	static void get_inputs(ArrayList<char *> *input_sources);
-	int set_picture(int brightness, 
-		int hue, 
-		int color, 
-		int contrast, 
-		int whiteness);
+	static void get_inputs(ArrayList<Channel*> *input_sources);
+	int set_picture(Picture *picture);
 	int get_best_colormodel(int colormodel);
 	void create_channeldb(ArrayList<Channel*> *channeldb);
 	void new_output_buffer(VFrame **outputs, int colormodel);

@@ -93,6 +93,8 @@ int PackageRenderer::initialize(MWindow *mwindow,
 	this->default_asset = default_asset;
 	this->plugindb = plugindb;
 
+
+//printf("PackageRenderer::initialize %d\n", preferences->processors);
 	command = new TransportCommand;
 	command->command = NORMAL_FWD;
 	command->get_edl()->copy_all(edl);
@@ -215,21 +217,24 @@ void PackageRenderer::create_engine()
 	if(asset->audio_data)
 	{
 		file->start_audio_thread(audio_read_length, 
-			preferences->processors);
+			preferences->processors > 1 ? 2 : 1);
 	}
 
 
 	if(asset->video_data)
 	{
 		compressed_output = new VFrame;
+// The write length needs to correlate with the processor count because
+// it is passed to the file handler which usually processes frames simultaneously.
 		video_write_length = preferences->processors;
 		video_write_position = 0;
 		direct_frame_copying = 0;
 
 
+//printf("PackageRenderer::create_engine 1\n");
 		file->start_video_thread(video_write_length,
 			command->get_edl()->session->color_model,
-			preferences->processors,
+			preferences->processors > 1 ? 2 : 1,
 			0);
 
 
@@ -342,12 +347,11 @@ void PackageRenderer::do_video()
 				{
 					file->start_video_thread(video_write_length, 
 						command->get_edl()->session->color_model,
-						preferences->processors,
+						preferences->processors > 1 ? 2 : 1,
 						0);
 					direct_frame_copying = 0;
 				}
 
-//printf("PackageRenderer::do_video 4\n");
 // Try to use the rendering engine to write the frame.
 // Get a buffer for background writing.
 
@@ -360,7 +364,6 @@ void PackageRenderer::do_video()
 
 
 
-//printf("PackageRenderer::do_video 5\n");
 // Construct layered output buffer
 				for(int i = 0; i < MAX_CHANNELS; i++)
 					video_output_ptr[i] = 
@@ -660,7 +663,8 @@ int PackageRenderer::direct_frame_copy(EDL *edl,
 				video_position,
 				PLAY_FORWARD,
 				video_cache,
-				1);
+				1,
+				0);
 
 
 		if(!error && video_preroll > 0)

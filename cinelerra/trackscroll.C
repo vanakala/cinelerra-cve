@@ -1,6 +1,7 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "localsession.h"
+#include "maincursor.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "patchbay.h"

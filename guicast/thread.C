@@ -47,7 +47,7 @@ void Thread::start()
 	thread_running = 1;
 	if(!synchronous) pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 
-	if(realtime)
+	if(realtime && getuid() == 0)
 	{
 		if(pthread_attr_setschedpolicy(&attr, SCHED_FIFO) < 0)
 			perror("PFCThread::start pthread_attr_setschedpolicy");
@@ -166,7 +166,8 @@ int Thread::get_synchronous()
 int Thread::calculate_realtime()
 {
 //printf("Thread::calculate_realtime %d %d\n", getpid(), sched_getscheduler(0));
-	return (sched_getscheduler(0) == SCHED_RR);
+	return (sched_getscheduler(0) == SCHED_RR ||
+		sched_getscheduler(0) == SCHED_FIFO);
 }
 
 int Thread::get_realtime()

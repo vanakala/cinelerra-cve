@@ -24,7 +24,8 @@ public:
 			int64_t input_position, 
 			int direction,
 			CICache *cache,
-			int use_nudge);
+			int use_nudge,
+			int use_cache);
 	
 	
 	

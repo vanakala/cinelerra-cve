@@ -78,6 +78,21 @@ int PlaybackEngine::create_objects()
 	return result;
 }
 
+ChannelDB* PlaybackEngine::get_channeldb()
+{
+	int playback_strategy = command->get_edl()->session->playback_strategy;
+	PlaybackConfig *config = command->get_edl()->session->get_playback_config(playback_strategy, 0);
+	switch(config->vconfig->driver)
+	{
+		case VIDEO4LINUX2JPEG:
+			return mwindow->channeldb_v4l2jpeg;
+			break;
+		case PLAYBACK_BUZ:
+			return mwindow->channeldb_buz;
+			break;
+	}
+	return 0;
+}
 
 int PlaybackEngine::create_render_engines()
 {
@@ -100,7 +115,7 @@ int PlaybackEngine::create_render_engines()
 			command, 
 			output,
 			mwindow->plugindb,
-			&mwindow->channeldb_buz,
+			get_channeldb(),
 			i);  
 		render_engines.append(engine);
 	}
@@ -185,6 +200,7 @@ void PlaybackEngine::perform_change()
 void PlaybackEngine::sync_parameters(EDL *edl)
 {
 // TODO: lock out render engine from keyframe deletions
+	command->get_edl()->synchronize_params(edl);
 	for(int i = 0; i < render_engines.total; i++)
 		render_engines.values[i]->edl->synchronize_params(edl);
 }

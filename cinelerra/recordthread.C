@@ -14,8 +14,12 @@
 #include "recordgui.h"
 #include "recordthread.h"
 #include "recordvideo.h"
-#include "timer.h"
+#include "bctimer.h"
 #include "videodevice.h"
+
+
+
+#define RING_BUFFERS 2
 
 
 RecordThread::RecordThread(MWindow *mwindow, Record *record)
@@ -61,7 +65,6 @@ int RecordThread::create_objects()
 
 int RecordThread::start_recording(int monitor, int context)
 {
-//printf("RecordThread::start_recording 1\n");
 	engine_done = 0;
 	this->monitor = monitor;
 	this->context = context;
@@ -74,7 +77,6 @@ int RecordThread::start_recording(int monitor, int context)
 	Thread::start();
 	startup_lock->lock("RecordThread::start_recording");
 	startup_lock->unlock();
-//printf("RecordThread::start_recording 10\n");
 	return 0;
 }
 
@@ -286,7 +288,7 @@ TRACE("RecordThread::run 7");
 					record->file->start_video_thread(mwindow->edl->session->video_write_length,
 						record->vdevice->get_best_colormodel(record->default_asset),
 						RING_BUFFERS,
-						record->vdevice->is_compressed());
+						record->vdevice->is_compressed(1, 0));
 TRACE("RecordThread::run 8");
 			}
 

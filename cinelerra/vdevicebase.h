@@ -3,9 +3,9 @@
 
 #include "assets.inc"
 #include "channel.inc"
-#include "colormodels.h"
 #include "edl.inc"
 #include "guicast.h"
+#include "picture.inc"
 #include "videodevice.inc"
 
 class VDeviceBase
@@ -26,13 +26,7 @@ public:
 // Extra work must sometimes be done in here to set up the device.
 	virtual int get_best_colormodel(Asset *asset);
 	virtual int set_channel(Channel *channel) { return 0; };
-	virtual int set_picture(int brightness, 
-		int hue, 
-		int color, 
-		int contrast, 
-		int whiteness) { return 0; };
-// Create a default channeldb
-	virtual void create_channeldb(ArrayList<Channel*> *channeldb) {};
+	virtual int set_picture(Picture *picture) { return 0; };
 
 	virtual int open_output() { return 1; };
 	virtual int output_visible() { return 0; };

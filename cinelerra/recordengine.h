@@ -16,7 +16,7 @@
 #include "recordgui.inc"
 #include "recordlabel.inc"
 #include "recordthread.inc"
-#include "timer.h"
+#include "bctimer.h"
 #include "videodevice.inc"
 
 class RecordEngine

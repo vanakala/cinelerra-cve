@@ -10,7 +10,7 @@
 #include "mwindowgui.inc"
 #include "playbackengine.inc"
 #include "thread.h"
-#include "timer.h"
+#include "bctimer.h"
 
 class Tracking : public Thread
 {

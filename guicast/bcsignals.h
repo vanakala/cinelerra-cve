@@ -21,6 +21,7 @@ class BC_Signals
 public:
 	BC_Signals();
 	void initialize();
+	void initialize2();
 
 
 	virtual void signal_handler(int signum);
@@ -70,6 +71,18 @@ public:
 #define UNBUFFER(ptr);
 
 #endif
+
+// Handling of temporary files in crash
+#define SET_TEMP BC_Signals::set_temp
+#define UNSET_TEMP BC_Signals::unset_temp
+
+// Temporary files
+	static void delete_temps();
+	static void set_temp(char *string);
+	static void unset_temp(char *string);
+
+
+
 
 	static void set_lock(void *ptr, char *title, char *location);
 	static void unset_lock(void *ptr);

@@ -109,7 +109,9 @@ int quicktime_read_stbl(quicktime_t *file, quicktime_minf_t *minf, quicktime_stb
 		if(quicktime_atom_is(&leaf_atom, "stco"))
 			{ quicktime_read_stco(file, &(stbl->stco)); }
 		else
+		{
 			quicktime_atom_skip(file, &leaf_atom);
+		}
 	}while(quicktime_position(file) < parent_atom->end);
 
 	return 0;

@@ -91,3 +91,37 @@ void quicktime_write_stts(quicktime_t *file, quicktime_stts_t *stts)
 
 	quicktime_atom_write_footer(file, &atom);
 }
+
+// Return the sample which contains the start_time argument.
+// Stores the actual starting time of the sample in the start_time argument.
+int quicktime_time_to_sample(quicktime_stts_t *stts,
+	int64_t *start_time)
+{
+	int result = 0;
+	int current_entry = 0;
+	int64_t current_start_time = 0;
+	while(current_entry < stts->total_entries)
+	{
+		quicktime_stts_table_t *stts_table = &stts->table[current_entry];
+		int sample_count = stts_table->sample_count;
+		while(sample_count > 0)
+		{
+			current_start_time += stts_table->sample_duration;
+// Current sample contains start time
+			if(current_start_time > *start_time)
+			{
+				current_start_time -= stts_table->sample_duration;
+				*start_time = current_start_time;
+				return result;
+			}
+
+// Next sample
+			sample_count--;
+			result++;
+		}
+		current_entry++;
+	}
+
+	return result > 0 ? result - 1 : result;
+}
+

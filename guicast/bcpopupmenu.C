@@ -135,7 +135,7 @@ int BC_PopupMenu::draw_title()
 	draw_3segmenth(0, 0, w, images[status]);
 
 // Overlay text
-	set_color(BLACK);
+	set_color(get_resources()->popup_title_text);
 	if(!icon)
 	{
 		set_font(MEDIUMFONT);

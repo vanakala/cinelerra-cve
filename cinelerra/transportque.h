@@ -4,7 +4,6 @@
 #include "canvas.inc"
 #include "condition.inc"
 #include "edl.inc"
-#include "mutex.h"
 #include "preferences.inc"
 #include "transportque.inc"
 

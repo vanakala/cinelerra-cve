@@ -20,6 +20,7 @@ public:
 	static char* compression_to_str(char *compression);
 	static char* str_to_compression(char *string);
 
+	int get_memory_usage();
 // To be used in single frame FileTGA
 	static void read_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp);
 	static void write_tga(Asset *asset, VFrame *frame, VFrame *data, VFrame* &temp);

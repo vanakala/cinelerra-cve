@@ -9,9 +9,9 @@
 #ifndef __LINUX_VIDEODEV_H
 #define __LINUX_VIDEODEV_H
 
+
 #define V4L2_MAJOR_VERSION	0
 #define V4L2_MINOR_VERSION	20
-
 #include "videodevfix.h"
 
 /*

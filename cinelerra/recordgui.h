@@ -83,8 +83,8 @@ public:
 	ArrayList<BC_ListBoxItem*> sources;
 
 	BC_Title *current_operation;
-	BC_Title *position_title, *total_length_title;
-	BC_Title *prev_label_title /*, *next_label_title */;
+	BC_Title *position_title;
+	BC_Title *prev_label_title;
 	BC_Title *frames_dropped, *samples_clipped;
 	MWindow *mwindow;
 	Record *record;
@@ -125,7 +125,6 @@ public:
 	RecordCancelThread *cancel_thread;
 	static char *batch_titles[BATCH_COLUMNS];
 	int column_widths[BATCH_COLUMNS];
-	double total_length;
 	LoadMode *load_mode;
 	int flash_color;
 
@@ -188,8 +187,7 @@ public:
 	int set_translation(int x, int y, float z);
 
 	void update_labels(double new_position);
-	int update_position(double new_position, double total_length);
-	int update_total_length(double new_position);
+	int update_position(double new_position);
 	int update_prev_label(long new_position);
 //	int update_next_label(long new_position);
 
@@ -443,7 +441,7 @@ public:
 	~RecordStatusThread();
 
 	void update_dropped_frames(long value);
-	void update_position(double new_position, double total_length);
+	void update_position(double new_position);
 	void update_clipped_samples(long new_clipped_samples);
 	void run();
 
@@ -451,7 +449,6 @@ public:
 	RecordGUI *gui;
 	long new_dropped_frames;
 	double new_position;
-	double new_length;
 	long new_clipped_samples;
 	int done;
 	Condition *input_lock;

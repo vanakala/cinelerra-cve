@@ -25,8 +25,8 @@ GainWindow::GainWindow(Gain *gain, int x, int y)
 	0, 
 	0,
 	1)
-{ 
-	this->gain = gain; 
+{
+	this->gain = gain;
 }
 
 GainWindow::~GainWindow()

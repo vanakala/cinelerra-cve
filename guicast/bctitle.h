@@ -22,6 +22,8 @@ public:
 	int reposition(int x, int y);
 	int set_color(int color);
 	int update(char *text);
+	char* get_text();
+
 private:
 	int draw();
 	int get_size(int &w, int &h);

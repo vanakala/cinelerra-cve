@@ -164,21 +164,17 @@ void RecordVideo::run()
 	trigger_lock->lock("RecordVideo::run");
 	trigger_lock->unlock();
 
-//printf("RecordVideo::run 1 %d\n", record_thread->monitor);
 
 	while(!batch_done && 
 		!write_result)
 	{
 // Synchronize with audio or timer
-//printf("RecordVideo::run 1 %d\n", batch_done);
 		dropped_frames = 0;
 		next_sample = (int64_t)((float)record->get_current_batch()->session_frames / 
 			record->default_asset->frame_rate * 
 			record->default_asset->sample_rate);
-//printf("RecordVideo::run 1\n");
  		current_sample = record->sync_position();
 
-//printf("RecordVideo::run 2\n");
 
 
 		if(current_sample < next_sample && current_sample > 0)
@@ -225,8 +221,7 @@ void RecordVideo::run()
 				if(!grab_result) buffer_position++;
 
 // Update the position indicator
-				gui->update_position(record->current_display_position(),
-					record->current_display_length());
+				gui->update_position(record->current_display_position());
 			}
 			else
 // Grab frame for monitoring
@@ -246,11 +241,18 @@ void RecordVideo::run()
 		}
 
 // Monitor the frame if monitoring
+// printf("RecordVideo::run %p %d %d %d\n", 
+// capture_frame->get_data(), 
+// record->monitor_video, 
+// batch_done, 
+// grab_result);
 		if(capture_frame->get_data() && 
 			record->monitor_video && 
 			!batch_done && 
 			!grab_result)
+		{
 			record->record_monitor->update(capture_frame);
+		}
 
 // Duplicate a frame if behind
 		if(!record_thread->monitor && 
@@ -342,8 +344,9 @@ void RecordVideo::read_buffer()
 	grab_result = record->vdevice->read_buffer(capture_frame);
 
 
+// Get field offset for monitor
 	if(!strncmp(record->default_asset->vcodec, QUICKTIME_MJPA, 4) &&
-		record->vdevice->is_compressed())
+		record->vdevice->is_compressed(0, 1))
 	{
 		unsigned char *data = capture_frame->get_data();
 		int64_t size = capture_frame->get_compressed_size();
@@ -354,6 +357,7 @@ void RecordVideo::read_buffer()
 			int64_t field2_offset = mjpeg_get_field2(data, size);
 			capture_frame->set_compressed_size(size);
 			capture_frame->set_field2_offset(field2_offset);
+//printf("RecordVideo::read_buffer 1 %d\n", capture_frame->get_field2_offset());
 		}
 	}
 }
@@ -374,13 +378,13 @@ void RecordVideo::rewind_file()
 	record->file->start_video_thread(buffer_size,
 		record->vdevice->get_best_colormodel(record->default_asset),
 		2,
-		record->vdevice->is_compressed());
+		record->vdevice->is_compressed(1, 0));
 	frame_ptr = record->file->get_video_buffer();
 	record->get_current_batch()->current_frame = 0;
 	record->get_current_batch()->current_sample = 0;
 	record->get_current_batch()->session_frames = 0;
 	record->get_current_batch()->session_samples = 0;
-	gui->update_position(0, record->current_display_length());
+	gui->update_position(0);
 }
 
 int RecordVideo::unhang_thread()

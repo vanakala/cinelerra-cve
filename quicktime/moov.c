@@ -3,7 +3,7 @@
 #include "workarounds.h"
 
 
-
+#include <zlib.h>
 
 
 int quicktime_moov_init(quicktime_moov_t *moov)
@@ -39,19 +39,156 @@ void quicktime_moov_dump(quicktime_moov_t *moov)
 	quicktime_ctab_dump(&(moov->ctab));
 }
 
-
-int quicktime_read_moov(quicktime_t *file, quicktime_moov_t *moov, quicktime_atom_t *parent_atom)
+static void* zalloc(void *opaque, unsigned int items, unsigned int size)
 {
-/* mandatory mvhd */
-	quicktime_atom_t leaf_atom;
+	return calloc(items, size);
+}
 
-// AVI translation:
-// strh -> mvhd
+static void zfree(void *opaque, void *ptr)
+{
+	free(ptr);
+}
+
+static int read_cmov(quicktime_t *file,
+	quicktime_atom_t *parent_atom,
+	quicktime_atom_t *moov_atom)
+{
+	quicktime_atom_t leaf_atom;
 
 	do
 	{
 		quicktime_atom_read_header(file, &leaf_atom);
 
+/* Algorithm used to compress */
+		if(quicktime_atom_is(&leaf_atom, "dcom"))
+		{
+			char data[5];
+//printf("read_cmov 1 %lld\n", quicktime_position(file));
+			quicktime_read_data(file, data, 4);
+			data[4] = 0;
+			if(strcmp(data, "zlib"))
+			{
+				fprintf(stderr, 
+					"read_cmov: compression '%c%c%c%c' not zlib.  Giving up and going to a movie.\n",
+					data[0],
+					data[1],
+					data[2],
+					data[3]);
+				return 1;
+			}
+
+			quicktime_atom_skip(file, &leaf_atom);
+		}
+		else
+/* Size of uncompressed data followed by compressed data */
+		if(quicktime_atom_is(&leaf_atom, "cmvd"))
+		{
+/* Size of uncompressed data */
+			int uncompressed_size = quicktime_read_int32(file);
+/* Read compressed data */
+			int compressed_size = leaf_atom.end - quicktime_position(file);
+			if(compressed_size > uncompressed_size)
+			{
+				fprintf(stderr, 
+					"read_cmov: FYI compressed_size=%d uncompressed_size=%d\n",
+					compressed_size,
+					uncompressed_size);
+			}
+
+			unsigned char *data_in = calloc(1, compressed_size);
+			quicktime_read_data(file, data_in, compressed_size);
+/* Decompress to another buffer */
+			unsigned char *data_out = calloc(1, uncompressed_size + 0x400);
+			z_stream zlib;
+			zlib.zalloc = zalloc;
+			zlib.zfree = zfree;
+			zlib.opaque = NULL;
+			zlib.avail_out = uncompressed_size + 0x400;
+			zlib.next_out = data_out;
+			zlib.avail_in = compressed_size;
+			zlib.next_in = data_in;
+			inflateInit(&zlib);
+			inflate(&zlib, Z_PARTIAL_FLUSH);
+			inflateEnd(&zlib);
+			free(data_in);
+			file->moov_data = data_out;
+
+/*
+ * FILE *test = fopen("/tmp/test", "w");
+ * fwrite(data_out, uncompressed_size, 1, test);
+ * fclose(test);
+ * exit(0);
+ */
+
+
+/* Trick library into reading temporary buffer for the moov */
+			file->moov_end = moov_atom->end;
+			file->moov_size = moov_atom->size;
+			moov_atom->end = moov_atom->start + uncompressed_size;
+			moov_atom->size = uncompressed_size;
+			file->old_preload_size = file->preload_size;
+			file->old_preload_buffer = file->preload_buffer;
+			file->old_preload_start = file->preload_start;
+			file->old_preload_end = file->preload_end;
+			file->old_preload_ptr = file->preload_ptr;
+			file->preload_size = uncompressed_size;
+			file->preload_buffer = data_out;
+			file->preload_start = moov_atom->start;
+			file->preload_end = file->preload_start + uncompressed_size;
+			file->preload_ptr = 0;
+			quicktime_set_position(file, file->preload_start + 8);
+/* Try again */
+			if(quicktime_read_moov(file, 
+				&file->moov, 
+				moov_atom))
+				return 1;
+/* Exit the compressed state */
+			moov_atom->size = file->moov_size;
+			moov_atom->end = file->moov_end;
+			file->preload_size = file->old_preload_size;
+			file->preload_buffer = file->old_preload_buffer;
+			file->preload_start = file->old_preload_start;
+			file->preload_end = file->old_preload_end;
+			file->preload_ptr = file->old_preload_ptr;
+			quicktime_set_position(file, moov_atom->end);
+		}
+		else
+			quicktime_atom_skip(file, &leaf_atom);
+	}while(quicktime_position(file) < parent_atom->end);
+	return 0;
+}
+
+
+int quicktime_read_moov(quicktime_t *file, 
+	quicktime_moov_t *moov, 
+	quicktime_atom_t *parent_atom)
+{
+/* mandatory mvhd */
+	quicktime_atom_t leaf_atom;
+
+/* AVI translation: */
+/* strh -> mvhd */
+
+	do
+	{
+//printf("quicktime_read_moov 1 %llx\n", quicktime_position(file));
+		quicktime_atom_read_header(file, &leaf_atom);
+
+/*
+ * printf("quicktime_read_moov 2 %c%c%c%c\n", 
+ * leaf_atom.type[0],
+ * leaf_atom.type[1],
+ * leaf_atom.type[2],
+ * leaf_atom.type[3]);
+ */
+
+		if(quicktime_atom_is(&leaf_atom, "cmov"))
+		{
+			file->compressed_moov = 1;
+			if(read_cmov(file, &leaf_atom, parent_atom)) return 1;
+/* Now were reading the compressed moov atom from the beginning. */
+		}
+		else
 		if(quicktime_atom_is(&leaf_atom, "mvhd"))
 		{
 			quicktime_read_mvhd(file, &(moov->mvhd), &leaf_atom);

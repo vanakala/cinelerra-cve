@@ -138,7 +138,6 @@ int PluginVClient::process_buffer(VFrame **frame,
 	int64_t start_position,
 	double frame_rate)
 {
-//printf("PluginVClient::process_buffer 1 %lld %f\n", start_position, frame_rate);
 	for(int i = 0; i < PluginClient::total_in_buffers; i++)
 		read_frame(frame[i], i, start_position, frame_rate);
 	if(is_multichannel())
@@ -150,7 +149,6 @@ int PluginVClient::process_buffer(VFrame *frame,
 	int64_t start_position,
 	double frame_rate)
 {
-//printf("PluginVClient::process_buffer 2 %lld %f\n", start_position, frame_rate);
 	read_frame(frame, 0, start_position, frame_rate);
 	process_realtime(frame, frame);
 	return 0;

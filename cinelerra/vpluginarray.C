@@ -12,8 +12,13 @@
 #include "vpluginarray.h"
 #include "vtrack.h"
 
+
+#define RING_BUFFERS 2
+
+
+
 VPluginArray::VPluginArray()
- : PluginArray()
+ : PluginArray(TRACK_VIDEO)
 {
 	realtime_buffers = 0;
 }
@@ -47,6 +52,11 @@ void VPluginArray::create_buffers()
 //	if(!plugin_server->realtime) realtime_buffers = file->get_video_buffer();
 }
 
+void VPluginArray::get_buffers()
+{
+	if(!realtime_buffers) realtime_buffers = file->get_video_buffer();
+}
+
 void VPluginArray::create_modules()
 {
 	modules = new Module*[total_tracks()];
@@ -60,14 +70,6 @@ void VPluginArray::create_modules()
 	}
 }
 
-// void VPluginArray::load_module(int module, int64_t input_position, int64_t len)
-// {
-// 	if(module == 0) realtime_buffers = file->get_video_buffer();
-// 	((VModule*)modules[module])->render(realtime_buffers[module][0],
-// 		input_position,
-// 		PLAY_FORWARD,
-// 		0);
-// }
 
 void VPluginArray::process_realtime(int module, 
 	int64_t input_position, 

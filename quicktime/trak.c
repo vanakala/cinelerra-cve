@@ -76,7 +76,7 @@ quicktime_trak_t* quicktime_add_trak(quicktime_t *file)
 	quicktime_moov_t *moov = &(file->moov);
 	if(moov->total_tracks < MAXTRACKS)
 	{
-		moov->trak[moov->total_tracks] = malloc(sizeof(quicktime_trak_t));
+		moov->trak[moov->total_tracks] = calloc(1, sizeof(quicktime_trak_t));
 		quicktime_trak_init(moov->trak[moov->total_tracks]);
 		moov->total_tracks++;
 	}
@@ -231,12 +231,21 @@ long quicktime_track_samples(quicktime_t *file, quicktime_trak_t *trak)
 /* get the sample count when reading only */
 		quicktime_stts_t *stts = &(trak->mdia.minf.stbl.stts);
 		int i;
-		long total = 0;
+		int64_t total = 0;
 
 		for(i = 0; i < stts->total_entries; i++)
 		{
-			total += stts->table[i].sample_count;
+			total += stts->table[i].sample_count *
+				stts->table[i].sample_duration;
 		}
+
+/* Convert to samples */
+		if(trak->mdia.minf.is_audio)
+			return total;
+		else
+		if(trak->mdia.minf.is_video)
+			return total /
+				stts->table[0].sample_duration;
 		return total;
 	}
 }
@@ -358,7 +367,7 @@ int64_t quicktime_chunk_to_offset(quicktime_t *file, quicktime_trak_t *trak, lon
 // codecs can't use read_chunk
 	if(file->use_avi)
 	{
-//printf("quicktime_chunk_to_offset 1 %llx %d\n", result, file->mdat.atom.start);
+//printf("quicktime_chunk_to_offset 1 %llx %llx\n", result, file->mdat.atom.start);
 		result += 8 + file->mdat.atom.start;
 	}
 	return result;
@@ -406,14 +415,13 @@ int64_t quicktime_sample_range_size(quicktime_trak_t *trak,
 	{
 /* assume audio */
 		return quicktime_samples_to_bytes(trak, sample - chunk_sample);
-/* 		return (sample - chunk_sample) * trak->mdia.minf.stbl.stsz.sample_size  */
-/* 			* trak->mdia.minf.stbl.stsd.table[0].channels  */
-/* 			* trak->mdia.minf.stbl.stsd.table[0].sample_size / 8; */
 	}
 	else
 	{
-/* probably video */
-		for(i = chunk_sample, total = 0; i < sample; i++)
+/* video or vbr audio */
+		for(i = chunk_sample, total = 0; 
+			i < sample && i < trak->mdia.minf.stbl.stsz.total_entries; 
+			i++)
 		{
 			total += trak->mdia.minf.stbl.stsz.table[i].size;
 		}
@@ -421,13 +429,16 @@ int64_t quicktime_sample_range_size(quicktime_trak_t *trak,
 	return total;
 }
 
-int64_t quicktime_sample_to_offset(quicktime_t *file, quicktime_trak_t *trak, long sample)
+int64_t quicktime_sample_to_offset(quicktime_t *file, 
+	quicktime_trak_t *trak, 
+	long sample)
 {
 	int64_t chunk, chunk_sample, chunk_offset1, chunk_offset2;
 
 	quicktime_chunk_of_sample(&chunk_sample, &chunk, trak, sample);
 	chunk_offset1 = quicktime_chunk_to_offset(file, trak, chunk);
-	chunk_offset2 = chunk_offset1 + quicktime_sample_range_size(trak, chunk_sample, sample);
+	chunk_offset2 = chunk_offset1 + 
+		quicktime_sample_range_size(trak, chunk_sample, sample);
 	return chunk_offset2;
 }
 
@@ -562,6 +573,10 @@ void quicktime_write_chunk_footer(quicktime_t *file,
  * }
  */
 
+
+/**
+ * This is used for writing the header
+ **/
 int quicktime_trak_duration(quicktime_trak_t *trak, 
 	long *duration, 
 	long *timescale)
@@ -572,7 +587,8 @@ int quicktime_trak_duration(quicktime_trak_t *trak,
 
 	for(i = 0; i < stts->total_entries; i++)
 	{
-		*duration += stts->table[i].sample_duration * stts->table[i].sample_count;
+		*duration += stts->table[i].sample_duration * 
+			stts->table[i].sample_count;
 	}
 
 	*timescale = trak->mdia.mdhd.time_scale;

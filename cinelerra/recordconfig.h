@@ -50,6 +50,8 @@ public:
 
 	int driver;
 	char v4l_in_device[BCTEXTLEN];
+	char v4l2_in_device[BCTEXTLEN];
+	char v4l2jpeg_in_device[BCTEXTLEN];
 	char lml_in_device[BCTEXTLEN];
 	char buz_in_device[BCTEXTLEN];
 	char screencapture_display[BCTEXTLEN];

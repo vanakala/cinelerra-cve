@@ -114,26 +114,10 @@ int VirtualVConsole::process_buffer(int64_t input_position)
 				-1);
 		}
 
-//printf("VirtualVConsole::process_buffer 1 %p\n", output_temp);
 		result |= node->render(output_temp,
 			input_position + track->nudge,
 			renderengine->edl->session->frame_rate);
 	}
-
-// // Arm input buffers
-// 	for(i = 0; i < total_tracks; i++)
-// 		result |= ((VModule*)virtual_modules[i]->real_module)->render(buffer_in[i],
-// 			input_position,
-// 			renderengine->command->get_direction(),
-// 			1);
-//
-// // render nodes in sorted list
-// 	for(i = 0; i < render_list.total; i++)
-// 	{
-// 		((VirtualVNode*)render_list.values[i])->render(vrender->video_out, 
-// 				input_position);
-// 	}
-//printf("VirtualVConsole::process_buffer 10\n");
 
 	return result;
 }

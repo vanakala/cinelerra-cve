@@ -84,8 +84,19 @@ static int decode(quicktime_t *file,
 		codec->buffer = realloc(codec->buffer, codec->buffer_allocated);
 	}
 
-//printf("decode 1 %d %d\n", vtrack->current_position, size);
 	result = !quicktime_read_data(file, codec->buffer, size);
+/*
+ * printf("decode 1 %02x %02x %02x %02x %02x %02x %02x %02x\n", 
+ * codec->buffer[0],
+ * codec->buffer[1],
+ * codec->buffer[2],
+ * codec->buffer[3],
+ * codec->buffer[4],
+ * codec->buffer[5],
+ * codec->buffer[6],
+ * codec->buffer[7]
+ * );
+ */
 
 	if(!result)
 	{
@@ -99,13 +110,21 @@ static int decode(quicktime_t *file,
 			}
 			else
 			{
-				field2_offset = mjpeg_get_quicktime_field2(codec->buffer, size);
+				field2_offset = mjpeg_get_quicktime_field2(codec->buffer, 
+					size);
+// Sanity check
+				if(!field2_offset)
+				{
+					printf("decode: FYI field2_offset=0\n");
+					field2_offset = mjpeg_get_field2(codec->buffer, size);
+				}
 			}
 		}
 		else
 			field2_offset = 0;
 
 
+//printf("decode 2 %d\n", field2_offset);
 /*
  * printf("decode result=%d field1=%llx field2=%llx size=%d %02x %02x %02x %02x\n", 
  * result, 
@@ -150,6 +169,7 @@ static int decode(quicktime_t *file,
 			for(i = 0; i < track_height; i++)
 				temp_rows[i] = codec->temp_video + i * temp_rowsize;
 
+//printf("decode 10\n");
 			mjpeg_decompress(codec->mjpeg, 
 				codec->buffer, 
 				size,
@@ -183,7 +203,10 @@ static int decode(quicktime_t *file,
 				track_width,
 				file->out_w);
 
+//printf("decode 30\n");
 			free(temp_rows);
+
+//printf("decode 40\n");
 		}
 	}
 //printf("decode 2 %d\n", result);
@@ -364,6 +387,11 @@ void quicktime_init_codec_jpeg(quicktime_video_map_t *vtrack)
 void quicktime_init_codec_mjpa(quicktime_video_map_t *vtrack)
 {
 	init_codec_common(vtrack, QUICKTIME_MJPA);
+}
+
+void quicktime_init_codec_mjpg(quicktime_video_map_t *vtrack)
+{
+	init_codec_common(vtrack, "MJPG");
 }
 
 

@@ -131,7 +131,6 @@ int RecordGUI::create_objects()
 	modes.append(new BC_ListBoxItem(Batch::mode_to_text(RECORD_TIMED)));
 //	modes.append(new BC_ListBoxItem(Batch::mode_to_text(RECORD_LOOP)));
 //	modes.append(new BC_ListBoxItem(Batch::mode_to_text(RECORD_SCENETOSCENE)));
-	total_length = 0;
 
 // Status
 	int x = mwindow->theme->recordgui_status_x;
@@ -205,14 +204,6 @@ int RecordGUI::create_objects()
 	y += 20;
 	add_subwindow(new BC_Title(x, y, _("Position:")));
 	add_subwindow(position_title = new BC_Title(x1, 
-		y, 
-		"", 
-		MEDIUMFONT, 
-		mwindow->theme->recordgui_variable_color));
-	
-	y += 20;
-	add_subwindow(new BC_Title(x, y, _("End:")));
-	add_subwindow(total_length_title = new BC_Title(x1, 
 		y, 
 		"", 
 		MEDIUMFONT, 
@@ -1133,9 +1124,9 @@ int RecordGUI::update_dropped_frames(long new_dropped)
 	return 0;
 }
 
-int RecordGUI::update_position(double new_position, double new_length) 
+int RecordGUI::update_position(double new_position) 
 { 
-	status_thread->update_position(new_position, new_length);
+	status_thread->update_position(new_position);
 	return 0;
 }
 
@@ -1182,13 +1173,6 @@ void RecordGUI::update_labels(double new_position)
 }
 
 
-
-int RecordGUI::update_total_length(double new_position) 
-{
-	total_length = new_position;
-	update_title(total_length_title, new_position); 
-	return 0;
-}
 
 int RecordGUI::update_prev_label(long new_position) 
 { 
@@ -1301,7 +1285,6 @@ RecordStatusThread::RecordStatusThread(MWindow *mwindow, RecordGUI *gui)
 	this->gui = gui;
 	new_dropped_frames = -1;
 	new_position = -1;
-	new_length = -1;
 	new_clipped_samples = -1;
 	input_lock = new Condition(0, "RecordStatusThread::input_lock");
 	done = 0;
@@ -1323,10 +1306,9 @@ void RecordStatusThread::update_dropped_frames(long value)
 	input_lock->unlock();
 }
 
-void RecordStatusThread::update_position(double new_position, double total_length)
+void RecordStatusThread::update_position(double new_position)
 {
 	this->new_position = new_position;
-	this->new_length = total_length;
 	input_lock->unlock();
 }
 
@@ -1354,10 +1336,9 @@ void RecordStatusThread::run()
 			}
 		}
 		
-		if(new_position >= 0 || new_length >= 0)
+		if(new_position >= 0)
 		{
 			gui->update_title(gui->position_title, new_position);
-			gui->update_title(gui->total_length_title, new_length); 
 			gui->update_labels(new_position);
 		}
 		
@@ -1377,7 +1358,6 @@ void RecordStatusThread::run()
 		new_clipped_samples = -1;
 		new_dropped_frames = -1;
 		new_position = -1;
-		new_length = -1;
 	}
 }
 

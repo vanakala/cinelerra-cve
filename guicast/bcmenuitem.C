@@ -316,12 +316,12 @@ int BC_MenuItem::draw()
 			}
 			else
 			{
-				menu_popup->get_popup()->set_color(top_level->get_resources()->menu_highlighted);
+				menu_popup->get_popup()->set_color(BC_WindowBase::get_resources()->menu_highlighted);
 				menu_popup->get_popup()->draw_box(2, y, menu_popup->get_w() - 4, h);
 			}
 		}
 
-		menu_popup->get_popup()->set_color(BLACK);
+		menu_popup->get_popup()->set_color(BC_WindowBase::get_resources()->menu_item_text);
 		if(checked)
 		{
 			menu_popup->get_popup()->draw_check(10, y + 2);

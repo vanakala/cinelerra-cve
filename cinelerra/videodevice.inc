@@ -4,15 +4,17 @@
 class VideoDevice;
 
 // Flags for mainwindow->preferences->vconfig_in->driver
-#define VIDEO4LINUX      0
-#define VIDEO4LINUX2     1
-#define SCREENCAPTURE    2
-#define CAPTURE_LML      3
-#define CAPTURE_FIREWIRE 4
-#define CAPTURE_BUZ      5
+#define VIDEO4LINUX          0
+#define VIDEO4LINUX2         1
+#define VIDEO4LINUX2JPEG     2
+#define SCREENCAPTURE        3
+#define CAPTURE_LML          4
+#define CAPTURE_FIREWIRE     5
+#define CAPTURE_BUZ          6
 
 #define VIDEO4LINUX_TITLE      "Video4Linux"
 #define VIDEO4LINUX2_TITLE     "Video4Linux2"
+#define VIDEO4LINUX2JPEG_TITLE "Video4Linux2 JPEG"
 #define SCREENCAPTURE_TITLE    "Screencapture"
 #define CAPTURE_LML_TITLE      "LML 33"
 #define CAPTURE_BUZ_TITLE      "Buz"

@@ -29,6 +29,6 @@
 #include "bcwindow.h"
 #include "colors.h"
 #include "fonts.h"
-#include "timer.h"
+#include "bctimer.h"
 
 #endif

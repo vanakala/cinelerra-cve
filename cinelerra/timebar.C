@@ -8,6 +8,7 @@
 #include "fonts.h"
 #include "labels.h"
 #include "localsession.h"
+#include "maincursor.h"
 #include "mbuttons.h"
 #include "mwindow.h"
 #include "mwindowgui.h"

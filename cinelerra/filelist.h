@@ -47,7 +47,7 @@ public:
 	int write_list_header();
 	int write_frames(VFrame ***frames, int len);
 	VFrame* read_frame(int use_alpha, int use_float);
-
+	int get_memory_usage();
 
 	virtual FrameWriterUnit* new_writer_unit(FrameWriter *writer);
 

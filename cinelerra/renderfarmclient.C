@@ -152,7 +152,7 @@ void RenderFarmClient::main_loop()
     		}
 			else
 			{
-printf("RenderFarmClient::main_loop: Session started from %s\n", inet_ntoa(clientname.sin_addr));
+//printf("RenderFarmClient::main_loop: Session started from %s\n", inet_ntoa(clientname.sin_addr));
 				thread->main_loop(new_socket_fd);
 			}
 		}
@@ -169,7 +169,7 @@ printf("RenderFarmClient::main_loop: Session started from %s\n", inet_ntoa(clien
     		}
 			else
 			{
-printf("RenderFarmClient::main_loop: Session started from %s\n", clientname.sun_path);
+//printf("RenderFarmClient::main_loop: Session started from %s\n", clientname.sun_path);
 				thread->main_loop(new_socket_fd);
 			}
 		}
@@ -276,7 +276,7 @@ void RenderFarmClientThread::read_string(int socket_fd, char* &string)
 				(((u_int32_t)header[2]) << 8) | 
 				((u_int32_t)header[3]);
 //printf("RenderFarmClientThread::read_string %d %02x%02x%02x%02x\n",
-//	len, header[0], header[1], header[2], header[3]);
+//len, header[0], header[1], header[2], header[3]);
 
 	if(len)
 	{
@@ -408,10 +408,11 @@ int RenderFarmClientThread::read_package(int socket_fd, RenderPackage *package)
 	write_socket((char*)datagram, 4, RENDERFARM_TIMEOUT);
 
 
+//printf("RenderFarmClientThread::read_package 1 %f %ld\n", frames_per_second, fixed);
 	char *data;
 	unsigned char *data_ptr;
 	read_string(socket_fd, data);
-
+//printf("RenderFarmClientThread::read_package 2 %p\n", data);
 // Signifies end of session.
 	if(!data) 
 	{
@@ -419,6 +420,7 @@ int RenderFarmClientThread::read_package(int socket_fd, RenderPackage *package)
 		return 1;
 	}
 
+//printf("RenderFarmClientThread::read_package 2\n");
 
 
 	data_ptr = (unsigned char*)data;

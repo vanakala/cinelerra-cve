@@ -205,8 +205,7 @@ void RecordAudio::run()
 
 //printf("RecordAudio::run 2 %f\n", record->current_display_position());
 				if(!record->default_asset->video_data) 
-					gui->update_position(record->current_display_position(),
-						record->current_display_length());
+					gui->update_position(record->current_display_position());
 				if(clipped_sample) 
 					gui->update_clipped_samples(++total_clipped_samples);
 

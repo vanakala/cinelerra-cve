@@ -41,10 +41,11 @@ int VEdit::load_properties_derived(FileXML *xml)
 
 
 int VEdit::read_frame(VFrame *video_out, 
-			int64_t input_position, 
-			int direction,
-			CICache *cache,
-			int use_nudge)
+	int64_t input_position, 
+	int direction,
+	CICache *cache,
+	int use_nudge,
+	int use_cache)
 {
 	File *file = cache->check_out(asset);
 	int result = 0;
@@ -55,21 +56,15 @@ int VEdit::read_frame(VFrame *video_out,
 
 		input_position = (direction == PLAY_FORWARD) ? input_position : (input_position - 1);
 
-//printf("VEdit::read_frame 4\n");
 		file->set_layer(channel);
 
-//printf("VEdit::read_frame 5\n");
-//printf("VEdit::read_frame 3 %lld\n", input_position - startproject + startsource);
 		file->set_video_position(input_position - startproject + startsource, edl->session->frame_rate);
 
-//printf("VEdit::read_frame 6 channel: %d w: %d h: %d video_out: %p\n", channel, asset->width, asset->height, video_out);
-//asset->dump();
+		file->set_cache_frames(use_cache);
 		result = file->read_frame(video_out);
+		file->set_cache_frames(0);
 
-//printf("VEdit::read_frame 7 %d\n", video_out->get_compressed_size());
 		cache->check_in(asset);
-
-//printf("VEdit::read_frame 8\n");
 	}
 	else
 		result = 1;

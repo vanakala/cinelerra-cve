@@ -7,7 +7,7 @@
 #include "mainprogress.inc"
 #include "mwindow.inc"
 #include "mwindowgui.inc"
-#include "timer.inc"
+#include "bctimer.inc"
 
 // Generic progress bar for the MainProgress
 class MainProgress;

@@ -2,6 +2,7 @@
 #include "edlsession.h"
 #include "samplescroll.h"
 #include "localsession.h"
+#include "maincursor.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "patchbay.h"

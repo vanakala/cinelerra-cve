@@ -13,7 +13,7 @@
 #include "render.h"
 #include "renderfarm.h"
 #include "renderfarmfsserver.h"
-#include "timer.h"
+#include "bctimer.h"
 #include "transportque.h"
 
 
@@ -360,6 +360,7 @@ void RenderFarmServerThread::run()
 		}
 
 		int request_id = header[0];
+//printf("RenderFarmServerThread::run 1 %d\n", request_id);
 		int64_t request_size = (((u_int32_t)header[1]) << 24) |
 							(((u_int32_t)header[2]) << 16) |
 							(((u_int32_t)header[3]) << 8)  |
@@ -502,7 +503,7 @@ void RenderFarmServerThread::send_package(unsigned char *buffer)
 		((u_int32_t)buffer[3])) / 
 		65536.0;
 
-//printf("RenderFarmServerThread::send_package 1\n");
+//printf("RenderFarmServerThread::send_package 1 %f\n", frames_per_second);
 	RenderPackage *package = 
 		server->packages->get_package(frames_per_second, 
 			number, 
@@ -515,12 +516,14 @@ void RenderFarmServerThread::send_package(unsigned char *buffer)
 // No more packages
 	if(!package)
 	{
+//printf("RenderFarmServerThread::send_package 1\n");
 		datagram[0] = datagram[1] = datagram[2] = datagram[3] = 0;
 		write_socket(datagram, 4, RENDERFARM_TIMEOUT);
 	}
 	else
 // Encode package
 	{
+//printf("RenderFarmServerThread::send_package 10\n");
 		int i = 4;
 		strcpy(&datagram[i], package->path);
 		i += strlen(package->path);

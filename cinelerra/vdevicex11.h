@@ -4,7 +4,6 @@
 #include "canvas.inc"
 #include "edl.inc"
 #include "guicast.h"
-#include "mutex.h"
 #include "thread.h"
 #include "vdevicebase.h"
 

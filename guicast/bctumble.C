@@ -232,16 +232,23 @@ BC_ITumbler::BC_ITumbler(BC_TextBox *textbox, int64_t min, int64_t max, int x, i
 	this->textbox = textbox;
 	this->min = min;
 	this->max = max;
+	this->increment = 1;
 }
 
 BC_ITumbler::~BC_ITumbler()
 {
 }
 
+void BC_ITumbler::set_increment(float value)
+{
+	this->increment = (int64_t)value;
+	if(increment < 1) increment = 1;
+}
+
 int BC_ITumbler::handle_up_event()
 {
 	int64_t value = atol(textbox->get_text());
-	value++;
+	value += increment;
 	if(value > max) value = max;
 	textbox->update(value);
 	textbox->handle_event();
@@ -251,7 +258,7 @@ int BC_ITumbler::handle_up_event()
 int BC_ITumbler::handle_down_event()
 {
 	int64_t value = atol(textbox->get_text());
-	value--;
+	value -= increment;
 	if(value < min) value = min;
 	textbox->update(value);
 	textbox->handle_event();

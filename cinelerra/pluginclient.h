@@ -219,6 +219,8 @@ public:
 	virtual char* plugin_title();   // return the title of the plugin
 	virtual VFrame* new_picon();
 	virtual Theme* new_theme();
+// Get theme being used by Cinelerra currently.  Used by all plugins.
+	Theme* get_theme();
 
 
 
@@ -226,9 +228,11 @@ public:
 
 
 // Non realtime signal processors define these.
-// give the samplerate of the output for a non realtime plugin
+// Give the samplerate of the output for a non realtime plugin.
+// For realtime plugins give the requested samplerate.
 	virtual int get_samplerate();
-// give the framerate of the output for a non realtime plugin
+// Give the framerate of the output for a non realtime plugin.
+// For realtime plugins give the requested framerate.
 	virtual double get_framerate();
 	virtual int delete_nonrealtime_parameters();
 	virtual int start_plugin();         // run a non realtime plugin

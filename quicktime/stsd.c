@@ -98,7 +98,7 @@ void quicktime_read_stsd(quicktime_t *file, quicktime_minf_t *minf, quicktime_st
 	stsd->version = quicktime_read_char(file);
 	stsd->flags = quicktime_read_int24(file);
 	stsd->total_entries = quicktime_read_int32(file);
-	stsd->table = (quicktime_stsd_table_t*)malloc(sizeof(quicktime_stsd_table_t) * stsd->total_entries);
+	stsd->table = (quicktime_stsd_table_t*)calloc(1, sizeof(quicktime_stsd_table_t) * stsd->total_entries);
 	for(i = 0; i < stsd->total_entries; i++)
 	{
 		quicktime_stsd_table_init(&(stsd->table[i]));

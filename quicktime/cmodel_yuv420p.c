@@ -226,6 +226,204 @@
 			} \
 			break; \
  \
+		case BC_YUV9P: \
+			switch(out_colormodel) \
+			{ \
+				case BC_RGB8: \
+					TRANSFER_YUV9P_IN_HEAD \
+					transfer_YUV422P_to_RGB8((output), \
+						input_y + (y_in_offset), \
+						input_u + (u_in_offset), \
+						input_v + (v_in_offset)); \
+					TRANSFER_FRAME_TAIL \
+					break; \
+				case BC_BGR565: \
+					TRANSFER_YUV9P_IN_HEAD \
+					transfer_YUV422P_to_BGR565((output), \
+						input_y + (y_in_offset), \
+						input_u + (u_in_offset), \
+						input_v + (v_in_offset)); \
+					TRANSFER_FRAME_TAIL \
+					break; \
+				case BC_RGB565: \
+					TRANSFER_YUV9P_IN_HEAD \
+					transfer_YUV422P_to_RGB565((output), \
+						input_y + (y_in_offset), \
+						input_u + (u_in_offset), \
+						input_v + (v_in_offset)); \
+					TRANSFER_FRAME_TAIL \
+					break; \
+				case BC_BGR888:      \
+					TRANSFER_YUV9P_IN_HEAD \
+					transfer_YUV422P_to_BGR888((output), \
+						input_y + (y_in_offset), \
+						input_u + (u_in_offset), \
+						input_v + (v_in_offset)); \
+					TRANSFER_FRAME_TAIL \
+					break; \
+				case BC_BGR8888: \
+					TRANSFER_YUV9P_IN_HEAD \
+					transfer_YUV422P_to_BGR8888((output), \
+						input_y + (y_in_offset), \
+						input_u + (u_in_offset), \
+						input_v + (v_in_offset)); \
+					TRANSFER_FRAME_TAIL \
+					break; \
+				case BC_YUV420P: \
+					for(i = 0; i < out_h; i++) \
+					{ \
+						unsigned char *output_y = out_y_plane + i * total_out_w; \
+						unsigned char *output_u = out_u_plane + i / 2 * total_out_w / 2; \
+						unsigned char *output_v = out_v_plane + i / 2 * total_out_w / 2; \
+						unsigned char *input_y = in_y_plane + row_table[i] * total_in_w; \
+						unsigned char *input_u = in_u_plane + row_table[i] / 2 * total_in_w / 2; \
+						unsigned char *input_v = in_v_plane + row_table[i] / 2 * total_in_w / 2; \
+						for(j = 0; j < out_w; j++) \
+						{ \
+							transfer_YUV422P_to_YUV420P(input_y + (y_in_offset), \
+								input_u + (u_in_offset), \
+								input_v + (v_in_offset), \
+								output_y, \
+								output_u, \
+								output_v, \
+								j); \
+						} \
+					} \
+					break; \
+				case BC_YUV422: \
+					TRANSFER_YUV9P_IN_HEAD \
+					transfer_YUV422P_to_YUV422((output), \
+						input_y + (y_in_offset), \
+						input_u + (u_in_offset), \
+						input_v + (v_in_offset), \
+						j); \
+					TRANSFER_FRAME_TAIL \
+					break; \
+				case BC_YUV422P: \
+					for(i = 0; i < out_h; i++) \
+					{ \
+						unsigned char *output_y = out_y_plane + i * total_out_w; \
+						unsigned char *output_u = out_u_plane + i * total_out_w / 2; \
+						unsigned char *output_v = out_v_plane + i * total_out_w / 2; \
+						unsigned char *input_y = in_y_plane + row_table[i] * total_in_w; \
+						unsigned char *input_u = in_u_plane + row_table[i] / 2 * total_in_w / 2; \
+						unsigned char *input_v = in_v_plane + row_table[i] / 2 * total_in_w / 2; \
+						for(j = 0; j < out_w; j++) \
+						{ \
+							transfer_YUV422P_to_YUV420P(input_y + (y_in_offset), \
+								input_u + (u_in_offset), \
+								input_v + (v_in_offset), \
+								output_y, \
+								output_u, \
+								output_v, \
+								j); \
+						} \
+					} \
+					break; \
+				case BC_YUV444P: \
+					for(i = 0; i < out_h; i++) \
+					{ \
+						unsigned char *output_y = out_y_plane + i * total_out_w; \
+						unsigned char *output_u = out_u_plane + i * total_out_w; \
+						unsigned char *output_v = out_v_plane + i * total_out_w; \
+						unsigned char *input_y = in_y_plane + row_table[i] * total_in_w; \
+						unsigned char *input_u = in_u_plane + row_table[i] / 2 * total_in_w / 2; \
+						unsigned char *input_v = in_v_plane + row_table[i] / 2 * total_in_w / 2; \
+						for(j = 0; j < out_w; j++) \
+						{ \
+							transfer_YUV422P_to_YUV444P(input_y + (y_in_offset), \
+								input_u + (u_in_offset), \
+								input_v + (v_in_offset), \
+								output_y, \
+								output_u, \
+								output_v, \
+								j); \
+						} \
+					} \
+					break; \
+				case BC_RGB888:      \
+					TRANSFER_YUV9P_IN_HEAD \
+					transfer_YUV422P_to_RGB888((output), \
+						input_y + (y_in_offset), \
+						input_u + (u_in_offset), \
+						input_v + (v_in_offset)); \
+					TRANSFER_FRAME_TAIL \
+					break; \
+				case BC_ARGB8888:      \
+					TRANSFER_YUV9P_IN_HEAD \
+					transfer_YUV422P_to_ARGB8888((output), \
+						input_y + (y_in_offset), \
+						input_u + (u_in_offset), \
+						input_v + (v_in_offset)); \
+					TRANSFER_FRAME_TAIL \
+					break; \
+				case BC_ABGR8888:      \
+					TRANSFER_YUV9P_IN_HEAD \
+					transfer_YUV422P_to_ABGR8888((output), \
+						input_y + (y_in_offset), \
+						input_u + (u_in_offset), \
+						input_v + (v_in_offset)); \
+					TRANSFER_FRAME_TAIL \
+					break; \
+				case BC_RGBA8888:      \
+					TRANSFER_YUV9P_IN_HEAD \
+					transfer_YUV422P_to_RGBA8888((output), \
+						input_y + (y_in_offset), \
+						input_u + (u_in_offset), \
+						input_v + (v_in_offset)); \
+					TRANSFER_FRAME_TAIL \
+					break; \
+				case BC_RGB161616:      \
+					TRANSFER_YUV9P_IN_HEAD \
+					transfer_YUV422P_to_RGB161616((uint16_t**)(output), \
+						input_y + (y_in_offset), \
+						input_u + (u_in_offset), \
+						input_v + (v_in_offset)); \
+					TRANSFER_FRAME_TAIL \
+					break; \
+				case BC_RGBA16161616:      \
+					TRANSFER_YUV9P_IN_HEAD \
+					transfer_YUV422P_to_RGBA16161616((uint16_t**)(output), \
+						input_y + (y_in_offset), \
+						input_u + (u_in_offset), \
+						input_v + (v_in_offset)); \
+					TRANSFER_FRAME_TAIL \
+					break; \
+				case BC_YUV888: \
+					TRANSFER_YUV9P_IN_HEAD \
+					transfer_YUV422P_to_YUV888((output), \
+						input_y + (y_in_offset), \
+						input_u + (u_in_offset), \
+						input_v + (v_in_offset)); \
+					TRANSFER_FRAME_TAIL \
+					break; \
+				case BC_YUVA8888: \
+					TRANSFER_YUV9P_IN_HEAD \
+					transfer_YUV422P_to_YUVA8888((output), \
+						input_y + (y_in_offset), \
+						input_u + (u_in_offset), \
+						input_v + (v_in_offset)); \
+					TRANSFER_FRAME_TAIL \
+					break; \
+				case BC_YUV161616: \
+					TRANSFER_YUV9P_IN_HEAD \
+					transfer_YUV422P_to_YUV161616((uint16_t**)(output), \
+						input_y + (y_in_offset), \
+						input_u + (u_in_offset), \
+						input_v + (v_in_offset)); \
+					TRANSFER_FRAME_TAIL \
+					break; \
+				case BC_YUVA16161616: \
+					TRANSFER_YUV9P_IN_HEAD \
+					transfer_YUV422P_to_YUVA16161616((uint16_t**)(output), \
+						input_y + (y_in_offset), \
+						input_u + (u_in_offset), \
+						input_v + (v_in_offset)); \
+					TRANSFER_FRAME_TAIL \
+					break; \
+			} \
+			break; \
+ \
 		case BC_YUV422P: \
 			switch(out_colormodel) \
 			{ \
@@ -643,6 +841,28 @@ void cmodel_yuv420p(PERMUTATION_ARGS)
 			j,
 			j / 2,
 			j / 2,
+			0);
+	}
+}
+
+void cmodel_yuv9p(PERMUTATION_ARGS)
+{
+	if(scale)
+	{
+		TRANSFER_FRAME_DEFAULT(&output_row, 
+			input_row + column_table[j] * in_pixelsize,
+			column_table[j],
+			column_table[j] / 4,
+			column_table[j] / 4,
+			0);
+	}
+	else
+	{
+		TRANSFER_FRAME_DEFAULT(&output_row, 
+			input_row + j * in_pixelsize,
+			j,
+			j / 4,
+			j / 4,
 			0);
 	}
 }
