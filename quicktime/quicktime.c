@@ -1265,7 +1265,6 @@ int quicktime_close(quicktime_t *file)
 		{
 			quicktime_atom_t junk_atom;
 			int i;
-			int64_t position = quicktime_position(file);
 
 // Finalize last header
 			quicktime_finalize_riff(file, file->riff[file->total_riffs - 1]);
@@ -1278,7 +1277,6 @@ int quicktime_close(quicktime_t *file)
 			quicktime_finalize_indx(file);
 
 // Pad ending
-			quicktime_set_position(file, position);
 			quicktime_atom_write_header(file, &junk_atom, "JUNK");
 			for(i = 0; i < 0x406; i++)
 				quicktime_write_int32_le(file, 0);
@@ -1316,4 +1314,3 @@ int quicktime_release()
 {
 	return QUICKTIME_RELEASE;
 }
-
