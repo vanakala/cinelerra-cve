@@ -1,7 +1,7 @@
 Source: hvirtual
 Section: graphics
 Priority: optional
-Maintainer: Sylvain Joyeux <sylvain.joyeux@polytechnique.org>
+Maintainer: Cinelerra non-official mailing list <cinelerra@skolelinux.no>
 Standards-Version: 3.5.9
 Build-Depends: debhelper (>> 4), automake1.7, dpatch (>= 1.11),
  libasound2-dev (>= 0.9.0), libglib1.2-dev (>= 1.2.10), libdv2-dev (>= 0.99), 
