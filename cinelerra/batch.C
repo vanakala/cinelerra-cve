@@ -83,7 +83,7 @@ void Batch::calculate_news()
 // File open
 	if(record->get_current_batch() == this && record->file)
 	{
-		sprintf(news, "Open");
+		sprintf(news, _("Open"));
 	}
 	else
 	{
@@ -92,11 +92,11 @@ void Batch::calculate_news()
 
 		if(test)
 		{
-			sprintf(news, "File exists");
+			sprintf(news, _("File exists"));
 			fclose(test);
 		}
 		else
-			sprintf(news, "OK");
+			sprintf(news, _("OK"));
 	}
 }
 
@@ -147,10 +147,10 @@ char* Batch::mode_to_text(int record_mode)
 	switch(record_mode)
 	{
 		case RECORD_INFINITE:
-			return "Untimed";
+			return _("Untimed");
 			break;
 		case RECORD_TIMED:
-			return "Timed";
+			return _("Timed");
 			break;
 // 		case RECORD_LOOP:
 // 			return "Loop";
@@ -159,7 +159,7 @@ char* Batch::mode_to_text(int record_mode)
 // 			return "Scene to scene";
 // 			break;
 	}
-	return "Unknown";
+	return _("Unknown");
 }
 
 Asset* Batch::get_current_asset()
