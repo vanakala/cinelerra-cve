@@ -4281,7 +4281,7 @@ int TrackCanvas::test_plugins(int cursor_x,
 					case PLUGIN_STANDALONE:
 					{
 						PluginServer *server = mwindow->scan_plugindb(plugin->title,
-							track->data_type);
+							plugin->track->data_type);
 						VFrame *frame = server->picon;
 //printf("TrackCanvas::test_plugins 7\n");
 						drag_popup = new BC_DragWindow(gui, 
