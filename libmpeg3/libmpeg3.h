@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 
+// FIXME: don't include private definitions in external header
 #include "mpeg3private.h"
 
 
