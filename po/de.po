@@ -2532,7 +2532,7 @@ msgstr "Frame rückwärts ( 4 )"
 
 #: cinelerra/playtransport.C:412
 msgid "Normal forward ( 3 )"
-msgstr "Normal, rückwärts ( 3 )"
+msgstr "Normal vorwärts ( 3 )"
 
 #: cinelerra/playtransport.C:431
 msgid "Frame forward ( 1 )"
