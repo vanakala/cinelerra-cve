@@ -250,6 +250,7 @@ int main(int argc, char *argv[])
 // Tabulate the start and end of all the JPEG images.
 // This search is intended to be as simple as possible, reserving more
 // complicated operations for a table pass.
+printf("Pass 1 video only.\n");
 	while(ftell_byte < file_size)
 	{
 		current_byte = ftell_byte;
@@ -359,6 +360,7 @@ fflush(stdout);
 
 // With the image table complete, 
 // write chunk table from the gaps in the image table
+printf("Pass 2 audio table.\n");
 	total_samples = 0;
 	for(i = 1; i < start_size; i++)
 	{
@@ -369,13 +371,27 @@ fflush(stdout);
 		if(next_image_start - prev_image_end >= audio_chunk * audio_frame)
 		{
 			long samples = (next_image_start - prev_image_end) / audio_frame;
-			quicktime_update_tables(out, 
-						out->atracks[0].track, 
-						prev_image_end, 
-						out->atracks[0].current_chunk, 
-						out->atracks[0].current_position, 
-						samples, 
-						0);
+			quicktime_atom_t chunk_atom;
+
+			quicktime_set_position(out, prev_image_end);
+			quicktime_write_chunk_header(out, 
+				out->atracks[0].track, 
+				&chunk_atom);
+			quicktime_set_position(out, next_image_start);
+			quicktime_write_chunk_footer(out,
+				out->atracks[0].track, 
+				out->atracks[0].current_chunk, 
+				&chunk_atom,
+				samples);
+/*
+ * 			quicktime_update_tables(out, 
+ * 						out->atracks[0].track, 
+ * 						prev_image_end, 
+ * 						out->atracks[0].current_chunk, 
+ * 						out->atracks[0].current_position, 
+ * 						samples, 
+ * 						0);
+ */
 			out->atracks[0].current_position += samples;
 			out->atracks[0].current_chunk++;
 			total_samples += samples;
@@ -398,224 +414,39 @@ printf("Got %d frames %d samples total.\n", start_size, total_samples);
 		}
 		else
 		{
-			quicktime_update_tables(out,
-						out->vtracks[0].track,
-						start_table[i],
-						out->vtracks[0].current_chunk,
-						out->vtracks[0].current_position,
-						1,
-						end_table[i + fields - 1] - start_table[i]);
+			quicktime_atom_t chunk_atom;
+			quicktime_set_position(out, start_table[i]);
+			quicktime_write_chunk_header(out, 
+				out->vtracks[0].track,
+				&chunk_atom);
+			quicktime_set_position(out, end_table[i + fields - 1]);
+			quicktime_write_chunk_footer(out,
+				out->vtracks[0].track, 
+				out->vtracks[0].current_chunk, 
+				&chunk_atom,
+				1);
+/*
+ * 			quicktime_update_tables(out,
+ * 						out->vtracks[0].track,
+ * 						start_table[i],
+ * 						out->vtracks[0].current_chunk,
+ * 						out->vtracks[0].current_position,
+ * 						1,
+ * 						end_table[i + fields - 1] - start_table[i]);
+ */
 			out->vtracks[0].current_position++;
 			out->vtracks[0].current_chunk++;
 		}
 	}
 
 
-	
 
 
 
 
 
-
-
-
-#if 0
-	
-
-	if(!memcmp(VCODEC, QUICKTIME_MJPA, 4))
-	{
-		fields = 2;
-		jpeg_header_offset = 46;
-	}
-	else
-	{
-		jpeg_header_offset = 2;
-	}
-
-	while(ftell_byte < file_size)
-	{
-// Search forward for JFIF
-		current_byte = ftell_byte;
-		fread(search_buffer, SEARCH_FRAGMENT, 1, in);
-		ftell_byte = current_byte + SEARCH_FRAGMENT - SEARCH_PAD;
-		FSEEK(in, ftell_byte, SEEK_SET);
-
-		for(i = 0; i < SEARCH_FRAGMENT - SEARCH_PAD; i++)
-		{
-			update_time = 0;
-
-// Software compression
-			if(search_buffer[i] == 0xff &&
-				search_buffer[i + 1] == 0xe0 &&
-				search_buffer[i + 4] == 'J' &&
-				search_buffer[i + 5] == 'F' &&
-				search_buffer[i + 6] == 'I' &&
-				search_buffer[i + 7] == 'F')
-			{
-				if(state == GOT_NOTHING)
-				{
-					audio_end = field1_offset = current_byte + i - jpeg_header_offset;
-					state = IN_FIELD1;
-				}
-				else
-				if(state == GOT_FIELD1)
-				{
-					field2_offset = current_byte + i - jpeg_header_offset;
-					state = IN_FIELD2;
-				}
-			}
-			else
-// BUZ driver
-			if(search_buffer[i] == 0xff &&
-				search_buffer[i + 1] == 0xe1 &&
-				search_buffer[i + 8] == 'm' &&
-				search_buffer[i + 9] == 'j' &&
-				search_buffer[i + 10] == 'p' &&
-				search_buffer[i + 11] == 'g')
-			{
-				if(state == GOT_NOTHING)
-				{
-					audio_end = field1_offset = current_byte + i - 2;
-					state = IN_FIELD1;
-				}
-				else
-				if(state == GOT_FIELD1)
-				{
-					field2_offset = current_byte + i - 2;
-					state = IN_FIELD2;
-				}
-			}
-			else
-			if(search_buffer[i] == 0xff &&
-				search_buffer[i + 1] == 0xd9)
-			{
-				int got_eoi = 0;
-
-// ffd9 sometimes occurs inside the mjpg tag
-				if(state == IN_FIELD1 && 
-					current_byte + i - field1_offset > 0x2a)
-				{
-					state = GOT_FIELD1;
-					got_eoi = 1;
-				}
-				else
-				if(state == IN_FIELD2 && 
-					current_byte + i - field2_offset > 0x2a)
-				{
-					state = GOT_FIELD2;
-					got_eoi = 1;
-				}
-
-				if(got_eoi)
-				{
-					int j, got_ff = 0;
-// BUZ driver puts padding in
-					for(j = 2; j < 8; j++)
-					{
-						if(search_buffer[i + j] != 0xff)
-						{
-// Got next frame
-							if(search_buffer[i + j] == 0xd8 && got_ff)
-							{
-								audio_start = jpeg_end = current_byte + i + j - 1;
-							}
-							else
-// Got end of video chunk
-							{
-								audio_start = jpeg_end = current_byte + i + j;
-							}
-							break;
-						}
-						got_ff = 1;
-					}
-				}
-			}
-
-
-// Got video frame
-			if((fields == 2 && state == GOT_FIELD2) ||
-				(fields == 1 && state == GOT_FIELD1))
-			{
-				quicktime_update_tables(out,
-							out->vtracks[0].track,
-							field1_offset,
-							out->vtracks[0].current_chunk,
-							out->vtracks[0].current_position,
-							1,
-							jpeg_end - field1_offset);
-				out->vtracks[0].current_position++;
-				out->vtracks[0].current_chunk++;
-//printf("video chunk %d %d\n", found_jfif, out->vtracks[0].current_position);
-				update_time = 1;
-				state = GOT_NOTHING;
-			}
-			else
-// Got an audio chunk
-			if(audio_end - audio_start > 0)
-			{
-				if(audio_end - audio_start > 8)
-				{
-// Audio chunk needs to end on the start of a frame but it needs to
-// start a multiple of frame_size from the end.  The BUZ driver generates
-// arbitrary padding on the end of frames, so we don't know where the 
-// audio starts.
-					int frame_size = CHANNELS * BITS / 8;
-					int chunk_size = audio_end - audio_start;
-					chunk_size = (int)((chunk_size + frame_size - 1) / frame_size) * frame_size;
-					audio_start = audio_end - chunk_size;
-					long samples = (audio_end - audio_start) / frame_size;
-
-
-					quicktime_update_tables(out, 
-								out->atracks[0].track, 
-								audio_start, 
-								out->atracks[0].current_chunk, 
-								out->atracks[0].current_position, 
-								samples, 
-								0);
-					out->atracks[0].current_position += samples;
-					out->atracks[0].current_chunk++;
-				}
-
-				audio_start = audio_end;
-				update_time = 1;
-//printf("audio chunk %d\n", out->atracks[0].current_position);
-			}
-
-			if(update_time)
-			{
-				current_time = time(0);
-				if((int64_t)current_time - (int64_t)prev_time >= 1)
-				{
-printf("samples %d frames %d\r", out->atracks[0].current_position, out->vtracks[0].current_position);
-fflush(stdout);
-					prev_time = current_time;
-				}
-			}
-
-
-
-		}
-
-	}
-printf("\n\n");
-
-
-#endif
-
-
-
-
-
-
-
-
-
-
-
-
-// Force header out
+// Force header out at beginning of temp file
+	quicktime_set_position(out, 0x10);
 	quicktime_close(out);
 
 // Transfer header
@@ -633,6 +464,7 @@ printf("\n\n");
 
 	FSEEK(in, ftell_byte, SEEK_SET);
 	stat(TEMP_FILE, &ostat);
+
 	temp = fopen(TEMP_FILE, "rb");
 	FSEEK(temp, 0x10, SEEK_SET);
 	copy_buffer = calloc(1, ostat.st_size);

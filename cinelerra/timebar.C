@@ -384,12 +384,18 @@ void TimeBar::update_presentations()
 
 void TimeBar::update(int do_range, int do_others)
 {
+//printf("TimeBar::update 1\n");
 	draw_time();
+//printf("TimeBar::update 1\n");
 // Need to redo these when range is drawn to get the background updated.
 	update_labels();
+//printf("TimeBar::update 1\n");
 	update_points();
+//printf("TimeBar::update 1\n");
 	update_presentations();
+//printf("TimeBar::update 1\n");
 	flash();
+//printf("TimeBar::update 10\n");
 }
 
 
@@ -778,10 +784,7 @@ int TimeBar::cursor_motion_event()
 		case TIMEBAR_DRAG:
 		{
 			update_cursor();
-// printf("TimeBar::cursor_motion_event %d %d %d\n", 
-// get_cursor_x(), 
-// 0, 
-// get_w());
+//printf("TimeBar::cursor_motion_event 1\n");
 			int relative_cursor_x = mwindow->gui->canvas->get_relative_cursor_x();
 			if(relative_cursor_x >= mwindow->gui->canvas->get_w() || 
 				relative_cursor_x < 0)
@@ -795,6 +798,7 @@ int TimeBar::cursor_motion_event()
 				mwindow->gui->canvas->stop_dragscroll();
 			}
 			result = 1;
+//printf("TimeBar::cursor_motion_event 10\n");
 			break;
 		}
 
@@ -806,7 +810,9 @@ int TimeBar::cursor_motion_event()
 			break;
 
 		default:
+//printf("TimeBar::cursor_motion_event 20\n");
 			result = test_preview(0);
+//printf("TimeBar::cursor_motion_event 30\n");
 			break;
 	}
 

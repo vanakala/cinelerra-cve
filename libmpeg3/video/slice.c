@@ -20,7 +20,7 @@ int mpeg3_new_slice_buffer(mpeg3_slice_buffer_t *slice_buffer)
 	slice_buffer->bits = 0;
 	slice_buffer->done = 0;
 	pthread_mutexattr_init(&mutex_attr);
-//	pthread_mutexattr_setkind_np(&mutex_attr, PTHREAD_MUTEX_FAST_NP);
+//	pthread_mutexattr_settype(&mutex_attr, PTHREAD_MUTEX_ADAPTIVE_NP);
 	pthread_mutex_init(&(slice_buffer->completion_lock), &mutex_attr);
 	return 0;
 }
@@ -683,7 +683,7 @@ int mpeg3_new_slice_decoder(void *video, mpeg3_slice_t *slice)
 	slice->video = video;
 	slice->done = 0;
 	pthread_mutexattr_init(&mutex_attr);
-//	pthread_mutexattr_setkind_np(&mutex_attr, PTHREAD_MUTEX_FAST_NP);
+//	pthread_mutexattr_settype(&mutex_attr, PTHREAD_MUTEX_ADAPTIVE_NP);
 	pthread_mutex_init(&(slice->input_lock), &mutex_attr);
 	pthread_mutex_lock(&(slice->input_lock));
 	pthread_mutex_init(&(slice->output_lock), &mutex_attr);

@@ -1,3 +1,4 @@
+#include "bcsignals.h"
 #include <sys/wait.h>
 #include <signal.h>
 #include <stdio.h>
@@ -26,7 +27,7 @@ void* Thread::entrypoint(void *parameters)
 	pthread_setcanceltype(PTHREAD_CANCEL_ASYNCHRONOUS, 0);
 // Disable cancellation by default.
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, 0);
-	
+//printf("Thread::entrypoint 1 %d\n", getpid());	
 
 	thread->run();
 
@@ -65,7 +66,7 @@ void Thread::start()
 
 int Thread::end(pthread_t tid)           // need to join after this if synchronous
 {
-	if(tid > 0) pthread_cancel(tid);
+	if((int)tid > 0) pthread_cancel(tid);
 	return 0;
 }
 
@@ -77,7 +78,7 @@ int Thread::end()           // need to join after this if synchronous
 
 int Thread::cancel()
 {
-	if(tid > 0) pthread_cancel(tid);
+	if((int)tid > 0) pthread_cancel(tid);
 	if(!synchronous) tid = (pthread_t)-1;
 	return 0;
 }
@@ -85,7 +86,10 @@ int Thread::cancel()
 int Thread::join()   // join this thread
 {
 	int result = 0;
-	if(tid > 0) result = pthread_join(tid, 0); 
+	if((int)tid > 0)
+	{
+		result = pthread_join(tid, 0);
+	}
 
 	tid = (pthread_t)-1;
 
@@ -116,13 +120,13 @@ int Thread::exit_thread()
 
 int Thread::suspend_thread()
 {
-	if(tid > 0) pthread_kill(tid, SIGSTOP);
+	if((int)tid > 0) pthread_kill(tid, SIGSTOP);
 	return 0;
 }
 
 int Thread::continue_thread()
 {
-	if(tid > 0) pthread_kill(tid, SIGCONT);
+	if((int)tid > 0) pthread_kill(tid, SIGCONT);
 	return 0;
 }
 
@@ -147,6 +151,11 @@ int Thread::set_autodelete(int value)
 {
 	this->autodelete = value;
 	return 0;
+}
+
+int Thread::get_autodelete()
+{
+	return autodelete;
 }
 
 int Thread::get_synchronous()

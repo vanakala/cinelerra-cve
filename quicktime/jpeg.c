@@ -68,7 +68,6 @@ static int decode(quicktime_t *file,
 	int result = 0;
 	int field_dominance = trak->mdia.minf.stbl.stsd.table[0].field_dominance;
 
-//printf(__FUNCTION__ " 1 %d\n", vtrack->current_position);
 	mjpeg_set_cpus(codec->mjpeg, file->cpus);
 	if(file->row_span) 
 		mjpeg_set_rowspan(codec->mjpeg, file->row_span);
@@ -85,7 +84,7 @@ static int decode(quicktime_t *file,
 		codec->buffer = realloc(codec->buffer, codec->buffer_allocated);
 	}
 
-//printf("decode 1 %llx %llx\n", quicktime_position(file), quicktime_position(file) + size);
+//printf("decode 1 %d %d\n", vtrack->current_position, size);
 	result = !quicktime_read_data(file, codec->buffer, size);
 
 	if(!result)

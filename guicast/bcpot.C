@@ -17,6 +17,7 @@ BC_Pot::BC_Pot(int x, int y, VFrame **data)
 	this->data = data;
 	for(int i = 0; i < POT_STATES; i++)
 		images[i] = 0;
+	use_caption = 1;
 }
 
 BC_Pot::~BC_Pot()
@@ -56,6 +57,11 @@ int BC_Pot::set_data(VFrame **data)
 	return 0;
 }
 
+
+void BC_Pot::set_use_caption(int value)
+{
+	use_caption = value;
+}
 
 int BC_Pot::draw()
 {
@@ -158,9 +164,12 @@ float BC_Pot::coords_to_angle(int x2, int y2)
 
 void BC_Pot::show_value_tooltip()
 {
-	set_tooltip(get_caption());
-	show_tooltip(50);
-	keypress_tooltip_timer = 2000;
+	if(use_caption)
+	{
+		set_tooltip(get_caption());
+		show_tooltip(50);
+		keypress_tooltip_timer = 2000;
+	}
 }
 
 int BC_Pot::repeat_event(int64_t duration)
@@ -182,14 +191,17 @@ int BC_Pot::repeat_event(int64_t duration)
 		else
 		if(status == POT_HIGH)
 		{
-			if(!tooltip_text[0] || isdigit(tooltip_text[0]))
+			if(use_caption)
 			{
-				set_tooltip(get_caption());
-				show_tooltip(50);
+				if(!tooltip_text[0] || isdigit(tooltip_text[0]))
+				{
+					set_tooltip(get_caption());
+					show_tooltip(50);
+				}
+				else
+					show_tooltip();
+				tooltip_done = 1;
 			}
-			else
-				show_tooltip();
-			tooltip_done = 1;
 			return 1;
 		}
 	}
@@ -232,7 +244,6 @@ int BC_Pot::cursor_enter_event()
 {
 	if(top_level->event_win == win)
 	{
-// Set caption if no tooltip
 		tooltip_done = 0;
 		if(!top_level->button_down && status == POT_UP)
 		{
@@ -310,6 +321,7 @@ int BC_Pot::button_release_event()
 			}
 		}
 		draw();
+		return 1;
 	}
 	return 0;
 }
@@ -336,7 +348,8 @@ int BC_Pot::cursor_motion_event()
 		
 		prev_angle = angle;
 
-		if(percentage_to_value(angle_to_percentage(angle + angle_correction - angle_offset)))
+		if(percentage_to_value(
+			angle_to_percentage(angle + angle_correction - angle_offset)))
 		{
 			set_tooltip(get_caption());
 			draw();

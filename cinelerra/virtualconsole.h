@@ -3,9 +3,9 @@
 
 #include "arraylist.h"
 #include "commonrender.inc"
+#include "condition.inc"
 #include "maxbuffers.h"
 #include "module.inc"
-#include "mutex.inc"
 #include "playabletracks.inc"
 #include "renderengine.inc"
 #include "thread.h"
@@ -96,9 +96,9 @@ public:
 	PlayableTracks *playable_tracks;
 
 
-	Mutex *input_lock[MAX_BUFFERS];     // lock before sending input buffers through console
-	Mutex *output_lock[MAX_BUFFERS];	// lock before loading input buffers
-	Mutex *startup_lock;                // Lock before returning from start
+	Condition *input_lock[MAX_BUFFERS];     // lock before sending input buffers through console
+	Condition *output_lock[MAX_BUFFERS];	// lock before loading input buffers
+	Condition *startup_lock;                // Lock before returning from start
 
 // information for each buffer
 	int last_playback[MAX_BUFFERS];      // last buffer in playback range

@@ -7,11 +7,6 @@
 #include "fonts.h"
 #include "vframe.inc"
 
-#define TOGGLE_UP 0
-#define TOGGLE_UPHI 1
-#define TOGGLE_CHECKED 2
-#define TOGGLE_DOWN 3
-#define TOGGLE_CHECKEDHI 4
 
 class BC_Toggle : public BC_SubWindow
 {
@@ -31,6 +26,9 @@ public:
 	void set_select_drag(int value);
 	int update(int value, int draw = 1);
 	void reposition_window(int x, int y);
+	void enable();
+	void disable();
+	void set_status(int value);
 
 	int initialize();
 	int set_images(VFrame **data);
@@ -42,6 +40,15 @@ public:
 	int cursor_motion_event();
 	int repeat_event(int64_t repeat_id);
 	int draw_face();
+
+	enum
+	{
+		TOGGLE_UP,
+		TOGGLE_UPHI,
+		TOGGLE_CHECKED,
+		TOGGLE_DOWN,
+		TOGGLE_CHECKEDHI
+	};
 
 private:
 	int has_caption();
@@ -56,6 +63,7 @@ private:
 	int font;
 	int color;
 	int select_drag;
+	int enabled;
 };
 
 class BC_Radial : public BC_Toggle

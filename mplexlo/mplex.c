@@ -164,7 +164,7 @@ int main(int argc, char *argv[])
 
 	if(argc < 4)
 	{
-		printf("Tiny MPLEX by Adam Williams\n");
+		printf("Tiny MPLEX by Heroine Virtual Ltd.\n");
 		printf("Usage: mplex [-a] <stream 1> <stream2> ... <output>\n");
 		printf("	-a use ac3 packet headers\n");
 		exit(1);
@@ -276,7 +276,8 @@ int main(int argc, char *argv[])
 					int percentage;
 					skip_frame(track->file->vtrack[0]->demuxer);
 					track->frames_decoded++;
-					track->bytes_decoded = mpeg3demux_tell(track->file->vtrack[0]->demuxer);
+					track->bytes_decoded = mpeg3demux_tell_byte(
+						track->file->vtrack[0]->demuxer);
 					if(track->frames_decoded > frames_decoded)
 					{
 						frames_decoded = track->frames_decoded;
@@ -290,7 +291,9 @@ int main(int argc, char *argv[])
 									0xe0 | track->stream_number,
 									0);
 				    track->end_of_data = mpeg3_end_of_video(track->file, 0);
-					percentage = (int)(mpeg3_tell_percentage(track->file) * 100);
+					percentage = (int)(mpeg3demux_tell_byte(track->file->vtrack[0]->demuxer) * 
+						100 / 
+						mpeg3demux_movie_size(track->file->vtrack[0]->demuxer));
 					if(percentage - old_percentage >= 1)
 					{
 						printf("\t%d%% completed\r", percentage);
@@ -325,14 +328,14 @@ int main(int argc, char *argv[])
 							0,
 							samples_needed,
 							0);
-						track->bytes_decoded = mpeg3demux_tell(track->file->atrack[0]->demuxer);
+						track->bytes_decoded = mpeg3demux_tell_byte(track->file->atrack[0]->demuxer);
 						if(!track->end_of_data) track->bytes_decoded -= 2048;
 						track->samples_decoded += samples_needed;
 						track->end_of_data = mpeg3_end_of_audio(track->file, 0);
 					}
 					else
 					{
-						track->bytes_decoded = mpeg3demuxer_total_bytes(track->file->atrack[0]->demuxer);
+						track->bytes_decoded = mpeg3demux_movie_size(track->file->atrack[0]->demuxer);
 						track->end_of_data = 1;
 					}
 

@@ -251,7 +251,7 @@ mpeg3video_t* mpeg3video_allocate_struct(mpeg3_t *file, mpeg3_vtrack_t *track)
 	video->framenum = -1;
 	video->have_mmx = file->have_mmx;
 
-	video->percentage_seek = -1;
+	video->byte_seek = -1;
 	video->frame_seek = -1;
 
 	mpeg3video_init_scantables(video);
@@ -294,26 +294,21 @@ int mpeg3video_read_frame_backend(mpeg3video_t *video, int skip_bframes)
 	int got_top = 0, got_bottom = 0;
 	int i = 0;
 
-//printf(__FUNCTION__ " 1\n");
 	do
 	{
 		if(mpeg3bits_eof(video->vstream)) result = 1;
-//printf(__FUNCTION__ " 1.1\n");
 
 		if(!result) result = mpeg3video_get_header(video, 0);
-//printf(__FUNCTION__ " 1\n");
 
 
 /* skip_bframes is the number of bframes we can skip successfully. */
 /* This is in case a skipped B-frame is repeated and the second repeat happens */
 /* to be a B frame we need. */
 		video->skip_bframes = skip_bframes;
-//printf(__FUNCTION__ " 1\n");
 
 		if(!result)
 			result = mpeg3video_getpicture(video, video->framenum);
 
-//printf(__FUNCTION__ " 1\n");
 
 		if(video->pict_struct == TOP_FIELD)
 		{
@@ -330,7 +325,6 @@ int mpeg3video_read_frame_backend(mpeg3video_t *video, int skip_bframes)
 		{
 			got_top = got_bottom = 1;
 		}
-//printf(__FUNCTION__ " 2\n");
 
 		i++;
 	}while(i < 2 && 
@@ -340,11 +334,11 @@ int mpeg3video_read_frame_backend(mpeg3video_t *video, int skip_bframes)
 // the I frames have the top field but both the I frame and
 // subsequent P frame make the keyframe.
 
-//printf(__FUNCTION__ " 3 %d %d\n", video->pict_type, video->pict_struct);
+
 
 #ifdef HAVE_MMX
-		if(video->have_mmx)
-			__asm__ __volatile__ ("emms");
+	if(video->have_mmx)
+		__asm__ __volatile__ ("emms");
 #endif
 
 	if(!result)
@@ -352,7 +346,7 @@ int mpeg3video_read_frame_backend(mpeg3video_t *video, int skip_bframes)
 		video->last_number = video->framenum;
 		video->framenum++;
 	}
-//printf(__FUNCTION__ " 100\n");
+//printf("mpeg3video_read_frame_backend 100\n");
 
 	return result;
 }
@@ -410,13 +404,16 @@ static long gop_to_frame(mpeg3video_t *video, mpeg3_timecode_t *gop_timecode)
 mpeg3video_t* mpeg3video_new(mpeg3_t *file, mpeg3_vtrack_t *track)
 {
 	mpeg3video_t *video;
+	mpeg3_bits_t *bitstream;
+	mpeg3_demuxer_t *demuxer;
 	int result = 0;
 
 	video = mpeg3video_allocate_struct(file, track);
+	bitstream = video->vstream;
+	demuxer = bitstream->demuxer;
 
-//printf("mpeg3video_new 1 %llx %llx\n", mpeg3bits_tell(video->vstream), mpeg3demux_tell(track->demuxer));
+// Get encoding parameters from stream
 	result = mpeg3video_get_header(video, 1);
-//printf("mpeg3video_new 2 %d\n", result);
 
 	if(!result)
 	{
@@ -435,9 +432,10 @@ mpeg3video_t* mpeg3video_new(mpeg3_t *file, mpeg3_vtrack_t *track)
 			if(file->is_video_stream)
 			{
 /* Load the first GOP */
-				mpeg3bits_seek_start(video->vstream);
-				result = mpeg3video_next_code(video->vstream, MPEG3_GOP_START_CODE);
-				if(!result) mpeg3bits_getbits(video->vstream, 32);
+				mpeg3bits_seek_byte(bitstream, 0);
+				result = mpeg3video_next_code(bitstream, 
+					MPEG3_GOP_START_CODE);
+				if(!result) mpeg3bits_getbits(bitstream, 32);
 				if(!result) result = mpeg3video_getgophdr(video);
 
 				hour = video->gop_timecode.hour;
@@ -459,11 +457,17 @@ mpeg3video_t* mpeg3video_new(mpeg3_t *file, mpeg3_vtrack_t *track)
 				video->frames_per_gop = 16;
 
 /* Read the last GOP in the file by seeking backward. */
-				mpeg3bits_seek_end(video->vstream);
-				mpeg3bits_start_reverse(video->vstream);
-				result = mpeg3video_prev_code(video->vstream, MPEG3_GOP_START_CODE);
-				mpeg3bits_start_forward(video->vstream);
-				mpeg3bits_getbits(video->vstream, 8);
+				mpeg3demux_seek_byte(demuxer, 
+					mpeg3demux_movie_size(demuxer));
+				mpeg3demux_start_reverse(demuxer);
+				result = mpeg3video_prev_code(demuxer, 
+					MPEG3_GOP_START_CODE);
+				mpeg3demux_start_forward(demuxer);
+
+
+
+				mpeg3bits_reset(bitstream);
+				mpeg3bits_getbits(bitstream, 8);
 				if(!result) result = mpeg3video_getgophdr(video);
 
 				hour = video->gop_timecode.hour;
@@ -485,18 +489,17 @@ mpeg3video_t* mpeg3video_new(mpeg3_t *file, mpeg3_vtrack_t *track)
 /* Count number of frames to end */
 				while(!result)
 				{
-					result = mpeg3video_next_code(video->vstream, MPEG3_PICTURE_START_CODE);
-//printf("mpeg3video_new 2 %d %ld\n", result, video->last_frame);
+					result = mpeg3video_next_code(bitstream, MPEG3_PICTURE_START_CODE);
 					if(!result)
 					{
-						mpeg3bits_getbyte_noptr(video->vstream);
+						mpeg3bits_getbyte_noptr(bitstream);
 						video->last_frame++;
 					}
 				}
 
 				track->total_frames = video->last_frame - video->first_frame + 1;
 //printf("mpeg3video_new 3 %ld\n", track->total_frames);
-				mpeg3bits_seek_start(video->vstream);
+				mpeg3bits_seek_byte(video->vstream, 0);
 			}
 			else
 // Try to get the length of the file from the multiplexing.
@@ -517,17 +520,19 @@ mpeg3video_t* mpeg3video_new(mpeg3_t *file, mpeg3_vtrack_t *track)
 
 
 		video->maxframe = track->total_frames;
-		mpeg3bits_seek_start(video->vstream);
+		video->repeat_count = 0;
+//printf("mpeg3video_new 2\n");
+		mpeg3bits_seek_byte(video->vstream, 0);
+//printf("mpeg3video_new 3\n");
 		mpeg3video_get_firstframe(video);
 	}
 	else
 	{
-//printf("mpeg3video_new 3 %p\n", video);
 		mpeg3video_delete(video);
 		video = 0;
 	}
-//printf("mpeg3video_new 100 %p\n", video);
 
+//printf("mpeg3video_new 4\n");
 	return video;
 }
 
@@ -554,7 +559,10 @@ int mpeg3video_set_mmx(mpeg3video_t *video, int use_mmx)
 }
 
 /* Read all the way up to and including the next picture start code */
-int mpeg3video_read_raw(mpeg3video_t *video, unsigned char *output, long *size, long max_size)
+int mpeg3video_read_raw(mpeg3video_t *video, 
+	unsigned char *output, 
+	long *size, 
+	long max_size)
 {
 	u_int32_t code = 0;
 	mpeg3_bits_t *vstream = video->vstream;
@@ -616,17 +624,26 @@ int mpeg3video_read_frame(mpeg3video_t *video,
 		video->x_table = mpeg3video_get_scaletable(video->in_w, video->out_w);
 		video->y_table = mpeg3video_get_scaletable(video->in_h, video->out_h);
 	}
+//printf("mpeg3video_read_frame 1 %d\n", video->framenum);
 
-//printf("mpeg3video_read_frame 3\n");
-	if(!result) result = mpeg3video_seek(video);
+// Only decode if it's a different frame
+	if(video->frame_seek < 0 || 
+		video->last_number < 0 ||
+		video->frame_seek != video->last_number)
+	{
+		if(!result) result = mpeg3video_seek(video);
 
-//printf("mpeg3video_read_frame 4\n");
-	if(!result) result = mpeg3video_read_frame_backend(video, 0);
+		if(!result) result = mpeg3video_read_frame_backend(video, 0);
+	}
+	else
+	{
+		video->framenum = video->frame_seek + 1;
+		video->last_number = video->frame_seek;
+		video->frame_seek = -1;
+	}
 
-//printf("mpeg3video_read_frame 5\n");
 	if(video->output_src) mpeg3video_present_frame(video);
 
-	video->percentage_seek = -1;
 	return result;
 }
 
@@ -642,6 +659,7 @@ int mpeg3video_read_yuvframe(mpeg3video_t *video,
 {
 	int result = 0;
 
+//printf("mpeg3video_read_yuvframe 1 %d\n", video->framenum);
 	video->want_yvu = 1;
 	video->y_output = y_output;
 	video->u_output = u_output;
@@ -658,7 +676,7 @@ int mpeg3video_read_yuvframe(mpeg3video_t *video,
 	if(video->output_src) mpeg3video_present_frame(video);
 
 	video->want_yvu = 0;
-	video->percentage_seek = -1;
+	video->byte_seek = -1;
 	return result;
 }
 
@@ -669,23 +687,41 @@ int mpeg3video_read_yuvframe_ptr(mpeg3video_t *video,
 					char **v_output)
 {
 	int result = 0;
-//printf("mpeg3video_read_yuvframe_ptr 1\n");
 
 	video->want_yvu = 1;
 
-	if(!result) result = mpeg3video_seek(video);
+//printf("mpeg3video_read_yuvframe_ptr 1\n");
+// Only decode if it's a different frame
+	if(video->frame_seek < 0 || 
+		video->last_number < 0 ||
+		video->frame_seek != video->last_number)
+	{
+//printf("mpeg3video_read_yuvframe_ptr 1 %d\n", video->framenum);
+		if(!result) result = mpeg3video_seek(video);
+		if(!result) result = mpeg3video_read_frame_backend(video, 0);
+	}
+	else
+	{
+		video->framenum = video->frame_seek + 1;
+		video->last_number = video->frame_seek;
+		video->frame_seek = -1;
+	}
 //printf("mpeg3video_read_yuvframe_ptr 10\n");
 
-	if(!result) result = mpeg3video_read_frame_backend(video, 0);
-//printf("mpeg3video_read_yuvframe_ptr 20 %p\n", video->output_src);
-
-
-	*y_output = video->output_src[0];
-	*u_output = video->output_src[1];
-	*v_output = video->output_src[2];
+	if(video->output_src)
+	{
+		*y_output = video->output_src[0];
+		*u_output = video->output_src[1];
+		*v_output = video->output_src[2];
+	}
+	else
+	{
+		*y_output = *u_output = *v_output = 0;
+	}
+//printf("mpeg3video_read_yuvframe_ptr 20\n");
 
 	video->want_yvu = 0;
-	video->percentage_seek = -1;
+	video->byte_seek = -1;
 
 //printf("mpeg3video_read_yuvframe_ptr 100\n");
 

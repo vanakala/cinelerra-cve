@@ -2,7 +2,8 @@
 #define THREADINDEXER_H
 
 
-#include "assets.inc"
+#include "asset.inc"
+#include "condition.inc"
 #include "mwindow.inc"
 #include "thread.h"
 
@@ -22,7 +23,7 @@ public:
 	int interrupt_flag;
 	MWindow *mwindow;
 	Assets *assets;
-	Mutex interrupt_lock;    // Force blocking until thread is finished
+	Condition *interrupt_lock;    // Force blocking until thread is finished
 	IndexFile *indexfile;
 };
 

@@ -32,6 +32,7 @@ public:
 	int update_clocks();
 	int update_playback(int64_t new_position);       // update the playback position
 	int set_selection(int which_one);
+	void update_formatting(BC_TextBox *dst);
 
 	MWindow *mwindow;
 	MWindowGUI *gui;

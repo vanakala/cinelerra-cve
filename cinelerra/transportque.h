@@ -2,6 +2,7 @@
 #define TRANSPORTQUE_H
 
 #include "canvas.inc"
+#include "condition.inc"
 #include "edl.inc"
 #include "mutex.h"
 #include "preferences.inc"
@@ -19,7 +20,11 @@ public:
 	float get_speed();
 	TransportCommand& operator=(TransportCommand &command);
 // Get the range to play back from the EDL
-	void set_playback_range(EDL *edl);
+	void set_playback_range(EDL *edl = 0);
+
+// Adjust playback range with in/out points for rendering
+	void adjust_playback_range();
+
 	int single_frame();
 	EDL* get_edl();
 
@@ -58,7 +63,7 @@ public:
 	void update_change_type(int change_type);
 
 	TransportCommand command;
-	Mutex input_lock, output_lock;
+	Condition *input_lock, *output_lock;
 };
 
 #endif

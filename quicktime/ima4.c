@@ -494,7 +494,7 @@ static int encode(quicktime_t *file,
 			trak,
 			track_map->current_chunk,
 			&chunk_atom, 
-			1);
+			chunk_samples);
 
 		if(result) 
 			result = 0; 

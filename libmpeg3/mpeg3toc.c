@@ -183,6 +183,12 @@ int main(int argc, char *argv[])
 			int have_video = 0;
 			int64_t title_number = 0;
 
+
+
+
+
+
+// Audio section
 // Store current position and read sample_count from each atrack
 			for(j = 0; j < atracks; j++)
 			{
@@ -197,10 +203,12 @@ int main(int argc, char *argv[])
 				{
 // Don't want to maintain separate vectors for offset and title.
 					title_number = mpeg3demux_tell_title(input->atrack[j]->demuxer);
-					int64_t position = mpeg3demux_tell(input->atrack[j]->demuxer);
+					int64_t position = mpeg3demux_tell_relative(input->atrack[j]->demuxer);
 					int64_t result;
-					if(position < MPEG3_IO_SIZE) position = MPEG3_IO_SIZE;
-					result = (title_number << 56) | (position - MPEG3_IO_SIZE);
+
+//					if(position < MPEG3_IO_SIZE) position = MPEG3_IO_SIZE;
+//					result = (title_number << 56) | (position - MPEG3_IO_SIZE);
+					result = (title_number << 56) | position;
 
 					have_audio = 1;
 					APPEND_VECTOR(sample_offsets, 
@@ -242,6 +250,21 @@ int main(int argc, char *argv[])
 			}
 
 //printf(__FUNCTION__ " 9 %d\n", vtracks);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// Video section
 			for(j = 0; j < vtracks; j++)
 			{
 				mpeg3video_t *video = input->vtrack[j]->video;
@@ -257,7 +280,7 @@ int main(int argc, char *argv[])
 					if(!mpeg3_end_of_video(input, j))
 					{
 						int64_t title_number = mpeg3demux_tell_title(demuxer);
-						int64_t position = mpeg3demux_tell(demuxer);
+						int64_t position = mpeg3demux_tell_relative(demuxer);
 						int64_t result;
 						uint32_t code = 0;
 						int got_top = 0;
@@ -265,12 +288,13 @@ int main(int argc, char *argv[])
 						int got_keyframe = 0;
 						int fields = 0;
 
-						if(position < MPEG3_IO_SIZE) position = MPEG3_IO_SIZE;
-						result = (title_number << 56) | (position - MPEG3_IO_SIZE);
+//						if(position < MPEG3_IO_SIZE) position = MPEG3_IO_SIZE;
+//						result = (title_number << 56) | (position - MPEG3_IO_SIZE);
+						result = (title_number << 56) | position;
 						have_video = 1;
 
 
-
+//printf("%llx\n", position);
 // Store offset of every frame in table
 						APPEND_VECTOR(frame_offsets, 
 							total_frame_offsets,
@@ -327,7 +351,6 @@ int main(int argc, char *argv[])
 // subsequent P frame make the keyframe.
 							if(video->pict_type == I_TYPE)
 								got_keyframe = 1;
-//printf(__FUNCTION__ " 10 %d %d %d\n", video->pict_type, got_top, got_bottom);
 						}while(!mpeg3_end_of_video(input, j) && 
 							!got_bottom && 
 							total_frame_offsets[j] > 1);
@@ -428,12 +451,12 @@ int main(int argc, char *argv[])
 // Total bytes
 			PUT_INT64(input->demuxer->titles[i]->total_bytes);
 // Byte offsets of cells
-			PUT_INT32(input->demuxer->titles[i]->timecode_table_size);
-			for(j = 0; j < input->demuxer->titles[i]->timecode_table_size; j++)
+			PUT_INT32(input->demuxer->titles[i]->cell_table_size);
+			for(j = 0; j < input->demuxer->titles[i]->cell_table_size; j++)
 			{
-				PUT_INT64(input->demuxer->titles[i]->timecode_table[j].start_byte);
-				PUT_INT64(input->demuxer->titles[i]->timecode_table[j].end_byte);
-				PUT_INT32(input->demuxer->titles[i]->timecode_table[j].program);
+				PUT_INT64(input->demuxer->titles[i]->cell_table[j].start_byte);
+				PUT_INT64(input->demuxer->titles[i]->cell_table[j].end_byte);
+				PUT_INT32(input->demuxer->titles[i]->cell_table[j].program);
 			}
 		}
 

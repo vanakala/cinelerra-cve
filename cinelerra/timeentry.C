@@ -5,13 +5,15 @@ TimeEntry::TimeEntry(BC_WindowBase *gui,
 		int x, 
 		int y, 
 		int *output_day, 
-		double *output_time)
+		double *output_time,
+		int time_format)
 {
 	this->gui = gui;
 	this->x = x;
 	this->y = y;
 	this->output_day = output_day;
 	this->output_time = output_time;
+	this->time_format = time_format;
 }
 
 TimeEntry::~TimeEntry()
@@ -90,9 +92,10 @@ void TimeEntry::create_objects()
 		x, 
 		y, 
 		time_w, 
-		Units::totext(string, 	
+		Units::totext(string, 
 			*output_time, 
-			TIME_HMS)));
+			time_format)));
+	time_text->set_separators(Units::format_to_separators(time_format));
 }
 
 void TimeEntry::reposition_window(int x, int y)
@@ -130,7 +133,7 @@ void TimeEntry::update(int *day, double *time)
 	if(time)
 		time_text->update(Units::totext(string, 	
 			*time, 
-			TIME_HMS));
+			time_format));
 }
 
 int TimeEntry::handle_event()
@@ -211,10 +214,9 @@ int TimeTextBox::handle_event()
 {
 	*timeentry->output_time = Units::text_to_seconds(get_text(),
 		48000,
-		TIME_HMS,
+		timeentry->time_format,
 		0,
 		0);
-//printf("TimeTextBox::handle_event %.3f\n", *timeentry->output_time);
 	timeentry->handle_event();
 	return 1;
 }

@@ -1,26 +1,31 @@
+#include "bcsignals.h"
 #include "sema.h"
 
 
 
 
-Sema::Sema()
+Sema::Sema(int init_value, char *title)
 {
-	sem_init(&sem, 0, 1);
+	sem_init(&sem, 0, init_value);
+	this->title = title;
 }
 
 Sema::~Sema()
 {
 	sem_destroy(&sem);
+	UNSET_ALL_LOCKS(this);
 }
 
 
-void Sema::lock()
+void Sema::lock(char *location)
 {
+	SET_LOCK(this, title, location);
 	sem_wait(&sem);
 }
 
 void Sema::unlock()
 {
+	UNSET_LOCK(this);
 	sem_post(&sem);
 }
 

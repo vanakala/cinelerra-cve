@@ -13,7 +13,9 @@
 #define ICON_LEFT        0
 #define ICON_TOP         1
 
+// White space around text
 #define LISTBOX_MARGIN   4
+// Distance from sides of window
 #define LISTBOX_BORDER   2
 #define ICON_MARGIN      1
 #define LISTBOX_INDENT   10

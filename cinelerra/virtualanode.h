@@ -66,13 +66,24 @@ private:
 				double *output,        // start of output fragment
 				int64_t buffer_len,      // fragment length in input scale
 				int64_t input_position, // starting sample of input buffer in project
-				Autos *autos);     // DB not used in pan
+				Autos *autos,          // DB not used in pan
+				int direction,
+				int use_nudge);
 	int render_pan(double *input,        // start of input fragment
 				double *output,        // start of output fragment
 				int64_t fragment_len,      // fragment length in input scale
 				int64_t input_position, // starting sample of input buffer in project
 				Autos *autos,
-				int channel);
+				int channel,
+				int direction,
+				int use_nudge);
+	void get_pan_automation(double &slope,
+		double &intercept,
+		int64_t input_position,
+		int64_t &slope_len,
+		Autos *autos,
+		int channel,
+		int direction);
 
 	double* get_module_input(int double_buffer, int64_t fragment_position);
 	double* get_module_output(int double_buffer, int64_t fragment_position);

@@ -23,12 +23,14 @@ class VideoDevice;
 #define PLAYBACK_BUZ 	  11
 #define PLAYBACK_LML 	  12
 #define PLAYBACK_FIREWIRE 13
+#define PLAYBACK_DV1394   15
 
 #define PLAYBACK_X11_TITLE  	"X11"
 #define PLAYBACK_X11_XV_TITLE   "X11-XV"
 #define PLAYBACK_BUZ_TITLE  	"Buz"
 #define PLAYBACK_LML_TITLE  	"LML 33"
 #define PLAYBACK_FIREWIRE_TITLE "IEEE 1394"
+#define PLAYBACK_DV1394_TITLE   "DV 1394"
 
 // Output formats required for direct frame copy
 // RGB is for either RGB or RGBA as defined in the VFrame

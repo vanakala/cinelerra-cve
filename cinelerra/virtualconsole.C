@@ -2,6 +2,7 @@
 #include "automation.h"
 #include "autos.h"
 #include "commonrender.h"
+#include "condition.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "virtualconsole.h"
@@ -24,7 +25,7 @@ VirtualConsole::VirtualConsole(RenderEngine *renderengine,
 	this->commonrender = commonrender;
 	this->data_type = data_type;
 	total_tracks = 0;
-	startup_lock = new Mutex;
+	startup_lock = new Condition(1, "VirtualConsole::startup_lock");
 	playable_tracks = 0;
 	ring_buffers = 0;
 	virtual_modules = 0;
@@ -69,7 +70,6 @@ void VirtualConsole::start_playback()
 	interrupt = 0;
 	current_input_buffer = 0;
 	current_vconsole_buffer = 0;
-//printf("VirtualConsole::start_playback 1 %d %d\n", renderengine->command->realtime, data_type);
 	if(renderengine->command->realtime && data_type == TRACK_AUDIO)
 	{
 // don't start a thread unless writing to an audio device
@@ -78,7 +78,7 @@ void VirtualConsole::start_playback()
 		{
 			input_lock[ring_buffer]->reset();
 			output_lock[ring_buffer]->reset();
-			input_lock[ring_buffer]->lock();
+			input_lock[ring_buffer]->lock("VirtualConsole::start_playback");
 		}
 		Thread::set_synchronous(1);   // prepare thread base class
 //printf("VirtualConsole::start_playback 2 %d\n", renderengine->edl->session->real_time_playback);
@@ -135,8 +135,8 @@ int VirtualConsole::allocate_input_buffers()
 			ring_buffer < ring_buffers; 
 			ring_buffer++)
 		{
-			input_lock[ring_buffer] = new Mutex;
-			output_lock[ring_buffer] = new Mutex;
+			input_lock[ring_buffer] = new Condition(1, "VirtualConsole::input_lock");
+			output_lock[ring_buffer] = new Condition(1, "VirtualConsole::output_lock");
 			last_playback[ring_buffer] = 0;
 			new_input_buffer(ring_buffer);
 		}
@@ -223,8 +223,6 @@ int VirtualConsole::test_reconfigure(int64_t position,
 	Track *current_track;
 	Module *module;
 
-//printf("VirtualConsole::test_reconfigure 1\n");
-
 // Test playback status against virtual console for current position.
 	for(current_track = renderengine->edl->tracks->first;
 		current_track && !result;
@@ -234,7 +232,8 @@ int VirtualConsole::test_reconfigure(int64_t position,
 		{
 // Playable status changed
 			if(playable_tracks->is_playable(current_track, 
-				commonrender->current_position))
+				commonrender->current_position,
+				1))
 			{
 				if(!playable_tracks->is_listed(current_track))
 					result = 1;
@@ -258,7 +257,7 @@ int VirtualConsole::test_reconfigure(int64_t position,
 // Now get the length of time until next reconfiguration.
 // This part is not concerned with result.
 // Don't clip input length if only rendering 1 frame.
-	if(length == 1)  return result;
+	if(length == 1) return result;
 
 
 
@@ -270,7 +269,6 @@ int VirtualConsole::test_reconfigure(int64_t position,
 	int64_t longest_duration2;
 	int64_t longest_duration3;
 
-//printf("VirtualConsole::test_reconfigure 6 %d %d\n", length, result);
 // Length of time until next transition, edit, or effect change.
 // Why do we need the edit change?  Probably for changing to and from silence.
 	for(current_track = renderengine->edl->tracks->first;
@@ -284,24 +282,25 @@ int VirtualConsole::test_reconfigure(int64_t position,
 				commonrender->current_position, 
 				length, 
 				direction == PLAY_REVERSE, 
+				1,
 				1);
 
-//printf("VirtualConsole::test_reconfigure 10 %d\n", length);
 
 // Test the edits
 			longest_duration2 = current_track->edit_change_duration(
 				commonrender->current_position, 
 				length, 
 				direction, 
-				0);
+				0,
+				1);
 
-//printf("VirtualConsole::test_reconfigure 20 %d\n", length);
 
 // Test the plugins
 			longest_duration3 = current_track->plugin_change_duration(
 				commonrender->current_position,
 				length,
-				direction == PLAY_REVERSE);
+				direction == PLAY_REVERSE,
+				1);
 
 			if(longest_duration1 < length)
 			{
@@ -319,10 +318,8 @@ int VirtualConsole::test_reconfigure(int64_t position,
 				last_playback = 0;
 			}
 
-//printf("VirtualConsole::test_reconfigure 30 %d\n", length);
 		}
 	}
-//printf("VirtualConsole::test_reconfigure 11 %d %d\n", length, result);
 
 	return result;
 }

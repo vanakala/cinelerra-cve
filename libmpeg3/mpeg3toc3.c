@@ -146,7 +146,7 @@ static int read_titles(mpeg3_demuxer_t *demuxer, int version)
 			else
 			if(title)
 			{
-				mpeg3demux_timecode_t *timecode;
+				mpeg3demux_cell_t *timecode;
 				start_byte = atol(string2);
 	//printf("read_titles 5\n");
 				if(!strcasecmp(string1, "REGION:"))

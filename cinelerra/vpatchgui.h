@@ -13,12 +13,15 @@ class VModePatch;
 class VPatchGUI : public PatchGUI
 {
 public:
-	VPatchGUI(MWindow *mwindow, PatchBay *patchbay, VTrack *track, int x, int y);
+	VPatchGUI(MWindow *mwindow, 
+		PatchBay *patchbay, 
+		VTrack *track, 
+		int x, 
+		int y);
 	~VPatchGUI();
 
 	int create_objects();
 	int reposition(int x, int y);
-	void create_mode();
 	int update(int x, int y);
 	void synchronize_fade(float value_change);
 
@@ -46,12 +49,12 @@ public:
 	int handle_event();
 	int create_objects();         // add initial items
 	static char* mode_to_text(int mode);
-	static int text_to_mode(char *text);
 	static IntAuto* get_keyframe(MWindow *mwindow, VPatchGUI *patch);
 	void update(int mode);
 
 	MWindow *mwindow;
 	VPatchGUI *patch;
+	int mode;
 };
 
 class VModePatchItem : public BC_MenuItem

@@ -4,13 +4,23 @@
 class IVTCMain;
 class IVTCEngine;
 
-#define TOTAL_PATTERNS 2
+#define TOTAL_PATTERNS 3
+
+static char *pattern_text[] = 
+{
+	"A  B  BC  CD  D",
+	"AB  BC  CD  DE  EF",
+	"Automatic"
+};
 
 #include "defaults.h"
+#include "loadbalance.h"
 #include "mutex.h"
 #include "pluginvclient.h"
 #include "ivtcwindow.h"
 #include <sys/types.h>
+
+class IVTCEngine;
 
 class IVTCConfig
 {
@@ -22,6 +32,12 @@ public:
 	int automatic;
 	float auto_threshold;
 	int pattern;
+	enum
+	{
+		PULLDOWN32,
+		SHIFTFIELD,
+		AUTOMATIC
+	};
 };
 
 class IVTCMain : public PluginVClient
@@ -45,34 +61,55 @@ public:
 		VFrame *frame2, 
 		int64_t &field1,
 		int64_t &field2);
+	int64_t compare(VFrame *current_avg, 
+		VFrame *current_orig, 
+		VFrame *previous, 
+		int field);
+
+	void deinterlace_avg(VFrame *output, VFrame *input, int dominance);
 
 
-// 0, 3, 4 indicating pattern frame the automatic algorithm is on
-	int state;
-// New field detected in state 2
-	int new_field;
-	int64_t average, total_average;
 	VFrame *temp_frame[2];
-
-	IVTCEngine **engine;
+	VFrame *input, *output;
+	int64_t even_vs_current;
+	int64_t even_vs_prev;
+	int64_t odd_vs_current;
+	int64_t odd_vs_prev;
+	IVTCEngine *engine;
 };
 
-class IVTCEngine : public Thread
+
+class IVTCPackage : public LoadPackage
 {
 public:
-	IVTCEngine(IVTCMain *plugin, int start_y, int end_y);
-	~IVTCEngine();
-	
-	void run();
-	int start_process_frame(VFrame *output, VFrame *input);
-	int wait_process_frame();
+	IVTCPackage();
+	int y1, y2;
+};
 
+class IVTCUnit : public LoadClient
+{
+public:
+	IVTCUnit(IVTCEngine *server, IVTCMain *plugin);
+	void process_package(LoadPackage *package);
+	void clear_totals();
+	IVTCEngine *server;
 	IVTCMain *plugin;
-	int start_y, end_y;
-	VFrame *output, *input;
-	Mutex input_lock, output_lock;
-	int last_frame;
-	int64_t field1, field2;
+	int64_t even_vs_current;
+	int64_t even_vs_prev;
+	int64_t odd_vs_current;
+	int64_t odd_vs_prev;
+};
+
+
+class IVTCEngine : public LoadServer
+{
+public:
+	IVTCEngine(IVTCMain *plugin, int cpus);
+	~IVTCEngine();
+	void init_packages();
+	LoadClient* new_client();
+	LoadPackage* new_package();
+	IVTCMain *plugin;
 };
 
 #endif

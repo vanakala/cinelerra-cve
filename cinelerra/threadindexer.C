@@ -1,20 +1,19 @@
+#include "asset.h"
 #include "assets.h"
-#include "defaults.h"
 #include "bcprogressbox.h"
+#include "condition.h"
+#include "defaults.h"
 #include "filesystem.h"
-#include "indexfile.h"
-#include "loadfile.h"
 #include "guicast.h"
-#include "mwindow.h"
+#include "indexfile.h"
+#include "language.h"
+#include "loadfile.h"
 #include "mwindowgui.h"
+#include "mwindow.h"
 #include "threadindexer.h"
 
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 
@@ -26,16 +25,17 @@ ThreadIndexer::ThreadIndexer(MWindow *mwindow, Assets *assets)
 	this->assets = assets;
 	set_synchronous(0);
 	indexfile = new IndexFile(mwindow);
+	interrupt_lock = new Condition(0, "ThreadIndexer::ThreadIndexer");
 }
 
 ThreadIndexer::~ThreadIndexer()
 {
 	delete indexfile;
+	delete interrupt_lock;
 }
 
 int ThreadIndexer::start_build()
 {
-	interrupt_lock.lock();
 	interrupt_flag = 0;
 	start();
 }
@@ -72,15 +72,17 @@ void ThreadIndexer::run()
 			window.create_objects();
 			int result2 = window.run_window();
 
-			mwindow->defaults->update("DIRECTORY", window.get_path());
+			mwindow->defaults->update("DIRECTORY", 
+				window.get_submitted_path());
 
-			if(result2 == 1 )
+			if(result2 == 1)
 			{
 				strcpy(new_filename, SILENCE);
 			}
 			else
 			{
-				strcpy(new_filename, window.get_path());
+				strcpy(new_filename, 
+					window.get_submitted_path());
 			}
 
 // update assets containing old location
@@ -133,14 +135,14 @@ void ThreadIndexer::run()
 		progress = 0;
 	}
 
-	interrupt_lock.unlock();
+	interrupt_lock->unlock();
 }
 
 int ThreadIndexer::interrupt_build()
 {
 	interrupt_flag = 1;
 	indexfile->interrupt_index();
-	interrupt_lock.lock();
-	interrupt_lock.unlock();
+	interrupt_lock->lock(" ThreadIndexer::interrupt_build");
+	interrupt_lock->unlock();
 }
 

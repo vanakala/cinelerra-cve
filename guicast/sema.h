@@ -7,14 +7,15 @@
 class Sema
 {
 public:
-	Sema();
+	Sema(int init_value = 1, char *title = 0);
 	~Sema();
 
-	void lock();
+	void lock(char *location = 0);
 	void unlock();
 	int get_value();
 
 	sem_t sem;
+	char *title;
 };
 
 

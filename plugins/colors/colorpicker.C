@@ -7,6 +7,11 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 ColorThread::ColorThread(int do_alpha, char *title)
  : Thread()
 {
@@ -52,7 +57,7 @@ void ColorThread::run()
 	if(title)
 		strcat(window_title, title);
 	else
-		strcat(window_title, "Color Picker");
+		strcat(window_title, _("Color Picker"));
 
 
 
@@ -119,37 +124,37 @@ void ColorWindow::create_objects()
 //printf("ColorWindow::create_objects 1\n");
 	
 	x += 240; y = init_y;
-	add_tool(new BC_Title(x, y, "Hue", SMALLFONT));
+	add_tool(new BC_Title(x, y, _("Hue"), SMALLFONT));
 	y += 15;
 //printf("ColorWindow::create_objects 1 %p\n", this);
 	add_tool(hue = new PaletteHue(this, x, y));
 	y += 30;
 //printf("ColorWindow::create_objects 1\n");
-	add_tool(new BC_Title(x, y, "Saturation", SMALLFONT));
+	add_tool(new BC_Title(x, y, _("Saturation"), SMALLFONT));
 	y += 15;
 //printf("ColorWindow::create_objects 1\n");
 	add_tool(saturation = new PaletteSaturation(this, x, y));
 	y += 30;
 //printf("ColorWindow::create_objects 1\n");
-	add_tool(new BC_Title(x, y, "Value", SMALLFONT));
+	add_tool(new BC_Title(x, y, _("Value"), SMALLFONT));
 	y += 15;
 //printf("ColorWindow::create_objects 1\n");
 	add_tool(value = new PaletteValue(this, x, y));
 	y += 30;
 //printf("ColorWindow::create_objects 1\n");
-	add_tool(new BC_Title(x, y, "Red", SMALLFONT));
+	add_tool(new BC_Title(x, y, _("Red"), SMALLFONT));
 	y += 15;
 //printf("ColorWindow::create_objects 1\n");
 	add_tool(red = new PaletteRed(this, x, y));
 	y += 30;
 //printf("ColorWindow::create_objects 1\n");
-	add_tool(new BC_Title(x, y, "Green", SMALLFONT));
+	add_tool(new BC_Title(x, y, _("Green"), SMALLFONT));
 	y += 15;
 //printf("ColorWindow::create_objects 1\n");
 	add_tool(green = new PaletteGreen(this, x, y));
 	y += 30;
 //printf("ColorWindow::create_objects 1\n");
-	add_tool(new BC_Title(x, y, "Blue", SMALLFONT));
+	add_tool(new BC_Title(x, y, _("Blue"), SMALLFONT));
 	y += 15;
 //printf("ColorWindow::create_objects 1\n");
 	add_tool(blue = new PaletteBlue(this, x, y));
@@ -157,7 +162,7 @@ void ColorWindow::create_objects()
 	if(thread->do_alpha)
 	{
 		y += 30;
-		add_tool(new BC_Title(x, y, "Alpha", SMALLFONT));
+		add_tool(new BC_Title(x, y, _("Alpha"), SMALLFONT));
 		y += 15;
 		add_tool(alpha = new PaletteAlpha(this, x, y));
 	}

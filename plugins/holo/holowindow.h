@@ -10,19 +10,8 @@ class HoloWindow;
 #include "mutex.h"
 #include "holo.h"
 
-class HoloThread : public Thread
-{
-public:
-	HoloThread(HoloMain *client);
-	~HoloThread();
 
-	void run();
-
-// prevent loading data until the GUI is started
- 	Mutex gui_started, completion;
-	HoloMain *client;
-	HoloWindow *window;
-};
+PLUGIN_THREAD_HEADER(HoloMain, HoloThread, HoloWindow)
 
 class HoloWindow : public BC_Window
 {

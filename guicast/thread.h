@@ -32,6 +32,7 @@ public:
 	int set_synchronous(int value);
 	int set_realtime(int value = 1);
 	int set_autodelete(int value);
+	int get_autodelete();
 	int get_realtime();                 // Return realtime variable
 	static int calculate_realtime();    // Determine status by querying kernel
 	int get_synchronous();

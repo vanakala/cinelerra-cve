@@ -33,13 +33,14 @@ public:
 	virtual char* get_caption() { return ""; };
 	virtual int increase_value() { return 0; };
 	virtual int decrease_value() { return 0; };
+	void set_use_caption(int value);
 
 	int reposition_window(int x, int y);
 	int repeat_event(int64_t repeat_id);
 	int cursor_enter_event();
 	int cursor_leave_event();
 	int button_press_event();
-	int button_release_event();
+	virtual int button_release_event();
 	int cursor_motion_event();
 	int keypress_event();
 
@@ -61,6 +62,7 @@ private:
 	float start_cursor_angle;
 	float start_needle_angle;
 	float prev_angle, angle_correction;
+	int use_caption;
 };
 
 class BC_FPot : public BC_Pot

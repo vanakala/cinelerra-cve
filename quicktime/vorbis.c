@@ -23,7 +23,8 @@ typedef struct
 	vorbis_block enc_vb;
 // Number of samples written to disk
 	int encoded_samples;
-
+// Number of bytes written to disk
+	int64_t encoded_bytes;
 
 
 // Number of samples encoded into the chunk
@@ -762,6 +763,15 @@ static int encode(quicktime_t *file,
 	if(chunk_started)
 	{
 		int new_encoded_samples = codec->enc_vd.granulepos;
+// granulepos is meaningless for fixed bitrate
+		if(!codec->use_vbr)
+		{
+			codec->encoded_bytes += quicktime_position(file) - offset;
+			new_encoded_samples = codec->encoded_bytes *
+				(int64_t)8 *
+				(int64_t)samplerate / 
+				(int64_t)codec->nominal_bitrate;
+		}
 		quicktime_write_chunk_footer(file, 
 						trak,
 						track_map->current_chunk,
@@ -804,32 +814,42 @@ static int set_parameter(quicktime_t *file,
 
 static void flush(quicktime_t *file, int track)
 {
-	int result = 0;
-	int size = 0;
-	int64_t offset = quicktime_position(file);
 	quicktime_audio_map_t *track_map = &(file->atracks[track]);
 	quicktime_vorbis_codec_t *codec = ((quicktime_codec_t*)track_map->codec)->priv;
-	long output_position = codec->enc_vd.granulepos;
-	int chunk_started = 0;
-	quicktime_atom_t chunk_atom;
-	quicktime_trak_t *trak = track_map->track;
-
-//printf("flush 1\n");
-	vorbis_analysis_wrote(&codec->enc_vd,0);
-
-	FLUSH_OGG2
-	
-//printf("flush 2 %d\n", size);
-	if(chunk_started)
+	if(codec->encode_initialized)
 	{
-		int new_encoded_samples = codec->enc_vd.granulepos;
-		quicktime_write_chunk_footer(file, 
-						trak,
-						track_map->current_chunk,
-						&chunk_atom, 
-						new_encoded_samples - codec->encoded_samples);
-		track_map->current_chunk++;
-		codec->next_chunk_size = 0;
+		int result = 0;
+		int size = 0;
+		int64_t offset = quicktime_position(file);
+		long output_position = codec->enc_vd.granulepos;
+		int chunk_started = 0;
+		quicktime_trak_t *trak = track_map->track;
+		int sample_rate = trak->mdia.minf.stbl.stsd.table[0].sample_rate;
+		quicktime_atom_t chunk_atom;
+
+		vorbis_analysis_wrote(&codec->enc_vd,0);
+
+		FLUSH_OGG2
+	
+		if(chunk_started)
+		{
+			int new_encoded_samples = codec->enc_vd.granulepos;
+			if(!codec->use_vbr)
+			{
+				codec->encoded_bytes += quicktime_position(file) - offset;
+				new_encoded_samples = codec->encoded_bytes *
+					(int64_t)8 *
+					(int64_t)sample_rate / 
+					(int64_t)codec->nominal_bitrate;
+			}
+			quicktime_write_chunk_footer(file, 
+							trak,
+							track_map->current_chunk,
+							&chunk_atom, 
+							new_encoded_samples - codec->encoded_samples);
+			track_map->current_chunk++;
+			codec->next_chunk_size = 0;
+		}
 	}
 }
 

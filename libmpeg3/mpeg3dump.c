@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
 	int decompress_audio = 0, decompress_video = 0;
 	int audio_track = 0;
 /* Print cell offsets */
-	int print_offsets = 1;
+	int print_offsets = 0;
 	int print_pids = 1;
 
 	outfile[0] = 0;
@@ -157,15 +157,15 @@ int main(int argc, char *argv[])
 			fprintf(stderr, "  Title path=%s total_bytes=%llx cell_table_size=%d\n", 
 				file->demuxer->titles[i]->fs->path,
 				file->demuxer->titles[i]->total_bytes, 
-				file->demuxer->titles[i]->timecode_table_size);
+				file->demuxer->titles[i]->cell_table_size);
 			
 			if(print_offsets)
 			{
-				for(j = 0; j < file->demuxer->titles[i]->timecode_table_size; j++)
+				for(j = 0; j < file->demuxer->titles[i]->cell_table_size; j++)
 					fprintf(stderr, "    Cell: %llx-%llx program=%d\n", 
-						file->demuxer->titles[i]->timecode_table[j].start_byte, 
-						file->demuxer->titles[i]->timecode_table[j].end_byte,
-						file->demuxer->titles[i]->timecode_table[j].program);
+						file->demuxer->titles[i]->cell_table[j].start_byte, 
+						file->demuxer->titles[i]->cell_table[j].end_byte,
+						file->demuxer->titles[i]->cell_table[j].program);
 			}
 		}
 

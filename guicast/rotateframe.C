@@ -504,7 +504,7 @@ int RotateEngine::create_matrix()
 	return 0;
 }
 
-#define ROTATE_NEAREST(type, components) \
+#define ROTATE_NEAREST(type, components, black_chroma) \
 { \
 	type **input_rows = (type**)input->get_rows(); \
 	type **output_rows = (type**)output->get_rows(); \
@@ -528,9 +528,9 @@ int RotateEngine::create_matrix()
 	} \
 }
 
-#define ROTATE_INTERPOLATE(type, components) \
+#define ROTATE_INTERPOLATE(type, components, black_chroma) \
 { \
-	type zero_pixel[] = { 0, 0, 0, 0 }; \
+	type zero_pixel[] = { 0, black_chroma, black_chroma, 0 }; \
 	int i, j; \
 	float k, l; \
 	type **input_rows = (type**)input->get_rows(); \
@@ -594,22 +594,30 @@ int RotateEngine::perform_rotation()
 		switch(input->get_color_model())
 		{
 			case BC_RGB888:
+				ROTATE_NEAREST(unsigned char, 3, 0x0);
+				break;
 			case BC_YUV888:
-				ROTATE_NEAREST(unsigned char, 3);
+				ROTATE_NEAREST(unsigned char, 3, 0x80);
 				break;
 			case BC_RGBA8888:
+				ROTATE_NEAREST(unsigned char, 4, 0x0);
+				break;
 			case BC_YUVA8888:
-				ROTATE_NEAREST(unsigned char, 4);
+				ROTATE_NEAREST(unsigned char, 4, 0x80);
 				break;
 
 			case BC_RGB161616:
+				ROTATE_NEAREST(uint16_t, 3, 0x0);
+				break;
 			case BC_YUV161616:
-				ROTATE_NEAREST(uint16_t, 3);
+				ROTATE_NEAREST(uint16_t, 3, 0x8000);
 				break;
 
 			case BC_RGBA16161616:
+				ROTATE_NEAREST(uint16_t, 4, 0x0);
+				break;
 			case BC_YUVA16161616:
-				ROTATE_NEAREST(uint16_t, 4);
+				ROTATE_NEAREST(uint16_t, 4, 0x8000);
 				break;
 		}
 	}
@@ -618,22 +626,30 @@ int RotateEngine::perform_rotation()
 		switch(input->get_color_model())
 		{
 			case BC_RGB888:
+				ROTATE_INTERPOLATE(unsigned char, 3, 0x0);
+				break;
 			case BC_YUV888:
-				ROTATE_INTERPOLATE(unsigned char, 3);
+				ROTATE_INTERPOLATE(unsigned char, 3, 0x80);
 				break;
 			case BC_RGBA8888:
+				ROTATE_INTERPOLATE(unsigned char, 4, 0x0);
+				break;
 			case BC_YUVA8888:
-				ROTATE_INTERPOLATE(unsigned char, 4);
+				ROTATE_INTERPOLATE(unsigned char, 4, 0x80);
 				break;
 
 			case BC_RGB161616:
+				ROTATE_INTERPOLATE(uint16_t, 3, 0x0);
+				break;
 			case BC_YUV161616:
-				ROTATE_INTERPOLATE(uint16_t, 3);
+				ROTATE_INTERPOLATE(uint16_t, 3, 0x8000);
 				break;
 
 			case BC_RGBA16161616:
+				ROTATE_INTERPOLATE(uint16_t, 4, 0x0);
+				break;
 			case BC_YUVA16161616:
-				ROTATE_INTERPOLATE(uint16_t, 4);
+				ROTATE_INTERPOLATE(uint16_t, 4, 0x8000);
 				break;
 		}
 	}

@@ -58,6 +58,16 @@ public:
     RotateWindow *window;
 };
 
+class RotateText : public BC_TextBox
+{
+public:
+	RotateText(RotateWindow *window, RotateMain *plugin, int x, int y);
+	int handle_event();
+
+	RotateMain *plugin;
+    RotateWindow *window;
+};
+
 class RotateWindow : public BC_Window
 {
 public:
@@ -75,6 +85,7 @@ public:
 	RotateToggle *toggle180;
 	RotateToggle *toggle270;
 	RotateFine *fine;
+	RotateText *text;
 };
 
 class RotateThread : public Thread

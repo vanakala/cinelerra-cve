@@ -1,5 +1,6 @@
 #include "assets.h"
 #include "file.inc"
+#include "language.h"
 #include "playbackconfig.h"
 #include "preferences.h"
 #include "recordconfig.h"
@@ -8,11 +9,6 @@
 #include "vframe.h"
 #include "videoconfig.h"
 #include "videodevice.h"
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 #define SOI 0xffd8

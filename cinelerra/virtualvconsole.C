@@ -18,14 +18,12 @@
 VirtualVConsole::VirtualVConsole(RenderEngine *renderengine, VRender *vrender)
  : VirtualConsole(renderengine, vrender, TRACK_VIDEO)
 {
-//printf("VirtualVConsole::VirtualVConsole\n");
 	this->vrender = vrender;
 	buffer_in = 0;
 }
 
 VirtualVConsole::~VirtualVConsole()
 {
-//printf("VirtualVConsole::~VirtualVConsole 1\n");
 }
 
 int VirtualVConsole::total_ring_buffers()
@@ -35,11 +33,11 @@ int VirtualVConsole::total_ring_buffers()
 
 void VirtualVConsole::get_playable_tracks()
 {
-//printf("VirtualVConsole::get_playable_tracks 1\n");
 	if(!playable_tracks)
 		playable_tracks = new PlayableTracks(renderengine, 
 			commonrender->current_position, 
-			TRACK_VIDEO);
+			TRACK_VIDEO,
+			1);
 }
 
 void VirtualVConsole::new_input_buffer(int ring_buffer)
@@ -89,7 +87,6 @@ int VirtualVConsole::process_buffer(int64_t input_position)
 	int i, j, k;
 	int result = 0;
 
-//printf("VirtualVConsole::process_buffer 1\n");
 // clear output buffers
 	for(i = 0; i < MAX_CHANNELS; i++)
 	{
@@ -97,15 +94,13 @@ int VirtualVConsole::process_buffer(int64_t input_position)
 			vrender->video_out[i]->clear_frame();
 	}
 
-//printf("VirtualVConsole::process_buffer 2 %d\n", total_tracks);
 // Arm input buffers
 	for(i = 0; i < total_tracks; i++)
 		result |= ((VModule*)virtual_modules[i]->real_module)->render(buffer_in[i],
 			input_position,
-			renderengine->command->get_direction());
-//return;
+			renderengine->command->get_direction(),
+			1);
 
-//printf("VirtualVConsole::process_buffer 3 %d\n", render_list.total);
 // render nodes in sorted list
 	for(i = 0; i < render_list.total; i++)
 	{
@@ -113,7 +108,6 @@ int VirtualVConsole::process_buffer(int64_t input_position)
 				input_position);
 	}
 
-//printf("VirtualVConsole::process_buffer 4\n");
 	return result;
 }
 

@@ -75,7 +75,7 @@ public:
 		int64_t real_position, 
 		int direction);
 // Give whether compressed data can be copied directly from the track to the output file
-	int direct_copy_possible(int64_t current_frame, int direction);
+	int direct_copy_possible(int64_t current_frame, int direction, int use_nudge);
 
 
 // ===================================== editing

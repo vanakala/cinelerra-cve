@@ -16,13 +16,14 @@ BC_Toggle::BC_Toggle(int x, int y,
 {
 	this->data = data;
 	images[0] = images[1] = images[2] = images[3] = images[4] = 0;
-	status = value ? TOGGLE_CHECKED : TOGGLE_UP;
+	status = value ? BC_Toggle::TOGGLE_CHECKED : BC_Toggle::TOGGLE_UP;
 	this->value = value;
 	this->caption = caption;
 	this->bottom_justify = bottom_justify;
 	this->font = font;
 	this->color = color;
 	select_drag = 0;
+	enabled = 1;
 }
 
 
@@ -108,16 +109,19 @@ int BC_Toggle::draw_face()
 	draw_top_background(parent_window, 0, 0, get_w(), get_h());
 	if(has_caption())
 	{
-		if(status == TOGGLE_UPHI || status == TOGGLE_DOWN || status == TOGGLE_CHECKEDHI)
+		if(enabled &&
+			(status == BC_Toggle::TOGGLE_UPHI || status == BC_Toggle::TOGGLE_DOWN || status == BC_Toggle::TOGGLE_CHECKEDHI))
 		{
 			set_color(LTGREY);
 			draw_box(text_x, text_line - get_text_ascent(MEDIUMFONT), get_w() - text_x, get_text_height(MEDIUMFONT));
 		}
 
 		set_opaque();
-		set_color(get_resources()->text_default);
+		if(enabled)
+			set_color(color);
+		else
+			set_color(MEGREY);
 		set_font(font);
-		set_color(color);
 		draw_text(text_x, text_line, caption);
 	}
 
@@ -126,12 +130,29 @@ int BC_Toggle::draw_face()
 	return 0;
 }
 
+void BC_Toggle::enable()
+{
+	enabled = 1;
+	draw_face();
+}
+
+void BC_Toggle::disable()
+{
+	enabled = 0;
+	draw_face();
+}
+
+void BC_Toggle::set_status(int value)
+{
+	this->status = value;
+}
+
 
 int BC_Toggle::repeat_event(int64_t duration)
 {
 	if(duration == top_level->get_resources()->tooltip_delay &&
 		tooltip_text[0] != 0 &&
-		(status == TOGGLE_UPHI || status == TOGGLE_CHECKEDHI) &&
+		(status == BC_Toggle::TOGGLE_UPHI || status == BC_Toggle::TOGGLE_CHECKEDHI) &&
 		!tooltip_done)
 	{
 		show_tooltip();
@@ -143,13 +164,13 @@ int BC_Toggle::repeat_event(int64_t duration)
 
 int BC_Toggle::cursor_enter_event()
 {
-	if(top_level->event_win == win)
+	if(top_level->event_win == win && enabled)
 	{
 		tooltip_done = 0;
 		if(top_level->button_down)
-			status = TOGGLE_DOWN;
+			status = BC_Toggle::TOGGLE_DOWN;
 		else
-			status = value ? TOGGLE_CHECKEDHI : TOGGLE_UPHI;
+			status = value ? BC_Toggle::TOGGLE_CHECKEDHI : BC_Toggle::TOGGLE_UPHI;
 		draw_face();
 	}
 	return 0;
@@ -160,12 +181,12 @@ int BC_Toggle::cursor_leave_event()
 	hide_tooltip();
 	if(!value)
 	{
-		status = TOGGLE_UP;
+		status = BC_Toggle::TOGGLE_UP;
 		draw_face();
 	}
 	else
 	{
-		status = TOGGLE_CHECKED;
+		status = BC_Toggle::TOGGLE_CHECKED;
 		draw_face();
 	}
 	return 0;
@@ -174,9 +195,9 @@ int BC_Toggle::cursor_leave_event()
 int BC_Toggle::button_press_event()
 {
 	hide_tooltip();
-	if(top_level->event_win == win && get_buttonpress() == 1)
+	if(top_level->event_win == win && get_buttonpress() == 1 && enabled)
 	{
-		status = TOGGLE_DOWN;
+		status = BC_Toggle::TOGGLE_DOWN;
 		top_level->toggle_value = !this->value;
 		draw_face();
 		return 1;
@@ -187,19 +208,18 @@ int BC_Toggle::button_press_event()
 int BC_Toggle::button_release_event()
 {
 	hide_tooltip();
-	if(top_level->event_win == win && status == TOGGLE_DOWN)
+	if(top_level->event_win == win && status == BC_Toggle::TOGGLE_DOWN)
 	{
-		if(!value)
+		if((!value && !select_drag) || (value && select_drag))
 		{
-			status = TOGGLE_CHECKEDHI;
+			status = BC_Toggle::TOGGLE_CHECKEDHI;
 			value = 1;
 		}
 		else
 		{
-			status = TOGGLE_UPHI;
+			status = BC_Toggle::TOGGLE_UPHI;
 			value = 0;
 		}
-
 		draw_face();
 		return handle_event();
 	}
@@ -209,17 +229,19 @@ int BC_Toggle::button_release_event()
 int BC_Toggle::cursor_motion_event()
 {
 	if(select_drag) return 0;
-	if(top_level->button_down && top_level->event_win == win && !cursor_inside())
+	if(top_level->button_down && 
+		top_level->event_win == win && 
+		!cursor_inside())
 	{
-		if(status == TOGGLE_DOWN)
+		if(status == BC_Toggle::TOGGLE_DOWN)
 		{
-			status = TOGGLE_UP;
+			status = BC_Toggle::TOGGLE_UP;
 			draw_face();
 		}
 		else
-		if(status == TOGGLE_UPHI)
+		if(status == BC_Toggle::TOGGLE_UPHI)
 		{
-			status = TOGGLE_CHECKEDHI;
+			status = BC_Toggle::TOGGLE_CHECKEDHI;
 			draw_face();
 		}
 	}
@@ -240,22 +262,22 @@ int BC_Toggle::set_value(int value, int draw)
 		{
 			switch(status)
 			{
-				case TOGGLE_UP:
-					status = TOGGLE_CHECKED;
+				case BC_Toggle::TOGGLE_UP:
+					status = BC_Toggle::TOGGLE_CHECKED;
 					break;
-				case TOGGLE_UPHI:
-					status = TOGGLE_CHECKEDHI;
+				case BC_Toggle::TOGGLE_UPHI:
+					status = BC_Toggle::TOGGLE_CHECKEDHI;
 					break;
 			}
 		}
 		else
 		switch(status)
 		{
-			case TOGGLE_CHECKED:
-				status = TOGGLE_UP;
+			case BC_Toggle::TOGGLE_CHECKED:
+				status = BC_Toggle::TOGGLE_UP;
 				break;
-			case TOGGLE_CHECKEDHI:
-				status = TOGGLE_UPHI;
+			case BC_Toggle::TOGGLE_CHECKEDHI:
+				status = BC_Toggle::TOGGLE_UPHI;
 				break;
 		}
 		if(draw) draw_face();

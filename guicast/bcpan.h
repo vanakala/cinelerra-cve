@@ -45,6 +45,7 @@ public:
 	int button_release_event();
 	int cursor_enter_event();
 	int cursor_leave_event();
+	int repeat_event(int64_t duration);
 	virtual int handle_event() { return 0; };
 // change radial positions of channels
 	int change_channels(int new_channels, int *value_positions);

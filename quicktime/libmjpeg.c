@@ -327,9 +327,9 @@ static void append_buffer(unsigned char **buffer,
 		*allocated = 65536;
 	}
 
-	if(*size + data_size > *allocated)
+	if(*size + data_size + 0x100 > *allocated)
 	{
-		*allocated = *size + data_size;
+		*allocated = *size + data_size + 0x100;
 		*buffer = realloc(*buffer, *allocated);
 	}
 
@@ -743,6 +743,7 @@ mjpeg_compressor* mjpeg_new_decompressor(mjpeg_t *mjpeg, int instance)
 	result->mcu_rows[2] = malloc(16 * sizeof(unsigned char*));
 
 	pthread_mutexattr_init(&mutex_attr);
+//	pthread_mutexattr_settype(&mutex_attr, PTHREAD_MUTEX_ADAPTIVE_NP);
 	pthread_mutex_init(&(result->input_lock), &mutex_attr);
 	pthread_mutex_lock(&(result->input_lock));
 	pthread_mutex_init(&(result->output_lock), &mutex_attr);
@@ -827,6 +828,7 @@ mjpeg_compressor* mjpeg_new_compressor(mjpeg_t *mjpeg, int instance)
 	result->mcu_rows[2] = malloc(16 * sizeof(unsigned char*));
 
 	pthread_mutexattr_init(&mutex_attr);
+//	pthread_mutexattr_settype(&mutex_attr, PTHREAD_MUTEX_ADAPTIVE_NP);
 	pthread_mutex_init(&(result->input_lock), &mutex_attr);
 	pthread_mutex_lock(&(result->input_lock));
 	pthread_mutex_init(&(result->output_lock), &mutex_attr);
@@ -868,6 +870,17 @@ long mjpeg_output_size(mjpeg_t *mjpeg)
 {
 	return mjpeg->output_size;
 }
+
+long mjpeg_output_allocated(mjpeg_t *mjpeg)
+{
+	return mjpeg->output_allocated;
+}
+
+void mjpeg_set_output_size(mjpeg_t *mjpeg, long output_size)
+{
+	mjpeg->output_size = output_size;
+}
+
 
 int mjpeg_compress(mjpeg_t *mjpeg, 
 	unsigned char **row_pointers, 
@@ -1144,6 +1157,7 @@ mjpeg_t* mjpeg_new(int w,
 	result->use_float = 0;
 
 	pthread_mutexattr_init(&mutex_attr);
+//	pthread_mutexattr_settype(&mutex_attr, PTHREAD_MUTEX_ADAPTIVE_NP);
 	pthread_mutex_init(&(result->decompress_init), &mutex_attr);
 	
 
@@ -1398,11 +1412,15 @@ static int qt_table_offsets(unsigned char *buffer,
 	for(field = 0; field < 2; field++)
 	{
 		done = 0;
+
 		while(!done)
 		{
+//printf("qt_table_offsets 2\n");
 			marker = next_marker(buffer, 
 				&offset, 
 				buffer_size);
+
+//printf("qt_table_offsets 3 %d %d %02x\n", offset, buffer_size, marker);
 			len = 0;
 
 			switch(marker)
@@ -1505,6 +1523,7 @@ static int qt_table_offsets(unsigned char *buffer,
 
 			if(!done) offset += len;
 		}
+//printf("qt_table_offsets 10 %d\n", field);
 	}
 
 	return result;

@@ -17,18 +17,22 @@ int Timer::update()
 	return 0;
 }
 
-long long Timer::get_difference(struct timeval *result)
+int64_t Timer::get_difference(struct timeval *result)
 {
 	gettimeofday(&new_time, 0);
 	
 	result->tv_usec = new_time.tv_usec - current_time.tv_usec;
 	result->tv_sec = new_time.tv_sec - current_time.tv_sec;
-	if(result->tv_usec < 0) { result->tv_usec += 1000000; result->tv_sec--; }
+	if(result->tv_usec < 0) 
+	{
+		result->tv_usec += 1000000; 
+		result->tv_sec--; 
+	}
 	
-	return (long long)result->tv_sec * 1000 + (long long)result->tv_usec / 1000;
+	return (int64_t)result->tv_sec * 1000 + (int64_t)result->tv_usec / 1000;
 }
 
-long long Timer::get_difference()
+int64_t Timer::get_difference()
 {
 	gettimeofday(&new_time, 0);
 
@@ -40,13 +44,15 @@ long long Timer::get_difference()
 		new_time.tv_sec--;
 	}
 
-	return (long long)new_time.tv_sec * 1000 + (long long)new_time.tv_usec / 1000;
+	return (int64_t)new_time.tv_sec * 1000 + 
+		(int64_t)new_time.tv_usec / 1000;
 }
 
-long long Timer::get_scaled_difference(long denominator)
+int64_t Timer::get_scaled_difference(long denominator)
 {
 	get_difference(&new_time);
-	return (long long)new_time.tv_sec * denominator + (long long)((float)new_time.tv_usec / 1000000 * denominator);
+	return (int64_t)new_time.tv_sec * denominator + 
+		(int64_t)((double)new_time.tv_usec / 1000000 * denominator);
 }
 
 int Timer::delay(long milliseconds)

@@ -284,7 +284,7 @@ int main(int argc, char *argv[])
 
 			while(!result)
 			{
-				result = mpeg3_advance_timecode(demuxer, 0);
+				result = mpeg3_advance_cell(demuxer, 0);
 
 
 //fprintf(stderr, "mpeg3cat 1 %d\n", result);

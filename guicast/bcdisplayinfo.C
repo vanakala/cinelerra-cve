@@ -145,6 +145,8 @@ void BC_DisplayInfo::test_window(int &x_out,
 
 	x_out = MAX(0, x_out);
 	y_out = MAX(0, y_out);
+	x_out = MIN(x_out, 30);
+	y_out = MIN(y_out, 30);
 //printf("BC_DisplayInfo::test_window 2\n");
 }
 

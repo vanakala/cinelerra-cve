@@ -31,7 +31,9 @@ mpeg3_t* mpeg3_new(char *path)
 	mpeg3_t *file = calloc(1, sizeof(mpeg3_t));
 	file->cpus = 1;
 	file->fs = mpeg3_new_fs(path);
-	file->have_mmx = mpeg3_mmx_test();
+//	file->have_mmx = mpeg3_mmx_test();
+// Late compilers don't produce usable code.
+	file->have_mmx = 0;
 	file->demuxer = mpeg3_new_demuxer(file, 0, 0, -1);
 	file->seekable = 1;
 	return file;
@@ -204,15 +206,15 @@ static int read_toc(mpeg3_t *file)
 	int vtracks;
 	int i, j;
 	int is_vfs = 0;
-	if(!strncmp(file->fs->path, RENDERFARM_FS_PREFIX, strlen(RENDERFARM_FS_PREFIX)))
+	int vfs_len = strlen(RENDERFARM_FS_PREFIX);
+
+// Fix title paths for Cinelerra VFS
+	if(!strncmp(file->fs->path, RENDERFARM_FS_PREFIX, vfs_len))
 		is_vfs = 1;
-//printf("read_toc 10\n");
+
 	buffer = malloc(mpeg3io_total_bytes(file->fs));
-//printf("read_toc 10\n");
 	mpeg3io_seek(file->fs, 0);
-//printf("read_toc 10\n");
 	mpeg3io_read_data(buffer, mpeg3io_total_bytes(file->fs), file->fs);
-//printf("read_toc 10\n");
 
 
 //printf("read_toc %lld\n", mpeg3io_total_bytes(file->fs));
@@ -270,16 +272,76 @@ static int read_toc(mpeg3_t *file)
 		char string[MPEG3_STRLEN];
 		int string_len = 0;
 		mpeg3_title_t *title;
+		FILE *test_fd;
 
+// Construct title path from VFS prefix and path.
 		position++;
 		if(is_vfs)
 		{
 			strcpy(string, RENDERFARM_FS_PREFIX);
-			string_len = strlen(string);
+			string_len = vfs_len;
 		}
 		while(buffer[position] != 0) string[string_len++] = buffer[position++];
 		string[string_len++] = 0;
 		position++;
+
+// Test title availability
+		test_fd = fopen(string, "r");
+		if(test_fd) 
+		{
+			fclose(test_fd);
+		}
+		else
+		{
+// Try concatenating title and toc directory if title is not absolute and
+// toc path has a directory section.
+			if((!is_vfs && string[0] != '/') ||
+				(is_vfs && string[vfs_len] != '/'))
+			{
+// Get toc filename without path
+				char *ptr = strrchr(file->fs->path, '/');
+				if(ptr)
+				{
+					char string2[MPEG3_STRLEN];
+
+// Stack filename on toc path
+					strcpy(string2, file->fs->path);
+					if(!is_vfs)
+						strcpy(&string2[ptr - file->fs->path + 1], string);
+					else
+						strcpy(&string2[ptr - file->fs->path + 1], string + vfs_len);
+
+					test_fd = fopen(string2, "r");
+					if(test_fd)
+					{
+						fclose(test_fd);
+						strcpy(string, string2);
+					}
+					else
+					{
+						fprintf(stderr, 
+							"read_toc: failed to open %s or %s\n",
+							string,
+							string2);
+						return 1;
+					}
+				}
+				else
+				{
+					fprintf(stderr,
+						"read_toc: failed to open %s\n", 
+						string);
+					return 1;
+				}
+			}
+			else
+			{
+				fprintf(stderr, 
+					"read_toc: failed to open %s\n", 
+					string);
+				return 1;
+			}
+		}
 
 		title = 
 			file->demuxer->titles[file->demuxer->total_titles++] = 
@@ -288,15 +350,15 @@ static int read_toc(mpeg3_t *file)
 		title->total_bytes = read_int64(buffer, &position);
 
 // Cells
-		title->timecode_table_size = 
-			title->timecode_table_allocation = 
+		title->cell_table_size = 
+			title->cell_table_allocation = 
 			read_int32(buffer, &position);
-		title->timecode_table = calloc(title->timecode_table_size, sizeof(mpeg3demux_timecode_t));
-		for(i = 0; i < title->timecode_table_size; i++)
+		title->cell_table = calloc(title->cell_table_size, sizeof(mpeg3demux_cell_t));
+		for(i = 0; i < title->cell_table_size; i++)
 		{
-			title->timecode_table[i].start_byte = read_int64(buffer, &position);
-			title->timecode_table[i].end_byte = read_int64(buffer, &position);
-			title->timecode_table[i].program = read_int32(buffer, &position);
+			title->cell_table[i].start_byte = read_int64(buffer, &position);
+			title->cell_table[i].end_byte = read_int64(buffer, &position);
+			title->cell_table[i].program = read_int32(buffer, &position);
 		}
 	}
 //printf("read_toc 10\n");
@@ -845,34 +907,36 @@ int mpeg3_set_frame(mpeg3_t *file,
 	return -1;
 }
 
-int mpeg3_seek_percentage(mpeg3_t *file, double percentage)
+int mpeg3_seek_byte(mpeg3_t *file, int64_t byte)
 {
 	int i;
 
-	file->percentage_pts = -1;
+//	file->percentage_pts = -1;
 	for(i = 0; i < file->total_vstreams; i++)
 	{
 		file->vtrack[i]->current_position = 0;
-		mpeg3video_seek_percentage(file->vtrack[i]->video, percentage);
+		mpeg3video_seek_byte(file->vtrack[i]->video, byte);
 	}
 
 	for(i = 0; i < file->total_astreams; i++)
 	{
 		file->atrack[i]->current_position = 0;
-		mpeg3audio_seek_percentage(file->atrack[i]->audio, percentage);
+		mpeg3audio_seek_byte(file->atrack[i]->audio, byte);
 	}
 
 	return 0;
 }
 
-double mpeg3_get_percentage_pts(mpeg3_t *file)
-{
-	return file->percentage_pts;
-}
-
-void mpeg3_set_percentage_pts(mpeg3_t *file, double pts)
-{
-}
+/*
+ * double mpeg3_get_percentage_pts(mpeg3_t *file)
+ * {
+ * 	return file->percentage_pts;
+ * }
+ * 
+ * void mpeg3_set_percentage_pts(mpeg3_t *file, double pts)
+ * {
+ * }
+ */
 
 
 int mpeg3_previous_frame(mpeg3_t *file, int stream)
@@ -886,19 +950,24 @@ int mpeg3_previous_frame(mpeg3_t *file, int stream)
 	return 0;
 }
 
-double mpeg3_tell_percentage(mpeg3_t *file)
+int64_t mpeg3_tell_byte(mpeg3_t *file)
 {
-	double percent = 0;
+	int64_t result = 0;
 	if(file->last_type_read == 1)
 	{
-		percent = mpeg3demux_tell_percentage(file->atrack[file->last_stream_read]->demuxer);
+		result = mpeg3demux_tell_byte(file->atrack[file->last_stream_read]->demuxer);
 	}
 
 	if(file->last_type_read == 2)
 	{
-		percent = mpeg3demux_tell_percentage(file->vtrack[file->last_stream_read]->demuxer);
+		result = mpeg3demux_tell_byte(file->vtrack[file->last_stream_read]->demuxer);
 	}
-	return percent;
+	return result;
+}
+
+int64_t mpeg3_get_bytes(mpeg3_t *file)
+{
+	return mpeg3demux_movie_size(file->demuxer);
 }
 
 double mpeg3_get_time(mpeg3_t *file)
@@ -923,14 +992,18 @@ double mpeg3_get_time(mpeg3_t *file)
 /* Use percentage and total time */
 		if(file->total_astreams)
 		{
-			atime = mpeg3demux_tell_percentage(file->atrack[0]->demuxer) * 
-						mpeg3_audio_samples(file, 0) / mpeg3_sample_rate(file, 0);
+			atime = mpeg3demux_tell_byte(file->atrack[0]->demuxer) * 
+						mpeg3_audio_samples(file, 0) / 
+						mpeg3_sample_rate(file, 0) /
+						mpeg3_get_bytes(file);
 		}
 
 		if(file->total_vstreams)
 		{
-			vtime = mpeg3demux_tell_percentage(file->vtrack[0]->demuxer) *
-						mpeg3_video_frames(file, 0) / mpeg3_frame_rate(file, 0);
+			vtime = mpeg3demux_tell_byte(file->vtrack[0]->demuxer) *
+						mpeg3_video_frames(file, 0) / 
+						mpeg3_frame_rate(file, 0) /
+						mpeg3_get_bytes(file);
 		}
 	}
 
@@ -952,40 +1025,6 @@ int mpeg3_end_of_video(mpeg3_t *file, int stream)
 	return result;
 }
 
-
-int mpeg3_read_frame(mpeg3_t *file, 
-		unsigned char **output_rows, 
-		int in_x, 
-		int in_y, 
-		int in_w, 
-		int in_h, 
-		int out_w, 
-		int out_h, 
-		int color_model,
-		int stream)
-{
-	int result = -1;
-
-	if(file->total_vstreams)
-	{
-//printf(__FUNCTION__ " 1 %d\n", file->vtrack[stream]->current_position);
-		result = mpeg3video_read_frame(file->vtrack[stream]->video, 
-					file->vtrack[stream]->current_position, 
-					output_rows,
-					in_x, 
-					in_y, 
-					in_w, 
-					in_h, 
-					out_w,
-					out_h,
-					color_model);
-//printf(__FUNCTION__ " 2\n");
-		file->last_type_read = 2;
-		file->last_stream_read = stream;
-		file->vtrack[stream]->current_position++;
-	}
-	return result;
-}
 
 int mpeg3_drop_frames(mpeg3_t *file, long frames, int stream)
 {
@@ -1021,6 +1060,42 @@ int mpeg3_set_rowspan(mpeg3_t *file, int bytes, int stream)
 }
 
 
+int mpeg3_read_frame(mpeg3_t *file, 
+		unsigned char **output_rows, 
+		int in_x, 
+		int in_y, 
+		int in_w, 
+		int in_h, 
+		int out_w, 
+		int out_h, 
+		int color_model,
+		int stream)
+{
+	int result = -1;
+//printf("mpeg3_read_frame 1 %d\n", file->vtrack[stream]->current_position);
+
+	if(file->total_vstreams)
+	{
+		result = mpeg3video_read_frame(file->vtrack[stream]->video, 
+					file->vtrack[stream]->current_position, 
+					output_rows,
+					in_x, 
+					in_y, 
+					in_w, 
+					in_h, 
+					out_w,
+					out_h,
+					color_model);
+//printf(__FUNCTION__ " 2\n");
+		file->last_type_read = 2;
+		file->last_stream_read = stream;
+		file->vtrack[stream]->current_position++;
+	}
+
+//printf("mpeg3_read_frame 2 %d\n", file->vtrack[stream]->current_position);
+	return result;
+}
+
 int mpeg3_read_yuvframe(mpeg3_t *file,
 		char *y_output,
 		char *u_output,
@@ -1033,7 +1108,7 @@ int mpeg3_read_yuvframe(mpeg3_t *file,
 {
 	int result = -1;
 
-//printf("mpeg3_read_yuvframe 1 %d %d\n", mpeg3demux_tell(file->vtrack[stream]->demuxer), mpeg3demuxer_total_bytes(file->vtrack[stream]->demuxer));
+//printf("mpeg3_read_yuvframe 1\n");
 	if(file->total_vstreams)
 	{
 		result = mpeg3video_read_yuvframe(file->vtrack[stream]->video, 
@@ -1049,7 +1124,7 @@ int mpeg3_read_yuvframe(mpeg3_t *file,
 		file->last_stream_read = stream;
 		file->vtrack[stream]->current_position++;
 	}
-//printf("mpeg3_read_yuvframe 2 %d %d\n", mpeg3demux_tell(file->vtrack[stream]->demuxer), mpeg3demuxer_total_bytes(file->vtrack[stream]->demuxer));
+//printf("mpeg3_read_yuvframe 100\n");
 	return result;
 }
 
@@ -1061,7 +1136,7 @@ int mpeg3_read_yuvframe_ptr(mpeg3_t *file,
 {
 	int result = -1;
 
-//printf("mpeg3_read_yuvframe_ptr 1 %d %d\n", mpeg3demux_tell(file->vtrack[stream]->demuxer), mpeg3demuxer_total_bytes(file->vtrack[stream]->demuxer));
+//printf("mpeg3_read_yuvframe_ptr 1\n");
 	if(file->total_vstreams)
 	{
 		result = mpeg3video_read_yuvframe_ptr(file->vtrack[stream]->video, 
@@ -1073,7 +1148,7 @@ int mpeg3_read_yuvframe_ptr(mpeg3_t *file,
 		file->last_stream_read = stream;
 		file->vtrack[stream]->current_position++;
 	}
-//printf("mpeg3_read_yuvframe_ptr 2 %d %d\n", mpeg3demux_tell(file->vtrack[stream]->demuxer), mpeg3demuxer_total_bytes(file->vtrack[stream]->demuxer));
+//printf("mpeg3_read_yuvframe_ptr 100\n");
 	return result;
 }
 

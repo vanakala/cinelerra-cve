@@ -2,6 +2,7 @@
 #define BCRESOURCES_H
 
 #include "bcdisplayinfo.inc"
+#include "bcfilebox.h"
 #include "bcresources.inc"
 #include "bcsignals.inc"
 #include "bcwindowbase.inc"
@@ -104,6 +105,9 @@ public:
 	VFrame *listbox_bg;
 	VFrame **listbox_button;
 	VFrame **listbox_expand;
+	VFrame **listbox_column;
+	VFrame *listbox_up;
+	VFrame *listbox_dn;
 
 // Sliders
 	VFrame **horizontal_slider_data;
@@ -142,16 +146,33 @@ public:
 	char filebox_filter[BCTEXTLEN];
 	int filebox_w;
 	int filebox_h;
+	int filebox_columntype[FILEBOX_COLUMNS];
+	int filebox_columnwidth[FILEBOX_COLUMNS];
+	int filebox_sortcolumn;
+	int filebox_sortorder;
+
 
 // fonts
 	static char *large_font;
 	static char *medium_font;
 	static char *small_font;
+
 	static char *large_fontset;
 	static char *medium_fontset;
 	static char *small_fontset;
+
+	static char *large_font_xft;
+	static char *medium_font_xft;
+	static char *small_font_xft;
+
 	VFrame **medium_7segment;
+
+
 	int use_fontset;
+// This must be constitutive since applications access the private members here.
+	int use_xft;
+
+
 
 // Available display extensions
 	int use_shm;

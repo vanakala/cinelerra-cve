@@ -2,15 +2,12 @@
 #include "bcresources.h"
 #include "bcwindowbase.h"
 #include "colormodels.h"
+#include "language.h"
 #include "vframe.h"
 #include <stdlib.h>
 #include <stdio.h>
 #include <X11/Xutil.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 

@@ -25,6 +25,7 @@ BC_Button::BC_Button(int x,
 	status = BUTTON_UP;
 	this->w_argument = 0;
 	underline_number = -1;
+	enabled = 1;
 }
 
 BC_Button::BC_Button(int x, 
@@ -39,6 +40,7 @@ BC_Button::BC_Button(int x,
 	if(!data) printf("BC_Button::BC_Button data == 0\n");
 	status = BUTTON_UP;
 	underline_number = -1;
+	enabled = 1;
 }
 
 
@@ -79,6 +81,19 @@ int BC_Button::update_bitmaps(VFrame **data)
 	return 0;
 }
 
+void BC_Button::enable()
+{
+	enabled = 1;
+	draw_face();
+}
+
+void BC_Button::disable()
+{
+	enabled = 0;
+	draw_face();
+}
+
+
 void BC_Button::set_underline(int number)
 {
 	this->underline_number = number;
@@ -112,6 +127,7 @@ int BC_Button::draw_face()
 			0,
 			0);
 	flash();
+	flush();
 	return 0;
 }
 
@@ -131,7 +147,7 @@ int BC_Button::repeat_event(int64_t duration)
 
 int BC_Button::cursor_enter_event()
 {
-	if(top_level->event_win == win)
+	if(top_level->event_win == win && enabled)
 	{
 		tooltip_done = 0;
 		if(top_level->button_down)
@@ -158,9 +174,9 @@ int BC_Button::cursor_leave_event()
 
 int BC_Button::button_press_event()
 {
-	if(top_level->event_win == win)
+	if(top_level->event_win == win && get_buttonpress() == 1 && enabled)
 	{
-		top_level->hide_tooltip();
+		hide_tooltip();
 		if(status == BUTTON_UPHI || status == BUTTON_UP) status = BUTTON_DOWNHI;
 		draw_face();
 		return 1;
@@ -322,7 +338,10 @@ int BC_GenericButton::draw_face()
 	draw_top_background(parent_window, 0, 0, get_w(), get_h());
 	draw_3segmenth(0, 0, get_w(), images[status]);
 
-	set_color(BLACK);
+	if(enabled)
+		set_color(BLACK);
+	else
+		set_color(MEGREY);
 	set_font(MEDIUMFONT);
 	y = (int)((float)get_h() / 2 + get_text_ascent(MEDIUMFONT) / 2 - 2);
 	w = get_text_width(current_font, text, strlen(text));
@@ -341,6 +360,7 @@ int BC_GenericButton::draw_face()
 	}
 
 	flash();
+	flush();
 	return 0;
 }
 

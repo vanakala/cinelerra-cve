@@ -1,16 +1,12 @@
 #include "autoconf.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "language.h"
 #include "mainmenu.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "viewmenu.h"
 #include "trackcanvas.h"
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 ShowEdits::ShowEdits(MWindow *mwindow, char *hotkey)

@@ -1,7 +1,7 @@
 #ifndef VWINDOWGUI_H
 #define VWINDOWGUI_H
 
-#include "assets.inc"
+#include "asset.inc"
 #include "canvas.h"
 #include "editpanel.h"
 #include "guicast.h"

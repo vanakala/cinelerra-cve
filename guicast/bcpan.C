@@ -105,6 +105,7 @@ int BC_Pan::button_press_event()
 {
 	if(is_event_win() && get_buttonpress() == 1)
 	{
+		hide_tooltip();
 		activate();
 		x_origin = get_cursor_x();
 		y_origin = get_cursor_y();
@@ -136,8 +137,24 @@ int BC_Pan::button_release_event()
 {
 	if(active)
 	{
+		hide_tooltip();
 		deactivate();
 		draw();
+		return 1;
+	}
+	return 0;
+}
+
+int BC_Pan::repeat_event(int64_t duration)
+{
+	if(duration == top_level->get_resources()->tooltip_delay &&
+		tooltip_text[0] != 0 &&
+		highlighted &&
+		!active &&
+		!tooltip_done)
+	{
+		show_tooltip();
+		tooltip_done = 1;
 		return 1;
 	}
 	return 0;
@@ -147,6 +164,7 @@ int BC_Pan::cursor_enter_event()
 {
 	if(is_event_win() && !highlighted)
 	{
+		tooltip_done = 0;
 		highlighted = 1;
 		draw();
 	}
@@ -158,6 +176,7 @@ int BC_Pan::cursor_leave_event()
 	if(highlighted)
 	{
 		highlighted = 0;
+		hide_tooltip();
 		draw();
 	}
 	return 0;

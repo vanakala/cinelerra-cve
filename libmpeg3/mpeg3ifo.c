@@ -339,6 +339,8 @@ static void get_ifo_playlist(mpeg3_t *file, mpeg3_demuxer_t *demuxer)
 					mpeg3io_joinpath(title_path, directory, new_filename->d_name);
 					title = demuxer->titles[demuxer->total_titles++] = mpeg3_new_title(file, title_path);
 					title->total_bytes = mpeg3io_path_total_bytes(title_path);
+					title->start_byte = total_bytes;
+					title->end_byte = total_bytes + title->total_bytes;
 					total_bytes += title->total_bytes;
 //printf("%s\n", title_path);
 				}
@@ -394,7 +396,7 @@ static void get_ifo_header(mpeg3_demuxer_t *demuxer, ifo_t *ifo)
 		mpeg3demux_seek_byte(demuxer, TEST_START);
 		while(!result && 
 			!mpeg3demux_eof(demuxer) && 
-			mpeg3demux_tell(demuxer) < TEST_START + TEST_LEN)
+			mpeg3demux_tell_relative(demuxer) < TEST_START + TEST_LEN)
 		{
 			result = mpeg3_read_next_packet(demuxer);
 		}
@@ -661,7 +663,7 @@ return;
 /* Read the title information from a ifo */
 static int read_ifo(mpeg3_t *file, 
 	mpeg3_demuxer_t *demuxer, 
-	int read_timecodes)
+	int read_cells)
 {
 	int64_t last_ifo_byte = 0, first_ifo_byte = 0;
 	mpeg3ifo_celltable_t *cells, *cell_addresses, *final_cells;
@@ -729,7 +731,7 @@ static int read_ifo(mpeg3_t *file,
  * (long)(cell_start - title_start_byte), 
  * (long)(cell_start - title_start_byte + length));
  */
-				mpeg3_new_timecode(title, 
+				mpeg3_new_cell(title, 
 					(long)(cell_start - title_start_byte), 
 					0,
 					(long)(cell_start - title_start_byte + length),
@@ -763,30 +765,30 @@ static int read_ifo(mpeg3_t *file,
 	}
 
 //printf("read_ifo 4\n");
-// Look up time values for the timecodes
+// Look up time values for the cells
 // Should only be used for building a TOC
-	if(read_timecodes)
+	if(read_cells)
 	{
 		for(current_title = 0; current_title < demuxer->total_titles; current_title++)
 		{
 			mpeg3_title_t *title = demuxer->titles[current_title];
 			mpeg3demux_open_title(demuxer, current_title);
 
-			for(i = 0; i < title->timecode_table_size; i++)
+			for(i = 0; i < title->cell_table_size; i++)
 			{
-				mpeg3demux_timecode_t *timecode = &title->timecode_table[i];
+				mpeg3demux_cell_t *cell = &title->cell_table[i];
 
-				mpeg3io_seek(title->fs, timecode->start_byte);
+				mpeg3io_seek(title->fs, cell->start_byte);
 				mpeg3_read_next_packet(demuxer);
-				timecode->start_time = demuxer->time;
+				cell->start_time = demuxer->time;
 
-				mpeg3io_seek(title->fs, timecode->end_byte);
-				if(timecode->end_byte >= title->total_bytes)
+				mpeg3io_seek(title->fs, cell->end_byte);
+				if(cell->end_byte >= title->total_bytes)
 					mpeg3_read_prev_packet(demuxer);
 				else
 					mpeg3_read_next_packet(demuxer);
 
-				timecode->end_time = demuxer->time;
+				cell->end_time = demuxer->time;
 			}
 		}
 		mpeg3demux_open_title(demuxer, 0);
@@ -805,11 +807,11 @@ static int read_ifo(mpeg3_t *file,
 	return 0;
 }
 
-int mpeg3_read_ifo(mpeg3_t *file, int read_timecodes)
+int mpeg3_read_ifo(mpeg3_t *file, int read_cells)
 {
 	file->is_program_stream = 1;
 
-	read_ifo(file, file->demuxer, read_timecodes);
+	read_ifo(file, file->demuxer, read_cells);
 	return 0;
 }
 

@@ -1,4 +1,5 @@
 #include "bcmenubar.h"
+#include "bcmenupopup.h"
 #include "bcpixmap.h"
 #include "bcpopupmenu.h"
 #include "bcresources.h"
@@ -19,6 +20,7 @@ BC_PopupMenu::BC_PopupMenu(int x,
 {
 	highlighted = popup_down = 0;
 	menu_popup = 0;
+	icon = 0;
 	this->use_title = use_title;
 	strcpy(this->text, text);
 	for(int i = 0; i < 9; i++)
@@ -40,6 +42,24 @@ BC_PopupMenu::~BC_PopupMenu()
 char* BC_PopupMenu::get_text()
 {
 	return text;
+}
+
+void BC_PopupMenu::set_text(char *text)
+{
+	if(use_title)
+	{
+		strcpy(this->text, text);
+		draw_title();
+	}
+}
+
+void BC_PopupMenu::set_icon(BC_Pixmap *icon)
+{
+	if(use_title)
+	{
+		this->icon = icon;
+		if(menu_popup) draw_title();
+	}
 }
 
 int BC_PopupMenu::initialize()
@@ -66,7 +86,7 @@ int BC_PopupMenu::initialize()
 		0, 
 		this);
 
-	if(use_title) draw_text();
+	if(use_title) draw_title();
 
 	return 0;
 }
@@ -101,32 +121,43 @@ int BC_PopupMenu::total_items()
 	return 0;
 }
 
-int BC_PopupMenu::set_text(char *text)
+BC_MenuItem* BC_PopupMenu::get_item(int i)
 {
-	if(use_title)
-	{
-		strcpy(this->text, text);
-		draw_text();
-	}
-
-	return 0;
+	return menu_popup->menu_items.values[i];
 }
 
-int BC_PopupMenu::draw_text()
+int BC_PopupMenu::draw_title()
 {
 	if(!use_title) return 0;
 
-//printf("BC_PopupMenu::draw_text %d\n", status);
+// Background
 	draw_top_background(parent_window, 0, 0, w, h);
 	draw_3segmenth(0, 0, w, images[status]);
 
+// Overlay text
 	set_color(BLACK);
-	set_font(MEDIUMFONT);
-	BC_WindowBase::draw_center_text(get_w() / 2, 
-		(int)((float)get_h() / 2 + get_text_ascent(MEDIUMFONT) / 2 - 2), 
-		text);
+	if(!icon)
+	{
+		set_font(MEDIUMFONT);
+		BC_WindowBase::draw_center_text(get_w() / 2, 
+			(int)((float)get_h() / 2 + get_text_ascent(MEDIUMFONT) / 2 - 2), 
+			text);
+	}
 
-	draw_triangle_down_flat(get_w() - 20, get_h() / 2 - 6, 10, 10);
+#define MARGIN 10
+#define TRIANGLE_W 10
+#define TRIANGLE_H 10
+
+	if(icon)
+	{
+		draw_pixmap(icon,
+			MARGIN,
+			get_h() / 2 - icon->get_h() / 2);
+	}
+
+	draw_triangle_down_flat(get_w() - MARGIN - TRIANGLE_W, 
+		get_h() / 2 - TRIANGLE_H / 2, 
+		TRIANGLE_W, TRIANGLE_H);
 
 	flash();
 	return 0;
@@ -140,7 +171,7 @@ int BC_PopupMenu::deactivate()
 		popup_down = 0;
 		menu_popup->deactivate_menu();
 
-		if(use_title) draw_text();    // draw the title
+		if(use_title) draw_title();    // draw the title
 	}
 	return 0;
 }
@@ -185,7 +216,7 @@ int BC_PopupMenu::activate_menu()
 		else
 			menu_popup->activate_menu(x, y, w, h, 0, 1);
 		popup_down = 1;
-		if(use_title) draw_text();
+		if(use_title) draw_title();
 	}
 	return 0;
 }
@@ -193,6 +224,27 @@ int BC_PopupMenu::activate_menu()
 int BC_PopupMenu::deactivate_menu()
 {
 	deactivate();
+	return 0;
+}
+
+int BC_PopupMenu::focus_out_event()
+{
+	deactivate();
+	return 0;
+}
+
+
+int BC_PopupMenu::repeat_event(int64_t duration)
+{
+	if(duration == top_level->get_resources()->tooltip_delay &&
+		tooltip_text[0] != 0 &&
+		status == BUTTON_HI &&
+		!tooltip_done)
+	{
+		show_tooltip();
+		tooltip_done = 1;
+		return 1;
+	}
 	return 0;
 }
 
@@ -207,7 +259,7 @@ int BC_PopupMenu::button_press_event()
 		top_level->hide_tooltip();
 		if(status == BUTTON_HI || status == BUTTON_UP) status = BUTTON_DN;
 		activate_menu();
-		draw_text();
+		draw_title();
 		return 1;
 	}
 
@@ -235,7 +287,7 @@ int BC_PopupMenu::button_release_event()
 		if(status == BUTTON_DN)
 		{
 			status = BUTTON_HI;
-			draw_text();
+			draw_title();
 		}
 	}
 //printf("BC_PopupMenu::button_release_event 2 %d\n", result);
@@ -331,7 +383,7 @@ int BC_PopupMenu::cursor_leave_event()
 	if(status == BUTTON_HI && use_title)
 	{
 		status = BUTTON_UP;
-		draw_text();
+		draw_title();
 		hide_tooltip();
 	}
 
@@ -357,7 +409,7 @@ int BC_PopupMenu::cursor_enter_event()
 		else
 		if(status == BUTTON_UP) 
 			status = BUTTON_HI;
-		draw_text();
+		draw_title();
 	}
 
 	return 0;
@@ -380,7 +432,7 @@ int BC_PopupMenu::cursor_motion_event()
 			if(cursor_inside())
 			{
 				highlighted = 0;
-				draw_text();
+				draw_title();
 			}
 		}
 		else
@@ -388,7 +440,7 @@ int BC_PopupMenu::cursor_motion_event()
 			if(cursor_inside())
 			{
 				highlighted = 1;
-				draw_text();
+				draw_title();
 				result = 1;
 			}
 		}

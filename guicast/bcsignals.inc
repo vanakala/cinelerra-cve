@@ -2,5 +2,6 @@
 #define BCSIGNALS_INC
 
 class BC_Signals;
+class BC_LockTrace;
 
 #endif

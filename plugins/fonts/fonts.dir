@@ -1,4 +1,9 @@
-487
+537
+VeraBd.ttf -Bitstream-Bitstream Vera Sans-bold-r-normal--0-0-0-0-p-0-ascii-0
+VeraBd.ttf -Bitstream-Bitstream Vera Sans-bold-r-normal--0-0-0-0-p-0-fcd8859-15
+VeraBd.ttf -Bitstream-Bitstream Vera Sans-bold-r-normal--0-0-0-0-p-0-iso8859-1
+VeraBd.ttf -Bitstream-Bitstream Vera Sans-bold-r-normal--0-0-0-0-p-0-iso8859-15
+VeraBd.ttf -Bitstream-Bitstream Vera Sans-bold-r-normal--0-0-0-0-p-0-iso8859-9
 arial.ttf -monotype-Arial-medium-r-normal--0-0-0-0-p-0-ascii-0
 arial.ttf -monotype-Arial-medium-r-normal--0-0-0-0-p-0-fcd8859-15
 arial.ttf -monotype-Arial-medium-r-normal--0-0-0-0-p-0-iso8859-1
@@ -261,6 +266,12 @@ micross.ttf -monotype-Microsoft Sans Serif-medium-r-normal--0-0-0-0-p-0-iso8859-
 micross.ttf -monotype-Microsoft Sans Serif-medium-r-normal--0-0-0-0-p-0-iso8859-9
 micross.ttf -monotype-Microsoft Sans Serif-medium-r-normal--0-0-0-0-p-0-koi8-r
 micross.ttf -monotype-Microsoft Sans Serif-medium-r-normal--0-0-0-0-p-0-koi8-ru
+old_engl.ttf -alltype-Old English-medium-r-normal--0-0-0-0-p-0-ascii-0
+old_engl.ttf -alltype-Old English-medium-r-normal--0-0-0-0-p-0-fcd8859-15
+old_engl.ttf -alltype-Old English-medium-r-normal--0-0-0-0-p-0-iso8859-1
+old_engl.ttf -alltype-Old English-medium-r-normal--0-0-0-0-p-0-iso8859-15
+old_engl.ttf -alltype-Old English-medium-r-normal--0-0-0-0-p-0-iso8859-2
+old_engl.ttf -alltype-Old English-medium-r-normal--0-0-0-0-p-0-iso8859-9
 pala.ttf -linotype-Palatino Linotype-medium-r-normal--0-0-0-0-p-0-ascii-0
 pala.ttf -linotype-Palatino Linotype-medium-r-normal--0-0-0-0-p-0-fcd8859-15
 pala.ttf -linotype-Palatino Linotype-medium-r-normal--0-0-0-0-p-0-iso8859-1
@@ -480,9 +491,48 @@ verdanaz.ttf -microsoft-Verdana-bold-i-normal--0-0-0-0-p-0-koi8-r
 verdanaz.ttf -microsoft-Verdana-bold-i-normal--0-0-0-0-p-0-koi8-ru
 webdings.ttf -microsoft-Webdings-medium-r-normal--0-0-0-0-p-0-microsoft-symbol
 wingding.ttf -microsoft-Wingdings-medium-r-normal--0-0-0-0-p-0-microsoft-symbol
-old_engl.ttf -alltype-Old English-medium-r-normal--0-0-0-0-p-0-ascii-0
-old_engl.ttf -alltype-Old English-medium-r-normal--0-0-0-0-p-0-fcd8859-15
-old_engl.ttf -alltype-Old English-medium-r-normal--0-0-0-0-p-0-iso8859-1
-old_engl.ttf -alltype-Old English-medium-r-normal--0-0-0-0-p-0-iso8859-15
-old_engl.ttf -alltype-Old English-medium-r-normal--0-0-0-0-p-0-iso8859-2
-old_engl.ttf -alltype-Old English-medium-r-normal--0-0-0-0-p-0-iso8859-9
+VeraIt.ttf -Bitstream-Bitstream Vera Sans-medium-i-normal--0-0-0-0-p-0-ascii-0
+VeraIt.ttf -Bitstream-Bitstream Vera Sans-medium-i-normal--0-0-0-0-p-0-fcd8859-15
+VeraIt.ttf -Bitstream-Bitstream Vera Sans-medium-i-normal--0-0-0-0-p-0-iso8859-1
+VeraIt.ttf -Bitstream-Bitstream Vera Sans-medium-i-normal--0-0-0-0-p-0-iso8859-15
+VeraIt.ttf -Bitstream-Bitstream Vera Sans-medium-i-normal--0-0-0-0-p-0-iso8859-9
+VeraMoBd.ttf -Bitstream-Bitstream Vera Sans Mono-bold-r-normal--0-0-0-0-m-0-ascii-0
+VeraMoBd.ttf -Bitstream-Bitstream Vera Sans Mono-bold-r-normal--0-0-0-0-m-0-fcd8859-15
+VeraMoBd.ttf -Bitstream-Bitstream Vera Sans Mono-bold-r-normal--0-0-0-0-m-0-iso8859-1
+VeraMoBd.ttf -Bitstream-Bitstream Vera Sans Mono-bold-r-normal--0-0-0-0-m-0-iso8859-15
+VeraMoBd.ttf -Bitstream-Bitstream Vera Sans Mono-bold-r-normal--0-0-0-0-m-0-iso8859-9
+VeraMoIt.ttf -Bitstream-Bitstream Vera Sans Mono-medium-i-normal--0-0-0-0-m-0-ascii-0
+VeraMoIt.ttf -Bitstream-Bitstream Vera Sans Mono-medium-i-normal--0-0-0-0-m-0-fcd8859-15
+VeraMoIt.ttf -Bitstream-Bitstream Vera Sans Mono-medium-i-normal--0-0-0-0-m-0-iso8859-1
+VeraMoIt.ttf -Bitstream-Bitstream Vera Sans Mono-medium-i-normal--0-0-0-0-m-0-iso8859-15
+VeraMoIt.ttf -Bitstream-Bitstream Vera Sans Mono-medium-i-normal--0-0-0-0-m-0-iso8859-9
+VeraMono.ttf -Bitstream-Bitstream Vera Sans Mono-medium-r-normal--0-0-0-0-m-0-ascii-0
+VeraMono.ttf -Bitstream-Bitstream Vera Sans Mono-medium-r-normal--0-0-0-0-m-0-fcd8859-15
+VeraMono.ttf -Bitstream-Bitstream Vera Sans Mono-medium-r-normal--0-0-0-0-m-0-iso8859-1
+VeraMono.ttf -Bitstream-Bitstream Vera Sans Mono-medium-r-normal--0-0-0-0-m-0-iso8859-15
+VeraMono.ttf -Bitstream-Bitstream Vera Sans Mono-medium-r-normal--0-0-0-0-m-0-iso8859-9
+VeraSeBd.ttf -Bitstream-Bitstream Vera Serif-bold-r-normal--0-0-0-0-p-0-ascii-0
+VeraSeBd.ttf -Bitstream-Bitstream Vera Serif-bold-r-normal--0-0-0-0-p-0-fcd8859-15
+VeraSeBd.ttf -Bitstream-Bitstream Vera Serif-bold-r-normal--0-0-0-0-p-0-iso8859-1
+VeraSeBd.ttf -Bitstream-Bitstream Vera Serif-bold-r-normal--0-0-0-0-p-0-iso8859-15
+VeraSeBd.ttf -Bitstream-Bitstream Vera Serif-bold-r-normal--0-0-0-0-p-0-iso8859-9
+VeraSe.ttf -Bitstream-Bitstream Vera Serif-medium-r-normal--0-0-0-0-p-0-ascii-0
+VeraSe.ttf -Bitstream-Bitstream Vera Serif-medium-r-normal--0-0-0-0-p-0-fcd8859-15
+VeraSe.ttf -Bitstream-Bitstream Vera Serif-medium-r-normal--0-0-0-0-p-0-iso8859-1
+VeraSe.ttf -Bitstream-Bitstream Vera Serif-medium-r-normal--0-0-0-0-p-0-iso8859-15
+VeraSe.ttf -Bitstream-Bitstream Vera Serif-medium-r-normal--0-0-0-0-p-0-iso8859-9
+Vera.ttf -Bitstream-Bitstream Vera Sans-medium-r-normal--0-0-0-0-p-0-ascii-0
+Vera.ttf -Bitstream-Bitstream Vera Sans-medium-r-normal--0-0-0-0-p-0-fcd8859-15
+Vera.ttf -Bitstream-Bitstream Vera Sans-medium-r-normal--0-0-0-0-p-0-iso8859-1
+Vera.ttf -Bitstream-Bitstream Vera Sans-medium-r-normal--0-0-0-0-p-0-iso8859-15
+Vera.ttf -Bitstream-Bitstream Vera Sans-medium-r-normal--0-0-0-0-p-0-iso8859-9
+VeraBI.ttf -Bitstream-Bitstream Vera Sans-bold-i-normal--0-0-0-0-p-0-ascii-0
+VeraBI.ttf -Bitstream-Bitstream Vera Sans-bold-i-normal--0-0-0-0-p-0-fcd8859-15
+VeraBI.ttf -Bitstream-Bitstream Vera Sans-bold-i-normal--0-0-0-0-p-0-iso8859-1
+VeraBI.ttf -Bitstream-Bitstream Vera Sans-bold-i-normal--0-0-0-0-p-0-iso8859-15
+VeraBI.ttf -Bitstream-Bitstream Vera Sans-bold-i-normal--0-0-0-0-p-0-iso8859-9
+VeraMoBI.ttf -Bitstream-Bitstream Vera Sans Mono-bold-i-normal--0-0-0-0-m-0-ascii-0
+VeraMoBI.ttf -Bitstream-Bitstream Vera Sans Mono-bold-i-normal--0-0-0-0-m-0-fcd8859-15
+VeraMoBI.ttf -Bitstream-Bitstream Vera Sans Mono-bold-i-normal--0-0-0-0-m-0-iso8859-1
+VeraMoBI.ttf -Bitstream-Bitstream Vera Sans Mono-bold-i-normal--0-0-0-0-m-0-iso8859-15
+VeraMoBI.ttf -Bitstream-Bitstream Vera Sans Mono-bold-i-normal--0-0-0-0-m-0-iso8859-9

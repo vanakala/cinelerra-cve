@@ -44,7 +44,8 @@ int mpeg3video_clearblock(mpeg3_slice_t *slice, int comp, int size)
 
 /* Compiler error with 2.95 required hard coding the size to 6 */
 
-	memset(slice->block[comp], 0, sizeof(short) * 64 * size);
+	bzero(slice->block[comp], sizeof(short) * 64 * size);
+//	memset(slice->block[comp], 0, sizeof(short) * 64 * size);
 	return 0;
 }
 

@@ -35,6 +35,7 @@ public:
 
 	int initialize();
 	int delete_objects();
+	void reset_objects();
 
 	PreferencesWindow *pwindow;
 	PreferencesDialog *dialog;
@@ -45,12 +46,14 @@ public:
 private:
 	int create_lml_objs();
 	int create_firewire_objs();
+	int create_dv1394_objs();
 	int create_v4l_objs();
 	int create_screencap_objs();
 	int create_buz_objs();
 	int create_x11_objs();
 
 	VDriverMenu *menu;
+
 	BC_Title *device_title, *port_title, *channel_title, *output_title, *syt_title;
 	VDeviceTextBox *device_text;
 	VDeviceIntBox *firewire_port;
@@ -58,7 +61,7 @@ private:
 	VDeviceIntBox *firewire_channels;
 	VDeviceIntBox *firewire_syt;
 	VDeviceTextBox *firewire_path;
-	VDeviceCheckBox *firewire_use_dv1394;
+
 	VDeviceCheckBox *buz_swap_channels;
 	int driver, mode;
 	int x;

@@ -9,7 +9,8 @@ decoding</B></FONT><P>
 <TR>
 <TD>
 <CODE>
-Author: Heroine Virtual (Motion picture solutions for Linux)     broadcast@earthling.net<BR>
+Author: Heroine Virtual Ltd. (Motion picture solutions for Linux without a warranty)
+Harassment: broadcast@earthling.net<BR>
 Homepage: heroinewarrior.com<P>
 
 libmpeg3 is free software; you can redistribute it and/or modify it
@@ -186,7 +187,11 @@ any number.<P>
 
 Call <CODE>mpeg3_set_mmx(mpeg3_t *file, int use_mmx)</CODE> to set if
 MMX is used for video.  Disabling MMX is mandatory for low bitrate
-streams since it is very lossy.<P>
+streams since it is very lossy.  By the way, lately the compiled MMX
+output has been producing corrupted video.  This is a change in the way
+modern compilers and CPU's handle MMX from the way it was done 4 years
+ago but since modern CPU's are so fast, you're better off not using MMX
+at all.<P>
 
 
 
@@ -243,25 +248,31 @@ not available in any consumer distribution medium.<P>
 
 Each audio stream and each video stream has a position in the file
 independant of each other stream.  A variety of methods are available
-for specifying the position of a stream: <B>percentage, frame,
+for specifying the position of a stream: <B>byte offset, frame,
 sample</B>.  Which method you use depends on whether you're seeking
-audio or video and whether have reliable timecode stamps in the
+audio or video and whether you have a table of contents for the
 stream.<P>
 
 The preferred seeking method if you're writing a player is:<P>
 
 <CODE><PRE>
-int mpeg3_seek_percentage(mpeg3_t *file, double percentage);
-double mpeg3_tell_percentage(mpeg3_t *file);
+int mpeg3_seek_byte(mpeg3_t *file, int64_t byte);
+int64_t mpeg3_tell_byte(mpeg3_t *file);
 </PRE></CODE>
 
-This seeks all tracks to a percentage of the file length.  The
-percentage is from 0 to 1.<P>
+This seeks all tracks to an absolute byte offset in the file.  The
+byte offset is from 0 to the result of:<P>
 
-The alternative is <B>absolute seeking</B>.  Absolute seeking is only
-possible if a <B>table of contents</B> exists, if the stream is fixed
-bitrate audio, or if the stream has contiguous timecode.  The audio
-seeking is handled by:<P>
+<CORE><PRE>
+mpeg3_get_bytes(mpeg3_t *file)
+</PRE></CODE>
+
+
+The alternative to byte seeking is <B>frame or sample seeking</B>. 
+Frame seeking is only possible if a <B>table of contents</B> exists. 
+The <B>mpeg3toc</B> that comes with libmpeg3 creates tables of contents
+from MPEG 1 & 2 streams.  Sample seeking is only possible if the stream
+is fixed bitrate audio.  The audio seeking is handled by:<P>
 
 <CODE><PRE>
 int mpeg3_set_sample(mpeg3_t *file, long sample, int stream);    // Seek
@@ -276,13 +287,13 @@ long mpeg3_get_frame(mpeg3_t *file, int stream);            // Tell current posi
 </PRE></CODE>
 
 
-You can either perform percentage seeking or absolute seeking but not
-both on the same file handle.  Once you perform either method, the file
-becomes configured for that method.<P>
+You can either perform percentage seeking or absolute byte seeking but
+not both on the same file handle.  Once you perform either method, the
+file becomes configured for that method.<P>
 
-If you're in percentage seeking mode and you want the current time
-stamp in the file you can't use mpeg3_tell_percentage because you don't
-know how many seconds the total length is.  The
+If you're in byte seeking mode and you want the current time stamp in
+the file you can't use mpeg3_get_frame or mpeg3_get_sample because you
+don't know the total length in the desired units.  The
 <CODE>mpeg3_audio_samples</CODE> and <CODE>mpeg3_video_frames</CODE>
 commands don't work in percentage seeking either.  Instead use
 
@@ -292,14 +303,21 @@ double mpeg3_get_time(mpeg3_t *file);
 
 which gives you the last timecode read in seconds.  The MPEG standard
 specifies timecodes being placed in the streams.  Now you know the
-percentage position in the file and the current time stamp, enough to
-update a progress bar or a text box.<P>
+absolute byte position in the file and the current time stamp, enough
+to update a progress bar or a text box.<P>
+
+Finally, there is a way to seek to the previous frame of video:
 
 
+<CODE><PRE>
+int mpeg3_previous_frame(mpeg3_t *file, int stream);
+</PRE></CODE>
 
-
-
-
+Because MPEG 1 & 2 are really hairy, the set commands won't do much
+good for playing backwards.  mpeg3_previous_frame does some tricks to
+seek to the previous frame.  Next you have to call a read_frame
+command to read it.
+<P>
 
 
 
@@ -487,7 +505,7 @@ every 65536th sample and every keyframe so it can be pretty slow.<P>
 
 The resulting table of contents file should be passed to mpeg3_open
 and mpeg3_open_copy just like a normal file.  The only difference is
-absolute seeking is available.<P>
+frame seeking of video is available.<P>
 
 
 

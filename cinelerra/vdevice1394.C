@@ -47,7 +47,8 @@ int VDevice1394::open_input()
 // and fills video frames for us.
 	int result = 0;
 	if(device->adevice &&
-		device->adevice->in_config->driver == AUDIO_1394)
+		(device->adevice->in_config->driver == AUDIO_1394 ||
+			device->adevice->in_config->driver == AUDIO_DV1394))
 	{
 		Audio1394 *low_level = (Audio1394*)device->adevice->get_lowlevel_in();
 		input_thread = low_level->input_thread;
@@ -77,7 +78,8 @@ int VDevice1394::open_output()
 // Share audio driver.  The audio driver takes DV frames from us and
 // inserts audio.
 	if(device->adevice &&
-		device->adevice->out_config->driver == AUDIO_1394)
+		(device->adevice->out_config->driver == AUDIO_1394 ||
+			device->adevice->out_config->driver == AUDIO_DV1394))
 	{
 		Audio1394 *low_level = (Audio1394*)device->adevice->get_lowlevel_out();
 		output_thread = low_level->output_thread;
@@ -86,16 +88,29 @@ int VDevice1394::open_output()
 	else
 	if(!output_thread)
 	{
-		output_thread = new Device1394Output;
-		output_thread->open(device->out_config->firewire_path,
-			device->out_config->firewire_port, 
-			device->out_config->firewire_channel,
-			30,
-			2,
-			16,
-			48000,
-			device->out_config->firewire_syt,
-			device->out_config->firewire_use_dv1394);
+		output_thread = new Device1394Output(device);
+		if(device->out_config->driver == PLAYBACK_DV1394)
+		{
+			output_thread->open(device->out_config->dv1394_path,
+				device->out_config->dv1394_port, 
+				device->out_config->dv1394_channel,
+				30,
+				2,
+				16,
+				48000,
+				device->out_config->dv1394_syt);
+		}
+		else
+		{
+			output_thread->open(device->out_config->firewire_path,
+				device->out_config->firewire_port, 
+				device->out_config->firewire_channel,
+				30,
+				2,
+				16,
+				48000,
+				device->out_config->firewire_syt);
+		}
 	}
 
 	return 0;

@@ -22,13 +22,13 @@ int64_t mpeg3io_get_total_bytes(mpeg3_fs_t *fs);
 /* TITLE */
 
 mpeg3_title_t* mpeg3_new_title(mpeg3_t *file, char *path);
-void mpeg3_new_timecode(mpeg3_title_t *title, 
+void mpeg3_new_cell(mpeg3_title_t *title, 
 		long start_byte, 
 		double start_time,
 		long end_byte,
 		double end_time,
 		int program);
-mpeg3demux_timecode_t* mpeg3_append_timecode(mpeg3_demuxer_t *demuxer, 
+mpeg3demux_cell_t* mpeg3_append_cell(mpeg3_demuxer_t *demuxer, 
 		mpeg3_title_t *title, 
 		long prev_byte, 
 		double prev_time, 
@@ -36,6 +36,10 @@ mpeg3demux_timecode_t* mpeg3_append_timecode(mpeg3_demuxer_t *demuxer,
 		double start_time,
 		int dont_store,
 		int program);
+/* Called by mpeg3_open for a single file */
+int mpeg3demux_create_title(mpeg3_demuxer_t *demuxer, 
+		int cell_search, 
+		FILE *toc);
 
 
 /* ATRACK */
@@ -167,6 +171,8 @@ int mpeg3video_read_frame(mpeg3video_t *video,
 		int out_h, 
 		int color_model);
 void mpeg3video_dump(mpeg3video_t *video);
+int mpeg3video_prev_code(mpeg3_demuxer_t *demuxer, unsigned int code);
+int mpeg3video_next_code(mpeg3_bits_t* stream, unsigned int code);
 
 
 
@@ -204,28 +210,32 @@ mpeg3_demuxer_t* mpeg3_new_demuxer(mpeg3_t *file,
 	int do_video, 
 	int stream_id);
 int mpeg3_delete_demuxer(mpeg3_demuxer_t *demuxer);
+mpeg3_demuxer_t* mpeg3_get_demuxer(mpeg3_t *file);
 int mpeg3demux_read_data(mpeg3_demuxer_t *demuxer, 
 	unsigned char *output, 
 	long size);
 unsigned int mpeg3demux_read_int32(mpeg3_demuxer_t *demuxer);
 unsigned int mpeg3demux_read_int24(mpeg3_demuxer_t *demuxer);
 unsigned int mpeg3demux_read_int16(mpeg3_demuxer_t *demuxer);
+
+/* Total number of seconds in all titles */
 double mpeg3demux_length(mpeg3_demuxer_t *demuxer);
-mpeg3_demuxer_t* mpeg3_get_demuxer(mpeg3_t *file);
-
-/* Give byte offset relative to current title */
-int64_t mpeg3demux_tell(mpeg3_demuxer_t *demuxer);
-
-/* Give byte offset relative to start of movie */
-int64_t mpeg3demux_tell_absolute(mpeg3_demuxer_t *demuxer);
 
 /* Give total number of bytes in all titles */
 int64_t mpeg3demux_movie_size(mpeg3_demuxer_t *demuxer);
 
-double mpeg3demux_tell_percentage(mpeg3_demuxer_t *demuxer);
+/* Number of bytes in the current title */
+int64_t mpeg3demux_title_bytes(mpeg3_demuxer_t *demuxer);
 
 /* Return the current title */
 int mpeg3demux_tell_title(mpeg3_demuxer_t *demuxer);
+
+/* Give byte offset relative to current title */
+int64_t mpeg3demux_tell_relative(mpeg3_demuxer_t *demuxer);
+
+/* Give byte offset relative to start of movie */
+int64_t mpeg3demux_tell_byte(mpeg3_demuxer_t *demuxer);
+
 
 double mpeg3demux_get_time(mpeg3_demuxer_t *demuxer);
 int mpeg3demux_eof(mpeg3_demuxer_t *demuxer);
@@ -234,8 +244,6 @@ void mpeg3demux_start_reverse(mpeg3_demuxer_t *demuxer);
 void mpeg3demux_start_forward(mpeg3_demuxer_t *demuxer);
 int mpeg3demux_open_title(mpeg3_demuxer_t *demuxer, int title_number);
 int mpeg3demux_seek_byte(mpeg3_demuxer_t *demuxer, int64_t byte);
-int mpeg3demux_seek_percentage(mpeg3_demuxer_t *demuxer, double percentage);
-int64_t mpeg3demuxer_total_bytes(mpeg3_demuxer_t *demuxer);
 unsigned char mpeg3demux_read_char_packet(mpeg3_demuxer_t *demuxer);
 unsigned char mpeg3demux_read_prev_char_packet(mpeg3_demuxer_t *demuxer);
 int mpeg3demux_read_program(mpeg3_demuxer_t *demuxer);
@@ -248,10 +256,10 @@ double mpeg3demux_video_pts(mpeg3_demuxer_t *demuxer);
 /* Set the last pts read to -1 for audio and video */
 void mpeg3demux_reset_pts(mpeg3_demuxer_t *demuxer);
 
-/* scan forward for next pts.  Used in percentage seeking to synchronize */
+/* scan forward for next pts.  Used in byte seeking to synchronize */
 double mpeg3demux_scan_pts(mpeg3_demuxer_t *demuxer);
 
-/* seek using sequential search to the pts given.  Used in percentage seeking. */
+/* seek using sequential search to the pts given.  Used in byte seeking. */
 int mpeg3demux_goto_pts(mpeg3_demuxer_t *demuxer, double pts);
 
 
@@ -309,14 +317,15 @@ mpeg3_bits_t* mpeg3bits_new_stream(mpeg3_t *file, mpeg3_demuxer_t *demuxer);
 int mpeg3bits_delete_stream(mpeg3_bits_t* stream);
 int mpeg3bits_seek_byte(mpeg3_bits_t* stream, int64_t position);
 int mpeg3bits_open_title(mpeg3_bits_t* stream, int title);
+/* Give absolute byte offset in all titles. */
 int64_t mpeg3bits_tell(mpeg3_bits_t* stream);
+/* Reset bit bucket */
+void mpeg3bits_reset(mpeg3_bits_t *stream);
 
 
 
 
 
-
-#define mpeg3bits_tell_percentage(stream) mpeg3demux_tell_percentage((stream)->demuxer)
 
 #define mpeg3bits_packet_time(stream) mpeg3demux_current_time((stream)->demuxer)
 
@@ -473,7 +482,7 @@ static unsigned int mpeg3bits_showbits_reverse(mpeg3_bits_t* stream, int bits)
 
 
 // I/O
-
+// I/O must be character based so the buffer doesn't get overrun
 
 
 
@@ -497,8 +506,8 @@ void mpeg3io_read_buffer(mpeg3_fs_t *fs);
 
 static int mpeg3io_sync_buffer(mpeg3_fs_t *fs)
 {
-	if(fs->buffer_position + fs->buffer_offset != fs->current_byte)
 // Reposition buffer offset
+	if(fs->buffer_position + fs->buffer_offset != fs->current_byte)
 	{
 		fs->buffer_offset = fs->current_byte - fs->buffer_position;
 	}
@@ -507,9 +516,15 @@ static int mpeg3io_sync_buffer(mpeg3_fs_t *fs)
 	if(fs->current_byte < fs->buffer_position ||
 		fs->current_byte >= fs->buffer_position + fs->buffer_size)
 	{
+/*
+ * printf("mpeg3io_sync_buffer 1 %llx %llx %llx\n",
+ * fs->buffer_position,
+ * fs->current_byte,
+ * fs->buffer_position + fs->buffer_size);
+ */
 		mpeg3io_read_buffer(fs);
 	}
-	
+
 	return !fs->buffer_size;
 }
 

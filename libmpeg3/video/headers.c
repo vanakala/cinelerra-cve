@@ -428,11 +428,9 @@ int mpeg3video_get_header(mpeg3video_t *video, int dont_repeat)
 {
 	unsigned int code;
 
-//printf("mpeg3video_get_header 1\n");
 /* a sequence header should be found before returning from `getheader' the */
 /* first time (this is to set horizontal/vertical size properly) */
 
-//printf("mpeg3video_get_header 1 %d %d\n", video->repeat_count, video->current_repeat);
 /* Repeat the frame until it's less than 1 count from repeat_count */
 	if(video->repeat_count - video->current_repeat >= 100 && !dont_repeat)
 	{
@@ -454,7 +452,6 @@ int mpeg3video_get_header(mpeg3video_t *video, int dont_repeat)
  * video->vstream->demuxer->titles[0]->fs->current_byte, 
  * video->vstream->demuxer->titles[0]->fs->total_bytes);
  */
-//printf("mpeg3video_get_header 10\n");
 
 	while(1)
 	{

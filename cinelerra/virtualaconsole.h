@@ -19,11 +19,18 @@ public:
 	void get_playable_tracks();
 	void run();
 
+// process a buffer
+	int process_buffer(int buffer, 
+		int64_t input_len, 
+		int64_t input_position, 
+		int64_t absolute_position);
+
 	int process_buffer(int64_t input_len,
 		int64_t input_position,
 		int last_buffer,
 		int64_t absolute_position);
-		void process_console();
+
+	void process_asynchronous();
 
 // set up virtual console and buffers
 	int init_rendering(int duplicate);
@@ -32,9 +39,6 @@ public:
 
 // delete buffers, tables, and mutexes
 	int stop_rendering(int duplicate);
-
-// process a buffer
-	int process_buffer(int buffer, int64_t input_len, int64_t input_position, int64_t absolute_position);
 	int send_last_output_buffer();  // cause audio device to quit
 
 // pointers to audio to read from disk

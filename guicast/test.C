@@ -1,5 +1,7 @@
+#include "bcsignals.h"
 #include "guicast.h"
 #include "keys.h"
+#include "language.h"
 #include "vframe.h"
 #include <ctype.h>
 #include <math.h>
@@ -99,7 +101,12 @@ public:
 				0,
 				0,
 				320, 
-				240)
+				240,
+				-1,
+				-1,
+				0,
+				0,
+				1)
 	{
 		current_cursor = 0;
 	};
@@ -133,6 +140,7 @@ public:
 
 int main(int argc, char *argv[])
 {
+	new BC_Signals;
 	TestWindow window;
 	int angles[] = { 180, 0 };
 	float values[] = { 1, 0 };
@@ -146,7 +154,15 @@ int main(int argc, char *argv[])
 		-1, 
 		-1,
 		values));
-	window.add_tool(new BC_TextBox(10, 10, 200, 5, "Mary Egbert\nhad a little lamb."));
+	window.add_tool(new BC_TextBox(10, 10, 200, 5, _("Mary Egbert\nhad a little lamb.")));
+	BC_Title *title;
+	window.add_tool(title = new BC_Title(10, 210, _("Hello world")));
+	title->update("xyz");
+	window.show_window();
+
+sleep(2);
+	title->update("abc");
+
 	window.run_window();
 
 //	thread_fork();

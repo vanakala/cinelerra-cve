@@ -1,6 +1,7 @@
 #ifndef TIMER_H
 #define TIMER_H
 
+#include <stdint.h>
 #include <sys/time.h>
 
 
@@ -14,11 +15,11 @@ public:
 	
 // get difference between now and last update in milliseconds
 // must be positive or error results
-	long long get_difference(struct timeval *result); // also stores in timeval
-	long long get_difference();
+	int64_t get_difference(struct timeval *result); // also stores in timeval
+	int64_t get_difference();
 
 // get difference in arbitrary units between now and last update    
-	long long get_scaled_difference(long denominator);        
+	int64_t get_scaled_difference(long denominator);        
 	int delay(long milliseconds);
 
 private:

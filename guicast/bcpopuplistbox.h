@@ -4,6 +4,9 @@
 #include "bclistbox.h"
 #include "bctextbox.h"
 
+// A listbox that comes with a textbox.  Selected item automatically appears
+// in textbox.
+
 class BC_PopupListText : public BC_TextBox
 {
 public:

@@ -5,9 +5,9 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "condition.inc"
 #include "mwindow.inc"
 #include "mwindowgui.inc"
-#include "mutex.h"
 #include "playbackengine.inc"
 #include "thread.h"
 #include "timer.h"
@@ -55,16 +55,9 @@ public:
 
 
 	void show_playback_cursor(int64_t position);
-	int wait_for_startup();
 	int view_follows_playback;
-// Stop cursor loop when not playing
-	Mutex pause_lock;
-// Exclude changes in state during the main loop
-	Mutex loop_lock;
-// Exclude accesses to the cursor
-	Mutex cursor_lock;
 // Delay until startup
-	Mutex startup_lock;
+	Condition *startup_lock;
 	MWindow *mwindow;
 	MWindowGUI *gui;
 	double last_position;

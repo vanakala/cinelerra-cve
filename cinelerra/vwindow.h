@@ -1,7 +1,7 @@
 #ifndef VWINDOW_H
 #define VWINDOW_H
 
-#include "assets.inc"
+#include "asset.inc"
 #include "clipedit.inc"
 #include "edl.inc"
 #include "mwindow.inc"

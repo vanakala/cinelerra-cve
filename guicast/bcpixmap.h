@@ -2,6 +2,9 @@
 #define BCPIXMAP_H
 
 #include <X11/Xlib.h>
+#ifdef HAVE_XFT
+#include <X11/Xft/Xft.h>
+#endif
 #include "bcbitmap.inc"
 #include "bcpixmap.inc"
 #include "bcwindowbase.inc"
@@ -58,7 +61,11 @@ private:
 
 	BC_WindowBase *parent_window;
 	BC_WindowBase *top_level;
-	Pixmap opaque_pixmap, alpha_pixmap, mask_pixmap;
+	Pixmap opaque_pixmap, alpha_pixmap;
+//#ifdef HAVE_XFT
+//	XftDraw *opaque_xft_draw, *alpha_xft_draw;
+//#endif
+	void *opaque_xft_draw, *alpha_xft_draw;
 	int w, h;
 	int mode;
 	GC alpha_gc, copy_gc;

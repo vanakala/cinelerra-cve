@@ -121,7 +121,9 @@ public:
 	void get_mute_fragment(int64_t input_position,
 				int &mute_constant, 
 				int64_t &fragment_len, 
-				Autos *autos);
+				Autos *autos,
+				int direction,
+				int use_nudge);
 
 // convenience routines for fade automation
 	void get_fade_automation(double &slope,
@@ -129,12 +131,6 @@ public:
 		int64_t input_position,
 		int64_t &slope_len,
 		Autos *autos);
-	void get_pan_automation(double &slope,
-		double &intercept,
-		int64_t input_position,
-		int64_t &slope_len,
-		Autos *autos,
-		int channel);
 
 	int init_automation(int &automate, 
 				double &constant, 

@@ -315,7 +315,7 @@ static int get_length(mpeg3audio_t *audio)
 	mpeg3_atrack_t *track = audio->track;
 	int samples = 0;
 
-//printf(__FUNCTION__ " 1\n");
+// Table of contents
 	if(track->sample_offsets)
 	{
 		int try = 0;
@@ -326,14 +326,12 @@ static int get_length(mpeg3audio_t *audio)
 			samples = read_frame(audio, 0);
 		}
 
-//printf(__FUNCTION__ " 2\n");
 		result = track->total_sample_offsets * MPEG3_AUDIO_CHUNKSIZE;
-//printf(__FUNCTION__ " 3\n");
 	}
 	else
+// Estimate using multiplexed stream size in seconds
 	if(!file->is_audio_stream)
 	{
-//printf(__FUNCTION__ " 4\n");
 
 /* Get stream parameters for header validation */
 		while(samples == 0)
@@ -343,31 +341,24 @@ static int get_length(mpeg3audio_t *audio)
 
 		result = (long)(mpeg3demux_length(track->demuxer) * 
 			track->sample_rate);
-//printf(__FUNCTION__ " 5\n");
 	}
 	else
+// Estimate using average bitrate
 	{
-//printf(__FUNCTION__ " 6\n");
 		long test_bytes = 0;
 		long max_bytes = 0x40000;
 		long test_samples = 0;
 		int error = 0;
-//printf(__FUNCTION__ " 6\n");
-		int64_t total_bytes = mpeg3demuxer_total_bytes(track->demuxer);
-//printf(__FUNCTION__ " 7\n");
+		int64_t total_bytes = mpeg3demux_movie_size(track->demuxer);
 
 		while(!error && test_bytes < max_bytes)
 		{
-//printf(__FUNCTION__ " 8\n");
 			int samples = read_frame(audio, 0);
-//printf(__FUNCTION__ " 9 %d\n", samples);
 			if(!samples) error = 1;
 			test_samples += samples;
 			test_bytes += audio->framesize;
 		}
-//printf(__FUNCTION__ " 10\n");
 		result = (long)(((double)total_bytes / test_bytes) * test_samples + 0.5);
-//printf(__FUNCTION__ " 11\n");
 	}
 
 	audio->output_size = 0;
@@ -392,15 +383,15 @@ mpeg3audio_t* mpeg3audio_new(mpeg3_t *file,
 	if(!decode_lock)
 	{
 		pthread_mutexattr_t attr;
-		decode_lock = calloc(1, sizeof(pthread_mutex_t));
 		pthread_mutexattr_init(&attr);
+		decode_lock = calloc(1, sizeof(pthread_mutex_t));
 		pthread_mutex_init(decode_lock, &attr);
 	}
 
 	audio->file = file;
 	audio->track = track;
 
-	audio->percentage_seek = -1;
+	audio->byte_seek = -1;
 	audio->sample_seek = -1;
 	track->format = format;
 //printf("mpeg3audio_new 1 %d\n", result);
@@ -532,9 +523,9 @@ static int seek(mpeg3audio_t *audio)
 			index = audio->sample_seek / MPEG3_AUDIO_CHUNKSIZE;
 			if(index >= track->total_sample_offsets) index = track->total_sample_offsets - 1;
 			title_number = (track->sample_offsets[index] & 
-				0xff00000000000000) >> 56;
+				0xff00000000000000LL) >> 56;
 			byte = track->sample_offsets[index] &
-				0xffffffffffffff;
+				0xffffffffffffffLL;
 
 			mpeg3demux_open_title(demuxer, title_number);
 			mpeg3demux_seek_byte(demuxer, byte);
@@ -559,7 +550,7 @@ static int seek(mpeg3audio_t *audio)
 		{
 			int64_t byte = (int64_t)((double)audio->sample_seek / 
 				track->total_samples * 
-				mpeg3demuxer_total_bytes(demuxer));
+				mpeg3demux_movie_size(demuxer));
 //printf(__FUNCTION__ " 5\n");
 
 			mpeg3demux_seek_byte(demuxer, byte);
@@ -570,21 +561,21 @@ static int seek(mpeg3audio_t *audio)
 	}
 	else
 /* Percentage seek was requested */
-	if(audio->percentage_seek > -0.5)
+	if(audio->byte_seek >= 0)
 	{
-		mpeg3demux_seek_percentage(demuxer, audio->percentage_seek);
+		mpeg3demux_seek_byte(demuxer, audio->byte_seek);
 
 // Scan for pts if we're the first to seek.
-		if(file->percentage_pts < 0)
-		{
-			file->percentage_pts = mpeg3demux_scan_pts(demuxer);
-		}
-		else
-		{
-//printf(__FUNCTION__ " 1 %lld\n", mpeg3demux_tell_absolute(demuxer));
-			mpeg3demux_goto_pts(demuxer, file->percentage_pts);
-//printf(__FUNCTION__ " 2 %lld\n", mpeg3demux_tell_absolute(demuxer));
-		}
+/*
+ * 		if(file->percentage_pts < 0)
+ * 		{
+ * 			file->percentage_pts = mpeg3demux_scan_pts(demuxer);
+ * 		}
+ * 		else
+ * 		{
+ * 			mpeg3demux_goto_pts(demuxer, file->percentage_pts);
+ * 		}
+ */
 
 	   	audio->output_position = 0;
 		audio->output_size = 0;
@@ -602,7 +593,7 @@ static int seek(mpeg3audio_t *audio)
 		}
 	}
 	audio->sample_seek = -1;
-	audio->percentage_seek = -1;
+	audio->byte_seek = -1;
 
 	return 0;
 }
@@ -628,9 +619,9 @@ int mpeg3audio_delete(mpeg3audio_t *audio)
 	return 0;
 }
 
-int mpeg3audio_seek_percentage(mpeg3audio_t *audio, double percentage)
+int mpeg3audio_seek_byte(mpeg3audio_t *audio, int64_t byte)
 {
-	audio->percentage_seek = percentage;
+	audio->byte_seek = byte;
 	return 0;
 }
 

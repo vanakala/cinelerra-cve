@@ -207,12 +207,12 @@ inline void mpeg3video_rgb16_mmx(unsigned char *lum,
 		);
 }
 
-static unsigned long long  mpeg3_MMX_U_80 = 0x0000008000800000;
-static unsigned long long  mpeg3_MMX_V_80 = 0x0000000000800080;
-static long long  mpeg3_MMX_U_COEF        = 0x00000058ffd30000;
-static long long  mpeg3_MMX_V_COEF        = 0x00000000ffea006f;
-static long long  mpeg3_MMX_601_Y_COEF    = 0x0000004800480048;
-static long long  mpeg3_MMX_601_Y_DIFF    = 0x0000000000000010;
+static unsigned long long  mpeg3_MMX_U_80 = 0x0000008000800000LL;
+static unsigned long long  mpeg3_MMX_V_80 = 0x0000000000800080LL;
+static long long  mpeg3_MMX_U_COEF        = 0x00000058ffd30000LL;
+static long long  mpeg3_MMX_V_COEF        = 0x00000000ffea006fLL;
+static long long  mpeg3_MMX_601_Y_COEF    = 0x0000004800480048LL;
+static long long  mpeg3_MMX_601_Y_DIFF    = 0x0000000000000010LL;
 
 inline void mpeg3_bgra32_mmx(unsigned long y, 
 		unsigned long u, 
@@ -297,10 +297,10 @@ asm(
 : "r" (&y), "r" (&u), "r" (&v), "r" (output));
 }
 
-static unsigned long long  mpeg3_MMX_U_80_RGB    = 0x0000000000800080;
-static unsigned long long  mpeg3_MMX_V_80_RGB    = 0x0000008000800000;
-static long long  mpeg3_MMX_U_COEF_RGB    = 0x00000000ffd30058;
-static long long  mpeg3_MMX_V_COEF_RGB    = 0x0000006fffea0000;
+static unsigned long long  mpeg3_MMX_U_80_RGB    = 0x0000000000800080LL;
+static unsigned long long  mpeg3_MMX_V_80_RGB    = 0x0000008000800000LL;
+static long long  mpeg3_MMX_U_COEF_RGB    = 0x00000000ffd30058LL;
+static long long  mpeg3_MMX_V_COEF_RGB    = 0x0000006fffea0000LL;
 
 inline void mpeg3_rgba32_mmx(unsigned long y, 
 		unsigned long u, 
@@ -536,7 +536,7 @@ int mpeg3video_ditherframe(mpeg3video_t *video,
 
 #ifdef HAVE_MMX
 /* =================================== MMX ===================================== */
-	if(/* video->have_mmx */ 1 &&
+	if(video->have_mmx &&
 		video->out_w == video->horizontal_size &&
 		video->out_h == video->vertical_size &&
 		video->in_w == video->out_w &&
@@ -557,7 +557,7 @@ int mpeg3video_ditherframe(mpeg3video_t *video,
 			(output_rows[1] - output_rows[0]) / 2 - video->out_w);
 	}
 	else
-	if(/* video->have_mmx */ 1 && 
+	if(video->have_mmx && 
 		(video->color_model == MPEG3_BGRA8888 || 
 		video->color_model == MPEG3_BGR888 ||
 /*		video->color_model == MPEG3_RGB888 || */

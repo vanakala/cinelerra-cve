@@ -62,13 +62,11 @@ void VPluginArray::create_modules()
 
 void VPluginArray::load_module(int module, int64_t input_position, int64_t len)
 {
-//printf("VPluginArray::load_module 1 %d\n", module);
 	if(module == 0) realtime_buffers = file->get_video_buffer();
-//printf("VPluginArray::load_module 1 %d\n", module);
 	((VModule*)modules[module])->render(realtime_buffers[module][0],
 		input_position,
-		PLAY_FORWARD);
-//printf("VPluginArray::load_module 2\n");
+		PLAY_FORWARD,
+		0);
 }
 
 void VPluginArray::process_realtime(int module, int64_t input_position, int64_t len)

@@ -23,7 +23,8 @@ public:
 	int read_frame(VFrame *video_out, 
 			int64_t input_position, 
 			int direction,
-			CICache *cache);
+			CICache *cache,
+			int use_nudge);
 	
 	
 	

@@ -3,7 +3,7 @@
 
 #include "bcbutton.h"
 #include "bcfilebox.inc"
-#include "bclistbox.h"
+#include "bclistbox.inc"
 #include "bclistboxitem.inc"
 #include "bcresources.inc"
 #include "bctextbox.h"
@@ -12,11 +12,6 @@
 #include "mutex.h"
 #include "thread.h"
 
-// Display modes
-#define FILEBOX_LIST    0
-#define FILEBOX_ICONS   1
-
-#define FILEBOX_COLUMNS 2
 
 class BC_NewFolder : public BC_Window
 {
@@ -55,6 +50,9 @@ public:
 
 	int handle_event();
 	int selection_changed();
+	int column_resize_event();
+	int sort_order_event();
+	int move_column_event();
 	int evaluate_query(int list_item, char *string);
 
 	BC_FileBox *filebox;
@@ -167,19 +165,6 @@ public:
 		int want_directory = 0,
 		int multiple_files = 0,
 		int h_padding = 0);
-	BC_FileBox(int x, 
-		int y,
-		int w,
-		int h,
-		char *init_path,
-		char *title,
-		char *caption,
-// Set to 1 to get hidden files. 
-		int show_all_files = 0,
-// Want only directories
-		int want_directory = 0,
-		int multiple_files = 0,
-		int h_padding = 0);
 	virtual ~BC_FileBox();
 
 	friend class BC_FileBoxCancel;
@@ -201,9 +186,16 @@ public:
 
 	int refresh();
 
-// Give the most recently selected path
-	char* get_path();
-// Give the path of any selected item or 0
+// The OK and Use This button submits a path.
+// The cancel button has a current path highlighted but possibly different from the
+// path actually submitted.
+// Give the most recently submitted path
+	char* get_submitted_path();
+// Give the path currently highlighted
+	char* get_current_path();
+
+// Give the path of any selected item or 0.  Used when many items are
+// selected in the list.  Should only be called when OK is pressed.
 	char* get_path(int selection);
 	int update_filter(char *filter);
 	virtual int resize_event(int w, int h);
@@ -214,11 +206,17 @@ private:
 	int create_tables();
 	int delete_tables();
 	int submit_file(char *path, int return_value, int use_this = 0);
+// Called by move_column_event
+	void move_column(int src, int dst);
 	int get_display_mode();
 	int get_listbox_w();
 	int get_listbox_h(int y);
 	void create_listbox(int x, int y, int mode);
-	BC_Pixmap* get_icon(char *path, int is_dir);    // Get the icon number for a listbox
+// Get the icon number for a listbox
+	BC_Pixmap* get_icon(char *path, int is_dir);
+	static char* columntype_to_text(int type);
+// Get the column whose type matches type.
+	int column_of_type(int type);
 
 	BC_Pixmap *icons[TOTAL_ICONS];
 	FileSystem *fs;
@@ -231,16 +229,23 @@ private:
 	BC_Button *ok_button, *cancel_button;
 	BC_FileBoxUseThis *usethis_button;
 	char caption[BCTEXTLEN];
-	char path[BCTEXTLEN];
+	char current_path[BCTEXTLEN];
+	char submitted_path[BCTEXTLEN];
 	char directory[BCTEXTLEN];
 	char filename[BCTEXTLEN];
 	char string[BCTEXTLEN];
 	int want_directory;
 	int select_multiple;
-	static char *column_titles[FILEBOX_COLUMNS];
-	int column_width[FILEBOX_COLUMNS];
-	ArrayList<BC_ListBoxItem*> list_column[FILEBOX_COLUMNS];
+
+	int sort_column;
+	int sort_order;
+
+	char *column_titles[FILEBOX_COLUMNS];
 	ArrayList<BC_ListBoxItem*> filter_list;
+	ArrayList<BC_ListBoxItem*> *list_column;
+	int *column_type;
+	int *column_width;
+	
 	char new_folder_title[BCTEXTLEN];
 	BC_NewFolderThread *newfolder_thread;
 	int h_padding;

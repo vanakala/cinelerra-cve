@@ -78,13 +78,11 @@ int VDeviceX11::output_visible()
 
 int VDeviceX11::close_all()
 {
-//printf("VDeviceX11::close_all 1\n");
 	if(output)
 	{
-		output->canvas->lock_window();
+		output->canvas->lock_window("VDeviceX11::close_all");
 	}
 
-//printf("VDeviceX11::close_all 2\n");
 	if(output && output_frame)
 	{
 // Copy picture to persistent frame buffer with conversion to flat colormodel
@@ -97,7 +95,6 @@ int VDeviceX11::close_all()
 			output->refresh_frame = 0;
 		}
 
-//printf("VDeviceX11::close_all 3\n");
 		if(!output->refresh_frame)
 		{
 			output->refresh_frame = new VFrame(0,
@@ -106,21 +103,16 @@ int VDeviceX11::close_all()
 				output_frame->get_color_model());
 		}
 
-//printf("VDeviceX11::close_all 4\n");
 		if(!device->single_frame)
 		{
-//printf("VDeviceX11::close_all 5\n");
 			output->canvas->stop_video();
 		}
 
-//printf("VDeviceX11::close_all 5\n");
 		output->refresh_frame->copy_from(output_frame);
 
-//printf("VDeviceX11::close_all 6\n");
 		output->draw_refresh();
 	}
 
-//printf("VDeviceX11::close_all 8\n");
 	if(bitmap)
 	{
 		delete bitmap;
@@ -128,27 +120,21 @@ int VDeviceX11::close_all()
 		bitmap = 0;
 	}
 
-//printf("VDeviceX11::close_all 0\n");
 	if(capture_bitmap) delete capture_bitmap;
 
-//printf("VDeviceX11::close_all 10\n");
 	if(output)
 	{
 		output->canvas->unlock_window();
 	}
 
-//printf("VDeviceX11::close_all 11\n");
 
 	reset_parameters();
-//printf("VDeviceX11::close_all 12\n");
 	return 0;
 }
 
 int VDeviceX11::read_buffer(VFrame *frame)
 {
-//printf("VDeviceX11::read_buffer 1\n");
 	capture_bitmap->capture_frame(frame, device->input_x, device->input_y);
-//printf("VDeviceX11::read_buffer 2\n");
 	return 0;
 }
 
@@ -413,11 +399,9 @@ int VDeviceX11::write_buffer(VFrame **output_channels, EDL *edl)
 {
 	int i = 0;
 
-// printf("VDeviceX11::write_buffer 1 %d %d\n",
-// 	bitmap->hardware_scaling(), 
-// 	output_channels[0]->get_color_model());
-
-	output->canvas->lock_window();
+//printf("VDeviceX11::write_buffer 1\n");
+	output->canvas->lock_window("VDeviceX11::write_buffer");
+//printf("VDeviceX11::write_buffer 2\n");
 	output->get_transfers(edl, 
 		in_x, 
 		in_y, 

@@ -91,10 +91,11 @@ int mpeg3io_read_data(unsigned char *buffer, long bytes, mpeg3_fs_t *fs)
 {
 	int result = 0, i, fragment_size;
 	
-//printf("mpeg3io_read_data 1 %d\n", bytes);
 	for(i = 0; bytes > 0 && !result; )
 	{
+//printf("mpeg3io_read_data 1 %d\n", bytes);
 		result = mpeg3io_sync_buffer(fs);
+//printf("mpeg3io_read_data 2\n");
 
 		fragment_size = MPEG3_IO_SIZE;
 
@@ -129,22 +130,47 @@ int mpeg3io_seek_relative(mpeg3_fs_t *fs, long bytes)
 	return (fs->current_byte < 0) || (fs->current_byte > fs->total_bytes);
 }
 
+#define MIN(x, y) ((x) > (y) ? (y) : (x))
+
 void mpeg3io_read_buffer(mpeg3_fs_t *fs)
 {
-// Sequential reverse buffer
-	if(fs->current_byte == fs->buffer_position - 1)
+// Special case for sequential reverse buffer.
+// This is only used for searching for previous codes.
+// Here we move a full half buffer backwards since the search normally
+// goes backwards and then forwards a little bit.
+	if(fs->current_byte < fs->buffer_position &&
+		fs->current_byte >= fs->buffer_position - MPEG3_IO_SIZE / 2)
 	{
-		fs->buffer_position = fs->current_byte - MPEG3_IO_SIZE + 1;
-		if(fs->buffer_position < 0) fs->buffer_position = 0;
+		int64_t new_buffer_position = fs->current_byte - MPEG3_IO_SIZE / 2;
+		int64_t new_buffer_size = MIN(fs->buffer_size + MPEG3_IO_SIZE / 2,
+			MPEG3_IO_SIZE);
+		if(new_buffer_position < 0)
+		{
+			new_buffer_size += new_buffer_position;
+			new_buffer_position = 0;
+		}
 
-		fs->buffer_size = fs->current_byte - fs->buffer_position + 1;
-		fs->buffer_offset = fs->buffer_size - 1;
+// Shift existing buffer forward and calculate amount of new data needed.
+		int remainder = new_buffer_position + new_buffer_size - fs->buffer_position;
+		if(remainder < 0) remainder = 0;
+		int remainder_start = new_buffer_size - remainder;
+		int i;
+		if(remainder)
+			memmove(fs->buffer + remainder_start, fs->buffer, remainder);
 
-//printf("mpeg3io_read_buffer 1 %x %x\n", fs->current_byte, fs->buffer_position);
-		fseeko64(fs->fd, fs->buffer_position, SEEK_SET);
-//printf("mpeg3io_read_buffer 10\n");
-		fs->buffer_size = fread(fs->buffer, 1, fs->buffer_size, fs->fd);
-//printf("mpeg3io_read_buffer 100\n");
+/*
+ * printf("mpeg3io_read_buffer 1 %llx %llx %x\n", 
+ * fs->current_byte, 
+ * fs->buffer_position,
+ * MPEG3_IO_SIZE);
+ */
+		fseeko64(fs->fd, new_buffer_position, SEEK_SET);
+		fread(fs->buffer, 1, remainder_start, fs->fd);
+
+
+		fs->buffer_position = new_buffer_position;
+		fs->buffer_size = new_buffer_size;
+		fs->buffer_offset = fs->current_byte - fs->buffer_position;
 	}
 	else
 // Sequential forward buffer or random seek
@@ -153,11 +179,12 @@ void mpeg3io_read_buffer(mpeg3_fs_t *fs)
 		fs->buffer_position = fs->current_byte;
 		fs->buffer_offset = 0;
 
-//printf("mpeg3io_read_buffer 200\n");
+//printf("mpeg3io_read_buffer 2 %llx %llx\n", fs->current_byte, fs->buffer_position);
 		result = fseeko64(fs->fd, fs->buffer_position, SEEK_SET);
-//printf("mpeg3io_read_buffer 210\n");
 		fs->buffer_size = fread(fs->buffer, 1, MPEG3_IO_SIZE, fs->fd);
-//printf("mpeg3io_read_buffer 220\n");
+
+
+
 /*
  * printf(__FUNCTION__ " 2 result=%d ftell=%llx buffer_position=%llx %02x%02x%02x%02x%02x%02x%02x%02x %02x%02x\n", 
  * result,

@@ -20,6 +20,8 @@ public:
 	virtual int handle_event() { return 0; };
 	int repeat_event(int64_t repeat_id);
 	virtual int draw_face();
+	void disable();
+	void enable();
 
 	int initialize();
 	virtual int set_images(VFrame **data);
@@ -39,6 +41,7 @@ private:
 	int status;
 	int w_argument;
 	int underline_number;
+	int enabled;
 };
 
 

@@ -1,4 +1,4 @@
-#include "assets.h"
+#include "asset.h"
 #include "autoconf.h"
 #include "bezierauto.h"
 #include "bezierautos.h"
@@ -11,6 +11,7 @@
 #include "edlsession.h"
 #include "filexml.h"
 #include "floatautos.h"
+#include "language.h"
 #include "localsession.h"
 #include "patch.h"
 #include "mainsession.h"
@@ -26,11 +27,6 @@
 #include "vmodule.h"
 #include "vpluginset.h"
 #include "vtrack.h"
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 VTrack::VTrack(EDL *edl, Tracks *tracks)
  : Track(edl, tracks)
@@ -159,29 +155,26 @@ int VTrack::load_derived(FileXML *file, uint32_t load_flags)
 }
 
 
-int VTrack::direct_copy_possible(int64_t start, int direction)
+int VTrack::direct_copy_possible(int64_t start, int direction, int use_nudge)
 {
 	int i;
+	if(use_nudge) start += nudge;
 
 // Track size must equal output size
 	if(track_w != edl->session->output_w || track_h != edl->session->output_h)
 		return 0;
 
 // No automation must be present in the track
-//printf("VTrack::direct_copy_possible 1\n");
 	if(!automation->direct_copy_possible(start, direction))
 		return 0;
-//printf("VTrack::direct_copy_possible 2\n");
 
 // No plugin must be present
 	if(plugin_used(start, direction)) 
 		return 0;
 
-//printf("VTrack::direct_copy_possible 3\n");
 // No transition
-	if(get_current_transition(start, direction, 0))
+	if(get_current_transition(start, direction, 0, 0))
 		return 0;
-//printf("VTrack::direct_copy_possible 4\n");
 
 	return 1;
 }

@@ -3,7 +3,7 @@
 
 #include "bcrepeater.inc"
 #include "bcwindowbase.inc"
-#include "mutex.h"
+#include "condition.inc"
 #include "thread.h"
 #include "timer.h"
 
@@ -13,6 +13,7 @@ public:
 	BC_Repeater(BC_WindowBase *top_level, long delay);
 	~BC_Repeater();
 
+	void initialize();
 	int start_repeating();
 	int stop_repeating();
 	void run();
@@ -22,15 +23,15 @@ public:
 	int repeating;
 	int interrupted;
 // Prevent new signal until existing event is processed
-	Mutex repeat_lock;
+	Condition *repeat_lock;
 
 private:
 	Timer timer;
 	BC_WindowBase *top_level;
 // Delay corrected for the time the last repeat took
 	long next_delay;
-	Mutex pause_lock;
-	Mutex startup_lock;
+	Condition *pause_lock;
+	Condition *startup_lock;
 };
 
 

@@ -8,6 +8,12 @@ class TimeTextBox;
 
 #include "guicast.h"
 
+// 3 part entry widget.
+// part 1: day of the week
+// part 2: day tumbler
+// part 3: time of day
+// Used by the Record GUI, Batch Rendering.
+
 class TimeEntry
 {
 public:
@@ -15,7 +21,8 @@ public:
 		int x, 
 		int y, 
 		int *output_day, 
-		double *output_time);
+		double *output_time,
+		int time_format);
 	~TimeEntry();
 	
 	void create_objects();
@@ -36,6 +43,7 @@ public:
 	static char *day_table[TOTAL_DAYS];
 	int *output_day;
 	double *output_time;
+	int time_format;
 };
 
 class DayText : public BC_TextBox

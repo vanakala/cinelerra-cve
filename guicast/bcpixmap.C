@@ -3,6 +3,9 @@
 #include "bcwindowbase.h"
 #include "vframe.h"
 
+
+#include <unistd.h>
+
 BC_Pixmap::BC_Pixmap(BC_WindowBase *parent_window, 
 	VFrame *frame, 
 	int mode,
@@ -25,6 +28,7 @@ BC_Pixmap::BC_Pixmap(BC_WindowBase *parent_window,
 			0, 
 			frame->get_w(), 
 			frame->get_h());
+		
 	}
 
 	if(use_alpha())
@@ -35,6 +39,8 @@ BC_Pixmap::BC_Pixmap(BC_WindowBase *parent_window,
 				BC_TRANSPARENCY, 
 				0);
 
+		if(frame->get_color_model() != BC_RGBA8888)
+			printf("BC_Pixmap::BC_Pixmap: PIXMAP_ALPHA but frame doesn't have alpha.\n");
 		alpha_bitmap->read_frame(frame, 
 			0, 
 			0, 
@@ -101,7 +107,6 @@ BC_Pixmap::~BC_Pixmap()
 
 int BC_Pixmap::initialize(BC_WindowBase *parent_window, int w, int h, int mode)
 {
-//printf("BC_Pixmap::initialize 1\n");
 	unsigned long gcmask = GCGraphicsExposures | GCForeground | GCBackground | GCFunction;
 	XGCValues gcvalues;
 	gcvalues.graphics_exposures = 0;        // prevent expose events for every redraw
@@ -109,14 +114,12 @@ int BC_Pixmap::initialize(BC_WindowBase *parent_window, int w, int h, int mode)
 	gcvalues.background = 1;
 	gcvalues.function = GXcopy;
 
-//printf("BC_Pixmap::initialize 1\n");
 	this->w = w;
 	this->h = h;
 	this->parent_window = parent_window;
 	this->mode = mode;
 	top_level = parent_window->top_level;
 
-//printf("BC_Pixmap::initialize 1\n");
 	if(use_opaque())
 	{
 		opaque_pixmap = XCreatePixmap(top_level->display, 
@@ -124,9 +127,14 @@ int BC_Pixmap::initialize(BC_WindowBase *parent_window, int w, int h, int mode)
 			w, 
 			h, 
 			top_level->default_depth);
+#ifdef HAVE_XFT
+		opaque_xft_draw = XftDrawCreate(top_level->display,
+		       opaque_pixmap,
+		       top_level->vis,
+		       top_level->cmap);
+#endif
 	}
 
-//printf("BC_Pixmap::initialize 1\n");
 	if(use_alpha())
 	{
 		alpha_pixmap = XCreatePixmap(top_level->display, 
@@ -135,20 +143,22 @@ int BC_Pixmap::initialize(BC_WindowBase *parent_window, int w, int h, int mode)
 			h, 
 			1);
 
-//printf("BC_Pixmap::initialize 1\n");
 		alpha_gc = XCreateGC(top_level->display, 
 			top_level->win, 
 			gcmask, 
 			&gcvalues);
 
-//printf("BC_Pixmap::initialize 1\n");
 		copy_gc = XCreateGC(top_level->display,
 			alpha_pixmap,
 			gcmask,
 			&gcvalues);
+
+#ifdef HAVE_XFT
+		alpha_xft_draw = XftDrawCreateBitmap(top_level->display,
+			alpha_pixmap);
+#endif
 	}
 	
-//printf("BC_Pixmap::initialize 2\n");
 	return 0;
 }
 

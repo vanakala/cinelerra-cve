@@ -67,21 +67,21 @@ public:
 	};
 
 private:
-	long rtoy_tab_8[0x100], gtoy_tab_8[0x100], btoy_tab_8[0x100];
-	long rtou_tab_8[0x100], gtou_tab_8[0x100], btou_tab_8[0x100];
-	long rtov_tab_8[0x100], gtov_tab_8[0x100], btov_tab_8[0x100];
+	int rtoy_tab_8[0x100], gtoy_tab_8[0x100], btoy_tab_8[0x100];
+	int rtou_tab_8[0x100], gtou_tab_8[0x100], btou_tab_8[0x100];
+	int rtov_tab_8[0x100], gtov_tab_8[0x100], btov_tab_8[0x100];
 
-	long vtor_tab_8[0x100], vtog_tab_8[0x100];
-	long utog_tab_8[0x100], utob_tab_8[0x100];
-	long *vtor_8, *vtog_8, *utog_8, *utob_8;
+	int vtor_tab_8[0x100], vtog_tab_8[0x100];
+	int utog_tab_8[0x100], utob_tab_8[0x100];
+	int *vtor_8, *vtog_8, *utog_8, *utob_8;
 
-	long rtoy_tab_16[0x10000], gtoy_tab_16[0x10000], btoy_tab_16[0x10000];
-	long rtou_tab_16[0x10000], gtou_tab_16[0x10000], btou_tab_16[0x10000];
-	long rtov_tab_16[0x10000], gtov_tab_16[0x10000], btov_tab_16[0x10000];
+	int rtoy_tab_16[0x10000], gtoy_tab_16[0x10000], btoy_tab_16[0x10000];
+	int rtou_tab_16[0x10000], gtou_tab_16[0x10000], btou_tab_16[0x10000];
+	int rtov_tab_16[0x10000], gtov_tab_16[0x10000], btov_tab_16[0x10000];
 
-	long vtor_tab_16[0x10000], vtog_tab_16[0x10000];
-	long utog_tab_16[0x10000], utob_tab_16[0x10000];
-	long *vtor_16, *vtog_16, *utog_16, *utob_16;
+	int vtor_tab_16[0x10000], vtog_tab_16[0x10000];
+	int utog_tab_16[0x10000], utob_tab_16[0x10000];
+	int *vtor_16, *vtog_16, *utog_16, *utob_16;
 };
 
 

@@ -1,5 +1,5 @@
 #include <stdio.h>
-
+#include <unistd.h>
 
 #define PROGRESS_UP 0
 #define PROGRESS_HI 1
@@ -37,6 +37,14 @@ int BC_ProgressBar::initialize()
 	return 0;
 }
 
+int BC_ProgressBar::reposition_window(int x, int y, int w, int h)
+{
+	if(w < 0) w = get_w();
+	if(h < 0) h = get_h();
+	BC_WindowBase::reposition_window(x, y, w, h);
+	draw(1);
+}
+
 void BC_ProgressBar::set_do_text(int value)
 {
 	this->do_text = value;
@@ -48,9 +56,11 @@ int BC_ProgressBar::set_images()
 		if(images[i]) delete images[i];
 
 	for(int i = 0; i < 2; i++)
+	{
 		images[i] = new BC_Pixmap(parent_window, 
 			get_resources()->progress_images[i], 
 			PIXMAP_ALPHA);
+	}
 	return 0;
 }
 

@@ -1,4 +1,4 @@
-#include "assets.h"
+#include "asset.h"
 #include "bezierauto.h"
 #include "bezierautos.h"
 #include "cache.h"
@@ -43,23 +43,23 @@ int VEdit::load_properties_derived(FileXML *xml)
 int VEdit::read_frame(VFrame *video_out, 
 			int64_t input_position, 
 			int direction,
-			CICache *cache)
+			CICache *cache,
+			int use_nudge)
 {
-//printf("VEdit::read_frame 1 %f %d %p %p %s\n", asset->frame_rate, asset->video_length, cache, asset, asset->path);
 	File *file = cache->check_out(asset);
 	int result = 0;
+	if(use_nudge) input_position += track->nudge;
 
-//printf("VEdit::read_frame 2\n");
 	if(file)
 	{
 
-//printf("VEdit::read_frame 3\n");
 		input_position = (direction == PLAY_FORWARD) ? input_position : (input_position - 1);
 
 //printf("VEdit::read_frame 4\n");
 		file->set_layer(channel);
 
 //printf("VEdit::read_frame 5\n");
+//printf("VEdit::read_frame 3 %lld\n", input_position - startproject + startsource);
 		file->set_video_position(input_position - startproject + startsource, edl->session->frame_rate);
 
 //printf("VEdit::read_frame 6 channel: %d w: %d h: %d video_out: %p\n", channel, asset->width, asset->height, video_out);
