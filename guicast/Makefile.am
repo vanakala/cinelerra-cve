@@ -42,6 +42,7 @@ libguicast_la_SOURCES = \
 	bcwindowbase.C \
 	bcwindowdraw.C \
 	bcwindowevents.C \
+	debug.h \
         error.h \
 	errorbox.C \
 	defaults.C \
