@@ -563,8 +563,6 @@ BC_Resources::BC_Resources()
 	use_xft = 0;
 #endif
 
-	if(use_fontset) setlocale(LC_ALL, "");
-
 
 	drag_radius = 10;
 	recursive_resizing = 1;

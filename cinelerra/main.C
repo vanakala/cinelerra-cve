@@ -44,9 +44,11 @@ int main(int argc, char *argv[])
 	int nice_value = 20;
 	char *rcfile = NULL;
 
-	setlocale (LC_ALL, "");
 	bindtextdomain (PACKAGE, LOCALEDIR);
 	textdomain (PACKAGE);
+	setlocale (LC_MESSAGES, "");
+	setlocale (LC_CTYPE, "");
+
 	for(int i = 1; i < argc; i++)
 	{
 		if(!strcmp(argv[i], "-h"))
