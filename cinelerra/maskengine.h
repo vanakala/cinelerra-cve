@@ -44,6 +44,11 @@ public:
 		float feather, 
 		int start_out, 
 		int end_out);
+	int do_feather_2(VFrame *output,
+		VFrame *input, 
+		float feather, 
+		int start_out, 
+		int end_out);
 	void blur_strip(float *val_p, 
 		float *val_m, 
 		float *dst, 
@@ -88,7 +93,8 @@ public:
 	VFrame *temp_mask;
 	ArrayList<ArrayList<MaskPoint*>*> point_sets;
 	int mode;
-	float feather;
+	float feather;              // gui feather
+	float realfeather;          // real feather
 	int recalculate;
 	int value;
 	Mutex stage1_finished;

@@ -10,6 +10,9 @@
 #include <string.h>
 #include <limits.h>
 
+#include "codegen/feather.h"
+
+
 int64_t get_difference(struct timeval *start_time)
 {
         struct timeval new_time;
@@ -163,6 +166,21 @@ void MaskUnit::blur_strip(float *val_p,
 		dst[i] = sum;
 	}
 }
+
+
+
+int MaskUnit::do_feather_2(VFrame *output,
+	VFrame *input, 
+	float feather, 
+	int start_out, 
+	int end_out)
+{
+	
+	int fint = (int)feather;
+	DO_FEATHER_N(unsigned char, uint32_t, 0xffff, fint);
+
+}
+
 
 void MaskUnit::do_feather(VFrame *output,
 	VFrame *input, 
@@ -583,7 +601,7 @@ void MaskUnit::process_package(LoadPackage *package)
 					else \
 					if(OVERSAMPLE == 4) coverage >>= 2; \
 					else \
-					if(OVERSAMPLE == 2) coverage >>= 2; \
+					if(OVERSAMPLE == 2) coverage >>= 1; \
 					else coverage /= OVERSAMPLE * OVERSAMPLE; \
 
 					
@@ -645,14 +663,10 @@ void MaskUnit::process_package(LoadPackage *package)
 
 
 	/* possible optimization: this could be useful for do_feather also */
-	start_row = MAX (ptr->row1, engine->first_nonempty_rowspan); 
-	end_row = MIN (ptr->row2, engine->last_nonempty_rowspan + 1);
 
 	// Feather polygon
 	if(engine->recalculate && engine->feather > 0) 
 	{	
-		start_row = ptr->row1;
-		end_row = ptr->row2;
 		/* first take care that all packages are already drawn onto mask */
 		protect_data.lock();
 		engine->stage1_finished_count ++;
@@ -664,12 +678,79 @@ void MaskUnit::process_package(LoadPackage *package)
 		
 		/* now do the feather */
 //printf("MaskUnit::process_package 3 %f\n", engine->feather);
-		do_feather(engine->mask, 
+
+	struct timeval start_time;
+	gettimeofday(&start_time, 0);
+
+	/* 
+	{
+	// EXPERIMENTAL CODE to find out how values between old and new do_feather map
+	// create a testcase and find out the closest match between do_feather_2 at 3 and do_feather
+	//			2	3	4	5	6	7	8	10	13	15
+	// do_feather_2		3	5	7	9	11	13	15	19	25	29
+	// do_feather_1		2.683	3.401	4.139	4.768	5.315	5.819	6.271	7.093	8.170	8.844		
+	// diff				0.718	0.738	0.629	0.547	0.504	0.452
+	// {(2,2.683),(3,3.401),(4,4.139),(5,4.768),(6,5.315),(7,5.819),(8,6.271),(10,7.093),(13,8.170),(15,8.844)}
+	// use http://mss.math.vanderbilt.edu/cgi-bin/MSSAgent/~pscrooke/MSS/fitpoly.def
+	// for calculating the coefficients
+
+		VFrame *df2 = new VFrame (*engine->mask);
+		VFrame *one_sample = new VFrame(*engine->mask);
+		do_feather_2(df2, 
 			engine->temp_mask, 
-			engine->feather, 
+			25, 
 			ptr->row1, 
 			ptr->row2);
+		float ftmp;
+		for (ftmp = 8.15; ftmp <8.18; ftmp += 0.001) 
+		{
+			do_feather(one_sample, 
+			engine->temp_mask, 
+			ftmp, 
+			ptr->row1, 
+			ptr->row2);
+			double squarediff = 0;
+			for (int i=0; i< engine->mask->get_h(); i++)
+				for (int j = 0; j< engine->mask->get_w(); j++)
+				{
+					double v1= ((unsigned char *)one_sample->get_rows()[i])[j];
+					double v2= ((unsigned char *)df2->get_rows()[i])[j];
+					squarediff += (v1-v2)*(v1-v2);
+				}
+			squarediff = sqrt(squarediff);
+			printf("for value 3: ftmp: %2.3f, squarediff: %f\n", ftmp, squarediff);
+		}
 	}
+	*/	
+	
+		int done = 0;
+		done = do_feather_2(engine->mask,        // try if we have super fast implementation ready
+				engine->temp_mask,
+				engine->feather * 2 - 1, 
+				ptr->row1, 
+				ptr->row2);
+		if (done) {
+			engine->realfeather = engine->feather;
+		}
+		if (!done)
+		{
+		//	printf("not done\n");
+			float feather = engine->feather;
+			engine->realfeather = 0.878441 + 0.988534*feather - 0.0490204 *feather*feather  + 0.0012359 *feather*feather*feather;
+			do_feather(engine->mask, 
+				engine->temp_mask, 
+				engine->realfeather, 
+				ptr->row1, 
+				ptr->row2); 
+		}
+		int64_t dif= get_difference(&start_time);
+		printf("diff: %lli\n", dif);
+	} else
+	if (engine->feather <= 0) {
+		engine->realfeather = 0;
+	}
+	start_row = MAX (ptr->row1, engine->first_nonempty_rowspan - (int)ceil(engine->realfeather)); 
+	end_row = MIN (ptr->row2, engine->last_nonempty_rowspan + 1 + (int)ceil(engine->realfeather));
 
 
 
