@@ -435,7 +435,8 @@ int File::close_file()
 			asset->video_length = current_frame;
 		}
 //printf("File::close_file 3 %d %d\n", asset->audio_length, asset->video_length);
-		file->close_file();
+//		close_file is called in destructor of file
+//		file->close_file();
 		delete file;
 	}
 
