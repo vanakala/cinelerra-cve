@@ -1,6 +1,7 @@
 #include "bcbitmap.h"
 #include "bcipc.h"
 #include "bcresources.h"
+#include "bcsignals.h"
 #include "bcwindow.h"
 #include "colormodels.h"
 #include "vframe.h"
@@ -237,6 +238,7 @@ int BC_Bitmap::allocate_data()
 			perror("BC_Bitmap::allocate_data XShmAttach");
 		}
 
+// This causes it to automatically delete when the program exits.
 		shmctl(shm_info.shmid, IPC_RMID, 0);
 	}
 	else
@@ -419,7 +421,9 @@ int BC_Bitmap::write_drawable(Drawable &pixmap,
 //printf("BC_Bitmap::write_drawable 1 %p %d\n", this, current_ringbuffer);fflush(stdout);
     if(use_shm)
 	{
+//TRACE("BC_Bitmap::write_drawable 1");
 		if(dont_wait) XSync(top_level->display, False);
+//TRACE("BC_Bitmap::write_drawable 2");
 
 		if(hardware_scaling())
 		{
@@ -436,6 +440,7 @@ int BC_Bitmap::write_drawable(Drawable &pixmap,
 //	pixmap, 
 //	gc,
 //	xv_image[current_ringbuffer]);
+//TRACE("BC_Bitmap::write_drawable 3");
 			XvShmPutImage(top_level->display, 
 				xv_portid, 
 				pixmap, 
@@ -450,7 +455,7 @@ int BC_Bitmap::write_drawable(Drawable &pixmap,
 				dest_w, 
 				dest_h, 
 				False);
-//printf("BC_Bitmap::write_drawable 2\n");
+//TRACE("BC_Bitmap::write_drawable 4");
 // Need to pass these to the XvStopVideo
 			last_pixmap = pixmap;
 			last_pixmap_used = 1;
@@ -481,6 +486,7 @@ int BC_Bitmap::write_drawable(Drawable &pixmap,
 // Force the X server into processing all requests.
 // This allows the shared memory to be written to again.
 		if(!dont_wait) XSync(top_level->display, False);
+//TRACE("BC_Bitmap::write_drawable 5");
 	}
     else
 	{
@@ -603,6 +609,12 @@ int BC_Bitmap::read_frame(VFrame *frame,
 				bg_color,
 				frame->get_w(),
 				w);
+// color model transfer_*_to_TRANSPARENCY don't care about endianness
+// so buffer bitswaped here if needed.
+				if ((color_model == BC_TRANSPARENCY) && (!top_level->server_byte_order))
+					transparency_bitswap();
+
+
 // printf("BC_Bitmap::read_frame 2\n");
 			break;
 	}
@@ -742,6 +754,58 @@ int BC_Bitmap::hardware_scaling()
 int BC_Bitmap::get_w() { return w; }
 
 int BC_Bitmap::get_h() { return h; }
+
+char BC_Bitmap::byte_bitswap(char src) {
+	int i;
+	char dst;
+
+	dst = 0;
+	if (src & 1) dst |= ((unsigned char)1 << 7);
+	src = src >> 1;
+	if (src & 1) dst |= ((unsigned char)1 << 6);
+	src = src >> 1;
+	if (src & 1) dst |= ((unsigned char)1 << 5);
+	src = src >> 1;
+	if (src & 1) dst |= ((unsigned char)1 << 4);
+	src = src >> 1;
+	if (src & 1) dst |= ((unsigned char)1 << 3);
+	src = src >> 1;
+	if (src & 1) dst |= ((unsigned char)1 << 2);
+	src = src >> 1;
+	if (src & 1) dst |= ((unsigned char)1 << 1);
+	src = src >> 1;
+	if (src & 1) dst |= ((unsigned char)1 << 0);
+
+	return(dst);
+}
+
+void BC_Bitmap::transparency_bitswap() {
+	unsigned char *buf;
+	int i, width, height;
+	int len;
+
+	buf = *row_data[current_ringbuffer];
+
+	width = w;
+	height = h;
+	if (width % 8)
+		width = width + 8 - (width % 8);
+	len = width * height / 8;
+
+	for(i=0 ; i+8<=len ; i+=8){
+		buf[i+0] = byte_bitswap(buf[i+0]);
+		buf[i+1] = byte_bitswap(buf[i+1]);
+		buf[i+2] = byte_bitswap(buf[i+2]);
+		buf[i+3] = byte_bitswap(buf[i+3]);
+		buf[i+4] = byte_bitswap(buf[i+4]);
+		buf[i+5] = byte_bitswap(buf[i+5]);
+		buf[i+6] = byte_bitswap(buf[i+6]);
+		buf[i+7] = byte_bitswap(buf[i+7]);
+	}
+	for( ; i<len ; i++){
+		buf[i+0] = byte_bitswap(buf[i+0]);
+	}
+}
 
 int BC_Bitmap::get_color_model() { return color_model; }
 
