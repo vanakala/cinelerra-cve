@@ -18,6 +18,7 @@
 #include "tracks.inc"
 #include "transitionhandles.inc"
 #include "keyframe.inc"
+#include "floatauto.inc"
 
 class TrackCanvas : public BC_SubWindow
 {
@@ -177,6 +178,9 @@ public:
 		int &center_pixel,
 		double &zoom_sample,
 		double &zoom_units);
+
+	void synchronize_autos(float change, Track *skip, FloatAuto *fauto, int fill_gangs);
+
 
 	void draw_brender_start();
 	void draw_loop_points();

@@ -52,6 +52,7 @@ public:
 	ArrayList<Asset*> *drag_assets;
 	ArrayList<EDL*> *drag_clips;
 	Auto *drag_auto;
+	ArrayList<Auto*> *drag_auto_gang;
 
 // Edit whose handle is being dragged
 	Edit *drag_edit;
@@ -72,6 +73,9 @@ public:
 	long drag_start_position;
 // Records for redrawing brender position in timebar
 	double brender_end;
+
+// Show controls in CWindow
+	int cwindow_controls;
 
 // Clip number for automatic title generation
 	int clip_number;

@@ -51,6 +51,8 @@
 #include "tracks.h"
 #include "transition.h"
 #include "vframe.h"
+#include "apatchgui.inc"
+#include "vpatchgui.inc"
 
 #include <string.h>
 
@@ -1630,6 +1632,7 @@ int TrackCanvas::do_keyframes(int cursor_x,
 			}
 			if(result && buttonpress)
 			{
+				synchronize_autos(0, track, (FloatAuto*)mwindow->session->drag_auto, 1);
 				mwindow->session->current_operation = DRAG_FADE;
 				update_drag_caption();
 			}
@@ -2181,6 +2184,78 @@ void TrackCanvas::draw_floatline(int center_pixel,
 
 
 }
+
+void TrackCanvas::synchronize_autos(float change, Track *skip, FloatAuto *fauto, int fill_gangs)
+{
+	if (fill_gangs == 1 && skip->gang) // fill mwindow->session->drag_auto_gang
+	{
+		for(Track *current = mwindow->edl->tracks->first;
+			current;
+			current = NEXT)
+		{
+			if(current->data_type == skip->data_type &&
+				current->gang && 
+				current->record && 
+				current != skip)
+			{
+				FloatAutos *fade_autos = current->automation->fade_autos;
+				double position = skip->from_units(fauto->position);
+				int tmp_cursor_on_frames = mwindow->edl->session->cursor_on_frames;
+				mwindow->edl->session->cursor_on_frames = 0;
+				FloatAuto *previous = 0, *next = 0;
+				float init_value = fade_autos->get_value(fauto->position, PLAY_FORWARD, previous, next);
+
+				int update_undo = !fade_autos->auto_exists_for_editing(position);
+				
+				FloatAuto *keyframe = (FloatAuto*)fade_autos->get_auto_for_editing(position);
+				mwindow->edl->session->cursor_on_frames = tmp_cursor_on_frames;		
+				if (update_undo)
+					keyframe->value = init_value;
+				else
+					keyframe->value += change;		
+				keyframe->position = fauto->position;
+				keyframe->control_out_position = fauto->control_out_position;
+				keyframe->control_in_position = fauto->control_in_position;
+				keyframe->control_out_value = fauto->control_out_value;
+				keyframe->control_in_value = fauto->control_in_value;
+
+				mwindow->session->drag_auto_gang->append((Auto *)keyframe);
+			}
+		}
+	} else 
+	if (fill_gangs == 0)      // move the gangs
+	{
+
+		// Move the gang!
+		for (int i = 0; i < mwindow->session->drag_auto_gang->total; i++)
+		{
+			FloatAuto *keyframe = (FloatAuto *)mwindow->session->drag_auto_gang->values[i];
+			
+			keyframe->value += change;
+			keyframe->position = fauto->position;
+			if(skip->data_type == TRACK_AUDIO)
+				CLAMP(keyframe->value, INFINITYGAIN, MAX_AUDIO_FADE);
+			else
+				CLAMP(keyframe->value, 0, MAX_VIDEO_FADE);
+			keyframe->control_out_position = fauto->control_out_position;
+			keyframe->control_in_position = fauto->control_in_position;
+			keyframe->control_out_value = fauto->control_out_value;
+			keyframe->control_in_value = fauto->control_in_value;
+		} 
+
+	} else
+	if (fill_gangs == -1)      // remove the gangs
+	{
+		for (int i = 0; i < mwindow->session->drag_auto_gang->total; i++)
+		{
+			FloatAuto *keyframe = (FloatAuto *)mwindow->session->drag_auto_gang->values[i];
+			keyframe->autos->remove_nonsequential(
+					keyframe);
+		} 
+		mwindow->session->drag_auto_gang->remove_all();
+	}
+}
+
 
 int TrackCanvas::test_floatline(int center_pixel, 
 		FloatAutos *autos,
@@ -3130,6 +3205,16 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 // Snap to nearby values
 			if(shift_down())
 			{
+				if (current->previous && current->next)
+				{
+					float temp_val = ((FloatAuto*)current)->percentage_to_value(percentage);
+					if (fabsf(temp_val - ((FloatAuto *)current->previous)->value) 
+					    > fabsf (temp_val - ((FloatAuto *)current->next)->value))
+						value = ((FloatAuto *)current->next)->value;
+					else
+						value = ((FloatAuto *)current->previous)->value;
+				}
+				else
 				if(current->previous)
 					value = ((FloatAuto*)current->previous)->value;
 				else
@@ -3145,8 +3230,10 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 			if(value != current->value || position != current->position)
 			{
 				result = 1;
+				float change = value - current->value;		
 				current->value = value;
 				current->position = position;
+				synchronize_autos(change, current->autos->track, current, 0);
 
 				char string[BCTEXTLEN], string2[BCTEXTLEN];
 				Units::totext(string2, 
@@ -3170,6 +3257,7 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 				result = 1;
 				current->control_in_value = value;
 				current->control_in_position = position;
+				synchronize_autos(0, current->autos->track, current, 0);
 
 				char string[BCTEXTLEN], string2[BCTEXTLEN];
 				Units::totext(string2, 
@@ -3191,8 +3279,9 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 				position != current->control_out_position)
 			{
 				result = 1;
-				((FloatAuto*)current)->control_out_value = value;
-				((FloatAuto*)current)->control_out_position = position;
+				current->control_out_value = value;
+				current->control_out_position = position;
+				synchronize_autos(0, current->autos->track, current, 0);
 
 				char string[BCTEXTLEN], string2[BCTEXTLEN];
 				Units::totext(string2, 
@@ -3703,6 +3792,7 @@ int TrackCanvas::button_release_event()
 			break;
 
 		case DRAG_FADE:
+			synchronize_autos(0, 0, 0, -1); // delete the drag_auto_gang first and remove out of order keys
 		case DRAG_CZOOM:
 		case DRAG_PZOOM:
 		case DRAG_PLAY:
