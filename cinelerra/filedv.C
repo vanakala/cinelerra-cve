@@ -9,6 +9,7 @@
 #include "guicast.h"
 #include "language.h"
 #include "mwindow.inc"
+#include "quicktime.h"
 #include "vframe.h"
 #include "videodevice.inc"
 #include "cmodel_permutation.h"
@@ -44,6 +45,7 @@ FileDV::~FileDV()
 		free(audio_buffer);
 	}
 	delete[] output;
+	delete[] input;
 }
 
 void FileDV::get_parameters(BC_WindowBase *parent_window,
@@ -52,6 +54,7 @@ void FileDV::get_parameters(BC_WindowBase *parent_window,
 	int audio_options,
 	int video_options)
 {
+	strcpy(asset->acodec, "Raw DV");
 	// No options yet for this format
 	// Should pop up a window that just says "Raw DV".
 	// maybe have some of the parameters that get passed to libdv? nah.
@@ -62,10 +65,16 @@ int FileDV::reset_parameters_derived()
 	int i = 0;
 	if(decoder) dv_decoder_free(decoder);
 	if(encoder) dv_encoder_free(encoder);
+
 	decoder = dv_decoder_new(0,0,0);
+	decoder->quality = DV_QUALITY_BEST;
+
 	encoder = dv_encoder_new(0,0,0);
 	if(asset->height == 576)
 		encoder->isPAL = 1;
+	encoder->vlc_encode_passes = 3;
+	encoder->static_qno = 0;
+	encoder->force_dct = DV_DCT_AUTO;
 
 	if(audio_buffer)
 	{
@@ -82,11 +91,12 @@ int FileDV::reset_parameters_derived()
 	fd = 0;
 	audio_position = 0;
 	video_position = 0;
-	output_size = (asset->height == 576 ? DV1394_PAL_FRAME_SIZE : DV1394_NTSC_FRAME_SIZE);
+	output_size = ( encoder->isPAL ? DV1394_PAL_FRAME_SIZE : DV1394_NTSC_FRAME_SIZE);
 	output = new unsigned char[output_size];
 	input = new unsigned char[output_size];
 	audio_offset = 0;
 	video_offset = 0;
+
 }
 
 int FileDV::open_file(int rd, int wr)
@@ -114,14 +124,23 @@ int FileDV::open_file(int rd, int wr)
 
 int FileDV::check_sig(Asset *asset)
 {
-	// Check if its a dv file. for now, we return 0, since we have no
-	// detection in place.
+	unsigned char temp[3];
+	int t_fd = open(asset->path, O_RDONLY);
+
+	read(t_fd, &temp, 3);
+
+	close(t_fd);
+
+	if(temp[0] == 0x1f &&
+			temp[1] == 0x07 &&
+			temp[2] == 0x00)
+		return 1;
+
 	return 0;
 }
 
 int FileDV::close_file()
 {
-//printf("FileDV::close_file(): 1\n");
 	close(fd);
 }
 
@@ -364,6 +383,7 @@ int FileDV::write_compressed_frame(VFrame *buffer)
 
 int64_t FileDV::compressed_frame_size()
 {
+	if(!fd) return 0;
 	return output_size;
 }
 
@@ -374,23 +394,57 @@ int FileDV::read_samples(double *buffer, int64_t len)
 
 int FileDV::read_frame(VFrame *frame)
 {
-	return 1;	
+	return 1;
 }
 
 int FileDV::colormodel_supported(int colormodel)
 {
-	if(colormodel == BC_YUV422) return 1;
-	return 0;
+	return colormodel;
 }
 
 int FileDV::can_copy_from(Edit *edit, int64_t position)
 {
+	if(!fd) return 0;
 
+	if(edit->asset->format == FILE_DV ||
+			(edit->asset->format == FILE_MOV &&
+				(match4(this->asset->vcodec, QUICKTIME_DV) ||
+				match4(this->asset->vcodec, QUICKTIME_DVSD))))
+		return 1;
+
+	return 0;
 }
 
 int FileDV::get_best_colormodel(Asset *asset, int driver)
 {
-	return BC_YUV422;
+	switch(driver)
+	{
+		case PLAYBACK_X11:
+			return BC_RGB888;
+			break;
+		case PLAYBACK_X11_XV:
+			return BC_YUV422;
+			break;
+		case PLAYBACK_DV1394:
+		case PLAYBACK_FIREWIRE:
+			return BC_COMPRESSED;
+			break;
+		case PLAYBACK_LML:
+		case PLAYBACK_BUZ:
+			return BC_YUV422P;
+			break;
+		case VIDEO4LINUX:
+		case VIDEO4LINUX2:
+		case CAPTURE_BUZ:
+		case CAPTURE_LML:
+		case VIDEO4LINUX2JPEG:
+			return BC_YUV422;
+			break;
+		case CAPTURE_FIREWIRE:
+			return BC_COMPRESSED;
+			break;
+	}
+	return BC_RGB888;
 }
 
 #endif
