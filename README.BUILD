@@ -1,8 +1,8 @@
 You need automake version 1.7 to build.  1.4 won't work!
 
 The automake version of the cinelerra source tree needs third-party libraries
-development files installed. Run 'autoreconf -i" to run the autotools and
-generate configure.
+development files installed. Run './autogen.sh' to create configure and
+supporting files.
 
 For debian user, you can find debian packages of all of these libs on the distribution
 itself or at 
