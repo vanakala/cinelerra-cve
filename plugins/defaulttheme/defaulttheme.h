@@ -24,7 +24,7 @@ public:
 	void draw_preferences_bg(PreferencesWindow *gui);
 
 	void get_mwindow_sizes(MWindowGUI *gui, int w, int h);
-	void get_cwindow_sizes(CWindowGUI *gui);
+	void get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls);
 	void get_vwindow_sizes(VWindowGUI *gui);
 	void get_preferences_sizes();
 	void get_recordgui_sizes(RecordGUI *gui, int w, int h);

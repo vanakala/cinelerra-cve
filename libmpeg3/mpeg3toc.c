@@ -8,6 +8,9 @@
 #include <sys/stat.h>
 
 
+/*
+ * Generate table of frame and sample offsets for editing.
+ */
 
 
 #define INIT_VECTORS(data, size, allocation, tracks) \
@@ -110,11 +113,17 @@
 int main(int argc, char *argv[])
 {
 	struct stat st;
+	int i, j, l;
+	char *src = 0, *dst = 0;
+	int astream_override = -1;
 
 	if(argc < 3)
 	{
 		fprintf(stderr, "Create a table of contents for a DVD or mpeg stream.\n"
-			"	Usage: mpeg3toc <path> <output>\n"
+			"	Usage: [-a audio streams] mpeg3toc <path> <output>\n"
+			"\n"
+			" -a override the number of audio streams to scan.  Must be less than\n"
+			"the total number of audio streams.\n"
 			"\n"
 			"	The path should be absolute unless you plan\n"
 			"	to always run your movie editor from the same directory\n"
@@ -125,17 +134,68 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
+	for(i = 1; i < argc; i++)
+	{
+		if(!strcmp(argv[i], "-a"))
+		{
+			if(i < argc - 1)
+			{
+				astream_override = atoi(argv[i + 1]);
+				if(astream_override < 0)
+				{
+					fprintf(stderr, "Total audio streams may not be negative\n");
+					exit(1);
+				}
+				else
+				{
+					fprintf(stderr, 
+						"Using first %d audio streams.\n",
+						astream_override);
+				}
+				i++;
+			}
+			else
+			{
+				fprintf(stderr, "-a requires an argument.\n");
+				exit(1);
+			}
+		}
+		else
+		if(!src)
+		{
+			src = argv[i];
+		}
+		else
+		if(!dst)
+		{
+			dst = argv[i];
+		}
+		else
+		{
+			fprintf(stderr, "Ignoring argument \"%s\"\n", argv[i]);
+		}
+	}
 
+	if(!src)
+	{
+		fprintf(stderr, "source path not supplied.\n");
+		exit(1);
+	}
 
-	stat(argv[1], &st);
+	if(!dst)
+	{
+		fprintf(stderr, "source path not supplied.\n");
+		exit(1);
+	}
+
+	stat(src, &st);
 
 	if(!st.st_size)
 	{
-		fprintf(stderr, "%s is 0 length.  Skipping\n", argv[1]);
+		fprintf(stderr, "%s is 0 length.  Skipping\n", src);
 	}
 	else
 	{
-		int i, j, l;
 		int64_t size;
 		int vtracks;
 		int atracks;
@@ -158,12 +218,12 @@ int main(int argc, char *argv[])
 		int rewind = 1;
 
 //printf(__FUNCTION__ " 1\n");
-		input = mpeg3_open(argv[1]);
-		output = fopen(argv[2], "w");
+		input = mpeg3_open(src);
 
 //printf(__FUNCTION__ " 2\n");
 		vtracks = mpeg3_total_vstreams(input);
 		atracks = mpeg3_total_astreams(input);
+		if(astream_override >= 0) atracks = astream_override;
 
 		if(atracks) sample_rate = mpeg3_sample_rate(input, 0);
 		if(vtracks) frame_rate = mpeg3_frame_rate(input, 0);
@@ -202,13 +262,12 @@ int main(int argc, char *argv[])
 				if(!mpeg3_end_of_audio(input, j))
 				{
 // Don't want to maintain separate vectors for offset and title.
-					title_number = mpeg3demux_tell_title(input->atrack[j]->demuxer);
-					int64_t position = mpeg3demux_tell_relative(input->atrack[j]->demuxer);
+					int64_t position = mpeg3demux_tell_byte(input->atrack[j]->demuxer);
 					int64_t result;
 
-//					if(position < MPEG3_IO_SIZE) position = MPEG3_IO_SIZE;
+					if(position < MPEG3_IO_SIZE) position = MPEG3_IO_SIZE;
 //					result = (title_number << 56) | (position - MPEG3_IO_SIZE);
-					result = (title_number << 56) | position;
+					result = position;
 
 					have_audio = 1;
 					APPEND_VECTOR(sample_offsets, 
@@ -279,8 +338,7 @@ int main(int argc, char *argv[])
 				{
 					if(!mpeg3_end_of_video(input, j))
 					{
-						int64_t title_number = mpeg3demux_tell_title(demuxer);
-						int64_t position = mpeg3demux_tell_relative(demuxer);
+						int64_t position = mpeg3demux_tell_byte(demuxer);
 						int64_t result;
 						uint32_t code = 0;
 						int got_top = 0;
@@ -288,9 +346,9 @@ int main(int argc, char *argv[])
 						int got_keyframe = 0;
 						int fields = 0;
 
-//						if(position < MPEG3_IO_SIZE) position = MPEG3_IO_SIZE;
+						if(position < MPEG3_IO_SIZE) position = MPEG3_IO_SIZE;
 //						result = (title_number << 56) | (position - MPEG3_IO_SIZE);
-						result = (title_number << 56) | position;
+						result = position;
 						have_video = 1;
 
 
@@ -393,6 +451,9 @@ int main(int argc, char *argv[])
 		}
 
 
+		output = fopen(dst, "w");
+
+
 
 // Write file type
 		fputc('T', output);
@@ -400,6 +461,8 @@ int main(int argc, char *argv[])
 		fputc('C', output);
 		fputc(' ', output);
 
+// Write version
+		fputc(MPEG3_TOC_VERSION, output);
 
 		if(input->is_program_stream)
 		{

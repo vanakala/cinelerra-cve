@@ -4,6 +4,14 @@
 #include <stdlib.h>
 #include <string.h>
 
+void mpeg3video_toc_error()
+{
+	fprintf(stderr, 
+		"mpeg3video_seek: frame accurate seeking without a table of contents \n"
+		"is no longer supported.  Use mpeg3toc <mpeg file> <table of contents>\n"
+		"to generate a table of contents and load the table of contents instead.\n");
+}
+
 unsigned int mpeg3bits_next_startcode(mpeg3_bits_t* stream)
 {
 /* Perform forwards search */
@@ -173,8 +181,8 @@ int mpeg3video_seek(mpeg3video_t *video)
 // Rewind 2 I-frames
 		if(byte > 0)
 		{
+//printf("mpeg3video_seek 1\n");
 			mpeg3demux_start_reverse(demuxer);
-
 
 //printf("mpeg3video_seek 1 %lld\n", mpeg3demux_tell_byte(demuxer));
 			if(!result)
@@ -213,6 +221,7 @@ int mpeg3video_seek(mpeg3video_t *video)
 
 		mpeg3bits_reset(vstream);
 
+//printf("mpeg3video_seek 4 %lld\n", mpeg3demux_tell_byte(demuxer));
 // Read up to the correct byte
 		result = 0;
 		video->repeat_count = 0;
@@ -223,6 +232,7 @@ int mpeg3video_seek(mpeg3video_t *video)
 			result = mpeg3video_read_frame_backend(video, 0);
 		}
 
+//printf("mpeg3video_seek 5 %lld\n", mpeg3demux_tell_byte(demuxer));
 
 
 
@@ -255,21 +265,18 @@ int mpeg3video_seek(mpeg3video_t *video)
 					if(track->keyframe_numbers[i] <= frame_number)
 					{
 						int frame;
-						int title_number;
 						int64_t byte;
 
 // Go 2 I-frames before current position
 						if(i > 0) i--;
 
 						frame = track->keyframe_numbers[i];
-						title_number = (track->frame_offsets[frame] & 
-							0xff00000000000000LL) >> 56;
-						byte = track->frame_offsets[frame] & 
-							  0xffffffffffffffLL;
-
+						if(frame == 0)
+							byte = 0;
+						else
+							byte = track->frame_offsets[frame];
 						video->framenum = track->keyframe_numbers[i];
 
-						mpeg3bits_open_title(vstream, title_number);
 						mpeg3bits_seek_byte(vstream, byte);
 
 
@@ -297,10 +304,7 @@ int mpeg3video_seek(mpeg3video_t *video)
 		else
 /* Discontinue support of seeking without table of contents */
 		{
-fprintf(stderr, 
-"mpeg3video_seek: frame accurate seeking without a table of contents \n"
-"is no longer supported.  Use mpeg3toc <mpeg file> <table of contents>\n"
-"to generate a table of contents and load the table of contents instead.\n");
+			mpeg3video_toc_error();
 		}
 
 

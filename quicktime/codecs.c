@@ -123,7 +123,7 @@ int new_vcodec(quicktime_video_map_t *vtrack)
 	if(result)
 	{
 		fprintf(stderr, 
-			"new_vcodec: couldn't find codec for ""%c%c%c%c""\n",
+			"new_vcodec: couldn't find codec for \"%c%c%c%c\"\n",
 			compressor[0],
 			compressor[1],
 			compressor[2],
@@ -145,7 +145,7 @@ int new_acodec(quicktime_audio_map_t *atrack)
 	if(result)
 	{
 		fprintf(stderr, 
-			"new_acodec: couldn't find codec for ""%c%c%c%c""\n",
+			"new_acodec: couldn't find codec for \"%c%c%c%c\"\n",
 			compressor[0],
 			compressor[1],
 			compressor[2],

@@ -389,14 +389,14 @@ static void get_ifo_header(mpeg3_demuxer_t *demuxer, ifo_t *ifo)
 		int atracks = ifo_audio((char*)ifo->data[ID_MAT] + IFO_OFFSET_AUDIO, (char**)&audio);
 		int atracks_empirical = 0;
 
-// Construct audio stream id's
-#define TEST_START 0x600000
-#define TEST_LEN   0x100000
+// Collect stream id's
+#define TEST_START 0x1000000
+#define TEST_LEN   0x1000000
 		mpeg3demux_open_title(demuxer, 0);
 		mpeg3demux_seek_byte(demuxer, TEST_START);
 		while(!result && 
 			!mpeg3demux_eof(demuxer) && 
-			mpeg3demux_tell_relative(demuxer) < TEST_START + TEST_LEN)
+			mpeg3demux_tell_byte(demuxer) < TEST_START + TEST_LEN)
 		{
 			result = mpeg3_read_next_packet(demuxer);
 		}
@@ -404,7 +404,6 @@ static void get_ifo_header(mpeg3_demuxer_t *demuxer, ifo_t *ifo)
 
 		for(i = 0; i < MPEG3_MAX_STREAMS; i++)
 		{
-//printf("%x %d\n", i, demuxer->astream_table[i]);
 			if(demuxer->astream_table[i]) atracks_empirical++;
 		}
 
@@ -645,6 +644,8 @@ static void finaltable(mpeg3ifo_celltable_t *final_cells,
 
 		final_cells->cells[i].start_byte *= (int64_t)2048;
 		final_cells->cells[i].end_byte *= (int64_t)2048;
+// End index seems to be inclusive
+		final_cells->cells[i].end_byte += 2048;
 	}
 
 return;
@@ -743,14 +744,15 @@ static int read_ifo(mpeg3_t *file,
 			else
 			{
 				fprintf(stderr, 
-					"read_ifo: cell length and title length don't match! title=%d cell_start=%llx cell_end=%llx.\n",
+					"read_ifo: cell length and title length don't match! title=%d cell=%d cell_start=%llx cell_end=%llx.\n",
 					current_title,
+					current_cell,
 					cell_start - title_start_byte,
 					cell_end - title_start_byte);
 
 // Try this out.  It works for Contact where one VOB is 0x800 bytes longer than 
 // the cells in it but the next cell aligns perfectly with the next VOB.
-				current_cell--;
+				if(current_title < demuxer->total_titles - 1) current_cell--;
 			}
 
 // Advance title
@@ -767,32 +769,34 @@ static int read_ifo(mpeg3_t *file,
 //printf("read_ifo 4\n");
 // Look up time values for the cells
 // Should only be used for building a TOC
-	if(read_cells)
-	{
-		for(current_title = 0; current_title < demuxer->total_titles; current_title++)
-		{
-			mpeg3_title_t *title = demuxer->titles[current_title];
-			mpeg3demux_open_title(demuxer, current_title);
-
-			for(i = 0; i < title->cell_table_size; i++)
-			{
-				mpeg3demux_cell_t *cell = &title->cell_table[i];
-
-				mpeg3io_seek(title->fs, cell->start_byte);
-				mpeg3_read_next_packet(demuxer);
-				cell->start_time = demuxer->time;
-
-				mpeg3io_seek(title->fs, cell->end_byte);
-				if(cell->end_byte >= title->total_bytes)
-					mpeg3_read_prev_packet(demuxer);
-				else
-					mpeg3_read_next_packet(demuxer);
-
-				cell->end_time = demuxer->time;
-			}
-		}
-		mpeg3demux_open_title(demuxer, 0);
-	}
+/*
+ * 	if(read_cells)
+ * 	{
+ * 		for(current_title = 0; current_title < demuxer->total_titles; current_title++)
+ * 		{
+ * 			mpeg3_title_t *title = demuxer->titles[current_title];
+ * 			mpeg3demux_open_title(demuxer, current_title);
+ * 
+ * 			for(i = 0; i < title->cell_table_size; i++)
+ * 			{
+ * 				mpeg3demux_cell_t *cell = &title->cell_table[i];
+ * 
+ * 				mpeg3io_seek(title->fs, cell->start_byte);
+ * 				mpeg3_read_next_packet(demuxer);
+ * 				cell->start_time = demuxer->time;
+ * 
+ * 				mpeg3io_seek(title->fs, cell->end_byte);
+ * 				if(cell->end_byte >= title->total_bytes)
+ * 					mpeg3_read_prev_packet(demuxer);
+ * 				else
+ * 					mpeg3_read_next_packet(demuxer);
+ * 
+ * 				cell->end_time = demuxer->time;
+ * 			}
+ * 		}
+ * 		mpeg3demux_open_title(demuxer, 0);
+ * 	}
+ */
 
 //for(i = 0; i < demuxer->total_titles; i++) mpeg3_dump_title(demuxer->titles[i]);
 

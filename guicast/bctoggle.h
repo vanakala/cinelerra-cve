@@ -50,15 +50,20 @@ public:
 		TOGGLE_CHECKEDHI
 	};
 
-private:
 	int has_caption();
 
 	BC_Pixmap *images[5];
 	VFrame **data;
-	char *caption;
+	char caption[BCTEXTLEN];
 	int status;
 	int value;
-	int toggle_x, toggle_y, text_x, text_y, text_w, text_h, text_line;
+	int toggle_x;
+	int toggle_y;
+	int text_x;
+	int text_y;
+	int text_w;
+	int text_h;
+	int text_line;
 	int bottom_justify;
 	int font;
 	int color;
@@ -93,6 +98,7 @@ public:
 		int font = MEDIUMFONT,
 		int color = BLACK);
 	virtual int handle_event();
+
 	int *value;
 };
 

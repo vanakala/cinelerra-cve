@@ -2,13 +2,10 @@
 #include "defaults.h"
 #include "filesystem.h"
 #include "gainwindow.h"
+#include "language.h"
 
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 PLUGIN_THREAD_OBJECT(Gain, GainThread, GainWindow)
 
@@ -47,13 +44,7 @@ int GainWindow::create_objects()
 	return 0;
 }
 
-int GainWindow::close_event()
-{
-// Set result to 1 to indicate a client side close
-	set_done(1);
-	return 1;
-}
-
+WINDOW_CLOSE_EVENT(GainWindow)
 
 
 

@@ -13,6 +13,8 @@
 // debugging.
 #define ENABLE_TRACE
 #define TRACE_LOCKS
+//#define TRACE_MEMORY
+
 
 class BC_Signals
 {
@@ -53,6 +55,22 @@ public:
 #endif
 
 
+#ifdef TRACE_MEMORY
+
+#define ENABLE_BUFFER BC_Signals::enable_memory();
+#define DISABLE_BUFFER BC_Signals::disable_memory();
+#define BUFFER(size, ptr, location) BC_Signals::set_buffer(size, ptr, location);
+#define UNBUFFER(ptr) BC_Signals::unset_buffer(ptr);
+
+#else
+
+#define ENABLE_BUFFER ;
+#define DISABLE_BUFFER ;
+#define BUFFER(size, ptr, location);
+#define UNBUFFER(ptr);
+
+#endif
+
 	static void set_lock(void *ptr, char *title, char *location);
 	static void unset_lock(void *ptr);
 // Used in lock destructors so takes away all references
@@ -61,30 +79,21 @@ public:
 	static void new_trace(char *text);
 	static void delete_traces();
 
+	static void enable_memory();
+	static void disable_memory();
+	static void set_buffer(int size, void *ptr, char* location);
+// This one returns 1 if the buffer wasn't found.
+	static int unset_buffer(void *ptr);
+
+	static void dump_traces();
+	static void dump_locks();
+	static void dump_buffers();
+
 // Convert signum to text
 	static char* sig_to_str(int number);
 
-// Table of functions currently running.
-	ArrayList <char*>execution_table;
-// Table of locked positions
-	ArrayList <BC_LockTrace*>lock_table;
-
 	static BC_Signals *global_signals;
-
-// Can't use Mutex because it would be recursive
-	pthread_mutex_t *lock;
 };
 
-
-class BC_LockTrace
-{
-public:
-	BC_LockTrace(void *ptr, char *title, char *location, int is_lock);
-	~BC_LockTrace();
-	void *ptr;
-	char *title;
-	char *location;
-	int is_lock;
-};
 
 #endif

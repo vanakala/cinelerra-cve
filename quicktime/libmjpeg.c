@@ -1074,14 +1074,6 @@ int mjpeg_decompress(mjpeg_t *mjpeg,
 		(mjpeg->temp_data || 
 		!mjpeg->error))
 	{
-/*
- * printf("mjpeg_decompress %d %d %d %d %d\n", 
- * 	mjpeg->jpeg_color_model, 
- * 	mjpeg->color_model,
- * 	mjpeg->output_w,
- * 	mjpeg->output_h,
- * 	mjpeg->coded_w);
- */
 		cmodel_transfer(row_pointers, 
 			0,
 			y_plane,
@@ -1104,7 +1096,6 @@ int mjpeg_decompress(mjpeg_t *mjpeg,
 			mjpeg->coded_w,
 			mjpeg->rowspan ? mjpeg->rowspan : mjpeg->output_w);
 	}
-//printf("mjpeg_decompress 7\n");
 	return 0;
 }
 

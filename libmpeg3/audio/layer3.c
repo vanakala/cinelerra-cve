@@ -1081,7 +1081,7 @@ int mpeg3audio_dolayer3(mpeg3_layer_t *audio,
 	int i;
 	int output_offset = 0;
 
-//printf(__FUNCTION__ " 1\n");
+//printf("1\n");
 // Skip header
 	frame += 4;
 	frame_size -= 4;
@@ -1104,10 +1104,8 @@ int mpeg3audio_dolayer3(mpeg3_layer_t *audio,
  */
 
 
-//printf(__FUNCTION__ " 2\n");
 	if(!audio->first_frame)
 	{
-//printf(__FUNCTION__ " 3\n");
 /* Set up bitstream to use buffer */
 		mpeg3bits_use_ptr(audio->stream, audio->bsbuf);
 
@@ -1327,7 +1325,6 @@ int mpeg3audio_dolayer3(mpeg3_layer_t *audio,
     			}
     		}
 		}
-//printf(__FUNCTION__ " 11\n");
 	}
 	else
 	{
@@ -1401,7 +1398,6 @@ int mpeg3_layer_header(mpeg3_layer_t *audio, unsigned char *data)
 	int mpeg35;
 	int channels;
 	int mode;
-//printf(__FUNCTION__ ": mpeg3_layer_check 1\n");
 
 	if(mpeg3_layer_check(data))
 	{
@@ -1425,6 +1421,7 @@ int mpeg3_layer_header(mpeg3_layer_t *audio, unsigned char *data)
 
     layer = 4 - ((header >> 17) & 3);
 
+//printf("mpeg3_layer_header 1 %08x %d\n", header, layer);
 	if(audio->layer != 0 &&
 		layer != audio->layer)
 	{
@@ -1521,7 +1518,7 @@ int mpeg3_layer_header(mpeg3_layer_t *audio, unsigned char *data)
 
 	if(audio->bitrate < 64000 && audio->layer != 3) return 0;
 	if(audio->framesize > MAXFRAMESIZE) return 0;
-//printf(__FUNCTION__ ": mpeg3_layer_check 2\n");
+//printf("mpeg3_layer_header 10 %d\n", layer);
 
 	return audio->framesize;
 }

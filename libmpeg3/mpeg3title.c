@@ -53,15 +53,16 @@ int mpeg3_dump_title(mpeg3_title_t *title)
 {
 	int i;
 	
-	printf("mpeg3_dump_title path %s cell_table_size %d\n", title->fs->path, title->cell_table_size);
+	printf("mpeg3_dump_title path %s %llx-%llx cell_table_size %d\n", 
+		title->fs->path, 
+		title->start_byte,
+		title->end_byte,
+		title->cell_table_size);
 	for(i = 0; i < title->cell_table_size; i++)
 	{
-		printf("%.02f: %x - %x %.02f %.02f %x\n", 
-			title->cell_table[i].absolute_start_time, 
+		printf("%llx - %llx %x\n", 
 			title->cell_table[i].start_byte, 
 			title->cell_table[i].end_byte, 
-			title->cell_table[i].start_time, 
-			title->cell_table[i].end_time, 
 			title->cell_table[i].program);
 	}
 	return 0;
@@ -110,10 +111,7 @@ void mpeg3_new_cell(mpeg3_title_t *title,
 	new_cell = &title->cell_table[title->cell_table_size];
 	
 	new_cell->start_byte = start_byte;
-	new_cell->start_time = start_time;
 	new_cell->end_byte = end_byte;
-	new_cell->end_time = end_time;
-	new_cell->absolute_start_time = 0;
 	new_cell->program = program;
 	title->cell_table_size++;
 }
@@ -144,19 +142,11 @@ mpeg3demux_cell_t* mpeg3_append_cell(mpeg3_demuxer_t *demuxer,
 	if(!dont_store)
 	{
 		new_cell->start_byte = start_byte;
-		new_cell->start_time = start_time;
-		new_cell->absolute_start_time = 0;
 
 		if(title->cell_table_size > 0)
 		{
 			old_cell = &title->cell_table[title->cell_table_size - 1];
 			old_cell->end_byte = prev_byte;
-			old_cell->end_time = prev_time;
-			new_cell->absolute_start_time = 
-				prev_time - 
-				old_cell->start_time + 
-				old_cell->absolute_start_time;
-			new_cell->absolute_end_time = start_time;
 		}
 	}
 
@@ -173,7 +163,7 @@ int mpeg3demux_create_title(mpeg3_demuxer_t *demuxer,
 {
 	int result = 0, done = 0, counter_start, counter;
 	mpeg3_t *file = demuxer->file;
-	long next_byte, prev_byte;
+	int64_t next_byte, prev_byte;
 	double next_time, prev_time, absolute_time;
 	long i;
 	mpeg3_title_t *title;
@@ -198,11 +188,7 @@ int mpeg3demux_create_title(mpeg3_demuxer_t *demuxer,
 
 
 
-
-
-
-
-/* Get cells for the title */
+/* Get information about file */
 	if(file->is_transport_stream || file->is_program_stream)
 	{
 		mpeg3io_seek(title->fs, 0);
@@ -211,51 +197,10 @@ int mpeg3demux_create_title(mpeg3_demuxer_t *demuxer,
 			next_byte = mpeg3io_tell(title->fs);
 			result = mpeg3_read_next_packet(demuxer);
 
-			if(!result)
-			{
-				next_time = demuxer->time;
-				if(next_time < prev_time || 
-					next_time - prev_time > MPEG3_CONTIGUOUS_THRESHOLD ||
-					!title->cell_table_size)
-				{
-/* Discontinuous */
-					cell = mpeg3_append_cell(demuxer, 
-						title, 
-						prev_byte, 
-						prev_time, 
-						next_byte, 
-						next_time,
-						0,
-						0);
-/*
- * printf("cell: %ld %ld %f %f\n",
- * 				cell->start_byte,
- * 				cell->end_byte,
- * 				cell->start_time,
- * 				cell->end_time);
- */
-
-					counter_start = next_time;
-				}
-				
-
-
-// Breaks transport stream decoding	
-// Kai Strieder
-//				if (prev_time == next_time)
-//				{
-//					done = 1;
-//				}
-
-
-				prev_time = next_time;
-				prev_byte = next_byte;
-				counter = next_time;
-			}
-
 /* Just get the first bytes if not building a toc to get the stream ID's. */
-			if(next_byte > 0x100000 && 
+			if(next_byte > 0x1000000 && 
 				(!cell_search || !toc)) done = 1;
+//printf("mpeg3demux_create_title 1 %lld %d %p\n", next_byte, cell_search, toc);
 		}
 
 /* Get the last cell */
@@ -269,9 +214,6 @@ int mpeg3demux_create_title(mpeg3_demuxer_t *demuxer,
 		if(title->cell_table && cell)
 		{
 			cell->end_byte = title->total_bytes;
-//			cell->end_byte = mpeg3io_tell(title->fs)/*  + demuxer->packet_size */;
-			cell->end_time = demuxer->time;
-			cell->absolute_end_time = cell->end_time - cell->start_time;
 		}
 	}
 
@@ -295,8 +237,6 @@ int mpeg3demux_print_cells(mpeg3_title_t *title, FILE *output)
 			fprintf(output, "REGION: %ld %ld %f %f %d\n",
 				cell->start_byte,
 				cell->end_byte,
-				cell->start_time,
-				cell->end_time,
 				cell->program);
 		}
 	}

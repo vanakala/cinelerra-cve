@@ -197,7 +197,10 @@ public:
 	~ParametricFFT();
 	
 	int signal_process();
-	
+	int read_samples(int64_t output_sample, 
+		int samples, 
+		double *buffer);
+
 	ParametricEQ *plugin;
 };
 
@@ -211,7 +214,10 @@ public:
 	int is_realtime();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
-	int process_realtime(int64_t size, double *input_ptr, double *output_ptr);
+	int process_buffer(int64_t size, 
+		double *buffer, 
+		int64_t start_position,
+		int sample_rate);
 
 	int load_defaults();
 	int save_defaults();

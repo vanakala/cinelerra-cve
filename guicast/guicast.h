@@ -22,6 +22,7 @@
 #include "bcslider.h"
 #include "bcsubwindow.h"
 #include "bctextbox.h"
+#include "bctheme.h"
 #include "bctitle.h"
 #include "bctoggle.h"
 #include "bctumble.h"

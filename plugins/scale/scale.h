@@ -109,7 +109,6 @@ public:
 	ScaleThread *thread;
 
 	OverlayFrame *overlayer;   // To scale images
-	VFrame *temp_frame;        // Used if buffers are the same
 	Defaults *defaults;
 	ScaleConfig config;
 };

@@ -283,7 +283,16 @@ void cmodel_transfer(unsigned char **output_rows,
 
 /*
  * printf("cmodel_transfer %d %d %d,%d %d,%d %d,%d %d,%d\n", 
- * in_colormodel, out_colormodel, out_x, out_y, out_w, out_h, in_x, in_y, in_w, in_h);
+ * in_colormodel, 
+ * out_colormodel, 
+ * out_x, 
+ * out_y, 
+ * out_w, 
+ * out_h, 
+ * in_x, 
+ * in_y, 
+ * in_w, 
+ * in_h);
  */
 
 // Handle planar cmodels separately

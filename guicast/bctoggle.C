@@ -4,6 +4,7 @@
 #include "colors.h"
 #include "fonts.h"
 
+#include <string.h>
 
 BC_Toggle::BC_Toggle(int x, int y, 
 		VFrame **data, 
@@ -15,10 +16,11 @@ BC_Toggle::BC_Toggle(int x, int y,
  : BC_SubWindow(x, y, 0, 0, -1)
 {
 	this->data = data;
-	images[0] = images[1] = images[2] = images[3] = images[4] = 0;
+	for(int i = 0; i < 5; i++)
+		images[i] = 0;
 	status = value ? BC_Toggle::TOGGLE_CHECKED : BC_Toggle::TOGGLE_UP;
 	this->value = value;
-	this->caption = caption;
+	strcpy(this->caption, caption);
 	this->bottom_justify = bottom_justify;
 	this->font = font;
 	this->color = color;
@@ -29,11 +31,7 @@ BC_Toggle::BC_Toggle(int x, int y,
 
 BC_Toggle::~BC_Toggle()
 {
-	delete images[0];
-	delete images[1];
-	delete images[2];
-	delete images[3];
-	delete images[4];
+	for(int i = 0; i < 5; i++) if(images[i]) delete images[i];
 }
 
 
@@ -82,20 +80,11 @@ int BC_Toggle::initialize()
 
 int BC_Toggle::set_images(VFrame **data)
 {
-	if(images)
+	for(int i = 0; i < 5; i++)
 	{
-		delete images[0];
-		delete images[1];
-		delete images[2];
-		delete images[3];
-		delete images[4];
+		if(images[i]) delete images[i];
+		images[i] = new BC_Pixmap(top_level, data[i], PIXMAP_ALPHA);
 	}
-
-	images[0] = new BC_Pixmap(top_level, data[0], PIXMAP_ALPHA);
-	images[1] = new BC_Pixmap(top_level, data[1], PIXMAP_ALPHA);
-	images[2] = new BC_Pixmap(top_level, data[2], PIXMAP_ALPHA);
-	images[3] = new BC_Pixmap(top_level, data[3], PIXMAP_ALPHA);
-	images[4] = new BC_Pixmap(top_level, data[4], PIXMAP_ALPHA);
 	return 0;
 }
 

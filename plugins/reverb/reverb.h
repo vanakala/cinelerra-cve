@@ -60,6 +60,7 @@ public:
 
 	int process_realtime(int64_t size, double **input_ptr, double **output_ptr);
 	int is_realtime();
+	int is_synthesis();
 	int is_multichannel();
 	char* plugin_title();
 	int show_gui();

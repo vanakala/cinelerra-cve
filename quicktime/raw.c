@@ -1,7 +1,6 @@
 #include "colormodels.h"
 #include "funcprotos.h"
 #include "quicktime.h"
-#include "funcprotos.h"
 #include "graphics.h"
 
 typedef struct
@@ -106,6 +105,8 @@ static int quicktime_decode_raw(quicktime_t *file, unsigned char **row_pointers,
 			width,
 			file->out_w);
 	}
+
+	free(temp_rows);
 
 	return result;
 }

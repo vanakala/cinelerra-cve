@@ -119,7 +119,6 @@ int mpeg3io_read_data(unsigned char *buffer, long bytes, mpeg3_fs_t *fs)
 
 int mpeg3io_seek(mpeg3_fs_t *fs, int64_t byte)
 {
-//printf("mpeg3io_seek 1 %llx\n", byte);
 	fs->current_byte = byte;
 	return (fs->current_byte < 0) || (fs->current_byte > fs->total_bytes);
 }
@@ -158,12 +157,6 @@ void mpeg3io_read_buffer(mpeg3_fs_t *fs)
 		if(remainder)
 			memmove(fs->buffer + remainder_start, fs->buffer, remainder);
 
-/*
- * printf("mpeg3io_read_buffer 1 %llx %llx %x\n", 
- * fs->current_byte, 
- * fs->buffer_position,
- * MPEG3_IO_SIZE);
- */
 		fseeko64(fs->fd, new_buffer_position, SEEK_SET);
 		fread(fs->buffer, 1, remainder_start, fs->fd);
 
@@ -179,7 +172,6 @@ void mpeg3io_read_buffer(mpeg3_fs_t *fs)
 		fs->buffer_position = fs->current_byte;
 		fs->buffer_offset = 0;
 
-//printf("mpeg3io_read_buffer 2 %llx %llx\n", fs->current_byte, fs->buffer_position);
 		result = fseeko64(fs->fd, fs->buffer_position, SEEK_SET);
 		fs->buffer_size = fread(fs->buffer, 1, MPEG3_IO_SIZE, fs->fd);
 
@@ -274,38 +266,3 @@ void mpeg3io_joinpath(char *title_path, char *directory, char *new_filename)
 }
 
 
-/* Find end of next 4 byte code */
-int mpeg3io_next_code(mpeg3_fs_t *fs, uint32_t code, int count)
-{
-	uint32_t header = 0;
-
-	while(header != code &&
-		!mpeg3io_eof(fs) &&
-		count > 0)
-	{
-		header <<= 8;
-		header |= mpeg3io_read_char(fs);
-		count--;
-	}
-
-	return mpeg3io_eof(fs) || count <= 0;
-}
-
-/* Find start of previous 4 byte code */
-int mpeg3io_prev_code(mpeg3_fs_t *fs, uint32_t code, int count)
-{
-	uint32_t header = 0;
-	while(header != code &&
-		!mpeg3io_bof(fs) &&
-		count > 0)
-	{
-		mpeg3io_seek_relative(fs, -1);
-		header >>= 8;
-		header |= ((uint32_t)mpeg3io_read_char(fs)) << 24;
-//printf("mpeg3io_prev_code %08x\n", header);
-		mpeg3io_seek_relative(fs, -1);
-		count--;
-	}
-	
-	return mpeg3io_bof(fs) || count <= 0;
-}

@@ -503,12 +503,15 @@ mpeg3video_t* mpeg3video_new(mpeg3_t *file, mpeg3_vtrack_t *track)
 			}
 			else
 // Try to get the length of the file from the multiplexing.
+// Need a table of contents
 			{
-				video->first_frame = 0;
-				track->total_frames = video->last_frame = 
-					(long)(mpeg3demux_length(video->vstream->demuxer) * 
-						video->frame_rate);
-				video->first_frame = 0;
+/*
+ * 				video->first_frame = 0;
+ * 				track->total_frames = video->last_frame = 
+ * 					(long)(mpeg3demux_length(video->vstream->demuxer) * 
+ * 						video->frame_rate);
+ * 				video->first_frame = 0;
+ */
 			}
 		}
 		else

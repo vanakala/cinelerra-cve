@@ -379,32 +379,25 @@ int mpeg3audio_dolayer2(mpeg3_layer_t *audio,
 	int output_position = 0;
 
 
-//printf(__FUNCTION__ " 1\n");
 	frame += 4;
 /* Set up bitstream to use buffer */
 	mpeg3bits_use_ptr(audio->stream, frame);
 
-//printf(__FUNCTION__ " 1\n");
 
 
  	if(audio->error_protection)
 		mpeg3bits_getbits(audio->stream, 16);
 
-//printf(__FUNCTION__ " 1\n");
 	select_table(audio);
 
-//printf(__FUNCTION__ " 1\n");
   	audio->jsbound = (audio->mode == MPG_MD_JOINT_STEREO) ?
      	(audio->mode_ext << 2) + 4 : audio->II_sblimit;
 
-//printf(__FUNCTION__ " 1\n");
   	if(channels == 1 || single == 3)
     	single = 0;
 
-//printf(__FUNCTION__ " 1\n");
   	result |= step_one(audio, bit_alloc, scale);
 
-//printf(__FUNCTION__ " 2\n");
 	for(i = 0; i < SCALE_BLOCK && !result; i++)
 	{
     	result |= step_two(audio, bit_alloc, fraction, scale, i >> 2);
@@ -448,7 +441,6 @@ int mpeg3audio_dolayer2(mpeg3_layer_t *audio,
     		}
 		}
 	}
-//printf(__FUNCTION__ " 6 %d\n", output_position);
 
 
   	return output_position;

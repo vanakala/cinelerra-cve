@@ -29,7 +29,7 @@ int main(int argc, char *argv[])
 	int decompress_audio = 0, decompress_video = 0;
 	int audio_track = 0;
 /* Print cell offsets */
-	int print_offsets = 0;
+	int print_offsets = 1;
 	int print_pids = 1;
 
 	outfile[0] = 0;

@@ -10,6 +10,14 @@
 static pthread_mutex_t *decode_lock = 0;
 
 
+static void toc_error()
+{
+	fprintf(stderr, 
+		"mpeg3audio: sample accurate seeking without a table of contents \n"
+		"is no longer supported.  Use mpeg3toc <mpeg file> <table of contents>\n"
+		"to generate a table of contents and load the table of contents instead.\n");
+}
+
 
 
 
@@ -74,7 +82,6 @@ static int read_header(mpeg3audio_t *audio)
 				audio->packet_buffer + 1, 
 				3);
 
-//printf(__FUNCTION__ " 1 %d\n", result);
 			do
 			{
 				try++;
@@ -104,7 +111,6 @@ static int read_header(mpeg3audio_t *audio)
 				}
 			}while(!result && !got_it && try < 0x10000);
 
-//printf(__FUNCTION__ " 5 %d %d\n", result, try);
 			if(!result)
 			{
 				if(audio->layer_decoder->channels > track->channels)
@@ -112,7 +118,6 @@ static int read_header(mpeg3audio_t *audio)
 				track->sample_rate = audio->layer_decoder->samplerate;
 				audio->framesize = audio->layer_decoder->framesize;
 			}
-//printf(__FUNCTION__ " 6 %d\n", result);
 			break;
 
 		case AUDIO_PCM:
@@ -204,8 +209,6 @@ static int read_frame(mpeg3audio_t *audio, int render)
 				audio->framesize - audio->packet_position);
 	}
 
-//printf(__FUNCTION__ " 1\n");
-
 /* Handle increase in channel count, for ATSC */
 	if(old_channels < track->channels)
 	{
@@ -224,6 +227,8 @@ static int read_frame(mpeg3audio_t *audio, int render)
 		audio->output = new_output;
 	}
 
+
+
 	if(render)
 	{
 		temp_output = malloc(sizeof(float*) * track->channels);
@@ -233,7 +238,8 @@ static int read_frame(mpeg3audio_t *audio, int render)
 		}
 	}
 
-//printf(__FUNCTION__ " 2\n");
+//printf("read_frame 4 %d %d\n", track->format, audio->layer_decoder->layer);
+//sleep(1);
 	if(!result)
 	{
 		switch(track->format)
@@ -283,7 +289,6 @@ static int read_frame(mpeg3audio_t *audio, int render)
 	}
 
 
-//printf(__FUNCTION__ " 3\n");
 	audio->output_size += samples;
 	if(render)
 	{
@@ -332,15 +337,16 @@ static int get_length(mpeg3audio_t *audio)
 // Estimate using multiplexed stream size in seconds
 	if(!file->is_audio_stream)
 	{
-
 /* Get stream parameters for header validation */
+/* Need a table of contents */
 		while(samples == 0)
 		{
 			samples = read_frame(audio, 0);
 		}
 
-		result = (long)(mpeg3demux_length(track->demuxer) * 
-			track->sample_rate);
+//		result = (long)(mpeg3demux_length(track->demuxer) * 
+//			track->sample_rate);
+		result = 0;
 	}
 	else
 // Estimate using average bitrate
@@ -431,7 +437,10 @@ mpeg3audio_t* mpeg3audio_new(mpeg3_t *file,
 				audio->pcm_decoder = mpeg3_new_pcm();
 				break;
 		}
+
 		mpeg3demux_seek_byte(track->demuxer, 0);
+//printf("mpeg3audio_new 1 %llx\n", mpeg3demux_tell_byte(track->demuxer));
+
 		result = read_header(audio);
 	}
 //printf("mpeg3audio_new 1 %d\n", result);
@@ -508,7 +517,6 @@ static int seek(mpeg3audio_t *audio)
 		if(audio->sample_seek >= audio->output_position &&
 			audio->sample_seek <= audio->output_position + audio->output_size)
 		{
-//printf(__FUNCTION__ " 2\n");
 			;
 		}
 		else
@@ -516,18 +524,12 @@ static int seek(mpeg3audio_t *audio)
 		if(track->sample_offsets)
 		{
 			int index;
-			int title_number;
 			int64_t byte;
-//printf(__FUNCTION__ " 3\n");
 
 			index = audio->sample_seek / MPEG3_AUDIO_CHUNKSIZE;
 			if(index >= track->total_sample_offsets) index = track->total_sample_offsets - 1;
-			title_number = (track->sample_offsets[index] & 
-				0xff00000000000000LL) >> 56;
-			byte = track->sample_offsets[index] &
-				0xffffffffffffffLL;
+			byte = track->sample_offsets[index];
 
-			mpeg3demux_open_title(demuxer, title_number);
 			mpeg3demux_seek_byte(demuxer, byte);
 
 			audio->output_position = index * MPEG3_AUDIO_CHUNKSIZE;
@@ -538,9 +540,11 @@ static int seek(mpeg3audio_t *audio)
 		if(!file->is_audio_stream)
 /* Use demuxer */
 		{
-	   		double time_position = (double)audio->sample_seek / track->sample_rate;
-//printf(__FUNCTION__ " 4\n");
-			result |= mpeg3demux_seek_time(demuxer, time_position);
+			toc_error();
+/*
+ * 	   		double time_position = (double)audio->sample_seek / track->sample_rate;
+ * 			result |= mpeg3demux_seek_time(demuxer, time_position);
+ */
 	   		audio->output_position = audio->sample_seek;
 			audio->output_size = 0;
 			seeked = 1;
@@ -697,11 +701,11 @@ int mpeg3audio_decode_audio(mpeg3audio_t *audio,
 
 	if(output_f || output_i) render = 1;
 
-//printf(__FUNCTION__ " 1\n");
+//printf("mpeg3audio_decode_audio 1\n");
 /* Handle seeking requests */
 	seek(audio);
 
-//printf(__FUNCTION__ " 1\n");
+//printf("mpeg3audio_decode_audio 2\n");
 	new_size = track->current_position + 
 			len + 
 			MAXFRAMESAMPLES - 
@@ -731,7 +735,6 @@ int mpeg3audio_decode_audio(mpeg3audio_t *audio,
 		audio->output_allocated = new_size;
 	}
 
-//printf(__FUNCTION__ " 8 %d %d\n", try, mpeg3demux_eof(track->demuxer));
 /* Decode frames until the output is ready */
 	while(audio->output_position + audio->output_size < 
 			track->current_position + len &&
@@ -739,8 +742,9 @@ int mpeg3audio_decode_audio(mpeg3audio_t *audio,
 		!mpeg3demux_eof(track->demuxer))
 	{
 
-//printf(__FUNCTION__ " 8.1\n");
+//printf("mpeg3audio_decode_audio 8 %d %d\n", try, mpeg3demux_eof(track->demuxer));
 		int samples = read_frame(audio, render);
+//printf("mpeg3audio_decode_audio 9 %d\n", samples);
 
 		if(!samples)
 			try++;
@@ -750,7 +754,7 @@ int mpeg3audio_decode_audio(mpeg3audio_t *audio,
 
 
 
-//printf(__FUNCTION__ " 8\n");
+//printf("mpeg3audio_decode_audio 9\n");
 
 /* Copy the buffer to the output */
 	if(channel >= track->channels) channel = track->channels - 1;
@@ -807,7 +811,7 @@ int mpeg3audio_decode_audio(mpeg3audio_t *audio,
 	}
 
 
-//printf(__FUNCTION__ " 10 %d %d\n", try, mpeg3demux_eof(track->demuxer));
+//printf("mpeg3audio_decode_audio 10 %d %d\n", try, mpeg3demux_eof(track->demuxer));
 
 	if(audio->output_size > 0)
 		return 0;

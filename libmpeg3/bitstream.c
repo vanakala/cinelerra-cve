@@ -146,11 +146,13 @@ int mpeg3bits_open_title(mpeg3_bits_t* stream, int title)
 	return mpeg3demux_open_title(stream->demuxer, title);
 }
 
-int mpeg3bits_seek_time(mpeg3_bits_t* stream, double time_position)
-{
-	stream->bfr_size = stream->bit_number = 0;
-	return mpeg3demux_seek_time(stream->demuxer, time_position);
-}
+/*
+ * int mpeg3bits_seek_time(mpeg3_bits_t* stream, double time_position)
+ * {
+ * 	stream->bfr_size = stream->bit_number = 0;
+ * 	return mpeg3demux_seek_time(stream->demuxer, time_position);
+ * }
+ */
 
 int mpeg3bits_seek_byte(mpeg3_bits_t* stream, int64_t position)
 {

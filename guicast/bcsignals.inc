@@ -3,5 +3,6 @@
 
 class BC_Signals;
 class BC_LockTrace;
+class BC_BufferTrace;
 
 #endif
