@@ -72,11 +72,11 @@ Description: Quicktime 4 Linux (Cinelerra internal) library (development files)
  .
  For more informations, see http://heroinewarrior.com/quicktime.php3
 
-Package: libmpeg3
+Package: libmpeg3hv
 Section: libs
 Depends: ${shlibs:Depends}
 Architecture: any
-Description: advanced editing and manipulation of MPEG streams
+Description: advanced editing and manipulation of MPEG streams (cinelerra's internal) 
  Libmpeg3 supports advanced editing and manipulation of MPEG streams. 
  MPEG is normally a last mile format but with libmpeg3 you can edit 
  it like a first mile solution. 
@@ -86,9 +86,9 @@ Description: advanced editing and manipulation of MPEG streams
  .
  For more informations, see http://heroinewarrior.com/quicktime.php3
 
-Package: libmpeg3-dev
+Package: libmpeg3hv-dev
 Section: libs
-Depends: libmpeg3
+Depends: libmpeg3hv
 Architecture: any
 Description: advanced editing and manipulation of MPEG streams (development files)
  Libmpeg3 supports advanced editing and manipulation of MPEG streams. 
