@@ -33,6 +33,7 @@ int BC_SubWindow::initialize()
 			bg_color, 
 			NULL, 
 			SUB_WINDOW, 
+			0,
 			0);
 	return 0;
 }

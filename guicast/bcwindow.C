@@ -14,7 +14,8 @@ BC_Window::BC_Window(char *title,
 				int private_color, 
 				int hide,
 				int bg_color,
-				char *display_name)
+				char *display_name,
+				int group_it)
  : BC_WindowBase()
 {
 	create_window(0,
@@ -31,7 +32,8 @@ BC_Window::BC_Window(char *title,
 				bg_color,
 				display_name,
 				MAIN_WINDOW,
-				0);
+				0,
+				group_it);
 }
 
 

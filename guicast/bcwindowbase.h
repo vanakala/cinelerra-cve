@@ -455,7 +455,8 @@ private:
 				int bg_color,
 				char *display_name,
 				int window_type,
-				BC_Pixmap *bg_pixmap);
+				BC_Pixmap *bg_pixmap,
+				int group_it);
 
 	static Display* init_display(char *display_name);
 	virtual int initialize();

@@ -24,7 +24,8 @@ BC_FullScreen::BC_FullScreen(BC_WindowBase *parent_window, int w, int h,
 			   bg_color,
 			   NULL,
 			   VIDMODE_SCALED_WINDOW,
-			   bg_pixmap);
+			   bg_pixmap,
+			   0);
    else
 #endif
    create_window(parent_window,
@@ -41,7 +42,8 @@ BC_FullScreen::BC_FullScreen(BC_WindowBase *parent_window, int w, int h,
 			   bg_color,
 			   NULL,
 			   POPUP_WINDOW,
-			   bg_pixmap);
+			   bg_pixmap,
+			   0);
 }
 
 
@@ -74,7 +76,8 @@ BC_Popup::BC_Popup(BC_WindowBase *parent_window,
 				bg_color,
 				NULL,
 				POPUP_WINDOW,
-				bg_pixmap);
+				bg_pixmap,
+				0);
 }
 
 

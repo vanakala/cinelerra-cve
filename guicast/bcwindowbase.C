@@ -51,6 +51,8 @@ Mutex BC_WindowBase::opengl_lock;
 
 BC_Resources BC_WindowBase::resources;
 
+Window XGroupLeader = 0;
+
 BC_WindowBase::BC_WindowBase()
 {
 //printf("BC_WindowBase::BC_WindowBase 1\n");
@@ -211,7 +213,8 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 				int bg_color,
 				char *display_name,
 				int window_type,
-				BC_Pixmap *bg_pixmap)
+				BC_Pixmap *bg_pixmap,
+				int group_it)
 {
 	XSetWindowAttributes attr;
 	unsigned long mask;
@@ -347,6 +350,31 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 		
 		clipboard = new BC_Clipboard(display_name);
 		clipboard->start_clipboard();
+
+		if (group_it)
+		{
+			Atom ClientLeaderXAtom;
+			if (XGroupLeader == 0)
+				XGroupLeader = win;
+			char *instance_name = "cinelerra";
+			char *class_name = "Cinelerra";
+			XClassHint *class_hints = XAllocClassHint(); 
+			class_hints->res_name = instance_name;
+			class_hints->res_class = class_name;
+			XSetClassHint(top_level->display, win, class_hints);
+			XFree(class_hints);
+			ClientLeaderXAtom = XInternAtom(display, "WM_CLIENT_LEADER", True);
+			XChangeProperty(display, 
+					win, 
+					ClientLeaderXAtom, 
+					XA_WINDOW, 
+					32, 
+					PropModeReplace, 
+					(unsigned char *)&XGroupLeader, 
+					true);
+
+		}
+		
 	}
 
 #ifdef HAVE_LIBXXF86VM
@@ -3112,10 +3140,12 @@ int BC_WindowBase::set_icon(VFrame *data)
 		icon_pixmap);
 
 	XWMHints wm_hints;
-	wm_hints.flags = IconPixmapHint | IconMaskHint | IconWindowHint;
+	wm_hints.flags = WindowGroupHint | IconPixmapHint | IconMaskHint | IconWindowHint;
 	wm_hints.icon_pixmap = icon_pixmap->get_pixmap();
 	wm_hints.icon_mask = icon_pixmap->get_alpha();
 	wm_hints.icon_window = icon_window->win;
+	wm_hints.window_group = XGroupLeader;
+
 // for(int i = 0; i < 1000; i++)
 // printf("02x ", icon_pixmap->get_alpha()->get_row_pointers()[0][i]);
 // printf("\n");
