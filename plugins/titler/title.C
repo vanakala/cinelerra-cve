@@ -14,7 +14,7 @@
 #include "freetype/ftglyph.h"
 #include "freetype/ftbbox.h"
 #include "freetype/ftoutln.h"
-#include "freetype/ftstroker.h"
+#include "freetype/ftstroke.h"
 
 
 #include <errno.h>
