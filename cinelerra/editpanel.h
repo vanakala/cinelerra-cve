@@ -4,6 +4,7 @@
 #include "guicast.h"
 #include "meterpanel.inc"
 #include "mwindow.inc"
+#include "manualgoto.inc"
 
 class ArrowButton;
 class IBeamButton;
@@ -16,6 +17,7 @@ class EditDelOutPoint;
 class EditSplice;
 class EditOverwrite;
 class EditToClip;
+class EditManualGoto;
 class EditLift;
 class EditExtract;
 class EditCut;
@@ -103,6 +105,7 @@ public:
 	EditLift *lift;
 	EditExtract *extract;
 	EditToClip *clip;
+	EditManualGoto *mangoto;
 	EditCut *cut;
 	EditCopy *copy;
 	EditPaste *paste;
@@ -212,6 +215,18 @@ public:
 	int keypress_event();
 	MWindow *mwindow;
 	EditPanel *panel;
+};
+
+class EditManualGoto : public BC_Button
+{
+public:
+	EditManualGoto(MWindow *mwindow, EditPanel *panel, int x, int y);
+	~EditManualGoto();
+	int handle_event();
+	int keypress_event();
+	MWindow *mwindow;
+	EditPanel *panel;
+	ManualGoto *mangoto;
 };
 
 class EditCut : public BC_Button

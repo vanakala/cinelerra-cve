@@ -645,6 +645,34 @@ void BC_TextBox::default_keypress(int &dispatch_event, int &result)
 	}
 }
 
+int BC_TextBox::select_whole_text(int select)
+{
+	if (select == 1) 
+	{
+		highlight_letter1 = 0;
+		highlight_letter2 = strlen(text);
+		text_selected = word_selected = 0;	
+		ibeam_letter = highlight_letter1;
+		find_ibeam(1);
+		if(keypress_draw) draw();
+	} else
+	if (select == -1)
+	{
+		ibeam_letter = strlen(text);
+		highlight_letter1 = ibeam_letter;
+		highlight_letter2 = ibeam_letter;
+		text_selected = word_selected = 0;
+		find_ibeam(1);
+		if(keypress_draw) draw();
+	}
+	return highlight_letter2 - highlight_letter1;
+}
+
+void BC_TextBox::cycle_textboxes(int amout)
+{
+	top_level->cycle_textboxes(amout);
+}
+
 int BC_TextBox::keypress_event()
 {
 // Result == 2 contents changed
@@ -680,12 +708,12 @@ int BC_TextBox::keypress_event()
 // Handle like a default keypress
 
 		case TAB:
-			top_level->cycle_textboxes(1);
+			cycle_textboxes(1);
 			result = 1;
 			break;
 
 		case LEFTTAB:
-			top_level->cycle_textboxes(-1);
+			cycle_textboxes(-1);
 			result = 1;
 			break;
 

@@ -21,6 +21,7 @@
 #include "trackcanvas.h"
 #include "transportque.h"
 #include "zoombar.h"
+#include "manualgoto.h"
 
 #include <libintl.h>
 #define _(String) gettext(String)
@@ -250,6 +251,9 @@ void EditPanel::create_buttons()
 		subwindow->add_subwindow(redo = new EditRedo(mwindow, this, x1, y1));
 		x1 += redo->get_w();
 	}
+	subwindow->add_subwindow(mangoto = new EditManualGoto(mwindow, this, x1, y1));
+	x1 += mangoto->get_w();
+
 }
 
 
@@ -400,6 +404,9 @@ void EditPanel::reposition_buttons(int x, int y)
 		redo->reposition_window(x1, y1);
 		x1 += redo->get_w();
 	}
+	
+	mangoto->reposition_window(x1, y1);
+	x1 += mangoto->get_w();
 }
 
 
@@ -684,6 +691,33 @@ int EditToClip::handle_event()
 int EditToClip::keypress_event()
 {
 	if(get_keypress() == 'i')
+	{
+		handle_event();
+		return 1;
+	}
+	return 0;
+}
+EditManualGoto::EditManualGoto(MWindow *mwindow, EditPanel *panel, int x, int y)
+ : BC_Button(x, y, mwindow->theme->toclip_data)
+{
+	this->mwindow = mwindow;
+	this->panel = panel;
+	mangoto = new ManualGoto(mwindow, panel->subwindow);
+	set_tooltip(_("Manual goto ( g )"));
+}
+EditManualGoto::~EditManualGoto()
+{
+	delete mangoto;
+}
+int EditManualGoto::handle_event()
+{
+	mangoto->open_window();
+	return 1;
+}
+
+int EditManualGoto::keypress_event()
+{
+	if(get_keypress() == 'g')
 	{
 		handle_event();
 		return 1;

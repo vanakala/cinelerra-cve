@@ -5,7 +5,7 @@
 #include "bcsubwindow.h"
 #include "bctumble.h"
 #include "fonts.h"
-#include "timer.inc"
+#include "bctimer.inc"
 
 #define BCCURSORW 2
 
@@ -53,6 +53,7 @@ public:
 	int update(float value);
 	void disable();
 	void enable();
+	int get_enabled();
 
 	int initialize();
 
@@ -89,6 +90,11 @@ public:
 // separators.  The alnums are replaced by user text.
 	void set_separators(char *separators);
 
+// 1 - selects text, -1 - deselects, 0 - do nothing
+// in all cases it returns text_selected after the operation
+	int select_whole_text(int select);
+	void cycle_textboxes(int amout);
+	
 private:
 	int reset_parameters(int rows, int has_border, int font);
 	void draw();
@@ -111,7 +117,7 @@ private:
 
 // Top left of text relative to window
 	int text_x, text_y;
-// Top left of cursor relative to window
+// Top left of cursor relative to text
 	int ibeam_x, ibeam_y;
 
 	int ibeam_letter;
