@@ -7,6 +7,11 @@
 #include "theme.h"
 #include "units.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 RecordTransport::RecordTransport(MWindow *mwindow, 
 		Record *record, 
@@ -120,7 +125,7 @@ RecordGUIRec::RecordGUIRec(MWindow *mwindow, Record *record, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->record = record;
-	set_tooltip("Start interactive recording\nfrom current position");
+	set_tooltip(_("Start interactive recording\nfrom current position"));
 }
 
 RecordGUIRec::~RecordGUIRec()
@@ -144,7 +149,7 @@ RecordGUIRecFrame::RecordGUIRecFrame(MWindow *mwindow, Record *record, int x, in
  : BC_Button(x, y, mwindow->theme->recframe_data)
 { 
 	this->record = record; 
-	set_tooltip("Record single frame");
+	set_tooltip(_("Record single frame"));
 }
 
 RecordGUIRecFrame::~RecordGUIRecFrame()
@@ -168,7 +173,7 @@ RecordGUIPlay::RecordGUIPlay(MWindow *mwindow, int x, int y)
  : BC_Button(x, y, mwindow->theme->forward_data)
 { 
 //	this->engine = engine; 
-	set_tooltip("Preview recording");
+	set_tooltip(_("Preview recording"));
 }
 
 RecordGUIPlay::~RecordGUIPlay()
@@ -193,7 +198,7 @@ RecordGUIStop::RecordGUIStop(MWindow *mwindow, Record *record, int x, int y)
  : BC_Button(x, y, mwindow->theme->stoprec_data)
 { 
 	this->record = record; 
-	set_tooltip("Stop operation");
+	set_tooltip(_("Stop operation"));
 }
 
 RecordGUIStop::~RecordGUIStop()
@@ -243,7 +248,7 @@ RecordGUIBack::RecordGUIBack(MWindow *mwindow, Record *record, int x, int y)
  : BC_Button(x, y, mwindow->theme->fastrev_data)
 { 
 	this->record = record; 
-	set_tooltip("Fast rewind");
+	set_tooltip(_("Fast rewind"));
 }
 
 RecordGUIBack::~RecordGUIBack()
@@ -306,7 +311,7 @@ RecordGUIFwd::RecordGUIFwd(MWindow *mwindow, Record *record, int x, int y)
 { 
 	this->engine = engine; 
 	this->record = record; 
-	set_tooltip("Fast forward");
+	set_tooltip(_("Fast forward"));
 }
 
 RecordGUIFwd::~RecordGUIFwd()
@@ -366,7 +371,7 @@ RecordGUIEnd::RecordGUIEnd(MWindow *mwindow, Record *record, int x, int y)
 { 
 	this->engine = engine; 
 	this->record = record; 
-	set_tooltip("Seek to end of recording");
+	set_tooltip(_("Seek to end of recording"));
 }
 
 RecordGUIEnd::~RecordGUIEnd()
@@ -398,7 +403,7 @@ int RecordGUIEnd::keypress_event()
 //  : BC_Button(x, y, mwindow->theme->duplex_data)
 // { 
 // 	this->engine = engine; 
-// 	set_tooltip("Start full duplex recording");
+// 	set_tooltip(_("Start full duplex recording"));
 // }
 // 
 // RecordGUIDuplex::~RecordGUIDuplex()

@@ -11,6 +11,10 @@
 #include "recordconfig.h"
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
 
 VDevicePrefs::VDevicePrefs(int x, 
 	int y, 
@@ -159,7 +163,7 @@ int VDevicePrefs::create_lml_objs()
 			output_char = in_config->lml_in_device;
 			break;
 	}
-	dialog->add_subwindow(device_title = new BC_Title(x1, y, "Device path:", MEDIUMFONT, BLACK));
+	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Device path:"), MEDIUMFONT, BLACK));
 	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y + 20, output_char));
 	return 0;
 }
@@ -180,7 +184,7 @@ int VDevicePrefs::create_buz_objs()
 			output_char = in_config->buz_in_device;
 			break;
 	}
-	dialog->add_subwindow(device_title = new BC_Title(x1, y1, "Device path:", MEDIUMFONT, BLACK));
+	dialog->add_subwindow(device_title = new BC_Title(x1, y1, _("Device path:"), MEDIUMFONT, BLACK));
 
 	y1 += 20;
 	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y1, output_char));
@@ -188,12 +192,12 @@ int VDevicePrefs::create_buz_objs()
 	if(driver == PLAYBACK_BUZ)
 	{
 		dialog->add_subwindow(buz_swap_channels = 
-			new VDeviceCheckBox(x2, y1, &out_config->buz_swap_fields, "Swap fields"));
+			new VDeviceCheckBox(x2, y1, &out_config->buz_swap_fields, _("Swap fields")));
 	}
 	y1 += 30;
 	if(driver == PLAYBACK_BUZ)
 	{
-		dialog->add_subwindow(output_title = new BC_Title(x1, y1, "Output channel:"));
+		dialog->add_subwindow(output_title = new BC_Title(x1, y1, _("Output channel:")));
 		y1 += 20;
 		channel_picker = new PrefsChannelPicker(pwindow->mwindow, 
 			this, 
@@ -225,7 +229,7 @@ int VDevicePrefs::create_firewire_objs()
 
 	if(output_char)
 	{
-		dialog->add_subwindow(device_title = new BC_Title(x1, y, "Device Path:", MEDIUMFONT, BLACK));
+		dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Device Path:"), MEDIUMFONT, BLACK));
 		dialog->add_subwindow(firewire_path = new VDeviceTextBox(x1, y + 20, output_char));
 		x1 += firewire_path->get_w() + 5;
 	}
@@ -240,7 +244,7 @@ int VDevicePrefs::create_firewire_objs()
 			output_int = &in_config->firewire_port;
 			break;
 	}
-	dialog->add_subwindow(port_title = new BC_Title(x1, y, "Port:", MEDIUMFONT, BLACK));
+	dialog->add_subwindow(port_title = new BC_Title(x1, y, _("Port:"), MEDIUMFONT, BLACK));
 	dialog->add_subwindow(firewire_port = new VDeviceIntBox(x1, y + 20, output_int));
 	x1 += firewire_port->get_w() + 5;
 
@@ -255,7 +259,7 @@ int VDevicePrefs::create_firewire_objs()
 			break;
 	}
 
-	dialog->add_subwindow(channel_title = new BC_Title(x1, y, "Channel:", MEDIUMFONT, BLACK));
+	dialog->add_subwindow(channel_title = new BC_Title(x1, y, _("Channel:"), MEDIUMFONT, BLACK));
 	dialog->add_subwindow(firewire_channel = new VDeviceIntBox(x1, y + 20, output_int));
 	x1 += firewire_channel->get_w() + 5;
 
@@ -272,7 +276,7 @@ int VDevicePrefs::create_firewire_objs()
 	}
 	if(output_int)
 	{
-		dialog->add_subwindow(syt_title = new BC_Title(x1, y, "Syt Offset:", MEDIUMFONT, BLACK));
+		dialog->add_subwindow(syt_title = new BC_Title(x1, y, _("Syt Offset:"), MEDIUMFONT, BLACK));
 		dialog->add_subwindow(firewire_syt = new VDeviceIntBox(x1, y + 20, output_int));
 	}
 
@@ -284,7 +288,7 @@ int VDevicePrefs::create_v4l_objs()
 	char *output_char;
 	int x1 = x + menu->get_w() + 5;
 	output_char = pwindow->thread->edl->session->vconfig_in->v4l_in_device;
-	dialog->add_subwindow(device_title = new BC_Title(x1, y, "Device path:", MEDIUMFONT, BLACK));
+	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Device path:"), MEDIUMFONT, BLACK));
 	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y + 20, output_char));
 	return 0;
 }
@@ -294,7 +298,7 @@ int VDevicePrefs::create_screencap_objs()
 	char *output_char;
 	int x1 = x + menu->get_w() + 5;
 	output_char = pwindow->thread->edl->session->vconfig_in->screencapture_display;
-	dialog->add_subwindow(device_title = new BC_Title(x1, y, "Display:", MEDIUMFONT, BLACK));
+	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Display:"), MEDIUMFONT, BLACK));
 	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y + 20, output_char));
 	return 0;
 }
@@ -304,7 +308,7 @@ int VDevicePrefs::create_x11_objs()
 	char *output_char;
 	int x1 = x + menu->get_w() + 5;
 	output_char = out_config->x11_host;
-	dialog->add_subwindow(device_title = new BC_Title(x1, y, "Display for compositor:", MEDIUMFONT, BLACK));
+	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Display for compositor:"), MEDIUMFONT, BLACK));
 	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y + 20, output_char));
 	return 0;
 }

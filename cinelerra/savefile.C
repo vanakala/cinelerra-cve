@@ -14,6 +14,10 @@
 
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
 
 
 
@@ -24,14 +28,14 @@
 
 
 SaveBackup::SaveBackup(MWindow *mwindow)
- : BC_MenuItem("Save backup")
+ : BC_MenuItem(_("Save backup"))
 {
 	this->mwindow = mwindow;
 }
 int SaveBackup::handle_event()
 {
 	mwindow->save_backup();
-	mwindow->gui->show_message("Saved backup.");
+	mwindow->gui->show_message(_("Saved backup."));
 	return 1;
 }
 
@@ -45,7 +49,7 @@ int SaveBackup::handle_event()
 
 
 
-Save::Save(MWindow *mwindow) : BC_MenuItem("Save", "s", 's')
+Save::Save(MWindow *mwindow) : BC_MenuItem(_("Save"), "s", 's')
 { 
 	this->mwindow = mwindow; 
 	quit_now = 0; 
@@ -78,7 +82,7 @@ int Save::handle_event()
 		if(file.write_to_file(mwindow->session->filename))
 		{
 			char string2[256];
-			sprintf(string2, "Couldn't open %s", mwindow->session->filename);
+			sprintf(string2, _("Couldn't open %s"), mwindow->session->filename);
 			ErrorBox error(PROGRAM_NAME ": Error",
 				mwindow->gui->get_abs_cursor_x(),
 				mwindow->gui->get_abs_cursor_y());
@@ -89,7 +93,7 @@ int Save::handle_event()
 		else
 		{
 			char string[BCTEXTLEN];
-			sprintf(string, "\"%s\" %dC written", mwindow->session->filename, strlen(file.string));
+			sprintf(string, _("\"%s\" %dC written"), mwindow->session->filename, strlen(file.string));
 			mwindow->gui->show_message(string, BLACK);
 		}
 		mwindow->session->changes_made = 0;
@@ -106,7 +110,7 @@ int Save::save_before_quit()
 }
 
 SaveAs::SaveAs(MWindow *mwindow)
- : BC_MenuItem("Save as...", ""), Thread()
+ : BC_MenuItem(_("Save as..."), ""), Thread()
 { 
 	this->mwindow = mwindow; 
 	quit_now = 0;
@@ -185,7 +189,7 @@ void SaveAs::run()
 	{
 		char string2[256];
 		mwindow->set_filename("");      // update the project name
-		sprintf(string2, "Couldn't open %s.", filename);
+		sprintf(string2, _("Couldn't open %s."), filename);
 		ErrorBox error(PROGRAM_NAME ": Error",
 			mwindow->gui->get_abs_cursor_x(),
 			mwindow->gui->get_abs_cursor_y());
@@ -196,7 +200,7 @@ void SaveAs::run()
 	else
 	{
 		char string[BCTEXTLEN];
-		sprintf(string, "\"%s\" %dC written", filename, strlen(file.string));
+		sprintf(string, _("\"%s\" %dC written"), filename, strlen(file.string));
 		mwindow->gui->lock_window();
 		mwindow->gui->show_message(string, BLACK);
 		mwindow->gui->unlock_window();
@@ -221,7 +225,7 @@ SaveFileWindow::SaveFileWindow(MWindow *mwindow, char *init_directory)
  	mwindow->gui->get_abs_cursor_y() - BC_WindowBase::get_resources()->filebox_h / 2,
  	init_directory, 
 	PROGRAM_NAME ": Save", 
-	"Enter a filename to save as")
+	_("Enter a filename to save as"))
 { 
 	this->mwindow = mwindow; 
 }

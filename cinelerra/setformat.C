@@ -19,8 +19,13 @@
 #include "vwindow.h"
 #include "vwindowgui.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 SetFormat::SetFormat(MWindow *mwindow)
- : BC_MenuItem("Format...")
+ : BC_MenuItem(_("Format..."))
 {
 	this->mwindow = mwindow;
 	thread = new SetFormatThread(mwindow);
@@ -94,7 +99,7 @@ void SetFormatThread::apply_changes()
 	int new_channels = new_settings->session->audio_channels;
 
 
-	mwindow->undo->update_undo_before("set format", LOAD_ALL);
+	mwindow->undo->update_undo_before(_("set format"), LOAD_ALL);
 	mwindow->edl->copy_session(new_settings);
 	mwindow->edl->session->output_w = dimension[0];
 	mwindow->edl->session->output_h = dimension[1];
@@ -245,17 +250,17 @@ void SetFormatWindow::create_objects()
 	mwindow->theme->draw_setformat_bg(this);
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x1, 
 		y, 
-		"Audio", 
+		_("Audio"), 
 		LARGEFONT));
 	y += mwindow->theme->setformat_margin;
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x1, 
 		y,
-		"Samplerate:"));
+		_("Samplerate:")));
 
 	y += mwindow->theme->setformat_margin;
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x1, 
 		y,
-		"Samplerate:"));
+		_("Samplerate:")));
 	add_subwindow(textbox = new SetSampleRateTextBox(thread, 
 		mwindow->theme->setformat_x2, 
 		y));
@@ -267,7 +272,7 @@ void SetFormatWindow::create_objects()
 	y += mwindow->theme->setformat_margin;
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x1, 
 		y, 
-		"Channels:"));
+		_("Channels:")));
 	add_subwindow(textbox = new SetChannelsTextBox(thread, 
 		mwindow->theme->setformat_x2, 
 		y));
@@ -280,7 +285,7 @@ void SetFormatWindow::create_objects()
 	y += mwindow->theme->setformat_margin;
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x1, 
 		y, 
-		"Channel positions:"));
+		_("Channel positions:")));
 	y += mwindow->theme->setformat_margin;
 	add_subwindow(canvas = new SetChannelsCanvas(mwindow, 
 		thread, 
@@ -301,13 +306,13 @@ void SetFormatWindow::create_objects()
 	y = mwindow->theme->setformat_y1;
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, 
 		y, 
-		"Video", 
+		_("Video"), 
 		LARGEFONT));
 
 	y += mwindow->theme->setformat_margin;
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, 
 		y, 
-		"Frame rate:"));
+		_("Frame rate:")));
 	add_subwindow(textbox = new SetFrameRateTextBox(thread, 
 		mwindow->theme->setformat_x4, 
 		y));
@@ -319,17 +324,17 @@ void SetFormatWindow::create_objects()
 	y += mwindow->theme->setformat_margin;
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, 
 		y, 
-		"Canvas size:"));
+		_("Canvas size:")));
 
 	y += mwindow->theme->setformat_margin;
-	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, y, "Width:"));
+	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, y, _("Width:")));
 	add_subwindow(dimension[0] = new ScaleSizeText(mwindow->theme->setformat_x4, 
 		y, 
 		thread, 
 		&(thread->dimension[0])));
 
 	y += mwindow->theme->setformat_margin;
-	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, y, "Height:"));
+	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, y, _("Height:")));
 	add_subwindow(dimension[1] = new ScaleSizeText(mwindow->theme->setformat_x4, 
 		y, 
 		thread, 
@@ -343,7 +348,7 @@ void SetFormatWindow::create_objects()
 	y += mwindow->theme->setformat_margin;
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, 
 		y, 
-		"W Ratio:"));
+		_("W Ratio:")));
 	add_subwindow(ratio[0] = new ScaleRatioText(mwindow->theme->setformat_x4, 
 		y, 
 		thread, 
@@ -352,7 +357,7 @@ void SetFormatWindow::create_objects()
 	y += mwindow->theme->setformat_margin;
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, 
 		y, 
-		"H Ratio:"));
+		_("H Ratio:")));
 	add_subwindow(ratio[1] = new ScaleRatioText(mwindow->theme->setformat_x4, 
 		y, 
 		thread, 
@@ -361,7 +366,7 @@ void SetFormatWindow::create_objects()
 	y += mwindow->theme->setformat_margin;
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, 
 		y, 
-		"Color model:"));
+		_("Color model:")));
 	x = mwindow->theme->setformat_x4;
 	add_subwindow(textbox = new BC_TextBox(x, 
 		y, 
@@ -378,7 +383,7 @@ void SetFormatWindow::create_objects()
 	y += mwindow->theme->setformat_margin;
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, 
 		y, 
-		"Aspect ratio:"));
+		_("Aspect ratio:")));
 	y += mwindow->theme->setformat_margin;
 	x = mwindow->theme->setformat_x3;
 	add_subwindow(aspect_w = new ScaleAspectText(x, 
@@ -386,7 +391,7 @@ void SetFormatWindow::create_objects()
 		thread, 
 		&(thread->new_settings->session->aspect_w)));
 	x += aspect_w->get_w() + 5;
-	add_subwindow(new BC_Title(x, y, ":"));
+	add_subwindow(new BC_Title(x, y, _(":")));
 	x += 10;
 	add_subwindow(aspect_h = new ScaleAspectText(x, 
 		y, 
@@ -526,7 +531,7 @@ int SetChannelsCanvas::draw(int angle)
 
 	if(angle > -1)
 	{
-		sprintf(string, "%d degrees", angle);
+		sprintf(string, _("%d degrees"), angle);
 		draw_text(this->get_w() / 2 - 40, this->get_h() / 2, string);
 	}
 
@@ -694,7 +699,7 @@ int ScaleRatioText::handle_event()
 
 
 ScaleAspectAuto::ScaleAspectAuto(int x, int y, SetFormatThread *thread)
- : BC_CheckBox(x, y, thread->auto_aspect, "Auto")
+ : BC_CheckBox(x, y, thread->auto_aspect, _("Auto"))
 {
 	this->thread = thread; 
 }
@@ -729,7 +734,7 @@ int ScaleAspectText::handle_event()
 
 
 SetFormatApply::SetFormatApply(int x, int y, SetFormatThread *thread)
- : BC_GenericButton(x, y, "Apply")
+ : BC_GenericButton(x, y, _("Apply"))
 {
 	this->thread = thread;
 }

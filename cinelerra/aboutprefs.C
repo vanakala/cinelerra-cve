@@ -6,6 +6,11 @@
 #include "theme.h"
 #include "vframe.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 AboutPrefs::AboutPrefs(MWindow *mwindow, PreferencesWindow *pwindow)
  : PreferencesDialog(mwindow, pwindow)
@@ -50,17 +55,18 @@ int AboutPrefs::create_objects()
 	x += mwindow->theme->about_bg->get_w() + 10;
 	y += get_text_height(LARGEFONT) * 2;
 
-	char *license1 = 
-"Cinelerra " VERSION;
+	char license1[BCTEXTLEN];
+	sprintf (license1, _("Cinelerra "), VERSION);
 
 	set_font(LARGEFONT);
 	set_color(BLACK);
 	draw_text(x, y, license1);
 
-
-	char *license2 = 
-"(c) 2003 Heroine Virtual Ltd.\n\n"
-"Build date: " BUILDDATE;
+	char license2[BCTEXTLEN];
+	sprintf(license2, "%s%s%s", 
+		_("(c) 2003 Heroine Virtual Ltd.\n\n"),
+		_("Build date: "), 
+		BUILDDATE);
 	y += get_text_height(LARGEFONT) * 2;
 	set_font(MEDIUMFONT);
 	draw_text(x, y, license2);
@@ -68,7 +74,8 @@ int AboutPrefs::create_objects()
 
 
 
-	char *license3 = 
+	char license3[BCTEXTLEN];
+	sprintf(license3, _(
 "This program is free software; you can\n"
 "redistribute it and/or modify it under the terms\n"
 "of the GNU General Public License as published\n"
@@ -82,15 +89,15 @@ int AboutPrefs::create_objects()
 "MERCHANTABILITY or FITNESS FOR A PARTICULAR\n"
 "PURPOSE.  See the GNU General Public License for\n"
 "more details.\n"
-"\n";
+"\n"));
 	y += 100;
 	draw_text(x, y, license3);
 
 
 	char versions[BCTEXTLEN];
 	sprintf(versions, 
-"Quicktime version %d.%d.%d\n"
-"Libmpeg3 version %d.%d.%d\n",
+_("Quicktime version %d.%d.%d\n"
+"Libmpeg3 version %d.%d.%d\n"),
 quicktime_major(),
 quicktime_minor(),
 quicktime_release(),

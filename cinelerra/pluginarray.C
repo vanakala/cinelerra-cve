@@ -12,6 +12,10 @@
 #include "preferences.h"
 #include "bcprogressbox.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
 
 
 
@@ -159,7 +163,7 @@ int PluginArray::run_plugins()
 		char string[BCTEXTLEN], string2[BCTEXTLEN];
 
 //printf("PluginArray::run_plugins 2\n");
-		sprintf(string, "%s...", plugin_server->title);
+		sprintf(string, _("%s..."), plugin_server->title);
 		progress = mwindow->mainprogress->start_progress(string, end - start);
 
 //printf("PluginArray::run_plugins 3\n");
@@ -195,7 +199,7 @@ int PluginArray::run_plugins()
 		progress->stop_progress();
 		delete progress;
 
-		sprintf(string, "%s took %s", plugin_server->title, string2);
+		sprintf(string, _("%s took %s"), plugin_server->title, string2);
 		mwindow->gui->lock_window();
 		mwindow->gui->show_message(string2, BLACK);
 		mwindow->gui->unlock_window();

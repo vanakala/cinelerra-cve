@@ -3,6 +3,11 @@
 #include "mwindow.h"
 #include "theme.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 LabelNavigate::LabelNavigate(MWindow *mwindow, MButtons *gui, int x, int y)
 {
 	this->mwindow = mwindow;
@@ -35,7 +40,7 @@ PrevLabel::PrevLabel(MWindow *mwindow, LabelNavigate *navigate, int x, int y)
 { 
 	this->mwindow = mwindow; 
 	this->navigate = navigate;
-	set_tooltip("Previous label");
+	set_tooltip(_("Previous label"));
 }
 
 PrevLabel::~PrevLabel() {}
@@ -53,7 +58,7 @@ NextLabel::NextLabel(MWindow *mwindow, LabelNavigate *navigate, int x, int y)
 { 
 	this->mwindow = mwindow; 
 	this->navigate = navigate; 
-	set_tooltip("Next label");
+	set_tooltip(_("Next label"));
 }
 
 NextLabel::~NextLabel() {}

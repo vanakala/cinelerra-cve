@@ -19,6 +19,12 @@
 #include "transportque.h"
 #include "vframe.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
 PatchGUI::PatchGUI(MWindow *mwindow, 
 		PatchBay *patchbay, 
 		Track *track, 
@@ -283,7 +289,7 @@ PlayPatch::PlayPatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->patch = patch;
-	set_tooltip("Play track");
+	set_tooltip(_("Play track"));
 	set_select_drag(1);
 }
 
@@ -333,7 +339,7 @@ RecordPatch::RecordPatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->patch = patch;
-	set_tooltip("Arm track");
+	set_tooltip(_("Arm track"));
 	set_select_drag(1);
 }
 
@@ -411,7 +417,7 @@ GangPatch::GangPatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->patch = patch;
-	set_tooltip("Gang faders");
+	set_tooltip(_("Gang faders"));
 	set_select_drag(1);
 }
 
@@ -460,7 +466,7 @@ DrawPatch::DrawPatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->patch = patch;
-	set_tooltip("Draw media");
+	set_tooltip(_("Draw media"));
 	set_select_drag(1);
 }
 
@@ -508,7 +514,7 @@ MutePatch::MutePatch(MWindow *mwindow, PatchGUI *patch, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->patch = patch;
-	set_tooltip("Don't send to output");
+	set_tooltip(_("Don't send to output"));
 	set_select_drag(1);
 }
 
@@ -521,7 +527,7 @@ int MutePatch::button_press_event()
 		double position = mwindow->edl->local_session->selectionstart;
 		Autos *mute_autos = patch->track->automation->mute_autos;
 
-		mwindow->undo->update_undo_before("keyframe", LOAD_AUTOMATION);
+		mwindow->undo->update_undo_before(_("keyframe"), LOAD_AUTOMATION);
 
 		current = (IntAuto*)mute_autos->get_auto_for_editing(position);
 		current->value = get_value();

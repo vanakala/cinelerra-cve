@@ -11,6 +11,14 @@
 
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
+
+
 ThreadIndexer::ThreadIndexer(MWindow *mwindow, Assets *assets)
  : Thread()
 {
@@ -58,7 +66,7 @@ void ThreadIndexer::run()
 			char string[1024], name[1024];
 			FileSystem dir;
 			dir.extract_name(name, old_filename);
-			sprintf(string, "Where is %s?", name);
+			sprintf(string, _("Where is %s?"), name);
 
 			LocateFileWindow window(mwindow, directory, string);
 			window.create_objects();
@@ -102,7 +110,7 @@ void ThreadIndexer::run()
 				{
 					progress = new BC_ProgressBox(mwindow->gui->get_abs_cursor_x(),
 						mwindow->gui->get_abs_cursor_y(),
-						"Building Indexes...", 
+						_("Building Indexes..."), 
 						1);
 					progress->start();
 				}

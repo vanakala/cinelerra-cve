@@ -67,6 +67,10 @@
 
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
 
 
 extern "C"
@@ -268,7 +272,7 @@ void MWindow::init_plugins(Preferences *preferences,
 	if(result)
 	{
 		fprintf(stderr, 
-			"MWindow::init_plugins: couldn't open %s directory\n",
+			_("MWindow::init_plugins: couldn't open %s directory\n"),
 			preferences->global_plugin_dir);
 	}
 
@@ -306,7 +310,7 @@ void MWindow::init_plugins(Preferences *preferences,
 				if(result)
 				{
 					fprintf(stderr, 
-						"MWindow::init_plugins: couldn't open %s directory\n",
+						_("MWindow::init_plugins: couldn't open %s directory\n"),
 						string);
 				}
 			}
@@ -492,7 +496,7 @@ void MWindow::init_theme()
 
 	if(!theme)
 	{
-		fprintf(stderr, "MWindow::init_theme: theme %s not found.\n", preferences->theme);
+		fprintf(stderr, _("MWindow::init_theme: theme %s not found.\n"), preferences->theme);
 		exit(1);
 	}
 
@@ -813,7 +817,7 @@ TRON("MWindow::load_filenames\n");
 					FileSystem fs;
 					fs.extract_name(string, new_asset->path);
 
-					strcat(string, "'s format couldn't be determined.");
+					strcat(string, _("'s format couldn't be determined."));
 					new_asset->audio_data = 1;
 					new_asset->format = FILE_PCM;
 					new_asset->channels = defaults->get("AUDIO_CHANNELS", 2);
@@ -1000,7 +1004,7 @@ void MWindow::create_objects(int want_gui, int want_new)
 	init_preferences();
 //printf("MWindow::create_objects 1\n");
 	init_plugins(preferences, plugindb, splash_window);
-	splash_window->operation->update("Initializing GUI");
+	splash_window->operation->update(_("Initializing GUI"));
 //printf("MWindow::create_objects 1\n");
 	init_theme();
 // Default project created here
@@ -1558,7 +1562,7 @@ void MWindow::save_backup()
 	if(file.write_to_file(path))
 	{
 		char string2[256];
-		sprintf(string2, "Couldn't open %s for writing.", BACKUP_PATH);
+		sprintf(string2, _("Couldn't open %s for writing."), BACKUP_PATH);
 		gui->show_message(string2);
 	}
 }
@@ -1594,7 +1598,7 @@ void MWindow::render_list()
 
 void MWindow::remove_assets_from_project(int push_undo)
 {
-    if(push_undo) undo->update_undo_before("remove assets", LOAD_ALL);
+    if(push_undo) undo->update_undo_before(_("remove assets"), LOAD_ALL);
 
 // Remove from caches
 	for(int i = 0; i < session->drag_assets->total; i++)
@@ -1781,7 +1785,7 @@ void MWindow::next_time_format()
 
 
 	char string[BCTEXTLEN], string2[BCTEXTLEN];
-	sprintf(string, "Using %s.", Units::print_time_format(edl->session->time_format, string2));
+	sprintf(string, _("Using %s."), Units::print_time_format(edl->session->time_format, string2));
 	gui->show_message(string, BLACK);
 	gui->flush();
 	gui->unlock_window();

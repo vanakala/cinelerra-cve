@@ -9,6 +9,13 @@
 #include "recordprefs.h"
 #include "vdeviceprefs.h"
 
+
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
 RecordPrefs::RecordPrefs(MWindow *mwindow, PreferencesWindow *pwindow)
  : PreferencesDialog(mwindow, pwindow)
 {
@@ -26,11 +33,11 @@ int RecordPrefs::create_objects()
 	int x = 5, y = 5;
 	char string[BCTEXTLEN];
 
-	add_subwindow(new BC_Title(x, y, "Audio In", LARGEFONT, BLACK));
+	add_subwindow(new BC_Title(x, y, _("Audio In"), LARGEFONT, BLACK));
 	y += 25;
 
 
-	add_subwindow(new BC_Title(x, y, "Record Driver:", MEDIUMFONT, BLACK));
+	add_subwindow(new BC_Title(x, y, _("Record Driver:"), MEDIUMFONT, BLACK));
 	in_device = new ADevicePrefs(x + 110, 
 		y, 
 		pwindow, 
@@ -42,7 +49,7 @@ int RecordPrefs::create_objects()
 
 	y += ADevicePrefs::get_h();
 
-// 	add_subwindow(new BC_Title(x, y, "Duplex Driver:", MEDIUMFONT, BLACK));
+// 	add_subwindow(new BC_Title(x, y, _("Duplex Driver:"), MEDIUMFONT, BLACK));
 // 	duplex_device = new ADevicePrefs(x + 110, 
 // 		y, 
 // 		pwindow, 
@@ -55,7 +62,7 @@ int RecordPrefs::create_objects()
 // 	y += ADevicePrefs::get_h();
 
 	BC_TextBox *textbox;
-	add_subwindow(new BC_Title(x, y, "Samples to write to disk at a time:"));
+	add_subwindow(new BC_Title(x, y, _("Samples to write to disk at a time:")));
 	sprintf(string, "%ld", pwindow->thread->edl->session->record_write_length);
 	add_subwindow(textbox = new RecordWriteLength(mwindow, pwindow, x + 240, y, string));
 
@@ -64,7 +71,7 @@ int RecordPrefs::create_objects()
 //	y += 30;
 	add_subwindow(new RecordRealTime(mwindow, pwindow, x, y, pwindow->thread->edl->session->real_time_record));
 	y += 35;
-	add_subwindow(new BC_Title(x, y, "Sample rate for recording:"));
+	add_subwindow(new BC_Title(x, y, _("Sample rate for recording:")));
 	x += 190;
 	add_subwindow(textbox = new RecordSampleRate(pwindow, x, y));
 	x += 75;
@@ -73,10 +80,10 @@ int RecordPrefs::create_objects()
 	x = 5;
 
 
-	add_subwindow(new BC_Title(x, y, "Video In", LARGEFONT, BLACK));
+	add_subwindow(new BC_Title(x, y, _("Video In"), LARGEFONT, BLACK));
 	y += 25;
 
-	add_subwindow(new BC_Title(x, y, "Record Driver:", MEDIUMFONT, BLACK));
+	add_subwindow(new BC_Title(x, y, _("Record Driver:"), MEDIUMFONT, BLACK));
 	video_in_device = new VDevicePrefs(x + 110, 
 		y, 
 		pwindow, 
@@ -90,12 +97,12 @@ int RecordPrefs::create_objects()
 	sprintf(string, "%d", pwindow->thread->edl->session->video_write_length);
 	add_subwindow(textbox = new VideoWriteLength(pwindow, string, y));
 	add_subwindow(new CaptureLengthTumbler(pwindow, textbox, textbox->get_x() + textbox->get_w(), y));
-	add_subwindow(new BC_Title(x, y, "Frames to record to disk at a time:"));
+	add_subwindow(new BC_Title(x, y, _("Frames to record to disk at a time:")));
 	y += 27;
 	sprintf(string, "%d", pwindow->thread->edl->session->vconfig_in->capture_length);
 	add_subwindow(textbox = new VideoCaptureLength(pwindow, string, y));
 	add_subwindow(new CaptureLengthTumbler(pwindow, textbox, textbox->get_x() + textbox->get_w(), y));
-	add_subwindow(new BC_Title(x, y, "Frames to buffer in device:"));
+	add_subwindow(new BC_Title(x, y, _("Frames to buffer in device:")));
 	y += 27;
 
 	add_subwindow(new RecordSoftwareTimer(pwindow, 
@@ -110,7 +117,7 @@ int RecordPrefs::create_objects()
 	y += 35;
 
 	BC_TextBox *w_text, *h_text;
-	add_subwindow(new BC_Title(x, y, "Size of captured frame:"));
+	add_subwindow(new BC_Title(x, y, _("Size of captured frame:")));
 	x += 170;
 	add_subwindow(w_text = new RecordW(pwindow, x, y));
 	x += w_text->get_w() + 2;
@@ -126,7 +133,7 @@ int RecordPrefs::create_objects()
 
 	y += 30;
 	x = 5;
-	add_subwindow(new BC_Title(x, y, "Frame rate for recording:"));
+	add_subwindow(new BC_Title(x, y, _("Frame rate for recording:")));
 	x += 180;
 	add_subwindow(textbox = new RecordFrameRate(pwindow, x, y));
 	x += 75;
@@ -152,7 +159,7 @@ int RecordWriteLength::handle_event()
 
 
 RecordRealTime::RecordRealTime(MWindow *mwindow, PreferencesWindow *pwindow, int x, int y, int value)
- : BC_CheckBox(x, y, value, "Record in realtime priority (root only)")
+ : BC_CheckBox(x, y, value, _("Record in realtime priority (root only)"))
 { 
 	this->pwindow = pwindow; 
 }
@@ -176,7 +183,7 @@ int RecordSampleRate::handle_event()
 
 
 // DuplexEnable::DuplexEnable(MWindow *mwindow, PreferencesWindow *pwindow, int x, int y, int value)
-//  : BC_CheckBox(x, y, value, "Enable full duplex")
+//  : BC_CheckBox(x, y, value, _("Enable full duplex"))
 // { this->pwindow = pwindow; }
 // 
 // int DuplexEnable::handle_event()
@@ -278,7 +285,7 @@ int CaptureLengthTumbler::handle_down_event()
 
 
 RecordSoftwareTimer::RecordSoftwareTimer(PreferencesWindow *pwindow, int value, int x, int y)
- : BC_CheckBox(x, y, value, "Use software for positioning information")
+ : BC_CheckBox(x, y, value, _("Use software for positioning information"))
 {
 	this->pwindow = pwindow; 
 }
@@ -292,7 +299,7 @@ int RecordSoftwareTimer::handle_event()
 
 
 RecordSyncDrives::RecordSyncDrives(PreferencesWindow *pwindow, int value, int x, int y)
- : BC_CheckBox(x, y, value, "Sync drives automatically")
+ : BC_CheckBox(x, y, value, _("Sync drives automatically"))
 {
 	this->pwindow = pwindow; 
 }

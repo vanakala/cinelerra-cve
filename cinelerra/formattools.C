@@ -8,6 +8,11 @@
 #include "theme.h"
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 FormatTools::FormatTools(MWindow *mwindow,
 				BC_WindowBase *window, 
 				Asset *asset)
@@ -97,8 +102,8 @@ int FormatTools::create_objects(int &init_x,
 		x, 
 		y, 
 		asset->path,
-		"Output to file",
-		"Select a file to write to:",
+		_("Output to file"),
+		_("Select a file to write to:"),
 		0));
 
 //printf("FormatTools::create_objects 2\n");
@@ -106,7 +111,7 @@ int FormatTools::create_objects(int &init_x,
 	y += 35;
 
 //printf("FormatTools::create_objects 3\n");
-	window->add_subwindow(format_title = new BC_Title(x, y, "File Format:"));
+	window->add_subwindow(format_title = new BC_Title(x, y, _("File Format:")));
 	x += 90;
 	window->add_subwindow(format_text = new BC_TextBox(x, 
 		y, 
@@ -125,7 +130,7 @@ int FormatTools::create_objects(int &init_x,
 	y += format_button->get_h() + 10;
 	if(do_audio)
 	{
-		window->add_subwindow(audio_title = new BC_Title(x, y, "Audio:", LARGEFONT, RED));
+		window->add_subwindow(audio_title = new BC_Title(x, y, _("Audio:"), LARGEFONT, RED));
 		x += 80;
 		window->add_subwindow(aparams_button = new FormatAParams(mwindow, this, x, y));
 		x += aparams_button->get_w() + 10;
@@ -140,7 +145,7 @@ int FormatTools::create_objects(int &init_x,
 // Audio channels only used for recording.
 		if(prompt_audio_channels)
 		{
-			window->add_subwindow(channels_title = new BC_Title(x, y, "Number of audio channels to record:"));
+			window->add_subwindow(channels_title = new BC_Title(x, y, _("Number of audio channels to record:")));
 			x += 260;
 			window->add_subwindow(channels_button = new FormatChannels(x, y, asset));
 			x += channels_button->get_w() + 5;
@@ -158,7 +163,7 @@ int FormatTools::create_objects(int &init_x,
 	{
 
 //printf("FormatTools::create_objects 8\n");
-		window->add_subwindow(video_title = new BC_Title(x, y, "Video:", LARGEFONT, RED));
+		window->add_subwindow(video_title = new BC_Title(x, y, _("Video:"), LARGEFONT, RED));
 		x += 80;
 		if(prompt_video_compression)
 		{
@@ -309,7 +314,7 @@ FormatAParams::FormatAParams(MWindow *mwindow, FormatTools *format, int x, int y
  : BC_Button(x, y, mwindow->theme->wrench_data)
 {
 	this->format = format;
-	set_tooltip("Configure audio compression");
+	set_tooltip(_("Configure audio compression"));
 }
 FormatAParams::~FormatAParams() 
 {
@@ -323,7 +328,7 @@ FormatVParams::FormatVParams(MWindow *mwindow, FormatTools *format, int x, int y
  : BC_Button(x, y, mwindow->theme->wrench_data)
 { 
 	this->format = format; 
-	set_tooltip("Configure video compression");
+	set_tooltip(_("Configure video compression"));
 }
 FormatVParams::~FormatVParams() 
 {
@@ -399,7 +404,7 @@ FormatAudio::FormatAudio(int x, int y, FormatTools *format, int default_)
  : BC_CheckBox(x, 
  	y, 
 	default_, 
-	(char*)(format->recording ? "Record audio tracks" : "Render audio tracks"))
+	(char*)(format->recording ? _("Record audio tracks") : _("Render audio tracks")))
 { 
 	this->format = format; 
 }
@@ -414,7 +419,7 @@ FormatVideo::FormatVideo(int x, int y, FormatTools *format, int default_)
  : BC_CheckBox(x, 
  	y, 
 	default_, 
-	(char*)(format->recording ? "Record video tracks" : "Render video tracks"))
+	(char*)(format->recording ? _("Record video tracks") : _("Render video tracks")))
 {
 this->format = format; 
 }
@@ -468,7 +473,7 @@ int FormatChannels::handle_event()
 }
 
 FormatToTracks::FormatToTracks(int x, int y, int *output)
- : BC_CheckBox(x, y, *output, "Overwrite project with output")
+ : BC_CheckBox(x, y, *output, _("Overwrite project with output"))
 { 
 	this->output = output; 
 }
@@ -486,7 +491,7 @@ FormatMultiple::FormatMultiple(MWindow *mwindow, int x, int y, int *output)
  : BC_CheckBox(x, 
  	y, 
 	(*output == FILE_PER_LABEL) || (*output == FILE_PER_LABEL_FARM), 
-	"Create new file at each label")
+	_("Create new file at each label"))
 { 
 	this->output = output;
 	this->mwindow = mwindow;

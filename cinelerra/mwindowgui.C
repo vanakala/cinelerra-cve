@@ -31,6 +31,11 @@
 #include "vwindow.h"
 #include "vwindowgui.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 // the main window uses its own private colormap for video
 MWindowGUI::MWindowGUI(MWindow *mwindow)
  : BC_Window(PROGRAM_NAME ": Program", 

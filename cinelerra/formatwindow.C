@@ -22,9 +22,9 @@ int FormatAWindow::create_objects()
 	File file;
 	x = init_x = 10;
 
-	add_subwindow(new BC_Title(x, y, "Set parameters for this audio format:"));
+	add_subwindow(new BC_Title(x, y, _("Set parameters for this audio format:")));
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Bits:"));
+	add_subwindow(new BC_Title(x, y, _("Bits:")));
 	x += 45;
 	add_subwindow(new FormatBits(x, y, asset));
 	x += 100;
@@ -40,12 +40,12 @@ int FormatAWindow::create_objects()
 
 	if(asset->format == FILE_PCM)
 	{
-		add_subwindow(new BC_Title(x, y, "Byte order:"));
+		add_subwindow(new BC_Title(x, y, _("Byte order:")));
 		y += 25;
-		add_subwindow(new BC_Title(x, y, "HiLo:", SMALLFONT));
+		add_subwindow(new BC_Title(x, y, _("HiLo:"), SMALLFONT));
 		add_subwindow(hilo_button = new FormatHILO(x + 30, y, asset));
 		x += 50;
-		add_subwindow(new BC_Title(x, y, "LoHi:", SMALLFONT));
+		add_subwindow(new BC_Title(x, y, _("LoHi:"), SMALLFONT));
 		add_subwindow(lohi_button = new FormatLOHI(x + 30, y, hilo_button, asset));
 		hilo_button->lohi = lohi_button;
 		y += 30;
@@ -82,13 +82,13 @@ int FormatVWindow::create_objects()
 
 	if(asset->format == FILE_MOV)
 	{
-		add_subwindow(new BC_Title(x, y, "Set parameters for this video format:"));
+		add_subwindow(new BC_Title(x, y, _("Set parameters for this video format:")));
 		y += 30;
-		add_subwindow(new BC_Title(x, y, "Compression:"));
+		add_subwindow(new BC_Title(x, y, _("Compression:")));
 		x += 110;
 		add_subwindow(new FormatCompress(x, y, recording, asset, asset->compression));
 		x += 90;
-		add_subwindow(new BC_Title(x, y, "Quality:"));
+		add_subwindow(new BC_Title(x, y, _("Quality:")));
 		x += 70;
 		add_subwindow(new FormatQuality(x, y, asset, asset->quality));
 		y += 40;
@@ -97,9 +97,9 @@ int FormatVWindow::create_objects()
 	else
 	if(asset->format == FILE_JPEG_LIST)
 	{
-		add_subwindow(new BC_Title(x, y, "Set parameters for this video format:"));
+		add_subwindow(new BC_Title(x, y, _("Set parameters for this video format:")));
 		y += 30;
-		add_subwindow(new BC_Title(x, y, "Quality:"));
+		add_subwindow(new BC_Title(x, y, _("Quality:")));
 		x += 70;
 		add_subwindow(new FormatQuality(x, y, asset, asset->quality));
 		y += 40;
@@ -107,7 +107,7 @@ int FormatVWindow::create_objects()
 	}
 	else
 	{
-		add_subwindow(new BC_Title(x, y, "Video is not supported in this format."));
+		add_subwindow(new BC_Title(x, y, _("Video is not supported in this format.")));
 		y += 40;
 	}
 
@@ -173,7 +173,7 @@ int FormatBits::handle_event()
 
 
 FormatDither::FormatDither(int x, int y, int *dither)
- : BC_CheckBox(x, y, *dither, "Dither")
+ : BC_CheckBox(x, y, *dither, _("Dither"))
 { this->dither = dither; }
 FormatDither::~FormatDither() {}
 int FormatDither::handle_event()
@@ -185,7 +185,7 @@ int FormatDither::handle_event()
 
 
 FormatSigned::FormatSigned(int x, int y, Asset *asset)
- : BC_CheckBox(x, y, asset->signed_, "Signed")
+ : BC_CheckBox(x, y, asset->signed_, _("Signed"))
 { this->asset = asset; }
 FormatSigned::~FormatSigned() {}
 int FormatSigned::handle_event()

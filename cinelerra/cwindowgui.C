@@ -35,6 +35,13 @@
 #include "transportque.h"
 #include "vtrack.h"
 
+
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
 CWindowGUI::CWindowGUI(MWindow *mwindow, CWindow *cwindow)
  : BC_Window(PROGRAM_NAME ": Compositor",
  	mwindow->session->cwindow_x, 
@@ -357,7 +364,7 @@ int CWindowGUI::drag_stop()
 		if(mwindow->session->drag_assets->total)
 		{
 			mwindow->gui->lock_window();
-			mwindow->undo->update_undo_before("insert assets", 
+			mwindow->undo->update_undo_before(_("insert assets"), 
 				LOAD_ALL);
 			mwindow->clear(0);
 			mwindow->load_assets(mwindow->session->drag_assets, 
@@ -372,7 +379,7 @@ int CWindowGUI::drag_stop()
 		if(mwindow->session->drag_clips->total)
 		{
 			mwindow->gui->lock_window();
-			mwindow->undo->update_undo_before("insert assets", 
+			mwindow->undo->update_undo_before(_("insert assets"), 
 				LOAD_ALL);
 			mwindow->clear(0);
 			mwindow->paste_edls(mwindow->session->drag_clips, 
@@ -1197,7 +1204,7 @@ int CWindowCanvas::do_mask(int &redraw,
 			point->control_x2 = 0;
 			point->control_y2 = 0;
 
-			mwindow->undo->update_undo_before("mask point", LOAD_AUTOMATION);
+			mwindow->undo->update_undo_before(_("mask point"), LOAD_AUTOMATION);
 
 			if(shortest_point2 < shortest_point1)
 			{
@@ -1398,7 +1405,7 @@ int CWindowCanvas::do_mask(int &redraw,
 				!EQUIV(last_control_x2, point->control_x2) ||
 				!EQUIV(last_control_y2, point->control_y2))
 			{
-				mwindow->undo->update_undo_before("tweek", LOAD_AUTOMATION);
+				mwindow->undo->update_undo_before(_("tweek"), LOAD_AUTOMATION);
 				rerender = 1;
 				redraw = 1;
 			}
@@ -2251,7 +2258,7 @@ int CWindowCanvas::test_bezier(int button_press,
 
 			if(!gui->affected_auto)
 			{
-				mwindow->undo->update_undo_before("keyframe", LOAD_AUTOMATION);
+				mwindow->undo->update_undo_before(_("keyframe"), LOAD_AUTOMATION);
 				if(mwindow->edl->session->cwindow_operation == CWINDOW_CAMERA)
 				{
 					if(gui->translating_zoom)
@@ -2310,7 +2317,7 @@ int CWindowCanvas::test_bezier(int button_press,
 				zoom_keyframe->value = gui->center_z + (cursor_y - gui->y_origin) / 128;
 				if(!EQUIV(last_center_z, zoom_keyframe->value))
 				{
-					mwindow->undo->update_undo_before("tweek", LOAD_AUTOMATION);
+					mwindow->undo->update_undo_before(_("tweek"), LOAD_AUTOMATION);
 					rerender = 1;
 					redraw = 1;
 					redraw_canvas = 1;
@@ -2323,7 +2330,7 @@ int CWindowCanvas::test_bezier(int button_press,
 				if(!EQUIV(last_center_x,  bezier_keyframe->center_x) ||
 				   	!EQUIV(last_center_y, bezier_keyframe->center_y))
 				{
-					mwindow->undo->update_undo_before("tweek", LOAD_AUTOMATION);
+					mwindow->undo->update_undo_before(_("tweek"), LOAD_AUTOMATION);
 					rerender = 1;
 					redraw = 1;
 				}
@@ -2342,7 +2349,7 @@ int CWindowCanvas::test_bezier(int button_press,
 			if(!EQUIV(last_control_in_x, bezier_keyframe->control_in_x) ||
 				!EQUIV(last_control_in_y, bezier_keyframe->control_in_y))
 			{
-				mwindow->undo->update_undo_before("tweek", LOAD_AUTOMATION);
+				mwindow->undo->update_undo_before(_("tweek"), LOAD_AUTOMATION);
 				rerender = 1;
 				redraw = 1;
 			}
@@ -2360,7 +2367,7 @@ int CWindowCanvas::test_bezier(int button_press,
 			if(!EQUIV(last_control_out_x, bezier_keyframe->control_out_x) ||
 				!EQUIV(last_control_out_y, bezier_keyframe->control_out_y))
 			{
-				mwindow->undo->update_undo_before("tweek", LOAD_AUTOMATION);
+				mwindow->undo->update_undo_before(_("tweek"), LOAD_AUTOMATION);
 				rerender = 1;
 				redraw = 1;
 			}

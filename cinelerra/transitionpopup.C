@@ -10,6 +10,10 @@
 #include "tracks.h"
 #include "transitionpopup.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
 
 TransitionLengthThread::TransitionLengthThread(MWindow *mwindow, TransitionPopup *popup)
  : Thread()
@@ -57,7 +61,7 @@ TransitionLengthDialog::~TransitionLengthDialog()
 	
 void TransitionLengthDialog::create_objects()
 {
-	add_subwindow(new BC_Title(10, 10, "Seconds:"));
+	add_subwindow(new BC_Title(10, 10, _("Seconds:")));
 	text = new TransitionLengthText(mwindow, this, 100, 10);
 	text->create_objects();
 	add_subwindow(new BC_OKButton(this));
@@ -155,7 +159,7 @@ int TransitionPopup::update(Transition *transition)
 
 
 TransitionPopupAttach::TransitionPopupAttach(MWindow *mwindow, TransitionPopup *popup)
- : BC_MenuItem("Attach...")
+ : BC_MenuItem(_("Attach..."))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
@@ -177,7 +181,7 @@ int TransitionPopupAttach::handle_event()
 
 
 TransitionPopupDetach::TransitionPopupDetach(MWindow *mwindow, TransitionPopup *popup)
- : BC_MenuItem("Detach")
+ : BC_MenuItem(_("Detach"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
@@ -195,7 +199,7 @@ int TransitionPopupDetach::handle_event()
 
 
 TransitionPopupOn::TransitionPopupOn(MWindow *mwindow, TransitionPopup *popup)
- : BC_MenuItem("On")
+ : BC_MenuItem(_("On"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
@@ -218,7 +222,7 @@ int TransitionPopupOn::handle_event()
 
 
 TransitionPopupShow::TransitionPopupShow(MWindow *mwindow, TransitionPopup *popup)
- : BC_MenuItem("Show")
+ : BC_MenuItem(_("Show"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
@@ -242,7 +246,7 @@ int TransitionPopupShow::handle_event()
 
 
 TransitionPopupLength::TransitionPopupLength(MWindow *mwindow, TransitionPopup *popup)
- : BC_MenuItem("Length")
+ : BC_MenuItem(_("Length"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;

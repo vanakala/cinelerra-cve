@@ -4,6 +4,11 @@
 #include "edlsession.h"
 #include "vframe.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 Canvas::Canvas(BC_WindowBase *subwindow, 
 	int x, 
@@ -735,10 +740,10 @@ CanvasPopup::~CanvasPopup()
 
 void CanvasPopup::create_objects()
 {
-	add_item(new CanvasPopupSize(canvas, "Zoom 25%", 0.25));
-	add_item(new CanvasPopupSize(canvas, "Zoom 50%", 0.5));
-	add_item(new CanvasPopupSize(canvas, "Zoom 100%", 1.0));
-	add_item(new CanvasPopupSize(canvas, "Zoom 200%", 2.0));
+	add_item(new CanvasPopupSize(canvas, _("Zoom 25%"), 0.25));
+	add_item(new CanvasPopupSize(canvas, _("Zoom 50%"), 0.5));
+	add_item(new CanvasPopupSize(canvas, _("Zoom 100%"), 1.0));
+	add_item(new CanvasPopupSize(canvas, _("Zoom 200%"), 2.0));
 	if(canvas->use_cwindow)
 	{
 		add_item(new CanvasPopupResetCamera(canvas));
@@ -774,7 +779,7 @@ int CanvasPopupSize::handle_event()
 
 
 CanvasPopupResetCamera::CanvasPopupResetCamera(Canvas *canvas)
- : BC_MenuItem("Reset camera")
+ : BC_MenuItem(_("Reset camera"))
 {
 	this->canvas = canvas;
 }
@@ -787,7 +792,7 @@ int CanvasPopupResetCamera::handle_event()
 
 
 CanvasPopupResetProjector::CanvasPopupResetProjector(Canvas *canvas)
- : BC_MenuItem("Reset projector")
+ : BC_MenuItem(_("Reset projector"))
 {
 	this->canvas = canvas;
 }
@@ -800,7 +805,7 @@ int CanvasPopupResetProjector::handle_event()
 
 
 CanvasPopupResetTranslation::CanvasPopupResetTranslation(Canvas *canvas)
- : BC_MenuItem("Reset translation")
+ : BC_MenuItem(_("Reset translation"))
 {
 	this->canvas = canvas;
 }
@@ -814,7 +819,7 @@ int CanvasPopupResetTranslation::handle_event()
 
 
 CanvasPopupRemoveSource::CanvasPopupRemoveSource(Canvas *canvas)
- : BC_MenuItem("Close source")
+ : BC_MenuItem(_("Close source"))
 {
 	this->canvas = canvas;
 }

@@ -5,6 +5,11 @@
 #include <stdlib.h>
 #include <unistd.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 Messages::Messages(int input_flag, int output_flag, int id)
 {
 	if(id == -1)
@@ -43,7 +48,7 @@ int Messages::read_message(char *text)
 
 	if((msgrcv(msgid, (struct msgbuf*)&buffer, MESSAGESIZE, input_flag, 0)) < 0)
 	{
-		printf("recieve message failed\n");
+		printf(_("recieve message failed\n"));
 		sleep(1);     // don't flood the screen during the loop
 		return -1;
 	}
@@ -59,7 +64,7 @@ long Messages::read_message()
 	
 	if((msgrcv(msgid, (struct msgbuf*)&buffer, MESSAGESIZE, input_flag, 0)) < 0)
 	{
-		printf("recieve message failed\n");
+		printf(_("recieve message failed\n"));
 		sleep(1);
 		return -1;
 	}
@@ -80,7 +85,7 @@ char* Messages::read_message_raw()
 	
 	if((msgrcv(msgid, (struct msgbuf*)&buffer, MESSAGESIZE, input_flag, 0)) < 0)
 	{
-		printf("recieve message failed\n");
+		printf(_("recieve message failed\n"));
 		sleep(1);
 		return "RECIEVE MESSAGE FAILED";
 	}
@@ -151,7 +156,7 @@ int Messages::write_message(char *text)
 	buffer.mtype = output_flag;
 	strcpy(buffer.text, text);
 
-	if((msgsnd(msgid, (struct msgbuf*)&buffer, strlen(text) + 1, 0)) < 0) printf("send message failed\n");
+	if((msgsnd(msgid, (struct msgbuf*)&buffer, strlen(text) + 1, 0)) < 0) printf(_("send message failed\n"));
 	return 0;
 }
 
@@ -159,7 +164,7 @@ int Messages::write_message_raw()
 {
 	buffer.mtype = output_flag;
 
-	if((msgsnd(msgid, (struct msgbuf*)&buffer, strlen(buffer.text) + 1, 0)) < 0) printf("send message failed\n");
+	if((msgsnd(msgid, (struct msgbuf*)&buffer, strlen(buffer.text) + 1, 0)) < 0) printf(_("send message failed\n"));
 	return 0;
 }
 
@@ -168,7 +173,7 @@ int Messages::write_message_flagged(int output_flag, int command)
 	buffer.mtype = output_flag;
 	sprintf(buffer.text, "%d", command);
 	
-	if((msgsnd(msgid, (struct msgbuf*)&buffer, strlen(buffer.text) + 1, 0)) < 0) printf("send message failed\n");
+	if((msgsnd(msgid, (struct msgbuf*)&buffer, strlen(buffer.text) + 1, 0)) < 0) printf(_("send message failed\n"));
 	return 0;
 }
 
@@ -176,7 +181,7 @@ int Messages::write_message(int number)
 {
 	sprintf(buffer.text, "%d", number);
 	buffer.mtype = output_flag;
-	if((msgsnd(msgid, (struct msgbuf*)&buffer, strlen(buffer.text) + 1, 0)) < 0) perror("Messages::write_message");
+	if((msgsnd(msgid, (struct msgbuf*)&buffer, strlen(buffer.text) + 1, 0)) < 0) perror(_("Messages::write_message"));
 	return 0;
 }
 
@@ -184,7 +189,7 @@ int Messages::write_message_f(float number)
 {
 	sprintf(buffer.text, "%f", number);
 	buffer.mtype = output_flag;
-	if((msgsnd(msgid, (struct msgbuf*)&buffer, strlen(buffer.text) + 1, 0)) < 0) perror("Messages::write_message");
+	if((msgsnd(msgid, (struct msgbuf*)&buffer, strlen(buffer.text) + 1, 0)) < 0) perror(_("Messages::write_message"));
 	return 0;
 }
 

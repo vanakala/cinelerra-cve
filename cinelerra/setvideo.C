@@ -13,8 +13,13 @@
 #include "setvideo.h"
 #include "transportque.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 SetVideo::SetVideo(MWindow *mwindow)
- :BC_MenuItem("Video Setup...")
+ :BC_MenuItem(_("Video Setup..."))
 {
 	this->mwindow = mwindow;
 	thread = new SetVideoThread(mwindow);
@@ -105,7 +110,7 @@ void SetVideoThread::run()
 
 	if(!result)
 	{
-		mwindow->undo->update_undo_before("set video", LOAD_ALL);
+		mwindow->undo->update_undo_before(_("set video"), LOAD_ALL);
 		save_params();
 		mwindow->undo->update_undo_after();
 		mwindow->save_backup();
@@ -238,7 +243,7 @@ int SetVideoWindow::create_objects()
 	BC_TextBox *textbox;
 
 	x1 = x;
-	add_subwindow(new BC_Title(x1, y, "Frame rate:"));
+	add_subwindow(new BC_Title(x1, y, _("Frame rate:")));
 	x1 += 100;
 	add_subwindow(textbox = new SetFrameRateTextBox(thread, x1, y));
 	x1 += textbox->get_w();
@@ -246,55 +251,55 @@ int SetVideoWindow::create_objects()
 
 // 	x1 = x;
 // 	y += textbox->get_h() + 5;
-// 	add_subwindow(new BC_Title(x1, y, "Channels:"));
+// 	add_subwindow(new BC_Title(x1, y, _("Channels:")));
 // 	x1 += 100;
 // 	add_subwindow(textbox = new SetVChannels(thread, x1, y));
 // 	x1 += textbox->get_w();
 // 	add_subwindow(new BC_ITumbler(textbox, 1, MAXCHANNELS, x1, y));
 
 	y += textbox->get_h() + 40;
-	add_subwindow(new BC_Title(x, y, "Default track size:"));
+	add_subwindow(new BC_Title(x, y, _("Default track size:")));
 	x1 = x + 150;
 	y1 = y;
-	add_subwindow(new BC_Title(x + 200, y, "Canvas size:"));
+	add_subwindow(new BC_Title(x + 200, y, _("Canvas size:")));
 	x2 = x + 200 + 150;
 	y2 = y;
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Width:"));
+	add_subwindow(new BC_Title(x, y, _("Width:")));
 	x += 70;
 	add_subwindow(dimension[0] = new ScaleSizeText(x, y, thread, &(thread->dimension[0])));
 	x += 110;
-	add_subwindow(new BC_Title(x, y, "Width:"));
+	add_subwindow(new BC_Title(x, y, _("Width:")));
 	x += 70;
 	add_subwindow(dimension[2] = new ScaleSizeText(x, y, thread, &(thread->dimension[2])));
 
 	y += dimension[0]->get_h() + 5;
 	x = 10;
-	add_subwindow(new BC_Title(x, y, "Height:"));
+	add_subwindow(new BC_Title(x, y, _("Height:")));
 	x += 70;
 	add_subwindow(dimension[1] = new ScaleSizeText(x, y, thread, &(thread->dimension[1])));
 	x += 110;
-	add_subwindow(new BC_Title(x, y, "Height:"));
+	add_subwindow(new BC_Title(x, y, _("Height:")));
 	x += 70;
 	add_subwindow(dimension[3] = new ScaleSizeText(x, y, thread, &(thread->dimension[3])));
 
 	y += dimension[1]->get_h() + 5;
 	x = 10;
-	add_subwindow(new BC_Title(x, y, "W Ratio:"));
+	add_subwindow(new BC_Title(x, y, _("W Ratio:")));
 	x += 70;
 	add_subwindow(ratio[0] = new ScaleRatioText(x, y, thread, &(thread->ratio[0])));
 	x += 110;
-	add_subwindow(new BC_Title(x, y, "W Ratio:"));
+	add_subwindow(new BC_Title(x, y, _("W Ratio:")));
 	x += 70;
 	add_subwindow(ratio[2] = new ScaleRatioText(x, y, thread, &(thread->ratio[2])));
 
 	y += ratio[0]->get_h() + 5;
 	x = 10;
-	add_subwindow(new BC_Title(x, y, "H Ratio:"));
+	add_subwindow(new BC_Title(x, y, _("H Ratio:")));
 	x += 70;
 	add_subwindow(ratio[1] = new ScaleRatioText(x, y, thread, &(thread->ratio[1])));
 	x += 110;
-	add_subwindow(new BC_Title(x, y, "H Ratio:"));
+	add_subwindow(new BC_Title(x, y, _("H Ratio:")));
 	x += 70;
 	add_subwindow(ratio[3] = new ScaleRatioText(x, y, thread, &(thread->ratio[3])));
 
@@ -315,14 +320,14 @@ int SetVideoWindow::create_objects()
 //	add_subwindow(new ScaleConstrain(x, y, thread));
 //	x = 10;
 //	y += 80;
-	add_subwindow(new BC_Title(x, y, "Aspect ratio:"));
+	add_subwindow(new BC_Title(x, y, _("Aspect ratio:")));
 	x += 100;
 	add_subwindow(aspect_w = new ScaleAspectText(x, 
 		y, 
 		thread, 
 		&(thread->aspect_w)));
 	x += aspect_w->get_w() + 5;
-	add_subwindow(new BC_Title(x, y, ":"));
+	add_subwindow(new BC_Title(x, y, _(":")));
 	x += 10;
 	add_subwindow(aspect_h = new ScaleAspectText(x, 
 		y, 
@@ -339,7 +344,7 @@ int SetVideoWindow::create_objects()
 
 	y += 40;
 	x = 10;
-	add_subwindow(new BC_Title(x, y, "Color model:"));
+	add_subwindow(new BC_Title(x, y, _("Color model:")));
 	x += 100;
 	add_subwindow(textbox = new BC_TextBox(x, y, 200, 1, ""));
 	x += textbox->get_w();
@@ -428,7 +433,7 @@ int ScaleRatioText::handle_event()
 
 
 ScaleConstrain::ScaleConstrain(int x, int y, SetVideoThread *thread)
- : BC_CheckBox(x, y, thread->constrain_ratio, "Constrain ratio")
+ : BC_CheckBox(x, y, thread->constrain_ratio, _("Constrain ratio"))
 { 
 	this->thread = thread; 
 }
@@ -440,7 +445,7 @@ int ScaleConstrain::handle_event()
 
 
 ScaleAspectAuto::ScaleAspectAuto(int x, int y, SetVideoThread *thread)
- : BC_CheckBox(x, y, thread->auto_aspect, "Auto")
+ : BC_CheckBox(x, y, thread->auto_aspect, _("Auto"))
 { 
 	this->thread = thread; 
 }

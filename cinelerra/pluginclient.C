@@ -4,6 +4,10 @@
 #include "pluginserver.h"
 
 #include <string.h>
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
 
 PluginClient::PluginClient(PluginServer *server)
 {
@@ -39,7 +43,7 @@ int PluginClient::plugin_init(int argc, char *argv[])
 {
 	if(argc < 3)
 	{
-		printf("This is a plugin for Broadcast 2000a.  Grow a mane.\n");
+		printf(_("This is a plugin for Broadcast 2000a.  Grow a mane.\n"));
 		success = 0;
 		return 1;
 	}
@@ -129,7 +133,7 @@ int PluginClient::is_synthesis() { return 0; }
 int PluginClient::is_realtime() { return 0; }
 int PluginClient::is_fileio() { return 0; }
 int PluginClient::delete_buffer_ptrs() { return 0; }
-char* PluginClient::plugin_title() { return "Untitled"; }
+char* PluginClient::plugin_title() { return _("Untitled"); }
 VFrame* PluginClient::new_picon() { return 0; }
 Theme* PluginClient::new_theme() { return 0; }
 int PluginClient::is_audio() { return 0; }
@@ -187,7 +191,7 @@ int PluginClient::plugin_start_plugin()
 
 int PluginClient::start_plugin()
 {
-	printf("No processing defined for this plugin.\n");
+	printf(_("No processing defined for this plugin.\n"));
 	return 0;
 }
 

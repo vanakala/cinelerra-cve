@@ -4,6 +4,13 @@
 #include "theme.h"
 #include "vframe.h"
 
+
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
 StatusBar::StatusBar(MWindow *mwindow, MWindowGUI *gui)
  : BC_SubWindow(mwindow->theme->mstatus_x, 
  	mwindow->theme->mstatus_y, 
@@ -79,7 +86,7 @@ void StatusBar::set_message(char *text)
 void StatusBar::default_message()
 {
 	status_text->set_color(BLACK);
-	status_text->update("Welcome to Cinelerra.");
+	status_text->update(_("Welcome to Cinelerra."));
 }
 
 
@@ -87,7 +94,7 @@ StatusBarCancel::StatusBarCancel(MWindow *mwindow, int x, int y)
  : BC_Button(x, y, mwindow->theme->statusbar_cancel_data)
 {
 	this->mwindow = mwindow;
-	set_tooltip("Cancel operation");
+	set_tooltip(_("Cancel operation"));
 }
 int StatusBarCancel::handle_event()
 {

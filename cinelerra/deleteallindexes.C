@@ -8,9 +8,13 @@
 #include "theme.h"
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
 
 DeleteAllIndexes::DeleteAllIndexes(MWindow *mwindow, PreferencesWindow *pwindow, int x, int y)
- : BC_GenericButton(x, y, "Delete existing indexes"), Thread()
+ : BC_GenericButton(x, y, _("Delete existing indexes")), Thread()
 {
 	this->mwindow = mwindow;
 	this->pwindow = pwindow;
@@ -33,7 +37,7 @@ void DeleteAllIndexes::run()
 
 //	pwindow->disable_window();
 	char string[1024];
-	sprintf(string, "Delete all indexes in %s?", string1);
+	sprintf(string, _("Delete all indexes in %s?"), string1);
 //	QuestionWindow confirm(mwindow);
 //	confirm.create_objects(string, 0);
 

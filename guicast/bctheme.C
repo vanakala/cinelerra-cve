@@ -8,6 +8,11 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 BC_Theme::BC_Theme()
 {
 	char *path_env = getenv("PATH");
@@ -18,7 +23,7 @@ BC_Theme::BC_Theme()
 	FILE *fd = fopen("/proc/self/cmdline", "r");
 	if(!fd)
 	{
-		perror("BC_Theme::BC_Theme: can't open /proc/self/cmdline.\n");
+		perror(_("BC_Theme::BC_Theme: can't open /proc/self/cmdline.\n"));
 		return;
 	}
 	else
@@ -284,7 +289,7 @@ unsigned char* BC_Theme::get_image_data(char *title)
 
 		if(!fd)
 		{
-			fprintf(stderr, "Theme::get_image: %s when opening %s\n", strerror(errno), path);
+			fprintf(stderr, _("Theme::get_image: %s when opening %s\n"), strerror(errno), path);
 		}
 		int data_offset, contents_offset;
 		int total_bytes;
@@ -343,7 +348,7 @@ unsigned char* BC_Theme::get_image_data(char *title)
 		}
 	}
 
-	fprintf(stderr, "Theme::get_image: %s not found.\n", title);
+	fprintf(stderr, _("Theme::get_image: %s not found.\n"), title);
 	return 0;
 }
 
@@ -357,7 +362,7 @@ return;
 		if(!used.values[i])
 		{
 			if(!got_it)
-				printf("BC_Theme::check_used: Images aren't used.\n");
+				printf(_("BC_Theme::check_used: Images aren't used.\n"));
 			printf("%s ", contents.values[i]);
 			got_it = 1;
 		}

@@ -21,6 +21,12 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 extern "C"
 {
 #include <uuid/uuid.h>
@@ -118,7 +124,7 @@ void BRender::run()
 		fclose(fd);
 	}
 	else
-		perror("BRender::fork_background: can't open /proc/self/cmdline.\n");
+		perror(_("BRender::fork_background: can't open /proc/self/cmdline.\n"));
 
 	arguments[0] = new char[strlen(string) + 1];
 	strcpy(arguments[0], string);
@@ -229,7 +235,7 @@ void BRender::set_video_map(int64_t position, int value)
 
 	if(value == BRender::NOT_SCANNED)
 	{
-		printf("BRender::set_video_map called to set NOT_SCANNED\n");
+		printf(_("BRender::set_video_map called to set NOT_SCANNED\n"));
 	}
 
 // Preroll
@@ -246,7 +252,7 @@ void BRender::set_video_map(int64_t position, int value)
 	else
 // Obsolete EDL
 	{
-		printf("BRender::set_video_map %d: attempt to set beyond end of map %d.\n",
+		printf(_("BRender::set_video_map %d: attempt to set beyond end of map %d.\n"),
 			position,
 			map_size);
 	}

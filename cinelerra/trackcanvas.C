@@ -2158,7 +2158,7 @@ int TrackCanvas::test_floatline(int center_pixel,
 
 		if(buttonpress)
 		{
-			mwindow->undo->update_undo_before("keyframe", LOAD_AUTOMATION);
+			mwindow->undo->update_undo_before(_("keyframe"), LOAD_AUTOMATION);
 
 
 			Auto *current;
@@ -2219,7 +2219,7 @@ int TrackCanvas::test_toggleline(Autos *autos,
 
 			if(buttonpress)
 			{
-				mwindow->undo->update_undo_before("keyframe", LOAD_AUTOMATION);
+				mwindow->undo->update_undo_before(_("keyframe"), LOAD_AUTOMATION);
 
 
 				Auto *current;
@@ -3021,7 +3021,7 @@ int TrackCanvas::update_drag_edit()
 	double zoom_sample; \
 	double zoom_units; \
  \
- 	mwindow->undo->update_undo_before("tweek", LOAD_AUTOMATION); \
+ 	mwindow->undo->update_undo_before(_("tweek"), LOAD_AUTOMATION); \
 	calculate_viewport(current->autos->track,  \
 		view_start, \
 		unit_start, \

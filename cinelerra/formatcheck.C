@@ -4,6 +4,11 @@
 #include "formatcheck.h"
 #include "mwindow.inc"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 FormatCheck::FormatCheck(Asset *asset)
 {
 	this->asset = asset;
@@ -23,7 +28,7 @@ int FormatCheck::check_format()
 		if(!File::supports_video(asset->format))
 		{
 			ErrorBox errorbox(PROGRAM_NAME ": Error");
-			errorbox.create_objects("The format you selected doesn't support video.");
+			errorbox.create_objects(_("The format you selected doesn't support video."));
 			errorbox.run_window();
 			result = 1;
 		}
@@ -34,7 +39,7 @@ int FormatCheck::check_format()
 		if(!File::supports_audio(asset->format))
 		{
 			ErrorBox errorbox(PROGRAM_NAME ": Error");
-			errorbox.create_objects("The format you selected doesn't support audio.");
+			errorbox.create_objects(_("The format you selected doesn't support audio."));
 			errorbox.run_window();
 			result = 1;
 		}
@@ -42,7 +47,7 @@ int FormatCheck::check_format()
 		if(!result && asset->bits == BITSIMA4 && asset->format != FILE_MOV)
 		{
 			ErrorBox errorbox(PROGRAM_NAME ": Error");
-			errorbox.create_objects("IMA4 compression is only available in Quicktime movies.");
+			errorbox.create_objects(_("IMA4 compression is only available in Quicktime movies."));
 			errorbox.run_window();
 			result = 1;
 		}
@@ -52,8 +57,8 @@ int FormatCheck::check_format()
 			asset->format != FILE_PCM)
 		{
 			ErrorBox errorbox(PROGRAM_NAME ": Error");
-			errorbox.create_objects("ULAW compression is only available in\n" 
-				"Quicktime Movies and PCM files.");
+			errorbox.create_objects(_("ULAW compression is only available in\n" 
+				"Quicktime Movies and PCM files."));
 			errorbox.run_window();
 			result = 1;
 		}

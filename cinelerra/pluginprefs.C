@@ -2,6 +2,13 @@
 #include "preferences.h"
 #include <string.h>
 
+
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
 PluginPrefs::PluginPrefs(MWindow *mwindow, PreferencesWindow *pwindow)
  : PreferencesDialog(mwindow, pwindow)
 {
@@ -26,9 +33,9 @@ int PluginPrefs::create_objects()
 // 		get_resources()->get_bg_light2(),
 // 		get_resources()->get_bg_light1());
 
-	add_subwindow(new BC_Title(x, y, "Plugin Set", LARGEFONT, BLACK));
+	add_subwindow(new BC_Title(x, y, _("Plugin Set"), LARGEFONT, BLACK));
 	y += 35;
-	add_subwindow(new BC_Title(x, y, "Look for global plugins here", MEDIUMFONT, BLACK));
+	add_subwindow(new BC_Title(x, y, _("Look for global plugins here"), MEDIUMFONT, BLACK));
 	y += 20;
 	add_subwindow(ipathtext = new PluginGlobalPathText(x, y, pwindow, pwindow->thread->preferences->global_plugin_dir));
 	add_subwindow(ipath = new BrowseButton(mwindow,
@@ -37,12 +44,12 @@ int PluginPrefs::create_objects()
 		215, 
 		y, 
 		pwindow->thread->preferences->global_plugin_dir, 
-		"Global Plugin Path", 
-		"Select the directory for plugins", 
+		("Global Plugin Path"), 
+		_("Select the directory for plugins"), 
 		1));
 	
 	y += 35;
-	add_subwindow(new BC_Title(x, y, "Look for personal plugins here", MEDIUMFONT, BLACK));
+	add_subwindow(new BC_Title(x, y, _("Look for personal plugins here"), MEDIUMFONT, BLACK));
 	y += 20;
 	add_subwindow(lpathtext = new PluginLocalPathText(x, y, pwindow, pwindow->thread->preferences->local_plugin_dir));
 	add_subwindow(lpath = new BrowseButton(mwindow,
@@ -51,8 +58,8 @@ int PluginPrefs::create_objects()
 		215, 
 		y, 
 		pwindow->thread->preferences->local_plugin_dir, 
-		"Personal Plugin Path", 
-		"Select the directory for plugins", 
+		_9"Personal Plugin Path"), 
+		_("Select the directory for plugins"), 
 		1));
 
 

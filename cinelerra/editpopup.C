@@ -8,6 +8,11 @@
 #include "tracks.h"
 #include "trackcanvas.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 EditPopup::EditPopup(MWindow *mwindow, MWindowGUI *gui)
  : BC_PopupMenu(0, 
 		0, 
@@ -63,7 +68,7 @@ int EditPopup::update(Track *track, Edit *edit)
 
 
 EditAttachEffect::EditAttachEffect(MWindow *mwindow, EditPopup *popup)
- : BC_MenuItem("Attach effect...")
+ : BC_MenuItem(_("Attach effect..."))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
@@ -85,7 +90,7 @@ int EditAttachEffect::handle_event()
 
 
 EditMoveTrackUp::EditMoveTrackUp(MWindow *mwindow, EditPopup *popup)
- : BC_MenuItem("Move up")
+ : BC_MenuItem(_("Move up"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
@@ -102,7 +107,7 @@ int EditMoveTrackUp::handle_event()
 
 
 EditMoveTrackDown::EditMoveTrackDown(MWindow *mwindow, EditPopup *popup)
- : BC_MenuItem("Move down")
+ : BC_MenuItem(_("Move down"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
@@ -120,7 +125,7 @@ int EditMoveTrackDown::handle_event()
 
 
 EditPopupResize::EditPopupResize(MWindow *mwindow, EditPopup *popup)
- : BC_MenuItem("Resize track...")
+ : BC_MenuItem(_("Resize track..."))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
@@ -144,7 +149,7 @@ int EditPopupResize::handle_event()
 
 
 EditPopupMatchSize::EditPopupMatchSize(MWindow *mwindow, EditPopup *popup)
- : BC_MenuItem("Match output size")
+ : BC_MenuItem(_("Match output size"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
@@ -166,7 +171,7 @@ int EditPopupMatchSize::handle_event()
 
 
 EditPopupDeleteTrack::EditPopupDeleteTrack(MWindow *mwindow, EditPopup *popup)
- : BC_MenuItem("Delete track")
+ : BC_MenuItem(_("Delete track"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
@@ -183,7 +188,7 @@ int EditPopupDeleteTrack::handle_event()
 
 
 EditPopupAddTrack::EditPopupAddTrack(MWindow *mwindow, EditPopup *popup)
- : BC_MenuItem("Add track")
+ : BC_MenuItem(_("Add track"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;

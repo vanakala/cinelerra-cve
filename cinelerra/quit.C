@@ -16,9 +16,13 @@
 #include "videowindowgui.h"
 
 #include <unistd.h>
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
 
 Quit::Quit(MWindow *mwindow)
- : BC_MenuItem("Quit", "q", 'q'), Thread() 
+ : BC_MenuItem(_("Quit"), "q", 'q'), Thread() 
 { 
 	this->mwindow = mwindow; 
 }
@@ -57,7 +61,7 @@ void Quit::run()
 		ErrorBox error(PROGRAM_NAME ": Error", 
 			mwindow->gui->get_abs_cursor_x(), 
 			mwindow->gui->get_abs_cursor_y());
-		error.create_objects("Can't quit while a recording is in progress.");
+		error.create_objects(_("Can't quit while a recording is in progress."));
 		error.run_window();
 		return;
 	}
@@ -67,7 +71,7 @@ void Quit::run()
 		ErrorBox error(PROGRAM_NAME ": Error", 
 			mwindow->gui->get_abs_cursor_x(), 
 			mwindow->gui->get_abs_cursor_y());
-		error.create_objects("Can't quit while a render is in progress.");
+		error.create_objects(_("Can't quit while a render is in progress."));
 		error.run_window();
 		return;
 	}
@@ -80,7 +84,7 @@ void Quit::run()
 //printf("Quit::run 2\n");
 		ConfirmQuitWindow confirm(mwindow);
 //printf("Quit::run 2\n");
-		confirm.create_objects("Save edit list before exiting?");
+		confirm.create_objects(_("Save edit list before exiting?"));
 //printf("Quit::run 2\n");
 		result = confirm.run_window();
 //printf("Quit::run 2\n");

@@ -26,6 +26,13 @@
 #include "vwindowgui.h"
 #include "vwindow.h"
 
+
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
 AssetPicon::AssetPicon(MWindow *mwindow, 
 	AWindowGUI *gui, 
 	Asset *asset)
@@ -260,8 +267,8 @@ int AWindowGUI::create_objects()
 	AssetPicon *picon;
 
 //printf("AWindowGUI::create_objects 1\n");
-	asset_titles[0] = "Title";
-	asset_titles[1] = "Comments";
+	asset_titles[0] = _("Title");
+	asset_titles[1] = _("Comments");
 
 	set_icon(mwindow->theme->awindow_icon);
 	file_icon = new BC_Pixmap(this, 
@@ -1263,7 +1270,7 @@ AWindowNewFolder::AWindowNewFolder(MWindow *mwindow, AWindowGUI *gui, int x, int
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip("New bin");
+	set_tooltip(_("New bin"));
 }
 
 int AWindowNewFolder::handle_event()
@@ -1277,7 +1284,7 @@ AWindowDeleteFolder::AWindowDeleteFolder(MWindow *mwindow, AWindowGUI *gui, int 
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip("Delete bin");
+	set_tooltip(_("Delete bin"));
 }
 
 int AWindowDeleteFolder::handle_event()
@@ -1295,7 +1302,7 @@ AWindowRenameFolder::AWindowRenameFolder(MWindow *mwindow, AWindowGUI *gui, int 
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip("Rename bin");
+	set_tooltip(_("Rename bin"));
 }
 
 int AWindowRenameFolder::handle_event()
@@ -1308,7 +1315,7 @@ AWindowDeleteDisk::AWindowDeleteDisk(MWindow *mwindow, AWindowGUI *gui, int x, i
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip("Delete asset from disk");
+	set_tooltip(_("Delete asset from disk"));
 }
 
 int AWindowDeleteDisk::handle_event()
@@ -1321,7 +1328,7 @@ AWindowDeleteProject::AWindowDeleteProject(MWindow *mwindow, AWindowGUI *gui, in
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip("Delete asset from project");
+	set_tooltip(_("Delete asset from project"));
 }
 
 int AWindowDeleteProject::handle_event()
@@ -1334,7 +1341,7 @@ AWindowInfo::AWindowInfo(MWindow *mwindow, AWindowGUI *gui, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip("Edit information on asset");
+	set_tooltip(_("Edit information on asset"));
 }
 
 int AWindowInfo::handle_event()
@@ -1348,7 +1355,7 @@ AWindowRedrawIndex::AWindowRedrawIndex(MWindow *mwindow, AWindowGUI *gui, int x,
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip("Redraw index");
+	set_tooltip(_("Redraw index"));
 }
 
 int AWindowRedrawIndex::handle_event()
@@ -1361,7 +1368,7 @@ AWindowPaste::AWindowPaste(MWindow *mwindow, AWindowGUI *gui, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip("Paste asset on recordable tracks");
+	set_tooltip(_("Paste asset on recordable tracks"));
 }
 
 int AWindowPaste::handle_event()
@@ -1374,7 +1381,7 @@ AWindowAppend::AWindowAppend(MWindow *mwindow, AWindowGUI *gui, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip("Append asset in new tracks");
+	set_tooltip(_("Append asset in new tracks"));
 }
 
 int AWindowAppend::handle_event()
@@ -1387,7 +1394,7 @@ AWindowView::AWindowView(MWindow *mwindow, AWindowGUI *gui, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip("View asset");
+	set_tooltip(_("View asset"));
 }
 
 int AWindowView::handle_event()

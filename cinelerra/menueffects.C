@@ -26,8 +26,14 @@
 #include "theme.h"
 #include "tracks.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
 MenuEffects::MenuEffects(MWindow *mwindow)
- : BC_MenuItem("Render effect...")
+ : BC_MenuItem(_("Render effect..."))
 {
 	this->mwindow = mwindow;
 }
@@ -105,7 +111,7 @@ void MenuEffectThread::run()
 // check for recordable tracks
 	if(!get_recordable_tracks(&default_asset))
 	{
-		sprintf(string, "No recorable tracks specified.");
+		sprintf(string, _("No recorable tracks specified."));
 		ErrorBox error(PROGRAM_NAME ": Error");
 		error.create_objects(string);
 		error.run_window();
@@ -116,7 +122,7 @@ void MenuEffectThread::run()
 // check for plugins
 	if(!plugindb->total)
 	{
-		sprintf(string, "No plugins available.");
+		sprintf(string, _("No plugins available."));
 		ErrorBox error(PROGRAM_NAME ": Error");
 		error.create_objects(string);
 		error.run_window();
@@ -227,7 +233,7 @@ void MenuEffectThread::run()
 	{
 		result = 1;        // no output path given
 		ErrorBox error(PROGRAM_NAME ": Error");
-		error.create_objects("No output file specified.");
+		error.create_objects(_("No output file specified."));
 		error.run_window();
 	}
 
@@ -235,7 +241,7 @@ void MenuEffectThread::run()
 	{
 		result = 1;        // no output path given
 		ErrorBox error(PROGRAM_NAME ": Error");
-		error.create_objects("No effect selected.");
+		error.create_objects(_("No effect selected."));
 		error.run_window();
 	}
 //printf("MenuEffectThread::run 7\n");
@@ -283,7 +289,7 @@ void MenuEffectThread::run()
 	{
 		result = 1;        // no output path given
 		ErrorBox error(PROGRAM_NAME ": Error");
-		error.create_objects("No selected range to process.");
+		error.create_objects(_("No selected range to process."));
 		error.run_window();
 	}
 
@@ -417,7 +423,7 @@ void MenuEffectThread::run()
 					mwindow->edl->session->frame_rate))
 				{
 // open failed
-					sprintf(string, "Couldn't open %s", asset->path);
+					sprintf(string, _("Couldn't open %s"), asset->path);
 					ErrorBox error(PROGRAM_NAME ": Error");
 					error.create_objects(string);
 					error.run_window();
@@ -585,7 +591,7 @@ int MenuEffectWindow::create_objects()
 	{
 		add_subwindow(list_title = new BC_Title(mwindow->theme->menueffect_list_x, 
 			mwindow->theme->menueffect_list_y, 
-			"Select an effect"));
+			_("Select an effect")));
 		add_subwindow(list = new MenuEffectWindowList(this, 
 			mwindow->theme->menueffect_list_x, 
 			mwindow->theme->menueffect_list_y + 20, 
@@ -597,8 +603,8 @@ int MenuEffectWindow::create_objects()
 	add_subwindow(file_title = new BC_Title(mwindow->theme->menueffect_file_x, 
 		mwindow->theme->menueffect_file_y, 
 		(char*)((menueffects->strategy == FILE_PER_LABEL  || menueffects->strategy == FILE_PER_LABEL_FARM) ? 
-			"Select the first file to render to:" : 
-			"Select a file to render to:")));
+			_("Select the first file to render to:") : 
+			_("Select a file to render to:"))));
 
 	x = mwindow->theme->menueffect_tools_x;
 	y = mwindow->theme->menueffect_tools_y;
@@ -749,7 +755,7 @@ MenuEffectPrompt::~MenuEffectPrompt()
 int MenuEffectPrompt::create_objects()
 {
 	int x = 10, y = 10;
-	add_subwindow(new BC_Title(x, y, "Set up effect panel and hit \"OK\""));
+	add_subwindow(new BC_Title(x, y, _("Set up effect panel and hit \"OK\"")));
 	y += 20;
 	add_subwindow(new BC_OKButton(this));
 	x = get_w() - 100;

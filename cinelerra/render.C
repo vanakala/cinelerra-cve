@@ -48,9 +48,15 @@
 #include <ctype.h>
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
 
 RenderItem::RenderItem(MWindow *mwindow)
- : BC_MenuItem("Render...", "Shift+R", 'R')
+ : BC_MenuItem(_("Render..."), "Shift+R", 'R')
 {
 	this->mwindow = mwindow;
 	set_shift(1);
@@ -212,10 +218,10 @@ void Render::start_progress()
 	FileSystem fs;
 // Generate the progress box
 	fs.extract_name(filename, default_asset->path);
-	sprintf(string, "Rendering %s...", filename);
+	sprintf(string, _("Rendering %s..."), filename);
 
 // Don't bother with the filename since renderfarm defeats the meaning
-	progress = mwindow->mainprogress->start_progress("Rendering...", 
+	progress = mwindow->mainprogress->start_progress(_("Rendering..."), 
 		Units::to_int64(default_asset->sample_rate * 
 			(total_end - total_start)) +
 		Units::to_int64(preferences->render_preroll * 
@@ -235,7 +241,7 @@ void Render::stop_progress()
 		progress->stop_progress();
 		delete progress;
 
-		sprintf(string2, "Rendering took %s", string);
+		sprintf(string2, _("Rendering took %s"), string);
 		mwindow->gui->lock_window();
 		mwindow->gui->show_message(string2, BLACK);
 		mwindow->gui->unlock_window();
@@ -432,7 +438,7 @@ void Render::run()
 	{
 // Start dispatching external jobs
 		mwindow->gui->lock_window();
-		mwindow->gui->show_message("Starting render farm", BLACK);
+		mwindow->gui->show_message(_("Starting render farm"), BLACK);
 		mwindow->gui->unlock_window();
 		if(strategy == SINGLE_PASS_FARM || strategy == FILE_PER_LABEL_FARM)
 		{
@@ -451,7 +457,7 @@ void Render::run()
 			if(result)
 			{
 				mwindow->gui->lock_window();
-				mwindow->gui->show_message("Failed to start render farm", BLACK);
+				mwindow->gui->show_message(_("Failed to start render farm"), BLACK);
 				mwindow->gui->unlock_window();
 			}
 		}
@@ -547,7 +553,7 @@ void Render::run()
 			ErrorBox error_box(PROGRAM_NAME ": Error",
 				mwindow->gui->get_abs_cursor_x(),
 				mwindow->gui->get_abs_cursor_y());
-			error_box.create_objects("Error rendering data.");
+			error_box.create_objects(_("Error rendering data."));
 			error_box.run_window();
 		}
 
@@ -571,7 +577,7 @@ void Render::run()
 		mwindow->gui->lock_window();
 
 
-		mwindow->undo->update_undo_before("render", LOAD_ALL);
+		mwindow->undo->update_undo_before(_("render"), LOAD_ALL);
 
 
 		ArrayList<Asset*> *assets = packages->get_asset_list();
@@ -819,8 +825,8 @@ int RenderWindow::create_objects()
 	add_subwindow(new BC_Title(x, 
 		y, 
 		(char*)((render->strategy == FILE_PER_LABEL || render->strategy == FILE_PER_LABEL_FARM) ? 
-			"Select the first file to render to:" : 
-			"Select a file to render to:")));
+			_("Select the first file to render to:") : 
+			_("Select a file to render to:"))));
 	y += 25;
 
 	format_tools = new FormatTools(mwindow,

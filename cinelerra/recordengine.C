@@ -20,6 +20,11 @@
 
 #include <ctype.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 RecordEngine::RecordEngine(MWindow *mwindow, Record *record)
 {
 	this->mwindow = mwindow;
@@ -668,17 +673,17 @@ int RecordEngine::mode_to_text(char *string, int mode)
 {
 	switch(mode)
 	{
-		case 0:        sprintf(string, "Untimed");       break;
-		case 1:        sprintf(string, "Timed");         break;
-		case 2:        sprintf(string, "Loop");          break;
+		case 0:        sprintf(string, _("Untimed"));       break;
+		case 1:        sprintf(string, _("Timed"));         break;
+		case 2:        sprintf(string, _("Loop"));          break;
 	}
 }
 
 int RecordEngine::text_to_mode(char *string)
 {
-	if(!strcasecmp(string, "untimed")) return 0;
-	if(!strcasecmp(string, "timed"))   return 1;
-	if(!strcasecmp(string, "loop"))    return 2;
+	if(!strcasecmp(string, _("Untimed"))) return 0;
+	if(!strcasecmp(string, _("Timed")))   return 1;
+	if(!strcasecmp(string, _("Loop")))    return 2;
 }
 
 long RecordEngine::get_current_delay()

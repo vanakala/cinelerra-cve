@@ -9,6 +9,11 @@
 #include "recordconfig.h"
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 #define DEVICE_H 25
 
 ADevicePrefs::ADevicePrefs(int x, 
@@ -225,7 +230,7 @@ int ADevicePrefs::create_oss_objs()
 		}
 		if(i == 0) dialog->add_subwindow(path_title = new BC_Title(x1, 
 			y, 
-			"Device path:", 
+			_("Device path:"), 
 			MEDIUMFONT, 
 			BLACK));
 		dialog->add_subwindow(oss_path[i] = new ADeviceTextBox(x1, 
@@ -247,7 +252,7 @@ int ADevicePrefs::create_oss_objs()
 					output_int = &out_config->oss_out_bits;
 					break;
 			}
-			if(i == 0) dialog->add_subwindow(bits_title = new BC_Title(x1, y, "Bits:", MEDIUMFONT, BLACK));
+			if(i == 0) dialog->add_subwindow(bits_title = new BC_Title(x1, y, _("Bits:"), MEDIUMFONT, BLACK));
 			oss_bits = new BitsPopup(dialog, 
 				x1, 
 				y1 + 20, 
@@ -273,7 +278,7 @@ int ADevicePrefs::create_oss_objs()
 				output_int = &out_config->oss_out_channels[i];
 				break;
 		}
-		if(i == 0) dialog->add_subwindow(channels_title = new BC_Title(x1, y1, "Channels:", MEDIUMFONT, BLACK));
+		if(i == 0) dialog->add_subwindow(channels_title = new BC_Title(x1, y1, _("Channels:"), MEDIUMFONT, BLACK));
 		dialog->add_subwindow(oss_channels[i] = new ADeviceIntBox(x1, y1 + 20, output_int));
 		y1 += DEVICE_H;
 break;
@@ -312,7 +317,7 @@ int ADevicePrefs::create_alsa_objs()
 			output_char = out_config->alsa_out_device;
 			break;
 	}
-	dialog->add_subwindow(path_title = new BC_Title(x1, y, "Device:", MEDIUMFONT, BLACK));
+	dialog->add_subwindow(path_title = new BC_Title(x1, y, _("Device:"), MEDIUMFONT, BLACK));
 	alsa_device = new ALSADevice(dialog,
 		x1, 
 		y1 + 20, 
@@ -333,7 +338,7 @@ int ADevicePrefs::create_alsa_objs()
 			output_int = &out_config->alsa_out_bits;
 			break;
 	}
-	dialog->add_subwindow(bits_title = new BC_Title(x1, y, "Bits:", MEDIUMFONT, BLACK));
+	dialog->add_subwindow(bits_title = new BC_Title(x1, y, _("Bits:"), MEDIUMFONT, BLACK));
 	alsa_bits = new BitsPopup(dialog, 
 		x1, 
 		y1 + 20, 
@@ -358,7 +363,7 @@ int ADevicePrefs::create_alsa_objs()
 			output_int = &out_config->alsa_out_channels;
 			break;
 	}
-	dialog->add_subwindow(channels_title = new BC_Title(x1, y, "Channels:", MEDIUMFONT, BLACK));
+	dialog->add_subwindow(channels_title = new BC_Title(x1, y, _("Channels:"), MEDIUMFONT, BLACK));
 	dialog->add_subwindow(alsa_channels = new ADeviceIntBox(x1, y1 + 20, output_int));
 	y1 += DEVICE_H;
 #endif
@@ -384,7 +389,7 @@ int ADevicePrefs::create_esound_objs()
 			output_char = out_config->esound_out_server;
 			break;
 	}
-	dialog->add_subwindow(server_title = new BC_Title(x1, y, "Server:", MEDIUMFONT, BLACK));
+	dialog->add_subwindow(server_title = new BC_Title(x1, y, _("Server:"), MEDIUMFONT, BLACK));
 	dialog->add_subwindow(esound_server = new ADeviceTextBox(x1, y + 20, output_char));
 
 	switch(mode)
@@ -400,7 +405,7 @@ int ADevicePrefs::create_esound_objs()
 			break;
 	}
 	x1 += esound_server->get_w() + 5;
-	dialog->add_subwindow(port_title = new BC_Title(x1, y, "Port:", MEDIUMFONT, BLACK));
+	dialog->add_subwindow(port_title = new BC_Title(x1, y, _("Port:"), MEDIUMFONT, BLACK));
 	dialog->add_subwindow(esound_port = new ADeviceIntBox(x1, y + 20, output_int));
 	return 0;
 }
@@ -425,7 +430,7 @@ int ADevicePrefs::create_firewire_objs()
 
 	if(output_char)
 	{
-		dialog->add_subwindow(path_title = new BC_Title(x1, y, "Device Path:", MEDIUMFONT, BLACK));
+		dialog->add_subwindow(path_title = new BC_Title(x1, y, _("Device Path:"), MEDIUMFONT, BLACK));
 		dialog->add_subwindow(firewire_path = new ADeviceTextBox(x1, y + 20, output_char));
 		x1 += firewire_path->get_w() + 5;
 	}
@@ -443,7 +448,7 @@ int ADevicePrefs::create_firewire_objs()
 //			output_int = &out_config->afirewire_out_port;
 			break;
 	}
-	dialog->add_subwindow(port_title = new BC_Title(x1, y, "Port:", MEDIUMFONT, BLACK));
+	dialog->add_subwindow(port_title = new BC_Title(x1, y, _("Port:"), MEDIUMFONT, BLACK));
 	dialog->add_subwindow(firewire_port = new ADeviceIntBox(x1, y + 20, output_int));
 
 	x1 += firewire_port->get_w() + 5;
@@ -458,7 +463,7 @@ int ADevicePrefs::create_firewire_objs()
 			output_int = &in_config->firewire_channel;
 			break;
 	}
-	dialog->add_subwindow(channel_title = new BC_Title(x1, y, "Channel:", MEDIUMFONT, BLACK));
+	dialog->add_subwindow(channel_title = new BC_Title(x1, y, _("Channel:"), MEDIUMFONT, BLACK));
 	dialog->add_subwindow(firewire_channel = new ADeviceIntBox(x1, y + 20, output_int));
 	x1 += firewire_channel->get_w() + 5;
 
@@ -475,7 +480,7 @@ int ADevicePrefs::create_firewire_objs()
 
 	if(output_int)
 	{
-		dialog->add_subwindow(channels_title = new BC_Title(x1, y, "Channels:", MEDIUMFONT, BLACK));
+		dialog->add_subwindow(channels_title = new BC_Title(x1, y, _("Channels:"), MEDIUMFONT, BLACK));
 		dialog->add_subwindow(firewire_channels = new ADeviceIntBox(x1, y + 20, output_int));
 		x1 += firewire_channels->get_w() + 5;
 	}
@@ -493,7 +498,7 @@ int ADevicePrefs::create_firewire_objs()
 
 	if(output_int)
 	{
-		dialog->add_subwindow(syt_title = new BC_Title(x1, y, "Syt Offset:", MEDIUMFONT, BLACK));
+		dialog->add_subwindow(syt_title = new BC_Title(x1, y, _("Syt Offset:"), MEDIUMFONT, BLACK));
 		dialog->add_subwindow(firewire_syt = new ADeviceIntBox(x1, y + 20, output_int));
 		x1 += firewire_syt->get_w() + 5;
 	}

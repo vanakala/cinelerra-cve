@@ -7,6 +7,10 @@
 #include <stdint.h>
 #include <string.h>
 #include <unistd.h>
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
 
 FileTIFF::FileTIFF(Asset *asset, File *file)
  : FileList(asset, file, "TIFFLIST", ".tif", FILE_TIFF, FILE_TIFF_LIST)
@@ -442,7 +446,7 @@ TIFFConfigAlpha::TIFFConfigAlpha(TIFFConfigVideo *gui, int x, int y)
  : BC_CheckBox(x, 
  	y, 
 	TIFFConfigVideo::codec_to_alpha(gui->asset->vcodec), 
- 	"Use alpha")
+ 	_("Use alpha"))
 {
 	this->gui = gui;
 }

@@ -26,6 +26,12 @@
 #include <X11/extensions/Xvlib.h>
 #include <X11/extensions/shape.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
 BC_ResizeCall::BC_ResizeCall(int w, int h)
 {
 	this->w = w;
@@ -1565,13 +1571,13 @@ int BC_WindowBase::init_gc()
 
 int BC_WindowBase::init_fonts()
 {
-	if((largefont = XLoadQueryFont(display, resources.large_font)) == NULL) 
+	if((largefont = XLoadQueryFont(display, _(resources.large_font))) == NULL) 
 		largefont = XLoadQueryFont(display, "fixed"); 
 
-	if((mediumfont = XLoadQueryFont(display, resources.medium_font)) == NULL)
+	if((mediumfont = XLoadQueryFont(display, _(resources.medium_font))) == NULL)
 		mediumfont = XLoadQueryFont(display, "fixed"); 
 
-	if((smallfont = XLoadQueryFont(display, resources.small_font)) == NULL)
+	if((smallfont = XLoadQueryFont(display, _(resources.small_font))) == NULL)
 		smallfont = XLoadQueryFont(display, "fixed"); 
 
 	if(get_resources()->use_fontset)

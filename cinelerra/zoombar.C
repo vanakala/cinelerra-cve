@@ -13,6 +13,11 @@
 #include "zoombar.h"
 
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 
 
@@ -57,9 +62,9 @@ int ZoomBar::create_objects()
 	add_subwindow(to_value = new ToTextBox(mwindow, this, x, y));
 	x += to_value->get_w() + 5;
 
-	add_subwindow(playback_value = new BC_Title(x, 100, "--", MEDIUMFONT, RED));
+	add_subwindow(playback_value = new BC_Title(x, 100, _("--"), MEDIUMFONT, RED));
 
-	add_subwindow(zoom_value = new BC_Title(x, 100, "--", MEDIUMFONT, BLACK));
+	add_subwindow(zoom_value = new BC_Title(x, 100, _("--"), MEDIUMFONT, BLACK));
 	update();
 	return 0;
 }

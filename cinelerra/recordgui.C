@@ -28,6 +28,13 @@
 
 #include <time.h>
 
+
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
 RecordGUI::RecordGUI(MWindow *mwindow, Record *record)
  : BC_Window(PROGRAM_NAME ": Recording", 
  	mwindow->session->rwindow_x, 
@@ -69,13 +76,13 @@ RecordGUI::~RecordGUI()
 
 char* RecordGUI::batch_titles[] = 
 {
-	"On",
-	"Path",
-	"News",
-	"Start time",
-	"Duration",
-	"Source",
-	"Mode"
+	N_("On"),
+	N_("Path"),
+	N_("News"),
+	N_("Start time"),
+	N_("Duration"),
+	N_("Source"),
+	N_("Mode")
 };
 
 void RecordGUI::load_defaults()
@@ -140,7 +147,7 @@ int RecordGUI::create_objects()
 	int y = mwindow->theme->recordgui_status_y;
 	int x1 = mwindow->theme->recordgui_status_x2;
 
-	add_subwindow(new BC_Title(x, y, "Format:"));
+	add_subwindow(new BC_Title(x, y, _("Format:")));
 	add_subwindow(new BC_Title(x1, 
 		y, 
 		File::formattostr(mwindow->plugindb, 
@@ -151,7 +158,7 @@ int RecordGUI::create_objects()
 	if(record->default_asset->audio_data)
 	{
 		y += 20;
-		add_subwindow(new BC_Title(x, y, "Audio compression:"));
+		add_subwindow(new BC_Title(x, y, _("Audio compression:")));
 		add_subwindow(new BC_Title(x1, 
 			y, 
 			File::bitstostr(record->default_asset->bits), 
@@ -159,7 +166,7 @@ int RecordGUI::create_objects()
 			mwindow->theme->recordgui_fixed_color));
 
 		y += 20;
-		add_subwindow(new BC_Title(x, y, "Samplerate:"));
+		add_subwindow(new BC_Title(x, y, _("Samplerate:")));
 		sprintf(string, "%d", record->default_asset->sample_rate);
 		add_subwindow(new BC_Title(x1, 
 			y, 
@@ -168,7 +175,7 @@ int RecordGUI::create_objects()
 			mwindow->theme->recordgui_fixed_color));
 
 		y += 20;
-		add_subwindow(new BC_Title(x, y, "Clipped samples:"));
+		add_subwindow(new BC_Title(x, y, _("Clipped samples:")));
 		add_subwindow(samples_clipped = new BC_Title(x1, 
 			y, 
 			"0", 
@@ -179,7 +186,7 @@ int RecordGUI::create_objects()
 	if(record->default_asset->video_data)
 	{
 		y += 20;
-		add_subwindow(new BC_Title(x, y, "Video compression:"));
+		add_subwindow(new BC_Title(x, y, _("Video compression:")));
 		add_subwindow(new BC_Title(x1, 
 			y, 
 			FileMOV::compressiontostr(record->default_asset->vcodec), 
@@ -187,7 +194,7 @@ int RecordGUI::create_objects()
 			mwindow->theme->recordgui_fixed_color));
 	
 		y += 20;
-		add_subwindow(new BC_Title(x, y, "Framerate:"));
+		add_subwindow(new BC_Title(x, y, _("Framerate:")));
 		sprintf(string, "%0.2f", record->default_asset->frame_rate);
 		add_subwindow(new BC_Title(x1, 
 			y, 
@@ -196,7 +203,7 @@ int RecordGUI::create_objects()
 			mwindow->theme->recordgui_fixed_color));
 	
 		y += 20;
-		add_subwindow(new BC_Title(x, y, "Frames behind:"));
+		add_subwindow(new BC_Title(x, y, _("Frames behind:")));
 		add_subwindow(frames_dropped = new BC_Title(x1, 
 			y, 
 			"0", 
@@ -205,7 +212,7 @@ int RecordGUI::create_objects()
 	}
 
 	y += 20;
-	add_subwindow(new BC_Title(x, y, "Position:"));
+	add_subwindow(new BC_Title(x, y, _("Position:")));
 	add_subwindow(position_title = new BC_Title(x1, 
 		y, 
 		"", 
@@ -213,7 +220,7 @@ int RecordGUI::create_objects()
 		mwindow->theme->recordgui_variable_color));
 	
 	y += 20;
-	add_subwindow(new BC_Title(x, y, "End:"));
+	add_subwindow(new BC_Title(x, y, _("End:")));
 	add_subwindow(total_length_title = new BC_Title(x1, 
 		y, 
 		"", 
@@ -221,18 +228,18 @@ int RecordGUI::create_objects()
 		mwindow->theme->recordgui_variable_color));
 
 	y += 20;
-	add_subwindow(new BC_Title(x, y, "Prev label:"));
+	add_subwindow(new BC_Title(x, y, _("Prev label:")));
 	add_subwindow(prev_label_title = new BC_Title(x1, 
 		y, 
-		"None", 
+		_("None"), 
 		MEDIUMFONT, 
 		mwindow->theme->recordgui_variable_color));
 	
 // 	y += 20;
-// 	add_subwindow(new BC_Title(x, y, "Next label:"));
+// 	add_subwindow(new BC_Title(x, y, _("Next label:")));
 // 	add_subwindow(next_label_title = new BC_Title(x1, 
 // 		y, 
-// 		"None", 
+// 		_("None"), 
 // 		MEDIUMFONT, 
 // 		mwindow->theme->recordgui_variable_color));
 // 
@@ -241,7 +248,7 @@ int RecordGUI::create_objects()
 	y = mwindow->theme->recordgui_batch_y;
 	x1 = mwindow->theme->recordgui_batchcaption_x;
 
-	add_subwindow(batch_path_title = new BC_Title(x, y, "Path:"));
+	add_subwindow(batch_path_title = new BC_Title(x, y, _("Path:")));
 	add_subwindow(batch_path = new RecordPath(mwindow, record, x1, y));
 	add_subwindow(batch_browse = new BrowseButton(mwindow, 
 		this, 
@@ -250,32 +257,32 @@ int RecordGUI::create_objects()
 		y,
 		record->default_asset->path,
 		PROGRAM_NAME ": Record path",
-		"Select a file to record to:",
+		_("Select a file to record to:"),
 		0));
 
 	y += 30;
-	add_subwindow(batch_start_title = new BC_Title(x, y, "Start time:"));
+	add_subwindow(batch_start_title = new BC_Title(x, y, _("Start time:")));
 	batch_start = new RecordStart(mwindow, record, x1, y);
 	batch_start->create_objects();
 
 	y += 30;
-	add_subwindow(batch_duration_title = new BC_Title(x, y, "Duration time:"));
+	add_subwindow(batch_duration_title = new BC_Title(x, y, _("Duration time:")));
 	batch_duration = new RecordDuration(mwindow, record, x1, y);
 	batch_duration->create_objects();
 
 	y += 30;
-	add_subwindow(batch_source_title = new BC_Title(x, y, "Source:"));
+	add_subwindow(batch_source_title = new BC_Title(x, y, _("Source:")));
 	batch_source = new RecordSource(mwindow, record, this, x1, y);
 	batch_source->create_objects();
 	y += 30;
-	add_subwindow(batch_mode_title = new BC_Title(x, y, "Mode:"));
+	add_subwindow(batch_mode_title = new BC_Title(x, y, _("Mode:")));
 	batch_mode = new RecordMode(mwindow, record, this, x1, y);
 	batch_mode->create_objects();
 	y += 30;
 
 	add_subwindow(transport_title = 
 		new BC_Title(mwindow->theme->recordgui_transport_x, 
-			mwindow->theme->recordgui_transport_y, "Transport:"));
+			mwindow->theme->recordgui_transport_y, _("Transport:")));
 	record_transport = new RecordTransport(mwindow, 
 		record, 
 		this, 
@@ -653,9 +660,9 @@ int RecordGUIBatches::drag_stop_event()
 
 
 RecordGUISave::RecordGUISave(Record *record, RecordGUI *record_gui, int x, int y)
- : BC_GenericButton(x, y, "Close")
+ : BC_GenericButton(x, y, _("Close"))
 {
-	set_tooltip("Save the recording and quit.");
+	set_tooltip(_("Save the recording and quit."));
 	this->record = record;
 	this->gui = record_gui;
 }
@@ -678,9 +685,9 @@ int RecordGUISave::keypress_event()
 }
 
 RecordGUICancel::RecordGUICancel(Record *record, RecordGUI *record_gui, int x, int y)
- : BC_GenericButton(x, y, "Cancel")
+ : BC_GenericButton(x, y, _("Cancel"))
 {
-	set_tooltip("Quit without pasting into project.");
+	set_tooltip(_("Quit without pasting into project."));
 	this->record = record;
 	this->gui = record_gui;
 }
@@ -704,9 +711,9 @@ int RecordGUICancel::keypress_event()
 }
 
 RecordGUIStartOver::RecordGUIStartOver(Record *record, RecordGUI *record_gui, int x, int y)
- : BC_GenericButton(x, y, "Start Over")
+ : BC_GenericButton(x, y, _("Start Over"))
 {
-	set_tooltip("Rewind the current file and erase.");
+	set_tooltip(_("Rewind the current file and erase."));
 	this->record = record;
 	this->gui = record_gui;
 }
@@ -722,11 +729,11 @@ int RecordGUIStartOver::handle_event()
 }
 
 RecordGUIFillFrames::RecordGUIFillFrames(MWindow *mwindow, Record *record, int x, int y)
- : BC_CheckBox(x, y, record->fill_frames, "Fill frames")
+ : BC_CheckBox(x, y, record->fill_frames, _("Fill frames"))
 {
 	this->mwindow = mwindow;
 	this->record = record;
-	set_tooltip("Write extra frames when behind.");
+	set_tooltip(_("Write extra frames when behind."));
 }
 
 int RecordGUIFillFrames::handle_event()
@@ -737,7 +744,7 @@ int RecordGUIFillFrames::handle_event()
 }
 
 RecordGUIMonitorVideo::RecordGUIMonitorVideo(MWindow *mwindow, Record *record, int x, int y)
- : BC_CheckBox(x, y, record->monitor_video, "Monitor video")
+ : BC_CheckBox(x, y, record->monitor_video, _("Monitor video"))
 {
 	this->mwindow = mwindow;
 	this->record = record;
@@ -761,7 +768,7 @@ int RecordGUIMonitorVideo::handle_event()
 
 
 RecordGUIMonitorAudio::RecordGUIMonitorAudio(MWindow *mwindow, Record *record, int x, int y)
- : BC_CheckBox(x, y, record->monitor_audio, "Monitor audio")
+ : BC_CheckBox(x, y, record->monitor_audio, _("Monitor audio"))
 {
 	this->mwindow = mwindow;
 	this->record = record;
@@ -815,7 +822,7 @@ int RecordPath::handle_event()
 }
 
 RecordStartType::RecordStartType(MWindow *mwindow, Record *record, int x, int y)
- : BC_CheckBox(x, y, record->get_editing_batch()->start_type, "Offset")
+ : BC_CheckBox(x, y, record->get_editing_batch()->start_type, _("Offset"))
 {
 	this->mwindow = mwindow;
 	this->record = record;
@@ -909,11 +916,11 @@ int RecordNews::handle_event()
 
 
 RecordGUINewBatch::RecordGUINewBatch(MWindow *mwindow, Record *record, int x, int y)
- : BC_GenericButton(x, y, "New")
+ : BC_GenericButton(x, y, _("New"))
 {
 	this->mwindow = mwindow;
 	this->record = record;
-	set_tooltip("Create new clip.");
+	set_tooltip(_("Create new clip."));
 }
 int RecordGUINewBatch::handle_event()
 {
@@ -924,11 +931,11 @@ int RecordGUINewBatch::handle_event()
 
 
 RecordGUIDeleteBatch::RecordGUIDeleteBatch(MWindow *mwindow, Record *record, int x, int y)
- : BC_GenericButton(x, y, "Delete")
+ : BC_GenericButton(x, y, _("Delete"))
 {
 	this->mwindow = mwindow;
 	this->record = record;
-	set_tooltip("Delete clip.");
+	set_tooltip(_("Delete clip."));
 }
 int RecordGUIDeleteBatch::handle_event()
 {
@@ -939,11 +946,11 @@ int RecordGUIDeleteBatch::handle_event()
 
 
 RecordGUIStartBatches::RecordGUIStartBatches(MWindow *mwindow, Record *record, int x, int y)
- : BC_GenericButton(x, y, "Start")
+ : BC_GenericButton(x, y, _("Start"))
 {
 	this->mwindow = mwindow;
 	this->record = record;
-	set_tooltip("Start batch recording\nfrom the current position.");
+	set_tooltip(_("Start batch recording\nfrom the current position."));
 }
 int RecordGUIStartBatches::handle_event()
 {
@@ -955,7 +962,7 @@ int RecordGUIStartBatches::handle_event()
 
 
 RecordGUIStopbatches::RecordGUIStopbatches(MWindow *mwindow, Record *record, int x, int y)
- : BC_GenericButton(x, y, "Stop")
+ : BC_GenericButton(x, y, _("Stop"))
 {
 	this->mwindow = mwindow;
 	this->record = record;
@@ -967,11 +974,11 @@ int RecordGUIStopbatches::handle_event()
 
 
 RecordGUIActivateBatch::RecordGUIActivateBatch(MWindow *mwindow, Record *record, int x, int y)
- : BC_GenericButton(x, y, "Activate")
+ : BC_GenericButton(x, y, _("Activate"))
 {
 	this->mwindow = mwindow;
 	this->record = record;
-	set_tooltip("Make the highlighted\nclip active.");
+	set_tooltip(_("Make the highlighted\nclip active."));
 }
 int RecordGUIActivateBatch::handle_event()
 {
@@ -981,7 +988,7 @@ int RecordGUIActivateBatch::handle_event()
 
 
 RecordGUILabel::RecordGUILabel(MWindow *mwindow, Record *record, int x, int y)
- : BC_GenericButton(x, y, "Label")
+ : BC_GenericButton(x, y, _("Label"))
 { 
 	this->mwindow = mwindow;
 	this->record = record;
@@ -1053,7 +1060,7 @@ void RecordCancelThread::run()
 	if(record->prompt_cancel)
 	{
 		window = new QuestionWindow(record->mwindow);
-		window->create_objects("Quit without pasting into project?", 0);
+		window->create_objects(_("Quit without pasting into project?"), 0);
 		int result = window->run_window();
 		if(result == 2) gui->set_done(1);
 		delete window;
@@ -1090,7 +1097,7 @@ void RecordStartoverThread::run()
 {
 	completion_lock.lock();
 	window = new QuestionWindow(record->mwindow);
-	window->create_objects("Rewind batch and overwrite?", 0);
+	window->create_objects(_("Rewind batch and overwrite?"), 0);
 	int result = window->run_window();
 	if(result == 2) record->start_over();
 	delete window;
@@ -1278,9 +1285,9 @@ RecordGUIModeMenu::~RecordGUIModeMenu()
 
 int RecordGUIModeMenu::add_items()
 {
-	add_item(linear = new RecordGUIMode("Untimed"));
-	add_item(timed = new RecordGUIMode("Timed"));
-//	add_item(loop = new RecordGUIMode("Loop"));
+	add_item(linear = new RecordGUIMode(_("Untimed")));
+	add_item(timed = new RecordGUIMode(_("Timed")));
+//	add_item(loop = new RecordGUIMode("_(Loop")));
 	return 0;
 }
 

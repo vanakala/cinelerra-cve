@@ -11,6 +11,11 @@
 #include "trackcanvas.h"
 #include "tracks.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 // Read data from buffers and calculate peaks
 
 IndexThread::IndexThread(MWindow *mwindow, 
@@ -197,7 +202,7 @@ void IndexThread::run()
 	if(!(file = fopen(index_filename, "wb")))
 	{
 // failed to create it
-		printf("IndexThread::run() Couldn't write index file %s to disk.\n", index_filename);
+		printf(_("IndexThread::run() Couldn't write index file %s to disk.\n"), index_filename);
 	}
 	else
 	{

@@ -10,6 +10,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
 
 FileVorbis::FileVorbis(Asset *asset, File *file)
  : FileBase(asset, file)
@@ -87,7 +91,7 @@ int FileVorbis::open_file(int rd, int wr)
 //printf("FileVorbis::open_file 2 %p %p\n", fd, vf);
 			if(ov_open(fd, &vf, NULL, 0) < 0)
 			{
-				printf("FileVorbis::open_file %s: invalid bitstream.\n", asset->path);
+				printf(_("FileVorbis::open_file %s: invalid bitstream.\n"), asset->path);
 				result = 1;
 			}
 			else
@@ -410,16 +414,16 @@ int VorbisConfigAudio::create_objects()
 
 	y += 30;
 	sprintf(string, "%d", asset->vorbis_min_bitrate);
-	add_tool(new BC_Title(x, y, "Min bitrate:"));
+	add_tool(new BC_Title(x, y, _("Min bitrate:")));
 	add_tool(new VorbisMinBitrate(x1, y, this, string));
 
 	y += 30;
-	add_tool(new BC_Title(x, y, "Avg bitrate:"));
+	add_tool(new BC_Title(x, y, _("Avg bitrate:")));
 	sprintf(string, "%d", asset->vorbis_bitrate);
 	add_tool(new VorbisAvgBitrate(x1, y, this, string));
 
 	y += 30;
-	add_tool(new BC_Title(x, y, "Max bitrate:"));
+	add_tool(new BC_Title(x, y, _("Max bitrate:")));
 	sprintf(string, "%d", asset->vorbis_max_bitrate);
 	add_tool(new VorbisMaxBitrate(x1, y, this, string));
 
@@ -441,7 +445,7 @@ int VorbisConfigAudio::close_event()
 
 
 VorbisFixedBitrate::VorbisFixedBitrate(int x, int y, VorbisConfigAudio *gui)
- : BC_Radial(x, y, !gui->asset->vorbis_vbr, "Fixed bitrate")
+ : BC_Radial(x, y, !gui->asset->vorbis_vbr, _("Fixed bitrate"))
 {
 	this->gui = gui;
 }
@@ -453,7 +457,7 @@ int VorbisFixedBitrate::handle_event()
 }
 
 VorbisVariableBitrate::VorbisVariableBitrate(int x, int y, VorbisConfigAudio *gui)
- : BC_Radial(x, y, gui->asset->vorbis_vbr, "Variable bitrate")
+ : BC_Radial(x, y, gui->asset->vorbis_vbr, _("Variable bitrate"))
 {
 	this->gui = gui;
 }

@@ -32,6 +32,10 @@
 #include "videodevice.h"
 #include "vrender.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
 
 
 
@@ -165,7 +169,7 @@ void PackageRenderer::create_output()
 // open failed
 		char string[BCTEXTLEN];
 //printf("PackageRenderer::create_output 6\n");
-		sprintf(string, "Couldn't open %s", asset->path);
+		sprintf(string, _("Couldn't open %s"), asset->path);
 //printf("PackageRenderer::create_output 7\n");
 		ErrorBox error(PROGRAM_NAME ": Error",
 			mwindow->gui->get_abs_cursor_x(),

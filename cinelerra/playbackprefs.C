@@ -13,6 +13,10 @@
 #include "videodevice.inc"
 
 #include <string.h>
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
 
 
 PlaybackPrefs::PlaybackPrefs(MWindow *mwindow, PreferencesWindow *pwindow)
@@ -40,13 +44,13 @@ int PlaybackPrefs::create_objects()
 
 //printf("PlaybackPrefs::create_objects 1\n");
 	current_head = mwindow->defaults->get("PLAYBACK_HEAD", 0);
-	strategies.append(new BC_ListBoxItem("Local Host"));
-	strategies.append(new BC_ListBoxItem("Multihead"));
-	strategies.append(new BC_ListBoxItem("Blond Symphony"));
+	strategies.append(new BC_ListBoxItem(_("Local Host")));
+	strategies.append(new BC_ListBoxItem(_("Multihead")));
+	strategies.append(new BC_ListBoxItem(_("Blond Symphony")));
 
-//	add_subwindow(new BC_Title(x, y, "Playback", LARGEFONT, BLACK));
+//	add_subwindow(new BC_Title(x, y, _("Playback"), LARGEFONT, BLACK));
 //	x += 200;
-// 	add_subwindow(new BC_Title(x, y, "Strategy:"));
+// 	add_subwindow(new BC_Title(x, y, _("Strategy:")));
 // 	popup = new PlaybackStrategy(this, x + 70, y);
 // 	popup->create_objects();
 // 	x = 10;
@@ -55,13 +59,13 @@ int PlaybackPrefs::create_objects()
 // Global playback options
 
 // All strategies use these
-	add_subwindow(new BC_Title(x, y, "Audio Out", LARGEFONT, BLACK));
+	add_subwindow(new BC_Title(x, y, _("Audio Out"), LARGEFONT, BLACK));
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Samples to read from disk at a time:", MEDIUMFONT, BLACK));
+	add_subwindow(new BC_Title(x, y, _("Samples to read from disk at a time:"), MEDIUMFONT, BLACK));
 	sprintf(string, "%d", pwindow->thread->edl->session->audio_read_length);
 	add_subwindow(new PlaybackReadLength(x + 275, y, pwindow, this, string));
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Samples to send to console at a time:", MEDIUMFONT, BLACK));
+	add_subwindow(new BC_Title(x, y, _("Samples to send to console at a time:"), MEDIUMFONT, BLACK));
 	sprintf(string, "%d", pwindow->thread->edl->session->audio_module_fragment);
 	add_subwindow(new PlaybackModuleFragment(x + 275, y, pwindow, this, string));
 	y += 30;
@@ -73,7 +77,7 @@ int PlaybackPrefs::create_objects()
 	y += 30;
 	add_subwindow(new PlaybackRealTime(pwindow, pwindow->thread->edl->session->real_time_playback, y));
 	y += 40;
-	add_subwindow(new BC_Title(x, y, "Audio Driver:"));
+	add_subwindow(new BC_Title(x, y, _("Audio Driver:")));
 	audio_device = new ADevicePrefs(x + 100, 
 		y, 
 		pwindow, 
@@ -86,21 +90,21 @@ int PlaybackPrefs::create_objects()
 // Strategic playback options created here
 	set_strategy(pwindow->thread->edl->session->playback_strategy);
 // 
-// 	add_subwindow(new BC_Title(x, y, "Playback driver:", MEDIUMFONT, BLACK));
+// 	add_subwindow(new BC_Title(x, y, _("Playback driver:"), MEDIUMFONT, BLACK));
 // 	add_subwindow(new AudioDriverMenu(x, y + 20, out_device, &(pwindow->thread->preferences->aconfig->audio_out_driver), 0, 1));
  	y += 60;
 
-	add_subwindow(new BC_Title(x, y, "Video Out", LARGEFONT, BLACK));
+	add_subwindow(new BC_Title(x, y, _("Video Out"), LARGEFONT, BLACK));
 	y += 30;
 
 	add_subwindow(new VideoEveryFrame(pwindow, x, y));
 
-	add_subwindow(new BC_Title(x + 200, y + 10, "Framerate achieved:"));
-	add_subwindow(framerate_title = new BC_Title(x + 350, y + 10, "--", MEDIUMFONT, RED));
+	add_subwindow(new BC_Title(x + 200, y + 10, _("Framerate achieved:")));
+	add_subwindow(framerate_title = new BC_Title(x + 350, y + 10, _("--"), MEDIUMFONT, RED));
 	draw_framerate();
 
 	y += 35;
- 	add_subwindow(new BC_Title(x, y, "Scaling equation:"));
+ 	add_subwindow(new BC_Title(x, y, _("Scaling equation:")));
 	y += 20;
 	add_subwindow(nearest_neighbor = new PlaybackNearest(pwindow, 
 		this, 
@@ -121,7 +125,7 @@ int PlaybackPrefs::create_objects()
 		y));
 
 	y += 35;
-	add_subwindow(new BC_Title(x, y, "Preload buffer for Quicktime:", MEDIUMFONT, BLACK));
+	add_subwindow(new BC_Title(x, y, _("Preload buffer for Quicktime:"), MEDIUMFONT, BLACK));
 	sprintf(string, "%d", pwindow->thread->edl->session->playback_preload);
 	add_subwindow(new PlaybackPreload(x + 210, y, pwindow, this, string));
 
@@ -129,7 +133,7 @@ int PlaybackPrefs::create_objects()
 //	add_subwindow(new PlaybackDeblock(pwindow, 10, y));
 
 	y += 35;
-	add_subwindow(vdevice_title = new BC_Title(x, y, "Video Driver:"));
+	add_subwindow(vdevice_title = new BC_Title(x, y, _("Video Driver:")));
 	video_device = new VDevicePrefs(x + 100, 
 		y, 
 		pwindow, 
@@ -151,16 +155,16 @@ char* PlaybackPrefs::strategy_to_string(int strategy)
 	switch(strategy)
 	{
 		case PLAYBACK_LOCALHOST:
-			return "Local Host";
+			return _("Local Host");
 			break;
 		case PLAYBACK_MULTIHEAD:
-			return "Multihead";
+			return _("Multihead");
 			break;
 		case PLAYBACK_BLONDSYMPHONY:
-			return "Blond Symphony";
+			return _("Blond Symphony");
 			break;
 	}
-	return "Local Host";
+	return _("Local Host");
 }
 
 // Delete strategy dependant objects
@@ -203,16 +207,16 @@ int PlaybackPrefs::set_strategy(int strategy)
 		case PLAYBACK_LOCALHOST:
 			break;
 		case PLAYBACK_MULTIHEAD:
-			add_subwindow(head_title = new BC_Title(x, y, "Head:"));
+			add_subwindow(head_title = new BC_Title(x, y, _("Head:")));
 			head_text = new PlaybackHead(this, x1, y);
 			head_text->create_objects();
 			y += 25;
-			add_subwindow(head_count_title = new BC_Title(x, y, "Total Heads:"));
+			add_subwindow(head_count_title = new BC_Title(x, y, _("Total Heads:")));
 			head_count_text = new PlaybackHeadCount(this, x1, y);
 			head_count_text->create_objects();
 			x = 10;
 			y = 390;
-			add_subwindow(vdevice_title = new BC_Title(x, y, "Video Driver:"));
+			add_subwindow(vdevice_title = new BC_Title(x, y, _("Video Driver:")));
 			video_device = new VDevicePrefs(x + 100, 
 				y, 
 				pwindow, 
@@ -223,19 +227,19 @@ int PlaybackPrefs::set_strategy(int strategy)
 			video_device->initialize();
 			break;
 		case PLAYBACK_BLONDSYMPHONY:
-			add_subwindow(head_title = new BC_Title(x, y, "Head:"));
+			add_subwindow(head_title = new BC_Title(x, y, _("Head:")));
 			head_text = new PlaybackHead(this, x1, y);
 			head_text->create_objects();
 			y += 25;
-			add_subwindow(head_count_title = new BC_Title(x, y, "Total Heads:"));
+			add_subwindow(head_count_title = new BC_Title(x, y, _("Total Heads:")));
 			head_count_text = new PlaybackHeadCount(this, x1, y);
 			head_count_text->create_objects();
 			y += 25;
-			add_subwindow(host_title = new BC_Title(x, y, "Hostname:"));
+			add_subwindow(host_title = new BC_Title(x, y, _("Hostname:")));
 			add_subwindow(host_text = new PlaybackHost(this, x1, y));
 			x = 10;
 			y = 390;
-			add_subwindow(vdevice_title = new BC_Title(x, y, "Video Driver:"));
+			add_subwindow(vdevice_title = new BC_Title(x, y, _("Video Driver:")));
 			video_device = new VDevicePrefs(x + 100, 
 				y, 
 				pwindow, 
@@ -426,7 +430,7 @@ int PlaybackBufferBytes::update_bytes()
 }
 
 PlaybackDisableNoEdits::PlaybackDisableNoEdits(PreferencesWindow *pwindow, int value, int y)
- : BC_CheckBox(10, y, value, "Disable tracks when no edits.")
+ : BC_CheckBox(10, y, value, _("Disable tracks when no edits."))
 { 
 	this->pwindow = pwindow; 
 }
@@ -441,7 +445,7 @@ int PlaybackDisableNoEdits::handle_event()
 
 
 PlaybackViewFollows::PlaybackViewFollows(PreferencesWindow *pwindow, int value, int y)
- : BC_CheckBox(10, y, value, "View follows playback")
+ : BC_CheckBox(10, y, value, _("View follows playback"))
 { 
 	this->pwindow = pwindow; 
 }
@@ -456,7 +460,7 @@ int PlaybackViewFollows::handle_event()
 
 
 PlaybackSoftwareTimer::PlaybackSoftwareTimer(PreferencesWindow *pwindow, int value, int y)
- : BC_CheckBox(10, y, value, "Use software for positioning information")
+ : BC_CheckBox(10, y, value, _("Use software for positioning information"))
 { 
 	this->pwindow = pwindow; 
 }
@@ -471,7 +475,7 @@ int PlaybackSoftwareTimer::handle_event()
 
 
 PlaybackRealTime::PlaybackRealTime(PreferencesWindow *pwindow, int value, int y)
- : BC_CheckBox(10, y, value, "Audio playback in real time priority (root only)")
+ : BC_CheckBox(10, y, value, _("Audio playback in real time priority (root only)"))
 { 
 	this->pwindow = pwindow; 
 }
@@ -489,7 +493,7 @@ int PlaybackRealTime::handle_event()
 
 
 PlaybackNearest::PlaybackNearest(PreferencesWindow *pwindow, PlaybackPrefs *prefs, int value, int x, int y)
- : BC_Radial(x, y, value, "Nearest neighbor enlarge and reduce")
+ : BC_Radial(x, y, value, _("Nearest neighbor enlarge and reduce"))
 {
 	this->pwindow = pwindow;
 	this->prefs = prefs;
@@ -505,7 +509,7 @@ int PlaybackNearest::handle_event()
 
 
 PlaybackBicubicBicubic::PlaybackBicubicBicubic(PreferencesWindow *pwindow, PlaybackPrefs *prefs, int value, int x, int y)
- : BC_Radial(x, y, value, "Bicubic enlarge and reduce")
+ : BC_Radial(x, y, value, _("Bicubic enlarge and reduce"))
 {
 	this->pwindow = pwindow;
 	this->prefs = prefs;
@@ -520,7 +524,7 @@ int PlaybackBicubicBicubic::handle_event()
 
 
 PlaybackBicubicBilinear::PlaybackBicubicBilinear(PreferencesWindow *pwindow, PlaybackPrefs *prefs, int value, int x, int y)
- : BC_Radial(x, y, value, "Bicubic enlarge and bilinear reduce")
+ : BC_Radial(x, y, value, _("Bicubic enlarge and bilinear reduce"))
 {
 	this->pwindow = pwindow;
 	this->prefs = prefs;
@@ -537,7 +541,7 @@ PlaybackBilinearBilinear::PlaybackBilinearBilinear(PreferencesWindow *pwindow,
 	int value, 
 	int x, 
 	int y)
- : BC_Radial(x, y, value, "Bilinear enlarge and bilinear reduce")
+ : BC_Radial(x, y, value, _("Bilinear enlarge and bilinear reduce"))
 {
 	this->pwindow = pwindow;
 	this->prefs = prefs;
@@ -569,7 +573,7 @@ int PlaybackPreload::handle_event()
 
 
 VideoEveryFrame::VideoEveryFrame(PreferencesWindow *pwindow, int x, int y)
- : BC_CheckBox(x, y, pwindow->thread->edl->session->video_every_frame, "Play every frame")
+ : BC_CheckBox(x, y, pwindow->thread->edl->session->video_every_frame, _("Play every frame"))
 {
 	this->pwindow = pwindow;
 }
@@ -588,7 +592,7 @@ int VideoEveryFrame::handle_event()
 //  : BC_CheckBox(x, 
 //  	y, 
 // 	pwindow->thread->edl->session->mpeg4_deblock, 
-// 	"MPEG-4 Deblocking")
+// 	_("MPEG-4 Deblocking"))
 // {
 // 	this->pwindow = pwindow;
 // }

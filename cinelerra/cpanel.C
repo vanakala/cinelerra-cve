@@ -8,6 +8,12 @@
 #include "theme.h"
 
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
 CPanel::CPanel(MWindow *mwindow, 
 	CWindowGUI *subwindow, 
 	int x, 
@@ -101,7 +107,7 @@ CPanelProtect::CPanelProtect(MWindow *mwindow, CPanel *gui, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip("Protect video from changes");
+	set_tooltip(_("Protect video from changes"));
 }
 CPanelProtect::~CPanelProtect()
 {
@@ -125,7 +131,7 @@ CPanelMask::CPanelMask(MWindow *mwindow, CPanel *gui, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip("Edit mask");
+	set_tooltip(_("Edit mask"));
 }
 CPanelMask::~CPanelMask()
 {
@@ -145,7 +151,7 @@ CPanelMagnify::CPanelMagnify(MWindow *mwindow, CPanel *gui, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip("Zoom view");
+	set_tooltip(_("Zoom view"));
 }
 CPanelMagnify::~CPanelMagnify()
 {
@@ -165,7 +171,7 @@ CPanelCamera::CPanelCamera(MWindow *mwindow, CPanel *gui, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip("Adjust camera automation");
+	set_tooltip(_("Adjust camera automation"));
 }
 CPanelCamera::~CPanelCamera()
 {
@@ -185,7 +191,7 @@ CPanelProj::CPanelProj(MWindow *mwindow, CPanel *gui, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip("Adjust projector automation");
+	set_tooltip(_("Adjust projector automation"));
 }
 CPanelProj::~CPanelProj()
 {
@@ -205,7 +211,7 @@ CPanelCrop::CPanelCrop(MWindow *mwindow, CPanel *gui, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip("Crop a layer or output");
+	set_tooltip(_("Crop a layer or output"));
 }
 CPanelCrop::~CPanelCrop()
 {
@@ -227,7 +233,7 @@ CPanelToolWindow::CPanelToolWindow(MWindow *mwindow, CPanel *gui, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip("Show tool info");
+	set_tooltip(_("Show tool info"));
 }
 CPanelToolWindow::~CPanelToolWindow()
 {
@@ -248,7 +254,7 @@ CPanelTitleSafe::CPanelTitleSafe(MWindow *mwindow, CPanel *gui, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	set_tooltip("Show safe regions");
+	set_tooltip(_("Show safe regions"));
 }
 CPanelTitleSafe::~CPanelTitleSafe()
 {

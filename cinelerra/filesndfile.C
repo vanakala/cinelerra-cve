@@ -5,6 +5,11 @@
 #include "filesndfile.h"
 #include "mwindow.inc"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 FileSndFile::FileSndFile(Asset *asset, File *file)
  : FileBase(asset, file)
 {
@@ -352,7 +357,7 @@ int SndFileConfig::create_objects()
 		case FILE_WAV:
 		case FILE_PCM:
 		case FILE_AIFF:
-			add_tool(new BC_Title(x, y, "Compression:"));
+			add_tool(new BC_Title(x, y, _("Compression:")));
 			y += 25;
 			if(asset->format == FILE_WAV)
 				bits_popup = new BitsPopup(this, x, y, &asset->bits, 0, 0, 1, 1, 0);
@@ -365,13 +370,13 @@ int SndFileConfig::create_objects()
 
 	x = 10;
 	if(asset->format != FILE_AU)
-		add_subwindow(new BC_CheckBox(x, y, &asset->dither, "Dither"));
+		add_subwindow(new BC_CheckBox(x, y, &asset->dither, _("Dither")));
 	y += 30;
 	if(asset->format == FILE_PCM)
 	{
-		add_subwindow(new BC_CheckBox(x, y, &asset->signed_, "Signed"));
+		add_subwindow(new BC_CheckBox(x, y, &asset->signed_, _("Signed")));
 		y += 35;
-		add_subwindow(new BC_Title(x, y, "Byte order:"));
+		add_subwindow(new BC_Title(x, y, _("Byte order:")));
 		add_subwindow(hilo = new SndFileHILO(this, x + 100, y));
 		add_subwindow(lohi = new SndFileLOHI(this, x + 170, y));
 	}
@@ -388,7 +393,7 @@ int SndFileConfig::close_event()
 
 
 SndFileHILO::SndFileHILO(SndFileConfig *gui, int x, int y)
- : BC_Radial(x, y, gui->asset->byte_order == 0, "Hi Lo")
+ : BC_Radial(x, y, gui->asset->byte_order == 0, _("Hi Lo"))
 {
 	this->gui = gui;
 }
@@ -403,7 +408,7 @@ int SndFileHILO::handle_event()
 
 
 SndFileLOHI::SndFileLOHI(SndFileConfig *gui, int x, int y)
- : BC_Radial(x, y, gui->asset->byte_order == 1, "Lo Hi")
+ : BC_Radial(x, y, gui->asset->byte_order == 1, _("Lo Hi"))
 {
 	this->gui = gui;
 }

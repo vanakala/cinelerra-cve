@@ -13,6 +13,11 @@
 #include "tracks.h"
 #include "transition.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 PluginDialogThread::PluginDialogThread(MWindow *mwindow)
  : Thread()
@@ -92,7 +97,7 @@ void PluginDialogThread::run()
 		{
 			mwindow->gui->lock_window();
 
-			mwindow->undo->update_undo_before("attach effect", LOAD_EDITS | LOAD_PATCHES);
+			mwindow->undo->update_undo_before(_("attach effect"), LOAD_EDITS | LOAD_PATCHES);
 
 			if(plugin)
 			{
@@ -203,7 +208,7 @@ int PluginDialog::create_objects()
 	else
 	{
 // no plugin
-		sprintf(string, "None");
+		sprintf(string, _("None"));
 	}
 
 
@@ -264,7 +269,7 @@ int PluginDialog::create_objects()
 // Create widgets
 	add_subwindow(standalone_title = new BC_Title(mwindow->theme->plugindialog_new_x, 
 		mwindow->theme->plugindialog_new_y - 20, 
-		"Plugins:"));
+		_("Plugins:")));
 	add_subwindow(standalone_list = new PluginDialogNew(this, 
 		&standalone_data, 
 		mwindow->theme->plugindialog_new_x, 
@@ -285,7 +290,7 @@ int PluginDialog::create_objects()
 
 	add_subwindow(shared_title = new BC_Title(mwindow->theme->plugindialog_shared_x, 
 		mwindow->theme->plugindialog_shared_y - 20, 
-		"Shared effects:"));
+		_("Shared effects:")));
 	add_subwindow(shared_list = new PluginDialogShared(this, 
 		&shared_data, 
 		mwindow->theme->plugindialog_shared_x, 
@@ -307,7 +312,7 @@ int PluginDialog::create_objects()
 
 	add_subwindow(module_title = new BC_Title(mwindow->theme->plugindialog_module_x, 
 		mwindow->theme->plugindialog_module_y - 20, 
-		"Shared tracks:"));
+		_("Shared tracks:")));
 	add_subwindow(module_list = new PluginDialogModules(this, 
 		&module_data, 
 		mwindow->theme->plugindialog_module_x, 
@@ -433,7 +438,7 @@ int PluginDialogTextBox::handle_event()
 { }
 
 PluginDialogDetach::PluginDialogDetach(MWindow *mwindow, PluginDialog *dialog, int x, int y)
- : BC_GenericButton(x, y, "Detach") 
+ : BC_GenericButton(x, y, _("Detach")) 
 { 
 	this->dialog = dialog; 
 }
@@ -441,7 +446,7 @@ PluginDialogDetach::~PluginDialogDetach()
 { }
 int PluginDialogDetach::handle_event() 
 {
-//	dialog->title->update("None");
+//	dialog->title->update(_("None"));
 	dialog->thread->plugin_type = 0;         // type is none
 	dialog->thread->plugin_title[0] = 0;
 	return 1;
@@ -491,7 +496,7 @@ int PluginDialogNew::selection_changed()
 }
 
 PluginDialogAttachNew::PluginDialogAttachNew(MWindow *mwindow, PluginDialog *dialog, int x, int y)
- : BC_GenericButton(x, y, "Attach") 
+ : BC_GenericButton(x, y, _("Attach")) 
 { 
  	this->dialog = dialog; 
 }
@@ -546,7 +551,7 @@ PluginDialogAttachShared::PluginDialogAttachShared(MWindow *mwindow,
 	PluginDialog *dialog, 
 	int x,
 	int y)
- : BC_GenericButton(x, y, "Attach") 
+ : BC_GenericButton(x, y, _("Attach")) 
 { 
 	this->dialog = dialog; 
 }
@@ -604,7 +609,7 @@ PluginDialogAttachModule::PluginDialogAttachModule(MWindow *mwindow,
 	PluginDialog *dialog, 
 	int x, 
 	int y)
- : BC_GenericButton(x, y, "Attach") 
+ : BC_GenericButton(x, y, _("Attach")) 
 { 
 	this->dialog = dialog; 
 }
@@ -630,7 +635,7 @@ int PluginDialogAttachModule::handle_event()
 
 
 PluginDialogIn::PluginDialogIn(PluginDialog *dialog, int setting, int x, int y)
- : BC_CheckBox(x, y, setting, "Send") 
+ : BC_CheckBox(x, y, setting, _("Send")) 
 { 
 	this->dialog = dialog; 
 }
@@ -659,7 +664,7 @@ int PluginDialogIn::cursor_moved_over()
 }
 
 PluginDialogOut::PluginDialogOut(PluginDialog *dialog, int setting, int x, int y)
- : BC_CheckBox(x, y, setting, "Receive") 
+ : BC_CheckBox(x, y, setting, _("Receive")) 
 { 
  	this->dialog = dialog; 
 }
@@ -688,7 +693,7 @@ int PluginDialogOut::cursor_moved_over()
 }
 
 PluginDialogThru::PluginDialogThru(PluginDialog *dialog, int setting)
- : BC_CheckBox(300, 350, setting, "Thru") 
+ : BC_CheckBox(300, 350, setting, _("Thru")) 
 { 
 	this->dialog = dialog; 
 }

@@ -1,5 +1,4 @@
-#include "apatchgui.h"
-#include "atrack.inc"
+#include "apatchgui.h"#include "atrack.inc"
 #include "automation.h"
 #include "floatauto.h"
 #include "floatautos.h"
@@ -23,6 +22,10 @@
 #include "vpatchgui.h"
 #include "vtrack.inc"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
 
 
 PatchBay::PatchBay(MWindow *mwindow, MWindowGUI *gui)
@@ -148,7 +151,7 @@ int PatchBay::cursor_motion_event()
 
 							if(current->value != new_status)
 							{
-								mwindow->undo->update_undo_before("keyframe", LOAD_AUTOMATION);
+								mwindow->undo->update_undo_before(_("keyframe"), LOAD_AUTOMATION);
 
 								current = (IntAuto*)mute_autos->get_auto_for_editing(position);
 
@@ -328,7 +331,7 @@ void PatchBay::synchronize_faders(float change, int data_type, Track *skip)
 			int update_undo = !fade_autos->auto_exists_for_editing(position);
 
 			if(update_undo)
-				mwindow->undo->update_undo_before("fade", LOAD_AUTOMATION);
+				mwindow->undo->update_undo_before(_("fade"), LOAD_AUTOMATION);
 
 			FloatAuto *keyframe = (FloatAuto*)fade_autos->get_auto_for_editing(position);
 

@@ -18,6 +18,11 @@
 #include "vwindow.h"
 #include "vwindowgui.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 VWindow::VWindow(MWindow *mwindow) : Thread()
 {
@@ -197,14 +202,14 @@ void VWindow::change_source(EDL *edl)
 			mwindow->edl->clips.number_of(edl);
 	}
 	else
-		gui->change_source(edl, "Viewer");
+		gui->change_source(edl, _("Viewer"));
 }
 
 
 void VWindow::remove_source()
 {
 	delete_edl();
-	gui->change_source(0, "Viewer");
+	gui->change_source(0, _("Viewer"));
 }
 
 void VWindow::change_source(char *folder, int item)

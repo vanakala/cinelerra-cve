@@ -8,6 +8,10 @@
 #include "videodevice.inc"
 
 #include <png.h>
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
 
 FilePNG::FilePNG(Asset *asset, File *file)
  : FileList(asset, file, "PNGLIST", ".png", FILE_PNG, FILE_PNG_LIST)
@@ -353,7 +357,7 @@ int PNGConfigVideo::close_event()
 
 
 PNGUseAlpha::PNGUseAlpha(PNGConfigVideo *gui, int x, int y)
- : BC_CheckBox(x, y, gui->asset->png_use_alpha, "Use alpha")
+ : BC_CheckBox(x, y, gui->asset->png_use_alpha, _("Use alpha"))
 {
 	this->gui = gui;
 }

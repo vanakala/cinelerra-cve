@@ -29,6 +29,11 @@
 #include "vwindow.h"
 
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 VWindowGUI::VWindowGUI(MWindow *mwindow, VWindow *vwindow)
  : BC_Window(PROGRAM_NAME ": Viewer",
  	mwindow->session->vwindow_x,
@@ -208,7 +213,7 @@ int VWindowGUI::create_objects()
 // 		mwindow->theme->vsource_x,
 // 		mwindow->theme->vsource_y);
 // 	source->create_objects();	
-	update_sources("None");
+	update_sources(_("None"));
 
 //printf("VWindowGUI::create_objects 2\n");
 	return 0;
@@ -564,7 +569,7 @@ void VWindowEditing::to_clip()
 		EDL *new_edl = new EDL(mwindow->edl);
 		new_edl->create_objects();
 		new_edl->load_xml(mwindow->plugindb, &file, LOAD_ALL);
-		sprintf(new_edl->local_session->clip_title, "Clip %d\n", mwindow->session->clip_number++);
+		sprintf(new_edl->local_session->clip_title, _("Clip %d\n"), mwindow->session->clip_number++);
 
 printf("VWindowEditing::to_clip 1 %s\n", edl->local_session->clip_title);
 

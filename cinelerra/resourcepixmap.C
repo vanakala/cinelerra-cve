@@ -22,6 +22,12 @@
 #include "vframe.h"
 
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
 ResourcePixmap::ResourcePixmap(MWindow *mwindow, 
 	TrackCanvas *canvas, 
 	Edit *edit, 
@@ -467,7 +473,7 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 
 	if(!source)
 	{
-		printf("ResourcePixmap::draw_audio_source: failed to check out %s for drawing.\n", edit->asset->path);
+		printf(_("ResourcePixmap::draw_audio_source: failed to check out %s for drawing.\n"), edit->asset->path);
 		return;
 	}
 

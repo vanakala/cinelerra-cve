@@ -2,6 +2,12 @@
 #include "mwindow.h"
 #include "mwindowgui.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
 AssetRemoveWindow::AssetRemoveWindow(MWindow *mwindow)
  : BC_Window(PROGRAM_NAME ": Remove assets", 
 				mwindow->gui->get_abs_cursor_x(),
@@ -19,7 +25,7 @@ AssetRemoveWindow::AssetRemoveWindow(MWindow *mwindow)
 void AssetRemoveWindow::create_objects()
 {
 	int x = 10, y = 10;
-	add_subwindow(new BC_Title(x, y, "Permanently remove from disk?"));
+	add_subwindow(new BC_Title(x, y, _("Permanently remove from disk?")));
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
 	show_window();

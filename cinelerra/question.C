@@ -4,6 +4,11 @@
 #include "theme.h"
 
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 #define WIDTH 375
 #define HEIGHT 160
 
@@ -35,7 +40,7 @@ int QuestionWindow::create_objects(char *string, int use_cancel)
 }
 
 QuestionYesButton::QuestionYesButton(MWindow *mwindow, QuestionWindow *window, int x, int y)
- : BC_GenericButton(x, y, "Yes")
+ : BC_GenericButton(x, y, _("Yes"))
 {
 	this->window = window;
 	set_underline(0);
@@ -53,7 +58,7 @@ int QuestionYesButton::keypress_event()
 }
 
 QuestionNoButton::QuestionNoButton(MWindow *mwindow, QuestionWindow *window, int x, int y)
- : BC_GenericButton(x, y, "No")
+ : BC_GenericButton(x, y, _("No"))
 {
 	this->window = window;
 	set_underline(0);

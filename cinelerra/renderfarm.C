@@ -29,6 +29,11 @@
 #include <unistd.h>
 
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 RenderFarmServer::RenderFarmServer(MWindow *mwindow, 
 	PackageDispatcher *packages,
@@ -140,7 +145,7 @@ int RenderFarmServerThread::start_loop()
 	{
 		if((socket_fd = socket(PF_UNIX, SOCK_STREAM, 0)) < 0)
 		{
-			perror("RenderFarmServerThread::start_loop: socket\n");
+			perror(_("RenderFarmServerThread::start_loop: socket\n"));
 			result = 1;
 		}
 		else
@@ -166,7 +171,7 @@ int RenderFarmServerThread::start_loop()
 					if(attempt > 30000000 / ATTEMPT_DELAY)
 					{
 //printf("RenderFarmServerThread::start_loop 4 %s\n", hostname);
-						fprintf(stderr, "RenderFarmServerThread::start_loop: %s: %s\n", 
+						fprintf(stderr, _("RenderFarmServerThread::start_loop: %s: %s\n"), 
 							hostname, 
 							strerror(errno));
 						result = 1;
@@ -186,7 +191,7 @@ int RenderFarmServerThread::start_loop()
 	{
 		if((socket_fd = socket(PF_INET, SOCK_STREAM, 0)) < 0)
 		{
-			perror("RenderFarmServerThread::start_loop: socket");
+			perror(_("RenderFarmServerThread::start_loop: socket"));
 			result = 1;
 		}
 		else
@@ -199,7 +204,7 @@ int RenderFarmServerThread::start_loop()
 			hostinfo = gethostbyname(hostname);
 			if(hostinfo == NULL)
     		{
-    			fprintf(stderr, "RenderFarmServerThread::start_loop: unknown host %s.\n", 
+    			fprintf(stderr, _("RenderFarmServerThread::start_loop: unknown host %s.\n"), 
 					server->preferences->get_node_hostname(number));
     			result = 1;
     		}
@@ -209,7 +214,7 @@ int RenderFarmServerThread::start_loop()
 
 				if(connect(socket_fd, (struct sockaddr*)&addr, sizeof(addr)) < 0)
 				{
-					fprintf(stderr, "RenderFarmServerThread::start_loop: %s: %s\n", 
+					fprintf(stderr, _("RenderFarmServerThread::start_loop: %s: %s\n"), 
 						server->preferences->get_node_hostname(number), 
 						strerror(errno));
 					result = 1;
@@ -414,7 +419,7 @@ void RenderFarmServerThread::run()
 			default:
 				if(!fs_server->handle_request(request_id, request_size, (char*)buffer))
 				{
-					printf("RenderFarmServerThread::run: unknown request %02x\n", request_id);
+					printf(_("RenderFarmServerThread::run: unknown request %02x\n"), request_id);
 				}
 				break;
 		}

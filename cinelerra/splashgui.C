@@ -3,6 +3,11 @@
 #include "splashgui.h"
 #include "vframe.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 
 
@@ -38,7 +43,7 @@ void SplashGUI::create_objects()
 	add_subwindow(operation = 
 		new BC_Title(5, 
 			progress->get_y() - get_text_height(MEDIUMFONT) - 5,
-			"Loading..."));
+			_("Loading...")));
 	flash();
 	show_window();
 }

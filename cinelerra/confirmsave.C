@@ -2,6 +2,13 @@
 #include "mwindow.h"
 #include "mwindowgui.h"
 
+
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
 ConfirmSave::ConfirmSave(MWindow *mwindow)
 {
 	this->mwindow = mwindow;
@@ -48,7 +55,7 @@ int ConfirmSaveWindow::create_objects()
 {
 	char string[1024];
 	int x = 10, y = 10;
-	sprintf(string, "Overwrite %s?", filename);
+	sprintf(string, _("Overwrite %s?"), filename);
 	add_subwindow(new BC_Title(5, 5, string));
 	y += 30;
 	add_subwindow(new BC_OKButton(this));

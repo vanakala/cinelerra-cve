@@ -24,6 +24,12 @@
 
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
 ATrack::ATrack(EDL *edl, Tracks *tracks)
  : Track(edl, tracks)
 {
@@ -114,7 +120,7 @@ void ATrack::set_default_title()
 	{
 		if(current->data_type == TRACK_AUDIO) i++;
 	}
-	sprintf(title, "Audio %d", i);
+	sprintf(title, _("Audio %d"), i);
 }
 
 int64_t ATrack::to_units(double position, int round)

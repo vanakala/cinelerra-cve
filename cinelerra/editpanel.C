@@ -22,6 +22,11 @@
 #include "transportque.h"
 #include "zoombar.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 EditPanel::EditPanel(MWindow *mwindow, 
 	BC_WindowBase *subwindow,
@@ -455,7 +460,7 @@ EditInPoint::EditInPoint(MWindow *mwindow, EditPanel *panel, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip("In point ( [ )");
+	set_tooltip(_("In point ( [ )"));
 }
 EditInPoint::~EditInPoint()
 {
@@ -480,7 +485,7 @@ EditOutPoint::EditOutPoint(MWindow *mwindow, EditPanel *panel, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip("Out point ( ] )");
+	set_tooltip(_("Out point ( ] )"));
 }
 EditOutPoint::~EditOutPoint()
 {
@@ -505,7 +510,7 @@ EditDelInPoint::EditDelInPoint(MWindow *mwindow, EditPanel *panel, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip("Delete in point");
+	set_tooltip(_("Delete in point"));
 }
 EditDelInPoint::~EditDelInPoint()
 {
@@ -530,7 +535,7 @@ EditDelOutPoint::EditDelOutPoint(MWindow *mwindow, EditPanel *panel, int x, int 
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip("Delete out point");
+	set_tooltip(_("Delete out point"));
 }
 EditDelOutPoint::~EditDelOutPoint()
 {
@@ -560,7 +565,7 @@ EditNextLabel::EditNextLabel(MWindow *mwindow,
 	this->mwindow = mwindow;
 	this->panel = panel;
 	this->is_mwindow = is_mwindow;
-	set_tooltip("Next label ( ctrl -> )");
+	set_tooltip(_("Next label ( ctrl -> )"));
 }
 EditNextLabel::~EditNextLabel()
 {
@@ -587,7 +592,7 @@ EditPrevLabel::EditPrevLabel(MWindow *mwindow,
 	this->mwindow = mwindow;
 	this->panel = panel;
 	this->is_mwindow = is_mwindow;
-	set_tooltip("Previous label ( ctrl <- )");
+	set_tooltip(_("Previous label ( ctrl <- )"));
 }
 EditPrevLabel::~EditPrevLabel()
 {
@@ -609,7 +614,7 @@ EditLift::EditLift(MWindow *mwindow, EditPanel *panel, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip("Lift");
+	set_tooltip(_("Lift"));
 }
 EditLift::~EditLift()
 {
@@ -624,7 +629,7 @@ EditOverwrite::EditOverwrite(MWindow *mwindow, EditPanel *panel, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip("Overwrite ( b )");
+	set_tooltip(_("Overwrite ( b )"));
 }
 EditOverwrite::~EditOverwrite()
 {
@@ -649,7 +654,7 @@ EditExtract::EditExtract(MWindow *mwindow, EditPanel *panel, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip("Extract");
+	set_tooltip(_("Extract"));
 }
 EditExtract::~EditExtract()
 {
@@ -665,7 +670,7 @@ EditToClip::EditToClip(MWindow *mwindow, EditPanel *panel, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip("To clip");
+	set_tooltip(_("To clip"));
 }
 EditToClip::~EditToClip()
 {
@@ -681,7 +686,7 @@ EditSplice::EditSplice(MWindow *mwindow, EditPanel *panel, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip("Splice ( v )");
+	set_tooltip(_("Splice ( v )"));
 }
 EditSplice::~EditSplice()
 {
@@ -706,7 +711,7 @@ EditCut::EditCut(MWindow *mwindow, EditPanel *panel, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip("Cut ( x )");
+	set_tooltip(_("Cut ( x )"));
 }
 EditCut::~EditCut()
 {
@@ -731,7 +736,7 @@ EditCopy::EditCopy(MWindow *mwindow, EditPanel *panel, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip("Copy ( c )");
+	set_tooltip(_("Copy ( c )"));
 }
 EditCopy::~EditCopy()
 {
@@ -754,7 +759,7 @@ EditAppend::EditAppend(MWindow *mwindow, EditPanel *panel, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip("Append to end of track");
+	set_tooltip(_("Append to end of track"));
 }
 EditAppend::~EditAppend()
 {
@@ -772,7 +777,7 @@ EditInsert::EditInsert(MWindow *mwindow, EditPanel *panel, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip("Insert before beginning of track");
+	set_tooltip(_("Insert before beginning of track"));
 }
 EditInsert::~EditInsert()
 {
@@ -791,7 +796,7 @@ EditPaste::EditPaste(MWindow *mwindow, EditPanel *panel, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip("Paste ( v )");
+	set_tooltip(_("Paste ( v )"));
 }
 EditPaste::~EditPaste()
 {
@@ -818,7 +823,7 @@ EditTransition::EditTransition(MWindow *mwindow, EditPanel *panel, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip("Set transition");
+	set_tooltip(_("Set transition"));
 }
 EditTransition::~EditTransition()
 {
@@ -833,7 +838,7 @@ EditPresentation::EditPresentation(MWindow *mwindow, EditPanel *panel, int x, in
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip("Set presentation up to current position");
+	set_tooltip(_("Set presentation up to current position"));
 }
 EditPresentation::~EditPresentation()
 {
@@ -848,7 +853,7 @@ EditUndo::EditUndo(MWindow *mwindow, EditPanel *panel, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip("Undo ( z )");
+	set_tooltip(_("Undo ( z )"));
 }
 EditUndo::~EditUndo()
 {
@@ -870,7 +875,7 @@ EditRedo::EditRedo(MWindow *mwindow, EditPanel *panel, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip("Redo ( shift Z )");
+	set_tooltip(_("Redo ( shift Z )"));
 }
 EditRedo::~EditRedo()
 {
@@ -896,7 +901,7 @@ EditLabelbutton::EditLabelbutton(MWindow *mwindow, EditPanel *panel, int x, int 
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip("Toggle label at current position ( l )");
+	set_tooltip(_("Toggle label at current position ( l )"));
 }
 
 EditLabelbutton::~EditLabelbutton()
@@ -925,7 +930,7 @@ EditFit::EditFit(MWindow *mwindow, EditPanel *panel, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip("Fit selection to display ( f )");
+	set_tooltip(_("Fit selection to display ( f )"));
 }
 EditFit::~EditFit()
 {
@@ -958,7 +963,7 @@ ArrowButton::ArrowButton(MWindow *mwindow, EditPanel *panel, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip("Drag and drop editing mode");
+	set_tooltip(_("Drag and drop editing mode"));
 }
 
 int ArrowButton::handle_event()
@@ -983,7 +988,7 @@ IBeamButton::IBeamButton(MWindow *mwindow, EditPanel *panel, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip("Cut and paste editing mode");
+	set_tooltip(_("Cut and paste editing mode"));
 }
 
 int IBeamButton::handle_event()
@@ -1006,7 +1011,7 @@ KeyFrameButton::KeyFrameButton(MWindow *mwindow, int x, int y)
 	0)
 {
 	this->mwindow = mwindow;
-	set_tooltip("Generate keyframes while tweeking");
+	set_tooltip(_("Generate keyframes while tweeking"));
 }
 
 int KeyFrameButton::handle_event()

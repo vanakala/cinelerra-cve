@@ -30,6 +30,12 @@
 
 #include <errno.h>
 #include <string.h>
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
 
 
 
@@ -247,7 +253,7 @@ unsigned char* Theme::get_image(char *title)
 
 		if(!fd)
 		{
-			fprintf(stderr, "Theme::get_image: %s when opening %s\n", strerror(errno), path);
+			fprintf(stderr, _("Theme::get_image: %s when opening %s\n"), strerror(errno), path);
 		}
 		int data_offset, contents_offset;
 		int total_bytes;
@@ -302,7 +308,7 @@ unsigned char* Theme::get_image(char *title)
 		}
 	}
 
-	fprintf(stderr, "Theme::get_image: %s not found.\n", title);
+	fprintf(stderr, _("Theme::get_image: %s not found.\n"), title);
 	return 0;
 }
 

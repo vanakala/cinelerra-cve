@@ -26,7 +26,7 @@ FileJPEGList::~FileJPEGList()
 
 char* FileJPEGList::list_title()
 {
-	return "JPEGLIST";
+	return _("JPEGLIST");
 }
 
 char* FileJPEGList::extension()
@@ -147,7 +147,7 @@ int JPEGConfigVideo::create_objects()
 {
 	int x = 10, y = 10;
 
-	add_subwindow(new BC_Title(x, y, "Quality:"));
+	add_subwindow(new BC_Title(x, y, _("Quality:")));
 	add_subwindow(new BC_ISlider(x + 80, 
 		y,
 		0,

@@ -4,6 +4,13 @@
 #include "mwindowgui.h"
 #include "theme.h"
 
+
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
 ConfirmQuitWindow::ConfirmQuitWindow(MWindow *mwindow)
  : BC_Window(PROGRAM_NAME ": Question", 
  	mwindow->gui->get_abs_cursor_x(), 
@@ -27,7 +34,7 @@ int ConfirmQuitWindow::create_objects(char *string)
 	add_subwindow(title = new BC_Title(x, y, string));
 	y += title->get_h();
 //printf("ConfirmQuitWindow::create_objects 1\n");
-	add_subwindow(title = new BC_Title(x, y, "( Answering ""No"" will destroy changes )"));
+	add_subwindow(title = new BC_Title(x, y, _("( Answering ""No"" will destroy changes )")));
 	y = get_h() - 40;
 //printf("ConfirmQuitWindow::create_objects 1\n");
 	add_subwindow(new ConfirmQuitYesButton(mwindow, x, y));
@@ -42,7 +49,7 @@ int ConfirmQuitWindow::create_objects(char *string)
 }
 
 ConfirmQuitYesButton::ConfirmQuitYesButton(MWindow *mwindow, int x, int y)
- : BC_GenericButton(x, y, "Yes")
+ : BC_GenericButton(x, y, _("Yes"))
 {
 	set_underline(0);
 }
@@ -60,7 +67,7 @@ int ConfirmQuitYesButton::keypress_event()
 }
 
 ConfirmQuitNoButton::ConfirmQuitNoButton(MWindow *mwindow, int x, int y)
- : BC_GenericButton(x, y, "No")
+ : BC_GenericButton(x, y, _("No"))
 {
 	set_underline(0);
 }

@@ -7,9 +7,14 @@
 #include "viewmenu.h"
 #include "trackcanvas.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 ShowEdits::ShowEdits(MWindow *mwindow, char *hotkey)
- : BC_MenuItem("Show edits", hotkey, hotkey[0])
+ : BC_MenuItem(_("Show edits"), hotkey, hotkey[0])
 { 
 	this->mwindow = mwindow; 
 	set_checked(0); 
@@ -22,7 +27,7 @@ int ShowEdits::handle_event()
 }
 
 ShowTitles::ShowTitles(MWindow *mwindow, char *hotkey)
- : BC_MenuItem("Show titles", hotkey, hotkey[0])
+ : BC_MenuItem(_("Show titles"), hotkey, hotkey[0])
 {
 	this->mwindow = mwindow; 
 	set_checked(mwindow->edl->session->show_titles); 
@@ -43,7 +48,7 @@ int ShowTitles::handle_event()
 
 
 ShowKeyframes::ShowKeyframes(MWindow *mwindow, char *hotkey)
- : BC_MenuItem("Plugin keyframes", hotkey, hotkey[0])
+ : BC_MenuItem(_("Plugin keyframes"), hotkey, hotkey[0])
 { 
 	this->mwindow = mwindow; 
 //	set_checked(mwindow->edl->session->auto_conf->keyframes); 
@@ -55,7 +60,7 @@ int ShowKeyframes::handle_event()
 
 
 ShowTransitions::ShowTransitions(MWindow *mwindow, char *hotkey)
- : BC_MenuItem("Show transitions", hotkey, hotkey[0])
+ : BC_MenuItem(_("Show transitions"), hotkey, hotkey[0])
 { 
 	this->mwindow = mwindow; 
 	set_checked(mwindow->edl->session->auto_conf->transitions); 
@@ -72,7 +77,7 @@ int ShowTransitions::handle_event()
 
 
 FadeAutomation::FadeAutomation(MWindow *mwindow, char *hotkey)
- : BC_MenuItem("Fade keyframes", hotkey, hotkey[0])
+ : BC_MenuItem(_("Fade keyframes"), hotkey, hotkey[0])
 { 
 	this->mwindow = mwindow; 
 	set_checked(mwindow->edl->session->auto_conf->fade); 
@@ -89,7 +94,7 @@ int FadeAutomation::handle_event()
 
 #if 0
 PlayAutomation::PlayAutomation(MWindow *mwindow, char *hotkey)
- : BC_MenuItem("Play keyframes", hotkey, hotkey[0])
+ : BC_MenuItem(_("Play keyframes"), hotkey, hotkey[0])
 { 
 	this->mwindow = mwindow; 
 	set_checked(mwindow->edl->session->auto_conf->play); 
@@ -107,7 +112,7 @@ int PlayAutomation::handle_event()
 
 
 CameraAutomation::CameraAutomation(MWindow *mwindow, char *hotkey)
- : BC_MenuItem("Camera keyframes", hotkey, hotkey[0]) 
+ : BC_MenuItem(_("Camera keyframes"), hotkey, hotkey[0]) 
 { 
 	this->mwindow = mwindow; 
 	set_checked(0); 
@@ -124,7 +129,7 @@ int CameraAutomation::handle_event()
 
 
 ProjectAutomation::ProjectAutomation(MWindow *mwindow, char *hotkey)
- : BC_MenuItem("Projector keyframes", hotkey, hotkey[0]) 
+ : BC_MenuItem(_("Projector keyframes"), hotkey, hotkey[0]) 
 { 
 	this->mwindow = mwindow; 
 	set_checked(0); 
@@ -141,7 +146,7 @@ int ProjectAutomation::handle_event()
 
 
 ShowRenderedOutput::ShowRenderedOutput(MWindow *mwindow, char *hotkey)
- : BC_MenuItem("Draw Output", hotkey, hotkey[0])
+ : BC_MenuItem(_("Draw Output"), hotkey, hotkey[0])
 { 
 	this->mwindow = mwindow; 
 	set_checked(0); 
@@ -149,13 +154,13 @@ ShowRenderedOutput::ShowRenderedOutput(MWindow *mwindow, char *hotkey)
 int ShowRenderedOutput::handle_event()
 {
 //	mwindow->tracks->set_draw_output();
-//	if(mwindow->tracks->show_output) set_text("Draw Tracks"); else set_text("Draw Output");
+//	if(mwindow->tracks->show_output) set_text(_("Draw Tracks")); else set_text(_("Draw Output"));
 	return 1;
 }
 
 
 MuteAutomation::MuteAutomation(MWindow *mwindow, char *hotkey)
- : BC_MenuItem("Mute keyframes", hotkey, hotkey[0])
+ : BC_MenuItem(_("Mute keyframes"), hotkey, hotkey[0])
 { 
 	this->mwindow = mwindow; 
 	set_checked(mwindow->edl->session->auto_conf->mute); 
@@ -172,7 +177,7 @@ int MuteAutomation::handle_event()
 
 
 PanAutomation::PanAutomation(MWindow *mwindow, char *hotkey)
- : BC_MenuItem("Pan keyframes", hotkey, hotkey[0]) 
+ : BC_MenuItem(_("Pan keyframes"), hotkey, hotkey[0]) 
 { 
 	this->mwindow = mwindow; 
 	set_checked(mwindow->edl->session->auto_conf->pan); 
@@ -188,7 +193,7 @@ int PanAutomation::handle_event()
 }
 
 PluginAutomation::PluginAutomation(MWindow *mwindow, char *hotkey)
- : BC_MenuItem("Plugin keyframes", hotkey, hotkey[0]) 
+ : BC_MenuItem(_("Plugin keyframes"), hotkey, hotkey[0]) 
 { 
 	this->mwindow = mwindow; 
 }
@@ -204,7 +209,7 @@ int PluginAutomation::handle_event()
 }
 
 ModeAutomation::ModeAutomation(MWindow *mwindow, char *hotkey)
- : BC_MenuItem("Mode keyframes", hotkey, hotkey[0]) 
+ : BC_MenuItem(_("Mode keyframes"), hotkey, hotkey[0]) 
 { 
 	this->mwindow = mwindow;
 }
@@ -220,7 +225,7 @@ int ModeAutomation::handle_event()
 }
 
 MaskAutomation::MaskAutomation(MWindow *mwindow, char *hotkey)
- : BC_MenuItem("Mask keyframes", hotkey, hotkey[0])
+ : BC_MenuItem(_("Mask keyframes"), hotkey, hotkey[0])
 { 
 	this->mwindow = mwindow;
 }
@@ -236,7 +241,7 @@ int MaskAutomation::handle_event()
 }
 
 CZoomAutomation::CZoomAutomation(MWindow *mwindow, char *hotkey)
- : BC_MenuItem("Camera Zoom", hotkey, hotkey[0])
+ : BC_MenuItem(_("Camera Zoom"), hotkey, hotkey[0])
 { 
 	this->mwindow = mwindow;
 }
@@ -252,7 +257,7 @@ int CZoomAutomation::handle_event()
 }
 
 PZoomAutomation::PZoomAutomation(MWindow *mwindow, char *hotkey)
- : BC_MenuItem("Projector Zoom", hotkey, hotkey[0])
+ : BC_MenuItem(_("Projector Zoom"), hotkey, hotkey[0])
 { 
 	set_shift(1); 
 	this->mwindow = mwindow;

@@ -20,6 +20,12 @@
 #include "renderengine.h"
 
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
 RecordAudio::RecordAudio(MWindow *mwindow,
 				Record *record, 
 				RecordThread *record_thread)
@@ -232,7 +238,7 @@ void RecordAudio::run()
 		ErrorBox error_box(PROGRAM_NAME ": Error",
 			mwindow->gui->get_abs_cursor_x(),
 			mwindow->gui->get_abs_cursor_y());
-		error_box.create_objects("No space left on disk.");
+		error_box.create_objects(_("No space left on disk."));
 		error_box.run_window();
 		batch_done = 1;
 	}

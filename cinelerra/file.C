@@ -22,6 +22,11 @@
 #include "vframe.h"
 
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 File::File()
 {
@@ -192,10 +197,10 @@ int File::get_options(BC_WindowBase *parent_window,
 		format_window = errorbox;
 		getting_options = 1;
 		if(audio_options)
-			errorbox->create_objects("This format doesn't support audio.");
+			errorbox->create_objects(_("This format doesn't support audio."));
 		else
 		if(video_options)
-			errorbox->create_objects("This format doesn't support video.");
+			errorbox->create_objects(_("This format doesn't support video."));
 		errorbox->run_window();
 		delete errorbox;
 	}
@@ -944,51 +949,51 @@ int File::can_copy_from(Edit *edit, int64_t position, int output_w, int output_h
 
 int File::strtoformat(ArrayList<PluginServer*> *plugindb, char *format)
 {
-	if(!strcasecmp(format, WAV_NAME)) return FILE_WAV;
+	if(!strcasecmp(format, _(WAV_NAME))) return FILE_WAV;
 	else
-	if(!strcasecmp(format, PCM_NAME)) return FILE_PCM;
+	if(!strcasecmp(format, _(PCM_NAME))) return FILE_PCM;
 	else
-	if(!strcasecmp(format, AU_NAME)) return FILE_AU;
+	if(!strcasecmp(format, _(AU_NAME))) return FILE_AU;
 	else
-	if(!strcasecmp(format, AIFF_NAME)) return FILE_AIFF;
+	if(!strcasecmp(format, _(AIFF_NAME))) return FILE_AIFF;
 	else
-	if(!strcasecmp(format, SND_NAME)) return FILE_SND;
+	if(!strcasecmp(format, _(SND_NAME))) return FILE_SND;
 	else
-	if(!strcasecmp(format, PNG_NAME)) return FILE_PNG;
+	if(!strcasecmp(format, _(PNG_NAME))) return FILE_PNG;
 	else
-	if(!strcasecmp(format, PNG_LIST_NAME)) return FILE_PNG_LIST;
+	if(!strcasecmp(format, _(PNG_LIST_NAME))) return FILE_PNG_LIST;
 	else
-	if(!strcasecmp(format, TIFF_NAME)) return FILE_TIFF;
+	if(!strcasecmp(format, _(TIFF_NAME))) return FILE_TIFF;
 	else
-	if(!strcasecmp(format, TIFF_LIST_NAME)) return FILE_TIFF_LIST;
+	if(!strcasecmp(format, _(TIFF_LIST_NAME))) return FILE_TIFF_LIST;
 	else
-	if(!strcasecmp(format, JPEG_NAME)) return FILE_JPEG;
+	if(!strcasecmp(format, _(JPEG_NAME))) return FILE_JPEG;
 	else
-	if(!strcasecmp(format, JPEG_LIST_NAME)) return FILE_JPEG_LIST;
+	if(!strcasecmp(format, _(JPEG_LIST_NAME))) return FILE_JPEG_LIST;
 	else
-	if(!strcasecmp(format, MPEG_NAME)) return FILE_MPEG;
+	if(!strcasecmp(format, _(MPEG_NAME))) return FILE_MPEG;
 	else
-	if(!strcasecmp(format, AMPEG_NAME)) return FILE_AMPEG;
+	if(!strcasecmp(format, _(AMPEG_NAME))) return FILE_AMPEG;
 	else
-	if(!strcasecmp(format, VMPEG_NAME)) return FILE_VMPEG;
+	if(!strcasecmp(format, _(VMPEG_NAME))) return FILE_VMPEG;
 	else
-	if(!strcasecmp(format, TGA_NAME)) return FILE_TGA;
+	if(!strcasecmp(format, _(TGA_NAME))) return FILE_TGA;
 	else
-	if(!strcasecmp(format, TGA_LIST_NAME)) return FILE_TGA_LIST;
+	if(!strcasecmp(format, _(TGA_LIST_NAME))) return FILE_TGA_LIST;
 	else
-	if(!strcasecmp(format, MOV_NAME)) return FILE_MOV;
+	if(!strcasecmp(format, _(MOV_NAME))) return FILE_MOV;
 	else
-	if(!strcasecmp(format, AVI_NAME)) return FILE_AVI;
+	if(!strcasecmp(format, _(AVI_NAME))) return FILE_AVI;
 	else
-	if(!strcasecmp(format, AVI_LAVTOOLS_NAME)) return FILE_AVI_LAVTOOLS;
+	if(!strcasecmp(format, _(AVI_LAVTOOLS_NAME))) return FILE_AVI_LAVTOOLS;
 	else
-	if(!strcasecmp(format, AVI_ARNE2_NAME)) return FILE_AVI_ARNE2;
+	if(!strcasecmp(format, _(AVI_ARNE2_NAME))) return FILE_AVI_ARNE2;
 	else
-	if(!strcasecmp(format, AVI_ARNE1_NAME)) return FILE_AVI_ARNE1;
+	if(!strcasecmp(format, _(AVI_ARNE1_NAME))) return FILE_AVI_ARNE1;
 	else
-	if(!strcasecmp(format, AVI_AVIFILE_NAME)) return FILE_AVI_AVIFILE;
+	if(!strcasecmp(format, _(AVI_AVIFILE_NAME))) return FILE_AVI_AVIFILE;
 	else
-	if(!strcasecmp(format, VORBIS_NAME)) return FILE_VORBIS;
+	if(!strcasecmp(format, _(VORBIS_NAME))) return FILE_VORBIS;
 
 	return 0;
 }
@@ -998,77 +1003,77 @@ char* File::formattostr(ArrayList<PluginServer*> *plugindb, int format)
 	switch(format)
 	{
 		case FILE_WAV:
-			return WAV_NAME;
+			return _(WAV_NAME);
 			break;
 		case FILE_PCM:
-			return PCM_NAME;
+			return _(PCM_NAME);
 			break;
 		case FILE_AU:
-			return AU_NAME;
+			return _(AU_NAME);
 			break;
 		case FILE_AIFF:
-			return AIFF_NAME;
+			return _(AIFF_NAME);
 			break;
 		case FILE_SND:
-			return SND_NAME;
+			return _(SND_NAME);
 			break;
 		case FILE_PNG:
-			return PNG_NAME;
+			return _(PNG_NAME);
 			break;
 		case FILE_PNG_LIST:
-			return PNG_LIST_NAME;
+			return _(PNG_LIST_NAME);
 			break;
 		case FILE_JPEG:
-			return JPEG_NAME;
+			return _(JPEG_NAME);
 			break;
 		case FILE_JPEG_LIST:
-			return JPEG_LIST_NAME;
+			return _(JPEG_LIST_NAME);
 			break;
 		case FILE_MPEG:
-			return MPEG_NAME;
+			return _(MPEG_NAME);
 			break;
 		case FILE_AMPEG:
-			return AMPEG_NAME;
+			return _(AMPEG_NAME);
 			break;
 		case FILE_VMPEG:
-			return VMPEG_NAME;
+			return _(VMPEG_NAME);
 			break;
 		case FILE_TGA:
-			return TGA_NAME;
+			return _(TGA_NAME);
 			break;
 		case FILE_TGA_LIST:
-			return TGA_LIST_NAME;
+			return _(TGA_LIST_NAME);
 			break;
 		case FILE_TIFF:
-			return TIFF_NAME;
+			return _(TIFF_NAME);
 			break;
 		case FILE_TIFF_LIST:
-			return TIFF_LIST_NAME;
+			return _(TIFF_LIST_NAME);
 			break;
 		case FILE_MOV:
-			return MOV_NAME;
+			return _(MOV_NAME);
 			break;
 		case FILE_AVI_LAVTOOLS:
-			return AVI_LAVTOOLS_NAME;
+			return _(AVI_LAVTOOLS_NAME);
 			break;
 		case FILE_AVI:
-			return AVI_NAME;
+			return _(AVI_NAME);
 			break;
 		case FILE_AVI_ARNE2:
-			return AVI_ARNE2_NAME;
+			return _(AVI_ARNE2_NAME);
 			break;
 		case FILE_AVI_ARNE1:
-			return AVI_ARNE1_NAME;
+			return _(AVI_ARNE1_NAME);
 			break;
 		case FILE_AVI_AVIFILE:
-			return AVI_AVIFILE_NAME;
+			return _(AVI_AVIFILE_NAME);
 			break;
 		case FILE_VORBIS:
-			return VORBIS_NAME;
+			return _(VORBIS_NAME);
 			break;
 
 		default:
-			return "Unknown";
+			return _("Unknown");
 			break;
 	}
 	return "Unknown";
@@ -1076,14 +1081,14 @@ char* File::formattostr(ArrayList<PluginServer*> *plugindb, int format)
 
 int File::strtobits(char *bits)
 {
-	if(!strcasecmp(bits, NAME_8BIT)) return BITSLINEAR8;
-	if(!strcasecmp(bits, NAME_16BIT)) return BITSLINEAR16;
-	if(!strcasecmp(bits, NAME_24BIT)) return BITSLINEAR24;
-	if(!strcasecmp(bits, NAME_32BIT)) return BITSLINEAR32;
-	if(!strcasecmp(bits, NAME_ULAW)) return BITSULAW;
-	if(!strcasecmp(bits, NAME_ADPCM)) return BITS_ADPCM;
-	if(!strcasecmp(bits, NAME_FLOAT)) return BITSFLOAT;
-	if(!strcasecmp(bits, NAME_IMA4)) return BITSIMA4;
+	if(!strcasecmp(bits, _(NAME_8BIT))) return BITSLINEAR8;
+	if(!strcasecmp(bits, _(NAME_16BIT))) return BITSLINEAR16;
+	if(!strcasecmp(bits, _(NAME_24BIT))) return BITSLINEAR24;
+	if(!strcasecmp(bits, _(NAME_32BIT))) return BITSLINEAR32;
+	if(!strcasecmp(bits, _(NAME_ULAW))) return BITSULAW;
+	if(!strcasecmp(bits, _(NAME_ADPCM))) return BITS_ADPCM;
+	if(!strcasecmp(bits, _(NAME_FLOAT))) return BITSFLOAT;
+	if(!strcasecmp(bits, _(NAME_IMA4))) return BITSIMA4;
 	return BITSLINEAR16;
 }
 
@@ -1093,28 +1098,28 @@ char* File::bitstostr(int bits)
 	switch(bits)
 	{
 		case BITSLINEAR8:
-			return NAME_8BIT;
+			return (NAME_8BIT);
 			break;
 		case BITSLINEAR16:
-			return NAME_16BIT;
+			return (NAME_16BIT);
 			break;
 		case BITSLINEAR24:
-			return NAME_24BIT;
+			return (NAME_24BIT);
 			break;
 		case BITSLINEAR32:
-			return NAME_32BIT;
+			return (NAME_32BIT);
 			break;
 		case BITSULAW:
-			return NAME_ULAW;
+			return (NAME_ULAW);
 			break;
 		case BITS_ADPCM:
-			return NAME_ADPCM;
+			return (NAME_ADPCM);
 			break;
 		case BITSFLOAT:
-			return NAME_FLOAT;
+			return (NAME_FLOAT);
 			break;
 		case BITSIMA4:
-			return NAME_IMA4;
+			return (NAME_IMA4);
 			break;
 	}
 	return "Unknown";
@@ -1124,14 +1129,14 @@ char* File::bitstostr(int bits)
 
 int File::str_to_byteorder(char *string)
 {
-	if(!strcasecmp(string, "Lo Hi")) return 1;
+	if(!strcasecmp(string, _("Lo Hi"))) return 1;
 	return 0;
 }
 
 char* File::byteorder_to_str(int byte_order)
 {
-	if(byte_order) return "Lo Hi";
-	return "Hi Lo";
+	if(byte_order) return _("Lo Hi");
+	return _("Hi Lo");
 }
 
 int File::bytes_per_sample(int bits)

@@ -3,8 +3,13 @@
 #include "mainsession.h"
 #include "setsamplerate.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 SetSampleRate::SetSampleRate(MWindow *mwindow)
- : BC_MenuItem("Sample rate...", ""), Thread() 
+ : BC_MenuItem(_("Sample rate..."), ""), Thread() 
 { this->mwindow = mwindow; }
  
 int SetSampleRate::handle_event() { start(); }
@@ -44,7 +49,7 @@ SetSampleRateWindow::~SetSampleRateWindow()
 
 int SetSampleRateWindow::create_objects()
 {
-	add_subwindow(new BC_Title(5, 5, "Enter the sample rate to use:"));
+	add_subwindow(new BC_Title(5, 5, _("Enter the sample rate to use:")));
 	add_subwindow(new BC_OKButton(10, get_h() - 40));
 	add_subwindow(new BC_CancelButton(get_w() - 100, get_h() - 40));
 	

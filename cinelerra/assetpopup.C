@@ -17,6 +17,12 @@
 #include "vwindow.h"
 #include "vwindowgui.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
 AssetPopup::AssetPopup(MWindow *mwindow, AWindowGUI *gui)
  : BC_PopupMenu(0, 
 		0, 
@@ -86,7 +92,7 @@ int AssetPopup::update()
 
 
 AssetPopupInfo::AssetPopupInfo(MWindow *mwindow, AssetPopup *popup)
- : BC_MenuItem("Info...")
+ : BC_MenuItem(_("Info..."))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
@@ -128,7 +134,7 @@ int AssetPopupInfo::handle_event()
 
 
 AssetPopupBuildIndex::AssetPopupBuildIndex(MWindow *mwindow, AssetPopup *popup)
- : BC_MenuItem("Rebuild index")
+ : BC_MenuItem(_("Rebuild index"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
@@ -152,7 +158,7 @@ int AssetPopupBuildIndex::handle_event()
 
 
 AssetPopupSort::AssetPopupSort(MWindow *mwindow, AssetPopup *popup)
- : BC_MenuItem("Sort items")
+ : BC_MenuItem(_("Sort items"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
@@ -175,7 +181,7 @@ int AssetPopupSort::handle_event()
 
 
 AssetPopupView::AssetPopupView(MWindow *mwindow, AssetPopup *popup)
- : BC_MenuItem("View")
+ : BC_MenuItem(_("View"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
@@ -208,7 +214,7 @@ int AssetPopupView::handle_event()
 
 
 AssetPopupPaste::AssetPopupPaste(MWindow *mwindow, AssetPopup *popup)
- : BC_MenuItem("Paste")
+ : BC_MenuItem(_("Paste"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
@@ -232,7 +238,7 @@ int AssetPopupPaste::handle_event()
 
 
 AssetMatchSize::AssetMatchSize(MWindow *mwindow, AssetPopup *popup)
- : BC_MenuItem("Match project size")
+ : BC_MenuItem(_("Match project size"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
@@ -262,7 +268,7 @@ int AssetMatchSize::handle_event()
 
 
 AssetPopupProjectRemove::AssetPopupProjectRemove(MWindow *mwindow, AssetPopup *popup)
- : BC_MenuItem("Remove from project")
+ : BC_MenuItem(_("Remove from project"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
@@ -284,7 +290,7 @@ int AssetPopupProjectRemove::handle_event()
 
 
 AssetPopupDiskRemove::AssetPopupDiskRemove(MWindow *mwindow, AssetPopup *popup)
- : BC_MenuItem("Remove from disk")
+ : BC_MenuItem(_("Remove from disk"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;

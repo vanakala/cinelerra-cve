@@ -27,6 +27,11 @@
 #include "vpluginset.h"
 #include "vtrack.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 VTrack::VTrack(EDL *edl, Tracks *tracks)
  : Track(edl, tracks)
 {
@@ -95,7 +100,7 @@ void VTrack::set_default_title()
 	{
 		if(current->data_type == TRACK_VIDEO) i++;
 	}
-	sprintf(title, "Video %d", i);
+	sprintf(title, _("Video %d"), i);
 }
 
 int64_t VTrack::to_units(double position, int round)

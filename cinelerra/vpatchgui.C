@@ -20,6 +20,11 @@
 
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 VPatchGUI::VPatchGUI(MWindow *mwindow, PatchBay *patchbay, VTrack *track, int x, int y)
  : PatchGUI(mwindow, patchbay, track, x, y)
 {
@@ -157,7 +162,7 @@ float VFadePatch::update_edl()
 	int update_undo = !fade_autos->auto_exists_for_editing(position);
 
 	if(update_undo)
-		mwindow->undo->update_undo_before("fade", LOAD_AUTOMATION);
+		mwindow->undo->update_undo_before(_("fade"), LOAD_AUTOMATION);
 
 	current = (FloatAuto*)fade_autos->get_auto_for_editing(position);
 
@@ -235,7 +240,7 @@ int VModePatch::handle_event()
 	int update_undo = !mode_autos->auto_exists_for_editing(position);
 
 	if(update_undo)
-		mwindow->undo->update_undo_before("mode", LOAD_AUTOMATION);
+		mwindow->undo->update_undo_before(_("mode"), LOAD_AUTOMATION);
 
 	current = (IntAuto*)mode_autos->get_auto_for_editing(position);
 	current->value = text_to_mode(get_text());
@@ -302,31 +307,31 @@ char* VModePatch::mode_to_text(int mode)
 	switch(mode)
 	{
 		case TRANSFER_NORMAL:
-			return "Normal";
+			return _("Normal");
 			break;
 		
 		case TRANSFER_REPLACE:
-			return "Replace";
+			return _("Replace");
 			break;
 		
 		case TRANSFER_ADDITION:
-			return "Addition";
+			return _("Addition");
 			break;
 		
 		case TRANSFER_SUBTRACT:
-			return "Subtract";
+			return _("Subtract");
 			break;
 		
 		case TRANSFER_MULTIPLY:
-			return "Multiply";
+			return _("Multiply");
 			break;
 		
 		case TRANSFER_DIVIDE:
-			return "Divide";
+			return _("Divide");
 			break;
 		
 		default:
-			return "Normal";
+			return _("Normal");
 			break;
 	}
 	return "";

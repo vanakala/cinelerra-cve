@@ -3,6 +3,12 @@
 #include "theme.h"
 
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
 LoadModeItem::LoadModeItem(char *text, int value)
  : BC_ListBoxItem(text)
 {
@@ -23,13 +29,13 @@ LoadMode::LoadMode(MWindow *mwindow,
 	this->y = y;
 	this->output = output;
 	this->use_nothing = use_nothing;
-	if(use_nothing) load_modes.append(new LoadModeItem("Insert nothing", LOAD_NOTHING));
-	load_modes.append(new LoadModeItem("Replace current project", LOAD_REPLACE));
-	load_modes.append(new LoadModeItem("Replace current project and concatenate tracks", LOAD_REPLACE_CONCATENATE));
-	load_modes.append(new LoadModeItem("Append in new tracks", LOAD_NEW_TRACKS));
-	load_modes.append(new LoadModeItem("Concatenate to existing tracks", LOAD_CONCATENATE));
-	load_modes.append(new LoadModeItem("Paste at insertion point", LOAD_PASTE));
-	load_modes.append(new LoadModeItem("Create new resources only", LOAD_RESOURCESONLY));
+	if(use_nothing) load_modes.append(new LoadModeItem(_("Insert nothing"), LOAD_NOTHING));
+	load_modes.append(new LoadModeItem(_("Replace current project"), LOAD_REPLACE));
+	load_modes.append(new LoadModeItem(_("Replace current project and concatenate tracks"), LOAD_REPLACE_CONCATENATE));
+	load_modes.append(new LoadModeItem(_("Append in new tracks"), LOAD_NEW_TRACKS));
+	load_modes.append(new LoadModeItem(_("Concatenate to existing tracks"), LOAD_CONCATENATE));
+	load_modes.append(new LoadModeItem(_("Paste at insertion point"), LOAD_PASTE));
+	load_modes.append(new LoadModeItem(_("Create new resources only"), LOAD_RESOURCESONLY));
 }
 
 LoadMode::~LoadMode()
@@ -49,7 +55,7 @@ char* LoadMode::mode_to_text()
 		if(load_modes.values[i]->value == *output) 
 			return load_modes.values[i]->get_text();
 	}
-	return "Unknown";
+	return _("Unknown");
 }
 
 int LoadMode::create_objects()
@@ -58,7 +64,7 @@ int LoadMode::create_objects()
 	char *default_text;
 	default_text = mode_to_text();
 
-	window->add_subwindow(title = new BC_Title(x, y, "Insertion strategy:"));
+	window->add_subwindow(title = new BC_Title(x, y, _("Insertion strategy:")));
 	y += 20;
 	window->add_subwindow(textbox = new BC_TextBox(x, 
 		y, 

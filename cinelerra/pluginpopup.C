@@ -6,6 +6,12 @@
 #include "pluginpopup.h"
 #include "track.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
 PluginPopup::PluginPopup(MWindow *mwindow, MWindowGUI *gui)
  : BC_PopupMenu(0, 
 		0, 
@@ -53,7 +59,7 @@ int PluginPopup::update(Plugin *plugin)
 
 
 PluginPopupAttach::PluginPopupAttach(MWindow *mwindow, PluginPopup *popup)
- : BC_MenuItem("Attach...")
+ : BC_MenuItem(_("Attach..."))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
@@ -79,7 +85,7 @@ int PluginPopupAttach::handle_event()
 
 
 PluginPopupDetach::PluginPopupDetach(MWindow *mwindow, PluginPopup *popup)
- : BC_MenuItem("Detach")
+ : BC_MenuItem(_("Detach"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
@@ -92,7 +98,7 @@ PluginPopupDetach::~PluginPopupDetach()
 int PluginPopupDetach::handle_event()
 {
 	mwindow->hide_plugin(popup->plugin, 1);
-	mwindow->undo->update_undo_before("detach effect", LOAD_ALL);
+	mwindow->undo->update_undo_before(_("detach effect"), LOAD_ALL);
 	popup->plugin->track->detach_effect(popup->plugin);
 	mwindow->save_backup();
 	mwindow->undo->update_undo_after();
@@ -115,7 +121,7 @@ int PluginPopupDetach::handle_event()
 
 
 PluginPopupIn::PluginPopupIn(MWindow *mwindow, PluginPopup *popup)
- : BC_MenuItem("Send")
+ : BC_MenuItem(_("Send"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
@@ -137,7 +143,7 @@ int PluginPopupIn::handle_event()
 
 
 PluginPopupOut::PluginPopupOut(MWindow *mwindow, PluginPopup *popup)
- : BC_MenuItem("Receive")
+ : BC_MenuItem(_("Receive"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
@@ -159,7 +165,7 @@ int PluginPopupOut::handle_event()
 
 
 PluginPopupShow::PluginPopupShow(MWindow *mwindow, PluginPopup *popup)
- : BC_MenuItem("Show")
+ : BC_MenuItem(_("Show"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
@@ -179,7 +185,7 @@ int PluginPopupShow::handle_event()
 
 
 PluginPopupOn::PluginPopupOn(MWindow *mwindow, PluginPopup *popup)
- : BC_MenuItem("On")
+ : BC_MenuItem(_("On"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
@@ -199,7 +205,7 @@ int PluginPopupOn::handle_event()
 
 
 PluginPopupUp::PluginPopupUp(MWindow *mwindow, PluginPopup *popup)
- : BC_MenuItem("Move up")
+ : BC_MenuItem(_("Move up"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;
@@ -214,7 +220,7 @@ int PluginPopupUp::handle_event()
 
 
 PluginPopupDown::PluginPopupDown(MWindow *mwindow, PluginPopup *popup)
- : BC_MenuItem("Move down")
+ : BC_MenuItem(_("Move down"))
 {
 	this->mwindow = mwindow;
 	this->popup = popup;

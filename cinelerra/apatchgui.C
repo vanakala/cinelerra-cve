@@ -18,6 +18,12 @@
 #include "trackcanvas.h"
 
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
 APatchGUI::APatchGUI(MWindow *mwindow, PatchBay *patchbay, ATrack *track, int x, int y)
  : PatchGUI(mwindow, patchbay, track, x, y)
 {
@@ -195,7 +201,7 @@ float AFadePatch::update_edl()
 
 //printf("AFadePatch::update_edl 1 %d\n", update_undo);
 	if(update_undo)
-		mwindow->undo->update_undo_before("fade", LOAD_AUTOMATION);
+		mwindow->undo->update_undo_before(_("fade"), LOAD_AUTOMATION);
 
 	current = (FloatAuto*)fade_autos->get_auto_for_editing(position);
 
@@ -271,7 +277,7 @@ int APanPatch::handle_event()
 	int update_undo = !pan_autos->auto_exists_for_editing(position);
 
 	if(update_undo)
-		mwindow->undo->update_undo_before("pan", LOAD_AUTOMATION);
+		mwindow->undo->update_undo_before(_("pan"), LOAD_AUTOMATION);
 
 	current = (PanAuto*)pan_autos->get_auto_for_editing(position);
 

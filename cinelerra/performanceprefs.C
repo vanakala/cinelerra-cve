@@ -6,6 +6,12 @@
 #include "preferences.h"
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
 PerformancePrefs::PerformancePrefs(MWindow *mwindow, PreferencesWindow *pwindow)
  : PreferencesDialog(mwindow, pwindow)
 {
@@ -38,14 +44,14 @@ int PerformancePrefs::create_objects()
 // 		get_resources()->get_bg_color(),
 // 		get_resources()->get_bg_light2(),
 // 		get_resources()->get_bg_light1());
-	add_subwindow(new BC_Title(x, y, "Performance", LARGEFONT, BLACK));
+	add_subwindow(new BC_Title(x, y, _("Performance"), LARGEFONT, BLACK));
 
 	y += 30;
-	add_subwindow(new BC_Title(x, y + 5, "Cache items:", MEDIUMFONT, BLACK));
+	add_subwindow(new BC_Title(x, y + 5, _("Cache items:"), MEDIUMFONT, BLACK));
 	sprintf(string, "%ld", pwindow->thread->preferences->cache_size);
 	add_subwindow(csize = new CICacheSize(x + 230, y, pwindow, string));
 	y += 30;
-	add_subwindow(new BC_Title(x, y + 5, "Seconds to preroll renders:"));
+	add_subwindow(new BC_Title(x, y + 5, _("Seconds to preroll renders:")));
 	PrefsRenderPreroll *preroll = new PrefsRenderPreroll(pwindow, 
 		this, 
 		x + 230, 
@@ -57,7 +63,7 @@ int PerformancePrefs::create_objects()
 	y += 35;
 
 
-	add_subwindow(new BC_Title(x, y, "Background Rendering", LARGEFONT, BLACK));
+	add_subwindow(new BC_Title(x, y, _("Background Rendering"), LARGEFONT, BLACK));
 	y += 30;
 
 	add_subwindow(new PrefsUseBRender(pwindow, 
@@ -65,13 +71,13 @@ int PerformancePrefs::create_objects()
 		y));
 
 
-	add_subwindow(new BC_Title(x, y + 40, "Frames per background rendering job:"));
+	add_subwindow(new BC_Title(x, y + 40, _("Frames per background rendering job:")));
 	PrefsBRenderFragment *brender_fragment = new PrefsBRenderFragment(pwindow, 
 		this, 
 		x, 
 		y + 60);
 	brender_fragment->create_objects();
-	add_subwindow(new BC_Title(x, y + 95, "Frames to preroll background:"));
+	add_subwindow(new BC_Title(x, y + 95, _("Frames to preroll background:")));
 	PrefsBRenderPreroll *bpreroll = new PrefsBRenderPreroll(pwindow, 
 		this, 
 		x + xmargin3, 
@@ -80,7 +86,7 @@ int PerformancePrefs::create_objects()
 
 
 	x += xmargin4;
-	add_subwindow(new BC_Title(x, y, "Output for background rendering:"));
+	add_subwindow(new BC_Title(x, y, _("Output for background rendering:")));
 	y += 20;
 	brender_tools = 
 		new FormatTools(mwindow,
@@ -100,20 +106,23 @@ int PerformancePrefs::create_objects()
 		1); // Supply file formats for background rendering
 	x = xmargin1;
 
-	add_subwindow(new BC_Title(x, y, "Render Farm", LARGEFONT, BLACK));
+	add_subwindow(new BC_Title(x, y, _("Render Farm"), LARGEFONT, BLACK));
 	y += 25;
 
 	add_subwindow(new PrefsRenderFarm(pwindow, x, y));
-	add_subwindow(new BC_Title(x + xmargin4, y, "Nodes:"));
+	add_subwindow(new BC_Title(x + xmargin4, y, _("Nodes:")));
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Hostname:"));
-	add_subwindow(new BC_Title(x + xmargin3, y, "Port:"));
+	add_subwindow(new BC_Title(x, y, _("Hostname:")));
+	add_subwindow(new BC_Title(x + xmargin3, y, _("Port:")));
 	add_subwindow(node_list = new PrefsRenderFarmNodes(pwindow, 
 		this, 
 		x + xmargin4, 
 		y - 5));
+#if 0
+N_("Master node framerate: %0.3f")
+#endif
 #define MASTER_NODE_FRAMERATE_TEXT "Master node framerate: %0.3f"
-	sprintf(string, MASTER_NODE_FRAMERATE_TEXT, 
+	sprintf(string, _(MASTER_NODE_FRAMERATE_TEXT), 
 		pwindow->thread->preferences->local_rate);
 	add_subwindow(master_rate = new BC_Title(x + xmargin4, y + node_list->get_h(), string));
 
@@ -156,10 +165,10 @@ int PerformancePrefs::create_objects()
 	y += 35;
 	add_subwindow(new BC_Title(x, 
 		y, 
-		"Total jobs to create:"));
+		_("Total jobs to create:")));
 	add_subwindow(new BC_Title(x, 
 		y + 30, 
-		"(overridden if new file at each label is checked)"));
+		_("(overridden if new file at each label is checked)")));
 	PrefsRenderFarmJobs *jobs = new PrefsRenderFarmJobs(pwindow, 
 		this, 
 		x + xmargin3, 
@@ -172,7 +181,7 @@ int PerformancePrefs::create_objects()
 		y));
 // 	add_subwindow(new BC_Title(x, 
 // 		y, 
-// 		"Filesystem prefix on remote nodes:"));
+// 		_("Filesystem prefix on remote nodes:")));
 // 	add_subwindow(new PrefsRenderFarmMountpoint(pwindow, 
 // 		this, 
 // 		x + xmargin3, 
@@ -215,10 +224,10 @@ void PerformancePrefs::generate_node_list()
 
 static char *titles[] = 
 {
-	"On",
-	"Hostname",
-	"Port",
-	"Framerate"
+	N_("On"),
+	N_("Hostname"),
+	N_("Port"),
+	N_("Framerate")
 };
 
 static int widths[] = 
@@ -249,7 +258,7 @@ PrefsUseBRender::PrefsUseBRender(PreferencesWindow *pwindow,
  : BC_CheckBox(x, 
  	y, 
 	pwindow->thread->preferences->use_brender, 
-	"Use background rendering")
+	_("Use background rendering"))
 {
 	this->pwindow = pwindow;
 }
@@ -388,7 +397,7 @@ PrefsRenderFarm::PrefsRenderFarm(PreferencesWindow *pwindow, int x, int y)
  : BC_CheckBox(x, 
  	y, 
 	pwindow->thread->preferences->use_renderfarm,
-	"Use render farm")
+	_("Use render farm"))
 {
 	this->pwindow = pwindow;
 }
@@ -408,7 +417,7 @@ PrefsForceUniprocessor::PrefsForceUniprocessor(PreferencesWindow *pwindow, int x
  : BC_CheckBox(x, 
  	y, 
 	pwindow->thread->edl->session->force_uniprocessor,
-	"Force single processor use")
+	_("Force single processor use"))
 {
 	this->pwindow = pwindow;
 }
@@ -431,7 +440,7 @@ PrefsRenderFarmConsolidate::PrefsRenderFarmConsolidate(PreferencesWindow *pwindo
  : BC_CheckBox(x, 
  	y, 
 	pwindow->thread->preferences->renderfarm_consolidate,
-	"Consolidate output files on completion")
+	_("Consolidate output files on completion"))
 {
 	this->pwindow = pwindow;
 }
@@ -557,7 +566,7 @@ int PrefsRenderFarmEditNode::handle_event()
 
 
 PrefsRenderFarmNewNode::PrefsRenderFarmNewNode(PreferencesWindow *pwindow, PerformancePrefs *subwindow, int x, int y)
- : BC_GenericButton(x, y, "Add Node")
+ : BC_GenericButton(x, y, _("Add Node"))
 {
 	this->pwindow = pwindow;
 	this->subwindow = subwindow;
@@ -585,7 +594,7 @@ int PrefsRenderFarmNewNode::handle_event()
 
 
 PrefsRenderFarmReplaceNode::PrefsRenderFarmReplaceNode(PreferencesWindow *pwindow, PerformancePrefs *subwindow, int x, int y)
- : BC_GenericButton(x, y, "Apply Changes")
+ : BC_GenericButton(x, y, _("Apply Changes"))
 {
 	this->pwindow = pwindow;
 	this->subwindow = subwindow;
@@ -612,7 +621,7 @@ int PrefsRenderFarmReplaceNode::handle_event()
 
 
 PrefsRenderFarmDelNode::PrefsRenderFarmDelNode(PreferencesWindow *pwindow, PerformancePrefs *subwindow, int x, int y)
- : BC_GenericButton(x, y, "Delete Node")
+ : BC_GenericButton(x, y, _("Delete Node"))
 {
 	this->pwindow = pwindow;
 	this->subwindow = subwindow;
@@ -640,7 +649,7 @@ PrefsRenderFarmSortNodes::PrefsRenderFarmSortNodes(PreferencesWindow *pwindow,
 	PerformancePrefs *subwindow, 
 	int x, 
 	int y)
- : BC_GenericButton(x, y, "Sort nodes")
+ : BC_GenericButton(x, y, _("Sort nodes"))
 {
 	this->pwindow = pwindow;
 	this->subwindow = subwindow;
@@ -667,7 +676,7 @@ PrefsRenderFarmReset::PrefsRenderFarmReset(PreferencesWindow *pwindow,
 	PerformancePrefs *subwindow, 
 	int x, 
 	int y)
- : BC_GenericButton(x, y, "Reset rates")
+ : BC_GenericButton(x, y, _("Reset rates"))
 {
 	this->pwindow = pwindow;
 	this->subwindow = subwindow;
@@ -748,7 +757,7 @@ PrefsRenderFarmVFS::PrefsRenderFarmVFS(PreferencesWindow *pwindow,
 	PerformancePrefs *subwindow,
 	int x,
 	int y)
- : BC_CheckBox(x, y, pwindow->thread->preferences->renderfarm_vfs, "Use virtual filesystem")
+ : BC_CheckBox(x, y, pwindow->thread->preferences->renderfarm_vfs, _("Use virtual filesystem"))
 {
 	this->pwindow = pwindow;
 	this->subwindow = subwindow;

@@ -25,6 +25,13 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
+
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
 // The render client waits for connections from the server.
 // Then it starts a thread for each connection.
 RenderFarmClient::RenderFarmClient(int port, char *deamon_path)
@@ -75,7 +82,7 @@ void RenderFarmClient::main_loop()
 
 		if((socket_fd = socket(PF_INET, SOCK_STREAM, 0)) < 0)
 		{
-			perror("RenderFarmClient::main_loop: socket");
+			perror(_("RenderFarmClient::main_loop: socket"));
 			return;
 		}
 
@@ -84,7 +91,7 @@ void RenderFarmClient::main_loop()
 			sizeof(addr)) < 0)
 		{
 			fprintf(stderr, 
-				"RenderFarmClient::main_loop: bind port %d: %s",
+				_("RenderFarmClient::main_loop: bind port %d: %s"),
 				port,
 				strerror(errno));
 			return;
@@ -100,7 +107,7 @@ void RenderFarmClient::main_loop()
 
 		if((socket_fd = socket(PF_UNIX, SOCK_STREAM, 0)) < 0)
 		{
-			perror("RenderFarmClient::main_loop: socket");
+			perror(_("RenderFarmClient::main_loop: socket"));
 			return;
 		}
 
@@ -109,7 +116,7 @@ void RenderFarmClient::main_loop()
 			size) < 0)
 		{
 			fprintf(stderr, 
-				"RenderFarmClient::main_loop: bind path %s: %s\n",
+				_("RenderFarmClient::main_loop: bind path %s: %s\n"),
 				deamon_path,
 				strerror(errno));
 			return;
@@ -121,7 +128,7 @@ void RenderFarmClient::main_loop()
 	{
 		if(listen(socket_fd, 256) < 0)
     	{
-    		perror("RenderFarmClient::main_loop: listen");
+    		perror(_("RenderFarmClient::main_loop: listen"));
     		return;
     	}
 
@@ -137,7 +144,7 @@ void RenderFarmClient::main_loop()
                 		(struct sockaddr*)&clientname, 
 						&size)) < 0)
     		{
-        		perror("RenderFarmClient::main_loop: accept");
+        		perror(_("RenderFarmClient::main_loop: accept"));
         		return;
     		}
 			else
@@ -154,7 +161,7 @@ printf("RenderFarmClient::main_loop: Session started from %s\n", inet_ntoa(clien
                 		(struct sockaddr*)&clientname, 
 						&size)) < 0)
     		{
-        		perror("RenderFarmClient::main_loop: accept");
+        		perror(_("RenderFarmClient::main_loop: accept"));
         		return;
     		}
 			else
@@ -405,7 +412,7 @@ int RenderFarmClientThread::read_package(int socket_fd, RenderPackage *package)
 // Signifies end of session.
 	if(!data) 
 	{
-//		printf("RenderFarmClientThread::read_package no output path recieved.\n");
+//		printf(_("RenderFarmClientThread::read_package no output path recieved.\n"));
 		return 1;
 	}
 
@@ -552,7 +559,7 @@ void RenderFarmClientThread::run()
 //printf("RenderFarmClientThread::run 11\n");
 	delete preferences;
 //printf("RenderFarmClientThread::run 12\n");
-printf("RenderFarmClientThread::run: Session finished.\n");
+printf(_("RenderFarmClientThread::run: Session finished.\n"));
 
 // Socket error should be the only cause of this
 	if(result)

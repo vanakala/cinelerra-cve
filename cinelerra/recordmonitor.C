@@ -20,6 +20,12 @@
 #include "vframe.h"
 #include "videodevice.h"
 
+
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 RecordMonitor::RecordMonitor(MWindow *mwindow, Record *record)
  : Thread(1)
 {
@@ -462,7 +468,7 @@ int RecordMonitorGUI::create_bitmap()
 }
 
 ReverseInterlace::ReverseInterlace(Record *record, int x, int y)
- : BC_CheckBox(x, y, record->reverse_interlace, "Swap fields")
+ : BC_CheckBox(x, y, record->reverse_interlace, _("Swap fields"))
 {
 	this->record = record;
 }
@@ -603,7 +609,7 @@ int RecordMonitorCanvas::keypress_event()
 
 RecordMonitorFullsize::RecordMonitorFullsize(MWindow *mwindow, 
 	RecordMonitorGUI *window)
- : BC_MenuItem("Zoom 100%")
+ : BC_MenuItem(_("Zoom 100%"))
 {
 	this->mwindow = mwindow;
 	this->window = window;

@@ -18,6 +18,11 @@
 
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 
 
@@ -757,7 +762,7 @@ int AVIConfigAudio::create_objects()
 
 			int x = 10, y = 10;
 			BC_Title *title;
-			add_subwindow(title = new BC_Title(x, y, "Codec: "));
+			add_subwindow(title = new BC_Title(x, y, _("Codec: ")));
 			list = new AVIACodecList(this, x, y);
 			list->create_objects();
 			y += list->get_h();
@@ -766,7 +771,7 @@ int AVIConfigAudio::create_objects()
 #endif
 
 		case FILE_AVI_ARNE2:
-			add_subwindow(new BC_Title(10, 10, "Compressor: 16 bit PCM"));
+			add_subwindow(new BC_Title(10, 10, _("Compressor: 16 bit PCM")));
 			break;
 	}
 
@@ -901,23 +906,23 @@ int AVIConfigVideo::create_objects()
 
 			int x = 10, y = 10, x1 = 90;
 			BC_Title *title;
-			add_subwindow(title = new BC_Title(x, y, "Codec: "));
+			add_subwindow(title = new BC_Title(x, y, _("Codec: ")));
 			list = new AVIVCodecList(this, x1, y);
 			list->create_objects();
 			y += list->get_h() + 5;
 
-			add_subwindow(title = new BC_Title(x, y, "Attributes:"));
+			add_subwindow(title = new BC_Title(x, y, _("Attributes:")));
 			add_subwindow(attributes = new AVIVAttributeList(this, x1, y));
 			y += attributes->get_h() + 5;
 
-			add_subwindow(new BC_Title(x, y, "Value:"));
+			add_subwindow(new BC_Title(x, y, _("Value:")));
 			add_subwindow(attribute = new AVIVAttribute(this, x1, y));
 			break;
 		}
 #endif
 
 		case FILE_AVI_ARNE2:
-			add_subwindow(new BC_Title(10, 10, "Compressor: Consumer DV"));
+			add_subwindow(new BC_Title(10, 10, _("Compressor: Consumer DV")));
 			break;
 	}
 

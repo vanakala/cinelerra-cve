@@ -22,6 +22,10 @@
 #include "vframe.h"
 
 #include <string.h>
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
 
 // Use native sampling rates for files so the same index can be used in
 // multiple projects.
@@ -293,7 +297,7 @@ int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 		mwindow->preferences->index_directory, 
 		index_filename, 
 		asset->path);
-	sprintf(string, "Creating %s.", index_filename);
+	sprintf(string, _("Creating %s."), index_filename);
 
 	progress->update_title(string);
 	progress->update_length(length_source);
@@ -421,7 +425,7 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 // check against index_end when being built
 	if(asset->index_zoom == 0)
 	{
-		printf("IndexFile::draw_index: index has 0 zoom\n");
+		printf(_("IndexFile::draw_index: index has 0 zoom\n"));
 		return 0;
 	}
 

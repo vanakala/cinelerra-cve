@@ -24,6 +24,11 @@
 #include "transportque.h"
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 AModule::AModule(RenderEngine *renderengine, 
 	CommonRender *commonrender, 
@@ -185,7 +190,7 @@ int AModule::render(double *buffer,
 				{
 // couldn't open source file / skip the edit
 					result = 1;
-					printf("VirtualAConsole::load_track Couldn't open %s.\n", playable_edit->asset->path);
+					printf(_("VirtualAConsole::load_track Couldn't open %s.\n"), playable_edit->asset->path);
 				}
 				else
 				{
@@ -261,7 +266,7 @@ int AModule::render(double *buffer,
 						if(!(source = get_cache()->check_out(previous_edit->asset)))
 						{
 // couldn't open source file / skip the edit
-							printf("VirtualAConsole::load_track Couldn't open %s.\n", playable_edit->asset->path);
+							printf(_("VirtualAConsole::load_track Couldn't open %s.\n"), playable_edit->asset->path);
 							result = 1;
 						}
 						else

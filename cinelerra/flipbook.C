@@ -1,9 +1,14 @@
 #include "flipbook.h"
 #include "mwindow.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 FlipBook::FlipBook(MWindow *mwindow)
- : BC_MenuItem("Flipbook...")
+ : BC_MenuItem(_("Flipbook..."))
 {
 	this->mwindow = mwindow;
 	thread = new FlipBookThread(mwindow);

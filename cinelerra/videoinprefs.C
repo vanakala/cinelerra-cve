@@ -8,6 +8,12 @@
 #include "vdeviceprefs.h"
 #include "videoinprefs.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
 VideoInPrefs::VideoInPrefs(MWindow *mwindow, PreferencesWindow *pwindow)
  : PreferencesDialog(mwindow, pwindow)
 {
@@ -25,10 +31,10 @@ int VideoInPrefs::create_objects()
 	BC_TextBox *textbox;
 
 
-	add_subwindow(new BC_Title(x, y, "Video In", LARGEFONT, BLACK));
+	add_subwindow(new BC_Title(x, y, _("Video In"), LARGEFONT, BLACK));
 	y += 25;
 
-	add_subwindow(new BC_Title(x, y, "Record Driver:", MEDIUMFONT, BLACK));
+	add_subwindow(new BC_Title(x, y, _("Record Driver:"), MEDIUMFONT, BLACK));
 	video_in_device = new VDevicePrefs(x + 110, 
 		y, 
 		pwindow, 
@@ -42,12 +48,12 @@ int VideoInPrefs::create_objects()
 	sprintf(string, "%d", pwindow->thread->edl->session->video_write_length);
 	add_subwindow(textbox = new VideoWriteLength(pwindow, string, y));
 	add_subwindow(new CaptureLengthTumbler(pwindow, textbox, textbox->get_x() + textbox->get_w(), y));
-	add_subwindow(new BC_Title(x, y, "Frames to record to disk at a time:"));
+	add_subwindow(new BC_Title(x, y, _("Frames to record to disk at a time:")));
 	y += 27;
 	sprintf(string, "%d", pwindow->thread->edl->session->vconfig_in->capture_length);
 	add_subwindow(textbox = new VideoCaptureLength(pwindow, string, y));
 	add_subwindow(new CaptureLengthTumbler(pwindow, textbox, textbox->get_x() + textbox->get_w(), y));
-	add_subwindow(new BC_Title(x, y, "Frames to buffer in device:"));
+	add_subwindow(new BC_Title(x, y, _("Frames to buffer in device:")));
 	y += 27;
 
 	add_subwindow(new RecordSoftwareTimer(pwindow, 
@@ -62,7 +68,7 @@ int VideoInPrefs::create_objects()
 	y += 35;
 
 	BC_TextBox *w_text, *h_text;
-	add_subwindow(new BC_Title(x, y, "Size of captured frame:"));
+	add_subwindow(new BC_Title(x, y, _("Size of captured frame:")));
 	x += 170;
 	add_subwindow(w_text = new RecordW(pwindow, x, y));
 	x += w_text->get_w() + 2;
@@ -78,7 +84,7 @@ int VideoInPrefs::create_objects()
 
 	y += 27;
 	x = 5;
-	add_subwindow(new BC_Title(x, y, "Frame rate is always the default frame rate of the project."));
+	add_subwindow(new BC_Title(x, y, _("Frame rate is always the default frame rate of the project.")));
 	return 0;
 }
 
@@ -165,7 +171,7 @@ int CaptureLengthTumbler::handle_down_event()
 
 
 RecordSoftwareTimer::RecordSoftwareTimer(PreferencesWindow *pwindow, int value, int x, int y)
- : BC_CheckBox(x, y, value, "Use software for positioning information")
+ : BC_CheckBox(x, y, value, _("Use software for positioning information"))
 {
 	this->pwindow = pwindow; 
 }
@@ -179,7 +185,7 @@ int RecordSoftwareTimer::handle_event()
 
 
 RecordSyncDrives::RecordSyncDrives(PreferencesWindow *pwindow, int value, int x, int y)
- : BC_CheckBox(x, y, value, "Sync drives automatically")
+ : BC_CheckBox(x, y, value, _("Sync drives automatically"))
 {
 	this->pwindow = pwindow; 
 }

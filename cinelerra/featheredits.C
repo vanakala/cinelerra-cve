@@ -3,6 +3,10 @@
 #include "mwindow.h"
 #include "mwindowgui.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
 
 
 
@@ -39,7 +43,7 @@ void FeatherEdits::run()
 	if(!result)
 	{
 		mwindow->gui->lock_window();
-//		mwindow->undo->update_undo_edits("Feather", 0);
+//		mwindow->undo->update_undo_edits(_("Feather"), 0);
 		
 		mwindow->feather_edits(feather_samples, audio, video);
 
@@ -72,9 +76,9 @@ int FeatherEditsWindow::create_objects(int audio, int video)
 	this->video = video;
 
 	if(audio)
-		add_subwindow(new BC_Title(x, y, "Feather by how many samples:"));
+		add_subwindow(new BC_Title(x, y, _("Feather by how many samples:")));
 	else
-		add_subwindow(new BC_Title(x, y, "Feather by how many frames:"));
+		add_subwindow(new BC_Title(x, y, _("Feather by how many frames:")));
 
 	y += 20;
 	char string[1024];

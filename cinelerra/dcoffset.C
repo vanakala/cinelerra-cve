@@ -3,6 +3,11 @@
 #include "mutex.h"
 #include "recordgui.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 
 DC_Offset::DC_Offset()
@@ -32,7 +37,7 @@ void DC_Offset::run()
 // thread out progress box
 	progress = new BC_ProgressBox((int)BC_INFINITY, 
 		(int)BC_INFINITY, 
-		"DC Offset", 
+		_("DC Offset"), 
 		256000);
 	progress->start();
 

@@ -6,8 +6,13 @@
 #include "tracks.h"
 #include "videowindow.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 Scale::Scale(MWindow *mwindow)
- : BC_MenuItem("Resize...")
+ : BC_MenuItem(_("Resize..."))
 { 
 	this->mwindow = mwindow; 
 	thread = new ScaleThread(mwindow);
@@ -178,44 +183,44 @@ ScaleWindow::~ScaleWindow()
 int ScaleWindow::create_objects()
 {
 	int x = 10, y = 10;
-	add_subwindow(new BC_Title(x, y, "New camera size:"));
-	add_subwindow(new BC_Title(x + 200, y, "New projector size:"));
+	add_subwindow(new BC_Title(x, y, _("New camera size:")));
+	add_subwindow(new BC_Title(x + 200, y, _("New projector size:")));
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Width:"));
+	add_subwindow(new BC_Title(x, y, _("Width:")));
 	x += 70;
 	add_subwindow(dimension[0] = new ScaleSizeText(x, y, thread, &(thread->dimension[0])));
 	x += 110;
-	add_subwindow(new BC_Title(x, y, "Width:"));
+	add_subwindow(new BC_Title(x, y, _("Width:")));
 	x += 70;
 	add_subwindow(dimension[2] = new ScaleSizeText(x, y, thread, &(thread->dimension[2])));
 
 	y += 30;
 	x = 10;
-	add_subwindow(new BC_Title(x, y, "Height:"));
+	add_subwindow(new BC_Title(x, y, _("Height:")));
 	x += 70;
 	add_subwindow(dimension[1] = new ScaleSizeText(x, y, thread, &(thread->dimension[1])));
 	x += 110;
-	add_subwindow(new BC_Title(x, y, "Height:"));
+	add_subwindow(new BC_Title(x, y, _("Height:")));
 	x += 70;
 	add_subwindow(dimension[3] = new ScaleSizeText(x, y, thread, &(thread->dimension[3])));
 
 	y += 30;
 	x = 10;
-	add_subwindow(new BC_Title(x, y, "W Ratio:"));
+	add_subwindow(new BC_Title(x, y, _("W Ratio:")));
 	x += 70;
 	add_subwindow(ratio[0] = new ScaleRatioText(x, y, thread, &(thread->ratio[0])));
 	x += 110;
-	add_subwindow(new BC_Title(x, y, "W Ratio:"));
+	add_subwindow(new BC_Title(x, y, _("W Ratio:")));
 	x += 70;
 	add_subwindow(ratio[2] = new ScaleRatioText(x, y, thread, &(thread->ratio[2])));
 
 	y += 30;
 	x = 10;
-	add_subwindow(new BC_Title(x, y, "H Ratio:"));
+	add_subwindow(new BC_Title(x, y, _("H Ratio:")));
 	x += 70;
 	add_subwindow(ratio[1] = new ScaleRatioText(x, y, thread, &(thread->ratio[1])));
 	x += 110;
-	add_subwindow(new BC_Title(x, y, "H Ratio:"));
+	add_subwindow(new BC_Title(x, y, _("H Ratio:")));
 	x += 70;
 	add_subwindow(ratio[3] = new ScaleRatioText(x, y, thread, &(thread->ratio[3])));
 
@@ -241,13 +246,13 @@ int ScaleWindow::create_objects()
 
 	x = 10;
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Aspect ratio:"));
+	add_subwindow(new BC_Title(x, y, _("Aspect ratio:")));
 	x += 100;
 	char string[1024];
 	sprintf(string, "%.0f", thread->aspect_w);
 	add_subwindow(aspect_w = new ScaleAspectW(x, y, thread, &(thread->aspect_w), string));
 	x += 55;
-	add_subwindow(new BC_Title(x, y, ":"));
+	add_subwindow(new BC_Title(x, y, _(":")));
 	x += 10;
 	sprintf(string, "%.0f", thread->aspect_h);
 	add_subwindow(aspect_h = new ScaleAspectH(x, y, thread, &(thread->aspect_h), string));
@@ -256,9 +261,9 @@ int ScaleWindow::create_objects()
 
 	y += 30;
 //	x = 40;
-//	add_subwindow(new BC_Title(x, y, "Camera position:"));
+//	add_subwindow(new BC_Title(x, y, _("Camera position:")));
 //	x += 200;
-//	add_subwindow(new BC_Title(x, y, "Projector position:"));
+//	add_subwindow(new BC_Title(x, y, _("Projector position:")));
 
 //	ScalePosition *position;
 //	x = 60;
@@ -334,7 +339,7 @@ int ScaleRatioText::handle_event()
 
 
 ScaleConstrain::ScaleConstrain(int x, int y, ScaleThread *thread)
- : BC_CheckBox(x, y, thread->constrain_ratio, "Constrain ratio")
+ : BC_CheckBox(x, y, thread->constrain_ratio, _("Constrain ratio"))
 { this->thread = thread; }
 ScaleConstrain::~ScaleConstrain() {}
 int ScaleConstrain::handle_event()
@@ -343,7 +348,7 @@ int ScaleConstrain::handle_event()
 }
 
 ScaleData::ScaleData(int x, int y, ScaleThread *thread)
- : BC_CheckBox(x, y, thread->scale_data, "Scale data")
+ : BC_CheckBox(x, y, thread->scale_data, _("Scale data"))
 { this->thread = thread; }
 ScaleData::~ScaleData() {}
 int ScaleData::handle_event()
@@ -354,7 +359,7 @@ int ScaleData::handle_event()
 
 
 ScaleAspectAuto::ScaleAspectAuto(int x, int y, ScaleThread *thread)
- : BC_CheckBox(x, y, thread->auto_aspect, "Auto")
+ : BC_CheckBox(x, y, thread->auto_aspect, _("Auto"))
 { this->thread = thread; }
 
 ScaleAspectAuto::~ScaleAspectAuto()

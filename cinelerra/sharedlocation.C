@@ -11,6 +11,11 @@
 
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 SharedLocation::SharedLocation()
 {
@@ -96,12 +101,12 @@ void SharedLocation::calculate_title(char *string,
 		if(track)
 			strcpy(track_title, track->title);
 		else
-			sprintf(track_title, "None");
+			sprintf(track_title, _("None"));
 
 		if(plugin)
 			strcpy(plugin_title, plugin->title);
 		else
-			sprintf(plugin_title, "None");
+			sprintf(plugin_title, _("None"));
 
 		sprintf(string, "%s: %s", track_title, plugin_title);
 	}
@@ -114,7 +119,7 @@ void SharedLocation::calculate_title(char *string,
 		if(track)
 			strcpy(string, track->title);
 		else
-			sprintf(string, "None");
+			sprintf(string, _("None"));
 //printf("SharedLocation::calculate_title %p %s\n", string);
 	}
 }

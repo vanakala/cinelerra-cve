@@ -19,6 +19,12 @@
 
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
 AssetEdit::AssetEdit(MWindow *mwindow)
  : Thread()
 {
@@ -169,17 +175,17 @@ int AssetEditWindow::create_objects()
 		path_text, 
 		y, 
 		asset->path, 
-		PROGRAM_NAME ": Asset path", "Select a file for this asset:"));
+		PROGRAM_NAME ": Asset path", _("Select a file for this asset:")));
 	y += 30;
 
-	add_subwindow(new BC_Title(x, y, "File format:"));
+	add_subwindow(new BC_Title(x, y, _("File format:")));
 	x = x2;
 	File file;
 	add_subwindow(new BC_Title(x, y, file.formattostr(mwindow->plugindb, asset->format), MEDIUMFONT, YELLOW));
 	x = x1;
 	y += 20;
 
-	add_subwindow(new BC_Title(x, y, "Bytes:"));
+	add_subwindow(new BC_Title(x, y, _("Bytes:")));
 	sprintf(string, "%lld", fs.get_size(asset->path));
 // Do commas
 	int len = strlen(string);
@@ -202,13 +208,13 @@ int AssetEditWindow::create_objects()
 
 	if(asset->audio_data)
 	{
-		add_subwindow(new BC_Title(x, y, "Audio:", LARGEFONT, RED));
+		add_subwindow(new BC_Title(x, y, _("Audio:"), LARGEFONT, RED));
 
 		y += 30;
 
 		if(asset->acodec[0])
 		{
-			add_subwindow(new BC_Title(x, y, "Compression:"));
+			add_subwindow(new BC_Title(x, y, _("Compression:")));
 			sprintf(string, "%c%c%c%c", 
 				asset->acodec[0], 
 				asset->acodec[1], 
@@ -220,7 +226,7 @@ int AssetEditWindow::create_objects()
 			x = x1;
 		}
 
-		add_subwindow(new BC_Title(x, y, "Channels:"));
+		add_subwindow(new BC_Title(x, y, _("Channels:")));
 		sprintf(string, "%d", asset->channels);
 
 		x = x2;
@@ -237,7 +243,7 @@ int AssetEditWindow::create_objects()
 		}
 
 		x = x1;
-		add_subwindow(new BC_Title(x, y, "Sample rate:"));
+		add_subwindow(new BC_Title(x, y, _("Sample rate:")));
 		sprintf(string, "%d", asset->sample_rate);
 
 		x = x2;
@@ -257,7 +263,7 @@ int AssetEditWindow::create_objects()
 		y += 30;
 		x = x1;
 
-		add_subwindow(new BC_Title(x, y, "Bits:"));
+		add_subwindow(new BC_Title(x, y, _("Bits:")));
 		x = x2;
 		if(allow_edits)
 		{
@@ -278,7 +284,7 @@ int AssetEditWindow::create_objects()
 
 		x = x1;
 		y += vmargin;
-		add_subwindow(new BC_Title(x, y, "Header length:"));
+		add_subwindow(new BC_Title(x, y, _("Header length:")));
 		sprintf(string, "%d", asset->header);
 
 		x = x2;
@@ -290,7 +296,7 @@ int AssetEditWindow::create_objects()
 		y += vmargin;
 		x = x1;
 
-		add_subwindow(new BC_Title(x, y, "Byte order:"));
+		add_subwindow(new BC_Title(x, y, _("Byte order:")));
 
 		if(allow_edits)
 		{
@@ -310,9 +316,9 @@ int AssetEditWindow::create_objects()
 		{
 			x = x2;
 			if(asset->byte_order)
-				add_subwindow(new BC_Title(x, y, "Lo-Hi", MEDIUMFONT, YELLOW));
+				add_subwindow(new BC_Title(x, y, _("Lo-Hi"), MEDIUMFONT, YELLOW));
 			else
-				add_subwindow(new BC_Title(x, y, "Hi-Lo", MEDIUMFONT, YELLOW));
+				add_subwindow(new BC_Title(x, y, _("Hi-Lo"), MEDIUMFONT, YELLOW));
 			y += vmargin;
 		}
 
@@ -320,15 +326,15 @@ int AssetEditWindow::create_objects()
 		x = x1;
 		if(allow_edits)
 		{
-//			add_subwindow(new BC_Title(x, y, "Values are signed:"));
+//			add_subwindow(new BC_Title(x, y, _("Values are signed:")));
 			add_subwindow(new AssetEditSigned(this, asset->signed_, x, y));
 		}
 		else
 		{
 			if(!asset->signed_ && asset->bits == 8)
-				add_subwindow(new BC_Title(x, y, "Values are unsigned"));
+				add_subwindow(new BC_Title(x, y, _("Values are unsigned")));
 			else
-				add_subwindow(new BC_Title(x, y, "Values are signed"));
+				add_subwindow(new BC_Title(x, y, _("Values are signed")));
 		}
 
 		y += 30;
@@ -337,13 +343,13 @@ int AssetEditWindow::create_objects()
 	x = x1;
 	if(asset->video_data)
 	{
-		add_subwindow(new BC_Title(x, y, "Video:", LARGEFONT, RED));
+		add_subwindow(new BC_Title(x, y, _("Video:"), LARGEFONT, RED));
 
 		y += 30;
 		x = x1;
 		if(asset->vcodec[0])
 		{
-			add_subwindow(new BC_Title(x, y, "Compression:"));
+			add_subwindow(new BC_Title(x, y, _("Compression:")));
 			sprintf(string, "%c%c%c%c", 
 				asset->vcodec[0], 
 				asset->vcodec[1], 
@@ -355,7 +361,7 @@ int AssetEditWindow::create_objects()
 			x = x1;
 		}
 
-		add_subwindow(new BC_Title(x, y, "Frame rate:"));
+		add_subwindow(new BC_Title(x, y, _("Frame rate:")));
 		x = x2;
 		sprintf(string, "%.2f", asset->frame_rate);
 		BC_TextBox *framerate;
@@ -365,14 +371,14 @@ int AssetEditWindow::create_objects()
 		
 		y += 30;
 		x = x1;
-		add_subwindow(new BC_Title(x, y, "Width:"));
+		add_subwindow(new BC_Title(x, y, _("Width:")));
 		x = x2;
 		sprintf(string, "%d", asset->width);
 		add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, YELLOW));
 		
 		y += vmargin;
 		x = x1;
-		add_subwindow(new BC_Title(x, y, "Height:"));
+		add_subwindow(new BC_Title(x, y, _("Height:")));
 		x = x2;
 		sprintf(string, "%d", asset->height);
 		add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, YELLOW));
@@ -447,7 +453,7 @@ AssetEditByteOrderLOHI::AssetEditByteOrderLOHI(AssetEditWindow *fwindow,
 	int value, 
 	int x,
 	int y)
- : BC_Radial(x, y, value, "Lo-Hi")
+ : BC_Radial(x, y, value, _("Lo-Hi"))
 {
 	this->fwindow = fwindow;
 }
@@ -464,7 +470,7 @@ AssetEditByteOrderHILO::AssetEditByteOrderHILO(AssetEditWindow *fwindow,
 	int value, 
 	int x, 
 	int y)
- : BC_Radial(x, y, value, "Hi-Lo")
+ : BC_Radial(x, y, value, _("Hi-Lo"))
 {
 	this->fwindow = fwindow;
 }
@@ -481,7 +487,7 @@ AssetEditSigned::AssetEditSigned(AssetEditWindow *fwindow,
 	int value, 
 	int x, 
 	int y)
- : BC_CheckBox(x, y, value, "Values are signed")
+ : BC_CheckBox(x, y, value, _("Values are signed"))
 {
 	this->fwindow = fwindow;
 }

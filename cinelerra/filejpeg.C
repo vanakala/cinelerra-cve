@@ -9,6 +9,11 @@
 #include "vframe.h"
 #include "videodevice.inc"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 FileJPEG::FileJPEG(Asset *asset, File *file)
  : FileList(asset, file, "JPEGLIST", ".jpg", FILE_JPEG, FILE_JPEG_LIST)
@@ -268,7 +273,7 @@ int JPEGConfigVideo::create_objects()
 {
 	int x = 10, y = 10;
 
-	add_subwindow(new BC_Title(x, y, "Quality:"));
+	add_subwindow(new BC_Title(x, y, _("Quality:")));
 	add_subwindow(new BC_ISlider(x + 80, 
 		y,
 		0,

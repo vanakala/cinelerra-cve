@@ -9,6 +9,10 @@
 #include <ctype.h>
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
 
 
 
@@ -451,10 +455,10 @@ int PluginAClientWindow::create_objects()
 	}
 
 	y += 10;
-	sprintf(string, "Author: %s", server->lad_descriptor->Maker);
+	sprintf(string, _("Author: %s"), server->lad_descriptor->Maker);
 	add_subwindow(new BC_Title(x, y, string));
 	y += 20;
-	sprintf(string, "License: %s", server->lad_descriptor->Copyright);
+	sprintf(string, _("License: %s"), server->lad_descriptor->Copyright);
 	add_subwindow(new BC_Title(x, y, string));
 }
 

@@ -6,6 +6,12 @@
 
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
 NewFolder::NewFolder(MWindow *mwindow, AWindowGUI *awindow, int x, int y)
  : BC_Window(PROGRAM_NAME ": New folder", 
  	x, 
@@ -30,9 +36,9 @@ NewFolder::~NewFolder()
 int NewFolder::create_objects()
 {
 	int x = 10, y = 10;
-	add_tool(new BC_Title(x, y, "Enter the name of the folder:"));
+	add_tool(new BC_Title(x, y, _("Enter the name of the folder:")));
 	y += 20;
-	add_subwindow(textbox = new BC_TextBox(x, y, 300, 1, "Untitled"));
+	add_subwindow(textbox = new BC_TextBox(x, y, 300, 1, _("Untitled")));
 	y += 30;
 	add_subwindow(new BC_OKButton(x, y));
 	x = get_w() - 100;

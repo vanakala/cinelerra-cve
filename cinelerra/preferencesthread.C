@@ -31,8 +31,13 @@
 
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 PreferencesMenuitem::PreferencesMenuitem(MWindow *mwindow)
- : BC_MenuItem("Preferences...", "Shift+P", 'P')
+ : BC_MenuItem(_("Preferences..."), "Shift+P", 'P')
 {
 	this->mwindow = mwindow; 
 
@@ -216,22 +221,22 @@ char* PreferencesThread::category_to_text(int category)
 	switch(category)
 	{
 		case 0:
-			return "Playback";
+			return _("Playback");
 			break;
 		case 1:
-			return "Recording";
+			return _("Recording");
 			break;
 		case 2:
-			return "Performance";
+			return _("Performance");
 			break;
 		case 3:
-			return "Interface";
+			return _("Interface");
 			break;
 // 		case 4:
-// 			return "Plugin Set";
+// 			return _("Plugin Set");
 // 			break;
 		case 4:
-			return "About";
+			return _("About");
 			break;
 	}
 	return "";
@@ -304,7 +309,7 @@ int PreferencesWindow::create_objects()
 //printf("PreferencesWindow::create_objects 1\n");
 	for(int i = 0; i < CATEGORIES; i++)
 		categories.append(new BC_ListBoxItem(thread->category_to_text(i)));
-//	add_subwindow(new BC_Title(x, y, "Category:", LARGEFONT_3D, RED));
+//	add_subwindow(new BC_Title(x, y, _("Category:"), LARGEFONT_3D, RED));
 	category = new PreferencesCategory(mwindow, thread, x, y);
 	category->create_objects();
 
@@ -412,7 +417,7 @@ PreferencesDialog::~PreferencesDialog()
 
 
 PreferencesApply::PreferencesApply(MWindow *mwindow, PreferencesThread *thread, int x, int y)
- : BC_GenericButton(x, y, "Apply")
+ : BC_GenericButton(x, y, _("Apply"))
 {
 	this->mwindow = mwindow;
 	this->thread = thread;

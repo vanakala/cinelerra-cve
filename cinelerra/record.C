@@ -43,8 +43,14 @@
 
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
 RecordMenuItem::RecordMenuItem(MWindow *mwindow)
- : BC_MenuItem("Record...", "r", 'r')
+ : BC_MenuItem(_("Record..."), "r", 'r')
 {
 	this->mwindow = mwindow;
 	thread = new Record(mwindow, this);
@@ -222,7 +228,7 @@ int Record::run_script(Asset *asset, int &do_audio, int &do_video)
 			}
 			else
 			{
-				printf("Record::run_script: Unrecognized command: %s\n", script->tag.get_title());
+				printf(_("Record::run_script: Unrecognized command: %s\n"), script->tag.get_title());
 			}
 		}
 	}
@@ -432,7 +438,7 @@ void Record::source_to_text(char *string, Batch *batch)
 		case VIDEO4LINUX:
 		case CAPTURE_BUZ:
 			if(batch->channel < 0 || batch->channel >= current_channeldb()->total)
-				sprintf(string, "None");
+				sprintf(string, _("None"));
 			else
 				sprintf(string, current_channeldb()->values[batch->channel]->title);
 			break;
@@ -630,7 +636,7 @@ void Record::run()
 
 		if(new_edls.total)
 		{
-			mwindow->undo->update_undo_before("render", LOAD_ALL);
+			mwindow->undo->update_undo_before(_("render"), LOAD_ALL);
 //printf("Record::run 6\n");
 
 // For pasting, clear the active region
@@ -765,14 +771,14 @@ int Record::delete_output_file()
 			record_gui->lock_window();
 
 // Update GUI
-			sprintf(batch->news, "Deleting");
+			sprintf(batch->news, _("Deleting"));
 			record_gui->update_batches();
 
 // Remove it
 			remove(batch->get_current_asset()->path);
 
 // Update GUI
-			sprintf(batch->news, "OK");
+			sprintf(batch->news, _("OK"));
 			record_gui->update_batches();
 
 			record_gui->unlock_window();

@@ -1,7 +1,14 @@
 #include "reindex.h"
 
+
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
 ReIndex::ReIndex(MWindow *mwindow)
- : BC_MenuItem("Redraw Indexes", "", 0), Thread()
+ : BC_MenuItem(_("Redraw Indexes"), "", 0), Thread()
 {
 	this->mwindow = mwindow;
 }
@@ -55,13 +62,13 @@ ReIndexWindow::create_objects()
 	BC_SubWindow *subwindow;
 	
 	add_subwindow(subwindow = new BC_SubWindow(0, 0, w, h, MEGREY));
-	subwindow->add_subwindow(new BC_Title(5, 5, "Redraw all indexes for the current project?"));
+	subwindow->add_subwindow(new BC_Title(5, 5, _("Redraw all indexes for the current project?")));
 	subwindow->add_subwindow(ok = new ReIndexOkButton(this));
 	subwindow->add_subwindow(cancel = new ReIndexCancelButton(this));
 }
 
 ReIndexOkButton::ReIndexOkButton(ReIndexWindow *window)
- : BC_Button(5, 80, "Yes")
+ : BC_Button(5, 80, _("Yes"))
 {
 	this->window = window;
 }
@@ -78,7 +85,7 @@ ReIndexOkButton::keypress_event()
 }
 
 ReIndexCancelButton::ReIndexCancelButton(ReIndexWindow *window)
- : BC_Button(140, 80, "No")
+ : BC_Button(140, 80, _("No"))
 {
 	this->window = window;
 }

@@ -6,6 +6,11 @@
 #include "theme.h"
 #include "vframe.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 MeterPanel::MeterPanel(MWindow *mwindow, 
 	BC_WindowBase *subwindow, 
@@ -239,7 +244,7 @@ MeterShow::MeterShow(MWindow *mwindow, MeterPanel *panel, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip("Show meters");
+	set_tooltip(_("Show meters"));
 }
 
 

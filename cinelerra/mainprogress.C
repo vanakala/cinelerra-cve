@@ -7,6 +7,11 @@
 
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 MainProgressBar::MainProgressBar(MWindow *mwindow, MainProgress *mainprogress)
 {
 	progress_box = 0;
@@ -132,7 +137,7 @@ int MainProgressBar::update(long value)
 			eta,
 			TIME_HMS2);
 
-		sprintf(string, "%s ETA: %s", 
+		sprintf(string, _("%s ETA: %s"), 
 			default_title, 
 			time_string);
 		update_title(string, 0);

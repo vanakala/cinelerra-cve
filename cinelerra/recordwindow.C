@@ -6,6 +6,13 @@
 #include "recordwindow.h"
 #include "videodevice.inc"
 
+
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
 #define WIDTH 410
 #define HEIGHT 360
 
@@ -37,7 +44,7 @@ RecordWindow::~RecordWindow()
 int RecordWindow::create_objects()
 {
 //printf("RecordWindow::create_objects 1\n");
-	add_subwindow(new BC_Title(5, 5, "Select a file to record to:"));
+	add_subwindow(new BC_Title(5, 5, _("Select a file to record to:")));
 
 //printf("RecordWindow::create_objects 1\n");
 	int x = 5, y = 25;

@@ -23,14 +23,17 @@
 #include "vwindowgui.h"
 
 
-
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
 
 
 
 
 
 SetAudio::SetAudio(MWindow *mwindow)
- :BC_MenuItem("Audio Setup...")
+ :BC_MenuItem(_("Audio Setup..."))
 {
 	this->mwindow = mwindow;
 	thread = new SetAudioThread(mwindow);
@@ -86,7 +89,7 @@ void SetAudioThread::run()
 		int old_channels = mwindow->edl->session->audio_channels;
 		int new_channels = new_settings->session->audio_channels;
 	
-		mwindow->undo->update_undo_before("set audio", LOAD_EDITS | LOAD_SESSION);
+		mwindow->undo->update_undo_before(_("set audio"), LOAD_EDITS | LOAD_SESSION);
 		mwindow->edl->copy_session(new_settings);
 		mwindow->edl->resample(old_rate, new_rate, TRACK_AUDIO);
 		mwindow->undo->update_undo_after();
@@ -171,7 +174,7 @@ int SetAudioWindow::create_objects()
 	BC_TextBox *textbox;
 
 	x1 = x;
-	add_subwindow(new BC_Title(x1, y, "Samplerate:"));
+	add_subwindow(new BC_Title(x1, y, _("Samplerate:")));
 	x1 += 100;
 	add_subwindow(textbox = new SetSampleRateTextBox(thread, x1, y));
 	x1 += textbox->get_w();
@@ -179,7 +182,7 @@ int SetAudioWindow::create_objects()
 
 	x1 = x;
 	y += textbox->get_h() + 5;
-	add_subwindow(new BC_Title(x1, y, "Channels:"));
+	add_subwindow(new BC_Title(x1, y, _("Channels:")));
 	x1 += 100;
 	add_subwindow(textbox = new SetChannelsTextBox(thread, x1, y));
 	x1 += textbox->get_w();
@@ -187,7 +190,7 @@ int SetAudioWindow::create_objects()
 
 	x1 = x;
 	y += textbox->get_h() + 15;
-	add_subwindow(new BC_Title(x1, y, "Channel positions:"));
+	add_subwindow(new BC_Title(x1, y, _("Channel positions:")));
 	y += 20;
 	add_subwindow(canvas = new SetChannelsCanvas(mwindow, thread, x, y));
 	canvas->draw();
@@ -288,7 +291,7 @@ int SetChannelsCanvas::draw(int angle)
 
 	if(angle > -1)
 	{
-		sprintf(string, "%d degrees", angle);
+		sprintf(string, _("%d degrees"), angle);
 		draw_text(this->get_w() / 2 - 40, this->get_h() / 2, string);
 	}
 

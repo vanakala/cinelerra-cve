@@ -16,6 +16,11 @@
 #include <X11/extensions/XShm.h>
 #include <unistd.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 int BC_Resources::error = 0;
 
 VFrame* BC_Resources::bg_image = 0;
@@ -33,9 +38,9 @@ VFrame* BC_Resources::type_to_icon[] =
 	new VFrame(file_sound_png)
 };
 
-char* BC_Resources::small_font = "-*-helvetica-medium-r-normal-*-10-*";
-char* BC_Resources::medium_font = "-*-helvetica-bold-r-normal-*-14-*";
-char* BC_Resources::large_font = "-*-helvetica-bold-r-normal-*-18-*";
+char* BC_Resources::small_font = N_("-*-helvetica-medium-r-normal-*-10-*");
+char* BC_Resources::medium_font = N_("-*-helvetica-bold-r-normal-*-14-*");
+char* BC_Resources::large_font = N_("-*-helvetica-bold-r-normal-*-18-*");
 char* BC_Resources::small_fontset = "6x12,*";
 char* BC_Resources::medium_fontset = "7x14,*";
 char* BC_Resources::large_fontset = "8x16,*";

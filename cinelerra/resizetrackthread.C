@@ -8,6 +8,11 @@
 #include "tracks.h"
 
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 
 
@@ -96,14 +101,14 @@ void ResizeTrackWindow::create_objects()
 {
 	int x = 10, y = 10;
 
-	add_subwindow(new BC_Title(x, y, "Size:"));
+	add_subwindow(new BC_Title(x, y, _("Size:")));
 	x += 50;
 	add_subwindow(w = new ResizeTrackWidth(this, 
 		thread,
 		x,
 		y));
 	x += 100;
-	add_subwindow(new BC_Title(x, y, "x"));
+	add_subwindow(new BC_Title(x, y, _("x")));
 	x += 15;
 	add_subwindow(h = new ResizeTrackHeight(this, 
 		thread,
@@ -118,14 +123,14 @@ void ResizeTrackWindow::create_objects()
 
 	y += 30;
 	x = 10;
-	add_subwindow(new BC_Title(x, y, "Scale:"));
+	add_subwindow(new BC_Title(x, y, _("Scale:")));
 	x += 50;
 	add_subwindow(w_scale = new ResizeTrackScaleW(this, 
 		thread,
 		x,
 		y));
 	x += 100;
-	add_subwindow(new BC_Title(x, y, "x"));
+	add_subwindow(new BC_Title(x, y, _("x")));
 	x += 15;
 	add_subwindow(h_scale = new ResizeTrackScaleH(this, 
 		thread,

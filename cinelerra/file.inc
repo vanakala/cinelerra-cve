@@ -1,6 +1,12 @@
 #ifndef FILE_INC
 #define FILE_INC
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
 // Return values for open_file
 #define FILE_OK 0
 #define FILE_NOT_FOUND 1
@@ -37,6 +43,31 @@
 // For formats supported by plugins, the format number is the plugin number in the 
 // plugin list ORed with 0x8000.
 
+#if 0
+N_("Apple/SGI AIFF")
+N_("MPEG Audio")    // For encoding only
+N_("Sun/NeXT AU")
+N_("Microsoft AVI")
+N_("Microsoft WAV")
+N_("AVI Arne Type 1")
+N_("AVI DV Type 2")
+N_("AVI Avifile")
+N_("AVI Lavtools")
+N_("JPEG Sequence")
+N_("JPEG")
+N_("Quicktime for Linux")
+N_("MPEG")          // For decoding only
+N_("Raw PCM")
+N_("PNG Sequence")
+N_("PNG")
+N_("Unknown sound")
+N_("TGA Sequence")
+N_("TGA")
+N_("TIFF")
+N_("TIFF Sequence")
+N_("MPEG Video")    // For encoding only
+N_("OGG Vorbis")
+#endif
 
 #define AIFF_NAME "Apple/SGI AIFF"
 #define AMPEG_NAME "MPEG Audio"    // For encoding only
@@ -71,6 +102,21 @@
 #define BITSULAW       254
 #define BITSIMA4       255
 
+#if 0
+N_("8 Bit Linear")
+N_("16 Bit Linear")
+N_("24 Bit Linear")
+N_("32 Bit Linear")
+N_("u Law")
+N_("IMA 4")
+N_("ADPCM")
+N_("Float")
+
+// Video formats not part of Quicktime
+N_("RGB ALPHA")
+N_("PNG ALPHA")
+#endif
+
 #define NAME_8BIT "8 Bit Linear"
 #define NAME_16BIT "16 Bit Linear"
 #define NAME_24BIT "24 Bit Linear"
@@ -83,6 +129,7 @@
 // Video formats not part of Quicktime
 #define MOV_RGBA "RGB ALPHA"
 #define MOV_PNGA "PNG ALPHA"
+
 
 class File;
 

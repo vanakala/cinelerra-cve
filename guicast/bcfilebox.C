@@ -8,6 +8,12 @@
 #include <string.h>
 #include <sys/stat.h>
 
+
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 #define DIRECTORY_COLOR BLUE
 #define FILE_COLOR BLACK
 
@@ -33,9 +39,9 @@ BC_NewFolder::~BC_NewFolder()
 int BC_NewFolder::create_objects()
 {
 	int x = 10, y = 10;
-	add_tool(new BC_Title(x, y, "Enter the name of the folder:"));
+	add_tool(new BC_Title(x, y, _("Enter the name of the folder:")));
 	y += 20;
-	add_subwindow(textbox = new BC_TextBox(x, y, 300, 1, "Untitled"));
+	add_subwindow(textbox = new BC_TextBox(x, y, 300, 1, _("Untitled")));
 	y += 30;
 	add_subwindow(new BC_OKButton(this));
 	x = get_w() - 100;
@@ -234,7 +240,7 @@ BC_FileBoxFilterMenu::BC_FileBoxFilterMenu(int x, int y, BC_FileBox *filebox)
 	1)
 {
 	this->filebox = filebox;
-	set_tooltip("Change the filter");
+	set_tooltip(_("Change the filter"));
 }
 
 int BC_FileBoxFilterMenu::handle_event()
@@ -257,7 +263,7 @@ BC_FileBoxCancel::BC_FileBoxCancel(BC_FileBox *filebox)
  : BC_CancelButton(filebox)
 {
 	this->filebox = filebox;
-	set_tooltip("Cancel the operation");
+	set_tooltip(_("Cancel the operation"));
 }
 
 BC_FileBoxCancel::~BC_FileBoxCancel()
@@ -284,7 +290,7 @@ BC_FileBoxUseThis::BC_FileBoxUseThis(BC_FileBox *filebox)
 	BC_WindowBase::get_resources()->usethis_button_images)
 {
 	this->filebox = filebox; 
-	set_tooltip("Submit the directory");
+	set_tooltip(_("Submit the directory"));
 }
 
 BC_FileBoxUseThis::~BC_FileBoxUseThis()
@@ -305,7 +311,7 @@ BC_FileBoxOK::BC_FileBoxOK(BC_FileBox *filebox)
  : BC_OKButton(filebox)
 {
 	this->filebox = filebox; 
-	set_tooltip("Submit the file");
+	set_tooltip(_("Submit the file"));
 }
 
 BC_FileBoxOK::~BC_FileBoxOK()
@@ -327,7 +333,7 @@ BC_FileBoxText::BC_FileBoxText(int x, int y, BC_FileBox *filebox)
  : BC_Button(x, y, BC_WindowBase::get_resources()->filebox_text_images)
 {
 	this->filebox = filebox; 
-	set_tooltip("Display text");
+	set_tooltip(_("Display text"));
 }
 int BC_FileBoxText::handle_event()
 {
@@ -340,7 +346,7 @@ BC_FileBoxIcons::BC_FileBoxIcons(int x, int y, BC_FileBox *filebox)
  : BC_Button(x, y, BC_WindowBase::get_resources()->filebox_icons_images)
 {
 	this->filebox = filebox; 
-	set_tooltip("Display icons");
+	set_tooltip(_("Display icons"));
 }
 int BC_FileBoxIcons::handle_event()
 {
@@ -353,7 +359,7 @@ BC_FileBoxNewfolder::BC_FileBoxNewfolder(int x, int y, BC_FileBox *filebox)
  : BC_Button(x, y, BC_WindowBase::get_resources()->filebox_newfolder_images)
 {
 	this->filebox = filebox; 
-	set_tooltip("Create new folder");
+	set_tooltip(_("Create new folder"));
 }
 int BC_FileBoxNewfolder::handle_event()
 {
@@ -365,12 +371,12 @@ BC_FileBoxUpdir::BC_FileBoxUpdir(int x, int y, BC_FileBox *filebox)
  : BC_Button(x, y, BC_WindowBase::get_resources()->filebox_updir_images)
 {
 	this->filebox = filebox; 
-	set_tooltip("Up a directory");
+	set_tooltip(_("Up a directory"));
 }
 int BC_FileBoxUpdir::handle_event()
 {
 // Need a temp so submit_file can expand it
-	sprintf(string, "..");
+	sprintf(string, _(".."));
 	filebox->submit_file(string, 0);
 	return 1;
 }
@@ -763,7 +769,7 @@ char* BC_FileBox::get_newfolder_title()
 		new_folder_title[letter2 - title] = 0;
 	}
 
-	strcat(new_folder_title, ": New folder");
+	strcat(new_folder_title, _(": New folder"));
 
 	return new_folder_title;
 }

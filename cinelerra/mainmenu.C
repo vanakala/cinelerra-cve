@@ -46,6 +46,11 @@
 
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 MainMenu::MainMenu(MWindow *mwindow, MWindowGUI *gui)
  : BC_MenuBar(0, 0, gui->get_w())
 {
@@ -64,7 +69,7 @@ int MainMenu::create_objects()
 	Load *append_file;
 	total_loads = 0; 
 
-	add_menu(filemenu = new BC_Menu("File"));
+	add_menu(filemenu = new BC_Menu(_("File")));
 	filemenu->add_item(new_project = new New(mwindow));
 	new_project->create_objects();
 
@@ -91,7 +96,7 @@ int MainMenu::create_objects()
 	filemenu->add_item(new SaveBackup(mwindow));
 
 	BC_Menu *editmenu;
-	add_menu(editmenu = new BC_Menu("Edit"));
+	add_menu(editmenu = new BC_Menu(_("Edit")));
 	editmenu->add_item(undo = new Undo(mwindow));
 	editmenu->add_item(redo = new Redo(mwindow));
 	editmenu->add_item(new BC_MenuItem("-"));
@@ -107,7 +112,7 @@ int MainMenu::create_objects()
 	editmenu->add_item(new ClearLabels(mwindow));
 
 	BC_Menu *keyframemenu;
-	add_menu(keyframemenu = new BC_Menu("Keyframes"));
+	add_menu(keyframemenu = new BC_Menu(_("Keyframes")));
 	keyframemenu->add_item(new CutKeyframes(mwindow));
 	keyframemenu->add_item(new CopyKeyframes(mwindow));
 	keyframemenu->add_item(new PasteKeyframes(mwindow));
@@ -119,24 +124,24 @@ int MainMenu::create_objects()
 
 
 
-	add_menu(audiomenu = new BC_Menu("Audio"));
+	add_menu(audiomenu = new BC_Menu(_("Audio")));
 	audiomenu->add_item(new AddAudioTrack(mwindow));
 	audiomenu->add_item(new DefaultATransition(mwindow));
 	audiomenu->add_item(aeffects = new MenuAEffects(mwindow));
 
-	add_menu(videomenu = new BC_Menu("Video"));
+	add_menu(videomenu = new BC_Menu(_("Video")));
 	videomenu->add_item(new AddVideoTrack(mwindow));
 	videomenu->add_item(new DefaultVTransition(mwindow));
 	videomenu->add_item(veffects = new MenuVEffects(mwindow));
 
-	add_menu(trackmenu = new BC_Menu("Tracks"));
+	add_menu(trackmenu = new BC_Menu(_("Tracks")));
 	trackmenu->add_item(new MoveTracksUp(mwindow));
 	trackmenu->add_item(new MoveTracksDown(mwindow));
 	trackmenu->add_item(new DeleteTracks(mwindow));
 	trackmenu->add_item(new DeleteTrack(mwindow));
 	trackmenu->add_item(new ConcatenateTracks(mwindow));
 
-	add_menu(settingsmenu = new BC_Menu("Settings"));
+	add_menu(settingsmenu = new BC_Menu(_("Settings")));
 
 	settingsmenu->add_item(new SetFormat(mwindow));
 	settingsmenu->add_item(preferences = new PreferencesMenuitem(mwindow));
@@ -151,14 +156,14 @@ int MainMenu::create_objects()
 //	ScrubSpeed *scrub_speed;
 //	settingsmenu->add_item(scrub_speed = new ScrubSpeed(mwindow));
 //	if(mwindow->edl->session->scrub_speed == .5) 
-//		scrub_speed->set_text("Fast Shuttle");
+//		scrub_speed->set_text(_("Fast Shuttle"));
 
 
 
 
 
 
-	add_menu(viewmenu = new BC_Menu("View"));
+	add_menu(viewmenu = new BC_Menu(_("View")));
 	viewmenu->add_item(show_titles = new ShowTitles(mwindow, "1"));
 	viewmenu->add_item(show_transitions = new ShowTransitions(mwindow, "2"));
 	viewmenu->add_item(fade_automation = new FadeAutomation(mwindow, "3"));
@@ -174,7 +179,7 @@ int MainMenu::create_objects()
 	viewmenu->add_item(pzoom_automation = new PZoomAutomation(mwindow, "="));
 
 
-	add_menu(windowmenu = new BC_Menu("Window"));
+	add_menu(windowmenu = new BC_Menu(_("Window")));
 	windowmenu->add_item(show_vwindow = new ShowVWindow(mwindow));
 	windowmenu->add_item(show_awindow = new ShowAWindow(mwindow));
 	windowmenu->add_item(show_cwindow = new ShowCWindow(mwindow));
@@ -484,7 +489,7 @@ int MainMenu::add_load(char *path)
 
 
 DumpCICache::DumpCICache(MWindow *mwindow)
- : BC_MenuItem("Dump CICache")
+ : BC_MenuItem(_("Dump CICache"))
 { this->mwindow = mwindow; }
 
 int DumpCICache::handle_event()
@@ -493,7 +498,7 @@ int DumpCICache::handle_event()
 }
 
 DumpEDL::DumpEDL(MWindow *mwindow)
- : BC_MenuItem("Dump EDL")
+ : BC_MenuItem(_("Dump EDL"))
 { 
 	this->mwindow = mwindow;
 }
@@ -507,7 +512,7 @@ int DumpEDL::handle_event()
 }
 
 DumpPlugins::DumpPlugins(MWindow *mwindow)
- : BC_MenuItem("Dump Plugins")
+ : BC_MenuItem(_("Dump Plugins"))
 { 
 	this->mwindow = mwindow;
 }
@@ -522,7 +527,7 @@ int DumpPlugins::handle_event()
 
 
 DumpAssets::DumpAssets(MWindow *mwindow)
- : BC_MenuItem("Dump Assets")
+ : BC_MenuItem(_("Dump Assets"))
 { this->mwindow = mwindow; }
 
 int DumpAssets::handle_event()
@@ -532,7 +537,7 @@ int DumpAssets::handle_event()
 
 // ================================================= edit
 
-Undo::Undo(MWindow *mwindow) : BC_MenuItem("Undo", "z", 'z') 
+Undo::Undo(MWindow *mwindow) : BC_MenuItem(_("Undo"), "z", 'z') 
 { 
 	this->mwindow = mwindow; 
 }
@@ -544,12 +549,12 @@ int Undo::handle_event()
 int Undo::update_caption(char *new_caption)
 {
 	char string[1024];
-	sprintf(string, "Undo %s", new_caption);
+	sprintf(string, _("Undo %s"), new_caption);
 	set_text(string);
 }
 
 
-Redo::Redo(MWindow *mwindow) : BC_MenuItem("Redo", "Shift+Z", 'Z') 
+Redo::Redo(MWindow *mwindow) : BC_MenuItem(_("Redo"), "Shift+Z", 'Z') 
 { 
 	set_shift(1); 
 	this->mwindow = mwindow; 
@@ -564,12 +569,12 @@ int Redo::handle_event()
 int Redo::update_caption(char *new_caption)
 {
 	char string[1024];
-	sprintf(string, "Redo %s", new_caption);
+	sprintf(string, _("Redo %s"), new_caption);
 	set_text(string);
 }
 
 CutKeyframes::CutKeyframes(MWindow *mwindow)
- : BC_MenuItem("Cut keyframes", "Shift-X", 'X')
+ : BC_MenuItem(_("Cut keyframes"), "Shift-X", 'X')
 { 
 	set_shift(); 
 	this->mwindow = mwindow; 
@@ -581,7 +586,7 @@ int CutKeyframes::handle_event()
 }
 
 CopyKeyframes::CopyKeyframes(MWindow *mwindow)
- : BC_MenuItem("Copy keyframes", "Shift-C", 'C')
+ : BC_MenuItem(_("Copy keyframes"), "Shift-C", 'C')
 { 
 	set_shift(); 
 	this->mwindow = mwindow; 
@@ -594,7 +599,7 @@ int CopyKeyframes::handle_event()
 }
 
 PasteKeyframes::PasteKeyframes(MWindow *mwindow)
- : BC_MenuItem("Paste keyframes", "Shift-V", 'V')
+ : BC_MenuItem(_("Paste keyframes"), "Shift-V", 'V')
 {
 	set_shift(); 
 	this->mwindow = mwindow; 
@@ -606,7 +611,7 @@ int PasteKeyframes::handle_event()
 }
 
 ClearKeyframes::ClearKeyframes(MWindow *mwindow)
- : BC_MenuItem("Clear keyframes", "Shift-Del", BACKSPACE)
+ : BC_MenuItem(_("Clear keyframes"), "Shift-Del", BACKSPACE)
 {
 	set_shift(); 
 	this->mwindow = mwindow; 
@@ -623,7 +628,7 @@ int ClearKeyframes::handle_event()
 
 
 CutDefaultKeyframe::CutDefaultKeyframe(MWindow *mwindow)
- : BC_MenuItem("Cut default keyframe", "Alt-X", 'X')
+ : BC_MenuItem(_("Cut default keyframe"), "Alt-X", 'X')
 { 
 	set_alt(); 
 	this->mwindow = mwindow; 
@@ -636,7 +641,7 @@ int CutDefaultKeyframe::handle_event()
 }
 
 CopyDefaultKeyframe::CopyDefaultKeyframe(MWindow *mwindow)
- : BC_MenuItem("Copy default keyframe", "Alt-c", 'c')
+ : BC_MenuItem(_("Copy default keyframe"), "Alt-c", 'c')
 { 
 	set_alt(); 
 	this->mwindow = mwindow; 
@@ -649,7 +654,7 @@ int CopyDefaultKeyframe::handle_event()
 }
 
 PasteDefaultKeyframe::PasteDefaultKeyframe(MWindow *mwindow)
- : BC_MenuItem("Paste default keyframe", "Alt-v", 'v')
+ : BC_MenuItem(_("Paste default keyframe"), "Alt-v", 'v')
 {
 	set_alt(); 
 	this->mwindow = mwindow; 
@@ -662,7 +667,7 @@ int PasteDefaultKeyframe::handle_event()
 }
 
 ClearDefaultKeyframe::ClearDefaultKeyframe(MWindow *mwindow)
- : BC_MenuItem("Clear default keyframe", "Alt-Del", BACKSPACE)
+ : BC_MenuItem(_("Clear default keyframe"), "Alt-Del", BACKSPACE)
 {
 	set_alt(); 
 	this->mwindow = mwindow; 
@@ -675,7 +680,7 @@ int ClearDefaultKeyframe::handle_event()
 }
 
 Cut::Cut(MWindow *mwindow)
- : BC_MenuItem("Cut", "x", 'x') 
+ : BC_MenuItem(_("Cut"), "x", 'x') 
 {
 	this->mwindow = mwindow; 
 }
@@ -687,7 +692,7 @@ int Cut::handle_event()
 }
 
 Copy::Copy(MWindow *mwindow)
- : BC_MenuItem("Copy", "c", 'c') 
+ : BC_MenuItem(_("Copy"), "c", 'c') 
 {
 	this->mwindow = mwindow; 
 }
@@ -699,7 +704,7 @@ int Copy::handle_event()
 }
 
 Paste::Paste(MWindow *mwindow)
- : BC_MenuItem("Paste", "v", 'v') 
+ : BC_MenuItem(("Paste"), "v", 'v') 
 {
 	this->mwindow = mwindow; 
 }
@@ -711,7 +716,7 @@ int Paste::handle_event()
 }
 
 Clear::Clear(MWindow *mwindow)
- : BC_MenuItem("Clear", "Del", BACKSPACE) 
+ : BC_MenuItem(_("Clear"), "Del", BACKSPACE) 
 {
 	this->mwindow = mwindow; 
 }
@@ -725,7 +730,7 @@ int Clear::handle_event()
 }
 
 PasteSilence::PasteSilence(MWindow *mwindow)
- : BC_MenuItem("Paste silence", "Shift+Space", ' ')
+ : BC_MenuItem(_("Paste silence"), "Shift+Space", ' ')
 { 
 	this->mwindow = mwindow; 
 	set_shift(); 
@@ -738,7 +743,7 @@ int PasteSilence::handle_event()
 }
 
 SelectAll::SelectAll(MWindow *mwindow)
- : BC_MenuItem("Select All", "a", 'a')
+ : BC_MenuItem(_("Select All"), "a", 'a')
 { 
 	this->mwindow = mwindow; 
 }
@@ -761,7 +766,7 @@ int ClearLabels::handle_event()
 }
 
 MuteSelection::MuteSelection(MWindow *mwindow)
- : BC_MenuItem("Mute Region", "m", 'm')
+ : BC_MenuItem(_("Mute Region"), "m", 'm')
 {
 	this->mwindow = mwindow;
 }
@@ -774,7 +779,7 @@ int MuteSelection::handle_event()
 
 
 TrimSelection::TrimSelection(MWindow *mwindow)
- : BC_MenuItem("Trim Selection")
+ : BC_MenuItem(_("Trim Selection"))
 {
 	this->mwindow = mwindow;
 }
@@ -799,7 +804,7 @@ int TrimSelection::handle_event()
 // ============================================= audio
 
 AddAudioTrack::AddAudioTrack(MWindow *mwindow)
- : BC_MenuItem("Add track", "t", 't')
+ : BC_MenuItem(_("Add track"), "t", 't')
 {
 	this->mwindow = mwindow;
 }
@@ -811,7 +816,7 @@ int AddAudioTrack::handle_event()
 }
 
 DeleteAudioTrack::DeleteAudioTrack(MWindow *mwindow)
- : BC_MenuItem("Delete track")
+ : BC_MenuItem(_("Delete track"))
 {
 	this->mwindow = mwindow;
 }
@@ -822,7 +827,7 @@ int DeleteAudioTrack::handle_event()
 }
 
 DefaultATransition::DefaultATransition(MWindow *mwindow)
- : BC_MenuItem("Default Transition", "u", 'u')
+ : BC_MenuItem(_("Default Transition"), "u", 'u')
 {
 	this->mwindow = mwindow;
 }
@@ -840,7 +845,7 @@ int DefaultATransition::handle_event()
 
 
 AddVideoTrack::AddVideoTrack(MWindow *mwindow)
- : BC_MenuItem("Add track", "Shift-T", 'T')
+ : BC_MenuItem(_("Add track"), "Shift-T", 'T')
 {
 	set_shift();
 	this->mwindow = mwindow;
@@ -854,7 +859,7 @@ int AddVideoTrack::handle_event()
 
 
 DeleteVideoTrack::DeleteVideoTrack(MWindow *mwindow)
- : BC_MenuItem("Delete track")
+ : BC_MenuItem(_("Delete track"))
 {
 	this->mwindow = mwindow;
 }
@@ -867,7 +872,7 @@ int DeleteVideoTrack::handle_event()
 
 
 ResetTranslation::ResetTranslation(MWindow *mwindow)
- : BC_MenuItem("Reset Translation")
+ : BC_MenuItem(_("Reset Translation"))
 {
 	this->mwindow = mwindow;
 }
@@ -880,7 +885,7 @@ int ResetTranslation::handle_event()
 
 
 DefaultVTransition::DefaultVTransition(MWindow *mwindow)
- : BC_MenuItem("Default Transition", "Shift-U", 'U')
+ : BC_MenuItem(_("Default Transition"), "Shift-U", 'U')
 {
 	set_shift();
 	this->mwindow = mwindow;
@@ -908,7 +913,7 @@ int DefaultVTransition::handle_event()
 // ============================================ settings
 
 DeleteTracks::DeleteTracks(MWindow *mwindow)
- : BC_MenuItem("Delete tracks")
+ : BC_MenuItem(_("Delete tracks"))
 {
 	this->mwindow = mwindow;
 }
@@ -920,7 +925,7 @@ int DeleteTracks::handle_event()
 }
 
 DeleteTrack::DeleteTrack(MWindow *mwindow)
- : BC_MenuItem("Delete last track", "d", 'd')
+ : BC_MenuItem(_("Delete last track"), "d", 'd')
 {
 	this->mwindow = mwindow;
 }
@@ -932,7 +937,7 @@ int DeleteTrack::handle_event()
 }
 
 MoveTracksUp::MoveTracksUp(MWindow *mwindow)
- : BC_MenuItem("Move tracks up")
+ : BC_MenuItem(_("Move tracks up"))
 {
 	set_shift(); this->mwindow = mwindow;
 }
@@ -944,7 +949,7 @@ int MoveTracksUp::handle_event()
 }
 
 MoveTracksDown::MoveTracksDown(MWindow *mwindow)
- : BC_MenuItem("Move tracks down")
+ : BC_MenuItem(_("Move tracks down"))
 {
 	set_shift(); this->mwindow = mwindow;
 }
@@ -959,7 +964,7 @@ int MoveTracksDown::handle_event()
 
 
 ConcatenateTracks::ConcatenateTracks(MWindow *mwindow)
- : BC_MenuItem("Concatenate tracks")
+ : BC_MenuItem(_("Concatenate tracks"))
 {
 	set_shift(); 
 	this->mwindow = mwindow;
@@ -976,7 +981,7 @@ int ConcatenateTracks::handle_event()
 
 
 LoopPlayback::LoopPlayback(MWindow *mwindow)
- : BC_MenuItem("Loop Playback", "Shift+L", 'L')
+ : BC_MenuItem(_("Loop Playback"), "Shift+L", 'L')
 {
 	this->mwindow = mwindow;
 	set_checked(mwindow->edl->local_session->loop_playback);
@@ -995,7 +1000,7 @@ int LoopPlayback::handle_event()
 
 
 SetBRenderStart::SetBRenderStart(MWindow *mwindow)
- : BC_MenuItem("Set background render")
+ : BC_MenuItem(_("Set background render"))
 {
 	this->mwindow = mwindow;
 }
@@ -1013,7 +1018,7 @@ int SetBRenderStart::handle_event()
 
 
 LabelsFollowEdits::LabelsFollowEdits(MWindow *mwindow)
- : BC_MenuItem("Edit labels") 
+ : BC_MenuItem(_("Edit labels")) 
 { 
 	this->mwindow = mwindow; 
 	set_checked(mwindow->edl->session->labels_follow_edits);
@@ -1029,7 +1034,7 @@ int LabelsFollowEdits::handle_event()
 
 
 PluginsFollowEdits::PluginsFollowEdits(MWindow *mwindow)
- : BC_MenuItem("Edit effects") 
+ : BC_MenuItem(_("Edit effects")) 
 { 
 	this->mwindow = mwindow; 
 	set_checked(mwindow->edl->session->plugins_follow_edits);
@@ -1045,7 +1050,7 @@ int PluginsFollowEdits::handle_event()
 
 
 AutosFollowEdits::AutosFollowEdits(MWindow *mwindow)
- : BC_MenuItem("Autos follow edits") 
+ : BC_MenuItem(_("Autos follow edits")) 
 { 
 	this->mwindow = mwindow; 
 	set_checked(mwindow->edl->session->autos_follow_edits);
@@ -1059,7 +1064,7 @@ int AutosFollowEdits::handle_event()
 
 
 CursorOnFrames::CursorOnFrames(MWindow *mwindow)
- : BC_MenuItem("Align cursor on frames") 
+ : BC_MenuItem(_("Align cursor on frames")) 
 { 
 	this->mwindow = mwindow; 
 	set_checked(mwindow->edl->session->cursor_on_frames);
@@ -1082,12 +1087,12 @@ int ScrubSpeed::handle_event()
 	if(mwindow->edl->session->scrub_speed == .5)
 	{
 		mwindow->edl->session->scrub_speed = 2;
-		set_text("Slow Shuttle");
+		set_text(_("Slow Shuttle"));
 	}
 	else
 	{
 		mwindow->edl->session->scrub_speed = .5;
-		set_text("Fast Shuttle");
+		set_text(_("Fast Shuttle"));
 	}
 }
 
@@ -1100,7 +1105,7 @@ int SaveSettingsNow::handle_event()
 {
 	mwindow->save_defaults();
 	mwindow->save_backup();
-	mwindow->gui->show_message("Saved settings.");
+	mwindow->gui->show_message(_("Saved settings."));
 	return 1;
 }
 
@@ -1113,7 +1118,7 @@ int SaveSettingsNow::handle_event()
 
 
 ShowVWindow::ShowVWindow(MWindow *mwindow)
- : BC_MenuItem("Show Viewer")
+ : BC_MenuItem(_("Show Viewer"))
 {
 	this->mwindow = mwindow;
 	set_checked(mwindow->session->show_vwindow);
@@ -1125,7 +1130,7 @@ int ShowVWindow::handle_event()
 }
 
 ShowAWindow::ShowAWindow(MWindow *mwindow)
- : BC_MenuItem("Show Resources")
+ : BC_MenuItem(_("Show Resources"))
 {
 	this->mwindow = mwindow;
 	set_checked(mwindow->session->show_awindow);
@@ -1137,7 +1142,7 @@ int ShowAWindow::handle_event()
 }
 
 ShowCWindow::ShowCWindow(MWindow *mwindow)
- : BC_MenuItem("Show Compositor")
+ : BC_MenuItem(_("Show Compositor"))
 {
 	this->mwindow = mwindow;
 	set_checked(mwindow->session->show_cwindow);
@@ -1150,7 +1155,7 @@ int ShowCWindow::handle_event()
 
 
 ShowLWindow::ShowLWindow(MWindow *mwindow)
- : BC_MenuItem("Show Levels")
+ : BC_MenuItem(_("Show Levels"))
 {
 	this->mwindow = mwindow;
 	set_checked(mwindow->session->show_lwindow);
@@ -1162,7 +1167,7 @@ int ShowLWindow::handle_event()
 }
 
 TileWindows::TileWindows(MWindow *mwindow)
- : BC_MenuItem("Default positions")
+ : BC_MenuItem(_("Default positions"))
 {
 	this->mwindow = mwindow;
 }

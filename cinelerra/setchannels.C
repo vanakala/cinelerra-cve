@@ -6,10 +6,14 @@
 #include "setchannels.h"
 
 #include <math.h>
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
 
 
 SetChannels::SetChannels(MWindow *mwindow)
- : BC_MenuItem("Output channels..."), Thread() 
+ : BC_MenuItem(_("Output channels...")), Thread() 
 { this->mwindow = mwindow; }
  
 int SetChannels::handle_event() 
@@ -30,7 +34,7 @@ void SetChannels::run()
 	int result = window.run_window();
 	if(!result)
 	{
-		mwindow->undo->update_undo_audio("Output channels", 0);
+		mwindow->undo->update_undo_audio(_("Output channels"), 0);
 		for(int i = 0 ; i < MAXCHANNELS; i++)
 		{
 			mwindow->session->achannel_positions[i] = this->achannel_positions[i];
@@ -63,11 +67,11 @@ SetChannelsWindow::~SetChannelsWindow()
 
 int SetChannelsWindow::create_objects()
 {
-	add_subwindow(new BC_Title(5, 5, "Enter the output channels to use:"));
+	add_subwindow(new BC_Title(5, 5, _("Enter the output channels to use:")));
 	add_subwindow(new BC_OKButton(10, get_h() - 40));
 	add_subwindow(new BC_CancelButton(get_w() - 100, get_h() - 40));
 	
-	add_subwindow(new BC_Title(5, 60, "Position the channels in space:"));
+	add_subwindow(new BC_Title(5, 60, _("Position the channels in space:")));
 	add_subwindow(canvas = new SetChannelsCanvas(setchannels, 10, 80, 150, 150));
 
 	char string[1024];
@@ -132,7 +136,7 @@ int SetChannelsCanvas::draw(int angle)
 	}
 	if(angle > -1)
 	{
-		sprintf(string, "%d degrees", angle);
+		sprintf(string, _("%d degrees"), angle);
 		draw_text(this->get_w() / 2 - 40, this->get_h() / 2, string);
 	}
 	

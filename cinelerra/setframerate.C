@@ -7,8 +7,13 @@
 #include "setframerate.h"
 #include "tracks.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 SetFrameRate::SetFrameRate(MWindow *mwindow)
- : BC_MenuItem("Frame rate...")
+ : BC_MenuItem(_("Frame rate..."))
 { 
 	this->mwindow = mwindow;
 	thread = new SetFrameRateThread(mwindow);
@@ -39,7 +44,7 @@ void SetFrameRateThread::run()
 	int result = window.run_window();
 	if(!result)
 	{
-		mwindow->undo->update_undo_edits("Frame rate", 0);
+		mwindow->undo->update_undo_edits(_("Frame rate"), 0);
 		if(scale_data) mwindow->tracks->scale_time(frame_rate / mwindow->session->frame_rate, 1, 1, 1, 0, mwindow->tracks->total_samples());
 		mwindow->session->frame_rate = frame_rate;
 		mwindow->preferences->actual_frame_rate = frame_rate;
@@ -67,7 +72,7 @@ SetFrameRateWindow::~SetFrameRateWindow()
 
 int SetFrameRateWindow::create_objects()
 {
-	add_subwindow(new BC_Title(5, 5, "Enter the frame rate to use:"));
+	add_subwindow(new BC_Title(5, 5, _("Enter the frame rate to use:")));
 	add_subwindow(new BC_OKButton(10, get_h() - 40));
 	add_subwindow(new BC_CancelButton(get_w() - 100, get_h() - 40));
 
@@ -86,7 +91,7 @@ int SetFrameRateTextBox::handle_event()
 }
 
 SetFrameRateMoveData::SetFrameRateMoveData(SetFrameRateThread *thread)
- : BC_CheckBox(120, 40, thread->scale_data, "Scale data")
+ : BC_CheckBox(120, 40, thread->scale_data, _("Scale data"))
 {
 	this->thread = thread;
 }

@@ -8,6 +8,12 @@
 #include "neworappend.h"
 #include "theme.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
 NewOrAppend::NewOrAppend(MWindow *mwindow)
 {
 	this->mwindow = mwindow;
@@ -76,12 +82,12 @@ int NewOrAppendWindow::create_objects()
 	FileSystem fs;
 	fs.extract_name(filename, asset->path);
 	
-	sprintf(string, "%s exists!", filename);
+	sprintf(string, _("%s exists!"), filename);
 	add_subwindow(new BC_Title(5, 5, string));
 	if(confidence == 1)
-	sprintf(string, "But is in the same format as your new file.");
+	sprintf(string, _("But is in the same format as your new file."));
 	else
-	sprintf(string, "But might be in the same format as your new file.");
+	sprintf(string, _("But might be in the same format as your new file."));
 	add_subwindow(new BC_Title(5, 25, string));
 	add_subwindow(ok = new NewOrAppendNewButton(this));
 	add_subwindow(append = new NewOrAppendAppendButton(this));

@@ -7,6 +7,11 @@
 #include <string.h>
 #include <unistd.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 /* Known image types. */
 #define TGA_TYPE_MAPPED      1
 #define TGA_TYPE_COLOR       2
@@ -84,6 +89,12 @@ void FileTGA::get_parameters(BC_WindowBase *parent_window,
 	}
 }
 
+#if 0
+N_("RGB compressed")
+N_("RGBA compressed")
+N_("RGB uncompressed")
+N_("RGBA uncompressed")
+#endif
 
 #define TGA_RGB_RLE "rle "
 #define TGA_RGBA_RLE "rlea"
@@ -97,10 +108,10 @@ void FileTGA::get_parameters(BC_WindowBase *parent_window,
 
 char* FileTGA::compression_to_str(char *compression)
 {
-	if(!strcasecmp(compression, TGA_RGB_RLE)) return TGA_RGB_RLE_NAME;
-	if(!strcasecmp(compression, TGA_RGBA_RLE)) return TGA_RGBA_RLE_NAME;
-	if(!strcasecmp(compression, TGA_RGB)) return TGA_RGB_NAME;
-	if(!strcasecmp(compression, TGA_RGBA)) return TGA_RGBA_NAME;
+	if(!strcasecmp(compression, TGA_RGB_RLE)) return _(TGA_RGB_RLE_NAME);
+	if(!strcasecmp(compression, TGA_RGBA_RLE)) return _(TGA_RGBA_RLE_NAME);
+	if(!strcasecmp(compression, TGA_RGB)) return _(TGA_RGB_NAME);
+	if(!strcasecmp(compression, TGA_RGBA)) return _(TGA_RGBA_NAME);
 	return TGA_RGB_NAME;
 }
 
@@ -890,7 +901,7 @@ int TGAConfigVideo::create_objects()
 {
 	int x = 10, y = 10;
 
-	add_subwindow(new BC_Title(x, y, "Compression:"));
+	add_subwindow(new BC_Title(x, y, _("Compression:")));
 	TGACompression *textbox = new TGACompression(this, 
 		x + 110, 
 		y, 

@@ -6,6 +6,18 @@
 #include "preferencesthread.h"
 #include "interfaceprefs.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+#if 0
+N_("Drag all following edits")
+N_("Drag only one edit")
+N_("Drag source only")
+N_("No effect")
+#endif
+
 #define MOVE_ALL_EDITS_TITLE "Drag all following edits"
 #define MOVE_ONE_EDIT_TITLE "Drag only one edit"
 #define MOVE_NO_EDITS_TITLE "Drag source only"
@@ -25,7 +37,7 @@ int InterfacePrefs::create_objects()
 // 		get_resources()->get_bg_color(),
 // 		get_resources()->get_bg_light2(),
 // 		get_resources()->get_bg_light1());
-	add_subwindow(new BC_Title(x, y, "Interface", LARGEFONT, BLACK));
+	add_subwindow(new BC_Title(x, y, _("Interface"), LARGEFONT, BLACK));
 
 
 	y += 35;
@@ -64,7 +76,7 @@ int InterfacePrefs::create_objects()
 		pwindow->thread->edl->session->time_format == 5, 
 		x, 
 		y));
-	add_subwindow(new BC_Title(260, y, "frames per foot"));
+	add_subwindow(new BC_Title(260, y, _("frames per foot")));
 	sprintf(string, "%0.2f", pwindow->thread->edl->session->frames_per_foot);
 	add_subwindow(new TimeFormatFeetSetting(pwindow, 
 		x + 155, 
@@ -74,13 +86,13 @@ int InterfacePrefs::create_objects()
 
 	y += 35;
 
-	add_subwindow(new BC_Title(x, y, "Index files", LARGEFONT, BLACK));
+	add_subwindow(new BC_Title(x, y, _("Index files"), LARGEFONT, BLACK));
 
 
 	y += 35;
 	add_subwindow(new BC_Title(x, 
 		y + 5, 
-		"Index files go here:", MEDIUMFONT, BLACK));
+		_("Index files go here:"), MEDIUMFONT, BLACK));
 	add_subwindow(ipathtext = new IndexPathText(x + 230, 
 		y, 
 		pwindow, 
@@ -91,20 +103,20 @@ int InterfacePrefs::create_objects()
 		x + 230 + ipathtext->get_w(), 
 		y, 
 		pwindow->thread->preferences->index_directory,
-		"Index Path", 
-		"Select the directory for index files",
+		_("Index Path"), 
+		_("Select the directory for index files"),
 		1));
 
 	y += 30;
 	add_subwindow(new BC_Title(x, 
 		y + 5, 
-		"Size of index file:", 
+		_("Size of index file:"), 
 		MEDIUMFONT, 
 		BLACK));
 	sprintf(string, "%ld", pwindow->thread->preferences->index_size);
 	add_subwindow(isize = new IndexSize(x + 230, y, pwindow, string));
 	y += 30;
-	add_subwindow(new BC_Title(x, y + 5, "Number of index files to keep:", MEDIUMFONT, BLACK));
+	add_subwindow(new BC_Title(x, y + 5, _("Number of index files to keep:"), MEDIUMFONT, BLACK));
 	sprintf(string, "%ld", pwindow->thread->preferences->index_count);
 	add_subwindow(icount = new IndexCount(x + 230, y, pwindow, string));
 	add_subwindow(deleteall = new DeleteAllIndexes(mwindow, pwindow, 350, y));
@@ -115,16 +127,16 @@ int InterfacePrefs::create_objects()
 
 	y += 35;
 
-	add_subwindow(new BC_Title(x, y, "Editing", LARGEFONT, BLACK));
+	add_subwindow(new BC_Title(x, y, _("Editing"), LARGEFONT, BLACK));
 
 
 	y += 35;
 	add_subwindow(thumbnails = new ViewThumbnails(x, y, pwindow));
 
 	y += 35;
-	add_subwindow(new BC_Title(x, y, "Clicking on in/out points does what:"));
+	add_subwindow(new BC_Title(x, y, _("Clicking on in/out points does what:")));
 	y += 25;
-	add_subwindow(new BC_Title(x, y, "Button 1:"));
+	add_subwindow(new BC_Title(x, y, _("Button 1:")));
 	
 	ViewBehaviourText *text;
 	add_subwindow(text = new ViewBehaviourText(80, 
@@ -134,7 +146,7 @@ int InterfacePrefs::create_objects()
 			&(pwindow->thread->edl->session->edit_handle_mode[0])));
 	text->create_objects();
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Button 2:"));
+	add_subwindow(new BC_Title(x, y, _("Button 2:")));
 	add_subwindow(text = new ViewBehaviourText(80, 
 		y - 5, 
 		behavior_to_text(pwindow->thread->edl->session->edit_handle_mode[1]), 
@@ -142,7 +154,7 @@ int InterfacePrefs::create_objects()
 			&(pwindow->thread->edl->session->edit_handle_mode[1])));
 	text->create_objects();
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Button 3:"));
+	add_subwindow(new BC_Title(x, y, _("Button 3:")));
 	add_subwindow(text = new ViewBehaviourText(80, 
 		y - 5, 
 		behavior_to_text(pwindow->thread->edl->session->edit_handle_mode[2]), 
@@ -151,19 +163,19 @@ int InterfacePrefs::create_objects()
 	text->create_objects();
 
 	y += 40;
-	add_subwindow(new BC_Title(x, y, "Min DB for meter:"));
+	add_subwindow(new BC_Title(x, y, _("Min DB for meter:")));
 	sprintf(string, "%.0f", pwindow->thread->edl->session->min_meter_db);
 	add_subwindow(min_db = new MeterMinDB(pwindow, string, y));
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Format for meter:"));
-	add_subwindow(vu_db = new MeterVUDB(pwindow, "DB", y));
-//	add_subwindow(vu_int = new MeterVUInt(pwindow, "Percent of maximum", y));
+	add_subwindow(new BC_Title(x, y, _("Format for meter:")));
+	add_subwindow(vu_db = new MeterVUDB(pwindow, _("DB"), y));
+//	add_subwindow(vu_int = new MeterVUInt(pwindow, _("Percent of maximum"), y));
 //	vu_db->vu_int = vu_int;
 //	vu_int->vu_db = vu_db;
 	
 	y += 30;
 	ViewTheme *theme;
-	add_subwindow(new BC_Title(x, y, "Theme:"));
+	add_subwindow(new BC_Title(x, y, _("Theme:")));
 	x += 60;
 	add_subwindow(theme = new ViewTheme(x, y, pwindow));
 	theme->create_objects();
@@ -175,16 +187,16 @@ char* InterfacePrefs::behavior_to_text(int mode)
 	switch(mode)
 	{
 		case MOVE_ALL_EDITS:
-			return MOVE_ALL_EDITS_TITLE;
+			return _(MOVE_ALL_EDITS_TITLE);
 			break;
 		case MOVE_ONE_EDIT:
-			return MOVE_ONE_EDIT_TITLE;
+			return _(MOVE_ONE_EDIT_TITLE);
 			break;
 		case MOVE_NO_EDITS:
-			return MOVE_NO_EDITS_TITLE;
+			return _(MOVE_NO_EDITS_TITLE);
 			break;
 		case MOVE_EDITS_DISABLED:
-			return MOVE_EDITS_DISABLED_TITLE;
+			return _(MOVE_EDITS_DISABLED_TITLE);
 			break;
 		default:
 			return "";
@@ -308,7 +320,7 @@ int IndexCount::handle_event()
 
 
 TimeFormatHMS::TimeFormatHMS(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y)
- : BC_Radial(x, y, value, "Use Hours:Minutes:Seconds.xxx")
+ : BC_Radial(x, y, value, _("Use Hours:Minutes:Seconds.xxx"))
 { this->pwindow = pwindow; this->tfwindow = tfwindow; }
 
 int TimeFormatHMS::handle_event()
@@ -318,7 +330,7 @@ int TimeFormatHMS::handle_event()
 }
 
 TimeFormatHMSF::TimeFormatHMSF(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y)
- : BC_Radial(x, y, value, "Use Hours:Minutes:Seconds:Frames")
+ : BC_Radial(x, y, value, _("Use Hours:Minutes:Seconds:Frames"))
 { this->pwindow = pwindow; this->tfwindow = tfwindow; }
 
 int TimeFormatHMSF::handle_event()
@@ -327,7 +339,7 @@ int TimeFormatHMSF::handle_event()
 }
 
 TimeFormatSamples::TimeFormatSamples(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y)
- : BC_Radial(x, y, value, "Use Samples")
+ : BC_Radial(x, y, value, _("Use Samples"))
 { this->pwindow = pwindow; this->tfwindow = tfwindow; }
 
 int TimeFormatSamples::handle_event()
@@ -336,7 +348,7 @@ int TimeFormatSamples::handle_event()
 }
 
 TimeFormatFrames::TimeFormatFrames(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y)
- : BC_Radial(x, y, value, "Use Frames")
+ : BC_Radial(x, y, value, _("Use Frames"))
 { this->pwindow = pwindow; this->tfwindow = tfwindow; }
 
 int TimeFormatFrames::handle_event()
@@ -345,7 +357,7 @@ int TimeFormatFrames::handle_event()
 }
 
 TimeFormatHex::TimeFormatHex(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y)
- : BC_Radial(x, y, value, "Use Hex Samples")
+ : BC_Radial(x, y, value, _("Use Hex Samples"))
 { this->pwindow = pwindow; this->tfwindow = tfwindow; }
 
 int TimeFormatHex::handle_event()
@@ -354,7 +366,7 @@ int TimeFormatHex::handle_event()
 }
 
 TimeFormatFeet::TimeFormatFeet(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y)
- : BC_Radial(x, y, value, "Use Feet-frames")
+ : BC_Radial(x, y, value, _("Use Feet-frames"))
 { this->pwindow = pwindow; this->tfwindow = tfwindow; }
 
 int TimeFormatFeet::handle_event()
@@ -397,10 +409,10 @@ int ViewBehaviourText::handle_event()
 int ViewBehaviourText::create_objects()
 {
 // Video4linux versions are automatically detected
-	add_item(new ViewBehaviourItem(this, MOVE_ALL_EDITS_TITLE, MOVE_ALL_EDITS));
-	add_item(new ViewBehaviourItem(this, MOVE_ONE_EDIT_TITLE, MOVE_ONE_EDIT));
-	add_item(new ViewBehaviourItem(this, MOVE_NO_EDITS_TITLE, MOVE_NO_EDITS));
-	add_item(new ViewBehaviourItem(this, MOVE_EDITS_DISABLED_TITLE, MOVE_EDITS_DISABLED));
+	add_item(new ViewBehaviourItem(this, _(MOVE_ALL_EDITS_TITLE), MOVE_ALL_EDITS));
+	add_item(new ViewBehaviourItem(this, _(MOVE_ONE_EDIT_TITLE), MOVE_ONE_EDIT));
+	add_item(new ViewBehaviourItem(this, _(MOVE_NO_EDITS_TITLE), MOVE_NO_EDITS));
+	add_item(new ViewBehaviourItem(this, _(MOVE_EDITS_DISABLED_TITLE), MOVE_EDITS_DISABLED));
 	return 0;
 }
 
@@ -525,7 +537,7 @@ ViewThumbnails::ViewThumbnails(int x,
 	PreferencesWindow *pwindow)
  : BC_CheckBox(x, 
  	y, 
-	pwindow->thread->preferences->use_thumbnails, "Use thumbnails in resource window")
+	pwindow->thread->preferences->use_thumbnails, _("Use thumbnails in resource window"))
 {
 	this->pwindow = pwindow;
 }

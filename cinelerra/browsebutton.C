@@ -2,6 +2,13 @@
 #include "mwindow.h"
 #include "theme.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
+
 BrowseButton::BrowseButton(MWindow *mwindow, 
 	BC_WindowBase *parent_window, 
 	BC_TextBox *textbox, 
@@ -20,7 +27,7 @@ BrowseButton::BrowseButton(MWindow *mwindow,
 	this->init_directory = init_directory;
 	this->textbox = textbox;
 	this->mwindow = mwindow;
-	set_tooltip("Look for file");
+	set_tooltip(_("Look for file"));
 }
 
 BrowseButton::~BrowseButton()
