@@ -26,6 +26,7 @@ FadeUnit::~FadeUnit()
 { \
 	int_type opacity = (int_type)(alpha * max); \
 	int_type transparency = (int_type)(max - opacity); \
+	int_type product = (int_type) (chroma_zero * transparency); \
  \
 	for(int i = row1; i < row2; i++) \
 	{ \
@@ -40,10 +41,10 @@ FadeUnit::~FadeUnit()
 					(type)((int_type)in_row[0] * opacity / max); \
 				out_row[1] =  \
 					(type)(((int_type)in_row[1] * opacity +  \
-						(int_type)chroma_zero * transparency) / max); \
+						product) / max); \
 				out_row[2] =  \
 					(type)(((int_type)in_row[2] * opacity +  \
-						(int_type)chroma_zero * transparency) / max); \
+						product) / max); \
 			} \
 			else \
 			{ \
