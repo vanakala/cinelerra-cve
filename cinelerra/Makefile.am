@@ -167,8 +167,6 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    playtransport.C \
 		    pluginaclient.C \
 		    pluginaclientlad.C \
-		    pluginvclientlivido.C \
-		    livido-library.c \
 		    pluginarray.C \
 		    pluginautos.C \
 		    plugin.C \
@@ -417,7 +415,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 labelnavigate.h \
 		 labels.h \
 		 ladspa.h \
-		 livido.h \
 		 levelwindowgui.h \
 		 levelwindow.h \
 		 loadbalance.h \
@@ -468,7 +465,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 playtransport.h \
 		 pluginaclient.h \
 		 pluginaclientlad.h \
-		 pluginvclientlivido.h \
 		 pluginarray.h \
 		 pluginautos.h \
 		 pluginclient.h \
