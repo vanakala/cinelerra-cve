@@ -1,6 +1,7 @@
 #ifndef COLORPICKER_H
 #define COLORPICKER_H
 
+#include "condition.h"
 #include "guicast.h"
 #include "thread.h"
 #include "vframe.inc"
@@ -28,8 +29,8 @@ public:
 	virtual int handle_event(int output) { return 0; };
 	void update_gui(int output, int alpha);
 
+	Condition completion;
 	ColorWindow *window;
-	Mutex completion;
 // Starting color
 	int output;
 	int alpha;

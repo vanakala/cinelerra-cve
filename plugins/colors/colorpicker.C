@@ -13,7 +13,8 @@
 #define N_(String) gettext_noop (String)
 
 ColorThread::ColorThread(int do_alpha, char *title)
- : Thread()
+ : Thread(),
+ completion(1, "ColorThread::completion")
 {
 	window = 0;
 	this->title = title;
