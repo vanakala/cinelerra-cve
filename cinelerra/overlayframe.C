@@ -10,6 +10,9 @@
 #include "overlayframe.h"
 #include "vframe.h"
 
+//#include "timer.h"
+
+
 #if 1
 static int use_float = 1;
 #else
@@ -2526,10 +2529,10 @@ ScaleTranslatePackage::ScaleTranslatePackage()
 		for(int j = 0; j < w; j++) \
 		{ \
 			int64_t input1, input2, input3, input4; \
-			input1 = in_row[j * components]; \
-			input2 = in_row[j * components + 1]; \
-			input3 = in_row[j * components + 2]; \
-			if(components == 4) input4 = in_row[j * components + 3]; \
+			input1 = in_row[0]; \
+			input2 = in_row[1]; \
+			input3 = in_row[2]; \
+			if(components == 4) input4 = in_row[3]; \
  \
  \
  			if(components == 3) \
@@ -2541,14 +2544,98 @@ ScaleTranslatePackage::ScaleTranslatePackage()
 				BLEND_4(max, type, chroma_offset); \
 			} \
  \
-			input += components; \
+			in_row += components; \
 			output += components; \
 		} \
 	} \
 }
 
 
+#define BLEND_ONLY_TRANSFER_REPLACE(type, components) \
+{ \
+ \
+	type** output_rows = (type**)output->get_rows(); \
+	type** input_rows = (type**)input->get_rows(); \
+	int w = input->get_w(); \
+	int h = input->get_h(); \
+	int line_len = w * sizeof(type) * components; \
+ \
+	for(int i = pkg->out_row1; i < pkg->out_row2; i++) \
+	{ \
+		memcpy(output_rows[i], input_rows[i], line_len); \
+	} \
+}
 
+// components is always 4
+#define BLEND_ONLY_4_NORMAL(int_type, type, max, chroma_offset) \
+{ \
+	int_type opacity = (int_type)(alpha * max + 0.5); \
+	int_type transparency = max - opacity; \
+	int_type maxsq = ((int_type)max) * max; \
+ \
+	type** output_rows = (type**)output->get_rows(); \
+	type** input_rows = (type**)input->get_rows(); \
+	int w = input->get_w(); \
+	int h = input->get_h(); \
+ \
+	for(int i = pkg->out_row1; i < pkg->out_row2; i++) \
+	{ \
+		type* in_row = input_rows[i]; \
+		type* output = output_rows[i]; \
+ \
+		for(int j = 0; j < w; j++) \
+		{ \
+			int_type pixel_opacity, pixel_transparency; \
+			pixel_opacity = opacity * in_row[3]; \
+			pixel_transparency = (int_type)maxsq - pixel_opacity; \
+		 \
+		 \
+		 	int_type r,g,b; \
+			r = ((int_type)in_row[0] * pixel_opacity + \
+				(int_type)output[0] * pixel_transparency) / max / max; \
+			output[0] = (type)CLIP(r, 0, max); \
+			g = (((int_type)in_row[1] - chroma_offset) * pixel_opacity + \
+				((int_type)output[1] - chroma_offset) * pixel_transparency) \
+				/ max / max + \
+				chroma_offset; \
+			output[1] = (type)CLIP(g, 0, max); \
+			b = (((int_type)in_row[2] - chroma_offset) * pixel_opacity + \
+				((int_type)output[2] - chroma_offset) * pixel_transparency) \
+				/ max / max + \
+				chroma_offset; \
+			output[2] = (type)CLIP(b, 0, max); \
+			output[3] = (type)(in_row[3] > output[3] ? in_row[3] : output[3]); \
+ \
+			in_row += 4; \
+			output += 4; \
+		} \
+	} \
+}
+
+// components is always 3
+#define BLEND_ONLY_3_NORMAL(int_type, type, max, chroma_offset) \
+{ \
+	int_type opacity = (int_type)(alpha * max + 0.5); \
+	int_type transparency = max - opacity; \
+ \
+	type** output_rows = (type**)output->get_rows(); \
+	type** input_rows = (type**)input->get_rows(); \
+	int w = input->get_w() * 3; \
+	int h = input->get_h(); \
+ \
+	for(int i = pkg->out_row1; i < pkg->out_row2; i++) \
+	{ \
+		type* in_row = input_rows[i]; \
+		type* output = output_rows[i]; \
+ \
+		for(int j = 0; j < w; j++) /* w = 3x width! */ \
+		{ \
+			*output = (type)CLIP(((int_type)*in_row * opacity + *output * transparency) / max, 0, max); \
+			in_row ++; \
+			output ++; \
+		} \
+	} \
+}
 
 BlendUnit::BlendUnit(BlendEngine *server, OverlayFrame *overlay)
  : LoadClient(server)
@@ -2570,7 +2657,58 @@ void BlendUnit::process_package(LoadPackage *package)
 	VFrame *input = blend_engine->input;
 	float alpha = blend_engine->alpha;
 	int mode = blend_engine->mode;
-
+//	Timer a;
+//	a.update();
+	if (mode == TRANSFER_REPLACE) {
+		switch(input->get_color_model())
+		{
+			case BC_RGB888:
+			case BC_YUV888:
+				BLEND_ONLY_TRANSFER_REPLACE(unsigned char, 3);
+				break;
+			case BC_RGBA8888:
+			case BC_YUVA8888:
+				BLEND_ONLY_TRANSFER_REPLACE(unsigned char, 4);
+				break;
+			case BC_RGB161616:
+			case BC_YUV161616:
+				BLEND_ONLY_TRANSFER_REPLACE(uint16_t, 3);
+				break;
+			case BC_RGBA16161616:
+			case BC_YUVA16161616:
+				BLEND_ONLY_TRANSFER_REPLACE(uint16_t, 4);
+				break;
+		}
+	} else
+	if (mode == TRANSFER_NORMAL) {
+		switch(input->get_color_model())
+		{
+			case BC_RGB888:
+				BLEND_ONLY_3_NORMAL(uint32_t, unsigned char, 0xff, 0);
+				break;
+			case BC_YUV888:
+				BLEND_ONLY_3_NORMAL(int32_t, unsigned char, 0xff, 0x80);
+				break;
+			case BC_RGBA8888:
+				BLEND_ONLY_4_NORMAL(uint32_t, unsigned char, 0xff, 0);
+				break;
+			case BC_YUVA8888:
+				BLEND_ONLY_4_NORMAL(int32_t, unsigned char, 0xff, 0x80);
+				break;
+			case BC_RGB161616:
+				BLEND_ONLY_3_NORMAL(uint64_t, uint16_t, 0xffff, 0);
+				break;
+			case BC_YUV161616:
+				BLEND_ONLY_3_NORMAL(int64_t, uint16_t, 0xffff, 0x8000);
+				break;
+			case BC_RGBA16161616:
+				BLEND_ONLY_4_NORMAL(uint64_t, uint16_t, 0xffff, 0);
+				break;
+			case BC_YUVA16161616:
+				BLEND_ONLY_4_NORMAL(int64_t, uint16_t, 0xffff, 0x8000);
+				break;
+		}
+	} else
 	switch(input->get_color_model())
 	{
 		case BC_RGB888:
@@ -2598,6 +2736,7 @@ void BlendUnit::process_package(LoadPackage *package)
 			BLEND_ONLY(uint16_t, 0xffff, 4, 0x8000);
 			break;
 	}
+//	printf("blend mode %i, took %li ms\n", mode, a.get_difference());
 }
 
 
