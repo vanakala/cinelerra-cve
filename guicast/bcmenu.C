@@ -238,23 +238,23 @@ int BC_Menu::draw_title()
 			top_level->get_resources()->menu_down,
 			top_level->get_resources()->menu_down,
 			top_level->get_resources()->menu_light);
+		menu_bar->set_color(top_level->get_resources()->menu_item_text);
 	}
 	else
 // Menu is not pulled down.
 	{
 		if(highlighted)
 		{
-			menu_bar->set_color(top_level->get_resources()->menu_highlighted);
-			menu_bar->draw_box(x, y, w, h);
+		  menu_bar->set_color(top_level->get_resources()->menu_highlighted);
+		  menu_bar->draw_box(x, y, w, h);
+		  menu_bar->set_color(top_level->get_resources()->menu_highlighted_fontcolor);			
 		}
 		else
 		{
-			menu_bar->draw_background(x, y, w, h);
+		  menu_bar->draw_background(x, y, w, h);
+		  menu_bar->set_color(top_level->get_resources()->menu_item_text);
 		}
-	
 	}
-
-	menu_bar->set_color(BLACK);
 	menu_bar->set_font(MEDIUMFONT);
 	menu_bar->draw_text(x + 10, h - menu_bar->get_text_descent(MEDIUMFONT), text);
 	menu_bar->flash();

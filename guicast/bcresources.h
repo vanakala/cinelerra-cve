@@ -8,6 +8,7 @@
 #include "bcwindowbase.inc"
 #include "vframe.inc"
 
+
 #include <X11/Xlib.h>
 
 typedef struct
@@ -49,10 +50,11 @@ public:
 
 // beveled box colors
 	int button_light;      
-	int button_highlighted;
+       	int button_highlighted;
 	int button_down;       
 	int button_up;         
 	int button_shadow;     
+	int button_uphighlighted;
 
 // highlighting
 	int highlight_inverse;
@@ -73,6 +75,8 @@ public:
 	int progress_text;
 
 
+	int menu_highlighted_fontcolor;
+
 // ms for double click
 	long double_click;
 // ms for cursor flash
@@ -86,6 +90,10 @@ public:
 
 	int text_default;      // default color of text
 	int text_background;   // background color of textboxes and list boxes
+	
+	int listboxitemselected_color;
+
+	int audiovideo_color;
 
 // Background images
 	static VFrame *bg_image;
@@ -147,7 +155,7 @@ public:
 
 // Filebox
 	static suffix_to_type_t suffix_to_type[TOTAL_SUFFIXES];
-	static VFrame *type_to_icon[TOTAL_ICONS];
+	VFrame **type_to_icon;
 // Display mode for fileboxes
 	int filebox_mode;
 // Filter currently used in filebox
@@ -175,6 +183,8 @@ public:
 
 	VFrame **medium_7segment;
 
+//clock
+	int draw_clock_background;
 
 	int use_fontset;
 // This must be constitutive since applications access the private members here.
@@ -189,6 +199,7 @@ public:
 	int recursive_resizing;
 // Work around X server bugs
 	int use_xvideo;
+
 
 private:
 // Test for availability of shared memory pixmaps

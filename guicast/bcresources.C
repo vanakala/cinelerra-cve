@@ -3,6 +3,7 @@
 #include "bclistbox.inc"
 #include "bcresources.h"
 #include "bcsignals.h"
+#include "bctheme.h"
 #include "bcwindowbase.h"
 #include "colors.h"
 #include "colormodels.h"
@@ -24,20 +25,6 @@ int BC_Resources::error = 0;
 
 VFrame* BC_Resources::bg_image = 0;
 VFrame* BC_Resources::menu_bg = 0;
-
-#include "images/file_film_png.h"
-#include "images/file_folder_png.h"
-#include "images/file_sound_png.h"
-#include "images/file_unknown_png.h"
-#include "images/file_column_png.h"
-VFrame* BC_Resources::type_to_icon[] = 
-{
-	new VFrame(file_folder_png),
-	new VFrame(file_unknown_png),
-	new VFrame(file_film_png),
-	new VFrame(file_sound_png),
-	new VFrame(file_column_png)
-};
 
 char* BC_Resources::small_font = N_("-*-helvetica-medium-r-normal-*-10-*");
 char* BC_Resources::medium_font = N_("-*-helvetica-bold-r-normal-*-14-*");
@@ -84,6 +71,9 @@ BC_Resources::BC_Resources()
 #endif
 
 	use_xvideo = 1;
+
+static VFrame* type_to_icon = 0;
+
 #include "images/cancel_up_png.h"
 #include "images/cancel_hi_png.h"
 #include "images/cancel_dn_png.h"
@@ -114,172 +104,26 @@ BC_Resources::BC_Resources()
 		new VFrame(usethis_dn_png)
 	};
 
-#include "images/checkbox_checked_png.h"
-#include "images/checkbox_down_png.h"
-#include "images/checkbox_checkedhi_png.h"
-#include "images/checkbox_up_png.h"
-#include "images/checkbox_uphi_png.h"
-	static VFrame* default_checkbox_images[] =  
-	{
-		new VFrame(checkbox_up_png),
-		new VFrame(checkbox_uphi_png),
-		new VFrame(checkbox_checked_png),
-		new VFrame(checkbox_down_png),
-		new VFrame(checkbox_checkedhi_png)
-	};
+	static VFrame* default_checkbox_images = 0;
+	static VFrame* default_radial_images = 0;
+	static VFrame* default_label_images =  0;
 
-#include "images/radial_checked_png.h"
-#include "images/radial_down_png.h"
-#include "images/radial_checkedhi_png.h"
-#include "images/radial_up_png.h"
-#include "images/radial_uphi_png.h"
-	static VFrame* default_radial_images[] =  
-	{
-		new VFrame(radial_up_png),
-		new VFrame(radial_uphi_png),
-		new VFrame(radial_checked_png),
-		new VFrame(radial_down_png),
-		new VFrame(radial_checkedhi_png)
-	};
+ 	listbox_button = 0;
+	listbox_bg = 0;
 
-	static VFrame* default_label_images[] =  
-	{
-		new VFrame(radial_up_png),
-		new VFrame(radial_uphi_png),
-		new VFrame(radial_checked_png),
-		new VFrame(radial_down_png),
-		new VFrame(radial_checkedhi_png)
-	};
+	static VFrame* default_filebox_text_images = 0; 
+	static VFrame* default_filebox_icons_images = 0;
+	static VFrame* default_filebox_updir_images = 0;
+	static VFrame* default_filebox_newfolder_images = 0; 
 
+	listbox_expand = 0;
+	listbox_column = 0;
+	listbox_up =0;
+	listbox_dn = 0;
 
-#include "images/file_text_up_png.h"
-#include "images/file_text_uphi_png.h"
-#include "images/file_text_dn_png.h"
-#include "images/file_icons_up_png.h"
-#include "images/file_icons_uphi_png.h"
-#include "images/file_icons_dn_png.h"
-#include "images/file_newfolder_up_png.h"
-#include "images/file_newfolder_uphi_png.h"
-#include "images/file_newfolder_dn_png.h"
-#include "images/file_updir_up_png.h"
-#include "images/file_updir_uphi_png.h"
-#include "images/file_updir_dn_png.h"
-	static VFrame* default_filebox_text_images[] = 
-	{
-		new VFrame(file_text_up_png),
-		new VFrame(file_text_uphi_png),
-		new VFrame(file_text_dn_png)
-	};
+ 	horizontal_slider_data = 0;
+ 	vertical_slider_data = 0;
 
-	static VFrame* default_filebox_icons_images[] = 
-	{
-		new VFrame(file_icons_up_png),
-		new VFrame(file_icons_uphi_png),
-		new VFrame(file_icons_dn_png)
-	};
-
-	static VFrame* default_filebox_updir_images[] =  
-	{
-		new VFrame(file_updir_up_png),
-		new VFrame(file_updir_uphi_png),
-		new VFrame(file_updir_dn_png)
-	};
-
-	static VFrame* default_filebox_newfolder_images[] = 
-	{
-		new VFrame(file_newfolder_up_png),
-		new VFrame(file_newfolder_uphi_png),
-		new VFrame(file_newfolder_dn_png)
-	};
-
-#include "images/listbox_button_dn_png.h"
-#include "images/listbox_button_hi_png.h"
-#include "images/listbox_button_up_png.h"
-	static VFrame* default_listbox_button[] = 
-	{
-		new VFrame(listbox_button_up_png),
-		new VFrame(listbox_button_hi_png),
-		new VFrame(listbox_button_dn_png)
-	};
-	listbox_button = default_listbox_button;
-
-#include "images/list_bg_png.h"
-	static VFrame* default_listbox_bg = new VFrame(list_bg_png);
-	listbox_bg = default_listbox_bg;
-
-#include "images/listbox_expandchecked_png.h"
-#include "images/listbox_expandcheckedhi_png.h"
-#include "images/listbox_expanddn_png.h"
-#include "images/listbox_expandup_png.h"
-#include "images/listbox_expanduphi_png.h"
-	static VFrame* default_listbox_expand[] = 
-	{
-		new VFrame(listbox_expandup_png),
-		new VFrame(listbox_expanduphi_png),
-		new VFrame(listbox_expandchecked_png),
-		new VFrame(listbox_expanddn_png),
-		new VFrame(listbox_expandcheckedhi_png),
-	};
-	listbox_expand = default_listbox_expand;
-
-#include "images/listbox_columnup_png.h"
-#include "images/listbox_columnhi_png.h"
-#include "images/listbox_columndn_png.h"
-	static VFrame* default_listbox_column[] = 
-	{
-		new VFrame(listbox_columnup_png),
-		new VFrame(listbox_columnhi_png),
-		new VFrame(listbox_columndn_png)
-	};
-	listbox_column = default_listbox_column;
-
-
-#include "images/listbox_up_png.h"
-#include "images/listbox_dn_png.h"
-	listbox_up = new VFrame(listbox_up_png);
-	listbox_dn = new VFrame(listbox_dn_png);
-
-
-
-
-
-
-
-
-
-#include "images/horizontal_slider_bg_up_png.h"
-#include "images/horizontal_slider_bg_hi_png.h"
-#include "images/horizontal_slider_bg_dn_png.h"
-#include "images/horizontal_slider_fg_up_png.h"
-#include "images/horizontal_slider_fg_hi_png.h"
-#include "images/horizontal_slider_fg_dn_png.h"
-	static VFrame *default_horizontal_slider_data[] = 
-	{
-		new VFrame(horizontal_slider_fg_up_png),
-		new VFrame(horizontal_slider_fg_hi_png),
-		new VFrame(horizontal_slider_fg_dn_png),
-		new VFrame(horizontal_slider_bg_up_png),
-		new VFrame(horizontal_slider_bg_hi_png),
-		new VFrame(horizontal_slider_bg_dn_png),
-	};
-
-#include "images/vertical_slider_bg_up_png.h"
-#include "images/vertical_slider_bg_hi_png.h"
-#include "images/vertical_slider_bg_dn_png.h"
-#include "images/vertical_slider_fg_up_png.h"
-#include "images/vertical_slider_fg_hi_png.h"
-#include "images/vertical_slider_fg_dn_png.h"
-	static VFrame *default_vertical_slider_data[] = 
-	{
-		new VFrame(vertical_slider_fg_up_png),
-		new VFrame(vertical_slider_fg_hi_png),
-		new VFrame(vertical_slider_fg_dn_png),
-		new VFrame(vertical_slider_bg_up_png),
-		new VFrame(vertical_slider_bg_hi_png),
-		new VFrame(vertical_slider_bg_dn_png),
-	};
-	horizontal_slider_data = default_horizontal_slider_data;
-	vertical_slider_data = default_vertical_slider_data;
 
 #include "images/pot_hi_png.h"
 #include "images/pot_up_png.h"
@@ -291,33 +135,15 @@ BC_Resources::BC_Resources()
 		new VFrame(pot_dn_png)
 	};
 
-#include "images/progress_up_png.h"
-#include "images/progress_hi_png.h"
-	static VFrame* default_progress_images[] = 
-	{
-		new VFrame(progress_up_png),
-		new VFrame(progress_hi_png)
-	};
+ #include "images/progress_up_png.h"
+ #include "images/progress_hi_png.h"
+ 	static VFrame* default_progress_images[] = 
+ 	{
+ 		new VFrame(progress_up_png),
+ 		new VFrame(progress_hi_png)
+ 	};
 
-
-#include "images/pan_up_png.h"
-#include "images/pan_hi_png.h"
-#include "images/pan_popup_png.h"
-#include "images/pan_channel_png.h"
-#include "images/pan_stick_png.h"
-#include "images/pan_channel_small_png.h"
-#include "images/pan_stick_small_png.h"
-	static VFrame* default_pan_data[] = 
-	{
-		new VFrame(pan_up_png),
-		new VFrame(pan_hi_png),
-		new VFrame(pan_popup_png),
-		new VFrame(pan_channel_png),
-		new VFrame(pan_stick_png),
-		new VFrame(pan_channel_small_png),
-		new VFrame(pan_stick_small_png)
-	};
-	pan_data = default_pan_data;
+	pan_data = 0;
 	pan_text_color = YELLOW;
 
 #include "images/7seg_small/0_png.h"
@@ -364,145 +190,41 @@ BC_Resources::BC_Resources()
 		new VFrame(dash_png)
 	};
 
-#include "images/tumble_bottomdn_png.h"
-#include "images/tumble_topdn_png.h"
-#include "images/tumble_hi_png.h"
-#include "images/tumble_up_png.h"
-	static VFrame* default_tumbler_data[] = 
-	{
-		new VFrame(tumble_up_png),
-		new VFrame(tumble_hi_png),
-		new VFrame(tumble_bottomdn_png),
-		new VFrame(tumble_topdn_png)
-	};
-
-#include "images/xmeter_normal_png.h"
-#include "images/xmeter_green_png.h"
-#include "images/xmeter_red_png.h"
-#include "images/xmeter_yellow_png.h"
-#include "images/over_horiz_png.h"
-#include "images/ymeter_normal_png.h"
-#include "images/ymeter_green_png.h"
-#include "images/ymeter_red_png.h"
-#include "images/ymeter_yellow_png.h"
-#include "images/over_vertical_png.h"
-	static VFrame* default_xmeter_data[] =
-	{
-		new VFrame(xmeter_normal_png),
-		new VFrame(xmeter_green_png),
-		new VFrame(xmeter_red_png),
-		new VFrame(xmeter_yellow_png),
-		new VFrame(over_horiz_png)
-	};
-
-	static VFrame* default_ymeter_data[] =
-	{
-		new VFrame(ymeter_normal_png),
-		new VFrame(ymeter_green_png),
-		new VFrame(ymeter_red_png),
-		new VFrame(ymeter_yellow_png),
-		new VFrame(over_vertical_png)
-	};
-
-#include "images/generic_up_png.h"
-#include "images/generic_hi_png.h"
-#include "images/generic_dn_png.h"
-	
-	static VFrame* default_generic_button_data[] = 
-	{
-		new VFrame(generic_up_png),
-		new VFrame(generic_hi_png),
-		new VFrame(generic_dn_png)
-	};
-	
-	generic_button_images = default_generic_button_data;
-
-
-
-
-#include "images/hscroll_handle_up_png.h"
-#include "images/hscroll_handle_hi_png.h"
-#include "images/hscroll_handle_dn_png.h"
-#include "images/hscroll_handle_bg_png.h"
-#include "images/hscroll_left_up_png.h"
-#include "images/hscroll_left_hi_png.h"
-#include "images/hscroll_left_dn_png.h"
-#include "images/hscroll_right_up_png.h"
-#include "images/hscroll_right_hi_png.h"
-#include "images/hscroll_right_dn_png.h"
-#include "images/vscroll_handle_up_png.h"
-#include "images/vscroll_handle_hi_png.h"
-#include "images/vscroll_handle_dn_png.h"
-#include "images/vscroll_handle_bg_png.h"
-#include "images/vscroll_left_up_png.h"
-#include "images/vscroll_left_hi_png.h"
-#include "images/vscroll_left_dn_png.h"
-#include "images/vscroll_right_up_png.h"
-#include "images/vscroll_right_hi_png.h"
-#include "images/vscroll_right_dn_png.h"
-	static VFrame *default_hscroll_data[] = 
-	{
-		new VFrame(hscroll_handle_up_png), 
-		new VFrame(hscroll_handle_hi_png), 
-		new VFrame(hscroll_handle_dn_png), 
-		new VFrame(hscroll_handle_bg_png), 
-		new VFrame(hscroll_left_up_png), 
-		new VFrame(hscroll_left_hi_png), 
-		new VFrame(hscroll_left_dn_png), 
-		new VFrame(hscroll_right_up_png), 
-		new VFrame(hscroll_right_hi_png), 
-		new VFrame(hscroll_right_dn_png)
-	};
-	static VFrame *default_vscroll_data[] = 
-	{
-		new VFrame(vscroll_handle_up_png), 
-		new VFrame(vscroll_handle_hi_png), 
-		new VFrame(vscroll_handle_dn_png), 
-		new VFrame(vscroll_handle_bg_png), 
-		new VFrame(vscroll_left_up_png), 
-		new VFrame(vscroll_left_hi_png), 
-		new VFrame(vscroll_left_dn_png), 
-		new VFrame(vscroll_right_up_png), 
-		new VFrame(vscroll_right_hi_png), 
-		new VFrame(vscroll_right_dn_png)
-	};
-	hscroll_data = default_hscroll_data;
-	vscroll_data = default_vscroll_data;
-
-
-
+	draw_clock_background=1;
 
 	use_shm = -1;
 
 // Initialize
-	bg_color = MEGREY;
+	bg_color = ORANGE;
 	bg_shadow1 = DKGREY;
 	bg_shadow2 = BLACK;
 	bg_light1 = WHITE;
 	bg_light2 = bg_color;
 
 	button_light = WHITE;           // bright corner
-	button_highlighted = LTGREY;  // face when highlighted
+	button_highlighted = 0xffe000;  // face when highlighted
 	button_down = MDGREY;         // face when down
-	button_up = MEGREY;           // face when up
+	button_up = 0xffc000;           // face when up
 	button_shadow = DKGREY;       // dark corner
+	button_uphighlighted = RED;   // upper side when highlighted
 
-	tumble_data = default_tumbler_data;
+	tumble_data = 0;
 	tumble_duration = 150;
 
 	ok_images = default_ok_images;
 	cancel_images = default_cancel_images;
 	usethis_button_images = default_usethis_images;
 
-	checkbox_images = default_checkbox_images;
-	radial_images = default_radial_images;
-	label_images = default_label_images;
-
 	menu_light = LTCYAN;
 	menu_highlighted = LTBLUE;
 	menu_down = MDCYAN;
 	menu_up = MECYAN;
 	menu_shadow = DKCYAN;
+
+	popup_title_text = BLACK;
+	menu_item_text = BLACK;
+	menu_highlighted_fontcolor = BLACK;
+	progress_text = BLACK;
 
 	text_default = BLACK;
 	text_background = WHITE;
@@ -528,14 +250,13 @@ BC_Resources::BC_Resources()
 	filebox_columnwidth[1] = 100;
 	filebox_columnwidth[2] = 100;
 
-	filebox_text_images = default_filebox_text_images;
-	filebox_icons_images = default_filebox_icons_images;
-	filebox_updir_images = default_filebox_updir_images;
-	filebox_newfolder_images = default_filebox_newfolder_images;
+ 	filebox_text_images = 0;
+ 	filebox_icons_images = 0;
+ 	filebox_updir_images = 0;
+ 	filebox_newfolder_images = 0;
 
 	filebox_sortcolumn = 0;
 	filebox_sortorder = BC_ListBox::SORT_ASCENDING;
-
 
 	pot_images = default_pot_images;
 	pot_x1 = pot_images[0]->get_w() / 2 - 2;
@@ -544,14 +265,17 @@ BC_Resources::BC_Resources()
 
 	progress_images = default_progress_images;
 
-	xmeter_images = default_xmeter_data;
-	ymeter_images = default_ymeter_data;
+	xmeter_images = 0;
+	ymeter_images = 0;
 	meter_font = SMALLFONT_3D;
 	meter_font_color = RED;
 	meter_title_w = 20;
 	meter_3d = 1;
 	medium_7segment = default_medium_7segment;
 
+	listboxitemselected_color = BLUE;
+
+	audiovideo_color = RED;
 
 	use_fontset = 0;
 

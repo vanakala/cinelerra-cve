@@ -1170,7 +1170,7 @@ int AWindowAssets::selection_changed()
 void AWindowAssets::draw_background()
 {
 	BC_ListBox::draw_background();
-	set_color(RED);
+	set_color(BC_WindowBase::get_resources()->audiovideo_color);
 	set_font(LARGEFONT);
 	draw_text(get_w() - 
 			get_text_width(LARGEFONT, mwindow->edl->session->current_folder) - 4, 

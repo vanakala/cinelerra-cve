@@ -47,6 +47,8 @@ EXTRA_DIST = \
 	heroine_logo10_png.h \
 	heroine_logo11.png \
 	heroine_logo11_png.h \
+	heroine_logo12.png \
+	heroine_logo12_png.h \
 	heroine_logo9.png \
 	heroine_logo9_png.h \
 	lad_picon.png \

@@ -131,7 +131,7 @@ int FormatTools::create_objects(int &init_x,
 	y += format_button->get_h() + 10;
 	if(do_audio)
 	{
-		window->add_subwindow(audio_title = new BC_Title(x, y, _("Audio:"), LARGEFONT, RED));
+		window->add_subwindow(audio_title = new BC_Title(x, y, _("Audio:"), LARGEFONT,  BC_WindowBase::get_resources()->audiovideo_color));
 		x += 80;
 		window->add_subwindow(aparams_button = new FormatAParams(mwindow, this, x, y));
 		x += aparams_button->get_w() + 10;
@@ -164,7 +164,7 @@ int FormatTools::create_objects(int &init_x,
 	{
 
 //printf("FormatTools::create_objects 8\n");
-		window->add_subwindow(video_title = new BC_Title(x, y, _("Video:"), LARGEFONT, RED));
+		window->add_subwindow(video_title = new BC_Title(x, y, _("Video:"), LARGEFONT,  BC_WindowBase::get_resources()->audiovideo_color));
 		x += 80;
 		if(prompt_video_compression)
 		{

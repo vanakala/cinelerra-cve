@@ -1285,8 +1285,8 @@ int BC_ListBox::get_item_highlight(ArrayList<BC_ListBoxItem*> *data,
 	int item)
 {
 	if(data[column].values[item]->selected)
-		return BLUE;
-	else
+	  return top_level->get_resources()->listboxitemselected_color;
+	 else
 	if(highlighted_item >= 0 &&
 		highlighted_ptr == data[master_column].values[item])
 		return LTGREY;
@@ -4242,8 +4242,8 @@ int BC_ListBox::draw_border(int flash)
 		view_w + LISTBOX_BORDER * 2, 
 		view_h + title_h + LISTBOX_BORDER * 2, 
 		top_level->get_resources()->button_shadow, 
-		list_highlighted ? RED : BLACK, 
-		list_highlighted ? RED : top_level->get_resources()->button_up, 
+		list_highlighted ? top_level->get_resources()->button_uphighlighted : BLACK, 
+		list_highlighted ? top_level->get_resources()->button_uphighlighted : top_level->get_resources()->button_up, 
 		top_level->get_resources()->button_light);
 
 	if(flash)

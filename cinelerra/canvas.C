@@ -598,7 +598,7 @@ CanvasOutput::CanvasOutput(EDL *edl,
     int y,
     int w,
     int h)
- : BC_SubWindow(x, y, w, h, BLACK)
+ : BC_SubWindow(x, y, w, h, BC_WindowBase::get_resources()->bg_color)
 {
 	this->canvas = canvas;
 	cursor_inside = 0;

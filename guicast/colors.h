@@ -40,4 +40,10 @@
 
 #define BLOND               0xb4b487
 
+#define MNGREY              0xe6e6e6
+#define FGGREY              0xe3e3e3
+#define MNBLUE              0x003cff
+#define ORANGE              0xffdd76
+#define FTGREY              0xbcbcbc
+
 #endif

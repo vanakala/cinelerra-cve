@@ -3,19 +3,26 @@
 
 Summary: Cinelerra CVS
 Name: cinelerra
-Version: 1.2.0
-Release: 6
+#Version: 1.2.0.cvs.cobra
+Version: @VERSION@.cvs.%{build_nick}
+Release: 8
 License: GPL
 Group: X11
 URL: http://cvs.cinelerra.org
-Source0: %{name}-%{version}.tar.gz
-BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
+#Source0: %{name}-%{version}.tar.gz
+#Source0: %{name}-1.2.0.tar.gz
+Source0: %{name}-@VERSION@.tar.gz
+#BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
+#BuildRoot: %{_tmppath}/%{name}-1.2.0-%{release}-buildroot
+BuildRoot: %{_tmppath}/%{name}-@VERSION@-%{release}-buildroot
 
 %description
 Cinelerra unofficial cvs package
 
 %prep
-%setup -q
+# %setup -q
+# %setup -n cinelerra-1.2.0
+%setup -n %{name}-@VERSION@
 
 %build
 ./configure --prefix=%prefix
@@ -67,6 +74,15 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Sun Jul 25 2004 Kevin Brosius <cobra@compuserve.com> - 1.2.0.cvs.cobra-8
+- Move blondtheme contents back to defaulttheme dir
+- create .spec.in and setup versioning, add:
+- %build_nick	your_nick
+- to your ~/.rpmmacros file for building local RPM files.
+
+* Sun Jul 25 2004 Kevin Brosius <cobra@compuserve.com> - 1.2.0.cvs.cobra-7
+- Merge bluedot theme
+
 * Sat Jul  3 2004 Kevin Brosius <cobra@compuserve.com> - 1.2.0-6
 - xml audio handling fix, delayvideo plugin cleanup
 

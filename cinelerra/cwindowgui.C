@@ -49,7 +49,7 @@ CWindowGUI::CWindowGUI(MWindow *mwindow, CWindow *cwindow)
     1,
     1,
     1,
-	BLACK,
+	BC_WindowBase::get_resources()->bg_color,
 	mwindow->edl->session->get_cwindow_display())
 {
 	this->mwindow = mwindow;

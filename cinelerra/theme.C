@@ -45,9 +45,6 @@ Theme::Theme()
 	contents_buffer = 0;
 	last_image = 0;
 
-	BC_WindowBase::get_resources()->bg_color = BLOND;
-	BC_WindowBase::get_resources()->button_up = 0xffc000;
-	BC_WindowBase::get_resources()->button_highlighted = 0xffe000;
 	BC_WindowBase::get_resources()->recursive_resizing = 0;
 	audio_color = BLACK;
 	fade_h = 22;

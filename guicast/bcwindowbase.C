@@ -1598,6 +1598,12 @@ int BC_WindowBase::create_shared_colors()
 	create_color(MEPURPLE); 
 	create_color(MDPURPLE); 
 	create_color(DKPURPLE); 
+
+	create_color(FGGREY); 
+	create_color(MNBLUE);
+	create_color(ORANGE);
+	create_color(FTGREY);
+
 	return 0;
 }
 
