@@ -1014,10 +1014,9 @@ int BC_ListBox::get_items_height(ArrayList<BC_ListBoxItem*> *data,
 		if(display_format == LISTBOX_ICONS)
 		{
 			get_icon_mask(item, x, y, w, h);
-			if(y + h > highest) highest = y + h;
-
+			if(y + h + yposition > highest) highest = y + h + yposition;
 			get_text_mask(item, x, y, w, h);
-			if(y + h > highest) highest = y + h;
+			if(y + h + yposition > highest) highest = y + h + yposition;
 		}
 		else
 		{
