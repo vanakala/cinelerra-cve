@@ -4,7 +4,7 @@
 Summary: Cinelerra CVS
 Name: cinelerra
 Version: 1.1.9
-Release: 7
+Release: 8
 License: GPL
 Group: X11
 URL: http://cvs.cinelerra.org
@@ -58,6 +58,9 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Wed Apr 21 2004 Kevin <cobra@compuserve.com> - 1.1.9-8
+- Getting ready for cvs commit, no fadeout bug fix
+
 * Sat Apr 17 2004 Kevin <cobra@compuserve.com> - 1.1.9-7
 - hscroll plugins fix, fadeengine calculation improvement
 

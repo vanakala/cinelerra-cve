@@ -560,7 +560,7 @@ cinelerra_LDADD = \
 	$(FIREWIRE_LDFLAGS) -ldv \
 	-luuid $(AVIFILE_LDFLAGS)
 
-EXTRA_DIST = Blond data
+EXTRA_DIST = data
 
 dist-hook:
 	-rm -rf $(distdir)/Blond/CVS

@@ -100,5 +100,3 @@ install-exec-hook:
 	echo $(DESTDIR)$(plugindir)/$$theme.so; \
 	$(top_builddir)/guicast/bootstrap $(DESTDIR)$(plugindir)/$$theme.so $(srcdir)/$$theme/data/*.png; \
 	done
-	cd $(DESTDIR)$(plugindir); \
-	rm -f *.a *.la

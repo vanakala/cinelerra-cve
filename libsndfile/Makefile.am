@@ -1,9 +1,10 @@
 SUBDIRS = src
 DIST_SUBDIRS = $(SUBDIRS)
 EXTRA_DIST = reconf acinclude.m4 libsndfile.spec.in sndfile.pc.in \
-			check_libsndfile.py libsndfile_version_convert.py Make.bat
-			
-			 
+			check_libsndfile.py libsndfile_version_convert.py Make.bat \
+	depcomp
+
+
 pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = sndfile.pc
 

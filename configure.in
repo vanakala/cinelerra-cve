@@ -135,7 +135,7 @@ if test "x$enable_firewire" = "xyes"; then
 		FIREWIRE_LDFLAGS=""
 	else
 		FIREWIRE_CFLAGS="-DHAVE_FIREWIRE"
-		FIREWIRE_LDFLAGS="-lraw1394 -lavc1394 -lrom1394"
+#		FIREWIRE_LDFLAGS="-lraw1394 -lavc1394 -lrom1394"
 	fi
 fi
 AC_SUBST(FIREWIRE_CFLAGS)
