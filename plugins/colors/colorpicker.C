@@ -460,33 +460,9 @@ int PaletteWheel::draw(float hue, float saturation)
 
 int PaletteWheel::get_angle(float x1, float y1, float x2, float y2)
 {
-	float result;
-	
-	if(x2 > x1 && y2 < y1)
-// Top right
-		result = 90 - atan((y1 - y2) / (x2 - x1)) / M_PI / 2 * 360;
-	else
-	if(x2 < x1 && y2 < y1)
-// Top left
-		result = 270 + atan((y1 - y2) / (x1 - x2)) / M_PI / 2 * 360;
-	else
-	if(x2 > x1 && y2 > y1)
-// Bottom right
-		result = 90 + atan((y2 - y1) / (x2 - x1)) / M_PI / 2 * 360;
-	else
-	if(x2 < x1 && y2 > y1)
-// Bottom left
-		result = 270 - atan((y2 - y1) / (x1 - x2)) / M_PI / 2 * 360;
-	else
-		if(x2 == x1 && y2 < y1) result = 0;
-	else
-		if(x2 == x1 && y2 > y1) result = 180;
-	else
-		if(x2 > x1 && y2 == y1) result = 90;
-	else
-		if(x2 < x1 && y2 == y1) result = 270;
-	else 
-		result = 0;
+	float result = atan2(x2 - x1, y1 - y2) * (360 / M_PI / 2);
+	if (result < 0)
+		result += 360;
 	return (int)result;
 }
 
