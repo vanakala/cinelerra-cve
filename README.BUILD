@@ -50,4 +50,5 @@ http://lpnotfr.free.fr/cinelerra-libs
 	- libavcodec
 	- libavcodec-dev
 	- libuuid
+	- libfaad2
 	- nasm (for mmx optimization)
