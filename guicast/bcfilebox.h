@@ -210,6 +210,7 @@ public:
 
 private:
 	int create_icons();
+	int extract_extension(char *out, const char *in);
 	int create_tables();
 	int delete_tables();
 	int submit_file(char *path, int return_value, int use_this = 0);

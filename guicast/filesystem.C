@@ -119,6 +119,32 @@ int FileSystem::set_sort_field(int field)
 	this->sort_field = field;
 }
 
+// filename.with.dots.extension
+//   becomes
+// extension.dots.with.filename
+
+int FileSystem::dot_reverse_filename(char *out, const char *in)
+{
+	int i, i2, j=0, lastdot;
+	lastdot = strlen(in);
+	for (i = strlen(in); i >= 0; i--){
+
+	if (in[i] == '.') { 
+		i2 = i+1;
+		while (i2 < lastdot) 
+			out[j++] = in[i2++];
+		out[j++] = in[i];
+		lastdot = i;
+		}
+	}
+	i++;
+	if (in[i] != '.') {
+		while (i < lastdot) out[j++] = in[i++];
+	}
+	out[j++] = '\0';
+	return 0;
+}
+
 int FileSystem::compare_items(ArrayList<FileItem*> *dir_list, 
 	int item1, 
 	int item2)
@@ -130,6 +156,8 @@ int FileSystem::compare_items(ArrayList<FileItem*> *dir_list,
 // Default to name in ascending order
 	switch(sort_field)
 	{
+		char dotreversedname1[BCTEXTLEN], dotreversedname2[BCTEXTLEN];
+
 		case SORT_PATH:
 			result = (sort_order == SORT_ASCENDING) ? 
 				strcasecmp(ptr1->name, ptr2->name) :
@@ -150,6 +178,14 @@ int FileSystem::compare_items(ArrayList<FileItem*> *dir_list,
 				result = (sort_order == SORT_ASCENDING) ?
 					(ptr1->calendar_time > ptr2->calendar_time) :
 					(ptr2->calendar_time > ptr1->calendar_time);
+			break;
+		case SORT_EXTENSION:
+			dot_reverse_filename(dotreversedname1,ptr1->name);
+			dot_reverse_filename(dotreversedname2,ptr2->name);
+
+			result = (sort_order == SORT_ASCENDING) ? 
+			strcasecmp(dotreversedname1, dotreversedname2) :
+			strcasecmp(dotreversedname2, dotreversedname1);
 			break;
 	}
 	return result;
