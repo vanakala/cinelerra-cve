@@ -4,6 +4,10 @@
 #include "bcsignals.h"
 #include "file.h"
 
+extern "C" {
+	extern int sigpipe_received;
+}
+
 class SigHandler : public BC_Signals
 {
 public:
@@ -20,6 +24,5 @@ public:
 // During a crash, the sighandler should close them all.
 	ArrayList<File*> files;
 };
-
 
 #endif

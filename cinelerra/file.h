@@ -11,6 +11,7 @@
 #include "filethread.inc"
 #include "filexml.inc"
 #include "formatwindow.inc"
+#include "formattools.h"
 #include "framecache.inc"
 #include "guicast.h"
 #include "mutex.inc"
@@ -31,12 +32,10 @@ public:
 
 // Get attributes for various file formats.
 // The dither parameter is carried over from recording, where dither is done at the device.
-	int get_options(BC_WindowBase *parent_window, 
-		ArrayList<PluginServer*> *plugindb, 
-		Asset *asset,
-		int audio_options,
-		int video_options,
-		int lock_compressor);
+	int get_options(FormatTools *format, 
+			int audio_options,
+			int video_options,
+			int lock_compressor);
 
 	int raise_window();
 // Close parameter window

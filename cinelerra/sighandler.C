@@ -2,10 +2,20 @@
 #include "file.h"
 #include "sighandler.h"
 
+// FUTURE: This should probably be done inside of SigHandler or BC_Signals
+extern "C" {
+	int sigpipe_received;
+
+	void handle_sigpipe(int signum) {
+		printf("Received sigpipe\n");
+		sigpipe_received++;
+	}
+}
 
 SigHandler::SigHandler()
  : BC_Signals()
 {
+	signal(SIGPIPE, handle_sigpipe);
 }
 
 void SigHandler::signal_handler(int signum)
@@ -17,7 +27,6 @@ void SigHandler::signal_handler(int signum)
 		printf("Closing %s\n", files.values[i]->asset->path);
 		files.values[i]->close_file(1);
 	}
-	BC_Signals::signal_handler(signum);
 }
 
 void SigHandler::push_file(File *file)
@@ -50,7 +59,6 @@ void SigHandler::pull_file(File *file)
 	printf("SigHandler::pull_file: file %s not on table.\n",
 		file->asset->path);
 }
-
 
 
 

@@ -19,7 +19,6 @@
 #define FILE_AVI_ARNE2          19    // DV type 2
 #define FILE_AVI_AVIFILE        21
 #define FILE_AVI_LAVTOOLS       12    // MJPEG type 1
-#define FILE_RAWDV					28
 #define FILE_GIF  	    		7
 #define FILE_JPEG 	    		5
 #define FILE_JPEG_LIST  		8
@@ -39,6 +38,8 @@
 #define FILE_WAV  	    		2
 #define FILE_EXR                26
 #define FILE_EXR_LIST           27
+#define FILE_RAWDV		28
+#define FILE_YUV		29	// mjpegtools YUV4MPEG (aka YUV4MPEG2)
 
 // For formats supported by plugins, the format number is the plugin number in the 
 // plugin list ORed with 0x8000.
@@ -100,6 +101,8 @@ N_("EXR List")
 #define VORBIS_NAME "OGG Vorbis"
 #define EXR_NAME "EXR"
 #define EXR_LIST_NAME "EXR List"
+#define YUV_NAME "YUV4MPEG Stream"
+
 
 #define BITSLINEAR8    8
 #define BITSLINEAR16   16

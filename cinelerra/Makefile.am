@@ -98,6 +98,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    filetiff.C \
 		    filevorbis.C \
 		    filexml.C \
+		    fileyuv.C \
 		    floatauto.C \
 		    floatautos.C \
 		    formatcheck.C \
@@ -178,6 +179,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    presentations.C \
 		    question.C \
 		    quit.C \
+	            recentlist.C \
 		    recconfirmdelete.C \
 		    recordableatracks.C \
 		    recordablevtracks.C \
@@ -260,6 +262,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    vwindow.C \
 		    vwindowgui.C \
 		    workarounds.C \
+                    yuvstream.C \
 		    zoombar.C \
 		    zoompanel.C
 
@@ -385,6 +388,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 filetiff.h \
 		 filevorbis.h \
 		 filexml.h \
+		 fileyuv.h \
 		 floatauto.h \
 		 floatautos.h \
 		 formatcheck.h \
@@ -473,6 +477,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 presentations.h \
 		 question.h \
 		 quit.h \
+                 recentlist.h \
 		 recconfirmdelete.h \
 		 recordableatracks.h \
 		 recordablevtracks.h \
@@ -569,6 +574,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 vwindowgui.h \
 		 vwindow.h \
 		 workarounds.h \
+                 yuvstream.h \
 		 zoombar.h \
 		 zoompanel.h \
 		$(srcdir)/*.inc
@@ -584,6 +590,7 @@ cinelerra_LDADD = \
 	$(SOUND_LDFLAGS) \
 	$(FIREWIRE_LDFLAGS) -ldv \
 	-lIex -lIlmImf -lHalf \
-	-luuid $(AVIFILE_LDFLAGS)
+	-luuid $(AVIFILE_LDFLAGS) \
+	-lmjpegutils
 
 EXTRA_DIST = gen-feather-h

@@ -391,12 +391,7 @@ FormatAThread::~FormatAThread()
 
 void FormatAThread::run()
 {
-	file->get_options(format->window, 
-		format->plugindb, 
-		format->asset, 
-		1, 
-		0,
-		0);
+	file->get_options(format, 1, 0,	0);
 }
 
 
@@ -418,12 +413,7 @@ FormatVThread::~FormatVThread()
 
 void FormatVThread::run()
 {
-	file->get_options(format->window, 
-		format->plugindb, 
-		format->asset, 
-		0, 
-		1, 
-		lock_compressor);
+	file->get_options(format, 0, 1, lock_compressor);
 }
 
 FormatPathText::FormatPathText(int x, int y, FormatTools *format)

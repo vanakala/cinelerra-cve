@@ -21,7 +21,9 @@
 #include "filethread.h"
 #include "filetiff.h"
 #include "filevorbis.h"
+#include "fileyuv.h"
 #include "formatwindow.h"
+#include "formattools.h"
 #include "framecache.h"
 #include "language.h"
 #include "pluginserver.h"
@@ -101,13 +103,15 @@ void File::close_window()
 	}
 }
 
-int File::get_options(BC_WindowBase *parent_window, 
-	ArrayList<PluginServer*> *plugindb, 
-	Asset *asset, 
-	int audio_options, 
-	int video_options,
-	int lock_compressor)
+int File::get_options(FormatTools *format, 
+		      int audio_options, 
+		      int video_options,
+		      int lock_compressor)
 {
+	BC_WindowBase *parent_window = format->window;
+	ArrayList<PluginServer*> *plugindb = format->plugindb;
+	Asset *asset = format->asset;
+
 	getting_options = 1;
 	format_completion->lock("File::get_options");
 	switch(asset->format)
@@ -187,6 +191,12 @@ int File::get_options(BC_WindowBase *parent_window,
 				format_window, 
 				audio_options, 
 				video_options);
+			break;
+	        case FILE_YUV:
+			FileYUV::get_parameters(parent_window,
+				asset,
+				format_window,
+				format);
 			break;
 		case FILE_PNG:
 		case FILE_PNG_LIST:
@@ -345,9 +355,16 @@ int File::open_file(ArrayList<PluginServer*> *plugindb,
 			else
 			if(FileEXR::check_sig(this->asset, test))
 			{
-// JPEG file
+// EXR file
 				fclose(stream);
 				file = new FileEXR(this->asset, this);
+			}
+			else
+			if(FileYUV::check_sig(this->asset))
+			{
+// YUV file
+				fclose(stream);
+				file = new FileYUV(this->asset, this);
 			}
 			else
 			if(FileTGA::check_sig(this->asset))
@@ -429,6 +446,10 @@ int File::open_file(ArrayList<PluginServer*> *plugindb,
 		case FILE_EXR:
 		case FILE_EXR_LIST:
 			file = new FileEXR(this->asset, this);
+			break;
+
+		case FILE_YUV:
+			file = new FileYUV(this->asset, this);
 			break;
 
 		case FILE_TGA_LIST:
@@ -937,81 +958,75 @@ int File::read_frame(VFrame *frame)
 		int advance_position = 1;
 
 
-// Test cache
+		// Test cache
 		if(use_cache &&
-			frame_cache->get_frame(frame,
-				current_frame,
-				asset->frame_rate))
-		{
-// Can't advance position if cache used.
+		   frame_cache->get_frame(frame,
+					  current_frame,
+					  asset->frame_rate)) {
+			// Can't advance position if cache used.
 			advance_position = 0;
 		}
-		else
-// Need temp
-		if(frame->get_color_model() != BC_COMPRESSED &&
+		else if(frame->get_color_model() != BC_COMPRESSED &&
 			(supported_colormodel != frame->get_color_model() ||
-			frame->get_w() != asset->width ||
-			frame->get_h() != asset->height))
-		{
-
-// Can't advance position here because it needs to be added to cache
-			if(temp_frame)
-			{
-				if(!temp_frame->params_match(asset->width, asset->height, supported_colormodel))
-				{
+			 frame->get_w() != asset->width ||
+			 frame->get_h() != asset->height)) {
+			// Need temp				
+			// Can't advance position here because it needs to be added to cache
+			if(temp_frame) {
+				if(!temp_frame->params_match(asset->width, asset->height, supported_colormodel)) {
 					delete temp_frame;
 					temp_frame = 0;
 				}
 			}
-
-			if(!temp_frame)
-			{
+			
+			if(!temp_frame)	{
 				temp_frame = new VFrame(0,
-					asset->width,
-					asset->height,
-					supported_colormodel);
+							asset->width,
+							asset->height,
+							supported_colormodel);
 			}
-
+			
 			file->read_frame(temp_frame);
-//struct timeval start_time;
-//gettimeofday(&start_time, 0);
-//			printf("tarnsfering from : %i to %i\n", frame->get_color_model(),temp_frame->get_color_model());
-			cmodel_transfer(frame->get_rows(), 
-				temp_frame->get_rows(),
-				0,
-				0,
-				0,
-				0,
-				0,
-				0,
-				0, 
-				0, 
-				temp_frame->get_w(), 
-				temp_frame->get_h(),
-				0, 
-				0, 
-				frame->get_w(), 
-				frame->get_h(),
-				temp_frame->get_color_model(), 
-				frame->get_color_model(),
-				0,
-				temp_frame->get_w(),
-				frame->get_w());
-//	int64_t dif= get_difference(&start_time);
-//	printf("diff: %lli\n", dif);
+			//struct timeval start_time;
+			//gettimeofday(&start_time, 0);
+			//printf("tarnsfering from : %i to %i\n", frame->get_color_model(),temp_frame->get_color_model());
 
+// FUTURE: convert from YUV planar if cmodel_is_planar(temp_frame)
+			cmodel_transfer(frame->get_rows(), 
+					temp_frame->get_rows(),
+					0,
+					0,
+					0,
+					0,
+					0,
+					0,
+					0, 
+					0, 
+					temp_frame->get_w(), 
+					temp_frame->get_h(),
+					0, 
+					0, 
+					frame->get_w(), 
+					frame->get_h(),
+					temp_frame->get_color_model(), 
+					frame->get_color_model(),
+					0,
+					temp_frame->get_w(),
+					frame->get_w());
+			//	int64_t dif= get_difference(&start_time);
+			//	printf("diff: %lli\n", dif);
+			
 		}
-		else
-		{
-// Can't advance position here because it needs to be added to cache
+		else {
+			// Can't advance position here because it needs to be added to cache
 			file->read_frame(frame);
 		}
-
+		
 		if(use_cache) frame_cache->put_frame(frame,
-			current_frame,
-			asset->frame_rate,
-			1);
-
+						     current_frame,
+						     asset->frame_rate,
+						     1);
+		
 		if(advance_position) current_frame++;
 		return 0;
 	}
@@ -1068,6 +1083,8 @@ int File::strtoformat(ArrayList<PluginServer*> *plugindb, char *format)
 	if(!strcasecmp(format, _(EXR_NAME))) return FILE_EXR;
 	else
 	if(!strcasecmp(format, _(EXR_LIST_NAME))) return FILE_EXR_LIST;
+	else
+	if(!strcasecmp(format, _(YUV_NAME))) return FILE_YUV;
 	else
 	if(!strcasecmp(format, _(MPEG_NAME))) return FILE_MPEG;
 	else
@@ -1141,6 +1158,9 @@ char* File::formattostr(ArrayList<PluginServer*> *plugindb, int format)
 			break;
 		case FILE_EXR_LIST:
 			return _(EXR_LIST_NAME);
+			break;
+		case FILE_YUV:
+			return _(YUV_NAME);
 			break;
 		case FILE_MPEG:
 			return _(MPEG_NAME);
@@ -1319,6 +1339,10 @@ int File::get_best_colormodel(Asset *asset, int driver)
 			return FileEXR::get_best_colormodel(asset, driver);
 			break;
 		
+		case FILE_YUV:
+			return FileYUV::get_best_colormodel(asset, driver);
+			break;
+
 		case FILE_PNG:
 		case FILE_PNG_LIST:
 			return FilePNG::get_best_colormodel(asset, driver);
@@ -1386,6 +1410,7 @@ int File::supports_video(int format)
 		case FILE_JPEG_LIST:
 		case FILE_EXR:
 		case FILE_EXR_LIST:
+	        case FILE_YUV:
 		case FILE_PNG:
 		case FILE_PNG_LIST:
 		case FILE_TGA:

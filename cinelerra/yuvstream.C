@@ -1,0 +1,268 @@
+#include <fcntl.h>
+#include <string.h>
+#include <errno.h>
+
+#include "guicast.h"
+#include "sighandler.h"
+#include "yuvstream.h"
+
+
+YUVStream::YUVStream() { 
+	y4m_init_stream_info(&stream_info);
+	y4m_init_frame_info(&frame_info);
+	stream_fd = 0;
+	stream_file = 0;
+	frame_count = 0;
+	frame_index = 0;
+}
+
+YUVStream::~YUVStream() {		
+	y4m_fini_stream_info(&stream_info);
+	y4m_fini_frame_info(&frame_info);
+	if (frame_index) delete frame_index;
+	close_fd();
+}
+
+
+int YUVStream::open_read(char *path) {
+	// NOTE: reading from pipes would be very difficult without temp files
+	stream_fd = open(path, O_RDONLY);
+
+	if (stream_fd < 0) {
+		printf("open(%s) failed: %s\n", path, strerror(errno));
+		return 1;
+	}
+
+	int result = read_header();
+	if (result != Y4M_OK) {
+		printf("bad YUV4MPEG2 header: %s\n", y4m_strerr(result));
+		return 1;
+	}
+
+	// generate index to frame position if not done yet
+	if (frame_index == 0) {
+		if (make_index() != 0) {
+			return 1;
+		}
+	}
+
+	return 0;
+}
+
+// NOTE: path is opened as a pipe if contains '|'
+int YUVStream::open_write(char *path) {
+	char *pipe = strchr(path, '|');
+	if (pipe) {
+		// skip over the '|'
+		path = pipe + 1;
+		stream_file = popen(path, "w");
+		if (stream_file != NULL) {
+			stream_fd = fileno(stream_file);
+			return 0;
+		}
+		// NOTE: popen() fails only if fork/exec fails
+		//       there is no immediate way to see if command failed
+		//       As such, one must expect to raise SIGPIPE on failure
+		printf("popen(%s) failed: %s\n", pipe, strerror(errno));
+		return 1;
+	}
+
+	stream_fd = open(path, O_CREAT|O_WRONLY|O_TRUNC, 0666);
+	if (stream_fd > 0) return 0;
+	
+	printf("open(%s) failed: %s\n", path, strerror(errno));
+	return 1;
+}
+
+
+void YUVStream::close_fd() {
+	if (stream_file) {
+		pclose(stream_file);
+		stream_file = 0;
+		stream_fd = 0;
+	}
+		
+	if (stream_fd) close(stream_fd);
+	stream_fd = 0;
+}
+
+int YUVStream::read_frame(uint8_t *yuv[3]) {
+	int result =  y4m_read_frame(stream_fd, &stream_info, 
+				  &frame_info, yuv);
+	if (result != Y4M_OK) {
+		if (result != Y4M_ERR_EOF) {
+			printf("read_frame() failed: %s\n", 
+			       y4m_strerr(result));
+		}
+		return 1;
+	}
+
+	return 0;
+}
+
+int YUVStream::read_frame_raw(uint8_t *data, long frame_size) {
+	int result = y4m_read_frame_header(stream_fd, &frame_info);
+	if (result != Y4M_OK) {
+		printf("y4m_read_frame_header() failed: %s\n", 
+		       y4m_strerr(result));
+		return 1;
+	}
+	result = y4m_read(stream_fd, data, frame_size);
+	if (result != Y4M_OK) {
+		printf("y4m_read(%d) failed: %s\n", 
+		       frame_size, y4m_strerr(result));
+		return 1;
+	}
+	return 0;
+}
+		
+int YUVStream::write_frame(uint8_t *yuv[3]) {
+	int result = y4m_write_frame(stream_fd, &stream_info, 
+				     &frame_info, yuv);
+	if (result != Y4M_OK) {
+		printf("write_frame() failed: %s\n", y4m_strerr(result));
+		return 1;
+	}
+	return 0;
+}
+int YUVStream::write_frame_raw(uint8_t *data, long frame_size) {
+	int result = y4m_write_frame_header(stream_fd, &frame_info);
+	if (result != Y4M_OK) {
+		printf("y4m_write_frame_header() failed: %s\n", 
+		       y4m_strerr(result));
+		return 1;
+	}
+	result = y4m_write(stream_fd, data, frame_size);
+	if (result != Y4M_OK) {
+		printf("y4m_write(%d) failed: %s\n", 
+		       frame_size, y4m_strerr(result));
+		return 1;
+	}
+	return 0;
+}		
+
+int YUVStream::make_index() {
+	off_t position;
+	uint8_t *yuv[3];
+
+	// NOTE: make_index() must be called after read_header().
+
+	// NOTE: storing frame_index locally means it is destroyed too often.
+	//       make_index() will be called several times per file.  If this
+	//       becomes a performance problem, the index should be cached.
+	//       Storing in 'asset' helps some, but still is done twice.
+	if (frame_index) delete frame_index;
+	frame_index = new ArrayList<off_t>;
+
+	VFrame *frame = new VFrame(0, get_width(), get_height(), BC_YUV420P);
+	yuv[0] = frame->get_y();
+	yuv[1] = frame->get_u();
+	yuv[2] = frame->get_v();
+
+	// note the start of the first frame
+	position = lseek(stream_fd, 0, SEEK_CUR);
+
+	// reset the frame count
+	frame_count = 0;
+
+	while (read_frame(yuv) == 0) {
+		// index is start position of each frame
+		frame_index->append(position);
+		position = lseek(stream_fd, 0, SEEK_CUR);
+		frame_count++;
+	} 
+
+	// rewind to the start of the first frame
+	lseek(stream_fd, frame_index->values[0], SEEK_SET);
+
+	delete frame;
+
+	return 0;
+}
+
+int YUVStream::seek_frame(int64_t frame_number) {
+	if (frame_number > frame_count ||
+	    frame_number < 0 ||
+	    frame_index == 0) {
+		printf("seek_frame(%d) failed (frame_count=%d)\n", 
+		       frame_number, frame_count);
+		return 1;
+	}
+
+	off_t position = frame_index->values[frame_number];
+	if (position == 0) {
+		// because of header, position should never be zero
+		printf("seek_frame(%d): position was zero\n", frame_number);
+	}
+
+	if (lseek(stream_fd, position, SEEK_SET) < 0) {
+		printf("lseek(%d) failed: %s\n", position, strerror(errno));
+		return 1;
+	}
+
+	return 0;
+}
+
+int YUVStream::read_header() {
+	int result = y4m_read_stream_header(stream_fd, &stream_info);
+	if (result != Y4M_OK) {
+		printf("y4m_read_stream_header() failed: %s\n", 
+		       y4m_strerr(result));
+		return 1;
+	}
+	return 0;
+}
+int YUVStream::write_header() {
+	int result = y4m_write_stream_header(stream_fd, &stream_info);
+	if (result != Y4M_OK) {
+		printf("y4m_write_stream_header() failed: %s\n", 
+		       y4m_strerr(result));
+		return 1;
+	}
+	return 0;
+}
+
+int YUVStream::get_width() {
+	return y4m_si_get_width(&stream_info);
+}
+void YUVStream::set_width(int width) {
+	y4m_si_set_width(&stream_info, width);
+}
+
+int YUVStream::get_height() {
+	return y4m_si_get_height(&stream_info);
+}
+void YUVStream::set_height(int height) {
+	y4m_si_set_height(&stream_info, height);
+}
+
+double YUVStream::get_frame_rate() {
+	y4m_ratio_t ratio = y4m_si_get_framerate(&stream_info);
+	double frame_rate = (double) ratio.n / (double) ratio.d;
+	return frame_rate;
+}
+void YUVStream::set_frame_rate(double frame_rate) {
+	y4m_ratio_t ratio = mpeg_conform_framerate(frame_rate);
+	y4m_si_set_framerate(&stream_info, ratio);
+}
+
+// FUTURE: these seem like a mess, possibly because I don't 
+//         properly understand "display aspect" vs "pixel aspect"
+double YUVStream::get_aspect_ratio() {
+	y4m_ratio_t sar = y4m_si_get_sampleaspect(&stream_info);
+	mpeg_aspect_code_t code = 
+		mpeg_guess_mpeg_aspect_code(2, sar, 
+					    get_width(),
+					    get_height());
+	y4m_ratio_t aspect_ratio =  mpeg_framerate(code);
+	if (aspect_ratio.d == 0) return 0;
+	return (double) aspect_ratio.n / (double) aspect_ratio.n;
+}		
+void YUVStream::set_aspect_ratio(double aspect_ratio) {
+	y4m_ratio_t ratio;
+	ratio.n = (int)(aspect_ratio * 10000);
+	ratio.d = 10000;
+	y4m_ratio_t sar = y4m_guess_sar(get_width(), get_height(),
+					ratio);
+	y4m_si_set_sampleaspect(&stream_info, sar);
+}

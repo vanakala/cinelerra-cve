@@ -64,6 +64,17 @@ AC_CHECK_LIB(X11, XOpenDisplay, ,[
 	])
 ############## END XLIB
 
+############## MJPEGTOOLS (for YUV4MPEG)
+LDFLAGS="$LDFLAGS -L/usr/local/lib"
+# FIXME: probably have to change to using pkg-config or the like
+CPPFLAGS="$CPPFLAGS -I/usr/local/include/mjpegtools -I/usr/include/mjpegtools";
+AC_CHECK_HEADER(mjpegtools/format_codes.h, ,NOT_FOUND="$NOT_FOUND mjpegtools")
+AC_CHECK_LIB(mjpegutils, y4m_read_frame, , 
+			 [AC_MSG_WARN([libmjpegutils not found])
+			 NOT_FOUND="$NOT_FOUND libmjpegutils"])
+############## END MJPEGTOOLS
+
+
 ############## MISC LIBRARIES
 AC_CHECK_HEADERS(uuid/uuid.h)
 AC_CHECK_LIB(uuid, uuid_clear, ,[AC_MSG_WARN([libuuid not found])
@@ -374,11 +385,16 @@ else
 		l=`echo $i | sed -e 's/,/ /'`
 		AC_MSG_WARN([	$l])
 	done
-	AC_MSG_WARN([Compilation may fail! Remember, you need the developer packages too, not just the runtime libraries!])
+	AC_MSG_WARN([Compilation may fail! Remember, you need the developer])
+	AC_MSG_WARN([packages too, not just the runtime libraries!])
+	AC_MSG_WARN([])
 	case $NOT_FOUND in
 	*OpenEXR*)
 	  AC_MSG_WARN([Use ./configure OPENEXR=/path/to/OpenEXR to specify])
 	  AC_MSG_WARN([the directory that contains the OpenEXR include files])
-	  AC_MSG_WARN([(default is \$prefix/include/OpenEXR).])
+	  AC_MSG_WARN([(default is \$prefix/include/OpenEXR).]) ;;
+	*mjpeg*)
+          AC_MSG_WARN([mjpegtools is needed for YUV4MPEG export to tools])
+	  AC_MSG_WARN([like mpeg2enc.  See http://mjpeg.sourceforge.net/]) ;;
 	esac
 fi
