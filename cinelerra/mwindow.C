@@ -61,6 +61,7 @@
 #include "tracking.h"
 #include "trackscroll.h"
 #include "tracks.h"
+#include "transition.h"
 #include "transportque.h"
 #include "vframe.h"
 #include "videodevice.inc"
@@ -394,7 +395,7 @@ void MWindow::create_plugindb(int do_audio,
 		{
 			PluginServer *value1 = plugindb.values[i];
 			PluginServer *value2 = plugindb.values[i + 1];
-			if(strcmp(value1->title, value2->title) > 0)
+			if(strcmp(_(value1->title), _(value2->title)) > 0)
 			{
 				done = 0;
 				plugindb.values[i] = value2;
@@ -856,6 +857,64 @@ TRACE("MWindow::load_filenames 1");
 // Load EDL for pasting
 //printf("load_filenames 3\n");
 				new_edl->load_xml(plugindb, &xml_file, LOAD_ALL);
+
+// Do a check weather plugins exist
+				for(Track *track = new_edl->tracks->first; track; track = track->next)
+				{
+					for(int k = 0; k < track->plugin_set.total; k++)
+					{
+						PluginSet *plugin_set = track->plugin_set.values[k];
+						for(Plugin *plugin = (Plugin*)plugin_set->first; 
+						plugin; 
+						plugin = (Plugin*)plugin->next)
+						{
+							if(plugin->plugin_type == PLUGIN_STANDALONE)
+							{
+								// ok we need to find it in plugindb
+								int plugin_found = 0;
+								for(int j = 0; j < plugindb->total; j++)
+								{
+									PluginServer *server = plugindb->values[j];
+									if(!strcasecmp(server->title, plugin->title) &&
+										((track->data_type == TRACK_AUDIO && server->audio) ||
+										(track->data_type == TRACK_VIDEO && server->video)) &&
+										(!server->transition))
+										plugin_found = 1;
+								}
+								if (!plugin_found) 
+								{
+									printf("\nWARNING: The plugin '%s' named in file '%s' is not part of your installation of Cinelerra. This means project will not be rendered as it was meant and it might result in Cinelerra crushing.\n", plugin->title, filenames->values[i]); 
+								}
+							}
+						}
+					}
+					for(Edit *edit = (Edit*)track->edits->first; 
+					edit; 
+					edit = (Edit*)edit->next)
+					{
+						if (edit->transition)
+						{
+							// ok we need to find transition in plugindb
+							int transition_found = 0;
+							for(int j = 0; j < plugindb->total; j++)
+							{
+								PluginServer *server = plugindb->values[j];
+								if(!strcasecmp(server->title, edit->transition->title) &&
+									((track->data_type == TRACK_AUDIO && server->audio) ||
+									(track->data_type == TRACK_VIDEO && server->video)) &&
+									(server->transition))
+									transition_found = 1;
+							}
+							if (!transition_found) 
+							{
+								printf("\nWARNING: The transition '%s' named in file '%s' is not part of your installation of Cinelerra. This means project will not be rendered as it was meant and it might result in Cinelerra crushing.\n", edit->transition->title, filenames->values[i]); 
+							}
+						}
+					}
+				}
+
+
+
 //printf("load_filenames 3\n");
 				if(load_mode == LOAD_REPLACE || 
 					load_mode == LOAD_REPLACE_CONCATENATE)
