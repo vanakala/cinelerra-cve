@@ -1,7 +1,6 @@
 #include "bctheme.h"
 #include "bcwindowbase.h"
 #include "clip.h"
-#include "filesystem.h"
 #include "language.h"
 #include "vframe.h"
 
@@ -11,6 +10,10 @@
 
 BC_Theme::BC_Theme()
 {
+	data_ptr = 0;
+	contents_ptr = 0;
+	last_image = 0;
+	last_pointer = 0;
 }
 
 BC_Theme::~BC_Theme()
@@ -22,9 +25,9 @@ void BC_Theme::dump()
 {
 	printf("BC_Theme::dump 1 image_sets=%d contents=%d\n", 
 		image_sets.total, 
-		titles.total);
-	for(int i = 0; i < titles.total; i++)
-		printf("    %s %x %ld\n", titles.values[i], image_datas.values[i].data, image_datas.values[i].size);
+		contents.total);
+	for(int i = 0; i < contents.total; i++)
+		printf("    %s %p\n", contents.values[i], pointers.values[i]);
 }
 
 BC_Resources* BC_Theme::get_resources()
@@ -270,31 +273,61 @@ void BC_Theme::overlay(VFrame *dst, VFrame *src, int in_x1, int in_x2)
 	}
 }
 
-void BC_Theme::register_image(const char* title, unsigned char* data, long size)
+void BC_Theme::set_data(unsigned char *ptr)
 {
-	PngData d;
-	d.data = data;
-	d.size = size;
-	titles.append(title);
-	image_datas.append(d);
-	used.append(0);
+	contents_ptr = (char*)(ptr + sizeof(int));
+	int contents_size = *(int*)ptr - sizeof(int);
+	data_ptr = contents_ptr + contents_size;
+
+	for(int i = 0; i < contents_size; )
+	{
+		used.append(0);
+		contents.append(contents_ptr + i);
+		while(contents_ptr[i] && i < contents_size)
+			i++;
+		if(i < contents_size)
+		{
+			i++;
+			pointers.append((unsigned char*)data_ptr + 
+				*(unsigned int*)(contents_ptr + i));
+			i += 4;
+		}
+		else
+		{
+			pointers.append((unsigned char*)data_ptr);
+			break;
+		}
+	}
 }
 
-const PngData& BC_Theme::get_image_data(char *title)
+unsigned char* BC_Theme::get_image_data(char *title)
 {
-// Search for image.
-	for(int i = 0; i < titles.total; i++)
+	if(!data_ptr)
 	{
-		if(!strcasecmp(titles.values[i], title))
+		fprintf(stderr, "BC_Theme::get_image_data: no data set\n");
+		return 0;
+	}
+
+// Image is the same as the last one
+	if(last_image && !strcasecmp(last_image, title))
+	{
+		return last_pointer;
+	}
+	else
+// Search for image anew.
+	for(int i = 0; i < contents.total; i++)
+	{
+		if(!strcasecmp(contents.values[i], title))
 		{
+			last_pointer = pointers.values[i];
+			last_image = contents.values[i];
 			used.values[i] = 1;
-			return image_datas.values[i];
+			return pointers.values[i];
 		}
 	}
 
 	fprintf(stderr, _("Theme::get_image: %s not found.\n"), title);
-	static const PngData nullPng = { 0 };
-	return nullPng;
+	return 0;
 }
 
 void BC_Theme::check_used()
@@ -308,7 +341,7 @@ return;
 		{
 			if(!got_it)
 				printf(_("BC_Theme::check_used: Images aren't used.\n"));
-			printf("%s ", titles.values[i]);
+			printf("%s ", contents.values[i]);
 			got_it = 1;
 		}
 	}

@@ -45,6 +45,9 @@ Theme::Theme()
 	contents_buffer = 0;
 	last_image = 0;
 
+	BC_WindowBase::get_resources()->bg_color = BLOND;
+	BC_WindowBase::get_resources()->button_up = 0xffc000;
+	BC_WindowBase::get_resources()->button_highlighted = 0xffe000;
 	BC_WindowBase::get_resources()->recursive_resizing = 0;
 	audio_color = BLACK;
 	fade_h = 22;
@@ -68,7 +71,6 @@ Theme::Theme()
 	build_menus();
 
 
-#include "data/register_images.h"
 }
 
 
@@ -95,6 +97,11 @@ void Theme::flush_images()
 
 void Theme::initialize()
 {
+// Force to use local data for images
+	extern unsigned char _binary_theme_data_start[];
+	set_data(_binary_theme_data_start);
+
+// Set images which weren't set by subclass
 	new_image("mode_add", "mode_add.png");
 	new_image("mode_divide", "mode_divide.png");
 	new_image("mode_multiply", "mode_multiply.png");
@@ -297,11 +304,11 @@ void Theme::overlay(VFrame *dst, VFrame *src, int in_x1, int in_x2)
 }
 
 void Theme::build_transport(VFrame** &data,
-	const PngData& png_overlay,
+	unsigned char *png_overlay,
 	VFrame **bg_data,
 	int third)
 {
-	if(!png_overlay.data) return;
+	if(!png_overlay) return;
 	VFrame default_data(png_overlay);
 	data = new VFrame*[3];
 	data[0] = new VFrame(0, default_data.get_w(), default_data.get_h(), BC_RGBA8888);

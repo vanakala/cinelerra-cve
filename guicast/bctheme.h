@@ -18,6 +18,10 @@ public:
 	BC_Theme();
 	virtual ~BC_Theme();
 
+// Set pointer to binary object containing images and contents.
+// Immediately loads the contents from the object.
+	void set_data(unsigned char *ptr);
+
 	VFrame** new_button(char *overlay_path, 
 		char *up_path, 
 		char *hi_path, 
@@ -58,12 +62,8 @@ public:
 	VFrame* get_image(char *title);
 	VFrame** get_image_set(char *title);
 
-// Registers compiled-in PNG image data
-// title and data are not copied, so they must point permanent memory
-	void register_image(const char* title, unsigned char* data, long size);
-
 // Loads compressed data into temporary
-	const PngData& get_image_data(char *title);
+	unsigned char* get_image_data(char *title);
 
 // Verify all images have been used after initialization.
 	void check_used();
@@ -82,9 +82,13 @@ private:
 	ArrayList<BC_ThemeSet*> image_sets;
 
 // Compressed images are loaded in here.
-	ArrayList<const char*> titles;
-	ArrayList<PngData> image_datas;
+	char *data_ptr;
+	char *contents_ptr;
+	ArrayList<char*> contents;
+	ArrayList<unsigned char*> pointers;
 	ArrayList<int> used;
+	char *last_image;
+	unsigned char *last_pointer;
 };
 
 class BC_ThemeSet

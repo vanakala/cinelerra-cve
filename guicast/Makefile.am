@@ -1,4 +1,5 @@
 lib_LTLIBRARIES = libguicast.la
+noinst_PROGRAMS=bootstrap
 
 libguicast_la_LIBADD = -lXxf86vm -lX11 -lXv -lXext
 libguicast_la_LDFLAGS = $(X_LIBS) -version-info 1:0:0 
@@ -115,7 +116,10 @@ noinst_HEADERS = arraylist.h bcbitmap.h bcbitmap.inc bcbutton.h bcbutton.inc bcc
 INCLUDES = -I$(top_srcdir)/quicktime -I/usr/include/qt
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
 
-EXTRA_DIST = images pngtoh.c bootstrap.c
+bootstrap_SOURCES=bootstrap.c
+bootstrap_LDADD =
+
+EXTRA_DIST = images pngtoh.c
 
 dist-hook:
 	-rm -rf $(distdir)/images/CVS

@@ -45,6 +45,8 @@ char* BlueDotThemeMain::plugin_title()
 Theme* BlueDotThemeMain::new_theme()
 {
 	theme = new BlueDotTheme;
+	extern unsigned char _binary_bluedottheme_data_start[];
+	theme->set_data(_binary_bluedottheme_data_start);
 	return theme;
 }
 
@@ -58,7 +60,6 @@ Theme* BlueDotThemeMain::new_theme()
 BlueDotTheme::BlueDotTheme()
  : Theme()
 {
-#include "data/register_images.h"
 }
 
 BlueDotTheme::~BlueDotTheme()

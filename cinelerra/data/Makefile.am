@@ -1,7 +1,7 @@
-all-local: register_images.h
-
 noinst_LIBRARIES = libimagedata.a
-libimagedata_a_SOURCES = \
+libimagedata_a_SOURCES = theme.data
+
+PNGS = \
 	mode_add.png \
 	mode_divide.png \
 	mode_multiply.png \
@@ -9,29 +9,14 @@ libimagedata_a_SOURCES = \
 	mode_replace.png \
 	mode_subtract.png
 
-# this rule creates the .o files from the pngs
-# the .png must be copied to the build directory so that only the basename
-# (without a path) is used in the symbol name that objcopy inserts in the .o
-# the test ensures that we don't erase the .png if $(srcdir) == $(builddir)
-.png.$(OBJEXT):
-	f=`basename $<`; \
-	test -f $$f || ln -sf $< $$f; \
-	$(OBJCOPY) -I binary -B $(OBJCOPYARCH) -O $(OBJCOPYTARGET) $$f $@
+# this rule creates the .o file from the concatenated PNGs
+.data.$(OBJEXT):
+	$(OBJCOPY) -I binary -B $(OBJCOPYARCH) -O $(OBJCOPYTARGET) $< $@
 
-# this creates a file that, if included in the constructor
-# of a BCTheme derived class, will link in and register
-# the .png data from libimagedata.a
-register_images.h: $(libimagedata_a_SOURCES) Makefile.am
-	(echo "// This file is generated automatically. Do not edit."; \
-	for i in $(libimagedata_a_SOURCES); do \
-	  png=`basename $$i .png`; \
-	  echo "extern unsigned char _binary_$${png}_png_start[], _binary_$${png}_png_end[];"; \
-	  echo "register_image(\"$$png.png\", _binary_$${png}_png_start, _binary_$${png}_png_end-_binary_$${png}_png_start);"; \
-	done) > $@ || { rm -f $@; exit 1; }
+theme.data: $(PNGS)
+	$(top_builddir)/guicast/bootstrap $@ $^ || { rm $@; exit 1; }
 
-BUILT_SOURCES = register_images.h
-
-CLEANFILES = register_images.h
+CLEANFILES = theme.data
 
 EXTRA_DIST = \
 	about.png \

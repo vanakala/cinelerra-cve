@@ -5,33 +5,20 @@
 
 // Bootstrap for themes.
 
-// Concatenate the resources onto the end of the target.  Then write a
-// table of contents.
-
-// Usage: bootstrap <target> <resource> * n
-
-// The table of contents contains simply the filenames of the resources
-// with offsets.
-
-// Initial startup with static resources:
-//   F   UID   PID  PPID PRI  NI   VSZ  RSS  WCHAN STAT TTY        TIME COMMAND
-// 040     0 14623 14602  12   0 107512 28632    - S    pts/2      0:00 ci
-// 
-// -rwxr-xr-x    1 root     root       736712 Dec  8 15:59 defaulttheme.plugin
+// Concatenates all the resources and a table of contents 
+// into a data file that must be converted to an object with objcopy.
+// The user must then pass the name of the destination symbol
+// _binary_destname_start
+// to BC_Theme::set_data to set the image table.
 
 
-// Initial startup with concatenated resources:
-//   F   UID   PID  PPID PRI  NI   VSZ  RSS  WCHAN STAT TTY        TIME COMMAND
-// 040     0 23653 23644  12   0 111512 27520    - S    pts/0      0:00 ci
-//
-// -rwxr-xr-x    1 root     root       860924 Dec  8 22:33 defaulttheme.plugin
+// Usage: bootstrap <destname> <resource>...
 
-// At least the compile time is less.
+
 
 
 void append_contents(char *path,
 	int data_offset,
-	int dest_size, 
 	char *buffer,
 	int *buffer_size)
 {
@@ -62,14 +49,14 @@ int main(int argc, char *argv[])
 {
 	FILE *dest;
 	FILE *src;
-	int total_resources;
 	int i;
 	char *contents_buffer;
 	int contents_size = 0;
 	char *data_buffer;
 	int data_size = 0;
-	int dest_size;
-	int contents_offset;
+	int data_offset = 0;
+	char temp_path[1024];
+	char system_command[1024];
 
 	if(argc < 3)
 	{
@@ -78,22 +65,17 @@ int main(int argc, char *argv[])
 	}
 
 
+// Make object filename
+	strcpy(temp_path, argv[1]);
 
-	if(!(dest = fopen(argv[1], "r")))
+	if(!(dest = fopen(temp_path, "w")))
 	{
-		fprintf(stderr, "While opening %s: %s\n", argv[1], strerror(errno));
+		fprintf(stderr, "Couldn't open dest file %s. %s\n",
+			temp_path,
+			strerror(errno));
 		exit(1);
 	}
-	else
-	{
-		fseek(dest, 0, SEEK_END);
-		dest_size = ftell(dest);
-		fclose(dest);
-	}
 
-	dest = fopen(argv[1], "a+");
-	total_resources = argc - 2;
-	data_size = 0;
 	if(!(data_buffer = malloc(0x1000000)))
 	{
 		fprintf(stderr, "Not enough memory to allocate data buffer.\n");
@@ -106,23 +88,28 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
+// Leave space for offset to data
+	contents_size = sizeof(int);
 
-	for(i = 0; i < total_resources; i++)
+// Read through all the resources, concatenate to dest file, 
+// and record the contents.
+	for(i = 2; i < argc; i++)
 	{
-		char *path = argv[2 + i];
+		char *path = argv[i];
 		if(!(src = fopen(path, "r")))
 		{
 			fprintf(stderr, "%s while opening %s\n", strerror(errno), path);
+			exit(1);
 		}
 		else
 		{
-// Copy data
-			int size, data_offset;
+			int size;
 			fseek(src, 0, SEEK_END);
 			size = ftell(src);
 			fseek(src, 0, SEEK_SET);
 
 			data_offset = data_size;
+
 // Write size of image in data buffer
 			*(data_buffer + data_size) = (size & 0xff000000) >> 24;
 			data_size++;
@@ -138,18 +125,19 @@ int main(int argc, char *argv[])
 			fclose(src);
 
 // Create contents
-			append_contents(path, data_offset, dest_size, contents_buffer, &contents_size);
+			append_contents(path, 
+				data_offset, 
+				contents_buffer, 
+				&contents_size);
 		}
 	}
 
-	fwrite(data_buffer, 1, data_size, dest);
-	contents_offset = ftell(dest);
-	*(int*)(contents_buffer + contents_size) = dest_size;
-	contents_size += sizeof(int);
-	*(int*)(contents_buffer + contents_size) = contents_offset;
-	contents_size += sizeof(int);
+// Finish off size of contents
+	*(int*)(contents_buffer) = contents_size;
+// Write contents
 	fwrite(contents_buffer, 1, contents_size, dest);
-
+// Write data
+	fwrite(data_buffer, 1, data_size, dest);
 	fclose(dest);
 }
 

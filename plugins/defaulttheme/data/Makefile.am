@@ -1,7 +1,6 @@
-all-local: register_images.h
-
 noinst_LIBRARIES = libimagedata.a
-libimagedata_a_SOURCES = $(PNGS)
+libimagedata_a_SOURCES = defaulttheme.data
+
 PNGS = \
 	about.png \
 	about_bg.png \
@@ -530,29 +529,14 @@ ymeter_yellow.png \
 	zoombar_left.png \
 	zoombar_right.png
 
-# this rule creates the .o files from the pngs
-# the .png must be copied to the build directory so that only the basename
-# (without a path) is used in the symbol name that objcopy inserts in the .o
-# the test ensures that we don't erase the .png if $(srcdir) == $(builddir)
-.png.$(OBJEXT):
-	f=`basename $<`; \
-	test -f $$f || ln -sf $< $$f; \
-	$(OBJCOPY) -I binary -B $(OBJCOPYARCH) -O $(OBJCOPYTARGET) $$f $@
+# this rule creates the .o file from the concatenated PNGs
+.data.$(OBJEXT):
+	$(OBJCOPY) -I binary -B $(OBJCOPYARCH) -O $(OBJCOPYTARGET) $< $@
 
-# this creates a file that, if included in the constructor
-# of a BCTheme derived class, will link in and register
-# the .png data from libimagedata.a
-register_images.h: $(PNGS) Makefile.am
-	(echo "// This file is generated automatically. Do not edit."; \
-	for i in $(PNGS); do \
-	  png=`basename $$i .png`; \
-	  echo "extern unsigned char _binary_$${png}_png_start[], _binary_$${png}_png_end[];"; \
-	  echo "register_image(\"$$png.png\", _binary_$${png}_png_start, _binary_$${png}_png_end-_binary_$${png}_png_start);"; \
-	done) > $@ || { rm -f $@; exit 1; }
+defaulttheme.data: $(PNGS)
+	$(top_builddir)/guicast/bootstrap $@ $^ || { rm $@; exit 1; }
 
-BUILT_SOURCES = register_images.h
-
-CLEANFILES = register_images.h
+CLEANFILES = defaulttheme.data
 
 EXTRA_DIST = \
 	about.xcf.bz2 \

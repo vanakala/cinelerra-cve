@@ -53,6 +53,8 @@ char* BlondThemeMain::plugin_title()
 Theme* BlondThemeMain::new_theme()
 {
 	theme = new BlondTheme;
+	extern unsigned char _binary_defaulttheme_data_start[];
+	theme->set_data(_binary_defaulttheme_data_start);
 	return theme;
 }
 
@@ -66,7 +68,6 @@ Theme* BlondThemeMain::new_theme()
 BlondTheme::BlondTheme()
  : Theme()
 {
-#include "data/register_images.h"
 }
 
 BlondTheme::~BlondTheme()

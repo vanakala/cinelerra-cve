@@ -97,7 +97,7 @@ public:
 // Tools for building widgets
 	void overlay(VFrame *dst, VFrame *src, int in_x1 = -1, int in_x2 = -1);
 	void build_transport(VFrame** &data,
-		const PngData& png_overlay,
+		unsigned char *png_overlay,
 		VFrame **bg_data,
 		int region);
 	void build_patches(VFrame** &data,
