@@ -12,7 +12,8 @@
 #include "filesystem.inc"
 #include "mutex.inc"
 #include "thread.h"
-
+#include "bcrecentlist.h"
+#include "defaults.h"
 
 class BC_NewFolder : public BC_Window
 {
@@ -161,12 +162,16 @@ public:
 		char *init_path,
 		char *title,
 		char *caption,
+	        Defaults *defaults = NULL,
+		const char *recent_prefix = NULL,
 // Set to 1 to get hidden files. 
 		int show_all_files = 0,
 // Want only directories
 		int want_directory = 0,
 		int multiple_files = 0,
-		int h_padding = 0);
+		int h_padding = 0
+);
+
 	virtual ~BC_FileBox();
 
 	friend class BC_FileBoxCancel;
@@ -223,6 +228,7 @@ private:
 	BC_Pixmap *icons[TOTAL_ICONS];
 	FileSystem *fs;
 	BC_FileBoxTextBox *textbox;
+	BC_RecentList *recent;
 	BC_FileBoxListBox *listbox;
 	BC_FileBoxFilterText *filter_text;
 	BC_FileBoxFilterMenu *filter_popup;
@@ -251,6 +257,8 @@ private:
 	char new_folder_title[BCTEXTLEN];
 	BC_NewFolderThread *newfolder_thread;
 	int h_padding;
+	Defaults *defaults;
+	const char *recent_prefix;
 };
 
 #endif

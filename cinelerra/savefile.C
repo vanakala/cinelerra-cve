@@ -84,8 +84,8 @@ int Save::handle_event()
 			char string2[256];
 			sprintf(string2, _("Couldn't open %s"), mwindow->session->filename);
 			ErrorBox error(PROGRAM_NAME ": Error",
-				mwindow->gui->get_abs_cursor_x(),
-				mwindow->gui->get_abs_cursor_y());
+				mwindow->gui->get_abs_cursor_x(1),
+				mwindow->gui->get_abs_cursor_y(1));
 			error.create_objects(string2);
 			error.run_window();
 			return 1;		
@@ -183,8 +183,8 @@ void SaveAs::run()
 		mwindow->set_filename("");      // update the project name
 		sprintf(string2, _("Couldn't open %s."), filename);
 		ErrorBox error(PROGRAM_NAME ": Error",
-			mwindow->gui->get_abs_cursor_x(),
-			mwindow->gui->get_abs_cursor_y());
+			mwindow->gui->get_abs_cursor_x(1),
+			mwindow->gui->get_abs_cursor_y(1));
 		error.create_objects(string2);
 		error.run_window();
 		return;		
@@ -213,11 +213,12 @@ void SaveAs::run()
 
 
 SaveFileWindow::SaveFileWindow(MWindow *mwindow, char *init_directory)
- : BC_FileBox(mwindow->gui->get_abs_cursor_x(),
- 	mwindow->gui->get_abs_cursor_y() - BC_WindowBase::get_resources()->filebox_h / 2,
+ : BC_FileBox(mwindow->gui->get_abs_cursor_x(1),
+ 	mwindow->gui->get_abs_cursor_y(1) - BC_WindowBase::get_resources()->filebox_h / 2,
  	init_directory, 
 	PROGRAM_NAME ": Save", 
-	_("Enter a filename to save as"))
+	_("Enter a filename to save as"),
+	mwindow->defaults)
 { 
 	this->mwindow = mwindow; 
 }

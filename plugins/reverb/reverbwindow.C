@@ -424,7 +424,7 @@ ReverbSaveDialog::ReverbSaveDialog(Reverb *reverb)
  			0, 
  			reverb->config_directory, 
  			_("Save reverb"), 
- 			_("Select the reverb file to save as"), 0, 0)
+	                 _("Select the reverb file to save as")) 
 {
 	this->reverb = reverb;
 }

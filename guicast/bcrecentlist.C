@@ -8,15 +8,34 @@
 
 // NOTE: textbox can be NULL if no textbox is associated
 BC_RecentList::BC_RecentList(const char *type, Defaults *defaults, 
-		       BC_TextBox *textbox, int max, 
-		       int x, int y, int w, int h) 
+			     BC_TextBox *textbox, int max, 
+			     int x, int y, int w, int h) 
 	: BC_ListBox(x, y, w, h, LISTBOX_TEXT, 0, 0, 0, 1, 0, 1) 
 {
 	this->type = type;
 	this->defaults = defaults;
 	this->textbox = textbox;
-	this->max = max;
 	set_tooltip("Choose from recently used");
+}
+
+BC_RecentList::BC_RecentList(const char *type, Defaults *defaults, 
+			     BC_TextBox *textbox) 
+	: BC_ListBox(textbox->get_x() + textbox->get_w(), textbox->get_y(),
+		     textbox->get_w(), RECENT_POPUP_HEIGHT,
+		     LISTBOX_TEXT, 0, 0, 0, 1, 0, 1)
+{
+	this->type = type;
+	this->defaults = defaults;
+	this->textbox = textbox;
+	set_tooltip("Choose from recently used");
+}
+
+BC_RecentList::BC_RecentList(const char *type, Defaults *defaults) 
+	: BC_ListBox(-1, -1, -1, -1, LISTBOX_TEXT, 0, 0, 0, 1, 0, 1)
+{
+	this->type = type;
+	this->defaults = defaults;
+	this->textbox = NULL;
 }
 
 BC_RecentList::~BC_RecentList() {
@@ -36,14 +55,17 @@ int BC_RecentList::handle_event() {
 	return 0;
 }
 
+
 int BC_RecentList::load_items(const char *prefix) {
+
+	if (! prefix) prefix = "ANY";
 
 	if (items.total > 0) {
 		items.remove_all_objects();
 	}
 
 	int count;
-	for (count = 0; count < max; count++) {
+	for (count = 0; count < RECENT_MAX_ITEMS; count++) {
 		char save[BCTEXTLEN];
 		char text[BCTEXTLEN];
 		sprintf(save, "RECENT_%s_%s_%d", prefix, type, count);
@@ -53,13 +75,16 @@ int BC_RecentList::load_items(const char *prefix) {
 		items.append(new BC_ListBoxItem(text));
 	}
 
-	update(&items, 0, 0, 1);
+	// only update if we are part of a window
+	if (textbox) update(&items, 0, 0, 1);
 
 	return count;
 }	
 
 
 int BC_RecentList::add_item(const char *prefix, char *text) {
+
+	if (! prefix) prefix = "ANY";
 	
 	// remove an old item if it matches the new text
 	for (int i = 0; i < items.total; i++) {
@@ -72,9 +97,11 @@ int BC_RecentList::add_item(const char *prefix, char *text) {
 	// make a new item and put it at the top of the list
 	items.insert(new BC_ListBoxItem(text), 0);
 
-	// save up to 'max' items of the list for future use
+	// save up to maximum items of the list for future use
 	int count;
-	for (count = 0; count < max && count < items.total; count++) {
+	for (count = 0; 
+	     count < RECENT_MAX_ITEMS && count < items.total; 
+	     count++) {
 		BC_ListBoxItem *item = items.values[count];
 		char save[BCTEXTLEN];
 		sprintf(save, "RECENT_%s_%s_%d", prefix, type, count);

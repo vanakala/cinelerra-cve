@@ -60,8 +60,8 @@ int MainMenu::create_objects()
 {
 	BC_Menu *viewmenu, *windowmenu, *settingsmenu, *trackmenu;
 	PreferencesMenuitem *preferences;
-	Load *append_file;
-	total_loads = 0; 
+
+	recent_load = new BC_RecentList("PATH", mwindow->defaults);
 
 	add_menu(filemenu = new BC_Menu(_("File")));
 	filemenu->add_item(new_project = new New(mwindow));
@@ -215,7 +215,6 @@ void MainMenu::update_toggles()
 
 int MainMenu::save_defaults(Defaults *defaults)
 {
-	save_loads(defaults);
 	save_aeffects(defaults);
 	save_veffects(defaults);
 	return 0;
@@ -271,32 +270,22 @@ int MainMenu::init_veffects(Defaults *defaults)
 
 int MainMenu::init_loads(Defaults *defaults)
 {
-//printf("MainMenu::init_loads 1\n");
-	total_loads = defaults->get("TOTAL_LOADS", 0);
-//printf("MainMenu::init_loads 1\n");
-	char string[1024], path[1024], filename[1024];
-//printf("MainMenu::init_loads 1\n");
+	char string[BCTEXTLEN], path[BCTEXTLEN], filename[BCTEXTLEN];
 	FileSystem dir;
-//printf("MainMenu::init_loads 2\n");
+	
+	recent_load->load_items();
+
+	int total_loads = recent_load->items.total;
 	if(total_loads > 0) filemenu->add_item(new BC_MenuItem("-"));
 
 	for(int i = 0; i < total_loads; i++)
 	{
-		sprintf(string, "LOADPREVIOUS%d", i);
-//printf("MainMenu::init_loads 3\n");
-		defaults->get(string, path);
-//printf("MainMenu::init_loads 4\n");
-
-		filemenu->add_item(load[i] = new LoadPrevious(mwindow, load_file));
-//printf("MainMenu::init_loads 5\n");
+		char *path = recent_load->items.values[i]->get_text();
+		filemenu->add_item(load[i] = new LoadPrevious(mwindow));
 		dir.extract_name(filename, path, 0);
-//printf("MainMenu::init_loads 6\n");
 		load[i]->set_text(filename);
-//printf("MainMenu::init_loads 7\n");
 		load[i]->set_path(path);
-//printf("MainMenu::init_loads 8\n");
 	}
-//printf("MainMenu::init_loads 9\n");
 	return 0;
 }
 
@@ -322,18 +311,6 @@ int MainMenu::save_veffects(Defaults *defaults)
 	{
 		sprintf(string, "VEFFECTRECENT%d", i);
 		defaults->update(string, veffect[i]->get_text());
-	}
-	return 0;
-}
-
-int MainMenu::save_loads(Defaults *defaults)
-{
-	defaults->update("TOTAL_LOADS", total_loads);
-	char string[1024];
-	for(int i = 0; i < total_loads; i++)
-	{
-		sprintf(string, "LOADPREVIOUS%d", i);
-		defaults->update(string, load[i]->path);
 	}
 	return 0;
 }
@@ -422,54 +399,39 @@ int MainMenu::add_veffect(char *title)
 	return 0;
 }
 
-int MainMenu::add_load(char *path)
+int MainMenu::add_load(char *new_path)
 {
+	char filename[BCTEXTLEN];
+	FileSystem dir;
+	char *path;
+
+	int total_loads = recent_load->items.total;
+
 	if(total_loads == 0)
 	{
 		filemenu->add_item(new BC_MenuItem("-"));
 	}
 
-// test for existing copy
-	FileSystem fs;
-	char text[1024], new_path[1024];      // get text and path
-	fs.extract_name(text, path);
-	strcpy(new_path, path);
+	int new_total = recent_load->add_item(NULL, new_path);
 
-	for(int i = 0; i < total_loads; i++)
-	{
-		if(!strcmp(load[i]->get_text(), text))     // already exists
-		{                                // swap for top load
-			for(int j = i; j > 0; j--)   // move preceeding loads down
-			{
-				load[j]->set_text(load[j - 1]->get_text());
-				load[j]->set_path(load[j - 1]->path);
-			}
-			load[0]->set_text(text);
-			load[0]->set_path(new_path);
-			
-			return 1;
-		}
-	}
-	
-// add another load
-	if(total_loads < TOTAL_LOADS)
-	{
-		filemenu->add_item(load[total_loads] = new LoadPrevious(mwindow, load_file));
-		total_loads++;
-	}
-	
-// cycle loads down
-	for(int i = total_loads - 1; i > 0; i--)
-	{
-	// set menu item text
-		load[i]->set_text(load[i - 1]->get_text());
-	// set filename
-		load[i]->set_path(load[i - 1]->path);
+	if (new_total > total_loads) {
+		// just create a new item if there is room for it
+		int i = new_total - 1;
+		load[i] = new LoadPrevious(mwindow);
+		dir.extract_name(filename, new_path, 0);
+		load[i]->set_text(filename);
+		load[i]->set_path(path);
+		filemenu->add_item(load[i]);
 	}
 
-// set up the new load
-	load[0]->set_text(text);
-	load[0]->set_path(new_path);
+	// reassign the paths to adjust for the shift down
+	for(int i = 0; i < new_total; i++) {
+		path = recent_load->items.values[i]->get_text();
+		dir.extract_name(filename, path, 0);
+		load[i]->set_text(filename);
+		load[i]->set_path(path);
+	}
+
 	return 0;
 }
 

@@ -117,7 +117,7 @@ public:
 class LoadPrevious : public BC_MenuItem, public Thread
 {
 public:
-	LoadPrevious(MWindow *mwindow, Load *loadfile);
+	LoadPrevious(MWindow *mwindow);
 	int handle_event();
 	void run();
 	

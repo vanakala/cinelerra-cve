@@ -15,7 +15,8 @@ BrowseButton::BrowseButton(MWindow *mwindow,
 	char *init_directory, 
 	char *title, 
 	char *caption, 
-	int want_directory)
+	int want_directory,
+	const char *recent_prefix)
  : BC_Button(x, y, mwindow->theme->magnify_button_data), 
    Thread()
 {
@@ -26,14 +27,15 @@ BrowseButton::BrowseButton(MWindow *mwindow,
 	this->init_directory = init_directory;
 	this->textbox = textbox;
 	this->mwindow = mwindow;
+	this->recent_prefix = recent_prefix;
 	set_tooltip(_("Look for file"));
 	gui = 0;
-	startup_lock = new Mutex;
+	startup_lock = new Mutex("BrowseButton::startup_lock");
 }
 
 BrowseButton::~BrowseButton()
 {
-	startup_lock->lock();
+	startup_lock->lock("BrowseButton::~BrowseButton");
 	if(gui)
 	{
 		gui->lock_window();
@@ -58,12 +60,12 @@ int BrowseButton::handle_event()
 		return 1;
 	}
 
-	x = parent_window->get_abs_cursor_x();
-	y = parent_window->get_abs_cursor_y();
-	startup_lock->lock();
+	x = parent_window->get_abs_cursor_x(0);
+	y = parent_window->get_abs_cursor_y(0);
+	startup_lock->lock("BrowseButton::handle_event 1");
 	Thread::start();
 
-	startup_lock->lock();
+	startup_lock->lock("BrowseButton::handle_event 2");
 	startup_lock->unlock();
 	return 1;
 }
@@ -97,7 +99,7 @@ void BrowseButton::run()
 		parent_window->flush();
 		textbox->handle_event();
 	}
-	startup_lock->lock();
+	startup_lock->lock("BrowseButton::run");
 	gui = 0;
 	startup_lock->unlock();
 }
@@ -115,18 +117,16 @@ BrowseButtonWindow::BrowseButtonWindow(MWindow *mwindow,
 	char *caption, 
 	int want_directory)
  : BC_FileBox(button->x - 
- 		BC_WindowBase::get_resources()->filebox_w / 2, 
- 	button->y - 
-		BC_WindowBase::get_resources()->filebox_h / 2,
-	init_directory,
-	title,
-	caption,
-// Set to 1 to get hidden files. 
-	want_directory,
-// Want only directories
-	want_directory,
-	0,
-	mwindow->theme->browse_pad)
+	      BC_WindowBase::get_resources()->filebox_w / 2, 
+	      button->y - BC_WindowBase::get_resources()->filebox_h / 2,
+	      init_directory, title, caption,
+	      button->mwindow->defaults, button->recent_prefix,
+	      // Set to 1 to get hidden files. 
+	      want_directory,
+	      // Want only directories
+	      want_directory,
+	      0,
+	      mwindow->theme->browse_pad)
 {
 }
 

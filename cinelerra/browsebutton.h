@@ -19,7 +19,8 @@ public:
 		char *init_directory, 
 		char *title, 
 		char *caption, 
-		int want_directory = 0);
+		int want_directory = 0,
+		const char *recent_prefix = NULL);
 	~BrowseButton();
 	
 	int handle_event();
@@ -35,6 +36,7 @@ public:
 	BrowseButtonWindow *gui;
 	Mutex *startup_lock;
 	int x, y;
+	const char *recent_prefix;
 };
 
 class BrowseButtonWindow : public BC_FileBox

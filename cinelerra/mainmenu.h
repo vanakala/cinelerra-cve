@@ -52,9 +52,8 @@ public:
 	int save_defaults(Defaults *defaults);
 
 // most recent loads
-	int add_load(char *path);
+	int add_load(char *new_path);
 	int init_loads(Defaults *defaults);
-	int save_loads(Defaults *defaults);
 
 // most recent effects
 	int init_aeffects(Defaults *defaults);
@@ -78,11 +77,9 @@ public:
 	MenuAEffects *aeffects;
 	MenuVEffects *veffects;
 
-// for previous document loader
-	Load *load_file;
+        Load *load_file;
+	BC_RecentList *recent_load;
 	LoadPrevious *load[TOTAL_LOADS];
-	int total_loads;
-
 
 	RecordMenuItem *record;
 	RenderItem *render;

@@ -147,11 +147,12 @@ void LoadFileThread::run()
 LoadFileWindow::LoadFileWindow(MWindow *mwindow, 
 	LoadFileThread *thread,
 	char *init_directory)
- : BC_FileBox(mwindow->gui->get_abs_cursor_x(),
- 		mwindow->gui->get_abs_cursor_y() - BC_WindowBase::get_resources()->filebox_h / 2,
+ : BC_FileBox(mwindow->gui->get_abs_cursor_x(1),
+ 		mwindow->gui->get_abs_cursor_y(1) - BC_WindowBase::get_resources()->filebox_h / 2,
 		init_directory, 
 		PROGRAM_NAME ": Load",
 		_("Select files to load:"), 
+	        mwindow->defaults, NULL, 
 		0,
 		0,
 		1,
@@ -290,8 +291,8 @@ int ResourcesOnly::handle_event()
 LocateFileWindow::LocateFileWindow(MWindow *mwindow, 
 	char *init_directory, 
 	char *old_filename)
- : BC_FileBox(mwindow->gui->get_abs_cursor_x(),
- 		mwindow->gui->get_abs_cursor_y(), 
+ : BC_FileBox(mwindow->gui->get_abs_cursor_x(1),
+ 		mwindow->gui->get_abs_cursor_y(1), 
 		init_directory, 
 		PROGRAM_NAME ": Locate file", 
 		old_filename)
@@ -307,7 +308,7 @@ LocateFileWindow::~LocateFileWindow() {}
 
 
 
-LoadPrevious::LoadPrevious(MWindow *mwindow, Load *loadfile)
+LoadPrevious::LoadPrevious(MWindow *mwindow)
  : BC_MenuItem(""), Thread()
 { 
 	this->mwindow = mwindow;
@@ -335,11 +336,6 @@ int LoadPrevious::handle_event()
 	mwindow->save_backup();
 	return 1;
 }
-
-
-
-
-
 
 
 void LoadPrevious::run()
@@ -379,9 +375,11 @@ int LoadBackup::handle_event()
 	strcpy(out_path, string);
 	
 	mwindow->undo->update_undo_before(_("load backup"), LOAD_ALL);
-	mwindow->load_filenames(&path_list, LOAD_REPLACE);
+	mwindow->load_filenames(&path_list, LOAD_REPLACE, 0);
 	mwindow->edl->local_session->clip_title[0] = 0;
-	mwindow->set_filename("");
+// This is unique to backups since the path of the backup is different than the
+// path of the project.
+	mwindow->set_filename(mwindow->edl->project_path);
 	path_list.remove_all_objects();
 	mwindow->undo->update_undo_after();
 	mwindow->save_backup();
