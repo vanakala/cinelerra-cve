@@ -77,7 +77,10 @@ void LoadFileThread::run()
 	ArrayList<char*> path_list;
 	path_list.set_array_delete();
 	char default_path[BCTEXTLEN];
-
+	char *reel_name = 0;
+	int reel_number = 0;
+	int overwrite_reel = 0;
+	
 	sprintf(default_path, "~");
 	mwindow->defaults->get("DEFAULT_LOADPATH", default_path);
 	load_mode = mwindow->defaults->get("LOAD_MODE", LOAD_REPLACE);
@@ -122,10 +125,25 @@ void LoadFileThread::run()
 		return;
 	}
 
+	{
+		ReelWindow rwindow(mwindow);
+		rwindow.create_objects();
+		result = rwindow.run_window();
+
+		if(result)
+		{
+			return;
+		}
+		
+		reel_name = rwindow.reel_name->get_text();
+		reel_number = atol(rwindow.reel_number->get_text());
+		overwrite_reel = rwindow.overwrite_reel;
+	}
+
 	mwindow->undo->update_undo_before(_("load"), LOAD_ALL);
 	mwindow->interrupt_indexes();
 	mwindow->gui->lock_window();
-	result = mwindow->load_filenames(&path_list, load_mode);
+	result = mwindow->load_filenames(&path_list, load_mode, 0, reel_name, reel_number, overwrite_reel);
 	mwindow->gui->mainmenu->add_load(path_list.values[0]);
 	mwindow->gui->unlock_window();
 	path_list.remove_all_objects();
@@ -173,6 +191,7 @@ int LoadFileWindow::create_objects()
 
 	int x = get_w() / 2 - 200;
 	int y = get_h() - 90;
+
 	loadmode = new LoadMode(mwindow, this, x, y, &thread->load_mode, 0);
 	loadmode->create_objects();
 
@@ -389,5 +408,108 @@ int LoadBackup::handle_event()
 	
 
 
+// Dialog to set reel number/name
 
+ReelWindow::ReelWindow(MWindow *mwindow)
+ : BC_Window(_("Please enter the reel name and number"),
+ 	mwindow->gui->get_abs_cursor_x(1) - 375 / 2,
+ 	mwindow->gui->get_abs_cursor_y(1) - 150 / 2,
+ 	375,
+ 	150,
+ 	100,
+ 	100,
+ 	0,
+ 	0,
+ 	1)
+{
+	this->mwindow = mwindow;
+	overwrite_reel = 0; // TODO: this should be loaded from previous time
+}
 
+ReelWindow::~ReelWindow()
+{
+	delete reel_name_title;
+	delete reel_name;
+	delete reel_number_title;
+	delete reel_number;
+	delete checkbox;
+}
+
+int ReelWindow::create_objects()
+{
+	int y = 10;
+	int x = 0;
+
+	add_subwindow(checkbox = new OverwriteReel(this, x, y, !overwrite_reel));	
+	y += 40;
+	
+	x = 10;
+	add_subwindow(reel_name_title = new BC_Title(x, y, _("Reel Name:")));
+	x += reel_name_title->get_w() + 20;
+
+	add_subwindow(reel_name = new BC_TextBox(x,
+		y,
+		250,
+		1,
+		"cin0000"));
+	
+	y += 30;
+	
+	x = 10;
+	
+	add_subwindow(reel_number_title = new BC_Title(x, y,
+																	_("Reel Number:")));
+	// line up the text boxes
+	x += reel_name_title->get_w() + 20;
+
+	add_subwindow(reel_number = new BC_TextBox(x,
+		y,
+		50,
+		1,
+		"00"));
+
+	add_subwindow(ok_button = new BC_OKButton(this));
+	
+	add_subwindow(cancel_button = new BC_CancelButton(this));
+
+// Disable reel_name and reel_number if the user doesn't want to overwrite
+// (overwrite == accept default as well)
+	if(!overwrite_reel)
+	{
+		reel_name->disable();
+		reel_number->disable();
+	}
+	show_window();
+
+	return 0;	
+}
+
+int ReelWindow::resize_event(int w, int h)
+{
+// Doesn't resize
+	return 0;
+}
+
+OverwriteReel::OverwriteReel(ReelWindow *rwindow,
+	int x, int y, int value)
+ : BC_CheckBox(x, y, value, _("Use default or previous name and number"))
+{
+	this->rwindow = rwindow;
+}
+
+int OverwriteReel::handle_event()
+{
+	rwindow->overwrite_reel = !get_value();
+// If the checkbox is not enabled, we want to enable the reel_name and
+// reel_number text boxes
+	if(!get_value())
+	{
+		rwindow->reel_name->enable();
+		rwindow->reel_number->enable();
+	}
+	else
+	{
+		rwindow->reel_name->disable();
+		rwindow->reel_number->disable();
+	}
+}

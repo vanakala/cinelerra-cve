@@ -149,6 +149,8 @@ public:
 	double frame_rate;
 
 // Timecode information. User setable, in case of errors in source
+	char reel_name[BCTEXTLEN];
+	int reel_number;
 	int64_t tcstart;
 	int64_t tcend;
 	int tcformat;

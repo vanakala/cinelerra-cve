@@ -155,6 +155,8 @@ int Asset::reset_index()
 
 int Asset::reset_timecode()
 {
+	strcpy(reel_name, "cin0000");
+	reel_number = 0;
 	tcstart = 0;
 	tcend = 0;
 	tcformat = 0;
@@ -264,6 +266,8 @@ void Asset::copy_format(Asset *asset, int do_index)
 	// FUTURE: should this be here or in copy_from()?
 	strcpy(prefix, asset->prefix);
 
+	strcpy(reel_name, asset->reel_name);
+	reel_number = asset->reel_number;
 	tcstart = asset->tcstart;
 	tcend = asset->tcend;
 	tcformat = asset->tcformat;
@@ -312,6 +316,8 @@ int Asset::equivalent(Asset &asset,
 			width == asset.width &&
 			height == asset.height &&
 			!strcmp(vcodec, asset.vcodec) &&
+			strcmp(reel_name, asset.reel_name) == 0 &&
+			reel_number == asset.reel_number &&
 			tcstart == asset.tcstart &&
 			tcend == asset.tcend &&
 			tcformat == asset.tcformat);
@@ -540,6 +546,8 @@ int Asset::read_video(FileXML *file)
 	tiff_cmodel = file->tag.get_property("TIFF_CMODEL", tiff_cmodel);
 	tiff_compression = file->tag.get_property("TIFF_COMPRESSION", tiff_compression);
 
+	file->tag.get_property("REEL_NAME", reel_name);
+	reel_number = file->tag.get_property("REEL_NUMBER", reel_number);
 	tcstart = file->tag.get_property("TCSTART", tcstart);
 	tcend = file->tag.get_property("TCEND", tcend);
 	tcformat = file->tag.get_property("TCFORMAT", tcformat);
@@ -768,6 +776,8 @@ int Asset::write_video(FileXML *file)
 	file->tag.set_property("TIFF_CMODEL", tiff_cmodel);
 	file->tag.set_property("TIFF_COMPRESSION", tiff_compression);
 
+	file->tag.set_property("REEL_NAME", reel_name);
+	file->tag.set_property("REEL_NUMBER", reel_number);
 	file->tag.set_property("TCSTART", tcstart);
 	file->tag.set_property("TCEND", tcend);
 	file->tag.set_property("TCFORMAT", tcformat);
@@ -922,6 +932,8 @@ void Asset::load_defaults(Defaults *defaults,
 	tiff_cmodel = GET_DEFAULT("TIFF_CMODEL", tiff_cmodel);
 	tiff_compression = GET_DEFAULT("TIFF_COMPRESSION", tiff_compression);
 
+	GET_DEFAULT("REEL_NAME", reel_name);
+	reel_number = GET_DEFAULT("REEL_NUMBER", reel_number);
 	tcstart = GET_DEFAULT("TCSTART", tcstart);
 	tcend = GET_DEFAULT("TCEND", tcend);
 	tcformat = GET_DEFAULT("TCFORMAT", tcformat);
@@ -1049,6 +1061,8 @@ void Asset::save_defaults(Defaults *defaults,
 	UPDATE_DEFAULT("TIFF_CMODEL", tiff_cmodel);
 	UPDATE_DEFAULT("TIFF_COMPRESSION", tiff_compression);
 
+	UPDATE_DEFAULT("REEL_NAME", reel_name);
+	UPDATE_DEFAULT("REEL_NUMBER", reel_number);
 	UPDATE_DEFAULT("TCSTART", tcstart);
 	UPDATE_DEFAULT("TCEND", tcend);
 	UPDATE_DEFAULT("TCFORMAT", tcformat);
@@ -1145,8 +1159,8 @@ int Asset::dump()
 	printf("   video_data %d layers %d framerate %f width %d height %d vcodec %c%c%c%c aspect_ratio %f\n",
 		video_data, layers, frame_rate, width, height, vcodec[0], vcodec[1], vcodec[2], vcodec[3], aspect_ratio);
 	printf("   video_length %lld \n", video_length);
-	printf("   tcstart %d tcend %d tcf %d\n",
-		tcstart, tcend, tcformat);
+	printf("   reel_name %s reel_number %i tcstart %d tcend %d tcf %d\n",
+		reel_name, reel_number, tcstart, tcend, tcformat);
 	
 	return 0;
 }

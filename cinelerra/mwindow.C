@@ -692,7 +692,10 @@ void MWindow::set_brender_start()
 
 int MWindow::load_filenames(ArrayList<char*> *filenames, 
 	int load_mode,
-	int update_filename)
+	int update_filename,
+	char *reel_name,
+	int reel_number,
+	int overwrite_reel)
 {
 TRACE("MWindow::load_filenames 1");
 	ArrayList<EDL*> new_edls;
@@ -723,6 +726,26 @@ TRACE("MWindow::load_filenames 1");
 		EDL *new_edl = new EDL;
 		char string[BCTEXTLEN];
 
+// Set reel name and number for the asset
+// If the user wants to overwrite the last used reel number for the clip,
+// we have to rebuild the index for the file
+
+		if(overwrite_reel)
+		{
+			char source_filename[BCTEXTLEN];
+			char index_filename[BCTEXTLEN];
+			
+			strcpy(new_asset->reel_name, reel_name);
+			new_asset->reel_number = reel_number;
+
+			IndexFile::get_index_filename(source_filename,
+				preferences->index_directory,
+				index_filename,
+				new_asset->path);
+			remove(index_filename);
+			new_asset->index_status = INDEX_NOTTESTED;
+		}
+		
 		new_edl->create_objects();
 		new_edl->copy_session(edl);
 
@@ -862,6 +885,10 @@ TRACE("MWindow::load_filenames 1");
 				xml_file.read_from_file(filenames->values[i]);
 // Load EDL for pasting
 				new_edl->load_xml(plugindb, &xml_file, LOAD_ALL);
+
+// We don't want a valid reel name/number for projects
+				strcpy(new_asset->reel_name, "");
+				reel_number = -1;
 
 // Do a check weather plugins exist
 				for(Track *track = new_edl->tracks->first; track; track = track->next)
