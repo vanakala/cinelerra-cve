@@ -1,4 +1,5 @@
 You need automake version 1.7 to build.  1.4 won't work!
+Autoconf 2.57 is also required to build.
 
 The automake version of the cinelerra source tree needs third-party libraries
 development files installed. Run 'autoreconf -i' to create configure and
@@ -26,7 +27,7 @@ you distrib. Not joking):
 	- libtiff
 	- libesd (esound = 0.2.28)
 	- libfreetype (2.1.0)
-	
+	- xlib-dev
 		
 The others are maybe part of your distrib. If they aren't, you can find them
 on http://lpnotfr.free.fr/cinelerra-libs
@@ -37,5 +38,7 @@ on http://lpnotfr.free.fr/cinelerra-libs
 	- libaudiofile (0.2.3)
 	- libraw1394 (0.9.0)
 	- libavc1394 (0.4.1)
+	- liblame-dev
+	- libavcodec
 	- libuuid
 	- nasm (for mmx optimization)

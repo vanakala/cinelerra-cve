@@ -1,8 +1,22 @@
-AC_INIT(configure.in)
+AC_INIT(Cinelerra, 1.1.7)
 
 AC_CANONICAL_SYSTEM
 
-AM_INIT_AUTOMAKE(Cinelerra, "1.1.7")
+# Test for minimal version of autoconf
+AC_PREREQ(2.57)
+
+# Test for minimal versions of and automake
+
+if test `automake --version | grep "automake (GNU automake)" | cut -b 25-27` = "1.7"; then
+	echo "Checking for automake 1.7 ... found"
+else
+	echo "Checking for automake 1.7 ... not found"
+	echo "You are using a version of automake older than 1.7. That will not work."
+	echo " See README.BUILD for further instructions"
+	exit
+fi
+
+AM_INIT_AUTOMAKE
 AM_CONFIG_HEADER(config.h)
 AM_GNU_GETTEXT([external])
 AM_GNU_GETTEXT_VERSION(0.11.5)
@@ -45,11 +59,22 @@ AC_ARG_WITH(fontsdir,
 AC_SUBST(fontsdir)
 ############## END OF SPECIAL DIRECTORIES
 
+############## XLIB
+LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
+AC_CHECK_HEADERS(X11/Xlib.h)
+AC_CHECK_LIB(X11, XOpenDisplay, ,[
+	echo "Xlib-dev was not found. In order to build Cinelerra,"
+	echo "xlib-dev must be installed. Please install xlib-dev and"
+	echo "run configure again."
+	exit
+	])
+############## END XLIB
 
 ############## MISC LIBRARIES
 AC_CHECK_HEADERS(uuid/uuid.h)
 AC_CHECK_LIB(uuid, uuid_clear, ,[AC_MSG_NOTICE([libuuid not found])
 	NOT_FOUND="$NOT_FOUND libuuid,"])
+
 AM_PATH_GLIB(1.2.0)
 AC_PATH_XTRA
 ############## END OF MISC LIBRARIES
@@ -61,6 +86,8 @@ CXXFLAGS="-D_REENTRANT -DHAVE_LIBXXF86VM $LARGEFILE_CFLAGS $CXXFLAGS"
 ############## LAME
 # Just test to see if we have lame installed.
 AC_CHECK_HEADERS(lame/lame.h)
+#AC_CHECK_LIB(-lmp3lame, lame_init, ,[AC_MSG_NOTICE([libmp3lame not found])
+#	NOT_FOUND="$NOT_FOUND libmp3lame,"])
 # END LAME
 
 ############## LIBSNDFILE
@@ -84,10 +111,16 @@ else
 fi
 # END LIBSNDFILE
 
+############## LIBAVCODEC
+AC_CHECK_HEADERS(ffmpeg/avcodec.h)
+AC_CHECK_LIB(avcodec, avcodec_init, ,[AC_MSG_NOTICE([libavcodec not found])
+	NOT_FOUND="$NOT_FOUND libavcodec"])
+# END LIBAVCODEC
+
 ############## LIBXVIDCORE
 AC_CHECK_HEADERS(xvid.h)
 AC_CHECK_LIB(xvidcore, xvid_init, ,[AC_MSG_NOTICE([libxvidcore not found])
-	NOT_FOUND="$NOT_FOUND livxvidcore,"])
+	NOT_FOUND="$NOT_FOUND libxvidcore,"])
 # END LIBXVIDCORE
 
 ############## FIREWIRE
