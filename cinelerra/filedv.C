@@ -109,6 +109,8 @@ int FileDV::reset_parameters_derived()
 
 	audio_buffer = 0;
 	samples_in_buffer = 0;
+	for(i = 0; i < 4; i++) // max 4 channels in dv
+		samples_offset[i] = 0;
 
 	frames_written = 0;
 
@@ -206,7 +208,7 @@ int64_t FileDV::get_video_position()
 
 int64_t FileDV::get_audio_position()
 {
-	return audio_offset * asset->sample_rate;
+	return audio_position;
 }
 
 int FileDV::set_video_position(int64_t x)
@@ -223,12 +225,17 @@ int FileDV::set_video_position(int64_t x)
 
 int FileDV::set_audio_position(int64_t x)
 {
+	int i = 0;
 	if(fd < 0) return 1;
 
 	if(x >= 0 && x < asset->audio_length)
 	{
-		audio_offset = output_size *
-			(int64_t) (x / (asset->sample_rate / asset->frame_rate));
+		audio_position = x;
+		audio_offset = output_size * (int64_t) (x / (asset->sample_rate / asset->frame_rate));
+		for(i = 0; i < 4; i++)
+		{
+			samples_offset[i] = audio_position - (int) (audio_offset / output_size / asset->frame_rate * asset->sample_rate);
+		}
 		return 0;
 	}
 	else
@@ -458,7 +465,50 @@ int64_t FileDV::compressed_frame_size()
 
 int FileDV::read_samples(double *buffer, int64_t len)
 {
-	return 1;
+	int16_t **outbuf = 0;
+	int16_t **temp_buffer = 0;
+	int i, j = 0;
+	int channel = file->current_channel;
+	int offset = samples_offset[channel];
+
+	outbuf = (int16_t **) calloc(sizeof(int16_t *), asset->channels);
+	temp_buffer = (int16_t **) calloc(sizeof(int16_t *), asset->channels);
+	for(i = 0; i < asset->channels; i++)
+	{
+// need a bit extra, since chances are len is not a multiple of the
+// samples per frame.
+		outbuf[i] = (int16_t *) calloc(sizeof(int16_t), len * 2);
+		temp_buffer[i] = outbuf[i];
+	}
+
+// set file position
+	audio_offset = lseek(fd, audio_offset, SEEK_SET);
+
+// get audio data and put it in buffer
+	for(i = 0; i < len + dv_get_num_samples(decoder); i += dv_get_num_samples(decoder))
+	{
+		audio_offset += read(fd, input, output_size);
+		dv_decode_full_audio(decoder, input, temp_buffer);
+
+		for(j = 0; j < asset->channels; j++)
+			temp_buffer[j] += dv_get_num_samples(decoder);
+	}
+
+	for(i = 0; i < len; i++)
+		buffer[i] = (double) outbuf[channel][i + offset] / 32767;
+
+	samples_offset[channel] = (len + offset) % dv_get_num_samples(decoder);
+
+// we do this to keep everything in sync. When > 1 channel is being
+// played, our set_audio_position gets overriden every second time,
+// which is a Good Thing (tm) since it would otherwise be wrong.
+	set_audio_position(audio_position + len);
+
+	free(temp_buffer);
+	for(i = 0; i < asset->channels; i++)
+		free(outbuf[i]);
+	free(outbuf);
+	return 0;
 }
 
 int FileDV::read_frame(VFrame *frame)

@@ -51,6 +51,7 @@ private:
 	int output_size;
 	int64_t audio_offset;
 	int64_t video_offset;
+	int samples_offset[4];
 	int frames_written;
 	int16_t **audio_buffer;
 	int samples_in_buffer;
