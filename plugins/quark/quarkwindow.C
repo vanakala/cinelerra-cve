@@ -1,5 +1,5 @@
 #include "bcdisplayinfo.h"
-#include "sharpenwindow.h"
+#include "quarkwindow.h"
 
 #include <libintl.h>
 #define _(String) gettext(String)

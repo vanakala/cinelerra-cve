@@ -9,7 +9,7 @@ class SharpenInterlace;
 
 #include "filexml.h"
 #include "mutex.h"
-#include "sharpen.h"
+#include "quark.h"
 
 class SharpenThread : public Thread
 {

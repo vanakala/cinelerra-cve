@@ -769,7 +769,7 @@ TRON("MWindow::load_filenames\n");
 
 // File not found
 			case FILE_NOT_FOUND:
-				sprintf(string, "Failed to open %s", new_asset->path);
+				sprintf(string, _("Failed to open %s"), new_asset->path);
 				gui->show_message(string, RED);
 				result = 1;
 				break;

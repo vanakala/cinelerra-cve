@@ -8,6 +8,11 @@
 #include <string.h>
 #include <errno.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 #include "empty_svg.h"
 
 REGISTER_PLUGIN(SvgMain)
@@ -86,6 +91,7 @@ SvgMain::SvgMain(PluginServer *server)
 	temp_frame = 0;
 	overlayer = 0;
 	need_reconfigure = 0;
+	force_png_render = 1;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
@@ -99,7 +105,7 @@ SvgMain::~SvgMain()
 	overlayer = 0;
 }
 
-char* SvgMain::plugin_title() { return "SVG via Sodipodi"; }
+char* SvgMain::plugin_title() { return _("SVG via Sodipodi"); }
 int SvgMain::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(SvgMain)
@@ -231,7 +237,7 @@ int SvgMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 
 //	printf("PNg mtime: %li, last_load: %li\n", st_png.st_mtime, config.last_load);
-	if (need_reconfigure || result_stat_png || st_png.st_mtime > config.last_load) {
+	if (need_reconfigure || result_stat_png || (st_png.st_mtime > config.last_load)) {
 		if (temp_frame)
 			delete temp_frame;
 		temp_frame = 0;
@@ -246,28 +252,29 @@ int SvgMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 		if (result = stat (config.svg_file, &st_svg)) 
 		{
-			printf("Error calling stat() on svg file: %s\n", config.svg_file); 
+			printf(_("Error calling stat() on svg file: %s\n"), config.svg_file); 
 		}
-		if (result_stat_png || 
+		if (force_png_render || result_stat_png || 
 			st_png.st_mtime < st_svg.st_mtime) 
 		{
 			char command[1024];
 			sprintf(command,
 				"sodipodi --export-png=%s --export-width=%i --export-height=%i %s",
 				filename_png, (int)config.in_w, (int)config.in_h, config.svg_file);
-			printf("Running command %s\n", command);
+			printf(_("Running command %s\n"), command);
 			system(command);
 			stat(filename_png, &st_png);
+			force_png_render = 0;
 		}
 
 		// advisory lock, so we wait for sodipodi to finish
 		strcpy(filename_lock, filename_png);
 		strcat(filename_lock, ".lock");
-		printf("Cinelerra locking %s\n", filename_lock);
+//		printf("Cinelerra locking %s\n", filename_lock);
 		fh_lockfile = open (filename_lock, O_CREAT | O_RDWR);
 		int res = lockf(fh_lockfile, F_LOCK, 10);    // Blocking call - will wait for sodipodi to finish!
-		printf("Cinelerra: filehandle: %i, cineres: %i, errno: %i\n", fh_lockfile, res, errno);
-		perror("Cineerror");
+//		printf("Cinelerra: filehandle: %i, cineres: %i, errno: %i\n", fh_lockfile, res, errno);
+//		perror("Cineerror");
 		int fh = open(filename_png, O_RDONLY);
 		unsigned char *pngdata;
 		// get the size again
@@ -275,14 +282,13 @@ int SvgMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 		pngdata = (unsigned char*) malloc(st_png.st_size + 4);
 		*((int32_t *)pngdata) = st_png.st_size; 
-		printf("PNG size: %i\n", st_png.st_size);
+//		printf("PNG size: %i\n", st_png.st_size);
 		result = read(fh, pngdata+4, st_png.st_size);
-		close(fh);	
-		
+		close(fh);
 		// unlock the file
 		lockf(fh_lockfile, F_ULOCK, 0);
 		close(fh_lockfile);
-		printf("Cinelerra unlocking\n");
+//		printf("Cinelerra unlocking\n");
 
 		config.last_load = st_png.st_mtime; // we just updated
 		

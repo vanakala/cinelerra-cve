@@ -7,7 +7,7 @@ class QuarkMain;
 #include "defaults.h"
 #include "mutex.h"
 #include "pluginvclient.h"
-#include "sharpenwindow.h"
+#include "quarkwindow.h"
 
 #include <sys/types.h>
 

@@ -6,6 +6,11 @@
 #include <unistd.h>
 #include <fcntl.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 #include "empty_svg.h"
 
 
@@ -40,25 +45,25 @@ int SvgWin::create_objects()
 {
 	int x = 10, y = 10;
 
-//	add_tool(new BC_Title(x, y, "In X:"));
+//	add_tool(new BC_Title(x, y, _("In X:")));
 	y += 20;
 //	in_x = new SvgCoord(this, client, x, y, &client->config.in_x);
 //	in_x->create_objects();
 	y += 30;
 
-//	add_tool(new BC_Title(x, y, "In Y:"));
+//	add_tool(new BC_Title(x, y, _("In Y:")));
 	y += 20;
 //	in_y = new SvgCoord(this, client, x, y, &client->config.in_y);
 //	in_y->create_objects();
 	y += 30;
 
-//	add_tool(new BC_Title(x, y, "In W:"));
+//	add_tool(new BC_Title(x, y, _("In W:")));
 	y += 20;
 //	in_w = new SvgCoord(this, client, x, y, &client->config.in_w);
 //	in_w->create_objects();
 	y += 30;
 
-//	add_tool(new BC_Title(x, y, "In H:"));
+//	add_tool(new BC_Title(x, y, _("In H:")));
 	y += 20;
 //	in_h = new SvgCoord(this, client, x, y, &client->config.in_h);
 //	in_h->create_objects();
@@ -67,25 +72,25 @@ int SvgWin::create_objects()
 
 	x += 150;
 	y = 10;
-	add_tool(new BC_Title(x, y, "Out X:"));
+	add_tool(new BC_Title(x, y, _("Out X:")));
 	y += 20;
 	out_x = new SvgCoord(this, client, x, y, &client->config.out_x);
 	out_x->create_objects();
 	y += 30;
 
-	add_tool(new BC_Title(x, y, "Out Y:"));
+	add_tool(new BC_Title(x, y, _("Out Y:")));
 	y += 20;
 	out_y = new SvgCoord(this, client, x, y, &client->config.out_y);
 	out_y->create_objects();
 	y += 30;
 
-	add_tool(new BC_Title(x, y, "Out W:"));
+	add_tool(new BC_Title(x, y, _("Out W:")));
 	y += 20;
 	out_w = new SvgCoord(this, client, x, y, &client->config.out_w);
 	out_w->create_objects();
 	y += 30;
 
-	add_tool(new BC_Title(x, y, "Out H:"));
+	add_tool(new BC_Title(x, y, _("Out H:")));
 	y += 20;
 	out_h = new SvgCoord(this, client, x, y, &client->config.out_h);
 	out_h->create_objects();
@@ -141,7 +146,7 @@ int SvgCoord::handle_event()
 }
 
 NewSvgButton::NewSvgButton(SvgMain *client, SvgWin *window, int x, int y)
- : BC_GenericButton(x, y, "New/Open SVG...")
+ : BC_GenericButton(x, y, _("New/Open SVG..."))
 {
 	this->client = client;
 	this->window = window;
@@ -226,7 +231,7 @@ void NewSvgButton::run()
 				slen = strlen(wvalue);
 				if (slen<3 || strcmp(wvalue+slen-2, "mm"))
 				{
-					printf("SVG Width is currently only supported in milimeters: %s, falling back to 100\n", wvalue);
+					printf(_("SVG Width is currently only supported in milimeters: %s, falling back to 100\n"), wvalue);
 					w = 100;
 				} else {
 					wvalue[slen-2] = 0;
@@ -237,7 +242,7 @@ void NewSvgButton::run()
 				slen = strlen(hvalue);
 				if (slen<3 || strcmp(hvalue+slen-2, "mm"))
 				{
-					printf("SVG Height is currently only supported in milimeters: %s, falling back to 100\n", hvalue);
+					printf(_("SVG Height is currently only supported in milimeters: %s, falling back to 100\n"), hvalue);
 					h = 100;
 				} else {
 					hvalue[slen-2] = 0;
@@ -258,14 +263,13 @@ void NewSvgButton::run()
 
 			}
 		} while (!result);		
-
-
 	}
 
 	window->svg_file_title->update(filename);
 	window->flush();
 	strcpy(client->config.svg_file, filename);
 	client->need_reconfigure = 1;
+	client->force_png_render = 1;
 	client->send_configure_change();
 
 // save it
@@ -274,7 +278,7 @@ void NewSvgButton::run()
 }
 
 EditSvgButton::EditSvgButton(SvgMain *client, SvgWin *window, int x, int y)
- : BC_GenericButton(x, y, "Edit")
+ : BC_GenericButton(x, y, _("Edit"))
 {
 	this->client = client;
 	this->window = window;
@@ -359,7 +363,7 @@ void SvgSodipodiThread::run()
 
 	sprintf(command, "sodipodi --cinelerra-export-file=%s --export-width=%i --export-height=%i %s",
 		filename_png, (int)client->config.in_w, (int)client->config.in_h, client->config.svg_file);
-	printf("Running external SVG editor: %s\n", command);		
+	printf(_("Running external SVG editor: %s\n"), command);		
 	enable_cancel();
 	system(command);
 	disable_cancel();
@@ -373,8 +377,8 @@ NewSvgWindow::NewSvgWindow(SvgMain *client, SvgWin *window, char *init_directory
  : BC_FileBox(0,
  	BC_WindowBase::get_resources()->filebox_h / 2,
  	init_directory, 
-	"SVG Plugin: Pick SVG file", 
-	"Open an existing SVG file or create a new one")
+	_("SVG Plugin: Pick SVG file"), 
+	_("Open an existing SVG file or create a new one"))
 { 
 	this->window = window; 
 }

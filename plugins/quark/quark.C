@@ -1,8 +1,8 @@
 #include "colormodels.h"
 #include "filexml.h"
 #include "picon_png.h"
-#include "sharpen.h"
-#include "sharpenwindow.h"
+#include "quark.h"
+#include "quarkwindow.h"
 
 #include <stdio.h>
 #include <string.h>

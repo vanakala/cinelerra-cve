@@ -565,7 +565,7 @@ int SynthWindow::create_objects()
 	BC_Menu *levelmenu, *phasemenu, *harmonicmenu;
 	menu->add_menu(levelmenu = new BC_Menu(_("Level")));
 	menu->add_menu(phasemenu = new BC_Menu(_("Phase")));
-	menu->add_menu(harmonicmenu = new BC_Menu("Harmonic"));
+	menu->add_menu(harmonicmenu = new BC_Menu(_("Harmonic")));
 
 	levelmenu->add_item(new SynthLevelInvert(synth));
 	levelmenu->add_item(new SynthLevelMax(synth));
