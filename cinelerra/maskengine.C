@@ -646,7 +646,7 @@ void MaskUnit::process_package(LoadPackage *package)
 
 	/* possible optimization: this could be useful for do_feather also */
 	start_row = MAX (ptr->row1, engine->first_nonempty_rowspan); 
-	end_row = MIN (ptr->row2, engine->last_nonempty_rowspan);
+	end_row = MIN (ptr->row2, engine->last_nonempty_rowspan + 1);
 
 	// Feather polygon
 	if(engine->recalculate && engine->feather > 0) 
