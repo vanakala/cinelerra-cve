@@ -321,8 +321,7 @@ void DefaultTheme::initialize()
 	build_transport(framefwd_data, get_image_data("framefwd.png"), transport_bg, 1);
 	build_transport(framefwd_data, get_image_data("framefwd.png"), transport_bg, 1);
 	build_transport(framerev_data, get_image_data("framerev.png"), transport_bg, 1);
-	build_transport(pause_data, get_image_data("pause.png"),
-		transport_bg, 1);
+	build_transport(pause_data, get_image_data("pause.png"), transport_bg, 1);
 	build_transport(rec_data, get_image_data("record.png"), transport_bg, 1);
 	build_transport(recframe_data, get_image_data("singleframe.png"), transport_bg, 1);
 	build_transport(reverse_data, get_image_data("reverse.png"), transport_bg, 1);
