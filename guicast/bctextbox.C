@@ -420,7 +420,8 @@ void BC_TextBox::draw()
 
 //printf("BC_TextBox::draw 4 %d\n", ibeam_y);
 // Draw solid cursor
-//	draw_cursor();
+	if (active) 
+		draw_cursor();
 
 // Border
 	draw_border();
