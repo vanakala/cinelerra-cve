@@ -282,7 +282,7 @@ AC_OUTPUT(Makefile cinelerra-cvs-current.spec po/Makefile.in \
 					libmpeg3/Makefile libmpeg3/video/Makefile libmpeg3/audio/Makefile \
 					quicktime/Makefile \
 					quicktime/encore50/Makefile \
-					mpeg2enc/Makefile toolame-02l/Makefile\
+					mpeg2enc/Makefile toolame-02l/Makefile \
 					guicast/Makefile cinelerra/Makefile \
 	cinelerra/data/Makefile \
 					mplexhi/Makefile mplexlo/Makefile \
