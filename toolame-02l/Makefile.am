@@ -25,3 +25,5 @@ libtoolame_la_SOURCES = common.c \
 libtoolame_la_CFLAGS = -fomit-frame-pointer -O3 -DNDEBUG -DINLINE=inline -DNEWENCODE -DNEWATAN
 
 libtoolame_la_LDFLAGS =  -lm
+
+LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTC_FLAGS)

@@ -19,3 +19,4 @@ libmpeg2enc_la_SOURCES +=     fdct_mmx.s fdctdata.c idct_mmx.s idctdata.c \
 endif
 
 libmpeg2enc_la_LIBADD=@PTHREAD_LIBS@ @LIBGETOPT_LIB@ $(LIBM_LIBS)
+LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTC_FLAGS)

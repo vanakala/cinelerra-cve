@@ -5,4 +5,5 @@ AM_CFLAGS = $(CPU_CFLAGS) $(LARGEFILE_CFLAGS)
 AM_CXXFLAGS = $(CPU_CFLAGS) $(LARGEFILE_CFLAGS)
 INCLUDES=-I.. -I/usr/include/a52dec
 
+LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTC_FLAGS)
 

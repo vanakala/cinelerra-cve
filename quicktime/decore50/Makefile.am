@@ -11,3 +11,7 @@ else
 libdecore_la_SOURCES += basic_prediction.c
 endif
 INCLUDES=-I./
+
+
+
+LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTC_FLAGS)

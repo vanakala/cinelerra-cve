@@ -23,3 +23,5 @@ INCLUDES = -I/usr/include/lame -I$(top_srcdir)/libmpeg3 -I/usr/include/glib-1.2
 
 pkgincludedir=$(includedir)/quicktime
 pkginclude_HEADERS=quicktime.h qtprivate.h
+
+LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTC_FLAGS)

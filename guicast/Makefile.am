@@ -22,3 +22,4 @@ noinst_HEADERS = arraylist.h bcbitmap.h bcbitmap.inc bcbutton.h bcbutton.inc bcc
 								 timer.inc units.h vframe.h vframe.inc workarounds.h bclistboxitem.h bctheme.h condition.h
 
 INCLUDES = -I$(top_srcdir)/quicktime -I/usr/include/qt
+LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)

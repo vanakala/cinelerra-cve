@@ -11,3 +11,4 @@ SUBDIRS = audio video
 
 pkgincludedir=$(includedir)/mpeg3
 pkginclude_HEADERS=libmpeg3.h mpeg3private.h
+LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTC_FLAGS)

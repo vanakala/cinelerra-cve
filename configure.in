@@ -13,7 +13,17 @@ AC_PROG_CXX
 
 AC_ENABLE_SHARED
 AC_ENABLE_STATIC
+
 AC_PROG_LIBTOOL
+
+# hack for libtool 1.5 -- this is ugly and probably wrong, but works
+if test `libtool --version | grep ltmain.sh | cut -b 25-27` = "1.5"; then
+   LTC_FLAGS="--tag=CC"
+   LTCXX_FLAGS="--tag=CXX"
+fi
+AC_SUBST(LTC_FLAGS)
+AC_SUBST(LTCXX_FLAGS)
+
 
 # hack for using nasm for .S files
 CCAS="\$(top_srcdir)/admin/nasm"

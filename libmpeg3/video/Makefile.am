@@ -11,4 +11,4 @@ libmpeg3_video_la_LDFLAGS=-static
 AM_CFLAGS = $(CPU_CFLAGS) $(LARGEFILE_CFLAGS)
 INCLUDES=-I..
 
-
+LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTC_FLAGS)
