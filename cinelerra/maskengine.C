@@ -526,9 +526,9 @@ void MaskUnit::process_package(LoadPackage *package)
 					continue; /* no work for us here */
 				else 
 				{       /* if we have engaged first nonempty rowspan...	remember it to speed up mask applying */
-					if (local_first_nonempty_rowspan < 0) 
+					if (local_first_nonempty_rowspan < 0 || i < local_first_nonempty_rowspan) 
 						local_first_nonempty_rowspan = i;  
-					local_last_nonempty_rowspan = i;
+					if (i > local_last_nonempty_rowspan) local_last_nonempty_rowspan = i;
 				}
 				/* we have some pixels to fill, do coverage calculation for span */
 
