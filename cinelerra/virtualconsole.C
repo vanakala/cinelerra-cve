@@ -34,8 +34,7 @@ VirtualConsole::VirtualConsole(RenderEngine *renderengine,
 VirtualConsole::~VirtualConsole()
 {
 // Destructor always calls default methods so can't put deletions in here
-	delete_virtual_console();
-	delete_input_buffers();
+// Deletions have been moved to downmost destructors
 
 	delete startup_lock;
 	if(playable_tracks) delete playable_tracks;
@@ -126,6 +125,7 @@ Module* VirtualConsole::module_number(int track_number)
 
 int VirtualConsole::allocate_input_buffers()
 {
+//printf("VirtualConsole::allocate_input_buffers 1\n");
 	if(!ring_buffers)
 	{
 		ring_buffers = total_ring_buffers();
@@ -356,11 +356,13 @@ void VirtualConsole::run()
 int VirtualConsole::delete_virtual_console()
 {
 // delete the virtual modules
+//printf("delete_virtual_console 1 %i %p\n", total_tracks);
 	for(int i = 0; i < total_tracks; i++)
 	{
 		delete virtual_modules[i];
 	}
-	if(total_tracks) delete [] virtual_modules;
+	// even when calling new[0] (when total_tracks == 0), pointer gets allocated 
+	if(virtual_modules) delete [] virtual_modules;
 	virtual_modules = 0;
 
 // delete sort order
@@ -370,6 +372,7 @@ int VirtualConsole::delete_virtual_console()
 int VirtualConsole::delete_input_buffers()
 {
 // delete input buffers
+//printf("VirtualConsole::delete_input_buffers 1\n");
 	for(int buffer = 0; buffer < ring_buffers; buffer++)
 	{
 		delete_input_buffer(buffer);

@@ -8,6 +8,7 @@
 #include "mainundo.h"
 #include "mainmenu.h"
 #include "mwindow.h"
+#include "patchbay.h"
 #include "mwindowgui.h"
 #include "new.h"
 #include "mainsession.h"
@@ -83,6 +84,9 @@ int New::create_new_project()
 //printf("New::create_new_project 1\n");
 	mwindow->hide_plugins();
 	delete mwindow->edl;
+	// patches are pointing to vtracks, that have been just deleted
+	// so patches have to be deleted also
+ 	mwindow->patches->delete_all_patches();    
 	mwindow->edl = new_edl;
 	mwindow->save_defaults();
 

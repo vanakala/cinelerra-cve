@@ -32,6 +32,8 @@ VirtualAConsole::VirtualAConsole(RenderEngine *renderengine, ARender *arender)
 
 VirtualAConsole::~VirtualAConsole()
 {
+	delete_virtual_console();
+	delete_input_buffers();
 }
 
 int VirtualAConsole::total_ring_buffers()

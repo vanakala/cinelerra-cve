@@ -25,6 +25,8 @@ VirtualVConsole::VirtualVConsole(RenderEngine *renderengine, VRender *vrender)
 
 VirtualVConsole::~VirtualVConsole()
 {
+	delete_virtual_console();
+	delete_input_buffers();
 }
 
 int VirtualVConsole::total_ring_buffers()
@@ -45,6 +47,7 @@ void VirtualVConsole::new_input_buffer(int ring_buffer)
 {
 	buffer_in = new VFrame*[total_tracks];
 //printf("VirtualVConsole::new_input_buffer 1\n");
+
 	for(int i = 0; i < total_tracks; i++)
 	{
 		buffer_in[i] = new VFrame(0,
@@ -57,6 +60,7 @@ void VirtualVConsole::new_input_buffer(int ring_buffer)
 
 void VirtualVConsole::delete_input_buffer(int ring_buffer)
 {
+//printf("VirtualVConsole::delete_input_buffer 1\n");
 	for(int i = 0; i < total_tracks; i++)
 	{
 		delete buffer_in[i];
