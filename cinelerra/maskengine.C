@@ -8,18 +8,36 @@
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
+#include <limits.h>
+
+int64_t get_difference(struct timeval *start_time)
+{
+        struct timeval new_time;
+
+	gettimeofday(&new_time, 0);
+
+	new_time.tv_usec -= start_time->tv_usec;
+	new_time.tv_sec -= start_time->tv_sec;
+	if(new_time.tv_usec < 0)
+	{
+		new_time.tv_usec += 1000000;
+		new_time.tv_sec--;
+	}
+
+	return (int64_t)new_time.tv_sec * 1000000 + 
+		(int64_t)new_time.tv_usec;
+
+}
+
+
 
 MaskPackage::MaskPackage()
 {
-	apply_mutex = new Mutex;
 }
 
 MaskPackage::~MaskPackage()
 {
-	delete apply_mutex;
 }
-
-
 
 
 
@@ -29,101 +47,77 @@ MaskUnit::MaskUnit(MaskEngine *engine)
  : LoadClient(engine)
 {
 	this->engine = engine;
-	this->temp = 0;
+	row_spans_h = 0;
+	row_spans = 0;
 }
 
 
 MaskUnit::~MaskUnit()
 {
-	if(temp) delete temp;
+	if (row_spans)
+	{
+		for (int i = 0; i < row_spans_h; i++) 
+			free(row_spans[i]);
+		delete row_spans;
+	}
 }
 
 #ifndef SQR
 #define SQR(x) ((x) * (x))
 #endif
 
-#define OVERSAMPLE 8
 
 
-
-
-
-
-
-
-
-
-
-
-
-#define DRAW_LINE_CLAMPED(type, value) \
-{ \
-	type **rows = (type**)frame->get_rows(); \
- \
-	if(draw_y2 != draw_y1) \
-	{ \
-		float slope = ((float)draw_x2 - draw_x1) / ((float)draw_y2 - draw_y1); \
-		int w = frame->get_w() - 1; \
-		int h = frame->get_h(); \
- \
-		for(float y = draw_y1; y < draw_y2; y++) \
-		{ \
-			if(y >= 0 && y < h) \
-			{ \
-				int x = (int)((y - draw_y1) * slope + draw_x1); \
-				int y_i = (int)y; \
-				int x_i = CLIP(x, 0, w); \
- \
-				if(rows[y_i][x_i] == value) \
-					rows[y_i][x_i] = 0; \
-				else \
-					rows[y_i][x_i] = value; \
-			} \
-		} \
-	} \
-}
-
-
-
-void MaskUnit::draw_line_clamped(VFrame *frame, 
-	int &x1, 
-	int &y1, 
-	int x2, 
-	int y2,
-	unsigned char k)
+inline void MaskUnit::draw_line_clamped(
+	int draw_x1, 
+	int draw_y1, 
+	int draw_x2, 
+	int draw_y2,
+	int w,
+	int h,
+	int hoffset)
 {
 //printf("MaskUnit::draw_line_clamped 1 %d %d %d %d\n", x1, y1, x2, y2);
-	int draw_x1;
-	int draw_y1;
-	int draw_x2;
-	int draw_y2;
-	unsigned char value;
+	if (draw_y1 == draw_y2) return; 
 
-	if(y2 < y1)
-	{
-		draw_x1 = x2;
-		draw_y1 = y2;
-		draw_x2 = x1;
-		draw_y2 = y1;
-	}
-	else
-	{
-		draw_x1 = x1;
-		draw_y1 = y1;
-		draw_x2 = x2;
-		draw_y2 = y2;
+	if(draw_y2 < draw_y1)
+	{ /* change the order */
+		int tmp;
+		tmp = draw_x1;
+		draw_x1 = draw_x2;
+		draw_x2 = tmp;
+		tmp = draw_y1;
+		draw_y1 = draw_y2;
+		draw_y2 = tmp;
 	}
 
-	switch(frame->get_color_model())
-	{
-		case BC_A8:
-			DRAW_LINE_CLAMPED(unsigned char, k);
-			break;
-		
-		case BC_A16:
-			DRAW_LINE_CLAMPED(uint16_t, k);
-			break;
-	}
+	float slope = ((float)draw_x2 - draw_x1) / ((float)draw_y2 - draw_y1); 
+	w--;
+	for(int y_i = draw_y1; y_i < draw_y2; y_i++) 
+	{ 
+		if (y_i >= h) 
+			return; // since y gets larger, there is no point in continuing
+		else if(y_i >= 0) 
+		{ 
+			int x = (int)(slope * (y_i - draw_y1) + draw_x1); 
+			int x_i = CLIP(x, 0, w); 
+
+			/* now insert into span in order */
+			short index = 2;
+			short *span = row_spans[y_i + hoffset];	
+			while (index < span[0] && span[index] < x_i)
+				index++;
+			for (int j = span[0]; j > index; j--) {       // move forward
+				span[j] = span[j-1];
+			}
+			span[index] = x_i;
+			span[0] ++;
+			if (span[0] > span[1]) { /* do the reallocation */
+				span[1] *= 2;
+				row_spans[y_i + hoffset] = (short *) realloc (span, span[1] * sizeof(short)); /* be careful! row_spans has to be updated! */
+			};
+		} 
+	} 
 }
 
 void MaskUnit::blur_strip(float *val_p, 
@@ -368,8 +362,10 @@ void MaskUnit::do_feather(VFrame *output,
 void MaskUnit::process_package(LoadPackage *package)
 {
 	MaskPackage *ptr = (MaskPackage*)package;
-
-	if(engine->recalculate && ptr->part == RECALCULATE_PART)
+	
+	int start_row = SHRT_MIN;         // part for which mask exists
+	int end_row;
+	if(engine->recalculate)
 	{
 		VFrame *mask;
 //printf("MaskUnit::process_package 1 %d\n", get_package_number());
@@ -378,43 +374,51 @@ void MaskUnit::process_package(LoadPackage *package)
 		else
 			mask = engine->mask;
 
-// Generated oversampling frame
 		int mask_w = mask->get_w();
 		int mask_h = mask->get_h();
+		int mask_color_model = mask->get_color_model();
 		int oversampled_package_w = mask_w * OVERSAMPLE;
 		int oversampled_package_h = (ptr->row2 - ptr->row1) * OVERSAMPLE;
-//printf("MaskUnit::process_package 1\n");
+		int local_first_nonempty_rowspan = SHRT_MIN;
+		int local_last_nonempty_rowspan = SHRT_MIN;
 
-		if(temp && 
-			(temp->get_w() != oversampled_package_w ||
-			temp->get_h() != oversampled_package_h))
-		{
-			delete temp;
-			temp = 0;
+		protect_data.lock(); // there was a race before...
+		if (!row_spans || row_spans_h != mask_h * OVERSAMPLE) {
+			int i;	
+			if (row_spans) {   /* size change */
+				for (i = 0; i < row_spans_h; i++) 
+					free(row_spans[i]);
+				delete row_spans;
+			}
+			row_spans_h = mask_h * OVERSAMPLE;
+			row_spans = new (short *)[mask_h * OVERSAMPLE]; 
+			for (i= 0; i<mask_h * OVERSAMPLE; i++) {
+				/* we use malloc so we can use realloc */
+				row_spans[i] = (short *)malloc(sizeof(short) * NUM_SPANS);
+				/* [0] is initialized later */
+				row_spans[i][1] = NUM_SPANS;
+			}
 		}
-//printf("MaskUnit::process_package 1\n");
-
-		if(!temp)
-		{
-			temp = new VFrame(0, 
-				oversampled_package_w, 
-				oversampled_package_h,
-				BC_A8);
-		}
-
-		temp->clear_frame();
+		protect_data.unlock();
+		
 //printf("MaskUnit::process_package 1 %d\n", engine->point_sets.total);
+		
 
+// Draw bezier curves onto span buffer
+//struct timeval start_time;
+//gettimeofday(&start_time, 0);
 
-// Draw oversampled region of polygons on temp
 		for(int k = 0; k < engine->point_sets.total; k++)
-		{
+		{		
 			int old_x, old_y;
-			unsigned char max = k + 1;
+			old_x = SHRT_MIN; // sentinel
 			ArrayList<MaskPoint*> *points = engine->point_sets.values[k];
 
-			if(points->total < 3) continue;
+			if(points->total < 2) continue;
 //printf("MaskUnit::process_package 2 %d %d\n", k, points->total);
+			for (int i = ptr->row1 * OVERSAMPLE; i < ptr->row2 * OVERSAMPLE; i++) 
+				row_spans[i][0] = 2; /* initialize to zero */ 
+			(ptr->row1*OVERSAMPLE, ptr->row2*OVERSAMPLE); // init just my rows
 			for(int i = 0; i < points->total; i++)
 			{
 				MaskPoint *point1 = points->values[i];
@@ -422,8 +426,6 @@ void MaskUnit::process_package(LoadPackage *package)
 					points->values[0] : 
 					points->values[i + 1];
 
-				float x, y;
-				int segments = (int)(sqrt(SQR(point1->x - point2->x) + SQR(point1->y - point2->y)));
 				float x0 = point1->x;
 				float y0 = point1->y;
 				float x1 = point1->x + point1->control_x2;
@@ -433,320 +435,381 @@ void MaskUnit::process_package(LoadPackage *package)
 				float x3 = point2->x;
 				float y3 = point2->y;
 
-				for(int j = 0; j <= segments; j++)
+				// possible optimization here... since these coordinates are bounding box for curve
+				// we can continue with next curve if they are out of our range
+
+				// forward differencing bezier curves implementation taken from GPL code at
+				// http://cvs.sourceforge.net/viewcvs.py/guliverkli/guliverkli/src/subtitles/Rasterizer.cpp?rev=1.3
+
+
+
+				float cx3, cx2, cx1, cx0, cy3, cy2, cy1, cy0;
+
+
+				// [-1 +3 -3 +1]
+				// [+3 -6 +3  0]
+				// [-3 +3  0  0]
+				// [+1  0  0  0]
+
+		 		cx3 = (-  x0 + 3*x1 - 3*x2 + x3) * OVERSAMPLE;
+				cx2 = ( 3*x0 - 6*x1 + 3*x2) * OVERSAMPLE;
+				cx1 = (-3*x0 + 3*x1) * OVERSAMPLE;
+				cx0 = (   x0) * OVERSAMPLE;
+
+				cy3 = (-  y0 + 3*y1 - 3*y2 + y3) * OVERSAMPLE;
+				cy2 = ( 3*y0 - 6*y1 + 3*y2) * OVERSAMPLE;
+				cy1 = (-3*y0 + 3*y1) * OVERSAMPLE;
+				cy0 = (   y0 - ptr->row1) * OVERSAMPLE;
+
+				float maxaccel1 = fabs(2*cy2) + fabs(6*cy3);
+				float maxaccel2 = fabs(2*cx2) + fabs(6*cx3);
+
+				float maxaccel = maxaccel1 > maxaccel2 ? maxaccel1 : maxaccel2;
+				float h = 1.0;
+
+				if(maxaccel > 8.0 * OVERSAMPLE) h = sqrt((8.0 * OVERSAMPLE) / maxaccel);
+
+				for(float t = 0.0; t < 1.0; t += h)
 				{
-					float t = (float)j / segments;
-					float tpow2 = t * t;
-					float tpow3 = t * t * t;
-					float invt = 1 - t;
-					float invtpow2 = invt * invt;
-					float invtpow3 = invt * invt * invt;
+					int x = (int) (cx0 + t*(cx1 + t*(cx2 + t*cx3)));
+					int y = (int) (cy0 + t*(cy1 + t*(cy2 + t*cy3)));
 
-					x = (        invtpow3 * x0
-						+ 3 * t     * invtpow2 * x1
-						+ 3 * tpow2 * invt     * x2 
-						+     tpow3            * x3);
-					y = (        invtpow3 * y0 
-						+ 3 * t     * invtpow2 * y1
-						+ 3 * tpow2 * invt     * y2 
-						+     tpow3            * y3);
-
-					y -= ptr->row1;
-					x *= OVERSAMPLE;
-					y *= OVERSAMPLE;
-
-					if(j > 0)
-					{
-						draw_line_clamped(temp, old_x, old_y, (int)x, (int)y, max);
-					}
-
-					old_x = (int)x;
-					old_y = (int)y;
+					if (old_x != SHRT_MIN) 
+						draw_line_clamped(old_x, old_y, x, y, oversampled_package_w, oversampled_package_h, ptr->row1 * OVERSAMPLE);
+					old_x = x;
+					old_y = y;
 				}
-			}
 
+				int x = (int)(x3 * OVERSAMPLE);
+				int y = (int)((y3 - ptr->row1) * OVERSAMPLE);
+				draw_line_clamped(old_x, old_y, x, y, oversampled_package_w, oversampled_package_h, ptr->row1 * OVERSAMPLE);
+				old_x = (int)x;
+				old_y = (int)y;
+		
+			}
 //printf("MaskUnit::process_package 1\n");
 
-
-
-
-
-#define FILL_ROWS(type) \
-for(int i = 0; i < oversampled_package_h; i++) \
-{ \
-	type *row = (type*)temp->get_rows()[i]; \
-	int value = 0x0; \
-	int total = 0; \
- \
- 	for(int j = 0; j < oversampled_package_w; j++) \
-		if(row[j] == max) total++; \
- \
- 	if(total > 1) \
-	{ \
-		if(total & 0x1) total--; \
-		for(int j = 0; j < oversampled_package_w; j++) \
-		{ \
-			if(row[j] == max && total > 0) \
-			{ \
-				if(value)  \
-					value = 0x0; \
-				else \
-					value = max; \
-				total--; \
-			} \
-			else \
-			{ \
-				if(value) row[j] = value; \
-			} \
-		} \
-	} \
-}
-
-
-// Fill in the polygon in the horizontal direction
-			switch(temp->get_color_model())
-			{
-				case BC_A8:
-					FILL_ROWS(unsigned char);
-					break;
-
-				case BC_A16:
-					FILL_ROWS(uint16_t);
-					break;
-			}
-		}
-
-
-
-
-
-
-
-
-#define DOWNSAMPLE(type, value) \
-for(int i = 0; i < ptr->row2 - ptr->row1; i++) \
-{ \
-	type *output_row = (type*)mask->get_rows()[i + ptr->row1]; \
-	unsigned char **input_rows = (unsigned char**)temp->get_rows() + i * OVERSAMPLE; \
- \
- \
-	for(int j = 0; j < mask_w; j++) \
-	{ \
-		int64_t total = 0; \
- \
-/* Accumulate pixel */ \
-		for(int k = 0; k < OVERSAMPLE; k++) \
-		{ \
-			unsigned char *input_vector = input_rows[k] + j * OVERSAMPLE; \
-			for(int l = 0; l < OVERSAMPLE; l++) \
-			{ \
-				total += (input_vector[l] ? value : 0); \
-			} \
-		} \
- \
-/* Divide pixel */ \
-		if(OVERSAMPLE == 8) \
-			total >>= 6; \
-		else \
-		if(OVERSAMPLE == 4) \
-			total >>= 2; \
-		else \
-		if(OVERSAMPLE == 2) \
-			total >>= 2; \
-		else \
-			total /= OVERSAMPLE * OVERSAMPLE; \
- \
-		output_row[j] = total; \
-	} \
-}
-
-
-// Downsample polygon
-		switch(mask->get_color_model())
-		{
-			case BC_A8:
-			{
-				unsigned char value;
+			// Now we have ordered spans ready!
+			//printf("Segment : %i , row1: %i\n", oversampled_package_h, ptr->row1);
+			uint16_t value;
+			if (mask_color_model == BC_A8)
 				value = (int)((float)engine->value / 100 * 0xff);
-				DOWNSAMPLE(unsigned char, value);
-				break;
-			}
-
-			case BC_A16:
-			{
-				uint16_t value;
+			else
 				value = (int)((float)engine->value / 100 * 0xffff);
-				DOWNSAMPLE(uint16_t, value);
-				break;
-			}
-		}
 
-	}
-
-
-	if(ptr->part == RECALCULATE_PART)
-	{
-// The feather could span more than one package so can't do it until
-// all packages are drawn.
-		if(get_package_number() >= engine->get_total_packages() / 2 - 1)
-		{
-			for(int i = engine->get_total_packages() / 2; 
-				i < engine->get_total_packages();
-				i++)
+			/* Scaneline sampling, inspired by Graphics gems I, page 81 */
+			for (int i = ptr->row1; i < ptr->row2; i++) 
 			{
-				MaskPackage *package = (MaskPackage*)engine->get_package(i);
-				package->apply_mutex->unlock();
-			}
+				short min_x = SHRT_MAX;
+				short max_x = SHRT_MIN;
+				int j; 				/* universal counter for 0..OVERSAMPLE-1 */
+				short *span;			/* current span - set inside loops with j */
+				short span_p[OVERSAMPLE];	/* pointers to current positions in spans */
+				#define P (span_p[j])		/* current span pointer */
+				#define MAXP (span[0])		/* current span length */
+				int num_empty_spans = 0;
+				/* get the initial span pointers ready */
+				for (j = 0; j < OVERSAMPLE; j++)
+				{	
+					span = row_spans[j + i * OVERSAMPLE];
+					P = 2;              /* starting pointers to spans */
+						/* hypotetical hypotetical fix goes here: take care that there is maximum one empty span for every subpixel */ 
+					if (MAXP != 2) {                                        /* if span is not empty */
+						if (span[2] < min_x) min_x = span[2];           /* take start of the first span */
+						if (span[MAXP-1] > max_x) max_x = span[MAXP-1]; /* and end of last */
+					} else              
+					{	/* span is empty */
+						num_empty_spans ++;	
+					}	
+				}
+				if (num_empty_spans == OVERSAMPLE)
+					continue; /* no work for us here */
+				else 
+				{       /* if we have engaged first nonempty rowspan...	remember it to speed up mask applying */
+					if (local_first_nonempty_rowspan < 0) 
+						local_first_nonempty_rowspan = i;  
+					local_last_nonempty_rowspan = i;
+				}
+				/* we have some pixels to fill, do coverage calculation for span */
+
+				void *output_row = (unsigned char*)mask->get_rows()[i];
+				min_x = min_x / OVERSAMPLE;
+				max_x = (max_x + OVERSAMPLE - 1) / OVERSAMPLE;
+				
+				/* printf("row %i, pixel range: %i %i, spans0: %i\n", i, min_x, max_x, row_spans[i*OVERSAMPLE][0]-2); */
+
+				/* this is not a full loop, since we jump trough h if possible */
+				for (int h = min_x; h <= max_x; h++) 
+				{
+					short pixelleft = h * OVERSAMPLE;  /* leftmost subpixel of pixel*/
+					short pixelright = pixelleft + OVERSAMPLE - 1; /* rightmost subpixel of pixel */
+					uint32_t coverage = 0;
+					int num_left = 0;               /* number of spans that have start left of the next pixel */
+					short right_end = SHRT_MAX;     /* leftmost end of any span - right end of a full scanline */
+					short right_start = SHRT_MAX;   /* leftmost start of any span - left end of empty scanline */
+
+					for (j=0; j< OVERSAMPLE; j++) 
+					{	
+						char chg = 1;
+						span = row_spans[j + i * OVERSAMPLE];
+						while (P < MAXP && chg)
+						{
+						//	printf("Sp: %i %i\n", span[P], span[P+1]);
+							if (span[P] <= pixelright)          /* if span start is before the end of pixel */
+								coverage += MIN(span[P+1], pixelright)  /* 'clip' the span to pixel */
+		                                                          - MAX(span[P], pixelleft) + 1;
+							if (span[P+1] <= pixelright) 
+								P += 2;
+							else 
+								chg = 0;
+						} 
+						if (P == MAXP) 
+							num_left = -OVERSAMPLE; /* just take care that num_left cannot equal OVERSAMPLE or zero again */
+						else	
+						{ 
+							if (span[P] <= pixelright)  /* if span starts before subpixel in the pixel on the right */
+							{    /* useful for determining filled space till next non-fully-filled pixel */
+								num_left ++;						
+								if (span[P+1] < right_end) right_end = span[P+1]; 
+							} else 
+							{    /* useful for determining empty space till next non-empty pixel */
+								if (span[P] < right_start) right_start = span[P]; 
+							}
+						}
+					}
+					// calculate coverage
+					coverage *= value;
+					if(OVERSAMPLE == 8) coverage >>= 6; \
+					else \
+					if(OVERSAMPLE == 4) coverage >>= 2; \
+					else \
+					if(OVERSAMPLE == 2) coverage >>= 2; \
+					else coverage /= OVERSAMPLE * OVERSAMPLE; \
+
+					
+					if (mask_color_model == BC_A8) 
+					{
+						if (((unsigned char *) output_row)[h] < coverage) /* when we have multiple masks... we don't want aliasing inside areas */
+							((unsigned char*)output_row)[h] = coverage;
+					} else
+					{
+						if (((uint16_t *) output_row)[h] < coverage) /* when we have multiple masks... we don't want aliasing inside areas */
+							((uint16_t *) output_row)[h] = coverage;
+					}
+					/* possible optimization: do joining of multiple masks by span logics, not by bitmap logics*/
+					
+					if (num_left == OVERSAMPLE) 
+					{
+						/* all current spans start more left than next pixel */
+						/* this means we can probably (if lucky) draw a longer horizontal line */
+						right_end = (right_end / OVERSAMPLE) - 1; /* last fully covered pixel */
+						if (right_end > h)
+						{
+							if (mask_color_model == BC_A8) 
+								memset((char *)output_row + h + 1, value, right_end - h);
+							else {
+								/* we are fucked, since there is no 16bit memset */
+								for (int z = h +1; z <= right_end; z++)
+									((uint16_t *) output_row)[z] =  value;
+		
+							}
+							h = right_end;  
+						}
+					} else 
+					if (num_left == 0) 
+					{
+						/* all current spans start right of next pixel */ 
+						/* this means we can probably (if lucky) skip some pixels */
+						right_start = (right_start / OVERSAMPLE) - 1; /* last fully empty pixel */
+						if (right_start > h)
+						{
+							h = right_start;
+						}
+					}
+				}
+				
+			}					
+			
 		}
+		protect_data.lock(); // there was a race before...
+		if (local_first_nonempty_rowspan < engine->first_nonempty_rowspan)
+			engine->first_nonempty_rowspan = local_first_nonempty_rowspan;
+		if (local_last_nonempty_rowspan > engine->last_nonempty_rowspan)
+			engine->last_nonempty_rowspan = local_last_nonempty_rowspan;
+		protect_data.unlock(); // there was a race before...
+	
 
-	}
+//		int64_t dif= get_difference(&start_time);
+//		printf("diff: %lli\n", dif);
+	}	/* END OF RECALCULATION! */
 
-//printf("MaskUnit::process_package 2\n");
 
-	if(ptr->part == APPLY_PART)
-	{
-//printf("MaskUnit::process_package 2.1\n");
-		ptr->apply_mutex->lock();
-		ptr->apply_mutex->unlock();
-//printf("MaskUnit::process_package 2.2\n");
+	/* possible optimization: this could be useful for do_feather also */
+	start_row = MAX (ptr->row1, engine->first_nonempty_rowspan); 
+	end_row = MIN (ptr->row2, engine->last_nonempty_rowspan);
 
-		if(engine->recalculate)
-		{
-// Feather polygon
-			if(engine->feather > 0) do_feather(engine->mask, 
-				engine->temp_mask, 
-				engine->feather, 
-				ptr->row1, 
-				ptr->row2);
-
-		}
+	// Feather polygon
+	if(engine->recalculate && engine->feather > 0) 
+	{	
+		start_row = ptr->row1;
+		end_row = ptr->row2;
+		/* first take care that all packages are already drawn onto mask */
+		protect_data.lock();
+		engine->stage1_finished_count ++;
+		if (!engine->recalculate || !engine->feather || engine->stage1_finished_count == engine->get_total_packages())
+			engine->stage1_finished.unlock();
+		protect_data.unlock();
+		engine->stage1_finished.lock();   // if feather and this is last stage, it will block
+		engine->stage1_finished.unlock(); // let others pass also
+		
+		/* now do the feather */
 //printf("MaskUnit::process_package 3 %f\n", engine->feather);
-
+		do_feather(engine->mask, 
+			engine->temp_mask, 
+			engine->feather, 
+			ptr->row1, 
+			ptr->row2);
+	}
 
 
 
 // Apply mask
-		int mask_w = engine->mask->get_w();
 
 
+/* use the info about first and last column that are coloured from rowspan!  */
+/* possible optimisation: also remember total spans */
+/* possible optimisation: lookup for  X * (max - *mask_row) / max, where max is known mask_row and X are variabiles */
 #define APPLY_MASK_SUBTRACT_ALPHA(type, max, components, do_yuv) \
 { \
+	int chroma_offset = (max + 1) / 2; \
+	for(int i = start_row; i < end_row; i++) \
+	{ \
 	type *output_row = (type*)engine->output->get_rows()[i]; \
 	type *mask_row = (type*)engine->mask->get_rows()[i]; \
-	int chroma_offset = (max + 1) / 2; \
+	\
  \
 	for(int j  = 0; j < mask_w; j++) \
 	{ \
 		if(components == 4) \
 		{ \
-			output_row[j * 4 + 3] = output_row[j * 4 + 3] * (max - mask_row[j]) / max; \
+			output_row[3] = output_row[3] * (max - *mask_row) / max; \
 		} \
 		else \
 		{ \
-			output_row[j * 3] = output_row[j * 3] * (max - mask_row[j]) / max; \
+			output_row[0] = output_row[0] * (max - *mask_row) / max; \
  \
-			output_row[j * 3 + 1] = output_row[j * 3 + 1] * (max - mask_row[j]) / max; \
-			output_row[j * 3 + 2] = output_row[j * 3 + 2] * (max - mask_row[j]) / max; \
+			output_row[1] = output_row[1] * (max - *mask_row) / max; \
+			output_row[2] = output_row[2] * (max - *mask_row) / max; \
  \
 			if(do_yuv) \
 			{ \
-				output_row[j * 3 + 1] += chroma_offset * mask_row[j] / max; \
-				output_row[j * 3 + 2] += chroma_offset * mask_row[j] / max; \
+				output_row[1] += chroma_offset * *mask_row / max; \
+				output_row[2] += chroma_offset * *mask_row / max; \
 			} \
 		} \
+		output_row += components; \
+		mask_row += 1;		 \
+	} \
 	} \
 }
 
 #define APPLY_MASK_MULTIPLY_ALPHA(type, max, components, do_yuv) \
 { \
+	int chroma_offset = (max + 1) / 2; \
+		for(int i = ptr->row1; i < ptr->row2; i++) \
+		{ \
 	type *output_row = (type*)engine->output->get_rows()[i]; \
 	type *mask_row = (type*)engine->mask->get_rows()[i]; \
-	int chroma_offset = (max + 1) / 2; \
  \
-	for(int j  = 0; j < mask_w; j++) \
+        if (components == 4) output_row += 3; \
+	for(int j  = mask_w; j != 0;  j--) \
 	{ \
 		if(components == 4) \
 		{ \
-			output_row[j * 4 + 3] = output_row[j * 4 + 3] * mask_row[j] / max; \
+			*output_row = *output_row * *mask_row / max; \
 		} \
 		else \
 		{ \
-			output_row[j * 3] = output_row[j * 3] * mask_row[j] / max; \
+			output_row[0] = output_row[3] * *mask_row / max; \
  \
-			output_row[j * 3 + 1] = output_row[j * 3 + 1] * mask_row[j] / max; \
-			output_row[j * 3 + 2] = output_row[j * 3 + 2] * mask_row[j] / max; \
+			output_row[1] = output_row[1] * *mask_row / max; \
+			output_row[2] = output_row[2] * *mask_row / max; \
  \
 			if(do_yuv) \
 			{ \
-				output_row[j * 3 + 1] += chroma_offset * (max - mask_row[j]) / max; \
-				output_row[j * 3 + 2] += chroma_offset * (max - mask_row[j]) / max; \
+				output_row[1] += chroma_offset * (max - *mask_row) / max; \
+				output_row[2] += chroma_offset * (max - *mask_row) / max; \
 			} \
 		} \
+		output_row += components; \
+		mask_row += 1;		 \
+	} \
 	} \
 }
 
 
-
+//struct timeval start_time;
+//gettimeofday(&start_time, 0);
 
 //printf("MaskUnit::process_package 1 %d\n", engine->mode);
-		for(int i = ptr->row1; i < ptr->row2; i++)
-		{
-			switch(engine->mode)
+	int mask_w = engine->mask->get_w();
+	switch(engine->mode)
+	{
+		case MASK_MULTIPLY_ALPHA:
+			switch(engine->output->get_color_model())
 			{
-				case MASK_MULTIPLY_ALPHA:
-					switch(engine->output->get_color_model())
-					{
-						case BC_RGB888:
-							APPLY_MASK_MULTIPLY_ALPHA(unsigned char, 0xff, 3, 0);
-							break;
-						case BC_YUV888:
-							APPLY_MASK_MULTIPLY_ALPHA(unsigned char, 0xff, 3, 1);
-							break;
-						case BC_YUVA8888:
-						case BC_RGBA8888:
-							APPLY_MASK_MULTIPLY_ALPHA(unsigned char, 0xff, 4, 0);
-							break;
-						case BC_RGB161616:
-							APPLY_MASK_MULTIPLY_ALPHA(uint16_t, 0xffff, 3, 0);
-							break;
-						case BC_YUV161616:
-							APPLY_MASK_MULTIPLY_ALPHA(uint16_t, 0xffff, 3, 1);
-							break;
-						case BC_YUVA16161616:
-						case BC_RGBA16161616:
-							APPLY_MASK_MULTIPLY_ALPHA(uint16_t, 0xffff, 4, 0);
-							break;
-					}
+				case BC_RGB888:
+					APPLY_MASK_MULTIPLY_ALPHA(unsigned char, 0xff, 3, 0);
 					break;
-
-				case MASK_SUBTRACT_ALPHA:
-					switch(engine->output->get_color_model())
-					{
-						case BC_RGB888:
-							APPLY_MASK_SUBTRACT_ALPHA(unsigned char, 0xff, 3, 0);
-							break;
-						case BC_YUV888:
-							APPLY_MASK_SUBTRACT_ALPHA(unsigned char, 0xff, 3, 1);
-							break;
-						case BC_YUVA8888:
-						case BC_RGBA8888:
-							APPLY_MASK_SUBTRACT_ALPHA(unsigned char, 0xff, 4, 0);
-							break;
-						case BC_RGB161616:
-							APPLY_MASK_SUBTRACT_ALPHA(uint16_t, 0xffff, 3, 0);
-							break;
-						case BC_YUV161616:
-							APPLY_MASK_SUBTRACT_ALPHA(uint16_t, 0xffff, 3, 1);
-							break;
-						case BC_YUVA16161616:
-						case BC_RGBA16161616:
-							APPLY_MASK_SUBTRACT_ALPHA(uint16_t, 0xffff, 4, 0);
-							break;
-					}
+				case BC_YUV888:
+					APPLY_MASK_MULTIPLY_ALPHA(unsigned char, 0xff, 3, 1);
+					break;
+				case BC_YUVA8888:
+				case BC_RGBA8888:
+					APPLY_MASK_MULTIPLY_ALPHA(unsigned char, 0xff, 4, 0);
+					break;
+				case BC_RGB161616:
+					APPLY_MASK_MULTIPLY_ALPHA(uint16_t, 0xffff, 3, 0);
+					break;
+				case BC_YUV161616:
+					APPLY_MASK_MULTIPLY_ALPHA(uint16_t, 0xffff, 3, 1);
+					break;
+				case BC_YUVA16161616:
+				case BC_RGBA16161616:
+					APPLY_MASK_MULTIPLY_ALPHA(uint16_t, 0xffff, 4, 0);
 					break;
 			}
-		}
+			break;
+
+		case MASK_SUBTRACT_ALPHA:
+			switch(engine->output->get_color_model())
+			{
+				case BC_RGB888:
+					APPLY_MASK_SUBTRACT_ALPHA(unsigned char, 0xff, 3, 0);
+					break;
+				case BC_YUV888:
+					APPLY_MASK_SUBTRACT_ALPHA(unsigned char, 0xff, 3, 1);
+					break;
+				case BC_YUVA8888:
+				case BC_RGBA8888:
+					APPLY_MASK_SUBTRACT_ALPHA(unsigned char, 0xff, 4, 0);
+					break;
+				case BC_RGB161616:
+					APPLY_MASK_SUBTRACT_ALPHA(uint16_t, 0xffff, 3, 0);
+					break;
+				case BC_YUV161616:
+					APPLY_MASK_SUBTRACT_ALPHA(uint16_t, 0xffff, 3, 1);
+					break;
+				case BC_YUVA16161616:
+				case BC_RGBA16161616:
+					APPLY_MASK_SUBTRACT_ALPHA(uint16_t, 0xffff, 4, 0);
+					break;
+			}
+			break;
 	}
+//	int64_t dif= get_difference(&start_time);
+//	printf("diff: %lli\n", dif);
+//printf("diff2: %lli\n", get_difference(&start_time));
 //printf("MaskUnit::process_package 4 %d\n", get_package_number());
 }
 
@@ -755,7 +818,7 @@ for(int i = 0; i < ptr->row2 - ptr->row1; i++) \
 
 
 MaskEngine::MaskEngine(int cpus)
- : LoadServer(cpus, cpus * OVERSAMPLE * 2)
+ : LoadServer(cpus, cpus )      /* these two HAVE to be the same, since packages communicate  */
 // : LoadServer(1, 2)
 {
 	mask = 0;
@@ -931,28 +994,28 @@ void MaskEngine::do_mask(VFrame *output,
 void MaskEngine::init_packages()
 {
 //printf("MaskEngine::init_packages 1\n");
-	int division = (int)((float)output->get_h() / (total_packages / 2) + 0.5);
+	int division = (int)((float)output->get_h() / (get_total_packages()) + 0.5);
 	if(division < 1) division = 1;
 
+	stage1_finished_count = 0;
+	stage1_finished.reset();
+	stage1_finished.lock();
+	if (recalculate) {
+		last_nonempty_rowspan = SHRT_MIN;
+		first_nonempty_rowspan = SHRT_MAX;
+	}
 // Always a multiple of 2 packages exist
-	for(int i = 0; i < get_total_packages() / 2; i++)
+	for(int i = 0; i < get_total_packages(); i++)
 	{
-		MaskPackage *part1 = (MaskPackage*)packages[i];
-		MaskPackage *part2 = (MaskPackage*)packages[i + total_packages / 2];
-		part2->row1 = part1->row1 = division * i;
-		part2->row2 = part1->row2 = division * i + division;
-		part2->row1 = part1->row1 = MIN(output->get_h(), part1->row1);
-		part2->row2 = part1->row2 = MIN(output->get_h(), part1->row2);
+		MaskPackage *pkg = (MaskPackage*)packages[i];
+		pkg->row1 = division * i;
+		pkg->row2 = MIN (division * i + division, output->get_h());
 		
-		if(i >= (total_packages / 2) - 1) 
+		if(i == get_total_packages() - 1)  // last package
 		{
-			part2->row2 = part1->row2 = output->get_h();
+			pkg->row2 = pkg->row2 = output->get_h();
 		}
 
-		part2->apply_mutex->lock();
-
-		part1->part = RECALCULATE_PART;
-		part2->part = APPLY_PART;
 	}
 //printf("MaskEngine::init_packages 2\n");
 }

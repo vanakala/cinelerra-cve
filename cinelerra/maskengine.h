@@ -9,6 +9,9 @@
 #include "vframe.inc"
 
 
+#define OVERSAMPLE 8
+#define NUM_SPANS 4 /* starting number of spans to be allocated for */
+
 class MaskEngine;
 
 
@@ -26,8 +29,6 @@ public:
 	~MaskPackage();
 
 	int row1, row2;
-	int part;
-	Mutex *apply_mutex;
 };
 
 class MaskUnit : public LoadClient
@@ -37,7 +38,7 @@ public:
 	~MaskUnit();
 
 	void process_package(LoadPackage *package);
-	void draw_line_clamped(VFrame *frame, int &x1, int &y1, int x2, int y2, unsigned char value);
+	void draw_line_clamped(int x1, int y1, int x2, int y2, int w, int h, int hoffset);
 	void do_feather(VFrame *output,
 		VFrame *input, 
 		float feather, 
@@ -54,7 +55,9 @@ public:
     float d_p[5], d_m[5];
     float bd_p[5], bd_m[5];
 	MaskEngine *engine;
-	VFrame *temp;
+	short **row_spans;
+	short row_spans_h;
+	Mutex protect_data;
 };
 
 
@@ -86,6 +89,10 @@ public:
 	float feather;
 	int recalculate;
 	int value;
+	Mutex stage1_finished;
+	int stage1_finished_count;
+	int first_nonempty_rowspan;
+	int last_nonempty_rowspan;
 };
 
 
