@@ -1,6 +1,7 @@
-#include "assets.h"
+#include "asset.h"
 #include "audiodevice.h"
 #include "batch.h"
+#include "bcsignals.h"
 #include "drivesync.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -87,19 +88,14 @@ int RecordThread::stop_recording(int resume_monitor)
 	else
 	if(record_audio && context != CONTEXT_SINGLEFRAME) 
 	{
-//printf("RecordThread::stop_recording 3\n");
 		record_audio->batch_done = 1;
 		state_lock.unlock();
-//printf("RecordThread::stop_recording 4\n");
 		record_audio->stop_recording();
-//printf("RecordThread::stop_recording 5\n");
 	}
 
 
-//printf("RecordThread::stop_recording 6\n");
 	completion_lock.lock();
 	completion_lock.unlock();
-//printf("RecordThread::stop_recording 100\n");
 	return 0;
 }
 
@@ -221,7 +217,7 @@ void RecordThread::run()
 	int rewinding_loop = 0;
 	startup_lock.unlock();
 	record->get_current_time(last_seconds, last_day);
-	
+
 
 	do
 	{
@@ -238,17 +234,18 @@ void RecordThread::run()
 		{
 			
 			rewinding_loop = 0;
-//printf("RecordThread::run 6\n");
 
 // Batch context needs to open the device here.  Interactive and singleframe
 // contexts need to open in Record::start_recording to allow full duplex.
 			if(context == CONTEXT_BATCH)
 			{
 // Delete output file before opening the devices to avoid buffer overflow.
+TRACE("RecordThread::run 1");
 				record->delete_output_file();
+TRACE("RecordThread::run 2");
 				record->open_input_devices(0, context);
+TRACE("RecordThread::run 3");
 			}
-//printf("RecordThread::run 7 %d\n", monitor);
 
 // Switch interactive recording to batch recording
 // to get delay before next batch
@@ -258,7 +255,9 @@ void RecordThread::run()
 			if(!monitor)
 			{
 // This draws to RecordGUI, incidentally
+TRACE("RecordThread::run 4");
 				record->open_output_file();
+TRACE("RecordThread::run 5");
 				if(mwindow->edl->session->record_sync_drives)
 				{
 					drivesync = new DriveSync;
@@ -268,6 +267,7 @@ void RecordThread::run()
 					drivesync = 0;
 
 				record->get_current_batch()->recorded = 1;
+TRACE("RecordThread::run 6");
 
 // Open file threads here to keep loop synchronized
 				if(record->default_asset->audio_data && 
@@ -277,14 +277,15 @@ void RecordThread::run()
 					record->get_audio_write_length(buffer_size, fragment_size);
 					record->file->start_audio_thread(buffer_size, RING_BUFFERS);
 				}
+TRACE("RecordThread::run 7");
 
 				if(record->default_asset->video_data)
 					record->file->start_video_thread(mwindow->edl->session->video_write_length,
 						record->vdevice->get_best_colormodel(record->default_asset),
 						RING_BUFFERS,
 						record->vdevice->is_compressed());
+TRACE("RecordThread::run 8");
 			}
-//printf("RecordThread::run 8\n");
 
 // Reset synchronization  counters
 			record->get_current_batch()->session_samples = 0;
@@ -292,37 +293,43 @@ void RecordThread::run()
 			record_timer->update();
 
 // Do initialization
+TRACE("RecordThread::run 9");
 			if(record->default_asset->audio_data && context != CONTEXT_SINGLEFRAME)
 				record_audio->arm_recording();
+TRACE("RecordThread::run 10");
 			if(record->default_asset->video_data)
 				record_video->arm_recording();
-//printf("RecordThread::run 9\n");
+TRACE("RecordThread::run 11");
 			state_lock.unlock();
 
 // Trigger loops
 
 			if(record->default_asset->audio_data && context != CONTEXT_SINGLEFRAME)
 				record_audio->start_recording();
+TRACE("RecordThread::run 12");
 			if(record->default_asset->video_data)
 				record_video->start_recording();
+TRACE("RecordThread::run 13");
 
-//printf("RecordThread::run 10\n");
 
 			if(record->default_asset->audio_data && context != CONTEXT_SINGLEFRAME)
 				record_audio->join();
-//printf("RecordThread::run 10\n");
+TRACE("RecordThread::run 14");
 			if(record->default_asset->video_data)
 				record_video->join();
-//printf("RecordThread::run 11\n");
+TRACE("RecordThread::run 15");
 
 // Stop file threads here to keep loop synchronized
 			if(!monitor)
 			{
 				if(drivesync) drivesync->done = 1;
+TRACE("RecordThread::run 16");
 				if(record->default_asset->audio_data && context != CONTEXT_SINGLEFRAME)
 					record->file->stop_audio_thread();
+TRACE("RecordThread::run 17");
 				if(record->default_asset->video_data)
 					record->file->stop_video_thread();
+TRACE("RecordThread::run 18");
 
 // Update asset info
 				record->get_current_batch()->get_current_asset()->audio_length = 
@@ -355,10 +362,10 @@ void RecordThread::run()
 						engine_done = 1;
 					}
 				}
+TRACE("RecordThread::run 20");
 
 				if(drivesync) delete drivesync;
 			}
-//printf("RecordThread::run 12\n");
 		}
 		else
 		{
@@ -375,7 +382,6 @@ void RecordThread::run()
 		}
 	}while(!engine_done);
 
-//printf("RecordThread::run 13\n");
 	record->close_input_devices();
 
 // Resume monitoring only if not a monitor ourselves

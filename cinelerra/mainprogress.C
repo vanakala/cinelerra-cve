@@ -171,6 +171,10 @@ void MainProgressBar::get_time(char *text)
 			TIME_HMS2);
 }
 
+double MainProgressBar::get_time()
+{
+	return (double)eta_timer->get_scaled_difference(1);
+}
 
 
 

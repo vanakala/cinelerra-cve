@@ -1,5 +1,5 @@
+#include "asset.h"
 #include "apluginarray.h"
-#include "assets.h"
 #include "defaults.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -43,43 +43,33 @@ int MenuAEffectThread::get_recordable_tracks(Asset *asset)
 
 int MenuAEffectThread::get_derived_attributes(Asset *asset, Defaults *defaults)
 {
-	char string[1024];
-	File file;
-	defaults->get("AEFFECTPATH", asset->path);
-	sprintf(string, "WAV");
-	defaults->get("AEFFECTFORMAT", string);
-	if(!file.supports_audio(mwindow->plugindb, string)) sprintf(string, WAV_NAME);
-	asset->format = file.strtoformat(mwindow->plugindb, string);
-//printf("MenuAEffectThread::get_derived_attributes %s\n", string);
-	asset->sample_rate = mwindow->edl->session->sample_rate;
-	asset->bits = defaults->get("AEFFECTBITS", 16);
-	dither = defaults->get("AEFFECTDITHER", 0);
-	asset->signed_ = defaults->get("AEFFECTSIGNED", 1);
-	asset->byte_order = defaults->get("AEFFECTBYTEORDER", 1);
+	asset->load_defaults(defaults, 
+		"AEFFECT_",
+		1, 
+		1,
+		1,
+		0,
+		1);
+
+
+// Fix asset for audio only
+	if(!File::supports_audio(asset->format)) asset->format = FILE_WAV;
 	asset->audio_data = 1;
+	asset->video_data = 0;
 
-
-
-
-
-	asset->load_defaults(defaults);
-	defaults->get("EFFECT_AUDIO_CODEC", asset->acodec);
 	return 0;
 }
 
 int MenuAEffectThread::save_derived_attributes(Asset *asset, Defaults *defaults)
 {
-	File file;
-	defaults->update("AEFFECTPATH", asset->path);
-	defaults->update("AEFFECTFORMAT", file.formattostr(mwindow->plugindb, asset->format));
-//printf("MenuAEffectThread::save_derived_attributes %s\n", file.formattostr(mwindow->plugindb, asset->format));
-	defaults->update("AEFFECTBITS", asset->bits);
-	defaults->update("AEFFECTDITHER", dither);
-	defaults->update("AEFFECTSIGNED", asset->signed_);
-	defaults->update("AEFFECTBYTEORDER", asset->byte_order);
+	asset->save_defaults(defaults, 
+		"AEFFECT_",
+		1, 
+		1,
+		1,
+		0,
+		1);
 
-	asset->save_defaults(defaults);
-	defaults->update("EFFECT_AUDIO_CODEC", asset->acodec);
 	return 0;
 }
 

@@ -42,13 +42,22 @@ public:
 	int alsa_out_channels;
 	int alsa_out_bits;
 
+// Firewire options
 	int firewire_channels;
 	int firewire_channel;
 	int firewire_port;
 	int firewire_frames;
 	char firewire_path[BCTEXTLEN];
 	int firewire_syt;
-	int firewire_use_dv1394;
+
+
+// DV1394 options
+	int dv1394_channels;
+	int dv1394_channel;
+	int dv1394_port;
+	int dv1394_frames;
+	char dv1394_path[BCTEXTLEN];
+	int dv1394_syt;
 };
 
 // This structure is passed to the driver
@@ -102,7 +111,12 @@ public:
 	int firewire_port;
 	char firewire_path[BCTEXTLEN];
 	int firewire_syt;
-	int firewire_use_dv1394;
+
+// DV1394 options
+	int dv1394_channel;
+	int dv1394_port;
+	char dv1394_path[BCTEXTLEN];
+	int dv1394_syt;
 };
 
 class PlaybackConfig

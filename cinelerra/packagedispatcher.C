@@ -1,5 +1,6 @@
-#include "assets.h"
+#include "asset.h"
 #include "clip.h"
+#include "confirmsave.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "mutex.h"
@@ -35,7 +36,8 @@ int PackageDispatcher::create_packages(MWindow *mwindow,
 	int strategy, 
 	Asset *default_asset, 
 	double total_start, 
-	double total_end)
+	double total_end,
+	int test_overwrite)
 {
 	int result = 0;
 
@@ -203,14 +205,16 @@ int PackageDispatcher::create_packages(MWindow *mwindow,
 		}
 	}
 
-// Test existence of every output file
-	if(strategy != BRENDER_FARM)
+// Test existence of every output file.
+// Only if this isn't a background render.
+	if(strategy != BRENDER_FARM && test_overwrite)
 	{
-		for(int i = 0; i < total_allocated && !result; i++)
+		ArrayList<char*> paths;
+		for(int i = 0; i < total_allocated; i++)
 		{
-			Asset temp_asset(packages[i]->path);
-			result = Render::test_existence(mwindow, &temp_asset);
+			paths.append(packages[i]->path);
 		}
+		result = ConfirmSave::test_files(mwindow, &paths);
 	}
 	
 	return result;
@@ -418,5 +422,15 @@ ArrayList<Asset*>* PackageDispatcher::get_asset_list()
 	}
 
 	return assets;
+}
+
+RenderPackage* PackageDispatcher::get_package(int number)
+{
+	return packages[number];
+}
+
+int PackageDispatcher::get_total_packages()
+{
+	return total_allocated;
 }
 

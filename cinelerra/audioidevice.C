@@ -1,4 +1,5 @@
 #include "audiodevice.h"
+#include "condition.h"
 #include "dcoffset.h"
 #include "bcprogressbox.h"
 
@@ -159,7 +160,7 @@ int AudioDevice::read_buffer(double **input,
 	if(duplex_init && !record_before_play)
 	{
 // block until playback starts
-		duplex_lock.lock();
+		duplex_lock->lock("AudioDevice::read_buffer");
 		duplex_init = 0;
 	}
 
@@ -168,7 +169,7 @@ int AudioDevice::read_buffer(double **input,
 // allow playback to start
 	if(duplex_init && record_before_play)
 	{
-		duplex_lock.unlock();
+		duplex_lock->unlock();
 		duplex_init = 0;
 	}
 

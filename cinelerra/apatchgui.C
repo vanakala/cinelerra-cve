@@ -7,6 +7,7 @@
 #include "edlsession.h"
 #include "floatauto.h"
 #include "floatautos.h"
+#include "language.h"
 #include "localsession.h"
 #include "mainundo.h"
 #include "mwindow.h"
@@ -18,10 +19,6 @@
 #include "trackcanvas.h"
 
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 APatchGUI::APatchGUI(MWindow *mwindow, PatchBay *patchbay, ATrack *track, int x, int y)
@@ -50,17 +47,21 @@ int APatchGUI::reposition(int x, int y)
 	int x1 = 0;
 	int y1 = PatchGUI::reposition(x, y);
 
-	if(fade) fade->reposition_window(x1 + x, 
+	if(fade) fade->reposition_window(fade->get_x(), 
 		y1 + y);
 	y1 += mwindow->theme->fade_h;
 
-	if(meter) meter->reposition_window(x1 + x,
+	if(meter) meter->reposition_window(meter->get_x(),
 		y1 + y,
 		meter->get_w());
 	y1 += mwindow->theme->meter_h;
 
-	if(pan) pan->reposition_window(x1 + x + mwindow->theme->pan_x,
+	if(pan) pan->reposition_window(pan->get_x(),
 		y1 + y);
+
+	if(nudge) nudge->reposition_window(nudge->get_x(),
+		y1 + y);
+
 	y1 += mwindow->theme->pan_h;
 	return y1;
 }
@@ -122,6 +123,7 @@ int APatchGUI::update(int x, int y)
 			y1 + y));
 	}
 	y1 += mwindow->theme->meter_h;
+	x1 += 10;
 
 	if(pan)
 	{
@@ -129,27 +131,32 @@ int APatchGUI::update(int x, int y)
 		{
 			delete pan;
 			pan = 0;
-		}
-		else
-		if(pan->get_total_values() != mwindow->edl->session->audio_channels)
-		{
-			pan->change_channels(mwindow->edl->session->audio_channels,
-				mwindow->edl->session->achannel_positions);
+			delete nudge;
+			nudge = 0;
 		}
 		else
 		{
-			int handle_x, handle_y;
-			PanAuto *previous = 0, *next = 0;
-			double unit_position = mwindow->edl->local_session->selectionstart;
-			unit_position = mwindow->edl->align_to_frame(unit_position, 0);
-			unit_position = atrack->to_units(unit_position, 0);
-			atrack->automation->pan_autos->get_handle(handle_x,
-				handle_y,
-				(long)unit_position, 
-				PLAY_FORWARD,
-				previous,
-				next);
-			pan->update(handle_x, handle_y);
+			if(pan->get_total_values() != mwindow->edl->session->audio_channels)
+			{
+				pan->change_channels(mwindow->edl->session->audio_channels,
+					mwindow->edl->session->achannel_positions);
+			}
+			else
+			{
+				int handle_x, handle_y;
+				PanAuto *previous = 0, *next = 0;
+				double unit_position = mwindow->edl->local_session->selectionstart;
+				unit_position = mwindow->edl->align_to_frame(unit_position, 0);
+				unit_position = atrack->to_units(unit_position, 0);
+				atrack->automation->pan_autos->get_handle(handle_x,
+					handle_y,
+					(long)unit_position, 
+					PLAY_FORWARD,
+					previous,
+					next);
+				pan->update(handle_x, handle_y);
+			}
+			nudge->update();
 		}
 	}
 	else
@@ -157,8 +164,14 @@ int APatchGUI::update(int x, int y)
 	{
 		patchbay->add_subwindow(pan = new APanPatch(mwindow,
 			this,
-			x1 + x + mwindow->theme->pan_x, 
+			x1 + x, 
 			y1 + y));
+		x1 += pan->get_w() + 10;
+		patchbay->add_subwindow(nudge = new NudgePatch(mwindow,
+			this,
+			x1 + x,
+			y1 + y,
+			patchbay->get_w() - x1 - 10));
 	}
 	y1 += mwindow->theme->pan_h;
 
@@ -266,7 +279,7 @@ APanPatch::APanPatch(MWindow *mwindow, APatchGUI *patch, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->patch = patch;
-//printf("APanPatch::APanPatch %d %d\n", get_keyframe(mwindow, patch)->handle_x, get_keyframe(mwindow, patch)->handle_y);
+	set_tooltip("Pan");
 }
 
 int APanPatch::handle_event()

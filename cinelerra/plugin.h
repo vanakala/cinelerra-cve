@@ -53,6 +53,8 @@ public:
 	virtual int operator==(Edit& that);
 
 	virtual void copy_from(Edit *edit);
+
+
 // Called by == operators, Edit::equivalent output
 // to test title and keyframe of transition.
 	virtual int identical(Plugin *that);
@@ -93,11 +95,11 @@ public:
 // Get keyframes for editing with automatic creation if enabled
 	virtual KeyFrame* get_keyframe();
 	int silence();
-// Calculate title given plugin type
-	void calculate_title(char *string);
+// Calculate title given plugin type.  Used by TrackCanvas::draw_plugins
+	void calculate_title(char *string, int use_nudge);
 // Resolve objects pointed to by shared_location
 	Track* get_shared_track();
-	Plugin* get_shared_plugin();
+//	Plugin* get_shared_plugin();
 
 // Need to resample keyframes
 	void resample(double old_rate, double new_rate);

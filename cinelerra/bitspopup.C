@@ -1,4 +1,3 @@
-#include "assets.h"
 #include "bitspopup.h"
 #include "file.h"
 

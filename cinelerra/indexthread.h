@@ -1,10 +1,10 @@
 #ifndef INDEXTHREAD_H
 #define INDEXTHREAD_H
 
-#include "assets.inc"
+#include "asset.inc"
+#include "condition.inc"
 #include "indexfile.inc"
 #include "mwindow.inc"
-#include "mutex.h"
 #include "thread.h"
 
 #define TOTAL_BUFFERS 2
@@ -38,7 +38,7 @@ public:
 private:
 	int interrupt_flag;
 	double **buffer_in[TOTAL_BUFFERS];
-	Mutex input_lock[TOTAL_BUFFERS], output_lock[TOTAL_BUFFERS];
+	Condition *input_lock[TOTAL_BUFFERS], *output_lock[TOTAL_BUFFERS];
 	int last_buffer[TOTAL_BUFFERS];
 	int64_t input_len[TOTAL_BUFFERS];
 };

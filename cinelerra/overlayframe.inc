@@ -3,6 +3,8 @@
 
 // Modes
 
+#define TRANSFER_TYPES 6
+
 #define TRANSFER_NORMAL       0
 #define TRANSFER_ADDITION     1
 #define TRANSFER_SUBTRACT     2

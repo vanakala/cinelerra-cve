@@ -1,11 +1,14 @@
-#include "assets.h"
+#include "asset.h"
+#include "condition.h"
 #include "file.h"
 #include "filethread.h"
+#include "mutex.h"
 #include "vframe.h"
 
 #include <unistd.h>
 
-FileThread::FileThread(File *file, int do_audio, int do_video) : Thread()
+FileThread::FileThread(File *file, int do_audio, int do_video)
+ : Thread(1, 0, 0)
 {
 	create_objects(file,
 		do_audio,
@@ -44,10 +47,11 @@ void FileThread::create_objects(File *file,
 	this->file = file;
 	this->do_audio = do_audio;
 	this->do_video = do_video;
+	file_lock = new Mutex("FileThread::file_lock");
 	for(int i = 0; i < RING_BUFFERS; i++)
 	{
-		output_lock[i].lock();
-		input_lock[i].unlock();
+		output_lock[i] = new Condition(0, "FileThread::output_lock");
+		input_lock[i] = new Condition(1, "FileThread::input_lock");
 	}
 	this->ring_buffers = ring_buffers;
 	this->buffer_size = buffer_size;
@@ -61,6 +65,12 @@ void FileThread::create_objects(File *file,
 
 FileThread::~FileThread()
 {
+	delete file_lock;
+	for(int i = 0; i < RING_BUFFERS; i++)
+	{
+		delete output_lock[i];
+		delete input_lock[i];
+	}
 }
 
 void FileThread::run()
@@ -68,16 +78,19 @@ void FileThread::run()
 	int done = 0;
 	int i, j, result;
 
+//printf("FileThread::run 1 %d\n", getpid());
 	while(!done)
 	{
-		output_lock[local_buffer].lock();
+		output_lock[local_buffer]->lock("FileThread::run 1");
 		return_value = 0;
 
+// Timer timer;
+// timer.update();
 		if(!last_buffer[local_buffer])
 		{
 			if(output_size[local_buffer])
 			{
-				file_lock.lock();
+				file_lock->lock("FileThread::run 2");
 				if(do_audio)
 				{
 					result = file->write_samples(audio_buffer[local_buffer], 
@@ -100,7 +113,7 @@ void FileThread::run()
 					}
 				}
 
-				file_lock.unlock();
+				file_lock->unlock();
 				return_value = result;
 			}
 			else
@@ -111,7 +124,8 @@ void FileThread::run()
 		else
 			done = 1;
 
-		input_lock[local_buffer].unlock();
+//printf("FileThread::run %lld\n", timer.get_difference());
+		input_lock[local_buffer]->unlock();
 		local_buffer++;
 		if(local_buffer >= ring_buffers) local_buffer = 0;
 	}
@@ -124,13 +138,12 @@ int FileThread::stop_writing()
 	int i, buffer, layer, frame;
 
 	swap_buffer();
-	input_lock[current_buffer].lock();
+	input_lock[current_buffer]->lock("FileThread::stop_writing 1");
 
 	last_buffer[current_buffer] = 1;
 
 	for(i = 0; i < ring_buffers; i++)
-		output_lock[i].unlock();
-//	output_lock[current_buffer].unlock();
+		output_lock[i]->unlock();
 
 	swap_buffer();
 
@@ -138,7 +151,7 @@ int FileThread::stop_writing()
 	join();
 
 // delete buffers
-	file_lock.lock();
+	file_lock->lock("FileThread::stop_writing 2");
 	if(do_audio)
 	{
 		for(buffer = 0; buffer < ring_buffers; buffer++)
@@ -169,7 +182,7 @@ int FileThread::stop_writing()
 			delete [] video_buffer[buffer];
 		}
 	}
-	file_lock.unlock();
+	file_lock->unlock();
 	return 0;
 }
 
@@ -194,7 +207,7 @@ int FileThread::start_writing(long buffer_size,
 	this->ring_buffers = ring_buffers;
 	this->buffer_size = buffer_size;
 
-	file_lock.lock();
+	file_lock->lock("FileThread::start_writing 1");
 	if(do_audio)
 	{
 		for(buffer = 0; buffer < ring_buffers; buffer++)
@@ -239,7 +252,7 @@ int FileThread::start_writing(long buffer_size,
 		}
 	}
 //printf("FileThread::start_writing 1\n");
-	file_lock.unlock();
+	file_lock->unlock();
 
 	for(int i = 0; i < ring_buffers; i++)
 	{
@@ -247,8 +260,6 @@ int FileThread::start_writing(long buffer_size,
 	}
 //printf("FileThread::start_writing 1\n");
 
-	set_synchronous(1);
-//printf("FileThread::start_writing 2\n");
 
 	start();
 	return 0;
@@ -258,7 +269,7 @@ double** FileThread::get_audio_buffer()
 {
 	swap_buffer();
 
-	input_lock[current_buffer].lock();
+	input_lock[current_buffer]->lock("FileThread::get_audio_buffer");
 	return audio_buffer[current_buffer];
 }
 
@@ -266,7 +277,7 @@ VFrame*** FileThread::get_video_buffer()
 {
 	swap_buffer();
 
-	input_lock[current_buffer].lock();
+	input_lock[current_buffer]->lock("FileThread::get_video_buffer");
 	return video_buffer[current_buffer];
 }
 
@@ -275,7 +286,7 @@ int FileThread::write_buffer(long size)
 	output_size[current_buffer] = size;
 
 // unlock the output lock
-	output_lock[current_buffer].unlock();
+	output_lock[current_buffer]->unlock();
 
 	return return_value;
 }

@@ -68,7 +68,24 @@ int MButtons::resize_event()
 int MButtons::keypress_event()
 {
 	int result = 0;
-	result = transport->keypress_event();
+
+// 	switch(get_keypress())
+// 	{
+// 		case END:
+// 			mwindow->goto_start();
+// 			result = 1;
+// 			break;
+// 		case HOME:
+// 			mwindow->goto_end();
+// 			result = 1;
+// 			break;
+// 	}
+
+	if(!result)
+	{
+		result = transport->keypress_event();
+	}
+
 	if(!result)
 	{
 	}
@@ -81,6 +98,21 @@ void MButtons::update()
 {
 	edit_panel->update();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 MainTransport::MainTransport(MWindow *mwindow, MButtons *mbuttons, int x, int y)
  : PlayTransport(mwindow, mbuttons, x, y)

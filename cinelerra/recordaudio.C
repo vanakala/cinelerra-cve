@@ -1,4 +1,4 @@
-#include "assets.h"
+#include "asset.h"
 #include "audiodevice.h"
 #include "batch.h"
 #include "clip.h"
@@ -7,6 +7,7 @@
 #include "errorbox.h"
 #include "file.h"
 #include "filethread.h"
+#include "language.h"
 #include "meterpanel.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
@@ -19,11 +20,6 @@
 #include "recordthread.h"
 #include "renderengine.h"
 
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 RecordAudio::RecordAudio(MWindow *mwindow,

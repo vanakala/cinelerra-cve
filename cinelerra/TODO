@@ -1,46 +1,43 @@
 Big bugs
 -----------
-Remove css from libmpeg3 distribution.
 Double click and drag item drags it but doesn't drop it.
 Undo doesn't restore project title from previous load.
 Master node framerate not displaying.
 Need to stop building on first error.
 Lockup when playing and interrupting in certain places.
-Test lame, toolame termination.
-Hitting space rapidly locks up recording sometimes.
-Drawing cache not cleared after recording.
-Use This doesn't work in directory selection unless text is in the textbox.
-Autoplacement of new clips in AWindow doesn't work.
 If region in VWindow and CWindow is 100% it should follow the timeline length.
 Autoplacement of new clips in AWindow doesn't work.
-Use This doesn't work in directory selection unless text is in the textbox.
-Drawing cache not cleared after recording.
-Date, Size, Path sorting in file boxes.
 Hitting space rapidly locks up recording sometimes.
 Test lame, toolame termination.
-Lockup when playing mpg.
-Need to stop building on first error.
-
-
-
-
+Drawing cache not cleared if pcm parameters changed
+Drawing cache not cleared after recording.
+Lockup when render finishes and video is playing.
+Stop immediately followed by paste in CWindow locks up
+Test XMovie with DVD.
+Load shift_keyframes.xml then load slide.xml
+Load pan_photo.xml then load pan.xml
+Pinch doesn't work unless whirl is nonzero.
 
 Small bugs
 ----------------
 List problems:
 	Click drag doesn't drag selection over sublists.
 	First column text not indented in sublist.
-	Can't unselect by shift-dragging.
 	Shift dragging to create multiple selections doesn't handle crossing over center of selection.
-
-
+	Vertical range not recalculated when expanding or collapsing rows.
 
 
 
 Big Features
 ----------------
-Audio nudge
-Date, Size, Path sorting in file boxes.
+hourglass
+time decimation
+Pitch shift and time stretch using single window.
+remote control in Video In
+Hide controls in Compositor and Record Monitor
+color curves
+hide cursor when over video output
+SUV theme
 Asset searches.
 Asset organization in subfolders.
 Field based reverse video.
@@ -51,8 +48,13 @@ Zoom transition
 
 
 
+
+
 Small Features
 -----------------
+Pencil and chain instead of G and D.
+N for Normal overlay
+left and right arrow in track title
 
 
 

@@ -54,7 +54,8 @@ void APluginArray::load_module(int module, int64_t input_position, int64_t len)
 	((AModule*)modules[module])->render(realtime_buffers[module], 
 		len, 
 		input_position,
-		PLAY_FORWARD);
+		PLAY_FORWARD,
+		0);
 }
 
 void APluginArray::process_realtime(int module, int64_t input_position, int64_t len)

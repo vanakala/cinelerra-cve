@@ -1,3 +1,4 @@
+#include "asset.h"
 #include "assets.h"
 #include "clip.h"
 #include "defaults.h"
@@ -34,14 +35,15 @@
 
 // The render client waits for connections from the server.
 // Then it starts a thread for each connection.
-RenderFarmClient::RenderFarmClient(int port, char *deamon_path)
+RenderFarmClient::RenderFarmClient(int port, char *deamon_path, int nice_value)
 {
 	this->port = port;
 	this->deamon_path = deamon_path;
-	new SigHandler;
+	SigHandler *signals = new SigHandler;
+	signals->initialize();
 
 	this_pid = getpid();
-	nice(20);
+	nice(nice_value);
 
 	thread = new RenderFarmClientThread(this);
 
@@ -124,6 +126,7 @@ void RenderFarmClient::main_loop()
 	}
 
 // Wait for connections
+	printf("RenderFarmClient::main_loop: client started\n");
 	while(1)
 	{
 		if(listen(socket_fd, 256) < 0)

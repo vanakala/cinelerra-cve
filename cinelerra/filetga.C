@@ -1,4 +1,4 @@
-#include "assets.h"
+#include "asset.h"
 #include "edit.h"
 #include "filetga.h"
 #include "mwindow.inc"

@@ -12,12 +12,12 @@
 // Files given as arguments must outlive the cache.
 
 #include "arraylist.h"
-#include "assets.inc"
+#include "asset.inc"
 #include "cache.inc"
 #include "edl.inc"
 #include "file.inc"
 #include "linklist.h"
-#include "mutex.h"
+#include "mutex.inc"
 #include "pluginserver.inc"
 #include "preferences.inc"
 
@@ -35,7 +35,7 @@ public:
 	int64_t counter;     // number of age calls ago this asset was last needed
 	                  // assets used in the last render have counter == 1
 	Asset *asset;     // Copy of asset.  CICache should outlive EDLs.
-	Mutex item_lock;
+	Mutex *item_lock;
 	int checked_out;
 private:
 	CICache *cache;
@@ -89,7 +89,7 @@ private:
 // to prevent one from checking the same asset out before it's checked in
 // yet without blocking the asset trying to get checked in
 // use a seperate mutex for checkouts and checkins
-	Mutex check_in_lock, check_out_lock, total_lock;
+	Mutex *check_in_lock, *check_out_lock, *total_lock;
 // Copy of EDL
 	EDL *edl;
 	Preferences *preferences;

@@ -1,4 +1,5 @@
-#include "assets.h"
+#include "asset.h"
+#include "condition.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
@@ -48,11 +49,12 @@ IndexThread::IndexThread(MWindow *mwindow,
 	for(int i = 0; i < TOTAL_BUFFERS; i++)
 	{
 		buffer_in[i] = new double*[asset->channels];
+		output_lock[i] = new Condition(0, "IndexThread::output_lock");
+		input_lock[i] = new Condition(1, "IndexThread::input_lock");
 		for(int j = 0; j < asset->channels; j++)
 		{
 			buffer_in[i][j] = new double[buffer_size];
 		}
-		output_lock[i].lock();
 	}
 
 	interrupt_flag = 0;
@@ -67,6 +69,8 @@ IndexThread::~IndexThread()
 			delete [] buffer_in[i][j];
 		}
 		delete [] buffer_in[i];
+		delete output_lock[i];
+		delete input_lock[i];
 	}
 	
 	delete [] asset->index_buffer;
@@ -129,7 +133,7 @@ void IndexThread::run()
 
 	while(!interrupt_flag && !done)
 	{
-		output_lock[current_buffer].lock();
+		output_lock[current_buffer]->lock("IndexThread::run");
 
 		if(last_buffer[current_buffer]) done = 1;
 		if(!interrupt_flag && !done)
@@ -190,7 +194,7 @@ void IndexThread::run()
 		}
 
 //printf("IndexThread::run %ld\n", lowpoint[asset->channels - 1] + 1);
-		input_lock[current_buffer].unlock();
+		input_lock[current_buffer]->unlock();
 		current_buffer++;
 		if(current_buffer >= TOTAL_BUFFERS) current_buffer = 0;
 	}

@@ -14,9 +14,11 @@
 #include "audioesound.inc"
 #include "audiooss.inc"
 #include "binary.h"
+#include "condition.inc"
 #include "dcoffset.inc"
+#include "device1394output.inc"
 #include "maxchannels.h"
-#include "mutex.h"
+#include "mutex.inc"
 #include "preferences.inc"
 #include "recordgui.inc"
 #include "thread.h"
@@ -56,6 +58,7 @@ public:
 	friend class AudioESound;
 	friend class Audio1394;
 	friend class VDevice1394;
+	friend class Device1394Output;
 
 	int open_input(AudioInConfig *config, int rate, int samples);
 	int open_output(AudioOutConfig *config, int rate, int samples, int realtime);
@@ -150,7 +153,8 @@ private:
 // OSS >= 3.9  --> doesn't matter
 // Got better synchronization by starting playback first
 	int record_before_play;
-	Mutex duplex_lock, startup_lock;
+	Condition *duplex_lock;
+	Condition *startup_lock;
 // notify playback routines to test the duplex lock
 	int duplex_init;        
 // bits in output file
@@ -163,8 +167,9 @@ private:
 	int last_buffer[TOTAL_BUFFERS];    // not written to device
 // formatted buffers for output
 	char *buffer[TOTAL_BUFFERS], *input_buffer;
-	Mutex play_mutex[TOTAL_BUFFERS], arm_mutex[TOTAL_BUFFERS];
-	Mutex timer_lock;
+	Condition *play_lock[TOTAL_BUFFERS];
+	Condition *arm_lock[TOTAL_BUFFERS];
+	Mutex *timer_lock;
 	int arm_buffer_num;
 
 // for position information

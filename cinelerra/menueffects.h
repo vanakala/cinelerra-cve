@@ -1,7 +1,7 @@
 #ifndef MENUEFFECTS_H
 #define MENUEFFECTS_H
 
-#include "assets.inc"
+#include "asset.inc"
 #include "bitspopup.h"
 #include "browsebutton.h"
 #include "compresspopup.h"
@@ -32,14 +32,14 @@ public:
 class MenuEffectPacket
 {
 public:
-	MenuEffectPacket();
+	MenuEffectPacket(char *path, int64_t start, int64_t end);
 	~MenuEffectPacket();
 
 // Path of output without remote prefix
 	char path[BCTEXTLEN];
 	
-	double start;
-	double end;
+	int64_t start;
+	int64_t end;
 };
 
 

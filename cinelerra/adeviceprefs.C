@@ -36,7 +36,6 @@ ADevicePrefs::ADevicePrefs(int x,
 	firewire_channels = 0;
 	firewire_path = 0;
 	firewire_syt = 0;
-	firewire_use_dv1394 = 0;
 	syt_title = 0;
 	channels_title = 0;
 	path_title = 0;
@@ -92,6 +91,7 @@ int ADevicePrefs::initialize()
 			create_esound_objs();
 			break;
 		case AUDIO_1394:
+		case AUDIO_DV1394:
 			create_firewire_objs();
 			break;
 	}
@@ -119,6 +119,7 @@ int ADevicePrefs::delete_objects()
 			delete_esound_objs();
 			break;
 		case AUDIO_1394:
+		case AUDIO_DV1394:
 			delete_firewire_objs();
 			break;
 	}
@@ -175,11 +176,6 @@ int ADevicePrefs::delete_firewire_objs()
 		delete channels_title;
 	}
 	firewire_channels = 0;
-	if(firewire_use_dv1394)
-	{
-		delete firewire_use_dv1394;
-	}
-	firewire_use_dv1394 = 0;
 	return 0;
 }
 
@@ -369,8 +365,8 @@ int ADevicePrefs::create_alsa_objs()
 			output_int = &out_config->alsa_out_channels;
 			break;
 	}
-	dialog->add_subwindow(channels_title = new BC_Title(x1, y, _("Channels:"), MEDIUMFONT, BLACK));
-	dialog->add_subwindow(alsa_channels = new ADeviceIntBox(x1, y1 + 20, output_int));
+	dialog->add_subwindow(channels_title = new BC_Title(x1, y, "Channels:", MEDIUMFONT, BLACK));
+	dialog->add_subwindow(alsa_channels = new ALSAChannels(x1, y1 + 20, output_int));
 	y1 += DEVICE_H;
 #endif
 
@@ -426,7 +422,10 @@ int ADevicePrefs::create_firewire_objs()
 	switch(mode)
 	{
 		case MODEPLAY:
-			output_char = out_config->firewire_path;
+			if(driver == AUDIO_DV1394)
+				output_char = out_config->dv1394_path;
+			else
+				output_char = out_config->firewire_path;
 			break;
 // Our version of raw1394 doesn't support changing the path
 		case MODERECORD:
@@ -445,7 +444,10 @@ int ADevicePrefs::create_firewire_objs()
 	switch(mode)
 	{
 		case MODEPLAY: 
-			output_int = &out_config->firewire_port;
+			if(driver == AUDIO_DV1394)
+				output_int = &out_config->dv1394_port;
+			else
+				output_int = &out_config->firewire_port;
 			break;
 		case MODERECORD:
 			output_int = &in_config->firewire_port;
@@ -463,7 +465,10 @@ int ADevicePrefs::create_firewire_objs()
 	switch(mode)
 	{
 		case MODEPLAY: 
-			output_int = &out_config->firewire_channel;
+			if(driver == AUDIO_DV1394)
+				output_int = &out_config->dv1394_channel;
+			else
+				output_int = &out_config->firewire_channel;
 			break;
 		case MODERECORD:
 			output_int = &in_config->firewire_channel;
@@ -477,7 +482,10 @@ int ADevicePrefs::create_firewire_objs()
 	switch(mode)
 	{
 		case MODEPLAY:
-			output_int = &out_config->firewire_channels;
+			if(driver == AUDIO_DV1394)
+				output_int = &out_config->dv1394_channels;
+			else
+				output_int = &out_config->firewire_channels;
 			break;
 		case MODERECORD:
 			output_int = 0;
@@ -495,7 +503,10 @@ int ADevicePrefs::create_firewire_objs()
 	switch(mode)
 	{
 		case MODEPLAY:
-			output_int = &out_config->firewire_syt;
+			if(driver == AUDIO_DV1394)
+				output_int = &out_config->dv1394_syt;
+			else
+				output_int = &out_config->firewire_syt;
 			break;
 		case MODERECORD:
 			output_int = 0;
@@ -507,24 +518,6 @@ int ADevicePrefs::create_firewire_objs()
 		dialog->add_subwindow(syt_title = new BC_Title(x1, y, _("Syt Offset:"), MEDIUMFONT, BLACK));
 		dialog->add_subwindow(firewire_syt = new ADeviceIntBox(x1, y + 20, output_int));
 		x1 += firewire_syt->get_w() + 5;
-	}
-
-	x1 = x + menu->get_w() + 5;
-
-	switch(mode)
-	{
-		case MODEPLAY:
-			output_int = &out_config->firewire_use_dv1394;
-			break;
-		case MODERECORD:
-			output_int = 0;
-			break;
-	}
-
-	if(output_int)
-	{
-		dialog->add_subwindow(firewire_use_dv1394 =
-				new BC_CheckBox(x1, y + 45, output_int, _("Use DV1394")));
 	}
 
 	return 0;
@@ -557,8 +550,8 @@ void ADriverMenu::create_objects()
 
 	if(!do_input) add_item(new ADriverItem(this, AUDIO_ESOUND_TITLE, AUDIO_ESOUND));
 //	add_item(new ADriverItem(this, AUDIO_NAS_TITLE, AUDIO_NAS));
-//	if(do_input) 
 	add_item(new ADriverItem(this, AUDIO_1394_TITLE, AUDIO_1394));
+	if(!do_input) add_item(new ADriverItem(this, AUDIO_DV1394_TITLE, AUDIO_DV1394));
 }
 
 char* ADriverMenu::adriver_to_string(int driver)
@@ -582,6 +575,9 @@ char* ADriverMenu::adriver_to_string(int driver)
 			break;
 		case AUDIO_1394:
 			sprintf(string, AUDIO_1394_TITLE);
+			break;
+		case AUDIO_DV1394:
+			sprintf(string, AUDIO_DV1394_TITLE);
 			break;
 	}
 	return string;
@@ -645,17 +641,6 @@ int ADeviceIntBox::handle_event()
 { 
 	*output = atol(get_text()); 
 	return 1;
-}
-
-ADeviceCheckBox::ADeviceCheckBox(int x, int y, int *output, char *text)
- : BC_CheckBox(x, y, *output, text)
-{
-   this->output = output;
-}
-int ADeviceCheckBox::handle_event()
-{
-   *output = get_value();
-   return 1;
 }
 
 

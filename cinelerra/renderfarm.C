@@ -1,4 +1,4 @@
-#include "assets.h"
+#include "asset.h"
 #include "brender.h"
 #include "clip.h"
 #include "defaults.h"
@@ -547,7 +547,7 @@ void RenderFarmServerThread::send_package(unsigned char *buffer)
 
 void RenderFarmServerThread::set_progress(unsigned char *buffer)
 {
-	server->total_return_lock->lock();
+	server->total_return_lock->lock("RenderFarmServerThread::set_progress");
 	*server->total_return += (int64_t)(((u_int32_t)buffer[0]) << 24) |
 											(((u_int32_t)buffer[1]) << 16) |
 											(((u_int32_t)buffer[2]) << 8)  |

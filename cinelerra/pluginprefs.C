@@ -44,7 +44,7 @@ int PluginPrefs::create_objects()
 		215, 
 		y, 
 		pwindow->thread->preferences->global_plugin_dir, 
-		("Global Plugin Path"), 
+		_("Global Plugin Path"), 
 		_("Select the directory for plugins"), 
 		1));
 	
@@ -58,7 +58,7 @@ int PluginPrefs::create_objects()
 		215, 
 		y, 
 		pwindow->thread->preferences->local_plugin_dir, 
-		_9"Personal Plugin Path"), 
+		_("Personal Plugin Path"), 
 		_("Select the directory for plugins"), 
 		1));
 

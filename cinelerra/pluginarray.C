@@ -76,7 +76,11 @@ int PluginArray::start_plugins(MWindow *mwindow,
 				plugin->set_mwindow(mwindow);
 				plugin->set_keyframe(keyframe);
 				plugin->set_module(modules[i]);
-				plugin->open_plugin(0, mwindow->edl, 0);
+				plugin->open_plugin(0, 
+					mwindow->preferences, 
+					mwindow->edl, 
+					0,
+					-1);
 				if(i == 0) plugin->set_interactive();
 				plugin->start_loop(start, end, buffer_size, 1);
 //printf("PluginArray::start_plugins 4\n");
@@ -96,7 +100,11 @@ int PluginArray::start_plugins(MWindow *mwindow,
 			for(i = 0; i < total_tracks(); i++)
 				plugin->set_module(modules[i]);
 //printf("PluginArray::start_plugins 4\n");
-			plugin->open_plugin(0, mwindow->edl, 0);
+			plugin->open_plugin(0, 
+				mwindow->preferences, 
+				mwindow->edl, 
+				0,
+				-1);
 // set one plugin for progress bars
 			plugin->set_interactive();
 //printf("PluginArray::start_plugins 4\n");
@@ -120,7 +128,11 @@ int PluginArray::start_plugins(MWindow *mwindow,
 				append(plugin = new PluginServer(*plugin_server));
 				plugin->set_mwindow(mwindow);
 				plugin->set_keyframe(keyframe);
-				plugin->open_plugin(0, mwindow->edl, 0);
+				plugin->open_plugin(0, 
+					mwindow->preferences, 
+					mwindow->edl, 
+					0,
+					-1);
 				plugin->init_realtime(0, 1, get_bufsize());
 // Plugin loads configuration on its own
 //			plugin->get_configuration_change(plugin_data);				
@@ -133,7 +145,11 @@ int PluginArray::start_plugins(MWindow *mwindow,
 			append(plugin = new PluginServer(*plugin_server));
 			plugin->set_mwindow(mwindow);
 			plugin->set_keyframe(keyframe);
-			plugin->open_plugin(0, mwindow->edl, 0);
+			plugin->open_plugin(0, 
+				mwindow->preferences,
+				mwindow->edl, 
+				0,
+				-1);
 			plugin->init_realtime(0, total_tracks(), get_bufsize());
 // Plugin loads configuration on its own
 //		plugin->get_configuration_change(plugin_data);				

@@ -1,4 +1,4 @@
-#include "assets.h"
+#include "asset.h"
 #include "defaults.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -43,33 +43,39 @@ int MenuVEffectThread::get_recordable_tracks(Asset *asset)
 
 int MenuVEffectThread::get_derived_attributes(Asset *asset, Defaults *defaults)
 {
-	char string[1024];
-	File file;
-	defaults->get("VEFFECTPATH", asset->path);
-	sprintf(string, MOV_NAME);
-	defaults->get("VEFFECTFORMAT", string);
-	if(!file.supports_video(mwindow->plugindb, string)) sprintf(string, MOV_NAME);
-	asset->format = file.strtoformat(mwindow->plugindb, string);
-	sprintf(asset->vcodec, QUICKTIME_YUV2);
+
+	asset->load_defaults(defaults, 
+		"VEFFECT_",
+		1, 
+		1,
+		1,
+		0,
+		0);
+
+
+
+
+// Fix asset for video only
+	if(!File::supports_video(asset->format)) asset->format = FILE_MOV;
+	asset->audio_data = 0;
 	asset->video_data = 1;
 
 
 
-	asset->load_defaults(defaults);
-	defaults->get("EFFECT_VIDEO_CODEC", asset->vcodec);
 	return 0;
 }
 
 int MenuVEffectThread::save_derived_attributes(Asset *asset, Defaults *defaults)
 {
-	File file;
-	defaults->update("VEFFECTPATH", asset->path);
-	defaults->update("VEFFECTFORMAT", file.formattostr(mwindow->plugindb, asset->format));
-	defaults->update("VEFFECTCOMPRESSION", asset->vcodec);
+	asset->save_defaults(defaults,
+		"VEFFECT_",
+		1,
+		1,
+		1,
+		0,
+		0);
 
 
-	asset->save_defaults(defaults);
-	defaults->update("EFFECT_VIDEO_CODEC", asset->vcodec);
 	return 0;
 }
 

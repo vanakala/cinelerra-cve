@@ -46,16 +46,11 @@ int CWindow::create_objects()
 
 	playback_engine = new CPlayback(mwindow, this, gui->canvas);
 
-//printf("CWindow::create_objects 1\n");
 // Start command loop
 	playback_engine->create_objects();
-//printf("CWindow::create_objects 1\n");
 	gui->transport->set_engine(playback_engine);
-//printf("CWindow::create_objects 1\n");
 	playback_cursor = new CTracking(mwindow, this);
-//printf("CWindow::create_objects 1\n");
 	playback_cursor->create_objects();
-//printf("CWindow::create_objects 2\n");
     return 0;
 }
 
@@ -86,7 +81,7 @@ Auto* CWindow::calculate_affected_auto(Autos *autos, int create)
 		affected_auto = autos->get_auto_for_editing();
 		if(total != autos->total())
 		{
-			mwindow->gui->lock_window();
+			mwindow->gui->lock_window("CWindow::calculate_affected_auto");
 			mwindow->gui->canvas->draw_overlays();
 			mwindow->gui->canvas->flash();
 			mwindow->gui->unlock_window();
@@ -116,7 +111,7 @@ void CWindow::update(int position,
 	if(position)
 	{
 //printf("CWindow::update 2\n");
-		gui->lock_window();
+		gui->lock_window("CWindow::update 1");
 		gui->slider->set_position();
 		gui->unlock_window();
 //printf("CWindow::update 2\n");
@@ -131,7 +126,7 @@ void CWindow::update(int position,
 //printf("CWindow::update 4\n");
 
 
-	gui->lock_window();
+	gui->lock_window("CWindow::update 2");
 
 
 

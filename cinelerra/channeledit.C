@@ -3,6 +3,7 @@
 #include "channeledit.h"
 #include "channelpicker.h"
 #include "chantables.h"
+#include "language.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "record.h"
@@ -10,10 +11,6 @@
 #include "theme.h"
 
 #include <string.h>
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 ChannelEditThread::ChannelEditThread(MWindow *mwindow, 
 	ChannelPicker *channel_picker,
@@ -990,7 +987,16 @@ ChannelEditBright::ChannelEditBright(int x, int y, ChannelPicker *channel_picker
 ChannelEditBright::~ChannelEditBright() {}
 int ChannelEditBright::handle_event()
 {
-	channel_picker->set_brightness(get_value());
+	return 1;
+}
+int ChannelEditBright::button_release_event()
+{
+	if(BC_Pot::button_release_event())
+	{
+		channel_picker->set_brightness(get_value());
+		return 1;
+	}
+	return 0;
 }
 
 ChannelEditContrast::ChannelEditContrast(int x, int y, ChannelPicker *channel_picker, int value)
@@ -1005,8 +1011,18 @@ ChannelEditContrast::ChannelEditContrast(int x, int y, ChannelPicker *channel_pi
 ChannelEditContrast::~ChannelEditContrast() {}
 int ChannelEditContrast::handle_event()
 {
-	channel_picker->set_contrast(get_value());
+	return 1;
 }
+int ChannelEditContrast::button_release_event()
+{
+	if(BC_Pot::button_release_event())
+	{
+		channel_picker->set_contrast(get_value());
+		return 1;
+	}
+	return 0;
+}
+
 
 ChannelEditColor::ChannelEditColor(int x, int y, ChannelPicker *channel_picker, int value)
  : BC_IPot(x, 
@@ -1020,7 +1036,16 @@ ChannelEditColor::ChannelEditColor(int x, int y, ChannelPicker *channel_picker, 
 ChannelEditColor::~ChannelEditColor() {}
 int ChannelEditColor::handle_event()
 {
-	channel_picker->set_color(get_value());
+	return 1;
+}
+int ChannelEditColor::button_release_event()
+{
+	if(BC_Pot::button_release_event())
+	{
+		channel_picker->set_color(get_value());
+		return 1;
+	}
+	return 0;
 }
 
 ChannelEditHue::ChannelEditHue(int x, int y, ChannelPicker *channel_picker, int value)
@@ -1035,7 +1060,16 @@ ChannelEditHue::ChannelEditHue(int x, int y, ChannelPicker *channel_picker, int 
 ChannelEditHue::~ChannelEditHue() {}
 int ChannelEditHue::handle_event()
 {
-	channel_picker->set_hue(get_value());
+	return 1;
+}
+int ChannelEditHue::button_release_event()
+{
+	if(BC_Pot::button_release_event())
+	{
+		channel_picker->set_hue(get_value());
+		return 1;
+	}
+	return 0;
 }
 
 ChannelEditWhiteness::ChannelEditWhiteness(int x, int y, ChannelPicker *channel_picker, int value)
@@ -1050,5 +1084,17 @@ ChannelEditWhiteness::ChannelEditWhiteness(int x, int y, ChannelPicker *channel_
 ChannelEditWhiteness::~ChannelEditWhiteness() {}
 int ChannelEditWhiteness::handle_event()
 {
-	channel_picker->set_whiteness(get_value());
+	return 1;
 }
+int ChannelEditWhiteness::button_release_event()
+{
+	if(BC_Pot::button_release_event())
+	{
+		channel_picker->set_whiteness(get_value());
+		return 1;
+	}
+	return 0;
+}
+
+
+

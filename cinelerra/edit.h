@@ -1,7 +1,7 @@
 #ifndef EDIT_H
 #define EDIT_H
 
-#include "assets.inc"
+#include "asset.inc"
 #include "edl.inc"
 #include "guicast.h"
 #include "edits.inc"

@@ -9,13 +9,12 @@ class PluginClient;
 
 
 #include "arraylist.h"
+#include "condition.h"
 #include "keyframe.h"
 #include "mainprogress.inc"
 #include "maxbuffers.h"
-#include "messages.h"
 #include "plugincommands.h"
 #include "pluginserver.inc"
-#include "sema.h"
 #include "theme.inc"
 #include "vframe.h"
 
@@ -61,7 +60,6 @@ public: \
 	thread_class(plugin_class *plugin); \
 	~thread_class(); \
 	void run(); \
-	Mutex completion; \
 	window_class *window; \
 	plugin_class *plugin; \
 };
@@ -69,11 +67,9 @@ public: \
 
 #define PLUGIN_THREAD_OBJECT(plugin_class, thread_class, window_class) \
 thread_class::thread_class(plugin_class *plugin) \
- : Thread() \
+ : Thread(0, 0, 1) \
 { \
 	this->plugin = plugin; \
-	set_synchronous(0); \
-	completion.lock(); \
 } \
  \
 thread_class::~thread_class() \
@@ -83,25 +79,16 @@ thread_class::~thread_class() \
 	 \
 void thread_class::run() \
 { \
-/* printf("thread_class::run 1\n"); */ \
 	BC_DisplayInfo info; \
-/* printf("thread_class::run 1\n"); */ \
 	window = new window_class(plugin,  \
 		info.get_abs_cursor_x() - 75,  \
 		info.get_abs_cursor_y() - 65); \
-/* printf("thread_class::run 1\n"); */ \
 	window->create_objects(); \
-/* printf("thread_class::run 1\n"); */ \
  \
 /* Only set it here so tracking doesn't update it until everything is created. */ \
  	plugin->thread = this; \
-/* printf("thread_class::run 1\n"); */ \
 	int result = window->run_window(); \
-/* printf("thread_class::run 1\n"); */ \
-	completion.unlock(); \
-/* printf("thread_class::run 1\n"); */ \
 	if(result) plugin->client_side_close(); \
-/* printf("thread_class::run 2\n"); */ \
 }
 
 
@@ -127,8 +114,6 @@ void thread_class::run() \
 	if(thread) \
 	{ \
 		thread->window->set_done(0); \
-		thread->completion.lock(); \
-		delete thread; \
 	} \
  \
 	if(defaults) save_defaults(); \
@@ -365,11 +350,9 @@ public:
 	void set_interactive();
 
 // Realtime operations.
-	int plugin_init(int argc, char *argv[]);
 	int reset();
 	virtual int plugin_command_derived(int plugin_command) {}; // Extension of plugin_run for derived plugins
 	int plugin_get_range();
-	int plugin_start_plugin();    // Run a non realtime plugin
 	int plugin_init_realtime(int realtime_priority, 
 		int total_in_buffers,
 		int buffer_size);
@@ -387,7 +370,6 @@ public:
 	int save_data_client();
 	int load_data_client();
 	int set_string_client(char *string);                // set the string identifying the plugin
-	int send_completed();        // send when finished
 	int send_cancelled();        // non realtime plugin sends when cancelled
 
 // ================================= Buffers ===============================
@@ -410,8 +392,6 @@ public:
 	ArrayList<PluginClientAuto> automation;
 
 // ================================== Messages ===========================
-	Messages *messages, *gui_messages;
-	Sema *message_lock;             // only used for realtime plugins
 	char gui_string[1024];          // string identifying module and plugin
 	int master_gui_on;              // Status of the master gui plugin
 	int client_gui_on;              // Status of this client's gui
@@ -440,7 +420,7 @@ public:
 	int64_t source_len;
 	int64_t source_position;
 	int64_t total_len;
-// Total number of processors available
+// Total number of processors available - 1
 	int smp;  
 	PluginServer *server;
 

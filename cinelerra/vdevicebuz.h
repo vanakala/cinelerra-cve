@@ -3,10 +3,10 @@
 
 #include "buz.h"
 #include "channel.inc"
+#include "condition.inc"
 #include "guicast.h"
 #include "libmjpeg.h"
-#include "mutex.h"
-#include "sema.h"
+#include "mutex.inc"
 #include "thread.h"
 #include "vdevicebase.h"
 #include "vdevicebuz.inc"
@@ -41,8 +41,8 @@ public:
 	int total_buffers;
 	int current_inbuffer;
 	int current_outbuffer;
-	Sema output_lock;
-	Mutex buffer_lock;
+	Condition *output_lock;
+	Mutex *buffer_lock;
 	int done;
 };
 
@@ -93,15 +93,21 @@ private:
 // Frame given to user to acquire data
 	VFrame *user_frame;
 	mjpeg_t *mjpeg;
-	Mutex tuner_lock;
+	Mutex *tuner_lock;
 	VDeviceBUZInput *input_thread;
 
-    struct buz_params bparm;
-    struct buz_requestbuffers breq;
+	struct buz_params bparm;
+	struct buz_requestbuffers breq;
 // Can't CSYNC the first loop
 	int total_loops;
 // Number of output frame to load
 	int output_number;
+
+	int brightness;
+	int hue;
+	int color;
+	int contrast;
+	int whiteness;
 };
 
 #endif

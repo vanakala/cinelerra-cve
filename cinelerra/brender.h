@@ -41,6 +41,7 @@
 #include "arraylist.h"
 #include "bcwindowbase.inc"
 #include "brender.inc"
+#include "condition.inc"
 #include "edl.inc"
 #include "mutex.inc"
 #include "mwindow.inc"
@@ -110,7 +111,7 @@ public:
 	int last_contiguous;
 
 // Wait until stop commands are finished
-	Mutex *completion_lock;
+	Condition *completion_lock;
 	BRenderThread *thread;
 // PID of master node for killing.
 	int master_pid;
@@ -163,7 +164,7 @@ public:
 	BRender *brender;
 	BRenderCommand *command_queue;
 	BRenderCommand *command;
-	Mutex *input_lock;
+	Condition *input_lock;
 	Mutex *thread_lock;
 // Render farm server.  Deleted when stopped.  Created when restarted.
 	RenderFarmServer *farm_server;

@@ -27,13 +27,16 @@ public:
 		int strategy, 
 		Asset *default_asset, 
 		double total_start, 
-		double total_end);
+		double total_end,
+		int test_overwrite);
 // Supply a frame rate of the calling node.  If the client number is -1
 // the frame rate isn't added to the preferences table.
 	RenderPackage* get_package(double frames_per_second, 
 		int client_number,
 		int use_local_rate);
 	ArrayList<Asset*>* get_asset_list();
+	RenderPackage* get_package(int number);
+	int get_total_packages();
 
 	EDL *edl;
 	int64_t audio_position;

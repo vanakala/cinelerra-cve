@@ -1,7 +1,7 @@
 #ifndef MENUVEFFECTS_H
 #define MENUVEFFECTS_H
 
-#include "assets.inc"
+#include "asset.inc"
 #include "edl.inc"
 #include "mwindow.inc"
 #include "menueffects.h"

@@ -19,7 +19,8 @@ public:
 		EDL *edl, 
 		double position, 
 		int convert_units,
-		int plugin_type);
+		int plugin_type,
+		int use_nudge);
 	
 	int module, plugin;
 };

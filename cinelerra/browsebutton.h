@@ -2,9 +2,11 @@
 #define BROWSEBUTTON_H
 
 #include "guicast.h"
+#include "mutex.inc"
 #include "mwindow.inc"
 #include "thread.h"
 
+class BrowseButtonWindow;
 
 class BrowseButton : public BC_Button, public Thread
 {
@@ -30,12 +32,16 @@ public:
 	BC_TextBox *textbox;
 	MWindow *mwindow;
 	BC_WindowBase *parent_window;
+	BrowseButtonWindow *gui;
+	Mutex *startup_lock;
+	int x, y;
 };
 
 class BrowseButtonWindow : public BC_FileBox
 {
 public:
 	BrowseButtonWindow(MWindow *mwindow,
+		BrowseButton *button,
 		BC_WindowBase *parent_window, 
 		char *init_directory, 
 		char *title, 

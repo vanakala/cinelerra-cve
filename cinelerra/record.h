@@ -1,6 +1,7 @@
 #ifndef RECORD_H
 #define RECORD_H
 
+#include "asset.inc"
 #include "assets.inc"
 #include "audiodevice.inc"
 #include "batch.inc"
@@ -18,7 +19,6 @@
 #include "loadmode.inc"
 #include "mwindow.inc"
 #include "maxchannels.h"
-#include "mutex.h"
 #include "playbackengine.inc"
 #include "record.inc"
 #include "recordengine.inc"

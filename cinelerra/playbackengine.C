@@ -1,9 +1,11 @@
 #include "cache.h"
+#include "condition.h"
 #include "defaults.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "localsession.h"
 #include "mbuttons.h"
+#include "mutex.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "patchbay.h"
@@ -31,32 +33,32 @@ PlaybackEngine::PlaybackEngine(MWindow *mwindow, Canvas *output)
 	video_cache = 0;
 	last_command = STOP;
 	Thread::set_synchronous(1);
+	tracking_lock = new Mutex("PlaybackEngine::tracking_lock");
+	tracking_done = new Condition(1, "PlaybackEngine::tracking_done");
+	pause_lock = new Condition(0, "PlaybackEngine::pause_lock");
+	start_lock = new Condition(0, "PlaybackEngine::start_lock");
 }
 
 PlaybackEngine::~PlaybackEngine()
 {
-//printf("PlaybackEngine::~PlaybackEngine 1\n");
 	done = 1;
 	que->send_command(STOP,
 		CHANGE_NONE, 
 		0,
 		0);
 	interrupt_playback();
-//printf("PlaybackEngine::~PlaybackEngine 1\n");
+
 	Thread::join();
-//printf("PlaybackEngine::~PlaybackEngine 1\n");
 	delete preferences;
-//printf("PlaybackEngine::~PlaybackEngine 1\n");
 	delete command;
-//printf("PlaybackEngine::~PlaybackEngine 1\n");
 	delete que;
-//printf("PlaybackEngine::~PlaybackEngine 1\n");
 	delete_render_engines();
-//printf("PlaybackEngine::~PlaybackEngine 1\n");
 	if(audio_cache) delete audio_cache;
-//printf("PlaybackEngine::~PlaybackEngine 1\n");
 	if(video_cache) delete video_cache;
-//printf("PlaybackEngine::~PlaybackEngine 2\n");
+	delete tracking_lock;
+	delete tracking_done;
+	delete pause_lock;
+	delete start_lock;
 }
 
 int PlaybackEngine::create_objects()
@@ -71,14 +73,8 @@ int PlaybackEngine::create_objects()
 	*preferences = *mwindow->preferences;
 
 	done = 0;
-	start_lock.lock();
-//printf("PlaybackEngine::create_objects 1\n");
 	Thread::start();
-//printf("PlaybackEngine::create_objects 1\n");
-	start_lock.lock();
-//printf("PlaybackEngine::create_objects 1\n");
-	start_lock.unlock();
-//printf("PlaybackEngine::create_objects 1\n");
+	start_lock->lock("PlaybackEngine::create_objects");
 	return result;
 }
 
@@ -139,15 +135,12 @@ void PlaybackEngine::start_render_engines()
 
 void PlaybackEngine::wait_render_engines()
 {
-//printf("PlaybackEngine::wait_render_engines 1 %d %d\n", command->command, command->realtime);
 	if(command->realtime)
 	{
 		for(int i = 0; i < render_engines.total; i++)
 		{
-//printf("PlaybackEngine::wait_render_engines 2 %p %d\n", render_engines.values[i], render_engines.values[i]->get_tid());
 			render_engines.values[i]->join();
 		}
-//printf("PlaybackEngine::wait_render_engines 3 %d\n", render_engines.total);
 	}
 }
 
@@ -203,21 +196,18 @@ void PlaybackEngine::sync_parameters(EDL *edl)
 
 void PlaybackEngine::interrupt_playback(int wait_tracking)
 {
-//printf("PlaybackEngine::interrupt_playback 1\n");
 	for(int i = 0; i < render_engines.total; i++)
 		render_engines.values[i]->interrupt_playback();
 
 // Stop pausing
-	pause_lock.unlock();
+	pause_lock->unlock();
 
 // Wait for tracking to finish if it is running
-//printf("PlaybackEngine::interrupt_playback 2\n");
 	if(wait_tracking)
 	{
-		tracking_done.lock();
-		tracking_done.unlock();
+		tracking_done->lock("PlaybackEngine::interrupt_playback");
+		tracking_done->unlock();
 	}
-//printf("PlaybackEngine::interrupt_playback 3\n");
 }
 
 
@@ -274,39 +264,34 @@ void PlaybackEngine::init_tracking()
 		tracking_active = 0;
 
 	tracking_position = command->playbackstart;
-	tracking_done.lock();
+	tracking_done->lock("PlaybackEngine::init_tracking");
 	init_cursor();
-//printf("PlaybackEngine::init_tracking %ld\n", tracking_position);
 }
 
 void PlaybackEngine::stop_tracking()
 {
-// Set the tracking position to right now before stopping it.
-//	tracking_position = get_tracking_position();
-//printf("PlaybackEngine::stop_tracking %ld\n", tracking_position);
 	tracking_active = 0;
 	stop_cursor();
-//printf("PlaybackEngine::stop_tracking 1\n");
-	tracking_done.unlock();
+	tracking_done->unlock();
 }
 
 void PlaybackEngine::update_tracking(double position)
 {
-	tracking_lock.lock();
+	tracking_lock->lock("PlaybackEngine::update_tracking");
 
 	tracking_position = position;
 
 // Signal that the timer is accurate.
 	if(tracking_active) tracking_active = 2;
 	tracking_timer.update();
-	tracking_lock.unlock();
+	tracking_lock->unlock();
 }
 
 double PlaybackEngine::get_tracking_position()
 {
 	double result = 0;
 
-	tracking_lock.lock();
+	tracking_lock->lock("PlaybackEngine::get_tracking_position");
 
 
 // Adjust for elapsed time since last update_tracking.
@@ -366,7 +351,7 @@ double PlaybackEngine::get_tracking_position()
 	else
 		result = tracking_position;
 
-	tracking_lock.unlock();
+	tracking_lock->unlock();
 //printf("PlaybackEngine::get_tracking_position %f %f %d\n", result, tracking_position, tracking_active);
 
 // Adjust for loop
@@ -383,33 +368,24 @@ void PlaybackEngine::update_transport(int command, int paused)
 
 void PlaybackEngine::run()
 {
-	start_lock.unlock();
+	start_lock->unlock();
+
 	do
 	{
 // Wait for current command to finish
-//printf("PlaybackEngine::run 1\n");
-		que->output_lock.lock();
-//printf("PlaybackEngine::run 2\n");
+		que->output_lock->lock("PlaybackEngine::run");
 
 		wait_render_engines();
 
-//printf("PlaybackEngine::run 3 %d\n", que->command.command);
 
 // Read the new command
-		que->input_lock.lock();
+		que->input_lock->lock("PlaybackEngine::run");
 		if(done) return;
 
-//printf("PlaybackEngine::run 3\n");
 		*command = que->command;
-//printf("PlaybackEngine::run 3 %f %f\n", command->playbackstart, que->command.playbackstart);
 		que->command.reset();
-//printf("PlaybackEngine::run 3 %p\n", this);
-		que->input_lock.unlock();
+		que->input_lock->unlock();
 
-// printf("PlaybackEngine::run 4 %d %x %x\n", 
-// 	this->command->command, 
-// 	this->command->change_type, 
-// 	que->command.change_type);
 
 
 		switch(command->command)
@@ -421,10 +397,8 @@ void PlaybackEngine::run()
 				break;
 
 			case PAUSE:
-				pause_lock.lock();
 				init_cursor();
-				pause_lock.lock();
-				pause_lock.unlock();
+				pause_lock->lock("PlaybackEngine::run");
 				stop_cursor();
 				break;
 
@@ -433,22 +407,16 @@ void PlaybackEngine::run()
 				break;
 
 			case CURRENT_FRAME:
-//printf("PlaybackEngine::run 5\n");
 				last_command = command->command;
-//printf("PlaybackEngine::run 5.1\n");
 				perform_change();
-//printf("PlaybackEngine::run 7\n");
 				arm_render_engines();
 // Dispatch the command
 				start_render_engines();
-//printf("PlaybackEngine::run 8\n");
 				break;
 
 			default:
-//printf("PlaybackEngine::run 5\n");
 				last_command = command->command;
 				is_playing_back = 1;
-//printf("PlaybackEngine::run 6 %f %f\n", command->playbackstart, get_tracking_position());
  				if(command->command == SINGLE_FRAME_FWD ||
 					command->command == SINGLE_FRAME_REWIND)
 				{
@@ -456,22 +424,19 @@ void PlaybackEngine::run()
 				}
 
 				perform_change();
-//printf("PlaybackEngine::run 9 %f\n", command->playbackstart);
 				arm_render_engines();
 
 // Start tracking after arming so the tracking position doesn't change.
 // The tracking for a single frame command occurs during PAUSE
-//printf("PlaybackEngine::run 9 %d\n", command->playbackstart);
 				init_tracking();
 
 // Dispatch the command
-//printf("PlaybackEngine::run 10\n");
 				start_render_engines();
-//printf("PlaybackEngine::run 11\n");
 				break;
 		}
 
-//printf("PlaybackEngine::run 12\n");
+
+//printf("PlaybackEngine::run 100\n");
 	}while(!done);
 }
 
@@ -633,21 +598,3 @@ int PlaybackEngine::move_right(long distance)
 	return 0;
 }
 
-
-int PlaybackEngine::cleanup()
-{
-	return 0;
-}
-
-int PlaybackEngine::wait_for_startup()
-{
-	return 0;
-}
-
-int PlaybackEngine::wait_for_completion()
-{
-// must use mutex not join since playback engine also terminates itself
-	complete.lock();
-	complete.unlock();
-	return 0;
-}

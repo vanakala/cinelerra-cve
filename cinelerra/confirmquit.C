@@ -1,14 +1,11 @@
 #include "confirmquit.h"
 #include "keys.h"
+#include "language.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "theme.h"
 
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 ConfirmQuitWindow::ConfirmQuitWindow(MWindow *mwindow)

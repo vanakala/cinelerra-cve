@@ -1,3 +1,4 @@
+#include "bcsignals.h"
 #include "cplayback.h"
 #include "ctimebar.h"
 #include "ctracking.h"
@@ -110,25 +111,32 @@ void CTracking::update_tracker(double position)
 {
 	int updated_scroll = 0;
 // Update cwindow slider
-	cwindow->gui->lock_window();
+//TRACE("CTracking::update_tracker 1");
+	cwindow->gui->lock_window("CTracking::update_tracker 1");
+//TRACE("CTracking::update_tracker 2");
 	cwindow->gui->slider->update(position);
 
 // This is going to boost the latency but we need to update the timebar
 	cwindow->gui->timebar->draw_range();
 	cwindow->gui->timebar->flash();
 	cwindow->gui->unlock_window();
+//TRACE("CTracking::update_tracker 3");
 
 // Update mwindow cursor
-	mwindow->gui->lock_window();
+	mwindow->gui->lock_window("CTracking::update_tracker 2");
+//TRACE("CTracking::update_tracker 4");
 
 	mwindow->edl->local_session->selectionstart = 
 		mwindow->edl->local_session->selectionend = 
 		position;
 
 	updated_scroll = update_scroll(position);
+//TRACE("CTracking::update_tracker 5");
 
 	mwindow->gui->mainclock->update(position);
+//TRACE("CTracking::update_tracker 5.5");
 	mwindow->gui->patchbay->update();
+//TRACE("CTracking::update_tracker 6");
 
 	if(!updated_scroll)
 	{
@@ -140,12 +148,15 @@ void CTracking::update_tracker(double position)
 		mwindow->gui->flush();
 	}
 	mwindow->gui->unlock_window();
+//TRACE("CTracking::update_tracker 7");
 
 // Plugin GUI's hold lock on mwindow->gui here during user interface handlers.
 	mwindow->update_plugin_guis();
+//TRACE("CTracking::update_tracker 8");
 
 
 	update_meters((int64_t)(position * mwindow->edl->session->sample_rate));
+//TRACE("CTracking::update_tracker 9");
 }
 
 void CTracking::draw()

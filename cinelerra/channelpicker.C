@@ -4,6 +4,7 @@
 #include "chantables.h"
 #include "clip.h"
 #include "keys.h"
+#include "language.h"
 #include "mwindow.h"
 #include "playbackconfig.h"
 #include "preferencesthread.h"
@@ -13,10 +14,6 @@
 #include "vdevicebuz.h"
 #include "vdeviceprefs.h"
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 PrefsChannelPicker::PrefsChannelPicker(MWindow *mwindow, 

@@ -21,6 +21,8 @@ public:
 	void show();
 	void restore();
 	void update();
+	void focus_in_event();
+	void focus_out_event();
 
 	MWindow *mwindow;
 	MWindowGUI *gui;

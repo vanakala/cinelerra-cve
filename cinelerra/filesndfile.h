@@ -6,6 +6,15 @@
 #include "filesndfile.h"
 #include "sndfile.h"
 
+#include <stdio.h>
+
+// The following libsndfile files have to be modified to support VFS.
+// They need to use FILE * instead of file descriptors.
+// open doesn't seem to be overridable.
+// file_io.c
+// sndfile.c
+// sndfile.h
+
 class FileSndFile : public FileBase
 {
 public:
@@ -27,6 +36,9 @@ public:
 		int audio_options,
 		int video_options);
 
+// File must be opened here to get the VFS override.  libsndfile-1.0.5 uses
+// open instead of fopen.
+	FILE *fileptr;
 	SNDFILE *fd;
 	SF_INFO fd_config;
 // Temp for interleaved channels

@@ -333,6 +333,7 @@ public:
 	ChannelEditBright(int x, int y, ChannelPicker *channel_picker, int value);
 	~ChannelEditBright();
 	int handle_event();
+	int button_release_event();
 	ChannelPicker *channel_picker;
 };
 
@@ -342,6 +343,7 @@ public:
 	ChannelEditContrast(int x, int y, ChannelPicker *channel_picker, int value);
 	~ChannelEditContrast();
 	int handle_event();
+	int button_release_event();
 	ChannelPicker *channel_picker;
 };
 
@@ -351,6 +353,7 @@ public:
 	ChannelEditColor(int x, int y, ChannelPicker *channel_picker, int value);
 	~ChannelEditColor();
 	int handle_event();
+	int button_release_event();
 	ChannelPicker *channel_picker;
 };
 
@@ -360,6 +363,7 @@ public:
 	ChannelEditHue(int x, int y, ChannelPicker *channel_picker, int value);
 	~ChannelEditHue();
 	int handle_event();
+	int button_release_event();
 	ChannelPicker *channel_picker;
 };
 
@@ -369,6 +373,7 @@ public:
 	ChannelEditWhiteness(int x, int y, ChannelPicker *channel_picker, int value);
 	~ChannelEditWhiteness();
 	int handle_event();
+	int button_release_event();
 	ChannelPicker *channel_picker;
 };
 

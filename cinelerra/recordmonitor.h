@@ -13,28 +13,8 @@
 #include "recordmonitor.inc"
 #include "videodevice.inc"
 
-#include <png.h>
-
 class RecordMonitorThread;
 
-struct recvideo_jpeg_error_mgr 
-{
-	struct jpeg_error_mgr pub;	/* "public" fields */
-	jmp_buf setjmp_buffer;	/* for return to caller */
-};
-
-typedef struct recvideo_jpeg_error_mgr* recvideo_jpeg_error_ptr;
-
-
-typedef struct 
-{
-	struct jpeg_source_mgr pub;	/* public fields */
-
-	JOCTET * buffer;		/* start of buffer */
-	int bytes;             /* total size of buffer */
-} recvideo_jpeg_source_mgr;
-
-typedef recvideo_jpeg_source_mgr * recvideo_jpeg_src_ptr;
 
 class RecordMonitor : public Thread
 {
@@ -91,7 +71,7 @@ public:
 
 	MeterPanel *meters;
 	Canvas *canvas;
-	RecordTransport *record_transport;
+//	RecordTransport *record_transport;
 	ChannelPicker *channel_picker;
 	ReverseInterlace *reverse_interlace;
 	int cursor_x_origin, cursor_y_origin;

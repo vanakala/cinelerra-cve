@@ -2,6 +2,7 @@
 #define AUDIOOSS_H
 
 #include "audiodevice.h"
+#include "condition.inc"
 #include "playbackconfig.inc"
 
 #ifdef HAVE_OSS
@@ -20,7 +21,10 @@ public:
 	void wait_read();
 	void wait_write();
 	
-	Mutex input_lock, output_lock, read_lock, write_lock;
+	Condition *input_lock;
+	Condition *output_lock;
+	Condition *read_lock;
+	Condition *write_lock;
 	int rd, wr, fd;
 	unsigned char *data;
 	int bytes;
@@ -41,7 +45,7 @@ public:
 	int read_buffer(char *buffer, int bytes);
 	int close_all();
 	int64_t device_position();
-	int flush_device(int number);
+	int flush_device();
 	int interrupt_playback();
 
 private:

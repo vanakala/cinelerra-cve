@@ -1,9 +1,10 @@
 #ifndef MAININDEXES_H
 #define MAININDEXES_H
 
-#include "assets.inc"
+#include "asset.inc"
+#include "condition.inc"
 #include "indexfile.inc"
-#include "mutex.h"
+#include "mutex.inc"
 #include "mwindow.inc"
 #include "thread.h"
 
@@ -31,9 +32,9 @@ public:
 	int interrupt_flag;                 // Build process interrupted by user
 	int done;                           // Program quit
 	MWindow *mwindow;
-	Mutex input_lock;                   // Lock until new data is to be indexed
-	Mutex next_lock;                    // Lock changes to next assets
-	Mutex interrupt_lock;               // Force blocking until thread is finished
+	Condition *input_lock;                   // Lock until new data is to be indexed
+	Mutex *next_lock;                    // Lock changes to next assets
+	Condition *interrupt_lock;               // Force blocking until thread is finished
 	IndexFile *indexfile;
 };
 

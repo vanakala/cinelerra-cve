@@ -26,6 +26,7 @@ public:
 	void update_length(long length);
 	int update(long value);
 	void get_time(char *text);
+	double get_time(); 
 
 // Only defined if this is a separate window;
 	BC_ProgressBox *progress_box;
@@ -55,7 +56,6 @@ public:
 // Start a progress sequence and return the bar
 	MainProgressBar* start_progress(char *text, long total_length);
 	void end_progress(MainProgressBar* progress_bar);
-	void get_time(char *text);
 
 	ArrayList<MainProgressBar*> progress_bars;
 	MainProgressBar *mwindow_progress;

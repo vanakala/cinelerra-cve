@@ -1,3 +1,4 @@
+#include "clip.h"
 #include "defaults.h"
 #include "edl.h"
 #include "filexml.h"
@@ -122,6 +123,7 @@ void LocalSession::load_xml(FileXML *file, unsigned long load_flags)
 
 void LocalSession::boundaries()
 {
+	zoom_sample = MAX(1, zoom_sample);
 }
 
 int LocalSession::load_defaults(Defaults *defaults)

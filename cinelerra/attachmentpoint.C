@@ -61,7 +61,11 @@ int AttachmentPoint::render_init()
 					plugin_servers.append(new_server = new PluginServer(*plugin_server));
 					new_server->set_attachmentpoint(this);
 //printf("AttachmentPoint::render_init 5.2 %p %p\n", plugin_servers.values[i], plugin);
-					plugin_servers.values[i]->open_plugin(0, renderengine->edl, plugin);
+					plugin_servers.values[i]->open_plugin(0, 
+						renderengine->preferences,
+						renderengine->edl, 
+						plugin,
+						-1);
 //printf("AttachmentPoint::render_init 5.3\n");
 					plugin_servers.values[i]->init_realtime(
 						renderengine->edl->session->real_time_playback &&

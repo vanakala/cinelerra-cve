@@ -1,5 +1,5 @@
 #include "aboutprefs.h"
-#include "assets.h"
+#include "asset.h"
 #include "audiodevice.inc"
 #include "cache.h"
 #include "cplayback.h"
@@ -12,6 +12,7 @@
 #include "fonts.h"
 #include "interfaceprefs.h"
 #include "keys.h"
+#include "language.h"
 #include "levelwindow.h"
 #include "levelwindowgui.h"
 #include "meterpanel.h"
@@ -30,11 +31,6 @@
 #include "vwindowgui.h"
 
 #include <string.h>
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 PreferencesMenuitem::PreferencesMenuitem(MWindow *mwindow)
  : BC_MenuItem(_("Preferences..."), "Shift+P", 'P')
@@ -143,7 +139,7 @@ int PreferencesThread::apply_settings()
 		(edl->session->audio_module_fragment != mwindow->edl->session->audio_module_fragment) ||
 		(edl->session->audio_read_length != mwindow->edl->session->audio_read_length) ||
 		(edl->session->playback_strategy != mwindow->edl->session->playback_strategy) ||
-		(edl->session->force_uniprocessor != mwindow->edl->session->force_uniprocessor) ||
+		(preferences->force_uniprocessor != preferences->force_uniprocessor) ||
 		(*this_aconfig != *aconfig) ||
 		(*this_vconfig != *vconfig) ||
 		!preferences->brender_asset->equivalent(*mwindow->preferences->brender_asset, 0, 1);
@@ -158,28 +154,28 @@ int PreferencesThread::apply_settings()
 
 	if(redraw_meters)
 	{
-		mwindow->cwindow->gui->lock_window();
+		mwindow->cwindow->gui->lock_window("PreferencesThread::apply_settings");
 		mwindow->cwindow->gui->meters->change_format(edl->session->meter_format,
 			edl->session->min_meter_db);
 		mwindow->cwindow->gui->unlock_window();
 
 
 
-		mwindow->vwindow->gui->lock_window();
+		mwindow->vwindow->gui->lock_window("PreferencesThread::apply_settings");
 		mwindow->vwindow->gui->meters->change_format(edl->session->meter_format,
 			edl->session->min_meter_db);
 		mwindow->vwindow->gui->unlock_window();
 
 
 
-		mwindow->gui->lock_window();
+		mwindow->gui->lock_window("PreferencesThread::apply_settings 1");
 		mwindow->gui->patchbay->change_meter_format(edl->session->meter_format,
 			edl->session->min_meter_db);
 		mwindow->gui->unlock_window();
 
 
 
-		mwindow->lwindow->gui->lock_window();
+		mwindow->lwindow->gui->lock_window("PreferencesThread::apply_settings");
 		mwindow->lwindow->gui->panel->change_format(edl->session->meter_format,
 			edl->session->min_meter_db);
 		mwindow->lwindow->gui->unlock_window();
@@ -187,7 +183,7 @@ int PreferencesThread::apply_settings()
 
 	if(redraw_overlays)
 	{
-		mwindow->gui->lock_window();
+		mwindow->gui->lock_window("PreferencesThread::apply_settings 2");
 		mwindow->gui->canvas->draw_overlays();
 		mwindow->gui->canvas->flash();
 		mwindow->gui->unlock_window();
@@ -195,7 +191,7 @@ int PreferencesThread::apply_settings()
 
 	if(redraw_times)
 	{
-		mwindow->gui->lock_window();
+		mwindow->gui->lock_window("PreferencesThread::apply_settings 3");
 		mwindow->gui->update(0, 0, 1, 0, 0, 1, 0);
 		mwindow->gui->redraw_time_dependancies();
 		mwindow->gui->unlock_window();
@@ -337,7 +333,7 @@ int PreferencesWindow::create_objects()
 
 int PreferencesWindow::update_framerate()
 {
-	lock_window();
+	lock_window("PreferencesWindow::update_framerate");
 //printf("PreferencesWindow::update_framerate 1\n");
 	if(thread->current_dialog == 0)
 	{

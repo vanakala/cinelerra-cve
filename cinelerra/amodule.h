@@ -35,7 +35,8 @@ public:
 	int render(double *buffer, 
 		int64_t input_len, 
 		int64_t input_position,
-		int direction);
+		int direction,
+		int use_nudge);
 	void reverse_buffer(double *buffer, int64_t len);
 	int get_buffer_size();
 

@@ -3,7 +3,6 @@
 
 
 class Assets;
-class Asset;
 
 
 // Index statuses

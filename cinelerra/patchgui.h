@@ -18,7 +18,7 @@ class GangPatch;
 class DrawPatch;
 class MutePatch;
 class ExpandPatch;
-
+class NudgePatch;
 
 class PatchGUI
 {
@@ -39,6 +39,8 @@ public:
 	virtual int update(int x, int y);
 	virtual void synchronize_fade(float change) {};
 	void synchronize_faders(float change, int audio, int video);
+	char* calculate_nudge_text();
+	void set_nudge_value(char *string);
 
 	MWindow *mwindow;
 	PatchBay *patchbay;
@@ -59,6 +61,8 @@ public:
 	DrawPatch *draw;
 	MutePatch *mute;
 	ExpandPatch *expand;
+	NudgePatch *nudge;
+	char string_return[BCTEXTLEN];
 };
 
 
@@ -143,6 +147,16 @@ public:
 	PatchGUI *patch;
 };
 
+class NudgePatch : public BC_TextBox
+{
+public:
+	NudgePatch(MWindow *mwindow, PatchGUI *patch, int x, int y, int w);
+	int handle_event();
+	int button_press_event();
+	void update();
+	MWindow *mwindow;
+	PatchGUI *patch;
+};
 
 
 #endif

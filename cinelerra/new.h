@@ -63,6 +63,10 @@ public:
 	void create_presets(int &x, int &y);
 	int create_objects();
 	int update();
+// Match the EDL configuration to a preset for displaying in the preset box.
+	int get_preset(EDL *edl);
+// Get the text for the preset returned by get_preset
+	char* get_preset_text();
 
 	MWindow *mwindow;
 	NewThread *new_thread;

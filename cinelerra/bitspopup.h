@@ -1,7 +1,6 @@
 #ifndef BITSPOPUP_H
 #define BITSPOPUP_H
 
-#include "assets.inc"
 #include "guicast.h"
 
 class BitsPopupMenu;

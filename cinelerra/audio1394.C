@@ -70,18 +70,30 @@ int Audio1394::open_output()
 		device->out_bits = 16;
 		bytes_per_sample = device->out_channels * device->out_bits / 8;
 
-		output_thread = new Device1394Output;
+		output_thread = new Device1394Output(device);
 
-//printf("Audio1394::open_output 1 %s\n", device->out_config->firewire_path);
-		output_thread->open(device->out_config->firewire_path,
-			device->out_config->firewire_port,
-			device->out_config->firewire_channel,
-			30,
-			device->out_channels, 
-			device->out_bits, 
-			device->out_samplerate,
-			device->out_config->firewire_syt,
-			device->out_config->firewire_use_dv1394);
+		if(device->driver == AUDIO_DV1394)
+		{
+			output_thread->open(device->out_config->dv1394_path,
+				device->out_config->dv1394_port,
+				device->out_config->dv1394_channel,
+				30,
+				device->out_channels, 
+				device->out_bits, 
+				device->out_samplerate,
+				device->out_config->dv1394_syt);
+		}
+		else
+		{
+			output_thread->open(device->out_config->firewire_path,
+				device->out_config->firewire_port,
+				device->out_config->firewire_channel,
+				30,
+				device->out_channels, 
+				device->out_bits, 
+				device->out_samplerate,
+				device->out_config->firewire_syt);
+		}
 	}
 }
 

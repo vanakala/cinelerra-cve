@@ -1,4 +1,4 @@
-#include "assets.h"
+#include "asset.h"
 #include "batch.h"
 #include "browsebutton.h"
 #include "channelpicker.h"
@@ -756,7 +756,7 @@ int RecordGUIMonitorVideo::handle_event()
 	record->monitor_video = get_value();
 	if(record->monitor_video)
 	{
-		record->record_monitor->window->lock_window();
+		record->record_monitor->window->lock_window("RecordGUIMonitorVideo::handle_event");
 		record->record_monitor->window->show_window();
 		record->record_monitor->window->raise_window();
 		record->record_monitor->window->flush();
@@ -779,7 +779,7 @@ int RecordGUIMonitorAudio::handle_event()
 	record->monitor_audio = get_value();
 	if(record->monitor_audio)
 	{
-		record->record_monitor->window->lock_window();
+		record->record_monitor->window->lock_window("RecordGUIMonitorAudio::handle_event");
 		record->record_monitor->window->show_window();
 		record->record_monitor->window->raise_window();
 		record->record_monitor->window->flush();
@@ -838,7 +838,8 @@ RecordStart::RecordStart(MWindow *mwindow, Record *record, int x, int y)
 		x, 
 		y, 
 		&(record->get_editing_batch()->start_day), 
-		&(record->get_editing_batch()->start_time))
+		&(record->get_editing_batch()->start_time),
+		TIME_HMS3)
 {
 	this->mwindow = mwindow;
 	this->record = record;
@@ -854,7 +855,8 @@ RecordDuration::RecordDuration(MWindow *mwindow, Record *record, int x, int y)
 		x, 
 		y, 
 		0, 
-		&(record->get_editing_batch()->duration))
+		&(record->get_editing_batch()->duration),
+		TIME_HMS2)
 {
 	this->mwindow = mwindow;
 	this->record = record;
@@ -956,7 +958,7 @@ int RecordGUIStartBatches::handle_event()
 {
 	unlock_window();
 	record->start_recording(0, CONTEXT_BATCH);
-	lock_window();
+	lock_window("RecordGUIStartBatches::handle_event");
 	return 1;
 }
 
@@ -1043,7 +1045,7 @@ RecordCancelThread::~RecordCancelThread()
 {
 	if(Thread::running()) 
 	{
-		window->lock_window();
+		window->lock_window("RecordCancelThread::~RecordCancelThread");
 		window->set_done(1);
 		window->unlock_window();
 	}
@@ -1085,7 +1087,7 @@ RecordStartoverThread::~RecordStartoverThread()
 {
 	if(Thread::running()) 
 	{
-		window->lock_window();
+		window->lock_window("RecordStartoverThread::~RecordStartoverThread");
 		window->set_done(1);
 		window->unlock_window();
 	}
@@ -1239,7 +1241,7 @@ int RecordGUI::update_title(BC_Title *title, double position)
 	{
 		sprintf(string, "-");
 	}
-	lock_window();
+	lock_window("RecordGUI::update_title");
 	title->update(string);
 	unlock_window();
 }
@@ -1373,7 +1375,7 @@ void RecordStatusThread::run()
 			{
 				gui->total_dropped_frames = new_dropped_frames;
 				sprintf(string, "%d\n", gui->total_dropped_frames);
-				gui->lock_window();
+				gui->lock_window("RecordStatusThread::run 1");
 				gui->frames_dropped->update(string);
 				gui->unlock_window();
 			}
@@ -1393,7 +1395,7 @@ void RecordStatusThread::run()
 				char string[1024];
 				gui->total_clipped_samples = new_clipped_samples;
 				sprintf(string, "%d\n", gui->total_clipped_samples);
-				gui->lock_window();
+				gui->lock_window("RecordStatusThread::run 2");
 				gui->samples_clipped->update(string);
 				gui->unlock_window();
 			}

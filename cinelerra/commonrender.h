@@ -2,9 +2,9 @@
 #define COMMONRENDER_H
 
 #include "cache.inc"
+#include "condition.inc"
 #include "virtualconsole.inc"
 #include "module.inc"
-#include "mutex.h"
 #include "mwindow.inc"
 #include "renderengine.inc"
 #include "thread.h"
@@ -41,7 +41,7 @@ public:
 	VirtualConsole *vconsole;
 // Native units position in project used for all functions
 	int64_t current_position;       
-	Mutex start_lock;
+	Condition *start_lock;
 // flag for normally completed playback
 	int done;       
 // Flag for interrupted playback

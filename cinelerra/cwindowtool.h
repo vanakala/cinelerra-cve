@@ -1,7 +1,7 @@
 #ifndef CWINDOWTOOL_H
 #define CWINDOWTOOL_H
 
-
+#include "condition.inc"
 #include "cwindowgui.inc"
 #include "guicast.h"
 #include "maskauto.inc"
@@ -11,6 +11,8 @@
 class CWindowToolGUI;
 class CWindowCoord;
 
+
+// This common thread supports all the tool GUI's.
 class CWindowTool : public Thread
 {
 public:
@@ -28,7 +30,8 @@ public:
 	CWindowToolGUI *tool_gui;
 	int done;
 	int current_tool;
-	Mutex *input_lock, *output_lock;
+	Condition *input_lock;
+	Condition *output_lock;
 	
 };
 

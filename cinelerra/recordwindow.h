@@ -6,6 +6,12 @@
 #include "mwindow.inc"
 #include "record.inc"
 
+
+
+// Dialog for record file format.
+
+
+
 class RecordWindow : public BC_Window
 {
 public:

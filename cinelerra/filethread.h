@@ -1,8 +1,9 @@
 #ifndef FILETHREAD_H
 #define FILETHREAD_H
 
+#include "condition.inc"
 #include "file.inc"
-#include "mutex.h"
+#include "mutex.inc"
 #include "thread.h"
 #include "vframe.inc"
 
@@ -49,9 +50,9 @@ public:
 	VFrame ***video_buffer[RING_BUFFERS];      
 	long output_size[RING_BUFFERS];  // Number of frames or samples to write
 	int is_compressed[RING_BUFFERS]; // Whether to use the compressed data in the frame
-	Mutex output_lock[RING_BUFFERS], input_lock[RING_BUFFERS];
+	Condition *output_lock[RING_BUFFERS], *input_lock[RING_BUFFERS];
 // Lock access to the file to allow it to be changed without stopping the loop
-	Mutex file_lock;
+	Mutex *file_lock;
 	int current_buffer;
 	int local_buffer;
 	int last_buffer[RING_BUFFERS];

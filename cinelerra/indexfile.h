@@ -1,7 +1,7 @@
 #ifndef INDEXFILE_H
 #define INDEXFILE_H
 
-#include "assets.inc"
+#include "asset.inc"
 #include "edit.inc"
 #include "file.inc"
 #include "guicast.h"

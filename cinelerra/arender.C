@@ -6,6 +6,7 @@
 #include "auto.h"
 #include "autos.h"
 #include "cache.h"
+#include "condition.h"
 #include "edit.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -162,14 +163,13 @@ int ARender::process_buffer(double **buffer_out,
 	int last_buffer)
 {
 	int result = 0;
-//printf("ARender::process_buffer 1\n");
+
 	this->last_playback = last_buffer;
 	int64_t fragment_position = 0;
 	int64_t fragment_len = input_len;
 	int reconfigure = 0;
 	current_position = input_position;
 
-//printf("ARender::process_buffer 2\n");
 	while(fragment_position < input_len)
 	{
 		for(int i = 0; i < MAXCHANNELS; i++)
@@ -184,19 +184,15 @@ int ARender::process_buffer(double **buffer_out,
 		if(fragment_position + fragment_len > input_len)
 			fragment_len = input_len - fragment_position;
 
-//printf("ARender::process_buffer 3 %d\n", fragment_len);
 		reconfigure = vconsole->test_reconfigure(input_position, 
 			fragment_len,
 			last_playback);
 
-//printf("ARender::process_buffer 4 %d %d %d\n", input_position, fragment_len, reconfigure);
 
 
 		if(reconfigure) restart_playback();
-//printf("ARender::process_buffer 6\n");
 
 		result = process_buffer(fragment_len, input_position);
-//printf("ARender::process_buffer 7\n");
 
 		fragment_position += fragment_len;
 		input_position += fragment_len;
@@ -205,13 +201,9 @@ int ARender::process_buffer(double **buffer_out,
 
 // Don't delete audio_out on completion
 	bzero(this->audio_out, sizeof(double*) * MAXCHANNELS);
-// printf("ARender::process_buffer 1 %.2f %.2f %.2f %.2f %.2f\n", 
-// 	buffer_out[0][0], 
-// 	buffer_out[0][1], 
-// 	buffer_out[0][2], 
-// 	buffer_out[0][3], 
-// 	buffer_out[0][4]);
-//printf("ARender::process_buffer 8\n");
+
+
+
 	return result;
 	return 0;
 }
@@ -219,14 +211,10 @@ int ARender::process_buffer(double **buffer_out,
 
 int ARender::process_buffer(int64_t input_len, int64_t input_position)
 {
-//printf("ARender::process_buffer 1\n");
 	int result = ((VirtualAConsole*)vconsole)->process_buffer(input_len,
 		input_position,
 		last_playback,
 		session_position);
-
-
-
 
 
 
@@ -281,37 +269,26 @@ void ARender::run()
 {
 	int64_t current_input_length;
 	int reconfigure = 0;
-//printf("ARender::run 1\n");
 
-//sleep(1);
-	start_lock.unlock();
+	start_lock->unlock();
 
-//printf("ARender::run 2 %d %d %d\n", done, interrupt, last_playback);
 	while(!done && !interrupt && !last_playback)
 	{
 		current_input_length = renderengine->edl->session->audio_read_length;
-//printf("ARender::run 2 %d\n", current_input_length);
 		get_boundaries(current_input_length);
-//printf("ARender::run 3 %d\n", current_input_length);
 
 		if(current_input_length)
 		{
-//printf("ARender::run 4 %d\n", current_input_length);
 			reconfigure = vconsole->test_reconfigure(current_position, 
 				current_input_length,
 				last_playback);
-//printf("ARender::run 5 %d %d\n", reconfigure, current_input_length);
-			
-			
-			
-			
-			
-// 			test_virtualnodes(current_position, 
-// 				current_input_length, 
-// 				get_datatype());
+
+
+
+
+
 			if(reconfigure) restart_playback();
 		}
-//printf("ARender::run 4 %d %d %d\n", current_position, current_input_length, reconfigure);
 
 
 // Update tracking if no video is playing.
@@ -328,12 +305,10 @@ void ARender::run()
 			else
 				position = renderengine->command->playbackstart - position;
 
-//printf("ARender::run 6 %f\n", renderengine->audio->current_position());
 // This number is not compensated for looping.  It's compensated in 
 // PlaybackEngine::get_tracking_position when interpolation also happens.
 			renderengine->playback_engine->update_tracking(position);
 		}
-//printf("ARender::run 7 %d\n", current_position);
 
 
 
@@ -341,18 +316,13 @@ void ARender::run()
 
 
 		process_buffer(current_input_length, current_position);
-//printf("ARender::run 8 %d %d %d\n", done, interrupt, last_playback);
 
 		advance_position(get_render_length(current_input_length));
 		if(vconsole->interrupt) interrupt = 1;
-//printf("ARender::run 9 %d %d %d\n", done, interrupt, last_playback);
 	}
 
-//printf("ARender::run 10\n");
 	if(renderengine->command->realtime) wait_device_completion();
-//printf("ARender::run 11\n");
 	vconsole->stop_rendering(0);
-//printf("ARender::run 12\n");
 }
 
 
@@ -386,7 +356,6 @@ int ARender::arm_playback(int64_t current_position,
 	this->current_position = current_position;
 	this->input_length = input_length;
 	session_position = 0;
-	startup_lock.lock();
 
 	source_length = renderengine->end_position - renderengine->start_position;
 
@@ -412,7 +381,7 @@ int ARender::send_reconfigure_buffer()
 {
 	if(renderengine->command->realtime)
 	{
-		vconsole->output_lock[vconsole->current_input_buffer]->lock();
+		vconsole->output_lock[vconsole->current_input_buffer]->lock("ARender::send_reconfigure_buffer");
 
 		vconsole->input_len[vconsole->current_input_buffer] = 0;
 		vconsole->input_position[vconsole->current_input_buffer] = 0;
@@ -450,8 +419,3 @@ int64_t ARender::get_render_length(int64_t current_render_length)
 	return current_render_length;
 }
 
-int ARender::wait_for_startup()
-{
-	startup_lock.lock();
-	startup_lock.unlock();
-}

@@ -1,6 +1,7 @@
 #include "auto.h"
 #include "cache.h"
 #include "commonrender.h"
+#include "condition.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "intautos.h"
@@ -23,6 +24,7 @@ CommonRender::CommonRender(RenderEngine *renderengine)
 {
 	this->renderengine = renderengine;
 	reset_parameters();
+	start_lock = new Condition(0, "CommonRender::start_lock");
 }
 
 CommonRender::~CommonRender()
@@ -34,6 +36,7 @@ CommonRender::~CommonRender()
 			delete modules[i];
 	 	delete [] modules;
 	}
+	delete start_lock;
 }
 
 void CommonRender::reset_parameters()
@@ -53,52 +56,41 @@ void CommonRender::arm_command()
 {
 	int64_t temp_length = 1;
 
-//printf("CommonRender::arm_command 1 %f\n", renderengine->command->playbackstart);
 	current_position = tounits(renderengine->command->playbackstart, 0);
-//printf("CommonRender::arm_command 2 %d\n", renderengine->command->playbackstart);
 
 	init_output_buffers();
 
-//printf("CommonRender::arm_command 3 %d\n", renderengine->command->playbackstart);
 	last_playback = 0;
 	if(test_reconfigure(current_position, temp_length))
 	{
-//printf("CommonRender::arm_command 3.1 %d\n", renderengine->command->playbackstart);
 		restart_playback();
 	}
 	else
 	{
 		vconsole->start_playback();
 	}
-//printf("CommonRender::arm_command 4 %d\n", renderengine->command->playbackstart);
 
 	done = 0;
 	interrupt = 0;
 	last_playback = 0;
 	restart_plugins = 0;
-
-//printf("CommonRender::arm_command 5\n");
 }
 
 
 
 void CommonRender::create_modules()
 {
-//printf("CommonRender::create_modules 1\n");
 // Create a module for every track, playable or not
 	Track *current = renderengine->edl->tracks->first;
 	int module = 0;
 
-//printf("CommonRender::create_modules 1\n");
 	if(!modules)
 	{
 		total_modules = get_total_tracks();
 		modules = new Module*[total_modules];
-//printf("CommonRender::create_modules 1 %d\n", total_modules);
 
 		for(module = 0; module < total_modules && current; current = NEXT)
 		{
-//printf("CommonRender::create_modules 2 %d %p\n", total_modules, current);
 			if(current->data_type == data_type)
 			{
 				modules[module] = new_module(current);
@@ -110,12 +102,10 @@ void CommonRender::create_modules()
 	else
 // Update changes in plugins for existing modules
 	{
-//printf("CommonRender::create_modules 3 %d\n", total_modules);
 		for(module = 0; module < total_modules; module++)
 		{
 			modules[module]->create_objects();
 		}
-//printf("CommonRender::create_modules 4\n");
 	}
 }
 
@@ -145,26 +135,21 @@ int CommonRender::test_reconfigure(int64_t position, int64_t &length)
 void CommonRender::build_virtual_console()
 {
 // Create new virtual console object
-//printf("CommonRender::build_virtual_console 1 %p\n", vconsole);
 	if(!vconsole)
 	{
 		vconsole = new_vconsole_object();
-//printf("CommonRender::build_virtual_console 2\n");
 	}
 
 // Create nodes
 	vconsole->create_objects();
-//printf("CommonRender::build_virtual_console 3\n");
 }
 
 void CommonRender::start_command()
 {
 	if(renderengine->command->realtime)
 	{
-		start_lock.lock();
 		Thread::start();
-		start_lock.lock();
-		start_lock.unlock();
+		start_lock->lock("CommonRender::start_command");
 	}
 }
 
@@ -197,40 +182,29 @@ int CommonRender::get_boundaries(int64_t &current_render_length)
 	int64_t end_position = tounits(renderengine->command->end_position, 1);
 
 
-//printf("CommonRender::get_boundaries 1 %d %d %d %d\n", 
-//current_render_length, 
-//current_position, 
-//start_position,
-//end_position);
 // test absolute boundaries if no loop and not infinite
 	if(renderengine->command->single_frame() || 
 		(!renderengine->edl->local_session->loop_playback && 
 		!renderengine->command->infinite))
 	{
-//printf("CommonRender::get_boundaries 1.1 %d\n", current_render_length);
 		if(renderengine->command->get_direction() == PLAY_FORWARD)
 		{
-//printf("CommonRender::get_boundaries 1.2 %d\n", current_render_length);
 			if(current_position + current_render_length >= end_position)
 			{
 				last_playback = 1;
 				current_render_length = end_position - current_position;
-//printf("CommonRender::get_boundaries 1.3 %d\n", current_render_length);
 			}
 		}
 // reverse playback
 		else               
 		{
-//printf("CommonRender::get_boundaries 1.4 %d\n", current_render_length);
 			if(current_position - current_render_length <= start_position)
 			{
 				last_playback = 1;
 				current_render_length = current_position - start_position;
-//printf("CommonRender::get_boundaries 1.5 %d\n", current_render_length);
 			}
 		}
 	}
-//printf("CommonRender::get_boundaries 2 %d\n", current_render_length);
 
 // test against loop boundaries
 	if(!renderengine->command->single_frame() &&
@@ -255,19 +229,16 @@ int CommonRender::get_boundaries(int64_t &current_render_length)
 			}
 		}
 	}
-	
-//printf("CommonRender::get_boundaries 3 %d\n", current_render_length);
+
 	if(renderengine->command->single_frame())
 		current_render_length = 1;
 
-//printf("CommonRender::get_boundaries 4 %d\n", current_render_length);
-//sleep(1);
 	return 0;
 }
 
 void CommonRender::run()
 {
-	start_lock.unlock();
+	start_lock->unlock();
 }
 
 

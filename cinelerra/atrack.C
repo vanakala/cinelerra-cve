@@ -2,7 +2,6 @@
 #include "aedits.h"
 #include "amodule.h"
 #include "apluginset.h"
-#include "assets.h"
 #include "atrack.h"
 #include "autoconf.h"
 #include "aautomation.h"
@@ -15,6 +14,7 @@
 #include "file.h"
 #include "filexml.h"
 #include "floatautos.h"
+#include "language.h"
 #include "localsession.h"
 #include "mainsession.h"
 #include "panautos.h"
@@ -24,10 +24,6 @@
 
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 ATrack::ATrack(EDL *edl, Tracks *tracks)

@@ -8,6 +8,7 @@
 #include "cwindow.h"
 #include "cwindowgui.h"
 #include "edl.h"
+#include "language.h"
 #include "localsession.h"
 #include "mainindexes.h"
 #include "mainsession.h"
@@ -17,10 +18,6 @@
 #include "vwindow.h"
 #include "vwindowgui.h"
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 AssetPopup::AssetPopup(MWindow *mwindow, AWindowGUI *gui)
@@ -54,9 +51,9 @@ void AssetPopup::create_objects()
 void AssetPopup::paste_assets()
 {
 // Collect items into the drag vectors for temporary storage
-	gui->lock_window();
-	mwindow->gui->lock_window();
-	mwindow->cwindow->gui->lock_window();
+	gui->lock_window("AssetPopup::paste_assets");
+	mwindow->gui->lock_window("AssetPopup::paste_assets");
+	mwindow->cwindow->gui->lock_window("AssetPopup::paste_assets");
 
 	gui->collect_assets();
 	mwindow->paste_assets(mwindow->edl->local_session->selectionstart, 
@@ -71,7 +68,7 @@ void AssetPopup::match_size()
 {
 // Collect items into the drag vectors for temporary storage
 	gui->collect_assets();
-	mwindow->gui->lock_window();
+	mwindow->gui->lock_window("AssetPopup::match_size");
 	mwindow->asset_to_size();
 	mwindow->gui->unlock_window();
 }
@@ -193,7 +190,7 @@ AssetPopupView::~AssetPopupView()
 
 int AssetPopupView::handle_event()
 {
-	mwindow->vwindow->gui->lock_window();
+	mwindow->vwindow->gui->lock_window("AssetPopupView::handle_event");
 
 	if(mwindow->session->drag_assets->total)
 		mwindow->vwindow->change_source(

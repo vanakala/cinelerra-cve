@@ -32,6 +32,7 @@ public:
 
 	void boundaries();
 
+
 	EDL *edl;
 
 
@@ -70,7 +71,7 @@ public:
 // Track zoom
 	int64_t zoom_track;
 
-// Range for CWindow and VWindow in seconds
+// Range for CWindow and VWindow preview in seconds.
 	double preview_start;
 	double preview_end;
 };

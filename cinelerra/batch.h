@@ -1,7 +1,7 @@
 #ifndef RECORDBATCH_H
 #define RECORDBATCH_H
 
-#include "assets.inc"
+#include "asset.inc"
 #include "channel.inc"
 #include "edl.inc"
 #include "file.inc"

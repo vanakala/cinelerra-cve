@@ -4,7 +4,6 @@
 #include "atrack.inc"
 #include "commonrender.h"
 #include "maxchannels.h"
-#include "mutex.h"
 
 class ARender : public CommonRender
 {
@@ -90,7 +89,6 @@ private:
 	int init_meters();
 // Samples since start of playback
 	int64_t session_position;
-	Mutex startup_lock;
 };
 
 

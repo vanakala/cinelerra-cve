@@ -2,7 +2,7 @@
 #define RENDERFARMCLIENT_H
 
 #include "arraylist.h"
-#include "assets.inc"
+#include "asset.inc"
 #include "defaults.inc"
 #include "edl.inc"
 #include "packagerenderer.h"
@@ -17,7 +17,7 @@
 class RenderFarmClient
 {
 public:
-	RenderFarmClient(int port, char *deamon_path);
+	RenderFarmClient(int port, char *deamon_path, int nice_value);
 	~RenderFarmClient();
 	
 	void main_loop();

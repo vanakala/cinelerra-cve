@@ -15,7 +15,8 @@
 
 PlayableTracks::PlayableTracks(RenderEngine *renderengine, 
 	long current_position, 
-	int data_type)
+	int data_type,
+	int use_nudge)
  : ArrayList<Track*>()
 {
 	this->renderengine = renderengine;
@@ -26,7 +27,7 @@ PlayableTracks::PlayableTracks(RenderEngine *renderengine,
 		current_track; 
 		current_track = current_track->next)
 	{
-		if(is_playable(current_track, current_position))
+		if(is_playable(current_track, current_position, use_nudge))
 		{
 //printf("PlayableTracks::PlayableTracks 1 %p %d %d\n", this, total, current_position);
 			append(current_track);
@@ -40,10 +41,13 @@ PlayableTracks::~PlayableTracks()
 }
 
 
-int PlayableTracks::is_playable(Track *current_track, long position)
+int PlayableTracks::is_playable(Track *current_track, 
+	long position,
+	int use_nudge)
 {
 	int result = 1;
 	int direction = renderengine->command->get_direction();
+	if(use_nudge) position += current_track->nudge;
 
 	Auto *current = 0;
 	int *do_channel;
@@ -61,9 +65,6 @@ int PlayableTracks::is_playable(Track *current_track, long position)
 	
 
 // Track is off screen and not bounced to other modules
-// printf("PlayableTracks::is_playable 1 %d %p\n", 
-// result, 
-// do_channel);
 
 
 	if(result)
@@ -72,7 +73,6 @@ int PlayableTracks::is_playable(Track *current_track, long position)
 			!current_track->channel_is_playable(position, direction, do_channel))
 			result = 0;
 	}
-//printf("PlayableTracks::is_playable 2 %d\n", result);
 
 // Test play patch
 	if(!current_track->play)
@@ -80,7 +80,6 @@ int PlayableTracks::is_playable(Track *current_track, long position)
 		result = 0;
 	}
 
-//printf("PlayableTracks::is_playable 3 %d %d\n", position, result);
 	if(result)
 	{
 // Test for playable edit

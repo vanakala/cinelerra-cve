@@ -1,7 +1,7 @@
 #ifndef MENUAEFFECTS_H
 #define MENUAEFFECTS_H
 
-#include "assets.inc"
+#include "asset.inc"
 #include "edl.inc"
 #include "guicast.h"
 #include "mwindow.inc"

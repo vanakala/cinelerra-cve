@@ -1,35 +1,60 @@
+#include "asset.h"
 #include "confirmsave.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
-ConfirmSave::ConfirmSave(MWindow *mwindow)
+ConfirmSave::ConfirmSave()
 {
-	this->mwindow = mwindow;
 }
 
 ConfirmSave::~ConfirmSave()
 {
 }
 
-int ConfirmSave::test_file(char *filename)
+int ConfirmSave::test_file(MWindow *mwindow, char *path)
 {
-	FILE *in;
-	if(in = fopen(filename, "rb"))
+	ArrayList<char*> paths;
+	paths.append(path);
+	int result = test_files(mwindow, &paths);
+	paths.remove_all();
+	return result;
+}
+
+int ConfirmSave::test_files(MWindow *mwindow, 
+	ArrayList<char*> *paths)
+{
+	FILE *file;
+	ArrayList<BC_ListBoxItem*> list;
+	int result = 0;
+
+	for(int i = 0; i < paths->total; i++)
 	{
-		fclose(in);
-		ConfirmSaveWindow cwindow(mwindow, filename);
-		cwindow.create_objects();
-		int result = cwindow.run_window();
+		char *path = paths->values[i];
+		if(file = fopen(path, "r"))
+		{
+			fclose(file);
+			list.append(new BC_ListBoxItem(path));
+		}
+	}
+
+	if(list.total)
+	{
+		ConfirmSaveWindow window(mwindow, &list);
+		window.create_objects();
+		result = window.run_window();
+		list.remove_all_objects();
 		return result;
 	}
-	return 0;
+	else
+	{
+		list.remove_all_objects();
+		return 0;
+	}
+
+	return result;
 }
 
 
@@ -37,29 +62,59 @@ int ConfirmSave::test_file(char *filename)
 
 
 
-ConfirmSaveWindow::ConfirmSaveWindow(MWindow *mwindow, char *filename)
+
+
+
+ConfirmSaveWindow::ConfirmSaveWindow(MWindow *mwindow, 
+	ArrayList<BC_ListBoxItem*> *list)
  : BC_Window(PROGRAM_NAME ": File Exists", 
- 		mwindow->gui->get_abs_cursor_x() - 140, 
-		mwindow->gui->get_abs_cursor_y() - 80, 
-		375, 
-		160)
+ 		mwindow->gui->get_abs_cursor_x() - 160, 
+		mwindow->gui->get_abs_cursor_y() - 120, 
+		320, 
+		240)
 {
-	this->filename = filename;
+	this->list = list;
 }
 
 ConfirmSaveWindow::~ConfirmSaveWindow()
 {
 }
 
+
 int ConfirmSaveWindow::create_objects()
 {
-	char string[1024];
 	int x = 10, y = 10;
-	sprintf(string, _("Overwrite %s?"), filename);
-	add_subwindow(new BC_Title(5, 5, string));
+	add_subwindow(title = new BC_Title(5, 
+		5, 
+		"The following files exist.  Overwrite them?"));
 	y += 30;
+	add_subwindow(listbox = new BC_ListBox(x, 
+		y, 
+		get_w() - x - 10,
+		get_h() - y - 50,
+		LISTBOX_TEXT,
+		list));
+	y = get_h() - 40;
 	add_subwindow(new BC_OKButton(this));
 	x = get_w() - 100;
 	add_subwindow(new BC_CancelButton(this));
 	return 0;
 }
+
+int ConfirmSaveWindow::resize_event(int w, int h)
+{
+	int x = 10, y = 10;
+	title->reposition_window(x, y);
+	y += 30;
+	listbox->reposition_window(x,
+		y,
+		w - x - 10,
+		h - y - 50);
+	return 1;
+}
+
+
+
+
+
+

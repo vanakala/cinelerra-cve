@@ -1,4 +1,4 @@
-#include "assets.h"
+#include "asset.h"
 #include "file.h"
 #include "mwindow.h"
 #include "record.h"
@@ -104,13 +104,13 @@ int RecordTransport::keypress_event()
 			case IS_PREVIEWING:
 				window->unlock_window();
 				record->stop_operation(1);
-				window->lock_window();
+				window->lock_window("RecordTransport::keypress_event 1");
 				break;
 
 			default:
 				window->unlock_window();
 				record->start_recording(0, CONTEXT_INTERACTIVE);
-				window->lock_window();
+				window->lock_window("RecordTransport::keypress_event 2");
 				break;
 		}
 //printf("RecordTransport::keypress_event 2\n");
@@ -136,7 +136,7 @@ int RecordGUIRec::handle_event()
 {
 	unlock_window();
 	record->start_recording(0, CONTEXT_INTERACTIVE);
-	lock_window();
+	lock_window("RecordGUIRec::handle_event");
 	return 1;
 }
 
@@ -160,7 +160,7 @@ int RecordGUIRecFrame::handle_event()
 {
 	unlock_window();
 	record->start_recording(0, CONTEXT_SINGLEFRAME);
-	lock_window();
+	lock_window("RecordGUIRecFrame::handle_event");
 	return 1;
 }
 
@@ -209,7 +209,7 @@ int RecordGUIStop::handle_event()
 {
 	unlock_window();
 	record->stop_operation(1);
-	lock_window();
+	lock_window("RecordGUIStop::handle_event");
 	return 1;
 }
 

@@ -38,7 +38,7 @@ int Quit::handle_event()
 //printf("Quit::handle_event 1 %d\n", mwindow->session->changes_made);
 	if(mwindow->session->changes_made ||
 		mwindow->gui->mainmenu->record->current_state ||
-		mwindow->render->running()) 
+		mwindow->render->in_progress) 
 	{
 		start();
 	}

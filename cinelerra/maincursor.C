@@ -25,6 +25,16 @@ void MainCursor::create_objects()
 //	draw();
 }
 
+void MainCursor::focus_in_event()
+{
+}
+
+void MainCursor::focus_out_event()
+{
+	show();
+	flash();
+}
+
 void MainCursor::activate()
 {
 //printf("MainCursor::activate 1 %d\n", BC_WindowBase::get_resources()->blink_rate);
@@ -48,7 +58,7 @@ void MainCursor::deactivate()
 
 int MainCursor::repeat_event(int64_t duration)
 {
-	if(!active) return 0;
+	if(!active || !gui->get_has_focus()) return 0;
 //printf("MainCursor::repeat_event 1 %d\n", duration);
 	if(duration != BC_WindowBase::get_resources()->blink_rate) return 0;
 
@@ -121,7 +131,6 @@ void MainCursor::hide()
 
 void MainCursor::show()
 {
-//printf("MainCursor::show 1 %d\n", visible);
 	if(!visible) draw();
 }
 

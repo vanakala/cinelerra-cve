@@ -11,6 +11,7 @@ class FileFormatRate;
 class FileFormatChannels;
 class FileFormatBits;
 
+#include "asset.inc"
 #include "assets.inc"
 #include "bitspopup.inc"
 #include "file.inc"

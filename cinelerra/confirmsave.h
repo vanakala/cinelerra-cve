@@ -1,6 +1,7 @@
 #ifndef CONFIRMSAVE_H
 #define CONFIRMSAVE_H
 
+#include "asset.inc"
 #include "guicast.h"
 #include "mwindow.inc"
 
@@ -10,21 +11,29 @@ class ConfirmSaveCancelButton;
 class ConfirmSave
 {
 public:
-	ConfirmSave(MWindow *mwindow);
+	ConfirmSave();
 	~ConfirmSave();
 
-	int test_file(char *filename);    // return 1 if user cancels save
-	MWindow *mwindow;
+// Return values:
+// 1 cancel
+// 0 replace or doesn't exist yet
+	static int test_file(MWindow *mwindow, char *path);
+	static int test_files(MWindow *mwindow, ArrayList<char*> *paths);
+
 };
 
 class ConfirmSaveWindow : public BC_Window
 {
 public:
-	ConfirmSaveWindow(MWindow *mwindow, char *filename);
+	ConfirmSaveWindow(MWindow *mwindow, ArrayList<BC_ListBoxItem*> *list);
 	~ConfirmSaveWindow();
 
 	int create_objects();
-	char *filename;
+	int resize_event(int w, int h);
+
+	ArrayList<BC_ListBoxItem*> *list;
+	BC_Title *title;
+	BC_ListBox *listbox;
 };
 
 #endif

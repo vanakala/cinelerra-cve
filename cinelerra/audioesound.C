@@ -84,7 +84,7 @@ int AudioESound::open_input()
 	}
 	esd_in_fd = esd_record_stream_fallback(format, device->in_samplerate, 
 			    	translate_device_string(device->out_config->esound_out_server, device->out_config->esound_out_port), 
-						"Bcast 2000");
+						"Cinelerra");
 	return 0;
 }
 
@@ -105,7 +105,7 @@ int AudioESound::open_output()
 	};
 	esd_out_fd = esd_play_stream_fallback(format, device->out_samplerate, 
 			    	translate_device_string(device->out_config->esound_out_server, device->out_config->esound_out_port), 
-						"Bcast 2000");
+						"Cinelerra");
 
 	device->device_buffer = esd_get_latency(esd_out);
 	device->device_buffer *= device->out_bits / 8 * device->out_channels;

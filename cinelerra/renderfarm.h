@@ -3,7 +3,7 @@
 
 
 #include "arraylist.h"
-#include "assets.inc"
+#include "asset.inc"
 #include "brender.inc"
 #include "defaults.inc"
 #include "edl.inc"
@@ -89,7 +89,8 @@ enum
 	RENDERFARM_FTELL,
 	RENDERFARM_STAT,
 	RENDERFARM_STAT64,     // 20
-	RENDERFARM_FGETS       // 21
+	RENDERFARM_FGETS,      // 21
+	RENDERFARM_FILENO
 };
 
 

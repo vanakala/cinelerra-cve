@@ -1,3 +1,4 @@
+#include "asset.h"
 #include "assets.h"
 #include "audiodevice.h"
 #include "batch.h"
@@ -19,7 +20,6 @@
 #include "mainundo.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
-#include "neworappend.h"
 #include "playbackengine.h"
 #include "preferences.h"
 #include "quicktime.h"
@@ -72,7 +72,7 @@ int RecordMenuItem::handle_event()
 		{
 			case RECORD_INTRO:
 //printf("RecordMenuItem::handle_event 3\n");
-				thread->record_window->lock_window();
+				thread->record_window->lock_window("RecordMenuItem::handle_event 1");
 				thread->record_window->raise_window();
 				thread->record_window->unlock_window();
 //printf("RecordMenuItem::handle_event 4\n");
@@ -80,7 +80,7 @@ int RecordMenuItem::handle_event()
 			
 			case RECORD_CAPTURING:
 //printf("RecordMenuItem::handle_event 5\n");
-				thread->record_gui->lock_window();
+				thread->record_gui->lock_window("RecordMenuItem::handle_event 2");
 				thread->record_gui->raise_window();
 				thread->record_gui->unlock_window();
 //printf("RecordMenuItem::handle_event 6\n");
@@ -132,128 +132,34 @@ Record::~Record()
 {
 }
 
-int Record::set_script(FileXML *script)
-{
-	this->script = script;
-}
-
-int Record::run_script(Asset *asset, int &do_audio, int &do_video)
-{
-	int script_result = 0, result = 0;
-	File test_file;
-
-	while(!result && !script_result)
-	{
-		result = script->read_tag();
-
-		if(!result)
-		{
-			if(script->tag.title_is("set_path"))
-			{
-				strcpy(asset->path, script->tag.get_property_text(0));
-			}
-			else
-			if(script->tag.title_is("set_audio"))
-			{
-				do_audio = script->tag.get_property_int(0);
-			}
-			else
-			if(script->tag.title_is("set_video"))
-			{
-				do_video = script->tag.get_property_int(0);
-			}
-			else
-			if(script->tag.title_is("set_paste_output"))
-			{
-				to_tracks = script->tag.get_property_int(0);
-			}
-			else
-			if(script->tag.title_is("set_format"))
-			{
-				if(!(asset->format = test_file.strtoformat(mwindow->plugindb, script->tag.get_property_text(0))))
-				{
-					printf("Invalid file format %s.  See the menu for possible file formats.\n", script->tag.get_property_text(0));
-				}
-			}
-			else
-			if(script->tag.title_is("set_audio_compression"))
-			{
-				if(!(asset->bits = test_file.strtobits(script->tag.get_property_text(0))))
-				{
-					printf("Invalid audio compressor %s.  See the menu for possible compressors.\n", script->tag.get_property_text(0));
-				}
-			}
-			else
-			if(script->tag.title_is("set_audio_signed"))
-			{
-				asset->signed_ = script->tag.get_property_int(0);
-			}
-			else
-			if(script->tag.title_is("set_audio_channels"))
-			{
-				asset->channels = script->tag.get_property_int(0);
-				if(!asset->channels || asset->channels > MAXCHANNELS)
-				{
-					printf("Invalid number of channels %d.\n", asset->channels);
-				}
-			}
-			else
-// 			if(script->tag.title_is("set_channel"))
-// 			{
-// 				char string[1024];
-// 				strcpy(string, script->tag.get_property_text(0));
-// 				for(int i = 0; i < mwindow->channeldb.total; i++)
-// 				{
-// 					if(!strcasecmp(mwindow->channeldb.values[i]->title, string))
-// 					{
-// 						current_channel = i;
-// 						break;
-// 					}
-// 				}
-// 			}
-// 			else
-			if(script->tag.title_is("set_video_compression"))
-			{
-				strcpy(asset->vcodec, FileMOV::strtocompression(script->tag.get_property_text(0)));
-			}
-			else
-			if(script->tag.title_is("set_video_quality"))
-			{
-//				asset->quality = script->tag.get_property_int(0);
-			}
-			else
-			if(script->tag.title_is("ok"))
-			{
-				script_result = 1;
-			}
-			else
-			{
-				printf(_("Record::run_script: Unrecognized command: %s\n"), script->tag.get_title());
-			}
-		}
-	}
-
-	return script_result;
-}
 
 int Record::load_defaults()
 {
-//printf("Record::load_defaults 1\n");
 	char string[BCTEXTLEN];
-//printf("Record::load_defaults 1\n");
-//printf("Record::load_defaults 1\n");
 	Defaults *defaults = mwindow->defaults;
 
-//printf("Record::load_defaults 1\n");
 // Load default asset
-	defaults->get("RECORD_PATH_0", default_asset->path);
-	sprintf(string, "WAV");
-	defaults->get("RECORD_FORMAT", string);
-	default_asset->format = File::strtoformat(mwindow->plugindb, string);
-// Record compression can't be the same as render compression
-// because DV can't be synthesized.
-	sprintf(default_asset->vcodec, QUICKTIME_RAW);
-	defaults->get("RECORD_COMPRESSION", default_asset->vcodec);
+	default_asset->load_defaults(defaults, 
+		"RECORD_", 
+		1,
+		1,
+		1,
+		1,
+		1);
+
+
+
+
+
+
+	default_asset->sample_rate = mwindow->edl->session->aconfig_in->in_samplerate;
+	default_asset->frame_rate = mwindow->edl->session->vconfig_in->in_framerate;
+	default_asset->width = mwindow->edl->session->vconfig_in->w;
+	default_asset->height = mwindow->edl->session->vconfig_in->h;
+	default_asset->channels = defaults->get("RECORD_CHANNELS", 2);
+	default_asset->layers = 1;
+
+
 // These are locked by a specific driver.
 	if(mwindow->edl->session->vconfig_in->driver == CAPTURE_LML ||
 		mwindow->edl->session->vconfig_in->driver == CAPTURE_BUZ)
@@ -262,29 +168,8 @@ int Record::load_defaults()
 	if(mwindow->edl->session->vconfig_in->driver == CAPTURE_FIREWIRE)
 		strncpy(default_asset->vcodec, QUICKTIME_DV, 4);
 
-	default_asset->sample_rate = mwindow->edl->session->aconfig_in->in_samplerate;
-	default_asset->frame_rate = mwindow->edl->session->vconfig_in->in_framerate;
-	default_asset->width = mwindow->edl->session->vconfig_in->w;
-	default_asset->height = mwindow->edl->session->vconfig_in->h;
-	default_asset->audio_data = defaults->get("RECORD_AUDIO", 1);
-	default_asset->video_data = defaults->get("RECORD_VIDEO", 1);
 
 
-
-	default_asset->bits = defaults->get("RECORD_BITS", 16);
-	default_asset->dither = defaults->get("RECORD_DITHER", 0);
-	default_asset->signed_ = defaults->get("RECORD_SIGNED", 1);
-	default_asset->byte_order = defaults->get("RECORD_BYTEORDER", 1);
-	default_asset->channels = defaults->get("RECORD_CHANNELS", 2);
-	default_asset->layers = 1;
-
-
-	default_asset->load_defaults(defaults);
-	defaults->get("RECORD_AUDIO_CODEC", default_asset->acodec);
-	defaults->get("RECORD_VIDEO_CODEC", default_asset->vcodec);
-
-
-//printf("Record::load_defaults 1\n");
 
 // Load batches
 	int total_batches = defaults->get("TOTAL_BATCHES", 1);
@@ -311,10 +196,9 @@ int Record::load_defaults()
 		sprintf(string, "BATCH_ENABLED_%d", i);
 		batch->enabled = defaults->get(string, batch->enabled);
 	}
-//printf("Record::load_defaults 1\n");
+
 
 	load_mode = defaults->get("RECORD_LOADMODE", LOAD_PASTE);
-//printf("Record::load_defaults 1\n");
 
 	monitor_audio = defaults->get("RECORD_MONITOR_AUDIO", 1);
 	monitor_video = defaults->get("RECORD_MONITOR_VIDEO", 1);
@@ -328,15 +212,12 @@ int Record::load_defaults()
 	video_contrast = defaults->get("VIDEO_CONTRAST", 0);
 	video_whiteness = defaults->get("VIDEO_WHITENESS", 0);
 	reverse_interlace = defaults->get("REVERSE_INTERLACE", 0);
-//printf("Record::load_defaults 1\n");
 	for(int i = 0; i < MAXCHANNELS; i++) 
 	{
 		sprintf(string, "RECORD_DCOFFSET_%d", i);
 		dc_offset[i] = defaults->get(string, 0);
 	}
-//printf("Record::load_defaults 1\n");
 	fill_frames = defaults->get("FILL_DROPPED_FRAMES", 0);
-//printf("Record::load_defaults 2\n");
 	return 0;
 }
 
@@ -347,25 +228,19 @@ int Record::save_defaults()
 	editing_batch = 0;
 
 // Save default asset
-	defaults->update("RECORD_FORMAT", File::formattostr(mwindow->plugindb, default_asset->format));
-// These are locked by a specific driver.
-	if(!fixed_compression)
-		defaults->update("RECORD_COMPRESSION", default_asset->vcodec);
-	defaults->update("RECORD_BITS", default_asset->bits);
-	defaults->update("RECORD_DITHER", default_asset->dither);
-	defaults->update("RECORD_SIGNED", default_asset->signed_);
-	defaults->update("RECORD_BYTEORDER", default_asset->byte_order);
+	default_asset->save_defaults(defaults,
+		"RECORD_",
+		1,
+		!fixed_compression,
+		1,
+		1,
+		1);
+
 	defaults->update("RECORD_CHANNELS", default_asset->channels);
-	defaults->update("RECORD_AUDIO", default_asset->audio_data);
-	defaults->update("RECORD_VIDEO", default_asset->video_data);
 
 
 
 
-
-	default_asset->save_defaults(defaults);
-	defaults->update("RECORD_AUDIO_CODEC", default_asset->acodec);
-	defaults->update("RECORD_VIDEO_CODEC", default_asset->vcodec);
 
 
 	defaults->update("TOTAL_BATCHES", batches.total);
@@ -406,7 +281,7 @@ int Record::save_defaults()
 	defaults->update("VIDEO_CONTRAST", video_contrast);
 	defaults->update("VIDEO_WHITENESS", video_whiteness);
 	defaults->update("REVERSE_INTERLACE", reverse_interlace);
-	for(int i = 0; i < MAXCHANNELS; i++) 
+	for(int i = 0; i < MAXCHANNELS; i++)
 	{
 		sprintf(string, "RECORD_DCOFFSET_%d", i);
 		defaults->update(string, dc_offset[i]);
@@ -461,23 +336,17 @@ ArrayList<Channel*>* Record::current_channeldb()
 
 void Record::run()
 {
-//printf("Record::run 1\n");
 	int result = 0, format_error = 0;
-//printf("Record::run 1\n");
 	int64_t start, end;
 	record_gui = 0;
-//printf("Record::run 1\n");
+//printf("Record::run 1 %d\n", getpid());
 
 // Default asset forms the first path in the batch capture
 // and the file format for all operations.
 	default_asset = new Asset;
-//printf("Record::run 1\n");
 	prompt_cancel = 0;
-//printf("Record::run 1\n");
 	fixed_compression = VideoDevice::is_compressed(mwindow->edl->session->vconfig_in->driver);
-//printf("Record::run 1\n");
 	load_defaults();
-//printf("Record::run 1\n");
 
 	if(fixed_compression)
 	{
@@ -487,19 +356,14 @@ void Record::run()
 
 
 	menu_item->current_state = RECORD_INTRO;
-//printf("Record::run 1\n");
 
 // Get information about the file format
 	do
 	{
 // Script did not contain "ok" so pop up a window.
-//printf("Record::run 2\n");
 		record_window = new RecordWindow(mwindow, this);
-//printf("Record::run 2\n");
 		record_window->create_objects();
-//printf("Record::run 2\n");
 		result = record_window->run_window();
-//printf("Record::run 3\n");
 		delete record_window;
 		record_window = 0;
 
@@ -509,91 +373,62 @@ void Record::run()
 			format_error = check_format.check_format();
 		}
 	}while(format_error && !result);
-//printf("Record::run 4\n");
 
 	save_defaults();
 	mwindow->save_defaults();
-//printf("Record::run 5\n");
 
 	configure_batches();
 	current_batch = 0;
 	editing_batch = 0;
-//printf("Record::run 6\n");
 
 // Run recordgui
 	if(!result)
 	{
-//printf("Record::run 7\n");
 		edl = new EDL;
 		edl->create_objects();
-// 		edl->session->track_w = default_asset->width;
-// 		edl->session->track_h = default_asset->height;
 		edl->session->output_w = default_asset->width;
 		edl->session->output_h = default_asset->height;
 		edl->session->aspect_w = mwindow->edl->session->aspect_w;
 		edl->session->aspect_h = mwindow->edl->session->aspect_h;
 		record_gui = new RecordGUI(mwindow, this);
-//printf("Record::run 8\n");
 		record_gui->load_defaults();
 		record_gui->create_objects();
 
-//printf("Record::run 1\n");
 		record_monitor = new RecordMonitor(mwindow, this);
-//printf("Record::run 1\n");
 		record_monitor->create_objects();
-//printf("Record::run 9\n");
 		record_gui->update_batch_sources();
 
-//printf("Record::run 1\n");
 		menu_item->current_state = RECORD_CAPTURING;
-//printf("Record::run 1\n");
 		record_engine = new RecordThread(mwindow, this);
-//printf("Record::run 1\n");
 		record_engine->create_objects();
-//printf("Record::run 1\n");
 		monitor_engine = new RecordThread(mwindow, this);
-//printf("Record::run 1\n");
 		monitor_engine->create_objects();
-//printf("Record::run 10\n");
 
-//		duplex_engine = new PlaybackEngine(mwindow, record_monitor->window->canvas, 1);
-//		duplex_engine->create_objects();
 
-//printf("Record::run 11\n");
 		record_gui->show_window();
-//printf("Record::run 11\n");
 		record_gui->flush();
-//printf("Record::run 11\n");
 		if(video_window_open)
 		{
 			record_monitor->window->show_window();
 			record_monitor->window->raise_window();
 			record_monitor->window->flush();
 		}
-//printf("Record::run 11\n");
 		start_monitor();
-//printf("Record::run 12\n");
 		result = record_gui->run_window();
 // Force monitor to quit without resuming
 		if(monitor_engine->record_video) 
 			monitor_engine->record_video->batch_done = 1;
 		else
 			monitor_engine->record_audio->batch_done = 1;
-//printf("Record::run 13\n");
 		stop_operation(0);
-//printf("Record::run 14\n");
 		close_output_file();
-//printf("Record::run 15\n");
 		delete record_monitor;
-//printf("Record::run 16\n");
 		record_gui->save_defaults();
 		delete record_gui;
-//printf("Record::run17\n");
 		delete edl;
 	}
 
 	menu_item->current_state = RECORD_NOTHING;
-//printf("Record::run 1\n");
 
 // Save everything again
 	save_defaults();
@@ -605,15 +440,13 @@ void Record::run()
 // Paste into EDL
 	if(!result && load_mode != LOAD_NOTHING)
 	{
-		mwindow->gui->lock_window();
+		mwindow->gui->lock_window("Record::run");
 		ArrayList<EDL*> new_edls;
 
-//printf("Record::run 3\n");
 
 // Paste assets
 		for(int i = 0; i < batches.total; i++)
 		{
-//printf("Record::run 4\n");
 			Batch *batch = batches.values[i];
 			Asset *asset = batch->get_current_asset();
 
@@ -627,17 +460,14 @@ void Record::run()
 					mwindow->asset_to_edl(new_edl, 
 						batch->assets.values[j], 
 						batch->labels);
-//new_edl->dump();
 					new_edls.append(new_edl);
 				}
 			}
-//printf("Record::run 5\n");
 		}
 
 		if(new_edls.total)
 		{
 			mwindow->undo->update_undo_before(_("render"), LOAD_ALL);
-//printf("Record::run 6\n");
 
 // For pasting, clear the active region
 			if(load_mode == LOAD_PASTE)
@@ -670,17 +500,12 @@ void Record::run()
 			mwindow->sync_parameters(CHANGE_ALL);
 		}
 		mwindow->gui->unlock_window();
-//printf("Record::run 9\n");
 	}
 
-//printf("Record::run 10\n");
 // Delete everything
 	script = 0;
-//printf("Record 1\n");
 	batches.remove_all_objects();
-//printf("Record 1\n");
 	delete default_asset;
-//printf("Record 2\n");
 }
 
 void Record::activate_batch(int number, int stop_operation)
@@ -768,7 +593,7 @@ int Record::delete_output_file()
 		{
 			fclose(test);
 
-			record_gui->lock_window();
+			record_gui->lock_window("Record::delete_output_file");
 
 // Update GUI
 			sprintf(batch->news, _("Deleting"));
@@ -814,9 +639,9 @@ int Record::open_output_file()
 		{
 			mwindow->sighandler->push_file(file);
 			IndexFile::delete_index(mwindow->preferences, batch->get_current_asset());
-			file->set_processors(mwindow->edl->session->smp + 1);
+			file->set_processors(mwindow->preferences->processors);
 			batch->calculate_news();
-			record_gui->lock_window();
+			record_gui->lock_window("Record::open_output_file");
 			record_gui->update_batches();
 			record_gui->unlock_window();
 		}
@@ -861,7 +686,7 @@ void Record::rewind_file()
 
 	get_current_batch()->current_sample = 0;
 	get_current_batch()->current_frame = 0;
-	record_gui->lock_window();
+	record_gui->lock_window("Record::rewind_file");
 	record_gui->update_position(0, current_display_length());
 	record_gui->unlock_window();
 }
@@ -881,7 +706,7 @@ void Record::start_over()
 
 	get_current_batch()->start_over();
 
-	record_gui->lock_window();
+	record_gui->lock_window("Record::start_over");
 	record_gui->update_position(0, 0);
 	record_gui->update_batches();
 	record_gui->unlock_window();
@@ -1125,7 +950,6 @@ int Record::open_input_devices(int duplex, int context)
 		adevice->set_vdevice(vdevice);
 	}
 
-//printf("Record::open_input_devices 1\n");
 // Configure audio
 	if(adevice)
 	{
@@ -1180,10 +1004,9 @@ int Record::open_input_devices(int duplex, int context)
 			default_asset->frame_rate);
 		color_model = vdevice->get_best_colormodel(default_asset);
 		vdevice->set_field_order(reverse_interlace);
+// This also calls set_picture
 		set_channel(get_current_channel());
-		set_video_picture();
 	}
-//printf("Record::open_input_devices 2\n");
 
 	return 0;
 }
@@ -1192,20 +1015,16 @@ int Record::close_input_devices()
 {
 	if(vdevice)
 	{
-//printf("Record::close_input_devices 1\n");
 		vdevice->close_all();
 		delete vdevice;
 		vdevice = 0;
-//printf("Record::close_input_devices 2\n");
 	}
 
 	if(adevice)
 	{
-//printf("Record::close_input_devices 3\n");
 		adevice->close_all();
 		delete adevice;
 		adevice = 0;
-//printf("Record::close_input_devices 4\n");
 	}
 
 	return 0;
@@ -1241,7 +1060,7 @@ int Record::start_recording(int duplex, int context)
 // Toggle once to cue the user that we're not dead.
 		if(context == CONTEXT_BATCH)
 		{
-			record_gui->lock_window();
+			record_gui->lock_window("Record::start_recording");
 			record_gui->flash_batch();
 			record_gui->unlock_window();
 		}
@@ -1350,7 +1169,7 @@ int Record::set_channel(int channel)
 			char string[BCTEXTLEN];
 			get_editing_batch()->channel = channel;
 			source_to_text(string, get_editing_batch());
-			record_gui->lock_window();
+			record_gui->lock_window("Record::set_channel");
 			record_gui->batch_source->update(string);
 			record_monitor->window->channel_picker->channel_text->update(string);
 			record_gui->update_batches();
@@ -1359,7 +1178,6 @@ int Record::set_channel(int channel)
 			if(vdevice)
 			{
 				vdevice->set_channel(current_channeldb()->values[channel]);
-//printf("Record::set_channel 1\n");
 				set_video_picture();
 			}
 		}

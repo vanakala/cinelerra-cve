@@ -5,11 +5,12 @@
 #include "audiodevice.inc"
 #include "cache.inc"
 #include "canvas.inc"
+#include "condition.inc"
 #include "defaults.inc"
 #include "edl.inc"
 #include "mwindow.inc"
 #include "maxchannels.h"
-#include "mutex.h"
+#include "mutex.inc"
 #include "tracking.inc"
 #include "preferences.inc"
 #include "renderengine.inc"
@@ -67,9 +68,13 @@ public:
 // tracking_active is incremented to 2.
 	Timer tracking_timer;
 // Lock access to tracking data
-	Mutex tracking_lock;
+	Mutex *tracking_lock;
 // Block returns until tracking loop is finished
-	Mutex tracking_done;
+	Condition *tracking_done;
+// Pause the main loop for the PAUSE command
+	Condition *pause_lock;
+// Wait until thread has started
+	Condition *start_lock;
 
 	MWindow *mwindow;
 	Canvas *output;
@@ -85,8 +90,6 @@ public:
 	int do_cwindow;
 // Render engine set
 	ArrayList<RenderEngine*> render_engines;
-// Pause the main loop for the PAUSE command
-	Mutex pause_lock;
 
 
 
@@ -99,8 +102,6 @@ public:
 
 
 
-	int wait_for_startup();
-	int wait_for_completion();
 
 	int reset_parameters();
 
@@ -119,8 +120,6 @@ public:
 // generic render routine
 	int render_audio();
 	int reset_buttons();
-	int cleanup();
-	Mutex complete, startup_lock, start_lock;
 
 // ============================ cursor
 	int lock_playback_cursor();

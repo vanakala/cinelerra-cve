@@ -1,12 +1,9 @@
 #include "compresspopup.h"
 #include "file.h"
+#include "language.h"
 #include "quicktime.h"
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 CompressPopup::CompressPopup(int x, int y, int use_dv, char *text)
