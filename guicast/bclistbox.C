@@ -1851,9 +1851,12 @@ int BC_ListBox::get_scrollbars()
 			xscrollbar->bound_to = this;
 		}
 		else
+		{
+		        xscrollbar->update_length(w_needed, xposition, view_w);
 			xscrollbar->reposition_window(get_xscroll_x(),
 				get_xscroll_y(),
 				get_xscroll_width());
+		}
 	}
 	else
 	{
