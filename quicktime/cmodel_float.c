@@ -247,6 +247,32 @@ static inline void transfer_RGB_FLOAT_to_YUV444P(unsigned char *output_y,
 	output_v[output_column] = v >> 8;
 }
 
+static inline void transfer_RGB_FLOAT_to_YUV422(unsigned char *(*output), 
+	float *input,
+	int j)
+{
+	int y, u, v, r, g, b;
+	r = (int)(CLIP(input[0], 0, 1) * 0xffff);
+	g = (int)(CLIP(input[1], 0, 1) * 0xffff);
+	b = (int)(CLIP(input[2], 0, 1) * 0xffff);
+	
+	RGB_TO_YUV16(y, u, v, r, g, b);
+	
+	if(!(j & 1))
+	{ 
+// Store U and V for even pixels only
+		 (*output)[1] = u >> 8;
+		 (*output)[3] = v >> 8;
+		 (*output)[0] = y >> 8;
+	}
+	else
+	{ 
+// Store Y and advance output for odd pixels only
+		 (*output)[2] = y >> 8;
+		 (*output) += 4;
+	}
+
+}
 
 
 
@@ -492,6 +518,33 @@ static inline void transfer_RGBA_FLOAT_to_YUV444P(unsigned char *output_y,
 	output_v[output_column] = v >> 8;
 }
 
+static inline void transfer_RGBA_FLOAT_to_YUV422(unsigned char *(*output), 
+	float *input,
+	int j)
+{
+	int y, u, v, r, g, b, a;
+	a = (int)(CLIP(input[3], 0, 1) * 0x101);
+	r = (int)(CLIP(input[0], 0, 1) * 0xff * a);
+	g = (int)(CLIP(input[1], 0, 1) * 0xff * a);
+	b = (int)(CLIP(input[2], 0, 1) * 0xff * a);
+
+	RGB_TO_YUV16(y, u, v, r, g, b);;
+
+	if(!(j & 1))
+	{ 
+// Store U and V for even pixels only
+		 (*output)[1] = u >> 8;
+		 (*output)[3] = v >> 8;
+		 (*output)[0] = y >> 8;
+	}
+	else
+	{ 
+// Store Y and advance output for odd pixels only
+		 (*output)[2] = y >> 8;
+		 (*output) += 4;
+	}
+
+}
 
 
 
@@ -603,6 +656,11 @@ static inline void transfer_RGBA_FLOAT_to_YUV444P(unsigned char *output_y,
 						j); \
 					TRANSFER_FRAME_TAIL \
 					break; \
+				case BC_YUV422: \
+					TRANSFER_FRAME_HEAD \
+					transfer_RGB_FLOAT_to_YUV422((output), (float*)(input), j); \
+					TRANSFER_FRAME_TAIL \
+					break; \
 				case BC_YUV444P: \
 					TRANSFER_YUV444P_OUT_HEAD \
 					transfer_RGB_FLOAT_to_YUV444P(output_y, \
@@ -699,6 +757,11 @@ static inline void transfer_RGBA_FLOAT_to_YUV444P(unsigned char *output_y,
 						output_v, \
 						(float*)(input), \
 						j); \
+					TRANSFER_FRAME_TAIL \
+					break; \
+				case BC_YUV422: \
+					TRANSFER_FRAME_HEAD \
+					transfer_RGBA_FLOAT_to_YUV422((output), (float*)(input), j); \
 					TRANSFER_FRAME_TAIL \
 					break; \
 				case BC_YUV444P: \
