@@ -27,12 +27,235 @@
 #define gettext_noop(String) String
 #define N_(String) gettext_noop (String)
 
+ FrameCache::FrameCache(int cache_size) 
+ {
+ 	cache_enabled = 0;
+ 	this->cache_size = cache_size;
+ 	timer.update();
+ }
+ 
+ FrameCache::~FrameCache() 
+ {
+	reset();
+ }
+ 
+ void FrameCache::reset() 
+ {	
+ 	change_lock.lock();
+ 	FrameCacheTree::iterator iterator = cache_tree.begin();
+ 	while (iterator != cache_tree.end()) {
+ 		delete iterator->second;
+ 		iterator++;
+	}
+ 	cache_tree.clear();
+ 	cache_tree_bytime.clear();
+ 	change_lock.unlock();
+ }
+ 
+ void FrameCache::enable_cache() 
+ {	
+ 	cache_enabled = 1;
+ }
+ 
+ 
+ void FrameCache::disable_cache() 
+ {
+ 	cache_enabled = 0;
+ }
+ 
+ void FrameCache::unlock_cache()
+ { 
+ 	change_lock.unlock();
+ }
+ 
+ void FrameCache::lock_cache()
+ { 
+ 	change_lock.lock();
+ }
+ 
+ inline int FrameCache::compare_with_frame(FrameCacheElement *element, 
+ 					int frame_number, 
+ 					int frame_layer,
+ 					int frame_width,
+ 					int frame_height,
+ 					int frame_color_model)
+ {
+ 	if (	element->frame_number == frame_number && 
+		element->frame_layer == frame_layer && 
+ 		element->frame->get_w() == frame_width && 
+ 		element->frame->get_h() == frame_height && 
+ 		element->frame->get_color_model() == frame_color_model)
+ 			return 1; 
+ 		else
+ 			return 0;
+ }
+ 
+ FrameCacheTree::iterator FrameCache::find_element_byframe(long frame_number, int frame_layer, int frame_width, int frame_height, int frame_color_model)
+ {
+ 	FrameCacheTree::iterator iterator = cache_tree.find(frame_number);
+   	if(iterator != cache_tree.end()) {
+ 		do {
+ 			if (compare_with_frame(iterator->second, 
+ 						frame_number, 
+ 						frame_layer,
+ 						frame_width,
+ 						frame_height,
+ 						frame_color_model))
+ 			{
+ 				
+ 				return iterator;
+ 			}
+ 			iterator++;
+ 		} while (iterator->first == frame_number);
+ 	}
+ 	return cache_tree.end();
+ }
+ 
+ FrameCacheTree_ByTime::iterator FrameCache::find_element_bytime(long long frame_time_diff, long frame_number, int frame_layer, int frame_width, int frame_height, int frame_color_model)
+ {
+ 	FrameCacheTree_ByTime::iterator iterator = cache_tree_bytime.find(frame_time_diff);
+   	if(iterator != cache_tree_bytime.end()) {
+ 		do {	
+ 			if (compare_with_frame(iterator->second, 
+ 						frame_number, 
+ 						frame_layer,
+ 						frame_width,
+ 						frame_height,
+ 						frame_color_model))
+ 			{
+ 				
+ 				return iterator;
+ 			}
+ 			iterator++;
+ 		} while (iterator->first == frame_time_diff);
+ 	}
+ 	return cache_tree_bytime.end();
+ }
+ 
+  
+ // implicitly locks the class, needs to be unlocked after the call
+ // this is the best behaviour, everything else just complicates things and
+ // causes races (because you don't know the state of cache_enabled during the call).
+ VFrame *FrameCache::get_frame(long frame_number, int frame_layer, int frame_width, int frame_height, int frame_color_model)
+ {
+ 
+ 	change_lock.lock();
+ 	if (!cache_enabled) return 0;
+ //	printf("Looking for - frame: %li, layer: %i, w: %i, h:%i, cm: %i\n", frame_number, frame_layer, frame_width, frame_height, frame_color_model);
+ 	FrameCacheTree::iterator iterator= find_element_byframe(frame_number, 
+ 								frame_layer,
+ 								frame_width,
+ 								frame_height,
+ 								frame_color_model);
+ 	// update timestamp in other tree
+ 	if (iterator != cache_tree.end())
+ 	{
+ 		FrameCacheElement *cache_element = iterator->second;
+ 		FrameCacheTree_ByTime::iterator iterator_bytime;
+ 		// this tree node always exists
+ 		iterator_bytime = find_element_bytime(cache_element->time_diff,
+ 								frame_number, 
+ 								frame_layer,
+ 								frame_width,
+ 								frame_height,
+ 								frame_color_model);
+ 		if (cache_element != iterator_bytime->second)
+ 		{
+ 			printf("FrameCache: Something severely wrong in the cache engine!! this: %p\n", this);
+ 			dump();
+ 			return 0;
+ 		};
+ //		printf("Cache hit - frame: %li, layer: %i, w: %i, h:%i, cm: %i\n", frame_number, frame_layer, frame_width, frame_height, frame_color_model);
+ 		// delete & replace with new key
+ 		cache_tree_bytime.erase(iterator_bytime);
+ 		cache_element->time_diff = timer.get_difference();
+ 		cache_tree_bytime.insert(std::pair<long long, FrameCacheElement *> (cache_element->time_diff, cache_element)); 
+ 		return (cache_element->frame);
+ 	};
+ 	return 0;
+ } 
+
+ void FrameCache::add_frame(long frame_number, int frame_layer, VFrame *frame, int do_not_copy_frame) 
+ {
+ 	
+ 	if (!cache_enabled) return;
+ 	change_lock.lock();
+ 	
+ //	printf("%p, adding frame:  %li, layer: %i, w: %i, h:%i cm:%i\n",this, frame_number, frame_layer, frame->get_w(),frame->get_h(), frame->get_color_model());
+ 	
+ 	FrameCacheElement *cache_element;
+ 
+ 	// currently cache size can only grow, not shrink
+ 	if (cache_tree.size() >= cache_size) 
+ 	{
+ 		// delete the oldest element
+ 		FrameCacheTree_ByTime::iterator iterator_bytime = cache_tree_bytime.begin();
+ 		cache_element = iterator_bytime->second;
+ 		FrameCacheTree::iterator iterator = find_element_byframe(cache_element->frame_number,
+ 									cache_element->frame_layer,
+ 									cache_element->frame->get_w(),
+ 									cache_element->frame->get_h(),
+ 									cache_element->frame->get_color_model());
+ //	printf("Deleting oldest frame: - frame: %li, layer: %i, w: %i, h:%i, cm: %i\n", cache_element->frame_number, cache_element->frame_layer, cache_element->frame->get_w(), cache_element->frame->get_h(), cache_element->frame->get_color_model());
+ 		delete cache_element->frame;
+ 		cache_tree.erase(iterator);
+   		cache_tree_bytime.erase(iterator_bytime);
+ 	} else
+ 	{
+ 		cache_element = new FrameCacheElement;
+ 	}
+ 	
+ 	if (do_not_copy_frame) 
+ 	{
+ 		cache_element->frame = frame;
+ 	} else
+ 	{
+ 		cache_element->frame = new VFrame(0,
+ 					frame->get_w(),
+ 					frame->get_h(),
+ 					frame->get_color_model());
+ 		cache_element->frame->copy_from(frame);
+ 	}
+ 	cache_element->frame_layer = frame_layer;
+ 	cache_element->frame_number = frame_number;
+ 	cache_element->time_diff = timer.get_difference();
+ 
+ // insert the same data into both trees under different keys
+ 	
+ 	cache_tree.insert(std::pair<long, FrameCacheElement *> (cache_element->frame_number, cache_element));
+ 	cache_tree_bytime.insert(std::pair<long long, FrameCacheElement *> (cache_element->time_diff, cache_element)); 
+ 	change_lock.unlock();
+ }
+ 
+ void FrameCache::dump() 
+{	
+ 	printf("Dump of frames' cache %p, cache_tree:\n", this);
+ 	{
+ 		FrameCacheTree::iterator iterator = cache_tree.begin();
+ 		while (iterator != cache_tree.end()) {
+ 			FrameCacheElement *cache_element = iterator->second;
+ 			printf("%p, frame: %li, layer: %i, w: %i, h:%i, cm: %i, time_diff: %i\n", cache_element, cache_element->frame_number, cache_element->frame_layer, cache_element->frame->get_w(), cache_element->frame->get_h(), cache_element->frame->get_color_model(), cache_element->time_diff);
+ 			iterator++;
+ 		}
+ 	}
+ 	printf("cache_tree_bytime:\n", this);
+ 	{
+ 		FrameCacheTree_ByTime::iterator iterator = cache_tree_bytime.begin();
+ 		while (iterator != cache_tree_bytime.end()) {
+ 			FrameCacheElement *cache_element = iterator->second;
+ 			printf("%p, frame: %li, layer: %i, w: %i, h:%i, cm: %i, time_diff: %li\n", cache_element, cache_element->frame_number, cache_element->frame_layer, cache_element->frame->get_w(), cache_element->frame->get_h(), cache_element->frame->get_color_model(), cache_element->time_diff);
+ 			iterator++;
+ 		}
+ 	}
+ }
+
 
 File::File()
 {
 	cpus = 1;
 	asset = new Asset;
-	reset_parameters();
+	frames_cache = new FrameCache();
+  	reset_parameters();
 }
 
 File::~File()
@@ -57,6 +280,7 @@ File::~File()
 	close_file();
 	reset_parameters();
 	delete asset;
+	delete frames_cache;
 }
 
 void File::reset_parameters()
@@ -76,6 +300,7 @@ void File::reset_parameters()
 	normalized_sample = 0;
 	normalized_sample_rate = 0;
 	resample = 0;
+	frames_cache->reset();
 }
 
 
@@ -849,7 +1074,6 @@ VFrame* File::read_frame(int color_model)
 		result = return_frame;
 	}
 //printf("File::read_frame 6\n");
-
 	return result;
 }
 
@@ -887,43 +1111,67 @@ int File::read_frame(VFrame *frame)
 					asset->height,
 					supported_colormodel);
 			}
-
+			
 //printf("File::read_frame 5 %d %d\n", 
 //	temp_frame->get_color_model(), 
 //	frame->get_color_model());
-			file->read_frame(temp_frame);
-			cmodel_transfer(frame->get_rows(), 
-				temp_frame->get_rows(),
-				0,
-				0,
-				0,
-				0,
-				0,
-				0,
-				0, 
-				0, 
-				temp_frame->get_w(), 
-				temp_frame->get_h(),
-				0, 
-				0, 
-				frame->get_w(), 
-				frame->get_h(),
-				temp_frame->get_color_model(), 
-				frame->get_color_model(),
-				0,
-				temp_frame->get_w(),
-				frame->get_w());
-//printf("File::read_frame 6\n");
+			VFrame *temp_frame2 = frames_cache->get_frame(current_frame, current_layer, asset->width, asset->height, supported_colormodel);
+			if (temp_frame2) 
+			{
+				delete temp_frame;
+				frame->copy_from(temp_frame2);
+				// cache is implicitly locked on cache hit
+				frames_cache->unlock_cache();
+			} else
+			{
+				frames_cache->unlock_cache();
+				file->read_frame(temp_frame);
+
+				cmodel_transfer(frame->get_rows(), 
+					temp_frame->get_rows(),
+					0,
+					0,
+					0,
+					0,
+					0,
+					0,
+					0, 
+					0, 
+					temp_frame->get_w(), 
+					temp_frame->get_h(),
+					0, 
+					0, 
+					frame->get_w(), 
+					frame->get_h(),
+					temp_frame->get_color_model(), 
+					frame->get_color_model(),
+					0,
+					temp_frame->get_w(),
+					frame->get_w());
+printf("File::read_frame 6\n");
+				frames_cache->add_frame(current_frame, current_layer, frame);
+				current_frame++;
+			}
 		}
 		else
 		{
 //printf("File::read_frame 7\n");
-			file->read_frame(frame);
+			VFrame *temp_frame2 = frames_cache->get_frame(current_frame, current_layer, asset->width, asset->height, frame->get_color_model());
+			if (temp_frame2) 
+			{
+				frame->copy_from(temp_frame2);
+				frames_cache->unlock_cache();
+			} else
+			{
+				frames_cache->unlock_cache();
+				file->read_frame(frame);
+				frames_cache->add_frame(current_frame, current_layer, frame);
+				current_frame++;
+			}
 //printf("File::read_frame 8\n");
 		}
 
 //printf("File::read_frame 9\n");
-		current_frame++;
 //printf("File::read_frame 2 %d\n", supported_colormodel);
 		return 0;
 	}

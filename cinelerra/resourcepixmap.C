@@ -732,21 +732,88 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 //project_frame, frame_w, refresh_x, refresh_w, x);
 	while(x < refresh_x + refresh_w)
 	{
-		int64_t source_frame = project_frame + edit->startsource;
+		int cache_hit; // so we know whether to relase a lock at the end or was it already
+		VFrame *final_picon_frame;
+ 		int64_t source_frame = project_frame + edit->startsource;
 		source->set_layer(edit->channel);
 		source->set_video_position(source_frame, 
 			mwindow->edl->session->frame_rate);
 //printf("ResourcePixmap::draw_video_resource 3 %p\n", source);
-		VFrame *src = source->read_frame(BC_RGB888);
+//		VFrame *src = source->read_frame(BC_RGB888);
 //printf("ResourcePixmap::draw_video_resource 4 %p\n", src);
-		if(src)
-			draw_vframe(src, 
+		source->frames_cache->enable_cache();           // we do enabling and disabling of cache 
+								// on our own, so File doesn't use it's own caching
+		if ((final_picon_frame = source->frames_cache->get_frame(source->current_frame,
+									source->current_layer,
+									picon_w,
+									picon_h,
+									BC_RGB888)))
+		{
+			cache_hit = 1;
+			
+		} else
+		{
+			source->frames_cache->unlock_cache(); // implicitly locked
+			cache_hit = 0;	
+			long now_current_frame = source->current_frame;
+			source->frames_cache->disable_cache();
+			VFrame *src = source->read_frame(BC_RGB888);
+					if (src) 
+			{
+				final_picon_frame = new VFrame (0, 
+							picon_w,
+							picon_h,
+							BC_RGB888);
+				cmodel_transfer(final_picon_frame->get_rows(), 
+					src->get_rows(),
+					final_picon_frame->get_y(),
+					final_picon_frame->get_u(),
+					final_picon_frame->get_v(),
+					src->get_y(),
+					src->get_u(),
+					src->get_v(),
+					0, 
+					0, 
+					src->get_w(), 
+					src->get_h(),
+					0, 
+					0, 
+					picon_w, 
+					picon_h,
+					src->get_color_model(), 
+					BC_RGB888,
+					0,
+					src->get_w(),
+					picon_w);
+	
+				source->frames_cache->enable_cache();
+				source->frames_cache->add_frame(now_current_frame,
+								source->current_layer,
+								final_picon_frame,
+								1); // do not do a copy of frame. keep this one
+				source->frames_cache->disable_cache();
+	
+			} else 
+			{
+				final_picon_frame = 0;
+			}
+		}
+		
+
+
+//		if(src)
+//			draw_vframe(src, 
+		if(final_picon_frame)
+			draw_vframe(final_picon_frame, 
 				x, 
 				y, 
 				picon_w, 
 				picon_h, 
 				0, 
 				0);
+
+		if (cache_hit)
+			source->frames_cache->unlock_cache(); // implicitly locked
 
 		
 		

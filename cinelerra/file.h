@@ -17,8 +17,48 @@
 #include "sema.h"
 #include "vframe.inc"
 
-
+#include <map>
+#include "timer.h"
 // ======================================= include file types here
+
+
+class FrameCacheElement {
+public:
+	int frame_layer;
+	int frame_number;
+	long long time_diff;
+	VFrame *frame;
+};
+
+typedef std::multimap<int, FrameCacheElement*> FrameCacheTree;
+typedef std::multimap<long long, FrameCacheElement*> FrameCacheTree_ByTime;
+
+
+class FrameCache {
+public:
+	FrameCache(int cache_size = 100);
+	~FrameCache();
+	VFrame *get_frame(long frame_number, int frame_layer, int frame_width, int frame_height, int color_model); // implicit lock
+	void add_frame(long frame_number, int frame_layer, VFrame *frame, int do_not_copy_frame = 0); 
+	void unlock_cache();
+	void lock_cache();
+	void reset();		
+	void disable_cache();
+	void enable_cache();
+	void dump();
+	
+private:
+	int compare_with_frame(FrameCacheElement *element, int frame_number, int frame_layer, int frame_width, int frame_height, int frame_color_model);
+	FrameCacheTree::iterator find_element_byframe(long frame_number, int frame_layer, int frame_width, int frame_height, int frame_color_model);
+	FrameCacheTree_ByTime::iterator find_element_bytime(long long frame_time_diff, long frame_number, int frame_layer, int frame_width, int frame_height, int frame_color_model);
+	Mutex change_lock;
+	int cache_enabled;
+	int cache_size;
+	FrameCacheTree cache_tree;
+	FrameCacheTree_ByTime cache_tree_bytime;
+	Timer timer;
+};
+
 
 // generic file opened by user
 class File
@@ -179,6 +219,8 @@ public:
 // Position information normalized
 	int64_t normalized_sample;
 	int64_t normalized_sample_rate;
+
+	FrameCache *frames_cache;
 
 private:
 	void reset_parameters();
