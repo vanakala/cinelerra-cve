@@ -69,7 +69,6 @@ msgstr ""
 "Razlièica Libmpeg3 %d.%d.%d\n"
 
 #: cinelerra/aboutprefs.C:92
-#, fuzzy, c-format
 msgid ""
 "This program is free software; you can redistribute it and/or modify it under the terms\n"
 "of the GNU General Public License as published by the Free Software Foundation; either version\n"
@@ -80,17 +79,13 @@ msgid ""
 "PURPOSE.  See the GNU General Public License for more details.\n"
 "\n"
 msgstr ""
-"Ta program je prosto programje; lahko ga \n"
-"raz¹irjate in/ali spreminjate pod pogoji \n"
-" GNU General Public License, \n"
-"kot jo je objavila Free Software Foundation,\n"
-"ali (na va¹o ¾eljo) keterokoli novej¹o verzijo te licence\n"
+"Ta program je prosto programje; lahko ga raz¹irjate in/ali spreminjate pod pogoji \n"
+"GNU Splo¹ne javne licence, kot jo je objavila Free Software Foundation,\n"
+"ali (na va¹o ¾eljo) keterokoli novej¹o razlièico te licence\n"
 "\n"
-"Program je na voljo v upanju, da je uporaben, \n"
-"a BREZ KAKR©NIHKOLI JAMSTEV;\n"
-" jamèeno ni niti za njegovo UPORABNOST \n"
-"ali PRIMERNOST ZA DOLOÈENO RABO. \n"
-"Za nadaljne podrobnosti glej GNU General Public License.\n"
+"Program je na voljo v upanju, da je uporaben, a BREZ KAKR©NIHKOLI JAMSTEV;\n"
+" jamèeno ni niti za njegovo UPORABNOST ali PRIMERNOST ZA DOLOÈENO RABO. \n"
+"Za nadaljne podrobnosti glejte GNU Splo¹no javno licenco.\n"
 
 #: cinelerra/adeviceprefs.C:235
 #: cinelerra/vdeviceprefs.C:166
@@ -380,19 +375,16 @@ msgid "EDL"
 msgstr "EDL"
 
 #: cinelerra/batchrender.C:32
-#, fuzzy
 msgid "Elapsed"
-msgstr "Poteèen"
+msgstr "Preteèen"
 
 #: cinelerra/batchrender.C:44
-#, fuzzy
 msgid "Batch Render..."
-msgstr "Serijsko upodabljanje...."
+msgstr "Serijsko upodabljanje..."
 
 #: cinelerra/batchrender.C:356
-#, fuzzy, c-format
 msgid "EDL %s not found.\n"
-msgstr "EDL %s ni najden.\n"
+msgstr "EDL %s ni bil najden.\n"
 
 #. output file
 #: cinelerra/batchrender.C:623
@@ -400,12 +392,10 @@ msgid "Output path:"
 msgstr "Pot izhoda:"
 
 #: cinelerra/batchrender.C:650
-#, fuzzy
 msgid "EDL Path:"
 msgstr "Pot EDL:"
 
 #: cinelerra/batchrender.C:667
-#, fuzzy
 msgid "Input EDL"
 msgstr "Vhod EDL"
 
@@ -414,9 +404,8 @@ msgid "Select an EDL to load:"
 msgstr "Izberi EDL za odprtje:"
 
 #: cinelerra/batchrender.C:686
-#, fuzzy
 msgid "Batches to render:"
-msgstr "Serij za upodobit:"
+msgstr "Serije za upodobit:"
 
 #: cinelerra/batchrender.C:817
 #: cinelerra/file.C:1132
@@ -499,9 +488,8 @@ msgid "Reset translation"
 msgstr "Ponastavi premik"
 
 #: cinelerra/canvas.C:835
-#, fuzzy
 msgid "Show controls"
-msgstr "Prika¾i kontrole"
+msgstr "Ka¾i kontrole"
 
 #: cinelerra/canvas.C:837
 msgid "Hide controls"
@@ -1029,7 +1017,6 @@ msgid "Hi Lo"
 msgstr "Vi¹-Ni¾"
 
 #: cinelerra/file.inc:44
-#, fuzzy
 msgid "AC3"
 msgstr "AC3"
 
@@ -1789,22 +1776,18 @@ msgid ""
 msgstr ""
 
 #: cinelerra/main.C:164
-#, fuzzy, c-format
 msgid "-d = Run in the background as renderfarm client.  The port (400) is optional.\n"
 msgstr "-d = Po¾eni v ozadju kot farmni odjemalec. Izbira vrat (400) je neobvezna.\n"
 
 #: cinelerra/main.C:165
-#, fuzzy, c-format
 msgid "-f = Run in the foreground as renderfarm client.  Substitute for -d.\n"
 msgstr "-f = Po¾eni v ospredju kot farmni odjemalec. Nadomestek za -d\n"
 
 #: cinelerra/main.C:166
-#, fuzzy, c-format
 msgid "-n = Nice value if running as renderfarm client. (20)\n"
-msgstr "-n = èe teèe kot farmni odjemalec.(20)\n"
+msgstr "-n = èe teèe kot farmni odjemalec, nastavi ni¾jo prioriteto.(20)\n"
 
 #: cinelerra/main.C:167
-#, fuzzy, c-format
 msgid "-c = Configuration file to use instead of %s%s.\n"
 msgstr "-c = Uporaba nastavitvene datoteke namesto %s%s.\n"
 
@@ -2068,7 +2051,6 @@ msgid "Render effect..."
 msgstr "Upodobi uèinek..."
 
 #: cinelerra/menueffects.C:109
-#, fuzzy, c-format
 msgid "No recordable tracks specified."
 msgstr "Doloèena ni nobena snemalna steza."
 
@@ -2480,9 +2462,8 @@ msgid "Don't send to output"
 msgstr "Ne po¹lji v izhod"
 
 #: cinelerra/patchgui.C:709
-#, fuzzy
 msgid "Nudge"
-msgstr "Dregljaj"
+msgstr "Zamik
 
 #. add_border(get_resources()->get_bg_shadow1(),
 #. get_resources()->get_bg_shadow2(),
@@ -2717,9 +2698,8 @@ msgid "Play every frame"
 msgstr "Predvajaj vsako sliko"
 
 #: cinelerra/playtransport.C:354
-#, fuzzy
 msgid "Rewind ( Home )"
-msgstr "Previj (Domov)"
+msgstr "Previj ( tipka Home )"
 
 #: cinelerra/playtransport.C:367
 msgid "Fast reverse ( + )"
@@ -2746,9 +2726,8 @@ msgid "Fast forward ( Enter )"
 msgstr "Hitro previjanje naprej ( Enter )"
 
 #: cinelerra/playtransport.C:459
-#, fuzzy
 msgid "Jump to end ( End )"
-msgstr "Skoèi na konec"
+msgstr "Skoèi na konec ( tipka End )"
 
 #: cinelerra/playtransport.C:472
 msgid "Stop ( 0 )"
@@ -3977,14 +3956,12 @@ msgid "Denoise power:"
 msgstr "Moè odstr. ¹uma:"
 
 #: plugins/denoisefft/denoisefft.C:234
-#, fuzzy
 msgid "Number of samples for reference:"
-msgstr "©tevilo vzorcev kazala:"
+msgstr "©tevilo vzorcev za referenco:"
 
 #: plugins/denoisefft/denoisefft.C:236
-#, fuzzy
 msgid "The keyframe is the start of the reference"
-msgstr "Kljuèni okvir je zaèetek sklica/reference/kazala."
+msgstr "Kljuèni okvir je zaèetek reference"
 
 #: plugins/denoisefft/denoisefft.C:308
 msgid "DenoiseFFT"
@@ -4610,9 +4587,8 @@ msgid "Even offset:"
 msgstr "Sod odmik:"
 
 #: plugins/shiftinterlace/shiftinterlace.C:263
-#, fuzzy
 msgid "ShiftInterlace"
-msgstr "Spremenjeno prepletenanje"
+msgstr "Prepleten zamik"
 
 #: plugins/slide/slide.C:32
 #: plugins/titler/titlewindow.C:806
@@ -4651,12 +4627,11 @@ msgstr "Izvoz %s v %s ni uspel\n"
 #: plugins/svg/svg.C:277
 #, c-format
 msgid "The file %s that was generated from %s is not in RAWC format. Try to delete all *.raw files.\n"
-msgstr "Datoteka %s ustvarjena iz %s ni v RAWC formatu. Poisku¹ajte zbrisati vse *.raw datoteke.\n"
+msgstr "Datoteka %s ustvarjena iz %s ni v obliki RAWC. Poisku¹ajte zbrisati vse *.raw datoteke.\n"
 
 #: plugins/svg/svg.C:284
-#, fuzzy, c-format
 msgid "Unsupported version of RAWC file %s. This means your Sodipodi uses newer RAWC format than Cinelerra. Please upgrade Cinelerra.\n"
-msgstr "Nepotprta verzija RAWC datoteke %s. To pomeni, da va¹ Sodipodi uporablja novej¹i RAWC format, kot Cinelerra. Prosim da si nadgradite Cinelerro.\n"
+msgstr "Nepodprta razlièica datoteke RAWC %s. To pomeni, da va¹ Sodipodi uporablja novej¹i zapis RAWC, kot Cinelerra. Prosimo, da si nadgradite Cinelerro.\n"
 
 #: plugins/svg/svgwin.C:85
 #: plugins/translate/translatewin.C:73
@@ -4673,7 +4648,6 @@ msgid "New/Open SVG..."
 msgstr "Nov/Odpri SVG..."
 
 #: plugins/svg/svgwin.C:341
-#, fuzzy, c-format
 msgid "Sodipodi has exited\n"
 msgstr "Sodipodi se je zaprl\n"
 
