@@ -29,7 +29,7 @@
 
  FrameCache::FrameCache(int cache_size) 
  {
- 	cache_enabled = 0;
+ 	cache_enabled = 1;
  	this->cache_size = cache_size;
  	timer.update();
  }

@@ -115,8 +115,8 @@ int RecordVideo::cleanup_recording()
 	}
 	else
 	{
-		delete frame_ptr[0];
-		delete frame_ptr;
+		delete [] frame_ptr[0];
+		delete [] frame_ptr;
 		delete capture_frame;
 	}
 	return 0;

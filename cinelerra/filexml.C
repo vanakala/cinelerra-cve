@@ -94,7 +94,7 @@ int FileXML::reallocate_string(long new_available)
 		char *new_string = new char[new_available];
 		for(int i = 0; i < position; i++) new_string[i] = string[i];
 		available = new_available;
-		delete string;
+		delete [] string;
 		string = new_string;
 	}
 	return 0;

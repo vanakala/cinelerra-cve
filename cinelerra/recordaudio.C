@@ -255,9 +255,9 @@ void RecordAudio::run()
 		for(int i = 0; i < record_channels; i++)
 		{
 			record->record_monitor->window->meters->meters.values[i]->reset();
-			delete input[i];
+			delete [] input[i];
 		}
-		delete input;
+		delete [] input;
 		input = 0;
 	}
 //printf("RecordAudio::run 11\n");
@@ -271,8 +271,8 @@ void RecordAudio::run()
 //printf("RecordAudio::run 12\n");
 
 	gui->unlock_window();
-	delete max;
-	delete over;
+	delete [] max;
+	delete [] over;
 //printf("RecordAudio::run 5\n");
 }
 

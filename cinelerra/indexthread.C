@@ -35,8 +35,8 @@ IndexThread::IndexThread(MWindow *mwindow,
 // initialize output data
 	int64_t index_size = mwindow->preferences->index_size / 
 		sizeof(float) + 1;      // size of output file in floats
-	if(asset->index_buffer) delete asset->index_buffer;
-	if(asset->index_offsets) delete asset->index_offsets;
+	if(asset->index_buffer) delete [] asset->index_buffer;
+	if(asset->index_offsets) delete [] asset->index_offsets;
 // buffer used for drawing during the build.  This is not deleted in the asset
 	asset->index_buffer = new float[index_size];  
 // This is deleted in the asset's destructor
@@ -69,7 +69,7 @@ IndexThread::~IndexThread()
 		delete [] buffer_in[i];
 	}
 	
-	delete asset->index_buffer;
+	delete [] asset->index_buffer;
 	asset->index_buffer = 0;
 }
 

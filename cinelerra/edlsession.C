@@ -34,6 +34,7 @@ EDLSession::EDLSession(EDL *edl)
 		playback_config[i].append(config);
 	}
 	auto_conf = new AutoConf;
+	vwindow_folder[0]=0;
 }
 
 EDLSession::~EDLSession()
