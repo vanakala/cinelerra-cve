@@ -192,7 +192,7 @@ int BC_Clipboard::from_clipboard(char *data, long maxlen, int clipboard_num)
     Atom type_return, pty;
     int format;
     unsigned long nitems, size, new_size, total;
-	char *temp_data;
+    char *temp_data = 0;
 
     pty = (clipboard_num == PRIMARY_SELECTION) ? primary : secondary; 
 						/* a property of our window
@@ -228,6 +228,9 @@ int BC_Clipboard::from_clipboard(char *data, long maxlen, int clipboard_num)
         	&size,
         	(unsigned char**)&temp_data);
 
+	if (temp_data) XFree(temp_data);
+	temp_data = 0;
+        	
 // Get data
    	XGetWindowProperty(in_display,
         	in_win,
@@ -250,6 +253,8 @@ int BC_Clipboard::from_clipboard(char *data, long maxlen, int clipboard_num)
 		}
 		else
 			data[0] = 0;
+			
+		if (temp_data) XFree(temp_data);
 	}
 
 	XUnlockDisplay(in_display);
