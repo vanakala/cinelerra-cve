@@ -23,6 +23,8 @@ public:
 		int audio_options,
 		int video_options);
 	static int check_sig(Asset *asset);
+	static char* compression_to_str(int value);
+	static char* cmodel_to_str(int value);
 	int can_copy_from(Edit *edit, int64_t position);
 	int colormodel_supported(int colormodel);
 	int get_best_colormodel(Asset *asset, int driver);
@@ -30,6 +32,24 @@ public:
 	int read_frame(VFrame *output, VFrame *input);
 	int write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit);
 	FrameWriterUnit* new_writer_unit(FrameWriter *writer);
+
+	enum
+	{
+		NONE,
+// values stored in Asset::tiff_cmodel
+// Data types
+		RGB_888,
+		RGBA_8888,
+		RGB_FLOAT,
+		RGBA_FLOAT,
+		A_8,
+// values stored in Asset::tiff_compression
+// Compression types
+		LZW,
+		PACK_BITS,
+		DEFLATE,
+		JPEG
+	};
 
 	Mutex *unit_lock;
 };
@@ -62,22 +82,49 @@ public:
 	int close_event();
 	static char* alpha_to_codec(int use_alpha);
 	static int codec_to_alpha(char *codec);
-	static void fix_codec(char *codec);
 	BC_WindowBase *parent_window;
 	Asset *asset;
 };
 
 
-class TIFFConfigAlpha : public BC_CheckBox
+class TIFFColorspace : public BC_PopupMenu
 {
 public:
-	TIFFConfigAlpha(TIFFConfigVideo *gui, int x, int y);
-	
+	TIFFColorspace(TIFFConfigVideo *gui, int x, int y, int w);
+	void create_objects();
 	int handle_event();
-	
 	TIFFConfigVideo *gui;
 };
 
+class TIFFColorspaceItem : public BC_MenuItem
+{
+public:
+	TIFFColorspaceItem(TIFFConfigVideo *gui, int value);
+	int handle_event();
+	TIFFConfigVideo *gui;
+	int value;
+};
+
+
+
+
+class TIFFCompression : public BC_PopupMenu
+{
+public:
+	TIFFCompression(TIFFConfigVideo *gui, int x, int y, int w);
+	void create_objects();
+	int handle_event();
+	TIFFConfigVideo *gui;
+};
+
+class TIFFCompressionItem : public BC_MenuItem
+{
+public:
+	TIFFCompressionItem(TIFFConfigVideo *gui, int value);
+	int handle_event();
+	TIFFConfigVideo *gui;
+	int value;
+};
 
 
 
