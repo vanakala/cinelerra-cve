@@ -85,8 +85,9 @@ int bc_init_ipc()
 		signal(SIGSEGV, SIG_IGN);
 	if(signal(SIGBUS, bc_ipc_termination) == SIG_IGN)
 		signal(SIGBUS, SIG_IGN);
-	if(signal(SIGKILL, bc_ipc_termination) == SIG_IGN)
-		signal(SIGKILL, SIG_IGN);
+	//      SIGKILL can't be ignored
+	//	if(signal(SIGKILL, bc_ipc_termination) == SIG_IGN)
+	//		signal(SIGKILL, SIG_IGN);
 	if(signal(SIGINT, bc_ipc_termination) == SIG_IGN)
 		signal(SIGINT, SIG_IGN);
 	if(signal(SIGHUP, bc_ipc_termination) == SIG_IGN)
