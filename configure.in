@@ -185,18 +185,18 @@ if test "x$enable_firewire" = "xyes"; then
 
 	AC_CHECK_LIB(avc1394, avc1394_send_command, :,[AC_MSG_WARN([libavc1394 not found])
 	NOT_FOUND="$NOT_FOUND libavc1394"
-	FIREWIRE="no"])
+	FIREWIRE="no"],-lraw1394)
 
 	AC_CHECK_LIB(rom1394, rom1394_get_bus_id, :,[AC_MSG_WARN([librom1394 not found])
 	NOT_FOUND="$NOT_FOUND librom1394"
-	FIREWIRE="no"])
+	FIREWIRE="no"],-lraw1394)
 
 	if test "$FIREWIRE" = "no"; then
 		FIREWIRE_CFLAGS=""
 		FIREWIRE_LDFLAGS=""
 	else
 		FIREWIRE_CFLAGS="-DHAVE_FIREWIRE"
-		FIREWIRE_LDFLAGS="-lraw1394 -lavc1394 -lrom1394"
+		FIREWIRE_LDFLAGS="-lavc1394 -lrom1394 -lraw1394"
 	fi
 fi
 AC_SUBST(FIREWIRE_CFLAGS)
