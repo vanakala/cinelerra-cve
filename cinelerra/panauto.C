@@ -65,6 +65,8 @@ void PanAuto::copy(int64_t start, int64_t end, FileXML *file, int default_auto)
 		file->tag.set_property(string, values[i]);
 	}
 	file->append_tag();
+	file->tag.set_title("/AUTO");
+	file->append_tag();
 }
 
 

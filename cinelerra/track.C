@@ -983,16 +983,6 @@ int Track::copy(double start,
 	file->append_newline();
 
 //printf("Track::copy 1\n");
-	if(data_type == TRACK_AUDIO)
-		file->tag.set_property("TYPE", "AUDIO");
-	else
-		file->tag.set_property("TYPE", "VIDEO");
-
-//printf("Track::copy 1\n");
-	file->append_tag();
-	file->append_newline();
-
-//printf("Track::copy 1\n");
 	edits->copy(start_unit, end_unit, file, output_path);
 
 //printf("Track::copy 1\n");

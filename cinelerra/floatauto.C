@@ -137,6 +137,8 @@ void FloatAuto::copy(int64_t start, int64_t end, FileXML *file, int default_auto
 	file->tag.set_property("CONTROL_IN_POSITION", control_in_position);
 	file->tag.set_property("CONTROL_OUT_POSITION", control_out_position);
 	file->append_tag();
+	file->tag.set_title("/AUTO");
+	file->append_tag();
 	file->append_newline();
 }
 

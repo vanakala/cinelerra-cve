@@ -133,6 +133,8 @@ int Edit::copy(int64_t start, int64_t end, FileXML *file, char *output_path)
 				file->tag.set_title("FILE");
 				file->tag.set_property("SRC", stored_path);
 				file->append_tag();
+				file->tag.set_title("/FILE");
+				file->append_tag();
 			}
 
 			if(transition)

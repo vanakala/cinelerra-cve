@@ -84,6 +84,8 @@ void BezierAuto::copy(int64_t start, int64_t end, FileXML *file, int default_aut
 	file->tag.set_property("CONTROL_OUT_Y", control_out_y);
 	file->tag.set_property("CONTROL_OUT_Z", control_out_z);
 	file->append_tag();
+	file->tag.set_title("/AUTO");
+	file->append_tag();
 	file->append_newline();
 }
 

@@ -77,6 +77,8 @@ void LocalSession::save_xml(FileXML *file, double start)
 	file->tag.set_property("PREVIEW_START", preview_start);
 	file->tag.set_property("PREVIEW_END", preview_end);
 	file->append_tag();
+	file->tag.set_title("/LOCALSESSION");
+	file->append_tag();
 	file->append_newline();
 	file->append_newline();
 }

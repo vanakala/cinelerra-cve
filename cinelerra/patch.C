@@ -70,11 +70,15 @@ int Patch::save(FileXML *xml)
 	{
 		xml->tag.set_title("PLAY");
 		xml->append_tag();
+		xml->tag.set_title("/PLAY");
+		xml->append_tag();
 	}
 	
 	if(record)  
 	{
 		xml->tag.set_title("RECORD");
+		xml->append_tag();
+		xml->tag.set_title("/RECORD");
 		xml->append_tag();
 	}
 	
@@ -82,11 +86,15 @@ int Patch::save(FileXML *xml)
 	{
 		xml->tag.set_title("AUTO");
 		xml->append_tag();
+		xml->tag.set_title("/AUTO");
+		xml->append_tag();
 	}
 	
 	if(draw)  
 	{
 		xml->tag.set_title("DRAW");
+		xml->append_tag();
+		xml->tag.set_title("/DRAW");
 		xml->append_tag();
 	}
 	

@@ -420,20 +420,28 @@ void Plugin::copy(int64_t start, int64_t end, FileXML *file)
 		{
 			file->tag.set_title("IN");
 			file->append_tag();
+			file->tag.set_title("/IN");
+			file->append_tag();
 		}
 		if(out)
 		{
 			file->tag.set_title("OUT");
+			file->append_tag();
+			file->tag.set_title("/OUT");
 			file->append_tag();
 		}
 		if(show)
 		{
 			file->tag.set_title("SHOW");
 			file->append_tag();
+			file->tag.set_title("/SHOW");
+			file->append_tag();
 		}
 		if(on)
 		{
 			file->tag.set_title("ON");
+			file->append_tag();
+			file->tag.set_title("/ON");
 			file->append_tag();
 		}
 		file->append_newline();

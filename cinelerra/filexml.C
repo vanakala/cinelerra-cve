@@ -330,7 +330,6 @@ int XMLTag::write_tag()
 {
 	int i, j;
 	char *current_property, *current_value;
-	int has_space;
 
 // opening bracket
 	string[len] = left_delimiter;        
@@ -357,21 +356,13 @@ int XMLTag::write_tag()
 		current_value = tag_property_values[i];
 
 // property value
-// search for spaces in value
-		for(j = 0, has_space = 0; current_value[j] != 0 && !has_space; j++)
-		{
-			if(current_value[j] == ' ') has_space = 1;
-		}
-
-// add a quote if space
-		if(has_space && len < MAX_LENGTH) string[len++] = '\"';
+		if( len < MAX_LENGTH) string[len++] = '\"';
 // write the value
 		for(j = 0; current_value[j] != 0 && len < MAX_LENGTH; j++, len++)
 		{
 			string[len] = current_value[j];
 		}
-// add a quote if space
-		if(has_space && len < MAX_LENGTH) string[len++] = '\"';
+		if(len < MAX_LENGTH) string[len++] = '\"';
 	}     // next property
 	
 	if(len < MAX_LENGTH) string[len++] = right_delimiter;   // terminating bracket

@@ -575,6 +575,8 @@ int Asset::write(ArrayList<PluginServer*> *plugindb,
 	file->tag.set_property("USE_HEADER", use_header);
 
 	file->append_tag();
+	file->tag.set_title("/FORMAT");
+	file->append_tag();
 	file->append_newline();
 
 	if(audio_data) write_audio(file);
@@ -618,6 +620,8 @@ int Asset::write_audio(FileXML *file)
 
 
 
+	file->append_tag();
+	file->tag.set_title("/AUDIO");
 	file->append_tag();
 	file->append_newline();
 	return 0;
@@ -680,6 +684,8 @@ int Asset::write_video(FileXML *file)
 
 
 	file->append_tag();
+	file->tag.set_title("/VIDEO");
+	file->append_tag();
 	file->append_newline();
 	return 0;
 }
@@ -698,6 +704,8 @@ int Asset::write_index(FileXML *file)
 		{
 			file->tag.set_title("OFFSET");
 			file->tag.set_property("FLOAT", index_offsets[i]);
+			file->append_tag();
+			file->tag.set_title("/OFFSET");
 			file->append_tag();
 		}
 	}

@@ -521,6 +521,8 @@ int EDLSession::save_xml(FileXML *file)
 	file->tag.set_property("VWINDOW_SOURCE", vwindow_source);
 	file->tag.set_property("VWINDOW_ZOOM", vwindow_zoom);
 	file->append_tag();
+	file->tag.set_title("/SESSION");
+	file->append_tag();
 	file->append_newline();
 	file->append_newline();
 //printf("EDLSession::save_session 3\n");
@@ -550,6 +552,8 @@ int EDLSession::save_video_config(FileXML *file)
 	file->tag.set_property("ASPECTW", aspect_w);
 	file->tag.set_property("ASPECTH", aspect_h);
 	file->append_tag();
+	file->tag.set_title("/VIDEO");
+	file->append_tag();
 	file->append_newline();
 	file->append_newline();
 	return 0;
@@ -568,6 +572,8 @@ int EDLSession::save_audio_config(FileXML *file)
 		file->tag.set_property(string, achannel_positions[i]);
 	}
 	
+	file->append_tag();
+	file->tag.set_title("/AUDIO");
 	file->append_tag();
 	file->append_newline();
 	file->append_newline();

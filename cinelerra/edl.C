@@ -471,6 +471,8 @@ int EDL::copy(double start,
 		file->tag.set_title("CLIPBOARD");
 		file->tag.set_property("LENGTH", end - start);
 		file->append_tag();
+		file->tag.set_title("/CLIPBOARD");
+		file->append_tag();
 		file->append_newline();
 		file->append_newline();
 	}
