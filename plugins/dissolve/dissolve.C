@@ -41,6 +41,68 @@ int DissolveMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 
 	if(!overlayer) overlayer = new OverlayFrame(get_project_smp() + 1);
 //printf("DissolveMain::process_realtime %f\n", fade);
+
+// There is a problem when dissolving from fully opaque picture to a picture that uses alpha
+// in order to make it dissolve correctly, we have to manually decrese alpha of opaque picture
+// The other apporach would be to add another mode to overlayer -> very complex
+// Bugs in YUVA16161616 and RGBA_FLAOT make it not work, but code therein is correct
+
+	switch (outgoing->get_color_model())
+	{
+		case BC_RGBA8888:
+		case BC_YUVA8888:
+		{
+			uint8_t** data_rows = (uint8_t **)outgoing->get_rows();
+			int w = outgoing->get_w();
+			int h = outgoing->get_h(); 
+			for(int i = 0; i < h; i++) 
+			{ 
+				uint8_t* alpha_chan = data_rows[i] + 3; 
+				for(int j = 0; j < w; j++) 
+				{
+					*alpha_chan = (uint8_t) (*alpha_chan * (1-fade));
+					alpha_chan+=4;
+				} 
+			}
+			break;
+		}
+		case BC_YUVA16161616:
+		{
+			uint16_t** data_rows = (uint16_t **)outgoing->get_rows();
+			int w = outgoing->get_w();
+			int h = outgoing->get_h(); 
+			for(int i = 0; i < h; i++) 
+			{ 
+				uint16_t* alpha_chan = data_rows[i] + 6; 
+				for(int j = 0; j < w; j++) 
+				{
+					*alpha_chan = (uint16_t)(*alpha_chan * (1-fade));
+					alpha_chan += 8;
+				} 
+			}
+			break;
+		}
+		case BC_RGBA_FLOAT:
+		{
+			float** data_rows = (float **)outgoing->get_rows();
+			int w = outgoing->get_w();
+			int h = outgoing->get_h(); 
+			for(int i = 0; i < h; i++) 
+			{ 
+				float* alpha_chan = data_rows[i] + sizeof(float) * 3; 
+				for(int j = 0; j < w; j++) 
+				{
+					*alpha_chan = *alpha_chan * (1-fade);
+					alpha_chan += sizeof(float);
+				} 
+			}
+			break;
+		}
+		default:
+			break;
+		
+
+	}
 	overlayer->overlay(outgoing, 
 		incoming, 
 		0, 
