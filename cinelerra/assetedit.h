@@ -15,6 +15,9 @@
 #define gettext_noop(String) String
 #define N_(String) gettext_noop (String)
 
+class AssetEditTCStartTextBox;
+class AssetEditReelNumber;
+class AssetEditReelName;
 class AssetEditByteOrderHILO;
 class AssetEditByteOrderLOHI;
 class AssetEditPath;
@@ -163,4 +166,39 @@ public:
 	AssetEditWindow *fwindow;
 };
 
+class AssetEditReelName : public BC_TextBox
+{
+public:
+	AssetEditReelName(AssetEditWindow *fwindow, int x, int y);
+	~AssetEditReelName();
+
+	int handle_event();
+	
+	AssetEditWindow *fwindow;
+};
+
+class AssetEditReelNumber : public BC_TextBox
+{
+public:
+	AssetEditReelNumber(AssetEditWindow *fwindow, int x, int y);
+	~AssetEditReelNumber();
+	
+	int handle_event();
+	
+	AssetEditWindow *fwindow;
+};
+
+class AssetEditTCStartTextBox : public BC_TextBox
+{
+public:
+	AssetEditTCStartTextBox(AssetEditWindow *fwindow, int value, int x, int y, int multiplier);
+	~AssetEditTCStartTextBox();
+	int handle_event();
+	
+	AssetEditWindow *fwindow;
+// Multiplier is the # of frames for whatever unit of time this is.
+// fps dependent, and unit dependent
+	int multiplier;
+	int previous;
+};
 #endif

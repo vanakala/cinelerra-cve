@@ -128,7 +128,7 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
  	mwindow->gui->get_abs_cursor_x(1) - 400 / 2, 
 	mwindow->gui->get_abs_cursor_y(1) - 500 / 2, 
 	400, 
-	500,
+	600,
 	400,
 	500,
 	0,
@@ -381,6 +381,55 @@ int AssetEditWindow::create_objects()
 		sprintf(string, "%d", asset->height);
 		add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
 		y += 30;
+		
+		x = x1;
+		add_subwindow(new BC_Title(x, y, _("Reel Name:")));
+		x = x2;
+		add_subwindow(new AssetEditReelName(this, x, y));
+		y += 30;
+		
+		x = x1;
+		add_subwindow(new BC_Title(x, y, _("Reel Number:")));
+		x = x2;
+		add_subwindow(new AssetEditReelNumber(this, x, y));
+		y += 30;
+		
+		x = x1;
+		add_subwindow(new BC_Title(x, y, _("Time Code Start:")));
+		x = x2;
+
+// Calculate values to enter into textboxes
+		char tc[12];
+		
+		Units::totext(tc,
+			asset->tcstart / asset->frame_rate,
+			TIME_HMSF,
+			asset->sample_rate,
+			asset->frame_rate);
+		
+		tc[1] = '\0';
+		tc[4] = '\0';
+		tc[7] = '\0';
+		
+		add_subwindow(new AssetEditTCStartTextBox(this, atoi(tc), x, y,
+			(int) (asset->frame_rate * 60 * 60)));
+		x += 30;
+		add_subwindow(new BC_Title(x, y, ":"));
+		x += 10;
+		add_subwindow(new AssetEditTCStartTextBox(this, atoi(tc + 2), x, y,
+			(int) (asset->frame_rate * 60)));
+		x += 30;
+		add_subwindow(new BC_Title(x, y, ":"));
+		x += 10;
+		add_subwindow(new AssetEditTCStartTextBox(this, atoi(tc + 5), x, y,
+			(int) (asset->frame_rate)));
+		x += 30;
+		add_subwindow(new BC_Title(x, y, ":"));
+		x += 10;
+		add_subwindow(new AssetEditTCStartTextBox(this, atoi(tc + 8), x, y, 1));
+
+
+		y += 30;
 	}
 
 	add_subwindow(new BC_OKButton(this));
@@ -542,3 +591,65 @@ int AssetEditFormat::handle_event()
 	return 1;
 }
 
+
+
+
+AssetEditReelName::AssetEditReelName(AssetEditWindow *fwindow, int x, int y)
+ : BC_TextBox(x, y, 300, 1, fwindow->asset->reel_name)
+{
+	this->fwindow = fwindow;
+}
+AssetEditReelName::~AssetEditReelName()
+{
+}
+int AssetEditReelName::handle_event()
+{
+	strcpy(fwindow->asset->reel_name, get_text());
+}
+
+
+
+
+
+AssetEditReelNumber::AssetEditReelNumber(AssetEditWindow *fwindow, int x, int y)
+ : BC_TextBox(x, y, 200, 1, fwindow->asset->reel_number)
+{
+	this->fwindow = fwindow;
+}
+AssetEditReelNumber::~AssetEditReelNumber()
+{
+}
+int AssetEditReelNumber::handle_event()
+{
+	char *text = get_text() + strlen(get_text()) - 1;
+	
+	// Don't let user enter an invalid character -- only numbers here
+	if(*text < 48 ||
+		*text > 57)
+	{
+		*text = '\0';
+	}
+
+	fwindow->asset->reel_number = atoi(get_text());
+}
+
+
+
+
+
+AssetEditTCStartTextBox::AssetEditTCStartTextBox(AssetEditWindow *fwindow, int value, int x, int y, int multiplier)
+ : BC_TextBox(x, y, 30, 1, value)
+{
+	this->fwindow = fwindow;
+	this->multiplier = multiplier;
+	previous = value;
+}
+AssetEditTCStartTextBox::~AssetEditTCStartTextBox()
+{
+}
+int AssetEditTCStartTextBox::handle_event()
+{
+	fwindow->asset->tcstart -= previous * multiplier;
+	fwindow->asset->tcstart += atoi(get_text()) * multiplier;
+	previous = atoi(get_text());
+}
