@@ -221,6 +221,8 @@ void quicktime_import_avi(quicktime_t *file)
 			quicktime_update_stco(stco, 
 					stco->total_entries + 1, 
 					idx1table->offset + first_riff->movi.atom.start);
+// Lavtools 1.6.2 gives absolute offset
+//					idx1table->offset);
 
 			if(is_video)
 			{
