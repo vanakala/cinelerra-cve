@@ -128,8 +128,8 @@ int quicktime_write_udta_string(quicktime_t *file, char *string, int size)
 int quicktime_set_udta_string(char **string, int *size, char *new_string)
 {
 	if(*size) free(*string);
-	*size = strlen(new_string + 1);
-	*string = malloc(*size + 1);
+	*size = strlen(new_string) + 1;
+	*string = malloc(*size);
 	strcpy(*string, new_string);
 	return 0;
 }
