@@ -1301,6 +1301,10 @@ int File::get_best_colormodel(Asset *asset, int driver)
 			return FileMOV::get_best_colormodel(asset, driver);
 			break;
 		
+        	case FILE_AVI:
+			return FileMOV::get_best_colormodel(asset, driver);
+			break;
+
 		case FILE_MPEG:
 			return FileMPEG::get_best_colormodel(asset, driver);
 			break;

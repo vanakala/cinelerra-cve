@@ -386,6 +386,7 @@ int FileMOV::get_best_colormodel(Asset *asset, int driver)
 			if(match4(asset->vcodec, QUICKTIME_JPEG)) return BC_YUV420P;
 			if(match4(asset->vcodec, QUICKTIME_MJPA)) return BC_YUV422P;
 			if(match4(asset->vcodec, QUICKTIME_DV)) return BC_YUV422;
+			if(match4(asset->vcodec, QUICKTIME_DVSD)) return BC_YUV422;
 			if(match4(asset->vcodec, QUICKTIME_HV60)) return BC_YUV420P;
 			if(match4(asset->vcodec, QUICKTIME_DIVX)) return BC_YUV420P;
 			if(match4(asset->vcodec, QUICKTIME_MP4V)) return BC_YUV420P;
