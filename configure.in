@@ -166,12 +166,6 @@ AC_CHECK_LIB(faad, faacDecInit, ,[AC_MSG_WARN([libfaad not found])
 	NOT_FOUND="$NOT_FOUND libfaad,2"])
 # END LIBFAAD
 
-############## LIBXVIDCORE
-AC_CHECK_HEADERS(xvid.h)
-AC_CHECK_LIB(xvidcore, xvid_global, ,[AC_MSG_WARN([libxvidcore not found])
-	NOT_FOUND="$NOT_FOUND libxvidcore"])
-# END LIBXVIDCORE
-
 ############## FIREWIRE
 # firewire settings are propagated through FIREWIRE_CFLAGS and FIREWIRE_LDFLAGS
 AC_ARG_ENABLE(firewire, 

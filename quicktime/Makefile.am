@@ -5,7 +5,7 @@ lib_LTLIBRARIES = libquicktimehv.la
 libquicktimehv_la_CFLAGS = $(CPU_CFLAGS) $(FIREWIRE_CFLAGS) $(OGG_CFLAGS) $(VORBIS_CFLAGS) $(LIBAVCODEC_CFLAGS) -DENCORE_INCLUDE=\"encore50/encore.h\"
 libquicktimehv_la_LDFLAGS = -version-info 1:0:0 -release 1.6.0 -Wl,--no-undefined 
 
-libquicktimehv_la_LIBADD = $(FIREWIRE_LDFLAGS) -ldv -lxvidcore -ljpeg -lpng \
+libquicktimehv_la_LIBADD = $(FIREWIRE_LDFLAGS) -ldv -ljpeg -lpng \
                                                  -logg -lvorbis -lvorbisenc -lmp3lame $(LIBAVCODEC_LIBS) \
 	-lfaad \
                                                  encore50/libencore.la \
