@@ -10,7 +10,7 @@ libmpeg2enc_la_SOURCES = mpeg2enc.c conform.c putseq.c putpic.c puthdr.c putmpg.
 	 putvlc.c putbits.c predict.c readpic.c writepic.c transfrm.c \
 	fdctref.c idct.c quantize.c ratectl.c stats.c \
 	global.h mpeg2enc.h vlc.h \
-	simd.h synchrolib.h motion.c cpu_accel.c
+	simd.h motion.c cpu_accel.c
 
 if USEMMX
 libmpeg2enc_la_SOURCES +=     fdct_mmx.s fdctdata.c idct_mmx.s idctdata.c \
