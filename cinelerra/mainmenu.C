@@ -403,7 +403,6 @@ int MainMenu::add_load(char *new_path)
 {
 	char filename[BCTEXTLEN];
 	FileSystem dir;
-	char *path;
 
 	int total_loads = recent_load->items.total;
 
@@ -420,13 +419,13 @@ int MainMenu::add_load(char *new_path)
 		load[i] = new LoadPrevious(mwindow);
 		dir.extract_name(filename, new_path, 0);
 		load[i]->set_text(filename);
-		load[i]->set_path(path);
+		load[i]->set_path(new_path);
 		filemenu->add_item(load[i]);
 	}
 
 	// reassign the paths to adjust for the shift down
 	for(int i = 0; i < new_total; i++) {
-		path = recent_load->items.values[i]->get_text();
+		char *path = recent_load->items.values[i]->get_text();
 		dir.extract_name(filename, path, 0);
 		load[i]->set_text(filename);
 		load[i]->set_path(path);
