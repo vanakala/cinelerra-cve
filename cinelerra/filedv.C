@@ -58,9 +58,6 @@ void FileDV::get_parameters(BC_WindowBase *parent_window,
 	int audio_options,
 	int video_options)
 {
-	strcpy(asset->acodec, "dvc");
-	strcpy(asset->vcodec, "dvc");
-
 	if(audio_options)
 	{
 		DVConfigAudio *window = new DVConfigAudio(parent_window, asset);
@@ -78,7 +75,6 @@ void FileDV::get_parameters(BC_WindowBase *parent_window,
 		window->run_window();
 		delete window;
 	}
-
 
 }
 
@@ -147,26 +143,40 @@ int FileDV::open_file(int rd, int wr)
 		struct stat *info = (struct stat*) malloc(sizeof(struct stat));
 		fstat(fd, info);
 
+		// read the first frame so we can get the stream info from it
 		read(fd, input, output_size);
-		// read first frame to get video and audio information
-		dv_parse_header(decoder, input);
 
-		asset->audio_data = 1;
-		asset->sample_rate = dv_get_frequency(decoder);
-		asset->channels = dv_get_num_channels(decoder);
-		asset->bits = decoder->audio->quantization;
-		asset->audio_length = info->st_size / output_size * dv_get_num_samples(decoder);
+		if(dv_parse_header(decoder, input) > -1 )
+		{
+			// see if there are any audio tracks
+			asset->channels = decoder->audio->num_channels;
+			if(asset->channels > 0)
+			{
+				asset->audio_data = 1;
+				asset->sample_rate = decoder->audio->frequency;
+				asset->bits = decoder->audio->quantization;
+				asset->audio_length = info->st_size * decoder->audio->samples_this_frame / output_size;
+				strncpy(asset->acodec, "dvc ", 4);
+			}
+			else
+				asset->audio_data = 0;
 
-		asset->video_data = 1;
-		asset->layers = 1;
-		asset->aspect_ratio = 1;
-		asset->width = 720;
-		asset->height = (dv_is_PAL(decoder) ? 576 : 480);
-		asset->video_length = info->st_size / output_size;
-
-		if(!asset->frame_rate)
-			asset->frame_rate = (dv_is_PAL(decoder) ? 25 : 29.97);
-
+			// always have video
+			asset->video_data = 1;
+			asset->layers = 1;
+			asset->aspect_ratio = (double) 4 / 3;
+			asset->width = decoder->width;
+			asset->height = decoder->height;
+			asset->video_length = info->st_size / output_size;
+			if(!asset->frame_rate)
+				asset->frame_rate = (asset->height == 576 ? 25 : 29.97);
+			strncpy(asset->vcodec, "dvc ", 4);
+		}
+		else
+		{
+			asset->audio_data = 0;
+			asset->video_data = 0;
+		}
 		free(info);
 	}
 
@@ -485,19 +495,19 @@ int FileDV::read_samples(double *buffer, int64_t len)
 	audio_offset = lseek(fd, audio_offset, SEEK_SET);
 
 // get audio data and put it in buffer
-	for(i = 0; i < len + dv_get_num_samples(decoder); i += dv_get_num_samples(decoder))
+	for(i = 0; i < len + decoder->audio->samples_this_frame; i += decoder->audio->samples_this_frame)
 	{
 		audio_offset += read(fd, input, output_size);
 		dv_decode_full_audio(decoder, input, temp_buffer);
 
 		for(j = 0; j < asset->channels; j++)
-			temp_buffer[j] += dv_get_num_samples(decoder);
+			temp_buffer[j] += decoder->audio->samples_this_frame;
 	}
 
 	for(i = 0; i < len; i++)
 		buffer[i] = (double) outbuf[channel][i + offset] / 32767;
 
-	samples_offset[channel] = (len + offset) % dv_get_num_samples(decoder);
+	samples_offset[channel] = (len + offset) % decoder->audio->samples_this_frame;
 
 // we do this to keep everything in sync. When > 1 channel is being
 // played, our set_audio_position gets overriden every second time,
