@@ -1,3 +1,9 @@
+hvirtual (1:1.2.2) unstable; urgency=low
+
+  * merge with 1.2.2 (by Johannes Sixt)
+
+ -- Andraz Tori <andraz.tori1@guest.arnes.si>  Tue, 8 Feb 2005 22:22:14 +0200
+
 hvirtual (1:1.2.1) unstable; urgency=low
 
   * merge with 1.2.1 (by Johannes Sixt)
