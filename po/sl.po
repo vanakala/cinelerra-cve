@@ -430,15 +430,15 @@ msgstr "Zbri¹i"
 
 #: cinelerra/batchrender.C:1059
 msgid "batch_render_start"
-msgstr ""
+msgstr "zaèetek_serijskega_upodabljanja"
 
 #: cinelerra/batchrender.C:1075
 msgid "batch_render_stop"
-msgstr ""
+msgstr "konec_serijskega_upodabljanja"
 
 #: cinelerra/batchrender.C:1094
 msgid "batch_render_cancel"
-msgstr ""
+msgstr "prekinitev_serijskega_upodabljanja"
 
 #: cinelerra/brender.C:133
 msgid "BRender::fork_background: can't open /proc/self/cmdline.\n"
@@ -1774,6 +1774,8 @@ msgid ""
 "%s [-f] [-c configuration] [-d port] [-n nice] [-r batch file] [filenames]\n"
 "\n"
 msgstr ""
+"%s [-f] [-c nastavitve] [-d vrata] [-n nice] [-r serijska datoteka] [datoteke]\n"
+"\n"
 
 #: cinelerra/main.C:164
 msgid "-d = Run in the background as renderfarm client.  The port (400) is optional.\n"
@@ -1794,7 +1796,7 @@ msgstr "-c = Uporaba nastavitvene datoteke namesto %s%s.\n"
 #: cinelerra/main.C:170
 #, c-format
 msgid "-r = batch render the contents of the batch file (%s%s) with no GUI.  batch file is optional.\n"
-msgstr ""
+msgstr "-r = serijsko upodabljanje vsebine serijske datoteke (%s%s) brez grafiènega vmesnika. ime serijske datoteke je neobvezno\n"
 
 #: cinelerra/main.C:173
 #, c-format
