@@ -6,6 +6,14 @@ libmpeg3_la_LIBADD = -la52 video/libmpeg3_video.la audio/libmpeg3_audio.la -lm \
 libmpeg3_la_SOURCES = bitstream.c libmpeg3.c mpeg3atrack.c mpeg3css.c \
 											mpeg3demux.c mpeg3ifo.c mpeg3io.c mpeg3title.c \
 											mpeg3vtrack.c workarounds.c 
+bin_PROGRAMS = mpeg3dump mpeg3toc mpeg3cat
+mpeg3dump_SOURCES = mpeg3dump.c
+mpeg3dump_LDADD = libmpeg3.la
+mpeg3toc_SOURCES = mpeg3toc.c
+mpeg3toc_LDADD = libmpeg3.la
+mpeg3cat_SOURCES = mpeg3cat.c
+mpeg3cat_LDADD = libmpeg3.la
+
 SUBDIRS = audio video 
 
 noinst_HEADERS = bitstream.h \
