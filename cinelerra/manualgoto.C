@@ -48,8 +48,8 @@ void ManualGoto::open_window()
 						 mwindow->edl->session->frame_rate;;
 	}
 	else
-		if (mwindow->vwindow->edl)
-			position = mwindow->vwindow->edl->local_session->selectionstart;
+		if (mwindow->vwindow->get_edl())
+			position = mwindow->vwindow->get_edl()->local_session->selectionstart;
 		else
 			return;
 	if (!gotowindow)
@@ -110,11 +110,11 @@ void ManualGoto::run()
 				}
 			} else
 			if ((masterwindow == (BC_WindowBase *)mwindow->vwindow->gui) &&
-			    mwindow->vwindow->edl)
+			    mwindow->vwindow->get_edl())
 			{
 				// vwindow update
 				VWindow *vwindow = mwindow->vwindow;
-				double current_position = vwindow->edl->local_session->selectionstart;
+				double current_position = vwindow->get_edl()->local_session->selectionstart;
 				switch (modifier)
 				{
 					case '+': 
@@ -126,15 +126,15 @@ void ManualGoto::run()
 					default:
 						break;
 				}
-				if (new_position > vwindow->edl->tracks->total_length())
-					new_position = vwindow->edl->tracks->total_length();
+				if (new_position > vwindow->get_edl()->tracks->total_length())
+					new_position = vwindow->get_edl()->tracks->total_length();
 				if (new_position < 0)
 					new_position = 0;
-				new_position = vwindow->edl->align_to_frame(new_position, 1);
+				new_position = vwindow->get_edl()->align_to_frame(new_position, 1);
 				if (current_position != new_position)
 				{
-					vwindow->edl->local_session->selectionstart = new_position;
-					vwindow->edl->local_session->selectionend = new_position;
+					vwindow->get_edl()->local_session->selectionstart = new_position;
+					vwindow->get_edl()->local_session->selectionend = new_position;
 					vwindow->gui->lock_window();
 					vwindow->update_position(CHANGE_NONE, 0, 1);			
 					vwindow->gui->unlock_window();
