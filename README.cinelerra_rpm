@@ -1,4 +1,7 @@
-3/26/2004 K Brosius <cobra@compuserve.com>
+4/28/2004 K Brosius <cobra@compuserve.com>
+
+RPM builds in CVS
+=================
 
 Original RPM patch was developed for SuSE 9.0.  These are some notes...
 
@@ -38,6 +41,37 @@ This is subject to change, as I'm debating how to handle this best.
 
 You may need additional RPMs not supplied here or with SuSE 9.  They should
 be available from http://packman.links2linux.org/ .
+
+Other packages needed on SuSE 9.0
+=================================
+
+SuSE 9.0 packages added (from install CDs)
+
+e2fsprogs-devel
+libraw1394-devel
+
+
+remote packages installed:
+
+http://packman.links2linux.org/?action=140
+
+a52dec-0.7.4-3.pm.0.i686.rpm
+
+http://packman.links2linux.org/?action=223
+
+libffmpeg0-0.4.8-0.pm.0.i686.rpm
+libffmpeg0-devel-0.4.8-0.pm.0.i686.rpm
+
+http://packman.links2linux.org/?action=172
+
+xvid-0.9.9_1.0.0_rc3-0.pm.0.i586.rpm
+xvid-devel-0.9.9_1.0.0_rc3-0.pm.0.i586.rpm
+
+http://packman.links2linux.org/?action=017
+  (or i686 version?)
+
+lame-3.93.1-1.i586.rpm
+
 
 Source RPMs
 ===========
