@@ -84,8 +84,6 @@ public:
 // Cursor location during the last button press relative to output
 // and offset by scroll bars
 	float x_origin, y_origin;
-// Crop handle being dragged
-	int crop_handle;
 // Origin of crop handle during last button press
 	float crop_origin_x, crop_origin_y;
 // Origin for camera and projector operations during last button press

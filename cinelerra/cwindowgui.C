@@ -1559,39 +1559,39 @@ int CWindowCanvas::test_crop(int button_press, int &redraw)
 
 	if(gui->current_operation == CWINDOW_CROP)
 	{
-		handle_selected = gui->crop_handle;
+		// do nothing
 	}
 	else
 	if(canvas_cursor_x >= canvas_x1 && canvas_cursor_x < canvas_x1 + CROPHANDLE_W &&
 		canvas_cursor_y >= canvas_y1 && canvas_cursor_y < canvas_y1 + CROPHANDLE_H)
 	{
 		handle_selected = 0;
-		gui->crop_origin_x = x1;
-		gui->crop_origin_y = y1;
+		gui->crop_origin_x = x2;
+		gui->crop_origin_y = y2;
 	}
 	else
 	if(canvas_cursor_x >= canvas_x2 - CROPHANDLE_W && canvas_cursor_x < canvas_x2 &&
 		canvas_cursor_y >= canvas_y1 && canvas_cursor_y < canvas_y1 + CROPHANDLE_H)
 	{
 		handle_selected = 1;
-		gui->crop_origin_x = x2;
-		gui->crop_origin_y = y1;
+		gui->crop_origin_x = x1;
+		gui->crop_origin_y = y2;
 	}
 	else
 	if(canvas_cursor_x >= canvas_x1 && canvas_cursor_x < canvas_x1 + CROPHANDLE_W &&
 		canvas_cursor_y >= canvas_y2 - CROPHANDLE_H && canvas_cursor_y < canvas_y2)
 	{
 		handle_selected = 2;
-		gui->crop_origin_x = x1;
-		gui->crop_origin_y = y2;
+		gui->crop_origin_x = x2;
+		gui->crop_origin_y = y1;
 	}
 	else
 	if(canvas_cursor_x >= canvas_x2 - CROPHANDLE_W && canvas_cursor_x < canvas_x2 &&
 		canvas_cursor_y >= canvas_y2 - CROPHANDLE_H && canvas_cursor_y < canvas_y2)
 	{
 		handle_selected = 3;
-		gui->crop_origin_x = x2;
-		gui->crop_origin_y = y2;
+		gui->crop_origin_x = x1;
+		gui->crop_origin_y = y1;
 	}
 	else
 // Start new box
@@ -1600,17 +1600,10 @@ int CWindowCanvas::test_crop(int button_press, int &redraw)
 		gui->crop_origin_y = cursor_y;
 	}
 
-// printf("test crop %d %d\n", 
-// 	gui->current_operation,
-// 	handle_selected);
-
 // Start dragging.
 	if(button_press)
 	{
 		gui->current_operation = CWINDOW_CROP;
-		gui->crop_handle = handle_selected;
-		gui->x_origin = cursor_x;
-		gui->y_origin = cursor_y;
 		result = 1;
 
 		if(handle_selected < 0) 
@@ -1628,73 +1621,45 @@ int CWindowCanvas::test_crop(int button_press, int &redraw)
 // Update dragging
 	if(gui->current_operation == CWINDOW_CROP)
 	{
-		float x_difference, y_difference;
-		if(gui->crop_handle >= 0)
-		{
-			float zoom_x, zoom_y, conformed_w, conformed_h;
-			get_zooms(mwindow->edl, 0, zoom_x, zoom_y, conformed_w, conformed_h);
-			x_difference = cursor_x - gui->x_origin;
-		}
-
-		switch(gui->crop_handle)
-		{
-			case -1:
-				x1 = gui->crop_origin_x;
-				y1 = gui->crop_origin_y;
-				x2 = gui->crop_origin_x;
-				y2 = gui->crop_origin_y;
-				if(cursor_x < gui->x_origin)
-				{
-					if(cursor_y < gui->y_origin)
-					{
-						x1 = cursor_x;
-						y1 = cursor_y;
-					}
-					else
-					if(cursor_y >= gui->y_origin)
-					{
-						x1 = cursor_x;
-						y2 = cursor_y;
-					}
-				}
-				else
-				if(cursor_x  >= gui->x_origin)
-				{
-					if(cursor_y < gui->y_origin)
-					{
-						y1 = cursor_y;
-						x2 = cursor_x;
-					}
-					else
-					if(cursor_y >= gui->y_origin)
-					{
-						x2 = cursor_x;
-						y2 = cursor_y;
-					}
-				}
+		x1 = gui->crop_origin_x;
+		y1 = gui->crop_origin_y;
+		x2 = cursor_x;
+		y2 = cursor_y;
 
 // printf("test crop %d %d %d %d\n", 
 // 	mwindow->edl->session->crop_x1,
 // 	mwindow->edl->session->crop_y1,
 // 	mwindow->edl->session->crop_x2,
 // 	mwindow->edl->session->crop_y2);
-				break;
-			case 0:
-				x1 = cursor_x - gui->x_origin + gui->crop_origin_x;
-				y1 = cursor_y - gui->y_origin + gui->crop_origin_y;
-				break;
-			case 1:
-				x2 = cursor_x - gui->x_origin + gui->crop_origin_x;
-				y1 = cursor_y - gui->y_origin + gui->crop_origin_y;
-				break;
-			case 2:
-				x1 = cursor_x - gui->x_origin + gui->crop_origin_x;
-				y2 = cursor_y - gui->y_origin + gui->crop_origin_y;
-				break;
-			case 3:
-				x2 = cursor_x - gui->x_origin + gui->crop_origin_x;
-				y2 = cursor_y - gui->y_origin + gui->crop_origin_y;
-				break;
+	
+		handle_selected = 3; // situation, before switching coordinates
+	
+		if (x1 > x2) {
+			float tmp = x1;
+			x1 = x2;
+			x2 = tmp;
+			switch (handle_selected) 
+			{
+				case 0:	handle_selected = 1; break;
+				case 1:	handle_selected = 0; break;
+				case 2:	handle_selected = 3; break;
+				case 3:	handle_selected = 2; break;
+				default: break;
+			}
+ 
+		}
+		if (y1 > y2) {
+			float tmp = y1;
+			y1 = y2;
+			y2 = tmp;
+			switch (handle_selected) 
+			{
+				case 0:	handle_selected = 2; break;
+				case 1:	handle_selected = 3; break;
+				case 2:	handle_selected = 0; break;
+				case 3:	handle_selected = 1; break;
+				default: break;
+			}
 		}
 
 		if(!EQUIV(mwindow->edl->session->crop_x1, x1) ||
@@ -1709,32 +1674,28 @@ int CWindowCanvas::test_crop(int button_press, int &redraw)
 			result = 1;
 			redraw = 1;
 		}
+
 	}
-	else
-// Update cursor font
-	if(handle_selected >= 0)
+// Update cursor font, always!
+	switch(handle_selected)
 	{
-		switch(handle_selected)
-		{
-			case 0:
-				set_cursor(UPLEFT_RESIZE);
-				break;
-			case 1:
-				set_cursor(UPRIGHT_RESIZE);
-				break;
-			case 2:
-				set_cursor(DOWNLEFT_RESIZE);
-				break;
-			case 3:
-				set_cursor(DOWNRIGHT_RESIZE);
-				break;
-		}
-		result = 1;
+		case -1:
+			set_cursor(ARROW_CURSOR);
+			break;
+		case 0:
+			set_cursor(UPLEFT_RESIZE);
+			break;
+		case 1:
+			set_cursor(UPRIGHT_RESIZE);
+			break;
+		case 2:
+			set_cursor(DOWNLEFT_RESIZE);
+			break;
+		case 3:
+			set_cursor(DOWNRIGHT_RESIZE);
+			break;
 	}
-	else
-	{
-		set_cursor(ARROW_CURSOR);
-	}
+
 #define CLAMP(x, y, z) ((x) = ((x) < (y) ? (y) : ((x) > (z) ? (z) : (x))))
 	
 	if(redraw)
