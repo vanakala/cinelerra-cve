@@ -58,8 +58,9 @@ BurnMain::~BurnMain()
 	if(effecttv) delete effecttv;
 }
 
-char* BurnMain::plugin_title() { return _("BurningTV"); }
+char* BurnMain::plugin_title() { return ("BurningTV"); }
 int BurnMain::is_realtime() { return 1; }
+
 
 NEW_PICON_MACRO(BurnMain)
 SHOW_GUI_MACRO(BurnMain, BurnThread)

@@ -199,20 +199,11 @@ void SwapMain::reset()
 	temp = 0;
 }
 
-int SwapMain::is_realtime() 
-{
-	return 1;
-}
 
-char* SwapMain::plugin_title() 
-{
-	return _("Swap channels");
-}
+char* SwapMain::plugin_title()  { return ("Swap channels"); }
+int SwapMain::is_synthesis() { return 1; }
+int SwapMain::is_realtime()  { return 1; }
 
-int SwapMain::is_synthesis()
-{
-	return 1;
-}
 
 SHOW_GUI_MACRO(SwapMain, SwapThread)
 NEW_PICON_MACRO(SwapMain)

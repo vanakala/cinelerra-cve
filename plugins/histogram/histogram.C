@@ -1029,7 +1029,7 @@ HistogramMain::~HistogramMain()
 	if(engine) delete engine;
 }
 
-char* HistogramMain::plugin_title() { return _("Histogram"); }
+char* HistogramMain::plugin_title() { return ("Histogram"); }
 int HistogramMain::is_realtime() { return 1; }
 
 

@@ -2,16 +2,13 @@
 #include "defaults.h"
 #include "filexml.h"
 #include "freezeframe.h"
+#include "language.h"
 #include "picon_png.h"
 
 
 
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 REGISTER_PLUGIN(FreezeFrameMain)
 
@@ -141,6 +138,7 @@ FreezeFrameMain::FreezeFrameMain(PluginServer *server)
 {
 	PLUGIN_CONSTRUCTOR_MACRO
 	first_frame = 0;
+	first_frame_position = -1;
 }
 
 FreezeFrameMain::~FreezeFrameMain()
@@ -149,14 +147,10 @@ FreezeFrameMain::~FreezeFrameMain()
 	if(first_frame) delete first_frame;
 }
 
-char* FreezeFrameMain::plugin_title() { return _("Freeze Frame"); }
-
-int FreezeFrameMain::is_synthesis()
-{
-	return 1;
-}
-
+char* FreezeFrameMain::plugin_title() { return ("Freeze Frame"); }
+int FreezeFrameMain::is_synthesis() { return 1; }
 int FreezeFrameMain::is_realtime() { return 1; }
+
 
 SHOW_GUI_MACRO(FreezeFrameMain, FreezeFrameThread)
 
@@ -166,7 +160,16 @@ SET_STRING_MACRO(FreezeFrameMain)
 
 NEW_PICON_MACRO(FreezeFrameMain)
 
-LOAD_CONFIGURATION_MACRO(FreezeFrameMain, FreezeFrameConfig)
+int FreezeFrameMain::load_configuration()
+{
+	KeyFrame *prev_keyframe = get_prev_keyframe(get_source_position());
+	int64_t prev_position = edl_to_local(prev_keyframe->position);
+	if(prev_position < get_source_start()) prev_position = get_source_start();
+	read_data(prev_keyframe);
+// Invalidate stored frame
+	if(config.enabled) first_frame_position = prev_position;
+	return 0;
+}
 
 void FreezeFrameMain::update_gui()
 {
@@ -258,50 +261,72 @@ int FreezeFrameMain::save_defaults()
 
 
 
-int FreezeFrameMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+int FreezeFrameMain::process_buffer(VFrame *frame,
+		int64_t start_position,
+		double frame_rate)
 {
+	int64_t previous_first_frame = first_frame_position;
 	load_configuration();
-	KeyFrame *prev_keyframe;
-	int new_keyframe;
-	prev_keyframe = get_prev_keyframe(get_source_position());
-	new_keyframe = (prev_keyframe->position == get_source_position());
 
-	if(!first_frame && config.enabled || new_keyframe)
+
+// Just entered frozen range
+	if(!first_frame && config.enabled)
 	{
 		if(!first_frame)
 			first_frame = new VFrame(0, 
-				input_ptr->get_w(), 
-				input_ptr->get_h(),
-				input_ptr->get_color_model());
-		first_frame->copy_from(input_ptr);
-		output_ptr->copy_from(input_ptr);
+				frame->get_w(), 
+				frame->get_h(),
+				frame->get_color_model());
+		read_frame(first_frame, 
+				0, 
+				first_frame_position,
+				frame_rate);
+		frame->copy_from(first_frame);
 	}
 	else
+// Still not frozen
 	if(!first_frame && !config.enabled)
 	{
-		output_ptr->copy_from(input_ptr);
+		read_frame(frame, 
+			0, 
+			start_position,
+			frame_rate);
 	}
 	else
+// Just left frozen range
 	if(first_frame && !config.enabled)
 	{
 		delete first_frame;
 		first_frame = 0;
-		output_ptr->copy_from(input_ptr);
+		read_frame(frame, 
+			0, 
+			start_position,
+			frame_rate);
 	}
 	else
+// Still frozen
 	if(first_frame && config.enabled)
 	{
-		output_ptr->copy_from(first_frame);
+// Had a keyframe in frozen range.  Load new first frame
+		if(previous_first_frame != first_frame_position)
+		{
+			read_frame(first_frame, 
+				0, 
+				first_frame_position,
+				frame_rate);
+		}
+		frame->copy_from(first_frame);
 	}
 
 
+// Line double to support interlacing
 	if(config.line_double && config.enabled)
 	{
-		for(int i = 0; i < output_ptr->get_h() - 1; i += 2)
+		for(int i = 0; i < frame->get_h() - 1; i += 2)
 		{
-			memcpy(output_ptr->get_rows()[i + 1], 
-				output_ptr->get_rows()[i], 
-				output_ptr->get_bytes_per_line());
+			memcpy(frame->get_rows()[i + 1], 
+				frame->get_rows()[i], 
+				frame->get_bytes_per_line());
 		}
 	}
 

@@ -69,7 +69,7 @@ FlipMain::~FlipMain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-char* FlipMain::plugin_title() { return _("Flip"); }
+char* FlipMain::plugin_title() { return ("Flip"); }
 int FlipMain::is_realtime() { return 1; }
 	
 

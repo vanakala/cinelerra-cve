@@ -34,11 +34,10 @@ NormalizeMain::~NormalizeMain()
 	delete defaults;
 }
 
-char* NormalizeMain::plugin_title() { return _("Normalize"); }
-
+char* NormalizeMain::plugin_title() { return ("Normalize"); }
 int NormalizeMain::is_realtime() { return 0; }
-
 int NormalizeMain::is_multichannel() { return 1; }
+
 
 VFrame* NormalizeMain::new_picon()
 {
@@ -75,13 +74,9 @@ int NormalizeMain::save_defaults()
 int NormalizeMain::get_parameters()
 {
 	BC_DisplayInfo info;
-//printf("NormalizeMain::get_parameters 1\n");
 	NormalizeWindow window(info.get_abs_cursor_x(), info.get_abs_cursor_y());
-//printf("NormalizeMain::get_parameters 2\n");
 	window.create_objects(&db_over, &separate_tracks);
-//printf("NormalizeMain::get_parameters 3\n");
 	int result = window.run_window();
-//printf("NormalizeMain::get_parameters 4\n");
 	return result;
 }
 

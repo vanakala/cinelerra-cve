@@ -49,21 +49,15 @@ VFrame* DelayAudio::new_picon()
 	return new VFrame(picon_png);
 }
 
-char* DelayAudio::plugin_title()
-{
-	return _("Delay audio");
-}
+char* DelayAudio::plugin_title() { return ("Delay audio"); }
+int DelayAudio::is_realtime() { return 1; }
+
 
 void DelayAudio::reset()
 {
 	need_reconfigure = 1;
 	buffer = 0;
 	thread = 0;
-}
-
-int DelayAudio::is_realtime()
-{
-	return 1;
 }
 
 void DelayAudio::load_configuration()

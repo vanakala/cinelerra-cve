@@ -94,7 +94,7 @@ TranslateMain::~TranslateMain()
 	overlayer = 0;
 }
 
-char* TranslateMain::plugin_title() { return _("Translate"); }
+char* TranslateMain::plugin_title() { return ("Translate"); }
 int TranslateMain::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(TranslateMain)
@@ -269,16 +269,18 @@ void TranslateMain::update_gui()
 {
 	if(thread)
 	{
-		load_configuration();
-		thread->window->lock_window();
-		thread->window->in_x->update(config.in_x);
-		thread->window->in_y->update(config.in_y);
-		thread->window->in_w->update(config.in_w);
-		thread->window->in_h->update(config.in_h);
-		thread->window->out_x->update(config.out_x);
-		thread->window->out_y->update(config.out_y);
-		thread->window->out_w->update(config.out_w);
-		thread->window->out_h->update(config.out_h);
-		thread->window->unlock_window();
+		if(load_configuration())
+		{
+			thread->window->lock_window();
+			thread->window->in_x->update(config.in_x);
+			thread->window->in_y->update(config.in_y);
+			thread->window->in_w->update(config.in_w);
+			thread->window->in_h->update(config.in_h);
+			thread->window->out_x->update(config.out_x);
+			thread->window->out_y->update(config.out_y);
+			thread->window->out_w->update(config.out_w);
+			thread->window->out_h->update(config.out_h);
+			thread->window->unlock_window();
+		}
 	}
 }

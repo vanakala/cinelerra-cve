@@ -83,24 +83,9 @@ void CompressorEffect::reset()
 	max_counter = 0;
 }
 
-char* CompressorEffect::plugin_title()
-{
-	return _("Compressor");
-}
-
-
-int CompressorEffect::is_realtime()
-{
-	return 1;
-}
-
-int CompressorEffect::is_multichannel()
-{
-	return 1;
-}
-
-
-
+char* CompressorEffect::plugin_title() { return ("Compressor"); }
+int CompressorEffect::is_realtime() { return 1; }
+int CompressorEffect::is_multichannel() { return 1; }
 
 
 

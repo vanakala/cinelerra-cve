@@ -1,13 +1,10 @@
 #include "crossfade.h"
 #include "edl.inc"
+#include "language.h"
 #include "overlayframe.h"
 #include "picon_png.h"
 #include "vframe.h"
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 
@@ -25,7 +22,7 @@ CrossfadeMain::~CrossfadeMain()
 {
 }
 
-char* CrossfadeMain::plugin_title() { return _("Crossfade"); }
+char* CrossfadeMain::plugin_title() { return ("Crossfade"); }
 int CrossfadeMain::is_transition() { return 1; }
 int CrossfadeMain::uses_gui() { return 0; }
 
@@ -40,6 +37,7 @@ int CrossfadeMain::process_realtime(int64_t size,
 		PluginClient::get_total_len();
 	double slope = (double)1 / PluginClient::get_total_len();
 
+//printf("CrossfadeMain::process_realtime %f %f\n", intercept, slope);
 	for(int i = 0; i < size; i++)
 	{
 		incoming[i] = outgoing[i] * ((double)1 - (slope * i + intercept)) + 

@@ -30,7 +30,7 @@ DissolveMain::~DissolveMain()
 		delete overlayer;
 }
 
-char* DissolveMain::plugin_title() { return _("Dissolve"); }
+char* DissolveMain::plugin_title() { return ("Dissolve"); }
 int DissolveMain::is_video() { return 1; }
 int DissolveMain::is_transition() { return 1; }
 int DissolveMain::uses_gui() { return 0; }

@@ -381,7 +381,7 @@ GradientMain::~GradientMain()
 	if(overlayer) delete overlayer;
 }
 
-char* GradientMain::plugin_title() { return _("Gradient"); }
+char* GradientMain::plugin_title() { return ("Gradient"); }
 int GradientMain::is_realtime() { return 1; }
 
 

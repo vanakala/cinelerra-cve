@@ -717,15 +717,8 @@ int Decimate::process_buffer(VFrame *frame,
 
 
 
-int Decimate::is_realtime()
-{
-	return 1;
-}
-
-char* Decimate::plugin_title()
-{
-	return _("Decimate");
-}
+char* Decimate::plugin_title() { return ("Decimate"); }
+int Decimate::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(Decimate) 
 

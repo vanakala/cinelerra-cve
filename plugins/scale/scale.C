@@ -59,7 +59,6 @@ void ScaleConfig::interpolate(ScaleConfig &prev,
 ScaleMain::ScaleMain(PluginServer *server)
  : PluginVClient(server)
 {
-	temp_frame = 0;
 	overlayer = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
@@ -68,13 +67,11 @@ ScaleMain::~ScaleMain()
 {
 	PLUGIN_DESTRUCTOR_MACRO
 
-	if(temp_frame) delete temp_frame;
-	temp_frame = 0;
 	if(overlayer) delete overlayer;
 	overlayer = 0;
 }
 
-char* ScaleMain::plugin_title() { return _("Scale"); }
+char* ScaleMain::plugin_title() { return ("Scale"); }
 int ScaleMain::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(ScaleMain)
@@ -173,12 +170,10 @@ int ScaleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 	load_configuration();
 
-//printf("ScaleMain::process_realtime 1 %p\n", input);
+//printf("ScaleMain::process_realtime 1\n");
 	if(input->get_rows()[0] == output->get_rows()[0])
 	{
-		if(!temp_frame) 
-			temp_frame = new VFrame(0, 
-				input_ptr->get_w(), 
+		VFrame *temp_frame = new_temp(input_ptr->get_w(), 
 				input_ptr->get_h(),
 				input->get_color_model());
 		temp_frame->copy_from(input);
@@ -277,6 +272,7 @@ int ScaleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 			get_interpolation_type());
 
 	}
+
 }
 
 

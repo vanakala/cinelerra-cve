@@ -175,7 +175,7 @@ _720to480Main::~_720to480Main()
 	if(temp) delete temp;
 }
 
-char* _720to480Main::plugin_title() { return _("720 to 480"); }
+char* _720to480Main::plugin_title() { return ("720 to 480"); }
 int _720to480Main::is_realtime() { return 0; }
 
 double _720to480Main::get_framerate()

@@ -314,15 +314,10 @@ int DenoiseVideo::process_realtime(VFrame *input, VFrame *output)
 	}
 }
 
-int DenoiseVideo::is_realtime()
-{
-	return 1;
-}
 
-char* DenoiseVideo::plugin_title()
-{
-	return _("Denoise video");
-}
+char* DenoiseVideo::plugin_title() { return ("Denoise video"); }
+int DenoiseVideo::is_realtime() { return 1; }
+
 
 NEW_PICON_MACRO(DenoiseVideo)
 

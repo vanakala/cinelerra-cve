@@ -3,6 +3,7 @@
 #include "filexml.h"
 #include "guicast.h"
 #include "keyframe.h"
+#include "language.h"
 #include "picon_png.h"
 #include "pluginvclient.h"
 #include "vframe.h"
@@ -10,10 +11,6 @@
 #include <string.h>
 #include <stdint.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 #define TOP_FIELD_FIRST 0
 #define BOTTOM_FIELD_FIRST 1
@@ -22,10 +19,16 @@ class FrameField;
 class FrameFieldWindow;
 
 
+
+
+
+
+
 class FrameFieldConfig
 {
 public:
 	FrameFieldConfig();
+	int equivalent(FrameFieldConfig &src);
 	int field_dominance;
 	int avg;
 };
@@ -103,28 +106,30 @@ public:
 	FrameField(PluginServer *server);
 	~FrameField();
 
-	int process_realtime(VFrame *input, VFrame *output);
+	PLUGIN_CLASS_MEMBERS(FrameFieldConfig, FrameFieldThread);
+
+	int process_buffer(VFrame *frame,
+		int64_t start_position,
+		double frame_rate);
 	int is_realtime();
-	char* plugin_title();
-	VFrame* new_picon();
-	int show_gui();
-	void load_configuration();
-	int set_string();
 	int load_defaults();
 	int save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
-	void raise_window();
 	void update_gui();
 
 
 	void average_rows(int offset, VFrame *frame);
 
-	int current_frame;
-	VFrame *prev_frame;
-	FrameFieldThread *thread;
-	FrameFieldConfig config;
-	Defaults *defaults;
+// Last frame requested
+	int64_t last_frame;
+// Field needed
+	int64_t field_number;
+// Frame needed
+	int64_t current_frame_number;
+// Frame stored
+	int64_t src_frame_number;
+	VFrame *src_frame;
 };
 
 
@@ -135,6 +140,7 @@ public:
 
 
 
+REGISTER_PLUGIN(FrameField)
 
 
 
@@ -144,6 +150,11 @@ FrameFieldConfig::FrameFieldConfig()
 	avg = 1;
 }
 
+int FrameFieldConfig::equivalent(FrameFieldConfig &src)
+{
+	return src.field_dominance == field_dominance &&
+		src.avg == avg;
+}
 
 
 
@@ -179,11 +190,7 @@ void FrameFieldWindow::create_objects()
 	flush();
 }
 
-int FrameFieldWindow::close_event()
-{
-	set_done(1);
-	return 1;
-}
+WINDOW_CLOSE_EVENT(FrameFieldWindow)
 
 
 
@@ -279,7 +286,6 @@ PLUGIN_THREAD_OBJECT(FrameField, FrameFieldThread, FrameFieldWindow)
 
 
 
-REGISTER_PLUGIN(FrameField)
 
 
 
@@ -290,8 +296,10 @@ FrameField::FrameField(PluginServer *server)
  : PluginVClient(server)
 {
 	PLUGIN_CONSTRUCTOR_MACRO
-	current_frame = 0;
-	prev_frame = 0;
+	field_number = 0;
+	src_frame = 0;
+	src_frame_number = -1;
+	last_frame = -1;
 }
 
 
@@ -299,7 +307,7 @@ FrameField::~FrameField()
 {
 	PLUGIN_DESTRUCTOR_MACRO
 
-	if(prev_frame) delete prev_frame;
+	if(src_frame) delete src_frame;
 }
 
 
@@ -307,113 +315,133 @@ FrameField::~FrameField()
 // 1 - current frame field 0, current frame field 1, copy current to prev
 // 2 - current frame field 0, prev frame field 1
 
-int FrameField::process_realtime(VFrame *input, VFrame *output)
+int FrameField::process_buffer(VFrame *frame,
+	int64_t start_position,
+	double frame_rate)
 {
 	load_configuration();
-	
-	int row_size = VFrame::calculate_bytes_per_pixel(input->get_color_model()) * input->get_w();
+
+	int row_size = VFrame::calculate_bytes_per_pixel(frame->get_color_model()) * 
+		frame->get_w();
 	int start_row;
 
-	if(!prev_frame)
+	if(src_frame &&
+		src_frame->get_color_model() != frame->get_color_model())
 	{
-		prev_frame = new VFrame(0, 
-			input->get_w(), 
-			input->get_h(), 
-			input->get_color_model());
+		delete src_frame;
+		src_frame = 0;
+	}
+	if(!src_frame)
+	{
+		src_frame = new VFrame(0, 
+			frame->get_w(), 
+			frame->get_h(), 
+			frame->get_color_model());
 	}
 
-	unsigned char **current_rows = input->get_rows();
-	unsigned char **prev_rows = prev_frame->get_rows();
-	unsigned char **output_rows = output->get_rows();
+	unsigned char **src_rows = src_frame->get_rows();
+	unsigned char **output_rows = frame->get_rows();
 
-// Calculate current frame based on absolute position so the algorithm isn't
+// Calculate current field based on absolute position so the algorithm isn't
 // relative to where playback started.
-	current_frame = get_source_position() % 2;
+	field_number = get_source_position() % 2;
+	current_frame_number = start_position / 2;
 
-	if(current_frame == 0)
+// Import source frame at half frame rate
+	if(current_frame_number != src_frame_number ||
+// If same frame was requested, assume it was a configuration change and reprocess.
+		start_position == last_frame)
+	{
+		read_frame(src_frame, 
+			0, 
+			current_frame_number, 
+			frame_rate / 2);
+		src_frame_number = current_frame_number;
+	}
+
+
+// Even field
+	if(field_number == 0)
 	{
 		if(config.field_dominance == TOP_FIELD_FIRST) 
 		{
-			for(int i = 0; i < input->get_h() - 1; i += 2)
+			for(int i = 0; i < frame->get_h() - 1; i += 2)
 			{
-// Copy even lines of current to both lines of output
-				memcpy(output_rows[i], current_rows[i], row_size);
-				if(!config.avg) memcpy(output_rows[i + 1], current_rows[i], row_size);
+// Copy even lines of src to both lines of output
+				memcpy(output_rows[i], 
+					src_rows[i], 
+					row_size);
+				if(!config.avg) 
+					memcpy(output_rows[i + 1], 
+						src_rows[i], 
+						row_size);
 			}
 
 // Average empty rows
-			if(config.avg) average_rows(0, output);
+			if(config.avg) average_rows(0, frame);
 		}
 		else
 		{
-			for(int i = 0; i < input->get_h() - 1; i += 2)
+			for(int i = 0; i < frame->get_h() - 1; i += 2)
 			{
 // Copy odd lines of current to both lines of output with shift up.
-				memcpy(output_rows[i + 1], current_rows[i + 1], row_size);
-				if(i < input->get_h() - 2 && !config.avg)
-					memcpy(output_rows[i + 2], current_rows[i + 1], row_size);
+				memcpy(output_rows[i + 1], 
+					src_rows[i + 1], 
+					row_size);
+				if(i < frame->get_h() - 2 && !config.avg)
+					memcpy(output_rows[i + 2], 
+						src_rows[i + 1], 
+						row_size);
 			}
 
 // Average empty rows
-			if(config.avg) average_rows(1, output);
+			if(config.avg) average_rows(1, frame);
 		}
 	}
 	else
-// Odd frame
-// Copy input frame to prev_frame after the calculations using temp rows
+// Odd field
 	{
-		unsigned char *temp_row1 = new unsigned char[row_size];
-		unsigned char *temp_row2 = new unsigned char[row_size];
-
 		if(config.field_dominance == TOP_FIELD_FIRST)
 		{
-			for(int i = 0; i < input->get_h() - 1; i += 2)
+			for(int i = 0; i < frame->get_h() - 1; i += 2)
 			{
-// Copy lines to temporary for prev_frame
-				memcpy(temp_row1, output_rows[i], row_size);
-				memcpy(temp_row2, output_rows[i + 1], row_size);
-
-
-// Copy odd lines of input to both lines of output
-				memcpy(output_rows[i + 1], current_rows[i + 1], row_size);
-				if(i < input->get_h() - 2 && !config.avg)
-					memcpy(output_rows[i + 2], current_rows[i + 1], row_size);
-
-// Copy temporary to prev_frame
-				memcpy(prev_rows[i], temp_row1, row_size);
-				memcpy(prev_rows[i + 1], temp_row2, row_size);
+// Copy odd lines of src to both lines of output
+				memcpy(output_rows[i + 1], 
+					src_rows[i + 1], 
+					row_size);
+				if(i < frame->get_h() - 2 && !config.avg)
+					memcpy(output_rows[i + 2], 
+						src_rows[i + 1], 
+						row_size);
 			}
 
 // Average empty rows
-			if(config.avg) average_rows(1, output);
+			if(config.avg) average_rows(1, frame);
 		}
 		else
 		{
-			for(int i = 0; i < input->get_h() - 1; i += 2)
+			for(int i = 0; i < frame->get_h() - 1; i += 2)
 			{
-// Copy lines to temporary for prev_frame
-				memcpy(temp_row1, output_rows[i], row_size);
-				memcpy(temp_row2, output_rows[i + 1], row_size);
-
-// Copy even lines of input to both lines of output.
-				memcpy(output_rows[i], current_rows[i], row_size);
-				if(!config.avg) memcpy(output_rows[i + 1], current_rows[i], row_size);
-
-// Copy temporary to prev_frame
-				memcpy(prev_rows[i], temp_row1, row_size);
-				memcpy(prev_rows[i + 1], temp_row2, row_size);
+// Copy even lines of src to both lines of output.
+				memcpy(output_rows[i], 
+					src_rows[i], 
+					row_size);
+				if(!config.avg) 
+					memcpy(output_rows[i + 1], 
+						src_rows[i], 
+						row_size);
 			}
 
 // Average empty rows
-			if(config.avg) average_rows(0, output);
+			if(config.avg) average_rows(0, frame);
 		}
-		delete [] temp_row1;
-		delete [] temp_row2;
 	}
 
-	current_frame = !current_frame;
+	last_frame = start_position;
+	return 0;
 }
 
+// Averaging 2 pixels
 #define AVERAGE(type, components, offset) \
 { \
 	type **rows = (type**)frame->get_rows(); \
@@ -429,6 +457,61 @@ int FrameField::process_realtime(VFrame *input, VFrame *output)
 		{ \
 			int64_t sum = (int64_t)*row1++ + (int64_t)*row3++; \
 			*row2++ = (sum >> 1); \
+		} \
+	} \
+}
+
+// Averaging 6 pixels
+#define AVERAGE_BAK(type, components, offset) \
+{ \
+	type **rows = (type**)frame->get_rows(); \
+	int w = frame->get_w(); \
+	int h = frame->get_h(); \
+	int row_size = w; \
+	for(int i = offset; i < h - 3; i += 2) \
+	{ \
+		type *row1 = rows[i]; \
+		type *row2 = rows[i + 1]; \
+		type *row3 = rows[i + 2]; \
+		int64_t sum; \
+		int64_t pixel1[4], pixel2[4], pixel3[4]; \
+		int64_t pixel4[4], pixel5[4], pixel6[4]; \
+ \
+/* First pixel */ \
+		for(int j = 0; j < components; j++) \
+		{ \
+			pixel1[j] = *row1++; \
+			pixel4[j] = *row3++; \
+			*row2++ = (pixel1[j] + pixel4[j]) >> 1; \
+		} \
+ \
+		for(int j = 2; j < row_size; j++) \
+		{ \
+			for(int k = 0; k < components; k++) \
+			{ \
+				pixel2[k] = *row1++; \
+				pixel5[k] = *row3++; \
+			} \
+ \
+			for(int k = 0; k < components; k++) \
+			{ \
+				pixel3[k] = *row1; \
+				pixel6[k] = *row3; \
+				*row2++ = (pixel1[k] + \
+					pixel2[k] + \
+					pixel3[k] + \
+					pixel4[k] + \
+					pixel5[k] + \
+					pixel6[k]) / 6; \
+				pixel1[k] = pixel2[k]; \
+				pixel4[k] = pixel5[k]; \
+			} \
+		} \
+ \
+/* Last pixel */ \
+		for(int j = 0; j < components; j++) \
+		{ \
+			*row2++ = (pixel3[j] + pixel6[j]) >> 1; \
 		} \
 	} \
 }
@@ -458,15 +541,9 @@ void FrameField::average_rows(int offset, VFrame *frame)
 }
 
 
-int FrameField::is_realtime()
-{
-	return 1;
-}
 
-char* FrameField::plugin_title()
-{
-	return _("Frames to fields");
-}
+char* FrameField::plugin_title() { return ("Frames to fields"); }
+int FrameField::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(FrameField) 
 
@@ -476,11 +553,15 @@ RAISE_WINDOW_MACRO(FrameField)
 
 SET_STRING_MACRO(FrameField);
 
-void FrameField::load_configuration()
+int FrameField::load_configuration()
 {
 	KeyFrame *prev_keyframe;
+	FrameFieldConfig old_config = config;
+
 	prev_keyframe = get_prev_keyframe(get_source_position());
 	read_data(prev_keyframe);
+
+	return !old_config.equivalent(config);
 }
 
 int FrameField::load_defaults()
@@ -541,10 +622,13 @@ void FrameField::update_gui()
 {
 	if(thread)
 	{
-		thread->window->lock_window();
-		thread->window->top->update(config.field_dominance == TOP_FIELD_FIRST);
-		thread->window->bottom->update(config.field_dominance == BOTTOM_FIELD_FIRST);
-		thread->window->unlock_window();
+		if(load_configuration())
+		{
+			thread->window->lock_window();
+			thread->window->top->update(config.field_dominance == TOP_FIELD_FIRST);
+			thread->window->bottom->update(config.field_dominance == BOTTOM_FIELD_FIRST);
+			thread->window->unlock_window();
+		}
 	}
 }
 

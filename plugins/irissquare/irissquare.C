@@ -136,10 +136,11 @@ IrisSquareMain::~IrisSquareMain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-char* IrisSquareMain::plugin_title() { return _("IrisSquare"); }
+char* IrisSquareMain::plugin_title() { return ("IrisSquare"); }
 int IrisSquareMain::is_video() { return 1; }
 int IrisSquareMain::is_transition() { return 1; }
 int IrisSquareMain::uses_gui() { return 1; }
+
 SHOW_GUI_MACRO(IrisSquareMain, IrisSquareThread);
 SET_STRING_MACRO(IrisSquareMain)
 RAISE_WINDOW_MACRO(IrisSquareMain)

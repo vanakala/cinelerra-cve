@@ -221,7 +221,7 @@ void MWindow::init_plugin_path(Preferences *preferences,
 					plugindb->append(new_plugin);
 					new_plugin->close_plugin();
 					if(splash_window)
-						splash_window->operation->update(new_plugin->title);
+						splash_window->operation->update(_(new_plugin->title));
 				}
 				else
 				if(result == PLUGINSERVER_IS_LAD)
@@ -243,7 +243,7 @@ void MWindow::init_plugin_path(Preferences *preferences,
 							plugindb->append(new_plugin);
 							new_plugin->close_plugin();
 							if(splash_window)
-								splash_window->operation->update(new_plugin->title);
+								splash_window->operation->update(_(new_plugin->title));
 						}
 					}while(!result);
 				}

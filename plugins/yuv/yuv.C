@@ -213,15 +213,10 @@ YUVEffect::~YUVEffect()
 {
 	PLUGIN_DESTRUCTOR_MACRO
 }
-int YUVEffect::is_realtime()
-{
-	return 1;
-}
 
-char* YUVEffect::plugin_title()
-{
-	return _("YUV");
-}
+char* YUVEffect::plugin_title() { return ("YUV"); }
+int YUVEffect::is_realtime() { return 1; } 
+
 
 NEW_PICON_MACRO(YUVEffect)
 SHOW_GUI_MACRO(YUVEffect, YUVThread)

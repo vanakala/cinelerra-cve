@@ -2,6 +2,7 @@
 #include "defaults.h"
 #include "edl.inc"
 #include "filexml.h"
+#include "language.h"
 #include "overlayframe.h"
 #include "picon_png.h"
 #include "vframe.h"
@@ -11,10 +12,6 @@
 #include <stdint.h>
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 REGISTER_PLUGIN(WipeMain)
 
@@ -135,10 +132,11 @@ WipeMain::~WipeMain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-char* WipeMain::plugin_title() { return _("Wipe"); }
+char* WipeMain::plugin_title() { return ("Wipe"); }
 int WipeMain::is_video() { return 1; }
 int WipeMain::is_transition() { return 1; }
 int WipeMain::uses_gui() { return 1; }
+
 SHOW_GUI_MACRO(WipeMain, WipeThread);
 SET_STRING_MACRO(WipeMain)
 RAISE_WINDOW_MACRO(WipeMain)

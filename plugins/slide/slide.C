@@ -195,10 +195,11 @@ SlideMain::~SlideMain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-char* SlideMain::plugin_title() { return _("Slide"); }
+char* SlideMain::plugin_title() { return ("Slide"); }
 int SlideMain::is_video() { return 1; }
 int SlideMain::is_transition() { return 1; }
 int SlideMain::uses_gui() { return 1; }
+
 SHOW_GUI_MACRO(SlideMain, SlideThread);
 SET_STRING_MACRO(SlideMain)
 RAISE_WINDOW_MACRO(SlideMain)

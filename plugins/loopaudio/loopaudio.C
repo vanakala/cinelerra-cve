@@ -164,20 +164,10 @@ LoopAudio::~LoopAudio()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-char* LoopAudio::plugin_title()
-{
-	return _("Loop audio");
-}
+char* LoopAudio::plugin_title() { return ("Loop audio"); }
+int LoopAudio::is_realtime() { return 1; } 
+int LoopAudio::is_synthesis() { return 1; }
 
-int LoopAudio::is_realtime()
-{
-	return 1;
-}
-
-int LoopAudio::is_synthesis()
-{
-	return 1;
-}
 
 #include "picon_png.h"
 NEW_PICON_MACRO(LoopAudio)

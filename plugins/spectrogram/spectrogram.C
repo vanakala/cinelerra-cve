@@ -1,6 +1,8 @@
 #include "bcdisplayinfo.h"
+#include "clip.h"
 #include "defaults.h"
 #include "filexml.h"
+#include "language.h"
 #include "picon_png.h"
 #include "spectrogram.h"
 #include "units.h"
@@ -9,17 +11,12 @@
 
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
-
 
 
 REGISTER_PLUGIN(Spectrogram)
 
-
-
+#define WINDOW_SIZE 4096
+#define HALF_WINDOW 2048
 
 
 SpectrogramConfig::SpectrogramConfig()
@@ -146,70 +143,28 @@ SpectrogramFFT::~SpectrogramFFT()
 
 int SpectrogramFFT::signal_process()
 {
-
-//printf("SpectrogramFFT::signal_process %d\n", window_size);
-	BC_SubWindow *window = plugin->thread->window->canvas;
-
-	int h = window->get_h();
-	double *temp = new double[h];
-	int niquist = plugin->PluginAClient::project_sample_rate / 2;
-	int input1 = window_size / 2;
 	double level = DB::fromdb(plugin->config.level);
-
-	for(int i = 0; i < h; i++)
+	for(int i = 0; i < HALF_WINDOW; i++)
 	{
-		int input2 = (int)((float)(h - 1 - i) / h * TOTALFREQS);
-		input2 = (int)((float)Freq::tofreq(input2) / 
-			niquist * 
-			window_size / 
-			2);
-		if(input2 > window_size / 2 - 1) input2 = window_size / 2 - 1;
-
-		double sum = 0;
-		if(input1 > input2)
-		{
-			for(int j = input1 - 1; j >= input2; j--)
-				sum += sqrt(freq_real[j] * freq_real[j] + 
-					freq_imag[j] * freq_imag[j]);
-
-			sum /= (double)(input1 - input2);
-		}
-		else
-			sum = sqrt(freq_real[input2] * freq_real[input2] + 
-					freq_imag[input2] * freq_imag[input2]);
-
-
-		temp[i] = sum * level;
-		input1 = input2;
+		plugin->data[i] += level *
+			sqrt(freq_real[i] * freq_real[i] + 
+				freq_imag[i] * freq_imag[i]);
 	}
 
-	window->copy_area(1, 
-		0, 
-		0, 
-		0, 
-		window->get_w() - 1,
-		window->get_h());
-	int x = window->get_w() - 1;
-
-	double scale = (double)0xffffff;
-	for(int i = 0; i < h; i++)
-	{
-		int64_t color;
-		color = (int)(scale * temp[i]);
-
-		if(color < 0) color = 0;
-		if(color > 0xffffff) color = 0xffffff;
-		window->set_color(color);
-		window->draw_pixel(x, i);
-	}
-
-	window->flash();
-	window->flush();
-	delete [] temp;
-
+	plugin->total_windows++;
 	return 0;
 }
 
+int SpectrogramFFT::read_samples(int64_t output_sample, 
+	int samples, 
+	double *buffer)
+{
+	return plugin->read_samples(buffer,
+		0,
+		plugin->get_samplerate(),
+		output_sample,
+		samples);
+}
 
 
 
@@ -231,6 +186,7 @@ Spectrogram::~Spectrogram()
 	PLUGIN_DESTRUCTOR_MACRO
 
 	if(fft) delete fft;
+	if(data) delete [] data;
 }
 
 
@@ -239,24 +195,38 @@ void Spectrogram::reset()
 	thread = 0;
 	fft = 0;
 	done = 0;
+	data = 0;
 }
 
 
-char* Spectrogram::plugin_title()
-{
-	return _("Spectrogram");
-}
+char* Spectrogram::plugin_title() { return ("Spectrogram"); }
+int Spectrogram::is_realtime() { return 1; }
 
-int Spectrogram::is_realtime()
+int Spectrogram::process_buffer(int64_t size, 
+		double *buffer,
+		int64_t start_position,
+		int sample_rate)
 {
-	return 1;
-}
+	load_configuration();
+	if(!fft)
+	{
+		fft = new SpectrogramFFT(this);
+		fft->initialize(WINDOW_SIZE);
+	}
+	if(!data)
+	{
+		data = new float[HALF_WINDOW];
+	}
 
-int Spectrogram::process_realtime(int64_t size, double *input_ptr, double *output_ptr)
-{
-//printf("Spectrogram::process_realtime 1\n");
-	send_render_gui(input_ptr, size);
-	memcpy(output_ptr, input_ptr, sizeof(double) * size);
+	bzero(data, sizeof(float) * HALF_WINDOW);
+	total_windows = 0;
+	fft->process_buffer(start_position,
+		size, 
+		buffer,
+		get_direction());
+	for(int i = 0; i < HALF_WINDOW; i++)
+		data[i] /= total_windows;
+	send_render_gui(data, HALF_WINDOW);
 
 	return 0;
 }
@@ -274,7 +244,7 @@ void Spectrogram::update_gui()
 	if(thread)
 	{
 		load_configuration();
-		thread->window->lock_window();
+		thread->window->lock_window("Spectrogram::update_gui");
 		thread->window->update_gui();
 		thread->window->unlock_window();
 	}
@@ -282,21 +252,65 @@ void Spectrogram::update_gui()
 
 void Spectrogram::render_gui(void *data, int size)
 {
-//printf("Spectrogram::render_gui 1\n");
 	if(thread)
 	{
-		thread->window->lock_window();
-		load_configuration();
+		thread->window->lock_window("Spectrogram::render_gui");
+		float *frame = (float*)data;
+		int niquist = get_project_samplerate();
+		BC_SubWindow *canvas = thread->window->canvas;
+		int h = canvas->get_h();
+		int input1 = HALF_WINDOW - 1;
+		double *temp = new double[h];
 
-		if(!fft) 
+// Scale frame to canvas height
+		for(int i = 0; i < h; i++)
 		{
-			fft = new SpectrogramFFT(this);
-			fft->initialize(WINDOW_SIZE);
-		}
-		double *temp = new double[size];
-		fft->process_fifo(size, (double*)data, temp);
+			int input2 = (int)((h - 1 - i) * TOTALFREQS / h);
+			input2 = Freq::tofreq(input2) * 
+				HALF_WINDOW / 
+				niquist;
+			input2 = MIN(HALF_WINDOW - 1, input2);
+			double sum = 0;
+			if(input1 > input2)
+			{
+				for(int j = input1 - 1; j >= input2; j--)
+					sum += frame[j];
 
+				sum /= input1 - input2;
+			}
+			else
+			{
+				sum = frame[input2];
+			}
+
+			temp[i] = sum;
+			input1 = input2;
+		}
+
+// Shift left
+		canvas->copy_area(1, 
+			0, 
+			0, 
+			0, 
+			canvas->get_w() - 1,
+			canvas->get_h());
+		int x = canvas->get_w() - 1;
+		double scale = (double)0xffffff;
+		for(int i = 0; i < h; i++)
+		{
+			int64_t color;
+			color = (int)(scale * temp[i]);
+
+			if(color < 0) color = 0;
+			if(color > 0xffffff) color = 0xffffff;
+			canvas->set_color(color);
+			canvas->draw_pixel(x, i);
+		}
+
+		canvas->flash();
+		canvas->flush();
 		delete [] temp;
+
 		thread->window->unlock_window();
 	}
 }

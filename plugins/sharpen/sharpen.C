@@ -100,7 +100,7 @@ NEW_PICON_MACRO(SharpenMain)
 
 LOAD_CONFIGURATION_MACRO(SharpenMain, SharpenConfig)
 
-char* SharpenMain::plugin_title() { return _("Sharpen"); }
+char* SharpenMain::plugin_title() { return ("Sharpen"); }
 int SharpenMain::is_realtime() { return 1; }
 
 

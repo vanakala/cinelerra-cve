@@ -2,6 +2,7 @@
 #include "clip.h"
 #include "defaults.h"
 #include "filexml.h"
+#include "language.h"
 #include "parametric.h"
 #include "picon_png.h"
 #include "units.h"
@@ -10,10 +11,6 @@
 #include <math.h>
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 
@@ -22,10 +19,7 @@
 
 
 
-PluginClient* new_plugin(PluginServer *server)
-{
-	return new ParametricEQ(server);
-}
+REGISTER_PLUGIN(ParametricEQ)
 
 
 
@@ -375,9 +369,94 @@ void ParametricWindow::create_objects()
 	add_subwindow(new BC_Title(10, y + 10, _("Wetness:")));
 	add_subwindow(wetness = new ParametricWetness(plugin, 80, y));
 	y += 50;
-	add_subwindow(canvas = new BC_SubWindow(10, y, get_w() - 20, get_h() - y - 10, WHITE));
-	
-	
+	int canvas_x = 30;
+	int canvas_y = y;
+	int canvas_w = get_w() - canvas_x - 10;
+	int canvas_h = get_h() - canvas_y - 30;
+	add_subwindow(canvas = new BC_SubWindow(canvas_x, 
+		canvas_y, 
+		canvas_w, 
+		canvas_h, 
+		WHITE));
+
+// Draw canvas titles
+	set_font(SMALLFONT);
+#define MAJOR_DIVISIONS 4
+#define MINOR_DIVISIONS 5
+	for(int i = 0; i <= MAJOR_DIVISIONS; i++)
+	{
+		int y1 = canvas_y + canvas_h - i * (canvas_h / MAJOR_DIVISIONS) - 2;
+		int y2 = y1 + 3;
+		int x1 = canvas_x - 25;
+		int x2 = canvas_x - 10;
+		int x3 = canvas_x - 2;
+
+		char string[BCTEXTLEN];
+		if(i == 0)
+			sprintf(string, "oo");
+		else
+			sprintf(string, "%d", i * 5 - 5);
+
+		set_color(BLACK);
+		draw_text(x1 + 1, y2 + 1, string);
+		draw_line(x2 + 1, y1 + 1, x3 + 1, y1 + 1);
+		set_color(RED);
+		draw_text(x1, y2, string);
+		draw_line(x2, y1, x3, y1);
+
+		if(i < MAJOR_DIVISIONS)
+		{
+			for(int j = 1; j < MINOR_DIVISIONS; j++)
+			{
+				int y3 = y1 - j * (canvas_h / MAJOR_DIVISIONS) / MINOR_DIVISIONS;
+				int x4 = x3 - 5;
+				set_color(BLACK);
+				draw_line(x4 + 1, y3 + 1, x3 + 1, y3 + 1);
+				set_color(RED);
+				draw_line(x4, y3, x3, y3);
+			}
+		}
+	}
+
+#undef MAJOR_DIVISIONS
+#define MAJOR_DIVISIONS 5
+	for(int i = 0; i <= MAJOR_DIVISIONS; i++)
+	{
+		int freq = Freq::tofreq(i * TOTALFREQS / MAJOR_DIVISIONS);
+		int x1 = canvas_x + i * canvas_w / MAJOR_DIVISIONS;
+		int y1 = canvas_y + canvas_h + 20;
+		char string[BCTEXTLEN];
+		sprintf(string, "%d", freq);
+		int x2 = x1 - get_text_width(SMALLFONT, string);
+		int y2 = y1 - 10;
+		int y3 = y2 - 5;
+		int y4 = canvas_y + canvas_h;
+		
+		set_color(BLACK);
+		draw_text(x2 + 1, y1 + 1, string);
+		draw_line(x1 + 1, y4 + 1, x1 + 1, y2 + 1);
+		set_color(RED);
+		draw_text(x2, y1, string);
+		draw_line(x1, y4, x1, y2);
+
+		if(i < MAJOR_DIVISIONS)
+		{
+#undef MINOR_DIVISIONS
+#define MINOR_DIVISIONS 5
+			for(int j = 0; j < MINOR_DIVISIONS; j++)
+			{
+				int x3 = (int)(x1 + 
+					(canvas_w / MAJOR_DIVISIONS) -
+					exp(-(double)j * 0.7) * 
+					(canvas_w / MAJOR_DIVISIONS));
+				set_color(BLACK);
+				draw_line(x3 + 1, y4 + 1, x3 + 1, y3 + 1);
+				set_color(RED);
+				draw_line(x3, y4, x3, y3);
+			}
+		}
+	}
+
 	update_canvas();
 	show_window();
 	flush();
@@ -401,32 +480,63 @@ void ParametricWindow::update_gui()
 
 void ParametricWindow::update_canvas()
 {
-//printf("ParametricWindow::update_canvas 1\n");
 	double scale = 1;
 	int y1 = canvas->get_h() / 2;
-	double normalize = DB::fromdb(MAXMAGNITUDE);
 	int niquist = plugin->PluginAClient::project_sample_rate / 2;
+	int wetness = canvas->get_h() -
+		(int)((plugin->config.wetness - INFINITYGAIN) /
+			-INFINITYGAIN * 
+			canvas->get_h() / 
+			4);
 
 	canvas->clear_box(0, 0, canvas->get_w(), canvas->get_h());
-	canvas->set_color(GREEN);
-	canvas->draw_line(0, 
-		canvas->get_h() - (int)((double)canvas->get_h() / normalize), 
-		canvas->get_w(), 
-		canvas->get_h() - (int)((double)canvas->get_h() / normalize));
+// 	canvas->set_color(GREEN);
+// 	canvas->draw_line(0, 
+// 		wetness, 
+// 		canvas->get_w(), 
+// 		wetness);
 
 	canvas->set_color(BLACK);
 
 	plugin->calculate_envelope();
-	for(int i = 0; i < canvas->get_w(); i++)
+	for(int i = 0; i < canvas->get_w() - 1; i++)
 	{
-		int freq = Freq::tofreq((int)((float)i / canvas->get_w() * TOTALFREQS));
-		int index = (int)((float)freq / niquist * WINDOW_SIZE / 2);
+		int freq = Freq::tofreq(i * TOTALFREQS / canvas->get_w());
+		int index = freq * WINDOW_SIZE / 2 / niquist;
 		double magnitude = plugin->envelope[index];
-		int y2 = canvas->get_h() - 
-			(int)((double)canvas->get_h() / normalize * magnitude);
+		int y2 = canvas->get_h() * 3 / 4;
+
+		if(magnitude > 1)
+		{
+			y2 -= (int)(DB::todb(magnitude) * 
+				canvas->get_h() * 
+				3 / 
+				4 / 
+				15);
+		}
+		else
+		{
+			y2 += (int)((1 - magnitude) * canvas->get_h() / 4);
+// 			y2 += (int)(DB::todb(magnitude) / 
+// 				INFINITYGAIN * 
+// 				canvas->get_h() / 
+// 				4);
+		}
 		if(i > 0) canvas->draw_line(i - 1, y1, i, y2);
 		y1 = y2;
 	}
+
+
+// 	for(int i = 0; i < canvas->get_w(); i++)
+// 	{
+// 		int freq = Freq::tofreq((int)((float)i / canvas->get_w() * TOTALFREQS));
+// 		int index = (int)((float)freq / niquist * WINDOW_SIZE / 2);
+// 		double magnitude = plugin->envelope[index];
+// 		int y2 = canvas->get_h() - 
+// 			(int)((double)canvas->get_h() / normalize * magnitude);
+// 		if(i > 0) canvas->draw_line(i - 1, y1, i, y2);
+// 		y1 = y2;
+// 	}
 
 	canvas->flash();
 	flush();
@@ -459,7 +569,6 @@ ParametricFFT::~ParametricFFT()
 
 int ParametricFFT::signal_process()
 {
-//printf("ParametricFFT::signal_process 1\n");
 	for(int i = 0; i < window_size / 2; i++)
 	{
 		double result = plugin->envelope[i] * sqrt(freq_real[i] * freq_real[i] + freq_imag[i] * freq_imag[i]);
@@ -467,14 +576,21 @@ int ParametricFFT::signal_process()
 		freq_real[i] = result * cos(angle);
 		freq_imag[i] = result * sin(angle);
 	}
-//printf("ParametricFFT::signal_process 2\n");
 
 	symmetry(window_size, freq_real, freq_imag);
-//printf("ParametricFFT::signal_process 3\n");
 	return 0;
 }
 
-
+int ParametricFFT::read_samples(int64_t output_sample, 
+	int samples, 
+	double *buffer)
+{
+	return plugin->read_samples(buffer,
+		0,
+		plugin->get_samplerate(),
+		output_sample,
+		samples);
+}
 
 
 
@@ -509,15 +625,8 @@ SET_STRING_MACRO(ParametricEQ)
 LOAD_CONFIGURATION_MACRO(ParametricEQ, ParametricConfig)
 
 
-char* ParametricEQ::plugin_title()
-{
-	return _("EQ Parametric");
-}
-
-int ParametricEQ::is_realtime()
-{
-	return 1;
-}
+char* ParametricEQ::plugin_title() { return ("EQ Parametric"); }
+int ParametricEQ::is_realtime() { return 1; }
 
 void ParametricEQ::read_data(KeyFrame *keyframe)
 {
@@ -669,21 +778,25 @@ double ParametricEQ::gauss(double sigma, double a, double x)
 {
 	if(EQUIV(sigma, 0)) sigma = 0.01;
 
-	return 1 / 
+	return 1.0 / 
 		sqrt(2 * M_PI * sigma * sigma) * 
 		exp(-(x - a) * (x - a) / 
 			(2 * sigma * sigma));
 }
 
-int ParametricEQ::process_realtime(int64_t size, 
-	double *input_ptr, 
-	double *output_ptr)
+
+
+int ParametricEQ::process_buffer(int64_t size, 
+	double *buffer, 
+	int64_t start_position,
+	int sample_rate)
 {
 	need_reconfigure |= load_configuration();
 	if(need_reconfigure) reconfigure();
 	
 	
-	fft->process_fifo(size, input_ptr, output_ptr);
+	fft->process_buffer(start_position, size, buffer, get_direction());
+	return 0;
 }
 
 
@@ -754,7 +867,7 @@ void ParametricEQ::update_gui()
 	if(thread)
 	{
 		load_configuration();
-		thread->window->lock_window();
+		thread->window->lock_window("ParametricEQ::update_gui");
 		thread->window->update_gui();
 		thread->window->unlock_window();
 	}

@@ -56,7 +56,7 @@ AgingMain::~AgingMain()
 	if(aging_server) delete aging_server;
 }
 
-char* AgingMain::plugin_title() { return _("AgingTV"); }
+char* AgingMain::plugin_title() { return ("AgingTV"); }
 int AgingMain::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(AgingMain)

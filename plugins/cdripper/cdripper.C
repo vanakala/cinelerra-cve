@@ -34,11 +34,10 @@ CDRipMain::~CDRipMain()
 	delete defaults;
 }
 
-char* CDRipMain::plugin_title() { return _("CD Ripper"); }
-
+char* CDRipMain::plugin_title() { return ("CD Ripper"); }
 int CDRipMain::is_realtime() { return 0; }
-
 int CDRipMain::is_multichannel() { return 1; }
+
 
 int CDRipMain::load_defaults()
 {
@@ -100,7 +99,7 @@ int CDRipMain::get_parameters()
 		if(!result) result2 = get_toc();
 //printf("CDRipMain::get_parameters 5 %d\n", result);
 	}
-	PluginClient::sample_rate = 44100;
+	PluginAClient::sample_rate = 44100;
 	return result;
 }
 

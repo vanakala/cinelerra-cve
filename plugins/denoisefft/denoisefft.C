@@ -304,16 +304,10 @@ void DenoiseFFTEffect::reset()
 	collection_sample = 0;
 }
 
-char* DenoiseFFTEffect::plugin_title()
-{
-	return _("DenoiseFFT");
-}
+int DenoiseFFTEffect::is_realtime() { return 1; }
+char* DenoiseFFTEffect::plugin_title() { return ("DenoiseFFT"); }
 
 
-int DenoiseFFTEffect::is_realtime()
-{
-	return 1;
-}
 
 
 

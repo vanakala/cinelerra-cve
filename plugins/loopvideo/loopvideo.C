@@ -162,20 +162,9 @@ LoopVideo::~LoopVideo()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-char* LoopVideo::plugin_title()
-{
-	return _("Loop video");
-}
-
-int LoopVideo::is_realtime()
-{
-	return 1;
-}
-
-int LoopVideo::is_synthesis()
-{
-	return 1;
-}
+char* LoopVideo::plugin_title() { return ("Loop video"); }
+int LoopVideo::is_realtime() { return 1; }
+int LoopVideo::is_synthesis() { return 1; }
 
 #include "picon_png.h"
 NEW_PICON_MACRO(LoopVideo)

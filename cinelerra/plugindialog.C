@@ -166,20 +166,15 @@ PluginDialog::PluginDialog(MWindow *mwindow,
 PluginDialog::~PluginDialog()
 {
 	int i;
-	for(i = 0; i < standalone_data.total; i++) delete standalone_data.values[i];
-	standalone_data.remove_all();
+	standalone_data.remove_all_objects();
 	
-	for(i = 0; i < shared_data.total; i++) delete shared_data.values[i];
-	shared_data.remove_all();
+	shared_data.remove_all_objects();
 	
-	for(i = 0; i < module_data.total; i++) delete module_data.values[i];
-	module_data.remove_all();
+	module_data.remove_all_objects();
 
-	for(i = 0; i < plugin_locations.total; i++) delete plugin_locations.values[i];
-	plugin_locations.remove_all();
+	plugin_locations.remove_all_objects();
 
-	for(i = 0; i < module_locations.total; i++) delete module_locations.values[i];
-	module_locations.remove_all();
+	module_locations.remove_all_objects();
 
 //	delete title;
 //	delete detach;
@@ -217,7 +212,6 @@ int PluginDialog::create_objects()
 
 
 // GET A LIST OF ALL THE PLUGINS AVAILABLE
-	ArrayList<PluginServer*> plugindb;
 	mwindow->create_plugindb(thread->data_type == TRACK_AUDIO, 
 		thread->data_type == TRACK_VIDEO, 
 		1, 
@@ -240,7 +234,7 @@ int PluginDialog::create_objects()
 
 // Construct listbox items
 	for(int i = 0; i < plugindb.total; i++)
-		standalone_data.append(new BC_ListBoxItem(plugindb.values[i]->title));
+		standalone_data.append(new BC_ListBoxItem(_(plugindb.values[i]->title)));
 	for(int i = 0; i < plugin_locations.total; i++)
 	{
 		Track *track = mwindow->edl->tracks->number(plugin_locations.values[i]->module);
@@ -254,7 +248,7 @@ int PluginDialog::create_objects()
 		char *plugin_title = plugin->title;
 		char string[BCTEXTLEN];
 
-		sprintf(string, "%s: %s", track_title, plugin_title);
+		sprintf(string, "%s: %s", track_title, _(plugin_title));
 		shared_data.append(new BC_ListBoxItem(string));
 	}
 	for(int i = 0; i < module_locations.total; i++)
@@ -390,7 +384,7 @@ int PluginDialog::attach_new(int number)
 {
 	if(number > -1 && number < standalone_data.total) 
 	{
-		strcpy(thread->plugin_title, standalone_data.values[number]->get_text());
+		strcpy(thread->plugin_title, plugindb.values[number]->title);
 		thread->plugin_type = PLUGIN_STANDALONE;         // type is plugin
 	}
 	return 0;

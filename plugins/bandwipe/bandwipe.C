@@ -174,10 +174,11 @@ BandWipeMain::~BandWipeMain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-char* BandWipeMain::plugin_title() { return _("BandWipe"); }
+char* BandWipeMain::plugin_title() { return ("BandWipe"); }
 int BandWipeMain::is_video() { return 1; }
 int BandWipeMain::is_transition() { return 1; }
 int BandWipeMain::uses_gui() { return 1; }
+
 SHOW_GUI_MACRO(BandWipeMain, BandWipeThread);
 SET_STRING_MACRO(BandWipeMain)
 RAISE_WINDOW_MACRO(BandWipeMain)

@@ -2,6 +2,7 @@
 #include "clip.h"
 #include "defaults.h"
 #include "filexml.h"
+#include "language.h"
 #include "pitch.h"
 #include "picon_png.h"
 #include "units.h"
@@ -11,21 +12,12 @@
 #include <string.h>
 
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
+
+#define WINDOW_SIZE 4096
 
 
 
-
-
-
-
-PluginClient* new_plugin(PluginServer *server)
-{
-	return new PitchEffect(server);
-}
+REGISTER_PLUGIN(PitchEffect);
 
 
 
@@ -34,40 +26,19 @@ PluginClient* new_plugin(PluginServer *server)
 PitchEffect::PitchEffect(PluginServer *server)
  : PluginAClient(server)
 {
+	PLUGIN_CONSTRUCTOR_MACRO
 	reset();
-	load_defaults();
 }
 
 PitchEffect::~PitchEffect()
 {
-	if(thread)
-	{
-		thread->window->set_done(0);
-		thread->completion.lock();
-		delete thread;
-	}
-	
-	save_defaults();
-	delete defaults;
+	PLUGIN_DESTRUCTOR_MACRO
 
 	if(fft) delete fft;
 }
 
-VFrame* PitchEffect::new_picon()
-{
-	return new VFrame(picon_png);
-}
-
-char* PitchEffect::plugin_title()
-{
-	return _("Pitch shift");
-}
-
-
-int PitchEffect::is_realtime()
-{
-	return 1;
-}
+char* PitchEffect::plugin_title() { return ("Pitch shift"); }
+int PitchEffect::is_realtime() { return 1; }
 
 
 
@@ -128,10 +99,17 @@ int PitchEffect::save_defaults()
 
 LOAD_CONFIGURATION_MACRO(PitchEffect, PitchConfig)
 
+SHOW_GUI_MACRO(PitchEffect, PitchThread)
+
+RAISE_WINDOW_MACRO(PitchEffect)
+
+SET_STRING_MACRO(PitchEffect)
+
+NEW_PICON_MACRO(PitchEffect)
+
 
 void PitchEffect::reset()
 {
-	thread = 0;
 	fft = 0;
 }
 
@@ -140,48 +118,27 @@ void PitchEffect::update_gui()
 	if(thread)
 	{
 		load_configuration();
-		thread->window->lock_window();
+		thread->window->lock_window("PitchEffect::update_gui");
 		thread->window->update();
 		thread->window->unlock_window();
 	}
 }
 
-int PitchEffect::show_gui()
+int PitchEffect::process_buffer(int64_t size, 
+		double *buffer,
+		int64_t start_position,
+		int sample_rate)
 {
 	load_configuration();
-	
-	thread = new PitchThread(this);
-	thread->start();
-	return 0;
-}
-
-void PitchEffect::raise_window()
-{
-	if(thread)
+	if(!fft)
 	{
-		thread->window->lock_window();
-		thread->window->raise_window();
-		thread->window->flush();
-		thread->window->unlock_window();
+		fft = new PitchFFT(this);
+		fft->initialize(WINDOW_SIZE);
 	}
-}
-
-int PitchEffect::set_string()
-{
-	if(thread) 
-	{
-		thread->window->lock_window();
-		thread->window->set_title(gui_string);
-		thread->window->unlock_window();
-	}
-	return 0;
-}
-
-int PitchEffect::process_realtime(int64_t size, double *input_ptr, double *output_ptr)
-{
-	load_configuration();
-	if(!fft) fft = new PitchFFT(this);
-	fft->process_fifo(size, input_ptr, output_ptr);
+	fft->process_buffer(start_position,
+		size, 
+		buffer,
+		get_direction());
 	return 0;
 }
 
@@ -248,6 +205,17 @@ int PitchFFT::signal_process()
 	return 0;
 }
 
+int PitchFFT::read_samples(int64_t output_sample, 
+	int samples, 
+	double *buffer)
+{
+	return plugin->read_samples(buffer,
+		0,
+		plugin->get_samplerate(),
+		output_sample,
+		samples);
+}
+
 
 
 
@@ -287,35 +255,8 @@ void PitchConfig::interpolate(PitchConfig &prev,
 
 
 
+PLUGIN_THREAD_OBJECT(PitchEffect, PitchThread, PitchWindow) 
 
-PitchThread::PitchThread(PitchEffect *plugin)
- : Thread()
-{
-	this->plugin = plugin;
-	set_synchronous(0);
-	completion.lock();
-}
-
-PitchThread::~PitchThread()
-{
-	delete window;
-}
-
-
-void PitchThread::run()
-{
-	BC_DisplayInfo info;
-
-	window = new PitchWindow(plugin,
-		info.get_abs_cursor_x() - 125, 
-		info.get_abs_cursor_y() - 115);
-
-	window->create_objects();
-	int result = window->run_window();
-	completion.unlock();
-// Last command in thread
-	if(result) plugin->client_side_close();
-}
 
 
 
@@ -350,12 +291,7 @@ void PitchWindow::create_objects()
 	flush();
 }
 
-int PitchWindow::close_event()
-{
-// Set result to 1 to indicate a client side close
-	set_done(1);
-	return 1;
-}
+WINDOW_CLOSE_EVENT(PitchWindow)
 
 void PitchWindow::update()
 {

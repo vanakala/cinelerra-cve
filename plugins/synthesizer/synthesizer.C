@@ -55,10 +55,9 @@ VFrame* Synth::new_picon()
 }
 
 
-char* Synth::plugin_title()
-{
-	return _("Synthesizer");
-}
+char* Synth::plugin_title() { return ("Synthesizer"); }
+int Synth::is_realtime() { return 1; }
+int Synth::is_synthesis() { return 1; }
 
 
 void Synth::reset()
@@ -68,15 +67,6 @@ void Synth::reset()
 	dsp_buffer = 0;
 }
 
-int Synth::is_realtime()
-{
-	return 1;
-}
-
-int Synth::is_synthesis()
-{
-	return 1;
-}
 
 
 

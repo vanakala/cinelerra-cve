@@ -78,21 +78,9 @@ InterpolateAllEffect::~InterpolateAllEffect()
 
 
 
-char* InterpolateAllEffect::plugin_title()
-{
-	return _("Interpolate");
-}
-
-
-int InterpolateAllEffect::is_realtime()
-{
-	return 0;
-}
-
-int InterpolateAllEffect::is_multichannel()
-{
-	return 0;
-}
+char* InterpolateAllEffect::plugin_title() { return ("Interpolate"); }
+int InterpolateAllEffect::is_realtime() { return 0; }
+int InterpolateAllEffect::is_multichannel() { return 0; }
 
 
 int InterpolateAllEffect::get_parameters()

@@ -1,10 +1,7 @@
 #include "cursors.h"
+#include "language.h"
 #include "perspective.h"
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 
@@ -605,7 +602,7 @@ PerspectiveMain::~PerspectiveMain()
 	if(temp) delete temp;
 }
 
-char* PerspectiveMain::plugin_title() { return _("Perspective"); }
+char* PerspectiveMain::plugin_title() { return ("Perspective"); }
 int PerspectiveMain::is_realtime() { return 1; }
 
 

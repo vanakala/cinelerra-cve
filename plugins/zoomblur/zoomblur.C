@@ -380,7 +380,7 @@ ZoomBlurMain::~ZoomBlurMain()
 	if(temp) delete temp;
 }
 
-char* ZoomBlurMain::plugin_title() { return _("Zoom Blur"); }
+char* ZoomBlurMain::plugin_title() { return ("Zoom Blur"); }
 int ZoomBlurMain::is_realtime() { return 1; }
 
 

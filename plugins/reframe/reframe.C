@@ -37,7 +37,7 @@ ReFrame::~ReFrame()
 	delete defaults;
 }
 
-char* ReFrame::plugin_title() { return _("Reframe"); }
+char* ReFrame::plugin_title() { return ("Reframe"); }
 
 NEW_PICON_MACRO(ReFrame) 
 

@@ -321,21 +321,9 @@ RAISE_WINDOW_MACRO(InterpolateEffect)
 SET_STRING_MACRO(InterpolateEffect)
 
 
-char* InterpolateEffect::plugin_title()
-{
-	return _("Interpolate");
-}
-
-
-int InterpolateEffect::is_realtime()
-{
-	return 1;
-}
-
-int InterpolateEffect::is_multichannel()
-{
-	return 1;
-}
+char* InterpolateEffect::plugin_title() { return ("Interpolate"); }
+int InterpolateEffect::is_realtime() { return 1;}
+int InterpolateEffect::is_multichannel() { return 1; }
 
 
 

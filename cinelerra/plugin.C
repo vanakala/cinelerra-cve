@@ -551,7 +551,7 @@ void Plugin::calculate_title(char *string, int use_nudge)
 {
 	if(plugin_type == PLUGIN_STANDALONE || plugin_type == PLUGIN_NONE)
 	{
-		strcpy(string, title);
+		strcpy(string, _(title));
 	}
 	else
 	if(plugin_type == PLUGIN_SHAREDPLUGIN || plugin_type == PLUGIN_SHAREDMODULE)

@@ -183,16 +183,9 @@ void SoundLevelEffect::reset()
 	accum_size = 0;
 }
 
-char* SoundLevelEffect::plugin_title()
-{
-	return _("SoundLevel");
-}
+char* SoundLevelEffect::plugin_title() { return ("SoundLevel"); }
+int SoundLevelEffect::is_realtime() { return 1; }
 
-
-int SoundLevelEffect::is_realtime()
-{
-	return 1;
-}
 
 void SoundLevelEffect::read_data(KeyFrame *keyframe)
 {

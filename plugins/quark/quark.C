@@ -39,7 +39,7 @@ SharpenMain::~SharpenMain()
 	delete defaults;
 }
 
-char* SharpenMain::plugin_title() { return _("Quark"); }
+char* SharpenMain::plugin_title() { return ("Quark"); }
 int SharpenMain::is_realtime() { return 1; }
 
 VFrame* SharpenMain::new_picon()

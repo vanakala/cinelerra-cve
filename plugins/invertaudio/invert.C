@@ -24,7 +24,7 @@ public:
 	};
 	char* plugin_title()
 	{
-		return _("Invert Audio");
+		return  ("Invert Audio");
 	};
 	int is_realtime()
 	{

@@ -497,20 +497,12 @@ printf("Overlay::process_buffer 10\n");
 
 
 
-int Overlay::is_realtime()
-{
-	return 1;
-}
 
-int Overlay::is_multichannel()
-{
-	return 1;
-}
+char* Overlay::plugin_title() { return ("Overlay"); }
+int Overlay::is_realtime() { return 1; }
+int Overlay::is_multichannel() { return 1; }
 
-char* Overlay::plugin_title()
-{
-	return _("Overlay");
-}
+
 
 NEW_PICON_MACRO(Overlay) 
 

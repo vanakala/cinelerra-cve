@@ -150,7 +150,7 @@ void MenuEffectThread::run()
 
 		for(int i = 0; i < local_plugindb.total; i++)
 		{
-			plugin_list.append(new BC_ListBoxItem(local_plugindb.values[i]->title, BLACK));
+			plugin_list.append(new BC_ListBoxItem(_(local_plugindb.values[i]->title)));
 		}
 	}
 

@@ -106,7 +106,7 @@ void SharedLocation::calculate_title(char *string,
 			sprintf(track_title, _("None"));
 
 		if(plugin)
-			strcpy(plugin_title, plugin->title);
+			strcpy(plugin_title, _(plugin->title));
 		else
 			sprintf(plugin_title, _("None"));
 

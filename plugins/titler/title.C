@@ -1022,7 +1022,7 @@ TitleMain::~TitleMain()
 	if(translate) delete translate;
 }
 
-char* TitleMain::plugin_title() { return _("Title"); }
+char* TitleMain::plugin_title() { return ("Title"); }
 int TitleMain::is_realtime() { return 1; }
 int TitleMain::is_synthesis() { return 1; }
 

@@ -174,10 +174,11 @@ BandSlideMain::~BandSlideMain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-char* BandSlideMain::plugin_title() { return _("BandSlide"); }
+char* BandSlideMain::plugin_title() { return ("BandSlide"); }
 int BandSlideMain::is_video() { return 1; }
 int BandSlideMain::is_transition() { return 1; }
 int BandSlideMain::uses_gui() { return 1; }
+
 SHOW_GUI_MACRO(BandSlideMain, BandSlideThread);
 SET_STRING_MACRO(BandSlideMain)
 RAISE_WINDOW_MACRO(BandSlideMain)

@@ -120,7 +120,7 @@ SvgMain::~SvgMain()
 	overlayer = 0;
 }
 
-char* SvgMain::plugin_title() { return _("SVG via Sodipodi"); }
+char* SvgMain::plugin_title() { return ("SVG via Sodipodi"); }
 int SvgMain::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(SvgMain)

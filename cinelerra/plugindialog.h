@@ -95,6 +95,8 @@ public:
 	ArrayList<BC_ListBoxItem*> module_data;
 	ArrayList<SharedLocation*> plugin_locations; // locations of all shared plugins
 	ArrayList<SharedLocation*> module_locations; // locations of all shared modules
+	ArrayList<PluginServer*> plugindb;           // locations of all simple plugins, no need for memory freeing!
+
 	int selected_available;
 	int selected_shared;
 	int selected_modules;
