@@ -1,6 +1,10 @@
 #ifndef BCWINDOWBASE_H
 #define BCWINDOWBASE_H
 
+#if defined(HAVE_CONFIG_H)
+#include "config.h"
+#endif
+
 // Window types
 
 #define MAIN_WINDOW 0

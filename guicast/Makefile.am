@@ -130,10 +130,17 @@ noinst_HEADERS = arraylist.h bcbitmap.h bcbitmap.inc bcbutton.h bcbutton.inc bcc
 	condition.h
 
 INCLUDES = -I$(top_srcdir)/quicktime -I/usr/include/qt
+AM_CXXFLAGS = $(LARGEFILE_CFLAGS)
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
 
+# special CFLAGS that can be set on the make command line
+BOOTSTRAP_CFLAGS=
 bootstrap_SOURCES=bootstrap.c
 bootstrap_LDADD =
+
+# custom rule that disregards any fancy flags that the user might have set
+bootstrap.$(OBJEXT): bootstrap.c
+	$(CC) $(BOOTSTRAP_CFLAGS) -c $<
 
 EXTRA_DIST = images pngtoh.c
 

@@ -277,14 +277,16 @@ INCLUDES = \
 	-I$(top_builddir)/libsndfile/src \
 	-I@OPENEXR@
 
-# the library search path.
-cinelerra_CFLAGS = $(CFLAGS) $(FIREWIRE_CFLAGS) $(SOUND_CFLAGS) $(AVIFILE_CXXFLAGS) 
-cinelerra_CXXFLAGS = $(CXXFLAGS) $(FIREWIRE_CFLAGS) $(SOUND_CFLAGS) $(AVIFILE_CXXFLAGS) -DPLUGIN_DIR=\"$(plugindir)\"
-cinelerra_LDFLAGS = -export-dynamic ../mpeg2enc/libmpeg2enc.la ../toolame-02l/libtoolame.la 
-AM_CFLAGS = 
-AM_CXXFLAGS = 
-AM_FFLAGS = 
-cinelerra_DEPENDENCIES = 
+AM_CXXFLAGS = \
+	$(LARGEFILE_CFLAGS) \
+	$(FIREWIRE_CFLAGS) \
+	$(SOUND_CFLAGS) \
+	$(AVIFILE_CXXFLAGS) \
+	-DPLUGIN_DIR=\"$(plugindir)\"
+AM_LDFLAGS = -export-dynamic \
+	../mpeg2enc/libmpeg2enc.la \
+	../toolame-02l/libtoolame.la 
+
 noinst_HEADERS = aattachmentpoint.h \
 		 aautomation.h \
 		 aboutprefs.h \

@@ -2,8 +2,8 @@ plugin_LTLIBRARIES = shapewipe.la
 shapewipe_la_LDFLAGS = -avoid-version -module -shared 
 shapewipe_la_LIBADD = 
 shapewipe_la_SOURCES = shapewipe.C 
-AM_CFLAGS = 
-AM_CXXFLAGS = -DDEFAULT_SHAPE=\"$(shapewipedir)/heart.png\"
+AM_CXXFLAGS = $(LARGEFILE_CFLAGS) \
+	-DDEFAULT_SHAPE=\"$(shapewipedir)/heart.png\"
 
 INCLUDES = -I$(top_srcdir)/guicast -I$(top_srcdir)/cinelerra -I$(top_srcdir)/quicktime
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)

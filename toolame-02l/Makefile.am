@@ -55,7 +55,9 @@ noinst_HEADERS = absthr.h \
 
 EXTRA_DIST = FUTURE HISTORY LGPL.txt pds_subband.c
 
-libtoolame_la_CFLAGS = -fomit-frame-pointer -O3 -DNDEBUG -DINLINE=inline -DNEWENCODE -DNEWATAN
+AM_CFLAGS = $(LARGEFILE_CFLAGS) \
+	-fomit-frame-pointer \
+	-DNDEBUG -DINLINE=inline -DNEWENCODE -DNEWATAN
 
 libtoolame_la_LDFLAGS =  -lm
 

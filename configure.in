@@ -54,14 +54,18 @@ AC_SUBST(fontsdir)
 ############## END OF SPECIAL DIRECTORIES
 
 ############## XLIB
-LDFLAGS="$LDFLAGS -L/usr/X11R6/lib"
-AC_CHECK_HEADERS(X11/Xlib.h)
-AC_CHECK_LIB(X11, XOpenDisplay, ,[
-	echo "Xlib-dev was not found. In order to build Cinelerra,"
-	echo "xlib-dev must be installed. Please install xlib-dev and"
-	echo "run configure again."
-	exit
-	])
+AC_PATH_XTRA
+if test "$no_x" = yes; then
+  if test "x$have_x" = "xdisabled"; then
+    AC_MSG_WARN([Do not use --without-x or --with-x=no.])
+  else
+    AC_MSG_WARN([X Windows development tools were not found.])
+    AC_MSG_WARN([Please install xlib-dev or xorg-x11-devel.])
+  fi
+  AC_MSG_ERROR([Cinelerra requires X Windows.])
+fi
+AH_TEMPLATE(HAVE_LIBXXF86VM, [Define to 1 if libXxf86vm is available.])
+AC_DEFINE(HAVE_LIBXXF86VM)
 ############## END XLIB
 
 ############## SOUND
@@ -112,13 +116,10 @@ AC_CHECK_LIB(mjpegutils, y4m_read_frame, ,
 AC_CHECK_HEADERS(uuid/uuid.h)
 AC_CHECK_LIB(uuid, uuid_clear, ,[AC_MSG_WARN([libuuid not found])
 	NOT_FOUND="$NOT_FOUND libuuid"])
-
-AC_PATH_XTRA
 ############## END OF MISC LIBRARIES
 
 LARGEFILE_CFLAGS="-D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64"
-CFLAGS="-D_REENTRANT -DHAVE_LIBXXF86VM $LARGEFILE_CFLAGS $CFLAGS"
-CXXFLAGS="-D_REENTRANT -DHAVE_LIBXXF86VM $LARGEFILE_CFLAGS $CXXFLAGS"
+AC_SUBST(LARGEFILE_CFLAGS)
 
 # A52DEC
 AC_CHECK_HEADERS(a52dec/a52.h)
