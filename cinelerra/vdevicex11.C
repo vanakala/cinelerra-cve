@@ -243,8 +243,7 @@ void VDeviceX11::new_output_buffer(VFrame **output_channels, int colormodel)
 		{
 			case BC_YUV420P:
 				if(device->out_config->driver == PLAYBACK_X11_XV &&
-					output->canvas->accel_available(best_colormodel) &&
-					!output->use_scrollbars)
+					output->canvas->accel_available(best_colormodel))
 				{
 					bitmap = new BC_Bitmap(output->canvas, 
 						device->out_w,
@@ -264,8 +263,7 @@ void VDeviceX11::new_output_buffer(VFrame **output_channels, int colormodel)
 
 			case BC_YUV422P:
 				if(device->out_config->driver == PLAYBACK_X11_XV &&
-					output->canvas->accel_available(best_colormodel) &&
-					!output->use_scrollbars)
+					output->canvas->accel_available(best_colormodel))
 				{
 					bitmap = new BC_Bitmap(output->canvas, 
 						device->out_w,
@@ -297,8 +295,7 @@ void VDeviceX11::new_output_buffer(VFrame **output_channels, int colormodel)
 			case BC_YUV422:
 //printf("VDeviceX11::new_output_buffer 3\n");
 				if(device->out_config->driver == PLAYBACK_X11_XV &&
-					output->canvas->accel_available(best_colormodel) &&
-					!output->use_scrollbars)
+					output->canvas->accel_available(best_colormodel))
 				{
 //printf("VDeviceX11::new_output_buffer 4\n");
 					bitmap = new BC_Bitmap(output->canvas, 
@@ -333,7 +330,7 @@ void VDeviceX11::new_output_buffer(VFrame **output_channels, int colormodel)
 		}
 //printf("VDeviceX11::new_output_buffer 8\n");
 
-// Try default colormodel
+// Not accelerated --- use specified Format/Video/Color model instead
 		if(!bitmap)
 		{
 			best_colormodel = output->canvas->get_color_model();
