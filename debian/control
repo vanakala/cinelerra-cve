@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: Cinelerra non-official mailing list <cinelerra@skolelinux.no>
 Standards-Version: 3.5.9
 Build-Depends: debhelper (>> 4), automake1.7, dpatch (>= 1.11),
- libasound2-dev (>= 0.9.0), libglib1.2-dev (>= 1.2.10), libdv2-dev (>= 0.99), 
+ libasound2-dev (>= 0.9.0), libdv2-dev (>= 0.99), 
  libavcodec1-dev (>= 0.4.8), libxvidencore0 (>= 20020822), libxvidcore-dev, liblame-dev (>= 3.92), xlibs-dev,
  libvorbis-dev (>= 1.0.0), libogg-dev (>= 1.0.0), libtool (>= 1.5),
  liba52-0.7.4-dev (>= 0.7.4), libpng12-0-dev | libpng12-dev (>= 1.2.5), libjpeg62-dev (>= 6b), libtiff3g-dev (>= 3.5.5),
