@@ -1,3 +1,9 @@
+hvirtual (1:1.1.9-1) unstable; urgency=low
+
+  * fix libsndfilehv dependency (by Johannes Sixt)
+
+ -- Andraz Tori <andraz.tori1@guest.arnes.si>  Mon, 8 Mar 2004 22:22:14 +0200
+
 hvirtual (1:1.1.8-2) unstable; urgency=low
 
   * fix libsndfilehv dependency (by Johannes Sixt)
