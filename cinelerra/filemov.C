@@ -13,6 +13,7 @@
 #include "videodevice.inc"
 
 #include <unistd.h>
+#include <libdv/dv.h>
 
 #if 0
 N_("MPEG-4")
@@ -173,7 +174,37 @@ int FileMOV::open_file(int rd, int wr)
 
 	quicktime_set_cpus(fd, file->cpus);
 
-	if(rd) format_to_asset();
+	if(rd)
+	{
+		format_to_asset();
+		
+		// If DV stream, get the timecode
+		if(match4(asset->vcodec, QUICKTIME_DV))
+		{
+			char tc[12];
+			dv_decoder_t *tmp_decoder = dv_decoder_new(0,0,0);
+			VFrame *frame = new VFrame(0, 0, 0, BC_COMPRESSED);
+			
+			read_frame(frame);
+			set_video_position(0);
+			
+			if(dv_parse_header(tmp_decoder, frame->get_data()) > -1)
+			{
+				dv_parse_packs(tmp_decoder, frame->get_data());
+				dv_get_timestamp(tmp_decoder, tc);
+				printf("Timestamp %s\n", tc);
+			
+				float seconds = Units::text_to_seconds(tc,
+										1, // Use 1 as sample rate, doesn't matter
+										TIME_HMSF,
+										tmp_decoder->height == 576 ? 25 : 30, // FIXME
+										0);
+				// Get frame number
+				asset->tcstart = seconds * (tmp_decoder->height == 576 ? 25 : 30);
+			}
+			
+		}
+	}
 
 	if(wr) asset_to_format();
 
