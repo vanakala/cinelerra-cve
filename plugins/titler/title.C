@@ -1818,10 +1818,9 @@ void TitleMain::overlay_mask()
 	alpha = 0x100;
 	if(!EQUIV(config.fade_in, 0))
 	{
-		int fade_len = (int)(config.fade_in * PluginVClient::project_frame_rate);
-		printf("flen: %i, prev_keyframe: %lli, source: %lli\n", fade_len, config.prev_keyframe_position, get_source_position());
+		int fade_len = (int)(config.fade_in * 
+			PluginVClient::project_frame_rate);
 		int fade_position = get_source_position() - 
-/*			get_source_start() -   */
 			config.prev_keyframe_position;
 
 
@@ -1838,7 +1837,6 @@ void TitleMain::overlay_mask()
 
 		int fade_len = (int)(config.fade_out * 
 			PluginVClient::project_frame_rate);
-		printf("flen: %i, next_keyframe: %lli, source: %lli\n", fade_len, config.next_keyframe_position, get_source_position());
 		int fade_position = config.next_keyframe_position - 
 			get_source_position();
 
