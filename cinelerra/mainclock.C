@@ -24,6 +24,11 @@ MainClock::~MainClock()
 void MainClock::update(double position)
 {
 	char string[BCTEXTLEN];
+	position += (double)(mwindow->edl->session->timecode_offset[3] * 3600  +
+                        mwindow->edl->session->timecode_offset[2] * 60 +
+                        mwindow->edl->session->timecode_offset[1] +
+								mwindow->edl->session->timecode_offset[0] /
+								mwindow->edl->session->frame_rate);
 	Units::totext(string, 
 		position,
 		mwindow->edl->session->time_format,

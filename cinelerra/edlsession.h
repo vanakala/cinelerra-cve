@@ -31,6 +31,10 @@ public:
 	char* get_cwindow_display();
 	void boundaries();
 
+	PlaybackConfig* get_playback_config(int strategy, int head);
+	ArrayList<PlaybackConfig*>* get_playback_config(int strategy);
+	int get_playback_heads(int strategy);
+
 	void equivalent_output(EDLSession *session, double *result);
 	void dump();
 
@@ -48,10 +52,6 @@ public:
     float aspect_w;
     float aspect_h;
 	int audio_channels;
-// Samples to send through console
-	int64_t audio_module_fragment;
-// Samples to read from disk at a time
-	int64_t audio_read_length;
 	int audio_tracks;
 // automation follows edits during editing
  	int autos_follow_edits;
@@ -111,11 +111,6 @@ public:
     int output_w;
     int output_h;
 	int64_t playback_buffer;
-// Global playback.  This is loaded from defaults but not from XML probably
-// because it was discovered to be the most convenient.
-// It is part of the EDL probably because the playback setting was 
-// going to be bound to the EDL.
-	ArrayList<PlaybackConfig*> playback_config[PLAYBACK_STRATEGIES];
 	int playback_cursor_visible;
 	int64_t playback_preload;
 	int playback_software_position;
@@ -141,6 +136,8 @@ public:
 	int test_playback_edits;
 // Format to display times in
 	int time_format;
+// Offset for timecode
+	int timecode_offset[4];
 // Format to display nudge in, either seconds or track units.
 	int nudge_seconds;
 // Show tool window in CWindow
@@ -166,6 +163,13 @@ public:
 	float vwindow_zoom;
 // Global ID counter
 	static int current_id;
+
+private:
+// Global playback.  This is loaded from defaults but not from XML probably
+// because it was discovered to be the most convenient.
+// It is part of the EDL probably because the playback setting was 
+// going to be bound to the EDL.
+	ArrayList<PlaybackConfig*> playback_config[PLAYBACK_STRATEGIES];
 };
 
 

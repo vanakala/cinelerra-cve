@@ -5,6 +5,7 @@
 #include "defaults.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "language.h"
 #include "mwindow.h"
 #include "overlayframe.inc"
 #include "playbackprefs.h"
@@ -12,11 +13,6 @@
 #include "vdeviceprefs.h"
 #include "videodevice.inc"
 
-#include <string.h>
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 PlaybackPrefs::PlaybackPrefs(MWindow *mwindow, PreferencesWindow *pwindow)
@@ -56,17 +52,29 @@ int PlaybackPrefs::create_objects()
 
 
 	BC_Title *title1, *title2;
-	add_subwindow(title1 = new BC_Title(x, y, _("Samples to read from disk at a time:"), MEDIUMFONT, BLACK));
-	add_subwindow(title2 = new BC_Title(x, y + 30, _("Samples to send to console at a time:"), MEDIUMFONT, BLACK));
-	x2 = MAX(title1->get_w(), title2->get_w()) + 10;
+//	add_subwindow(title1 = new BC_Title(x, y, _("Samples to read from disk at a time:"), MEDIUMFONT, BLACK));
+	add_subwindow(title2 = new BC_Title(x, y, _("Samples to send to console at a time:"), MEDIUMFONT, BLACK));
+	x2 = MAX(title2->get_w(), title2->get_w()) + 10;
 
-	sprintf(string, "%d", pwindow->thread->edl->session->audio_read_length);
-	add_subwindow(new PlaybackReadLength(x2, y, pwindow, this, string));
-	sprintf(string, "%d", pwindow->thread->edl->session->audio_module_fragment);
-	add_subwindow(new PlaybackModuleFragment(x2, y + 30, pwindow, this, string));
+// 	sprintf(string, "%d", pwindow->thread->edl->session->audio_read_length);
+// 	add_subwindow(new PlaybackReadLength(x2, y, pwindow, this, string));
+	sprintf(string, "%d", current_config()->aconfig->fragment_size);
+	PlaybackModuleFragment *menu;
+	add_subwindow(menu = new PlaybackModuleFragment(x2, 
+		y, 
+		pwindow, 
+		this, 
+		string));
+	menu->add_item(new BC_MenuItem("2048"));
+	menu->add_item(new BC_MenuItem("4096"));
+	menu->add_item(new BC_MenuItem("8192"));
+	menu->add_item(new BC_MenuItem("16384"));
+	menu->add_item(new BC_MenuItem("32768"));
+	menu->add_item(new BC_MenuItem("65536"));
+	menu->add_item(new BC_MenuItem("131072"));
+	menu->add_item(new BC_MenuItem("262144"));
 
-
-	y += 60;
+	y += 30;
 	add_subwindow(new PlaybackViewFollows(pwindow, pwindow->thread->edl->session->view_follows_playback, y));
 	y += 30;
 	add_subwindow(new PlaybackSoftwareTimer(pwindow, pwindow->thread->edl->session->playback_software_position, y));
@@ -127,6 +135,20 @@ int PlaybackPrefs::create_objects()
 
 //	y += 30;
 //	add_subwindow(new PlaybackDeblock(pwindow, 10, y));
+
+	y += 30;
+	add_subwindow(new BC_Title(x, y, _("Timecode offset:"), MEDIUMFONT, BLACK));
+	sprintf(string, "%d", pwindow->thread->edl->session->timecode_offset[3]);
+	add_subwindow(new TimecodeOffset(x + 120, y, pwindow, this, string, 3));
+	add_subwindow(new BC_Title(x + 152, y, _(":"), MEDIUMFONT, BLACK));
+	sprintf(string, "%d", pwindow->thread->edl->session->timecode_offset[2]);
+	add_subwindow(new TimecodeOffset(x + 160, y, pwindow, this, string, 2));
+	add_subwindow(new BC_Title(x + 192, y, _(":"), MEDIUMFONT, BLACK));
+	sprintf(string, "%d", pwindow->thread->edl->session->timecode_offset[1]);
+	add_subwindow(new TimecodeOffset(x + 200, y, pwindow, this, string, 1));
+	add_subwindow(new BC_Title(x + 232, y, _(":"), MEDIUMFONT, BLACK));
+	sprintf(string, "%d", pwindow->thread->edl->session->timecode_offset[0]);
+	add_subwindow(new TimecodeOffset(x + 240, y, pwindow, this, string, 0));
 
 	y += 35;
 	add_subwindow(vdevice_title = new BC_Title(x, y, _("Video Driver:")));
@@ -252,7 +274,8 @@ int PlaybackPrefs::set_strategy(int strategy)
 
 ArrayList<PlaybackConfig*>* PlaybackPrefs::current_config_list()
 {
-	return &pwindow->thread->edl->session->playback_config[pwindow->thread->edl->session->playback_strategy];
+	return pwindow->thread->edl->session->get_playback_config(
+		pwindow->thread->edl->session->playback_strategy);
 }
 
 PlaybackConfig* PlaybackPrefs::current_config()
@@ -355,12 +378,12 @@ int PlaybackHeadCount::handle_event()
 
 PlaybackHost::PlaybackHost(PlaybackPrefs *prefs, int x, int y)
  : BC_TextBox(x, y, 100, 1, prefs->current_config()->hostname)
-{ 
+{
 	this->prefs = prefs; 
 }
 
 int PlaybackHost::handle_event() 
-{ 
+{
 	strcpy(prefs->current_config()->hostname, get_text()); 
 	return 1;
 }
@@ -368,72 +391,81 @@ int PlaybackHost::handle_event()
 
 
 
-PlaybackReadLength::PlaybackReadLength(int x, int y, PreferencesWindow *pwindow, PlaybackPrefs *playback, char *text)
- : BC_TextBox(x, y, 100, 1, text)
+// PlaybackReadLength::PlaybackReadLength(int x, int y, PreferencesWindow *pwindow, PlaybackPrefs *playback, char *text)
+//  : BC_TextBox(x, y, 100, 1, text)
+// { 
+// 	this->pwindow = pwindow; 
+// 	this->playback = playback; 
+// }
+// 
+// int PlaybackReadLength::handle_event() 
+// { 
+// 	pwindow->thread->edl->session->audio_read_length = atol(get_text()); 
+// 	return 1;
+// }
+//
+// PlaybackBufferSize::PlaybackBufferSize(int x, int y, PreferencesWindow *pwindow, PlaybackPrefs *playback, char *text)
+//  : BC_TextBox(x, y, 100, 1, text)
+// { 
+// 	this->pwindow = pwindow; 
+// 	this->playback = playback; 
+// }
+// 
+// int PlaybackBufferSize::handle_event() 
+// {
+// 	pwindow->thread->edl->session->playback_buffer = atol(get_text()); 
+// 	return 1;
+// }
+// 
+// PlaybackBufferBytes::PlaybackBufferBytes(int x, 
+// 	int y, 
+// 	PreferencesWindow *pwindow, 
+// 	PlaybackPrefs *playback, 
+// 	char *text)
+//  : BC_Title(x, y, text)
+// {
+// 	this->pwindow = pwindow; 
+// 	this->playback = playback;
+// }
+// int PlaybackBufferBytes::update_bytes()
+// {
+// 	sprintf(string, "%d", playback->get_buffer_bytes());
+// 	update(string);
+// 	return 1;
+// }
+// 
+// PlaybackDisableNoEdits::PlaybackDisableNoEdits(PreferencesWindow *pwindow, int value, int y)
+//  : BC_CheckBox(10, y, value, _("Disable tracks when no edits."))
+// {
+// 	this->pwindow = pwindow; 
+// }
+// 
+// int PlaybackDisableNoEdits::handle_event() 
+// { 
+// 	pwindow->thread->edl->session->test_playback_edits = get_value(); 
+// 	return 1;
+// }
+
+
+
+PlaybackModuleFragment::PlaybackModuleFragment(int x, 
+	int y, 
+	PreferencesWindow *pwindow, 
+	PlaybackPrefs *playback, 
+	char *text)
+ : BC_PopupMenu(x, 
+ 	y, 
+	100, 
+	text,
+	1)
 { 
-	this->pwindow = pwindow; 
-	this->playback = playback; 
-}
-
-int PlaybackReadLength::handle_event() 
-{ 
-	pwindow->thread->edl->session->audio_read_length = atol(get_text()); 
-	return 1;
-}
-
-
-
-
-PlaybackModuleFragment::PlaybackModuleFragment(int x, int y, PreferencesWindow *pwindow, PlaybackPrefs *playback, char *text)
- : BC_TextBox(x, y, 100, 1, text)
-{ 
-	this->pwindow = pwindow; 
+	this->pwindow = pwindow;
+	this->playback = playback;
 }
 
 int PlaybackModuleFragment::handle_event() 
-{ 
-	pwindow->thread->edl->session->audio_module_fragment = atol(get_text()); 
-	return 1;
-}
-
-
-
-
-PlaybackBufferSize::PlaybackBufferSize(int x, int y, PreferencesWindow *pwindow, PlaybackPrefs *playback, char *text)
- : BC_TextBox(x, y, 100, 1, text)
-{ 
-	this->pwindow = pwindow; 
-	this->playback = playback; 
-}
-
-int PlaybackBufferSize::handle_event() 
-{ 
-	pwindow->thread->edl->session->playback_buffer = atol(get_text()); 
-	return 1;
-}
-
-PlaybackBufferBytes::PlaybackBufferBytes(int x, int y, PreferencesWindow *pwindow, PlaybackPrefs *playback, char *text)
- : BC_Title(x, y, text)
 {
-	this->pwindow = pwindow; 
-	this->playback = playback;
-}
-int PlaybackBufferBytes::update_bytes()
-{
-	sprintf(string, "%d", playback->get_buffer_bytes());
-	update(string);
-	return 1;
-}
-
-PlaybackDisableNoEdits::PlaybackDisableNoEdits(PreferencesWindow *pwindow, int value, int y)
- : BC_CheckBox(10, y, value, _("Disable tracks when no edits."))
-{ 
-	this->pwindow = pwindow; 
-}
-
-int PlaybackDisableNoEdits::handle_event() 
-{ 
-	pwindow->thread->edl->session->test_playback_edits = get_value(); 
+	playback->current_config()->aconfig->fragment_size = atol(get_text()); 
 	return 1;
 }
 
@@ -602,6 +634,20 @@ int VideoEveryFrame::handle_event()
 
 
 
+TimecodeOffset::TimecodeOffset(int x, int y, PreferencesWindow *pwindow, 
+      PlaybackPrefs *playback, char *text, int unit)
+ : BC_TextBox(x, y, 30, 1, text)
+{
+   this->pwindow = pwindow;
+   this->playback = playback;
+	this->unit = unit;
+}
+
+int TimecodeOffset::handle_event()
+{
+	pwindow->thread->edl->session->timecode_offset[unit] = atol(get_text());
+	return 1;
+}
 
 
 

@@ -100,6 +100,14 @@ void MTimeBar::draw_time()
 		mwindow->edl->local_session->zoom_sample - 
 		mwindow->edl->local_session->view_start);
 //printf("TimeBar::draw_time 2\n");
+	sample += (int64_t) ((mwindow->edl->session->timecode_offset[3] * 3600  +
+								mwindow->edl->session->timecode_offset[2] * 60 +
+								mwindow->edl->session->timecode_offset[1] +
+								mwindow->edl->session->timecode_offset[0] /
+								mwindow->edl->session->frame_rate) *
+								48000 /
+								timescale1 *
+								timescale1);
 
 	for( ; pixel < get_w(); pixel += timescale1 / mwindow->edl->local_session->zoom_sample, sample += timescale1)
 	{

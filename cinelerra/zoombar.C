@@ -369,6 +369,11 @@ int FromTextBox::handle_event()
 
 int FromTextBox::update_position(double new_position)
 {
+	new_position += (double)(mwindow->edl->session->timecode_offset[3] * 3600  +
+								mwindow->edl->session->timecode_offset[2] * 60 +
+								mwindow->edl->session->timecode_offset[1] +
+								mwindow->edl->session->timecode_offset[0] /	
+								mwindow->edl->session->frame_rate);
 	Units::totext(string, 
 		new_position, 
 		mwindow->edl->session->time_format, 
@@ -437,6 +442,11 @@ int ToTextBox::handle_event()
 
 int ToTextBox::update_position(double new_position)
 {
+	new_position += (double)(mwindow->edl->session->timecode_offset[3] * 3600  +
+								mwindow->edl->session->timecode_offset[2] * 60 +
+								mwindow->edl->session->timecode_offset[1] +
+								mwindow->edl->session->timecode_offset[0] /
+								mwindow->edl->session->frame_rate);
 	Units::totext(string, 
 		new_position, 
 		mwindow->edl->session->time_format, 
