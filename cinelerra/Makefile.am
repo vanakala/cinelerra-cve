@@ -361,6 +361,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 edl.h \
 		 edlsession.h \
 		 fadeengine.h \
+		 feather.h \
 		 featheredits.h \
 		 fileac3.h \
 		 fileavi.h \
@@ -575,3 +576,5 @@ cinelerra_LDADD = \
 	$(SOUND_LDFLAGS) \
 	$(FIREWIRE_LDFLAGS) -ldv \
 	-luuid $(AVIFILE_LDFLAGS)
+
+EXTRA_DIST = gen-feather-h

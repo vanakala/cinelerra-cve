@@ -10,7 +10,7 @@
 #include <string.h>
 #include <limits.h>
 
-#include "codegen/feather.h"
+#include "feather.h"
 
 
 int64_t get_difference(struct timeval *start_time)

@@ -286,7 +286,6 @@ AC_OUTPUT(Makefile po/Makefile.in \
 					guicast/Makefile cinelerra/Makefile \
 	cinelerra/data/Makefile \
 					mplexhi/Makefile mplexlo/Makefile \
-					codegen/Makefile \
 					plugins/defaulttheme/Makefile \
 	plugins/defaulttheme/data/Makefile \
 					plugins/microtheme/Makefile \
