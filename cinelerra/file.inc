@@ -19,7 +19,7 @@
 #define FILE_AVI_ARNE2          19    // DV type 2
 #define FILE_AVI_AVIFILE        21
 #define FILE_AVI_LAVTOOLS       12    // MJPEG type 1
-#define FILE_DV					26
+#define FILE_RAWDV					28
 #define FILE_GIF  	    		7
 #define FILE_JPEG 	    		5
 #define FILE_JPEG_LIST  		8
@@ -79,7 +79,7 @@ N_("OGG Vorbis")
 #define AVI_ARNE2_NAME "AVI DV Type 2"
 #define AVI_AVIFILE_NAME "AVI Avifile"
 #define AVI_LAVTOOLS_NAME "AVI Lavtools"
-#define DV_NAME "Raw DV"
+#define RAWDV_NAME "Raw DV"
 #define JPEG_LIST_NAME "JPEG Sequence"
 #define JPEG_NAME "JPEG"
 #define MOV_NAME "Quicktime for Linux"

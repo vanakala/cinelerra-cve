@@ -31,7 +31,7 @@ FileDV::FileDV(Asset *asset, File *file)
 	input = 0;
 	output = 0;
 	if(asset->format == FILE_UNKNOWN)
-		asset->format = FILE_DV;
+		asset->format = FILE_RAWDV;
 	asset->byte_order = 0;
 	reset_parameters();
 }
@@ -635,7 +635,7 @@ int FileDV::can_copy_from(Edit *edit, int64_t position)
 {
 	if(!fd) return 0;
 
-	if(edit->asset->format == FILE_DV ||
+	if(edit->asset->format == FILE_RAWDV ||
 			(edit->asset->format == FILE_MOV &&
 				(match4(edit->asset->vcodec, QUICKTIME_DV) ||
 				match4(edit->asset->vcodec, QUICKTIME_DVSD))))

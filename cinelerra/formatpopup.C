@@ -52,7 +52,7 @@ int FormatPopup::create_objects()
 		format_items.append(new BC_ListBoxItem(_(AVI_NAME)));
 		format_items.append(new BC_ListBoxItem(_(WAV_NAME)));
 		format_items.append(new BC_ListBoxItem(_(MOV_NAME)));
-		format_items.append(new BC_ListBoxItem(_(DV_NAME)));
+		format_items.append(new BC_ListBoxItem(_(RAWDV_NAME)));
 		format_items.append(new BC_ListBoxItem(_(AMPEG_NAME)));
 		format_items.append(new BC_ListBoxItem(_(VMPEG_NAME)));
 		format_items.append(new BC_ListBoxItem(_(VORBIS_NAME)));
