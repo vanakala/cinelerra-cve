@@ -155,6 +155,9 @@ int TransitionPopup::update(Transition *transition)
 	this->transition = transition;
 	show->set_checked(transition->show);
 	on->set_checked(transition->on);
+	char len_text[50];
+	sprintf(len_text, _("Length: %2.2f sec"), transition->track->from_units(transition->length));
+	length->set_text(len_text);
 	return 0;
 }
 
