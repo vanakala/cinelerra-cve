@@ -33,7 +33,7 @@ on http://lpnotfr.free.fr/cinelerra-libs
 	- libdv (0.99)
 	- xvid (cvs 20020822)
 	- liba52 (0.7.4)
-	- libsndfile (= 0.0.26) - Newest versions don't work !!!
+	- libsndfile - both 0.x.x and 1.x.x versions should work
 	- libaudiofile (0.2.3)
 	- libraw1394 (0.9.0)
 	- libavc1394 (0.4.1)
