@@ -10,6 +10,9 @@
 #define gettext_noop(String) String
 #define N_(String) gettext_noop (String)
 
+#ifdef HAVE_LIBSNDFILE_0
+// Routines for libsndfile 0.x.x
+//
 FileSndFile::FileSndFile(Asset *asset, File *file)
  : FileBase(asset, file)
 {
@@ -418,5 +421,456 @@ int SndFileLOHI::handle_event()
 	gui->hilo->update(0);
 	return 1;
 }
+#else // #ifdef HAVE_LIBSNDFILE_0
+// Updated, libsndfile 1.x.x compatible routines
+
+FileSndFile::FileSndFile(Asset *asset, File *file)
+ : FileBase(asset, file)
+{
+	temp_double = 0;
+	temp_allocated = 0;
+	fd_config.format = 0;
+}
+
+FileSndFile::~FileSndFile()
+{
+	if(temp_double) delete [] temp_double;
+}
+
+int FileSndFile::check_sig(Asset *asset)
+{
+//printf("FileSndFile::check_sig 1\n");
+	int result = 0;
+	SF_INFO fd_config;
+	fd_config.format = 0;
+//printf("FileSndFile::check_sig 1\n");
+	SNDFILE *fd = sf_open(asset->path, SFM_READ, &fd_config);
+//printf("FileSndFile::check_sig 1\n");
+
+	if(fd)
+	{
+		sf_close(fd);
+		result = 1;
+	}
+	else
+		result = 0;
+//printf("FileSndFile::check_sig 2\n");
+	return result;
+}
+
+void FileSndFile::asset_to_format()
+{
+	// Set the file format
+	switch(asset->format)
+	{
+		case FILE_PCM:  fd_config.format = SF_FORMAT_RAW;  break;
+		case FILE_WAV:  fd_config.format = SF_FORMAT_WAV;  break;
+		case FILE_AU:   fd_config.format = SF_FORMAT_AU;   break;
+		case FILE_AIFF: fd_config.format = SF_FORMAT_AIFF; break;
+	}
+
+	// Set the coding format - not all file/coding format combinations
+    // are supported
+	switch(asset->bits)
+	{
+		case BITSLINEAR8:
+			if (asset->signed_)
+			{
+				fd_config.format |= SF_FORMAT_PCM_S8;
+			}
+			else
+			{
+				fd_config.format |= SF_FORMAT_PCM_U8;
+			}
+			break;
+
+		case BITSLINEAR16:
+		 	fd_config.format |= SF_FORMAT_PCM_16;
+			break;
+
+		case BITSLINEAR24:
+			fd_config.format |= SF_FORMAT_PCM_24;
+			break;
+
+		case BITSFLOAT: 
+			// RAW can't be float
+			if (asset->format != FILE_PCM)
+			{
+				fd_config.format |= SF_FORMAT_FLOAT; 
+			}
+			break;
+
+		case BITSULAW: 
+			// FIXME: can RAW be ADPCM?
+			fd_config.format |= SF_FORMAT_ULAW; 
+			break;
+
+		case BITS_ADPCM: 
+			// FIXME: can RAW be ADPCM?
+			if(fd_config.format == FILE_WAV)
+			{
+				fd_config.format |= SF_FORMAT_MS_ADPCM;
+			}
+			else
+			{
+				fd_config.format |= SF_FORMAT_IMA_ADPCM; 
+			}
+			break;
+	}
+
+	if(asset->byte_order)
+	{
+		fd_config.format |= SF_ENDIAN_LITTLE;
+	}
+	else
+	{
+		fd_config.format |= SF_ENDIAN_BIG;
+	}
+
+	fd_config.seekable = 1;
+	fd_config.samplerate = asset->sample_rate;
+	fd_config.channels  = asset->channels;
+}
+
+void FileSndFile::format_to_asset()
+{
+//printf("FileSndFile::format_to_asset 1\n");
+	asset->byte_order = 0;
+	asset->signed_ = 1;
+
+	if(asset->format == 0)
+	{
+		switch(fd_config.format & SF_FORMAT_TYPEMASK)
+		{
+			case SF_FORMAT_WAV:  
+				asset->format = FILE_WAV;  
+				asset->byte_order = 1;
+				asset->header = 44;
+				break;
+			case SF_FORMAT_AIFF: asset->format = FILE_AIFF; break;
+			case SF_FORMAT_AU:   asset->format = FILE_AU;   break;
+//			case SF_FORMAT_AULE: asset->format = FILE_AU;   break;
+			case SF_FORMAT_RAW:  asset->format = FILE_PCM;  break;
+			case SF_FORMAT_PAF:  asset->format = FILE_SND;  break;
+			case SF_FORMAT_SVX:  asset->format = FILE_SND;  break;
+			case SF_FORMAT_NIST: asset->format = FILE_SND;  break;
+		}
+	}
+
+	switch(fd_config.format & SF_FORMAT_SUBMASK)
+	{
+		case SF_FORMAT_FLOAT: 
+			asset->bits = BITSFLOAT; 
+			break;
+
+		case SF_FORMAT_ULAW: 
+			asset->bits = BITSULAW; 
+			break;
+
+		case SF_FORMAT_IMA_ADPCM:
+		case SF_FORMAT_MS_ADPCM:
+			asset->bits = BITS_ADPCM;
+			break;
+
+		case SF_FORMAT_PCM_16:
+			asset->signed_ = 1;
+			asset->bits = 16;
+			break;
+
+		case SF_FORMAT_PCM_24:
+			asset->signed_ = 1;
+			asset->bits = 24;
+			break;
+
+		case SF_FORMAT_PCM_32:
+			asset->signed_ = 1;
+			asset->bits = 32;
+			break;
+
+		case SF_FORMAT_PCM_S8:
+			asset->signed_ = 1;
+			asset->bits = BITSLINEAR8;
+			break;
+
+		case SF_FORMAT_PCM_U8:
+			asset->signed_ = 0;
+			asset->bits = BITSLINEAR8;
+			break;
+	}
+
+	switch(fd_config.format & SF_FORMAT_ENDMASK)
+	{
+		case SF_ENDIAN_LITTLE:
+			asset->byte_order = 1;
+			break;
+		case SF_ENDIAN_BIG:
+			asset->byte_order = 0;
+			break;
+	}
+
+	asset->audio_data = 1;
+	asset->audio_length = fd_config.frames;
+
+	if(!asset->sample_rate)
+		asset->sample_rate = fd_config.samplerate;
+
+	asset->channels = fd_config.channels;
+
+//printf("FileSndFile::format_to_asset %x %d %d %x\n", fd_config.format & SF_FORMAT_TYPEMASK, fd_config.pcmbitwidth, fd_config.samples, fd_config.format & SF_FORMAT_SUBMASK);
+//asset->dump();
+}
+
+int FileSndFile::open_file(int rd, int wr)
+{
+	int result = 0;
+	this->rd = rd;
+	this->wr = wr;
+
+	if(rd)
+	{
+		if(asset->format == FILE_PCM)
+		{
+			asset_to_format();
+			fd = sf_open(asset->path, SFM_READ, &fd_config);
+			format_to_asset();
+		}
+		else
+		{
+			fd = sf_open(asset->path, SFM_READ, &fd_config);
+// Doesn't calculate the length
+			format_to_asset();
+		}
+	}
+	else
+	{
+		if(wr)
+		{
+//printf("FileSndFile::open_file 1\n");
+			asset_to_format();
+//printf("FileSndFile::open_file 1\n");
+			fd = sf_open(asset->path, SFM_WRITE, &fd_config);
+//printf("FileSndFile::open_file 2 %p\n", fd);
+		}
+	}
+
+	if(!fd) 
+	{
+		result = 1;
+		printf("FileSndFile::open_file:\n");
+		sf_perror(0);
+	}
+
+	return result;
+}
+
+int FileSndFile::close_file()
+{
+//printf("FileSndFile::close_file 1\n");
+	sf_close(fd);
+	FileBase::close_file();
+	fd_config.format = 0;
+	return 0;
+}
+
+int FileSndFile::set_audio_position(int64_t sample)
+{
+//printf("FileSndFile::set_audio_position %ld\n", sample);
+// Commented out /* && psf->dataoffset */ in sndfile.c: 761
+	if(sf_seek(fd, sample, SEEK_SET) < 0)
+	{
+		printf("FileSndFile::set_audio_position %ld: failed\n", sample);
+		sf_perror(fd);
+		return 1;
+	}
+	return 0;
+}
+
+int FileSndFile::read_samples(double *buffer, int64_t len)
+{
+	int result = 0;
+
+// Get temp buffer for interleaved channels
+	if(len <= 0 || len > 1000000)
+		printf("FileSndFile::read_samples len=%d\n", len);
+
+	if(!buffer)
+		printf("FileSndFile::read_samples buffer=%p\n", buffer);
+
+//printf("FileSndFile::read_samples 1 current_sample=%d len=%d\n", file->current_sample, len);
+	if(temp_allocated && temp_allocated < len)
+	{
+//printf("FileSndFile::read_samples 1\n");
+		delete [] temp_double;
+		temp_double = 0;
+		temp_allocated = 0;
+	}
+
+	if(!temp_allocated)
+	{
+		temp_allocated = len;
+//printf("FileSndFile::read_samples 2\n");
+		temp_double = new double[len * asset->channels];
+	}
+
+//printf("FileSndFile::read_samples 3\n");
+	result = !sf_read_double(fd, temp_double, len * asset->channels);
+//printf("FileSndFile::read_samples 4\n");
+
+	if(result)
+		printf("FileSndFile::read_samples fd=%p temp_double=%p len=%d asset=%p asset->channels=%d\n",
+			fd, temp_double, len, asset, asset->channels);
+
+//printf("FileSndFile::read_samples 4\n");
+// Extract single channel
+	for(int i = 0, j = file->current_channel; 
+		i < len;
+		i++, j += asset->channels)
+	{
+		buffer[i] = temp_double[j];
+	}
+//printf("FileSndFile::read_samples 6\n");
+
+	return result;
+}
+
+int FileSndFile::write_samples(double **buffer, int64_t len)
+{
+	int result = 0;
+
+// Get temp buffer for interleaved channels
+//printf("FileSndFile::read_samples 1\n");
+	if(temp_allocated && temp_allocated < len)
+	{
+		temp_allocated = 0;
+		delete [] temp_double;
+		temp_double = 0;
+	}
+
+//printf("FileSndFile::read_samples 2\n");
+	if(!temp_allocated)
+	{
+		temp_allocated = len;
+		temp_double = new double[len * asset->channels];
+	}
+
+// Interleave channels
+	for(int i = 0; i < asset->channels; i++)
+	{
+		for(int j = 0; j < len; j++)
+		{
+			double sample = buffer[i][j];
+// Libsndfile does not limit values
+//if(sample > 1.0 || sample < -1.0) printf("FileSndFile::write_samples %f\n", sample);
+			CLAMP(sample, -1.0, (32767.0 / 32768.0));
+			temp_double[j * asset->channels + i] = sample;
+		}
+	}
+	
+	result = !sf_writef_double(fd, temp_double, len);
+
+	return result;
+}
+
+void FileSndFile::get_parameters(BC_WindowBase *parent_window, 
+		Asset *asset, 
+		BC_WindowBase* &format_window,
+		int audio_options,
+		int video_options)
+{
+	if(audio_options)
+	{
+		SndFileConfig *window = new SndFileConfig(parent_window, asset);
+		format_window = window;
+		window->create_objects();
+		window->run_window();
+		delete window;
+	}
+}
+
+SndFileConfig::SndFileConfig(BC_WindowBase *parent_window, Asset *asset)
+ : BC_Window(PROGRAM_NAME ": Audio Compression",
+ 	parent_window->get_abs_cursor_x(),
+ 	parent_window->get_abs_cursor_y(),
+	250,
+	200)
+{
+	this->parent_window = parent_window;
+	this->asset = asset;
+}
+
+SndFileConfig::~SndFileConfig()
+{
+	if(bits_popup) delete bits_popup;
+}
+int SndFileConfig::create_objects()
+{
+	int x = 10, y = 10;
+
+	bits_popup = 0;
+	switch(asset->format)
+	{
+		case FILE_WAV:
+		case FILE_PCM:
+		case FILE_AIFF:
+			add_tool(new BC_Title(x, y, _("Compression:")));
+			y += 25;
+			if(asset->format == FILE_WAV)
+				bits_popup = new BitsPopup(this, x, y, &asset->bits, 0, 0, 1, 1, 0);
+			else
+				bits_popup = new BitsPopup(this, x, y, &asset->bits, 0, 0, 0, 0, 0);
+			y += 40;
+			bits_popup->create_objects();
+			break;
+	}
+
+	x = 10;
+	if(asset->format != FILE_AU)
+		add_subwindow(new BC_CheckBox(x, y, &asset->dither, _("Dither")));
+	y += 30;
+	if(asset->format == FILE_PCM)
+	{
+		add_subwindow(new BC_CheckBox(x, y, &asset->signed_, _("Signed")));
+		y += 35;
+		add_subwindow(new BC_Title(x, y, _("Byte order:")));
+		add_subwindow(hilo = new SndFileHILO(this, x + 100, y));
+		add_subwindow(lohi = new SndFileLOHI(this, x + 170, y));
+	}
+	add_subwindow(new BC_OKButton(this));
+	return 0;
+}
+
+int SndFileConfig::close_event()
+{
+	set_done(0);
+	return 1;
+}
 
 
+
+SndFileHILO::SndFileHILO(SndFileConfig *gui, int x, int y)
+ : BC_Radial(x, y, gui->asset->byte_order == 0, _("Hi Lo"))
+{
+	this->gui = gui;
+}
+int SndFileHILO::handle_event()
+{
+	gui->asset->byte_order = 0;
+	gui->lohi->update(0);
+	return 1;
+}
+
+
+
+
+SndFileLOHI::SndFileLOHI(SndFileConfig *gui, int x, int y)
+ : BC_Radial(x, y, gui->asset->byte_order == 1, _("Lo Hi"))
+{
+	this->gui = gui;
+}
+int SndFileLOHI::handle_event()
+{
+	gui->asset->byte_order = 1;
+	gui->hilo->update(0);
+	return 1;
+}
+#endif // #ifdef HAVE_LIBSNDFILE_0
