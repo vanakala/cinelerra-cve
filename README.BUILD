@@ -32,6 +32,7 @@ you distrib. Not joking):
 	- libesd (esound = 0.2.28)
 	- libfreetype (>=2.1.4)
 	- xlib-dev
+	- gettext
 		
 The others are maybe part of your distrib. If they aren't, 
 you can find most of them on ftp://ftp.nerim.net/debian-marillat/
