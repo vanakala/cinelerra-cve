@@ -266,10 +266,10 @@ AC_CHECK_TOOL(OBJDUMP, objdump)
 dnl extract target and architecture if objdump was found
 if test "x$OBJDUMP" = "x"; then :; else
   AC_MSG_CHECKING(for object target)
-  octarget=`$OBJDUMP --info | sed -ne '2{p;q}'` # extract line 2
+  octarget=`$OBJDUMP --info | sed -ne '2p'` # extract first target
   AC_MSG_RESULT($octarget)
   AC_MSG_CHECKING(for object architecture)
-  ocarch=`$OBJDUMP --info | sed -ne '/^  /{p;q}'` # extract 1st matching line
+  ocarch=`$OBJDUMP --info | sed -ne '4p'` # extract corresponding arch
   AC_MSG_RESULT($ocarch)
 fi
 AC_SUBST(OBJCOPYTARGET, $octarget)
