@@ -28,7 +28,7 @@ AudioOutPrefs::AudioOutPrefs(MWindow *mwindow, PreferencesWindow *pwindow)
 AudioOutPrefs::~AudioOutPrefs()
 {
 	delete_strategy();
-	mwindow->defaults->update("PLAYBACK_HEAD", current_head);
+	mwindow->defaults->update("PLAYBACK_HEAD", (int)current_head);
 	delete audio_device;
 	delete video_device;
 }
