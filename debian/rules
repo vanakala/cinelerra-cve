@@ -53,11 +53,14 @@ binary-arch: checkroot build-stamp
 	# Since Cinelerra is far from stable, I prefer leaving the debug info
 	dh_strip -a
 	strip -x -s -R .comment -R .note debian/cinelerra/usr/lib/cinelerra/*.so
+
+# AFAIK bootstraping should be gone now -- minmax
+
 # Rename defaulttheme to blondtheme
-	guicast/bootstrap debian/cinelerra/usr/lib/cinelerra/blondtheme.so plugins/defaulttheme/data/*.png
+#	guicast/bootstrap debian/cinelerra/usr/lib/cinelerra/blondtheme.so plugins/defaulttheme/data/*.png
 # Add bluedottheme
-	guicast/bootstrap debian/cinelerra/usr/lib/cinelerra/bluedottheme.so plugins/bluedottheme/data/*.png
-	guicast/bootstrap debian/cinelerra/usr/bin/cinelerra cinelerra/data/mode_*.png
+#	guicast/bootstrap debian/cinelerra/usr/lib/cinelerra/bluedottheme.so plugins/bluedottheme/data/*.png
+#	guicast/bootstrap debian/cinelerra/usr/bin/cinelerra cinelerra/data/mode_*.png
 # not present anymore?
 #	guicast/bootstrap debian/cinelerra/usr/lib/cinelerra/microtheme.so plugins/microtheme/data/*.png
 
