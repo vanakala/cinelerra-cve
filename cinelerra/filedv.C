@@ -161,6 +161,7 @@ TRACE("FileDV::reset_parameters_derived: 30")
 	delete[] input;
 	audio_offset = 0;
 	video_offset = 0;
+	current_frame = asset->tcstart;
 	
 UNTRACE
 
@@ -217,13 +218,13 @@ TRACE("FileDV::open_file 50")
 		// data. libdv will determine if it's PAL or NTSC, and input and output
 		// buffers get allocated accordingly.
 		fread(temp, DV1394_PAL_FRAME_SIZE, 1, stream);
-		fseek(stream, 0, SEEK_SET);
 
 TRACE("FileDV::open_file 60")
 
 		if(dv_parse_header(decoder, temp) > -1 )
 		{
-
+			char tc[12];
+			
 			// define video params first -- we need to find out output_size
 			// always have video
 			asset->video_data = 1;
@@ -255,6 +256,19 @@ TRACE("FileDV::open_file 60")
 			else
 				asset->audio_data = 0;
 
+			// Set start timecode
+			dv_parse_packs(decoder, temp);
+			dv_get_timestamp(decoder, tc);
+			asset->set_timecode(tc, TC_DROPFRAME, 0);
+
+			// Get the last frame's timecode
+			set_video_position(asset->video_length);
+			fread(temp, DV1394_PAL_FRAME_SIZE, 1, stream);
+			dv_parse_header(decoder, temp);
+			dv_parse_packs(decoder, temp);
+			dv_get_timestamp(decoder, tc);
+			
+			asset->set_timecode(tc, TC_DROPFRAME, 1);
 		}
 		else
 		{
@@ -262,6 +276,7 @@ TRACE("FileDV::open_file 60")
 			asset->video_data = 0;
 		}
 
+		fseek(stream, 0, SEEK_SET);
 TRACE("FileDV::open_file 80")
 
 		delete[] temp;

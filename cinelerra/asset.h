@@ -12,6 +12,11 @@
 
 #include <stdint.h>
 
+// Time code formats
+#define TC_DROPFRAME 0
+#define TC_NONDROPFRAME 1
+#define TC_PAL 2
+#define TC_FILM 3
 
 // Asset can be one of the following:
 // 1) a pure media file
@@ -59,10 +64,6 @@ public:
 	void load_format_defaults(Defaults *defaults);
 	void save_format_defaults(Defaults *defaults);
 
-// for programme timecode
-	void set_frame_start(int64_t value);
-
-
 // Executed during index building only
 	void update_index(Asset *asset);
 	int equivalent(Asset &asset, 
@@ -79,6 +80,10 @@ public:
 	int read_video(FileXML *xml);
 	int read_index(FileXML *xml);
 	int reset_index();  // When the index file is wrong, reset the asset values
+
+	int set_timecode(char *tc, int format, int end);
+	int reset_timecode();
+	
 // Output path is the path of the output file if name truncation is desired.
 // It is a "" if complete names should be used.
 	int write(FileXML *file, 
@@ -142,6 +147,12 @@ public:
 	int video_data;       
 	int layers;
 	double frame_rate;
+
+// Timecode information. User setable, in case of errors in source
+	int64_t tcstart;
+	int64_t tcend;
+	int tcformat;
+
 	int width, height;
 // String or FourCC describing compression
 	char vcodec[BCTEXTLEN];
@@ -251,8 +262,6 @@ public:
 	float* index_buffer;  
 	int id;
 
-// programme timecode
-	int frame_start; // start frame offset
 };
 
 

@@ -1,5 +1,8 @@
+#include "asset.h"
 #include "automation.h"
 #include "clip.h"
+#include "edit.h"
+#include "edits.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "fadeengine.h"
@@ -11,12 +14,14 @@
 #include "mwindow.h"
 #include "module.h"
 #include "overlayframe.h"
+#include "playabletracks.h"
 #include "plugin.h"
 #include "preferences.h"
 #include "renderengine.h"
 #include "transition.h"
 #include "transportque.h"
 #include "vattachmentpoint.h"
+#include "vedit.h"
 #include "vframe.h"
 #include "virtualvconsole.h"
 #include "virtualvnode.h"
@@ -232,6 +237,11 @@ int VirtualVNode::render_as_module(VFrame **video_out,
 			start_position,
 			frame_rate);
 	}
+
+	Edit *edit = 0;
+	renderengine->vrender->insert_timecode(edit,
+		start_position,
+		output_temp);
 
 	return 0;
 }

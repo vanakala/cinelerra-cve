@@ -72,7 +72,7 @@ public:
 	static void fix_codecs(Asset *asset);
 
 // set programme timecode
-	void set_frame_start(int64_t);
+	void set_frame_start(int64_t offset);
 
 private:
 	void new_audio_temp(int64_t len);

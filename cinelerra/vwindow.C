@@ -284,6 +284,7 @@ void VWindow::update_position(int change_type,
 	EDL *edl = get_edl();
 	if(edl)
 	{
+		Asset *asset = edl->assets->first;
 		if(use_slider) 
 		{
 			edl->local_session->selectionstart = 
@@ -301,7 +302,9 @@ void VWindow::update_position(int change_type,
 			edl,
 			1);
 
-		gui->clock->update(edl->local_session->selectionstart);
+		gui->clock->update(edl->local_session->selectionstart +
+			asset->tcstart / 
+			(asset->video_data ? asset->frame_rate : asset->sample_rate));
 	}
 }
 

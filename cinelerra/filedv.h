@@ -67,6 +67,7 @@ private:
 	int16_t **audio_buffer;
 	int samples_in_buffer;
 	int isPAL;
+	int current_frame;
 };
 
 

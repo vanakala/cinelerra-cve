@@ -1,10 +1,15 @@
+#include "asset.h"
+#include "assets.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "localsession.h"
 #include "mainclock.h"
 #include "meterpanel.h"
 #include "mwindow.h"
+#include "renderengine.h"
+#include "mainclock.h"
 #include "vplayback.h"
+#include "vrender.h"
 #include "vtimebar.h"
 #include "vtracking.h"
 #include "vwindow.h"
@@ -28,13 +33,18 @@ PlaybackEngine* VTracking::get_playback_engine()
 
 void VTracking::update_tracker(double position)
 {
+	Asset *asset = vwindow->get_edl()->assets->first;
 //printf("VTracking::update_tracker %ld\n", position);
 	vwindow->gui->lock_window();
 	vwindow->get_edl()->local_session->selectionstart = 
 		vwindow->get_edl()->local_session->selectionend = 
 		position;
 	vwindow->gui->slider->update(position);
-	vwindow->gui->clock->update(position);
+
+	vwindow->gui->clock->update(position + 
+		asset->tcstart / (asset->video_data ?
+							asset->frame_rate :
+							asset->sample_rate));
 
 // This is going to boost the latency but we need to update the timebar
 	vwindow->gui->timebar->draw_range();

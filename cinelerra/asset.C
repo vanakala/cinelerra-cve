@@ -132,12 +132,12 @@ int Asset::init_values()
 	reset_index();
 	id = EDL::next_id();
 
-	frame_start = 0;
-
 	pipe[0] = 0;
 	use_pipe = 0;
 
 	strcpy(prefix, "");
+
+	reset_timecode();
 
 	return 0;
 }
@@ -150,6 +150,15 @@ int Asset::reset_index()
 	index_zoom = 0;
 	index_bytes = 0;
 	index_buffer = 0;
+	return 0;
+}
+
+int Asset::reset_timecode()
+{
+	tcstart = 0;
+	tcend = 0;
+	tcformat = 0;
+	
 	return 0;
 }
 
@@ -255,7 +264,9 @@ void Asset::copy_format(Asset *asset, int do_index)
 	// FUTURE: should this be here or in copy_from()?
 	strcpy(prefix, asset->prefix);
 
-	frame_start = asset->frame_start;
+	tcstart = asset->tcstart;
+	tcend = asset->tcend;
+	tcformat = asset->tcformat;
 }
 
 int64_t Asset::get_index_offset(int channel)
@@ -300,7 +311,10 @@ int Asset::equivalent(Asset &asset,
 			frame_rate == asset.frame_rate &&
 			width == asset.width &&
 			height == asset.height &&
-			!strcmp(vcodec, asset.vcodec));
+			!strcmp(vcodec, asset.vcodec) &&
+			tcstart == asset.tcstart &&
+			tcend == asset.tcend &&
+			tcformat == asset.tcformat);
 	}
 
 	return result;
@@ -453,7 +467,12 @@ int Asset::read_audio(FileXML *file)
 
 	mp3_bitrate = file->tag.get_property("MP3_BITRATE", mp3_bitrate);
 
-
+	if(!video_data)
+	{
+		tcstart = 0;
+		tcend = audio_length;
+		tcformat = 0;
+	}
 	return 0;
 }
 
@@ -520,6 +539,10 @@ int Asset::read_video(FileXML *file)
 
 	tiff_cmodel = file->tag.get_property("TIFF_CMODEL", tiff_cmodel);
 	tiff_compression = file->tag.get_property("TIFF_COMPRESSION", tiff_compression);
+
+	tcstart = file->tag.get_property("TCSTART", tcstart);
+	tcend = file->tag.get_property("TCEND", tcend);
+	tcformat = file->tag.get_property("TCFORMAT", tcformat);
 
 	return 0;
 }
@@ -745,7 +768,9 @@ int Asset::write_video(FileXML *file)
 	file->tag.set_property("TIFF_CMODEL", tiff_cmodel);
 	file->tag.set_property("TIFF_COMPRESSION", tiff_compression);
 
-
+	file->tag.set_property("TCSTART", tcstart);
+	file->tag.set_property("TCEND", tcend);
+	file->tag.set_property("TCFORMAT", tcformat);
 
 	file->append_tag();
 	file->tag.set_title("/VIDEO");
@@ -897,6 +922,10 @@ void Asset::load_defaults(Defaults *defaults,
 	tiff_cmodel = GET_DEFAULT("TIFF_CMODEL", tiff_cmodel);
 	tiff_compression = GET_DEFAULT("TIFF_COMPRESSION", tiff_compression);
 
+	tcstart = GET_DEFAULT("TCSTART", tcstart);
+	tcend = GET_DEFAULT("TCEND", tcend);
+	tcformat = GET_DEFAULT("TCFORMAT", tcformat);
+
 	load_format_defaults(defaults);
 }
 
@@ -1020,6 +1049,10 @@ void Asset::save_defaults(Defaults *defaults,
 	UPDATE_DEFAULT("TIFF_CMODEL", tiff_cmodel);
 	UPDATE_DEFAULT("TIFF_COMPRESSION", tiff_compression);
 
+	UPDATE_DEFAULT("TCSTART", tcstart);
+	UPDATE_DEFAULT("TCEND", tcend);
+	UPDATE_DEFAULT("TCFORMAT", tcformat);
+
 	save_format_defaults(defaults);
 }
 
@@ -1081,9 +1114,23 @@ void Asset::update_index(Asset *asset)
 //printf("Asset::update_index 2\n");
 }
 
-void Asset::set_frame_start(int64_t value)
+int Asset::set_timecode(char *tc, int format, int end)
 {
-	frame_start = value;
+	int hr, min, sec;
+
+	hr = ((int) tc[0] - 48) * 10 + (int) tc[1] - 48;
+	min = ((int) tc[3] - 48) * 10 + (int) tc[4] - 48;
+	sec = ((int) tc[6] - 48) * 10 + (int) tc[7] - 48;
+	
+	// This needs to be modified to handle drop-frame
+	
+	if(end)
+		tcend = (int64_t) (((hr * 3600) + (min * 60) + sec) * frame_rate);
+	else
+		tcstart = (int64_t) (((hr * 3600) + (min * 60) + sec) * frame_rate);
+
+	tcformat = format;
+	return 0;
 }
 
 int Asset::dump()
@@ -1098,7 +1145,9 @@ int Asset::dump()
 	printf("   video_data %d layers %d framerate %f width %d height %d vcodec %c%c%c%c aspect_ratio %f\n",
 		video_data, layers, frame_rate, width, height, vcodec[0], vcodec[1], vcodec[2], vcodec[3], aspect_ratio);
 	printf("   video_length %lld \n", video_length);
-	printf("   frame_start %d\n", frame_start);
+	printf("   tcstart %d tcend %d tcf %d\n",
+		tcstart, tcend, tcformat);
+	
 	return 0;
 }
 

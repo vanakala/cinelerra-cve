@@ -181,7 +181,7 @@ int FileMOV::open_file(int rd, int wr)
 	quicktime_set_parameter(fd, "divx_use_deblocking", &asset->divx_use_deblocking);
 
 // Set timecode offset
-	quicktime_set_frame_start(fd, asset->frame_start);
+	quicktime_set_frame_start(fd, asset->tcstart);
 
 	return 0;
 }

@@ -344,9 +344,6 @@ void Render::run()
 		save_defaults(asset);
 		mwindow->save_defaults();
 
-// set the start frame offset
-		asset->set_frame_start(mwindow->edl->session->get_frame_offset());
-
 		if(!result) render(1, asset, mwindow->edl, strategy);
 
 		delete asset;
@@ -376,8 +373,6 @@ void Render::run()
 				if(!plugindb && mwindow)
 					plugindb = mwindow->plugindb;
 				edl->load_xml(plugindb, file, LOAD_ALL);
-
-				job->asset->set_frame_start(edl->session->get_frame_offset());
 
 				render(0, job->asset, edl, job->strategy);
 
@@ -428,11 +423,19 @@ int Render::check_asset(EDL *edl, Asset &asset)
 		asset.layers = 1;
 		asset.width = edl->session->output_w;
 		asset.height = edl->session->output_h;
+		asset.tcstart = (int64_t) (edl->session->get_frame_offset() +
+			edl->local_session->get_selectionstart() *
+				edl->session->frame_rate);
+		asset.tcend = (int64_t) (edl->session->get_frame_offset() +
+			edl->local_session->get_selectionend() *
+				edl->session->frame_rate);
 	}
 	else
 	{
 		asset.video_data = 0;
 		asset.layers = 0;
+		asset.tcstart = 0;
+		asset.tcend = 0;
 	}
 
 	if(asset.audio_data && 
@@ -442,11 +445,19 @@ int Render::check_asset(EDL *edl, Asset &asset)
 		asset.audio_data = 1;
 		asset.channels = edl->session->audio_channels;
 		if(asset.format == FILE_MOV) asset.byte_order = 0;
+		asset.tcstart = (int64_t) (edl->session->get_frame_offset() +
+			edl->local_session->get_selectionstart() *
+				edl->session->sample_rate);
+		asset.tcend = (int64_t) (edl->session->get_frame_offset() +
+			edl->local_session->get_selectionend() *
+				edl->session->sample_rate);
 	}
 	else
 	{
 		asset.audio_data = 0;
 		asset.channels = 0;
+		asset.tcstart = 0;
+		asset.tcend = 0;
 	}
 
 	if(!asset.audio_data &&
