@@ -171,10 +171,6 @@ char* OverlayConfig::mode_to_text(int mode)
 			return "Divide";
 			break;
 
-		case TRANSFER_REPLACE_ALPHA:
-			return "Replace alpha";
-			break;
-
 		default:
 			return "Normal";
 			break;
@@ -472,14 +468,8 @@ printf("Overlay::process_buffer 1\n");
 
 
 	output = frame[output_layer];
-//	output->clear_frame();
-	read_frame(output, 
-		input_layer1, 
-		start_position,
-		frame_rate);
-
-	printf("config: %i\n", config.mode);
-	for(int i = input_layer1 + step; i != input_layer2; i += step)
+	output->clear_frame();
+	for(int i = input_layer1; i != input_layer2; i += step)
 	{
 		read_frame(temp, 
 			i, 
