@@ -7,15 +7,16 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-
+#include <sys/types.h>
 
 #define INPUT_SAMPLES 131072                       // = 1Mbit ?? why?
 #define BUFFER_TIMEOUT 500000
 
 
 Device1394Input::Device1394Input()
- : Thread(1, 1, 0)
+ : Thread(1, 0, 0)
 {
+	if(getuid() == (uid_t) 0) set_realtime(1);
 	buffer = 0;
 	buffer_valid = 0;
 	done = 0;
