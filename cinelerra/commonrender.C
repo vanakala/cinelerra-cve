@@ -208,7 +208,6 @@ int CommonRender::get_boundaries(int64_t &current_render_length)
 		renderengine->edl->local_session->loop_playback && 
 		!renderengine->command->infinite)
 	{
-
 		if(renderengine->command->get_direction() == PLAY_FORWARD)
 		{
 			int64_t segment_end = current_position + current_render_length;
@@ -293,7 +292,6 @@ int CommonRender::advance_position(int64_t current_render_length)
 	else
 		current_position += current_render_length;
 
-//printf("CommonRender::advance_position 1 %d\n", current_render_length);
 // test loop again
 	if(renderengine->edl->local_session->loop_playback && 
 		!renderengine->command->infinite)

@@ -111,19 +111,18 @@ void CWindow::update(int position,
 
 	if(position)
 	{
-//TRACE("CWindow::update 2");
+//printf("CWindow::update 2\n");
 		gui->lock_window("CWindow::update 1");
 		gui->slider->set_position();
 		gui->unlock_window();
-//TRACE("CWindow::update 2");
+//printf("CWindow::update 2\n");
 		playback_engine->que->send_command(CURRENT_FRAME, 
 			CHANGE_NONE,
 			mwindow->edl,
 			1);
-//TRACE("CWindow::update 3");
+//printf("CWindow::update 3\n");
 	}
 //TRACE("CWindow::update 4");
-
 
 	gui->lock_window("CWindow::update 2");
 
@@ -160,19 +159,19 @@ void CWindow::update(int position,
 		gui->zoom_panel->update(AUTO_ZOOM);
 	else
 		gui->zoom_panel->update(mwindow->edl->session->cwindow_zoom);
-//TRACE("CWindow::update 6");
+//printf("CWindow::update 6\n");
 
 	gui->canvas->update_zoom(mwindow->edl->session->cwindow_xscroll,
 			mwindow->edl->session->cwindow_yscroll, 
 			mwindow->edl->session->cwindow_zoom);
-//TRACE("CWindow::update 6");
+//printf("CWindow::update 6\n");
 	gui->canvas->reposition_window(mwindow->edl, 
 			mwindow->theme->ccanvas_x,
 			mwindow->theme->ccanvas_y,
 			mwindow->theme->ccanvas_w,
 			mwindow->theme->ccanvas_h);
 
-//TRACE("CWindow::update 6");
+//printf("CWindow::update 6\n");
 
 
 
@@ -181,7 +180,7 @@ void CWindow::update(int position,
 
 
 
-//TRACE("CWindow::update 7");
+//printf("CWindow::update 7\n");
 }
 
 

@@ -20,7 +20,7 @@
 class AttachmentPoint
 {
 public:
-	AttachmentPoint(RenderEngine *renderengine, Plugin *plugin);
+	AttachmentPoint(RenderEngine *renderengine, Plugin *plugin, int data_type);
 	virtual ~AttachmentPoint();
 
 	virtual int reset_parameters();
@@ -90,7 +90,7 @@ public:
 	int64_t sample_rate;
 	double frame_rate;
 	int is_processed;
-	
+	int data_type;	
 
 
 

@@ -22,7 +22,7 @@
 #include "preferences.inc"
 #include "recordgui.inc"
 #include "thread.h"
-#include "timer.h"
+#include "bctimer.h"
 #include "vdevice1394.inc"
 #include "videodevice.inc"
 

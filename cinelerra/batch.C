@@ -1,6 +1,7 @@
 #include "asset.h"
 #include "batch.h"
 #include "channel.h"
+#include "channeldb.h"
 #include "edl.h"
 #include "record.h"
 #include "recordlabel.h"
@@ -169,12 +170,9 @@ Asset* Batch::get_current_asset()
 
 Channel* Batch::get_current_channel_struct()
 {
-	if(record->current_channeldb())
+	if(channel >= 0 && channel < record->channeldb->size())
 	{
-		if(channel >= 0 && channel < record->current_channeldb()->total)
-		{
-			return record->current_channeldb()->values[channel];
-		}
+		return record->channeldb->get(channel);
 	}
 	return 0;
 }

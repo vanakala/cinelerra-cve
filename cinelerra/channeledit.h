@@ -3,9 +3,12 @@
 
 #include "guicast.h"
 #include "channel.inc"
+#include "channeldb.inc"
 #include "channelpicker.inc"
-#include "mutex.h"
+#include "condition.inc"
+#include "mutex.inc"
 #include "mwindow.inc"
+#include "picture.inc"
 #include "record.h"
 
 class ChannelEditWindow;
@@ -15,18 +18,18 @@ class ChannelEditThread : public Thread
 public:
 	ChannelEditThread(MWindow *mwindow, 
 		ChannelPicker *channel_picker,
-		ArrayList<Channel*> *channeldb,
+		ChannelDB *channeldb,
 		Record *Record);
 	~ChannelEditThread();
 	void run();
 	int close_threads();
 
-	Mutex completion;
+	Condition *completion;
 	int in_progress;
 	int current_channel;
 	ChannelPicker *channel_picker;
-	ArrayList<Channel*> *channeldb;
-	ArrayList <Channel*> *new_channels;
+	ChannelDB *channeldb;
+	ChannelDB *new_channels;
 	ChannelEditWindow *window;
 	MWindow *mwindow;
 	Record *record;
@@ -177,8 +180,12 @@ public:
 	Record *record;
 	int editing;   // Tells whether or not to delete the channel on cancel
 	int in_progress;   // Allow only 1 thread at a time
-	Mutex completion;
+	int user_title;
+	Condition *completion;
 };
+
+class ChannelEditEditTitle;
+
 
 class ChannelEditEditWindow : public BC_Window
 {
@@ -191,6 +198,7 @@ public:
 
 	ChannelEditEditThread *thread;
 	ChannelEditWindow *window;
+	ChannelEditEditTitle *title_text;
 	Channel *new_channel;
 	ChannelPicker *channel_picker;
 };
@@ -310,7 +318,7 @@ public:
 	int edit_picture();
 
 	int in_progress;   // Allow only 1 thread at a time
-	Mutex completion;
+	Condition *completion;
 	ChannelPicker *channel_picker;
 	ChannelEditWindow *window;
 	ChannelEditPictureWindow *edit_window;
@@ -375,6 +383,22 @@ public:
 	int handle_event();
 	int button_release_event();
 	ChannelPicker *channel_picker;
+};
+
+
+
+class ChannelEditCommon : public BC_IPot
+{
+public:;
+	ChannelEditCommon(int x, 
+		int y, 
+		ChannelPicker *channel_picker,
+		PictureItem *item);
+	~ChannelEditCommon();
+	int handle_event();
+	int button_release_event();
+	ChannelPicker *channel_picker;
+	int device_id;
 };
 
 

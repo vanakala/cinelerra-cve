@@ -78,8 +78,9 @@ public:
 	ArrayList<PluginServer*> *plugindb;
 
 private:
-	int delete_oldest();        // returns 0 if successful
-	                        // 1 if nothing was old
+// returns 1 if nothing was available to delete
+// 0 if successful
+	int delete_oldest();
 	int64_t get_memory_usage();
 
 // for deleting items

@@ -12,8 +12,12 @@
 #include "recordableatracks.h"
 #include "mainsession.h"
 
+
+#define RING_BUFFERS 2
+
+
 APluginArray::APluginArray()
- : PluginArray()
+ : PluginArray(TRACK_AUDIO)
 {
 	realtime_buffers = 0;
 }
@@ -34,6 +38,11 @@ void APluginArray::create_buffers()
 //	if(!plugin_server->realtime) realtime_buffers = file->get_audio_buffer();
 }
 
+void APluginArray::get_buffers()
+{
+	if(!realtime_buffers) realtime_buffers = file->get_audio_buffer();
+}
+
 void APluginArray::create_modules()
 {
 	modules = new Module*[total_tracks()];
@@ -46,16 +55,6 @@ void APluginArray::create_modules()
 		modules[i]->render_init();
 	}
 }
-
-// void APluginArray::load_module(int module, int64_t input_position, int64_t len)
-// {
-// 	if(module == 0) realtime_buffers = file->get_audio_buffer();
-// 	((AModule*)modules[module])->render(realtime_buffers[module], 
-// 		len, 
-// 		input_position,
-// 		PLAY_FORWARD,
-// 		0);
-// }
 
 void APluginArray::process_realtime(int module, int64_t input_position, int64_t len)
 {

@@ -178,7 +178,7 @@ int ARender::process_buffer(double **buffer_out,
 			fragment_len,
 			last_playback);
 
-
+//printf("ARender::process_buffer 1 %lld %d\n", input_position, reconfigure);
 
 		if(reconfigure) restart_playback();
 

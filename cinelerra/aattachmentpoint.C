@@ -1,4 +1,5 @@
 #include "aattachmentpoint.h"
+#include "datatype.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "playbackconfig.h"
@@ -8,7 +9,7 @@
 #include "transportque.h"
 
 AAttachmentPoint::AAttachmentPoint(RenderEngine *renderengine, Plugin *plugin)
-: AttachmentPoint(renderengine, plugin)
+: AttachmentPoint(renderengine, plugin, TRACK_AUDIO)
 {
 	buffer_vector = 0;
 	buffer_allocation = 0;
@@ -109,6 +110,7 @@ void AAttachmentPoint::render(double *output,
 // Process plugin
 		double *output_temp[1];
 		output_temp[0] = output;
+//printf("AAttachmentPoint::render 1\n");
 		plugin_servers.values[buffer_number]->process_buffer(output_temp,
 			start_position,
 			len,
@@ -116,7 +118,8 @@ void AAttachmentPoint::render(double *output,
 			plugin->length *
 				sample_rate /
 				renderengine->edl->session->sample_rate,
-		renderengine->command->get_direction());
+			renderengine->command->get_direction());
+//printf("AAttachmentPoint::render 10\n");
 	}
 }
 

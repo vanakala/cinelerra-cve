@@ -6,15 +6,47 @@
 
 Channel::Channel()
 {
-	strcpy(this->title, "");
-	this->entry = 0;
-	this->freqtable = 0;
-	this->fine_tune = 0;
-	this->input = 0;
-	this->norm = 0;
+	reset();
 }
 
 Channel::Channel(Channel *channel)
+{
+	reset();
+	printf("Channel::Channel(Channel *channel) not supported\n");
+}
+
+Channel::~Channel()
+{
+}
+
+
+void Channel::reset()
+{
+// GUI options
+ 	use_frequency = 0;
+ 	use_fine = 0;
+ 	use_norm = 0;
+ 	use_input = 0;
+
+	title[0] = 0;
+	device_name[0] = 0;
+	entry = 0;
+	freqtable = 0;
+	fine_tune = 0;
+	input = 0;
+	norm = 0;
+	device_index = 0;
+	tuner = 0;
+}
+
+
+Channel& Channel::operator=(Channel &channel)
+{
+	printf("Channel::operator= not supported.\n");
+	return *this;
+}
+
+void Channel::copy_settings(Channel *channel)
 {
 	strcpy(this->title, channel->title);
 	this->entry = channel->entry;
@@ -22,20 +54,16 @@ Channel::Channel(Channel *channel)
 	this->fine_tune = channel->fine_tune;
 	this->input = channel->input;
 	this->norm = channel->norm;
+	this->device_index = channel->device_index;
+	this->tuner = channel->tuner;
 }
 
-Channel::~Channel()
+void Channel::copy_usage(Channel *channel)
 {
-}
-
-Channel& Channel::operator=(Channel &channel)
-{
-	strcpy(this->title, channel.title);
-	this->entry = channel.entry;
-	this->freqtable = channel.freqtable;
-	this->fine_tune = channel.fine_tune;
-	this->input = channel.input;
-	this->norm = channel.norm;
+	this->use_frequency = channel->use_frequency;
+	this->use_fine = channel->use_fine;
+	this->use_norm = channel->use_norm;
+	this->use_input = channel->use_input;
 }
 
 int Channel::load(FileXML *file)
@@ -56,6 +84,8 @@ int Channel::load(FileXML *file)
 				fine_tune = file->tag.get_property("FINE_TUNE", fine_tune);
 				input = file->tag.get_property("INPUT", input);
 				norm = file->tag.get_property("NORM", norm);
+				device_index = file->tag.get_property("DEVICE_INDEX", device_index);
+				tuner = file->tag.get_property("TUNER", tuner);
 				text = file->read_text();
 				strcpy(title, text);
 			}
@@ -75,6 +105,8 @@ int Channel::save(FileXML *file)
 	file->tag.set_property("FINE_TUNE", fine_tune);
 	file->tag.set_property("INPUT", input);
 	file->tag.set_property("NORM", norm);
+	file->tag.set_property("DEVICE_INDEX", device_index);
+	file->tag.set_property("TUNER", tuner);
 	file->append_tag();
 	file->append_text(title);
 	file->tag.set_title("/CHANNEL");

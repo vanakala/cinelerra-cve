@@ -11,13 +11,17 @@
 
 
 
-AttachmentPoint::AttachmentPoint(RenderEngine *renderengine, Plugin *plugin)
+AttachmentPoint::AttachmentPoint(RenderEngine *renderengine, 
+	Plugin *plugin,
+	int data_type)
 {
 	reset_parameters();
 	this->plugin = plugin;
 	this->plugin_id = plugin->id;
 	this->renderengine = renderengine;
-	plugin_server = renderengine->scan_plugindb(plugin->title);
+	this->data_type = data_type;
+	plugin_server = renderengine->scan_plugindb(plugin->title,
+		data_type);
 }
 
 AttachmentPoint::~AttachmentPoint()

@@ -3,6 +3,7 @@
 #include "cwindowgui.h"
 #include "edl.h"
 #include "localsession.h"
+#include "maincursor.h"
 #include "mbuttons.h"
 #include "mwindow.h"
 #include "mwindowgui.h"

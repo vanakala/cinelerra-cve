@@ -49,7 +49,7 @@
 #include "preferences.inc"
 #include "renderfarm.inc"
 #include "thread.h"
-#include "timer.inc"
+#include "bctimer.inc"
 
 
 

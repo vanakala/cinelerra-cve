@@ -3,8 +3,10 @@
 
 #include "guicast.h"
 #include "channel.inc"
+#include "channeldb.inc"
 #include "channeledit.inc"
 #include "mwindow.inc"
+#include "picture.inc"
 #include "record.inc"
 #include "recordmonitor.inc"
 #include "vdeviceprefs.inc"
@@ -24,27 +26,43 @@ public:
 	ChannelPicker(MWindow *mwindow, 
 		Record *record, 
 		RecordMonitor *record_monitor,
-		ArrayList<Channel*> *channeldb, 
+		ChannelDB *channeldb, 
 		int x,
 		int y);
 	virtual ~ChannelPicker();
 
 	virtual BC_WindowBase* get_subwindow();
+
+
+// Get the current state of the channel
 	virtual Channel* get_current_channel_struct();
 	virtual int get_current_channel_number();
-	virtual ArrayList<char*>* get_video_inputs();
+// Set the current state of the channel
 	virtual void set_channel_number(int number);
 	virtual void set_channel(Channel *channel);
+// Get what inputs the device supports, one Channel structure for every input.
+	virtual ArrayList<Channel*>* get_video_inputs();
+// Get a structure containing what parameters the device supports
+	Channel* get_channel_usage();
+
+// Set current picture state
 	virtual int set_brightness(int value);
 	virtual int set_hue(int value);
 	virtual int set_color(int value);
 	virtual int set_contrast(int value);
 	virtual int set_whiteness(int value);
+	virtual int set_picture(int device_id, int value);
+
+// Get the current state of the picture
 	virtual int get_brightness();
 	virtual int get_hue();
 	virtual int get_color();
 	virtual int get_contrast();
 	virtual int get_whiteness();
+	virtual int get_controls();
+	virtual PictureItem* get_control(int i);
+// Get a structure containing what parameters the device supports
+	virtual Picture* get_picture_usage();
 
 	
 
@@ -62,7 +80,7 @@ public:
 	MWindow *mwindow;
 	Record *record;
 	RecordMonitor *record_monitor;
-	ArrayList<Channel*> *channeldb;
+	ChannelDB *channeldb;
 
 
 
@@ -83,29 +101,46 @@ class PrefsChannelPicker : public ChannelPicker
 public:
 	PrefsChannelPicker(MWindow *mwindow, 
 		VDevicePrefs *prefs, 
-		ArrayList<Channel*> *channeldb, 
+		ChannelDB *channeldb, 
 		int x,
 		int y);
 	~PrefsChannelPicker();
 	
 	BC_WindowBase* get_subwindow();
+
+// Get the current state of the channel
 	Channel* get_current_channel_struct();
 	int get_current_channel_number();
-	ArrayList<char*>* get_video_inputs();
+// Set the current state of the channel
 	void set_channel(Channel *channel);
 	void set_channel_number(int number);
+// Get what inputs the device supports, one Channel structure for every input.
+	ArrayList<Channel*>* get_video_inputs();
+// Get a structure containing what parameters the device supports
+	Channel* get_channel_usage();
+
+
+
+// Set current picture state
 	int set_brightness(int value);
 	int set_hue(int value);
 	int set_color(int value);
 	int set_contrast(int value);
 	int set_whiteness(int value);
+	int set_picture(int device_id, int value);
+
+// Get the current state of the picture
 	int get_brightness();
 	int get_hue();
 	int get_color();
 	int get_contrast();
 	int get_whiteness();
+	int get_controls();
+	PictureItem* get_control(int i);
+// Get a structure containing what parameters the device supports
+	virtual Picture* get_picture_usage();
 
-	ArrayList<char *> input_sources;	
+	ArrayList<Channel*> input_sources;	
 	VDevicePrefs *prefs;
 };
 

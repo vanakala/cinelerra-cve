@@ -8,6 +8,7 @@
 #include "edlsession.h"
 #include "localsession.h"
 #include "mainclock.h"
+#include "maincursor.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "patchbay.h"

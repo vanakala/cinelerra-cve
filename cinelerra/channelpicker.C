@@ -1,4 +1,5 @@
 #include "channel.h"
+#include "channeldb.h"
 #include "channeledit.h"
 #include "channelpicker.h"
 #include "chantables.h"
@@ -6,6 +7,7 @@
 #include "keys.h"
 #include "language.h"
 #include "mwindow.h"
+#include "picture.h"
 #include "playbackconfig.h"
 #include "preferencesthread.h"
 #include "record.h"
@@ -18,7 +20,7 @@
 
 PrefsChannelPicker::PrefsChannelPicker(MWindow *mwindow, 
 		VDevicePrefs *prefs, 
-		ArrayList<Channel*> *channeldb, 
+		ChannelDB *channeldb, 
 		int x,
 		int y)
  : ChannelPicker(mwindow, 
@@ -47,9 +49,9 @@ Channel* PrefsChannelPicker::get_current_channel_struct()
 {
 	int number = get_current_channel_number();
 
-	if(number >= 0 && number < channeldb->total)
+	if(number >= 0 && number < channeldb->size())
 	{
-		return channeldb->values[number];
+		return channeldb->get(number);
 	}
 	return 0;
 }
@@ -59,10 +61,16 @@ int PrefsChannelPicker::get_current_channel_number()
 	return prefs->out_config->buz_out_channel;
 }
 
-ArrayList<char*>* PrefsChannelPicker::get_video_inputs()
+ArrayList<Channel*>* PrefsChannelPicker::get_video_inputs()
 {
 	return &input_sources;
 }
+
+Channel* PrefsChannelPicker::get_channel_usage()
+{
+	return 0;
+}
+
 
 void PrefsChannelPicker::set_channel(Channel *channel)
 {
@@ -72,9 +80,7 @@ void PrefsChannelPicker::set_channel(Channel *channel)
 
 void PrefsChannelPicker::set_channel_number(int number)
 {
-// CLAMP doesn't work
-	CLAMP(number, 0, channeldb->total - 1);
-//printf("PrefsChannelPicker::set_channel_number %d\n", number);
+	CLAMP(number, 0, channeldb->size() - 1);
 	prefs->out_config->buz_out_channel = number;
 	set_channel(get_current_channel_struct());
 }
@@ -129,8 +135,25 @@ int PrefsChannelPicker::get_whiteness()
 	return prefs->out_config->whiteness;
 }
 
+int PrefsChannelPicker::set_picture(int device_id, int value)
+{
+	return 0;
+}
 
+int PrefsChannelPicker::get_controls()
+{
+	return 0;
+}
 
+PictureItem* PrefsChannelPicker::get_control(int i)
+{
+	return 0;
+}
+
+Picture* PrefsChannelPicker::get_picture_usage()
+{
+	return 0;
+}
 
 
 
@@ -141,7 +164,7 @@ int PrefsChannelPicker::get_whiteness()
 ChannelPicker::ChannelPicker(MWindow *mwindow, 
 		Record *record, 
 		RecordMonitor *record_monitor,
-		ArrayList<Channel*> *channeldb, 
+		ChannelDB *channeldb, 
 		int x,
 		int y)
 {
@@ -169,9 +192,9 @@ void ChannelPicker::update_channel_list()
 {
 //printf("ChannelPicker::update_channel_list 1\n");
 	channel_listitems.remove_all_objects();
-	for(int i = 0; i < channeldb->total; i++)
+	for(int i = 0; i < channeldb->size(); i++)
 	{
-		channel_listitems.append(new BC_ListBoxItem(channeldb->values[i]->title));
+		channel_listitems.append(new BC_ListBoxItem(channeldb->get(i)->title));
 	}
 
 	if(channel_text)
@@ -202,9 +225,14 @@ int ChannelPicker::get_current_channel_number()
 	return record->get_editing_channel();
 }
 
-ArrayList<char*>* ChannelPicker::get_video_inputs() 
+ArrayList<Channel*>* ChannelPicker::get_video_inputs() 
 {
 	return record->get_video_inputs();
+}
+
+Channel* ChannelPicker::get_channel_usage()
+{
+	return record->master_channel;
 }
 
 void ChannelPicker::set_channel_number(int number)
@@ -219,63 +247,86 @@ void ChannelPicker::set_channel(Channel *channel)
 
 int ChannelPicker::set_brightness(int value)
 {
-	record->video_brightness = value;
+	record->picture->brightness = value;
 	record->set_video_picture();
 	return 0;
 }
 
 int ChannelPicker::set_hue(int value)
 {
-	record->video_hue = value;
+	record->picture->hue = value;
 	record->set_video_picture();
 	return 0;
 }
 
 int ChannelPicker::set_color(int value)
 {
-	record->video_color = value;
+	record->picture->color = value;
 	record->set_video_picture();
 	return 0;
 }
 
 int ChannelPicker::set_contrast(int value)
 {
-	record->video_contrast = value;
+	record->picture->contrast = value;
 	record->set_video_picture();
 	return 0;
 }
 
 int ChannelPicker::set_whiteness(int value)
 {
-	record->video_whiteness = value;
+	record->picture->whiteness = value;
+	record->set_video_picture();
+	return 0;
+}
+
+int ChannelPicker::set_picture(int device_id, int value)
+{
+	record->picture->set_item(device_id, value);
 	record->set_video_picture();
 	return 0;
 }
 
 int ChannelPicker::get_brightness()
 {
-	return record->video_brightness;
+	return record->picture->brightness;
 }
 
 int ChannelPicker::get_hue()
 {
-	return record->video_hue;
+	return record->picture->hue;
 }
 
 int ChannelPicker::get_color()
 {
-	return record->video_color;
+	return record->picture->color;
 }
 
 int ChannelPicker::get_contrast()
 {
-	return record->video_contrast;
+	return record->picture->contrast;
 }
 
 int ChannelPicker::get_whiteness()
 {
-	return record->video_whiteness;
+	return record->picture->whiteness;
 }
+
+int ChannelPicker::get_controls()
+{
+	return record->picture->controls.total;
+}
+
+PictureItem* ChannelPicker::get_control(int i)
+{
+	return record->picture->controls.values[i];
+}
+
+Picture* ChannelPicker::get_picture_usage()
+{
+	return record->picture;
+}
+
 
 
 
@@ -287,17 +338,12 @@ int ChannelPicker::create_objects()
 {
 	channel_text = 0;
 	update_channel_list();
-//printf("ChannelPicker::create_objects 1\n");
 	channel_text = new ChannelText(mwindow, this, x, y);
-//printf("ChannelPicker::create_objects 1\n");
 	channel_text->create_objects();
-//printf("ChannelPicker::create_objects 1\n");
 	x += channel_text->get_w();
 	get_subwindow()->add_subwindow(channel_select = new ChannelTumbler(mwindow, this, x, y));
-//printf("ChannelPicker::create_objects 1\n");
 	x += channel_select->get_w() + 5;
 	get_subwindow()->add_subwindow(channel_button = new ChannelButton(mwindow, this, x, y - 1));
-//printf("ChannelPicker::create_objects 2\n");
 	return 0;
 }
 
@@ -340,7 +386,7 @@ int ChannelPicker::channel_down()
 {
 	int number = get_current_channel_number() - 1;
 	if(number < 0) number = 0;
-	CLAMP(number, 0, channeldb->total - 1);
+	CLAMP(number, 0, channeldb->size() - 1);
 	set_channel_number(number);
 	return 0;
 }
@@ -348,8 +394,8 @@ int ChannelPicker::channel_down()
 int ChannelPicker::channel_up()
 {
 	int number = get_current_channel_number() + 1;
-	if(number >= channeldb->total) number = channeldb->total - 1;
-	CLAMP(number, 0, channeldb->total - 1);
+	if(number >= channeldb->size()) number = channeldb->size() - 1;
+	CLAMP(number, 0, channeldb->size() - 1);
 	set_channel_number(number);
 	return 0;
 }

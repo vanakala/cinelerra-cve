@@ -1,23 +1,26 @@
 Big bugs
 ----------------
-Undo doesn't restore project title from previous load.
 Master node framerate not displaying.
-Need to stop building on first error.
-Lockup when playing and interrupting in certain places.
 If region in VWindow and CWindow is 100% it should follow the timeline length.
 Autoplacement of new clips in AWindow doesn't work.
 Hitting space rapidly locks up recording sometimes.
 Drawing cache not cleared after recording.
 Stop immediately followed by paste in CWindow locks up
-Batch record lockup up after start near FileThread::get_buffer
-Double click and drag item drags it but doesn't drop it.
+Lockup when playing and interrupting in certain places.
 An optimization error in GCC 3.3.2 causes RGB16 colormodels to crash.
  - Recompiling the cmodel files with just -O works.
 Drag effect before timeline is finished drawing after a load -> lockup
-
-
-
-playlist.xml not playing all the way through
+Test 0 for loop video.
+Keyframes for effects are still displayed if edits are collapsed.
+Interpolate video shouldn't always use different frames if framerate is fractionally different
+Interpolate audio
+VFS broken on Opteron
+Crash when applying interpolateaudio to small segment and repeatedly playing.
+diffkey debug
+Transition lengths not adjusted for frame rate changes.
+Undo doesn't restore project title from previous load.
+Quicktime mp4a not decoded properly
+Quicktime mp3 needs standards check
 
 
 
@@ -33,13 +36,12 @@ List problems:
 
 Big Features
 ----------------
+Should restore EDL path from backup.
 Test pull console with LAD.
 Signal handling for non interactive rendering.
 Compressor using readahead buffer.
 Sound level using readahead buffer.
-Batch render from command line.
 hourglass
-remote control in Video In
 color curves
 hide cursor when over video output
 SUV theme
