@@ -1,5 +1,5 @@
-#ifndef DEFAULTTHEME_H
-#define DEFAULTTHEME_H
+#ifndef BLONDTHEME_H
+#define BLONDTHEME_H
 
 #include "new.inc"
 #include "plugintclient.h"
@@ -8,11 +8,11 @@
 #include "theme.h"
 #include "timebar.inc"
 
-class DefaultTheme : public Theme
+class BlondTheme : public Theme
 {
 public:
-	DefaultTheme();
-	~DefaultTheme();
+	BlondTheme();
+	~BlondTheme();
 
 	void initialize();
 	void draw_mwindow_bg(MWindowGUI *gui);
@@ -76,16 +76,16 @@ private:
 
 
 
-class DefaultThemeMain : public PluginTClient
+class BlondThemeMain : public PluginTClient
 {
 public:
-	DefaultThemeMain(PluginServer *server);
-	~DefaultThemeMain();
+	BlondThemeMain(PluginServer *server);
+	~BlondThemeMain();
 	
 	char* plugin_title();
 	Theme* new_theme();
 	
-	DefaultTheme *theme;
+	BlondTheme *theme;
 };
 
 

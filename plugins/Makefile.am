@@ -1,5 +1,6 @@
 THEMES= \
 	microtheme \
+	bluedottheme \
 	defaulttheme
 
 SUBDIRS= \

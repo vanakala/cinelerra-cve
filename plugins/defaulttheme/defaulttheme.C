@@ -27,7 +27,7 @@
 
 PluginClient* new_plugin(PluginServer *server)
 {
-	return new DefaultThemeMain(server);
+	return new BlondThemeMain(server);
 }
 
 
@@ -36,23 +36,23 @@ PluginClient* new_plugin(PluginServer *server)
 
 
 
-DefaultThemeMain::DefaultThemeMain(PluginServer *server)
+BlondThemeMain::BlondThemeMain(PluginServer *server)
  : PluginTClient(server)
 {
 }
 
-DefaultThemeMain::~DefaultThemeMain()
+BlondThemeMain::~BlondThemeMain()
 {
 }
 
-char* DefaultThemeMain::plugin_title()
+char* BlondThemeMain::plugin_title()
 {
 	return "Blond";
 }
 
-Theme* DefaultThemeMain::new_theme()
+Theme* BlondThemeMain::new_theme()
 {
-	theme = new DefaultTheme;
+	theme = new BlondTheme;
 	return theme;
 }
 
@@ -63,17 +63,17 @@ Theme* DefaultThemeMain::new_theme()
 
 
 
-DefaultTheme::DefaultTheme()
+BlondTheme::BlondTheme()
  : Theme()
 {
 #include "data/register_images.h"
 }
 
-DefaultTheme::~DefaultTheme()
+BlondTheme::~BlondTheme()
 {
 }
 
-void DefaultTheme::initialize()
+void BlondTheme::initialize()
 {
 	BC_Resources *resources = BC_WindowBase::get_resources();
 	resources->generic_button_images = new_image_set(3, 
@@ -87,6 +87,13 @@ void DefaultTheme::initialize()
 			"hslider_bg_up.png",
 			"hslider_bg_hi.png",
 			"hslider_bg_dn.png");
+	resources->vertical_slider_data = new_image_set(6,
+			"vertical_slider_fg_up.png",
+			"vertical_slider_fg_hi.png",
+			"vertical_slider_fg_dn.png",
+			"vertical_slider_bg_up.png",
+			"vertical_slider_bg_hi.png",
+			"vertical_slider_bg_dn.png");
 	resources->progress_images = new_image_set(2,
 			"progress_bg.png",
 			"progress_hi.png");
@@ -103,6 +110,14 @@ void DefaultTheme::initialize()
 		"listbox_column_up.png",
 		"listbox_column_hi.png",
 		"listbox_column_dn.png");
+	resources->listbox_expand = new_image_set(5,
+		"listbox_expandup.png",
+		"listbox_expanduphi.png",
+		"listbox_expandchecked.png",
+		"listbox_expanddn.png",
+        	"listbox_expandcheckedhi.png");
+	resources->listbox_up = new_image("listbox_up.png");
+	resources->listbox_dn = new_image("listbox_dn.png");
 	resources->pan_data = new_image_set(7,
 			"pan_up.png", 
 			"pan_hi.png", 
@@ -335,15 +350,88 @@ void DefaultTheme::initialize()
 	title_color = WHITE;
 	recordgui_fixed_color = YELLOW;
 	recordgui_variable_color = RED;
+	resources->medium_font = N_("-*-helvetica-bold-r-normal-*-14-*");
 
 	channel_position_color = MEYELLOW;
 	resources->meter_title_w = 25;
+
+	//bgcolor
+	resources->bg_color = BLOND;
+
+	//checkbox
+ 	resources->checkbox_images = new_image_set(5,
+  		"checkbox_up.png", 
+  		"checkbox_uphi.png", 
+  		"checkbox_checked.png", 
+  		"checkbox_down.png", 
+  		"checkbox_checkedhi.png");
+
+	//radiobox
+ 	resources->radial_images = new_image_set(5,
+  		"radial_up.png", 
+  		"radial_uphi.png", 
+  		"radial_checked.png", 
+  		"radial_down.png", 
+  		"radial_checkedhi.png");
+	
+	//labels
+ 	resources->label_images = new_image_set(5,
+  		"radial_up.png", 
+  		"radial_uphi.png", 
+  		"radial_checked.png", 
+  		"radial_down.png", 
+  		"radial_checkedhi.png");
+
+	//filebox
+  	resources->filebox_text_images = new_image_set(3,
+  		"file_text_up.png", 
+  		"file_text_uphi.png", 
+  		"file_text_dn.png");
+  	resources->filebox_icons_images = new_image_set(3,
+  		"file_icons_up.png", 
+  		"file_icons_uphi.png", 
+  		"file_icons_dn.png");
+  	resources->filebox_updir_images = new_image_set(3,
+  		"file_updir_up.png", 
+  		"file_updir_uphi.png", 
+  		"file_updir_dn.png");
+  	resources->filebox_newfolder_images = new_image_set(3,
+  		"file_newfolder_up.png", 
+  		"file_newfolder_uphi.png", 
+  		"file_newfolder_dn.png");
+
+	resources->type_to_icon = new_image_set(5,
+                "file_folder.png",
+	        "file_unknown.png",
+          	"file_film.png",
+	        "file_sound.png",
+	        "file_column.png");
+
+	//meters
+	resources->xmeter_images = new_image_set(5,
+		"xmeter_normal.png",
+		"xmeter_green.png",
+		"xmeter_red.png",
+		"xmeter_yellow.png",
+        	"over_horiz.png");
+				
+	resources->ymeter_images = new_image_set(5,
+		"ymeter_normal.png",
+		"ymeter_green.png",
+		"ymeter_red.png",
+		"ymeter_yellow.png",
+        	"over_vertical.png");
+
+	//listbox
+	resources->listbox_bg = new_image("list_bg.png");
+
+
 }
 
 #define CWINDOW_METER_MARGIN 5
 #define VWINDOW_METER_MARGIN 5
 
-void DefaultTheme::get_mwindow_sizes(MWindowGUI *gui, int w, int h)
+void BlondTheme::get_mwindow_sizes(MWindowGUI *gui, int w, int h)
 {
 	mbuttons_x = 0;
 	mbuttons_y = gui->mainmenu->get_h();
@@ -382,7 +470,7 @@ void DefaultTheme::get_mwindow_sizes(MWindowGUI *gui, int w, int h)
 	mcanvas_h = patchbay_h;
 }
 
-void DefaultTheme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
+void BlondTheme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 {
 	if(cwindow_controls)
 	{
@@ -455,7 +543,7 @@ void DefaultTheme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 
 
 
-void DefaultTheme::get_recordgui_sizes(RecordGUI *gui, int w, int h)
+void BlondTheme::get_recordgui_sizes(RecordGUI *gui, int w, int h)
 {
 	recordgui_status_x = 10;
 	recordgui_status_y = 10;
@@ -486,7 +574,7 @@ void DefaultTheme::get_recordgui_sizes(RecordGUI *gui, int w, int h)
 
 
 
-void DefaultTheme::get_vwindow_sizes(VWindowGUI *gui)
+void BlondTheme::get_vwindow_sizes(VWindowGUI *gui)
 {
 	vmeter_y = 5;
 	vmeter_h = mwindow->session->vwindow_h - cmeter_y;
@@ -537,7 +625,7 @@ void DefaultTheme::get_vwindow_sizes(VWindowGUI *gui)
 
 
 
-void DefaultTheme::build_icons()
+void BlondTheme::build_icons()
 {
 	mwindow_icon = new VFrame(get_image_data("heroine_icon.png"));
 	vwindow_icon = new VFrame(get_image_data("heroine_icon.png"));
@@ -549,7 +637,7 @@ void DefaultTheme::build_icons()
 
 
 
-void DefaultTheme::build_bg_data()
+void BlondTheme::build_bg_data()
 {
 // Audio settings
 	channel_bg_data = new VFrame(get_image_data("channel_bg.png"));
@@ -568,7 +656,7 @@ void DefaultTheme::build_bg_data()
 }
 
 
-void DefaultTheme::build_patches()
+void BlondTheme::build_patches()
 {
 	static VFrame *default_drawpatch_data[] = { new VFrame(get_image_data("drawpatch_up.png")), new VFrame(get_image_data("drawpatch_hi.png")), new VFrame(get_image_data("drawpatch_checked.png")), new VFrame(get_image_data("drawpatch_dn.png")), new VFrame(get_image_data("drawpatch_checkedhi.png")) };
 	static VFrame *default_expandpatch_data[] = { new VFrame(get_image_data("expandpatch_up.png")), new VFrame(get_image_data("expandpatch_hi.png")), new VFrame(get_image_data("expandpatch_checked.png")), new VFrame(get_image_data("expandpatch_dn.png")), new VFrame(get_image_data("expandpatch_checkedhi.png")) };
@@ -588,7 +676,7 @@ void DefaultTheme::build_patches()
 	recordpatch_data = default_recordpatch_data;
 }
 
-void DefaultTheme::build_overlays()
+void BlondTheme::build_overlays()
 {
 	keyframe_data = new VFrame(get_image_data("keyframe3.png"));
 	camerakeyframe_data = new VFrame(get_image_data("camerakeyframe.png"));
@@ -606,7 +694,7 @@ void DefaultTheme::build_overlays()
 
 
 
-void DefaultTheme::draw_rwindow_bg(RecordGUI *gui)
+void BlondTheme::draw_rwindow_bg(RecordGUI *gui)
 {
 	int y;
 	int margin = 50;
@@ -628,7 +716,7 @@ void DefaultTheme::draw_rwindow_bg(RecordGUI *gui)
 		rgui_list);
 }
 
-void DefaultTheme::draw_rmonitor_bg(RecordMonitorGUI *gui)
+void BlondTheme::draw_rmonitor_bg(RecordMonitorGUI *gui)
 {
 	int margin = 45;
 	int panel_w = 300;
@@ -651,7 +739,7 @@ void DefaultTheme::draw_rmonitor_bg(RecordMonitorGUI *gui)
 
 
 
-void DefaultTheme::draw_mwindow_bg(MWindowGUI *gui)
+void BlondTheme::draw_mwindow_bg(MWindowGUI *gui)
 {
 // Button bar
 	gui->draw_3segmenth(mbuttons_x, 
@@ -713,7 +801,7 @@ void DefaultTheme::draw_mwindow_bg(MWindowGUI *gui)
 			statusbar_right);
 }
 
-void DefaultTheme::draw_cwindow_bg(CWindowGUI *gui)
+void BlondTheme::draw_cwindow_bg(CWindowGUI *gui)
 {
 	const int button_division = 530;
 	gui->draw_3segmentv(0, 0, ccomposite_h, cpanel_bg);
@@ -739,7 +827,7 @@ void DefaultTheme::draw_cwindow_bg(CWindowGUI *gui)
 	}
 }
 
-void DefaultTheme::draw_vwindow_bg(VWindowGUI *gui)
+void BlondTheme::draw_vwindow_bg(VWindowGUI *gui)
 {
 	const int button_division = 400;
 	gui->draw_3segmenth(0, vcanvas_h, button_division, vbuttons_left);
@@ -764,26 +852,26 @@ void DefaultTheme::draw_vwindow_bg(VWindowGUI *gui)
 	}
 }
 
-void DefaultTheme::get_preferences_sizes()
+void BlondTheme::get_preferences_sizes()
 {
 }
 
 
-void DefaultTheme::draw_preferences_bg(PreferencesWindow *gui)
+void BlondTheme::draw_preferences_bg(PreferencesWindow *gui)
 {
 	gui->draw_9segment(0, 0, gui->get_w(), gui->get_h() - 40, preferences_bg);
 }
 
-void DefaultTheme::get_new_sizes(NewWindow *gui)
+void BlondTheme::get_new_sizes(NewWindow *gui)
 {
 }
 
-void DefaultTheme::draw_new_bg(NewWindow *gui)
+void BlondTheme::draw_new_bg(NewWindow *gui)
 {
 	gui->draw_vframe(new_bg, 0, 0);
 }
 
-void DefaultTheme::draw_setformat_bg(SetFormatWindow *gui)
+void BlondTheme::draw_setformat_bg(SetFormatWindow *gui)
 {
 	gui->draw_vframe(setformat_bg, 0, 0);
 }

@@ -101,6 +101,13 @@ PNGS = \
 	channel_hi.png \
 	channel_position.png \
 	channel_up.png \
+\
+checkbox_checked.png \
+checkbox_checkedhi.png \
+checkbox_down.png \
+checkbox_up.png \
+checkbox_uphi.png \
+\
 	cirselection_checked.png \
 	cirselection_checkedhi.png \
 	cirselection_dn.png \
@@ -176,6 +183,25 @@ PNGS = \
 	expandpatch_up.png \
 	fastfwd.png \
 	fastrev.png \
+\
+file_column.png \
+file_film.png \
+file_folder.png \
+file_icons_dn.png \
+file_icons_up.png \
+file_icons_uphi.png \
+file_newfolder_dn.png \
+file_newfolder_up.png \
+file_newfolder_uphi.png \
+file_sound.png \
+file_text_dn.png \
+file_text_up.png \
+file_text_uphi.png \
+file_unknown.png \
+file_updir_dn.png \
+file_updir_up.png \
+file_updir_uphi.png \
+\
 	fit.png \
 	fit_dn.png \
 	fit_hi.png \
@@ -246,6 +272,9 @@ PNGS = \
 	labeltoggle_up.png \
 	labeltoggle_uphi.png \
 	left_justify.png \
+\
+list_bg.png \
+\
 	listbox_button.png \
 	listbox_button_dn.png \
 	listbox_button_hi.png \
@@ -253,6 +282,15 @@ PNGS = \
 	listbox_column_dn.png \
 	listbox_column_hi.png \
 	listbox_column_up.png \
+\
+listbox_dn.png \
+listbox_expandchecked.png \
+listbox_expandcheckedhi.png \
+listbox_expanddn.png \
+listbox_expandup.png \
+listbox_expanduphi.png \
+listbox_up.png \
+\
 	magnify.png \
 	magnify_checked.png \
 	magnify_checkedhi.png \
@@ -306,8 +344,14 @@ PNGS = \
 	outpoint.png \
 	over.png \
 	over_dn.png \
+\
+over_horiz.png \
+\
 	over_up.png \
 	over_uphi.png \
+\
+over_vertical.png \
+\
 	overwrite.png \
 	pan_channel.png \
 	pan_channel_small.png \
@@ -323,7 +367,9 @@ PNGS = \
 	pasteasset_up.png \
 	patchbay.png \
 	patchbay_bg.png \
+\
 	pause.png \
+\
 	picture_dn.png \
 	picture_hi.png \
 	picture_up.png \
@@ -353,6 +399,14 @@ PNGS = \
 	projector_up.png \
 	projectorkeyframe.png \
 	protect.png \
+\
+radial_checked.png \
+radial_checkedhi.png \
+radial_down.png \
+radial_downhi.png \
+radial_up.png \
+radial_uphi.png \
+\
 	recframe.png \
 	record.png \
 	recordgui_batch.png \
@@ -439,6 +493,14 @@ PNGS = \
 	undo_up.png \
 	vbuttons_left.png \
 	vbuttons_right.png \
+\
+vertical_slider_bg_dn.png \
+vertical_slider_bg_hi.png \
+vertical_slider_bg_up.png \
+vertical_slider_fg_dn.png \
+vertical_slider_fg_hi.png \
+vertical_slider_fg_up.png \
+\
 	viewasset_dn.png \
 	viewasset_hi.png \
 	viewasset_up.png \
@@ -458,9 +520,21 @@ PNGS = \
 	wrench_dn.png \
 	wrench_hi.png \
 	wrench_up.png \
+\
+xmeter_green.png \
+xmeter_normal.png \
+xmeter_red.png \
+xmeter_yellow.png \
+\
 	yes_dn.png \
 	yes_hi.png \
 	yes_up.png \
+\
+ymeter_green.png \
+ymeter_normal.png \
+ymeter_red.png \
+ymeter_yellow.png \
+\
 	zoombar_left.png \
 	zoombar_right.png
 
