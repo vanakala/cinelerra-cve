@@ -176,8 +176,8 @@ void NewSvgButton::run()
 		new_window->create_objects();
 		new_window->update_filter("*.svg");
 		result = new_window->run_window();
-		client->defaults->update("DIRECTORY", new_window->get_path());
-		strcpy(filename, new_window->get_path());
+		client->defaults->update("DIRECTORY", new_window->get_path(0));
+		strcpy(filename, new_window->get_path(0));
 		delete new_window;
 
 // Extend the filename with .svg

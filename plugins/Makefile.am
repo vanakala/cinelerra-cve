@@ -22,7 +22,7 @@ SUBDIRS= \
 				 denoise denoisefft denoisevideo despike dissolve dot fieldframe flip framefield \
 				 freeverb freezeframe gain holo huesaturation interpolateall invertaudio invertvideo \
 				 irissquare ivtc normalize oilpainting pitch polar reframe resample reverb reverseaudio \
-				 reversevideo rgb601 rotate scale sharpen shiftinterlace slide spectrogram swapchannels \
+				 reversevideo rgb601 rotate scale sharpen svg shiftinterlace slide spectrogram swapchannels \
 	synthesizer \
 	timeavg \
 	timestretch \
