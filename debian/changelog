@@ -1,3 +1,21 @@
+hvirtual (1:1.1.6-2) unstable; urgency=low
+
+  * applied pal dv-out patch from andreaskielb@web.de
+
+ -- Andraz Tori <andraz.tori1@guest.arnes.si>  Wed, 14 May 2003 07:58:01 +0200
+
+hvirtual (1:1.1.6-2) unstable; urgency=low
+
+  * applied patches for:
+  * crush on exit
+  * wrong delete[] in filexml.C
+  * possible libmpeg3 crush regarding threads
+  * crush when placing cursor after loop and playing
+  * small cleanup not to use uninitialized values
+  * splashscreen leak removed
+
+ -- Andraz Tori <andraz.tori1@guest.arnes.si>  Wed, 14 May 2003 07:58:01 +0200
+
 hvirtual (1:1.1.6-1) unstable; urgency=low
 
   * New upstream release
