@@ -13,6 +13,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <locale.h>
+
 #define PACKAGE "cinelerra"
 #define LOCALEDIR "/usr/share/locale"
 
