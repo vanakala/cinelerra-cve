@@ -519,7 +519,6 @@ int FileDV::read_frame(VFrame *frame)
 
 TRACE("FileDV::read_frame 1")
 
-	unsigned char *data = frame->get_data();
 	unsigned char **row_pointers = frame->get_rows();
 
 	unsigned char *temp_data = (unsigned char *) malloc(asset->height * asset->width * 2);
@@ -543,7 +542,7 @@ TRACE("FileDV::read_frame 20")
 TRACE("FileDV::read_frame 30")
 			frame->allocate_compressed_data(output_size);
 			frame->set_compressed_size(output_size);
-			data = input;
+			memcpy(frame->get_data(), input, output_size);
 			break;
 		case BC_RGB888:
 TRACE("FileDV::read_frame 40")
