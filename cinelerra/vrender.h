@@ -1,10 +1,11 @@
 #ifndef VRENDER_H
 #define VRENDER_H
 
-#include "guicast.h"
 #include "commonrender.h"
 #include "edit.inc"
+#include "guicast.h"
 #include "mwindow.inc"
+#include "overlayframe.inc"
 #include "renderengine.inc"
 #include "vframe.inc"
 
@@ -76,9 +77,19 @@ public:
 	VFrame *video_out[MAX_CHANNELS];
 // Byte offset of video_out
 	int64_t output_offset;
+
+// Temp frame for VModule transitions
+	VFrame *transition_temp;
+// Engine for camera and projector automation
+	OverlayFrame *overlayer;
+
+
 	
-	
-	int64_t source_length;  // Total number of frames to render for transitions
+// Total number of frames to render for transitions
+	int64_t source_length;  
+
+// Flag first frame to unlock audio
+	int first_frame;
 
 private:
 	int init_device_buffers();

@@ -1,31 +1,32 @@
 #include "asset.h"
 #include "cache.h"
 #include "condition.h"
-#include "virtualconsole.h"
 #include "datatype.h"
 #include "edits.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "file.h"
 #include "localsession.h"
+#include "mainsession.h"
 #include "mwindow.h"
-#include "playbackengine.h"
+#include "overlayframe.h"
 #include "playabletracks.h"
+#include "playbackengine.h"
 #include "preferences.h"
 #include "preferencesthread.h"
 #include "renderengine.h"
-#include "mainsession.h"
 #include "strategies.inc"
-#include "units.h"
 #include "tracks.h"
 #include "transportque.h"
-#include "vrender.h"
+#include "units.h"
 #include "vedit.h"
 #include "vframe.h"
 #include "videoconfig.h"
 #include "videodevice.h"
+#include "virtualconsole.h"
 #include "virtualvconsole.h"
 #include "vmodule.h"
+#include "vrender.h"
 #include "vtrack.h"
 
 
@@ -36,10 +37,14 @@ VRender::VRender(RenderEngine *renderengine)
  : CommonRender(renderengine)
 {
 	data_type = TRACK_VIDEO;
+	transition_temp = 0;
+	overlayer = new OverlayFrame(renderengine->preferences->processors);
 }
 
 VRender::~VRender()
 {
+	if(transition_temp) delete transition_temp;
+	if(overlayer) delete overlayer;
 }
 
 
@@ -97,6 +102,8 @@ int VRender::process_buffer(int64_t input_position)
 	int use_brender = 0;
 	int result = 0;
 
+//printf("VRender::process_buffer 1\n");
+
 // Determine the rendering strategy for this frame.
 	use_vconsole = get_use_vconsole(playable_edit, 
 		input_position,
@@ -133,7 +140,6 @@ int VRender::process_buffer(int64_t input_position)
 		else
 		if(playable_edit)
 		{
-//printf("VRender::process_buffer 1 %d\n", current_position);
 			result = ((VEdit*)playable_edit)->read_frame(video_out[0], 
 				current_position, 
 				renderengine->command->get_direction(),
@@ -151,6 +157,7 @@ int VRender::process_buffer(int64_t input_position)
 	}
 
 
+//printf("VRender::process_buffer 10\n");
 	return result;
 }
 
@@ -170,7 +177,7 @@ int VRender::get_use_vconsole(Edit* &playable_edit,
 
 
 // Total number of playable tracks is 1
-	if(vconsole->total_tracks != 1) return 1;
+	if(vconsole->total_entry_nodes != 1) return 1;
 
 	playable_track = vconsole->playable_tracks->values[0];
 
@@ -263,6 +270,8 @@ void VRender::run()
 // Number of frames to skip.
 	int64_t frame_step = 1;
 
+	first_frame = 1;
+
 // Number of frames since start of rendering
 	session_frame = 0;
 	framerate_counter = 0;
@@ -308,17 +317,10 @@ void VRender::run()
 			start_sample = Units::tosamples(session_frame - 1, 
 				renderengine->edl->session->sample_rate, 
 				renderengine->edl->session->frame_rate);
-// printf("VRender:run 9 currentsample=%lld endsample=%lld startsample=%lld samplerate=%lld framerate=%f\n", 
-// current_sample, 
-// end_sample, 
-// start_sample, 
-// renderengine->edl->session->sample_rate,
-// renderengine->edl->session->frame_rate);
 
-// Straight from XMovie
-			if(end_sample < current_sample)
+			if(first_frame || end_sample < current_sample)
 			{
-// Frame rendered late.  Flash it now.
+// Frame rendered late or this is the first frame.  Flash it now.
 				flash_output();
 
 				if(renderengine->edl->session->video_every_frame)
@@ -372,19 +374,22 @@ void VRender::run()
 					{
 // Came after the earliest sample so keep going
 					}
-//printf("VRender:run 20\n");
 				}
 
 // Flash frame now.
 				flash_output();
 			}
-//printf("VRender:run 11\n");
 		}
 
-//printf("VRender:run 12 %d\n", current_position);
+// Trigger audio to start
+		if(first_frame)
+		{
+			renderengine->first_frame_lock->unlock();
+			first_frame = 0;
+			renderengine->reset_sync_position();
+		}
 
 		session_frame += frame_step;
-//printf("VRender:run 13 %d %d\n", frame_step, last_playback);
 
 // advance position in project
 		current_input_length = frame_step;
@@ -406,7 +411,6 @@ void VRender::run()
 			renderengine->playback_engine &&
 			renderengine->command->command != CURRENT_FRAME)
 		{
-//printf("VRender:run 17 %d\n", current_position);
 			renderengine->playback_engine->update_tracking(fromunits(current_position));
 		}
 
@@ -415,17 +419,16 @@ void VRender::run()
 		if(framerate_counter >= renderengine->edl->session->frame_rate && 
 			renderengine->command->realtime)
 		{
-//printf("VRender::run 1\n");
 			renderengine->update_framerate((float)framerate_counter / 
 				((float)framerate_timer.get_difference() / 1000));
-//printf("VRender::run 2\n");
 			framerate_counter = 0;
 			framerate_timer.update();
 		}
-//printf("VRender:run 13\n");
 	}
 
-//printf("VRender:run 14\n");
+// In case we were interrupted before the first loop
+	renderengine->first_frame_lock->unlock();
+
 }
 
 

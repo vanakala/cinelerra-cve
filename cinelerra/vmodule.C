@@ -1,4 +1,5 @@
 #include "asset.h"
+#include "bcsignals.h"
 #include "cache.h"
 #include "clip.h"
 #include "commonrender.h"
@@ -8,8 +9,10 @@
 #include "file.h"
 #include "filexml.h"
 #include "floatautos.h"
+#include "mwindow.h"
 #include "overlayframe.h"
 #include "patch.h"
+#include "pluginarray.h"
 #include "preferences.h"
 #include "renderengine.h"
 #include "sharedlocation.h"
@@ -20,6 +23,7 @@
 #include "vedit.h"
 #include "vframe.h"
 #include "vmodule.h"
+#include "vrender.h"
 #include "vplugin.h"
 #include "vtrack.h"
 #include <string.h>
@@ -31,21 +35,14 @@ VModule::VModule(RenderEngine *renderengine,
  : Module(renderengine, commonrender, plugin_array, track)
 {
 	data_type = TRACK_VIDEO;
-	input_temp = transition_temp = 0;
-	overlayer = 0;
+	overlay_temp = 0;
+	transition_temp = 0;
 }
 
 VModule::~VModule()
 {
-	if(input_temp) 
-	{
-		delete input_temp;
-	}
-	if(transition_temp) 
-	{
-		delete transition_temp;
-	}
-	if(overlayer) delete overlayer;
+	if(overlay_temp) delete overlay_temp;
+	if(transition_temp) delete transition_temp;
 }
 
 
@@ -70,10 +67,11 @@ CICache* VModule::get_cache()
 int VModule::import_frame(VFrame *output,
 	VEdit *current_edit,
 	int64_t input_position,
+	double frame_rate,
 	int direction)
 {
 	int64_t corrected_position;
-
+	int64_t corrected_position_project;
 // Translation of edit
 	float in_x1;
 	float in_y1;
@@ -84,26 +82,46 @@ int VModule::import_frame(VFrame *output,
 	float out_w1;
 	float out_h1;
 	int result = 0;
+	double edl_rate = get_edl()->session->frame_rate;
+	int64_t input_position_project = (int64_t)(input_position * 
+		edl_rate / 
+		frame_rate);
+	if(!output) printf("VModule::import_frame 10 output=%p\n", output);
+//printf("VModule::import_frame 20\n");
 
+//printf("VModule::import_frame 1 %lld\n", input_position);
 	corrected_position = input_position;
-	if(direction == PLAY_REVERSE) corrected_position--;
+	corrected_position_project = input_position_project;
+	if(direction == PLAY_REVERSE)
+	{
+		corrected_position--;
+		input_position_project--;
+	}
 
 // Load frame into output
 	if(current_edit &&
 		current_edit->asset)
 	{
+		get_cache()->age();
 		File *source = get_cache()->check_out(current_edit->asset);
+//		get_cache()->dump();
 
 		if(source)
 		{
+			int64_t edit_startproject = (int64_t)(current_edit->startproject * 
+				frame_rate / 
+				edl_rate);
+			int64_t edit_startsource = (int64_t)(current_edit->startsource *
+				frame_rate /
+				edl_rate);
 			source->set_video_position(corrected_position - 
-				current_edit->startproject + 
-				current_edit->startsource,
-				get_edl()->session->frame_rate);
+				edit_startproject + 
+				edit_startsource,
+				frame_rate);
 			source->set_layer(current_edit->channel);
 
 			((VTrack*)track)->calculate_input_transfer(current_edit->asset, 
-				input_position, 
+				input_position_project, 
 				direction, 
 				in_x1, 
 				in_y1, 
@@ -128,35 +146,26 @@ int VModule::import_frame(VFrame *output,
 				!EQUIV(in_w1, current_edit->asset->width) ||
 				!EQUIV(in_h1, current_edit->asset->height))
 			{
-// Fix buffers
-				if(input_temp && 
-					(input_temp->get_w() != current_edit->asset->width ||
-					input_temp->get_h() != current_edit->asset->height))
-				{
-					delete input_temp;
-					input_temp = 0;
-				}
-
-
-
-
-
-				if(!input_temp)
-				{
-//printf("VModule::import_frame 4\n");
-					input_temp = new VFrame(0,
-						current_edit->asset->width,
-						current_edit->asset->height,
-						get_edl()->session->color_model,
-						-1);
-				}
-//printf("VModule::import_frame 5\n");
-
 // file -> temp
-				result = source->read_frame(input_temp);
-				if(!overlayer)
+//printf("VModule::import_frame 1 %lld %f\n", input_position, frame_rate);
+				OverlayFrame *overlayer = 0;
+// Realtime playback
+				if(commonrender)
 				{
-					overlayer = new OverlayFrame(renderengine->preferences->processors);
+					VRender *vrender = (VRender*)commonrender;
+					overlayer = vrender->overlayer;
+				}
+				else
+// Menu effect
+				{
+					if(!plugin_array)
+						printf("VModule::import_frame neither plugin_array nor commonrender is defined.\n");
+					if(!overlay_temp)
+					{
+						overlay_temp = new OverlayFrame(plugin_array->mwindow->preferences->processors);
+					}
+
+					overlayer = overlay_temp;
 				}
 // printf("VModule::import_frame 1 %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f\n", 
 // 	in_x1, 
@@ -185,8 +194,10 @@ int VModule::import_frame(VFrame *output,
 					cmodel_is_yuv(output->get_color_model()))
 					mode = TRANSFER_NORMAL;
 
+				VFrame *input = 0;
+				input = source->read_frame_cache(get_edl()->session->color_model);
 				overlayer->overlay(output,
-					input_temp, 
+					input, 
 					in_x1,
 					in_y1,
 					in_x1 + in_w1,
@@ -198,15 +209,17 @@ int VModule::import_frame(VFrame *output,
 					1,
 					mode,
 					get_edl()->session->interpolation_type);
+				source->frames_cache->unlock_cache();
+				result = 1;
+//printf("VModule::import_frame 20\n");
 			}
 			else
 // file -> output
 			{
-
-//printf("VModule::import_frame 6\n");
+//printf("VModule::import_frame 30 %p\n", output);
 				result = source->read_frame(output);
+//printf("VModule::import_frame 40\n");
 			}
-//printf("VModule::import_frame 6\n");
 
 			get_cache()->check_in(current_edit->asset);
 		}
@@ -221,7 +234,6 @@ int VModule::import_frame(VFrame *output,
 	{
 		output->clear_frame();
 	}
-//printf("VModule::import_frame 7\n");
 
 	return result;
 }
@@ -229,43 +241,76 @@ int VModule::import_frame(VFrame *output,
 
 
 int VModule::render(VFrame *output,
-	int64_t input_position,
+	int64_t start_position,
 	int direction,
+	double frame_rate,
 	int use_nudge)
 {
 	int result = 0;
-	if(use_nudge) input_position += track->nudge;
+	double edl_rate = get_edl()->session->frame_rate;
+	if(use_nudge) start_position += (int64_t)(track->nudge * 
+		frame_rate / 
+		edl_rate);
 
-	update_transition(input_position, direction);
+//printf("VModule::render 1\n");
 
-	VEdit* current_edit = (VEdit*)track->edits->editof(input_position, 
+	int64_t start_position_project = (int64_t)(start_position *
+		edl_rate /
+		frame_rate);
+
+	update_transition(start_position_project, 
+		direction);
+
+	VEdit* current_edit = (VEdit*)track->edits->editof(start_position_project, 
 		direction,
 		0);
 	VEdit* previous_edit = 0;
 
-	if(!current_edit) 
+	if(!current_edit)
 	{
 		output->clear_frame();
 		return 0;
 	}
+//printf("VModule::render 10\n");
 
 
 // Process transition
 	if(transition)
 	{
-// Load incoming frame
-		if(!transition_temp)
+// Get temporary buffer
+		VFrame **transition_input = 0;
+		if(commonrender)
 		{
-			transition_temp = new VFrame(0,
+			VRender *vrender = (VRender*)commonrender;
+			transition_input = &vrender->transition_temp;
+		}
+		else
+		{
+			transition_input = &transition_temp;
+		}
+
+		if((*transition_input) &&
+			((*transition_input)->get_w() != track->track_w ||
+			(*transition_input)->get_h() != track->track_h))
+		{
+			delete (*transition_input);
+			(*transition_input) = 0;
+		}
+
+// Load incoming frame
+		if(!(*transition_input))
+		{
+			(*transition_input) = new VFrame(0,
 				track->track_w,
 				track->track_h,
 				get_edl()->session->color_model,
 				-1);
 		}
 
-		result = import_frame(transition_temp, 
+		result = import_frame((*transition_input), 
 			current_edit, 
-			input_position,
+			start_position,
+			frame_rate,
 			direction);
 
 
@@ -274,19 +319,16 @@ int VModule::render(VFrame *output,
 
 		result |= import_frame(output, 
 			previous_edit, 
-			input_position,
+			start_position,
+			frame_rate,
 			direction);
 
-// Execute plugin with transition_temp and output here
-		int64_t corrected_position = input_position;
-		if(direction == PLAY_REVERSE)
-			corrected_position--;
-
-		transition_server->process_realtime(&transition_temp, 
-			&output,
+// Execute plugin with transition_input and output here
+		transition_server->process_transition((*transition_input), 
+			output,
 			(direction == PLAY_FORWARD) ? 
-				(input_position - current_edit->startproject) :
-				(input_position - current_edit->startproject - 1),
+				(start_position_project - current_edit->startproject) :
+				(start_position_project - current_edit->startproject - 1),
 			transition->length);
 	}
 	else
@@ -294,10 +336,12 @@ int VModule::render(VFrame *output,
 // Load output buffer
 		result = import_frame(output, 
 			current_edit, 
-			input_position,
+			start_position,
+			frame_rate,
 			direction);
 	}
 
+//printf("VModule::render 100\n");
 
 	return result;
 }
