@@ -30,5 +30,5 @@ noinst_HEADERS = attributes.h \
 	simd.h \
 	vlc.h
 
-libmpeg2enc_la_LIBADD=@PTHREAD_LIBS@ @LIBGETOPT_LIB@ $(LIBM_LIBS)
+libmpeg2enc_la_LIBADD=$(LIBM_LIBS)
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTC_FLAGS)
