@@ -1109,7 +1109,7 @@ int Track::modify_edithandles(double oldposition,
 {
 	edits->modify_handles(oldposition, 
 		newposition, 
-		currentend, 
+		currentend,
 		handle_mode,
 		1,
 		edit_labels,
