@@ -1,4 +1,6 @@
 #include "asset.h"
+#include "audiodevice.inc"
+#include "audiodevice.h"
 #include "channelpicker.h"
 #include "cursors.h"
 #include "libdv.h"
@@ -192,6 +194,7 @@ RecordMonitorGUI::RecordMonitorGUI(MWindow *mwindow,
 	this->mwindow = mwindow;
 	this->thread = thread;
 	this->record = record;
+	avc = new AVC1394();
 	bitmap = 0;
 	channel_picker = 0;
 	reverse_interlace = 0;
@@ -204,10 +207,13 @@ RecordMonitorGUI::~RecordMonitorGUI()
 {
 	if(bitmap) delete bitmap;
 	if(channel_picker) delete channel_picker;
+	if(avc) delete avc;
 }
 
 int RecordMonitorGUI::create_objects()
 {
+	// y offset for video canvas if we have the transport controls
+	int offset = 0;
 //printf("RecordMonitorGUI::create_objects 1\n");
 	mwindow->theme->get_rmonitor_sizes(record->default_asset->audio_data, 
 		record->default_asset->video_data,
@@ -225,13 +231,30 @@ int RecordMonitorGUI::create_objects()
 // 	record_transport->create_objects();
 //printf("RecordMonitorGUI::create_objects 1\n");
 
+	if(avc->device > -1) {
+		add_subwindow(avc1394transport_title =
+			new BC_Title(mwindow->theme->rmonitor_canvas_x,
+				mwindow->theme->rmonitor_canvas_y + 10,
+				_("Device Transport:")));
+
+		avc1394_transport = new AVC1394Transport(mwindow,
+			avc,
+			this,
+			mwindow->theme->rmonitor_canvas_x +
+				avc1394transport_title->get_w(),
+			mwindow->theme->rmonitor_canvas_y);
+		avc1394_transport->create_objects();
+
+		offset = 30;
+	}
+
 	if(record->default_asset->video_data)
 	{
 		canvas = new RecordMonitorCanvas(mwindow, 
 			this,
 			record, 
 			mwindow->theme->rmonitor_canvas_x, 
-			mwindow->theme->rmonitor_canvas_y, 
+			mwindow->theme->rmonitor_canvas_y + offset, 
 			mwindow->theme->rmonitor_canvas_w, 
 			mwindow->theme->rmonitor_canvas_h);
 		canvas->create_objects(0);

@@ -29,6 +29,8 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    autoconf.C \
 		    automation.C \
 		    autos.C \
+			 avc1394.C \
+			 avc1394transport.C \
 		    awindow.C \
 		    awindowgui.C \
 		    awindowmenu.C \
