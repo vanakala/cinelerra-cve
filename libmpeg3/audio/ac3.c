@@ -41,7 +41,7 @@ int mpeg3_ac3_header(mpeg3_ac3_t *audio, unsigned char *header)
 	int result = 0;
 	audio->flags = 0;
 
-//printf(__FUNCTION__ " %02x%02x%02x%02x%02x%02x%02x%02x\n", header[0], header[1], header[2], header[3], header[4], header[5], header[6], header[7]);
+//printf("mpeg3_ac3_header %02x%02x%02x%02x%02x%02x%02x%02x\n", header[0], header[1], header[2], header[3], header[4], header[5], header[6], header[7]);
 	result = a52_syncinfo(header, 
 		&audio->flags,
         &audio->samplerate, 
@@ -50,12 +50,12 @@ int mpeg3_ac3_header(mpeg3_ac3_t *audio, unsigned char *header)
 
 	if(result)
 	{
-//printf(__FUNCTION__ " %02x%02x%02x%02x%02x%02x%02x%02x\n", header[0], header[1], header[2], header[3], header[4], header[5], header[6], header[7]);
 		audio->framesize = result;
 		audio->channels = 0;
 
 		if(audio->flags & A52_LFE)
 			audio->channels++;
+//printf("mpeg3_ac3_header %02x\n", audio->flags & A52_CHANNEL_MASK);
 		switch(audio->flags & A52_CHANNEL_MASK)
 		{
 			case A52_CHANNEL:
@@ -89,8 +89,8 @@ int mpeg3_ac3_header(mpeg3_ac3_t *audio, unsigned char *header)
 				printf("mpeg3_ac3_header: unknown channel code: %p\n", audio->flags & A52_CHANNEL_MASK);
 				break;
 		}
-//printf(__FUNCTION__ " 1 %d\n", audio->channels);
 	}
+//printf("mpeg3_ac3_header 1 %d\n", audio->channels);
 	return result;
 }
 

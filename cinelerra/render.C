@@ -22,6 +22,7 @@
 #include "formatpopup.h"
 #include "formattools.h"
 #include "labels.h"
+#include "language.h"
 #include "loadmode.h"
 #include "localsession.h"
 #include "mainprogress.h"
@@ -50,11 +51,6 @@
 
 #include <ctype.h>
 #include <string.h>
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 
@@ -150,14 +146,47 @@ void MainPackageRenderer::set_progress(int64_t value)
 {
 	render->counter_lock->lock();
 	render->total_rendered += value;
-//printf("MainPackageRenderer::set_progress 1 %lld %lld\n", value, render->total_rendered);
-//	render->total_rendered += audio_read_length;
+
+// If non interactive, print progress out
+	if(!render->progress)
+	{
+		int64_t current_eta = render->progress_timer->get_scaled_difference(1000);
+		if(current_eta - render->last_eta > 1000)
+		{
+			double eta = 0;
+
+
+			if(render->total_rendered)
+			{
+				eta = current_eta /
+					1000 *
+					render->progress_max /
+					render->total_rendered -
+					current_eta /
+					1000;
+			}
+
+			char string[BCTEXTLEN];
+			Units::totext(string, 
+				eta,
+				TIME_HMS2);
+
+			printf("%d%% ETA: %s      \r", (int)(100 * 
+				(float)render->total_rendered / 
+					render->progress_max),
+				string);
+			fflush(stdout);
+			render->last_eta = current_eta;
+		}
+	}
+
 	render->counter_lock->unlock();
 }
 
 int MainPackageRenderer::progress_cancelled()
 {
-	return render->progress->is_cancelled() || render->batch_cancelled;
+	return (render->progress && render->progress->is_cancelled()) || 
+		render->batch_cancelled;
 }
 
 
@@ -175,12 +204,15 @@ Render::Render(MWindow *mwindow)
  : Thread()
 {
 	this->mwindow = mwindow;
+	if(mwindow) plugindb = mwindow->plugindb;
 	in_progress = 0;
+	progress = 0;
+	preferences = 0;
 	elapsed_time = 0.0;
-	package_lock = new Mutex;
-	counter_lock = new Mutex;
-	completion = new Condition;
-	autorender = 0;
+	package_lock = new Mutex("Render::package_lock");
+	counter_lock = new Mutex("Render::counter_lock");
+	completion = new Condition(0, "Render::completion");
+	progress_timer = new Timer;
 }
 
 Render::~Render()
@@ -188,11 +220,8 @@ Render::~Render()
 	delete package_lock;
 	delete counter_lock;
 	delete completion;
-}
-
-void Render::set_autorender(int autorender)
-{
-	this->autorender = autorender;
+	if(preferences) delete preferences;
+	delete progress_timer;
 }
 
 void Render::start_interactive()
@@ -217,11 +246,11 @@ void Render::start_interactive()
 
 void Render::start_batches(ArrayList<BatchRenderJob*> *jobs)
 {
+	batch_cancelled = 0;
 	if(!Thread::running())
 	{
 		mode = Render::BATCH;
 		this->jobs = jobs;
-		batch_cancelled = 0;
 		completion->reset();
 		Thread::start();
 	}
@@ -235,13 +264,29 @@ void Render::start_batches(ArrayList<BatchRenderJob*> *jobs)
 	}
 }
 
+void Render::start_batches(ArrayList<BatchRenderJob*> *jobs,
+	Defaults *boot_defaults,
+	Preferences *preferences,
+	ArrayList<PluginServer*> *plugindb)
+{
+	mode = Render::BATCH;
+	batch_cancelled = 0;
+	this->jobs = jobs;
+	this->preferences = preferences;
+	this->plugindb = plugindb;
+
+	completion->reset();
+	run();
+	this->preferences = 0;
+}
+
 void Render::stop_operation()
 {
 	if(Thread::running())
 	{
 		batch_cancelled = 1;
 // Wait for completion
-		completion->lock();
+		completion->lock("Render::stop_operation");
 		completion->reset();
 	}
 }
@@ -267,7 +312,6 @@ void Render::run()
 			format_error = 0;
 			result = 0;
 
-			if (!autorender)
 			{
 				RenderWindow window(mwindow, this, asset);
 				window.create_objects();
@@ -297,26 +341,58 @@ void Render::run()
 			BatchRenderJob *job = jobs->values[i];
 			if(job->enabled)
 			{
-				mwindow->batch_render->update_active(i);
+				if(mwindow)
+				{
+					mwindow->batch_render->update_active(i);
+				}
+				else
+				{
+					printf("Render::run: %s\n", job->edl_path);
+				}
+
+
 				FileXML *file = new FileXML;
 				EDL *edl = new EDL;
 				edl->create_objects();
 				file->read_from_file(job->edl_path);
-				edl->load_xml(mwindow->plugindb, file, LOAD_ALL);
+				if(!plugindb && mwindow)
+					plugindb = mwindow->plugindb;
+				edl->load_xml(plugindb, file, LOAD_ALL);
 
 				render(0, job->asset, edl, job->strategy);
 
 				delete edl;
 				delete file;
 				if(!result)
-					mwindow->batch_render->update_done(i, 1, elapsed_time);
+				{
+					if(mwindow)
+						mwindow->batch_render->update_done(i, 1, elapsed_time);
+					else
+					{
+						char string[BCTEXTLEN];
+						elapsed_time = 
+							(double)progress_timer->get_scaled_difference(1);
+						Units::totext(string,
+							elapsed_time,
+							TIME_HMS2);
+						printf("Render::run: done in %s\n", string);
+					}
+				}
 				else
-					mwindow->batch_render->update_active(-1);
+				{
+					if(mwindow)
+						mwindow->batch_render->update_active(-1);
+					else
+						printf("Render::run: failed\n");
+				}
 			}
 		}
 
-		mwindow->batch_render->update_active(-1);
-		mwindow->batch_render->update_done(-1, 0, 0);
+		if(mwindow)
+		{
+			mwindow->batch_render->update_active(-1);
+			mwindow->batch_render->update_done(-1, 0, 0);
+		}
 	}
 }
 
@@ -381,19 +457,26 @@ void Render::start_progress()
 	char filename[BCTEXTLEN];
 	char string[BCTEXTLEN];
 	FileSystem fs;
-// Generate the progress box
-	fs.extract_name(filename, default_asset->path);
-	sprintf(string, _("Rendering %s..."), filename);
 
-// Don't bother with the filename since renderfarm defeats the meaning
-	progress = mwindow->mainprogress->start_progress(_("Rendering..."), 
-		Units::to_int64(default_asset->sample_rate * 
+	progress_max = Units::to_int64(default_asset->sample_rate * 
 			(total_end - total_start)) +
 		Units::to_int64(preferences->render_preroll * 
 			packages->total_allocated * 
-			default_asset->sample_rate));
-	render_progress = new RenderProgress(mwindow, this);
-	render_progress->start();
+			default_asset->sample_rate);
+	progress_timer->update();
+	last_eta = 0;
+	if(mwindow)
+	{
+// Generate the progress box
+		fs.extract_name(filename, default_asset->path);
+		sprintf(string, _("Rendering %s..."), filename);
+
+// Don't bother with the filename since renderfarm defeats the meaning
+		progress = mwindow->mainprogress->start_progress(_("Rendering..."), 
+			progress_max);
+		render_progress = new RenderProgress(mwindow, this);
+		render_progress->start();
+	}
 }
 
 void Render::stop_progress()
@@ -444,9 +527,17 @@ int Render::render(int test_overwrite,
 	this->default_asset = asset;
 	progress = 0;
 	result = 0;
-	preferences = new Preferences;
-	*preferences = *mwindow->preferences;
-// Create rendering commandw
+
+	if(mwindow)
+	{
+		if(!preferences)
+			preferences = new Preferences;
+
+		preferences->copy_from(mwindow->preferences);
+	}
+
+
+// Create rendering command
 	command = new TransportCommand;
 	command->command = NORMAL_FWD;
 	command->get_edl()->copy_all(edl);
@@ -469,8 +560,8 @@ int Render::render(int test_overwrite,
 	}
 
 // Create caches
-	audio_cache = new CICache(command->get_edl(), preferences, mwindow->plugindb);
-	video_cache = new CICache(command->get_edl(), preferences, mwindow->plugindb);
+	audio_cache = new CICache(command->get_edl(), preferences, plugindb);
+	video_cache = new CICache(command->get_edl(), preferences, plugindb);
 
 	default_asset->frame_rate = command->get_edl()->session->frame_rate;
 	default_asset->sample_rate = command->get_edl()->session->sample_rate;
@@ -502,7 +593,7 @@ int Render::render(int test_overwrite,
 	if(!result)
 	{
 // Stop background rendering
-		mwindow->stop_brender();
+		if(mwindow) mwindow->stop_brender();
 
 		fs.complete_path(default_asset->path);
 		strategy = Render::fix_strategy(strategy, preferences->use_renderfarm);
@@ -533,12 +624,20 @@ int Render::render(int test_overwrite,
 	if(!result)
 	{
 // Start dispatching external jobs
-		mwindow->gui->lock_window();
-		mwindow->gui->show_message(_("Starting render farm"), BLACK);
-		mwindow->gui->unlock_window();
+		if(mwindow)
+		{
+			mwindow->gui->lock_window();
+			mwindow->gui->show_message(_("Starting render farm"), BLACK);
+			mwindow->gui->unlock_window();
+		}
+		else
+		{
+			printf("Render::render: starting render farm\n");
+		}
+
 		if(strategy == SINGLE_PASS_FARM || strategy == FILE_PER_LABEL_FARM)
 		{
-			farm_server = new RenderFarmServer(mwindow, 
+			farm_server = new RenderFarmServer(plugindb, 
 				packages,
 				preferences, 
 				1,
@@ -552,15 +651,21 @@ int Render::render(int test_overwrite,
 
 			if(result)
 			{
-				mwindow->gui->lock_window();
-				mwindow->gui->show_message(_("Failed to start render farm"), BLACK);
-				mwindow->gui->unlock_window();
+				if(mwindow)
+				{
+					mwindow->gui->lock_window();
+					mwindow->gui->show_message(_("Failed to start render farm"), BLACK);
+					mwindow->gui->unlock_window();
+				}
+				else
+				{
+					printf("Render::render: Failed to start render farm\n");
+				}
 			}
 		}
 	}
 
 
-//printf("Render 5\n");
 
 
 // Perform local rendering
@@ -573,17 +678,14 @@ int Render::render(int test_overwrite,
 	
 
 
-//printf("Render 6\n");
 		MainPackageRenderer package_renderer(this);
-//printf("Render 7\n");
 		package_renderer.initialize(mwindow,
 				command->get_edl(),   // Copy of master EDL
 				preferences, 
 				default_asset,
-				mwindow->plugindb);
+				plugindb);
 
 
-//printf("Render 8\n");
 
 
 
@@ -596,9 +698,7 @@ int Render::render(int test_overwrite,
 
 			if(strategy == SINGLE_PASS_FARM)
 			{
-//printf("Render 9\n");
 				package = packages->get_package(frames_per_second, -1, 1);
-//printf("Render 10\n");
 			}
 			else
 			{
@@ -613,26 +713,27 @@ int Render::render(int test_overwrite,
 			}
 
 
-//printf("Render 11\n");
 
 			Timer timer;
 			timer.update();
 
 			if(package_renderer.render_package(package))
 				result = 1;
+
 // Result is also set directly by the RenderFarm.
-//printf("Render 12\n");
 
 			frames_per_second = (double)(package->video_end - package->video_start) / 
 				(double)(timer.get_difference() / 1000);
 
-//printf("Render 13\n");
 
 		} // file_number
+
+
 
 //printf("Render::run: Session finished.\n");
 
 
+//printf("Render::render 80\n");
 
 
 
@@ -641,36 +742,42 @@ int Render::render(int test_overwrite,
 			farm_server->wait_clients();
 		}
 
+//printf("Render::render 90\n");
 
 // Notify of error
 		if(result && 
-			!progress->is_cancelled() &&
+			(!progress || !progress->is_cancelled()) &&
 			!batch_cancelled)
 		{
-			ErrorBox error_box(PROGRAM_NAME ": Error",
-				mwindow->gui->get_abs_cursor_x(),
-				mwindow->gui->get_abs_cursor_y());
-			error_box.create_objects(_("Error rendering data."));
-			error_box.run_window();
+			if(mwindow)
+			{
+				ErrorBox error_box(PROGRAM_NAME ": Error",
+					mwindow->gui->get_abs_cursor_x(),
+					mwindow->gui->get_abs_cursor_y());
+				error_box.create_objects(_("Error rendering data."));
+				error_box.run_window();
+			}
+			else
+			{
+				printf("Render::render: Error rendering data\n");
+			}
 		}
 
 // Delete the progress box
 		stop_progress();
 
+//printf("Render::render 100\n");
 
 
 
 
 	} // !result
 
-//	mwindow->gui->lock_window();
-//	if(!result) mwindow->gui->statusbar->default_message();
-//	mwindow->gui->unlock_window();
 
 // Paste all packages into timeline if desired
 
-	if(!result && load_mode != LOAD_NOTHING)
-	{             // paste it in
+	if(!result && load_mode != LOAD_NOTHING && mwindow)
+	{
 		mwindow->gui->lock_window();
 
 
@@ -698,17 +805,18 @@ int Render::render(int test_overwrite,
 			2,
 			1,
 			1,
-			0,
+			1,
 			1,
 			0);
 		mwindow->sync_parameters(CHANGE_ALL);
 		mwindow->gui->unlock_window();
 	}
 
+//printf("Render::render 110\n");
 // Need to restart because brender always stops before render.
-	mwindow->restart_brender();
+	if(mwindow)
+		mwindow->restart_brender();
 	if(farm_server) delete farm_server;
-	delete preferences;
 	delete command;
 	delete playback_config;
 	delete audio_cache;
@@ -717,9 +825,7 @@ int Render::render(int test_overwrite,
 	delete packages;
 	in_progress = 0;
 	completion->unlock();
-	
-	if (autorender)
-		mwindow->gui->set_done(0);
+//printf("Render::render 120\n");
 
 	return result;
 }
@@ -765,13 +871,18 @@ void Render::get_starting_number(char *path,
 	int i, j;
 	int len = strlen(path);
 	char number_text[BCTEXTLEN];
-	char *ptr = path;
+	char *ptr = 0;
+	char *ptr2 = 0;
 
 	total_digits = 0;
 	number_start = 0;
 
-// Search for first 0.
-	ptr = strchr(ptr, '0');
+// Search for last /
+	ptr2 = strrchr(path, '/');
+
+// Search for first 0 after last /.
+	if(ptr2)
+		ptr = strchr(ptr2, '0');
 
 	if(ptr && isdigit(*ptr))
 	{

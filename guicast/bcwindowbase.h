@@ -2,6 +2,7 @@
 #define BCWINDOWBASE_H
 
 // Window types
+
 #define MAIN_WINDOW 0
 #define SUB_WINDOW 1
 #define POPUP_WINDOW 2

@@ -19,7 +19,7 @@ CICache::CICache(EDL *edl,
 {
 	this->edl = new EDL;
 	this->edl->create_objects();
-	*this->edl = *edl;
+	this->edl->copy_all(edl);
 	this->plugindb = plugindb;
 	this->preferences = preferences;
 	check_in_lock = new Mutex("CICache::check_in_lock");
@@ -38,7 +38,7 @@ CICache::~CICache()
 
 void CICache::set_edl(EDL *edl)
 {
-	*this->edl = *edl;
+	this->edl->copy_all(edl);
 }
 
 void CICache::update(File* &file)
@@ -105,6 +105,8 @@ File* CICache::check_out(Asset *asset)
 		}
 	}
 
+
+//printf("CICache::check_out %s\n", asset->path);
 	check_out_lock->unlock();
 
 	return result;
@@ -242,15 +244,16 @@ int CICache::dump()
 	lock_all();
 	CICacheItem *current;
 
+	printf("CICache::dump total size %lld\n", get_memory_usage());
 	for(current = first; current; current = NEXT)
 	{
-		printf("cache item %x\n", current);
-		printf("	asset %x\n", current->asset);
-		printf("	%s\n", current->asset->path);
-		printf("	counter %lld\n", current->counter);
+		printf("cache item %x asset %x %s counter %lld\n", 
+			current, 
+			current->asset,
+			current->asset->path, 
+			current->counter);
 	}
 	
-	printf("total size %lld\n", get_memory_usage());
 	unlock_all();
 }
 

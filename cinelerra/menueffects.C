@@ -9,6 +9,7 @@
 #include "indexfile.h"
 #include "keyframe.h"
 #include "keys.h"
+#include "language.h"
 #include "loadmode.h"
 #include "localsession.h"
 #include "mainmenu.h"
@@ -26,10 +27,6 @@
 #include "theme.h"
 #include "tracks.h"
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 MenuEffects::MenuEffects(MWindow *mwindow)
@@ -116,7 +113,6 @@ void MenuEffectThread::run()
 		return;
 	}
 
-//printf("MenuEffectThread::run 1\n");
 // check for plugins
 	if(!plugindb->total)
 	{
@@ -127,9 +123,7 @@ void MenuEffectThread::run()
 		return;
 	}
 
-//printf("MenuEffectThread::run 1\n");
 
-//printf("MenuEffectThread::run 1\n");
 // get default attributes for output file
 // used after completion
 	get_derived_attributes(&default_asset, defaults);
@@ -137,7 +131,6 @@ void MenuEffectThread::run()
 	load_mode = defaults->get("RENDER_EFFECT_LOADMODE", LOAD_PASTE);
 	strategy = defaults->get("RENDER_EFFECT_STRATEGY", SINGLE_PASS);
 
-//printf("MenuEffectThread::run 1\n");
 // get plugin information
 	int need_plugin;
 	if(!strlen(title)) 
@@ -145,7 +138,6 @@ void MenuEffectThread::run()
 	else 
 		need_plugin = 0;
 
-//printf("MenuEffectThread::run 1\n");
 // generate a list of plugins for the window
 	if(need_plugin)
 	{
@@ -156,14 +148,12 @@ void MenuEffectThread::run()
 			0,
 			local_plugindb);
 
-//printf("MenuEffectThread::run 1\n");
 		for(int i = 0; i < local_plugindb.total; i++)
 		{
 			plugin_list.append(new BC_ListBoxItem(local_plugindb.values[i]->title, BLACK));
 		}
 	}
 
-//printf("MenuEffectThread::run 2\n");
 // find out which effect to run and get output file
 	int plugin_number, format_error = 0;
 
@@ -179,7 +169,6 @@ void MenuEffectThread::run()
 			plugin_number = window.result;
 		}
 
-//printf("MenuEffectThread::run 3\n");
 		if(!result)
 		{
 			FormatCheck format_check(&default_asset);
@@ -187,14 +176,12 @@ void MenuEffectThread::run()
 		}
 	}while(format_error && !result);
 
-//printf("MenuEffectThread::run 4\n");
 // save defaults
 	save_derived_attributes(&default_asset, defaults);
 	defaults->update("RENDER_EFFECT_LOADMODE", load_mode);
 	defaults->update("RENDER_EFFECT_STRATEGY", strategy);
 	mwindow->save_defaults();
 
-//printf("MenuEffectThread::run 5\n");
 // get plugin server to use and delete the plugin list
 	PluginServer *plugin_server = 0;
 	PluginServer *plugin = 0;
@@ -226,7 +213,6 @@ void MenuEffectThread::run()
 		fix_menu(title);
 	}
 
-//printf("MenuEffectThread::run 6\n");
 	if(!result && !strlen(default_asset.path))
 	{
 		result = 1;        // no output path given
@@ -242,17 +228,14 @@ void MenuEffectThread::run()
 		error.create_objects(_("No effect selected."));
 		error.run_window();
 	}
-//printf("MenuEffectThread::run 7\n");
 
 // Configuration for realtime plugins.
 	KeyFrame plugin_data;        
-//printf("MenuEffectThread::run 8\n");
 
 // get selection to render
 // Range
 	double total_start, total_end;
 
-//printf("MenuEffectThread::run 9\n");
 	total_start = mwindow->edl->local_session->get_selectionstart();
 
 
@@ -264,7 +247,6 @@ void MenuEffectThread::run()
 
 
 
-//printf("MenuEffectThread::run 10\n");
 // get native units for range
 	total_start = to_units(total_start, 0);
 	total_end = to_units(total_end, 1);
@@ -275,9 +257,7 @@ void MenuEffectThread::run()
 	if(plugin && 
 		!plugin->realtime && 
 		total_end == total_start) total_end = total_start + 1;
-//printf("MenuEffectThread::run 11\n");
 
-//printf("MenuEffectThread::run 1\n");
 // Units are now in the track's units.
 	int64_t total_length = (int64_t)total_end - (int64_t)total_start;
 // length of output file
@@ -299,32 +279,24 @@ void MenuEffectThread::run()
 		if(plugin->realtime)
 		{
 // Open a prompt GUI
-//printf("MenuEffectThread::run 10 %s\n", plugin->title);
 			MenuEffectPrompt prompt(mwindow);
 			prompt.create_objects();
-			char title[1024];
+			char title[BCTEXTLEN];
 			sprintf(title, PROGRAM_NAME ": %s", plugin->title);
-//printf("MenuEffectThread::run 11 %s\n", plugin->title);
 
 // Open the plugin GUI
 			plugin->set_mwindow(mwindow);
 			plugin->set_keyframe(&plugin_data);
 			plugin->set_prompt(&prompt);
-//printf("MenuEffectThread::run 11 %s\n", plugin->title);
 			plugin->open_plugin(0, mwindow->preferences, mwindow->edl, 0, -1);
-//printf("MenuEffectThread::run 11 %s\n", plugin->title);
 			plugin->show_gui();
-//printf("MenuEffectThread::run 12 %s\n", plugin->title);
 
 // wait for user input
 			result = prompt.run_window();
-//printf("MenuEffectThread::run 13 %s\n", plugin->title);
 
 // Close plugin.
 			plugin->save_data(&plugin_data);
-//printf("MenuEffectThread::run 13 %s\n", plugin->title);
 			delete plugin;
-//printf("MenuEffectThread::run 14\n");
 			default_asset.sample_rate = mwindow->edl->session->sample_rate;
 			default_asset.frame_rate = mwindow->edl->session->frame_rate;
 			realtime = 1;
@@ -332,14 +304,12 @@ void MenuEffectThread::run()
 		else
 // ============================non realtime plugin 
 		{
-//printf("MenuEffectThread::run 15\n");
 			plugin->set_mwindow(mwindow);
-//printf("MenuEffectThread::run 16\n");
 			plugin->open_plugin(0, mwindow->preferences, mwindow->edl, 0, -1);
-//printf("MenuEffectThread::run 17\n");
-			result = plugin->get_parameters();
+			result = plugin->get_parameters((int64_t)total_start, 
+				(int64_t)total_end, 
+				get_recordable_tracks(&default_asset));
 // some plugins can change the sample rate and the frame rate
-//printf("MenuEffectThread::run 18\n");
 
 
 			if(!result)
@@ -347,7 +317,6 @@ void MenuEffectThread::run()
 				default_asset.sample_rate = plugin->get_samplerate();
 				default_asset.frame_rate = plugin->get_framerate();
 			}
-//printf("MenuEffectThread::run 19\n");
 			delete plugin;
 			realtime = 0;
 		}
@@ -466,7 +435,6 @@ void MenuEffectThread::run()
 			}
 		}
 
-//printf("MenuEffectThread::run 10\n");
 // run plugins
 		if(!result)
 		{
@@ -476,7 +444,6 @@ void MenuEffectThread::run()
 			PluginArray *plugin_array;
 			plugin_array = create_plugin_array();
 
-//printf("MenuEffectThread::run 11\n");
 			plugin_array->start_plugins(mwindow, 
 				mwindow->edl, 
 				plugin_server, 
@@ -484,34 +451,27 @@ void MenuEffectThread::run()
 				fragment_start,
 				fragment_end,
 				file);
-//printf("MenuEffectThread::run 12\n");
 			plugin_array->run_plugins();
 
-//printf("MenuEffectThread::run 13\n");
 			plugin_array->stop_plugins();
 			mwindow->sighandler->pull_file(file);
 			file->close_file();
 			asset->audio_length = file->asset->audio_length;
 			asset->video_length = file->asset->video_length;
-//printf("MenuEffectThread::run 14 %d %d\n", asset->audio_length, asset->video_length);
 			delete plugin_array;
-//printf("MenuEffectThread::run 16\n");
 		}
 
 		delete file;
 	}
 
-//printf("MenuEffectThread::run 16 %d\n", result);
 	packets.remove_all_objects();
 
 // paste output to tracks
 	if(!result && load_mode != LOAD_NOTHING)
 	{
 		mwindow->gui->lock_window();
-//printf("MenuEffectThread::run 17\n");
 		mwindow->undo->update_undo_before(title, LOAD_ALL);
 
-//printf("MenuEffectThread::run 18\n");
 		if(load_mode == LOAD_PASTE)
 			mwindow->clear(0);
 		mwindow->load_assets(&assets,
@@ -522,7 +482,6 @@ void MenuEffectThread::run()
 			mwindow->edl->session->labels_follow_edits, 
 			mwindow->edl->session->plugins_follow_edits);
 
-//printf("MenuEffectThread::run 19\n");
 
 		mwindow->save_backup();
 		mwindow->undo->update_undo_after();
@@ -539,13 +498,10 @@ void MenuEffectThread::run()
 			1,
 			0);
 		mwindow->sync_parameters(CHANGE_ALL);
-//printf("MenuEffectThread::run 22\n");
 		mwindow->gui->unlock_window();
-//printf("MenuEffectThread::run 23\n");
 	}
 
 	assets.remove_all_objects();
-//printf("MenuEffectThread::run 24\n");
 }
 
 

@@ -65,11 +65,20 @@ class PitchEngine : public CrossfadeFFT
 {
 public:
 	PitchEngine(TimeStretch *plugin);
+	~PitchEngine();
 
 
+	int read_samples(int64_t output_sample, 
+		int samples, 
+		double *buffer);
 	int signal_process();
 
 	TimeStretch *plugin;
+	double *temp;
+	double *input_buffer;
+	int input_size;
+	int input_allocated;
+	int64_t current_position;
 };
 
 class TimeStretch : public PluginAClient
@@ -105,8 +114,11 @@ public:
 	Defaults *defaults;
 	MainProgressBar *progress;
 	double scale;
+	int64_t scaled_size;
 	int64_t current_position;
 	int64_t total_written;
+	int64_t current_written;
+	int64_t total_read;
 };
 
 

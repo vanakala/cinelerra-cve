@@ -272,11 +272,11 @@ void Plugin::change_plugin(char *title,
 
 
 
-KeyFrame* Plugin::get_prev_keyframe(int64_t position)
+KeyFrame* Plugin::get_prev_keyframe(int64_t position,
+	int direction)
 {
 	KeyFrame *current = 0;
 
-TRACE("Plugin::get_prev_keyframe 1");
 // This doesn't work because edl->selectionstart doesn't change during
 // playback at the same rate as PluginClient::source_position.
 	if(position < 0)
@@ -284,60 +284,66 @@ TRACE("Plugin::get_prev_keyframe 1");
 		position = track->to_units(edl->local_session->selectionstart, 0);
 	}
 
-TRACE("Plugin::get_prev_keyframe 1");
+// Get keyframe on or before current position
 	for(current = (KeyFrame*)keyframes->last;
 		current;
 		current = (KeyFrame*)PREVIOUS)
 	{
-		if(current->position <= position) break;
+		if(direction == PLAY_FORWARD && current->position <= position) break;
+		else
+		if(direction == PLAY_REVERSE && current->position < position) break;
 	}
 
-TRACE("Plugin::get_prev_keyframe 1");
+// Nothing before current position
 	if(!current && keyframes->first)
 	{
 		current = (KeyFrame*)keyframes->first;
 	}
 	else
+// No keyframes
 	if(!current)
 	{
 		current = (KeyFrame*)keyframes->default_auto;
 	}
-UNTRACE
 
 	return current;
 }
 
-KeyFrame* Plugin::get_next_keyframe(int64_t position)
+KeyFrame* Plugin::get_next_keyframe(int64_t position,
+	int direction)
 {
 	KeyFrame *current;
 
-// This doesn't work because edl->selectionstart doesn't change during
-// playback at the same rate as PluginClient::source_position.
+// This doesn't work for playback because edl->selectionstart doesn't 
+// change during playback at the same rate as PluginClient::source_position.
 	if(position < 0)
 	{
-printf("Plugin::get_next_keyframe position < 0\n");
+//printf("Plugin::get_next_keyframe position < 0\n");
 		position = track->to_units(edl->local_session->selectionstart, 0);
 	}
 
+// Get keyframe after current position
 	for(current = (KeyFrame*)keyframes->first;
 		current;
 		current = (KeyFrame*)NEXT)
 	{
-		if(current->position > position) break;
+		if(direction == PLAY_FORWARD && current->position > position) break;
+		else
+		if(direction == PLAY_REVERSE && current->position >= position) break;
 	}
 
+// Nothing after current position
 	if(!current && keyframes->last)
 	{
 		current =  (KeyFrame*)keyframes->last;
 	}
 	else
+// No keyframes
 	if(!current)
 	{
 		current = (KeyFrame*)keyframes->default_auto;
 	}
 
-//printf("Plugin::get_next_keyframe 2 %ld %ld\n", 
-//	position, current->position);
 	return current;
 }
 
@@ -345,9 +351,9 @@ KeyFrame* Plugin::get_keyframe()
 {
 // Search for keyframe on or before selection
 	KeyFrame *result = 
-		get_prev_keyframe(track->to_units(edl->local_session->selectionstart, 0));
+		get_prev_keyframe(track->to_units(edl->local_session->selectionstart, 0), 
+			PLAY_FORWARD);
 
-//printf("Plugin::get_keyframe %p %p %p\n", result, edl, edl->session);
 // Return nearest keyframe if not in automatic keyframe generation
 	if(!edl->session->auto_keyframes)
 	{
@@ -585,7 +591,7 @@ void Plugin::dump()
 		on, 
 		shared_location.module, 
 		shared_location.plugin);
-	printf("    startproject %ld length %ld\n", startproject, length);
+	printf("    startproject %lld length %lld\n", startproject, length);
 
 	keyframes->dump();
 }

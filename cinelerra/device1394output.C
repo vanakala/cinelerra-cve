@@ -19,9 +19,9 @@
 #include <unistd.h>
 #include <sys/utsname.h>
 
-#include "avc1394.h"
-#include "avc1394_vcr.h"
-#include "rom1394.h"
+#include <libavc1394/avc1394.h>
+#include <libavc1394/avc1394_vcr.h>
+#include <libavc1394/rom1394.h>
 
 
 

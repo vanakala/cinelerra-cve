@@ -140,7 +140,7 @@ void PackageRenderer::create_output()
 
 	
 
-	file = new File;
+	file = new File(preferences);
 
 	file->set_processors(preferences->processors);
 

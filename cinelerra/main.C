@@ -1,4 +1,6 @@
 #include "arraylist.h"
+#include "batchrender.h"
+#include "bcsignals.h"
 #include "builddate.h"
 #include "filexml.h"
 #include "filesystem.h"
@@ -26,7 +28,7 @@ enum
 	DO_DEAMON_FG,
 	DO_BRENDER,
 	DO_USAGE,
-	DO_RENDER
+	DO_BATCHRENDER
 };
 
 #include "thread.h"
@@ -37,24 +39,53 @@ int main(int argc, char *argv[])
 	srand(time(0));
 	ArrayList<char*> filenames;
 	FileSystem fs;
-	
+
 	int operation = DO_GUI;
 	int deamon_port = DEAMON_PORT;
 	char deamon_path[BCTEXTLEN];
+	char config_path[BCTEXTLEN];
+	char batch_path[BCTEXTLEN];
 	int nice_value = 20;
-	char *rcfile = NULL;
+	config_path[0] = 0;
+	batch_path[0] = 0;
+	deamon_path[0] = 0;
 
 	bindtextdomain (PACKAGE, LOCALEDIR);
 	textdomain (PACKAGE);
 	setlocale (LC_MESSAGES, "");
 	setlocale (LC_CTYPE, "");
 
-
 	for(int i = 1; i < argc; i++)
 	{
 		if(!strcmp(argv[i], "-h"))
 		{
 			operation = DO_USAGE;
+		}
+		else
+		if(!strcmp(argv[i], "-r"))
+		{
+			operation = DO_BATCHRENDER;
+			if(argc > i + 1)
+			{
+				if(argv[i + 1][0] != '-')
+				{
+					strcpy(batch_path, argv[i + 1]);
+					i++;
+				}
+			}
+		}
+		else
+		if(!strcmp(argv[i], "-c"))
+		{
+			if(argc > i + 1)
+			{
+				strcpy(config_path, argv[i + 1]);
+				i++;
+			}
+			else
+			{
+				fprintf(stderr, "%s: -c needs a filename.\n", argv[0]);
+			}
 		}
 		else
 		if(!strcmp(argv[i], "-d") || !strcmp(argv[i], "-f"))
@@ -75,7 +106,13 @@ int main(int argc, char *argv[])
 		if(!strcmp(argv[i], "-b"))
 		{
 			operation = DO_BRENDER;
-			strcpy(deamon_path, argv[i + 1]);
+			if(i > argc - 2)
+			{
+				fprintf(stderr, "-b may not be used by the user.\n");
+				exit(1);
+			}
+			else
+				strcpy(deamon_path, argv[i + 1]);
 		}
 		else
 		if(!strcmp(argv[i], "-n"))
@@ -85,20 +122,6 @@ int main(int argc, char *argv[])
 				nice_value = atol(argv[i + 1]);
 				i++;
 			}
-		}
-		else
-		if(!strcmp(argv[i], "-r"))
-		{
-			operation = DO_RENDER;
-		}
-		else
-		if(!strcmp(argv[i], "-c"))
-		{
-			i++;
-			if (argc > i)
-				rcfile = argv[i];
-			else
-				operation = DO_USAGE;
 		}
 		else
 		{
@@ -117,7 +140,8 @@ int main(int argc, char *argv[])
 	if(operation == DO_GUI || 
 		operation == DO_DEAMON || 
 		operation == DO_DEAMON_FG || 
-		operation == DO_USAGE)
+		operation == DO_USAGE ||
+		operation == DO_BATCHRENDER)
 	fprintf(stderr, 
 		PROGRAM_NAME " " 
 		CINELERRA_VERSION " " 
@@ -136,16 +160,17 @@ PROGRAM_NAME " is free software, covered by the GNU General Public License,\n"
 	{
 		case DO_USAGE:
 			printf(_("\nUsage:\n"));
-			printf(_("%s [-c rcfile] [[-d [port]]|[-d [port]] [-n nice]]|[-r file]|[file...]\n"), argv[0]);
-			printf(_("-c = Load alternate rcfile instead of Cinelerra_rc.\n"));
-			printf(_("-d = Run in the background as renderfarm client.\n"));
-			printf(_("-f = Run in the foreground as renderfarm client.\n"));
-			printf(_("-n = Nice value if running as renderfarm client.\n"));
-			printf(_("-r = Render file using current settings and exit.\n"));
-			printf(_("rcfile = Rcfile to load.\n"));
-			printf(_("port = Port for client to listen on. (400)\n"));
-			printf(_("file = File to process.\n"));
-			printf(_("nice = Nice value to switch to.\n\n\n"));
+			printf(_("%s [-f] [-c configuration] [-d port] [-n nice] [-r batch file] [filenames]\n\n"), argv[0]);
+			printf(_("-d = Run in the background as renderfarm client.  The port (400) is optional.\n"));
+			printf(_("-f = Run in the foreground as renderfarm client.  Substitute for -d.\n"));
+			printf(_("-n = Nice value if running as renderfarm client. (20)\n"));
+			printf(_("-c = Configuration file to use instead of %s%s.\n"), 
+				BCASTDIR, 
+				CONFIG_FILE);
+			printf(_("-r = batch render the contents of the batch file (%s%s) with no GUI.  batch file is optional.\n"), 
+				BCASTDIR, 
+				BATCH_PATH);
+			printf(_("filenames = files to load\n\n\n"));
 			exit(0);
 			break;
 
@@ -163,7 +188,10 @@ PROGRAM_NAME " is free software, covered by the GNU General Public License,\n"
 				}
 			}
 
-			RenderFarmClient client(deamon_port, 0, nice_value, rcfile);
+			RenderFarmClient client(deamon_port, 
+				0, 
+				nice_value, 
+				config_path);
 			client.main_loop();
 			break;
 		}
@@ -171,31 +199,43 @@ PROGRAM_NAME " is free software, covered by the GNU General Public License,\n"
 // Same thing without detachment
 		case DO_BRENDER:
 		{
-			RenderFarmClient client(0, deamon_path, 20, rcfile);
+			RenderFarmClient client(0, 
+				deamon_path, 
+				20,
+				config_path);
 			client.main_loop();
 			break;
 		}
 
+		case DO_BATCHRENDER:
+		{
+			BatchRenderThread *thread = new BatchRenderThread;
+			thread->start_rendering(config_path, 
+				batch_path);
+			break;
+		}
+
 		case DO_GUI:
-		case DO_RENDER:
 		{
 			MWindow mwindow;
-			mwindow.create_objects(1, !filenames.total, rcfile);
+			mwindow.create_objects(1, 
+				!filenames.total,
+				config_path);
 
 // load the initial files on seperate tracks
 			if(filenames.total)
 			{
 				mwindow.gui->lock_window();
 				mwindow.load_filenames(&filenames, LOAD_REPLACE);
-				if(filenames.total == 1) 
+				if(filenames.total == 1)
 					mwindow.gui->mainmenu->add_load(filenames.values[0]);
 				mwindow.gui->unlock_window();
 			}
 
 // run the program
-			mwindow.start(operation == DO_RENDER);
-//			mwindow.gui->run_window();
+			mwindow.start();
 			mwindow.save_defaults();
+DISABLE_BUFFER
 			break;
 		}
 	}

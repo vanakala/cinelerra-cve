@@ -299,6 +299,8 @@ noinst_HEADERS = aattachmentpoint.h \
 		 auto.h \
 		 automation.h \
 		 autos.h \
+		 avc1394.h \
+		 avc1394transport.h \
 		 awindowgui.h \
 		 awindow.h \
 		 awindowmenu.h \
@@ -373,6 +375,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 formattools.h \
 		 formatwindow.h \
 		 headers.h \
+		 ieee1394-ioctl.h \
 		 indexfile.h \
 		 indexthread.h \
 		 intauto.h \

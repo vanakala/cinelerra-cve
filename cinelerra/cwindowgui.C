@@ -81,7 +81,7 @@ int CWindowGUI::create_objects()
 {
 	set_icon(mwindow->theme->cwindow_icon);
 
-	mwindow->theme->get_cwindow_sizes(this);
+	mwindow->theme->get_cwindow_sizes(this, mwindow->session->cwindow_controls);
 	mwindow->theme->draw_cwindow_bg(this);
 	flash();
 
@@ -175,7 +175,7 @@ int CWindowGUI::resize_event(int w, int h)
 	mwindow->session->cwindow_h = h;
 
 //printf("CWindowGUI::resize_event 1\n");
-	mwindow->theme->get_cwindow_sizes(this);
+	mwindow->theme->get_cwindow_sizes(this, mwindow->session->cwindow_controls);
 	mwindow->theme->draw_cwindow_bg(this);
 	flash();
 
@@ -238,17 +238,13 @@ int CWindowGUI::resize_event(int w, int h)
 // refresh it anyway.
 void CWindowGUI::set_operation(int value)
 {
-//printf("CWindowGUI::set_operation 1 %d\n", value);
 	mwindow->edl->session->cwindow_operation = value;
-//printf("CWindowGUI::set_operation 1 %d\n", value);
 
 	composite_panel->set_operation(value);
-//printf("CWindowGUI::set_operation 1 %d\n", value);
 	edit_panel->update();
 
 	tool_panel->start_tool(value);
 	canvas->draw_refresh();
-//printf("CWindowGUI::set_operation 2 %d\n", value);
 }
 
 void CWindowGUI::update_tool()
@@ -459,9 +455,8 @@ CWindowMeters::~CWindowMeters()
 
 int CWindowMeters::change_status_event()
 {
-//printf("CWindowMeters::change_status_event 1 %d\n", gui->meters->use_meters);
 	mwindow->edl->session->cwindow_meter = use_meters;
-	mwindow->theme->get_cwindow_sizes(gui);
+	mwindow->theme->get_cwindow_sizes(gui, mwindow->session->cwindow_controls);
 	gui->resize_event(gui->get_w(), gui->get_h());
 	return 1;
 }
@@ -501,19 +496,25 @@ int CWindowZoom::handle_event()
 		mwindow->edl->session->cwindow_scrollbars = 1;
 	}
 
-//printf("CWindowZoom::handle_event 1 %d %d\n", gui->canvas->get_xscroll(), gui->canvas->get_yscroll());
-	gui->canvas->update_zoom(gui->canvas->get_xscroll(), 
-		gui->canvas->get_yscroll(), 
-		get_value());
-//printf("CWindowZoom::handle_event 2 %d %d\n", gui->canvas->get_xscroll(), gui->canvas->get_yscroll());
+	float old_zoom = mwindow->edl->session->cwindow_zoom;
+	float new_zoom = get_value();
+	float x = gui->canvas->w / 2;
+	float y = gui->canvas->h / 2;
+	gui->canvas->canvas_to_output(mwindow->edl, 
+				0, 
+				x, 
+				y);
+	x -= gui->canvas->w_visible / 2 * old_zoom / new_zoom;
+	y -= gui->canvas->h_visible / 2 * old_zoom / new_zoom;
+	gui->canvas->update_zoom((int)x, 
+		(int)y, 
+		new_zoom);
 	gui->canvas->reposition_window(mwindow->edl, 
 		mwindow->theme->ccanvas_x,
 		mwindow->theme->ccanvas_y,
 		mwindow->theme->ccanvas_w,
 		mwindow->theme->ccanvas_h);
-//printf("CWindowZoom::handle_event 3 %d %d\n", gui->canvas->get_xscroll(), gui->canvas->get_yscroll());
 	gui->canvas->draw_refresh();
-//printf("CWindowZoom::handle_event 4 %d %d\n", gui->canvas->get_xscroll(), gui->canvas->get_yscroll());
 	return 1;
 }
 
@@ -714,8 +715,9 @@ void CWindowCanvas::draw_refresh()
 				out_h);
 
 
-// printf("CWindowCanvas::draw_refresh %d %d %d %d -> %d %d %d %d\n", in_x, in_y, in_w, in_h, out_x, out_y, out_w, out_h);
-// 			canvas->clear_box(0, 0, canvas->get_w(), canvas->get_h());
+// printf("CWindowCanvas::draw_refresh %d %d %d %d -> %d %d %d %d\n", 
+// in_x, in_y, in_w, in_h, out_x, out_y, out_w, out_h);
+//canvas->clear_box(0, 0, canvas->get_w(), canvas->get_h());
 
 
 //printf("CWindowCanvas::draw_refresh 5\n");
@@ -1130,7 +1132,6 @@ int CWindowCanvas::do_mask(int &redraw,
 
 	if(button_press && !result)
 	{
-//printf("CWindowCanvas::do_mask 5\n");
 		gui->affected_track = gui->cwindow->calculate_affected_track();
 // Get current keyframe
 		if(gui->affected_track)
@@ -1140,7 +1141,6 @@ int CWindowCanvas::do_mask(int &redraw,
 		MaskAuto *keyframe = (MaskAuto*)gui->affected_auto;
 		SubMask *mask = keyframe->get_submask(mwindow->edl->session->cwindow_mask);
 
-//printf("CWindowCanvas::do_mask 6 %d %d\n", gui->alt_down(), mask->points.total);
 
 // Translate entire keyframe
 		if(gui->alt_down() && mask->points.total)
@@ -1186,6 +1186,9 @@ int CWindowCanvas::do_mask(int &redraw,
 
 
 
+// printf("CWindowGUI::do_mask 40\n");
+// mwindow->edl->dump();
+// printf("CWindowGUI::do_mask 50\n");
 
 
 
@@ -1221,15 +1224,21 @@ int CWindowCanvas::do_mask(int &redraw,
 					current; )
 				{
 					SubMask *submask = current->get_submask(mwindow->edl->session->cwindow_mask);
-					MaskPoint *new_point = new MaskPoint;
-					submask->points.append(0);
-					for(int i = submask->points.total - 1; 
-						i > shortest_point2; 
-						i--)
-						submask->points.values[i] = submask->points.values[i - 1];
-					submask->points.values[shortest_point2] = new_point;
+// In case the keyframe point count isn't synchronized with the rest of the keyframes,
+// avoid a crash.
+					if(submask->points.total >= shortest_point2)
+					{
+						MaskPoint *new_point = new MaskPoint;
+						submask->points.append(0);
+						for(int i = submask->points.total - 1; 
+							i > shortest_point2; 
+							i--)
+							submask->points.values[i] = submask->points.values[i - 1];
+						submask->points.values[shortest_point2] = new_point;
 
-					*new_point = *point;
+						*new_point = *point;
+					}
+
 					if(current == (MaskAuto*)mask_autos->default_auto)
 						current = (MaskAuto*)mask_autos->first;
 					else
@@ -1240,9 +1249,11 @@ int CWindowCanvas::do_mask(int &redraw,
 				gui->affected_point = shortest_point2;
 				result = 1;
 			}
-//printf("CWindowCanvas::do_mask 3 %d\n", mask->points.total);
 
 
+// printf("CWindowGUI::do_mask 20\n");
+// mwindow->edl->dump();
+// printf("CWindowGUI::do_mask 30\n");
 
 
 
@@ -1287,19 +1298,19 @@ int CWindowCanvas::do_mask(int &redraw,
 
 
 
-//printf("CWindowCanvas::do_mask 2 %d %d %f %f\n", get_cursor_x(), get_cursor_y(), gui->affected_point->x, gui->affected_point->y);
 			gui->current_operation = mwindow->edl->session->cwindow_operation;
 // Delete the template
 			delete point;
+//printf("CWindowGUI::do_mask 1\n");
 			mwindow->undo->update_undo_after();
-//printf("CWindowCanvas::do_mask 4\n");
+//printf("CWindowGUI::do_mask 10\n");
+
 		}
 
 		result = 1;
 		rerender = 1;
 		redraw = 1;
 	}
-//printf("CWindowCanvas::do_mask 7\n");
 
 	if(button_press && result)
 	{
@@ -1558,41 +1569,42 @@ int CWindowCanvas::test_crop(int button_press, int &redraw)
 	output_to_canvas(mwindow->edl, 0, canvas_x1, canvas_y1);
 	output_to_canvas(mwindow->edl, 0, canvas_x2, canvas_y2);
 
+
 	if(gui->current_operation == CWINDOW_CROP)
 	{
-		// do nothing
+		handle_selected = gui->crop_handle;
 	}
 	else
 	if(canvas_cursor_x >= canvas_x1 && canvas_cursor_x < canvas_x1 + CROPHANDLE_W &&
 		canvas_cursor_y >= canvas_y1 && canvas_cursor_y < canvas_y1 + CROPHANDLE_H)
 	{
 		handle_selected = 0;
-		gui->crop_origin_x = x2;
-		gui->crop_origin_y = y2;
+		gui->crop_origin_x = x1;
+		gui->crop_origin_y = y1;
 	}
 	else
 	if(canvas_cursor_x >= canvas_x2 - CROPHANDLE_W && canvas_cursor_x < canvas_x2 &&
 		canvas_cursor_y >= canvas_y1 && canvas_cursor_y < canvas_y1 + CROPHANDLE_H)
 	{
 		handle_selected = 1;
-		gui->crop_origin_x = x1;
-		gui->crop_origin_y = y2;
+		gui->crop_origin_x = x2;
+		gui->crop_origin_y = y1;
 	}
 	else
 	if(canvas_cursor_x >= canvas_x1 && canvas_cursor_x < canvas_x1 + CROPHANDLE_W &&
 		canvas_cursor_y >= canvas_y2 - CROPHANDLE_H && canvas_cursor_y < canvas_y2)
 	{
 		handle_selected = 2;
-		gui->crop_origin_x = x2;
-		gui->crop_origin_y = y1;
+		gui->crop_origin_x = x1;
+		gui->crop_origin_y = y2;
 	}
 	else
 	if(canvas_cursor_x >= canvas_x2 - CROPHANDLE_W && canvas_cursor_x < canvas_x2 &&
 		canvas_cursor_y >= canvas_y2 - CROPHANDLE_H && canvas_cursor_y < canvas_y2)
 	{
 		handle_selected = 3;
-		gui->crop_origin_x = x1;
-		gui->crop_origin_y = y1;
+		gui->crop_origin_x = x2;
+		gui->crop_origin_y = y2;
 	}
 	else
 // Start new box
@@ -1601,10 +1613,17 @@ int CWindowCanvas::test_crop(int button_press, int &redraw)
 		gui->crop_origin_y = cursor_y;
 	}
 
+// printf("test crop %d %d\n", 
+// 	gui->current_operation,
+// 	handle_selected);
+
 // Start dragging.
 	if(button_press)
 	{
 		gui->current_operation = CWINDOW_CROP;
+		gui->crop_handle = handle_selected;
+		gui->x_origin = cursor_x;
+		gui->y_origin = cursor_y;
 		result = 1;
 
 		if(handle_selected < 0) 
@@ -1622,45 +1641,73 @@ int CWindowCanvas::test_crop(int button_press, int &redraw)
 // Update dragging
 	if(gui->current_operation == CWINDOW_CROP)
 	{
-		x1 = gui->crop_origin_x;
-		y1 = gui->crop_origin_y;
-		x2 = cursor_x;
-		y2 = cursor_y;
+		float x_difference, y_difference;
+		if(gui->crop_handle >= 0)
+		{
+			float zoom_x, zoom_y, conformed_w, conformed_h;
+			get_zooms(mwindow->edl, 0, zoom_x, zoom_y, conformed_w, conformed_h);
+			x_difference = cursor_x - gui->x_origin;
+		}
+
+		switch(gui->crop_handle)
+		{
+			case -1:
+				x1 = gui->crop_origin_x;
+				y1 = gui->crop_origin_y;
+				x2 = gui->crop_origin_x;
+				y2 = gui->crop_origin_y;
+				if(cursor_x < gui->x_origin)
+				{
+					if(cursor_y < gui->y_origin)
+					{
+						x1 = cursor_x;
+						y1 = cursor_y;
+					}
+					else
+					if(cursor_y >= gui->y_origin)
+					{
+						x1 = cursor_x;
+						y2 = cursor_y;
+					}
+				}
+				else
+				if(cursor_x  >= gui->x_origin)
+				{
+					if(cursor_y < gui->y_origin)
+					{
+						y1 = cursor_y;
+						x2 = cursor_x;
+					}
+					else
+					if(cursor_y >= gui->y_origin)
+					{
+						x2 = cursor_x;
+						y2 = cursor_y;
+					}
+				}
 
 // printf("test crop %d %d %d %d\n", 
 // 	mwindow->edl->session->crop_x1,
 // 	mwindow->edl->session->crop_y1,
 // 	mwindow->edl->session->crop_x2,
 // 	mwindow->edl->session->crop_y2);
-	
-		handle_selected = 3; // situation, before switching coordinates
-	
-		if (x1 > x2) {
-			float tmp = x1;
-			x1 = x2;
-			x2 = tmp;
-			switch (handle_selected) 
-			{
-				case 0:	handle_selected = 1; break;
-				case 1:	handle_selected = 0; break;
-				case 2:	handle_selected = 3; break;
-				case 3:	handle_selected = 2; break;
-				default: break;
-			}
- 
-		}
-		if (y1 > y2) {
-			float tmp = y1;
-			y1 = y2;
-			y2 = tmp;
-			switch (handle_selected) 
-			{
-				case 0:	handle_selected = 2; break;
-				case 1:	handle_selected = 3; break;
-				case 2:	handle_selected = 0; break;
-				case 3:	handle_selected = 1; break;
-				default: break;
-			}
+				break;
+			case 0:
+				x1 = cursor_x - gui->x_origin + gui->crop_origin_x;
+				y1 = cursor_y - gui->y_origin + gui->crop_origin_y;
+				break;
+			case 1:
+				x2 = cursor_x - gui->x_origin + gui->crop_origin_x;
+				y1 = cursor_y - gui->y_origin + gui->crop_origin_y;
+				break;
+			case 2:
+				x1 = cursor_x - gui->x_origin + gui->crop_origin_x;
+				y2 = cursor_y - gui->y_origin + gui->crop_origin_y;
+				break;
+			case 3:
+				x2 = cursor_x - gui->x_origin + gui->crop_origin_x;
+				y2 = cursor_y - gui->y_origin + gui->crop_origin_y;
+				break;
 		}
 
 		if(!EQUIV(mwindow->edl->session->crop_x1, x1) ||
@@ -1668,6 +1715,36 @@ int CWindowCanvas::test_crop(int button_press, int &redraw)
 			!EQUIV(mwindow->edl->session->crop_y1, y1) ||
 			!EQUIV(mwindow->edl->session->crop_y2, y2))
 		{
+			if (x1 > x2) 
+			{
+				float tmp = x1;
+				x1 = x2;
+				x2 = tmp;
+				switch (gui->crop_handle) 
+				{
+					case 0:	gui->crop_handle = 1; break;
+					case 1:	gui->crop_handle = 0; break;
+					case 2:	gui->crop_handle = 3; break;
+					case 3:	gui->crop_handle = 2; break;
+					default: break;
+				}
+
+			}
+			if (y1 > y2) 
+			{
+				float tmp = y1;
+				y1 = y2;
+				y2 = tmp;
+				switch (gui->crop_handle) 
+				{
+					case 0:	gui->crop_handle = 2; break;
+					case 1:	gui->crop_handle = 3; break;
+					case 2:	gui->crop_handle = 0; break;
+					case 3:	gui->crop_handle = 1; break;
+					default: break;
+				}
+			}
+
 			mwindow->edl->session->crop_x1 = (int)x1;
 			mwindow->edl->session->crop_y1 = (int)y1;
 			mwindow->edl->session->crop_x2 = (int)x2;
@@ -1675,28 +1752,32 @@ int CWindowCanvas::test_crop(int button_press, int &redraw)
 			result = 1;
 			redraw = 1;
 		}
-
 	}
-// Update cursor font, always!
-	switch(handle_selected)
+	else
+// Update cursor font
+	if(handle_selected >= 0)
 	{
-		case -1:
-			set_cursor(ARROW_CURSOR);
-			break;
-		case 0:
-			set_cursor(UPLEFT_RESIZE);
-			break;
-		case 1:
-			set_cursor(UPRIGHT_RESIZE);
-			break;
-		case 2:
-			set_cursor(DOWNLEFT_RESIZE);
-			break;
-		case 3:
-			set_cursor(DOWNRIGHT_RESIZE);
-			break;
+		switch(handle_selected)
+		{
+			case 0:
+				set_cursor(UPLEFT_RESIZE);
+				break;
+			case 1:
+				set_cursor(UPRIGHT_RESIZE);
+				break;
+			case 2:
+				set_cursor(DOWNLEFT_RESIZE);
+				break;
+			case 3:
+				set_cursor(DOWNRIGHT_RESIZE);
+				break;
+		}
+		result = 1;
 	}
-
+	else
+	{
+		set_cursor(ARROW_CURSOR);
+	}
 #define CLAMP(x, y, z) ((x) = ((x) < (y) ? (y) : ((x) > (z) ? (z) : (x))))
 	
 	if(redraw)
@@ -1874,15 +1955,18 @@ int CWindowCanvas::do_bezier_center(BezierAuto *current,
 
 	if(draw)
 	{
+// Drop shadow
 		canvas->set_color(BLACK);
 		DRAW_THING(1);
 
+		canvas->set_inverse();
 		if(current->position > position)
 			canvas->set_color(GREEN);
 		else
 			canvas->set_color(RED);
 
 		DRAW_THING(0);
+		canvas->set_opaque();
 // printf("CWindowCanvas::do_bezier_center 2 %f,%f %f,%f\n", 
 // control_in_x, 
 // control_in_y, 
@@ -1991,15 +2075,18 @@ void CWindowCanvas::draw_bezier_joining(BezierAuto *first,
 		output_to_canvas(mwindow->edl, 0, x1, y1);
 		output_to_canvas(mwindow->edl, 0, x2, y2);
 
-		canvas->set_color(BLACK);
-		canvas->draw_line((int)x1 + 1, (int)y1 + 1, (int)x2 + 1, (int)y2 + 1);
+// Drop shadow
+//		canvas->set_color(BLACK);
+//		canvas->draw_line((int)x1 + 1, (int)y1 + 1, (int)x2 + 1, (int)y2 + 1);
 
 		if(frame >= position)
 			canvas->set_color(GREEN);
 		else
 			canvas->set_color(RED);
 
+		canvas->set_inverse();
 		canvas->draw_line((int)x1, (int)y1, (int)x2, (int)y2);
+		canvas->set_opaque();
 		old_x = new_x;
 		old_y = new_y;
 	}
@@ -2534,7 +2621,6 @@ int CWindowCanvas::cursor_motion_event()
 			int x = (int)(gui->x_origin - cursor_x + gui->x_offset);
 			int y = (int)(gui->y_origin - cursor_y + gui->y_offset);
 
-
 			update_zoom(x, 
 				y, 
 				zoom);
@@ -2722,3 +2808,17 @@ void CWindowCanvas::zoom_resize_window(float percentage)
 	gui->resize_window(new_w, new_h);
 	gui->resize_event(new_w, new_h);
 }
+
+void CWindowCanvas::toggle_controls()
+{
+	mwindow->session->cwindow_controls = !mwindow->session->cwindow_controls;
+	gui->resize_event(gui->get_w(), gui->get_h());
+}
+
+int CWindowCanvas::get_cwindow_controls()
+{
+	return mwindow->session->cwindow_controls;
+}
+
+
+

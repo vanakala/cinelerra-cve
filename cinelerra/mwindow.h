@@ -64,10 +64,12 @@ public:
 	~MWindow();
 
 // ======================================== initialization commands
-	void create_objects(int want_gui, int want_new, char *rcfile);
+	void create_objects(int want_gui, 
+		int want_new,
+		char *config_path);
 	void show_splash();
 	void hide_splash();
-	void start(int autorender);
+	void start();
 	static void init_tuner(ArrayList<Channel*> &channeldb, char *path);
 
 	int run_script(FileXML *script);
@@ -172,7 +174,8 @@ public:
 	void show_plugin(Plugin *plugin);
 	void hide_plugin(Plugin *plugin, int lock);
 	void hide_plugins();
-// Update plugins with configuration changes
+// Update plugins with configuration changes.
+// Called by TrackCanvas::cursor_motion_event.
 	void update_plugin_guis();
 	void update_plugin_states();
 	void update_plugin_titles();
@@ -413,7 +416,8 @@ public:
 	int brender_available(int position);
 	void set_brender_start();
 
-	static void init_defaults(Defaults* &defaults, char *cfgfile);
+	static void init_defaults(Defaults* &defaults, 
+		char *config_path);
 	void init_edl();
 	void init_awindow();
 // Used by MWindow and RenderFarmClient

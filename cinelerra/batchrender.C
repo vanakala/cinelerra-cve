@@ -59,9 +59,9 @@ int BatchRenderMenuItem::handle_event()
 
 
 
-BatchRenderJob::BatchRenderJob(MWindow *mwindow)
+BatchRenderJob::BatchRenderJob(Preferences *preferences)
 {
-	this->mwindow = mwindow;
+	this->preferences = preferences;
 	asset = new Asset;
 	edl_path[0] = 0;
 	strategy = 0;
@@ -123,7 +123,7 @@ void BatchRenderJob::save(FileXML *file)
 
 void BatchRenderJob::fix_strategy()
 {
-	strategy = Render::fix_strategy(strategy, mwindow->preferences->use_renderfarm);
+	strategy = Render::fix_strategy(strategy, preferences->use_renderfarm);
 }
 
 
@@ -142,14 +142,28 @@ BatchRenderThread::BatchRenderThread(MWindow *mwindow)
 	current_job = 0;
 	rendering_job = -1;
 	is_rendering = 0;
+	default_job = 0;
+}
+
+BatchRenderThread::BatchRenderThread()
+ : BC_DialogThread()
+{
+	mwindow = 0;
+	current_job = 0;
+	rendering_job = -1;
+	is_rendering = 0;
+	default_job = 0;
 }
 
 void BatchRenderThread::handle_close_event(int result)
 {
 // Save settings
-	save_jobs();
-	save_defaults();
+	char path[BCTEXTLEN];
+	path[0] = 0;
+	save_jobs(path);
+	save_defaults(mwindow->defaults);
 	delete default_job;
+	default_job = 0;
 	jobs.remove_all_objects();
 }
 
@@ -157,10 +171,12 @@ BC_Window* BatchRenderThread::new_gui()
 {
 	current_start = 0.0;
 	current_end = 0.0;
-	default_job = new BatchRenderJob(mwindow);
+	default_job = new BatchRenderJob(mwindow->preferences);
 
-	load_jobs();
-	load_defaults();
+	char path[BCTEXTLEN];
+	path[0] = 0;
+	load_jobs(path, mwindow->preferences);
+	load_defaults(mwindow->defaults);
 	this->gui = new BatchRenderGUI(mwindow, 
 		this,
 		mwindow->session->batchrender_x,
@@ -172,14 +188,16 @@ BC_Window* BatchRenderThread::new_gui()
 }
 
 
-void BatchRenderThread::load_jobs()
+void BatchRenderThread::load_jobs(char *path, Preferences *preferences)
 {
-	char path[BCTEXTLEN];
 	FileXML file;
 	int result = 0;
 
 	jobs.remove_all_objects();
-	file.read_from_file(create_path(path));
+	if(path[0])
+		file.read_from_file(path);
+	else
+		file.read_from_file(create_path(path));
 
 	while(!result)
 	{
@@ -188,16 +206,15 @@ void BatchRenderThread::load_jobs()
 			if(file.tag.title_is("JOB"))
 			{
 				BatchRenderJob *job;
-				jobs.append(job = new BatchRenderJob(mwindow));
+				jobs.append(job = new BatchRenderJob(preferences));
 				job->load(&file);
 			}
 		}
 	}
 }
 
-void BatchRenderThread::save_jobs()
+void BatchRenderThread::save_jobs(char *path)
 {
-	char path[BCTEXTLEN];
 	FileXML file;
 
 	for(int i = 0; i < jobs.total; i++)
@@ -205,47 +222,59 @@ void BatchRenderThread::save_jobs()
 		file.tag.set_title("JOB");
 		jobs.values[i]->save(&file);
 	}
-	file.write_to_file(create_path(path));
+
+	if(path[0])
+		file.write_to_file(path);
+	else
+		file.write_to_file(create_path(path));
 }
 
-void BatchRenderThread::load_defaults()
+void BatchRenderThread::load_defaults(Defaults *defaults)
 {
-	default_job->asset->load_defaults(mwindow->defaults,
-		"BATCHRENDER_",
-		1,
-		1,
-		1,
-		1,
-		1);
-	default_job->fix_strategy();
+	if(default_job)
+	{
+		default_job->asset->load_defaults(defaults,
+			"BATCHRENDER_",
+			1,
+			1,
+			1,
+			1,
+			1);
+		default_job->fix_strategy();
+	}
 
 	for(int i = 0; i < BATCHRENDER_COLUMNS; i++)
 	{
 		char string[BCTEXTLEN];
 		sprintf(string, "BATCHRENDER_COLUMN%d", i);
-		column_width[i] = mwindow->defaults->get(string, list_widths[i]);
+		column_width[i] = defaults->get(string, list_widths[i]);
 	}
-//	current_job = mwindow->defaults->get("BATCHRENDER_JOB", 0);
 }
 
-void BatchRenderThread::save_defaults()
+void BatchRenderThread::save_defaults(Defaults *defaults)
 {
-	default_job->asset->save_defaults(mwindow->defaults,
-		"BATCHRENDER_",
-		1,
-		1,
-		1,
-		1,
-		1);
-	mwindow->defaults->update("BATCHRENDER_STRATEGY", default_job->strategy);
+	if(default_job)
+	{
+		default_job->asset->save_defaults(defaults,
+			"BATCHRENDER_",
+			1,
+			1,
+			1,
+			1,
+			1);
+		defaults->update("BATCHRENDER_STRATEGY", default_job->strategy);
+	}
 	for(int i = 0; i < BATCHRENDER_COLUMNS; i++)
 	{
 		char string[BCTEXTLEN];
 		sprintf(string, "BATCHRENDER_COLUMN%d", i);
-		mwindow->defaults->update(string, column_width[i]);
+		defaults->update(string, column_width[i]);
 	}
-//	mwindow->defaults->update("BATCHRENDER_JOB", current_job);
-	mwindow->save_defaults();
+//	defaults->update("BATCHRENDER_JOB", current_job);
+	if(mwindow)
+		mwindow->save_defaults();
+	else
+		defaults->save();
 }
 
 char* BatchRenderThread::create_path(char *string)
@@ -253,13 +282,13 @@ char* BatchRenderThread::create_path(char *string)
 	FileSystem fs;
 	sprintf(string, "%s", BCASTDIR);
 	fs.complete_path(string);
-	strcat(string, "batchrender.rc");
+	strcat(string, BATCH_PATH);
 	return string;
 }
 
 void BatchRenderThread::new_job()
 {
-	BatchRenderJob *result = new BatchRenderJob(mwindow);
+	BatchRenderJob *result = new BatchRenderJob(mwindow->preferences);
 	result->copy_from(get_current_job());
 	jobs.append(result);
 	current_job = jobs.total - 1;
@@ -303,17 +332,10 @@ char* BatchRenderThread::get_current_edl()
 	return get_current_job()->edl_path;
 }
 
-void BatchRenderThread::start_rendering()
-{
-	if(is_rendering) return;
-
-	is_rendering = 1;
-	save_jobs();
-	save_defaults();
-	gui->new_batch->disable();
-	gui->delete_batch->disable();
 
 // Test EDL files for existence
+int BatchRenderThread::test_edl_files()
+{
 	for(int i = 0; i < jobs.total; i++)
 	{
 		if(jobs.values[i]->enabled)
@@ -321,18 +343,27 @@ void BatchRenderThread::start_rendering()
 			FILE *fd = fopen(jobs.values[i]->edl_path, "r");
 			if(!fd)
 			{
-				ErrorBox error_box(PROGRAM_NAME ": Error",
-					mwindow->gui->get_abs_cursor_x(),
-					mwindow->gui->get_abs_cursor_y());
 				char string[BCTEXTLEN];
 				sprintf(string, _("EDL %s not found.\n"), jobs.values[i]->edl_path);
-				error_box.create_objects(string);
-				error_box.run_window();
+				if(mwindow)
+				{
+					ErrorBox error_box(PROGRAM_NAME ": Error",
+						mwindow->gui->get_abs_cursor_x(),
+						mwindow->gui->get_abs_cursor_y());
+					error_box.create_objects(string);
+					error_box.run_window();
+					gui->new_batch->enable();
+					gui->delete_batch->enable();
+				}
+				else
+				{
+					fprintf(stderr, 
+						"%s",
+						string);
+				}
+
 				is_rendering = 0;
-				gui->new_batch->enable();
-				gui->delete_batch->enable();
-				is_rendering = 0;
-				return;
+				return 1;
 			}
 			else
 			{
@@ -340,9 +371,13 @@ void BatchRenderThread::start_rendering()
 			}
 		}
 	}
+	return 0;
+}
 
-// Predict all destination paths
-	ArrayList<char*> paths;
+void BatchRenderThread::calculate_dest_paths(ArrayList<char*> *paths,
+	Preferences *preferences,
+	ArrayList<PluginServer*> *plugindb)
+{
 	for(int i = 0; i < jobs.total; i++)
 	{
 		BatchRenderJob *job = jobs.values[i];
@@ -357,7 +392,7 @@ void BatchRenderThread::start_rendering()
 
 // Use command to calculate range.
 			command->command = NORMAL_FWD;
-			command->get_edl()->load_xml(mwindow->plugindb, 
+			command->get_edl()->load_xml(plugindb, 
 				file, 
 				LOAD_ALL);
 			command->change_type = CHANGE_ALL;
@@ -367,7 +402,7 @@ void BatchRenderThread::start_rendering()
 // Create test packages
 			packages->create_packages(mwindow,
 				command->get_edl(),
-				mwindow->preferences,
+				preferences,
 				job->strategy, 
 				job->asset, 
 				command->start_position, 
@@ -378,7 +413,7 @@ void BatchRenderThread::start_rendering()
 			for(int j = 0; j < packages->get_total_packages(); j++)
 			{
 				RenderPackage *package = packages->get_package(j);
-				paths.append(strdup(package->path));
+				paths->append(strdup(package->path));
 			}
 
 // Delete package harness
@@ -387,7 +422,69 @@ void BatchRenderThread::start_rendering()
 			delete file;
 		}
 	}
+}
 
+
+void BatchRenderThread::start_rendering(char *config_path,
+	char *batch_path)
+{
+	Defaults *boot_defaults;
+	Preferences *preferences;
+	Render *render;
+	ArrayList<PluginServer*> *plugindb;
+
+// Initialize stuff which MWindow does.
+	MWindow::init_defaults(boot_defaults, config_path);
+	load_defaults(boot_defaults);
+	preferences = new Preferences;
+	preferences->load_defaults(boot_defaults);
+	MWindow::init_plugins(preferences, plugindb, 0);
+
+	load_jobs(batch_path, preferences);
+	save_jobs(batch_path);
+	save_defaults(boot_defaults);
+
+// Test EDL files for existence
+	if(test_edl_files()) return;
+
+
+// Predict all destination paths
+	ArrayList<char*> paths;
+	calculate_dest_paths(&paths,
+		preferences,
+		plugindb);
+
+	int result = ConfirmSave::test_files(0, &paths);
+// Abort on any existing file because it's so hard to set this up.
+	if(result) return;
+
+	render = new Render(0);
+	render->start_batches(&jobs, 
+		boot_defaults,
+		preferences,
+		plugindb);
+}
+
+void BatchRenderThread::start_rendering()
+{
+	if(is_rendering) return;
+
+	is_rendering = 1;
+	char path[BCTEXTLEN];
+	path[0] = 0;
+	save_jobs(path);
+	save_defaults(mwindow->defaults);
+	gui->new_batch->disable();
+	gui->delete_batch->disable();
+
+// Test EDL files for existence
+	if(test_edl_files()) return;
+
+// Predict all destination paths
+	ArrayList<char*> paths;
+	calculate_dest_paths(&paths,
+		mwindow->preferences,
+		mwindow->plugindb);
 
 // Test destination files for overwrite
 	int result = ConfirmSave::test_files(mwindow, &paths);

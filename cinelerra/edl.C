@@ -102,9 +102,8 @@ int EDL::create_objects()
 
 EDL& EDL::operator=(EDL &edl)
 {
-//printf("EDL::operator= 1\n");
+printf("EDL::operator= 1\n");
 	copy_all(&edl);
-//printf("EDL::operator= 2\n");
 	return *this;
 }
 
@@ -340,8 +339,8 @@ int EDL::copy_all(EDL *edl)
 	copy_session(edl);
 	copy_assets(edl);
 	copy_clips(edl);
-	*this->tracks = *edl->tracks;
-	*this->labels = *edl->labels;
+	tracks->copy_from(edl->tracks);
+	labels->copy_from(edl->labels);
 	return 0;
 }
 
@@ -365,7 +364,9 @@ void EDL::copy_clips(EDL *edl)
 void EDL::copy_assets(EDL *edl)
 {
 	if(!parent_edl)
-		*this->assets = *edl->assets;
+	{
+		assets->copy_from(edl->assets);
+	}
 }
 
 void EDL::copy_session(EDL *edl)
@@ -646,11 +647,8 @@ int EDL::equivalent(double position1, double position2)
 double EDL::equivalent_output(EDL *edl)
 {
 	double result = -1;
-//printf("EDL::equivalent_output 1 %f\n", result);
 	session->equivalent_output(edl->session, &result);
-//printf("EDL::equivalent_output 2 %f\n", result);
 	tracks->equivalent_output(edl->tracks, &result);
-//printf("EDL::equivalent_output 3 %f\n", result);
 	return result;
 }
 
@@ -971,16 +969,16 @@ void EDL::insert_asset(Asset *asset,
 // Insert asset into asset table
 	Asset *new_asset = assets->update(asset);
 
+
 // Paste video
 	int vtrack = 0;
 	Track *current = first_track ? first_track : tracks->first;
 
-//printf("EDL::insert_asset 1\n");
 
 // Fix length of single frame
 	double length;
-	
-	
+
+
 	if(new_asset->video_length < 0) 
 		length = 1.0 / session->frame_rate; 
 	else
@@ -989,7 +987,6 @@ void EDL::insert_asset(Asset *asset,
 	else
 		length = 1.0 / session->frame_rate;
 
-//printf("EDL::insert_asset 2 %f\n", length);
 	for( ;
 		current && vtrack < new_asset->layers;
 		current = NEXT)
@@ -998,13 +995,11 @@ void EDL::insert_asset(Asset *asset,
 			current->data_type != TRACK_VIDEO)
 			continue;
 
-//printf("EDL::insert_asset 3\n");
 		current->insert_asset(new_asset, 
 			length, 
 			position, 
 			vtrack);
 
-//printf("EDL::insert_asset 4\n");
 		vtrack++;
 	}
 
@@ -1017,14 +1012,12 @@ void EDL::insert_asset(Asset *asset,
 			current->data_type != TRACK_AUDIO)
 			continue;
 
-//printf("EDL::insert_asset 5\n");
 		current->insert_asset(new_asset, 
 			(double)new_asset->audio_length / 
 				new_asset->sample_rate, 
 			position, 
 			atrack);
 
-//printf("EDL::insert_asset 6\n");
 
 		atrack++;
 	}
@@ -1033,12 +1026,9 @@ void EDL::insert_asset(Asset *asset,
 	{
 		for(RecordLabel *label = labels->first; label; label = label->next)
 		{
-//printf("EDL::insert_asset 1 %f\n", label->position);
 			this->labels->toggle_label(label->position, label->position);
 		}
 	}
-
-//	optimize();
 }
 
 

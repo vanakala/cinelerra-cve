@@ -1,4 +1,5 @@
 THEMES= \
+	microtheme \
 	defaulttheme
 
 SUBDIRS= \
@@ -18,10 +19,29 @@ SUBDIRS= \
 	burn \
 	aging \
 	cdripper \
-				 chromakey colorbalance compressor crossfade deinterlace delayaudio delayvideo \
+	chromakey \
+	colorbalance \
+	compressor \
+	crossfade \
+	decimate \
+	deinterlace \
+	delayaudio \
+	delayvideo \
 				 denoise denoisefft denoisevideo despike dissolve dot fieldframe flip framefield \
 				 freeverb freezeframe gain holo huesaturation interpolateall invertaudio invertvideo \
-				 irissquare ivtc normalize oilpainting pitch polar reframe resample reverb reverseaudio \
+	irissquare \
+	ivtc \
+	loopaudio \
+	loopvideo \
+	normalize \
+	oilpainting \
+	overlay \
+	pitch \
+	polar \
+	reframe \
+	resample \
+	reverb \
+	reverseaudio \
 				 reversevideo rgb601 rotate scale sharpen svg shiftinterlace slide spectrogram swapchannels \
 	synthesizer \
 	timeavg \
@@ -44,7 +64,7 @@ SUBDIRS= \
 
 AUTOMAKE_OPTIONS=foreign
 
-EXTRA_DIST = install_plugins themes
+EXTRA_DIST = 
 
 install-exec-hook:
 	@echo "Postprocessing plugins in $(DESTDIR)$(plugindir)"

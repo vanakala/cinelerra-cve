@@ -282,8 +282,6 @@ AC_SUBST(GCC_MAJOR_VERSION)
 
 AC_CONFIG_FILES([Makefile src/sndfile.h src/Version_script \
 			src/Makefile src/GSM610/Makefile src/G72x/Makefile \
-			man/Makefile examples/Makefile tests/Makefile doc/Makefile \
-			Win32/Makefile MacOS/Makefile Octave/Makefile \
 			libsndfile.spec sndfile.pc])
 AC_OUTPUT
 

@@ -732,7 +732,6 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 
 //printf("ResourcePixmap::draw_video_resource 1 %s\n", edit->asset->path);
 	File *source = mwindow->video_cache->check_out(edit->asset);
-//printf("ResourcePixmap::draw_video_resource 2\n");
 	if(!source) return;
 
 

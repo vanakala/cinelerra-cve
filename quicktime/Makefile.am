@@ -16,6 +16,7 @@ libquicktimehv_la_SOURCES = atom.c avi_hdrl.c avi_idx1.c avi_movi.c avi_strl.c \
 													ctab.c dinf.c dref.c dv.c edts.c elst.c graphics.c hdlr.c \
 													ima4.c jpeg.c libdv.c libmjpeg.c matrix.c mdat.c mdhd.c mdia.c \
 													minf.c moov.c mvhd.c plugin.c qtpng.c qtmp3.c quicktime.c raw.c rawaudio.c \
+	rle.c \
 													smhd.c stbl.c stco.c stsc.c stsd.c stsdtable.c stss.c stsz.c stts.c \
 													tkhd.c trak.c twos.c udta.c ulaw.c util.c v308.c v408.c v410.c vmhd.c \
 													vorbis.c workarounds.c yuv2.c yuv4.c yv12.c wmx2.c \
@@ -45,6 +46,7 @@ noinst_HEADERS = cmodel_permutation.h \
 	quicktime.h \
 	raw.h \
 	rawaudio.h \
+	rle.h \
 	rtjpeg.h \
 	rtjpeg_core.h \
 	twos.h \

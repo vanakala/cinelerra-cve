@@ -1,4 +1,5 @@
 #include "avc1394transport.h"
+#include "language.h"
 
 AVC1394Transport::AVC1394Transport(MWindow *mwindow,
 		AVC1394 *avc,

@@ -1,4 +1,4 @@
-AC_INIT(Cinelerra, 1.1.7)
+AC_INIT(Cinelerra, 1.1.9)
 
 AC_CANONICAL_SYSTEM
 
@@ -134,7 +134,7 @@ if test "x$enable_firewire" = "xyes"; then
 		FIREWIRE_CFLAGS=""
 		FIREWIRE_LDFLAGS=""
 	else
-		FIREWIRE_CFLAGS="-DHAVE_FIREWIRE -I/usr/include/libavc1394 -I/usr/include/libraw1394"
+		FIREWIRE_CFLAGS="-DHAVE_FIREWIRE"
 		FIREWIRE_LDFLAGS="-lraw1394 -lavc1394 -lrom1394"
 	fi
 fi
@@ -258,7 +258,8 @@ AC_SUBST(LIBAVCODEC_LIBS)
 AC_OUTPUT(Makefile po/Makefile.in \
 	m4/Makefile \
 					libmpeg3/Makefile libmpeg3/video/Makefile libmpeg3/audio/Makefile \
-					quicktime/Makefile quicktime/encore50/Makefile quicktime/decore50/Makefile \
+					quicktime/Makefile \
+					quicktime/encore50/Makefile \
 					mpeg2enc/Makefile toolame-02l/Makefile\
 					guicast/Makefile cinelerra/Makefile \
 					mplexhi/Makefile mplexlo/Makefile \
@@ -278,6 +279,7 @@ AC_OUTPUT(Makefile po/Makefile.in \
 					plugins/cdripper/Makefile plugins/chromakey/Makefile plugins/colorbalance/Makefile \
 					plugins/compressor/Makefile \
 					plugins/crossfade/Makefile \
+					plugins/decimate/Makefile \
 					plugins/deinterlace/Makefile plugins/delayaudio/Makefile plugins/delayvideo/Makefile \
 					plugins/denoise/Makefile plugins/denoisefft/Makefile plugins/denoisevideo/Makefile \
 					plugins/despike/Makefile plugins/dissolve/Makefile plugins/dot/Makefile \
@@ -285,8 +287,14 @@ AC_OUTPUT(Makefile po/Makefile.in \
 					plugins/freeverb/Makefile plugins/freezeframe/Makefile plugins/gain/Makefile \
 					plugins/holo/Makefile plugins/huesaturation/Makefile plugins/interpolateall/Makefile \
 					plugins/invertaudio/Makefile plugins/invertvideo/Makefile plugins/irissquare/Makefile \
-					plugins/ivtc/Makefile plugins/normalize/Makefile \
-					plugins/oilpainting/Makefile plugins/pitch/Makefile plugins/polar/Makefile \
+					plugins/ivtc/Makefile \
+					plugins/loopaudio/Makefile \
+					plugins/loopvideo/Makefile \
+					plugins/normalize/Makefile \
+					plugins/oilpainting/Makefile \
+					plugins/overlay/Makefile \
+					plugins/pitch/Makefile \
+					plugins/polar/Makefile \
 					plugins/reframe/Makefile plugins/resample/Makefile plugins/reverb/Makefile \
 					plugins/reverseaudio/Makefile plugins/reversevideo/Makefile plugins/rgb601/Makefile \
 					plugins/rotate/Makefile plugins/scale/Makefile plugins/sharpen/Makefile \

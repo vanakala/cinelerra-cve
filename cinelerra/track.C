@@ -89,15 +89,14 @@ void Track::equivalent_output(Track *track, double *result)
 	if(data_type != track->data_type ||
 		track_w != track->track_w ||
 		track_h != track->track_h ||
-		play != track->play)
+		play != track->play ||
+		nudge != track->nudge)
 		*result = 0;
 
 // Convert result to track units
 	int64_t result2 = -1;
 	automation->equivalent_output(track->automation, &result2);
-//printf("Track::equivalent_output 3 %d\n", result2);
 	edits->equivalent_output(track->edits, &result2);
-//printf("Track::equivalent_output 4 %d\n", result2);
 
 	int plugin_sets = MIN(plugin_set.total, track->plugin_set.total);
 // Test existing plugin sets
@@ -107,7 +106,6 @@ void Track::equivalent_output(Track *track, double *result)
 			track->plugin_set.values[i], 
 			&result2);
 	}
-//printf("Track::equivalent_output 5 %d\n", result2);
 
 // New EDL has more plugin sets.  Get starting plugin in new plugin sets
 	for(int i = plugin_sets; i < plugin_set.total; i++)
@@ -120,11 +118,9 @@ void Track::equivalent_output(Track *track, double *result)
 		}
 	}
 
-//printf("Track::equivalent_output 6 %f %d\n", *result, result2);
 	if(result2 >= 0 && 
 		(*result < 0 || from_units(result2) < *result))
 		*result = from_units(result2);
-//printf("Track::equivalent_output 7 %f\n", *result);
 }
 
 
@@ -151,30 +147,28 @@ int Track::is_synthesis(RenderEngine *renderengine,
 	return is_synthesis;
 }
 
-Track& Track::operator=(Track& track)
+void Track::copy_from(Track *track)
 {
-//printf("Track::operator= 1\n");
-	copy_settings(&track);
-//printf("Track::operator= 1\n");
-	*this->edits = *track.edits;
-//printf("Track::operator= 1\n");
+	copy_settings(track);
+	edits->copy_from(track->edits);
 	for(int i = 0; i < this->plugin_set.total; i++)
 		delete this->plugin_set.values[i];
-//printf("Track::operator= 1\n");
 	this->plugin_set.remove_all_objects();
-//printf("Track::operator= 1\n");
 
-	for(int i = 0; i < track.plugin_set.total; i++)
+	for(int i = 0; i < track->plugin_set.total; i++)
 	{
 		PluginSet *new_plugin_set = plugin_set.append(new PluginSet(edl, this));
-		*new_plugin_set = *track.plugin_set.values[i];
+		new_plugin_set->copy_from(track->plugin_set.values[i]);
 	}
-//printf("Track::operator= 1\n");
-	*this->automation = *track.automation;
-//printf("Track::operator= 1\n");
-	this->track_w = track.track_w;
-	this->track_h = track.track_h;
-//printf("Track::operator= 2\n");
+	automation->copy_from(track->automation);
+	this->track_w = track->track_w;
+	this->track_h = track->track_h;
+}
+
+Track& Track::operator=(Track& track)
+{
+printf("Track::operator= 1\n");
+	copy_from(&track);
 	return *this;
 }
 
@@ -610,6 +604,7 @@ void Track::resample(double old_rate, double new_rate)
 	automation->resample(old_rate, new_rate);
 	for(int i = 0; i < plugin_set.total; i++)
 		plugin_set.values[i]->resample(old_rate, new_rate);
+	nudge = (int64_t)(nudge * new_rate / old_rate);
 }
 
 
@@ -983,30 +978,35 @@ int Track::copy(double start,
 	file->append_newline();
 
 //printf("Track::copy 1\n");
-	edits->copy(start_unit, end_unit, file, output_path);
 
 //printf("Track::copy 1\n");
+
+//printf("Track::copy 2\n");
+	edits->copy(start_unit, end_unit, file, output_path);
+//printf("Track::copy 3\n");
+
 	AutoConf auto_conf;
 	auto_conf.set_all();
 	automation->copy(start_unit, end_unit, file, 0, 0);
 
+//printf("Track::copy 4\n");
 
 	for(int i = 0; i < plugin_set.total; i++)
 	{
 		plugin_set.values[i]->copy(start_unit, end_unit, file);
 	}
 
-//printf("Track::copy 1\n");
+//printf("Track::copy 5\n");
 	copy_derived(start_unit, end_unit, file);
 
-//printf("Track::copy 1\n");
+//printf("Track::copy 6\n");
 	file->tag.set_title("/TRACK");
 	file->append_tag();
 	file->append_newline();
 	file->append_newline();
 	file->append_newline();
 	file->append_newline();
-//printf("Track::copy 2\n");
+//printf("Track::copy 100\n");
 	return 0;
 }
 

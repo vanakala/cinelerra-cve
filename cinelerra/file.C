@@ -1,5 +1,6 @@
 
 #include "asset.h"
+#include "bcsignals.h"
 #include "byteorder.h"
 #include "edit.h"
 #include "errorbox.h"

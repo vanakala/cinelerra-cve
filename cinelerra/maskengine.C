@@ -849,19 +849,22 @@ int MaskEngine::points_equivalent(ArrayList<MaskPoint*> *new_points,
 }
 
 void MaskEngine::do_mask(VFrame *output, 
+	int64_t start_position,
+	double frame_rate,
+	double project_frame_rate,
 	MaskAutos *keyframe_set, 
-	long position, 
 	int direction)
 {
-//printf("MaskEngine::do_mask 1\n");
+	int64_t start_position_project = (int64_t)(start_position *
+		project_frame_rate / 
+		frame_rate);
 	Auto *current = 0;
 	MaskAuto *default_auto = (MaskAuto*)keyframe_set->default_auto;
-	MaskAuto *keyframe = (MaskAuto*)keyframe_set->get_prev_auto(position, 
+	MaskAuto *keyframe = (MaskAuto*)keyframe_set->get_prev_auto(start_position_project, 
 		direction,
 		current);
 
 
-// Nothing to be done
 	int total_points = 0;
 	for(int i = 0; i < keyframe->masks.total; i++)
 	{
@@ -908,7 +911,6 @@ void MaskEngine::do_mask(VFrame *output,
 
 // Determine if recalculation is needed
 
-//printf("MaskEngine::do_mask 1 %d\n", recalculate);
 	if(mask && 
 		(mask->get_w() != output->get_w() ||
 		mask->get_h() != output->get_h() ||
@@ -920,28 +922,30 @@ void MaskEngine::do_mask(VFrame *output,
 		recalculate = 1;
 	}
 
-//printf("MaskEngine::do_mask %d\n", recalculate);
 	if(!recalculate)
 	{
-		if(point_sets.total != keyframe_set->total_submasks(position, direction))
+		if(point_sets.total != keyframe_set->total_submasks(start_position_project, 
+			direction))
 			recalculate = 1;
 	}
 
-//printf("MaskEngine::do_mask %d\n", recalculate);
 	if(!recalculate)
 	{
 		for(int i = 0; 
-			i < keyframe_set->total_submasks(position, direction) && !recalculate; 
+			i < keyframe_set->total_submasks(start_position_project, 
+				direction) && !recalculate; 
 			i++)
 		{
 			ArrayList<MaskPoint*> *new_points = new ArrayList<MaskPoint*>;
-			keyframe_set->get_points(new_points, i, position, direction);
+			keyframe_set->get_points(new_points, 
+				i, 
+				start_position_project, 
+				direction);
 			if(!points_equivalent(new_points, point_sets.values[i])) recalculate = 1;
 			new_points->remove_all_objects();
 		}
 	}
 
-//printf("MaskEngine::do_mask 3 %d\n", recalculate);
 	if(recalculate ||
 		!EQUIV(keyframe->feather, feather) ||
 		!EQUIV(keyframe->value, value))
@@ -965,23 +969,25 @@ void MaskEngine::do_mask(VFrame *output,
 		point_sets.remove_all_objects();
 
 		for(int i = 0; 
-			i < keyframe_set->total_submasks(position, direction); 
+			i < keyframe_set->total_submasks(start_position_project, 
+				direction); 
 			i++)
 		{
 			ArrayList<MaskPoint*> *new_points = new ArrayList<MaskPoint*>;
-			keyframe_set->get_points(new_points, i, position, direction);
+			keyframe_set->get_points(new_points, 
+				i, 
+				start_position_project, 
+				direction);
 			point_sets.append(new_points);
 		}
 	}
 
-//printf("MaskEngine::do_mask 4 %d\n", recalculate);
 
 
 	this->output = output;
 	this->mode = default_auto->mode;
 	this->feather = keyframe->feather;
 	this->value = keyframe->value;
-//printf("MaskEngine::do_mask 5\n");
 
 
 // Run units

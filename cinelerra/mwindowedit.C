@@ -300,6 +300,19 @@ void MWindow::crop_video()
 {
 	undo->update_undo_before(_("crop"), LOAD_ALL);
 
+// Clamp EDL crop region
+	if(edl->session->crop_x1 > edl->session->crop_x2)
+	{
+		edl->session->crop_x1 ^= edl->session->crop_x2;
+		edl->session->crop_x2 ^= edl->session->crop_x1;
+		edl->session->crop_x1 ^= edl->session->crop_x2;
+	}
+	if(edl->session->crop_y1 > edl->session->crop_y2)
+	{
+		edl->session->crop_y1 ^= edl->session->crop_y2;
+		edl->session->crop_y2 ^= edl->session->crop_y1;
+		edl->session->crop_y1 ^= edl->session->crop_y2;
+	}
 
 	float old_projector_x = (float)edl->session->output_w / 2;
 	float old_projector_y = (float)edl->session->output_h / 2;
@@ -987,36 +1000,41 @@ void MWindow::paste()
 	double start = edl->local_session->get_selectionstart();
 	double end = edl->local_session->get_selectionend();
 	int64_t len = gui->get_clipboard()->clipboard_len(SECONDARY_SELECTION);
-	char *string = new char[len + 1];
 
-	gui->get_clipboard()->from_clipboard(string, 
-		len, 
-		SECONDARY_SELECTION);
-	FileXML file;
-	file.read_from_string(string);
+	if(len)
+	{
+		char *string = new char[len + 1];
 
 
-	undo->update_undo_before(_("paste"), LOAD_EDITS | LOAD_TIMEBAR);
-
-	clear(0);
-	insert(start, 
-		&file, 
-		edl->session->labels_follow_edits, 
-		edl->session->plugins_follow_edits);
-	edl->optimize();
-
-	delete [] string;
+		gui->get_clipboard()->from_clipboard(string, 
+			len, 
+			SECONDARY_SELECTION);
+		FileXML file;
+		file.read_from_string(string);
 
 
-	save_backup();
+		undo->update_undo_before(_("paste"), LOAD_EDITS | LOAD_TIMEBAR);
+
+		clear(0);
+		insert(start, 
+			&file, 
+			edl->session->labels_follow_edits, 
+			edl->session->plugins_follow_edits);
+		edl->optimize();
+
+		delete [] string;
 
 
-	undo->update_undo_after();
-	restart_brender();
-	update_plugin_guis();
-	gui->update(1, 2, 1, 1, 0, 1, 0);
-	awindow->gui->update_assets();
-	sync_parameters(CHANGE_EDL);
+		save_backup();
+
+
+		undo->update_undo_after();
+		restart_brender();
+		update_plugin_guis();
+		gui->update(1, 2, 1, 1, 0, 1, 0);
+		awindow->gui->update_assets();
+		sync_parameters(CHANGE_EDL);
+	}
 }
 
 int MWindow::paste_assets(double position, Track *dest_track)
@@ -1117,31 +1135,34 @@ int MWindow::paste_automation()
 {
 	int64_t len = gui->get_clipboard()->clipboard_len(SECONDARY_SELECTION);
 
-	char *string = new char[len + 1];
-	gui->get_clipboard()->from_clipboard(string, 
-		len, 
-		SECONDARY_SELECTION);
-	FileXML file;
-	file.read_from_string(string);
+	if(len)
+	{
+		char *string = new char[len + 1];
+		gui->get_clipboard()->from_clipboard(string, 
+			len, 
+			SECONDARY_SELECTION);
+		FileXML file;
+		file.read_from_string(string);
 
-	undo->update_undo_before(_("paste keyframes"), LOAD_AUTOMATION); 
-	edl->tracks->clear_automation(edl->local_session->get_selectionstart(), 
-		edl->local_session->get_selectionend()); 
-	edl->tracks->paste_automation(edl->local_session->get_selectionstart(), 
-		&file,
-		0); 
-	save_backup();
-	undo->update_undo_after(); 
-	delete [] string;
+		undo->update_undo_before(_("paste keyframes"), LOAD_AUTOMATION); 
+		edl->tracks->clear_automation(edl->local_session->get_selectionstart(), 
+			edl->local_session->get_selectionend()); 
+		edl->tracks->paste_automation(edl->local_session->get_selectionstart(), 
+			&file,
+			0); 
+		save_backup();
+		undo->update_undo_after(); 
+		delete [] string;
 
 
-	restart_brender();
-	update_plugin_guis();
-	gui->canvas->draw_overlays();
-	gui->canvas->flash();
-	sync_parameters(CHANGE_PARAMS);
-	gui->patchbay->update();
-	cwindow->update(1, 0, 0);
+		restart_brender();
+		update_plugin_guis();
+		gui->canvas->draw_overlays();
+		gui->canvas->flash();
+		sync_parameters(CHANGE_PARAMS);
+		gui->patchbay->update();
+		cwindow->update(1, 0, 0);
+	}
 
 	return 0;
 }
@@ -1149,26 +1170,30 @@ int MWindow::paste_automation()
 int MWindow::paste_default_keyframe()
 {
 	int64_t len = gui->get_clipboard()->clipboard_len(SECONDARY_SELECTION);
-	char *string = new char[len + 1];
-	gui->get_clipboard()->from_clipboard(string, 
-		len, 
-		SECONDARY_SELECTION);
-	FileXML file;
-	file.read_from_string(string);
-	undo->update_undo_before(_("paste default keyframe"), LOAD_AUTOMATION); 
-	edl->tracks->paste_default_keyframe(&file); 
-	undo->update_undo_after(); 
+
+	if(len)
+	{
+		char *string = new char[len + 1];
+		gui->get_clipboard()->from_clipboard(string, 
+			len, 
+			SECONDARY_SELECTION);
+		FileXML file;
+		file.read_from_string(string);
+		undo->update_undo_before(_("paste default keyframe"), LOAD_AUTOMATION); 
+		edl->tracks->paste_default_keyframe(&file); 
+		undo->update_undo_after(); 
 
 
-	restart_brender();
-	update_plugin_guis();
-	gui->canvas->draw_overlays();
-	gui->canvas->flash();
-	sync_parameters(CHANGE_PARAMS);
-	gui->patchbay->update();
-	cwindow->update(1, 0, 0);
-	delete [] string;
-	save_backup();
+		restart_brender();
+		update_plugin_guis();
+		gui->canvas->draw_overlays();
+		gui->canvas->flash();
+		sync_parameters(CHANGE_PARAMS);
+		gui->patchbay->update();
+		cwindow->update(1, 0, 0);
+		delete [] string;
+		save_backup();
+	}
 
 	return 0;
 }

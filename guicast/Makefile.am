@@ -59,7 +59,16 @@ noinst_HEADERS = arraylist.h bcbitmap.h bcbitmap.inc bcbutton.h bcbutton.inc bcc
 								 bcsignals.h bcsignals.inc bcslider.h bcslider.inc bcsubwindow.h bcsubwindow.inc bctextbox.h bctextbox.inc \
 								 bctheme.inc bctitle.h bctitle.inc bctoggle.h bctoggle.inc bctumble.h bctumble.inc bcwindowbase.h bcwindowbase.inc \
 								 bcwindow.h bcwindow.inc clip.h colors.h condition.inc cursors.h defaults.h defaults.inc errorbox.h errorbox.inc \
-								 filesystem.h filesystem.inc fonts.h guicast.h keys.h linklist.h mutex.h mutex.inc rotateframe.h \
+	filesystem.h \
+	filesystem.inc \
+	fonts.h \
+	guicast.h \
+	keys.h \
+	language.h \
+	linklist.h \
+	mutex.h \
+	mutex.inc \
+	rotateframe.h \
 								 rotateframe.inc sema.h sema.inc sizes.h stringfile.h stringfile.inc testobject.h thread.h timer.h \
 								 timer.inc units.h vframe.h vframe.inc workarounds.h bclistboxitem.h bctheme.h condition.h
 
@@ -67,6 +76,7 @@ INCLUDES = -I$(top_srcdir)/quicktime -I/usr/include/qt
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
 
 bootstrap_SOURCES=bootstrap.c
+bootstrap_LDADD =
 
 EXTRA_DIST = images pngtoh.c
 

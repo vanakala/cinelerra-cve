@@ -8,14 +8,10 @@
 #include "filexml.h"
 #include "gradient.h"
 #include "keyframe.h"
+#include "language.h"
 #include "overlayframe.h"
 #include "picon_png.h"
 #include "vframe.h"
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 
@@ -805,13 +801,13 @@ void GradientUnit::process_package(LoadPackage *package)
 			break;
 		case BC_YUV161616:
 			yuv.rgb_to_yuv_16(
-				plugin->config.in_r,
-				plugin->config.in_g,
-				plugin->config.in_b,
+				(plugin->config.in_r << 8) | plugin->config.in_r,
+				(plugin->config.in_g << 8) | plugin->config.in_g,
+				(plugin->config.in_b << 8) | plugin->config.in_b,
 				in1,
 				in2,
 				in3);
-			in4 = plugin->config.in_a;
+			in4 = (plugin->config.in_a << 8) | plugin->config.in_a;
 			yuv.rgb_to_yuv_16(
 				(plugin->config.out_r << 8) | plugin->config.out_r,
 				(plugin->config.out_g << 8) | plugin->config.out_g,

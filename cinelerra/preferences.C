@@ -108,43 +108,43 @@ void Preferences::copy_rates_from(Preferences *preferences)
 	preferences_lock->unlock();
 }
 
-Preferences& Preferences::operator=(Preferences &that)
+void Preferences::copy_from(Preferences *that)
 {
 // ================================= Performance ================================
-	strcpy(index_directory, that.index_directory);
-	index_size = that.index_size;
-	index_count = that.index_count;
-	use_thumbnails = that.use_thumbnails;
-	strcpy(global_plugin_dir, that.global_plugin_dir);
-	strcpy(theme, that.theme);
+	strcpy(index_directory, that->index_directory);
+	index_size = that->index_size;
+	index_count = that->index_count;
+	use_thumbnails = that->use_thumbnails;
+	strcpy(global_plugin_dir, that->global_plugin_dir);
+	strcpy(theme, that->theme);
 
-	cache_items = that.cache_items;
-	cache_size_per_item = that.cache_size_per_item;
-	force_uniprocessor = that.force_uniprocessor;
+	cache_items = that->cache_items;
+	cache_size_per_item = that->cache_size_per_item;
+	force_uniprocessor = that->force_uniprocessor;
 	processors = calculate_processors();
 	renderfarm_nodes.remove_all_objects();
 	renderfarm_ports.remove_all();
 	renderfarm_enabled.remove_all();
 	renderfarm_rate.remove_all();
-	local_rate = that.local_rate;
-	for(int i = 0; i < that.renderfarm_nodes.total; i++)
+	local_rate = that->local_rate;
+	for(int i = 0; i < that->renderfarm_nodes.total; i++)
 	{
-		add_node(that.renderfarm_nodes.values[i], 
-			that.renderfarm_ports.values[i],
-			that.renderfarm_enabled.values[i],
-			that.renderfarm_rate.values[i]);
+		add_node(that->renderfarm_nodes.values[i], 
+			that->renderfarm_ports.values[i],
+			that->renderfarm_enabled.values[i],
+			that->renderfarm_rate.values[i]);
 	}
-	use_renderfarm = that.use_renderfarm;
-	renderfarm_port = that.renderfarm_port;
-	render_preroll = that.render_preroll;
-	brender_preroll = that.brender_preroll;
-	renderfarm_job_count = that.renderfarm_job_count;
-	renderfarm_vfs = that.renderfarm_vfs;
-	strcpy(renderfarm_mountpoint, that.renderfarm_mountpoint);
-	renderfarm_consolidate = that.renderfarm_consolidate;
-	use_brender = that.use_brender;
-	brender_fragment = that.brender_fragment;
-	*brender_asset = *that.brender_asset;
+	use_renderfarm = that->use_renderfarm;
+	renderfarm_port = that->renderfarm_port;
+	render_preroll = that->render_preroll;
+	brender_preroll = that->brender_preroll;
+	renderfarm_job_count = that->renderfarm_job_count;
+	renderfarm_vfs = that->renderfarm_vfs;
+	strcpy(renderfarm_mountpoint, that->renderfarm_mountpoint);
+	renderfarm_consolidate = that->renderfarm_consolidate;
+	use_brender = that->use_brender;
+	brender_fragment = that->brender_fragment;
+	*brender_asset = *that->brender_asset;
 
 // Check boundaries
 
@@ -164,7 +164,12 @@ Preferences& Preferences::operator=(Preferences &that)
 	renderfarm_job_count = MAX(renderfarm_job_count, 1);
 	CLAMP(cache_items, 1, 100);
 	CLAMP(cache_size_per_item, 0, 128);
+}
 
+Preferences& Preferences::operator=(Preferences &that)
+{
+printf("Preferences::operator=\n");
+	copy_from(&that);
 	return *this;
 }
 
@@ -505,10 +510,10 @@ int Preferences::calculate_processors()
 
 	if(proc = fopen("/proc/cpuinfo", "r"))
 	{
-		char string[1024];
+		char string[BCTEXTLEN];
 		while(!feof(proc))
 		{
-			fgets(string, 1024, proc);
+			fgets(string, BCTEXTLEN, proc);
 			if(!strncasecmp(string, "processor", 9))
 			{
 				char *ptr = strchr(string, ':');

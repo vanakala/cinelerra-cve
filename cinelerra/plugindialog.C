@@ -502,9 +502,10 @@ PluginDialogAttachNew::PluginDialogAttachNew(MWindow *mwindow, PluginDialog *dia
  	this->dialog = dialog; 
 }
 PluginDialogAttachNew::~PluginDialogAttachNew() 
-{ }
+{
+}
 int PluginDialogAttachNew::handle_event() 
-{ 
+{
 	dialog->attach_new(dialog->selected_available); 
 	set_done(0);
 	return 1;

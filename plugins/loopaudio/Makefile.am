@@ -1,7 +1,7 @@
-plugin_LTLIBRARIES = reverseaudio.la
-reverseaudio_la_LDFLAGS = -avoid-version -module -shared 
-reverseaudio_la_LIBADD = 
-reverseaudio_la_SOURCES = reverseaudio.C 
+plugin_LTLIBRARIES = loopaudio.la
+loopaudio_la_LDFLAGS = -avoid-version -module -shared 
+loopaudio_la_LIBADD = 
+loopaudio_la_SOURCES = loopaudio.C 
 AM_CFLAGS = 
 AM_CXXFLAGS = 
 

@@ -298,13 +298,14 @@ int AssetEditWindow::create_objects()
 		if(allow_edits)
 		{
 			x = x2;
-			add_subwindow(hilo = new AssetEditByteOrderHILO(this, 
-				!asset->byte_order, 
+
+			add_subwindow(lohi = new AssetEditByteOrderLOHI(this, 
+				asset->byte_order, 
 				x, 
 				y));
 			x += 70;
-			add_subwindow(lohi = new AssetEditByteOrderLOHI(this, 
-				asset->byte_order, 
+			add_subwindow(hilo = new AssetEditByteOrderHILO(this, 
+				!asset->byte_order, 
 				x, 
 				y));
 			y += vmargin;

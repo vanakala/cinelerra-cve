@@ -10,13 +10,12 @@
 #include "language.h"
 #include "vframe.h"
 
-
 #include <string.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <X11/extensions/XShm.h>
 #include <unistd.h>
-#include <locale.h> 
+ 
 
 
 

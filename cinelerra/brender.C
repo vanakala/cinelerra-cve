@@ -111,7 +111,7 @@ void BRender::run()
 	char string[BCTEXTLEN];
 	int size;
 	FILE *fd;
-printf("BRender::run 1 %d\n", getpid());
+//printf("BRender::run 1 %d\n", getpid());
 
 
 // Construct executable command with the designated filesystem port
@@ -512,7 +512,7 @@ void BRenderThread::start()
 	{
 //printf("BRenderThread::start 1\n");
 		preferences = new Preferences;
-		*preferences = *mwindow->preferences;
+		preferences->copy_from(mwindow->preferences);
 		packages = new PackageDispatcher;
 
 // Fix preferences to use local node
@@ -544,6 +544,8 @@ void BRenderThread::start()
 		int64_t end_frame = Units::round(command->edl->tracks->total_video_length() * 
 			command->edl->session->frame_rate);
 		if(end_frame < start_frame) end_frame = start_frame;
+
+
 printf("BRenderThread::start 1 map=%d equivalent=%d brender_start=%d result=%d end=%d\n", 
 last_contiguous, 
 last_good, 
@@ -568,7 +570,7 @@ end_frame);
 
 //sleep(1);
 //printf("BRenderThread::start 3 %d\n", result);
-		farm_server = new RenderFarmServer(mwindow, 
+		farm_server = new RenderFarmServer(mwindow->plugindb, 
 			packages,
 			preferences,
 			0,

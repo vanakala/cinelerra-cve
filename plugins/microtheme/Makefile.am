@@ -1,7 +1,7 @@
-plugin_LTLIBRARIES = microtheme.la
-microtheme_la_LDFLAGS = -avoid-version -module -shared 
-microtheme_la_LIBADD = 
-microtheme_la_SOURCES = microtheme.C 
+## disabled plugin_LTLIBRARIES = microtheme.la
+## disabled microtheme_la_LDFLAGS = -avoid-version -module -shared 
+## disabled microtheme_la_LIBADD = 
+## disabled microtheme_la_SOURCES = microtheme.C 
 AM_CFLAGS = 
 AM_CXXFLAGS = 
 
@@ -11,6 +11,7 @@ LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
 noinst_HEADERS = microtheme.h 
 
 EXTRA_DIST = data \
+	microtheme.C \
 	apply.xcf.bz2 \
 	buttonbars.xcf.bz2 \
 	checkbox.xcf.bz2 \

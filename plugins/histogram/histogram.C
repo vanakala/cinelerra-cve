@@ -1,6 +1,7 @@
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
+#include <unistd.h>
 
 #include "bcdisplayinfo.h"
 #include "bcsignals.h"
@@ -8,6 +9,7 @@
 #include "defaults.h"
 #include "filexml.h"
 #include "keyframe.h"
+#include "language.h"
 #include "loadbalance.h"
 #include "max_picon_png.h"
 #include "mid_picon_png.h"
@@ -17,11 +19,6 @@
 #include "pluginvclient.h"
 #include "vframe.h"
 
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 class HistogramMain;
@@ -817,7 +814,7 @@ int HistogramSlider::cursor_motion_event()
 		gui->unlock_window();
 		plugin->send_configure_change();
 //printf("HistogramSlider::cursor_motion_event 2\n");
-		gui->lock_window();
+		gui->lock_window("HistogramSlider::cursor_motion_event");
 //printf("HistogramSlider::cursor_motion_event 3\n");
 		return 1;
 	}
@@ -1048,37 +1045,29 @@ LOAD_CONFIGURATION_MACRO(HistogramMain, HistogramConfig)
 
 void HistogramMain::render_gui(void *data)
 {
-
 	if(thread)
 	{
-//printf("HistogramMain::render_gui 1\n");
-		thread->window->lock_window();
-//printf("HistogramMain::render_gui 2\n");
 		calculate_histogram((VFrame*)data);
-//printf("HistogramMain::render_gui 3\n");
 		if(config.automatic)
 		{
 			calculate_automatic((VFrame*)data);
 		}
-//printf("HistogramMain::render_gui 3\n");
 
+		thread->window->lock_window("HistogramMain::render_gui");
 		thread->window->update_canvas();
-//printf("HistogramMain::render_gui 3\n");
 		if(config.automatic)
 		{
 			thread->window->update_input();
 		}
-//printf("HistogramMain::render_gui 3\n");
 		thread->window->unlock_window();
 	}
-//printf("HistogramMain::render_gui 4\n");
 }
 
 void HistogramMain::update_gui()
 {
 	if(thread)
 	{
-		thread->window->lock_window();
+		thread->window->lock_window("HistogramMain::update_gui");
 		int reconfigure = load_configuration();
 		if(reconfigure) 
 		{
@@ -1290,6 +1279,7 @@ float HistogramMain::calculate_curve(float input, int subscript)
 
 void HistogramMain::calculate_histogram(VFrame *data)
 {
+
 	if(!engine) engine = new HistogramEngine(this,
 		get_project_smp() + 1,
 		get_project_smp() + 1);
@@ -1299,7 +1289,6 @@ void HistogramMain::calculate_histogram(VFrame *data)
 		for(int i = 0; i < 5; i++)
 			accum[i] = new int64_t[HISTOGRAM_RANGE];
 	}
-
 	engine->process_packages(HistogramEngine::HISTOGRAM, data);
 
 	for(int i = 0; i < engine->get_total_clients(); i++)
@@ -1384,9 +1373,7 @@ void HistogramMain::calculate_automatic(VFrame *data)
 
 int HistogramMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
-//printf("HistogramMain::process_realtime 1\n");
 TRACE("HistogramMain::process_realtime");
-//printf("HistogramMain::process_realtime 1\n");
 	int need_reconfigure = load_configuration();
 
 
@@ -1396,9 +1383,7 @@ TRACE("HistogramMain::process_realtime");
 	this->input = input_ptr;
 	this->output = output_ptr;
 
-//printf("HistogramMain::process_realtime 1\n");
 	send_render_gui(input_ptr);
-//printf("HistogramMain::process_realtime 1\n");
 
 	if(input_ptr->get_rows()[0] != output_ptr->get_rows()[0])
 	{
@@ -1476,16 +1461,14 @@ HistogramUnit::HistogramUnit(HistogramEngine *server,
 {
 	this->plugin = plugin;
 	this->server = server;
-	bzero(accum, sizeof(accum));
+	for(int i = 0; i < 5; i++)
+		accum[i] = new int64_t[HISTOGRAM_RANGE];
 }
 
 HistogramUnit::~HistogramUnit()
 {
-	if(accum[0]) delete [] accum[0];
-	if(accum[1]) delete [] accum[1];
-	if(accum[2]) delete [] accum[2];
-	if(accum[3]) delete [] accum[3];
-	if(accum[4]) delete [] accum[4];
+	for(int i = 0; i < 5; i++)
+		delete [] accum[i];
 }
 
 void HistogramUnit::process_package(LoadPackage *package)
@@ -1517,14 +1500,7 @@ void HistogramUnit::process_package(LoadPackage *package)
 }
 
 
-		if(!accum[0])
-		{
-			for(int i = 0; i < 5; i++)
-				accum[i] = new int64_t[HISTOGRAM_RANGE];
-		}
 
-		for(int i = 0; i < 5; i++)
-			bzero(accum[i], sizeof(int64_t) * HISTOGRAM_RANGE);
 
 		VFrame *data = server->data;
 		int w = data->get_w();
@@ -1837,16 +1813,24 @@ void HistogramEngine::init_packages()
 			break;
 	}
 	int package_size = (int)((float)total_size / 
-			total_packages + 1);
+			get_total_packages() + 1);
 	int start = 0;
-	for(int i = 0; i < total_packages; i++)
+	for(int i = 0; i < get_total_packages(); i++)
 	{
-		HistogramPackage *package = (HistogramPackage*)packages[i];
+		HistogramPackage *package = (HistogramPackage*)get_package(i);
 		package->start = start;
 		package->end = start + package_size;
 		if(package->end > total_size)
 			package->end = total_size;
 		start = package->end;
+	}
+
+// Initialize clients here in case some don't get run.
+	for(int i = 0; i < get_total_clients(); i++)
+	{
+		HistogramUnit *unit = (HistogramUnit*)get_client(i);
+		for(int i = 0; i < 5; i++)
+			bzero(unit->accum[i], sizeof(int64_t) * HISTOGRAM_RANGE);
 	}
 }
 

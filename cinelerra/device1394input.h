@@ -8,7 +8,7 @@
 #include "condition.inc"
 #include "libdv.h"
 #include "mutex.inc"
-#include "raw1394.h"
+#include <libraw1394/raw1394.h>
 #include "thread.h"
 #include "vframe.inc"
 

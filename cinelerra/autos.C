@@ -159,7 +159,10 @@ void Autos::insert_track(Autos *automation,
 	}
 }
 
-Auto* Autos::get_prev_auto(int64_t position, int direction, Auto* &current, int use_default)
+Auto* Autos::get_prev_auto(int64_t position, 
+	int direction, 
+	Auto* &current, 
+	int use_default)
 {
 // Get on or before position
 	if(direction == PLAY_FORWARD)
@@ -553,6 +556,9 @@ void Autos::optimize()
 {
 	int done = 0;
 
+
+// Default auto should always be at 0
+	default_auto->position = 0;
 	while(!done)
 	{
 		int consecutive = 0;

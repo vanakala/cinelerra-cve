@@ -60,6 +60,20 @@ char* EDLSession::get_cwindow_display()
 
 
 
+PlaybackConfig* EDLSession::get_playback_config(int strategy, int head)
+{
+	return playback_config[strategy].values[head];
+}
+
+ArrayList<PlaybackConfig*>* EDLSession::get_playback_config(int strategy)
+{
+	return &playback_config[strategy];
+}
+
+int EDLSession::get_playback_heads(int strategy)
+{
+	return playback_config[strategy].total;
+}
 
 
 void EDLSession::equivalent_output(EDLSession *session, double *result)
@@ -112,8 +126,6 @@ int EDLSession::load_defaults(Defaults *defaults)
 		asset_columns[i] = defaults->get(string, 100);
 	}
 	audio_channels = defaults->get("ACHANNELS", 2);
-	audio_module_fragment = defaults->get("AUDIO_MODULE_FRAGMENT", 2048);
-	audio_read_length = defaults->get("PLAYBACK_READ_LENGTH", 131072);
 	audio_tracks = defaults->get("ATRACKS", 2);
 	auto_conf->load_defaults(defaults);
 	autos_follow_edits = defaults->get("AUTOS_FOLLOW_EDITS", 1);
@@ -234,8 +246,6 @@ int EDLSession::save_defaults(Defaults *defaults)
     defaults->update("ASSETLIST_FORMAT", assetlist_format);
     defaults->update("ASPECTW", aspect_w);
     defaults->update("ASPECTH", aspect_h);
-    defaults->update("AUDIO_MODULE_FRAGMENT", audio_module_fragment);
-    defaults->update("PLAYBACK_READ_LENGTH", audio_read_length);
 	defaults->update("ATRACKS", audio_tracks);
 	defaults->update("AUTOS_FOLLOW_EDITS", autos_follow_edits);
 	defaults->update("BRENDER_START", brender_start);
@@ -424,8 +434,6 @@ int EDLSession::load_xml(FileXML *file,
 			sprintf(string, "ASSET_COLUMN%d", i);
 			asset_columns[i] = file->tag.get_property(string, asset_columns[i]);
 		}
-		audio_module_fragment = file->tag.get_property("AUDIO_MODULE_FRAGMENT", audio_module_fragment);
-		audio_read_length = file->tag.get_property("PLAYBACK_READ_LENGTH", audio_read_length);
 		auto_conf->load_xml(file);
 		auto_keyframes = file->tag.get_property("AUTO_KEYFRAMES", auto_keyframes);
 		autos_follow_edits = file->tag.get_property("AUTOS_FOLLOW_EDITS", autos_follow_edits);
@@ -480,8 +488,6 @@ int EDLSession::save_xml(FileXML *file)
 		sprintf(string, "ASSET_COLUMN%d", i);
 		file->tag.set_property(string, asset_columns[i]);
 	}
-	file->tag.set_property("AUDIO_MODULE_FRAGMENT", audio_module_fragment);
-	file->tag.set_property("PLAYBACK_READ_LENGTH", audio_read_length);
 	auto_conf->save_xml(file);
 	file->tag.set_property("AUTO_KEYFRAMES", auto_keyframes);
 	file->tag.set_property("AUTOS_FOLLOW_EDITS", autos_follow_edits);
@@ -599,8 +605,6 @@ int EDLSession::copy(EDLSession *session)
 	aspect_w = session->aspect_w;
 	aspect_h = session->aspect_h;
 	audio_channels = session->audio_channels;
-	audio_module_fragment = session->audio_module_fragment;
-	audio_read_length = session->audio_read_length;
 	audio_tracks = session->audio_tracks;
 	autos_follow_edits = session->autos_follow_edits;
 	brender_start = session->brender_start;

@@ -82,8 +82,14 @@ public:
 
 // Start dialogue box and render interactively.
 	void start_interactive();
-// Start batch rendering jobs
+// Start batch rendering jobs.
+// A new thread is created and the rendering is interactive.
 	void start_batches(ArrayList<BatchRenderJob*> *jobs);
+// The batches are processed in the foreground in non interactive mode.
+	void start_batches(ArrayList<BatchRenderJob*> *jobs,
+		Defaults *boot_defaults,
+		Preferences *preferences,
+		ArrayList<PluginServer*> *plugindb);
 // Called by BatchRender to stop the operation.
 	void stop_operation();
 	void set_autorender(int autorender);
@@ -149,7 +155,10 @@ public:
 	PlayableTracks *playable_tracks;
 	PackageDispatcher *packages;
 	Mutex *package_lock, *counter_lock;
+// Copy of mwindow preferences
 	Preferences *preferences;
+// For use in non interactive mode
+	ArrayList<PluginServer*> *plugindb;
 	int strategy;
 // Total selection to render in seconds
 	double total_start, total_end;
@@ -171,8 +180,11 @@ public:
 	double frames_per_second;
 // Time used in last render
 	double elapsed_time;
-private:
-	int autorender;
+
+// For non interactive mode, maintain progress here.
+	int64_t progress_max;
+	Timer *progress_timer;
+	int64_t last_eta;
 };
 
 class RenderToTracks;

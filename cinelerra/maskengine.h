@@ -68,8 +68,10 @@ public:
 	~MaskEngine();
 
 	void do_mask(VFrame *output, 
+		int64_t start_position,
+		double frame_rate,
+		double project_frame_rate,
 		MaskAutos *keyframe_set, 
-		long position, 
 		int direction);
 	int points_equivalent(ArrayList<MaskPoint*> *new_points, 
 		ArrayList<MaskPoint*> *points);

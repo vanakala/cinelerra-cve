@@ -3,6 +3,7 @@
 #include "defaults.h"
 #include "filexml.h"
 #include "guicast.h"
+#include "language.h"
 #include "picon_png.h"
 #include "pluginvclient.h"
 #include "rotateframe.h"
@@ -11,10 +12,6 @@
 
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 #define SQR(x) ((x) * (x))
@@ -143,7 +140,6 @@ public:
 	RotateConfig config;
 	RotateFrame *engine;
 	RotateThread *thread;
-	VFrame *temp_frame;
 	Defaults *defaults;
 	int need_reconfigure;
 };
@@ -461,7 +457,6 @@ RotateEffect::RotateEffect(PluginServer *server)
  : PluginVClient(server)
 {
 	engine = 0;
-	temp_frame = 0;
 	need_reconfigure = 1;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
@@ -470,7 +465,6 @@ RotateEffect::~RotateEffect()
 {
 	PLUGIN_DESTRUCTOR_MACRO
 	if(engine) delete engine;
-	if(temp_frame) delete temp_frame;
 }
 
 
@@ -576,11 +570,9 @@ int RotateEffect::process_realtime(VFrame *input, VFrame *output)
 
 //printf("RotateEffect::process_realtime 1 %d %f\n", config.bilinear, config.angle);
 
-	if(!temp_frame)
-		temp_frame = new VFrame(0, 
-			input->get_w(), 
-			input->get_h(), 
-			input->get_color_model());
+	VFrame *temp_frame = PluginVClient::new_temp(input->get_w(),
+		input->get_h(),
+		input->get_color_model());
 
 	if(!engine) engine = new RotateFrame(PluginClient::smp + 1, 
 		input->get_w(), 
@@ -593,6 +585,12 @@ int RotateEffect::process_realtime(VFrame *input, VFrame *output)
 		config.angle,
 		config.bilinear);
 
+	if(input->get_w() > PLUGIN_MAX_W &&
+		input->get_h() > PLUGIN_MAX_H)
+	{
+		delete engine;
+		engine = 0;
+	}
 	return 0;
 }
 

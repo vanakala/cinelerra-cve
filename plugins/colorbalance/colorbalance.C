@@ -334,7 +334,7 @@ int ColorBalanceMain::reconfigure()
     cyan_red_transfer = config.cyan > 0 ? highlights_add : highlights_sub; \
     magenta_green_transfer = config.magenta > 0 ? highlights_add : highlights_sub; \
     yellow_blue_transfer = config.yellow > 0 ? highlights_add : highlights_sub; \
-	for(int i = 0; i < max; i++) \
+	for(int i = 0; i <= max; i++) \
     { \
     	r_n = g_n = b_n = i; \
 	    r_n += (int)(config.cyan / 100 * max * cyan_red_transfer[r_n]); \

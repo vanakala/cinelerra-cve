@@ -71,6 +71,7 @@
 #include <string.h>
 
 
+
 extern "C"
 {
 
@@ -132,66 +133,57 @@ MWindow::~MWindow()
 
 TRACE("MWindow::~MWindow 1\n");
 	clean_indexes();
+TRACE("MWindow::~MWindow 2\n");
 
+	save_defaults();
+TRACE("MWindow::~MWindow 3\n");
 // Give up and go to a movie
 	exit(0);
 
-TRACE("MWindow::~MWindow 2\n");
-	delete mainprogress;
-TRACE("MWindow::~MWindow 3\n");
-	delete audio_cache;             // delete the cache after the assets
 TRACE("MWindow::~MWindow 4\n");
+	delete mainprogress;
+	delete audio_cache;             // delete the cache after the assets
 	delete video_cache;             // delete the cache after the assets
-TRACE("MWindow::~MWindow 5\n");
 	if(gui) delete gui;
-TRACE("MWindow::~MWindow 6\n");
 	delete undo;
-TRACE("MWindow::~MWindow 7\n");
 	delete preferences;
-TRACE("MWindow::~MWindow 8\n");
 	delete defaults;
-TRACE("MWindow::~MWindow 9\n");
 	delete render;
-TRACE("MWindow::~MWindow 10\n");
 //	delete renderlist;
-TRACE("MWindow::~MWindow 11\n");
 	delete awindow;
-TRACE("MWindow::~MWindow 12\n");
 	delete vwindow;
-TRACE("MWindow::~MWindow 13\n");
 	delete cwindow;
 	delete lwindow;
-TRACE("MWindow::~MWindow 14\n");
 	plugin_guis->remove_all_objects();
-TRACE("MWindow::~MWindow 15\n");
 	delete plugin_guis;
-TRACE("MWindow::~MWindow 16\n");
 	delete plugin_gui_lock;
-TRACE("MWindow::~MWindow 17\n");
 }
 
-void MWindow::init_defaults(Defaults* &defaults, char *rcfile)
+void MWindow::init_defaults(Defaults* &defaults, char *config_path)
 {
-// set the .bcast directory
-	char directory[BCTEXTLEN];
-	FileSystem fs;
-
-	sprintf(directory, "%s", BCASTDIR);
-	fs.complete_path(directory);
-	if(fs.is_dir(directory)) 
+	char path[BCTEXTLEN];
+// Use user supplied path
+	if(config_path[0])
 	{
-		fs.create_dir(directory); 
+		strcpy(path, config_path);
 	}
-
-// load the defaults
-	if (rcfile != NULL)
-		defaults = new Defaults(rcfile);
 	else
 	{
-		strcat(directory, "Cinelerra_rc");
-		defaults = new Defaults(directory);
+// set the .bcast path
+		FileSystem fs;
+
+		sprintf(path, "%s", BCASTDIR);
+		fs.complete_path(path);
+		if(fs.is_dir(path)) 
+		{
+			fs.create_dir(path); 
+		}
+
+// load the defaults
+		strcat(path, "Cinelerra_rc");
 	}
 
+	defaults = new Defaults(path);
 	defaults->load();
 }
 
@@ -271,6 +263,8 @@ void MWindow::init_plugins(Preferences *preferences,
 	SplashGUI *splash_window)
 {
 	plugindb = new ArrayList<PluginServer*>;
+
+
 
 	FileSystem cinelerra_fs;
 	ArrayList<FileSystem*> lad_fs;
@@ -639,6 +633,7 @@ void MWindow::init_signals()
 {
 	sighandler = new SigHandler;
 	sighandler->initialize();
+ENABLE_BUFFER
 }
 
 void MWindow::init_render()
@@ -866,8 +861,6 @@ TRACE("MWindow::load_filenames 1");
 					if(load_mode != LOAD_RESOURCESONLY)
 					{
 						asset_to_edl(new_edl, new_asset);
-//printf("MWindow::load_filenames 1 %d %d\n", new_asset->video_length, new_asset->audio_length);
-//new_edl->dump();
 						new_edls.append(new_edl);
 						delete new_asset;
 					}
@@ -1000,7 +993,9 @@ UNTRACE
 	return 0;
 }
 
-void MWindow::create_objects(int want_gui, int want_new, char *rcfile)
+void MWindow::create_objects(int want_gui, 
+	int want_new,
+	char *config_path)
 {
 	char string[BCTEXTLEN];
 	FileSystem fs;
@@ -1014,11 +1009,11 @@ void MWindow::create_objects(int want_gui, int want_new, char *rcfile)
 // For some reason, init_signals must come after show_splash or the signals won't
 // get trapped.
 	init_signals();
-//printf("MWindow::create_objects 1\n");
+
 
 	init_menus();
 TRACE("MWindow::create_objects 1");
-	init_defaults(defaults, rcfile);
+	init_defaults(defaults, config_path);
 TRACE("MWindow::create_objects 1");
 	init_preferences();
 TRACE("MWindow::create_objects 1");
@@ -1109,17 +1104,12 @@ void MWindow::hide_splash()
 }
 
 
-void MWindow::start(int autorender)
+void MWindow::start()
 {
 	vwindow->start();
 	awindow->start();
 	cwindow->start();
 	lwindow->start();
-	if (autorender)
-	{
-		render->set_autorender(autorender);
-		render->start_interactive();
-	}
 	gui->run_window();
 }
 
@@ -1256,12 +1246,10 @@ void MWindow::sync_parameters(int change_type)
 	}
 	else
 	{
-//printf("MWindow::sync_parameters 1\n");
 		cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
 							change_type,
 							edl,
 							1);
-//printf("MWindow::sync_parameters 2\n");
 	}
 }
 
@@ -1337,9 +1325,7 @@ void MWindow::hide_plugins()
 
 void MWindow::update_plugin_guis()
 {
-
 	plugin_gui_lock->lock();
-
 
 	for(int i = 0; i < plugin_guis->total; i++)
 	{
@@ -1505,20 +1491,20 @@ int MWindow::asset_to_edl(EDL *new_edl,
 void MWindow::update_project(int load_mode)
 {
 	restart_brender();
-TRACE("MWindow::update_project 1");
+//TRACE("MWindow::update_project 1");
 	edl->tracks->update_y_pixels(theme);
 
 // Draw timeline
-TRACE("MWindow::update_project 1");
+//TRACE("MWindow::update_project 2");
 	update_caches();
 
-TRACE("MWindow::update_project 1");
+TRACE("MWindow::update_project 3");
 	gui->update(1, 1, 1, 1, 1, 1, 1);
 
-TRACE("MWindow::update_project 1");
+TRACE("MWindow::update_project 4");
 	cwindow->update(0, 0, 1, 1, 1);
 
-TRACE("MWindow::update_project 1");
+TRACE("MWindow::update_project 5");
 
 	if(load_mode == LOAD_REPLACE ||
 		load_mode == LOAD_REPLACE_CONCATENATE)
@@ -1530,14 +1516,18 @@ TRACE("MWindow::update_project 1");
 		vwindow->update(1);
 	}
 
+TRACE("MWindow::update_project 6");
 
 	cwindow->gui->slider->set_position();
+TRACE("MWindow::update_project 6.1");
 	cwindow->gui->timebar->update(1, 1);
+TRACE("MWindow::update_project 6.2");
 	cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
 		CHANGE_ALL,
 		edl,
 		1);
 
+TRACE("MWindow::update_project 7");
 	awindow->gui->lock_window("MWindow::update_project");
 	awindow->gui->update_assets();
 	awindow->gui->flush();
@@ -1721,19 +1711,14 @@ void MWindow::dump_plugins()
 
 int MWindow::save_defaults()
 {
-//printf("MWindow::save_defaults 1\n");
 	gui->save_defaults(defaults);
 	edl->save_defaults(defaults);
-//printf("MWindow::save_defaults 1\n");
 	session->save_defaults(defaults);
 	preferences->save_defaults(defaults);
-//printf("MWindow::save_defaults 1\n");
 
 	save_tuner(channeldb_v4l, "channels_v4l");
 	save_tuner(channeldb_buz, "channels_buz");
-//printf("MWindow::save_defaults 1\n");
 	defaults->save();
-//printf("MWindow::save_defaults 2\n");
 	return 0;
 }
 

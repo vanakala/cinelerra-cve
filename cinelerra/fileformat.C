@@ -86,9 +86,11 @@ int FileFormat::create_objects_(char *string2)
 	add_subwindow(header_button = new FileFormatHeader(x2, y, this, string));
 	
 	y += 30;
+
+//printf("FileFormat::create_objects_ 1 %d\n", asset->byte_order);
 	add_subwindow(new BC_Title(x, y, _("Byte order:")));
 	add_subwindow(lohi = new FileFormatByteOrderLOHI(x2, y, this, asset->byte_order));
-	add_subwindow(hilo = new FileFormatByteOrderHILO(x2 + 70, y, this, asset->byte_order ^ 1));
+	add_subwindow(hilo = new FileFormatByteOrderHILO(x2 + 70, y, this, !asset->byte_order));
 	
 	y += 30;
 	add_subwindow(signed_button = new FileFormatSigned(x, y, this, asset->signed_));
@@ -148,8 +150,10 @@ FileFormatByteOrderLOHI::FileFormatByteOrderLOHI(int x, int y, FileFormat *fwind
 
 int FileFormatByteOrderLOHI::handle_event()
 {
-	fwindow->asset->byte_order = get_value();
-	fwindow->hilo->update(get_value() ^ 1);
+	update(1);
+	fwindow->asset->byte_order = 1;
+	fwindow->hilo->update(0);
+	return 1;
 }
 
 FileFormatByteOrderHILO::FileFormatByteOrderHILO(int x, int y, FileFormat *fwindow, int value)
@@ -160,8 +164,10 @@ FileFormatByteOrderHILO::FileFormatByteOrderHILO(int x, int y, FileFormat *fwind
 
 int FileFormatByteOrderHILO::handle_event()
 {
-	fwindow->asset->byte_order = get_value() ^ 1;
-	fwindow->lohi->update(get_value() ^ 1);
+	update(1);
+	fwindow->asset->byte_order = 0;
+	fwindow->lohi->update(0);
+	return 1;
 }
 
 FileFormatSigned::FileFormatSigned(int x, int y, FileFormat *fwindow, int value)
@@ -173,4 +179,5 @@ FileFormatSigned::FileFormatSigned(int x, int y, FileFormat *fwindow, int value)
 int FileFormatSigned::handle_event()
 {
 	fwindow->asset->signed_ = get_value();
+	return 1;
 }

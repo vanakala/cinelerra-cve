@@ -754,22 +754,6 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 //printf("decode 20 %d %p\n", result, codec->picture[current_field].data[0]);
 	if(codec->picture[current_field].data[0])
 	{
-		int y_out_size = codec->decoder_context[current_field]->width * 
-			codec->decoder_context[current_field]->height;
-		int u_out_size = codec->decoder_context[current_field]->width * 
-			codec->decoder_context[current_field]->height / 
-			4;
-		int v_out_size = codec->decoder_context[current_field]->width * 
-			codec->decoder_context[current_field]->height / 
-			4;
-		int y_in_size = codec->picture[current_field].linesize[0] * 
-			codec->decoder_context[current_field]->height;
-		int u_in_size = codec->picture[current_field].linesize[1] * 
-			codec->decoder_context[current_field]->height / 
-			4;
-		int v_in_size = codec->picture[current_field].linesize[2] * 
-			codec->decoder_context[current_field]->height / 
-			4;
 		input_rows = 
 			malloc(sizeof(unsigned char*) * 
 			codec->decoder_context[current_field]->height);
@@ -780,65 +764,28 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 				codec->decoder_context[current_field]->width * 
 				cmodel_calculate_pixelsize(input_cmodel);
 
-		if(!codec->temp_frame)
-		{
-			codec->temp_frame = malloc(y_out_size +
-				u_out_size +
-				v_out_size);
-		}
 
-		if(codec->picture[current_field].data[0])
-
-			for(i = 0; i < codec->decoder_context[current_field]->height; i++)
-			{
-				memcpy(codec->temp_frame + i * codec->decoder_context[current_field]->width,
-					codec->picture[current_field].data[0] + i * codec->picture[current_field].linesize[0],
-					codec->decoder_context[current_field]->width);
-			}
-
-			for(i = 0; i < codec->decoder_context[current_field]->height; i += 2)
-			{
-				memcpy(codec->temp_frame + 
-						y_out_size + 
-						i / 2 * 
-						codec->decoder_context[current_field]->width / 2,
-					codec->picture[current_field].data[1] + 
-						i / 2 * 
-						codec->picture[current_field].linesize[1],
-					codec->decoder_context[current_field]->width / 2);
-
-				memcpy(codec->temp_frame + 
-						y_out_size + 
-						u_out_size + 
-						i / 2 * 
-						codec->decoder_context[current_field]->width / 2,
-					codec->picture[current_field].data[2] + 
-						i / 2 * 
-						codec->picture[current_field].linesize[2],
-					codec->decoder_context[current_field]->width / 2);
-			}
-
-			cmodel_transfer(row_pointers, /* Leave NULL if non existent */
-				input_rows,
-				row_pointers[0], /* Leave NULL if non existent */
-				row_pointers[1],
-				row_pointers[2],
-				codec->temp_frame, /* Leave NULL if non existent */
-				codec->temp_frame + y_out_size,
-				codec->temp_frame + y_out_size + u_out_size,
-				file->in_x,        /* Dimensions to capture from input frame */
-				file->in_y, 
-				file->in_w, 
-				file->in_h,
-				0,       /* Dimensions to project on output frame */
-				0, 
-				file->out_w, 
-				file->out_h,
-				input_cmodel, 
-				file->color_model,
-				0,         /* When transfering BC_RGBA8888 to non-alpha this is the background color in 0xRRGGBB hex */
-				codec->decoder_context[current_field]->width,       /* For planar use the luma rowspan */
-				width);
+		cmodel_transfer(row_pointers, /* Leave NULL if non existent */
+			input_rows,
+			row_pointers[0], /* Leave NULL if non existent */
+			row_pointers[1],
+			row_pointers[2],
+			codec->picture[current_field].data[0], /* Leave NULL if non existent */
+			codec->picture[current_field].data[1],
+			codec->picture[current_field].data[2],
+			file->in_x,        /* Dimensions to capture from input frame */
+			file->in_y, 
+			file->in_w, 
+			file->in_h,
+			0,       /* Dimensions to project on output frame */
+			0, 
+			file->out_w, 
+			file->out_h,
+			input_cmodel, 
+			file->color_model,
+			0,         /* When transfering BC_RGBA8888 to non-alpha this is the background color in 0xRRGGBB hex */
+			codec->picture[current_field].linesize[0],       /* For planar use the luma rowspan */
+			width);
 		free(input_rows);
 	}
 

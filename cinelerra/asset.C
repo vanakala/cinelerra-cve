@@ -67,6 +67,7 @@ int Asset::init_values()
 	strcpy(vcodec, QUICKTIME_YUV2);
 	strcpy(acodec, QUICKTIME_TWOS);
 	jpeg_quality = 100;
+	aspect_ratio = -1;
 	
 	ampeg_bitrate = 256;
 	ampeg_derivative = 3;
@@ -165,7 +166,7 @@ void Asset::copy_format(Asset *asset, int do_index)
 	dither = asset->dither;
 	mp3_bitrate = asset->mp3_bitrate;
 	use_header = asset->use_header;
-
+	aspect_ratio = asset->aspect_ratio;
 
 	video_data = asset->video_data;
 	layers = asset->layers;
@@ -434,7 +435,7 @@ int Asset::read_video(FileXML *file)
 
 
 	jpeg_quality = file->tag.get_property("JPEG_QUALITY", jpeg_quality);
-
+	aspect_ratio = file->tag.get_property("ASPECT_RATIO", aspect_ratio);
 
 
 
@@ -642,6 +643,7 @@ int Asset::write_video(FileXML *file)
 
 
 	file->tag.set_property("JPEG_QUALITY", jpeg_quality);
+	file->tag.set_property("ASPECT_RATIO", aspect_ratio);
 
 	file->tag.set_property("VMPEG_IFRAME_DISTANCE", vmpeg_iframe_distance);
 	file->tag.set_property("VMPEG_BFRAME_DISTANCE", vmpeg_bframe_distance);
@@ -788,6 +790,7 @@ void Asset::load_defaults(Defaults *defaults,
 
 
 	jpeg_quality = GET_DEFAULT("JPEG_QUALITY", jpeg_quality);
+	aspect_ratio = GET_DEFAULT("ASPECT_RATIO", aspect_ratio);
 
 // MPEG format information
 	vmpeg_iframe_distance = GET_DEFAULT("VMPEG_IFRAME_DISTANCE", vmpeg_iframe_distance);
@@ -877,6 +880,7 @@ void Asset::save_defaults(Defaults *defaults,
 
 
 	UPDATE_DEFAULT("JPEG_QUALITY", jpeg_quality);
+	UPDATE_DEFAULT("ASPECT_RATIO", aspect_ratio);
 
 // MPEG format information
 	UPDATE_DEFAULT("VMPEG_IFRAME_DISTANCE", vmpeg_iframe_distance);
@@ -973,8 +977,8 @@ int Asset::dump()
 	printf("   audio_data %d channels %d samplerate %d bits %d byte_order %d signed %d header %d dither %d acodec %c%c%c%c\n",
 		audio_data, channels, sample_rate, bits, byte_order, signed_, header, dither, acodec[0], acodec[1], acodec[2], acodec[3]);
 	printf("   audio_length %lld\n", audio_length);
-	printf("   video_data %d layers %d framerate %f width %d height %d vcodec %c%c%c%c\n",
-		video_data, layers, frame_rate, width, height, vcodec[0], vcodec[1], vcodec[2], vcodec[3]);
+	printf("   video_data %d layers %d framerate %f width %d height %d vcodec %c%c%c%c aspect_ratio %f\n",
+		video_data, layers, frame_rate, width, height, vcodec[0], vcodec[1], vcodec[2], vcodec[3], aspect_ratio);
 	printf("   video_length %lld \n", video_length);
 	return 0;
 }

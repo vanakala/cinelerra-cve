@@ -18,6 +18,7 @@ public:
 	~Preferences();
 
 	Preferences& operator=(Preferences &that);
+	void copy_from(Preferences *that);
 	int load_defaults(Defaults *defaults);
 	int save_defaults(Defaults *defaults);
 

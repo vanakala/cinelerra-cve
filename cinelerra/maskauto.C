@@ -64,6 +64,7 @@ int SubMask::operator==(SubMask& ptr)
 void SubMask::copy_from(SubMask& ptr)
 {
 	points.remove_all_objects();
+//printf("SubMask::copy_from 1 %p %d\n", this, ptr.points.total);
 	for(int i = 0; i < ptr.points.total; i++)
 	{
 		MaskPoint *point = new MaskPoint;
@@ -148,6 +149,7 @@ void SubMask::copy(FileXML *file)
 			file->tag.set_title("POINT");
 			file->append_tag();
 			char string[BCTEXTLEN];
+//printf("SubMask::copy 1 %p %d %p\n", this, i, points.values[i]);
 			sprintf(string, "%.6e, %.6e, %.6e, %.6e, %.6e, %.6e", 
 				points.values[i]->x, 
 				points.values[i]->y, 
@@ -155,6 +157,7 @@ void SubMask::copy(FileXML *file)
 				points.values[i]->control_y1, 
 				points.values[i]->control_x2, 
 				points.values[i]->control_y2);
+//printf("SubMask::copy 2\n");
 			file->append_text(string);
 			file->tag.set_title("/POINT");
 			file->append_tag();
@@ -346,7 +349,9 @@ void MaskAuto::copy(int64_t start, int64_t end, FileXML *file, int default_auto)
 
 	for(int i = 0; i < masks.total; i++)
 	{
+//printf("MaskAuto::copy 1 %p %d %p\n", this, i, masks.values[i]);
 		masks.values[i]->copy(file);
+//printf("MaskAuto::copy 10\n");
 	}
 
 	file->append_newline();
