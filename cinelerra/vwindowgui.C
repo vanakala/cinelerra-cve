@@ -10,6 +10,7 @@
 #include "filesystem.h"
 #include "filexml.h"
 #include "fonts.h"
+#include "labels.h"
 #include "language.h"
 #include "localsession.h"
 #include "mainclock.h"
@@ -606,6 +607,7 @@ VWindowSlider::VWindowSlider(MWindow *mwindow,
 	this->mwindow = mwindow;
 	this->vwindow = vwindow;
 	this->gui = gui;
+	set_precision(0.00001);
 }
 
 VWindowSlider::~VWindowSlider()

@@ -141,6 +141,9 @@ void quicktime_read_indx(quicktime_t *file,
 	quicktime_read_int32_le(file);
 	quicktime_read_int32_le(file);
 
+
+	file->is_odml = 1;
+
 //printf("quicktime_read_indx 1\n");
 /* Read indx entries */
 	indx->table = calloc(indx->table_size, sizeof(quicktime_indxtable_t));

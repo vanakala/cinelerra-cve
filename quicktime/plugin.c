@@ -141,8 +141,8 @@ int quicktime_find_acodec(quicktime_audio_map_t *atrack)
 	int i;
 	char *compressor = atrack->track->mdia.minf.stbl.stsd.table[0].format;
 	int compression_id = atrack->track->mdia.minf.stbl.stsd.table[0].compression_id;
-	int32_t compressor_int = *(int32_t*)compressor;
 	quicktime_codec_t *codec_base = (quicktime_codec_t*)atrack->codec;
+	int32_t compressor_int = *(int32_t*)compressor;
 	if(!total_acodecs) register_acodecs();
 
 	for(i = 0; i < total_acodecs; i++)
@@ -154,9 +154,10 @@ int quicktime_find_acodec(quicktime_audio_map_t *atrack)
 		if(quicktime_match_32(compressor, codec_base->fourcc))
 			return 0;
 		else
-// For reading AVI, the fourcc may be 0 and the compression_id used instead
-// forucc can also be compression_id (mencoder does that)
-		if((compressor[0] == 0 || compressor_int == codec_base->wav_id) && codec_base->wav_id == compression_id)
+// For reading AVI, sometimes the fourcc is 0 and the compression_id is used instead.
+// Sometimes the compression_id is the fourcc.
+		if((compressor[0] == 0 || compressor_int == codec_base->wav_id) && 
+			codec_base->wav_id == compression_id)
 			return 0;
 		else
 		{
@@ -167,4 +168,85 @@ int quicktime_find_acodec(quicktime_audio_map_t *atrack)
 
 	return -1;
 }
+
+
+char* quicktime_acodec_title(char *fourcc)
+{
+	int i;
+	char *result = 0;
+	quicktime_audio_map_t *atrack = 
+		(quicktime_audio_map_t*)calloc(1, sizeof(quicktime_audio_map_t));
+	quicktime_codec_t *codec_base = 
+		atrack->codec = 
+		(quicktime_codec_t*)calloc(1, sizeof(quicktime_codec_t));
+	int done = 0;
+	if(!total_acodecs) register_acodecs();
+	for(i = 0; i < total_acodecs && !done; i++)
+	{
+//printf("quicktime_acodec_title 1\n");
+		quicktime_codectable_t *table = &acodecs[i];
+//printf("quicktime_acodec_title 2\n");
+		table->init_acodec(atrack);
+//printf("quicktime_acodec_title 3\n");
+		if(quicktime_match_32(fourcc, codec_base->fourcc))
+		{
+			result = codec_base->title;
+			done = 1;
+		}
+//printf("quicktime_acodec_title 4\n");
+		codec_base->delete_acodec(atrack);
+//printf("quicktime_acodec_title 5\n");
+	}
+	free(codec_base);
+	free(atrack);
+	
+	if(!result)
+		return fourcc;
+	else
+		return result;
+}
+
+char* quicktime_vcodec_title(char *fourcc)
+{
+	int i;
+	char *result = 0;
+
+	quicktime_video_map_t *vtrack = 
+		(quicktime_video_map_t*)calloc(1, sizeof(quicktime_video_map_t));
+	quicktime_codec_t *codec_base = 
+		vtrack->codec = 
+		(quicktime_codec_t*)calloc(1, sizeof(quicktime_codec_t));
+	int done = 0;
+
+
+	if(!total_vcodecs) register_vcodecs();
+	for(i = 0; i < total_vcodecs && !done; i++)
+	{
+		quicktime_codectable_t *table = &vcodecs[i];
+		table->init_vcodec(vtrack);
+		if(quicktime_match_32(fourcc, codec_base->fourcc))
+		{
+			result = codec_base->title;
+			done = 1;
+		}
+		codec_base->delete_vcodec(vtrack);
+	}
+
+
+
+	free(codec_base);
+	free(vtrack);
+
+	if(!result)
+		return fourcc;
+	else
+		return result;
+}
+
+
+
+
+
+
+
 

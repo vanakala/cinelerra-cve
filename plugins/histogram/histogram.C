@@ -1243,35 +1243,23 @@ int HistogramMain::load_defaults()
 int HistogramMain::save_defaults()
 {
 	char string[BCTEXTLEN];
-//printf("HistogramMain::save_defaults 1 %p\n", defaults);
 	for(int i = 0; i < 5; i++)
 	{
-//printf("HistogramMain::save_defaults 1 %d\n", i);
 		sprintf(string, "INPUT_MIN_%d", i);
 		defaults->update(string, config.input_min[i]);
-//printf("HistogramMain::save_defaults 1 %d\n", i);
 		sprintf(string, "INPUT_MID_%d", i);
 		defaults->update(string, config.input_mid[i]);
-//printf("HistogramMain::save_defaults 1 %d\n", i);
 		sprintf(string, "INPUT_MAX_%d", i);
-//printf("HistogramMain::save_defaults 1 %d\n", config.input_max[i]);
 		defaults->update(string, config.input_max[i]);
-//printf("HistogramMain::save_defaults 1 %d\n", i);
 		sprintf(string, "OUTPUT_MIN_%d", i);
 		defaults->update(string, config.output_min[i]);
-//printf("HistogramMain::save_defaults 1 %d\n", i);
 		sprintf(string, "OUTPUT_MAX_%d", i);
 	   	defaults->update(string, config.output_max[i]);
-//printf("HistogramMain::save_defaults %d %f %d\n", config.input_min[i], config.input_mid[i], config.input_max[i]);
 	}
-//printf("HistogramMain::save_defaults 3\n");
 	defaults->update("AUTOMATIC", config.automatic);
-//printf("HistogramMain::save_defaults 4\n");
 	defaults->update("MODE", config.mode);
 	defaults->update("THRESHOLD", config.threshold);
-//printf("HistogramMain::save_defaults 5\n");
 	defaults->save();
-//printf("HistogramMain::save_defaults 6\n");
 	return 0;
 }
 

@@ -37,6 +37,21 @@ public:
 	int get_in_color();
 	int get_out_color();
 
+// LINEAR or RADIAL
+	int shape;
+// LINEAR or LOG or SQUARE
+	int rate;
+	enum
+	{
+		LINEAR,
+		RADIAL,
+		LOG,
+		SQUARE
+	};
+
+
+	double center_x;
+	double center_y;
 	double angle;
 	double in_radius;
 	double out_radius;
@@ -44,6 +59,52 @@ public:
 	int out_r, out_g, out_b, out_a;
 };
 
+
+class GradientShape : public BC_PopupMenu
+{
+public:
+	GradientShape(GradientMain *plugin, 
+		GradientWindow *gui,
+		int x, 
+		int y);
+	void create_objects();
+	static char* to_text(int shape);
+	static int from_text(char *text);
+	int handle_event();
+	GradientMain *plugin;
+	GradientWindow *gui;
+};
+
+
+class GradientRate : public BC_PopupMenu
+{
+public:
+	GradientRate(GradientMain *plugin, 
+		int x, 
+		int y);
+	void create_objects();
+	static char* to_text(int shape);
+	static int from_text(char *text);
+	int handle_event();
+	GradientMain *plugin;
+	GradientWindow *gui;
+};
+
+class GradientCenterX : public BC_FPot
+{
+public:
+	GradientCenterX(GradientMain *plugin, int x, int y);
+	int handle_event();
+	GradientMain *plugin;
+};
+
+class GradientCenterY : public BC_FPot
+{
+public:
+	GradientCenterY(GradientMain *plugin, int x, int y);
+	int handle_event();
+	GradientMain *plugin;
+};
 
 class GradientAngle : public BC_FPot
 {
@@ -120,8 +181,10 @@ public:
 	int close_event();
 	void update_in_color();
 	void update_out_color();
+	void update_shape();
 
 	GradientMain *plugin;
+	BC_Title *angle_title;
 	GradientAngle *angle;
 	GradientInRadius *in_radius;
 	GradientOutRadius *out_radius;
@@ -129,8 +192,16 @@ public:
 	GradientOutColorButton *out_color;
 	GradientInColorThread *in_color_thread;
 	GradientOutColorThread *out_color_thread;
+	GradientShape *shape;
+	BC_Title *shape_title;
+	GradientCenterX *center_x;
+	BC_Title *center_x_title;
+	BC_Title *center_y_title;
+	GradientCenterY *center_y;
+	GradientRate *rate;
 	int in_color_x, in_color_y;
 	int out_color_x, out_color_y;
+	int shape_x, shape_y;
 };
 
 

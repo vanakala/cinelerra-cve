@@ -46,7 +46,8 @@ public:
 		int64_t end, 
 		int edit_edits,
 		int edit_labels, 
-		int edit_plugins);
+		int edit_plugins,
+		Edits *trim_edits);
 	virtual void shift_keyframes_recursive(int64_t position, int64_t length);
 	virtual void shift_effects_recursive(int64_t position, int64_t length);
 // Returns the newly created edit
@@ -91,17 +92,14 @@ public:
 
 // ==================================== editing
 
-// inserts space at the desired location and returns the edit before the space
-// fills end of track if range is after track
-// if sole_edit != NULL, only sole_edit is moved
 	int modify_handles(double oldposition, 
 		double newposition, 
 		int currentend,
-		Edit *sole_edit,
 		int edit_mode, 
 		int edit_edits,
 		int edit_labels,
-		int edit_plugins);
+		int edit_plugins,
+		Edits *trim_edits);
 	virtual int optimize();
 
 

@@ -36,6 +36,10 @@ GradientConfig::GradientConfig()
 	out_g = 0x0;
 	out_b = 0x0;
 	out_a = 0x0;
+	shape = GradientConfig::LINEAR;
+	rate = GradientConfig::LINEAR;
+	center_x = 50;
+	center_y = 50;
 }
 
 int GradientConfig::equivalent(GradientConfig &that)
@@ -50,7 +54,11 @@ int GradientConfig::equivalent(GradientConfig &that)
 		out_r == that.out_r &&
 		out_g == that.out_g &&
 		out_b == that.out_b &&
-		out_a == that.out_a);
+		out_a == that.out_a &&
+		shape == that.shape &&
+		rate == that.rate &&
+		EQUIV(center_x, that.center_x) &&
+		EQUIV(center_y, that.center_y));
 }
 
 void GradientConfig::copy_from(GradientConfig &that)
@@ -66,6 +74,10 @@ void GradientConfig::copy_from(GradientConfig &that)
 	out_g = that.out_g;
 	out_b = that.out_b;
 	out_a = that.out_a;
+	shape = that.shape;
+	rate = that.rate;
+	center_x = that.center_x;
+	center_y = that.center_y;
 }
 
 void GradientConfig::interpolate(GradientConfig &prev, 
@@ -89,6 +101,10 @@ void GradientConfig::interpolate(GradientConfig &prev,
 	out_g = (int)(prev.out_g * prev_scale + next.out_g * next_scale);
 	out_b = (int)(prev.out_b * prev_scale + next.out_b * next_scale);
 	out_a = (int)(prev.out_a * prev_scale + next.out_a * next_scale);
+	shape = prev.shape;
+	rate = prev.rate;
+	center_x = prev.center_x * prev_scale + next.center_x * next_scale;
+	center_y = prev.center_y * prev_scale + next.center_y * next_scale;
 }
 
 int GradientConfig::get_in_color()
@@ -122,13 +138,19 @@ GradientWindow::GradientWindow(GradientMain *plugin, int x, int y)
  	x,
 	y,
 	350, 
-	210, 
+	290, 
 	350, 
-	210, 
+	290, 
 	0, 
 	1)
 {
-	this->plugin = plugin; 
+	this->plugin = plugin;
+	angle = 0;
+	angle_title = 0;
+	center_x = 0;
+	center_y = 0;
+	center_x_title = 0;
+	center_y_title = 0;
 }
 
 GradientWindow::~GradientWindow()
@@ -139,32 +161,89 @@ GradientWindow::~GradientWindow()
 
 int GradientWindow::create_objects()
 {
-	int x = 10, y = 10, x2 = 130;
+	int x = 10, y = 10;
+	BC_Title *title;
 
-	add_subwindow(new BC_Title(x, y, _("Angle:")));
-	add_subwindow(angle = new GradientAngle(plugin, x2, y));
+	add_subwindow(title = new BC_Title(x, y, _("Shape:")));
+	add_subwindow(shape = new GradientShape(plugin, 
+		this, 
+		x + title->get_w() + 10, 
+		y));
+	shape->create_objects();
 	y += 40;
-	add_subwindow(new BC_Title(x, y, _("Inner radius:")));
-	add_subwindow(in_radius = new GradientInRadius(plugin, x2, y));
+	shape_x = x;
+	shape_y = y;
+	y += 40;
+	add_subwindow(title = new BC_Title(x, y, _("Rate:")));
+	add_subwindow(rate = new GradientRate(plugin,
+		x + title->get_w() + 10,
+		y));
+	rate->create_objects();
+	y += 40;
+	add_subwindow(title = new BC_Title(x, y, _("Inner radius:")));
+	add_subwindow(in_radius = new GradientInRadius(plugin, x + title->get_w() + 10, y));
 	y += 30;
-	add_subwindow(new BC_Title(x, y, _("Outer radius:")));
-	add_subwindow(out_radius = new GradientOutRadius(plugin, x2, y));
+	add_subwindow(title = new BC_Title(x, y, _("Outer radius:")));
+	add_subwindow(out_radius = new GradientOutRadius(plugin, x + title->get_w() + 10, y));
 	y += 35;
 	add_subwindow(in_color = new GradientInColorButton(plugin, this, x, y));
-	in_color_x = x2;
+	in_color_x = x + in_color->get_w() + 10;
 	in_color_y = y;
 	y += 35;
 	add_subwindow(out_color = new GradientOutColorButton(plugin, this, x, y));
-	out_color_x = x2;
+	out_color_x = x + out_color->get_w() + 10;
 	out_color_y = y;
 	in_color_thread = new GradientInColorThread(plugin, this);
 	out_color_thread = new GradientOutColorThread(plugin, this);
 	update_in_color();
 	update_out_color();
+	update_shape();
 
 	show_window();
 	flush();
 	return 0;
+}
+
+void GradientWindow::update_shape()
+{
+	int x = shape_x, y = shape_y;
+
+	if(plugin->config.shape == GradientConfig::LINEAR)
+	{
+		delete center_x_title;
+		delete center_y_title;
+		delete center_x;
+		delete center_y;
+		center_x_title = 0;
+		center_y_title = 0;
+		center_x = 0;
+		center_y = 0;
+
+		if(!angle)
+		{
+			add_subwindow(angle_title = new BC_Title(x, y, _("Angle:")));
+			add_subwindow(angle = new GradientAngle(plugin, x + angle_title->get_w() + 10, y));
+		}
+	}
+	else
+	{
+		delete angle_title;
+		delete angle;
+		angle_title = 0;
+		angle = 0;
+		if(!center_x)
+		{
+			add_subwindow(center_x_title = new BC_Title(x, y, _("Center X:")));
+			add_subwindow(center_x = new GradientCenterX(plugin,
+				x + center_x_title->get_w() + 10,
+				y));
+			x += center_x_title->get_w() + 10 + center_x->get_w() + 10;
+			add_subwindow(center_y_title = new BC_Title(x, y, _("Center Y:")));
+			add_subwindow(center_y = new GradientCenterY(plugin,
+				x + center_y_title->get_w() + 10,
+				y));
+		}
+	}
 }
 
 int GradientWindow::close_event()
@@ -198,6 +277,76 @@ void GradientWindow::update_out_color()
 
 
 
+GradientShape::GradientShape(GradientMain *plugin, 
+	GradientWindow *gui, 
+	int x, 
+	int y)
+ : BC_PopupMenu(x, y, 100, to_text(plugin->config.shape), 1)
+{
+	this->plugin = plugin;
+	this->gui = gui;
+}
+void GradientShape::create_objects()
+{
+	add_item(new BC_MenuItem(to_text(GradientConfig::LINEAR)));
+	add_item(new BC_MenuItem(to_text(GradientConfig::RADIAL)));
+}
+char* GradientShape::to_text(int shape)
+{
+	switch(shape)
+	{
+		case GradientConfig::LINEAR:
+			return _("Linear");
+		default:
+			return _("Radial");
+	}
+}
+int GradientShape::from_text(char *text)
+{
+	if(!strcmp(text, to_text(GradientConfig::LINEAR))) 
+		return GradientConfig::LINEAR;
+	return GradientConfig::RADIAL;
+}
+int GradientShape::handle_event()
+{
+	plugin->config.shape = from_text(get_text());
+	gui->update_shape();
+	plugin->send_configure_change();
+}
+
+
+
+
+GradientCenterX::GradientCenterX(GradientMain *plugin, int x, int y)
+ : BC_FPot(x, y, plugin->config.center_x, 0, 100)
+{
+	this->plugin = plugin;
+}
+int GradientCenterX::handle_event()
+{
+	plugin->config.center_x = get_value();
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+
+GradientCenterY::GradientCenterY(GradientMain *plugin, int x, int y)
+ : BC_FPot(x, y, plugin->config.center_y, 0, 100)
+{
+	this->plugin = plugin;
+}
+
+int GradientCenterY::handle_event()
+{
+	plugin->config.center_y = get_value();
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+
+
 GradientAngle::GradientAngle(GradientMain *plugin, int x, int y)
  : BC_FPot(x,
  	y,
@@ -214,6 +363,50 @@ int GradientAngle::handle_event()
 	plugin->send_configure_change();
 	return 1;
 }
+
+
+GradientRate::GradientRate(GradientMain *plugin, int x, int y)
+ : BC_PopupMenu(x,
+ 	y,
+	100,
+	to_text(plugin->config.rate),
+	1)
+{
+	this->plugin = plugin;
+}
+void GradientRate::create_objects()
+{
+	add_item(new BC_MenuItem(to_text(GradientConfig::LINEAR)));
+	add_item(new BC_MenuItem(to_text(GradientConfig::LOG)));
+	add_item(new BC_MenuItem(to_text(GradientConfig::SQUARE)));
+}
+char* GradientRate::to_text(int shape)
+{
+	switch(shape)
+	{
+		case GradientConfig::LINEAR:
+			return _("Linear");
+		case GradientConfig::LOG:
+			return _("Log");
+		default:
+			return _("Square");
+	}
+}
+int GradientRate::from_text(char *text)
+{
+	if(!strcmp(text, to_text(GradientConfig::LINEAR))) 
+		return GradientConfig::LINEAR;
+	if(!strcmp(text, to_text(GradientConfig::LOG)))
+		return GradientConfig::LOG;
+	return GradientConfig::SQUARE;
+}
+int GradientRate::handle_event()
+{
+	plugin->config.rate = from_text(get_text());
+	plugin->send_configure_change();
+	return 1;
+}
+
 
 
 GradientInRadius::GradientInRadius(GradientMain *plugin, int x, int y)
@@ -407,24 +600,12 @@ int GradientMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	this->output = output_ptr;
 	need_reconfigure |= load_configuration();
 
-// printf("GradientMain::process_realtime 1 %d %d %d %d %d %d %d %d\n",
-// config.in_r,
-// config.in_g,
-// config.in_b,
-// config.in_a,
-// config.out_r,
-// config.out_g,
-// config.out_b,
-// config.out_a);
-
-
 
 // Generate new gradient
 	if(need_reconfigure)
 	{
 		need_reconfigure = 0;
 
-//printf("GradientMain::process_realtime 1\n");
 		if(!gradient) gradient = new VFrame(0, 
 			input->get_w(),
 			input->get_h(),
@@ -436,14 +617,7 @@ int GradientMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		engine->process_packages();
 	}
 
-//printf("GradientMain::process_realtime 2\n");
-// Overlay new gradient
-	if(output->get_rows()[0] != input->get_rows()[0])
-	{
-		output->copy_from(input);
-	}
 
-//printf("GradientMain::process_realtime 2\n");
 	if(!overlayer) overlayer = new OverlayFrame(get_project_smp() + 1);
 	overlayer->overlay(output, 
 		gradient,
@@ -458,7 +632,6 @@ int GradientMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		1.0, 
 		TRANSFER_NORMAL,
 		NEAREST_NEIGHBOR);
-//printf("GradientMain::process_realtime 2\n");
 
 	return 0;
 }
@@ -468,16 +641,27 @@ void GradientMain::update_gui()
 {
 	if(thread)
 	{
-		load_configuration();
-		thread->window->lock_window();
-		thread->window->angle->update(config.angle);
-		thread->window->in_radius->update(config.in_radius);
-		thread->window->out_radius->update(config.out_radius);
-		thread->window->update_in_color();
-		thread->window->update_out_color();
-		thread->window->unlock_window();
-		thread->window->in_color_thread->update_gui(config.get_in_color(), config.in_a);
-		thread->window->out_color_thread->update_gui(config.get_out_color(), config.out_a);
+		if(load_configuration())
+		{
+			thread->window->lock_window("GradientMain::update_gui");
+			thread->window->angle->update(config.angle);
+			thread->window->rate->set_text(GradientRate::to_text(config.rate));
+			thread->window->in_radius->update(config.in_radius);
+			thread->window->out_radius->update(config.out_radius);
+			thread->window->shape->set_text(GradientShape::to_text(config.shape));
+			if(thread->window->angle)
+				thread->window->angle->update(config.angle);
+			if(thread->window->center_x)
+				thread->window->angle->update(config.center_x);
+			if(thread->window->center_y)
+				thread->window->angle->update(config.center_y);
+			thread->window->update_in_color();
+			thread->window->update_out_color();
+			thread->window->update_shape();
+			thread->window->unlock_window();
+			thread->window->in_color_thread->update_gui(config.get_in_color(), config.in_a);
+			thread->window->out_color_thread->update_gui(config.get_out_color(), config.out_a);
+		}
 	}
 }
 
@@ -508,6 +692,10 @@ int GradientMain::load_defaults()
 	config.out_g = defaults->get("OUT_G", config.out_g);
 	config.out_b = defaults->get("OUT_B", config.out_b);
 	config.out_a = defaults->get("OUT_A", config.out_a);
+	config.shape = defaults->get("SHAPE", config.shape);
+	config.rate = defaults->get("RATE", config.rate);
+	config.center_x = defaults->get("CENTER_X", config.center_x);
+	config.center_y = defaults->get("CENTER_Y", config.center_y);
 	return 0;
 }
 
@@ -525,6 +713,10 @@ int GradientMain::save_defaults()
 	defaults->update("OUT_G", config.out_g);
 	defaults->update("OUT_B", config.out_b);
 	defaults->update("OUT_A", config.out_a);
+	defaults->update("RATE", config.rate);
+	defaults->update("SHAPE", config.shape);
+	defaults->update("CENTER_X", config.center_x);
+	defaults->update("CENTER_Y", config.center_y);
 	defaults->save();
 	return 0;
 }
@@ -550,6 +742,10 @@ void GradientMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("OUT_G", config.out_g);
 	output.tag.set_property("OUT_B", config.out_b);
 	output.tag.set_property("OUT_A", config.out_a);
+	output.tag.set_property("SHAPE", config.shape);
+	output.tag.set_property("RATE", config.rate);
+	output.tag.set_property("CENTER_X", config.center_x);
+	output.tag.set_property("CENTER_Y", config.center_y);
 	output.append_tag();
 	output.terminate_string();
 }
@@ -571,6 +767,7 @@ void GradientMain::read_data(KeyFrame *keyframe)
 			if(input.tag.title_is("GRADIENT"))
 			{
 				config.angle = input.tag.get_property("ANGLE", config.angle);
+				config.rate = input.tag.get_property("RATE", config.rate);
 				config.in_radius = input.tag.get_property("IN_RADIUS", config.in_radius);
 				config.out_radius = input.tag.get_property("OUT_RADIUS", config.out_radius);
 				config.in_r = input.tag.get_property("IN_R", config.in_r);
@@ -581,6 +778,9 @@ void GradientMain::read_data(KeyFrame *keyframe)
 				config.out_g = input.tag.get_property("OUT_G", config.out_g);
 				config.out_b = input.tag.get_property("OUT_B", config.out_b);
 				config.out_a = input.tag.get_property("OUT_A", config.out_a);
+				config.shape = input.tag.get_property("SHAPE", config.shape);
+				config.center_x = input.tag.get_property("CENTER_X", config.center_x);
+				config.center_y = input.tag.get_property("CENTER_Y", config.center_y);
 			}
 		}
 	}
@@ -608,7 +808,7 @@ GradientUnit::GradientUnit(GradientServer *server, GradientMain *plugin)
 
 
 #define SQR(x) ((x) * (x))
-
+#define LOG_RANGE 1
 
 #define CREATE_GRADIENT(type, components) \
 { \
@@ -623,13 +823,26 @@ GradientUnit::GradientUnit(GradientServer *server, GradientMain *plugin)
 	{ \
 		float opacity; \
 		float transparency; \
-		if(i < in_radius) \
-			opacity = 0.0; \
-		else \
-		if(i < out_radius) \
-			opacity = (float)(i - in_radius) / (out_radius - in_radius); \
-		else \
-			opacity = 1.0; \
+		switch(plugin->config.rate) \
+		{ \
+			case GradientConfig::LINEAR: \
+				if(i < in_radius) \
+					opacity = 0.0; \
+				else \
+				if(i >= out_radius) \
+					opacity = 1.0; \
+				else \
+					opacity = (float)(i - in_radius) / (out_radius - in_radius); \
+				break; \
+			case GradientConfig::LOG: \
+				opacity = 1 - exp(LOG_RANGE * -(float)(i - in_radius) / (out_radius - in_radius)); \
+				break; \
+			case GradientConfig::SQUARE: \
+				opacity = SQR((float)(i - in_radius) / (out_radius - in_radius)); \
+				break; \
+		} \
+ \
+ 		CLAMP(opacity, 0, 1); \
 		transparency = 1.0 - opacity; \
 		((type*)r_table)[i] = (type)(out1 * opacity + in1 * transparency); \
 		((type*)g_table)[i] = (type)(out2 * opacity + in2 * transparency); \
@@ -641,40 +854,62 @@ GradientUnit::GradientUnit(GradientServer *server, GradientMain *plugin)
 	{ \
 		type *out_row = (type*)plugin->gradient->get_rows()[i]; \
  \
-		for(int j = 0; j < w; j++) \
+ 		switch(plugin->config.shape) \
 		{ \
-			int x = j - half_w; \
-			int y = -(i - half_h); \
- \
+			case GradientConfig::LINEAR: \
+				for(int j = 0; j < w; j++) \
+				{ \
+					int x = j - half_w; \
+					int y = -(i - half_h); \
+		 \
 /* Rotate by effect angle */ \
-			int input_y = (int)(gradient_size / 2 - (x*sin_angle + y*cos_angle)+0.5); \
- \
+					int input_y = (int)(gradient_size / 2 - \
+						(x * sin_angle + y * cos_angle) + \
+						0.5); \
+		 \
 /* Get gradient value from these coords */ \
+		 \
+ 					if(input_y < 0) \
+					{ \
+						out_row[0] = out1; \
+						out_row[1] = out2; \
+						out_row[2] = out3; \
+						if(components == 4) out_row[3] = out4; \
+					} \
+					else \
+					if(input_y >= gradient_size) \
+					{ \
+						out_row[0] = in1; \
+						out_row[1] = in2; \
+						out_row[2] = in3; \
+						if(components == 4) out_row[3] = in4; \
+					} \
+					else \
+					{ \
+						out_row[0] = ((type*)r_table)[input_y]; \
+						out_row[1] = ((type*)g_table)[input_y]; \
+						out_row[2] = ((type*)b_table)[input_y]; \
+						if(components == 4) out_row[3] = ((type*)a_table)[input_y]; \
+					} \
+		 \
+ 					out_row += components; \
+				} \
+				break; \
  \
- 			if(input_y < 0) \
-			{ \
-				out_row[0] = out1; \
-				out_row[1] = out2; \
-				out_row[2] = out3; \
-				if(components == 4) out_row[3] = out4; \
-			} \
-			else \
-			if(input_y >= gradient_size) \
-			{ \
-				out_row[0] = in1; \
-				out_row[1] = in2; \
-				out_row[2] = in3; \
-				if(components == 4) out_row[3] = in4; \
-			} \
-			else \
-			{ \
-				out_row[0] = ((type*)r_table)[input_y]; \
-				out_row[1] = ((type*)g_table)[input_y]; \
-				out_row[2] = ((type*)b_table)[input_y]; \
-				if(components == 4) out_row[3] = ((type*)a_table)[input_y]; \
-			} \
- \
- 			out_row += components; \
+			case GradientConfig::RADIAL: \
+				for(int j = 0; j < w; j++) \
+				{ \
+					double x = j - center_x; \
+					double y = i - center_y; \
+					double magnitude = hypot(x, y); \
+					int input_y = (int)magnitude; \
+					out_row[0] = ((type*)r_table)[input_y]; \
+					out_row[1] = ((type*)g_table)[input_y]; \
+					out_row[2] = ((type*)b_table)[input_y]; \
+					if(components == 4) out_row[3] = ((type*)a_table)[input_y]; \
+					out_row += components; \
+				} \
+				break; \
 		} \
 	} \
 }
@@ -686,11 +921,13 @@ void GradientUnit::process_package(LoadPackage *package)
 	int w = plugin->input->get_w();
 	int half_w = w / 2;
 	int half_h = h / 2;
-	int gradient_size = (int)(sqrt(SQR(w) + SQR(h)) + 1);
+	int gradient_size = (int)(ceil(hypot(w, h)));
 	int in_radius = (int)(plugin->config.in_radius / 100 * gradient_size);
 	int out_radius = (int)(plugin->config.out_radius / 100 * gradient_size);
 	double sin_angle = sin(plugin->config.angle * (M_PI / 180));
 	double cos_angle = cos(plugin->config.angle * (M_PI / 180));
+	double center_x = plugin->config.center_x * w / 100;
+	double center_y = plugin->config.center_y * h / 100;
 	void *r_table = 0;
 	void *g_table = 0;
 	void *b_table = 0;
@@ -698,9 +935,9 @@ void GradientUnit::process_package(LoadPackage *package)
 
 	if(in_radius > out_radius)
 	{
-		in_radius ^= out_radius;
-		out_radius ^= in_radius;
-		in_radius ^= out_radius;
+	    in_radius ^= out_radius;
+	    out_radius ^= in_radius;
+	    in_radius ^= out_radius;
 	}
 
 
@@ -911,7 +1148,7 @@ void GradientServer::init_packages()
 			i / 
 			total_packages;
 		package->y2 = plugin->input->get_h() * 
-			(i+1) /
+			(i + 1) /
 			total_packages;
 	}
 }

@@ -576,6 +576,11 @@ void quicktime_init_codec_dv(quicktime_video_map_t *vtrack)
 	init_codec_common(vtrack, QUICKTIME_DV);
 }
 
+void quicktime_init_codec_dv25(quicktime_video_map_t *vtrack)
+{
+	init_codec_common(vtrack, QUICKTIME_DV25);
+}
+
 void quicktime_init_codec_dvsd(quicktime_video_map_t *vtrack)
 {
 	init_codec_common(vtrack, QUICKTIME_DVSD);

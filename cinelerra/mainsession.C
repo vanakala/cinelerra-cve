@@ -34,6 +34,7 @@ MainSession::MainSession(MWindow *mwindow)
 	clip_number = 1;
 	brender_end = 0;
 	cwindow_controls = 1;
+	trim_edits = 0;
 }
 
 MainSession::~MainSession()

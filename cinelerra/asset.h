@@ -40,7 +40,8 @@ public:
 	void copy_format(Asset *asset, int do_index = 1);
 	void copy_index(Asset *asset);
 	int64_t get_index_offset(int channel);
-
+// Get an english description of the compression.  Used by AssetEdit
+	char* get_compression_text(int audio, int video);
 
 // Load and save parameters for a render dialog
 // Used by render, record, menueffects, preferences
@@ -114,8 +115,8 @@ public:
 // Folder in resource manager
 	char folder[BCTEXTLEN];
 
-// Determines the file engine to use
-	int format;      // format of file
+// Format of file.  An enumeration from file.inc.
+	int format;
 
 // contains audio data
 	int audio_data;

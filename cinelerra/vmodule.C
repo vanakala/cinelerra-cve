@@ -87,9 +87,9 @@ int VModule::import_frame(VFrame *output,
 	double edl_rate = get_edl()->session->frame_rate;
 	int64_t input_position_project = (int64_t)(input_position * 
 		edl_rate / 
-		frame_rate);
+		frame_rate + 
+		0.001);
 	if(!output) printf("VModule::import_frame 10 output=%p\n", output);
-//printf("VModule::import_frame 20\n");
 
 //printf("VModule::import_frame 1 %lld\n", input_position);
 	corrected_position = input_position;
@@ -300,7 +300,6 @@ int VModule::render(VFrame *output,
 	double edl_rate = get_edl()->session->frame_rate;
 
 
-
 	if(use_nudge) start_position += (int64_t)(track->nudge * 
 		frame_rate / 
 		edl_rate);
@@ -338,6 +337,7 @@ int VModule::render(VFrame *output,
 // Process transition
 	if(transition)
 	{
+
 // Get temporary buffer
 		VFrame **transition_input = 0;
 		if(commonrender)
@@ -402,7 +402,6 @@ int VModule::render(VFrame *output,
 			direction);
 	}
 
-//printf("VModule::render 100\n");
 
 	return result;
 }

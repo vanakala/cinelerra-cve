@@ -39,7 +39,7 @@ BC_Resources* BC_Theme::get_resources()
 // These create single images for storage in the image_sets table.
 VFrame* BC_Theme::new_image(char *title, char *path)
 {
-	VFrame *existing_image = title[0] ? get_image(title) : 0;
+	VFrame *existing_image = title[0] ? get_image(title, 0) : 0;
 	if(existing_image) return existing_image;
 
 	BC_ThemeSet *result = new BC_ThemeSet(1, 0, title);
@@ -53,10 +53,12 @@ VFrame* BC_Theme::new_image(char *path)
 	return new_image("", path);
 }
 
+
+
 // These create image sets which are stored in the image_sets table.
 VFrame** BC_Theme::new_image_set(char *title, int total, va_list *args)
 {
-	VFrame **existing_image_set = title[0] ? get_image_set(title) : 0;
+	VFrame **existing_image_set = title[0] ? get_image_set(title, 0) : 0;
 	if(existing_image_set) return existing_image_set;
 
 	BC_ThemeSet *result = new BC_ThemeSet(total, 1, title);
@@ -89,7 +91,7 @@ VFrame** BC_Theme::new_image_set(int total, ...)
 	return result;
 }
 
-VFrame* BC_Theme::get_image(char *title)
+VFrame* BC_Theme::get_image(char *title, int use_default)
 {
 	for(int i = 0; i < image_sets.total; i++)
 	{
@@ -101,11 +103,22 @@ VFrame* BC_Theme::get_image(char *title)
 
 
 
-// TODO: Need to return a default image
+// Return the first image it can find.  This should always work.
+	if(use_default)
+	{
+		printf("BC_Theme::get_image: image \"%s\" not found.\n",
+			title);
+		if(image_sets.total)
+		{
+			return image_sets.values[0]->data[0];
+		}
+	}
+
+// Give up and go to a movie.
 	return 0;
 }
 
-VFrame** BC_Theme::get_image_set(char *title)
+VFrame** BC_Theme::get_image_set(char *title, int use_default)
 {
 	for(int i = 0; i < image_sets.total; i++)
 	{
@@ -115,9 +128,27 @@ VFrame** BC_Theme::get_image_set(char *title)
 		}
 	}
 
+// Get the image set with the largest number of images.
+	if(use_default)
+	{
+		printf("BC_Theme::get_image_set: image set \"%s\" not found.\n",
+			title);
+		int max_total = 0;
+		int max_number = -1;
+		for(int i = 0; i < image_sets.total; i++)
+		{
+			if(image_sets.values[i]->total > max_total)
+			{
+				max_total = image_sets.values[i]->total;
+				max_number = i;
+			}
+		}
 
+		if(max_number >= 0)
+			return image_sets.values[max_number]->data;
+	}
 
-// TODO: Need to return a default image set
+// Give up and go to a movie
 	return 0;
 }
 
@@ -136,34 +167,38 @@ VFrame** BC_Theme::get_image_set(char *title)
 VFrame** BC_Theme::new_button(char *overlay_path, 
 	char *up_path, 
 	char *hi_path, 
-	char *dn_path)
+	char *dn_path,
+	char *title)
 {
 	VFrame default_data(get_image_data(overlay_path));
-	VFrame **data = new VFrame*[3];
+	BC_ThemeSet *result = new BC_ThemeSet(3, 1, title ? title : (char*)"");
+	if(title) image_sets.append(result);
 
-	data[0] = new_image(up_path);
-	data[1] = new_image(hi_path);
-	data[2] = new_image(dn_path);
+	result->data[0] = new_image(up_path);
+	result->data[1] = new_image(hi_path);
+	result->data[2] = new_image(dn_path);
 	for(int i = 0; i < 3; i++)
-		overlay(data[i], &default_data);
-	return data;
+		overlay(result->data[i], &default_data, -1, -1, (i == 2));
+	return result->data;
 }
 
 
 VFrame** BC_Theme::new_button(char *overlay_path, 
 	VFrame *up,
 	VFrame *hi,
-	VFrame *dn)
+	VFrame *dn,
+	char *title)
 {
 	VFrame default_data(get_image_data(overlay_path));
-	VFrame **data = new VFrame*[3];
+	BC_ThemeSet *result = new BC_ThemeSet(3, 0, title ? title : (char*)"");
+	if(title) image_sets.append(result);
 
-	data[0] = new VFrame(*up);
-	data[1] = new VFrame(*hi);
-	data[2] = new VFrame(*dn);
+	result->data[0] = new VFrame(*up);
+	result->data[1] = new VFrame(*hi);
+	result->data[2] = new VFrame(*dn);
 	for(int i = 0; i < 3; i++)
-		overlay(data[i], &default_data);
-	return data;
+		overlay(result->data[i], &default_data, -1, -1, (i == 2));
+	return result->data;
 }
 
 
@@ -172,19 +207,21 @@ VFrame** BC_Theme::new_toggle(char *overlay_path,
 	char *hi_path,
 	char *checked_path,
 	char *dn_path,
-	char *checkedhi_path)
+	char *checkedhi_path,
+	char *title)
 {
 	VFrame default_data(get_image_data(overlay_path));
-	VFrame **data = new VFrame*[5];
+	BC_ThemeSet *result = new BC_ThemeSet(5, 1, title ? title : (char*)"");
+	if(title) image_sets.append(result);
 
-	data[0] = new_image(up_path);
-	data[1] = new_image(hi_path);
-	data[2] = new_image(checked_path);
-	data[3] = new_image(dn_path);
-	data[4] = new_image(checkedhi_path);
+	result->data[0] = new_image(up_path);
+	result->data[1] = new_image(hi_path);
+	result->data[2] = new_image(checked_path);
+	result->data[3] = new_image(dn_path);
+	result->data[4] = new_image(checkedhi_path);
 	for(int i = 0; i < 5; i++)
-		overlay(data[i], &default_data);
-	return data;
+		overlay(result->data[i], &default_data, -1, -1, (i == 3));
+	return result->data;
 }
 
 VFrame** BC_Theme::new_toggle(char *overlay_path, 
@@ -192,21 +229,24 @@ VFrame** BC_Theme::new_toggle(char *overlay_path,
 	VFrame *hi,
 	VFrame *checked,
 	VFrame *dn,
-	VFrame *checkedhi)
+	VFrame *checkedhi,
+	char *title)
 {
 	VFrame default_data(get_image_data(overlay_path));
-	VFrame **data = new VFrame*[5];
+	BC_ThemeSet *result = new BC_ThemeSet(5, 0, title ? title : (char*)"");
+	if(title) image_sets.append(result);
 
-	data[0] = new VFrame(*up);
-	data[1] = new VFrame(*hi);
-	data[2] = new VFrame(*checked);
-	data[3] = new VFrame(*dn);
-	data[4] = new VFrame(*checkedhi);
+	result->data[0] = new VFrame(*up);
+	result->data[1] = new VFrame(*hi);
+	result->data[2] = new VFrame(*checked);
+	result->data[3] = new VFrame(*dn);
+	result->data[4] = new VFrame(*checkedhi);
 	for(int i = 0; i < 5; i++)
-		overlay(data[i], &default_data);
-	return data;
+		overlay(result->data[i], &default_data, -1, -1, (i == 3));
+	return result->data;
 }
-void BC_Theme::overlay(VFrame *dst, VFrame *src, int in_x1, int in_x2)
+
+void BC_Theme::overlay(VFrame *dst, VFrame *src, int in_x1, int in_x2, int shift)
 {
 	int w;
 	int h;
@@ -234,14 +274,27 @@ void BC_Theme::overlay(VFrame *dst, VFrame *src, int in_x1, int in_x2)
 			switch(dst->get_color_model())
 			{
 				case BC_RGBA8888:
-					for(int i = 0; i < h; i++)
+					for(int i = shift; i < h; i++)
 					{
-						unsigned char *in_row = in_rows[i] + in_x1 * 4;
-						unsigned char *out_row = out_rows[i];
-						for(int j = 0; j < w; j++)
+						unsigned char *in_row = 0;
+						unsigned char *out_row;
+
+						if(!shift)
+						{
+							in_row = in_rows[i] + in_x1 * 4;
+							out_row = out_rows[i];
+						}
+						else
+						{
+							in_row = in_rows[i - 1] + in_x1 * 4;
+							out_row = out_rows[i] + 4;
+						}
+
+						for(int j = shift; j < w; j++)
 						{
 							int opacity = in_row[3];
 							int transparency = 0xff - opacity;
+
 							out_row[0] = (in_row[0] * opacity + out_row[0] * transparency) / 0xff;
 							out_row[1] = (in_row[1] * opacity + out_row[1] * transparency) / 0xff;
 							out_row[2] = (in_row[2] * opacity + out_row[2] * transparency) / 0xff;
@@ -251,11 +304,25 @@ void BC_Theme::overlay(VFrame *dst, VFrame *src, int in_x1, int in_x2)
 						}
 					}
 					break;
+
 				case BC_RGB888:
 					for(int i = 0; i < h; i++)
 					{
-						unsigned char *in_row = in_rows[i] + in_x1 * 4;
+						unsigned char *in_row;
 						unsigned char *out_row = out_rows[i];
+
+						if(!shift)
+						{
+							in_row = in_rows[i] + in_x1 * 3;
+							out_row = out_rows[i];
+						}
+						else
+						{
+							
+							in_row = in_rows[i - 1] + in_x1 * 4;
+							out_row = out_rows[i] + 4;
+						}
+
 						for(int j = 0; j < w; j++)
 						{
 							int opacity = in_row[3];
@@ -362,7 +429,8 @@ return;
 BC_ThemeSet::BC_ThemeSet(int total, int is_reference, char *title)
 {
 	this->total = total;
-	this->title = title;
+	this->title = new char[strlen(title) + 1];
+	strcpy(this->title, title);
 	this->is_reference = is_reference;
 	data = new VFrame*[total];
 }
@@ -379,6 +447,8 @@ BC_ThemeSet::~BC_ThemeSet()
 
 		delete [] data;
 	}
+
+	delete [] title;
 }
 
 

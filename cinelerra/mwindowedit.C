@@ -660,18 +660,15 @@ void MWindow::insert_effect(char *title,
 
 int MWindow::modify_edithandles()
 {
-	Edit *sole_edit;
 	undo->update_undo_before(_("drag handle"), LOAD_EDITS | LOAD_TIMEBAR);
 
-	if (session->solo_dragged)
-		sole_edit = session->drag_edit;
-	else
-		sole_edit = 0;
+
+
+
 
 	edl->modify_edithandles(session->drag_start, 
 		session->drag_position, 
 		session->drag_handle, 
-		sole_edit,
 		edl->session->edit_handle_mode[session->drag_button],
 		edl->session->labels_follow_edits, 
 		edl->session->plugins_follow_edits);
@@ -685,20 +682,14 @@ int MWindow::modify_edithandles()
 
 int MWindow::modify_pluginhandles()
 {
-	Edit *sole_edit;
 	undo->update_undo_before(_("drag handle"), LOAD_EDITS | LOAD_TIMEBAR);
 
-	if (session->solo_dragged)
-		sole_edit = session->drag_plugin;
-	else
-		sole_edit = 0;
-	
 	edl->modify_pluginhandles(session->drag_start, 
 		session->drag_position, 
 		session->drag_handle, 
-		sole_edit,
 		edl->session->edit_handle_mode[session->drag_button],
-		edl->session->labels_follow_edits);
+		edl->session->labels_follow_edits,
+		session->trim_edits);
 
 	finish_modify_handles();
 

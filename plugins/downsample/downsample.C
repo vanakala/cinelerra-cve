@@ -566,12 +566,12 @@ DownSampleUnit::DownSampleUnit(DownSampleServer *server,
 #define SQR(x) ((x) * (x))
 
 
-#define DOWNSAMPLE(type, components, max) \
+#define DOWNSAMPLE(type, temp_type, components, max) \
 { \
-	uint64_t r; \
-	uint64_t g; \
-	uint64_t b; \
-	uint64_t a; \
+	temp_type r; \
+	temp_type g; \
+	temp_type b; \
+	temp_type a; \
 	int do_r = plugin->config.r; \
 	int do_g = plugin->config.g; \
 	int do_b = plugin->config.b; \
@@ -591,7 +591,7 @@ DownSampleUnit::DownSampleUnit(DownSampleServer *server,
 			int x1 = MAX(j, 0); \
 			int x2 = MIN(j + plugin->config.horizontal, w); \
  \
-			int64_t scale = (x2 - x1) * (y2 - y1); \
+			temp_type scale = (x2 - x1) * (y2 - y1); \
 			if(x2 > x1 && y2 > y1) \
 			{ \
  \
@@ -645,28 +645,34 @@ void DownSampleUnit::process_package(LoadPackage *package)
 	switch(plugin->input->get_color_model())
 	{
 		case BC_RGB888:
-			DOWNSAMPLE(uint8_t, 3, 0xff)
+			DOWNSAMPLE(uint8_t, int64_t, 3, 0xff)
+			break;
+		case BC_RGB_FLOAT:
+			DOWNSAMPLE(float, float, 3, 1.0)
 			break;
 		case BC_RGBA8888:
-			DOWNSAMPLE(uint8_t, 4, 0xff)
+			DOWNSAMPLE(uint8_t, int64_t, 4, 0xff)
+			break;
+		case BC_RGBA_FLOAT:
+			DOWNSAMPLE(float, float, 4, 1.0)
 			break;
 		case BC_RGB161616:
-			DOWNSAMPLE(uint16_t, 3, 0xffff)
+			DOWNSAMPLE(uint16_t, int64_t, 3, 0xffff)
 			break;
 		case BC_RGBA16161616:
-			DOWNSAMPLE(uint16_t, 4, 0xffff)
+			DOWNSAMPLE(uint16_t, int64_t, 4, 0xffff)
 			break;
 		case BC_YUV888:
-			DOWNSAMPLE(uint8_t, 3, 0xff)
+			DOWNSAMPLE(uint8_t, int64_t, 3, 0xff)
 			break;
 		case BC_YUVA8888:
-			DOWNSAMPLE(uint8_t, 4, 0xff)
+			DOWNSAMPLE(uint8_t, int64_t, 4, 0xff)
 			break;
 		case BC_YUV161616:
-			DOWNSAMPLE(uint16_t, 3, 0xffff)
+			DOWNSAMPLE(uint16_t, int64_t, 3, 0xffff)
 			break;
 		case BC_YUVA16161616:
-			DOWNSAMPLE(uint16_t, 4, 0xffff)
+			DOWNSAMPLE(uint16_t, int64_t, 4, 0xffff)
 			break;
 	}
 }

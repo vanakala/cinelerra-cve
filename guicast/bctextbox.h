@@ -341,6 +341,7 @@ public:
 	BC_TumbleTextBoxText(BC_TumbleTextBox *popup, int x, int y);
 	virtual ~BC_TumbleTextBoxText();
 	int handle_event();
+	int button_press_event();
 	BC_TumbleTextBox *popup;
 };
 

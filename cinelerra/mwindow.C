@@ -885,67 +885,11 @@ TRACE("MWindow::load_filenames 1");
 				xml_file.read_from_file(filenames->values[i]);
 // Load EDL for pasting
 				new_edl->load_xml(plugindb, &xml_file, LOAD_ALL);
+				test_plugins(new_edl, filenames->values[i]);
 
 // We don't want a valid reel name/number for projects
 				strcpy(new_asset->reel_name, "");
 				reel_number = -1;
-
-// Do a check weather plugins exist
-				for(Track *track = new_edl->tracks->first; track; track = track->next)
-				{
-					for(int k = 0; k < track->plugin_set.total; k++)
-					{
-						PluginSet *plugin_set = track->plugin_set.values[k];
-						for(Plugin *plugin = (Plugin*)plugin_set->first; 
-						plugin; 
-						plugin = (Plugin*)plugin->next)
-						{
-							if(plugin->plugin_type == PLUGIN_STANDALONE)
-							{
-								// ok we need to find it in plugindb
-								int plugin_found = 0;
-								for(int j = 0; j < plugindb->total; j++)
-								{
-									PluginServer *server = plugindb->values[j];
-									if(!strcasecmp(server->title, plugin->title) &&
-										((track->data_type == TRACK_AUDIO && server->audio) ||
-										(track->data_type == TRACK_VIDEO && server->video)) &&
-										(!server->transition))
-										plugin_found = 1;
-								}
-								if (!plugin_found) 
-								{
-									printf("\nWARNING: The plugin '%s' named in file '%s' is not part of your installation of Cinelerra. This means project will not be rendered as it was meant and it might result in Cinelerra crushing.\n", plugin->title, filenames->values[i]); 
-								}
-							}
-						}
-					}
-					for(Edit *edit = (Edit*)track->edits->first; 
-					edit; 
-					edit = (Edit*)edit->next)
-					{
-						if (edit->transition)
-						{
-							// ok we need to find transition in plugindb
-							int transition_found = 0;
-							for(int j = 0; j < plugindb->total; j++)
-							{
-								PluginServer *server = plugindb->values[j];
-								if(!strcasecmp(server->title, edit->transition->title) &&
-									((track->data_type == TRACK_AUDIO && server->audio) ||
-									(track->data_type == TRACK_VIDEO && server->video)) &&
-									(server->transition))
-									transition_found = 1;
-							}
-							if (!transition_found) 
-							{
-								printf("\nWARNING: The transition '%s' named in file '%s' is not part of your installation of Cinelerra. This means project will not be rendered as it was meant and it might result in Cinelerra crushing.\n", edit->transition->title, filenames->values[i]); 
-							}
-						}
-					}
-				}
-
-
 
 				if(load_mode == LOAD_REPLACE || 
 					load_mode == LOAD_REPLACE_CONCATENATE)
@@ -1043,6 +987,72 @@ TRACE("MWindow::load_filenames 110");
 UNTRACE
 	return 0;
 }
+
+
+
+
+void MWindow::test_plugins(EDL *new_edl, char *path)
+{
+// Do a check weather plugins exist
+	for(Track *track = new_edl->tracks->first; track; track = track->next)
+	{
+		for(int k = 0; k < track->plugin_set.total; k++)
+		{
+			PluginSet *plugin_set = track->plugin_set.values[k];
+			for(Plugin *plugin = (Plugin*)plugin_set->first; 
+			plugin; 
+			plugin = (Plugin*)plugin->next)
+			{
+				if(plugin->plugin_type == PLUGIN_STANDALONE)
+				{
+					// ok we need to find it in plugindb
+					int plugin_found = 0;
+					for(int j = 0; j < plugindb->total; j++)
+					{
+						PluginServer *server = plugindb->values[j];
+						if(!strcasecmp(server->title, plugin->title) &&
+							((track->data_type == TRACK_AUDIO && server->audio) ||
+							(track->data_type == TRACK_VIDEO && server->video)) &&
+							(!server->transition))
+							plugin_found = 1;
+					}
+					if (!plugin_found) 
+					{
+						printf("\nWARNING: The plugin '%s' named in file '%s' is not part of your installation of Cinelerra. This means project will not be rendered as it was meant and it might result in Cinelerra crashing.\n", plugin->title, path); 
+					}
+				}
+			}
+		}
+		for(Edit *edit = (Edit*)track->edits->first; 
+		edit; 
+		edit = (Edit*)edit->next)
+		{
+			if (edit->transition)
+			{
+				// ok we need to find transition in plugindb
+				int transition_found = 0;
+				for(int j = 0; j < plugindb->total; j++)
+				{
+					PluginServer *server = plugindb->values[j];
+					if(!strcasecmp(server->title, edit->transition->title) &&
+						((track->data_type == TRACK_AUDIO && server->audio) ||
+						(track->data_type == TRACK_VIDEO && server->video)) &&
+						(server->transition))
+						transition_found = 1;
+				}
+				if (!transition_found) 
+				{
+					printf("\nWARNING: The transition '%s' named in file '%s' is not part of your installation of Cinelerra. This means project will not be rendered as it was meant and it might result in Cinelerra crashing.\n", edit->transition->title, path); 
+				}
+			}
+		}
+	}
+}
+
+
+
+
+
 
 void MWindow::create_objects(int want_gui, 
 	int want_new,
@@ -1497,15 +1507,16 @@ int MWindow::asset_to_edl(EDL *new_edl,
 //printf("MWindow::asset_to_edl 2 %d %d\n", new_edl->session->video_tracks, new_edl->session->audio_tracks);
 
 // Disable drawing if the file format isn't fast enough.
-	if(new_asset->format == FILE_MPEG)
-	{
-		for(Track *current = new_edl->tracks->first;
-			current;
-			current = NEXT)
-		{
-			if(current->data_type == TRACK_VIDEO) current->draw = 0;
-		}
-	}
+// MPEG is now faster than most other codecs.
+// 	if(new_asset->format == FILE_MPEG)
+// 	{
+// 		for(Track *current = new_edl->tracks->first;
+// 			current;
+// 			current = NEXT)
+// 		{
+// 			if(current->data_type == TRACK_VIDEO) current->draw = 0;
+// 		}
+// 	}
 
 
 
@@ -1627,6 +1638,7 @@ void MWindow::save_backup()
 int MWindow::create_aspect_ratio(float &w, float &h, int width, int height)
 {
 	int denominator;
+	if(!width || !height) return 1;
 	float fraction = (float)width / height;
 
 	for(denominator = 1; 
@@ -1637,6 +1649,7 @@ int MWindow::create_aspect_ratio(float &w, float &h, int width, int height)
 
 	w = denominator * width / height;
 	h = denominator;
+	return 0;
 }
 
 
@@ -1809,25 +1822,45 @@ void MWindow::next_time_format()
 {
 	switch(edl->session->time_format)
 	{
-		case 0: edl->session->time_format = 1; break;
-		case 1: edl->session->time_format = 2; break;
-		case 2: edl->session->time_format = 3; break;
-		case 3: edl->session->time_format = 4; break;
-		case 4: edl->session->time_format = 5; break;
-		case 5: edl->session->time_format = 0; break;
+		case TIME_HMS: edl->session->time_format = TIME_HMSF; break;
+		case TIME_HMSF: edl->session->time_format = TIME_SAMPLES; break;
+		case TIME_SAMPLES: edl->session->time_format = TIME_SAMPLES_HEX; break;
+		case TIME_SAMPLES_HEX: edl->session->time_format = TIME_FRAMES; break;
+		case TIME_FRAMES: edl->session->time_format = TIME_FEET_FRAMES; break;
+		case TIME_FEET_FRAMES: edl->session->time_format = TIME_SECONDS; break;
+		case TIME_SECONDS: edl->session->time_format = TIME_HMS; break;
 	}
 
-	gui->lock_window();
+	time_format_common();
+}
+
+void MWindow::prev_time_format()
+{
+	switch(edl->session->time_format)
+	{
+		case TIME_HMS: edl->session->time_format = TIME_SECONDS; break;
+		case TIME_SECONDS: edl->session->time_format = TIME_FEET_FRAMES; break;
+		case TIME_FEET_FRAMES: edl->session->time_format = TIME_FRAMES; break;
+		case TIME_FRAMES: edl->session->time_format = TIME_SAMPLES_HEX; break;
+		case TIME_SAMPLES_HEX: edl->session->time_format = TIME_SAMPLES; break;
+		case TIME_SAMPLES: edl->session->time_format = TIME_HMSF; break;
+		case TIME_HMSF: edl->session->time_format = TIME_HMS; break;
+	}
+
+	time_format_common();
+}
+
+void MWindow::time_format_common()
+{
+	gui->lock_window("MWindow::next_time_format");
 	gui->redraw_time_dependancies();
-
-
-
 	char string[BCTEXTLEN], string2[BCTEXTLEN];
 	sprintf(string, _("Using %s."), Units::print_time_format(edl->session->time_format, string2));
 	gui->show_message(string, BLACK);
 	gui->flush();
 	gui->unlock_window();
 }
+
 
 int MWindow::set_filename(char *filename)
 {

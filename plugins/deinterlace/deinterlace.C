@@ -542,7 +542,7 @@ void DeInterlaceMain::update_gui()
 	{
 		load_configuration();
 		thread->window->lock_window();
-		thread->window->set_mode(config.mode, 0);
+		thread->window->set_mode(config.mode, 1);
 		thread->window->adaptive->update(config.adaptive);
 		thread->window->threshold->update(config.threshold);
 		thread->window->unlock_window();

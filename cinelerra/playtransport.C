@@ -324,16 +324,13 @@ void PlayTransport::handle_transport(int command, int wait_tracking)
 		case STOP:
 		case REWIND:
 		case GOTO_END:
-//printf("PlayTransport 1\n");
 			engine->que->send_command(STOP,
 				CHANGE_NONE, 
 				0,
 				0);
-//printf("PlayTransport 1\n");
 			engine->interrupt_playback(wait_tracking);
 			break;
 	}
-//printf("PlayTransport::handle_transport 2\n");
 }
 
 EDL* PlayTransport::get_edl()

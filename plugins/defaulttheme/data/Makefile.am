@@ -127,6 +127,8 @@ checkbox_uphi.png \
 	crop_hi.png \
 	crop_up.png \
 	cut.png \
+	cwindow_inactive.png \
+	cwindow_active.png \
 	default_bg.png \
 	delete_all_indexes_dn.png \
 	delete_all_indexes_hi.png \
@@ -368,6 +370,9 @@ listbox_up.png \
 	playpatch_up.png \
 	plugin.png \
 	plugin_bg.png \
+	pot_dn.png \
+	pot_hi.png \
+	pot_up.png \
 	preferences_bg.png \
 	presentation_dn.png \
 	presentation_hi.png \

@@ -419,12 +419,15 @@ int VFrame::read_png(const PngData& data)
 	w = png_get_image_width(png_ptr, info_ptr);
 	h = png_get_image_height(png_ptr, info_ptr);
 
-	switch(png_get_color_type(png_ptr, info_ptr))
+	int src_color_model = png_get_color_type(png_ptr, info_ptr);
+	switch(src_color_model)
 	{
 		case PNG_COLOR_TYPE_RGB:
 			new_color_model = BC_RGB888;
 			break;
 
+
+		case PNG_COLOR_TYPE_GRAY_ALPHA:
 		case PNG_COLOR_TYPE_RGB_ALPHA:
 		default:
 			new_color_model = BC_RGBA8888;
@@ -441,6 +444,29 @@ int VFrame::read_png(const PngData& data)
 		-1);
 
 	png_read_image(png_ptr, get_rows());
+
+
+
+	if(src_color_model == PNG_COLOR_TYPE_GRAY_ALPHA)
+	{
+		for(int i = 0; i < get_h(); i++)
+		{
+			unsigned char *row = get_rows()[i];
+			unsigned char *out_ptr = row + get_w() * 4 - 4;
+			unsigned char *in_ptr = row + get_w() * 2 - 2;
+
+			for(int j = get_w() - 1; j >= 0; j--)
+			{
+				out_ptr[0] = in_ptr[0];
+				out_ptr[1] = in_ptr[0];
+				out_ptr[2] = in_ptr[0];
+				out_ptr[3] = in_ptr[1];
+				out_ptr -= 4;
+				in_ptr -= 2;
+			}
+		}
+	}
+
 	png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
 	return 0;
 }

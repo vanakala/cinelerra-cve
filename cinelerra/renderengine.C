@@ -331,7 +331,6 @@ double RenderEngine::get_tracking_position()
 
 int RenderEngine::open_output()
 {
-//printf("RenderEngine::open_output 1\n");
 	if(command->realtime)
 	{
 // Allocate devices
@@ -494,6 +493,7 @@ void RenderEngine::wait_render_threads()
 	{
 		arender->Thread::join();
 	}
+
 	if(do_video)
 	{
 		vrender->Thread::join();

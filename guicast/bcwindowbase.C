@@ -78,6 +78,9 @@ BC_WindowBase::~BC_WindowBase()
                 parent_window->subwindows->remove(this);
         }
 
+
+// Delete the subwindows
+	is_deleting = 1;
         if(subwindows)
         {
                 while (subwindows->total) 
@@ -130,6 +133,7 @@ BC_WindowBase::~BC_WindowBase()
 
 int BC_WindowBase::initialize()
 {
+	is_deleting = 0;
 	window_lock = 0;
 	x = 0; 
 	y = 0; 
@@ -1039,6 +1043,13 @@ int BC_WindowBase::get_has_focus()
 	return top_level->has_focus;
 }
 
+int BC_WindowBase::get_deleting()
+{
+	if(is_deleting) return 1;
+	if(parent_window && parent_window->get_deleting()) return 1;
+	return 0;
+}
+
 int BC_WindowBase::dispatch_button_press()
 {
 	int result = 0;
@@ -1877,9 +1888,9 @@ int BC_WindowBase::video_is_on()
 void BC_WindowBase::start_video()
 {
 	video_on = 1;
-	set_color(BLACK);
-	draw_box(0, 0, get_w(), get_h());
-	flash();
+//	set_color(BLACK);
+//	draw_box(0, 0, get_w(), get_h());
+//	flash();
 }
 
 void BC_WindowBase::stop_video()
@@ -2561,6 +2572,11 @@ int BC_WindowBase::get_x2()
 int BC_WindowBase::get_y2()
 {
 	return y + h;
+}
+
+int BC_WindowBase::get_video_on()
+{
+	return video_on;
 }
 
 int BC_WindowBase::get_hidden()
@@ -3315,24 +3331,22 @@ void BC_WindowBase::enable_opengl()
 	XVisualInfo *visinfo;
 	int nvi;
 
-//printf("BC_WindowBase::enable_opengl 1\n");
 	viproto.screen = top_level->screen;
 	visinfo = XGetVisualInfo(top_level->display,
     	VisualScreenMask,
     	&viproto,
     	&nvi);
-//printf("BC_WindowBase::enable_opengl 1 %p\n", visinfo);
 
 	gl_context = glXCreateContext(top_level->display,
 		visinfo,
 		0,
 		1);
-//printf("BC_WindowBase::enable_opengl 1\n");
 
 	glXMakeCurrent(top_level->display,
 		win,
 		gl_context);
 
+// Need expose events for 3D
 	unsigned long valuemask = CWEventMask;
 	XSetWindowAttributes attributes;
 	attributes.event_mask = DEFAULT_EVENT_MASKS |
@@ -3341,7 +3355,6 @@ void BC_WindowBase::enable_opengl()
 
 	opengl_lock.unlock();
 	unlock_window();
-//printf("BC_WindowBase::enable_opengl 2\n");
 }
 
 void BC_WindowBase::disable_opengl()

@@ -1057,10 +1057,12 @@ int Track::clear(double start,
 	int edit_edits,
 	int edit_labels,
 	int edit_plugins,
-	int convert_units)
+	int convert_units,
+	Edits *trim_edits)
 {
 // Edits::move_auto calls this routine after the units are converted to the track
 // format.
+//printf("Track::clear 1 %d %d %d\n", edit_edits, edit_labels, edit_plugins);
 	if(convert_units)
 	{
 		start = to_units(start, 0);
@@ -1072,7 +1074,10 @@ int Track::clear(double start,
 
 	if(edit_plugins)
 		for(int i = 0; i < plugin_set.total; i++)
-			plugin_set.values[i]->clear((int64_t)start, (int64_t)end);
+		{
+			if(!trim_edits || trim_edits == (Edits*)plugin_set.values[i])
+				plugin_set.values[i]->clear((int64_t)start, (int64_t)end);
+		}
 
 	if(edit_edits)
 		edits->clear((int64_t)start, (int64_t)end);
@@ -1098,19 +1103,18 @@ int Track::popup_transition(int cursor_x, int cursor_y)
 int Track::modify_edithandles(double oldposition, 
 	double newposition, 
 	int currentend, 
-	Edit *sole_edit,
 	int handle_mode,
 	int edit_labels,
 	int edit_plugins)
 {
 	edits->modify_handles(oldposition, 
 		newposition, 
-		currentend,
-		sole_edit,
+		currentend, 
 		handle_mode,
 		1,
 		edit_labels,
-		edit_plugins);
+		edit_plugins,
+		0);
 
 
 	return 0;
@@ -1119,20 +1123,22 @@ int Track::modify_edithandles(double oldposition,
 int Track::modify_pluginhandles(double oldposition, 
 	double newposition, 
 	int currentend, 
-	Edit *sole_edit,
 	int handle_mode,
-	int edit_labels)
+	int edit_labels,
+	Edits *trim_edits)
 {
 	for(int i = 0; i < plugin_set.total; i++)
 	{
-		plugin_set.values[i]->modify_handles(oldposition, 
-			newposition, 
-			currentend, 
-			sole_edit,
-			handle_mode,
-			0,
-			edit_labels,
-			1);
+		if(!trim_edits || trim_edits == (Edits*)plugin_set.values[i])
+			plugin_set.values[i]->modify_handles(oldposition, 
+				newposition, 
+				currentend, 
+				handle_mode,
+// Don't allow plugin tweeks to affect edits.
+				0,
+				edit_labels,
+				1,
+				trim_edits);
 	}
 	return 0;
 }

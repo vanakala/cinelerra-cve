@@ -128,6 +128,7 @@ public:
 	int cauto_x, cauto_y, cauto_w, cauto_h;
 	int ccanvas_x, ccanvas_y, ccanvas_w, ccanvas_h;
 	int ccomposite_x, ccomposite_y, ccomposite_w, ccomposite_h;
+	int cstatus_x, cstatus_y;
 	int cdest_x, cdest_y;
 	int cedit_x, cedit_y;
 	int channel_position_color;

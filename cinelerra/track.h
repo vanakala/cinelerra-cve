@@ -216,7 +216,8 @@ public:
 		int edit_edits,
 		int edit_labels,
 		int clear_plugins, 
-		int convert_units /* = 1 */);
+		int convert_units,
+		Edits *trim_edits);
 // Returns the point to restart background rendering at.
 // -1 means nothing changed.
 	void clear_automation(double selectionstart, 
@@ -281,16 +282,15 @@ public:
 	int modify_edithandles(double oldposition, 
 		double newposition, 
 		int currentend, 
-		Edit *sole_edit,
 		int handle_mode,
 		int edit_labels,
 		int edit_plugins);
 	int modify_pluginhandles(double oldposition, 
 		double newposition, 
 		int currentend, 
-		Edit *sole_edit,
 		int handle_mode,
-		int edit_labels);
+		int edit_labels,
+		Edits *trim_edits);
 	int select_edit(int cursor_x, 
 		int cursor_y, 
 		double &new_start, 

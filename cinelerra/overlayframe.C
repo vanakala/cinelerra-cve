@@ -9,6 +9,7 @@
 #include "edl.inc"
 #include "mutex.h"
 #include "overlayframe.h"
+#include "units.h"
 #include "vframe.h"
 
 // Easy abstraction of the float and int types.  Most of these are never used
@@ -293,6 +294,13 @@ int OverlayFrame::overlay(VFrame *output,
 	float w_scale = (out_x2 - out_x1) / (in_x2 - in_x1);
 	float h_scale = (out_y2 - out_y1) / (in_y2 - in_y1);
 
+
+
+
+
+
+
+
 	if(isnan(in_x1) ||
 		isnan(in_y1) ||
 		isnan(in_x2) ||
@@ -301,14 +309,16 @@ int OverlayFrame::overlay(VFrame *output,
 		isnan(out_y1) ||
 		isnan(out_x2) ||
 		isnan(out_y2)) return 1;
-// printf("OverlayFrame::overlay 1 %f %f %f %f -> %f %f %f %f\n", in_x1,
-// 			in_y1,
-// 			in_x2,
-// 			in_y2,
-// 			out_x1,
-// 			out_y1,
-// 			out_x2,
-// 			out_y2);
+// printf("OverlayFrame::overlay 1 %f %f %f %f -> %f %f %f %f scale=%f %f\n", in_x1,
+// in_y1,
+// in_x2,
+// in_y2,
+// out_x1,
+// out_y1,
+// out_x2,
+// out_y2,
+// out_x2 - out_x1, 
+// out_y2 - out_y1);
 
 // Limit values
 	if(in_x1 < 0)
@@ -739,10 +749,10 @@ void ScaleUnit::tabulate_reduction(bilinear_table_t* &table,
 		bilinear_table_t *entry = table + i;
 //printf("ScaleUnit::tabulate_reduction 1 %f %f %f %f\n", out_start, out_end, in_start, in_end);
 
-// Store input fraction
-		entry->input_fraction1 = (floor(in_start + 1) - in_start) / scale;
-		entry->input_fraction2 = 1.0 / scale;
-		entry->input_fraction3 = (in_end - floor(in_end)) / scale;
+// Store input fraction.  Using scale to normalize these didn't work.
+		entry->input_fraction1 = (floor(in_start + 1) - in_start) /* / scale */;
+		entry->input_fraction2 = 1.0 /* / scale */;
+		entry->input_fraction3 = (in_end - floor(in_end)) /* / scale */;
 
 		if(in_end >= in_total - in_pixel1)
 		{
@@ -759,12 +769,36 @@ void ScaleUnit::tabulate_reduction(bilinear_table_t* &table,
 		entry->input_pixel1 = (int)in_start;
 		entry->input_pixel2 = (int)in_end;
 
-// printf("ScaleUnit::tabulate_reduction 1 %d %d %f %f  %f\n", 
+// Normalize for middle pixels
+		if(entry->input_pixel2 > entry->input_pixel1 + 1)
+		{
+			float total = entry->input_fraction1 + 
+				entry->input_fraction2 * 
+				(entry->input_pixel2 - entry->input_pixel1 - 1) + 
+				entry->input_fraction3;
+			entry->input_fraction1 /= total;
+			entry->input_fraction2 /= total;
+			entry->input_fraction3 /= total;
+		}
+		else
+		{
+			float total = entry->input_fraction1 +
+				entry->input_fraction3;
+			entry->input_fraction1 /= total;
+			entry->input_fraction3 /= total;
+		}
+
+// printf("ScaleUnit::tabulate_reduction 1 %d %d %d %f %f %f %f\n", 
+// i,
 // entry->input_pixel1, 
 // entry->input_pixel2,
 // entry->input_fraction1,
 // entry->input_fraction2,
-// entry->input_fraction3);
+// entry->input_fraction3,
+// entry->input_fraction1 + 
+// 	entry->input_fraction2 * 
+// 	(entry->input_pixel2 - entry->input_pixel1 - 1) + 
+// 	entry->input_fraction3);
 
 
 // Sanity check
@@ -928,7 +962,13 @@ void ScaleUnit::dump_bilinear(bilinear_table_t *table, int total)
 	{ \
 		type *out_row = out_rows[i + pkg->out_row1]; \
 		bilinear_table_t *y_entry = &y_table[i + pkg->out_row1]; \
-/*printf("BILINEAR_REDUCE 2 %d %d %d\n", i, y_entry->input_pixel1, y_entry->input_pixel2); */\
+/* printf("BILINEAR_REDUCE 2 %d %d %d %f %f %f\n", */ \
+/* i, */ \
+/* y_entry->input_pixel1, */ \
+/* y_entry->input_pixel2, */ \
+/* y_entry->input_fraction1, */ \
+/* y_entry->input_fraction2, */ \
+/* y_entry->input_fraction3); */ \
  \
 		for(int j = 0; j < out_w_int; j++) \
 		{ \
@@ -972,13 +1012,15 @@ void ScaleUnit::dump_bilinear(bilinear_table_t *table, int total)
 				} \
 			} \
  \
- 			if(max != 1.0) \
+ \
+  			if(max != 1.0) \
 			{ \
 				if(temp_f1 > max) temp_f1 = max; \
 				if(temp_f2 > max) temp_f2 = max; \
 				if(temp_f3 > max) temp_f3 = max; \
 				if(components == 4) if(temp_f4 > max) temp_f4 = max; \
 			} \
+ \
 			out_row[j * components    ] = (type)temp_f1; \
 			out_row[j * components + 1] = (type)temp_f2; \
 			out_row[j * components + 2] = (type)temp_f3; \
@@ -1593,7 +1635,14 @@ void TranslateUnit::translation_array_f(transfer_table_f* &table,
 	bzero(table, sizeof(transfer_table_f) * out_w_int);
 
 
-//printf("OverlayFrame::translation_array_f 2 %f %f -> %f %f\n", in_x1, in_x2, out_x1, out_x2);
+// printf("OverlayFrame::translation_array_f 2 %f %f -> %f %f scale=%f %f\n", 
+// in_x1, 
+// in_x2, 
+// out_x1, 
+// out_x2,
+// in_x2 - in_x1,
+// out_x2 - out_x1);
+// 
 
 	float in_x = in_x1;
 	for(int out_x = out_x1_int; out_x < out_x2_int; out_x++)

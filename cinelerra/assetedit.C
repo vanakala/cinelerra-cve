@@ -5,6 +5,7 @@
 #include "bcprogressbox.h"
 #include "bitspopup.h"
 #include "cache.h"
+#include "clip.h"
 #include "cplayback.h"
 #include "cwindow.h"
 #include "file.h"
@@ -154,6 +155,26 @@ AssetEditWindow::~AssetEditWindow()
 	if(bitspopup) delete bitspopup;
 }
 
+
+static void do_commas(char *string)
+{
+// Do commas
+	int len = strlen(string);
+	int commas = (len - 1) / 3;
+	for(int i = len + commas, j = len, k; j >= 0 && i >= 0; i--, j--)
+	{
+		k = (len - j - 1) / 3;
+		if(k * 3 == len - j - 1 && j != len - 1 && string[j] != 0)
+		{
+			string[i--] = ',';
+		}
+
+		string[i] = string[j];
+	}
+}
+
+
+
 int AssetEditWindow::create_objects()
 {
 	int y = 10, x = 10, x1 = 10, x2 = 150;
@@ -182,26 +203,31 @@ int AssetEditWindow::create_objects()
 	x = x1;
 	y += 20;
 
+	int64_t bytes = fs.get_size(asset->path);
 	add_subwindow(new BC_Title(x, y, _("Bytes:")));
-	sprintf(string, "%lld", fs.get_size(asset->path));
-// Do commas
-	int len = strlen(string);
-	int commas = (len - 1) / 3;
-	for(int i = len + commas, j = len, k; j >= 0 && i >= 0; i--, j--)
-	{
-		k = (len - j - 1) / 3;
-		if(k * 3 == len - j - 1 && j != len - 1 && string[j] != 0)
-		{
-			string[i--] = ',';
-		}
+	sprintf(string, "%lld", bytes);
+	do_commas(string);
+	
 
-		string[i] = string[j];
-	}
+	add_subwindow(new BC_Title(x2, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
+	y += 20;
+	x = x1;
 
-	x = x2;
-	add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
+	double length;
+	if(asset->audio_length > 0)
+		length = (double)asset->audio_length / asset->sample_rate;
+	if(asset->video_length > 0)
+		length = MAX(length, (double)asset->video_length / asset->frame_rate);
+	int64_t bitrate = (int64_t)(bytes * 8 / length);
+	add_subwindow(new BC_Title(x, y, _("Bitrate (bits/sec):")));
+	sprintf(string, "%lld", bitrate);
+
+	do_commas(string);
+	add_subwindow(new BC_Title(x2, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
+
 	y += 30;
 	x = x1;
+
 
 	if(asset->audio_data)
 	{
@@ -209,16 +235,15 @@ int AssetEditWindow::create_objects()
 
 		y += 30;
 
-		if(asset->acodec[0])
+		if(asset->get_compression_text(1, 0))
 		{
 			add_subwindow(new BC_Title(x, y, _("Compression:")));
-			sprintf(string, "%c%c%c%c", 
-				asset->acodec[0], 
-				asset->acodec[1], 
-				asset->acodec[2], 
-				asset->acodec[3]);
 			x = x2;
-			add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
+			add_subwindow(new BC_Title(x, 
+				y, 
+				asset->get_compression_text(1, 0), 
+				MEDIUMFONT, 
+				mwindow->theme->edit_font_color));
 			y += vmargin;
 			x = x1;
 		}
@@ -343,18 +368,18 @@ int AssetEditWindow::create_objects()
 	{
 		add_subwindow(new BC_Title(x, y, _("Video:"), LARGEFONT, RED));
 
+
 		y += 30;
 		x = x1;
-		if(asset->vcodec[0])
+		if(asset->get_compression_text(0,1))
 		{
 			add_subwindow(new BC_Title(x, y, _("Compression:")));
-			sprintf(string, "%c%c%c%c", 
-				asset->vcodec[0], 
-				asset->vcodec[1], 
-				asset->vcodec[2], 
-				asset->vcodec[3]);
 			x = x2;
-			add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
+			add_subwindow(new BC_Title(x, 
+				y, 
+				asset->get_compression_text(0,1), 
+				MEDIUMFONT, 
+				mwindow->theme->edit_font_color));
 			y += vmargin;
 			x = x1;
 		}

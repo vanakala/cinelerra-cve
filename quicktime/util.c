@@ -254,7 +254,7 @@ int quicktime_write_data(quicktime_t *file, char *data, int size)
 				file->stream);
 		file->file_position += size;
 		file->ftell_position += size;
-//printf("quicktime_write_data 2\n");
+		file->presave_position = file->file_position;
 	}
 	else
 	{
@@ -662,6 +662,11 @@ int64_t quicktime_position(quicktime_t *file)
 int quicktime_set_position(quicktime_t *file, int64_t position) 
 {
 	file->file_position = position;
+	if(!file->use_presave)
+	{
+		quicktime_fseek(file, position);
+		file->presave_position = position;
+	}
 	return 0;
 }
 

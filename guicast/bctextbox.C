@@ -126,14 +126,15 @@ int BC_TextBox::initialize()
 // Create the subwindow
 	BC_SubWindow::initialize();
 
+	BC_Resources *resources = get_resources();
 	if(has_border)
 	{
-		back_color = WHITE;
-		high_color = LTYELLOW;
+		back_color = resources->text_background;
+		high_color = resources->text_background_hi;
 	}
 	else 
 	{
-		high_color = LTGREY;
+		high_color = resources->text_background_noborder_hi;
 		back_color = bg_color;
 	}
 
@@ -190,8 +191,11 @@ void BC_TextBox::disable()
 	if(enabled)
 	{
 		enabled = 0;
-		if(active) top_level->deactivate();
-		draw();
+		if(top_level)
+		{
+			if(active) top_level->deactivate();
+			draw();
+		}
 	}
 }
 
@@ -200,7 +204,10 @@ void BC_TextBox::enable()
 	if(!enabled)
 	{
 		enabled = 1;
-		draw();
+		if(top_level)
+		{
+			draw();
+		}
 	}
 }
 
@@ -274,6 +281,7 @@ int BC_TextBox::reposition_window(int x, int y, int w, int rows)
 
 void BC_TextBox::draw_border()
 {
+	BC_Resources *resources = get_resources();
 // Clear margins
 	set_color(background_color);
 	draw_box(0, 0, left_margin, get_h());
@@ -283,22 +291,23 @@ void BC_TextBox::draw_border()
 	{
 		if(highlighted)
 			draw_3d_border(0, 0, w, h,
-				top_level->get_resources()->button_shadow, 
-				top_level->get_resources()->button_uphighlighted,
-			        top_level->get_resources()->button_highlighted,
-			        top_level->get_resources()->button_light);
+				resources->button_shadow, 
+				resources->button_uphighlighted,
+			        resources->button_highlighted,
+			        resources->button_light);
 		else
 			draw_3d_border(0, 0, w, h, 
-				top_level->get_resources()->button_shadow, 
-				BLACK, 
-				top_level->get_resources()->button_up,
-				top_level->get_resources()->button_light);
+				resources->text_border1, 
+				resources->text_border2,
+				resources->text_border3,
+				resources->text_border4);
 	}
 }
 
 void BC_TextBox::draw_cursor()
 {
-	set_color(background_color);
+//	set_color(background_color);
+	set_color(WHITE);
 	set_inverse();
 
 	draw_box(ibeam_x + text_x, 
@@ -315,12 +324,13 @@ void BC_TextBox::draw()
 	int row_begin, row_end;
 	int highlight_x1, highlight_x2;
 	int need_ibeam = 1;
+	BC_Resources *resources = get_resources();
 
 //printf("BC_TextBox::draw 1 %s\n", text);
 // Background
 	if(has_border)
 	{
-		background_color = WHITE;
+		background_color = resources->text_background;
 	}
 	else
 	{
@@ -363,7 +373,7 @@ void BC_TextBox::draw()
 				highlight_letter2 > row_begin && highlight_letter1 < row_end)
 			{
 				if(active && enabled && get_has_focus())
-					set_color(top_level->get_resources()->text_highlight);
+					set_color(resources->text_highlight);
 				else
 					set_color(MEGREY);
 
@@ -385,7 +395,7 @@ void BC_TextBox::draw()
 
 // Draw text over highlight
 			if(enabled)
-				set_color(BLACK);
+				set_color(resources->text_default);
 			else
 				set_color(MEGREY);
 
@@ -410,10 +420,7 @@ void BC_TextBox::draw()
 
 //printf("BC_TextBox::draw 4 %d\n", ibeam_y);
 // Draw solid cursor
-//	if(!active)
-//	{
-		draw_cursor();
-//	}
+	draw_cursor();
 
 // Border
 	draw_border();
@@ -1876,7 +1883,24 @@ int BC_TumbleTextBoxText::handle_event()
 	return 1;
 }
 
-
+int BC_TumbleTextBoxText::button_press_event()
+{
+	if(is_event_win())
+	{
+		if(get_buttonpress() < 4) return BC_TextBox::button_press_event();
+		if(get_buttonpress() == 4)
+		{
+			popup->tumbler->handle_up_event();
+		}
+		else
+		if(get_buttonpress() == 5)
+		{
+			popup->tumbler->handle_down_event();
+		}
+		return 1;
+	}
+	return 0;
+}
 
 
 

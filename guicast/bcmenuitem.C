@@ -1,6 +1,7 @@
 #include "bcmenubar.h"
 #include "bcmenuitem.h"
 #include "bcmenupopup.h"
+#include "bcpixmap.h"
 #include "bcpopup.h"
 #include "bcpopupmenu.h"
 #include "bcresources.h"
@@ -9,6 +10,13 @@
 
 #include <string.h>
 
+
+#define MENUITEM_UP 0
+#define MENUITEM_HI 1
+#define MENUITEM_DN 2
+
+
+#define MENUITEM_MARGIN 2
 
 // ================================ Menu Item ==================================
 
@@ -290,6 +298,8 @@ int BC_MenuItem::dispatch_key_press()
 int BC_MenuItem::draw()
 {
 	int text_line = top_level->get_text_descent(MEDIUMFONT);
+	BC_Resources *resources = top_level->get_resources();
+
 	if(!strcmp(text, "-"))
 	{
 		menu_popup->get_popup()->set_color(DKGREY);
@@ -304,26 +314,56 @@ int BC_MenuItem::draw()
 			int y = this->y;
 			int w = menu_popup->get_w() - 4;
 			int h = this->h;
-			
+
+// Button down
 			if(top_level->get_button_down() && !submenu)
 			{
-				menu_popup->get_popup()->draw_3d_box(2, y, menu_popup->get_w() - 4, h, 
-					top_level->get_resources()->menu_shadow,
-					BLACK,
-					top_level->get_resources()->menu_down,
-					top_level->get_resources()->menu_down,
-					top_level->get_resources()->menu_light);
+				if(menu_popup->item_bg[2])
+				{
+					menu_popup->get_popup()->draw_9segment(MENUITEM_MARGIN,
+						y,
+						menu_popup->get_w() - MENUITEM_MARGIN * 2,
+						h,
+						menu_popup->item_bg[MENUITEM_DN]);
+				}
+				else
+				{
+					menu_popup->get_popup()->draw_3d_box(MENUITEM_MARGIN, 
+						y, 
+						menu_popup->get_w() - MENUITEM_MARGIN * 2, 
+						h, 
+						resources->menu_shadow,
+						BLACK,
+						resources->menu_down,
+						resources->menu_down,
+						resources->menu_light);
+				}
 			}
 			else
+// Highlighted
 			{
-				menu_popup->get_popup()->set_color(BC_WindowBase::get_resources()->menu_highlighted);
-				menu_popup->get_popup()->draw_box(2, y, menu_popup->get_w() - 4, h);
+				if(menu_popup->item_bg[MENUITEM_HI])
+				{
+					menu_popup->get_popup()->draw_9segment(MENUITEM_MARGIN,
+						y,
+						menu_popup->get_w() - MENUITEM_MARGIN * 2,
+						h,
+						menu_popup->item_bg[1]);
+				}
+				else
+				{
+					menu_popup->get_popup()->set_color(resources->menu_highlighted);
+					menu_popup->get_popup()->draw_box(MENUITEM_MARGIN, 
+						y, 
+						menu_popup->get_w() - MENUITEM_MARGIN * 2, 
+						h);
+				}
 			}
-			menu_popup->get_popup()->set_color(top_level->get_resources()->menu_highlighted_fontcolor);
+			menu_popup->get_popup()->set_color(resources->menu_highlighted_fontcolor);
 		}
 		else
 		  {
-		    menu_popup->get_popup()->set_color(top_level->get_resources()->menu_item_text);
+		    menu_popup->get_popup()->set_color(resources->menu_item_text);
 		  }
 		if(checked)
 		{

@@ -5,6 +5,7 @@
 #include "auto.inc"
 #include "defaults.inc"
 #include "edit.inc"
+#include "edits.inc"
 #include "guicast.h"
 #include "mainsession.inc"
 #include "maxchannels.h"
@@ -49,6 +50,8 @@ public:
 // Item being dragged
 	ArrayList <PluginServer*> *drag_pluginservers;
 	Plugin *drag_plugin;
+// When trim should only affect the selected edits or plugins
+	Edits *trim_edits;
 	ArrayList<Asset*> *drag_assets;
 	ArrayList<EDL*> *drag_clips;
 	Auto *drag_auto;
@@ -58,8 +61,6 @@ public:
 	Edit *drag_edit;
 // Edits who are being dragged
 	ArrayList<Edit*> *drag_edits;
-// Is the edit or plugin solely being dragged (by pressing shift key)
-	int solo_dragged;
 // Button pressed during drag
 	int drag_button;
 // Handle being dragged

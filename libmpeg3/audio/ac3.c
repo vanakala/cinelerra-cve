@@ -50,13 +50,12 @@ int mpeg3_ac3_header(mpeg3_ac3_t *audio, unsigned char *header)
 
 	if(result)
 	{
-//printf("%d\n", result);
 		audio->framesize = result;
 		audio->channels = 0;
 
 		if(audio->flags & A52_LFE)
 			audio->channels++;
-//printf("mpeg3_ac3_header %02x %02x\n", audio->flags & A52_LFE, audio->flags & A52_CHANNEL_MASK);
+//printf("mpeg3_ac3_header %02x\n", audio->flags & A52_CHANNEL_MASK);
 		switch(audio->flags & A52_CHANNEL_MASK)
 		{
 			case A52_CHANNEL:
@@ -134,6 +133,7 @@ int mpeg3audio_doac3(mpeg3_ac3_t *audio,
 			output_position += 256;
 		}
 	}
+//printf("mpeg3audio_doac3 4 %d\n", output_position);
 
 
 	return output_position;

@@ -104,7 +104,7 @@ N_("TIFF Sequence")
 N_("MPEG Video")    // For encoding only
 N_("OGG Vorbis")
 N_("EXR")
-N_("EXR List")
+N_("EXR Sequence")
 #endif
 
 #define AC3_NAME "AC3"
@@ -133,7 +133,7 @@ N_("EXR List")
 #define VMPEG_NAME "MPEG Video"    // For encoding only
 #define VORBIS_NAME "OGG Vorbis"
 #define EXR_NAME "EXR"
-#define EXR_LIST_NAME "EXR List"
+#define EXR_LIST_NAME "EXR Sequence"
 #define YUV_NAME "YUV4MPEG Stream"
 
 

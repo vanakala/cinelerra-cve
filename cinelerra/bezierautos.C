@@ -88,21 +88,34 @@ int BezierAutos::get_frame_half(float scale, int vertical, float units_per_pixel
 int BezierAutos::get_center(float &x, 
 			float &y, 
 			float &z, 
-			float frame, 
+			int64_t frame, 
 			int direction, 
 			BezierAuto **before, 
 			BezierAuto **after)
 {
 	frame = (direction == PLAY_FORWARD) ? frame : (frame - 1);
-	get_neighbors((int64_t)frame, (int64_t)frame, (Auto**)before, (Auto**)after);
+	get_neighbors(frame, frame, (Auto**)before, (Auto**)after);
 
-//printf("BezierAutos::get_center %p %p\n", *before, *after);
+// printf("BezierAutos::get_center %lld %p %p\n", frame, *before, *after);
+// printf("BezierAutos::get_center %lld %lld\n", 
+// *before ? (*before)->position : -1, 
+// *after ? (*after)->position : -1);
 	if(*before == 0 && *after == 0)
 	{
 		x = ((BezierAuto*)default_auto)->center_x;
 		y = ((BezierAuto*)default_auto)->center_y;
 		z = ((BezierAuto*)default_auto)->center_z;
 //printf("BezierAutos::get_center %f %f %f\n", x, y, z);
+		return 0;
+	}
+	else
+	if(*before == *after)
+	{
+		x = ((BezierAuto*)*before)->center_x;
+		y = ((BezierAuto*)*before)->center_y;
+		z = ((BezierAuto*)*before)->center_z;
+//printf("BezierAutos::get_center %lld %lld %f %f %f\n", 
+//frame, (*before)->position, x, y, z);
 		return 0;
 	}
 

@@ -57,6 +57,7 @@ void Edit::reset()
 	asset = 0;
 	transition = 0;
 	channel = 0;
+	user_title[0] = 0;
 }
 
 int Edit::copy(int64_t start, int64_t end, FileXML *file, char *output_path)
@@ -100,6 +101,7 @@ int Edit::copy(int64_t start, int64_t end, FileXML *file, char *output_path)
 			file->tag.set_property("STARTSOURCE", startsource_in_selection);
 			file->tag.set_property("CHANNEL", (int64_t)channel);
 			file->tag.set_property("LENGTH", length_in_selection);
+			if(user_title[0]) file->tag.set_property("USER_TITLE", user_title);
 //printf("Edit::copy 5\n");
 
 			copy_properties_derived(file, length_in_selection);
@@ -195,6 +197,8 @@ void Edit::copy_from(Edit *edit)
 	this->startsource = edit->startsource;
 	this->startproject = edit->startproject;
 	this->length = edit->length;
+	strcpy (this->user_title, edit->user_title);
+
 	if(edit->transition)
 	{
 		if(!transition) transition = new Transition(edl, 
@@ -311,6 +315,8 @@ int Edit::load_properties(FileXML *file, int64_t &startproject)
 {
 	startsource = file->tag.get_property("STARTSOURCE", (int64_t)0);
 	length = file->tag.get_property("LENGTH", (int64_t)0);
+	user_title[0] = 0;
+	file->tag.get_property("USER_TITLE", user_title);
 	this->startproject = startproject;
 	load_properties_derived(file);
 	return 0;
@@ -328,7 +334,8 @@ int Edit::shift_start_in(int edit_mode,
 	int64_t oldposition,
 	int edit_edits,
 	int edit_labels,
-	int edit_plugins)
+	int edit_plugins,
+	Edits *trim_edits)
 {
 	int64_t cut_length = newposition - oldposition;
 	int64_t end_previous_source, end_source;
@@ -341,7 +348,8 @@ int Edit::shift_start_in(int edit_mode,
 				newposition,
 				edit_edits,
 				edit_labels,
-				edit_plugins);
+				edit_plugins,
+				trim_edits);
 		}
 		else
 		{        // clear entire
@@ -349,7 +357,8 @@ int Edit::shift_start_in(int edit_mode,
 				startproject + length,
 				edit_edits,
 				edit_labels,
-				edit_plugins);
+				edit_plugins,
+				trim_edits);
 		}
 	}
 	else
@@ -392,7 +401,8 @@ int Edit::shift_start_in(int edit_mode,
 				startproject + cut_length,
 				edit_edits,
 				edit_labels,
-				edit_plugins);
+				edit_plugins,
+				trim_edits);
 		}
 //printf("Edit::shift_start_in 3\n");
 	}
@@ -413,7 +423,8 @@ int Edit::shift_start_out(int edit_mode,
 	int64_t oldposition,
 	int edit_edits,
 	int edit_labels,
-	int edit_plugins)
+	int edit_plugins,
+	Edits *trim_edits)
 {
 	int64_t cut_length = oldposition - newposition;
 
@@ -484,7 +495,8 @@ int Edit::shift_end_in(int edit_mode,
 	int64_t oldposition,
 	int edit_edits,
 	int edit_labels,
-	int edit_plugins)
+	int edit_plugins,
+	Edits *trim_edits)
 {
 	int64_t cut_length = oldposition - newposition;
 
@@ -498,7 +510,8 @@ int Edit::shift_end_in(int edit_mode,
 				oldposition,
 				edit_edits,
 				edit_labels,
-				edit_plugins);
+				edit_plugins,
+				trim_edits);
 		}
 		else
 		{        // clear entire edit
@@ -506,7 +519,8 @@ int Edit::shift_end_in(int edit_mode,
 				oldposition,
 				edit_edits,
 				edit_labels,
-				edit_plugins);
+				edit_plugins,
+				trim_edits);
 		}
 	}
 	else
@@ -554,7 +568,8 @@ int Edit::shift_end_in(int edit_mode,
 					oldposition,
 					edit_edits,
 					edit_labels,
-					edit_plugins);
+					edit_plugins,
+					trim_edits);
 			}
 		}
 	}
@@ -578,7 +593,8 @@ int Edit::shift_end_out(int edit_mode,
 	int64_t oldposition,
 	int edit_edits,
 	int edit_labels,
-	int edit_plugins)
+	int edit_plugins,
+	Edits *trim_edits)
 {
 	int64_t cut_length = newposition - oldposition;
 	int64_t endsource = get_source_end(startsource + length + cut_length);

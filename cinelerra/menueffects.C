@@ -9,6 +9,7 @@
 #include "indexfile.h"
 #include "keyframe.h"
 #include "keys.h"
+#include "labels.h"
 #include "language.h"
 #include "loadmode.h"
 #include "localsession.h"

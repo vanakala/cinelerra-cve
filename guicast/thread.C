@@ -1,5 +1,6 @@
 #include "bcsignals.h"
 #include <sys/wait.h>
+#include <sched.h>
 #include <signal.h>
 #include <stdio.h>
 #include <unistd.h>
@@ -11,7 +12,8 @@ Thread::Thread(int synchronous, int realtime, int autodelete)
 	this->synchronous = synchronous;
 	this->realtime = realtime;
 	this->autodelete = autodelete;
-	tid = (pthread_t)0;
+	tid = (pthread_t)-1;
+	tid_valid = 0;
 	thread_running = 0;
 	cancel_enabled = 0;
 }
@@ -29,9 +31,20 @@ void* Thread::entrypoint(void *parameters)
 // Disable cancellation by default.
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, 0);
 	thread->cancel_enabled = 0;
-//printf("Thread::entrypoint 1 %d\n", thread->tid);
+
+// Set realtime here seince it doesn't work in start
+	if(thread->realtime && getuid() == 0)
+	{
+		struct sched_param param = 
+		{
+			sched_priority : 1
+		};
+		if(pthread_setschedparam(thread->tid, SCHED_RR, &param) < 0)
+			perror("Thread::entrypoint pthread_attr_setschedpolicy");
+	}
 
 	thread->run();
+
 	thread->thread_running = 0;
 
 	if(thread->autodelete && !thread->synchronous) delete thread;
@@ -46,15 +59,20 @@ void Thread::start()
 	pthread_attr_init(&attr);
 
 	thread_running = 1;
+
+// Inherit realtime from current thread the easy way.
+	if(!realtime) realtime = calculate_realtime();
+
+
 	if(!synchronous) pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_DETACHED);
 
 	if(realtime && getuid() == 0)
 	{
-		if(pthread_attr_setschedpolicy(&attr, SCHED_FIFO) < 0)
-			perror("PFCThread::start pthread_attr_setschedpolicy");
+		if(pthread_attr_setschedpolicy(&attr, SCHED_RR) < 0)
+			perror("Thread::start pthread_attr_setschedpolicy");
 		param.sched_priority = 50;
 		if(pthread_attr_setschedparam(&attr, &param) < 0)
-			perror("PFCThread::start pthread_attr_setschedparam");
+			perror("Thread::start pthread_attr_setschedparam");
 	}
 	else
 	{
@@ -63,11 +81,15 @@ void Thread::start()
 	}
 
 	pthread_create(&tid, &attr, Thread::entrypoint, this);
+	tid_valid = 1;
 }
 
 int Thread::end(pthread_t tid)           // need to join after this if synchronous
 {
-	if((int)tid != 0) pthread_cancel(tid);
+	if(tid_valid)
+	{
+		pthread_cancel(tid);
+	}
 	return 0;
 }
 
@@ -79,19 +101,25 @@ int Thread::end()           // need to join after this if synchronous
 
 int Thread::cancel()
 {
-	if((int)tid != 0) pthread_cancel(tid);
-	if(!synchronous) tid = (pthread_t)0;
+	if(tid_valid) pthread_cancel(tid);
+	if(!synchronous)
+	{
+		tid = (pthread_t)-1;
+		tid_valid = 0;
+	}
 	return 0;
 }
 
 int Thread::join()   // join this thread
 {
 	int result = 0;
-	if((int)tid != 0)
+	if(tid_valid)
 	{
 		result = pthread_join(tid, 0);
 	}
-	tid = (pthread_t)0;
+
+	tid = (pthread_t)-1;
+	tid_valid = 0;
 
 // Don't execute anything after this.
 	if(autodelete && synchronous) delete this;
@@ -120,20 +148,24 @@ int Thread::get_cancel_enabled()
 int Thread::exit_thread()
 {
  	pthread_exit(0);
-	if(!synchronous) tid = (pthread_t)0;
+	if(!synchronous)
+	{
+		tid = (pthread_t)-1;
+		tid_valid = 0;
+	}
 	return 0;
 }
 
 
 int Thread::suspend_thread()
 {
-	if((int)tid != 0) pthread_kill(tid, SIGSTOP);
+	if(tid_valid) pthread_kill(tid, SIGSTOP);
 	return 0;
 }
 
 int Thread::continue_thread()
 {
-	if((int)tid != 0) pthread_kill(tid, SIGCONT);
+	if(tid_valid) pthread_kill(tid, SIGCONT);
 	return 0;
 }
 

@@ -5,6 +5,7 @@
 #include "assets.inc"
 #include "autoconf.inc"
 #include "defaults.inc"
+#include "edits.inc"
 #include "edl.inc"
 #include "edlsession.inc"
 #include "filexml.inc"
@@ -14,11 +15,10 @@
 #include "playbackconfig.h"
 #include "pluginserver.h"
 #include "preferences.inc"
-#include "presentations.h"
+#include "recordlabel.inc"
 #include "sharedlocation.inc"
 #include "theme.inc"
 #include "tracks.inc"
-#include "edit.inc"
 
 
 // Loading and saving are built on load and copy except for automation:
@@ -115,7 +115,6 @@ public:
 	void modify_edithandles(double oldposition, 
 		double newposition, 
 		int currentend, 
-		Edit *sole_edit,
 		int handle_mode,
 		int edit_labels,
 		int edit_plugins);
@@ -123,9 +122,9 @@ public:
 	void modify_pluginhandles(double oldposition, 
 		double newposition, 
 		int currentend, 
-		Edit *sole_edit,
 		int handle_mode,
-		int edit_labels);
+		int edit_labels,
+		Edits *trim_edits);
 
 	int trim_selection(double start, 
 		double end,
@@ -199,7 +198,6 @@ public:
 
 	Tracks *tracks;
 	Labels *labels;
-	Presentations *presentations;
 // Shared between all EDLs in a tree, for projects.
 	EDLSession *session;
 // Specific to this EDL, for clips.

@@ -32,7 +32,6 @@ EDL::EDL(EDL *parent_edl)
 	tracks = 0;
 	labels = 0;
 	local_session = 0;
-	presentations = 0;
 	vwindow_edl = 0;
 
 	folders.set_array_delete();
@@ -53,10 +52,6 @@ EDL::~EDL()
 	if(labels)
 	{
 		delete labels;
-	}
-	if(presentations)
-	{
-		delete presentations;
 	}
 
 	if(local_session)
@@ -96,7 +91,6 @@ int EDL::create_objects()
 	
 	local_session = new LocalSession(this);
 	labels = new Labels(this, "LABELS");
-	presentations = new Presentations(this);
 //	last_playback_position = 0;
 	return 0;
 }
@@ -247,12 +241,6 @@ int EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 				{
 					if(load_flags & LOAD_TIMEBAR)
 						labels->load(file, load_flags);
-				}
-				else
-				if(file->tag.title_is(presentations->xml_tag))
-				{
-					if(load_flags & LOAD_TIMEBAR)
-						presentations->load(file, load_flags);
 				}
 				else
 				if(file->tag.title_is("LOCALSESSION"))
@@ -470,7 +458,7 @@ int EDL::copy(double start,
 	else
 	{
 		file->tag.set_title("EDL");
-		file->tag.set_property("PRODUCER_VERSION", CINELERRA_VERSION);
+		file->tag.set_property("VERSION", CINELERRA_VERSION);
 // Save path for restoration of the project title from a backup.
 		if(this->project_path[0])
 		{
@@ -557,8 +545,6 @@ int EDL::copy(double start,
 //printf("EDL::copy 1\n");
 
 	labels->copy(start, end, file);
-//printf("EDL::copy 1\n");
-	presentations->copy(start, end, file);
 //printf("EDL::copy 1\n");
 	tracks->copy(start, end, all, file, output_path);
 //printf("EDL::copy 2\n");
@@ -726,7 +712,6 @@ int EDL::clear(double start,
 			labels->clear(start, 
 				end, 
 				1);
-		presentations->clear(start, end);
 	}
 
 // Need to put at beginning so a subsequent paste operation starts at the
@@ -740,7 +725,6 @@ int EDL::clear(double start,
 void EDL::modify_edithandles(double oldposition, 
 	double newposition, 
 	int currentend,
-	Edit *sole_edit, 
 	int handle_mode,
 	int edit_labels,
 	int edit_plugins)
@@ -748,11 +732,9 @@ void EDL::modify_edithandles(double oldposition,
 	tracks->modify_edithandles(oldposition, 
 		newposition, 
 		currentend,
-		sole_edit, 
 		handle_mode,
 		edit_labels, 
 		edit_plugins);
-	if (!sole_edit)
 	labels->modify_handles(oldposition, 
 		newposition, 
 		currentend,
@@ -763,16 +745,16 @@ void EDL::modify_edithandles(double oldposition,
 void EDL::modify_pluginhandles(double oldposition, 
 	double newposition, 
 	int currentend, 
-	Edit *sole_edit,
 	int handle_mode,
-	int edit_labels)
+	int edit_labels,
+	Edits *trim_edits)
 {
 	tracks->modify_pluginhandles(oldposition, 
 		newposition, 
 		currentend, 
-		sole_edit,
 		handle_mode,
-		edit_labels);
+		edit_labels,
+		trim_edits);
 	optimize();
 }
 

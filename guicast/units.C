@@ -1,3 +1,4 @@
+#include "bcwindowbase.inc"
 #include "units.h"
 #include <stdlib.h>
 
@@ -165,8 +166,13 @@ char* Units::totext(char *text,
 
 	switch(time_format)
 	{
+		case TIME_SECONDS:
+			seconds = fabs(seconds);
+			sprintf(text, "%04d.%03d", (int)seconds, (int)(seconds * 1000) % 1000);
+			return text;
+			break;
+
 		case TIME_HMS:
-		{
 			seconds = fabs(seconds);
   			hour = (int)(seconds / 3600);
   			minute = (int)(seconds / 60 - hour * 60);
@@ -178,7 +184,6 @@ char* Units::totext(char *text,
 				second, 
 				thousandths);
 			return text;
-		}
 		  break;
 		
 		case TIME_HMS2:
@@ -246,6 +251,7 @@ char* Units::totext(char *text,
 }
 
 
+// give text representation as time
 char* Units::totext(char *text, 
 		int64_t samples, 
 		int samplerate, 
@@ -254,7 +260,7 @@ char* Units::totext(char *text,
 		float frames_per_foot)
 {
 	return totext(text, (double)samples / samplerate, time_format, samplerate, frame_rate, frames_per_foot);
-}    // give text representation as time
+}    
 
 int64_t Units::fromtext(char *text, 
 			int samplerate, 
@@ -264,11 +270,16 @@ int64_t Units::fromtext(char *text,
 {
 	int64_t hours, minutes, frames, total_samples, i, j;
 	int64_t feet;
-	float seconds;
-	char string[256];
+	double seconds;
+	char string[BCTEXTLEN];
 	
 	switch(time_format)
 	{
+		case TIME_SECONDS:
+			seconds = atof(text);
+			return (int64_t)(seconds * samplerate);
+			break;
+
 		case TIME_HMS:
 		case TIME_HMS2:
 		case TIME_HMS3:
@@ -515,6 +526,7 @@ char* Units::print_time_format(int time_format, char *string)
 		case 3: sprintf(string, "Hex Samples"); break;
 		case 4: sprintf(string, "Frames"); break;
 		case 5: sprintf(string, "Feet-frames"); break;
+		case 8: sprintf(string, "Seconds"); break;
 	}
 	
 	return string;
@@ -566,7 +578,6 @@ uint64_t Units::ptr_to_int64(void *ptr)
 	unsigned char *ptr_dissected = (unsigned char*)&ptr;
 	int64_t result = 0;
 	unsigned char *data = (unsigned char*)&result;
-
 // Don't do this at home.
 	if(sizeof(void*) == 4)
 	{
@@ -603,6 +614,7 @@ char* Units::format_to_separators(int time_format)
 {
 	switch(time_format)
 	{
+		case TIME_SECONDS:     return "0000.000";
 		case TIME_HMS:         return "0:00:00.000";
 		case TIME_HMS2:        return "0:00:00";
 		case TIME_HMS3:        return "00:00:00";

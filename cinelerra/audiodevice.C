@@ -152,7 +152,10 @@ int AudioDevice::open_input(AudioInConfig *config,
 	return 0;
 }
 
-int AudioDevice::open_output(AudioOutConfig *config, int rate, int samples, int realtime)
+int AudioDevice::open_output(AudioOutConfig *config, 
+	int rate, 
+	int samples, 
+	int realtime)
 {
 	w = 1;
 	duplex_init = 0;

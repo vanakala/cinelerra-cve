@@ -172,7 +172,6 @@ void ClipEditWindow::create_objects()
 	add_subwindow(new BC_CancelButton(this));
 	show_window();
 	titlebox->activate();
-	
 }
 
 

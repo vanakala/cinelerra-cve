@@ -150,6 +150,10 @@ public:
 	int show_window(int flush = 1);
 	int hide_window(int flush = 1);
 	int get_hidden();
+	int get_video_on();
+// Shouldn't deference a pointer to delete a window if a parent is 
+// currently being deleted.  This returns 1 if any parent is being deleted.
+	int get_deleting();
 	void enable_opengl();
 	void disable_opengl();
 	void lock_opengl();
@@ -188,7 +192,9 @@ public:
 // For traversing windows... return 1 if this or any subwindow is win
  	int match_window(Window win);
 
+// 1 or 0 if a button is down
 	int get_button_down();
+// Number of button pressed 1 - 5
 	int get_buttonpress();
 	int get_has_focus();
 	int get_dragging();
@@ -270,32 +276,32 @@ public:
 		VFrame *right_image,
 		BC_Pixmap *pixmap = 0);
 // For drawing a changing level
-	void draw_3segmenth(long x, 
-		long y, 
-		long w, 
-		long total_x,
-		long total_w,
+	void draw_3segmenth(int x, 
+		int y, 
+		int w, 
+		int total_x,
+		int total_w,
 		VFrame *image,
 		BC_Pixmap *pixmap);
-	void draw_3segmenth(long x, 
-		long y, 
-		long w, 
-		long total_x,
-		long total_w,
+	void draw_3segmenth(int x, 
+		int y, 
+		int w, 
+		int total_x,
+		int total_w,
 		BC_Pixmap *src,
 		BC_Pixmap *dst = 0);
-	void draw_3segmentv(long x, 
-		long y, 
-		long h, 
-		long total_y,
-		long total_h,
+	void draw_3segmentv(int x, 
+		int y, 
+		int h, 
+		int total_y,
+		int total_h,
 		BC_Pixmap *src,
 		BC_Pixmap *dst = 0);
-	void draw_3segmentv(long x, 
-		long y, 
-		long h, 
-		long total_y,
-		long total_h,
+	void draw_3segmentv(int x, 
+		int y, 
+		int h, 
+		int total_y,
+		int total_h,
 		VFrame *src,
 		BC_Pixmap *dst = 0);
 // For drawing a single level
@@ -304,26 +310,32 @@ public:
 		int w, 
 		VFrame *image,
 		BC_Pixmap *pixmap = 0);
-	void draw_3segmenth(long x, 
-		long y, 
-		long w,
+	void draw_3segmenth(int x, 
+		int y, 
+		int w,
 		BC_Pixmap *src,
 		BC_Pixmap *dst = 0);
-	void draw_3segmentv(long x, 
-		long y, 
-		long h,
+	void draw_3segmentv(int x, 
+		int y, 
+		int h,
 		BC_Pixmap *src,
 		BC_Pixmap *dst = 0);
-	void draw_3segmentv(long x, 
-		long y, 
-		long h,
+	void draw_3segmentv(int x, 
+		int y, 
+		int h,
 		VFrame *src,
 		BC_Pixmap *dst = 0);
-	void draw_9segment(long x, 
-		long y, 
-		long w,
-		long h,
+	void draw_9segment(int x, 
+		int y, 
+		int w,
+		int h,
 		VFrame *src,
+		BC_Pixmap *dst = 0);
+	void draw_9segment(int x, 
+		int y, 
+		int w,
+		int h,
+		BC_Pixmap *src,
 		BC_Pixmap *dst = 0);
 	void draw_3d_box(int x, 
 		int y, 
@@ -592,7 +604,7 @@ private:
 // When button was pressed and whether it qualifies as a double click
 	uint64_t button_time1, button_time2;
 	int double_click;
-// Which button is down
+// Which button is down.  1, 2, 3, 4, 5
 	int button_pressed;
 // Last key pressed
 	int key_pressed;
@@ -714,6 +726,7 @@ private:
 	Mutex *event_lock;
 	Condition *event_condition;
 	BC_WindowEvents *event_thread;
+	int is_deleting;
 };
 
 

@@ -229,32 +229,35 @@ int BC_Menu::set_text(char *text)
 
 int BC_Menu::draw_title()
 {
+	BC_Resources *resources = top_level->get_resources();
 	if(active && menu_popup)
 	{
 // Menu is pulled down and title is recessed.
 		menu_bar->draw_3d_box(x, y, w, h, 
-			top_level->get_resources()->menu_shadow, 
+			resources->menu_shadow, 
 			BLACK, 
-			top_level->get_resources()->menu_down,
-			top_level->get_resources()->menu_down,
-			top_level->get_resources()->menu_light);
-		menu_bar->set_color(top_level->get_resources()->menu_item_text);
+			resources->menu_down,
+			resources->menu_down,
+			resources->menu_light);
+		menu_bar->set_color(resources->menu_item_text);
 	}
 	else
 // Menu is not pulled down.
 	{
 		if(highlighted)
 		{
-		  menu_bar->set_color(top_level->get_resources()->menu_highlighted);
-		  menu_bar->draw_box(x, y, w, h);
-		  menu_bar->set_color(top_level->get_resources()->menu_highlighted_fontcolor);			
+			menu_bar->set_color(resources->menu_highlighted);
+			menu_bar->draw_box(x, y, w, h);
+			menu_bar->set_color(resources->menu_highlighted_fontcolor);			
 		}
 		else
 		{
 		  menu_bar->draw_background(x, y, w, h);
-		  menu_bar->set_color(top_level->get_resources()->menu_item_text);
+		  menu_bar->set_color(resources->menu_item_text);
 		}
 	}
+
+//	menu_bar->set_color(resources->menu_title_text);
 	menu_bar->set_font(MEDIUMFONT);
 	menu_bar->draw_text(x + 10, h - menu_bar->get_text_descent(MEDIUMFONT), text);
 	menu_bar->flash();

@@ -665,7 +665,8 @@ void Edits::clear_recursive(int64_t start,
 	int64_t end, 
 	int edit_edits,
 	int edit_labels, 
-	int edit_plugins)
+	int edit_plugins,
+	Edits *trim_edits)
 {
 //printf("Edits::clear_recursive 1\n");
 	track->clear(start, 
@@ -673,7 +674,8 @@ void Edits::clear_recursive(int64_t start,
 		edit_edits,
 		edit_labels,
 		edit_plugins,
-		0);
+		0,
+		trim_edits);
 }
 
 
@@ -739,11 +741,11 @@ int Edits::clear_handle(double start,
 int Edits::modify_handles(double oldposition, 
 	double newposition, 
 	int currentend,
-	Edit *sole_edit,
 	int edit_mode, 
 	int edit_edits,
 	int edit_labels,
-	int edit_plugins)
+	int edit_plugins,
+	Edits *trim_edits)
 {
 	int result = 0;
 	Edit *current_edit;
@@ -754,12 +756,8 @@ int Edits::modify_handles(double oldposition,
 // left handle
 		for(current_edit = first; current_edit && !result;)
 		{
-//printf("Edits::modify_handles 2 %f %f\n", 
-//track->from_units(current_edit->startproject), 
-//oldposition);
 			if(edl->equivalent(track->from_units(current_edit->startproject), 
-				oldposition) 
-				&& (!sole_edit || sole_edit == current_edit))
+				oldposition))
 			{
 // edit matches selection
 //printf("Edits::modify_handles 3 %f %f\n", newposition, oldposition);
@@ -775,7 +773,8 @@ int Edits::modify_handles(double oldposition,
 						track->to_units(oldposition, 0),
 						edit_edits,
 						edit_labels,
-						edit_plugins);
+						edit_plugins,
+						trim_edits);
 				}
 				else
 				{
@@ -786,7 +785,8 @@ int Edits::modify_handles(double oldposition,
 						track->to_units(oldposition, 0),
 						edit_edits,
 						edit_labels,
-						edit_plugins);
+						edit_plugins,
+						trim_edits);
 				}
 			}
 
@@ -798,37 +798,38 @@ int Edits::modify_handles(double oldposition,
 // right handle selected
 		for(current_edit = first; current_edit && !result;)
 		{
-//printf("Edits::modify_handle 1 %s\n", track->title);
 			if(edl->equivalent(track->from_units(current_edit->startproject) + 
-				track->from_units(current_edit->length), oldposition) 
-				&& (!sole_edit || sole_edit == current_edit))
+				track->from_units(current_edit->length), oldposition))
 			{
-//printf("Edits::modify_handle 2\n");
             	oldposition = track->from_units(current_edit->startproject) + 
 					track->from_units(current_edit->length);
 				result = 1;
 
 //printf("Edits::modify_handle 3\n");
 				if(newposition <= oldposition)
-				{     // shift end of edit in
+				{     
+// shift end of edit in
 //printf("Edits::modify_handle 4\n");
 					current_edit->shift_end_in(edit_mode, 
 						track->to_units(newposition, 0), 
 						track->to_units(oldposition, 0),
 						edit_edits,
 						edit_labels,
-						edit_plugins);
+						edit_plugins,
+						trim_edits);
 //printf("Edits::modify_handle 5\n");
 				}
 				else
-				{     // move end of edit out
+				{     
+// move end of edit out
 //printf("Edits::modify_handle 6\n");
 					current_edit->shift_end_out(edit_mode, 
 						track->to_units(newposition, 0), 
 						track->to_units(oldposition, 0),
 						edit_edits,
 						edit_labels,
-						edit_plugins);
+						edit_plugins,
+						trim_edits);
 //printf("Edits::modify_handle 7\n");
 				}
 			}

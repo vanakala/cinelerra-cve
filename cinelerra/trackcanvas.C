@@ -1469,8 +1469,6 @@ void TrackCanvas::draw_highlighting()
 					draw_paste_destination();
 				}
 			}
-
-
 			break;
 	}
 
@@ -1710,6 +1708,11 @@ int TrackCanvas::do_keyframes(int cursor_x,
 	int current_tool = 0;
 	int result = 0;
 	EDLSession *session = mwindow->edl->session;
+	if(buttonpress == 3)
+	{
+		update_cursor = 1;
+		return 0;
+	}
 
 	for(Track *track = mwindow->edl->tracks->first;
 		track && !result;
@@ -2306,7 +2309,7 @@ void TrackCanvas::draw_floatline(int center_pixel,
 	FloatAuto *previous,
 	FloatAuto *next,
 	FloatAutos *autos,
-	double view_start_doubleunits,
+	double unit_start,
 	double zoom_units,
 	double yscale,
 	int x1,
@@ -2331,7 +2334,7 @@ void TrackCanvas::draw_floatline(int center_pixel,
 	FloatAuto *previous1 = previous, *next1 = next;
 	for(int x = x1; x < x2; x++)
 	{
-		int64_t position = (int64_t)(view_start_doubleunits + x * zoom_units);
+		int64_t position = (int64_t)(unit_start + x * zoom_units);
 		float value = autos->get_value(position, PLAY_FORWARD, previous1, next1);
 
 		int y = (int)(center_pixel + 
@@ -2439,7 +2442,7 @@ void TrackCanvas::synchronize_autos(float change, Track *skip, FloatAuto *fauto,
 
 int TrackCanvas::test_floatline(int center_pixel, 
 		FloatAutos *autos,
-		double view_start_doubleunits,
+		double unit_start,
 		double zoom_units,
 		double yscale,
 		int x1,
@@ -2451,7 +2454,7 @@ int TrackCanvas::test_floatline(int center_pixel,
 	int result = 0;
 
 
-	int64_t position = (int64_t)(view_start_doubleunits + cursor_x * zoom_units);
+	int64_t position = (int64_t)(unit_start + cursor_x * zoom_units);
 // Call by reference fails for some reason here
 	FloatAuto *previous = 0, *next = 0;
 	float value = autos->get_value(position, PLAY_FORWARD, previous, next);
@@ -2550,15 +2553,15 @@ int TrackCanvas::test_toggleline(Autos *autos,
 
 			}
 		}
-	}
+	};
 	return result;
 }
 
 void TrackCanvas::calculate_viewport(Track *track, 
 	double &view_start,   // Seconds
-	int64_t &unit_start,
+	double &unit_start,
 	double &view_end,     // Seconds
-	int64_t &unit_end,
+	double &unit_end,
 	double &yscale,
 	int &center_pixel,
 	double &zoom_sample,
@@ -2567,17 +2570,12 @@ void TrackCanvas::calculate_viewport(Track *track,
 	view_start = (double)mwindow->edl->local_session->view_start * 
 		mwindow->edl->local_session->zoom_sample /
 		mwindow->edl->session->sample_rate;
-
-// unit_start is useless since it denoted as frame number in video tracks - causes big displacement when
-// positioning keyframes in totaly timezoomed view
-	unit_start = track->to_units(view_start, 0);
-
+	unit_start = track->to_doubleunits(view_start);
 	view_end = (double)(mwindow->edl->local_session->view_start + 
 		get_w()) * 
 		mwindow->edl->local_session->zoom_sample / 
 		mwindow->edl->session->sample_rate;
-// same problem as unit end
-	unit_end = (int64_t)(track->to_units(view_end, 1));
+	unit_end = track->to_doubleunits(view_end);
 	yscale = mwindow->edl->local_session->zoom_track;
 	center_pixel = (int)(track->y_pixel + yscale / 2) + 
 		(mwindow->edl->session->show_titles ? 
@@ -2600,9 +2598,9 @@ int TrackCanvas::do_float_autos(Track *track,
 	int result = 0;
 
 	double view_start;
-	int64_t unit_start;
+	double unit_start;
 	double view_end;
-	int64_t unit_end;
+	double unit_end;
 	double yscale;
 	int center_pixel;
 	double zoom_sample;
@@ -2879,9 +2877,9 @@ int TrackCanvas::do_toggle_autos(Track *track,
 {
 	int result = 0;
 	double view_start;
-	int64_t unit_start;
+	double unit_start;
 	double view_end;
-	int64_t unit_end;
+	double unit_end;
 	double yscale;
 	int center_pixel;
 	double zoom_sample;
@@ -3049,9 +3047,9 @@ int TrackCanvas::do_autos(Track *track,
 	int result = 0;
 
 	double view_start;
-	int64_t unit_start;
+	double unit_start;
 	double view_end;
-	int64_t unit_end;
+	double unit_end;
 	double yscale;
 	int center_pixel;
 	double zoom_sample;
@@ -3134,9 +3132,9 @@ int TrackCanvas::do_plugin_autos(Track *track,
 	int result = 0;
 
 	double view_start;
-	int64_t unit_start;
+	double unit_start;
 	double view_end;
-	int64_t unit_end;
+	double unit_end;
 	double yscale;
 	int center_pixel;
 	double zoom_sample;
@@ -3348,9 +3346,9 @@ int TrackCanvas::update_drag_edit()
  \
 	if(!current->autos->track->record) return 0; \
 	double view_start; \
-	int64_t unit_start; \
+	double unit_start; \
 	double view_end; \
-	int64_t unit_end; \
+	double unit_end; \
 	double yscale; \
 	int center_pixel; \
 	double zoom_sample; \
@@ -4137,10 +4135,6 @@ int TrackCanvas::test_edit_handles(int cursor_x,
 			mwindow->session->drag_origin_x = get_cursor_x();
 			mwindow->session->drag_origin_y = get_cursor_y();
 			mwindow->session->drag_start = position;
-			if (!shift_down())
-				mwindow->session->solo_dragged = 0;
-			else 
-				mwindow->session->solo_dragged = 1;				
 
 
 			int rerender = start_selection(position);
@@ -4182,7 +4176,7 @@ int TrackCanvas::test_plugin_handles(int cursor_x,
 			{
 				int64_t plugin_x, plugin_y, plugin_w, plugin_h;
 				plugin_dimensions(plugin, plugin_x, plugin_y, plugin_w, plugin_h);
-				
+
 				if(cursor_x >= plugin_x && cursor_x <= plugin_x + plugin_w &&
 					cursor_y >= plugin_y && cursor_y < plugin_y + plugin_h)
 				{
@@ -4201,6 +4195,9 @@ int TrackCanvas::test_plugin_handles(int cursor_x,
 					}
 				}
 			}
+
+			if(result && shift_down())
+				mwindow->session->trim_edits = plugin_set;
 		}
 	}
 
@@ -4231,10 +4228,6 @@ int TrackCanvas::test_plugin_handles(int cursor_x,
 			mwindow->session->drag_origin_x = get_cursor_x();
 			mwindow->session->drag_origin_y = get_cursor_y();
 			mwindow->session->drag_start = position;
-			if (!shift_down())
-				mwindow->session->solo_dragged = 0;
-			else 
-				mwindow->session->solo_dragged = 1;				
 
 			int rerender = start_selection(position);
 			if(rerender) mwindow->cwindow->update(1, 0, 0);
@@ -4397,6 +4390,9 @@ int TrackCanvas::test_plugins(int cursor_x,
 		track && !done;
 		track = track->next)
 	{
+		if(!track->expand_view) continue;
+
+
 		for(int i = 0; i < track->plugin_set.total && !done; i++)
 		{
 			// first check if plugins are visible at all
@@ -4584,6 +4580,7 @@ int TrackCanvas::button_press_event()
 //printf("TrackCanvas::button_press_event 1\n");
 	cursor_x = get_cursor_x();
 	cursor_y = get_cursor_y();
+	mwindow->session->trim_edits = 0;
 
 	if(is_event_win() && cursor_inside())
 	{

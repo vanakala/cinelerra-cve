@@ -193,6 +193,7 @@ static VFrame* type_to_icon = 0;
 		new VFrame(dash_png)
 	};
 
+	generic_button_margin = 15;
 	draw_clock_background=1;
 
 	use_shm = -1;
@@ -226,16 +227,34 @@ static VFrame* type_to_icon = 0;
 	menu_down = MDCYAN;
 	menu_up = MECYAN;
 	menu_shadow = DKCYAN;
+	menu_popup_bg = 0;
+	menu_title_bg = 0;
+	menu_item_bg = 0;
 
+	menu_title_text = BLACK;
 	popup_title_text = BLACK;
 	menu_item_text = BLACK;
 	menu_highlighted_fontcolor = BLACK;
 	progress_text = BLACK;
 
+
+
 	text_default = BLACK;
-	text_background = WHITE;
 	highlight_inverse = WHITE ^ BLUE;
+	text_background = WHITE;
+	text_background_hi = LTYELLOW;
+	text_background_noborder_hi = LTGREY;
+	text_background_noborder = -1;
+	text_border1 = DKGREY;
+	text_border2 = BLACK;
+	text_border2_hi = RED;
+	text_border3 = MEGREY;
+	text_border3_hi = LTPINK;
+	text_border4 = WHITE;
 	text_highlight = BLUE;
+
+	toggle_highlight_bg = 0;
+	toggle_text_margin = 0;
 
 // Delays must all be different for repeaters
 	double_click = 300;
@@ -265,8 +284,9 @@ static VFrame* type_to_icon = 0;
 	filebox_sortorder = BC_ListBox::SORT_ASCENDING;
 
 	pot_images = default_pot_images;
-	pot_x1 = pot_images[0]->get_w() / 2 - 2;
-	pot_y1 = pot_images[0]->get_h() / 2 - 2;;
+	pot_offset = 2;
+	pot_x1 = pot_images[0]->get_w() / 2 - pot_offset;
+	pot_y1 = pot_images[0]->get_h() / 2 - pot_offset;
 	pot_r = pot_x1;
 	pot_needle_color = BLACK;
 

@@ -39,6 +39,7 @@ Canvas::~Canvas()
 	delete canvas_menu;
  	if(yscroll) delete yscroll;
  	if(xscroll) delete xscroll;
+	delete canvas;
 }
 
 void Canvas::reset()
@@ -49,6 +50,8 @@ void Canvas::reset()
     xscroll = 0;
     yscroll = 0;
 	refresh_frame = 0;
+	canvas = 0;
+	is_processing = 0;
 }
 
 // Get dimensions given a zoom
@@ -533,6 +536,17 @@ void Canvas::reposition_window(EDL *edl, int x, int y, int w, int h)
 	get_scrollbars(edl, view_x, view_y, view_w, view_h);
 //printf("Canvas::reposition_window %d %d %d %d\n", view_x, view_y, view_w, view_h);
 	canvas->reposition_window(view_x, view_y, view_w, view_h);
+
+// Need to clear out the garbage in the back
+	if(canvas->video_is_on())
+	{
+		canvas->set_color(BLACK);
+		canvas->draw_box(0, 0, canvas->get_w(), canvas->get_h());
+		canvas->flash();
+	}
+
+	
+
 	draw_refresh();
 //printf("Canvas::reposition_window 2\n");
 }
@@ -585,9 +599,54 @@ int Canvas::button_press_event()
 		canvas_menu->activate_menu();
 		result = 1;
 	}
-	
+
 	return result;
 }
+
+void Canvas::start_single()
+{
+	is_processing = 1;
+	status_event();
+}
+
+void Canvas::stop_single()
+{
+	is_processing = 0;
+	status_event();
+}
+
+void Canvas::start_video()
+{
+	if(canvas)
+	{
+		canvas->start_video();
+		status_event();
+	}
+}
+
+void Canvas::stop_video()
+{
+	if(canvas)
+	{
+		canvas->stop_video();
+		status_event();
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

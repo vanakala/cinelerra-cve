@@ -495,6 +495,7 @@ int ReverbEngine::process_overlay(double *in, double *out, double &out1, double 
 void ReverbEngine::run()
 {
 	int j, i;
+//printf("ReverbEngine::run 1 %d\n", calculate_realtime());
 	while(1)
 	{
 		input_lock.lock();

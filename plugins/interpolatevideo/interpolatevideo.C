@@ -65,9 +65,11 @@ class InterpolateVideoKeyframes : public BC_CheckBox
 {
 public:
 	InterpolateVideoKeyframes(InterpolateVideo *plugin,
+		InterpolateVideoWindow *gui,
 		int x, 
 		int y);
 	int handle_event();
+	InterpolateVideoWindow *gui;
 	InterpolateVideo *plugin;
 };
 
@@ -79,6 +81,7 @@ public:
 
 	void create_objects();
 	int close_event();
+	void update_enabled();
 
 	ArrayList<BC_ListBoxItem*> frame_rates;
 	InterpolateVideo *plugin;
@@ -125,6 +128,8 @@ public:
 	int64_t range_start;
 	int64_t range_end;
 
+// Input rate determined by keyframe mode
+	double active_input_rate;
 };
 
 
@@ -200,11 +205,25 @@ void InterpolateVideoWindow::create_objects()
 		y));
 	y += 30;
 	add_subwindow(keyframes = new InterpolateVideoKeyframes(plugin,
+		this,
 		x, 
 		y));
 
+	update_enabled();
 	show_window();
 	flush();
+}
+
+void InterpolateVideoWindow::update_enabled()
+{
+	if(plugin->config.use_keyframes)
+	{
+		rate->disable();
+	}
+	else
+	{
+		rate->enable();
+	}
 }
 
 WINDOW_CLOSE_EVENT(InterpolateVideoWindow)
@@ -277,6 +296,7 @@ int InterpolateVideoRateMenu::handle_event()
 
 
 InterpolateVideoKeyframes::InterpolateVideoKeyframes(InterpolateVideo *plugin,
+	InterpolateVideoWindow *gui,
 	int x, 
 	int y)
  : BC_CheckBox(x, 
@@ -285,10 +305,12 @@ InterpolateVideoKeyframes::InterpolateVideoKeyframes(InterpolateVideo *plugin,
 	"Use keyframes as input")
 {
 	this->plugin = plugin;
+	this->gui = gui;
 }
 int InterpolateVideoKeyframes::handle_event()
 {
 	plugin->config.use_keyframes = get_value();
+	gui->update_enabled();
 	plugin->send_configure_change();
 	return 1;
 }
@@ -347,20 +369,22 @@ void InterpolateVideo::fill_border(double frame_rate, int64_t start_position)
 		last_position != start_position ||
 		!EQUIV(last_rate, frame_rate))
 	{
+//printf("InterpolateVideo::fill_border 1 %lld\n", range_start);
 		read_frame(frames[0], 
 			0, 
 			range_start + (get_direction() == PLAY_REVERSE ? 1 : 0), 
-			config.input_rate);
+			active_input_rate);
 	}
 
 	if(range_end != frame_number[1] || 
 		last_position != start_position ||
 		!EQUIV(last_rate, frame_rate))
 	{
+//printf("InterpolateVideo::fill_border 2 %lld\n", range_start);
 		read_frame(frames[1], 
 			0, 
 			range_end + (get_direction() == PLAY_REVERSE ? 1 : 0), 
-			config.input_rate);
+			active_input_rate);
 	}
 
 	last_position = start_position;
@@ -409,14 +433,14 @@ int InterpolateVideo::process_buffer(VFrame *frame,
 				-1);
 		}
 	}
-
+//printf("InterpolateVideo::process_buffer 1 %lld %lld\n", range_start, range_end);
 
 	if(range_start == range_end)
 	{
 		read_frame(frame, 
 			0, 
 			range_start, 
-			config.input_rate);
+			active_input_rate);
 		return 0;
 	}
 	else
@@ -428,10 +452,10 @@ int InterpolateVideo::process_buffer(VFrame *frame,
 // Fraction of lowest frame in output
 		int64_t requested_range_start = (int64_t)((double)range_start * 
 			frame_rate / 
-			config.input_rate);
+			active_input_rate);
 		int64_t requested_range_end = (int64_t)((double)range_end * 
 			frame_rate / 
-			config.input_rate);
+			active_input_rate);
 		float highest_fraction = (float)(start_position - requested_range_start) /
 			(requested_range_end - requested_range_start);
 
@@ -534,6 +558,7 @@ int InterpolateVideo::load_configuration()
 // Use keyframes to determine range
 	if(config.use_keyframes)
 	{
+		active_input_rate = get_framerate();
 // Between keyframe and edge of range or no keyframes
 		if(range_start == range_end)
 		{
@@ -558,20 +583,29 @@ int InterpolateVideo::load_configuration()
 			}
 		}
 
+
+// Make requested rate equal to input rate for this mode.
+
 // Convert requested rate to input rate
-		range_start = (int64_t)((double)range_start / get_framerate() * config.input_rate + 0.5);
-		range_end = (int64_t)((double)range_end / get_framerate() * config.input_rate + 0.5);
+// printf("InterpolateVideo::load_configuration 2 %lld %lld %f %f\n", 
+// range_start, 
+// range_end,
+// get_framerate(),
+// config.input_rate);
+//		range_start = (int64_t)((double)range_start / get_framerate() * active_input_rate + 0.5);
+//		range_end = (int64_t)((double)range_end / get_framerate() * active_input_rate + 0.5);
 	}
 	else
 // Use frame rate
 	{
+		active_input_rate = config.input_rate;
 // Convert to input frame rate
 		range_start = (int64_t)(get_source_position() / 
 			get_framerate() *
-			config.input_rate);
+			active_input_rate);
 		range_end = (int64_t)(get_source_position() / 
 			get_framerate() *
-			config.input_rate) + 1;
+			active_input_rate) + 1;
 	}
 
 // printf("InterpolateVideo::load_configuration 1 %lld %lld %lld %lld %lld %lld\n",
@@ -651,6 +685,7 @@ void InterpolateVideo::update_gui()
 			thread->window->lock_window("InterpolateVideo::update_gui");
 			thread->window->rate->update((float)config.input_rate);
 			thread->window->keyframes->update(config.use_keyframes);
+			thread->window->update_enabled();
 			thread->window->unlock_window();
 		}
 	}

@@ -1,3 +1,4 @@
+#include "../motion/affine.h"
 #include "bcdisplayinfo.h"
 #include "clip.h"
 #include "defaults.h"
@@ -36,7 +37,7 @@ public:
 		long current_frame);
 
 	float angle;
-	int bilinear;
+//	int bilinear;
 };
 
 class RotateToggle : public BC_Radial
@@ -110,7 +111,7 @@ public:
 	RotateToggle *toggle270;
 	RotateFine *fine;
 	RotateText *text;
-	RotateInterpolate *bilinear;
+//	RotateInterpolate *bilinear;
 };
 
 
@@ -138,7 +139,7 @@ public:
 	void read_data(KeyFrame *keyframe);
 
 	RotateConfig config;
-	RotateFrame *engine;
+	AffineEngine *engine;
 	RotateThread *thread;
 	Defaults *defaults;
 	int need_reconfigure;
@@ -176,13 +177,13 @@ RotateConfig::RotateConfig()
 
 int RotateConfig::equivalent(RotateConfig &that)
 {
-	return EQUIV(angle, that.angle) && bilinear == that.bilinear;
+	return EQUIV(angle, that.angle) /* && bilinear == that.bilinear */;
 }
 
 void RotateConfig::copy_from(RotateConfig &that)
 {
 	angle = that.angle;
-	bilinear = that.bilinear;
+//	bilinear = that.bilinear;
 }
 
 void RotateConfig::interpolate(RotateConfig &prev, 
@@ -195,7 +196,7 @@ void RotateConfig::interpolate(RotateConfig &prev,
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
 
 	this->angle = prev.angle * prev_scale + next.angle * next_scale;
-	bilinear = prev.bilinear;
+//	bilinear = prev.bilinear;
 }
 
 
@@ -232,18 +233,18 @@ int RotateToggle::handle_event()
 
 
 
-RotateInterpolate::RotateInterpolate(RotateEffect *plugin, int x, int y)
- : BC_CheckBox(x, y, plugin->config.bilinear, _("Interpolate"))
-{
-	this->plugin = plugin;
-}
-int RotateInterpolate::handle_event()
-{
-	plugin->config.bilinear = get_value();
-	plugin->send_configure_change();
-	return 1;
-}
-
+// RotateInterpolate::RotateInterpolate(RotateEffect *plugin, int x, int y)
+//  : BC_CheckBox(x, y, plugin->config.bilinear, _("Interpolate"))
+// {
+// 	this->plugin = plugin;
+// }
+// int RotateInterpolate::handle_event()
+// {
+// 	plugin->config.bilinear = get_value();
+// 	plugin->send_configure_change();
+// 	return 1;
+// }
+// 
 
 
 
@@ -364,14 +365,14 @@ int RotateWindow::create_objects()
 		y, 
 		270, 
 		"270"));
-	add_subwindow(bilinear = new RotateInterpolate(plugin, 10, y + 60));
-	x += 130;
+//	add_subwindow(bilinear = new RotateInterpolate(plugin, 10, y + 60));
+	x += 120;
 	y -= 50;
 	add_tool(fine = new RotateFine(this, plugin, x, y));
 	y += fine->get_h() + 10;
 	add_tool(text = new RotateText(this, plugin, x, y));
 	y += 30;
-	add_tool(new BC_Title(x, y, _("Angle")));
+	add_tool(new BC_Title(x, y, _("Degrees")));
 	
 
 
@@ -390,7 +391,7 @@ int RotateWindow::update()
 	update_fine();
 	update_toggles();
 	update_text();
-	bilinear->update(plugin->config.bilinear);
+//	bilinear->update(plugin->config.bilinear);
 	return 0;
 }
 
@@ -502,14 +503,14 @@ int RotateEffect::load_defaults()
 	defaults->load();
 
 	config.angle = defaults->get("ANGLE", (float)config.angle);
-	config.bilinear = defaults->get("INTERPOLATE", (int)config.bilinear);
+//	config.bilinear = defaults->get("INTERPOLATE", (int)config.bilinear);
 	return 0;
 }
 
 int RotateEffect::save_defaults()
 {
 	defaults->update("ANGLE", (float)config.angle);
-	defaults->update("INTERPOLATE", (int)config.bilinear);
+//	defaults->update("INTERPOLATE", (int)config.bilinear);
 	defaults->save();
 	return 0;
 }
@@ -522,7 +523,7 @@ void RotateEffect::save_data(KeyFrame *keyframe)
 	output.set_shared_string(keyframe->data, MESSAGESIZE);
 	output.tag.set_title("ROTATE");
 	output.tag.set_property("ANGLE", (float)config.angle);
-	output.tag.set_property("INTERPOLATE", (int)config.bilinear);
+//	output.tag.set_property("INTERPOLATE", (int)config.bilinear);
 	output.append_tag();
 	output.terminate_string();
 // data is now in *text
@@ -545,7 +546,7 @@ void RotateEffect::read_data(KeyFrame *keyframe)
 			if(input.tag.title_is("ROTATE"))
 			{
 				config.angle = input.tag.get_property("ANGLE", (float)config.angle);
-				config.bilinear = input.tag.get_property("INTERPOLATE", (int)config.bilinear);
+//				config.bilinear = input.tag.get_property("INTERPOLATE", (int)config.bilinear);
 			}
 		}
 	}
@@ -562,16 +563,21 @@ int RotateEffect::process_realtime(VFrame *input, VFrame *output)
 		input->get_h(),
 		input->get_color_model());
 
-	if(!engine) engine = new RotateFrame(PluginClient::smp + 1, 
-		input->get_w(), 
-		input->get_h());
+	if(!engine) engine = new AffineEngine(PluginClient::smp + 1, 
+		PluginClient::smp + 1);
 
 	temp_frame->copy_from(input);
 
+// engine->set_viewport(50, 
+// 50, 
+// 100, 
+// 100);
+// engine->set_pivot(100, 100);
+
+	output->clear_frame();
 	engine->rotate(output, 
 		temp_frame, 
-		config.angle,
-		config.bilinear);
+		config.angle);
 
 	if(input->get_w() > PLUGIN_MAX_W &&
 		input->get_h() > PLUGIN_MAX_H)

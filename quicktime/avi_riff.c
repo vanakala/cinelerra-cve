@@ -200,14 +200,18 @@ void quicktime_import_avi(quicktime_t *file)
 // is_odml is not currently set anywhere, but when we will support
 // odml, this will be ready...
 	
-	int index_format;
-	if((idx1->table[0].offset < first_riff->movi.atom.start + 4 ||
-            idx1->table[1].offset < first_riff->movi.atom.start + 4)
-            && !file->is_odml)
-            	index_format = 1;
-        else 
-		index_format = 0;
-		
+	int index_format = 0;
+	
+	if(idx1->table_size > 1)
+	{
+		if((idx1->table[0].offset < first_riff->movi.atom.start ||
+        		idx1->table[1].offset < first_riff->movi.atom.start) && 
+        	!file->is_odml)
+        	index_format = 1;
+    	else 
+        	index_format = 0;
+	}
+
 	for(i = 0; i < idx1->table_size; i++)
 	{
 		quicktime_idx1table_t *idx1table = idx1->table + i;
@@ -228,6 +232,8 @@ void quicktime_import_avi(quicktime_t *file)
 			quicktime_stsc_t *stsc = &trak->mdia.minf.stbl.stsc;
 /* Sample description */
 			quicktime_stsd_t *stsd = &trak->mdia.minf.stbl.stsd;
+
+
 
 
 /* Enter the offset and size no matter what so the sample counts */

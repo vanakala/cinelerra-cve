@@ -22,26 +22,32 @@ public:
 // Immediately loads the contents from the object.
 	void set_data(unsigned char *ptr);
 
+// Compose widgets using standard images.
+// Put in the image table only if the title is nonzero.
 	VFrame** new_button(char *overlay_path, 
 		char *up_path, 
 		char *hi_path, 
-		char *dn_path);
+		char *dn_path,
+		char *title = 0);
 	VFrame** new_button(char *overlay_path,
 		VFrame *up,
 		VFrame *hi,
-		VFrame *dn);
+		VFrame *dn,
+		char *title = 0);
 	VFrame** new_toggle(char *overlay_path,
 		char *up_path,
 		char *hi_path,
 		char *checked_path,
 		char *dn_path,
-		char *checkedhi_path);
+		char *checkedhi_path,
+		char *title = 0);
 	VFrame** new_toggle(char *overlay_path,
 		VFrame *up,
 		VFrame *hi,
 		VFrame *checked,
 		VFrame *dn,
-		VFrame *checkedhi);
+		VFrame *checkedhi,
+		char *title = 0);
 
 
 // The two main routines for creating images are new_image_set and new_image.
@@ -59,8 +65,8 @@ public:
 
 
 // These retrieve images based on case sensitive title
-	VFrame* get_image(char *title);
-	VFrame** get_image_set(char *title);
+	VFrame* get_image(char *title, int use_default = 1);
+	VFrame** get_image_set(char *title, int use_default = 1);
 
 // Loads compressed data into temporary
 	unsigned char* get_image_data(char *title);
@@ -72,7 +78,7 @@ public:
 	BC_Resources* get_resources();
 
 private:
-	void overlay(VFrame *dst, VFrame *src, int in_x1 = -1, int in_x2 = -1);
+	void overlay(VFrame *dst, VFrame *src, int in_x1 = -1, int in_x2 = -1, int shift = 0);
 	void init_contents();
 
 

@@ -413,7 +413,9 @@ void InterpolateEffect::update_gui()
 	}
 }
 
-int InterpolateEffect::process_realtime(long size, double **input_ptr, double **output_ptr)
+int InterpolateEffect::process_realtime(long size, 
+	double **input_ptr, 
+	double **output_ptr)
 {
 	load_configuration();
 	if(!engine) engine = new revmodel;

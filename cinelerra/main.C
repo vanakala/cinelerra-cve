@@ -49,26 +49,34 @@ int main(int argc, char *argv[])
 	config_path[0] = 0;
 	batch_path[0] = 0;
 	deamon_path[0] = 0;
-               
-        // <---Beginning of dirty hack
-        // This hack will be removed as soon as Cinelerra is UTF-8 compliant
-        char *s, *language;
-        
-        // Query user locale
-        if ((s = getenv("LC_ALL"))  || (s = getenv("LC_MESSAGES")) || (s = getenv("LC_CTYPE")) || (s = getenv ("LANG"))) 
+
+
+
+// detect an UTF-8 locale and try to use a non-Unicode locale instead
+// <---Beginning of dirty hack
+// This hack will be removed as soon as Cinelerra is UTF-8 compliant
+    char *s, *language;
+
+// Query user locale
+    if ((s = getenv("LC_ALL"))  || 
+		(s = getenv("LC_MESSAGES")) || 
+		(s = getenv("LC_CTYPE")) || 
+		(s = getenv ("LANG")))
+    {
+// Test if user locale is set to Unicode        
+        if (strstr(s, ".UTF-8"))
         {
-            // Test if user locale is set to Unicode        
-            if (strstr(s, ".UTF-8"))
-            {
-              // extract language  from language-charset@variant
-              language = strtok (s, ".@");
-              // set language as the default locale
-              setenv("LANG", language, 1);
-            }
+// extract language  from language-charset@variant
+          language = strtok (s, ".@");
+// set language as the default locale
+          setenv("LANG", language, 1);
         }
-        // End of dirty hack --->
-        
-        
+    }
+// End of dirty hack --->
+
+
+
+
 	bindtextdomain (PACKAGE, LOCALEDIR);
 	textdomain (PACKAGE);
 	setlocale (LC_MESSAGES, "");
@@ -167,7 +175,7 @@ int main(int argc, char *argv[])
 		PROGRAM_NAME " " 
 		CINELERRA_VERSION " " 
 		BUILDDATE 
-		" (C)2004 Heroine Virtual Ltd.\n\n"
+		" (C)2005 Heroine Virtual Ltd.\n\n"
 
 PROGRAM_NAME " is free software, covered by the GNU General Public License,\n"
 "and you are welcome to change it and/or distribute copies of it under\n"

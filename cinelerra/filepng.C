@@ -93,7 +93,7 @@ int FilePNG::colormodel_supported(int colormodel)
 	{
 	    return colormodel;
 	}
-	else if ((colormodel == BC_RGB161616)&&(native_cmodel == BC_RGBA8888))
+	else if ((colormodel == BC_RGB161616) && (native_cmodel == BC_RGBA8888))
 	{
 	    return BC_RGB888;
 	}
@@ -122,7 +122,6 @@ int FilePNG::read_frame_header(char *path)
 	int color_depth;
 	int num_trans = 0;
 	
-//printf("FilePNG::read_frame_header 1\n");
 	FILE *stream;
 
 	if(!(stream = fopen(path, "rb")))
@@ -131,7 +130,6 @@ int FilePNG::read_frame_header(char *path)
 		return 1;
 	}
 
-//printf("FilePNG::read_frame_header 1\n");
 	png_structp png_ptr;
 	png_infop info_ptr;
 	png_infop end_info = 0;	
@@ -139,11 +137,9 @@ int FilePNG::read_frame_header(char *path)
 	info_ptr = png_create_info_struct(png_ptr);
 	png_init_io(png_ptr, stream);
 
-//printf("FilePNG::read_frame_header 1\n");
 
 	png_read_info(png_ptr, info_ptr);
 
-//printf("FilePNG::read_frame_header 1\n");
 	asset->width = png_get_image_width(png_ptr, info_ptr);
 	asset->height = png_get_image_height(png_ptr, info_ptr);
 	color_type = png_get_color_type(png_ptr, info_ptr);
@@ -162,8 +158,9 @@ int FilePNG::read_frame_header(char *path)
 	        native_cmodel = BC_RGB161616;
 	    }
 	}
-	else if ((color_type & PNG_COLOR_MASK_ALPHA)
-	        || (num_trans > 0))
+	else 
+	if ((color_type & PNG_COLOR_MASK_ALPHA)
+	    || (num_trans > 0))
 	{
 	    native_cmodel = BC_RGBA8888;
 	}
@@ -173,12 +170,9 @@ int FilePNG::read_frame_header(char *path)
 	}
 
 
-//printf("FilePNG::read_frame_header 1\n");
 	png_destroy_read_struct(&png_ptr, &info_ptr, &end_info);
-//printf("FilePNG::read_frame_header 1\n");
 	fclose(stream);
 	
-//printf("FilePNG::read_frame_header 2\n");
 	
 	
 	return result;

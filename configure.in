@@ -1,4 +1,4 @@
-AC_INIT(Cinelerra, 1.2.1)
+AC_INIT(Cinelerra, 1.2.2)
 
 AC_CANONICAL_SYSTEM
 
@@ -363,8 +363,12 @@ AC_OUTPUT(Makefile cinelerra-cvs-current.spec po/Makefile.in \
 					plugins/shapewipe/Makefile \
 					plugins/sharpen/Makefile \
 					plugins/shiftinterlace/Makefile plugins/slide/Makefile plugins/spectrogram/Makefile \
-					plugins/swapchannels/Makefile plugins/synthesizer/Makefile plugins/timeavg/Makefile \
+					plugins/swapchannels/Makefile \
+					plugins/synthesizer/Makefile \
+					plugins/threshold/Makefile \
+					plugins/timeavg/Makefile \
 					plugins/timestretch/Makefile plugins/titler/Makefile plugins/translate/Makefile \
+					plugins/unsharp/Makefile \
 					plugins/videoscope/Makefile plugins/wave/Makefile plugins/whirl/Makefile \
 					plugins/wipe/Makefile \
 					plugins/yuv/Makefile \

@@ -58,3 +58,11 @@ track_bounce2.xml - should output monaural audio on both speakers.
 
 
 
+Motion tracking:
+
+Make 10 frames of a text bitmap with quarter pixel offsets in each frame.
+Test global tracking modes.
+Make 10 frames with quarter degree rotation in each frame.
+Test rotation tracking modes.
+Test long range global tracking to see if the block follows the motion.
+

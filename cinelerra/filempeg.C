@@ -7,6 +7,7 @@
 #include "filempeg.h"
 #include "guicast.h"
 #include "language.h"
+#include "libmjpeg.h"
 #include "mwindow.inc"
 #include "vframe.h"
 #include "videodevice.inc"
@@ -640,6 +641,51 @@ int FileMPEG::read_frame(VFrame *frame)
 					asset->width,
 					asset->height,
 					file->current_layer);
+
+// Test composite something
+// static VFrame *test_frame = 0;
+// if(!test_frame)
+// {
+// FILE *test_fd = 0;
+// mjpeg_t *test_mjpeg = 0;
+// test_frame = new VFrame(0, 1920, 1080, BC_YUV420P);
+// test_mjpeg = mjpeg_new(1920, 1080, 1);
+// test_fd = fopen("/mov/test.jpg", "r");
+// fseek(test_fd, 0, SEEK_END);
+// int test_size = ftell(test_fd);
+// fseek(test_fd, 0, SEEK_SET);
+// unsigned char *test_buffer = new unsigned char[test_size];
+// fread(test_buffer, test_size, 1, test_fd);
+// mjpeg_decompress(test_mjpeg, 
+// test_buffer, 
+// test_size, 
+// 0,
+// 0,
+// test_frame->get_y(),
+// test_frame->get_u(),
+// test_frame->get_v(),
+// BC_YUV420P,
+// 1);
+// }
+// int test_bytes = 1920 * 1080;
+// unsigned char *output_byte = frame->get_data();
+// unsigned char *input_byte = test_frame->get_data();
+// for(int i = 0; i < test_bytes; i++)
+// {
+// *output_byte = (*input_byte * 0x80 + *output_byte * 0x80) >> 8;
+// output_byte++;
+// input_byte++;
+// }
+// test_bytes /= 2;
+// for(int i = 0; i < test_bytes / 2; i++)
+// {
+// *output_byte = (*input_byte * 0x80 + *output_byte * 0x80) >> 8;
+// output_byte++;
+// input_byte++;
+// *output_byte = (*input_byte * 0x80 + *output_byte * 0x80) >> 8;
+// output_byte++;
+// input_byte++;
+// }
 			}
 			else
 // Process through temp frame

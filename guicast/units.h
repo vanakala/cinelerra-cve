@@ -19,13 +19,13 @@
 // hh:mm:ss
 #define TIME_HMS3 7
 // h:mm:ss:ff
+#define TIME_SECONDS 8
 #define TIME_HMSF 1
 #define TIME_SAMPLES 2
 #define TIME_SAMPLES_HEX 3
 #define TIME_FRAMES 4
 // fffff-ff
 #define TIME_FEET_FRAMES 5
-
 
 class DB
 {
@@ -109,28 +109,32 @@ public:
 	static char* format_to_separators(int time_format);
 
 	static int64_t tosamples(float frames, int sample_rate, float framerate);
+// give text representation as time
 	static char* totext(char *text, 
 				int64_t samples, 
 				int time_format, 
 				int samplerate, 
 				float frame_rate = 0, 
-				float frames_per_foot = 0);    // give text representation as time
+				float frames_per_foot = 0);    
+// give text representation as time
 	static char* totext(char *text, 
 				double seconds, 
 				int time_format, 
 				int sample_rate = 0,
 				float frame_rate = 0, 
-				float frames_per_foot = 0);    // give text representation as time
+				float frames_per_foot = 0);    
+// convert time to samples
 	static int64_t fromtext(char *text, 
 				int samplerate, 
 				int time_format, 
 				float frame_rate, 
-				float frames_per_foot);    // convert time to samples
+				float frames_per_foot);
+// Convert text to seconds
 	static double text_to_seconds(char *text, 
 				int samplerate, 
 				int time_format, 
 				float frame_rate, 
-				float frames_per_foot);   // Convert text to seconds
+				float frames_per_foot);   
 
 	static char* print_time_format(int time_format, char *string);
 

@@ -81,10 +81,12 @@ SUBDIRS= \
 	svg \
 	swapchannels \
 	synthesizer \
+	threshold \
 	timeavg \
 	timestretch \
 	titler \
 	translate \
+	unsharp \
 	videoscope \
 	wave \
 	whirl \

@@ -38,7 +38,7 @@ int AboutPrefs::create_objects()
 
 	char license2[BCTEXTLEN];
 	sprintf(license2, "%s%s%s", 
-		_("(c) 2004 Heroine Virtual Ltd.\n\n"),
+		_("(c) 2005 Heroine Virtual Ltd.\n\n"),
 		_("Build date: "), 
 		BUILDDATE);
 	set_font(MEDIUMFONT);
@@ -71,14 +71,18 @@ mpeg3_release());
 	char credits[BCTEXTLEN];
 	sprintf(credits,
 "Richard Baverstock\n"
+"Karl Bielefeldt\n"
 "Kevin Brosius\n"
 "Jack Crossfire\n"
+"Jean-Michel POURE\n"
 "Pierre Marc Dumuid\n"
 "Alex Ferrer\n"
 "Koen Muylkens\n"
 "Eric Seigne\n"
 "Gustavo Iñiguez\n"
 "Johannes Sixt\n"
+"Mark Taraba\n"
+"Nathan Kurz\n"
 "Andraz Tori\n"
 );
 	draw_text(x, y, credits);

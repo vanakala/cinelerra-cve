@@ -302,7 +302,8 @@ static void get_scale_tables(int **column_table,
 	float hscale = w_in / w_out;
 	float vscale = h_in / h_out;
 
-	(*column_table) = malloc(sizeof(int) * (w_out + 1));    /* +1 so we don't overflow when calculating in advance */
+/* + 1 so we don't overflow when calculating in advance */
+	(*column_table) = malloc(sizeof(int) * (w_out + 1));
 	(*row_table) = malloc(sizeof(int) * h_out);
 	for(i = 0; i < w_out; i++)
 	{

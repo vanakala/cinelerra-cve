@@ -10,9 +10,9 @@
 
 
 ColorThread::ColorThread(int do_alpha, char *title)
- : Thread(),
- completion(1, "ColorThread::completion"),
- mutex("ColorThread::mutex")
+ : Thread(), 
+	 completion(1, "ColorThread::completion"),
+	 mutex("ColorThread::mutex")
 {
 	window = 0;
 	this->title = title;
@@ -32,7 +32,7 @@ ColorThread::~ColorThread()
 
 void ColorThread::start_window(int output, int alpha)
 {
-	mutex.lock();
+	mutex.lock("ColorThread::start_window 1");
 	this->output = output;
 	this->alpha = alpha;
 	mutex.unlock();
@@ -61,30 +61,25 @@ void ColorThread::run()
 		strcat(window_title, _("Color Picker"));
 
 
-
-	mutex.lock();
+	mutex.lock("ColorThread::run 1");
 	window = new ColorWindow(this, 
 		info.get_abs_cursor_x() - 200, 
 		info.get_abs_cursor_y() - 200,
 		window_title);
-//printf("ColorThread::run 1 %p\n", window);
 	window->create_objects();
 	mutex.unlock();
-//printf("ColorThread::run 1 %p\n", window);
 	window->run_window();
-
-	mutex.lock();
+	mutex.lock("lorThread::run 2");
 	delete window;
 	window = 0;
 	mutex.unlock();
 
 	completion.unlock();
-//printf("ColorThread::run 2\n");
 }
 
 void ColorThread::update_gui(int output, int alpha)
 {
-	mutex.lock();
+	mutex.lock("ColorThread::update_gui");
 	if (window)
 	{
 		this->output = output;
@@ -96,6 +91,14 @@ void ColorThread::update_gui(int output, int alpha)
 	}
 	mutex.unlock();
 }
+
+int ColorThread::handle_new_color(int output, int alpha)
+{
+	printf("ColorThread::handle_new_color undefined.\n");
+	return 0;
+}
+
+
 
 
 
@@ -112,15 +115,6 @@ ColorWindow::ColorWindow(ColorThread *thread, int x, int y, char *title)
 	1)
 {
 	this->thread = thread;
-}
-
-void ColorWindow::change_values()
-{
-	r = (float)((thread->output & 0xff0000) >> 16) / 255;
-	g = (float)((thread->output & 0xff00) >> 8) / 255;
-	b = (float)((thread->output & 0xff)) / 255;
-	HSV::rgb_to_hsv(r, g, b, h, s, v);
-	a = (float)thread->alpha / 255;
 }
 
 void ColorWindow::create_objects()
@@ -198,6 +192,17 @@ void ColorWindow::create_objects()
 	flush();
 	return;
 }
+
+
+void ColorWindow::change_values()
+ {
+ 	r = (float)((thread->output & 0xff0000) >> 16) / 255;
+ 	g = (float)((thread->output & 0xff00) >> 8) / 255;
+ 	b = (float)((thread->output & 0xff)) / 255;
+ 	HSV::rgb_to_hsv(r, g, b, h, s, v);
+ 	a = (float)thread->alpha / 255;
+}
+
 
 int ColorWindow::close_event()
 {

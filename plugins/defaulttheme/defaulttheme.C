@@ -129,6 +129,25 @@ void BlondTheme::initialize()
 			"pan_stick_small.png");
 	resources->pan_text_color = WHITE;
 
+	resources->pot_images = new_image_set(3,
+		"pot_up.png",
+		"pot_hi.png",
+		"pot_dn.png");
+
+	resources->checkbox_images = new_image_set(5,
+		"checkbox_up.png",
+		"checkbox_uphi.png",
+		"checkbox_checked.png",
+		"checkbox_down.png",
+		"checkbox_checkedhi.png");
+
+	resources->radial_images = new_image_set(5,
+		"radial_up.png",
+		"radial_uphi.png",
+		"radial_checked.png",
+		"radial_down.png",
+		"radial_checkedhi.png");
+
 	resources->xmeter_images = new_image_set(6, 
 		"xmeter_normal.png",
 		"xmeter_green.png",
@@ -309,6 +328,10 @@ void BlondTheme::initialize()
 	top_justify = new_button("top_justify.png", editpanel_up, editpanel_hi, editpanel_dn);
 	undo_data = new_button("undo.png", editpanel_up, editpanel_hi, editpanel_dn);
 	wrench_data = new_button("wrench.png", editpanel_up, editpanel_hi, editpanel_dn);
+
+// CWindow icons
+	new_image("cwindow_inactive", "cwindow_inactive.png");
+	new_image("cwindow_active", "cwindow_active.png");
 
 
 	new_image_set("batch_render_start",
@@ -493,6 +516,8 @@ void BlondTheme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 		ccanvas_x = ccomposite_x + ccomposite_w;
 		ccanvas_y = 0;
 		ccanvas_h = ccomposite_h;
+		cstatus_x = 525;
+		cstatus_y = mwindow->session->cwindow_h - 40;
 		if(mwindow->edl->session->cwindow_meter)
 		{
 			cmeter_x = mwindow->session->cwindow_w - MeterPanel::get_meters_width(mwindow->edl->session->audio_channels, 
@@ -523,6 +548,8 @@ void BlondTheme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 		ccanvas_w = mwindow->session->cwindow_w;
 		ccanvas_h = mwindow->session->cwindow_h;
 		cmeter_x = mwindow->session->cwindow_w;
+		cstatus_x = mwindow->session->cwindow_w;
+		cstatus_y = mwindow->session->cwindow_h;
 	}
 
 

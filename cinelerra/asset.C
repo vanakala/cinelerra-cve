@@ -281,6 +281,39 @@ int64_t Asset::get_index_offset(int channel)
 		return 0;
 }
 
+
+char* Asset::get_compression_text(int audio, int video)
+{
+	if(audio)
+	{
+		switch(format)
+		{
+			case FILE_MOV:
+			case FILE_AVI:
+				if(acodec[0])
+					return quicktime_acodec_title(acodec);
+				else
+					return 0;
+				break;
+		}
+	}
+	else
+	if(video)
+	{
+		switch(format)
+		{
+			case FILE_MOV:
+			case FILE_AVI:
+				if(vcodec[0])
+					return quicktime_vcodec_title(vcodec);
+				else
+					return 0;
+				break;
+		}
+	}
+	return 0;
+}
+
 Asset& Asset::operator=(Asset &asset)
 {
 	copy_location(&asset);
@@ -479,6 +512,7 @@ int Asset::read_audio(FileXML *file)
 		tcend = audio_length;
 		tcformat = 0;
 	}
+
 	return 0;
 }
 

@@ -18,6 +18,9 @@ extern "C" {
 /* ===== compression formats for which codecs exist ====== */
 
 /* Straight MPEG-4 */
+#define QUICKTIME_DX50 "DX50"
+#define QUICKTIME_MPG4 "MPG4"
+#define QUICKTIME_MP42 "MP42"
 #define QUICKTIME_DIVX "DIVX"
 #define QUICKTIME_MP4V "mp4v"
 
@@ -36,6 +39,7 @@ extern "C" {
 
 /* Dee Vee */
 #define QUICKTIME_DV "dvc "
+#define QUICKTIME_DV25 "dv25"
 #define QUICKTIME_DVSD "dvsd"
 
 /* RGB uncompressed.  Allows alpha */
@@ -187,6 +191,12 @@ void quicktime_set_jpeg(quicktime_t *file, int quality, int use_float);
 /* the value.  The value can be any data type and the key must be a */
 /* string which the codec understands. */
 void quicktime_set_parameter(quicktime_t *file, char *key, void *value);
+
+/* Get the english title of a codec based on its fourcc. */
+/* Used by info boxed. */
+char* quicktime_acodec_title(char *fourcc);
+char* quicktime_vcodec_title(char *fourcc);
+
 
 /* Set the depth of the track. */
 void quicktime_set_depth(quicktime_t *file, 

@@ -661,6 +661,8 @@ typedef struct
 /* AVI tree */
 	quicktime_riff_t *riff[MAX_RIFFS];
 	int total_riffs;
+/* is odml version of AVI */
+	int is_odml;
 
 
 
@@ -714,9 +716,6 @@ typedef struct
 
 /* Adjustable timecode frame number */
 	int64_t current_frame;
-
-/* is odml file? */
-	int is_odml;
 
 } quicktime_t;
 

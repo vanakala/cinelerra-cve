@@ -172,7 +172,7 @@ int NewThread::update_aspect()
 {
 	if(auto_aspect)
 	{
-		char string[1024];
+		char string[BCTEXTLEN];
 		mwindow->create_aspect_ratio(new_project->new_edl->session->aspect_w, 
 			new_project->new_edl->session->aspect_h, 
 			new_project->new_edl->session->output_w, 

@@ -1,5 +1,6 @@
 #include "assets.h"
 #include "bccapture.h"
+#include "bcsignals.h"
 #include "canvas.h"
 #include "colormodels.h"
 #include "mwindow.h"
@@ -61,8 +62,15 @@ int VDeviceX11::open_input()
 
 int VDeviceX11::open_output()
 {
-	if(output && !device->single_frame) 
-		output->canvas->start_video();
+	if(output)
+	{
+		output->canvas->lock_window("VDeviceX11::open_output");
+		if(!device->single_frame)
+			output->start_video();
+		else
+			output->start_single();
+		output->canvas->unlock_window();
+	}
 	return 0;
 }
 
@@ -104,9 +112,9 @@ int VDeviceX11::close_all()
 		}
 
 		if(!device->single_frame)
-		{
-			output->canvas->stop_video();
-		}
+			output->stop_video();
+		else
+			output->stop_single();
 
 		output->refresh_frame->copy_from(output_frame);
 
@@ -379,14 +387,14 @@ int VDeviceX11::start_playback()
 {
 // Record window is initialized when its monitor starts.
 	if(!device->single_frame)
-		output->canvas->start_video();
+		output->start_video();
 	return 0;
 }
 
 int VDeviceX11::stop_playback()
 {
 	if(!device->single_frame)
-		output->canvas->stop_video();
+		output->stop_video();
 // Record window goes back to monitoring
 // get the last frame played and store it in the video_out
 	return 0;
@@ -546,18 +554,7 @@ int VDeviceX11::write_buffer(VFrame **output_channels, EDL *edl)
 	}
 
 
-// In single frame mode we want the frame to display once along with overlays
-// when the device is closed.  This prevents intermediate drawing with overlays
-// from reading the obsolete back buffer before the device is closed.
-
-// 	if(device->single_frame)
-// 	{
-// 		output->canvas->flash();
-// 		output->canvas->flush();
-// 	}
-
 	output->canvas->unlock_window();
-//printf("VDeviceX11::write_buffer 5\n");fflush(stdout);
 	return 0;
 }
 

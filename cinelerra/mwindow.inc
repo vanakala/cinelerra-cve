@@ -2,7 +2,7 @@
 #define MWINDOW_INC
 
 #define PROGRAM_NAME "Cinelerra"
-#define CINELERRA_VERSION "1.2.1"
+#define CINELERRA_VERSION "1.2.2"
 #define DEFAULT_THEME "Blond"
 #define CONFIG_FILE "Cinelerra_rc"
 

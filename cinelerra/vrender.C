@@ -389,6 +389,7 @@ void VRender::run()
 		!renderengine->video->interrupt && 
 		!last_playback)
 	{
+TRACE("VRender::run 0");
 // Perform the most time consuming part of frame decompression now.
 // Want the condition before, since only 1 frame is rendered 
 // and the number of frames skipped after this frame varies.
@@ -397,12 +398,14 @@ void VRender::run()
 		reconfigure = vconsole->test_reconfigure(current_position, 
 			current_input_length,
 			last_playback);
+TRACE("VRender::run 0.1");
 
 		if(reconfigure) restart_playback();
+TRACE("VRender::run 0.2");
 
 		process_buffer(current_position);
 
-//TRACE("VRender::run 1");
+TRACE("VRender::run 0.3");
 		if(renderengine->command->single_frame())
 		{
 //TRACE("VRender::run 2");
@@ -414,9 +417,11 @@ void VRender::run()
 		else
 // Perform synchronization
 		{
+TRACE("VRender::run 0.4");
 // Determine the delay until the frame needs to be shown.
 			current_sample = (int64_t)(renderengine->sync_position() * 
 				renderengine->command->get_speed());
+TRACE("VRender::run 0.5");
 // latest sample at which the frame can be shown.
 			end_sample = Units::tosamples(session_frame, 
 				renderengine->edl->session->sample_rate, 
@@ -455,12 +460,14 @@ void VRender::run()
 								renderengine->edl->session->sample_rate, 
 								renderengine->edl->session->frame_rate);
 				}
+//TRACE("VRender::run 3");
 //printf("VRender:run 11 frame_step %d\n", frame_step);
 			}
 			else
 			{
 // Frame rendered early or just in time.
 				frame_step = 1;
+//TRACE("VRender::run 4");
 
 				if(delay_countdown > 0)
 				{
@@ -484,11 +491,12 @@ void VRender::run()
 					}
 				}
 
+//TRACE("VRender::run 5");
 // Flash frame now.
 				flash_output();
+//TRACE("VRender::run 6");
 			}
 		}
-//TRACE("VRender::run 4");
 
 // Trigger audio to start
 		if(first_frame)
@@ -515,7 +523,7 @@ void VRender::run()
 			frame_step -= current_input_length;
 			current_input_length = frame_step;
 		}
-//TRACE("VRender::run 6");
+TRACE("VRender::run 6");
 
 // Update tracking.
 		if(renderengine->command->realtime &&
@@ -525,7 +533,7 @@ void VRender::run()
 			renderengine->playback_engine->update_tracking(fromunits(current_position));
 		}
 
-//TRACE("VRender::run 7");
+TRACE("VRender::run 7");
 // Calculate the framerate counter
 		framerate_counter++;
 		if(framerate_counter >= renderengine->edl->session->frame_rate && 
@@ -536,8 +544,9 @@ void VRender::run()
 			framerate_counter = 0;
 			framerate_timer.update();
 		}
-//TRACE("VRender::run 8");
+TRACE("VRender::run 8");
 	}
+TRACE("VRender::run 10");
 
 // In case we were interrupted before the first loop
 	renderengine->first_frame_lock->unlock();

@@ -4,6 +4,7 @@
 
 #include <math.h>
 #include <stdint.h>
+#include <stdio.h>
 #include <unistd.h>
 
 #define SQR(x) ((x) * (x))
@@ -15,7 +16,6 @@ RotateFrame::RotateFrame(int cpus, int width, int height)
 	y1 = 0;
 	this->cpus = cpus;
 
-//printf("RotateFrame::RotateFrame 1\n");
 	engine = new RotateEngine*[cpus];
 	for(int i = 0; i < cpus; i++)
 	{
@@ -32,7 +32,6 @@ RotateFrame::RotateFrame(int cpus, int width, int height)
 	float_rows = 0;
 	last_angle = 0;
 	last_interpolate = 0;
-//printf("RotateFrame::RotateFrame 2\n");
 }
 
 RotateFrame::~RotateFrame()

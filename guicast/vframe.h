@@ -96,9 +96,9 @@ public:
 // return an array of pointers to rows
 	unsigned char** get_rows();       
 // return yuv planes
-	unsigned char* get_y(); 
-	unsigned char* get_u(); 
-	unsigned char* get_v(); 
+	unsigned char* get_y();
+	unsigned char* get_u();
+	unsigned char* get_v();
 	int get_w();
 	int get_h();
 	int get_w_fixed();

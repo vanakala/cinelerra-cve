@@ -697,6 +697,7 @@ int EditToClip::keypress_event()
 	}
 	return 0;
 }
+
 EditManualGoto::EditManualGoto(MWindow *mwindow, EditPanel *panel, int x, int y)
  : BC_Button(x, y, mwindow->theme->toclip_data)
 {

@@ -1,12 +1,13 @@
 #ifndef MWINDOW_H
 #define MWINDOW_H
 
+#include "arraylist.h"
 #include "asset.inc"
 #include "assets.inc"
 #include "audiodevice.inc"
-#include "arraylist.h"
 #include "awindow.inc"
 #include "batchrender.inc"
+#include "bcwindowbase.inc"
 #include "brender.inc"
 #include "cache.inc"
 #include "channel.inc"
@@ -25,8 +26,8 @@
 #include "mainundo.inc"
 #include "maxchannels.h"
 #include "mutex.inc"
-#include "mwindowgui.inc"
 #include "mwindow.inc"
+#include "mwindowgui.inc"
 #include "new.inc"
 #include "patchbay.inc"
 #include "playbackengine.inc"
@@ -144,6 +145,10 @@ public:
 		int reel_number = 0,
 		int overwrite_reel = 0);
 	
+
+// Print out plugins which are referenced in the EDL but not loaded.
+	void test_plugins(EDL *new_edl, char *path);
+
 	int interrupt_indexes();  // Stop index building
 
 
@@ -152,6 +157,8 @@ public:
 // =========================================== movement
 
 	void next_time_format();
+	void prev_time_format();
+	void time_format_common();
 	int reposition_timebar(int new_pixel, int new_height);
 	int expand_sample();
 	int zoom_in_sample();
@@ -293,7 +300,6 @@ public:
 	void paste_audio_transition();
 	void paste_video_transition();
 	void rebuild_indices();
-	void redo_entry(BC_WindowBase *calling_window_gui);
 // Asset removal
 	void remove_assets_from_project(int push_undo = 0);
 	void remove_assets_from_disk();
@@ -312,6 +318,7 @@ public:
 	void to_clip();
 	int toggle_label(int is_mwindow);
 	void undo_entry(BC_WindowBase *calling_window_gui);
+	void redo_entry(BC_WindowBase *calling_window_gui);
 
 	int cut_automation();
 	int copy_automation();

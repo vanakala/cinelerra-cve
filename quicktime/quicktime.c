@@ -1004,6 +1004,7 @@ int quicktime_read_info(quicktime_t *file)
 		file->use_avi = 1;
 		file->use_asf = 1;
 		result = quicktime_atom_read_header(file, &leaf_atom);
+
 		if(!result && quicktime_atom_is(&leaf_atom, "RIFF"))
 		{
 			quicktime_read_data(file, avi_avi, 4);
@@ -1023,6 +1024,7 @@ int quicktime_read_info(quicktime_t *file)
 			break;
 		}
 	}while(1);
+
 	if(!got_avi) file->use_avi = 0;
 	if(!got_asf) file->use_asf = 0;
 

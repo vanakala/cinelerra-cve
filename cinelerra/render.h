@@ -63,6 +63,7 @@ public:
 	~MainPackageRenderer();
 	
 	
+	int get_master();
 	int get_result();
 	void set_result(int value);
 	void set_progress(int64_t value);

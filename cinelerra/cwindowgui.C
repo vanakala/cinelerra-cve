@@ -64,6 +64,8 @@ CWindowGUI::CWindowGUI(MWindow *mwindow, CWindow *cwindow)
 	current_operation = CWINDOW_NONE;
 	tool_panel = 0;
 	translating_zoom = 0;
+	active = 0;
+	inactive = 0;
 }
 
 CWindowGUI::~CWindowGUI()
@@ -75,11 +77,16 @@ CWindowGUI::~CWindowGUI()
  	delete transport;
  	delete edit_panel;
  	delete zoom_panel;
+	delete active;
+	delete inactive;
 }
 
 int CWindowGUI::create_objects()
 {
 	set_icon(mwindow->theme->cwindow_icon);
+
+	active = new BC_Pixmap(this, mwindow->theme->get_image("cwindow_active"));
+	inactive = new BC_Pixmap(this, mwindow->theme->get_image("cwindow_inactive"));
 
 	mwindow->theme->get_cwindow_sizes(this, mwindow->session->cwindow_controls);
 	mwindow->theme->draw_cwindow_bg(this);
@@ -154,8 +161,11 @@ int CWindowGUI::create_objects()
 	tool_panel->Thread::start();
 	
 	set_operation(mwindow->edl->session->cwindow_operation);
+
+
 	canvas->draw_refresh();
 
+	draw_status();
 
 	return 0;
 }
@@ -213,23 +223,38 @@ int CWindowGUI::resize_event(int w, int h)
 
 	zoom_panel->reposition_window(mwindow->theme->czoom_x, 
 		mwindow->theme->czoom_y);
-//printf("CWindowGUI::resize_event 1\n");
 
 // 	destination->reposition_window(mwindow->theme->cdest_x,
 // 		mwindow->theme->cdest_y);
-//printf("CWindowGUI::resize_event 1\n");
 
 	meters->reposition_window(mwindow->theme->cmeter_x,
 		mwindow->theme->cmeter_y,
 		mwindow->theme->cmeter_h);
-//printf("CWindowGUI::resize_event 2\n");
+
+	draw_status();
 
 	BC_WindowBase::resize_event(w, h);
 	return 1;
 }
 
 
-
+void CWindowGUI::draw_status()
+{
+	if(canvas->canvas && 
+		canvas->canvas->get_video_on() ||
+		canvas->is_processing)
+		draw_pixmap(active, 
+			mwindow->theme->cstatus_x, 
+			mwindow->theme->cstatus_y);
+	else
+		draw_pixmap(inactive, 
+			mwindow->theme->cstatus_x, 
+			mwindow->theme->cstatus_y);
+	flash(mwindow->theme->cstatus_x,
+		mwindow->theme->cstatus_y,
+		active->get_w(),
+		active->get_h());
+}
 
 
 
@@ -532,6 +557,7 @@ CWindowSlider::CWindowSlider(MWindow *mwindow, CWindow *cwindow, int x, int y, i
 {
 	this->mwindow = mwindow;
 	this->cwindow = cwindow;
+	set_precision(0.00001);
 }
 
 CWindowSlider::~CWindowSlider()
@@ -667,6 +693,11 @@ CWindowCanvas::CWindowCanvas(MWindow *mwindow, CWindowGUI *gui)
 	this->gui = gui;
 }
 
+void CWindowCanvas::status_event()
+{
+	gui->draw_status();
+}
+
 void CWindowCanvas::update_zoom(int x, int y, float zoom)
 {
 	use_scrollbars = mwindow->edl->session->cwindow_scrollbars;
@@ -782,7 +813,7 @@ int CWindowCanvas::do_mask(int &redraw,
 //printf("CWindowCanvas::do_mask 3\n");
 
 	MaskAutos *mask_autos = track->automation->mask_autos;
-	long position = track->to_units(mwindow->edl->local_session->selectionstart,
+	int64_t position = track->to_units(mwindow->edl->local_session->selectionstart,
 		0);
 	ArrayList<MaskPoint*> points;
 	mask_autos->get_points(&points, mwindow->edl->session->cwindow_mask,
@@ -1839,7 +1870,7 @@ int CWindowCanvas::do_bezier_center(BezierAuto *current,
 	BezierAuto *before = 0, *after = 0;
 	FloatAuto *previous = 0, *next = 0;
 	VTrack *track = (VTrack*)current->autos->track;
-	long position = track->to_units(
+	int64_t position = track->to_units(
 				mwindow->edl->local_session->selectionstart, 
 				0);
 
@@ -1849,7 +1880,7 @@ int CWindowCanvas::do_bezier_center(BezierAuto *current,
 		camera_autos->get_center(center_x, 
 			center_y, 
 			center_z, 
-			(float)position,
+			position,
 			PLAY_FORWARD, 
 			&before, 
 			&after);
@@ -1863,7 +1894,7 @@ int CWindowCanvas::do_bezier_center(BezierAuto *current,
 		projector_autos->get_center(projector_x, 
 			projector_y, 
 			projector_z,
-			(float)position,
+			position,
 			PLAY_FORWARD,
 			&before,
 			&after);
@@ -2012,7 +2043,7 @@ void CWindowCanvas::draw_bezier_joining(BezierAuto *first,
 	
 	float center_x = 0, center_y = 0, center_z = 0;
 	BezierAuto *before = 0, *after = 0;
-	long position = first->autos->track->to_units(
+	int64_t position = first->autos->track->to_units(
 					mwindow->edl->local_session->selectionstart, 
 					0);
 
@@ -2022,7 +2053,7 @@ void CWindowCanvas::draw_bezier_joining(BezierAuto *first,
 		camera_autos->get_center(center_x, 
 				center_y, 
 				center_z, 
-				(float)position, 
+				position, 
 				PLAY_FORWARD, 
 				&before, 
 				&after);
@@ -2032,7 +2063,7 @@ void CWindowCanvas::draw_bezier_joining(BezierAuto *first,
 		projector_autos->get_center(projector_x, 
 			projector_y, 
 			projector_z,
-			(float)position,
+			position,
 			PLAY_FORWARD,
 			&before,
 			&after);
@@ -2047,7 +2078,7 @@ void CWindowCanvas::draw_bezier_joining(BezierAuto *first,
 	float old_x, old_y;
 	if(step < 1) step = 1;
 
-	for(long frame = first->position; 
+	for(int64_t frame = first->position; 
 		frame < last->position; 
 		frame += step)
 	{
@@ -2116,7 +2147,7 @@ void CWindowCanvas::draw_bezier(int do_camera)
 		autos = track->automation->projector_autos;
 
 
-	long position = track->to_units(mwindow->edl->local_session->selectionstart, 
+	int64_t position = track->to_units(mwindow->edl->local_session->selectionstart, 
 					0);
 
 

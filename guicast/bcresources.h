@@ -60,19 +60,27 @@ public:
 
 // highlighting
 	int highlight_inverse;
-	int text_highlight;
 
-// for menus
+// 3D box colors for menus
 	int menu_light;
 	int menu_highlighted;
 	int menu_down;
 	int menu_up;
 	int menu_shadow;
+// If these are nonzero, they override the menu backgrounds.
+	VFrame *menu_popup_bg;
+	VFrame **menu_title_bg;
 
+// Menu bar text color
+	int menu_title_text;
 // color of popup title
 	int popup_title_text;
 // color for item text
 	int menu_item_text;
+// Override the menu item background if nonzero.
+	VFrame **menu_item_bg;
+
+
 // color for progress text
 	int progress_text;
 
@@ -90,12 +98,29 @@ public:
 	int tooltip_bg_color;
 	int tooltips_enabled;
 
-	int text_default;      // default color of text
-	int text_background;   // background color of textboxes and list boxes
-	
 	int listboxitemselected_color;
 
 	int audiovideo_color;
+
+// default color of text
+	int text_default;      
+// background color of textboxes and list boxes
+	int text_border1;
+	int text_border2;
+	int text_border2_hi;
+	int text_background;   
+	int text_background_hi;
+	int text_background_noborder_hi;
+	int text_border3;
+	int text_border3_hi;
+	int text_border4;
+	int text_highlight;
+// Not used
+	int text_background_noborder;
+
+// Optional background for highlighted text in toggle
+	VFrame *toggle_highlight_bg;
+	int toggle_text_margin;
 
 // Background images
 	static VFrame *bg_image;
@@ -108,7 +133,11 @@ public:
 	VFrame **filebox_icons_images;
 	VFrame **filebox_updir_images;
 	VFrame **filebox_newfolder_images;
+
+// Generic button images
 	VFrame **generic_button_images;
+// Generic button text margin
+	int generic_button_margin;
 	VFrame **usethis_button_images;
 
 // Toggles
@@ -143,6 +172,8 @@ public:
 // Pots
 	VFrame **pot_images;
 	int pot_x1, pot_y1, pot_r;
+// Amoun of deflection of pot when down
+	int pot_offset;
 	int pot_needle_color;
 
 // Meters

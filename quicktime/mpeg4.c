@@ -1195,6 +1195,9 @@ static int set_parameter(quicktime_t *file,
 	char *compressor = vtrack->track->mdia.minf.stbl.stsd.table[0].format;
 
 	if(quicktime_match_32(compressor, QUICKTIME_DIVX) ||
+		quicktime_match_32(compressor, QUICKTIME_MP42) ||
+		quicktime_match_32(compressor, QUICKTIME_MPG4) ||
+		quicktime_match_32(compressor, QUICKTIME_DX50) ||
 		quicktime_match_32(compressor, QUICKTIME_HV60))
 	{
 		quicktime_mpeg4_codec_t *codec = ((quicktime_codec_t*)vtrack->codec)->priv;
@@ -1364,6 +1367,14 @@ void quicktime_init_codec_div3lower(quicktime_video_map_t *vtrack)
 	result->ffmpeg_id = CODEC_ID_MSMPEG4V3;
 }
 
+void quicktime_init_codec_div3v2(quicktime_video_map_t *vtrack)
+{
+	quicktime_mpeg4_codec_t *result = init_common(vtrack, 
+		QUICKTIME_MP42,
+		"MP42",
+		"Mike Row Soft MPEG4 Version 2");
+	result->ffmpeg_id = CODEC_ID_MSMPEG4V2;
+}
 
 // Generic MPEG-4
 void quicktime_init_codec_divx(quicktime_video_map_t *vtrack)
@@ -1372,6 +1383,24 @@ void quicktime_init_codec_divx(quicktime_video_map_t *vtrack)
 		QUICKTIME_DIVX,
 		"MPEG4",
 		"Generic MPEG Four");
+	result->ffmpeg_id = CODEC_ID_MPEG4;
+}
+
+void quicktime_init_codec_mpg4(quicktime_video_map_t *vtrack)
+{
+	quicktime_mpeg4_codec_t *result = init_common(vtrack, 
+		QUICKTIME_MPG4,
+		"MPEG4",
+		"FFMPEG (msmpeg4)");
+	result->ffmpeg_id = CODEC_ID_MSMPEG4V1;
+}
+
+void quicktime_init_codec_dx50(quicktime_video_map_t *vtrack)
+{
+	quicktime_mpeg4_codec_t *result = init_common(vtrack, 
+		QUICKTIME_DX50,
+		"MPEG4",
+		"FFMPEG (mpeg4)");
 	result->ffmpeg_id = CODEC_ID_MPEG4;
 }
 

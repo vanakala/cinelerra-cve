@@ -179,7 +179,6 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    pluginvclient.C \
 		    preferences.C \
 		    preferencesthread.C \
-		    presentations.C \
 		    question.C \
 		    quit.C \
 		    recconfirmdelete.C \
@@ -479,7 +478,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 pluginvclient.h \
 		 preferences.h \
 		 preferencesthread.h \
-		 presentations.h \
 		 question.h \
 		 quit.h \
 		 recconfirmdelete.h \

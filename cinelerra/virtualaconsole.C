@@ -141,11 +141,13 @@ int VirtualAConsole::process_buffer(int64_t len,
 				{
 // Level history comes before clipping to get over status
 					double *sample = &current_buffer[j];
-// Clip it
+
+
 					if(fabs(*sample) > peak) peak = fabs(*sample);
-					if(*sample > 1) *sample = 1;
-					else
-					if(*sample < -1) *sample = -1;
+// Make the output device clip it
+// 					if(*sample > 1) *sample = 1;
+// 					else
+// 					if(*sample < -1) *sample = -1;
 				}
 
 
