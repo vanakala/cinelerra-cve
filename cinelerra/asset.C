@@ -650,7 +650,10 @@ int Asset::write_audio(FileXML *file)
 
 
 	file->append_tag();
-	file->tag.set_title("/AUDIO");
+	if(audio_data)
+	  file->tag.set_title("/AUDIO");
+	else
+          file->tag.set_title("/AUDIO_OMIT");
 	file->append_tag();
 	file->append_newline();
 	return 0;
