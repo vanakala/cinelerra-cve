@@ -10,6 +10,7 @@
 
 #include "bcdisplayinfo.h"
 #include "diffkeywindow.h"
+#include "language.h"
 
 //#define NO_GUI
 
@@ -74,7 +75,7 @@ int DiffKeyWindow::create_objects()
 	#endif
 
 	int x = 10, y = 10;
-	add_tool(new BC_Title(x, y, "Hue sensitivity"));
+	add_tool(new BC_Title(x, y, _("Hue sensitivity")));
 	x += 170;
 	add_tool(hue_on = new DiffKeyToggle(client, 
 		&(client->config.hue_on), 
@@ -88,7 +89,7 @@ int DiffKeyWindow::create_objects()
 		x,
 		y));
 	y += 30;
-	add_tool(new BC_Title(x, y, "Saturation sensitivity"));
+	add_tool(new BC_Title(x, y, _("Saturation sensitivity")));
 	x += 170;
 	add_tool(sat_on = new DiffKeyToggle(client, 
 		&(client->config.sat_on), 
@@ -102,7 +103,7 @@ int DiffKeyWindow::create_objects()
 		x,
 		y));
 	y += 30;
-	add_tool(new BC_Title(x, y, "Value sensitivity"));
+	add_tool(new BC_Title(x, y, _("Value sensitivity")));
 	x += 170;
 	add_tool(val_on = new DiffKeyToggle(client, 
 		&(client->config.val_on), 
@@ -116,7 +117,7 @@ int DiffKeyWindow::create_objects()
 		x,
 		y));
 	y += 30;
-	add_tool(new BC_Title(x, y, "Visibility threshold"));
+	add_tool(new BC_Title(x, y, _("Visibility threshold")));
 	x += 170;
 	add_tool(vis_on = new DiffKeyToggle(client, 
 		&(client->config.vis_on), 
@@ -130,7 +131,7 @@ int DiffKeyWindow::create_objects()
 		x,
 		y));
 	y += 30;
-	add_tool(new BC_Title(x, y, "Desaturation threshold"));
+	add_tool(new BC_Title(x, y, _("Desaturation threshold")));
 	x += 170;
 	add_tool(desat_on = new DiffKeyToggle(client, 
 		&(client->config.desat_on), 
@@ -159,7 +160,7 @@ int DiffKeyWindow::create_objects()
 
 	x = 220;
 	y = 10;
-	add_tool(new BC_Title(x, y, "Red sensitivity"));
+	add_tool(new BC_Title(x, y, _("Red sensitivity")));
 	x += 170;
 	add_tool(r_on = new DiffKeyToggle(client, 
 		&(client->config.r_on), 
@@ -173,7 +174,7 @@ int DiffKeyWindow::create_objects()
 		x,
 		y));
 	y += 30;
-	add_tool(new BC_Title(x, y, "Green sensitivity"));
+	add_tool(new BC_Title(x, y, _("Green sensitivity")));
 	x += 170;
 	add_tool(g_on = new DiffKeyToggle(client, 
 		&(client->config.g_on), 
@@ -187,7 +188,7 @@ int DiffKeyWindow::create_objects()
 		x,
 		y));
 	y += 30;
-	add_tool(new BC_Title(x, y, "Blue sensitivity"));
+	add_tool(new BC_Title(x, y, _("Blue sensitivity")));
 	x += 170;
 	add_tool(b_on = new DiffKeyToggle(client, 
 		&(client->config.b_on), 
@@ -201,7 +202,7 @@ int DiffKeyWindow::create_objects()
 		x,
 		y));
 	y += 30;
-	add_tool(new BC_Title(x, y, "Transparency threshold"));
+	add_tool(new BC_Title(x, y, _("Transparency threshold")));
 	x += 170;
 	add_tool(trans_on = new DiffKeyToggle(client, 
 		&(client->config.trans_on), 

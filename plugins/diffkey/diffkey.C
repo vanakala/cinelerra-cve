@@ -5,6 +5,7 @@
 #include "diffkey.h"
 #include "diffkeywindow.h"
 #include "picon_png.h"
+#include "language.h"
 
 #include <stdint.h>
 #include <string.h>
