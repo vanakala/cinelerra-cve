@@ -36,6 +36,7 @@ BC_Signals::BC_Signals()
 	signal(SIGKILL, signal_entry);
 	signal(SIGSEGV, signal_entry);
 	signal(SIGTERM, signal_entry);
+	execution_table.set_array_delete();
 }
 
 
@@ -69,7 +70,9 @@ void BC_Signals::new_function(char *name)
 //printf("BC_Signals::new_function 1 %p\n", signals_object);
 	signals_object->lock->lock();
 //printf("BC_Signals::new_function 1\n");
-	signals_object->execution_table.append(strdup(name));
+	char *dup_name = new char[strlen(name)+1];
+	strcpy(dup_name, name);
+	signals_object->execution_table.append(dup_name);
 //printf("BC_Signals::new_function 1\n");
 	signals_object->lock->unlock();
 //printf("BC_Signals::new_function 10\n");
