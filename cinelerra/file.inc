@@ -1,11 +1,7 @@
 #ifndef FILE_INC
 #define FILE_INC
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
-
+#include "language.h"
 
 // Return values for open_file
 #define FILE_OK 0
@@ -16,17 +12,19 @@
 #define FILE_UNKNOWN    		0
 #define FILE_AIFF       		10
 #define FILE_AMPEG      	  	16    // For encoding only
+#define FILE_AC3                25    // AC3 encoding
 #define FILE_AU         		9
 #define FILE_AVI_ARNE1          20    // DV type 1
 #define FILE_AVI                24    // Heroine Virtual
 #define FILE_AVI_ARNE2          19    // DV type 2
 #define FILE_AVI_AVIFILE        21
 #define FILE_AVI_LAVTOOLS       12    // MJPEG type 1
+#define FILE_DV					26
 #define FILE_GIF  	    		7
 #define FILE_JPEG 	    		5
 #define FILE_JPEG_LIST  		8
 #define FILE_MOV  	    		3
-#define FILE_MPEG       	  	15    // For decoding only
+#define FILE_MPEG       	  	15    // Libmpeg3 decoding only
 #define FILE_PCM  	    		1
 #define FILE_PLUGIN     	  	0x8000
 #define FILE_PNG  	    		4
@@ -44,6 +42,7 @@
 // plugin list ORed with 0x8000.
 
 #if 0
+N_("AC3")
 N_("Apple/SGI AIFF")
 N_("MPEG Audio")    // For encoding only
 N_("Sun/NeXT AU")
@@ -53,6 +52,7 @@ N_("AVI Arne Type 1")
 N_("AVI DV Type 2")
 N_("AVI Avifile")
 N_("AVI Lavtools")
+N_("Raw DV")
 N_("JPEG Sequence")
 N_("JPEG")
 N_("Quicktime for Linux")
@@ -69,6 +69,7 @@ N_("MPEG Video")    // For encoding only
 N_("OGG Vorbis")
 #endif
 
+#define AC3_NAME "AC3"
 #define AIFF_NAME "Apple/SGI AIFF"
 #define AMPEG_NAME "MPEG Audio"    // For encoding only
 #define AU_NAME "Sun/NeXT AU"
@@ -78,6 +79,7 @@ N_("OGG Vorbis")
 #define AVI_ARNE2_NAME "AVI DV Type 2"
 #define AVI_AVIFILE_NAME "AVI Avifile"
 #define AVI_LAVTOOLS_NAME "AVI Lavtools"
+#define DV_NAME "Raw DV"
 #define JPEG_LIST_NAME "JPEG Sequence"
 #define JPEG_NAME "JPEG"
 #define MOV_NAME "Quicktime for Linux"

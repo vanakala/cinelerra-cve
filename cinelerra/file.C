@@ -8,6 +8,7 @@
 #include "file.h"
 #include "fileac3.h"
 #include "fileavi.h"
+#include "filedv.h"
 #include "filebase.h"
 #include "filexml.h"
 #include "filejpeg.h"
@@ -112,6 +113,13 @@ int File::get_options(BC_WindowBase *parent_window,
 	{
 		case FILE_AC3:
 			FileAC3::get_parameters(parent_window,
+				asset,
+				format_window,
+				audio_options,
+				video_options);
+			break;
+		case FILE_DV:
+			FileDV::get_parameters(parent_window,
 				asset,
 				format_window,
 				audio_options,
@@ -299,7 +307,13 @@ int File::open_file(ArrayList<PluginServer*> *plugindb,
 // 				file = new FileAVI(this->asset, this);
 // 			}
 // 			else
-			if(FileSndFile::check_sig(this->asset))
+			if(FileDV::check_sig(this->asset))
+			{
+// libdv
+				fclose(stream);
+				file = new FileDV(this->asset, this);
+			}
+			else if(FileSndFile::check_sig(this->asset))
 			{
 // libsndfile
 				fclose(stream);
@@ -429,6 +443,10 @@ int File::open_file(ArrayList<PluginServer*> *plugindb,
 		case FILE_AVI_ARNE1:
 		case FILE_AVI_AVIFILE:
 			file = new FileAVI(this->asset, this);
+			break;
+
+		case FILE_DV:
+			file = new FileDV(this->asset, this);
 			break;
 
 // try plugins
@@ -1042,7 +1060,8 @@ int File::strtoformat(ArrayList<PluginServer*> *plugindb, char *format)
 	if(!strcasecmp(format, _(AVI_AVIFILE_NAME))) return FILE_AVI_AVIFILE;
 	else
 	if(!strcasecmp(format, _(VORBIS_NAME))) return FILE_VORBIS;
-
+	else
+	if(!strcasecmp(format, _(DV_NAME))) return FILE_DV;
 	return 0;
 }
 
@@ -1127,7 +1146,9 @@ char* File::formattostr(ArrayList<PluginServer*> *plugindb, int format)
 		case FILE_VORBIS:
 			return _(VORBIS_NAME);
 			break;
-
+		case FILE_DV:
+			return _(DV_NAME);
+			break;
 		default:
 			return _("Unknown");
 			break;
@@ -1234,6 +1255,10 @@ int File::get_best_colormodel(Asset *asset, int driver)
 {
 	switch(asset->format)
 	{
+		case FILE_DV:
+			return FileDV::get_best_colormodel(asset, driver);
+			break;
+
 		case FILE_MOV:
 			return FileMOV::get_best_colormodel(asset, driver);
 			break;
@@ -1324,6 +1349,7 @@ int File::supports_video(int format)
 		case FILE_AVI:
 		case FILE_AVI_ARNE1:
 		case FILE_AVI_AVIFILE:
+		case FILE_DV:
 			return 1;
 			break;
 
@@ -1351,6 +1377,7 @@ int File::supports_audio(int format)
 		case FILE_AVI_ARNE2:
 		case FILE_AVI_ARNE1:
 		case FILE_AVI_AVIFILE:
+		case FILE_DV:
 			return 1;
 		
 		default:

@@ -84,6 +84,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    filebaseima4.C \
 		    filebaseulaw.C \
 		    file.C \
+		    filedv.C \
 		    fileformat.C \
 		    filejpeg.C \
 		    filelist.C \
@@ -368,6 +369,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 filebase.h \
 		 fileformat.h \
 		 file.h \
+	    filedv.h \
 		 filejpeg.h \
 		 filelist.h \
 		 filemov.h \
