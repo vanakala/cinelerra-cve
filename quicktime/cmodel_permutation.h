@@ -908,6 +908,21 @@ static inline void transfer_RGB161616_to_BGR8888(unsigned char *(*output), uint1
 	(*output) += 4;
 }
 
+static inline void transfer_RGB161616_to_RGB_FLOAT(float *(*output), uint16_t *input)
+{
+	*(*output)++ = (float)*input++ / 0xffff;
+	*(*output)++ = (float)*input++ / 0xffff;
+	*(*output)++ = (float)*input / 0xffff;
+}
+
+static inline void transfer_RGB161616_to_RGBA_FLOAT(float *(*output), uint16_t *input)
+{
+	*(*output)++ = (float)*input++ / 0xffff;
+	*(*output)++ = (float)*input++ / 0xffff;
+	*(*output)++ = (float)*input / 0xffff;
+	*(*output)++ = 1.0;
+}
+
 static inline void transfer_RGB161616_to_YUV888(unsigned char *(*output), uint16_t *input)
 {
 	int y, u, v, r, g, b;
@@ -1120,6 +1135,22 @@ static inline void transfer_RGBA16161616_to_BGR8888(unsigned char *(*output), ui
 	(*output)[1] = (unsigned char)(g >> 24);
 	(*output)[2] = (unsigned char)(r >> 24);
 	(*output) += 4;
+}
+
+static inline void transfer_RGBA16161616_to_RGB_FLOAT(float *(*output), uint16_t *input)
+{
+	float opacity = (float)input[3];
+	*(*output)++ = (float)*input++ * opacity / 0xffff / 0xffff;
+	*(*output)++ = (float)*input++ * opacity / 0xffff / 0xffff;
+	*(*output)++ = (float)*input * opacity / 0xffff / 0xffff;
+}
+
+static inline void transfer_RGBA16161616_to_RGBA_FLOAT(float *(*output), uint16_t *input)
+{
+	*(*output)++ = (float)*input++ / 0xffff;
+	*(*output)++ = (float)*input++ / 0xffff;
+	*(*output)++ = (float)*input++ / 0xffff;
+	*(*output)++ = (float)*input / 0xffff;
 }
 
 static inline void transfer_RGBA16161616_to_YUV101010(unsigned char *(*output), uint16_t *input)

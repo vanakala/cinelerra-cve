@@ -1788,6 +1788,16 @@ static inline void transfer_UYVA8888_to_YUVA16161616(uint16_t *(*output), unsign
 					transfer_RGB161616_to_RGBA8888((output), (uint16_t*)(input));    \
 					TRANSFER_FRAME_TAIL \
 					break; \
+				case BC_RGB_FLOAT: \
+					TRANSFER_FRAME_HEAD \
+					transfer_RGB161616_to_RGB_FLOAT((float**)(output), (uint16_t*)(input)); \
+					TRANSFER_FRAME_TAIL \
+					break; \
+				case BC_RGBA_FLOAT: \
+					TRANSFER_FRAME_HEAD \
+					transfer_RGB161616_to_RGBA_FLOAT((float**)(output), (uint16_t*)(input)); \
+					TRANSFER_FRAME_TAIL \
+					break; \
 				case BC_YUV888: \
 					TRANSFER_FRAME_HEAD \
 					transfer_RGB161616_to_YUV888((output), (uint16_t*)(input));   \
@@ -1868,7 +1878,17 @@ static inline void transfer_UYVA8888_to_YUVA16161616(uint16_t *(*output), unsign
 					break; \
 				case BC_RGBA8888: \
 					TRANSFER_FRAME_HEAD \
-					transfer_RGBA16161616_to_RGBA8888((output), (input)); \
+					transfer_RGBA16161616_to_RGBA8888((output), (uint16_t*)(input)); \
+					TRANSFER_FRAME_TAIL \
+					break; \
+				case BC_RGB_FLOAT: \
+					TRANSFER_FRAME_HEAD \
+					transfer_RGBA16161616_to_RGB_FLOAT((float**)(output), (uint16_t*)(input)); \
+					TRANSFER_FRAME_TAIL \
+					break; \
+				case BC_RGBA_FLOAT: \
+					TRANSFER_FRAME_HEAD \
+					transfer_RGBA16161616_to_RGBA_FLOAT((float**)(output), (uint16_t*)(input)); \
 					TRANSFER_FRAME_TAIL \
 					break; \
 				case BC_YUV101010: \
