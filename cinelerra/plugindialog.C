@@ -559,7 +559,7 @@ PluginDialogAttachShared::PluginDialogAttachShared(MWindow *mwindow,
 PluginDialogAttachShared::~PluginDialogAttachShared() { }
 int PluginDialogAttachShared::handle_event() 
 { 
-	dialog->attach_module(dialog->selected_shared); 
+	dialog->attach_shared(dialog->selected_shared); 
 	set_done(0);
 	return 1;
 }
