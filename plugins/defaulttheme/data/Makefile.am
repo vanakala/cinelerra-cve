@@ -1,5 +1,6 @@
 noinst_LIBRARIES = libimagedata.a
-libimagedata_a_SOURCES = defaulttheme.data
+libimagedata_a_SOURCES = $(PNGS)
+nodist_libimagedata_a_SOURCES = defaulttheme.data
 
 PNGS = \
 	about.png \
@@ -534,10 +535,11 @@ ymeter_yellow.png \
 	$(OBJCOPY) -I binary -B $(OBJCOPYARCH) -O $(OBJCOPYTARGET) $< $@
 
 defaulttheme.data: $(PNGS)
-	$(top_builddir)/guicast/bootstrap $@ $^ || { rm $@; exit 1; }
+	$(top_builddir)/guicast/bootstrap $@ $^ || { rm -f $@; exit 1; }
 
-CLEANFILES = defaulttheme.data
-
+clean-local:
+	rm -f defaulttheme.data
+ 
 EXTRA_DIST = \
 	about.xcf.bz2 \
 	asset_button.xcf.bz2 \

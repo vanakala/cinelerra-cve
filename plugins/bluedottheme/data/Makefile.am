@@ -1,5 +1,6 @@
 noinst_LIBRARIES = libimagedata.a
-libimagedata_a_SOURCES = bluedottheme.data
+libimagedata_a_SOURCES = $(PNGS)
+nodist_libimagedata_a_SOURCES = bluedottheme.data
 
 PNGS = \
 about_bg.png \
@@ -318,9 +319,10 @@ zoombar_right.png
 	$(OBJCOPY) -I binary -B $(OBJCOPYARCH) -O $(OBJCOPYTARGET) $< $@
 
 bluedottheme.data: $(PNGS)
-	$(top_builddir)/guicast/bootstrap $@ $^ || { rm $@; exit 1; }
+	$(top_builddir)/guicast/bootstrap $@ $^ || { rm -f $@; exit 1; }
 
-CLEANFILES = bluedottheme.data
+clean-local:
+	rm -f bluedottheme.data
 
 EXTRA_DIST = 
 

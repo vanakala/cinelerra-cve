@@ -1,5 +1,6 @@
 noinst_LIBRARIES = libimagedata.a
-libimagedata_a_SOURCES = theme.data
+libimagedata_a_SOURCES = $(PNGS)
+nodist_libimagedata_a_SOURCES = theme.data
 
 PNGS = \
 	mode_add.png \
@@ -14,9 +15,10 @@ PNGS = \
 	$(OBJCOPY) -I binary -B $(OBJCOPYARCH) -O $(OBJCOPYTARGET) $< $@
 
 theme.data: $(PNGS)
-	$(top_builddir)/guicast/bootstrap $@ $^ || { rm $@; exit 1; }
+	$(top_builddir)/guicast/bootstrap $@ $^ || { rm -f $@; exit 1; }
 
-CLEANFILES = theme.data
+clean-local:
+	rm -f theme.data
 
 EXTRA_DIST = \
 	about.png \
