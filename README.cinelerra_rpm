@@ -1,0 +1,49 @@
+3/26/2004 K Brosius <cobra@compuserve.com>
+
+Original RPM patch was developed for SuSE 9.0.  These are some notes...
+
+To build an rpm package, check the .spec file.  You should change packager
+to your name, and possibly talk to me about version stamping if you plan
+to distribute your package.
+
+You should be able to build an rpm binary and source package from a clean cvs
+checkout by doing:
+
+> autoreconf -i
+> ./configure
+> make dist 
+> rpmbuild -ta cinelerra-1.1.9.tar.gz
+
+If you have older rpm, then the rpm command will look something like 'rpm -ta'
+instead.  rpmbuild seems to be a newer split of the build and install portions
+of rpm.  Check the man page.
+
+
+SuSE 9.0 RPMs
+=============
+
+I have binary and source packages up from recent cvs at
+http://kevb.net/files/RPM/ .  The notes below apply to those files.
+
+libavc1394-0.4.1-1.i586.rpm
+cinelerra-1.1.9-?.i586.rpm
+
+SuSE ships with libavc 0.3.1.  The firewire capture fixes in 0.4.1 are
+recommended for use with cinelerra from cvs.  The libavc here is a combo
+binary and dev package.  You may need to remove libavc1394-devel using yast2.
+
+cinelerra normally supplies mpeg3dump, mpeg3cat, and mpeg3toc.  However, the
+SuSE libmpeg3 supplies these also.  I left them out of this cinelerra RPM.
+This is subject to change, as I'm debating how to handle this best.
+
+You may need additional RPMs not supplied here or with SuSE 9.  They should
+be available from http://packman.links2linux.org/ .
+
+Source RPMs
+===========
+
+cinelerra-1.1.9-?.src.rpm
+
+Source rpm, from above RPM build tree.  Let me know how this works on other
+platforms.
+
