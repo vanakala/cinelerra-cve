@@ -1,4 +1,23 @@
-4/28/2004 K Brosius <cobra@compuserve.com>
+6/15/2004 K Brosius <cobra@compuserve.com>
+
+
+Cinelerra 1.2.0
+===============
+
+You'll need packages listed below under 'Other packages needed on SuSE 9.0
+', plus these for 1.2.0 (-devel only if you want to build from source):
+
+http://packman.links2linux.org/?action=217
+ alsa-1.0.4-0.pm.0.i586.rpm   (for binary)
+ alsa-devel-1.0.4-0.pm.0.i586.rpm
+
+http://packman.links2linux.org/?action=287
+ faad2-2.0rc1-1.i586.rpm   (for binary)
+ faad2-devel-2.0rc1-1.i586.rpm
+ -or-
+ faad2-2.0rc1-1.i686.rpm
+ faad2-devel-2.0rc1-1.i686.rpm
+
 
 RPM builds in CVS
 =================
@@ -42,6 +61,7 @@ This is subject to change, as I'm debating how to handle this best.
 You may need additional RPMs not supplied here or with SuSE 9.  They should
 be available from http://packman.links2linux.org/ .
 
+
 Other packages needed on SuSE 9.0
 =================================
 
@@ -77,6 +97,7 @@ Source RPMs
 ===========
 
 cinelerra-1.1.9-?.src.rpm
+cinelerra-1.2.0-?.src.rpm
 
 Source rpm, from above RPM build tree.  Let me know how this works on other
 platforms.

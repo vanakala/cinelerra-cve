@@ -3,12 +3,11 @@
 
 Summary: Cinelerra CVS
 Name: cinelerra
-Version: 1.1.9
-Release: 11
+Version: 1.2.0
+Release: 1
 License: GPL
 Group: X11
 URL: http://cvs.cinelerra.org
-Packager: Kevin Brosius <cobra@compuserve.com>
 Source0: %{name}-%{version}.tar.gz
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
 
@@ -59,6 +58,12 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Fri Jun 11 2004 Kevin Brosius <cobra@sea.kevb.net> - 1.2.0-1
+- Merge of 1.2.0 and current cvs
+- Feather speedups, tumbler/spinner limit fixes
+- spanish translation, buz driver fix
+- framecache race fix, trackcanvas fix, gang faders changes
+
 * Fri Apr 30 2004 Kevin Brosius <cobra@compuserve.com> - 1.1.9-11
 - change bootstrap technique for PNG files
 - gang fading in trackcanvas, snap to value with shift

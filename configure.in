@@ -34,8 +34,10 @@ AC_SUBST(CCASFLAGS)
 
 dnl Check for Video4Linux2
 AH_TEMPLATE(HAVE_VIDEO4LINUX2, [Define to 1 if Video4Linux2 is available.])
-AC_CHECK_HEADER([linux/videodev2.h], [AC_DEFINE(HAVE_VIDEO4LINUX2)], [],
-  [#include <linux/time.h>])
+AC_CHECK_HEADER([linux/videodev2.h], 
+	[AC_CHECK_MEMBER(struct v4l2_buffer.index, [AC_DEFINE(HAVE_VIDEO4LINUX2)], [],
+  		[#include <linux/time.h>])],
+	[],[#include <linux/time.h>] )
 
 ############## SPECIAL DIRECTORIES
 AC_ARG_WITH(plugindir,
@@ -284,6 +286,7 @@ AC_OUTPUT(Makefile po/Makefile.in \
 					guicast/Makefile cinelerra/Makefile \
 	cinelerra/data/Makefile \
 					mplexhi/Makefile mplexlo/Makefile \
+					codegen/Makefile \
 					plugins/defaulttheme/Makefile \
 	plugins/defaulttheme/data/Makefile \
 					plugins/microtheme/Makefile \
