@@ -1660,7 +1660,7 @@ void MWindow::resize_track(Track *track, int w, int h)
 InPointUndoItem::InPointUndoItem(
       double old_position, double new_position, EDL *edl)
 {
-   set_description("in point");
+   set_description(_("in point"));
    this->old_position = old_position;
    this->new_position = new_position;
    this->edl = edl;
@@ -1718,7 +1718,7 @@ void MWindow::set_inpoint(int is_mwindow)
 OutPointUndoItem::OutPointUndoItem(
       double old_position, double new_position, EDL *edl)
 {
-   set_description("out point");
+   set_description(_("out point"));
    this->old_position = old_position;
    this->new_position = new_position;
    this->edl = edl;
@@ -1858,7 +1858,7 @@ void MWindow::to_clip()
 LabelUndoItem::LabelUndoItem(
       double position1, double position2, EDL *edl)
 {
-   set_description("label");
+   set_description(_("label"));
    this->position1 = position1;
    this->position2 = position2;
    this->edl = edl;
