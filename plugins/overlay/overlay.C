@@ -435,7 +435,7 @@ printf("Overlay::process_buffer 1\n");
 		-1);
 
 	if(!overlayer)
-		overlayer = new OverlayFrame(get_project_smp());
+		overlayer = new OverlayFrame(get_project_smp() + 1);
 
 // Inclusive layer numbers
 	int input_layer1;
