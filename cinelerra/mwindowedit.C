@@ -943,8 +943,21 @@ void MWindow::mute_selection()
 void MWindow::overwrite(EDL *source)
 {
 	FileXML file;
-	source->copy(source->local_session->in_point, 
-		source->local_session->out_point, 
+	undo->update_undo_before(_("overwrite"), LOAD_EDITS | LOAD_TIMEBAR);
+
+	double src_start = source->local_session->in_point;
+	double overwrite_len = source->local_session->out_point - src_start;
+	double dst_start = edl->local_session->get_selectionstart();
+	double dst_len = edl->local_session->get_selectionend() - dst_start;
+
+	if (!EQUIV(dst_len, 0) && (dst_len < overwrite_len))
+	{
+// in/out points or selection present and shorter than overwrite range
+// shorten the copy range
+		overwrite_len = dst_len;
+	}
+	source->copy(src_start, 
+		src_start + overwrite_len, 
 		1,
 		0,
 		0,
@@ -952,29 +965,24 @@ void MWindow::overwrite(EDL *source)
 		plugindb,
 		"",
 		1);
-	undo->update_undo_before(_("overwrite"), LOAD_EDITS);
 
-	double start = edl->local_session->get_selectionstart();
-	double end = edl->local_session->get_selectionend();
-// Calculate overwrite length from length of source
-	if(EQUIV(end, start))
-	{
-		end = start + 
-			source->local_session->out_point - 
-			source->local_session->in_point;
-	}
-
-
-	paste(start, 
-		end, 
+// HACK around paste_edl get_start/endselection on its own
+// so we need to clear only when not using both io points
+// FIXME: need to write simple overwrite_edl to be used for overwrite function
+	if (edl->local_session->in_point < 0 || edl->local_session < 0)
+		edl->clear(dst_start, 
+			dst_start + overwrite_len, 
+			0, 
+			0);
+	paste(dst_start, 
+		dst_start + overwrite_len, 
 		&file,
 		0,
 		0);
 	edl->local_session->selectionstart = 
 		edl->local_session->selectionend =
-		start + 
-		source->local_session->out_point - 
-		source->local_session->in_point;
+		dst_start + overwrite_len;
+		
 	save_backup();
 	undo->update_undo_after();
 
