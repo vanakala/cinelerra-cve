@@ -1256,7 +1256,7 @@ int64_t Track::plugin_change_duration(int64_t input_position,
 			reverse);
 		if(new_duration < input_length) input_length = new_duration;
 	}
-	return (length);
+	return (input_length);
 }
 
 int64_t Track::edit_change_duration(int64_t input_position, 
