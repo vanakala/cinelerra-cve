@@ -1,4 +1,4 @@
-#include "assets.h"
+#include "asset.h"
 #include "edit.h"
 #include "file.h"
 #include "filepng.h"
@@ -161,11 +161,8 @@ static void read_function(png_structp png_ptr,
 {
 	VFrame *input = (VFrame*)png_get_io_ptr(png_ptr);
 
-//printf("read_function 1\n");
 	memcpy(data, input->get_data() + input->get_compressed_size(), length);
-//printf("read_function 1\n");
 	input->set_compressed_size(input->get_compressed_size() + length);
-//printf("read_function 2\n");
 }
 
 static void write_function(png_structp png_ptr, png_bytep data, png_uint_32 length)
@@ -176,7 +173,6 @@ static void write_function(png_structp png_ptr, png_bytep data, png_uint_32 leng
 		output->allocate_compressed_data((output->get_compressed_allocated() + length) * 2);
 	memcpy(output->get_data() + output->get_compressed_size(), data, length);
 	output->set_compressed_size(output->get_compressed_size() + length);
-//printf("write_function %d %d\n", output->get_compressed_size(), length);
 }
 
 static void flush_function(png_structp png_ptr)

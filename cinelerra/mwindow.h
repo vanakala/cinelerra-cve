@@ -1,10 +1,12 @@
 #ifndef MWINDOW_H
 #define MWINDOW_H
 
+#include "asset.inc"
 #include "assets.inc"
 #include "audiodevice.inc"
 #include "arraylist.h"
 #include "awindow.inc"
+#include "batchrender.inc"
 #include "brender.inc"
 #include "cache.inc"
 #include "channel.inc"
@@ -285,8 +287,6 @@ public:
 // Asset removal
 	void remove_assets_from_project(int push_undo = 0);
 	void remove_assets_from_disk();
-	void render_single();
-	void render_list();
 	void resize_track(Track *track, int w, int h);
 	void set_auto_keyframes(int value);
 // Update the editing mode
@@ -380,9 +380,9 @@ public:
 	int fix_timing(int64_t &samples_out, int64_t &frames_out, int64_t samples_in);     
 
 
-
+	BatchRenderThread *batch_render;
 	Render *render;
-	Render *renderlist;
+//	Render *renderlist;
 // Master edl
 	EDL *edl;
 // Main Window GUI

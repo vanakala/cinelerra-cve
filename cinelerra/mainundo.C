@@ -1,3 +1,4 @@
+#include "asset.h"
 #include "assets.h"
 #include "edl.h"
 #include "filexml.h"

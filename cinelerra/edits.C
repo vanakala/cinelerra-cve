@@ -1,4 +1,5 @@
 #include "aedit.h"
+#include "asset.h"
 #include "assets.h"
 #include "automation.h"
 #include "cache.h"
@@ -185,7 +186,7 @@ Edit* Edits::insert_new_edit(int64_t position)
 Edit* Edits::split_edit(int64_t position)
 {
 // Get edit containing position
-	Edit *edit = editof(position, PLAY_FORWARD);
+	Edit *edit = editof(position, PLAY_FORWARD, 0);
 
 // No edit found
 	if(!edit)
@@ -512,10 +513,11 @@ int64_t Edits::length()
 // 	return total; 
 // };
 
-Edit* Edits::editof(int64_t position, int direction)
+Edit* Edits::editof(int64_t position, int direction, int use_nudge)
 {
 	Edit *current = 0;
-	
+	if(use_nudge && track) position += track->nudge;
+
 	if(direction == PLAY_FORWARD)
 	{
 		for(current = last; current; current = PREVIOUS)
@@ -537,9 +539,10 @@ Edit* Edits::editof(int64_t position, int direction)
 	return 0;     // return 0 on failure
 }
 
-Edit* Edits::get_playable_edit(int64_t position)
+Edit* Edits::get_playable_edit(int64_t position, int use_nudge)
 {
 	Edit *current;
+	if(track && use_nudge) position += track->nudge;
 
 // Get the current edit
 	for(current = first; current; current = NEXT)
@@ -585,8 +588,8 @@ int Edits::copy(int64_t start, int64_t end, FileXML *file, char *output_path)
 
 void Edits::clear(int64_t start, int64_t end)
 {
-	Edit* edit1 = editof(start, PLAY_FORWARD);
-	Edit* edit2 = editof(end, PLAY_FORWARD);
+	Edit* edit1 = editof(start, PLAY_FORWARD, 0);
+	Edit* edit2 = editof(end, PLAY_FORWARD, 0);
 	Edit* current_edit;
 
 	if(end == start) return;        // nothing selected

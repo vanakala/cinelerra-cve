@@ -110,8 +110,10 @@ void LoadFileThread::run()
 			}
 		}
 
-		mwindow->defaults->update("DEFAULT_LOADPATH", window.get_path());
-		mwindow->defaults->update("LOAD_MODE", load_mode);
+		mwindow->defaults->update("DEFAULT_LOADPATH", 
+			window.get_submitted_path());
+		mwindow->defaults->update("LOAD_MODE", 
+			load_mode);
 	}
 
 // No file selected
@@ -186,6 +188,11 @@ int LoadFileWindow::resize_event(int w, int h)
 
 	return BC_FileBox::resize_event(w, h);
 }
+
+
+
+
+
 
 
 NewTimeline::NewTimeline(int x, int y, LoadFileWindow *window)
@@ -318,13 +325,9 @@ int LoadPrevious::handle_event()
 
 	path_list.append(out_path = new char[strlen(path) + 1]);
 	strcpy(out_path, path);
-//printf("LoadPrevious::LoadPrevious 1\n");
 	mwindow->load_filenames(&path_list, LOAD_REPLACE);
-//printf("LoadPrevious::LoadPrevious 2\n");
 	mwindow->gui->mainmenu->add_load(path_list.values[0]);
-//printf("LoadPrevious::LoadPrevious 3\n");
 	path_list.remove_all_objects();
-//printf("LoadPrevious::LoadPrevious 4\n");
 
 
 	mwindow->defaults->update("LOAD_MODE", load_mode);

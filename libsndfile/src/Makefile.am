@@ -3,12 +3,12 @@
 
 SUBDIRS = GSM610 G72x
 
-lib_LTLIBRARIES = libsndfile.la
-include_HEADERS = sndfile.h
+lib_LTLIBRARIES = libsndfilehv.la
 
 EXTRA_DIST = sndfile.h.in config.h.in Version_script.in
 
-noinst_HEADERS = common.h sfendian.h float_cast.h wav_w64.h au.h
+noinst_HEADERS = sndfile.h \
+	common.h sfendian.h float_cast.h wav_w64.h au.h
 
 COMMON = sndfile.c common.c file_io.c command.c pcm.c ulaw.c alaw.c float32.c \
 		double64.c ima_adpcm.c ms_adpcm.c gsm610.c dwvw.c sfendian.c vox_adpcm.c \
@@ -18,9 +18,9 @@ FILESPECIFIC = aiff.c au.c au_g72x.c ircam.c mat4.c mat5.c nist.c paf.c \
 				pvf.c raw.c svx.c voc.c w64.c wav.c wav_w64.c htk.c \
 				sd2.c rx2.c txw.c sds.c wve.c dwd.c ogg.c xi.c
 				
-libsndfile_la_SOURCES = $(COMMON) $(FILESPECIFIC) $(noinst_HEADERS) sndfile.h
-libsndfile_la_LDFLAGS = -version-info @SHARED_VERSION_INFO@ @SHLIB_VERSION_ARG@
-libsndfile_la_LIBADD  = GSM610/libgsm.la G72x/libg72x.la -lm
+libsndfilehv_la_SOURCES = $(COMMON) $(FILESPECIFIC) $(noinst_HEADERS)
+libsndfilehv_la_LDFLAGS = -version-info @SHARED_VERSION_INFO@ @SHLIB_VERSION_ARG@
+libsndfilehv_la_LIBADD  = GSM610/libgsm.la G72x/libg72x.la -lm
 
 # Disable autoheader. 
 AUTOHEADER=echo

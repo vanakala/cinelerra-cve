@@ -165,12 +165,12 @@ void quicktime_finalize_riff(quicktime_t *file, quicktime_riff_t *riff)
 	quicktime_finalize_movi(file, &riff->movi);
 	if(riff->have_hdrl)
 	{
-printf("quicktime_finalize_riff 1\n");
+//printf("quicktime_finalize_riff 1\n");
 		quicktime_finalize_hdrl(file, &riff->hdrl);
-printf("quicktime_finalize_riff 10\n");
+//printf("quicktime_finalize_riff 10\n");
 // Write original index for first RIFF
 		quicktime_write_idx1(file, &riff->idx1);
-printf("quicktime_finalize_riff 100\n");
+//printf("quicktime_finalize_riff 100\n");
 	}
 	quicktime_atom_write_footer(file, &riff->atom);
 }

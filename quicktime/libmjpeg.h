@@ -30,8 +30,8 @@ extern "C" {
 
 
 #include <stdio.h>
-#include "jpeglib.h"
-#include <png.h>       /* Need setjmp.h included by png.h */
+#include <jpeglib.h>
+#include <png.h>              /* Need setjmp.h as included by png.h */
 #include "pthread.h"
 
 #define MAXFIELDS 2
@@ -171,8 +171,14 @@ int mjpeg_compress(mjpeg_t *mjpeg,
 
 // Get buffer information after compressing
 unsigned char* mjpeg_output_buffer(mjpeg_t *mjpeg);
+// Called by decoder
 long mjpeg_output_field2(mjpeg_t *mjpeg);
+// Called before inserting markers by user
 long mjpeg_output_size(mjpeg_t *mjpeg);
+// Called before inserting markers by user
+long mjpeg_output_allocated(mjpeg_t *mjpeg);
+// Called after inserting markers by user to increase the size
+void mjpeg_set_output_size(mjpeg_t *mjpeg, long output_size);
 
 // Retrieve width and height from a buffer of JPEG data
 void mjpeg_video_size(unsigned char *data, long data_size, int *w, int *h);

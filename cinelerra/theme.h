@@ -2,6 +2,7 @@
 #define THEME_H
 
 #include "awindowgui.inc"
+#include "batchrender.inc"
 #include "bctheme.h"
 #include "cwindowgui.inc"
 #include "guicast.h"
@@ -46,10 +47,15 @@ public:
 	virtual void get_vwindow_sizes(VWindowGUI *gui);
 	virtual void get_cwindow_sizes(CWindowGUI *gui);
 	virtual void get_awindow_sizes(AWindowGUI *gui);
-	virtual void get_recordmonitor_sizes(int do_audio, 
-		int do_video);
+	virtual void get_rmonitor_sizes(int do_audio, 
+		int do_video,
+		int do_channel,
+		int do_interlace);
 	virtual void get_recordgui_sizes(RecordGUI *gui,
 		int w,
+		int h);
+	virtual void get_batchrender_sizes(BatchRenderGUI *gui,
+		int w, 
 		int h);
 	virtual void get_plugindialog_sizes();
 	virtual void get_menueffect_sizes(int use_list);
@@ -77,7 +83,7 @@ public:
 	virtual void draw_setformat_bg(SetFormatWindow *window);
 
 	virtual void build_menus();
-	unsigned char* get_image(char *title);
+//	unsigned char* get_image(char *title);
 	void flush_images();
 
 	ArrayList<BC_ListBoxItem*> aspect_ratios;
@@ -164,7 +170,6 @@ public:
 	int menueffect_tools_x, menueffect_tools_y;
 
 
-
 	int recordgui_batches_w, recordgui_batches_h;
 	int recordgui_batches_x, recordgui_batches_y;
 	int recordgui_batch_x, recordgui_batch_y, recordgui_batchcaption_x;
@@ -183,6 +188,9 @@ public:
 	int rmonitor_meter_x, rmonitor_meter_y;
 	int rmonitor_source_x, rmonitor_source_y;
 	int rmonitor_tx_x, rmonitor_tx_y;
+
+	int batchrender_x1, batchrender_x2, batchrender_x3;
+
 	int setformat_x1, setformat_x2, setformat_x3, setformat_x4, setformat_y1, setformat_w, setformat_h, setformat_margin;
 	int setformat_channels_x, setformat_channels_y, setformat_channels_w, setformat_channels_h;
 	int title_h;

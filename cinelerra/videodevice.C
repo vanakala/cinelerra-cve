@@ -492,6 +492,7 @@ int VideoDevice::open_output(VideoOutConfig *config,
 			output_base = new VDeviceX11(this, output);
 			break;
 
+		case PLAYBACK_DV1394:
 		case PLAYBACK_FIREWIRE:
 			output_base = new VDevice1394(this);
 			break;

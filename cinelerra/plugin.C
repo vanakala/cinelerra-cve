@@ -1,3 +1,4 @@
+#include "bcsignals.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
@@ -196,13 +197,15 @@ int Plugin::is_synthesis(RenderEngine *renderengine,
 			int real_module_number = shared_location.module;
 			int real_plugin_number = shared_location.plugin;
 			Track *track = edl->tracks->number(real_module_number);
+// Get shared plugin from master track
 			Plugin *plugin = track->get_current_plugin(position, 
 				real_plugin_number, 
 				direction, 
+				0,
 				0);
-			// if plugin at the master track is not present at this position
-			if (!plugin) return 0;
-			return plugin->is_synthesis(renderengine, position, direction);
+
+			if(plugin)
+				return plugin->is_synthesis(renderengine, position, direction);
 			break;
 		}
 
@@ -222,40 +225,35 @@ int Plugin::is_synthesis(RenderEngine *renderengine,
 
 int Plugin::identical(Plugin *that)
 {
-	char title1[BCTEXTLEN], title2[BCTEXTLEN];
+// Test type
+	if(plugin_type != that->plugin_type) return 0;
 
-	calculate_title(title1);
-	that->calculate_title(title2);
+// Test title or location
+	switch(plugin_type)
+	{
+		case PLUGIN_STANDALONE:
+			if(strcmp(title, that->title)) return 0;
+			break;
+		case PLUGIN_SHAREDPLUGIN:
+			if(shared_location.module != that->shared_location.module ||
+				shared_location.plugin != that->shared_location.plugin) return 0;
+			break;
+		case PLUGIN_SHAREDMODULE:
+			if(shared_location.module != that->shared_location.module) return 0;
+			break;
+	}
 
-// printf("Plugin::identical %s %s %d %d %s %s %d\n",
-// title1, 
-// title2,
-// plugin_type, 
-// that->plugin_type,
-// ((KeyFrame*)keyframes->default_auto)->data,
-// ((KeyFrame*)that->keyframes->default_auto)->data,
-// ((KeyFrame*)keyframes->default_auto)->identical(((KeyFrame*)that->keyframes->default_auto)));
-
-	return (this->plugin_type == that->plugin_type &&
-		this->on == that->on &&
-		!strcasecmp(title1, title2) &&
+// Test remaining fields
+	return (this->on == that->on &&
 		((KeyFrame*)keyframes->default_auto)->identical(
 			((KeyFrame*)that->keyframes->default_auto)));
 }
 
 int Plugin::identical_location(Plugin *that)
 {
-//printf("Plugin::identical_location\n");
 	if(!plugin_set || !plugin_set->track) return 0;
 	if(!that->plugin_set || !that->plugin_set->track) return 0;
 
-//printf("Plugin::identical_location %d %d %d %d %d %d\n",
-//plugin_set->track->number_of(),
-//that->plugin_set->track->number_of(),
-//plugin_set->get_number(),
-//that->plugin_set->get_number(),
-//startproject,
-//that->startproject);
 	if(plugin_set->track->number_of() == that->plugin_set->track->number_of() &&
 		plugin_set->get_number() == that->plugin_set->get_number() &&
 		startproject == that->startproject) return 1;
@@ -278,16 +276,15 @@ KeyFrame* Plugin::get_prev_keyframe(int64_t position)
 {
 	KeyFrame *current = 0;
 
-//printf("Plugin::get_prev_keyframe 1 %p %p\n", this, edl);
+TRACE("Plugin::get_prev_keyframe 1");
 // This doesn't work because edl->selectionstart doesn't change during
 // playback at the same rate as PluginClient::source_position.
 	if(position < 0)
 	{
-printf("Plugin::get_prev_keyframe position < 0\n");
 		position = track->to_units(edl->local_session->selectionstart, 0);
 	}
-//printf("Plugin::get_prev_keyframe 1 %d\n", position);
 
+TRACE("Plugin::get_prev_keyframe 1");
 	for(current = (KeyFrame*)keyframes->last;
 		current;
 		current = (KeyFrame*)PREVIOUS)
@@ -295,7 +292,7 @@ printf("Plugin::get_prev_keyframe position < 0\n");
 		if(current->position <= position) break;
 	}
 
-//printf("Plugin::get_prev_keyframe %p %p %ld\n", current, keyframes->first, keyframes->first->position);
+TRACE("Plugin::get_prev_keyframe 1");
 	if(!current && keyframes->first)
 	{
 		current = (KeyFrame*)keyframes->first;
@@ -305,9 +302,8 @@ printf("Plugin::get_prev_keyframe position < 0\n");
 	{
 		current = (KeyFrame*)keyframes->default_auto;
 	}
+UNTRACE
 
-//printf("Plugin::get_prev_keyframe 2 %ld %ld\n", 
-//	position, current->position);
 	return current;
 }
 
@@ -536,24 +532,8 @@ Track* Plugin::get_shared_track()
 	return edl->tracks->get_item_number(shared_location.module);
 }
 
-Plugin* Plugin::get_shared_plugin()
-{
-	Track *track = get_shared_track();
 
-	if(track && 
-		shared_location.plugin >= 0)
-	{
-		return track->get_current_plugin(startproject, 
-			shared_location.plugin, 
-			PLAY_FORWARD,
-			0);
-	}
-	else
-		return 0;
-}
-
-
-void Plugin::calculate_title(char *string)
+void Plugin::calculate_title(char *string, int use_nudge)
 {
 	if(plugin_type == PLUGIN_STANDALONE || plugin_type == PLUGIN_NONE)
 	{
@@ -562,7 +542,12 @@ void Plugin::calculate_title(char *string)
 	else
 	if(plugin_type == PLUGIN_SHAREDPLUGIN || plugin_type == PLUGIN_SHAREDMODULE)
 	{
-		shared_location.calculate_title(string, edl, startproject, 0, plugin_type);
+		shared_location.calculate_title(string, 
+			edl, 
+			startproject, 
+			0, 
+			plugin_type,
+			use_nudge);
 	}
 }
 

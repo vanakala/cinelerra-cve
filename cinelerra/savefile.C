@@ -145,8 +145,8 @@ void SaveAs::run()
 		window = new SaveFileWindow(mwindow, directory);
 		window->create_objects();
 		result = window->run_window();
-		mwindow->defaults->update("DIRECTORY", window->get_path());
-		strcpy(filename, window->get_path());
+		mwindow->defaults->update("DIRECTORY", window->get_submitted_path());
+		strcpy(filename, window->get_submitted_path());
 		delete window;
 
 // Extend the filename with .xml
@@ -159,15 +159,7 @@ void SaveAs::run()
 // ======================================= try to save it
 		if(filename[0] == 0) return;              // no filename given
 		if(result == 1) return;          // user cancelled
-		FILE *in;
-		if(in = fopen(filename, "rb"))
-		{
-			fclose(in);
-			ConfirmSaveWindow cwindow(mwindow, filename);
-			cwindow.create_objects();
-			int result2 = cwindow.run_window();
-			if(result2) result = 1;
-		}
+		result = ConfirmSave::test_file(mwindow, filename);
 	}while(result);        // file exists so repeat
 
 //printf("SaveAs::run 6 %s\n", filename);

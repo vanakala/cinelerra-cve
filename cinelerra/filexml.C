@@ -1,4 +1,5 @@
 #include <ctype.h>
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -199,20 +200,23 @@ int FileXML::write_to_file(char *filename)
 	{
 		fprintf(out, "<?xml version=\"1.0\"?>\n");
 // Position may have been rewound after storing so we use a strlen
-		if(!fwrite(string, strlen(string), 1, out))
+		if(!fwrite(string, strlen(string), 1, out) && strlen(string))
 		{
-			perror("FileXML::write_to_file");
+			fprintf(stderr, "FileXML::write_to_file 1 \"%s\": %s\n",
+				filename,
+				strerror(errno));
 			fclose(out);
 			return 1;
 		}
 		else
 		{
-//			fputc(0, out);
 		}
 	}
 	else
 	{
-		perror("FileXML::write_to_file");
+		fprintf(stderr, "FileXML::write_to_file 2 \"%s\": %s\n",
+			filename,
+			strerror(errno));
 		return 1;
 	}
 	fclose(out);
@@ -221,17 +225,18 @@ int FileXML::write_to_file(char *filename)
 
 int FileXML::write_to_file(FILE *file)
 {
-	strcpy(this->filename, "");
+	strcpy(filename, "");
 	fprintf(file, "<?xml version=\"1.0\"?>\n");
 // Position may have been rewound after storing
-	if(fwrite(string, strlen(string), 1, file))
+	if(fwrite(string, strlen(string), 1, file) || !strlen(string))
 	{
-//		fputc(0, file);
 		return 0;
 	}
 	else
 	{
-		perror("FileXML::write_to_file");
+		fprintf(stderr, "FileXML::write_to_file \"%s\": %s\n",
+			filename,
+			strerror(errno));
 		return 1;
 	}
 	return 0;
@@ -254,7 +259,10 @@ int FileXML::read_from_file(char *filename, int ignore_error)
 	}
 	else
 	{
-		if(!ignore_error) perror("FileXML::read_from_file");
+		if(!ignore_error) 
+			fprintf(stderr, "FileXML::read_from_file \"%s\" %s\n",
+				filename,
+				strerror(errno));
 		return 1;
 	}
 	fclose(in);

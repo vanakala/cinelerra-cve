@@ -1,3 +1,4 @@
+#include "asset.h"
 #include "assets.h"
 #include "cache.h"
 #include "datatype.h"
@@ -5,6 +6,7 @@
 #include "edlsession.h"
 #include "file.h"
 #include "filesystem.h"
+#include "mutex.h"
 #include "preferences.h"
 
 #include <string.h>
@@ -20,12 +22,18 @@ CICache::CICache(EDL *edl,
 	*this->edl = *edl;
 	this->plugindb = plugindb;
 	this->preferences = preferences;
+	check_in_lock = new Mutex("CICache::check_in_lock");
+	check_out_lock = new Mutex("CICache::check_out_lock");
+	total_lock = new Mutex("CICache::total_lock");
 }
 
 CICache::~CICache()
 {
 	while(last) delete last;
 	delete edl;
+	delete check_in_lock;
+	delete check_out_lock;
+	delete total_lock;
 }
 
 void CICache::set_edl(EDL *edl)
@@ -59,12 +67,10 @@ File* CICache::check_out(Asset *asset)
 {
 	File *result = 0;
 
-	check_out_lock.lock();
+	check_out_lock->lock("CICache::check_out");
 
-//printf("CICache::check_out 1 %s\n", asset->path);
 // search for it in the cache
 	CICacheItem *current, *new_item = 0;
-//printf("CICache::check_out 1 %s\n", asset->path);
 
 	for(current = first; current && !new_item; current = NEXT)
 	{
@@ -74,7 +80,6 @@ File* CICache::check_out(Asset *asset)
 			new_item = current;
 		}
 	}
-//printf("CICache::check_out 1 %s\n", asset->path);
 
 // didn't find it so create a new one
 	if(!new_item)
@@ -82,13 +87,12 @@ File* CICache::check_out(Asset *asset)
 		new_item = append(new CICacheItem(this, asset));
 	}
 
-//printf("CICache::check_out 1 %s\n", asset->path);
 	if(new_item)
 	{
 		if(new_item->file)
 		{
 // opened successfully
-			new_item->item_lock.lock();
+			new_item->item_lock->lock();
 			new_item->checked_out = 1;
 
 			result = new_item->file;
@@ -100,34 +104,32 @@ File* CICache::check_out(Asset *asset)
 			new_item = 0;
 		}
 	}
-//printf("CICache::check_out 1 %s\n", asset->path);
 
-	check_out_lock.unlock();
-//printf("CICache::check_out 100 %s\n", asset->path);
+	check_out_lock->unlock();
 
 	return result;
 }
 
 int CICache::check_in(Asset *asset)
 {
-	check_in_lock.lock();
+	check_in_lock->lock();
 
 	CICacheItem *current;
 	int result = 0;
-	total_lock.lock();
+	total_lock->lock("CICache::check_in");
 	for(current = first; current && !result; current = NEXT)
 	{
 // Pointers are different
 		if(!strcmp(current->asset->path, asset->path))
 		{
 			current->checked_out = 0;
-			current->item_lock.unlock();
+			current->item_lock->unlock();
 			result = 1;
 		}
 	}
-	total_lock.unlock();
+	total_lock->unlock();
 
-	check_in_lock.unlock();
+	check_in_lock->unlock();
 
 	age();
 //dump();
@@ -170,7 +172,7 @@ int CICache::delete_entry(Asset *asset)
 
 int CICache::age()
 {
-	check_out_lock.lock();
+	check_out_lock->lock("CICache::age");
 	CICacheItem *current;
 
 	for(current = first; current; current = NEXT)
@@ -191,7 +193,7 @@ int CICache::age()
 		}
 	}while(memory_usage > preferences->cache_size && !result);
 
-	check_out_lock.unlock();
+	check_out_lock->unlock();
 }
 
 int64_t CICache::get_memory_usage()
@@ -224,9 +226,9 @@ int CICache::delete_oldest()
 
 	if(highest_counter > 1 && oldest && !oldest->checked_out)
 	{
-		total_lock.lock();
+		total_lock->lock("CICache::delete_oldest");
 		delete oldest;
-		total_lock.unlock();
+		total_lock->unlock();
 		return 0;    // success
 	}
 	else
@@ -254,14 +256,14 @@ int CICache::dump()
 
 int CICache::lock_all()
 {
-	check_in_lock.lock();
-	check_out_lock.lock();
+	check_in_lock->lock("CICache::lock_all");
+	check_out_lock->lock("CICache::lock_all");
 }
 
 int CICache::unlock_all()
 {
-	check_in_lock.unlock();
-	check_out_lock.unlock();
+	check_in_lock->unlock();
+	check_out_lock->unlock();
 }
 
 
@@ -278,30 +280,24 @@ int CICache::unlock_all()
 CICacheItem::CICacheItem(CICache *cache, Asset *asset)
  : ListItem<CICacheItem>()
 {
-//printf("CICacheItem::CICacheItem 1\n");
 	int result = 0;
 	counter = 0;
 	this->asset = new Asset;
+	item_lock = new Mutex("CICacheItem::item_lock");
 	
 // Must copy Asset since this belongs to an EDL which won't exist forever.
-//printf("CICacheItem::CICacheItem 1\n");
 	*this->asset = *asset;
-//printf("CICacheItem::CICacheItem 1\n");
 	this->cache = cache;
 	checked_out = 0;
 
 	file = new File;
-//printf("CICacheItem::CICacheItem 1\n");
-	file->set_processors(cache->edl->session->smp ? 2: 1);
-//printf("CICacheItem::CICacheItem 1\n");
+	file->set_processors(cache->preferences->processors);
 	file->set_preload(cache->edl->session->playback_preload);
-//printf("CICacheItem::CICacheItem 1\n");
 
 
 // Copy decoding parameters from session to asset so file can see them.
 	this->asset->divx_use_deblocking = cache->edl->session->mpeg4_deblock;
 
-//printf("CICacheItem::CICacheItem 1\n");
 
 
 	if(result = file->open_file(cache->plugindb, this->asset, 1, 0, -1, -1))
@@ -317,12 +313,13 @@ CICacheItem::CICacheItem(CICache *cache, File *file)
 {
 	counter = 0;
 	this->asset = new Asset;
+	item_lock = new Mutex("CICacheItem::item_lock");
 	*this->asset = *file->asset;
 	this->file = file;
 	this->cache = cache;
 	checked_out = 0;
 
-	file->set_processors(cache->edl->session->smp ? 2: 1);
+	file->set_processors(cache->preferences->processors);
 	file->set_preload(cache->edl->session->playback_preload);
 }
 
@@ -330,4 +327,5 @@ CICacheItem::~CICacheItem()
 {
 	delete file;
 	delete asset;
+	delete item_lock;
 }

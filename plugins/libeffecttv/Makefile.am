@@ -1,5 +1,5 @@
-plugin_LTLIBRARIES = libeffecttv.la
-libeffecttv_la_LDFLAGS = -avoid-version -shared 
+noinst_LTLIBRARIES = libeffecttv.la
+libeffecttv_la_LDFLAGS = 
 libeffecttv_la_LIBADD = 
 libeffecttv_la_SOURCES = effecttv.C
 AM_CFLAGS = 

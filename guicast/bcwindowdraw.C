@@ -74,7 +74,11 @@ void BC_WindowBase::clear_box(int x, int y, int w, int h, BC_Pixmap *pixmap)
 		h);
 }
 
-void BC_WindowBase::draw_text(int x, int y, char *text, int length, BC_Pixmap *pixmap)
+void BC_WindowBase::draw_text(int x, 
+	int y, 
+	char *text, 
+	int length, 
+	BC_Pixmap *pixmap)
 {
 	if(length < 0) length = strlen(text);
 	int boldface = top_level->current_font & BOLDFACE;
@@ -168,8 +172,10 @@ void BC_WindowBase::draw_text(int x, int y, char *text, int length, BC_Pixmap *p
 
 		default:
 		{
+// Set drawing color for dropshadow
 			int color = get_color();
 			if(boldface) set_color(BLACK);
+
 
 			for(int k = (boldface ? 1 : 0); k >= 0; k--)
 			{
@@ -179,7 +185,55 @@ void BC_WindowBase::draw_text(int x, int y, char *text, int length, BC_Pixmap *p
 				{
 					if(text[i] == '\n' || text[i] == 0)
 					{
+#ifdef HAVE_XFT
+// printf("BC_WindowBase::draw_text 1 %d %p\n", 
+// get_resources()->use_xft, 
+// top_level->get_xft_struct(top_level->current_font));
+						if(get_resources()->use_xft && 
+							top_level->get_xft_struct(top_level->current_font))
+						{
+							XRenderColor color;
+							XftColor xft_color;
+							color.red = (top_level->current_color & 0xff0000) >> 16;
+							color.red |= color.red << 8;
+							color.green = (top_level->current_color & 0xff00) >> 8;
+							color.green |= color.green << 8;
+							color.blue = (top_level->current_color & 0xff);
+							color.blue |= color.blue << 8;
+							color.alpha = 0xffff;
+
+							XftColorAllocValue(top_level->display,
+			    				top_level->vis,
+			    				top_level->cmap,
+			    				&color,
+			    				&xft_color);
+
+// printf("BC_WindowBase::draw_text 1 %u   %p %p %p %d %d %s %d\n",
+// xft_color.pixel,
+// pixmap ? pixmap->opaque_xft_draw : this->xft_drawable,
+// &xft_color,
+// top_level->get_xft_struct(top_level->current_font),
+// x2 + k, 
+// y2 + k,
+// (FcChar8*)&text[j],
+// i - j);
+							XftDrawString8 (
+								(XftDraw*)(pixmap ? pixmap->opaque_xft_draw : this->xft_drawable),
+								&xft_color,
+								top_level->get_xft_struct(top_level->current_font),
+								x2 + k, 
+								y2 + k,
+								(FcChar8*)&text[j],
+								i - j);
+							XftColorFree(top_level->display,
+	    						top_level->vis,
+	    						top_level->cmap,
+	    						&xft_color);
+						}
+						else
+#endif
 						if(get_resources()->use_fontset && top_level->get_curr_fontset())
+						{
         					XmbDrawString(top_level->display, 
                 				pixmap ? pixmap->opaque_pixmap : this->pixmap, 
                 				top_level->get_curr_fontset(),
@@ -188,7 +242,10 @@ void BC_WindowBase::draw_text(int x, int y, char *text, int length, BC_Pixmap *p
                 				y2 + k, 
                 				&text[j], 
                 				i - j);
+						}
 						else
+						{
+//printf("BC_WindowBase::draw_text 3\n");
 							XDrawString(top_level->display, 
 								pixmap ? pixmap->opaque_pixmap : this->pixmap, 
 								top_level->gc, 
@@ -196,6 +253,10 @@ void BC_WindowBase::draw_text(int x, int y, char *text, int length, BC_Pixmap *p
 								y2 + k, 
 								&text[j], 
 								i - j);
+						}
+
+
+
 						j = i + 1;
 						y2 += get_text_height(MEDIUMFONT);
 					}

@@ -6,7 +6,7 @@
 /* Version used internally.  You need to query it with the C functions */
 #define QUICKTIME_MAJOR 2
 #define QUICKTIME_MINOR 0
-#define QUICKTIME_RELEASE 0
+#define QUICKTIME_RELEASE 1
 
 
 #define HEADER_LENGTH 8

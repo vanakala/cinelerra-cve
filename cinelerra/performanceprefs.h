@@ -2,7 +2,6 @@
 #define PERFORMANCEPREFS_H
 
 class CICacheSize;
-class PrefsSMP;
 
 #include "formattools.inc"
 #include "mwindow.inc"
@@ -27,7 +26,6 @@ public:
 	int hot_node;
 
 	CICacheSize *csize;
-	PrefsSMP *smp;
 
 	ArrayList<BC_ListBoxItem*> nodes[4];
 	PrefsRenderFarmEditNode *edit_node;
@@ -283,16 +281,6 @@ public:
 
 
 
-
-class PrefsSMP : public BC_TextBox
-{
-public:
-	PrefsSMP(int x, int y, PreferencesWindow *pwindow);
-	~PrefsSMP();
-
-	int handle_event();
-	PreferencesWindow *pwindow;
-};
 
 
 class CICacheSize : public BC_TextBox

@@ -1,4 +1,5 @@
 #include "assets.h"
+#include "batchrender.h"
 #include "cache.h"
 #include "cplayback.h"
 #include "cropvideo.h"
@@ -11,6 +12,7 @@
 #include "filesystem.h"
 #include "filexml.h"
 #include "keys.h"
+#include "language.h"
 #include "levelwindow.h"
 #include "loadfile.h"
 #include "localsession.h"
@@ -31,25 +33,17 @@
 #include "record.h"
 #include "render.h"
 #include "savefile.h"
-#include "setaudio.h"
 #include "setformat.h"
-#include "setvideo.h"
 #include "timebar.h"
 #include "trackcanvas.h"
 #include "tracks.h"
 #include "transition.h"
 #include "transportque.h"
-//#include "videowindowgui.h"
-//#include "videowindow.h"
 #include "viewmenu.h"
 #include "zoombar.h"
 
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 MainMenu::MainMenu(MWindow *mwindow, MWindowGUI *gui)
  : BC_MenuBar(0, 0, gui->get_w())
@@ -87,6 +81,7 @@ int MainMenu::create_objects()
 	filemenu->add_item(record = new RecordMenuItem(mwindow));
 
 	filemenu->add_item(render = new RenderItem(mwindow));
+	filemenu->add_item(new BatchRenderMenuItem(mwindow));
 	filemenu->add_item(new BC_MenuItem("-"));
 	filemenu->add_item(quit_program = new Quit(mwindow));
 	quit_program->create_objects(save);
@@ -723,7 +718,7 @@ Clear::Clear(MWindow *mwindow)
 
 int Clear::handle_event()
 {
-	mwindow->cwindow->gui->lock_window();
+	mwindow->cwindow->gui->lock_window("Clear::handle_event");
 	mwindow->clear_entry();
 	mwindow->cwindow->gui->unlock_window();
 	return 1;

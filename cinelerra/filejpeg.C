@@ -1,4 +1,4 @@
-#include "assets.h"
+#include "asset.h"
 #include "edit.h"
 #include "file.h"
 #include "filejpeg.h"
@@ -105,6 +105,7 @@ int FileJPEG::get_best_colormodel(Asset *asset, int driver)
 			return BC_RGB888;
 			break;
 		case PLAYBACK_X11_XV:
+		case PLAYBACK_DV1394:
 		case PLAYBACK_FIREWIRE:
 			return BC_YUV420P;
 			break;

@@ -5,13 +5,15 @@
 
 #ifdef HAVE_FIREWIRE
 
+#include "audiodevice.inc"
 #include "condition.inc"
 #include "libdv.h"
+#include "libdv/dv1394.h"
 #include "mutex.inc"
 #include "thread.h"
 #include "vframe.inc"
 #include "video1394.h"
-#include <libdv/dv1394.h>
+#include "videodevice.inc"
 
 // Common 1394 output for audio and video
 
@@ -20,9 +22,11 @@
 class Device1394Output : public Thread
 {
 public:
-	Device1394Output();
+	Device1394Output(VideoDevice *vdevice);
+	Device1394Output(AudioDevice *adevice);
 	~Device1394Output();
 
+	void reset();
 	int open(char *path,
 		int port,
 		int channel,
@@ -30,8 +34,7 @@ public:
 		int channels, 
 		int bits, 
 		int samplerate,
-		int syt,
-		int use_dv1394);
+		int syt);
 	void start();
 	void run();
 
@@ -48,6 +51,9 @@ public:
 	void interrupt();
 	void flush();
 
+// This object is shared between audio and video.  Return what the driver is
+// based on whether vdevice or adevice exists.
+	int get_dv1394();
 
 	void encrypt(unsigned char *output, 
 		unsigned char *data, 
@@ -81,11 +87,11 @@ public:
 	Condition *video_lock;
 	Condition *audio_lock;
 	int done;
+ 	struct dv1394_status status;
 
 
 // Output
 	int output_fd;
-	struct dv1394_status status;
 	struct video1394_mmap output_mmap;
 	struct video1394_queue_variable output_queue;
 //	raw1394handle_t avc_handle;
@@ -96,7 +102,6 @@ public:
 	unsigned int cip_n, cip_d;
     unsigned int cip_counter;
 	unsigned char f50_60;
-	Device1394Output *output_thread;
 	unsigned char *output_buffer;
 	int output_number;
     unsigned int packet_sizes[321];
@@ -110,7 +115,9 @@ public:
 	long audio_position;
 	int interrupted;
 	int have_video;
-	int use_dv1394;
+	int is_pal;
+	VideoDevice *vdevice;
+	AudioDevice *adevice;
 };
 
 

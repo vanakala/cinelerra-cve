@@ -1,4 +1,4 @@
-#include "assets.h"
+#include "asset.h"
 #include "audioconfig.h"
 #include "audiodevice.inc"
 #include "bcmeter.inc"
@@ -41,15 +41,23 @@ Preferences::Preferences()
 	use_thumbnails = 1;
 	theme[0] = 0;
 	use_renderfarm = 0;
+	force_uniprocessor = 0;
 	renderfarm_port = DEAMON_PORT;
 	render_preroll = 0.5;
 	brender_preroll = 0;
 	renderfarm_mountpoint[0] = 0;
 	renderfarm_vfs = 1;
 	renderfarm_job_count = 1;
+	processors = calculate_processors();
+
+// Default brender asset
 	brender_asset = new Asset;
 	brender_asset->audio_data = 0;
 	brender_asset->video_data = 1;
+	sprintf(brender_asset->path, "/tmp/brender");
+	brender_asset->format = FILE_JPEG_LIST;
+	brender_asset->jpeg_quality = 80;
+
 	use_brender = 0;
 	brender_fragment = 1;
 	local_rate = 0.0;
@@ -107,10 +115,11 @@ Preferences& Preferences::operator=(Preferences &that)
 	index_count = that.index_count;
 	use_thumbnails = that.use_thumbnails;
 	strcpy(global_plugin_dir, that.global_plugin_dir);
-	strcpy(local_plugin_dir, that.local_plugin_dir);
 	strcpy(theme, that.theme);
 
 	cache_size = that.cache_size;
+	force_uniprocessor = that.force_uniprocessor;
+	processors = calculate_processors();
 	renderfarm_nodes.remove_all_objects();
 	renderfarm_ports.remove_all();
 	renderfarm_enabled.remove_all();
@@ -150,12 +159,6 @@ Preferences& Preferences::operator=(Preferences &that)
 		fs.add_end_slash(global_plugin_dir);
 	}
 	
-	if(strlen(local_plugin_dir))
-	{
-		fs.complete_path(local_plugin_dir);
-		fs.add_end_slash(local_plugin_dir);
-	}
-
 	renderfarm_job_count = MAX(renderfarm_job_count, 1);
 	CLAMP(cache_size, 1, 100);
 
@@ -171,17 +174,29 @@ int Preferences::load_defaults(Defaults *defaults)
 	index_count = defaults->get("INDEX_COUNT", index_count);
 	use_thumbnails = defaults->get("USE_THUMBNAILS", use_thumbnails);
 
-	sprintf(global_plugin_dir, PLUGINDIR);
-	sprintf(local_plugin_dir, "");
-	strcpy(theme, DEFAULT_THEME);
+	sprintf(global_plugin_dir, "/usr/lib/cinelerra");
 	defaults->get("GLOBAL_PLUGIN_DIR", global_plugin_dir);
-	defaults->get("LOCAL_PLUGIN_DIR", local_plugin_dir);
+	if(getenv("GLOBAL_PLUGIN_DIR"))
+	{
+		strcpy(global_plugin_dir, getenv("GLOBAL_PLUGIN_DIR"));
+	}
+
+	strcpy(theme, DEFAULT_THEME);
 	defaults->get("THEME", theme);
 
-	sprintf(brender_asset->path, "/tmp/brender");
-	brender_asset->format = FILE_JPEG_LIST;
-	brender_asset->jpeg_quality = 80;
-	brender_asset->load_defaults(defaults, "BRENDER_", 1);
+
+	brender_asset->load_defaults(defaults, 
+		"BRENDER_", 
+		1,
+		1,
+		1,
+		0,
+		0);
+
+
+
+	force_uniprocessor = defaults->get("FORCE_UNIPROCESSOR", 0);
+	processors = calculate_processors();
 	use_brender = defaults->get("USE_BRENDER", use_brender);
 	brender_fragment = defaults->get("BRENDER_FRAGMENT", brender_fragment);
 	cache_size = defaults->get("CACHE_SIZE", cache_size);
@@ -234,12 +249,18 @@ int Preferences::save_defaults(Defaults *defaults)
 	defaults->update("INDEX_COUNT", index_count);
 	defaults->update("USE_THUMBNAILS", use_thumbnails);
 	defaults->update("GLOBAL_PLUGIN_DIR", global_plugin_dir);
-	defaults->update("LOCAL_PLUGIN_DIR", local_plugin_dir);
 	defaults->update("THEME", theme);
 
 
 
-	brender_asset->save_defaults(defaults, "BRENDER_");
+	defaults->update("FORCE_UNIPROCESSOR", force_uniprocessor);
+	brender_asset->save_defaults(defaults, 
+		"BRENDER_",
+		1,
+		1,
+		1,
+		0,
+		0);
 	defaults->update("USE_BRENDER", use_brender);
 	defaults->update("BRENDER_FRAGMENT", brender_fragment);
 	defaults->update("USE_RENDERFARM", use_renderfarm);
@@ -468,6 +489,46 @@ int Preferences::get_node_port(int number)
 	return -1;
 }
 
+
+int Preferences::calculate_processors()
+{
+/* Get processor count */
+	int result = 1;
+	FILE *proc;
+
+	if(force_uniprocessor) return 1;
+
+	if(proc = fopen("/proc/cpuinfo", "r"))
+	{
+		char string[1024];
+		while(!feof(proc))
+		{
+			fgets(string, 1024, proc);
+			if(!strncasecmp(string, "processor", 9))
+			{
+				char *ptr = strchr(string, ':');
+				if(ptr)
+				{
+					ptr++;
+					result = atol(ptr) + 1;
+				}
+			}
+			else
+			if(!strncasecmp(string, "cpus detected", 13))
+			{
+				char *ptr = strchr(string, ':');
+				if(ptr)
+				{
+					ptr++;
+					result = atol(ptr);
+				}
+			}
+		}
+		fclose(proc);
+	}
+
+	return result;
+}
 
 
 

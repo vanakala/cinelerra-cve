@@ -6,13 +6,46 @@ Drag assets onto timeline.
 Pan photo.
 Zoom.
 Render all combinations of audio and video.
-Pan automation.
+Pan automation for audio.
 Frame reverse from end of timeline.
 Drag control points in camera and projector automation.
 Non realtime and realtime effects through the render effect menu.
 Copy and paste between Cinelerra sessions.
 Cut and paste multiple tracks.
+Paste assets while building indexes.
 Tweek plugin while playing back.
 Show and hide plugin while playing back.
 MJPEG recording with kernel driver
 Number of open file descriptors matches reality.
+Nudge audio and video.
+
+
+Background render:
+play with effect
+detach effect and play
+turn effect off and play
+quit during playback
+
+
+Batch render:
+Batch render with and without labels.
+Batch render with renderfarm and labels.
+Stop batch render.
+Cancel batch render.
+
+Batch record:
+record several batches 1 minute apart.
+
+Load all tests in tests directory in succession.
+
+
+XMovie:
+Load DVD
+
+
+
+
+
+
+
+

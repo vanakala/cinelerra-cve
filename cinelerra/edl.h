@@ -1,9 +1,11 @@
 #ifndef EDL_H
 #define EDL_H
 
+#include "asset.inc"
 #include "assets.inc"
 #include "autoconf.inc"
 #include "defaults.inc"
+#include "edl.inc"
 #include "edlsession.inc"
 #include "filexml.inc"
 #include "labels.inc"

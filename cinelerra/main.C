@@ -2,6 +2,7 @@
 #include "builddate.h"
 #include "filexml.h"
 #include "filesystem.h"
+#include "language.h"
 #include "loadfile.inc"
 #include "mainmenu.h"
 #include "mwindow.h"
@@ -14,15 +15,13 @@
 
 #define PACKAGE "cinelerra"
 #define LOCALEDIR "/usr/share/locale"
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
+
 
 enum
 {
 	DO_GUI,
 	DO_DEAMON,
+	DO_DEAMON_FG,
 	DO_BRENDER,
 	DO_USAGE
 };
@@ -39,6 +38,7 @@ int main(int argc, char *argv[])
 	int operation = DO_GUI;
 	int deamon_port = DEAMON_PORT;
 	char deamon_path[BCTEXTLEN];
+	int nice_value = 20;
 
 	setlocale (LC_ALL, "");
 	bindtextdomain (PACKAGE, LOCALEDIR);
@@ -46,18 +46,22 @@ int main(int argc, char *argv[])
 	for(int i = 1; i < argc; i++)
 	{
 		if(!strcmp(argv[i], "-h"))
-		{                     // help
+		{
 			operation = DO_USAGE;
 		}
 		else
-		if(!strcmp(argv[i], "-d"))
+		if(!strcmp(argv[i], "-d") || !strcmp(argv[i], "-f"))
 		{
-			operation = DO_DEAMON;
+			if(!strcmp(argv[i], "-d"))
+				operation = DO_DEAMON;
+			else
+				operation = DO_DEAMON_FG;
 
 			if(argc > i + 1)
 			{
 				if(atol(argv[i + 1]) > 0)
 					deamon_port = atol(argv[i + 1]);
+				i++;
 			}
 		}
 		else
@@ -65,6 +69,15 @@ int main(int argc, char *argv[])
 		{
 			operation = DO_BRENDER;
 			strcpy(deamon_path, argv[i + 1]);
+		}
+		else
+		if(!strcmp(argv[i], "-n"))
+		{
+			if(argc > i + 1)
+			{
+				nice_value = atol(argv[i + 1]);
+				i++;
+			}
 		}
 		else
 		{
@@ -80,7 +93,10 @@ int main(int argc, char *argv[])
 
 
 
-	if(operation == DO_GUI || operation == DO_DEAMON || operation == DO_USAGE)
+	if(operation == DO_GUI || 
+		operation == DO_DEAMON || 
+		operation == DO_DEAMON_FG || 
+		operation == DO_USAGE)
 	fprintf(stderr, 
 		PROGRAM_NAME " " 
 		VERSION " " 
@@ -99,19 +115,29 @@ PROGRAM_NAME " is free software, covered by the GNU General Public License,\n"
 	{
 		case DO_USAGE:
 			printf(_("\nUsage:\n"));
-			printf(_("%s [-d] [port]\n"), argv[0]);
-			printf(_("\n-d = Run in the background as renderfarm client.\n"));
+			printf(_("%s [-df] [-n nice] [port]\n\n"), argv[0]);
+			printf(_("-d = Run in the background as renderfarm client.\n"));
+			printf(_("-f = Run in the foreground as renderfarm client.\n"));
+			printf(_("-n = Nice value if running as renderfarm client.\n"));
 			printf(_("port = Port for client to listen on. (400)\n\n\n"));
 			exit(0);
 			break;
 
 		case DO_DEAMON:
+		case DO_DEAMON_FG:
 		{
-			int pid = fork();
-			
-			if(pid) exit(0);
+			if(operation == DO_DEAMON)
+			{
+				int pid = fork();
 
-			RenderFarmClient client(deamon_port, 0);
+				if(pid)
+				{
+// Redhat 9 requires _exit instead of exit here.
+					_exit(0);
+				}
+			}
+
+			RenderFarmClient client(deamon_port, 0, nice_value);
 			client.main_loop();
 			break;
 		}
@@ -119,7 +145,7 @@ PROGRAM_NAME " is free software, covered by the GNU General Public License,\n"
 // Same thing without detachment
 		case DO_BRENDER:
 		{
-			RenderFarmClient client(0, deamon_path);
+			RenderFarmClient client(0, deamon_path, 20);
 			client.main_loop();
 			break;
 		}

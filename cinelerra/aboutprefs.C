@@ -1,15 +1,12 @@
 #include "aboutprefs.h"
 #include "builddate.h"
+#include "language.h"
 #include "libmpeg3.h"
 #include "mwindow.h"
 #include "quicktime.h"
 #include "theme.h"
 #include "vframe.h"
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 AboutPrefs::AboutPrefs(MWindow *mwindow, PreferencesWindow *pwindow)
@@ -36,20 +33,8 @@ int AboutPrefs::create_objects()
 	draw_pixmap(temp_pixmap, 
 		x, 
 		y);
-// 	draw_vframe(mwindow->theme->about_bg,
-// 		x, 
-// 		y);
-
-
-// 	BC_Pixmap *temp_pixmap2 = new BC_Pixmap(this, 
-// 		mwindow->theme->about_microsoft,
-// 		PIXMAP_ALPHA);
-// 	draw_pixmap(temp_pixmap2, 
-// 		x, 
-// 		y + mwindow->theme->about_bg->get_h());
 
 	delete temp_pixmap;
-//	delete temp_pixmap2;
 
 
 	x += mwindow->theme->about_bg->get_w() + 10;

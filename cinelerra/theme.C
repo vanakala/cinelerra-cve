@@ -4,6 +4,7 @@
 #include "cwindowgui.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "language.h"
 #include "levelwindowgui.h"
 #include "loadmode.h"
 #include "localsession.h"
@@ -30,10 +31,6 @@
 
 #include <errno.h>
 #include <string.h>
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 
@@ -80,7 +77,6 @@ Theme::Theme()
 // Need to delete everything here
 Theme::~Theme()
 {
-//printf("Theme::~Theme 1\n");
 	flush_images();	
 
 	aspect_ratios.remove_all_objects();
@@ -88,146 +84,6 @@ Theme::~Theme()
 	frame_sizes.remove_all_objects();
 	sample_rates.remove_all_objects();
 	zoom_values.remove_all_objects();
-
-
-// 
-// 	delete about_bg;
-// 	delete about_microsoft;
-// 	delete [] appendasset_data;
-// 	delete [] append_data;
-// 	delete [] arrow_data;
-// 	delete [] asset_append_data;
-// 	delete [] asset_disk_data;
-// 	delete [] asset_index_data;
-// 	delete [] asset_info_data;
-// 	delete [] asset_project_data;
-// 	delete [] autokeyframe_data;
-// 	delete awindow_icon;
-// 	delete [] bottom_justify;
-// 	delete [] browse_data;
-// 	delete [] calibrate_data;
-// 	delete [] camera_data;
-// 	delete camerakeyframe_data;
-// 	delete [] cancel_data;
-// 	delete [] center_justify;
-// 	delete [] chain_data;
-// 	delete channel_bg_data;
-// 	delete [] channel_data;
-// 	delete channel_position_data;
-// 	delete clip_icon;
-// 	delete [] copy_data;
-// 	delete [] crop_data;
-// 	delete [] cut_data;
-// 	delete cwindow_icon;
-// 	delete [] delete_all_indexes_data;
-// 	delete [] deletebin_data;
-// 	delete [] delete_data;
-// 	delete [] deletedisk_data;
-// 	delete [] deleteproject_data;
-// 	delete [] detach_data;
-// 	delete [] dntriangle_data;
-// 	delete [] drawpatch_data;
-// 	delete [] duplex_data;
-// 	delete [] edit_data;
-// 	delete [] edithandlein_data;
-// 	delete [] edithandleout_data;
-// 	delete [] end_data;
-// 	delete [] expandpatch_data;
-// 	delete [] extract_data;
-// 	delete [] fastfwd_data;
-// 	delete [] fastrev_data;
-// 	delete [] fit_data;
-// 	delete [] forward_data;
-// 	delete [] framefwd_data;
-// 	delete [] framerev_data;
-// 	delete [] gangpatch_data;
-// 	delete [] ibeam_data;
-// 	delete [] in_data;
-// 	delete [] indelete_data;
-// 	delete [] infoasset_data;
-// 	delete [] in_point;
-// 	delete [] insert_data;
-// 	delete keyframe_data;
-// 	delete [] labelbutton_data;
-// 	delete [] label_toggle;
-// 	delete [] left_justify;
-// 	delete [] lift_data;
-// 	delete [] magnify_button_data;
-// 	delete [] magnify_data;
-// 	delete [] mask_data;
-// 	delete maskkeyframe_data;
-// 	delete [] middle_justify;
-// 	delete modekeyframe_data;
-// 	delete [] movedn_data;
-// 	delete [] moveup_data;
-// 	delete [] mutepatch_data;
-// 	delete mwindow_icon;
-// 	delete [] newbin_data;
-// 	delete [] nextlabel_data;
-// 	delete [] no_data;
-// 	delete [] options_data;
-// 	delete [] out_data;
-// 	delete [] outdelete_data;
-// 	delete [] out_point;
-// 	delete [] over_button;
-// 	delete [] overwrite_data;
-// 	delete pankeyframe_data;
-// 	delete [] pasteasset_data;
-// 	delete [] paste_data;
-// 	delete patchbay_bg;
-// 	delete [] pause_data;
-// 	delete [] paused_data;
-// 	delete [] picture_data;
-// 	delete [] playpatch_data;
-// 	delete plugin_bg_data;
-// 	delete [] presentation_data;
-// 	delete [] presentation_loop;
-// 	delete [] presentation_stop;
-// 	delete [] prevlabel_data;
-// 	delete [] proj_data;
-// 	delete projectorkeyframe_data;
-// 	delete [] protect_data;
-// 	delete [] rec_data;
-// 	delete [] recframe_data;
-// 	delete record_icon;
-// 	delete [] recordpatch_data;
-// 	delete [] redo_data;
-// 	delete [] redrawindex_data;
-// 	delete [] renamebin_data;
-// 	delete [] reset_data;
-// 	delete resource1024_bg_data;
-// 	delete resource128_bg_data;
-// 	delete resource256_bg_data;
-// 	delete resource32_bg_data;
-// 	delete resource512_bg_data;
-// 	delete resource64_bg_data;
-// 	delete [] reverse_data;
-// 	delete [] rewind_data;
-// 	delete [] right_justify;
-// 	delete [] select_data;
-// 	delete [] show_meters;
-// 	delete [] splice_data;
-// 	delete [] start_over_data;
-// 	delete [] statusbar_cancel_data;
-// 	delete [] stop_data;
-// 	delete [] stoprec_data;
-// 	delete timebar_bg_data;
-// 	delete timebar_brender_data;
-// 	delete timebar_view_data;
-// 	delete title_bg_data;
-// 	delete [] titlesafe_data;
-// 	delete [] toclip_data;
-// 	delete [] tool_data;
-// 	delete [] top_justify;
-// 	delete [] transition_data;
-// 	delete [] undo_data;
-// 	delete [] uptriangle_data;
-// 	delete [] viewasset_data;
-// 	delete vtimebar_bg_data;
-// 	delete vwindow_icon;
-// 	delete [] wrench_data;
-// 	delete [] yes_data;
-//printf("Theme::~Theme 2\n");
 }
 
 void Theme::flush_images()
@@ -241,76 +97,85 @@ void Theme::flush_images()
 
 void Theme::initialize()
 {
+// Force to use executable for images
+	unset_path();
+
+	new_image("mode_add", "mode_add.png");
+	new_image("mode_divide", "mode_divide.png");
+	new_image("mode_multiply", "mode_multiply.png");
+	new_image("mode_normal", "mode_normal.png");
+	new_image("mode_replace", "mode_replace.png");
+	new_image("mode_subtract", "mode_subtract.png");
 }
 
 
-unsigned char* Theme::get_image(char *title)
-{
-// Read contents
-	if(!data_buffer)
-	{
-		FILE *fd = fopen(path, "r");
-
-		if(!fd)
-		{
-			fprintf(stderr, _("Theme::get_image: %s when opening %s\n"), strerror(errno), path);
-		}
-		int data_offset, contents_offset;
-		int total_bytes;
-		int data_size;
-		int contents_size;
-
-		fseek(fd, -8, SEEK_END);
-		total_bytes = ftell(fd);
-		fread(&data_offset, 1, 4, fd);
-		fread(&contents_offset, 1, 4, fd);
-
-
-		fseek(fd, data_offset, SEEK_SET);
-		data_size = contents_offset - data_offset;
-		data_buffer = new char[data_size];
-		fread(data_buffer, 1, data_size, fd);
-
-		fseek(fd, contents_offset, SEEK_SET);
-		contents_size = total_bytes - contents_offset;
-		contents_buffer = new char[contents_size];
-		fread(contents_buffer, 1, contents_size, fd);
-
-		char *start_of_title = contents_buffer;
-		for(int i = 0; i < contents_size; )
-		{
-			if(contents_buffer[i] == 0)
-			{
-				contents.append(start_of_title);
-				i++;
-				offsets.append(*(int*)(contents_buffer + i));
-				i += 4;
-				start_of_title = contents_buffer + i;
-			}
-			else
-				i++;
-		}
-		fclose(fd);
-	}
-
-	if(last_image && !strcasecmp(last_image, title))
-	{
-		return (unsigned char*)(data_buffer + last_offset);
-	}
-	else
-	for(int i = 0; i < contents.total; i++)
-	{
-		if(!strcasecmp(contents.values[i], title))
-		{
-			last_offset = offsets.values[i];
-			last_image = contents.values[i];
-			return (unsigned char*)(data_buffer + offsets.values[i]);
-		}
-	}
-
-	fprintf(stderr, _("Theme::get_image: %s not found.\n"), title);
-	return 0;
-}
+// unsigned char* Theme::get_image(char *title)
+// {
+// // Read contents
+// 	if(!data_buffer)
+// 	{
+// 		FILE *fd = fopen(path, "r");
+// 
+// 		if(!fd)
+// 		{
+// 			fprintf(stderr, "Theme::get_image: %s when opening %s\n", strerror(errno), path);
+// 		}
+// 		int data_offset, contents_offset;
+// 		int total_bytes;
+// 		int data_size;
+// 		int contents_size;
+// 
+// 		fseek(fd, -8, SEEK_END);
+// 		total_bytes = ftell(fd);
+// 		fread(&data_offset, 1, 4, fd);
+// 		fread(&contents_offset, 1, 4, fd);
+// 
+// 
+// 		fseek(fd, data_offset, SEEK_SET);
+// 		data_size = contents_offset - data_offset;
+// 		data_buffer = new char[data_size];
+// 		fread(data_buffer, 1, data_size, fd);
+// 
+// 		fseek(fd, contents_offset, SEEK_SET);
+// 		contents_size = total_bytes - contents_offset;
+// 		contents_buffer = new char[contents_size];
+// 		fread(contents_buffer, 1, contents_size, fd);
+// 
+// 		char *start_of_title = contents_buffer;
+// 		for(int i = 0; i < contents_size; )
+// 		{
+// 			if(contents_buffer[i] == 0)
+// 			{
+// 				contents.append(start_of_title);
+// 				i++;
+// 				offsets.append(*(int*)(contents_buffer + i));
+// 				i += 4;
+// 				start_of_title = contents_buffer + i;
+// 			}
+// 			else
+// 				i++;
+// 		}
+// 		fclose(fd);
+// 	}
+// 
+// 	if(last_image && !strcasecmp(last_image, title))
+// 	{
+// 		return (unsigned char*)(data_buffer + last_offset);
+// 	}
+// 	else
+// 	for(int i = 0; i < contents.total; i++)
+// 	{
+// 		if(!strcasecmp(contents.values[i], title))
+// 		{
+// 			last_offset = offsets.values[i];
+// 			last_image = contents.values[i];
+// 			return (unsigned char*)(data_buffer + offsets.values[i]);
+// 		}
+// 	}
+// 
+// 	fprintf(stderr, "Theme::get_image: %s not found.\n", title);
+// 	return 0;
+// }
 
 
 void Theme::build_menus()
@@ -720,17 +585,35 @@ void Theme::get_awindow_sizes(AWindowGUI *gui)
 	alist_h = afolders_h;
 }
 
-void Theme::get_recordmonitor_sizes(int do_audio, 
-	int do_video)
+void Theme::get_rmonitor_sizes(int do_audio, 
+	int do_video,
+	int do_channel,
+	int do_interlace)
 {
-	rmonitor_tx_x = 10;
-	rmonitor_tx_y = 3;
-	rmonitor_source_x = 150;
-	rmonitor_source_y = 10;
-	rmonitor_interlace_x = 455;
-	rmonitor_interlace_y = 5;
-	rmonitor_channel_x = 0;
-	rmonitor_channel_y = 0;
+	int x = 10;
+	int y = 3;
+
+	rmonitor_canvas_y = 0;
+//	rmonitor_tx_x = x;
+//	rmonitor_tx_y = y;
+//	x += 210;
+
+	if(do_channel)
+	{
+		y = 5;
+		rmonitor_channel_x = x;
+		rmonitor_channel_y = 5;
+		x += 235;
+		rmonitor_canvas_y = 35;
+	}
+
+	if(do_interlace)
+	{
+		y = 4;
+		rmonitor_interlace_x = x;
+		rmonitor_interlace_y = y;
+	}
+
 
 	if(do_audio)
 	{
@@ -743,16 +626,10 @@ void Theme::get_recordmonitor_sizes(int do_audio,
 		rmonitor_meter_x = mwindow->session->rmonitor_w;
 	}
 
-// 	if(do_video)
-// 	{
-		rmonitor_canvas_x = 0;
-		rmonitor_canvas_y = 35;
-		rmonitor_canvas_w = rmonitor_meter_x - rmonitor_canvas_x;
-		if(do_audio) rmonitor_canvas_w -= 10;
-		rmonitor_canvas_h = mwindow->session->rmonitor_h - rmonitor_canvas_y;
-		rmonitor_channel_x = 220;
-		rmonitor_channel_y = 5;
-//	}
+	rmonitor_canvas_x = 0;
+	rmonitor_canvas_w = rmonitor_meter_x - rmonitor_canvas_x;
+	if(do_audio) rmonitor_canvas_w -= 10;
+	rmonitor_canvas_h = mwindow->session->rmonitor_h - rmonitor_canvas_y;
 }
 
 void Theme::get_recordgui_sizes(RecordGUI *gui, int w, int h)
@@ -782,6 +659,15 @@ void Theme::get_recordgui_sizes(RecordGUI *gui, int w, int h)
 
 	recordgui_controls_x = 10;
 	recordgui_controls_y = h - 40;
+}
+
+void Theme::get_batchrender_sizes(BatchRenderGUI *gui,
+	int w, 
+	int h)
+{
+	batchrender_x1 = 5;
+	batchrender_x2 = 300;
+	batchrender_x3 = 400;
 }
 
 void Theme::get_plugindialog_sizes()

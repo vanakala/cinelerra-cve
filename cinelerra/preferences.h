@@ -1,7 +1,7 @@
 #ifndef PREFERENCES_H
 #define PREFERENCES_H
 
-#include "assets.inc"
+#include "asset.inc"
 #include "audioconfig.inc"
 #include "defaults.inc"
 #include "guicast.h"
@@ -39,6 +39,7 @@ public:
 // Set frame rate for a node.  Node -1 is the master node.
 // The node number is relative to the enabled nodes.
 	void set_rate(float rate, int node);
+	int calculate_processors();
 
 // ================================= Performance ================================
 // directory to look in for indexes
@@ -52,6 +53,10 @@ public:
 	char theme[BCTEXTLEN];
 	double render_preroll;
 	int brender_preroll;
+	int force_uniprocessor;
+// number of cpus to use - 1
+	int processors;
+
 
 	Asset *brender_asset;
 	int use_brender;

@@ -1,4 +1,4 @@
-#include "assets.h"
+#include "asset.h"
 #include "byteorder.h"
 #include "edit.h"
 #include "errorbox.h"
@@ -16,16 +16,13 @@
 #include "filetiff.h"
 #include "filevorbis.h"
 #include "formatwindow.h"
+#include "language.h"
 #include "pluginserver.h"
 #include "resample.h"
 #include "stringfile.h"
 #include "vframe.h"
 
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
  FrameCache::FrameCache(int cache_size) 
  {
@@ -255,7 +252,7 @@ File::File()
 	cpus = 1;
 	asset = new Asset;
 	frames_cache = new FrameCache();
-  	reset_parameters();
+	reset_parameters();
 }
 
 File::~File()
@@ -263,7 +260,7 @@ File::~File()
 	if(getting_options)
 	{
 		if(format_window) format_window->set_done(0);
-		format_completion.lock();
+		format_completion.lock("File::~File");
 		format_completion.unlock();
 	}
 
@@ -306,12 +303,23 @@ void File::reset_parameters()
 
 int File::raise_window()
 {
-	if(format_window)
+	if(getting_options && format_window)
 	{
 		format_window->raise_window();
 		format_window->flush();
 	}
 	return 0;
+}
+
+void File::close_window()
+{
+	if(getting_options)
+	{
+		format_window->lock_window("File::close_window");
+		format_window->set_done(1);
+		format_window->unlock_window();
+		getting_options = 0;
+	}
 }
 
 int File::get_options(BC_WindowBase *parent_window, 
@@ -322,7 +330,7 @@ int File::get_options(BC_WindowBase *parent_window,
 	int lock_compressor)
 {
 	getting_options = 1;
-	format_completion.lock();
+	format_completion.lock("File::get_options");
 	switch(asset->format)
 	{
 		case FILE_PCM:
@@ -429,6 +437,7 @@ int File::get_options(BC_WindowBase *parent_window,
 		errorbox->run_window();
 		delete errorbox;
 	}
+
 	getting_options = 0;
 	format_window = 0;
 	format_completion.unlock();
@@ -625,9 +634,11 @@ int File::open_file(ArrayList<PluginServer*> *plugindb,
 // Reopen file with correct parser and get header.
 	if(file->open_file(rd, wr))
 	{
+//printf("File::open_file 2.5\n");
 		delete file;
 		file = 0;
 	}
+//printf("File::open_file 3\n");
 
 
 // Set extra writing parameters to mandatory settings.
@@ -638,7 +649,6 @@ int File::open_file(ArrayList<PluginServer*> *plugindb,
 
 // Synchronize header parameters
 	*asset = *this->asset;
-//printf("File::open_file 3\n");
 
 	if(file)
 		return FILE_OK;
@@ -873,19 +883,16 @@ int File::set_video_position(int64_t position, float base_framerate)
 {
 	int result = 0;
 	if(!file) return 0;
-//printf("File::set_video_position 1 %d\n", position);
 
 // Convert to file's rate
 	if(base_framerate > 0)
 		position = (int64_t)((double)position / base_framerate * asset->frame_rate + 0.5);
-//printf("File::set_video_position 2 %d\n", position);
 
 	if(current_frame != position && file)
 	{
 		current_frame = position;
 		result = file->set_video_position(current_frame);
 	}
-//printf("File::set_video_position 3 %d\n", result);
 
 	return result;
 }
@@ -897,7 +904,7 @@ int File::write_samples(double **buffer, int64_t len)
 	
 	if(file)
 	{
-		write_lock.lock();
+		write_lock.lock("File::write_samples");
 		result = file->write_samples(buffer, len);
 		current_sample += len;
 		normalized_sample += len;
@@ -915,7 +922,7 @@ int File::write_frames(VFrame ***frames, int len)
 	int result;
 	int current_frame_temp = current_frame;
 	int video_length_temp = asset->video_length;
-	write_lock.lock();
+	write_lock.lock("File::write_frames");
 
 
 
@@ -935,7 +942,7 @@ int File::write_frames(VFrame ***frames, int len)
 int File::write_compressed_frame(VFrame *buffer)
 {
 	int result = 0;
-	write_lock.lock();
+	write_lock.lock("File::write_compressed_frame");
 	result = file->write_compressed_frame(buffer);
 	current_frame++;
 	asset->video_length++;
@@ -1194,6 +1201,10 @@ int File::can_copy_from(Edit *edit, int64_t position, int output_w, int output_h
 // Fill in queries about formats when adding formats here.
 
 
+int File::strtoformat(char *format)
+{
+	return strtoformat(0, format);
+}
 
 int File::strtoformat(ArrayList<PluginServer*> *plugindb, char *format)
 {
@@ -1244,6 +1255,11 @@ int File::strtoformat(ArrayList<PluginServer*> *plugindb, char *format)
 	if(!strcasecmp(format, _(VORBIS_NAME))) return FILE_VORBIS;
 
 	return 0;
+}
+
+char* File::formattostr(int format)
+{
+	return formattostr(0, format);
 }
 
 char* File::formattostr(ArrayList<PluginServer*> *plugindb, int format)

@@ -289,24 +289,15 @@ REGISTER_PLUGIN(FrameField)
 FrameField::FrameField(PluginServer *server)
  : PluginVClient(server)
 {
-	prev_frame = 0;
-	thread = 0;
+	PLUGIN_CONSTRUCTOR_MACRO
 	current_frame = 0;
-	load_defaults();
+	prev_frame = 0;
 }
 
 
 FrameField::~FrameField()
 {
-	if(thread)
-	{
-		thread->window->set_done(0);
-		thread->completion.lock();
-		delete thread;
-	}
-
-	save_defaults();
-	delete defaults;
+	PLUGIN_DESTRUCTOR_MACRO
 
 	if(prev_frame) delete prev_frame;
 }

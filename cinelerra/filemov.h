@@ -2,14 +2,12 @@
 #define FILEMOV_H
 
 #include "bitspopup.inc"
-#include "file.inc"
 #include "filebase.h"
-#include "mutex.h"
-#include "thread.h"
-
-// ./Quicktime
+#include "file.inc"
 #include "libmjpeg.h"
+#include "mutex.h"
 #include "quicktime.h"
+#include "thread.h"
 
 class FileMOVThread;
 

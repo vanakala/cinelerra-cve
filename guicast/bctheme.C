@@ -1,22 +1,18 @@
 #include "bctheme.h"
 #include "bcwindowbase.h"
 #include "clip.h"
+#include "filesystem.h"
+#include "language.h"
 #include "vframe.h"
 
 #include <errno.h>
-#include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 BC_Theme::BC_Theme()
 {
 	char *path_env = getenv("PATH");
-	char default_path[BCTEXTLEN];
+	char executable_name[BCTEXTLEN];
 	char *path_ptr = path_env;
 
 // Get location of executable
@@ -28,16 +24,23 @@ BC_Theme::BC_Theme()
 	}
 	else
 	{
-		fread(default_path, 1, BCTEXTLEN, fd);
-		strcpy(path, default_path);
+		fread(executable_name, 1, BCTEXTLEN, fd);
+		strcpy(path, executable_name);
 		fclose(fd);
 	}
 
 	int done = 0;
 	fd = 0;
+
+// Search path environment for executable
 	do
 	{
-		fd = fopen(path, "r");
+		FileSystem fs;
+// Ignore directories
+		if(!fs.is_dir(path))
+			fd = 0;
+		else
+			fd = fopen(path, "r");
 
 
 		if(!fd)
@@ -68,7 +71,7 @@ BC_Theme::BC_Theme()
 				*new_ptr++ = '/';
 				*new_ptr = 0;
 			}
-			strcat(path, default_path);
+			strcat(path, executable_name);
 		}
 		else
 		{
@@ -77,7 +80,7 @@ BC_Theme::BC_Theme()
 		}
 	}while(!done);
 
-
+	strcpy(default_path, path);
 	data_buffer = 0;
 	contents_buffer = 0;
 	last_image = 0;
@@ -85,18 +88,14 @@ BC_Theme::BC_Theme()
 
 BC_Theme::~BC_Theme()
 {
-	for(int i = 0; i < image_sets.total; i++)
-		delete image_sets.values[i];
-	for(int i = 0; i < images.total; i++)
-		delete images.values[i];
+	image_sets.remove_all_objects();
 	if(data_buffer) delete [] data_buffer;
 	if(contents_buffer) delete [] contents_buffer;
 }
 
 void BC_Theme::dump()
 {
-	printf("BC_Theme::dump 1 images=%d sets=%d path=%s contents=%d\n", 
-		images.total, 
+	printf("BC_Theme::dump 1 image_sets=%d path=%s contents=%d\n", 
 		image_sets.total, 
 		path, 
 		contents.total);
@@ -109,24 +108,103 @@ BC_Resources* BC_Theme::get_resources()
 	return BC_WindowBase::get_resources();
 }
 
-// These create image sets which are stored in the caches.
+
+// These create single images for storage in the image_sets table.
+VFrame* BC_Theme::new_image(char *title, char *path)
+{
+	VFrame *existing_image = title[0] ? get_image(title) : 0;
+	if(existing_image) return existing_image;
+
+	BC_ThemeSet *result = new BC_ThemeSet(1, 0, title);
+	result->data[0] = new VFrame(get_image_data(path));
+	image_sets.append(result);
+	return result->data[0];
+}
+
+VFrame* BC_Theme::new_image(char *path)
+{
+	return new_image("", path);
+}
+
+// These create image sets which are stored in the image_sets table.
+VFrame** BC_Theme::new_image_set(char *title, int total, va_list *args)
+{
+	VFrame **existing_image_set = title[0] ? get_image_set(title) : 0;
+	if(existing_image_set) return existing_image_set;
+
+	BC_ThemeSet *result = new BC_ThemeSet(total, 1, title);
+	image_sets.append(result);
+	for(int i = 0; i < total; i++)
+	{
+		char *path = va_arg(*args, char*);
+		result->data[i] = new_image(path);
+	}
+	return result->data;
+}
+
+VFrame** BC_Theme::new_image_set(char *title, int total, ...)
+{
+	va_list list;
+	va_start(list, total);
+	VFrame **result = new_image_set(title, total, &list);
+	va_end(list);
+
+	return result;
+}
+
 VFrame** BC_Theme::new_image_set(int total, ...)
 {
 	va_list list;
-	BC_ThemeSet *result = new BC_ThemeSet(total);
-	image_sets.append(result);
-
-
 	va_start(list, total);
-	for(int i = 0; i < total; i++)
-	{
-		char *path = va_arg(list, char*);
-		result->data[i] = new_image(path);
-	}
+	VFrame **result = new_image_set("", total, &list);
 	va_end(list);
 
-	return result->data;
+	return result;
 }
+
+VFrame* BC_Theme::get_image(char *title)
+{
+	for(int i = 0; i < image_sets.total; i++)
+	{
+		if(!strcmp(image_sets.values[i]->title, title))
+		{
+			return image_sets.values[i]->data[0];
+		}
+	}
+
+
+
+// TODO: Need to return a default image
+	return 0;
+}
+
+VFrame** BC_Theme::get_image_set(char *title)
+{
+	for(int i = 0; i < image_sets.total; i++)
+	{
+		if(!strcmp(image_sets.values[i]->title, title))
+		{
+			return image_sets.values[i]->data;
+		}
+	}
+
+
+
+// TODO: Need to return a default image set
+	return 0;
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 VFrame** BC_Theme::new_button(char *overlay_path, 
 	char *up_path, 
@@ -134,7 +212,7 @@ VFrame** BC_Theme::new_button(char *overlay_path,
 	char *dn_path)
 {
 	VFrame default_data(get_image_data(overlay_path));
-	BC_ThemeSet *result = new BC_ThemeSet(3);
+	BC_ThemeSet *result = new BC_ThemeSet(3, 1, "");
 
 	result->data[0] = new_image(up_path);
 	result->data[1] = new_image(hi_path);
@@ -151,7 +229,7 @@ VFrame** BC_Theme::new_button(char *overlay_path,
 	VFrame *dn)
 {
 	VFrame default_data(get_image_data(overlay_path));
-	BC_ThemeSet *result = new BC_ThemeSet(3);
+	BC_ThemeSet *result = new BC_ThemeSet(3, 0, "");
 
 	result->data[0] = new VFrame(*up);
 	result->data[1] = new VFrame(*hi);
@@ -170,7 +248,7 @@ VFrame** BC_Theme::new_toggle(char *overlay_path,
 	char *checkedhi_path)
 {
 	VFrame default_data(get_image_data(overlay_path));
-	BC_ThemeSet *result = new BC_ThemeSet(5);
+	BC_ThemeSet *result = new BC_ThemeSet(5, 1, "");
 
 	result->data[0] = new_image(up_path);
 	result->data[1] = new_image(hi_path);
@@ -190,7 +268,7 @@ VFrame** BC_Theme::new_toggle(char *overlay_path,
 	VFrame *checkedhi)
 {
 	VFrame default_data(get_image_data(overlay_path));
-	BC_ThemeSet *result = new BC_ThemeSet(5);
+	BC_ThemeSet *result = new BC_ThemeSet(5, 0, "");
 
 	result->data[0] = new VFrame(*up);
 	result->data[1] = new VFrame(*hi);
@@ -268,16 +346,19 @@ void BC_Theme::overlay(VFrame *dst, VFrame *src, int in_x1, int in_x2)
 	}
 }
 
-VFrame* BC_Theme::new_image(char *title)
-{
-	VFrame *result = new VFrame(get_image_data(title));
-	images.append(result);
-	return result;
-}
-
 void BC_Theme::set_path(char *path)
 {
 	strcpy(this->path, path);
+}
+
+void BC_Theme::unset_path()
+{
+	strcpy(this->path, default_path);
+	if(data_buffer) delete [] data_buffer;
+	if(contents_buffer) delete [] contents_buffer;
+	data_buffer = 0;
+	contents_buffer = 0;
+	last_image = 0;
 }
 
 unsigned char* BC_Theme::get_image_data(char *title)
@@ -285,7 +366,14 @@ unsigned char* BC_Theme::get_image_data(char *title)
 // Read contents
 	if(!data_buffer)
 	{
+		FileSystem fs;
+		if(!fs.is_dir(path))
+		{
+			fprintf(stderr, _("Theme::get_image: %s is a directory.\n"), path);
+			return 0;
+		}
 		FILE *fd = fopen(path, "r");
+		int result = 0;
 
 		if(!fd)
 		{
@@ -296,10 +384,22 @@ unsigned char* BC_Theme::get_image_data(char *title)
 		int data_size;
 		int contents_size;
 
-		fseek(fd, -8, SEEK_END);
+		if(fseek(fd, -8, SEEK_END) < 0)
+		{
+			fprintf(stderr, _("BC_Theme::get_image_data fseek %s\n"), strerror(errno));
+			return 0;
+		}
 		total_bytes = ftell(fd);
-		fread(&data_offset, 1, 4, fd);
-		fread(&contents_offset, 1, 4, fd);
+		if(fread(&data_offset, 1, 4, fd) != 4)
+		{
+			fprintf(stderr, _("BC_Theme::get_image_data fread 1 %s\n"), strerror(errno));
+			return 0;
+		}
+		if(fread(&contents_offset, 1, 4, fd) != 4)
+		{
+			fprintf(stderr, _("BC_Theme::get_image_data fread 2 %s\n"), strerror(errno));
+			return 0;
+		}
 
 
 		fseek(fd, data_offset, SEEK_SET);
@@ -381,12 +481,29 @@ return;
 
 
 
-BC_ThemeSet::BC_ThemeSet(int total)
+BC_ThemeSet::BC_ThemeSet(int total, int is_reference, char *title)
 {
+	this->total = total;
+	this->title = title;
+	this->is_reference = is_reference;
 	data = new VFrame*[total];
 }
 
 BC_ThemeSet::~BC_ThemeSet()
 {
-	if(data) delete [] data;
+	if(data) 
+	{
+		if(!is_reference)
+		{
+			for(int i = 0; i < total; i++)
+				delete data[i];
+		}
+
+		delete [] data;
+	}
 }
+
+
+
+
+

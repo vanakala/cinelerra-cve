@@ -167,8 +167,8 @@ int InterfacePrefs::create_objects()
 	sprintf(string, "%.0f", pwindow->thread->edl->session->min_meter_db);
 	add_subwindow(min_db = new MeterMinDB(pwindow, string, y));
 	y += 30;
-	add_subwindow(new BC_Title(x, y, _("Format for meter:")));
-	add_subwindow(vu_db = new MeterVUDB(pwindow, _("DB"), y));
+// 	add_subwindow(new BC_Title(x, y, _("Format for meter:")));
+// 	add_subwindow(vu_db = new MeterVUDB(pwindow, _("DB"), y));
 //	add_subwindow(vu_int = new MeterVUInt(pwindow, _("Percent of maximum"), y));
 //	vu_db->vu_int = vu_int;
 //	vu_int->vu_db = vu_db;
@@ -225,7 +225,7 @@ InterfacePrefs::~InterfacePrefs()
 	delete hex;
 	delete feet;
 	delete min_db;
-	delete vu_db;
+//	delete vu_db;
 //	delete vu_int;
 	delete thumbnails;
 }

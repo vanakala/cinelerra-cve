@@ -2,6 +2,7 @@
 #include "edlsession.h"
 #include "pluginclient.h"
 #include "pluginserver.h"
+#include "preferences.h"
 
 #include <string.h>
 #include <libintl.h>
@@ -22,9 +23,7 @@ PluginClient::~PluginClient()
 int PluginClient::reset()
 {
 	interactive = 0;
-	gui_messages = 0;
 	show_initially = 0;
-	message_lock = 0;
 	wr = rd = 0;
 	master_gui_on = 0;
 	client_gui_on = 0;
@@ -37,32 +36,6 @@ int PluginClient::reset()
 	source_len = 0;
 	source_position = 0;
 	total_len = 0;
-}
-
-int PluginClient::plugin_init(int argc, char *argv[])
-{
-	if(argc < 3)
-	{
-		printf(_("This is a plugin for Broadcast 2000a.  Grow a mane.\n"));
-		success = 0;
-		return 1;
-	}
-
-// get the message pipes
-	messages = new Messages(MESSAGE_TO_PLUGIN, MESSAGE_FROM_PLUGIN, atol(argv[1]));
-
-	if(atol(argv[2]) >= 0)
-	{
-		gui_messages = new Messages(MESSAGE_TO_PLUGIN, MESSAGE_FROM_PLUGIN, atol(argv[2]));
-		gui_messages->write_message(GET_STRING);
-		gui_messages->read_message(gui_string);
-
-		show_initially = 1;       // flag for plugin
-		client_gui_on = 1;
-	}
-	success = 1;
-
-	return 0;
 }
 
 
@@ -80,7 +53,7 @@ int PluginClient::plugin_init_realtime(int realtime_priority,
 // get parameters depending on video or audio
 	init_realtime_parameters();
 //printf("PluginClient::plugin_init_realtime 1\n");
-	smp = server->edl->session->smp;
+	smp = server->preferences->processors - 1;
 	this->realtime_priority = realtime_priority;
 	this->total_in_buffers = this->total_out_buffers = total_in_buffers;
 	this->out_buffer_size = this->in_buffer_size = buffer_size;
@@ -177,18 +150,6 @@ int PluginClient::get_gui_status()
 	return server->get_gui_status();
 }
 
-int PluginClient::plugin_start_plugin()
-{
-// Create any necessary pointers and download any parameters for the derived plugin.
-	smp = get_project_smp();
-
-	start_plugin();
-
-	delete_nonrealtime_parameters();
-	send_completed();
-	return 0;
-}
-
 int PluginClient::start_plugin()
 {
 	printf(_("No processing defined for this plugin.\n"));
@@ -245,18 +206,6 @@ int PluginClient::set_string_client(char *string)
 	return 0;
 }
 
-int PluginClient::save_data_client()
-{
-//	save_data(messages->get_message_buffer());         // user puts data directly into buffer
-//	messages->write_message_raw();
-	return 0;
-}
-
-int PluginClient::load_data_client()
-{
-//	read_data(messages->read_message_raw());         // user reads data directly from buffer
-	return 0;
-}
 
 KeyFrame* PluginClient::get_prev_keyframe(int64_t position)
 {
@@ -313,12 +262,6 @@ int64_t PluginClient::get_total_len()
 }
 
 
-int PluginClient::get_configure_change()
-{
-//	read_data(messages->read_message_raw());
-	return 0;
-}
-
 
 int PluginClient::get_project_smp()
 {
@@ -331,16 +274,6 @@ char* PluginClient::get_defaultdir()
 }
 
 
-int PluginClient::send_completed()
-{
-	messages->write_message(COMPLETED);
-}
-
-int PluginClient::send_cancelled()
-{
-	messages->write_message(CANCEL);
-}
-
 int PluginClient::send_hide_gui()
 {
 // Stop the GUI server and delete GUI messages
@@ -351,34 +284,9 @@ int PluginClient::send_hide_gui()
 int PluginClient::send_configure_change()
 {
 // handle everything using the gui messages
-//printf("PluginClient::send_configure_change 1 %p\n", server);
 	KeyFrame* keyframe = server->get_keyframe();
-//printf("PluginClient::send_configure_change 1\n");
 	save_data(keyframe);
-//printf("PluginClient::send_configure_change 1\n");
 	server->sync_parameters();
-//printf("PluginClient::send_configure_change 2\n");
 	return 0;
 }
 
-int PluginClient::write_frames(int64_t total_frames)
-{
-// buffers are preloaded by client
-	messages->write_message(WRITE_FRAMES);
-
-	messages->write_message(total_frames);
-	int result = messages->read_message();
-	if(result == OK) return 0;
-	else return 1;
-}
-
-int PluginClient::write_samples(int64_t total_samples)
-{
-// buffers are preloaded by client
-	messages->write_message(WRITE_SAMPLES);
-	
-	messages->write_message(total_samples);
-	int result = messages->read_message();
-	if(result == OK) return 0;
-	else return 1;
-}

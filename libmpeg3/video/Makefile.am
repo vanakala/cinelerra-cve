@@ -14,7 +14,7 @@ noinst_HEADERS = idct.h \
 	slice.h \
 	vlc.h
 
-libmpeg3_video_la_LDFLAGS=-static
+libmpeg3_video_la_LDFLAGS=
 AM_CFLAGS = $(CPU_CFLAGS) $(LARGEFILE_CFLAGS)
 INCLUDES=-I$(srcdir)/..
 

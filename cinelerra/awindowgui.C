@@ -1,3 +1,4 @@
+#include "asset.h"
 #include "assetedit.h"
 #include "assetpopup.h"
 #include "assets.h"
@@ -14,6 +15,7 @@
 #include "edlsession.h"
 #include "file.h"
 #include "filesystem.h"
+#include "language.h"
 #include "localsession.h"
 #include "mainmenu.h"
 #include "mainsession.h"
@@ -27,10 +29,6 @@
 #include "vwindow.h"
 
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 AssetPicon::AssetPicon(MWindow *mwindow, 
@@ -432,7 +430,7 @@ int AWindowGUI::close_event()
 {
 	hide_window();
 	mwindow->session->show_awindow = 0;
-	mwindow->gui->lock_window();
+	mwindow->gui->lock_window("AWindowGUI::close_event");
 	mwindow->gui->mainmenu->show_awindow->set_checked(0);
 	mwindow->gui->unlock_window();
 	mwindow->save_defaults();
@@ -1071,7 +1069,7 @@ int AWindowAssets::handle_event()
 		else
 		{
 //printf("AWindowAssets::handle_event 2 %d %d\n", get_buttonpress(), get_selection(0, 0));
-			mwindow->vwindow->gui->lock_window();
+			mwindow->vwindow->gui->lock_window("AWindowAssets::handle_event");
 			
 			if(((AssetPicon*)get_selection(0, 0))->asset)
 				mwindow->vwindow->change_source(((AssetPicon*)get_selection(0, 0))->asset);
@@ -1197,15 +1195,15 @@ int AWindowAssets::drag_motion_event()
 {
 	BC_ListBox::drag_motion_event();
 
-	mwindow->gui->lock_window();
+	mwindow->gui->lock_window("AWindowAssets::drag_motion_event");
 	mwindow->gui->drag_motion();
 	mwindow->gui->unlock_window();
 
-	mwindow->vwindow->gui->lock_window();
+	mwindow->vwindow->gui->lock_window("AWindowAssets::drag_motion_event");
 	mwindow->vwindow->gui->drag_motion();
 	mwindow->vwindow->gui->unlock_window();
 
-	mwindow->cwindow->gui->lock_window();
+	mwindow->cwindow->gui->lock_window("AWindowAssets::drag_motion_event");
 	mwindow->cwindow->gui->drag_motion();
 	mwindow->cwindow->gui->unlock_window();
 	return 0;
@@ -1220,21 +1218,21 @@ int AWindowAssets::drag_stop_event()
 
 	if(!result)
 	{
-		mwindow->gui->lock_window();
+		mwindow->gui->lock_window("AWindowAssets::drag_stop_event");
 		result = mwindow->gui->drag_stop();
 		mwindow->gui->unlock_window();
 	}
 
 	if(!result) 
 	{
-		mwindow->vwindow->gui->lock_window();
+		mwindow->vwindow->gui->lock_window("AWindowAssets::drag_stop_event");
 		result = mwindow->vwindow->gui->drag_stop();
 		mwindow->vwindow->gui->unlock_window();
 	}
 
 	if(!result) 
 	{
-		mwindow->cwindow->gui->lock_window();
+		mwindow->cwindow->gui->lock_window("AWindowAssets::drag_stop_event");
 		result = mwindow->cwindow->gui->drag_stop();
 		mwindow->cwindow->gui->unlock_window();
 	}

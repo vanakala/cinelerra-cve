@@ -1,4 +1,4 @@
-#include "assets.h"
+#include "asset.h"
 #include "file.h"
 #include "filelist.h"
 #include "guicast.h"
@@ -258,7 +258,8 @@ int FileList::read_frame(VFrame *frame)
 // Fix path for VFS
 		if(!strncmp(asset->path, RENDERFARM_FS_PREFIX, strlen(RENDERFARM_FS_PREFIX)))
 			sprintf(string, "%s%s", RENDERFARM_FS_PREFIX, path);
-
+		else
+			strcpy(string, path);
 
 		if(!(in = fopen(string, "rb")))
 		{

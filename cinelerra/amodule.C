@@ -3,7 +3,7 @@
 #include "amodule.h"
 #include "aplugin.h"
 #include "arender.h"
-#include "assets.h"
+#include "asset.h"
 #include "atrack.h"
 #include "cache.h"
 #include "edits.h"
@@ -12,6 +12,7 @@
 #include "file.h"
 #include "filexml.h"
 #include "floatautos.h"
+#include "language.h"
 #include "module.h"
 #include "patch.h"
 #include "plugin.h"
@@ -24,10 +25,6 @@
 #include "transportque.h"
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 AModule::AModule(RenderEngine *renderengine, 
@@ -110,8 +107,11 @@ CICache* AModule::get_cache()
 int AModule::render(double *buffer, 
 	int64_t input_len, 
 	int64_t input_position,
-	int direction)
+	int direction,
+	int use_nudge)
 {
+	if(use_nudge) input_position += track->nudge;
+
 	AEdit *playable_edit;
 	int64_t start_project = input_position;
 	int64_t end_project = input_position + input_len;
@@ -119,7 +119,6 @@ int AModule::render(double *buffer,
 	int result = 0;
 
 
-//printf("AModule::render 1 %d %d\n", input_position, input_len);
 
 // Flip range around so start_project < end_project
 	if(direction == PLAY_REVERSE)
@@ -130,7 +129,6 @@ int AModule::render(double *buffer,
 
 	bzero(buffer, input_len * sizeof(double));
 
-//printf("AModule::render 2\n");
 
 // Get first edit containing range
 	for(playable_edit = (AEdit*)track->edits->first; 
@@ -150,7 +148,6 @@ int AModule::render(double *buffer,
 
 
 
-//printf("AModule::render 3\n");
 
 
 // Fill output one fragment at a time
@@ -158,17 +155,14 @@ int AModule::render(double *buffer,
 	{
 		int64_t fragment_len = input_len;
 
-//printf("AModule::render 4 %d\n", fragment_len);
 		if(fragment_len + start_project > end_project)
 			fragment_len = end_project - start_project;
 
-//printf("AModule::render 5 %d\n", fragment_len);
 		update_transition(start_project, PLAY_FORWARD);
 
 
 		if(playable_edit)
 		{
-//printf("AModule::render 6\n");
 
 
 // Trim fragment_len
@@ -177,13 +171,11 @@ int AModule::render(double *buffer,
 				fragment_len = playable_edit->startproject + 
 					playable_edit->length - start_project;
 
-//printf("AModule::render 8 %d\n", fragment_len);
 
 			if(playable_edit->asset)
 			{
 				File *source;
 
-//printf("AModule::render 9\n");
 
 
 				if(!(source = get_cache()->check_out(playable_edit->asset)))
@@ -196,17 +188,11 @@ int AModule::render(double *buffer,
 				{
 					int result = 0;
 
-//printf("AModule::render 10\n");
-
-//printf("AModule::load_track 7 %d\n", start_project - 
-//							playable_edit->startproject + 
-//							playable_edit->startsource);
 
 					result = source->set_audio_position(start_project - 
 							playable_edit->startproject + 
 							playable_edit->startsource, 
 						get_edl()->session->sample_rate);
-//printf("AModule::render 10\n");
 
 					if(result) printf("AModule::render start_project=%d playable_edit->startproject=%d playable_edit->startsource=%d\n"
 						"source=%p playable_edit=%p edl=%p edlsession=%p sample_rate=%d\n",
@@ -215,19 +201,11 @@ int AModule::render(double *buffer,
 
 					source->set_channel(playable_edit->channel);
 
-// printf("AModule::render 11 %p %p %d %d\n", 
-// 	source, 
-// 	buffer, 
-// 	buffer_offset, 
-// 	fragment_len);
-//printf("AModule::render 10 %p %p\n", source, playable_edit);
 					source->read_samples(buffer + buffer_offset, 
 						fragment_len,
 						get_edl()->session->sample_rate);
 
-//printf("AModule::render 12 %d %d\n", fragment_len, get_edl()->session->sample_rate);
 					get_cache()->check_in(playable_edit->asset);
-//printf("AModule::render 13\n");
 				}
 			}
 
@@ -314,7 +292,6 @@ int AModule::render(double *buffer,
 			}
 		}
 
-//printf("AModule::render 13\n");
 		buffer_offset += fragment_len;
 		start_project += fragment_len;
 		if(playable_edit &&
@@ -322,13 +299,11 @@ int AModule::render(double *buffer,
 			playable_edit = (AEdit*)playable_edit->next;
 	}
 
-//printf("AModule::render 14\n");
 
 // Reverse buffer here so plugins always render forward.
 	if(direction == PLAY_REVERSE) 
 		reverse_buffer(buffer, input_len);
 
-//printf("AModule::render 15\n");
 	return result;
 }
 

@@ -4,6 +4,7 @@
 float* DB::topower = 0;
 int* Freq::freqtable = 0;
 
+
 DB::DB(float infinitygain)
 {
 	this->infinitygain = infinitygain;
@@ -185,6 +186,18 @@ char* Units::totext(char *text,
 		}
 		  break;
 
+		case TIME_HMS3:
+		{
+			float second;
+			seconds = fabs(seconds);
+  			hour = (int)(seconds / 3600);
+  			minute = (int)(seconds / 60 - hour * 60);
+  			second = (float)seconds - (int64_t)hour * 3600 - (int64_t)minute * 60;
+  			sprintf(text, "%02d:%02d:%02d", hour, minute, (int)second);
+			return text;
+		}
+		  break;
+
 		case TIME_HMSF:
 		{
 			int second;
@@ -250,7 +263,9 @@ int64_t Units::fromtext(char *text,
 	
 	switch(time_format)
 	{
-		case 0:
+		case TIME_HMS:
+		case TIME_HMS2:
+		case TIME_HMS3:
 // get hours
 			i = 0;
 			j = 0;
@@ -277,7 +292,7 @@ int64_t Units::fromtext(char *text,
 			return total_samples;
 			break;
 
-		case 1:
+		case TIME_HMSF:
 // get hours
 			i = 0;
 			j = 0;
@@ -313,19 +328,19 @@ int64_t Units::fromtext(char *text,
 			return total_samples;
 			break;
 
-		case 2:
+		case TIME_SAMPLES:
 			return atol(text);
 			break;
 		
-		case 3:
+		case TIME_SAMPLES_HEX:
 			sscanf(text, "%x", &total_samples);
 			return total_samples;
 		
-		case 4:
+		case TIME_FRAMES:
 			return (int64_t)(atof(text) / frame_rate * samplerate);
 			break;
 		
-		case 5:
+		case TIME_FEET_FRAMES:
 // Get feet
 			i = 0;
 			j = 0;
@@ -576,6 +591,22 @@ uint64_t Units::ptr_to_int64(void *ptr)
 		data[7] = ptr_dissected[7];
 	}
 	return result;
+}
+
+char* Units::format_to_separators(int time_format)
+{
+	switch(time_format)
+	{
+		case TIME_HMS:         return "0:00:00.000";
+		case TIME_HMS2:        return "0:00:00";
+		case TIME_HMS3:        return "00:00:00";
+		case TIME_HMSF:        return "0:00:00:00";
+		case TIME_SAMPLES:     return 0;
+		case TIME_SAMPLES_HEX: return 0;
+		case TIME_FRAMES:      return 0;
+		case TIME_FEET_FRAMES: return "00000-00";
+	}
+	return 0;
 }
 
 

@@ -1,5 +1,5 @@
+#include "asset.h"
 #include "assetedit.h"
-#include "assets.h"
 #include "awindow.h"
 #include "awindowgui.h"
 #include "bcprogressbox.h"
@@ -10,6 +10,7 @@
 #include "file.h"
 #include "filesystem.h"
 #include "indexfile.h"
+#include "language.h"
 #include "mainindexes.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
@@ -19,10 +20,6 @@
 
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 AssetEdit::AssetEdit(MWindow *mwindow)

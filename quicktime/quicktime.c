@@ -2,7 +2,6 @@
 #include "funcprotos.h"
 #include "quicktime.h"
 #include "workarounds.h"
-#include <glib.h>
 #include <sys/stat.h>
 
 int quicktime_make_streamable(char *in_path, char *out_path)
@@ -495,6 +494,7 @@ int quicktime_set_video_position(quicktime_t *file, int64_t frame, int track)
 		file->vtracks[track].current_chunk = chunk;
 		offset = quicktime_sample_to_offset(file, trak, frame);
 		quicktime_set_position(file, offset);
+//printf("quicktime_set_video_position 1 %lld %d\n", frame, file->vtracks[track].current_position);
 	}
 	else
 		fprintf(stderr, "quicktime_set_video_position: track >= file->total_vtracks\n");
@@ -1228,10 +1228,11 @@ quicktime_t* quicktime_open(char *filename, int rd, int wr)
 	}
 	else
 	{
+//printf("quicktime_open 10\n");
 		quicktime_close(new_file);
+//printf("quicktime_open 100\n");
 		new_file = 0;
 	}
-//printf("quicktime_open 10\n");
 
 
 	return new_file;
@@ -1270,8 +1271,11 @@ int quicktime_close(quicktime_t *file)
 		else
 		{
 // Atoms are only written here
-			quicktime_write_moov(file, &(file->moov));
-			quicktime_atom_write_footer(file, &file->mdat.atom);
+			if(file->stream)
+			{
+				quicktime_write_moov(file, &(file->moov));
+				quicktime_atom_write_footer(file, &file->mdat.atom);
+			}
 		}
 	}
 

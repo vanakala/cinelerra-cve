@@ -1,6 +1,7 @@
 #ifndef FILEBASE_H
 #define FILEBASE_H
 
+#include "asset.inc"
 #include "assets.inc"
 #include "colormodels.h"
 #include "edit.inc"

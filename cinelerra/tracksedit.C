@@ -629,7 +629,9 @@ void Tracks::paste_audio_transition(PluginServer *server)
 		{
 			int64_t position = current->to_units(
 				edl->local_session->get_selectionstart(), 0);
-			Edit *current_edit = current->edits->editof(position, PLAY_FORWARD);
+			Edit *current_edit = current->edits->editof(position, 
+				PLAY_FORWARD,
+				0);
 			if(current_edit)
 			{
 				paste_transition(server, current_edit);
@@ -754,7 +756,9 @@ void Tracks::paste_video_transition(PluginServer *server, int first_track)
 		{
 			int64_t position = current->to_units(
 				edl->local_session->get_selectionstart(), 0);
-			Edit *current_edit = current->edits->editof(position, PLAY_FORWARD);
+			Edit *current_edit = current->edits->editof(position, 
+				PLAY_FORWARD,
+				0);
 			if(current_edit)
 			{
 				paste_transition(server, current_edit);

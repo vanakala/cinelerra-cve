@@ -1,5 +1,6 @@
 #include "edl.h"
 #include "keys.h"
+#include "language.h"
 #include "mwindow.h"
 #include "playbackengine.h"
 #include "playtransport.h"
@@ -8,10 +9,6 @@
 #include "transportque.h"
 #include "vframe.h"
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 PlayTransport::PlayTransport(MWindow *mwindow, 
@@ -165,11 +162,27 @@ int PlayTransport::flip_vertical(int vertical, int &x, int &y)
 
 int PlayTransport::keypress_event()
 {
-//printf("PlayTransport::keypress_event 1\n");
-	if(subwindow->shift_down()) return  0;
 	int result = 0;
+	if(subwindow->shift_down())
+	{
+		switch(subwindow->get_keypress())
+		{
+			case END:
+				subwindow->lock_window("PlayTransport::keypress_event 1");
+				goto_end();                                   
+				result = 1; 
+				subwindow->unlock_window();
+				break;
+			case HOME:
+				subwindow->lock_window("PlayTransport::keypress_event 2");
+		    	goto_start();                                 
+				result = 1; 
+				subwindow->unlock_window();
+				break;
+		}
+		return result;
+	}
 
-//printf("PlayTransport::keypress_event %x\n", subwindow->get_keypress());
 	subwindow->unlock_window();
 	switch(subwindow->get_keypress())
 	{
@@ -184,9 +197,21 @@ int PlayTransport::keypress_event()
 		case KPINS:         handle_transport(STOP);                       result = 1; break;
 		case ' ':           handle_transport(NORMAL_FWD);                 result = 1; break;
 		case 'k':           handle_transport(STOP);   					  result = 1; break;
+		case END:
+			subwindow->lock_window("PlayTransport::keypress_event 3");
+			goto_end();                                   
+			result = 1; 
+			subwindow->unlock_window();
+			break;
+		case HOME:
+			subwindow->lock_window("PlayTransport::keypress_event 4");
+		    goto_start();                                 
+			result = 1; 
+			subwindow->unlock_window();
+			break;
 	}
 
-	subwindow->lock_window();
+	subwindow->lock_window("PlayTransport::keypress_event 5");
 
 	return result;
 }
@@ -199,7 +224,7 @@ void PlayTransport::goto_start()
 
 void PlayTransport::goto_end()
 {
-	handle_transport(END, 1);
+	handle_transport(GOTO_END, 1);
 }
 
 
@@ -277,9 +302,9 @@ void PlayTransport::handle_transport(int command, int wait_tracking)
 				0);
 //printf("PlayTransport 1\n");
 			engine->interrupt_playback(wait_tracking);
-//printf("PlayTransport 2\n");
 			break;
 	}
+//printf("PlayTransport::handle_transport 2\n");
 }
 
 EDL* PlayTransport::get_edl()
@@ -345,7 +370,7 @@ int FastReverseButton::handle_event()
 {
 	unlock_window();
 	transport->handle_transport(FAST_REWIND);
-	lock_window();
+	lock_window("FastReverseButton::handle_event");
 	return 1;
 }
 
@@ -360,7 +385,7 @@ int ReverseButton::handle_event()
 {
 	unlock_window();
 	transport->handle_transport(NORMAL_REWIND);
-	lock_window();
+	lock_window("ReverseButton::handle_event");
 	return 1;
 }
 
@@ -375,7 +400,7 @@ int FrameReverseButton::handle_event()
 {
 	unlock_window();
 	transport->handle_transport(SINGLE_FRAME_REWIND);
-	lock_window();
+	lock_window("FrameReverseButton::handle_event");
 	return 1;
 }
 
@@ -391,7 +416,7 @@ int PlayButton::handle_event()
 //printf("PlayButton::handle_event 1\n");
 	unlock_window();
 	transport->handle_transport(NORMAL_FWD);	
-	lock_window();
+	lock_window("PlayButton::handle_event");
 //printf("PlayButton::handle_event 2\n");
 	return 1;
 }
@@ -409,7 +434,7 @@ int FramePlayButton::handle_event()
 {
 	unlock_window();
 	transport->handle_transport(SINGLE_FRAME_FWD);
-	lock_window();
+	lock_window("FramePlayButton::handle_event");
 	return 1;
 }
 
@@ -424,7 +449,7 @@ int FastPlayButton::handle_event()
 {
 	unlock_window();
 	transport->handle_transport(FAST_FWD);
-	lock_window();
+	lock_window("FastPlayButton::handle_event");
 	return 1;
 }
 
@@ -448,12 +473,8 @@ StopButton::StopButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
 }
 int StopButton::handle_event()
 {
-//printf("StopButton::handle_event 1\n");
 	unlock_window();
-//printf("StopButton::handle_event 1\n");
 	transport->handle_transport(STOP);
-//printf("StopButton::handle_event 1\n");
-	lock_window();
-//printf("StopButton::handle_event 2\n");
+	lock_window("StopButton::handle_event");
 	return 1;
 }

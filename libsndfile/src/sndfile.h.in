@@ -40,6 +40,10 @@
 #include	<sys/types.h>
 #endif
 
+#ifndef loff_t
+#define loff_t long long
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif	/* __cplusplus */
@@ -217,7 +221,7 @@ enum
 
 typedef	struct SNDFILE_tag	SNDFILE ;
 
-typedef @TYPEOF_SF_COUNT_T@	sf_count_t ;
+typedef loff_t	sf_count_t ;
 
 /* A pointer to a SF_INFO structure is passed to sf_open_read () and filled in.
 ** On write, the SF_INFO structure is filled in by the user and passed into
@@ -303,7 +307,8 @@ SNDFILE* 	sf_open		(const char *path, int mode, SF_INFO *sfinfo) ;
 
 */
 
-SNDFILE* 	sf_open_fd	(int fd, int mode, SF_INFO *sfinfo, int close_desc) ;
+SNDFILE* 	sf_open_fd	(FILE *fileptr, char *path, int mode, SF_INFO *sfinfo, int close_desc) ;
+//SNDFILE* 	sf_open_fd	(int fd, int mode, SF_INFO *sfinfo, int close_desc) ;
 
 /* sf_error () returns a error number which can be translated to a text 
 ** string using sf_error_number().

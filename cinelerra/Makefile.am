@@ -3,7 +3,6 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    aautomation.C \
 		    aboutprefs.C \
 		    adeviceprefs.C \
-		    adrivermenu.C \
 		    aedit.C \
 		    aedits.C \
 		    amodule.C \
@@ -12,6 +11,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    aplugin.C \
 		    apluginset.C \
 		    arender.C \
+		    asset.C \
 		    assetedit.C \
 		    assetpopup.C \
 		    assetremove.C \
@@ -33,6 +33,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    awindowgui.C \
 		    awindowmenu.C \
 		    batch.C \
+		    batchrender.C \
 		    bezierauto.C \
 		    bezierautos.C \
 		    bitspopup.C \
@@ -135,7 +136,6 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    mwindowmove.C \
 		    new.C \
 		    newfolder.C \
-		    neworappend.C \
 		    overlayframe.C \
 		    packagedispatcher.C \
 		    packagerenderer.C \
@@ -250,7 +250,14 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    zoompanel.C
 		    
 # set the include path found by configure
-INCLUDES = -I$(top_srcdir)/quicktime -I$(top_srcdir)/guicast -I$(top_srcdir)/libmpeg3 $(all_includes)
+# note that a private, modified copy of libsndfile is used,
+# and that its sndfile.h is a built file that is found in $(builddir)!
+INCLUDES = \
+	-I$(top_srcdir)/quicktime \
+	-I$(top_srcdir)/guicast \
+	-I$(top_srcdir)/libmpeg3 \
+	-I$(top_builddir)/libsndfile/src \
+	$(all_includes)
 
 # the library search path.
 cinelerra_CFLAGS = $(CFLAGS) $(FIREWIRE_CFLAGS) $(SOUND_CFLAGS) $(AVIFILE_CXXFLAGS) 
@@ -265,7 +272,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 aautomation.h \
 		 aboutprefs.h \
 		 adeviceprefs.h \
-		 adrivermenu.h \
 		 aedit.h \
 		 aedits.h \
 		 amodule.h \
@@ -274,6 +280,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 aplugin.h \
 		 apluginset.h \
 		 arender.h \
+		 asset.h \
 		 assetedit.h \
 		 assetpopup.h \
 		 assetremove.h \
@@ -285,7 +292,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 audioconfig.h \
 		 audiodevice.h \
 		 audioesound.h \
-		 audioinprefs.h \
 		 audiooss.h \
 		 autoconf.h \
 		 auto.h \
@@ -295,6 +301,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 awindow.h \
 		 awindowmenu.h \
 		 batch.h \
+		 batchrender.h \
 		 bezierauto.h \
 		 bezierautos.h \
 		 binary.h \
@@ -406,7 +413,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 mwindow.h \
 		 newfolder.h \
 		 new.h \
-		 neworappend.h \
 		 overlayframe.h \
 		 packagedispatcher.h \
 		 packagerenderer.h \
@@ -467,12 +473,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 samplescroll.h \
 		 savefile.h \
 		 scale.h \
-		 setaudio.h \
-		 setchannels.h \
 		 setformat.h \
-		 setframerate.h \
-		 setsamplerate.h \
-		 setvideo.h \
 		 sharedlocation.h \
 		 shmemory.h \
 		 sighandler.h \
@@ -515,8 +516,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 videodev2.h \
 		 videodevfix.h \
 		 videodevice.h \
-		 videoinprefs.h \
-		 videooutprefs.h \
 		 videowindowgui.h \
 		 videowindow.h \
 		 viewer.h \
@@ -545,10 +544,23 @@ noinst_HEADERS = aattachmentpoint.h \
 		 zoompanel.h \
 		$(srcdir)/*.inc
 		 
-cinelerra_LDADD = $(top_builddir)/quicktime/libquicktime.la $(top_builddir)/guicast/libguicast.la $(top_builddir)/libmpeg3/libmpeg3.la -lX11 -lsndfile -logg -lvorbis -lvorbisfile -lvorbisenc -la52 -lpng -lXv -lXext -ljpeg -lmp3lame -ltiff -lesd -lz $(SOUND_LDFLAGS) $(FIREWIRE_LDFLAGS) -ldv -luuid $(AVIFILE_LDFLAGS)
+cinelerra_LDADD = \
+	$(top_builddir)/quicktime/libquicktime.la \
+	$(top_builddir)/guicast/libguicast.la \
+	$(top_builddir)/libmpeg3/libmpeg3.la \
+	$(top_builddir)/libsndfile/src/libsndfilehv.la \
+	-lX11 -logg -lvorbis -lvorbisfile -lvorbisenc -la52 \
+	-lpng -lXv -lXext -ljpeg -lmp3lame -ltiff -lesd -lz \
+	$(SOUND_LDFLAGS) \
+	$(FIREWIRE_LDFLAGS) -ldv \
+	-luuid $(AVIFILE_LDFLAGS)
 
 EXTRA_DIST = Blond data
 
 dist-hook:
 	-rm -rf $(distdir)/Blond/CVS
 	-rm -rf $(distdir)/data/CVS
+
+install-exec-hook:
+	@echo "Postprocessing $(DESTDIR)$(bindir)/cinelerra"
+	$(top_builddir)/guicast/bootstrap $(DESTDIR)$(bindir)/cinelerra $(srcdir)/data/mode_*.png

@@ -2,6 +2,7 @@
 #define EDITS_H
 
 
+#include "asset.inc"
 #include "assets.inc"
 #include "edl.inc"
 #include "guicast.h"
@@ -81,9 +82,9 @@ public:
 
 // ==================================== accounting
 
-	Edit* editof(int64_t position, int direction);
+	Edit* editof(int64_t position, int direction, int use_nudge);
 // Return an edit if position is over an edit and the edit has a source file
-	Edit* get_playable_edit(int64_t position);
+	Edit* get_playable_edit(int64_t position, int use_nudge);
 //	int64_t total_length();
 	int64_t length();         // end position of last edit
 

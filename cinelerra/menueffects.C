@@ -1,4 +1,5 @@
-#include "assets.h"
+#include "asset.h"
+#include "confirmsave.h"
 #include "defaults.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -16,7 +17,6 @@
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "menueffects.h"
-#include "neworappend.h"
 #include "playbackengine.h"
 #include "pluginarray.h"
 #include "pluginserver.h"
@@ -53,10 +53,11 @@ int MenuEffects::handle_event()
 
 
 
-MenuEffectPacket::MenuEffectPacket()
+MenuEffectPacket::MenuEffectPacket(char *path, int64_t start, int64_t end)
 {
-	start = end = 0.0;
-	path[0] = 0;
+	this->start = start;
+	this->end = end;
+	strcpy(this->path, path);
 }
 
 MenuEffectPacket::~MenuEffectPacket()
@@ -104,9 +105,6 @@ void MenuEffectThread::run()
 // Output
 	ArrayList<Asset*> assets;
 
-//printf("MenuEffectThread::run 1\n");
-//	sprintf(string, "");
-//	defaults->get("EFFECTPATH", string);
 
 // check for recordable tracks
 	if(!get_recordable_tracks(&default_asset))
@@ -313,7 +311,7 @@ void MenuEffectThread::run()
 			plugin->set_keyframe(&plugin_data);
 			plugin->set_prompt(&prompt);
 //printf("MenuEffectThread::run 11 %s\n", plugin->title);
-			plugin->open_plugin(0, mwindow->edl, 0);
+			plugin->open_plugin(0, mwindow->preferences, mwindow->edl, 0, -1);
 //printf("MenuEffectThread::run 11 %s\n", plugin->title);
 			plugin->show_gui();
 //printf("MenuEffectThread::run 12 %s\n", plugin->title);
@@ -337,7 +335,7 @@ void MenuEffectThread::run()
 //printf("MenuEffectThread::run 15\n");
 			plugin->set_mwindow(mwindow);
 //printf("MenuEffectThread::run 16\n");
-			plugin->open_plugin(0, mwindow->edl, 0);
+			plugin->open_plugin(0, mwindow->preferences, mwindow->edl, 0, -1);
 //printf("MenuEffectThread::run 17\n");
 			result = plugin->get_parameters();
 // some plugins can change the sample rate and the frame rate
@@ -359,120 +357,152 @@ void MenuEffectThread::run()
 		default_asset.height = mwindow->edl->session->output_h;
 	}
 
-//printf("MenuEffectThread::run 20\n");
 // Process the total length in fragments
-	Label *current_label = mwindow->edl->labels->first;
-	mwindow->stop_brender();
-
-	int current_number;
-	int number_start;
-	int total_digits;
-	Render::get_starting_number(default_asset.path, 
-		current_number,
-		number_start, 
-		total_digits);
-	for(int64_t fragment_start = (int64_t)total_start, fragment_end; 
-		fragment_start < (int64_t)total_end && !result; 
-		fragment_start = fragment_end)
+	ArrayList<MenuEffectPacket*> packets;
+	if(!result)
 	{
+		Label *current_label = mwindow->edl->labels->first;
+		mwindow->stop_brender();
+
+		int current_number;
+		int number_start;
+		int total_digits;
+		Render::get_starting_number(default_asset.path, 
+			current_number,
+			number_start, 
+			total_digits);
+
+
+
+// Construct all packets for single overwrite confirmation
+		for(int64_t fragment_start = (int64_t)total_start, fragment_end;
+			fragment_start < (int64_t)total_end;
+			fragment_start = fragment_end)
+		{
 // Get fragment end
-		if(strategy == FILE_PER_LABEL || strategy == FILE_PER_LABEL_FARM)
-		{
-			while(current_label && 
-				to_units(current_label->position, 0) <= fragment_start)
+			if(strategy == FILE_PER_LABEL || strategy == FILE_PER_LABEL_FARM)
+			{
+				while(current_label  &&
+					to_units(current_label->position, 0) <= fragment_start)
 					current_label = current_label->next;
-
-			if(!current_label)
-				fragment_end = (int64_t)total_end;
+				if(!current_label)
+					fragment_end = (int64_t)total_end;
+				else
+					fragment_end = to_units(current_label->position, 0);
+			}
 			else
-				fragment_end = to_units(current_label->position, 0);
-		}
-		else
-		{
-			fragment_end = (int64_t)total_end;
+			{
+				fragment_end = (int64_t)total_end;
+			}
+
+// Get path
+			char path[BCTEXTLEN];
+			if(strategy == FILE_PER_LABEL || strategy == FILE_PER_LABEL_FARM) 
+				Render::create_filename(path, 
+					default_asset.path, 
+					current_number,
+					total_digits,
+					number_start);
+			else
+				strcpy(path, default_asset.path);
+			current_number++;
+
+			MenuEffectPacket *packet = new MenuEffectPacket(path, 
+				fragment_start,
+				fragment_end);
+			packets.append(packet);
 		}
 
-// Create asset
+
+// Test existence of files
+		ArrayList<char*> paths;
+		for(int i = 0; i < packets.total; i++)
+		{
+			paths.append(packets.values[i]->path);
+		}
+		result = ConfirmSave::test_files(mwindow, &paths);
+		paths.remove_all();
+	}
+
+
+
+	for(int current_packet = 0; 
+		current_packet < packets.total && !result; 
+		current_packet++)
+	{
 		Asset *asset = new Asset(default_asset);
-		if(strategy == FILE_PER_LABEL || strategy == FILE_PER_LABEL_FARM) 
-			Render::create_filename(asset->path, 
-				default_asset.path, 
-				current_number,
-				total_digits,
-				number_start);
-		current_number++;
+		MenuEffectPacket *packet = packets.values[current_packet];
+		int64_t fragment_start = packet->start;
+		int64_t fragment_end = packet->end;
+		strcpy(asset->path, packet->path);
 
-		result = Render::test_existence(mwindow, asset);
-
-		if(!result)
-		{
-			assets.append(asset);
-			File *file = new File;
+		assets.append(asset);
+		File *file = new File;
 
 // Open the output file after getting the information because the sample rate
 // is needed here.
-			if(!result)
-			{
+		if(!result)
+		{
 // open output file in write mode
-				file->set_processors(mwindow->edl->session->smp + 1);
-				if(file->open_file(mwindow->plugindb, 
-					asset, 
-					0, 
-					1, 
-					mwindow->edl->session->sample_rate, 
-					mwindow->edl->session->frame_rate))
-				{
+			file->set_processors(mwindow->preferences->processors);
+			if(file->open_file(mwindow->plugindb, 
+				asset, 
+				0, 
+				1, 
+				mwindow->edl->session->sample_rate, 
+				mwindow->edl->session->frame_rate))
+			{
 // open failed
-					sprintf(string, _("Couldn't open %s"), asset->path);
-					ErrorBox error(PROGRAM_NAME ": Error");
-					error.create_objects(string);
-					error.run_window();
-					result = 1;
-				}
-				else
-				{
-					mwindow->sighandler->push_file(file);
-					IndexFile::delete_index(mwindow->preferences, asset);
-				}
+				sprintf(string, _("Couldn't open %s"), asset->path);
+				ErrorBox error(PROGRAM_NAME ": Error");
+				error.create_objects(string);
+				error.run_window();
+				result = 1;
 			}
+			else
+			{
+				mwindow->sighandler->push_file(file);
+				IndexFile::delete_index(mwindow->preferences, asset);
+			}
+		}
 
 //printf("MenuEffectThread::run 10\n");
 // run plugins
-			if(!result)
-			{
+		if(!result)
+		{
 // position file
-				output_start = 0;
+			output_start = 0;
 
-				PluginArray *plugin_array;
-				plugin_array = create_plugin_array();
+			PluginArray *plugin_array;
+			plugin_array = create_plugin_array();
 
 //printf("MenuEffectThread::run 11\n");
-				plugin_array->start_plugins(mwindow, 
-					mwindow->edl, 
-					plugin_server, 
-					&plugin_data,
-					fragment_start,
-					fragment_end,
-					file);
+			plugin_array->start_plugins(mwindow, 
+				mwindow->edl, 
+				plugin_server, 
+				&plugin_data,
+				fragment_start,
+				fragment_end,
+				file);
 //printf("MenuEffectThread::run 12\n");
-				plugin_array->run_plugins();
+			plugin_array->run_plugins();
 
 //printf("MenuEffectThread::run 13\n");
-				plugin_array->stop_plugins();
-				mwindow->sighandler->pull_file(file);
-				file->close_file();
-				asset->audio_length = file->asset->audio_length;
-				asset->video_length = file->asset->video_length;
+			plugin_array->stop_plugins();
+			mwindow->sighandler->pull_file(file);
+			file->close_file();
+			asset->audio_length = file->asset->audio_length;
+			asset->video_length = file->asset->video_length;
 //printf("MenuEffectThread::run 14 %d %d\n", asset->audio_length, asset->video_length);
-				delete plugin_array;
+			delete plugin_array;
 //printf("MenuEffectThread::run 16\n");
-			}
-
-			delete file;
 		}
-	}
-//printf("MenuEffectThread::run 16 %d\n", result);
 
+		delete file;
+	}
+
+//printf("MenuEffectThread::run 16 %d\n", result);
+	packets.remove_all_objects();
 
 // paste output to tracks
 	if(!result && load_mode != LOAD_NOTHING)

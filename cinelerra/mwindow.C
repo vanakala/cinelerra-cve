@@ -1,6 +1,8 @@
+#include "asset.h"
 #include "assets.h"
 #include "awindowgui.h"
 #include "awindow.h"
+#include "batchrender.h"
 #include "bcdisplayinfo.h"
 #include "brender.h"
 #include "cache.h"
@@ -21,6 +23,7 @@
 #include "filesystem.h"
 #include "filexml.h"
 #include "indexfile.h"
+#include "language.h"
 #include "levelwindowgui.h"
 #include "levelwindow.h"
 #include "loadfile.inc"
@@ -67,11 +70,6 @@
 
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
-
 
 extern "C"
 {
@@ -116,54 +114,60 @@ int atexit(void (*function)(void))
 
 MWindow::MWindow()
 {
-	plugin_gui_lock = new Mutex;
-	brender_lock = new Mutex;
+	plugin_gui_lock = new Mutex("MWindow::plugin_gui_lock");
+	brender_lock = new Mutex("MWindow::brender_lock");
 	brender = 0;
 	session = 0;
 }
 
 MWindow::~MWindow()
 {
-//printf("MWindow::~MWindow 1\n");
-	brender_lock->lock();
+	brender_lock->lock("MWindow::~MWindow");
 	if(brender) delete brender;
 	brender = 0;
 	brender_lock->unlock();
 	delete brender_lock;
-//printf("MWindow::~MWindow 2\n");
+
+	delete mainindexes;
+
+TRACE("MWindow::~MWindow 1\n");
 	clean_indexes();
-//printf("MWindow::~MWindow 1\n");
+
+// Give up and go to a movie
+	exit(0);
+
+TRACE("MWindow::~MWindow 2\n");
 	delete mainprogress;
-//printf("MWindow::~MWindow 1\n");
+TRACE("MWindow::~MWindow 3\n");
 	delete audio_cache;             // delete the cache after the assets
-//printf("MWindow::~MWindow 1\n");
+TRACE("MWindow::~MWindow 4\n");
 	delete video_cache;             // delete the cache after the assets
-//printf("MWindow::~MWindow 1\n");
+TRACE("MWindow::~MWindow 5\n");
 	if(gui) delete gui;
-//printf("MWindow::~MWindow 1\n");
+TRACE("MWindow::~MWindow 6\n");
 	delete undo;
-//printf("MWindow::~MWindow 1\n");
+TRACE("MWindow::~MWindow 7\n");
 	delete preferences;
-//printf("MWindow::~MWindow 1\n");
+TRACE("MWindow::~MWindow 8\n");
 	delete defaults;
-//printf("MWindow::~MWindow 1\n");
+TRACE("MWindow::~MWindow 9\n");
 	delete render;
-//printf("MWindow::~MWindow 1\n");
-	delete renderlist;
-//printf("MWindow::~MWindow 1\n");
+TRACE("MWindow::~MWindow 10\n");
+//	delete renderlist;
+TRACE("MWindow::~MWindow 11\n");
 	delete awindow;
-//printf("MWindow::~MWindow 1\n");
+TRACE("MWindow::~MWindow 12\n");
 	delete vwindow;
-//printf("MWindow::~MWindow 1\n");
+TRACE("MWindow::~MWindow 13\n");
 	delete cwindow;
 	delete lwindow;
-//printf("MWindow::~MWindow 1\n");
+TRACE("MWindow::~MWindow 14\n");
 	plugin_guis->remove_all_objects();
-//printf("MWindow::~MWindow 2\n");
+TRACE("MWindow::~MWindow 15\n");
 	delete plugin_guis;
-//printf("MWindow::~MWindow 3\n");
+TRACE("MWindow::~MWindow 16\n");
 	delete plugin_gui_lock;
-//printf("MWindow::~MWindow 5\n");
+TRACE("MWindow::~MWindow 17\n");
 }
 
 void MWindow::init_defaults(Defaults* &defaults)
@@ -211,8 +215,9 @@ void MWindow::init_plugin_path(Preferences *preferences,
 			{
 // Try to query the plugin
 				fs->complete_path(path);
+//printf("MWindow::init_plugin_path %s\n", path);
 				PluginServer *new_plugin = new PluginServer(path);
-				int result = new_plugin->open_plugin(1, 0, 0);
+				int result = new_plugin->open_plugin(1, preferences, 0, 0, -1);
 
 				if(!result)
 				{
@@ -231,6 +236,7 @@ void MWindow::init_plugin_path(Preferences *preferences,
 					{
 						new_plugin = new PluginServer(path);
 						result = new_plugin->open_plugin(1,
+							preferences,
 							0,
 							0,
 							id);
@@ -486,7 +492,7 @@ void MWindow::init_theme()
 			!strcasecmp(preferences->theme, plugindb->values[i]->title))
 		{
 			PluginServer plugin = *plugindb->values[i];
-			plugin.open_plugin(0, 0, 0);
+			plugin.open_plugin(0, preferences, 0, 0, -1);
 			theme = plugin.new_theme();
 			theme->mwindow = this;
 			strcpy(theme->path, plugin.path);
@@ -500,10 +506,12 @@ void MWindow::init_theme()
 		exit(1);
 	}
 
-//printf("MWindow::init_theme 3 %p\n", theme);
+// Load user images
 	theme->initialize();
+// Load images which may have been forgotten
+	theme->Theme::initialize();
+
 	theme->check_used();
-//printf("MWindow::init_theme 4\n");
 }
 
 void MWindow::init_edl()
@@ -625,19 +633,21 @@ void MWindow::init_gui()
 void MWindow::init_signals()
 {
 	sighandler = new SigHandler;
+	sighandler->initialize();
 }
 
 void MWindow::init_render()
 {
 	render = new Render(this);
-	renderlist = new Render(this);
+//	renderlist = new Render(this);
+	batch_render = new BatchRenderThread(this);
 }
 
 void MWindow::init_brender()
 {
 	if(preferences->use_brender && !brender)
 	{
-		brender_lock->lock();
+		brender_lock->lock("MWindow::init_brender 1");
 		brender = new BRender(this);
 		brender->initialize();
 		session->brender_end = 0;
@@ -646,7 +656,7 @@ void MWindow::init_brender()
 	else
 	if(!preferences->use_brender && brender)
 	{
-		brender_lock->lock();
+		brender_lock->lock("MWindow::init_brender 2");
 		delete brender;
 		brender = 0;
 		session->brender_end = 0;
@@ -669,12 +679,12 @@ void MWindow::stop_brender()
 int MWindow::brender_available(int position)
 {
 	int result = 0;
-	brender_lock->lock();
+	brender_lock->lock("MWindow::brender_available 1");
 	if(brender)
 	{
 		if(brender->map_valid)
 		{
-			brender->map_lock->lock();
+			brender->map_lock->lock("MWindow::brender_available 2");
 			if(position < brender->map_size &&
 				position >= 0)
 			{
@@ -701,7 +711,7 @@ void MWindow::set_brender_start()
 
 int MWindow::load_filenames(ArrayList<char*> *filenames, int load_mode)
 {
-TRON("MWindow::load_filenames\n");
+TRACE("MWindow::load_filenames 1");
 	ArrayList<EDL*> new_edls;
 	ArrayList<Asset*> new_assets;
 //printf("load_filenames 1\n");
@@ -873,10 +883,6 @@ TRON("MWindow::load_filenames\n");
 //printf("load_filenames 2\n");
 				FileXML xml_file;
 				xml_file.read_from_file(filenames->values[i]);
-//printf("load_filenames 3\n");
-//				gui->lock_window();
-//				gui->update_title(session->filename);
-//				gui->unlock_window();
 // Load EDL for pasting
 //printf("load_filenames 3\n");
 				new_edl->load_xml(plugindb, &xml_file, LOAD_ALL);
@@ -970,7 +976,9 @@ TRON("MWindow::load_filenames\n");
 		mainindexes->start_build();
 	}
 
+TRACE("MWindow::load_filenames 100");
 	update_project(load_mode);
+TRACE("MWindow::load_filenames 110");
 
 //printf("MWindow::load_filenames 9\n");
 //sleep(10);
@@ -983,53 +991,60 @@ TRON("MWindow::load_filenames\n");
 		load_mode == LOAD_REPLACE_CONCATENATE)
 		session->changes_made = 0;
 
-TROFF("MWindow::load_filenames\n");
+UNTRACE
 	return 0;
 }
 
 void MWindow::create_objects(int want_gui, int want_new)
 {
-	char string[1024];
+	char string[BCTEXTLEN];
 	FileSystem fs;
-
 	edl = 0;
 
+
+//printf("MWindow::create_objects 1\n");
 	show_splash();
+
+//printf("MWindow::create_objects 1\n");
+// For some reason, init_signals must come after show_splash or the signals won't
+// get trapped.
 	init_signals();
+//printf("MWindow::create_objects 1\n");
 
 	init_menus();
-//printf("MWindow::create_objects 1\n");
+TRACE("MWindow::create_objects 1");
 	init_defaults(defaults);
-//printf("MWindow::create_objects 1\n");
+TRACE("MWindow::create_objects 1");
 	init_preferences();
-//printf("MWindow::create_objects 1\n");
+TRACE("MWindow::create_objects 1");
 	init_plugins(preferences, plugindb, splash_window);
-	splash_window->operation->update(_("Initializing GUI"));
-//printf("MWindow::create_objects 1\n");
+	if(splash_window) splash_window->operation->update(_("Initializing GUI"));
+TRACE("MWindow::create_objects 1");
 	init_theme();
 // Default project created here
-//printf("MWindow::create_objects 1\n");
+TRACE("MWindow::create_objects 1");
 	init_edl();
 
-//printf("MWindow::create_objects 1\n");
+TRACE("MWindow::create_objects 1");
 	init_awindow();
-//printf("MWindow::create_objects 1\n");
+TRACE("MWindow::create_objects 1");
 	init_compositor();
-//printf("MWindow::create_objects 1\n");
+TRACE("MWindow::create_objects 1");
 	init_levelwindow();
-//printf("MWindow::create_objects 1\n");
+TRACE("MWindow::create_objects 1");
 	init_viewer();
-//printf("MWindow::create_objects 1\n");
+TRACE("MWindow::create_objects 1");
 	init_tuner(channeldb_v4l, "channels_v4l");
-//printf("MWindow::create_objects 1\n");
+TRACE("MWindow::create_objects 1");
 	init_tuner(channeldb_buz, "channels_buz");
-//printf("MWindow::create_objects 1\n");
+TRACE("MWindow::create_objects 1");
 	init_cache();
-//printf("MWindow::create_objects 1\n");
+TRACE("MWindow::create_objects 1");
 	init_indexes();
-//printf("MWindow::create_objects 1\n");
+TRACE("MWindow::create_objects 1");
+
 	init_gui();
-//printf("MWindow::create_objects 1\n");
+TRACE("MWindow::create_objects 1");
 	init_render();
 	init_brender();
 	mainprogress = new MainProgress(this, gui);
@@ -1037,35 +1052,36 @@ void MWindow::create_objects(int want_gui, int want_new)
 
 	plugin_guis = new ArrayList<PluginServer*>;
 
-//printf("MWindow::create_objects 1\n");
+TRACE("MWindow::create_objects 1");
 	if(session->show_vwindow) vwindow->gui->show_window();
 	if(session->show_cwindow) cwindow->gui->show_window();
 	if(session->show_awindow) awindow->gui->show_window();
 	if(session->show_lwindow) lwindow->gui->show_window();
-//printf("MWindow::create_objects 1\n");
+TRACE("MWindow::create_objects 1");
 
 // 	vwindow->start();
 // 	awindow->start();
 // 	cwindow->start();
 // 	lwindow->start();
-//printf("MWindow::create_objects 1\n");
+//printf("MWindow::create_objects 1");
 
 	gui->mainmenu->load_defaults(defaults);
-//printf("MWindow::create_objects 1\n");
+TRACE("MWindow::create_objects 1");
 	gui->mainmenu->update_toggles();
-//printf("MWindow::create_objects 1\n");
+TRACE("MWindow::create_objects 1");
 	gui->patchbay->update();
-//printf("MWindow::create_objects 1\n");
+TRACE("MWindow::create_objects 1");
 	gui->canvas->draw();
-//printf("MWindow::create_objects 1\n");
+TRACE("MWindow::create_objects 1");
 	gui->cursor->draw();
-//printf("MWindow::create_objects 1\n");
+TRACE("MWindow::create_objects 1");
 	gui->raise_window();
-//printf("MWindow::create_objects 1\n");
+TRACE("MWindow::create_objects 1");
 	gui->show_window();
+TRACE("MWindow::create_objects 2");
 
 	hide_splash();
-//printf("MWindow::create_objects 2\n");
+UNTRACE
 }
 
 
@@ -1082,7 +1098,9 @@ void MWindow::show_splash()
 
 void MWindow::hide_splash()
 {
-	delete splash_window;
+	if(splash_window)
+		delete splash_window;
+	splash_window = 0;
 }
 
 
@@ -1098,7 +1116,7 @@ void MWindow::start()
 void MWindow::show_vwindow()
 {
 	session->show_vwindow = 1;
-	vwindow->gui->lock_window();
+	vwindow->gui->lock_window("MWindow::show_vwindow");
 	vwindow->gui->show_window();
 	vwindow->gui->raise_window();
 	vwindow->gui->flush();
@@ -1109,7 +1127,7 @@ void MWindow::show_vwindow()
 void MWindow::show_awindow()
 {
 	session->show_awindow = 1;
-	awindow->gui->lock_window();
+	awindow->gui->lock_window("MWindow::show_awindow");
 	awindow->gui->show_window();
 	awindow->gui->raise_window();
 	awindow->gui->flush();
@@ -1120,7 +1138,7 @@ void MWindow::show_awindow()
 void MWindow::show_cwindow()
 {
 	session->show_cwindow = 1;
-	cwindow->gui->lock_window();
+	cwindow->gui->lock_window("MWindow::show_cwindow");
 	cwindow->gui->show_window();
 	cwindow->gui->raise_window();
 	cwindow->gui->flush();
@@ -1131,7 +1149,7 @@ void MWindow::show_cwindow()
 void MWindow::show_lwindow()
 {
 	session->show_lwindow = 1;
-	lwindow->gui->lock_window();
+	lwindow->gui->lock_window("MWindow::show_lwindow");
 	lwindow->gui->show_window();
 	lwindow->gui->raise_window();
 	lwindow->gui->flush();
@@ -1164,12 +1182,12 @@ void MWindow::set_titles(int value)
 
 void MWindow::set_auto_keyframes(int value)
 {
-	gui->lock_window();
+	gui->lock_window("MWindow::set_auto_keyframes");
 	edl->session->auto_keyframes = value;
 	gui->mbuttons->edit_panel->keyframe->update(value);
 	gui->flush();
 	gui->unlock_window();
-	cwindow->gui->lock_window();
+	cwindow->gui->lock_window("MWindow::set_auto_keyframes");
 	cwindow->gui->edit_panel->keyframe->update(value);
 	cwindow->gui->flush();
 	cwindow->gui->unlock_window();
@@ -1177,13 +1195,13 @@ void MWindow::set_auto_keyframes(int value)
 
 int MWindow::set_editing_mode(int new_editing_mode)
 {
-	gui->lock_window();
+	gui->lock_window("MWindow::set_editing_mode");
 	edl->session->editing_mode = new_editing_mode;
 	gui->mbuttons->edit_panel->editing_mode = edl->session->editing_mode;
 	gui->mbuttons->edit_panel->update();
 	gui->canvas->update_cursor();
 	gui->unlock_window();
-	cwindow->gui->lock_window();
+	cwindow->gui->lock_window("MWindow::set_editing_mode");
 	cwindow->gui->edit_panel->update();
 	cwindow->gui->edit_panel->editing_mode = edl->session->editing_mode;
 	cwindow->gui->unlock_window();
@@ -1270,7 +1288,7 @@ void MWindow::show_plugin(Plugin *plugin)
 			PluginServer *gui = plugin_guis->append(new PluginServer(*server));
 // Needs mwindow to do GUI
 			gui->set_mwindow(this);
-			gui->open_plugin(0, edl, plugin);
+			gui->open_plugin(0, preferences, edl, plugin, -1);
 			gui->show_gui();
 			plugin->show = 1;
 		}
@@ -1477,20 +1495,20 @@ int MWindow::asset_to_edl(EDL *new_edl,
 void MWindow::update_project(int load_mode)
 {
 	restart_brender();
-//printf("MWindow::update_project 1\n");
+TRACE("MWindow::update_project 1");
 	edl->tracks->update_y_pixels(theme);
 
 // Draw timeline
-//printf("MWindow::update_project 1\n");
+TRACE("MWindow::update_project 1");
 	update_caches();
 
-//printf("MWindow::update_project 1\n");
+TRACE("MWindow::update_project 1");
 	gui->update(1, 1, 1, 1, 1, 1, 1);
 
-//printf("MWindow::update_project 1\n");
+TRACE("MWindow::update_project 1");
 	cwindow->update(0, 0, 1, 1, 1);
 
-//printf("MWindow::update_project 1\n");
+TRACE("MWindow::update_project 1");
 
 	if(load_mode == LOAD_REPLACE ||
 		load_mode == LOAD_REPLACE_CONCATENATE)
@@ -1510,17 +1528,12 @@ void MWindow::update_project(int load_mode)
 		edl,
 		1);
 
-//printf("MWindow::update_project 1\n");
-	awindow->gui->lock_window();
-//printf("MWindow::update_project 1\n");
+	awindow->gui->lock_window("MWindow::update_project");
 	awindow->gui->update_assets();
-//printf("MWindow::update_project 1\n");
 	awindow->gui->flush();
-//printf("MWindow::update_project 1\n");
 	awindow->gui->unlock_window();
-//printf("MWindow::update_project 12\n");
 	gui->flush();
-//printf("MWindow::update_project 13\n");
+TRACE("MWindow::update_project 100");
 }
 
 
@@ -1583,17 +1596,6 @@ int MWindow::create_aspect_ratio(float &w, float &h, int width, int height)
 	h = denominator;
 }
 
-void MWindow::render_single()
-{
-	if(!render->running())
-		render->start();
-}
-
-void MWindow::render_list()
-{
-	if(!renderlist->running())
-		renderlist->start();
-}
 
 
 void MWindow::remove_assets_from_project(int push_undo)
@@ -1617,7 +1619,7 @@ printf("MWindow::remove_assets_from_project 100\n");
 	{
 		if(session->drag_clips->values[i] == vwindow->get_edl())
 		{
-			vwindow->gui->lock_window();
+			vwindow->gui->lock_window("MWindow::remove_assets_from_project 1");
 			vwindow->remove_source();
 			vwindow->gui->unlock_window();
 		}
@@ -1627,7 +1629,7 @@ printf("MWindow::remove_assets_from_project 100\n");
 	{
 		if(session->drag_assets->values[i] == vwindow->get_asset())
 		{
-			vwindow->gui->lock_window();
+			vwindow->gui->lock_window("MWindow::remove_assets_from_project 2");
 			vwindow->remove_source();
 			vwindow->gui->unlock_window();
 		}
@@ -1639,7 +1641,7 @@ printf("MWindow::remove_assets_from_project 100\n");
 	if(push_undo) undo->update_undo_after();
 	restart_brender();
 
-	gui->lock_window();
+	gui->lock_window("MWindow::remove_assets_from_project 3");
 	gui->update(1,
 		1,
 		1,
@@ -1649,7 +1651,7 @@ printf("MWindow::remove_assets_from_project 100\n");
 		0);
 	gui->unlock_window();
 
-	awindow->gui->lock_window();
+	awindow->gui->lock_window("MWindow::remove_assets_from_project 4");
 	awindow->gui->update_assets();
 	awindow->gui->flush();
 	awindow->gui->unlock_window();
@@ -1856,19 +1858,19 @@ int MWindow::set_loop_boundaries()
 
 int MWindow::reset_meters()
 {
-	cwindow->gui->lock_window();
+	cwindow->gui->lock_window("MWindow::reset_meters 1");
 	cwindow->gui->meters->reset_meters();
 	cwindow->gui->unlock_window();
 
-	vwindow->gui->lock_window();
+	vwindow->gui->lock_window("MWindow::reset_meters 2");
 	vwindow->gui->meters->reset_meters();
 	vwindow->gui->unlock_window();
 
-	lwindow->gui->lock_window();
+	lwindow->gui->lock_window("MWindow::reset_meters 3");
 	lwindow->gui->panel->reset_meters();
 	lwindow->gui->unlock_window();
 
-	gui->lock_window();
+	gui->lock_window("MWindow::reset_meters 4");
 	gui->patchbay->reset_meters();
 	gui->unlock_window();
 	return 0; 

@@ -105,26 +105,30 @@ float mpeg3_aspect_ratio(mpeg3_t *file, int stream); /* aspect ratio.  0 if none
 double mpeg3_frame_rate(mpeg3_t *file, int stream);  /* Frames/sec */
 
 /* Total length.   */
-/* For DVD files, this is 1 indicating only percentage seeking is available. */
+/* This is meaningless except for TOC files. */
 long mpeg3_video_frames(mpeg3_t *file, int stream);
 int mpeg3_set_frame(mpeg3_t *file, long frame, int stream); /* Seek to a frame */
 int mpeg3_skip_frames();
 long mpeg3_get_frame(mpeg3_t *file, int stream);            /* Tell current position */
 
-/* Seek all the tracks based on a percentage of the total bytes in the  */
-/* file or the total */
-/* time in a toc if one exists.  Percentage is a 0 to 1 double. */
-/* This eliminates the need for tocs and 64 bit longs but doesn't  */
+/* Total bytes.  Used for absolute byte seeking. */
+int64_t mpeg3_get_bytes(mpeg3_t *file);
+
+/* Seek all the tracks to the absolute byte in the  */
+/* file.  This eliminates the need for tocs but doesn't  */
 /* give frame accuracy. */
-int mpeg3_seek_percentage(mpeg3_t *file, double percentage);
-double mpeg3_tell_percentage(mpeg3_t *file);
+int mpeg3_seek_byte(mpeg3_t *file, int64_t byte);
+int64_t mpeg3_tell_byte(mpeg3_t *file);
+
 
 /* To synchronize audio and video in percentage seeking mode, these must */
 /* be called after percentage seeking the video file and before */
 /* percentage seeking the audio file.  Then when the audio file is percentage */
 /* seeked it will search for the nearest pts to file->percentage_pts. */
-double mpeg3_get_percentage_pts(mpeg3_t *file);
-void mpeg3_set_percentage_pts(mpeg3_t *file, double pts);
+/*
+ * double mpeg3_get_percentage_pts(mpeg3_t *file);
+ * void mpeg3_set_percentage_pts(mpeg3_t *file, double pts);
+ */
 
 int mpeg3_previous_frame(mpeg3_t *file, int stream);
 int mpeg3_end_of_audio(mpeg3_t *file, int stream);

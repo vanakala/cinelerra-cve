@@ -5,6 +5,7 @@
 #include "bcsubwindow.h"
 #include "bctumble.h"
 #include "fonts.h"
+#include "timer.inc"
 
 #define BCCURSORW 2
 
@@ -13,10 +14,34 @@
 class BC_TextBox : public BC_SubWindow
 {
 public:
-	BC_TextBox(int x, int y, int w, int rows, char *text, int has_border = 1, int font = MEDIUMFONT);
-	BC_TextBox(int x, int y, int w, int rows, int64_t text, int has_border = 1, int font = MEDIUMFONT);
-	BC_TextBox(int x, int y, int w, int rows, int text, int has_border = 1, int font = MEDIUMFONT);
-	BC_TextBox(int x, int y, int w, int rows, float text, int has_border = 1, int font = MEDIUMFONT);
+	BC_TextBox(int x, 
+		int y, 
+		int w, 
+		int rows, 
+		char *text, 
+		int has_border = 1, 
+		int font = MEDIUMFONT);
+	BC_TextBox(int x, 
+		int y, 
+		int w, 
+		int rows, 
+		int64_t text, 
+		int has_border = 1, 
+		int font = MEDIUMFONT);
+	BC_TextBox(int x, 
+		int y, 
+		int w, 
+		int rows, 
+		int text, 
+		int has_border = 1, 
+		int font = MEDIUMFONT);
+	BC_TextBox(int x, 
+		int y, 
+		int w, 
+		int rows, 
+		float text, 
+		int has_border = 1, 
+		int font = MEDIUMFONT);
 	virtual ~BC_TextBox();
 
 // Whenever the contents of the text change
@@ -30,10 +55,13 @@ public:
 	void enable();
 
 	int initialize();
+
+	int focus_in_event();
+	int focus_out_event();
 	int cursor_enter_event();
 	int cursor_leave_event();
 	int cursor_motion_event();
-	int button_press_event();
+	virtual int button_press_event();
 	int button_release_event();
 	int repeat_event(int64_t repeat_id);
 	int keypress_event();
@@ -49,6 +77,17 @@ public:
 	static int calculate_row_h(int rows, BC_WindowBase *parent_window, int has_border = 1, int font = MEDIUMFONT);
 	static int pixels_to_rows(BC_WindowBase *window, int font, int pixels);
 	void set_precision(int precision);
+// Whether to draw every time there is a keypress or rely on user to
+// follow up every keypress with an update().
+	void set_keypress_draw(int value);
+	int get_ibeam_letter();
+	void set_ibeam_letter(int number, int redraw = 1);
+// Used for custom formatting text boxes
+	int get_last_keypress();
+// Table of separators to skip.  Used by time textboxes
+// The separator format is "0000:0000".  Things not alnum are considered
+// separators.  The alnums are replaced by user text.
+	void set_separators(char *separators);
 
 private:
 	int reset_parameters(int rows, int has_border, int font);
@@ -59,6 +98,9 @@ private:
 	void paste_selection(int clipboard_num);
 	void delete_selection(int letter1, int letter2, int text_len);
 	void insert_text(char *string);
+// Reformat text according to separators.
+// ibeam_left causes the ibeam to move left.
+	void do_separators(int ibeam_left);
 	void get_ibeam_position(int &x, int &y);
 	void find_ibeam(int dispatch_event);
 	void select_word(int &letter1, int &letter2, int ibeam_letter);
@@ -88,6 +130,13 @@ private:
 	int active;
 	int enabled;
 	int precision;
+	int keypress_draw;
+// Cause the repeater to skip a cursor refresh if a certain event happened
+// within a certain time of the last repeat event
+	Timer *skip_cursor;
+// Used for custom formatting text boxes
+	int last_keypress;
+	char *separators;
 };
 
 

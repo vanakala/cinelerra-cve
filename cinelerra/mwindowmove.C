@@ -225,7 +225,7 @@ int MWindow::goto_start()
 			0;
 	}
 
-	if(edl->local_session->view_start != old_view_start) 
+	if(edl->local_session->view_start != old_view_start)
 		samplemovement(edl->local_session->view_start);
 
 	update_plugin_guis();
@@ -239,24 +239,15 @@ int MWindow::goto_start()
 
 int MWindow::samplemovement(int64_t view_start)
 {
-//printf("MWindow::samplemovement 1\n");
 	edl->local_session->view_start = view_start;
-//printf("MWindow::samplemovement 2\n");
 	if(edl->local_session->view_start < 0) edl->local_session->view_start = 0;
-//printf("MWindow::samplemovement 3\n");
 	gui->canvas->draw();
-//printf("MWindow::samplemovement 4\n");
 	gui->cursor->show();
-//printf("MWindow::samplemovement 5\n");
 	gui->canvas->flash();
-//printf("MWindow::samplemovement 6\n");
 	gui->timebar->update();
-//printf("MWindow::samplemovement 7\n");
 	gui->zoombar->update();
-//printf("MWindow::samplemovement 8\n");
 
 	if(gui->samplescroll) gui->samplescroll->set_position();
-//printf("MWindow::samplemovement 9\n");
 	return 0;
 }
 

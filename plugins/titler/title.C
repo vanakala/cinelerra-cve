@@ -26,7 +26,7 @@
 #include <endian.h>
 #include <byteswap.h>
 #include <iconv.h>
-
+#include <sys/stat.h>
 
 #include <libintl.h>
 #define _(String) gettext(String)
@@ -1010,7 +1010,6 @@ TitleMain::TitleMain(PluginServer *server)
 
 TitleMain::~TitleMain()
 {
-//printf("TitleMain::~TitleMain 1\n");
 	PLUGIN_DESTRUCTOR_MACRO
 	if(text_mask) delete text_mask;
 	if(text_mask_stroke) delete text_mask_stroke;
@@ -1051,6 +1050,8 @@ void TitleMain::build_fonts()
 //printf("TitleMain::build_fonts %s\n", command_line);
 
 		FILE *in = popen(command_line, "r");
+
+
 		char current_dir[BCTEXTLEN];
 		FT_Library freetype_library = 0;      	// Freetype library
 		FT_Face freetype_face = 0;
@@ -1068,7 +1069,7 @@ void TitleMain::build_fonts()
 			char *out_ptr;
 
 // Get current directory
-			
+
 			if(string[0] == '/')
 			{
 				out_ptr = current_dir;
@@ -1084,6 +1085,7 @@ void TitleMain::build_fonts()
 
 //printf("TitleMain::build_fonts %s\n", string);
 				FontEntry *entry = new FontEntry;
+				int result = 0;
 
 // Path
 				out_ptr = string2;
@@ -1102,6 +1104,15 @@ void TitleMain::build_fonts()
 					entry->path = new char[strlen(current_dir) + strlen(string2) + 1];
 					sprintf(entry->path, "%s%s", current_dir, string2);
 				}
+
+
+// Test path existence
+				struct stat test_stat;
+				if(stat(entry->path, &test_stat))
+				{
+					result = 1;
+				}
+//printf("TitleMain::build_fonts 1 %s\n", entry->path);
 
 // Foundary
 				while(*in_ptr != 0 && *in_ptr != 0xa && (*in_ptr == ' ' || *in_ptr == '-'))
@@ -1258,7 +1269,7 @@ void TitleMain::build_fonts()
 
 
 // Add to list
-				if(strlen(entry->foundary))
+				if(strlen(entry->foundary) && !result)
 				{
 //printf("TitleMain::build_fonts 1 %s\n", entry->path);
 // This takes a real long time to do.  Instead just take all fonts

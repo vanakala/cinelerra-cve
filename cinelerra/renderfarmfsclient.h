@@ -67,6 +67,7 @@ public:
 	int stat (__const char *__restrict __file,
 			 struct stat *__restrict __buf);
 	char *fgets (char *__restrict __s, int __n, FILE *__restrict __stream);
+	int fileno(FILE *file);
 
 // Locking order:
 // 1) RenderFarmFSClient

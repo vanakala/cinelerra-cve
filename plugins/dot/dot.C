@@ -43,25 +43,17 @@ DotConfig::DotConfig()
 DotMain::DotMain(PluginServer *server)
  : PluginVClient(server)
 {
-	thread = 0;
-	defaults = 0;
 	pattern = 0;
 	sampx = 0;
 	sampy = 0;
 	effecttv = 0;
 	need_reconfigure = 1;
-	load_defaults();
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 DotMain::~DotMain()
 {
-	if(thread)
-	{
-// Set result to 0 to indicate a server side close
-		thread->window->set_done(0);
-		thread->completion.lock();
-		delete thread;
-	}
+	PLUGIN_DESTRUCTOR_MACRO
 	
 	if(pattern) delete [] pattern;
 	if(sampx) delete [] sampx;
@@ -71,8 +63,6 @@ DotMain::~DotMain()
 		delete dot_server;
 		delete effecttv;
 	}
-	save_defaults();
-	if(defaults) delete defaults;
 }
 
 char* DotMain::plugin_title() { return _("DotTV"); }

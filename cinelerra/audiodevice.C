@@ -4,7 +4,9 @@
 #include "audioalsa.h"
 #include "audioesound.h"
 #include "audiooss.h"
+#include "condition.h"
 #include "dcoffset.h"
+#include "mutex.h"
 #include "playbackconfig.h"
 #include "preferences.h"
 #include "recordconfig.h"
@@ -32,12 +34,28 @@ AudioDevice::AudioDevice()
 	initialize();
 	this->out_config = new AudioOutConfig(0, 0, 0);
 	this->in_config = new AudioInConfig;
+	startup_lock = new Condition(0, "AudioDevice::startup_lock");
+	duplex_lock = new Condition(0, "AudioDevice::duplex_lock");
+	timer_lock = new Mutex("AudioDevice::timer_lock");
+	for(int i = 0; i < TOTAL_BUFFERS; i++)
+	{
+		play_lock[i] = new Condition(0, "AudioDevice::play_lock");
+		arm_lock[i] = new Condition(1, "AudioDevice::arm_lock");
+	}
 }
 
 AudioDevice::~AudioDevice()
 {
 	delete out_config;
 	delete in_config;
+	delete startup_lock;
+	delete duplex_lock;
+	delete timer_lock;
+	for(int i = 0; i < TOTAL_BUFFERS; i++)
+	{
+		delete play_lock[i];
+		delete arm_lock[i];
+	}
 }
 
 int AudioDevice::initialize()
@@ -49,7 +67,6 @@ int AudioDevice::initialize()
 	{
 		buffer[i] = 0;
 		buffer_size[i] = 0;
-		play_mutex[i].lock();
 		last_buffer[i] = 0;
 	}
 
@@ -76,6 +93,7 @@ int AudioDevice::initialize()
 int AudioDevice::create_lowlevel(AudioLowLevel* &lowlevel, int driver)
 {
 	this->driver = driver;
+
 
 	if(!lowlevel)
 	{
@@ -104,6 +122,7 @@ int AudioDevice::create_lowlevel(AudioLowLevel* &lowlevel, int driver)
 
 #ifdef HAVE_FIREWIRE	
 			case AUDIO_1394:
+			case AUDIO_DV1394:
 				lowlevel = new Audio1394(this);
 				break;
 #endif
@@ -152,7 +171,6 @@ int AudioDevice::open_duplex(AudioOutConfig *out_config, int rate, int samples, 
 	{
 		duplex_channels += out_config->oss_out_channels[i];
 	}
-	duplex_lock.lock();     // prevent playback until recording starts
 	create_lowlevel(lowlevel_duplex, out_config->driver);
 	lowlevel_duplex->open_duplex();
 	playback_timer.update();

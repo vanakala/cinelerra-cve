@@ -52,9 +52,9 @@ VirtualVNode::VirtualVNode(RenderEngine *renderengine,
 	this->buffer_in = buffer_in;
 	this->buffer_out = buffer_out;
 //printf("VirtualVNode::VirtualVNode 1\n");
-	overlayer = new OverlayFrame(renderengine->edl->session->smp + 1);
-	fader = new FadeEngine(renderengine->edl->session->smp + 1);
-	masker = new MaskEngine(renderengine->edl->session->smp + 1);
+	overlayer = new OverlayFrame(renderengine->preferences->processors);
+	fader = new FadeEngine(renderengine->preferences->processors);
+	masker = new MaskEngine(renderengine->preferences->processors);
 }
 
 VirtualVNode::~VirtualVNode()
@@ -146,19 +146,15 @@ VFrame* VirtualVNode::get_module_output()
 
 int VirtualVNode::render(VFrame **video_out, int64_t input_position)
 {
-//printf("VirtualVNode::render 1\n");
 	if(real_module)
 	{
-//printf("VirtualVNode::render 2\n");
 		render_as_module(video_out, input_position);
 	}
 	else
 	if(real_plugin)
 	{
-//printf("VirtualVNode::render 3\n");
 		render_as_plugin(input_position);
 	}
-//printf("VirtualVNode::render 4\n");
 	return 0;
 }
 
@@ -167,6 +163,7 @@ void VirtualVNode::render_as_plugin(int64_t input_position)
 	if(!attachment ||
 		!real_plugin ||
 		!real_plugin->on) return;
+	input_position += track->nudge;
 
 	((VAttachmentPoint*)attachment)->render(buffer_in,
 		buffer_out,
@@ -179,14 +176,17 @@ int VirtualVNode::render_as_module(VFrame **video_out, int64_t input_position)
 	this->reverse = reverse;
 	VFrame *buffer_in = get_module_input();
 	VFrame *buffer_out = get_module_output();
+	int direction = renderengine->command->get_direction();
 
-//printf("VirtualVNode::render_as_module 1 %d\n", buffer_out->get_color_model());
+	input_position += track->nudge;
+
+
 	render_fade(buffer_in, 
 				buffer_out,
 				input_position,
-				track->automation->fade_autos);
+				track->automation->fade_autos,
+				direction);
 
-//printf("VirtualVNode::render_as_module 2\n");
 
 // video is definitely in output buffer now
 
@@ -215,9 +215,10 @@ int VirtualVNode::render_as_module(VFrame **video_out, int64_t input_position)
 	get_mute_fragment(input_position,
 			mute_constant, 
 			mute_fragment, 
-			(Autos*)((VTrack*)track)->automation->mute_autos);
+			(Autos*)((VTrack*)track)->automation->mute_autos,
+			direction,
+			0);
 
-//printf("VirtualVNode::render_as_module 4 %d\n", mute_constant);
 	if(!mute_constant)
 	{
 // Fragment is playable
@@ -233,11 +234,11 @@ int VirtualVNode::render_as_module(VFrame **video_out, int64_t input_position)
 int VirtualVNode::render_fade(VFrame *input,         // start of input fragment
 			VFrame *output,        // start of output fragment
 			int64_t input_position,  // start of input fragment in project if forward / end of input fragment if reverse
-			Autos *autos)
+			Autos *autos,
+			int direction)
 {
 	double slope, intercept;
 	int64_t slope_len = 1;
-	int direction = renderengine->command->get_direction();
 	FloatAuto *previous = 0;
 	FloatAuto *next = 0;
 
@@ -276,14 +277,13 @@ int VirtualVNode::render_projector(VFrame *input,
 {
 	float in_x1, in_y1, in_x2, in_y2;
 	float out_x1, out_y1, out_x2, out_y2;
-	float float_input_position = input_position;
 
 	for(int i = 0; i < MAX_CHANNELS; i++)
 	{
 		if(output[i])
 		{
 			((VTrack*)track)->calculate_output_transfer(i,
-				(int64_t)float_input_position,
+				input_position,
 				renderengine->command->get_direction(),
 				in_x1, 
 				in_y1, 

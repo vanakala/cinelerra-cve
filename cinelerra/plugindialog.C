@@ -55,7 +55,7 @@ void PluginDialogThread::start_window(Track *track,
 
 		if(plugin)
 		{
-			plugin->calculate_title(plugin_title);
+			plugin->calculate_title(plugin_title, 0);
 			this->shared_location = plugin->shared_location;
 			this->plugin_type = plugin->plugin_type;
 		}
@@ -249,7 +249,8 @@ int PluginDialog::create_objects()
 		Plugin *plugin = track->get_current_plugin(mwindow->edl->local_session->selectionstart, 
 			number, 
 			PLAY_FORWARD,
-			1);
+			1,
+			0);
 		char *plugin_title = plugin->title;
 		char string[BCTEXTLEN];
 

@@ -33,7 +33,8 @@ public:
 // Replace with update
 	void redraw_time_dependancies();
 
-
+	int focus_in_event();
+	int focus_out_event();
 
 	void update(int scrollbars,
 		int canvas,      // 1 for incremental drawing.  2 for full refresh

@@ -52,15 +52,20 @@ void MTimeBar::draw_time()
 //printf("TimeBar::draw_time 2\n");
 
 // fit the time
-	int64_t windowspan, timescale1, timescale2, sample_rate, sample;
-	float timescale3;
-	int pixel;
-	char string[256];
+	int64_t windowspan = 0;
+	int64_t timescale1 = 0;
+	int64_t timescale2 = 0;
+	int64_t sample_rate = 0;
+	int64_t sample = 0;
+	float timescale3 = 0;
+	int pixel = 0;
+	char string[BCTEXTLEN];
 #define TIMESPACING 100
 
 	sample_rate = mwindow->edl->session->sample_rate;
 	windowspan = mwindow->edl->local_session->zoom_sample * get_w();
 	timescale2 = TIMESPACING * mwindow->edl->local_session->zoom_sample;
+//printf("TimeBar::draw_time 2\n");
 
 	if(timescale2 <= sample_rate / 4) timescale1 = sample_rate / 4;
 	else
@@ -75,21 +80,26 @@ void MTimeBar::draw_time()
 	if(timescale2 <= sample_rate * 600) timescale1 = sample_rate * 600;
 	else
 	timescale1 = sample_rate * 3600;
+//printf("TimeBar::draw_time 2\n");
 
 	for(timescale3 = timescale1; timescale3 > timescale2; timescale3 /= 2)
 		;
+//printf("TimeBar::draw_time 2\n");
 
 	timescale1 = (int64_t)(timescale3 * 2);
+//printf("TimeBar::draw_time 2\n");
 
 	sample = (int64_t)(mwindow->edl->local_session->view_start * 
 		mwindow->edl->local_session->zoom_sample + 
 		0.5);
+//printf("TimeBar::draw_time 2 %lld %lld %lld\n", mwindow->edl->local_session->zoom_sample, sample_rate, timescale1);
 
 	sample /= timescale1;
 	sample *= timescale1;
 	pixel = (int64_t)(sample / 
 		mwindow->edl->local_session->zoom_sample - 
 		mwindow->edl->local_session->view_start);
+//printf("TimeBar::draw_time 2\n");
 
 	for( ; pixel < get_w(); pixel += timescale1 / mwindow->edl->local_session->zoom_sample, sample += timescale1)
 	{
@@ -104,6 +114,7 @@ void MTimeBar::draw_time()
 		draw_text(pixel + 4, get_text_ascent(MEDIUMFONT), string);
 		draw_line(pixel, 3, pixel, get_h() - 4);
 	}
+//printf("TimeBar::draw_time 200\n");
 }
 
 void MTimeBar::draw_range()

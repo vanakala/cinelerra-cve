@@ -22,9 +22,7 @@ EDLSession::EDLSession(EDL *edl)
 	vconfig_in = new VideoInConfig;
 	playback_strategy = PLAYBACK_LOCALHOST;
 	interpolation_type = CUBIC_LINEAR;
-	force_uniprocessor = 0;
 	test_playback_edits = 1;
-	smp = calculate_smp();
 	brender_start = 0.0;
 	mpeg4_deblock = 1;
 
@@ -34,7 +32,7 @@ EDLSession::EDLSession(EDL *edl)
 		playback_config[i].append(config);
 	}
 	auto_conf = new AutoConf;
-	vwindow_folder[0]=0;
+	vwindow_folder[0] = 0;
 }
 
 EDLSession::~EDLSession()
@@ -51,46 +49,6 @@ EDLSession::~EDLSession()
 	}
 }
 
-
-int EDLSession::calculate_smp()
-{
-/* Get processor count */
-	int result = 1;
-	FILE *proc;
-
-	if(force_uniprocessor) return 0;
-
-	if(proc = fopen("/proc/cpuinfo", "r"))
-	{
-		char string[1024];
-		while(!feof(proc))
-		{
-			fgets(string, 1024, proc);
-			if(!strncasecmp(string, "processor", 9))
-			{
-				char *ptr = strchr(string, ':');
-				if(ptr)
-				{
-					ptr++;
-					result = atol(ptr) + 1;
-				}
-			}
-			else
-			if(!strncasecmp(string, "cpus detected", 13))
-			{
-				char *ptr = strchr(string, ':');
-				if(ptr)
-				{
-					ptr++;
-					result = atol(ptr);
-				}
-			}
-		}
-		fclose(proc);
-	}
-
-	return result - 1;
-}
 
 char* EDLSession::get_cwindow_display()
 {
@@ -188,7 +146,6 @@ int EDLSession::load_defaults(Defaults *defaults)
 	editing_mode = defaults->get("EDITING_MODE", EDITING_IBEAM);
 	enable_duplex = defaults->get("ENABLE_DUPLEX", 1);
 	folderlist_format = defaults->get("FOLDERLIST_FORMAT", FOLDERS_ICONS);
-	force_uniprocessor = defaults->get("FORCE_UNIPROCESSOR", 0);
 	frame_rate = defaults->get("FRAMERATE", (double)30000.0/1001);
 	frames_per_foot = defaults->get("FRAMES_PER_FOOT", (float)16);
 	interpolation_type = defaults->get("INTERPOLATION_TYPE", interpolation_type);
@@ -227,9 +184,9 @@ int EDLSession::load_defaults(Defaults *defaults)
 	sample_rate = defaults->get("SAMPLERATE", 48000);
 	scrub_speed = defaults->get("SCRUB_SPEED", (float)2);
 	show_titles = defaults->get("SHOW_TITLES", 1);
-	smp = calculate_smp();
 //	test_playback_edits = defaults->get("TEST_PLAYBACK_EDITS", 1);
 	time_format = defaults->get("TIME_FORMAT", TIME_HMS);
+	nudge_seconds = defaults->get("NUDGE_FORMAT", 1);
 	tool_window = defaults->get("TOOL_WINDOW", 0);
 	vconfig_in->load_defaults(defaults);
 	for(int i = 0; i < MAXCHANNELS; i++)
@@ -307,7 +264,6 @@ int EDLSession::save_defaults(Defaults *defaults)
 	defaults->update("EDITING_MODE", editing_mode);
 	defaults->update("ENABLE_DUPLEX", enable_duplex);
     defaults->update("FOLDERLIST_FORMAT", folderlist_format);
-	defaults->update("FORCE_UNIPROCESSOR", force_uniprocessor);
 	defaults->update("FRAMERATE", frame_rate);
 	defaults->update("FRAMES_PER_FOOT", frames_per_foot);
 	defaults->update("HIGHLIGHTED_TRACK", highlighted_track);
@@ -345,6 +301,7 @@ int EDLSession::save_defaults(Defaults *defaults)
 	defaults->update("SHOW_TITLES", show_titles);
 //	defaults->update("TEST_PLAYBACK_EDITS", test_playback_edits);
 	defaults->update("TIME_FORMAT", time_format);
+	defaults->update("NUDGE_FORMAT", nudge_seconds);
 	defaults->update("TOOL_WINDOW", tool_window);
     vconfig_in->save_defaults(defaults);
 	for(int i = 0; i < MAXCHANNELS; i++)
@@ -441,8 +398,9 @@ int EDLSession::load_audio_config(FileXML *file, int append_mode, uint32_t load_
 
 	for(int i = 0; i < audio_channels; i++)
 	{
-		sprintf(string, "CHPOSITION%d", i);
+		sprintf(string, "ACHANNEL_ANGLE_%d", i);
 		achannel_positions[i] = file->tag.get_property(string, achannel_positions[i]);
+//printf("EDLSession::load_audio_config 1 %d %d\n", i, achannel_positions[i]);
 	}
 
 	sample_rate = file->tag.get_property("SAMPLERATE", (int64_t)sample_rate);
@@ -491,7 +449,6 @@ int EDLSession::load_xml(FileXML *file,
 		default_transition_length = file->tag.get_property("DEFAULT_TRANSITION_LENGTH", default_transition_length);
 		editing_mode = file->tag.get_property("EDITING_MODE", editing_mode);
 		folderlist_format = file->tag.get_property("FOLDERLIST_FORMAT", folderlist_format);
-		force_uniprocessor = file->tag.get_property("FORCE_UNIPROCESSOR", force_uniprocessor);
 		highlighted_track = file->tag.get_property("HIGHLIGHTED_TRACK", 0);
 		labels_follow_edits = file->tag.get_property("LABELS_FOLLOW_EDITS", labels_follow_edits);
 		mpeg4_deblock = file->tag.get_property("MPEG4_DEBLOCK", mpeg4_deblock);
@@ -499,9 +456,9 @@ int EDLSession::load_xml(FileXML *file,
 		playback_preload = file->tag.get_property("PLAYBACK_PRELOAD", playback_preload);
 		safe_regions = file->tag.get_property("SAFE_REGIONS", safe_regions);
 		show_titles = file->tag.get_property("SHOW_TITLES", 1);
-		smp = calculate_smp();
 //		test_playback_edits = file->tag.get_property("TEST_PLAYBACK_EDITS", test_playback_edits);
 		time_format = file->tag.get_property("TIME_FORMAT", time_format);
+		nudge_seconds = file->tag.get_property("NUDGE_FORMAT", nudge_seconds);
 		tool_window = file->tag.get_property("TOOL_WINDOW", tool_window);
 		vwindow_meter = file->tag.get_property("VWINDOW_METER", vwindow_meter);
 		file->tag.get_property("VWINDOW_FOLDER", vwindow_folder);
@@ -548,7 +505,6 @@ int EDLSession::save_xml(FileXML *file)
 	file->tag.set_property("DEFAULT_TRANSITION_LENGTH", default_transition_length);
 	file->tag.set_property("EDITING_MODE", editing_mode);
 	file->tag.set_property("FOLDERLIST_FORMAT", folderlist_format);
-	file->tag.set_property("FORCE_UNIPROCESSOR", force_uniprocessor);
 	file->tag.set_property("HIGHLIGHTED_TRACK", highlighted_track);
 	file->tag.set_property("LABELS_FOLLOW_EDITS", labels_follow_edits);
 	file->tag.set_property("MPEG4_DEBLOCK", mpeg4_deblock);
@@ -558,6 +514,7 @@ int EDLSession::save_xml(FileXML *file)
 	file->tag.set_property("SHOW_TITLES", show_titles);
 	file->tag.set_property("TEST_PLAYBACK_EDITS", test_playback_edits);
 	file->tag.set_property("TIME_FORMAT", time_format);
+	file->tag.set_property("NUDGE_SECONDS", nudge_seconds);
 	file->tag.set_property("TOOL_WINDOW", tool_window);
 	file->tag.set_property("VWINDOW_METER", vwindow_meter);
 	file->tag.set_property("VWINDOW_FOLDER", vwindow_folder);
@@ -665,8 +622,6 @@ int EDLSession::copy(EDLSession *session)
 	editing_mode = session->editing_mode;
 	enable_duplex = session->enable_duplex;
 	folderlist_format = session->folderlist_format;
-	force_uniprocessor = session->force_uniprocessor;
-	smp = calculate_smp();
 	frame_rate = session->frame_rate;
 	frames_per_foot = session->frames_per_foot;
 	highlighted_track = session->highlighted_track;
@@ -705,9 +660,9 @@ int EDLSession::copy(EDLSession *session)
 	sample_rate = session->sample_rate;
 	scrub_speed = session->scrub_speed;
 	show_titles = session->show_titles;
-	smp = force_uniprocessor ? 0 : session->smp;
 	test_playback_edits = session->test_playback_edits;
 	time_format = session->time_format;
+	nudge_seconds = session->nudge_seconds;
 	tool_window = session->tool_window;
 	for(int i = 0; i < MAXCHANNELS; i++)
 	{
@@ -725,4 +680,21 @@ int EDLSession::copy(EDLSession *session)
 	vwindow_source = session->vwindow_source;
 	vwindow_zoom = session->vwindow_zoom;
 	return 0;
+}
+
+
+void EDLSession::dump()
+{
+	printf("EDLSession::dump\n");
+	printf("    audio_tracks=%d audio_channels=%d sample_rate=%lld\n"
+			"video_tracks=%d frame_rate=%f output_w=%d output_h=%d aspect_w=%f aspect_h=%f\n", 
+		audio_tracks, 
+		audio_channels, 
+		sample_rate, 
+		video_tracks, 
+		frame_rate, 
+		output_w, 
+		output_h, 
+		aspect_w, 
+		aspect_h);
 }

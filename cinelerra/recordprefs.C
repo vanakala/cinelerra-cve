@@ -30,7 +30,7 @@ RecordPrefs::~RecordPrefs()
 
 int RecordPrefs::create_objects()
 {
-	int x = 5, y = 5;
+	int x = 5, y = 5, x2;
 	char string[BCTEXTLEN];
 
 	add_subwindow(new BC_Title(x, y, _("Audio In"), LARGEFONT, BLACK));
@@ -49,33 +49,30 @@ int RecordPrefs::create_objects()
 
 	y += ADevicePrefs::get_h();
 
-// 	add_subwindow(new BC_Title(x, y, _("Duplex Driver:"), MEDIUMFONT, BLACK));
-// 	duplex_device = new ADevicePrefs(x + 110, 
-// 		y, 
-// 		pwindow, 
-// 		this, 
-// 		pwindow->thread->edl->session->aconfig_duplex, 
-// 		0,
-// 		MODEDUPLEX);
-// 	duplex_device->initialize();
-// 
-// 	y += ADevicePrefs::get_h();
 
 	BC_TextBox *textbox;
-	add_subwindow(new BC_Title(x, y, _("Samples to write to disk at a time:")));
-	sprintf(string, "%ld", pwindow->thread->edl->session->record_write_length);
-	add_subwindow(textbox = new RecordWriteLength(mwindow, pwindow, x + 240, y, string));
+	BC_Title *title1, *title2;
+	add_subwindow(title1 = new BC_Title(x, y, _("Samples to write to disk at a time:")));
+	add_subwindow(title2 = new BC_Title(x, y + 30, _("Sample rate for recording:")));
+	x2 = MAX(title1->get_w(), title2->get_w()) + 10;
 
-	y += 30;
-//	add_subwindow(new DuplexEnable(mwindow, pwindow, x, y, pwindow->thread->edl->session->enable_duplex));
-//	y += 30;
-	add_subwindow(new RecordRealTime(mwindow, pwindow, x, y, pwindow->thread->edl->session->real_time_record));
-	y += 35;
-	add_subwindow(new BC_Title(x, y, _("Sample rate for recording:")));
-	x += 190;
-	add_subwindow(textbox = new RecordSampleRate(pwindow, x, y));
-	x += 75;
-	add_subwindow(new SampleRatePulldown(mwindow, textbox, x, y));
+	sprintf(string, "%ld", pwindow->thread->edl->session->record_write_length);
+	add_subwindow(textbox = new RecordWriteLength(mwindow, 
+		pwindow, 
+		x2, 
+		y, 
+		string));
+	add_subwindow(textbox = new RecordSampleRate(pwindow, x2, y + 30));
+	add_subwindow(new SampleRatePulldown(mwindow, textbox, x2 + textbox->get_w(), y + 30));
+
+	y += 60;
+
+
+	add_subwindow(new RecordRealTime(mwindow, 
+		pwindow, 
+		x, 
+		y, 
+		pwindow->thread->edl->session->real_time_record));
 	y += 45;
 	x = 5;
 

@@ -5,8 +5,8 @@
 #include "funcprotos.h"
 #include "quicktime.h"
 #include "workarounds.h"
-#include ENCORE_INCLUDE
-#include DECORE_INCLUDE
+#include "encore50/encore.h"
+#include "decore50/decore.h"
 
 #include <pthread.h>
 #include <stdint.h>

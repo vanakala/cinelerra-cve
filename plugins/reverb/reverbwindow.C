@@ -410,7 +410,7 @@ void ReverbSaveThread::run()
 		ReverbSaveDialog dialog(reverb);
 		dialog.create_objects();
 		result = dialog.run_window();
-		if(!result) strcpy(reverb->config_directory, dialog.get_path());
+//		if(!result) strcpy(reverb->config_directory, dialog.get_path());
 	}
 	if(!result) 
 	{
@@ -460,7 +460,7 @@ void ReverbLoadThread::run()
 		ReverbLoadDialog dialog(reverb);
 		dialog.create_objects();
 		result = dialog.run_window();
-		if(!result) strcpy(reverb->config_directory, dialog.get_path());
+//		if(!result) strcpy(reverb->config_directory, dialog.get_path());
 	}
 	if(!result) 
 	{

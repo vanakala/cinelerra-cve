@@ -17,31 +17,31 @@ Copyright @copyright{} 2002 Heroine Virtual Ltd.
 
 
 @node TOP
-@top BRIEF CONTENTS
+@top
+
+@contents
 
 
 @menu
-* ABOUT CINELERRA::
-* INSTALLATION::
-* CONFIGURATION::
-* THE MAIN WINDOWS::
-* LOADING AND SAVING FILES::
-* NAVIGATING THE PROJECT::
-* EDITING::
-* USING EFFECTS::
-* SETTING PROJECT ATTRIBUTES::
-* COMPOSITING::
-* KEYFRAMES::
-* CAPTURING MEDIA::
-* IMPROVING PERFORMANCE::
-* TROUBLESHOOTING::
-* SECRETS OF CINELERRA::
-* EFFECT DESCRIPTIONS::
-* PLUGIN AUTHORING::
-* RELEASE NOTES::
+* ABOUT CINELERRA::          Cinelerra in brief.
+* INSTALLATION::             Making Cinelerra work on your system.
+* CONFIGURATION::            Adjusting the behavior of Cinelerra.
+* THE MAIN WINDOWS::         The most often used user interface.
+* LOADING AND SAVING FILES:: Moving media between disk and Cinelerra.
+* NAVIGATING THE PROJECT::   Moving around the media.
+* EDITING::                  Moving the media in time.
+* USING EFFECTS::            Altering the media.
+* SETTING PROJECT ATTRIBUTES:: Changing the way the media is displayed.
+* COMPOSITING::              Overlaying different sources of video.
+* KEYFRAMES::                Making effects change over time.
+* CAPTURING MEDIA::          Moving media from the real world to disk.
+* IMPROVING PERFORMANCE::    Making Cinelerra run better on Linux.
+* TROUBLESHOOTING::          Problems with Cinelerra.
+* SECRETS OF CINELERRA::     Unusual applications of Cinelerra to common problems.
+* EFFECT DESCRIPTIONS::      How to use the more complicated effects.
+* PLUGIN AUTHORING::         How to write new effects.
+* RELEASE NOTES::            Changes in the most recent versions of Cinelerra.
 @end menu
-
-@contents
 
 
 
@@ -54,6 +54,12 @@ Copyright @copyright{} 2002 Heroine Virtual Ltd.
 @node ABOUT CINELERRA
 @chapter ABOUT CINELERRA
 
+For years some people have wanted a way to edit their audio and video
+in one place as fluidly as writing text.  Cinelerra tries to be a
+single location for all audio and video editing needs.  All the
+recording, editing, and playback are handled here.  It can be used as
+an audio player.  It can be used to record audio or video.  It can even
+be used as a photo retoucher.
 
 There are two types of moviegoers: producers who create new content,
 going back over their content at future points for further refinement,
@@ -125,11 +131,16 @@ interface.  As always, quality improvements would happen.
 @node ABOUT THIS MANUAL
 @section ABOUT THIS MANUAL
 
+Like the operating system and compiler for a piece of software, the
+document writing format is the most important thing in choosing our
+document format.  A piece of software which compiles on GCC and Linux
+will be usable as long as there are C compilers.  Documents written in
+Texinfo will be readable as long as there's a C compiler.
+
 After many years of searching for the perfect documentation format
 we've arrived at TexInfo.  This format can be converted to HTML,
 printed, automatically indexed, but most importantly is not bound to
-any commercial word processor.  Documents written in Texinfo will be
-readable as long as there's a C compiler.
+any commercial word processor.
 
 There are no screenshots in this manual.  Screenshots become obsolete
 quickly and as a result confuse the users.  What looks one way in a
@@ -168,22 +179,39 @@ that you wouldn't think of on your own.
 The Cinelerra package contains Cinelerra and most of the libraries
 needed to run it.  We try to include all the dependancies because of
 the difficulty in tracking down the right versions.  Also included are
-some utilities for handling files.
+some utilities for handling files.  The following are the general
+contents of all Cinelerra packages.
 
 @itemize
 
 @item
 
-MPlexhi - Multiplexing of MPEG elementary streams with standards conformance.
+@b{Foreign language translations} - These go into /usr/share/locale.
 
 @item
 
-MPlexlo - Multiplexing of MPEG elementary streams without standards
+@b{Cinelerra executable} - This goes into /usr/bin
+
+@item
+
+@b{Cinelerra plugins} - These go into /usr/lib/cinelerra
+
+@item
+
+@b{soundtest} - Utility for determining sound card buffer size.
+
+@item
+
+@b{mplexhi} - Multiplexing of MPEG elementary streams with standards conformance.
+
+@item
+
+@b{mplexlo} - Multiplexing of MPEG elementary streams without standards
 conformance but more efficiently.
 
 @item
 
-mpeg3toc - Utility for indexing and reading MPEG files.
+@b{mpeg3toc} - Utility for indexing and reading MPEG files.
 
 @end itemize
 
@@ -193,6 +221,12 @@ mpeg3toc - Utility for indexing and reading MPEG files.
 * INSTALLING AN RPM::
 * COMPILING FROM SCRATCH::
 @end menu
+
+
+
+
+
+
 
 
 @node INSTALLING AN RPM
@@ -215,25 +249,37 @@ rpm2cpio hvirtual*.rpm | cpio -i --make-directories
 @end example
 
 
+
+
+
+
+
+
+
 @node COMPILING FROM SCRATCH
 @section COMPILING FROM SCRATCH
 
-It should be noted that the compiler used in building Cinelerra binaries is the free GNU compiler and very conservative optimization flags.  You can try
-different compilers and optimization flags by compiling the source.
+It should be noted that the compiler used in building Cinelerra
+binaries is the free GNU compiler and very conservative optimization
+flags.  You can try different compilers and optimization flags by
+compiling the source but this is hard.
 
-The compilation is verified on a vanilla RedHat 9.0 installation, workstation mode.  RedHat 9.0 doesn't install @b{nasm}.  This has to be installed manually for compilation to succeed.
-Compiling the source is hard and there's no warranty if the source code fails to compile, but the method for compiling starts by downloading
-the source code and decompressing.
+The compilation is verified on a vanilla RedHat 9.0 installation,
+workstation mode.  RedHat 9.0 doesn't install @b{nasm}.  This has to be
+installed manually for compilation to succeed. Compiling the source is
+hard and there's no warranty if the source code fails to compile, but
+the method for compiling starts by downloading the source code and
+decompressing.
 
 @example
-tar jxf hvirtual*.tar.bz2
+tar jxf cinelerra*.tar.bz2
 @end example
 
 
 Enter the hvirtual directory
 
 @example
-cd hvirtual
+cd cinelerra
 @end example
 
 and set the CFLAGS environment variable.  The flags for the GCC
@@ -260,6 +306,13 @@ export CFLAGS='-O3 -march=athlon -fmessage-length=0 -funroll-all-loops -fomit-fr
 Then run
 
 @example
+./configure
+@end example
+
+This checks the build environment for the right tools and should give
+you an error if a tool is missing.  Once that succeeds run
+
+@example
 make
 @end example
 
@@ -282,6 +335,8 @@ to install the binaries.  The output is put in the following directories:
 Executables -> /usr/bin
 @item
 Plugins  -> /usr/lib/cinelerra
+@item
+Translations  -> /usr/share/locale/*/LC_MESSAGES/cinelerra.mo
 @end itemize
 
 The main binaries are /usr/bin/cinelerra and several utilities for
@@ -323,13 +378,38 @@ Go to @emph{settings->preferences} and run through the options.
 
 
 @menu
-* PLAYBACK::
-* RECORDING::
-* PERFORMANCE::
-* INTERFACE::
+* ENVIRONMENT VARIABLES::  These environment variables are recognized by Cinelerra
+* PLAYBACK::               Configuring parameters related to playback.
+* RECORDING::              Configuring parameters related to recording.
+* PERFORMANCE::            Configuring parameters related to how fast things go.
+* INTERFACE::              Configuring the user interface.
+* ABOUT::                  Viewing information about the program.
 @end menu
 
 
+@node ENVIRONMENT VARIABLES
+@section ENVIRONMENT VARIABLES
+
+In UNIX derivatives, environment variables are global variables in the
+shell which all applications can read.  They are set with a command
+like @b{set VARIABLE=value}.  All the environment variables can be
+viewed with a command like @b{env}.  Cinelerra recognizes the following
+environment variables:
+
+@itemize
+
+@item @b{LADSPA_PATH} - A colon separated list of directories to search
+for LADSPA plugins.  These are not native Cinelerra plugins. 
+@xref{LADSPA EFFECTS}.
+
+@item @b{GLOBAL_PLUGIN_DIR} - The directory Cinelerra should look for
+native plugins in.  The default is /usr/lib/cinelerra but you may need an
+alternate directory if you're sharing the same executable directory
+among many machines via NFS.  Plugins of different binary formats need
+to be in different directories.
+
+
+@end itemize
 
 @node PLAYBACK
 @section PLAYBACK
@@ -950,9 +1030,14 @@ network packets to access it.
 
 There is a penalty for doing this though, since Virtual Filesystem
 isn't as refined as NFS.  Operations that access one byte at a time are
-really slow.  Unless you need to run rendering clients without root
-access or have a lot of assets in different directories,  use NFS
-instead.
+really slow.
+
+Certain file format parsers are extemely slow over the Virtual
+Filesystem because they access very small amounts of data at a time. 
+The PCM audio formats do this.  These are best rendered using NFS.
+
+Unless you need to run rendering clients without root access or have a
+lot of assets in different directories,  use NFS instead.
 
 
 
@@ -1062,6 +1147,13 @@ Cinelerra to see it.
 
 
 
+@node ABOUT
+@section ABOUT
+
+This section gives you information about the copyright, the time of the
+current build, the lack of a warranty, and the versions of some of the
+libraries.  Be sure to agree to the terms of the lack of the warranty.
+
 
 
 
@@ -1129,11 +1221,10 @@ audio levels after all mixing is done.
 
 
 @menu
-* LOADING FILES::
-* LOADING THE BACKUP::
-* SAVING FILES::
-* RENDERING FILES::
-* THE RENDER FARM::
+* LOADING FILES::              Loading all types of files
+* LOADING THE BACKUP::         Recovering the session from before a crash
+* SAVING FILES::               Saving edit decision lists
+* RENDERING FILES::            Saving media files
 @end menu
 
 
@@ -1418,51 +1509,72 @@ difficult to retouch any editing decisions in the pure movie file,
 however, so keep the original assets and XML file around several days
 after you render it.
 
-To begin a render operation you need to define a region of the timeline
-to render.  The navigation section describes methods of defining
-regions.  @xref{NAVIGATING THE PROJECT}.  When a region is highlighted
-or in/out points are set, the affected region is rendered.  When no
-region is highlighted, everything after the insertion point is
-rendered.
+All rendering operations are based on a region of the timeling to be
+rendered.  You need to define this region of the timeline.  The
+navigation section describes methods of defining regions. 
+@xref{NAVIGATING THE PROJECT}.  The rendering functions define the
+region based on a set of rules.  When a region is highlighted or in/out
+points are set, the affected region is rendered.  When no region is
+highlighted, everything after the insertion point is rendered.  Merely
+by positioning the insertion point at the beginning of a track and
+unsetting all in/out points, the entire track is rendered.
 
-Go to @emph{File->render} to bring up the render dialog.  Select the
-magnifying glass to bring up a file selection dialog.  This determines
-the filename to write the rendered file to.
 
-In the render dialog select a format from the @emph{File Format} menu. 
+
+@menu
+* SINGLE FILE RENDERING::      Rendering a single file
+* BATCH RENDERING::            Rendering several files unattended
+* THE RENDER FARM::            Rendering using many computers
+@end menu
+
+
+
+@node SINGLE FILE RENDERING
+@subsection SINGLE FILE RENDERING
+
+The fastest way to get media to disk is to use the single file
+rendering function.
+
+Go to @b{File->render} to bring up the render dialog.  Select the
+magnifying glass @image{magnify} to bring up a file selection dialog.  This determines
+the filename to write the rendered file to and the encoding parameters.
+
+In the render dialog select a format from the @b{File Format} menu. 
 The format of the file determines whether you can render audio or video
-or both.  Select @emph{Render audio tracks} to generate audio tracks
-and @emph{Render video tracks} to generate video tracks.  Select the
-wrench next to each toggle to set compression parameters.  If the file
-format can't store audio or video the compression parameters will be
-blank.  If @emph{Render audio tracks} or @emph{Render video tracks} is
-selected and the file format doesn't support it, trying to render will
-pop up an error.
+or both.  Select the @b{Render audio tracks} toggle to generate
+audio tracks and @b{Render video tracks} to generate video tracks.
 
-The @emph{Create new file at each label} option causes a new file to be
+
+Select the wrench @image{wrench} next to each toggle to set compression
+parameters.  If the file format can't store audio or video the
+compression parameters will be blank.  If @b{Render audio tracks} or
+@b{Render video tracks} is selected and the file format doesn't
+support it, trying to render will pop up an error.
+
+The @b{Create new file at each label} option causes a new file to be
 created when every label in the timeline is encountered.  This is
 useful for dividing long audio recordings into individual tracks.  When
-using the renderfarm, @emph{Create new file at each label} causes one
+using the renderfarm, @b{Create new file at each label} causes one
 renderfarm job to be created at every label instead of using the
 internal load balancing algorithm to space jobs.
 
-When @emph{Create new file at each label} is selected, a new filename
+When @b{Create new file at each label} is selected, a new filename
 is created for every output file.  If the filename given in the render
 dialog has a 2 digit number in it, the 2 digit number is overwritten
 with a different incremental number for every output file.  If no 2
 digit number is given, Cinelerra automatically concatenates a number to
 the end of the given filename for every output file.
 
-In the filename @emph{/hmov/track01.wav} the @emph{01} would be
+In the filename @b{/hmov/track01.wav} the @b{01} would be
 overwritten for every output file.  The filename
-@emph{/hmov/track.wav}; however, would become @emph{/hmov/track.wav001}
+@b{/hmov/track.wav}; however, would become @b{/hmov/track.wav001}
 and so on and so forth.  Filename regeneration is only used when either
 renderfarm mode is active or creating new files for every label is
 active.
 
 Finally the render dialog lets you select an insertion mode.  The
 insertion modes are the same as with loading files.  In this case if
-you select @emph{insert nothing} the file will be written out to disk
+you select @b{insert nothing} the file will be written out to disk
 without changing the current project.  For other insertion strategies
 be sure to prepare the timeline to have the output inserted at the
 right position before the rendering operation is finished. 
@@ -1470,7 +1582,7 @@ right position before the rendering operation is finished.
 at the right position.
 
 It should be noted that even if you only have audio or only have video
-rendered, a @emph{paste} insertion strategy will behave like a normal
+rendered, a @b{paste} insertion strategy will behave like a normal
 paste operation, erasing any selected region of the timeline and
 pasting just the data that was rendered.  If you render only audio and
 have some video tracks armed, the video tracks will get truncated while
@@ -1478,10 +1590,92 @@ the audio output is pasted into the audio tracks.
 
 
 
+@node BATCH RENDERING
+@subsection BATCH RENDERING
 
 
 
+If you want to render many projects to media files without having to
+repeatedly attend to the @b{Render} dialog, @b{batch rendering} is the
+function to use.  In this function, you specify many EDL files to
+render and the unique output files for each.  Then Cinelerra loads each
+EDL file and renders it automatically, without any user intervention. 
+Each EDL file and its output to be rendered is called a @b{batch}. 
+This allows a huge amount of media to be processed and greatly
+increases the value of an expensive computer.
 
+The first thing to do when preparing to do batch rendering is define
+projects to be rendered.  The batch renderer requires a separate EDL
+file for every batch to be rendered.  Set up a project and define the
+region to be rendered either by highlighting it, setting in/out points
+around it, or positioning the insertion point before it.  Then save the
+project as an EDL.  Define as many projects as needed this way.  The
+batch renderer takes the active region from the EDL file for rendering.
+
+With all the EDL files prepared with active regions, go to
+@b{File->batch render}.  This brings up the batch rendering dialog. 
+The interface for batch rendering is a bit more complex than for single
+file rendering.
+
+
+A list of batches must be defined before starting a batch rendering
+operation.  The table of batches appears on the bottom of the batch
+render dialog and is called @b{batches to render}.  Above this are
+the configuration parameters for a single batch.
+
+Set the @b{output path}, @b{file format}, @b{Audio}, @b{Video}, and
+@b{Create new file at each label} parameters as if it was a single
+file.  These parameters apply to only one batch.  In addition to the
+standard rendering parameters, you must select the source EDL to use in
+the batch.  Do this by setting the @b{EDL path}.
+
+If the @b{batches to render} list is empty or nothing is highlighted,
+click @b{New} to create a new batch.  The new batch will contain all
+the parameters you just set.
+
+Repeatedly press the @b{New} button to create more batches with the
+same parameters.  Highlight any batch and edit the configuration on the
+top of the batch render window.  The highlighted batch is always
+synchronized to the information displayed.
+
+Click and drag batches to change the order in which they're rendered. 
+Hit @b{delete} to permanently remove the highlighted batch.
+
+In the list box is a column which enables or disables the batch.  This
+way batches can be skipped without being deleted.  Click on the
+@b{Enabled} column in the list box to enable or disable a batch.  If it
+is checked, the batch is rendered.  If it is blank, the batch is
+skipped.
+
+The other columns in the batch list are informative.
+
+@itemize
+
+@item
+@b{Output} The output path of the batch.
+@item
+@b{EDL} The source EDL of the batch.
+@item
+@b{Elapsed} The amount of time taken to render the batch if it is finished.
+
+@end itemize
+
+To start rendering from the first enabled batch, hit @b{Start}.
+
+Once rendering, the main window shows the progress of the batch.  Once
+the batch finishes, the elapsed column in the batch list is updated and
+the next batch is rendered until all the enabled batches are finished.
+The currently rendering batch is always highlighted red.
+
+
+To stop rendering before the batches are finished without closing the
+batch render dialog, hit @b{Stop}.
+
+To stop rendering before the batches are finished and close the batch
+render dialog, hit @b{Cancel}.
+
+To exit the batch render dialog whether or not anything is being
+rendered, hit @b{Cancel}.
 
 
 
@@ -1490,7 +1684,7 @@ the audio output is pasted into the audio tracks.
 
 
 @node THE RENDER FARM
-@section THE RENDER FARM
+@subsection THE RENDER FARM
 
 When bicubic interpolation and HDTV was first done on Cinelerra, the
 time needed to produce the simplest output became unbearable even on
@@ -1504,7 +1698,7 @@ through the same amount of hassle you would with a several hundred node
 farm.  Renderfarm is invoked transparently for all file->render
 operations when it is enabled in the preferences.
 
-It should be noted that @emph{Create new file at each label} causes a
+It should be noted that @b{Create new file at each label} causes a
 new renderfarm job to be created at each label instead of the default
 load balancing.  If this option is selected when no labels exist, only
 one job will be created.
@@ -1523,7 +1717,7 @@ node to use the same filesystem for assets, mounted over the network.
 
 Since most of the time you'll want to bring in the rendered output and
 fine tune it on the timeline, the jobs are left in individual files. 
-You can load these using @emph{concatenate mode} and render them again
+You can load these using @b{concatenate mode} and render them again
 with renderfarm disabled.  If the track and output dimensions equal the
 asset dimensions, Cinelerra will do a direct copy of all the jobs into
 a single file.  Note that direct copying doesn't work for MPEG Video. 
@@ -1580,11 +1774,20 @@ tracks.
 Below the timeline you'll find the zoom panel.  The zoom panel contains
 values for @emph{sample zoom}, @emph{amplitude}, and @emph{track
 zoom}.  These values in addition to the scrollbars are all that's
-needed to position the timeline.
+needed to position the timeline, but at the heart of the batch
+rendering dialog are the same parameters you found in single file
+rendering.
+
+
+
+
+
+
+
 
 @sp 1
 
-@image{zoompanel,,,,}
+@image{zoompanel}
 
 
 Changing the @emph{sample zoom} causes the amount of time visible to
@@ -1602,10 +1805,15 @@ In addition to the graphical tools, you'll probably more often use the
 keyboard to navigate.  Use @emph{PAGE UP} and @emph{PAGE DOWN} to
 scroll up and down the tracks.
 
-Use the @emph{LEFT} and @emph{RIGHT} arrows to move across time. 
-You'll often need to scroll beyond the end of the timeline but
-scrollbars won't let you do it.  Instead use the @emph{RIGHT} arrow to
-scroll past the end of timeline.
+Use the @emph{LEFT} and @emph{RIGHT} arrows to move across time in
+small increments.  You'll often need to scroll beyond the end of the
+timeline but scrollbars won't let you do it.  Instead use the
+@emph{RIGHT} arrow to scroll past the end of timeline.
+
+Use the @emph{HOME} and @emph{END} keys to instantly go to the
+beginning or end of the timeline.  In @emph{I-beam} mode, hold down
+shift while pressing @emph{HOME} or @emph{END} to select the region of
+the timeline between the insertion point and the key pressed.
 
 Use the @emph{UP} and @emph{DOWN} arrows to change the sample zoom by a
 power of 2.
@@ -2024,18 +2232,82 @@ process.  The three main methods are two screen editing, drag and drop
 editing, and cut and paste editing.
 
 There are several concepts Cinelerra uses when editing which apply to
-all the methods.  The timeline is where all editing decisions are
-represented.  Every track on the timeline has a set of attributes on
+all the methods.  The @b{timeline} is where all editing decisions are
+represented.  This is a stack of tracks in the center of the main
+window.  It can be scrolled up, down, left and right with the
+scrollbars on the right and bottom of it.  It can also be scrolled up
+and down with a mouse wheel.
+
+The @b{active region} is the range of time which is affected by editing
+commands on the timeline.  The active region is determined first by the
+presence of in/out points in the timeline.  If those don't exist the
+highlighted region is used.  If no highlighted region exists the
+insertion point is used as the start of the active region.  Some
+commands treat all the space to the right of the insertion point as
+active, like @b{Render}, while others treat the active length as 0 if no
+end point for the active region is defined.
+
+Finally, editing decisions never affect source material.  This is
+@b{non destructive editing} and it became popular with audio because it
+was much faster than if you had to copy all the media affected by an
+edit.  Editing only affects pointers to source material, so if you want
+to have a media file at the end of your editing session which
+represents the editing decisions, you need to @emph{render} it.
+@xref{RENDERING FILES}.
+
+Every track on the timeline has a set of attributes on
 the left, the most important of which is the @emph{arm track}
 attribute.
+
+
+
+@menu
+* THE PATCHBAY::           Enabling different features on different tracks
+* NUDGING TRACKS::         Moving entire tracks horizontally
+* MANIPULATING TRACKS::    Moving whole tracks around
+* TWO SCREEN EDITING::     Using two video windows to edit
+* DRAG AND DROP EDITING::  Dragging objects to edit
+* CUT AND PASTE EDITING::  Editing media like text
+* TRIMMING::               Changing in and out points
+@end menu
+
+
+@node THE PATCHBAY
+@section THE PATCHBAY
+
+
+On the left of the timeline is a region affectionately known as the
+patchbay.  The patchbay enables features specific to each track.  All
+tracks have a text area for naming the track.
+
+All tracks have an @b{expander} @image{expandpatch_checked} for viewing
+more options and for viewing the effects on the track.  Click on the
+expander to expand or collapse the track.  If it's pointing sideways,
+the track is collapsed.  If it's pointing down, the track is expanded. 
+The effects appear below the media for the track if they exist.
+
+All tracks have the following row of toggles for several features.
 
 @sp 1
 @image{track_attributes}
 @emph{Track attributes}
 
-Only the @emph{armed tracks} are affected by editing operations.  Make
-sure you have enough armed destination tracks when you paste or splice
-material or some tracks in the material will get left out.
+
+If the toggle is colored, it is enabled.  If the toggle is the
+background color of most of the windows, it is disabled.  Click on the
+toggle to enable or disable the feature.  Several mouse operations
+speed up the configuration of several tracks at a time.
+
+Click on an attribute and drag across adjacent tracks to toggle the
+same attribute in those tracks.
+
+Hold down @b{shift} while clicking a track's attribute to toggle the
+attribute in all the tracks.
+
+Hold down @b{shift} while clicking an attribute.  Click until all the
+tracks except the selected one are disabled.  Then drag the cursor over
+the adjacent track to enable the attribute in the adjacent track.
+
 
 The other attributes affect the output of the track.
 
@@ -2047,6 +2319,20 @@ The other attributes affect the output of the track.
 it's off, the track is not rendered.  However, if the track is chained
 to any other tracks, the other tracks perform all the effects in the
 chained track, regardless of play status.
+@sp 1
+
+@item
+
+@b{Arm track} determines whether the track is armed or not.   Only the
+@emph{armed tracks} are affected by editing operations.  Make sure you
+have enough armed destination tracks when you paste or splice material
+or some tracks in the material will get left out.
+
+In addition to restricting editing operations, the armed tracks in
+combination with the active region determine where material is inserted
+when loading files.  If the files are loaded with one of the insertion
+strategies which doesn't delete the existing project, the armed tracks
+will be used as destination tracks.
 
 @item
 
@@ -2054,14 +2340,16 @@ chained track, regardless of play status.
 fader you're adjusting.  A fader is only ganged if the @b{arm track} is
 also on.  This is normally used to adjust audio levels on all the
 tracks simultaneously.
+@sp 1
 
 @item
 
-@b{Draw data} determines if picons or waveforms are drawn on the
+@b{Draw media} determines if picons or waveforms are drawn on the
 track.  By default, some file formats load with this off while other
 file formats load with it on.  This depends on whether the file format
 takes a long time to draw on the timeline.  Merely set it to on if you
 want to see picons for any file format.
+@sp 1
 
 @item
 
@@ -2071,39 +2359,38 @@ on.  If the track is part of an effect chain, the output of the effect
 chain track is overlayed on the final output even though it's routed
 back to another track.  Mute track is used to keep the effect chain
 track from overlapping the output of the source track.
+@sp 1
+
+@item
+
+@b{Fader} All tracks have a fader, but the units of each fader depend
+on whether it's audio or video.  Click and drag the fader to fade the
+track in and out.  If it is ganged to other tracks of the same media
+type, with the @b{arm} option enabled, the other faders should follow.
+
+Hold down @b{shift} and drag a fader to center it on 0.
 
 @end itemize
 
-There are two ways to set the same attribute on multiple tracks very
-quickly.  Hold down @b{shift} while clicking a track's attribute to
-match the same attribute in all the other tracks.  If you don't want to
-affect all the other tracks, click on an attribute and drag across
-other tracks to have the same attribute set in them.
 
-In addition to restricting editing operations, the armed tracks in
-combination with the active region determine where material is inserted
-when loading files.  If the files are loaded with one of the insertion
-strategies which doesn't delete the existing project, the armed tracks
-will be used as destination tracks.
 
-The active region is the range of time in the edit decision on the
-timeline.  The active region is determined first by the presence of
-in/out points in the timeline.  If those don't exist the highlighted
-region is used.  If no highlighted region exists the insertion point is
-used as the active region and the active length is 0.
+@node NUDGING TRACKS
+@section NUDGING TRACKS
 
-Finally, editing decisions never affect source material.  Editing only affects
-pointers to source material, so if you want to have a media file at the
-end of your editing session which represents the editing decisions, you
-need to @emph{render} it. @xref{RENDERING FILES}.
+Each track has a nudge textbox in the patchbay under the fader and on
+the right.  You may have to expand the track to see it.  The nudge is
+the amount the track is shifted left or right during playback.  The
+track is not displayed shifted on the timeline, but it is shifted when
+it's played back.  This is useful for synchronizing audio with video,
+creating fake stereo, or compensating for an effect which shifts time,
+all without tampering with any edits.
 
-@menu
-* MANIPULATING TRACKS::
-* TWO SCREEN EDITING::
-* DRAG AND DROP EDITING::
-* CUT AND PASTE EDITING::
-* TRIMMING::
-@end menu
+Merely enter in the amount of time to shift by to instantly shift the
+track.  Negative numbers make the track play later.  Positive numbers
+make the track play sooner.  The nudge units are either @b{seconds} or
+the native units for the track.  Select the units by @b{right clicking}
+on the nudge textbox and using the context sensitive menu.
+
 
 
 
@@ -3154,34 +3441,42 @@ the inner rectangle and keep action inside the outer rectangle.
 @node OVERLAY MODES
 @section OVERLAY MODES
 
-Every track has an overlay mode, accessible by expanding the track. 
+Every video track has an overlay mode, accessible by expanding the
+track.  The overlay mode is a pulldown menu on the left under the
+fader.  When collapsed, it displays an icon representing the current
+overlay mode.
+
 Select the @image{expandpatch_checked} expand track toggle to view all
-the options for a video track.  The overlay mode of the track is
-@emph{normal} by default.  Select other modes by selecting the
-@emph{normal} button.  Overlay modes are processed inside the projector
-stage of compositing.  The different modes are summarized below.
+the options for a video track if you can't see the overlay mode.  The
+overlay mode of video tracks is @emph{normal} by default.  Select other
+modes by clicking the overlay button and selecting an item from the
+popup menu.
+
+Overlay modes are processed inside the projector stage of compositing. 
+The different modes are summarized below.
 
 @itemize
 
 @item
 
-Normal uses a traditional Porter-Diff equation to blend tracks with
-alpha.  When no alpha exists, the new track replaces the output.
+@b{Normal} uses a traditional Porter-Diff equation to blend tracks with
+alpha.  When no alpha exists in the project color model, the new track
+always replaces the output.
 
 @item
 
-In addition, whatever is in the output is added to the current track. 
-The result is blended based on the current track's alpha onto the
-output.
+@b{Addition}  In this mode, whatever is in the output is added to the
+current track.  The result is blended based on the current track's
+alpha onto the output.
 
 @item
 
-In subtraction, the current track is subtracted from the output and the
-result is alpha blended onto the output.
+@b{Subtraction} In this mode, the current track is subtracted from the
+output and the result is alpha blended onto the output.
 
 @item 
 
-Multiply is the most useful operation.  The current track is multiplied
+@b{Multiply} is the most useful operation.  The current track is multiplied
 by the output and the result blended onto the output.  Usually a black
 and white image with no alpha channel or a white title on a black image
 is used as the current track.  With the multiply operation, only the
@@ -3189,12 +3484,12 @@ output portions under the white area show.
 
 @item
 
-Divide divides the current track by the output and the result is
+@b{Divide} divides the current track by the output and the result is
 blended into the output.  It usually results in overloaded levels.
 
 @item
 
-Replace does no blending and overwrites the output with the current
+@b{Replace} does no blending and overwrites the output with the current
 track.
 
 @end itemize
@@ -3712,10 +4007,18 @@ the right order.
 @chapter IMPROVING PERFORMANCE
 
 
+Let's get one thing perfectly clear.  Linux is not a very good
+desktop.  It's a server.  Most of what you'll find on modern Linux
+distributions are faceless, network-only programs strategicly designed
+to counteract one Microsoft server feature or another and not to
+perform very well at user interaction.  There are a number of
+parameters on Linux, which ordinary people can adjust to make it behave
+more like a thoroughbred in desktop usage.
+
+
 @menu
 * DISABLING SWAP SPACE::
 * ENLARGING SOUND BUFFERS::
-* MAKING XFree86 FASTER::
 * FREEING MORE SHARED MEMORY::
 * SPEEDING UP THE HARD DRIVE::
 * DISABLING CRON::
@@ -3763,11 +4066,18 @@ Then recompile the kernel.
 @section ENLARGING SOUND BUFFERS
 
 In order to improve realtime performance, the audio buffers for all the
-Linux sound drivers were limited from 127k to 64k.  For recording audio
+Linux sound drivers were limited from 128k to 64k.  For recording audio
 and video simultaneously and for most audio recording this causes
 dropouts.  Application of low latency and preemtible kernel patches
 make it possible to record more audio recordings but it doesn't improve
 recording video with audio.  This is where you need to hack the kernel.
+
+To see if your sound buffers are suitable, run the included
+@b{soundtest} program with nothing playing or recording.  This
+allocates the largest possible buffers and displays them.  If the
+@b{TOTAL BYTES AVAILABLE} is under 131072, you need to see about
+getting the buffers enlarged in the driver.  While many drivers differ,
+we have a hack for at least one driver.
 
 This only applies to the OSS version of the Soundblaster Live driver. 
 Since every sound card and every sound driver derivative has a
@@ -3824,21 +4134,6 @@ to
 
 Then recompile the kernel modules.
 
-
-
-
-@node MAKING XFree86 FASTER
-@section MAKING XFree86 FASTER
-
-XFree86 by default can't display Cinelerra's advanced pixmap rendering
-very fast.  The X server stalls during list box drawing.  Fix this by
-adding a line to your XF86Config* files.
-
-In the @b{Section "Device"} area, add a line saying:
-
-@b{Option "XaaNoOffscreenPixmaps"}
-
-and restart the X server.
 
 
 
@@ -3981,6 +4276,19 @@ Change the value of @b{DOWNSAMPLE_N} to change the mouse sensitivity.
 @node ASSORTED X TWEEKS
 @section ASSORTED X TWEEKS
 
+
+XFree86 by default can't display Cinelerra's advanced pixmap rendering
+very fast.  The X server stalls during list box drawing.  Fix this by
+adding a line to your XF86Config* files.
+
+In the @b{Section "Device"} area, add a line saying:
+
+@b{Option "XaaNoOffscreenPixmaps"}
+
+and restart the X server.
+
+
+
 Screen blanking is really annoying, unless you're fabulously rich and
 can afford to leave your monitor on 24 hours a day without power saving
 mode.  In @b{/etc/X11/xinit/xinitrc} put 
@@ -4073,7 +4381,7 @@ Video recorded from the ZORAN inputs is normally unaligned or not
 completely encoded on the right.  This can be slightly compensated by
 adjusting parameters in the driver sourcecode.
 
-In @b{/usr/src/linux/drivers/media/video/zr36067.h} the structures
+In @b{/usr/src/linux/drivers/media/video/zr36067.c} the structures
 defined near line 623 affect alignment.  At least for NTSC, the 2.4.20
 version of the driver could be improved by changing 
 
@@ -4120,6 +4428,7 @@ the first frame.
 @menu
 * BUZ DRIVER CRASHES::
 * DRAGGING IN AND OUT POINTS DOESN'T WORK::
+* SYNCHRONIZATION LOST WHILE RECORDING::
 @end menu
 
 @node BUZ DRIVER CRASHES
@@ -4143,6 +4452,17 @@ Sometimes there will be two edits really close together.  The point
 selected for dragging may be next to the indended edit on an edit too
 small to see at the current zoom level.  Zoom in horizontally.
 
+
+
+@node SYNCHRONIZATION LOST WHILE RECORDING
+@section SYNCHRONIZATION LOST WHILE RECORDING
+
+If the framerate of the recording is much lower than the framerate of
+the source, the video will accumulate in the recording buffers over
+time while the audio and video are well out of sync.  Decrease the
+@b{number of frames to buffer in the device} in
+@b{preferences->recording} so the excess frames are dropped instead of
+buffered.
 
 
 
@@ -4292,28 +4612,7 @@ difference between the lines.  It doesn't work.
 @b{Inverse Telecine}
 
 This is the most effective deinterlacing tool when the footage is an
-NTSC TV broadcast of a film.  Here the image was converted from 24fps
-to 30fps by interlacing in a predictable pattern, which the @b{Inverse
-Telecine} effect can detect.  It shifts fields forwards and backwards
-to get progressive frames of the same resolution as the original, most
-of the time.
-
-The timing is going to be jittery because of this but it's progressive.
-
-There is only one useful setting for @b{Inverse Telecine}: 
-
-@example
-Pattern offset:   0
-    Odd field first
-  x Automatic IVTC
-Pattern:
-  x A B BC CD D
-    AB BC CD DE EF
-@end example
-
-The other options are only there because one day there may be some
-progressive scan camera which produces pulldown in the same frame of
-reference throughout entire tapes.
+NTSC TV broadcast of a film.  @xref{INVERSE TELECINE}.
 
 
 @b{Time base correction}
@@ -4451,11 +4750,13 @@ utilize fully by mere experimentation.
 
 
 @menu
-* CHROMA KEY::
-* HISTOGRAM::
-* TIME AVERAGE::
-* VIDEO SCOPE::
-* DEINTERLACE::
+* CHROMA KEY::        How to make areas transparent based on color.
+* DEINTERLACE::       How to convert interlaced video to progressive video.
+* HISTOGRAM::         How to change the mapping of different brightness values.
+* INVERSE TELECINE::  How to convert pulled down frames to progressive frames.
+* TIME AVERAGE::      How to add trail patterns or increase still image quality.
+* TITLER::            How to add text to a track from inside Cinelerra.
+* VIDEO SCOPE::       How to view the dynamic range of intensity and hue.
 @end menu
 
 
@@ -4485,6 +4786,21 @@ to blur just the alpha.
 
 
 
+@node DEINTERLACE
+@section DEINTERLACE
+
+The deinterlace effect has evolved over the years to deinterlacing and
+a whole lot more.  In fact two of the deinterlacing methods, @b{Inverse
+Telecine} and @b{Frames to Fields}, are separate effects.  The
+deinterlace effect offers several variations of line replication to
+eliminate comb artifacts in interlaced video.  It also has some line
+swapping tools to fix improperly captured video or make the result of a
+reverse effect display fields in the right order.
+
+
+
+
+
 @node HISTOGRAM
 @section HISTOGRAM
 
@@ -4503,6 +4819,41 @@ boundaries of the histogram the automatic gain should be.
 
 
 
+@node INVERSE TELECINE
+@section INVERSE TELECINE
+
+This is the most effective deinterlacing tool when the footage is a
+video transfer of a film.  Here the film was converted from 24fps to
+60fps.  Then the 60fps was downsampled to 30fps by extracting odd and
+even lines and interlacing the lines.  The IVTC effect is primarily a
+way to convert interlaced video to progressive video.  It undoes three
+patterns of interlacing.
+
+@example
+  A AB BC CD D
+  AB CD CD DE EF
+  Automatic
+@end example
+
+The first two options are fixed patterns and affected by the @b{pattern
+offset} and @b{odd field first} parameters.  The last option creates
+several combinations of lines for each frame and picks the most
+progressive combination.  It's a brute force algorithm.
+
+This technique doesn't rely on a pattern like other techniques and is
+less destructive but the timing is going to be jittery because of the
+lack of a frame rate reduction.
+
+
+
+
+
+
+
+
+
+
+
 @node TIME AVERAGE
 @section TIME AVERAGE
 
@@ -4512,6 +4863,84 @@ still images.  Merely point a video camera at a stationary subject for
 30 frames, capture the frames, and average them using TIME AVERAGE and
 you'll have a super high quality print.  In 16 bit colormodels, time
 average can increase the dynamic range of lousy cameras.
+
+
+@node TITLER
+@section TITLER
+
+While it is possible to add text to movies by importing still images
+from The Gimp and compositing them, the Titler allows you to add text
+from within Cinelerra.  
+
+The titler has standard options for @b{font, size, and style}.  The
+best font is a generic, normal font like Arial in a large size.
+
+The titler also has options you'll only find in moving pictures.  The
+@b{Justify} operation justifies the text relative to the entire frame. 
+Once justified, the @b{X and Y} offset is applied.  This allows text to
+be justified while at the same time letting you push it within the
+title safe region.
+
+The @b{motion type} scrolls the text in any of the four directions. 
+When using this, the text may dissappear.  Move the insertion point
+along the timeline until the text is far enough along the animation to
+reappear.  The text scrolls on and scrolls off.
+
+Setting @b{loop} causes the text to scroll completely off and repeat. 
+Without @b{loop} the text scrolls off and never reappears.
+
+The speed of the animation is determined by @b{speed}  Set it higher to
+speed up the animation.
+
+@b{Drop shadow} draws a black copy of the text to the bottom right of
+the original text.  Useful when drawing text over changing video to
+keep the border always visible.
+
+In addition to the scrolling, @b{Fade in/Fade out} are a second type of
+animation.  If the fade seconds are 0, no fading is done.
+
+@b{Color} picks the color to draw the text in.  Usually white is the
+only practical color.
+
+@b{Stamp timecode} replaces the text with the current position on the
+timeline in seconds and frames.
+
+@menu
+* ADDING FONTS TO THE TITLER:: How to add fonts to the titler
+* THE TITLE-SAFE REGION::      How to keep text visible on output
+@end menu
+
+@node ADDING FONTS TO THE TITLER
+@subsection ADDING FONTS TO THE TITLER
+
+The X Window system originally didn't have a suitable font renderer for
+video.  It also is restricted to the current bit depth.  It doesn't
+have a convenient way to know which fonts work with the suitable font
+renderer in the desired bit depth.  The easiest way we've found to
+support fonts in the titler is to have a directory for them at
+@b{/usr/lib/cinelerra/fonts}.
+
+The titler supports mainly @b{TTF}, true type fonts.  It supports
+others but TTF are the most reliable.  To add true type fonts, copy the
+@b{.TTF} files to the @b{/usr/lib/cinelerra/fonts} directory.  In that
+directory run @b{ttmkfdir > fonts.dir} and restart Cinelerra.  The new
+fonts should appear.
+
+
+@node THE TITLE-SAFE REGION
+@subsection THE TITLE-SAFE REGION
+
+If the video is displayed on a consumer TV, the outer border is going
+to be cropped by 5% on each side.  Moreover, text which is too close to
+the edge looks sloppy.  Make sure when added titles to have the
+@b{title-safe} @image{titlesafe} tool active in the @b{compositor} window.
+The text shouldn't cross the inner rectangle.
+
+
+
+
+
+
 
 
 
@@ -4533,21 +4962,6 @@ black to complete white while adjusting the brightness/contrast.
 Some thought is being given to having a video scope for recording. 
 Unfortunately, this would require a lot of variations of the video
 scope for all the different video drivers.
-
-
-
-
-
-@node DEINTERLACE
-@section DEINTERLACE
-
-The deinterlace effect has evolved over the years to deinterlacing and
-a whole lot more.  In fact two of the deinterlacing methods, @b{Inverse
-Telecine} and @b{Frames to Fields}, are separate effects.  The
-deinterlace effect offers several variations of line replication to
-eliminate comb artifacts in interlaced video.  It also has some line
-swapping tools to fix improperly captured video or make the result of a
-reverse effect display fields in the right order.
 
 
 
@@ -5578,6 +5992,6 @@ More IEEE1394 playback options.
 
 @end itemize
 
-@bye
 
+@bye
 

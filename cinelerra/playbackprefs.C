@@ -1,7 +1,7 @@
 #include "adeviceprefs.h"
-#include "adrivermenu.h"
 #include "audioconfig.h"
 #include "audiodevice.inc"
+#include "clip.h"
 #include "defaults.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -38,39 +38,35 @@ PlaybackPrefs::~PlaybackPrefs()
 
 int PlaybackPrefs::create_objects()
 {
-	int x = 5, y = 5;
-	char string[1024];
+	int x = 5, y = 5, x2;
+	char string[BCTEXTLEN];
 	BC_PopupTextBox *popup;
 
-//printf("PlaybackPrefs::create_objects 1\n");
 	current_head = mwindow->defaults->get("PLAYBACK_HEAD", 0);
 	strategies.append(new BC_ListBoxItem(_("Local Host")));
 	strategies.append(new BC_ListBoxItem(_("Multihead")));
 	strategies.append(new BC_ListBoxItem(_("Blond Symphony")));
-
-//	add_subwindow(new BC_Title(x, y, _("Playback"), LARGEFONT, BLACK));
-//	x += 200;
-// 	add_subwindow(new BC_Title(x, y, _("Strategy:")));
-// 	popup = new PlaybackStrategy(this, x + 70, y);
-// 	popup->create_objects();
-// 	x = 10;
-//	y += popup->get_h() + 30;
 
 // Global playback options
 
 // All strategies use these
 	add_subwindow(new BC_Title(x, y, _("Audio Out"), LARGEFONT, BLACK));
 	y += 30;
-	add_subwindow(new BC_Title(x, y, _("Samples to read from disk at a time:"), MEDIUMFONT, BLACK));
+
+
+
+	BC_Title *title1, *title2;
+	add_subwindow(title1 = new BC_Title(x, y, _("Samples to read from disk at a time:"), MEDIUMFONT, BLACK));
+	add_subwindow(title2 = new BC_Title(x, y + 30, _("Samples to send to console at a time:"), MEDIUMFONT, BLACK));
+	x2 = MAX(title1->get_w(), title2->get_w()) + 10;
+
 	sprintf(string, "%d", pwindow->thread->edl->session->audio_read_length);
-	add_subwindow(new PlaybackReadLength(x + 275, y, pwindow, this, string));
-	y += 30;
-	add_subwindow(new BC_Title(x, y, _("Samples to send to console at a time:"), MEDIUMFONT, BLACK));
+	add_subwindow(new PlaybackReadLength(x2, y, pwindow, this, string));
 	sprintf(string, "%d", pwindow->thread->edl->session->audio_module_fragment);
-	add_subwindow(new PlaybackModuleFragment(x + 275, y, pwindow, this, string));
-	y += 30;
-//	add_subwindow(new PlaybackDisableNoEdits(pwindow, pwindow->thread->edl->session->test_playback_edits, y));
-//	y += 30;
+	add_subwindow(new PlaybackModuleFragment(x2, y + 30, pwindow, this, string));
+
+
+	y += 60;
 	add_subwindow(new PlaybackViewFollows(pwindow, pwindow->thread->edl->session->view_follows_playback, y));
 	y += 30;
 	add_subwindow(new PlaybackSoftwareTimer(pwindow, pwindow->thread->edl->session->playback_software_position, y));

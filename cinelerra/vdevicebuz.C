@@ -4,9 +4,12 @@
 #undef _FILE_OFFSET_BITS
 
 #include "assets.h"
+#include "bcsignals.h"
 #include "channel.h"
 #include "chantables.h"
+#include "condition.h"
 #include "file.inc"
+#include "mutex.h"
 #include "playbackconfig.h"
 #include "preferences.h"
 #include "recordconfig.h"
@@ -28,6 +31,9 @@
 
 
 
+#define READ_TIMEOUT 5000000
+
+
 VDeviceBUZInput::VDeviceBUZInput(VDeviceBUZ *device)
  : Thread(1, 1, 0)
 {
@@ -38,7 +44,8 @@ VDeviceBUZInput::VDeviceBUZInput(VDeviceBUZ *device)
 	current_inbuffer = 0;
 	current_outbuffer = 0;
 	done = 0;
-	output_lock.lock();
+	output_lock = new Condition(0, "VDeviceBUZInput::output_lock");
+	buffer_lock = new Mutex("VDeviceBUZInput::buffer_lock");
 }
 
 VDeviceBUZInput::~VDeviceBUZInput()
@@ -47,9 +54,7 @@ VDeviceBUZInput::~VDeviceBUZInput()
 	{
 		done = 1;
 		Thread::cancel();
-//printf("VDeviceBUZInput::~VDeviceBUZInput 1\n");
 		Thread::join();
-//printf("VDeviceBUZInput::~VDeviceBUZInput 100\n");
 	}
 
 	if(buffer)
@@ -61,6 +66,8 @@ VDeviceBUZInput::~VDeviceBUZInput()
 		delete [] buffer;
 		delete [] buffer_size;
 	}
+	delete output_lock;
+	delete buffer_lock;
 }
 
 void VDeviceBUZInput::start()
@@ -99,7 +106,7 @@ void VDeviceBUZInput::run()
 
 
 			int new_buffer = 0;
-			buffer_lock.lock();
+			buffer_lock->lock("VDeviceBUZInput::run");
 // Save only if the current buffer is free.
 			if(!buffer_size[current_inbuffer])
 			{
@@ -114,12 +121,12 @@ void VDeviceBUZInput::run()
 				increment_counter(&current_inbuffer);
 			}
 
-			buffer_lock.unlock();
+			buffer_lock->unlock();
 
 			if(ioctl(device->jvideo_fd, BUZIOC_QBUF_CAPT, &bsync.frame))
 				perror("VDeviceBUZInput::run BUZIOC_QBUF_CAPT");
 
-			if(new_buffer) output_lock.unlock();
+			if(new_buffer) output_lock->unlock();
 		}
 	}
 }
@@ -127,20 +134,34 @@ void VDeviceBUZInput::run()
 void VDeviceBUZInput::get_buffer(char **ptr, int *size)
 {
 // Increase semaphore to wait for buffer.
-	output_lock.lock();
+	int result = output_lock->timed_lock(READ_TIMEOUT, "VDeviceBUZInput::get_buffer");
 
+
+// The driver has its own timeout routine but it doesn't work because
+// because the tuner lock is unlocked and relocked with no delay.
+//	int result = 0;
+//	output_lock->lock("VDeviceBUZInput::get_buffer");
+
+	if(!result)
+	{
 // Take over buffer table
-	buffer_lock.lock();
-	*ptr = buffer[current_outbuffer];
-	*size = buffer_size[current_outbuffer];
-	buffer_lock.unlock();
+		buffer_lock->lock("VDeviceBUZInput::get_buffer");
+		*ptr = buffer[current_outbuffer];
+		*size = buffer_size[current_outbuffer];
+		buffer_lock->unlock();
+	}
+	else
+	{
+//printf("VDeviceBUZInput::get_buffer 1\n");
+		output_lock->unlock();
+	}
 }
 
 void VDeviceBUZInput::put_buffer()
 {
-	buffer_lock.lock();
+	buffer_lock->lock("VDeviceBUZInput::put_buffer");
 	buffer_size[current_outbuffer] = 0;
-	buffer_lock.unlock();
+	buffer_lock->unlock();
 	increment_counter(&current_outbuffer);
 }
 
@@ -159,18 +180,29 @@ void VDeviceBUZInput::decrement_counter(int *counter)
 
 
 
+
+
+
+
+
+
+
+
+
+
+
 VDeviceBUZ::VDeviceBUZ(VideoDevice *device)
  : VDeviceBase(device)
 {
 	reset_parameters();
 	render_strategies.append(VRENDER_MJPG);
+	tuner_lock = new Mutex("VDeviceBUZ::tuner_lock");
 }
 
 VDeviceBUZ::~VDeviceBUZ()
 {
-//printf("VDeviceBUZ::~VDeviceBUZ 1\n");
 	close_all();
-//printf("VDeviceBUZ::~VDeviceBUZ 2\n");
+	delete tuner_lock;
 }
 
 int VDeviceBUZ::reset_parameters()
@@ -189,11 +221,15 @@ int VDeviceBUZ::reset_parameters()
 	total_loops = 0;
 	output_number = 0;
 	input_thread = 0;
+	brightness = 32768;
+	hue = 32768;
+	color = 32768;
+	contrast = 32768;
+	whiteness = 32768;
 }
 
 int VDeviceBUZ::close_input_core()
 {
-//printf("VDeviceBUZ::close_input_core 1\n");
 	if(input_thread)
 	{
 		delete input_thread;
@@ -213,8 +249,6 @@ int VDeviceBUZ::close_input_core()
 			munmap(input_buffer, breq.count * breq.size);
 		input_buffer = 0;
 	}
-
-//printf("VDeviceBUZ::close_input_core 2\n");
 }
 
 int VDeviceBUZ::close_output_core()
@@ -296,10 +330,10 @@ int VDeviceBUZ::open_output()
 
 int VDeviceBUZ::set_channel(Channel *channel)
 {
-//printf("VDeviceBUZ::set_channel 1\n");
 	if(!channel) return 0;
 
-	tuner_lock.lock();
+	tuner_lock->lock("VDeviceBUZ::set_channel");
+
 	if(device->r)
 	{
 		close_input_core();
@@ -310,8 +344,8 @@ int VDeviceBUZ::set_channel(Channel *channel)
 		close_output_core();
 		open_output_core(channel);
 	}
-	tuner_lock.unlock();
-//printf("VDeviceBUZ::set_channel 2\n");
+
+	tuner_lock->unlock();
 
 
 	return 0;
@@ -328,30 +362,54 @@ int VDeviceBUZ::set_picture(int brightness,
 		int contrast, 
 		int whiteness)
 {
-	tuner_lock.lock();
-
-	struct video_picture picture_params;
-	brightness = (int)((float)brightness / 100 * 32767 + 32768);
-	hue = (int)((float)hue / 100 * 32767 + 32768);
-	color = (int)((float)color / 100 * 32767 + 32768);
-	contrast = (int)((float)contrast / 100 * 32767 + 32768);
-	whiteness = (int)((float)whiteness / 100 * 32767 + 32768);
-	if(ioctl(jvideo_fd, VIDIOCGPICT, &picture_params) < 0)
-		perror("VDeviceBUZ::set_picture VIDIOCGPICT");
-	picture_params.brightness = brightness;
-	picture_params.hue = hue;
-	picture_params.colour = color;
-	picture_params.contrast = contrast;
-	picture_params.whiteness = whiteness;
-	if(ioctl(jvideo_fd, VIDIOCSPICT, &picture_params) < 0)
-		perror("VDeviceBUZ::set_picture VIDIOCSPICT");
-	if(ioctl(jvideo_fd, VIDIOCGPICT, &picture_params) < 0)
-		perror("VDeviceBUZ::set_picture VIDIOCGPICT");
+	this->brightness = (int)((float)brightness / 100 * 32767 + 32768);
+	this->hue = (int)((float)hue / 100 * 32767 + 32768);
+	this->color = (int)((float)color / 100 * 32767 + 32768);
+	this->contrast = (int)((float)contrast / 100 * 32767 + 32768);
+	this->whiteness = (int)((float)whiteness / 100 * 32767 + 32768);
 
 
+ 	tuner_lock->lock("VDeviceBUZ::set_picture");
+	if(device->r)
+	{
+		close_input_core();
+		open_input_core(0);
+	}
+	else
+	{
+		close_output_core();
+		open_output_core(0);
+	}
+ 	tuner_lock->unlock();
+// 
+// 
+// TRACE("VDeviceBUZ::set_picture 1");
+// 	tuner_lock->lock("VDeviceBUZ::set_picture");
+// TRACE("VDeviceBUZ::set_picture 2");
+// 
+// 
+// 
+// 	struct video_picture picture_params;
+// // This call takes a long time in 2.4.22
+// 	if(ioctl(jvideo_fd, VIDIOCGPICT, &picture_params) < 0)
+// 		perror("VDeviceBUZ::set_picture VIDIOCGPICT");
+// 	picture_params.brightness = brightness;
+// 	picture_params.hue = hue;
+// 	picture_params.colour = color;
+// 	picture_params.contrast = contrast;
+// 	picture_params.whiteness = whiteness;
+// // This call takes a long time in 2.4.22
+// 	if(ioctl(jvideo_fd, VIDIOCSPICT, &picture_params) < 0)
+// 		perror("VDeviceBUZ::set_picture VIDIOCSPICT");
+// 	if(ioctl(jvideo_fd, VIDIOCGPICT, &picture_params) < 0)
+// 		perror("VDeviceBUZ::set_picture VIDIOCGPICT");
+// 
+// 
+// TRACE("VDeviceBUZ::set_picture 10");
+// 
+// 
+// 	tuner_lock->unlock();
 
-
-	tuner_lock.unlock();
 	return 0;
 }
 
@@ -367,42 +425,55 @@ int VDeviceBUZ::get_norm(int norm)
 
 int VDeviceBUZ::read_buffer(VFrame *frame)
 {
-	tuner_lock.lock();
+	tuner_lock->lock("VDeviceBUZ::read_buffer");
 	if(!jvideo_fd) open_input_core(0);
 
 // Get buffer from thread
-	char *buffer;
-	int buffer_size;
+	char *buffer = 0;
+	int buffer_size = 0;
+// Timer timer;
+// timer.update();
 	input_thread->get_buffer(&buffer, &buffer_size);
+//printf("%lld ", timer.get_difference());fflush(stdout);
 
-	
-	frame->allocate_compressed_data(buffer_size);
-	frame->set_compressed_size(buffer_size);
+	if(buffer)
+	{
+		frame->allocate_compressed_data(buffer_size);
+		frame->set_compressed_size(buffer_size);
 
 // Transfer fields to frame
-	if(device->odd_field_first)
-	{
-		long field2_offset = mjpeg_get_field2((unsigned char*)buffer, buffer_size);
-		long field1_len = field2_offset;
-		long field2_len = buffer_size - field2_offset;
+		if(device->odd_field_first)
+		{
+			long field2_offset = mjpeg_get_field2((unsigned char*)buffer, buffer_size);
+			long field1_len = field2_offset;
+			long field2_len = buffer_size - field2_offset;
 
-		memcpy(frame->get_data(), buffer + field2_offset, field2_len);
-		memcpy(frame->get_data() + field2_len, buffer, field1_len);
+			memcpy(frame->get_data(), buffer + field2_offset, field2_len);
+			memcpy(frame->get_data() + field2_len, buffer, field1_len);
+		}
+		else
+		{
+			bcopy(buffer, frame->get_data(), buffer_size);
+		}
+
+		input_thread->put_buffer();
+		tuner_lock->unlock();
 	}
 	else
 	{
-		bcopy(buffer, frame->get_data(), buffer_size);
+		tuner_lock->unlock();
+		Timer timer;
+//printf("VDeviceBUZ::read_buffer 1\n");
+// Allow other threads to lock the tuner_lock under NPTL.
+		timer.delay(100);
 	}
 
-	input_thread->put_buffer();
 
-	tuner_lock.unlock();
 	return 0;
 }
 
 int VDeviceBUZ::open_input_core(Channel *channel)
 {
-//printf("VDeviceBUZ::open_input_core 1\n");
 	jvideo_fd = open(device->in_config->buz_in_device, O_RDONLY);
 
 	if(jvideo_fd <= 0)
@@ -434,9 +505,9 @@ int VDeviceBUZ::open_input_core(Channel *channel)
 
 
 // Throw away
-    struct video_capability vc;
-	if(ioctl(jvideo_fd, VIDIOCGCAP, &vc) < 0)
-		perror("VDeviceBUZ::open_input VIDIOCGCAP");
+//     struct video_capability vc;
+// 	if(ioctl(jvideo_fd, VIDIOCGCAP, &vc) < 0)
+// 		perror("VDeviceBUZ::open_input VIDIOCGCAP");
 
 // API dependant initialization
 	if(ioctl(jvideo_fd, BUZIOC_G_PARAMS, &bparm) < 0)
@@ -488,6 +559,26 @@ int VDeviceBUZ::open_input_core(Channel *channel)
 		jvideo_fd, 
 		0)) <= 0)
 		perror("VDeviceBUZ::open_input mmap");
+
+
+// Set picture quality
+	struct video_picture picture_params;
+// This call takes a long time in 2.4.22
+	if(ioctl(jvideo_fd, VIDIOCGPICT, &picture_params) < 0)
+		perror("VDeviceBUZ::set_picture VIDIOCGPICT");
+	picture_params.brightness = brightness;
+	picture_params.hue = hue;
+	picture_params.colour = color;
+	picture_params.contrast = contrast;
+	picture_params.whiteness = whiteness;
+// This call takes a long time in 2.4.22
+	if(ioctl(jvideo_fd, VIDIOCSPICT, &picture_params) < 0)
+		perror("VDeviceBUZ::set_picture VIDIOCSPICT");
+	if(ioctl(jvideo_fd, VIDIOCGPICT, &picture_params) < 0)
+		perror("VDeviceBUZ::set_picture VIDIOCGPICT");
+
+
+
 
 // Start capturing
 	for(int i = 0; i < breq.count; i++)
@@ -564,7 +655,7 @@ int VDeviceBUZ::open_output_core(Channel *channel)
 int VDeviceBUZ::write_buffer(VFrame **frames, EDL *edl)
 {
 //printf("VDeviceBUZ::write_buffer 1\n");
-	tuner_lock.lock();
+	tuner_lock->lock("VDeviceBUZ::write_buffer");
 
 	if(!jvideo_fd) open_output_core(0);
 
@@ -629,7 +720,7 @@ int VDeviceBUZ::write_buffer(VFrame **frames, EDL *edl)
 		output_number = 0;
 		total_loops++;
 	}
-	tuner_lock.unlock();
+	tuner_lock->unlock();
 //printf("VDeviceBUZ::write_buffer 2\n");
 
 	return 0;

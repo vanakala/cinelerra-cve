@@ -155,6 +155,23 @@ file, size, num, bytes);
 			break;
 		}
 
+		case RENDERFARM_FILENO:
+		{
+			int64_t pointer = READ_INT64((unsigned char*)buffer);
+			FILE *file = (FILE*)Units::int64_to_ptr(pointer);
+			unsigned char datagram[4];
+			int i = 0;
+
+			int return_value = fileno(file);
+			STORE_INT32(return_value);
+			server->write_socket((char*)datagram, 4, RENDERFARM_TIMEOUT);
+if(DEBUG)
+printf("RenderFarmFSServer::handle_request file=%p fileno=%d\n", 
+file, return_value);
+			result = 1;
+			break;
+		}
+
 		case RENDERFARM_FWRITE:
 		{
 			int64_t pointer = READ_INT64((unsigned char*)buffer);

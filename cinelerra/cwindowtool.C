@@ -1,6 +1,7 @@
 #include "automation.h"
 #include "bezierauto.h"
 #include "bezierautos.h"
+#include "condition.h"
 #include "cpanel.h"
 #include "cplayback.h"
 #include "cwindow.h"
@@ -11,6 +12,7 @@
 #include "floatauto.h"
 #include "floatautos.h"
 #include "keys.h"
+#include "language.h"
 #include "localsession.h"
 #include "mainsession.h"
 #include "maskauto.h"
@@ -22,10 +24,6 @@
 #include "trackcanvas.h"
 #include "transportque.h"
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 CWindowTool::CWindowTool(MWindow *mwindow, CWindowGUI *gui)
  : Thread()
@@ -36,9 +34,8 @@ CWindowTool::CWindowTool(MWindow *mwindow, CWindowGUI *gui)
 	done = 0;
 	current_tool = CWINDOW_NONE;
 	set_synchronous(1);
-	input_lock = new Mutex;
-	input_lock->lock();
-	output_lock = new Mutex;
+	input_lock = new Condition(0, "CWindowTool::input_lock");
+	output_lock = new Condition(1, "CWindowTool::output_lock");
 }
 
 CWindowTool::~CWindowTool()
@@ -86,9 +83,11 @@ void CWindowTool::start_tool(int operation)
 		if(!result)
 		{
 			stop_tool();
-			output_lock->lock();
+// Wait for previous tool GUI to finish
+			output_lock->lock("CWindowTool::start_tool");
 			this->tool_gui = new_gui;
 			tool_gui->create_objects();
+// Signal thread to run next tool GUI
 			input_lock->unlock();
 		}
 //printf("CWindowTool::start_tool 1\n");
@@ -96,7 +95,7 @@ void CWindowTool::start_tool(int operation)
 	else
 	if(tool_gui) 
 	{
-		tool_gui->lock_window();
+		tool_gui->lock_window("CWindowTool::start_tool");
 		tool_gui->update();
 		tool_gui->unlock_window();
 	}
@@ -110,7 +109,7 @@ void CWindowTool::stop_tool()
 {
 	if(tool_gui)
 	{
-		tool_gui->lock_window();
+		tool_gui->lock_window("CWindowTool::stop_tool");
 		tool_gui->set_done(0);
 		tool_gui->unlock_window();
 	}
@@ -120,7 +119,7 @@ void CWindowTool::run()
 {
 	while(!done)
 	{
-		input_lock->lock();
+		input_lock->lock("CWindowTool::run");
 		if(!done)
 		{
 			tool_gui->run_window();
@@ -135,7 +134,7 @@ void CWindowTool::update_show_window()
 {
 	if(tool_gui)
 	{
-		tool_gui->lock_window();
+		tool_gui->lock_window("CWindowTool::update_show_window");
 
 		if(mwindow->edl->session->tool_window) 
 		{
@@ -155,7 +154,7 @@ void CWindowTool::update_values()
 	if(tool_gui)
 	{
 //printf("CWindowTool::update_values 1\n");
-		tool_gui->lock_window();
+		tool_gui->lock_window("CWindowTool::update_values");
 		tool_gui->update();
 		tool_gui->flush();
 		tool_gui->unlock_window();
@@ -199,7 +198,7 @@ int CWindowToolGUI::close_event()
 	hide_window();
 	flush();
 	mwindow->edl->session->tool_window = 0;
-	thread->gui->lock_window();
+	thread->gui->lock_window("CWindowToolGUI::close_event");
 	thread->gui->composite_panel->set_operation(mwindow->edl->session->cwindow_operation);
 	thread->gui->flush();
 	thread->gui->unlock_window();
@@ -342,7 +341,7 @@ void CWindowCropGUI::handle_event()
 	mwindow->edl->session->crop_y1 = atol(y1->get_text());
 	mwindow->edl->session->crop_x2 = atol(x2->get_text());
 	mwindow->edl->session->crop_y2 = atol(y2->get_text());
-	mwindow->cwindow->gui->lock_window();
+	mwindow->cwindow->gui->lock_window("CWindowCropGUI::handle_event");
 	mwindow->cwindow->gui->canvas->draw_refresh();
 	mwindow->cwindow->gui->unlock_window();
 }
@@ -457,7 +456,7 @@ void CWindowCameraGUI::update_preview()
 			mwindow->edl,
 			1);
 //printf("CWindowCameraGUI::update_preview 1\n");
-	mwindow->cwindow->gui->lock_window();
+	mwindow->cwindow->gui->lock_window("CWindowCameraGUI::update_preview");
 //printf("CWindowCameraGUI::update_preview 1\n");
 	mwindow->cwindow->gui->canvas->draw_refresh();
 //printf("CWindowCameraGUI::update_preview 2\n");
@@ -493,7 +492,7 @@ void CWindowCameraGUI::handle_event()
 	if(zoom_keyframe)
 	{
 		zoom_keyframe->value = atof(z->get_text());
-		mwindow->gui->lock_window();
+		mwindow->gui->lock_window("CWindowCameraGUI::handle_event");
 		mwindow->gui->canvas->draw_overlays();
 		mwindow->gui->canvas->flash();
 		mwindow->gui->unlock_window();
@@ -827,7 +826,7 @@ void CWindowProjectorGUI::update_preview()
 			CHANGE_NONE,
 			mwindow->edl,
 			1);
-	mwindow->cwindow->gui->lock_window();
+	mwindow->cwindow->gui->lock_window("CWindowProjectorGUI::update_preview");
 	mwindow->cwindow->gui->canvas->draw_refresh();
 	mwindow->cwindow->gui->unlock_window();
 }
@@ -861,7 +860,7 @@ void CWindowProjectorGUI::handle_event()
 	if(zoom_keyframe)
 	{
 		zoom_keyframe->value = atof(z->get_text());
-		mwindow->gui->lock_window();
+		mwindow->gui->lock_window("CWindowProjectorGUI::handle_event");
 		mwindow->gui->canvas->draw_overlays();
 		mwindow->gui->canvas->flash();
 		mwindow->gui->unlock_window();
@@ -1643,7 +1642,7 @@ void CWindowMaskGUI::update_preview()
 			CHANGE_NONE,
 			mwindow->edl,
 			1);
-	mwindow->cwindow->gui->lock_window();
+	mwindow->cwindow->gui->lock_window("CWindowMaskGUI::update_preview");
 	mwindow->cwindow->gui->canvas->draw_refresh();
 	mwindow->cwindow->gui->unlock_window();
 }

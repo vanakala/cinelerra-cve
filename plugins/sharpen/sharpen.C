@@ -72,23 +72,12 @@ void SharpenConfig::interpolate(SharpenConfig &prev,
 SharpenMain::SharpenMain(PluginServer *server)
  : PluginVClient(server)
 {
-	thread = 0;
-	engine = 0;
-	load_defaults();
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 SharpenMain::~SharpenMain()
 {
-	if(thread)
-	{
-// Set result to 0 to indicate a server side close
-		thread->window->set_done(0);
-		thread->completion.lock();
-		delete thread;
-	}
-
-	save_defaults();
-	delete defaults;
+	PLUGIN_DESTRUCTOR_MACRO
 
 	if(engine)
 	{
@@ -125,7 +114,7 @@ int SharpenMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	if(!engine)
 	{
 
-		total_engines = smp > 1 ? 2 : 1;
+		total_engines = PluginClient::smp > 1 ? 2 : 1;
 		engine = new SharpenEngine*[total_engines];
 		for(int i = 0; i < total_engines; i++)
 		{
@@ -139,7 +128,7 @@ int SharpenMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	if(config.sharpness != 0)
 	{
 // Arm first row
-		row_step = (config.interlace || config.horizontal) ? 2 : 1;
+		row_step = (config.interlace /* || config.horizontal */) ? 2 : 1;
 
 		for(j = 0; j < row_step; j += total_engines)
 		{

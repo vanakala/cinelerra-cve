@@ -4,6 +4,7 @@
 #include "filesystem.h"
 #include "indexfile.h"
 #include "condition.h"
+#include "language.h"
 #include "loadfile.h"
 #include "guicast.h"
 #include "mainindexes.h"
@@ -13,10 +14,6 @@
 
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 MainIndexes::MainIndexes(MWindow *mwindow)
  : Thread()
@@ -167,7 +164,7 @@ void MainIndexes::run()
 					if(!progress)
 					{
 						if(mwindow->gui) mwindow->gui->lock_window("MainIndexes::run 1");
-						progress = mwindow->mainprogress->start_progress("Building Indexes...", 1);
+						progress = mwindow->mainprogress->start_progress(_("Building Indexes..."), 1);
 						if(mwindow->gui) mwindow->gui->unlock_window();
 					}
 

@@ -1,13 +1,13 @@
-SUBDIRS=decore50 encore50 
+SUBDIRS=encore50 
 
 
 lib_LTLIBRARIES = libquicktime.la
-libquicktime_la_CFLAGS = $(GLIB_CFLAGS) $(CPU_CFLAGS) $(FIREWIRE_CFLAGS) $(OGG_CFLAGS) $(VORBIS_CFLAGS) $(LIBAVCODEC_CFLAGS) -DDECORE_INCLUDE=\"decore50/decore.h\" -DENCORE_INCLUDE=\"encore50/encore.h\"
+libquicktime_la_CFLAGS = $(GLIB_CFLAGS) $(CPU_CFLAGS) $(FIREWIRE_CFLAGS) $(OGG_CFLAGS) $(VORBIS_CFLAGS) $(LIBAVCODEC_CFLAGS) -DENCORE_INCLUDE=\"encore50/encore.h\"
 libquicktime_la_LDFLAGS = -version-info 1:0:0 -release 1.6.0 -Wl,--no-undefined 
 
 libquicktime_la_LIBADD = $(FIREWIRE_LDFLAGS) -ldv -lxvidcore -ljpeg -lpng \
                                                  -logg -lvorbis -lvorbisenc -lmp3lame $(LIBAVCODEC_LIBS) \
-                                                 encore50/libencore.la decore50/libdecore.la \
+                                                 encore50/libencore.la \
                                                 $(top_builddir)/libmpeg3/libmpeg3.la -lpthread -lm
 
 libquicktime_la_SOURCES = atom.c avi_hdrl.c avi_idx1.c avi_movi.c avi_strl.c \
@@ -64,7 +64,7 @@ noinst_HEADERS = cmodel_permutation.h \
 	
 EXTRA_DIST = docs
 
-INCLUDES = -I/usr/include/lame -I$(top_srcdir)/libmpeg3 -I/usr/include/glib-1.2
+INCLUDES = -I$(top_srcdir)/libmpeg3
 
 pkgincludedir=$(includedir)/quicktime
 pkginclude_HEADERS=quicktime.h qtprivate.h

@@ -50,12 +50,15 @@ inline void mpeg3video_rgb16_mmx(unsigned char *lum,
 	y = lum + cols * rows;
     x = 0;
 
+		unsigned char * temp;
     __asm__ __volatile__(
         ".align 8\n"
         "1:\n"
-            "movd           (%1),                   %%mm0\n"  /* 4 Cb	  0  0  0  0 u3 u2 u1 u0 */
+						"mov 						%1,											%9\n"
+            "movd           (%9),                   %%mm0\n"  /* 4 Cb	  0  0  0  0 u3 u2 u1 u0 */
             "pxor           %%mm7,                  %%mm7\n"
-            "movd           (%0),                   %%mm1\n"  /* 4 Cr	  0  0  0  0 v3 v2 v1 v0 */
+						"mov						%0,											%9\n"
+            "movd           (%9),                   %%mm1\n"  /* 4 Cr	  0  0  0  0 v3 v2 v1 v0 */
             "punpcklbw      %%mm7,                  %%mm0\n"  /* 4 W cb   0 u3  0 u2  0 u1  0 u0 */
             "punpcklbw      %%mm7,                  %%mm1\n"  /* 4 W cr   0 v3  0 v2  0 v1  0 v0 */
 
@@ -195,15 +198,16 @@ inline void mpeg3video_rgb16_mmx(unsigned char *lum,
         "movl           $0,     %6\n"
         "cmpl           %8,     %2\n"
         "jl             1b\n"
-        : : "r" (cr), 
-			"r" (cb), 
+        : : "m" (cr), 
+			"m" (cb), 
 			"r" (lum), 
 			"r" (cols), 
 			"r" (row1) ,
 			"r" (col1), 
 			"m" (x), 
 			"m" (mod), 
-			"m" (y)
+			"m" (y),
+			"r" (temp)
 		);
 }
 

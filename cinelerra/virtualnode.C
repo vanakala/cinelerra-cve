@@ -139,7 +139,8 @@ int VirtualNode::expand_as_module(int duplicate, int64_t current_position)
 		Plugin *plugin = track->get_current_plugin(current_position, 
 			i, 
 			renderengine->command->get_direction(),
-			0);
+			0,
+			1);
 
 // printf("VirtualNode::expand_as_module 1 %d %d %p %p\n", 
 // i, 
@@ -499,10 +500,12 @@ int VirtualNode::render_as_plugin(int64_t source_len,
 void VirtualNode::get_mute_fragment(int64_t input_position,
 				int &mute_constant, 
 				int64_t &fragment_len, 
-				Autos *autos)
+				Autos *autos,
+				int direction,
+				int use_nudge)
 {
 	int64_t mute_len;
-	int direction = renderengine->command->get_direction();
+	if(use_nudge) input_position += track->nudge;
 
 	IntAuto *prev_keyframe = 0;
 	IntAuto *next_keyframe = 0;
@@ -557,64 +560,6 @@ void VirtualNode::get_fade_automation(double &slope,
 		input_position,
 		slope_len,
 		direction);
-}
-
-void VirtualNode::get_pan_automation(double &slope,
-	double &intercept,
-	int64_t input_position,
-	int64_t &slope_len,
-	Autos *autos,
-	int channel)
-{
-	int direction = renderengine->command->get_direction();
-	intercept = 0;
-	slope = 0;
-
-	PanAuto *prev_keyframe = 0;
-	PanAuto *next_keyframe = 0;
-	prev_keyframe = (PanAuto*)autos->get_prev_auto(input_position, direction, (Auto*)prev_keyframe);
-	next_keyframe = (PanAuto*)autos->get_next_auto(input_position, direction, (Auto*)next_keyframe);
-	
-	if(direction == PLAY_FORWARD)
-	{
-// Two distinct automation points within range
-		if(next_keyframe->position > prev_keyframe->position)
-		{
-			slope = ((double)next_keyframe->values[channel] - prev_keyframe->values[channel]) / 
-				((double)next_keyframe->position - prev_keyframe->position);
-			intercept = ((double)input_position - prev_keyframe->position) * slope + 
-				prev_keyframe->values[channel];
-
-			if(next_keyframe->position < input_position + slope_len)
-				slope_len = next_keyframe->position - input_position;
-		}
-		else
-// One automation point within range
-		{
-			slope = 0;
-			intercept = prev_keyframe->values[channel];
-		}
-	}
-	else
-	{
-// Two distinct automation points within range
-		if(next_keyframe->position < prev_keyframe->position)
-		{
-			slope = ((double)next_keyframe->values[channel] - prev_keyframe->values[channel]) / 
-				((double)next_keyframe->position - prev_keyframe->position);
-			intercept = ((double)input_position - prev_keyframe->position) * slope + 
-				prev_keyframe->values[channel];
-
-			if(next_keyframe->position > input_position - slope_len)
-				slope_len = input_position - next_keyframe->position;
-		}
-		else
-// One automation point within range
-		{
-			slope = 0;
-			intercept = next_keyframe->values[channel];
-		}
-	}
 }
 
 

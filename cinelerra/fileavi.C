@@ -1,10 +1,10 @@
-#include "assets.h"
+#include "asset.h"
 
 #ifdef USE_AVIFILE
 #include "avifile.h"
 #include "creators.h"
 #include "except.h"
-#include "fourcc.h"
+#include "avm_fourcc.h"
 #include "StreamInfo.h"
 #endif
 
@@ -977,7 +977,7 @@ void AVIConfigVideo::generate_attributelist()
 			avm::vector<AttributeInfo>& attributes = i->encoder_info;
 
 			for(avm::vector<AttributeInfo>::const_iterator j = attributes.begin();
-				j < attributes.end();
+				j != attributes.end();
 				j++)
 			{
 				char *name = (char*)j->GetName();
@@ -1004,8 +1004,12 @@ void AVIConfigVideo::generate_attributelist()
 					}
 
 					case AttributeInfo::String:
-						Creators::GetCodecAttr(*i, name, value, BCTEXTLEN);
+					{
+						const char * temp = 0;
+						Creators::GetCodecAttr(*i, name, &temp);
+						if(temp) strncpy(value, temp, BCTEXTLEN);
 						break;
+					}
 				}
 
 				attribute_items[0].append(new BC_ListBoxItem(name));

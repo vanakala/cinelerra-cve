@@ -305,23 +305,6 @@ int PrefsBRenderFragment::handle_event()
 
 
 
-PrefsSMP::PrefsSMP(int x, int y, PreferencesWindow *pwindow)
- : BC_TextBox(x, y, 100, 1, pwindow->thread->edl->session->smp + 1)
-{
-	this->pwindow = pwindow;
-}
-
-PrefsSMP::~PrefsSMP()
-{
-}
-
-int PrefsSMP::handle_event()
-{
-	pwindow->thread->edl->session->smp = atol(get_text()) - 1;
-	if(pwindow->thread->edl->session->smp < 0) pwindow->thread->edl->session->smp = 0;
-	return 0;
-}
-
 
 CICacheSize::CICacheSize(int x, int y, PreferencesWindow *pwindow, char *text)
  : BC_TextBox(x, y, 100, 1, text)
@@ -416,7 +399,7 @@ int PrefsRenderFarm::handle_event()
 PrefsForceUniprocessor::PrefsForceUniprocessor(PreferencesWindow *pwindow, int x, int y)
  : BC_CheckBox(x, 
  	y, 
-	pwindow->thread->edl->session->force_uniprocessor,
+	pwindow->thread->preferences->force_uniprocessor,
 	_("Force single processor use"))
 {
 	this->pwindow = pwindow;
@@ -426,7 +409,7 @@ PrefsForceUniprocessor::~PrefsForceUniprocessor()
 }
 int PrefsForceUniprocessor::handle_event()
 {
-	pwindow->thread->edl->session->force_uniprocessor = get_value();
+	pwindow->thread->preferences->force_uniprocessor = get_value();
 	return 1;
 }
 

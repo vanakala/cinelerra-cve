@@ -2,11 +2,13 @@
 #define RENDER_H
 
 
-#include "assets.inc"
+#include "asset.inc"
+#include "batchrender.inc"
 #include "bitspopup.h"
 #include "browsebutton.h"
 #include "cache.inc"
 #include "compresspopup.h"
+#include "condition.inc"
 #include "defaults.inc"
 #include "edit.inc"
 #include "errorbox.inc"
@@ -78,12 +80,28 @@ public:
 	Render(MWindow *mwindow);
 	~Render();
 
+// Start dialogue box and render interactively.
+	void start_interactive();
+// Start batch rendering jobs
+	void start_batches(ArrayList<BatchRenderJob*> *jobs);
+// Called by BatchRender to stop the operation.
+	void stop_operation();
 	void run();
+
+
+// Render single job.  Used by run.
+	int render(int test_overwrite, 
+		Asset *asset,
+		EDL *edl,
+		int strategy);
+
 	int load_defaults(Asset *asset);
 	int save_defaults(Asset *asset);
 // force asset parameters regardless of window
 // This should be integrated into the Asset Class.
 	static int check_asset(EDL *edl, Asset &asset); 
+// Fix strategy to conform with using renderfarm.
+	static int fix_strategy(int strategy, int use_renderfarm);
 // Force filename to have a 0 padded number if rendering to a list.
 	int check_numbering(Asset &asset);
 	static void create_filename(char *path, 
@@ -96,7 +114,6 @@ public:
 		int &number_start, 
 		int &total_digits,
 		int min_digits = 3);
-	static int test_existence(MWindow *mwindow, Asset *asset);
 	int direct_frame_copy(EDL *edl, int64_t &render_video_position, File *file);
 	int direct_copy_possible(EDL *edl, 
 			int64_t current_position, 
@@ -106,6 +123,17 @@ public:
 
 	void start_progress();
 	void stop_progress();
+
+// Procedure the run function should use.
+	int mode;
+	enum
+	{
+		INTERACTIVE,
+		BATCH
+	};
+// When batch rendering is cancelled from the batch dialog
+	int batch_cancelled;
+
 
 	int load_mode;
 	int in_progress;
@@ -128,6 +156,11 @@ public:
 	int result;
 	Asset *default_asset;
 	TransportCommand *command;
+// Jobs pointer passed to start_batches
+	ArrayList<BatchRenderJob*> *jobs;
+// Used by batch rendering to wait until rendering is finished
+	Condition *completion;
+
 
 // Total samples updated by the render farm and the local renderer.
 // This avoids rounding errors and complies with the use of samples for
@@ -135,6 +168,8 @@ public:
 	int64_t total_rendered;
 // Speed for the master node
 	double frames_per_second;
+// Time used in last render
+	double elapsed_time;
 };
 
 class RenderToTracks;

@@ -1,4 +1,5 @@
 #include "clip.h"
+#include "condition.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "localsession.h"
@@ -114,6 +115,7 @@ float TransportCommand::get_speed()
 // Assume starting without pause
 void TransportCommand::set_playback_range(EDL *edl)
 {
+	if(!edl) edl = this->edl;
 	switch(command)
 	{
 		case SLOW_FWD:
@@ -178,6 +180,23 @@ void TransportCommand::set_playback_range(EDL *edl)
 // end_position * edl->session->frame_rate);
 }
 
+void TransportCommand::adjust_playback_range()
+{
+	if(edl->local_session->in_point >= 0 ||
+		edl->local_session->out_point >= 0)
+	{
+		if(edl->local_session->in_point >= 0)
+			start_position = edl->local_session->in_point;
+		else
+			start_position = 0;
+
+		if(edl->local_session->out_point >= 0)
+			end_position = edl->local_session->out_point;
+		else
+			end_position = edl->tracks->total_playable_length();
+	}
+}
+
 
 
 
@@ -197,11 +216,14 @@ void TransportCommand::set_playback_range(EDL *edl)
 
 TransportQue::TransportQue()
 {
-	output_lock.lock();
+	input_lock = new Condition(1, "TransportQue::input_lock");
+	output_lock = new Condition(0, "TransportQue::output_lock");
 }
 
 TransportQue::~TransportQue()
 {
+	delete input_lock;
+	delete output_lock;
 }
 
 int TransportQue::send_command(int command, 
@@ -210,16 +232,10 @@ int TransportQue::send_command(int command,
 		int realtime,
 		int resume)
 {
-//printf("TransportQue::send_command 1\n");
-	input_lock.lock();
+	input_lock->lock("TransportQue::send_command 1");
 	this->command.command = command;
 // Mutually exclusive operation
 	this->command.change_type |= change_type;
-//printf("TransportQue::send_command 1 %x\n", change_type);
-// 	if(command == STOP)
-// 		this->command.change_type = CHANGE_NONE;
-//printf("TransportQue::send_command 2\n");
-
 	this->command.realtime = realtime;
 	this->command.resume = resume;
 
@@ -246,15 +262,15 @@ int TransportQue::send_command(int command,
 
 //printf("TransportQue::send_command 3\n");
 //printf("TransportQue::send_command 2 %p %d %d\n", new_edl, this->command.playbackstart);
-	input_lock.unlock();
-	output_lock.unlock();
+	input_lock->unlock();
+	output_lock->unlock();
 //printf("TransportQue::send_command 4\n");
 	return 0;
 }
 
 void TransportQue::update_change_type(int change_type)
 {
-	input_lock.lock();
+	input_lock->lock("TransportQue::update_change_type");
 	this->command.change_type |= change_type;
-	input_lock.unlock();
+	input_lock->unlock();
 }

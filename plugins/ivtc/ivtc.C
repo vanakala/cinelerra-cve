@@ -1,3 +1,4 @@
+#include "clip.h"
 #include "colormodels.h"
 #include "filexml.h"
 #include "ivtc.h"
@@ -20,7 +21,7 @@ IVTCConfig::IVTCConfig()
 	first_field = 0;
 	automatic = 1;
 	auto_threshold = 2;
-	pattern = 0;
+	pattern = IVTCConfig::PULLDOWN32;
 }
 
 IVTCMain::IVTCMain(PluginServer *server)
@@ -40,9 +41,7 @@ IVTCMain::~IVTCMain()
 		if(temp_frame[1]) delete temp_frame[1];
 		temp_frame[0] = 0;
 		temp_frame[1] = 0;
-		for(int i = 0; i < (smp + 1); i++)
-			delete engine[i];
-		delete [] engine;
+		delete engine;
 	}
 }
 
@@ -143,57 +142,19 @@ void IVTCMain::read_data(KeyFrame *keyframe)
 }
 
 
-void IVTCMain::compare_fields(VFrame *frame1, 
-	VFrame *frame2, 
-	int64_t &field1,
-	int64_t &field2)
-{
-	field1 = field2 = 0;
-	for(int i = 0; i < (smp + 1); i++)
-	{
-		engine[i]->start_process_frame(frame1, frame2);
-	}
-	
-	for(int i = 0; i < (smp + 1); i++)
-	{
-		engine[i]->wait_process_frame();
-		field1 += engine[i]->field1;
-		field2 += engine[i]->field2;
-	}
-}
 
-#define ABS(x) ((x) > 0 ? (x) : -(x))
 
 // Pattern A B BC CD D
 int IVTCMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
 	load_configuration();
 
-//printf("IVTCMain::process_realtime 1\n");
 	if(!engine)
 	{
 		temp_frame[0] = 0;
 		temp_frame[1] = 0;
-		state = 0;
-		new_field = 0;
-		average = 0;
-		total_average = (int64_t)(project_frame_rate + 0.5);
 	
-		int y1, y2, y_increment;
-		y_increment = input_ptr->get_h() / (smp + 1);
-		y1 = 0;
-
-		engine = new IVTCEngine*[(smp + 1)];
-		for(int i = 0; i < (smp + 1); i++)
-		{
-			y2 = y1 + y_increment;
-			if(i == (PluginClient::smp + 1) - 1 && 
-				y2 < input_ptr->get_h() - 1) 
-				y2 = input_ptr->get_h() - 1;
-			engine[i] = new IVTCEngine(this, y1, y2);
-			engine[i]->start();
-			y1 += y_increment;
-		}
+		engine = new IVTCEngine(this, smp + 1);
 	}
 
 // Determine position in pattern
@@ -212,9 +173,55 @@ int IVTCMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		-1);
 
 	int row_size = VFrame::calculate_bytes_per_pixel(input_ptr->get_color_model()) * input_ptr->get_w();
+	int64_t field1;
+	int64_t field2;
+	int64_t field1_sum;
+	int64_t field2_sum;
+	this->input = input_ptr;
+	this->output = output_ptr;
 
 // Determine pattern
-	if(config.pattern == 1)
+	if(config.pattern == IVTCConfig::PULLDOWN32)
+	{
+		switch(pattern_position)
+		{
+// Direct copy
+			case 0:
+			case 4:
+				if(input_ptr->get_rows()[0] != output_ptr->get_rows()[0])
+					output_ptr->copy_from(input_ptr);
+				break;
+
+			case 1:
+				temp_frame[0]->copy_from(input_ptr);
+				if(input_ptr->get_rows()[0] != output_ptr->get_rows()[0])
+					output_ptr->copy_from(input_ptr);
+				break;
+
+			case 2:
+// Save one field for next frame.  Reuse previous frame.
+				temp_frame[1]->copy_from(input_ptr);
+				output_ptr->copy_from(temp_frame[0]);
+				break;
+
+			case 3:
+// Combine previous field with current field.
+				for(int i = 0; i < input_ptr->get_h(); i++)
+				{
+					if((i + config.first_field) & 1)
+						memcpy(output_ptr->get_rows()[i], 
+							input_ptr->get_rows()[i],
+							row_size);
+					else
+						memcpy(output_ptr->get_rows()[i], 
+							temp_frame[1]->get_rows()[i],
+							row_size);
+				}
+				break;
+		}
+	}
+	else
+	if(config.pattern == IVTCConfig::SHIFTFIELD)
 	{
 		temp_frame[1]->copy_from(input_ptr);
 
@@ -237,160 +244,288 @@ int IVTCMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		temp_frame[1] = temp;
 	}
 	else
-// Determine where in the pattern we are
-	if(config.automatic)
+	if(config.pattern == IVTCConfig::AUTOMATIC)
 	{
-		int64_t field1;
-		int64_t field2;
-
-		compare_fields(temp_frame[0], 
-			input_ptr, 
-			field1,
-			field2);
-
-		int64_t field_difference = field2 - field1;
-		int64_t threshold;
-
-
+// Compare with original rows and with previous rows and averaged rows.
+// Take rows which are most similar to the averaged rows.
+// Process frame.
+		engine->process_packages();
+// Copy current for future use
 		temp_frame[1]->copy_from(input_ptr);
 
-// Automatically generate field difference threshold using weighted average of previous frames
-		if(average > 0)
-			threshold = average;
-		else
-			threshold = ABS(field_difference);
+// Add results
+		even_vs_current = 0;
+		even_vs_prev = 0;
+		odd_vs_current = 0;
+		odd_vs_prev = 0;
 
-//printf("IVTCMain::process_realtime 1 %d %lld %lld %lld\n", state, average, threshold, field_difference);
-// CD
-		if(state == 3)
+		for(int i = 0; i < engine->get_total_clients(); i++)
 		{
-			state = 4;
+			IVTCUnit *unit = (IVTCUnit*)engine->get_client(i);
+			even_vs_current += unit->even_vs_current;
+			even_vs_prev += unit->even_vs_prev;
+			odd_vs_current += unit->odd_vs_current;
+			odd_vs_prev += unit->odd_vs_prev;
+		}
 
-// Compute new threshold for next time
-			average = (int64_t)(average * total_average + 
-				ABS(field_difference)) / (total_average + 1);
 
-			for(int i = 0; i < input_ptr->get_h(); i++)
-			{
-				if((i + new_field) & 1)
-					memcpy(output_ptr->get_rows()[i], 
-						input_ptr->get_rows()[i],
-						row_size);
-				else
-					memcpy(output_ptr->get_rows()[i],
-						temp_frame[0]->get_rows()[i],
-						row_size);
-			}
+		int64_t min;
+		int strategy;
+		if(even_vs_current > even_vs_prev)
+		{
+			min = even_vs_prev;
+			strategy = 0;
 		}
 		else
-// Neither field changed enough
-// A or B or D
-		if(ABS(field_difference) <= threshold ||
-			state == 4)
 		{
-			state = 0;
+			min = even_vs_current;
+			strategy = 2;
+		}
 
-// Compute new threshold for next time
-			average = (int64_t)(average * total_average + 
-				ABS(field_difference)) / (total_average + 1);
+		if(min > odd_vs_prev)
+		{
+			min = odd_vs_prev;
+			strategy = 1;
+		}
 
-			if(input_ptr->get_rows()[0] != output_ptr->get_rows()[0])
+		if(min > odd_vs_current)
+		{
+			min = odd_vs_current;
+			strategy = 2;
+		}
+
+
+
+
+// printf("%lld %lld %lld %lld %d\n", 
+// even_vs_prev, even_vs_current, odd_vs_prev, odd_vs_current, strategy);
+//strategy = 2;
+
+		switch(strategy)
+		{
+			case 0:
+				for(int i = 0; i < input_ptr->get_h(); i++)
+				{
+					if(!(i & 1))
+						memcpy(output_ptr->get_rows()[i], 
+							temp_frame[0]->get_rows()[i],
+							row_size);
+					else
+						memcpy(output_ptr->get_rows()[i],
+							input_ptr->get_rows()[i],
+							row_size);
+				}
+				break;
+			case 1:
+				for(int i = 0; i < input_ptr->get_h(); i++)
+				{
+					if(i & 1)
+						memcpy(output_ptr->get_rows()[i], 
+							temp_frame[0]->get_rows()[i],
+							row_size);
+					else
+						memcpy(output_ptr->get_rows()[i],
+							input_ptr->get_rows()[i],
+							row_size);
+				}
+				break;
+			case 2:
 				output_ptr->copy_from(input_ptr);
-		}
-		else
-// Field 2 changed more than field 1
-		if(field_difference > threshold)
-		{
-// BC bottom field new
-			state = 3;
-			new_field = 1;
-
-// Compute new threshold for next time
-			average = (int64_t)(average * total_average + 
-				ABS(field_difference)) / (total_average + 1);
-
-			for(int i = 0; i < input_ptr->get_h(); i++)
-			{
-				if(i & 1)
-					memcpy(output_ptr->get_rows()[i], 
-						temp_frame[0]->get_rows()[i],
-						row_size);
-				else
-					memcpy(output_ptr->get_rows()[i],
-						input_ptr->get_rows()[i],
-						row_size);
-			}
-		}
-		else
-// Field 1 changed more than field 2
-		if(field_difference < -threshold)
-		{
-// BC top field new
-			state = 3;
-			new_field = 0;
-
-// Compute new threshold for next time
-			average = (int64_t)(average * total_average + 
-				ABS(field_difference)) / (total_average + 1);
-
-			for(int i = 0; i < input_ptr->get_h(); i++)
-			{
-				if(i & 1)
-					memcpy(output_ptr->get_rows()[i],
-						input_ptr->get_rows()[i],
-						row_size);
-				else
-					memcpy(output_ptr->get_rows()[i], 
-						temp_frame[0]->get_rows()[i],
-						row_size);
-			}
+				break;
 		}
 
-// Swap temp frames
-		VFrame *temp = temp_frame[0];
-		temp_frame[0] = temp_frame[1];
-		temp_frame[1] = temp;
+		VFrame *temp = temp_frame[1];
+		temp_frame[1] = temp_frame[0];
+		temp_frame[0] = temp;
 	}
-	else
-	switch(pattern_position)
-	{
-// Direct copy
-		case 0:
-		case 4:
-			if(input_ptr->get_rows()[0] != output_ptr->get_rows()[0])
-				output_ptr->copy_from(input_ptr);
-			break;
-
-		case 1:
-			temp_frame[0]->copy_from(input_ptr);
-			if(input_ptr->get_rows()[0] != output_ptr->get_rows()[0])
-				output_ptr->copy_from(input_ptr);
-			break;
-
-		case 2:
-// Save one field for next frame.  Reuse previous frame.
-			temp_frame[1]->copy_from(input_ptr);
-			output_ptr->copy_from(temp_frame[0]);
-			break;
-
-		case 3:
-// Combine previous field with current field.
-			for(int i = 0; i < input_ptr->get_h(); i++)
-			{
-				if((i + config.first_field) & 1)
-					memcpy(output_ptr->get_rows()[i], 
-						input_ptr->get_rows()[i],
-						row_size);
-				else
-					memcpy(output_ptr->get_rows()[i], 
-						temp_frame[1]->get_rows()[i],
-						row_size);
-			}
-			break;
-	}
-//printf("IVTCMain::process_realtime 2\n");
-
 	return 0;
+}
+
+
+
+#define DEINTERLACE_AVG_MACRO(type, components) \
+{ \
+	int w = input->get_w(); \
+	int h = input->get_h(); \
+ 	type **in_rows = (type**)input->get_rows(); \
+ 	type **out_rows = (type**)output->get_rows(); \
+	int max_h = h - 1; \
+ \
+	for(int i = 0; i < max_h; i += 2) \
+	{ \
+		int in_number1 = dominance ? i - 1 : i + 0; \
+		int in_number2 = dominance ? i + 1 : i + 2; \
+		int out_number1 = dominance ? i - 1 : i; \
+		int out_number2 = dominance ? i : i + 1; \
+		in_number1 = MAX(in_number1, 0); \
+		in_number2 = MIN(in_number2, max_h); \
+		out_number1 = MAX(out_number1, 0); \
+		out_number2 = MIN(out_number2, max_h); \
+ \
+		type *input_row1 = in_rows[in_number1]; \
+		type *input_row2 = in_rows[in_number2]; \
+		type *input_row3 = in_rows[out_number2]; \
+		type *output_row1 = out_rows[out_number1]; \
+		type *output_row2 = out_rows[out_number2]; \
+		int64_t accum_r, accum_b, accum_g, accum_a; \
+ \
+/* Assume the dominant rows are never compared */ \
+/*		memcpy(output_row1, input_row1, w * components * sizeof(type)); */\
+		for(int j = 0; j < w; j++) \
+		{ \
+			accum_r = (*input_row1++) + (*input_row2++); \
+			accum_g = (*input_row1++) + (*input_row2++); \
+			accum_b = (*input_row1++) + (*input_row2++); \
+			if(components == 4) \
+				accum_a = (*input_row1++) + (*input_row2++); \
+			accum_r >>= 1; \
+			accum_g >>= 1; \
+			accum_b >>= 1; \
+			accum_a >>= 1; \
+ \
+			*output_row2++ = accum_r; \
+			*output_row2++ = accum_g; \
+			*output_row2++ = accum_b; \
+			if(components == 4) \
+			{ \
+				*output_row2++ = accum_a; \
+			} \
+		} \
+	} \
+}
+
+
+void IVTCMain::deinterlace_avg(VFrame *output, 
+	VFrame *input, 
+	int dominance)
+{
+	switch(input->get_color_model())
+	{
+		case BC_RGB888:
+		case BC_YUV888:
+			DEINTERLACE_AVG_MACRO(unsigned char, 3);
+			break;
+		case BC_RGBA8888:
+		case BC_YUVA8888:
+			DEINTERLACE_AVG_MACRO(unsigned char, 4);
+			break;
+		case BC_RGB161616:
+		case BC_YUV161616:
+			DEINTERLACE_AVG_MACRO(uint16_t, 3);
+			break;
+		case BC_RGBA16161616:
+		case BC_YUVA16161616:
+			DEINTERLACE_AVG_MACRO(uint16_t, 4);
+			break;
+	}
+}
+
+
+#define COMPARE(type, components, is_yuv) \
+{ \
+	int w = current_avg->get_w(); \
+	int h = current_avg->get_h(); \
+ 	type **in_rows = (type**)current_avg->get_rows(); \
+ 	type **curr_rows = (type**)current_orig->get_rows(); \
+ 	type **prev_rows = (type**)previous->get_rows(); \
+/* Components to skip for YUV */ \
+	int skip = components - 1; \
+ \
+	for(int i = 0; i < h; i++) \
+	{ \
+		type *in_row = in_rows[i]; \
+		type *out_row; \
+ \
+		switch(field) \
+		{ \
+			case 0: \
+/* Compare with previous even field */ \
+				if(!(i % 2)) \
+					out_row = prev_rows[i]; \
+				else \
+/* Compare with current odd field */ \
+/* Assume curr_rows is the averaged in_rows with odd dominance and skip. */ \
+					out_row = 0; \
+				break; \
+			case 1: \
+/* Compare with current even field */ \
+/* Assume curr_rows is the averaged in_rows with odd dominance and skip. */ \
+				if(!(i % 2)) \
+					out_row = 0; \
+				else \
+/* Compare with previous odd field */ \
+					out_row = prev_rows[i]; \
+				break; \
+			case 2: \
+/* Compare with current both fields */ \
+				out_row = curr_rows[i]; \
+				break; \
+		} \
+ \
+ 		if(out_row) \
+		{ \
+			if(is_yuv) \
+			{ \
+/* Compare the row luminance */ \
+				for(int j = 0; j < w; j++) \
+				{ \
+					int difference = labs(*in_row - *out_row); \
+					result += difference; \
+					in_row += skip; \
+					out_row += skip; \
+				} \
+			} \
+			else \
+			{ \
+/* Compare all channels */ \
+				for(int j = 0; j < w; j++) \
+				{ \
+					result += labs(in_row[0] - out_row[0]); \
+					result += labs(in_row[1] - out_row[1]); \
+					result += labs(in_row[2] - out_row[2]); \
+					in_row += components; \
+					out_row += components; \
+				} \
+			} \
+		} \
+	} \
+}
+
+int64_t IVTCMain::compare(VFrame *current_avg, 
+	VFrame *current_orig, 
+	VFrame *previous, 
+	int field)
+{
+	int64_t result = 0;
+	
+	switch(current_avg->get_color_model())
+	{
+		case BC_RGB888:
+			COMPARE(unsigned char, 3, 0);
+			break;
+		case BC_YUV888:
+			COMPARE(unsigned char, 3, 1);
+			break;
+		case BC_RGBA8888:
+			COMPARE(unsigned char, 4, 0);
+			break;
+		case BC_YUVA8888:
+			COMPARE(unsigned char, 4, 1);
+			break;
+		case BC_RGB161616:
+			COMPARE(uint16_t, 3, 0);
+			break;
+		case BC_YUV161616:
+			COMPARE(uint16_t, 3, 1);
+			break;
+		case BC_RGBA16161616:
+			COMPARE(uint16_t, 4, 0);
+			break;
+		case BC_YUVA16161616:
+			COMPARE(uint16_t, 4, 1);
+			break;
+	}
+	return result;
 }
 
 void IVTCMain::update_gui()
@@ -399,11 +534,23 @@ void IVTCMain::update_gui()
 	{
 		load_configuration();
 		thread->window->lock_window();
+		if(config.pattern == IVTCConfig::AUTOMATIC)
+		{
+			thread->window->frame_offset->disable();
+			thread->window->first_field->disable();
+		}
+		else
+		{
+			thread->window->frame_offset->enable();
+			thread->window->first_field->enable();
+		}
 		thread->window->frame_offset->update((int64_t)config.frame_offset);
 		thread->window->first_field->update(config.first_field);
-		thread->window->automatic->update(config.automatic);
-		thread->window->pattern[0]->update(config.pattern == 0);
-		thread->window->pattern[1]->update(config.pattern == 1);
+//		thread->window->automatic->update(config.automatic);
+		for(int i = 0; i < TOTAL_PATTERNS; i++)
+		{
+			thread->window->pattern[i]->update(config.pattern == i);
+		}
 		thread->window->unlock_window();
 	}
 }
@@ -411,174 +558,180 @@ void IVTCMain::update_gui()
 
 
 
-IVTCEngine::IVTCEngine(IVTCMain *plugin, int start_y, int end_y)
- : Thread()
+
+
+
+
+
+IVTCPackage::IVTCPackage()
+ : LoadPackage()
+{
+}
+
+
+
+
+IVTCUnit::IVTCUnit(IVTCEngine *server, IVTCMain *plugin)
+ : LoadClient(server)
+{
+	this->server = server;
+	this->plugin = plugin;
+}
+
+#define IVTC_MACRO(type, components, is_yuv) \
+{ \
+ 	type **curr_rows = (type**)plugin->input->get_rows(); \
+ 	type **prev_rows = (type**)plugin->temp_frame[0]->get_rows(); \
+/* Components to skip for YUV */ \
+	int skip = components - 1; \
+ \
+	for(int i = ptr->y1; i < ptr->y2; i++) \
+	{ \
+/* Rows to average in the input frame */ \
+		int input_row1_number = i - 1; \
+		int input_row2_number = i + 1; \
+		input_row1_number = MAX(0, input_row1_number); \
+		input_row2_number = MIN(h - 1, input_row2_number); \
+		type *input_row1 = curr_rows[input_row1_number]; \
+		type *input_row2 = curr_rows[input_row2_number]; \
+ \
+/* Rows to compare the averaged rows to */ \
+		type *current_row = curr_rows[i]; \
+		type *prev_row = prev_rows[i]; \
+ \
+		int64_t current_difference = 0; \
+		int64_t prev_difference = 0; \
+		for(int j = 0; j < w; j++) \
+		{ \
+/* Get pixel average */ \
+			uint32_t average = ((uint32_t)*input_row1 + *input_row2) >> 1; \
+/* Compare row to current */ \
+			current_difference += labs(average - *current_row); \
+/* Compare row to previous */ \
+			prev_difference += labs(average - *prev_row); \
+ \
+/* Do RGB channels */ \
+			if(!is_yuv) \
+			{ \
+				average = ((uint32_t)input_row1[1] + input_row2[1]) >> 1; \
+				current_difference += labs(average - current_row[1]); \
+				prev_difference += labs(average - prev_row[1]); \
+				average = ((uint32_t)input_row1[2] + input_row2[2]) >> 1; \
+				current_difference += labs(average - current_row[2]); \
+				prev_difference += labs(average - prev_row[2]); \
+			} \
+ \
+/* Add to row accumulators */ \
+			current_row += components; \
+			prev_row += components; \
+			input_row1 += components; \
+			input_row2 += components; \
+		} \
+ \
+/* Store row differences in even or odd variables */ \
+		if(i % 2) \
+		{ \
+			odd_vs_current += current_difference; \
+			odd_vs_prev += prev_difference; \
+		} \
+		else \
+		{ \
+			even_vs_current += current_difference; \
+			even_vs_prev += prev_difference; \
+		} \
+	} \
+}
+
+void IVTCUnit::clear_totals()
+{
+	even_vs_current = 0;
+	even_vs_prev = 0;
+	odd_vs_current = 0;
+	odd_vs_prev = 0;
+}
+
+void IVTCUnit::process_package(LoadPackage *package)
+{
+	IVTCPackage *ptr = (IVTCPackage*)package;
+	int w = plugin->input->get_w();
+	int h = plugin->input->get_h();
+
+	switch(plugin->input->get_color_model())
+	{
+		case BC_RGB888:
+			IVTC_MACRO(unsigned char, 3, 0);
+			break;
+		case BC_YUV888:
+			IVTC_MACRO(unsigned char, 3, 1);
+			break;
+		case BC_RGBA8888:
+			IVTC_MACRO(unsigned char, 4, 0);
+			break;
+		case BC_YUVA8888:
+			IVTC_MACRO(unsigned char, 4, 1);
+			break;
+		case BC_RGB161616:
+			IVTC_MACRO(uint16_t, 3, 0);
+			break;
+		case BC_YUV161616:
+			IVTC_MACRO(uint16_t, 3, 1);
+			break;
+		case BC_RGBA16161616:
+			IVTC_MACRO(uint16_t, 4, 0);
+			break;
+		case BC_YUVA16161616:
+			IVTC_MACRO(uint16_t, 4, 1);
+			break;
+	}
+	
+}
+
+
+
+
+
+IVTCEngine::IVTCEngine(IVTCMain *plugin, int cpus)
+ : LoadServer(cpus, cpus)
 {
 	this->plugin = plugin;
-	set_synchronous(1);
-	this->start_y = start_y;
-	this->end_y = end_y;
-	input_lock.lock();
-	output_lock.lock();
-	last_frame = 0;
 }
 
 IVTCEngine::~IVTCEngine()
 {
 }
 
-
-// Use all channels to get more info
-#define COMPARE_ROWS(result, row1, row2, type, width, components) \
-{ \
-	for(int i = 0; i < width * components; i++) \
-	{ \
-		result += labs(((type*)row1)[i] - ((type*)row2)[i]); \
-	} \
-}
-
-#define COMPARE_FIELDS(rows1, rows2, type, width, height, components) \
-{ \
-	int w = width * components; \
-	int h = height; \
-	 \
-	for(int i = 0; i < h; i++) \
-	{ \
-		type *row1 = (type*)(rows1)[i]; \
-		type *row2 = (type*)(rows2)[i]; \
- \
-		if(i & 1) \
-			for(int j = 0; j < w; j++) \
-			{ \
-				field2 += labs(row1[j] - row2[j]); \
-			} \
-		else \
-			for(int j = 0; j < w; j++) \
-			{ \
-				field1 += labs(row1[j] - row2[j]); \
-			} \
-	} \
-}
-
-#define COMPARE_FIELDS_YUV(rows1, rows2, type, width, height, components) \
-{ \
-	int w = width * components; \
-	int h = height; \
-	 \
-	for(int i = 0; i < h; i++) \
-	{ \
-		type *row1 = (type*)(rows1)[i]; \
-		type *row2 = (type*)(rows2)[i]; \
- \
-		if(i & 1) \
-			for(int j = 0; j < w; j += components) \
-			{ \
-				field2 += labs(row1[j] - row2[j]); \
-			} \
-		else \
-			for(int j = 0; j < w; j += components) \
-			{ \
-				field1 += labs(row1[j] - row2[j]); \
-			} \
-	} \
-}
-
-
-void IVTCEngine::run()
+void IVTCEngine::init_packages()
 {
-	while(1)
+	int increment = plugin->input->get_h() / get_total_packages();
+	increment /= 2;
+	increment *= 2;
+	if(!increment) increment = 2;
+	int y1 = 0;
+	for(int i = 0; i < get_total_packages(); i++)
 	{
-		input_lock.lock();
-		if(last_frame)
-		{
-			output_lock.unlock();
-			return;
-		}
-		
-		field1 = 0;
-		field2 = 0;
-		switch(input->get_color_model())
-		{
-			case BC_RGB888:
-				COMPARE_FIELDS(input->get_rows() + start_y, 
-					output->get_rows() + start_y, 
-					unsigned char, 
-					input->get_w(),
-					end_y - start_y, 
-					3);
-				break;
-			case BC_YUV888:
-				COMPARE_FIELDS_YUV(input->get_rows() + start_y, 
-					output->get_rows() + start_y, 
-					unsigned char, 
-					input->get_w(),
-					end_y - start_y, 
-					3);
-				break;
-			case BC_RGBA8888:
-				COMPARE_FIELDS(input->get_rows() + start_y, 
-					output->get_rows() + start_y, 
-					unsigned char, 
-					input->get_w(),
-					end_y - start_y, 
-					4);
-					break;
-			case BC_YUVA8888:
-				COMPARE_FIELDS_YUV(input->get_rows() + start_y, 
-					output->get_rows() + start_y, 
-					unsigned char, 
-					input->get_w(),
-					end_y - start_y, 
-					4);
-					break;
-			case BC_RGB161616:
-				COMPARE_FIELDS(input->get_rows() + start_y, 
-					output->get_rows() + start_y, 
-					u_int16_t, 
-					input->get_w(),
-					end_y - start_y, 
-					3);
-				break;
-			case BC_YUV161616:
-				COMPARE_FIELDS_YUV(input->get_rows() + start_y, 
-					output->get_rows() + start_y, 
-					u_int16_t, 
-					input->get_w(),
-					end_y - start_y, 
-					3);
-				break;
-			case BC_RGBA16161616:
-				COMPARE_FIELDS(input->get_rows() + start_y, 
-					output->get_rows() + start_y, 
-					u_int16_t, 
-					input->get_w(),
-					end_y - start_y, 
-					4);
-				break;
-			case BC_YUVA16161616:
-				COMPARE_FIELDS_YUV(input->get_rows() + start_y, 
-					output->get_rows() + start_y, 
-					u_int16_t, 
-					input->get_w(),
-					end_y - start_y, 
-					4);
-				break;
-		}
-		output_lock.unlock();
+		IVTCPackage *package = (IVTCPackage*)get_package(i);
+		package->y1 = y1;
+		y1 += increment;
+		if(y1 > plugin->input->get_h()) y1 = plugin->input->get_h();
+		package->y2 = y1;
+	}
+	for(int i = 0; i < get_total_clients(); i++)
+	{
+		IVTCUnit *unit = (IVTCUnit*)get_client(i);
+		unit->clear_totals();
 	}
 }
 
-
-int IVTCEngine::start_process_frame(VFrame *output, VFrame *input)
+LoadClient* IVTCEngine::new_client()
 {
-	this->output = output;
-	this->input = input;
-	input_lock.unlock();
-	return 0;
+	return new IVTCUnit(this, plugin);
 }
 
-int IVTCEngine::wait_process_frame()
+LoadPackage* IVTCEngine::new_package()
 {
-	output_lock.lock();
-	return 0;
+	return new IVTCPackage;
 }
+
+
+
+

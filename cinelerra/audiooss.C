@@ -2,6 +2,7 @@
 #include "audiodevice.h"
 #include "audiooss.h"
 #include "clip.h"
+#include "condition.h"
 #include "errno.h"
 #include "playbackconfig.h"
 #include "preferences.h"
@@ -28,78 +29,81 @@ OSSThread::OSSThread(AudioOSS *device)
 	wr = 0;
 	done = 0;
 	this->device = device;
-	input_lock.lock();
+	input_lock = new Condition(0, "OSSThread::input_lock");
+	output_lock = new Condition(1, "OSSThread::output_lock");
+	read_lock = new Condition(0, "OSSThread::read_lock");
+	write_lock = new Condition(0, "OSSThread::write_lock");
 }
 
 OSSThread::~OSSThread()
 {
 	done = 1;
-	input_lock.unlock();
+	input_lock->unlock();
 	Thread::join();
+	delete input_lock;
+	delete output_lock;
+	delete read_lock;
+	delete write_lock;
 }
 
 void OSSThread::run()
 {
 	while(!done)
 	{
-		input_lock.lock();
+		input_lock->lock("OSSThread::run 1");
 		if(rd)
 		{
 			int result = read(fd, data, bytes);
-			read_lock.unlock();
+			read_lock->unlock();
 		}
 		else
 		if(wr)
 		{
-//fwrite(data, bytes, 1, stdout);
-//printf("OSSThread::run %d %d\n", bytes, device->device->get_device_buffer());
 			if(done) return;
-//printf("OSSThread::run 1\n");
+
+
 			Thread::enable_cancel();
 			write(fd, data, bytes);
 			Thread::disable_cancel();
-//printf("OSSThread::run 10\n");
+
+
 			if(done) return;
-			write_lock.unlock();
+			write_lock->unlock();
 		}
-		output_lock.unlock();
+		output_lock->unlock();
 	}
 }
 
 void OSSThread::write_data(int fd, unsigned char *data, int bytes)
 {
-	output_lock.lock();
+	output_lock->lock("OSSThread::write_data");
 	wr = 1;
 	rd = 0;
 	this->data = data;
 	this->bytes = bytes;
 	this->fd = fd;
-	write_lock.lock();
-	input_lock.unlock();
+	input_lock->unlock();
 }
 
 void OSSThread::read_data(int fd, unsigned char *data, int bytes)
 {
-	output_lock.lock();
+	output_lock->lock("OSSThread::read_data");
 	wr = 0;
 	rd = 1;
 	this->data = data;
 	this->bytes = bytes;
 	this->fd = fd;
-	read_lock.lock();
-	input_lock.unlock();
+	input_lock->unlock();
 }
 
 void OSSThread::wait_read()
 {
-	read_lock.lock();
-	read_lock.unlock();
+	read_lock->lock("OSSThread::wait_read");
 }
 
 void OSSThread::wait_write()
 {
-	write_lock.lock();
-	write_lock.unlock();
+	write_lock->lock("OSSThread::wait_write");
 }
 
 
@@ -356,7 +360,7 @@ int AudioOSS::interrupt_playback()
 		if(thread[i])
 		{
 			thread[i]->cancel();
-			thread[i]->write_lock.unlock();
+			thread[i]->write_lock->unlock();
 		}
 	}
 //printf("AudioOSS::interrupt_playback 100\n");
@@ -474,10 +478,10 @@ int AudioOSS::write_buffer(char *buffer, int bytes)
 	return 0;
 }
 
-int AudioOSS::flush_device(int number)
+int AudioOSS::flush_device()
 {
-printf("AudioOSS::flush_device 1 %d\n", number);
-	ioctl(get_output(number), SNDCTL_DSP_SYNC, 0);
+	for(int i = 0; i < MAXDEVICES; i++)
+		if(thread[i]) ioctl(get_output(i), SNDCTL_DSP_SYNC, 0);
 	return 0;
 }
 

@@ -162,9 +162,9 @@ int Device1394Input::open(int port,
 
 		audio_buffer = new char[INPUT_SAMPLES * 2 * channels];
 
-		audio_lock = new Condition(0);
-		video_lock = new Condition(0);
-		buffer_lock = new Mutex;
+		audio_lock = new Condition(0, "Device1394Input::audio_lock");
+		video_lock = new Condition(0, "Device1394Input::video_lock");
+		buffer_lock = new Mutex("Device1394Input::buffer_lock");
 
 		decoder = dv_new();
 
@@ -201,18 +201,15 @@ int Device1394Input::read_video(VFrame *data)
 {
 	int result = 0;
 
-//printf("Device1394Input::read_video 1\n");
 // Take over buffer table
-	buffer_lock->lock();
-//printf("Device1394Input::read_video 1\n");
+	buffer_lock->lock("Device1394Input::read_video 1");
 // Wait for buffer with timeout
 	while(!buffer_valid[current_outbuffer] && !result)
 	{
 		buffer_lock->unlock();
-		result = video_lock->timed_lock(BUFFER_TIMEOUT);
-		buffer_lock->lock();
+		result = video_lock->timed_lock(BUFFER_TIMEOUT, "Device1394Input::read_video 2");
+		buffer_lock->lock("Device1394Input::read_video 3");
 	}
-//printf("Device1394Input::read_video 1\n");
 
 // Copy frame
 	if(buffer_valid[current_outbuffer])
@@ -235,19 +232,17 @@ int Device1394Input::read_video(VFrame *data)
 int Device1394Input::read_audio(char *data, int samples)
 {
 	int result = 0;
-//printf("Device1394Input::read_audio 1\n");
 	int timeout = (int64_t)samples * (int64_t)1000000 * (int64_t)2 / (int64_t)samplerate;
 	if(timeout < 500000) timeout = 500000;
-//printf("Device1394Input::read_audio 1\n");
 
 // Take over buffer table
-	buffer_lock->lock();
+	buffer_lock->lock("Device1394Input::read_audio 1");
 // Wait for buffer with timeout
 	while(audio_samples < samples && !result)
 	{
 		buffer_lock->unlock();
-		result = audio_lock->timed_lock(timeout);
-		buffer_lock->lock();
+		result = audio_lock->timed_lock(timeout, "Device1394Input::read_audio 2");
+		buffer_lock->lock("Device1394Input::read_audio 3");
 	}
 //printf("Device1394Input::read_audio 1 %d %d\n", result, timeout);
 
@@ -302,7 +297,7 @@ int Device1394Input::dv_iso_handler(raw1394handle_t handle,
 				thread->buffer_size = thread->bytes_read;
 
 
-				thread->buffer_lock->lock();
+				thread->buffer_lock->lock("Device1394Input::dv_iso_handler");
 //printf("Device1394Input::dv_iso_handler 21 %p\n", thread->buffer[thread->current_inbuffer]);
 				memcpy(thread->buffer[thread->current_inbuffer],
 					thread->temp,

@@ -1,3 +1,4 @@
+#include "asset.h"
 #include "assets.h"
 #include "awindowgui.h"
 #include "awindow.h"
@@ -9,6 +10,7 @@
 #include "filesystem.h"
 #include "filexml.h"
 #include "fonts.h"
+#include "language.h"
 #include "localsession.h"
 #include "mainclock.h"
 #include "mainmenu.h"
@@ -29,10 +31,7 @@
 #include "vwindow.h"
 
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
+
 
 VWindowGUI::VWindowGUI(MWindow *mwindow, VWindow *vwindow)
  : BC_Window(PROGRAM_NAME ": Viewer",
@@ -65,7 +64,7 @@ void VWindowGUI::change_source(EDL *edl, char *title)
 	else
 		sprintf(string, PROGRAM_NAME);
 
-	lock_window();
+	lock_window("VWindowGUI::change_source");
 	slider->set_position();
 	timebar->update();
 	set_title(string);
@@ -76,7 +75,7 @@ void VWindowGUI::change_source(EDL *edl, char *title)
 // Get source list from master EDL
 void VWindowGUI::update_sources(char *title)
 {
-	lock_window();
+	lock_window("VWindowGUI::update_sources");
 
 //printf("VWindowGUI::update_sources 1\n");
 	sources.remove_all_objects();
@@ -273,7 +272,7 @@ int VWindowGUI::close_event()
 {
 	hide_window();
 	mwindow->session->show_vwindow = 0;
-	mwindow->gui->lock_window();
+	mwindow->gui->lock_window("VWindowGUI::close_event");
 	mwindow->gui->mainmenu->show_vwindow->set_checked(0);
 	mwindow->gui->unlock_window();
 	mwindow->save_defaults();
@@ -426,7 +425,7 @@ void VWindowEditing::splice_selection()
 {
 	if(vwindow->get_edl())
 	{
-		mwindow->gui->lock_window();
+		mwindow->gui->lock_window("VWindowEditing::splice_selection");
 		mwindow->splice(vwindow->get_edl());
 		mwindow->gui->unlock_window();
 	}
@@ -436,7 +435,7 @@ void VWindowEditing::overwrite_selection()
 {
 	if(vwindow->get_edl())
 	{
-		mwindow->gui->lock_window();
+		mwindow->gui->lock_window("VWindowEditing::overwrite_selection");
 		mwindow->overwrite(vwindow->get_edl());
 		mwindow->gui->unlock_window();
 	}
@@ -460,7 +459,7 @@ void VWindowEditing::prev_label()
 		EDL *edl = vwindow->get_edl();
 		vwindow->gui->unlock_window();
 		vwindow->playback_engine->interrupt_playback(1);
-		vwindow->gui->lock_window();
+		vwindow->gui->lock_window("VWindowEditing::prev_label");
 
 //printf("VWindowEditing::prev_label 1 %f\n", edl->local_session->selectionstart);
 		Label *current = edl->labels->prev_label(edl->local_session->selectionstart);
@@ -495,7 +494,7 @@ void VWindowEditing::next_label()
 		{
 			vwindow->gui->unlock_window();
 			vwindow->playback_engine->interrupt_playback(1);
-			vwindow->gui->lock_window();
+			vwindow->gui->lock_window("VWindowEditing::next_label 1");
 
 			edl->local_session->selectionstart = 
 				edl->local_session->selectionend = edl->tracks->total_length();
@@ -506,7 +505,7 @@ void VWindowEditing::next_label()
 		{
 			vwindow->gui->unlock_window();
 			vwindow->playback_engine->interrupt_playback(1);
-			vwindow->gui->lock_window();
+			vwindow->gui->lock_window("VWindowEditing::next_label 2");
 
 			edl->local_session->selectionstart = 
 				edl->local_session->selectionend = current->position;
@@ -610,7 +609,7 @@ int VWindowSlider::handle_event()
 {
 	unlock_window();
 	vwindow->playback_engine->interrupt_playback(1);
-	lock_window();
+	lock_window("VWindowSlider::handle_event");
 
 	vwindow->update_position(CHANGE_NONE, 1, 0);
 	gui->timebar->update();
@@ -698,7 +697,7 @@ void VWindowTransport::goto_start()
 {
 	gui->unlock_window();
 	handle_transport(REWIND, 1);
-	gui->lock_window();
+	gui->lock_window("VWindowTransport::goto_start");
 	gui->vwindow->goto_start();
 }
 
@@ -706,7 +705,7 @@ void VWindowTransport::goto_end()
 {
 	gui->unlock_window();
 	handle_transport(GOTO_END, 1);
-	gui->lock_window();
+	gui->lock_window("VWindowTransport::goto_end");
 	gui->vwindow->goto_end();
 }
 

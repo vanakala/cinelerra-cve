@@ -1,12 +1,15 @@
 #include "arender.h"
-#include "assets.h"
+#include "asset.h"
 #include "auto.h"
+#include "batchrender.h"
 #include "bcprogressbox.h"
 #include "cache.h"
 #include "clip.h"
 #include "compresspopup.h"
-#include "cwindow.h"
+#include "condition.h"
+#include "confirmsave.h"
 #include "cwindowgui.h"
+#include "cwindow.h"
 #include "defaults.h"
 #include "edits.h"
 #include "edl.h"
@@ -14,6 +17,7 @@
 #include "errorbox.h"
 #include "file.h"
 #include "filesystem.h"
+#include "filexml.h"
 #include "formatcheck.h"
 #include "formatpopup.h"
 #include "formattools.h"
@@ -23,27 +27,26 @@
 #include "mainprogress.h"
 #include "mainsession.h"
 #include "mainundo.h"
-#include "mwindow.h"
-#include "mwindowgui.h"
 #include "module.h"
 #include "mutex.h"
-#include "neworappend.h"
+#include "mwindowgui.h"
+#include "mwindow.h"
 #include "packagedispatcher.h"
 #include "packagerenderer.h"
 #include "patchbay.h"
 #include "playabletracks.h"
 #include "preferences.h"
+#include "quicktime.h"
+#include "renderfarm.h"
+#include "render.h"
 #include "statusbar.h"
 #include "timebar.h"
 #include "tracks.h"
 #include "transportque.h"
-#include "quicktime.h"
-#include "vrender.h"
-#include "render.h"
-#include "renderfarm.h"
 #include "vedit.h"
 #include "vframe.h"
 #include "videoconfig.h"
+#include "vrender.h"
 
 #include <ctype.h>
 #include <string.h>
@@ -64,7 +67,7 @@ RenderItem::RenderItem(MWindow *mwindow)
 
 int RenderItem::handle_event() 
 {
-	mwindow->render_single();
+	mwindow->render->start_interactive();
 	return 1;
 }
 
@@ -146,14 +149,21 @@ void MainPackageRenderer::set_result(int value)
 void MainPackageRenderer::set_progress(int64_t value)
 {
 	render->counter_lock->lock();
-	render->total_rendered += audio_read_length;
+	render->total_rendered += value;
+//printf("MainPackageRenderer::set_progress 1 %lld %lld\n", value, render->total_rendered);
+//	render->total_rendered += audio_read_length;
 	render->counter_lock->unlock();
 }
 
 int MainPackageRenderer::progress_cancelled()
 {
-	return render->progress->is_cancelled();
+	return render->progress->is_cancelled() || render->batch_cancelled;
 }
+
+
+
+
+
 
 
 
@@ -166,15 +176,143 @@ Render::Render(MWindow *mwindow)
 {
 	this->mwindow = mwindow;
 	in_progress = 0;
+	elapsed_time = 0.0;
 	package_lock = new Mutex;
 	counter_lock = new Mutex;
+	completion = new Condition;
 }
 
 Render::~Render()
 {
 	delete package_lock;
 	delete counter_lock;
+	delete completion;
 }
+
+void Render::start_interactive()
+{
+	if(!Thread::running())
+	{
+		mode = Render::INTERACTIVE;
+		this->jobs = 0;
+		batch_cancelled = 0;
+		completion->reset();
+		Thread::start();
+	}
+	else
+	{
+		ErrorBox error_box(PROGRAM_NAME ": Error",
+			mwindow->gui->get_abs_cursor_x(),
+			mwindow->gui->get_abs_cursor_y());
+		error_box.create_objects("Already rendering");
+		error_box.run_window();
+	}
+}
+
+void Render::start_batches(ArrayList<BatchRenderJob*> *jobs)
+{
+	if(!Thread::running())
+	{
+		mode = Render::BATCH;
+		this->jobs = jobs;
+		batch_cancelled = 0;
+		completion->reset();
+		Thread::start();
+	}
+	else
+	{
+		ErrorBox error_box(PROGRAM_NAME ": Error",
+			mwindow->gui->get_abs_cursor_x(),
+			mwindow->gui->get_abs_cursor_y());
+		error_box.create_objects("Already rendering");
+		error_box.run_window();
+	}
+}
+
+void Render::stop_operation()
+{
+	if(Thread::running())
+	{
+		batch_cancelled = 1;
+// Wait for completion
+		completion->lock();
+		completion->reset();
+	}
+}
+
+
+void Render::run()
+{
+	int format_error;
+
+
+	result = 0;
+
+	if(mode == Render::INTERACTIVE)
+	{
+// Fix the asset for rendering
+		Asset *asset = new Asset;
+		load_defaults(asset);
+		check_asset(mwindow->edl, *asset);
+
+// Get format from user
+		do
+		{
+			format_error = 0;
+			result = 0;
+
+			{
+				RenderWindow window(mwindow, this, asset);
+				window.create_objects();
+				result = window.run_window();
+			}
+
+			if(!result)
+			{
+// Check the asset format for errors.
+				FormatCheck format_check(asset);
+				format_error = format_check.check_format();
+			}
+		}while(format_error && !result);
+
+		save_defaults(asset);
+		mwindow->save_defaults();
+
+		if(!result) render(1, asset, mwindow->edl, strategy);
+
+		delete asset;
+	}
+	else
+	if(mode == Render::BATCH)
+	{
+		for(int i = 0; i < jobs->total && !result; i++)
+		{
+			BatchRenderJob *job = jobs->values[i];
+			if(job->enabled)
+			{
+				mwindow->batch_render->update_active(i);
+				FileXML *file = new FileXML;
+				EDL *edl = new EDL;
+				edl->create_objects();
+				file->read_from_file(job->edl_path);
+				edl->load_xml(mwindow->plugindb, file, LOAD_ALL);
+
+				render(0, job->asset, edl, job->strategy);
+
+				delete edl;
+				delete file;
+				if(!result)
+					mwindow->batch_render->update_done(i, 1, elapsed_time);
+				else
+					mwindow->batch_render->update_active(-1);
+			}
+		}
+
+		mwindow->batch_render->update_active(-1);
+		mwindow->batch_render->update_done(-1, 0, 0);
+	}
+}
+
 
 
 int Render::check_asset(EDL *edl, Asset &asset)
@@ -210,6 +348,26 @@ int Render::check_asset(EDL *edl, Asset &asset)
 //printf("Render::check_asset 3\n");
 }
 
+int Render::fix_strategy(int strategy, int use_renderfarm)
+{
+	if(use_renderfarm)
+	{
+		if(strategy == FILE_PER_LABEL)
+			strategy = FILE_PER_LABEL_FARM;
+		else
+		if(strategy == SINGLE_PASS)
+			strategy = SINGLE_PASS_FARM;
+	}
+	else
+	{
+		if(strategy == FILE_PER_LABEL_FARM)
+			strategy = FILE_PER_LABEL;
+		else
+		if(strategy == SINGLE_PASS_FARM)
+			strategy = SINGLE_PASS;
+	}
+	return strategy;
+}
 
 void Render::start_progress()
 {
@@ -238,6 +396,7 @@ void Render::stop_progress()
 		char string[BCTEXTLEN], string2[BCTEXTLEN];
 		delete render_progress;
 		progress->get_time(string);
+		elapsed_time = progress->get_time();
 		progress->stop_progress();
 		delete progress;
 
@@ -250,17 +409,20 @@ void Render::stop_progress()
 }
 
 
-void Render::run()
+
+int Render::render(int test_overwrite, 
+	Asset *asset,
+	EDL *edl,
+	int strategy)
 {
-	int format_error;
 	char string[BCTEXTLEN];
 // Total length in seconds
 	double total_length;
 	int last_audio_buffer;
 	RenderFarmServer *farm_server = 0;
 	FileSystem fs;
-	int total_digits;       // Total number of digits including padding the user specified.
-	int number_start;       // Character in the filename path at which the number begins
+	int total_digits;      // Total number of digits including padding the user specified.
+	int number_start;      // Character in the filename path at which the number begins
 	int current_number;    // The number the being injected into the filename.
 // Pointer from file
 // (VFrame*)(VFrame array [])(Channel [])
@@ -269,39 +431,23 @@ void Render::run()
 	VFrame *video_output_ptr[MAX_CHANNELS];
 	double *audio_output_ptr[MAX_CHANNELS];
 	int done = 0;
+	in_progress = 1;
 
 
+	this->default_asset = asset;
 	progress = 0;
 	result = 0;
-
-// Fix the EDL for rendering
-	default_asset = new Asset;
 	preferences = new Preferences;
 	*preferences = *mwindow->preferences;
+// Create rendering commandw
 	command = new TransportCommand;
 	command->command = NORMAL_FWD;
-	*command->get_edl() = *mwindow->edl;
+	command->get_edl()->copy_all(edl);
 	command->change_type = CHANGE_ALL;
-	command->set_playback_range(mwindow->edl);
-
-
-
+// Get highlighted playback range
+	command->set_playback_range();
 // Adjust playback range with in/out points
-	if(mwindow->edl->local_session->in_point >= 0 ||
-		mwindow->edl->local_session->out_point >= 0)
-	{
-		if(mwindow->edl->local_session->in_point >= 0)
-			command->start_position = mwindow->edl->local_session->in_point;
-		else
-			command->start_position = 0;
-
-		if(mwindow->edl->local_session->out_point >= 0)
-			command->end_position = mwindow->edl->local_session->out_point;
-		else
-			command->end_position = mwindow->edl->tracks->total_playable_length();
-	}
-
-
+	command->adjust_playback_range();
 	packages = new PackageDispatcher;
 
 
@@ -319,50 +465,12 @@ void Render::run()
 	audio_cache = new CICache(command->get_edl(), preferences, mwindow->plugindb);
 	video_cache = new CICache(command->get_edl(), preferences, mwindow->plugindb);
 
-	load_defaults(default_asset);
-
-
-
 	default_asset->frame_rate = command->get_edl()->session->frame_rate;
 	default_asset->sample_rate = command->get_edl()->session->sample_rate;
+
+// Conform asset to EDL.
 	check_asset(command->get_edl(), *default_asset);
 
-
-
-
-
-
-
-
-
-
-// Get format from user
-	do
-	{
-		format_error = 0;
-		result = 0;
-
-		{
-			RenderWindow window(mwindow, this, default_asset);
-			window.create_objects();
-			result = window.run_window();
-		}
-
-		if(!result)
-		{
-// Check the asset format for errors.
-			FormatCheck format_check(default_asset);
-			format_error = format_check.check_format();
-		}
-	}while(format_error && !result);
-
-	check_asset(command->get_edl(), *default_asset);
-//printf("%d %d\n", default_asset->video_data, default_asset->audio_data);
-	save_defaults(default_asset);
-	mwindow->save_defaults();
-
-//printf("Render 2\n");
-//default_asset->dump();
 	if(!result)
 	{
 // Get total range to render
@@ -381,10 +489,6 @@ void Render::run()
 
 
 
-//printf("Render 3\n");
-
-
-
 
 
 // Generate packages
@@ -394,22 +498,7 @@ void Render::run()
 		mwindow->stop_brender();
 
 		fs.complete_path(default_asset->path);
-		if(preferences->use_renderfarm)
-		{
-			if(strategy == SINGLE_PASS)
-				strategy = SINGLE_PASS_FARM;
-			else
-			if(strategy == FILE_PER_LABEL)
-				strategy = FILE_PER_LABEL_FARM;
-		}
-		else
-		{
-			if(strategy == SINGLE_PASS_FARM)
-				strategy = SINGLE_PASS;
-			else
-			if(strategy == FILE_PER_LABEL_FARM)
-				strategy = FILE_PER_LABEL;
-		}
+		strategy = Render::fix_strategy(strategy, preferences->use_renderfarm);
 
 		result = packages->create_packages(mwindow,
 			command->get_edl(),
@@ -417,12 +506,12 @@ void Render::run()
 			strategy, 
 			default_asset, 
 			total_start, 
-			total_end);
+			total_end,
+			test_overwrite);
 	}
 
 
 
-//printf("Render 4\n");
 
 
 
@@ -453,7 +542,7 @@ void Render::run()
 				command->get_edl(),
 				0);
 			result = farm_server->start_clients();
-			
+
 			if(result)
 			{
 				mwindow->gui->lock_window();
@@ -548,7 +637,8 @@ void Render::run()
 
 // Notify of error
 		if(result && 
-			!progress->is_cancelled())
+			!progress->is_cancelled() &&
+			!batch_cancelled)
 		{
 			ErrorBox error_box(PROGRAM_NAME ": Error",
 				mwindow->gui->get_abs_cursor_x(),
@@ -618,33 +708,9 @@ void Render::run()
 	delete video_cache;
 // Must delete packages after server
 	delete packages;
-	delete default_asset;
 	in_progress = 0;
-}
-
-int Render::test_existence(MWindow *mwindow, Asset *asset)
-{
-	int result = 0;
-	NewOrAppend window(mwindow);
-// Append is not compatible with resample plugin.
-	result = window.test_file(asset);
-	switch(result)
-	{
-		case 0:
-//			mwindow->purge_asset(asset->path);
-//			remove(asset->path);              // overwrite
-//			append_to_file = 0;
-			break;
-
-		case 1:
-			result = 1;                      // cancel
-			break;
-
-		case 2:
-//					append_to_file = 1;              // append
-			result = 0;       // reset result;
-			break;
-	}
+	completion->unlock();
+	
 	return result;
 }
 
@@ -728,62 +794,38 @@ void Render::get_starting_number(char *path,
 
 int Render::load_defaults(Asset *asset)
 {
-	mwindow->defaults->get("RENDER_PATH", asset->path);
-//	to_tracks = mwindow->defaults->get("RENDER_TO_TRACKS", 1);
 	strategy = mwindow->defaults->get("RENDER_STRATEGY", SINGLE_PASS);
 	load_mode = mwindow->defaults->get("RENDER_LOADMODE", LOAD_NEW_TRACKS);
-	asset->audio_data = mwindow->defaults->get("RENDER_AUDIO", 1);
-	asset->video_data = mwindow->defaults->get("RENDER_VIDEO", 1);
-//printf("Render::load_defaults 1 %d %d\n", asset->audio_data, asset->video_data);
-
-	char string[BCTEXTLEN];
-	sprintf(string, "WAV");
-	mwindow->defaults->get("RENDER_FORMAT", string);
-	sprintf(asset->vcodec, QUICKTIME_YUV2);
-	mwindow->defaults->get("RENDER_COMPRESSION", asset->vcodec);
-
-	asset->format = File::strtoformat(mwindow->plugindb, string);
-
-	asset->bits = mwindow->defaults->get("RENDER_BITS", 16);
-	asset->dither = mwindow->defaults->get("RENDER_DITHER", 0);
-	asset->signed_ = mwindow->defaults->get("RENDER_SIGNED", 1);
-	asset->byte_order = mwindow->defaults->get("RENDER_BYTE_ORDER", 1);
 
 
+	asset->load_defaults(mwindow->defaults, 
+		"RENDER_", 
+		1,
+		1,
+		1,
+		1,
+		1);
 
-
-	asset->load_defaults(mwindow->defaults);
-	mwindow->defaults->get("RENDER_AUDIO_CODEC", asset->acodec);
-	mwindow->defaults->get("RENDER_VIDEO_CODEC", asset->vcodec);
-//printf("Render 1 %d\n", default_asset->divx_fix_bitrate);
 
 	return 0;
 }
 
 int Render::save_defaults(Asset *asset)
 {
-//printf("Render::save_defaults 1\n");
-	mwindow->defaults->update("RENDER_PATH", asset->path);
-//	mwindow->defaults->update("RENDER_TO_TRACKS", to_tracks);
 	mwindow->defaults->update("RENDER_STRATEGY", strategy);
 	mwindow->defaults->update("RENDER_LOADMODE", load_mode);
-	mwindow->defaults->update("RENDER_AUDIO", asset->audio_data);
-	mwindow->defaults->update("RENDER_VIDEO", asset->video_data);
-//printf("Render::save_defaults 2\n");
 
-	mwindow->defaults->update("RENDER_FORMAT", File::formattostr(mwindow->plugindb, asset->format));
-//printf("Render::save_defaults 3\n");
 
-	mwindow->defaults->update("RENDER_VCODEC", asset->vcodec);
-	mwindow->defaults->update("RENDER_BITS", asset->bits);
-	mwindow->defaults->update("RENDER_DITHER", asset->dither);
-	mwindow->defaults->update("RENDER_SIGNED", asset->signed_);
-	mwindow->defaults->update("RENDER_BYTE_ORDER", asset->byte_order);
 
-	asset->save_defaults(mwindow->defaults);
-	mwindow->defaults->update("RENDER_AUDIO_CODEC", asset->acodec);
-	mwindow->defaults->update("RENDER_VIDEO_CODEC", asset->vcodec);
-//printf("Render::save_defaults 4\n");
+
+	asset->save_defaults(mwindow->defaults, 
+		"RENDER_",
+		1,
+		1,
+		1,
+		1,
+		1);
+
 	return 0;
 }
 
@@ -824,7 +866,8 @@ int RenderWindow::create_objects()
 	int x = 5, y = 5;
 	add_subwindow(new BC_Title(x, 
 		y, 
-		(char*)((render->strategy == FILE_PER_LABEL || render->strategy == FILE_PER_LABEL_FARM) ? 
+		(char*)((render->strategy == FILE_PER_LABEL || 
+				render->strategy == FILE_PER_LABEL_FARM) ? 
 			_("Select the first file to render to:") : 
 			_("Select a file to render to:"))));
 	y += 25;

@@ -1,3 +1,4 @@
+#include "asset.h"
 #include "assets.h"
 #include "atrack.h"
 #include "autoconf.h"
@@ -305,6 +306,7 @@ int EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 		}while(!result);
 //printf("EDL::load_xml 4\n");
 	}
+	boundaries();
 //printf("EDL::load_xml 6 %p\n", parent_edl);
 //dump();
 
@@ -1073,7 +1075,8 @@ void EDL::get_shared_plugins(Track *source,
 				Plugin *plugin = track->get_current_plugin(local_session->selectionstart, 
 					i, 
 					PLAY_FORWARD, 
-					1);
+					1,
+					0);
 				if(plugin && plugin->plugin_type == PLUGIN_STANDALONE)
 				{
 					plugin_locations->append(new SharedLocation(tracks->number_of(track), i));

@@ -1,4 +1,4 @@
-#include "assets.h"
+#include "asset.h"
 #include "cache.h"
 #include "clip.h"
 #include "commonrender.h"
@@ -10,6 +10,7 @@
 #include "floatautos.h"
 #include "overlayframe.h"
 #include "patch.h"
+#include "preferences.h"
 #include "renderengine.h"
 #include "sharedlocation.h"
 #include "transition.h"
@@ -71,8 +72,8 @@ int VModule::import_frame(VFrame *output,
 	int64_t input_position,
 	int direction)
 {
-	int64_t corrected_position = input_position;
-	if(direction == PLAY_REVERSE) corrected_position--;
+	int64_t corrected_position;
+
 // Translation of edit
 	float in_x1;
 	float in_y1;
@@ -84,23 +85,22 @@ int VModule::import_frame(VFrame *output,
 	float out_h1;
 	int result = 0;
 
-//printf("VModule::import_frame 1 %p\n", current_edit);
+	corrected_position = input_position;
+	if(direction == PLAY_REVERSE) corrected_position--;
+
 // Load frame into output
 	if(current_edit &&
 		current_edit->asset)
 	{
-//printf("VModule::import_frame 1\n");
 		File *source = get_cache()->check_out(current_edit->asset);
 
 		if(source)
 		{
-//printf("VModule::import_frame 1\n");
 			source->set_video_position(corrected_position - 
 				current_edit->startproject + 
 				current_edit->startsource,
 				get_edl()->session->frame_rate);
 			source->set_layer(current_edit->channel);
-//printf("VModule::import_frame 2\n");
 
 			((VTrack*)track)->calculate_input_transfer(current_edit->asset, 
 				input_position, 
@@ -113,15 +113,6 @@ int VModule::import_frame(VFrame *output,
 				out_y1, 
 				out_w1, 
 				out_h1);
-// printf("VModule::import_frame 1 %0.2f %0.2f %0.2f %0.2f -> %0.2f %0.2f %0.2f %0.2f\n",
-// 	in_x1,
-// 	in_y1,
-// 	in_w1,
-// 	in_h1,
-// 	out_x1,
-// 	out_y1,
-// 	out_w1,
-// 	out_h1);
 
 
 
@@ -138,12 +129,10 @@ int VModule::import_frame(VFrame *output,
 				!EQUIV(in_h1, current_edit->asset->height))
 			{
 // Fix buffers
-//printf("VModule::import_frame 3\n");
 				if(input_temp && 
 					(input_temp->get_w() != current_edit->asset->width ||
 					input_temp->get_h() != current_edit->asset->height))
 				{
-//printf("VModule::import_frame 3\n");
 					delete input_temp;
 					input_temp = 0;
 				}
@@ -167,7 +156,7 @@ int VModule::import_frame(VFrame *output,
 				result = source->read_frame(input_temp);
 				if(!overlayer)
 				{
-					overlayer = new OverlayFrame(get_edl()->session->smp + 1);
+					overlayer = new OverlayFrame(renderengine->preferences->processors);
 				}
 // printf("VModule::import_frame 1 %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f\n", 
 // 	in_x1, 
@@ -241,17 +230,18 @@ int VModule::import_frame(VFrame *output,
 
 int VModule::render(VFrame *output,
 	int64_t input_position,
-	int direction)
+	int direction,
+	int use_nudge)
 {
 	int result = 0;
+	if(use_nudge) input_position += track->nudge;
 
-//printf("VModule::render 1 %d\n", input_position);
 	update_transition(input_position, direction);
 
 	VEdit* current_edit = (VEdit*)track->edits->editof(input_position, 
-		direction);
+		direction,
+		0);
 	VEdit* previous_edit = 0;
-//printf("VModule::render 2\n");
 
 	if(!current_edit) 
 	{
@@ -259,9 +249,7 @@ int VModule::render(VFrame *output,
 		return 0;
 	}
 
-//printf("VModule::render 3\n");
 
-//printf("VModule::render 3 %p\n", transition);
 // Process transition
 	if(transition)
 	{
@@ -282,17 +270,18 @@ int VModule::render(VFrame *output,
 
 
 // Load transition buffer
-//printf("VModule::render 2\n");
 		previous_edit = (VEdit*)current_edit->previous;
 
-//printf("VModule::render 3\n");
 		result |= import_frame(output, 
 			previous_edit, 
 			input_position,
 			direction);
 
 // Execute plugin with transition_temp and output here
-//printf("VModule::render 4 %d - %d %d\n", input_position, current_edit->startproject, transition->length);
+		int64_t corrected_position = input_position;
+		if(direction == PLAY_REVERSE)
+			corrected_position--;
+
 		transition_server->process_realtime(&transition_temp, 
 			&output,
 			(direction == PLAY_FORWARD) ? 
@@ -309,7 +298,7 @@ int VModule::render(VFrame *output,
 			direction);
 	}
 
-//printf("VModule::render 5\n");
+
 	return result;
 }
 

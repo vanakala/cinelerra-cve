@@ -1,5 +1,6 @@
 #include "bctitle.h"
 #include <string.h>
+#include <unistd.h>
 
 BC_Title::BC_Title(int x, 
 		int y, 
@@ -66,7 +67,6 @@ int BC_Title::update(char *text)
 	{
 		resize_window(new_w, new_h);
 	}
-
 	draw();
 	return 0;
 }
@@ -146,6 +146,6 @@ int BC_Title::get_size(int &w, int &h)
 	h *= get_text_height(font);
 	w += 5;
 	if(fixed_w > 0) w = fixed_w;
-//printf("BC_Title::get_size %d\n", w);
+
 	return 0;
 }

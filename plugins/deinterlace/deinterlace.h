@@ -65,8 +65,8 @@ public:
 	int save_defaults();
 	void render_gui(void *data);
 
-	void deinterlace_even(VFrame *input, VFrame *output, int dominance);
 	void deinterlace_avg_even(VFrame *input, VFrame *output, int dominance);
+	void deinterlace_even(VFrame *input, VFrame *output, int dominance);
 	void deinterlace_avg(VFrame *input, VFrame *output);
 	void deinterlace_swap(VFrame *input, VFrame *output, int dominance);
 

@@ -12,13 +12,18 @@
 #define MAXGAIN 50
 #define TOTALFREQS 1024
 
-
+// h:mm:ss.sss
 #define TIME_HMS 0
+// h:mm:ss
 #define TIME_HMS2 6
+// hh:mm:ss
+#define TIME_HMS3 7
+// h:mm:ss:ff
 #define TIME_HMSF 1
 #define TIME_SAMPLES 2
 #define TIME_SAMPLES_HEX 3
 #define TIME_FRAMES 4
+// fffff-ff
 #define TIME_FEET_FRAMES 5
 
 
@@ -97,6 +102,10 @@ public:
 	static double atoframerate(char *text);
 
 
+// separator strings for BC_TextBox::set_separators
+// Returns 0 if the format has no separators.
+	static char* format_to_separators(int time_format);
+
 	static int64_t tosamples(float frames, int sample_rate, float framerate);
 	static char* totext(char *text, 
 				int64_t samples, 
@@ -138,6 +147,7 @@ public:
 
 	static void* int64_to_ptr(uint64_t value);
 	static uint64_t ptr_to_int64(void *ptr);
+
 };
 
 #endif

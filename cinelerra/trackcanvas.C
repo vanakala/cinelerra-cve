@@ -1,4 +1,4 @@
-#include "assets.h"
+#include "asset.h"
 #include "autoconf.h"
 #include "automation.h"
 #include "bcsignals.h"
@@ -304,7 +304,7 @@ int TrackCanvas::drag_motion()
 //printf("TrackCanvas::drag_motion 2 %p\n", mwindow->session->track_highlighted);
 	if(redraw)
 	{
-		lock_window();
+		lock_window("TrackCanvas::drag_motion");
 		draw_overlays();
 		flash();
 		unlock_window();
@@ -582,7 +582,7 @@ int TrackCanvas::drag_stop()
 void TrackCanvas::draw(int force, int hide_cursor)
 {
 // Swap pixmap layers
-TRON("TrackCanvas::draw")
+TRACE("TrackCanvas::draw 1")
  	if(get_w() != background_pixmap->get_w() ||
  		get_h() != background_pixmap->get_h())
  	{
@@ -590,7 +590,7 @@ TRON("TrackCanvas::draw")
  		background_pixmap = new BC_Pixmap(this, get_w(), get_h());
  	}
 
-//printf("TrackCanvas::draw 2\n");
+TRACE("TrackCanvas::draw 10")
 // Cursor disappears after resize when this is called.
 // Cursor doesn't redraw after editing when this isn't called.
 	if(gui->cursor && hide_cursor) gui->cursor->hide();
@@ -600,7 +600,7 @@ TRON("TrackCanvas::draw")
 	draw_resources(force);
 //printf("TrackCanvas::draw 5\n");
 	draw_overlays();
-TROFF("TrackCanvas::draw")
+UNTRACE
 }
 
 void TrackCanvas::update_cursor()
@@ -1405,7 +1405,7 @@ void TrackCanvas::draw_plugins()
 							0);
 						set_color(WHITE);
 						set_font(MEDIUMFONT_3D);
-						plugin->calculate_title(string);
+						plugin->calculate_title(string, 0);
 
 // Truncate string to int64_test visible in background
 						int len = strlen(string), j;
@@ -2895,7 +2895,7 @@ int TrackCanvas::do_plugin_autos(Track *track,
 void TrackCanvas::draw_overlays()
 {
 	int new_cursor, update_cursor, rerender;
-TRON("TrackCanvas::draw_overlays")
+TRACE("TrackCanvas::draw_overlays 1")
 
 // Move background pixmap to foreground pixmap
 	draw_pixmap(background_pixmap, 
@@ -2905,7 +2905,7 @@ TRON("TrackCanvas::draw_overlays")
 		get_h(),
 		0,
 		0);
-TROFF("TrackCanvas::draw_overlays")
+TRACE("TrackCanvas::draw_overlays 10")
 
 //printf("TrackCanvas::draw_overlays 4\n");
 // In/Out points
@@ -3247,7 +3247,7 @@ int TrackCanvas::cursor_motion_event()
 	int new_cursor = 0;
 	int rerender = 0;
 	double position = 0;
-//printf("TrackCanvas::cursor_motion_event 1 %f\n", mwindow->edl->local_session->selectionstart);
+//printf("TrackCanvas::cursor_motion_event 1\n");
 	result = 0;
 
 // Default cursor
@@ -3491,7 +3491,9 @@ int TrackCanvas::cursor_motion_event()
 		draw_overlays();
 		flash();
 	}
-//printf("TrackCanvas::cursor_motion_event 100 %f\n", mwindow->edl->local_session->selectionstart);
+
+
+//printf("TrackCanvas::cursor_motion_event 100\n");
 	return result;
 }
 
@@ -4212,7 +4214,7 @@ int TrackCanvas::button_press_event()
 		{
 			gui->unlock_window();
 			gui->mbuttons->transport->handle_transport(STOP, 1);
-			gui->lock_window();
+			gui->lock_window("TrackCanvas::button_press_event");
 		}
 
 		int update_overlay = 0, update_cursor = 0, rerender = 0;

@@ -365,8 +365,8 @@ int ADevicePrefs::create_alsa_objs()
 			output_int = &out_config->alsa_out_channels;
 			break;
 	}
-	dialog->add_subwindow(channels_title = new BC_Title(x1, y, "Channels:", MEDIUMFONT, BLACK));
-	dialog->add_subwindow(alsa_channels = new ALSAChannels(x1, y1 + 20, output_int));
+	dialog->add_subwindow(channels_title = new BC_Title(x1, y, _("Channels:"), MEDIUMFONT, BLACK));
+	dialog->add_subwindow(alsa_channels = new ADeviceIntBox(x1, y1 + 20, output_int));
 	y1 += DEVICE_H;
 #endif
 

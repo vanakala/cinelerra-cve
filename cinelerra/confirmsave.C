@@ -1,5 +1,6 @@
 #include "asset.h"
 #include "confirmsave.h"
+#include "language.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 
@@ -86,7 +87,7 @@ int ConfirmSaveWindow::create_objects()
 	int x = 10, y = 10;
 	add_subwindow(title = new BC_Title(5, 
 		5, 
-		"The following files exist.  Overwrite them?"));
+		_("The following files exist.  Overwrite them?")));
 	y += 30;
 	add_subwindow(listbox = new BC_ListBox(x, 
 		y, 

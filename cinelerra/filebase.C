@@ -1,3 +1,4 @@
+#include "asset.h"
 #include "assets.h"
 #include "byteorder.h"
 #include "colormodels.h"

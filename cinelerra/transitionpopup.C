@@ -2,6 +2,7 @@
 #include "edit.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "language.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "plugin.h"
@@ -10,10 +11,6 @@
 #include "tracks.h"
 #include "transitionpopup.h"
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 TransitionLengthThread::TransitionLengthThread(MWindow *mwindow, TransitionPopup *popup)
  : Thread()

@@ -82,6 +82,7 @@ public:
 // filename of the current project for window titling and saving
 	char filename[BCTEXTLEN];
 
+	int batchrender_x, batchrender_y, batchrender_w, batchrender_h;
 
 // Window positions
 	int lwindow_x, lwindow_y, lwindow_w, lwindow_h;

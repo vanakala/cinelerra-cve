@@ -79,7 +79,8 @@ void SharedLocation::calculate_title(char *string,
 	EDL *edl, 
 	double position, 
 	int convert_units,
-	int plugin_type)
+	int plugin_type,
+	int use_nudge)
 {
 	if(plugin_type == PLUGIN_SHAREDPLUGIN)
 	{
@@ -92,7 +93,8 @@ void SharedLocation::calculate_title(char *string,
 			plugin = track->get_current_plugin(position, 
 				this->plugin, 
 				PLAY_FORWARD,
-				convert_units);
+				convert_units,
+				use_nudge);
 		}
 
 		char track_title[BCTEXTLEN];

@@ -1,6 +1,7 @@
 #ifndef VIDEODEVICE_H
 #define VIDEODEVICE_H
 
+#include "asset.inc"
 #include "assets.inc"
 #include "audio1394.inc"
 #include "audiodevice.inc"
@@ -8,6 +9,7 @@
 #include "bccapture.inc"
 #include "canvas.inc"
 #include "channel.inc"
+#include "device1394output.inc"
 #include "edl.inc"
 #include "mwindow.inc"
 #include "mutex.h"
@@ -72,6 +74,7 @@ public:
 	friend class VDeviceBase;
 	friend class VDeviceV4L;
 	friend class Audio1394;
+	friend class Device1394Output;
 
 	int close_all();
 // Create a default channeldb, erasing the old one

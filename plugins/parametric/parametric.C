@@ -486,23 +486,14 @@ int ParametricFFT::signal_process()
 ParametricEQ::ParametricEQ(PluginServer *server)
  : PluginAClient(server)
 {
-//printf("ParametricEQ::ParametricEQ 1\n");
-	reset();
-	load_defaults();
-//printf("ParametricEQ::ParametricEQ 2\n");
+	PLUGIN_CONSTRUCTOR_MACRO
+	fft = 0;
+	need_reconfigure = 1;
 }
 
 ParametricEQ::~ParametricEQ()
 {
-	if(thread)
-	{
-		thread->window->set_done(0);
-		thread->completion.lock();
-		delete thread;
-	}
-	
-	save_defaults();
-	delete defaults;
+	PLUGIN_DESTRUCTOR_MACRO
 
 	if(fft) delete fft;
 }

@@ -21,7 +21,6 @@ public:
 	int load_xml(FileXML *xml, int append_mode, uint32_t load_flags);
 	int save_xml(FileXML *xml);
 	int copy(EDLSession *session);
-	int calculate_smp();
 	int load_audio_config(FileXML *file, int append_mode, uint32_t load_flags);
     int save_audio_config(FileXML *xml);
 	int load_video_config(FileXML *file, int append_mode, uint32_t load_flags);
@@ -33,6 +32,7 @@ public:
 	void boundaries();
 
 	void equivalent_output(EDLSession *session, double *result);
+	void dump();
 
 // Audio
 	int achannel_positions[MAXCHANNELS];
@@ -96,7 +96,6 @@ public:
 	int enable_duplex;
 // AWindow format
 	int folderlist_format;
-	int force_uniprocessor;
 	double frame_rate;
 	float frames_per_foot;
 // Number of highlighted track
@@ -138,12 +137,12 @@ public:
 	float scrub_speed;
 // Show titles in resources
 	int show_titles;
-// number of cpus to use - 1
-	int smp;
 // Test for data before rendering a track
 	int test_playback_edits;
 // Format to display times in
 	int time_format;
+// Format to display nudge in, either seconds or track units.
+	int nudge_seconds;
 // Show tool window in CWindow
 	int tool_window;
 // Location of video outs

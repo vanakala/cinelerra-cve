@@ -21,6 +21,7 @@
 #include "pluginaclientlad.inc"
 #include "pluginclient.inc"
 #include "pluginserver.inc"
+#include "preferences.inc"
 #include "theme.inc"
 #include "thread.h"
 #include "track.inc"
@@ -54,9 +55,10 @@ public:
 #define PLUGINSERVER_NOT_RECOGNIZED 1
 #define PLUGINSERVER_OK 0
 	int open_plugin(int master, 
+		Preferences *preferences,
 		EDL *edl, 
 		Plugin *plugin,
-		int lad_index = -1);
+		int lad_index /* = -1 */);
 // close the plugin
 	int close_plugin();    
 	void dump();
@@ -149,6 +151,7 @@ public:
 	int process_loop(VFrame **buffers, int64_t &write_length);
 	int process_loop(double **buffers, int64_t &write_length);
 	int stop_loop();
+// Called by non-realtime plugin to read data during rendered effect.
 	int read_frame(VFrame *buffer, int channel, int64_t start_position);
 	int read_samples(double *buffer, int channel, int64_t start_position, int64_t total_samples);
 	int read_samples(double *buffer, int64_t start_position, int64_t total_samples);
@@ -238,8 +241,10 @@ public:
 	AttachmentPoint *attachment;
 // Storage of keyframes and GUI status
 	Plugin *plugin;
+
 // Storage of session parameters
 	EDL *edl;
+	Preferences *preferences;
 	MenuEffectPrompt *prompt;
 	int gui_on;
 

@@ -1,4 +1,4 @@
-#include "assets.h"
+#include "asset.h"
 #include "bitspopup.h"
 #include "byteorder.h"
 #include "clip.h"
@@ -318,6 +318,7 @@ int FileMPEG::get_best_colormodel(Asset *asset, int driver)
 		case PLAYBACK_BUZ:
 			return BC_YUV422P;
 			break;
+		case PLAYBACK_DV1394:
 		case PLAYBACK_FIREWIRE:
 			return BC_YUV422P;
 			break;
@@ -377,7 +378,9 @@ int FileMPEG::set_video_position(int64_t x)
 {
 	if(!fd) return 1;
 	if(x >= 0 && x < asset->video_length)
-		return mpeg3_set_frame(fd, x, file->current_layer);
+	{
+		mpeg3_set_frame(fd, x, file->current_layer);
+	}
 	else
 		return 1;
 }
@@ -639,27 +642,30 @@ int FileMPEG::read_frame(VFrame *frame)
 					&u,
 					&v,
 					file->current_layer);
-				cmodel_transfer(frame->get_rows(), 
-					0,
-					frame->get_y(),
-					frame->get_u(),
-					frame->get_v(),
-					(unsigned char*)y,
-					(unsigned char*)u,
-					(unsigned char*)v,
-					0,
-					0,
-					asset->width,
-					asset->height,
-					0,
-					0,
-					asset->width,
-					asset->height,
-					src_cmodel, 
-					frame->get_color_model(),
-					0, 
-					asset->width,
-					frame->get_w());
+				if(y && u && v)
+				{
+					cmodel_transfer(frame->get_rows(), 
+						0,
+						frame->get_y(),
+						frame->get_u(),
+						frame->get_v(),
+						(unsigned char*)y,
+						(unsigned char*)u,
+						(unsigned char*)v,
+						0,
+						0,
+						asset->width,
+						asset->height,
+						0,
+						0,
+						asset->width,
+						asset->height,
+						src_cmodel, 
+						frame->get_color_model(),
+						0, 
+						asset->width,
+						frame->get_w());
+				}
 			}
 //printf("FileMPEG::read_frame 2\n");
 			break;

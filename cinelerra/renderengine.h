@@ -9,6 +9,8 @@ class RenderEngine;
 #include "cache.inc"
 #include "canvas.inc"
 #include "channel.inc"
+#include "condition.inc"
+#include "mutex.inc"
 #include "mwindow.inc"
 #include "playbackengine.inc"
 #include "pluginserver.inc"
@@ -86,11 +88,18 @@ public:
 	Preferences *preferences;
 // Canvas if being used for CWindow
 	Canvas *output;
+
+
 // Lock out new commands until completion
-	Mutex input_lock;
+	Condition *input_lock;
 // Lock out interrupts until started
-	Mutex start_lock;
-	Mutex output_lock;
+	Condition *start_lock;
+	Condition *output_lock;
+// Lock out interrupts before and after renderengine is active
+	Mutex *interrupt_lock;
+
+
+
 	int done;
 	AudioDevice *audio;
 	VideoDevice *video;
@@ -110,8 +119,6 @@ public:
 
 // length to send to audio device after speed adjustment
 	int64_t adjusted_fragment_len;              
-// Lock out interrupts before and after renderengine is active
-	Mutex interrupt_lock;
 // CICaches for use if no playbackengine exists
 	CICache *audio_cache, *video_cache;
 
@@ -167,8 +174,6 @@ public:
 // start video since vrender is the master
 	int start_video();
 
-	int wait_for_startup();
-	int wait_for_completion();
 
 // information for playback
 	int reverse;

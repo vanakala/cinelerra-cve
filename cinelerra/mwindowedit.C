@@ -1,3 +1,4 @@
+#include "asset.h"
 #include "assets.h"
 #include "awindowgui.h"
 #include "awindow.h"
@@ -13,6 +14,7 @@
 #include "filexml.h"
 #include "keyframe.h"
 #include "labels.h"
+#include "language.h"
 #include "levelwindow.h"
 #include "localsession.h"
 #include "mainclock.h"
@@ -44,10 +46,7 @@
 
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
+
 
 
 
@@ -55,7 +54,7 @@
 void MWindow::add_audio_track_entry(int above, Track *dst)
 {
 	undo->update_undo_before(_("add track"), LOAD_ALL);
-	add_audio_track(1, dst);
+	add_audio_track(above, dst);
 	save_backup();
 	undo->update_undo_after();
 
@@ -67,9 +66,9 @@ void MWindow::add_audio_track_entry(int above, Track *dst)
 	gui->canvas->flash();
 	gui->canvas->activate();
 	cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
-							CHANGE_EDL,
-							edl,
-							1);
+		CHANGE_EDL,
+		edl,
+		1);
 }
 
 void MWindow::add_video_track_entry(Track *dst)
@@ -619,7 +618,7 @@ void MWindow::insert_effect(char *title,
 		default_keyframe = new KeyFrame;
 		server = new PluginServer(*scan_plugindb(title));
 
-		server->open_plugin(0, edl, 0);
+		server->open_plugin(0, preferences, edl, 0, -1);
 		server->save_data(default_keyframe);
 	}
 
@@ -1410,9 +1409,15 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 					destination_tracks.values[destination_track]->data_type == new_track->data_type)
 				{
 					Track *track = destination_tracks.values[destination_track];
-// Replace default keyframes if first EDL and new tracks were created
+
+// Replace default keyframes if first EDL and new tracks were created.
+// This means data copied from one track and pasted to another won't retain
+// the camera position unless it's a keyframe.  If it did, previous data in the
+// track might get unknowingly corrupted.  Ideally we would detect when differing
+// default keyframes existed and create discrete keyframes for both.
 					int replace_default = (i == 0) && need_new_tracks;
 
+//printf("MWindow::paste_edls 1 %d\n", replace_default);
 // Insert new track at current position
 					switch(load_mode)
 					{
@@ -1575,7 +1580,7 @@ void MWindow::redo_entry(int is_mwindow)
 	vwindow->playback_engine->interrupt_playback(0);
 
 
-	cwindow->gui->lock_window();
+	cwindow->gui->lock_window("MWindow::redo_entry");
 	gui->lock_window();
 
 	undo->redo(); 
@@ -1623,7 +1628,7 @@ void MWindow::set_inpoint(int is_mwindow)
 
 	if(!is_mwindow)
 	{
-		gui->lock_window();
+		gui->lock_window("MWindow::set_inpoint 1");
 	}
 	gui->timebar->update();
 	gui->flush();
@@ -1634,7 +1639,7 @@ void MWindow::set_inpoint(int is_mwindow)
 
 	if(is_mwindow)
 	{
-		cwindow->gui->lock_window();
+		cwindow->gui->lock_window("MWindow::set_inpoint 2");
 	}
 	cwindow->gui->timebar->update();
 	cwindow->gui->flush();
@@ -1654,7 +1659,7 @@ void MWindow::set_outpoint(int is_mwindow)
 
 	if(!is_mwindow)
 	{
-		gui->lock_window();
+		gui->lock_window("MWindow::set_outpoint 1");
 	}
 	gui->timebar->update();
 	gui->flush();
@@ -1665,7 +1670,7 @@ void MWindow::set_outpoint(int is_mwindow)
 
 	if(is_mwindow)
 	{
-		cwindow->gui->lock_window();
+		cwindow->gui->lock_window("MWindow::set_outpoint 2");
 	}
 	cwindow->gui->timebar->update();
 	cwindow->gui->flush();
@@ -1790,7 +1795,7 @@ int MWindow::toggle_label(int is_mwindow)
 //printf("MWindow::toggle_label 1\n");
 	if(!is_mwindow)
 	{
-		gui->lock_window();
+		gui->lock_window("MWindow::toggle_label 1");
 	}
 	gui->timebar->update();
 	gui->canvas->activate();
@@ -1803,7 +1808,7 @@ int MWindow::toggle_label(int is_mwindow)
 //printf("MWindow::toggle_label 1\n");
 	if(is_mwindow)
 	{
-		cwindow->gui->lock_window();
+		cwindow->gui->lock_window("MWindow::toggle_label 2");
 	}
 	cwindow->gui->timebar->update();
 	cwindow->gui->flush();
@@ -1820,7 +1825,7 @@ int MWindow::toggle_label(int is_mwindow)
 
 void MWindow::trim_selection()
 {
-	undo->update_undo_before(_("trim selection"), LOAD_EDITS);
+	undo->update_undo_before(_("trim selection"), LOAD_EDITS | LOAD_TIMEBAR);
 
 
 	edl->trim_selection(edl->local_session->get_selectionstart(), 
@@ -1859,8 +1864,8 @@ void MWindow::undo_entry(int is_mwindow)
 	cwindow->playback_engine->interrupt_playback(0);
 	vwindow->playback_engine->interrupt_playback(0);
 
-	cwindow->gui->lock_window();
-	gui->lock_window();
+	cwindow->gui->lock_window("MWindow::undo_entry 1");
+	gui->lock_window("MWindow::undo_entry 2");
 
 	undo->undo(); 
 
@@ -1876,7 +1881,7 @@ void MWindow::undo_entry(int is_mwindow)
 	else
 		gui->unlock_window();
 
-	awindow->gui->lock_window();
+	awindow->gui->lock_window("MWindow::undo_entry 3");
 	awindow->gui->update_assets();
 	awindow->gui->flush();
 	awindow->gui->unlock_window();
@@ -1893,7 +1898,7 @@ void MWindow::new_folder(char *new_folder)
 	undo->update_undo_before(_("new folder"), LOAD_ALL);
 	edl->new_folder(new_folder);
 	undo->update_undo_after();
-	awindow->gui->lock_window();
+	awindow->gui->lock_window("MWindow::new_folder");
 	awindow->gui->update_assets();
 	awindow->gui->unlock_window();
 }

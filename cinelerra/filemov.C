@@ -1,4 +1,4 @@
-#include "assets.h"
+#include "asset.h"
 #include "bitspopup.h"
 #include "byteorder.h"
 #include "edit.h"
@@ -388,6 +388,7 @@ int FileMOV::get_best_colormodel(Asset *asset, int driver)
 			if(match4(asset->vcodec, QUICKTIME_DIVX)) return BC_YUV420P;
 			if(match4(asset->vcodec, QUICKTIME_DIV3)) return BC_YUV420P;
 			break;
+		case PLAYBACK_DV1394:
 		case PLAYBACK_FIREWIRE:
 			if(match4(asset->vcodec, QUICKTIME_DV)) return BC_COMPRESSED;
 			return BC_YUV422P;
@@ -474,7 +475,7 @@ int FileMOV::set_audio_position(int64_t x)
 int FileMOV::set_video_position(int64_t x)
 {
 	if(!fd) return 1;
-//printf("FileMOV::set_video_position 1 %d %d\n", x, asset->video_length);
+//printf("FileMOV::set_video_position 1 %lld %lld %d\n", x, asset->video_length, file->current_layer);
 	if(x >= 0 && x < asset->video_length)
 		return quicktime_set_video_position(fd, x, file->current_layer);
 	else
@@ -754,9 +755,10 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 // Write the frames as they're finished
 			for(j = 0; j < len; j++)
 			{
+//printf("filemov 1\n");
 				threadframes.values[j]->completion_lock.lock();
 				threadframes.values[j]->completion_lock.unlock();
-//printf("filemov 1\n");
+//printf("filemov 10 %p %d\n", threadframes.values[j]->output, threadframes.values[j]->output_size);
 				if(!result)
 				{
 					result = quicktime_write_frame(fd, 
@@ -764,6 +766,7 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 						threadframes.values[j]->output_size,
 						i);
 				}
+//printf("filemov 20\n");
 			}
 		}
 
@@ -897,6 +900,8 @@ int FileMOV::read_raw(VFrame *frame,
 {
 	int64_t i, color_channels, result = 0;
 	if(!fd) return 0;
+
+//printf("FileMOV::read_raw 1\n");
 	quicktime_set_video_position(fd, file->current_frame, file->current_layer);
 // Develop importing strategy
 	switch(frame->get_color_model())
@@ -1131,18 +1136,12 @@ void FileMOVThread::run()
 					frame->get_color_model(),
 					1);
 
-//printf("FileMOVThread 1 %02x%02x\n", mjpeg_output_buffer(mjpeg)[0], mjpeg_output_buffer(mjpeg)[1]);
-//printf("FileMOVThread 1\n");
 				if(fields > 1)
 				{
+					unsigned char *data = mjpeg_output_buffer(mjpeg);
+					long data_size = mjpeg_output_size(mjpeg);
+					long data_allocated = mjpeg_output_allocated(mjpeg);
 					long field2_offset;
-// Create extra space for markers
-					if(frame->get_compressed_allocated() - frame->get_compressed_size() < 0x100)
-						frame->allocate_compressed_data(frame->get_compressed_size() + 0x100);
-
-					unsigned char *data = frame->get_data();
-					long data_size = frame->get_compressed_size();
-					long data_allocated = frame->get_compressed_allocated();
 
 					if(filemov->asset->format == FILE_MOV)
 					{
@@ -1160,12 +1159,9 @@ void FileMOVThread::run()
 							2,
 							&field2_offset);
 					}
-					frame->set_compressed_size(data_size);
+					mjpeg_set_output_size(mjpeg, data_size);
 				}
 				threadframe->load_output(mjpeg);
-//printf("FileMOVThread 2 %02x%02x\n", mjpeg_output_buffer(mjpeg)[0], mjpeg_output_buffer(mjpeg)[1]);
-
-//printf("FileMOVThread 2 %p\n", this);
 				threadframe->completion_lock.unlock();
 			}
 			else

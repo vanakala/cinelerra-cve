@@ -1,7 +1,7 @@
 #ifndef ASSETEDIT_H
 #define ASSETEDIT_H
 
-#include "assets.inc"
+#include "asset.inc"
 #include "awindow.inc"
 #include "guicast.h"
 #include "bitspopup.inc"

@@ -167,6 +167,9 @@ int NewThread::update_aspect()
 	return 0;
 }
 
+
+
+
 #define WIDTH 600
 #define HEIGHT 400
 
@@ -207,22 +210,7 @@ void NewWindow::create_presets(int &x, int &y)
 	item = new NewPresetItem(mwindow, this, _("User Defined"));
 	preset_items.append(item);
 
-	item = new NewPresetItem(mwindow, this, _("1080 Progressive"));
-	item->edl->session->audio_channels = 2;
-	item->edl->session->audio_tracks = 2;
-	item->edl->session->sample_rate = 48000;
-	item->edl->session->video_channels = 1;
-	item->edl->session->video_tracks = 1;
-	item->edl->session->frame_rate = (double)30000.0 / 1001;
-// 	item->edl->session->track_w = 1920;
-// 	item->edl->session->track_h = 1080;
-	item->edl->session->output_w = 1920;
-	item->edl->session->output_h = 1080;
-	item->edl->session->aspect_w = 16;
-	item->edl->session->aspect_h = 9;
-	preset_items.append(item);
-
-	item = new NewPresetItem(mwindow, this, _("1080 Interlaced"));
+	item = new NewPresetItem(mwindow, this, _("1080P"));
 	item->edl->session->audio_channels = 2;
 	item->edl->session->audio_tracks = 2;
 	item->edl->session->sample_rate = 48000;
@@ -237,13 +225,28 @@ void NewWindow::create_presets(int &x, int &y)
 	item->edl->session->aspect_h = 9;
 	preset_items.append(item);
 
-	item = new NewPresetItem(mwindow, this, _("720 Progressive"));
+	item = new NewPresetItem(mwindow, this, _("1080I"));
 	item->edl->session->audio_channels = 2;
 	item->edl->session->audio_tracks = 2;
 	item->edl->session->sample_rate = 48000;
 	item->edl->session->video_channels = 1;
 	item->edl->session->video_tracks = 1;
 	item->edl->session->frame_rate = (double)30000.0 / 1001;
+// 	item->edl->session->track_w = 1920;
+// 	item->edl->session->track_h = 1080;
+	item->edl->session->output_w = 1920;
+	item->edl->session->output_h = 1080;
+	item->edl->session->aspect_w = 16;
+	item->edl->session->aspect_h = 9;
+	preset_items.append(item);
+
+	item = new NewPresetItem(mwindow, this, _("720P"));
+	item->edl->session->audio_channels = 2;
+	item->edl->session->audio_tracks = 2;
+	item->edl->session->sample_rate = 48000;
+	item->edl->session->video_channels = 1;
+	item->edl->session->video_tracks = 1;
+	item->edl->session->frame_rate = (double)60000.0 / 1001;
 // 	item->edl->session->track_w = 1280;
 // 	item->edl->session->track_h = 720;
 	item->edl->session->output_w = 1280;
@@ -252,13 +255,13 @@ void NewWindow::create_presets(int &x, int &y)
 	item->edl->session->aspect_h = 9;
 	preset_items.append(item);
 
-	item = new NewPresetItem(mwindow, this, _("480 Progressive"));
+	item = new NewPresetItem(mwindow, this, _("480P"));
 	item->edl->session->audio_channels = 2;
 	item->edl->session->audio_tracks = 2;
 	item->edl->session->sample_rate = 48000;
 	item->edl->session->video_channels = 1;
 	item->edl->session->video_tracks = 1;
-	item->edl->session->frame_rate = (double)30000.0 / 1001;
+	item->edl->session->frame_rate = (double)60000.0 / 1001;
 // 	item->edl->session->track_w = 720;
 // 	item->edl->session->track_h = 480;
 	item->edl->session->output_w = 720;
@@ -267,13 +270,13 @@ void NewWindow::create_presets(int &x, int &y)
 	item->edl->session->aspect_h = 3;
 	preset_items.append(item);
 
-	item = new NewPresetItem(mwindow, this, _("480 Interlaced"));
+	item = new NewPresetItem(mwindow, this, _("480I"));
 	item->edl->session->audio_channels = 2;
 	item->edl->session->audio_tracks = 2;
 	item->edl->session->sample_rate = 48000;
 	item->edl->session->video_channels = 1;
 	item->edl->session->video_tracks = 1;
-	item->edl->session->frame_rate = (double)60000.0 / 1001;
+	item->edl->session->frame_rate = (double)30000.0 / 1001;
 // 	item->edl->session->track_w = 720;
 // 	item->edl->session->track_h = 480;
 	item->edl->session->output_w = 720;
@@ -484,6 +487,35 @@ int NewWindow::create_objects()
 	return 0;
 }
 
+
+int NewWindow::get_preset(EDL *edl)
+{
+
+	for(int i = 1; i < preset_items.total; i++)
+	{
+		NewPresetItem *preset = preset_items.values[i];
+		if(edl->session->audio_tracks == preset->edl->session->audio_tracks &&
+			edl->session->audio_channels == preset->edl->session->audio_channels &&
+			edl->session->sample_rate == preset->edl->session->sample_rate &&
+			edl->session->video_tracks == preset->edl->session->video_tracks &&
+			edl->session->frame_rate == preset->edl->session->frame_rate &&
+			edl->session->output_w == preset->edl->session->output_w &&
+			edl->session->output_h == preset->edl->session->output_h &&
+			edl->session->aspect_w == preset->edl->session->aspect_w &&
+			edl->session->aspect_h == preset->edl->session->aspect_h)
+			return i;
+	}
+	return 0;
+}
+
+char* NewWindow::get_preset_text()
+{
+	int preset_number = get_preset(new_edl);
+	if(preset_number < preset_items.total) 
+		return preset_items.values[preset_number]->get_text();
+	return preset_items.values[0]->get_text();
+}
+
 int NewWindow::update()
 {
 	char string[BCTEXTLEN];
@@ -491,10 +523,7 @@ int NewWindow::update()
 	achannels->update((int64_t)new_edl->session->audio_channels);
 	sample_rate->update((int64_t)new_edl->session->sample_rate);
 	vtracks->update((int64_t)new_edl->session->video_tracks);
-//	vchannels->update((int64_t)new_edl->session->video_channels);
 	frame_rate->update((float)new_edl->session->frame_rate);
-// 	canvas_w_text->update((int64_t)new_edl->session->track_w);
-// 	canvas_h_text->update((int64_t)new_edl->session->track_h);
 	output_w_text->update((int64_t)new_edl->session->output_w);
 	output_h_text->update((int64_t)new_edl->session->output_h);
 	aspect_w_text->update((float)new_edl->session->aspect_w);
@@ -502,8 +531,12 @@ int NewWindow::update()
 	return 0;
 }
 
+
+
+
+
 NewPresetsText::NewPresetsText(MWindow *mwindow, NewWindow *window, int x, int y)
- : BC_TextBox(x, y, 200, 1, window->preset_items.values[0]->get_text())
+ : BC_TextBox(x, y, 200, 1, window->get_preset_text())
 {
 	this->mwindow = mwindow;
 	this->window = window;

@@ -1,3 +1,4 @@
+#include "asset.h"
 #include "assets.h"
 #include "clipedit.h"
 #include "defaults.h"
@@ -5,6 +6,7 @@
 #include "edlsession.h"
 #include "filesystem.h"
 #include "filexml.h"
+#include "language.h"
 #include "localsession.h"
 #include "mainclock.h"
 #include "mwindow.h"
@@ -17,11 +19,6 @@
 #include "vtracking.h"
 #include "vwindow.h"
 #include "vwindowgui.h"
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 VWindow::VWindow(MWindow *mwindow) : Thread()

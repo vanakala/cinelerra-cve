@@ -2,12 +2,9 @@
 #include "clip.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "language.h"
 #include "vframe.h"
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 Canvas::Canvas(BC_WindowBase *subwindow, 

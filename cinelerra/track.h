@@ -2,7 +2,7 @@
 #define TRACK_H
 
 #include "arraylist.h"
-#include "assets.inc"
+#include "asset.inc"
 #include "autoconf.inc"
 #include "automation.inc"
 #include "datatype.h"
@@ -47,11 +47,7 @@ public:
 	virtual int load_header(FileXML *file, uint32_t load_flags) { return 0; };
 	virtual int load_derived(FileXML *file, uint32_t load_flags) { return 0; };
 	void equivalent_output(Track *track, double *result);
-// Called by playable tracks to test for playable server.
-// Descends the plugin tree without creating a virtual console.
-	int is_synthesis(RenderEngine *renderengine, 
-		int64_t position, 
-		int direction);
+
 	Track& operator=(Track& track);
 	virtual PluginSet* new_plugins() { return 0; };
 // Synchronize playback numbers
@@ -106,25 +102,49 @@ public:
 
 // Positions are identical for handle modifications
     virtual int identical(int64_t sample1, int64_t sample2) { return 0; };
+
 // Get the plugin belonging to the set.
 	Plugin* get_current_plugin(double position, 
 		int plugin_set, 
 		int direction, 
-		int convert_units);
+		int convert_units,
+		int use_nudge);
 	Plugin* get_current_transition(double position, 
 		int direction, 
-		int convert_units);
-	virtual int channel_is_playable(int64_t position, int direction, int *do_channel);
+		int convert_units,
+		int use_nudge);
+
+
+
+// Called by playable tracks to test for playable server.
+// Descends the plugin tree without creating a virtual console.
+// Used by PlayableTracks::is_playable.
+	int is_synthesis(RenderEngine *renderengine, 
+		int64_t position, 
+		int direction);
+
+// Used by PlayableTracks::is_playable
+	virtual int channel_is_playable(int64_t position, 
+		int direction, 
+		int *do_channel);
+
 // Test direct copy conditions common to all the rendering routines
-	virtual int direct_copy_possible(int64_t start, int direction);
+	virtual int direct_copy_possible(int64_t start, int direction, int use_nudge);
+
+// Used by PlayableTracks::is_playable
 	int plugin_used(int64_t position, int64_t direction);
+
+
+
+
+
 	virtual int copy_settings(Track *track);
 	void shift_keyframes(double position, double length, int convert_units);
 	void shift_effects(double position, double length, int convert_units);
 	void change_plugins(SharedLocation &old_location, 
 		SharedLocation &new_location, 
 		int do_swap);
-	void change_modules(int old_location, \
+	void change_modules(int old_location, 
 		int new_location, 
 		int do_swap);
 	int delete_module_pointers(int deleted_track);
@@ -148,6 +168,9 @@ public:
 	char title[BCTEXTLEN];
 	int play;
 	int record;
+// Nudge in track units.  Positive shifts track earlier in time.  This way
+// the position variables only need to add the nudge.
+	int nudge;
 // TRACK_AUDIO or TRACK_VIDEO
 	int data_type;     
 
@@ -288,13 +311,16 @@ public:
 	int64_t edit_change_duration(int64_t input_position, 
 		int64_t input_length, 
 		int reverse, 
-		int test_transitions);
+		int test_transitions,
+		int use_nudge);
 	int64_t plugin_change_duration(int64_t input_position,
 		int64_t input_length,
-		int reverse);
+		int reverse,
+		int use_nudge);
 // Utility for edit_change_duration.
 	int need_edit(Edit *current, int test_transitions);
-// If the edit under position is playable
+// If the edit under position is playable.
+// Used by PlayableTracks::is_playable.
 	int playable_edit(int64_t position, int direction);
 
 // ===================================== for handles, titles, etc

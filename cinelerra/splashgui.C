@@ -1,14 +1,10 @@
 #include "bcdisplayinfo.h"
+#include "language.h"
 #include "mwindow.inc"
 #include "splashgui.h"
 #include "vframe.h"
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
-
-
+#include <unistd.h>
 
 
 
@@ -35,6 +31,9 @@ SplashGUI::~SplashGUI()
 void SplashGUI::create_objects()
 {
 	draw_vframe(bg, 0, 0);
+	flash();
+	show_window();
+
 	add_subwindow(progress = new BC_ProgressBar(5, 
 		get_h() - get_resources()->progress_images[0]->get_h() - 5,
 		get_w() - 10,
@@ -44,8 +43,6 @@ void SplashGUI::create_objects()
 		new BC_Title(5, 
 			progress->get_y() - get_text_height(MEDIUMFONT) - 5,
 			_("Loading...")));
-	flash();
-	show_window();
 }
 
 

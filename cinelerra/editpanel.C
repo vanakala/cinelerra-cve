@@ -271,9 +271,9 @@ void EditPanel::prev_label()
 	mwindow->gui->mbuttons->transport->handle_transport(STOP, 1);
 
 	if(!is_mwindow)
-		subwindow->lock_window();
+		subwindow->lock_window("EditPanel::prev_label 1");
 
-	mwindow->gui->lock_window();
+	mwindow->gui->lock_window("EditPanel::prev_label 2");
 
 	mwindow->prev_label();
 
@@ -293,9 +293,9 @@ void EditPanel::next_label()
 	mwindow->gui->mbuttons->transport->handle_transport(STOP, 1);
 
 	if(!is_mwindow)
-		subwindow->lock_window();
+		subwindow->lock_window("EditPanel::next_label 1");
 
-	mwindow->gui->lock_window();
+	mwindow->gui->lock_window("EditPanel::next_label 2");
 
 	mwindow->next_label();
 
@@ -725,7 +725,7 @@ int EditCut::keypress_event()
 
 int EditCut::handle_event()
 {
-	if(!panel->is_mwindow) mwindow->gui->lock_window();
+	if(!panel->is_mwindow) mwindow->gui->lock_window("EditCut::handle_event");
 	mwindow->cut();
 	if(!panel->is_mwindow) mwindow->gui->unlock_window();
 	return 1;
@@ -810,7 +810,7 @@ int EditPaste::keypress_event()
 }
 int EditPaste::handle_event()
 {
-	if(!panel->is_mwindow) mwindow->gui->lock_window();
+	if(!panel->is_mwindow) mwindow->gui->lock_window("EditPaste::handle_event");
 	mwindow->paste();
 	if(!panel->is_mwindow) mwindow->gui->unlock_window();
 	return 1;

@@ -2,40 +2,21 @@
 #include "titlewindow.h"
 
 #include <string.h>
-
 #include <libintl.h>
 #define _(String) gettext(String)
 #define gettext_noop(String) String
 #define N_(String) gettext_noop (String)
 
-TitleThread::TitleThread(TitleMain *client)
- : Thread()
-{
-	this->client = client;
-	set_synchronous(0);
-	gui_started.lock();
-	completion.lock();
-}
 
-TitleThread::~TitleThread()
-{
-// Window always deleted here
-	delete window;
-}
 
-void TitleThread::run()
-{
-	BC_DisplayInfo info;
-	window = new TitleWindow(client, 
-		info.get_abs_cursor_x() - client->window_w / 2, 
-		info.get_abs_cursor_y() - client->window_h / 2);
-	window->create_objects();
-	gui_started.unlock();
-	int result = window->run_window();
-	completion.unlock();
-// Last command executed in thread
-	if(result) client->client_side_close();
-}
+
+
+
+
+
+
+PLUGIN_THREAD_OBJECT(TitleMain, TitleThread, TitleWindow)
+
 
 
 

@@ -43,12 +43,10 @@ HoloConfig::HoloConfig()
 HoloMain::HoloMain(PluginServer *server)
  : PluginVClient(server)
 {
-	thread = 0;
-	defaults = 0;
 	effecttv = 0;
 	bgimage = 0;
 	do_reconfigure = 1;
-	load_defaults();
+	PLUGIN_CONSTRUCTOR_MACRO
 }
 
 HoloMain::~HoloMain()

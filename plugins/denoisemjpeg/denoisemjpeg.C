@@ -439,23 +439,14 @@ PLUGIN_THREAD_OBJECT(DenoiseMJPEG, DenoiseMJPEGThread, DenoiseMJPEGWindow)
 DenoiseMJPEG::DenoiseMJPEG(PluginServer *server)
  : PluginVClient(server)
 {
+	PLUGIN_CONSTRUCTOR_MACRO
 	accumulation = 0;
-	thread = 0;
-	load_defaults();
 }
 
 
 DenoiseMJPEG::~DenoiseMJPEG()
 {
-	if(thread)
-	{
-		thread->window->set_done(0);
-		thread->completion.lock();
-		delete thread;
-	}
-
-	save_defaults();
-	delete defaults;
+	PLUGIN_DESTRUCTOR_MACRO
 
 	if(accumulation) delete [] accumulation;
 }

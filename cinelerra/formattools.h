@@ -1,7 +1,7 @@
 #ifndef FORMATTOOLS_H
 #define FORMATTOOLS_H
 
-#include "assets.inc"
+#include "asset.inc"
 #include "guicast.h"
 #include "bitspopup.h"
 #include "browsebutton.h"
@@ -28,7 +28,7 @@ public:
 	FormatTools(MWindow *mwindow,
 				BC_WindowBase *window, 
 				Asset *asset);
-	~FormatTools();
+	virtual ~FormatTools();
 
 	int create_objects(int &init_x, 
 						int &init_y, 
@@ -43,9 +43,17 @@ public:
 						int *strategy,  // If nonzero, prompt for insertion strategy
 						int brender); // Supply file formats for background rendering
 	void reposition_window(int &init_x, int &init_y);
+// Put new asset's parameters in and change asset.
+	void update(Asset *asset, int *strategy);
+	void close_format_windows();
+	Asset* get_asset();
+
+// Handle change in path text.  Used in BatchRender.
+	virtual int handle_event();
 
 	int set_audio_options();
 	int set_video_options();
+	int get_w();
 
 	BC_WindowBase *window;
 	Asset *asset;
@@ -83,6 +91,7 @@ public:
 	int prompt_video;
 	int prompt_video_compression;
 	int *strategy;
+	int w;
 };
 
 
@@ -90,11 +99,10 @@ public:
 class FormatPathText : public BC_TextBox
 {
 public:
-	FormatPathText(int x, int y, FormatTools *format, Asset *asset);
+	FormatPathText(int x, int y, FormatTools *format);
 	~FormatPathText();
 	int handle_event();
 	
-	Asset *asset;
 	FormatTools *format;
 };
 
@@ -103,12 +111,11 @@ public:
 class FormatFormat : public FormatPopup
 {
 public:
-	FormatFormat(int x, int y, FormatTools *format, Asset *asset);
+	FormatFormat(int x, int y, FormatTools *format);
 	~FormatFormat();
 	
 	int handle_event();
 	FormatTools *format;
-	Asset *asset;
 };
 
 class FormatAParams : public BC_Button
@@ -177,11 +184,10 @@ public:
 class FormatChannels : public BC_TextBox
 {
 public:
-	FormatChannels(int x, int y, Asset *asset);
+	FormatChannels(int x, int y, FormatTools *format);
 	~FormatChannels();
 	int handle_event();
-
-	Asset *asset;
+	FormatTools *format;
 };
 
 class FormatToTracks : public BC_CheckBox
@@ -199,6 +205,7 @@ public:
 	FormatMultiple(MWindow *mwindow, int x, int y, int *output);
 	~FormatMultiple();
 	int handle_event();
+	void update(int *output);
 	int *output;
 	MWindow *mwindow;
 };

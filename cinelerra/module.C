@@ -84,7 +84,8 @@ void Module::create_new_attachments()
 					track->get_current_plugin(commonrender->current_position, 
 						i, 
 						renderengine->command->get_direction(),
-						0);
+						0,
+						1);
 
 				if(plugin && plugin->plugin_type != PLUGIN_NONE && plugin->on)
 					new_attachments[i] = new_attachment(plugin);
@@ -167,10 +168,12 @@ int Module::test_plugins()
 	for(int i = 0; i < total_attachments; i++)
 	{
 		AttachmentPoint *attachment = attachments[i];
-		Plugin *plugin = track->get_current_plugin(commonrender->current_position, 
+		Plugin *plugin = track->get_current_plugin(
+			commonrender->current_position, 
 			i, 
 			renderengine->command->get_direction(),
-			0);
+			0,
+			1);
 // One exists and one doesn't
 		int use_plugin = plugin &&
 			plugin->plugin_type != PLUGIN_NONE &&
@@ -191,11 +194,10 @@ int Module::test_plugins()
 
 void Module::update_transition(int64_t current_position, int direction)
 {
-//printf("Module::update_transition 1\n");
 	Plugin *transition = track->get_current_transition(current_position, 
 		direction,
-		0);
-//printf("Module::update_transition 2 %p\n", transition);
+		0,
+		1);
 
 	if((!transition && this->transition) || 
 		(transition && this->transition && strcmp(transition->title, this->transition->title)))
@@ -206,17 +208,19 @@ void Module::update_transition(int64_t current_position, int direction)
 		delete transition_server;
 		transition_server = 0;
 	}
-//printf("Module::update_transition 7\n");
 
 	if(transition && !this->transition)
 	{
 		this->transition = transition;
-//printf("Module::update_transition 7\n");
 		if(renderengine)
 		{
 			PluginServer *plugin_server = renderengine->scan_plugindb(transition->title);
 			transition_server = new PluginServer(*plugin_server);
-			transition_server->open_plugin(0, get_edl(), transition);
+			transition_server->open_plugin(0, 
+				renderengine->preferences, 
+				get_edl(), 
+				transition,
+				-1);
 			transition_server->init_realtime(
 				get_edl()->session->real_time_playback &&
 				renderengine->command->realtime,
@@ -228,20 +232,17 @@ void Module::update_transition(int64_t current_position, int direction)
 		{
 			PluginServer *plugin_server = plugin_array->scan_plugindb(transition->title);
 			transition_server = new PluginServer(*plugin_server);
-			transition_server->open_plugin(0, get_edl(), transition);
+			transition_server->open_plugin(0, 
+				renderengine->preferences,
+				get_edl(), 
+				transition,
+				-1);
 			transition_server->init_realtime(
 				0,
 				1,
 				get_buffer_size());
 		}
-//printf("Module::update_transition 7\n");
 	}
-
-//printf("Module::update_transition 8\n");
-// Test transition
-//	
-//	if((transition && !this->transition) || (!transition && this->transition)) return 1;
-//	if(transition && transition != this->transition->plugin) return 1;
 }
 
 

@@ -12,6 +12,7 @@
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "new.h"
+#include "preferences.h"
 #include "rotateframe.h"
 #include "setformat.h"
 #include "theme.h"
@@ -111,7 +112,7 @@ void SetFormatThread::apply_changes()
 
 // Update GUIs
 	mwindow->restart_brender();
-	mwindow->gui->lock_window();
+	mwindow->gui->lock_window("SetFormatThread::apply_changes");
 	mwindow->gui->update(1,
 		1,
 		1,
@@ -121,7 +122,7 @@ void SetFormatThread::apply_changes()
 		0);
 	mwindow->gui->unlock_window();
 
-	mwindow->cwindow->gui->lock_window();
+	mwindow->cwindow->gui->lock_window("SetFormatThread::apply_changes");
 	mwindow->cwindow->gui->resize_event(mwindow->cwindow->gui->get_w(), 
 		mwindow->cwindow->gui->get_h());
 	mwindow->cwindow->gui->meters->set_meters(new_channels, 1);
@@ -129,14 +130,14 @@ void SetFormatThread::apply_changes()
 	mwindow->cwindow->gui->flush();
 	mwindow->cwindow->gui->unlock_window();
 
-	mwindow->vwindow->gui->lock_window();
+	mwindow->vwindow->gui->lock_window("SetFormatThread::apply_changes");
 	mwindow->vwindow->gui->resize_event(mwindow->vwindow->gui->get_w(), 
 		mwindow->vwindow->gui->get_h());
 	mwindow->vwindow->gui->meters->set_meters(new_channels, 1);
 	mwindow->vwindow->gui->flush();
 	mwindow->vwindow->gui->unlock_window();
 
-	mwindow->lwindow->gui->lock_window();
+	mwindow->lwindow->gui->lock_window("SetFormatThread::apply_changes");
 	mwindow->lwindow->gui->panel->set_meters(new_channels, 1);
 	mwindow->lwindow->gui->flush();
 	mwindow->lwindow->gui->unlock_window();
@@ -476,7 +477,7 @@ SetChannelsCanvas::SetChannelsCanvas(MWindow *mwindow,
 		mwindow->theme->channel_position_data->get_h(),
 		mwindow->theme->channel_position_data->get_color_model());
 //printf("SetChannelsCanvas::SetChannelsCanvas 1\n");
-	rotater = new RotateFrame(mwindow->edl->session->smp + 1,
+	rotater = new RotateFrame(mwindow->preferences->processors,
 		mwindow->theme->channel_position_data->get_w(),
 		mwindow->theme->channel_position_data->get_h());
 //printf("SetChannelsCanvas::SetChannelsCanvas 2\n");

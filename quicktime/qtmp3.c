@@ -4,7 +4,7 @@
 #define MMX_TEMP
 #undef MMX
 #endif
-#include "lame.h"
+#include <lame/lame.h>
                                                                                 
 #ifdef MMX_TEMP
 #define MMX

@@ -13,7 +13,7 @@
 #include "mid_picon_png.h"
 #include "min_picon_png.h"
 #include "picon_png.h"
-#include "../libcolors/plugincolors.h"
+#include "plugincolors.h"
 #include "pluginvclient.h"
 #include "vframe.h"
 
@@ -1385,7 +1385,7 @@ void HistogramMain::calculate_automatic(VFrame *data)
 int HistogramMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
 //printf("HistogramMain::process_realtime 1\n");
-TRON("HistogramMain::process_realtime");
+TRACE("HistogramMain::process_realtime");
 //printf("HistogramMain::process_realtime 1\n");
 	int need_reconfigure = load_configuration();
 
@@ -1452,7 +1452,7 @@ TRON("HistogramMain::process_realtime");
 //printf("HistogramMain::process_realtime 100\n");
 
 
-TROFF("HistogramMain::process_realtime");
+UNTRACE
 
 	return 0;
 }

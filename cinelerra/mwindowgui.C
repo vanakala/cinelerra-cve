@@ -1,40 +1,37 @@
-#include "awindow.h"
 #include "awindowgui.h"
-#include "cwindow.h"
+#include "awindow.h"
+#include "bcsignals.h"
 #include "cwindowgui.h"
+#include "cwindow.h"
 #include "defaults.h"
 #include "editpopup.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "filesystem.h"
 #include "keys.h"
+#include "language.h"
 #include "localsession.h"
 #include "mainclock.h"
-#include "mainmenu.h"
-#include "samplescroll.h"
-#include "mainundo.h"
 #include "maincursor.h"
+#include "mainmenu.h"
+#include "mainsession.h"
+#include "mainundo.h"
 #include "mbuttons.h"
 #include "mtimebar.h"
-#include "mwindow.h"
 #include "mwindowgui.h"
+#include "mwindow.h"
 #include "patchbay.h"
 #include "pluginpopup.h"
-#include "mainsession.h"
+#include "samplescroll.h"
 #include "statusbar.h"
-#include "zoombar.h"
 #include "theme.h"
 #include "trackcanvas.h"
-#include "tracks.h"
 #include "trackscroll.h"
+#include "tracks.h"
 #include "transitionpopup.h"
-#include "vwindow.h"
 #include "vwindowgui.h"
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
+#include "vwindow.h"
+#include "zoombar.h"
 
 // the main window uses its own private colormap for video
 MWindowGUI::MWindowGUI(MWindow *mwindow)
@@ -257,6 +254,19 @@ void MWindowGUI::redraw_time_dependancies()
 	mainclock->update(mwindow->edl->local_session->selectionstart);
 }
 
+int MWindowGUI::focus_in_event()
+{
+	cursor->focus_in_event();
+	return 1;
+}
+
+int MWindowGUI::focus_out_event()
+{
+	cursor->focus_out_event();
+	return 1;
+}
+
+
 int MWindowGUI::resize_event(int w, int h)
 {
 	mwindow->session->mwindow_w = w;
@@ -284,12 +294,19 @@ void MWindowGUI::update(int scrollbars,
 	int clock,
 	int buttonbar)
 {
+TRACE("MWindowGUI::update 1");
 	mwindow->edl->tracks->update_y_pixels(mwindow->theme);
+TRACE("MWindowGUI::update 1");
 	if(scrollbars) this->get_scrollbars();
+TRACE("MWindowGUI::update 1");
 	if(timebar) this->timebar->update();
+TRACE("MWindowGUI::update 1");
 	if(zoombar) this->zoombar->update();
+TRACE("MWindowGUI::update 1");
 	if(patchbay) this->patchbay->update();
+TRACE("MWindowGUI::update 1");
 	if(clock) this->mainclock->update(mwindow->edl->local_session->selectionstart);
+TRACE("MWindowGUI::update 1");
 	if(canvas)
 	{
 		this->canvas->draw(canvas == 2);
@@ -297,7 +314,9 @@ void MWindowGUI::update(int scrollbars,
 		this->canvas->flash();
 		this->canvas->activate();
 	}
+TRACE("MWindowGUI::update 1");
 	if(buttonbar) mbuttons->update();
+TRACE("MWindowGUI::update 100");
 }
 
 int MWindowGUI::visible(int64_t x1, int64_t x2, int64_t view_x1, int64_t view_x2)
@@ -336,9 +355,9 @@ int MWindowGUI::drag_stop()
 void MWindowGUI::default_positions()
 {
 //printf("MWindowGUI::default_positions 1\n");
-	mwindow->vwindow->gui->lock_window();
-	mwindow->cwindow->gui->lock_window();
-	mwindow->awindow->gui->lock_window();
+	mwindow->vwindow->gui->lock_window("MWindowGUI::default_positions");
+	mwindow->cwindow->gui->lock_window("MWindowGUI::default_positions");
+	mwindow->awindow->gui->lock_window("MWindowGUI::default_positions");
 
 // printf("MWindowGUI::default_positions 1 %d %d %d %d\n", mwindow->session->vwindow_x, 
 // mwindow->session->vwindow_y,

@@ -96,25 +96,8 @@ AC_CHECK_HEADERS(lame/lame.h)
 # END LAME
 
 ############## LIBSNDFILE
-# Check the version of libsndfile and 
-# set the compile flags accordingly
-AC_CHECK_HEADER(sndfile.h, [ sndfile_found=yes ])
-
-if test "x$sndfile_found" = "xyes"
-then
-	AC_CHECK_LIB(sndfile, sf_open_read, [sndfile_old=yes])
-	if test "x$sndfile_old" = "xyes"
-	then
-		AC_MSG_NOTICE([Found old (< 1.0.0) version of libsndfile])
-		CXXFLAGS="$CXXFLAGS -DHAVE_LIBSNDFILE_0"
-	else
-		AC_MSG_NOTICE([Found new (>= 1.0.0) version of libsndfile])
-	fi
-else
-	AC_MSG_NOTICE([libsndfile not found])
-	NOT_FOUND="$NOT_FOUND libsndfile,"
-fi
-# END LIBSNDFILE
+# Use the provided libsndfile, which will be renamed to libsndfilehv
+AC_CONFIG_SUBDIRS(libsndfile)
 
 ############## LIBAVCODEC
 AC_CHECK_HEADERS(ffmpeg/avcodec.h)
@@ -279,19 +262,22 @@ AC_OUTPUT(Makefile po/Makefile.in \
 					mpeg2enc/Makefile toolame-02l/Makefile\
 					guicast/Makefile cinelerra/Makefile \
 					mplexhi/Makefile mplexlo/Makefile \
+					plugins/defaulttheme/Makefile \
+					plugins/microtheme/Makefile \
+					plugins/colors/Makefile \
+					plugins/libfourier/Makefile \
+					plugins/libeffecttv/Makefile \
 					plugins/Makefile plugins/1080to480/Makefile \
 					plugins/histogram/Makefile \
 					plugins/720to480/Makefile \
 					plugins/denoisemjpeg/Makefile \
 					plugins/motion/Makefile \
 					plugins/bandslide/Makefile \
-					plugins/libcolors/Makefile \
-					plugins/libfourier/Makefile \
-					plugins/libeffecttv/Makefile \
 					plugins/bandwipe/Makefile plugins/blur/Makefile plugins/brightness/Makefile \
 					plugins/burn/Makefile plugins/parametric/Makefile plugins/aging/Makefile \
 					plugins/cdripper/Makefile plugins/chromakey/Makefile plugins/colorbalance/Makefile \
-					plugins/compressor/Makefile plugins/crossfade/Makefile plugins/defaulttheme/Makefile \
+					plugins/compressor/Makefile \
+					plugins/crossfade/Makefile \
 					plugins/deinterlace/Makefile plugins/delayaudio/Makefile plugins/delayvideo/Makefile \
 					plugins/denoise/Makefile plugins/denoisefft/Makefile plugins/denoisevideo/Makefile \
 					plugins/despike/Makefile plugins/dissolve/Makefile plugins/dot/Makefile \
@@ -308,7 +294,8 @@ AC_OUTPUT(Makefile po/Makefile.in \
 					plugins/swapchannels/Makefile plugins/synthesizer/Makefile plugins/timeavg/Makefile \
 					plugins/timestretch/Makefile plugins/titler/Makefile plugins/translate/Makefile \
 					plugins/videoscope/Makefile plugins/wave/Makefile plugins/whirl/Makefile \
-					plugins/wipe/Makefile plugins/yuv/Makefile plugins/microtheme/Makefile \
+					plugins/wipe/Makefile \
+					plugins/yuv/Makefile \
 					plugins/downsample/Makefile plugins/flash/Makefile plugins/gradient/Makefile \
 					plugins/level/Makefile plugins/linearblur/Makefile \
 					plugins/perspective/Makefile plugins/radialblur/Makefile plugins/zoomblur/Makefile \

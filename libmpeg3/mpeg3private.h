@@ -23,6 +23,7 @@
 #define MPEG3_ID3_PREFIX                 0x494433
 #define MPEG3_IFO_PREFIX                 0x44564456
 #define MPEG3_IO_SIZE                    0x100000     /* Bytes read by mpeg3io at a time */
+//#define MPEG3_IO_SIZE                    0x800          /* Bytes read by mpeg3io at a time */
 #define MPEG3_RIFF_CODE                  0x52494646
 #define MPEG3_PROC_CPUINFO               "/proc/cpuinfo"
 #define MPEG3_RAW_SIZE                   0x100000     /* Largest possible packet */
@@ -57,7 +58,7 @@
 #define MPEG3_AUDIO_CHUNKSIZE            0x10000 /* Size of chunk of audio in table of contents */
 #define MPEG3_LITTLE_ENDIAN              ((*(uint32_t*)"x\0\0\0") & 0x000000ff)
 #define MPEG3_AUDIO_HISTORY              0x100000 /* Number of samples in audio history */
-#define MPEG3_PTS_RANGE                  0x100000 /* Range to scan for pts after percentage seek */
+#define MPEG3_PTS_RANGE                  0x100000 /* Range to scan for pts after byte seek */
 
 /* Values for audio format */
 #define AUDIO_UNKNOWN 0
@@ -192,17 +193,22 @@ typedef struct
 	int64_t end_byte;
 	double end_time;
 	int program;
-} mpeg3demux_timecode_t;
+} mpeg3demux_cell_t;
 
 typedef struct
 {
 	void *file;
 	mpeg3_fs_t *fs;
-	int64_t total_bytes;     /* Total bytes in file.  Critical for seeking and length. */
+/* Total bytes in title file.  Critical for seeking and length. */
+	int64_t total_bytes;
+/* Absolute starting byte of the title in the stream */
+	int64_t start_byte;
+/* Absolute ending byte of the title in the stream + 1 */
+	int64_t end_byte;     
 /* Timecode table */
-	mpeg3demux_timecode_t *timecode_table;
-	long timecode_table_size;    /* Number of entries */
-	long timecode_table_allocation;    /* Number of available slots */
+	mpeg3demux_cell_t *cell_table;
+	int cell_table_size;    /* Number of entries */
+	int cell_table_allocation;    /* Number of available slots */
 } mpeg3_title_t;
 
 
@@ -232,7 +238,8 @@ typedef struct
 	void* file;
 /* One packet. MPEG3_RAW_SIZE allocated since we don't know the packet size */
 	unsigned char *raw_data;
-	long raw_offset;
+/* Offset in raw_data */
+	int raw_offset;
 /* Amount loaded in last raw_data */
 	int raw_size;
 /* One packet payload */
@@ -270,10 +277,12 @@ typedef struct
 	int current_program;
 
 /* Timecode in the current title */
-	int current_timecode;
+	int current_cell;
 
 /* Byte position in the current title */
-	long current_byte;
+//	int64_t current_byte;
+/* Absolute byte position. */
+	int64_t absolute_byte;
 
 	int transport_error_indicator;
 	int payload_unit_start_indicator;
@@ -504,20 +513,22 @@ typedef struct
 
 /* In order of importance */
 	long outscale;
-	long framenum;
+/* Number of current frame being decoded */
+	int framenum;
+	
 /* Size of frame including header */
 	int framesize;
 	float **output;           /* Output from synthesizer in linear floats */
-	long output_size;         /* Number of pcm samples in the buffer */
-	long output_allocated;    /* Allocated number of samples in output */
-	long output_position;     /* Sample position in file of start of output buffer */
+	int output_size;         /* Number of pcm samples in the buffer */
+	int output_allocated;    /* Allocated number of samples in output */
+	int output_position;     /* Sample position in file of start of output buffer */
 
 /* Perform a seek to the sample */
 	int sample_seek;
-/* Perform a seek to the percentage */
-	double percentage_seek;
+/* Perform a seek to the absolute byte */
+	int64_t byte_seek;
 /* +/- number of samples of difference between audio and video */
-	long seek_correction;
+	int seek_correction;
 /* Buffer containing current packet */
 	unsigned char packet_buffer[MAXFRAMESIZE];
 /* Position in packet buffer of next byte to read */
@@ -537,8 +548,8 @@ typedef struct
 	int sample_rate;
 	mpeg3_demuxer_t *demuxer;
 	mpeg3audio_t *audio;
-	long current_position;
-	long total_samples;
+	int current_position;
+	int total_samples;
 	int format;               /* format of audio */
 
 
@@ -677,10 +688,10 @@ typedef struct
 
 typedef struct 
 {
-	long hour;
-	long minute;
-	long second;
-	long frame;
+	int hour;
+	int minute;
+	int second;
+	int frame;
 } mpeg3_timecode_t;
 
 
@@ -709,21 +720,21 @@ typedef struct
 	pthread_mutex_t test_lock;
 
 	int blockreadsize;
-	long maxframe;         /* Max value of frame num to read */
-	double percentage_seek;   /* Perform a percentage seek before the next frame is read */
+	int maxframe;         /* Max value of frame num to read */
+	int64_t byte_seek;   /* Perform absolute byte seek before the next frame is read */
 	int frame_seek;        /* Perform a frame seek before the next frame is read */
-	long framenum;         /* Number of the next frame to be decoded */
-	long last_number;       /* Last framenum rendered */
+	int framenum;         /* Number of the next frame to be decoded */
+	int last_number;       /* Last framenum rendered */
 	int found_seqhdr;
-	long bitrate;
+	int bitrate;
 	mpeg3_timecode_t gop_timecode;     /* Timecode for the last GOP header read. */
 	int has_gops; /* Some streams have no GOPs so try sequence start codes instead */
 
 /* These are only available from elementary streams. */
-	long frames_per_gop;       /* Frames per GOP after the first GOP. */
-	long first_gop_frames;     /* Frames in the first GOP. */
-	long first_frame;     /* Number of first frame stored in timecode */
-	long last_frame;      /* Last frame in file */
+	int frames_per_gop;       /* Frames per GOP after the first GOP. */
+	int first_gop_frames;     /* Frames in the first GOP. */
+	int first_frame;     /* Number of first frame stored in timecode */
+	int last_frame;      /* Last frame in file */
 
 /* ================================= Compression variables ===================== */
 /* Malloced frame buffers.  2 refframes are swapped in and out. */
@@ -757,8 +768,8 @@ typedef struct
 	int matrix_coefficients;
 	int framerate_code;
 	double frame_rate;
-	long *cr_to_r, *cr_to_g, *cb_to_g, *cb_to_b;
-	long *cr_to_r_ptr, *cr_to_g_ptr, *cb_to_g_ptr, *cb_to_b_ptr;
+	int *cr_to_r, *cr_to_g, *cb_to_g, *cb_to_b;
+	int *cr_to_r_ptr, *cr_to_g_ptr, *cb_to_g_ptr, *cb_to_b_ptr;
 	int have_mmx;
 	int intra_quantizer_matrix[64], non_intra_quantizer_matrix[64];
 	int chroma_intra_quantizer_matrix[64], chroma_non_intra_quantizer_matrix[64];
@@ -790,8 +801,8 @@ typedef struct
 	float aspect_ratio;
 	mpeg3_demuxer_t *demuxer;
 	mpeg3video_t *video;
-	long current_position;  /* Number of next frame to be played */
-	long total_frames;     /* Total frames in the file */
+	int current_position;  /* Number of next frame to be played */
+	int total_frames;     /* Total frames in the file */
 
 
 /* Pointer to master table of contents */
@@ -822,8 +833,10 @@ typedef struct
 
 typedef struct
 {
-	mpeg3_fs_t *fs;      /* Store entry path here */
-	mpeg3_demuxer_t *demuxer;        /* Master tables */
+/* Store entry path here */
+	mpeg3_fs_t *fs;      
+/* Master title tables copied to all tracks*/
+	mpeg3_demuxer_t *demuxer;        
 
 /* Media specific */
 	int total_astreams;
@@ -847,8 +860,8 @@ typedef struct
 	int is_audio_stream;         /* Elemental stream */
 	int is_video_stream;         /* Elemental stream */
 /* > 0 if known otherwise determine empirically for every packet */
-	long packet_size;
-/* Type and stream for getting current percentage */
+	int packet_size;
+/* Type and stream for getting current absolute byte */
 	int last_type_read;  /* 1 - audio   2 - video */
 	int last_stream_read;
 
@@ -861,11 +874,11 @@ typedef struct
 	int seekable;
 
 /*
- * After percentage seeking is called, this is set to -1.
- * The first operation to seek needs to set it to the pts of the percentage seek.
+ * After byte seeking is called, this is set to -1.
+ * The first operation to seek needs to set it to the pts of the byte seek.
  * Then the next operation to seek needs to match its pts to this value.
  */
-	double percentage_pts;
+	int64_t byte_pts;
 } mpeg3_t;
 
 

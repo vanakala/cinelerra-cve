@@ -22,4 +22,13 @@ automake --foreign --add-missing &&
 echo "Running autoconf ..." &&
 autoconf &&
 
+echo "Running aclocal in libsndfile ..." &&
+(cd libsndfile && aclocal) &&
+
+echo "Running automake in libsndfile ..." &&
+(cd libsndfile && automake --foreign --add-missing) &&
+
+echo "Running autoconf in libsndfile ..." &&
+(cd libsndfile && autoconf) &&
+
 echo "Finished" 

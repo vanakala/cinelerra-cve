@@ -21,11 +21,11 @@ FileItem::FileItem()
 FileItem::FileItem(char *path, 
 	char *name, 
 	int is_dir, 
-	longest size, 
+	int64_t size, 
 	int month, 
 	int day, 
 	int year,
-	longest calendar_time)
+	int64_t calendar_time)
 {
 	this->path = new char[strlen(path)];
 	this->name = new char[strlen(name)];
@@ -78,20 +78,9 @@ int FileItem::set_name(char *name)
 
 FileSystem::FileSystem()
 {
-// 	if(need_home)
-// 	{
-// // ========================= set to user's home directory
-//   		uid_t uid;
-//   		struct passwd *pw;
-// 
-//   		uid = getuid();             /* get user id */
-//   		pw = getpwuid(uid);         /* get info for user */
-//   		sprintf(current_dir, "%s", pw->pw_dir);
-// 
-//  	}
-// ========================= set to current directory
 	reset_parameters();
 	getcwd(current_dir, BCTEXTLEN);
+	
 }
 
 FileSystem::~FileSystem()
@@ -105,6 +94,8 @@ int FileSystem::reset_parameters()
 	want_directory = 0;
 	strcpy(filter, "");
 	strcpy(current_dir, "");
+	sort_order = SORT_ASCENDING;
+	sort_field = SORT_PATH;
 	return 0;
 }
 
@@ -118,9 +109,54 @@ int FileSystem::delete_directory()
 	return 0;
 }
 
+int FileSystem::set_sort_order(int value)
+{
+	this->sort_order = value;
+}
+
+int FileSystem::set_sort_field(int field)
+{
+	this->sort_field = field;
+}
+
+int FileSystem::compare_items(ArrayList<FileItem*> *dir_list, 
+	int item1, 
+	int item2)
+{
+	int result = 0;
+	FileItem *ptr1 = dir_list->values[item1];
+	FileItem *ptr2 = dir_list->values[item2];
+
+// Default to name in ascending order
+	switch(sort_field)
+	{
+		case SORT_PATH:
+			result = (sort_order == SORT_ASCENDING) ? 
+				strcasecmp(ptr1->name, ptr2->name) :
+				strcasecmp(ptr2->name, ptr1->name);
+			break;
+		case SORT_SIZE:
+			if(ptr1->size == ptr2->size || ptr1->is_dir)
+				result = strcasecmp(ptr1->name, ptr2->name);
+			else
+				result = (sort_order == SORT_ASCENDING) ?
+					(ptr1->size > ptr2->size) :
+					(ptr2->size > ptr1->size);
+			break;
+		case SORT_DATE:
+			if(ptr1->calendar_time == ptr2->calendar_time)
+				result = strcasecmp(ptr1->name, ptr2->name);
+			else
+				result = (sort_order == SORT_ASCENDING) ?
+					(ptr1->calendar_time > ptr2->calendar_time) :
+					(ptr2->calendar_time > ptr1->calendar_time);
+			break;
+	}
+	return result;
+}
 
 
-int FileSystem::sort(ArrayList<FileItem*> *dir_list)
+int FileSystem::sort_table(ArrayList<FileItem*> *dir_list)
 {
 	int changed;
 	FileItem *temp;
@@ -132,7 +168,8 @@ int FileSystem::sort(ArrayList<FileItem*> *dir_list)
 		changed = 0;
 		for(i = 0; i < dir_list->total - 1; i++)
 		{
-			if(strcmp(dir_list->values[i]->name, dir_list->values[i + 1]->name) > 0)
+			if(compare_items(dir_list, i, i + 1) > 0)
+//			if(strcasecmp(dir_list->values[i]->name, dir_list->values[i + 1]->name) > 0)
 			{
 				temp = dir_list->values[i];
 				dir_list->values[i] = dir_list->values[i+1];
@@ -149,13 +186,13 @@ int FileSystem::combine(ArrayList<FileItem*> *dir_list, ArrayList<FileItem*> *fi
 	int i;
 	FileItem *new_entry, *entry;
 	
-	sort(dir_list);
+	sort_table(dir_list);
 	for(i = 0; i < dir_list->total; i++)
 	{
 		this->dir_list.append(dir_list->values[i]);
 	}
 
-	sort(file_list);
+	sort_table(file_list);
 	for(i = 0; i < file_list->total; i++)
 	{
 		this->dir_list.append(file_list->values[i]);
@@ -402,13 +439,9 @@ int FileSystem::is_dir(const char *path)      // return 0 if the text is a direc
 	char new_dir[BCTEXTLEN];
 	struct stat ostat;    // entire name is a directory
 
-//printf("FileSystem::is_dir 1\n");
 	strcpy(new_dir, path);
-//printf("FileSystem::is_dir 1\n");
 	complete_path(new_dir);
-//printf("FileSystem::is_dir 1 %s\n", new_dir);
 	if(!stat(new_dir, &ostat) && S_ISDIR(ostat.st_mode)) return 0;
-//printf("FileSystem::is_dir 2\n");
 	return 1;
 }
 
@@ -632,13 +665,15 @@ int FileSystem::join_names(char *out, char *dir_in, char *name_in)
 long FileSystem::get_date(char *filename)
 {
 	struct stat file_status;
+	bzero(&file_status, sizeof(struct stat));
 	stat (filename, &file_status);
 	return file_status.st_mtime;
 }
 
-longest FileSystem::get_size(char *filename)
+int64_t FileSystem::get_size(char *filename)
 {
 	struct stat file_status;
+	bzero(&file_status, sizeof(struct stat));
 	stat(filename, &file_status);
 	return file_status.st_size;
 }

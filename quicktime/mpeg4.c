@@ -7,13 +7,13 @@
 
 
 
-#include "avcodec.h"
+#include <ffmpeg/avcodec.h>
 #include "colormodels.h"
 #include "funcprotos.h"
 #include "quicktime.h"
 #include "workarounds.h"
 #include ENCORE_INCLUDE
-#include DECORE_INCLUDE
+//#include DECORE_INCLUDE
 
 
 
@@ -37,8 +37,8 @@ typedef struct
 
 
 // Decore internals
-	DEC_PARAM dec_param[FIELDS];
-	int decode_handle[FIELDS];
+//	DEC_PARAM dec_param[FIELDS];
+//	int decode_handle[FIELDS];
 
 // Last frame decoded
 	long last_frame[FIELDS];
@@ -173,7 +173,7 @@ static void putbits(unsigned char **data,
 	int count, 
 	uint64_t value)
 {
-	value &= 0xffffffffffffffff >> (64 - count);
+	value &= 0xffffffffffffffffLL >> (64 - count);
 
 	while(64 - *bit_pos < count)
 	{
@@ -545,7 +545,7 @@ static int decode_wrapper(quicktime_t *file,
 	int height_i = (int)((float)height / 16 + 0.5) * 16;
 
 //printf("decode_wrapper 1\n");
-	quicktime_set_video_position(file, frame_number, track); 
+	quicktime_set_video_position(file, frame_number, track);
  
 	bytes = quicktime_frame_size(file, frame_number, track); 
 
@@ -638,6 +638,7 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 
 	if(!codec->decode_initialized[current_field])
 	{
+		int current_frame = vtrack->current_position;
 		init_decode(codec, current_field, width_i, height_i);
 // Must decode frame with VOL header first but only the first frame in the
 // field sequence has a VOL header.
@@ -647,9 +648,11 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 			current_field, 
 			current_field, 
 			track);
+// Reset position because decode wrapper set it
+		quicktime_set_video_position(file, current_frame, track);
 		codec->decode_initialized[current_field] = 1;
 	}
-//printf("decode 1\n");
+//printf("decode 1 %d\n", vtrack->current_position);
 
 // Handle seeking
 	if(quicktime_has_keyframes(file, track) && 

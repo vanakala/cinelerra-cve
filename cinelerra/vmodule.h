@@ -45,7 +45,8 @@ public:
 		int direction);
 	int render(VFrame *output,
 		int64_t input_position,
-		int direction);
+		int direction,
+		int use_nudge);
 
 // synchronization with tracks
 	FloatAutos* get_fade_automation();       // get the fade automation for this module

@@ -3,7 +3,7 @@
 
 #include <stdlib.h>
 
-#include "assets.inc"
+#include "asset.inc"
 #include "edit.inc"
 #include "file.inc"
 #include "filebase.inc"
@@ -75,7 +75,10 @@ public:
 		int audio_options,
 		int video_options,
 		int lock_compressor);
+
 	int raise_window();
+// Close parameter window
+	void close_window();
 
 // ===================================== start here
 	int set_processors(int cpus);   // Set the number of cpus for certain codecs.
@@ -182,6 +185,8 @@ public:
 	static int supports_audio(ArrayList<PluginServer*> *plugindb, char *format);
 	static int supports_video(int format);   // returns 1 if the format supports video or audio
 	static int supports_audio(int format);
+	static int strtoformat(char *format);
+	static char* formattostr(int format);
 	static int strtoformat(ArrayList<PluginServer*> *plugindb, char *format);
 	static char* formattostr(ArrayList<PluginServer*> *plugindb, int format);
 	static int strtobits(char *bits);

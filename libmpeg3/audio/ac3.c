@@ -1,7 +1,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
-#include "a52.h"
+#include <a52dec/a52.h>
 #include "mpeg3private.h"
 #include "mpeg3protos.h"
 

@@ -5,6 +5,7 @@
 #include "atrack.h"
 #include "audiodevice.h"
 #include "cache.h"
+#include "condition.h"
 #include "edit.h"
 #include "edits.h"
 #include "edl.h"
@@ -44,7 +45,8 @@ void VirtualAConsole::get_playable_tracks()
 	if(!playable_tracks)
 		playable_tracks = new PlayableTracks(renderengine, 
 			commonrender->current_position, 
-			TRACK_AUDIO);
+			TRACK_AUDIO,
+			1);
 }
 
 void VirtualAConsole::new_input_buffer(int ring_buffer)
@@ -106,7 +108,7 @@ int VirtualAConsole::process_buffer(int64_t input_len,
 	int result = 0;
 // wait for an input_buffer to become available
 	if(renderengine->command->realtime)
-		output_lock[current_input_buffer]->lock();
+		output_lock[current_input_buffer]->lock("VirtualAConsole::process_buffer");
 
 	if(!interrupt)
 	{
@@ -118,11 +120,12 @@ int VirtualAConsole::process_buffer(int64_t input_len,
 			result |= ((AModule*)virtual_modules[i]->real_module)->render(buffer_in[i],
 				input_len, 
 				input_position,
-				renderengine->command->get_direction());
+				renderengine->command->get_direction(),
+				1);
 		}
 
 
-
+// Configure the range of the current ring buffer
 		this->input_len[current_input_buffer] = input_len;
 		this->input_position[current_input_buffer] = input_position;
 		this->last_playback[current_input_buffer] = last_buffer;
@@ -132,15 +135,8 @@ int VirtualAConsole::process_buffer(int64_t input_len,
 		if(renderengine->command->realtime)
 			input_lock[current_input_buffer]->unlock();
 		else
-			process_console();
+			process_asynchronous();
 
-
-//printf("VirtualAConsole::process_buffer 5 %p\n", buffer_in[0]);
-// for(int i = 0; i < input_len; i++)
-// {
-// int16_t value = (int16_t)(buffer_in[0][i] * 32767);
-// fwrite(&value, 2, 1, stdout);
-// }
 
 
 		swap_input_buffer();
@@ -148,7 +144,7 @@ int VirtualAConsole::process_buffer(int64_t input_len,
 	return result;
 }
 
-void VirtualAConsole::process_console()
+void VirtualAConsole::process_asynchronous()
 {
 	int i, j, k;
 // length and lowest numbered sample of fragment in input buffer
@@ -168,7 +164,6 @@ void VirtualAConsole::process_console()
 
 
 
-//printf("VirtualAConsole::process_console 1 %p\n", this->buffer_in[buffer][0]);
 
 // process entire input buffer by filling one output buffer at a time
 	for(fragment_position = 0; 
@@ -179,7 +174,7 @@ void VirtualAConsole::process_console()
 		fragment_len = renderengine->edl->session->audio_module_fragment;
 		if(fragment_position + fragment_len > input_len)
 			fragment_len = input_len - fragment_position;
-
+//printf("VirtualAConsole::process_asynchronous %lld %lld\n", fragment_position, fragment_len);
 
 
 
@@ -205,7 +200,6 @@ void VirtualAConsole::process_console()
 // render nodes in sorted list
 		for(i = 0; i < render_list.total; i++)
 		{
-//printf("VirtualAConsole::process_console 1 %p\n", this->buffer_in[buffer][i] + fragment_position);
 			((VirtualANode*)render_list.values[i])->render(arender->audio_out, 
 					0, 
 					buffer,
@@ -277,8 +271,10 @@ void VirtualAConsole::process_console()
 		if(renderengine->command->realtime && !interrupt)
 		{
 // speed parameters
-			int64_t real_output_len; // length compensated for speed
-			double sample;       // output sample
+// length compensated for speed
+			int64_t real_output_len;
+// output sample
+			double sample;
 			int k;
 			double *audio_out_packed[MAX_CHANNELS];
 
@@ -362,13 +358,13 @@ void VirtualAConsole::run()
 	while(!done && !interrupt)
 	{
 // wait for a buffer to render through console
-		input_lock[current_vconsole_buffer]->lock();
+		input_lock[current_vconsole_buffer]->lock("VirtualAConsole::run");
 
 		if(!done && !interrupt && !last_reconfigure[current_vconsole_buffer])
 		{
 // render it if not last buffer
 // send to output device or the previously set output buffer
-			process_console();
+			process_asynchronous();
 
 // test for exit conditions tied to the buffer
 			if(last_playback[current_vconsole_buffer]) done = 1;

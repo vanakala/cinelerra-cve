@@ -242,6 +242,7 @@ sf_open	(const char *path, int mode, SF_INFO *sfinfo)
 {
 fprintf(stderr, "sf_open: not supported in the Heroine Virtual hack.\n");
 return 0;
+#if 0
 	SF_PRIVATE 	*psf ;
 	int			error = 0 ;
 
@@ -295,6 +296,7 @@ return 0;
 	memcpy (sfinfo, &(psf->sf), sizeof (SF_INFO)) ;
 
 	return (SNDFILE*) psf ;
+#endif /* 0 */
 } /* sf_open */
 
 SNDFILE*

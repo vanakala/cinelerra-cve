@@ -1,4 +1,4 @@
-#include "avcodec.h"
+#include <ffmpeg/avcodec.h>
 #include "funcprotos.h"
 #include "quicktime.h"
 #include "wma.h"

@@ -58,7 +58,8 @@ private:
 	int render_fade(VFrame *input,         // start of input fragment
 			VFrame *output,        // start of output fragment
 			int64_t input_position,  // start of input fragment in project if forward / end of input fragment if reverse
-			Autos *autos);
+			Autos *autos,
+			int direction);
 
 // overlay on the frame with scaling
 // Alpha values are from 0 to VMAX

@@ -1,7 +1,7 @@
 #ifndef TRACKCANVAS_H
 #define TRACKCANVAS_H
 
-#include "assets.inc"
+#include "asset.inc"
 #include "auto.inc"
 #include "autos.inc"
 #include "bezierauto.inc"

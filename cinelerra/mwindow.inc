@@ -2,7 +2,7 @@
 #define MWINDOW_INC
 
 #define PROGRAM_NAME "Cinelerra"
-#define VERSION "1.1.7"
+#define VERSION "1.1.8"
 #define DEFAULT_THEME "Blond"
 
 // What to call silence in the EDL

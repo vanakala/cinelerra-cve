@@ -49,6 +49,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <X11/Xatom.h>
+#ifdef HAVE_XFT
+#include <X11/Xft/Xft.h>
+#endif
 #include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/keysym.h>
@@ -127,14 +130,15 @@ public:
 
 // Main loop
 	int run_window();
-
 // Terminal event dispatchers
 	virtual int close_event();
 	virtual int resize_event(int w, int h);
-	virtual int cursor_motion_event() { return 0; };
 	virtual int repeat_event(int64_t duration) { return 0; };
+	virtual int focus_in_event() { return 0; };
+	virtual int focus_out_event() { return 0; };
 	virtual int button_press_event() { return 0; };
 	virtual int button_release_event() { return 0; };
+	virtual int cursor_motion_event() { return 0; };
 	virtual int cursor_leave_event();
 	virtual int cursor_enter_event();
 	virtual int keypress_event() { return 0; };
@@ -167,7 +171,7 @@ public:
 	void flush();
 	void sync_display();
 // Lock out other threads
-	int lock_window();
+	int lock_window(char *location = 0);
 	int unlock_window();
 	int get_window_lock();
 
@@ -193,6 +197,7 @@ public:
 	int get_cursor_over_window();
 	int get_button_down();
 	int get_buttonpress();
+	int get_has_focus();
 	int get_dragging();
 	int get_keypress();
 // Get cursor position of last event
@@ -352,6 +357,7 @@ public:
 	void set_opaque();
 	void set_inverse();
 	void set_background(VFrame *bitmap);
+// Change the window title.  The title is translated internally.
 	void set_title(char *text);
 	char* get_title();
 	void start_video();
@@ -412,7 +418,7 @@ public:
 
 	int cycle_textboxes(int amount);
 
-	int raise_window();
+	int raise_window(int do_flush = 1);
 	int set_tooltips(int tooltips_enabled);
 	int resize_window(int w, int h);
 	int reposition_window(int x, int y, int w = -1, int h = -1);
@@ -464,6 +470,7 @@ private:
 	int create_private_colors();
 	int create_color(int color);
 	int create_shared_colors();
+// Get width of a single line.  Used by get_text_width
 	int get_single_text_width(int font, char *text, int length);
 	int allocate_color_table();
 	int init_gc();
@@ -473,6 +480,9 @@ private:
 	int64_t get_color_bgr16(int color);
 	int64_t get_color_bgr24(int color);
 	XFontStruct* get_font_struct(int font);
+#ifdef HAVE_XFT
+	XftFont* get_xft_struct(int font);
+#endif
 	Cursor get_cursor_struct(int cursor);
     XFontSet get_fontset(int font);
     XFontSet get_curr_fontset(void);
@@ -490,6 +500,8 @@ private:
 
 // Recursive event dispatchers
 	int dispatch_resize_event(int w, int h);
+	int dispatch_focus_in();
+	int dispatch_focus_out();
 	int dispatch_motion_event();
 	int dispatch_keypress_event();
 	int dispatch_repeat_event(int64_t duration);
@@ -581,6 +593,8 @@ private:
 	int key_pressed;
 // During a selection drag involving toggles, set the same value for each toggle
 	int toggle_value;
+// Whether the window has the focus
+	int has_focus;
 
 	static BC_Resources resources;
 // Array of repeaters for multiple repeating objects.
@@ -598,8 +612,24 @@ private:
 	int tooltip_done;
 // If the tooltip shouldn't be hidden
 	int persistant_tooltip;
-	int current_font;
+
+
+
+// Font sets
     XFontSet largefontset, mediumfontset, smallfontset, curr_fontset;
+
+// Fonts
+	int current_font;
+	XFontStruct *largefont, *mediumfont, *smallfont;
+
+// Xft
+//	XftDraw *xft_drawable;
+//	XftFont *largefont_xft, *mediumfont_xft, *smallfont_xft;
+// Must be void so users don't need to include the wrong libpng version.
+	void *xft_drawable;
+	void *largefont_xft, *mediumfont_xft, *smallfont_xft;
+
+
 	int64_t current_color;
 // Coordinate of drag start
 	int drag_x, drag_y;
@@ -636,7 +666,6 @@ private:
 	Atom ProtoXAtom;
 	Atom RepeaterXAtom;
 	Atom SetDoneXAtom;
-	XFontStruct *largefont, *mediumfont, *smallfont;
 	int current_cursor;
 	Cursor arrow_cursor;
 	Cursor cross_cursor;
@@ -664,10 +693,6 @@ private:
 	BC_Bitmap *temp_bitmap;
 // Clipboard
 	BC_Clipboard *clipboard;
-
-// Cancel button, to be called on close window, if != NULL
-	BC_CancelButton *cancel_button;
-
 #ifdef HAVE_LIBXXF86VM
 // Mode switch information.
    int vm_switched;

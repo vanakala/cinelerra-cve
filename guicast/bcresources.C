@@ -7,19 +7,18 @@
 #include "colors.h"
 #include "colormodels.h"
 #include "fonts.h"
+#include "language.h"
 #include "vframe.h"
 
-#include <locale.h>
 #include <string.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <X11/extensions/XShm.h>
 #include <unistd.h>
+ 
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
+
+
 
 int BC_Resources::error = 0;
 
@@ -30,20 +29,27 @@ VFrame* BC_Resources::menu_bg = 0;
 #include "images/file_folder_png.h"
 #include "images/file_sound_png.h"
 #include "images/file_unknown_png.h"
+#include "images/file_column_png.h"
 VFrame* BC_Resources::type_to_icon[] = 
 {
 	new VFrame(file_folder_png),
 	new VFrame(file_unknown_png),
 	new VFrame(file_film_png),
-	new VFrame(file_sound_png)
+	new VFrame(file_sound_png),
+	new VFrame(file_column_png)
 };
 
 char* BC_Resources::small_font = N_("-*-helvetica-medium-r-normal-*-10-*");
 char* BC_Resources::medium_font = N_("-*-helvetica-bold-r-normal-*-14-*");
 char* BC_Resources::large_font = N_("-*-helvetica-bold-r-normal-*-18-*");
+
 char* BC_Resources::small_fontset = "6x12,*";
 char* BC_Resources::medium_fontset = "7x14,*";
 char* BC_Resources::large_fontset = "8x16,*";
+
+char* BC_Resources::small_font_xft = N_("-microsoft-verdana-*-*-*-*-*-*-*-*-*-*-*-*");
+char* BC_Resources::medium_font_xft = N_("-microsoft-verdana-*-*-*-*-*-*-*-*-*-*-*-*");
+char* BC_Resources::large_font_xft = N_("-microsoft-verdana-*-*-*-*-*-*-*-*-*-*-*-*");
 
 suffix_to_type_t BC_Resources::suffix_to_type[] = 
 {
@@ -72,6 +78,11 @@ int BC_Resources::x_error_handler(Display *display, XErrorEvent *event)
 BC_Resources::BC_Resources()
 {
 	display_info = new BC_DisplayInfo("", 0);
+
+#ifdef HAVE_XFT
+	XftInitFtLibrary();
+#endif
+
 	use_xvideo = 1;
 #include "images/cancel_up_png.h"
 #include "images/cancel_hi_png.h"
@@ -210,6 +221,30 @@ BC_Resources::BC_Resources()
 		new VFrame(listbox_expandcheckedhi_png),
 	};
 	listbox_expand = default_listbox_expand;
+
+#include "images/listbox_columnup_png.h"
+#include "images/listbox_columnhi_png.h"
+#include "images/listbox_columndn_png.h"
+	static VFrame* default_listbox_column[] = 
+	{
+		new VFrame(listbox_columnup_png),
+		new VFrame(listbox_columnhi_png),
+		new VFrame(listbox_columndn_png)
+	};
+	listbox_column = default_listbox_column;
+
+
+#include "images/listbox_up_png.h"
+#include "images/listbox_dn_png.h"
+	listbox_up = new VFrame(listbox_up_png);
+	listbox_dn = new VFrame(listbox_dn_png);
+
+
+
+
+
+
+
 
 
 #include "images/horizontal_slider_bg_up_png.h"
@@ -459,11 +494,6 @@ BC_Resources::BC_Resources()
 	cancel_images = default_cancel_images;
 	usethis_button_images = default_usethis_images;
 
-	filebox_text_images = default_filebox_text_images;
-	filebox_icons_images = default_filebox_icons_images;
-	filebox_updir_images = default_filebox_updir_images;
-	filebox_newfolder_images = default_filebox_newfolder_images;
-
 	checkbox_images = default_checkbox_images;
 	radial_images = default_radial_images;
 	label_images = default_label_images;
@@ -491,6 +521,20 @@ BC_Resources::BC_Resources()
 	sprintf(filebox_filter, "*");
 	filebox_w = 640;
 	filebox_h = 480;
+	filebox_columntype[0] = FILEBOX_NAME;
+	filebox_columntype[1] = FILEBOX_SIZE;
+	filebox_columntype[2] = FILEBOX_DATE;
+	filebox_columnwidth[0] = 200;
+	filebox_columnwidth[1] = 100;
+	filebox_columnwidth[2] = 100;
+
+	filebox_text_images = default_filebox_text_images;
+	filebox_icons_images = default_filebox_icons_images;
+	filebox_updir_images = default_filebox_updir_images;
+	filebox_newfolder_images = default_filebox_newfolder_images;
+
+	filebox_sortcolumn = 0;
+	filebox_sortorder = BC_ListBox::SORT_ASCENDING;
 
 
 	pot_images = default_pot_images;
@@ -507,8 +551,20 @@ BC_Resources::BC_Resources()
 	meter_title_w = 20;
 	meter_3d = 1;
 	medium_7segment = default_medium_7segment;
+
+
 	use_fontset = 0;
+
+// Xft has priority over font set
+#ifdef HAVE_XFT
+	use_xft = 1;
+#else
+	use_xft = 0;
+#endif
+
 	if(use_fontset) setlocale(LC_ALL, "");
+
+
 	drag_radius = 10;
 	recursive_resizing = 1;
 

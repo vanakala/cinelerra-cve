@@ -299,7 +299,8 @@ void putseq()
 #ifndef OUTPUT_STAT
 			if( cur_picture.pict_type!=B_TYPE)
 			{
-#endif			iquantize( &cur_picture );
+#endif
+				iquantize( &cur_picture );
 				itransform(&cur_picture,predframe,cur_picture.curref);
 /*
  * 				calcSNR(cur_picture.curorg,cur_picture.curref);

@@ -2,6 +2,7 @@
 #include "atrack.h"
 #include "attachmentpoint.h"
 #include "autoconf.h"
+#include "bcsignals.h"
 #include "cplayback.h"
 #include "cwindow.h"
 #include "edl.h"
@@ -12,7 +13,6 @@
 #include "menueffects.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
-#include "neworappend.h"
 #include "playbackengine.h"
 #include "plugin.h"
 #include "pluginaclientlad.h"
@@ -69,6 +69,7 @@ PluginServer::PluginServer(PluginServer &that)
 	attachment = that.attachment;	
 	realtime = that.realtime;
 	multichannel = that.multichannel;
+	preferences = that.preferences;
 	synthesis = that.synthesis;
 	audio = that.audio;
 	video = that.video;
@@ -105,6 +106,7 @@ int PluginServer::reset_parameters()
 	autos = 0;
 	plugin = 0;
 	edl = 0;
+	preferences = 0;
 	title = 0;
 	path = 0;
 	audio = video = theme = 0;
@@ -184,6 +186,7 @@ void PluginServer::generate_display_title(char *string)
 
 // Open plugin for signal processing
 int PluginServer::open_plugin(int master, 
+	Preferences *preferences,
 	EDL *edl, 
 	Plugin *plugin,
 	int lad_index)
@@ -191,6 +194,7 @@ int PluginServer::open_plugin(int master,
 	if(plugin_open) return 0;
 
 	if(!plugin_fd) plugin_fd = dlopen(path, RTLD_NOW);
+	this->preferences = preferences;
 	this->plugin = plugin;
 	this->edl = edl;
 //printf("PluginServer::open_plugin %s %p %p\n", path, this->plugin, plugin_fd);
@@ -474,24 +478,20 @@ int PluginServer::stop_loop()
 
 int PluginServer::read_frame(VFrame *buffer, int channel, int64_t start_position)
 {
-//printf("PluginServer::read_frame 1 %p\n", modules);
-//printf("PluginServer::read_frame 1 %p\n", modules->values[channel]);
-//printf("PluginServer::read_frame 1 %d %d\n", buffer->get_w(), buffer->get_h());
 	((VModule*)modules->values[channel])->render(buffer,
 		start_position,
-		PLAY_FORWARD);
-//printf("PluginServer::read_frame 2\n");
+		PLAY_FORWARD,
+		0);
 	return 0;
 }
 
 int PluginServer::read_samples(double *buffer, int channel, int64_t start_position, int64_t total_samples)
 {
-//printf("PluginServer::read_samples 1\n");
 	((AModule*)modules->values[channel])->render(buffer, 
 		total_samples, 
 		start_position,
-		PLAY_FORWARD);
-//printf("PluginServer::read_samples 2\n");
+		PLAY_FORWARD,
+		0);
 	return 0;
 }
 
@@ -500,7 +500,8 @@ int PluginServer::read_samples(double *buffer, int64_t start_position, int64_t t
 	((AModule*)modules->values[0])->render(buffer, 
 		total_samples, 
 		start_position,
-		PLAY_FORWARD);
+		PLAY_FORWARD,
+		0);
 	return 0;
 }
 
@@ -524,14 +525,10 @@ void PluginServer::raise_window()
 
 void PluginServer::show_gui()
 {
-//printf("PluginServer::show_gui 1\n");
 	if(!plugin_open) return;
-	client->smp = mwindow->edl->session->smp;
-//printf("PluginServer::show_gui 1\n");
+	client->smp = preferences->processors - 1;
 	client->update_display_title();
-//printf("PluginServer::show_gui 1\n");
 	client->show_gui();
-//printf("PluginServer::show_gui 2\n");
 }
 
 void PluginServer::update_gui()
@@ -721,20 +718,19 @@ Theme* PluginServer::new_theme()
 // Called when plugin interface is tweeked
 void PluginServer::sync_parameters()
 {
-//printf("PluginServer::sync_parameters 1\n");
+TRACE("PluginServer::sync_parameters 1\n");
 	if(video) mwindow->restart_brender();
-//printf("PluginServer::sync_parameters 1\n");
+TRACE("PluginServer::sync_parameters 10\n");
 	mwindow->sync_parameters();
+TRACE("PluginServer::sync_parameters 20\n");
 	if(mwindow->edl->session->auto_conf->plugins)
 	{
-//printf("PluginServer::sync_parameters 1\n");
-		mwindow->gui->lock_window();
-//printf("PluginServer::sync_parameters 2\n");
+		mwindow->gui->lock_window("PluginServer::sync_parameters");
 		mwindow->gui->canvas->draw_overlays();
 		mwindow->gui->canvas->flash();
 		mwindow->gui->unlock_window();
 	}
-//printf("PluginServer::sync_parameters 3\n");
+TRACE("PluginServer::sync_parameters 30\n");
 }
 
 

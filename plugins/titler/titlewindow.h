@@ -12,19 +12,8 @@ class TitleInterlace;
 #include "mutex.h"
 #include "title.h"
 
-class TitleThread : public Thread
-{
-public:
-	TitleThread(TitleMain *client);
-	~TitleThread();
 
-	void run();
-
-// prevent loading data until the GUI is started
- 	Mutex gui_started, completion;
-	TitleMain *client;
-	TitleWindow *window;
-};
+PLUGIN_THREAD_HEADER(TitleMain, TitleThread, TitleWindow)
 
 
 

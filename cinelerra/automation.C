@@ -426,7 +426,8 @@ void Automation::insert_track(Automation *automation,
 		start_unit, 
 		length_units, 
 		replace_default);
-	if(camera_autos) camera_autos->insert_track(automation->camera_autos, 
+	if(camera_autos)
+		camera_autos->insert_track(automation->camera_autos, 
 		start_unit, 
 		length_units, 
 		replace_default);

@@ -1,13 +1,14 @@
 #ifndef FILEAVI_H
 #define FILEAVI_H
 
+#include "asset.inc"
 #include "assets.inc"
 #include "file.inc"
 #include "filebase.h"
 
 #ifdef USE_AVIFILE
 #include "avifile.h"
-#include <vector.h>
+#include <vector>
 #endif
 
 //class IAviWriteFile;

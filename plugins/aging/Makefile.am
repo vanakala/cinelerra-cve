@@ -8,5 +8,5 @@ AM_CXXFLAGS =
 INCLUDES = -I$(top_srcdir)/guicast -I$(top_srcdir)/cinelerra -I$(top_srcdir)/quicktime -I$(top_srcdir)/plugins/libeffecttv
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
 
-noinst_HEADERS = aging.h agingwindow.h effecttv.h picon_png.h 
+noinst_HEADERS = aging.h agingwindow.h picon_png.h 
 EXTRA_DIST = picon.png

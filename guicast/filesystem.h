@@ -12,11 +12,11 @@ public:
 	FileItem(char *path, 
 		char *name, 
 		int is_dir, 
-		longest size, 
+		int64_t size, 
 		int month, 
 		int day, 
 		int year,
-		longest calendar_time);
+		int64_t calendar_time);
 	~FileItem();
 
 	int set_path(char *path);
@@ -25,17 +25,18 @@ public:
 	char *path;
 	char *name;
 	int is_dir;
-	longest size;
+	int64_t size;
 	int month;
 	int day;
 	int year;
-	longest calendar_time;
+	int64_t calendar_time;
 };
 
 class FileSystem
 {
 public:
-	FileSystem();      // sets the working directory to the user
+// sets the working directory to the user
+	FileSystem();
 	virtual ~FileSystem();
 
 // Load the new directory and change current_dir to it.
@@ -56,6 +57,8 @@ public:
 	int set_filter(char *new_filter);
 	int set_show_all();     // show hidden files
 	int set_want_directory();
+	int set_sort_order(int value);
+	int set_sort_field(int field);
 	int create_dir(char *new_dir_);    // create a new directory
 	int complete_path(char *filename);   // use the filename and the current_dir to create a complete filename
 	int is_dir(const char *new_dir_);	  // return 0 if the text is a directory
@@ -63,7 +66,7 @@ public:
 	int extract_name(char *out, const char *in, int test_dir = 1);	// extract the name from the path
 	int join_names(char *out, char *dir_in, char *name_in);    // combine a directory and filename
 	long get_date(char *filename);        // get the date of the filename modification
-	longest get_size(char *filename);        // Get the number of bytes in the file.
+	int64_t get_size(char *filename);        // Get the number of bytes in the file.
 	int add_end_slash(char *new_dir);
 	int total_files();
 	FileItem* get_entry(int entry);
@@ -76,8 +79,26 @@ public:
 // Directories are first.
 	ArrayList<FileItem*> dir_list;
 
+// Sorting order and sorting field.  These are identical in BC_ListBox.
+	enum
+	{
+		SORT_ASCENDING,
+		SORT_DESCENDING
+	};
+
+// Match column definitions in BC_FileBox.
+	enum
+	{
+		SORT_PATH,
+		SORT_SIZE,
+		SORT_DATE
+	};
+
 private:
-	int sort(ArrayList<FileItem*> *dir_list);
+	int compare_items(ArrayList<FileItem*> *dir_list, int item1, int item2);
+	int sort_table(ArrayList<FileItem*> *dir_list);
+
+
 // Combine the directories and files into the master list, directories first.
 	int combine(ArrayList<FileItem*> *dir_list, ArrayList<FileItem*> *file_list);
 // Return whether or not the string is the root directory.
@@ -91,6 +112,8 @@ private:
 	int show_all_files;       // shows . files
 	char current_dir[BCTEXTLEN];
 	char string[BCTEXTLEN], string2[BCTEXTLEN];
+	int sort_order;
+	int sort_field;
 };
 
 #endif

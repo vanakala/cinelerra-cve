@@ -4,6 +4,9 @@
    language is requested. */
 #undef ENABLE_NLS
 
+/* Define to 1 if you have the <a52dec/a52.h> header file. */
+#undef HAVE_A52DEC_A52_H
+
 /* Define if the GNU dcgettext() function is already present or preinstalled.
    */
 #undef HAVE_DCGETTEXT

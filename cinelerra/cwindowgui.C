@@ -1,4 +1,3 @@
-//#include "apanel.h"
 #include "automation.h"
 #include "autos.h"
 #include "bezierauto.h"
@@ -17,6 +16,7 @@
 #include "edlsession.h"
 #include "floatauto.h"
 #include "floatautos.h"
+#include "language.h"
 #include "localsession.h"
 #include "mainclock.h"
 #include "mainmenu.h"
@@ -36,10 +36,6 @@
 #include "vtrack.h"
 
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 CWindowGUI::CWindowGUI(MWindow *mwindow, CWindow *cwindow)
@@ -83,19 +79,12 @@ CWindowGUI::~CWindowGUI()
 
 int CWindowGUI::create_objects()
 {
-//printf("CWindowGUI::create_objects 1\n");
 	set_icon(mwindow->theme->cwindow_icon);
 
-//printf("CWindowGUI::create_objects 1\n");
-
-//printf("CWindowGUI::create_objects 1\n");
 	mwindow->theme->get_cwindow_sizes(this);
-//printf("CWindowGUI::create_objects 1\n");
 	mwindow->theme->draw_cwindow_bg(this);
 	flash();
-//printf("CWindowGUI::create_objects 1\n");
 
-//printf("CWindowGUI::create_objects 1\n");
 // Meters required by composite panel
 	meters = new CWindowMeters(mwindow, 
 		this,
@@ -103,9 +92,7 @@ int CWindowGUI::create_objects()
 		mwindow->theme->cmeter_y,
 		mwindow->theme->cmeter_h);
 	meters->create_objects();
-//printf("CWindowGUI::create_objects 1\n");
 
-//printf("CWindowGUI::create_objects 1\n");
 
 	composite_panel = new CPanel(mwindow, 
 		this, 
@@ -114,11 +101,9 @@ int CWindowGUI::create_objects()
 		mwindow->theme->ccomposite_w,
 		mwindow->theme->ccomposite_h);
 	composite_panel->create_objects();
-//printf("CWindowGUI::create_objects 1\n");
 
 	canvas = new CWindowCanvas(mwindow, this);
 	canvas->create_objects(mwindow->edl);
-//printf("CWindowGUI::create_objects 1\n");
 
 
 	add_subwindow(timebar = new CTimeBar(mwindow,
@@ -128,14 +113,12 @@ int CWindowGUI::create_objects()
 		mwindow->theme->ctimebar_w, 
 		mwindow->theme->ctimebar_h));
 	timebar->create_objects();
-//printf("CWindowGUI::create_objects 2\n");
 
 	add_subwindow(slider = new CWindowSlider(mwindow, 
 		cwindow, 
 		mwindow->theme->cslider_x,
 		mwindow->theme->cslider_y, 
 		mwindow->theme->cslider_w));
-//printf("CWindowGUI::create_objects 1\n");
 
 	transport = new CWindowTransport(mwindow, 
 		this, 
@@ -147,12 +130,11 @@ int CWindowGUI::create_objects()
 	edit_panel = new CWindowEditing(mwindow, cwindow);
 	edit_panel->set_meters(meters);
 	edit_panel->create_objects();
-//printf("CWindowGUI::create_objects 1\n");
 
 // 	add_subwindow(clock = new MainClock(mwindow, 
 // 		mwindow->theme->ctime_x, 
 // 		mwindow->theme->ctime_y));
-// 
+
 	zoom_panel = new CWindowZoom(mwindow, 
 		this, 
 		mwindow->theme->czoom_x, 
@@ -160,7 +142,6 @@ int CWindowGUI::create_objects()
 	zoom_panel->create_objects();
 	zoom_panel->zoom_text->add_item(new BC_MenuItem(AUTO_ZOOM));
 	if(!mwindow->edl->session->cwindow_scrollbars) zoom_panel->set_text(AUTO_ZOOM);
-//printf("CWindowGUI::create_objects 1\n");
 
 // 	destination = new CWindowDestination(mwindow, 
 // 		this, 
@@ -176,7 +157,6 @@ int CWindowGUI::create_objects()
 	canvas->draw_refresh();
 
 
-//printf("CWindowGUI::create_objects 2\n");
 	return 0;
 }
 
@@ -279,19 +259,12 @@ void CWindowGUI::update_tool()
 
 int CWindowGUI::close_event()
 {
-//printf("CWindowGUI::close_event 1\n");
 	hide_window();
-//printf("CWindowGUI::close_event 1\n");
 	mwindow->session->show_cwindow = 0;
-//printf("CWindowGUI::close_event 1\n");
-	mwindow->gui->lock_window();
-//printf("CWindowGUI::close_event 1\n");
+	mwindow->gui->lock_window("CWindowGUI::close_event");
 	mwindow->gui->mainmenu->show_cwindow->set_checked(0);
-//printf("CWindowGUI::close_event 1\n");
 	mwindow->gui->unlock_window();
-//printf("CWindowGUI::close_event 1\n");
 	mwindow->save_defaults();
-//printf("CWindowGUI::close_event 2\n");
 	return 1;
 }
 
@@ -363,7 +336,7 @@ int CWindowGUI::drag_stop()
 	{
 		if(mwindow->session->drag_assets->total)
 		{
-			mwindow->gui->lock_window();
+			mwindow->gui->lock_window("CWindowGUI::drag_stop 1");
 			mwindow->undo->update_undo_before(_("insert assets"), 
 				LOAD_ALL);
 			mwindow->clear(0);
@@ -378,7 +351,7 @@ int CWindowGUI::drag_stop()
 
 		if(mwindow->session->drag_clips->total)
 		{
-			mwindow->gui->lock_window();
+			mwindow->gui->lock_window("CWindowGUI::drag_stop 2");
 			mwindow->undo->update_undo_before(_("insert assets"), 
 				LOAD_ALL);
 			mwindow->clear(0);
@@ -408,7 +381,7 @@ int CWindowGUI::drag_stop()
 		Track *affected_track = cwindow->calculate_affected_track();
 //printf("CWindowGUI::drag_stop 2\n");
 
-		mwindow->gui->lock_window();
+		mwindow->gui->lock_window("CWindowGUI::drag_stop 3");
 		mwindow->insert_effects_cwindow(affected_track);
 		mwindow->session->current_operation = NO_OPERATION;
 		mwindow->gui->unlock_window();
@@ -417,7 +390,7 @@ int CWindowGUI::drag_stop()
 	if(mwindow->session->current_operation == DRAG_VTRANSITION)
 	{
 		Track *affected_track = cwindow->calculate_affected_track();
-		mwindow->gui->lock_window();
+		mwindow->gui->lock_window("CWindowGUI::drag_stop 4");
 		mwindow->paste_transition_cwindow(affected_track);
 		mwindow->session->current_operation = NO_OPERATION;
 		mwindow->gui->unlock_window();
@@ -568,9 +541,9 @@ int CWindowSlider::handle_event()
 {
 	unlock_window();
 	cwindow->playback_engine->interrupt_playback(1);
-	lock_window();
+	lock_window("CWindowSlider::handle_event 1");
 	
-	mwindow->gui->lock_window();
+	mwindow->gui->lock_window("CWindowSlider::handle_event 2");
 	mwindow->select_point((double)get_value());
 	mwindow->gui->unlock_window();
 	return 1;
@@ -599,8 +572,7 @@ int CWindowSlider::increase_value()
 {
 	unlock_window();
 	cwindow->gui->transport->handle_transport(SINGLE_FRAME_FWD);
-//printf("CWindowSlider::increase_value 1\n");
-	lock_window();
+	lock_window("CWindowSlider::increase_value");
 	return 1;
 }
 
@@ -608,8 +580,7 @@ int CWindowSlider::decrease_value()
 {
 	unlock_window();
 	cwindow->gui->transport->handle_transport(SINGLE_FRAME_REWIND);
-//printf("CWindowSlider::decrease_value 1\n");
-	lock_window();
+	lock_window("CWindowSlider::decrease_value");
 	return 1;
 }
 
@@ -659,11 +630,11 @@ void CWindowTransport::goto_start()
 	gui->unlock_window();
 	handle_transport(REWIND, 1);
 
-	mwindow->gui->lock_window();
+	mwindow->gui->lock_window("CWindowTransport::goto_start 1");
 	mwindow->goto_start();
 	mwindow->gui->unlock_window();
 
-	gui->lock_window();
+	gui->lock_window("CWindowTransport::goto_start 2");
 }
 
 void CWindowTransport::goto_end()
@@ -671,11 +642,11 @@ void CWindowTransport::goto_end()
 	gui->unlock_window();
 	handle_transport(GOTO_END, 1);
 
-	mwindow->gui->lock_window();
+	mwindow->gui->lock_window("CWindowTransport::goto_end 1");
 	mwindow->goto_end();
 	mwindow->gui->unlock_window();
 
-	gui->lock_window();
+	gui->lock_window("CWindowTransport::goto_end 2");
 }
 
 
@@ -2666,7 +2637,7 @@ int CWindowCanvas::cursor_motion_event()
 
 	if(redraw_canvas)
 	{
-		mwindow->gui->lock_window();
+		mwindow->gui->lock_window("CWindowCanvas::cursor_motion_event 1");
 		mwindow->gui->canvas->draw_overlays();
 		mwindow->gui->canvas->flash();
 		mwindow->gui->unlock_window();

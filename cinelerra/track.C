@@ -1,4 +1,4 @@
-#include "assets.h"
+#include "asset.h"
 #include "autoconf.h"
 #include "automation.h"
 #include "clip.h"
@@ -40,6 +40,7 @@ Track::Track(EDL *edl, Tracks *tracks) : ListItem<Track>()
 	title[0] = 0;
 	record = 1;
 	play = 1;
+	nudge = 0;
 	track_w = edl->session->output_w;
 	track_h = edl->session->output_h;
 	id = EDL::next_id();
@@ -49,8 +50,6 @@ Track::~Track()
 {
 	delete automation;
 	delete edits;
-//for(int i = 0; i < plugin_set.total; i++)
-//	printf("Track::~Track %p %p\n", plugin_set.values[i], plugin_set.values[i]->last);
 	plugin_set.remove_all_objects();
 }
 
@@ -66,6 +65,7 @@ int Track::copy_settings(Track *track)
 	this->draw = track->draw;
 	this->gang = track->gang;
 	this->record = track->record;
+	this->nudge = track->nudge;
 	this->play = track->play;
 	this->track_w = track->track_w;
 	this->track_h = track->track_h;
@@ -138,6 +138,7 @@ int Track::is_synthesis(RenderEngine *renderengine,
 		Plugin *plugin = get_current_plugin(position,
 			i,
 			direction,
+			0,
 			0);
 		if(plugin)
 		{
@@ -263,6 +264,7 @@ int Track::load(FileXML *file, int track_offset, uint32_t load_flags)
 	play = file->tag.get_property("PLAY", play);
 	gang = file->tag.get_property("GANG", gang);
 	draw = file->tag.get_property("DRAW", draw);
+	nudge = file->tag.get_property("NUDGE", nudge);
 	expand_view = file->tag.get_property("EXPAND", expand_view);
 	track_w = file->tag.get_property("TRACK_W", track_w);
 	track_h = file->tag.get_property("TRACK_H", track_h);
@@ -422,7 +424,8 @@ Plugin* Track::insert_effect(char *title,
 				edl->local_session->get_selectionstart(), 
 				shared_location->plugin, 
 				PLAY_FORWARD, 
-				1);
+				1,
+				0);
 
 // From an attach operation
 			if(source_plugin)
@@ -628,11 +631,12 @@ void Track::optimize()
 Plugin* Track::get_current_plugin(double position, 
 	int plugin_set, 
 	int direction, 
-	int convert_units)
+	int convert_units,
+	int use_nudge)
 {
 	Plugin *current;
 	if(convert_units) position = to_units(position, 0);
-	
+	if(use_nudge) position += nudge;
 	
 	if(plugin_set >= this->plugin_set.total || plugin_set < 0) return 0;
 
@@ -672,11 +676,15 @@ Plugin* Track::get_current_plugin(double position,
 	return 0;
 }
 
-Plugin* Track::get_current_transition(double position, int direction, int convert_units)
+Plugin* Track::get_current_transition(double position, 
+	int direction, 
+	int convert_units,
+	int use_nudge)
 {
 	Edit *current;
 	Plugin *result = 0;
 	if(convert_units) position = to_units(position, 0);
+	if(use_nudge) position += nudge;
 
 	if(direction == PLAY_FORWARD)
 	{
@@ -725,6 +733,7 @@ void Track::synchronize_params(Track *track)
 		plugin_set.values[i]->synchronize_params(track->plugin_set.values[i]);
 
 	automation->copy_from(track->automation);
+	this->nudge = track->nudge;
 }
 
 
@@ -953,6 +962,7 @@ int Track::copy(double start,
 	file->tag.set_title("TRACK");
 //	file->tag.set_property("PLAY", play);
 	file->tag.set_property("RECORD", record);
+	file->tag.set_property("NUDGE", nudge);
 	file->tag.set_property("PLAY", play);
 	file->tag.set_property("GANG", gang);
 //	file->tag.set_property("MUTE", mute);
@@ -1019,7 +1029,7 @@ int Track::copy_assets(double start,
 	start = to_units(start, 0);
 	end = to_units(end, 0);
 
-	Edit *current = edits->editof((int64_t)start, PLAY_FORWARD);
+	Edit *current = edits->editof((int64_t)start, PLAY_FORWARD, 0);
 
 // Search all edits
 	while(current && current->startproject < end)
@@ -1246,8 +1256,10 @@ int Track::need_edit(Edit *current, int test_transitions)
 
 int64_t Track::plugin_change_duration(int64_t input_position,
 	int64_t input_length,
-	int reverse)
+	int reverse,
+	int use_nudge)
 {
+	if(use_nudge) input_position += nudge;
 	for(int i = 0; i < plugin_set.total; i++)
 	{
 		int64_t new_duration = plugin_set.values[i]->plugin_change_duration(
@@ -1256,16 +1268,18 @@ int64_t Track::plugin_change_duration(int64_t input_position,
 			reverse);
 		if(new_duration < input_length) input_length = new_duration;
 	}
-	return (input_length);
+	return input_length;
 }
 
 int64_t Track::edit_change_duration(int64_t input_position, 
 	int64_t input_length, 
 	int reverse, 
-	int test_transitions)
+	int test_transitions,
+	int use_nudge)
 {
 	Edit *current;
 	int64_t edit_length = input_length;
+	if(use_nudge) input_position += nudge;
 
 	if(reverse)
 	{
@@ -1406,7 +1420,11 @@ int Track::plugin_used(int64_t position, int64_t direction)
 //printf("Track::plugin_used 1 %d\n", this->plugin_set.total);
 	for(int i = 0; i < this->plugin_set.total; i++)
 	{
-		Plugin *current_plugin = get_current_plugin(position, i, direction, 0);
+		Plugin *current_plugin = get_current_plugin(position, 
+			i, 
+			direction, 
+			0,
+			0);
 
 //printf("Track::plugin_used 2 %p\n", current_plugin);
 		if(current_plugin && 
@@ -1421,7 +1439,7 @@ int Track::plugin_used(int64_t position, int64_t direction)
 }
 
 // Audio is always rendered through VConsole
-int Track::direct_copy_possible(int64_t start, int direction)
+int Track::direct_copy_possible(int64_t start, int direction, int use_nudge)
 {
 	return 1;
 }

@@ -8,6 +8,7 @@
 #include "floatautos.h"
 #include "mwindow.h"
 #include "module.h"
+#include "panauto.h"
 #include "plugin.h"
 #include "renderengine.h"
 #include "track.h"
@@ -168,7 +169,6 @@ int VirtualANode::render(double **audio_out,
 	else
 	if(real_plugin)
 	{
-//printf("VirtualANode::render 1\n");
 		render_as_plugin(real_position,
 				fragment_position,
 				fragment_len,
@@ -182,7 +182,7 @@ void VirtualANode::render_as_plugin(int64_t real_position,
 	int64_t fragment_len,
 	int ring_buffer)
 {
-//printf("VirtualANode::render_as_plugin 1\n");
+	real_position += track->nudge;
 	((AAttachmentPoint*)attachment)->render(buffer_in[ring_buffer] + fragment_position, 
 		buffer_out[ring_buffer] + fragment_position, 
 		fragment_len, 
@@ -202,24 +202,16 @@ int VirtualANode::render_as_module(double **audio_out,
 	double *buffer_out = get_module_output(ring_buffer, fragment_position);
 	int direction = renderengine->command->get_direction();
 
-//printf("VirtualANode::render_as_module 1 %p\n", this->buffer_in[ring_buffer] + fragment_position);
-
-// for(int i = 0; i < fragment_len; i++)
-// {
-// int16_t value = (int16_t)(buffer_in[i] * 32767);
-// fwrite(&value, 2, 1, stdout);
-// }
-
-//printf("VirtualANode::render_as_module 1 %d\n", ring_buffer);
 // Render fade
 	render_fade(buffer_in, 
 				buffer_out,
 				fragment_len,
 				real_position,
-				track->automation->fade_autos);
+				track->automation->fade_autos,
+				direction,
+				1);
 
 // Get the peak but don't limit
-//printf("VirtualANode::render_as_module 1 %p %d\n", real_module, renderengine->command->realtime);
 	if(real_module && renderengine->command->realtime)
 	{
 		ARender *arender = ((VirtualAConsole*)vconsole)->arender;
@@ -228,7 +220,6 @@ int VirtualANode::render_as_module(double **audio_out,
 		int64_t meter_render_end;   // Ending sample of meter block
 		int64_t current_level = ((AModule*)real_module)->current_level;
 
-//printf("VirtualANode::render_as_module 1 %p %p\n", ((AModule*)real_module), ((AModule*)real_module)->level_samples);
 // Scan fragment in meter sized fragments
 		for(int i = 0; i < fragment_len; )
 		{
@@ -256,13 +247,11 @@ int VirtualANode::render_as_module(double **audio_out,
 				(renderengine->command->get_direction() == PLAY_FORWARD) ?
 				(real_position + meter_render_start) :
 				(real_position - meter_render_start);
-//printf("VirtualANode::render_as_module 2 %d\n", ((AModule*)real_module)->level_samples[current_level]);
 			((AModule*)real_module)->current_level = 
 				arender->get_next_peak(((AModule*)real_module)->current_level);
 		}
 	}
 
-//printf("VirtualANode::render_as_module 1\n");
 // process pans and copy the output to the output channels
 // Keep rendering unmuted fragments until finished.
 	int mute_constant;
@@ -277,8 +266,9 @@ int VirtualANode::render_as_module(double **audio_out,
 		get_mute_fragment(real_position,
 				mute_constant, 
 				mute_fragment,
-				(Autos*)track->automation->mute_autos);
-//printf("VirtualANode::render_as_module 1\n");
+				(Autos*)track->automation->mute_autos,
+				direction,
+				1);
 
 // Fragment is playable
 		if(!mute_constant)
@@ -287,7 +277,6 @@ int VirtualANode::render_as_module(double **audio_out,
 				i < MAX_CHANNELS; 
 				i++)
 			{
-//printf("VirtualANode::render_as_module %d\n", i);
 				if(audio_out[i])
 				{
 					double *buffer = audio_out[i];
@@ -297,7 +286,9 @@ int VirtualANode::render_as_module(double **audio_out,
 								mute_fragment,
 								real_position,
 								(Autos*)track->automation->pan_autos,
-								i);
+								i,
+								direction,
+								1);
 				}
 			}
 		}
@@ -306,7 +297,7 @@ int VirtualANode::render_as_module(double **audio_out,
 		real_position += (direction == PLAY_REVERSE) ? -mute_fragment : mute_fragment;
 		mute_position += mute_fragment;
 	}
-//printf("VirtualANode::render_as_module 2\n");
+
 	return 0;
 }
 
@@ -314,12 +305,14 @@ int VirtualANode::render_fade(double *input,        // start of input fragment
 								double *output,        // start of output fragment
 								int64_t fragment_len,      // fragment length in input scale
 								int64_t input_position, // starting sample of input buffer in project
-								Autos *autos)
+								Autos *autos,
+								int direction,
+								int use_nudge)
 {
 	double value, fade_value;
-	int direction = renderengine->command->get_direction();
 	FloatAuto *previous = 0;
 	FloatAuto *next = 0;
+	if(use_nudge) input_position += track->nudge;
 
 
 	if(((FloatAutos*)autos)->automation_is_constant(input_position, 
@@ -327,7 +320,6 @@ int VirtualANode::render_fade(double *input,        // start of input fragment
 		direction,
 		fade_value))
 	{
-//printf("VirtualANode::render_fade 1 %d %f\n", input_position, fade_value);
 		if(fade_value <= INFINITYGAIN) 
 			value = 0;
 		else
@@ -339,7 +331,6 @@ int VirtualANode::render_fade(double *input,        // start of input fragment
 	}
 	else
 	{
-//printf("VirtualANode::render_fade 10 %d\n", input_position);
 		for(int64_t i = 0; i < fragment_len; i++)
 		{
 			int64_t slope_len = fragment_len - i;
@@ -408,10 +399,12 @@ int VirtualANode::render_pan(double *input,        // start of input fragment
 								int64_t fragment_len,      // fragment length in input scale
 								int64_t input_position, // starting sample of input buffer in project
 								Autos *autos,
-								int channel)
+								int channel,
+								int direction,
+								int use_nudge)
 {
 	double slope, intercept;
-	int direction = renderengine->command->get_direction();
+	if(use_nudge) input_position += track->nudge;
 
 	for(int64_t i = 0; i < fragment_len; )
 	{
@@ -423,7 +416,8 @@ int VirtualANode::render_pan(double *input,        // start of input fragment
 						input_position,
 						slope_len,
 						autos,
-						channel);
+						channel,
+						direction);
 
 		if(slope != 0)
 		{
@@ -448,12 +442,64 @@ int VirtualANode::render_pan(double *input,        // start of input fragment
 			input_position -= slope_len;
 	}
 
-// if(channel == 0)
-// for(int i = 0; i < fragment_len; i++)
-// {
-// int16_t value = (int16_t)(input[i] * 32767);
-// fwrite(&value, 2, 1, stdout);
-// }
-
 	return 0;
+}
+
+
+void VirtualANode::get_pan_automation(double &slope,
+	double &intercept,
+	int64_t input_position,
+	int64_t &slope_len,
+	Autos *autos,
+	int channel,
+	int direction)
+{
+	intercept = 0;
+	slope = 0;
+
+	PanAuto *prev_keyframe = 0;
+	PanAuto *next_keyframe = 0;
+	prev_keyframe = (PanAuto*)autos->get_prev_auto(input_position, direction, (Auto*)prev_keyframe);
+	next_keyframe = (PanAuto*)autos->get_next_auto(input_position, direction, (Auto*)next_keyframe);
+	
+	if(direction == PLAY_FORWARD)
+	{
+// Two distinct automation points within range
+		if(next_keyframe->position > prev_keyframe->position)
+		{
+			slope = ((double)next_keyframe->values[channel] - prev_keyframe->values[channel]) / 
+				((double)next_keyframe->position - prev_keyframe->position);
+			intercept = ((double)input_position - prev_keyframe->position) * slope + 
+				prev_keyframe->values[channel];
+
+			if(next_keyframe->position < input_position + slope_len)
+				slope_len = next_keyframe->position - input_position;
+		}
+		else
+// One automation point within range
+		{
+			slope = 0;
+			intercept = prev_keyframe->values[channel];
+		}
+	}
+	else
+	{
+// Two distinct automation points within range
+		if(next_keyframe->position < prev_keyframe->position)
+		{
+			slope = ((double)next_keyframe->values[channel] - prev_keyframe->values[channel]) / 
+				((double)next_keyframe->position - prev_keyframe->position);
+			intercept = ((double)input_position - prev_keyframe->position) * slope + 
+				prev_keyframe->values[channel];
+
+			if(next_keyframe->position > input_position - slope_len)
+				slope_len = input_position - next_keyframe->position;
+		}
+		else
+// One automation point within range
+		{
+			slope = 0;
+			intercept = next_keyframe->values[channel];
+		}
+	}
 }

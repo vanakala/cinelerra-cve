@@ -1,5 +1,6 @@
-#include "assets.h"
+#include "asset.h"
 #include "clip.h"
+#include "condition.h"
 #include "edit.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -323,7 +324,7 @@ int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 		if(length_source - position < fragment_size && fragment_size == buffersize) fragment_size = length_source - position;
 
 //printf("IndexFile::create_index 1 %d\n", position);
-		index_thread->input_lock[current_buffer].lock();
+		index_thread->input_lock[current_buffer]->lock("IndexFile::create_index 1");
 		index_thread->input_len[current_buffer] = fragment_size;
 
 //printf("IndexFile::create_index 2 %d\n", position);
@@ -353,23 +354,23 @@ int IndexFile::create_index(Asset *asset, MainProgressBar *progress)
 
 		if(!result)
 		{
-			index_thread->output_lock[current_buffer].unlock();
+			index_thread->output_lock[current_buffer]->unlock();
 			current_buffer++;
 			if(current_buffer >= TOTAL_BUFFERS) current_buffer = 0;
 			position += fragment_size;
 		}
 		else
 		{
-			index_thread->input_lock[current_buffer].unlock();
+			index_thread->input_lock[current_buffer]->unlock();
 		}
 //printf("IndexFile::create_index 8 %d\n", position);
 	}
 //printf("IndexFile::create_index 10\n");
 
 // end thread cleanly
-	index_thread->input_lock[current_buffer].lock();
+	index_thread->input_lock[current_buffer]->lock("IndexFile::create_index 2");
 	index_thread->last_buffer[current_buffer] = 1;
-	index_thread->output_lock[current_buffer].unlock();
+	index_thread->output_lock[current_buffer]->unlock();
 
 	index_thread->stop_build();
 

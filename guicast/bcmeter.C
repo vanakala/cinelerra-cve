@@ -230,8 +230,18 @@ void BC_Meter::get_divisions()
 		j += j_step;
 	}
 
-	medium_division = pixels - title_pixel[(meter_titles-1)*1/6];
-	low_division = pixels - title_pixel[(meter_titles-1)*2/5];
+// Fix divisions at 5 and 20
+	if(meter_titles > 4)
+	{
+		medium_division = pixels - title_pixel[1];
+		low_division = pixels - title_pixel[4];
+	}
+	else
+// Boundary condition
+	{
+		medium_division = pixels - title_pixel[(meter_titles - 1) * 1 / 6];
+		low_division = pixels - title_pixel[(meter_titles - 1) * 2 / 5];
+	}
 }
 
 void BC_Meter::draw_titles()

@@ -124,36 +124,43 @@ void MainSession::default_window_positions()
 	rmonitor_y = rwindow_y;
 	rmonitor_w = root_w - rmonitor_x;
 	rmonitor_h = rwindow_h;
+
+	batchrender_w = 540;
+	batchrender_h = 340;
+	batchrender_x = root_w / 2 - batchrender_w / 2;
+	batchrender_y = root_h / 2 - batchrender_h / 2;
 }
 
 int MainSession::load_defaults(Defaults *defaults)
 {
-	char string[BCTEXTLEN];
-
-
-
-
-
 // Setup main windows
 	default_window_positions();
 	vwindow_x = defaults->get("VWINDOW_X", vwindow_x);
 	vwindow_y = defaults->get("VWINDOW_Y", vwindow_y);
 	vwindow_w = defaults->get("VWINDOW_W", vwindow_w);
 	vwindow_h = defaults->get("VWINDOW_H", vwindow_h);
+
+
 	cwindow_x = defaults->get("CWINDOW_X", cwindow_x);
 	cwindow_y = defaults->get("CWINDOW_Y", cwindow_y);
 	cwindow_w = defaults->get("CWINDOW_W", cwindow_w);
 	cwindow_h = defaults->get("CWINDOW_H", cwindow_h);
+
 	ctool_x = defaults->get("CTOOL_X", ctool_x);
 	ctool_y = defaults->get("CTOOL_Y", ctool_y);
+
+
 	mwindow_x = defaults->get("MWINDOW_X", mwindow_x);
 	mwindow_y = defaults->get("MWINDOW_Y", mwindow_y);
 	mwindow_w = defaults->get("MWINDOW_W", mwindow_w);
 	mwindow_h = defaults->get("MWINDOW_H", mwindow_h);
+
 	lwindow_x = defaults->get("LWINDOW_X", lwindow_x);
 	lwindow_y = defaults->get("LWINDOW_Y", lwindow_y);
 	lwindow_w = defaults->get("LWINDOW_W", lwindow_w);
 	lwindow_h = defaults->get("LWINDOW_H", lwindow_h);
+
+
 	awindow_x = defaults->get("AWINDOW_X", awindow_x);
 	awindow_y = defaults->get("AWINDOW_Y", awindow_y);
 	awindow_w = defaults->get("AWINDOW_W", awindow_w);
@@ -167,10 +174,16 @@ int MainSession::load_defaults(Defaults *defaults)
 	rwindow_y = defaults->get("RWINDOW_Y", rwindow_y);
 	rwindow_w = defaults->get("RWINDOW_W", rwindow_w);
 	rwindow_h = defaults->get("RWINDOW_H", rwindow_h);
+
 	rmonitor_x = defaults->get("RMONITOR_X", rmonitor_x);
 	rmonitor_y = defaults->get("RMONITOR_Y", rmonitor_y);
 	rmonitor_w = defaults->get("RMONITOR_W", rmonitor_w);
 	rmonitor_h = defaults->get("RMONITOR_H", rmonitor_h);
+
+	batchrender_x = defaults->get("BATCHRENDER_X", batchrender_x);
+	batchrender_y = defaults->get("BATCHRENDER_Y", batchrender_y);
+	batchrender_w = defaults->get("BATCHRENDER_W", batchrender_w);
+	batchrender_h = defaults->get("BATCHRENDER_H", batchrender_h);
 
 	show_vwindow = defaults->get("SHOW_VWINDOW", 1);
 	show_awindow = defaults->get("SHOW_AWINDOW", 1);
@@ -195,34 +208,46 @@ int MainSession::save_defaults(Defaults *defaults)
 	defaults->update("MWINDOW_Y", mwindow_y);
 	defaults->update("MWINDOW_W", mwindow_w);
 	defaults->update("MWINDOW_H", mwindow_h);
+
 	defaults->update("LWINDOW_X", lwindow_x);
 	defaults->update("LWINDOW_Y", lwindow_y);
 	defaults->update("LWINDOW_W", lwindow_w);
 	defaults->update("LWINDOW_H", lwindow_h);
+
 	defaults->update("VWINDOW_X", vwindow_x);
 	defaults->update("VWINDOW_Y", vwindow_y);
 	defaults->update("VWINDOW_W", vwindow_w);
 	defaults->update("VWINDOW_H", vwindow_h);
+
 	defaults->update("CWINDOW_X", cwindow_x);
 	defaults->update("CWINDOW_Y", cwindow_y);
 	defaults->update("CWINDOW_W", cwindow_w);
 	defaults->update("CWINDOW_H", cwindow_h);
+
 	defaults->update("CTOOL_X", ctool_x);
 	defaults->update("CTOOL_Y", ctool_y);
+
 	defaults->update("AWINDOW_X", awindow_x);
 	defaults->update("AWINDOW_Y", awindow_y);
 	defaults->update("AWINDOW_W", awindow_w);
 	defaults->update("AWINDOW_H", awindow_h);
 
  	defaults->update("ABINS_W", afolders_w);
+
 	defaults->update("RMONITOR_X", rmonitor_x);
 	defaults->update("RMONITOR_Y", rmonitor_y);
 	defaults->update("RMONITOR_W", rmonitor_w);
 	defaults->update("RMONITOR_H", rmonitor_h);
+
 	defaults->update("RWINDOW_X", rwindow_x);
 	defaults->update("RWINDOW_Y", rwindow_y);
 	defaults->update("RWINDOW_W", rwindow_w);
 	defaults->update("RWINDOW_H", rwindow_h);
+
+	defaults->update("BATCHRENDER_X", batchrender_x);
+	defaults->update("BATCHRENDER_Y", batchrender_y);
+	defaults->update("BATCHRENDER_W", batchrender_w);
+	defaults->update("BATCHRENDER_H", batchrender_h);
 
 	defaults->update("SHOW_VWINDOW", show_vwindow);
 	defaults->update("SHOW_AWINDOW", show_awindow);

@@ -98,6 +98,10 @@ void DefaultTheme::initialize()
 		"listbox_button_up.png",
 		"listbox_button_hi.png",
 		"listbox_button_dn.png");
+	BC_WindowBase::get_resources()->listbox_column = new_image_set(3,
+		"listbox_column_up.png",
+		"listbox_column_hi.png",
+		"listbox_column_dn.png");
 	BC_WindowBase::get_resources()->pan_data = new_image_set(7,
 			"pan_up.png", 
 			"pan_hi.png", 
@@ -273,6 +277,22 @@ void DefaultTheme::initialize()
 	wrench_data = new_button("wrench.png", editpanel_up, editpanel_hi, editpanel_dn);
 
 
+	new_image_set("batch_render_start",
+		3,
+		"batchstart_up.png",
+		"batchstart_hi.png",
+		"batchstart_dn.png");
+	new_image_set("batch_render_stop",
+		3,
+		"batchstop_up.png",
+		"batchstop_hi.png",
+		"batchstop_dn.png");
+	new_image_set("batch_render_cancel",
+		3,
+		"batchcancel_up.png",
+		"batchcancel_hi.png",
+		"batchcancel_dn.png");
+
 	arrow_data = new_toggle("arrow.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
 	autokeyframe_data = new_toggle("autokeyframe.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
 	camera_data = new_toggle("camera.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
@@ -293,20 +313,20 @@ void DefaultTheme::initialize()
 		"transportup.png", 
 		"transporthi.png", 
 		"transportdn.png");
-	build_transport(duplex_data, get_image("duplex.png"), transport_bg, 1);
-	build_transport(end_data, get_image("end.png"), transport_bg, 2);
-	build_transport(fastfwd_data, get_image("fastfwd.png"), transport_bg, 1);
-	build_transport(fastrev_data, get_image("fastrev.png"), transport_bg, 1);
-	build_transport(forward_data, get_image("play.png"), transport_bg, 1);
-	build_transport(framefwd_data, get_image("framefwd.png"), transport_bg, 1);
-	build_transport(framefwd_data, get_image("framefwd.png"), transport_bg, 1);
-	build_transport(framerev_data, get_image("framerev.png"), transport_bg, 1);
-	build_transport(rec_data, get_image("record.png"), transport_bg, 1);
-	build_transport(recframe_data, get_image("singleframe.png"), transport_bg, 1);
-	build_transport(reverse_data, get_image("reverse.png"), transport_bg, 1);
-	build_transport(rewind_data, get_image("rewind.png"), transport_bg, 0);
-	build_transport(stop_data, get_image("stop.png"), transport_bg, 1);
-	build_transport(stoprec_data, get_image("stoprec.png"), transport_bg, 2);
+	build_transport(duplex_data, get_image_data("duplex.png"), transport_bg, 1);
+	build_transport(end_data, get_image_data("end.png"), transport_bg, 2);
+	build_transport(fastfwd_data, get_image_data("fastfwd.png"), transport_bg, 1);
+	build_transport(fastrev_data, get_image_data("fastrev.png"), transport_bg, 1);
+	build_transport(forward_data, get_image_data("play.png"), transport_bg, 1);
+	build_transport(framefwd_data, get_image_data("framefwd.png"), transport_bg, 1);
+	build_transport(framefwd_data, get_image_data("framefwd.png"), transport_bg, 1);
+	build_transport(framerev_data, get_image_data("framerev.png"), transport_bg, 1);
+	build_transport(rec_data, get_image_data("record.png"), transport_bg, 1);
+	build_transport(recframe_data, get_image_data("singleframe.png"), transport_bg, 1);
+	build_transport(reverse_data, get_image_data("reverse.png"), transport_bg, 1);
+	build_transport(rewind_data, get_image_data("rewind.png"), transport_bg, 0);
+	build_transport(stop_data, get_image_data("stop.png"), transport_bg, 1);
+	build_transport(stoprec_data, get_image_data("stoprec.png"), transport_bg, 2);
 	flush_images();
 
 	title_font = MEDIUMFONT_3D;
@@ -491,12 +511,12 @@ void DefaultTheme::get_vwindow_sizes(VWindowGUI *gui)
 
 void DefaultTheme::build_icons()
 {
-	mwindow_icon = new VFrame(get_image("heroine_icon.png"));
-	vwindow_icon = new VFrame(get_image("heroine_icon.png"));
-	cwindow_icon = new VFrame(get_image("heroine_icon.png"));
-	awindow_icon = new VFrame(get_image("heroine_icon.png"));
-	record_icon = new VFrame(get_image("heroine_icon.png"));
-	clip_icon = new VFrame(get_image("clip_icon.png"));
+	mwindow_icon = new VFrame(get_image_data("heroine_icon.png"));
+	vwindow_icon = new VFrame(get_image_data("heroine_icon.png"));
+	cwindow_icon = new VFrame(get_image_data("heroine_icon.png"));
+	awindow_icon = new VFrame(get_image_data("heroine_icon.png"));
+	record_icon = new VFrame(get_image_data("heroine_icon.png"));
+	clip_icon = new VFrame(get_image_data("clip_icon.png"));
 }
 
 
@@ -504,31 +524,31 @@ void DefaultTheme::build_icons()
 void DefaultTheme::build_bg_data()
 {
 // Audio settings
-	channel_bg_data = new VFrame(get_image("channel_bg.png"));
-	channel_position_data = new VFrame(get_image("channel_position.png"));
+	channel_bg_data = new VFrame(get_image_data("channel_bg.png"));
+	channel_position_data = new VFrame(get_image_data("channel_position.png"));
 
 // Track bitmaps
-	resource1024_bg_data = new VFrame(get_image("resource1024.png"));
-	resource512_bg_data = new VFrame(get_image("resource512.png"));
-	resource256_bg_data = new VFrame(get_image("resource256.png"));
-	resource128_bg_data = new VFrame(get_image("resource128.png"));
-	resource64_bg_data = new VFrame(get_image("resource64.png"));
-	resource32_bg_data = new VFrame(get_image("resource32.png"));
-	plugin_bg_data = new VFrame(get_image("plugin_bg.png"));
-	title_bg_data = new VFrame(get_image("title_bg.png"));
-	vtimebar_bg_data = new VFrame(get_image("vwindow_timebar.png"));
+	resource1024_bg_data = new VFrame(get_image_data("resource1024.png"));
+	resource512_bg_data = new VFrame(get_image_data("resource512.png"));
+	resource256_bg_data = new VFrame(get_image_data("resource256.png"));
+	resource128_bg_data = new VFrame(get_image_data("resource128.png"));
+	resource64_bg_data = new VFrame(get_image_data("resource64.png"));
+	resource32_bg_data = new VFrame(get_image_data("resource32.png"));
+	plugin_bg_data = new VFrame(get_image_data("plugin_bg.png"));
+	title_bg_data = new VFrame(get_image_data("title_bg.png"));
+	vtimebar_bg_data = new VFrame(get_image_data("vwindow_timebar.png"));
 }
 
 
 void DefaultTheme::build_patches()
 {
-	static VFrame *default_drawpatch_data[] = { new VFrame(get_image("drawpatch_up.png")), new VFrame(get_image("drawpatch_hi.png")), new VFrame(get_image("drawpatch_checked.png")), new VFrame(get_image("drawpatch_dn.png")), new VFrame(get_image("drawpatch_checkedhi.png")) };
-	static VFrame *default_expandpatch_data[] = { new VFrame(get_image("expandpatch_up.png")), new VFrame(get_image("expandpatch_hi.png")), new VFrame(get_image("expandpatch_checked.png")), new VFrame(get_image("expandpatch_dn.png")), new VFrame(get_image("expandpatch_checkedhi.png")) };
-	static VFrame *default_gangpatch_data[] = { new VFrame(get_image("gangpatch_up.png")), new VFrame(get_image("gangpatch_hi.png")), new VFrame(get_image("gangpatch_checked.png")), new VFrame(get_image("gangpatch_dn.png")), new VFrame(get_image("gangpatch_checkedhi.png")) };
-	static VFrame *default_mutepatch_data[] = { new VFrame(get_image("mutepatch_up.png")), new VFrame(get_image("mutepatch_hi.png")), new VFrame(get_image("mutepatch_checked.png")), new VFrame(get_image("mutepatch_dn.png")), new VFrame(get_image("mutepatch_checkedhi.png")) };
-	static VFrame *default_patchbay_bg = new VFrame(get_image("patchbay_bg.png"));
-	static VFrame *default_playpatch_data[] = { new VFrame(get_image("playpatch_up.png")), new VFrame(get_image("playpatch_hi.png")), new VFrame(get_image("playpatch_checked.png")), new VFrame(get_image("playpatch_dn.png")), new VFrame(get_image("playpatch_checkedhi.png")) };
-	static VFrame *default_recordpatch_data[] = { new VFrame(get_image("recordpatch_up.png")), new VFrame(get_image("recordpatch_hi.png")), new VFrame(get_image("recordpatch_checked.png")), new VFrame(get_image("recordpatch_dn.png")), new VFrame(get_image("recordpatch_checkedhi.png")) };
+	static VFrame *default_drawpatch_data[] = { new VFrame(get_image_data("drawpatch_up.png")), new VFrame(get_image_data("drawpatch_hi.png")), new VFrame(get_image_data("drawpatch_checked.png")), new VFrame(get_image_data("drawpatch_dn.png")), new VFrame(get_image_data("drawpatch_checkedhi.png")) };
+	static VFrame *default_expandpatch_data[] = { new VFrame(get_image_data("expandpatch_up.png")), new VFrame(get_image_data("expandpatch_hi.png")), new VFrame(get_image_data("expandpatch_checked.png")), new VFrame(get_image_data("expandpatch_dn.png")), new VFrame(get_image_data("expandpatch_checkedhi.png")) };
+	static VFrame *default_gangpatch_data[] = { new VFrame(get_image_data("gangpatch_up.png")), new VFrame(get_image_data("gangpatch_hi.png")), new VFrame(get_image_data("gangpatch_checked.png")), new VFrame(get_image_data("gangpatch_dn.png")), new VFrame(get_image_data("gangpatch_checkedhi.png")) };
+	static VFrame *default_mutepatch_data[] = { new VFrame(get_image_data("mutepatch_up.png")), new VFrame(get_image_data("mutepatch_hi.png")), new VFrame(get_image_data("mutepatch_checked.png")), new VFrame(get_image_data("mutepatch_dn.png")), new VFrame(get_image_data("mutepatch_checkedhi.png")) };
+	static VFrame *default_patchbay_bg = new VFrame(get_image_data("patchbay_bg.png"));
+	static VFrame *default_playpatch_data[] = { new VFrame(get_image_data("playpatch_up.png")), new VFrame(get_image_data("playpatch_hi.png")), new VFrame(get_image_data("playpatch_checked.png")), new VFrame(get_image_data("playpatch_dn.png")), new VFrame(get_image_data("playpatch_checkedhi.png")) };
+	static VFrame *default_recordpatch_data[] = { new VFrame(get_image_data("recordpatch_up.png")), new VFrame(get_image_data("recordpatch_hi.png")), new VFrame(get_image_data("recordpatch_checked.png")), new VFrame(get_image_data("recordpatch_dn.png")), new VFrame(get_image_data("recordpatch_checkedhi.png")) };
 
 
 	drawpatch_data = default_drawpatch_data;
@@ -542,12 +562,12 @@ void DefaultTheme::build_patches()
 
 void DefaultTheme::build_overlays()
 {
-	keyframe_data = new VFrame(get_image("keyframe3.png"));
-	camerakeyframe_data = new VFrame(get_image("camerakeyframe.png"));
-	maskkeyframe_data = new VFrame(get_image("maskkeyframe.png"));
-	modekeyframe_data = new VFrame(get_image("modekeyframe.png"));
-	pankeyframe_data = new VFrame(get_image("pankeyframe.png"));
-	projectorkeyframe_data = new VFrame(get_image("projectorkeyframe.png"));
+	keyframe_data = new VFrame(get_image_data("keyframe3.png"));
+	camerakeyframe_data = new VFrame(get_image_data("camerakeyframe.png"));
+	maskkeyframe_data = new VFrame(get_image_data("maskkeyframe.png"));
+	modekeyframe_data = new VFrame(get_image_data("modekeyframe.png"));
+	pankeyframe_data = new VFrame(get_image_data("pankeyframe.png"));
+	projectorkeyframe_data = new VFrame(get_image_data("projectorkeyframe.png"));
 }
 
 

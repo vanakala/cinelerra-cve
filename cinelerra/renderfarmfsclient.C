@@ -37,6 +37,20 @@ extern "C"
 RenderFarmFSClient *renderfarm_fs_global = 0;
 
 
+// open doesn't seem overridable
+// int open (__const char *path, int flags, ...)
+// {
+// 	static int (*func)(__const char *__file, int __oflag) = 0;
+// 	int result = -1;
+// printf("open %s\n", path);
+// 
+//   	if (!func)
+//     	func = (int(*)(const char *path, int flags))dlsym(RTLD_NEXT, "open");
+// 	
+// 	result = (*func)(path, flags);
+// 	return result;
+// }
+
 
 FILE* fopen(const char *path, const char *mode)
 {
@@ -44,7 +58,6 @@ FILE* fopen(const char *path, const char *mode)
 // This pointer is meaningless except on the server.
 	FILE *result = 0;
 
-//printf("fopen %s\n", path);
   	if (!func)
     	func = (FILE*(*)(const char *path, const char *mode))dlsym(RTLD_NEXT, "fopen");
 
@@ -106,6 +119,26 @@ int fclose(FILE *file)
 	}
 
 	if(!done) result = (*func)(file);
+	return result;
+}
+
+int fileno (FILE *stream)
+{
+	static int (*func)(FILE *) = 0;
+	int result = -1;
+	if(!func)
+    	func = (int(*)(FILE *))dlsym(RTLD_NEXT, "fileno");
+	if(renderfarm_fs_global)
+	{
+		renderfarm_fs_global->lock();
+		if(renderfarm_fs_global->is_open(stream))
+		{
+			result = renderfarm_fs_global->fileno(stream);
+		}
+		renderfarm_fs_global->unlock();
+	}
+	else
+		result = (*func)(stream);
 	return result;
 }
 
@@ -379,12 +412,14 @@ __off64_t ftello64 (FILE *__stream)
 	return (*func)(__stream);
 }
 
+
 // Glibc inlines the stat functions and redirects them to __xstat functions
 int __xstat (int __ver, __const char *__filename,
 		    struct stat *__stat_buf)
 {
 	static int (*func)(int __ver, __const char *__filename,
 		    struct stat *__stat_buf) = 0;
+
 // This pointer is meaningless except on the server.
 	int result = 0;
 
@@ -400,7 +435,9 @@ int __xstat (int __ver, __const char *__filename,
 		renderfarm_fs_global->unlock();
 	}
 	else
+	{
 		result = (*func)(__ver, __filename, __stat_buf);
+	}
 
     return result;
 }
@@ -579,6 +616,36 @@ int RenderFarmFSClient::fclose(FILE *file)
 	unset_open(file);
 if(DEBUG)
 printf("RenderFarmFSClient::fclose file=%p\n", file);
+	return result;
+}
+
+int RenderFarmFSClient::fileno(FILE *file)
+{
+	int result = 0;
+	unsigned char datagram[8];
+	int i = 0;
+	int file_int64 = Units::ptr_to_int64(file);
+	STORE_INT64(file_int64);
+
+	client->lock();
+	if(!client->send_request_header(RENDERFARM_FILENO, 8))
+	{
+		if(client->write_socket((char*)datagram, 8, RENDERFARM_TIMEOUT) == 8)
+		{
+			unsigned char data[4];
+			if(client->read_socket((char*)data, 4, RENDERFARM_TIMEOUT) == 4)
+			{
+				result = READ_INT32(data);
+			}
+		}
+		else
+			result = -1;
+	}
+	else
+		result = -1;
+	client->unlock();
+if(DEBUG)
+printf("RenderFarmFSClient::fileno file=%p result=%d\n", file, result);
 	return result;
 }
 
