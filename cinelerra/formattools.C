@@ -156,7 +156,7 @@ int FormatTools::create_objects(int &init_x,
 		}
 
 //printf("FormatTools::create_objects 6\n");
-		aparams_thread = new FormatAThread(this, mwindow->preferences);
+		aparams_thread = new FormatAThread(this);
 	}
 
 //printf("FormatTools::create_objects 7\n");
@@ -185,7 +185,7 @@ int FormatTools::create_objects(int &init_x,
 
 //printf("FormatTools::create_objects 10\n");
 		y += 10;
-		vparams_thread = new FormatVThread(this, lock_compressor, mwindow->preferences);
+		vparams_thread = new FormatVThread(this, lock_compressor);
 	}
 
 //printf("FormatTools::create_objects 11\n");
@@ -377,11 +377,11 @@ int FormatVParams::handle_event()
 }
 
 
-FormatAThread::FormatAThread(FormatTools *format, Preferences *preferences)
+FormatAThread::FormatAThread(FormatTools *format)
  : Thread()
 { 
 	this->format = format; 
-	file = new File();
+	file = new File;
 }
 
 FormatAThread::~FormatAThread() 
@@ -403,8 +403,7 @@ void FormatAThread::run()
 
 
 FormatVThread::FormatVThread(FormatTools *format, 
-	int lock_compressor, 
-	Preferences *preferences)
+	int lock_compressor)
  : Thread()
 {
 	this->lock_compressor = lock_compressor;
