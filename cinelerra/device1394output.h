@@ -9,6 +9,7 @@
 #include "condition.inc"
 #include "libdv.h"
 #include "libdv/dv1394.h"
+#include "ieee1394-ioctl.h"
 #include "mutex.inc"
 #include "thread.h"
 #include "vframe.inc"
@@ -54,6 +55,9 @@ public:
 // This object is shared between audio and video.  Return what the driver is
 // based on whether vdevice or adevice exists.
 	int get_dv1394();
+
+// Set IOCTL numbers based on kernel version
+	void set_ioctls();
 
 	void encrypt(unsigned char *output, 
 		unsigned char *data, 
@@ -118,6 +122,29 @@ public:
 	int is_pal;
 	VideoDevice *vdevice;
 	AudioDevice *adevice;
+
+	// IOCTL # variables
+	      // dv1394
+   int dv1394_init;
+   int dv1394_shutdown;
+   int dv1394_submit_frames;
+   int dv1394_wait_frames;
+   int dv1394_receive_frames;
+   int dv1394_start_receive;
+   int dv1394_get_status;
+
+   // video1394
+   int video1394_listen_channel;
+   int video1394_unlisten_channel;
+   int video1394_listen_queue_buffer;
+   int video1394_listen_wait_buffer;
+   int video1394_talk_channel;
+   int video1394_untalk_channel;
+   int video1394_talk_queue_buffer;
+   int video1394_talk_wait_buffer;
+   int video1394_listen_poll_buffer;
+
+
 };
 
 
