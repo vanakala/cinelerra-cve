@@ -201,6 +201,7 @@ pan_up.png \
 pankeyframe.png \
 paste.png \
 patchbay_bg.png \
+pause.png \
 play.png \
 playpatch_checked.png \
 playpatch_checkedhi.png \

@@ -71,7 +71,9 @@ mpeg3_release());
 	char credits[BCTEXTLEN];
 	sprintf(credits,
 "Richard Baverstock\n"
+"Kevin Brosius\n"
 "Alex Ferrer\n"
+"Koen Muylkens\n"
 "Eric Seigne\n"
 "Andraz Tori\n"
 "\"ga\"\n"
