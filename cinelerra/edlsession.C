@@ -703,7 +703,7 @@ int64_t EDLSession::get_frame_offset()
 				timecode_offset[2] * 60 +
 				timecode_offset[1]) *
 				frame_rate +
-				timecode_offset[0] + 1;
+				timecode_offset[0];
 }
 
 void EDLSession::dump()
