@@ -1633,11 +1633,11 @@ int TitleMain::draw_mask()
 // Determine y of visible text
 	if(config.motion_strategy == BOTTOM_TO_TOP)
 	{
- printf("TitleMain::draw_mask 1 %d %lld %lld %lld\n", 
- 	config.motion_strategy,
- 	get_source_position(), 
- 	get_source_start(),
- 	config.prev_keyframe_position);
+// printf("TitleMain::draw_mask 1 %d %lld %lld %lld\n", 
+//	config.motion_strategy,
+// 	get_source_position(), 
+// 	get_source_start(),
+// 	config.prev_keyframe_position);
 		float magnitude = config.pixels_per_second * 
 			(get_source_position() - config.prev_keyframe_position) / 
 			PluginVClient::project_frame_rate;
