@@ -9,7 +9,12 @@ INCLUDES = -I$(top_srcdir)/guicast -I$(top_srcdir)/cinelerra -I$(top_srcdir)/qui
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
 
 shapewipedir = $(plugindir)/shapewipe
-shapewipe_DATA = heart.png
+shapewipe_DATA = \
+	circle.png \
+	clock.png \
+	heart.png \
+	tile2x2h.png \
+	tile2x2v.png
 
 noinst_HEADERS = shapewipe.h picon_png.h 
-EXTRA_DIST = picon.png heart.png
+EXTRA_DIST = picon.png $(shapewipe_DATA)
