@@ -10,6 +10,7 @@ gettextize --force &&
 sed 's/AM_GNU_GETTEXT_VERSION(\([.0-9]\+\))\?/AM_GNU_GETTEXT_VERSION(\1)/' < configure.in >configure.in.tmp 
 mv -f configure.in.tmp configure.in
 
+
 echo "Running libtoolize ..."
 libtoolize --force &&
 
@@ -21,6 +22,9 @@ automake --foreign --add-missing &&
 
 echo "Running autoconf ..." &&
 autoconf &&
+
+echo "Running libtoolize ..."
+(cd libsndfile && libtoolize --force) &&
 
 echo "Running aclocal in libsndfile ..." &&
 (cd libsndfile && aclocal) &&
