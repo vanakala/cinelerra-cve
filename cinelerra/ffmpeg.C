@@ -65,7 +65,7 @@ PixelFormat FFMPEG::color_model_to_pix_fmt(int color_model) {
 			  return PIX_FMT_YUV422;
 		case BC_RGB888:
 			return PIX_FMT_RGB24;
-		case BC_RGBA8888:
+		case BC_BGR8888:  // NOTE: order flipped
 			return PIX_FMT_RGBA32;
 		case BC_BGR888:
 			return PIX_FMT_BGR24;
@@ -81,8 +81,6 @@ PixelFormat FFMPEG::color_model_to_pix_fmt(int color_model) {
 			return PIX_FMT_RGB565;
 		};
 
-	printf("FFMPEG::color_model_to_pix_fmt color model '%d' not handled\n",
-	       color_model);
 	return PIX_FMT_NB;
 }
 
@@ -94,7 +92,7 @@ int FFMPEG::pix_fmt_to_color_model(PixelFormat pix_fmt) {
 		case PIX_FMT_RGB24:
 			return BC_RGB888;
 		case PIX_FMT_RGBA32:
-			return BC_RGBA8888;
+			return BC_BGR8888;
 		case PIX_FMT_BGR24:
 			return BC_BGR888;
 		case PIX_FMT_YUV420P:
@@ -134,13 +132,9 @@ int FFMPEG::init_picture_from_frame(AVPicture *picture, VFrame *frame) {
 	return size;
 }
 
+
 int FFMPEG::convert_cmodel(VFrame *frame_in,  VFrame *frame_out) {
-
-	// set up a temporary pictures from frame_in and frame_out
-	AVPicture picture_in, picture_out;
-	init_picture_from_frame(&picture_in, frame_in);
-	init_picture_from_frame(&picture_out, frame_out);
-
+  
 	PixelFormat pix_fmt_in = 
 		color_model_to_pix_fmt(frame_in->get_color_model());
 	PixelFormat pix_fmt_out = 
@@ -148,6 +142,11 @@ int FFMPEG::convert_cmodel(VFrame *frame_in,  VFrame *frame_out) {
 
 	// do conversion within libavcodec if possible
 	if (pix_fmt_in != PIX_FMT_NB && pix_fmt_out != PIX_FMT_NB) {
+		// set up a temporary pictures from frame_in and frame_out
+		AVPicture picture_in, picture_out;
+		init_picture_from_frame(&picture_in, frame_in);
+		init_picture_from_frame(&picture_out, frame_out);
+
 		int result = img_convert(&picture_out,
 					 pix_fmt_out,
 					 &picture_in,
