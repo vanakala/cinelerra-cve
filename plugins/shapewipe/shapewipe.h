@@ -73,6 +73,19 @@ public:
 };
 
 
+class ShapeWipePreserveAspectRatio : public BC_CheckBox
+{
+public:
+	ShapeWipePreserveAspectRatio(ShapeWipeMain *plugin,
+		ShapeWipeWindow *window,
+		int x,
+		int y);
+	int handle_event();
+	ShapeWipeMain *plugin;
+	ShapeWipeWindow *window;
+};
+
+
 class ShapeWipeLoad : public BC_FileBox
 {
 public:
@@ -129,6 +142,8 @@ public:
 	int frame_width;
 	int frame_height;
 	int antialias;
+	int preserve_aspect;
+	int last_preserve_aspect;
 	ShapeWipeThread *thread;
 	Defaults *defaults;
 };

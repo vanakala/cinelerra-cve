@@ -76,6 +76,23 @@ int ShapeWipeAntiAlias::handle_event()
 	return 0;
 }
 
+ShapeWipePreserveAspectRatio::ShapeWipePreserveAspectRatio(ShapeWipeMain *plugin,
+	ShapeWipeWindow *window,
+	int x,
+	int y)
+ : BC_CheckBox (x,y,plugin->preserve_aspect, _("Preserve shape aspect ratio"))
+{
+	this->plugin = plugin;
+	this->window = window;
+}
+
+int ShapeWipePreserveAspectRatio::handle_event()
+{
+	plugin->preserve_aspect = get_value();
+	plugin->send_configure_change();
+	return 0;
+}
+
 ShapeWipeFilename::ShapeWipeFilename(
 	ShapeWipeMain *plugin,
 	ShapeWipeWindow *window,
@@ -146,9 +163,9 @@ ShapeWipeWindow::ShapeWipeWindow(ShapeWipeMain *plugin, int x, int y)
 	x, 
 	y, 
 	450, 
-	100, 
+	125, 
 	450, 
-	100, 
+	125, 
 	0, 
 	0,
 	1)
@@ -199,6 +216,12 @@ void ShapeWipeWindow::create_objects()
 		this,
 		x,
 		y));
+	x = 110; y += 25;
+	add_subwindow(new ShapeWipePreserveAspectRatio(
+		plugin, 
+		this,
+		x,
+		y));
 	show_window();
 	flush();
 }
@@ -215,6 +238,8 @@ ShapeWipeMain::ShapeWipeMain(PluginServer *server)
 	min_value = 256;
 	max_value = 0;
 	antialias = 0;
+	preserve_aspect = 0;
+	last_preserve_aspect = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
@@ -251,6 +276,7 @@ int ShapeWipeMain::load_defaults()
 
 	direction = defaults->get("DIRECTION", direction);
 	antialias = defaults->get("ANTIALIAS", antialias);
+	preserve_aspect = defaults->get("PRESERVE_ASPECT", preserve_aspect);
 	defaults->get("FILENAME", filename);
 	return 0;
 }
@@ -259,6 +285,7 @@ int ShapeWipeMain::save_defaults()
 {
 	defaults->update("DIRECTION", direction);
 	defaults->update("ANTIALIAS", antialias);
+	defaults->update("PRESERVE_ASPECT", preserve_aspect);
 	defaults->update("FILENAME", filename);
 	defaults->save();
 	return 0;
@@ -271,6 +298,7 @@ void ShapeWipeMain::save_data(KeyFrame *keyframe)
 	output.tag.set_title("SHAPEWIPE");
 	output.tag.set_property("DIRECTION", direction);
 	output.tag.set_property("ANTIALIAS", antialias);
+	output.tag.set_property("PRESERVE_ASPECT", preserve_aspect);
 	output.tag.set_property("FILENAME", filename);
 	output.append_tag();
 	output.terminate_string();
@@ -288,6 +316,7 @@ void ShapeWipeMain::read_data(KeyFrame *keyframe)
 		{
 			direction = input.tag.get_property("DIRECTION", direction);
 			antialias = input.tag.get_property("ANTIALIAS", antialias);
+			preserve_aspect = input.tag.get_property("PRESERVE_ASPECT", preserve_aspect);
 			input.tag.get_property("FILENAME", filename);
 		}
 	}
@@ -403,9 +432,27 @@ int ShapeWipeMain::read_pattern_image(int new_frame_width, int new_frame_height)
 	double row_factor, col_factor;
 	double row_offset = 0.5, col_offset = 0.5;	// for rounding
 
-	// Stretch (or shrink) the pattern image to fill the frame
-	row_factor = (double)(height-1)/(double)(frame_height-1);
-	col_factor = (double)(width-1)/(double)(frame_width-1);
+	if (preserve_aspect && aspect_w != 0 && aspect_h != 0)
+	{
+		row_factor = (height-1)/aspect_h;
+		col_factor = (width-1)/aspect_w;
+		if (row_factor < col_factor)
+			col_factor = row_factor;
+		else
+			row_factor = col_factor;
+		row_factor *= aspect_h/(double)(frame_height-1);
+		col_factor *= aspect_w/(double)(frame_width-1);
+
+		// center the pattern over the frame
+		row_offset += (height-1-(frame_height-1)*row_factor)/2;
+		col_offset += (width-1-(frame_width-1)*col_factor)/2;
+	}
+	else
+	{
+		// Stretch (or shrink) the pattern image to fill the frame
+		row_factor = (double)(height-1)/(double)(frame_height-1);
+		col_factor = (double)(width-1)/(double)(frame_width-1);
+	}
 
 	for (scaled_row = 0; scaled_row < frame_height; scaled_row++)
 	{
@@ -604,12 +651,16 @@ int ShapeWipeMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 	int w = incoming->get_w();
 	int h = incoming->get_h();
 
-	if (strncmp(filename,last_read_filename,BCTEXTLEN))
+	if (strncmp(filename,last_read_filename,BCTEXTLEN)
+		|| preserve_aspect != last_preserve_aspect)
+	{
 		reset_pattern_image();
+	}
 
 	if (!pattern_image) {
 		read_pattern_image(w, h);
 		strncpy(last_read_filename, filename, BCTEXTLEN);
+		last_preserve_aspect = preserve_aspect;
 	}
 
 	if (!pattern_image)
