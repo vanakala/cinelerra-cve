@@ -22,22 +22,23 @@
 #include <errno.h>
 #include <stdint.h>
 #include <linux/kernel.h>
-//#include "videodev2.h"
+//#include <linux/videodev2.h>
 #include <linux/videodev.h>
 #include <fcntl.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <unistd.h>
-
+#include <sys/types.h>
 
 
 #define READ_TIMEOUT 5000000
 
 
 VDeviceBUZInput::VDeviceBUZInput(VDeviceBUZ *device)
- : Thread(1, 1, 0)
+ : Thread(1, 0, 0)
 {
 	this->device = device;
+	if(getuid() == (uid_t) 0) set_realtime(1);
 	buffer = 0;
 	buffer_size = 0;
 	total_buffers = 0;
