@@ -326,7 +326,7 @@ void Render::run()
 					result = render_window->run_window();
 					if (! result) {
 						// add to recentlist only on OK
-						render_window->format_tools->path_recent->add_item(asset->format, asset->path);
+						render_window->format_tools->path_recent->add_item(FILE_FORMAT_PREFIX(asset->format), asset->path);
 					}
 					delete render_window;
 					render_window = 0;

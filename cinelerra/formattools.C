@@ -8,7 +8,6 @@
 #include "theme.h"
 #include <string.h>
 #include "pipe.h"
-#include "recentlist.h"
 
 #include <libintl.h>
 #define _(String) gettext(String)
@@ -100,10 +99,10 @@ int FormatTools::create_objects(int &init_x,
 //printf("FormatTools::create_objects 1\n");
 	window->add_subwindow(path_textbox = new FormatPathText(x, y, this));
 	x += 300;
-	path_recent = new RecentList("PATH", mwindow->defaults, path_textbox, 
-				     10, x, y, 300, 100);
+	path_recent = new BC_RecentList("PATH", mwindow->defaults,
+					path_textbox, 10, x, y, 300, 100);
 	window->add_subwindow(path_recent);
-	path_recent->load_items(asset->format);
+	path_recent->load_items(FILE_FORMAT_PREFIX(asset->format));
 
 	x += 18;
 	window->add_subwindow(path_button = new BrowseButton(
@@ -521,7 +520,8 @@ int FormatFormat::handle_event()
 				update(get_selection(0, 0)->get_text());
 			format->path_textbox->update(format->asset->path);
 			format->pipe_status->set_status(format->asset);
-			format->path_recent->load_items(format->asset->format);
+			format->path_recent->load_items
+				(FILE_FORMAT_PREFIX(format->asset->format));
 		}
 	}
 	return 1;

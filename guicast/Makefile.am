@@ -25,7 +25,14 @@ libguicast_la_SOURCES = \
 	bcpopupmenu.C \
 	bcpot.C \
 	bcprogress.C \
-												bcprogressbox.C bcrepeater.C bcresources.C bcscrollbar.C bcsignals.C bcslider.C bcsubwindow.C \
+	bcprogressbox.C	\
+	bcrecentlist.C \
+	bcrepeater.C \
+	bcresources.C \
+	bcscrollbar.C \
+	bcsignals.C \
+	bcslider.C  \
+	bcsubwindow.C \
 	bctextbox.C \
 	bctimer.C \
 	bctitle.C \
@@ -72,7 +79,14 @@ noinst_HEADERS = arraylist.h bcbitmap.h bcbitmap.inc bcbutton.h bcbutton.inc bcc
 	bcmeter.inc \
 								 bcpan.h bcpan.inc bcpixmap.h bcpixmap.inc bcpopup.h bcpopup.inc \
 								 bcpopupmenu.h bcpopupmenu.inc bcpopuplistbox.inc bcpot.h bcpot.inc bcprogressbox.h bcprogressbox.inc bcprogress.h \
-								 bcprogress.inc bcrepeater.h bcrepeater.inc bcresources.h bcresources.inc bcscrollbar.h bcscrollbar.inc \
+	bcprogress.inc \
+	bcrecentlist.h \
+	bcrepeater.h \
+	bcrepeater.inc \
+	bcresources.h \
+	bcresources.inc \
+	bcscrollbar.h \
+	bcscrollbar.inc \
 								 bcsignals.h bcsignals.inc bcslider.h bcslider.inc bcsubwindow.h bcsubwindow.inc bctextbox.h bctextbox.inc \
 	bctheme.h \
 	bctheme.inc \

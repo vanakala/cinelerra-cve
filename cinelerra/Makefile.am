@@ -180,7 +180,6 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    presentations.C \
 		    question.C \
 		    quit.C \
-	            recentlist.C \
 		    recconfirmdelete.C \
 		    recordableatracks.C \
 		    recordablevtracks.C \
@@ -479,7 +478,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 presentations.h \
 		 question.h \
 		 quit.h \
-                 recentlist.h \
 		 recconfirmdelete.h \
 		 recordableatracks.h \
 		 recordablevtracks.h \

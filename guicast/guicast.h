@@ -17,6 +17,7 @@
 #include "bcpopupmenu.h"
 #include "bcpot.h"
 #include "bcprogress.h"
+#include "bcrecentlist.h"
 #include "bcresources.h"
 #include "bcscrollbar.h"
 #include "bcslider.h"

@@ -10,7 +10,6 @@
 #include "formatpopup.h"
 #include "mwindow.inc"
 #include "pipe.inc"
-#include "recentlist.h"
 
 class FormatAParams;
 class FormatVParams;
@@ -66,7 +65,7 @@ public:
 	FormatVThread *vparams_thread;
 	BrowseButton *path_button;
 	FormatPathText *path_textbox;
-	RecentList *path_recent;
+	BC_RecentList *path_recent;
 	PipeStatus *pipe_status;
 	BC_Title *format_title;
 	FormatFormat *format_button;

@@ -5,7 +5,6 @@
 #include "file.inc"
 #include "filelist.h"
 #include "vframe.inc"
-#include "recentlist.h"
 #include "formattools.h"
 
 
@@ -54,7 +53,7 @@ class YUVConfigVideo : public BC_Window
 	FormatTools *format;
 	Defaults *defaults;
 	BC_TextBox *path_textbox;
-	RecentList *path_recent;
+	BC_RecentList *path_recent;
 	PipeConfig *pipe_config;
 	PipePreset *mpeg2enc;
 	PipePreset *ffmpeg;

@@ -148,10 +148,10 @@ int PipeConfig::create_objects(int x, int y, int textbox_width, int format) {
 	x += 120;	
 	x += textbox_width;
 
-	recent = new RecentList("PIPE", defaults, textbox,
+	recent = new BC_RecentList("PIPE", defaults, textbox,
 				10, x, y, 350, 100);
 	window->add_subwindow(recent);
-	recent->load_items(format);
+	recent->load_items(FILE_FORMAT_PREFIX(format));
 }
 
 PipeCheckBox::PipeCheckBox(int x, int y, int value, BC_TextBox *textbox)

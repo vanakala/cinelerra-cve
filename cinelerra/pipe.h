@@ -3,7 +3,6 @@
 
 #include <fcntl.h>
 #include "guicast.h"
-#include "recentlist.h"
 #include "asset.h"
 
 extern "C" {
@@ -52,7 +51,7 @@ class PipeConfig {
 	// NOTE: these are public so caller can check final values
 	PipeCheckBox *checkbox;
 	BC_TextBox *textbox;
-	RecentList *recent;
+	BC_RecentList *recent;
 	
  private:
 	BC_WindowBase *window;

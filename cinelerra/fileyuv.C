@@ -269,9 +269,9 @@ void FileYUV::get_parameters(BC_WindowBase *parent_window,
 		// set the pipe status in the render window
 		format->pipe_status->set_status(asset);
 		// and add the new path and pipe to the defaults list
-		config->path_recent->add_item(asset->format, asset->path);
-		config->pipe_config->recent->add_item(asset->format, 
-						      asset->pipe);
+		const char *prefix = FILE_FORMAT_PREFIX(asset->format);
+		config->path_recent->add_item(prefix, asset->path);
+		config->pipe_config->recent->add_item(prefix, asset->pipe);
 	}
 	delete config;
 }
@@ -362,10 +362,10 @@ int YUVConfigVideo::create_objects()
 	add_subwindow(path_textbox);
 
 	x += 350;
-	path_recent = new RecentList("PATH", defaults, path_textbox, 
-				     10, x, y, 350, 100);
+	path_recent = new BC_RecentList("PATH", defaults, path_textbox, 
+					10, x, y, 350, 100);
 	add_subwindow(path_recent);
-	path_recent->load_items(asset->format);
+	path_recent->load_items(FILE_FORMAT_PREFIX(asset->format));
 
 	x = init_x;
 	y += 40;
