@@ -8,7 +8,8 @@
 #include <string.h>
 #include <unistd.h>
 
-#define INPUT_SAMPLES 131072
+
+#define INPUT_SAMPLES 131072                       // = 1Mbit ?? why?
 #define BUFFER_TIMEOUT 500000
 
 
@@ -316,6 +317,26 @@ int Device1394Input::dv_iso_handler(raw1394handle_t handle,
 						thread->bytes_read,
 						thread->channels,
 						thread->bits);
+					int real_freq=thread->decoder->decoder->audio->frequency;
+	
+					if (real_freq == 32000) 
+					{
+						// do in-place _FAST_ && _SIMPLE_ upsampling to 48khz
+						// i also think user should get a warning that his material is effectively 32khz
+
+						// we take 16bit samples for both channels in one 32bit int
+						int *twosample = (int*) (thread->audio_buffer + thread->audio_samples * 2 * 2);
+						int from = decode_result - 1;
+						int new_result = decode_result * 48000 / real_freq;
+						for (int to = new_result - 1; to >=0; to--)
+						{	
+							if ((to % 3) == 0 || (to % 3) == 1) from --;
+							twosample[to]=twosample[from];
+						}
+						decode_result = new_result;
+//						printf("decoder real_freq: %i, upsampled_samples_in_frame %i\n", real_freq, decode_result); 
+					}
+
 					thread->audio_samples += decode_result;
 
 //printf("Device1394Input::dv_iso_handler 25 %d\n", decode_result);
