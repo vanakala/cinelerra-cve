@@ -19,11 +19,13 @@ FileYUV::FileYUV(Asset *asset, File *file)
 	if (asset->format == FILE_UNKNOWN) asset->format = FILE_YUV;
 	asset->byte_order = 0; // FUTURE: is this always correct?
 	temp = 0;
+	stream = new YUVStream();
 }
 
 FileYUV::~FileYUV()
 {
 	close_file();
+	delete stream;
 }
 	
 int FileYUV::open_file(int should_read, int should_write)
@@ -32,14 +34,14 @@ int FileYUV::open_file(int should_read, int should_write)
 
 	if (should_read) {
 
-		result = stream.open_read(asset->path);
+		result = stream->open_read(asset->path);
 		if (result) return result;
-		
+
 		// NOTE: no easy way to defer setting video_length
-		asset->video_length = stream.frame_count;
+		asset->video_length = stream->frame_count;
 		
-		asset->width = stream.get_width();
-		asset->height = stream.get_height();
+		asset->width = stream->get_width();
+		asset->height = stream->get_height();
 		if (asset->width * asset->height <= 0) {
 			printf("illegal frame size '%d x %d'\n", 
 			       asset->width, asset->height);
@@ -50,22 +52,27 @@ int FileYUV::open_file(int should_read, int should_write)
 		asset->video_data = 1;
 		asset->audio_data = 0;
 		
-		asset->frame_rate = stream.get_frame_rate();
-		asset->aspect_ratio = stream.get_aspect_ratio();
+		asset->frame_rate = stream->get_frame_rate();
+		asset->aspect_ratio = stream->get_aspect_ratio();
 
 		return 0;
 	}
 
 	if (should_write) {
-		result = stream.open_write(asset->path);
+		if (asset->use_pipe) {
+			result = stream->open_write(asset->path, asset->pipe);
+		}
+		else {
+			result = stream->open_write(asset->path, NULL);
+		}
 		if (result) return result;
 
-		stream.set_width(asset->width);
-		stream.set_height(asset->height);
-		stream.set_frame_rate(asset->frame_rate);
-		stream.set_aspect_ratio(asset->aspect_ratio);
+		stream->set_width(asset->width);
+		stream->set_height(asset->height);
+		stream->set_frame_rate(asset->frame_rate);
+		stream->set_aspect_ratio(asset->aspect_ratio);
 
-		result = stream.write_header();
+		result = stream->write_header();
 		if (result) return result;
 		
 		return 0;
@@ -76,13 +83,13 @@ int FileYUV::open_file(int should_read, int should_write)
 }
 
 int FileYUV::close_file() {
-	stream.close_fd();
+	stream->close_fd();
 	return 0;
 }
 
 // NOTE: set_video_position() called every time a frame is read
 int FileYUV::set_video_position(int64_t frame_number) {
-	return stream.seek_frame(frame_number);
+	return stream->seek_frame(frame_number);
 }
 	
 int FileYUV::read_frame(VFrame *frame)
@@ -93,17 +100,17 @@ int FileYUV::read_frame(VFrame *frame)
 	// short cut for direct copy routines
 	if (frame->get_color_model() == BC_COMPRESSED) {
 		long frame_size = (long) // w*h + w*h/4 + w*h/4
-			(stream.get_height() * 	stream.get_width() * 1.5); 
+			(stream->get_height() *	stream->get_width() * 1.5); 
 		frame->allocate_compressed_data(frame_size);
 		frame->set_compressed_size(frame_size);
-		return stream.read_frame_raw(frame->get_data(), frame_size);
+		return stream->read_frame_raw(frame->get_data(), frame_size);
 	}
 	
 
 	// process through a temp frame if necessary
 	if (! cmodel_is_planar(frame->get_color_model()) ||
-	    (frame->get_w() != stream.get_width()) ||
-	    (frame->get_h() != stream.get_height())) {
+	    (frame->get_w() != stream->get_width()) ||
+	    (frame->get_h() != stream->get_height())) {
 		
 		// make sure the temp is correct size and type
 		if (temp && (temp->get_w() != asset->width ||
@@ -115,8 +122,8 @@ int FileYUV::read_frame(VFrame *frame)
 		
 		// create a correct temp frame if we don't have one
 		if (temp == 0) {
-			temp = new VFrame(0, stream.get_width(), 
-					  stream.get_height(), 
+			temp = new VFrame(0, stream->get_width(), 
+					  stream->get_height(), 
 					  BC_YUV420P);
 		}
 		
@@ -127,7 +134,7 @@ int FileYUV::read_frame(VFrame *frame)
 	yuv[0] = input->get_y();
 	yuv[1] = input->get_u();
 	yuv[2] = input->get_v();
-	result = stream.read_frame(yuv);
+	result = stream->read_frame(yuv);
 	if (result) return result;
 
 	// transfer from the temp frame to the real one
@@ -175,14 +182,14 @@ int FileYUV::write_frames(VFrame ***layers, int len)
 		// short cut for direct copy routines
 		if (frame->get_color_model() == BC_COMPRESSED) {
 			long frame_size = frame->get_compressed_size();
-			return stream.write_frame_raw(frame->get_data(), 
+			return stream->write_frame_raw(frame->get_data(), 
 						      frame_size);
 		}
 
 		// process through a temp frame only if necessary
 		if (! cmodel_is_planar(frame->get_color_model()) ||
-		    (frame->get_w() != stream.get_width()) ||
-		    (frame->get_h() != stream.get_height())) {
+		    (frame->get_w() != stream->get_width()) ||
+		    (frame->get_h() != stream->get_height())) {
 
 
 			// make sure the temp is correct size and type
@@ -195,8 +202,8 @@ int FileYUV::write_frames(VFrame ***layers, int len)
 			
 			// create a correct temp frame if we don't have one
 			if (temp == 0) {
-				temp = new VFrame(0, stream.get_width(), 
-						  stream.get_height(), 
+				temp = new VFrame(0, stream->get_width(), 
+						  stream->get_height(), 
 						  BC_YUV420P);
 			}
 			
@@ -229,7 +236,7 @@ int FileYUV::write_frames(VFrame ***layers, int len)
 		yuv[0] = frame->get_y();
 		yuv[1] = frame->get_u();
 		yuv[2] = frame->get_v();
-		result = stream.write_frame(yuv);
+		result = stream->write_frame(yuv);
 		if (result) return result;
 
 
@@ -252,12 +259,19 @@ void FileYUV::get_parameters(BC_WindowBase *parent_window,
 	format_window = config;
 	config->create_objects();
 	if (config->run_window() == 0) {
-		// save the new path/pipe and update render window
-		strcpy(asset->path, config->textbox->get_text());
-		// update the textbox in the render window
+		// save the new path and pipe to the asset
+		strcpy(asset->path, config->path_textbox->get_text());
+		strcpy(asset->pipe, config->pipe_config->textbox->get_text());
+		// are we using the pipe (if there is one)
+		asset->use_pipe = config->pipe_config->checkbox->get_value();
+		// update the path textbox in the render window
 		format->path_textbox->update(asset->path);
-		// and add the new path/pipe to the defaults list
-		config->recent->add_item(asset->path);
+		// set the pipe status in the render window
+		format->pipe_status->set_status(asset);
+		// and add the new path and pipe to the defaults list
+		config->path_recent->add_item(asset->format, asset->path);
+		config->pipe_config->recent->add_item(asset->format, 
+						      asset->pipe);
 	}
 	delete config;
 }
@@ -275,10 +289,10 @@ int FileYUV::check_sig(Asset *asset)
         return 0;
 }
 
+// NOTE: this is called on the write stream, not the read stream!
+//       as such, I have no idea what one is supposed to do with position.
 int FileYUV::can_copy_from(Edit *edit, int64_t position)
-{
-	if (position > stream.frame_count || position < 0) return 0;
-	// NOTE: width and height already checked in file.C
+{	// NOTE: width and height already checked in file.C
 	if (edit->asset->format == FILE_YUV) return 1;
 	return 0;
 }
@@ -317,18 +331,21 @@ YUVConfigVideo::YUVConfigVideo(BC_WindowBase *parent_window, Asset *asset,
 		    parent_window->get_abs_cursor_x(1),
 		    parent_window->get_abs_cursor_y(1),
 		    500,
-		    100)
+		    150)
 {
 	this->parent_window = parent_window;
 	this->asset = asset;
 	this->format = format;
+	this->defaults = format->mwindow->defaults;
 }
 
 YUVConfigVideo::~YUVConfigVideo()
 {
-	delete textbox;
+	delete path_textbox;
+	delete path_recent;
+	delete pipe_config;
 	delete mpeg2enc;
-	delete recent;
+	delete ffmpeg;
 }
 
 int YUVConfigVideo::create_objects()
@@ -339,27 +356,43 @@ int YUVConfigVideo::create_objects()
 	int x = init_x;
 	int y = init_y;
 
-	add_subwindow(new BC_Title(x, y, _("Path or Pipe:")));
-	x += 90;
-	textbox = new YUVPathText(x, y, this);
-	add_subwindow(textbox);
+	add_subwindow(new BC_Title(x, y, _("Output Path:")));
+	x += 120;
+	path_textbox = new BC_TextBox(x, y, 350, 1, asset->path);
+	add_subwindow(path_textbox);
 
 	x += 350;
-	recent = new RecentList("YUV4MPEG_STREAM", format->mwindow->defaults,
-				textbox, 10, x, y, 350, 100);
-	add_subwindow(recent);
-	recent->load_items();
-	recent->create_objects();
+	path_recent = new RecentList("PATH", defaults, path_textbox, 
+				     10, x, y, 350, 100);
+	add_subwindow(path_recent);
+	path_recent->load_items(asset->format);
 
 	x = init_x;
-	y += 25;
+	y += 40;
+
+	pipe_config = new PipeConfig(this, defaults, asset);
+	pipe_config->create_objects(x, y, 350, asset->format);
+	
+
+	x = init_x;
+	y += 40;
 
 	add_subwindow(new BC_Title(x, y, _("Presets:")));
 	x += 90;
-	mpeg2enc = new YUVMpeg2Enc(x, y, this);
+	mpeg2enc = new PipePreset(x, y, "mpeg2enc", pipe_config);
 	add_subwindow(mpeg2enc);
-	mpeg2enc->create_objects();	
-	
+	// NOTE: the '%' character will be replaced by the current path
+	// NOTE: to insert a real '%' double it up: '%%' -> '%'
+	// NOTE: preset items must have a '|' before the actual command
+	mpeg2enc->add_item(new BC_MenuItem ("(DVD) | mpeg2enc -f 8 -o %"));
+	mpeg2enc->add_item(new BC_MenuItem ("(VCD) | mpeg2enc -f 2 -o %"));
+
+	x += 160;
+	ffmpeg = new PipePreset(x, y, "ffmpeg", pipe_config);
+	add_subwindow(ffmpeg);
+	ffmpeg->add_item(new BC_MenuItem("(DVD) | ffmpeg -f yuv4mpegpipe -i - -y -target dvd %"));
+	ffmpeg->add_item(new BC_MenuItem("(VCD) | ffmpeg -f yuv4mpegpipe -i - -y -target vcd %"));
+
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
 	show_window();
@@ -373,31 +406,4 @@ int YUVConfigVideo::close_event()
 }
 
 
-YUVPathText::YUVPathText(int x, int y, YUVConfigVideo *config)
- : BC_TextBox(x, y, 350, 1, config->asset->path) 
-{
-	this->config = config;
-}
 
-
-YUVMpeg2Enc::YUVMpeg2Enc(int x, int y, YUVConfigVideo *config)
-	: BC_PopupMenu(x, y, 150, "mpeg2enc")
-{
-	this->config = config;
-	set_tooltip(_("Preset pipes to mpeg2enc encoder"));
-}
-
-int YUVMpeg2Enc::handle_event() {
-	char *text = get_text();
-	char *pipe = strchr(text, '|');
-	if (pipe) config->textbox->update(pipe);
-	// menuitem sets the title after selection but we reset it
-	set_text("mpeg2enc");
-}
-
-int YUVMpeg2Enc::create_objects() {
-	add_item(new BC_MenuItem("(DVD) | mpeg2enc -f 8 -o dvd.m2v"));
-	add_item(new BC_MenuItem("(VCD) | mpeg2enc -f 2 -o vcd.m2v"));
-}
-
-	

@@ -4,10 +4,6 @@
 #include "bcsignals.h"
 #include "file.h"
 
-extern "C" {
-	extern int sigpipe_received;
-}
-
 class SigHandler : public BC_Signals
 {
 public:

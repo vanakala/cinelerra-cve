@@ -318,6 +318,10 @@ void Render::run()
 					RenderWindow window(mwindow, this, asset);
 					window.create_objects();
 					result = window.run_window();
+					if (! result) {
+						// add to recentlist only on OK
+						window.format_tools->path_recent->add_item(asset->format, asset->path);
+					}
 				}
 
 				if(!result)

@@ -44,6 +44,39 @@
 // For formats supported by plugins, the format number is the plugin number in the 
 // plugin list ORed with 0x8000.
 
+#define FILE_FORMAT_PREFIX(format) ( \
+	format == FILE_AIFF    ? "AIFF" :		\
+	format == FILE_AMPEG   ? "MPEG" :		\
+	format == FILE_AC3     ? "AC3" :		\
+	format == FILE_AU      ? "AU" :			\
+	format == FILE_AVI_ARNE1 ? "AVI_ARNE1" :	\
+	format == FILE_AVI     ? "AVI" :		\
+	format == FILE_AVI_ARNE2 ? "AVI_ARNE2" :	\
+	format == FILE_AVI_AVIFILE ? "AVIFILE" :	\
+	format == FILE_AVI_LAVTOOLS ? "AVI_LAVTOOLS" :	\
+	format == FILE_GIF     ? "GIF" :		\
+	format == FILE_JPEG    ? "JPEG" :		\
+	format == FILE_JPEG_LIST ? "JPEG_LIST" :	\
+	format == FILE_MOV     ? "MOV" :		\
+	format == FILE_MPEG    ? "MPEG" :		\
+	format == FILE_PCM     ? "PCM" :		\
+	format == FILE_PLUGIN  ? "PLUGIN" :		\
+	format == FILE_PNG     ? "PNG" :		\
+	format == FILE_PNG_LIST ? "PNG_LIST" :		\
+	format == FILE_SND     ? "SND" :		\
+	format == FILE_TGA     ? "TGA" :		\
+	format == FILE_TGA_LIST ? "TGA_LIST" :		\
+	format == FILE_TIFF    ? "TIFF" :		\
+	format == FILE_TIFF_LIST ? "TIFF_LIST" :	\
+	format == FILE_VMPEG   ? "VMPEG" :		\
+	format == FILE_VORBIS  ? "VORBIS" :		\
+	format == FILE_WAV     ? "WAV" :		\
+	format == FILE_EXR     ? "EXR" :		\
+	format == FILE_EXR_LIST ? "EXR_LIST" :		\
+	format == FILE_RAWDV   ? "RAWDV" :		\
+	format == FILE_YUV     ? "YUV" :		\
+	"UNKNOWN")
+
 #if 0
 N_("AC3")
 N_("Apple/SGI AIFF")

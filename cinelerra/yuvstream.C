@@ -3,15 +3,15 @@
 #include <errno.h>
 
 #include "guicast.h"
-#include "sighandler.h"
+#include "pipe.h"
 #include "yuvstream.h"
 
 
 YUVStream::YUVStream() { 
 	y4m_init_stream_info(&stream_info);
 	y4m_init_frame_info(&frame_info);
-	stream_fd = 0;
-	stream_file = 0;
+	stream_fd = -1;
+	stream_pipe= 0;
 	frame_count = 0;
 	frame_index = 0;
 }
@@ -50,20 +50,18 @@ int YUVStream::open_read(char *path) {
 }
 
 // NOTE: path is opened as a pipe if contains '|'
-int YUVStream::open_write(char *path) {
-	char *pipe = strchr(path, '|');
-	if (pipe) {
-		// skip over the '|'
-		path = pipe + 1;
-		stream_file = popen(path, "w");
-		if (stream_file != NULL) {
-			stream_fd = fileno(stream_file);
+int YUVStream::open_write(char *path, char *pipe) {
+	if (pipe && *pipe) {
+		// skip over the '|' if present
+		if (char *p = strchr(path, '|')) {
+			pipe = p + 1;
+		}
+
+		stream_pipe = new Pipe(pipe, path);
+		if (stream_pipe->open_write() == 0) {
+			stream_fd = stream_pipe->fd;
 			return 0;
 		}
-		// NOTE: popen() fails only if fork/exec fails
-		//       there is no immediate way to see if command failed
-		//       As such, one must expect to raise SIGPIPE on failure
-		printf("popen(%s) failed: %s\n", pipe, strerror(errno));
 		return 1;
 	}
 
@@ -76,14 +74,14 @@ int YUVStream::open_write(char *path) {
 
 
 void YUVStream::close_fd() {
-	if (stream_file) {
-		pclose(stream_file);
-		stream_file = 0;
-		stream_fd = 0;
+	if (stream_pipe) {
+		stream_pipe->close();
+		stream_pipe = 0;
+		stream_fd = -1;
 	}
 		
-	if (stream_fd) close(stream_fd);
-	stream_fd = 0;
+	if (stream_fd >= 0) close(stream_fd);
+	stream_fd = -1;
 }
 
 int YUVStream::read_frame(uint8_t *yuv[3]) {
@@ -148,7 +146,7 @@ int YUVStream::make_index() {
 	// NOTE: make_index() must be called after read_header().
 
 	// NOTE: storing frame_index locally means it is destroyed too often.
-	//       make_index() will be called several times per file.  If this
+	//       make_index() will be called 3 times per file.  If this
 	//       becomes a performance problem, the index should be cached.
 	//       Storing in 'asset' helps some, but still is done twice.
 	if (frame_index) delete frame_index;

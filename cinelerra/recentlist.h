@@ -11,19 +11,18 @@
 class RecentList : public BC_ListBox
 {
  public:
-	RecentList(char *prefix, Defaults *defaults, 
+	RecentList(char *type, Defaults *defaults, 
 		   BC_TextBox *textbox, int max,
 		   int x, int y, int w, int h);
 	~RecentList();
 
 	int handle_event();
-	int create_objects();
-	int load_items();
-	int add_item(char *text);
+	int load_items(int format);
+	int add_item(int format, char *text);
 
  private:
 	int max;
-	char *prefix;
+	char *type;
 	BC_TextBox *textbox;
 	Defaults *defaults;
 	ArrayList<BC_ListBoxItem*> items;

@@ -35,32 +35,8 @@ class FileYUV : public FileBase
 
  private:
 	VFrame *temp;
-	YUVStream stream;
+	YUVStream *stream;
 };
-
-
-class YUVConfigVideo;
-
-class YUVPathText : public BC_TextBox
-{
- public:
-        YUVPathText(int x, int y, YUVConfigVideo *config);
-
- private:
-	YUVConfigVideo *config;
-};
-
-class YUVMpeg2Enc : public BC_PopupMenu
-{
- public:
-	YUVMpeg2Enc(int x, int y, YUVConfigVideo *config);
-	int handle_event();
-	int create_objects();
-	
- private: 
-	YUVConfigVideo *config;
-};
-	
 
 
 class YUVConfigVideo : public BC_Window
@@ -76,9 +52,13 @@ class YUVConfigVideo : public BC_Window
 	BC_WindowBase *parent_window;
 	Asset *asset;
 	FormatTools *format;
-	YUVPathText *textbox;
-	YUVMpeg2Enc *mpeg2enc;
-	RecentList *recent;
+	Defaults *defaults;
+	BC_TextBox *path_textbox;
+	RecentList *path_recent;
+	PipeConfig *pipe_config;
+	PipePreset *mpeg2enc;
+	PipePreset *ffmpeg;
 };
+
 
 #endif

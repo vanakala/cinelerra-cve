@@ -55,6 +55,10 @@ public:
 		int do_bits);
 	char* construct_param(char *param, char *prefix, char *return_value);
 
+// defaults which are specific to format used	
+	void load_format_defaults(Defaults *defaults);
+	void save_format_defaults(Defaults *defaults);
+
 // for programme timecode
 	void set_frame_start(int64_t value);
 
@@ -94,6 +98,13 @@ public:
 
 // Path to file
 	char path[BCTEXTLEN];
+
+// Pipe command
+	char pipe[BCTEXTLEN];
+	int use_pipe;
+
+// Prefix used to generate this asset
+	char prefix[BCTEXTLEN];
 
 // Folder in resource manager
 	char folder[BCTEXTLEN];

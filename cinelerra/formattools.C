@@ -7,6 +7,8 @@
 #include "preferences.h"
 #include "theme.h"
 #include <string.h>
+#include "pipe.h"
+#include "recentlist.h"
 
 #include <libintl.h>
 #define _(String) gettext(String)
@@ -34,6 +36,8 @@ FormatTools::~FormatTools()
 {
 	delete path_button;
 	delete path_textbox;
+	delete path_recent;
+	delete pipe_status;
 	delete format_button;
 
 	if(aparams_button) delete aparams_button;
@@ -95,13 +99,19 @@ int FormatTools::create_objects(int &init_x,
 
 //printf("FormatTools::create_objects 1\n");
 	window->add_subwindow(path_textbox = new FormatPathText(x, y, this));
-	x += 305;
+	x += 300;
+	path_recent = new RecentList("PATH", mwindow->defaults, path_textbox, 
+				     10, x, y, 300, 100);
+	window->add_subwindow(path_recent);
+	path_recent->load_items(asset->format);
+
+	x += 18;
 	window->add_subwindow(path_button = new BrowseButton(
 		mwindow,
 		window,
 		path_textbox, 
 		x, 
-		y, 
+		y - 4, 
 		asset->path,
 		_("Output to file"),
 		_("Select a file to write to:"),
@@ -110,7 +120,14 @@ int FormatTools::create_objects(int &init_x,
 	w = x + path_button->get_w() + 5;
 //printf("FormatTools::create_objects 2\n");
 	x -= 305;
-	y += 35;
+
+	y += 25;
+
+	pipe_status = new PipeStatus(x, y, "");
+	window->add_subwindow(pipe_status);
+	pipe_status->set_status(asset);
+       	
+	y += 25;
 
 //printf("FormatTools::create_objects 3\n");
 	window->add_subwindow(format_title = new BC_Title(x, y, _("File Format:")));
@@ -485,9 +502,26 @@ int FormatFormat::handle_event()
 		int new_format = File::strtoformat(format->plugindb, get_selection(0, 0)->get_text());
 		if(new_format != format->asset->format)
 		{
-			format->asset->format = new_format;
-			format->format_text->update(get_selection(0, 0)->get_text());
+			// save the state of the old format
+			format->asset->save_format_defaults
+				(format->mwindow->defaults);
+
+			// close the configure window if open
 			format->close_format_windows();
+
+			// change to the new format
+			format->asset->format = new_format;
+
+			// load the state for the new format
+			format->asset->load_format_defaults
+				(format->mwindow->defaults);
+
+			// update the render window to match
+			format->format_text->
+				update(get_selection(0, 0)->get_text());
+			format->path_textbox->update(format->asset->path);
+			format->pipe_status->set_status(format->asset);
+			format->path_recent->load_items(format->asset->format);
 		}
 	}
 	return 1;

@@ -134,6 +134,9 @@ int Asset::init_values()
 
 	frame_start = 0;
 
+	pipe[0] = 0;
+	use_pipe = 0;
+
 	return 0;
 }
 
@@ -243,6 +246,12 @@ void Asset::copy_format(Asset *asset, int do_index)
 
 	tiff_cmodel = asset->tiff_cmodel;
 	tiff_compression = asset->tiff_compression;
+
+	strcpy(pipe, asset->pipe);
+	use_pipe = asset->use_pipe;
+
+	// FUTURE: should this be here or in copy_from()?
+	strcpy(prefix, asset->prefix);
 
 	frame_start = asset->frame_start;
 }
@@ -828,6 +837,9 @@ void Asset::load_defaults(Defaults *defaults,
 		byte_order = GET_DEFAULT("BYTE_ORDER", 1);
 	}
 
+	// NOTE: this should never be saved
+	strcpy(this->prefix, prefix);
+
 	ampeg_bitrate = GET_DEFAULT("AMPEG_BITRATE", ampeg_bitrate);
 	ampeg_derivative = GET_DEFAULT("AMPEG_DERIVATIVE", ampeg_derivative);
 
@@ -882,7 +894,32 @@ void Asset::load_defaults(Defaults *defaults,
 	exr_compression = GET_DEFAULT("EXR_COMPRESSION", exr_compression);
 	tiff_cmodel = GET_DEFAULT("TIFF_CMODEL", tiff_cmodel);
 	tiff_compression = GET_DEFAULT("TIFF_COMPRESSION", tiff_compression);
+
+	load_format_defaults(defaults);
 }
+
+// FUTURE: put more of the format specific variables in here
+void Asset::load_format_defaults(Defaults *defaults) {
+	char temp[BCTEXTLEN];
+	char string[BCTEXTLEN];
+	if (! format) return;
+
+	// NOTE: old value is used if no init value set before GET_DEFAULT 
+
+	// override the defaults with those for this format
+	sprintf(temp, "FORMAT_%s_USE_PIPE", FILE_FORMAT_PREFIX(format));
+	use_pipe = 0;  
+	use_pipe = GET_DEFAULT(temp, use_pipe);
+
+	sprintf(temp, "FORMAT_%s_PIPE", FILE_FORMAT_PREFIX(format));
+	sprintf(pipe, "");
+	GET_DEFAULT(temp, pipe);
+
+	sprintf(temp, "FORMAT_%s_PATH", FILE_FORMAT_PREFIX(format));
+	sprintf(path, "");
+	GET_DEFAULT(temp, path);
+}
+	
 
 void Asset::save_defaults(Defaults *defaults, 
 	char *prefix,
@@ -980,14 +1017,26 @@ void Asset::save_defaults(Defaults *defaults,
 	UPDATE_DEFAULT("EXR_COMPRESSION", exr_compression);
 	UPDATE_DEFAULT("TIFF_CMODEL", tiff_cmodel);
 	UPDATE_DEFAULT("TIFF_COMPRESSION", tiff_compression);
+
+	save_format_defaults(defaults);
 }
 
 
+// FUTURE: put more of the format specific variables in here
+void Asset::save_format_defaults(Defaults *defaults) {
+	char temp[BCTEXTLEN];
+	char string[BCTEXTLEN];
+	if (! format) return;
 
+	sprintf(temp, "FORMAT_%s_USE_PIPE", FILE_FORMAT_PREFIX(format));
+	UPDATE_DEFAULT(temp, use_pipe);
 
+	sprintf(temp, "FORMAT_%s_PIPE", FILE_FORMAT_PREFIX(format));
+	UPDATE_DEFAULT(temp, pipe);
 
-
-
+	sprintf(temp, "FORMAT_%s_PATH", FILE_FORMAT_PREFIX(format));
+	UPDATE_DEFAULT(temp, path);
+}
 
 
 int Asset::update_path(char *new_path)

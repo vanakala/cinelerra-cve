@@ -2,15 +2,18 @@
 
 #include "defaults.h"
 #include "recentlist.h"
+#include "file.inc"
 
-RecentList::RecentList(char *prefix, Defaults *defaults, BC_TextBox *textbox,
-		       int max, int x, int y, int w, int h) 
+RecentList::RecentList(char *type, Defaults *defaults, 
+		       BC_TextBox *textbox, int max, 
+		       int x, int y, int w, int h) 
 	: BC_ListBox(x, y, w, h, LISTBOX_TEXT, 0, 0, 0, 1, 0, 1) 
 {
-	this->textbox = textbox;
+	this->type = type;
 	this->defaults = defaults;
-	this->prefix = prefix;
+	this->textbox = textbox;
 	this->max = max;
+	set_tooltip("Choose from recently used");
 }
 
 RecentList::~RecentList() {
@@ -21,17 +24,16 @@ int RecentList::handle_event() {
 	BC_ListBoxItem *item = get_selection(0, 0);
 	if (item < 0) return 0;
 	char *text = item->get_text();
-	if (text) textbox->update(text);
+	if (text) {
+		// change the text in the textbox
+		textbox->update(text);
+		// tell the textbox to deal with it
+		textbox->handle_event();
+	}
 	return 0;
 }
 
-int RecentList::create_objects() {
-	set_tooltip("Choose from recently used");
-	update(&items, 0, 0, 1);
-	return 0;
-}
-
-int RecentList::load_items() {
+int RecentList::load_items(int format) {
 
 	if (items.total > 0) {
 		items.remove_all_objects();
@@ -41,20 +43,21 @@ int RecentList::load_items() {
 	for (count = 0; count < max; count++) {
 		char save[BCTEXTLEN];
 		char text[BCTEXTLEN];
-		sprintf(save, "%s_%d", prefix, count);
+		sprintf(save, "RECENT_%s_%s_%d", 
+			FILE_FORMAT_PREFIX(format), type, count);
 		sprintf(text, "");
-		// FIXME: Defaults::get(char*,char*) at guicast/defaults.C:138 
-		//        looks really odd.  Perhaps a typo needs to be fixed?
 		defaults->get(save, text);
 		if (strlen(text) == 0) break;
 		items.append(new BC_ListBoxItem(text));
 	}
 
+	update(&items, 0, 0, 1);
+
 	return count;
 }	
 
 
-int RecentList::add_item(char *text) {
+int RecentList::add_item(int format, char *text) {
 	
 	// remove an old item if it matches the new text
 	for (int i = 0; i < items.total; i++) {
@@ -72,7 +75,8 @@ int RecentList::add_item(char *text) {
 	for (count = 0; count < max && count < items.total; count++) {
 		BC_ListBoxItem *item = items.values[count];
 		char save[BCTEXTLEN];
-		sprintf(save, "%s_%d", prefix, count);
+		sprintf(save, "RECENT_%s_%s_%d", 
+			FILE_FORMAT_PREFIX(format), type, count);
 		defaults->update(save, item->get_text());
 	}
 

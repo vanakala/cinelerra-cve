@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "guicast.h"
+#include "pipe.h"
 
 #ifndef HAVE_STDINT_H
 #define HAVE_STDINT_H
@@ -15,7 +16,7 @@ class YUVStream {
 	~YUVStream();
 
 	int open_read(char *path);
-	int open_write(char *path);  // opened as pipe if path contains '|'
+	int open_write(char *path, char *pipe);
 	void close_fd(); 
 
 	int read_frame(uint8_t *yuv[3]);
@@ -42,13 +43,12 @@ class YUVStream {
 	double get_aspect_ratio();
 	void set_aspect_ratio(double aspect_ratio);
 
-	long frame_count;
+	int64_t frame_count;
 
+	int stream_fd;  // used for files
  private: 
 	y4m_stream_info_t stream_info;
 	y4m_frame_info_t frame_info;
-	int stream_fd;  // used for pipes
-	FILE *stream_file; // used for files
-	int sigpipe;
+	Pipe *stream_pipe; // used for pipes
 	ArrayList<off_t> *frame_index;
 };
