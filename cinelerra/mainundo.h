@@ -14,16 +14,19 @@ public:
 	MainUndo(MWindow *mwindow);
 	~MainUndo();
 
+   // Use this function for UndoStackItem subclasses with custom
+   // undo and redo functions.  All fields including description must
+   // be populated before calling this function.
+   void push_undo_item(UndoStackItem *item);
+
+   // Use the following functions for the default save/restore undo method
 	void update_undo_before(char *description, uint32_t load_flags);
 	void update_undo_after();
-
 
 	int undo();
 	int redo();
 
 private:
-	int load_from_undo(FileXML *file, uint32_t load_flags);    // loads undo from the stringfile to the project
-
 	UndoStack undo_stack;
 	UndoStackItem* current_entry; // for setting the after buffer
 	MWindow *mwindow;

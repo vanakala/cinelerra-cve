@@ -38,6 +38,7 @@
 #include "transition.h"
 #include "transportque.h"
 #include "units.h"
+#include "undostack.h"
 #include "vplayback.h"
 #include "vwindow.h"
 #include "vwindowgui.h"
@@ -1656,13 +1657,40 @@ void MWindow::resize_track(Track *track, int w, int h)
 }
 
 
+InPointUndoItem::InPointUndoItem(
+      double old_position, double new_position, EDL *edl)
+{
+   set_description("in point");
+   this->old_position = old_position;
+   this->new_position = new_position;
+   this->edl = edl;
+}
+
+void InPointUndoItem::undo()
+{
+   edl->set_inpoint(old_position);
+}
+
+void InPointUndoItem::redo()
+{
+   edl->set_inpoint(new_position);
+}
+
+int InPointUndoItem::get_size()
+{
+   return 20;
+}
+
 void MWindow::set_inpoint(int is_mwindow)
 {
-	undo->update_undo_before(_("in point"), LOAD_TIMEBAR);
+   InPointUndoItem *undo_item;
+
+   undo_item = new InPointUndoItem(edl->local_session->in_point,
+         edl->local_session->selectionstart, edl);
+   undo->push_undo_item(undo_item);
+
 	edl->set_inpoint(edl->local_session->selectionstart);
 	save_backup();
-	undo->update_undo_after();
-
 
 	if(!is_mwindow)
 	{
@@ -1687,13 +1715,40 @@ void MWindow::set_inpoint(int is_mwindow)
 	}
 }
 
+OutPointUndoItem::OutPointUndoItem(
+      double old_position, double new_position, EDL *edl)
+{
+   set_description("out point");
+   this->old_position = old_position;
+   this->new_position = new_position;
+   this->edl = edl;
+}
+
+void OutPointUndoItem::undo()
+{
+   edl->set_outpoint(old_position);
+}
+
+void OutPointUndoItem::redo()
+{
+   edl->set_outpoint(new_position);
+}
+
+int OutPointUndoItem::get_size()
+{
+   return 20;
+}
+
 void MWindow::set_outpoint(int is_mwindow)
 {
-	undo->update_undo_before(_("out point"), LOAD_TIMEBAR);
+   OutPointUndoItem *undo_item;
+
+   undo_item = new OutPointUndoItem(edl->local_session->out_point,
+         edl->local_session->selectionend, edl);
+   undo->push_undo_item(undo_item);
+
 	edl->set_outpoint(edl->local_session->selectionend);
 	save_backup();
-	undo->update_undo_after();
-
 
 	if(!is_mwindow)
 	{
@@ -1800,15 +1855,35 @@ void MWindow::to_clip()
 //printf("VWindowEditing::to_clip 3 %d\n", edl->assets->total());
 }
 
+LabelUndoItem::LabelUndoItem(
+      double position1, double position2, EDL *edl)
+{
+   set_description("label");
+   this->position1 = position1;
+   this->position2 = position2;
+   this->edl = edl;
+}
 
+void LabelUndoItem::undo()
+{
+	edl->labels->toggle_label(position1, position2);
+}
 
+void LabelUndoItem::redo()
+{
+	edl->labels->toggle_label(position1, position2);
+}
+
+int LabelUndoItem::get_size()
+{
+   return 20;
+}
 
 int MWindow::toggle_label(int is_mwindow)
 {
+   LabelUndoItem *undo_item;
 	double position1, position2;
 
-//printf("MWindow::toggle_label 1\n");
-	undo->update_undo_before(_("label"), LOAD_TIMEBAR);
 //printf("MWindow::toggle_label 1\n");
 
 	if(cwindow->playback_engine->is_playing_back)
@@ -1827,6 +1902,9 @@ int MWindow::toggle_label(int is_mwindow)
 	position2 = edl->align_to_frame(position2, 0);
 
 //printf("MWindow::toggle_label 1\n");
+   undo_item = new LabelUndoItem(position1, position2, edl);
+   undo->push_undo_item(undo_item);
+
 	edl->labels->toggle_label(position1, position2);
 	save_backup();
 
@@ -1856,7 +1934,6 @@ int MWindow::toggle_label(int is_mwindow)
 	}
 
 //printf("MWindow::toggle_label 1\n");
-	undo->update_undo_after();
 //printf("MWindow::toggle_label 2\n");
 	return 0;
 }

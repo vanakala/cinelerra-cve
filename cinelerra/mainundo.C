@@ -20,6 +20,15 @@ MainUndo::~MainUndo()
 {
 }
 
+void MainUndo::push_undo_item(UndoStackItem *item)
+{
+   undo_stack.push(item);
+   mwindow->gui->lock_window("MainUndo::update_undo_before");
+   mwindow->gui->mainmenu->undo->update_caption(item->description);
+   mwindow->gui->mainmenu->redo->update_caption("");
+   mwindow->gui->unlock_window();
+}
+
 void MainUndo::update_undo_before(char *description, uint32_t load_flags)
 {
 	if(!undo_before_updated)
@@ -37,9 +46,10 @@ void MainUndo::update_undo_before(char *description, uint32_t load_flags)
 		current_entry->load_flags = load_flags;
 		current_entry->set_data_before(file.string);
 		current_entry->set_description(description);
+      current_entry->set_mwindow(mwindow);
 
 // the after update is always without a description
-		mwindow->gui->lock_window();
+		mwindow->gui->lock_window("MainUndo::update_undo_before");
 		mwindow->gui->mainmenu->undo->update_caption(description);
 		mwindow->gui->mainmenu->redo->update_caption("");
 		mwindow->gui->unlock_window();
@@ -53,13 +63,18 @@ void MainUndo::update_undo_after()
 	if(undo_before_updated)
 	{
 		FileXML file;
+//printf("MainUndo::update_undo_after 1\n");
 		mwindow->edl->save_xml(mwindow->plugindb, 
 			&file, 
 			"",
 			0,
 			0);
+//printf("MainUndo::update_undo_after 1\n");
 		file.terminate_string();
+//printf("MainUndo::update_undo_after 1\n");
 		current_entry->set_data_after(file.string);
+      undo_stack.update_size();
+//printf("MainUndo::update_undo_after 10\n");
 		undo_before_updated = 0;
 	}
 }
@@ -76,12 +91,9 @@ int MainUndo::undo()
 		current_entry = undo_stack.current;
 		if(current_entry->description && mwindow->gui) 
 			mwindow->gui->mainmenu->redo->update_caption(current_entry->description);
-		
-		FileXML file;
-		
-		file.read_from_string(current_entry->data_before);
-		load_from_undo(&file, current_entry->load_flags);
-		
+
+      current_entry->undo();
+
 		undo_stack.pull();    // move current back
 		if(mwindow->gui)
 		{
@@ -101,9 +113,7 @@ int MainUndo::redo()
 	
 	if(current_entry)
 	{
-		FileXML file;
-		file.read_from_string(current_entry->data_after);
-		load_from_undo(&file, current_entry->load_flags);
+      current_entry->redo();
 
 		if(mwindow->gui)
 		{
@@ -117,22 +127,3 @@ int MainUndo::redo()
 	}
 	return 0;
 }
-
-
-// Here the master EDL loads 
-int MainUndo::load_from_undo(FileXML *file, uint32_t load_flags)
-{
-	mwindow->edl->load_xml(mwindow->plugindb, file, load_flags);
-	for(Asset *asset = mwindow->edl->assets->first;
-		asset;
-		asset = asset->next)
-	{
-		mwindow->mainindexes->add_next_asset(asset);
-	}
-	mwindow->mainindexes->start_build();
-	return 0;
-}
-
-
-
-
