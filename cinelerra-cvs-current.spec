@@ -4,7 +4,7 @@
 Summary: Cinelerra CVS
 Name: cinelerra
 Version: 1.2.0
-Release: 1
+Release: 5
 License: GPL
 Group: X11
 URL: http://cvs.cinelerra.org
@@ -25,6 +25,12 @@ make
 %install
 rm -rf $RPM_BUILD_ROOT
 make prefix=$RPM_BUILD_ROOT%{prefix} install
+# rename the mpeg3 utils so they can be installed alongside SuSE native versions
+( cd $RPM_BUILD_ROOT%{prefix}/bin
+  mv mpeg3toc mpeg3toc.hv
+  mv mpeg3cat mpeg3cat.hv
+  mv mpeg3dump mpeg3dump.hv
+)
 
 %clean
 rm -rf $RPM_BUILD_ROOT
@@ -36,9 +42,12 @@ rm -rf $RPM_BUILD_ROOT
 %{prefix}/bin/cinelerra
 %{prefix}/bin/mplexhi
 %{prefix}/bin/mplexlo
-%exclude %{prefix}/bin/mpeg3dump
-%exclude %{prefix}/bin/mpeg3toc
-%exclude %{prefix}/bin/mpeg3cat
+#%exclude %{prefix}/bin/mpeg3dump
+#%exclude %{prefix}/bin/mpeg3toc
+#%exclude %{prefix}/bin/mpeg3cat
+%{prefix}/bin/mpeg3dump.hv
+%{prefix}/bin/mpeg3toc.hv
+%{prefix}/bin/mpeg3cat.hv
 #%{prefix}/lib/*
 %{prefix}/share/locale/*
 %exclude %{prefix}/include/*
@@ -58,6 +67,21 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Wed Jun 30 2004 Kevin Brosius <cobra@sea.kevb.net> - 1.2.0-5
+- dv crash fix related to number of samples
+- allow libdv 0.99 build, dv asset info changes
+- fix avi file reading (reverted to 1.1.9)
+
+* Thu Jun 24 2004 Kevin Brosius <cobra@sea.kevb.net> - 1.2.0-4
+- raw DV/quicktime read/write support, DV audio read/write support
+
+* Sun Jun 20 2004 Kevin Brosius <cobra@sea.kevb.net> - 1.2.0-3
+- package mpeg3 utils as mpeg3toc.hv, mpeg3dump.hv, mpeg3cat.hv
+
+* Sat Jun 19 2004 Kevin Brosius <cobra@sea.kevb.net> - 1.2.0-2
+- move feather.h & codegen script, slovenian translation update
+- tab shortcut to arm track under cursor
+
 * Fri Jun 11 2004 Kevin Brosius <cobra@sea.kevb.net> - 1.2.0-1
 - Merge of 1.2.0 and current cvs
 - Feather speedups, tumbler/spinner limit fixes
