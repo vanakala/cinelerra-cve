@@ -481,7 +481,7 @@ int InterpolateVideo::is_realtime()
 
 char* InterpolateVideo::plugin_title()
 {
-	return _("Interpolate");
+	return N_("Interpolate");
 }
 
 NEW_PICON_MACRO(InterpolateVideo) 
