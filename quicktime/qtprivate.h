@@ -6,7 +6,7 @@
 /* Version used internally.  You need to query it with the C functions */
 #define QUICKTIME_MAJOR 2
 #define QUICKTIME_MINOR 0
-#define QUICKTIME_RELEASE 1
+#define QUICKTIME_RELEASE 2
 
 
 #define HEADER_LENGTH 8
@@ -662,6 +662,9 @@ typedef struct
 	int do_scaling;
 	int in_x, in_y, in_w, in_h, out_w, out_h;
 	int color_model, row_span;
+
+/* Adjustable timecode frame number */
+	int64_t current_frame;
 } quicktime_t;
 
 

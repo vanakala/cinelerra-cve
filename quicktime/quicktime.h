@@ -380,6 +380,9 @@ void quicktime_set_preload(quicktime_t *file, int64_t preload);
 
 int64_t quicktime_byte_position(quicktime_t *file);
 
+/* Set frame offset for programme timecode */
+void quicktime_set_frame_start(quicktime_t *file, int64_t value);
+
 
 
 #ifdef __cplusplus

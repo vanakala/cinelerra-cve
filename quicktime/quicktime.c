@@ -299,6 +299,7 @@ int quicktime_init(quicktime_t *file)
 	quicktime_moov_init(&(file->moov));
 	file->cpus = 1;
 	file->color_model = BC_RGB888;
+	file->current_frame = 0;
 	return 0;
 }
 
@@ -1190,6 +1191,10 @@ void quicktime_set_asf(quicktime_t *file, int value)
 	file->use_asf = value;
 }
 
+void quicktime_set_frame_start(quicktime_t *file, int64_t value)
+{
+	file->current_frame = value;
+}
 
 quicktime_t* quicktime_open(char *filename, int rd, int wr)
 {
