@@ -364,12 +364,12 @@ int OverlayOutput::handle_event()
 	char *text = get_text();
 
 	if(!strcmp(text, 
-		OverlayConfig::direction_to_text(
+		OverlayConfig::output_to_text(
 			OverlayConfig::TOP)))
 		plugin->config.output_layer = OverlayConfig::TOP;
 	else
 	if(!strcmp(text, 
-		OverlayConfig::direction_to_text(
+		OverlayConfig::output_to_text(
 			OverlayConfig::BOTTOM)))
 		plugin->config.output_layer = OverlayConfig::BOTTOM;
 
