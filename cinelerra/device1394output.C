@@ -85,14 +85,15 @@ Device1394Output::~Device1394Output()
 
 		if(get_dv1394())
 		{
-  			if(ioctl(output_fd, dv1394_wait_frames, output_mmap.nb_buffers - 1) < 0)
+  			if(ioctl(output_fd, dv1394_wait_frames, status.init.n_frames - 1) < 0)
   			{
   				fprintf(stderr,
   					"Device1394Output::close_all: DV1394_WAIT_FRAMES %i: %s",
   					output_mmap.nb_buffers,
   					strerror(errno));
   			}
-  			munmap(output_buffer, status.init.n_frames * DV1394_NTSC_FRAME_SIZE);
+  			munmap(output_buffer, status.init.n_frames *
+				(is_pal ? DV1394_PAL_FRAME_SIZE : DV1394_NTSC_FRAME_SIZE));
   			if(ioctl(output_fd, dv1394_shutdown, NULL) < 0)
   			{
   				perror("Device1394Output::close_all: DV1394_SHUTDOWN");
@@ -273,7 +274,7 @@ int Device1394Output::open(char *path,
   					perror("Device1394Output::open DV1394_INIT:");
   				}
 
-  				if(ioctl(output_fd, dv1394_get_status, &setup) < 0)
+  				if(ioctl(output_fd, dv1394_get_status, &status) < 0)
   				{
   					perror("Device1394Output::open DV1394_GET_STATUS:");
   				}
@@ -314,7 +315,9 @@ int Device1394Output::open(char *path,
 // Create buffers
 			buffer = new char*[total_buffers];
 			for(int i = 0; i < length; i++)
-				buffer[i] = new char[DV_PAL_SIZE];
+				buffer[i] = new char[get_dv1394() ?
+					(is_pal ? DV1394_PAL_FRAME_SIZE : DV1394_NTSC_FRAME_SIZE) :
+					DV_PAL_SIZE];
 			buffer_size = new int[total_buffers];
 			buffer_valid = new int[total_buffers];
 			bzero(buffer_size, sizeof(int) * total_buffers);
@@ -339,7 +342,6 @@ void Device1394Output::run()
   	char *out_buffer;
   	int out_size;
 
-
 	Thread::enable_cancel();
 	start_lock->lock();
 	Thread::disable_cancel();
@@ -353,16 +355,8 @@ void Device1394Output::run()
 
 		buffer_lock->lock("Device1394Output::run 1");
 
-		if(get_dv1394())
-		{
-  			out_buffer = buffer[status.first_clear_frame];
-  			out_size = is_pal ? DV1394_PAL_FRAME_SIZE : DV1394_NTSC_FRAME_SIZE;
-		}
-		else
-		{
-			out_buffer = buffer[current_outbuffer];
-			out_size = buffer_size[current_outbuffer];
-		}
+		out_buffer = buffer[current_outbuffer];
+		out_size = buffer_size[current_outbuffer];
 
 
 
@@ -474,15 +468,14 @@ void Device1394Output::run()
 
 			if(get_dv1394())
 			{
-            if(ioctl(output_fd, dv1394_wait_frames, 1) < 0)
-            {
-               perror("Device1394Output::run DV1394_WAIT_FRAMES");
-            }
   				if(ioctl(output_fd, dv1394_submit_frames, 1) < 0)
   				{
   					perror("Device1394Output::run DV1394_SUBMIT_FRAMES");
   				}
-  
+ 				if(ioctl(output_fd, dv1394_wait_frames, 1) < 0)
+				{
+					perror("Device1394Output::run DV1394_WAIT_FRAMES");
+				}
   				if(ioctl(output_fd, dv1394_get_status, &status) < 0)
   				{
   					perror("Device1394Output::run DV1394_GET_STATUS");
@@ -502,14 +495,7 @@ void Device1394Output::run()
 
 			if(unused_buffers <= 0)
 			{
-				if(get_dv1394())
-				{
-/*						if(ioctl(output_fd, dv1394_wait_frames, 1) < 0)
-  					{
-  						perror("Device1394Output::run DV1394_WAIT_FRAMES");
-  					}
-*/				}
-				else
+				if(!get_dv1394())
 				{
     				if(ioctl(output_fd, video1394_talk_wait_buffer, &output_queue) < 0) 
 					{
