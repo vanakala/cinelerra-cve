@@ -24,7 +24,6 @@
 VWindow::VWindow(MWindow *mwindow) : Thread()
 {
 	this->mwindow = mwindow;
-	edl = 0;
 	asset = 0;
 }
 
@@ -51,8 +50,6 @@ void VWindow::delete_edl()
 
 	if(asset) delete asset;
 	asset = 0;
-	edl_shared = 0;
-	edl = 0;
 }
 
 
@@ -93,7 +90,7 @@ void VWindow::run()
 EDL* VWindow::get_edl()
 {
 //printf("VWindow::get_edl 1 %p\n", edl);
-	return edl;
+	return mwindow->edl->vwindow_edl;
 }
 
 Asset* VWindow::get_asset()
@@ -106,16 +103,13 @@ void VWindow::change_source()
 //printf("VWindow::change_source() 1 %p\n", mwindow->edl->vwindow_edl);
 	if(mwindow->edl->vwindow_edl)
 	{
-		this->edl = mwindow->edl->vwindow_edl;
-		gui->change_source(edl, edl->local_session->clip_title);
+		gui->change_source(get_edl(), get_edl()->local_session->clip_title);
 		update_position(CHANGE_ALL, 1, 1);
 	}
 	else
 	{
 		if(asset) delete asset;
 		asset = 0;
-		edl_shared = 0;
-		edl = 0;
 	}
 }
 
@@ -139,15 +133,14 @@ void VWindow::change_source(Asset *asset)
 // Generate EDL off of main EDL for cutting
 	this->asset = new Asset;
 	*this->asset = *asset;
-	edl = mwindow->edl->vwindow_edl = new EDL(mwindow->edl);
-	edl_shared = 0;
-	edl->create_objects();
-	mwindow->asset_to_edl(edl, asset);
+	mwindow->edl->vwindow_edl = new EDL(mwindow->edl);
+	mwindow->edl->vwindow_edl->create_objects();
+	mwindow->asset_to_edl(mwindow->edl->vwindow_edl, asset);
 //printf("VWindow::change_source 1 %d %d\n", edl->local_session->loop_playback, mwindow->edl->local_session->loop_playback);
 //edl->dump();
 
 // Update GUI
-	gui->change_source(edl, title);
+	gui->change_source(mwindow->edl->vwindow_edl, title);
 	update_position(CHANGE_ALL, 1, 1);
 
 
@@ -183,8 +176,7 @@ void VWindow::change_source(EDL *edl)
 	if(edl)
 	{
 		this->asset = 0;
-		this->edl = edl;
-		edl_shared = 1;
+		mwindow->edl->vwindow_edl = edl;
 //printf("VWindow::change_source 1\n");
 //edl->dump();
 //printf("VWindow::change_source 2\n");
@@ -248,10 +240,10 @@ void VWindow::change_source(char *folder, int item)
 
 void VWindow::goto_start()
 {
-	if(edl)
+	if(get_edl())
 	{
-		edl->local_session->selectionstart = 
-			edl->local_session->selectionend = 0;
+		get_edl()->local_session->selectionstart = 
+			get_edl()->local_session->selectionend = 0;
 		update_position(CHANGE_NONE, 
 			0, 
 			1);
@@ -260,11 +252,11 @@ void VWindow::goto_start()
 
 void VWindow::goto_end()
 {
-	if(edl)
+	if(get_edl())
 	{
-		edl->local_session->selectionstart = 
-			edl->local_session->selectionend = 
-			edl->tracks->total_length();
+		get_edl()->local_session->selectionstart = 
+			get_edl()->local_session->selectionend = 
+			get_edl()->tracks->total_length();
 		update_position(CHANGE_NONE, 
 			0, 
 			1);
