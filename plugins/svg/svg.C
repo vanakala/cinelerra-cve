@@ -17,6 +17,19 @@
 
 #include "empty_svg.h"
 
+struct raw_struct {
+	char rawc[5];        // Null terminated "RAWC" string
+	int32_t struct_version;  // currently 1 (bumped at each destructive change) 
+	int32_t struct_size;     // size of this struct in bytes
+	int32_t width;               // logical width of image
+	int32_t height;
+	int32_t pitch;           // physical width of image in memory
+	int32_t color_model;      // as BC_ constant, currently only BC_RGBA8888 is supported
+	int64_t time_of_creation; // in milliseconds - calculated as (tv_sec * 1000 + tv_usec / 1000);
+				// we can't trust date on the file, due to different reasons
+};	
+
+
 REGISTER_PLUGIN(SvgMain)
 
 SvgConfig::SvgConfig()
@@ -216,13 +229,13 @@ int SvgMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
 	char filename_raw[1024];
 	int fh_raw;
-	struct stat st_svg, st_raw;
-	int result_stat_raw;
+	struct stat st_raw;
 	VFrame *input, *output;
 	input = input_ptr;
 	output = output_ptr;
+	unsigned char * raw_buffer;
+	struct raw_struct *raw_data;
 
-	
 	need_reconfigure |= load_configuration();
 
 	if (config.svg_file[0] == 0) {
@@ -230,71 +243,71 @@ int SvgMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		return(0);
 	}
 
-	
 	strcpy(filename_raw, config.svg_file);
 	strcat(filename_raw, ".raw");
-	// get the time of the last PNG change
-	result_stat_raw = stat (filename_raw, &st_raw);
-	
+	fh_raw = open(filename_raw, O_RDWR); // in order for lockf to work it has to be open for writing
 
-
-//	printf("PNg mtime: %li, last_load: %li\n", st_raw.st_mtime, config.last_load);
-	if (need_reconfigure || result_stat_raw || (st_raw.st_mtime > config.last_load)) {
-		if (temp_frame)
-			delete temp_frame;
-		temp_frame = 0;
-	}
-	need_reconfigure = 0;
-	
-	if(!temp_frame) 
+	if (fh_raw == -1 || force_raw_render) // file does not exist, export it
 	{
-		int result;
-		int raw_width, raw_height;
-	//	printf("PROCESSING: %s %li\n", filename_raw, config.last_load);
+		need_reconfigure = 1;
+		char command[1024];
+		sprintf(command,
+			"sodipodi --without-gui --cinelerra-export-file=%s %s",
+			filename_raw, config.svg_file);
+		printf(_("Running command %s\n"), command);
+		system(command);
+		stat(filename_raw, &st_raw);
+		force_raw_render = 0;
+		fh_raw = open(filename_raw, O_RDWR); // in order for lockf to work it has to be open for writing
+		if (!fh_raw) {
+			printf(_("Export of %s to %s failed\n"), config.svg_file, filename_raw);
+			return 0;
+		}
+	}
 
-		if (result = stat (config.svg_file, &st_svg)) 
+
+	// file exists, ... lock it, mmap it and check time_of_creation
+	lockf(fh_raw, F_LOCK, 0);    // Blocking call - will wait for sodipodi to finish!
+	fstat (fh_raw, &st_raw);
+	raw_buffer = (unsigned char *)mmap (NULL, st_raw.st_size, PROT_READ, MAP_SHARED, fh_raw, 0); 
+	raw_data = (struct raw_struct *) raw_buffer;
+
+	if (strcmp(raw_data->rawc, "RAWC")) 
+	{
+		printf (_("The file %s that was generated from %s is not in RAWC format. Try to delete all *.raw files.\n"), filename_raw, config.svg_file);	
+		lockf(fh_raw, F_ULOCK, 0);
+		close(fh_raw);
+		return (0);
+	}
+	if (raw_data->struct_version > 1) 
+	{
+		printf (_("Unsupported version of RAWC file %s. This means your Sodipodi uses newer RAWC format than Cinelerra. Please upgrade Cinelerra.\n"), filename_raw);
+		lockf(fh_raw, F_ULOCK, 0);
+		close(fh_raw);
+		return (0);
+	}
+	// Ok, we can now be sure we have valid RAWC file on our hands
+	if (need_reconfigure || config.last_load < raw_data->time_of_creation) {    // the file was updated or is new (then last_load is zero)
+
+		if (temp_frame && 
+		  !temp_frame->params_match(raw_data->width, raw_data->height, output_ptr->get_color_model()))
 		{
-			printf(_("Error calling stat() on svg file: %s\n"), config.svg_file); 
+			// parameters don't match
+			delete temp_frame;
+			temp_frame = 0;
 		}
-		if (force_raw_render || result_stat_raw || 
-			st_raw.st_mtime < st_svg.st_mtime) 
-		{
-			char command[1024];
-			sprintf(command,
-				"sodipodi --without-gui --cinelerra-export-file=%s %s",
-				filename_raw, config.svg_file);
-			printf(_("Running command %s\n"), command);
-			system(command);
-			stat(filename_raw, &st_raw);
-			force_raw_render = 0;
-		}
-
-		// advisory lock, so we wait for sodipodi to finish
-//		printf("Cinelerra locking %s\n", filename_lock);
-		fh_raw = open (filename_raw, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);  // we have to open O_RDWR for lockf to work
-		int res = lockf(fh_raw, F_LOCK, 0);    // Blocking call - will wait for sodipodi to finish!
-//		printf("Cinelerra: filehandle: %i, cineres: %i, errno: %i\n", fh_lockfile, res, errno);
-
-		unsigned char *raw_data, *orig_raw_data;
-		// get the size again
-		result_stat_raw = fstat (fh_raw, &st_raw);
-		orig_raw_data = raw_data = (unsigned char *)mmap (NULL, st_raw.st_size, PROT_READ, MAP_SHARED, fh_raw, 0); 
-		raw_width = ((int *)raw_data)[0];
-		raw_height = ((int *)raw_data)[1];
-//		printf ("w: %i, h: %i\n", raw_width, raw_height);
-		raw_data += sizeof(int) * 2;
-
-		config.last_load = st_raw.st_mtime; // we just updated
-		
-		unsigned char ** raw_rows;
-		raw_rows = new unsigned char*[raw_height];
-		for (int i = 0; i < raw_height; i++) {
-			raw_rows[i] = raw_data + raw_width * i * 4;
-		}
-		temp_frame = new VFrame(0, 
-				        raw_width,
-					raw_height,
+		if (!temp_frame)			
+			temp_frame = new VFrame(0, 
+				        raw_data->width,
+					raw_data->height,
 					output_ptr->get_color_model());
+
+		// temp_frame is ready by now, we can do the loading
+		unsigned char ** raw_rows;
+		raw_rows = new unsigned char*[raw_data->height]; // this could be optimized, so new isn't used every time
+		for (int i = 0; i < raw_data->height; i++) {
+			raw_rows[i] = raw_buffer + raw_data->struct_size + raw_data->pitch * i * 4;
+		}
 	        cmodel_transfer(temp_frame->get_rows(),
 	                raw_rows,
 	                0,
@@ -305,8 +318,8 @@ int SvgMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	                0,
 	                0,
 	                0,
-	                raw_width,
-	                raw_height,
+	                raw_data->width,
+	                raw_data->height,
 	                0,
 	                0,
 	                temp_frame->get_w(),
@@ -314,24 +327,22 @@ int SvgMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	               	BC_RGBA8888,
 	                temp_frame->get_color_model(),
 	                0,
-	                raw_width,
+	                raw_data->pitch,
 	                temp_frame->get_w());
 		delete [] raw_rows;
-		munmap(orig_raw_data,st_raw.st_size);
+		munmap(raw_buffer, st_raw.st_size);
 		lockf(fh_raw, F_ULOCK, 0);
 		close(fh_raw);
 
-	}
 
-//printf("SvgMain::process_realtime 2 %p\n", input);
-
+	}	
+	// by now we have temp_frame ready, we just need to overylay it
 
 	if(!overlayer)
 	{
 		overlayer = new OverlayFrame(smp + 1);
 	}
 
-//	output->clear_frame();
 
 
 // printf("SvgMain::process_realtime 3 output=%p input=%p config.w=%f config.h=%f"

@@ -329,12 +329,13 @@ void EditSvgButton::run()
 			result = stat (filename_raw, &st_raw);
 			// Check if PNG is newer then what we have in memory
 //			printf("action1\n");
-			if (last_update < st_raw.st_mtime) { // FIXME this seems to work odd sometimes when fast-refreshing
+//			if (last_update < st_raw.st_mtime) { // FIXME this seems to work odd sometimes when fast-refreshing
 //				printf("newer pict\n");
 				// UPDATE IMAGE
+				client->config.last_load = 1;
 				client->send_configure_change();
 				last_update = st_raw.st_mtime;
-			}
+//			}
 		} else 
 		if (fifo_buf.action == 2) {
 			printf(_("Sodipodi has exited\n"));
