@@ -13,7 +13,10 @@ the --enable-mmx option.  NB! If you do that, you may have to use the
 
 For debian user, you can find debian packages of all of these libs on the distribution
 itself or at 
-	deb http://marillat.free.fr unstable main
+	deb ftp://ftp.nerim.net/debian-marillat/ unstable main
+
+(For other architectures/versions of Debian, more info can be found on:
+http://hpisi.nerim.net/)
 
 The versions indicated are for information. Cinelerra compiles fine
 with these. If you want to use another, don't mail me if it doesn't work.
@@ -27,7 +30,7 @@ you distrib. Not joking):
 	- libjpeg	
 	- libtiff
 	- libesd (esound = 0.2.28)
-	- libfreetype (2.1.0)
+	- libfreetype (>=2.1.4)
 	- xlib-dev
 		
 The others are maybe part of your distrib. If they aren't, you can find them
@@ -41,5 +44,6 @@ on http://lpnotfr.free.fr/cinelerra-libs
 	- libavc1394 (0.4.1)
 	- liblame-dev
 	- libavcodec
+	- libavcodec-dev
 	- libuuid
 	- nasm (for mmx optimization)
