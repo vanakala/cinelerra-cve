@@ -43,6 +43,8 @@ VDevicePrefs::~VDevicePrefs()
 
 void VDevicePrefs::reset_objects()
 {
+	device_text = 0;
+
 	port_title = 0;
 	channel_title = 0;
 	device_title = 0;
@@ -65,7 +67,7 @@ int VDevicePrefs::initialize()
 		case MODEPLAY:
 			driver = &out_config->driver;
 			break;
-		
+
 		case MODERECORD:
 			driver = &in_config->driver;
 			break;
@@ -86,6 +88,12 @@ int VDevicePrefs::initialize()
 	{
 		case VIDEO4LINUX:
 			create_v4l_objs();
+			break;
+		case VIDEO4LINUX2:
+			create_v4l2_objs();
+			break;
+		case VIDEO4LINUX2JPEG:
+			create_v4l2jpeg_objs();
 			break;
 		case SCREENCAPTURE:
 			create_screencap_objs();
@@ -114,27 +122,17 @@ int VDevicePrefs::delete_objects()
 {
 	switch(driver)
 	{
-		case PLAYBACK_X11:
-		case PLAYBACK_X11_XV:
-			delete device_text;
-			break;
 		case PLAYBACK_LML:
 		case PLAYBACK_BUZ:
-			delete device_text;
 			delete output_title;
 			delete channel_picker;
 			delete buz_swap_channels;
-			break;
-		case VIDEO4LINUX:
-		case SCREENCAPTURE:
-		case CAPTURE_LML:
-		case CAPTURE_BUZ:
-			delete device_text;
 			break;
 	}
 
 
 	
+	if(device_text) delete device_text;
 
 	if(port_title) delete port_title;
 	if(firewire_port) delete firewire_port;
@@ -202,7 +200,7 @@ int VDevicePrefs::create_buz_objs()
 		y1 += 20;
 		channel_picker = new PrefsChannelPicker(pwindow->mwindow, 
 			this, 
-			&pwindow->mwindow->channeldb_buz, 
+			pwindow->mwindow->channeldb_buz, 
 			x1,
 			y1);
 		channel_picker->create_objects();
@@ -306,6 +304,28 @@ int VDevicePrefs::create_v4l_objs()
 	return 0;
 }
 
+int VDevicePrefs::create_v4l2_objs()
+{
+	char *output_char;
+	int x1 = x + menu->get_w() + 5;
+	output_char = pwindow->thread->edl->session->vconfig_in->v4l2_in_device;
+	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Device path:"), MEDIUMFONT, BLACK));
+	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y + 20, output_char));
+	return 0;
+}
+
+int VDevicePrefs::create_v4l2jpeg_objs()
+{
+	char *output_char;
+	int x1 = x + menu->get_w() + 5;
+	output_char = pwindow->thread->edl->session->vconfig_in->v4l2jpeg_in_device;
+	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Device path:"), MEDIUMFONT, BLACK));
+	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y + 20, output_char));
+	return 0;
+}
+
+
+
 int VDevicePrefs::create_screencap_objs()
 {
 	char *output_char;
@@ -334,7 +354,7 @@ VDriverMenu::VDriverMenu(int x,
 	VDevicePrefs *device_prefs, 
 	int do_input, 
 	int *output)
- : BC_PopupMenu(x, y, 150, driver_to_string(*output))
+ : BC_PopupMenu(x, y, 200, driver_to_string(*output))
 {
 	this->output = output;
 	this->do_input = do_input;
@@ -351,6 +371,12 @@ char* VDriverMenu::driver_to_string(int driver)
 	{
 		case VIDEO4LINUX:
 			sprintf(string, VIDEO4LINUX_TITLE);
+			break;
+		case VIDEO4LINUX2:
+			sprintf(string, VIDEO4LINUX2_TITLE);
+			break;
+		case VIDEO4LINUX2JPEG:
+			sprintf(string, VIDEO4LINUX2JPEG_TITLE);
 			break;
 		case SCREENCAPTURE:
 			sprintf(string, SCREENCAPTURE_TITLE);
@@ -393,6 +419,8 @@ int VDriverMenu::create_objects()
 	if(do_input)
 	{
 		add_item(new VDriverItem(this, VIDEO4LINUX_TITLE, VIDEO4LINUX));
+		add_item(new VDriverItem(this, VIDEO4LINUX2_TITLE, VIDEO4LINUX2));
+		add_item(new VDriverItem(this, VIDEO4LINUX2JPEG_TITLE, VIDEO4LINUX2JPEG));
 		add_item(new VDriverItem(this, SCREENCAPTURE_TITLE, SCREENCAPTURE));
 		add_item(new VDriverItem(this, CAPTURE_BUZ_TITLE, CAPTURE_BUZ));
 		add_item(new VDriverItem(this, CAPTURE_FIREWIRE_TITLE, CAPTURE_FIREWIRE));
