@@ -1,3 +1,10 @@
+hvirtual (1:1.1.6-5) unstable; urgency=low
+
+  * updated dependency to new libsndfile1, patch by Artemia Salina
+    <asalina@newsfeeds.com>
+
+ -- Andraz Tori <andraz.tori1@guest.arnes.si>  Thu, 08 Aug 2003 18:00:01 +0200
+
 hvirtual (1:1.1.6-4) unstable; urgency=low
 
   * Johannes Sixt's patch for multihead display
