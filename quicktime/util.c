@@ -48,6 +48,7 @@ int quicktime_file_open(quicktime_t *file, char *path, int rd, int wr)
 		return 1;
 	}
 
+
 	if(rd && exists)
 	{
 		file->total_length = quicktime_get_file_length(path);		
@@ -213,58 +214,100 @@ printf("read data Size is larger than preload size. size=%llx preload_size=%llx\
 	return result;
 }
 
+void quicktime_set_presave(quicktime_t *file, int value)
+{
+// Flush presave buffer
+	if(!value && file->use_presave)
+	{
+		quicktime_fseek(file, file->presave_position - file->presave_size);
+		fwrite(file->presave_buffer, 1, file->presave_size, file->stream);
+		file->presave_size = 0;
+		file->file_position = file->presave_position;
+		file->ftell_position = file->presave_position;
+		if(file->total_length < file->ftell_position) 
+			file->total_length = file->ftell_position;
+	}
+	else
+	if(value && !file->use_presave)
+	{
+		;
+	}
+
+	file->use_presave = value;
+}
+
 int quicktime_write_data(quicktime_t *file, char *data, int size)
 {
 	int data_offset = 0;
 	int writes_attempted = 0;
 	int writes_succeeded = 0;
 	int iterations = 0;
-//printf("quicktime_write_data 1 %d\n", size);
 
-// Flush existing buffer and seek to new position
-	if(file->file_position != file->presave_position)
+	if(!file->use_presave)
 	{
-		if(file->presave_size)
-		{
-			quicktime_fseek(file, file->presave_position - file->presave_size);
-			writes_succeeded += fwrite(file->presave_buffer, 1, file->presave_size, file->stream);
-			writes_attempted += file->presave_size;
-			file->presave_size = 0;
-		}
-		file->presave_position = file->file_position;
+//printf("quicktime_write_data 1\n");
+		quicktime_fseek(file, file->file_position);
+		writes_attempted = 1;
+		writes_succeeded = fwrite(data, 
+				size, 
+				1, 
+				file->stream);
+		file->file_position += size;
+		file->ftell_position += size;
+//printf("quicktime_write_data 2\n");
 	}
+	else
+	{
+// Flush existing buffer and seek to new position
+		if(file->file_position != file->presave_position)
+		{
+			if(file->presave_size)
+			{
+				quicktime_fseek(file, file->presave_position - file->presave_size);
+				writes_succeeded += fwrite(file->presave_buffer, 1, file->presave_size, file->stream);
+				writes_attempted += file->presave_size;
+				file->presave_size = 0;
+			}
+			file->presave_position = file->file_position;
+		}
 
 // Write presave buffers until done
-	while(size > 0)
-	{
-		int fragment_size = QUICKTIME_PRESAVE;
-		if(fragment_size > size) fragment_size = size;
-		if(fragment_size + file->presave_size > QUICKTIME_PRESAVE)
-			fragment_size = QUICKTIME_PRESAVE- file->presave_size;
-
-		memcpy(file->presave_buffer + file->presave_size, 
-			data + data_offset,
-			fragment_size);
-
-		file->presave_position += fragment_size;
-		file->presave_size += fragment_size;
-		data_offset += fragment_size;
-		size -= fragment_size;
-
-		if(file->presave_size >= QUICKTIME_PRESAVE)
+		while(size > 0)
 		{
+			int fragment_size = QUICKTIME_PRESAVE;
+			if(fragment_size > size) fragment_size = size;
+			if(fragment_size + file->presave_size > QUICKTIME_PRESAVE)
+				fragment_size = QUICKTIME_PRESAVE- file->presave_size;
+
+			memcpy(file->presave_buffer + file->presave_size, 
+				data + data_offset,
+				fragment_size);
+
+			file->presave_position += fragment_size;
+			file->presave_size += fragment_size;
+			data_offset += fragment_size;
+			size -= fragment_size;
+
+			if(file->presave_size >= QUICKTIME_PRESAVE)
+			{
 //if(++iterations > 1) printf("quicktime_write_data 2 iterations=%d\n", iterations);
-			quicktime_fseek(file, file->presave_position - file->presave_size);
-			writes_succeeded += fwrite(file->presave_buffer, 1, file->presave_size, file->stream);
-			writes_attempted += file->presave_size;
-			file->presave_size = 0;
+				quicktime_fseek(file, file->presave_position - file->presave_size);
+				writes_succeeded += fwrite(file->presave_buffer, 
+					file->presave_size, 
+					1, 
+					file->stream);
+				writes_attempted += file->presave_size;
+				file->presave_size = 0;
+			}
 		}
-	}
 
 /* Adjust file position */
-	file->file_position = file->presave_position;
+		file->file_position = file->presave_position;
 /* Adjust ftell position */
-	file->ftell_position = file->presave_position;
+		file->ftell_position = file->presave_position;
+	}
+
+
 /* Adjust total length */
 	if(file->total_length < file->ftell_position) file->total_length = file->ftell_position;
 
