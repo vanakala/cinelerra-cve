@@ -271,6 +271,15 @@ LIBAVCODEC_LIBS=-lavcodec
 AC_SUBST(LIBAVCODEC_CFLAGS)
 AC_SUBST(LIBAVCODEC_LIBS)
 
+AH_TEMPLATE([USE_FFMPEG],
+[Define to 1 to use ffmpeg to decode/encode quicktime DV files])
+
+AC_ARG_WITH(ffmpeg,
+[ --with-ffmpeg Use FFMPEG for Quicktime DV encoding/decoding ],
+[
+	AC_DEFINE(USE_FFMPEG)
+])
+
 ############## END OF FFMPEG
 
 ############## .png TO .o CONVERSION
@@ -365,7 +374,7 @@ else
 		l=`echo $i | sed -e 's/,/ /'`
 		AC_MSG_WARN([	$l])
 	done
-	AC_MSG_WARN([Compilation may fail!])
+	AC_MSG_WARN([Compilation may fail! Remember, you need the developer packages too, not just the runtime libraries!])
 	case $NOT_FOUND in
 	*OpenEXR*)
 	  AC_MSG_WARN([Use ./configure OPENEXR=/path/to/OpenEXR to specify])
