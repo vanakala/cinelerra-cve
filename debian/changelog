@@ -1,5 +1,11 @@
 hvirtual (1:1.1.6-2) unstable; urgency=low
 
+  * applied new titler-stroke patch
+
+ -- Andraz Tori <andraz.tori1@guest.arnes.si>  Wed, 25 Jun 2003 18:00:01 +0200
+
+hvirtual (1:1.1.6-2) unstable; urgency=low
+
   * applied patch to allow stroke color&width in titler
   * applied patch to speedup overlaying and blending
 

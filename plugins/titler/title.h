@@ -408,7 +408,8 @@ public:
 	int text_h;
 // Position of each character relative to total text extents
 	title_char_position_t *char_positions;
-
+// Positions of the bottom pixels of the rows
+	int *rows_bottom;
 	VFrame *input, *output;
 
 	int need_reconfigure;
