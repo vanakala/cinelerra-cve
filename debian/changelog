@@ -1,3 +1,11 @@
+hvirtual (1:1.1.8-2) unstable; urgency=low
+
+  * fix libsndfilehv dependency (by Johannes Sixt)
+  * fix locale invocation, so only messages are translated, not numbers
+  * fix libtool dependency, remove libsndfile-dev dependency
+
+ -- Andraz Tori <andraz.tori1@guest.arnes.si>  Fri, 21 Dec 2003 22:22:14 +0200
+
 hvirtual (1:1.1.8-1) unstable; urgency=low
 
   * Merge with Adam's 1.1.8 release and the CVS
