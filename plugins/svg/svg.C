@@ -7,6 +7,8 @@
 #include <fcntl.h>
 #include <string.h>
 #include <errno.h>
+#include <sys/mman.h>
+
 
 #include <libintl.h>
 #define _(String) gettext(String)
@@ -91,7 +93,7 @@ SvgMain::SvgMain(PluginServer *server)
 	temp_frame = 0;
 	overlayer = 0;
 	need_reconfigure = 0;
-	force_png_render = 1;
+	force_raw_render = 0;
 	PLUGIN_CONSTRUCTOR_MACRO
 }
 
@@ -212,10 +214,10 @@ void SvgMain::read_data(KeyFrame *keyframe)
 
 int SvgMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
-	int fh_lockfile;
-	char filename_png[1024], filename_lock[1024];
-	struct stat st_svg, st_png;
-	int result_stat_png;
+	char filename_raw[1024];
+	int fh_raw;
+	struct stat st_svg, st_raw;
+	int result_stat_raw;
 	VFrame *input, *output;
 	input = input_ptr;
 	output = output_ptr;
@@ -229,15 +231,15 @@ int SvgMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	}
 
 	
-	strcpy(filename_png, config.svg_file);
-	strcat(filename_png, ".png");
+	strcpy(filename_raw, config.svg_file);
+	strcat(filename_raw, ".raw");
 	// get the time of the last PNG change
-	result_stat_png = stat (filename_png, &st_png);
+	result_stat_raw = stat (filename_raw, &st_raw);
 	
 
 
-//	printf("PNg mtime: %li, last_load: %li\n", st_png.st_mtime, config.last_load);
-	if (need_reconfigure || result_stat_png || (st_png.st_mtime > config.last_load)) {
+//	printf("PNg mtime: %li, last_load: %li\n", st_raw.st_mtime, config.last_load);
+	if (need_reconfigure || result_stat_raw || (st_raw.st_mtime > config.last_load)) {
 		if (temp_frame)
 			delete temp_frame;
 		temp_frame = 0;
@@ -247,59 +249,54 @@ int SvgMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	if(!temp_frame) 
 	{
 		int result;
-		VFrame *tmp2;
-//		printf("PROCESSING: %s %li\n", filename_png, config.last_load);
+		int raw_width, raw_height;
+	//	printf("PROCESSING: %s %li\n", filename_raw, config.last_load);
 
 		if (result = stat (config.svg_file, &st_svg)) 
 		{
 			printf(_("Error calling stat() on svg file: %s\n"), config.svg_file); 
 		}
-		if (force_png_render || result_stat_png || 
-			st_png.st_mtime < st_svg.st_mtime) 
+		if (force_raw_render || result_stat_raw || 
+			st_raw.st_mtime < st_svg.st_mtime) 
 		{
 			char command[1024];
 			sprintf(command,
-				"sodipodi --export-png=%s --export-width=%i --export-height=%i %s",
-				filename_png, (int)config.in_w, (int)config.in_h, config.svg_file);
+				"sodipodi --without-gui --cinelerra-export-file=%s %s",
+				filename_raw, config.svg_file);
 			printf(_("Running command %s\n"), command);
 			system(command);
-			stat(filename_png, &st_png);
-			force_png_render = 0;
+			stat(filename_raw, &st_raw);
+			force_raw_render = 0;
 		}
 
 		// advisory lock, so we wait for sodipodi to finish
-		strcpy(filename_lock, filename_png);
-		strcat(filename_lock, ".lock");
 //		printf("Cinelerra locking %s\n", filename_lock);
-		fh_lockfile = open (filename_lock, O_CREAT | O_RDWR);
-		int res = lockf(fh_lockfile, F_LOCK, 10);    // Blocking call - will wait for sodipodi to finish!
+		fh_raw = open (filename_raw, O_CREAT | O_RDWR, S_IRUSR | S_IWUSR);  // we have to open O_RDWR for lockf to work
+		int res = lockf(fh_raw, F_LOCK, 0);    // Blocking call - will wait for sodipodi to finish!
 //		printf("Cinelerra: filehandle: %i, cineres: %i, errno: %i\n", fh_lockfile, res, errno);
-//		perror("Cineerror");
-		int fh = open(filename_png, O_RDONLY);
-		unsigned char *pngdata;
+
+		unsigned char *raw_data, *orig_raw_data;
 		// get the size again
-		result_stat_png = fstat (fh, &st_png);
+		result_stat_raw = fstat (fh_raw, &st_raw);
+		orig_raw_data = raw_data = (unsigned char *)mmap (NULL, st_raw.st_size, PROT_READ, MAP_SHARED, fh_raw, 0); 
+		raw_width = ((int *)raw_data)[0];
+		raw_height = ((int *)raw_data)[1];
+//		printf ("w: %i, h: %i\n", raw_width, raw_height);
+		raw_data += sizeof(int) * 2;
 
-		pngdata = (unsigned char*) malloc(st_png.st_size + 4);
-		*((int32_t *)pngdata) = st_png.st_size; 
-//		printf("PNG size: %i\n", st_png.st_size);
-		result = read(fh, pngdata+4, st_png.st_size);
-		close(fh);
-		// unlock the file
-		lockf(fh_lockfile, F_ULOCK, 0);
-		close(fh_lockfile);
-//		printf("Cinelerra unlocking\n");
-
-		config.last_load = st_png.st_mtime; // we just updated
+		config.last_load = st_raw.st_mtime; // we just updated
 		
-		tmp2 = new VFrame(pngdata);
+		unsigned char ** raw_rows;
+		raw_rows = new unsigned char*[raw_height];
+		for (int i = 0; i < raw_height; i++) {
+			raw_rows[i] = raw_data + raw_width * i * 4;
+		}
 		temp_frame = new VFrame(0, 
-				        tmp2->get_w(),
-					tmp2->get_h(),
+				        raw_width,
+					raw_height,
 					output_ptr->get_color_model());
-		free (pngdata);
 	        cmodel_transfer(temp_frame->get_rows(),
-	                tmp2->get_rows(),
+	                raw_rows,
 	                0,
 	                0,
 	                0,
@@ -308,19 +305,21 @@ int SvgMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	                0,
 	                0,
 	                0,
-	                tmp2->get_w(),
-	                tmp2->get_h(),
+	                raw_width,
+	                raw_height,
 	                0,
 	                0,
 	                temp_frame->get_w(),
 	                temp_frame->get_h(),
-	               	tmp2->get_color_model(),
+	               	BC_RGBA8888,
 	                temp_frame->get_color_model(),
 	                0,
-	                tmp2->get_w(),
+	                raw_width,
 	                temp_frame->get_w());
-
-		delete tmp2;
+		delete [] raw_rows;
+		munmap(orig_raw_data,st_raw.st_size);
+		lockf(fh_raw, F_ULOCK, 0);
+		close(fh_raw);
 
 	}
 
@@ -349,17 +348,18 @@ int SvgMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 // 	out_y1, 
 // 	out_x2, 
 // 	out_y2);
+
 		output->copy_from(input);
 		overlayer->overlay(output, 
 			temp_frame,
-			config.in_x, 
-			config.in_y, 
-			config.in_x + config.in_w,
-			config.in_y + config.in_h,
+			0, 
+			0, 
+			temp_frame->get_w(),
+			temp_frame->get_h(),
 			config.out_x, 
 			config.out_y, 
-			config.out_x + config.out_w,
-			config.out_y + config.out_h,
+			config.out_x + temp_frame->get_w(),
+			config.out_y + temp_frame->get_h(),
 			1,
 			TRANSFER_NORMAL,
 			get_interpolation_type());
@@ -388,8 +388,8 @@ void SvgMain::update_gui()
 //		thread->window->in_h->update(config.in_h);
 		thread->window->out_x->update(config.out_x);
 		thread->window->out_y->update(config.out_y);
-		thread->window->out_w->update(config.out_w);
-		thread->window->out_h->update(config.out_h);
+//		thread->window->out_w->update(config.out_w);
+//		thread->window->out_h->update(config.out_h);
 		thread->window->svg_file_title->update(config.svg_file);
 		thread->window->unlock_window();
 	}

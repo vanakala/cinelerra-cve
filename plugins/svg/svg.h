@@ -60,7 +60,7 @@ public:
 	Defaults *defaults;
 	SvgConfig config;
 	int need_reconfigure;
-	int force_png_render;     //force rendering of PNG on first start
+	int force_raw_render;     //force rendering of PNG on first start
 };
 
 

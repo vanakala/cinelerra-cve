@@ -33,6 +33,9 @@ public:
 	NewSvgButton *new_svg_button;
 	NewSvgWindow *new_svg_thread;
 	EditSvgButton *edit_svg_button;
+	Mutex editing_lock;
+	int editing;
+
 };
 
 class SvgCoord : public BC_TumbleTextBox
@@ -68,14 +71,14 @@ class EditSvgButton : public BC_GenericButton, public Thread
 {
 public:
 	EditSvgButton(SvgMain *client, SvgWin *window, int x, int y);
+	~EditSvgButton();
 	int handle_event();
 	void run();
 	
 	int quit_now;
+	int fh_fifo;
 	SvgMain *client;
 	SvgWin *window;
-	Mutex editing_lock;
-	int editing;
 };
 
 class NewSvgWindow : public BC_FileBox
@@ -95,6 +98,7 @@ public:
 	void run();
 	SvgMain *client;
 	SvgWin *window;
+	int fh_fifo;
 };
 
 
