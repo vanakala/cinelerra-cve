@@ -96,27 +96,27 @@ void Module::create_new_attachments()
 		else
 			new_attachments = 0;
 
-// Create plugin servers later when nodes attach
+// Create plugin servers in virtual console expansion
 	}
 }
 
 void Module::swap_attachments()
 {
 // None of this is used in a pluginarray
-	for(int new_attachment = 0, old_attachment = 0; 
-		new_attachment < new_total_attachments &&
-		old_attachment < total_attachments; 
-		new_attachment++, old_attachment++)
+	for(int i = 0; 
+		i < new_total_attachments &&
+		i < total_attachments; 
+		i++)
 	{
-// Copy any old attachment which is identical to a new one
-		if(new_attachments[new_attachment] &&
-			attachments[old_attachment] &&
-			new_attachments[new_attachment]->plugin ==
-			attachments[old_attachment]->plugin)
+// Delete new attachment which is identical to the old one and copy
+// old attachment.
+		if(new_attachments[i] &&
+			attachments[i] &&
+			new_attachments[i]->identical(attachments[i]))
 		{
-			delete new_attachments[new_attachment];
-			new_attachments[new_attachment] = attachments[old_attachment];
-			attachments[old_attachment] = 0;
+			delete new_attachments[i];
+			new_attachments[i] = attachments[i];
+			attachments[i] = 0;
 		}
 	}
 
@@ -130,7 +130,7 @@ void Module::swap_attachments()
 	{
 		delete [] attachments;
 	}
-	
+
 	attachments = new_attachments;
 	total_attachments = new_total_attachments;
 }
@@ -158,6 +158,16 @@ AttachmentPoint* Module::attachment_of(Plugin *plugin)
 	return 0;
 }
 
+void Module::reset_attachments()
+{
+//printf("Module::reset_attachments 1 %d\n", total_attachments);
+	for(int i = 0; i < total_attachments; i++)
+	{
+//printf("Module::reset_attachments 2 %p\n", attachments[i]);
+		AttachmentPoint *attachment = attachments[i];
+		if(attachment) attachment->reset_status();
+	}
+}
 
 // Test plugins for reconfiguration.
 // Used in playback
@@ -192,12 +202,13 @@ int Module::test_plugins()
 	return 0;
 }
 
-void Module::update_transition(int64_t current_position, int direction)
+void Module::update_transition(int64_t current_position, 
+	int direction)
 {
 	Plugin *transition = track->get_current_transition(current_position, 
 		direction,
 		0,
-		1);
+		0); // position is already nudged in amodule.C and vmodule.C before calling update_transition!
 
 	if((!transition && this->transition) || 
 		(transition && this->transition && strcmp(transition->title, this->transition->title)))
@@ -212,9 +223,11 @@ void Module::update_transition(int64_t current_position, int direction)
 	if(transition && !this->transition)
 	{
 		this->transition = transition;
+
 		if(renderengine)
 		{
-			PluginServer *plugin_server = renderengine->scan_plugindb(transition->title);
+			PluginServer *plugin_server = renderengine->scan_plugindb(transition->title,
+				track->data_type);
 			transition_server = new PluginServer(*plugin_server);
 			transition_server->open_plugin(0, 
 				renderengine->preferences, 
@@ -252,10 +265,7 @@ void Module::dump()
 	printf("   Plugins total_attachments=%d\n", total_attachments);
 	for(int i = 0; i < total_attachments; i++)
 	{
-		if(attachments[i])
-			attachments[i]->dump();
-		else
-			printf("    No Plugin\n");
+		attachments[i]->dump();
 	}
 }
 
