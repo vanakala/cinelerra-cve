@@ -167,7 +167,7 @@ int VModule::import_frame(VFrame *output,
 				result = source->read_frame(input_temp);
 				if(!overlayer)
 				{
-					overlayer = new OverlayFrame(renderengine->edl->session->smp + 1);
+					overlayer = new OverlayFrame(get_edl()->session->smp + 1);
 				}
 // printf("VModule::import_frame 1 %.2f %.2f %.2f %.2f %.2f %.2f %.2f %.2f\n", 
 // 	in_x1, 
