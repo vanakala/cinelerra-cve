@@ -962,10 +962,6 @@ void TrackCanvas::edit_dimensions(Edit *edit,
 	int64_t &h)
 {
 //printf("TrackCanvas::edit_dimensions 1 %p\n", edit->track);
-	w = Units::round(edit->track->from_units(edit->length) * 
-		mwindow->edl->session->sample_rate / 
-		mwindow->edl->local_session->zoom_sample);
-//printf("TrackCanvas::edit_dimensions 1\n");
 
 	h = resource_h();
 
@@ -974,6 +970,13 @@ void TrackCanvas::edit_dimensions(Edit *edit,
 			mwindow->edl->session->sample_rate /
 			mwindow->edl->local_session->zoom_sample - 
 			mwindow->edl->local_session->view_start);
+
+// Method for calculating w so when edits are together we never get off by one error due to rounding
+	int64_t x_next = Units::round(edit->track->from_units(edit->startproject + edit->length) * 
+			mwindow->edl->session->sample_rate /
+			mwindow->edl->local_session->zoom_sample - 
+			mwindow->edl->local_session->view_start);
+	w = x_next - x;
 
 //printf("TrackCanvas::edit_dimensions 1\n");
 	y = edit->edits->track->y_pixel;
