@@ -70,6 +70,7 @@ int FileBase::reset_parameters()
 	prev_layer = -1;
 	ulawtofloat_table = 0;
 	floattoulaw_table = 0;
+	rd = wr = 0;
 
 	delete_ulaw_tables();
 	reset_parameters_derived();
