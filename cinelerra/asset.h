@@ -55,7 +55,8 @@ public:
 		int do_bits);
 	char* construct_param(char *param, char *prefix, char *return_value);
 
-
+// for programme timecode
+	void set_frame_start(int64_t value);
 
 
 // Executed during index building only
@@ -225,6 +226,9 @@ public:
 	int64_t* index_offsets;  // offsets of channels in index file in floats
 	float* index_buffer;  
 	int id;
+
+// programme timecode
+	int frame_start; // start frame offset
 };
 
 

@@ -125,6 +125,9 @@ int Asset::init_values()
 
 	reset_index();
 	id = EDL::next_id();
+
+	frame_start = 0;
+
 	return 0;
 }
 
@@ -227,6 +230,8 @@ void Asset::copy_format(Asset *asset, int do_index)
 
 	
 	png_use_alpha = asset->png_use_alpha;
+
+	frame_start = asset->frame_start;
 }
 
 int64_t Asset::get_index_offset(int channel)
@@ -967,6 +972,10 @@ void Asset::update_index(Asset *asset)
 //printf("Asset::update_index 2\n");
 }
 
+void Asset::set_frame_start(int64_t value)
+{
+	frame_start = value;
+}
 
 int Asset::dump()
 {
@@ -980,6 +989,7 @@ int Asset::dump()
 	printf("   video_data %d layers %d framerate %f width %d height %d vcodec %c%c%c%c aspect_ratio %f\n",
 		video_data, layers, frame_rate, width, height, vcodec[0], vcodec[1], vcodec[2], vcodec[3], aspect_ratio);
 	printf("   video_length %lld \n", video_length);
+	printf("   frame_start %d\n", frame_start);
 	return 0;
 }
 

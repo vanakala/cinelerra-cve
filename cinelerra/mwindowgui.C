@@ -211,6 +211,9 @@ int MWindowGUI::create_objects()
 		mwindow->theme->mclock_x,
  		mwindow->theme->mclock_y,
 		mwindow->theme->mclock_w));
+	mainclock->set_frame_offset( (double) 
+		(mwindow->edl->session->get_frame_offset() /
+		mwindow->edl->session->frame_rate));
 	mainclock->update(0);
 
 //printf("MWindowGUI::create_objects 1\n");

@@ -11,9 +11,11 @@ public:
 	MainClock(MWindow *mwindow, int x, int y, int w);
 	~MainClock();
 	
+	void set_frame_offset(double value);
 	void update(double position);
 	
 	MWindow *mwindow;
+	double position_offset;
 };
 
 

@@ -15,20 +15,24 @@ MainClock::MainClock(MWindow *mwindow, int x, int y, int w)
 		w)
 {
 	this->mwindow = mwindow;
+	position_offset = 0;
 }
 
 MainClock::~MainClock()
 {
 }
 
+void MainClock::set_frame_offset(double value)
+{
+	position_offset = value;
+}
+
 void MainClock::update(double position)
 {
 	char string[BCTEXTLEN];
-	position += (double)(mwindow->edl->session->timecode_offset[3] * 3600  +
-                        mwindow->edl->session->timecode_offset[2] * 60 +
-                        mwindow->edl->session->timecode_offset[1] +
-								mwindow->edl->session->timecode_offset[0] /
-								mwindow->edl->session->frame_rate);
+
+	position += position_offset;
+
 	Units::totext(string, 
 		position,
 		mwindow->edl->session->time_format,

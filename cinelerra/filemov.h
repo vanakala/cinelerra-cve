@@ -70,6 +70,9 @@ public:
 // Fix codec to what AVI or MOV support
 	static void fix_codecs(Asset *asset);
 
+// set programme timecode
+	void set_frame_start(int64_t);
+
 private:
 	void new_audio_temp(int64_t len);
 // read raw audio data

@@ -5,14 +5,10 @@
 #include "file.h"
 #include "filemov.h"
 #include "guicast.h"
+#include "language.h"
 #include "mwindow.inc"
 #include "vframe.h"
 #include "videodevice.inc"
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 #if 0
@@ -162,7 +158,6 @@ int FileMOV::open_file(int rd, int wr)
 	this->rd = rd;
 	this->wr = wr;
 
-
 	if(suffix_number == 0) strcpy(prefix_path, asset->path);
 
 	if(!(fd = quicktime_open(asset->path, rd, wr)))
@@ -179,6 +174,9 @@ int FileMOV::open_file(int rd, int wr)
 
 // Set decoding parameter
 	quicktime_set_parameter(fd, "divx_use_deblocking", &asset->divx_use_deblocking);
+
+// Set timecode offset
+	quicktime_set_frame_start(fd, asset->frame_start);
 
 	return 0;
 }
@@ -226,6 +224,11 @@ int FileMOV::close_file()
 	FileBase::close_file();
 //printf("FileMOV::close_file 2\n");
 	return 0;
+}
+
+void FileMOV::set_frame_start(int64_t offset)
+{
+	quicktime_set_frame_start(fd, offset);
 }
 
 void FileMOV::asset_to_format()
@@ -843,6 +846,7 @@ int FileMOV::read_frame(VFrame *frame)
 // Packed
 		default:
 			quicktime_set_cmodel(fd, frame->get_color_model());
+//printf("FileMOV::read_frame 100 %p %p\n", frame->get_color_model(), frame->get_rows()[0]);
 			result = quicktime_decode_video(fd, 
 				frame->get_rows(),
 				file->current_layer);

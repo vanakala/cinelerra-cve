@@ -329,6 +329,9 @@ void Render::run()
 		save_defaults(asset);
 		mwindow->save_defaults();
 
+// set the start frame offset
+		asset->set_frame_start(mwindow->edl->session->get_frame_offset());
+
 		if(!result) render(1, asset, mwindow->edl, strategy);
 
 		delete asset;
@@ -358,6 +361,8 @@ void Render::run()
 				if(!plugindb && mwindow)
 					plugindb = mwindow->plugindb;
 				edl->load_xml(plugindb, file, LOAD_ALL);
+
+				job->asset->set_frame_start(edl->session->get_frame_offset());
 
 				render(0, job->asset, edl, job->strategy);
 

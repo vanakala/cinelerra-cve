@@ -38,6 +38,9 @@ public:
 	void equivalent_output(EDLSession *session, double *result);
 	void dump();
 
+// calculates the frame offset for programme timecode
+	int64_t get_frame_offset();
+
 // Audio
 	int achannel_positions[MAXCHANNELS];
 	AudioOutConfig *aconfig_duplex;
