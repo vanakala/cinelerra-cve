@@ -4,7 +4,7 @@
 Summary: Cinelerra CVS
 Name: cinelerra
 Version: 1.1.9
-Release: 8
+Release: 11
 License: GPL
 Group: X11
 URL: http://cvs.cinelerra.org
@@ -45,7 +45,8 @@ rm -rf $RPM_BUILD_ROOT
 %exclude %{prefix}/include/*
 
 %{prefix}/lib/cinelerra/*.so
-%exclude %{prefix}/lib/cinelerra/*.a
+# remove below for no static libs
+# %exclude %{prefix}/lib/cinelerra/*.a
 %exclude %{prefix}/lib/cinelerra/*.la
 
 %{prefix}/lib/cinelerra/fonts/*
@@ -58,6 +59,22 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Fri Apr 30 2004 Kevin Brosius <cobra@compuserve.com> - 1.1.9-11
+- change bootstrap technique for PNG files
+- gang fading in trackcanvas, snap to value with shift
+- plugin drag from window fix
+
+* Wed Apr 28 2004 Kevin Brosius <cobra@compuserve.com> - 1.1.9-10
+- Link problem with libXv, new rpm
+
+* Tue Apr 27 2004 Kevin Brosius <cobra@compuserve.com> - 1.1.9-9
+- RPM build updates, off by one Xv/zoom bug
+- button bug for z change with no x/y
+- mp3/ogg vorbis speedups for sample rate conversion
+- plugin translation fixes, bug 35-automation with dnd in same track
+- input variables crash checks, 
+- remove static libs
+
 * Wed Apr 21 2004 Kevin <cobra@compuserve.com> - 1.1.9-8
 - Getting ready for cvs commit, no fadeout bug fix
 

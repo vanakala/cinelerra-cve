@@ -26,7 +26,7 @@ AC_LANG_C
 AC_PROG_CXX
 
 AC_ENABLE_SHARED
-AC_ENABLE_STATIC
+AC_DISABLE_STATIC
 AC_PROG_LIBTOOL
 
 # hack for libtool 1.5 -- this is ugly and probably wrong, but works
