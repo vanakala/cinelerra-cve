@@ -321,6 +321,8 @@ void DefaultTheme::initialize()
 	build_transport(framefwd_data, get_image_data("framefwd.png"), transport_bg, 1);
 	build_transport(framefwd_data, get_image_data("framefwd.png"), transport_bg, 1);
 	build_transport(framerev_data, get_image_data("framerev.png"), transport_bg, 1);
+	build_transport(pause_data, get_image_data("pause.png"),
+		transport_bg, 1);
 	build_transport(rec_data, get_image_data("record.png"), transport_bg, 1);
 	build_transport(recframe_data, get_image_data("singleframe.png"), transport_bg, 1);
 	build_transport(reverse_data, get_image_data("reverse.png"), transport_bg, 1);
@@ -380,36 +382,60 @@ void DefaultTheme::get_mwindow_sizes(MWindowGUI *gui, int w, int h)
 	mcanvas_h = patchbay_h;
 }
 
-void DefaultTheme::get_cwindow_sizes(CWindowGUI *gui)
+void DefaultTheme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 {
-	ccomposite_x = 0;
-	ccomposite_y = 5;
-	ccomposite_w = cpanel_bg->get_w();
-	ccomposite_h = mwindow->session->cwindow_h - cbuttons_left->get_h();
-	cslider_x = 5;
-	cslider_y = ccomposite_h + 23;
-	cedit_x = 10;
-	cedit_y = cslider_y + 17;
-	ctransport_x = 10;
-	ctransport_y = mwindow->session->cwindow_h - autokeyframe_data[0]->get_h();
-	czoom_x = ctransport_x + PlayTransport::get_transport_width(mwindow) + 20;
-	czoom_y = ctransport_y + 5;
-	ccanvas_x = ccomposite_x + ccomposite_w;
-	ccanvas_y = 0;
-	ccanvas_h = ccomposite_h;
-
-
-	if(mwindow->edl->session->cwindow_meter)
+	if(cwindow_controls)
 	{
-		cmeter_x = mwindow->session->cwindow_w - MeterPanel::get_meters_width(mwindow->edl->session->audio_channels, 
-			mwindow->edl->session->cwindow_meter);
-		ccanvas_w = cmeter_x - ccanvas_x - 5;
+		ccomposite_x = 0;
+		ccomposite_y = 5;
+		ccomposite_w = cpanel_bg->get_w();
+		ccomposite_h = mwindow->session->cwindow_h - cbuttons_left->get_h();
+		cslider_x = 5;
+		cslider_y = ccomposite_h + 23;
+		cedit_x = 10;
+		cedit_y = cslider_y + 17;
+		ctransport_x = 10;
+		ctransport_y = mwindow->session->cwindow_h - autokeyframe_data[0]->get_h();
+		ccanvas_x = ccomposite_x + ccomposite_w;
+		ccanvas_y = 0;
+		ccanvas_h = ccomposite_h;
+		if(mwindow->edl->session->cwindow_meter)
+		{
+			cmeter_x = mwindow->session->cwindow_w - MeterPanel::get_meters_width(mwindow->edl->session->audio_channels, 
+				mwindow->edl->session->cwindow_meter);
+			ccanvas_w = cmeter_x - ccanvas_x - 5;
+		}
+		else
+		{
+			cmeter_x = mwindow->session->cwindow_w;
+			ccanvas_w = cmeter_x - ccanvas_x;
+		}
 	}
 	else
 	{
+		ccomposite_x = -cpanel_bg->get_w();
+		ccomposite_y = 0;
+		ccomposite_w = cpanel_bg->get_w();
+		ccomposite_h = mwindow->session->cwindow_h - cbuttons_left->get_h();
+
+		cslider_x = 5;
+		cslider_y = mwindow->session->cwindow_h;
+		cedit_x = 10;
+		cedit_y = cslider_y + 17;
+		ctransport_x = 10;
+		ctransport_y = cedit_y + 40;
+		ccanvas_x = 0;
+		ccanvas_y = 0;
+		ccanvas_w = mwindow->session->cwindow_w;
+		ccanvas_h = mwindow->session->cwindow_h;
 		cmeter_x = mwindow->session->cwindow_w;
-		ccanvas_w = cmeter_x - ccanvas_x;
 	}
+
+
+	czoom_x = ctransport_x + PlayTransport::get_transport_width(mwindow) + 20;
+	czoom_y = ctransport_y + 5;
+
+
 	cmeter_y = 5;
 	cmeter_h = mwindow->session->cwindow_h - cmeter_y;
 
@@ -419,6 +445,8 @@ void DefaultTheme::get_cwindow_sizes(CWindowGUI *gui)
 	ctimebar_w = ccanvas_w;
 	ctimebar_h = 16;
 
+
+// Not used
 	ctime_x = ctransport_x + PlayTransport::get_transport_width(mwindow);
 	ctime_y = ctransport_y;
 	cdest_x = czoom_x;
