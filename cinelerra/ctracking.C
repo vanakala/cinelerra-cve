@@ -69,7 +69,11 @@ int CTracking::update_scroll(double position)
 			double right_boundary = midpoint + half_canvas;
 
 			if(position > left_boundary &&
-				position < right_boundary)
+				position < right_boundary &&
+// when we are looping - if start and end position of the loop are on screen, don't move canvas! 
+			  !(mwindow->edl->local_session->loop_playback &&            
+                            midpoint - half_canvas < mwindow->edl->local_session->loop_start && 
+			    midpoint + half_canvas > mwindow->edl->local_session->loop_end)) 
 			{
 				int pixels = Units::to_long((position - midpoint) * 
 					mwindow->edl->session->sample_rate /
@@ -89,7 +93,11 @@ int CTracking::update_scroll(double position)
 
 			if(position < right_boundary &&
 				position > left_boundary && 
-				mwindow->edl->local_session->view_start > 0)
+				mwindow->edl->local_session->view_start > 0 &&
+// when we are looping - if start and end position of the loop are on screen, don't move canvas! 
+			  !(mwindow->edl->local_session->loop_playback &&            
+                            midpoint - half_canvas < mwindow->edl->local_session->loop_start && 
+			    midpoint + half_canvas > mwindow->edl->local_session->loop_end)) 
 			{
 				int pixels = Units::to_long((midpoint - position) * 
 						mwindow->edl->session->sample_rate /

@@ -19,7 +19,7 @@
 #include "vwindowgui.h"
 
 
-VWindow::VWindow(MWindow *mwindow) : Thread()
+VWindow::VWindow(MWindow *mwindow) : Thread(1)
 {
 	this->mwindow = mwindow;
 	edl = 0;
@@ -29,6 +29,10 @@ VWindow::VWindow(MWindow *mwindow) : Thread()
 
 VWindow::~VWindow()
 {
+	// gui has to be stopped before deleting object to prevent possible crush on exit
+	gui->set_done(0);
+	join();
+	delete gui;
 //printf("VWindow::~VWindow 1\n");
 	delete playback_engine;
 //printf("VWindow::~VWindow 1\n");

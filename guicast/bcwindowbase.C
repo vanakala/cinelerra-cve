@@ -148,6 +148,8 @@ BC_WindowBase::~BC_WindowBase()
 	if(bg_pixmap && !shared_bg_pixmap) delete bg_pixmap;
 	if(icon_pixmap) delete icon_pixmap;
 
+	if (temp_bitmap) delete temp_bitmap;
+
 	if(window_type == MAIN_WINDOW) 
 	{
 		

@@ -1035,6 +1035,7 @@ void MWindow::show_splash()
 
 void MWindow::hide_splash()
 {
+	delete splash_window->bg;
 	delete splash_window;
 }
 

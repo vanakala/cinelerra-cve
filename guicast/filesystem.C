@@ -613,7 +613,8 @@ int FileSystem::extract_name(char *out, const char *in, int test_dir)
 
 int FileSystem::join_names(char *out, char *dir_in, char *name_in)
 {
-	strcpy(out, dir_in);
+	if (out != dir_in) // strcpy is undefined if strings overlap
+		strcpy(out, dir_in);
 	int len = strlen(out);
 	int result = 0;
 	

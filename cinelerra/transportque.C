@@ -11,8 +11,8 @@ TransportCommand::TransportCommand()
 // in the middle of a job.
 	edl = new EDL;
 	edl->create_objects();
-	reset();
 	command = 0;
+	reset();
 	change_type = 0;
 }
 
@@ -125,6 +125,10 @@ void TransportCommand::set_playback_range(EDL *edl)
 			else
 				end_position = edl->local_session->selectionend;
 //printf("TransportCommand::set_playback_range 1 %f %f\n", start_position, end_position);
+// this prevents a crush if start position is after the loop when playing forwards
+			if (edl->local_session->loop_playback && start_position > edl->local_session->loop_end) {       
+					start_position = edl->local_session->loop_start;
+			}
 			break;
 		
 		case SLOW_REWIND:
@@ -135,6 +139,11 @@ void TransportCommand::set_playback_range(EDL *edl)
 				start_position = 0;
 			else
 				start_position = edl->local_session->selectionstart;
+// this prevents a crush if start position is before the loop when playing backwards
+			if (edl->local_session->loop_playback && start_position <= edl->local_session->loop_start) {
+					start_position = edl->local_session->loop_end;
+					end_position = edl->local_session->loop_end;
+			}
 			break;
 		
 		case CURRENT_FRAME:
