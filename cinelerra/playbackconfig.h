@@ -1,0 +1,104 @@
+#ifndef PLAYBACKCONFIG_H
+#define PLAYBACKCONFIG_H
+
+#include "audiodevice.inc"
+#include "bcwindowbase.inc"
+#include "defaults.inc"
+#include "maxchannels.h"
+#include "playbackconfig.inc"
+
+// This structure is passed to the driver
+class AudioOutConfig
+{
+public:
+	AudioOutConfig(int playback_strategy, int engine_number, int duplex);
+	~AudioOutConfig();
+
+	int operator!=(AudioOutConfig &that);
+	int operator==(AudioOutConfig &that);
+	AudioOutConfig& operator=(AudioOutConfig &that);
+	int load_defaults(Defaults *defaults);
+	int save_defaults(Defaults *defaults);
+// Total channels in do_channels
+	int total_playable_channels();
+	int playable_channel_number(int number);
+// Total channels device can handle
+	int total_output_channels();
+
+// Change default titles for duplex
+	int duplex;
+	int playback_strategy;
+	int engine_number;
+	int driver;
+	int oss_enable[MAXDEVICES];
+	char oss_out_device[MAXDEVICES][BCTEXTLEN];
+	int oss_out_channels[MAXDEVICES];
+	int oss_out_bits;
+	char esound_out_server[BCTEXTLEN];
+	int esound_out_port;
+// Which channels to send output to
+	int do_channel[MAXCHANNELS];
+	char alsa_out_device[BCTEXTLEN];
+	int alsa_out_channels;
+	int alsa_out_bits;
+	int firewire_channels;
+	int firewire_channel;
+	int firewire_port;
+};
+
+// This structure is passed to the driver
+class VideoOutConfig
+{
+public:
+	VideoOutConfig(int playback_strategy, int engine_number);
+	~VideoOutConfig();
+
+	int operator!=(VideoOutConfig &that);
+	int operator==(VideoOutConfig &that);
+	VideoOutConfig& operator=(VideoOutConfig &that);
+	int load_defaults(Defaults *defaults);
+	int save_defaults(Defaults *defaults);
+	int total_playable_channels();
+	char* get_path();
+
+	int playback_strategy;
+	int engine_number;
+	int driver;
+	char lml_out_device[BCTEXTLEN];
+	char buz_out_device[BCTEXTLEN];
+// Entry in the buz channel table
+	int buz_out_channel;
+	int buz_swap_fields;
+	char x11_host[BCTEXTLEN];
+// Which channels to send output to
+	int do_channel[MAXCHANNELS];
+	int brightness;
+	int hue;
+	int color;
+	int contrast;
+	int whiteness;
+	int firewire_channel;
+	int firewire_port;
+};
+
+class PlaybackConfig
+{
+public:
+	PlaybackConfig(int playback_strategy, int engine_number);
+	~PlaybackConfig();
+
+	PlaybackConfig& operator=(PlaybackConfig &that);
+	int load_defaults(Defaults *defaults);
+	int save_defaults(Defaults *defaults);
+
+	char hostname[BCTEXTLEN];
+	int port;
+
+	int playback_strategy;
+	int engine_number;
+	AudioOutConfig *aconfig;
+	VideoOutConfig *vconfig;
+};
+
+
+#endif

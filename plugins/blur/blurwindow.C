@@ -1,0 +1,170 @@
+#include "bcdisplayinfo.h"
+#include "blur.h"
+#include "blurwindow.h"
+
+
+
+PLUGIN_THREAD_OBJECT(BlurMain, BlurThread, BlurWindow)
+
+
+
+
+
+BlurWindow::BlurWindow(BlurMain *client, int x, int y)
+ : BC_Window(client->gui_string, 
+ 	x,
+	y,
+	150, 
+	270, 
+	150, 
+	270, 
+	0, 
+	1)
+{ 
+	this->client = client; 
+}
+
+BlurWindow::~BlurWindow()
+{
+//printf("BlurWindow::~BlurWindow 1\n");
+}
+
+int BlurWindow::create_objects()
+{
+	int x = 10, y = 10;
+	add_subwindow(new BC_Title(x, y, "Blur"));
+	y += 20;
+	add_subwindow(horizontal = new BlurHorizontal(client, this, x, y));
+	y += 30;
+	add_subwindow(vertical = new BlurVertical(client, this, x, y));
+	y += 35;
+	add_subwindow(radius = new BlurRadius(client, x, y));
+	add_subwindow(new BC_Title(x + 50, y, "Radius"));
+	y += 50;
+	add_subwindow(a = new BlurA(client, x, y));
+	y += 30;
+	add_subwindow(r = new BlurR(client, x, y));
+	y += 30;
+	add_subwindow(g = new BlurG(client, x, y));
+	y += 30;
+	add_subwindow(b = new BlurB(client, x, y));
+	
+	show_window();
+	flush();
+	return 0;
+}
+
+int BlurWindow::close_event()
+{
+// Set result to 1 to indicate a client side close
+	set_done(1);
+	return 1;
+}
+
+BlurRadius::BlurRadius(BlurMain *client, int x, int y)
+ : BC_IPot(x, 
+ 	y, 
+	client->config.radius, 
+	0, 
+	MAXRADIUS)
+{
+	this->client = client;
+}
+BlurRadius::~BlurRadius()
+{
+}
+int BlurRadius::handle_event()
+{
+	client->config.radius = get_value();
+	client->send_configure_change();
+	return 1;
+}
+
+BlurVertical::BlurVertical(BlurMain *client, BlurWindow *window, int x, int y)
+ : BC_CheckBox(x, 
+ 	y, 
+	client->config.vertical, 
+	"Vertical")
+{
+	this->client = client;
+	this->window = window;
+}
+BlurVertical::~BlurVertical()
+{
+}
+int BlurVertical::handle_event()
+{
+	client->config.vertical = get_value();
+	client->send_configure_change();
+}
+
+BlurHorizontal::BlurHorizontal(BlurMain *client, BlurWindow *window, int x, int y)
+ : BC_CheckBox(x, 
+ 	y, 
+	client->config.horizontal, 
+	"Horizontal")
+{
+	this->client = client;
+	this->window = window;
+}
+BlurHorizontal::~BlurHorizontal()
+{
+}
+int BlurHorizontal::handle_event()
+{
+	client->config.horizontal = get_value();
+	client->send_configure_change();
+}
+
+
+
+
+BlurA::BlurA(BlurMain *client, int x, int y)
+ : BC_CheckBox(x, y, client->config.a, "Blur alpha")
+{
+	this->client = client;
+}
+int BlurA::handle_event()
+{
+	client->config.a = get_value();
+	client->send_configure_change();
+	return 1;
+}
+
+BlurR::BlurR(BlurMain *client, int x, int y)
+ : BC_CheckBox(x, y, client->config.r, "Blur red")
+{
+	this->client = client;
+}
+int BlurR::handle_event()
+{
+	client->config.r = get_value();
+	client->send_configure_change();
+	return 1;
+}
+
+BlurG::BlurG(BlurMain *client, int x, int y)
+ : BC_CheckBox(x, y, client->config.g, "Blur green")
+{
+	this->client = client;
+}
+int BlurG::handle_event()
+{
+	client->config.g = get_value();
+	client->send_configure_change();
+	return 1;
+}
+
+BlurB::BlurB(BlurMain *client, int x, int y)
+ : BC_CheckBox(x, y, client->config.b, "Blur blue")
+{
+	this->client = client;
+}
+int BlurB::handle_event()
+{
+	client->config.b = get_value();
+	client->send_configure_change();
+	return 1;
+}
+
+

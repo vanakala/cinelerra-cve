@@ -1,0 +1,66 @@
+#!/usr/bin/make -f
+# Made with the aid of debmake, by Christoph Lameter,
+# based on the sample debian/rules file for GNU hello by Ian Jackson.
+
+package=hvirtual
+export DH_COMPAT=4
+
+CFLAGS=-ffast-math -O3 -mmmx 
+CXXFLAGS=$(CFLAGS) -fno-check-new
+
+include /usr/share/dpatch/dpatch.make
+
+config.status: configure 
+	$(checkdir)
+	CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" \
+					./configure --prefix=/usr --without-pic
+	
+build: build-stamp
+build-stamp: config.status patch-stamp
+	$(checkdir)
+	$(MAKE)
+	docbook-to-man debian/cinelerra.sgml > debian/cinelerra.1
+	docbook-to-man debian/mplexhi.sgml > debian/mplexhi.1
+	docbook-to-man debian/mplexlo.sgml > debian/mplexlo.1
+	touch build-stamp
+
+clean: unpatch
+	$(checkdir)
+	-$(MAKE) -i distclean
+	dh_clean -a
+	-rm -f debian/cinelerra.1
+	-rm -f debian/mplexhi.1
+	-rm -f debian/mplexlo.1
+	-rm -f build-stamp
+
+binary-indep: checkroot build-stamp
+binary-arch: checkroot build-stamp
+	$(MAKE) install DESTDIR=$(CURDIR)/debian/tmp
+	chmod -x debian/tmp/usr/lib/cinelerra/*
+	chmod +x debian/tmp/usr/lib/cinelerra/fonts
+	chmod -x debian/tmp/usr/lib/cinelerra/fonts/*
+	dh_install --sourcedir=debian/tmp --autodest
+	dh_installdocs -XCVS
+	dh_installchangelogs -a
+	dh_installman
+
+	dh_fixperms -a
+	dh_compress -a
+	dh_strip -a
+	strip -x -s -R .comment -R .note debian/cinelerra/usr/lib/cinelerra/*.plugin
+	plugins/bootstrap debian/cinelerra/usr/lib/cinelerra/defaulttheme.plugin plugins/defaulttheme/data/*.png
+	plugins/bootstrap debian/cinelerra/usr/lib/cinelerra/microtheme.plugin plugins/microtheme/data/*.png
+
+	dh_makeshlibs -V -a
+	dh_shlibdeps -a
+
+	dh_gencontrol 
+	dh_builddeb 
+	
+
+binary: binary-indep binary-arch
+
+checkroot: 
+	dh_testroot
+
+

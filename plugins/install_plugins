@@ -1,0 +1,24 @@
+#! /bin/bash
+
+PLUGINS_DIR=$1
+echo "Postprocessing plugins in $PLUGINS_DIR"
+
+echo "Bootstraping themes"
+for theme in `cat themes`; do
+	echo $PLUGINS_DIR/lib$theme.so
+	./bootstrap $PLUGINS_DIR/$theme.so $theme/data/*.png
+done
+
+echo "Renaming plugins"
+# generic
+cd $PLUGINS_DIR
+rm -f *.a *.la
+for file in *.so; do
+	newfile=${file/so/plugin}
+	mv -f $file $newfile
+done
+
+#colors is only a library
+mv libcolors.plugin libcolors.so
+mv libfourier.plugin libfourier.so
+cd -

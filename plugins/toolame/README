@@ -1,0 +1,11 @@
+toolame v0.30
+
+A freshstart for the toolame code.
+Focus will be on improving the useability/extendability of the code.
+It will eventually include all the optimizations so far.
+
+history:
+v0.30
+	no optimizations at all.
+	Just the dist10 code without any layerI or layerIII stuff. 
+	(but there's still more code to remove).

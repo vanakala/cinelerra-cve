@@ -1,0 +1,607 @@
+#! /bin/sh -e
+## titler-charsets.dpatch by Andraz Tori <Andraz.tori1@guest.arnes.si>
+##
+## DP: enables non-english users to use their own charsets
+## DP: in the titler plugin.
+
+[ -f debian/patches/00patch-opts ] && . debian/patches/00patch-opts
+patch_opts="${patch_opts:--f --no-backup-if-mismatch}"
+
+if [ $# -ne 1 ]; then
+    echo >&2 "`basename $0`: script expects -patch|-unpatch as argument"
+    exit 1
+fi
+case "$1" in
+	-patch) patch $patch_opts -p1 < $0;;
+	-unpatch) patch $patch_opts -p1 -R < $0;;
+	*)
+		echo >&2 "`basename $0`: script expects -patch|-unpatch as argument"
+		exit 1;;
+esac
+exit 0
+@DPATCH@
+
+diff -u base/plugins/titler/title.C hvirtual-1.1.5/plugins/titler/title.C
+--- base/plugins/titler/title.C	2002-11-16 16:48:53.000000000 +0100
++++ hvirtual-1.1.5/plugins/titler/title.C	2003-04-12 01:38:14.000000000 +0200
+@@ -12,6 +12,9 @@
+ #include <stdint.h>
+ #include <stdio.h>
+ #include <string.h>
++#include <endian.h>
++#include <byteswap.h>
++#include <iconv.h>
+ 
+ 
+ #define FONT_SEARCHPATH "/usr/lib/cinelerra/fonts"
+@@ -37,6 +40,7 @@
+ 	dropshadow = 10;
+ 	sprintf(font, "fixed");
+ 	sprintf(text, "hello world");
++	sprintf(encoding, "ISO8859-1");
+ 	pixels_per_second = 1.0;
+ 	timecode = 0;
+ }
+@@ -53,6 +57,7 @@
+ 		vjustification == that.vjustification &&
+ 		EQUIV(pixels_per_second, that.pixels_per_second) &&
+ 		!strcasecmp(font, that.font) &&
++		!strcasecmp(encoding, that.encoding) &&
+ 		!strcmp(text, that.text);
+ }
+ 
+@@ -74,6 +79,7 @@
+ 	dropshadow = that.dropshadow;
+ 	timecode = that.timecode;
+ 	strcpy(text, that.text);
++	strcpy(encoding, that.encoding);
+ }
+ 
+ void TitleConfig::interpolate(TitleConfig &prev, 
+@@ -83,6 +89,7 @@
+ 	long current_frame)
+ {
+ 	strcpy(font, prev.font);
++	strcpy(encoding, prev.encoding);
+ 	style = prev.style;
+ 	size = prev.size;
+ 	color = prev.color;
+@@ -177,7 +184,8 @@
+ 
+ TitleGlyph::TitleGlyph()
+ {
+-	c = 0;
++	char_code = 0;
++	c=0;
+ 	data = 0;
+ }
+ 
+@@ -213,14 +221,11 @@
+ 	current_font = 0;
+ 	freetype_library = 0;
+ 	freetype_face = 0;
+-	face_buffer = 0;
+-	face_size = 0;
+ }
+ 
+ GlyphUnit::~GlyphUnit()
+ {
+ 	if(freetype_library) FT_Done_FreeType(freetype_library);
+-	if(face_buffer) delete [] face_buffer;
+ }
+ 
+ void GlyphUnit::process_package(LoadPackage *package)
+@@ -235,9 +240,7 @@
+ 
+ 		if(plugin->load_freetype_face(freetype_library,
+ 			freetype_face,
+-			current_font->path,
+-			face_buffer,
+-			face_size))
++			current_font->path))
+ 		{
+ 			printf("GlyphUnit::process_package FT_New_Face failed.\n");
+ 			result = 1;
+@@ -250,7 +253,8 @@
+ 
+ 	if(!result)
+ 	{
+-		if(FT_Load_Char(freetype_face, glyph->c, FT_LOAD_RENDER))
++
++		if(FT_Load_Char(freetype_face, glyph->char_code, FT_LOAD_RENDER))
+ 		{
+ 			printf("GlyphUnit::process_package FT_Load_Char failed.\n");
+ // Prevent a crash here
+@@ -274,7 +278,7 @@
+ 			glyph->pitch = freetype_face->glyph->bitmap.pitch;
+ 			glyph->left = freetype_face->glyph->bitmap_left;
+ 			glyph->top = freetype_face->glyph->bitmap_top;
+-			glyph->freetype_index = FT_Get_Char_Index(freetype_face, glyph->c);
++			glyph->freetype_index = FT_Get_Char_Index(freetype_face, glyph->char_code);
+ 			glyph->advance_w = (freetype_face->glyph->advance.x >> 6);
+ 
+ //printf("GlyphUnit::process_package 1 width=%d height=%d pitch=%d left=%d top=%d advance_w=%d freetype_index=%d\n", 
+@@ -754,8 +758,6 @@
+ 	char_positions = 0;
+ 	translate = 0;
+ 	need_reconfigure = 1;
+-	face_buffer = 0;
+-	face_size = 0;
+ }
+ 
+ TitleMain::~TitleMain()
+@@ -769,7 +771,6 @@
+ 	if(title_engine) delete title_engine;
+ 	if(freetype_library) FT_Done_FreeType(freetype_library);
+ 	if(translate) delete translate;
+-	if(face_buffer) delete [] face_buffer;
+ }
+ 
+ char* TitleMain::plugin_title() { return "Title"; }
+@@ -997,15 +998,11 @@
+ // Add to list
+ 				if(strlen(entry->foundary))
+ 				{
+-					char *face_buffer = 0;
+-					int face_size = 0;
+ //printf("TitleMain::build_fonts 1 %s\n", entry->path);
+ // This takes a real long time to do.  Instead just take all fonts
+ // 					if(!load_freetype_face(freetype_library, 
+ // 						freetype_face,
+-// 						entry->path,
+-// 						face_buffer,
+-// 						face_size))
++// 						entry->path))
+ //					if(1)
+ 					if(entry->family[0])
+ 					{
+@@ -1046,111 +1043,37 @@
+ 
+ 
+ // for(int i = 0; i < fonts->total; i++)
+-// 	fonts->values[i]->dump();
++//	fonts->values[i]->dump();
+ 
+ 
+ }
+ 
+ int TitleMain::load_freetype_face(FT_Library &freetype_library,
+ 	FT_Face &freetype_face,
+-	char *path,
+-	char* &face_buffer,
+-	int &face_size)
++	char *path)
+ {
+ //printf("TitleMain::load_freetype_face 1\n");
+ 	if(!freetype_library) FT_Init_FreeType(&freetype_library);
+ 	if(freetype_face) FT_Done_Face(freetype_face);
+-	if(face_buffer) delete [] face_buffer;
+ 	freetype_face = 0;
+-	face_buffer = 0;
+-	face_size = 0;
+-	char string[BCTEXTLEN];
+-	FILE *in;
+-	int use_compression = 0;
+ //printf("TitleMain::load_freetype_face 2\n");
+ 
+-// Determine compression type
+-	if(strlen(path) > 3 && 
+-		path[strlen(path) - 3] == '.' &&
+-		path[strlen(path) - 2] == 'g' &&
+-		path[strlen(path) - 1] == 'z')
+-	{
+-		sprintf(string, "cat %s | gunzip", path);
+-		in = popen(string, "r");
+-		use_compression = 1;
+-	}
+-	else
+-	{
+-		in = fopen(path, "rb");
+-		use_compression = 0;
+-	}
+-//printf("TitleMain::load_freetype_face 3\n");
+-
+-	if(!in)
++// Use freetype's internal function for loading font
++	if(FT_New_Face(freetype_library, 
++		path, 
++		0,
++		&freetype_face))
+ 	{
+-		fprintf(stderr, "TitleMain::load_freetype_face %s: %s:\n", 
+-			path, strerror(errno));
++		fprintf(stderr, "TitleMain::load_freetype_face %s failed.\n");
+ 		FT_Done_FreeType(freetype_library);
++		freetype_face = 0;
+ 		freetype_library = 0;
+ 		return 1;
+-	}
+-	else
++	} else
+ 	{
+-		int bytes_read = 0;
+-		int fragment_size = 65536;
+-//printf("TitleMain::load_freetype_face 4\n");
+-		do
+-		{
+-			if(!face_buffer) 
+-			{
+-//printf("TitleMain::load_freetype_face 4.1 %d\n", face_size);
+-				face_buffer = new char[fragment_size];
+-			}
+-			else
+-			{
+-//printf("TitleMain::load_freetype_face 4.2 %d %d\n", face_size, fragment_size);
+-				char *new_face_buffer = new char[face_size + fragment_size];
+-//printf("TitleMain::load_freetype_face 4.3 %d\n", face_size);
+-				memcpy(new_face_buffer, face_buffer, face_size);
+-//printf("TitleMain::load_freetype_face 4.4 %d\n", face_size);
+-				delete [] face_buffer;
+-//printf("TitleMain::load_freetype_face 4.5 %d\n", face_size);
+-				face_buffer = new_face_buffer;
+-//printf("TitleMain::load_freetype_face 4.6 %d\n", face_size);
+-			}
+-
+-//printf("TitleMain::load_freetype_face 4.7 %d\n", face_size);
+-			bytes_read = fread(face_buffer + face_size,
+-				1,
+-				fragment_size,
+-				in);
+-			face_size += bytes_read;
+-		}while(bytes_read == fragment_size);
+-//printf("TitleMain::load_freetype_face 5\n");
+-		if(use_compression)
+-			pclose(in);
+-		else
+-			fclose(in);
+-
+-//printf("TitleMain::load_freetype_face 6\n");
+-
+-		if(FT_New_Memory_Face(freetype_library, 
+-			(FT_Byte*)face_buffer, 
+-			face_size, 
+-			0,
+-			&freetype_face))
+-		{
+-			fprintf(stderr, "TitleMain::load_freetype_face %s failed.\n", path);
+-			FT_Done_FreeType(freetype_library);
+-			freetype_face = 0;
+-			freetype_library = 0;
+-			return 1;
+-		}
+-		else
+-		{
+-			return 0;
+-		}
++		return 0;
+ 	}
++
+ //printf("TitleMain::load_freetype_face 4\n");
+ }
+ 
+@@ -1254,14 +1177,43 @@
+ // Build table of all glyphs needed
+ 	int text_len = strlen(config.text);
+ 	int total_packages = 0;
++	iconv_t cd;
++	cd = iconv_open ("UCS-4", config.encoding);
++	if (cd == (iconv_t) -1)
++	{
++			/* Something went wrong.  */
++		fprintf (stderr, "Iconv conversion from %s to Unicode UCS-4 not available\n",config.encoding);
++	};
++
+ 	for(int i = 0; i < text_len; i++)
+ 	{
++		FT_ULong char_code;	
+ 		int c = config.text[i];
+ 		int exists = 0;
++		/* if iconv is working ok for current encoding */
++		if (cd != (iconv_t) -1)
++		{
++
++			size_t inbytes,outbytes;
++			char inbuf;
++			char *inp = (char*)&inbuf, *outp = (char *)&char_code;
++			
++			inbuf = (char)c;
++			inbytes = 1;
++			outbytes = 4;
++	
++			iconv (cd, &inp, &inbytes, &outp, &outbytes);
++#if     __BYTE_ORDER == __LITTLE_ENDIAN
++				char_code = bswap_32(char_code);
++#endif                          /* Big endian.  */
++
++		} else {
++			char_code = c;
++		}
+ 
+ 		for(int j = 0; j < glyphs.total; j++)
+ 		{
+-			if(glyphs.values[j]->c == c)
++			if(glyphs.values[j]->char_code == char_code)
+ 			{
+ 				exists = 1;
+ 				break;
+@@ -1276,8 +1228,10 @@
+ //printf("TitleMain::draw_glyphs 2\n");
+ 			glyphs.append(glyph);
+ 			glyph->c = c;
++			glyph->char_code = char_code;
+ 		}
+ 	}
++	iconv_close(cd);
+ 
+ 	if(!glyph_engine)
+ 		glyph_engine = new GlyphEngine(this, PluginClient::smp + 1);
+@@ -1686,6 +1640,7 @@
+ 
+ 	if(config.size <= 0 || config.size >= 2048) return 0;
+ 	if(!strlen(config.text)) return 0;
++	if(!strlen(config.encoding)) return 0;
+ 
+ // Handle reconfiguration
+ 	if(need_reconfigure)
+@@ -1719,9 +1674,7 @@
+ //printf("TitleMain::process_realtime 2.1 %s\n", font->path);
+ 			if(load_freetype_face(freetype_library,
+ 				freetype_face,
+-				font->path,
+-				face_buffer,
+-				face_size))
++				font->path))
+ 			{
+ 				printf("TitleMain::process_realtime %s: FT_New_Face failed.\n",
+ 					font->fixed_title);
+@@ -1813,6 +1766,7 @@
+ 	defaults->load();
+ 
+ 	defaults->get("FONT", config.font);
++	defaults->get("ENCODING", config.encoding);
+ 	config.style = defaults->get("STYLE", (long)config.style);
+ 	config.size = defaults->get("SIZE", config.size);
+ 	config.color = defaults->get("COLOR", config.color);
+@@ -1855,6 +1809,7 @@
+ 	char text_path[1024];
+ 
+ 	defaults->update("FONT", config.font);
++	defaults->update("ENCODING", config.encoding);
+ 	defaults->update("STYLE", (long)config.style);
+ 	defaults->update("SIZE", config.size);
+ 	defaults->update("COLOR", config.color);
+@@ -1946,6 +1901,7 @@
+ 	output.set_shared_string(keyframe->data, MESSAGESIZE);
+ 	output.tag.set_title("TITLE");
+ 	output.tag.set_property("FONT", config.font);
++	output.tag.set_property("ENCODING", config.encoding);
+ 	output.tag.set_property("STYLE", (long)config.style);
+ 	output.tag.set_property("SIZE", config.size);
+ 	output.tag.set_property("COLOR", config.color);
+@@ -1994,6 +1950,7 @@
+ 			if(input.tag.title_is("TITLE"))
+ 			{
+ 				input.tag.get_property("FONT", config.font);
++				input.tag.get_property("ENCODING", config.encoding);
+ 				config.style = input.tag.get_property("STYLE", (long)config.style);
+ 				config.size = input.tag.get_property("SIZE", config.size);
+ 				config.color = input.tag.get_property("COLOR", config.color);
+diff -u base/plugins/titler/title.h hvirtual-1.1.5/plugins/titler/title.h
+--- base/plugins/titler/title.h	2002-11-16 16:48:53.000000000 +0100
++++ hvirtual-1.1.5/plugins/titler/title.h	2003-04-12 01:37:49.000000000 +0200
+@@ -106,6 +106,8 @@
+ 
+ // Text to display
+ 	char text[BCTEXTLEN];
++// Encoding to convert from 
++	char encoding[BCTEXTLEN];
+ };
+ 
+ class FontEntry
+@@ -140,7 +142,10 @@
+ public:
+ 	TitleGlyph();
+ 	~TitleGlyph();
++	// character in 8 bit charset
+ 	int c;
++	// character in UCS-4
++	FT_ULong char_code;
+ 	int width, height, pitch, advance_w, left, top, freetype_index;
+ 	VFrame *data;
+ };
+@@ -172,8 +177,6 @@
+ 	FontEntry *current_font;       // Current font configured by freetype
+ 	FT_Library freetype_library;      	// Freetype library
+ 	FT_Face freetype_face;
+-	char *face_buffer;
+-	int face_size;
+ };
+ 
+ class GlyphEngine : public LoadServer
+@@ -332,9 +335,7 @@
+ 	void clear_glyphs();
+ 	int load_freetype_face(FT_Library &freetype_library,
+ 		FT_Face &freetype_face,
+-		char *path,
+-		char* &face_buffer,
+-		int &face_size);
++		char *path);
+ 
+ 
+ 
+@@ -364,8 +365,6 @@
+ // Necessary to get character width
+ 	FT_Library freetype_library;      	// Freetype library
+ 	FT_Face freetype_face;
+-	char *face_buffer;
+-	int face_size;
+ 
+ // Visible area of all text present in the mask.
+ // Horizontal characters aren't clipped because column positions are
+diff -u base/plugins/titler/titlewindow.C hvirtual-1.1.5/plugins/titler/titlewindow.C
+--- base/plugins/titler/titlewindow.C	2002-11-16 16:48:53.000000000 +0100
++++ hvirtual-1.1.5/plugins/titler/titlewindow.C	2003-04-12 01:32:53.000000000 +0200
+@@ -58,6 +58,7 @@
+ TitleWindow::~TitleWindow()
+ {
+ 	sizes.remove_all_objects();
++	encodings.remove_all_objects();
+ 	delete color_thread;
+ 	delete title_x;
+ 	delete title_y;
+@@ -66,6 +67,25 @@
+ int TitleWindow::create_objects()
+ {
+ 	int x = 10, y = 10;
++	
++	encodings.append(new BC_ListBoxItem("ISO8859-1"));
++	encodings.append(new BC_ListBoxItem("ISO8859-2"));
++	encodings.append(new BC_ListBoxItem("ISO8859-3"));
++	encodings.append(new BC_ListBoxItem("ISO8859-4"));
++	encodings.append(new BC_ListBoxItem("ISO8859-5"));
++	encodings.append(new BC_ListBoxItem("ISO8859-6"));
++	encodings.append(new BC_ListBoxItem("ISO8859-7"));
++	encodings.append(new BC_ListBoxItem("ISO8859-8"));
++	encodings.append(new BC_ListBoxItem("ISO8859-9"));
++	encodings.append(new BC_ListBoxItem("ISO8859-10"));
++	encodings.append(new BC_ListBoxItem("ISO8859-11"));
++	encodings.append(new BC_ListBoxItem("ISO8859-12"));
++	encodings.append(new BC_ListBoxItem("ISO8859-13"));
++	encodings.append(new BC_ListBoxItem("ISO8859-14"));
++	encodings.append(new BC_ListBoxItem("ISO8859-15"));
++	encodings.append(new BC_ListBoxItem("KOI8"));
++
++
+ 
+ 	sizes.append(new BC_ListBoxItem("8"));
+ 	sizes.append(new BC_ListBoxItem("9"));
+@@ -150,7 +170,6 @@
+ 	font->create_objects();
+ 	x += 230;
+ 	add_subwindow(font_tumbler = new TitleFontTumble(client, this, x, y + 20));
+-
+ 	x += 30;
+ 	char string[BCTEXTLEN];
+ 	add_tool(size_title = new BC_Title(x, y, "Size:"));
+@@ -228,10 +247,17 @@
+ 	x = 10;
+ 	y += 50;
+ 
+-	add_tool(text_title = new BC_Title(x, y, "Text:"));
+-	x += 150;
++	add_tool(text_title = new BC_Title(x, y+3, "Text:"));
++
++	x += 90;
++	add_tool(encoding_title = new BC_Title(x, y+3, "Encoding:"));
++	encoding = new TitleEncoding(client, this, x+100, y);
++	encoding->create_objects();
++
++	x += 280;
+ 	add_tool(timecode = new TitleTimecode(client, x, y));
+ 
++
+ 	x = 10;
+ 	y += 30;
+ 	text = new TitleText(client, 
+@@ -267,6 +293,8 @@
+ 	bold->reposition_window(bold->get_x(), bold->get_y());
+ 	size_title->reposition_window(size_title->get_x(), size_title->get_y());
+ 	size->reposition_window(size->get_x(), size->get_y());
++	encoding_title->reposition_window(encoding_title->get_x(), encoding_title->get_y());
++	encoding->reposition_window(encoding->get_x(), encoding->get_y());
+ 	color_button->reposition_window(color_button->get_x(), color_button->get_y());
+ 	motion_title->reposition_window(motion_title->get_x(), motion_title->get_y());
+ 	motion->reposition_window(motion->get_x(), motion->get_y());
+@@ -372,6 +400,7 @@
+ 	italic->update(client->config.style & FONT_ITALIC);
+ 	bold->update(client->config.style & FONT_BOLD);
+ 	size->update(client->config.size);
++	encoding->update(client->config.encoding);
+ 	motion->update(TitleMain::motion_to_text(client->config.motion_strategy));
+ 	loop->update(client->config.loop);
+ 	dropshadow->update((float)client->config.dropshadow);
+@@ -458,6 +487,28 @@
+ 	sprintf(string, "%d", size);
+ 	BC_PopupTextBox::update(string);
+ }
++TitleEncoding::TitleEncoding(TitleMain *client, TitleWindow *window, int x, int y)
++ : BC_PopupTextBox(window, 
++		&window->encodings,
++		client->config.encoding,
++		x, 
++		y, 
++		100,
++		300)
++{
++	this->client = client;
++	this->window = window;
++}
++
++TitleEncoding::~TitleEncoding()
++{
++}
++int TitleEncoding::handle_event()
++{
++	strcpy(client->config.encoding, get_text());
++	client->send_configure_change();
++	return 1;
++}
+ 
+ TitleColorButton::TitleColorButton(TitleMain *client, TitleWindow *window, int x, int y)
+  : BC_GenericButton(x, y, "Color...")
+diff -u base/plugins/titler/titlewindow.h hvirtual-1.1.5/plugins/titler/titlewindow.h
+--- base/plugins/titler/titlewindow.h	2002-11-16 16:48:53.000000000 +0100
++++ hvirtual-1.1.5/plugins/titler/titlewindow.h	2003-04-11 11:20:56.000000000 +0200
+@@ -32,6 +32,7 @@
+ class TitleItalic;
+ class TitleBold;
+ class TitleSize;
++class TitleEncoding;
+ class TitleColorButton;
+ class TitleDropShadow;
+ class TitleMotion;
+@@ -81,7 +82,9 @@
+ 	TitleItalic *italic;
+ 	TitleBold *bold;
+ 	BC_Title *size_title;
++	BC_Title *encoding_title;
+ 	TitleSize *size;
++	TitleEncoding *encoding;
+ 	TitleColorButton *color_button;
+ 	TitleColorThread *color_thread;
+ 	BC_Title *motion_title;
+@@ -107,6 +110,7 @@
+ // Color preview
+ 	int color_x, color_y;
+ 	ArrayList<BC_ListBoxItem*> sizes;
++	ArrayList<BC_ListBoxItem*> encodings;
+ 	ArrayList<BC_ListBoxItem*> paths;
+ 	ArrayList<BC_ListBoxItem*> fonts;
+ };
+@@ -150,6 +154,15 @@
+ 	TitleMain *client;
+ 	TitleWindow *window;
+ };
++class TitleEncoding : public BC_PopupTextBox
++{
++public:
++	TitleEncoding(TitleMain *client, TitleWindow *window, int x, int y);
++	~TitleEncoding();
++	int handle_event();
++	TitleMain *client;
++	TitleWindow *window;
++};
+ class TitleColorButton : public BC_GenericButton
+ {
+ public:
+--- base/guicast/bctextbox.C	2003-03-05 02:20:37.000000000 +0100
++++ hvirtual-1.1.5/guicast/bctextbox.C	2003-04-10 19:36:52.000000000 +0200
+@@ -528,7 +528,7 @@
+ void BC_TextBox::default_keypress(int &dispatch_event, int &result)
+ {
+     if((top_level->get_keypress() == RETURN) ||
+-		(top_level->get_keypress() > 30 && top_level->get_keypress() < 127))
++		(top_level->get_keypress() > 30 && top_level->get_keypress() <= 255))
+ 	{
+ // Substitute UNIX linefeed
+ 		if(top_level->get_keypress() == RETURN) 

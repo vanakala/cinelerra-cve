@@ -1,0 +1,24 @@
+lib_LTLIBRARIES = libguicast.la
+
+libguicast_la_LIBADD = -lXxf86vm -lX11 -lXv -lXext
+libguicast_la_LDFLAGS = $(X_LIBS) -version-info 1:0:0 
+libguicast_la_SOURCES = bcbitmap.C bcbutton.C bccapture.C bcclipboard.C bcdisplayinfo.C bcdragwindow.C bcfilebox.C bcipc.C \
+												bclistbox.C bcmenubar.C bcmeter.C bcpan.C bcpixmap.C bcpopup.C bcpopupmenu.C bcpot.C bcprogress.C \
+												bcprogressbox.C bcrepeater.C bcresources.C bcscrollbar.C bcsignals.C bcslider.C bcsubwindow.C \
+												bctextbox.C bctitle.C bctoggle.C bctumble.C bcwindow.C bcwindowbase.C bcwindowdraw.C errorbox.C \
+												defaults.C filesystem.C mutex.C rotateframe.C sema.C stringfile.C thread.C timer.C units.C \
+												vframe.C workarounds.C bclistboxitem.C bctheme.C
+noinst_HEADERS = arraylist.h bcbitmap.h bcbitmap.inc bcbutton.h bcbutton.inc bccapture.h bccapture.inc bcclipboard.h \
+								 bcclipboard.inc bcdisplayinfo.h bcdisplayinfo.inc bcdragwindow.h bcdragwindow.inc bcfilebox.h \
+								 bcfilebox.inc bcipc.h bclistbox.h bclistbox.inc bcmenubar.h bcmenubar.inc bcmeter.h bcmeter.inc \
+								 bcpan.h bcpan.inc bcpixmap.h bcpixmap.inc bcpopup.h bcpopup.inc bcpopuplistbox.h bcpopuplistbox.inc \
+								 bcpopupmenu.h bcpopupmenu.inc bcpot.h bcpot.inc bcprogressbox.h bcprogressbox.inc bcprogress.h \
+								 bcprogress.inc bcrepeater.h bcrepeater.inc bcresources.h bcresources.inc bcscrollbar.h bcscrollbar.inc \
+								 bcsignals.h bcsignals.inc bcslider.h bcslider.inc bcsubwindow.h bcsubwindow.inc bctextbox.h bctextbox.inc \
+								 bctitle.h bctitle.inc bctoggle.h bctoggle.inc bctumble.h bctumble.inc bcwindowbase.h bcwindowbase.inc \
+								 bcwindow.h bcwindow.inc clip.h colors.h cursors.h defaults.h defaults.inc errorbox.h errorbox.inc \
+								 filesystem.h filesystem.inc fonts.h guicast.h keys.h linklist.h mutex.h mutex.inc rotateframe.h \
+								 rotateframe.inc sema.h sema.inc sizes.h stringfile.h stringfile.inc testobject.h thread.h timer.h \
+								 timer.inc units.h vframe.h vframe.inc workarounds.h bclistboxitem.h bctheme.h
+
+INCLUDES = -I$(top_srcdir)/quicktime -I/usr/include/qt

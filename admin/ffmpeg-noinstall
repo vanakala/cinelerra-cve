@@ -1,0 +1,22 @@
+#! /usr/bin/perl -w
+use strict;
+
+my $outfile = "quicktime/ffmpeg/Makefile.temp";
+my $makefile = "quicktime/ffmpeg/Makefile";
+
+open MKFILE, $makefile;
+open OUT, ">$outfile";
+
+my $install_target = 0;
+while( <MKFILE> ) {
+	if (/^([^ ]*):/) {
+		$install_target = 0;
+		$install_target = 1 if ($1 =~ /install/);		
+		print OUT $_;
+	} elsif (! $install_target) {
+		print OUT $_;
+	}
+}
+close MKFILE;
+close OUT;
+`mv -f $outfile $makefile`;

@@ -1,0 +1,45 @@
+Quicktime for Linux
+
+Author: Heroine Virtual (Motion picture solutions for Linux)    broadcast@earthling.net
+Homepage: heroinewarrior.com/quicktime
+Requires: libpthread
+------------------------------------------------------------------------
+
+***** 
+
+This is a Quicktime library for UNIX in a freely redistributable,
+statically linkable library.  
+
+*****
+
+Building:
+type "make" in the quicktime/quicktime directory.
+type "make util" to get some Small Utilities.
+
+Configuration:
+
+libdv must be hacked to compile on Compaq C.
+
+Replace ... with enumeration.
+Replace run:, len: with proper order.
+
+
+
+
+/*******************************************************
+ * References:
+ *********************************/
+
+Apple's quicktime file format information:
+
+http://developer.apple.com/techpubs/quicktime/qtdevdocs/REF/refQTFileFormat.htm
+
+Color space conversions:
+
+http://www.neuro.sfc.keio.ac.jp/~aly/polygon/info/color-space-faq.html
+
+
+
+
+
+

@@ -1,0 +1,97 @@
+Source: hvirtual
+Section: graphics
+Priority: optional
+Maintainer: Sylvain Joyeux <sylvain.joyeux@polytechnique.org>
+Standards-Version: 3.5.9
+Build-Depends: debhelper (>> 4), automake1.7, dpatch (>= 1.11),
+ libasound2-dev (>= 0.9.0), libglib1.2-dev (>= 1.2.10), libdv2-dev (>= 0.98), 
+ libavcodec-dev (>= 0.4.6cvs20020821), libxvidencore0 (>= 20020822), liblame-dev (>= 3.92), xlibs-dev,
+ libsndfile0-dev (>= 0.0.26-1.1), libvorbis-dev (>= 1.0.0), libogg-dev (>= 1.0.0), 
+ liba52-0.7.4-dev (>= 0.7.4), libpng12-0-dev (>= 1.2.5), libjpeg62-dev (>= 6b), libtiff3g-dev (>= 3.5.5),
+ libesd0-dev (>= 0.2.28), libaudiofile-dev (>= 0.2.3), libraw1394-dev (>= 0.9.0), libavc1394-dev (>= 0.4.1),
+ libfreetype6-dev (>= 2.1.0), libfontconfig-dev, nasm, uuid-dev, docbook-to-man
+
+Package: cinelerra
+Section: graphics
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: An audio/video authoring tool
+ Cinelerra is a complete audio and video authoring
+ tool. It understands a lot of multimedia formats
+ (quicktime, avi, ogg) and audio/video compression
+ codecs (divx, xvid, mpeg1/2, ...)
+
+Package: libguicast
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}
+Description: A toolkit library
+ libguicast is a toolkit library mainly used by HeroineVirtual's
+ softwares
+
+Package: libquicktime1
+Section: libs
+Depends: ${shlibs:Depends}
+Architecture: any
+Description: Quicktime 4 Linux library
+ Quicktime 4 Linux was the first convenient way to read and write 
+ uncompressed Quicktime movies on Linux. Today Quicktime 4 Linux 
+ is intended for content creation and uncompressed movies. These 
+ usually arise during the production phase and not the consumer 
+ phase of a movie. It has improvements in colormodel support, 
+ bit depth, accuracy, reliability, and codecs, while not 
+ stressing economy. 
+ .
+ Users wishing for a consumer library should use OpenQuicktime or FFMPEG.
+ .
+ For more informations, see http://heroinewarrior.com/quicktime.php3
+
+Package: libquicktime-dev
+Section: libs
+Depends: libquicktime1 
+Architecture: any
+Description: Quicktime 4 Linux library (development files)
+ Quicktime 4 Linux was the first convenient way to read and write 
+ uncompressed Quicktime movies on Linux. Today Quicktime 4 Linux 
+ is intended for content creation and uncompressed movies. These 
+ usually arise during the production phase and not the consumer 
+ phase of a movie. It has improvements in colormodel support, 
+ bit depth, accuracy, reliability, and codecs, while not 
+ stressing economy. 
+ .
+ Users wishing for a consumer library should use OpenQuicktime or FFMPEG.
+ .
+ This package holds development files for the Quicktime 4 Linux library
+ .
+ For more informations, see http://heroinewarrior.com/quicktime.php3
+
+Package: libmpeg3
+Section: libs
+Depends: ${shlibs:Depends}
+Architecture: any
+Description: advanced editing and manipulation of MPEG streams
+ Libmpeg3 supports advanced editing and manipulation of MPEG streams. 
+ MPEG is normally a last mile format but with libmpeg3 you can edit 
+ it like a first mile solution. 
+ .
+ Unless you have a need for MPEG editing and copying, you're better 
+ off using a consumer library like FFMPEG.
+ .
+ For more informations, see http://heroinewarrior.com/quicktime.php3
+
+Package: libmpeg3-dev
+Section: libs
+Depends: libmpeg3
+Architecture: any
+Description: advanced editing and manipulation of MPEG streams (development files)
+ Libmpeg3 supports advanced editing and manipulation of MPEG streams. 
+ MPEG is normally a last mile format but with libmpeg3 you can edit 
+ it like a first mile solution. 
+ .
+ Unless you have a need for MPEG editing and copying, you're better 
+ off using a consumer library like FFMPEG.
+ .
+ This package holds development files for the libmpeg3 library
+ .
+ For more informations, see http://heroinewarrior.com/quicktime.php3
+

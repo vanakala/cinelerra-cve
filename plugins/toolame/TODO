@@ -1,0 +1,27 @@
+toolame v0.3 TODO file
+
+	- PRIORITY: Clean up the source code good and proper.
+	    floats or doubles?
+            mem allocation
+	    remove superfluous defines and values (e.g. layer 3 tables etc)
+	    Fix any mem leaks. (dmalloc)
+            Partition functions/files in a 'sensible' way.
+	    Have a nice structure for all our control variables.
+	    Have a nice structure for all the encoding variables.
+	    Pass the whole thing through a prettifier 
+	    Update the usage()
+            Rename some variables to make more sense. (e.g. fr_ps)
+	         frame_params struct can probably include psy model,
+		 input output filename. num samples. sblimit.
+		 current bitstream(*bs)
+		 rename: frame_info_struct *frame. rather than
+			 frame_params *fr_ps. (more sensible?)
+	    Add a version string.            
+	    A configure script?
+	    A proper makefile?
+	    Get the warnings going and remove them all.
+	    Better diagnostic printouts.
+	    Work out why the tonal_label() function doesn't work properly for mpeg2-lsf
+
+	- Optimization
+  	    Just a few of the major ones at first: e.g. add_db(), fft().

@@ -1,0 +1,19 @@
+<TITLE>Building</TITLE>
+
+
+<H1>Step 1: Build the library</H1><P>
+
+The entire source code tree should be positioned in a location where
+every application that needs it can access it.  There is no provision
+for standard include files and normally it's much to difficult for
+users to match versions to use it as a shared library.  Those of you
+who were around in 1997 may remember QT doing this.<P>
+
+Run make.  Make automatically configures itself.  The output is put in
+i686/libquicktime.a.  You should manually set the CFLAGS environment
+variable with the optimum optimization parameters for your i686
+derivative.<P>
+
+<P>
+<P>
+

@@ -1,0 +1,16 @@
+TODO
+
+
+- Replace the hardwired two-stream mux-despatcher loop with a general-purpose
+one table-driven affair for n-streams.
+
+- Add basic DVD support ( needs predecessor really).
+
+
+- Make VBR more efficient.
+
+
+Eventually:
+
+- Full SVCD (MPEG audio extension) support.
+

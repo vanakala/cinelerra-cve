@@ -1,0 +1,30 @@
+
+
+time mpeg2enc -q 13 -n 45 -d 0 28284 -u xena_friend_in_need1.mov xena_friend_in_need1_13.m2v 
+
+
+time mpeg2enc -q 13 -n 45 -d 28284 -u xena_friend_in_need1.mov xena_friend_in_need2_13.m2v 
+
+
+time mpeg2enc -q 13 -n 45 -d 0 28284 -u xena_friend_in_need1.mov xena_friend_in_need1_13.m2v 
+
+
+
+time mpeg2enc -q 13 -n 45 -d 25353 -u xena_friend_in_need3.mov xena_friend_in_need4_13.m2v 
+
+
+time mpeg2enc -q 12 -n 45 -d xena_friend_in_need2.mov xena_friend_in_need3a_12.m2v 
+
+
+
+time mpeg2enc -q 12 -n 45 -d 0 25353 xena_friend_in_need3.mov xena_friend_in_need3b_12.m2v 
+
+
+
+
+
+
+
+
+
+

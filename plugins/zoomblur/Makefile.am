@@ -1,0 +1,8 @@
+plugin_LTLIBRARIES = zoomblur.la
+zoomblur_la_LDFLAGS = -module -shared -avoid-version
+zoomblur_la_LIBADD =
+zoomblur_la_SOURCES = zoomblur.C
+AM_CFLAGS =
+AM_CXXFLAGS =
+
+INCLUDES = -I$(top_srcdir)/guicast -I$(top_srcdir)/cinelerra -I$(top_srcdir)/quicktime

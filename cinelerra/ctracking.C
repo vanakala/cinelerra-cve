@@ -1,0 +1,151 @@
+#include "cplayback.h"
+#include "ctracking.h"
+#include "cwindow.h"
+#include "cwindowgui.h"
+#include "edl.h"
+#include "edlsession.h"
+#include "localsession.h"
+#include "mainclock.h"
+#include "mwindow.h"
+#include "mwindowgui.h"
+#include "patchbay.h"
+#include "trackcanvas.h"
+#include "transportque.h"
+#include "zoombar.h"
+
+CTracking::CTracking(MWindow *mwindow, CWindow *cwindow)
+ : Tracking(mwindow)
+{
+	this->cwindow = cwindow;
+}
+
+CTracking::~CTracking()
+{
+}
+
+PlaybackEngine* CTracking::get_playback_engine()
+{
+	return cwindow->playback_engine;
+}
+
+int CTracking::start_playback(double new_position)
+{
+	mwindow->gui->cursor->playing_back = 1;
+
+	Tracking::start_playback(new_position);
+	return 0;
+}
+
+int CTracking::stop_playback()
+{
+	mwindow->gui->cursor->playing_back = 0;
+
+
+	Tracking::stop_playback();
+	return 0;
+}
+
+#define SCROLL_THRESHOLD 0
+
+
+int CTracking::update_scroll(double position)
+{
+	int updated_scroll = 0;
+
+	if(mwindow->edl->session->view_follows_playback)
+	{
+		double seconds_per_pixel = (double)mwindow->edl->local_session->zoom_sample / 
+			mwindow->edl->session->sample_rate;
+		double half_canvas = seconds_per_pixel * 
+			mwindow->gui->canvas->get_w() / 2;
+		double midpoint = mwindow->edl->local_session->view_start * 
+			seconds_per_pixel +
+			half_canvas;
+
+		if(get_playback_engine()->command->get_direction() == PLAY_FORWARD)
+		{
+			double left_boundary = midpoint + SCROLL_THRESHOLD * half_canvas;
+			double right_boundary = midpoint + half_canvas;
+
+			if(position > left_boundary &&
+				position < right_boundary)
+			{
+				int pixels = Units::to_long((position - midpoint) * 
+					mwindow->edl->session->sample_rate /
+					mwindow->edl->local_session->zoom_sample);
+				if(pixels) 
+				{
+					mwindow->move_right(pixels);
+//printf("CTracking::update_scroll 1 %d\n", pixels);
+					updated_scroll = 1;
+				}
+			}
+		}
+		else
+		{
+			double right_boundary = midpoint - SCROLL_THRESHOLD * half_canvas;
+			double left_boundary = midpoint - half_canvas;
+
+			if(position < right_boundary &&
+				position > left_boundary && 
+				mwindow->edl->local_session->view_start > 0)
+			{
+				int pixels = Units::to_long((midpoint - position) * 
+						mwindow->edl->session->sample_rate /
+						mwindow->edl->local_session->zoom_sample);
+				if(pixels) 
+				{
+					mwindow->move_left(pixels);
+					updated_scroll = 1;
+				}
+			}
+		}
+	}
+
+	return updated_scroll;
+}
+
+void CTracking::update_tracker(double position)
+{
+	int updated_scroll = 0;
+// Update cwindow cursor
+	cwindow->gui->lock_window();
+	cwindow->gui->slider->update(position);
+	cwindow->gui->unlock_window();
+
+// Update mwindow cursor
+	mwindow->gui->lock_window();
+
+	mwindow->edl->local_session->selectionstart = 
+		mwindow->edl->local_session->selectionend = 
+		position;
+
+	updated_scroll = update_scroll(position);
+
+	mwindow->gui->mainclock->update(position);
+	mwindow->gui->patchbay->update();
+
+	if(!updated_scroll)
+	{
+		mwindow->gui->cursor->update();
+		mwindow->gui->zoombar->update();
+
+
+		mwindow->gui->canvas->flash();
+		mwindow->gui->flush();
+	}
+	mwindow->gui->unlock_window();
+
+// Plugin GUI's make lock on mwindow->gui here during user interface handlers.
+	mwindow->update_plugin_guis();
+
+//printf("CTracking::update_tracker 4\n");
+
+	update_meters((long)(position * mwindow->edl->session->sample_rate));
+
+//printf("CTracking::update_tracker 5\n");
+}
+
+void CTracking::draw()
+{
+}

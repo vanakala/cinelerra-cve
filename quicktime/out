@@ -1,0 +1,1118 @@
+cd .. && \
+  /bin/sh /home/doudou/src/hvirtual/hvirtual-1.1.5/missing --run automake-1.7 --gnu  quicktime/Makefile
+cd .. && /bin/sh ./config.status quicktime/Makefile depfiles
+config.status: creating quicktime/Makefile
+config.status: executing depfiles commands
+Making all in decore50
+make[1]: Entering directory `/home/doudou/src/hvirtual/hvirtual-1.1.5/quicktime/decore50'
+make[1]: Nothing to be done for `all'.
+make[1]: Leaving directory `/home/doudou/src/hvirtual/hvirtual-1.1.5/quicktime/decore50'
+Making all in encore50
+make[1]: Entering directory `/home/doudou/src/hvirtual/hvirtual-1.1.5/quicktime/encore50'
+make[1]: Nothing to be done for `all'.
+make[1]: Leaving directory `/home/doudou/src/hvirtual/hvirtual-1.1.5/quicktime/encore50'
+Making all in ffmpeg
+make[1]: Entering directory `/home/doudou/src/hvirtual/hvirtual-1.1.5/quicktime/ffmpeg'
+make -C libavcodec all
+make[2]: Entering directory `/home/doudou/src/hvirtual/hvirtual-1.1.5/quicktime/ffmpeg/libavcodec'
+make[2]: Nothing to be done for `all'.
+make[2]: Leaving directory `/home/doudou/src/hvirtual/hvirtual-1.1.5/quicktime/ffmpeg/libavcodec'
+make -C libav all
+make[2]: Entering directory `/home/doudou/src/hvirtual/hvirtual-1.1.5/quicktime/ffmpeg/libav'
+make[2]: Nothing to be done for `all'.
+make[2]: Leaving directory `/home/doudou/src/hvirtual/hvirtual-1.1.5/quicktime/ffmpeg/libav'
+make[1]: Leaving directory `/home/doudou/src/hvirtual/hvirtual-1.1.5/quicktime/ffmpeg'
+make[1]: Entering directory `/home/doudou/src/hvirtual/hvirtual-1.1.5/quicktime'
+/bin/sh ../libtool --mode=link gcc  -pipe -D_REENTRANT -DHAVE_LIBXXF86VM -D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64 -O2   -o libquicktime.la -rpath /usr/lib -version-info 1:0:0 -release 1.6.0 -Wl,--no-undefined  libquicktime_la-atom.lo libquicktime_la-avi_hdrl.lo libquicktime_la-avi_idx1.lo libquicktime_la-avi_movi.lo libquicktime_la-avi_strh.lo libquicktime_la-cmodel_default.lo libquicktime_la-cmodel_yuv420p.lo libquicktime_la-cmodel_yuv422.lo libquicktime_la-codecs.lo libquicktime_la-colormodels.lo libquicktime_la-ctab.lo libquicktime_la-dinf.lo libquicktime_la-div3.lo libquicktime_la-divx.lo libquicktime_la-dref.lo libquicktime_la-dv.lo libquicktime_la-edts.lo libquicktime_la-elst.lo libquicktime_la-graphics.lo libquicktime_la-hdlr.lo libquicktime_la-ima4.lo libquicktime_la-jpeg.lo libquicktime_la-jpeg_old.lo libquicktime_la-libdv.lo libquicktime_la-libmjpeg.lo libquicktime_la-matrix.lo libquicktime_la-mdat.lo libquicktime_la-mdhd.lo libquicktime_la-mdia.lo libquicktime_la-minf.lo libquicktime_la-moov.lo libquicktime_la-mvhd.lo libquicktime_la-plugin.lo libquicktime_la-qtpng.lo libquicktime_la-qtmp3.lo libquicktime_la-quicktime.lo libquicktime_la-raw.lo libquicktime_la-rawaudio.lo -L/usr/lib -lglib -lraw1394 -lavc1394 -lrom1394 -ldv -lxvidcore -logg -lvorbis -lvorbisenc -lmp3lame ffmpeg/libavcodec/libavcodec.a encore50/libencore.la decore50/libdecore.la -lasound -lm -ldl -lpthread
+
+*** Warning: Linking the shared library libquicktime.la against the
+*** static library ffmpeg/libavcodec/libavcodec.a is not portable!
+rm -fr .libs/libquicktime.la .libs/libquicktime.* .libs/libquicktime-1.6.0.*
+gcc -shared  libquicktime_la-atom.lo libquicktime_la-avi_hdrl.lo libquicktime_la-avi_idx1.lo libquicktime_la-avi_movi.lo libquicktime_la-avi_strh.lo libquicktime_la-cmodel_default.lo libquicktime_la-cmodel_yuv420p.lo libquicktime_la-cmodel_yuv422.lo libquicktime_la-codecs.lo libquicktime_la-colormodels.lo libquicktime_la-ctab.lo libquicktime_la-dinf.lo libquicktime_la-div3.lo libquicktime_la-divx.lo libquicktime_la-dref.lo libquicktime_la-dv.lo libquicktime_la-edts.lo libquicktime_la-elst.lo libquicktime_la-graphics.lo libquicktime_la-hdlr.lo libquicktime_la-ima4.lo libquicktime_la-jpeg.lo libquicktime_la-jpeg_old.lo libquicktime_la-libdv.lo libquicktime_la-libmjpeg.lo libquicktime_la-matrix.lo libquicktime_la-mdat.lo libquicktime_la-mdhd.lo libquicktime_la-mdia.lo libquicktime_la-minf.lo libquicktime_la-moov.lo libquicktime_la-mvhd.lo libquicktime_la-plugin.lo libquicktime_la-qtpng.lo libquicktime_la-qtmp3.lo libquicktime_la-quicktime.lo libquicktime_la-raw.lo libquicktime_la-rawaudio.lo -Wl,--whole-archive encore50/.libs/libencore.a decore50/.libs/libdecore.a -Wl,--no-whole-archive  -L/usr/lib /usr/lib/libglib.so /usr/lib/libraw1394.so /usr/lib/libavc1394.so /usr/lib/librom1394.so /usr/lib/libdv.so -lxvidcore /usr/lib/libogg.so /usr/lib/libvorbis.so /usr/lib/libvorbisenc.so /usr/lib/libmp3lame.so ffmpeg/libavcodec/libavcodec.a encore50/.libs/libencore.a decore50/.libs/libdecore.a /usr/lib/libasound.so -lm -ldl -lpthread    -Wl,--no-undefined -Wl,-soname -Wl,libquicktime-1.6.0.so.1 -o .libs/libquicktime-1.6.0.so.1.0.0
+libquicktime_la-atom.lo(.text+0x25d): In function `quicktime_atom_read_header':
+: undefined reference to `quicktime_position'
+libquicktime_la-atom.lo(.text+0x270): In function `quicktime_atom_read_header':
+: undefined reference to `quicktime_read_data'
+libquicktime_la-atom.lo(.text+0x2d9): In function `quicktime_atom_read_header':
+: undefined reference to `quicktime_add3'
+libquicktime_la-atom.lo(.text+0x2f9): In function `quicktime_atom_read_header':
+: undefined reference to `quicktime_position'
+libquicktime_la-atom.lo(.text+0x30f): In function `quicktime_atom_read_header':
+: undefined reference to `quicktime_read_data'
+libquicktime_la-atom.lo(.text+0x361): In function `quicktime_atom_read_header':
+: undefined reference to `quicktime_match_32'
+libquicktime_la-atom.lo(.text+0x384): In function `quicktime_atom_read_header':
+: undefined reference to `quicktime_read_data'
+libquicktime_la-atom.lo(.text+0x3c1): In function `quicktime_atom_read_header':
+: undefined reference to `quicktime_position'
+libquicktime_la-atom.lo(.text+0x3db): In function `quicktime_atom_read_header':
+: undefined reference to `quicktime_read_data'
+libquicktime_la-atom.lo(.text+0x471): In function `quicktime_atom_write_header64':
+: undefined reference to `quicktime_position'
+libquicktime_la-atom.lo(.text+0x480): In function `quicktime_atom_write_header64':
+: undefined reference to `quicktime_write_int32'
+libquicktime_la-atom.lo(.text+0x4ac): In function `quicktime_atom_write_header64':
+: undefined reference to `quicktime_write_char32'
+libquicktime_la-atom.lo(.text+0x4c6): In function `quicktime_atom_write_header64':
+: undefined reference to `quicktime_write_int64'
+libquicktime_la-atom.lo(.text+0x50a): In function `quicktime_atom_write_header':
+: undefined reference to `quicktime_position'
+libquicktime_la-atom.lo(.text+0x520): In function `quicktime_atom_write_header':
+: undefined reference to `quicktime_write_char32'
+libquicktime_la-atom.lo(.text+0x54b): In function `quicktime_atom_write_header':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-atom.lo(.text+0x561): In function `quicktime_atom_write_header':
+: undefined reference to `quicktime_position'
+libquicktime_la-atom.lo(.text+0x570): In function `quicktime_atom_write_header':
+: undefined reference to `quicktime_write_int32'
+libquicktime_la-atom.lo(.text+0x58b): In function `quicktime_atom_write_header':
+: undefined reference to `quicktime_write_char32'
+libquicktime_la-atom.lo(.text+0x5b1): In function `quicktime_atom_write_footer':
+: undefined reference to `quicktime_position'
+libquicktime_la-atom.lo(.text+0x5df): In function `quicktime_atom_write_footer':
+: undefined reference to `quicktime_set_position'
+libquicktime_la-atom.lo(.text+0x5f5): In function `quicktime_atom_write_footer':
+: undefined reference to `quicktime_write_int64'
+libquicktime_la-atom.lo(.text+0x604): In function `quicktime_atom_write_footer':
+: undefined reference to `quicktime_set_position'
+libquicktime_la-atom.lo(.text+0x618): In function `quicktime_atom_write_footer':
+: undefined reference to `quicktime_set_position'
+libquicktime_la-atom.lo(.text+0x626): In function `quicktime_atom_write_footer':
+: undefined reference to `quicktime_write_int32'
+libquicktime_la-atom.lo(.text+0x63c): In function `quicktime_atom_write_footer':
+: undefined reference to `quicktime_set_position'
+libquicktime_la-atom.lo(.text+0x64a): In function `quicktime_atom_write_footer':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-atom.lo(.text+0x6e6): In function `quicktime_atom_skip':
+: undefined reference to `quicktime_set_position'
+libquicktime_la-avi_hdrl.lo(.text+0x77): In function `quicktime_read_hdrl':
+: undefined reference to `quicktime_position'
+libquicktime_la-avi_hdrl.lo(.text+0xdf): In function `quicktime_read_hdrl':
+: undefined reference to `quicktime_position'
+libquicktime_la-avi_hdrl.lo(.text+0xf2): In function `quicktime_read_hdrl':
+: undefined reference to `quicktime_set_position'
+libquicktime_la-avi_hdrl.lo(.text+0x133): In function `quicktime_write_hdrl':
+: undefined reference to `quicktime_write_char32'
+libquicktime_la-avi_hdrl.lo(.text+0x18b): In function `quicktime_write_hdrl':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_hdrl.lo(.text+0x193): In function `quicktime_write_hdrl':
+: undefined reference to `quicktime_position'
+libquicktime_la-avi_hdrl.lo(.text+0x1a9): In function `quicktime_write_hdrl':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_hdrl.lo(.text+0x1b3): In function `quicktime_write_hdrl':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_hdrl.lo(.text+0x1c0): In function `quicktime_write_hdrl':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_hdrl.lo(.text+0x1c8): In function `quicktime_write_hdrl':
+: undefined reference to `quicktime_position'
+libquicktime_la-avi_hdrl.lo(.text+0x1de): In function `quicktime_write_hdrl':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_hdrl.lo(.text+0x1e8): In function `quicktime_write_hdrl':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_hdrl.lo(.text+0x1f3): In function `quicktime_write_hdrl':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_hdrl.lo(.text+0x1fd): In function `quicktime_write_hdrl':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_hdrl.lo(.text+0x23c): In function `quicktime_write_hdrl':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_hdrl.lo(.text+0x269): more undefined references to `quicktime_write_int32_le' follow
+libquicktime_la-avi_hdrl.lo(.text+0x30d): In function `quicktime_finalize_hdrl':
+: undefined reference to `quicktime_position'
+libquicktime_la-avi_hdrl.lo(.text+0x388): In function `quicktime_finalize_hdrl':
+: undefined reference to `quicktime_set_position'
+libquicktime_la-avi_hdrl.lo(.text+0x3a6): In function `quicktime_finalize_hdrl':
+: undefined reference to `quicktime_set_position'
+libquicktime_la-avi_hdrl.lo(.text+0x3d6): In function `quicktime_finalize_hdrl':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_hdrl.lo(.text+0x3ee): In function `quicktime_finalize_hdrl':
+: undefined reference to `quicktime_set_position'
+libquicktime_la-avi_hdrl.lo(.text+0x3fb): In function `quicktime_finalize_hdrl':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_hdrl.lo(.text+0x419): In function `quicktime_finalize_hdrl':
+: undefined reference to `quicktime_set_position'
+libquicktime_la-avi_hdrl.lo(.text+0x424): In function `quicktime_finalize_hdrl':
+: undefined reference to `quicktime_track_samples'
+libquicktime_la-avi_hdrl.lo(.text+0x42f): In function `quicktime_finalize_hdrl':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_hdrl.lo(.text+0x446): In function `quicktime_finalize_hdrl':
+: undefined reference to `quicktime_set_position'
+libquicktime_la-avi_hdrl.lo(.text+0x451): In function `quicktime_finalize_hdrl':
+: undefined reference to `quicktime_avg_chunk_samples'
+libquicktime_la-avi_hdrl.lo(.text+0x45e): In function `quicktime_finalize_hdrl':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_hdrl.lo(.text+0x494): In function `quicktime_finalize_hdrl':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_hdrl.lo(.text+0x4b7): In function `quicktime_finalize_hdrl':
+: undefined reference to `quicktime_set_position'
+libquicktime_la-avi_hdrl.lo(.text+0x4c2): In function `quicktime_finalize_hdrl':
+: undefined reference to `quicktime_track_samples'
+libquicktime_la-avi_hdrl.lo(.text+0x4d8): In function `quicktime_finalize_hdrl':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_idx1.lo(.text+0x1ab): In function `quicktime_read_idx1':
+: undefined reference to `quicktime_position'
+libquicktime_la-avi_idx1.lo(.text+0x1ef): In function `quicktime_read_idx1':
+: undefined reference to `quicktime_read_data'
+libquicktime_la-avi_idx1.lo(.text+0x20d): In function `quicktime_read_idx1':
+: undefined reference to `quicktime_match_24'
+libquicktime_la-avi_idx1.lo(.text+0x247): In function `quicktime_read_idx1':
+: undefined reference to `quicktime_read_int32_le'
+libquicktime_la-avi_idx1.lo(.text+0x253): In function `quicktime_read_idx1':
+: undefined reference to `quicktime_read_int32_le'
+libquicktime_la-avi_idx1.lo(.text+0x27a): In function `quicktime_read_idx1':
+: undefined reference to `quicktime_update_stco'
+libquicktime_la-avi_idx1.lo(.text+0x29a): In function `quicktime_read_idx1':
+: undefined reference to `quicktime_read_int32_le'
+libquicktime_la-avi_idx1.lo(.text+0x2e1): In function `quicktime_read_idx1':
+: undefined reference to `quicktime_update_stsc'
+libquicktime_la-avi_idx1.lo(.text+0x2ff): In function `quicktime_read_idx1':
+: undefined reference to `quicktime_read_int32_le'
+libquicktime_la-avi_idx1.lo(.text+0x331): In function `quicktime_read_idx1':
+: undefined reference to `quicktime_update_stsz'
+libquicktime_la-avi_idx1.lo(.text+0x5ec): In function `quicktime_write_idx1':
+: undefined reference to `quicktime_write_char32'
+libquicktime_la-avi_idx1.lo(.text+0x5f9): In function `quicktime_write_idx1':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_idx1.lo(.text+0x606): In function `quicktime_write_idx1':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_idx1.lo(.text+0x613): In function `quicktime_write_idx1':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_movi.lo(.text+0x79): In function `quicktime_write_movi':
+: undefined reference to `quicktime_write_char32'
+libquicktime_la-avi_strh.lo(.text+0x4e): In function `quicktime_read_strh':
+: undefined reference to `quicktime_read_data'
+libquicktime_la-avi_strh.lo(.text+0x5f): In function `quicktime_read_strh':
+: undefined reference to `quicktime_match_32'
+libquicktime_la-avi_strh.lo(.text+0x8a): In function `quicktime_read_strh':
+: undefined reference to `quicktime_add_trak'
+libquicktime_la-avi_strh.lo(.text+0xac): In function `quicktime_read_strh':
+: undefined reference to `quicktime_read_data'
+libquicktime_la-avi_strh.lo(.text+0xb7): In function `quicktime_read_strh':
+: undefined reference to `quicktime_position'
+libquicktime_la-avi_strh.lo(.text+0xca): In function `quicktime_read_strh':
+: undefined reference to `quicktime_set_position'
+libquicktime_la-avi_strh.lo(.text+0xd3): In function `quicktime_read_strh':
+: undefined reference to `quicktime_read_int32_le'
+libquicktime_la-avi_strh.lo(.text+0xde): In function `quicktime_read_strh':
+: undefined reference to `quicktime_read_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x101): In function `quicktime_read_strh':
+: undefined reference to `quicktime_position'
+libquicktime_la-avi_strh.lo(.text+0x114): In function `quicktime_read_strh':
+: undefined reference to `quicktime_set_position'
+libquicktime_la-avi_strh.lo(.text+0x11d): In function `quicktime_read_strh':
+: undefined reference to `quicktime_read_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x174): In function `quicktime_read_strh':
+: undefined reference to `quicktime_trak_init_video'
+libquicktime_la-avi_strh.lo(.text+0x1b4): In function `quicktime_read_strh':
+: undefined reference to `quicktime_position'
+libquicktime_la-avi_strh.lo(.text+0x1eb): In function `quicktime_read_strh':
+: undefined reference to `quicktime_position'
+libquicktime_la-avi_strh.lo(.text+0x1fe): In function `quicktime_read_strh':
+: undefined reference to `quicktime_set_position'
+libquicktime_la-avi_strh.lo(.text+0x207): In function `quicktime_read_strh':
+: undefined reference to `quicktime_read_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x213): In function `quicktime_read_strh':
+: undefined reference to `quicktime_read_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x21f): In function `quicktime_read_strh':
+: undefined reference to `quicktime_read_int16_le'
+libquicktime_la-avi_strh.lo(.text+0x228): In function `quicktime_read_strh':
+: undefined reference to `quicktime_read_int16_le'
+libquicktime_la-avi_strh.lo(.text+0x23a): In function `quicktime_read_strh':
+: undefined reference to `quicktime_read_data'
+libquicktime_la-avi_strh.lo(.text+0x26e): In function `quicktime_read_strh':
+: undefined reference to `quicktime_match_32'
+libquicktime_la-avi_strh.lo(.text+0x2a0): In function `quicktime_read_strh':
+: undefined reference to `quicktime_add_trak'
+libquicktime_la-avi_strh.lo(.text+0x2c2): In function `quicktime_read_strh':
+: undefined reference to `quicktime_read_data'
+libquicktime_la-avi_strh.lo(.text+0x2cd): In function `quicktime_read_strh':
+: undefined reference to `quicktime_position'
+libquicktime_la-avi_strh.lo(.text+0x2e0): In function `quicktime_read_strh':
+: undefined reference to `quicktime_set_position'
+libquicktime_la-avi_strh.lo(.text+0x2e9): In function `quicktime_read_strh':
+: undefined reference to `quicktime_read_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x2f5): In function `quicktime_read_strh':
+: undefined reference to `quicktime_read_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x2fe): In function `quicktime_read_strh':
+: undefined reference to `quicktime_position'
+libquicktime_la-avi_strh.lo(.text+0x311): In function `quicktime_read_strh':
+: undefined reference to `quicktime_set_position'
+libquicktime_la-avi_strh.lo(.text+0x31a): In function `quicktime_read_strh':
+: undefined reference to `quicktime_read_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x323): In function `quicktime_read_strh':
+: undefined reference to `quicktime_position'
+libquicktime_la-avi_strh.lo(.text+0x336): In function `quicktime_read_strh':
+: undefined reference to `quicktime_set_position'
+libquicktime_la-avi_strh.lo(.text+0x33f): In function `quicktime_read_strh':
+: undefined reference to `quicktime_read_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x38b): In function `quicktime_read_strh':
+: undefined reference to `quicktime_trak_init_audio'
+libquicktime_la-avi_strh.lo(.text+0x3d1): In function `quicktime_read_strh':
+: undefined reference to `quicktime_read_int16_le'
+libquicktime_la-avi_strh.lo(.text+0x3e8): In function `quicktime_read_strh':
+: undefined reference to `quicktime_read_int16_le'
+libquicktime_la-avi_strh.lo(.text+0x3f4): In function `quicktime_read_strh':
+: undefined reference to `quicktime_read_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x400): In function `quicktime_read_strh':
+: undefined reference to `quicktime_position'
+libquicktime_la-avi_strh.lo(.text+0x413): In function `quicktime_read_strh':
+: undefined reference to `quicktime_set_position'
+libquicktime_la-avi_strh.lo(.text+0x41c): In function `quicktime_read_strh':
+: undefined reference to `quicktime_read_int16_le'
+libquicktime_la-avi_strh.lo(.text+0x47f): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_char32'
+libquicktime_la-avi_strh.lo(.text+0x53b): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x57d): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int16_le'
+libquicktime_la-avi_strh.lo(.text+0x591): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int16_le'
+libquicktime_la-avi_strh.lo(.text+0x5d4): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x5e1): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x5eb): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int16_le'
+libquicktime_la-avi_strh.lo(.text+0x5ff): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int16_le'
+libquicktime_la-avi_strh.lo(.text+0x609): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int16_le'
+libquicktime_la-avi_strh.lo(.text+0x61c): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x656): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x690): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x69a): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int16_le'
+libquicktime_la-avi_strh.lo(.text+0x6a4): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int16_le'
+libquicktime_la-avi_strh.lo(.text+0x6b2): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_char32'
+libquicktime_la-avi_strh.lo(.text+0x6f5): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x6ff): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x709): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x713): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x71d): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x732): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_char32'
+libquicktime_la-avi_strh.lo(.text+0x73c): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x746): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x750): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int16_le'
+libquicktime_la-avi_strh.lo(.text+0x75a): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int16_le'
+libquicktime_la-avi_strh.lo(.text+0x764): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x76c): In function `quicktime_write_strh':
+: undefined reference to `quicktime_position'
+libquicktime_la-avi_strh.lo(.text+0x782): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x78c): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x796): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x79e): In function `quicktime_write_strh':
+: undefined reference to `quicktime_position'
+libquicktime_la-avi_strh.lo(.text+0x7b4): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x7be): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x7c8): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x7d2): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x7dc): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x7e6): more undefined references to `quicktime_write_int32_le' follow
+libquicktime_la-avi_strh.lo(.text+0x7fe): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_char32'
+libquicktime_la-avi_strh.lo(.text+0x80c): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_char32'
+libquicktime_la-avi_strh.lo(.text+0x816): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x820): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int16_le'
+libquicktime_la-avi_strh.lo(.text+0x82a): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int16_le'
+libquicktime_la-avi_strh.lo(.text+0x834): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x845): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x850): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x85a): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x862): In function `quicktime_write_strh':
+: undefined reference to `quicktime_position'
+libquicktime_la-avi_strh.lo(.text+0x878): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x882): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x88c): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x896): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-avi_strh.lo(.text+0x8a0): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int16_le'
+libquicktime_la-avi_strh.lo(.text+0x8aa): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int16_le'
+libquicktime_la-avi_strh.lo(.text+0x8e4): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int16_le'
+libquicktime_la-avi_strh.lo(.text+0x91e): In function `quicktime_write_strh':
+: undefined reference to `quicktime_write_int16_le'
+libquicktime_la-codecs.lo(.text+0x194): In function `quicktime_codec_to_id':
+: undefined reference to `quicktime_match_32'
+libquicktime_la-codecs.lo(.text+0x1bc): In function `quicktime_codec_to_id':
+: undefined reference to `quicktime_match_32'
+libquicktime_la-codecs.lo(.text+0x7b7): In function `quicktime_samples_to_bytes':
+: undefined reference to `quicktime_match_32'
+libquicktime_la-codecs.lo(.text+0x7e0): In function `quicktime_samples_to_bytes':
+: undefined reference to `quicktime_match_32'
+libquicktime_la-ctab.lo(.text+0x191): In function `quicktime_read_ctab':
+: undefined reference to `quicktime_read_int32'
+libquicktime_la-ctab.lo(.text+0x19f): In function `quicktime_read_ctab':
+: undefined reference to `quicktime_read_int16'
+libquicktime_la-ctab.lo(.text+0x1ae): In function `quicktime_read_ctab':
+: undefined reference to `quicktime_read_int16'
+libquicktime_la-ctab.lo(.text+0x225): In function `quicktime_read_ctab':
+: undefined reference to `quicktime_read_int16'
+libquicktime_la-ctab.lo(.text+0x238): In function `quicktime_read_ctab':
+: undefined reference to `quicktime_read_int16'
+libquicktime_la-ctab.lo(.text+0x24b): In function `quicktime_read_ctab':
+: undefined reference to `quicktime_read_int16'
+libquicktime_la-ctab.lo(.text+0x25e): more undefined references to `quicktime_read_int16' follow
+libquicktime_la-dinf.lo(.text+0xe9): In function `quicktime_read_dinf':
+: undefined reference to `quicktime_position'
+libquicktime_la-div3.lo(.text+0x435): In function `decode':
+: undefined reference to `quicktime_read_data'
+libquicktime_la-div3.lo(.text+0x7db): In function `decode':
+: undefined reference to `quicktime_read_data'
+libquicktime_la-div3.lo(.text+0xbb3): In function `encode':
+: undefined reference to `quicktime_write_chunk_header'
+libquicktime_la-div3.lo(.text+0xbc8): In function `encode':
+: undefined reference to `quicktime_write_data'
+libquicktime_la-div3.lo(.text+0xbe9): In function `encode':
+: undefined reference to `quicktime_write_chunk_footer'
+libquicktime_la-divx.lo(.text+0x9b1): In function `decode':
+: undefined reference to `quicktime_read_data'
+libquicktime_la-divx.lo(.text+0xb7f): In function `decode':
+: undefined reference to `quicktime_read_data'
+libquicktime_la-divx.lo(.text+0xdca): In function `decode':
+: undefined reference to `quicktime_read_data'
+libquicktime_la-divx.lo(.text+0xe7d): In function `encode':
+: undefined reference to `quicktime_position'
+libquicktime_la-divx.lo(.text+0x1023): In function `encode':
+: undefined reference to `quicktime_write_data'
+libquicktime_la-divx.lo(.text+0x105b): In function `encode':
+: undefined reference to `quicktime_update_tables'
+libquicktime_la-dref.lo(.text+0xb5): In function `quicktime_read_dref_table':
+: undefined reference to `quicktime_read_int32'
+libquicktime_la-dref.lo(.text+0xc7): In function `quicktime_read_dref_table':
+: undefined reference to `quicktime_read_char32'
+libquicktime_la-dref.lo(.text+0xcf): In function `quicktime_read_dref_table':
+: undefined reference to `quicktime_read_char'
+libquicktime_la-dref.lo(.text+0xda): In function `quicktime_read_dref_table':
+: undefined reference to `quicktime_read_int24'
+libquicktime_la-dref.lo(.text+0x113): In function `quicktime_read_dref_table':
+: undefined reference to `quicktime_read_data'
+libquicktime_la-dref.lo(.text+0x176): In function `quicktime_write_dref_table':
+: undefined reference to `quicktime_write_int32'
+libquicktime_la-dref.lo(.text+0x184): In function `quicktime_write_dref_table':
+: undefined reference to `quicktime_write_char32'
+libquicktime_la-dref.lo(.text+0x193): In function `quicktime_write_dref_table':
+: undefined reference to `quicktime_write_char'
+libquicktime_la-dref.lo(.text+0x1a0): In function `quicktime_write_dref_table':
+: undefined reference to `quicktime_write_int24'
+libquicktime_la-dref.lo(.text+0x1bd): In function `quicktime_write_dref_table':
+: undefined reference to `quicktime_write_data'
+libquicktime_la-dref.lo(.text+0x3bd): In function `quicktime_read_dref':
+: undefined reference to `quicktime_read_char'
+libquicktime_la-dref.lo(.text+0x3cb): In function `quicktime_read_dref':
+: undefined reference to `quicktime_read_int24'
+libquicktime_la-dref.lo(.text+0x3da): In function `quicktime_read_dref':
+: undefined reference to `quicktime_read_int32'
+libquicktime_la-dref.lo(.text+0x478): In function `quicktime_write_dref':
+: undefined reference to `quicktime_write_char'
+libquicktime_la-dref.lo(.text+0x488): In function `quicktime_write_dref':
+: undefined reference to `quicktime_write_int24'
+libquicktime_la-dref.lo(.text+0x498): In function `quicktime_write_dref':
+: undefined reference to `quicktime_write_int32'
+libquicktime_la-dv.lo(.text+0x166): In function `decode':
+: undefined reference to `quicktime_read_data'
+libquicktime_la-dv.lo(.text+0x3c9): In function `encode':
+: undefined reference to `quicktime_position'
+libquicktime_la-dv.lo(.text+0x5bc): In function `encode':
+: undefined reference to `quicktime_write_data'
+libquicktime_la-dv.lo(.text+0x606): In function `encode':
+: undefined reference to `quicktime_update_tables'
+libquicktime_la-edts.lo(.text+0xb9): In function `quicktime_read_edts':
+: undefined reference to `quicktime_position'
+libquicktime_la-elst.lo(.text+0x41): In function `quicktime_read_elst_table':
+: undefined reference to `quicktime_read_int32'
+libquicktime_la-elst.lo(.text+0x4b): In function `quicktime_read_elst_table':
+: undefined reference to `quicktime_read_int32'
+libquicktime_la-elst.lo(.text+0x56): In function `quicktime_read_elst_table':
+: undefined reference to `quicktime_read_fixed32'
+libquicktime_la-elst.lo(.text+0x8b): In function `quicktime_write_elst_table':
+: undefined reference to `quicktime_write_int32'
+libquicktime_la-elst.lo(.text+0x96): In function `quicktime_write_elst_table':
+: undefined reference to `quicktime_write_int32'
+libquicktime_la-elst.lo(.text+0xa1): In function `quicktime_write_elst_table':
+: undefined reference to `quicktime_write_fixed32'
+libquicktime_la-elst.lo(.text+0x295): In function `quicktime_read_elst':
+: undefined reference to `quicktime_read_char'
+libquicktime_la-elst.lo(.text+0x2a3): In function `quicktime_read_elst':
+: undefined reference to `quicktime_read_int24'
+libquicktime_la-elst.lo(.text+0x2b2): In function `quicktime_read_elst':
+: undefined reference to `quicktime_read_int32'
+libquicktime_la-elst.lo(.text+0x354): In function `quicktime_write_elst':
+: undefined reference to `quicktime_write_char'
+libquicktime_la-elst.lo(.text+0x361): In function `quicktime_write_elst':
+: undefined reference to `quicktime_write_int24'
+libquicktime_la-elst.lo(.text+0x370): In function `quicktime_write_elst':
+: undefined reference to `quicktime_write_int32'
+libquicktime_la-hdlr.lo(.text+0x205): In function `quicktime_read_hdlr':
+: undefined reference to `quicktime_read_char'
+libquicktime_la-hdlr.lo(.text+0x20f): In function `quicktime_read_hdlr':
+: undefined reference to `quicktime_read_int24'
+libquicktime_la-hdlr.lo(.text+0x21e): In function `quicktime_read_hdlr':
+: undefined reference to `quicktime_read_char32'
+libquicktime_la-hdlr.lo(.text+0x22a): In function `quicktime_read_hdlr':
+: undefined reference to `quicktime_read_char32'
+libquicktime_la-hdlr.lo(.text+0x232): In function `quicktime_read_hdlr':
+: undefined reference to `quicktime_read_int32'
+libquicktime_la-hdlr.lo(.text+0x23d): In function `quicktime_read_hdlr':
+: undefined reference to `quicktime_read_int32'
+libquicktime_la-hdlr.lo(.text+0x248): In function `quicktime_read_hdlr':
+: undefined reference to `quicktime_read_int32'
+libquicktime_la-hdlr.lo(.text+0x257): In function `quicktime_read_hdlr':
+: undefined reference to `quicktime_read_pascal'
+libquicktime_la-hdlr.lo(.text+0x29b): In function `quicktime_write_hdlr':
+: undefined reference to `quicktime_write_char'
+libquicktime_la-hdlr.lo(.text+0x2a6): In function `quicktime_write_hdlr':
+: undefined reference to `quicktime_write_int24'
+libquicktime_la-hdlr.lo(.text+0x2b2): In function `quicktime_write_hdlr':
+: undefined reference to `quicktime_write_char32'
+libquicktime_la-hdlr.lo(.text+0x2be): In function `quicktime_write_hdlr':
+: undefined reference to `quicktime_write_char32'
+libquicktime_la-hdlr.lo(.text+0x2c9): In function `quicktime_write_hdlr':
+: undefined reference to `quicktime_write_int32'
+libquicktime_la-hdlr.lo(.text+0x2d4): In function `quicktime_write_hdlr':
+: undefined reference to `quicktime_write_int32'
+libquicktime_la-hdlr.lo(.text+0x2df): In function `quicktime_write_hdlr':
+: undefined reference to `quicktime_write_int32'
+libquicktime_la-hdlr.lo(.text+0x2eb): In function `quicktime_write_hdlr':
+: undefined reference to `quicktime_write_pascal'
+libquicktime_la-ima4.lo(.text+0x3b0): In function `ima4_decode_chunk':
+: undefined reference to `quicktime_chunk_samples'
+libquicktime_la-ima4.lo(.text+0x664): In function `decode':
+: undefined reference to `quicktime_chunk_of_sample'
+libquicktime_la-ima4.lo(.text+0x6aa): In function `decode':
+: undefined reference to `quicktime_chunk_samples'
+libquicktime_la-ima4.lo(.text+0xc7f): In function `encode':
+: undefined reference to `quicktime_position'
+libquicktime_la-ima4.lo(.text+0xc97): In function `encode':
+: undefined reference to `quicktime_write_data'
+libquicktime_la-ima4.lo(.text+0xcca): In function `encode':
+: undefined reference to `quicktime_update_tables'
+libquicktime_la-jpeg.lo(.text+0xb7): In function `quicktime_set_jpeg':
+: undefined reference to `quicktime_match_32'
+libquicktime_la-jpeg.lo(.text+0xdd): In function `quicktime_set_jpeg':
+: undefined reference to `quicktime_match_32'
+libquicktime_la-jpeg.lo(.text+0x153): In function `quicktime_set_jpeg':
+: undefined reference to `quicktime_match_32'
+libquicktime_la-jpeg.lo(.text+0x22b): In function `decode':
+: undefined reference to `quicktime_read_data'
+libquicktime_la-jpeg.lo(.text+0x457): In function `encode':
+: undefined reference to `quicktime_position'
+libquicktime_la-jpeg.lo(.text+0x4ac): In function `encode':
+: undefined reference to `quicktime_write_chunk_header'
+libquicktime_la-jpeg.lo(.text+0x4cd): In function `encode':
+: undefined reference to `quicktime_write_data'
+libquicktime_la-jpeg.lo(.text+0x4ed): In function `encode':
+: undefined reference to `quicktime_write_chunk_footer'
+libquicktime_la-jpeg.lo(.text+0x692): In function `quicktime_init_codec_jpeg':
+: undefined reference to `quicktime_match_32'
+libquicktime_la-jpeg.lo(.text+0x6b1): In function `quicktime_init_codec_jpeg':
+: undefined reference to `quicktime_match_32'
+libquicktime_la-jpeg.lo(.text+0x779): In function `quicktime_init_codec_jpeg':
+: undefined reference to `quicktime_match_32'
+libquicktime_la-jpeg_old.lo(.text+0x4c): In function `quicktime_jpeg_delete_compress_engine':
+: undefined reference to `jpeg_destroy'
+libquicktime_la-jpeg_old.lo(.text+0x14f): In function `quicktime_delete_codec_jpeg':
+: undefined reference to `jpeg_destroy_decompress'
+libquicktime_la-jpeg_old.lo(.text+0x9c3): In function `quicktime_create_mjpa_objects':
+: undefined reference to `jpeg_std_error'
+libquicktime_la-jpeg_old.lo(.text+0x9e1): In function `quicktime_create_mjpa_objects':
+: undefined reference to `jpeg_CreateDecompress'
+libquicktime_la-jpeg_old.lo(.text+0xa03): In function `quicktime_delete_mjpa_objects':
+: undefined reference to `jpeg_destroy_decompress'
+libquicktime_la-jpeg_old.lo(.text+0xadf): In function `quicktime_decompressor_jpeg':
+: undefined reference to `jpeg_read_header'
+libquicktime_la-jpeg_old.lo(.text+0xafe): In function `quicktime_decompressor_jpeg':
+: undefined reference to `jpeg_start_decompress'
+libquicktime_la-jpeg_old.lo(.text+0xb27): In function `quicktime_decompressor_jpeg':
+: undefined reference to `jpeg_finish_decompress'
+libquicktime_la-jpeg_old.lo(.text+0xb4c): In function `quicktime_decompressor_jpeg':
+: undefined reference to `jpeg_read_scanlines'
+libquicktime_la-jpeg_old.lo(.text+0xb8c): In function `quicktime_decompressor_jpeg':
+: undefined reference to `jpeg_read_scanlines'
+libquicktime_la-jpeg_old.lo(.text+0xc02): In function `quicktime_decompressor_jpeg':
+: undefined reference to `jpeg_save_markers'
+libquicktime_la-jpeg_old.lo(.text+0xee7): In function `quicktime_decode_jpeg':
+: undefined reference to `quicktime_read_data'
+libquicktime_la-jpeg_old.lo(.text+0x10b8): In function `quicktime_compress_jpeg':
+: undefined reference to `jpeg_start_compress'
+libquicktime_la-jpeg_old.lo(.text+0x10eb): In function `quicktime_compress_jpeg':
+: undefined reference to `jpeg_finish_compress'
+libquicktime_la-jpeg_old.lo(.text+0x1138): In function `quicktime_compress_jpeg':
+: undefined reference to `jpeg_write_scanlines'
+libquicktime_la-jpeg_old.lo(.text+0x116c): In function `quicktime_compress_jpeg':
+: undefined reference to `jpeg_write_scanlines'
+libquicktime_la-jpeg_old.lo(.text+0x119a): In function `quicktime_compress_jpeg':
+: undefined reference to `jpeg_write_marker'
+libquicktime_la-jpeg_old.lo(.text+0x1365): In function `quicktime_jpeg_new_compress_engine':
+: undefined reference to `jpeg_std_error'
+libquicktime_la-jpeg_old.lo(.text+0x137b): In function `quicktime_jpeg_new_compress_engine':
+: undefined reference to `jpeg_CreateCompress'
+libquicktime_la-jpeg_old.lo(.text+0x1391): In function `quicktime_jpeg_new_compress_engine':
+: undefined reference to `jpeg_set_defaults'
+libquicktime_la-jpeg_old.lo(.text+0x139f): In function `quicktime_jpeg_new_compress_engine':
+: undefined reference to `jpeg_set_quality'
+libquicktime_la-jpeg_old.lo(.text+0x1459): In function `quicktime_encode_jpeg':
+: undefined reference to `quicktime_position'
+libquicktime_la-jpeg_old.lo(.text+0x15e6): In function `quicktime_encode_jpeg':
+: undefined reference to `quicktime_write_data'
+libquicktime_la-jpeg_old.lo(.text+0x160a): In function `quicktime_encode_jpeg':
+: undefined reference to `quicktime_position'
+libquicktime_la-jpeg_old.lo(.text+0x1629): In function `quicktime_encode_jpeg':
+: undefined reference to `quicktime_update_tables'
+libquicktime_la-libmjpeg.lo(.text+0x1f7): In function `jpeg_buffer_src':
+: undefined reference to `jpeg_resync_to_restart'
+libquicktime_la-libmjpeg.lo(.text+0xb87): In function `new_jpeg_objects':
+: undefined reference to `jpeg_std_error'
+libquicktime_la-libmjpeg.lo(.text+0xba9): In function `new_jpeg_objects':
+: undefined reference to `jpeg_CreateDecompress'
+libquicktime_la-libmjpeg.lo(.text+0xbdf): In function `delete_jpeg_objects':
+: undefined reference to `jpeg_destroy_decompress'
+libquicktime_la-libmjpeg.lo(.text+0xd69): In function `decompress_field':
+: undefined reference to `jpeg_read_header'
+libquicktime_la-libmjpeg.lo(.text+0xd7b): In function `decompress_field':
+: undefined reference to `jpeg_start_decompress'
+libquicktime_la-libmjpeg.lo(.text+0xdfe): In function `decompress_field':
+: undefined reference to `jpeg_finish_decompress'
+libquicktime_la-libmjpeg.lo(.text+0xe2f): In function `decompress_field':
+: undefined reference to `jpeg_read_raw_data'
+libquicktime_la-libmjpeg.lo(.text+0xf5f): In function `compress_field':
+: undefined reference to `jpeg_start_compress'
+libquicktime_la-libmjpeg.lo(.text+0xf99): In function `compress_field':
+: undefined reference to `jpeg_write_raw_data'
+libquicktime_la-libmjpeg.lo(.text+0xfb3): In function `compress_field':
+: undefined reference to `jpeg_finish_compress'
+libquicktime_la-libmjpeg.lo(.text+0x11ca): In function `mjpeg_delete_decompressor':
+: undefined reference to `jpeg_destroy_decompress'
+libquicktime_la-libmjpeg.lo(.text+0x1253): In function `mjpeg_new_compressor':
+: undefined reference to `jpeg_std_error'
+libquicktime_la-libmjpeg.lo(.text+0x126f): In function `mjpeg_new_compressor':
+: undefined reference to `jpeg_CreateCompress'
+libquicktime_la-libmjpeg.lo(.text+0x12a3): In function `mjpeg_new_compressor':
+: undefined reference to `jpeg_set_defaults'
+libquicktime_la-libmjpeg.lo(.text+0x12c8): In function `mjpeg_new_compressor':
+: undefined reference to `jpeg_set_quality'
+libquicktime_la-libmjpeg.lo(.text+0x146d): In function `mjpeg_delete_compressor':
+: undefined reference to `jpeg_destroy'
+libquicktime_la-matrix.lo(.text+0x67): In function `quicktime_read_matrix':
+: undefined reference to `quicktime_read_fixed32'
+libquicktime_la-matrix.lo(.text+0x103): In function `quicktime_write_matrix':
+: undefined reference to `quicktime_write_fixed32'
+libquicktime_la-mdhd.lo(.text+0x22): In function `quicktime_mdhd_init':
+: undefined reference to `quicktime_current_time'
+libquicktime_la-mdhd.lo(.text+0x2a): In function `quicktime_mdhd_init':
+: undefined reference to `quicktime_current_time'
+libquicktime_la-mdhd.lo(.text+0xc5): In function `quicktime_read_mdhd':
+: undefined reference to `quicktime_read_char'
+libquicktime_la-mdhd.lo(.text+0xcf): In function `quicktime_read_mdhd':
+: undefined reference to `quicktime_read_int24'
+libquicktime_la-mdhd.lo(.text+0xda): In function `quicktime_read_mdhd':
+: undefined reference to `quicktime_read_int32'
+libquicktime_la-mdhd.lo(.text+0xe5): In function `quicktime_read_mdhd':
+: undefined reference to `quicktime_read_int32'
+libquicktime_la-mdhd.lo(.text+0xf0): In function `quicktime_read_mdhd':
+: undefined reference to `quicktime_read_int32'
+libquicktime_la-mdhd.lo(.text+0xfb): In function `quicktime_read_mdhd':
+: undefined reference to `quicktime_read_int32'
+libquicktime_la-mdhd.lo(.text+0x106): In function `quicktime_read_mdhd':
+: undefined reference to `quicktime_read_int16'
+libquicktime_la-mdhd.lo(.text+0x111): In function `quicktime_read_mdhd':
+: undefined reference to `quicktime_read_int16'
+libquicktime_la-mdhd.lo(.text+0x20b): In function `quicktime_write_mdhd':
+: undefined reference to `quicktime_write_char'
+libquicktime_la-mdhd.lo(.text+0x216): In function `quicktime_write_mdhd':
+: undefined reference to `quicktime_write_int24'
+libquicktime_la-mdhd.lo(.text+0x221): In function `quicktime_write_mdhd':
+: undefined reference to `quicktime_write_int32'
+libquicktime_la-mdhd.lo(.text+0x22c): In function `quicktime_write_mdhd':
+: undefined reference to `quicktime_write_int32'
+libquicktime_la-mdhd.lo(.text+0x237): In function `quicktime_write_mdhd':
+: undefined reference to `quicktime_write_int32'
+libquicktime_la-mdhd.lo(.text+0x242): In function `quicktime_write_mdhd':
+: undefined reference to `quicktime_write_int32'
+libquicktime_la-mdhd.lo(.text+0x24d): In function `quicktime_write_mdhd':
+: undefined reference to `quicktime_write_int16'
+libquicktime_la-mdhd.lo(.text+0x258): In function `quicktime_write_mdhd':
+: undefined reference to `quicktime_write_int16'
+libquicktime_la-mdia.lo(.text+0x1e5): In function `quicktime_read_mdia':
+: undefined reference to `quicktime_position'
+libquicktime_la-minf.lo(.text+0x29): In function `quicktime_minf_init':
+: undefined reference to `quicktime_vmhd_init'
+libquicktime_la-minf.lo(.text+0x34): In function `quicktime_minf_init':
+: undefined reference to `quicktime_smhd_init'
+libquicktime_la-minf.lo(.text+0x5b): In function `quicktime_minf_init':
+: undefined reference to `quicktime_stbl_init'
+libquicktime_la-minf.lo(.text+0x9b): In function `quicktime_minf_init_video':
+: undefined reference to `quicktime_vmhd_init_video'
+libquicktime_la-minf.lo(.text+0xb7): In function `quicktime_minf_init_video':
+: undefined reference to `quicktime_stbl_init_video'
+libquicktime_la-minf.lo(.text+0x112): In function `quicktime_minf_init_audio':
+: undefined reference to `quicktime_stbl_init_audio'
+libquicktime_la-minf.lo(.text+0x158): In function `quicktime_minf_delete':
+: undefined reference to `quicktime_vmhd_delete'
+libquicktime_la-minf.lo(.text+0x163): In function `quicktime_minf_delete':
+: undefined reference to `quicktime_smhd_delete'
+libquicktime_la-minf.lo(.text+0x182): In function `quicktime_minf_delete':
+: undefined reference to `quicktime_stbl_delete'
+libquicktime_la-minf.lo(.text+0x211): In function `quicktime_minf_dump':
+: undefined reference to `quicktime_stbl_dump'
+libquicktime_la-minf.lo(.text+0x224): In function `quicktime_minf_dump':
+: undefined reference to `quicktime_vmhd_dump'
+libquicktime_la-minf.lo(.text+0x238): In function `quicktime_minf_dump':
+: undefined reference to `quicktime_smhd_dump'
+libquicktime_la-minf.lo(.text+0x29e): In function `quicktime_read_minf':
+: undefined reference to `quicktime_read_vmhd'
+libquicktime_la-minf.lo(.text+0x2a7): In function `quicktime_read_minf':
+: undefined reference to `quicktime_position'
+libquicktime_la-minf.lo(.text+0x300): In function `quicktime_read_minf':
+: undefined reference to `quicktime_read_smhd'
+libquicktime_la-minf.lo(.text+0x3a5): In function `quicktime_read_minf':
+: undefined reference to `quicktime_read_stbl'
+libquicktime_la-minf.lo(.text+0x41c): In function `quicktime_write_minf':
+: undefined reference to `quicktime_write_stbl'
+libquicktime_la-minf.lo(.text+0x43d): In function `quicktime_write_minf':
+: undefined reference to `quicktime_write_smhd'
+libquicktime_la-minf.lo(.text+0x451): In function `quicktime_write_minf':
+: undefined reference to `quicktime_write_vmhd'
+libquicktime_la-moov.lo(.text+0x42): In function `quicktime_moov_init':
+: undefined reference to `quicktime_udta_init'
+libquicktime_la-moov.lo(.text+0x90): In function `quicktime_moov_delete':
+: undefined reference to `quicktime_udta_delete'
+libquicktime_la-moov.lo(.text+0xb1): In function `quicktime_moov_delete':
+: undefined reference to `quicktime_delete_trak'
+libquicktime_la-moov.lo(.text+0xfb): In function `quicktime_moov_dump':
+: undefined reference to `quicktime_udta_dump'
+libquicktime_la-moov.lo(.text+0x129): In function `quicktime_moov_dump':
+: undefined reference to `quicktime_trak_dump'
+libquicktime_la-moov.lo(.text+0x196): In function `quicktime_read_moov':
+: undefined reference to `quicktime_position'
+libquicktime_la-moov.lo(.text+0x1fd): In function `quicktime_read_moov':
+: undefined reference to `quicktime_add_trak'
+libquicktime_la-moov.lo(.text+0x20c): In function `quicktime_read_moov':
+: undefined reference to `quicktime_read_trak'
+libquicktime_la-moov.lo(.text+0x242): In function `quicktime_read_moov':
+: undefined reference to `quicktime_read_udta'
+libquicktime_la-moov.lo(.text+0x2bd): In function `quicktime_write_moov':
+: undefined reference to `quicktime_position'
+libquicktime_la-moov.lo(.text+0x303): In function `quicktime_write_moov':
+: undefined reference to `quicktime_trak_fix_counts'
+libquicktime_la-moov.lo(.text+0x315): In function `quicktime_write_moov':
+: undefined reference to `quicktime_trak_duration'
+libquicktime_la-moov.lo(.text+0x375): In function `quicktime_write_moov':
+: undefined reference to `quicktime_write_udta'
+libquicktime_la-moov.lo(.text+0x39c): In function `quicktime_write_moov':
+: undefined reference to `quicktime_set_position'
+libquicktime_la-moov.lo(.text+0x3b5): In function `quicktime_write_moov':
+: undefined reference to `quicktime_write_trak'
+libquicktime_la-moov.lo(.text+0x3d8): In function `quicktime_write_moov':
+: undefined reference to `quicktime_set_position'
+libquicktime_la-moov.lo(.text+0x3e1): In function `quicktime_write_moov':
+: undefined reference to `quicktime_position'
+libquicktime_la-moov.lo(.text+0x44d): In function `quicktime_shift_offsets':
+: undefined reference to `quicktime_trak_shift_offsets'
+libquicktime_la-mvhd.lo(.text+0x22): In function `quicktime_mvhd_init':
+: undefined reference to `quicktime_current_time'
+libquicktime_la-mvhd.lo(.text+0x2a): In function `quicktime_mvhd_init':
+: undefined reference to `quicktime_current_time'
+libquicktime_la-mvhd.lo(.text+0x16b): In function `quicktime_mvhd_dump':
+: undefined reference to `quicktime_print_chars'
+libquicktime_la-mvhd.lo(.text+0x215): In function `quicktime_read_mvhd':
+: undefined reference to `quicktime_read_char'
+libquicktime_la-mvhd.lo(.text+0x21f): In function `quicktime_read_mvhd':
+: undefined reference to `quicktime_read_int24'
+libquicktime_la-mvhd.lo(.text+0x22a): In function `quicktime_read_mvhd':
+: undefined reference to `quicktime_read_int32'
+libquicktime_la-mvhd.lo(.text+0x235): In function `quicktime_read_mvhd':
+: undefined reference to `quicktime_read_int32'
+libquicktime_la-mvhd.lo(.text+0x240): In function `quicktime_read_mvhd':
+: undefined reference to `quicktime_read_int32'
+libquicktime_la-mvhd.lo(.text+0x24b): In function `quicktime_read_mvhd':
+: undefined reference to `quicktime_read_int32'
+libquicktime_la-mvhd.lo(.text+0x256): In function `quicktime_read_mvhd':
+: undefined reference to `quicktime_read_fixed32'
+libquicktime_la-mvhd.lo(.text+0x261): In function `quicktime_read_mvhd':
+: undefined reference to `quicktime_read_fixed16'
+libquicktime_la-mvhd.lo(.text+0x272): In function `quicktime_read_mvhd':
+: undefined reference to `quicktime_read_data'
+libquicktime_la-mvhd.lo(.text+0x287): In function `quicktime_read_mvhd':
+: undefined reference to `quicktime_read_int32'
+libquicktime_la-mvhd.lo(.text+0x292): In function `quicktime_read_mvhd':
+: undefined reference to `quicktime_read_int32'
+libquicktime_la-mvhd.lo(.text+0x29d): In function `quicktime_read_mvhd':
+: undefined reference to `quicktime_read_int32'
+libquicktime_la-mvhd.lo(.text+0x2a8): In function `quicktime_read_mvhd':
+: undefined reference to `quicktime_read_int32'
+libquicktime_la-mvhd.lo(.text+0x2b3): In function `quicktime_read_mvhd':
+: undefined reference to `quicktime_read_int32'
+libquicktime_la-mvhd.lo(.text+0x2be): more undefined references to `quicktime_read_int32' follow
+libquicktime_la-mvhd.lo(.text+0x33b): In function `quicktime_write_mvhd':
+: undefined reference to `quicktime_write_char'
+libquicktime_la-mvhd.lo(.text+0x346): In function `quicktime_write_mvhd':
+: undefined reference to `quicktime_write_int24'
+libquicktime_la-mvhd.lo(.text+0x351): In function `quicktime_write_mvhd':
+: undefined reference to `quicktime_write_int32'
+libquicktime_la-mvhd.lo(.text+0x35c): In function `quicktime_write_mvhd':
+: undefined reference to `quicktime_write_int32'
+libquicktime_la-mvhd.lo(.text+0x367): In function `quicktime_write_mvhd':
+: undefined reference to `quicktime_write_int32'
+libquicktime_la-mvhd.lo(.text+0x372): In function `quicktime_write_mvhd':
+: undefined reference to `quicktime_write_int32'
+libquicktime_la-mvhd.lo(.text+0x37d): In function `quicktime_write_mvhd':
+: undefined reference to `quicktime_write_fixed32'
+libquicktime_la-mvhd.lo(.text+0x388): In function `quicktime_write_mvhd':
+: undefined reference to `quicktime_write_fixed16'
+libquicktime_la-mvhd.lo(.text+0x397): In function `quicktime_write_mvhd':
+: undefined reference to `quicktime_write_data'
+libquicktime_la-mvhd.lo(.text+0x3ae): In function `quicktime_write_mvhd':
+: undefined reference to `quicktime_write_int32'
+libquicktime_la-mvhd.lo(.text+0x3b9): In function `quicktime_write_mvhd':
+: undefined reference to `quicktime_write_int32'
+libquicktime_la-mvhd.lo(.text+0x3c4): In function `quicktime_write_mvhd':
+: undefined reference to `quicktime_write_int32'
+libquicktime_la-mvhd.lo(.text+0x3cf): In function `quicktime_write_mvhd':
+: undefined reference to `quicktime_write_int32'
+libquicktime_la-mvhd.lo(.text+0x3da): In function `quicktime_write_mvhd':
+: undefined reference to `quicktime_write_int32'
+libquicktime_la-mvhd.lo(.text+0x3e5): more undefined references to `quicktime_write_int32' follow
+libquicktime_la-plugin.lo(.text+0xd6): In function `decode_video_external':
+: undefined reference to `quicktime_read_data'
+libquicktime_la-plugin.lo(.text+0x1a6): In function `encode_video_external':
+: undefined reference to `quicktime_position'
+libquicktime_la-plugin.lo(.text+0x299): In function `encode_video_external':
+: undefined reference to `quicktime_write_data'
+libquicktime_la-plugin.lo(.text+0x2db): In function `encode_video_external':
+: undefined reference to `quicktime_update_tables'
+libquicktime_la-plugin.lo(.text+0x3d7): In function `quicktime_find_vcodec':
+: undefined reference to `quicktime_match_32'
+libquicktime_la-plugin.lo(.text+0x437): In function `quicktime_find_acodec':
+: undefined reference to `quicktime_match_32'
+libquicktime_la-plugin.lo(.text+0x4d6): In function `quicktime_register_vcodec':
+: undefined reference to `quicktime_copy_char32'
+libquicktime_la-plugin.lo(.text+0x55a): In function `quicktime_register_acodec':
+: undefined reference to `quicktime_copy_char32'
+libquicktime_la-plugin.lo(.text+0x5b1): In function `quicktime_register_internal_acodec':
+: undefined reference to `quicktime_init_codec_twos'
+libquicktime_la-plugin.lo(.text+0x5ed): In function `quicktime_register_internal_acodec':
+: undefined reference to `quicktime_init_codec_ulaw'
+libquicktime_la-plugin.lo(.text+0x601): In function `quicktime_register_internal_acodec':
+: undefined reference to `quicktime_init_codec_vorbis'
+libquicktime_la-plugin.lo(.text+0x6de): In function `quicktime_register_internal_vcodec':
+: undefined reference to `quicktime_init_codec_yuv2'
+libquicktime_la-plugin.lo(.text+0x6f2): In function `quicktime_register_internal_vcodec':
+: undefined reference to `quicktime_init_codec_yuv4'
+libquicktime_la-plugin.lo(.text+0x706): In function `quicktime_register_internal_vcodec':
+: undefined reference to `quicktime_init_codec_yv12'
+libquicktime_la-plugin.lo(.text+0x71a): In function `quicktime_register_internal_vcodec':
+: undefined reference to `quicktime_init_codec_v410'
+libquicktime_la-plugin.lo(.text+0x72e): In function `quicktime_register_internal_vcodec':
+: undefined reference to `quicktime_init_codec_v308'
+libquicktime_la-plugin.lo(.text+0x742): In function `quicktime_register_internal_vcodec':
+: undefined reference to `quicktime_init_codec_v408'
+libquicktime_la-qtpng.lo(.text+0xd7): In function `quicktime_set_png':
+: undefined reference to `quicktime_match_32'
+libquicktime_la-qtpng.lo(.text+0x12c): In function `read_function':
+: undefined reference to `png_get_io_ptr'
+libquicktime_la-qtpng.lo(.text+0x17c): In function `write_function':
+: undefined reference to `png_get_io_ptr'
+libquicktime_la-qtpng.lo(.text+0x37d): In function `decode':
+: undefined reference to `quicktime_read_data'
+libquicktime_la-qtpng.lo(.text+0x41b): In function `decode':
+: undefined reference to `png_create_read_struct'
+libquicktime_la-qtpng.lo(.text+0x426): In function `decode':
+: undefined reference to `png_create_info_struct'
+libquicktime_la-qtpng.lo(.text+0x43e): In function `decode':
+: undefined reference to `png_set_read_fn'
+libquicktime_la-qtpng.lo(.text+0x44b): In function `decode':
+: undefined reference to `png_read_info'
+libquicktime_la-qtpng.lo(.text+0x458): In function `decode':
+: undefined reference to `png_read_image'
+libquicktime_la-qtpng.lo(.text+0x46c): In function `decode':
+: undefined reference to `png_destroy_read_struct'
+libquicktime_la-qtpng.lo(.text+0x595): In function `encode':
+: undefined reference to `quicktime_position'
+libquicktime_la-qtpng.lo(.text+0x60f): In function `encode':
+: undefined reference to `png_create_write_struct'
+libquicktime_la-qtpng.lo(.text+0x61b): In function `encode':
+: undefined reference to `png_create_info_struct'
+libquicktime_la-qtpng.lo(.text+0x637): In function `encode':
+: undefined reference to `png_set_write_fn'
+libquicktime_la-qtpng.lo(.text+0x647): In function `encode':
+: undefined reference to `png_set_compression_level'
+libquicktime_la-qtpng.lo(.text+0x676): In function `encode':
+: undefined reference to `png_set_IHDR'
+libquicktime_la-qtpng.lo(.text+0x684): In function `encode':
+: undefined reference to `png_write_info'
+libquicktime_la-qtpng.lo(.text+0x691): In function `encode':
+: undefined reference to `png_write_image'
+libquicktime_la-qtpng.lo(.text+0x69e): In function `encode':
+: undefined reference to `png_write_end'
+libquicktime_la-qtpng.lo(.text+0x6ad): In function `encode':
+: undefined reference to `png_destroy_write_struct'
+libquicktime_la-qtpng.lo(.text+0x6c1): In function `encode':
+: undefined reference to `quicktime_write_data'
+libquicktime_la-qtpng.lo(.text+0x701): In function `encode':
+: undefined reference to `quicktime_update_tables'
+libquicktime_la-qtmp3.lo(.text+0x39): In function `mpeg3demux_read_char':
+: undefined reference to `mpeg3demux_read_char_packet'
+libquicktime_la-qtmp3.lo(.text+0x7d): In function `mpeg3demux_read_prev_char':
+: undefined reference to `mpeg3demux_read_prev_char_packet'
+libquicktime_la-qtmp3.lo(.text+0x4a3): In function `mpeg3io_sync_buffer':
+: undefined reference to `mpeg3io_read_buffer'
+libquicktime_la-qtmp3.lo(.text+0xa1c): In function `delete_codec':
+: undefined reference to `mpeg3_delete_layer'
+libquicktime_la-qtmp3.lo(.text+0xa5a): In function `delete_codec':
+: undefined reference to `mpeg3_delete_layer'
+libquicktime_la-qtmp3.lo(.text+0xa6b): In function `delete_codec':
+: undefined reference to `mpeg3_delete_layer'
+libquicktime_la-qtmp3.lo(.text+0xab7): In function `chunk_len':
+: undefined reference to `quicktime_set_position'
+libquicktime_la-qtmp3.lo(.text+0xac6): In function `chunk_len':
+: undefined reference to `quicktime_read_data'
+libquicktime_la-qtmp3.lo(.text+0xade): In function `chunk_len':
+: undefined reference to `mpeg3_layer_header'
+libquicktime_la-qtmp3.lo(.text+0xafc): In function `chunk_len':
+: undefined reference to `quicktime_set_position'
+libquicktime_la-qtmp3.lo(.text+0xc45): In function `decode':
+: undefined reference to `quicktime_chunk_of_sample'
+libquicktime_la-qtmp3.lo(.text+0xc63): In function `decode':
+: undefined reference to `quicktime_sample_of_chunk'
+libquicktime_la-qtmp3.lo(.text+0xce2): In function `decode':
+: undefined reference to `quicktime_chunk_to_offset'
+libquicktime_la-qtmp3.lo(.text+0xcfe): In function `decode':
+: undefined reference to `quicktime_chunk_to_offset'
+libquicktime_la-qtmp3.lo(.text+0xd75): In function `decode':
+: undefined reference to `quicktime_set_position'
+libquicktime_la-qtmp3.lo(.text+0xd89): In function `decode':
+: undefined reference to `quicktime_read_data'
+libquicktime_la-qtmp3.lo(.text+0xe2b): In function `decode':
+: undefined reference to `mpeg3_layer_header'
+libquicktime_la-qtmp3.lo(.text+0xe46): In function `decode':
+: undefined reference to `mpeg3audio_dolayer3'
+libquicktime_la-qtmp3.lo(.text+0x110b): In function `decode':
+: undefined reference to `mpeg3_new_layer'
+libquicktime_la-qtmp3.lo(.text+0x1115): In function `decode':
+: undefined reference to `mpeg3_new_layer'
+libquicktime_la-qtmp3.lo(.text+0x1233): In function `write_frames':
+: undefined reference to `mpeg3_layer_header'
+libquicktime_la-qtmp3.lo(.text+0x1268): In function `write_frames':
+: undefined reference to `mpeg3audio_dolayer3'
+libquicktime_la-qtmp3.lo(.text+0x127b): In function `write_frames':
+: undefined reference to `quicktime_write_chunk_header'
+libquicktime_la-qtmp3.lo(.text+0x128a): In function `write_frames':
+: undefined reference to `quicktime_write_data'
+libquicktime_la-qtmp3.lo(.text+0x12ac): In function `write_frames':
+: undefined reference to `quicktime_write_chunk_footer'
+libquicktime_la-qtmp3.lo(.text+0x15e7): In function `encode':
+: undefined reference to `mpeg3_new_layer'
+libquicktime_la-qtmp3.lo(.text+0x167c): In function `flush':
+: undefined reference to `quicktime_position'
+libquicktime_la-quicktime.lo(.text+0x8c): In function `quicktime_make_streamable':
+: undefined reference to `quicktime_get_file_length'
+libquicktime_la-quicktime.lo(.text+0x13c): In function `quicktime_make_streamable':
+: undefined reference to `quicktime_position'
+libquicktime_la-quicktime.lo(.text+0x26f): In function `quicktime_make_streamable':
+: undefined reference to `quicktime_set_position'
+libquicktime_la-quicktime.lo(.text+0x2bb): In function `quicktime_make_streamable':
+: undefined reference to `quicktime_position'
+libquicktime_la-quicktime.lo(.text+0x2e9): In function `quicktime_make_streamable':
+: undefined reference to `quicktime_position'
+libquicktime_la-quicktime.lo(.text+0x313): In function `quicktime_make_streamable':
+: undefined reference to `quicktime_position'
+libquicktime_la-quicktime.lo(.text+0x35e): In function `quicktime_make_streamable':
+: undefined reference to `quicktime_read_data'
+libquicktime_la-quicktime.lo(.text+0x38a): In function `quicktime_make_streamable':
+: undefined reference to `quicktime_write_data'
+libquicktime_la-quicktime.lo(.text+0x432): In function `quicktime_make_streamable':
+: undefined reference to `quicktime_position'
+libquicktime_la-quicktime.lo(.text+0x540): In function `quicktime_set_copyright':
+: undefined reference to `quicktime_set_udta_string'
+libquicktime_la-quicktime.lo(.text+0x574): In function `quicktime_set_name':
+: undefined reference to `quicktime_set_udta_string'
+libquicktime_la-quicktime.lo(.text+0x5a8): In function `quicktime_set_info':
+: undefined reference to `quicktime_set_udta_string'
+libquicktime_la-quicktime.lo(.text+0x686): In function `quicktime_set_audio':
+: undefined reference to `quicktime_match_32'
+libquicktime_la-quicktime.lo(.text+0x6c9): In function `quicktime_set_audio':
+: undefined reference to `quicktime_trak_init_audio'
+libquicktime_la-quicktime.lo(.text+0x731): In function `quicktime_set_audio':
+: undefined reference to `quicktime_match_32'
+libquicktime_la-quicktime.lo(.text+0x7e7): In function `quicktime_set_video':
+: undefined reference to `quicktime_trak_init_video'
+libquicktime_la-quicktime.lo(.text+0x909): In function `quicktime_add_track':
+: undefined reference to `quicktime_trak_init'
+libquicktime_la-quicktime.lo(.text+0xc6f): In function `quicktime_seek_end':
+: undefined reference to `quicktime_set_position'
+libquicktime_la-quicktime.lo(.text+0xca9): In function `quicktime_seek_start':
+: undefined reference to `quicktime_set_position'
+libquicktime_la-quicktime.lo(.text+0xcf2): In function `quicktime_audio_length':
+: undefined reference to `quicktime_track_samples'
+libquicktime_la-quicktime.lo(.text+0xd32): In function `quicktime_video_length':
+: undefined reference to `quicktime_track_samples'
+libquicktime_la-quicktime.lo(.text+0xd89): In function `quicktime_update_positions':
+: undefined reference to `quicktime_position'
+libquicktime_la-quicktime.lo(.text+0xde0): In function `quicktime_update_positions':
+: undefined reference to `quicktime_offset_to_sample'
+libquicktime_la-quicktime.lo(.text+0xe05): In function `quicktime_update_positions':
+: undefined reference to `quicktime_offset_to_chunk'
+libquicktime_la-quicktime.lo(.text+0xe54): In function `quicktime_update_positions':
+: undefined reference to `quicktime_offset_to_sample'
+libquicktime_la-quicktime.lo(.text+0xe79): In function `quicktime_update_positions':
+: undefined reference to `quicktime_offset_to_chunk'
+libquicktime_la-quicktime.lo(.text+0xf14): In function `quicktime_set_audio_position':
+: undefined reference to `quicktime_chunk_of_sample'
+libquicktime_la-quicktime.lo(.text+0xf31): In function `quicktime_set_audio_position':
+: undefined reference to `quicktime_sample_to_offset'
+libquicktime_la-quicktime.lo(.text+0xf3e): In function `quicktime_set_audio_position':
+: undefined reference to `quicktime_set_position'
+libquicktime_la-quicktime.lo(.text+0xfbb): In function `quicktime_set_video_position':
+: undefined reference to `quicktime_chunk_of_sample'
+libquicktime_la-quicktime.lo(.text+0xfd8): In function `quicktime_set_video_position':
+: undefined reference to `quicktime_sample_to_offset'
+libquicktime_la-quicktime.lo(.text+0xfe5): In function `quicktime_set_video_position':
+: undefined reference to `quicktime_set_position'
+libquicktime_la-quicktime.lo(.text+0x1367): In function `quicktime_write_audio':
+: undefined reference to `quicktime_position'
+libquicktime_la-quicktime.lo(.text+0x137c): In function `quicktime_write_audio':
+: undefined reference to `quicktime_write_data'
+libquicktime_la-quicktime.lo(.text+0x13b7): In function `quicktime_write_audio':
+: undefined reference to `quicktime_update_tables'
+libquicktime_la-quicktime.lo(.text+0x1408): In function `quicktime_write_frame':
+: undefined reference to `quicktime_position'
+libquicktime_la-quicktime.lo(.text+0x1431): In function `quicktime_write_frame':
+: undefined reference to `quicktime_write_chunk_header'
+libquicktime_la-quicktime.lo(.text+0x1442): In function `quicktime_write_frame':
+: undefined reference to `quicktime_write_data'
+libquicktime_la-quicktime.lo(.text+0x1465): In function `quicktime_write_frame':
+: undefined reference to `quicktime_write_chunk_footer'
+libquicktime_la-quicktime.lo(.text+0x1502): In function `quicktime_read_audio':
+: undefined reference to `quicktime_chunk_of_sample'
+libquicktime_la-quicktime.lo(.text+0x1557): In function `quicktime_read_audio':
+: undefined reference to `quicktime_chunk_samples'
+libquicktime_la-quicktime.lo(.text+0x1602): In function `quicktime_read_audio':
+: undefined reference to `quicktime_read_data'
+libquicktime_la-quicktime.lo(.text+0x16b2): In function `quicktime_read_chunk':
+: undefined reference to `quicktime_chunk_to_offset'
+libquicktime_la-quicktime.lo(.text+0x16c3): In function `quicktime_read_chunk':
+: undefined reference to `quicktime_set_position'
+libquicktime_la-quicktime.lo(.text+0x16d4): In function `quicktime_read_chunk':
+: undefined reference to `quicktime_read_data'
+libquicktime_la-quicktime.lo(.text+0x173a): In function `quicktime_frame_size':
+: undefined reference to `quicktime_track_samples'
+libquicktime_la-quicktime.lo(.text+0x17cd): In function `quicktime_read_frame':
+: undefined reference to `quicktime_read_data'
+libquicktime_la-quicktime.lo(.text+0x19d7): In function `quicktime_read_frame_init':
+: undefined reference to `quicktime_ftell'
+libquicktime_la-quicktime.lo(.text+0x1a51): In function `quicktime_read_frame_end':
+: undefined reference to `quicktime_ftell'
+libquicktime_la-quicktime.lo(.text+0x1cab): In function `quicktime_read_info':
+: undefined reference to `quicktime_position'
+libquicktime_la-quicktime.lo(.text+0x1cc1): In function `quicktime_read_info':
+: undefined reference to `quicktime_read_data'
+libquicktime_la-quicktime.lo(.text+0x1cd1): In function `quicktime_read_info':
+: undefined reference to `quicktime_match_32'
+libquicktime_la-quicktime.lo(.text+0x1ce9): In function `quicktime_read_info':
+: undefined reference to `quicktime_set_position'
+libquicktime_la-quicktime.lo(.text+0x1d5d): In function `quicktime_read_info':
+: undefined reference to `quicktime_position'
+libquicktime_la-quicktime.lo(.text+0x1d86): In function `quicktime_read_info':
+: undefined reference to `quicktime_set_position'
+libquicktime_la-quicktime.lo(.text+0x1dec): In function `quicktime_read_info':
+: undefined reference to `quicktime_position'
+libquicktime_la-quicktime.lo(.text+0x1e30): In function `quicktime_read_info':
+: undefined reference to `quicktime_read_data'
+libquicktime_la-quicktime.lo(.text+0x1e41): In function `quicktime_read_info':
+: undefined reference to `quicktime_set_position'
+libquicktime_la-quicktime.lo(.text+0x1e8a): In function `quicktime_read_info':
+: undefined reference to `quicktime_set_position'
+libquicktime_la-quicktime.lo(.text+0x1ed8): In function `quicktime_read_info':
+: undefined reference to `quicktime_read_data'
+libquicktime_la-quicktime.lo(.text+0x1f0b): In function `quicktime_read_info':
+: undefined reference to `quicktime_position'
+libquicktime_la-quicktime.lo(.text+0x1f78): In function `quicktime_read_info':
+: undefined reference to `quicktime_sample_of_chunk'
+libquicktime_la-quicktime.lo(.text+0x1ff0): In function `quicktime_read_info':
+: undefined reference to `quicktime_match_32'
+libquicktime_la-quicktime.lo(.text+0x202d): In function `quicktime_read_info':
+: undefined reference to `quicktime_match_32'
+libquicktime_la-quicktime.lo(.text+0x209c): In function `quicktime_read_info':
+: undefined reference to `quicktime_position'
+libquicktime_la-quicktime.lo(.text+0x20e0): In function `quicktime_read_info':
+: undefined reference to `quicktime_read_data'
+libquicktime_la-quicktime.lo(.text+0x20f1): In function `quicktime_read_info':
+: undefined reference to `quicktime_set_position'
+libquicktime_la-quicktime.lo(.text+0x211f): In function `quicktime_read_info':
+: undefined reference to `quicktime_match_32'
+libquicktime_la-quicktime.lo(.text+0x21f2): In function `quicktime_check_sig':
+: undefined reference to `quicktime_file_open'
+libquicktime_la-quicktime.lo(.text+0x2207): In function `quicktime_check_sig':
+: undefined reference to `quicktime_file_close'
+libquicktime_la-quicktime.lo(.text+0x223a): In function `quicktime_check_sig':
+: undefined reference to `quicktime_read_data'
+libquicktime_la-quicktime.lo(.text+0x224c): In function `quicktime_check_sig':
+: undefined reference to `quicktime_set_position'
+libquicktime_la-quicktime.lo(.text+0x225b): In function `quicktime_check_sig':
+: undefined reference to `quicktime_match_32'
+libquicktime_la-quicktime.lo(.text+0x22df): In function `quicktime_check_sig':
+: undefined reference to `quicktime_position'
+libquicktime_la-quicktime.lo(.text+0x233f): In function `quicktime_check_sig':
+: undefined reference to `quicktime_match_32'
+libquicktime_la-quicktime.lo(.text+0x2384): In function `quicktime_set_avi':
+: undefined reference to `quicktime_set_position'
+libquicktime_la-quicktime.lo(.text+0x23aa): In function `quicktime_set_avi':
+: undefined reference to `quicktime_write_char32'
+libquicktime_la-quicktime.lo(.text+0x241a): In function `quicktime_open':
+: undefined reference to `quicktime_file_open'
+libquicktime_la-quicktime.lo(.text+0x24c3): In function `quicktime_close':
+: undefined reference to `quicktime_file_close'
+libquicktime_la-quicktime.lo(.text+0x2506): In function `quicktime_close':
+: undefined reference to `quicktime_position'
+libquicktime_la-quicktime.lo(.text+0x255c): In function `quicktime_close':
+: undefined reference to `quicktime_write_data'
+libquicktime_la-quicktime.lo(.text+0x25b3): In function `quicktime_close':
+: undefined reference to `quicktime_write_int32_le'
+libquicktime_la-raw.lo(.text+0x19d): In function `quicktime_decode_raw':
+: undefined reference to `quicktime_read_data'
+libquicktime_la-raw.lo(.text+0x333): In function `quicktime_encode_raw':
+: undefined reference to `quicktime_position'
+libquicktime_la-raw.lo(.text+0x42b): In function `quicktime_encode_raw':
+: undefined reference to `quicktime_write_data'
+libquicktime_la-raw.lo(.text+0x471): In function `quicktime_encode_raw':
+: undefined reference to `quicktime_update_tables'
+collect2: ld returned 1 exit status
+make[1]: *** [libquicktime.la] Error 1
+make[1]: Leaving directory `/home/doudou/src/hvirtual/hvirtual-1.1.5/quicktime'
+make: *** [all-recursive] Error 1

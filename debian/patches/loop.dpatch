@@ -1,0 +1,62 @@
+#! /bin/sh -e
+## loop.dpatch by Andraz Tori <Andraz.tori1@guest.arnes.si>
+##
+## DP: fixes a problem wehere audio position was reported
+## DP: completely wrong and cursor went temporarily nuts while playing in
+## DP: loop, which was annoying the other thing it does is that it aligns
+## DP: cursor on frames while playing (if that option is set)
+
+
+[ -f debian/patches/00patch-opts ] && . debian/patches/00patch-opts
+patch_opts="${patch_opts:--f --no-backup-if-mismatch}"
+
+if [ $# -ne 1 ]; then
+    echo >&2 "`basename $0`: script expects -patch|-unpatch as argument"
+    exit 1
+fi
+case "$1" in
+	-patch) patch $patch_opts -p1 < $0;;
+	-unpatch) patch $patch_opts -p1 -R < $0;;
+	*)
+		echo >&2 "`basename $0`: script expects -patch|-unpatch as argument"
+		exit 1;;
+esac
+exit 0
+@DPATCH@
+																
+diff -u hvirtual-1.1.5/cinelerra/arender.C hv/cinelerra/arender.C
+--- hvirtual-1.1.5/cinelerra/arender.C	2002-11-16 16:48:52.000000000 +0100
++++ hv/cinelerra/arender.C	2003-04-10 17:21:17.000000000 +0200
+@@ -317,14 +317,14 @@
+ // Update tracking
+ 		if(renderengine->command->realtime && renderengine->playback_engine)
+ 		{
+-			double position = (double)renderengine->audio->current_position() / 
++			double position = (double)current_position / 
+ 				renderengine->edl->session->sample_rate * 
+ 				renderengine->command->get_speed();
+ 
+-			if(renderengine->command->get_direction() == PLAY_FORWARD) 
+-				position += renderengine->command->playbackstart;
+-			else
+-				position = renderengine->command->playbackstart - position;
++	//		if(renderengine->command->get_direction() == PLAY_FORWARD) 
++	//			position += renderengine->command->playbackstart;
++	//		else
++	//			position = renderengine->command->playbackstart - position;
+ 
+ //printf("ARender::run 6 %f\n", position);
+ 			renderengine->playback_engine->update_tracking(position);
+diff -u hvirtual-1.1.5/cinelerra/playbackengine.C hv/cinelerra/playbackengine.C
+--- hvirtual-1.1.5/cinelerra/playbackengine.C	2002-11-16 16:48:52.000000000 +0100
++++ hv/cinelerra/playbackengine.C	2003-04-10 16:51:50.000000000 +0200
+@@ -315,7 +315,8 @@
+ 	{
+ //printf("PlaybackEngine::get_tracking_position %d %d %d\n", command->get_direction(), tracking_position, tracking_timer.get_scaled_difference(command->get_edl()->session->sample_rate));
+ // Don't interpolate when every frame is played.
+-		if(command->get_edl()->session->video_every_frame &&
++// Also don't interpolate if cursor should be aligned to frames
++		if((command->get_edl()->session->video_every_frame || command->get_edl()->session->cursor_on_frames) &&
+ 			render_engines.total &&
+ 			render_engines.values[0]->do_video)
+ 		{

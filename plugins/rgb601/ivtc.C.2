@@ -1,0 +1,431 @@
+#include "colormodels.h"
+#include "filexml.h"
+#include "picon_png.h"
+#include "rgb601.h"
+#include "rgb601window.h"
+
+#include <stdio.h>
+#include <string.h>
+
+PluginClient* new_plugin(PluginServer *server)
+{
+	return new RGB601Main(server);
+}
+
+
+RGB601Config::RGB601Config()
+{
+	frame_offset = 0;
+	first_field = 0;
+	automatic = 1;
+	auto_threshold = 2;
+}
+
+RGB601Main::RGB601Main(PluginServer *server)
+ : PluginVClient(server)
+{
+	thread = 0;
+	load_defaults();
+}
+
+RGB601Main::~RGB601Main()
+{
+	if(thread)
+	{
+// Set result to 0 to indicate a server side close
+		thread->window->set_done(0);
+		thread->completion.lock();
+		delete thread;
+	}
+
+	save_defaults();
+	delete defaults;
+}
+
+char* RGB601Main::plugin_title() { return "Inverse Telecine"; }
+int RGB601Main::is_realtime() { return 1; }
+
+VFrame* RGB601Main::new_picon()
+{
+	return new VFrame(picon_png);
+}
+
+int RGB601Main::load_defaults()
+{
+	char directory[1024], string[1024];
+// set the default directory
+	sprintf(directory, "%srgb601.rc", BCASTDIR);
+
+// load the defaults
+	defaults = new Defaults(directory);
+	defaults->load();
+
+	config.frame_offset = defaults->get("FRAME_OFFSET", config.frame_offset);
+	config.first_field = defaults->get("FIRST_FIELD", config.first_field);
+	config.automatic = defaults->get("AUTOMATIC", config.automatic);
+	config.auto_threshold = defaults->get("AUTO_THRESHOLD", config.auto_threshold);
+	return 0;
+}
+
+int RGB601Main::save_defaults()
+{
+	defaults->update("FRAME_OFFSET", config.frame_offset);
+	defaults->update("FIRST_FIELD", config.first_field);
+	defaults->update("AUTOMATIC", config.automatic);
+	defaults->update("AUTO_THRESHOLD", config.auto_threshold);
+	defaults->save();
+	return 0;
+}
+
+void RGB601Main::load_configuration()
+{
+	KeyFrame *prev_keyframe, *next_keyframe;
+
+	prev_keyframe = get_prev_keyframe(-1);
+	next_keyframe = get_next_keyframe(-1);
+// Must also switch between interpolation between keyframes and using first keyframe
+	read_data(prev_keyframe);
+}
+
+
+void RGB601Main::save_data(KeyFrame *keyframe)
+{
+	FileXML output;
+
+// cause data to be stored directly in text
+	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.tag.set_title("RGB601");
+	output.tag.set_property("FRAME_OFFSET", config.frame_offset);
+	output.tag.set_property("FIRST_FIELD", config.first_field);
+	output.tag.set_property("AUTOMATIC", config.automatic);
+	output.tag.set_property("AUTO_THRESHOLD", config.auto_threshold);
+	output.append_tag();
+	output.terminate_string();
+}
+
+void RGB601Main::read_data(KeyFrame *keyframe)
+{
+	FileXML input;
+
+	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+
+	int result = 0;
+	float new_threshold;
+
+	while(!result)
+	{
+		result = input.read_tag();
+
+		if(!result)
+		{
+			if(input.tag.title_is("RGB601"))
+			{
+				config.frame_offset = input.tag.get_property("FRAME_OFFSET", config.frame_offset);
+				config.first_field = input.tag.get_property("FIRST_FIELD", config.first_field);
+				config.automatic = input.tag.get_property("AUTOMATIC", config.automatic);
+				new_threshold = input.tag.get_property("AUTO_THRESHOLD", config.auto_threshold);
+			}
+		}
+	}
+
+//	if(new_threshold != config.auto_threshold)
+//	{
+//		config.auto_threshold = new_threshold;
+//		average = -1;
+//	}
+
+	if(thread) 
+	{
+		thread->window->frame_offset->update((long)config.frame_offset);
+		thread->window->first_field->update(config.first_field);
+		thread->window->automatic->update(config.automatic);
+//		thread->window->threshold->update(config.auto_threshold);
+	}
+}
+
+
+int RGB601Main::start_realtime()
+{
+	temp_frame[0] = 0;
+	temp_frame[1] = 0;
+	state = 0;
+	new_field = 0;
+	average = 0;
+	total_average = project_frame_rate;
+//	total_average = 5;
+	return 0;
+}
+
+int RGB601Main::stop_realtime()
+{
+	if(temp_frame[0]) delete temp_frame[0];
+	if(temp_frame[1]) delete temp_frame[1];
+	temp_frame[0] = 0;
+	temp_frame[1] = 0;
+	return 0;
+}
+
+// Use all channels to get more info
+#define COMPARE_ROWS(result, row1, row2, type, width, components) \
+{ \
+	for(int i = 0; i < width * components; i++) \
+	{ \
+		result += labs(((type*)row1)[i] - ((type*)row2)[i]); \
+	} \
+}
+
+int64_t RGB601Main::compare_fields(VFrame *frame1, VFrame *frame2, int field)
+{
+	int64_t result = 0;
+	for(int row = field; row < frame1->get_h(); row += 2)
+	{
+		switch(frame1->get_color_model())
+		{
+			case BC_RGB888:
+			case BC_YUV888:
+				COMPARE_ROWS(result, 
+					frame1->get_rows()[row], 
+					frame2->get_rows()[row], 
+					unsigned char, 
+					frame1->get_w(), 
+					3);
+				break;
+
+			case BC_RGBA8888:
+			case BC_YUVA8888:
+				COMPARE_ROWS(result, 
+					frame1->get_rows()[row], 
+					frame2->get_rows()[row], 
+					unsigned char, 
+					frame1->get_w(),
+					4);
+				break;
+
+			case BC_RGB161616:
+			case BC_YUV161616:
+				COMPARE_ROWS(result, 
+					frame1->get_rows()[row], 
+					frame2->get_rows()[row], 
+					u_int16_t, 
+					frame1->get_w(),
+					3);
+				break;
+			
+			case BC_RGBA16161616:
+			case BC_YUVA16161616:
+				COMPARE_ROWS(result, 
+					frame1->get_rows()[row], 
+					frame2->get_rows()[row], 
+					u_int16_t, 
+					frame1->get_w(),
+					4);
+				break;
+		}
+	}
+	return result;
+}
+
+// Pattern A B BC CD D
+int RGB601Main::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+{
+	load_configuration();
+
+// Determine position in pattern
+	int pattern_position = (PluginClient::source_position +	config.frame_offset) % 5;
+
+//printf("RGB601Main::process_realtime %d %d\n", pattern_position, config.first_field);
+	if(!temp_frame[0]) temp_frame[0] = new VFrame(0,
+		input_ptr->get_w(),
+		input_ptr->get_h(),
+		input_ptr->get_color_model(),
+		-1);
+	if(!temp_frame[1]) temp_frame[1] = new VFrame(0,
+		input_ptr->get_w(),
+		input_ptr->get_h(),
+		input_ptr->get_color_model(),
+		-1);
+
+	int row_size = VFrame::calculate_bytes_per_pixel(input_ptr->get_color_model()) * input_ptr->get_w();
+
+// Determine where in the pattern we are
+	if(config.automatic)
+	{
+		int64_t field1 = compare_fields(temp_frame[0], input_ptr, 0);
+		int64_t field2 = compare_fields(temp_frame[0], input_ptr, 1);
+		int64_t threshold = (int64_t)(config.auto_threshold * 
+			input_ptr->get_w() * 
+			input_ptr->get_h());
+
+// 		if(input_ptr->get_color_model() == BC_RGBA8888 ||
+// 			input_ptr->get_color_model() == BC_RGBA16161616 ||
+// 			input_ptr->get_color_model() == BC_YUVA8888 ||
+// 			input_ptr->get_color_model() == BC_YUVA16161616)
+// 			threshold *= 4;
+// 		else
+			threshold *= 3;
+
+		if(input_ptr->get_color_model() == BC_RGB161616 ||
+			input_ptr->get_color_model() == BC_RGBA16161616 ||
+			input_ptr->get_color_model() == BC_YUV161616 ||
+			input_ptr->get_color_model() == BC_YUVA16161616)
+			threshold *= 0x100;
+
+		temp_frame[1]->copy_from(input_ptr);
+
+// Adjust threshold over time
+//		if(average >= 0)
+			threshold = average;
+//		else
+//			average = threshold;
+
+//printf("RGB601Main::process_realtime %d %lld %lld %lld %lld\n", state, average, threshold, field1, field2);
+// CD
+		if(state == 3)
+		{
+			state = 4;
+			for(int i = 0; i < input_ptr->get_h(); i++)
+			{
+				if((i + new_field) & 1)
+					memcpy(output_ptr->get_rows()[i], 
+						input_ptr->get_rows()[i],
+						row_size);
+				else
+					memcpy(output_ptr->get_rows()[i],
+						temp_frame[0]->get_rows()[i],
+						row_size);
+			}
+		}
+		else
+// A or B or D
+		if((field1 > threshold && field2 > threshold) ||
+			(field1 <= threshold && field2 <= threshold) ||
+			state == 4)
+		{
+			state = 0;
+
+// Compute new threshold for next time
+			average = (int64_t)(average * total_average + 
+				field1 + 
+				field2) / (total_average + 2);
+
+			if(input_ptr->get_rows()[0] != output_ptr->get_rows()[0])
+				output_ptr->copy_from(input_ptr);
+		}
+		else
+		if(field1 <= threshold && field2 >= threshold)
+		{
+// BC bottom field new
+			state = 3;
+			new_field = 1;
+
+// Compute new threshold for next time
+			average = (int64_t)(average * total_average + 
+				field1) / (total_average + 1);
+
+			for(int i = 0; i < input_ptr->get_h(); i++)
+			{
+				if(i & 1)
+					memcpy(output_ptr->get_rows()[i], 
+						temp_frame[0]->get_rows()[i],
+						row_size);
+				else
+					memcpy(output_ptr->get_rows()[i],
+						input_ptr->get_rows()[i],
+						row_size);
+			}
+		}
+		else
+		if(field1 >= threshold && field2 <= threshold)
+		{
+// BC top field new
+			state = 3;
+			new_field = 0;
+
+// Compute new threshold for next time
+			average = (int64_t)(average * total_average + 
+				field2) / (total_average + 1);
+
+			for(int i = 0; i < input_ptr->get_h(); i++)
+			{
+				if(i & 1)
+					memcpy(output_ptr->get_rows()[i],
+						input_ptr->get_rows()[i],
+						row_size);
+				else
+					memcpy(output_ptr->get_rows()[i], 
+						temp_frame[0]->get_rows()[i],
+						row_size);
+			}
+		}
+
+// Swap temp frames
+		VFrame *temp = temp_frame[0];
+		temp_frame[0] = temp_frame[1];
+		temp_frame[1] = temp;
+	}
+	else
+	switch(pattern_position)
+	{
+// Direct copy
+		case 0:
+		case 4:
+			if(input_ptr->get_rows()[0] != output_ptr->get_rows()[0])
+				output_ptr->copy_from(input_ptr);
+			break;
+
+		case 1:
+			temp_frame[0]->copy_from(input_ptr);
+			if(input_ptr->get_rows()[0] != output_ptr->get_rows()[0])
+				output_ptr->copy_from(input_ptr);
+			break;
+
+		case 2:
+// Save one field for next frame.  Reuse previous frame.
+			temp_frame[1]->copy_from(input_ptr);
+			output_ptr->copy_from(temp_frame[0]);
+			break;
+
+		case 3:
+// Combine previous field with current field.
+			for(int i = 0; i < input_ptr->get_h(); i++)
+			{
+				if((i + config.first_field) & 1)
+					memcpy(output_ptr->get_rows()[i], 
+						input_ptr->get_rows()[i],
+						row_size);
+				else
+					memcpy(output_ptr->get_rows()[i], 
+						temp_frame[1]->get_rows()[i],
+						row_size);
+			}
+			break;
+	}
+
+	return 0;
+}
+
+int RGB601Main::show_gui()
+{
+	load_configuration();
+	thread = new RGB601Thread(this);
+	thread->start();
+	return 0;
+}
+
+int RGB601Main::set_string()
+{
+	if(thread) thread->window->set_title(gui_string);
+	return 0;
+}
+
+void RGB601Main::raise_window()
+{
+	if(thread)
+	{
+		thread->window->raise_window();
+		thread->window->flush();
+	}
+}
+
+
+

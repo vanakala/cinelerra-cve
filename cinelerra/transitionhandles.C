@@ -1,0 +1,99 @@
+#include "cursors.h"
+#include "edit.h"
+#include "edits.h"
+#include "edl.h"
+#include "mwindow.h"
+#include "theme.h"
+#include "track.h"
+#include "trackcanvas.h"
+#include "tracks.h"
+#include "transitionhandles.h"
+
+TransitionHandle::TransitionHandle(MWindow *mwindow, 
+	TrackCanvas *trackcanvas,
+	Edit *edit,
+	int x,
+	int y)
+ : CanvasTool(mwindow, 
+		trackcanvas,
+		edit,
+		x,
+		y,
+		0)
+//		mwindow->theme->transitionhandle_data)
+{
+}
+
+TransitionHandle::~TransitionHandle()
+{
+}
+
+int TransitionHandle::handle_event()
+{
+	return 0;
+}
+
+
+
+
+TransitionHandles::TransitionHandles(MWindow *mwindow,
+		TrackCanvas *trackcanvas)
+ : CanvasTools(mwindow, trackcanvas)
+{
+}
+
+TransitionHandles::~TransitionHandles()
+{
+}
+
+
+void TransitionHandles::update()
+{
+	decrease_visible();
+
+	for(Track *current = mwindow->edl->tracks->first;
+		current;
+		current = NEXT)
+	{
+		for(Edit *edit = current->edits->first; edit; edit = edit->next)
+		{
+			if(edit->transition)
+			{
+				long edit_x, edit_y, edit_w, edit_h;
+				trackcanvas->edit_dimensions(edit, edit_x, edit_y, edit_w, edit_h);
+				trackcanvas->get_transition_coords(edit_x, edit_y, edit_w, edit_h);
+				
+				if(visible(edit_x, edit_w, edit_y, edit_h))
+				{
+					int exists = 0;
+
+					for(int i = 0; i < total; i++)
+					{
+						TransitionHandle *handle = (TransitionHandle*)values[i];
+						if(handle->edit->id == edit->id)
+						{
+							handle->reposition_window(edit_x, edit_y);
+							handle->visible = 1;
+							exists = 1;
+							break;
+						}
+					}
+
+					if(!exists)
+					{
+						TransitionHandle *handle = new TransitionHandle(mwindow,
+							trackcanvas,
+							edit,
+							edit_x,
+							edit_y);
+						trackcanvas->add_subwindow(handle);
+						handle->set_cursor(ARROW_CURSOR);
+						append(handle);
+					}
+				}
+			}
+		}
+	}
+
+	delete_invisible();
+}

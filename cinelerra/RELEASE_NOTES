@@ -1,0 +1,35 @@
+1.1.0
+
+Titler fonts installed by rpm.
+XMovie decodes ac3 according to redesigned liba52 channel mappings.
+Quicktime MPEG4 parameters debugged.
+Gradient effect.
+Background rendering over a renderfarm.
+Renderfarm clients automatically reduced to idle priority.
+Better MJPA decoding on single processors.
+Better title functionality in 16 bit colormodels.
+Undo for effect keyframes.
+Effect GUI's cleared during undo for effect attachment.
+Fewer lockups on startup.
+Proper keyframe interpolation in scale effect.
+Stamp timecode in titler.
+Memory leak in rendering stages removed.
+Removed legacy plugin server code.
+Downsample video resolution.
+Option to generate sequence header in every GOP for MPEG2.
+LADSPA support.
+Listbox doesn't enter drag_icon state when dragging column division.
+Radial, linear, and zoom blur.
+Effect rendering bug fixed.
+64 bit mpeg transport stream seeking beyond 2 gigs.
+More accurate mask drawing when projector is zoomed.
+Clear labels updates CWindow
+More accurate YUV/RGB conversions.
+Histogram.
+Perspective.
+Import partial tgas
+Copy keyframes doesn't copy default keyframe.
+Track highlighting offset by vertical scroll.
+Multiple video scope, spectrogram, and histogram displays may be opened.
+HutSaturation in YUV colorspaces.
+Undo for masks.

@@ -1,0 +1,81 @@
+hvirtual (1:1.1.5-4) unstable; urgency=low
+
+  * The "Patch me if you can" release
+  * Applied patches:
+    loop (Andraz Tori <Andraz.tori1@guest.arnes.si>):
+      fixes a problem wehere audio position was reported
+    	completely wrong and cursor went temporarily nuts while playing in
+    	loop, which was	annoying the other thing it does is that it aligns
+    	cursor on frames while playing (if that option is set)
+    titler-charsets (Andraz Tori <Andraz.tori1@guest.arnes.si>):
+      enables non-english users to use their own charsets
+  		in the titler plugin.
+   * Includes now mplexlo and mplexhi.
+   * Re-includes the badly forgotten mpeg2enc (really sorry for this one)
+
+ -- Sylvain Joyeux <sylvain.joyeux@polytechnique.org>  Tue, 15 Apr 2003 20:29:50 +0200
+
+hvirtual (1:1.1.5-3) unstable; urgency=low
+
+  * Fixed the dependency on XF4.3 (sorry for that)
+  * Fixed policy issues (now the packages are
+  clean according to lintian :), some rpath remain though
+
+ -- Sylvain Joyeux <sylvain.joyeux@polytechnique.org>  Wed,  9 Apr 2003 15:40:13 +0200
+
+hvirtual (1:1.1.5-2) unstable; urgency=low
+
+  * Rebuilt for fix the libvorbis0a dependency
+  * Removed the "lib" prefix on plugins
+  * added nasm in the Build-Depends
+  * Fixed the "linking shared library and static libraries" issue
+  * Now building non-PIC code since it prevents some assembly to build
+  (particularly in libavcodec)
+  * libguicast now links to Xv, not Xv_pic
+  * Moved the fourier code into a single library
+
+ -- Sylvain Joyeux <sylvain.joyeux@polytechnique.org>  Fri,  4 Apr 2003 01:09:33 +0200
+
+hvirtual (1:1.1.5-1) unstable; urgency=low
+
+  * New upstream version
+  * Quicktime: now, we use ffmpeg from the cinelerra source tree
+  (marillat's version is too new)
+  * Versioning: changed all version to Cinelerra version
+  * Cleaned choice system of mmx/non-mmx sources
+  (now using automake conditionals). mmx sources are no
+  longer built when it is not needed.
+
+ -- Sylvain Joyeux <sylvain.joyeux@polytechnique.org>  Fri, 14 Mar 2003 10:57:50 +0100
+
+hvirtual (1.1.0-3) unstable; urgency=low
+
+  * Fixed dependency problem (Bug reported by vizard on sourceforge)
+  * Since avifile support is broken, it is disabled by default
+  * Avifile was the only library in C++, we can now build with gcc 3.2
+  * Upgraded libsndfile to the 0.0.28 version (newest version in unstable)
+  * Since we build with gcc 3.2, enabled -mmmx
+
+ -- Sylvain Joyeux <sylvain.joyeux@polytechnique.org>  Sun, 24 Nov 2002 14:11:30 +0100
+
+hvirtual (1.1.0-2) unstable; urgency=low
+
+  * Re-adding some of the MMX/3Dnow parts
+  * Added options to the configure file
+  * Packages built without 3dnow support
+
+ -- Sylvain Joyeux <sylvain.joyeux@polytechnique.org>  Wed, 20 Nov 2002 01:49:19 +0100
+
+hvirtual (1.1.0-1) unstable; urgency=low
+  
+  * New upstream release
+  * Added non-included plugins
+  * Now, decore50 and encore50 are self-built (previously using libxvidecore0)
+
+ -- Sylvain Joyeux <sylvain.joyeux@polytechnique.org>  Sun, 17 Nov 2002 11:54:56 +0100
+
+hvirtual (1.0.0-1) unstable; urgency=low
+
+  * Initial release.
+
+ -- Sylvain Joyeux <sylvain.joyeux@polytechnique.org>  Mon, 21 Oct 2002 03:15:48 +0200

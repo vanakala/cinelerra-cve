@@ -1,0 +1,48 @@
+#ifndef NORMALIZE_H
+#define NORMALIZE_H
+
+#include "defaults.inc"
+#include "guicast.h"
+#include "mainprogress.inc"
+#include "pluginaclient.h"
+#include "vframe.inc"
+
+
+class NormalizeMain : public PluginAClient
+{
+public:
+	NormalizeMain(PluginServer *server);
+	~NormalizeMain();
+
+// normalizing engine
+
+// parameters needed
+
+	float db_over;
+	int separate_tracks;
+
+// required for all non realtime/multichannel plugins
+
+	VFrame* new_picon();
+	char* plugin_title();
+	int is_realtime();
+	int is_multichannel();
+	int get_parameters();
+	int start_loop();
+	int process_loop(double **buffer, long &write_length);
+	int stop_loop();
+
+	int load_defaults();  
+	int save_defaults();  
+
+	Defaults *defaults;
+	MainProgressBar *progress;
+
+// Current state of process_loop
+	int writing;
+	long current_position;
+	double *peak, *scale;
+};
+
+
+#endif

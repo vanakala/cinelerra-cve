@@ -1,0 +1,110 @@
+#include "assets.h"
+#include "mbuttons.h"
+#include "confirmquit.h"
+#include "errorbox.h"
+#include "levelwindow.h"
+#include "levelwindowgui.h"
+#include "mainmenu.h"
+#include "mwindow.h"
+#include "mwindowgui.h"
+#include "quit.h"
+#include "record.h"
+#include "render.h"
+#include "savefile.h"
+#include "mainsession.h"
+#include "videowindow.h"
+#include "videowindowgui.h"
+
+#include <unistd.h>
+
+Quit::Quit(MWindow *mwindow)
+ : BC_MenuItem("Quit", "q", 'q'), Thread() 
+{ 
+	this->mwindow = mwindow; 
+}
+int Quit::create_objects(Save *save)
+{ 
+	this->save = save; 
+	return 0;
+}
+
+int Quit::handle_event() 
+{
+
+//printf("Quit::handle_event 1 %d\n", mwindow->session->changes_made);
+	if(mwindow->session->changes_made ||
+		mwindow->gui->mainmenu->record->current_state ||
+		mwindow->render->running()) 
+	{
+		start();
+	}
+	else 
+	{        // quit
+		mwindow->gui->unlock_window();
+		mwindow->interrupt_indexes();
+		mwindow->gui->set_done(0);
+		mwindow->gui->lock_window();
+	}
+	return 0;
+}
+
+void Quit::run()
+{
+	int result = 0;
+// Test execution conditions
+	if(mwindow->gui->mainmenu->record->current_state == RECORD_CAPTURING)
+	{
+		ErrorBox error(PROGRAM_NAME ": Error", 
+			mwindow->gui->get_abs_cursor_x(), 
+			mwindow->gui->get_abs_cursor_y());
+		error.create_objects("Can't quit while a recording is in progress.");
+		error.run_window();
+		return;
+	}
+	else
+	if(mwindow->render->running())
+	{
+		ErrorBox error(PROGRAM_NAME ": Error", 
+			mwindow->gui->get_abs_cursor_x(), 
+			mwindow->gui->get_abs_cursor_y());
+		error.create_objects("Can't quit while a render is in progress.");
+		error.run_window();
+		return;
+	}
+
+
+//printf("Quit::run 1\n");
+
+// Quit
+	{
+//printf("Quit::run 2\n");
+		ConfirmQuitWindow confirm(mwindow);
+//printf("Quit::run 2\n");
+		confirm.create_objects("Save edit list before exiting?");
+//printf("Quit::run 2\n");
+		result = confirm.run_window();
+//printf("Quit::run 2\n");
+	}
+//printf("Quit::run 3\n");
+
+	switch(result)
+	{
+		case 0:          // quit
+			if(mwindow->gui)
+			{
+				mwindow->interrupt_indexes();
+// Last command in program
+				mwindow->gui->set_done(0);
+			}
+			break;
+
+		case 1:        // cancel
+			return;
+			break;
+
+		case 2:           // save
+			save->save_before_quit(); 
+			return;
+			break;
+	}
+}

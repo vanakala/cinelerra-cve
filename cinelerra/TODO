@@ -1,0 +1,80 @@
+A
+-------
+Speed ramps.
+Undo doesn't restore project title from previous load.
+File sequence testing.
+Crash during failure to open output file for rendering.
+Delete track which is being shared causes crash.
+ - not reproducible
+Quit freezes when background rendering is on.
+ - No quit during slow effect with background rendering.
+ - Not reproducible.
+Browse button for renderfarm path doesn't work.
+ - Real slow ls.  Need to block preferencesthread.
+DVD authoring guide
+BRender should stop during rendered effect and during effect detach
+ - test
+Renderfarm client runs without access to the filesystem and crashes.
+Rendering doesn't start sometimes.
+Drag plugin handle should only affect plugins with matching handles.
+Motion compensation.
+Middle mouse button drag of edit doesn't affect plugin.
+Zoomblur transition
+Master node framerate not displaying.
+Independant record options for plugin sets.
+
+
+
+
+Redo plugin keyframes.
+Undo Replace project doesn't work.
+Paste from load file after recording doesn't work.
+Changing channel count -> crash
+
+In/Out shifting locks up sometimes.
+Lockup of APatchPan if GUI is updated after every event and pan keyframes are visible.
+Plugin server locks up in sync_parameters when show plugin keyframes is on.
+Effect tweeking locks up if the time taken to render it is really long.
+
+
+
+
+
+
+B
+-----------
+Advancemame/scale2x filter
+Fourier with window size less than fragment size crashed.
+Moving icons in AWindow should reorder the contents in memory.
+Changes_made not set after tweek.
+Video playback not turned off after rendering.
+Denoise from mjpeg tools.
+Effects from audacity.
+Shift matching surrounding keyframes.
+Popup in CWindow and VWindow to set maximum preview size.
+Shared effect resolution when pasting to different tracks than source EDL.
+Doesn't support window managers with user placement of windows.
+Libmpeg3 encoding for DV and higher quality input than MPEG-4 can handle.
+Libmpeg3 decode of fields.
+Compressor stops after 30 minutes.
+Compressor non-functional.
+Remember Asset list position.
+More crash recovery in record.
+Lockup during channel change using RecordMonitor and BUZ driver.
+Ignore frames which return errors when monitoring recording.
+Color adjustments in Channel picker are thrown away when using Buz.
+Preferences crash after changing Playback device to Buz.
+Either audio or video plays back in Microsoft Media Player but not both.
+
+
+
+
+
+
+
+
+On hold
+--------------
+Effect editing.
+Paste non realtime plugins leading to a dialog box.
+Elimination of Audio and Video menus.

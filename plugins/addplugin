@@ -1,0 +1,25 @@
+#! /bin/bash
+
+if [ ! -d $1 ]; then
+	echo "$1 is not a plugin here"
+	exit;
+fi
+
+cd $1
+rm -fR Makefile CVS
+
+cat > Makefile.am <<EOF
+lib_LTLIBRARIES = lib$1.la
+lib$1_la_LDFLAGS = -module -shared -avoid-version
+lib$1_la_LIBADD =
+lib$1_la_SOURCES = $1.C
+AM_CFLAGS =
+AM_CXXFLAGS =
+
+INCLUDES = -I\$(top_srcdir)/guicast -I\$(top_srcdir)/cinelerra -I\$(top_srcdir)/quicktime
+EOF
+
+cd ..
+
+cp -af Makefile.am Makefile.am.before-$1 && sed "s/\(SUBDIRS.*\$\)/\1 $1/" Makefile.am.before-$1 > Makefile.am
+cp -af ../configure.in ./configure.in.before-$1 && sed "s/\(AC_OUTPUT.*\))\$/\1 plugins\/$1\/Makefile)/" configure.in.before-$1 > ../configure.in
