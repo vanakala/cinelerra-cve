@@ -282,7 +282,7 @@ long BC_Clipboard::clipboard_len(int clipboard_num)
     Atom type_return, pty;
     int format;
     unsigned long nitems, pty_size, total;
-	char *temp_data;
+    char *temp_data = 0;
 	int result = 0;
 
     pty = (clipboard_num == PRIMARY_SELECTION) ? primary : secondary; 
@@ -323,6 +323,8 @@ long BC_Clipboard::clipboard_len(int clipboard_num)
 		}
 		else
 			result = 0;
+	if (temp_data)
+		XFree(temp_data);
 	}
 
 	XUnlockDisplay(in_display);
