@@ -111,7 +111,7 @@ void MenuEffectThread::run()
 // check for recordable tracks
 	if(!get_recordable_tracks(&default_asset))
 	{
-		sprintf(string, _("No recorable tracks specified."));
+		sprintf(string, _("No recordable tracks specified."));
 		ErrorBox error(PROGRAM_NAME ": Error");
 		error.create_objects(string);
 		error.run_window();

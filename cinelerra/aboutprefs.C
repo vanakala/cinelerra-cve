@@ -79,7 +79,7 @@ int AboutPrefs::create_objects()
 "This program is free software; you can\n"
 "redistribute it and/or modify it under the terms\n"
 "of the GNU General Public License as published\n"
-"by  the Free Software Foundation; either version\n"
+"by the Free Software Foundation; either version\n"
 "2 of the License, or (at your option) any later\n"
 "version.\n"
 "\n"
