@@ -183,7 +183,7 @@ void Resample::resample_chunk(double *input,
 		j = (int)floor(time0 - itime[channel]);
 
 //		if(j + filter_l / 2 >= input_size) break;
-		if(j + filter_l / 2 >= in_len) break;
+		if(j + (filter_l + 1) / 2 >= in_len) break;
 
 //printf("Resample::resample_chunk 7\n");
 /* blackman filter.  by default, window centered at j+.5(filter_l%2) */
@@ -511,7 +511,7 @@ void Resample_float::resample_chunk(float *input,
 		j = (int)floor(time0 - itime[channel]);
 
 //		if(j + filter_l / 2 >= input_size) break;
-		if(j + filter_l / 2 >= in_len) break;
+		if(j + (filter_l + 1) / 2 >= in_len) break;
 
 //printf("Resample_float::resample_chunk 7\n");
 /* blackman filter.  by default, window centered at j+.5(filter_l%2) */

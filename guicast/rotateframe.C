@@ -39,7 +39,7 @@ RotateFrame::~RotateFrame()
 	{
 		delete engine[i];
 	}
-	delete engine;
+	delete [] engine;
 	if(float_matrix) delete [] float_matrix;
 	if(int_matrix) delete [] int_matrix;
 	if(float_rows) delete [] float_rows;
