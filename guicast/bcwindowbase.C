@@ -73,17 +73,19 @@ BC_WindowBase::~BC_WindowBase()
 		if(top_level->active_menubar == this) top_level->active_menubar = 0;
 		if(top_level->active_popup_menu == this) top_level->active_popup_menu = 0;
 		if(top_level->active_subwindow == this) top_level->active_subwindow = 0;
-		parent_window->subwindows->remove(this);
-	}
+                parent_window->subwindows->remove(this);
+        }
 
-	if(subwindows)
-	{
-		for(int i = 0; i < subwindows->total; i++)
-		{
-			delete subwindows->values[i];
-		}
-		delete subwindows;
-	}
+        if(subwindows)
+        {
+                while (subwindows->total) 
+                {
+                        // NOTE: since the value is itself a subwindow, the
+                        //       recursion removes the item from subwindows
+                        delete subwindows->values[0];
+                }
+                delete subwindows;
+        }
 
 	XFreePixmap(top_level->display, pixmap);
 	XDestroyWindow(top_level->display, win);
