@@ -1,5 +1,5 @@
-#ifndef _AVC1394_H
-#define _AVC1394_H
+#ifndef _AVC1394Control_H
+#define _AVC1394Control_H
 
 #include "mutex.h"
 
@@ -12,11 +12,11 @@
 #include <errno.h>
 #include <stdlib.h>
 
-class AVC1394
+class AVC1394Control
 {
 public:
-	AVC1394();
-	~AVC1394();
+	AVC1394Control();
+	~AVC1394Control();
 
 	void initialize();
 

@@ -29,7 +29,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    autoconf.C \
 		    automation.C \
 		    autos.C \
-			 avc1394.C \
+			 avc1394control.C \
 			 avc1394transport.C \
 		    awindow.C \
 		    awindowgui.C \
@@ -299,7 +299,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 auto.h \
 		 automation.h \
 		 autos.h \
-		 avc1394.h \
+		 avc1394control.h \
 		 avc1394transport.h \
 		 awindowgui.h \
 		 awindow.h \

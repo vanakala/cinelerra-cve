@@ -1,7 +1,7 @@
 #ifndef AVC1394TRANSPORT_H
 #define AVC1394TRANSPORT_H
 
-#include "avc1394.h"
+#include "avc1394control.h"
 #include "mwindow.h"
 #include "theme.h"
 
@@ -20,13 +20,13 @@ class AVC1394GUISeekEnd;
 class AVC1394TransportThread : public Thread
 {
 public:
-	AVC1394TransportThread(BC_Title *label, AVC1394 *avc);
+	AVC1394TransportThread(BC_Title *label, AVC1394Control *avc);
 	~AVC1394TransportThread();
 
 	void run();
 
 	BC_Title *label;
-	AVC1394 *avc;
+	AVC1394Control *avc;
 
 	int tid;
 	int done;
@@ -35,14 +35,14 @@ public:
 class AVC1394Transport
 {
 public:
-	AVC1394Transport(MWindow *mwindow, AVC1394 *avc, BC_WindowBase *window, int x, int y);
+	AVC1394Transport(MWindow *mwindow, AVC1394Control *avc, BC_WindowBase *window, int x, int y);
 	~AVC1394Transport();
 
 	int create_objects();
 	void reposition_window(int x, int y);
 	
 	MWindow *mwindow;
-	AVC1394 *avc;
+	AVC1394Control *avc;
 	BC_WindowBase *window;
 	int x;
 	int y;
@@ -62,98 +62,98 @@ public:
 class AVC1394GUISeekStart : public BC_Button
 {
 public:
-   AVC1394GUISeekStart(MWindow *mwindow, AVC1394 *avc, int x, int y);
+   AVC1394GUISeekStart(MWindow *mwindow, AVC1394Control *avc, int x, int y);
    ~AVC1394GUISeekStart();
 
    int handle_event();
    int keypress_event();
    MWindow *mwindow;
-   AVC1394 *avc;
+   AVC1394Control *avc;
 };
 
 class AVC1394GUIRewind : public BC_Button
 {
 public:
-   AVC1394GUIRewind(MWindow *mwindow, AVC1394 *avc, int x, int y);
+   AVC1394GUIRewind(MWindow *mwindow, AVC1394Control *avc, int x, int y);
    ~AVC1394GUIRewind();
 
    int handle_event();
    int keypress_event();
    MWindow *mwindow;
-   AVC1394 *avc;
+   AVC1394Control *avc;
 };
 
 class AVC1394GUIReverse : public BC_Button
 {
 public:
-   AVC1394GUIReverse(MWindow *mwindow, AVC1394 *avc, int x, int y);
+   AVC1394GUIReverse(MWindow *mwindow, AVC1394Control *avc, int x, int y);
    ~AVC1394GUIReverse();
 
    int handle_event();
    int keypress_event();
    MWindow *mwindow;
-   AVC1394 *avc;
+   AVC1394Control *avc;
 };
 
 class AVC1394GUIStop : public BC_Button
 {
 public:
-   AVC1394GUIStop(MWindow *mwindow, AVC1394 *avc, int x, int y);
+   AVC1394GUIStop(MWindow *mwindow, AVC1394Control *avc, int x, int y);
    ~AVC1394GUIStop();
 
    int handle_event();
    int keypress_event();
    MWindow *mwindow;
-   AVC1394 *avc;
+   AVC1394Control *avc;
 };
 
 class AVC1394GUIPause : public BC_Button
 {
 public:
-   AVC1394GUIPause(MWindow *mwindow, AVC1394 *avc, int x, int y);
+   AVC1394GUIPause(MWindow *mwindow, AVC1394Control *avc, int x, int y);
    ~AVC1394GUIPause();
 
    int handle_event();
    int keypress_event();
    MWindow *mwindow;
-   AVC1394 *avc;
+   AVC1394Control *avc;
 };
 
 class AVC1394GUIPlay : public BC_Button
 {
 public:
-   AVC1394GUIPlay(MWindow *mwindow, AVC1394 *avc, int x, int y);
+   AVC1394GUIPlay(MWindow *mwindow, AVC1394Control *avc, int x, int y);
    ~AVC1394GUIPlay();
 
    int handle_event();
    int keypress_event();
    MWindow *mwindow;
-   AVC1394 *avc;
+   AVC1394Control *avc;
 	int mode;
 };
 
 class AVC1394GUIFForward : public BC_Button
 {
 public:
-   AVC1394GUIFForward(MWindow *mwindow, AVC1394 *avc, int x, int y);
+   AVC1394GUIFForward(MWindow *mwindow, AVC1394Control *avc, int x, int y);
    ~AVC1394GUIFForward();
 
    int handle_event();
    int keypress_event();
    MWindow *mwindow;
-   AVC1394 *avc;
+   AVC1394Control *avc;
 };
 
 class AVC1394GUISeekEnd : public BC_Button
 {
 public:
-   AVC1394GUISeekEnd(MWindow *mwindow, AVC1394 *avc, int x, int y);
+   AVC1394GUISeekEnd(MWindow *mwindow, AVC1394Control *avc, int x, int y);
    ~AVC1394GUISeekEnd();
 
    int handle_event();
    int keypress_event();
    MWindow *mwindow;
-   AVC1394 *avc;
+   AVC1394Control *avc;
 };
 
 #endif

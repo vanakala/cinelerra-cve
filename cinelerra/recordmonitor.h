@@ -31,7 +31,6 @@ public:
 
 	MWindow *mwindow;
 	Record *record;
-	AVC1394 *avc;
 // Thread for slippery monitoring
 	RecordMonitorThread *thread; 
 	RecordMonitorGUI *window;
@@ -113,7 +112,7 @@ public:
 	BC_Bitmap *bitmap;
 	RecordMonitor *thread;
 	Record *record;
-	AVC1394 *avc;
+	AVC1394Control *avc;
 	BC_Title *avc1394transport_title;
 	BC_Title *avc1394transport_timecode;
 };

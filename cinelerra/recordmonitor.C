@@ -185,7 +185,7 @@ RecordMonitorGUI::RecordMonitorGUI(MWindow *mwindow,
 	this->mwindow = mwindow;
 	this->thread = thread;
 	this->record = record;
-	avc = new AVC1394();
+	avc = new AVC1394Control();
 	avc1394_transport = NULL;
 	bitmap = 0;
 	channel_picker = 0;
