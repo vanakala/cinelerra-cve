@@ -1410,7 +1410,7 @@ int BC_WindowBase::evaluate_color_model(int client_byte_order, int server_byte_o
 			color_model = server_byte_order ? BC_BGR888 : BC_RGB888;
 			break;
 		case 32:
-			color_model = server_byte_order ? BC_BGR8888 : BC_RGBA8888;
+			color_model = server_byte_order ? BC_BGR8888 : BC_ARGB8888;
 			break;
 	}
 	return color_model;
