@@ -36,11 +36,11 @@ Depends: ${shlibs:Depends}
 Description: A custom modified Cinelerra's libsndfile library
  Custom modified Cinelerra's libsndfile library
 
-Package: libquicktime1
+Package: libquicktimehv
 Section: libs
 Depends: ${shlibs:Depends}
 Architecture: any
-Description: Quicktime 4 Linux library
+Description: Quicktime 4 Linux Cinelerra internal library
  Quicktime 4 Linux was the first convenient way to read and write 
  uncompressed Quicktime movies on Linux. Today Quicktime 4 Linux 
  is intended for content creation and uncompressed movies. These 
@@ -53,11 +53,11 @@ Description: Quicktime 4 Linux library
  .
  For more informations, see http://heroinewarrior.com/quicktime.php3
 
-Package: libquicktime-dev
+Package: libquicktimehv-dev
 Section: libs
-Depends: libquicktime1 
+Depends: libquicktimehv 
 Architecture: any
-Description: Quicktime 4 Linux library (development files)
+Description: Quicktime 4 Linux (Cinelerra internal) library (development files)
  Quicktime 4 Linux was the first convenient way to read and write 
  uncompressed Quicktime movies on Linux. Today Quicktime 4 Linux 
  is intended for content creation and uncompressed movies. These 
