@@ -40,6 +40,10 @@ public:
 	ColorBalanceEngine(ColorBalanceMain *plugin);
 	~ColorBalanceEngine();
 
+	float calculate_highlight(float in);
+	float calculate_r(float r);
+	float calculate_g(float g);
+	float calculate_b(float b);
 	int start_process_frame(VFrame *output, VFrame *input, int row_start, int row_end);
 	int wait_process_frame();
 	void run();
@@ -50,6 +54,7 @@ public:
 	Mutex input_lock, output_lock;
 	VFrame *input, *output;
 	YUV yuv;
+	float cyan_f, magenta_f, yellow_f;
 };
 
 class ColorBalanceMain : public PluginVClient
@@ -63,6 +68,7 @@ public:
 	int is_realtime();
 	char* plugin_title();
 	int show_gui();
+	void update_gui();
 	void raise_window();
 	int set_string();
 	int load_configuration();

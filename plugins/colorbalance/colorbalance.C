@@ -52,6 +52,9 @@ void ColorBalanceConfig::interpolate(ColorBalanceConfig &prev,
 	this->cyan = prev.cyan * prev_scale + next.cyan * next_scale;
 	this->magenta = prev.magenta * prev_scale + next.magenta * next_scale;
 	this->yellow = prev.yellow * prev_scale + next.yellow * next_scale;
+	this->preserve = prev.preserve;
+	this->lock_params = prev.lock_params;
+	
 }
 
 
@@ -543,6 +546,22 @@ for(i = 0; i < max; i++) \
 	return 0;
 }
 
+
+
+void ColorBalanceMain::update_gui()
+{
+	if(thread)
+	{
+		load_configuration();
+		thread->window->lock_window();
+		thread->window->cyan->update((int64_t)config.cyan);
+		thread->window->magenta->update((int64_t)config.magenta);
+		thread->window->yellow->update((int64_t)config.yellow);
+		thread->window->preserve->update(config.preserve);
+		thread->window->lock_params->update(config.lock_params);
+		thread->window->unlock_window();
+	}
+}
 
 
 int ColorBalanceMain::load_defaults()
