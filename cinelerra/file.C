@@ -196,6 +196,7 @@ int File::get_options(FormatTools *format,
 			FileYUV::get_parameters(parent_window,
 				asset,
 				format_window,
+				video_options,
 				format);
 			break;
 		case FILE_PNG:

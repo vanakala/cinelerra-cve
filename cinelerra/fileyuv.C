@@ -242,8 +242,11 @@ int FileYUV::write_frames(VFrame ***layers, int len)
 void FileYUV::get_parameters(BC_WindowBase *parent_window, 
 			     Asset *asset, 
 			     BC_WindowBase* &format_window,
+			     int video_options,
 			     FormatTools *format)
 {
+	if (! video_options) return;
+
 	YUVConfigVideo *config =  
 		new YUVConfigVideo(parent_window, asset, format);
 	format_window = config;
@@ -393,8 +396,8 @@ int YUVMpeg2Enc::handle_event() {
 }
 
 int YUVMpeg2Enc::create_objects() {
-	add_item(new BC_MenuItem("(DVD) | mpeg2enc -f 8 -o dvd.mpv"));
-	add_item(new BC_MenuItem("(VCD) | mpeg2enc -f 2 -o vcd.mpv"));
+	add_item(new BC_MenuItem("(DVD) | mpeg2enc -f 8 -o dvd.m2v"));
+	add_item(new BC_MenuItem("(VCD) | mpeg2enc -f 2 -o vcd.m2v"));
 }
 
 	
