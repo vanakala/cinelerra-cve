@@ -30,7 +30,7 @@ build-stamp: config.status
 
 clean: 
 	$(checkdir)
-	-$(MAKE) -i distclean
+	-[ -r Makefile ] && $(MAKE) -i distclean
 	dh_clean -a
 	-rm -f debian/cinelerra.1
 	-rm -f debian/mplexhi.1
