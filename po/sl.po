@@ -2393,7 +2393,7 @@ msgstr "prehod"
 #: cinelerra/mwindowedit.C:1522 cinelerra/mwindowedit.C:1542
 #, c-format
 msgid "No default transition %s found."
-msgstr "Noben privzeti prehod %s found."
+msgstr "Privzeti prehod %s ni nil najden."
 
 #: cinelerra/mwindowedit.C:1527 cinelerra/mwindowedit.C:1548
 msgid "paste transition"
@@ -2587,7 +2587,7 @@ msgstr "Enaèba poveèave:"
 
 #: cinelerra/playbackprefs.C:128 cinelerra/videooutprefs.C:79
 msgid "Preload buffer for Quicktime:"
-msgstr "Prednal. medpol. za Quicktime:"
+msgstr "Predpomnilnik za Quicktime:"
 
 #: cinelerra/playbackprefs.C:496
 msgid "Nearest neighbor enlarge and reduce"
