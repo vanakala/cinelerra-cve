@@ -24,6 +24,9 @@ public:
 	virtual Auto& operator=(Auto &that);
 	virtual int operator==(Auto &that);
 	virtual void copy_from(Auto *that);
+	/* for interpolation creation */
+	/* if not possible, copy from a1 and return 0*/ 	
+	virtual int interpolate_from(Auto *a1, Auto *a2, int64_t position); 
 	virtual void copy(int64_t start, int64_t end, FileXML *file, int default_only);
 
 	virtual void load(FileXML *file);

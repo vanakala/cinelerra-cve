@@ -48,6 +48,11 @@ void Auto::copy_from(Auto *that)
 	this->position = that->position;
 }
 
+int Auto::interpolate_from(Auto *a1, Auto *a2, int64_t position)
+{
+	copy_from(a1);
+	return 0;
+}
 
 void Auto::load(FileXML *xml)
 {

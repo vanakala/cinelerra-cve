@@ -249,6 +249,51 @@ void MaskAuto::copy_from(MaskAuto *src)
 	}
 }
 
+
+int MaskAuto::interpolate_from(Auto *a1, Auto *a2, int64_t position) {
+	MaskAuto  *mask_auto1 = (MaskAuto *)a1;
+	MaskAuto  *mask_auto2 = (MaskAuto *)a2;
+
+	if (!mask_auto2 || mask_auto2->masks.total == 0) // if mask_auto == null, copy from first
+	{
+		copy_from(mask_auto1);
+		return 0;
+	}
+	this->mode = mask_auto1->mode;
+	this->feather = mask_auto1->feather;
+	this->value = mask_auto1->value;
+	this->position = position;
+	masks.remove_all_objects();
+
+	for(int i = 0; 
+		i < mask_auto1->masks.total; 
+		i++)
+	{
+		SubMask *new_submask = new SubMask(this);
+		masks.append(new_submask);
+		SubMask *mask1 = mask_auto1->masks.values[i];
+		SubMask *mask2 = mask_auto2->masks.values[i];
+
+		// just in case, should never happen
+		int total_points = MIN(mask1->points.total, mask2->points.total);
+		for(int j = 0; j < total_points; j++)
+		{
+			MaskPoint *point = new MaskPoint;
+			MaskAutos::avg_points(point, 
+				mask1->points.values[j], 
+				mask2->points.values[j],
+				position,
+				mask_auto1->position,
+				mask_auto2->position);
+			new_submask->points.append(point);
+		}
+
+	}
+
+
+}
+
+
 SubMask* MaskAuto::get_submask(int number)
 {
 	CLAMP(number, 0, masks.total - 1);

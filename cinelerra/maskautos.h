@@ -18,7 +18,7 @@ public:
 
 	int dump();
 
-	void avg_points(MaskPoint *output, 
+	static void avg_points(MaskPoint *output, 
 		MaskPoint *input1, 
 		MaskPoint *input2, 
 		int64_t output_position,

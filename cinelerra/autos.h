@@ -41,6 +41,9 @@ public:
 	Auto* get_auto_for_editing(double position = -1);
 // Insert keyframe at the point if it doesn't exist
 	Auto* insert_auto(int64_t position);
+// Insert keyframe at the point if it doesn't exist
+// Interpolate it insead of copying
+	Auto* insert_auto_for_editing(int64_t position);
 	void insert_track(Autos *automation, 
 		int64_t start_unit, 
 		int64_t length_units,

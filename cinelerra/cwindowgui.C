@@ -1296,6 +1296,7 @@ int CWindowCanvas::do_mask(int &redraw,
 		}
 
 		result = 1;
+		rerender = 1;
 		redraw = 1;
 	}
 //printf("CWindowCanvas::do_mask 7\n");
@@ -2674,6 +2675,17 @@ int CWindowCanvas::button_press_event()
 	{
 		draw_refresh();
 		gui->update_tool();
+	}
+
+	if(rerender) /* rerendering can also be caused by press event */
+	{
+		mwindow->restart_brender();
+		mwindow->sync_parameters(CHANGE_PARAMS);
+		gui->cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
+			CHANGE_NONE,
+			mwindow->edl,
+			1);
+		if(!redraw) gui->update_tool();
 	}
 	return result;
 }

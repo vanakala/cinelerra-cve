@@ -259,7 +259,7 @@ Auto* Autos::get_auto_for_editing(double position)
 
 	if(edl->session->auto_keyframes)
 	{
-		result = insert_auto(track->to_units(position, 0));
+		result = insert_auto_for_editing(track->to_units(position, 0));
 	}
 	else
 		result = get_prev_auto(track->to_units(position, 0), 
@@ -342,6 +342,55 @@ Auto* Autos::insert_auto(int64_t position)
 		{
 			insert_after(current, result = new_auto());
 			result->copy_from(current);
+		}
+		else
+		{
+			current = first;
+			if(!current) current = default_auto;
+
+			insert_before(first, result = new_auto());
+			if(current) result->copy_from(current);
+		}
+
+		result->position = position;
+	}
+	else
+	{
+		result = current;
+	}
+
+	return result;
+}
+
+Auto* Autos::insert_auto_for_editing(int64_t position)
+{
+	Auto *current, *result;
+
+// Test for existence
+	for(current = first; 
+		current && !edl->equivalent(current->position, position); 
+		current = NEXT)
+	{
+		;
+	}
+
+//printf("Autos::insert_auto_for_editing %p\n", current);
+// Insert new
+	if(!current)
+	{
+// Get first one on or before as a template
+		for(current = last; 
+			current && current->position > position; 
+			current = PREVIOUS)
+		{
+			;
+		}
+
+		if(current)
+		{
+			Auto *next = NEXT;
+			insert_after(current, result = new_auto());
+			result->interpolate_from(current, next, position);
 		}
 		else
 		{
