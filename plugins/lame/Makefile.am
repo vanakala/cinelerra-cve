@@ -8,3 +8,4 @@ AM_CXXFLAGS =
 
 INCLUDES = -I$(top_srcdir)/guicast -I$(top_srcdir)/cinelerra -I$(top_srcdir)/quicktime -I/usr/include/lame
 
+LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
