@@ -45,7 +45,7 @@ public:
 	MWindow *mwindow;
 	AWindowGUI *gui;
 	BC_Pixmap *icon;
-
+	VFrame *icon_vframe;
 // ID of thing pointed to
 	int id;
 

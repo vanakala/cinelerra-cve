@@ -29,6 +29,7 @@ public:
 	void resize_event();
 	int drag_start_event();
 	int drag_motion_event();
+	int cursor_leave_event();
 	int drag_stop_event();
 	int keypress_event();
 	void draw_resources(int force = 0,  // Redraw everything
@@ -264,7 +265,6 @@ public:
 	ArrayList<ResourcePixmap*> resource_pixmaps;
 // Allows overlays to get redrawn without redrawing the resources
 	BC_Pixmap *background_pixmap;
-	BC_Pixmap *drag_pixmap;
 	BC_DragWindow *drag_popup;
 	BC_Pixmap *transition_pixmap;
 	EditHandles *edit_handles;

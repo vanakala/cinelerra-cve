@@ -56,6 +56,7 @@ int BC_ListBoxItem::initialize()
 	color = BLACK;
 	selected = 0;
 	icon = 0;
+	icon_vframe = 0;
 	text_x = -1;
 	text_y = -1;
 	icon_x = -1;
@@ -174,6 +175,11 @@ char* BC_ListBoxItem::get_text()
 void BC_ListBoxItem::set_icon(BC_Pixmap *icon)
 {
 	this->icon = icon;
+}
+
+void BC_ListBoxItem::set_icon_vframe(VFrame *icon_vframe)
+{
+	this->icon_vframe = icon_vframe;
 }
 
 void BC_ListBoxItem::set_color(int color)

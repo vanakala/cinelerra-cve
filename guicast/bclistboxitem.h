@@ -4,7 +4,7 @@
 #include "arraylist.h"
 #include "bcpixmap.inc"
 #include "colors.h"
-
+#include "vframe.h"
 
 
 
@@ -34,6 +34,7 @@ public:
 	void set_text(char *new_text);
 	char* get_text();
 	void set_icon(BC_Pixmap *icon);
+	void set_icon_vframe(VFrame *icon_vframe);
 	int get_icon_x();
 	int get_icon_y();
 	int get_text_x();
@@ -69,6 +70,7 @@ private:
 
 
 	BC_Pixmap *icon;
+	VFrame *icon_vframe;
 // x and y position in listbox relative to top left
 // Different positions for icon mode and text mode are maintained
 	int icon_x, icon_y;

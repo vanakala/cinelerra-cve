@@ -196,6 +196,9 @@ public:
 // Return 1 if cursor is over an unobscured part of this window.
 // An argument is provided for excluding a drag popup
 	int get_cursor_over_window();
+// For traversing windows... return 1 if this or any subwindow is win
+ 	int match_window(Window win);
+
 	int get_button_down();
 	int get_buttonpress();
 	int get_has_focus();

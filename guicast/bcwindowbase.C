@@ -128,6 +128,7 @@ BC_WindowBase::~BC_WindowBase()
    }
 #endif
 
+//printf("BC_WindowBase::~BC_WindowBase 1\n");
 	hide_tooltip();
 	if(window_type != MAIN_WINDOW)
 	{
@@ -136,6 +137,7 @@ BC_WindowBase::~BC_WindowBase()
 		if(top_level->active_subwindow == this) top_level->active_subwindow = 0;
 		parent_window->subwindows->remove(this);
 	}
+//printf("BC_WindowBase::~BC_WindowBase 2\n");
 
 	if(subwindows)
 	{
@@ -143,15 +145,19 @@ BC_WindowBase::~BC_WindowBase()
 		{
 			delete subwindows->values[i];
 		}
+//printf("BC_WindowBase::~BC_WindowBase 2.5 %p\n", subwindows);
 		delete subwindows;
 	}
+//printf("BC_WindowBase::~BC_WindowBase 3\n");
 
 	XFreePixmap(top_level->display, pixmap);
 	XDestroyWindow(top_level->display, win);
 
+//printf("BC_WindowBase::~BC_WindowBase 4\n");
 	if(bg_pixmap && !shared_bg_pixmap) delete bg_pixmap;
 	if(icon_pixmap) delete icon_pixmap;
 	if (temp_bitmap) delete temp_bitmap;
+//printf("BC_WindowBase::~BC_WindowBase 5\n");
 
 
 	if(window_type == MAIN_WINDOW) 
@@ -174,9 +180,11 @@ BC_WindowBase::~BC_WindowBase()
 
 
 	}
+//printf("BC_WindowBase::~BC_WindowBase 6\n");
 
 	resize_history.remove_all_objects();
 	UNSET_ALL_LOCKS(this)
+//printf("BC_WindowBase::~BC_WindowBase 10\n");
 }
 
 int BC_WindowBase::initialize()
@@ -556,14 +564,12 @@ int BC_WindowBase::run_window()
 	done = 0;
 	return_value = 0;
 
-//printf("BC_WindowBase::run_window 1\n");
 // Start tooltips
 	if(window_type == MAIN_WINDOW)
 	{
 //		tooltip_id = get_repeat_id();
 		set_repeat(get_resources()->tooltip_delay);
 	}
-//printf("BC_WindowBase::run_window 2\n");
 
 	while(!done)
 	{
@@ -1372,7 +1378,6 @@ int BC_WindowBase::set_repeat(int64_t duration)
 	BC_Repeater *repeater = new BC_Repeater(this, duration);
 	repeater->initialize();
 	repeaters.append(repeater);
-
     repeater->start_repeating();
 	return 0;
 }
@@ -2388,7 +2393,7 @@ int BC_WindowBase::hide_window()
 BC_MenuBar* BC_WindowBase::add_menubar(BC_MenuBar *menu_bar)
 {
 	subwindows->append((BC_SubWindow*)menu_bar);
-	
+
 	menu_bar->parent_window = this;
 	menu_bar->top_level = this->top_level;
 	menu_bar->initialize();
@@ -2781,27 +2786,44 @@ int BC_WindowBase::get_abs_cursor_y()
 	return abs_y;
 }
 
+int BC_WindowBase::match_window(Window win) 
+{
+	if (this->win == win) return 1;
+	int result = 0;
+	for(int i = 0; i < subwindows->total; i++)
+	{
+		result = subwindows->values[i]->match_window(win);
+		if (result) return result;
+	}
+	return 0;
+
+}
+
 int BC_WindowBase::get_cursor_over_window()
 {
-return 1;
 	if(top_level != this) return top_level->get_cursor_over_window();
 
 	int abs_x, abs_y, win_x, win_y;
 	unsigned int temp_mask;
-	Window temp_win;
+	Window temp_win1, temp_win2;
 //printf("BC_WindowBase::get_cursor_over_window 2\n");
 
-	XQueryPointer(display, 
+	if (!XQueryPointer(display, 
 		win, 
-		&temp_win, 
-		&temp_win,
+		&temp_win1, 
+		&temp_win2,
 		&abs_x, 
 		&abs_y, 
 		&win_x, 
 		&win_y, 
-		&temp_mask);
+		&temp_mask))
+	return(0);
 //printf("BC_WindowBase::get_cursor_over_window 3 %p\n", window_tree);
 
+	int result = match_window(temp_win2)	;
+//	printf("t1: %p, t2: %p, win: %p, ret: %i\n", temp_win1, temp_win2, win, result);
+	return(result);
+/*------------------------previous attempts ------------
 // Get location in window tree
 	BC_WindowTree *tree_node = window_tree->get_node(win);
 
@@ -2839,7 +2861,7 @@ return 1;
 			}
 		}
 	}
-
+*/
 # if 0
 // Test every window after current node in same parent node.
 // Test every parent node after current parent node.

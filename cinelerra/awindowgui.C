@@ -87,7 +87,11 @@ AssetPicon::~AssetPicon()
 			icon != gui->audio_icon &&
 			icon != gui->folder_icon &&
 			icon != gui->clip_icon &&
-			icon != gui->video_icon) delete icon;
+			icon != gui->video_icon) 
+		{
+			delete icon;
+			delete icon_vframe;
+		}
 	}
 }
 
@@ -97,6 +101,7 @@ void AssetPicon::reset()
 	asset = 0;
 	edl = 0;
 	icon = 0;
+	icon_vframe = 0;
 	in_use = 1;
 	id = 0;
 	persistent = 0;
@@ -143,6 +148,7 @@ void AssetPicon::create_objects()
 							pixmap_h,
 							0,
 							0);
+						icon_vframe = new VFrame(*frame);
 					}
 					file->frames_cache->unlock_cache();
 //printf("AssetPicon::create_objects 5\n");
@@ -152,22 +158,27 @@ void AssetPicon::create_objects()
 				}
 				else
 				{
-					icon = gui->video_icon;
+					icon = gui->video_icon ;
+					icon_vframe = BC_WindowBase::get_resources()->type_to_icon[ICON_FILM];
+
 				}
 			}
 			else
 			{
 				icon = gui->video_icon;
+				icon_vframe = BC_WindowBase::get_resources()->type_to_icon[ICON_FILM];			
 			}
 		}
 		else
 		if(asset->audio_data)
 		{
 			icon = gui->audio_icon;
+			icon_vframe = BC_WindowBase::get_resources()->type_to_icon[ICON_SOUND];
 		}
 //printf("AssetPicon::create_objects 2\n");
 
 		set_icon(icon);
+		set_icon_vframe(icon_vframe);
 //printf("AssetPicon::create_objects 4\n");
 	}
 	else
@@ -177,6 +188,7 @@ void AssetPicon::create_objects()
 		strcpy(name, edl->local_session->clip_title);
 		set_text(name);
 		set_icon(gui->clip_icon);
+		set_icon_vframe(mwindow->theme->clip_icon);
 	}
 	else
 	if(plugin)
@@ -204,12 +216,15 @@ void AssetPicon::create_objects()
 					plugin->picon, 
 					PIXMAP_ALPHA);
 			}
+			icon_vframe = new VFrame (*plugin->picon);
 		}
 		else
 		{
 			icon = gui->file_icon;
+			icon_vframe = BC_WindowBase::get_resources()->type_to_icon[ICON_UNKNOWN];
 		}
 		set_icon(icon);
+		set_icon_vframe(icon_vframe);
 	}
 
 }
@@ -1241,6 +1256,7 @@ int AWindowAssets::drag_stop_event()
 	if(result) get_drag_popup()->set_animation(0);
 
 	BC_ListBox::drag_stop_event();
+	mwindow->session->current_operation = ::NO_OPERATION; // since NO_OPERATION is also defined in listbox, we have to reach for global scope...
 	return 0;
 }
 

@@ -507,9 +507,9 @@ private:
 	BC_Pixmap *bg_surface;
 	BC_Pixmap *bg_tile;
 // Drag icon for text mode
-	BC_Pixmap *drag_icon;
+	VFrame *drag_icon_vframe;
 // Drag column icon
-	BC_Pixmap *drag_column_icon;
+	VFrame *drag_column_icon_vframe;
 // Default background picon
 	BC_Pixmap *bg_pixmap;
 
