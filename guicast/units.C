@@ -212,7 +212,7 @@ char* Units::totext(char *text,
   			hour = (int)(seconds / 3600);
   			minute = (int)(seconds / 60 - hour * 60);
   			second = (int)(seconds - hour * 3600 - minute * 60);
-  			frame = (int64_t)round(frame_rate * 
+  			frame = (int64_t)(frame_rate * 
   	 			 (float)((float)seconds - (int64_t)hour * 3600 - (int64_t)minute * 60 - second));
   			sprintf(text, "%01d:%02d:%02d:%02ld", hour, minute, second, frame);
 			return text;
