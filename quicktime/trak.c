@@ -56,7 +56,10 @@ int quicktime_trak_init_audio(quicktime_t *file,
 
 int quicktime_trak_delete(quicktime_trak_t *trak)
 {
+	quicktime_mdia_delete(&(trak->mdia));
+	quicktime_edts_delete(&(trak->edts));
 	quicktime_tkhd_delete(&(trak->tkhd));
+	
 	free(trak->chunksizes);
 	return 0;
 }
