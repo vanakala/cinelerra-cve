@@ -12,9 +12,12 @@
 #include <stdlib.h>
 #include <string.h>
 
-
-
-// Instantiation of the main loop
+#define PACKAGE "cinelerra"
+#define LOCALEDIR "/usr/share/locale"
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
 
 enum
 {
@@ -37,6 +40,9 @@ int main(int argc, char *argv[])
 	int deamon_port = DEAMON_PORT;
 	char deamon_path[BCTEXTLEN];
 
+	setlocale (LC_ALL, "");
+	bindtextdomain (PACKAGE, LOCALEDIR);
+	textdomain (PACKAGE);
 	for(int i = 1; i < argc; i++)
 	{
 		if(!strcmp(argv[i], "-h"))
@@ -92,10 +98,10 @@ PROGRAM_NAME " is free software, covered by the GNU General Public License,\n"
 	switch(operation)
 	{
 		case DO_USAGE:
-			printf("\nUsage:\n");
-			printf("%s [-d] [port]\n", argv[0]);
-			printf("\n-d = Run in the background as renderfarm client.\n");
-			printf("port = Port for client to listen on. (400)\n\n\n");
+			printf(_("\nUsage:\n"));
+			printf(_("%s [-d] [port]\n"), argv[0]);
+			printf(_("\n-d = Run in the background as renderfarm client.\n"));
+			printf(_("port = Port for client to listen on. (400)\n\n\n"));
 			exit(0);
 			break;
 
