@@ -36,6 +36,7 @@ static int register_acodec(void (*init_acodec)(quicktime_audio_map_t *))
 
 
 #include "ima4.h"
+#include "mp4a.h"
 #include "qtvorbis.h"
 #include "qtmp3.h"
 #include "rawaudio.h"
@@ -48,8 +49,9 @@ static void register_acodecs()
 {
 	register_acodec(quicktime_init_codec_twos);
 	register_acodec(quicktime_init_codec_rawaudio);
-	register_acodec(quicktime_init_codec_ima4); 
-	register_acodec(quicktime_init_codec_ulaw); 
+	register_acodec(quicktime_init_codec_ima4);
+	register_acodec(quicktime_init_codec_mp4a);
+	register_acodec(quicktime_init_codec_ulaw);
 
 	register_acodec(quicktime_init_codec_vorbis);
 	register_acodec(quicktime_init_codec_mp3);
@@ -67,6 +69,7 @@ static void register_acodecs()
 #include "jpeg.h"
 #include "mpeg4.h"
 #include "qtpng.h"
+#include "rle.h"
 #include "v308.h"
 #include "v408.h"
 #include "v410.h"
@@ -83,14 +86,18 @@ static void register_vcodecs()
 	register_vcodec(quicktime_init_codec_hv60);
 	register_vcodec(quicktime_init_codec_div3);
 	register_vcodec(quicktime_init_codec_div3lower);
+	register_vcodec(quicktime_init_codec_mp4v);
 	register_vcodec(quicktime_init_codec_svq1);
+	register_vcodec(quicktime_init_codec_svq3);
+	register_vcodec(quicktime_init_codec_h263);
 	register_vcodec(quicktime_init_codec_dv);
 	register_vcodec(quicktime_init_codec_dvsd);
 
-
 	register_vcodec(quicktime_init_codec_jpeg);
 	register_vcodec(quicktime_init_codec_mjpa);
+	register_vcodec(quicktime_init_codec_mjpg);
 	register_vcodec(quicktime_init_codec_png);
+	register_vcodec(quicktime_init_codec_rle);
 
 	register_vcodec(quicktime_init_codec_yuv2);
 	register_vcodec(quicktime_init_codec_yuv4);
@@ -134,6 +141,7 @@ int quicktime_find_acodec(quicktime_audio_map_t *atrack)
 	int i;
 	char *compressor = atrack->track->mdia.minf.stbl.stsd.table[0].format;
 	int compression_id = atrack->track->mdia.minf.stbl.stsd.table[0].compression_id;
+	int32_t compressor_int = *(int32_t*)compressor;
 	quicktime_codec_t *codec_base = (quicktime_codec_t*)atrack->codec;
 	if(!total_acodecs) register_acodecs();
 
@@ -147,7 +155,8 @@ int quicktime_find_acodec(quicktime_audio_map_t *atrack)
 			return 0;
 		else
 // For reading AVI, the fourcc may be 0 and the compression_id used instead
-		if(compressor[0] == 0 && codec_base->wav_id == compression_id)
+// forucc can also be compression_id (mencoder does that)
+		if((compressor[0] == 0 || compressor_int == codec_base->wav_id) && codec_base->wav_id == compression_id)
 			return 0;
 		else
 		{
