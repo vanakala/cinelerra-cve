@@ -27,6 +27,9 @@ FileDV::FileDV(Asset *asset, File *file)
 {
 	decoder = 0;
 	encoder = 0;
+	audio_buffer = 0;
+	input = 0;
+	output = 0;
 	strcpy(asset->acodec, "Raw DV");
 	asset->byte_order = 0;
 	reset_parameters();
@@ -79,7 +82,9 @@ int FileDV::reset_parameters_derived()
 	if(audio_buffer)
 	{
 		for(i = 0; i < asset->channels; i++)
-			free(audio_buffer[i]);
+		{
+			if(audio_buffer[i]) free(audio_buffer[i]);
+		}
 		free(audio_buffer);
 	}
 
@@ -92,6 +97,8 @@ int FileDV::reset_parameters_derived()
 	audio_position = 0;
 	video_position = 0;
 	output_size = ( encoder->isPAL ? DV1394_PAL_FRAME_SIZE : DV1394_NTSC_FRAME_SIZE);
+	delete[] output;
+	delete[] input;
 	output = new unsigned char[output_size];
 	input = new unsigned char[output_size];
 	audio_offset = 0;
@@ -194,7 +201,7 @@ int FileDV::write_samples(double **buffer, int64_t len)
 
 	int samples_written = 0;
 	int i, j, k = 0;
-	unsigned char *temp_data = new unsigned char[output_size];
+	unsigned char *temp_data = (unsigned char *) calloc(sizeof(unsigned char*), output_size);
 	int16_t *temp_buffers[asset->channels];
 
 
@@ -268,7 +275,7 @@ TRACE("FileDV::write_samples 60")
 	// move the rest of the buffer to the front
 TRACE("FileDV::write_samples 70")
 		for(i = 0; i < asset->channels; i++)
-			memmove(audio_buffer[i], temp_buffers[i], len - samples_written);
+			memmove(audio_buffer[i], temp_buffers[i], len + samples_in_buffer - samples_written);
 		samples_in_buffer = len + samples_in_buffer - samples_written;
 	}
 	else
@@ -278,7 +285,7 @@ TRACE("FileDV::write_samples 70")
 
 TRACE("FileDV::write_samples 80")
 
-	delete[] temp_data;
+	free(temp_data);
 
 UNTRACE
 
