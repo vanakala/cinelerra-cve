@@ -586,15 +586,26 @@ void Theme::get_awindow_sizes(AWindowGUI *gui)
 void Theme::get_rmonitor_sizes(int do_audio, 
 	int do_video,
 	int do_channel,
-	int do_interlace)
+	int do_interlace,
+	int do_avc)
 {
 	int x = 10;
 	int y = 3;
 
-	rmonitor_canvas_y = 0;
-//	rmonitor_tx_x = x;
-//	rmonitor_tx_y = y;
-//	x += 210;
+
+	if(do_avc)
+	{
+		rmonitor_canvas_y = 30;
+		rmonitor_tx_x = 10;
+		rmonitor_tx_y = 0;
+	}
+	else
+	{
+		rmonitor_canvas_y = 0;
+		rmonitor_tx_x = 0;
+		rmonitor_tx_y = 0;
+	}
+
 
 	if(do_channel)
 	{

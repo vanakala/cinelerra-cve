@@ -5,7 +5,6 @@
 #include "audiodevice.h"
 
 #ifdef HAVE_ALSA
-#define ALSA_PCM_OLD_HW_PARAMS_API
 #include <alsa/asoundlib.h>
 
 class AudioALSA : public AudioLowLevel

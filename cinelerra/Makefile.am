@@ -48,6 +48,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    canvas.C \
 		    canvastools.C \
 		    channel.C \
+		    channeldb.C \
 		    channeledit.C \
 		    channelpicker.C \
 		    chantables.C \
@@ -76,6 +77,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    edl.C \
 		    edlsession.C \
 		    fadeengine.C \
+		    fileac3.C \
 		    fileavi.C \
 		    filebaseaudio.C \
 		    filebase.C \
@@ -99,6 +101,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    formatcheck.C \
 		    formatpopup.C \
 		    formattools.C \
+		    framecache.C \
 		    indexfile.C \
 		    indexthread.C \
 		    intauto.C \
@@ -106,6 +109,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    interfaceprefs.C \
 		    keyframe.C \
 		    keyframehandles.C \
+		    keyframepopup.C \
 		    keyframes.C \
 		    labelnavigate.C \
 		    labels.C \
@@ -148,6 +152,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    patchbay.C \
 		    patchgui.C \
 		    performanceprefs.C \
+		    picture.C \
 		    playabletracks.C \
 		    playbackconfig.C \
 		    playbackengine.C \
@@ -226,6 +231,8 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    vdevicebuz.C \
 		    vdeviceprefs.C \
 		    vdevicev4l.C \
+		    vdevicev4l2.C \
+		    vdevicev4l2jpeg.C \
 		    vdevicex11.C \
 		    vedit.C \
 		    vedits.C \
@@ -265,7 +272,7 @@ INCLUDES = \
 
 # the library search path.
 cinelerra_CFLAGS = $(CFLAGS) $(FIREWIRE_CFLAGS) $(SOUND_CFLAGS) $(AVIFILE_CXXFLAGS) 
-cinelerra_CXXFLAGS = $(CXXFLAGS) $(FIREWIRE_CFLAGS) $(SOUND_CFLAGS) $(AVIFILE_CXXFLAGS) -DPLUGINDIR=\"$(libdir)/cinelerra/\"
+cinelerra_CXXFLAGS = $(CXXFLAGS) $(FIREWIRE_CFLAGS) $(SOUND_CFLAGS) $(AVIFILE_CXXFLAGS) -DPLUGIN_DIR=\"$(plugindir)\"
 cinelerra_LDFLAGS = -export-dynamic ../mpeg2enc/libmpeg2enc.la ../toolame-02l/libtoolame.la 
 AM_CFLAGS = 
 AM_CXXFLAGS = 
@@ -323,6 +330,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 canvastools.h \
 		 channeledit.h \
 		 channel.h \
+		 channeldb.h \
 		 channelpicker.h \
 		 chantables.h \
 		 clipedit.h \
@@ -354,6 +362,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 edlsession.h \
 		 fadeengine.h \
 		 featheredits.h \
+		 fileac3.h \
 		 fileavi.h \
 		 filebase.h \
 		 fileformat.h \
@@ -375,6 +384,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 formatpopup.h \
 		 formattools.h \
 		 formatwindow.h \
+		 framecache.h \
 		 headers.h \
 		 ieee1394-ioctl.h \
 		 indexfile.h \
@@ -385,6 +395,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 jpegwrapper.h \
 		 keyframe.h \
 		 keyframehandles.h \
+		 keyframepopup.h \
 		 keyframes.h \
 		 labelnavigate.h \
 		 labels.h \
@@ -428,6 +439,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 patchgui.h \
 		 patch.h \
 		 performanceprefs.h \
+		 picture.h \
 		 playabletracks.h \
 		 playbackconfig.h \
 		 playbackengine.h \
@@ -514,6 +526,8 @@ noinst_HEADERS = aattachmentpoint.h \
 		 vdevicelml.h \
 		 vdeviceprefs.h \
 		 vdevicev4l.h \
+		 vdevicev4l2.h \
+		 vdevicev4l2jpeg.h \
 		 vdevicex11.h \
 		 vedit.h \
 		 vedits.h \

@@ -163,6 +163,7 @@ int cmodel_calculate_pixelsize(int colormodel)
 		case BC_YUV444P:      return 1; break;
 		case BC_YUV422:       return 2; break;
 		case BC_YUV411P:      return 1; break;
+		case BC_YUV9P:        return 1; break;
 	}
 	return 0;
 }
@@ -307,136 +308,60 @@ void cmodel_transfer(unsigned char **output_rows,
  */
 //	printf("in: %i, out: %i\n", in_colormodel, out_colormodel);
 
+
+#define PERMUTATION_VALUES \
+	output_rows,  \
+	input_rows, \
+	out_y_plane, \
+	out_u_plane, \
+	out_v_plane, \
+	in_y_plane, \
+	in_u_plane, \
+	in_v_plane, \
+	in_x,  \
+	in_y,  \
+	in_w,  \
+	in_h, \
+	out_x,  \
+	out_y,  \
+	out_w,  \
+	out_h, \
+	in_colormodel,  \
+	out_colormodel, \
+	bg_color, \
+	in_rowspan, \
+	out_rowspan, \
+	scale, \
+	out_pixelsize, \
+	in_pixelsize, \
+	row_table, \
+	column_table, \
+	bg_r, \
+	bg_g, \
+	bg_b
+
 // Handle planar cmodels separately
 	switch(in_colormodel)
 	{
 		case BC_YUV420P:
 		case BC_YUV422P:
-			cmodel_yuv420p(output_rows,  \
-				input_rows, \
-				out_y_plane, \
-				out_u_plane, \
-				out_v_plane, \
-				in_y_plane, \
-				in_u_plane, \
-				in_v_plane, \
-				in_x,  \
-				in_y,  \
-				in_w,  \
-				in_h, \
-				out_x,  \
-				out_y,  \
-				out_w,  \
-				out_h, \
-				in_colormodel,  \
-				out_colormodel, \
-				bg_color, \
-				in_rowspan, \
-				out_rowspan, \
-				scale, \
-				out_pixelsize, \
-				in_pixelsize, \
-				row_table, \
-				column_table, \
-				bg_r, \
-				bg_g, \
-				bg_b);
+			cmodel_yuv420p(PERMUTATION_VALUES);
+			break;
+
+		case BC_YUV9P:
+			cmodel_yuv9p(PERMUTATION_VALUES);
 			break;
 
 		case BC_YUV444P:
-			cmodel_yuv444p(output_rows,  \
-				input_rows, \
-				out_y_plane, \
-				out_u_plane, \
-				out_v_plane, \
-				in_y_plane, \
-				in_u_plane, \
-				in_v_plane, \
-				in_x,  \
-				in_y,  \
-				in_w,  \
-				in_h, \
-				out_x,  \
-				out_y,  \
-				out_w,  \
-				out_h, \
-				in_colormodel,  \
-				out_colormodel, \
-				bg_color, \
-				in_rowspan, \
-				out_rowspan, \
-				scale, \
-				out_pixelsize, \
-				in_pixelsize, \
-				row_table, \
-				column_table, \
-				bg_r, \
-				bg_g, \
-				bg_b);
+			cmodel_yuv444p(PERMUTATION_VALUES);
 			break;
 
 		case BC_YUV422:
-			cmodel_yuv422(output_rows,  \
-				input_rows, \
-				out_y_plane, \
-				out_u_plane, \
-				out_v_plane, \
-				in_y_plane, \
-				in_u_plane, \
-				in_v_plane, \
-				in_x,  \
-				in_y,  \
-				in_w,  \
-				in_h, \
-				out_x,  \
-				out_y,  \
-				out_w,  \
-				out_h, \
-				in_colormodel,  \
-				out_colormodel, \
-				bg_color, \
-				in_rowspan, \
-				out_rowspan, \
-				scale, \
-				out_pixelsize, \
-				in_pixelsize, \
-				row_table, \
-				column_table, \
-				bg_r, \
-				bg_g, \
-				bg_b);
+			cmodel_yuv422(PERMUTATION_VALUES);
 			break;
 
 		default:
-			cmodel_default(output_rows,  \
-				input_rows, \
-				out_y_plane, \
-				out_u_plane, \
-				out_v_plane, \
-				in_y_plane, \
-				in_u_plane, \
-				in_v_plane, \
-				in_x,  \
-				in_y,  \
-				in_w,  \
-				in_h, \
-				out_x,  \
-				out_y,  \
-				out_w,  \
-				out_h, \
-				in_colormodel,  \
-				out_colormodel, \
-				bg_color, \
-				in_rowspan, \
-				out_rowspan, \
-				scale, \
-				out_pixelsize, \
-				in_pixelsize, \
-				row_table, \
-				column_table, \
-				bg_r, \
-				bg_g, \
-				bg_b);
+			cmodel_default(PERMUTATION_VALUES);
 			break;
 	}
 

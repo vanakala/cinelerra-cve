@@ -137,12 +137,9 @@ LoopVideoFrames::LoopVideoFrames(LoopVideo *plugin,
 
 int LoopVideoFrames::handle_event()
 {
-	long new_frames = atol(get_text());
-	if (new_frames >0) 
-	{
-		plugin->config.frames = new_frames;
-		plugin->send_configure_change();
-	}
+	plugin->config.frames = atol(get_text());
+	plugin->config.frames = MAX(1, plugin->config.frames);
+	plugin->send_configure_change();
 	return 1;
 }
 
@@ -238,6 +235,7 @@ int LoopVideo::load_configuration()
 	int64_t old_frames = config.frames;
 	prev_keyframe = get_prev_keyframe(get_source_position());
 	read_data(prev_keyframe);
+	config.frames = MAX(config.frames, 1);
 	return old_frames != config.frames;
 }
 
@@ -268,7 +266,7 @@ void LoopVideo::save_data(KeyFrame *keyframe)
 
 // cause data to be stored directly in text
 	output.set_shared_string(keyframe->data, MESSAGESIZE);
-	output.tag.set_title("LOOPAUDIO");
+	output.tag.set_title("LOOPVIDEO");
 	output.tag.set_property("FRAMES", config.frames);
 	output.append_tag();
 	output.terminate_string();
@@ -284,7 +282,7 @@ void LoopVideo::read_data(KeyFrame *keyframe)
 
 	while(!input.read_tag())
 	{
-		if(input.tag.title_is("LOOPAUDIO"))
+		if(input.tag.title_is("LOOPVIDEO"))
 		{
 			config.frames = input.tag.get_property("FRAMES", config.frames);
 		}

@@ -146,7 +146,7 @@ int main(int argc, char *argv[])
 		PROGRAM_NAME " " 
 		CINELERRA_VERSION " " 
 		BUILDDATE 
-		" (C)2003 Heroine Virtual Ltd.\n\n"
+		" (C)2004 Heroine Virtual Ltd.\n\n"
 
 PROGRAM_NAME " is free software, covered by the GNU General Public License,\n"
 "and you are welcome to change it and/or distribute copies of it under\n"

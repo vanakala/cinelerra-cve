@@ -117,6 +117,7 @@ int Asset::init_values()
 	ms_gop_size = 45;
 	ms_fix_bitrate = 1;
 
+	ac3_bitrate = 128;
 
 	png_use_alpha = 0;
 
@@ -228,6 +229,8 @@ void Asset::copy_format(Asset *asset, int do_index)
 	ms_gop_size = asset->ms_gop_size;
 	ms_fix_bitrate = asset->ms_fix_bitrate;
 
+	
+	ac3_bitrate = asset->ac3_bitrate;
 	
 	png_use_alpha = asset->png_use_alpha;
 
@@ -361,6 +364,11 @@ int Asset::read(ArrayList<PluginServer*> *plugindb,
 				read_audio(file);
 			}
 			else
+			if(file->tag.title_is("AUDIO_OMIT"))
+			{
+				read_audio(file);
+			}
+			else
 			if(file->tag.title_is("FORMAT"))
 			{
 				char *string = file->tag.get_property("TYPE");
@@ -379,6 +387,11 @@ int Asset::read(ArrayList<PluginServer*> *plugindb,
 				read_video(file);
 			}
 			else
+			if(file->tag.title_is("VIDEO_OMIT"))
+			{
+				read_video(file);
+			}
+			else
 			if(file->tag.title_is("INDEX"))
 			{
 				read_index(file);
@@ -392,6 +405,7 @@ int Asset::read(ArrayList<PluginServer*> *plugindb,
 
 int Asset::read_audio(FileXML *file)
 {
+	if(file->tag.title_is("AUDIO")) audio_data = 1;
 	channels = file->tag.get_property("CHANNELS", 2);
 // This is loaded from the index file after the EDL but this 
 // should be overridable in the EDL.
@@ -419,12 +433,12 @@ int Asset::read_audio(FileXML *file)
 	mp3_bitrate = file->tag.get_property("MP3_BITRATE", mp3_bitrate);
 
 
-	audio_data = 1;
 	return 0;
 }
 
 int Asset::read_video(FileXML *file)
 {
+	if(file->tag.title_is("VIDEO")) video_data = 1;
 	height = file->tag.get_property("HEIGHT", height);
 	width = file->tag.get_property("WIDTH", width);
 	layers = file->tag.get_property("LAYERS", layers);
@@ -476,13 +490,14 @@ int Asset::read_video(FileXML *file)
 	ms_fix_bitrate = file->tag.get_property("MS_FIX_BITRATE", ms_fix_bitrate);
 
 
+	ac3_bitrate = file->tag.get_property("AC3_BITRATE", ac3_bitrate);
+
 
 	png_use_alpha = file->tag.get_property("PNG_USE_ALPHA", png_use_alpha);
 
 
 
 
-	video_data = 1;
 	return 0;
 }
 
@@ -585,8 +600,12 @@ int Asset::write(ArrayList<PluginServer*> *plugindb,
 	file->append_tag();
 	file->append_newline();
 
-	if(audio_data) write_audio(file);
-	if(video_data) write_video(file);
+// Requiring data to exist caused batch render to lose settings.
+// But the only way to know if an asset doesn't have audio or video data 
+// is to not write the block.
+// So change the block name if the asset doesn't have the data.
+	/* if(audio_data) */ write_audio(file);
+	/* if(video_data) */ write_video(file);
 	if(index_status == 0 && include_index) write_index(file);  // index goes after source
 
 	file->tag.set_title("/ASSET");
@@ -597,7 +616,11 @@ int Asset::write(ArrayList<PluginServer*> *plugindb,
 
 int Asset::write_audio(FileXML *file)
 {
-	file->tag.set_title("AUDIO");
+// Let the reader know if the asset has the data by naming the block.
+	if(audio_data)
+		file->tag.set_title("AUDIO");
+	else
+		file->tag.set_title("AUDIO_OMIT");
 	file->tag.set_property("CHANNELS", channels);
 	file->tag.set_property("RATE", sample_rate);
 	file->tag.set_property("BITS", bits);
@@ -635,7 +658,10 @@ int Asset::write_audio(FileXML *file)
 
 int Asset::write_video(FileXML *file)
 {
-	file->tag.set_title("VIDEO");
+	if(video_data)
+		file->tag.set_title("VIDEO");
+	else
+		file->tag.set_title("VIDEO_OMIT");
 	file->tag.set_property("HEIGHT", height);
 	file->tag.set_property("WIDTH", width);
 	file->tag.set_property("LAYERS", layers);
@@ -683,6 +709,7 @@ int Asset::write_video(FileXML *file)
 	file->tag.set_property("MS_FIX_BITRATE", ms_fix_bitrate);
 
 
+	file->tag.set_property("AC3_BITRATE", ac3_bitrate);
 
 	file->tag.set_property("PNG_USE_ALPHA", png_use_alpha);
 
@@ -829,6 +856,7 @@ void Asset::load_defaults(Defaults *defaults,
 	ms_gop_size = GET_DEFAULT("MS_GOP_SIZE", ms_gop_size);
 	ms_fix_bitrate = GET_DEFAULT("MS_FIX_BITRATE", ms_fix_bitrate);
 
+	ac3_bitrate = GET_DEFAULT("AC3_BITRATE", ac3_bitrate);
 
 	png_use_alpha = GET_DEFAULT("PNG_USE_ALPHA", png_use_alpha);
 }
@@ -920,6 +948,9 @@ void Asset::save_defaults(Defaults *defaults,
 	UPDATE_DEFAULT("MS_QUANTIZATION", ms_quantization);
 	UPDATE_DEFAULT("MS_GOP_SIZE", ms_gop_size);
 	UPDATE_DEFAULT("MS_FIX_BITRATE", ms_fix_bitrate);
+
+	UPDATE_DEFAULT("AC3_BITRATE", ac3_bitrate);
+
 
 	UPDATE_DEFAULT("PNG_USE_ALPHA", png_use_alpha);
 }

@@ -1,4 +1,4 @@
-#include "faad2/include/faad.h"
+#include <faad.h>
 #include "funcprotos.h"
 #include "quicktime.h"
 

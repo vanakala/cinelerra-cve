@@ -133,6 +133,8 @@ public:
 	AssetPopup *asset_menu;
 	AssetListMenu *assetlist_menu;
 	FolderListMenu *folderlist_menu;
+// Temporary for reading picons from files
+	VFrame *temp_picon;
 
 private:
 	void update_folder_list();

@@ -7,16 +7,14 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-#include <sys/types.h>
 
-#define INPUT_SAMPLES 131072                       // = 1Mbit ?? why?
+#define INPUT_SAMPLES 131072
 #define BUFFER_TIMEOUT 500000
 
 
 Device1394Input::Device1394Input()
- : Thread(1, 0, 0)
+ : Thread(1, 1, 0)
 {
-	if(getuid() == (uid_t) 0) set_realtime(1);
 	buffer = 0;
 	buffer_valid = 0;
 	done = 0;
@@ -222,7 +220,6 @@ int Device1394Input::read_video(VFrame *data)
 		buffer_valid[current_outbuffer] = 0;
 		increment_counter(&current_outbuffer);
 	}
-//printf("Device1394Input::read_video 100\n");
 
 	buffer_lock->unlock();
 	return result;

@@ -5,6 +5,7 @@
 
 #include "avc1394control.h"
 #include "mutex.h"
+#include "transportque.inc"
 
 AVC1394Control::AVC1394Control()
 {
@@ -15,6 +16,7 @@ void AVC1394Control::initialize()
 {
 	int i;
 
+	current_command = COMMAND_NONE;
 	device = -1;
 
 	device_lock = new Mutex;
@@ -32,7 +34,9 @@ void AVC1394Control::initialize()
 		{
 //printf("AVC1394Control::initialize(): 3\n");
 			fprintf(stderr, "AVC1394Control::initialize(): Not Compatable!\n");
-		} else {
+		} 
+		else 
+		{
 //printf("AVC1394Control::initialize(): 4\n");
 			fprintf(stderr, "AVC1394Control::initialize(): couldn't get handle\n");
 		}

@@ -25,6 +25,9 @@ class DecimateConfig
 {
 public:
 	DecimateConfig();
+	void copy_from(DecimateConfig *config);
+	int equivalent(DecimateConfig *config);
+
 	double input_rate;
 // Averaged frames is useless.  Some of the frames are permanently
 // destroyed in conversion from PAL to NTSC.
@@ -116,7 +119,7 @@ public:
 	char* plugin_title();
 	VFrame* new_picon();
 	int show_gui();
-	void load_configuration();
+	int load_configuration();
 	int set_string();
 	int load_defaults();
 	int save_defaults();
@@ -174,6 +177,18 @@ DecimateConfig::DecimateConfig()
 	input_rate = (double)30000 / 1001;
 	least_difference = 1;
 	averaged_frames = 0;
+}
+
+void DecimateConfig::copy_from(DecimateConfig *config)
+{
+	this->input_rate = config->input_rate;
+	this->least_difference = config->least_difference;
+	this->averaged_frames = config->averaged_frames;
+}
+
+int DecimateConfig::equivalent(DecimateConfig *config)
+{
+	return EQUIV(this->input_rate, config->input_rate);
 }
 
 
@@ -728,11 +743,14 @@ RAISE_WINDOW_MACRO(Decimate)
 
 SET_STRING_MACRO(Decimate);
 
-void Decimate::load_configuration()
+int Decimate::load_configuration()
 {
 	KeyFrame *prev_keyframe;
+	DecimateConfig old_config;
+	old_config.copy_from(&config);
 	prev_keyframe = get_prev_keyframe(get_source_position());
 	read_data(prev_keyframe);
+	return !old_config.equivalent(&config);
 }
 
 int Decimate::load_defaults()
@@ -799,11 +817,14 @@ void Decimate::update_gui()
 {
 	if(thread)
 	{
-		thread->window->lock_window();
-		thread->window->rate->update((float)config.input_rate);
-//		thread->window->difference->update(config.least_difference);
-//		thread->window->avg_difference->update(config.averaged_frames);
-		thread->window->unlock_window();
+		if(load_configuration())
+		{
+			thread->window->lock_window("Decimate::update_gui");
+			thread->window->rate->update((float)config.input_rate);
+//  		thread->window->difference->update(config.least_difference);
+//  		thread->window->avg_difference->update(config.averaged_frames);
+			thread->window->unlock_window();
+		}
 	}
 }
 

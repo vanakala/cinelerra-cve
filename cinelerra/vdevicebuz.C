@@ -10,6 +10,7 @@
 #include "condition.h"
 #include "file.inc"
 #include "mutex.h"
+#include "picture.h"
 #include "playbackconfig.h"
 #include "preferences.h"
 #include "recordconfig.h"
@@ -28,17 +29,16 @@
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 #include <unistd.h>
-#include <sys/types.h>
+
 
 
 #define READ_TIMEOUT 5000000
 
 
 VDeviceBUZInput::VDeviceBUZInput(VDeviceBUZ *device)
- : Thread(1, 0, 0)
+ : Thread(1, 1, 0)
 {
 	this->device = device;
-	if(getuid() == (uid_t) 0) set_realtime(1);
 	buffer = 0;
 	buffer_size = 0;
 	total_buffers = 0;
@@ -308,17 +308,30 @@ int VDeviceBUZ::close_all()
 #define BUZ_COMPOSITE 0
 #define BUZ_SVIDEO 1
 
-void VDeviceBUZ::get_inputs(ArrayList<char *> *input_sources)
+void VDeviceBUZ::get_inputs(ArrayList<Channel*> *input_sources)
 {
-	char *new_source;
-	input_sources->append(new_source = new char[strlen(COMPOSITE_TEXT) + 1]);
-	strcpy(new_source, COMPOSITE_TEXT);
-	input_sources->append(new_source = new char[strlen(SVIDEO_TEXT) + 1]);
-	strcpy(new_source, SVIDEO_TEXT);
+	Channel *new_source = new Channel;
+
+	new_source = new Channel;
+	strcpy(new_source->device_name, COMPOSITE_TEXT);
+	input_sources->append(new_source);
+
+	new_source = new Channel;
+	strcpy(new_source->device_name, SVIDEO_TEXT);
+	input_sources->append(new_source);
 }
 
 int VDeviceBUZ::open_input()
 {
+	device->channel->use_norm = 1;
+	device->channel->use_input = 1;
+
+	device->picture->use_brightness = 1;
+	device->picture->use_contrast = 1;
+	device->picture->use_color = 1;
+	device->picture->use_hue = 1;
+	device->picture->use_whiteness = 1;
+
 // Can't open input until after the channel is set
 	return 0;
 }
@@ -357,17 +370,13 @@ void VDeviceBUZ::create_channeldb(ArrayList<Channel*> *channeldb)
 	;
 }
 
-int VDeviceBUZ::set_picture(int brightness, 
-		int hue, 
-		int color, 
-		int contrast, 
-		int whiteness)
+int VDeviceBUZ::set_picture(Picture *picture)
 {
-	this->brightness = (int)((float)brightness / 100 * 32767 + 32768);
-	this->hue = (int)((float)hue / 100 * 32767 + 32768);
-	this->color = (int)((float)color / 100 * 32767 + 32768);
-	this->contrast = (int)((float)contrast / 100 * 32767 + 32768);
-	this->whiteness = (int)((float)whiteness / 100 * 32767 + 32768);
+	this->brightness = (int)((float)picture->brightness / 100 * 32767 + 32768);
+	this->hue = (int)((float)picture->hue / 100 * 32767 + 32768);
+	this->color = (int)((float)picture->color / 100 * 32767 + 32768);
+	this->contrast = (int)((float)picture->contrast / 100 * 32767 + 32768);
+	this->whiteness = (int)((float)picture->whiteness / 100 * 32767 + 32768);
 
 
  	tuner_lock->lock("VDeviceBUZ::set_picture");
@@ -432,10 +441,7 @@ int VDeviceBUZ::read_buffer(VFrame *frame)
 // Get buffer from thread
 	char *buffer = 0;
 	int buffer_size = 0;
-// Timer timer;
-// timer.update();
 	input_thread->get_buffer(&buffer, &buffer_size);
-//printf("%lld ", timer.get_difference());fflush(stdout);
 
 	if(buffer)
 	{
@@ -464,7 +470,6 @@ int VDeviceBUZ::read_buffer(VFrame *frame)
 	{
 		tuner_lock->unlock();
 		Timer timer;
-//printf("VDeviceBUZ::read_buffer 1\n");
 // Allow other threads to lock the tuner_lock under NPTL.
 		timer.delay(100);
 	}

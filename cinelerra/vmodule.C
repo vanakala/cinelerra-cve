@@ -36,12 +36,14 @@ VModule::VModule(RenderEngine *renderengine,
 {
 	data_type = TRACK_VIDEO;
 	overlay_temp = 0;
+	input_temp = 0;
 	transition_temp = 0;
 }
 
 VModule::~VModule()
 {
 	if(overlay_temp) delete overlay_temp;
+	if(input_temp) delete input_temp;
 	if(transition_temp) delete transition_temp;
 }
 
@@ -146,7 +148,52 @@ int VModule::import_frame(VFrame *output,
 				!EQUIV(in_w1, current_edit->asset->width) ||
 				!EQUIV(in_h1, current_edit->asset->height))
 			{
+// Get temporary input buffer
+				VFrame **input = 0;
+// Realtime playback
+				if(commonrender)
+				{
+					VRender *vrender = (VRender*)commonrender;
+					input = &vrender->input_temp;
+				}
+				else
+// Menu effect
+				{
+					input = &input_temp;
+				}
+
+
+				if((*input) && 
+					((*input)->get_w() != current_edit->asset->width ||
+					(*input)->get_h() != current_edit->asset->height))
+				{
+					delete (*input);
+					(*input) = 0;
+				}
+
+
+
+
+
+				if(!(*input))
+				{
+					(*input) = new VFrame(0,
+						current_edit->asset->width,
+						current_edit->asset->height,
+						get_edl()->session->color_model,
+						-1);
+				}
+
+
+
 // file -> temp
+// Cache for single frame only
+				if(renderengine && renderengine->command->single_frame())
+					source->set_cache_frames(1);
+				result = source->read_frame((*input));
+				if(renderengine && renderengine->command->single_frame())
+					source->set_cache_frames(0);
+
 //printf("VModule::import_frame 1 %lld %f\n", input_position, frame_rate);
 				OverlayFrame *overlayer = 0;
 // Realtime playback
@@ -194,10 +241,8 @@ int VModule::import_frame(VFrame *output,
 					cmodel_is_yuv(output->get_color_model()))
 					mode = TRANSFER_NORMAL;
 
-				VFrame *input = 0;
-				input = source->read_frame_cache(get_edl()->session->color_model);
 				overlayer->overlay(output,
-					input, 
+					(*input), 
 					in_x1,
 					in_y1,
 					in_x1 + in_w1,
@@ -209,7 +254,6 @@ int VModule::import_frame(VFrame *output,
 					1,
 					mode,
 					get_edl()->session->interpolation_type);
-				source->frames_cache->unlock_cache();
 				result = 1;
 //printf("VModule::import_frame 20\n");
 			}
@@ -217,7 +261,12 @@ int VModule::import_frame(VFrame *output,
 // file -> output
 			{
 //printf("VModule::import_frame 30 %p\n", output);
+// Cache single frames only
+				if(renderengine && renderengine->command->single_frame())
+					source->set_cache_frames(1);
 				result = source->read_frame(output);
+				if(renderengine && renderengine->command->single_frame())
+					source->set_cache_frames(0);
 //printf("VModule::import_frame 40\n");
 			}
 
@@ -252,11 +301,11 @@ int VModule::render(VFrame *output,
 		frame_rate / 
 		edl_rate);
 
-//printf("VModule::render 1\n");
 
 	int64_t start_position_project = (int64_t)(start_position *
 		edl_rate /
-		frame_rate);
+		frame_rate + 
+		0.5);
 
 	update_transition(start_position_project, 
 		direction);
@@ -271,7 +320,8 @@ int VModule::render(VFrame *output,
 		output->clear_frame();
 		return 0;
 	}
-//printf("VModule::render 10\n");
+
+
 
 
 // Process transition

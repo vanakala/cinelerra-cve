@@ -1,10 +1,12 @@
-
 #include "asset.h"
 #include "bcsignals.h"
 #include "byteorder.h"
+#include "cache.inc"
+#include "condition.h"
 #include "edit.h"
 #include "errorbox.h"
 #include "file.h"
+#include "fileac3.h"
 #include "fileavi.h"
 #include "filebase.h"
 #include "filexml.h"
@@ -18,6 +20,7 @@
 #include "filetiff.h"
 #include "filevorbis.h"
 #include "formatwindow.h"
+#include "framecache.h"
 #include "language.h"
 #include "pluginserver.h"
 #include "resample.h"
@@ -26,264 +29,14 @@
 
 
 
- FrameCache::FrameCache(int64_t cache_size) 
- {
- 	cache_enabled = 1;
- 	this->cache_size = cache_size;
-	memory_used = 0;
- 	timer.update();
- }
- 
- FrameCache::~FrameCache() 
- {
-	reset();
- }
- 
- void FrameCache::reset() 
- {	
- 	change_lock.lock();
- 	FrameCacheTree::iterator iterator = cache_tree.begin();
- 	while (iterator != cache_tree.end()) {
-		delete iterator->second->frame;
- 		delete iterator->second;
- 		iterator++;
-	}
- 	cache_tree.clear();
- 	cache_tree_bytime.clear();
-	memory_used = 0;
- 	change_lock.unlock();
- }
-
- void FrameCache::set_size(int64_t cache_size) 
- {
-	this->cache_size = cache_size;
- }
- 
- void FrameCache::enable_cache() 
- {	
- 	cache_enabled = 1;
- }
- 
-
- void FrameCache::disable_cache() 
- {
- 	cache_enabled = 0;
- }
- 
- void FrameCache::unlock_cache()
- { 
- 	change_lock.unlock();
- }
- 
- void FrameCache::lock_cache()
- { 
- 	change_lock.lock();
- }
- 
- inline int FrameCache::compare_with_frame(FrameCacheElement *element, 
- 					long frame_number, 
- 					int frame_layer,
- 					int frame_width,
- 					int frame_height,
- 					int frame_color_model)
- {
- 	if (	element->frame_number == frame_number && 
-		element->frame_layer == frame_layer && 
- 		element->frame->get_w() == frame_width && 
- 		element->frame->get_h() == frame_height && 
- 		element->frame->get_color_model() == frame_color_model)
- 			return 1; 
- 		else
- 			return 0;
- }
- 
- FrameCacheTree::iterator FrameCache::find_element_byframe(long frame_number, int frame_layer, int frame_width, int frame_height, int frame_color_model)
- {
- 	FrameCacheTree::iterator iterator = cache_tree.find(frame_number);
-	while (iterator != cache_tree.end() && iterator->first == frame_number)
-	{
-		if (compare_with_frame(iterator->second, 
-					frame_number, 
-					frame_layer,
-					frame_width,
-					frame_height,
-					frame_color_model))
-		{			
-			return iterator;
-		}
-		iterator++;
-	}
- 	return cache_tree.end();
- }
- 
- FrameCacheTree_ByTime::iterator FrameCache::find_element_bytime(long long frame_time_diff, long frame_number, int frame_layer, int frame_width, int frame_height, int frame_color_model)
- {
- 	FrameCacheTree_ByTime::iterator iterator = cache_tree_bytime.find(frame_time_diff);
-   	while (iterator != cache_tree_bytime.end() && iterator->first == frame_time_diff)
-	{
-		if (compare_with_frame(iterator->second, 
-					frame_number, 
-					frame_layer,
-					frame_width,
-					frame_height,
-					frame_color_model))
-		{			
-			return iterator;
-		}
-		iterator++;
-	}
- 	return cache_tree_bytime.end();
- }
- 
-  
- // implicitly locks the class, needs to be unlocked after the call
- // this is the best behaviour, everything else just complicates things and
- // causes races (because you don't know the state of cache_enabled during the call).
-VFrame *FrameCache::get_frame(long frame_number, int frame_layer, int frame_width, int frame_height, int frame_color_model, int force_cache)
- {
- 
- 	change_lock.lock();
- 	if (!cache_enabled && !force_cache) return 0;
- //	printf("Looking for - frame: %li, layer: %i, w: %i, h:%i, cm: %i\n", frame_number, frame_layer, frame_width, frame_height, frame_color_model);
- 	FrameCacheTree::iterator iterator= find_element_byframe(frame_number, 
- 								frame_layer,
- 								frame_width,
- 								frame_height,
- 								frame_color_model);
- 	// update timestamp in other tree
- 	if (iterator != cache_tree.end())
- 	{
- 		FrameCacheElement *cache_element = iterator->second;
- 		FrameCacheTree_ByTime::iterator iterator_bytime;
- 		// this tree node always exists
- 		iterator_bytime = find_element_bytime(cache_element->time_diff,
- 								frame_number, 
- 								frame_layer,
- 								frame_width,
- 								frame_height,
- 								frame_color_model);
- 		if (cache_element != iterator_bytime->second)
- 		{
- 			printf("FrameCache: Something severely wrong in the cache engine!! this: %p\n", this);
- 			dump();
- 			return 0;
- 		};
-// 		printf("Cache hit - frame: %li, layer: %i, w: %i, h:%i, cm: %i\n", frame_number, frame_layer, frame_width, frame_height, frame_color_model);
- 		// delete & replace with new key
- 		cache_tree_bytime.erase(iterator_bytime);
- 		cache_element->time_diff = timer.get_difference();
- 		cache_tree_bytime.insert(std::pair<long long, FrameCacheElement *> (cache_element->time_diff, cache_element)); 
- 		return (cache_element->frame);
- 	};
- 	return 0;
- } 
-
-// Always puts the image into cache, even if cache_size is 0 - there is always at least one image in the cache
-// if do_not_copy_frame is set, cache is locked after this function
-// returns always 1
-
-int FrameCache::add_frame(long frame_number, int frame_layer, VFrame *frame, int do_not_copy_frame, int force_cache) 
- {
- 	
- 	if (!cache_enabled && !force_cache) return 0;
- 	change_lock.lock();
- 	
- //	printf("%p, adding frame:  %li, layer: %i, w: %i, h:%i cm:%i\n",this, frame_number, frame_layer, frame->get_w(),frame->get_h(), frame->get_color_model());
- 	
- 	FrameCacheElement *cache_element = 0;
-
-	// what will be new size
- 	int64_t new_memory_size = frame->get_data_size();
-
- 	// currently cache size can only grow, not shrink
- 	while (memory_used + new_memory_size >= cache_size && memory_used > 0) 
- 	{
-		// delete the cache element from previous iteration
-		if (cache_element)
-			delete cache_element;
-
-		// if we cannot fit the new image into cache, exit
-		// new strategy: allways have one image in the cache - this is due to other read_frame function
-		// do not enable this code
-//		if (memory_used == 0 && new_memory_size > cache_size) {
-//			change_lock.unlock();
-//			return 0;
-//		}
-		// delete the element that wansn't accessed for the longest time
- 		FrameCacheTree_ByTime::iterator iterator_bytime = cache_tree_bytime.begin();
- 		cache_element = iterator_bytime->second;
- 		FrameCacheTree::iterator iterator = find_element_byframe(cache_element->frame_number,
- 									cache_element->frame_layer,
- 									cache_element->frame->get_w(),
- 									cache_element->frame->get_h(),
- 									cache_element->frame->get_color_model());
- //	printf("Deleting oldest frame: - frame: %li, layer: %i, w: %i, h:%i, cm: %i\n", cache_element->frame_number, cache_element->frame_layer, cache_element->frame->get_w(), cache_element->frame->get_h(), cache_element->frame->get_color_model());
-		memory_used -= cache_element->frame->get_data_size();
- 		delete cache_element->frame;
- 		cache_tree.erase(iterator);
-   		cache_tree_bytime.erase(iterator_bytime);
-	}
-
-	if (!cache_element) // recycle cache element if possible
-		cache_element = new FrameCacheElement;
- 	
- 	if (do_not_copy_frame) 
- 	{
- 		cache_element->frame = frame;
- 	} else
- 	{
- 		cache_element->frame = new VFrame(0,
- 					frame->get_w(),
- 					frame->get_h(),
- 					frame->get_color_model());
- 		cache_element->frame->copy_from(frame);
- 	}
-	memory_used += cache_element->frame->get_data_size();
- 	cache_element->frame_layer = frame_layer;
- 	cache_element->frame_number = frame_number;
- 	cache_element->time_diff = timer.get_difference();
-
-//	printf("Adding frame: - frame: %li, layer: %i, w: %i, h:%i, cm: %i\n", cache_element->frame_number, cache_element->frame_layer, cache_element->frame->get_w(), cache_element->frame->get_h(), cache_element->frame->get_color_model());
-	
-//	printf("Memory used by cache: %p %lli\n", this, memory_used);
- 
- // insert the same data into both trees under different keys
- 	
- 	cache_tree.insert(std::pair<long, FrameCacheElement *> (cache_element->frame_number, cache_element));
- 	cache_tree_bytime.insert(std::pair<long long, FrameCacheElement *> (cache_element->time_diff, cache_element)); 
- 	if (!do_not_copy_frame)
-		change_lock.unlock();
-	return 1;
-}
- 
- void FrameCache::dump() 
-{	
- 	printf("Dump of frames' cache %p, cache_tree:\n", this);
- 	{
- 		FrameCacheTree::iterator iterator = cache_tree.begin();
- 		while (iterator != cache_tree.end()) {
- 			FrameCacheElement *cache_element = iterator->second;
- 			printf("%p, frame: %li, layer: %i, w: %i, h:%i, cm: %i, time_diff: %i\n", cache_element, cache_element->frame_number, cache_element->frame_layer, cache_element->frame->get_w(), cache_element->frame->get_h(), cache_element->frame->get_color_model(), cache_element->time_diff);
- 			iterator++;
- 		}
- 	}
- 	printf("cache_tree_bytime:\n", this);
- 	{
- 		FrameCacheTree_ByTime::iterator iterator = cache_tree_bytime.begin();
- 		while (iterator != cache_tree_bytime.end()) {
- 			FrameCacheElement *cache_element = iterator->second;
- 			printf("%p, frame: %li, layer: %i, w: %i, h:%i, cm: %i, time_diff: %li\n", cache_element, cache_element->frame_number, cache_element->frame_layer, cache_element->frame->get_w(), cache_element->frame->get_h(), cache_element->frame->get_color_model(), cache_element->time_diff);
- 			iterator++;
- 		}
- 	}
- }
-
 
 File::File()
 {
 	cpus = 1;
 	asset = new Asset;
-	frames_cache = new FrameCache(0);     // this could possibly be avoided for write-files
+	format_completion = new Mutex("File::format_completion");
+	write_lock = new Condition(1, "File::write_lock");
+	frame_cache = new FrameCache;
 	reset_parameters();
 }
 
@@ -292,19 +45,18 @@ File::~File()
 	if(getting_options)
 	{
 		if(format_window) format_window->set_done(0);
-		format_completion.lock("File::~File");
-		format_completion.unlock();
+		format_completion->lock("File::~File");
+		format_completion->unlock();
 	}
 
-	if(temp_frame)
-	{
-		delete temp_frame;
-	}
+	if(temp_frame) delete temp_frame;
 
 	close_file();
 	reset_parameters();
 	delete asset;
-	delete frames_cache;
+	delete format_completion;
+	delete write_lock;
+	if(frame_cache) delete frame_cache;
 }
 
 void File::reset_parameters()
@@ -315,7 +67,6 @@ void File::reset_parameters()
 	getting_options = 0;
 	format_window = 0;
 	temp_frame = 0;
-	temp_frame = 0;
 	current_sample = 0;
 	current_frame = 0;
 	current_channel = 0;
@@ -324,12 +75,7 @@ void File::reset_parameters()
 	normalized_sample_rate = 0;
 	resample = 0;
 	resample_float = 0;
-	frames_cache->reset();
-}
-
-void File::set_cache_size(int64_t cache_size)
-{
-	frames_cache->set_size(cache_size);
+	use_cache = 0;
 }
 
 int File::raise_window()
@@ -361,9 +107,16 @@ int File::get_options(BC_WindowBase *parent_window,
 	int lock_compressor)
 {
 	getting_options = 1;
-	format_completion.lock("File::get_options");
+	format_completion->lock("File::get_options");
 	switch(asset->format)
 	{
+		case FILE_AC3:
+			FileAC3::get_parameters(parent_window,
+				asset,
+				format_window,
+				audio_options,
+				video_options);
+			break;
 		case FILE_PCM:
 		case FILE_WAV:
 		case FILE_AU:
@@ -471,7 +224,7 @@ int File::get_options(BC_WindowBase *parent_window,
 
 	getting_options = 0;
 	format_window = 0;
-	format_completion.unlock();
+	format_completion->unlock();
 	return 0;
 }
 
@@ -482,7 +235,6 @@ void File::set_asset(Asset *asset)
 
 int File::set_processors(int cpus)   // Set the number of cpus for certain codecs
 {
-//printf("File::set_processors 1 %d\n", cpus);
 	this->cpus = cpus;
 	return 0;
 }
@@ -492,6 +244,26 @@ int File::set_preload(int64_t size)
 	this->playback_preload = size;
 	return 0;
 }
+
+void File::set_cache_frames(int value)
+{
+	use_cache = value;
+}
+
+int File::purge_cache()
+{
+	return frame_cache->delete_oldest();
+}
+
+
+
+
+
+
+
+
+
+
 
 int File::open_file(ArrayList<PluginServer*> *plugindb, 
 	Asset *asset, 
@@ -601,6 +373,10 @@ int File::open_file(ArrayList<PluginServer*> *plugindb,
 			break;
 
 // format already determined
+		case FILE_AC3:
+			file = new FileAC3(this->asset, this);
+			break;
+
 		case FILE_PCM:
 		case FILE_WAV:
 		case FILE_AU:
@@ -918,7 +694,10 @@ int File::set_video_position(int64_t position, float base_framerate)
 
 // Convert to file's rate
 	if(base_framerate > 0)
-		position = (int64_t)((double)position / base_framerate * asset->frame_rate + 0.5);
+		position = (int64_t)((double)position / 
+			base_framerate * 
+			asset->frame_rate + 
+			0.5);
 
 	if(current_frame != position && file)
 	{
@@ -936,12 +715,12 @@ int File::write_samples(double **buffer, int64_t len)
 	
 	if(file)
 	{
-		write_lock.lock("File::write_samples");
+		write_lock->lock("File::write_samples");
 		result = file->write_samples(buffer, len);
 		current_sample += len;
 		normalized_sample += len;
 		asset->audio_length += len;
-		write_lock.unlock();
+		write_lock->unlock();
 	}
 	return result;
 }
@@ -954,7 +733,7 @@ int File::write_frames(VFrame ***frames, int len)
 	int result;
 	int current_frame_temp = current_frame;
 	int video_length_temp = asset->video_length;
-	write_lock.lock("File::write_frames");
+	write_lock->lock("File::write_frames");
 
 
 
@@ -967,18 +746,18 @@ int File::write_frames(VFrame ***frames, int len)
 
 	current_frame = current_frame_temp + len;
 	asset->video_length = video_length_temp + len;
-	write_lock.unlock();
+	write_lock->unlock();
 	return result;
 }
 
 int File::write_compressed_frame(VFrame *buffer)
 {
 	int result = 0;
-	write_lock.lock("File::write_compressed_frame");
+	write_lock->lock("File::write_compressed_frame");
 	result = file->write_compressed_frame(buffer);
 	current_frame++;
 	asset->video_length++;
-	write_lock.unlock();
+	write_lock->unlock();
 	return result;
 }
 
@@ -1108,142 +887,86 @@ int64_t File::compressed_frame_size()
 }
 
 
-// Return a pointer to a frame in the video file for drawing purposes.
-// frame is created and resides in cache
-// cache is ALWAYS locked after a call to this function
-// the calling function must unlock the cache ASAP
-VFrame* File::read_frame_cache(int color_model, int width , int height )
-{
-	VFrame* result = 0;
-	if (width == 0) width = asset->width;
-	if (height == 0) height = asset->height; 
-//printf("File::read_frame 1\n");
-	if(file)
-	{
-//printf("File::read_frame 2\n");
-		// do a lookup with forced cache usage
-		VFrame *temp_frame2 = frames_cache->get_frame(current_frame, current_layer, width, height, color_model, 1);
-		if (temp_frame2)
-		{
-			// return directly from cache
-			return temp_frame2;
-		}	
-
-//printf("File::read_frame 3\n");
-		result = new VFrame(0,
-			width,
-			height,
-			color_model);
-		// read frame:
-		// without using the cache lookup (done above)
-		// with caching the current instance - so cache is the one that needs to free it
-		read_frame(result, CACHE_NO_LOOKUP | CACHE_THIS_INSTANCE);	
-//printf("File::read_frame 4\n");
-	}
-//printf("File::read_frame 5\n");
-	return result;
-}
 
 
-int File::read_frame(VFrame *frame, int cache_mode)
+int File::read_frame(VFrame *frame)
 {
 	if(file)
 	{
-//printf("File::read_frame 1\n");
 		int supported_colormodel = colormodel_supported(frame->get_color_model());
 
-//printf("File::read_frame 1 %d %d\n", supported_colormodel, frame->get_color_model());
+
+// Test cache
+		if(use_cache &&
+			frame_cache->get_frame(frame,
+				current_frame,
+				asset->frame_rate))
+		{
+			;
+		}
+		else
+// Need temp
 		if(frame->get_color_model() != BC_COMPRESSED &&
 			(supported_colormodel != frame->get_color_model() ||
 			frame->get_w() != asset->width ||
 			frame->get_h() != asset->height))
 		{
-// Need temp
-//printf("File::read_frame 3 %d %d\n", 
-//	temp_frame->get_color_model(), 
-//	frame->get_color_model());
-			VFrame *temp_frame2 = 0;
-			if (!(cache_mode & CACHE_NO_LOOKUP))
-				temp_frame2 = frames_cache->get_frame(current_frame, current_layer, frame->get_w(), frame->get_h(), frame->get_color_model());
-			if (temp_frame2) 
+			if(temp_frame)
 			{
-				frame->copy_from(temp_frame2);
-				// cache is implicitly locked after a call to get_frame
-				frames_cache->unlock_cache();
-			} else
-			{
-				frames_cache->unlock_cache(); // cache is implicitly locked after a call to get_frame
-				if(temp_frame  && !temp_frame->params_match(asset->width, asset->height, supported_colormodel))
+				if(!temp_frame->params_match(asset->width, asset->height, supported_colormodel))
 				{
 					delete temp_frame;
 					temp_frame = 0;
 				}
-//printf("File::read_frame 4 %p %d %d %d\n", asset , asset->width, asset->height, supported_colormodel);
+			}
 
-				if(!temp_frame)
-				{
-					temp_frame = new VFrame(0,
-						asset->width,
-						asset->height,
-						supported_colormodel);
-				}
+			if(!temp_frame)
+			{
+				temp_frame = new VFrame(0,
+					asset->width,
+					asset->height,
+					supported_colormodel);
+			}
 
-
-				file->read_frame(temp_frame);
+			file->read_frame(temp_frame);
 //struct timeval start_time;
 //gettimeofday(&start_time, 0);
-//				printf("tarnsfering from : %i to %i\n", frame->get_color_model(),temp_frame->get_color_model());
-				cmodel_transfer(frame->get_rows(), 
-					temp_frame->get_rows(),
-					0,
-					0,
-					0,
-					0,
-					0,
-					0,
-					0, 
-					0, 
-					temp_frame->get_w(), 
-					temp_frame->get_h(),
-					0, 
-					0, 
-					frame->get_w(), 
-					frame->get_h(),
-					temp_frame->get_color_model(), 
-					frame->get_color_model(),
-					0,
-					temp_frame->get_w(),
-					frame->get_w());
+//			printf("tarnsfering from : %i to %i\n", frame->get_color_model(),temp_frame->get_color_model());
+			cmodel_transfer(frame->get_rows(), 
+				temp_frame->get_rows(),
+				0,
+				0,
+				0,
+				0,
+				0,
+				0,
+				0, 
+				0, 
+				temp_frame->get_w(), 
+				temp_frame->get_h(),
+				0, 
+				0, 
+				frame->get_w(), 
+				frame->get_h(),
+				temp_frame->get_color_model(), 
+				frame->get_color_model(),
+				0,
+				temp_frame->get_w(),
+				frame->get_w());
 //	int64_t dif= get_difference(&start_time);
 //	printf("diff: %lli\n", dif);
 
-//printf("File::read_frame 5\n");
-				frames_cache->add_frame(current_frame, current_layer, frame, cache_mode & CACHE_THIS_INSTANCE, 1);
-				current_frame++;
-			}
 		}
 		else
 		{
-//printf("File::read_frame 7\n");
-			VFrame *temp_frame2 = 0;
-			if (!(cache_mode & CACHE_NO_LOOKUP))
-				temp_frame2 = frames_cache->get_frame(current_frame, current_layer, frame->get_w(), frame->get_h(), frame->get_color_model());
-			if (temp_frame2) 
-			{
-				frame->copy_from(temp_frame2);
-				// cache is implicitly locked after a call to get_frame
-				frames_cache->unlock_cache();
-			} else
-			{
-				// cache is implicitly locked after a call to get_frame				
-				frames_cache->unlock_cache();
-				file->read_frame(frame);
-				frames_cache->add_frame(current_frame, current_layer, frame, cache_mode & CACHE_THIS_INSTANCE, 1);
-				current_frame++;
-			}
-//printf("File::read_frame 8\n");
+			file->read_frame(frame);
 		}
-//printf("File::read_frame 2 %d\n", supported_colormodel);
+		if(use_cache) frame_cache->put_frame(frame,
+			current_frame,
+			asset->frame_rate,
+			1);
+
+		current_frame++;
 		return 0;
 	}
 	else
@@ -1272,6 +995,8 @@ int File::strtoformat(char *format)
 
 int File::strtoformat(ArrayList<PluginServer*> *plugindb, char *format)
 {
+	if(!strcasecmp(format, _(AC3_NAME))) return FILE_AC3;
+	else
 	if(!strcasecmp(format, _(WAV_NAME))) return FILE_WAV;
 	else
 	if(!strcasecmp(format, _(PCM_NAME))) return FILE_PCM;
@@ -1330,6 +1055,9 @@ char* File::formattostr(ArrayList<PluginServer*> *plugindb, int format)
 {
 	switch(format)
 	{
+		case FILE_AC3:
+			return _(AC3_NAME);
+			break;
 		case FILE_WAV:
 			return _(WAV_NAME);
 			break;
@@ -1543,24 +1271,27 @@ int File::colormodel_supported(int colormodel)
 }
 
 
+int File::get_memory_usage()
+{
+	int result = 0;
+	if(temp_frame) result += temp_frame->get_data_size();
+	if(file) result += file->get_memory_usage();
+	result += frame_cache->get_memory_usage();
 
+	if(result < MIN_CACHEITEM_SIZE) result = MIN_CACHEITEM_SIZE;
+	return result;
+}
 
+FrameCache* File::get_frame_cache()
+{
+	return frame_cache;
+}
 
 int File::supports_video(ArrayList<PluginServer*> *plugindb, char *format)
 {
 	int i, format_i = strtoformat(plugindb, format);
 	
 	return supports_video(format_i);
-
-// 	for(i = 0; i < plugindb->total; i++)
-// 	{	
-// 		if(plugindb->values[i]->fileio && 
-// 			!strcmp(plugindb->values[i]->title, format))
-// 		{
-// 			if(plugindb->values[i]->video) return 1;
-// 		}
-// 	}
-
 	return 0;
 }
 
@@ -1569,16 +1300,6 @@ int File::supports_audio(ArrayList<PluginServer*> *plugindb, char *format)
 	int i, format_i = strtoformat(plugindb, format);
 
 	return supports_audio(format_i);
-
-// 	for(i = 0; i < plugindb->total; i++)
-// 	{	
-// 		if(plugindb->values[i]->fileio && 
-// 			!strcmp(plugindb->values[i]->title, format))
-// 		{
-// 			if(plugindb->values[i]->audio) return 1;
-// 		}
-// 	}
-
 	return 0;
 }
 
@@ -1616,6 +1337,7 @@ int File::supports_audio(int format)
 {
 	switch(format)
 	{
+		case FILE_AC3:
 		case FILE_PCM:
 		case FILE_WAV:
 		case FILE_MOV:

@@ -7,6 +7,7 @@
 #include "brender.h"
 #include "cache.h"
 #include "channel.h"
+#include "channeldb.h"
 #include "clip.h"
 #include "colormodels.h"
 #include "cplayback.h"
@@ -28,6 +29,7 @@
 #include "levelwindow.h"
 #include "loadfile.inc"
 #include "localsession.h"
+#include "maincursor.h"
 #include "mainindexes.h"
 #include "mainmenu.h"
 #include "mainprogress.h"
@@ -119,6 +121,8 @@ MWindow::MWindow()
 	brender_lock = new Mutex("MWindow::brender_lock");
 	brender = 0;
 	session = 0;
+	channeldb_buz = new ChannelDB;
+	channeldb_v4l2jpeg = new ChannelDB;
 }
 
 MWindow::~MWindow()
@@ -400,11 +404,21 @@ void MWindow::create_plugindb(int do_audio,
 	}
 }
 
-PluginServer* MWindow::scan_plugindb(char *title)
+PluginServer* MWindow::scan_plugindb(char *title,
+		int data_type)
 {
+	if(data_type < 0)
+	{
+		printf("MWindow::scan_plugindb data_type < 0\n");
+		return 0;
+	}
+
 	for(int i = 0; i < plugindb->total; i++)
 	{
-		if(!strcasecmp(plugindb->values[i]->title, title)) 
+		PluginServer *server = plugindb->values[i];
+		if(!strcasecmp(server->title, title) &&
+		((data_type == TRACK_AUDIO && server->audio) ||
+		(data_type == TRACK_VIDEO && server->video))) 
 			return plugindb->values[i];
 	}
 	return 0;
@@ -425,7 +439,7 @@ void MWindow::clean_indexes()
 	long oldest;
 	int oldest_item;
 	int result;
-	char string[1024];
+	char string[BCTEXTLEN];
 
 // Delete extra indexes
 	fs.set_filter("*.idx");
@@ -547,52 +561,10 @@ void MWindow::init_cache()
 	video_cache = new CICache(edl, preferences, plugindb);
 }
 
-void MWindow::init_tuner(ArrayList<Channel*> &channeldb, char *path)
+void MWindow::init_channeldb()
 {
-	FileSystem fs;
-	char directory[1024];
-	FileXML file;
-	Channel *channel;
-	int done;
-
-	sprintf(directory, BCASTDIR);
-	fs.complete_path(directory);
-	fs.join_names(directory, directory, path);
-	done = file.read_from_file(directory, 1);
-
-// Load channels
-	while(!done)
-	{
-		channel = new Channel;
-		if(!(done = channel->load(&file)))
-			channeldb.append(channel);
-		else
-		{
-			delete channel;
-		}
-	}
-}
-
-void MWindow::save_tuner(ArrayList<Channel*> &channeldb, char *path)
-{
-	FileSystem fs;
-	char directory[1024];
-	FileXML file;
-
-	sprintf(directory, BCASTDIR);
-	fs.complete_path(directory);
-	strcat(directory, path);
-
-	if(channeldb.total)
-	{
-		for(int i = 0; i < channeldb.total; i++)
-		{
-// Save channel here
-			channeldb.values[i]->save(&file);
-		}
-		file.terminate_string();
-		file.write_to_file(directory);
-	}
+	channeldb_buz->load("channeldb_buz");
+	channeldb_v4l2jpeg->load("channeldb_v4l2jpeg");
 }
 
 void MWindow::init_menus()
@@ -1002,10 +974,8 @@ void MWindow::create_objects(int want_gui,
 	edl = 0;
 
 
-//printf("MWindow::create_objects 1\n");
 	show_splash();
 
-//printf("MWindow::create_objects 1\n");
 // For some reason, init_signals must come after show_splash or the signals won't
 // get trapped.
 	init_signals();
@@ -1014,37 +984,35 @@ void MWindow::create_objects(int want_gui,
 	init_menus();
 TRACE("MWindow::create_objects 1");
 	init_defaults(defaults, config_path);
-TRACE("MWindow::create_objects 1");
+TRACE("MWindow::create_objects 2");
 	init_preferences();
-TRACE("MWindow::create_objects 1");
+TRACE("MWindow::create_objects 3");
 	init_plugins(preferences, plugindb, splash_window);
 	if(splash_window) splash_window->operation->update(_("Initializing GUI"));
-TRACE("MWindow::create_objects 1");
+TRACE("MWindow::create_objects 4");
 	init_theme();
 // Default project created here
-TRACE("MWindow::create_objects 1");
+TRACE("MWindow::create_objects 5");
 	init_edl();
 
-TRACE("MWindow::create_objects 1");
+TRACE("MWindow::create_objects 6");
 	init_awindow();
-TRACE("MWindow::create_objects 1");
+TRACE("MWindow::create_objects 7");
 	init_compositor();
-TRACE("MWindow::create_objects 1");
+TRACE("MWindow::create_objects 8");
 	init_levelwindow();
-TRACE("MWindow::create_objects 1");
+TRACE("MWindow::create_objects 9");
 	init_viewer();
-TRACE("MWindow::create_objects 1");
-	init_tuner(channeldb_v4l, "channels_v4l");
-TRACE("MWindow::create_objects 1");
-	init_tuner(channeldb_buz, "channels_buz");
-TRACE("MWindow::create_objects 1");
+TRACE("MWindow::create_objects 10");
 	init_cache();
-TRACE("MWindow::create_objects 1");
+TRACE("MWindow::create_objects 11");
 	init_indexes();
-TRACE("MWindow::create_objects 1");
+TRACE("MWindow::create_objects 12");
+	init_channeldb();
+TRACE("MWindow::create_objects 13");
 
 	init_gui();
-TRACE("MWindow::create_objects 1");
+TRACE("MWindow::create_objects 14");
 	init_render();
 	init_brender();
 	mainprogress = new MainProgress(this, gui);
@@ -1052,12 +1020,12 @@ TRACE("MWindow::create_objects 1");
 
 	plugin_guis = new ArrayList<PluginServer*>;
 
-TRACE("MWindow::create_objects 1");
+TRACE("MWindow::create_objects 15");
 	if(session->show_vwindow) vwindow->gui->show_window();
 	if(session->show_cwindow) cwindow->gui->show_window();
 	if(session->show_awindow) awindow->gui->show_window();
 	if(session->show_lwindow) lwindow->gui->show_window();
-TRACE("MWindow::create_objects 1");
+TRACE("MWindow::create_objects 16");
 
 // 	vwindow->start();
 // 	awindow->start();
@@ -1066,19 +1034,19 @@ TRACE("MWindow::create_objects 1");
 //printf("MWindow::create_objects 1");
 
 	gui->mainmenu->load_defaults(defaults);
-TRACE("MWindow::create_objects 1");
+TRACE("MWindow::create_objects 17");
 	gui->mainmenu->update_toggles();
-TRACE("MWindow::create_objects 1");
+TRACE("MWindow::create_objects 18");
 	gui->patchbay->update();
-TRACE("MWindow::create_objects 1");
+TRACE("MWindow::create_objects 19");
 	gui->canvas->draw();
-TRACE("MWindow::create_objects 1");
+TRACE("MWindow::create_objects 20");
 	gui->cursor->draw();
-TRACE("MWindow::create_objects 1");
+TRACE("MWindow::create_objects 21");
 	gui->raise_window();
-TRACE("MWindow::create_objects 1");
+TRACE("MWindow::create_objects 22");
 	gui->show_window();
-TRACE("MWindow::create_objects 2");
+TRACE("MWindow::create_objects 23");
 
 	hide_splash();
 UNTRACE
@@ -1223,25 +1191,21 @@ void MWindow::sync_parameters(int change_type)
 		else
 // Stop and restart
 		{
-//printf("MWindow::sync_parameters 1\n");
 			int command = cwindow->playback_engine->command->command;
 			cwindow->playback_engine->que->send_command(STOP,
 				CHANGE_NONE, 
 				0,
 				0);
-//printf("MWindow::sync_parameters 2\n");
 // Waiting for tracking to finish would make the restart position more
 // accurate but it can't lock the window to stop tracking for some reason.
 // Not waiting for tracking gives a faster response but restart position is
 // only as accurate as the last tracking update.
 			cwindow->playback_engine->interrupt_playback(0);
-//printf("MWindow::sync_parameters 3\n");
 			cwindow->playback_engine->que->send_command(command,
 					change_type, 
 					edl,
 					1,
 					0);
-//printf("MWindow::sync_parameters 4\n");
 		}
 	}
 	else
@@ -1278,7 +1242,12 @@ void MWindow::show_plugin(Plugin *plugin)
 //printf("MWindow::show_plugin 1\n");
 	if(!done)
 	{
-		PluginServer *server = scan_plugindb(plugin->title);
+		if(!plugin->track)
+		{
+			printf("MWindow::show_plugin track not defined.\n");
+		}
+		PluginServer *server = scan_plugindb(plugin->title,
+			plugin->track->data_type);
 
 //printf("MWindow::show_plugin %p %d\n", server, server->uses_gui);
 		if(server && server->uses_gui)
@@ -1716,8 +1685,6 @@ int MWindow::save_defaults()
 	session->save_defaults(defaults);
 	preferences->save_defaults(defaults);
 
-	save_tuner(channeldb_v4l, "channels_v4l");
-	save_tuner(channeldb_buz, "channels_buz");
 	defaults->save();
 	return 0;
 }
@@ -1800,7 +1767,7 @@ int MWindow::set_filename(char *filename)
 		else
 		{
 			FileSystem dir;
-			char string[1024], string2[1024];
+			char string[BCTEXTLEN], string2[BCTEXTLEN];
 			dir.extract_name(string, filename);
 			sprintf(string2, PROGRAM_NAME ": %s", string);
 			gui->set_title(string2);

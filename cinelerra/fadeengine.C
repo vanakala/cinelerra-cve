@@ -163,6 +163,7 @@ void FadeEngine::do_fade(VFrame *output, VFrame *input, float alpha)
 	this->output = output;
 	this->input = input;
 	this->alpha = alpha;
+	
 // Sanity
 	if(alpha == 1)
 		output->copy_from(input);

@@ -323,6 +323,9 @@ int quicktime_delete(quicktime_t *file)
 	file->total_atracks = 0;
 	file->total_vtracks = 0;
 
+	if(file->moov_data)
+		free(file->moov_data);
+
 	if(file->preload_size)
 	{
 		free(file->preload_buffer);
@@ -495,7 +498,6 @@ int quicktime_set_video_position(quicktime_t *file, int64_t frame, int track)
 		file->vtracks[track].current_chunk = chunk;
 		offset = quicktime_sample_to_offset(file, trak, frame);
 		quicktime_set_position(file, offset);
-//printf("quicktime_set_video_position 1 %lld %d\n", frame, file->vtracks[track].current_position);
 	}
 	else
 		fprintf(stderr, "quicktime_set_video_position: track >= file->total_vtracks\n");
@@ -692,7 +694,10 @@ int quicktime_write_frame(quicktime_t *file,
 }
 
 
-long quicktime_read_audio(quicktime_t *file, char *audio_buffer, long samples, int track)
+long quicktime_read_audio(quicktime_t *file, 
+	char *audio_buffer, 
+	long samples, 
+	int track)
 {
 	int64_t chunk_sample, chunk;
 	int result = 0, track_num;
@@ -949,6 +954,7 @@ int quicktime_delete_audio_map(quicktime_audio_map_t *atrack)
 {
 	int i;
 	quicktime_delete_acodec(atrack);
+	quicktime_clear_vbr(&atrack->vbr);
 	return 0;
 }
 
@@ -1074,7 +1080,8 @@ int quicktime_read_info(quicktime_t *file)
 					quicktime_set_position(file, start_position);
 					free(temp);
 
-					quicktime_read_moov(file, &(file->moov), &leaf_atom);
+					if(quicktime_read_moov(file, &(file->moov), &leaf_atom))
+						return 1;
 					got_header = 1;
 				}
 				else

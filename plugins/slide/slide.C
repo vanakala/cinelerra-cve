@@ -289,8 +289,9 @@ void SlideMain::load_configuration()
 				PluginClient::get_total_len(); \
 			out_add = x * components * sizeof(type); \
 			in_add = 0; \
-			cpy_len = (w - x) * components * sizeof(type); \ 
+			cpy_len = (w - x) * components * sizeof(type); \
 		} \
+ \
 		for(int j = 0; j < h; j++) \
 		{ \
 			memcpy( ((char *)outgoing->get_rows()[j]) + out_add, \

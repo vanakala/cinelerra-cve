@@ -6,6 +6,7 @@
 #include "edit.h"
 #include "filempeg.h"
 #include "guicast.h"
+#include "language.h"
 #include "mwindow.inc"
 #include "vframe.h"
 #include "videodevice.inc"
@@ -13,10 +14,6 @@
 #include <stdio.h>
 #include <string.h>
 #include <unistd.h>
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 FileMPEG::FileMPEG(Asset *asset, File *file)
@@ -705,6 +702,7 @@ int FileMPEG::read_samples(double *buffer, int64_t len)
 // Translate pure channel to a stream and a channel in the mpeg stream
 	int stream, channel;
 	to_streamchannel(file->current_channel, stream, channel);
+	
 	
 	
 //printf("FileMPEG::read_samples 1 current_sample=%ld len=%ld channel=%d\n", file->current_sample, len, channel);

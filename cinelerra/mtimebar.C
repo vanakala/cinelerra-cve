@@ -2,6 +2,7 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "localsession.h"
+#include "maincursor.h"
 #include "mainsession.h"
 #include "mbuttons.h"
 #include "mtimebar.h"

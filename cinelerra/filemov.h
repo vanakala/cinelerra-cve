@@ -2,10 +2,11 @@
 #define FILEMOV_H
 
 #include "bitspopup.inc"
+#include "condition.inc"
 #include "filebase.h"
 #include "file.inc"
 #include "libmjpeg.h"
-#include "mutex.h"
+#include "mutex.inc"
 #include "quicktime.h"
 #include "thread.h"
 
@@ -23,7 +24,7 @@ public:
 	unsigned char *output;  // Output buffer
 	int64_t output_size;        // Size of output buffer
 	int64_t output_allocated;  // Allocation of output buffer
-	Mutex completion_lock;
+	Condition *completion_lock;
 };
 
 class FileMOV : public FileBase
@@ -87,10 +88,6 @@ private:
 	int quicktime_vtracks;
 // current positions for when the file descriptor doesn't have the right position
 	quicktime_t *fd;
-// frame to return through read_frame
-	VFrame *frame; 
-// Temporary storage for color conversions
-	VFrame *temp_frame;
 	int depth;        // Depth in bits per pixel
 	int64_t frames_correction;  // Correction after 32bit overflow
 	int64_t samples_correction;  // Correction after 32bit overflow
@@ -100,7 +97,7 @@ private:
 
 	int total_threadframes;     // Number of thread frames in this buffer
 	int current_threadframe;    // Next threadframe to compress
-	Mutex threadframe_lock;     // Lock threadframe array.
+	Mutex *threadframe_lock;     // Lock threadframe array.
 
 	FileMOVThread **threads;   // One thread for every CPU
 	char prefix_path[1024];    // Prefix for new file when 2G limit is exceeded
@@ -129,8 +126,7 @@ public:
 	ThreadStruct *threadframe;    // The frame currently being processed.
 	int done;
 	FileMOV *filemov;
-	Mutex input_lock;     // Wait for new array of threads or completion.
-	Mutex quicktime_lock;  // Lock out reopen_file
+	Condition *input_lock;     // Wait for new array of threads or completion.
 	mjpeg_t *mjpeg;
 	int fields;
 };

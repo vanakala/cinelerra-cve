@@ -111,7 +111,6 @@ void AssetPicon::create_objects()
 {
 	FileSystem fs;
 	char name[BCTEXTLEN];
-	VFrame *frame = 0;
 	int pixmap_w, pixmap_h;
 
 
@@ -125,40 +124,74 @@ void AssetPicon::create_objects()
 		{
 			if(mwindow->preferences->use_thumbnails)
 			{
-//printf("AssetPicon::create_objects 1\n");
 				File *file = mwindow->video_cache->check_out(asset);
 
 				if(file)
 				{
 					pixmap_w = pixmap_h * asset->width / asset->height;
 
-//printf("AssetPicon::create_objects 3\n");
 					file->set_layer(0);
 					file->set_video_position(0, mwindow->edl->session->frame_rate);
-					frame = file->read_frame_cache(BC_RGB888, pixmap_w, pixmap_h);
-//printf("AssetPicon::create_objects 4\n");
 
-					if(frame)
+					if(gui->temp_picon && 
+						(gui->temp_picon->get_w() != asset->width ||
+						gui->temp_picon->get_h() != asset->height))
 					{
-						icon = new BC_Pixmap(gui, pixmap_w, pixmap_h);
-						icon->draw_vframe(frame,
-							0, 
-							0, 
-							pixmap_w, 
-							pixmap_h,
-							0,
-							0);
-						icon_vframe = new VFrame(*frame);
+						delete gui->temp_picon;
+						gui->temp_picon = 0;
 					}
-					file->frames_cache->unlock_cache();
-//printf("AssetPicon::create_objects 5\n");
+
+					if(!gui->temp_picon)
+					{
+						gui->temp_picon = new VFrame(0, 
+							asset->width, 
+							asset->height, 
+							BC_RGB888);
+					}
+
+					file->read_frame(gui->temp_picon);
+
+					icon = new BC_Pixmap(gui, pixmap_w, pixmap_h);
+					icon->draw_vframe(gui->temp_picon,
+						0, 
+						0, 
+						pixmap_w, 
+						pixmap_h,
+						0,
+						0);
+//printf("%d %d\n", gui->temp_picon->get_w(), gui->temp_picon->get_h());
+					icon_vframe = new VFrame(0, 
+						pixmap_w, 
+						pixmap_h, 
+						BC_RGB888);
+					cmodel_transfer(icon_vframe->get_rows(), /* Leave NULL if non existent */
+						gui->temp_picon->get_rows(),
+						0, /* Leave NULL if non existent */
+						0,
+						0,
+						0, /* Leave NULL if non existent */
+						0,
+						0,
+						0,        /* Dimensions to capture from input frame */
+						0, 
+						gui->temp_picon->get_w(), 
+						gui->temp_picon->get_h(),
+						0,       /* Dimensions to project on output frame */
+						0, 
+						pixmap_w, 
+						pixmap_h,
+						BC_RGB888, 
+						BC_RGB888,
+						0,         /* When transfering BC_RGBA8888 to non-alpha this is the background color in 0xRRGGBB hex */
+						0,       /* For planar use the luma rowspan */
+						0);     /* For planar use the luma rowspan */
+
 
 					mwindow->video_cache->check_in(asset);
-//printf("AssetPicon::create_objects 6\n");
 				}
 				else
 				{
-					icon = gui->video_icon ;
+					icon = gui->video_icon;
 					icon_vframe = BC_WindowBase::get_resources()->type_to_icon[ICON_FILM];
 
 				}
@@ -253,6 +286,7 @@ AWindowGUI::AWindowGUI(MWindow *mwindow, AWindow *awindow)
 // mwindow->session->awindow_h);
 	this->mwindow = mwindow;
 	this->awindow = awindow;
+	temp_picon = 0;
 }
 
 AWindowGUI::~AWindowGUI()
@@ -272,6 +306,7 @@ AWindowGUI::~AWindowGUI()
 	delete asset_menu;
 	delete assetlist_menu;
 	delete folderlist_menu;
+	if(temp_picon) delete temp_picon;
 }
 
 int AWindowGUI::create_objects()
@@ -568,7 +603,7 @@ void AWindowGUI::update_asset_list()
 
 
 
-//printf("AWindowGUI::update_asset_list 1\n");
+//printf("AWindowGUI::update_asset_list 2\n");
 
 
 // Synchronize EDL clips
@@ -607,7 +642,7 @@ void AWindowGUI::update_asset_list()
 
 
 
-//printf("AWindowGUI::update_asset_list 2 %d\n", assets.total);
+//printf("AWindowGUI::update_asset_list 3 %d\n", assets.total);
 // Synchronize EDL assets
 	for(Asset *current = mwindow->edl->assets->first; 
 		current; 

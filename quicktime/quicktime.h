@@ -19,6 +19,7 @@ extern "C" {
 
 /* Straight MPEG-4 */
 #define QUICKTIME_DIVX "DIVX"
+#define QUICKTIME_MP4V "mp4v"
 
 /* Basterdization of MPEG-4 which encodes alternating fields in series */
 /* NOT STANDARD */
@@ -30,6 +31,7 @@ extern "C" {
 
 /* Mormon MPEG-4 */
 #define QUICKTIME_SVQ1 "SVQ1"
+#define QUICKTIME_SVQ3 "SVQ3"
 
 /* Dee Vee */
 #define QUICKTIME_DV "dvc "
@@ -105,6 +107,8 @@ extern "C" {
 
 /* MP3 Doesn't play in Win for some reason */
 #define QUICKTIME_MP3 ".mp3"
+
+#define QUICKTIME_MP4A "mp4a"
 
 /* Mike Row Soft */
 /* AVI decode only */

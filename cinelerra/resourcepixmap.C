@@ -11,7 +11,9 @@
 #include "edlsession.h"
 #include "file.h"
 #include "filesystem.h"
+#include "framecache.h"
 #include "indexfile.h"
+#include "language.h"
 #include "localsession.h"
 #include "mwindow.h"
 #include "resourcepixmap.h"
@@ -20,12 +22,6 @@
 #include "trackcanvas.h"
 #include "vedit.h"
 #include "vframe.h"
-
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 ResourcePixmap::ResourcePixmap(MWindow *mwindow, 
@@ -715,7 +711,6 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 // Frame in project touched by current pixel
 	int64_t project_frame;
 
-//printf("ResourcePixmap::draw_video_resource 1\n");
 // Get first frame touched by x and fix x to start of frame
 	if(frames_per_picon > 1)
 	{
@@ -739,26 +734,80 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 //project_frame, frame_w, refresh_x, refresh_w, x);
 	while(x < refresh_x + refresh_w)
 	{
-		int cache_hit; // so we know whether to relase a lock at the end or was it already
-		VFrame *final_picon_frame;
-		long now_current_frame;
 		int64_t source_frame = project_frame + edit->startsource;
 		source->set_layer(edit->channel);
 		source->set_video_position(source_frame, 
 			mwindow->edl->session->frame_rate);
-//printf("ResourcePixmap::draw_video_resource 3 %p\n", source);
-		VFrame *src = source->read_frame_cache(BC_RGB888, picon_w, picon_h);
-//printf("ResourcePixmap::draw_video_resource 4 %p\n", src);
-		if(src)
-			draw_vframe(src, 
-				x, 
-				y, 
-				picon_w, 
-				picon_h, 
-				0, 
+
+// Try displaying from source cache
+		FrameCache *frame_cache = source->get_frame_cache();
+		VFrame *picon_frame = 0;
+
+//frame_cache->dump();
+		if((picon_frame = frame_cache->get_frame_ptr(source_frame,
+			mwindow->edl->session->frame_rate,
+			BC_RGB888,
+			picon_w,
+			picon_h)) != 0)
+		{
+			;
+		}
+		else
+// Display from file and put in cache
+		{
+			if(canvas->temp_picon &&
+				(canvas->temp_picon->get_w() != edit->asset->width ||
+				canvas->temp_picon->get_h() != edit->asset->height))
+			{
+				delete canvas->temp_picon;
+				canvas->temp_picon = 0;
+			}
+
+			if(!canvas->temp_picon)
+			{
+				canvas->temp_picon = new VFrame(0, 
+					edit->asset->width, 
+					edit->asset->height, 
+					BC_RGB888);
+			}
+
+			source->read_frame(canvas->temp_picon);
+			picon_frame = new VFrame(0, picon_w, picon_h, BC_RGB888);
+			frame_cache->put_frame(picon_frame, 
+				source_frame,
+				mwindow->edl->session->frame_rate,
 				0);
-		source->frames_cache->unlock_cache();
-		
+			cmodel_transfer(picon_frame->get_rows(),
+				canvas->temp_picon->get_rows(),
+				0,
+				0,
+				0,
+				0,
+				0,
+				0,
+				0,
+				0, 
+				canvas->temp_picon->get_w(),
+				canvas->temp_picon->get_h(),
+				0,
+				0,
+				picon_frame->get_w(), 
+				picon_frame->get_h(),
+				BC_RGB888,
+				BC_RGB888,
+				0,
+				canvas->temp_picon->get_bytes_per_line(),
+				picon_frame->get_bytes_per_line());
+		}
+
+		draw_vframe(picon_frame, 
+			x, 
+			y, 
+			picon_w, 
+			picon_h, 
+			0, 
+			0);
+
 		
 		
 		if(frames_per_picon > 1)
@@ -777,7 +826,6 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 	{
 		mwindow->video_cache->check_in(edit->asset);
 	}
-//printf("ResourcePixmap::draw_video_resource 5\n");
 }
 
 

@@ -139,13 +139,9 @@ LoopAudioSamples::LoopAudioSamples(LoopAudio *plugin,
 
 int LoopAudioSamples::handle_event()
 {
-	long new_samples = atol(get_text());
-	if (new_samples > 0 ) 
-	{
-		plugin->config.samples = new_samples;
-		plugin->send_configure_change();
-	}
-
+	plugin->config.samples = atol(get_text());
+	plugin->config.samples = MAX(1, plugin->config.samples);
+	plugin->send_configure_change();
 	return 1;
 }
 

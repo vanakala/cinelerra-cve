@@ -40,6 +40,7 @@ public:
 
 	int create_objects();
 	void reposition_window(int x, int y);
+	int keypress_event(int keypress);
 	
 	MWindow *mwindow;
 	AVC1394Control *avc;

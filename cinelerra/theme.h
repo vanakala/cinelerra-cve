@@ -50,7 +50,8 @@ public:
 	virtual void get_rmonitor_sizes(int do_audio, 
 		int do_video,
 		int do_channel,
-		int do_interlace);
+		int do_interlace,
+		int do_avc);
 	virtual void get_recordgui_sizes(RecordGUI *gui,
 		int w,
 		int h);

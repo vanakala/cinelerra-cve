@@ -134,7 +134,6 @@ void Resample::resample_chunk(double *input,
 	int num_used;
 	int i, j, k;
 
-//printf("Resample::resample_chunk 1\n");
   	intratio = (fabs(resample_ratio - floor(.5 + resample_ratio)) < .0001);
 	fcn = .90 / resample_ratio;
 	if(fcn > .90) fcn = .90;
@@ -142,11 +141,9 @@ void Resample::resample_chunk(double *input,
 /* must be odd */
 	if(0 == filter_l % 2 ) --filter_l;  
 
-//printf("Resample::resample_chunk 2\n");
 /* if resample_ratio = int, filter_l should be even */
   	filter_l += (int)intratio;
 
-//printf("Resample::resample_chunk 3\n");
 // Blackman filter initialization must be called whenever there is a 
 // sampling ratio change
 	if(!resample_init[channel] || last_ratio != resample_ratio)
@@ -155,7 +152,6 @@ void Resample::resample_chunk(double *input,
 		itime[channel] = 0;
 		bzero(old[channel], sizeof(double) * BLACKSIZE);
 
-//printf("Resample::resample_chunk 4\n");
 // precompute blackman filter coefficients
     	for (j = 0; j <= 2 * BPC; ++j) 
 		{
@@ -170,7 +166,6 @@ void Resample::resample_chunk(double *input,
 		}
 	}
 
-//printf("Resample::resample_chunk 5\n");
 // Main loop
 	double *inbuf_old = old[channel];
 	for(k = 0; 1; k++)
@@ -178,31 +173,26 @@ void Resample::resample_chunk(double *input,
 		double time0;
 		int joff;
 		
-//printf("Resample::resample_chunk 6\n");
 		time0 = k * resample_ratio;
 		j = (int)floor(time0 - itime[channel]);
 
 //		if(j + filter_l / 2 >= input_size) break;
 		if(j + (filter_l + 1) / 2 >= in_len) break;
 
-//printf("Resample::resample_chunk 7\n");
 /* blackman filter.  by default, window centered at j+.5(filter_l%2) */
 /* but we want a window centered at time0.   */
 		offset = (time0 - itime[channel] - (j + .5 * (filter_l % 2)));
 		joff = (int)floor((offset * 2 * BPC) + BPC + .5);
 		xvalue = 0;
 
-//printf("Resample::resample_chunk 8\n");
 		for(i = 0; i <= filter_l; i++)
 		{
 			int j2 = i + j - filter_l / 2;
 			double y = ((j2 < 0) ? inbuf_old[BLACKSIZE + j2] : input[j2]);
 
-//printf("Resample::resample_chunk 9\n");
 			xvalue += y * blackfilt[joff][i];
 		}
 		
-//printf("Resample::resample_chunk 10\n");
 		if(output_allocation <= output_size[channel])
 		{
 			double **new_output = new double*[channels];
@@ -222,18 +212,15 @@ void Resample::resample_chunk(double *input,
 			output_allocation = new_allocation;
 		}
 
-//printf("Resample::resample_chunk 11 %d %d\n", output_size[channel], output_allocation);
 		output_temp[channel][output_size[channel]++] = xvalue;
 	}
 
-//printf("Resample::resample_chunk 12\n");
 	num_used = MIN(in_len, j + filter_l / 2);
 	itime[channel] += num_used - k * resample_ratio;
 //	for(i = 0; i < BLACKSIZE; i++)
 //		inbuf_old[i] = input[num_used + i - BLACKSIZE];
 	bcopy(input + num_used - BLACKSIZE, inbuf_old, BLACKSIZE * sizeof(double));
 
-//printf("Resample::resample_chunk 13\n");
 	last_ratio = resample_ratio;
 }
 

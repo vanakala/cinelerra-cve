@@ -3,14 +3,10 @@
 #include "filexml.h"
 #include "ivtc.h"
 #include "ivtcwindow.h"
+#include "language.h"
 
 #include <stdio.h>
 #include <string.h>
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 REGISTER_PLUGIN(IVTCMain)
@@ -296,8 +292,6 @@ int IVTCMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 
 
-// printf("%lld %lld %lld %lld %d\n", 
-// even_vs_prev, even_vs_current, odd_vs_prev, odd_vs_current, strategy);
 //strategy = 2;
 
 		switch(strategy)
@@ -556,8 +550,21 @@ void IVTCMain::update_gui()
 
 
 
+// labs returns different values on x86_64 causing our accumulators to explode
+#ifdef __x86_64__
 
+#define ABS local_abs
 
+static int local_abs(int value)
+{
+	return (value < 0 ? -value : value);
+}
+
+#else
+
+#define ABS labs
+
+#endif
 
 
 
@@ -605,19 +612,19 @@ IVTCUnit::IVTCUnit(IVTCEngine *server, IVTCMain *plugin)
 /* Get pixel average */ \
 			uint32_t average = ((uint32_t)*input_row1 + *input_row2) >> 1; \
 /* Compare row to current */ \
-			current_difference += labs(average - *current_row); \
+			current_difference += ABS(average - *current_row); \
 /* Compare row to previous */ \
-			prev_difference += labs(average - *prev_row); \
+			prev_difference += ABS(average - *prev_row); \
  \
 /* Do RGB channels */ \
 			if(!is_yuv) \
 			{ \
 				average = ((uint32_t)input_row1[1] + input_row2[1]) >> 1; \
-				current_difference += labs(average - current_row[1]); \
-				prev_difference += labs(average - prev_row[1]); \
+				current_difference += ABS(average - current_row[1]); \
+				prev_difference += ABS(average - prev_row[1]); \
 				average = ((uint32_t)input_row1[2] + input_row2[2]) >> 1; \
-				current_difference += labs(average - current_row[2]); \
-				prev_difference += labs(average - prev_row[2]); \
+				current_difference += ABS(average - current_row[2]); \
+				prev_difference += ABS(average - prev_row[2]); \
 			} \
  \
 /* Add to row accumulators */ \

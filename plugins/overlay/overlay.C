@@ -425,7 +425,6 @@ int Overlay::process_buffer(VFrame **frame,
 	int64_t start_position,
 	double frame_rate)
 {
-printf("Overlay::process_buffer 1\n");
 	load_configuration();
 
 	if(!temp) temp = new VFrame(0,
@@ -467,9 +466,14 @@ printf("Overlay::process_buffer 1\n");
 	}
 
 
+
+// Direct copy the first layer
 	output = frame[output_layer];
-	output->clear_frame();
-	for(int i = input_layer1; i != input_layer2; i += step)
+	read_frame(output, 
+		input_layer1, 
+		start_position,
+		frame_rate);
+	for(int i = input_layer1 + step; i != input_layer2; i += step)
 	{
 		read_frame(temp, 
 			i, 
@@ -491,7 +495,6 @@ printf("Overlay::process_buffer 1\n");
 	}
 
 
-printf("Overlay::process_buffer 10\n");
 	return 0;
 }
 

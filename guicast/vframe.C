@@ -331,6 +331,18 @@ void VFrame::set_memory(unsigned char *data,
 	create_row_pointers();
 }
 
+void VFrame::set_compressed_memory(unsigned char *data,
+	int data_size,
+	int data_allocated)
+{
+	clear_objects();
+	shared = 1;
+	this->data = data;
+	this->compressed_allocated = data_allocated;
+	this->compressed_size = data_size;
+}
+
+
 // Reallocate uncompressed buffer with or without alpha
 int VFrame::reallocate(unsigned char *data, 
 		long y_offset,

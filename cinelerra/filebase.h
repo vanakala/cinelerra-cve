@@ -31,6 +31,18 @@ public:
 
 	int get_mode(char *mode, int rd, int wr);
 	int reset_parameters();
+
+
+
+	virtual void get_parameters(BC_WindowBase *parent_window, 
+			Asset *asset, 
+			BC_WindowBase **format_window,
+			int audio_options,
+			int video_options,
+			int lock_compressor) {};
+
+
+
 	virtual int check_header() { return 0; };  // Test file to see if it is of this type.
 	virtual int reset_parameters_derived() {};
 	virtual int read_header() {};     // WAV files for getting header
@@ -44,7 +56,11 @@ public:
 	virtual int64_t get_audio_position() { return 0; };
 	virtual int set_video_position(int64_t x) { return 0; };
 	virtual int set_audio_position(int64_t x) { return 0; };
-	virtual int64_t get_memory_usage() { return 0; };
+
+// Subclass should call this to add the base class allocation.
+// Only used in read mode.
+	virtual int get_memory_usage() { return 0; };
+
 	virtual int write_samples(double **buffer, 
 		int64_t len) { return 0; };
 	virtual int write_frames(VFrame ***frames, int len) { return 0; };

@@ -41,8 +41,9 @@ static int list_widths[] =
 };
 
 BatchRenderMenuItem::BatchRenderMenuItem(MWindow *mwindow)
- : BC_MenuItem(_("Batch Render..."))
+ : BC_MenuItem(_("Batch Render..."), "Shift-B", 'B')
 {
+	set_shift(1); 
 	this->mwindow = mwindow;
 }
 
@@ -158,13 +159,21 @@ BatchRenderThread::BatchRenderThread()
 void BatchRenderThread::handle_close_event(int result)
 {
 // Save settings
+printf("BatchRenderThread::handle_close_event 1\n");
 	char path[BCTEXTLEN];
+printf("BatchRenderThread::handle_close_event 1\n");
 	path[0] = 0;
+printf("BatchRenderThread::handle_close_event 1\n");
 	save_jobs(path);
+printf("BatchRenderThread::handle_close_event 1\n");
 	save_defaults(mwindow->defaults);
+printf("BatchRenderThread::handle_close_event 1\n");
 	delete default_job;
+printf("BatchRenderThread::handle_close_event 1\n");
 	default_job = 0;
+printf("BatchRenderThread::handle_close_event 1\n");
 	jobs.remove_all_objects();
+printf("BatchRenderThread::handle_close_event 100\n");
 }
 
 BC_Window* BatchRenderThread::new_gui()

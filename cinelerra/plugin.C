@@ -186,7 +186,13 @@ int Plugin::is_synthesis(RenderEngine *renderengine,
 	{
 		case PLUGIN_STANDALONE:
 		{
-			PluginServer *plugin_server = renderengine->scan_plugindb(title);
+			if(!track)
+			{
+				printf("Plugin::is_synthesis track not defined\n");
+				return 0;
+			}
+			PluginServer *plugin_server = renderengine->scan_plugindb(title,
+				track->data_type);
 			return plugin_server->synthesis;
 			break;
 		}

@@ -2,14 +2,11 @@
 #include "assets.h"
 #include "bitspopup.h"
 #include "fileformat.h"
+#include "language.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "new.h"
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 FileFormat::FileFormat(MWindow *mwindow)
@@ -98,9 +95,9 @@ int FileFormat::create_objects_(char *string2)
 
 FileFormatChannels::FileFormatChannels(int x, int y, FileFormat *fwindow, char *text)
  : BC_TumbleTextBox(fwindow, 
- 	atol(text), 
-	1, 
-	MAXCHANNELS, 
+ 	(int)atol(text), 
+	(int)1, 
+	(int)MAXCHANNELS, 
 	x, 
 	y, 
 	50)

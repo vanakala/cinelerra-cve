@@ -2,6 +2,7 @@
 #include "edlsession.h"
 #include "language.h"
 #include "localsession.h"
+#include "maincursor.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "mainsession.h"

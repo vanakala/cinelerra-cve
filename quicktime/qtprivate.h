@@ -6,7 +6,7 @@
 /* Version used internally.  You need to query it with the C functions */
 #define QUICKTIME_MAJOR 2
 #define QUICKTIME_MINOR 0
-#define QUICKTIME_RELEASE 2
+#define QUICKTIME_RELEASE 3
 
 
 #define HEADER_LENGTH 8
@@ -42,6 +42,33 @@
 // These are defined in mpeg4.c
 extern int ffmpeg_initialized;
 extern pthread_mutex_t ffmpeg_lock;
+
+
+
+// Utility functions for vbr audio.  This is accessed through quicktime_audio_map_t.
+typedef struct
+{
+// End of the output buffer in the file in samples
+	int64_t buffer_end;
+// Number of samples in output buffer before end
+	int buffer_size;
+// Position in output buffer of buffer_end
+	int buffer_ptr;
+// Output buffer, linear for each channel.
+	double **output_buffer;
+// Copy of channel count for deletion
+	int channels;
+// Input buffer for temporary compressed data
+	int input_size;
+	int input_allocation;
+	unsigned char *input_buffer;
+// Entry in sample size table of next frame of audio to read
+	int sample_size_entry;
+// Next sample/frame to read
+	int64_t sample;
+} quicktime_vbr_t;
+
+
 
 typedef struct
 {
@@ -149,6 +176,14 @@ typedef struct
 	int compression_id;
 	int packet_size;
 	float sample_rate;
+	char *mpeg4_header;
+	int mpeg4_header_size;
+
+/* Version 1 of audio description */
+	int samples_per_packet;
+	int bytes_per_packet;
+	int bytes_per_frame;
+	int bytes_per_sample;
 } quicktime_stsd_table_t;
 
 
@@ -575,6 +610,7 @@ typedef struct
 	int channels;            /* number of audio channels in the track */
 	long current_position;   /* current sample in output file */
 	long current_chunk;      /* current chunk in output file */
+	quicktime_vbr_t vbr;     /* Stores for vbr codecs */
 
 	void *codec;
 } quicktime_audio_map_t;
@@ -598,7 +634,20 @@ typedef struct
 	int rd;
 	int wr;
 
-
+/* If the moov atom is compressed */
+	int compressed_moov;
+	unsigned char *moov_data;
+/*
+ * Temporary storage of compressed sizes.  If the file length is shorter than the
+ * uncompressed sizes, it won't work.
+ */
+	int64_t moov_end;
+	int64_t moov_size;
+	int64_t old_preload_size;
+	char *old_preload_buffer;
+	int64_t old_preload_start;
+	int64_t old_preload_end;
+	int64_t old_preload_ptr;
 
 
 /* ASF section */

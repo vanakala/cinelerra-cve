@@ -36,6 +36,7 @@ CWindowTool::CWindowTool(MWindow *mwindow, CWindowGUI *gui)
 	set_synchronous(1);
 	input_lock = new Condition(0, "CWindowTool::input_lock");
 	output_lock = new Condition(1, "CWindowTool::output_lock");
+	tool_gui_lock = new Mutex("CWindowTool::tool_gui_lock");
 }
 
 CWindowTool::~CWindowTool()
@@ -46,6 +47,7 @@ CWindowTool::~CWindowTool()
 	Thread::join();
 	delete input_lock;
 	delete output_lock;
+	delete tool_gui_lock;
 }
 
 void CWindowTool::start_tool(int operation)
@@ -123,8 +125,10 @@ void CWindowTool::run()
 		if(!done)
 		{
 			tool_gui->run_window();
+			tool_gui_lock->lock("CWindowTool::run");
 			delete tool_gui;
 			tool_gui = 0;
+			tool_gui_lock->unlock();
 		}
 		output_lock->unlock();
 	}
@@ -151,15 +155,15 @@ void CWindowTool::update_show_window()
 
 void CWindowTool::update_values()
 {
+	tool_gui_lock->lock("CWindowTool::update_values");
 	if(tool_gui)
 	{
-//printf("CWindowTool::update_values 1\n");
 		tool_gui->lock_window("CWindowTool::update_values");
 		tool_gui->update();
 		tool_gui->flush();
 		tool_gui->unlock_window();
-//printf("CWindowTool::update_values 2\n");
 	}
+	tool_gui_lock->unlock();
 }
 
 
@@ -446,22 +450,16 @@ void CWindowCameraGUI::create_objects()
 
 void CWindowCameraGUI::update_preview()
 {
-//printf("CWindowCameraGUI::update_preview 1\n");
 	mwindow->restart_brender();
 	mwindow->sync_parameters(CHANGE_PARAMS);
 
-//printf("CWindowCameraGUI::update_preview 1\n");
 	mwindow->cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
 			CHANGE_NONE,
 			mwindow->edl,
 			1);
-//printf("CWindowCameraGUI::update_preview 1\n");
 	mwindow->cwindow->gui->lock_window("CWindowCameraGUI::update_preview");
-//printf("CWindowCameraGUI::update_preview 1\n");
 	mwindow->cwindow->gui->canvas->draw_refresh();
-//printf("CWindowCameraGUI::update_preview 2\n");
 	mwindow->cwindow->gui->unlock_window();
-//printf("CWindowCameraGUI::update_preview 3\n");
 }
 
 

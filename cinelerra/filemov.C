@@ -1,6 +1,8 @@
 #include "asset.h"
+#include "bcsignals.h"
 #include "bitspopup.h"
 #include "byteorder.h"
+#include "condition.h"
 #include "edit.h"
 #include "file.h"
 #include "filemov.h"
@@ -10,6 +12,7 @@
 #include "vframe.h"
 #include "videodevice.inc"
 
+#include <unistd.h>
 
 #if 0
 N_("MPEG-4")
@@ -75,11 +78,13 @@ FileMOV::FileMOV(Asset *asset, File *file)
 		asset->format = FILE_MOV;
 	asset->byte_order = 0;
 	suffix_number = 0;
+	threadframe_lock = new Mutex("FileMOV::threadframe_lock");
 }
 
 FileMOV::~FileMOV()
 {
 	close_file();
+	delete threadframe_lock;
 }
 
 void FileMOV::get_parameters(BC_WindowBase *parent_window, 
@@ -138,8 +143,6 @@ int FileMOV::reset_parameters_derived()
 {
 	fd = 0;
 	prev_track = 0;
-	frame = 0;
-	temp_frame = 0;
 	quicktime_atracks = 0;
 	quicktime_vtracks = 0;
 	depth = 24;
@@ -189,12 +192,6 @@ int FileMOV::close_file()
 		if(wr) quicktime_set_framerate(fd, asset->frame_rate);
 		quicktime_close(fd);
 	}
-
-//printf("FileMOV::close_file 1\n");
-	if(frame)
-		delete frame;
-	if(temp_frame)
-		delete temp_frame;
 
 //printf("FileMOV::close_file 1\n");
 	if(threads)
@@ -423,6 +420,7 @@ int FileMOV::get_best_colormodel(Asset *asset, int driver)
 			break;
 		case CAPTURE_BUZ:
 		case CAPTURE_LML:
+		case VIDEO4LINUX2JPEG:
 			if(!strncasecmp(asset->vcodec, QUICKTIME_MJPA, 4)) 
 				return BC_COMPRESSED;
 			else
@@ -450,11 +448,10 @@ int FileMOV::can_copy_from(Edit *edit, int64_t position)
 	if((edit->asset->format == FILE_MOV || 
 		edit->asset->format == FILE_AVI))
 	{
-		if (match4(edit->asset->vcodec, this->asset->vcodec))
+		if(match4(edit->asset->vcodec, this->asset->vcodec))
 			return 1;
-
-		// there are combinations where the same codec has multiple fourcc codes
-		// check for DV...
+// there are combinations where the same codec has multiple fourcc codes
+// check for DV...
 		int is_edit_dv = 0;
 		int is_this_dv = 0;
 		if (match4(edit->asset->vcodec, QUICKTIME_DV) || match4(edit->asset->vcodec, QUICKTIME_DVSD))
@@ -464,6 +461,7 @@ int FileMOV::can_copy_from(Edit *edit, int64_t position)
 		if (is_this_dv && is_edit_dv)
 			return 1;
 	}
+
 	return 0;
 }
 
@@ -489,7 +487,6 @@ int FileMOV::set_audio_position(int64_t x)
 int FileMOV::set_video_position(int64_t x)
 {
 	if(!fd) return 1;
-//printf("FileMOV::set_video_position 1 %lld %lld %d\n", x, asset->video_length, file->current_layer);
 	if(x >= 0 && x < asset->video_length)
 		return quicktime_set_video_position(fd, x, file->current_layer);
 	else
@@ -570,9 +567,8 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 {
 	int i, j, k, result = 0;
 	int default_compressor = 1;
-
 	if(!fd) return 0;
-//printf("FileMOV::write_frames 1\n");
+
 	for(i = 0; i < asset->layers && !result; i++)
 	{
 
@@ -661,27 +657,33 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 					long data_size = frame->get_compressed_size();
 					long data_allocated = frame->get_compressed_allocated();
 
-					if(asset->format == FILE_MOV)
+// Sometimes get 0 length frames
+					if(data_size)
 					{
-						mjpeg_insert_quicktime_markers(&data,
-							&data_size,
-							&data_allocated,
-							2,
-							&field2_offset);
+						if(asset->format == FILE_MOV)
+						{
+							mjpeg_insert_quicktime_markers(&data,
+								&data_size,
+								&data_allocated,
+								2,
+								&field2_offset);
+						}
+						else
+						{
+							mjpeg_insert_avi_markers(&data,
+								&data_size,
+								&data_allocated,
+								2,
+								&field2_offset);
+						}
+						frame->set_compressed_size(data_size);
+						result = quicktime_write_frame(fd,
+							frame->get_data(),
+							frame->get_compressed_size(),
+							i);
 					}
 					else
-					{
-						mjpeg_insert_avi_markers(&data,
-							&data_size,
-							&data_allocated,
-							2,
-							&field2_offset);
-					}
-					frame->set_compressed_size(data_size);
-					result = quicktime_write_frame(fd,
-						frame->get_data(),
-						frame->get_compressed_size(),
-						i);
+						printf("FileMOV::write_frames data_size=%d\n", data_size);
 				}
 				else
 					result = quicktime_write_frame(fd,
@@ -755,7 +757,7 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 			{
 				VFrame *frame = frames[i][j];
 				threadframes.values[j]->input = frame;
-				threadframes.values[j]->completion_lock.lock();
+				threadframes.values[j]->completion_lock->lock("FileMOV::write_frames 1");
 			}
 			total_threadframes = len;
 			current_threadframe = 0;
@@ -766,13 +768,12 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 				threads[j]->encode_buffer();
 			}
 
+
 // Write the frames as they're finished
 			for(j = 0; j < len; j++)
 			{
-//printf("filemov 1\n");
-				threadframes.values[j]->completion_lock.lock();
-				threadframes.values[j]->completion_lock.unlock();
-//printf("filemov 10 %p %d\n", threadframes.values[j]->output, threadframes.values[j]->output_size);
+				threadframes.values[j]->completion_lock->lock("FileMOV::write_frames 1");
+				threadframes.values[j]->completion_lock->unlock();
 				if(!result)
 				{
 					result = quicktime_write_frame(fd, 
@@ -780,7 +781,6 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 						threadframes.values[j]->output_size,
 						i);
 				}
-//printf("filemov 20\n");
 			}
 		}
 
@@ -816,7 +816,6 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 	}
 
 
-//printf("FileMOV::write_frames 100 %d\n", result);
 	return result;
 }
 
@@ -897,12 +896,12 @@ int FileMOV::write_compressed_frame(VFrame *buffer)
 	int result = 0;
 	if(!fd) return 0;
 
-//printf("FileMOV::write_compressed_frame 1\n");
+TRACE("FileMOV::write_compressed_frame 1");
 	result = quicktime_write_frame(fd, 
 		buffer->get_data(), 
 		buffer->get_compressed_size(), 
 		file->current_layer);
-//printf("FileMOV::write_compressed_frame 100\n");
+TRACE("FileMOV::write_compressed_frame 100");
 	return result;
 }
 
@@ -1060,11 +1059,13 @@ ThreadStruct::ThreadStruct()
 	output = 0;
 	output_allocated = 0;
 	output_size = 0;
+	completion_lock = new Condition(1, "ThreadStruct::completion_lock");
 }
 
 ThreadStruct::~ThreadStruct()
 {
 	if(output) delete [] output;
+	delete completion_lock;
 }
 
 void ThreadStruct::load_output(mjpeg_t *mjpeg)
@@ -1090,14 +1091,16 @@ FileMOVThread::FileMOVThread(FileMOV *filemov, int fields) : Thread()
 	this->filemov = filemov;
 	this->fields = fields;
 	mjpeg = 0;
+	input_lock = new Condition(1, "FileMOVThread::input_lock");
 }
+
 FileMOVThread::~FileMOVThread()
 {
+	delete input_lock;
 }
 
 int FileMOVThread::start_encoding()
 {
-//printf("FileMOVThread::start_encoding 1 %d\n", fields);
 	mjpeg = mjpeg_new(filemov->asset->width, 
 		filemov->asset->height, 
 		fields);
@@ -1105,44 +1108,43 @@ int FileMOVThread::start_encoding()
 	mjpeg_set_float(mjpeg, 0);
 	done = 0;
 	set_synchronous(1);
-	input_lock.lock();
+	input_lock->lock("FileMOVThread::start_encoding");
 	start();
 }
 
 int FileMOVThread::stop_encoding()
 {
 	done = 1;
-	input_lock.unlock();
+	input_lock->unlock();
 	join();
 	if(mjpeg) mjpeg_delete(mjpeg);
 }
 
 int FileMOVThread::encode_buffer()
 {
-	input_lock.unlock();
+	input_lock->unlock();
 }
 
 void FileMOVThread::run()
 {
 	while(!done)
 	{
-		input_lock.lock();
+		input_lock->lock("FileMOVThread::run");
 
 		if(!done)
 		{
 // Get a frame to compress.
-			filemov->threadframe_lock.lock();
+			filemov->threadframe_lock->lock("FileMOVThread::stop_encoding");
 			if(filemov->current_threadframe < filemov->total_threadframes)
 			{
 // Frame is available to process.
-				input_lock.unlock();
+				input_lock->unlock();
 				threadframe = filemov->threadframes.values[filemov->current_threadframe];
 				VFrame *frame = threadframe->input;
 
 				filemov->current_threadframe++;
-				filemov->threadframe_lock.unlock();
+				filemov->threadframe_lock->unlock();
 
-//printf("FileMOVThread 1 %02x%02x\n", mjpeg_output_buffer(mjpeg)[0], mjpeg_output_buffer(mjpeg)[1]);
 				mjpeg_compress(mjpeg, 
 					frame->get_rows(), 
 					frame->get_y(), 
@@ -1177,10 +1179,10 @@ void FileMOVThread::run()
 					mjpeg_set_output_size(mjpeg, data_size);
 				}
 				threadframe->load_output(mjpeg);
-				threadframe->completion_lock.unlock();
+				threadframe->completion_lock->unlock();
 			}
 			else
-				filemov->threadframe_lock.unlock();
+				filemov->threadframe_lock->unlock();
 		}
 	}
 }
@@ -1228,7 +1230,7 @@ int MOVConfigAudio::create_objects()
 		compression_items.append(new BC_ListBoxItem(_(TWOS_NAME)));
 		compression_items.append(new BC_ListBoxItem(_(RAW_NAME)));
 		compression_items.append(new BC_ListBoxItem(_(IMA4_NAME)));
-		compression_items.append(new BC_ListBoxItem(_(MP3_NAME)));
+//		compression_items.append(new BC_ListBoxItem(_(MP3_NAME)));
 		compression_items.append(new BC_ListBoxItem(_(ULAW_NAME)));
 		compression_items.append(new BC_ListBoxItem(_(VORBIS_NAME)));
 	}
@@ -1326,18 +1328,21 @@ void MOVConfigAudio::update_parameters()
 			x, 
 			y, 
 			&asset->vorbis_min_bitrate);
+		vorbis_min_bitrate->set_increment(1000);
 		y += 30;
 		vorbis_bitrate = new MOVConfigAudioNum(this, 
 			_("Avg bitrate:"), 
 			x, 
 			y, 
 			&asset->vorbis_bitrate);
+		vorbis_bitrate->set_increment(1000);
 		y += 30;
 		vorbis_max_bitrate = new MOVConfigAudioNum(this, 
 			_("Max bitrate:"), 
 			x, 
 			y, 
 			&asset->vorbis_max_bitrate);
+		vorbis_max_bitrate->set_increment(1000);
 
 
 

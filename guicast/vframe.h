@@ -35,13 +35,13 @@ public:
 	VFrame(const PngData& png_data);
 	VFrame(VFrame &vframe);
 // Create new frame for compressed data.
-// Can't share data because the data is dynamically allocated.
 	VFrame();
 	~VFrame();
 
 	friend class PngReadFunction;
 
 // Return 1 if the colormodel and dimensions are the same
+// Used by FrameCache
 	int equivalent(VFrame *src);
 
 // Reallocate a frame without deleting the class
@@ -58,6 +58,10 @@ public:
 		long y_offset,
 		long u_offset,
 		long v_offset);
+
+	void set_compressed_memory(unsigned char *data,
+		int data_size,
+		int data_allocated);
 
 // Read a PNG into the frame with alpha
 	int read_png(unsigned char *data);
@@ -113,6 +117,7 @@ public:
 		int h, 
 		int bytes_per_line = -1, 
 		int color_model = BC_RGB888);
+// Get size of uncompressed frame buffer
 	long get_data_size();
 	void rotate270();
 	void rotate90();

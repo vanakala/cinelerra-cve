@@ -56,37 +56,44 @@ BRender::BRender(MWindow *mwindow)
 
 BRender::~BRender()
 {
+TRACE("BRender::~BRender 1\n");
 	if(thread) 
 	{
-//printf("BRender::~BRender 1\n");
+TRACE("BRender::~BRender 2\n");
 		stop();
-//printf("BRender::~BRender 2\n");
+TRACE("BRender::~BRender 3\n");
 		delete thread;
+TRACE("BRender::~BRender 4\n");
 	}
 
-//printf("BRender::~BRender 3\n");
 
+TRACE("BRender::~BRender 5\n");
 	if(master_pid >= 0)
 	{
 		kill(master_pid, SIGKILL);
+TRACE("BRender::~BRender 6\n");
 		Thread::join();
+TRACE("BRender::~BRender 7\n");
 	}
 
-//printf("BRender::~BRender 2\n");
+TRACE("BRender::~BRender 8\n");
 	delete map_lock;
-//printf("BRender::~BRender 2\n");
+TRACE("BRender::~BRender 9\n");
 	delete completion_lock;
-//printf("BRender::~BRender 2\n");
+TRACE("BRender::~BRender 10\n");
+UNSET_TEMP(socket_path);
 	remove(socket_path);
-//printf("BRender::~BRender 2\n");
+TRACE("BRender::~BRender 11\n");
 	if(arguments[0]) delete [] arguments[0];
-//printf("BRender::~BRender 2\n");
+TRACE("BRender::~BRender 12\n");
 	if(arguments[1]) delete [] arguments[1];
-//printf("BRender::~BRender 2\n");
+TRACE("BRender::~BRender 13\n");
 	if(arguments[2]) delete [] arguments[2];
+TRACE("BRender::~BRender 14\n");
 	if(map) delete [] map;
+TRACE("BRender::~BRender 15\n");
 	delete timer;
-//printf("BRender::~BRender 3\n");
+TRACE("BRender::~BRender 100\n");
 }
 
 void BRender::initialize()
@@ -97,6 +104,7 @@ void BRender::initialize()
 	sprintf(socket_path, "/tmp/cinelerra.");
 	uuid_generate(socket_temp);
 	uuid_unparse(socket_temp, socket_path + strlen(socket_path));
+SET_TEMP(socket_path);
 
 // Start background instance of executable since codecs aren't reentrant
 	Thread::start();

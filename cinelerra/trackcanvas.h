@@ -10,6 +10,7 @@
 #include "floatauto.inc"
 #include "floatautos.inc"
 #include "guicast.h"
+#include "keyframe.inc"
 #include "mwindow.inc"
 #include "mwindowgui.inc"
 #include "plugin.inc"
@@ -165,8 +166,8 @@ public:
 		int cursor_y, 
 		int draw, 
 		int buttonpress,
-		Plugin *&keyframe_plugin,
-		KeyFrame *&keyframe_instance);
+		Plugin* &keyframe_plugin,
+		KeyFrame* &keyframe_instance);
 
 
 	void calculate_viewport(Track *track, 
@@ -286,7 +287,8 @@ public:
 	int drag_scroll;
 
 
-
+// Temporary for picon drawing
+	VFrame *temp_picon;
 
 
 

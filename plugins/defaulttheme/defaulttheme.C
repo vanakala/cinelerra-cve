@@ -75,34 +75,35 @@ DefaultTheme::~DefaultTheme()
 
 void DefaultTheme::initialize()
 {
-	BC_WindowBase::get_resources()->generic_button_images = new_image_set(3, 
+	BC_Resources *resources = BC_WindowBase::get_resources();
+	resources->generic_button_images = new_image_set(3, 
 			"generic_up.png", 
 			"generic_hi.png", 
 			"generic_dn.png");
-	BC_WindowBase::get_resources()->horizontal_slider_data = new_image_set(6,
+	resources->horizontal_slider_data = new_image_set(6,
 			"hslider_fg_up.png",
 			"hslider_fg_hi.png",
 			"hslider_fg_dn.png",
 			"hslider_bg_up.png",
 			"hslider_bg_hi.png",
 			"hslider_bg_dn.png");
-	BC_WindowBase::get_resources()->progress_images = new_image_set(2,
+	resources->progress_images = new_image_set(2,
 			"progress_bg.png",
 			"progress_hi.png");
-	BC_WindowBase::get_resources()->tumble_data = new_image_set(4,
+	resources->tumble_data = new_image_set(4,
 		"tumble_up.png",
 		"tumble_hi.png",
 		"tumble_botdn.png",
 		"tumble_topdn.png");
-	BC_WindowBase::get_resources()->listbox_button = new_image_set(3,
+	resources->listbox_button = new_image_set(3,
 		"listbox_button_up.png",
 		"listbox_button_hi.png",
 		"listbox_button_dn.png");
-	BC_WindowBase::get_resources()->listbox_column = new_image_set(3,
+	resources->listbox_column = new_image_set(3,
 		"listbox_column_up.png",
 		"listbox_column_hi.png",
 		"listbox_column_dn.png");
-	BC_WindowBase::get_resources()->pan_data = new_image_set(7,
+	resources->pan_data = new_image_set(7,
 			"pan_up.png", 
 			"pan_hi.png", 
 			"pan_popup.png", 
@@ -110,9 +111,9 @@ void DefaultTheme::initialize()
 			"pan_stick.png", 
 			"pan_channel_small.png", 
 			"pan_stick_small.png");
-	BC_WindowBase::get_resources()->pan_text_color = WHITE;
+	resources->pan_text_color = WHITE;
 
-	BC_WindowBase::get_resources()->hscroll_data = new_image_set(10,
+	resources->hscroll_data = new_image_set(10,
 			"hscroll_center_up.png",
 			"hscroll_center_hi.png",
 			"hscroll_center_dn.png",
@@ -124,7 +125,7 @@ void DefaultTheme::initialize()
 			"hscroll_fwd_hi.png",
 			"hscroll_fwd_dn.png");
 
-	BC_WindowBase::get_resources()->vscroll_data = new_image_set(10,
+	resources->vscroll_data = new_image_set(10,
 			"vscroll_center_up.png",
 			"vscroll_center_hi.png",
 			"vscroll_center_dn.png",
@@ -136,12 +137,12 @@ void DefaultTheme::initialize()
 			"vscroll_fwd_hi.png",
 			"vscroll_fwd_dn.png");
 
-	BC_WindowBase::get_resources()->ok_images = new_button("ok.png", 
+	resources->ok_images = new_button("ok.png", 
 			"generic_up.png",
 			"generic_hi.png",
 			"generic_dn.png");
 
-	BC_WindowBase::get_resources()->cancel_images = new_button("cancel.png", 
+	resources->cancel_images = new_button("cancel.png", 
 			"generic_up.png",
 			"generic_hi.png",
 			"generic_dn.png");
@@ -336,7 +337,7 @@ void DefaultTheme::initialize()
 	recordgui_variable_color = RED;
 
 	channel_position_color = MEYELLOW;
-	BC_WindowBase::get_resources()->meter_title_w = 25;
+	resources->meter_title_w = 25;
 }
 
 #define CWINDOW_METER_MARGIN 5

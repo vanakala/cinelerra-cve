@@ -4,70 +4,22 @@
 #include <stdlib.h>
 
 #include "asset.inc"
+#include "condition.inc"
 #include "edit.inc"
-#include "file.inc"
 #include "filebase.inc"
+#include "file.inc"
 #include "filethread.inc"
 #include "filexml.inc"
 #include "formatwindow.inc"
+#include "framecache.inc"
 #include "guicast.h"
-#include "mutex.h"
+#include "mutex.inc"
 #include "pluginserver.inc"
 #include "resample.inc"
-#include "sema.h"
 #include "vframe.inc"
-#include "preferences.h"
 
-#include <map>
-#include "timer.h"
 // ======================================= include file types here
 
-// cache mode constants
-#define CACHE_THIS_INSTANCE	1
-#define CACHE_NO_LOOKUP		2
-
-class FrameCacheElement {
-public:
-	int frame_layer;
-	int frame_number;
-	long long time_diff;
-	VFrame *frame;
-};
-
-typedef std::multimap<int, FrameCacheElement*> FrameCacheTree;
-typedef std::multimap<long long, FrameCacheElement*> FrameCacheTree_ByTime;
-
-
-class FrameCache {
-public:
-	FrameCache(int64_t cache_size);   // cache size is in bytes
-	~FrameCache();
-
-	VFrame *get_frame(long frame_number, int frame_layer, int frame_width, int frame_height, int color_model, int force_cache = 0); // implicit lock
-
-	// returns 1 if frame was put into cache, 0 if it wasn't
-	int add_frame(long frame_number, int frame_layer, VFrame *frame, int do_not_copy_frame = 0, int force_cache = 0); 
-
-	void set_size(int64_t cache_size);
-	void unlock_cache();
-	void lock_cache();
-	void reset();		
-	void disable_cache();
-	void enable_cache();
-	void dump();
-	
-private:
-	int compare_with_frame(FrameCacheElement *element, long frame_number, int frame_layer, int frame_width, int frame_height, int frame_color_model);
-	FrameCacheTree::iterator find_element_byframe(long frame_number, int frame_layer, int frame_width, int frame_height, int frame_color_model);
-	FrameCacheTree_ByTime::iterator find_element_bytime(long long frame_time_diff, long frame_number, int frame_layer, int frame_width, int frame_height, int frame_color_model);
-	Mutex change_lock;
-	int cache_enabled;
-	int64_t cache_size;              // maximum cache size in bytes
-	int64_t memory_used;         // used memory in bytes
-	FrameCacheTree cache_tree;
-	FrameCacheTree_ByTime cache_tree_bytime;
-	Timer timer;
-};
 
 
 // generic file opened by user
@@ -96,6 +48,14 @@ public:
 // When loading, the asset is deleted and a copy created in the EDL.
 	void set_asset(Asset *asset);
 
+// Enable or disable frame caching.  Must be tied to file to know when 
+// to delete the file object.  Otherwise we'd delete just the cached frames
+// while the list of open files grew.
+	void set_cache_frames(int value);
+// Delete oldest frame from cache.  Return 0 if successful.  Return 1 if 
+// nothing to delete.
+	int purge_cache();
+
 // Format may be preset if the asset format is not 0.
 	int open_file(ArrayList<PluginServer*> *plugindb, 
 		Asset *asset, 
@@ -107,6 +67,12 @@ public:
 // start a thread for writing to avoid blocking during record
 	int start_audio_thread(int64_t buffer_size, int ring_buffers);
 	int stop_audio_thread();
+// The ring buffer must either be 1 or 2.
+// The buffer_size for video needs to be > 1 on SMP systems to utilize 
+// multiple processors.
+// For audio it's the number of samples per buffer.
+// compressed - if 1 write_compressed_frame is called
+//              if 0 write_frames is called
 	int start_video_thread(int64_t buffer_size, 
 		int color_model, 
 		int ring_buffers, 
@@ -153,6 +119,9 @@ public:
 	double** get_audio_buffer();
 	VFrame*** get_video_buffer();
 
+// Used by ResourcePixmap to directly access the cache.
+	FrameCache* get_frame_cache();
+
 // Schedule a buffer for writing on the thread.
 // thread calls write_samples
 	int write_audio_buffer(int64_t len);
@@ -165,16 +134,10 @@ public:
 // return 1 if failed
 	int read_samples(double *buffer, int64_t len, int64_t base_samplerate, float *buffer_float = 0);
 
-// Return a pointer to the frame in a video file for drawing or 0.
-// The following routine copies a frame once to a temporary buffer and either 
-// returns a pointer to the temporary buffer or copies the temporary buffer again.
-// new way of calling ... cache is always LOCKED after call
-	VFrame* read_frame_cache(int color_model, int width = 0, int height = 0);
 
-	int read_frame(VFrame *frame, int cache_mode = 0);
+// Read frame of video into the argument
+	int File::read_frame(VFrame *frame);
 
-// cache is only useful for reading!
-	void set_cache_size(int64_t cache_size);
 
 // The following involve no extra copies.
 // Direct copy routines for direct copy playback
@@ -193,7 +156,11 @@ public:
 // direction determined to know whether to use a temp.
 	int colormodel_supported(int colormodel);
 
-
+// Used by CICache to calculate the total size of the cache.
+// Based on temporary frames and a call to the file subclass.
+// The return value is limited 1MB each in case of audio file.
+// The minimum setting for cache_size should be bigger than 1MB.
+	int get_memory_usage();
 
 	static int supports_video(ArrayList<PluginServer*> *plugindb, char *format);   // returns 1 if the format supports video or audio
 	static int supports_audio(ArrayList<PluginServer*> *plugindb, char *format);
@@ -213,15 +180,17 @@ public:
 	FileBase *file; // virtual class for file type
 // Threads for writing data in the background.
 	FileThread *audio_thread, *video_thread; 
+
 // Temporary storage for color conversions
 	VFrame *temp_frame;
+
 // Resampling engine
 	Resample *resample;
 	Resample_float *resample_float;
 
 // Lock writes while recording video and audio.
 // A binary lock won't do.  We need a FIFO lock.
-	Sema write_lock;
+	Condition *write_lock;
 	int cpus;
 	int64_t playback_preload;
 
@@ -238,14 +207,16 @@ public:
 	int64_t normalized_sample;
 	int64_t normalized_sample_rate;
 
-	FrameCache *frames_cache;
 
 private:
 	void reset_parameters();
 
 	int getting_options;
 	BC_WindowBase *format_window;
-	Mutex format_completion;
+	Mutex *format_completion;
+	FrameCache *frame_cache;
+// Copy read frames to the cache
+	int use_cache;
 };
 
 #endif

@@ -1,4 +1,4 @@
-AC_INIT(Cinelerra, 1.1.9)
+AC_INIT(Cinelerra, 1.2.0)
 
 AC_CANONICAL_SYSTEM
 
@@ -307,6 +307,8 @@ AC_OUTPUT(Makefile po/Makefile.in \
 					plugins/fieldframe/Makefile plugins/flip/Makefile plugins/framefield/Makefile \
 					plugins/freeverb/Makefile plugins/freezeframe/Makefile plugins/gain/Makefile \
 					plugins/holo/Makefile plugins/huesaturation/Makefile plugins/interpolateall/Makefile \
+					plugins/interpolateaudio/Makefile \
+					plugins/interpolatevideo/Makefile \
 					plugins/invertaudio/Makefile plugins/invertvideo/Makefile plugins/irissquare/Makefile \
 					plugins/ivtc/Makefile \
 					plugins/loopaudio/Makefile \

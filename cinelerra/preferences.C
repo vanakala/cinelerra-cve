@@ -2,6 +2,7 @@
 #include "audioconfig.h"
 #include "audiodevice.inc"
 #include "bcmeter.inc"
+#include "cache.inc"
 #include "clip.h"
 #include "defaults.h"
 #include "file.inc"
@@ -35,9 +36,8 @@ Preferences::Preferences()
 	sprintf(index_directory, BCASTDIR);
 	if(strlen(index_directory))
 		fs.complete_path(index_directory);
-	cache_items = 5;
-	cache_size_per_item = 2;
-	index_size = 3000000;
+	cache_size = 0xa00000;
+	index_size = 0x300000;
 	index_count = 100;
 	use_thumbnails = 1;
 	theme[0] = 0;
@@ -48,7 +48,7 @@ Preferences::Preferences()
 	brender_preroll = 0;
 	renderfarm_mountpoint[0] = 0;
 	renderfarm_vfs = 1;
-	renderfarm_job_count = 1;
+	renderfarm_job_count = 20;
 	processors = calculate_processors();
 
 // Default brender asset
@@ -118,8 +118,7 @@ void Preferences::copy_from(Preferences *that)
 	strcpy(global_plugin_dir, that->global_plugin_dir);
 	strcpy(theme, that->theme);
 
-	cache_items = that->cache_items;
-	cache_size_per_item = that->cache_size_per_item;
+	cache_size = that->cache_size;
 	force_uniprocessor = that->force_uniprocessor;
 	processors = calculate_processors();
 	renderfarm_nodes.remove_all_objects();
@@ -160,10 +159,14 @@ void Preferences::copy_from(Preferences *that)
 		fs.complete_path(global_plugin_dir);
 		fs.add_end_slash(global_plugin_dir);
 	}
-	
+
+	boundaries();
+}
+
+void Preferences::boundaries()
+{
 	renderfarm_job_count = MAX(renderfarm_job_count, 1);
-	CLAMP(cache_items, 1, 100);
-	CLAMP(cache_size_per_item, 0, 128);
+	CLAMP(cache_size, MIN_CACHE_SIZE, MAX_CACHE_SIZE);
 }
 
 Preferences& Preferences::operator=(Preferences &that)
@@ -182,7 +185,7 @@ int Preferences::load_defaults(Defaults *defaults)
 	index_count = defaults->get("INDEX_COUNT", index_count);
 	use_thumbnails = defaults->get("USE_THUMBNAILS", use_thumbnails);
 
-	sprintf(global_plugin_dir, PLUGINDIR);
+	sprintf(global_plugin_dir, PLUGIN_DIR);
 	defaults->get("GLOBAL_PLUGIN_DIR", global_plugin_dir);
 	if(getenv("GLOBAL_PLUGIN_DIR"))
 	{
@@ -207,8 +210,7 @@ int Preferences::load_defaults(Defaults *defaults)
 	processors = calculate_processors();
 	use_brender = defaults->get("USE_BRENDER", use_brender);
 	brender_fragment = defaults->get("BRENDER_FRAGMENT", brender_fragment);
-	cache_items = defaults->get("CACHE_SIZE", cache_items);
-	cache_size_per_item = defaults->get("CACHE_SIZE_PER_ITEM", cache_size_per_item);
+	cache_size = defaults->get("CACHE_SIZE", cache_size);
 	local_rate = defaults->get("LOCAL_RATE", local_rate);
 	use_renderfarm = defaults->get("USE_RENDERFARM", use_renderfarm);
 	renderfarm_port = defaults->get("RENDERFARM_PORT", renderfarm_port);
@@ -246,14 +248,15 @@ int Preferences::load_defaults(Defaults *defaults)
 		}
 	}
 
+	boundaries();
+
 	return 0;
 }
 
 int Preferences::save_defaults(Defaults *defaults)
 {
 	char string[BCTEXTLEN];
-	defaults->update("CACHE_SIZE", cache_items);
-	defaults->update("CACHE_SIZE_PER_ITEM", cache_size_per_item);
+	defaults->update("CACHE_SIZE", cache_size);
 	defaults->update("INDEX_DIRECTORY", index_directory);
 	defaults->update("INDEX_SIZE", index_size);
 	defaults->update("INDEX_COUNT", index_count);

@@ -39,10 +39,12 @@ VRender::VRender(RenderEngine *renderengine)
 	data_type = TRACK_VIDEO;
 	transition_temp = 0;
 	overlayer = new OverlayFrame(renderengine->preferences->processors);
+	input_temp = 0;
 }
 
 VRender::~VRender()
 {
+	if(input_temp) delete input_temp;
 	if(transition_temp) delete transition_temp;
 	if(overlayer) delete overlayer;
 }
@@ -102,7 +104,7 @@ int VRender::process_buffer(int64_t input_position)
 	int use_brender = 0;
 	int result = 0;
 
-//printf("VRender::process_buffer 1\n");
+//sleep(1);
 
 // Determine the rendering strategy for this frame.
 	use_vconsole = get_use_vconsole(playable_edit, 
@@ -133,7 +135,12 @@ int VRender::process_buffer(int64_t input_position)
 
 				file->set_video_position(corrected_position, 
 					renderengine->edl->session->frame_rate);
+// Cache single frames only
+				if(renderengine->command->single_frame())
+					file->set_cache_frames(1);
 				file->read_frame(video_out[0]);
+				if(renderengine->command->single_frame())
+					file->set_cache_frames(0);
 				renderengine->get_vcache()->check_in(asset);
 			}
 		}
@@ -144,7 +151,8 @@ int VRender::process_buffer(int64_t input_position)
 				current_position, 
 				renderengine->command->get_direction(),
 				renderengine->get_vcache(),
-				1);
+				1,
+				renderengine->command->single_frame());
 		}
 	}
 	else
@@ -157,7 +165,6 @@ int VRender::process_buffer(int64_t input_position)
 	}
 
 
-//printf("VRender::process_buffer 10\n");
 	return result;
 }
 

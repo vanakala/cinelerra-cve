@@ -4,12 +4,9 @@
 #include "bitspopup.inc"
 #include "file.inc"
 #include "filebase.h"
-#include "libmpeg3.h"
-#include "mutex.h"
-#include "thread.h"
-
-
 #include <lame/lame.h>
+#include "libmpeg3.h"
+#include "thread.h"
 
 
 extern "C"

@@ -13,6 +13,7 @@
 #include FT_OUTLINE_H
 #include FT_STROKER_H
 
+#include "language.h"
 #include "picon_png.h"
 #include "plugincolors.h"
 #include "title.h"
@@ -27,12 +28,6 @@
 #include <byteswap.h>
 #include <iconv.h>
 #include <sys/stat.h>
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
-
 
 #define ZERO (1.0 / 64.0)
 

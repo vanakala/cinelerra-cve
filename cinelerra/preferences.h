@@ -21,6 +21,8 @@ public:
 	void copy_from(Preferences *that);
 	int load_defaults(Defaults *defaults);
 	int save_defaults(Defaults *defaults);
+	void boundaries();
+
 
 	void add_node(char *text, int port, int enabled, float rate);
 	void delete_node(int number);
@@ -40,6 +42,7 @@ public:
 // Set frame rate for a node.  Node -1 is the master node.
 // The node number is relative to the enabled nodes.
 	void set_rate(float rate, int node);
+// Calculate the number of cpus to use.  Determined by /proc/cpuinfo and force_uniprocessor
 	int calculate_processors();
 
 // ================================= Performance ================================
@@ -55,7 +58,7 @@ public:
 	double render_preroll;
 	int brender_preroll;
 	int force_uniprocessor;
-// number of cpus to use - 1
+// The number of cpus to use.  Determined by /proc/cpuinfo and force_uniprocessor
 	int processors;
 
 
@@ -63,10 +66,10 @@ public:
 	int use_brender;
 // Number of frames in a brender job.
 	int brender_fragment;
-// Number of items to store in cache
-	int64_t cache_items;
-// Number of megabytes for thumbnail cache - per item
-	int cache_size_per_item;
+// Size of cache in bytes.
+// Several caches of cache_size exist so multiply by 4.
+// rendering, playback, timeline, preview
+	int64_t cache_size;
 
 	int use_renderfarm;
 	int renderfarm_port;

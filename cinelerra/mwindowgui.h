@@ -3,9 +3,10 @@
 
 #include "editpopup.inc"
 #include "guicast.h"
+#include "keyframepopup.inc"
 #include "mbuttons.inc"
 #include "mainclock.inc"
-#include "maincursor.h"
+#include "maincursor.inc"
 #include "mainmenu.inc"
 #include "mtimebar.inc"
 #include "mwindow.inc"

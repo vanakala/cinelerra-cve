@@ -92,7 +92,7 @@ File* CICache::check_out(Asset *asset)
 		if(new_item->file)
 		{
 // opened successfully
-			new_item->item_lock->lock();
+			new_item->item_lock->lock("CICache::check_out");
 			new_item->checked_out = 1;
 
 			result = new_item->file;
@@ -114,7 +114,7 @@ File* CICache::check_out(Asset *asset)
 
 int CICache::check_in(Asset *asset)
 {
-	check_in_lock->lock();
+	check_in_lock->lock("CICache::check_in");
 
 	CICacheItem *current;
 	int result = 0;
@@ -189,11 +189,12 @@ int CICache::age()
 	{
 		memory_usage = get_memory_usage();
 		
-		if(memory_usage > preferences->cache_items)
+//printf("CICache::age 3 %p %lld %lld\n", this, memory_usage, preferences->cache_size);
+		if(memory_usage > preferences->cache_size)
 		{
 			result = delete_oldest();
 		}
-	}while(memory_usage > preferences->cache_items && !result);
+	}while(memory_usage > preferences->cache_size && !result);
 
 	check_out_lock->unlock();
 }
@@ -205,7 +206,8 @@ int64_t CICache::get_memory_usage()
 	
 	for(current = first; current; current = NEXT)
 	{
-		result++;
+		File *file = current->file;
+		if(file) result += file->get_memory_usage();
 	}
 	
 	return result;
@@ -226,10 +228,17 @@ int CICache::delete_oldest()
 		}
 	}
 
-	if(highest_counter > 1 && oldest && !oldest->checked_out)
+	if(highest_counter > 1 && oldest)
 	{
 		total_lock->lock("CICache::delete_oldest");
-		delete oldest;
+
+
+// Got the oldest file.  Try requesting cache purge.
+		if(!oldest->file || oldest->file->purge_cache())
+		{
+// Delete the file if cache already empty and not checked out.
+			if(!oldest->checked_out) delete oldest;
+		}
 		total_lock->unlock();
 		return 0;    // success
 	}
@@ -296,7 +305,6 @@ CICacheItem::CICacheItem(CICache *cache, Asset *asset)
 	file = new File;
 	file->set_processors(cache->preferences->processors);
 	file->set_preload(cache->edl->session->playback_preload);
-	file->set_cache_size(cache->preferences->cache_size_per_item * 1024*1024);
 
 
 // Copy decoding parameters from session to asset so file can see them.

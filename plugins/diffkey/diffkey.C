@@ -5,11 +5,11 @@
 #include "diffkey.h"
 #include "diffkeywindow.h"
 #include "picon_png.h"
+#include "plugincolors.h"
 #include "language.h"
 
 #include <stdint.h>
 #include <string.h>
-#include "plugincolors.h"
 
 REGISTER_PLUGIN(DiffKeyMain)
 

@@ -2,6 +2,8 @@
 #include "bccapture.h"
 #include "channel.h"
 #include "chantables.h"
+#include "mutex.h"
+#include "picture.h"
 #include "playbackconfig.h"
 #include "playbackengine.h"
 #include "preferences.h"
@@ -10,6 +12,8 @@
 #include "vdevice1394.h"
 #include "vdevicebuz.h"
 #include "vdevicev4l.h"
+#include "vdevicev4l2.h"
+#include "vdevicev4l2jpeg.h"
 #include "vdevicex11.h"
 #include "videoconfig.h"
 #include "videodevice.h"
@@ -17,8 +21,11 @@
 #include "videowindowgui.h"
 #include "vframe.h"
 
+#include <unistd.h>
+#include <fcntl.h>
 
-KeepaliveThread::KeepaliveThread(VideoDevice *device) : Thread()
+KeepaliveThread::KeepaliveThread(VideoDevice *device)
+ : Thread()
 {
 	still_alive = 1;
 	failed = 0;
@@ -26,23 +33,25 @@ KeepaliveThread::KeepaliveThread(VideoDevice *device) : Thread()
 	set_synchronous(1);
 	this->device = device;
 	capturing = 0;
+	startup_lock = new Mutex("KeepaliveThread::startup_lock");
 }
 
 KeepaliveThread::~KeepaliveThread()
 {
+	delete startup_lock;
 }
 
 int KeepaliveThread::start_keepalive()
 {
-	startup_lock.lock();
+	startup_lock->lock("KeepaliveThread::start_keepalive 1");
 	start();
-	startup_lock.lock();
-	startup_lock.unlock();
+	startup_lock->lock("KeepaliveThread::start_keepalive 2");
+	startup_lock->unlock();
 }
 
 void KeepaliveThread::run()
 {
-	startup_lock.unlock();
+	startup_lock->unlock();
 	while(!interrupted)
 	{
 		still_alive = 0;
@@ -90,6 +99,11 @@ VideoDevice::VideoDevice()
 {
 	in_config = new VideoInConfig;
 	out_config = new VideoOutConfig(0, 0);
+	channel = new Channel;
+	picture = new Picture;
+	sharing_lock = new Mutex("VideoDevice::sharing_lock");
+	channel_lock = new Mutex("VideoDevice::channel_lock");
+	picture_lock = new Mutex("VideoDevice::picture_lock");
 	initialize();
 }
 
@@ -98,13 +112,18 @@ VideoDevice::~VideoDevice()
 	input_sources.remove_all_objects();
 	delete in_config;
 	delete out_config;
+	delete channel;
+	delete picture;
+	delete sharing_lock;
+	delete channel_lock;
+	delete picture_lock;
 }
 
 int VideoDevice::initialize()
 {
 	sharing = 0;
 	done_sharing = 0;
-	sharing_lock.reset();
+	sharing_lock->reset();
 	orate = irate = 0;
 	out_w = out_h = 0;
 	r = w = 0;
@@ -124,6 +143,8 @@ int VideoDevice::initialize()
 	quality = 80;
 	cpus = 1;
 	single_frame = 0;
+	channel_changed = 0;
+	picture_changed = 0;
 }
 
 int VideoDevice::open_input(VideoInConfig *config, 
@@ -148,6 +169,19 @@ int VideoDevice::open_input(VideoInConfig *config,
 			input_base = new VDeviceV4L(this);
 			result = input_base->open_input();
 			break;
+
+
+#ifdef HAVE_V4L2
+		case VIDEO4LINUX2:
+			input_base = new VDeviceV4L2(this);
+			result = input_base->open_input();
+			break;
+		case VIDEO4LINUX2JPEG:
+			input_base = new VDeviceV4L2JPEG(this);
+			result = input_base->open_input();
+			break;
+#endif
+
 		case SCREENCAPTURE:
 			this->input_x = input_x;
 			this->input_y = input_y;
@@ -173,12 +207,20 @@ int VideoDevice::open_input(VideoInConfig *config,
 	return 0;
 }
 
-int VideoDevice::is_compressed(int driver)
+int VideoDevice::is_compressed(int driver, int use_file, int use_fixed)
 {
-	return (driver == CAPTURE_BUZ || 
+// FileMOV needs to have write_frames called so the start codes get scanned.
+	return ((driver == CAPTURE_BUZ && use_fixed) ||
+		(driver == VIDEO4LINUX2JPEG && use_fixed) || 
 		driver == CAPTURE_LML || 
 		driver == CAPTURE_FIREWIRE);
 }
+
+int VideoDevice::is_compressed(int use_file, int use_fixed)
+{
+	return is_compressed(in_config->driver, use_file, use_fixed);
+}
+
 
 char* VideoDevice::get_vcodec(int driver)
 {
@@ -186,6 +228,7 @@ char* VideoDevice::get_vcodec(int driver)
 	{
 		case CAPTURE_BUZ:
 		case CAPTURE_LML:
+		case VIDEO4LINUX2JPEG:
 			return QUICKTIME_MJPA;
 			break;
 		
@@ -193,6 +236,7 @@ char* VideoDevice::get_vcodec(int driver)
 			return QUICKTIME_DV;
 			break;
 	}
+	return "";
 }
 
 
@@ -212,6 +256,12 @@ char* VideoDevice::drivertostr(int driver)
 		case VIDEO4LINUX:
 			return VIDEO4LINUX_TITLE;
 			break;
+		case VIDEO4LINUX2:
+			return VIDEO4LINUX2_TITLE;
+			break;
+		case VIDEO4LINUX2JPEG:
+			return VIDEO4LINUX2JPEG_TITLE;
+			break;
 		case SCREENCAPTURE:
 			return SCREENCAPTURE_TITLE;
 			break;
@@ -223,11 +273,6 @@ char* VideoDevice::drivertostr(int driver)
 			break;
 	}
 	return "";
-}
-
-int VideoDevice::is_compressed()
-{
-	return is_compressed(in_config->driver);
 }
 
 int VideoDevice::get_best_colormodel(Asset *asset)
@@ -288,36 +333,22 @@ int VideoDevice::set_adevice(AudioDevice *adevice)
 }
 
 
-// int VideoDevice::stop_sharing()
-// {
-// 	if(sharing)
-// 	{
-// 		sharing_lock.lock();
-// 		done_sharing = 1;
-// 		if(input_base) input_base->stop_sharing();
-// 	}
-// 	return 0;
-// }
-// 
-
-// int VideoDevice::get_shared_data(unsigned char *data, long size)
-// {
-// 	if(input_base)
-// 	{
-// 		input_base->get_shared_data(data, size);
-// 	}
-// 	return 0;
-// }
-
-void VideoDevice::create_channeldb(ArrayList<Channel*> *channeldb)
-{
-	if(input_base)
-		input_base->create_channeldb(channeldb);
-}
-
-ArrayList<char *>* VideoDevice::get_inputs()
+ArrayList<Channel*>* VideoDevice::get_inputs()
 {
 	return &input_sources;
+}
+
+Channel* VideoDevice::new_input_source(char *device_name)
+{
+	for(int i = 0; i < input_sources.total; i++)
+	{
+		if(!strcmp(input_sources.values[i]->device_name, device_name))
+			return input_sources.values[i];
+	}
+	Channel *item = new Channel;
+	strcpy(item->device_name, device_name);
+	input_sources.append(item);
+	return item;
 }
 
 int VideoDevice::get_failed()
@@ -349,8 +380,16 @@ int VideoDevice::set_field_order(int odd_field_first)
 
 int VideoDevice::set_channel(Channel *channel)
 {
-	if(input_base) return input_base->set_channel(channel);
-	if(output_base) return output_base->set_channel(channel);
+	if(channel)
+	{
+		channel_lock->lock("VideoDevice::set_channel");
+		this->channel->copy_settings(channel);
+		channel_changed = 1;
+		channel_lock->unlock();
+
+		if(input_base) return input_base->set_channel(channel);
+		if(output_base) return output_base->set_channel(channel);
+	}
 }
 
 void VideoDevice::set_quality(int quality)
@@ -363,17 +402,17 @@ void VideoDevice::set_cpus(int cpus)
 	this->cpus = cpus;
 }
 
-int VideoDevice::set_picture(int brightness, 
-	int hue, 
-	int color, 
-	int contrast, 
-	int whiteness)
+int VideoDevice::set_picture(Picture *picture)
 {
-	if(input_base) return input_base->set_picture(brightness, 
-			hue, 
-			color, 
-			contrast, 
-			whiteness);
+	if(picture)
+	{
+		picture_lock->lock("VideoDevice::set_picture");
+		this->picture->copy_settings(picture);
+		picture_changed = 1;
+		picture_lock->unlock();
+
+		if(input_base) return input_base->set_picture(picture);
+	}
 }
 
 int VideoDevice::update_translation()
@@ -569,3 +608,16 @@ BC_Bitmap* VideoDevice::get_bitmap()
 {
 	if(output_base) return output_base->get_bitmap();
 }
+
+
+int VideoDevice::set_cloexec_flag(int desc, int value)
+{
+	int oldflags = fcntl(desc, F_GETFD, 0);
+	if(oldflags < 0) return oldflags;
+	if(value != 0) 
+		oldflags |= FD_CLOEXEC;
+	else
+		oldflags &= ~FD_CLOEXEC;
+	return fcntl(desc, F_SETFD, oldflags);
+}
+

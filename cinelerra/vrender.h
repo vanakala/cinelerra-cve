@@ -78,6 +78,8 @@ public:
 // Byte offset of video_out
 	int64_t output_offset;
 
+// Temp frame for VModule loading
+	VFrame *input_temp;
 // Temp frame for VModule transitions
 	VFrame *transition_temp;
 // Engine for camera and projector automation

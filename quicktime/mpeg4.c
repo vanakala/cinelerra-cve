@@ -457,7 +457,10 @@ static int reads_colormodel(quicktime_t *file,
 		int colormodel, 
 		int track)
 {
-	return (colormodel == BC_YUV420P);
+	quicktime_video_map_t *vtrack = &(file->vtracks[track]);
+	quicktime_codec_t *codec = (quicktime_codec_t*)vtrack->codec;
+	return (colormodel == BC_YUV420P && 
+		!quicktime_match_32(QUICKTIME_SVQ1, codec->fourcc));
 }
 
 static int writes_colormodel(quicktime_t *file, 
@@ -526,7 +529,6 @@ static int init_decode(quicktime_mpeg4_codec_t *codec,
 }
 
 
-
 static int decode_wrapper(quicktime_t *file,
 	quicktime_video_map_t *vtrack,
 	quicktime_mpeg4_codec_t *codec,
@@ -534,31 +536,41 @@ static int decode_wrapper(quicktime_t *file,
 	int current_field, 
 	int track)
 {
+
 	int got_picture = 0; 
 	int result = 0; 
-	int bytes;
+	int bytes = 0;
+	int header_bytes = 0;
  	char *compressor = vtrack->track->mdia.minf.stbl.stsd.table[0].format;
 	quicktime_trak_t *trak = vtrack->track;
+	quicktime_stsd_table_t *stsd_table = &trak->mdia.minf.stbl.stsd.table[0];
 	int width = trak->tkhd.track_width;
 	int height = trak->tkhd.track_height;
 	int width_i = (int)((float)width / 16 + 0.5) * 16;
 	int height_i = (int)((float)height / 16 + 0.5) * 16;
 
-//printf("decode_wrapper 1\n");
 	quicktime_set_video_position(file, frame_number, track);
  
 	bytes = quicktime_frame_size(file, frame_number, track); 
+	if(frame_number == 0)
+	{
+		header_bytes = stsd_table->mpeg4_header_size;
+	}
+//printf("decode_wrapper 1 %p %d %d %d\n", stsd_table, frame_number, bytes, header_bytes);
 
-	if(!codec->work_buffer || codec->buffer_size < bytes) 
+	if(!codec->work_buffer || codec->buffer_size < bytes + header_bytes) 
 	{ 
 		if(codec->work_buffer) free(codec->work_buffer); 
-		codec->buffer_size = bytes; 
+		codec->buffer_size = bytes + header_bytes; 
 		codec->work_buffer = calloc(1, codec->buffer_size + 100); 
 	} 
  
-//printf("decode_wrapper 1 %d %llx %x\n", codec->ffmpeg_id, quicktime_position(file), bytes);
+	if(header_bytes)
+		memcpy(codec->work_buffer, stsd_table->mpeg4_header, header_bytes);
+
+//printf("decode_wrapper 1 %d %d\n", header_bytes, bytes);
 	if(!quicktime_read_data(file, 
-		codec->work_buffer, 
+		codec->work_buffer + header_bytes, 
 		bytes))
 		result = -1;
  
@@ -577,7 +589,6 @@ static int decode_wrapper(quicktime_t *file,
  * 		}
  */
 
-//printf("decode_wrapper 2 %d\n", frame_number);
 
 // No way to determine if there was an error based on nonzero status.
 // Need to test row pointers to determine if an error occurred.
@@ -585,8 +596,10 @@ static int decode_wrapper(quicktime_t *file,
 			&codec->picture[current_field], 
 			&got_picture, 
 			codec->work_buffer, 
-			bytes);
-//printf("decode_wrapper 3\n");
+			bytes + header_bytes);
+
+
+
 		if(codec->picture[current_field].data[0])
 		{
 			if(!codec->got_key[current_field])
@@ -624,14 +637,24 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 	quicktime_mpeg4_codec_t *codec = ((quicktime_codec_t*)vtrack->codec)->priv;
 	int width = trak->tkhd.track_width;
 	int height = trak->tkhd.track_height;
-	int width_i = (int)((float)width / 16 + 0.5) * 16;
-	int height_i = (int)((float)height / 16 + 0.5) * 16;
+	int width_i;
+	int height_i;
 	int use_temp = 0;
 	int input_cmodel;
 	int current_field = vtrack->current_position % codec->total_fields;
 	unsigned char **input_rows;
 	int seeking_done = 0;
 
+	if(codec->ffmpeg_id == CODEC_ID_SVQ1)
+	{
+		width_i = (int)((float)width / 16 + 0.5) * 32;
+		height_i = (int)((float)height / 16 + 0.5) * 32;
+	}
+	else
+	{
+		width_i = (int)((float)width / 16 + 0.5) * 16;
+		height_i = (int)((float)height / 16 + 0.5) * 16;
+	}
 
 	pthread_mutex_lock(&ffmpeg_lock);
 
@@ -640,8 +663,8 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 	{
 		int current_frame = vtrack->current_position;
 		init_decode(codec, current_field, width_i, height_i);
-// Must decode frame with VOL header first but only the first frame in the
-// field sequence has a VOL header.
+// Must decode frame with stream header first but only the first frame in the
+// field sequence has a stream header.
 		result = decode_wrapper(file, 
 			vtrack, 
 			codec, 
@@ -652,7 +675,6 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 		quicktime_set_video_position(file, current_frame, track);
 		codec->decode_initialized[current_field] = 1;
 	}
-//printf("decode 1 %d\n", vtrack->current_position);
 
 // Handle seeking
 	if(quicktime_has_keyframes(file, track) && 
@@ -681,7 +703,6 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 			frame1 = codec->last_frame[current_field] + codec->total_fields;
 			do_i_frame = 0;
 		}
-//printf("decode 4\n");
 
 		while(frame1 <= frame2)
 		{
@@ -706,12 +727,11 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 			}
 			frame1 += codec->total_fields;
 		}
-//printf("decode 5\n");
 
 		vtrack->current_position = frame2;
 		seeking_done = 1;
 	}
-//printf("decode 6\n");
+
 
 	if(!seeking_done)
 	{
@@ -723,7 +743,7 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 			track);
 	}
 	pthread_mutex_unlock(&ffmpeg_lock);
-//printf("decode 10\n");
+
 
 
 	codec->last_frame[current_field] = vtrack->current_position;
@@ -748,15 +768,28 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 		case PIX_FMT_YUV422P:
 			input_cmodel = BC_YUV422P;
 			break;
+		case PIX_FMT_YUV410P:
+			input_cmodel = BC_YUV9P;
+			break;
+		default:
+			fprintf(stderr, 
+				"mpeg4 decode: unrecognized color model %d\n", 
+				codec->decoder_context[current_field]->pix_fmt);
+			input_cmodel = BC_YUV420P;
+			break;
 	}
 
 
-//printf("decode 20 %d %p\n", result, codec->picture[current_field].data[0]);
+
+
+
 	if(codec->picture[current_field].data[0])
 	{
+
 		input_rows = 
 			malloc(sizeof(unsigned char*) * 
 			codec->decoder_context[current_field]->height);
+
 
 		for(i = 0; i < codec->decoder_context[current_field]->height; i++)
 			input_rows[i] = codec->picture[current_field].data[0] + 
@@ -789,8 +822,6 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 		free(input_rows);
 	}
 
-
-//printf("decode 100\n");
 
 
 
@@ -1278,6 +1309,16 @@ void quicktime_init_codec_divx(quicktime_video_map_t *vtrack)
 	result->ffmpeg_id = CODEC_ID_MPEG4;
 }
 
+// Generic MPEG-4
+void quicktime_init_codec_mp4v(quicktime_video_map_t *vtrack)
+{
+	quicktime_mpeg4_codec_t *result = init_common(vtrack, 
+		QUICKTIME_MP4V,
+		"MPEG4",
+		"Generic MPEG Four");
+	result->ffmpeg_id = CODEC_ID_MPEG4;
+}
+
 
 // Mormon MPEG-4
 void quicktime_init_codec_svq1(quicktime_video_map_t *vtrack)
@@ -1287,6 +1328,15 @@ void quicktime_init_codec_svq1(quicktime_video_map_t *vtrack)
 		"Sorenson Version 1",
 		"From the chearch of codecs of yesterday's sights");
 	result->ffmpeg_id = CODEC_ID_SVQ1;
+}
+
+void quicktime_init_codec_svq3(quicktime_video_map_t *vtrack)
+{
+	quicktime_mpeg4_codec_t *result = init_common(vtrack, 
+		QUICKTIME_SVQ3,
+		"Sorenson Version 3",
+		"From the chearch of codecs of yesterday's sights");
+	result->ffmpeg_id = CODEC_ID_SVQ3;
 }
 
 // field based MPEG-4

@@ -92,7 +92,6 @@ public:
 		ArrayList<PluginServer*> *plugindb);
 // Called by BatchRender to stop the operation.
 	void stop_operation();
-	void set_autorender(int autorender);
 	void run();
 
 

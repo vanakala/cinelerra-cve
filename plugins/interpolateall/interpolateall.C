@@ -3,16 +3,11 @@
 #include "defaults.h"
 #include "guicast.h"
 #include "filexml.h"
+#include "language.h"
 #include "mainprogress.h"
 #include "pluginaclient.h"
 
 #include <string.h>
-
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 

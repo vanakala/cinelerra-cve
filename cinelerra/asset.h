@@ -206,6 +206,11 @@ public:
 	int ms_gop_size;
 	int ms_fix_bitrate;
 
+
+	int ac3_bitrate;
+
+
+
 // Image file sequences.  Background rendering doesn't want to write a 
 // sequence header but instead wants to start the sequence numbering at a certain
 // number.  This ensures deletion of all the frames which aren't being used.

@@ -198,10 +198,13 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 // change in the editing operation.
 			Edit *source_edit = 0;
 			Track *source_track = 0;
+
+
 // Get source track
 			if(dest_track->data_type == TRACK_AUDIO)
 			{
 				int current_aedit = 0;
+
 				while(current_aedit < edits->total &&
 					edits->values[current_aedit]->track->data_type != TRACK_AUDIO)
 					current_aedit++;
@@ -256,10 +259,10 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 					1);
 				int64_t position_a = position_i;
 				if (dest_track == source_track)
-                                {
-                                 	if (position_a > source_edit->startproject)
-                                 	        position_a -= source_length;
-                                }	        
+                {
+                    if (position_a > source_edit->startproject)
+                            position_a -= source_length;
+                }	        
 
 				dest_track->automation->paste_silence(position_a, 
 					position_a + source_length);

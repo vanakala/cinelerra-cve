@@ -781,7 +781,10 @@ int Render::render(int test_overwrite,
 
 // Paste all packages into timeline if desired
 
-	if(!result && load_mode != LOAD_NOTHING && mwindow)
+	if(!result && 
+		load_mode != LOAD_NOTHING && 
+		mwindow &&
+		mode != Render::BATCH)
 	{
 		mwindow->gui->lock_window();
 

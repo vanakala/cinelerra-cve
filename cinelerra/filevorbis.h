@@ -5,7 +5,6 @@
 #include "filebase.h"
 #include "vorbis/vorbisenc.h"
 #include "vorbis/vorbisfile.h"
-#include "mutex.h"
 #include "resample.inc"
 
 

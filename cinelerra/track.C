@@ -118,6 +118,22 @@ void Track::equivalent_output(Track *track, double *result)
 		}
 	}
 
+// New EDL has fewer plugin sets.  Get starting plugin in old plugin set
+	for(int i = plugin_sets; i < track->plugin_set.total; i++)
+	{
+		Plugin *current = track->plugin_set.values[i]->get_first_plugin();
+		if(current)
+		{
+			if(result2 < 0 || current->startproject < result2)
+				result2 = current->startproject;
+		}
+	}
+
+// Number of plugin sets differs but somehow we didn't find the start of the
+// change.  Assume 0
+	if(track->plugin_set.total != plugin_set.total && result2 < 0)
+		result2 = 0;
+
 	if(result2 >= 0 && 
 		(*result < 0 || from_units(result2) < *result))
 		*result = from_units(result2);
@@ -619,7 +635,7 @@ void Track::optimize()
 		if(plugin_set.values[i]->total() <= 0)
 		{
 			remove_pluginset(plugin_set.values[i]);
-			i--;  // so we evaluate the next track that is now in this position!
+			i--;
 		}
 	}
 }

@@ -7,11 +7,12 @@
 #include "cursors.h"
 #include "fonts.h"
 #include "keys.h"
-#include "timer.h"
-#include "vframe.h"
 #include "language.h"
+#include "bctimer.h"
+#include "vframe.h"
 
 #include <string.h>
+
 
 // ====================================================== scrollbars
 
@@ -1015,6 +1016,7 @@ int BC_ListBox::get_items_height(ArrayList<BC_ListBoxItem*> *data,
 		{
 			get_icon_mask(item, x, y, w, h);
 			if(y + h + yposition > highest) highest = y + h + yposition;
+
 			get_text_mask(item, x, y, w, h);
 			if(y + h + yposition > highest) highest = y + h + yposition;
 		}
@@ -1852,7 +1854,7 @@ int BC_ListBox::get_scrollbars()
 		}
 		else
 		{
-		        xscrollbar->update_length(w_needed, xposition, view_w);
+		    xscrollbar->update_length(w_needed, xposition, view_w);
 			xscrollbar->reposition_window(get_xscroll_x(),
 				get_xscroll_y(),
 				get_xscroll_width());
@@ -1878,7 +1880,7 @@ int BC_ListBox::get_scrollbars()
 		}
 		else
 		{
-		        yscrollbar->update_length(h_needed, yposition, view_h);
+			yscrollbar->update_length(h_needed, yposition, view_h);
 			yscrollbar->reposition_window(get_yscroll_x(),
 				get_yscroll_y(),
 				get_yscroll_height());
@@ -3538,13 +3540,16 @@ int BC_ListBox::drag_start_event()
 				if(selection_number >= 0)
 				{
 					
-					if (item_return->icon_vframe) 
+					if (item_return->icon_vframe)
+					{
 						drag_popup = new BC_DragWindow(this, 
 							item_return->icon_vframe, 
 							get_abs_cursor_x() - item_return->icon_vframe->get_w() / 2,
 							get_abs_cursor_y() - item_return->icon_vframe->get_h() / 2);
+					}
 					else	
-					if (item_return->icon)  // this probably works not!
+// this probably works not!
+					if (item_return->icon)  
 						drag_popup = new BC_DragWindow(this, 
 							item_return->icon, 
 							get_abs_cursor_x() - item_return->icon->get_w() / 2,

@@ -148,7 +148,9 @@ int AudioOSS::open_input()
 	{
 		if(device->in_config->oss_enable[i])
 		{
+//printf("AudioOSS::open_input 10\n");
 			dsp_in[i] = open(device->in_config->oss_in_device[i], O_RDONLY/* | O_NDELAY*/);
+//printf("AudioOSS::open_input 20\n");
 			if(dsp_in[i] < 0) fprintf(stderr, "AudioOSS::open_input %s: %s\n", 
 				device->in_config->oss_in_device[i], 
 				strerror(errno));

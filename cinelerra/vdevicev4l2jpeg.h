@@ -1,7 +1,6 @@
 #ifndef VDEVICEV4L2JPEG_H
 #define VDEVICEV4L2JPEG_H
 
-#include "../hvirtual_config.h"
 
 #ifdef HAVE_V4L2
 #include "condition.inc"

@@ -199,18 +199,12 @@ int ReverseVideo::load_configuration()
 	KeyFrame *prev_keyframe, *next_keyframe;
 	next_keyframe = get_next_keyframe(get_source_position());
 	prev_keyframe = get_prev_keyframe(get_source_position());
-	read_data(next_keyframe);
 // Previous keyframe stays in config object.
 	read_data(prev_keyframe);
 
 	int64_t prev_position = edl_to_local(prev_keyframe->position);
 	int64_t next_position = edl_to_local(next_keyframe->position);
 
-// printf("ReverseVideo::load_configuration 1 %lld %lld %lld %lld\n", 
-// prev_position,
-// next_position,
-// prev_keyframe->position, 
-// next_keyframe->position);
 	if(prev_position == 0 && next_position == 0) 
 	{
 		next_position = prev_position = get_source_start();

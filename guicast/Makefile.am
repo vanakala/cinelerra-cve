@@ -26,8 +26,23 @@ libguicast_la_SOURCES = \
 	bcpot.C \
 	bcprogress.C \
 												bcprogressbox.C bcrepeater.C bcresources.C bcscrollbar.C bcsignals.C bcslider.C bcsubwindow.C \
-												bctextbox.C bctitle.C bctoggle.C bctumble.C bcwindow.C bcwindowbase.C bcwindowdraw.C errorbox.C \
-												defaults.C filesystem.C mutex.C rotateframe.C sema.C stringfile.C thread.C timer.C units.C \
+	bctextbox.C \
+	bctimer.C \
+	bctitle.C \
+	bctoggle.C \
+	bctumble.C \
+	bcwindow.C \
+	bcwindowbase.C \
+	bcwindowdraw.C \
+	errorbox.C \
+	defaults.C \
+	filesystem.C \
+	mutex.C \
+	rotateframe.C \
+	sema.C \
+	stringfile.C \
+	thread.C \
+	units.C \
 												vframe.C workarounds.C bclistboxitem.C bctheme.C condition.C
 noinst_HEADERS = arraylist.h bcbitmap.h bcbitmap.inc bcbutton.h bcbutton.inc bccapture.h bccapture.inc bcclipboard.h \
 	bcclipboard.inc \
@@ -42,6 +57,7 @@ noinst_HEADERS = arraylist.h bcbitmap.h bcbitmap.inc bcbutton.h bcbutton.inc bcc
 	bcipc.h \
 	bclistbox.h \
 	bclistbox.inc \
+	bclistboxitem.h \
 	bclistboxitem.inc \
 	bcmenu.h \
 	bcmenu.inc \
@@ -57,7 +73,18 @@ noinst_HEADERS = arraylist.h bcbitmap.h bcbitmap.inc bcbutton.h bcbutton.inc bcc
 								 bcpopupmenu.h bcpopupmenu.inc bcpopuplistbox.inc bcpot.h bcpot.inc bcprogressbox.h bcprogressbox.inc bcprogress.h \
 								 bcprogress.inc bcrepeater.h bcrepeater.inc bcresources.h bcresources.inc bcscrollbar.h bcscrollbar.inc \
 								 bcsignals.h bcsignals.inc bcslider.h bcslider.inc bcsubwindow.h bcsubwindow.inc bctextbox.h bctextbox.inc \
-								 bctheme.inc bctitle.h bctitle.inc bctoggle.h bctoggle.inc bctumble.h bctumble.inc bcwindowbase.h bcwindowbase.inc \
+	bctheme.h \
+	bctheme.inc \
+	bctimer.h \
+	bctimer.inc \
+	bctitle.h \
+	bctitle.inc \
+	bctoggle.h \
+	bctoggle.inc \
+	bctumble.h \
+	bctumble.inc \
+	bcwindowbase.h \
+	bcwindowbase.inc \
 								 bcwindow.h bcwindow.inc clip.h colors.h condition.inc cursors.h defaults.h defaults.inc errorbox.h errorbox.inc \
 	filesystem.h \
 	filesystem.inc \
@@ -69,8 +96,19 @@ noinst_HEADERS = arraylist.h bcbitmap.h bcbitmap.inc bcbutton.h bcbutton.inc bcc
 	mutex.h \
 	mutex.inc \
 	rotateframe.h \
-								 rotateframe.inc sema.h sema.inc sizes.h stringfile.h stringfile.inc testobject.h thread.h timer.h \
-								 timer.inc units.h vframe.h vframe.inc workarounds.h bclistboxitem.h bctheme.h condition.h
+	rotateframe.inc \
+	sema.h \
+	sema.inc \
+	sizes.h \
+	stringfile.h \
+	stringfile.inc \
+	testobject.h \
+	thread.h \
+	units.h \
+	vframe.h \
+	vframe.inc \
+	workarounds.h \
+	condition.h
 
 INCLUDES = -I$(top_srcdir)/quicktime -I/usr/include/qt
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)

@@ -3511,6 +3511,16 @@ static inline void transfer_YUV422_to_YUV422(unsigned char *(*output),
 		for(j = 0; j < out_w; j++) \
 		{
 
+#define TRANSFER_YUV9P_IN_HEAD \
+	for(i = 0; i < out_h; i++) \
+	{ \
+		unsigned char *output_row = output_rows[i + out_y] + out_x * out_pixelsize; \
+		unsigned char *input_y = in_y_plane + row_table[i] * total_in_w; \
+		unsigned char *input_u = in_u_plane + (row_table[i] / 4) * (total_in_w / 4); \
+		unsigned char *input_v = in_v_plane + (row_table[i] / 4) * (total_in_w / 4); \
+		for(j = 0; j < out_w; j++) \
+		{
+
 
 #define TRANSFER_YUV422P_IN_HEAD \
 	for(i = 0; i < out_h; i++) \

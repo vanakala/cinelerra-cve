@@ -8,6 +8,7 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "filesystem.h"
+#include "keyframepopup.h"
 #include "keys.h"
 #include "language.h"
 #include "localsession.h"
@@ -68,7 +69,7 @@ MWindowGUI::~MWindowGUI()
 	delete edit_menu;
 	delete plugin_menu;
 	delete keyframe_menu;
-	delete transition_menu;
+ 	delete transition_menu;
 }
 
 void MWindowGUI::get_scrollbars()

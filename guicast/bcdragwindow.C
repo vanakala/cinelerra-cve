@@ -143,7 +143,8 @@ BC_Pixmap *BC_DragWindow::prepare_frame(VFrame *frame, BC_WindowBase *parent_win
 	if(frame->get_color_model() == BC_RGBA8888)
 	{
 		temp_frame = new VFrame(*frame);
-	} else
+	}
+	else
 	{
 		temp_frame = new VFrame(0, 
 					frame->get_w(), 

@@ -49,6 +49,7 @@
 #define BC_YUV422P      17
 #define BC_YUV444P      27
 #define BC_YUV411P      18
+#define BC_YUV9P        28     // Disasterous cmodel from Sorenson
 
 // Colormodels purely used by Quicktime are done in Quicktime.
 
