@@ -40,12 +40,15 @@ typedef std::multimap<long long, FrameCacheElement*> FrameCacheTree_ByTime;
 
 class FrameCache {
 public:
-	FrameCache(int64_t cache_size = 0);   // chache size is in bytes
+	FrameCache(int64_t cache_size);   // cache size is in bytes
 	~FrameCache();
+
 	VFrame *get_frame(long frame_number, int frame_layer, int frame_width, int frame_height, int color_model, int force_cache = 0); // implicit lock
 
 	// returns 1 if frame was put into cache, 0 if it wasn't
 	int add_frame(long frame_number, int frame_layer, VFrame *frame, int do_not_copy_frame = 0, int force_cache = 0); 
+
+	void set_size(int64_t cache_size);
 	void unlock_cache();
 	void lock_cache();
 	void reset();		
@@ -54,7 +57,7 @@ public:
 	void dump();
 	
 private:
-	int compare_with_frame(FrameCacheElement *element, int frame_number, int frame_layer, int frame_width, int frame_height, int frame_color_model);
+	int compare_with_frame(FrameCacheElement *element, long frame_number, int frame_layer, int frame_width, int frame_height, int frame_color_model);
 	FrameCacheTree::iterator find_element_byframe(long frame_number, int frame_layer, int frame_width, int frame_height, int frame_color_model);
 	FrameCacheTree_ByTime::iterator find_element_bytime(long long frame_time_diff, long frame_number, int frame_layer, int frame_width, int frame_height, int frame_color_model);
 	Mutex change_lock;
@@ -71,7 +74,7 @@ private:
 class File
 {
 public:
-	File(Preferences *preferences);
+	File();
 	~File();
 
 // Get attributes for various file formats.
@@ -169,6 +172,9 @@ public:
 	VFrame* read_frame_cache(int color_model, int width = 0, int height = 0);
 
 	int read_frame(VFrame *frame, int cache_mode = 0);
+
+// cache is only useful for reading!
+	void set_cache_size(int64_t cache_size);
 
 // The following involve no extra copies.
 // Direct copy routines for direct copy playback

@@ -293,9 +293,10 @@ CICacheItem::CICacheItem(CICache *cache, Asset *asset)
 	this->cache = cache;
 	checked_out = 0;
 
-	file = new File(cache->preferences);
+	file = new File;
 	file->set_processors(cache->preferences->processors);
 	file->set_preload(cache->edl->session->playback_preload);
+	file->set_cache_size(cache->preferences->cache_size_per_item * 1024*1024);
 
 
 // Copy decoding parameters from session to asset so file can see them.

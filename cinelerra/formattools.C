@@ -381,7 +381,7 @@ FormatAThread::FormatAThread(FormatTools *format, Preferences *preferences)
  : Thread()
 { 
 	this->format = format; 
-	file = new File(preferences);
+	file = new File();
 }
 
 FormatAThread::~FormatAThread() 
@@ -409,7 +409,7 @@ FormatVThread::FormatVThread(FormatTools *format,
 {
 	this->lock_compressor = lock_compressor;
 	this->format = format;
-	file = new File(preferences);
+	file = new File;
 }
 
 FormatVThread::~FormatVThread() 

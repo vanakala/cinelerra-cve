@@ -406,7 +406,7 @@ void MenuEffectThread::run()
 		strcpy(asset->path, packet->path);
 
 		assets.append(asset);
-		File *file = new File(mwindow->preferences);
+		File *file = new File;
 
 // Open the output file after getting the information because the sample rate
 // is needed here.

@@ -52,6 +52,11 @@
 	memory_used = 0;
  	change_lock.unlock();
  }
+
+ void FrameCache::set_size(int64_t cache_size) 
+ {
+	this->cache_size = cache_size;
+ }
  
  void FrameCache::enable_cache() 
  {	
@@ -75,7 +80,7 @@
  }
  
  inline int FrameCache::compare_with_frame(FrameCacheElement *element, 
- 					int frame_number, 
+ 					long frame_number, 
  					int frame_layer,
  					int frame_width,
  					int frame_height,
@@ -273,11 +278,11 @@ int FrameCache::add_frame(long frame_number, int frame_layer, VFrame *frame, int
  }
 
 
-File::File(Preferences *preferences)
+File::File()
 {
 	cpus = 1;
 	asset = new Asset;
-	frames_cache = new FrameCache(preferences->cache_size_per_item * 1024*1024);
+	frames_cache = new FrameCache(0);     // this could possibly be avoided for write-files
 	reset_parameters();
 }
 
@@ -320,6 +325,10 @@ void File::reset_parameters()
 	frames_cache->reset();
 }
 
+void File::set_cache_size(int64_t cache_size)
+{
+	frames_cache->set_size(cache_size);
+}
 
 int File::raise_window()
 {
@@ -1066,6 +1075,7 @@ int64_t File::compressed_frame_size()
 	else 
 		return 0;
 }
+
 
 // Return a pointer to a frame in the video file for drawing purposes.
 // frame is created and resides in cache

@@ -177,8 +177,7 @@ int AssetEditWindow::create_objects()
 
 	add_subwindow(new BC_Title(x, y, _("File format:")));
 	x = x2;
-	File file(mwindow->preferences);
-	add_subwindow(new BC_Title(x, y, file.formattostr(mwindow->plugindb, asset->format), MEDIUMFONT, YELLOW));
+	add_subwindow(new BC_Title(x, y, File::formattostr(mwindow->plugindb, asset->format), MEDIUMFONT, YELLOW));
 	x = x1;
 	y += 20;
 
