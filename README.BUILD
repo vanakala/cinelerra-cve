@@ -1,3 +1,5 @@
+You need automake version 1.7 to build.  1.4 won't work!
+
 The automake version of the cinelerra source tree needs third-party libraries
 development files installed.
 
@@ -22,7 +24,7 @@ you distrib. Not joking):
 	
 		
 The others are maybe part of your distrib. If they aren't, you can find them
-on ftp://lpnotfr.free.fr/cinelerra-libs
+on http://lpnotfr.free.fr/cinelerra-libs
 	- libdv (0.95)
 	- xvid (cvs 20020822)
 	- liba52 (0.7.4)
