@@ -36,7 +36,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: sl\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2003-10-12 23:32+0200\n"
+"POT-Creation-Date: 2003-10-13 00:20+0200\n"
 "PO-Revision-Date: 2003-10-13 00:17+0200\n"
 "Last-Translator: \n"
 "Language-Team:  <sl@li.org>\n"
@@ -3118,7 +3118,8 @@ msgstr "Razmerje:"
 
 #: cinelerra/resourcepixmap.C:476
 #, c-format
-msgid "ResourcePixmap::draw_audio_source: failed to check out %s for drawing.\n"
+msgid ""
+"ResourcePixmap::draw_audio_source: failed to check out %s for drawing.\n"
 msgstr "ResourcePixmap::draw_audio_source: nisem uspel dobiti %s za risanje.\n"
 
 #: cinelerra/quit.C:25
@@ -3882,6 +3883,10 @@ msgstr "Zakasnitev zvoka"
 msgid "Delay seconds:"
 msgstr "Sekunde zakasnitve:"
 
+#: plugins/delayvideo/delayvideo.C:296
+msgid "Delay Video"
+msgstr "Zakasnitev videa"
+
 #: plugins/denoisefft/denoisefft.C:233
 msgid "Collect noise"
 msgstr "Zberi ¹um"
@@ -4633,7 +4638,9 @@ msgstr "Nov/Odpri SVG..."
 msgid ""
 "SVG Width is currently only supported in milimeters: %s, falling back to "
 "100\n"
-msgstr "Navajanje SVG ¹irine je trenutno podprto le v milimetrih: %s, uporabljam vrednost 100\n"
+msgstr ""
+"Navajanje SVG ¹irine je trenutno podprto le v milimetrih: %s, uporabljam "
+"vrednost 100\n"
 
 #: plugins/svg/svgwin.C:245
 #, c-format
@@ -5030,4 +5037,3 @@ msgstr "YUV"
 #: plugins/zoomblur/zoomblur.C:383
 msgid "Zoom Blur"
 msgstr "Poveèava mehèanja"
-
