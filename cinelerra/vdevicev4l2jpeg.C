@@ -20,7 +20,7 @@
 #include "vframe.h"
 #include "videodevice.h"
 
-#ifdef HAVE_V4L2
+#ifdef HAVE_VIDEO4LINUX2
 
 #include <fcntl.h>
 #include <string.h>

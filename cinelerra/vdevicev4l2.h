@@ -2,7 +2,10 @@
 #define VDEVICEV4L2_H
 
 
-#ifdef HAVE_V4L2
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+#ifdef HAVE_VIDEO4LINUX2
 
 #include "vdevicebase.h"
 #include <linux/types.h>

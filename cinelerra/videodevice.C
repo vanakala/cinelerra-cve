@@ -171,7 +171,7 @@ int VideoDevice::open_input(VideoInConfig *config,
 			break;
 
 
-#ifdef HAVE_V4L2
+#ifdef HAVE_VIDEO4LINUX2
 		case VIDEO4LINUX2:
 			input_base = new VDeviceV4L2(this);
 			result = input_base->open_input();
