@@ -409,7 +409,7 @@ void MaskUnit::process_package(LoadPackage *package)
 				delete row_spans;
 			}
 			row_spans_h = mask_h * OVERSAMPLE;
-			row_spans = new (short *)[mask_h * OVERSAMPLE]; 
+			row_spans = new short *[mask_h * OVERSAMPLE]; 
 			for (i= 0; i<mask_h * OVERSAMPLE; i++) {
 				/* we use malloc so we can use realloc */
 				row_spans[i] = (short *)malloc(sizeof(short) * NUM_SPANS);
