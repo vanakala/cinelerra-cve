@@ -550,4 +550,4 @@ noinst_HEADERS = aattachmentpoint.h \
 		 zoombar.h \
 		 zoompanel.h
 		 
-cinelerra_LDADD = $(top_builddir)/quicktime/libquicktime.la $(top_builddir)/guicast/libguicast.la $(top_builddir)/libmpeg3/libmpeg3.la -lX11 -lsndfile -logg -lvorbis -lvorbisfile -lvorbisenc -la52 -lasound -lpng -lXv -lXext -ljpeg -lmp3lame -ltiff -lesd -lz $(SOUND_LDFLAGS) $(FIREWIRE_LDFLAGS) -ldv -luuid $(AVIFILE_LDFLAGS)
+cinelerra_LDADD = $(top_builddir)/quicktime/libquicktime.la $(top_builddir)/guicast/libguicast.la $(top_builddir)/libmpeg3/libmpeg3.la -lX11 -lsndfile -logg -lvorbis -lvorbisfile -lvorbisenc -la52 -lpng -lXv -lXext -ljpeg -lmp3lame -ltiff -lesd -lz $(SOUND_LDFLAGS) $(FIREWIRE_LDFLAGS) -ldv -luuid $(AVIFILE_LDFLAGS)
