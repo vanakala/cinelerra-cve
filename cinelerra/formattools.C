@@ -23,27 +23,15 @@ FormatTools::FormatTools(MWindow *mwindow,
 	this->asset = asset;
 	this->plugindb = mwindow->plugindb;
 
-	aparams_button = 0;
-	vparams_button = 0;
 	aparams_thread = 0;
 	vparams_thread = 0;
-	channels_tumbler = 0;
 	w = 0;
 }
 
 FormatTools::~FormatTools()
 {
-	delete path_button;
-	delete path_textbox;
-	delete path_recent;
-	delete pipe_status;
-	delete format_button;
-
-	if(aparams_button) delete aparams_button;
-	if(vparams_button) delete vparams_button;
-	if(aparams_thread) delete aparams_thread;
-	if(vparams_thread) delete vparams_thread;
-	if(channels_tumbler) delete channels_tumbler;
+	delete aparams_thread;
+	delete vparams_thread;
 }
 
 int FormatTools::create_objects(int &init_x, 
