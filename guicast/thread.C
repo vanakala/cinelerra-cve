@@ -11,7 +11,7 @@ Thread::Thread(int synchronous, int realtime, int autodelete)
 	this->synchronous = synchronous;
 	this->realtime = realtime;
 	this->autodelete = autodelete;
-	tid = (pthread_t)-1;
+	tid = (pthread_t)0;
 	thread_running = 0;
 	cancel_enabled = 0;
 }
@@ -29,10 +29,9 @@ void* Thread::entrypoint(void *parameters)
 // Disable cancellation by default.
 	pthread_setcancelstate(PTHREAD_CANCEL_DISABLE, 0);
 	thread->cancel_enabled = 0;
-//printf("Thread::entrypoint 1 %d\n", getpid());	
+//printf("Thread::entrypoint 1 %d\n", thread->tid);
 
 	thread->run();
-
 	thread->thread_running = 0;
 
 	if(thread->autodelete && !thread->synchronous) delete thread;
@@ -68,7 +67,7 @@ void Thread::start()
 
 int Thread::end(pthread_t tid)           // need to join after this if synchronous
 {
-	if((int)tid > 0) pthread_cancel(tid);
+	if((int)tid != 0) pthread_cancel(tid);
 	return 0;
 }
 
@@ -80,20 +79,19 @@ int Thread::end()           // need to join after this if synchronous
 
 int Thread::cancel()
 {
-	if((int)tid > 0) pthread_cancel(tid);
-	if(!synchronous) tid = (pthread_t)-1;
+	if((int)tid != 0) pthread_cancel(tid);
+	if(!synchronous) tid = (pthread_t)0;
 	return 0;
 }
 
 int Thread::join()   // join this thread
 {
 	int result = 0;
-	if((int)tid > 0)
+	if((int)tid != 0)
 	{
 		result = pthread_join(tid, 0);
 	}
-
-	tid = (pthread_t)-1;
+	tid = (pthread_t)0;
 
 // Don't execute anything after this.
 	if(autodelete && synchronous) delete this;
@@ -122,20 +120,20 @@ int Thread::get_cancel_enabled()
 int Thread::exit_thread()
 {
  	pthread_exit(0);
-	if(!synchronous) tid = (pthread_t)-1;
+	if(!synchronous) tid = (pthread_t)0;
 	return 0;
 }
 
 
 int Thread::suspend_thread()
 {
-	if((int)tid > 0) pthread_kill(tid, SIGSTOP);
+	if((int)tid != 0) pthread_kill(tid, SIGSTOP);
 	return 0;
 }
 
 int Thread::continue_thread()
 {
-	if((int)tid > 0) pthread_kill(tid, SIGCONT);
+	if((int)tid != 0) pthread_kill(tid, SIGCONT);
 	return 0;
 }
 
