@@ -4249,7 +4249,7 @@ int TrackCanvas::test_edits(int cursor_x,
 					}
 				}
 				else
-				if(drag_start)
+				if(drag_start && track->record)
 				{
 					if(mwindow->edl->session->editing_mode == EDITING_ARROW)
 					{
@@ -4376,7 +4376,7 @@ int TrackCanvas::test_plugins(int cursor_x,
 		}
 		else
 // Move plugin
-		if(drag_start)
+		if(drag_start && plugin->track->record)
 		{
 //printf("TrackCanvas::test_plugins 4\n");
 			if(mwindow->edl->session->editing_mode == EDITING_ARROW)
