@@ -445,8 +445,8 @@ int FileDV::can_copy_from(Edit *edit, int64_t position)
 
 	if(edit->asset->format == FILE_DV ||
 			(edit->asset->format == FILE_MOV &&
-				(match4(this->asset->vcodec, QUICKTIME_DV) ||
-				match4(this->asset->vcodec, QUICKTIME_DVSD))))
+				(match4(edit->asset->vcodec, QUICKTIME_DV) ||
+				match4(edit->asset->vcodec, QUICKTIME_DVSD))))
 		return 1;
 
 	return 0;
