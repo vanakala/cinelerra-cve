@@ -359,6 +359,9 @@ void BC_Theme::unset_path()
 	data_buffer = 0;
 	contents_buffer = 0;
 	last_image = 0;
+	contents.remove_all();
+	offsets.remove_all();
+	used.remove_all();
 }
 
 unsigned char* BC_Theme::get_image_data(char *title)
