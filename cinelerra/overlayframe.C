@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include "clip.h"
 #include "edl.inc"
@@ -10,12 +11,32 @@
 #include "overlayframe.h"
 #include "vframe.h"
 
-#if 1
-	#define use_float 1
-#else
-	#define use_float 0
-#endif
+// Easy abstraction of the float and int types.  Most of these are never used
+// but GCC expects them.
+static int my_abs(int32_t x)
+{
+	return abs(x);
+}
 
+static int my_abs(uint32_t x)
+{
+	return x;
+}
+
+static int my_abs(int64_t x)
+{
+	return llabs(x);
+}
+
+static int my_abs(uint64_t x)
+{
+	return x;
+}
+
+static float my_abs(float x)
+{
+	return fabsf(x);
+}
 
 
 
@@ -32,13 +53,11 @@ OverlayFrame::OverlayFrame(int cpus)
 
 OverlayFrame::~OverlayFrame()
 {
-//printf("OverlayFrame::~OverlayFrame 1\n");
 	if(temp_frame) delete temp_frame;
 	if(scale_engine) delete scale_engine;
 	if(translate_engine) delete translate_engine;
 	if(blend_engine) delete blend_engine;
 	if(scaletranslate_engine) delete scaletranslate_engine;
-//printf("OverlayFrame::~OverlayFrame 2\n");
 }
 
 
@@ -70,8 +89,8 @@ OverlayFrame::~OverlayFrame()
 			r = output[0] ? (((temp_type)input1 * max) / output[0]) : max; \
 			if(chroma_offset) \
 			{ \
-				g = labs((int)input2 - chroma_offset) > labs((temp_type)output[1] - chroma_offset) ? input2 : output[1]; \
-				b = labs((int)input3 - chroma_offset) > labs((temp_type)output[2] - chroma_offset) ? input3 : output[2]; \
+				g = my_abs((temp_type)input2 - chroma_offset) > my_abs((temp_type)output[1] - chroma_offset) ? input2 : output[1]; \
+				b = my_abs((temp_type)input3 - chroma_offset) > my_abs((temp_type)output[2] - chroma_offset) ? input3 : output[2]; \
 			} \
 			else \
 			{ \
@@ -86,8 +105,8 @@ OverlayFrame::~OverlayFrame()
 			r = ((temp_type)input1 * output[0]) / max; \
 			if(chroma_offset) \
 			{ \
-				g = labs((temp_type)input2 - chroma_offset) > labs((temp_type)output[1] - chroma_offset) ? input2 : output[1]; \
-				b = labs((temp_type)input3 - chroma_offset) > labs((temp_type)output[2] - chroma_offset) ? input3 : output[2]; \
+				g = my_abs((temp_type)input2 - chroma_offset) > my_abs((temp_type)output[1] - chroma_offset) ? input2 : output[1]; \
+				b = my_abs((temp_type)input3 - chroma_offset) > my_abs((temp_type)output[2] - chroma_offset) ? input3 : output[2]; \
 			} \
 			else \
 			{ \
@@ -126,9 +145,18 @@ OverlayFrame::~OverlayFrame()
 			break; \
 	} \
  \
-	output[0] = (type)CLIP(r, 0, max); \
-	output[1] = (type)CLIP(g, 0, max); \
-	output[2] = (type)CLIP(b, 0, max); \
+ 	if(sizeof(type) != 4) \
+	{ \
+		output[0] = (type)CLIP(r, 0, max); \
+		output[1] = (type)CLIP(g, 0, max); \
+		output[2] = (type)CLIP(b, 0, max); \
+	} \
+	else \
+	{ \
+		output[0] = r; \
+		output[1] = g; \
+		output[2] = b; \
+	} \
 }
 
 
@@ -154,8 +182,8 @@ OverlayFrame::~OverlayFrame()
 			r = output1 ? (((temp_type)input1 * max) / output1) : max; \
 			if(chroma_offset) \
 			{ \
-				g = labs((int)input2 - chroma_offset) > labs((int)output2 - chroma_offset) ? input2 : output2; \
-				b = labs((int)input3 - chroma_offset) > labs((int)output3 - chroma_offset) ? input3 : output3; \
+				g = my_abs((temp_type)input2 - chroma_offset) > my_abs((temp_type)output2 - chroma_offset) ? input2 : output2; \
+				b = my_abs((temp_type)input3 - chroma_offset) > my_abs((temp_type)output3 - chroma_offset) ? input3 : output3; \
 			} \
 			else \
 			{ \
@@ -171,8 +199,8 @@ OverlayFrame::~OverlayFrame()
 			r = ((temp_type)input1 * output1) / max; \
 			if(chroma_offset) \
 			{ \
-				g = labs((temp_type)input2 - chroma_offset) > labs((temp_type)output2 - chroma_offset) ? input2 : output2; \
-				b = labs((temp_type)input3 - chroma_offset) > labs((temp_type)output3 - chroma_offset) ? input3 : output3; \
+				g = my_abs((temp_type)input2 - chroma_offset) > my_abs((temp_type)output2 - chroma_offset) ? input2 : output2; \
+				b = my_abs((temp_type)input3 - chroma_offset) > my_abs((temp_type)output3 - chroma_offset) ? input3 : output3; \
 			} \
 			else \
 			{ \
@@ -223,17 +251,21 @@ OverlayFrame::~OverlayFrame()
 			break; \
 	} \
  \
-	output[0] = (type)CLIP(r, 0, max); \
-	output[1] = (type)CLIP(g, 0, max); \
-	output[2] = (type)CLIP(b, 0, max); \
-	output[3] = (type)a; \
+ 	if(sizeof(type) != 4) \
+	{ \
+		output[0] = (type)CLIP(r, 0, max); \
+		output[1] = (type)CLIP(g, 0, max); \
+		output[2] = (type)CLIP(b, 0, max); \
+		output[3] = (type)a; \
+	} \
+	else \
+	{ \
+		output[0] = r; \
+		output[1] = g; \
+		output[2] = b; \
+		output[3] = a; \
+	} \
 }
-
-
-
-
-
-
 
 
 
@@ -261,6 +293,14 @@ int OverlayFrame::overlay(VFrame *output,
 	float w_scale = (out_x2 - out_x1) / (in_x2 - in_x1);
 	float h_scale = (out_y2 - out_y1) / (in_y2 - in_y1);
 
+	if(isnan(in_x1) ||
+		isnan(in_y1) ||
+		isnan(in_x2) ||
+		isnan(in_y2) ||
+		isnan(out_x1) ||
+		isnan(out_y1) ||
+		isnan(out_x2) ||
+		isnan(out_y2)) return 1;
 // printf("OverlayFrame::overlay 1 %f %f %f %f -> %f %f %f %f\n", in_x1,
 // 			in_y1,
 // 			in_x2,
@@ -411,10 +451,14 @@ int OverlayFrame::overlay(VFrame *output,
 		int in_y1_int = (int)in_y1;
 		int in_x2_int = MIN((int)ceil(in_x2), input->get_w());
 		int in_y2_int = MIN((int)ceil(in_y2), input->get_h());
+		int out_x1_int = (int)out_x1;
+		int out_y1_int = (int)out_y1;
+		int out_x2_int = MIN((int)ceil(out_x2), input->get_w());
+		int out_y2_int = MIN((int)ceil(out_y2), input->get_h());
 
 // Dimensions of temp frame.  Integer boundaries scaled.
-		int temp_w = (int)ceil(w_scale * (in_x2_int - in_x1_int));
-		int temp_h = (int)ceil(h_scale * (in_y2_int - in_y1_int));
+		int temp_w = (out_x2_int - out_x1_int);
+		int temp_h = (out_y2_int - out_y1_int);
 		VFrame *scale_output;
 
 
@@ -483,10 +527,10 @@ int OverlayFrame::overlay(VFrame *output,
 			translation_input = scale_output;
 
 // Adjust input coordinates to reflect new scaled coordinates.
-			in_x1 = (in_x1 - in_x1_int) * w_scale;
-			in_y1 = (in_y1 - in_y1_int) * h_scale;
-			in_x2 = (in_x2 - in_x1_int) * w_scale;
-			in_y2 = (in_y2 - in_y1_int) * h_scale;
+			in_x1 = 0;
+			in_y1 = 0;
+			in_x2 = temp_w;
+			in_y2 = temp_h;
 		}
 
 
@@ -890,10 +934,14 @@ void ScaleUnit::dump_bilinear(bilinear_table_t *table, int total)
 		{ \
 			bilinear_table_t *x_entry = &x_table[j]; \
 /* Load rounding factors */ \
-			float temp_f1 = .5; \
-			float temp_f2 = .5; \
-			float temp_f3 = .5; \
-			float temp_f4 = .5; \
+			float temp_f1; \
+			float temp_f2; \
+			float temp_f3; \
+			float temp_f4; \
+			if(sizeof(type) != 4) \
+				temp_f1 = temp_f2 = temp_f3 = temp_f4 = .5; \
+			else \
+				temp_f1 = temp_f2 = temp_f3 = temp_f4 = 0; \
  \
 /* First row */ \
 			float input_scale1 = y_entry->input_fraction1 * x_entry->input_fraction1; \
@@ -924,10 +972,13 @@ void ScaleUnit::dump_bilinear(bilinear_table_t *table, int total)
 				} \
 			} \
  \
-			if(temp_f1 > max) temp_f1 = max; \
-			if(temp_f2 > max) temp_f2 = max; \
-			if(temp_f3 > max) temp_f3 = max; \
-			if(components == 4) if(temp_f4 > max) temp_f4 = max; \
+ 			if(max != 1.0) \
+			{ \
+				if(temp_f1 > max) temp_f1 = max; \
+				if(temp_f2 > max) temp_f2 = max; \
+				if(temp_f3 > max) temp_f3 = max; \
+				if(components == 4) if(temp_f4 > max) temp_f4 = max; \
+			} \
 			out_row[j * components    ] = (type)temp_f1; \
 			out_row[j * components + 1] = (type)temp_f2; \
 			out_row[j * components + 2] = (type)temp_f3; \
@@ -958,48 +1009,24 @@ void ScaleUnit::dump_bilinear(bilinear_table_t *table, int total)
 	float *table_frac_x_f, *table_antifrac_x_f, *table_frac_y_f, *table_antifrac_y_f; \
 	int *table_frac_x_i, *table_antifrac_x_i, *table_frac_y_i, *table_antifrac_y_i; \
  \
-	if(use_float) \
-	{ \
- 		tabulate_blinear_f(table_int_x1,  \
-			table_int_x2,  \
-			table_frac_x_f,  \
-			table_antifrac_x_f,  \
-			k_x,  \
-			0,  \
-			out_w_int, \
-			in_x1_int,  \
-			in_w_int); \
- 		tabulate_blinear_f(table_int_y1,  \
-			table_int_y2,  \
-			table_frac_y_f,  \
-			table_antifrac_y_f,  \
-			k_y,  \
-			pkg->out_row1,  \
-			pkg->out_row2,  \
-			in_y1_int, \
-			in_h_int); \
-	} \
-	else \
-	{ \
- 		tabulate_blinear_i(table_int_x1,  \
-			table_int_x2,  \
-			table_frac_x_i,  \
-			table_antifrac_x_i,  \
-			k_x,  \
-			0,  \
-			out_w_int, \
-			in_x1_int,  \
-			in_w_int); \
- 		tabulate_blinear_i(table_int_y1,  \
-			table_int_y2,  \
-			table_frac_y_i,  \
-			table_antifrac_y_i,  \
-			k_y,  \
-			pkg->out_row1,  \
-			pkg->out_row2,  \
-			in_y1_int, \
-			in_h_int); \
-	} \
+ 	tabulate_blinear_f(table_int_x1,  \
+		table_int_x2,  \
+		table_frac_x_f,  \
+		table_antifrac_x_f,  \
+		k_x,  \
+		0,  \
+		out_w_int, \
+		in_x1_int,  \
+		in_w_int); \
+ 	tabulate_blinear_f(table_int_y1,  \
+		table_int_y2,  \
+		table_frac_y_f,  \
+		table_antifrac_y_f,  \
+		k_y,  \
+		pkg->out_row1,  \
+		pkg->out_row2,  \
+		in_y1_int, \
+		in_h_int); \
  \
 	for(int i = 0; i < out_h; i++) \
 	{ \
@@ -1009,16 +1036,8 @@ void ScaleUnit::dump_bilinear(bilinear_table_t *table, int total)
         float anti_a_f; \
 		uint64_t a_i; \
         uint64_t anti_a_i; \
-		if(use_float) \
-		{ \
-			a_f = table_frac_y_f[i]; \
-        	anti_a_f = table_antifrac_y_f[i]; \
-		} \
-		else \
-		{ \
-			a_i = table_frac_y_i[i]; \
-        	anti_a_i = table_antifrac_y_i[i]; \
-		} \
+		a_f = table_frac_y_f[i]; \
+        anti_a_f = table_antifrac_y_f[i]; \
 		type *in_row1 = in_rows[i_y1]; \
 		type *in_row2 = in_rows[i_y2]; \
 		type *out_row = out_rows[i + pkg->out_row1]; \
@@ -1027,112 +1046,56 @@ void ScaleUnit::dump_bilinear(bilinear_table_t *table, int total)
 		{ \
 			int i_x1 = table_int_x1[j]; \
 			int i_x2 = table_int_x2[j]; \
-			if(use_float) \
-			{ \
-				float output1r, output1g, output1b, output1a; \
-				float output2r, output2g, output2b, output2a; \
-				float output3r, output3g, output3b, output3a; \
-				float output4r, output4g, output4b, output4a; \
-				float b_f; \
-				float anti_b_f; \
-				b_f = table_frac_x_f[j]; \
-				anti_b_f = table_antifrac_x_f[j]; \
- \
-    			output1r = in_row1[i_x1 * components]; \
-    			output1g = in_row1[i_x1 * components + 1]; \
-    			output1b = in_row1[i_x1 * components + 2]; \
-    			if(components == 4) output1a = in_row1[i_x1 * components + 3]; \
- \
-    			output2r = in_row1[i_x2 * components]; \
-    			output2g = in_row1[i_x2 * components + 1]; \
-    			output2b = in_row1[i_x2 * components + 2]; \
-    			if(components == 4) output2a = in_row1[i_x2 * components + 3]; \
- \
-    			output3r = in_row2[i_x1 * components]; \
-    			output3g = in_row2[i_x1 * components + 1]; \
-    			output3b = in_row2[i_x1 * components + 2]; \
-    			if(components == 4) output3a = in_row2[i_x1 * components + 3]; \
+			float output1r, output1g, output1b, output1a; \
+			float output2r, output2g, output2b, output2a; \
+			float output3r, output3g, output3b, output3a; \
+			float output4r, output4g, output4b, output4a; \
+			float b_f; \
+			float anti_b_f; \
+			b_f = table_frac_x_f[j]; \
+			anti_b_f = table_antifrac_x_f[j]; \
 \
-    			output4r = in_row2[i_x2 * components]; \
-    			output4g = in_row2[i_x2 * components + 1]; \
-    			output4b = in_row2[i_x2 * components + 2]; \
-    			if(components == 4) output4a = in_row2[i_x2 * components + 3]; \
- \
-				out_row[j * components] =  \
-					(type)(anti_a_f * (anti_b_f * output1r +  \
-					b_f * output2r) +  \
-                	a_f * (anti_b_f * output3r +  \
-					b_f * output4r)); \
-				out_row[j * components + 1] =   \
-					(type)(anti_a_f * (anti_b_f * output1g +  \
-					b_f * output2g) +  \
-                	a_f * ((anti_b_f * output3g) +  \
-					b_f * output4g)); \
-				out_row[j * components + 2] =   \
-					(type)(anti_a_f * ((anti_b_f * output1b) +  \
-					(b_f * output2b)) +  \
-                	a_f * ((anti_b_f * output3b) +  \
-					b_f * output4b)); \
-				if(components == 4) \
-					out_row[j * components + 3] =   \
-						(type)(anti_a_f * ((anti_b_f * output1a) +  \
-						(b_f * output2a)) +  \
-                		a_f * ((anti_b_f * output3a) +  \
-						b_f * output4a)); \
-			} \
-			else \
-			{ \
-				uint64_t output1r, output1g, output1b, output1a; \
-				uint64_t output2r, output2g, output2b, output2a; \
-				uint64_t output3r, output3g, output3b, output3a; \
-				uint64_t output4r, output4g, output4b, output4a; \
-				uint64_t b_i; \
-				uint64_t anti_b_i; \
-				b_i = table_frac_x_i[j]; \
-				anti_b_i = table_antifrac_x_i[j]; \
- \
-    			output1r = in_row1[i_x1 * components]; \
-    			output1g = in_row1[i_x1 * components + 1]; \
-    			output1b = in_row1[i_x1 * components + 2]; \
-    			if(components == 4) output1a = in_row1[i_x1 * components + 3]; \
- \
-    			output2r = in_row1[i_x2 * components]; \
-    			output2g = in_row1[i_x2 * components + 1]; \
-    			output2b = in_row1[i_x2 * components + 2]; \
-    			if(components == 4) output2a = in_row1[i_x2 * components + 3]; \
- \
-    			output3r = in_row2[i_x1 * components]; \
-    			output3g = in_row2[i_x1 * components + 1]; \
-    			output3b = in_row2[i_x1 * components + 2]; \
-    			if(components == 4) output3a = in_row2[i_x1 * components + 3]; \
+    		output1r = in_row1[i_x1 * components]; \
+    		output1g = in_row1[i_x1 * components + 1]; \
+    		output1b = in_row1[i_x1 * components + 2]; \
+    		if(components == 4) output1a = in_row1[i_x1 * components + 3]; \
 \
-    			output4r = in_row2[i_x2 * components]; \
-    			output4g = in_row2[i_x2 * components + 1]; \
-    			output4b = in_row2[i_x2 * components + 2]; \
-    			if(components == 4) output4a = in_row2[i_x2 * components + 3]; \
- \
-				out_row[j * components] =  \
-					(type)((anti_a_i * (anti_b_i * output1r +  \
-					b_i * output2r) +  \
-                	a_i * (anti_b_i * output3r +  \
-					b_i * output4r)) / 0xffffffff); \
-				out_row[j * components + 1] =   \
-					(type)((anti_a_i * (anti_b_i * output1g +  \
-					b_i * output2g) +  \
-                	a_i * (anti_b_i * output3g +  \
-					b_i * output4g)) / 0xffffffff); \
-				out_row[j * components + 2] =   \
-					(type)((anti_a_i * (anti_b_i * output1b +  \
-					b_i * output2b) +  \
-                	a_i * (anti_b_i * output3b +  \
-					b_i * output4b)) / 0xffffffff); \
-				if(components == 4) \
-					out_row[j * components + 3] =   \
-						(type)((anti_a_i * (anti_b_i * output1a +  \
-						b_i * output2a) +  \
-                		a_i * (anti_b_i * output3a +  \
-						b_i * output4a)) / 0xffffffff); \
-			} \
+    		output2r = in_row1[i_x2 * components]; \
+    		output2g = in_row1[i_x2 * components + 1]; \
+    		output2b = in_row1[i_x2 * components + 2]; \
+    		if(components == 4) output2a = in_row1[i_x2 * components + 3]; \
+\
+    		output3r = in_row2[i_x1 * components]; \
+    		output3g = in_row2[i_x1 * components + 1]; \
+    		output3b = in_row2[i_x1 * components + 2]; \
+    		if(components == 4) output3a = in_row2[i_x1 * components + 3]; \
+\
+    		output4r = in_row2[i_x2 * components]; \
+    		output4g = in_row2[i_x2 * components + 1]; \
+    		output4b = in_row2[i_x2 * components + 2]; \
+    		if(components == 4) output4a = in_row2[i_x2 * components + 3]; \
+\
+			out_row[j * components] =  \
+				(type)(anti_a_f * (anti_b_f * output1r +  \
+				b_f * output2r) +  \
+                a_f * (anti_b_f * output3r +  \
+				b_f * output4r)); \
+			out_row[j * components + 1] =   \
+				(type)(anti_a_f * (anti_b_f * output1g +  \
+				b_f * output2g) +  \
+                a_f * ((anti_b_f * output3g) +  \
+				b_f * output4g)); \
+			out_row[j * components + 2] =   \
+				(type)(anti_a_f * ((anti_b_f * output1b) +  \
+				(b_f * output2b)) +  \
+                a_f * ((anti_b_f * output3b) +  \
+				b_f * output4b)); \
+			if(components == 4) \
+				out_row[j * components + 3] =   \
+					(type)(anti_a_f * ((anti_b_f * output1a) +  \
+					(b_f * output2a)) +  \
+                	a_f * ((anti_b_f * output3a) +  \
+					b_f * output4a)); \
 		} \
 	} \
  \
@@ -1141,20 +1104,10 @@ void ScaleUnit::dump_bilinear(bilinear_table_t *table, int total)
 	delete [] table_int_x2; \
 	delete [] table_int_y1; \
 	delete [] table_int_y2; \
-	if(use_float) \
-	{ \
-		delete [] table_frac_x_f; \
-		delete [] table_antifrac_x_f; \
-		delete [] table_frac_y_f; \
-		delete [] table_antifrac_y_f; \
-	} \
-	else \
-	{ \
-		delete [] table_frac_x_i; \
-		delete [] table_antifrac_x_i; \
-		delete [] table_frac_y_i; \
-		delete [] table_antifrac_y_i; \
-	} \
+	delete [] table_frac_x_f; \
+	delete [] table_antifrac_x_f; \
+	delete [] table_frac_y_f; \
+	delete [] table_antifrac_y_f; \
  \
 /*printf("BILINEAR_ENLARGE 2\n");*/ \
 }
@@ -1172,42 +1125,21 @@ void ScaleUnit::dump_bilinear(bilinear_table_t *table, int total)
 	int in_h_int = input->get_h(); \
 	int in_w_int = input->get_w(); \
  \
- 	if(use_float) \
-	{ \
-		tabulate_bcubic_f(bspline_x_f,  \
-			in_x_table, \
-			k_x, \
-			in_x1_int, \
-			out_w_int, \
-			in_w_int, \
-			-1); \
-	 \
-		tabulate_bcubic_f(bspline_y_f,  \
-			in_y_table, \
-			k_y, \
-			in_y1_int, \
-			out_h_int, \
-			in_h_int, \
-			1); \
-	} \
-	else \
-	{ \
-		tabulate_bcubic_i(bspline_x_i,  \
-			in_x_table, \
-			k_x, \
-			in_x1_int, \
-			out_w_int, \
-			in_w_int, \
-			-1); \
-	 \
-		tabulate_bcubic_i(bspline_y_i,  \
-			in_y_table, \
-			k_y, \
-			in_y1_int, \
-			out_h_int, \
-			in_h_int, \
-			1); \
-	} \
+	tabulate_bcubic_f(bspline_x_f,  \
+		in_x_table, \
+		k_x, \
+		in_x1_int, \
+		out_w_int, \
+		in_w_int, \
+		-1); \
+ \
+	tabulate_bcubic_f(bspline_y_f,  \
+		in_y_table, \
+		k_y, \
+		in_y1_int, \
+		out_h_int, \
+		in_h_int, \
+		1); \
  \
 	for(int i = pkg->out_row1; i < pkg->out_row2; i++) \
 	{ \
@@ -1216,22 +1148,11 @@ void ScaleUnit::dump_bilinear(bilinear_table_t *table, int total)
 			int i_x = (int)(k_x * j); \
 			float output1_f, output2_f, output3_f, output4_f; \
 			uint64_t output1_i, output2_i, output3_i, output4_i; \
-			if(use_float) \
-			{ \
-				output1_f = 0; \
-				output2_f = 0; \
-				output3_f = 0; \
-				if(components == 4) \
-					output4_f = 0; \
-			} \
-			else \
-			{ \
-				output1_i = 0; \
-				output2_i = 0; \
-				output3_i = 0; \
-				if(components == 4) \
-					output4_i = 0; \
-			} \
+			output1_f = 0; \
+			output2_f = 0; \
+			output3_f = 0; \
+			if(components == 4) \
+				output4_f = 0; \
 			int table_y = i * 4; \
  \
 /* Kernel */ \
@@ -1239,10 +1160,7 @@ void ScaleUnit::dump_bilinear(bilinear_table_t *table, int total)
 			{ \
 				float r1_f; \
 				uint64_t r1_i; \
-				if(use_float) \
-					r1_f = bspline_y_f[table_y]; \
-				else \
-					r1_i = bspline_y_i[table_y]; \
+				r1_f = bspline_y_f[table_y]; \
 				int y = in_y_table[table_y]; \
 				int table_x = j * 4; \
  \
@@ -1250,31 +1168,16 @@ void ScaleUnit::dump_bilinear(bilinear_table_t *table, int total)
 				{ \
 					float r2_f; \
 					uint64_t r2_i; \
-					if(use_float) \
-						r2_f = bspline_x_f[table_x]; \
-					else \
-						r2_i = bspline_x_i[table_x]; \
+					r2_f = bspline_x_f[table_x]; \
 					int x = in_x_table[table_x]; \
 					float r_square_f; \
 					uint64_t r_square_i; \
-					if(use_float) \
-					{ \
-						r_square_f = r1_f * r2_f; \
-						output1_f += r_square_f * in_rows[y][x * components]; \
-						output2_f += r_square_f * in_rows[y][x * components + 1]; \
-						output3_f += r_square_f * in_rows[y][x * components + 2]; \
-						if(components == 4) \
-							output4_f += r_square_f * in_rows[y][x * components + 3]; \
-					} \
-					else \
-					{ \
-						r_square_i = r1_i * r2_i; \
-						output1_i += r_square_i * in_rows[y][x * components]; \
-						output2_i += r_square_i * in_rows[y][x * components + 1]; \
-						output3_i += r_square_i * in_rows[y][x * components + 2]; \
-						if(components == 4) \
-							output4_i += r_square_i * in_rows[y][x * components + 3]; \
-					} \
+					r_square_f = r1_f * r2_f; \
+					output1_f += r_square_f * in_rows[y][x * components]; \
+					output2_f += r_square_f * in_rows[y][x * components + 1]; \
+					output3_f += r_square_f * in_rows[y][x * components + 2]; \
+					if(components == 4) \
+						output4_f += r_square_f * in_rows[y][x * components + 3]; \
  \
 					table_x++; \
 				} \
@@ -1282,36 +1185,17 @@ void ScaleUnit::dump_bilinear(bilinear_table_t *table, int total)
 			} \
  \
  \
- 			if(use_float) \
-			{ \
-				out_rows[i][j * components] = (type)output1_f; \
-				out_rows[i][j * components + 1] = (type)output2_f; \
-				out_rows[i][j * components + 2] = (type)output3_f; \
-				if(components == 4) \
-					out_rows[i][j * components + 3] = (type)output4_f; \
-			} \
-			else \
-			{ \
-				out_rows[i][j * components] = (type)(output1_i / 0xffffffff); \
-				out_rows[i][j * components + 1] = (type)(output2_i / 0xffffffff); \
-				out_rows[i][j * components + 2] = (type)(output3_i / 0xffffffff); \
-				if(components == 4) \
-					out_rows[i][j * components + 3] = (type)(output4_i / 0xffffffff); \
-			} \
+			out_rows[i][j * components] = (type)output1_f; \
+			out_rows[i][j * components + 1] = (type)output2_f; \
+			out_rows[i][j * components + 2] = (type)output3_f; \
+			if(components == 4) \
+				out_rows[i][j * components + 3] = (type)output4_f; \
  \
 		} \
 	} \
  \
-	if(use_float) \
-	{ \
-		delete [] bspline_x_f; \
-		delete [] bspline_y_f; \
-	} \
-	else \
-	{ \
-		delete [] bspline_x_i; \
-		delete [] bspline_y_i; \
-	} \
+	delete [] bspline_x_f; \
+	delete [] bspline_y_f; \
 	delete [] in_x_table; \
 	delete [] in_y_table; \
 }
@@ -1510,6 +1394,14 @@ void ScaleUnit::process_package(LoadPackage *package)
 	{
 		switch(engine->scale_input->get_color_model())
 		{
+			case BC_RGB_FLOAT:
+				BICUBIC(1.0, float, 3);
+				break;
+
+			case BC_RGBA_FLOAT:
+				BICUBIC(1.0, float, 4);
+				break;
+
 			case BC_RGB888:
 			case BC_YUV888:
 				BICUBIC(0xff, unsigned char, 3);
@@ -1532,13 +1424,20 @@ void ScaleUnit::process_package(LoadPackage *package)
 		}
 	}
 	else
+// Perform bilinear scaling input -> scale_output
 	if(engine->w_scale > 1 && 
 		engine->h_scale > 1)
-//if(0)
-// Perform bilinear scaling input -> scale_output
 	{
 		switch(engine->scale_input->get_color_model())
 		{
+			case BC_RGB_FLOAT:
+				BILINEAR_ENLARGE(1.0, float, 3);
+				break;
+
+			case BC_RGBA_FLOAT:
+				BILINEAR_ENLARGE(1.0, float, 4);
+				break;
+
 			case BC_RGB888:
 			case BC_YUV888:
 				BILINEAR_ENLARGE(0xff, unsigned char, 3);
@@ -1561,9 +1460,16 @@ void ScaleUnit::process_package(LoadPackage *package)
 		}
 	}
 	else
+// Bilinear reduction
 	{
 		switch(engine->scale_input->get_color_model())
 		{
+			case BC_RGB_FLOAT:
+				BILINEAR_REDUCE(1.0, float, 3);
+				break;
+			case BC_RGBA_FLOAT:
+				BILINEAR_REDUCE(1.0, float, 4);
+				break;
 			case BC_RGB888:
 			case BC_YUV888:
 				BILINEAR_REDUCE(0xff, unsigned char, 3);
@@ -1872,13 +1778,17 @@ void TranslateUnit::translation_array_i(transfer_table_i* &table,
 	type **in_rows = (type**)input->get_rows(); \
 	type **out_rows = (type**)output->get_rows(); \
  \
-/* printf("OverlayFrame::translate 1  %.2f %.2f %.2f %.2f -> %.2f %.2f %.2f %.2f\n",  */ \
-/* 	(in_x1),  in_y1,  in_x2,  in_y2,  out_x1,  out_y1, out_x2,  out_y2); */ \
  \
-	temp_type master_opacity = (temp_type)(alpha * max + 0.5); \
+	temp_type master_opacity; \
+	if(sizeof(type) != 4) \
+		master_opacity = (temp_type)(alpha * max + 0.5); \
+	else \
+		master_opacity = (temp_type)(alpha * max); \
 	temp_type master_transparency = max - master_opacity; \
+	float round = 0.0; \
+	if(sizeof(type) != 4) \
+		round = 0.5; \
  \
-/* printf("TRANSLATE %d\n", mode); */ \
  \
 	for(int i = row1; i < row2; i++) \
 	{ \
@@ -1887,25 +1797,11 @@ void TranslateUnit::translation_array_i(transfer_table_i* &table,
 		float y_fraction1_f; \
 		float y_fraction2_f; \
 		float y_output_fraction_f; \
-		uint64_t y_fraction1_i; \
-		uint64_t y_fraction2_i; \
-		uint64_t y_output_fraction_i; \
-		if(use_float) \
-		{ \
-			in_y1 = y_table_f[i - out_y1_int].in_x1; \
-			in_y2 = y_table_f[i - out_y1_int].in_x2; \
-			y_fraction1_f = y_table_f[i - out_y1_int].in_fraction1; \
-			y_fraction2_f = y_table_f[i - out_y1_int].in_fraction2; \
-			y_output_fraction_f = y_table_f[i - out_y1_int].output_fraction; \
-		} \
-		else \
-		{ \
-			in_y1 = y_table_i[i - out_y1_int].in_x1; \
-			in_y2 = y_table_i[i - out_y1_int].in_x2; \
-			y_fraction1_i = y_table_i[i - out_y1_int].in_fraction1; \
-			y_fraction2_i = y_table_i[i - out_y1_int].in_fraction2; \
-			y_output_fraction_i = y_table_i[i - out_y1_int].output_fraction; \
-		} \
+		in_y1 = y_table_f[i - out_y1_int].in_x1; \
+		in_y2 = y_table_f[i - out_y1_int].in_x2; \
+		y_fraction1_f = y_table_f[i - out_y1_int].in_fraction1; \
+		y_fraction2_f = y_table_f[i - out_y1_int].in_fraction2; \
+		y_output_fraction_f = y_table_f[i - out_y1_int].output_fraction; \
 		type *in_row1 = in_rows[(in_y1)]; \
 		type *in_row2 = in_rows[(in_y2)]; \
 		type *out_row = out_rows[i]; \
@@ -1917,138 +1813,70 @@ void TranslateUnit::translation_array_i(transfer_table_i* &table,
 			float x_fraction1_f; \
 			float x_fraction2_f; \
 			float x_output_fraction_f; \
-			uint64_t x_fraction1_i; \
-			uint64_t x_fraction2_i; \
-			uint64_t x_output_fraction_i; \
-			if(use_float) \
-			{ \
-				in_x1 = x_table_f[j - out_x1_int].in_x1; \
-				in_x2 = x_table_f[j - out_x1_int].in_x2; \
-				x_fraction1_f = x_table_f[j - out_x1_int].in_fraction1; \
-				x_fraction2_f = x_table_f[j - out_x1_int].in_fraction2; \
-				x_output_fraction_f = x_table_f[j - out_x1_int].output_fraction; \
-			} \
-			else \
-			{ \
-				in_x1 = x_table_i[j - out_x1_int].in_x1; \
-				in_x2 = x_table_i[j - out_x1_int].in_x2; \
-				x_fraction1_i = x_table_i[j - out_x1_int].in_fraction1; \
-				x_fraction2_i = x_table_i[j - out_x1_int].in_fraction2; \
-				x_output_fraction_i = x_table_i[j - out_x1_int].output_fraction; \
-			} \
+			in_x1 = x_table_f[j - out_x1_int].in_x1; \
+			in_x2 = x_table_f[j - out_x1_int].in_x2; \
+			x_fraction1_f = x_table_f[j - out_x1_int].in_fraction1; \
+			x_fraction2_f = x_table_f[j - out_x1_int].in_fraction2; \
+			x_output_fraction_f = x_table_f[j - out_x1_int].output_fraction; \
 			type *output = &out_row[j * components]; \
-			type input1, input2, input3, input4; \
+			temp_type input1, input2, input3, input4; \
  \
- 			if(use_float) \
-			{ \
-				float fraction1 = x_fraction1_f * y_fraction1_f; \
-				float fraction2 = x_fraction2_f * y_fraction1_f; \
-				float fraction3 = x_fraction1_f * y_fraction2_f; \
-				float fraction4 = x_fraction2_f * y_fraction2_f; \
-	 \
-				input1 = (type)(in_row1[in_x1 * components] * fraction1 +  \
-					in_row1[in_x2 * components] * fraction2 +  \
-					in_row2[in_x1 * components] * fraction3 +  \
-					in_row2[in_x2 * components] * fraction4 + 0.5); \
-	 \
+			float fraction1 = x_fraction1_f * y_fraction1_f; \
+			float fraction2 = x_fraction2_f * y_fraction1_f; \
+			float fraction3 = x_fraction1_f * y_fraction2_f; \
+			float fraction4 = x_fraction2_f * y_fraction2_f; \
+ \
+			input1 = (type)(in_row1[in_x1 * components] * fraction1 +  \
+				in_row1[in_x2 * components] * fraction2 +  \
+				in_row2[in_x1 * components] * fraction3 +  \
+				in_row2[in_x2 * components] * fraction4 + round); \
+ \
 /* Add chroma to fractional pixels */ \
- 				if(chroma_offset) \
-				{ \
-					float extra_chroma = (1.0F - \
-						fraction1 - \
-						fraction2 - \
-						fraction3 - \
-						fraction4) * chroma_offset; \
-					input2 = (type)(in_row1[in_x1 * components + 1] * fraction1 +  \
-						in_row1[in_x2 * components + 1] * fraction2 +  \
-						in_row2[in_x1 * components + 1] * fraction3 +  \
-						in_row2[in_x2 * components + 1] * fraction4 + \
-						extra_chroma + 0.5); \
-					input3 = (type)(in_row1[in_x1 * components + 2] * fraction1 +  \
-						in_row1[in_x2 * components + 2] * fraction2 +  \
-						in_row2[in_x1 * components + 2] * fraction3 +  \
-						in_row2[in_x2 * components + 2] * fraction4 +  \
-						extra_chroma + 0.5); \
-				} \
-				else \
-				{ \
-					input2 = (type)(in_row1[in_x1 * components + 1] * fraction1 +  \
-						in_row1[in_x2 * components + 1] * fraction2 +  \
-						in_row2[in_x1 * components + 1] * fraction3 +  \
-						in_row2[in_x2 * components + 1] * fraction4 + 0.5); \
-					input3 = (type)(in_row1[in_x1 * components + 2] * fraction1 +  \
-						in_row1[in_x2 * components + 2] * fraction2 +  \
-						in_row2[in_x1 * components + 2] * fraction3 +  \
-						in_row2[in_x2 * components + 2] * fraction4 + 0.5); \
-				} \
-	 \
-				if(components == 4) \
-					input4 = (type)(in_row1[in_x1 * components + 3] * fraction1 +  \
-						in_row1[in_x2 * components + 3] * fraction2 +  \
-						in_row2[in_x1 * components + 3] * fraction3 +  \
-						in_row2[in_x2 * components + 3] * fraction4 + 0.5); \
+ 			if(chroma_offset) \
+			{ \
+				float extra_chroma = (1.0F - \
+					fraction1 - \
+					fraction2 - \
+					fraction3 - \
+					fraction4) * chroma_offset; \
+				input2 = (type)(in_row1[in_x1 * components + 1] * fraction1 +  \
+					in_row1[in_x2 * components + 1] * fraction2 +  \
+					in_row2[in_x1 * components + 1] * fraction3 +  \
+					in_row2[in_x2 * components + 1] * fraction4 + \
+					extra_chroma + round); \
+				input3 = (type)(in_row1[in_x1 * components + 2] * fraction1 +  \
+					in_row1[in_x2 * components + 2] * fraction2 +  \
+					in_row2[in_x1 * components + 2] * fraction3 +  \
+					in_row2[in_x2 * components + 2] * fraction4 +  \
+					extra_chroma + round); \
 			} \
 			else \
 			{ \
-				uint64_t fraction1 = x_fraction1_i * y_fraction1_i; \
-				uint64_t fraction2 = x_fraction2_i * y_fraction1_i; \
-				uint64_t fraction3 = x_fraction1_i * y_fraction2_i; \
-				uint64_t fraction4 = x_fraction2_i * y_fraction2_i; \
-	 \
-				input1 = (type)((in_row1[in_x1 * components] * fraction1 +  \
-					in_row1[in_x2 * components] * fraction2 +  \
-					in_row2[in_x1 * components] * fraction3 +  \
-					in_row2[in_x2 * components] * fraction4) / 0xffffffff); \
-	 \
-/* Add chroma to fractional pixels */ \
- 				if(chroma_offset) \
-				{ \
-					uint64_t extra_chroma = (0xffffffff - \
-						fraction1 - \
-						fraction2 - \
-						fraction3 - \
-						fraction4) * \
-						chroma_offset; \
-					input2 = (type)((in_row1[in_x1 * components + 1] * fraction1 +  \
-						in_row1[in_x2 * components + 1] * fraction2 +  \
-						in_row2[in_x1 * components + 1] * fraction3 +  \
-						in_row2[in_x2 * components + 1] * fraction4 + \
-						extra_chroma) / 0xffffffff); \
-					input3 = (type)((in_row1[in_x1 * components + 2] * fraction1 +  \
-						in_row1[in_x2 * components + 2] * fraction2 +  \
-						in_row2[in_x1 * components + 2] * fraction3 +  \
-						in_row2[in_x2 * components + 2] * fraction4 +  \
-						extra_chroma) / 0xffffffff); \
-				} \
-				else \
-				{ \
-					input2 = (type)((in_row1[in_x1 * components + 1] * fraction1 +  \
-						in_row1[in_x2 * components + 1] * fraction2 +  \
-						in_row2[in_x1 * components + 1] * fraction3 +  \
-						in_row2[in_x2 * components + 1] * fraction4) / 0xffffffff); \
-					input3 = (type)((in_row1[in_x1 * components + 2] * fraction1 +  \
-						in_row1[in_x2 * components + 2] * fraction2 +  \
-						in_row2[in_x1 * components + 2] * fraction3 +  \
-						in_row2[in_x2 * components + 2] * fraction4) / 0xffffffff); \
-				} \
-	 \
-				if(components == 4) \
-					input4 = (type)((in_row1[in_x1 * components + 3] * fraction1 +  \
-						in_row1[in_x2 * components + 3] * fraction2 +  \
-						in_row2[in_x1 * components + 3] * fraction3 +  \
-						in_row2[in_x2 * components + 3] * fraction4) / 0xffffffff); \
+				input2 = (type)(in_row1[in_x1 * components + 1] * fraction1 +  \
+					in_row1[in_x2 * components + 1] * fraction2 +  \
+					in_row2[in_x1 * components + 1] * fraction3 +  \
+					in_row2[in_x2 * components + 1] * fraction4 + round); \
+				input3 = (type)(in_row1[in_x1 * components + 2] * fraction1 +  \
+					in_row1[in_x2 * components + 2] * fraction2 +  \
+					in_row2[in_x1 * components + 2] * fraction3 +  \
+					in_row2[in_x2 * components + 2] * fraction4 + round); \
 			} \
+ \
+			if(components == 4) \
+				input4 = (type)(in_row1[in_x1 * components + 3] * fraction1 +  \
+					in_row1[in_x2 * components + 3] * fraction2 +  \
+					in_row2[in_x1 * components + 3] * fraction3 +  \
+					in_row2[in_x2 * components + 3] * fraction4 + round); \
  \
 			temp_type opacity; \
-			if(use_float) \
+			if(sizeof(type) != 4) \
 				opacity = (temp_type)(master_opacity *  \
 					y_output_fraction_f *  \
 					x_output_fraction_f + 0.5); \
 			else \
-				opacity = (temp_type)((int64_t)master_opacity *  \
-					y_output_fraction_i *  \
-					x_output_fraction_i / \
-					0xffffffff); \
+				opacity = (temp_type)(master_opacity *  \
+					y_output_fraction_f *  \
+					x_output_fraction_f); \
 			temp_type transparency = max - opacity; \
  \
 /* printf("TRANSLATE 2 %x %d %d\n", opacity, j, i); */ \
@@ -2102,48 +1930,24 @@ void TranslateUnit::process_package(LoadPackage *package)
 	transfer_table_i *x_table_i; 
 	transfer_table_i *y_table_i; 
 
-	if(use_float)
-	{
-		translation_array_f(x_table_f,  
-			out_x1,  
-			out_x2, 
-			in_x1, 
-			in_x2, 
-			in_total_x,  
-			output->get_w(),  
-			out_x1_int, 
-			out_x2_int); 
-		translation_array_f(y_table_f,  
-			out_y1,  
-			out_y2, 
-			in_y1, 
-			in_y2, 
-			in_total_y,  
-			output->get_h(),  
-			out_y1_int, 
-			out_y2_int); 
- 	}
-	else
-	{
-		translation_array_i(x_table_i,  
-			out_x1,  
-			out_x2, 
-			in_x1, 
-			in_x2, 
-			in_total_x,  
-			output->get_w(),  
-			out_x1_int, 
-			out_x2_int); 
-		translation_array_i(y_table_i,  
-			out_y1,  
-			out_y2, 
-			in_y1, 
-			in_y2, 
-			in_total_y,  
-			output->get_h(),  
-			out_y1_int, 
-			out_y2_int); 
-	}
+	translation_array_f(x_table_f,  
+		out_x1,  
+		out_x2, 
+		in_x1, 
+		in_x2, 
+		in_total_x,  
+		output->get_w(),  
+		out_x1_int, 
+		out_x2_int); 
+	translation_array_f(y_table_f,  
+		out_y1,  
+		out_y2, 
+		in_y1, 
+		in_y2, 
+		in_total_y,  
+		output->get_h(),  
+		out_y1_int, 
+		out_y2_int); 
 //	printf("TranslateUnit::process_package 1 %d\n", mode);
 //	Timer a;
 //	a.update();
@@ -2156,6 +1960,14 @@ void TranslateUnit::process_package(LoadPackage *package)
 
 		case BC_RGBA8888:
 			TRANSLATE(0xff, uint32_t, unsigned char, 4, 0);
+			break;
+
+		case BC_RGB_FLOAT:
+			TRANSLATE(1.0, float, float, 3, 0);
+			break;
+
+		case BC_RGBA_FLOAT:
+			TRANSLATE(1.0, float, float, 4, 0);
 			break;
 
 		case BC_RGB161616:
@@ -2184,16 +1996,8 @@ void TranslateUnit::process_package(LoadPackage *package)
 	}
 //	printf("blend mode %i, took %li ms\n", mode, a.get_difference());
 
-	if(use_float)
-	{
-		delete [] x_table_f; 
-		delete [] y_table_f; 
-	}
-	else
-	{
-		delete [] x_table_i; 
-		delete [] y_table_i; 
-	}
+	delete [] x_table_f; 
+	delete [] y_table_f; 
 }
 
 
@@ -2254,7 +2058,11 @@ LoadPackage* TranslateEngine::new_package()
 
 #define SCALE_TRANSLATE(max, temp_type, type, components, chroma_offset) \
 { \
-	temp_type opacity = (temp_type)(alpha * max + 0.5); \
+	temp_type opacity; \
+	if(sizeof(type) != 4) \
+		opacity = (temp_type)(alpha * max + 0.5); \
+	else \
+		opacity = (temp_type)(alpha * max); \
 	temp_type transparency = max - opacity; \
  \
 	for(int i = pkg->out_row1; i < pkg->out_row2; i++) \
@@ -2415,11 +2223,16 @@ void ScaleTranslateUnit::process_package(LoadPackage *package)
  				line_len);
  		}
 
- 	} else
+ 	} 
+	else
 	switch(input->get_color_model())
 	{
 		case BC_RGB888:
 			SCALE_TRANSLATE(0xff, uint32_t, uint8_t, 3, 0);
+			break;
+
+		case BC_RGB_FLOAT:
+			SCALE_TRANSLATE(1.0, float, float, 3, 0);
 			break;
 
 		case BC_YUV888:
@@ -2428,6 +2241,10 @@ void ScaleTranslateUnit::process_package(LoadPackage *package)
 
 		case BC_RGBA8888:
 			SCALE_TRANSLATE(0xff, uint32_t, uint8_t, 4, 0);
+			break;
+
+		case BC_RGBA_FLOAT:
+			SCALE_TRANSLATE(1.0, float, float, 4, 0);
 			break;
 
 		case BC_YUVA8888:
@@ -2539,7 +2356,11 @@ ScaleTranslatePackage::ScaleTranslatePackage()
 
 #define BLEND_ONLY(temp_type, type, max, components, chroma_offset) \
 { \
-	temp_type opacity = (temp_type)(alpha * max + 0.5); \
+	temp_type opacity; \
+	if(sizeof(type) != 4) \
+		opacity = (temp_type)(alpha * max + 0.5); \
+	else \
+		opacity = (temp_type)(alpha * max); \
 	temp_type transparency = max - opacity; \
  \
 	type** output_rows = (type**)output->get_rows(); \
@@ -2635,6 +2456,8 @@ ScaleTranslatePackage::ScaleTranslatePackage()
 	} \
 }
  
+
+
 // components is always 3
 #define BLEND_ONLY_3_NORMAL(temp_type, type, max, chroma_offset) \
 { \
@@ -2662,6 +2485,7 @@ ScaleTranslatePackage::ScaleTranslatePackage()
 }
 
 
+
 BlendUnit::BlendUnit(BlendEngine *server, OverlayFrame *overlay)
  : LoadClient(server)
 {
@@ -2687,6 +2511,12 @@ void BlendUnit::process_package(LoadPackage *package)
 	{
 		switch(input->get_color_model())
 		{
+			case BC_RGB_FLOAT:
+				BLEND_ONLY_TRANSFER_REPLACE(float, 3);
+				break;
+			case BC_RGBA_FLOAT:
+				BLEND_ONLY_TRANSFER_REPLACE(float, 4);
+				break;
 			case BC_RGB888:
 			case BC_YUV888:
 				BLEND_ONLY_TRANSFER_REPLACE(unsigned char, 3);
@@ -2710,6 +2540,66 @@ void BlendUnit::process_package(LoadPackage *package)
 	{
 		switch(input->get_color_model())
 		{
+			case BC_RGB_FLOAT:
+			{
+				float opacity = alpha;
+				float transparency = 1.0 - alpha;
+
+				float** output_rows = (float**)output->get_rows();
+				float** input_rows = (float**)input->get_rows();
+				int w = input->get_w() * 3;
+				int h = input->get_h();
+
+				for(int i = pkg->out_row1; i < pkg->out_row2; i++)
+				{
+					float* in_row = input_rows[i];
+					float* output = output_rows[i];
+/* w = 3x width! */
+					for(int j = 0; j < w; j++) 
+					{
+						*output = *in_row * opacity + *output * transparency;
+						in_row++;
+						output++;
+					}
+				}
+				break;
+			}
+			case BC_RGBA_FLOAT:
+			{
+				float opacity = alpha;
+				float transparency = 1.0 - alpha;
+			
+				float** output_rows = (float**)output->get_rows();
+				float** input_rows = (float**)input->get_rows();
+				int w = input->get_w();
+				int h = input->get_h();
+			
+				for(int i = pkg->out_row1; i < pkg->out_row2; i++)
+				{
+					float* in_row = input_rows[i];
+					float* output = output_rows[i];
+			
+					for(int j = 0; j < w; j++)
+					{
+						float pixel_opacity, pixel_transparency;
+						pixel_opacity = opacity * in_row[3];
+						pixel_transparency = 1.0 - pixel_opacity;
+					
+					
+						output[0] = in_row[0] * pixel_opacity +
+							output[0] * pixel_transparency;
+						output[1] = in_row[1] * pixel_opacity +
+							output[1] * pixel_transparency;
+						output[2] = in_row[2] * pixel_opacity +
+							output[2] * pixel_transparency;
+						output[3] = in_row[3] > output[3] ? in_row[3] : output[3];
+
+						in_row += 4;
+						output += 4;
+					}
+				}
+				break;
+			}
 			case BC_RGB888:
 				BLEND_ONLY_3_NORMAL(uint32_t, unsigned char, 0xff, 0);
 				break;
@@ -2735,10 +2625,16 @@ void BlendUnit::process_package(LoadPackage *package)
 				BLEND_ONLY_4_NORMAL(int64_t, uint16_t, 0xffff, 0x8000);
 				break;
 		}
-	} 
+	}
 	else
 	switch(input->get_color_model())
 	{
+		case BC_RGB_FLOAT:
+			BLEND_ONLY(float, float, 1.0, 3, 0);
+			break;
+		case BC_RGBA_FLOAT:
+			BLEND_ONLY(float, float, 1.0, 4, 0);
+			break;
 		case BC_RGB888:
 			BLEND_ONLY(uint32_t, unsigned char, 0xff, 3, 0);
 			break;
