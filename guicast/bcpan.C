@@ -103,10 +103,27 @@ void BC_Pan::set_images(VFrame **data)
 
 int BC_Pan::button_press_event()
 {
-	if(is_event_win() && get_buttonpress() == 1)
+	// there are two modes of operation...
+	if (popup)
+	{	if (popup->is_event_win() && get_button_down() && get_buttonpress() == 1)
+		{ 
+			active = 1;
+			x_origin = popup->get_cursor_x();
+			y_origin = popup->get_cursor_y();
+			stick_x_origin = stick_x;
+			stick_y_origin = stick_y;
+			return 1;
+		} else
+		{
+			deactivate();
+			return 0;
+		}
+	}
+	if(is_event_win() && get_button_down() && get_buttonpress() == 1)
 	{
 		hide_tooltip();
 		activate();
+		active = 1;
 		x_origin = get_cursor_x();
 		y_origin = get_cursor_y();
 		stick_x_origin = stick_x;
@@ -119,7 +136,7 @@ int BC_Pan::button_press_event()
 
 int BC_Pan::cursor_motion_event()
 {
-	if(active)
+	if(popup && get_button_down() && get_buttonpress() == 1)
 	{
 		stick_x = stick_x_origin + get_cursor_x() - x_origin;
 		stick_y = stick_y_origin + get_cursor_y() - y_origin;
@@ -135,7 +152,7 @@ int BC_Pan::cursor_motion_event()
 
 int BC_Pan::button_release_event()
 {
-	if(active)
+	if(popup)
 	{
 		hide_tooltip();
 		deactivate();
@@ -192,13 +209,15 @@ int BC_Pan::deactivate()
 	return 0;
 }
 
-int BC_Pan::activate()
+int BC_Pan::activate(int popup_x, int popup_y)
 {
 	int x, y;
 	Window tempwin;
 
-	active = 1;
-	XTranslateCoordinates(top_level->display, 
+	active = 0;
+	if (popup_x < 0 || popup_y < 0)
+	{
+		XTranslateCoordinates(top_level->display, 
 			win, 
 			top_level->rootwin, 
 			0, 
@@ -206,10 +225,24 @@ int BC_Pan::activate()
 			&x, 
 			&y, 
 			&tempwin);
-
-	x -= (images[PAN_POPUP]->get_w() - get_w()) / 2;
-	y -= (images[PAN_POPUP]->get_h() - get_h()) / 2;
-
+		x -= (images[PAN_POPUP]->get_w() - get_w()) / 2;
+		y -= (images[PAN_POPUP]->get_h() - get_h()) / 2;
+	} else
+	{
+		XTranslateCoordinates(top_level->display, 
+			top_level->win, 
+			top_level->rootwin, 
+			popup_x, 
+			popup_y, 
+			&x, 
+			&y, 
+			&tempwin);
+		x -= images[PAN_POPUP]->get_w() / 2;
+		y -= images[PAN_POPUP]->get_h() / 2;
+	}
+	
+	
+	if (popup) delete popup;
 	popup = new BC_Popup(this, 
 				x, 
 				y, 
@@ -218,6 +251,7 @@ int BC_Pan::activate()
 				0, 
 				0, 
 				images[PAN_POPUP]);
+	draw_popup();
 	flush();
 	return 0;
 }

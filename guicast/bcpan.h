@@ -72,7 +72,7 @@ public:
 		int &stick_x,
 		int &stick_y);
 	static int rdtoxy(int &x, int &y, int a, int virtual_r);
-	int activate();
+	int activate(int popup_x = -1, int popup_y = -1);
 	int deactivate();
 	float* get_values();
 

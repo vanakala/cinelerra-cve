@@ -9,7 +9,13 @@
 #include "localsession.h"
 #include "cwindowgui.h" 
 #include "cpanel.h"
- 
+#include "patchbay.h"
+#include "patchgui.h" 
+#include "apatchgui.h"
+#include "vpatchgui.h"
+#include "track.h"
+#include "maincursor.h"
+#include "bcwindowbase.h"
 
 KeyframePopup::KeyframePopup(MWindow *mwindow, MWindowGUI *gui)
  : BC_PopupMenu(0, 
@@ -51,6 +57,17 @@ int KeyframePopup::update(Automation *automation, Autos *autos, Auto *auto_keyfr
 	this->keyframe_automation = automation;
 	this->keyframe_autos = autos;
 	this->keyframe_auto = auto_keyframe;
+
+	/* snap to cursor */
+	double current_position = mwindow->edl->local_session->selectionstart;
+	double new_position = keyframe_automation->track->from_units(keyframe_auto->position);
+	mwindow->edl->local_session->selectionstart = new_position;
+	mwindow->edl->local_session->selectionend = new_position;
+	mwindow->gui->cursor->hide();
+	mwindow->gui->cursor->draw();
+	if (current_position != new_position)
+		mwindow->cwindow->update(1, 0, 0, 0, 1);			
+
 	return 0;
 }
 
@@ -99,21 +116,6 @@ KeyframePopupShow::~KeyframePopupShow()
 
 int KeyframePopupShow::handle_event()
 {
-/*	FIXME: this is currently not needed. but correct behaviour for maincursor is not snap to 
-	position of the keyframe when right mouseclick is done
-	snap should happen inside this rutine when 'show' is chosen
-	snap should be disabled in trackcanvas.C
-
-	double current_position = mwindow->edl->local_session->selectionstart;
-	double new_position = popup->plugin->track->from_units(popup->keyframe->position);
-
-	mwindow->edl->local_session->selectionstart = new_position;
-	mwindow->edl->local_session->selectionend = new_position;
-	mwindow->gui->cursor->hide();
-	mwindow->gui->cursor->draw();
-//	if (current_position != new_position)
-	mwindow->cwindow->update(1, 0, 0, 0, 1);			
-*/
 	if (popup->keyframe_plugin)
 	{
 		mwindow->update_plugin_guis();
@@ -121,6 +123,7 @@ int KeyframePopupShow::handle_event()
 	} else
 	if (popup->keyframe_automation)
 	{
+
 		mwindow->cwindow->gui->lock_window();
 		int show_window = 1;
 		if (popup->keyframe_autos == (Autos *)popup->keyframe_automation->projector_autos ||
@@ -138,9 +141,26 @@ int KeyframePopupShow::handle_event()
 		if (popup->keyframe_autos == (Autos *)popup->keyframe_automation->mode_autos)
 		   
 		{
-			// no window to be shown, so do nothing
-			// IDEA: open the listbox of choices
+			// no window to be shown
 			show_window = 0;
+			// first find the appropriate patchgui
+			PatchBay *patchbay = mwindow->gui->patchbay;
+			PatchGUI *patchgui = 0;
+			for (int i = 0; i < patchbay->patches.total; i++)
+				if (patchbay->patches.values[i]->track == popup->keyframe_automation->track)
+					patchgui = patchbay->patches.values[i];		
+			if (patchgui != 0)
+			{
+// FIXME: repositioning of the listbox needs support in guicast
+//				int cursor_x = popup->get_relative_cursor_x();
+//				int cursor_y = popup->get_relative_cursor_y();
+//				vpatchgui->mode->reposition_window(cursor_x, cursor_y);
+
+
+// Open the popup menu
+				VPatchGUI *vpatchgui = (VPatchGUI *)patchgui;
+				vpatchgui->mode->activate_menu();
+			}
 		} else
 		if (popup->keyframe_autos == (Autos *)popup->keyframe_automation->mask_autos)
 		   
@@ -150,9 +170,24 @@ int KeyframePopupShow::handle_event()
 		if (popup->keyframe_autos == (Autos *)popup->keyframe_automation->pan_autos)
 		   
 		{
-			// no window to be shown, so do nothing
-			// IDEA: open the pan miniwindow
+			// no window to be shown
 			show_window = 0;
+			// first find the appropriate patchgui
+			PatchBay *patchbay = mwindow->gui->patchbay;
+			PatchGUI *patchgui = 0;
+			for (int i = 0; i < patchbay->patches.total; i++)
+				if (patchbay->patches.values[i]->track == popup->keyframe_automation->track)
+					patchgui = patchbay->patches.values[i];		
+			if (patchgui != 0)
+			{
+// Open the popup menu at current mouse position
+				APatchGUI *apatchgui = (APatchGUI *)patchgui;
+				int cursor_x = popup->get_relative_cursor_x();
+				int cursor_y = popup->get_relative_cursor_y();
+				apatchgui->pan->activate(cursor_x, cursor_y);
+			}
+			
+
 		} else
 		if (popup->keyframe_autos == (Autos *)popup->keyframe_automation->fade_autos)
 		   

@@ -1968,9 +1968,9 @@ int TrackCanvas::do_keyframes(int cursor_x,
 			{
 				rerender = 1;
 			}
-			if(result && buttonpress)
+			if(result && buttonpress && (buttonpress != 3))
 			{
-				mwindow->session->current_operation = DRAG_PAN_PRE && (buttonpress != 3);
+				mwindow->session->current_operation = DRAG_PAN_PRE;
 				update_drag_caption();
 				rerender = 1;
 			}
