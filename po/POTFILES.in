@@ -218,7 +218,7 @@ plugins/shiftinterlace/shiftinterlace.C
 plugins/slide/slide.C
 plugins/spectrogram/spectrogram.C
 plugins/svg/svg.C
-plugins/svg/svgwindow.C
+plugins/svg/svgwin.C
 plugins/swapchannels/swapchannels.C
 plugins/synthesizer/synthesizer.C
 plugins/timeavg/timeavg.C
