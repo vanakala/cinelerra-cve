@@ -22,6 +22,9 @@
 #include "timer.h"
 // ======================================= include file types here
 
+// cache mode constants
+#define CACHE_THIS_INSTANCE	1
+#define CACHE_NO_LOOKUP		2
 
 class FrameCacheElement {
 public:
@@ -162,9 +165,10 @@ public:
 // Return a pointer to the frame in a video file for drawing or 0.
 // The following routine copies a frame once to a temporary buffer and either 
 // returns a pointer to the temporary buffer or copies the temporary buffer again.
-	VFrame* read_frame(int color_model);
+// new way of calling ... cache is always LOCKED after call
+	VFrame* read_frame_cache(int color_model, int width = 0, int height = 0);
 
-	int read_frame(VFrame *frame);
+	int read_frame(VFrame *frame, int cache_mode = 0);
 
 // The following involve no extra copies.
 // Direct copy routines for direct copy playback
@@ -205,8 +209,6 @@ public:
 	FileThread *audio_thread, *video_thread; 
 // Temporary storage for color conversions
 	VFrame *temp_frame;
-// Frame to return pointer to
-	VFrame *return_frame;
 // Resampling engine
 	Resample *resample;
 

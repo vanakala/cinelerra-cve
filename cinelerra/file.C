@@ -28,7 +28,7 @@
 
  FrameCache::FrameCache(int64_t cache_size) 
  {
- 	cache_enabled = 0;
+ 	cache_enabled = 1;
  	this->cache_size = cache_size;
 	memory_used = 0;
  	timer.update();
@@ -58,7 +58,7 @@
  	cache_enabled = 1;
  }
  
- 
+
  void FrameCache::disable_cache() 
  {
  	cache_enabled = 0;
@@ -166,7 +166,7 @@ VFrame *FrameCache::get_frame(long frame_number, int frame_layer, int frame_widt
  			dump();
  			return 0;
  		};
- //		printf("Cache hit - frame: %li, layer: %i, w: %i, h:%i, cm: %i\n", frame_number, frame_layer, frame_width, frame_height, frame_color_model);
+// 		printf("Cache hit - frame: %li, layer: %i, w: %i, h:%i, cm: %i\n", frame_number, frame_layer, frame_width, frame_height, frame_color_model);
  		// delete & replace with new key
  		cache_tree_bytime.erase(iterator_bytime);
  		cache_element->time_diff = timer.get_difference();
@@ -176,6 +176,10 @@ VFrame *FrameCache::get_frame(long frame_number, int frame_layer, int frame_widt
  	return 0;
  } 
 
+// Always puts the image into cache, even if cache_size is 0 - there is always at least one image in the cache
+// if do_not_copy_frame is set, cache is locked after this function
+// returns always 1
+
 int FrameCache::add_frame(long frame_number, int frame_layer, VFrame *frame, int do_not_copy_frame, int force_cache) 
  {
  	
@@ -184,19 +188,25 @@ int FrameCache::add_frame(long frame_number, int frame_layer, VFrame *frame, int
  	
  //	printf("%p, adding frame:  %li, layer: %i, w: %i, h:%i cm:%i\n",this, frame_number, frame_layer, frame->get_w(),frame->get_h(), frame->get_color_model());
  	
- 	FrameCacheElement *cache_element;
+ 	FrameCacheElement *cache_element = 0;
 
 	// what will be new size
  	int64_t new_memory_size = frame->get_data_size();
 
  	// currently cache size can only grow, not shrink
- 	while (memory_used + new_memory_size >= cache_size) 
+ 	while (memory_used + new_memory_size >= cache_size && memory_used > 0) 
  	{
+		// delete the cache element from previous iteration
+		if (cache_element)
+			delete cache_element;
+
 		// if we cannot fit the new image into cache, exit
- 		if (memory_used == 0 && new_memory_size > cache_size) {
-			change_lock.unlock();
-			return 0;
-		}
+		// new strategy: allways have one image in the cache - this is due to other read_frame function
+		// do not enable this code
+//		if (memory_used == 0 && new_memory_size > cache_size) {
+//			change_lock.unlock();
+//			return 0;
+//		}
 		// delete the element that wansn't accessed for the longest time
  		FrameCacheTree_ByTime::iterator iterator_bytime = cache_tree_bytime.begin();
  		cache_element = iterator_bytime->second;
@@ -210,9 +220,10 @@ int FrameCache::add_frame(long frame_number, int frame_layer, VFrame *frame, int
  		delete cache_element->frame;
  		cache_tree.erase(iterator);
    		cache_tree_bytime.erase(iterator_bytime);
-		delete cache_element;
 	}
-	cache_element = new FrameCacheElement;
+
+	if (!cache_element) // recycle cache element if possible
+		cache_element = new FrameCacheElement;
  	
  	if (do_not_copy_frame) 
  	{
@@ -238,7 +249,8 @@ int FrameCache::add_frame(long frame_number, int frame_layer, VFrame *frame, int
  	
  	cache_tree.insert(std::pair<long, FrameCacheElement *> (cache_element->frame_number, cache_element));
  	cache_tree_bytime.insert(std::pair<long long, FrameCacheElement *> (cache_element->time_diff, cache_element)); 
- 	change_lock.unlock();
+ 	if (!do_not_copy_frame)
+		change_lock.unlock();
 	return 1;
 }
  
@@ -287,11 +299,6 @@ File::~File()
 		delete temp_frame;
 	}
 
-	if(return_frame)
-	{
-		delete return_frame;
-	}
-
 	close_file();
 	reset_parameters();
 	delete asset;
@@ -307,7 +314,6 @@ void File::reset_parameters()
 	format_window = 0;
 	temp_frame = 0;
 	temp_frame = 0;
-	return_frame = 0;
 	current_sample = 0;
 	current_frame = 0;
 	current_channel = 0;
@@ -1066,44 +1072,43 @@ int64_t File::compressed_frame_size()
 }
 
 // Return a pointer to a frame in the video file for drawing purposes.
-// The temporary frame is created by the file handler so that still frame
-// files don't have to copy to a new buffer.
-VFrame* File::read_frame(int color_model)
+// frame is created and resides in cache
+// cache is ALWAYS locked after a call to this function
+// the calling function must unlock the cache ASAP
+VFrame* File::read_frame_cache(int color_model, int width , int height )
 {
 	VFrame* result = 0;
+	if (width == 0) width = asset->width;
+	if (height == 0) height = asset->height; 
 //printf("File::read_frame 1\n");
 	if(file)
 	{
 //printf("File::read_frame 2\n");
-		if(return_frame && 
-			(return_frame->get_w() != asset->width || 
-			return_frame->get_h() != asset->height || 
-			return_frame->get_color_model() != color_model))
+		// do a lookup with forced cache usage
+		VFrame *temp_frame2 = frames_cache->get_frame(current_frame, current_layer, width, height, color_model, 1);
+		if (temp_frame2)
 		{
-			delete return_frame;
-			return_frame = 0;
-		}
+			// return directly from cache
+			return temp_frame2;
+		}	
 
 //printf("File::read_frame 3\n");
-		if(!return_frame)
-		{
-			return_frame = new VFrame(0,
-				asset->width,
-				asset->height,
-				color_model);
-		}
+		result = new VFrame(0,
+			width,
+			height,
+			color_model);
+		// read frame:
+		// without using the cache lookup (done above)
+		// with caching the current instance - so cache is the one that needs to free it
+		read_frame(result, CACHE_NO_LOOKUP | CACHE_THIS_INSTANCE);	
 //printf("File::read_frame 4\n");
-
-		read_frame(return_frame);
-//printf("File::read_frame 5\n");
-		result = return_frame;
 	}
-//printf("File::read_frame 6\n");
+//printf("File::read_frame 5\n");
 	return result;
 }
 
 
-int File::read_frame(VFrame *frame)
+int File::read_frame(VFrame *frame, int cache_mode)
 {
 	if(file)
 	{
@@ -1111,45 +1116,42 @@ int File::read_frame(VFrame *frame)
 		int supported_colormodel = colormodel_supported(frame->get_color_model());
 
 //printf("File::read_frame 1 %d %d\n", supported_colormodel, frame->get_color_model());
-// Need temp
-//printf("File::read_frame 2\n");
 		if(frame->get_color_model() != BC_COMPRESSED &&
 			(supported_colormodel != frame->get_color_model() ||
 			frame->get_w() != asset->width ||
 			frame->get_h() != asset->height))
 		{
-//printf("File::read_frame 3\n");
-			if(temp_frame)
-			{
-				if(!temp_frame->params_match(asset->width, asset->height, supported_colormodel))
-				{
-					delete temp_frame;
-					temp_frame = 0;
-				}
-			}
-//printf("File::read_frame 4 %p %d %d %d\n", asset , asset->width, asset->height, supported_colormodel);
-
-			if(!temp_frame)
-			{
-				temp_frame = new VFrame(0,
-					asset->width,
-					asset->height,
-					supported_colormodel);
-			}
-			
-//printf("File::read_frame 5 %d %d\n", 
+// Need temp
+//printf("File::read_frame 3 %d %d\n", 
 //	temp_frame->get_color_model(), 
 //	frame->get_color_model());
-			VFrame *temp_frame2 = frames_cache->get_frame(current_frame, current_layer, asset->width, asset->height, supported_colormodel);
+			VFrame *temp_frame2 = 0;
+			if (!(cache_mode & CACHE_NO_LOOKUP))
+				temp_frame2 = frames_cache->get_frame(current_frame, current_layer, frame->get_w(), frame->get_h(), frame->get_color_model());
 			if (temp_frame2) 
 			{
-				delete temp_frame;
 				frame->copy_from(temp_frame2);
 				// cache is implicitly locked after a call to get_frame
 				frames_cache->unlock_cache();
 			} else
 			{
 				frames_cache->unlock_cache(); // cache is implicitly locked after a call to get_frame
+				if(temp_frame  && !temp_frame->params_match(asset->width, asset->height, supported_colormodel))
+				{
+					delete temp_frame;
+					temp_frame = 0;
+				}
+//printf("File::read_frame 4 %p %d %d %d\n", asset , asset->width, asset->height, supported_colormodel);
+
+				if(!temp_frame)
+				{
+					temp_frame = new VFrame(0,
+						asset->width,
+						asset->height,
+						supported_colormodel);
+				}
+
+
 				file->read_frame(temp_frame);
 
 				cmodel_transfer(frame->get_rows(), 
@@ -1173,15 +1175,17 @@ int File::read_frame(VFrame *frame)
 					0,
 					temp_frame->get_w(),
 					frame->get_w());
-printf("File::read_frame 6\n");
-				frames_cache->add_frame(current_frame, current_layer, frame);
+//printf("File::read_frame 5\n");
+				frames_cache->add_frame(current_frame, current_layer, frame, cache_mode & CACHE_THIS_INSTANCE, 1);
 				current_frame++;
 			}
 		}
 		else
 		{
 //printf("File::read_frame 7\n");
-			VFrame *temp_frame2 = frames_cache->get_frame(current_frame, current_layer, asset->width, asset->height, frame->get_color_model());
+			VFrame *temp_frame2 = 0;
+			if (!(cache_mode & CACHE_NO_LOOKUP))
+				temp_frame2 = frames_cache->get_frame(current_frame, current_layer, frame->get_w(), frame->get_h(), frame->get_color_model());
 			if (temp_frame2) 
 			{
 				frame->copy_from(temp_frame2);
@@ -1192,13 +1196,11 @@ printf("File::read_frame 6\n");
 				// cache is implicitly locked after a call to get_frame				
 				frames_cache->unlock_cache();
 				file->read_frame(frame);
-				frames_cache->add_frame(current_frame, current_layer, frame);
+				frames_cache->add_frame(current_frame, current_layer, frame, cache_mode & CACHE_THIS_INSTANCE, 1);
 				current_frame++;
 			}
 //printf("File::read_frame 8\n");
 		}
-
-//printf("File::read_frame 9\n");
 //printf("File::read_frame 2 %d\n", supported_colormodel);
 		return 0;
 	}

@@ -122,7 +122,6 @@ void AssetPicon::create_objects()
 			{
 //printf("AssetPicon::create_objects 1\n");
 				File *file = mwindow->video_cache->check_out(asset);
-//printf("AssetPicon::create_objects 2\n");
 
 				if(file)
 				{
@@ -131,7 +130,7 @@ void AssetPicon::create_objects()
 //printf("AssetPicon::create_objects 3\n");
 					file->set_layer(0);
 					file->set_video_position(0, mwindow->edl->session->frame_rate);
-					frame = file->read_frame(BC_RGB888);
+					frame = file->read_frame_cache(BC_RGB888, pixmap_w, pixmap_h);
 //printf("AssetPicon::create_objects 4\n");
 
 					if(frame)
@@ -145,6 +144,7 @@ void AssetPicon::create_objects()
 							0,
 							0);
 					}
+					file->frames_cache->unlock_cache();
 //printf("AssetPicon::create_objects 5\n");
 
 					mwindow->video_cache->check_in(asset);
@@ -1119,7 +1119,6 @@ int AWindowAssets::selection_changed()
 
 void AWindowAssets::draw_background()
 {
-//printf("AWindowAssets::draw_background %s\n", mwindow->edl->session->current_folder);
 	BC_ListBox::draw_background();
 	set_color(RED);
 	set_font(LARGEFONT);

@@ -747,89 +747,17 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 		source->set_video_position(source_frame, 
 			mwindow->edl->session->frame_rate);
 //printf("ResourcePixmap::draw_video_resource 3 %p\n", source);
-//		VFrame *src = source->read_frame(BC_RGB888);
+		VFrame *src = source->read_frame_cache(BC_RGB888, picon_w, picon_h);
 //printf("ResourcePixmap::draw_video_resource 4 %p\n", src);
-		if ((final_picon_frame = source->frames_cache->get_frame(source->current_frame,
-									source->current_layer,
-									picon_w,
-									picon_h,
-									BC_RGB888,
-									1)))      // force cache
-		{
-			cache_hit = 1;
-			
-		} else
-		{
-			source->frames_cache->unlock_cache(); // implicitly locked after a call to get_frame
-			cache_hit = 0;	
-			now_current_frame = source->current_frame;    // remember current frame, due to (possible) change when using read_frame 			
-			Timer a;
- 			a.update();
-			VFrame *src = source->read_frame(BC_RGB888);
-			if (src) 
-			{
-				final_picon_frame = new VFrame (0, 
-							picon_w,
-							picon_h,
-							BC_RGB888);
-				cmodel_transfer(final_picon_frame->get_rows(), 
-					src->get_rows(),
-					final_picon_frame->get_y(),
-					final_picon_frame->get_u(),
-					final_picon_frame->get_v(),
-					src->get_y(),
-					src->get_u(),
-					src->get_v(),
-					0, 
-					0, 
-					src->get_w(), 
-					src->get_h(),
-					0, 
-					0, 
-					picon_w, 
-					picon_h,
-					src->get_color_model(), 
-					BC_RGB888,
-					0,
-					src->get_w(),
-					picon_w);
-	
- 				printf("Timer: %lli\n", a.get_difference());
-	
-			} else 
-			{
-				final_picon_frame = 0;
-			}
-		}
-		
-
-
-		if(final_picon_frame)
-			draw_vframe(final_picon_frame, 
+		if(src)
+			draw_vframe(src, 
 				x, 
 				y, 
 				picon_w, 
 				picon_h, 
 				0, 
 				0);
-
-		if (cache_hit) {
-			source->frames_cache->unlock_cache(); // cache is implicitly locked after a call to get_frame
-							      // when we don't need the picture, we relase the cache
-		} else {
-			// put the newly extracted frame into cache
-				if (final_picon_frame && !source->frames_cache->add_frame(now_current_frame,
-							source->current_layer,
-							final_picon_frame,
-							1, // do not do a copy of frame, keep this one
-							1) // force the caching, even if cache is disabled
-					)
-				{
-					// because do_not_copy_frame is used, 
-					// we have to take care of deletion in case of not adding the frame to cache
-					delete final_picon_frame;
-				}
-		}
+		source->frames_cache->unlock_cache();
 		
 		
 		
