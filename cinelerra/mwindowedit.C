@@ -18,6 +18,7 @@
 #include "levelwindow.h"
 #include "localsession.h"
 #include "mainclock.h"
+#include "maincursor.h"
 #include "mainindexes.h"
 #include "mainmenu.h"
 #include "mainsession.h"
@@ -629,7 +630,7 @@ void MWindow::insert_effect(char *title,
 	if(plugin_type == PLUGIN_STANDALONE)
 	{
 		default_keyframe = new KeyFrame;
-		server = new PluginServer(*scan_plugindb(title));
+		server = new PluginServer(*scan_plugindb(title, track->data_type));
 
 		server->open_plugin(0, preferences, edl, 0, -1);
 		server->save_data(default_keyframe);
@@ -659,15 +660,18 @@ void MWindow::insert_effect(char *title,
 
 int MWindow::modify_edithandles()
 {
+	Edit *sole_edit;
 	undo->update_undo_before(_("drag handle"), LOAD_EDITS | LOAD_TIMEBAR);
 
-
-
-
+	if (session->solo_dragged)
+		sole_edit = session->drag_edit;
+	else
+		sole_edit = 0;
 
 	edl->modify_edithandles(session->drag_start, 
 		session->drag_position, 
 		session->drag_handle, 
+		sole_edit,
 		edl->session->edit_handle_mode[session->drag_button],
 		edl->session->labels_follow_edits, 
 		edl->session->plugins_follow_edits);
@@ -681,11 +685,18 @@ int MWindow::modify_edithandles()
 
 int MWindow::modify_pluginhandles()
 {
+	Edit *sole_edit;
 	undo->update_undo_before(_("drag handle"), LOAD_EDITS | LOAD_TIMEBAR);
 
+	if (session->solo_dragged)
+		sole_edit = session->drag_plugin;
+	else
+		sole_edit = 0;
+	
 	edl->modify_pluginhandles(session->drag_start, 
 		session->drag_position, 
 		session->drag_handle, 
+		sole_edit,
 		edl->session->edit_handle_mode[session->drag_button],
 		edl->session->labels_follow_edits);
 
@@ -1545,7 +1556,8 @@ void MWindow::paste_transition_cwindow(Track *dest_track)
 
 void MWindow::paste_audio_transition()
 {
- 	PluginServer *server = scan_plugindb(edl->session->default_atransition);
+ 	PluginServer *server = scan_plugindb(edl->session->default_atransition,
+		TRACK_AUDIO);
 	if(!server)
 	{
 		char string[BCTEXTLEN];
@@ -1565,7 +1577,8 @@ void MWindow::paste_audio_transition()
 
 void MWindow::paste_video_transition()
 {
- 	PluginServer *server = scan_plugindb(edl->session->default_vtransition);
+ 	PluginServer *server = scan_plugindb(edl->session->default_vtransition,
+		TRACK_VIDEO);
 	if(!server)
 	{
 		char string[BCTEXTLEN];

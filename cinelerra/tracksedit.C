@@ -814,6 +814,7 @@ int Tracks::move_auto(int cursor_x, int cursor_y, int shift_down)
 int Tracks::modify_edithandles(double &oldposition, 
 	double &newposition, 
 	int currentend, 
+	Edit *sole_edit,
 	int handle_mode,
 	int edit_labels,
 	int edit_plugins)
@@ -826,7 +827,8 @@ int Tracks::modify_edithandles(double &oldposition,
 		{
 			current->modify_edithandles(oldposition, 
 				newposition, 
-				currentend, 
+				currentend,
+				sole_edit, 
 				handle_mode,
 				edit_labels,
 				edit_plugins);
@@ -838,6 +840,7 @@ int Tracks::modify_edithandles(double &oldposition,
 int Tracks::modify_pluginhandles(double &oldposition, 
 	double &newposition, 
 	int currentend, 
+	Edit *sole_edit,
 	int handle_mode,
 	int edit_labels)
 {
@@ -850,6 +853,7 @@ int Tracks::modify_pluginhandles(double &oldposition,
 			current->modify_pluginhandles(oldposition, 
 				newposition, 
 				currentend, 
+				sole_edit,
 				handle_mode,
 				edit_labels);
 		}

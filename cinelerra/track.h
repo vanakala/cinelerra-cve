@@ -48,6 +48,7 @@ public:
 	virtual int load_derived(FileXML *file, uint32_t load_flags) { return 0; };
 	void equivalent_output(Track *track, double *result);
 
+	virtual void copy_from(Track *track);
 	Track& operator=(Track& track);
 	virtual PluginSet* new_plugins() { return 0; };
 // Synchronize playback numbers
@@ -170,7 +171,7 @@ public:
 	int record;
 // Nudge in track units.  Positive shifts track earlier in time.  This way
 // the position variables only need to add the nudge.
-	int nudge;
+	int64_t nudge;
 // TRACK_AUDIO or TRACK_VIDEO
 	int data_type;     
 
@@ -280,12 +281,14 @@ public:
 	int modify_edithandles(double oldposition, 
 		double newposition, 
 		int currentend, 
+		Edit *sole_edit,
 		int handle_mode,
 		int edit_labels,
 		int edit_plugins);
 	int modify_pluginhandles(double oldposition, 
 		double newposition, 
 		int currentend, 
+		Edit *sole_edit,
 		int handle_mode,
 		int edit_labels);
 	int select_edit(int cursor_x, 

@@ -58,6 +58,8 @@ public:
 	Edit *drag_edit;
 // Edits who are being dragged
 	ArrayList<Edit*> *drag_edits;
+// Is the edit or plugin solely being dragged (by pressing shift key)
+	int solo_dragged;
 // Button pressed during drag
 	int drag_button;
 // Handle being dragged

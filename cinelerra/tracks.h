@@ -121,6 +121,8 @@ public:
 	int delete_tracks();     // delete all the recordable tracks
 	int delete_all_tracks();      // delete just the tracks
 
+	void copy_from(Tracks *tracks);
+
 // ================================== EDL editing
 	int copy(double start, 
 		double end, 
@@ -176,12 +178,14 @@ public:
 	int modify_edithandles(double &oldposition, 
 		double &newposition, 
 		int currentend, 
+		Edit *sole_edit,
 		int handle_mode,
 		int edit_labels,
 		int edit_plugins);
 	int modify_pluginhandles(double &oldposition, 
 		double &newposition, 
 		int currentend, 
+		Edit *sole_edit,
 		int handle_mode,
 		int edit_labels);
 	int select_handles();

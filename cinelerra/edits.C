@@ -69,15 +69,21 @@ void Edits::equivalent_output(Edits *edits, int64_t *result)
 	}
 }
 
-
-Edits& Edits::operator=(Edits& edits)
+void Edits::copy_from(Edits *edits)
 {
 	while(last) delete last;
-	for(Edit *current = edits.first; current; current = NEXT)
+	for(Edit *current = edits->first; current; current = NEXT)
 	{
 		Edit *new_edit = append(create_edit());
 		new_edit->copy_from(current);
 	}
+}
+
+
+Edits& Edits::operator=(Edits& edits)
+{
+printf("Edits::operator= 1\n");
+	copy_from(&edits);
 	return *this;
 }
 
@@ -240,6 +246,13 @@ void Edits::resample(double old_rate, double new_rate)
 		if(!NEXT) current->length = Units::to_int64((double)current->length /
 			old_rate *
 			new_rate);
+		if(current->transition)
+		{
+			current->transition->length = Units::to_int64(
+				(double)current->transition->length /
+				old_rate *
+				new_rate);
+		}
 		current->resample(old_rate, new_rate);
 	}
 }
@@ -726,6 +739,7 @@ int Edits::clear_handle(double start,
 int Edits::modify_handles(double oldposition, 
 	double newposition, 
 	int currentend,
+	Edit *sole_edit,
 	int edit_mode, 
 	int edit_edits,
 	int edit_labels,
@@ -744,7 +758,8 @@ int Edits::modify_handles(double oldposition,
 //track->from_units(current_edit->startproject), 
 //oldposition);
 			if(edl->equivalent(track->from_units(current_edit->startproject), 
-				oldposition))
+				oldposition) 
+				&& (!sole_edit || sole_edit == current_edit))
 			{
 // edit matches selection
 //printf("Edits::modify_handles 3 %f %f\n", newposition, oldposition);
@@ -785,7 +800,8 @@ int Edits::modify_handles(double oldposition,
 		{
 //printf("Edits::modify_handle 1 %s\n", track->title);
 			if(edl->equivalent(track->from_units(current_edit->startproject) + 
-				track->from_units(current_edit->length), oldposition))
+				track->from_units(current_edit->length), oldposition) 
+				&& (!sole_edit || sole_edit == current_edit))
 			{
 //printf("Edits::modify_handle 2\n");
             	oldposition = track->from_units(current_edit->startproject) + 

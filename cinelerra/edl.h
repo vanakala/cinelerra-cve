@@ -18,6 +18,7 @@
 #include "sharedlocation.inc"
 #include "theme.inc"
 #include "tracks.inc"
+#include "edit.inc"
 
 
 // Loading and saving are built on load and copy except for automation:
@@ -95,6 +96,8 @@ public:
 // If they're completely equivalent, -1 is returned;
 // This is used by BRender.
 	double equivalent_output(EDL *edl);
+// Set project path for saving a backup
+	void set_project_path(char *path);
 // Set points and labels
 	void set_inpoint(double position);
 	void set_outpoint(double position);
@@ -112,6 +115,7 @@ public:
 	void modify_edithandles(double oldposition, 
 		double newposition, 
 		int currentend, 
+		Edit *sole_edit,
 		int handle_mode,
 		int edit_labels,
 		int edit_plugins);
@@ -119,6 +123,7 @@ public:
 	void modify_pluginhandles(double oldposition, 
 		double newposition, 
 		int currentend, 
+		Edit *sole_edit,
 		int handle_mode,
 		int edit_labels);
 
@@ -195,11 +200,17 @@ public:
 	Tracks *tracks;
 	Labels *labels;
 	Presentations *presentations;
-// Shared between all EDLs in a tree
+// Shared between all EDLs in a tree, for projects.
 	EDLSession *session;
-// Specific to this EDL
+// Specific to this EDL, for clips.
 	LocalSession *local_session;
 
+// In the top EDL, this is the path it was loaded from.  Restores 
+// project titles from backups.  This is only used for loading backups.
+// All other loads keep the path in mainsession->filename.
+// This can't use the output_path argument to save_xml because that points
+// to the backup file, not the project file.
+	char project_path[BCTEXTLEN];
 
 
 

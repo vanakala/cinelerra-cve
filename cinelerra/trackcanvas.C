@@ -4054,6 +4054,11 @@ int TrackCanvas::test_edit_handles(int cursor_x,
 			mwindow->session->drag_origin_x = get_cursor_x();
 			mwindow->session->drag_origin_y = get_cursor_y();
 			mwindow->session->drag_start = position;
+			if (!shift_down())
+				mwindow->session->solo_dragged = 0;
+			else 
+				mwindow->session->solo_dragged = 1;				
+
 
 			int rerender = start_selection(position);
 			if(rerender)
@@ -4143,6 +4148,10 @@ int TrackCanvas::test_plugin_handles(int cursor_x,
 			mwindow->session->drag_origin_x = get_cursor_x();
 			mwindow->session->drag_origin_y = get_cursor_y();
 			mwindow->session->drag_start = position;
+			if (!shift_down())
+				mwindow->session->solo_dragged = 0;
+			else 
+				mwindow->session->solo_dragged = 1;				
 
 			int rerender = start_selection(position);
 			if(rerender) mwindow->cwindow->update(1, 0, 0);

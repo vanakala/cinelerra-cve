@@ -738,17 +738,20 @@ int EDL::clear(double start,
 
 void EDL::modify_edithandles(double oldposition, 
 	double newposition, 
-	int currentend, 
+	int currentend,
+	Edit *sole_edit, 
 	int handle_mode,
 	int edit_labels,
 	int edit_plugins)
 {
 	tracks->modify_edithandles(oldposition, 
 		newposition, 
-		currentend, 
+		currentend,
+		sole_edit, 
 		handle_mode,
 		edit_labels, 
 		edit_plugins);
+	if (!sole_edit)
 	labels->modify_handles(oldposition, 
 		newposition, 
 		currentend,
@@ -759,12 +762,14 @@ void EDL::modify_edithandles(double oldposition,
 void EDL::modify_pluginhandles(double oldposition, 
 	double newposition, 
 	int currentend, 
+	Edit *sole_edit,
 	int handle_mode,
 	int edit_labels)
 {
 	tracks->modify_pluginhandles(oldposition, 
 		newposition, 
 		currentend, 
+		sole_edit,
 		handle_mode,
 		edit_labels);
 	optimize();

@@ -21,6 +21,7 @@ public:
 	virtual ~Edits();	
 
 	void equivalent_output(Edits *edits, int64_t *result);
+	virtual void copy_from(Edits *edits);
 	virtual Edits& operator=(Edits& edits);
 // Editing
 	void insert_edits(Edits *edits, int64_t position);
@@ -92,9 +93,11 @@ public:
 
 // inserts space at the desired location and returns the edit before the space
 // fills end of track if range is after track
+// if sole_edit != NULL, only sole_edit is moved
 	int modify_handles(double oldposition, 
 		double newposition, 
 		int currentend,
+		Edit *sole_edit,
 		int edit_mode, 
 		int edit_edits,
 		int edit_labels,
