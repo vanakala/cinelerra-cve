@@ -227,7 +227,9 @@ public:
 	int test_plugins(int cursor_x, 
 		int cursor_y, 
 		int drag_start,
-		int button_press);
+		int button_press,
+		int &redraw,
+		int &rerender);
 	int test_transitions(int cursor_x, 
 		int cursor_y, 
 		int button_press,

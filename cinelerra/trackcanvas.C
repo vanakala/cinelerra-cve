@@ -190,6 +190,8 @@ int TrackCanvas::keypress_event()
 			break;
 	}
 
+	if (result) 
+		cursor_motion_event(); // since things under cursor have changed...
 	return result;
 }
 
@@ -326,7 +328,9 @@ int TrackCanvas::drag_start_event()
 		if(test_plugins(get_drag_x(), 
 			get_drag_y(), 
 			1,
-			0))
+			0,
+			redraw,
+			rerender))
 		{
 			result = 1;
 		}
@@ -4063,7 +4067,9 @@ int TrackCanvas::test_resources(int cursor_x, int cursor_y)
 int TrackCanvas::test_plugins(int cursor_x, 
 	int cursor_y, 
 	int drag_start,
-	int button_press)
+	int button_press,
+	int &redraw,
+	int &rerender)
 {
 	Plugin *plugin = 0;
 	int result = 0;
@@ -4109,7 +4115,25 @@ int TrackCanvas::test_plugins(int cursor_x,
 				gui->plugin_menu->update(plugin);
 				gui->plugin_menu->activate_menu();
 				result = 1;
-			}
+			} else
+			if (get_double_click() && !drag_start)
+					{
+						mwindow->edl->local_session->selectionstart = 
+							plugin->track->from_units(plugin->startproject);
+						mwindow->edl->local_session->selectionend = 
+							plugin->track->from_units(plugin->startproject) + 
+							plugin->track->from_units(plugin->length);
+						if(mwindow->edl->session->cursor_on_frames) 
+						{
+							mwindow->edl->local_session->selectionstart = 
+								mwindow->edl->align_to_frame(mwindow->edl->local_session->selectionstart, 0);
+							mwindow->edl->local_session->selectionend = 
+								mwindow->edl->align_to_frame(mwindow->edl->local_session->selectionend, 1);
+						}
+						rerender = 1;
+						redraw = 1;
+						result = 1;
+					}
 //printf("TrackCanvas::test_plugins 3\n");
 		}
 		else
@@ -4311,7 +4335,7 @@ int TrackCanvas::button_press_event()
 					break;
 				}
 				else
-				if(test_plugins(cursor_x, cursor_y, 0, 1))
+				if(test_plugins(cursor_x, cursor_y, 0, 1, update_cursor, rerender))
 				{
 					break;
 				}
@@ -4378,7 +4402,7 @@ int TrackCanvas::button_press_event()
 					break;
 				}
 				else
-				if(test_plugins(cursor_x, cursor_y, 0, 1))
+				if(test_plugins(cursor_x, cursor_y, 0, 1, update_cursor, rerender))
 				{
 					break;
 				}
