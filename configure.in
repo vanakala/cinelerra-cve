@@ -107,7 +107,7 @@ AC_CHECK_LIB(faad, faacDecInit, ,[AC_MSG_WARN([libfaad not found])
 
 ############## LIBXVIDCORE
 AC_CHECK_HEADERS(xvid.h)
-AC_CHECK_LIB(xvidcore, xvid_init, ,[AC_MSG_WARN([libxvidcore not found])
+AC_CHECK_LIB(xvidcore, xvid_global, ,[AC_MSG_WARN([libxvidcore not found])
 	NOT_FOUND="$NOT_FOUND libxvidcore"])
 # END LIBXVIDCORE
 
