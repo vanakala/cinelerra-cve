@@ -594,11 +594,11 @@ TRACE("TrackCanvas::draw 10")
 // Cursor disappears after resize when this is called.
 // Cursor doesn't redraw after editing when this isn't called.
 	if(gui->cursor && hide_cursor) gui->cursor->hide();
-//printf("TrackCanvas::draw 3\n");
+TRACE("TrackCanvas::draw 20")
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h(), background_pixmap);
-//printf("TrackCanvas::draw 4\n");
+TRACE("TrackCanvas::draw 30")
 	draw_resources(force);
-//printf("TrackCanvas::draw 5\n");
+TRACE("TrackCanvas::draw 40")
 	draw_overlays();
 UNTRACE
 }
@@ -1476,8 +1476,17 @@ void TrackCanvas::draw_transitions()
 		{
 			if(edit->transition)
 			{
+				int64_t strip_w, strip_x, strip_y;
 				edit_dimensions(edit, x, y, w, h);
+				strip_x = x ;
+				strip_y = y;
+				if(mwindow->edl->session->show_titles)
+					strip_y += mwindow->theme->title_bg_data->get_h();
+
 				get_transition_coords(x, y, w, h);
+				strip_w = Units::round(edit->track->from_units(edit->transition->length) * 
+					mwindow->edl->session->sample_rate / 
+					mwindow->edl->local_session->zoom_sample);
 
 				if(MWindowGUI::visible(x, x + w, 0, get_w()) &&
 					MWindowGUI::visible(y, y + h, 0, get_h()))
@@ -1492,6 +1501,27 @@ void TrackCanvas::draw_transitions()
 						0, 
 						server->picon->get_w(), 
 						server->picon->get_h());
+				}
+				if(MWindowGUI::visible(strip_x, strip_x + strip_w, 0, get_w()) &&
+					MWindowGUI::visible(strip_y, strip_y + h, 0, get_h()))
+				{
+					int x = strip_x, w = strip_w, left_margin = 5;
+					if(x < 0)
+					{
+						w -= -x;
+						x = 0;
+					}
+					if(w + x > get_w()) w -= (w + x) - get_w();
+				
+					draw_3segmenth(
+						x, 
+						strip_y, 
+						w, 
+						strip_x,
+						strip_w,
+						mwindow->theme->plugin_bg_data,
+						0);
+
 				}
 			}
 		}

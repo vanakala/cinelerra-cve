@@ -101,6 +101,13 @@ int TransitionLengthText::handle_event()
 		if(gui->transition->edit->track->data_type == TRACK_VIDEO) mwindow->restart_brender();
 		mwindow->sync_parameters(CHANGE_PARAMS);
 		mwindow->edl->session->default_transition_length = result;
+		mwindow->gui->update(0,
+			1,
+			0,
+			0,
+			0, 
+			0,
+			0);
 	}
 	
 	return 1;
