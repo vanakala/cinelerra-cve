@@ -74,6 +74,39 @@ int FileXML::append_text(char *text)
 	return 0;
 }
 
+int FileXML::serialize_and_append_text(char *text)
+{
+// We have to encode at least the '<' char
+// We encode three things:
+// '<' -> '&lt;' 
+// '>' -> '&gt;'
+// '&' -> '&amp;'
+	char leftb[] = "&lt;";
+	char rightb[] = "&gt;";
+	char amp[] = "&amp;";
+	char *replacement;
+	int len = strlen(text);
+	int lastpos = 0;
+	for (int i = 0; i < len; i++) 
+	{
+		switch (text[i]) {
+			case '<': replacement = leftb; break;
+			case '>': replacement = rightb; break;
+			case '&': replacement = amp; break;
+			default: replacement = 0; break;
+		}
+		if (replacement)
+		{
+			if (i - lastpos > 0)
+				append_text(text + lastpos, i - lastpos);
+			append_text(replacement, strlen(replacement));
+			lastpos = i + 1;
+		}
+	}
+	append_text(text + lastpos, len - lastpos);
+	return 0;
+}
+
 int FileXML::append_text(char *text, long len)
 {
 	while(position + len > available)
@@ -125,7 +158,34 @@ char* FileXML::read_text()
 // filter out first newline
 		if((i > 0 && i < output_length - 1) || string[text_position] != '\n') 
 		{
-			output[i] = string[text_position];
+// check if we have to do deserializing
+// but try to be most backward compatible possible
+			int character = string[text_position];
+			if (string[text_position] == '&') 
+			{
+				if (text_position + 3 < length)
+				{
+					if (string[text_position + 1] == 'l' && string[text_position + 2] == 't' && string[text_position + 3] == ';')
+					{
+						character = '<';
+						text_position += 3;
+					}		
+					if (string[text_position + 1] == 'g' && string[text_position + 2] == 't' && string[text_position + 3] == ';')
+					{
+						character = '>';
+						text_position += 3;
+					}		
+				}
+				if (text_position + 4 < length)
+				{
+					if (string[text_position + 1] == 'a' && string[text_position + 2] == 'm' && string[text_position + 3] == 'p' && string[text_position + 4] == ';')
+					{
+						character = '&';
+						text_position += 4;
+					}		
+				}
+			}
+			output[i] = character;
 			i++;
 		}
 	}

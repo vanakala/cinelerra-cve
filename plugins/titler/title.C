@@ -2266,7 +2266,7 @@ void TitleMain::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.append_newline();
 	
-	output.append_text(config.text);
+	output.serialize_and_append_text(config.text);
 
 	output.tag.set_title("/TITLE");
 	output.append_tag();

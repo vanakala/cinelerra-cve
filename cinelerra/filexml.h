@@ -70,6 +70,7 @@ public:
 	int append_tag();           // append tag object
 	int append_text(char *text);
 	int append_text(char *text, long len);        // add generic text to the string
+	int serialize_and_append_text(char *text);       // encode and add generic text to the string, 
 
 // Text array is dynamically allocated and deleted when FileXML is deleted
 	char* read_text();         // read text, put it in *output, and return it
