@@ -1,6 +1,12 @@
+/* 2004: FFMPEG DV Decode by Richard Bavestock baver@thebeever.com */
 /* 2002: Refurbished by Arthur Peters amep@softhome.net */
 /* 2000: Original codec by Heroine Virtual */
 
+#include "../config.h"
+
+#ifdef DV_USE_FFMPEG
+#include <avcodec.h>
+#endif
 
 #include "colormodels.h"
 #include "funcprotos.h"
@@ -16,6 +22,13 @@
 
 typedef struct
 {
+
+#ifdef DV_USE_FFMPEG
+	AVCodec *codec;
+	AVCodecContext *context;
+	AVFrame *frame;
+#endif
+
 	dv_decoder_t *dv_decoder;
 	dv_encoder_t *dv_encoder;
 	unsigned char *data;
@@ -39,6 +52,15 @@ static pthread_mutex_t libdv_init_mutex = PTHREAD_MUTEX_INITIALIZER;
 static int delete_codec(quicktime_video_map_t *vtrack)
 {
 	quicktime_dv_codec_t *codec = ((quicktime_codec_t*)vtrack->codec)->priv;
+
+#ifdef DV_USE_FFMPEG
+	if(codec->context)
+	{
+		avcodec_close(codec->context);
+		free(codec->context);
+	}
+	if(codec->frame) free(codec->frame);
+#endif
 
 	if(codec->dv_decoder)
 	{
@@ -97,14 +119,38 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 	result = !quicktime_read_data(file, (char*)codec->data, bytes);
 
 //printf(__FUNCTION__ " 1\n");
+#ifdef DV_USE_FFMPEG
+	if( codec->codec && codec->parameters_changed )
+	{
+		avcodec_close(codec->context);
+		free(codec->context);
+		codec->context = NULL;
+		codec->codec = NULL;
+		codec->parameters_changed = 0;
+	}
+#else
 	if( codec->dv_decoder && codec->parameters_changed )
 	{
 		dv_decoder_free( codec->dv_decoder );
 		codec->dv_decoder = NULL;
 		codec->parameters_changed = 0;
 	}
-	
+#endif // DV_USE_FFMEPG
+
 //printf(__FUNCTION__ " 2\n");
+#ifdef DV_USE_FFMPEG
+	if( ! codec->codec )
+	{
+		pthread_mutex_lock( &libdv_init_mutex );
+
+		codec->codec = avcodec_find_decoder(CODEC_ID_DVVIDEO);
+		codec->context = avcodec_alloc_context();
+		avcodec_open(codec->context, codec->codec);
+
+		codec->parameters_changed = 0;
+		pthread_mutex_unlock( &libdv_init_mutex );
+	}
+#else
 	if( ! codec->dv_decoder )
 	{
 		pthread_mutex_lock( &libdv_init_mutex );
@@ -119,8 +165,50 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 		codec->parameters_changed = 0;
 		pthread_mutex_unlock( &libdv_init_mutex );
 	}
-
+#endif // DV_USE_FFMPEG
 //printf(__FUNCTION__ " 3\n");
+
+#ifdef DV_USE_FFMPEG
+	if(codec->codec)
+	{
+		int got_picture = 0;
+		int i = 0;
+		AVPicture temp_frame;
+	
+		if(!codec->frame) codec->frame = avcodec_alloc_frame();
+	
+		if(avcodec_decode_video(codec->context,
+			codec->frame,
+			&got_picture,
+			codec->data,
+			bytes) < 0)
+		{
+			printf("Error while decoding frame\n");
+		}
+
+		if(!codec->temp_frame)
+		{
+			codec->temp_frame = malloc(720 * 576 * 2);
+			codec->temp_rows = malloc(sizeof(unsigned char*) * 576);
+			for(i = 0; i < 576; i++)
+				codec->temp_rows[i] = codec->temp_frame + 720 * 2 * i;
+		}
+
+		temp_frame.linesize[0] = 720 * 2;
+		for(i = 0; i < 4; i++)
+			temp_frame.data[i] = codec->temp_rows[i];
+
+		decode_colormodel = BC_YUV422;
+
+		img_convert(&temp_frame,
+			PIX_FMT_YUV422,
+			(AVPicture *)codec->frame,
+			(file->in_h == 576 ? PIX_FMT_YUV420P : PIX_FMT_YUV411P),
+			file->in_w,
+			file->in_h);
+			
+#else
+
 	if(codec->dv_decoder)
 	{
 //printf(__FUNCTION__ " 4\n");
@@ -184,6 +272,8 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 			dv_decode_full_frame( codec->dv_decoder, codec->data,
 								  e_dv_color_yuv, codec->temp_rows,
 								  pitches );
+#endif // DV_USE_FFMPEG
+
 //printf(__FUNCTION__ " 8\n");
 			
 
@@ -195,7 +285,6 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
  * codec->temp_rows[0][3]
  * )
  */
-
 
 			cmodel_transfer(row_pointers, 
 				codec->temp_rows,
@@ -227,7 +316,9 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
  * );
  */
 //printf("decode 9\n");
+#ifndef DV_USE_FFMPEG
 		}
+#endif // DV_USE_FFMPEG
 	}
 
 //printf(__FUNCTION__ " 2\n");
@@ -438,6 +529,11 @@ static void init_codec_common(quicktime_video_map_t *vtrack, char *fourcc)
 	quicktime_dv_codec_t *codec;
 	int i;
 
+#ifdef DV_USE_FFMPEG
+	avcodec_init();
+	avcodec_register_all();
+#endif // DV_USE_FFMPEG
+
 /* Init public items */
 	codec_base->priv = calloc(1, sizeof(quicktime_dv_codec_t));
 	codec_base->delete_vcodec = delete_codec;
@@ -456,7 +552,12 @@ static void init_codec_common(quicktime_video_map_t *vtrack, char *fourcc)
 	/* Init private items */
 
 	codec = codec_base->priv;
-	
+
+#ifdef DV_USE_FFMPEG
+	codec->codec = NULL;
+	codec->context = NULL;
+	codec->frame = NULL;
+#endif // DV_USE_FFMPEG
 	codec->dv_decoder = NULL;
 	codec->dv_encoder = NULL;
 	codec->decode_quality = DV_QUALITY_BEST;
