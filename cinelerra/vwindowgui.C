@@ -568,7 +568,7 @@ void VWindowEditing::to_clip()
 		EDL *new_edl = new EDL(mwindow->edl);
 		new_edl->create_objects();
 		new_edl->load_xml(mwindow->plugindb, &file, LOAD_ALL);
-		sprintf(new_edl->local_session->clip_title, _("Clip %d\n"), mwindow->session->clip_number++);
+		sprintf(new_edl->local_session->clip_title, _("Clip %d"), mwindow->session->clip_number++);
 
 printf("VWindowEditing::to_clip 1 %s\n", edl->local_session->clip_title);
 

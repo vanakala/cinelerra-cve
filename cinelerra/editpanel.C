@@ -670,7 +670,7 @@ EditToClip::EditToClip(MWindow *mwindow, EditPanel *panel, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip(_("To clip"));
+	set_tooltip(_("To clip ( i )"));
 }
 EditToClip::~EditToClip()
 {
@@ -680,6 +680,17 @@ int EditToClip::handle_event()
 	panel->to_clip();
 	return 1;
 }
+
+int EditToClip::keypress_event()
+{
+	if(get_keypress() == 'i')
+	{
+		handle_event();
+		return 1;
+	}
+	return 0;
+}
+
 
 EditSplice::EditSplice(MWindow *mwindow, EditPanel *panel, int x, int y)
  : BC_Button(x, y, mwindow->theme->splice_data)

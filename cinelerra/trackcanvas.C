@@ -1702,6 +1702,8 @@ int TrackCanvas::do_keyframes(int cursor_x,
 	int &update_cursor,
 	int &rerender)
 {
+// Note: button 3 (right mouse button) is not eaten to allow
+// track context menu to appear
 	int current_tool = 0;
 	int result = 0;
 	EDLSession *session = mwindow->edl->session;
@@ -1713,7 +1715,7 @@ int TrackCanvas::do_keyframes(int cursor_x,
 		Automation *automation = track->automation;
 
 //printf("TrackCanvas::draw_keyframes 1\n");
-		if(!result && session->auto_conf->fade)
+		if(!result && session->auto_conf->fade && buttonpress != 3)
 		{
 			result = do_float_autos(track, 
 				automation->fade_autos,
@@ -1736,7 +1738,7 @@ int TrackCanvas::do_keyframes(int cursor_x,
 
 //printf("TrackCanvas::draw_keyframes 1 %d\n", result);
 
-		if(!result && session->auto_conf->czoom && automation->czoom_autos)
+		if(!result && session->auto_conf->czoom && automation->czoom_autos && buttonpress != 3)
 		{
 			result = do_float_autos(track, 
 				automation->czoom_autos,
@@ -1757,7 +1759,7 @@ int TrackCanvas::do_keyframes(int cursor_x,
 		}
 
 //printf("TrackCanvas::draw_keyframes 2 %d\n", result);
-		if(!result && session->auto_conf->pzoom && automation->pzoom_autos)
+		if(!result && session->auto_conf->pzoom && automation->pzoom_autos && buttonpress != 3)
 		{
 			result = do_float_autos(track, 
 				automation->pzoom_autos,
@@ -1778,7 +1780,7 @@ int TrackCanvas::do_keyframes(int cursor_x,
 		}
 
 //printf("TrackCanvas::draw_keyframes 1 %d\n", result);
-		if(!result && session->auto_conf->mute)
+		if(!result && session->auto_conf->mute && buttonpress != 3)
 		{
 			result = do_toggle_autos(track, 
 				automation->mute_autos,
@@ -1799,7 +1801,7 @@ int TrackCanvas::do_keyframes(int cursor_x,
 		}
 
 //printf("TrackCanvas::draw_keyframes 1 %d\n", result);
-		if(!result && session->auto_conf->camera && automation->camera_autos)
+		if(!result && session->auto_conf->camera && automation->camera_autos && buttonpress != 3)
 		{
 			result = do_autos(track, 
 				automation->camera_autos,
@@ -1820,7 +1822,7 @@ int TrackCanvas::do_keyframes(int cursor_x,
 			}
 		}
 
-		if(!result && session->auto_conf->mode && automation->mode_autos)
+		if(!result && session->auto_conf->mode && automation->mode_autos && buttonpress != 3)
 		{
 			result = do_autos(track, 
 				automation->mode_autos,
@@ -1842,7 +1844,7 @@ int TrackCanvas::do_keyframes(int cursor_x,
 		}
 
 //printf("TrackCanvas::draw_keyframes 1 %d\n", result);
-		if(!result && session->auto_conf->projector && automation->projector_autos)
+		if(!result && session->auto_conf->projector && automation->projector_autos && buttonpress != 3)
 		{
 			result = do_autos(track, 
 				automation->projector_autos,
@@ -1863,7 +1865,7 @@ int TrackCanvas::do_keyframes(int cursor_x,
 			}
 		}
 
-		if(!result && session->auto_conf->mask && automation->mask_autos)
+		if(!result && session->auto_conf->mask && automation->mask_autos && buttonpress != 3)
 		{
 			result = do_autos(track, 
 				automation->mask_autos,
@@ -1885,7 +1887,7 @@ int TrackCanvas::do_keyframes(int cursor_x,
 		}
 
 //printf("TrackCanvas::draw_keyframes 1 %d\n", result);
-		if(!result && session->auto_conf->pan && automation->pan_autos)
+		if(!result && session->auto_conf->pan && automation->pan_autos && buttonpress != 3)
 		{
 			result = do_autos(track, 
 				automation->pan_autos,
@@ -1907,7 +1909,7 @@ int TrackCanvas::do_keyframes(int cursor_x,
 		}
 
 //printf("TrackCanvas::draw_keyframes 1 %d\n", result);
-		if(!result && session->auto_conf->plugins)
+		if(!result && session->auto_conf->plugins && buttonpress != 3)
 		{
 			Plugin *plugin;
 			KeyFrame *keyframe;
@@ -2234,7 +2236,7 @@ void TrackCanvas::draw_floatline(int center_pixel,
 	FloatAuto *previous,
 	FloatAuto *next,
 	FloatAutos *autos,
-	int64_t unit_start,
+	double view_start_doubleunits,
 	double zoom_units,
 	double yscale,
 	int x1,
@@ -2259,7 +2261,7 @@ void TrackCanvas::draw_floatline(int center_pixel,
 	FloatAuto *previous1 = previous, *next1 = next;
 	for(int x = x1; x < x2; x++)
 	{
-		int64_t position = (int64_t)(unit_start + x * zoom_units);
+		int64_t position = (int64_t)(view_start_doubleunits + x * zoom_units);
 		float value = autos->get_value(position, PLAY_FORWARD, previous1, next1);
 
 		int y = (int)(center_pixel + 
@@ -2367,7 +2369,7 @@ void TrackCanvas::synchronize_autos(float change, Track *skip, FloatAuto *fauto,
 
 int TrackCanvas::test_floatline(int center_pixel, 
 		FloatAutos *autos,
-		int64_t unit_start,
+		double view_start_doubleunits,
 		double zoom_units,
 		double yscale,
 		int x1,
@@ -2379,7 +2381,7 @@ int TrackCanvas::test_floatline(int center_pixel,
 	int result = 0;
 
 
-	int64_t position = (int64_t)(unit_start + cursor_x * zoom_units);
+	int64_t position = (int64_t)(view_start_doubleunits + cursor_x * zoom_units);
 // Call by reference fails for some reason here
 	FloatAuto *previous = 0, *next = 0;
 	float value = autos->get_value(position, PLAY_FORWARD, previous, next);
@@ -2495,11 +2497,16 @@ void TrackCanvas::calculate_viewport(Track *track,
 	view_start = (double)mwindow->edl->local_session->view_start * 
 		mwindow->edl->local_session->zoom_sample /
 		mwindow->edl->session->sample_rate;
+
+// unit_start is useless since it denoted as frame number in video tracks - causes big displacement when
+// positioning keyframes in totaly timezoomed view
 	unit_start = track->to_units(view_start, 0);
+
 	view_end = (double)(mwindow->edl->local_session->view_start + 
 		get_w()) * 
 		mwindow->edl->local_session->zoom_sample / 
 		mwindow->edl->session->sample_rate;
+// same problem as unit end
 	unit_end = (int64_t)(track->to_units(view_end, 1));
 	yscale = mwindow->edl->local_session->zoom_track;
 	center_pixel = (int)(track->y_pixel + yscale / 2) + 
@@ -2551,13 +2558,13 @@ int TrackCanvas::do_float_autos(Track *track,
 	Auto *current = 0;
 	Auto *previous = 0;
 	for(current = autos->last; 
-		current && current->position >= unit_start; 
+		current && current->position >= track->to_doubleunits(view_start); 
 		current = PREVIOUS)
 		;
 
 	if(current)
 	{
-		ax = (double)(current->position - unit_start) / zoom_units;
+		ax = (double)(current->position - track->to_doubleunits(view_start)) / zoom_units;
 		ay = (((FloatAuto*)current)->value_to_percentage() - 0.5) * -yscale;
 		current = NEXT;
 	}
@@ -2588,16 +2595,16 @@ int TrackCanvas::do_float_autos(Track *track,
 
 		if(current)
 		{
-			ax2 = (double)(current->position - unit_start) / zoom_units;
+			ax2 = (double)(current->position - track->to_doubleunits(view_start)) / zoom_units;
 			ay2 = (((FloatAuto*)current)->value_to_percentage() - 0.5) * -yscale;
 			in_x2 = (double)(current->position + 
 				((FloatAuto*)current)->control_in_position - 
-				unit_start) / 
+				track->to_doubleunits(view_start)) / 
 				zoom_units;
 			in_y2 = (((FloatAuto*)current)->invalue_to_percentage() - 0.5) * -yscale;
 			out_x2 = (double)(current->position + 
 				((FloatAuto*)current)->control_out_position - 
-				unit_start) / 
+				track->to_doubleunits(view_start)) / 
 				zoom_units;
 			out_y2 = (((FloatAuto*)current)->outvalue_to_percentage() - 0.5) * -yscale;
 		}
@@ -2685,7 +2692,7 @@ int TrackCanvas::do_float_autos(Track *track,
 				{
 					result = test_floatline(center_pixel, 
 						(FloatAutos*)autos,
-						unit_start,
+						track->to_doubleunits(view_start),
 						zoom_units,
 						yscale,
 						(int)ax,
@@ -2702,7 +2709,7 @@ int TrackCanvas::do_float_autos(Track *track,
 				(FloatAuto*)previous,
 				(FloatAuto*)current,
 				(FloatAutos*)autos,
-				unit_start,
+				track->to_doubleunits(view_start),
 				zoom_units,
 				yscale,
 				(int)ax, 
@@ -2728,7 +2735,7 @@ int TrackCanvas::do_float_autos(Track *track,
 		ax = ax2;
 		ay = ay2;
 	}while(current && 
-		current->position <= unit_end && 
+		current->position <= track->to_doubleunits(view_end) && 
 		!result);
 
 //printf("TrackCanvas::do_float_autos 100\n");
@@ -2750,7 +2757,7 @@ int TrackCanvas::do_float_autos(Track *track,
 			{
 				result = test_floatline(center_pixel, 
 					(FloatAutos*)autos,
-					unit_start,
+					track->to_doubleunits(view_start),
 					zoom_units,
 					yscale,
 					(int)ax,
@@ -2765,7 +2772,7 @@ int TrackCanvas::do_float_autos(Track *track,
 				(FloatAuto*)previous,
 				(FloatAuto*)current,
 				(FloatAutos*)autos,
-				unit_start,
+				track->to_doubleunits(view_start),
 				zoom_units,
 				yscale,
 				(int)ax, 
@@ -2849,7 +2856,7 @@ int TrackCanvas::do_toggle_autos(Track *track,
 	{
 		if(current)
 		{
-			ax2 = (double)(current->position - unit_start) / zoom_units;
+			ax2 = (double)(current->position - track->to_doubleunits(view_start)) / zoom_units;
 			ay2 = ((IntAuto*)current)->value > 0 ? high : low;
 		}
 		else
@@ -2918,7 +2925,7 @@ int TrackCanvas::do_toggle_autos(Track *track,
 
 		ax = ax2;
 		ay = ay2;
-	}while(current && current->position <= unit_end && !result);
+	}while(current && current->position <= track->to_doubleunits(view_end) && !result);
 
 	if(ax < get_w() && !result)
 	{
@@ -2983,10 +2990,10 @@ int TrackCanvas::do_autos(Track *track,
 
 	for(current = autos->first; current && !result; current = NEXT)
 	{
-		if(current->position >= unit_start && current->position < unit_end)
+		if(current->position >= track->to_doubleunits(view_start) && current->position < track->to_doubleunits(view_end))
 		{
 			int64_t x, y;
-			x = (int64_t)((double)(current->position - unit_start) / 
+			x = (int64_t)((double)(current->position - track->to_doubleunits(view_start)) / 
 				zoom_units - (pixmap->get_w() / 2 + 0.5));
 			y = center_pixel - pixmap->get_h() / 2;
 
@@ -3083,9 +3090,9 @@ int TrackCanvas::do_plugin_autos(Track *track,
 				keyframe = (KeyFrame*)keyframe->next)
 			{
 //printf("TrackCanvas::draw_plugin_autos 3 %d\n", keyframe->position);
-				if(keyframe->position >= unit_start && keyframe->position < unit_end)
+				if(keyframe->position >=  track->to_doubleunits(view_start) && keyframe->position <  track->to_doubleunits(view_end))
 				{
-					int64_t x = (int64_t)((keyframe->position - unit_start) / zoom_units);
+					int64_t x = (int64_t)((keyframe->position - track->to_doubleunits(view_start)) / zoom_units);
 					int y = center_pixel - keyframe_pixmap->get_h() / 2;
 
 //printf("TrackCanvas::draw_plugin_autos 4 %d %d\n", x, center_pixel);

@@ -24,7 +24,7 @@ PluginSet::~PluginSet()
 
 PluginSet& PluginSet::operator=(PluginSet& plugins)
 {
-//printf("PluginSet::operator= : you should call copy_from instead, to allow conditional copies.\n");
+printf("PluginSet::operator= 1\n");
 	copy_from(&plugins);
 	return *this;
 }
@@ -386,16 +386,18 @@ int PluginSet::optimize()
 	int result = 1;
 	Plugin *current_edit;
 
+
 // Delete keyframes out of range
 	for(current_edit = (Plugin*)first;
 		current_edit; 
 		current_edit = (Plugin*)current_edit->next)
 	{
+		current_edit->keyframes->default_auto->position = 0;
 		for(KeyFrame *current_keyframe = (KeyFrame*)current_edit->keyframes->last;
 			current_keyframe; )
 		{
 			KeyFrame *previous_keyframe = (KeyFrame*)current_keyframe->previous;
-			if(current_keyframe->position >= 
+			if(current_keyframe->position > 
 				current_edit->startproject + current_edit->length ||
 				current_keyframe->position < current_edit->startproject)
 			{

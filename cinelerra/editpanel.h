@@ -209,6 +209,7 @@ public:
 	EditToClip(MWindow *mwindow, EditPanel *panel, int x, int y);
 	~EditToClip();
 	int handle_event();
+	int keypress_event();
 	MWindow *mwindow;
 	EditPanel *panel;
 };

@@ -99,7 +99,7 @@ public:
 		FloatAuto *previous,
 		FloatAuto *current,
 		FloatAutos *autos,
-		int64_t unit_start,
+		double view_start_doubleunits,
 		double zoom_units,
 		double yscale,
 		int ax,
@@ -109,7 +109,7 @@ public:
 		int color);
 	int test_floatline(int center_pixel, 
 		FloatAutos *autos,
-		int64_t unit_start,
+		double view_start_doubleunits,
 		double zoom_units,
 		double yscale,
 		int x1,
