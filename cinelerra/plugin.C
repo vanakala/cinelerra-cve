@@ -200,6 +200,8 @@ int Plugin::is_synthesis(RenderEngine *renderengine,
 				real_plugin_number, 
 				direction, 
 				0);
+			// if plugin at the master track is not present at this position
+			if (!plugin) return 0;
 			return plugin->is_synthesis(renderengine, position, direction);
 			break;
 		}
