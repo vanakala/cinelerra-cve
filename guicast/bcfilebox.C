@@ -614,6 +614,8 @@ int BC_FileBox::resize_event(int w, int h)
 		h - (get_h() - textbox->get_y()),
 		w - (get_w() - textbox->get_w()),
 		1);
+	recent->reposition_window(textbox->get_x() + textbox->get_w(), 
+		h - (get_h() - recent->get_y()));
 	listbox->reposition_window(listbox->get_x(),
 		listbox->get_y(),
 		w - (get_w() - listbox->get_w()),
