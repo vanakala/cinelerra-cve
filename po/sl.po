@@ -1601,7 +1601,7 @@ msgstr "Datoteke kazala"
 
 #: cinelerra/interfaceprefs.C:95
 msgid "Index files go here:"
-msgstr "Datoteke kazala gredo sem:"
+msgstr "Mesto datotek kazal:"
 
 #: cinelerra/interfaceprefs.C:106
 msgid "Index Path"
@@ -1617,7 +1617,7 @@ msgstr "Velikost datoteke kazala:"
 
 #: cinelerra/interfaceprefs.C:119
 msgid "Number of index files to keep:"
-msgstr "©tevilo hranjenih datotek kazala:"
+msgstr "©tevilo hranjenih datotek kazal:"
 
 #: cinelerra/interfaceprefs.C:130
 msgid "Editing"
@@ -2580,7 +2580,7 @@ msgstr "Razvrsti vozli¹èa"
 
 #: cinelerra/performanceprefs.C:673
 msgid "Reset rates"
-msgstr "Ponastavi stopnjo"
+msgstr "Ponastavi produktivnost"
 
 #: cinelerra/performanceprefs.C:754
 msgid "Use virtual filesystem"
