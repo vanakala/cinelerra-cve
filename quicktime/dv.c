@@ -138,7 +138,7 @@ static int decode(quicktime_t *file, unsigned char **row_pointers, int track)
 		
 // Libdv improperly decodes RGB colormodels.
 		if( (file->color_model == BC_YUV422
-			/* || file->color_model == BC_RGB888 */) &&
+			 || file->color_model == BC_RGB888 ) &&
 			file->in_x == 0 && 
 			file->in_y == 0 && 
 			file->in_w == width &&
