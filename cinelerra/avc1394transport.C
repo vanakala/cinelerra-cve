@@ -4,10 +4,10 @@
 
 #include <unistd.h>
 
-#define POLL_INTERVAL 33000
+#define POLL_INTERVAL 20000
 
 AVC1394TransportThread::AVC1394TransportThread(BC_Title *label, AVC1394 *avc)
- : Thread(0, 0, 0)
+ : Thread(1, 0, 0)
 {
 	this->label = label;
 	this->avc = avc;
@@ -21,17 +21,16 @@ AVC1394TransportThread::~AVC1394TransportThread()
 
 void AVC1394TransportThread::run()
 {
-	char *text;
 	while(!done)
 	{
 		Thread::disable_cancel();
-		text = avc->timecode();
-		label->update(text);
-		free(text);
+		label->lock_window("AVC1394TransportThread::run 1");
+		// Sometimes text is set to NULL for some reason...
+		label->update(avc->timecode());
+		label->unlock_window();
 		usleep(POLL_INTERVAL);
 		Thread::enable_cancel();
 	}
-
 }
 
 AVC1394Transport::AVC1394Transport(MWindow *mwindow,
@@ -208,7 +207,7 @@ AVC1394GUIPlay::~AVC1394GUIPlay()
 int AVC1394GUIPlay::handle_event()
 {
 	if(mode == 0)
-	{
+/	{
 		avc->play();
 		set_tooltip(_("Pause"));
 		mode = 1;
