@@ -170,7 +170,7 @@ TRACE("MWindow::~MWindow 16\n");
 TRACE("MWindow::~MWindow 17\n");
 }
 
-void MWindow::init_defaults(Defaults* &defaults)
+void MWindow::init_defaults(Defaults* &defaults, char *rcfile)
 {
 // set the .bcast directory
 	char directory[BCTEXTLEN];
@@ -184,9 +184,14 @@ void MWindow::init_defaults(Defaults* &defaults)
 	}
 
 // load the defaults
-	strcat(directory, "Cinelerra_rc");
+	if (rcfile != NULL)
+		defaults = new Defaults(rcfile);
+	else
+	{
+		strcat(directory, "Cinelerra_rc");
+		defaults = new Defaults(directory);
+	}
 
-	defaults = new Defaults(directory);
 	defaults->load();
 }
 
@@ -995,7 +1000,7 @@ UNTRACE
 	return 0;
 }
 
-void MWindow::create_objects(int want_gui, int want_new)
+void MWindow::create_objects(int want_gui, int want_new, char *rcfile)
 {
 	char string[BCTEXTLEN];
 	FileSystem fs;
@@ -1013,7 +1018,7 @@ void MWindow::create_objects(int want_gui, int want_new)
 
 	init_menus();
 TRACE("MWindow::create_objects 1");
-	init_defaults(defaults);
+	init_defaults(defaults, rcfile);
 TRACE("MWindow::create_objects 1");
 	init_preferences();
 TRACE("MWindow::create_objects 1");
@@ -1104,12 +1109,17 @@ void MWindow::hide_splash()
 }
 
 
-void MWindow::start()
+void MWindow::start(int autorender)
 {
 	vwindow->start();
 	awindow->start();
 	cwindow->start();
 	lwindow->start();
+	if (autorender)
+	{
+		render->set_autorender(autorender);
+		render->start_interactive();
+	}
 	gui->run_window();
 }
 

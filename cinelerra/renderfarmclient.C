@@ -35,7 +35,7 @@
 
 // The render client waits for connections from the server.
 // Then it starts a thread for each connection.
-RenderFarmClient::RenderFarmClient(int port, char *deamon_path, int nice_value)
+RenderFarmClient::RenderFarmClient(int port, char *deamon_path, int nice_value, char *rcfile)
 {
 	this->port = port;
 	this->deamon_path = deamon_path;
@@ -47,7 +47,7 @@ RenderFarmClient::RenderFarmClient(int port, char *deamon_path, int nice_value)
 
 	thread = new RenderFarmClientThread(this);
 
-	MWindow::init_defaults(boot_defaults);
+	MWindow::init_defaults(boot_defaults, rcfile);
 	boot_preferences = new Preferences;
 	boot_preferences->load_defaults(boot_defaults);
 	MWindow::init_plugins(boot_preferences, plugindb, 0);

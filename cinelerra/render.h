@@ -86,6 +86,7 @@ public:
 	void start_batches(ArrayList<BatchRenderJob*> *jobs);
 // Called by BatchRender to stop the operation.
 	void stop_operation();
+	void set_autorender(int autorender);
 	void run();
 
 
@@ -170,6 +171,8 @@ public:
 	double frames_per_second;
 // Time used in last render
 	double elapsed_time;
+private:
+	int autorender;
 };
 
 class RenderToTracks;

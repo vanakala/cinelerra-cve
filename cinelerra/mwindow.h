@@ -64,10 +64,10 @@ public:
 	~MWindow();
 
 // ======================================== initialization commands
-	void create_objects(int want_gui, int want_new);
+	void create_objects(int want_gui, int want_new, char *rcfile);
 	void show_splash();
 	void hide_splash();
-	void start();
+	void start(int autorender);
 	static void init_tuner(ArrayList<Channel*> &channeldb, char *path);
 
 	int run_script(FileXML *script);
@@ -413,7 +413,7 @@ public:
 	int brender_available(int position);
 	void set_brender_start();
 
-	static void init_defaults(Defaults* &defaults);
+	static void init_defaults(Defaults* &defaults, char *cfgfile);
 	void init_edl();
 	void init_awindow();
 // Used by MWindow and RenderFarmClient

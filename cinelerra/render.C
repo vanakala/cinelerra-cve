@@ -180,6 +180,7 @@ Render::Render(MWindow *mwindow)
 	package_lock = new Mutex;
 	counter_lock = new Mutex;
 	completion = new Condition;
+	autorender = 0;
 }
 
 Render::~Render()
@@ -187,6 +188,11 @@ Render::~Render()
 	delete package_lock;
 	delete counter_lock;
 	delete completion;
+}
+
+void Render::set_autorender(int autorender)
+{
+	this->autorender = autorender;
 }
 
 void Render::start_interactive()
@@ -261,6 +267,7 @@ void Render::run()
 			format_error = 0;
 			result = 0;
 
+			if (!autorender)
 			{
 				RenderWindow window(mwindow, this, asset);
 				window.create_objects();
@@ -711,6 +718,9 @@ int Render::render(int test_overwrite,
 	in_progress = 0;
 	completion->unlock();
 	
+	if (autorender)
+		mwindow->gui->set_done(0);
+
 	return result;
 }
 

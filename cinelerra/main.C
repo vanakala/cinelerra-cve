@@ -23,7 +23,8 @@ enum
 	DO_DEAMON,
 	DO_DEAMON_FG,
 	DO_BRENDER,
-	DO_USAGE
+	DO_USAGE,
+	DO_RENDER
 };
 
 #include "thread.h"
@@ -39,6 +40,7 @@ int main(int argc, char *argv[])
 	int deamon_port = DEAMON_PORT;
 	char deamon_path[BCTEXTLEN];
 	int nice_value = 20;
+	char *rcfile = NULL;
 
 	setlocale (LC_ALL, "");
 	bindtextdomain (PACKAGE, LOCALEDIR);
@@ -80,6 +82,20 @@ int main(int argc, char *argv[])
 			}
 		}
 		else
+		if(!strcmp(argv[i], "-r"))
+		{
+			operation = DO_RENDER;
+		}
+		else
+		if(!strcmp(argv[i], "-c"))
+		{
+			i++;
+			if (argc > i)
+				rcfile = argv[i];
+			else
+				operation = DO_USAGE;
+		}
+		else
 		{
 			char *new_filename;
 			new_filename = new char[1024];
@@ -115,11 +131,16 @@ PROGRAM_NAME " is free software, covered by the GNU General Public License,\n"
 	{
 		case DO_USAGE:
 			printf(_("\nUsage:\n"));
-			printf(_("%s [-df] [-n nice] [port]\n\n"), argv[0]);
+			printf(_("%s [-c rcfile] [[-d [port]]|[-d [port]] [-n nice]]|[-r file]|[file...]\n"), argv[0]);
+			printf(_("-c = Load alternate rcfile instead of Cinelerra_rc.\n"));
 			printf(_("-d = Run in the background as renderfarm client.\n"));
 			printf(_("-f = Run in the foreground as renderfarm client.\n"));
 			printf(_("-n = Nice value if running as renderfarm client.\n"));
-			printf(_("port = Port for client to listen on. (400)\n\n\n"));
+			printf(_("-r = Render file using current settings and exit.\n"));
+			printf(_("rcfile = Rcfile to load.\n"));
+			printf(_("port = Port for client to listen on. (400)\n"));
+			printf(_("file = File to process.\n"));
+			printf(_("nice = Nice value to switch to.\n\n\n"));
 			exit(0);
 			break;
 
@@ -137,7 +158,7 @@ PROGRAM_NAME " is free software, covered by the GNU General Public License,\n"
 				}
 			}
 
-			RenderFarmClient client(deamon_port, 0, nice_value);
+			RenderFarmClient client(deamon_port, 0, nice_value, rcfile);
 			client.main_loop();
 			break;
 		}
@@ -145,15 +166,16 @@ PROGRAM_NAME " is free software, covered by the GNU General Public License,\n"
 // Same thing without detachment
 		case DO_BRENDER:
 		{
-			RenderFarmClient client(0, deamon_path, 20);
+			RenderFarmClient client(0, deamon_path, 20, rcfile);
 			client.main_loop();
 			break;
 		}
 
 		case DO_GUI:
+		case DO_RENDER:
 		{
 			MWindow mwindow;
-			mwindow.create_objects(1, !filenames.total);
+			mwindow.create_objects(1, !filenames.total, rcfile);
 
 // load the initial files on seperate tracks
 			if(filenames.total)
@@ -166,7 +188,7 @@ PROGRAM_NAME " is free software, covered by the GNU General Public License,\n"
 			}
 
 // run the program
-			mwindow.start();
+			mwindow.start(operation == DO_RENDER);
 //			mwindow.gui->run_window();
 			mwindow.save_defaults();
 			break;
