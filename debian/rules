@@ -16,7 +16,8 @@ endif
 config.status: configure 
 	$(checkdir)
 	CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" \
-					./configure --prefix=/usr --enable-mmx --enable-x86
+#					./configure --prefix=/usr --enable-x86 --without-pic
+					./configure --prefix=/usr --enable-mmx --enable-x86 --without-pic
 	
 build: build-stamp
 build-stamp: config.status

@@ -1,3 +1,23 @@
+hvirtual (1:1.1.7-3) unstable; urgency=low
+
+  * internationalization #2 & #3
+
+ -- Andraz Tori <andraz.tori1@guest.arnes.si>  Fri, 10 Oct 2003 18:00:01 +0200
+
+hvirtual (1:1.1.7-2) unstable; urgency=low
+
+  * added patch to be able to compile for 32bit frame counters
+  * internationalization
+  * fixed mmx compiling (richard) 
+
+ -- Andraz Tori <andraz.tori1@guest.arnes.si>  Fri, 26 Sep 2003 18:00:01 +0200
+
+hvirtual (1:1.1.7-1) unstable; urgency=low
+
+  * debification of mainline 1.1.7 by Richard Baverstock 
+
+ -- Andraz Tori <andraz.tori1@guest.arnes.si>  Mon, 08 Sep 2003 18:00:01 +0200
+
 hvirtual (1:1.1.6-5) unstable; urgency=low
 
   * updated dependency to new libsndfile1, patch by Artemia Salina
