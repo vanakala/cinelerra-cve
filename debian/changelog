@@ -1,3 +1,10 @@
+hvirtual (1:1.2.1) unstable; urgency=low
+
+  * merge with 1.2.1 (by Johannes Sixt)
+  * added libmxf to dependencies
+
+ -- Andraz Tori <andraz.tori1@guest.arnes.si>  Wed, 18 Aug 2004 22:22:14 +0200
+
 hvirtual (1:1.2.0) unstable; urgency=low
 
   * merge with 1.2.0 (by Johannes Sixt)
