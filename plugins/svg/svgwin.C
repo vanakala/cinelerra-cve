@@ -231,7 +231,7 @@ void NewSvgButton::run()
 				slen = strlen(wvalue);
 				if (slen<3 || strcmp(wvalue+slen-2, "mm"))
 				{
-					printf(_("SVG Width is currently only supported in milimeters: %s, falling back to 100\n"), wvalue);
+					printf(_("SVG Width is currently only supported in millimeters: %s, falling back to 100\n"), wvalue);
 					w = 100;
 				} else {
 					wvalue[slen-2] = 0;
@@ -242,7 +242,7 @@ void NewSvgButton::run()
 				slen = strlen(hvalue);
 				if (slen<3 || strcmp(hvalue+slen-2, "mm"))
 				{
-					printf(_("SVG Height is currently only supported in milimeters: %s, falling back to 100\n"), hvalue);
+					printf(_("SVG Height is currently only supported in millimeters: %s, falling back to 100\n"), hvalue);
 					h = 100;
 				} else {
 					hvalue[slen-2] = 0;
