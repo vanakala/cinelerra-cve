@@ -3,8 +3,6 @@
 // Andraz Tori <Andraz.tori1@guest.arnes.si>
 
 
-
-
 #include "clip.h"
 #include "colormodels.h"
 #include "filexml.h"
@@ -13,6 +11,10 @@
 #include "plugincolors.h"
 #include "title.h"
 #include "titlewindow.h"
+#include "freetype/ftglyph.h"
+#include "freetype/ftbbox.h"
+#include "freetype/ftoutln.h"
+#include "freetype/ftstroker.h"
 
 
 #include <errno.h>
@@ -35,6 +37,7 @@ TitleConfig::TitleConfig()
 {
 	style = 0;
 	color = BLACK;
+	color_stroke = 0xff0000;
 	size = 24;
 	motion_strategy = NO_MOTION;
 	loop = 0;
@@ -50,6 +53,7 @@ TitleConfig::TitleConfig()
 	sprintf(encoding, "ISO8859-1");
 	pixels_per_second = 1.0;
 	timecode = 0;
+	stroke_width = 1.0;
 }
 
 // Does not test equivalency but determines if redrawing text is necessary.
@@ -59,6 +63,8 @@ int TitleConfig::equivalent(TitleConfig &that)
 		style == that.style &&
 		size == that.size &&
 		color == that.color &&
+		color_stroke == that.color_stroke &&
+		stroke_width == that.stroke_width &&
 		timecode == that.timecode && 
 		hjustification == that.hjustification &&
 		vjustification == that.vjustification &&
@@ -74,6 +80,8 @@ void TitleConfig::copy_from(TitleConfig &that)
 	style = that.style;
 	size = that.size;
 	color = that.color;
+	color_stroke = that.color_stroke;
+	stroke_width = that.stroke_width;
 	pixels_per_second = that.pixels_per_second;
 	motion_strategy = that.motion_strategy;
 	loop = that.loop;
@@ -100,6 +108,8 @@ void TitleConfig::interpolate(TitleConfig &prev,
 	style = prev.style;
 	size = prev.size;
 	color = prev.color;
+	color_stroke = prev.color_stroke;
+	stroke_width = prev.stroke_width;
 	motion_strategy = prev.motion_strategy;
 	loop = prev.loop;
 	hjustification = prev.hjustification;
@@ -213,10 +223,6 @@ TitleGlyph::~TitleGlyph()
 
 
 
-
-
-
-
 GlyphPackage::GlyphPackage() : LoadPackage()
 {
 }
@@ -260,10 +266,12 @@ void GlyphUnit::process_package(LoadPackage *package)
 
 	if(!result)
 	{
-
-		if(FT_Load_Char(freetype_face, glyph->char_code, FT_LOAD_RENDER))
+		int gindex = FT_Get_Char_Index(freetype_face, glyph->char_code);
+//		if(FT_Load_Char(freetype_face, glyph->char_code, FT_LOAD_RENDER))
+		if (gindex == 0) 
 		{
-			printf("GlyphUnit::process_package FT_Load_Char failed.\n");
+			if (glyph->char_code != 10)  // carrige return
+				printf("GlyphUnit::process_package FT_Load_Char failed - char: %i.\n",glyph->char_code);
 // Prevent a crash here
 			glyph->width = 8;
 			glyph->height = 8;
@@ -279,17 +287,91 @@ void GlyphUnit::process_package(LoadPackage *package)
 				8);
 		}
 		else
+		if (plugin->config.stroke_width < 1.0/64) // effectively zero
 		{
-			glyph->width = freetype_face->glyph->bitmap.width;
-			glyph->height = freetype_face->glyph->bitmap.rows;
-			glyph->pitch = freetype_face->glyph->bitmap.pitch;
-			glyph->left = freetype_face->glyph->bitmap_left;
-			glyph->top = freetype_face->glyph->bitmap_top;
-			glyph->freetype_index = FT_Get_Char_Index(freetype_face, glyph->char_code);
-			glyph->advance_w = (freetype_face->glyph->advance.x >> 6);
+			FT_Glyph glyph_image;
+			FT_BBox bbox;
+			FT_Bitmap bm;
+			FT_Load_Glyph(freetype_face, gindex, FT_LOAD_DEFAULT);
+		    	FT_Get_Glyph(freetype_face->glyph, &glyph_image);
+			FT_Outline_Get_BBox(&((FT_OutlineGlyph) glyph_image)->outline, &bbox);
+//			printf("Stroke: Xmin: %ld, Xmax: %ld, Ymin: %ld, yMax: %ld\n",
+//					bbox.xMin,bbox.xMax, bbox.yMin, bbox.yMax);
 
+			FT_Outline_Translate(&((FT_OutlineGlyph) glyph_image)->outline,
+				- bbox.xMin,
+				- bbox.yMin);
+			glyph->width = bm.width = ((bbox.xMax - bbox.xMin + 63) >> 6);
+			glyph->height = bm.rows = ((bbox.yMax - bbox.yMin + 63) >> 6);
+			glyph->pitch = bm.pitch = bm.width;
+			bm.pixel_mode = FT_PIXEL_MODE_GRAY;
+			bm.num_grays = 256;
+			glyph->left = 0;
+			glyph->top = (bbox.yMax + 31) >>6;
+			glyph->freetype_index = gindex;
+			glyph->advance_w = ((freetype_face->glyph->advance.x + 31) >> 6);
 //printf("GlyphUnit::process_package 1 width=%d height=%d pitch=%d left=%d top=%d advance_w=%d freetype_index=%d\n", 
 //	glyph->width, glyph->height, glyph->pitch, glyph->left, glyph->top, glyph->advance_w, glyph->freetype_index);
+	
+			glyph->data = new VFrame(0,
+				glyph->width,
+				glyph->height,
+				BC_A8,
+				glyph->pitch);
+			glyph->data->clear_frame();
+			bm.buffer = glyph->data->get_data();
+			FT_Outline_Get_Bitmap( freetype_library,
+				&((FT_OutlineGlyph) glyph_image)->outline,
+				&bm);
+			glyph->data_stroke = NULL;
+			FT_Done_Glyph(glyph_image);
+		} else {
+			FT_Glyph glyph_image;
+			FT_Stroker stroker;
+			FT_Outline outline;
+			FT_Bitmap bm;
+			FT_BBox bbox, bbox_fill;
+			FT_UInt npoints, ncontours;	
+			typedef struct  FT_LibraryRec_ {    FT_Memory          memory; } FT_LibraryRec;
+			FT_Stroker_New(((FT_LibraryRec *)freetype_library)->memory, &stroker);
+			FT_Stroker_Set(stroker, (int)(plugin->config.stroke_width*64), FT_STROKER_LINECAP_ROUND, FT_STROKER_LINEJOIN_ROUND, 0);
+			FT_Load_Glyph(freetype_face, gindex, FT_LOAD_DEFAULT);
+			FT_Get_Glyph(freetype_face->glyph, &glyph_image);
+			FT_Stroker_ParseOutline(stroker, &((FT_OutlineGlyph) glyph_image)->outline, 1);
+			FT_Stroker_GetCounts(stroker,&npoints, &ncontours);
+			FT_Outline_New(freetype_library, npoints, ncontours, &outline);
+			outline.n_points=0;
+			outline.n_contours=0;
+			FT_Stroker_Export (stroker, &outline);
+			FT_Outline_Get_BBox(&outline, &bbox);
+			FT_Outline_Get_BBox(&((FT_OutlineGlyph) glyph_image)->outline, &bbox_fill);
+		
+			FT_Outline_Translate(&outline,
+					- bbox.xMin,
+					- bbox.yMin + (int)(plugin->config.stroke_width*32));
+		
+			FT_Outline_Translate(&((FT_OutlineGlyph) glyph_image)->outline,
+					- bbox.xMin,
+					- bbox.yMin + (int)(plugin->config.stroke_width*32));
+//			printf("Stroke: Xmin: %ld, Xmax: %ld, Ymin: %ld, yMax: %ld\nFill	Xmin: %ld, Xmax: %ld, Ymin: %ld, yMax: %ld\n",
+//					bbox.xMin,bbox.xMax, bbox.yMin, bbox.yMax,
+//					bbox_fill.xMin,bbox_fill.xMax, bbox_fill.yMin, bbox_fill.yMax);
+	
+			glyph->width = bm.width = ((bbox.xMax - bbox.xMin) >> 6)+1;
+			glyph->height = bm.rows = ((bbox.yMax - bbox.yMin + (int)plugin->config.stroke_width*64) >> 6);
+			glyph->pitch = bm.pitch = bm.width;
+			bm.pixel_mode = FT_PIXEL_MODE_GRAY;
+			bm.num_grays = 256;
+			glyph->left = 0;
+			glyph->top = (bbox.yMax + 31) >>6;
+			glyph->freetype_index = gindex;
+			int real_advance = ((int)ceil((float)freetype_face->glyph->advance.x + plugin->config.stroke_width*64) >> 6);
+			glyph->advance_w = glyph->width + (int)ceil(plugin->config.stroke_width);
+			if (real_advance > glyph->advance_w) 
+				glyph->advance_w = real_advance;
+//printf("GlyphUnit::process_package 1 width=%d height=%d pitch=%d left=%d top=%d advance_w=%d freetype_index=%d\n", 
+//glyph->width, glyph->height, glyph->pitch, glyph->left, glyph->top, glyph->advance_w, glyph->freetype_index);
+
 
 //printf("GlyphUnit::process_package 1\n");
 			glyph->data = new VFrame(0,
@@ -297,14 +379,27 @@ void GlyphUnit::process_package(LoadPackage *package)
 				glyph->height,
 				BC_A8,
 				glyph->pitch);
+			glyph->data_stroke = new VFrame(0,
+				glyph->width,
+				glyph->height,
+				BC_A8,
+				glyph->pitch);
+			glyph->data->clear_frame();
+			glyph->data_stroke->clear_frame();
+// for	debugging	memset(	glyph->data_stroke->get_data(), 40, glyph->pitch * glyph->height);
+			bm.buffer=glyph->data->get_data();
+			FT_Outline_Get_Bitmap( freetype_library,
+				&((FT_OutlineGlyph) glyph_image)->outline,
+				&bm);	
+			bm.buffer=glyph->data_stroke->get_data();
+			FT_Outline_Get_Bitmap( freetype_library,
+               		&outline,
+			&bm);
+			FT_Outline_Done(freetype_library,&outline);
+			FT_Stroker_Done(stroker);
+			FT_Done_Glyph(glyph_image);
 
 //printf("GlyphUnit::process_package 2\n");
-			for(int i = 0; i < glyph->height; i++)
-			{
-				memcpy(glyph->data->get_rows()[i], 
-					freetype_face->glyph->bitmap.buffer + glyph->pitch * i,
-					glyph->pitch);
-			}
 		}
 	}
 }
@@ -406,6 +501,12 @@ void TitleUnit::process_package(LoadPackage *package)
 			if(glyph->c == pkg->c)
 			{
 				draw_glyph(plugin->text_mask, glyph, pkg->x, pkg->y);
+				if (plugin->config.stroke_width >= 1.0/64) {
+					VFrame *tmp = glyph->data;
+					glyph->data = glyph->data_stroke;
+					draw_glyph(plugin->text_mask_stroke, glyph, pkg->x, pkg->y);
+					glyph->data = tmp;
+				}
 				break;
 			}
 		}
@@ -470,8 +571,6 @@ TitleTranslateUnit::TitleTranslateUnit(TitleMain *plugin, TitleTranslate *server
 {
 	this->plugin = plugin;
 }
-
-
 
 
 
@@ -560,6 +659,62 @@ TitleTranslateUnit::TitleTranslateUnit(TitleMain *plugin, TitleTranslate *server
 	} \
 }
 
+
+#define TRANSLATEA(type, max, components, r, g, b) \
+{ \
+	unsigned char **in_rows = plugin->text_mask->get_rows(); \
+	type **out_rows = (type**)plugin->output->get_rows(); \
+ \
+	for(int i = pkg->y1; i < pkg->y2; i++) \
+	{ \
+		if(i + server->out_y1_int >= 0 && \
+			i + server->out_y1_int < server->output_h) \
+		{ \
+			unsigned char *in_row = in_rows[i]; \
+			type *out_row = out_rows[i + server->out_y1_int]; \
+ \
+			for(int j = server->out_x1; j < server->out_x2_int; j++) \
+			{ \
+				if(j  >= 0 && \
+					j < server->output_w) \
+				{ \
+					int input = (int)(in_row[j - server->out_x1]);  \
+ \
+					input *= plugin->alpha; \
+/* Alpha is 0 - 256 */ \
+					input >>= 8; \
+ \
+					int anti_input = 0xff - input; \
+					if(components == 4) \
+					{ \
+						out_row[j * components + 0] =  \
+							(r * input + out_row[j * components + 0] * anti_input) / 0xff; \
+						out_row[j * components + 1] =  \
+							(g * input + out_row[j * components + 1] * anti_input) / 0xff; \
+						out_row[j * components + 2] =  \
+							(b * input + out_row[j * components + 2] * anti_input) / 0xff; \
+						if(max == 0xffff) \
+							out_row[j * components + 3] =  \
+								MAX((input << 8) | input, out_row[j * components + 3]); \
+						else \
+							out_row[j * components + 3] =  \
+								MAX(input, out_row[j * components + 3]); \
+					} \
+					else \
+					{ \
+						out_row[j * components + 0] =  \
+							(r * input + out_row[j * components + 0] * anti_input) / 0xff; \
+						out_row[j * components + 1] =  \
+							(g * input + out_row[j * components + 1] * anti_input) / 0xff; \
+						out_row[j * components + 2] =  \
+							(b * input + out_row[j * components + 2] * anti_input) / 0xff; \
+					} \
+				} \
+			} \
+		} \
+	} \
+}
+
 static YUV yuv;
 
 void TitleTranslateUnit::process_package(LoadPackage *package)
@@ -567,12 +722,19 @@ void TitleTranslateUnit::process_package(LoadPackage *package)
 	TitleTranslatePackage *pkg = (TitleTranslatePackage*)package;
 	TitleTranslate *server = (TitleTranslate*)this->server;
 	int r_in, g_in, b_in;
+	int r_in_stroke, g_in_stroke, b_in_stroke;
 
 //printf("TitleTranslateUnit::process_package 1 %d %d\n", pkg->y1, pkg->y2);
 
 	r_in = (plugin->config.color & 0xff0000) >> 16;
 	g_in = (plugin->config.color & 0xff00) >> 8;
 	b_in = plugin->config.color & 0xff;
+	if (plugin->config.stroke_width >= 1.0/64) {
+		r_in_stroke = (plugin->config.color_stroke & 0xff0000) >> 16;
+		g_in_stroke = (plugin->config.color_stroke & 0xff00) >> 8;
+		b_in_stroke = plugin->config.color_stroke & 0xff;
+	}
+
 	switch(plugin->output->get_color_model())
 	{
 		case BC_RGB888:
@@ -700,7 +862,7 @@ void TitleTranslate::init_packages()
 
 //printf("TitleTranslate::init_packages 1\n");
 
-
+	
 	out_y1 = out_y1_int;
 	out_y2 = out_y2_int;
 	out_x1 = out_x1_int;
@@ -758,6 +920,7 @@ TitleMain::TitleMain(PluginServer *server)
 // Build font database
 	build_fonts();
 	text_mask = 0;
+	text_mask_stroke = 0;
 	glyph_engine = 0;
 	title_engine = 0;
 	freetype_library = 0;
@@ -772,6 +935,7 @@ TitleMain::~TitleMain()
 //printf("TitleMain::~TitleMain 1\n");
 	PLUGIN_DESTRUCTOR_MACRO
 	if(text_mask) delete text_mask;
+	if(text_mask_stroke) delete text_mask_stroke;
 	if(char_positions) delete [] char_positions;
 	clear_glyphs();
 	if(glyph_engine) delete glyph_engine;
@@ -1131,7 +1295,7 @@ FontEntry* TitleMain::get_font()
 
 int TitleMain::get_char_height()
 {
-	return config.size;
+	return config.size+ (int)ceil(config.stroke_width*2);
 }
 
 int TitleMain::get_char_advance(int current, int next)
@@ -1174,7 +1338,7 @@ int TitleMain::get_char_advance(int current, int next)
 	else
 		kerning.x = 0;
 //printf("TitleMain::get_char_advance 2 %d %d\n", result, kerning.x);
-
+	
 	return result + (kerning.x >> 6);
 }
 
@@ -1482,11 +1646,16 @@ int TitleMain::draw_mask()
 	{
 		delete text_mask;
 		text_mask = 0;
+		text_mask_stroke = 0;
 	}
 
 	if(!text_mask)
 	{
 		text_mask = new VFrame(0,
+			text_w,
+			visible_rows * get_char_height(),
+			BC_A8);
+		text_mask_stroke = new VFrame(0,
 			text_w,
 			visible_rows * get_char_height(),
 			BC_A8);
@@ -1504,6 +1673,7 @@ int TitleMain::draw_mask()
 	{
 //printf("TitleMain::draw_mask 2\n");
 		text_mask->clear_frame();
+		text_mask_stroke->clear_frame();
 
 // for(int i = 0; i < text_mask->get_h(); i++)
 // 	for(int j = 0; j < text_mask->get_w(); j++)
@@ -1600,6 +1770,17 @@ void TitleMain::overlay_mask()
 	{
 		if(!translate) translate = new TitleTranslate(this, PluginClient::smp + 1);
 		translate->process_packages();
+		if (config.stroke_width >= 1.0/64) 
+		{
+			int temp_color = config.color;
+			VFrame *tmp_text_mask = this->text_mask;
+			config.color = config.color_stroke;
+			this->text_mask = this->text_mask_stroke;
+
+			translate->process_packages();
+			config.color = temp_color;
+			this->text_mask = tmp_text_mask;
+		}
 	}
 //printf("TitleMain::overlay_mask 200\n");
 }
@@ -1670,7 +1851,9 @@ int TitleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	{
 //printf("TitleMain::process_realtime 2\n");
 		if(text_mask) delete text_mask;
+		if(text_mask_stroke) delete text_mask_stroke;
 		text_mask = 0;
+		text_mask_stroke = 0;
 //printf("TitleMain::process_realtime 2\n");
 		if(freetype_face) FT_Done_Face(freetype_face);
 		freetype_face = 0;
@@ -1793,6 +1976,8 @@ int TitleMain::load_defaults()
 	config.style = defaults->get("STYLE", (long)config.style);
 	config.size = defaults->get("SIZE", config.size);
 	config.color = defaults->get("COLOR", config.color);
+	config.color_stroke = defaults->get("COLOR_STROKE", config.color_stroke);
+	config.stroke_width = defaults->get("STROKE_WIDTH", config.stroke_width);
 	config.motion_strategy = defaults->get("MOTION_STRATEGY", config.motion_strategy);
 	config.loop = defaults->get("LOOP", config.loop);
 	config.pixels_per_second = defaults->get("PIXELS_PER_SECOND", config.pixels_per_second);
@@ -1836,6 +2021,8 @@ int TitleMain::save_defaults()
 	defaults->update("STYLE", (long)config.style);
 	defaults->update("SIZE", config.size);
 	defaults->update("COLOR", config.color);
+	defaults->update("COLOR_STROKE", config.color_stroke);
+	defaults->update("STROKE_WIDTH", config.stroke_width);
 	defaults->update("MOTION_STRATEGY", config.motion_strategy);
 	defaults->update("LOOP", config.loop);
 	defaults->update("PIXELS_PER_SECOND", config.pixels_per_second);
@@ -1935,6 +2122,8 @@ void TitleMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("STYLE", (long)config.style);
 	output.tag.set_property("SIZE", config.size);
 	output.tag.set_property("COLOR", config.color);
+	output.tag.set_property("COLOR_STROKE", config.color_stroke);
+	output.tag.set_property("STROKE_WIDTH", config.stroke_width);
 	output.tag.set_property("MOTION_STRATEGY", config.motion_strategy);
 	output.tag.set_property("LOOP", config.loop);
 	output.tag.set_property("PIXELS_PER_SECOND", config.pixels_per_second);
@@ -1984,6 +2173,8 @@ void TitleMain::read_data(KeyFrame *keyframe)
 				config.style = input.tag.get_property("STYLE", (long)config.style);
 				config.size = input.tag.get_property("SIZE", config.size);
 				config.color = input.tag.get_property("COLOR", config.color);
+				config.color_stroke = input.tag.get_property("COLOR_STROKE", config.color_stroke);
+				config.stroke_width = input.tag.get_property("STROKE_WIDTH", config.stroke_width);
 				config.motion_strategy = input.tag.get_property("MOTION_STRATEGY", config.motion_strategy);
 				config.loop = input.tag.get_property("LOOP", config.loop);
 				config.pixels_per_second = input.tag.get_property("PIXELS_PER_SECOND", config.pixels_per_second);

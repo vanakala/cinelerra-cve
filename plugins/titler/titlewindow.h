@@ -35,6 +35,7 @@ class TitleBold;
 class TitleSize;
 class TitleEncoding;
 class TitleColorButton;
+class TitleColorStrokeButton;
 class TitleDropShadow;
 class TitleMotion;
 class TitleLoop;
@@ -50,6 +51,7 @@ class TitleTop;
 class TitleMid;
 class TitleBottom;
 class TitleColorThread;
+class TitleColorStrokeThread;
 class TitleSpeed;
 class TitleTimecode;
 
@@ -88,6 +90,8 @@ public:
 	TitleEncoding *encoding;
 	TitleColorButton *color_button;
 	TitleColorThread *color_thread;
+	TitleColorStrokeButton *color_stroke_button;
+	TitleColorStrokeThread *color_stroke_thread;
 	BC_Title *motion_title;
 	TitleMotion *motion;
 	TitleLoop *loop;
@@ -95,6 +99,8 @@ public:
 	TitleFade *fade_in;
 	BC_Title *fadeout_title;
 	TitleFade *fade_out;
+	BC_Title *strokewidth_title;
+	TitleFade *stroke_width;
 	BC_Title *text_title;
 	TitleText *text;
 	BC_Title *justify_title;
@@ -109,7 +115,7 @@ public:
 	TitleTimecode *timecode;
 
 // Color preview
-	int color_x, color_y;
+	int color_x, color_y, color_stroke_x, color_stroke_y;
 	ArrayList<BC_ListBoxItem*> sizes;
 	ArrayList<BC_ListBoxItem*> encodings;
 	ArrayList<BC_ListBoxItem*> paths;
@@ -168,6 +174,14 @@ class TitleColorButton : public BC_GenericButton
 {
 public:
 	TitleColorButton(TitleMain *client, TitleWindow *window, int x, int y);
+	int handle_event();
+	TitleMain *client;
+	TitleWindow *window;
+};
+class TitleColorStrokeButton : public BC_GenericButton
+{
+public:
+	TitleColorStrokeButton(TitleMain *client, TitleWindow *window, int x, int y);
 	int handle_event();
 	TitleMain *client;
 	TitleWindow *window;
@@ -313,6 +327,15 @@ class TitleColorThread : public ColorThread
 {
 public:
 	TitleColorThread(TitleMain *client, TitleWindow *window);
+	int handle_event(int output);
+	TitleMain *client;
+	TitleWindow *window;
+};
+
+class TitleColorStrokeThread : public ColorThread
+{
+public:
+	TitleColorStrokeThread(TitleMain *client, TitleWindow *window);
 	int handle_event(int output);
 	TitleMain *client;
 	TitleWindow *window;

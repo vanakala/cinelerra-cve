@@ -60,6 +60,7 @@ TitleWindow::~TitleWindow()
 	sizes.remove_all_objects();
 	encodings.remove_all_objects();
 	delete color_thread;
+	delete color_stroke_thread;
 	delete title_x;
 	delete title_y;
 }
@@ -244,6 +245,18 @@ int TitleWindow::create_objects()
 	color_y = y + 20;
 	color_thread = new TitleColorThread(client, this);
 
+	x = 265;
+	y += 50;
+	add_tool(strokewidth_title = new BC_Title(x, y, "Stroke width:"));
+	add_tool(stroke_width = new TitleFade(client, this, &client->config.stroke_width, x, y + 20));
+
+	x += 120;
+	add_tool(color_stroke_button = new TitleColorStrokeButton(client, this, x, y + 20));
+	color_stroke_x = color_x;
+	color_stroke_y = y + 20;
+	color_stroke_thread = new TitleColorStrokeThread(client, this);
+
+
 	x = 10;
 	y += 50;
 
@@ -296,6 +309,7 @@ int TitleWindow::resize_event(int w, int h)
 	encoding_title->reposition_window(encoding_title->get_x(), encoding_title->get_y());
 	encoding->reposition_window(encoding->get_x(), encoding->get_y());
 	color_button->reposition_window(color_button->get_x(), color_button->get_y());
+	color_stroke_button->reposition_window(color_stroke_button->get_x(), color_stroke_button->get_y());
 	motion_title->reposition_window(motion_title->get_x(), motion_title->get_y());
 	motion->reposition_window(motion->get_x(), motion->get_y());
 	loop->reposition_window(loop->get_x(), loop->get_y());
@@ -306,6 +320,8 @@ int TitleWindow::resize_event(int w, int h)
 	fadeout_title->reposition_window(fadeout_title->get_x(), fadeout_title->get_y());
 	fade_out->reposition_window(fade_out->get_x(), fade_out->get_y());
 	text_title->reposition_window(text_title->get_x(), text_title->get_y());
+	stroke_width->reposition_window(stroke_width->get_x(), stroke_width->get_y());
+	strokewidth_title->reposition_window(strokewidth_title->get_x(), strokewidth_title->get_y());
 	timecode->reposition_window(timecode->get_x(), timecode->get_y());
 
 	text->reposition_window(text->get_x(), 
@@ -381,6 +397,9 @@ void TitleWindow::update_color()
 	set_color(client->config.color);
 	draw_box(color_x, color_y, 100, 30);
 	flash(color_x, color_y, 100, 30);
+	set_color(client->config.color_stroke);
+	draw_box(color_stroke_x, color_stroke_y, 100, 30);
+	flash(color_stroke_x, color_stroke_y, 100, 30);
 }
 
 void TitleWindow::update_justification()
@@ -406,6 +425,7 @@ void TitleWindow::update()
 	dropshadow->update((float)client->config.dropshadow);
 	fade_in->update((float)client->config.fade_in);
 	fade_out->update((float)client->config.fade_out);
+	stroke_width->update((float)client->config.stroke_width);
 	font->update(client->config.font);
 	text->update(client->config.text);
 	speed->update(client->config.pixels_per_second);
@@ -519,6 +539,18 @@ TitleColorButton::TitleColorButton(TitleMain *client, TitleWindow *window, int x
 int TitleColorButton::handle_event()
 {
 	window->color_thread->start_window(client->config.color, 0);
+	return 1;
+}
+
+TitleColorStrokeButton::TitleColorStrokeButton(TitleMain *client, TitleWindow *window, int x, int y)
+ : BC_GenericButton(x, y, "Stroke color...")
+{
+	this->client = client;
+	this->window = window;
+}
+int TitleColorStrokeButton::handle_event()
+{
+	window->color_stroke_thread->start_window(client->config.color_stroke, 0);
 	return 1;
 }
 
@@ -808,6 +840,21 @@ TitleColorThread::TitleColorThread(TitleMain *client, TitleWindow *window)
 int TitleColorThread::handle_event(int output)
 {
 	client->config.color = output;
+	window->update_color();
+	window->flush();
+	client->send_configure_change();
+	return 1;
+}
+TitleColorStrokeThread::TitleColorStrokeThread(TitleMain *client, TitleWindow *window)
+ : ColorThread()
+{
+	this->client = client;
+	this->window = window;
+}
+
+int TitleColorStrokeThread::handle_event(int output)
+{
+	client->config.color_stroke = output;
 	window->update_color();
 	window->flush();
 	client->send_configure_change();

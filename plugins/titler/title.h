@@ -84,6 +84,7 @@ public:
 	long style;
 	int size;
 	int color;
+	int color_stroke;
 // Motion of title across frame
 	int motion_strategy;
 // Loop motion path
@@ -108,6 +109,8 @@ public:
 	char text[BCTEXTLEN];
 // Encoding to convert from 
 	char encoding[BCTEXTLEN];
+// Width of the stroke
+	double stroke_width;
 };
 
 class FontEntry
@@ -148,6 +151,7 @@ public:
 	FT_ULong char_code;
 	int width, height, pitch, advance_w, left, top, freetype_index;
 	VFrame *data;
+	VFrame *data_stroke;
 };
 
 
@@ -358,6 +362,7 @@ public:
 
 // Stage 1 parameters must be compared to redraw the text mask
 	VFrame *text_mask;
+	VFrame *text_mask_stroke;
 	GlyphEngine *glyph_engine;
 	TitleEngine *title_engine;
 	TitleTranslate *translate;
