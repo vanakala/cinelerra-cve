@@ -93,11 +93,15 @@ VFrame* FrameCache::get_frame_ptr(int64_t position,
 		item->age = current_age;
 		current_age++;
 	}
-	lock->unlock();
+//	lock->unlock();
+// 	do not unlock, the caller has to unlock when he copies/uses the image
 	if(item)
 		return item->data;
-	else
+	else	
+	{
+		lock->unlock(); // unlock if nothing was used
 		return 0;
+	}
 }
 
 
@@ -224,6 +228,11 @@ int FrameCache::delete_oldest()
 	}
 	lock->unlock();
 	return 1;
+}
+
+void FrameCache::unlock()
+{
+	lock->unlock();
 }
 
 void FrameCache::dump()

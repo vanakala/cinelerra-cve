@@ -416,10 +416,12 @@ PluginServer* MWindow::scan_plugindb(char *title,
 	for(int i = 0; i < plugindb->total; i++)
 	{
 		PluginServer *server = plugindb->values[i];
+		printf("o: '%s', c: '%s'\n", server->title, title);
 		if(!strcasecmp(server->title, title) &&
 		((data_type == TRACK_AUDIO && server->audio) ||
 		(data_type == TRACK_VIDEO && server->video))) 
 			return plugindb->values[i];
+		
 	}
 	return 0;
 }

@@ -43,6 +43,8 @@ public:
 		int color_model,
 		int w,
 		int h);
+	// to be used after get_frame_ptr data is not needed anymore
+	void unlock(); // 
 // Puts the frame in cache.
 // use_copy - if 1 a copy of the frame is made.  if 0 the argument is stored.
 // The copy of the frame is deleted by FrameCache in a future delete_oldest.
@@ -57,7 +59,6 @@ public:
 // Calculate current size of cache in bytes
 	int64_t get_memory_usage();
 	void dump();
-
 
 
 
