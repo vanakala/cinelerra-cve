@@ -198,7 +198,17 @@ RecordMonitorGUI::~RecordMonitorGUI()
 {
 	if(bitmap) delete bitmap;
 	if(channel_picker) delete channel_picker;
-	if(avc) delete avc;
+	if(avc)
+	{
+		if(avc->device > -1)
+		{
+			avc1394transport_thread->done = 1;
+			avc1394transport_thread->end();
+			avc1394transport_thread->join();
+			delete avc1394_transport;
+		}
+		delete avc;
+	}
 }
 
 int RecordMonitorGUI::create_objects()
@@ -222,7 +232,8 @@ int RecordMonitorGUI::create_objects()
 // 	record_transport->create_objects();
 //printf("RecordMonitorGUI::create_objects 1\n");
 
-	if(avc->device > -1) {
+	if(avc->device > -1)
+	{
 		add_subwindow(avc1394transport_title =
 			new BC_Title(mwindow->theme->rmonitor_canvas_x,
 				mwindow->theme->rmonitor_canvas_y + 10,
@@ -235,6 +246,17 @@ int RecordMonitorGUI::create_objects()
 				avc1394transport_title->get_w(),
 			mwindow->theme->rmonitor_canvas_y);
 		avc1394_transport->create_objects();
+
+		add_subwindow(avc1394transport_timecode =
+			new BC_Title(avc1394_transport->x_end + 30,
+			mwindow->theme->rmonitor_canvas_y + 10,
+			_("00:00:00:00")));
+
+		avc1394transport_thread =
+			new AVC1394TransportThread(avc1394transport_timecode,
+				avc);
+
+		avc1394transport_thread->start();
 
 		offset = 30;
 	}

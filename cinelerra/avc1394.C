@@ -4,6 +4,7 @@
 // the GPL.)
 
 #include "avc1394.h"
+#include "mutex.h"
 
 AVC1394::AVC1394()
 {
@@ -15,6 +16,8 @@ void AVC1394::initialize()
 	int i;
 
 	device = -1;
+
+	device_lock = new Mutex;
 
 #ifdef RAW1394_V_0_8
 	handle = raw1394_get_handle();
@@ -39,7 +42,7 @@ void AVC1394::initialize()
 	if(raw1394_set_port(handle, 0) < 0) {
 //printf("AVC1394::initialize(): 5\n");
 		perror("AVC1394::initialize(): couldn't set port");
-		raw1394_destroy_handle(handle);
+//		raw1394_destroy_handle(handle);
 		return;
 	}
 
@@ -49,7 +52,7 @@ void AVC1394::initialize()
 		{
 //printf("AVC1394::initialize(): 6\n");
 			fprintf(stderr, "AVC1394::initialize(): node %d\n", i);
-			raw1394_destroy_handle(handle);
+//			raw1394_destroy_handle(handle);
 			return;
 		}
 		
@@ -66,7 +69,7 @@ void AVC1394::initialize()
 	{
 //printf("AVC1394::initialize(): 8\n");
 		fprintf(stderr, "AVC1394::initialize(): No AV/C Devices\n");
-		raw1394_destroy_handle(handle);
+//		raw1394_destroy_handle(handle);
 		return;
 	}
 
@@ -74,72 +77,100 @@ void AVC1394::initialize()
 
 AVC1394::~AVC1394()
 {
-	raw1394_destroy_handle(handle);
+	if(handle) raw1394_destroy_handle(handle);
+
+	if(device_lock) delete device_lock;
+
 }
 
 void AVC1394::play()
 {
 //printf("AVC1394::play(): 1\n");
+	device_lock->lock();
 	avc1394_vcr_play(handle, device);
+	device_lock->unlock();
 }
 
 void AVC1394::stop()
 {
 //printf("AVC1394::stop(): 1\n");
+	device_lock->lock();
 	avc1394_vcr_stop(handle, device);
+	device_lock->unlock();
 }
 
 void AVC1394::reverse()
 {
 //printf("AVC1394::reverse(): 1\n");
+	device_lock->lock();
 	avc1394_vcr_reverse(handle, device);
+	device_lock->unlock();
 }
 
 void AVC1394::rewind()
 {
 //printf("AVC1394::rewind(): 1\n");
+	device_lock->lock();
 	avc1394_vcr_rewind(handle, device);
+	device_lock->unlock();
 }
 
 void AVC1394::fforward()
 {
 //printf("AVC1394::fforward(): 1\n");
+	device_lock->lock();
 	avc1394_vcr_forward(handle, device);
+	device_lock->unlock();
 }
 
 void AVC1394::pause()
 {
 //printf("AVC1394::pause(): 1\n");
+	device_lock->lock();
 	avc1394_vcr_pause(handle, device);
+	device_lock->unlock();
 }
 
 void AVC1394::record()
 {
 //printf("AVC1394::record(): 1\n");
+	device_lock->lock();
 	avc1394_vcr_record(handle, device);
+	device_lock->unlock();
 }
 
 void AVC1394::eject()
 {
 //printf("AVC1394::eject(): 1\n");
+	device_lock->lock();
 	avc1394_vcr_eject(handle, device);
+	device_lock->unlock();
 }
 
 void AVC1394::get_status()
 {
 //printf("AVC1394::get_status(): 1\n");
+	device_lock->lock();
 	status = avc1394_vcr_status(handle, device);
+	device_lock->unlock();
 //	printf("Status: %s\n", avc1394_vcr_decode_status(status));
 }
 
 char *AVC1394::timecode()
 {
 //printf("AVC1394::timecode(): 1\n");
-	return avc1394_vcr_get_timecode(handle, device);
+	char *text;
+	text = (char *) malloc(12);
+	device_lock->lock();
+	text = avc1394_vcr_get_timecode(handle, device);
+	device_lock->unlock();
+	return text;
 }
 
 void AVC1394::seek(char *time)
 {
 //printf("AVC1394::seek(): 1\n");
+	device_lock->lock();
 	avc1394_vcr_seek_timecode(handle, device, time);
+	device_lock->unlock();
 }

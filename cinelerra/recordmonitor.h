@@ -76,6 +76,7 @@ public:
 	Canvas *canvas;
 //	RecordTransport *record_transport;
 	AVC1394Transport *avc1394_transport;
+	AVC1394TransportThread *avc1394transport_thread;
 	ChannelPicker *channel_picker;
 	ReverseInterlace *reverse_interlace;
 	int cursor_x_origin, cursor_y_origin;
@@ -114,6 +115,7 @@ public:
 	Record *record;
 	AVC1394 *avc;
 	BC_Title *avc1394transport_title;
+	BC_Title *avc1394transport_timecode;
 };
 
 

@@ -5,6 +5,7 @@
 #include "mwindow.h"
 #include "theme.h"
 
+class AVC1394TransportThread;
 class AVC1394Transport;
 class AVC1394GUIRewind;
 class AVC1394GUIReverse;
@@ -14,6 +15,22 @@ class AVC1394GUIPlay;
 class AVC1394GUIFForward;
 class AVC1394GUISeekStart;
 class AVC1394GUISeekEnd;
+
+
+class AVC1394TransportThread : public Thread
+{
+public:
+	AVC1394TransportThread(BC_Title *label, AVC1394 *avc);
+	~AVC1394TransportThread();
+
+	void run();
+
+	BC_Title *label;
+	AVC1394 *avc;
+
+	int tid;
+	int done;
+};
 
 class AVC1394Transport
 {

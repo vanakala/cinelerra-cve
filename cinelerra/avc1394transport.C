@@ -1,5 +1,38 @@
 #include "avc1394transport.h"
+#include "recordmonitor.h"
 #include "language.h"
+
+#include <unistd.h>
+
+#define POLL_INTERVAL 33000
+
+AVC1394TransportThread::AVC1394TransportThread(BC_Title *label, AVC1394 *avc)
+ : Thread(0, 0, 0)
+{
+	this->label = label;
+	this->avc = avc;
+	done = 0;
+}
+
+AVC1394TransportThread::~AVC1394TransportThread()
+{
+
+}
+
+void AVC1394TransportThread::run()
+{
+	char *text;
+	while(!done)
+	{
+		Thread::disable_cancel();
+		text = avc->timecode();
+		label->update(text);
+		free(text);
+		usleep(POLL_INTERVAL);
+		Thread::enable_cancel();
+	}
+
+}
 
 AVC1394Transport::AVC1394Transport(MWindow *mwindow,
 		AVC1394 *avc,

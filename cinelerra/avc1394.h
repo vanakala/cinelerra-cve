@@ -1,6 +1,8 @@
 #ifndef _AVC1394_H
 #define _AVC1394_H
 
+#include "mutex.h"
+
 #include <libavc1394/rom1394.h>
 #include <libraw1394/raw1394.h>
 #include <libavc1394/avc1394.h>
@@ -31,6 +33,7 @@ public:
 	char *timecode();
 	int device;
 	int status;
+	Mutex *device_lock;
 
 private:
 	rom1394_directory rom_dir;
