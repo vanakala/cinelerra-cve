@@ -1,15 +1,18 @@
+#include "clip.h"
 #include "cplayback.h"
 #include "cwindow.h"
 #include "defaults.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
+#include "language.h"
 #include "levelwindow.h"
 #include "mainundo.h"
 #include "mainmenu.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "new.h"
+#include "newpresets.h"
 #include "mainsession.h"
 #include "patchbay.h"
 #include "theme.h"
@@ -20,10 +23,10 @@
 
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
+
+#define WIDTH 600
+#define HEIGHT 400
+
 
 New::New(MWindow *mwindow)
  : BC_MenuItem(_("New..."), "n", 'n')
@@ -42,7 +45,14 @@ int New::handle_event()
 {
 	if(thread->running())
 	{
-		thread->nwindow->raise_window();
+		thread->window_lock->lock("New::handle_event");
+		if(thread->nwindow)
+		{
+			thread->nwindow->lock_window("New::handle_event");
+			thread->nwindow->raise_window();
+			thread->nwindow->unlock_window();
+		}
+		thread->window_lock->unlock();
 		return 1;
 	}
 	mwindow->edl->save_defaults(mwindow->defaults);
@@ -101,10 +111,12 @@ NewThread::NewThread(MWindow *mwindow, New *new_project)
 {
 	this->mwindow = mwindow;
 	this->new_project = new_project;
+	window_lock = new Mutex("NewThread::window_lock");
 }
 
 NewThread::~NewThread()
 {
+	delete window_lock;
 }
 
 
@@ -113,17 +125,23 @@ void NewThread::run()
 	int result = 0;
 	load_defaults();
 
-	{
-		nwindow = new NewWindow(mwindow, this);
-		nwindow->create_objects();
-		result = nwindow->run_window();
-		delete nwindow;	
-//printf("NewThread::run 1\n");
-		new_project->new_edl->save_defaults(mwindow->defaults);
-//printf("NewThread::run 2\n");
-		mwindow->defaults->save();
-//printf("NewThread::run 3\n");
-	}
+	int x = mwindow->gui->get_root_w(0, 1) / 2 - WIDTH / 2;
+	int y = mwindow->gui->get_root_h(1) / 2 - HEIGHT / 2;
+
+	window_lock->lock("NewThread::run 1\n");
+	nwindow = new NewWindow(mwindow, this, x, y);
+	nwindow->create_objects();
+	window_lock->unlock();
+
+	result = nwindow->run_window();
+
+	window_lock->lock("NewThread::run 2\n");
+	delete nwindow;	
+	nwindow = 0;
+	window_lock->unlock();
+
+	new_project->new_edl->save_defaults(mwindow->defaults);
+	mwindow->defaults->save();
 
 	if(result)
 	{
@@ -170,17 +188,14 @@ int NewThread::update_aspect()
 
 
 
-#define WIDTH 600
-#define HEIGHT 400
-
 #if 0
 N_("Cinelerra: New Project");
 #endif
 
-NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread)
+NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread, int x, int y)
  : BC_Window(_(PROGRAM_NAME ": New Project"), 
- 		mwindow->gui->get_root_w() / 2 - WIDTH / 2,
-		mwindow->gui->get_root_h() / 2 - HEIGHT / 2,
+ 		x,
+		y,
 		WIDTH, 
 		HEIGHT,
 		-1,
@@ -192,163 +207,12 @@ NewWindow::NewWindow(MWindow *mwindow, NewThread *new_thread)
 	this->mwindow = mwindow;
 	this->new_thread = new_thread;
 	this->new_edl = new_thread->new_project->new_edl;
+	format_presets = 0;
 }
 
 NewWindow::~NewWindow()
 {
-	for(int i = 0; i < preset_items.total; i++)
-		delete preset_items.values[i];
-}
-
-void NewWindow::create_presets(int &x, int &y)
-{
-	NewPresetItem *item;
-	add_subwindow(new BC_Title(x, y, _("Presets:")));
-	int x1 = x;
-	y += 20;
-
-	item = new NewPresetItem(mwindow, this, _("User Defined"));
-	preset_items.append(item);
-
-	item = new NewPresetItem(mwindow, this, _("1080P"));
-	item->edl->session->audio_channels = 2;
-	item->edl->session->audio_tracks = 2;
-	item->edl->session->sample_rate = 48000;
-	item->edl->session->video_channels = 1;
-	item->edl->session->video_tracks = 1;
-	item->edl->session->frame_rate = (double)60000.0 / 1001;
-// 	item->edl->session->track_w = 1920;
-// 	item->edl->session->track_h = 1080;
-	item->edl->session->output_w = 1920;
-	item->edl->session->output_h = 1080;
-	item->edl->session->aspect_w = 16;
-	item->edl->session->aspect_h = 9;
-	preset_items.append(item);
-
-	item = new NewPresetItem(mwindow, this, _("1080I"));
-	item->edl->session->audio_channels = 2;
-	item->edl->session->audio_tracks = 2;
-	item->edl->session->sample_rate = 48000;
-	item->edl->session->video_channels = 1;
-	item->edl->session->video_tracks = 1;
-	item->edl->session->frame_rate = (double)30000.0 / 1001;
-// 	item->edl->session->track_w = 1920;
-// 	item->edl->session->track_h = 1080;
-	item->edl->session->output_w = 1920;
-	item->edl->session->output_h = 1080;
-	item->edl->session->aspect_w = 16;
-	item->edl->session->aspect_h = 9;
-	preset_items.append(item);
-
-	item = new NewPresetItem(mwindow, this, _("720P"));
-	item->edl->session->audio_channels = 2;
-	item->edl->session->audio_tracks = 2;
-	item->edl->session->sample_rate = 48000;
-	item->edl->session->video_channels = 1;
-	item->edl->session->video_tracks = 1;
-	item->edl->session->frame_rate = (double)60000.0 / 1001;
-// 	item->edl->session->track_w = 1280;
-// 	item->edl->session->track_h = 720;
-	item->edl->session->output_w = 1280;
-	item->edl->session->output_h = 720;
-	item->edl->session->aspect_w = 16;
-	item->edl->session->aspect_h = 9;
-	preset_items.append(item);
-
-	item = new NewPresetItem(mwindow, this, _("480P"));
-	item->edl->session->audio_channels = 2;
-	item->edl->session->audio_tracks = 2;
-	item->edl->session->sample_rate = 48000;
-	item->edl->session->video_channels = 1;
-	item->edl->session->video_tracks = 1;
-	item->edl->session->frame_rate = (double)60000.0 / 1001;
-// 	item->edl->session->track_w = 720;
-// 	item->edl->session->track_h = 480;
-	item->edl->session->output_w = 720;
-	item->edl->session->output_h = 480;
-	item->edl->session->aspect_w = 4;
-	item->edl->session->aspect_h = 3;
-	preset_items.append(item);
-
-	item = new NewPresetItem(mwindow, this, _("480I"));
-	item->edl->session->audio_channels = 2;
-	item->edl->session->audio_tracks = 2;
-	item->edl->session->sample_rate = 48000;
-	item->edl->session->video_channels = 1;
-	item->edl->session->video_tracks = 1;
-	item->edl->session->frame_rate = (double)30000.0 / 1001;
-// 	item->edl->session->track_w = 720;
-// 	item->edl->session->track_h = 480;
-	item->edl->session->output_w = 720;
-	item->edl->session->output_h = 480;
-	item->edl->session->aspect_w = 4;
-	item->edl->session->aspect_h = 3;
-	preset_items.append(item);
-
-	item = new NewPresetItem(mwindow, this, _("Half D-1 NTSC"));
-	item->edl->session->audio_channels = 2;
-	item->edl->session->audio_tracks = 2;
-	item->edl->session->sample_rate = 48000;
-	item->edl->session->video_channels = 1;
-	item->edl->session->video_tracks = 1;
-	item->edl->session->frame_rate = (double)30000.0 / 1001;
-// 	item->edl->session->track_w = 360;
-// 	item->edl->session->track_h = 240;
-	item->edl->session->output_w = 360;
-	item->edl->session->output_h = 240;
-	item->edl->session->aspect_w = 4;
-	item->edl->session->aspect_h = 3;
-	preset_items.append(item);
-
-	item = new NewPresetItem(mwindow, this, _("Internet"));
-	item->edl->session->audio_channels = 1;
-	item->edl->session->audio_tracks = 1;
-	item->edl->session->sample_rate = 22050;
-	item->edl->session->video_channels = 1;
-	item->edl->session->video_tracks = 1;
-	item->edl->session->frame_rate = 15;
-// 	item->edl->session->track_w = 320;
-// 	item->edl->session->track_h = 240;
-	item->edl->session->output_w = 320;
-	item->edl->session->output_h = 240;
-	item->edl->session->aspect_w = 4;
-	item->edl->session->aspect_h = 3;
-	preset_items.append(item);
-
-	item = new NewPresetItem(mwindow, this, _("CD Audio"));
-	item->edl->session->audio_channels = 2;
-	item->edl->session->audio_tracks = 2;
-	item->edl->session->sample_rate = 44100;
-	item->edl->session->video_channels = 1;
-	item->edl->session->video_tracks = 0;
-	item->edl->session->frame_rate = (double)30000.0 / 1001;
-// 	item->edl->session->track_w = 720;
-// 	item->edl->session->track_h = 480;
-	item->edl->session->output_w = 720;
-	item->edl->session->output_h = 480;
-	item->edl->session->aspect_w = 4;
-	item->edl->session->aspect_h = 3;
-	preset_items.append(item);
-
-	item = new NewPresetItem(mwindow, this, _("DAT Audio"));
-	item->edl->session->audio_channels = 2;
-	item->edl->session->audio_tracks = 2;
-	item->edl->session->sample_rate = 48000;
-	item->edl->session->video_channels = 1;
-	item->edl->session->video_tracks = 0;
-	item->edl->session->frame_rate = (double)30000.0 / 1001;
-// 	item->edl->session->track_w = 720;
-// 	item->edl->session->track_h = 480;
-	item->edl->session->output_w = 720;
-	item->edl->session->output_h = 480;
-	item->edl->session->aspect_w = 4;
-	item->edl->session->aspect_h = 3;
-	preset_items.append(item);
-
-	add_subwindow(presets_text = new NewPresetsText(mwindow, this, x, y));
-	x += presets_text->get_w();
-	add_subwindow(presets = new NewPresetsPulldown(mwindow, this, x, y));
-	x = x1;
+	if(format_presets) delete format_presets;
 }
 
 int NewWindow::create_objects()
@@ -360,7 +224,17 @@ int NewWindow::create_objects()
 
 	add_subwindow(new BC_Title(x, y, _("Parameters for the new project:")));
 	y += 20;
-	create_presets(x, y);
+
+	format_presets = new NewPresets(mwindow,
+		this, 
+		x, 
+		y);
+	format_presets->create_objects();
+	x = format_presets->x;
+	y = format_presets->y;
+
+
+
 	y += 40;
 	y1 = y;
 	add_subwindow(new BC_Title(x, y, _("Audio"), LARGEFONT));
@@ -487,35 +361,6 @@ int NewWindow::create_objects()
 	return 0;
 }
 
-
-int NewWindow::get_preset(EDL *edl)
-{
-
-	for(int i = 1; i < preset_items.total; i++)
-	{
-		NewPresetItem *preset = preset_items.values[i];
-		if(edl->session->audio_tracks == preset->edl->session->audio_tracks &&
-			edl->session->audio_channels == preset->edl->session->audio_channels &&
-			edl->session->sample_rate == preset->edl->session->sample_rate &&
-			edl->session->video_tracks == preset->edl->session->video_tracks &&
-			edl->session->frame_rate == preset->edl->session->frame_rate &&
-			edl->session->output_w == preset->edl->session->output_w &&
-			edl->session->output_h == preset->edl->session->output_h &&
-			edl->session->aspect_w == preset->edl->session->aspect_w &&
-			edl->session->aspect_h == preset->edl->session->aspect_h)
-			return i;
-	}
-	return 0;
-}
-
-char* NewWindow::get_preset_text()
-{
-	int preset_number = get_preset(new_edl);
-	if(preset_number < preset_items.total) 
-		return preset_items.values[preset_number]->get_text();
-	return preset_items.values[0]->get_text();
-}
-
 int NewWindow::update()
 {
 	char string[BCTEXTLEN];
@@ -535,63 +380,27 @@ int NewWindow::update()
 
 
 
-NewPresetsText::NewPresetsText(MWindow *mwindow, NewWindow *window, int x, int y)
- : BC_TextBox(x, y, 200, 1, window->get_preset_text())
+
+
+NewPresets::NewPresets(MWindow *mwindow, NewWindow *gui, int x, int y)
+ : FormatPresets(mwindow, gui, 0, x, y)
 {
-	this->mwindow = mwindow;
-	this->window = window;
 }
 
-int NewPresetsText::handle_event()
+NewPresets::~NewPresets()
 {
+}
+
+int NewPresets::handle_event()
+{
+	new_gui->update();
 	return 1;
 }
 
-
-
-
-
-NewPresetsPulldown::NewPresetsPulldown(MWindow *mwindow, NewWindow *window, int x, int y)
- : BC_ListBox(x, 
-		y, 
-		200, 
-		200,
-		LISTBOX_TEXT,                   // Display text list or icons
-		(ArrayList<BC_ListBoxItem*>*)&window->preset_items, // Each column has an ArrayList of BC_ListBoxItems.
-		0,             // Titles for columns.  Set to 0 for no titles
-		0,                // width of each column
-		1,                      // Total columns.
-		0,                    // Pixel of top of window.
-		1)
+EDL* NewPresets::get_edl()
 {
-	this->mwindow = mwindow;
-	this->window = window;
+	return new_gui->new_edl;
 }
-int NewPresetsPulldown::handle_event()
-{
-	NewPresetItem *preset = ((NewPresetItem*)get_selection(0, 0));
-	window->new_edl->copy_all(preset->edl);
-	window->update();
-	window->presets_text->update(preset->get_text());
-	return 1;
-}
-
-NewPresetItem::NewPresetItem(MWindow *mwindow, NewWindow *window, char *text)
- : BC_ListBoxItem(text)
-{
-	this->mwindow = mwindow;
-	this->window = window;
-	edl = new EDL;
-	edl->create_objects();
-	edl->copy_all(window->new_edl);
-}
-
-NewPresetItem::~NewPresetItem()
-{
-	delete edl;
-}
-
-
 
 
 
@@ -729,13 +538,9 @@ NewVTracksTumbler::NewVTracksTumbler(NewWindow *nwindow, int x, int y)
 }
 int NewVTracksTumbler::handle_up_event()
 {
-printf("NewVTracks::handle_event 1 %f\n", nwindow->new_edl->session->frame_rate);
 	nwindow->new_edl->session->video_tracks++;
-printf("NewVTracks::handle_event 2 %d %f\n", nwindow->new_edl->session->video_tracks, nwindow->new_edl->session->frame_rate);
 	nwindow->new_edl->boundaries();
-printf("NewVTracks::handle_event 3 %d %f\n", nwindow->new_edl->session->video_tracks, nwindow->new_edl->session->frame_rate);
 	nwindow->update();
-printf("NewVTracks::handle_event 4 %d %f\n", nwindow->new_edl->session->video_tracks, nwindow->new_edl->session->frame_rate);
 	return 1;
 }
 int NewVTracksTumbler::handle_down_event()
@@ -892,7 +697,7 @@ NewOutputW::NewOutputW(NewWindow *nwindow, int x, int y)
 }
 int NewOutputW::handle_event()
 {
-	nwindow->new_edl->session->output_w = atol(get_text());
+	nwindow->new_edl->session->output_w = MAX(1,atol(get_text()));
 	nwindow->new_thread->update_aspect();
 	return 1;
 }
@@ -904,7 +709,7 @@ NewOutputH::NewOutputH(NewWindow *nwindow, int x, int y)
 }
 int NewOutputH::handle_event()
 {
-	nwindow->new_edl->session->output_h = atol(get_text());
+	nwindow->new_edl->session->output_h = MAX(1, atol(get_text()));
 	nwindow->new_thread->update_aspect();
 	return 1;
 }
