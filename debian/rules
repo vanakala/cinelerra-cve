@@ -8,15 +8,13 @@ export DH_COMPAT=4
 CFLAGS=-ffast-math -O3 -mmmx -g
 CXXFLAGS=$(CFLAGS) -fno-check-new
 
-include /usr/share/dpatch/dpatch.make
-
 config.status: configure 
 	$(checkdir)
 	CFLAGS="$(CFLAGS)" CXXFLAGS="$(CXXFLAGS)" \
 					./configure --prefix=/usr --enable-mmx --enable-x86
 	
 build: build-stamp
-build-stamp: config.status patch-stamp
+build-stamp: config.status
 	$(checkdir)
 	$(MAKE)
 	docbook-to-man debian/cinelerra.sgml > debian/cinelerra.1
@@ -24,7 +22,7 @@ build-stamp: config.status patch-stamp
 	docbook-to-man debian/mplexlo.sgml > debian/mplexlo.1
 	touch build-stamp
 
-clean: unpatch 
+clean: 
 	$(checkdir)
 	-$(MAKE) -i distclean
 	dh_clean -a
