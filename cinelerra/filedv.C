@@ -39,7 +39,7 @@ FileDV::FileDV(Asset *asset, File *file)
 FileDV::~FileDV()
 {
 	int i = 0;
-	close_file();
+	if(stream) close_file();
 	if(decoder) dv_decoder_free(decoder);
 	if(encoder) dv_encoder_free(encoder);
 	if(audio_buffer)
@@ -83,7 +83,7 @@ int FileDV::reset_parameters_derived()
 	int i = 0;
 	if(decoder) dv_decoder_free(decoder);
 	if(encoder) dv_encoder_free(encoder);
-
+TRACE("FileDV::reset_parameters_derived 10")
 	decoder = dv_decoder_new(0,0,0);
 	decoder->quality = DV_QUALITY_BEST;
 
@@ -93,7 +93,9 @@ int FileDV::reset_parameters_derived()
 	encoder->vlc_encode_passes = 3;
 	encoder->static_qno = 0;
 	encoder->force_dct = DV_DCT_AUTO;
-
+	
+TRACE("FileDV::reset_parameters_derived: 20")
+	
 	if(audio_buffer)
 	{
 		for(i = 0; i < asset->channels; i++)
@@ -103,6 +105,8 @@ int FileDV::reset_parameters_derived()
 		free(audio_buffer);
 	}
 
+TRACE("FileDV::reset_parameters_derived: 30")
+	
 	audio_buffer = 0;
 	samples_in_buffer = 0;
 	for(i = 0; i < 4; i++) // max 4 channels in dv
@@ -110,7 +114,7 @@ int FileDV::reset_parameters_derived()
 
 	frames_written = 0;
 
-	fd = 0;
+	stream = 0;
 	audio_position = 0;
 	video_position = 0;
 	output_size = ( encoder->isPAL ? DV1394_PAL_FRAME_SIZE : DV1394_NTSC_FRAME_SIZE);
@@ -123,14 +127,17 @@ int FileDV::reset_parameters_derived()
 	memset(input, 0, output_size + 8);
 	audio_offset = 0;
 	video_offset = 0;
+UNTRACE
 }
 
 int FileDV::open_file(int rd, int wr)
 {
 //printf("FileDV::open_file: read %i, write %i\n", rd, wr);
+TRACE("FileDV::open_file 10")
 	if(wr)
 	{
-		if((fd = ::open(asset->path, O_RDWR | O_CREAT | O_LARGEFILE | O_TRUNC, S_IRWXU)) < 0)
+TRACE("FileDV::open_file 20")
+		if((stream = fopen(asset->path, "r+b")) < 0)
 		{
 			perror(_("FileDV::open_file rdwr"));
 			return 1;
@@ -138,17 +145,19 @@ int FileDV::open_file(int rd, int wr)
 	}
 	else
 	{
-		if((fd = ::open(asset->path, O_RDONLY | O_LARGEFILE)) < 0)
+TRACE("FileDV::open_file 30")
+		struct stat *info = (struct stat*) malloc(sizeof(struct stat));
+		stat(asset->path, info);
+TRACE("FileDV::open_file 40")
+		if((stream = fopen(asset->path, "rb")) < 0)
 		{
 			perror(_("FileDV::open_file rd"));
 			return 1;
 		}
-		struct stat *info = (struct stat*) malloc(sizeof(struct stat));
-		fstat(fd, info);
-
+TRACE("FileDV::open_file 50")
 		// read the first frame so we can get the stream info from it
-		read(fd, input, output_size);
-
+		fread(input, output_size, 1, stream);
+TRACE("FileDV::open_file 60")
 		if(dv_parse_header(decoder, input) > -1 )
 		{
 			// see if there are any audio tracks
@@ -180,21 +189,22 @@ int FileDV::open_file(int rd, int wr)
 			asset->audio_data = 0;
 			asset->video_data = 0;
 		}
+TRACE("FileDV::open_file 80")
 		free(info);
 	}
-
+UNTRACE
 	return 0;
 }
 
 int FileDV::check_sig(Asset *asset)
 {
 	unsigned char temp[3];
-	int t_fd = open(asset->path, O_RDONLY);
+	FILE *t_stream = fopen(asset->path, "rb");
 
-	read(t_fd, &temp, 3);
+	fread(&temp, 3, 1, t_stream);
 
-	close(t_fd);
-
+	fclose(t_stream);
+	
 	if(temp[0] == 0x1f &&
 			temp[1] == 0x07 &&
 			temp[2] == 0x00)
@@ -205,13 +215,15 @@ int FileDV::check_sig(Asset *asset)
 
 int FileDV::close_file()
 {
-	close(fd);
+	fclose(stream);
+	stream = 0;
 }
 
 int FileDV::close_file_derived()
 {
 //printf("FileDV::close_file_derived(): 1\n");
-	close(fd);
+	fclose(stream);
+	stream = 0;
 }
 
 int64_t FileDV::get_video_position()
@@ -226,7 +238,7 @@ int64_t FileDV::get_audio_position()
 
 int FileDV::set_video_position(int64_t x)
 {
-	if(fd < 0) return 1;
+	if(!stream) return 1;
 	if(x >= 0 && x < asset->video_length)
 	{
 		video_offset = x * output_size;
@@ -239,8 +251,7 @@ int FileDV::set_video_position(int64_t x)
 int FileDV::set_audio_position(int64_t x)
 {
 	int i = 0;
-	if(fd < 0) return 1;
-
+	if(!stream) return 1;
 	if(x >= 0 && x < asset->audio_length)
 	{
 		audio_position = x;
@@ -307,16 +318,17 @@ TRACE("FileDV::write_samples 30")
 	for(i = 0; i < frames_written && samples_written + samples <= samples_in_buffer; i++)
 	{
 // Position ourselves to where we last wrote audio
-		audio_offset = lseek(fd, audio_offset, SEEK_SET);
+		fseek(stream, audio_offset, SEEK_SET);
 
 // Read the frame in, add the audio, write it back out to the same
 // location and adjust audio_offset to the new location.
-		if(read(fd, temp_data, output_size) < output_size) break;
+		if(fread(temp_data, output_size, 1, stream) < 1) break;
 		encoder->samples_this_frame = samples;
 		dv_encode_full_audio(encoder, temp_buffers, asset->channels,
 			asset->sample_rate, temp_data);
-		audio_offset = lseek(fd, audio_offset, SEEK_SET);
-		audio_offset += write(fd, temp_data, output_size);
+		fseek(stream, audio_offset, SEEK_SET);
+		fwrite(temp_data, output_size, 1, stream);
+		audio_offset += output_size;
 
 TRACE("FileDV::write_samples 50")
 
@@ -368,7 +380,7 @@ int FileDV::write_frames(VFrame ***frames, int len)
 {
 	int i, j, result = 0;
 
-	if(fd < 0) return 0;
+	if(!stream) return 0;
 
 	for(j = 0; j < len && !result; j++)
 	{
@@ -433,8 +445,9 @@ int FileDV::write_frames(VFrame ***frames, int len)
 //printf("FileDV::write_frames: 7\n");
 
 
-		video_offset = lseek(fd, video_offset, SEEK_SET);
-		video_offset += write(fd, output, output_size);
+		fseek(stream, video_offset, SEEK_SET);
+		fwrite(output, output_size, 1, stream);
+		video_offset += output_size;
 		frames_written++;
 
 		free(cmodel_buf);
@@ -447,10 +460,11 @@ int FileDV::write_frames(VFrame ***frames, int len)
 int FileDV::read_compressed_frame(VFrame *buffer)
 {
 	int64_t result;
-	if(fd < 0) return 0;
+	if(!stream) return 0;
 
-	lseek(fd, video_offset, SEEK_SET);
-	video_offset += read(fd, buffer->get_data(), output_size);
+	fseek(stream, video_offset, SEEK_SET);
+	fread(buffer->get_data(), output_size, 1, stream);
+	video_offset += output_size;
 
 	buffer->set_compressed_size(result);
 	result = !result;
@@ -460,10 +474,11 @@ int FileDV::read_compressed_frame(VFrame *buffer)
 int FileDV::write_compressed_frame(VFrame *buffer)
 {
 	int result = 0;
-	if(fd < 0) return 0;
+	if(!stream) return 0;
 
-	lseek(fd, video_offset, SEEK_SET);
-	video_offset += write(fd, buffer->get_data(), buffer->get_compressed_size());
+	fseek(stream, video_offset, SEEK_SET);
+	fwrite(buffer->get_data(), buffer->get_compressed_size(), 1, stream);
+	video_offset += output_size;
 
 	frames_written++;
 
@@ -472,7 +487,7 @@ int FileDV::write_compressed_frame(VFrame *buffer)
 
 int64_t FileDV::compressed_frame_size()
 {
-	if(!fd) return 0;
+	if(!stream) return 0;
 	return output_size;
 }
 
@@ -483,7 +498,6 @@ int FileDV::read_samples(double *buffer, int64_t len)
 	int i, j = 0;
 	int channel = file->current_channel;
 	int offset = samples_offset[channel];
-
 TRACE("FileDV::read_samples 10")
 
 	outbuf = (int16_t **) calloc(sizeof(int16_t *), asset->channels);
@@ -503,13 +517,14 @@ TRACE("FileDV::read_samples 30")
 TRACE("FileDV::read_samples 40")
 
 // set file position
-	audio_offset = lseek(fd, audio_offset, SEEK_SET);
+	fseek(stream, audio_offset, SEEK_SET);
 
 // get audio data and put it in buffer
 	for(i = 0; i < len + decoder->audio->samples_this_frame; i += decoder->audio->samples_this_frame)
 	{
 TRACE("FileDV::read_samples 50")
-		audio_offset += read(fd, input, output_size);
+		fread(input, output_size, 1, stream);
+		audio_offset += output_size;
 		dv_decode_full_audio(decoder, input, temp_buffer);
 
 TRACE("FileDV::read_samples 60")
@@ -548,7 +563,7 @@ UNTRACE
 
 int FileDV::read_frame(VFrame *frame)
 {
-	if(fd < 0) return 1;
+	if(!stream) return 1;
 	int i, result = 0;
 	int pitches[3] = {720 * 2, 0, 0};
 
@@ -566,8 +581,9 @@ TRACE("FileDV::read_frame 10")
 
 
 // Seek to video position
-	video_offset = lseek(fd, video_offset, SEEK_SET);
-	video_offset += read(fd, input, output_size);
+	fseek(stream, video_offset, SEEK_SET);
+	fread(input, output_size, 1, stream);
+	video_offset += output_size;
 	
 
 TRACE("FileDV::read_frame 20")
@@ -633,7 +649,7 @@ int FileDV::colormodel_supported(int colormodel)
 
 int FileDV::can_copy_from(Edit *edit, int64_t position)
 {
-	if(!fd) return 0;
+	if(!stream) return 0;
 
 	if(edit->asset->format == FILE_RAWDV ||
 			(edit->asset->format == FILE_MOV &&

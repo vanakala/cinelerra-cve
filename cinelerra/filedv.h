@@ -41,7 +41,7 @@ public:
 	static int get_best_colormodel(Asset *asset, int driver);
 
 private:
-	int fd;
+	FILE *stream;
 	dv_decoder_t *decoder;
 	dv_encoder_t *encoder;
 	int64_t audio_position;
