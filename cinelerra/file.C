@@ -94,42 +94,38 @@
  FrameCacheTree::iterator FrameCache::find_element_byframe(long frame_number, int frame_layer, int frame_width, int frame_height, int frame_color_model)
  {
  	FrameCacheTree::iterator iterator = cache_tree.find(frame_number);
-   	if(iterator != cache_tree.end()) {
- 		do {
- 			if (compare_with_frame(iterator->second, 
- 						frame_number, 
- 						frame_layer,
- 						frame_width,
- 						frame_height,
- 						frame_color_model))
- 			{
- 				
- 				return iterator;
- 			}
- 			iterator++;
- 		} while (iterator->first == frame_number);
- 	}
+	while (iterator != cache_tree.end() && iterator->first == frame_number)
+	{
+		if (compare_with_frame(iterator->second, 
+					frame_number, 
+					frame_layer,
+					frame_width,
+					frame_height,
+					frame_color_model))
+		{			
+			return iterator;
+		}
+		iterator++;
+	}
  	return cache_tree.end();
  }
  
  FrameCacheTree_ByTime::iterator FrameCache::find_element_bytime(long long frame_time_diff, long frame_number, int frame_layer, int frame_width, int frame_height, int frame_color_model)
  {
  	FrameCacheTree_ByTime::iterator iterator = cache_tree_bytime.find(frame_time_diff);
-   	if(iterator != cache_tree_bytime.end()) {
- 		do {	
- 			if (compare_with_frame(iterator->second, 
- 						frame_number, 
- 						frame_layer,
- 						frame_width,
- 						frame_height,
- 						frame_color_model))
- 			{
- 				
- 				return iterator;
- 			}
- 			iterator++;
- 		} while (iterator->first == frame_time_diff);
- 	}
+   	while (iterator != cache_tree_bytime.end() && iterator->first == frame_time_diff)
+	{
+		if (compare_with_frame(iterator->second, 
+					frame_number, 
+					frame_layer,
+					frame_width,
+					frame_height,
+					frame_color_model))
+		{			
+			return iterator;
+		}
+		iterator++;
+	}
  	return cache_tree_bytime.end();
  }
  
