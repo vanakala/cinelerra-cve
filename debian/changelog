@@ -2,7 +2,7 @@ hvirtual (1:1.1.8-1) unstable; urgency=low
 
   * Merge with Adam's 1.1.8 release and the CVS
 
- -- Johannes Sixt <johannes.sixt@telecom.at>, Fri, Dec 5 22:22:14 2003 UTC
+ -- Johannes Sixt <johannes.sixt@telecom.at>  Fri, 5 Dec 2003 22:22:14 +0200
 
 hvirtual (1:1.1.7-3) unstable; urgency=low
 
