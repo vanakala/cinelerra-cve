@@ -7,7 +7,7 @@
 #include "plugin.inc"
 #include "plugindialog.inc"
 #include "keyframe.inc"
- 
+#include "automation.h" 
 
 
 class KeyframePopupDelete;
@@ -23,13 +23,18 @@ public:
 
 	void create_objects();
 	int update(Plugin *plugin, KeyFrame *keyframe);
+	int update(Automation *automation, Autos *autos, Auto *auto_keyframe);
 
 	MWindow *mwindow;
 	MWindowGUI *gui;
 // Acquired through the update command as the plugin currently being operated on
 	
-	Plugin *plugin;
-	KeyFrame *keyframe;
+	Plugin *keyframe_plugin;
+	Autos *keyframe_autos;
+	Automation *keyframe_automation;
+	Auto *keyframe_auto;
+	
+
 	
 	KeyframePopupDelete *key_delete;
 	KeyframePopupShow *key_show;

@@ -1715,201 +1715,275 @@ int TrackCanvas::do_keyframes(int cursor_x,
 		Automation *automation = track->automation;
 
 //printf("TrackCanvas::draw_keyframes 1\n");
-		if(!result && session->auto_conf->fade && buttonpress != 3)
+		if(!result && session->auto_conf->fade)
 		{
+			Auto *auto_keyframe;
 			result = do_float_autos(track, 
 				automation->fade_autos,
 				cursor_x, 
 				cursor_y, 
 				draw, 
 				buttonpress, 
-				WHITE);
-			if(result && mwindow->session->current_operation == DRAG_FADE)
+				WHITE,
+				auto_keyframe);
+			if(result && mwindow->session->current_operation == DRAG_FADE && (buttonpress != 3))
 			{
 				rerender = 1;
 			}
-			if(result && buttonpress)
+			if(result && buttonpress && (buttonpress != 3))
 			{
 				synchronize_autos(0, track, (FloatAuto*)mwindow->session->drag_auto, 1);
 				mwindow->session->current_operation = DRAG_FADE;
 				update_drag_caption();
 			}
+			if (result && (buttonpress == 3))
+			{
+				gui->keyframe_menu->update(automation, automation->fade_autos, auto_keyframe);
+				gui->keyframe_menu->activate_menu();
+				rerender = 1; // the position changes
+			}
 		}
 
 //printf("TrackCanvas::draw_keyframes 1 %d\n", result);
 
-		if(!result && session->auto_conf->czoom && automation->czoom_autos && buttonpress != 3)
+		if(!result && session->auto_conf->czoom && automation->czoom_autos)
 		{
+			Auto *auto_keyframe;
 			result = do_float_autos(track, 
 				automation->czoom_autos,
 				cursor_x, 
 				cursor_y, 
 				draw, 
 				buttonpress,
-				MEPURPLE);
-			if(result && mwindow->session->current_operation == DRAG_CZOOM)
+				MEPURPLE,
+				auto_keyframe);
+			if(result && mwindow->session->current_operation == DRAG_CZOOM && (buttonpress != 3))
 			{
 				rerender = 1;
 			}
-			if(result && buttonpress)
+			if(result && buttonpress && (buttonpress != 3))
 			{
 				mwindow->session->current_operation = DRAG_CZOOM;
 				update_drag_caption();
 			}
+			if (result && (buttonpress == 3))
+			{
+				gui->keyframe_menu->update(automation, automation->czoom_autos, auto_keyframe);
+				gui->keyframe_menu->activate_menu();
+				rerender = 1; // the position changes
+			}
 		}
 
 //printf("TrackCanvas::draw_keyframes 2 %d\n", result);
-		if(!result && session->auto_conf->pzoom && automation->pzoom_autos && buttonpress != 3)
+		if(!result && session->auto_conf->pzoom && automation->pzoom_autos)
 		{
+			Auto *auto_keyframe;
 			result = do_float_autos(track, 
 				automation->pzoom_autos,
 				cursor_x, 
 				cursor_y, 
 				draw, 
 				buttonpress,
-				PINK);
-			if(result && mwindow->session->current_operation == DRAG_PZOOM)
+				PINK,
+				auto_keyframe);
+			if(result && mwindow->session->current_operation == DRAG_PZOOM && (buttonpress != 3))
 			{
 				rerender = 1;
 			}
-			if(result && buttonpress)
+			if(result && buttonpress && (buttonpress != 3))
 			{
 				mwindow->session->current_operation = DRAG_PZOOM;
 				update_drag_caption();
 			}
+			if (result && (buttonpress == 3))
+			{
+				gui->keyframe_menu->update(automation, automation->pzoom_autos, auto_keyframe);
+				gui->keyframe_menu->activate_menu();
+				rerender = 1; // the position changes
+			}
 		}
 
 //printf("TrackCanvas::draw_keyframes 1 %d\n", result);
-		if(!result && session->auto_conf->mute && buttonpress != 3)
+		if(!result && session->auto_conf->mute)
 		{
+			Auto *auto_keyframe;
 			result = do_toggle_autos(track, 
 				automation->mute_autos,
 				cursor_x, 
 				cursor_y, 
 				draw, 
 				buttonpress,
-				BLUE);
-			if(result && mwindow->session->current_operation == DRAG_MUTE)
+				BLUE,
+				auto_keyframe);
+			if(result && mwindow->session->current_operation == DRAG_MUTE && (buttonpress != 3))
 			{
 				rerender = 1;
 			}
-			if(result && buttonpress)
+			if(result && buttonpress && (buttonpress != 3))
 			{
 				mwindow->session->current_operation = DRAG_MUTE;
 				update_drag_caption();
 			}
+			if (result && (buttonpress == 3))
+			{
+				gui->keyframe_menu->update(automation, automation->mute_autos, auto_keyframe);
+				gui->keyframe_menu->activate_menu();
+				rerender = 1; // the position changes
+			}
 		}
 
 //printf("TrackCanvas::draw_keyframes 1 %d\n", result);
-		if(!result && session->auto_conf->camera && automation->camera_autos && buttonpress != 3)
+		if(!result && session->auto_conf->camera && automation->camera_autos)
 		{
+			Auto *auto_keyframe;
 			result = do_autos(track, 
 				automation->camera_autos,
 				cursor_x, 
 				cursor_y, 
 				draw, 
 				buttonpress,
-				camerakeyframe_pixmap);
-			if(result && mwindow->session->current_operation == DRAG_CAMERA)
+				camerakeyframe_pixmap,
+				auto_keyframe);
+			if(result && mwindow->session->current_operation == DRAG_CAMERA && (buttonpress != 3))
 			{
 				rerender = 1;
 			}
-			if(result && buttonpress)
+			if(result && buttonpress && (buttonpress != 3))
 			{
 				mwindow->session->current_operation = DRAG_CAMERA_PRE;
 				update_drag_caption();
 				rerender = 1;
 			}
+			if (result && (buttonpress == 3))
+			{
+				gui->keyframe_menu->update(automation, automation->camera_autos, auto_keyframe);
+				gui->keyframe_menu->activate_menu();
+				rerender = 1; // the position changes
+			}
+
 		}
 
-		if(!result && session->auto_conf->mode && automation->mode_autos && buttonpress != 3)
+		if(!result && session->auto_conf->mode && automation->mode_autos)
 		{
+			Auto *auto_keyframe;
 			result = do_autos(track, 
 				automation->mode_autos,
 				cursor_x, 
 				cursor_y, 
 				draw, 
 				buttonpress,
-				modekeyframe_pixmap);
-			if(result && mwindow->session->current_operation == DRAG_MODE)
+				modekeyframe_pixmap,
+				auto_keyframe);
+			if(result && mwindow->session->current_operation == DRAG_MODE && (buttonpress != 3))
 			{
 				rerender = 1;
 			}
-			if(result && buttonpress)
+			if(result && buttonpress && (buttonpress != 3))
 			{
 				mwindow->session->current_operation = DRAG_MODE_PRE;
 				update_drag_caption();
 				rerender = 1;
 			}
+			if (result && (buttonpress == 3))
+			{
+				gui->keyframe_menu->update(automation, automation->mode_autos, auto_keyframe);
+				gui->keyframe_menu->activate_menu();
+				rerender = 1; // the position changes
+			}
 		}
 
 //printf("TrackCanvas::draw_keyframes 1 %d\n", result);
-		if(!result && session->auto_conf->projector && automation->projector_autos && buttonpress != 3)
+		if(!result && session->auto_conf->projector && automation->projector_autos)
 		{
+			Auto *auto_keyframe;
 			result = do_autos(track, 
 				automation->projector_autos,
 				cursor_x, 
 				cursor_y, 
 				draw, 
 				buttonpress,
-				projectorkeyframe_pixmap);
-			if(result && mwindow->session->current_operation == DRAG_PROJECTOR)
+				projectorkeyframe_pixmap,
+				auto_keyframe);
+			if(result && mwindow->session->current_operation == DRAG_PROJECTOR && (buttonpress != 3))
 			{
 				rerender = 1;
 			}
-			if(result && buttonpress)
+			if(result && buttonpress && (buttonpress != 3))
 			{
 				mwindow->session->current_operation = DRAG_PROJECTOR_PRE;
 				update_drag_caption();
 				rerender = 1;
 			}
+			if (result && (buttonpress == 3))
+			{
+				gui->keyframe_menu->update(automation, automation->projector_autos, auto_keyframe);
+				gui->keyframe_menu->activate_menu();
+				rerender = 1; // the position changes
+			}
 		}
 
-		if(!result && session->auto_conf->mask && automation->mask_autos && buttonpress != 3)
+		if(!result && session->auto_conf->mask && automation->mask_autos)
 		{
+			Auto *auto_keyframe;
 			result = do_autos(track, 
 				automation->mask_autos,
 				cursor_x, 
 				cursor_y, 
 				draw, 
 				buttonpress,
-				maskkeyframe_pixmap);
-			if(result && mwindow->session->current_operation == DRAG_MASK)
+				maskkeyframe_pixmap,
+				auto_keyframe);
+			if(result && mwindow->session->current_operation == DRAG_MASK && (buttonpress != 3))
 			{
 				rerender = 1;
 			}
-			if(result && buttonpress)
+			if(result && buttonpress && (buttonpress != 3))
 			{
 				mwindow->session->current_operation = DRAG_MASK_PRE;
 				update_drag_caption();
 				rerender = 1;
 			}
+			if (result && (buttonpress == 3))
+			{
+				gui->keyframe_menu->update(automation, automation->mask_autos, auto_keyframe);
+				gui->keyframe_menu->activate_menu();
+				rerender = 1; // the position changes
+			}
 		}
 
 //printf("TrackCanvas::draw_keyframes 1 %d\n", result);
-		if(!result && session->auto_conf->pan && automation->pan_autos && buttonpress != 3)
+		if(!result && session->auto_conf->pan && automation->pan_autos)
 		{
+			Auto *auto_keyframe;
 			result = do_autos(track, 
 				automation->pan_autos,
 				cursor_x, 
 				cursor_y, 
 				draw, 
 				buttonpress,
-				pankeyframe_pixmap);
-			if(result && mwindow->session->current_operation == DRAG_PAN)
+				pankeyframe_pixmap,
+				auto_keyframe);
+
+			if(result && mwindow->session->current_operation == DRAG_PAN && (buttonpress != 3))
 			{
 				rerender = 1;
 			}
 			if(result && buttonpress)
 			{
-				mwindow->session->current_operation = DRAG_PAN_PRE;
+				mwindow->session->current_operation = DRAG_PAN_PRE && (buttonpress != 3);
 				update_drag_caption();
 				rerender = 1;
+			}
+			if (result && (buttonpress == 3))
+			{
+				gui->keyframe_menu->update(automation, automation->pan_autos, auto_keyframe);
+				gui->keyframe_menu->activate_menu();
+				rerender = 1; // the position changes
 			}
 		}
 
 //printf("TrackCanvas::draw_keyframes 1 %d\n", result);
-		if(!result && session->auto_conf->plugins && buttonpress != 3)
+		if(!result && session->auto_conf->plugins)
 		{
 			Plugin *plugin;
 			KeyFrame *keyframe;
@@ -1931,13 +2005,6 @@ int TrackCanvas::do_keyframes(int cursor_x,
 				rerender = 1;
 			} else
 			if (result && (buttonpress == 3))
-			{
-				gui->keyframe_menu->update(plugin, keyframe);
-				gui->keyframe_menu->activate_menu();
-				rerender = 1; // the position changes
-			}
-			else
-			if(result && (buttonpress == 3))
 			{
 				gui->keyframe_menu->update(plugin, keyframe);
 				gui->keyframe_menu->activate_menu();
@@ -2098,7 +2165,7 @@ int TrackCanvas::test_auto(Auto *current,
 	if(cursor_x >= x1 && cursor_x < x2 && cursor_y >= y1 && cursor_y < y2)
 	{
 //printf("test_auto 2 %d\n", buttonpress);
-		if(buttonpress)
+		if(buttonpress && buttonpress != 3)
 		{
 //printf("test_auto 3\n");
 			mwindow->session->drag_auto = current;
@@ -2166,7 +2233,7 @@ int TrackCanvas::test_floatauto(Auto *current,
 		cursor_y >= y1 && 
 		cursor_y < y2)
 	{
-		if(buttonpress)
+		if(buttonpress && (buttonpress != 3))
 		{
 			mwindow->session->drag_auto = current;
 			mwindow->session->drag_start_percentage = current->value_to_percentage();
@@ -2186,7 +2253,7 @@ int TrackCanvas::test_floatauto(Auto *current,
 		cursor_y < in_y2 &&
 		current->position > 0)
 	{
-		if(buttonpress)
+		if(buttonpress && (buttonpress != 3))
 		{
 			mwindow->session->drag_auto = current;
 			mwindow->session->drag_start_percentage = 
@@ -2207,7 +2274,7 @@ int TrackCanvas::test_floatauto(Auto *current,
 		cursor_y >= out_y1 && 
 		cursor_y < out_y2)
 	{
-		if(buttonpress)
+		if(buttonpress && (buttonpress != 3))
 		{
 			mwindow->session->drag_auto = current;
 			mwindow->session->drag_start_percentage = 
@@ -2524,7 +2591,8 @@ int TrackCanvas::do_float_autos(Track *track,
 		int cursor_y, 
 		int draw, 
 		int buttonpress,
-		int color)
+		int color,
+		Auto * &auto_instance)
 {
 	int result = 0;
 
@@ -2541,6 +2609,8 @@ int TrackCanvas::do_float_autos(Track *track,
 	int draw_auto;
 	double slope;
 	int skip = 0;
+	
+	auto_instance = 0;
 
 	calculate_viewport(track, 
 		view_start,
@@ -2663,6 +2733,8 @@ int TrackCanvas::do_float_autos(Track *track,
 							cursor_x, 
 							cursor_y, 
 							buttonpress);
+					if (result) 
+						auto_instance = current;
 				}
 				else
 				if(draw_auto)
@@ -2688,7 +2760,7 @@ int TrackCanvas::do_float_autos(Track *track,
 		{
 			if(!result)
 			{
-				if(track->record)
+				if(track->record && buttonpress != 3)
 				{
 					result = test_floatline(center_pixel, 
 						(FloatAutos*)autos,
@@ -2753,7 +2825,7 @@ int TrackCanvas::do_float_autos(Track *track,
 		ay2 = ay;
 		if(!draw)
 		{
-			if(track->record)
+			if(track->record && buttonpress != 3)
 			{
 				result = test_floatline(center_pixel, 
 					(FloatAutos*)autos,
@@ -2799,7 +2871,8 @@ int TrackCanvas::do_toggle_autos(Track *track,
 		int cursor_y, 
 		int draw, 
 		int buttonpress,
-		int color)
+		int color,
+		Auto * &auto_instance)
 {
 	int result = 0;
 	double view_start;
@@ -2811,6 +2884,8 @@ int TrackCanvas::do_toggle_autos(Track *track,
 	double zoom_sample;
 	double zoom_units;
 	double ax, ay, ax2, ay2;
+	
+	auto_instance = 0;
 
 	calculate_viewport(track, 
 		view_start,
@@ -2883,6 +2958,8 @@ int TrackCanvas::do_toggle_autos(Track *track,
 							cursor_x, 
 							cursor_y, 
 							buttonpress);
+						if (result)
+							auto_instance = current;
 					}
 				}
 				else
@@ -2901,7 +2978,7 @@ int TrackCanvas::do_toggle_autos(Track *track,
 		{
 			if(!result)
 			{
-				if(track->record)
+				if(track->record && buttonpress != 3)
 				{
 					result = test_toggleline(autos, 
 						center_pixel, 
@@ -2933,7 +3010,7 @@ int TrackCanvas::do_toggle_autos(Track *track,
 		ay2 = ay;
 		if(!draw)
 		{
-			if(track->record)
+			if(track->record && buttonpress != 3)
 			{
 				result = test_toggleline(autos,
 					center_pixel, 
@@ -2963,7 +3040,8 @@ int TrackCanvas::do_autos(Track *track,
 		int cursor_y, 
 		int draw, 
 		int buttonpress,
-		BC_Pixmap *pixmap)
+		BC_Pixmap *pixmap,
+		Auto * &auto_instance)
 {
 	int result = 0;
 
@@ -2987,6 +3065,7 @@ int TrackCanvas::do_autos(Track *track,
 		zoom_units);
 
 	Auto *current;
+	auto_instance = 0;
 
 	for(current = autos->first; current && !result; current = NEXT)
 	{
@@ -3004,8 +3083,9 @@ int TrackCanvas::do_autos(Track *track,
 					cursor_y < y + pixmap->get_h())
 				{
 					result = 1;
+					auto_instance = current;
 
-					if(buttonpress)
+					if(buttonpress && (buttonpress != 3))
 					{
 						mwindow->session->drag_auto = current;
 						mwindow->session->drag_start_position = current->position;

@@ -120,6 +120,7 @@ public:
 	CPanelToolWindow(MWindow *mwindow, CPanel *gui, int x, int y);
 	~CPanelToolWindow();
 	int handle_event();
+	int set_shown(int shown);
 	MWindow *mwindow;
 	CPanel *gui;
 };

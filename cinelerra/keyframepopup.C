@@ -7,7 +7,8 @@
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "localsession.h"
- 
+#include "cwindowgui.h" 
+#include "cpanel.h"
  
 
 KeyframePopup::KeyframePopup(MWindow *mwindow, MWindowGUI *gui)
@@ -19,6 +20,9 @@ KeyframePopup::KeyframePopup(MWindow *mwindow, MWindowGUI *gui)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
+	key_show = 0;
+	key_delete = 0;
+	key_copy = 0;
 }
 
 KeyframePopup::~KeyframePopup()
@@ -27,15 +31,26 @@ KeyframePopup::~KeyframePopup()
 
 void KeyframePopup::create_objects()
 {
-	add_item(key_delete = new KeyframePopupDelete(mwindow, this));
 	add_item(key_show = new KeyframePopupShow(mwindow, this));
+	add_item(key_delete = new KeyframePopupDelete(mwindow, this));
 	add_item(key_copy = new KeyframePopupCopy(mwindow, this));
 }
 
 int KeyframePopup::update(Plugin *plugin, KeyFrame *keyframe)
 {
-	this->plugin = plugin;
-	this->keyframe = keyframe;
+	this->keyframe_plugin = plugin;
+	this->keyframe_auto = keyframe;
+	this->keyframe_autos = 0;
+	this->keyframe_automation = 0;
+	return 0;
+}
+
+int KeyframePopup::update(Automation *automation, Autos *autos, Auto *auto_keyframe)
+{
+	this->keyframe_plugin = 0;
+	this->keyframe_automation = automation;
+	this->keyframe_autos = autos;
+	this->keyframe_auto = auto_keyframe;
 	return 0;
 }
 
@@ -53,7 +68,7 @@ KeyframePopupDelete::~KeyframePopupDelete()
 int KeyframePopupDelete::handle_event()
 {
 	mwindow->undo->update_undo_before(_("delete keyframe"), LOAD_ALL);
-	delete popup->keyframe;
+	delete popup->keyframe_auto;
 	mwindow->save_backup();
 	mwindow->undo->update_undo_after();
 
@@ -99,8 +114,72 @@ int KeyframePopupShow::handle_event()
 //	if (current_position != new_position)
 	mwindow->cwindow->update(1, 0, 0, 0, 1);			
 */
-	mwindow->update_plugin_guis();
-	mwindow->show_plugin(popup->plugin);
+	if (popup->keyframe_plugin)
+	{
+		mwindow->update_plugin_guis();
+		mwindow->show_plugin(popup->keyframe_plugin);
+	} else
+	if (popup->keyframe_automation)
+	{
+		mwindow->cwindow->gui->lock_window();
+		int show_window = 1;
+		if (popup->keyframe_autos == (Autos *)popup->keyframe_automation->projector_autos ||
+		   popup->keyframe_autos == (Autos *)popup->keyframe_automation->pzoom_autos)
+		   
+		{
+			mwindow->cwindow->gui->set_operation(CWINDOW_PROJECTOR);	
+		} else
+		if (popup->keyframe_autos == (Autos *)popup->keyframe_automation->camera_autos ||
+		   popup->keyframe_autos == (Autos *)popup->keyframe_automation->czoom_autos)
+		   
+		{
+			mwindow->cwindow->gui->set_operation(CWINDOW_CAMERA);	
+		} else
+		if (popup->keyframe_autos == (Autos *)popup->keyframe_automation->mode_autos)
+		   
+		{
+			// no window to be shown, so do nothing
+			// IDEA: open the listbox of choices
+			show_window = 0;
+		} else
+		if (popup->keyframe_autos == (Autos *)popup->keyframe_automation->mask_autos)
+		   
+		{
+			mwindow->cwindow->gui->set_operation(CWINDOW_MASK);	
+		} else
+		if (popup->keyframe_autos == (Autos *)popup->keyframe_automation->pan_autos)
+		   
+		{
+			// no window to be shown, so do nothing
+			// IDEA: open the pan miniwindow
+			show_window = 0;
+		} else
+		if (popup->keyframe_autos == (Autos *)popup->keyframe_automation->fade_autos)
+		   
+		{
+			// no window to be shown, so do nothing
+			// IDEA: open window for fading
+			show_window = 0;
+		} else
+		if (popup->keyframe_autos == (Autos *)popup->keyframe_automation->mute_autos)
+		   
+		{
+			// no window to be shown, so do nothing
+			// IDEA: directly switch
+			show_window = 0;
+		} else;
+		
+
+// ensure bringing to front
+		if (show_window)
+		{
+			((CPanelToolWindow *)(mwindow->cwindow->gui->composite_panel->operation[CWINDOW_TOOL_WINDOW]))->set_shown(0);
+			((CPanelToolWindow *)(mwindow->cwindow->gui->composite_panel->operation[CWINDOW_TOOL_WINDOW]))->set_shown(1);
+		}
+		mwindow->cwindow->gui->unlock_window();
+
+
+	}
 	return 1;
 }
 

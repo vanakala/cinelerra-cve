@@ -242,6 +242,14 @@ int CPanelToolWindow::handle_event()
 	return 1;
 }
 
+int CPanelToolWindow::set_shown(int shown)
+{
+	set_value(shown);
+	mwindow->edl->session->tool_window = shown;
+	gui->subwindow->tool_panel->update_show_window();
+	return 1;
+}
+
 
 CPanelTitleSafe::CPanelTitleSafe(MWindow *mwindow, CPanel *gui, int x, int y)
  : BC_Toggle(x, 

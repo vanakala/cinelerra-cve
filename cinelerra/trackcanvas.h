@@ -146,21 +146,25 @@ public:
 		int cursor_y, 
 		int draw, 
 		int buttonpress,
-		int color);
+		int color,
+		Auto * &auto_instance);
+
 	int do_toggle_autos(Track *track, 
 		Autos *autos, 
 		int cursor_x, 
 		int cursor_y, 
 		int draw, 
 		int buttonpress,
-		int color);
+		int color,
+		Auto * &auto_instance);
 	int do_autos(Track *track, 
 		Autos *autos, 
 		int cursor_x, 
 		int cursor_y, 
 		int draw, 
 		int buttonpress,
-		BC_Pixmap *pixmap);
+		BC_Pixmap *pixmap,
+		Auto * &auto_instance);
 	int do_plugin_autos(Track *track,
 		int cursor_x, 
 		int cursor_y, 
