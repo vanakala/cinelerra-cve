@@ -1,8 +1,15 @@
 hvirtual (1:1.1.6-2) unstable; urgency=low
 
+  * applied patch to allow stroke color&width in titler
+  * applied patch to speedup overlaying and blending
+
+ -- Andraz Tori <andraz.tori1@guest.arnes.si>  Wed, 25 Jun 2003 18:00:01 +0200
+
+hvirtual (1:1.1.6-2) unstable; urgency=low
+
   * applied pal dv-out patch from andreaskielb@web.de
 
- -- Andraz Tori <andraz.tori1@guest.arnes.si>  Wed, 14 May 2003 07:58:01 +0200
+ -- Andraz Tori <andraz.tori1@guest.arnes.si>  Wed, 14 Jun 2003 07:58:01 +0200
 
 hvirtual (1:1.1.6-2) unstable; urgency=low
 
