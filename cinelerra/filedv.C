@@ -116,8 +116,11 @@ int FileDV::reset_parameters_derived()
 	output_size = ( encoder->isPAL ? DV1394_PAL_FRAME_SIZE : DV1394_NTSC_FRAME_SIZE);
 	delete[] output;
 	delete[] input;
-	output = new unsigned char[output_size];
-	input = new unsigned char[output_size];
+//libdv reads more than output_size, so we increase the buffer
+	output = new unsigned char[output_size + 8];
+	input = new unsigned char[output_size + 8];
+	memset(output, 0, output_size + 8);
+	memset(input, 0, output_size + 8);
 	audio_offset = 0;
 	video_offset = 0;
 }
@@ -481,15 +484,23 @@ int FileDV::read_samples(double *buffer, int64_t len)
 	int channel = file->current_channel;
 	int offset = samples_offset[channel];
 
+TRACE("FileDV::read_samples 10")
+
 	outbuf = (int16_t **) calloc(sizeof(int16_t *), asset->channels);
 	temp_buffer = (int16_t **) calloc(sizeof(int16_t *), asset->channels);
+
+TRACE("FileDV::read_samples 20")
+
 	for(i = 0; i < asset->channels; i++)
 	{
 // need a bit extra, since chances are len is not a multiple of the
 // samples per frame.
-		outbuf[i] = (int16_t *) calloc(sizeof(int16_t), len * 2);
+TRACE("FileDV::read_samples 30")
+		outbuf[i] = (int16_t *) calloc(sizeof(int16_t), len + 2 * DV_AUDIO_MAX_SAMPLES);
 		temp_buffer[i] = outbuf[i];
 	}
+
+TRACE("FileDV::read_samples 40")
 
 // set file position
 	audio_offset = lseek(fd, audio_offset, SEEK_SET);
@@ -497,27 +508,41 @@ int FileDV::read_samples(double *buffer, int64_t len)
 // get audio data and put it in buffer
 	for(i = 0; i < len + decoder->audio->samples_this_frame; i += decoder->audio->samples_this_frame)
 	{
+TRACE("FileDV::read_samples 50")
 		audio_offset += read(fd, input, output_size);
 		dv_decode_full_audio(decoder, input, temp_buffer);
 
+TRACE("FileDV::read_samples 60")
+
 		for(j = 0; j < asset->channels; j++)
 			temp_buffer[j] += decoder->audio->samples_this_frame;
+
 	}
+
+TRACE("FileDV::read_samples 70")
 
 	for(i = 0; i < len; i++)
 		buffer[i] = (double) outbuf[channel][i + offset] / 32767;
 
+TRACE("FileDV::read_samples 80")
+
 	samples_offset[channel] = (len + offset) % decoder->audio->samples_this_frame;
 
+TRACE("FileDV::read_samples 90")
 // we do this to keep everything in sync. When > 1 channel is being
 // played, our set_audio_position gets overriden every second time,
 // which is a Good Thing (tm) since it would otherwise be wrong.
 	set_audio_position(audio_position + len);
 
+TRACE("FileDV::read_samples 100")
+
 	free(temp_buffer);
+TRACE("FileDV::read_samples 105")
 	for(i = 0; i < asset->channels; i++)
 		free(outbuf[i]);
+TRACE("FileDV::read_samples 110")
 	free(outbuf);
+UNTRACE
 	return 0;
 }
 
