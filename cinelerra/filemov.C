@@ -448,11 +448,22 @@ int FileMOV::can_copy_from(Edit *edit, int64_t position)
 		return 1;
 	else
 	if((edit->asset->format == FILE_MOV || 
-		edit->asset->format == FILE_AVI)
-		&& 
-		(match4(edit->asset->vcodec, this->asset->vcodec)))
-		return 1;
+		edit->asset->format == FILE_AVI))
+	{
+		if (match4(edit->asset->vcodec, this->asset->vcodec))
+			return 1;
 
+		// there are combinations where the same codec has multiple fourcc codes
+		// check for DV...
+		int is_edit_dv = 0;
+		int is_this_dv = 0;
+		if (match4(edit->asset->vcodec, QUICKTIME_DV) || match4(edit->asset->vcodec, QUICKTIME_DVSD))
+			is_edit_dv = 1;
+		if (match4(this->asset->vcodec, QUICKTIME_DV) || match4(this->asset->vcodec, QUICKTIME_DVSD))
+			is_this_dv = 1;
+		if (is_this_dv && is_edit_dv)
+			return 1;
+	}
 	return 0;
 }
 
