@@ -29,7 +29,9 @@ register_images.h: $(libimagedata_a_SOURCES) Makefile.am
 	  echo "register_image(\"$$png.png\", _binary_$${png}_png_start, _binary_$${png}_png_end-_binary_$${png}_png_start);"; \
 	done) > $@ || { rm -f $@; exit 1; }
 
-BUILTSOURCES = register_images.h
+BUILT_SOURCES = register_images.h
+
+CLEANFILES = register_images.h
 
 EXTRA_DIST = \
 	about.png \
