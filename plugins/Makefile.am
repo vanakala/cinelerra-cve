@@ -72,6 +72,7 @@ SUBDIRS= \
 	rgb601 \
 	rotate \
 	scale \
+	shapewipe \
 	sharpen \
 	shiftinterlace \
 	slide \

@@ -357,7 +357,10 @@ AC_OUTPUT(Makefile cinelerra-cvs-current.spec po/Makefile.in \
 					plugins/polar/Makefile \
 					plugins/reframe/Makefile plugins/resample/Makefile plugins/reverb/Makefile \
 					plugins/reverseaudio/Makefile plugins/reversevideo/Makefile plugins/rgb601/Makefile \
-					plugins/rotate/Makefile plugins/scale/Makefile plugins/sharpen/Makefile \
+					plugins/rotate/Makefile \
+					plugins/scale/Makefile \
+					plugins/shapewipe/Makefile \
+					plugins/sharpen/Makefile \
 					plugins/shiftinterlace/Makefile plugins/slide/Makefile plugins/spectrogram/Makefile \
 					plugins/swapchannels/Makefile plugins/synthesizer/Makefile plugins/timeavg/Makefile \
 					plugins/timestretch/Makefile plugins/titler/Makefile plugins/translate/Makefile \
