@@ -30,7 +30,8 @@ FileDV::FileDV(Asset *asset, File *file)
 	audio_buffer = 0;
 	input = 0;
 	output = 0;
-	strcpy(asset->acodec, "Raw DV");
+	if(asset->format == FILE_UNKNOWN)
+		asset->format = FILE_DV;
 	asset->byte_order = 0;
 	reset_parameters();
 }
@@ -57,8 +58,8 @@ void FileDV::get_parameters(BC_WindowBase *parent_window,
 	int audio_options,
 	int video_options)
 {
-	strcpy(asset->acodec, DV_NAME);
-	strcpy(asset->vcodec, DV_NAME);
+	strcpy(asset->acodec, "dvc");
+	strcpy(asset->vcodec, "dvc");
 
 	if(audio_options)
 	{
@@ -121,7 +122,6 @@ int FileDV::reset_parameters_derived()
 	input = new unsigned char[output_size];
 	audio_offset = 0;
 	video_offset = 0;
-
 }
 
 int FileDV::open_file(int rd, int wr)
@@ -142,6 +142,30 @@ int FileDV::open_file(int rd, int wr)
 			perror(_("FileDV::open_file rd"));
 			return 1;
 		}
+		struct stat *info = (struct stat*) malloc(sizeof(struct stat));
+		fstat(fd, info);
+
+		read(fd, input, output_size);
+		// read first frame to get video and audio information
+		dv_parse_header(decoder, input);
+
+		asset->audio_data = 1;
+		asset->sample_rate = dv_get_frequency(decoder);
+		asset->channels = dv_get_num_channels(decoder);
+		asset->bits = decoder->audio->quantization;
+		asset->audio_length = info->st_size / output_size * dv_get_num_samples(decoder);
+
+		asset->video_data = 1;
+		asset->layers = 1;
+		asset->aspect_ratio = 1;
+		asset->width = 720;
+		asset->height = (dv_is_PAL(decoder) ? 576 : 480);
+		asset->video_length = info->st_size / output_size;
+
+		if(!asset->frame_rate)
+			asset->frame_rate = (dv_is_PAL(decoder) ? 25 : 29.97);
+
+		free(info);
 	}
 
 	return 0;
@@ -200,10 +224,11 @@ int FileDV::set_video_position(int64_t x)
 int FileDV::set_audio_position(int64_t x)
 {
 	if(fd < 0) return 1;
-printf("FileDV::set_audio_position: 1\n");
+
 	if(x >= 0 && x < asset->audio_length)
 	{
-		audio_offset = output_size * (int64_t) (x / asset->sample_rate);
+		audio_offset = output_size *
+			(int64_t) (x / (asset->sample_rate / asset->frame_rate));
 		return 0;
 	}
 	else
@@ -222,7 +247,6 @@ int FileDV::write_samples(double **buffer, int64_t len)
 	int i, j, k = 0;
 	unsigned char *temp_data = (unsigned char *) calloc(sizeof(unsigned char*), output_size);
 	int16_t *temp_buffers[asset->channels];
-
 
 TRACE("FileDV::write_samples 10")
 
@@ -402,7 +426,15 @@ int FileDV::write_frames(VFrame ***frames, int len)
 
 int FileDV::read_compressed_frame(VFrame *buffer)
 {
-	return 0;
+	int64_t result;
+	if(fd < 0) return 0;
+
+	lseek(fd, video_offset, SEEK_SET);
+	video_offset += read(fd, buffer->get_data(), output_size);
+
+	buffer->set_compressed_size(result);
+	result = !result;
+	return result;
 }
 
 int FileDV::write_compressed_frame(VFrame *buffer)
@@ -431,7 +463,83 @@ int FileDV::read_samples(double *buffer, int64_t len)
 
 int FileDV::read_frame(VFrame *frame)
 {
-	return 1;
+	if(fd < 0) return 1;
+	int i, result = 0;
+	int pitches[3] = {720 * 2, 0, 0};
+
+TRACE("FileDV::read_frame 1")
+
+	unsigned char *data = frame->get_data();
+	unsigned char **row_pointers = frame->get_rows();
+
+	unsigned char *temp_data = (unsigned char *) malloc(asset->height * asset->width * 2);
+	unsigned char **temp_pointers = (unsigned char **)malloc(sizeof(unsigned char *) * asset->height);
+
+TRACE("FileDV::read_frame 10")
+
+	for(i = 0; i < asset->height; i++)
+		temp_pointers[i] = temp_data + asset->width * 2 * i;
+
+
+// Seek to video position
+	video_offset = lseek(fd, video_offset, SEEK_SET);
+	video_offset += read(fd, input, output_size);
+	
+
+TRACE("FileDV::read_frame 20")
+	switch(frame->get_color_model())
+	{
+		case BC_COMPRESSED:
+TRACE("FileDV::read_frame 30")
+			frame->allocate_compressed_data(output_size);
+			frame->set_compressed_size(output_size);
+			data = input;
+			break;
+		case BC_RGB888:
+TRACE("FileDV::read_frame 40")
+			pitches[0] = 720 * 3;
+			dv_decode_full_frame(decoder, input, e_dv_color_rgb,
+				row_pointers, pitches);
+			break;
+		case BC_YUV422:
+TRACE("FileDV::read_frame 50")
+			dv_decode_full_frame(decoder, input, e_dv_color_yuv,
+				row_pointers, pitches);
+			break;
+		default:
+TRACE("FileDV::read_frame 60")
+			dv_decode_full_frame(decoder, input, e_dv_color_yuv,
+				temp_pointers, pitches);
+TRACE("FileDV::read_frame 70")
+			cmodel_transfer(row_pointers,
+				temp_pointers,
+				row_pointers[0],
+				row_pointers[1],
+				row_pointers[2],
+				temp_pointers[0],
+				temp_pointers[1],
+				temp_pointers[2],
+				0,
+				0,
+				asset->width,
+				asset->height,
+				0,
+				0,
+				asset->width,
+				asset->height,
+				BC_YUV422,
+				frame->get_color_model(),
+				0,
+				asset->width,
+				asset->width);
+			break;
+	}
+TRACE("FileDV::read_frame 80")
+//printf("FileDV::read_frame: color model %i\n", frame->get_color_model());
+	free(temp_pointers);
+	free(temp_data);
+UNTRACE
+	return 0;	
 }
 
 int FileDV::colormodel_supported(int colormodel)
