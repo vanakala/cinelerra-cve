@@ -9,7 +9,6 @@ export DH_COMPAT=4
 CFLAGS=-ffast-math -g -mmmx -march=pentium-mmx
 CXXFLAGS=$(CFLAGS) -fno-check-new
 
-MAKEFLAGS= -j2
 ifneq (, $(findstring smp2,$(DEB_BUILD_OPTIONS)))
 	MAKEFLAGS=-j2
 endif
