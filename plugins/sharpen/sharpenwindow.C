@@ -1,6 +1,11 @@
 #include "bcdisplayinfo.h"
 #include "sharpenwindow.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 PLUGIN_THREAD_OBJECT(SharpenMain, SharpenThread, SharpenWindow)
 
@@ -32,7 +37,7 @@ SharpenWindow::~SharpenWindow()
 int SharpenWindow::create_objects()
 {
 	int x = 10, y = 10;
-	add_tool(new BC_Title(x, y, "Sharpness"));
+	add_tool(new BC_Title(x, y, _("Sharpness")));
 	y += 20;
 	add_tool(sharpen_slider = new SharpenSlider(client, &(client->config.sharpness), x, y));
 	y += 30;
@@ -83,7 +88,7 @@ int SharpenSlider::handle_event()
 
 
 SharpenInterlace::SharpenInterlace(SharpenMain *client, int x, int y)
- : BC_CheckBox(x, y, client->config.interlace, "Interlace")
+ : BC_CheckBox(x, y, client->config.interlace, _("Interlace"))
 {
 	this->client = client;
 }
@@ -101,7 +106,7 @@ int SharpenInterlace::handle_event()
 
 
 SharpenHorizontal::SharpenHorizontal(SharpenMain *client, int x, int y)
- : BC_CheckBox(x, y, client->config.horizontal, "Horizontal only")
+ : BC_CheckBox(x, y, client->config.horizontal, _("Horizontal only"))
 {
 	this->client = client;
 }
@@ -118,7 +123,7 @@ int SharpenHorizontal::handle_event()
 
 
 SharpenLuminance::SharpenLuminance(SharpenMain *client, int x, int y)
- : BC_CheckBox(x, y, client->config.luminance, "Luminance only")
+ : BC_CheckBox(x, y, client->config.luminance, _("Luminance only"))
 {
 	this->client = client;
 }

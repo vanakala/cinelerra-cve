@@ -10,6 +10,11 @@
 
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 #define TOP_FIELD_FIRST 0
 #define BOTTOM_FIELD_FIRST 1
 
@@ -170,7 +175,7 @@ FieldFrameTop::FieldFrameTop(FieldFrame *plugin,
  : BC_Radial(x, 
 	y, 
 	plugin->config.field_dominance == TOP_FIELD_FIRST,
-	"Top field first")
+	_("Top field first"))
 {
 	this->plugin = plugin;
 	this->gui = gui;
@@ -194,7 +199,7 @@ FieldFrameBottom::FieldFrameBottom(FieldFrame *plugin,
  : BC_Radial(x, 
 	y, 
 	plugin->config.field_dominance == BOTTOM_FIELD_FIRST,
-	"Bottom field first")
+	_("Bottom field first"))
 {
 	this->plugin = plugin;
 	this->gui = gui;
@@ -250,7 +255,7 @@ FieldFrame::~FieldFrame()
 
 char* FieldFrame::plugin_title()
 {
-	return "Fields to frames";
+	return _("Fields to frames");
 }
 
 NEW_PICON_MACRO(FieldFrame)

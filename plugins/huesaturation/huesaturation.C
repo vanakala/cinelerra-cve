@@ -12,6 +12,11 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 class HueEffect;
 
 #define MINHUE -180
@@ -282,13 +287,13 @@ HueWindow::HueWindow(HueEffect *plugin, int x, int y)
 void HueWindow::create_objects()
 {
 	int x = 10, y = 10, x1 = 100;
-	add_subwindow(new BC_Title(x, y, "Hue:"));
+	add_subwindow(new BC_Title(x, y, _("Hue:")));
 	add_subwindow(hue = new HueSlider(plugin, x1, y, 200));
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Saturation:"));
+	add_subwindow(new BC_Title(x, y, _("Saturation:")));
 	add_subwindow(saturation = new SaturationSlider(plugin, x1, y, 200));
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Value:"));
+	add_subwindow(new BC_Title(x, y, _("Value:")));
 	add_subwindow(value = new ValueSlider(plugin, x1, y, 200));
 	show_window();
 	flush();
@@ -525,7 +530,7 @@ int HueEffect::is_realtime()
 }
 char* HueEffect::plugin_title()
 {
-	return "Hue saturation";
+	return _("Hue saturation");
 }
 
 NEW_PICON_MACRO(HueEffect)

@@ -8,6 +8,11 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 #define SQR(a) ((a) * (a))
 
 REGISTER_PLUGIN(BrightnessMain)
@@ -73,7 +78,7 @@ BrightnessMain::~BrightnessMain()
 	if(engine) delete engine;
 }
 
-char* BrightnessMain::plugin_title() { return "Brightness/Contrast"; }
+char* BrightnessMain::plugin_title() { return _("Brightness/Contrast"); }
 int BrightnessMain::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(BrightnessMain)	

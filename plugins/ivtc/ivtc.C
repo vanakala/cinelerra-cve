@@ -6,6 +6,11 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 REGISTER_PLUGIN(IVTCMain)
 
@@ -41,7 +46,7 @@ IVTCMain::~IVTCMain()
 	}
 }
 
-char* IVTCMain::plugin_title() { return "Inverse Telecine"; }
+char* IVTCMain::plugin_title() { return _("Inverse Telecine"); }
 
 int IVTCMain::is_realtime() { return 1; }
 

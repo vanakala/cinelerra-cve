@@ -1,6 +1,13 @@
 #include "bcdisplayinfo.h"
 #include "brightnesswindow.h"
 
+
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
 PLUGIN_THREAD_OBJECT(BrightnessMain, BrightnessThread, BrightnessWindow)
 
 
@@ -27,15 +34,15 @@ BrightnessWindow::~BrightnessWindow()
 int BrightnessWindow::create_objects()
 {
 	int x = 10, y = 10;
-	add_tool(new BC_Title(x, y, "Brightness/Contrast"));
+	add_tool(new BC_Title(x, y, _("Brightness/Contrast")));
 	y += 25;
-	add_tool(new BC_Title(x, y, "Brightness:"));
+	add_tool(new BC_Title(x, y,_("Brightness:")));
 	add_tool(brightness = new BrightnessSlider(client, 
 		&(client->config.brightness), 
 		x + 80, 
 		y));
 	y += 25;
-	add_tool(new BC_Title(x, y, "Contrast:"));
+	add_tool(new BC_Title(x, y, _("Contrast:")));
 	add_tool(contrast = new BrightnessSlider(client, 
 		&(client->config.contrast), 
 		x + 80, 
@@ -88,7 +95,7 @@ BrightnessLuma::BrightnessLuma(BrightnessMain *client,
  : BC_CheckBox(x, 
  	y, 
 	client->config.luma,
-	"Boost luminance only")
+	_("Boost luminance only"))
 {
 	this->client = client;
 }

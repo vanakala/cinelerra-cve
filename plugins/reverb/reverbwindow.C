@@ -8,6 +8,11 @@
 
 PLUGIN_THREAD_OBJECT(Reverb, ReverbThread, ReverbWindow)
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 
 ReverbWindow::ReverbWindow(Reverb *reverb, int x, int y)
@@ -32,21 +37,21 @@ ReverbWindow::~ReverbWindow()
 int ReverbWindow::create_objects()
 {
 	int x = 170, y = 10;
-	add_tool(new BC_Title(5, y + 10, "Initial signal level:"));
+	add_tool(new BC_Title(5, y + 10, _("Initial signal level:")));
 	add_tool(level_init = new ReverbLevelInit(reverb, x, y)); y += 25;
-	add_tool(new BC_Title(5, y + 10, "ms before reflections:"));
+	add_tool(new BC_Title(5, y + 10, _("ms before reflections:")));
 	add_tool(delay_init = new ReverbDelayInit(reverb, x + 35, y)); y += 25;
-	add_tool(new BC_Title(5, y + 10, "First reflection level:"));
+	add_tool(new BC_Title(5, y + 10, _("First reflection level:")));
 	add_tool(ref_level1 = new ReverbRefLevel1(reverb, x, y)); y += 25;
-	add_tool(new BC_Title(5, y + 10, "Last reflection level:"));
+	add_tool(new BC_Title(5, y + 10, _("Last reflection level:")));
 	add_tool(ref_level2 = new ReverbRefLevel2(reverb, x + 35, y)); y += 25;
-	add_tool(new BC_Title(5, y + 10, "Number of reflections:"));
+	add_tool(new BC_Title(5, y + 10, _("Number of reflections:")));
 	add_tool(ref_total = new ReverbRefTotal(reverb, x, y)); y += 25;
-	add_tool(new BC_Title(5, y + 10, "ms of reflections:"));
+	add_tool(new BC_Title(5, y + 10, _("ms of reflections:")));
 	add_tool(ref_length = new ReverbRefLength(reverb, x + 35, y)); y += 25;
-	add_tool(new BC_Title(5, y + 10, "Start band for lowpass:"));
+	add_tool(new BC_Title(5, y + 10, _("Start band for lowpass:")));
 	add_tool(lowpass1 = new ReverbLowPass1(reverb, x, y)); y += 25;
-	add_tool(new BC_Title(5, y + 10, "End band for lowpass:"));
+	add_tool(new BC_Title(5, y + 10, _("End band for lowpass:")));
 	add_tool(lowpass2 = new ReverbLowPass2(reverb, x + 35, y)); y += 40;
 	show_window();
 	flush();
@@ -226,7 +231,7 @@ ReverbMenu::~ReverbMenu()
 
 int ReverbMenu::create_objects(Defaults *defaults)
 {
-	add_menu(filemenu = new BC_Menu("File"));
+	add_menu(filemenu = new BC_Menu(_("File")));
 	filemenu->add_item(load = new ReverbLoad(reverb, this));
 	filemenu->add_item(save = new ReverbSave(reverb, this));
 	//filemenu->add_item(set_default = new ReverbSetDefault);
@@ -323,7 +328,7 @@ int ReverbMenu::add_load(char *path)
 }
 
 ReverbLoad::ReverbLoad(Reverb *reverb, ReverbMenu *menu)
- : BC_MenuItem("Load...")
+ : BC_MenuItem(_("Load..."))
 {
 	this->reverb = reverb;
 	this->menu = menu;
@@ -340,7 +345,7 @@ int ReverbLoad::handle_event()
 }
 
 ReverbSave::ReverbSave(Reverb *reverb, ReverbMenu *menu)
- : BC_MenuItem("Save...")
+ : BC_MenuItem(_("Save..."))
 {
 	this->reverb = reverb;
 	this->menu = menu;
@@ -357,7 +362,7 @@ int ReverbSave::handle_event()
 }
 
 ReverbSetDefault::ReverbSetDefault()
- : BC_MenuItem("Set default")
+ : BC_MenuItem(_("Set default"))
 {
 }
 int ReverbSetDefault::handle_event()
@@ -418,8 +423,8 @@ ReverbSaveDialog::ReverbSaveDialog(Reverb *reverb)
  : BC_FileBox(0,
  			0, 
  			reverb->config_directory, 
- 			"Save reverb", 
- 			"Select the reverb file to save as", 0, 0)
+ 			_("Save reverb"), 
+ 			_("Select the reverb file to save as"), 0, 0)
 {
 	this->reverb = reverb;
 }
@@ -501,8 +506,8 @@ ReverbLoadDialog::ReverbLoadDialog(Reverb *reverb)
  : BC_FileBox(0,
  			0, 
  			reverb->config_directory, 
- 			"Load reverb", 
- 			"Select the reverb file to load from", 0, 0)
+ 			_("Load reverb"), 
+ 			_("Select the reverb file to load from"), 0, 0)
 {
 	this->reverb = reverb;
 }

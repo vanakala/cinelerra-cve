@@ -7,6 +7,10 @@
 #include "mainprogress.h"
 #include "vframe.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
 
 
 #include <stdint.h>
@@ -53,14 +57,14 @@ int _720to480Window::create_objects()
 {
 	int x = 10, y = 10;
 
-	add_tool(odd_first = new _720to480Order(client, this, 1, x, y, "Odd field first"));
+	add_tool(odd_first = new _720to480Order(client, this, 1, x, y, _("Odd field first")));
 	y += 25;
-	add_tool(even_first = new _720to480Order(client, this, 0, x, y, "Even field first"));
+	add_tool(even_first = new _720to480Order(client, this, 0, x, y, _("Even field first")));
 
 // 	y += 25;
-// 	add_tool(forward = new _720to480Direction(client, this, FORWARD, x, y, "Downsample"));
+// 	add_tool(forward = new _720to480Direction(client, this, FORWARD, x, y, _("Downsample")));
 // 	y += 25;
-// 	add_tool(reverse = new _720to480Direction(client, this, REVERSE, x, y, "Upsample"));
+// 	add_tool(reverse = new _720to480Direction(client, this, REVERSE, x, y, _("Upsample")));
 // 
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
@@ -171,7 +175,7 @@ _720to480Main::~_720to480Main()
 	if(temp) delete temp;
 }
 
-char* _720to480Main::plugin_title() { return "720 to 480"; }
+char* _720to480Main::plugin_title() { return _("720 to 480"); }
 int _720to480Main::is_realtime() { return 0; }
 
 double _720to480Main::get_framerate()

@@ -1,6 +1,11 @@
 #include "bcdisplayinfo.h"
 #include "holowindow.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 HoloThread::HoloThread(HoloMain *client)
  : Thread()
@@ -59,8 +64,8 @@ int HoloWindow::create_objects()
 {
 	int x = 10, y = 10;
 	add_subwindow(new BC_Title(x, y, 
-		"HolographicTV from EffectTV\n"
-		"Copyright (C) 2001 FUKUCHI Kentarou"
+		_("HolographicTV from EffectTV\n"
+		"Copyright (C) 2001 FUKUCHI Kentarou")
 	));
 
 	show_window();

@@ -10,6 +10,11 @@
 #include <string.h>
 #include <stdint.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 #define TOP_FIELD_FIRST 0
 #define BOTTOM_FIELD_FIRST 1
 
@@ -198,7 +203,7 @@ FrameFieldTop::FrameFieldTop(FrameField *plugin,
  : BC_Radial(x, 
 	y, 
 	plugin->config.field_dominance == TOP_FIELD_FIRST,
-	"Top field first")
+	_("Top field first"))
 {
 	this->plugin = plugin;
 	this->gui = gui;
@@ -223,7 +228,7 @@ FrameFieldBottom::FrameFieldBottom(FrameField *plugin,
  : BC_Radial(x, 
 	y, 
 	plugin->config.field_dominance == BOTTOM_FIELD_FIRST,
-	"Bottom field first")
+	_("Bottom field first"))
 {
 	this->plugin = plugin;
 	this->gui = gui;
@@ -248,7 +253,7 @@ FrameFieldAvg::FrameFieldAvg(FrameField *plugin,
  : BC_CheckBox(x, 
 	y, 
 	plugin->config.avg,
-	"Average empty rows")
+	_("Average empty rows"))
 {
 	this->plugin = plugin;
 	this->gui = gui;
@@ -469,7 +474,7 @@ int FrameField::is_realtime()
 
 char* FrameField::plugin_title()
 {
-	return "Frames to fields";
+	return _("Frames to fields");
 }
 
 NEW_PICON_MACRO(FrameField) 

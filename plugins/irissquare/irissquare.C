@@ -11,6 +11,12 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
 REGISTER_PLUGIN(IrisSquareMain)
 
 
@@ -24,7 +30,7 @@ IrisSquareIn::IrisSquareIn(IrisSquareMain *plugin,
  : BC_Radial(x, 
 		y, 
 		plugin->direction == 0, 
-		"In")
+		_("In"))
 {
 	this->plugin = plugin;
 	this->window = window;
@@ -46,7 +52,7 @@ IrisSquareOut::IrisSquareOut(IrisSquareMain *plugin,
  : BC_Radial(x, 
 		y, 
 		plugin->direction == 1, 
-		"Out")
+		_("Out"))
 {
 	this->plugin = plugin;
 	this->window = window;
@@ -93,7 +99,7 @@ int IrisSquareWindow::close_event()
 void IrisSquareWindow::create_objects()
 {
 	int x = 10, y = 10;
-	add_subwindow(new BC_Title(x, y, "Direction:"));
+	add_subwindow(new BC_Title(x, y, _("Direction:")));
 	x += 100;
 	add_subwindow(in = new IrisSquareIn(plugin, 
 		this,
@@ -130,7 +136,7 @@ IrisSquareMain::~IrisSquareMain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-char* IrisSquareMain::plugin_title() { return "IrisSquare"; }
+char* IrisSquareMain::plugin_title() { return _("IrisSquare"); }
 int IrisSquareMain::is_video() { return 1; }
 int IrisSquareMain::is_transition() { return 1; }
 int IrisSquareMain::uses_gui() { return 1; }

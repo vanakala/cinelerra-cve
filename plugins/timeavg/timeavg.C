@@ -7,6 +7,11 @@
 #include "timeavgwindow.h"
 #include "vframe.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 
 
@@ -52,7 +57,7 @@ TimeAvgMain::~TimeAvgMain()
 	}
 }
 
-char* TimeAvgMain::plugin_title() { return "Time Average"; }
+char* TimeAvgMain::plugin_title() { return _("Time Average"); }
 int TimeAvgMain::is_realtime() { return 1; }
 
 

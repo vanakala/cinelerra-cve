@@ -2,6 +2,11 @@
 #include "timeavgwindow.h"
 
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 PLUGIN_THREAD_OBJECT(TimeAvgMain, TimeAvgThread, TimeAvgWindow)
 
 
@@ -30,7 +35,7 @@ TimeAvgWindow::~TimeAvgWindow()
 int TimeAvgWindow::create_objects()
 {
 	int x = 10, y = 10;
-	add_tool(new BC_Title(x, y, "Frames to average"));
+	add_tool(new BC_Title(x, y, _("Frames to average")));
 	y += 20;
 	add_tool(total_frames = new TimeAvgSlider(client, x, y));
 	show_window();

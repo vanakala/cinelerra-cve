@@ -9,6 +9,11 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 PluginClient* new_plugin(PluginServer *server)
 {
 	return new BlurZoomMain(server);
@@ -51,7 +56,7 @@ BlurZoomMain::~BlurZoomMain()
 	if(defaults) delete defaults;
 }
 
-char* BlurZoomMain::plugin_title() { return "RadioacTV"; }
+char* BlurZoomMain::plugin_title() { return _("RadioacTV"); }
 int BlurZoomMain::is_realtime() { return 1; }
 
 VFrame* BlurZoomMain::new_picon()

@@ -8,6 +8,11 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 REGISTER_PLUGIN(RGB601Main)
 
 
@@ -29,7 +34,7 @@ RGB601Main::~RGB601Main()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-char* RGB601Main::plugin_title() { return "RGB - 601"; }
+char* RGB601Main::plugin_title() { return _("RGB - 601"); }
 int RGB601Main::is_realtime() { return 1; }
 
 

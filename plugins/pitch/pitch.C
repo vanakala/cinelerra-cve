@@ -11,6 +11,11 @@
 #include <string.h>
 
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 
 
@@ -55,7 +60,7 @@ VFrame* PitchEffect::new_picon()
 
 char* PitchEffect::plugin_title()
 {
-	return "Pitch shift";
+	return _("Pitch shift");
 }
 
 
@@ -338,7 +343,7 @@ void PitchWindow::create_objects()
 {
 	int x = 10, y = 10;
 	
-	add_subwindow(new BC_Title(x, y, "Scale:"));
+	add_subwindow(new BC_Title(x, y, _("Scale:")));
 	x += 70;
 	add_subwindow(scale = new PitchScale(plugin, x, y));
 	show_window();

@@ -5,6 +5,11 @@
 #include "reframe.h"
 
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 
 
@@ -32,7 +37,7 @@ ReFrame::~ReFrame()
 	delete defaults;
 }
 
-char* ReFrame::plugin_title() { return "Reframe"; }
+char* ReFrame::plugin_title() { return _("Reframe"); }
 
 NEW_PICON_MACRO(ReFrame) 
 
@@ -168,7 +173,7 @@ ReFrameWindow::~ReFrameWindow()
 void ReFrameWindow::create_objects()
 {
 	int x = 10, y = 10;
-	add_subwindow(new BC_Title(x, y, "Scale factor:"));
+	add_subwindow(new BC_Title(x, y, _("Scale factor:")));
 	y += 20;
 	add_subwindow(new ReFrameOutput(plugin, x, y));
 	add_subwindow(new BC_OKButton(this));

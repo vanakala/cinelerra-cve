@@ -10,6 +10,11 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 PluginClient* new_plugin(PluginServer *server)
 {
 	return new DotMain(server);
@@ -70,7 +75,7 @@ DotMain::~DotMain()
 	if(defaults) delete defaults;
 }
 
-char* DotMain::plugin_title() { return "DotTV"; }
+char* DotMain::plugin_title() { return _("DotTV"); }
 int DotMain::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(DotMain)

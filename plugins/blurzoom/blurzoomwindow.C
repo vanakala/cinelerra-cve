@@ -1,6 +1,11 @@
 #include "bcdisplayinfo.h"
 #include "blurzoomwindow.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 BlurZoomThread::BlurZoomThread(BlurZoomMain *client)
  : Thread()
@@ -59,8 +64,8 @@ int BlurZoomWindow::create_objects()
 {
 	int x = 10, y = 10;
 	add_subwindow(new BC_Title(x, y, 
-		"RadioacTV from EffectTV\n"
-		"Copyright (C) 2001 FUKUCHI Kentarou"
+		_("RadioacTV from EffectTV\n"
+		"Copyright (C) 2001 FUKUCHI Kentarou")
 	));
 
 	show_window();

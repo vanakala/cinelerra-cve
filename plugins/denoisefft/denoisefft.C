@@ -15,6 +15,11 @@
 #include <math.h>
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 
 
@@ -225,7 +230,7 @@ int DenoiseFFTLevel::handle_event()
 }
 
 DenoiseFFTCollecting::DenoiseFFTCollecting(DenoiseFFTEffect *plugin, int x, int y)
- : BC_CheckBox(x, y, plugin->config.collecting, "Collect noise")
+ : BC_CheckBox(x, y, plugin->config.collecting, _("Collect noise"))
 {
 	this->plugin = plugin;
 }
@@ -270,12 +275,12 @@ void DenoiseFFTWindow::create_objects()
 {
 	int x = 10, y = 10;
 
-	add_subwindow(new BC_Title(x, y, "Denoise power:"));
+	add_subwindow(new BC_Title(x, y, _("Denoise power:")));
 	add_subwindow(level = new DenoiseFFTLevel(plugin, x + 130, y));
 	y += 35;
 	add_subwindow(collect = new DenoiseFFTCollecting(plugin, x, y));
 // 	y += 35;
-// 	add_subwindow(new BC_Title(x, y, "Window size:"));
+// 	add_subwindow(new BC_Title(x, y, _("Window size:")));
 // 	add_subwindow(size = new DenoiseFFTSize(plugin, x + 100, y));
 	show_window();
 	flush();
@@ -351,7 +356,7 @@ void DenoiseFFTEffect::reset()
 
 char* DenoiseFFTEffect::plugin_title()
 {
-	return "DenoiseFFT";
+	return _("DenoiseFFT");
 }
 
 

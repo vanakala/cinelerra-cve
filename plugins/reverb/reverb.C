@@ -14,6 +14,11 @@
 #include <time.h>
 #include <unistd.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 
 PluginClient* new_plugin(PluginServer *server)
@@ -74,7 +79,7 @@ Reverb::~Reverb()
 	}
 }
 
-char* Reverb::plugin_title() { return "Heroine College Concert Hall"; }
+char* Reverb::plugin_title() { return _("Heroine College Concert Hall"); }
 int Reverb::is_realtime() { return 1; }
 int Reverb::is_multichannel() { return 1; }
 
@@ -389,7 +394,7 @@ int Reverb::load_from_file(char *path)
 // failed
 		ErrorBox errorbox("");
 		char string[1024];
-		sprintf(string, "Couldn't open %s.", path);
+		sprintf(string, _("Couldn't open %s."), path);
 		errorbox.create_objects(string);
 		errorbox.run_window();
 		result = 1;
@@ -423,7 +428,7 @@ int Reverb::save_to_file(char *path)
 // failed
 			ErrorBox errorbox("");
 			char string[1024];
-			sprintf(string, "Couldn't save %s.", path);
+			sprintf(string, _("Couldn't save %s."), path);
 			errorbox.create_objects(string);
 			errorbox.run_window();
 			result = 1;

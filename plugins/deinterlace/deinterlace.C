@@ -8,6 +8,11 @@
 #include "vframe.h"
 
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 
 
@@ -69,7 +74,7 @@ DeInterlaceMain::~DeInterlaceMain()
 	if(temp) delete temp;
 }
 
-char* DeInterlaceMain::plugin_title() { return "Deinterlace"; }
+char* DeInterlaceMain::plugin_title() { return _("Deinterlace"); }
 int DeInterlaceMain::is_realtime() { return 1; }
 
 

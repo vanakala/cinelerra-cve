@@ -1,5 +1,10 @@
 #include "oilwindow.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 OilThread::OilThread(OilMain *client)
  : Thread()
@@ -39,11 +44,11 @@ OilWindow::~OilWindow()
 int OilWindow::create_objects()
 {
 	int x = 10, y = 10;
-	add_tool(new BC_Title(x, y, "Oil Painting"));
+	add_tool(new BC_Title(x, y, _("Oil Painting")));
 	y += 20;
 	add_tool(radius = new OilRadius(client, x, y));
 	x += 50;
-	add_tool(new BC_Title(x, y, "Radius"));
+	add_tool(new BC_Title(x, y, _("Radius")));
 	y += 50;
 	x = 10;
 	add_tool(use_intensity = new OilIntensity(client, x, y));
@@ -71,7 +76,7 @@ int OilRadius::handle_event()
 
 
 OilIntensity::OilIntensity(OilMain *client, int x, int y)
- : BC_CheckBox(x, y, 16, 16, client->use_intensity, "Use Intensity")
+ : BC_CheckBox(x, y, 16, 16, client->use_intensity, _("Use Intensity"))
 {
 	this->client = client;
 }

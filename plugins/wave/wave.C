@@ -13,6 +13,11 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 
 #define SMEAR 0
@@ -250,7 +255,7 @@ void WaveConfig::interpolate(WaveConfig &prev,
 
 
 WaveSmear::WaveSmear(WaveEffect *plugin, WaveWindow *window, int x, int y)
- : BC_Radial(x, y, plugin->config.mode == SMEAR, "Smear")
+ : BC_Radial(x, y, plugin->config.mode == SMEAR, _("Smear"))
 {
 	this->plugin = plugin;
 	this->window = window;
@@ -267,7 +272,7 @@ int WaveSmear::handle_event()
 
 
 WaveBlacken::WaveBlacken(WaveEffect *plugin, WaveWindow *window, int x, int y)
- : BC_Radial(x, y, plugin->config.mode == BLACKEN, "Blacken")
+ : BC_Radial(x, y, plugin->config.mode == BLACKEN, _("Blacken"))
 {
 	this->plugin = plugin;
 	this->window = window;
@@ -286,7 +291,7 @@ int WaveBlacken::handle_event()
 
 
 WaveReflective::WaveReflective(WaveEffect *plugin, int x, int y)
- : BC_CheckBox(x, y, plugin->config.reflective, "Reflective")
+ : BC_CheckBox(x, y, plugin->config.reflective, _("Reflective"))
 {
 	this->plugin = plugin;
 }
@@ -388,20 +393,20 @@ void WaveWindow::create_objects()
 {
 	int x = 10, y = 10, x1 = 100;
 
-//	add_subwindow(new BC_Title(x, y, "Mode:"));
+//	add_subwindow(new BC_Title(x, y, _("Mode:")));
 //	add_subwindow(smear = new WaveSmear(plugin, this, x1, y));
 //	y += 20;
 //	add_subwindow(blacken = new WaveBlacken(plugin, this, x1, y));
 //	y += 30;
 //	add_subwindow(reflective = new WaveReflective(plugin, x1, y));
 //	y += 30;
-	add_subwindow(new BC_Title(x, y, "Amplitude:"));
+	add_subwindow(new BC_Title(x, y, _("Amplitude:")));
 	add_subwindow(amplitude = new WaveAmplitude(plugin, x1, y));
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Phase:"));
+	add_subwindow(new BC_Title(x, y, _("Phase:")));
 	add_subwindow(phase = new WavePhase(plugin, x1, y));
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Wavelength:"));
+	add_subwindow(new BC_Title(x, y, _("Wavelength:")));
 	add_subwindow(wavelength = new WaveLength(plugin, x1, y));
 
 	show_window();
@@ -455,7 +460,7 @@ int WaveEffect::is_realtime()
 
 char* WaveEffect::plugin_title()
 {
-	return "Wave";
+	return _("Wave");
 }
 
 NEW_PICON_MACRO(WaveEffect)

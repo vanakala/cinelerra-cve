@@ -12,7 +12,10 @@
 #include "picon_png.h"
 #include "vframe.h"
 
-
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
 
 
 
@@ -141,13 +144,13 @@ int GradientWindow::create_objects()
 {
 	int x = 10, y = 10, x2 = 130;
 
-	add_subwindow(new BC_Title(x, y, "Angle:"));
+	add_subwindow(new BC_Title(x, y, _("Angle:")));
 	add_subwindow(angle = new GradientAngle(plugin, x2, y));
 	y += 40;
-	add_subwindow(new BC_Title(x, y, "Inner radius:"));
+	add_subwindow(new BC_Title(x, y, _("Inner radius:")));
 	add_subwindow(in_radius = new GradientInRadius(plugin, x2, y));
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Outer radius:"));
+	add_subwindow(new BC_Title(x, y, _("Outer radius:")));
 	add_subwindow(out_radius = new GradientOutRadius(plugin, x2, y));
 	y += 35;
 	add_subwindow(in_color = new GradientInColorButton(plugin, this, x, y));
@@ -258,7 +261,7 @@ int GradientOutRadius::handle_event()
 }
 
 GradientInColorButton::GradientInColorButton(GradientMain *plugin, GradientWindow *window, int x, int y)
- : BC_GenericButton(x, y, "Inner color:")
+ : BC_GenericButton(x, y, _("Inner color:"))
 {
 	this->plugin = plugin;
 	this->window = window;
@@ -274,7 +277,7 @@ int GradientInColorButton::handle_event()
 
 
 GradientOutColorButton::GradientOutColorButton(GradientMain *plugin, GradientWindow *window, int x, int y)
- : BC_GenericButton(x, y, "Outer color:")
+ : BC_GenericButton(x, y, _("Outer color:"))
 {
 	this->plugin = plugin;
 	this->window = window;
@@ -292,7 +295,7 @@ int GradientOutColorButton::handle_event()
 
 GradientInColorThread::GradientInColorThread(GradientMain *plugin, 
 	GradientWindow *window)
- : ColorThread(1, "Inner color")
+ : ColorThread(1, _("Inner color"))
 {
 	this->plugin = plugin;
 	this->window = window;
@@ -324,7 +327,7 @@ int GradientInColorThread::handle_event(int output)
 
 GradientOutColorThread::GradientOutColorThread(GradientMain *plugin, 
 	GradientWindow *window)
- : ColorThread(1, "Outer color")
+ : ColorThread(1, _("Outer color"))
 {
 	this->plugin = plugin;
 	this->window = window;
@@ -381,7 +384,7 @@ GradientMain::~GradientMain()
 	if(overlayer) delete overlayer;
 }
 
-char* GradientMain::plugin_title() { return "Gradient"; }
+char* GradientMain::plugin_title() { return _("Gradient"); }
 int GradientMain::is_realtime() { return 1; }
 
 

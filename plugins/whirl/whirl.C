@@ -9,6 +9,11 @@
 #include "pluginvclient.h"
 #include "vframe.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 
 #include <stdint.h>
@@ -235,15 +240,15 @@ WhirlWindow::WhirlWindow(WhirlEffect *plugin, int x, int y)
 void WhirlWindow::create_objects()
 {
 	int x = 10, y = 10;
-	add_subwindow(new BC_Title(x, y, "Radius"));
+	add_subwindow(new BC_Title(x, y, _("Radius")));
 	y += 20;
 	add_subwindow(radius = new WhirlRadius(plugin, x, y));
 	y += 40;
-	add_subwindow(new BC_Title(x, y, "Pinch"));
+	add_subwindow(new BC_Title(x, y, _("Pinch")));
 	y += 20;
 	add_subwindow(pinch = new WhirlPinch(plugin, x, y));
 	y += 40;
-	add_subwindow(new BC_Title(x, y, "Angle"));
+	add_subwindow(new BC_Title(x, y, _("Angle")));
 	y += 20;
 	add_subwindow(angle = new WhirlAngle(plugin, x, y));
 
@@ -369,7 +374,7 @@ int WhirlEffect::is_realtime()
 
 char* WhirlEffect::plugin_title()
 {
-	return "Whirl";
+	return _("Whirl");
 }
 
 NEW_PICON_MACRO(WhirlEffect)

@@ -15,6 +15,11 @@
 #include <string.h>
 
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 
 
@@ -350,7 +355,7 @@ int VideoScopeEffect::is_realtime()
 
 char* VideoScopeEffect::plugin_title()
 {
-	return "VideoScope";
+	return _("VideoScope");
 }
 
 int VideoScopeEffect::load_configuration()

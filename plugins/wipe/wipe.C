@@ -11,6 +11,11 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 REGISTER_PLUGIN(WipeMain)
 
 
@@ -24,7 +29,7 @@ WipeLeft::WipeLeft(WipeMain *plugin,
  : BC_Radial(x, 
 		y, 
 		plugin->direction == 0, 
-		"Left")
+		_("Left"))
 {
 	this->plugin = plugin;
 	this->window = window;
@@ -46,7 +51,7 @@ WipeRight::WipeRight(WipeMain *plugin,
  : BC_Radial(x, 
 		y, 
 		plugin->direction == 1, 
-		"Right")
+		_("Right"))
 {
 	this->plugin = plugin;
 	this->window = window;
@@ -93,7 +98,7 @@ int WipeWindow::close_event()
 void WipeWindow::create_objects()
 {
 	int x = 10, y = 10;
-	add_subwindow(new BC_Title(x, y, "Direction:"));
+	add_subwindow(new BC_Title(x, y, _("Direction:")));
 	x += 100;
 	add_subwindow(left = new WipeLeft(plugin, 
 		this,
@@ -130,7 +135,7 @@ WipeMain::~WipeMain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-char* WipeMain::plugin_title() { return "Wipe"; }
+char* WipeMain::plugin_title() { return _("Wipe"); }
 int WipeMain::is_video() { return 1; }
 int WipeMain::is_transition() { return 1; }
 int WipeMain::uses_gui() { return 1; }

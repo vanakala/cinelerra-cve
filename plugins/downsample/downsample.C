@@ -12,6 +12,11 @@
 #include "pluginvclient.h"
 #include "vframe.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 class DownSampleMain;
 class DownSampleServer;
@@ -247,7 +252,7 @@ int DownSampleWindow::create_objects()
 {
 	int x = 10, y = 10;
 
-	add_subwindow(new BC_Title(x, y, "Horizontal"));
+	add_subwindow(new BC_Title(x, y, _("Horizontal")));
 	y += 30;
 	add_subwindow(h = new DownSampleSize(plugin, 
 		x, 
@@ -256,7 +261,7 @@ int DownSampleWindow::create_objects()
 		1,
 		100));
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Horizontal offset"));
+	add_subwindow(new BC_Title(x, y, _("Horizontal offset")));
 	y += 30;
 	add_subwindow(h_x = new DownSampleSize(plugin, 
 		x, 
@@ -265,7 +270,7 @@ int DownSampleWindow::create_objects()
 		0,
 		100));
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Vertical"));
+	add_subwindow(new BC_Title(x, y, _("Vertical")));
 	y += 30;
 	add_subwindow(v = new DownSampleSize(plugin, 
 		x, 
@@ -274,7 +279,7 @@ int DownSampleWindow::create_objects()
 		1,
 		100));
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Vertical offset"));
+	add_subwindow(new BC_Title(x, y, _("Vertical offset")));
 	y += 30;
 	add_subwindow(v_y = new DownSampleSize(plugin, 
 		x, 
@@ -287,25 +292,25 @@ int DownSampleWindow::create_objects()
 		x, 
 		y, 
 		&plugin->config.r, 
-		"Red"));
+		_("Red")));
 	y += 30;
 	add_subwindow(g = new DownSampleToggle(plugin, 
 		x, 
 		y, 
 		&plugin->config.g, 
-		"Green"));
+		_("Green")));
 	y += 30;
 	add_subwindow(b = new DownSampleToggle(plugin, 
 		x, 
 		y, 
 		&plugin->config.b, 
-		"Blue"));
+		_("Blue")));
 	y += 30;
 	add_subwindow(a = new DownSampleToggle(plugin, 
 		x, 
 		y, 
 		&plugin->config.a, 
-		"Alpha"));
+		_("Alpha")));
 	y += 30;
 
 	show_window();
@@ -394,7 +399,7 @@ DownSampleMain::~DownSampleMain()
 	if(engine) delete engine;
 }
 
-char* DownSampleMain::plugin_title() { return "Downsample"; }
+char* DownSampleMain::plugin_title() { return _("Downsample"); }
 int DownSampleMain::is_realtime() { return 1; }
 
 

@@ -9,6 +9,10 @@
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
 
 
 
@@ -104,7 +108,7 @@ BlurMain::~BlurMain()
 	}
 }
 
-char* BlurMain::plugin_title() { return "Blur"; }
+char* BlurMain::plugin_title() { return _("Blur"); }
 int BlurMain::is_realtime() { return 1; }
 
 

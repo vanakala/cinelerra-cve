@@ -8,6 +8,13 @@
 #include "timestretchengine.h"
 #include "vframe.h"
 
+
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
 #define WINDOW_SIZE 8192
 
 
@@ -39,7 +46,7 @@ TimeStretchFreq::TimeStretchFreq(TimeStretch *plugin,
 	TimeStretchWindow *gui, 
 	int x, 
 	int y)
- : BC_Radial(x, y, plugin->use_fft, "Use fast fourier transform")
+ : BC_Radial(x, y, plugin->use_fft, _("Use fast fourier transform"))
 {
 	this->plugin = plugin;
 	this->gui = gui;
@@ -61,7 +68,7 @@ TimeStretchTime::TimeStretchTime(TimeStretch *plugin,
 	TimeStretchWindow *gui, 
 	int x, 
 	int y)
- : BC_Radial(x, y, !plugin->use_fft, "Use overlapping windows")
+ : BC_Radial(x, y, !plugin->use_fft, _("Use overlapping windows"))
 {
 	this->plugin = plugin;
 	this->gui = gui;
@@ -109,7 +116,7 @@ void TimeStretchWindow::create_objects()
 {
 	int x = 10, y = 10;
 
-	add_subwindow(new BC_Title(x, y, "Fraction of original length:"));
+	add_subwindow(new BC_Title(x, y, _("Fraction of original length:")));
 	y += 20;
 	add_subwindow(new TimeStretchFraction(plugin, x, y));
 
@@ -235,7 +242,7 @@ TimeStretch::~TimeStretch()
 	
 char* TimeStretch::plugin_title()
 {
-	return "Time stretch";
+	return _("Time stretch");
 }
 
 int TimeStretch::get_parameters()

@@ -10,6 +10,10 @@
 
 #include <stdint.h>
 #include <string.h>
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
 
 
 
@@ -52,7 +56,7 @@ BandSlideIn::BandSlideIn(BandSlideMain *plugin,
  : BC_Radial(x, 
 		y, 
 		plugin->direction == 0, 
-		"In")
+		_("In"))
 {
 	this->plugin = plugin;
 	this->window = window;
@@ -74,7 +78,7 @@ BandSlideOut::BandSlideOut(BandSlideMain *plugin,
  : BC_Radial(x, 
 		y, 
 		plugin->direction == 1, 
-		"Out")
+		_("Out"))
 {
 	this->plugin = plugin;
 	this->window = window;
@@ -121,7 +125,7 @@ int BandSlideWindow::close_event()
 void BandSlideWindow::create_objects()
 {
 	int x = 10, y = 10;
-	add_subwindow(new BC_Title(x, y, "Bands:"));
+	add_subwindow(new BC_Title(x, y, _("Bands:")));
 	x += 50;
 	count = new BandSlideCount(plugin, 
 		this,
@@ -131,7 +135,7 @@ void BandSlideWindow::create_objects()
 
 	y += 30;
 	x = 10;
-	add_subwindow(new BC_Title(x, y, "Direction:"));
+	add_subwindow(new BC_Title(x, y, _("Direction:")));
 	x += 100;
 	add_subwindow(in = new BandSlideIn(plugin, 
 		this,
@@ -170,7 +174,7 @@ BandSlideMain::~BandSlideMain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-char* BandSlideMain::plugin_title() { return "BandSlide"; }
+char* BandSlideMain::plugin_title() { return _("BandSlide"); }
 int BandSlideMain::is_video() { return 1; }
 int BandSlideMain::is_transition() { return 1; }
 int BandSlideMain::uses_gui() { return 1; }

@@ -11,6 +11,11 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 REGISTER_PLUGIN(SlideMain)
 
 
@@ -24,7 +29,7 @@ SlideLeft::SlideLeft(SlideMain *plugin,
  : BC_Radial(x, 
 		y, 
 		plugin->motion_direction == 0, 
-		"Left")
+		_("Left"))
 {
 	this->plugin = plugin;
 	this->window = window;
@@ -46,7 +51,7 @@ SlideRight::SlideRight(SlideMain *plugin,
  : BC_Radial(x, 
 		y, 
 		plugin->motion_direction == 1, 
-		"Right")
+		_("Right"))
 {
 	this->plugin = plugin;
 	this->window = window;
@@ -68,7 +73,7 @@ SlideIn::SlideIn(SlideMain *plugin,
  : BC_Radial(x, 
 		y, 
 		plugin->direction == 0, 
-		"In")
+		_("In"))
 {
 	this->plugin = plugin;
 	this->window = window;
@@ -90,7 +95,7 @@ SlideOut::SlideOut(SlideMain *plugin,
  : BC_Radial(x, 
 		y, 
 		plugin->direction == 1, 
-		"Out")
+		_("Out"))
 {
 	this->plugin = plugin;
 	this->window = window;
@@ -137,7 +142,7 @@ int SlideWindow::close_event()
 void SlideWindow::create_objects()
 {
 	int x = 10, y = 10;
-	add_subwindow(new BC_Title(x, y, "Direction:"));
+	add_subwindow(new BC_Title(x, y, _("Direction:")));
 	x += 100;
 	add_subwindow(left = new SlideLeft(plugin, 
 		this,
@@ -151,7 +156,7 @@ void SlideWindow::create_objects()
 
 	y += 30;
 	x = 10;
-	add_subwindow(new BC_Title(x, y, "Direction:"));
+	add_subwindow(new BC_Title(x, y, _("Direction:")));
 	x += 100;
 	add_subwindow(in = new SlideIn(plugin, 
 		this,
@@ -190,7 +195,7 @@ SlideMain::~SlideMain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-char* SlideMain::plugin_title() { return "Slide"; }
+char* SlideMain::plugin_title() { return _("Slide"); }
 int SlideMain::is_video() { return 1; }
 int SlideMain::is_transition() { return 1; }
 int SlideMain::uses_gui() { return 1; }

@@ -3,6 +3,11 @@
 
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 PLUGIN_THREAD_OBJECT(Despike, DespikeThread, DespikeWindow)
 
@@ -33,11 +38,11 @@ DespikeWindow::~DespikeWindow()
 int DespikeWindow::create_objects()
 {
 	int x = 10, y = 10;
-	add_tool(new BC_Title(5, y, "Maximum level:"));
+	add_tool(new BC_Title(5, y, _("Maximum level:")));
 	y += 20;
 	add_tool(level = new DespikeLevel(despike, x, y));
 	y += 30;
-	add_tool(new BC_Title(5, y, "Maximum rate of change:"));
+	add_tool(new BC_Title(5, y, _("Maximum rate of change:")));
 	y += 20;
 	add_tool(slope = new DespikeSlope(despike, x, y));
 	show_window();

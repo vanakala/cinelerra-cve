@@ -10,6 +10,11 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 PluginClient* new_plugin(PluginServer *server)
 {
 	return new BurnMain(server);
@@ -64,7 +69,7 @@ BurnMain::~BurnMain()
 	if(effecttv) delete effecttv;
 }
 
-char* BurnMain::plugin_title() { return "BurningTV"; }
+char* BurnMain::plugin_title() { return _("BurningTV"); }
 int BurnMain::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(BurnMain)

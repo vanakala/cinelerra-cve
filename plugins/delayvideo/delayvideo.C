@@ -7,6 +7,11 @@
 #include "vframe.h"
 
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 
 #include <string.h>
@@ -78,7 +83,7 @@ void DelayVideoWindow::create_objects()
 {
 	int x = 10, y = 10;
 	
-	add_subwindow(new BC_Title(x, y, "Delay seconds:"));
+	add_subwindow(new BC_Title(x, y, _("Delay seconds:")));
 	y += 20;
 	add_subwindow(slider = new DelayVideoSlider(plugin, x, y));
 	update_gui();

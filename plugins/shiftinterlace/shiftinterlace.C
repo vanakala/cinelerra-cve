@@ -13,6 +13,11 @@
 #include <string.h>
 
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 
 
@@ -181,10 +186,10 @@ void ShiftInterlaceWindow::create_objects()
 	int x = 10, y = 10;
 	int margin = 30;
 
-	add_subwindow(new BC_Title(x, y, "Odd offset:"));
+	add_subwindow(new BC_Title(x, y, _("Odd offset:")));
 	add_subwindow(odd_offset = new ShiftInterlaceOdd(plugin, x + 90, y));
 	y += margin;
-	add_subwindow(new BC_Title(x, y, "Even offset:"));
+	add_subwindow(new BC_Title(x, y, _("Even offset:")));
 	add_subwindow(even_offset = new ShiftInterlaceEven(plugin, x + 90, y));
 
 	show_window();
@@ -266,7 +271,7 @@ int ShiftInterlaceMain::is_realtime()
 
 char* ShiftInterlaceMain::plugin_title() 
 {
-	return "ShiftInterlace channels";
+	return _("ShiftInterlace channels");
 }
 
 

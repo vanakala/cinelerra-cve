@@ -10,6 +10,10 @@
 #include <math.h>
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
 
 
 
@@ -112,7 +116,7 @@ void DenoiseEffect::reset()
 
 char* DenoiseEffect::plugin_title()
 {
-	return "Denoise";
+	return _("Denoise");
 }
 
 
@@ -784,7 +788,7 @@ void DenoiseWindow::create_objects()
 {
 	int x = 10, y = 10;
 	
-	add_subwindow(new BC_Title(x, y, "Level:"));
+	add_subwindow(new BC_Title(x, y, _("Level:")));
 	x += 70;
 	add_subwindow(scale = new DenoiseLevel(plugin, x, y));
 	show_window();

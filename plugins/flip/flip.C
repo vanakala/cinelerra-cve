@@ -9,6 +9,11 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 REGISTER_PLUGIN(FlipMain)
 
 
@@ -64,7 +69,7 @@ FlipMain::~FlipMain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-char* FlipMain::plugin_title() { return "Flip"; }
+char* FlipMain::plugin_title() { return _("Flip"); }
 int FlipMain::is_realtime() { return 1; }
 	
 

@@ -1,6 +1,11 @@
 #include "bcdisplayinfo.h"
 #include "flipwindow.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 PLUGIN_THREAD_OBJECT(FlipMain, FlipThread, FlipWindow)
 
@@ -33,13 +38,13 @@ int FlipWindow::create_objects()
 	int x = 10, y = 10;
 	add_tool(flip_vertical = new FlipToggle(client, 
 		&(client->config.flip_vertical), 
-		"Vertical",
+		_("Vertical"),
 		x, 
 		y));
 	y += 30;
 	add_tool(flip_horizontal = new FlipToggle(client, 
 		&(client->config.flip_horizontal), 
-		"Horizontal",
+		_("Horizontal"),
 		x, 
 		y));
 	show_window();

@@ -7,6 +7,11 @@
 #include "picon_png.h"
 
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 
 
@@ -85,31 +90,31 @@ int MotionWindow::create_objects()
 {
 	int x = 10, y = 10;
 
-	add_subwindow(new BC_Title(x, y, "Search radius:"));
+	add_subwindow(new BC_Title(x, y, _("Search radius:")));
 	add_subwindow(radius = new MotionSearchRadius(plugin, 
 		x + 190, 
 		y));
 
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Block size:"));
+	add_subwindow(new BC_Title(x, y, _("Block size:")));
 	add_subwindow(block_size = new MotionBlockSize(plugin, 
 		x + 230, 
 		y));
 
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Maximum absolute offset:"));
+	add_subwindow(new BC_Title(x, y, _("Maximum absolute offset:")));
 	add_subwindow(magnitude = new MotionMagnitude(plugin, 
 		x + 190, 
 		y));
 
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Stabilizer settling time:"));
+	add_subwindow(new BC_Title(x, y, _("Stabilizer settling time:")));
 	add_subwindow(return_speed = new MotionReturnSpeed(plugin,
 		x + 230, 
 		y));
 
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Mode:"));
+	add_subwindow(new BC_Title(x, y, _("Mode:")));
 	y += 20;
 	add_subwindow(track = new MotionTrack(plugin, 
 		this,
@@ -248,7 +253,7 @@ MotionStabilize::MotionStabilize(MotionMain *plugin,
  : BC_Radial(x, 
  	y, 
 	plugin->config.mode == MotionConfig::STABILIZE,
-	"Stabilize")
+	_("Stabilize"))
 {
 	this->gui = gui;
 	this->plugin = plugin;
@@ -273,7 +278,7 @@ MotionTrack::MotionTrack(MotionMain *plugin,
  : BC_Radial(x,
  	y, 
 	plugin->config.mode == MotionConfig::TRACK,
-	"Track")
+	_("Track"))
 {
 	this->gui = gui;
 	this->plugin = plugin;
@@ -298,7 +303,7 @@ MotionDrawVectors::MotionDrawVectors(MotionMain *plugin,
  : BC_Radial(x,
  	y, 
 	plugin->config.mode == MotionConfig::DRAW_VECTORS,
-	"Draw vectors")
+	_("Draw vectors"))
 {
 	this->gui = gui;
 	this->plugin = plugin;
@@ -350,7 +355,7 @@ MotionMain::~MotionMain()
 	if(temp_frame) delete temp_frame;
 }
 
-char* MotionMain::plugin_title() { return "Motion"; }
+char* MotionMain::plugin_title() { return _("Motion"); }
 int MotionMain::is_realtime() { return 1; }
 int MotionMain::is_multichannel() { return 1; }
 

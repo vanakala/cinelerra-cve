@@ -1,5 +1,10 @@
 #include "polarwindow.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 PLUGIN_THREAD_OBJECT(PolarMain, PolarThread, PolarWindow)
 
@@ -34,12 +39,12 @@ PolarWindow::~PolarWindow()
 int PolarWindow::create_objects()
 {
 	int x = 10, y = 10;
-	add_tool(new BC_Title(x, y, "Depth"));
+	add_tool(new BC_Title(x, y, _("Depth")));
 	add_tool(automation[0] = new AutomatedFn(client, this, x + 80, y, 0));
 	y += 20;
 	add_tool(depth_slider = new DepthSlider(client, x, y));
 	y += 35;
-	add_tool(new BC_Title(x, y, "Angle"));
+	add_tool(new BC_Title(x, y, _("Angle")));
 	add_tool(automation[1] = new AutomatedFn(client, this, x + 80, y, 1));
 	y += 20;
 	add_tool(angle_slider = new AngleSlider(client, x, y));
@@ -81,7 +86,7 @@ int AngleSlider::handle_event()
 }
 
 AutomatedFn::AutomatedFn(PolarMain *client, PolarWindow *window, int x, int y, int number)
- : BC_CheckBox(x, y, 16, 16, client->automated_function == number, "Automate")
+ : BC_CheckBox(x, y, 16, 16, client->automated_function == number, _("Automate"))
 {
 	this->client = client;
 	this->window = window;

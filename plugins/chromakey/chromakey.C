@@ -14,6 +14,11 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 
 
@@ -94,7 +99,7 @@ void ChromaKeyWindow::create_objects()
 		draw_line(x1 + i, y, x1 + i, y + 25);
 	}
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Hue:"));
+	add_subwindow(new BC_Title(x, y, _("Hue:")));
 	add_subwindow(hue = new ChromaKeyHue(plugin, x1, y));
 	y += 30;
 
@@ -106,15 +111,15 @@ void ChromaKeyWindow::create_objects()
 	}
 
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Value:"));
+	add_subwindow(new BC_Title(x, y, _("Value:")));
 	add_subwindow(value = new ChromaKeyValue(plugin, x1, y));
 
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Slope:"));
+	add_subwindow(new BC_Title(x, y, _("Slope:")));
 	add_subwindow(slope = new ChromaKeySlope(plugin, x1, y));
 
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Threshold:"));
+	add_subwindow(new BC_Title(x, y, _("Threshold:")));
 	add_subwindow(threshold = new ChromaKeyThreshold(plugin, x1, y));
 
 
@@ -215,7 +220,7 @@ int ChromaKeySlope::handle_event()
 
 
 ChromaKeyUseValue::ChromaKeyUseValue(ChromaKey *plugin, int x, int y)
- : BC_CheckBox(x, y, plugin->config.use_value, "Use value")
+ : BC_CheckBox(x, y, plugin->config.use_value, _("Use value"))
 {
 	this->plugin = plugin;
 }
@@ -481,7 +486,7 @@ int ChromaKey::is_realtime()
 }
 char* ChromaKey::plugin_title()
 {
-	return "Chroma key";
+	return _("Chroma key");
 }
 
 NEW_PICON_MACRO(ChromaKey)

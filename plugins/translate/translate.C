@@ -6,6 +6,11 @@
 
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 REGISTER_PLUGIN(TranslateMain)
 
@@ -89,7 +94,7 @@ TranslateMain::~TranslateMain()
 	overlayer = 0;
 }
 
-char* TranslateMain::plugin_title() { return "Translate"; }
+char* TranslateMain::plugin_title() { return _("Translate"); }
 int TranslateMain::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(TranslateMain)

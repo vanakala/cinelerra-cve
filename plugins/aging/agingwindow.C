@@ -2,6 +2,11 @@
 #include "agingwindow.h"
 
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 PLUGIN_THREAD_OBJECT(AgingMain, AgingThread, AgingWindow)
 
 
@@ -31,8 +36,8 @@ int AgingWindow::create_objects()
 {
 	int x = 10, y = 10;
 	add_subwindow(new BC_Title(x, y, 
-		"Film aging from EffectTV\n"
-		"Copyright (C) 2001 FUKUCHI Kentarou"
+		_("Film aging from EffectTV\n"
+		"Copyright (C) 2001 FUKUCHI Kentarou")
 	));
 // 	
 // 	y += 50;
@@ -69,7 +74,7 @@ int AgingWindow::close_event()
 
 
 AgingColor::AgingColor(int x, int y, AgingMain *plugin)
- : BC_CheckBox(x, y, plugin->config.colorage, "Grain")
+ : BC_CheckBox(x, y, plugin->config.colorage, _("Grain"))
 {
 	this->plugin = plugin;
 }
@@ -84,7 +89,7 @@ int AgingColor::handle_event()
 
 
 AgingScratches::AgingScratches(int x, int y, AgingMain *plugin)
- : BC_CheckBox(x, y, plugin->config.scratch, "Scratch")
+ : BC_CheckBox(x, y, plugin->config.scratch, _("Scratch"))
 {
 	this->plugin;
 }
@@ -126,7 +131,7 @@ int AgingScratchCount::handle_event()
 
 
 AgingPits::AgingPits(int x, int y, AgingMain *plugin)
- : BC_CheckBox(x, y, plugin->config.pits, "Pits")
+ : BC_CheckBox(x, y, plugin->config.pits, _("Pits"))
 {
 	this->plugin = plugin;
 }
@@ -168,7 +173,7 @@ int AgingPitCount::handle_event()
 
 
 AgingDust::AgingDust(int x, int y, AgingMain *plugin)
- : BC_CheckBox(x, y, plugin->config.dust, "Dust")
+ : BC_CheckBox(x, y, plugin->config.dust, _("Dust"))
 {
 	this->plugin = plugin;
 }

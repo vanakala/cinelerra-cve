@@ -7,6 +7,11 @@
 
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 
 
@@ -318,7 +323,7 @@ SET_STRING_MACRO(InterpolateEffect)
 
 char* InterpolateEffect::plugin_title()
 {
-	return "Interpolate";
+	return _("Interpolate");
 }
 
 

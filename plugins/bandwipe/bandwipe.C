@@ -11,6 +11,11 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 
 
@@ -53,7 +58,7 @@ BandWipeIn::BandWipeIn(BandWipeMain *plugin,
  : BC_Radial(x, 
 		y, 
 		plugin->direction == 0, 
-		"In")
+		_("In"))
 {
 	this->plugin = plugin;
 	this->window = window;
@@ -75,7 +80,7 @@ BandWipeOut::BandWipeOut(BandWipeMain *plugin,
  : BC_Radial(x, 
 		y, 
 		plugin->direction == 1, 
-		"Out")
+		_("Out"))
 {
 	this->plugin = plugin;
 	this->window = window;
@@ -121,7 +126,7 @@ int BandWipeWindow::close_event()
 void BandWipeWindow::create_objects()
 {
 	int x = 10, y = 10;
-	add_subwindow(new BC_Title(x, y, "Bands:"));
+	add_subwindow(new BC_Title(x, y, _("Bands:")));
 	x += 50;
 	count = new BandWipeCount(plugin, 
 		this,
@@ -129,7 +134,7 @@ void BandWipeWindow::create_objects()
 		y);
 	count->create_objects();
 // 	y += 30;
-// 	add_subwindow(new BC_Title(x, y, "Direction:"));
+// 	add_subwindow(new BC_Title(x, y, _("Direction:")));
 // 	x += 100;
 // 	add_subwindow(in = new BandWipeIn(plugin, 
 // 		this,
@@ -169,7 +174,7 @@ BandWipeMain::~BandWipeMain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-char* BandWipeMain::plugin_title() { return "BandWipe"; }
+char* BandWipeMain::plugin_title() { return _("BandWipe"); }
 int BandWipeMain::is_video() { return 1; }
 int BandWipeMain::is_transition() { return 1; }
 int BandWipeMain::uses_gui() { return 1; }

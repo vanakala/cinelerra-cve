@@ -10,6 +10,11 @@
 #include <math.h>
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 
 
@@ -245,16 +250,16 @@ char* ParametricMode::mode_to_text(int mode)
 	switch(mode)
 	{
 		case ParametricBand::LOWPASS:
-			return "Lowpass";
+			return _("Lowpass");
 			break;
 		case ParametricBand::HIGHPASS:
-			return "Highpass";
+			return _("Highpass");
 			break;
 		case ParametricBand::BANDPASS:
-			return "Bandpass";
+			return _("Bandpass");
 			break;
 		case ParametricBand::NONE:
-			return "None";
+			return _("None");
 			break;
 	}
 	return "";
@@ -356,10 +361,10 @@ void ParametricWindow::create_objects()
 	int y = 35;
 	
 	
-	add_subwindow(new BC_Title(X1, 10, "Freq"));
-	add_subwindow(new BC_Title(X2, 10, "Qual"));
-	add_subwindow(new BC_Title(X3, 10, "Level"));
-	add_subwindow(new BC_Title(X4, 10, "Mode"));
+	add_subwindow(new BC_Title(X1, 10, _("Freq")));
+	add_subwindow(new BC_Title(X2, 10, _("Qual")));
+	add_subwindow(new BC_Title(X3, 10, _("Level")));
+	add_subwindow(new BC_Title(X4, 10, _("Mode")));
 	for(int i = 0; i < BANDS; i++)
 	{
 		bands[i] = new ParametricBandGUI(plugin, this, 10, y, i);
@@ -367,7 +372,7 @@ void ParametricWindow::create_objects()
 		y += 50;
 	}
 
-	add_subwindow(new BC_Title(10, y + 10, "Wetness:"));
+	add_subwindow(new BC_Title(10, y + 10, _("Wetness:")));
 	add_subwindow(wetness = new ParametricWetness(plugin, 80, y));
 	y += 50;
 	add_subwindow(canvas = new BC_SubWindow(10, y, get_w() - 20, get_h() - y - 10, WHITE));
@@ -515,7 +520,7 @@ LOAD_CONFIGURATION_MACRO(ParametricEQ, ParametricConfig)
 
 char* ParametricEQ::plugin_title()
 {
-	return "EQ Parametric";
+	return _("EQ Parametric");
 }
 
 int ParametricEQ::is_realtime()

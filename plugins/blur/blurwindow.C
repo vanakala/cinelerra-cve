@@ -3,6 +3,10 @@
 #include "blurwindow.h"
 
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
 
 PLUGIN_THREAD_OBJECT(BlurMain, BlurThread, BlurWindow)
 
@@ -32,14 +36,14 @@ BlurWindow::~BlurWindow()
 int BlurWindow::create_objects()
 {
 	int x = 10, y = 10;
-	add_subwindow(new BC_Title(x, y, "Blur"));
+	add_subwindow(new BC_Title(x, y, _("Blur")));
 	y += 20;
 	add_subwindow(horizontal = new BlurHorizontal(client, this, x, y));
 	y += 30;
 	add_subwindow(vertical = new BlurVertical(client, this, x, y));
 	y += 35;
 	add_subwindow(radius = new BlurRadius(client, x, y));
-	add_subwindow(new BC_Title(x + 50, y, "Radius"));
+	add_subwindow(new BC_Title(x + 50, y, _("Radius")));
 	y += 50;
 	add_subwindow(a = new BlurA(client, x, y));
 	y += 30;
@@ -84,7 +88,7 @@ BlurVertical::BlurVertical(BlurMain *client, BlurWindow *window, int x, int y)
  : BC_CheckBox(x, 
  	y, 
 	client->config.vertical, 
-	"Vertical")
+	_("Vertical"))
 {
 	this->client = client;
 	this->window = window;
@@ -102,7 +106,7 @@ BlurHorizontal::BlurHorizontal(BlurMain *client, BlurWindow *window, int x, int 
  : BC_CheckBox(x, 
  	y, 
 	client->config.horizontal, 
-	"Horizontal")
+	_("Horizontal"))
 {
 	this->client = client;
 	this->window = window;
@@ -120,7 +124,7 @@ int BlurHorizontal::handle_event()
 
 
 BlurA::BlurA(BlurMain *client, int x, int y)
- : BC_CheckBox(x, y, client->config.a, "Blur alpha")
+ : BC_CheckBox(x, y, client->config.a, _("Blur alpha"))
 {
 	this->client = client;
 }
@@ -132,7 +136,7 @@ int BlurA::handle_event()
 }
 
 BlurR::BlurR(BlurMain *client, int x, int y)
- : BC_CheckBox(x, y, client->config.r, "Blur red")
+ : BC_CheckBox(x, y, client->config.r, _("Blur red"))
 {
 	this->client = client;
 }
@@ -144,7 +148,7 @@ int BlurR::handle_event()
 }
 
 BlurG::BlurG(BlurMain *client, int x, int y)
- : BC_CheckBox(x, y, client->config.g, "Blur green")
+ : BC_CheckBox(x, y, client->config.g, _("Blur green"))
 {
 	this->client = client;
 }
@@ -156,7 +160,7 @@ int BlurG::handle_event()
 }
 
 BlurB::BlurB(BlurMain *client, int x, int y)
- : BC_CheckBox(x, y, client->config.b, "Blur blue")
+ : BC_CheckBox(x, y, client->config.b, _("Blur blue"))
 {
 	this->client = client;
 }

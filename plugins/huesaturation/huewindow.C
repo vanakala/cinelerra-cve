@@ -1,5 +1,10 @@
 #include "huewindow.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 HueThread::HueThread(HueMain *client)
  : Thread()
@@ -44,17 +49,17 @@ HueWindow::~HueWindow()
 int HueWindow::create_objects()
 {
 	int x = 10, y = 10;
-	add_tool(new BC_Title(x, y, "Hue"));
+	add_tool(new BC_Title(x, y, _("Hue")));
 	add_tool(automation[0] = new AutomatedFn(client, this, x + 80, y, 0));
 	y += 20;
 	add_tool(hue_slider = new HueSlider(client, x, y));
 	y += 35;
-	add_tool(new BC_Title(x, y, "Saturation"));
+	add_tool(new BC_Title(x, y, _("Saturation")));
 	add_tool(automation[1] = new AutomatedFn(client, this, x + 80, y, 1));
 	y += 20;
 	add_tool(saturation_slider = new SaturationSlider(client, x, y));
 	y += 35;
-	add_tool(new BC_Title(x, y, "Value"));
+	add_tool(new BC_Title(x, y, _("Value")));
 	add_tool(automation[2] = new AutomatedFn(client, this, x + 80, y, 2));
 	y += 20;
 	add_tool(value_slider = new ValueSlider(client, x, y));
@@ -110,7 +115,7 @@ int ValueSlider::handle_event()
 }
 
 AutomatedFn::AutomatedFn(HueMain *client, HueWindow *window, int x, int y, int number)
- : BC_CheckBox(x, y, 16, 16, client->automated_function == number, "Automate")
+ : BC_CheckBox(x, y, 16, 16, client->automated_function == number, _("Automate"))
 {
 	this->client = client;
 	this->window = window;

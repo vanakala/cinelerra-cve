@@ -12,6 +12,11 @@
 #include "pluginvclient.h"
 #include "vframe.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 class LinearBlurMain;
 class LinearBlurEngine;
@@ -251,25 +256,25 @@ int LinearBlurWindow::create_objects()
 {
 	int x = 10, y = 10;
 
-	add_subwindow(new BC_Title(x, y, "Length:"));
+	add_subwindow(new BC_Title(x, y, _("Length:")));
 	y += 20;
 	add_subwindow(radius = new LinearBlurSize(plugin, x, y, &plugin->config.radius, 0, 100));
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Angle:"));
+	add_subwindow(new BC_Title(x, y, _("Angle:")));
 	y += 20;
 	add_subwindow(angle = new LinearBlurSize(plugin, x, y, &plugin->config.angle, -180, 180));
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Steps:"));
+	add_subwindow(new BC_Title(x, y, _("Steps:")));
 	y += 20;
 	add_subwindow(steps = new LinearBlurSize(plugin, x, y, &plugin->config.steps, 1, 100));
 	y += 30;
-	add_subwindow(r = new LinearBlurToggle(plugin, x, y, &plugin->config.r, "Red"));
+	add_subwindow(r = new LinearBlurToggle(plugin, x, y, &plugin->config.r, _("Red")));
 	y += 30;
-	add_subwindow(g = new LinearBlurToggle(plugin, x, y, &plugin->config.g, "Green"));
+	add_subwindow(g = new LinearBlurToggle(plugin, x, y, &plugin->config.g, _("Green")));
 	y += 30;
-	add_subwindow(b = new LinearBlurToggle(plugin, x, y, &plugin->config.b, "Blue"));
+	add_subwindow(b = new LinearBlurToggle(plugin, x, y, &plugin->config.b, _("Blue")));
 	y += 30;
-	add_subwindow(a = new LinearBlurToggle(plugin, x, y, &plugin->config.a, "Alpha"));
+	add_subwindow(a = new LinearBlurToggle(plugin, x, y, &plugin->config.a, _("Alpha")));
 	y += 30;
 
 	show_window();
@@ -366,7 +371,7 @@ LinearBlurMain::~LinearBlurMain()
 	if(temp) delete temp;
 }
 
-char* LinearBlurMain::plugin_title() { return "Linear Blur"; }
+char* LinearBlurMain::plugin_title() { return _("Linear Blur"); }
 int LinearBlurMain::is_realtime() { return 1; }
 
 

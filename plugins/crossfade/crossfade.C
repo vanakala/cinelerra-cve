@@ -4,6 +4,11 @@
 #include "picon_png.h"
 #include "vframe.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 
 REGISTER_PLUGIN(CrossfadeMain)
@@ -20,7 +25,7 @@ CrossfadeMain::~CrossfadeMain()
 {
 }
 
-char* CrossfadeMain::plugin_title() { return "Crossfade"; }
+char* CrossfadeMain::plugin_title() { return _("Crossfade"); }
 int CrossfadeMain::is_transition() { return 1; }
 int CrossfadeMain::uses_gui() { return 0; }
 

@@ -3,6 +3,11 @@
 
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 CDRipWindow::CDRipWindow(CDRipMain *cdripper, int x, int y)
  : BC_Window(PROGRAM_NAME ": CD Ripper", 
  	x,
@@ -25,14 +30,14 @@ CDRipWindow::~CDRipWindow()
 int CDRipWindow::create_objects()
 {
 	int y = 10, x = 10;
-	add_tool(new BC_Title(x, y, "Select the range to transfer:")); y += 25;
-	add_tool(new BC_Title(x, y, "Track")); x += 70;
-	add_tool(new BC_Title(x, y, "Min")); x += 70;
-	add_tool(new BC_Title(x, y, "Sec")); x += 100;
+	add_tool(new BC_Title(x, y, _("Select the range to transfer:"))); y += 25;
+	add_tool(new BC_Title(x, y, _("Track"))); x += 70;
+	add_tool(new BC_Title(x, y, _("Min"))); x += 70;
+	add_tool(new BC_Title(x, y, _("Sec"))); x += 100;
 
-	add_tool(new BC_Title(x, y, "Track")); x += 70;
-	add_tool(new BC_Title(x, y, "Min")); x += 70;
-	add_tool(new BC_Title(x, y, "Sec")); x += 100;
+	add_tool(new BC_Title(x, y, _("Track"))); x += 70;
+	add_tool(new BC_Title(x, y, _("Min"))); x += 70;
+	add_tool(new BC_Title(x, y, _("Sec"))); x += 100;
 	
 	x = 10;  y += 25;
 	add_tool(track1 = new CDRipTextValue(this, &(cdripper->track1), x, y, 50));
@@ -49,12 +54,12 @@ int CDRipWindow::create_objects()
 	add_tool(sec2 = new CDRipTextValue(this, &(cdripper->sec2), x, y, 50));
 
 	x = 10;   y += 30;
-	add_tool(new BC_Title(x, y, "From", LARGEFONT, RED));
+	add_tool(new BC_Title(x, y, _("From"), LARGEFONT, RED));
 	x += 240;
-	add_tool(new BC_Title(x, y, "To", LARGEFONT, RED));
+	add_tool(new BC_Title(x, y, _("To"), LARGEFONT, RED));
 
 	x = 10;   y += 35;
-	add_tool(new BC_Title(x, y, "CD Device:"));
+	add_tool(new BC_Title(x, y, _("CD Device:")));
 	x += 100;
 	add_tool(device = new CDRipWindowDevice(this, cdripper->device, x, y, 200));
 

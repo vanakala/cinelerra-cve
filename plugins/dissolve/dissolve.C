@@ -4,6 +4,11 @@
 #include "picon_png.h"
 #include "vframe.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 PluginClient* new_plugin(PluginServer *server)
 {
 	return new DissolveMain(server);
@@ -25,7 +30,7 @@ DissolveMain::~DissolveMain()
 		delete overlayer;
 }
 
-char* DissolveMain::plugin_title() { return "Dissolve"; }
+char* DissolveMain::plugin_title() { return _("Dissolve"); }
 int DissolveMain::is_video() { return 1; }
 int DissolveMain::is_transition() { return 1; }
 int DissolveMain::uses_gui() { return 0; }

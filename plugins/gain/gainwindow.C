@@ -5,6 +5,11 @@
 
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 PLUGIN_THREAD_OBJECT(Gain, GainThread, GainWindow)
 
 
@@ -34,7 +39,7 @@ GainWindow::~GainWindow()
 int GainWindow::create_objects()
 {
 	int x = 10, y = 10;
-	add_tool(new BC_Title(5, y, "Level:"));
+	add_tool(new BC_Title(5, y, _("Level:")));
 	y += 20;
 	add_tool(level = new GainLevel(gain, x, y));
 	show_window();

@@ -6,6 +6,11 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 #define SQR(a) ((a) * (a))
 
 REGISTER_PLUGIN(ColorBalanceMain)
@@ -312,7 +317,7 @@ ColorBalanceMain::~ColorBalanceMain()
 	}
 }
 
-char* ColorBalanceMain::plugin_title() { return "Color Balance"; }
+char* ColorBalanceMain::plugin_title() { return _("Color Balance"); }
 int ColorBalanceMain::is_realtime() { return 1; }
 
 

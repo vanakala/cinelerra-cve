@@ -9,6 +9,11 @@
 #include <string.h>
 
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 
 
@@ -75,7 +80,7 @@ InterpolateAllEffect::~InterpolateAllEffect()
 
 char* InterpolateAllEffect::plugin_title()
 {
-	return "Interpolate";
+	return _("Interpolate");
 }
 
 

@@ -11,6 +11,11 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 PluginClient* new_plugin(PluginServer *server)
 {
 	return new CDRipMain(server);
@@ -29,7 +34,7 @@ CDRipMain::~CDRipMain()
 	delete defaults;
 }
 
-char* CDRipMain::plugin_title() { return "CD Ripper"; }
+char* CDRipMain::plugin_title() { return _("CD Ripper"); }
 
 int CDRipMain::is_realtime() { return 0; }
 
@@ -107,7 +112,7 @@ int CDRipMain::open_drive()
 		ErrorBox window(PROGRAM_NAME ": CD Ripper",
 			info.get_abs_cursor_x(), 
 			info.get_abs_cursor_y());
-		window.create_objects("Can't open cdrom drive.");
+		window.create_objects(_("Can't open cdrom drive."));
 		window.run_window();
 		return 1;
 	}
@@ -139,7 +144,7 @@ int CDRipMain::get_toc()
  		ErrorBox window(PROGRAM_NAME ": CD Ripper",
 			info.get_abs_cursor_x(), 
 			info.get_abs_cursor_y());
-		window.create_objects("Can't get total from table of contents.");
+		window.create_objects(_("Can't get total from table of contents."));
 		window.run_window();
 		result = 1;
   	}
@@ -155,7 +160,7 @@ int CDRipMain::get_toc()
  			ErrorBox window(PROGRAM_NAME ": CD Ripper",
 				info.get_abs_cursor_x(), 
 				info.get_abs_cursor_y());
-			window.create_objects("Can't get table of contents entry.");
+			window.create_objects(_("Can't get table of contents entry."));
 			window.run_window();
 			result = 1;
 			break;
@@ -171,7 +176,7 @@ int CDRipMain::get_toc()
  		ErrorBox window(PROGRAM_NAME ": CD Ripper",
 			info.get_abs_cursor_x(), 
 			info.get_abs_cursor_y());
-		window.create_objects("Can't get table of contents leadout.");
+		window.create_objects(_("Can't get table of contents leadout."));
 		window.run_window();
 		result = 1;
 	}
@@ -186,7 +191,7 @@ int CDRipMain::get_toc()
  		ErrorBox window(PROGRAM_NAME ": CD Ripper",
 			info.get_abs_cursor_x(), 
 			info.get_abs_cursor_y());
-		window.create_objects("Start track is out of range.");
+		window.create_objects(_("Start track is out of range."));
 		window.run_window();
 		result = 1;
 	}
@@ -198,7 +203,7 @@ int CDRipMain::get_toc()
  		ErrorBox window(PROGRAM_NAME ": CD Ripper",
 			info.get_abs_cursor_x(), 
 			info.get_abs_cursor_y());
-		window.create_objects("End track is out of range.");
+		window.create_objects(_("End track is out of range."));
 		window.run_window();
 		result = 1;
 	}
@@ -210,7 +215,7 @@ int CDRipMain::get_toc()
  		ErrorBox window(PROGRAM_NAME ": CD Ripper",
 			info.get_abs_cursor_x(), 
 			info.get_abs_cursor_y());
-		window.create_objects("End position is out of range.");
+		window.create_objects(_("End position is out of range."));
 		window.run_window();
 		result = 1;
 	}

@@ -14,6 +14,11 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 
 REGISTER_PLUGIN(DenoiseVideo)
@@ -166,21 +171,21 @@ DenoiseVideoWindow::DenoiseVideoWindow(DenoiseVideo *plugin, int x, int y)
 void DenoiseVideoWindow::create_objects()
 {
 	int x = 10, y = 10;
-	add_subwindow(new BC_Title(x, y, "Frames to accumulate:"));
+	add_subwindow(new BC_Title(x, y, _("Frames to accumulate:")));
 	y += 20;
 	add_subwindow(frames = new DenoiseVideoFrames(plugin, x, y));
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Threshold:"));
+	add_subwindow(new BC_Title(x, y, _("Threshold:")));
 	y += 20;
 	add_subwindow(threshold = new DenoiseVideoThreshold(plugin, x, y));
 	y += 40;
-	add_subwindow(do_r = new DenoiseVideoToggle(plugin, this, x, y, &plugin->config.do_r, "Red"));
+	add_subwindow(do_r = new DenoiseVideoToggle(plugin, this, x, y, &plugin->config.do_r, _("Red")));
 	y += 30;
-	add_subwindow(do_g = new DenoiseVideoToggle(plugin, this, x, y, &plugin->config.do_g, "Green"));
+	add_subwindow(do_g = new DenoiseVideoToggle(plugin, this, x, y, &plugin->config.do_g, _("Green")));
 	y += 30;
-	add_subwindow(do_b = new DenoiseVideoToggle(plugin, this, x, y, &plugin->config.do_b, "Blue"));
+	add_subwindow(do_b = new DenoiseVideoToggle(plugin, this, x, y, &plugin->config.do_b, _("Blue")));
 	y += 30;
-	add_subwindow(do_a = new DenoiseVideoToggle(plugin, this, x, y, &plugin->config.do_a, "Alpha"));
+	add_subwindow(do_a = new DenoiseVideoToggle(plugin, this, x, y, &plugin->config.do_a, _("Alpha")));
 	show_window();
 	flush();
 }
@@ -316,7 +321,7 @@ int DenoiseVideo::is_realtime()
 
 char* DenoiseVideo::plugin_title()
 {
-	return "Denoise video";
+	return _("Denoise video");
 }
 
 NEW_PICON_MACRO(DenoiseVideo)

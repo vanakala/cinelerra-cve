@@ -2,6 +2,11 @@
 #include "clip.h"
 #include "scale.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 
 
@@ -38,12 +43,12 @@ int ScaleWin::create_objects()
 {
 	int x = 10, y = 10;
 
-	add_tool(new BC_Title(x, y, "X Scale:"));
+	add_tool(new BC_Title(x, y, _("X Scale:")));
 	y += 20;
 	width = new ScaleWidth(this, client, x, y);
 	width->create_objects();
 	y += 30;
-	add_tool(new BC_Title(x, y, "Y Scale:"));
+	add_tool(new BC_Title(x, y, _("Y Scale:")));
 	y += 20;
 	height = new ScaleHeight(this, client, x, y);
 	height->create_objects();
@@ -136,7 +141,7 @@ int ScaleHeight::handle_event()
 
 
 ScaleConstrain::ScaleConstrain(ScaleMain *client, int x, int y)
- : BC_CheckBox(x, y, client->config.constrain, "Constrain ratio")
+ : BC_CheckBox(x, y, client->config.constrain, _("Constrain ratio"))
 {
 	this->client = client;
 }

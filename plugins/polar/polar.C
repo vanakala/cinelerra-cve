@@ -14,6 +14,11 @@
 #include <string.h>
 #include <stdint.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 #define SQR(x) ((x) * (x))
 #define WITHIN(a, b, c) ((((a) <= (b)) && ((b) <= (c))) ? 1 : 0)
 
@@ -196,10 +201,10 @@ PolarWindow::PolarWindow(PolarEffect *plugin, int x, int y)
 void PolarWindow::create_objects()
 {
 	int x = 10, y = 10;
-	add_subwindow(new BC_Title(x, y, "Depth:"));
+	add_subwindow(new BC_Title(x, y, _("Depth:")));
 	add_subwindow(depth = new PolarDepth(plugin, x + 50, y));
 	y += 40;
-	add_subwindow(new BC_Title(x, y, "Angle:"));
+	add_subwindow(new BC_Title(x, y, _("Angle:")));
 	add_subwindow(angle = new PolarAngle(plugin, x + 50, y));
 
 	show_window();
@@ -285,7 +290,7 @@ int PolarEffect::is_realtime()
 
 char* PolarEffect::plugin_title()
 {
-	return "Polar";
+	return _("Polar");
 }
 
 NEW_PICON_MACRO(PolarEffect)

@@ -1,6 +1,10 @@
 #include "bcdisplayinfo.h"
 #include "dotwindow.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
 
 PLUGIN_THREAD_OBJECT(DotMain, DotThread, DotWindow)
 
@@ -32,8 +36,8 @@ int DotWindow::create_objects()
 {
 	int x = 10, y = 10;
 	add_subwindow(new BC_Title(x, y, 
-		"DotTV from EffectTV\n"
-		"Copyright (C) 2001 FUKUCHI Kentarou"
+		_("DotTV from EffectTV\n"
+		"Copyright (C) 2001 FUKUCHI Kentarou")
 	));
 
 	show_window();

@@ -999,7 +999,7 @@ char* ColormodelPulldown::colormodel_to_text()
 
 
 NewAspectAuto::NewAspectAuto(NewWindow *nwindow, int x, int y)
- : BC_CheckBox(x, y, nwindow->new_thread->auto_aspect, "Auto aspect ratio")
+ : BC_CheckBox(x, y, nwindow->new_thread->auto_aspect, _("Auto aspect ratio"))
 {
 	this->nwindow = nwindow;
 }

@@ -12,6 +12,11 @@
 #include "pluginvclient.h"
 #include "vframe.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 class ZoomBlurMain;
 class ZoomBlurEngine;
@@ -256,29 +261,29 @@ int ZoomBlurWindow::create_objects()
 {
 	int x = 10, y = 10;
 
-	add_subwindow(new BC_Title(x, y, "X:"));
+	add_subwindow(new BC_Title(x, y, _("X:")));
 	y += 20;
 	add_subwindow(this->x = new ZoomBlurSize(plugin, x, y, &plugin->config.x, 0, 100));
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Y:"));
+	add_subwindow(new BC_Title(x, y, _("Y:")));
 	y += 20;
 	add_subwindow(this->y = new ZoomBlurSize(plugin, x, y, &plugin->config.y, 0, 100));
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Radius:"));
+	add_subwindow(new BC_Title(x, y, _("Radius:")));
 	y += 20;
 	add_subwindow(radius = new ZoomBlurSize(plugin, x, y, &plugin->config.radius, -100, 100));
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Steps:"));
+	add_subwindow(new BC_Title(x, y, _("Steps:")));
 	y += 20;
 	add_subwindow(steps = new ZoomBlurSize(plugin, x, y, &plugin->config.steps, 1, 100));
 	y += 30;
-	add_subwindow(r = new ZoomBlurToggle(plugin, x, y, &plugin->config.r, "Red"));
+	add_subwindow(r = new ZoomBlurToggle(plugin, x, y, &plugin->config.r, _("Red")));
 	y += 30;
-	add_subwindow(g = new ZoomBlurToggle(plugin, x, y, &plugin->config.g, "Green"));
+	add_subwindow(g = new ZoomBlurToggle(plugin, x, y, &plugin->config.g, _("Green")));
 	y += 30;
-	add_subwindow(b = new ZoomBlurToggle(plugin, x, y, &plugin->config.b, "Blue"));
+	add_subwindow(b = new ZoomBlurToggle(plugin, x, y, &plugin->config.b, _("Blue")));
 	y += 30;
-	add_subwindow(a = new ZoomBlurToggle(plugin, x, y, &plugin->config.a, "Alpha"));
+	add_subwindow(a = new ZoomBlurToggle(plugin, x, y, &plugin->config.a, _("Alpha")));
 	y += 30;
 
 	show_window();
@@ -375,7 +380,7 @@ ZoomBlurMain::~ZoomBlurMain()
 	if(temp) delete temp;
 }
 
-char* ZoomBlurMain::plugin_title() { return "Zoom Blur"; }
+char* ZoomBlurMain::plugin_title() { return _("Zoom Blur"); }
 int ZoomBlurMain::is_realtime() { return 1; }
 
 

@@ -1,6 +1,11 @@
 #include "mainprogress.h"
 #include "reversevideo.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 
 
@@ -33,7 +38,7 @@ ReverseVideo::~ReverseVideo()
 
 char* ReverseVideo::plugin_title()
 {
-	return "Reverse video";
+	return _("Reverse video");
 }
 
 VFrame* ReverseVideo::new_picon()

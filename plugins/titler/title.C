@@ -10,7 +10,7 @@
 #include "freetype/ftbbox.h"
 #include "freetype/ftglyph.h"
 #include "freetype/ftoutln.h"
-#include "freetype/ftstroker.h"
+#include "freetype/ftstroke.h"
 #include "picon_png.h"
 #include "plugincolors.h"
 #include "title.h"
@@ -24,6 +24,13 @@
 #include <endian.h>
 #include <byteswap.h>
 #include <iconv.h>
+
+
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 #define ZERO (1.0 / 64.0)
 
@@ -50,7 +57,7 @@ TitleConfig::TitleConfig()
 	y = 0.0;
 	dropshadow = 10;
 	sprintf(font, "fixed");
-	sprintf(text, "hello world");
+	sprintf(text, _("hello world"));
 #define DEFAULT_ENCODING "ISO8859-1"
 	sprintf(encoding, DEFAULT_ENCODING);
 	pixels_per_second = 1.0;
@@ -259,7 +266,7 @@ void GlyphUnit::process_package(LoadPackage *package)
 			freetype_face,
 			current_font->path))
 		{
-			printf("GlyphUnit::process_package FT_New_Face failed.\n");
+			printf(_("GlyphUnit::process_package FT_New_Face failed.\n"));
 			result = 1;
 		}
 		else
@@ -278,7 +285,7 @@ void GlyphUnit::process_package(LoadPackage *package)
 		{
 // carrige return
 			if (glyph->char_code != 10)  
-				printf("GlyphUnit::process_package FT_Load_Char failed - char: %i.\n",
+				printf(_("GlyphUnit::process_package FT_Load_Char failed - char: %i.\n"),
 					glyph->char_code);
 // Prevent a crash here
 			glyph->width = 8;
@@ -1014,7 +1021,7 @@ TitleMain::~TitleMain()
 	if(translate) delete translate;
 }
 
-char* TitleMain::plugin_title() { return "Title"; }
+char* TitleMain::plugin_title() { return _("Title"); }
 int TitleMain::is_realtime() { return 1; }
 int TitleMain::is_synthesis() { return 1; }
 
@@ -1317,7 +1324,7 @@ int TitleMain::load_freetype_face(FT_Library &freetype_library,
 		0,
 		&freetype_face))
 	{
-		fprintf(stderr, "TitleMain::load_freetype_face %s failed.\n");
+		fprintf(stderr, _("TitleMain::load_freetype_face %s failed.\n"));
 		FT_Done_FreeType(freetype_library);
 		freetype_face = 0;
 		freetype_library = 0;
@@ -1440,7 +1447,7 @@ void TitleMain::draw_glyphs()
 	if (cd == (iconv_t) -1)
 	{
 /* Something went wrong.  */
-		fprintf (stderr, "Iconv conversion from %s to Unicode UCS-4 not available\n",config.encoding);
+		fprintf (stderr, _("Iconv conversion from %s to Unicode UCS-4 not available\n"),config.encoding);
 	};
 
 	for(int i = 0; i < text_len; i++)
@@ -1887,11 +1894,11 @@ char* TitleMain::motion_to_text(int motion)
 {
 	switch(motion)
 	{
-		case NO_MOTION: return "No motion"; break;
-		case BOTTOM_TO_TOP: return "Bottom to top"; break;
-		case TOP_TO_BOTTOM: return "Top to bottom"; break;
-		case RIGHT_TO_LEFT: return "Right to left"; break;
-		case LEFT_TO_RIGHT: return "Left to right"; break;
+		case NO_MOTION: return _("No motion"); break;
+		case BOTTOM_TO_TOP: return _("Bottom to top"); break;
+		case TOP_TO_BOTTOM: return _("Top to bottom"); break;
+		case RIGHT_TO_LEFT: return _("Right to left"); break;
+		case LEFT_TO_RIGHT: return _("Left to right"); break;
 	}
 }
 

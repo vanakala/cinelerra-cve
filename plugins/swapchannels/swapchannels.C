@@ -11,6 +11,11 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 
 
@@ -82,21 +87,21 @@ void SwapWindow::create_objects()
 	int x = 10, y = 10;
 	int margin = 30;
 
-	add_subwindow(new BC_Title(x, y, "Swap channels"));
+	add_subwindow(new BC_Title(x, y, _("Swap channels")));
 	y += margin;
-	add_subwindow(new BC_Title(x + 160, y + 5, "-> Red"));
+	add_subwindow(new BC_Title(x + 160, y + 5, _("-> Red")));
 	add_subwindow(red = new SwapMenu(plugin, &(plugin->config.red), x, y));
 	red->create_objects();
 	y += margin;
-	add_subwindow(new BC_Title(x + 160, y + 5, "-> Green"));
+	add_subwindow(new BC_Title(x + 160, y + 5, _("-> Green")));
 	add_subwindow(green = new SwapMenu(plugin, &(plugin->config.green), x, y));
 	green->create_objects();
 	y += margin;
-	add_subwindow(new BC_Title(x + 160, y + 5, "-> Blue"));
+	add_subwindow(new BC_Title(x + 160, y + 5, _("-> Blue")));
 	add_subwindow(blue = new SwapMenu(plugin, &(plugin->config.blue), x, y));
 	blue->create_objects();
 	y += margin;
-	add_subwindow(new BC_Title(x + 160, y + 5, "-> Alpha"));
+	add_subwindow(new BC_Title(x + 160, y + 5, _("-> Alpha")));
 	add_subwindow(alpha = new SwapMenu(plugin, &(plugin->config.alpha), x, y));
 	alpha->create_objects();
 
@@ -201,7 +206,7 @@ int SwapMain::is_realtime()
 
 char* SwapMain::plugin_title() 
 {
-	return "Swap channels";
+	return _("Swap channels");
 }
 
 int SwapMain::is_synthesis()
@@ -429,22 +434,22 @@ char* SwapMain::output_to_text(int value)
 	switch(value)
 	{
 		case RED_SRC:
-			return "Red";
+			return _("Red");
 			break;
 		case GREEN_SRC:
-			return "Green";
+			return _("Green");
 			break;
 		case BLUE_SRC:
-			return "Blue";
+			return _("Blue");
 			break;
 		case ALPHA_SRC:
-			return "Alpha";
+			return _("Alpha");
 			break;
 		case NO_SRC:
-			return "0%";
+			return _("0%");
 			break;
 		case MAX_SRC:
-			return "100%";
+			return _("100%");
 			break;
 		default:
 			return "";
@@ -454,12 +459,12 @@ char* SwapMain::output_to_text(int value)
 
 int SwapMain::text_to_output(char *text)
 {
-	if(!strcmp(text, "Red")) return RED_SRC;
-	if(!strcmp(text, "Green")) return GREEN_SRC;
-	if(!strcmp(text, "Blue")) return BLUE_SRC;
-	if(!strcmp(text, "Alpha")) return ALPHA_SRC;
-	if(!strcmp(text, "0%")) return NO_SRC;
-	if(!strcmp(text, "100%")) return MAX_SRC;
+	if(!strcmp(text, _("Red"))) return RED_SRC;
+	if(!strcmp(text, _("Green"))) return GREEN_SRC;
+	if(!strcmp(text, _("Blue"))) return BLUE_SRC;
+	if(!strcmp(text, _("Alpha"))) return ALPHA_SRC;
+	if(!strcmp(text, _("0%"))) return NO_SRC;
+	if(!strcmp(text, _("100%"))) return MAX_SRC;
 	return 0;
 }
 

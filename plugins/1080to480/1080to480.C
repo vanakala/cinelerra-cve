@@ -10,6 +10,10 @@
 
 
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
 
 
 
@@ -76,9 +80,9 @@ int _1080to480Window::create_objects()
 {
 	int x = 10, y = 10;
 
-	add_tool(odd_first = new _1080to480Option(client, this, 1, x, y, "Odd field first"));
+	add_tool(odd_first = new _1080to480Option(client, this, 1, x, y, _("Odd field first")));
 	y += 25;
-	add_tool(even_first = new _1080to480Option(client, this, 0, x, y, "Even field first"));
+	add_tool(even_first = new _1080to480Option(client, this, 0, x, y, _("Even field first")));
 
 	show_window();
 	flush();
@@ -149,7 +153,7 @@ _1080to480Main::~_1080to480Main()
 	if(temp) delete temp;
 }
 
-char* _1080to480Main::plugin_title() { return "1080 to 480"; }
+char* _1080to480Main::plugin_title() { return _("1080 to 480"); }
 int _1080to480Main::is_realtime() { return 1; }
 
 SHOW_GUI_MACRO(_1080to480Main, _1080to480Thread)

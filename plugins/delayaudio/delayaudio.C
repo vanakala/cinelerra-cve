@@ -8,6 +8,11 @@
 
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 PluginClient* new_plugin(PluginServer *server)
 {
@@ -46,7 +51,7 @@ VFrame* DelayAudio::new_picon()
 
 char* DelayAudio::plugin_title()
 {
-	return "Delay audio";
+	return _("Delay audio");
 }
 
 void DelayAudio::reset()
@@ -290,7 +295,7 @@ DelayAudioWindow::~DelayAudioWindow()
 
 int DelayAudioWindow::create_objects()
 {
-	add_subwindow(new BC_Title(10, 10, "Delay seconds:"));
+	add_subwindow(new BC_Title(10, 10, _("Delay seconds:")));
 	add_subwindow(length = new DelayAudioTextBox(plugin, 10, 40));
 	update_gui();
 	show_window();

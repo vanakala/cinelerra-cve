@@ -1,5 +1,10 @@
 #include "invertwindow.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 InvertThread::InvertThread(InvertMain *client)
  : Thread()
@@ -39,7 +44,7 @@ InvertWindow::~InvertWindow()
 int InvertWindow::create_objects()
 {
 	int x = 10, y = 10;
-	add_tool(new BC_Title(x, y, "Invert"));
+	add_tool(new BC_Title(x, y, _("Invert")));
 	y += 20;
 	add_tool(invert = new InvertToggle(client, &(client->invert), x, y));
 }

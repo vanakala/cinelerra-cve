@@ -11,6 +11,11 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 class YUVEffect;
 
@@ -168,13 +173,13 @@ YUVWindow::YUVWindow(YUVEffect *plugin, int x, int y)
 void YUVWindow::create_objects()
 {
 	int x = 10, y = 10, x1 = 50;
-	add_subwindow(new BC_Title(x, y, "Y:"));
+	add_subwindow(new BC_Title(x, y, _("Y:")));
 	add_subwindow(this->y = new YUVLevel(plugin, &plugin->config.y, x1, y));
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "U:"));
+	add_subwindow(new BC_Title(x, y, _("U:")));
 	add_subwindow(u = new YUVLevel(plugin, &plugin->config.u, x1, y));
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "V:"));
+	add_subwindow(new BC_Title(x, y, _("V:")));
 	add_subwindow(v = new YUVLevel(plugin, &plugin->config.v, x1, y));
 
 	show_window();
@@ -215,7 +220,7 @@ int YUVEffect::is_realtime()
 
 char* YUVEffect::plugin_title()
 {
-	return "YUV";
+	return _("YUV");
 }
 
 NEW_PICON_MACRO(YUVEffect)

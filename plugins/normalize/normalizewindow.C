@@ -1,6 +1,11 @@
 #include "mwindow.inc"
 #include "normalizewindow.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 NormalizeWindow::NormalizeWindow(int x, int y)
  : BC_Window(PROGRAM_NAME ": Normalize", 
  				x - 160,
@@ -24,7 +29,7 @@ int NormalizeWindow::create_objects(float *db_over, int *separate_tracks)
 	int x = 10, y = 10;
 	this->db_over = db_over;
 	this->separate_tracks = separate_tracks;
-	add_subwindow(new BC_Title(x, y, "Enter the DB to overload by:"));
+	add_subwindow(new BC_Title(x, y, _("Enter the DB to overload by:")));
 	y += 20;
 	add_subwindow(new NormalizeWindowOverload(x, y, this->db_over));
 	y += 30;
@@ -60,7 +65,7 @@ int NormalizeWindowOverload::handle_event()
 
 
 NormalizeWindowSeparate::NormalizeWindowSeparate(int x, int y, int *separate_tracks)
- : BC_CheckBox(x, y, *separate_tracks, "Treat tracks independantly")
+ : BC_CheckBox(x, y, *separate_tracks, _("Treat tracks independantly"))
 {
 	this->separate_tracks = separate_tracks;
 }

@@ -11,6 +11,11 @@
 #include <math.h>
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 
 
@@ -80,7 +85,7 @@ void CompressorEffect::reset()
 
 char* CompressorEffect::plugin_title()
 {
-	return "Compressor";
+	return _("Compressor");
 }
 
 
@@ -702,26 +707,26 @@ void CompressorWindow::create_objects()
 		get_h() - y - 70));
 	canvas->set_cursor(CROSS_CURSOR);
 	x = get_w() - 110;
-	add_subwindow(new BC_Title(x, y, "Preview secs:"));
+	add_subwindow(new BC_Title(x, y, _("Preview secs:")));
 	y += 20;
 	add_subwindow(preview = new CompressorPreview(plugin, x, y));
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Reaction secs:"));
+	add_subwindow(new BC_Title(x, y, _("Reaction secs:")));
 	y += 20;
 	add_subwindow(reaction = new CompressorReaction(plugin, x, y));
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Trigger:"));
+	add_subwindow(new BC_Title(x, y, _("Trigger:")));
 	y += 20;
 	add_subwindow(trigger = new CompressorTrigger(plugin, x, y));
 	y += 30;
 	add_subwindow(clear = new CompressorClear(plugin, x, y));
 	x = 10;
 	y = get_h() - 40;
-	add_subwindow(new BC_Title(x, y, "Point:"));
+	add_subwindow(new BC_Title(x, y, _("Point:")));
 	x += 50;
 	add_subwindow(x_text = new CompressorX(plugin, x, y));
 	x += 110;
-	add_subwindow(new BC_Title(x, y, "x"));
+	add_subwindow(new BC_Title(x, y, _("x")));
 	x += 20;
 	add_subwindow(y_text = new CompressorY(plugin, x, y));
 	draw_scales();
@@ -1051,7 +1056,7 @@ int CompressorTrigger::handle_event()
 
 
 CompressorClear::CompressorClear(CompressorEffect *plugin, int x, int y) 
- : BC_GenericButton(x, y, "Clear")
+ : BC_GenericButton(x, y, _("Clear"))
 {
 	this->plugin = plugin;
 }

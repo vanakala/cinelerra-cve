@@ -1,10 +1,13 @@
+# translation of sl.po to 
+# translation of sl.po to slovenian language
+
 msgid ""
 msgstr ""
 "Project-Id-Version: sl\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2003-10-11 23:39+0200\n"
-"PO-Revision-Date: 2003-10-11 01:07+0200\n"
-"Last-Translator: \n"
+"POT-Creation-Date: 2003-10-12 19:14+0200\n"
+"PO-Revision-Date: 2003-10-12 19:06+0200\n"
+"Last-Translator: Ana Pavlisic <ana.pavlisic@kiss.si>\n"
 "Language-Team:  <sl@li.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=ISO-8859-2\n"
@@ -33,7 +36,7 @@ msgstr "Prednastavitve:"
 
 #: cinelerra/new.C:207
 msgid "User Defined"
-msgstr "Uporabni¹ko nastavljen"
+msgstr "Poljuben"
 
 #: cinelerra/new.C:210
 msgid "1080 Progressive"
@@ -65,11 +68,11 @@ msgstr "Internet"
 
 #: cinelerra/new.C:315
 msgid "CD Audio"
-msgstr "Avdio CD"
+msgstr "Zvoèni CD"
 
 #: cinelerra/new.C:330
 msgid "DAT Audio"
-msgstr "Avdio DAT"
+msgstr "Zvok DAT"
 
 #: cinelerra/new.C:358
 msgid "Parameters for the new project:"
@@ -77,7 +80,7 @@ msgstr "Parametri novega projekta:"
 
 #: cinelerra/new.C:363 cinelerra/mainmenu.C:127 cinelerra/setformat.C:253
 msgid "Audio"
-msgstr "Avdio"
+msgstr "Zvok"
 
 #: cinelerra/new.C:367 cinelerra/new.C:394
 msgid "Tracks:"
@@ -93,8 +96,17 @@ msgstr "Kanali:"
 #: cinelerra/new.C:383 cinelerra/recordgui.C:169 cinelerra/setaudio.C:177
 #: cinelerra/setformat.C:258 cinelerra/setformat.C:263
 msgid "Samplerate:"
-msgstr "Frekvenca vzorèenja"
+msgstr "Frek. vzorè.:"
 
+#. 	add_subwindow(new BC_Title(x, y, _("Playback"), LARGEFONT, BLACK));
+#. 	x += 200;
+#. 	add_subwindow(new BC_Title(x, y, _("Strategy:")));
+#. 	popup = new PlaybackStrategy(this, x + 70, y);
+#. 	popup->create_objects();
+#. 	x = 10;
+#. 	y += popup->get_h() + 30;
+#. Global playback options
+#. All strategies use these
 #: cinelerra/new.C:391 cinelerra/mainmenu.C:132 cinelerra/setformat.C:309
 #: cinelerra/videooutprefs.C:55
 msgid "Video"
@@ -102,21 +114,29 @@ msgstr "Video"
 
 #: cinelerra/new.C:409 cinelerra/recordgui.C:197
 msgid "Framerate:"
-msgstr "Frekvenca okvirjev:"
+msgstr "Frekv. slik:"
 
 #: cinelerra/new.C:435 cinelerra/setformat.C:327 cinelerra/setvideo.C:264
 msgid "Canvas size:"
-msgstr "Velikost platna:"
+msgstr "Platno:"
 
+#. 	add_subwindow(new ScaleConstrain(x, y, thread));
+#. 	x = 10;
+#. 	y += 80;
 #: cinelerra/new.C:451 cinelerra/scale.C:249 cinelerra/setformat.C:386
 #: cinelerra/setvideo.C:323
 msgid "Aspect ratio:"
-msgstr "Razmerje slike:"
+msgstr "Razmerje:"
 
 #: cinelerra/new.C:469 cinelerra/filempeg.C:1019 cinelerra/setformat.C:369
 #: cinelerra/setvideo.C:347
 msgid "Color model:"
 msgstr "Barvni naèin:"
+
+#: cinelerra/new.C:1002
+#, fuzzy
+msgid "Auto aspect ratio"
+msgstr "Razmerje:"
 
 #: cinelerra/loadfile.C:28
 msgid "Load files..."
@@ -171,10 +191,12 @@ msgstr "Snemanje..."
 msgid "Record::run_script: Unrecognized command: %s\n"
 msgstr "Record::run_script: Nepoznan ukaz: %s\n"
 
+#. no plugin
 #: cinelerra/record.C:441 cinelerra/channeledit.C:564
 #: cinelerra/plugindialog.C:211 cinelerra/recordgui.C:234
 #: cinelerra/sharedlocation.C:104 cinelerra/sharedlocation.C:109
 #: cinelerra/sharedlocation.C:122 cinelerra/vwindowgui.C:216
+#: plugins/parametric/parametric.C:262
 msgid "None"
 msgstr "Brez"
 
@@ -182,10 +204,12 @@ msgstr "Brez"
 msgid "render"
 msgstr "upodabljanje"
 
+#. Update GUI
 #: cinelerra/record.C:774
 msgid "Deleting"
 msgstr "Bri¹em"
 
+#. Update GUI
 #: cinelerra/record.C:781
 msgid "OK"
 msgstr "V redu"
@@ -199,6 +223,7 @@ msgstr "Upodabljanje..."
 msgid "Rendering %s..."
 msgstr "Upodabljam %s..."
 
+#. Don't bother with the filename since renderfarm defeats the meaning
 #: cinelerra/render.C:224
 msgid "Rendering..."
 msgstr "Upodabljam..."
@@ -318,6 +343,7 @@ msgstr "Kanal:"
 msgid "Syt Offset:"
 msgstr "Odmik syt:"
 
+#. couldn't open source file / skip the edit
 #: cinelerra/amodule.C:193 cinelerra/amodule.C:269
 #, c-format
 msgid "VirtualAConsole::load_track Couldn't open %s.\n"
@@ -354,7 +380,7 @@ msgstr "Bajti:"
 
 #: cinelerra/assetedit.C:211 cinelerra/formattools.C:133
 msgid "Audio:"
-msgstr "Avdio:"
+msgstr "Zvok:"
 
 #: cinelerra/assetedit.C:217 cinelerra/assetedit.C:352
 #: cinelerra/filemov.C:1231 cinelerra/filemov.C:1500
@@ -365,7 +391,7 @@ msgstr "Kompresija:"
 
 #: cinelerra/assetedit.C:246 cinelerra/fileformat.C:64
 msgid "Sample rate:"
-msgstr "Frekvenca vzorèenja:"
+msgstr "Ferkvenca vzorèenja:"
 
 #: cinelerra/assetedit.C:287 cinelerra/fileformat.C:83
 msgid "Header length:"
@@ -374,15 +400,15 @@ msgstr "Dol¾ina glave:"
 #: cinelerra/assetedit.C:299 cinelerra/fileformat.C:88
 #: cinelerra/filesndfile.C:379 cinelerra/formatwindow.C:43
 msgid "Byte order:"
-msgstr "Vrstni res bajtov:"
+msgstr "Zapis bajtov:"
 
 #: cinelerra/assetedit.C:319 cinelerra/assetedit.C:456
 msgid "Lo-Hi"
-msgstr "Ni¾ji-Vi¹ji"
+msgstr "Ni-Vi"
 
 #: cinelerra/assetedit.C:321 cinelerra/assetedit.C:473
 msgid "Hi-Lo"
-msgstr "Vi¹ji-Ni¾ji"
+msgstr "Vi-Ni"
 
 #: cinelerra/assetedit.C:335
 msgid "Values are unsigned"
@@ -393,6 +419,7 @@ msgstr "Vrednosti so nepredznaèene"
 msgid "Values are signed"
 msgstr "Vrednosti so predznaèene"
 
+#. printf("FormatTools::create_objects 8\n");
 #: cinelerra/assetedit.C:346 cinelerra/formattools.C:166
 msgid "Video:"
 msgstr "Video:"
@@ -400,10 +427,11 @@ msgstr "Video:"
 #: cinelerra/assetedit.C:364 cinelerra/setformat.C:315
 #: cinelerra/setvideo.C:246
 msgid "Frame rate:"
-msgstr "Frekvenca okvirjev:"
+msgstr "Frekv. slik:"
 
 #: cinelerra/assetedit.C:374 cinelerra/scale.C:189 cinelerra/scale.C:193
 #: cinelerra/setformat.C:330 cinelerra/setvideo.C:268 cinelerra/setvideo.C:272
+#: plugins/freeverb/freeverb.C:327
 msgid "Width:"
 msgstr "©irina:"
 
@@ -424,11 +452,16 @@ msgstr "Znova zgradi kazalo"
 msgid "Sort items"
 msgstr "Razvrsti predmete"
 
+#. set scrubbing speed
+#. 	ScrubSpeed *scrub_speed;
+#. 	settingsmenu->add_item(scrub_speed = new ScrubSpeed(mwindow));
+#. 	if(mwindow->edl->session->scrub_speed == .5)
+#. 		scrub_speed->set_text(_("Fast Shuttle"));
 #: cinelerra/assetpopup.C:184 cinelerra/mainmenu.C:166
 msgid "View"
 msgstr "Pogled"
 
-#: cinelerra/assetpopup.C:217
+#: cinelerra/assetpopup.C:217 cinelerra/mainmenu.C:707
 msgid "Paste"
 msgstr "Prilepi"
 
@@ -451,7 +484,7 @@ msgstr "Zaèasno odtrani z diska?"
 #: cinelerra/atrack.C:123
 #, c-format
 msgid "Audio %d"
-msgstr "Avdio %d"
+msgstr "Zvok %d"
 
 #: cinelerra/audiooutprefs.C:44 cinelerra/audiooutprefs.C:102
 #: cinelerra/audiooutprefs.C:111 cinelerra/playbackprefs.C:47
@@ -473,21 +506,30 @@ msgstr "Veèglavno"
 msgid "Blond Symphony"
 msgstr "Blond Symphony"
 
+#. 	add_subwindow(new BC_Title(x, y, _("Playback"), LARGEFONT, BLACK));
+#. 	x += 200;
+#. 	add_subwindow(new BC_Title(x, y, _("Strategy:")));
+#. 	popup = new PlaybackStrategy(this, x + 70, y);
+#. 	popup->create_objects();
+#. 	x = 10;
+#. 	y += popup->get_h() + 30;
+#. Global playback options
+#. All strategies use these
 #: cinelerra/audiooutprefs.C:59 cinelerra/playbackprefs.C:62
 msgid "Audio Out"
-msgstr "Avdio izhod"
+msgstr "Zvoèni izhod"
 
 #: cinelerra/audiooutprefs.C:61 cinelerra/playbackprefs.C:64
 msgid "Samples to read from disk at a time:"
-msgstr "©tevilo hkrati z diska branih vzorcev:"
+msgstr "©t. hkrati z diska branih vzorcev:"
 
 #: cinelerra/audiooutprefs.C:65 cinelerra/playbackprefs.C:68
 msgid "Samples to send to console at a time:"
-msgstr "©tevilo hkrati na konzolo poslanih vzorcev:"
+msgstr "©t. hkrati na konzolo poslanih vzorcev:"
 
 #: cinelerra/audiooutprefs.C:77 cinelerra/playbackprefs.C:80
 msgid "Audio Driver:"
-msgstr "Avdio gonilnik:"
+msgstr "Gonilnik:"
 
 #: cinelerra/audiooutprefs.C:154 cinelerra/audiooutprefs.C:174
 #: cinelerra/playbackprefs.C:210 cinelerra/playbackprefs.C:230
@@ -505,7 +547,7 @@ msgstr "Skupno glav:"
 #: cinelerra/playbackprefs.C:242 cinelerra/videooutprefs.C:156
 #: cinelerra/videooutprefs.C:190
 msgid "Video Driver:"
-msgstr "Video gonilnik:"
+msgstr "Gonilnik:"
 
 #: cinelerra/audiooutprefs.C:182 cinelerra/performanceprefs.C:115
 #: cinelerra/playbackprefs.C:238
@@ -523,13 +565,14 @@ msgstr "Pogled sledi predvajanu"
 #: cinelerra/audiooutprefs.C:390 cinelerra/playbackprefs.C:463
 #: cinelerra/recordprefs.C:288 cinelerra/videoinprefs.C:174
 msgid "Use software for positioning information"
-msgstr "Programsko ugotovi mesto predvajanja"
+msgstr "Programsko ugotavljaj trenutno mesto predvajanja"
 
 #: cinelerra/audiooutprefs.C:405 cinelerra/playbackprefs.C:478
 msgid "Audio playback in real time priority (root only)"
-msgstr "Predvajanje avdia v realno èasovni prioriteti (le administrator)"
+msgstr "Predvajaj zvok z realno èasovno prioriteto (le administrator)"
 
-#: cinelerra/awindowgui.C:270
+#. printf("AWindowGUI::create_objects 1\n");
+#: cinelerra/awindowgui.C:270 plugins/titler/title.C:1024
 msgid "Title"
 msgstr "Naslov"
 
@@ -655,7 +698,7 @@ msgid "Move down"
 msgstr "Prestavi dol"
 
 #: cinelerra/channeledit.C:419 cinelerra/cwindowtool.C:1188
-#: cinelerra/recordgui.C:934
+#: cinelerra/recordgui.C:934 plugins/synthesizer/synthesizer.C:896
 msgid "Delete"
 msgstr "Zbri¹i"
 
@@ -747,11 +790,11 @@ msgstr "Tabela frekvenc:"
 msgid "Input:"
 msgstr "Vhod:"
 
-#: cinelerra/channeledit.C:959
+#: cinelerra/channeledit.C:959 plugins/brightness/brightnesswindow.C:39
 msgid "Brightness:"
 msgstr "Svetlost:"
 
-#: cinelerra/channeledit.C:962
+#: cinelerra/channeledit.C:962 plugins/brightness/brightnesswindow.C:45
 msgid "Contrast:"
 msgstr "Kontrast:"
 
@@ -759,7 +802,8 @@ msgstr "Kontrast:"
 msgid "Color:"
 msgstr "Barva:"
 
-#: cinelerra/channeledit.C:968
+#: cinelerra/channeledit.C:968 plugins/chromakey/chromakey.C:102
+#: plugins/huesaturation/huesaturation.C:290
 msgid "Hue:"
 msgstr "Odtenek:"
 
@@ -807,6 +851,7 @@ msgstr "YUV420"
 msgid "YUV422"
 msgstr "YUV422"
 
+#. printf("ConfirmQuitWindow::create_objects 1\n");
 #: cinelerra/confirmquit.C:37
 msgid "( Answering No will destroy changes )"
 msgstr "( Odgovor \"Ne\" bo unièil spremembe ) "
@@ -882,7 +927,7 @@ msgstr ""
 #: cinelerra/patchgui.C:530 cinelerra/trackcanvas.C:2161
 #: cinelerra/trackcanvas.C:2222
 msgid "keyframe"
-msgstr "kljuèni okvir"
+msgstr "kljuèna slika"
 
 #: cinelerra/cwindowtool.C:260
 msgid "Do it"
@@ -905,12 +950,16 @@ msgid "Y2:"
 msgstr "Y2:"
 
 #: cinelerra/cwindowtool.C:400 cinelerra/cwindowtool.C:775
-#: cinelerra/cwindowtool.C:1526
+#: cinelerra/cwindowtool.C:1526 plugins/radialblur/radialblur.C:258
+#: plugins/titler/titlewindow.C:211 plugins/zoomblur/zoomblur.C:264
 msgid "X:"
 msgstr "X:"
 
 #: cinelerra/cwindowtool.C:409 cinelerra/cwindowtool.C:784
-#: cinelerra/cwindowtool.C:1534
+#: cinelerra/cwindowtool.C:1534 plugins/perspective/perspective.C:139
+#: plugins/radialblur/radialblur.C:262 plugins/titler/titlewindow.C:216
+#: plugins/yuv/yuv.C:176 plugins/yuv/yuvwindow.C:52
+#: plugins/zoomblur/zoomblur.C:268
 msgid "Y:"
 msgstr "Y:"
 
@@ -960,13 +1009,19 @@ msgid "Cycle prev"
 msgstr "Kro¾i nazaj"
 
 #: cinelerra/cwindowtool.C:1493 cinelerra/recordgui.C:278
+#: plugins/denoisemjpeg/denoisemjpeg.C:392 plugins/motion/motion.C:117
 msgid "Mode:"
 msgstr "Naèin:"
 
 #: cinelerra/cwindowtool.C:1502 cinelerra/fileavi.C:918
+#: plugins/chromakey/chromakey.C:114 plugins/huesaturation/huesaturation.C:296
 msgid "Value:"
 msgstr "Vrednost:"
 
+#. 	add_subwindow(next_point = new CWindowMaskCycleNext(mwindow, this, x, y));
+#. 	y += 30;
+#. 	add_subwindow(prev_point = new CWindowMaskCyclePrev(mwindow, this, x, y));
+#. 	y += 40;
 #: cinelerra/cwindowtool.C:1511
 msgid "Mask number:"
 msgstr "©tevilka maske:"
@@ -1030,9 +1085,8 @@ msgid "To clip"
 msgstr "V odsek"
 
 #: cinelerra/editpanel.C:689
-#, fuzzy
 msgid "Splice ( v )"
-msgstr "Prilepi ( v )"
+msgstr "Zdru¾i ( v )"
 
 #: cinelerra/editpanel.C:714
 msgid "Cut ( x )"
@@ -1088,7 +1142,7 @@ msgstr "Naèin urejanja izreèi in prilepi"
 
 #: cinelerra/editpanel.C:1014
 msgid "Generate keyframes while tweeking"
-msgstr "Ustvarjaj kljuène okvirje med premikanjem"
+msgstr "Ustvarjaj kljuène slike med premikanjem"
 
 #: cinelerra/editpopup.C:71
 msgid "Attach effect..."
@@ -1116,7 +1170,7 @@ msgstr "Mehèaj s koliko vzorci:"
 
 #: cinelerra/featheredits.C:81
 msgid "Feather by how many frames:"
-msgstr "Mehèaj s koliko okvirji:"
+msgstr "Mehèaj s koliko slikami:"
 
 #: cinelerra/fileavi.C:765 cinelerra/fileavi.C:909
 msgid "Codec: "
@@ -1136,7 +1190,7 @@ msgstr "Kompresija: Consumer DV"
 
 #: cinelerra/file.C:200
 msgid "This format doesn't support audio."
-msgstr "Ta format ne podpira avdia."
+msgstr "Ta format ne podpira zvoka."
 
 #: cinelerra/file.C:203
 msgid "This format doesn't support video."
@@ -1149,12 +1203,12 @@ msgstr "Neznan"
 #: cinelerra/file.C:1132 cinelerra/file.C:1138 cinelerra/fileformat.C:143
 #: cinelerra/filesndfile.C:411
 msgid "Lo Hi"
-msgstr "Ni¾ji-Vi¹ji"
+msgstr "Ni¾-Vi¹"
 
 #: cinelerra/file.C:1139 cinelerra/fileformat.C:155
 #: cinelerra/filesndfile.C:396
 msgid "Hi Lo"
-msgstr "Vi¹ji-Ni¾ji"
+msgstr "Vi¹-Ni¾"
 
 #: cinelerra/file.inc:47
 msgid "Apple/SGI AIFF"
@@ -1162,8 +1216,9 @@ msgstr "Apple/SGI AIFF"
 
 #: cinelerra/file.inc:48
 msgid "MPEG Audio"
-msgstr "Avdio MPEG"
+msgstr "Zvok MPEG"
 
+#. For encoding only
 #: cinelerra/file.inc:49
 msgid "Sun/NeXT AU"
 msgstr "Sun/NeXT AU"
@@ -1204,6 +1259,7 @@ msgstr "Quicktime za Linux"
 msgid "MPEG"
 msgstr "MPEG"
 
+#. For decoding only
 #: cinelerra/file.inc:60
 msgid "Raw PCM"
 msgstr "Surov PCM"
@@ -1236,6 +1292,7 @@ msgstr "Zaporedje TIFF"
 msgid "MPEG Video"
 msgstr "Video MPEG"
 
+#. For encoding only
 #: cinelerra/file.inc:69
 msgid "OGG Vorbis"
 msgstr "OGG Vorbis"
@@ -1272,6 +1329,7 @@ msgstr "ADPCM"
 msgid "Float"
 msgstr "Plavajoèa vejica"
 
+#. Video formats not part of Quicktime
 #: cinelerra/file.inc:116
 msgid "RGB ALPHA"
 msgstr "RGB ALPHA"
@@ -1383,6 +1441,7 @@ msgstr "MP3"
 msgid "FileMOV::open_file %s: No such file or directory\n"
 msgstr "FileMOV::open_file %s: Datoteka ali imenik ne obstaja\n"
 
+#. Fix up the Quicktime file.
 #: cinelerra/filemov.C:239
 msgid "Made with Cinelerra for Linux"
 msgstr "Narejeno s Cinellero za Linux"
@@ -1407,31 +1466,31 @@ msgstr "Spremenljiva bitna hitrost"
 
 #: cinelerra/filemov.C:1314 cinelerra/filevorbis.C:417
 msgid "Min bitrate:"
-msgstr "Najmanj¹a bitna hitrost:"
+msgstr "Najmanj¹a bit. hitr.:"
 
 #: cinelerra/filemov.C:1320 cinelerra/filevorbis.C:421
 msgid "Avg bitrate:"
-msgstr "Povpreèna bitna hitrost:"
+msgstr "Povpreèna bit. hitr.:"
 
 #: cinelerra/filemov.C:1326 cinelerra/filevorbis.C:426
 msgid "Max bitrate:"
-msgstr "Najveèja bitna hitrost:"
+msgstr "Najveèja bit. hitr.:"
 
 #: cinelerra/filemov.C:1608
 msgid "Bitrate tolerance:"
-msgstr "Toleranca bitne hitrosti:"
+msgstr "Toleranca bit. hitr.:"
 
 #: cinelerra/filemov.C:1615 cinelerra/filempeg.C:1007
 msgid "Quantization:"
 msgstr "Kvantizacija:"
 
-#: cinelerra/filemov.C:1629
+#: cinelerra/filemov.C:1629 plugins/denoisemjpeg/denoisemjpeg.C:279
 msgid "Interlaced"
 msgstr "Prepleten"
 
 #: cinelerra/filemov.C:1635
 msgid "Keyframe interval:"
-msgstr "Interval kljuènega okvirja"
+msgstr "Interval kljuè. slik:"
 
 #: cinelerra/filemov.C:1661
 msgid "Quantizer:"
@@ -1451,7 +1510,7 @@ msgstr "Perioda reakcije:"
 
 #: cinelerra/filemov.C:1696
 msgid "Max Key Interval:"
-msgstr "Najveèji interval med kljuèi:"
+msgstr "Najv. int. med klj.:"
 
 #: cinelerra/filemov.C:1703
 msgid "Max Quantizer:"
@@ -1459,15 +1518,15 @@ msgstr "Najveèji kvantizer:"
 
 #: cinelerra/filemov.C:1710
 msgid "Min Quantizer:"
-msgstr "Najmanj¹i kvantizer:"
+msgstr "Najmanj¹i kvantiz.:"
 
 #: cinelerra/filemov.C:1809
 msgid "Fix bitrate"
-msgstr "Zakleni bitno hitrost"
+msgstr "Zakleni bit. hitrost"
 
 #: cinelerra/filemov.C:1834
 msgid "Fix quantization"
-msgstr "Zakleni kvantizacijo"
+msgstr "Zakleni kvantizac."
 
 #: cinelerra/filempeg.C:217
 #, c-format
@@ -1480,7 +1539,7 @@ msgstr "Plast:"
 
 #: cinelerra/filempeg.C:813
 msgid "Kbits per second:"
-msgstr "Kilo Bitov na sekundo:"
+msgstr "Kbitov na sekundo:"
 
 #: cinelerra/filempeg.C:870 cinelerra/filempeg.C:878
 msgid "II"
@@ -1496,15 +1555,17 @@ msgstr "Derivat:"
 
 #: cinelerra/filempeg.C:1013
 msgid "I frame distance:"
-msgstr "Razdalja med okvirjema I:"
+msgstr "Razd. med slik. I:"
 
+#. 	add_subwindow(new BC_Title(x, y, _("P frame distance:")));
+#. 	y += 30;
 #: cinelerra/filempeg.C:1028
 msgid "Progressive frames"
-msgstr "Progresivni okvirji"
+msgstr "Progresivne slike"
 
 #: cinelerra/filempeg.C:1030
 msgid "Denoise"
-msgstr "Odstrani ¹um"
+msgstr "Odstranjevanje ¹uma"
 
 #: cinelerra/filempeg.C:1032
 msgid "Sequence start codes in every GOP"
@@ -1520,7 +1581,7 @@ msgstr "MPEG-2"
 
 #: cinelerra/filempeg.C:1133 cinelerra/filevorbis.C:448
 msgid "Fixed bitrate"
-msgstr "Stalna bitna hitrost"
+msgstr "Stalna bit. hitr."
 
 #: cinelerra/filempeg.C:1147
 msgid "Fixed quantization"
@@ -1573,7 +1634,7 @@ msgstr "Izbrana oblika zapisa en podpira videa."
 
 #: cinelerra/formatcheck.C:42
 msgid "The format you selected doesn't support audio."
-msgstr "Izbrana oblika zapisa ne podpira avdia."
+msgstr "Izbrana oblika zapisa ne podpira zvoka."
 
 #: cinelerra/formatcheck.C:50
 msgid "IMA4 compression is only available in Quicktime movies."
@@ -1595,17 +1656,18 @@ msgstr "Izhod v datoteko"
 msgid "Select a file to write to:"
 msgstr "Izberi datoteko v katero naj se pi¹e:"
 
+#. printf("FormatTools::create_objects 3\n");
 #: cinelerra/formattools.C:114
 msgid "File Format:"
-msgstr "Oblika zapisa datoteke:"
+msgstr "Obl. zapisa:"
 
 #: cinelerra/formattools.C:148
 msgid "Number of audio channels to record:"
-msgstr "©tevilo avdio kanalov za snemanje:"
+msgstr "©tevilo zvoènih kanalov za snemanje:"
 
 #: cinelerra/formattools.C:317
 msgid "Configure audio compression"
-msgstr "Nastavi kompresijo avdia"
+msgstr "Nastavi kompresijo zvoka"
 
 #: cinelerra/formattools.C:331
 msgid "Configure video compression"
@@ -1613,11 +1675,11 @@ msgstr "Nastavi kompresijo videa"
 
 #: cinelerra/formattools.C:407
 msgid "Record audio tracks"
-msgstr "Snemaj avdio steze"
+msgstr "Snemaj zvoène steze"
 
 #: cinelerra/formattools.C:407
 msgid "Render audio tracks"
-msgstr "Upodobi avdio steze"
+msgstr "Upodobi zvoène steze"
 
 #: cinelerra/formattools.C:422
 msgid "Record video tracks"
@@ -1637,7 +1699,7 @@ msgstr "Ob vsaki oznaki naredi novo datoteko"
 
 #: cinelerra/formatwindow.C:25
 msgid "Set parameters for this audio format:"
-msgstr "Nastavi parametre te oblike avdio zapisa:"
+msgstr "Nastavi parametre te oblike zvoènega zapisa:"
 
 #: cinelerra/formatwindow.C:45
 msgid "HiLo:"
@@ -1664,6 +1726,7 @@ msgstr "Ustvarjam %s."
 msgid "IndexFile::draw_index: index has 0 zoom\n"
 msgstr "IndexFile::draw_index: kazalo ima poveèavo 0\n"
 
+#. failed to create it
 #: cinelerra/indexthread.C:205
 #, c-format
 msgid "IndexThread::run() Couldn't write index file %s to disk.\n"
@@ -1685,13 +1748,18 @@ msgstr "Vleci le izvor"
 msgid "No effect"
 msgstr "Brez uèinka"
 
+#. 	add_border(get_resources()->get_bg_shadow1(),
+#. 		get_resources()->get_bg_shadow2(),
+#. 		get_resources()->get_bg_color(),
+#. 		get_resources()->get_bg_light2(),
+#. 		get_resources()->get_bg_light1());
 #: cinelerra/interfaceprefs.C:40 cinelerra/preferencesthread.C:233
 msgid "Interface"
 msgstr "Vmesnik"
 
 #: cinelerra/interfaceprefs.C:79
 msgid "frames per foot"
-msgstr "Okvirjev na èevelj"
+msgstr "Slik na èevelj"
 
 #: cinelerra/interfaceprefs.C:89
 msgid "Index files"
@@ -1739,7 +1807,7 @@ msgstr "Gumb 3:"
 
 #: cinelerra/interfaceprefs.C:166
 msgid "Min DB for meter:"
-msgstr "Najmanj DB na merilcu:"
+msgstr "Najmanj DB na mer.:"
 
 #: cinelerra/interfaceprefs.C:170
 msgid "Format for meter:"
@@ -1755,27 +1823,27 @@ msgstr "Tema:"
 
 #: cinelerra/interfaceprefs.C:323
 msgid "Use Hours:Minutes:Seconds.xxx"
-msgstr "Uporabi Ure:Minute:Sekunde.xxx"
+msgstr "Ka¾i Ure:Minute:Sekunde.xxx"
 
 #: cinelerra/interfaceprefs.C:333
 msgid "Use Hours:Minutes:Seconds:Frames"
-msgstr "Uporabi Ure:Minute:Sekunde:Okvirji"
+msgstr "Ka¾i Ure:Minute:Sekunde:Slike"
 
 #: cinelerra/interfaceprefs.C:342
 msgid "Use Samples"
-msgstr "Uporabi vzorce"
+msgstr "Ka¾i vzorce"
 
 #: cinelerra/interfaceprefs.C:351
 msgid "Use Frames"
-msgstr "Uporabi okvirje"
+msgstr "Ka¾i slike"
 
 #: cinelerra/interfaceprefs.C:360
 msgid "Use Hex Samples"
-msgstr "Uporabi okvirje ¹estnajsti¹ko"
+msgstr "Ka¾i vzorce v ¹estnajsti¹kem zapisu"
 
 #: cinelerra/interfaceprefs.C:369
 msgid "Use Feet-frames"
-msgstr "Uporabi èevlje-okvirje"
+msgstr "Ka¾i èevlje slik"
 
 #: cinelerra/interfaceprefs.C:540
 msgid "Use thumbnails in resource window"
@@ -1866,7 +1934,7 @@ msgstr "Uredi"
 
 #: cinelerra/mainmenu.C:115
 msgid "Keyframes"
-msgstr "Kljuèni okvirji"
+msgstr "Kljuène slike"
 
 #: cinelerra/mainmenu.C:137
 msgid "Tracks"
@@ -1896,6 +1964,7 @@ msgstr "Izpi¹i vtiènike"
 msgid "Dump Assets"
 msgstr "Izpi¹i sredstva"
 
+#. ================================================= edit
 #: cinelerra/mainmenu.C:540
 msgid "Undo"
 msgstr "Razveljavi"
@@ -1916,35 +1985,35 @@ msgstr "Obnovi %s"
 
 #: cinelerra/mainmenu.C:577
 msgid "Cut keyframes"
-msgstr "Izre¾i kljuène okvirje"
+msgstr "Izre¾i kljuène slike"
 
 #: cinelerra/mainmenu.C:589
 msgid "Copy keyframes"
-msgstr "Kopiraj kljuène okvirje"
+msgstr "Kopiraj kljuène slike"
 
 #: cinelerra/mainmenu.C:602
 msgid "Paste keyframes"
-msgstr "Prilepi kljuène okvirje"
+msgstr "Prilepi kljuène slike"
 
 #: cinelerra/mainmenu.C:614
 msgid "Clear keyframes"
-msgstr "Poèisti kljuène okvirje"
+msgstr "Poèisti kljuène slike"
 
 #: cinelerra/mainmenu.C:631
 msgid "Cut default keyframe"
-msgstr "Izre¾i privzet kljuèni okvir"
+msgstr "Izre¾i privzeto kljuèno sliko"
 
 #: cinelerra/mainmenu.C:644
 msgid "Copy default keyframe"
-msgstr "Kopiraj privzet kljuèni okvir"
+msgstr "Kopiraj privzeto kljuèno sliko  "
 
 #: cinelerra/mainmenu.C:657
 msgid "Paste default keyframe"
-msgstr "Prilepi privzet kljuèni okvir"
+msgstr "Prilepi privzeto kljuèno sliko"
 
 #: cinelerra/mainmenu.C:670
 msgid "Clear default keyframe"
-msgstr "Poèisti privzet kljuèni okvir"
+msgstr "Poèisti privzeto kljuèno sliko"
 
 #: cinelerra/mainmenu.C:683
 msgid "Cut"
@@ -1954,7 +2023,8 @@ msgstr "Izre¾i"
 msgid "Copy"
 msgstr "Kopiraj"
 
-#: cinelerra/mainmenu.C:719
+#: cinelerra/mainmenu.C:719 plugins/compressor/compressor.C:1059
+#: plugins/synthesizer/synthesizer.C:967
 msgid "Clear"
 msgstr "Poèisti"
 
@@ -1965,6 +2035,11 @@ msgstr "Prilepi ti¹ino"
 #: cinelerra/mainmenu.C:746
 msgid "Select All"
 msgstr "Izberi vse"
+
+#: cinelerra/mainmenu.C:757
+#, fuzzy
+msgid "Clear labels"
+msgstr "Poèisti kljuène slike"
 
 #: cinelerra/mainmenu.C:769
 msgid "Mute Region"
@@ -2024,15 +2099,20 @@ msgstr "Samodejnosti sledijo urejanjem"
 
 #: cinelerra/mainmenu.C:1067
 msgid "Align cursor on frames"
-msgstr "Postavi kazalec na okvirje"
+msgstr "Postavi kazalec na slike"
 
-#: cinelerra/mainmenu.C:1090
+#: cinelerra/mainmenu.C:1080 cinelerra/mainmenu.C:1090
 msgid "Slow Shuttle"
 msgstr "Poèasno premikanje"
 
 #: cinelerra/mainmenu.C:1095
 msgid "Fast Shuttle"
 msgstr "Hitro premikanje"
+
+#: cinelerra/mainmenu.C:1099
+#, fuzzy
+msgid "Save settings now"
+msgstr "Shranjene nastavitve."
 
 #: cinelerra/mainmenu.C:1108
 msgid "Saved settings."
@@ -2087,6 +2167,7 @@ msgstr "Izbran ni noben uèinek."
 msgid "No selected range to process."
 msgstr "Ni izbranega obmoèja za procesiranje."
 
+#. open failed
 #: cinelerra/menueffects.C:426 cinelerra/packagerenderer.C:172
 #: cinelerra/savefile.C:85
 #, c-format
@@ -2129,7 +2210,7 @@ msgstr "MWindow::init_theme: Tema %s ni bila najdena.\n"
 
 #: cinelerra/mwindow.C:820
 msgid "'s format couldn't be determined."
-msgstr "ni bilo mogoèe ugotoviti oblike zapisa."
+msgstr "ni bilo mogoèe ugotoviti obl. zapisa."
 
 #: cinelerra/mwindow.C:1007
 msgid "Initializing GUI"
@@ -2163,11 +2244,11 @@ msgstr "poèisti"
 
 #: cinelerra/mwindowedit.C:173
 msgid "clear keyframes"
-msgstr "poèisti kljuène okvirje"
+msgstr "poèisti kljuène slike"
 
 #: cinelerra/mwindowedit.C:190
 msgid "clear default keyframe"
-msgstr "poèisti privzete kljuène okvirje"
+msgstr "poèisti privzete kljuène slike"
 
 #: cinelerra/mwindowedit.C:225
 msgid "concatenate tracks"
@@ -2183,11 +2264,11 @@ msgstr "izre¾i"
 
 #: cinelerra/mwindowedit.C:359
 msgid "cut keyframes"
-msgstr "izre¾i kljuène okvirje"
+msgstr "izre¾i kljuène slike"
 
 #: cinelerra/mwindowedit.C:381
 msgid "cut default keyframe"
-msgstr "izre¾i privzeti kljuèni okvir"
+msgstr "izre¾i privzeto kljuèno sliko"
 
 #: cinelerra/mwindowedit.C:413 cinelerra/mwindowedit.C:446
 msgid "delete track"
@@ -2263,11 +2344,11 @@ msgstr "prilepi sredstvo"
 
 #: cinelerra/mwindowedit.C:1128
 msgid "paste keyframes"
-msgstr "prilepi kljuène okvirje"
+msgstr "prilepi kljuène slike"
 
 #: cinelerra/mwindowedit.C:1159
 msgid "paste default keyframe"
-msgstr "prilepi privzeti kljuèni okvir"
+msgstr "prilepi privzeto kljuèno sliko"
 
 #: cinelerra/mwindowedit.C:1468
 msgid "silence"
@@ -2299,15 +2380,15 @@ msgid "out point"
 msgstr "izhodna toèka"
 
 #: cinelerra/mwindowedit.C:1692
-#, fuzzy
 msgid "splice"
-msgstr "Zamenjaj"
+msgstr "zdru¾i"
 
 #: cinelerra/mwindowedit.C:1752 cinelerra/vwindowgui.C:572
 #, c-format
 msgid "Clip %d\n"
 msgstr "Odsek %d\n"
 
+#. printf("MWindow::toggle_label 1\n");
 #: cinelerra/mwindowedit.C:1768
 msgid "label"
 msgstr "oznaka"
@@ -2344,6 +2425,11 @@ msgstr "Ri¹i medij"
 msgid "Don't send to output"
 msgstr "Ne po¹lji v izhod"
 
+#. 	add_border(get_resources()->get_bg_shadow1(),
+#. 		get_resources()->get_bg_shadow2(),
+#. 		get_resources()->get_bg_color(),
+#. 		get_resources()->get_bg_light2(),
+#. 		get_resources()->get_bg_light1());
 #: cinelerra/performanceprefs.C:47 cinelerra/preferencesthread.C:230
 msgid "Performance"
 msgstr "Zmogljivost"
@@ -2354,7 +2440,7 @@ msgstr "Predpomnjeni predmeti:"
 
 #: cinelerra/performanceprefs.C:54
 msgid "Seconds to preroll renders:"
-msgstr "©tevilo sekund previtja upodabljanja:"
+msgstr "©t. sekund previtja upodabljanja:"
 
 #: cinelerra/performanceprefs.C:66
 msgid "Background Rendering"
@@ -2362,11 +2448,11 @@ msgstr "Upodabljanje v ozadju"
 
 #: cinelerra/performanceprefs.C:74
 msgid "Frames per background rendering job:"
-msgstr "©tevilo okvirjev na posel upodabljanja v ozadju:"
+msgstr "©tevilo slik na posel upodabljanja v ozadju:"
 
 #: cinelerra/performanceprefs.C:80
 msgid "Frames to preroll background:"
-msgstr "Za koliko okvirjev previti ozadje:"
+msgstr "Za koliko slik previti ozadje:"
 
 #: cinelerra/performanceprefs.C:89
 msgid "Output for background rendering:"
@@ -2383,7 +2469,7 @@ msgstr "Vozli¹èa:"
 #: cinelerra/performanceprefs.C:122
 #, c-format
 msgid "Master node framerate: %0.3f"
-msgstr "Hitrost okvirjev glavnega vozli¹èa: %0.3f"
+msgstr "Hitrost slik glavnega vozli¹èa: %0.3f"
 
 #: cinelerra/performanceprefs.C:168
 msgid "Total jobs to create:"
@@ -2391,7 +2477,7 @@ msgstr "Skupno ¹tevilo poslov za ustvarit:"
 
 #: cinelerra/performanceprefs.C:171
 msgid "(overridden if new file at each label is checked)"
-msgstr "(prezrto, èe je vklopljeno 'Nova datoteka pri vsaki oznaki')"
+msgstr "(prezrto, èe je vklop. 'Nova datoteka pri vsaki oznaki')"
 
 #: cinelerra/performanceprefs.C:227 cinelerra/pluginpopup.C:188
 #: cinelerra/recordgui.C:79 cinelerra/transitionpopup.C:202
@@ -2408,7 +2494,7 @@ msgstr "Vrata"
 
 #: cinelerra/performanceprefs.C:230
 msgid "Framerate"
-msgstr "Frekvenca okvirjev"
+msgstr "Frekvenca slik"
 
 #: cinelerra/performanceprefs.C:261
 msgid "Use background rendering"
@@ -2456,7 +2542,7 @@ msgstr "Video izhod"
 
 #: cinelerra/playbackprefs.C:102 cinelerra/videooutprefs.C:58
 msgid "Framerate achieved:"
-msgstr "Dose¾ena frekvenca okvirjev:"
+msgstr "Dose¾ena frekv. slik:"
 
 #: cinelerra/playbackprefs.C:103 cinelerra/videooutprefs.C:59
 #: cinelerra/zoombar.C:65 cinelerra/zoombar.C:67
@@ -2469,11 +2555,11 @@ msgstr "Enaèba poveèave:"
 
 #: cinelerra/playbackprefs.C:128 cinelerra/videooutprefs.C:79
 msgid "Preload buffer for Quicktime:"
-msgstr "Prednalo¾i medpolnilnik za Quicktime:"
+msgstr "Prednal. medpol. za Quicktime:"
 
 #: cinelerra/playbackprefs.C:496
 msgid "Nearest neighbor enlarge and reduce"
-msgstr "Pri poveèavah i pomanj¹avah najbli¾ji sosed"
+msgstr "Pri poveèavah in pomanj¹avah najbli¾ji sosed"
 
 #: cinelerra/playbackprefs.C:512
 msgid "Bicubic enlarge and reduce"
@@ -2489,7 +2575,48 @@ msgstr "Bilinearno poveèanje in bilinearno pomanj¹anje"
 
 #: cinelerra/playbackprefs.C:576 cinelerra/videooutprefs.C:273
 msgid "Play every frame"
-msgstr "Predvajaj vsak okvir"
+msgstr "Predvajaj vsako sliko"
+
+#: cinelerra/playtransport.C:329
+#, fuzzy
+msgid "Rewind"
+msgstr "Rdeèa"
+
+#: cinelerra/playtransport.C:342
+#, fuzzy
+msgid "Fast reverse ( + )"
+msgstr "Prilepi ( v )"
+
+#: cinelerra/playtransport.C:357
+msgid "Normal reverse ( 6 )"
+msgstr ""
+
+#: cinelerra/playtransport.C:372
+msgid "Frame reverse ( 4 )"
+msgstr ""
+
+#: cinelerra/playtransport.C:387
+msgid "Normal forward ( 3 )"
+msgstr ""
+
+#: cinelerra/playtransport.C:406
+#, fuzzy
+msgid "Frame forward ( 1 )"
+msgstr "Hitro previjanje naprej"
+
+#: cinelerra/playtransport.C:421
+#, fuzzy
+msgid "Fast forward ( Enter )"
+msgstr "Hitro previjanje naprej"
+
+#: cinelerra/playtransport.C:434
+msgid "Jump to end"
+msgstr ""
+
+#: cinelerra/playtransport.C:447
+#, fuzzy
+msgid "Stop ( 0 )"
+msgstr "Kopiraj ( c )"
 
 #: cinelerra/pluginaclientlad.C:458
 #, c-format
@@ -2501,6 +2628,7 @@ msgstr "Avtor: %s"
 msgid "License: %s"
 msgstr "Licenca: %s"
 
+#. printf("PluginArray::run_plugins 2\n");
 #: cinelerra/pluginarray.C:166
 #, c-format
 msgid "%s..."
@@ -2573,6 +2701,11 @@ msgstr "odpni uèinek"
 msgid "Show"
 msgstr "Ka¾i"
 
+#. 	add_border(get_resources()->get_bg_shadow1(),
+#. 		get_resources()->get_bg_shadow2(),
+#. 		get_resources()->get_bg_color(),
+#. 		get_resources()->get_bg_light2(),
+#. 		get_resources()->get_bg_light1());
 #: cinelerra/pluginprefs.C:36
 msgid "Plugin Set"
 msgstr "Nabor vtiènikov"
@@ -2629,6 +2762,7 @@ msgid "Timed"
 msgstr "Merjen èas"
 
 #: cinelerra/recordengine.C:678 cinelerra/recordengine.C:686
+#: plugins/titler/titlewindow.C:630
 msgid "Loop"
 msgstr "Zanka"
 
@@ -2652,13 +2786,13 @@ msgstr "Trajanje"
 msgid "Source"
 msgstr "Izvor"
 
-#: cinelerra/recordgui.C:85
+#: cinelerra/recordgui.C:85 plugins/parametric/parametric.C:367
 msgid "Mode"
 msgstr "Naèin"
 
 #: cinelerra/recordgui.C:150
 msgid "Format:"
-msgstr "Oblika zapisa:"
+msgstr "Obl. zapisa:"
 
 #: cinelerra/recordgui.C:161
 msgid "Audio compression:"
@@ -2692,6 +2826,7 @@ msgstr "Prej¹nja oznaka:"
 msgid "Path:"
 msgstr "Pot:"
 
+#. printf("RecordWindow::create_objects 1\n");
 #: cinelerra/recordgui.C:260 cinelerra/recordwindow.C:47
 msgid "Select a file to record to:"
 msgstr "Izberi datoteko za snemanje:"
@@ -2734,11 +2869,11 @@ msgstr "Previj trenutno datoteko in zbri¹i."
 
 #: cinelerra/recordgui.C:732
 msgid "Fill frames"
-msgstr "Polni okvirje"
+msgstr "Polni slike"
 
 #: cinelerra/recordgui.C:736
 msgid "Write extra frames when behind."
-msgstr "Ob zaostajanju vstavi dodatne okvirje."
+msgstr "Ob zaostajanju vstavi dodatne slike."
 
 #: cinelerra/recordgui.C:747
 msgid "Monitor video"
@@ -2746,7 +2881,7 @@ msgstr "Glej video"
 
 #: cinelerra/recordgui.C:771
 msgid "Monitor audio"
-msgstr "Poslu¹aj avdio"
+msgstr "Poslu¹aj zvok"
 
 #: cinelerra/recordgui.C:825
 msgid "Offset"
@@ -2806,12 +2941,12 @@ msgstr "Zamenjaj polja"
 
 #: cinelerra/recordprefs.C:36
 msgid "Audio In"
-msgstr "Avdio vhod"
+msgstr "Zvoèni vhod"
 
 #: cinelerra/recordprefs.C:40 cinelerra/recordprefs.C:86
 #: cinelerra/videoinprefs.C:37
 msgid "Record Driver:"
-msgstr "Gonilnik snemanja:"
+msgstr "Gonilnik:"
 
 #: cinelerra/recordprefs.C:65
 msgid "Samples to write to disk at a time:"
@@ -2819,7 +2954,7 @@ msgstr "©tevilo hkrati na disk zapisanih vzorcev:"
 
 #: cinelerra/recordprefs.C:74
 msgid "Sample rate for recording:"
-msgstr "Snemalna frekvenca vzorèenja:"
+msgstr "Snemalna frekv. vzorèenja:"
 
 #: cinelerra/recordprefs.C:83 cinelerra/videoinprefs.C:34
 msgid "Video In"
@@ -2827,23 +2962,23 @@ msgstr "Video vhod"
 
 #: cinelerra/recordprefs.C:100 cinelerra/videoinprefs.C:51
 msgid "Frames to record to disk at a time:"
-msgstr "©tevilo hkrati na disk zapisanih okvirjev:"
+msgstr "©tevilo hkrati na disk zapisanih slik:"
 
 #: cinelerra/recordprefs.C:105 cinelerra/videoinprefs.C:56
 msgid "Frames to buffer in device:"
-msgstr "©tevilo v napravi pomnjenih okvirjev:"
+msgstr "©tevilo v napravi pomnjenih slik:"
 
 #: cinelerra/recordprefs.C:120 cinelerra/videoinprefs.C:71
 msgid "Size of captured frame:"
-msgstr "Velikost zajetega okvirja:"
+msgstr "Velikost zajete slik:"
 
 #: cinelerra/recordprefs.C:136
 msgid "Frame rate for recording:"
-msgstr "Snemalna frekvenca okvirjev:"
+msgstr "Snemalna frekvenca slik:"
 
 #: cinelerra/recordprefs.C:162
 msgid "Record in realtime priority (root only)"
-msgstr "Snemaj v realnoèasovni prioriteti (le administrator)"
+msgstr "Snemaj zvok z realno èasovno prioriteto (le administrator)"
 
 #: cinelerra/recordprefs.C:302 cinelerra/videoinprefs.C:188
 msgid "Sync drives automatically"
@@ -2859,8 +2994,9 @@ msgstr ""
 
 #: cinelerra/recordtransport.C:152
 msgid "Record single frame"
-msgstr "Posnami en sam okvir"
+msgstr "Posnami eno samo sliko"
 
+#. 	this->engine = engine;
 #: cinelerra/recordtransport.C:176
 msgid "Preview recording"
 msgstr "Predogled snemanja"
@@ -2893,6 +3029,7 @@ msgstr "Znova nari¹i vsa kazala trenutnega projekta?"
 msgid "RenderFarmServerThread::start_loop: socket\n"
 msgstr "RenderFarmServerThread::start_loop: vtiè\n"
 
+#. printf("RenderFarmServerThread::start_loop 4 %s\n", hostname);
 #: cinelerra/renderfarm.C:174 cinelerra/renderfarm.C:217
 #, c-format
 msgid "RenderFarmServerThread::start_loop: %s: %s\n"
@@ -2934,19 +3071,21 @@ msgstr "RenderFarmClient::main_loop: poslu¹aj"
 msgid "RenderFarmClient::main_loop: accept"
 msgstr "RenderFarmClient::main_loop: sprejmi"
 
+#. printf("RenderFarmClientThread::run 12\n");
 #: cinelerra/renderfarmclient.C:562
 msgid "RenderFarmClientThread::run: Session finished.\n"
 msgstr "RenderFarmClientThread::run: Seja zakljuèena.\n"
 
-#: cinelerra/resizetrackthread.C:104
+#: cinelerra/resizetrackthread.C:104 plugins/titler/titlewindow.C:183
 msgid "Size:"
 msgstr "Velikost:"
 
 #: cinelerra/resizetrackthread.C:111 cinelerra/resizetrackthread.C:133
+#: plugins/compressor/compressor.C:729
 msgid "x"
 msgstr "x"
 
-#: cinelerra/resizetrackthread.C:126
+#: cinelerra/resizetrackthread.C:126 plugins/pitch/pitch.C:346
 msgid "Scale:"
 msgstr "Razmerje:"
 
@@ -2968,6 +3107,7 @@ msgstr "Ne morem konèati dokler traja snemanje."
 msgid "Can't quit while a render is in progress."
 msgstr "Ne morem konèati dokler traja upodabljanje."
 
+#. printf("Quit::run 2\n");
 #: cinelerra/quit.C:87
 msgid "Save edit list before exiting?"
 msgstr "Pred izhodom shrani seznam urejanj?"
@@ -2993,14 +3133,15 @@ msgstr "\"%s\" %dC napisal"
 msgid "Save as..."
 msgstr "Shrani kot..."
 
-#: cinelerra/savefile.C:192
+#. update the project name
+#: cinelerra/savefile.C:192 plugins/reverb/reverb.C:397
 #, c-format
 msgid "Couldn't open %s."
 msgstr "Ne morem odpreti %s."
 
 #: cinelerra/savefile.C:228
 msgid "Enter a filename to save as"
-msgstr "Vpisi ime datoteke za shranitev"
+msgstr "Vpi¹i ime datoteke za shranitev"
 
 #: cinelerra/scale.C:15
 msgid "Resize..."
@@ -3017,18 +3158,18 @@ msgstr "Nova velikost projektorja:"
 #: cinelerra/scale.C:209 cinelerra/scale.C:213 cinelerra/setformat.C:351
 #: cinelerra/setvideo.C:288 cinelerra/setvideo.C:292
 msgid "W Ratio:"
-msgstr "Razmerje ¹irine:"
+msgstr "Razm. ¹irine:"
 
 #: cinelerra/scale.C:219 cinelerra/scale.C:223 cinelerra/setformat.C:360
 #: cinelerra/setvideo.C:298 cinelerra/setvideo.C:302
 msgid "H Ratio:"
-msgstr "Razmerje vi¹ine:"
+msgstr "Razm. vi¹ine:"
 
 #: cinelerra/scale.C:255 cinelerra/setformat.C:394 cinelerra/setvideo.C:330
 msgid ":"
 msgstr ":"
 
-#: cinelerra/scale.C:342 cinelerra/setvideo.C:436
+#: cinelerra/scale.C:342 cinelerra/setvideo.C:436 plugins/scale/scalewin.C:144
 msgid "Constrain ratio"
 msgstr "Vezano razmerje"
 
@@ -3039,15 +3180,15 @@ msgstr "Frekvenca vzorèenja:"
 
 #: cinelerra/scale.C:362 cinelerra/setformat.C:702 cinelerra/setvideo.C:448
 msgid "Auto"
-msgstr "Samodejno"
+msgstr "Samod."
 
 #: cinelerra/setaudio.C:36
 msgid "Audio Setup..."
-msgstr "Nastavitev avdia..."
+msgstr "Nastavitev zvoka..."
 
 #: cinelerra/setaudio.C:92
 msgid "set audio"
-msgstr "nastavi avdio"
+msgstr "nastavi zvok"
 
 #: cinelerra/setaudio.C:193 cinelerra/setformat.C:288
 msgid "Channel positions:"
@@ -3057,7 +3198,7 @@ msgstr "Mesta kanalov:"
 #: cinelerra/setformat.C:534
 #, c-format
 msgid "%d degrees"
-msgstr "%d stopinje"
+msgstr "%d stopinj"
 
 #: cinelerra/setchannels.C:16
 msgid "Output channels..."
@@ -3085,15 +3226,15 @@ msgstr "nastavi obliko"
 
 #: cinelerra/setframerate.C:16
 msgid "Frame rate..."
-msgstr "Frekvenca okvirjev..."
+msgstr "Frekvenca slik..."
 
 #: cinelerra/setframerate.C:47
 msgid "Frame rate"
-msgstr "Frekvenca okvirjev"
+msgstr "Frekvenca slik"
 
 #: cinelerra/setframerate.C:75
 msgid "Enter the frame rate to use:"
-msgstr "Vpi¹i uporabljeno frekvenco okvirjev:"
+msgstr "Vpi¹i uporabljeno frekvenco slik:"
 
 #: cinelerra/setsamplerate.C:12
 msgid "Sample rate..."
@@ -3180,7 +3321,7 @@ msgstr "Zaslon skladatelja:"
 
 #: cinelerra/videoinprefs.C:87
 msgid "Frame rate is always the default frame rate of the project."
-msgstr "Frekvenca okvirjev je vedno privzeta frekvenca projekta."
+msgstr "Frekvenca slik je vedno privzeta frekvenca projekta."
 
 #: cinelerra/videooutprefs.C:224
 msgid "Nearest neighbor"
@@ -3200,7 +3341,7 @@ msgstr "Ka¾i nazive"
 
 #: cinelerra/viewmenu.C:51 cinelerra/viewmenu.C:196
 msgid "Plugin keyframes"
-msgstr "Kljuèni okvirji vtiènikov"
+msgstr "Kljuèna slika vtiènikov"
 
 #: cinelerra/viewmenu.C:63
 msgid "Show transitions"
@@ -3208,19 +3349,19 @@ msgstr "Ka¾i prehode"
 
 #: cinelerra/viewmenu.C:80
 msgid "Fade keyframes"
-msgstr "Kljuèni okvirji zabrisov"
+msgstr "Kljuène slike zabrisov"
 
 #: cinelerra/viewmenu.C:97
 msgid "Play keyframes"
-msgstr "Predvajalni kljuèni okvirji"
+msgstr "Predvajalne kljuène slike"
 
 #: cinelerra/viewmenu.C:115
 msgid "Camera keyframes"
-msgstr "Kljuèni okvirji kamere"
+msgstr "Kljuène slike kamere"
 
 #: cinelerra/viewmenu.C:132
 msgid "Projector keyframes"
-msgstr "Kljuèni okvirji projektorja"
+msgstr "Kljuène slike projektorja"
 
 #: cinelerra/viewmenu.C:149
 msgid "Draw Output"
@@ -3228,19 +3369,19 @@ msgstr "Ri¹i izhod"
 
 #: cinelerra/viewmenu.C:163
 msgid "Mute keyframes"
-msgstr "Kljuèni okvirji ti¹ine"
+msgstr "Kljuène slike ti¹ine"
 
 #: cinelerra/viewmenu.C:180
 msgid "Pan keyframes"
-msgstr "Kljuèni okvirji panorame"
+msgstr "Kljuène slike panorame"
 
 #: cinelerra/viewmenu.C:212
 msgid "Mode keyframes"
-msgstr "Klju¹ni okvirji naèina"
+msgstr "Kljuène slike naèina"
 
 #: cinelerra/viewmenu.C:228
 msgid "Mask keyframes"
-msgstr "Kljuèni okvirji maske"
+msgstr "Kljuène slike maske"
 
 #: cinelerra/viewmenu.C:244
 msgid "Camera Zoom"
@@ -3256,11 +3397,11 @@ msgstr "naèin"
 
 #: cinelerra/vpatchgui.C:310 cinelerra/vpatchgui.C:334
 msgid "Normal"
-msgstr "Obièajen"
+msgstr "Obièajno"
 
 #: cinelerra/vpatchgui.C:314
 msgid "Replace"
-msgstr "Zamenjaj"
+msgstr "Zamenjava"
 
 #: cinelerra/vpatchgui.C:318
 msgid "Addition"
@@ -3339,6 +3480,7 @@ msgstr "Ustvari novo mapo"
 msgid "Up a directory"
 msgstr "Imenik navzgor"
 
+#. Need a temp so submit_file can expand it
 #: guicast/bcfilebox.C:379
 msgid ".."
 msgstr ".."
@@ -3355,879 +3497,1445 @@ msgstr "Ne morem se povezati s stre¾nikom X.\n"
 msgid "'DISPLAY' environment variable not set.\n"
 msgstr "Okoljska spremenljivka 'DISPLAY' ni nastavljena.\n"
 
-#~ msgid "Odd field first"
-#~ msgstr "Najprej liha polja"
+#: plugins/1080to480/1080to480.C:83 plugins/720to480/720to480.C:60
+#: plugins/ivtc/ivtcwindow.C:101
+msgid "Odd field first"
+msgstr "Najprej liha polja"
+
+#: plugins/1080to480/1080to480.C:85 plugins/720to480/720to480.C:62
+msgid "Even field first"
+msgstr "Najprej soda polja"
+
+#: plugins/1080to480/1080to480.C:156
+msgid "1080 to 480"
+msgstr "1080 na 480"
+
+#: plugins/720to480/720to480.C:178
+msgid "720 to 480"
+msgstr "720 na 480"
+
+#: plugins/aging/aging.C:59
+msgid "AgingTV"
+msgstr "Postarana televizija"
+
+#: plugins/aging/agingwindow.C:39
+msgid ""
+"Film aging from EffectTV\n"
+"Copyright (C) 2001 FUKUCHI Kentarou"
+msgstr ""
+"Postaranje filma iz EffectTV\n"
+"Avtorske pravice pridr¾ane (C) \n"
+"2001 FUKUCHI Kentarou"
+
+#: plugins/aging/agingwindow.C:77
+msgid "Grain"
+msgstr "Ojaèanje"
+
+#: plugins/aging/agingwindow.C:92
+msgid "Scratch"
+msgstr "Praskanje"
+
+#: plugins/aging/agingwindow.C:134
+msgid "Pits"
+msgstr ""
+
+#: plugins/aging/agingwindow.C:176
+msgid "Dust"
+msgstr "Prah"
+
+#: plugins/bandslide/bandslide.C:59 plugins/bandwipe/bandwipe.C:61
+#: plugins/irissquare/irissquare.C:33 plugins/slide/slide.C:76
+msgid "In"
+msgstr "Vhod"
+
+#: plugins/bandslide/bandslide.C:81 plugins/bandwipe/bandwipe.C:83
+#: plugins/irissquare/irissquare.C:55 plugins/slide/slide.C:98
+msgid "Out"
+msgstr "Izhod"
+
+#: plugins/bandslide/bandslide.C:128 plugins/bandwipe/bandwipe.C:129
+msgid "Bands:"
+msgstr "Pasovi:"
+
+#: plugins/bandslide/bandslide.C:138 plugins/irissquare/irissquare.C:102
+#: plugins/slide/slide.C:145 plugins/slide/slide.C:159 plugins/wipe/wipe.C:101
+msgid "Direction:"
+msgstr "Smer:"
+
+#: plugins/bandslide/bandslide.C:177
+msgid "BandSlide"
+msgstr "Copyright"
+
+#: plugins/bandwipe/bandwipe.C:177
+msgid "BandWipe"
+msgstr ""
+
+#: plugins/blur/blur.C:111 plugins/blur/blurwindow.C:39
+msgid "Blur"
+msgstr "Zmehèaj"
+
+#: plugins/blur/blurwindow.C:46 plugins/oilpainting/oilwindow.C:51
+#: plugins/whirl/whirl.C:243 plugins/whirl/whirlwindow.C:62
+msgid "Radius"
+msgstr "Polmer"
+
+#: plugins/blur/blurwindow.C:91 plugins/downsample/downsample.C:273
+#: plugins/flip/flipwindow.C:41
+msgid "Vertical"
+msgstr "Navpièno"
+
+#: plugins/blur/blurwindow.C:109 plugins/downsample/downsample.C:255
+#: plugins/flip/flipwindow.C:47
+msgid "Horizontal"
+msgstr "Vodoravno "
+
+#: plugins/blur/blurwindow.C:127
+msgid "Blur alpha"
+msgstr "Zmehèaj alfo"
+
+#: plugins/blur/blurwindow.C:139
+msgid "Blur red"
+msgstr "Zmehèaj rdeèo"
+
+#: plugins/blur/blurwindow.C:151
+msgid "Blur green"
+msgstr "Zmehèaj zeleno"
+
+#: plugins/blur/blurwindow.C:163
+msgid "Blur blue"
+msgstr "Zmehèaj modro"
+
+#: plugins/blurzoom/blurzoom.C:59
+msgid "RadioacTV"
+msgstr ""
+
+#: plugins/blurzoom/blurzoomwindow.C:67
+msgid ""
+"RadioacTV from EffectTV\n"
+"Copyright (C) 2001 FUKUCHI Kentarou"
+msgstr ""
+"RadioacTV iz EffectTV\n"
+"Avtorske pravice pridr¾ane (C) \n"
+"2001 FUKUCHI Kentarou"
+
+#: plugins/brightness/brightness.C:81 plugins/brightness/brightnesswindow.C:37
+msgid "Brightness/Contrast"
+msgstr "Svetlost/Kontrast"
+
+#: plugins/brightness/brightnesswindow.C:98
+msgid "Boost luminance only"
+msgstr "Okrepi le svetilnost"
+
+#: plugins/burn/burn.C:72
+msgid "BurningTV"
+msgstr "Goreèa TV"
+
+#: plugins/burn/burnwindow.C:42
+#, fuzzy
+msgid ""
+"BurningTV from EffectTV\n"
+"Copyright (C) 2001 FUKUCHI Kentarou"
+msgstr ""
+"RadioacTV iz EffectTV\n"
+"Avtorske pravice pridr¾ane (C) \n"
+"2001 FUKUCHI Kentarou"
+
+#: plugins/cdripper/cdripper.C:37
+msgid "CD Ripper"
+msgstr "Zajemalnik CD-jev"
+
+#: plugins/cdripper/cdripper.C:115
+msgid "Can't open cdrom drive."
+msgstr "Ne morem odpreti pogona cdrom."
+
+#: plugins/cdripper/cdripper.C:147
+msgid "Can't get total from table of contents."
+msgstr "Ne morem dobiti vsote iz kazala."
+
+#: plugins/cdripper/cdripper.C:163
+msgid "Can't get table of contents entry."
+msgstr "Ne morem dobiti vnosa kazala."
+
+#: plugins/cdripper/cdripper.C:179
+msgid "Can't get table of contents leadout."
+msgstr ""
+
+#: plugins/cdripper/cdripper.C:194
+msgid "Start track is out of range."
+msgstr ""
+
+#: plugins/cdripper/cdripper.C:206
+msgid "End track is out of range."
+msgstr ""
+
+#: plugins/cdripper/cdripper.C:218
+msgid "End position is out of range."
+msgstr ""
+
+#: plugins/cdripper/cdripwindow.C:33
+msgid "Select the range to transfer:"
+msgstr "Izberi obmoèje za prenos:"
+
+#: plugins/cdripper/cdripwindow.C:34 plugins/cdripper/cdripwindow.C:38
+#: plugins/motion/motion.C:281
+msgid "Track"
+msgstr "Steza/Sledi"
+
+#: plugins/cdripper/cdripwindow.C:35 plugins/cdripper/cdripwindow.C:39
+msgid "Min"
+msgstr "Najmanj¹i"
+
+#: plugins/cdripper/cdripwindow.C:36 plugins/cdripper/cdripwindow.C:40
+msgid "Sec"
+msgstr "Sek"
+
+#: plugins/cdripper/cdripwindow.C:57
+msgid "From"
+msgstr "Od"
+
+#: plugins/cdripper/cdripwindow.C:59
+msgid "To"
+msgstr "Do"
+
+#: plugins/cdripper/cdripwindow.C:62
+msgid "CD Device:"
+msgstr "Naprava CD:"
+
+#: plugins/chromakey/chromakey.C:118
+msgid "Slope:"
+msgstr "Naklon:"
+
+#: plugins/chromakey/chromakey.C:122 plugins/denoisevideo/denoisevideo.C:178
+#: plugins/histogram/histogram.C:514
+msgid "Threshold:"
+msgstr "Prag:"
+
+#: plugins/chromakey/chromakey.C:223
+msgid "Use value"
+msgstr "Uporabi vrednost"
+
+#: plugins/chromakey/chromakey.C:489
+msgid "Chroma key"
+msgstr ""
+
+#: plugins/colorbalance/colorbalance.C:320
+#: plugins/colorbalance/colorbalancewindow.C:42
+msgid "Color Balance"
+msgstr "Barvno ravnovesje"
+
+#. printf("ColorBalanceWindow::create_objects 1\n");
+#: plugins/colorbalance/colorbalancewindow.C:45
+msgid "Cyan"
+msgstr "Sinja"
+
+#. printf("ColorWindow::create_objects 1\n");
+#: plugins/colorbalance/colorbalancewindow.C:47
+#: plugins/denoisevideo/denoisevideo.C:182 plugins/downsample/downsample.C:295
+#: plugins/histogram/histogram.C:402 plugins/libcolors/colorpicker.C:145
+#: plugins/linearblur/linearblur.C:271 plugins/radialblur/radialblur.C:274
+#: plugins/swapchannels/swapchannels.C:437
+#: plugins/swapchannels/swapchannels.C:462 plugins/zoomblur/zoomblur.C:280
+msgid "Red"
+msgstr "Rdeèa"
+
+#. printf("ColorBalanceWindow::create_objects 1\n");
+#: plugins/colorbalance/colorbalancewindow.C:50
+msgid "Magenta"
+msgstr "©krlatna"
+
+#. printf("ColorWindow::create_objects 1\n");
+#: plugins/colorbalance/colorbalancewindow.C:52
+#: plugins/denoisevideo/denoisevideo.C:184 plugins/downsample/downsample.C:301
+#: plugins/histogram/histogram.C:408 plugins/libcolors/colorpicker.C:151
+#: plugins/linearblur/linearblur.C:273 plugins/radialblur/radialblur.C:276
+#: plugins/swapchannels/swapchannels.C:440
+#: plugins/swapchannels/swapchannels.C:463 plugins/zoomblur/zoomblur.C:282
+msgid "Green"
+msgstr "Zelena"
+
+#. printf("ColorBalanceWindow::create_objects 1\n");
+#: plugins/colorbalance/colorbalancewindow.C:55
+msgid "Yellow"
+msgstr "Rumena"
+
+#. printf("ColorWindow::create_objects 1\n");
+#: plugins/colorbalance/colorbalancewindow.C:57
+#: plugins/denoisevideo/denoisevideo.C:186 plugins/downsample/downsample.C:307
+#: plugins/histogram/histogram.C:414 plugins/libcolors/colorpicker.C:157
+#: plugins/linearblur/linearblur.C:275 plugins/radialblur/radialblur.C:278
+#: plugins/swapchannels/swapchannels.C:443
+#: plugins/swapchannels/swapchannels.C:464 plugins/zoomblur/zoomblur.C:284
+msgid "Blue"
+msgstr "Modra"
+
+#: plugins/colorbalance/colorbalancewindow.C:103
+msgid "Preserve luminosity"
+msgstr "Ohrani svetilnost"
+
+#: plugins/colorbalance/colorbalancewindow.C:122
+msgid "Lock parameters"
+msgstr "Zakleni parametre"
+
+#: plugins/compressor/compressor.C:88
+msgid "Compressor"
+msgstr "Stiskalnik"
+
+#: plugins/compressor/compressor.C:710
+#, fuzzy
+msgid "Preview secs:"
+msgstr "Predogled snemanja"
+
+#: plugins/compressor/compressor.C:714
+#, fuzzy
+msgid "Reaction secs:"
+msgstr "Perioda reakcije:"
+
+#: plugins/compressor/compressor.C:718
+msgid "Trigger:"
+msgstr "Spro¾ilec:"
+
+#: plugins/compressor/compressor.C:725
+msgid "Point:"
+msgstr "Toèka:"
+
+#: plugins/crossfade/crossfade.C:28
+#, fuzzy
+msgid "Crossfade"
+msgstr "zabris"
+
+#: plugins/deinterlace/deinterlace.C:77
+#: plugins/denoisemjpeg/denoisemjpeg.C:238
+#, fuzzy
+msgid "Deinterlace"
+msgstr "Prepleteno"
+
+#: plugins/deinterlace/deinterwindow.C:39
+msgid "Select lines to keep"
+msgstr "Izberi vrstice za ohranitev"
 
-#~ msgid "Even field first"
-#~ msgstr "Najprej soda polja"
+#: plugins/deinterlace/deinterwindow.C:41
+msgid "Do nothing"
+msgstr "Ne naredi nièesar"
 
-#, fuzzy
-#~ msgid "Grain"
-#~ msgstr "Ojaèenje"
-
-#, fuzzy
-#~ msgid "Scratch"
-#~ msgstr "Razteg"
-
-#, fuzzy
-#~ msgid "Pits"
-#~ msgstr "Biti:"
+#: plugins/deinterlace/deinterwindow.C:43
+msgid "Odd lines"
+msgstr "Lihe vrstice"
 
-#~ msgid "In"
-#~ msgstr "Vhod"
+#: plugins/deinterlace/deinterwindow.C:45
+msgid "Even lines"
+msgstr "Sode vrstice"
 
-#~ msgid "Out"
-#~ msgstr "Izhod"
-
-#~ msgid "Bands:"
-#~ msgstr "Pasovi:"
-
-#~ msgid "Direction:"
-#~ msgstr "Smer:"
-
+#: plugins/deinterlace/deinterwindow.C:47
 #, fuzzy
-#~ msgid "BandWipe"
-#~ msgstr "Pobri¹i"
-
-#~ msgid "Blur"
-#~ msgstr "Zmehèaj"
-
-#~ msgid "Radius"
-#~ msgstr "Polmer"
+msgid "Average lines"
+msgstr "Sode vrstice"
 
-#~ msgid "Vertical"
-#~ msgstr "Navpièno"
+#: plugins/deinterlace/deinterwindow.C:49
+msgid "Swap odd fields"
+msgstr "Zamenjaj liha polja"
+
+#: plugins/deinterlace/deinterwindow.C:51
+msgid "Swap even fields"
+msgstr "Zamenjaj soda polja"
+
+#: plugins/deinterlace/deinterwindow.C:53
+#, fuzzy
+msgid "Average even lines"
+msgstr "Sode vrstice"
+
+#: plugins/deinterlace/deinterwindow.C:58
+#, fuzzy
+msgid "Average odd lines"
+msgstr "Lihe vrstice"
+
+#: plugins/deinterlace/deinterwindow.C:77
+#, c-format
+msgid "Changed rows: %d\n"
+msgstr "Spremenjene vrstice: %d\n"
+
+#: plugins/deinterlace/deinterwindow.C:123
+msgid "Adaptive"
+msgstr "Prilagodljiv"
+
+#: plugins/delayaudio/delayaudio.C:54
+msgid "Delay audio"
+msgstr "Zakasnitev zvoka"
 
-#~ msgid "Horizontal"
-#~ msgstr "Vodoravno "
+#: plugins/delayaudio/delayaudio.C:298 plugins/delayvideo/delayvideo.C:86
+msgid "Delay seconds:"
+msgstr "Sekunde zakasnitve:"
+
+#: plugins/denoisefft/denoisefft.C:233
+#, fuzzy
+msgid "Collect noise"
+msgstr "Odstrani ¹um"
+
+#: plugins/denoisefft/denoisefft.C:278
+msgid "Denoise power:"
+msgstr "Moè odstranitve ¹uma "
+
+#: plugins/denoisefft/denoisefft.C:359
+msgid "DenoiseFFT"
+msgstr "Odstranjevanje ¹uma s FFT"
+
+#: plugins/denoisemjpeg/denoisemjpeg.C:260
+msgid "Progressive"
+msgstr "Progresiven"
+
+#: plugins/denoisemjpeg/denoisemjpeg.C:298
+msgid "Fast"
+msgstr "Hitro"
+
+#: plugins/denoisemjpeg/denoisemjpeg.C:364 plugins/motion/motion.C:93
+msgid "Search radius:"
+msgstr "I¹èi polmer:"
+
+#: plugins/denoisemjpeg/denoisemjpeg.C:368
+#, fuzzy
+msgid "Pass 1 threshold:"
+msgstr "Prag:"
+
+#: plugins/denoisemjpeg/denoisemjpeg.C:372
+#, fuzzy
+msgid "Pass 2 threshold:"
+msgstr "Prag:"
+
+#: plugins/denoisemjpeg/denoisemjpeg.C:376
+msgid "Sharpness:"
+msgstr "Ostrina:"
+
+#: plugins/denoisemjpeg/denoisemjpeg.C:380
+#, fuzzy
+msgid "Luma contrast:"
+msgstr "Kontrast:"
+
+#: plugins/denoisemjpeg/denoisemjpeg.C:384
+#, fuzzy
+msgid "Chroma contrast:"
+msgstr "Kontrast:"
+
+#: plugins/denoisemjpeg/denoisemjpeg.C:388
+msgid "Delay frames:"
+msgstr "Zakasnjene slike:"
+
+#: plugins/denoisemjpeg/denoisemjpeg.C:476
+msgid "Denoise video2"
+msgstr "Odstrani ¹um videa2"
+
+#: plugins/denoisevideo/denoisevideo.C:174
+msgid "Frames to accumulate:"
+msgstr "©tevilo akumuliranih slik:"
+
+#: plugins/denoisevideo/denoisevideo.C:188 plugins/downsample/downsample.C:313
+#: plugins/histogram/histogram.C:420 plugins/libcolors/colorpicker.C:165
+#: plugins/linearblur/linearblur.C:277 plugins/radialblur/radialblur.C:280
+#: plugins/swapchannels/swapchannels.C:446
+#: plugins/swapchannels/swapchannels.C:465 plugins/zoomblur/zoomblur.C:286
+msgid "Alpha"
+msgstr "Alfa"
+
+#: plugins/denoisevideo/denoisevideo.C:324
+msgid "Denoise video"
+msgstr "Odstrani ¹um videa"
+
+#: plugins/despike/despike.C:36
+msgid "Despike"
+msgstr "Odstranjevanje ¹pic"
+
+#: plugins/despike/despikewindow.C:41
+msgid "Maximum level:"
+msgstr "Najveèja stopnja:"
+
+#: plugins/despike/despikewindow.C:45
+msgid "Maximum rate of change:"
+msgstr ""
+
+#: plugins/dissolve/dissolve.C:33
+msgid "Dissolve"
+msgstr ""
+
+#: plugins/dot/dot.C:78
+msgid "DotTV"
+msgstr "Pikèasta TV"
+
+#: plugins/dot/dotwindow.C:39
+#, fuzzy
+msgid ""
+"DotTV from EffectTV\n"
+"Copyright (C) 2001 FUKUCHI Kentarou"
+msgstr ""
+"RadioacTV iz EffectTV\n"
+"Avtorske pravice pridr¾ane (C) \n"
+"2001 FUKUCHI Kentarou"
+
+#: plugins/downsample/downsample.C:264
+msgid "Horizontal offset"
+msgstr "Vodoravni odmik"
 
-#~ msgid "Blur alpha"
-#~ msgstr "Zmehèaj alfo"
+#: plugins/downsample/downsample.C:282
+msgid "Vertical offset"
+msgstr "Navpièni odmik"
 
-#~ msgid "Blur red"
-#~ msgstr "Zmehèaj rdeèo"
+#: plugins/downsample/downsample.C:402
+msgid "Downsample"
+msgstr ""
 
-#~ msgid "Blur green"
-#~ msgstr "Zmehèaj zeleno"
+#: plugins/fieldframe/fieldframe.C:178 plugins/framefield/framefield.C:206
+msgid "Top field first"
+msgstr "Najprej zgornje polje"
 
-#~ msgid "Blur blue"
-#~ msgstr "Zmehèaj modro"
+#: plugins/fieldframe/fieldframe.C:202 plugins/framefield/framefield.C:231
+msgid "Bottom field first"
+msgstr "Najprej spodnje polje"
 
-#~ msgid "Brightness/Contrast"
-#~ msgstr "Svetlost/Kontrast"
+#: plugins/fieldframe/fieldframe.C:258
+msgid "Fields to frames"
+msgstr ""
 
-#~ msgid "Can't open cdrom drive."
-#~ msgstr "Ne morem odpreti pogona cdrom."
+#: plugins/flash/flash.C:31
+msgid "Flash"
+msgstr "Blisk"
 
-#~ msgid "Select the range to transfer:"
-#~ msgstr "Izberi obmoèje za prenos:"
+#: plugins/flip/flip.C:72
+msgid "Flip"
+msgstr "Obrni"
 
-#~ msgid "Track"
-#~ msgstr "Steza"
+#: plugins/framefield/framefield.C:256
+msgid "Average empty rows"
+msgstr "Povpreèi prazne vrstice"
 
-#~ msgid "Min"
-#~ msgstr "Najmanj¹i"
+#: plugins/framefield/framefield.C:477
+msgid "Frames to fields"
+msgstr "Slike v polja"
 
-#~ msgid "Sec"
-#~ msgstr "Sek"
+#: plugins/freeverb/freeverb.C:266
+msgid "Freeze"
+msgstr "Zamrzni"
 
-#~ msgid "From"
-#~ msgstr "Od"
+#: plugins/freeverb/freeverb.C:307
+msgid "Gain:"
+msgstr "Ojaèenje:"
 
-#~ msgid "To"
-#~ msgstr "Do"
+#: plugins/freeverb/freeverb.C:311
+msgid "Roomsize:"
+msgstr "Prostornost:"
 
-#~ msgid "CD Device:"
-#~ msgstr "Naprava CD:"
+#: plugins/freeverb/freeverb.C:315
+msgid "Damp:"
+msgstr "Vla¾nost:"
 
-#~ msgid "Slope:"
-#~ msgstr "Naklon:"
+#: plugins/freeverb/freeverb.C:319
+msgid "Wet:"
+msgstr "Mokrost:"
 
-#~ msgid "Threshold:"
-#~ msgstr "Prag:"
+#: plugins/freeverb/freeverb.C:323
+msgid "Dry:"
+msgstr "Suhost:"
 
-#~ msgid "Use value"
-#~ msgstr "Uporabi vrednost"
+#: plugins/freeverb/freeverb.C:473
+msgid "Freeverb"
+msgstr ""
 
-#~ msgid "Color Balance"
-#~ msgstr "Barvno ravnovesje"
+#: plugins/freezeframe/freezeframe.C:85
+msgid "Enabled"
+msgstr "Omogoèeno"
 
-#~ msgid "Cyan"
-#~ msgstr "Sinja"
+#: plugins/freezeframe/freezeframe.C:91
+msgid "Line double"
+msgstr ""
 
-#~ msgid "Red"
-#~ msgstr "Rdeèa"
+#: plugins/freezeframe/freezeframe.C:152
+msgid "Freeze Frame"
+msgstr "Zamrzni sliko"
 
-#~ msgid "Magenta"
-#~ msgstr "©krlatna"
+#: plugins/gain/gain.C:68
+msgid "Gain"
+msgstr "Ojaèenje"
 
-#~ msgid "Green"
-#~ msgstr "Zelena"
+#: plugins/gain/gainwindow.C:42 plugins/spectrogram/spectrogram.C:102
+msgid "Level:"
+msgstr "Stopnja:"
 
-#~ msgid "Yellow"
-#~ msgstr "Rumena"
+#: plugins/gradient/gradient.C:147 plugins/linearblur/linearblur.C:263
+#: plugins/polar/polar.C:207 plugins/radialblur/radialblur.C:266
+msgid "Angle:"
+msgstr "Kot:"
 
-#~ msgid "Blue"
-#~ msgstr "Modra"
-
-#~ msgid "Preserve luminosity"
-#~ msgstr "Ohrani svetilnost"
-
-#~ msgid "Lock parameters"
-#~ msgstr "Zakleni parametre"
-
-#~ msgid "Compressor"
-#~ msgstr "Stiskalnik"
-
-#, fuzzy
-#~ msgid "Preview secs:"
-#~ msgstr "Predogled snemanja"
-
-#, fuzzy
-#~ msgid "Reaction secs:"
-#~ msgstr "Perioda reakcije:"
-
-#~ msgid "Trigger:"
-#~ msgstr "Spro¾ilec:"
-
-#~ msgid "Point:"
-#~ msgstr "Toèka:"
-
+#: plugins/gradient/gradient.C:150
 #, fuzzy
-#~ msgid "Crossfade"
-#~ msgstr "zabris"
+msgid "Inner radius:"
+msgstr "I¹èi polmer:"
 
+#: plugins/gradient/gradient.C:153
 #, fuzzy
-#~ msgid "Deinterlace"
-#~ msgstr "Prepleteno"
-
-#~ msgid "Select lines to keep"
-#~ msgstr "Izberi vrstice za ohranitev"
+msgid "Outer radius:"
+msgstr "I¹èi polmer:"
 
-#~ msgid "Do nothing"
-#~ msgstr "Ne naredi nièesar"
+#: plugins/gradient/gradient.C:264
+msgid "Inner color:"
+msgstr ""
 
-#~ msgid "Odd lines"
-#~ msgstr "Lihe vrstice"
-
-#~ msgid "Even lines"
-#~ msgstr "Sode vrstice"
-
+#: plugins/gradient/gradient.C:280
 #, fuzzy
-#~ msgid "Average lines"
-#~ msgstr "Sode vrstice"
+msgid "Outer color:"
+msgstr "Barva obrobe..."
 
-#~ msgid "Swap odd fields"
-#~ msgstr "Zamenjaj liha polja"
-
-#~ msgid "Swap even fields"
-#~ msgstr "Zamenjaj soda polja"
-
-#, fuzzy
-#~ msgid "Average even lines"
-#~ msgstr "Sode vrstice"
+#: plugins/gradient/gradient.C:298
+msgid "Inner color"
+msgstr ""
 
+#: plugins/gradient/gradient.C:330
 #, fuzzy
-#~ msgid "Average odd lines"
-#~ msgstr "Lihe vrstice"
+msgid "Outer color"
+msgstr "Barva obrobe..."
 
-#~ msgid "Changed rows: %d\n"
-#~ msgstr "Spremenjene vrstice: %d\n"
-
-#~ msgid "Adaptive"
-#~ msgstr "Prilagodljiv"
-
-#~ msgid "Delay audio"
-#~ msgstr "Zakasnitev zvoka"
-
-#~ msgid "Delay seconds:"
-#~ msgstr "Sekunde zakasnitve:"
-
+#: plugins/gradient/gradient.C:387
 #, fuzzy
-#~ msgid "Collect noise"
-#~ msgstr "Odstrani ¹um"
+msgid "Gradient"
+msgstr "Ojaèanje"
 
-#, fuzzy
-#~ msgid "Denoise power:"
-#~ msgstr "Odsrani ¹um videa"
+#. printf("ColorWindow::create_objects 1\n");
+#: plugins/histogram/histogram.C:396 plugins/huesaturation/huewindow.C:62
+#: plugins/libcolors/colorpicker.C:139
+msgid "Value"
+msgstr "Vrednost"
 
+#: plugins/histogram/histogram.C:424
 #, fuzzy
-#~ msgid "DenoiseFFT"
-#~ msgstr "Odstrani ¹um"
-
-#~ msgid "Progressive"
-#~ msgstr "Progresiven"
+msgid "Input min:"
+msgstr "Vhod:"
 
-#~ msgid "Fast"
-#~ msgstr "Hitro"
+#: plugins/histogram/histogram.C:433
+msgid "Mid:"
+msgstr "Srednji:"
 
-#~ msgid "Search radius:"
-#~ msgstr "I¹èi polmer:"
+#: plugins/histogram/histogram.C:443 plugins/histogram/histogram.C:480
+msgid "Max:"
+msgstr "Najveèji:"
 
+#: plugins/histogram/histogram.C:471
 #, fuzzy
-#~ msgid "Pass 1 threshold:"
-#~ msgstr "Prag:"
+msgid "Output min:"
+msgstr "Izhodni kanal:"
 
-#, fuzzy
-#~ msgid "Pass 2 threshold:"
-#~ msgstr "Prag:"
-
-#~ msgid "Sharpness:"
-#~ msgstr "Ostrina:"
+#: plugins/histogram/histogram.C:641 plugins/perspective/perspective.C:512
+msgid "Reset"
+msgstr "Ponastavi"
 
-#, fuzzy
-#~ msgid "Luma contrast:"
-#~ msgstr "Kontrast:"
+#: plugins/histogram/histogram.C:917
+msgid "Automatic"
+msgstr "Samodejno"
 
-#, fuzzy
-#~ msgid "Chroma contrast:"
-#~ msgstr "Kontrast:"
+#: plugins/histogram/histogram.C:1035
+msgid "Histogram"
+msgstr "Histogram"
 
-#~ msgid "Delay frames:"
-#~ msgstr "Zakasnjeni okvirji:"
+#: plugins/holo/holo.C:69
+msgid "HolographicTV"
+msgstr "Holografska TV"
 
-#~ msgid "Denoise video2"
-#~ msgstr "Odstrani ¹um videa2"
+#: plugins/holo/holowindow.C:67
+msgid ""
+"HolographicTV from EffectTV\n"
+"Copyright (C) 2001 FUKUCHI Kentarou"
+msgstr ""
+"Holografska TV iz EffectTV\n"
+"Avtorske pravice pridr¾ane (C)\n"
+"2001 FUKUCHI Kentarou"
 
-#, fuzzy
-#~ msgid "Frames to accumulate:"
-#~ msgstr "Frekvenca okvirjev:"
+#: plugins/huesaturation/huesaturation.C:293
+msgid "Saturation:"
+msgstr "Nasièenost:"
 
-#~ msgid "Alpha"
-#~ msgstr "Alfa"
+#: plugins/huesaturation/huesaturation.C:533
+msgid "Hue saturation"
+msgstr "Odtenek in nasièenje"
 
-#~ msgid "Denoise video"
-#~ msgstr "Odsrani ¹um videa"
+#: plugins/huesaturation/huewindow.C:52 plugins/libcolors/colorpicker.C:127
+msgid "Hue"
+msgstr "Odtenek"
 
-#~ msgid "Maximum level:"
-#~ msgstr "Najveèja stopnja:"
+#. printf("ColorWindow::create_objects 1\n");
+#: plugins/huesaturation/huewindow.C:57 plugins/libcolors/colorpicker.C:133
+msgid "Saturation"
+msgstr "Nasièenost"
 
-#, fuzzy
-#~ msgid "Maximum rate of change:"
-#~ msgstr "Najveèji absolutni odmik:"
+#: plugins/huesaturation/huewindow.C:118 plugins/polar/polarwindow.C:89
+#: plugins/whirl/whirlwindow.C:118 plugins/yuv/yuvwindow.C:118
+msgid "Automate"
+msgstr "Samodejno"
 
-#, fuzzy
-#~ msgid "DotTV"
-#~ msgstr "Naredi"
+#: plugins/interpolateall/interpolateall.C:83
+#: plugins/interpolate/interpolate.C:326 plugins/rotate/rotate.C:224
+msgid "Interpolate"
+msgstr "Interpoliranje"
 
-#~ msgid "Horizontal offset"
-#~ msgstr "Vodoravni odmik"
+#: plugins/invertaudio/invert.C:27
+msgid "Invert Audio"
+msgstr "Obrnitev zvok"
 
-#~ msgid "Vertical offset"
-#~ msgstr "Navpièni odmik"
+#: plugins/invertvideo/invert.C:170
+msgid "Invert R"
+msgstr "Obrni rdeèo"
 
-#~ msgid "Top field first"
-#~ msgstr "Najprej zgornje polje"
+#: plugins/invertvideo/invert.C:172
+msgid "Invert G"
+msgstr "Obrni zeleno"
 
-#~ msgid "Bottom field first"
-#~ msgstr "Najprej spodnje polje"
+#: plugins/invertvideo/invert.C:174
+msgid "Invert B"
+msgstr "Obrni modro"
 
-#, fuzzy
-#~ msgid "Fields to frames"
-#~ msgstr "Polni okvirje"
+#: plugins/invertvideo/invert.C:176
+msgid "Invert A"
+msgstr "Obrni alfo"
 
-#, fuzzy
-#~ msgid "Flash"
-#~ msgstr "Hitro"
+#: plugins/invertvideo/invert.C:216
+msgid "Invert Video"
+msgstr "Obrni barve"
 
-#~ msgid "Flip"
-#~ msgstr "Obrni"
+#: plugins/invertvideo/invertwindow.C:47
+#: plugins/synthesizer/synthesizer.C:1268
+#: plugins/synthesizer/synthesizer.C:1315
+msgid "Invert"
+msgstr "Obrni"
 
+#: plugins/irissquare/irissquare.C:139
 #, fuzzy
-#~ msgid "Frames to fields"
-#~ msgstr "Zamenjaj liha polja"
+msgid "IrisSquare"
+msgstr "Kvadrat"
 
-#~ msgid "Freeze"
-#~ msgstr "Zamrzni"
+#: plugins/ivtc/ivtc.C:49
+msgid "Inverse Telecine"
+msgstr "Inverzna telekineza"
 
-#~ msgid "Gain:"
-#~ msgstr "Ojaèenje:"
-
-#, fuzzy
-#~ msgid "Roomsize:"
-#~ msgstr "Velikost bloka:"
+#: plugins/ivtc/ivtcwindow.C:46
+msgid "Pattern offset:"
+msgstr "Odmik vzorca:"
 
-#, fuzzy
-#~ msgid "Wet:"
-#~ msgstr "Besedilo:"
+#: plugins/ivtc/ivtcwindow.C:54
+msgid "Pattern:"
+msgstr "Vzorec:"
 
-#, fuzzy
-#~ msgid "Freeverb"
-#~ msgstr "Zamrzni"
+#: plugins/ivtc/ivtcwindow.C:117
+msgid "Automatic IVTC"
+msgstr "Samodejna IVTC"
 
-#~ msgid "Enabled"
-#~ msgstr "Omogoèen"
+#: plugins/level/leveleffect.C:114
+msgid "Duration (seconds):"
+msgstr "Trajanje (sekunde):"
 
-#~ msgid "Freeze Frame"
-#~ msgstr "Zamrzni okvir"
+#: plugins/level/leveleffect.C:117
+msgid "Max soundlevel (dB):"
+msgstr "Najv. glasnost (dB):"
 
-#~ msgid "Gain"
-#~ msgstr "Ojaèenje"
+#: plugins/level/leveleffect.C:120
+msgid "RMS soundlevel (dB):"
+msgstr "Glasnost RMS (dB):"
 
-#~ msgid "Level:"
-#~ msgstr "Stopnja:"
+#: plugins/level/leveleffect.C:188
+msgid "SoundLevel"
+msgstr "Glasnost"
 
-#~ msgid "Value"
-#~ msgstr "Vrednost"
+#: plugins/libcolors/colorpicker.C:60
+msgid "Color Picker"
+msgstr "Barvna pipeta"
 
-#, fuzzy
-#~ msgid "Input min:"
-#~ msgstr "Vhod:"
+#: plugins/linearblur/linearblur.C:259
+msgid "Length:"
+msgstr "Dol¾ina zamika:"
 
-#~ msgid "Mid:"
-#~ msgstr "Srednji:"
+#: plugins/linearblur/linearblur.C:267 plugins/radialblur/radialblur.C:270
+#: plugins/zoomblur/zoomblur.C:276
+msgid "Steps:"
+msgstr "Koraki:"
 
-#~ msgid "Max:"
-#~ msgstr "Najveèji:"
+#: plugins/linearblur/linearblur.C:374
+msgid "Linear Blur"
+msgstr "Linearno mehèanje"
 
-#, fuzzy
-#~ msgid "Output min:"
-#~ msgstr "Izhodni kanal:"
+#: plugins/motion/motion.C:99
+msgid "Block size:"
+msgstr "Velikost bloka:"
 
-#~ msgid "Reset"
-#~ msgstr "Ponastavi"
+#: plugins/motion/motion.C:105
+msgid "Maximum absolute offset:"
+msgstr "Najveèji absolutni odmik:"
 
-#~ msgid "Automatic"
-#~ msgstr "Samodejno"
+#: plugins/motion/motion.C:111
+msgid "Stabilizer settling time:"
+msgstr "Èas umirjanja stabilizacije:"
 
-#~ msgid "Histogram"
-#~ msgstr "Histogram"
+#: plugins/motion/motion.C:256
+msgid "Stabilize"
+msgstr "Stabilizacija"
 
-#~ msgid "Saturation:"
-#~ msgstr "Nasièenost:"
+#: plugins/motion/motion.C:306
+msgid "Draw vectors"
+msgstr "Risanje vektorjev"
 
-#, fuzzy
-#~ msgid "Hue saturation"
-#~ msgstr "Nasièenost"
+#: plugins/motion/motion.C:358
+msgid "Motion"
+msgstr "Detekcija gibanja"
 
-#~ msgid "Hue"
-#~ msgstr "Odtenek"
+#: plugins/normalize/normalize.C:37 plugins/synthesizer/synthesizer.C:1188
+msgid "Normalize"
+msgstr "Normaliziranje"
 
-#~ msgid "Saturation"
-#~ msgstr "Nasièenost"
+#: plugins/normalize/normalizewindow.C:32
+msgid "Enter the DB to overload by:"
+msgstr ""
 
-#~ msgid "Automate"
-#~ msgstr "Samodejno"
+#: plugins/normalize/normalizewindow.C:68
+msgid "Treat tracks independantly"
+msgstr "Neodvisno obravnavaj steze"
 
-#~ msgid "Interpolate"
-#~ msgstr "Interpoliranje"
+#: plugins/oilpainting/oil.C:226
+msgid "Use intensity"
+msgstr "Uporabi intenzivnost"
 
-#, fuzzy
-#~ msgid "Invert Audio"
-#~ msgstr "nastavi avdio"
+#: plugins/oilpainting/oil.C:265 plugins/zoomblur/zoomblur.C:272
+msgid "Radius:"
+msgstr "Polmer:"
 
-#, fuzzy
-#~ msgid "Invert R"
-#~ msgstr "Internet"
+#: plugins/oilpainting/oil.C:317
+msgid "Oil painting"
+msgstr "Oljnata slika"
 
-#, fuzzy
-#~ msgid "Invert G"
-#~ msgstr "Internet"
+#: plugins/oilpainting/oilwindow.C:47
+msgid "Oil Painting"
+msgstr "Oljnata slika"
 
-#, fuzzy
-#~ msgid "Invert B"
-#~ msgstr "Internet"
+#: plugins/oilpainting/oilwindow.C:79
+msgid "Use Intensity"
+msgstr "Uporabi intenzivnost"
 
-#, fuzzy
-#~ msgid "Invert A"
-#~ msgstr "Internet"
+#: plugins/parametric/parametric.C:253
+msgid "Lowpass"
+msgstr "Nizkopasovni"
 
-#, fuzzy
-#~ msgid "Invert Video"
-#~ msgstr "nastavi video"
+#: plugins/parametric/parametric.C:256
+msgid "Highpass"
+msgstr "Visokopasovi"
 
-#, fuzzy
-#~ msgid "Invert"
-#~ msgstr "Internet"
+#: plugins/parametric/parametric.C:259
+msgid "Bandpass"
+msgstr "Srednjepasovni"
 
-#, fuzzy
-#~ msgid "IrisSquare"
-#~ msgstr "Kvadrat"
+#: plugins/parametric/parametric.C:364
+msgid "Freq"
+msgstr ""
 
+#: plugins/parametric/parametric.C:365
 #, fuzzy
-#~ msgid "Pattern offset:"
-#~ msgstr "Sod odmik:"
+msgid "Qual"
+msgstr "Kvaliteta:"
 
-#, fuzzy
-#~ msgid "Pattern:"
-#~ msgstr "Mehèanje:"
+#: plugins/parametric/parametric.C:366 plugins/synthesizer/synthesizer.C:566
+#: plugins/synthesizer/synthesizer.C:624
+msgid "Level"
+msgstr "Stopnja"
 
+#: plugins/parametric/parametric.C:375 plugins/synthesizer/synthesizer.C:615
 #, fuzzy
-#~ msgid "Automatic IVTC"
-#~ msgstr "Samodejno"
-
-#~ msgid "Duration (seconds):"
-#~ msgstr "Trajanje (sekunde):"
-
-#~ msgid "Max soundlevel (dB):"
-#~ msgstr "Najveèja glasnost (dB):"
+msgid "Wetness:"
+msgstr "Belina:"
 
-#~ msgid "RMS soundlevel (dB):"
-#~ msgstr "glasnost RMS (dB):"
+#: plugins/parametric/parametric.C:523
+msgid "EQ Parametric"
+msgstr "Paramatrièno izravnavanje"
 
-#~ msgid "SoundLevel"
-#~ msgstr "Glasnost"
+#: plugins/perspective/perspective.C:129
+msgid "Current X:"
+msgstr "Trenutni X:"
 
-#~ msgid "Color Picker"
-#~ msgstr "Barvna pipeta"
+#: plugins/perspective/perspective.C:156 plugins/perspective/perspective.C:608
+msgid "Perspective"
+msgstr "Perspektiva"
 
+#: plugins/perspective/perspective.C:162
 #, fuzzy
-#~ msgid "Length:"
-#~ msgstr "Dol¾ina:"
+msgid "Sheer"
+msgstr "Stre¾nik:"
 
-#~ msgid "Angle:"
-#~ msgstr "Kot:"
+#: plugins/perspective/perspective.C:169
+msgid "Stretch"
+msgstr "Razteg"
 
-#~ msgid "Steps:"
-#~ msgstr "Koraki:"
+#: plugins/perspective/perspective.C:173
+msgid "Perspective direction:"
+msgstr "Smer perspektive:"
 
-#~ msgid "Linear Blur"
-#~ msgstr "Linearno mehèanje"
+#: plugins/perspective/perspective.C:179
+msgid "Forward"
+msgstr "Naprej"
 
-#~ msgid "Block size:"
-#~ msgstr "Velikost bloka:"
+#: plugins/perspective/perspective.C:185
+msgid "Reverse"
+msgstr "Nazaj"
 
-#~ msgid "Maximum absolute offset:"
-#~ msgstr "Najveèji absolutni odmik:"
+#: plugins/pitch/pitch.C:63
+msgid "Pitch shift"
+msgstr ""
 
-#, fuzzy
-#~ msgid "Stabilizer settling time:"
-#~ msgstr "Zaèetni èas:"
+#: plugins/polar/polar.C:204
+msgid "Depth:"
+msgstr "Glob.:"
 
-#~ msgid "Stabilize"
-#~ msgstr "Sabiliziraj"
+#: plugins/polar/polar.C:293
+msgid "Polar"
+msgstr "Polarnost"
 
-#~ msgid "Draw vectors"
-#~ msgstr "Ri¹i vektorje"
+#: plugins/polar/polarwindow.C:42
+msgid "Depth"
+msgstr "Glob."
 
-#~ msgid "Motion"
-#~ msgstr "Gibanje"
+#: plugins/polar/polarwindow.C:47 plugins/rotate/rotate.C:333
+#: plugins/rotate/rotatewindow.C:65 plugins/whirl/whirl.C:251
+#: plugins/whirl/whirlwindow.C:52
+msgid "Angle"
+msgstr "Kot"
 
-#, fuzzy
-#~ msgid "Normalize"
-#~ msgstr "Obièajen"
+#: plugins/quark/quark.C:42
+msgid "Quark"
+msgstr ""
 
-#~ msgid "Treat tracks independantly"
-#~ msgstr "Neodvisno obravnavaj steze"
+#: plugins/quark/quarkwindow.C:66 plugins/sharpen/sharpenwindow.C:40
+msgid "Sharpness"
+msgstr "Ostrina:"
 
-#~ msgid "Radius:"
-#~ msgstr "Polmer:"
+#: plugins/quark/quarkwindow.C:117 plugins/sharpen/sharpenwindow.C:91
+msgid "Interlace"
+msgstr "Prepleteno"
 
-#, fuzzy
-#~ msgid "Oil painting"
-#~ msgstr "vhodna toèka"
+#: plugins/quark/quarkwindow.C:135 plugins/sharpen/sharpenwindow.C:109
+msgid "Horizontal only"
+msgstr "Le vodoravno"
 
-#, fuzzy
-#~ msgid "Bandpass"
-#~ msgstr "Pasovi:"
+#: plugins/quark/quarkwindow.C:152 plugins/sharpen/sharpenwindow.C:126
+msgid "Luminance only"
+msgstr ""
 
-#, fuzzy
-#~ msgid "Freq"
-#~ msgstr "Zamrzni"
+#: plugins/radialblur/radialblur.C:370
+msgid "Radial Blur"
+msgstr "Radialno mehèanje"
 
+#: plugins/resample/resample.C:56 plugins/reframe/reframe.C:176
 #, fuzzy
-#~ msgid "Qual"
-#~ msgstr "Kvaliteta:"
-
-#~ msgid "Level"
-#~ msgstr "Stopnja"
+msgid "Scale factor:"
+msgstr "Frekvenca vzorèenja:"
 
+#: plugins/resample/resample.C:87
 #, fuzzy
-#~ msgid "Wetness:"
-#~ msgstr "Belina:"
+msgid "Resample"
+msgstr "kljuèni okvir"
 
+#: plugins/reframe/reframe.C:40
 #, fuzzy
-#~ msgid "Current X:"
-#~ msgstr "Izhod X:"
+msgid "Reframe"
+msgstr "kljuèni okvir"
 
-#~ msgid "Perspective"
-#~ msgstr "Perspekvita"
+#: plugins/reverb/reverb.C:82
+msgid "Heroine College Concert Hall"
+msgstr ""
 
-#, fuzzy
-#~ msgid "Sheer"
-#~ msgstr "Stre¾nik:"
-
-#~ msgid "Stretch"
-#~ msgstr "Razteg"
+#: plugins/reverb/reverb.C:431
+#, c-format
+msgid "Couldn't save %s."
+msgstr "Ne morem shraniti %s."
 
-#~ msgid "Perspective direction:"
-#~ msgstr "Smer perspektive:"
+#: plugins/reverseaudio/reverseaudio.C:27
+msgid "Reverse audio"
+msgstr "Zvok previj nazaj"
 
-#~ msgid "Forward"
-#~ msgstr "Previjanje naprej"
+#: plugins/reversevideo/reversevideo.C:41
+msgid "Reverse video"
+msgstr "Video previj nazaj"
 
-#~ msgid "Reverse"
-#~ msgstr "Previjanje nazaj"
+#: plugins/rgb601/rgb601.C:37
+msgid "RGB - 601"
+msgstr "RGB - 601"
 
-#~ msgid "Depth:"
-#~ msgstr "Globina:"
+#: plugins/rgb601/rgb601window.C:43
+msgid "RGB -> 601"
+msgstr "RGB -> 601"
 
-#~ msgid "Polar"
-#~ msgstr "Polarni"
+#: plugins/rgb601/rgb601window.C:45
+msgid "601 -> RGB"
+msgstr "601 -> RGB"
 
-#~ msgid "Depth"
-#~ msgstr "Globina"
+#: plugins/rotate/rotate.C:291 plugins/rotate/rotate.C:428
+#: plugins/rotate/rotatewindow.C:48
+msgid "Rotate"
+msgstr "Zavrti"
 
-#~ msgid "Angle"
-#~ msgstr "Kot"
+#: plugins/rotate/rotatewindow.C:51
+msgid "0"
+msgstr "0"
 
-#~ msgid "Sharpness"
-#~ msgstr "Ostrina:"
+#: plugins/rotate/rotatewindow.C:54
+msgid "90"
+msgstr "90"
 
-#~ msgid "Interlace"
-#~ msgstr "Prepleteno"
+#: plugins/rotate/rotatewindow.C:57
+msgid "180"
+msgstr "180"
 
-#~ msgid "Horizontal only"
-#~ msgstr "Le vodoravno"
+#: plugins/rotate/rotatewindow.C:60
+msgid "270"
+msgstr "270"
 
-#~ msgid "Radial Blur"
-#~ msgstr "Radialno mehèanje"
+#: plugins/rotate/rotatewindow.C:67
+msgid "(Automated)"
+msgstr "(Samodejno)"
 
+#: plugins/scale/scale.C:77
 #, fuzzy
-#~ msgid "Reframe"
-#~ msgstr "kljuèni okvir"
+msgid "Scale"
+msgstr "Razmerje:"
 
+#: plugins/scale/scalewin.C:46
 #, fuzzy
-#~ msgid "Scale factor:"
-#~ msgstr "Frekvenca vzorèenja:"
-
-#~ msgid "Couldn't save %s."
-#~ msgstr "Ne morem shraniti %s."
-
-#~ msgid "Reverse audio"
-#~ msgstr "Avdio previj nazaj"
-
-#~ msgid "Reverse video"
-#~ msgstr "Video previj nazaj"
+msgid "X Scale:"
+msgstr "Razmerje:"
 
-#~ msgid "RGB - 601"
-#~ msgstr "RGB - 601"
-
-#~ msgid "RGB -> 601"
-#~ msgstr "RGB -> 601"
-
-#~ msgid "601 -> RGB"
-#~ msgstr "601 -> RGB"
+#: plugins/scale/scalewin.C:51
+#, fuzzy
+msgid "Y Scale:"
+msgstr "Razmerje:"
 
-#~ msgid "Rotate"
-#~ msgstr "Zavrti"
+#: plugins/sharpen/sharpen.C:113
+msgid "Sharpen"
+msgstr "Izostritev"
 
-#~ msgid "0"
-#~ msgstr "0"
+#: plugins/shiftinterlace/shiftinterlace.C:189
+msgid "Odd offset:"
+msgstr "Lih odmik:"
 
-#~ msgid "90"
-#~ msgstr "90"
+#: plugins/shiftinterlace/shiftinterlace.C:192
+msgid "Even offset:"
+msgstr "Sod odmik:"
 
-#~ msgid "180"
-#~ msgstr "180"
+#: plugins/shiftinterlace/shiftinterlace.C:274
+#, fuzzy
+msgid "ShiftInterlace channels"
+msgstr "Zamenjaj kanale"
 
-#~ msgid "270"
-#~ msgstr "270"
+#: plugins/slide/slide.C:32 plugins/titler/titlewindow.C:825
+#: plugins/wipe/wipe.C:32
+msgid "Left"
+msgstr "Levo"
 
-#~ msgid "(Automated)"
-#~ msgstr "(Samodejno)"
+#: plugins/slide/slide.C:54 plugins/titler/titlewindow.C:853
+#: plugins/wipe/wipe.C:54
+msgid "Right"
+msgstr "Desno"
 
+#: plugins/slide/slide.C:198
 #, fuzzy
-#~ msgid "Scale"
-#~ msgstr "Razmerje:"
+msgid "Slide"
+msgstr "Sinus"
 
+#: plugins/spectrogram/spectrogram.C:247
 #, fuzzy
-#~ msgid "X Scale:"
-#~ msgstr "Razmerje:"
+msgid "Spectrogram"
+msgstr "Histogram"
 
-#, fuzzy
-#~ msgid "Y Scale:"
-#~ msgstr "Razmerje:"
+#: plugins/swapchannels/swapchannels.C:90
+#: plugins/swapchannels/swapchannels.C:209
+msgid "Swap channels"
+msgstr "Zamenjaj kanale"
 
-#~ msgid "Sharpen"
-#~ msgstr "Izostri"
+#: plugins/swapchannels/swapchannels.C:92
+msgid "-> Red"
+msgstr "-> Rdeèa"
 
-#~ msgid "Odd offset:"
-#~ msgstr "Lih odmik:"
+#: plugins/swapchannels/swapchannels.C:96
+msgid "-> Green"
+msgstr "-> Zelena"
 
-#~ msgid "Even offset:"
-#~ msgstr "Sod odmik:"
+#: plugins/swapchannels/swapchannels.C:100
+msgid "-> Blue"
+msgstr "-> Modra"
 
-#, fuzzy
-#~ msgid "ShiftInterlace channels"
-#~ msgstr "Zamenjaj kanale"
+#: plugins/swapchannels/swapchannels.C:104
+msgid "-> Alpha"
+msgstr "-> Alfa"
 
-#~ msgid "Left"
-#~ msgstr "Levo"
+#: plugins/swapchannels/swapchannels.C:449
+#: plugins/swapchannels/swapchannels.C:466
+msgid "0%"
+msgstr "0%"
 
-#~ msgid "Right"
-#~ msgstr "Desno"
+#: plugins/swapchannels/swapchannels.C:452
+#: plugins/swapchannels/swapchannels.C:467
+msgid "100%"
+msgstr "100%"
 
-#, fuzzy
-#~ msgid "Slide"
-#~ msgstr "Sinus"
+#: plugins/synthesizer/synthesizer.C:60
+msgid "Synthesizer"
+msgstr "Sintetizator"
 
+#: plugins/synthesizer/synthesizer.C:567 plugins/synthesizer/synthesizer.C:626
 #, fuzzy
-#~ msgid "Spectrogram"
-#~ msgstr "Histogram"
+msgid "Phase"
+msgstr "Prilepi"
 
-#~ msgid "Swap channels"
-#~ msgstr "Zamenjaj kanale"
+#: plugins/synthesizer/synthesizer.C:589
+msgid "Waveform"
+msgstr "Zvoèni vzorec"
 
-#~ msgid "-> Red"
-#~ msgstr "-> Rdeèa"
+#: plugins/synthesizer/synthesizer.C:591
+msgid "Wave Function"
+msgstr "Funkcija zvoènega vzorca"
 
-#~ msgid "-> Green"
-#~ msgstr "-> Zelena"
+#: plugins/synthesizer/synthesizer.C:606
+msgid "Base Frequency:"
+msgstr "Osnovna frekvenca:"
 
-#~ msgid "-> Blue"
-#~ msgstr "-> Modra"
+#: plugins/synthesizer/synthesizer.C:628
+msgid "Harmonic"
+msgstr ""
 
-#~ msgid "-> Alpha"
-#~ msgstr "-> Alfa"
+#: plugins/synthesizer/synthesizer.C:746
+msgid "DC"
+msgstr ""
 
-#~ msgid "0%"
-#~ msgstr "0%"
+#. 	add_item(new SynthWaveFormItem(synth, _("DC"), DC));
+#: plugins/synthesizer/synthesizer.C:747
+#: plugins/synthesizer/synthesizer.C:1000
+#: plugins/synthesizer/synthesizer.C:1289
+#: plugins/synthesizer/synthesizer.C:1356
+msgid "Sine"
+msgstr "Sinus"
 
-#~ msgid "100%"
-#~ msgstr "100%"
+#: plugins/synthesizer/synthesizer.C:748
+#: plugins/synthesizer/synthesizer.C:1001
+msgid "Sawtooth"
+msgstr "®agast"
 
-#~ msgid "Synthesizer"
-#~ msgstr "Sintetizator"
+#: plugins/synthesizer/synthesizer.C:749
+#: plugins/synthesizer/synthesizer.C:1002
+msgid "Square"
+msgstr "Kvadrat"
 
-#, fuzzy
-#~ msgid "Phase"
-#~ msgstr "Prilepi"
+#: plugins/synthesizer/synthesizer.C:750
+#: plugins/synthesizer/synthesizer.C:1003
+msgid "Triangle"
+msgstr "Trikotnik"
 
-#~ msgid "Waveform"
-#~ msgstr "Zvoèni vzorec"
+#: plugins/synthesizer/synthesizer.C:751
+#: plugins/synthesizer/synthesizer.C:1004
+#, fuzzy
+msgid "Pulse"
+msgstr "Prilepi"
 
-#~ msgid "Wave Function"
-#~ msgstr "Funkcija zvoènega vzorca"
+#: plugins/synthesizer/synthesizer.C:752
+#: plugins/synthesizer/synthesizer.C:1005
+msgid "Noise"
+msgstr "©um"
 
-#~ msgid "Base Frequency:"
-#~ msgstr "Osnovna frekvenca:"
+#: plugins/synthesizer/synthesizer.C:875
+msgid "Add"
+msgstr "Dodaj"
 
-#~ msgid "Sine"
-#~ msgstr "Sinus"
+#: plugins/synthesizer/synthesizer.C:1147
+#: plugins/synthesizer/synthesizer.C:1336
+msgid "Zero"
+msgstr "Niè"
 
-#~ msgid "Sawtooth"
-#~ msgstr "®agast"
+#: plugins/synthesizer/synthesizer.C:1168
+msgid "Maximum"
+msgstr "Najveè"
 
-#~ msgid "Square"
-#~ msgstr "Kvadrat"
+#: plugins/synthesizer/synthesizer.C:1224
+msgid "Slope"
+msgstr "Naklon"
 
-#~ msgid "Triangle"
-#~ msgstr "Trikotnik"
+#: plugins/synthesizer/synthesizer.C:1247
+#: plugins/synthesizer/synthesizer.C:1379
+#: plugins/synthesizer/synthesizer.C:1404
+msgid "Random"
+msgstr "Nakljuèno"
 
+#: plugins/synthesizer/synthesizer.C:1425
 #, fuzzy
-#~ msgid "Pulse"
-#~ msgstr "Prilepi"
+msgid "Enumerate"
+msgstr "Frekvenca okvirjev"
 
-#~ msgid "Noise"
-#~ msgstr "©um"
+#: plugins/synthesizer/synthesizer.C:1445
+msgid "Even"
+msgstr "Sod"
 
-#~ msgid "Add"
-#~ msgstr "Dodaj"
+#: plugins/synthesizer/synthesizer.C:1468
+msgid "Odd"
+msgstr "Lih"
 
-#~ msgid "Zero"
-#~ msgstr "Niè"
+#: plugins/synthesizer/synthesizer.C:1486
+msgid "Fibonnacci"
+msgstr ""
 
-#~ msgid "Maximum"
-#~ msgstr "Najveè"
+#: plugins/synthesizer/synthesizer.C:1510
+msgid "Prime"
+msgstr "Pra¹tevilo"
 
-#~ msgid "Slope"
-#~ msgstr "Naklon"
+#: plugins/timeavg/timeavg.C:60
+msgid "Time Average"
+msgstr "Povpreèen èas"
 
-#~ msgid "Random"
-#~ msgstr "Nakljuèno"
-
+#: plugins/timeavg/timeavgwindow.C:38
 #, fuzzy
-#~ msgid "Enumerate"
-#~ msgstr "Frekvenca okvirjev"
-
-#~ msgid "Even"
-#~ msgstr "Sod"
+msgid "Frames to average"
+msgstr "Frekvenca okvirjev"
 
-#~ msgid "Odd"
-#~ msgstr "Lih"
+#: plugins/timestretch/timestretch.C:49
+msgid "Use fast fourier transform"
+msgstr "Uporabi hitro Fourierjevo transformacijo"
 
-#~ msgid "Prime"
-#~ msgstr "Pra¹tevilo"
+#: plugins/timestretch/timestretch.C:71
+msgid "Use overlapping windows"
+msgstr "Uporabi prekrivajoèa okna"
 
-#~ msgid "Time Average"
-#~ msgstr "Povpreèen èas"
+#: plugins/timestretch/timestretch.C:119
+msgid "Fraction of original length:"
+msgstr "Del izvorne dol¾ine:"
 
-#, fuzzy
-#~ msgid "Frames to average"
-#~ msgstr "Frekvenca okvirjev"
-
-#~ msgid "Use fast fourier transform"
-#~ msgstr "Uporabi hitro Fourierjevo transformacijo"
-
-#~ msgid "Use overlapping windows"
-#~ msgstr "Uporabi prekrivajoèa okna"
+#: plugins/timestretch/timestretch.C:245
+msgid "Time stretch"
+msgstr "Raztegnjen èas"
 
-#~ msgid "Fraction of original length:"
-#~ msgstr "Del izvorne dol¾ine:"
+#: plugins/titler/title.C:60
+msgid "hello world"
+msgstr "pozdravljen svet"
 
+#: plugins/titler/title.C:269
 #, fuzzy
-#~ msgid "Time stretch"
-#~ msgstr "Razteg"
+msgid "GlyphUnit::process_package FT_New_Face failed.\n"
+msgstr "GlyphUnit::process_package FT_Load_Char failed - znak: %i.\n"
 
-#~ msgid "hello world"
-#~ msgstr "pozdravljen svet"
+#: plugins/titler/title.C:288
+#, c-format
+msgid "GlyphUnit::process_package FT_Load_Char failed - char: %i.\n"
+msgstr "GlyphUnit::process_package FT_Load_Char failed - znak: %i.\n"
 
-#, fuzzy
-#~ msgid "GlyphUnit::process_package FT_New_Face failed.\n"
-#~ msgstr "GlyphUnit::process_package FT_Load_Char failed - znak: %i.\n"
+#: plugins/titler/title.C:1327
+#, c-format
+msgid "TitleMain::load_freetype_face %s failed.\n"
+msgstr ""
 
-#~ msgid "GlyphUnit::process_package FT_Load_Char failed - char: %i.\n"
-#~ msgstr "GlyphUnit::process_package FT_Load_Char failed - znak: %i.\n"
+#. Something went wrong.
+#: plugins/titler/title.C:1450
+#, c-format
+msgid "Iconv conversion from %s to Unicode UCS-4 not available\n"
+msgstr ""
 
+#: plugins/titler/title.C:1897
 #, fuzzy
-#~ msgid "No motion"
-#~ msgstr "Gibanje"
+msgid "No motion"
+msgstr "Gibanje"
 
-#~ msgid "Bottom to top"
-#~ msgstr "Od spodaj navzgor"
+#: plugins/titler/title.C:1898
+msgid "Bottom to top"
+msgstr "Od spodaj navzgor"
 
-#~ msgid "Top to bottom"
-#~ msgstr "Od zgoraj navzdol"
+#: plugins/titler/title.C:1899
+msgid "Top to bottom"
+msgstr "Od zgoraj navzdol"
 
-#~ msgid "Right to left"
-#~ msgstr "Od desne proti levi"
+#: plugins/titler/title.C:1900
+msgid "Right to left"
+msgstr "Od desne proti levi"
 
-#~ msgid "Left to right"
-#~ msgstr "Od leve proti desni"
+#: plugins/titler/title.C:1901
+msgid "Left to right"
+msgstr "Od leve proti desni"
 
-#~ msgid "Font:"
-#~ msgstr "Pisava:"
+#: plugins/titler/titlewindow.C:176
+msgid "Font:"
+msgstr "Pisava:"
 
-#~ msgid "Style:"
-#~ msgstr "Slog:"
+#: plugins/titler/titlewindow.C:189
+msgid "Style:"
+msgstr "Slog:"
 
-#~ msgid "Justify:"
-#~ msgstr "Poravnava:"
+#: plugins/titler/titlewindow.C:196
+msgid "Justify:"
+msgstr "Poravnava:"
 
-#~ msgid "Motion type:"
-#~ msgstr "Vrsta gibanja:"
+#: plugins/titler/titlewindow.C:221
+msgid "Motion type:"
+msgstr "Vrsta gibanja:"
 
-#~ msgid "Drop shadow:"
-#~ msgstr "Spu¹èaj senco:"
+#: plugins/titler/titlewindow.C:233
+msgid "Drop shadow:"
+msgstr "Senca:"
 
-#~ msgid "Fade in (sec):"
-#~ msgstr "Odbris (sek):"
+#: plugins/titler/titlewindow.C:238
+msgid "Fade in (sec):"
+msgstr "Odbris (sek):"
 
-#~ msgid "Fade out (sec):"
-#~ msgstr "Zabris (sek):"
+#: plugins/titler/titlewindow.C:242
+msgid "Fade out (sec):"
+msgstr "Zabris (sek):"
 
-#~ msgid "Speed:"
-#~ msgstr "Hitrost:"
+#: plugins/titler/titlewindow.C:246
+msgid "Speed:"
+msgstr "Hitrost:"
 
-#~ msgid "Encoding:"
-#~ msgstr "Kodiranje:"
+#: plugins/titler/titlewindow.C:259
+msgid "Encoding:"
+msgstr "Kodiranje:"
 
-#~ msgid "Outline width:"
-#~ msgstr "Oris z:"
+#: plugins/titler/titlewindow.C:265
+msgid "Outline width:"
+msgstr "Oris z:"
 
-#~ msgid "Text:"
-#~ msgstr "Besedilo:"
+#: plugins/titler/titlewindow.C:286
+msgid "Text:"
+msgstr "Besedilo:"
 
-#~ msgid "Bold"
-#~ msgstr "Krepko"
+#: plugins/titler/titlewindow.C:489
+msgid "Bold"
+msgstr "Krepko"
 
-#~ msgid "Italic"
-#~ msgstr "Le¾eèe"
+#: plugins/titler/titlewindow.C:503
+msgid "Italic"
+msgstr "Le¾eèe"
 
-#~ msgid "Outline"
-#~ msgstr "Obroba"
+#: plugins/titler/titlewindow.C:516
+msgid "Outline"
+msgstr "Obroba"
 
-#~ msgid "Color..."
-#~ msgstr "Barva..."
+#: plugins/titler/titlewindow.C:585
+msgid "Color..."
+msgstr "Barva..."
 
-#~ msgid "Outline color..."
-#~ msgstr "Barva obrobe..."
+#: plugins/titler/titlewindow.C:597
+msgid "Outline color..."
+msgstr "Barva obrobe..."
 
-#, fuzzy
-#~ msgid "Stamp timecode"
-#~ msgstr "Zaèetni èas"
+#: plugins/titler/titlewindow.C:642
+msgid "Stamp timecode"
+msgstr "Èasovna koda"
 
-#~ msgid "Center"
-#~ msgstr "Sredina"
+#: plugins/titler/titlewindow.C:839
+msgid "Center"
+msgstr "Sredina"
 
-#~ msgid "Top"
-#~ msgstr "Zgoraj"
+#: plugins/titler/titlewindow.C:869
+msgid "Top"
+msgstr "Zgoraj"
 
-#~ msgid "Mid"
-#~ msgstr "Sredina"
+#: plugins/titler/titlewindow.C:883
+msgid "Mid"
+msgstr "Sredina"
 
-#~ msgid "Bottom"
-#~ msgstr "Spodaj"
+#: plugins/titler/titlewindow.C:897
+msgid "Bottom"
+msgstr "Spodaj"
 
-#~ msgid "Translate"
-#~ msgstr "Prevod"
+#: plugins/translate/translate.C:97
+msgid "Translate"
+msgstr "Prevod"
 
-#~ msgid "In X:"
-#~ msgstr "Vhod X:"
+#: plugins/translate/translatewin.C:46
+msgid "In X:"
+msgstr "Vhod X:"
 
-#~ msgid "In Y:"
-#~ msgstr "Vhod Y:"
+#: plugins/translate/translatewin.C:52
+msgid "In Y:"
+msgstr "Vhod Y:"
 
-#~ msgid "In W:"
-#~ msgstr "Vhod W:"
+#: plugins/translate/translatewin.C:58
+msgid "In W:"
+msgstr "Vhod W:"
 
-#~ msgid "In H:"
-#~ msgstr "Vhod H:"
+#: plugins/translate/translatewin.C:64
+msgid "In H:"
+msgstr "Vhod H:"
 
-#~ msgid "Out X:"
-#~ msgstr "Izhod X:"
+#: plugins/translate/translatewin.C:73
+msgid "Out X:"
+msgstr "Izhod X:"
 
-#~ msgid "Out Y:"
-#~ msgstr "Izhod Y:"
+#: plugins/translate/translatewin.C:79
+msgid "Out Y:"
+msgstr "Izhod Y:"
 
-#~ msgid "Out W:"
-#~ msgstr "Izhod W:"
+#: plugins/translate/translatewin.C:85
+msgid "Out W:"
+msgstr "Izhod W:"
 
-#~ msgid "Out H:"
-#~ msgstr "Izhod H:"
+#: plugins/translate/translatewin.C:91
+msgid "Out H:"
+msgstr "Izhod H:"
 
-#~ msgid "VideoScope"
-#~ msgstr "Obmoèje videa"
+#: plugins/videoscope/videoscope.C:358
+msgid "VideoScope"
+msgstr "Videoskop"
 
+#: plugins/wave/wave.C:258
 #, fuzzy
-#~ msgid "Smear"
-#~ msgstr "poèisti"
+msgid "Smear"
+msgstr "poèisti"
+
+#: plugins/wave/wave.C:275
+msgid "Blacken"
+msgstr ""
 
+#: plugins/wave/wave.C:294
 #, fuzzy
-#~ msgid "Reflective"
-#~ msgstr "Sprejmi"
+msgid "Reflective"
+msgstr "Sprejmi"
 
-#~ msgid "Amplitude:"
-#~ msgstr "Amplituda:"
+#. 	add_subwindow(new BC_Title(x, y, _("Mode:")));
+#. 	add_subwindow(smear = new WaveSmear(plugin, this, x1, y));
+#. 	y += 20;
+#. 	add_subwindow(blacken = new WaveBlacken(plugin, this, x1, y));
+#. 	y += 30;
+#. 	add_subwindow(reflective = new WaveReflective(plugin, x1, y));
+#. 	y += 30;
+#: plugins/wave/wave.C:403
+msgid "Amplitude:"
+msgstr "Amplituda:"
 
+#: plugins/wave/wave.C:406
 #, fuzzy
-#~ msgid "Phase:"
-#~ msgstr "Prilepi"
+msgid "Phase:"
+msgstr "Prilepi"
 
-#~ msgid "Wavelength:"
-#~ msgstr "Valovna dol¾ina:"
+#: plugins/wave/wave.C:409
+msgid "Wavelength:"
+msgstr "Valovna dol¾ina:"
 
-#~ msgid "Wave"
-#~ msgstr "Val"
+#: plugins/wave/wave.C:463
+msgid "Wave"
+msgstr "Val"
 
-#~ msgid "Pinch"
-#~ msgstr "Udarec"
+#: plugins/whirl/whirl.C:247 plugins/whirl/whirlwindow.C:57
+msgid "Pinch"
+msgstr "Udarec"
 
-#~ msgid "Whirl"
-#~ msgstr "Vrtinec"
+#: plugins/whirl/whirl.C:377
+msgid "Whirl"
+msgstr "Vrtinec"
 
-#~ msgid "Wipe"
-#~ msgstr "Pobri¹i"
+#: plugins/wipe/wipe.C:138
+msgid "Wipe"
+msgstr "Pobri¹i"
 
-#~ msgid "U:"
-#~ msgstr "U:"
+#: plugins/yuv/yuv.C:179 plugins/yuv/yuvwindow.C:57
+msgid "U:"
+msgstr "U:"
 
-#~ msgid "V:"
-#~ msgstr "V:"
+#: plugins/yuv/yuv.C:182 plugins/yuv/yuvwindow.C:62
+msgid "V:"
+msgstr "V:"
 
-#~ msgid "YUV"
-#~ msgstr "YUV"
+#: plugins/yuv/yuv.C:223
+msgid "YUV"
+msgstr "YUV"
 
-#~ msgid "Zoom Blur"
-#~ msgstr "Poveèava mehèanja"
+#: plugins/zoomblur/zoomblur.C:383
+msgid "Zoom Blur"
+msgstr "Poveèava mehèanja"

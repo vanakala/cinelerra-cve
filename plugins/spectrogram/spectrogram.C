@@ -9,6 +9,11 @@
 
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 
 REGISTER_PLUGIN(Spectrogram)
@@ -94,7 +99,7 @@ void SpectrogramWindow::create_objects()
 	x = canvas->get_x();
 	y = canvas->get_y() + canvas->get_h() + 5;
 
-	add_subwindow(new BC_Title(x, y + 10, "Level:"));
+	add_subwindow(new BC_Title(x, y + 10, _("Level:")));
 	add_subwindow(level = new SpectrogramLevel(plugin, x + 50, y));
 
 	show_window();
@@ -239,7 +244,7 @@ void Spectrogram::reset()
 
 char* Spectrogram::plugin_title()
 {
-	return "Spectrogram";
+	return _("Spectrogram");
 }
 
 int Spectrogram::is_realtime()

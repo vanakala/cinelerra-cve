@@ -1,5 +1,10 @@
 #include "whirlwindow.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 WhirlThread::WhirlThread(WhirlMain *client)
  : Thread()
@@ -44,17 +49,17 @@ WhirlWindow::~WhirlWindow()
 int WhirlWindow::create_objects()
 {
 	int x = 10, y = 10;
-	add_tool(new BC_Title(x, y, "Angle"));
+	add_tool(new BC_Title(x, y, _("Angle")));
 	add_tool(automation[0] = new AutomatedFn(client, this, x + 80, y, 0));
 	y += 20;
 	add_tool(angle_slider = new AngleSlider(client, x, y));
 	y += 35;
-	add_tool(new BC_Title(x, y, "Pinch"));
+	add_tool(new BC_Title(x, y, _("Pinch")));
 	add_tool(automation[1] = new AutomatedFn(client, this, x + 80, y, 1));
 	y += 20;
 	add_tool(pinch_slider = new PinchSlider(client, x, y));
 	y += 35;
-	add_tool(new BC_Title(x, y, "Radius"));
+	add_tool(new BC_Title(x, y, _("Radius")));
 	add_tool(automation[2] = new AutomatedFn(client, this, x + 80, y, 2));
 	y += 20;
 	add_tool(radius_slider = new RadiusSlider(client, x, y));
@@ -110,7 +115,7 @@ int RadiusSlider::handle_event()
 }
 
 AutomatedFn::AutomatedFn(WhirlMain *client, WhirlWindow *window, int x, int y, int number)
- : BC_CheckBox(x, y, 16, 16, client->automated_function == number, "Automate")
+ : BC_CheckBox(x, y, 16, 16, client->automated_function == number, _("Automate"))
 {
 	this->client = client;
 	this->window = window;

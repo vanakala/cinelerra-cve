@@ -69,6 +69,7 @@ cinelerra/patchbay.C
 cinelerra/patchgui.C
 cinelerra/performanceprefs.C
 cinelerra/playbackprefs.C
+cinelerra/playtransport.C
 cinelerra/pluginaclientlad.C
 cinelerra/pluginarray.C
 cinelerra/pluginclient.C
@@ -139,6 +140,7 @@ plugins/blurzoom/blurzoomwindow.C
 plugins/brightness/brightness.C
 plugins/brightness/brightnesswindow.C
 plugins/burn/burn.C
+plugins/burn/burnwindow.C
 plugins/cdripper/cdripper.C
 plugins/cdripper/cdripwindow.C
 plugins/chromakey/chromakey.C
@@ -157,6 +159,7 @@ plugins/despike/despike.C
 plugins/despike/despikewindow.C
 plugins/dissolve/dissolve.C
 plugins/dot/dot.C
+plugins/dot/dotwindow.C
 plugins/downsample/downsample.C
 plugins/fieldframe/fieldframe.C
 plugins/flash/flash.C
@@ -167,6 +170,7 @@ plugins/freeverb/freeverb.C
 plugins/freezeframe/freezeframe.C
 plugins/gain/gain.C
 plugins/gain/gainwindow.C
+plugins/gradient/gradient.C
 plugins/histogram/histogram.C
 plugins/holo/holo.C
 plugins/holo/holowindow.C

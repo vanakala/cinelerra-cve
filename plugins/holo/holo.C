@@ -10,6 +10,11 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 PluginClient* new_plugin(PluginServer *server)
 {
 	return new HoloMain(server);
@@ -61,7 +66,7 @@ HoloMain::~HoloMain()
 		delete bgimage;
 }
 
-char* HoloMain::plugin_title() { return "HolographicTV"; }
+char* HoloMain::plugin_title() { return _("HolographicTV"); }
 int HoloMain::is_realtime() { return 1; }
 
 VFrame* HoloMain::new_picon()

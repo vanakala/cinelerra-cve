@@ -8,6 +8,11 @@
 
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 REGISTER_PLUGIN(FreezeFrameMain)
 
 
@@ -77,13 +82,13 @@ int FreezeFrameWindow::create_objects()
 		&client->config.enabled,
 		x, 
 		y,
-		"Enabled"));
+		_("Enabled")));
 	y += 30;
 	add_tool(line_double = new FreezeFrameToggle(client, 
 		&client->config.line_double,
 		x, 
 		y,
-		"Line double"));
+		_("Line double")));
 	show_window();
 	flush();
 	return 0;
@@ -144,7 +149,7 @@ FreezeFrameMain::~FreezeFrameMain()
 	if(first_frame) delete first_frame;
 }
 
-char* FreezeFrameMain::plugin_title() { return "Freeze Frame"; }
+char* FreezeFrameMain::plugin_title() { return _("Freeze Frame"); }
 
 int FreezeFrameMain::is_synthesis()
 {

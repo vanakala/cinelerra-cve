@@ -11,6 +11,11 @@
 
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 #define SQR(x) ((x) * (x))
 #define MAXANGLE 360
@@ -216,7 +221,7 @@ int RotateToggle::handle_event()
 
 
 RotateInterpolate::RotateInterpolate(RotateEffect *plugin, int x, int y)
- : BC_CheckBox(x, y, plugin->config.bilinear, "Interpolate")
+ : BC_CheckBox(x, y, plugin->config.bilinear, _("Interpolate"))
 {
 	this->plugin = plugin;
 }
@@ -283,7 +288,7 @@ int RotateWindow::create_objects()
 
 
 
-	add_tool(new BC_Title(x, y, "Rotate"));
+	add_tool(new BC_Title(x, y, _("Rotate")));
 	x += 50;
 	y += 20;
 	add_tool(toggle0 = new RotateToggle(this, 
@@ -325,7 +330,7 @@ int RotateWindow::create_objects()
 	y -= 50;
 	add_tool(fine = new RotateFine(this, plugin, x, y));
 	y += fine->get_h() + 10;
-	add_tool(new BC_Title(x, y, "Angle"));
+	add_tool(new BC_Title(x, y, _("Angle")));
 
 
 
@@ -420,7 +425,7 @@ RotateEffect::~RotateEffect()
 
 char* RotateEffect::plugin_title() 
 {
-	return "Rotate";
+	return _("Rotate");
 }
 
 int RotateEffect::is_realtime() 

@@ -2,6 +2,11 @@
 #include "colorbalancewindow.h"
 
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 
 
@@ -34,22 +39,22 @@ int ColorBalanceWindow::create_objects()
 {
 //printf("ColorBalanceWindow::create_objects 1\n");
 	int x = 10, y = 10;
-	add_tool(new BC_Title(x, y, "Color Balance"));
+	add_tool(new BC_Title(x, y, _("Color Balance")));
 	y += 25;
 //printf("ColorBalanceWindow::create_objects 1\n");
-	add_tool(new BC_Title(x, y, "Cyan"));
+	add_tool(new BC_Title(x, y, _("Cyan")));
 	add_tool(cyan = new ColorBalanceSlider(client, &(client->config.cyan), x + 70, y));
-	add_tool(new BC_Title(x + 270, y, "Red"));
+	add_tool(new BC_Title(x + 270, y, _("Red")));
 	y += 25;
 //printf("ColorBalanceWindow::create_objects 1\n");
-	add_tool(new BC_Title(x, y, "Magenta"));
+	add_tool(new BC_Title(x, y, _("Magenta")));
 	add_tool(magenta = new ColorBalanceSlider(client, &(client->config.magenta), x + 70, y));
-	add_tool(new BC_Title(x + 270, y, "Green"));
+	add_tool(new BC_Title(x + 270, y, _("Green")));
 	y += 25;
 //printf("ColorBalanceWindow::create_objects 1\n");
-	add_tool(new BC_Title(x, y, "Yellow"));
+	add_tool(new BC_Title(x, y, _("Yellow")));
 	add_tool(yellow = new ColorBalanceSlider(client, &(client->config.yellow), x + 70, y));
-	add_tool(new BC_Title(x + 270, y, "Blue"));
+	add_tool(new BC_Title(x + 270, y, _("Blue")));
 	y += 25;
 //printf("ColorBalanceWindow::create_objects 1\n");
 	add_tool(preserve = new ColorBalancePreserve(client, x + 70, y));
@@ -95,7 +100,7 @@ ColorBalancePreserve::ColorBalancePreserve(ColorBalanceMain *client, int x, int 
  : BC_CheckBox(x, 
  	y, 
 	client->config.preserve, 
-	"Preserve luminosity")
+	_("Preserve luminosity"))
 {
 	this->client = client;
 }
@@ -114,7 +119,7 @@ ColorBalanceLock::ColorBalanceLock(ColorBalanceMain *client, int x, int y)
  : BC_CheckBox(x, 
  	y, 
 	client->config.lock_params, 
-	"Lock parameters")
+	_("Lock parameters"))
 {
 	this->client = client;
 }

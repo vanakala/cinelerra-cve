@@ -2,6 +2,11 @@
 #include "pluginaclient.h"
 #include "vframe.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 class InvertAudioEffect : public PluginAClient
 {
 public:
@@ -19,7 +24,7 @@ public:
 	};
 	char* plugin_title()
 	{
-		return "Invert Audio";
+		return _("Invert Audio");
 	};
 	int is_realtime()
 	{

@@ -6,6 +6,11 @@
 
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 REGISTER_PLUGIN(ScaleMain)
 
 
@@ -69,7 +74,7 @@ ScaleMain::~ScaleMain()
 	overlayer = 0;
 }
 
-char* ScaleMain::plugin_title() { return "Scale"; }
+char* ScaleMain::plugin_title() { return _("Scale"); }
 int ScaleMain::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(ScaleMain)

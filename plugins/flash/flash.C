@@ -5,6 +5,11 @@
 #include "vframe.h"
 #include <stdint.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 PluginClient* new_plugin(PluginServer *server)
 {
 	return new FlashMain(server);
@@ -23,7 +28,7 @@ FlashMain::~FlashMain()
 {
 }
 
-char* FlashMain::plugin_title() { return "Flash"; }
+char* FlashMain::plugin_title() { return _("Flash"); }
 int FlashMain::is_video() { return 1; }
 int FlashMain::is_transition() { return 1; }
 int FlashMain::uses_gui() { return 0; }

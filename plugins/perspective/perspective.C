@@ -1,6 +1,11 @@
 #include "cursors.h"
 #include "perspective.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 
 
@@ -121,7 +126,7 @@ int PerspectiveWindow::create_objects()
 		get_h() - 140));
 	canvas->set_cursor(CROSS_CURSOR);
 	y += canvas->get_h() + 10;
-	add_subwindow(new BC_Title(x, y, "Current X:"));
+	add_subwindow(new BC_Title(x, y, _("Current X:")));
 	x += 80;
 	this->x = new PerspectiveCoord(this, 
 		plugin, 
@@ -131,7 +136,7 @@ int PerspectiveWindow::create_objects()
 		1);
 	this->x->create_objects();
 	x += 140;
-	add_subwindow(new BC_Title(x, y, "Y:"));
+	add_subwindow(new BC_Title(x, y, _("Y:")));
 	x += 20;
 	this->y = new PerspectiveCoord(this, 
 		plugin, 
@@ -148,36 +153,36 @@ int PerspectiveWindow::create_objects()
 		x, 
 		y, 
 		PerspectiveConfig::PERSPECTIVE,
-		"Perspective"));
+		_("Perspective")));
 	x += 120;
 	add_subwindow(mode_sheer = new PerspectiveMode(plugin, 
 		x, 
 		y, 
 		PerspectiveConfig::SHEER,
-		"Sheer"));
+		_("Sheer")));
 	x = 110;
 	y += 30;
 	add_subwindow(mode_stretch = new PerspectiveMode(plugin, 
 		x, 
 		y, 
 		PerspectiveConfig::STRETCH,
-		"Stretch"));
+		_("Stretch")));
 	update_canvas();
 	y += 30;
 	x = 10;
-	add_subwindow(new BC_Title(x, y, "Perspective direction:"));
+	add_subwindow(new BC_Title(x, y, _("Perspective direction:")));
 	x += 170;
 	add_subwindow(forward = new PerspectiveDirection(plugin, 
 		x, 
 		y, 
 		1,
-		"Forward"));
+		_("Forward")));
 	x += 100;
 	add_subwindow(reverse = new PerspectiveDirection(plugin, 
 		x, 
 		y, 
 		0,
-		"Reverse"));
+		_("Reverse")));
 
 	show_window();
 	flush();
@@ -504,7 +509,7 @@ int PerspectiveCoord::handle_event()
 PerspectiveReset::PerspectiveReset(PerspectiveMain *plugin, 
 	int x, 
 	int y)
- : BC_GenericButton(x, y, "Reset")
+ : BC_GenericButton(x, y, _("Reset"))
 {
 	this->plugin = plugin;
 }
@@ -600,7 +605,7 @@ PerspectiveMain::~PerspectiveMain()
 	if(temp) delete temp;
 }
 
-char* PerspectiveMain::plugin_title() { return "Perspective"; }
+char* PerspectiveMain::plugin_title() { return _("Perspective"); }
 int PerspectiveMain::is_realtime() { return 1; }
 
 

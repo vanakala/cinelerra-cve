@@ -704,7 +704,7 @@ int Copy::handle_event()
 }
 
 Paste::Paste(MWindow *mwindow)
- : BC_MenuItem(("Paste"), "v", 'v') 
+ : BC_MenuItem(_("Paste"), "v", 'v') 
 {
 	this->mwindow = mwindow; 
 }
@@ -754,7 +754,7 @@ int SelectAll::handle_event()
 	return 1;
 }
 
-ClearLabels::ClearLabels(MWindow *mwindow) : BC_MenuItem("Clear labels") 
+ClearLabels::ClearLabels(MWindow *mwindow) : BC_MenuItem(_("Clear labels")) 
 { 
 	this->mwindow = mwindow; 
 }
@@ -1077,7 +1077,7 @@ int CursorOnFrames::handle_event()
 }
 
 
-ScrubSpeed::ScrubSpeed(MWindow *mwindow) : BC_MenuItem("Slow Shuttle")
+ScrubSpeed::ScrubSpeed(MWindow *mwindow) : BC_MenuItem(_("Slow Shuttle"))
 {
 	this->mwindow = mwindow;
 }
@@ -1096,7 +1096,7 @@ int ScrubSpeed::handle_event()
 	}
 }
 
-SaveSettingsNow::SaveSettingsNow(MWindow *mwindow) : BC_MenuItem("Save settings now") 
+SaveSettingsNow::SaveSettingsNow(MWindow *mwindow) : BC_MenuItem(_("Save settings now")) 
 { 
 	this->mwindow = mwindow; 
 }

@@ -7,6 +7,11 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 PluginClient* new_plugin(PluginServer *server)
 {
 	return new SharpenMain(server);
@@ -34,7 +39,7 @@ SharpenMain::~SharpenMain()
 	delete defaults;
 }
 
-char* SharpenMain::plugin_title() { return "Quark"; }
+char* SharpenMain::plugin_title() { return _("Quark"); }
 int SharpenMain::is_realtime() { return 1; }
 
 VFrame* SharpenMain::new_picon()

@@ -8,6 +8,11 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 REGISTER_PLUGIN(SharpenMain)
 
 
@@ -105,7 +110,7 @@ NEW_PICON_MACRO(SharpenMain)
 
 LOAD_CONFIGURATION_MACRO(SharpenMain, SharpenConfig)
 
-char* SharpenMain::plugin_title() { return "Sharpen"; }
+char* SharpenMain::plugin_title() { return _("Sharpen"); }
 int SharpenMain::is_realtime() { return 1; }
 
 

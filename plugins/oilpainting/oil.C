@@ -13,6 +13,11 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 
 // Algorithm by Torsten Martinsen
@@ -218,7 +223,7 @@ int OilRadius::handle_event()
 
 
 OilIntensity::OilIntensity(OilEffect *plugin, int x, int y)
- : BC_CheckBox(x, y, plugin->config.use_intensity, "Use intensity")
+ : BC_CheckBox(x, y, plugin->config.use_intensity, _("Use intensity"))
 {
 	this->plugin = plugin;
 }
@@ -257,7 +262,7 @@ OilWindow::~OilWindow()
 void OilWindow::create_objects()
 {
 	int x = 10, y = 10;
-	add_subwindow(new BC_Title(x, y, "Radius:"));
+	add_subwindow(new BC_Title(x, y, _("Radius:")));
 	add_subwindow(radius = new OilRadius(plugin, x + 70, y));
 	y += 40;
 	add_subwindow(intensity = new OilIntensity(plugin, x, y));
@@ -309,7 +314,7 @@ int OilEffect::is_realtime()
 
 char* OilEffect::plugin_title()
 {
-	return "Oil painting";
+	return _("Oil painting");
 }
 
 NEW_PICON_MACRO(OilEffect)

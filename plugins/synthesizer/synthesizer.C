@@ -9,6 +9,11 @@
 #include <string.h>
 
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 
 PluginClient* new_plugin(PluginServer *server)
@@ -52,7 +57,7 @@ VFrame* Synth::new_picon()
 
 char* Synth::plugin_title()
 {
-	return "Synthesizer";
+	return _("Synthesizer");
 }
 
 
@@ -558,8 +563,8 @@ int SynthWindow::create_objects()
 	add_subwindow(menu = new BC_MenuBar(0, 0, get_w()));
 
 	BC_Menu *levelmenu, *phasemenu, *harmonicmenu;
-	menu->add_menu(levelmenu = new BC_Menu("Level"));
-	menu->add_menu(phasemenu = new BC_Menu("Phase"));
+	menu->add_menu(levelmenu = new BC_Menu(_("Level")));
+	menu->add_menu(phasemenu = new BC_Menu(_("Phase")));
 	menu->add_menu(harmonicmenu = new BC_Menu("Harmonic"));
 
 	levelmenu->add_item(new SynthLevelInvert(synth));
@@ -581,9 +586,9 @@ int SynthWindow::create_objects()
 	harmonicmenu->add_item(new SynthFreqPrime(synth));
 
 	int x = 10, y = 30, i;
-	add_subwindow(new BC_Title(x, y, "Waveform"));
+	add_subwindow(new BC_Title(x, y, _("Waveform")));
 	x += 240;
-	add_subwindow(new BC_Title(x, y, "Wave Function"));
+	add_subwindow(new BC_Title(x, y, _("Wave Function")));
 	y += 20;
 	x = 10;
 	add_subwindow(canvas = new SynthCanvas(synth, this, x, y, 230, 160));
@@ -598,7 +603,7 @@ int SynthWindow::create_objects()
 	y += 30;
 
 
-	add_subwindow(new BC_Title(x, y, "Base Frequency:"));
+	add_subwindow(new BC_Title(x, y, _("Base Frequency:")));
 	y += 30;
 	add_subwindow(base_freq = new SynthBaseFreq(synth, x, y));
 	x += 80;
@@ -607,7 +612,7 @@ int SynthWindow::create_objects()
 	freqpot->freq_text = base_freq;
 	x -= 80;
 	y += 40;
-	add_subwindow(new BC_Title(x, y, "Wetness:"));
+	add_subwindow(new BC_Title(x, y, _("Wetness:")));
 	add_subwindow(wetness = new SynthWetness(synth, x + 70, y - 10));
 
 	y += 40;
@@ -616,11 +621,11 @@ int SynthWindow::create_objects()
 
 	x = 50;  
 	y = 220;
-	add_subwindow(new BC_Title(x, y, "Level")); 
+	add_subwindow(new BC_Title(x, y, _("Level"))); 
 	x += 75;
-	add_subwindow(new BC_Title(x, y, "Phase")); 
+	add_subwindow(new BC_Title(x, y, _("Phase"))); 
 	x += 75;
-	add_subwindow(new BC_Title(x, y, "Harmonic"));
+	add_subwindow(new BC_Title(x, y, _("Harmonic")));
 
 
 
@@ -738,13 +743,13 @@ int SynthWindow::waveform_to_text(char *text, int waveform)
 {
 	switch(waveform)
 	{
-		case DC:              sprintf(text, "DC");           break;
-		case SINE:            sprintf(text, "Sine");           break;
-		case SAWTOOTH:        sprintf(text, "Sawtooth");       break;
-		case SQUARE:          sprintf(text, "Square");         break;
-		case TRIANGLE:        sprintf(text, "Triangle");       break;
-		case PULSE:           sprintf(text, "Pulse");       break;
-		case NOISE:           sprintf(text, "Noise");       break;
+		case DC:              sprintf(text, _("DC"));           break;
+		case SINE:            sprintf(text, _("Sine"));           break;
+		case SAWTOOTH:        sprintf(text, _("Sawtooth"));       break;
+		case SQUARE:          sprintf(text, _("Square"));         break;
+		case TRIANGLE:        sprintf(text, _("Triangle"));       break;
+		case PULSE:           sprintf(text, _("Pulse"));       break;
+		case NOISE:           sprintf(text, _("Noise"));       break;
 	}
 	return 0;
 }
@@ -867,7 +872,7 @@ int SynthOscGUIFreq::handle_event()
 
 
 SynthAddOsc::SynthAddOsc(Synth *synth, SynthWindow *window, int x, int y)
- : BC_GenericButton(x, y, "Add")
+ : BC_GenericButton(x, y, _("Add"))
 {
 	this->synth = synth;
 	this->window = window;
@@ -888,7 +893,7 @@ int SynthAddOsc::handle_event()
 
 
 SynthDelOsc::SynthDelOsc(Synth *synth, SynthWindow *window, int x, int y)
- : BC_GenericButton(x, y, "Delete")
+ : BC_GenericButton(x, y, _("Delete"))
 {
 	this->synth = synth;
 	this->window = window;
@@ -959,7 +964,7 @@ SynthSubWindow::~SynthSubWindow()
 
 
 SynthClear::SynthClear(Synth *synth, int x, int y)
- : BC_GenericButton(x, y, "Clear")
+ : BC_GenericButton(x, y, _("Clear"))
 {
 	this->synth = synth;
 }
@@ -991,13 +996,13 @@ SynthWaveForm::~SynthWaveForm()
 
 int SynthWaveForm::create_objects()
 {
-//	add_item(new SynthWaveFormItem(synth, "DC", DC));
-	add_item(new SynthWaveFormItem(synth, "Sine", SINE));
-	add_item(new SynthWaveFormItem(synth, "Sawtooth", SAWTOOTH));
-	add_item(new SynthWaveFormItem(synth, "Square", SQUARE));
-	add_item(new SynthWaveFormItem(synth, "Triangle", TRIANGLE));
-	add_item(new SynthWaveFormItem(synth, "Pulse", PULSE));
-	add_item(new SynthWaveFormItem(synth, "Noise", NOISE));
+//	add_item(new SynthWaveFormItem(synth, _("DC"), DC));
+	add_item(new SynthWaveFormItem(synth, _("Sine"), SINE));
+	add_item(new SynthWaveFormItem(synth, _("Sawtooth"), SAWTOOTH));
+	add_item(new SynthWaveFormItem(synth, _("Square"), SQUARE));
+	add_item(new SynthWaveFormItem(synth, _("Triangle"), TRIANGLE));
+	add_item(new SynthWaveFormItem(synth, _("Pulse"), PULSE));
+	add_item(new SynthWaveFormItem(synth, _("Noise"), NOISE));
 	return 0;
 }
 
@@ -1139,7 +1144,7 @@ int SynthCanvas::update()
 
 // ======================= level calculations
 SynthLevelZero::SynthLevelZero(Synth *synth)
- : BC_MenuItem("Zero")
+ : BC_MenuItem(_("Zero"))
 { 
 	this->synth = synth; 
 }
@@ -1160,7 +1165,7 @@ int SynthLevelZero::handle_event()
 }
 
 SynthLevelMax::SynthLevelMax(Synth *synth)
- : BC_MenuItem("Maximum")
+ : BC_MenuItem(_("Maximum"))
 { 
 	this->synth = synth; 
 }
@@ -1180,7 +1185,7 @@ int SynthLevelMax::handle_event()
 }
 
 SynthLevelNormalize::SynthLevelNormalize(Synth *synth)
- : BC_MenuItem("Normalize")
+ : BC_MenuItem(_("Normalize"))
 {
 	this->synth = synth;
 }
@@ -1216,7 +1221,7 @@ int SynthLevelNormalize::handle_event()
 }
 
 SynthLevelSlope::SynthLevelSlope(Synth *synth)
- : BC_MenuItem("Slope")
+ : BC_MenuItem(_("Slope"))
 {
 	this->synth = synth;
 }
@@ -1239,7 +1244,7 @@ int SynthLevelSlope::handle_event()
 }
 
 SynthLevelRandom::SynthLevelRandom(Synth *synth)
- : BC_MenuItem("Random")
+ : BC_MenuItem(_("Random"))
 { 
 	this->synth = synth; 
 }
@@ -1260,7 +1265,7 @@ int SynthLevelRandom::handle_event()
 }
 
 SynthLevelInvert::SynthLevelInvert(Synth *synth)
- : BC_MenuItem("Invert")
+ : BC_MenuItem(_("Invert"))
 {
 	this->synth = synth;
 }
@@ -1281,7 +1286,7 @@ int SynthLevelInvert::handle_event()
 }
 
 SynthLevelSine::SynthLevelSine(Synth *synth)
- : BC_MenuItem("Sine")
+ : BC_MenuItem(_("Sine"))
 {
 	this->synth = synth;
 }
@@ -1307,7 +1312,7 @@ int SynthLevelSine::handle_event()
 // ============================ phase calculations
 
 SynthPhaseInvert::SynthPhaseInvert(Synth *synth)
- : BC_MenuItem("Invert")
+ : BC_MenuItem(_("Invert"))
 {
 	this->synth = synth;
 }
@@ -1328,7 +1333,7 @@ int SynthPhaseInvert::handle_event()
 }
 
 SynthPhaseZero::SynthPhaseZero(Synth *synth)
- : BC_MenuItem("Zero")
+ : BC_MenuItem(_("Zero"))
 {
 	this->synth = synth;
 }
@@ -1348,7 +1353,7 @@ int SynthPhaseZero::handle_event()
 }
 
 SynthPhaseSine::SynthPhaseSine(Synth *synth)
- : BC_MenuItem("Sine")
+ : BC_MenuItem(_("Sine"))
 {
 	this->synth = synth;
 }
@@ -1371,7 +1376,7 @@ int SynthPhaseSine::handle_event()
 }
 
 SynthPhaseRandom::SynthPhaseRandom(Synth *synth)
- : BC_MenuItem("Random")
+ : BC_MenuItem(_("Random"))
 {
 	this->synth = synth;
 }
@@ -1396,7 +1401,7 @@ int SynthPhaseRandom::handle_event()
 // ============================ freq calculations
 
 SynthFreqRandom::SynthFreqRandom(Synth *synth)
- : BC_MenuItem("Random")
+ : BC_MenuItem(_("Random"))
 {
 	this->synth = synth;
 }
@@ -1417,7 +1422,7 @@ int SynthFreqRandom::handle_event()
 }
 
 SynthFreqEnum::SynthFreqEnum(Synth *synth)
- : BC_MenuItem("Enumerate")
+ : BC_MenuItem(_("Enumerate"))
 {
 	this->synth = synth;
 }
@@ -1437,7 +1442,7 @@ int SynthFreqEnum::handle_event()
 }
 
 SynthFreqEven::SynthFreqEven(Synth *synth)
- : BC_MenuItem("Even")
+ : BC_MenuItem(_("Even"))
 {
 	this->synth = synth;
 }
@@ -1460,7 +1465,7 @@ int SynthFreqEven::handle_event()
 }
 
 SynthFreqOdd::SynthFreqOdd(Synth *synth)
- : BC_MenuItem("Odd")
+ : BC_MenuItem(_("Odd"))
 { this->synth = synth; }
 SynthFreqOdd::~SynthFreqOdd()
 {
@@ -1478,7 +1483,7 @@ int SynthFreqOdd::handle_event()
 }
 
 SynthFreqFibonacci::SynthFreqFibonacci(Synth *synth)
- : BC_MenuItem("Fibonnacci")
+ : BC_MenuItem(_("Fibonnacci"))
 { 
 	this->synth = synth; 
 }
@@ -1502,7 +1507,7 @@ int SynthFreqFibonacci::handle_event()
 }
 
 SynthFreqPrime::SynthFreqPrime(Synth *synth)
- : BC_MenuItem("Prime")
+ : BC_MenuItem(_("Prime"))
 { 
 	this->synth = synth; 
 }

@@ -4,6 +4,11 @@
 #include <stdio.h>
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 PluginClient* new_plugin(PluginServer *server)
 {
@@ -19,7 +24,7 @@ ReverseAudio::~ReverseAudio()
 {
 }
 
-char* ReverseAudio::plugin_title() { return "Reverse audio"; }
+char* ReverseAudio::plugin_title() { return _("Reverse audio"); }
 
 int ReverseAudio::is_realtime() { return 0; }
 

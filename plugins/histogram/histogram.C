@@ -17,6 +17,13 @@
 #include "pluginvclient.h"
 #include "vframe.h"
 
+
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
+
 class HistogramMain;
 class HistogramEngine;
 class HistogramWindow;
@@ -386,35 +393,35 @@ int HistogramWindow::create_objects()
 		x, 
 		y,
 		HISTOGRAM_VALUE,
-		"Value"));
+		_("Value")));
 	x += 70;
 	add_subwindow(mode_r = new HistogramMode(plugin, 
 		x, 
 		y,
 		HISTOGRAM_RED,
-		"Red"));
+		_("Red")));
 	x += 70;
 	add_subwindow(mode_g = new HistogramMode(plugin, 
 		x, 
 		y,
 		HISTOGRAM_GREEN,
-		"Green"));
+		_("Green")));
 	x += 70;
 	add_subwindow(mode_b = new HistogramMode(plugin, 
 		x, 
 		y,
 		HISTOGRAM_BLUE,
-		"Blue"));
+		_("Blue")));
 	x += 70;
 	add_subwindow(mode_a = new HistogramMode(plugin, 
 		x, 
 		y,
 		HISTOGRAM_ALPHA,
-		"Alpha"));
+		_("Alpha")));
 
 	x = x1;
 	y += 30;
-	add_subwindow(new BC_Title(x, y, "Input min:"));
+	add_subwindow(new BC_Title(x, y, _("Input min:")));
 	x += 80;
 	input_min = new HistogramText(plugin,
 		this,
@@ -423,7 +430,7 @@ int HistogramWindow::create_objects()
 		&plugin->config.input_min[subscript]);
 	input_min->create_objects();
 	x += 90;
-	add_subwindow(new BC_Title(x, y, "Mid:"));
+	add_subwindow(new BC_Title(x, y, _("Mid:")));
 	x += 40;
 	input_mid = new HistogramText(plugin,
 		this,
@@ -433,7 +440,7 @@ int HistogramWindow::create_objects()
 	input_mid->create_objects();
 	input_mid->update((int64_t)plugin->config.input_mid[subscript]);
 	x += 90;
-	add_subwindow(new BC_Title(x, y, "Max:"));
+	add_subwindow(new BC_Title(x, y, _("Max:")));
 	x += 40;
 	input_max = new HistogramText(plugin,
 		this,
@@ -461,7 +468,7 @@ int HistogramWindow::create_objects()
 	input->update();
 
 	y += input->get_h() + 10;
-	add_subwindow(new BC_Title(x, y, "Output min:"));
+	add_subwindow(new BC_Title(x, y, _("Output min:")));
 	x += 90;
 	output_min = new HistogramText(plugin,
 		this,
@@ -470,7 +477,7 @@ int HistogramWindow::create_objects()
 		&plugin->config.output_min[subscript]);
 	output_min->create_objects();
 	x += 90;
-	add_subwindow(new BC_Title(x, y, "Max:"));
+	add_subwindow(new BC_Title(x, y, _("Max:")));
 	x += 40;
 	output_max = new HistogramText(plugin,
 		this,
@@ -504,7 +511,7 @@ int HistogramWindow::create_objects()
 		x, 
 		y));
 	x += 100;
-	add_subwindow(new BC_Title(x, y, "Threshold:"));
+	add_subwindow(new BC_Title(x, y, _("Threshold:")));
 	x += 100;
 	threshold = new HistogramText(plugin,
 		this,
@@ -631,7 +638,7 @@ void HistogramWindow::update_canvas()
 HistogramReset::HistogramReset(HistogramMain *plugin, 
 	int x,
 	int y)
- : BC_GenericButton(x, y, "Reset")
+ : BC_GenericButton(x, y, _("Reset"))
 {
 	this->plugin = plugin;
 }
@@ -907,7 +914,7 @@ void HistogramSlider::update()
 HistogramAuto::HistogramAuto(HistogramMain *plugin, 
 	int x, 
 	int y)
- : BC_CheckBox(x, y, plugin->config.automatic, "Automatic")
+ : BC_CheckBox(x, y, plugin->config.automatic, _("Automatic"))
 {
 	this->plugin = plugin;
 }
@@ -1025,7 +1032,7 @@ HistogramMain::~HistogramMain()
 	if(engine) delete engine;
 }
 
-char* HistogramMain::plugin_title() { return "Histogram"; }
+char* HistogramMain::plugin_title() { return _("Histogram"); }
 int HistogramMain::is_realtime() { return 1; }
 
 

@@ -8,6 +8,11 @@
 #include "vframe.h"
 
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 
 
@@ -230,7 +235,7 @@ DenoiseMJPEGDeinterlace::DenoiseMJPEGDeinterlace(DenoiseMJPEG *plugin, int x, in
  : BC_CheckBox(x, 
  	y, 
 	plugin->config.deinterlace,
-	"Deinterlace")
+	_("Deinterlace"))
 {
 	this->plugin = plugin;
 }
@@ -252,7 +257,7 @@ DenoiseMJPEGModeProgressive::DenoiseMJPEGModeProgressive(DenoiseMJPEG *plugin, D
  : BC_Radial(x, 
  	y, 
 	plugin->config.mode == 0,
-	"Progressive")
+	_("Progressive"))
 {
 	this->plugin = plugin;
 	this->gui = gui;
@@ -271,7 +276,7 @@ DenoiseMJPEGModeInterlaced::DenoiseMJPEGModeInterlaced(DenoiseMJPEG *plugin, Den
  : BC_Radial(x, 
  	y, 
 	plugin->config.mode == 1,
-	"Interlaced")
+	_("Interlaced"))
 {
 	this->plugin = plugin;
 	this->gui = gui;
@@ -290,7 +295,7 @@ DenoiseMJPEGModeFast::DenoiseMJPEGModeFast(DenoiseMJPEG *plugin, DenoiseMJPEGWin
  : BC_Radial(x, 
  	y, 
 	plugin->config.mode == 2,
-	"Fast")
+	_("Fast"))
 {
 	this->plugin = plugin;
 	this->gui = gui;
@@ -356,35 +361,35 @@ DenoiseMJPEGWindow::DenoiseMJPEGWindow(DenoiseMJPEG *plugin, int x, int y)
 void DenoiseMJPEGWindow::create_objects()
 {
 	int x1 = 10, y1 = 20, x2 = 140, x3 = 180, y2 = 10, margin = 30, margin2 = 25;
-	add_subwindow(new BC_Title(x1, y1, "Search radius:"));
+	add_subwindow(new BC_Title(x1, y1, _("Search radius:")));
 	add_subwindow(radius = new DenoiseMJPEGRadius(plugin, x2, y2));
 	y1 += margin;
 	y2 += margin;
-	add_subwindow(new BC_Title(x1, y1, "Pass 1 threshold:"));
+	add_subwindow(new BC_Title(x1, y1, _("Pass 1 threshold:")));
 	add_subwindow(threshold1 = new DenoiseMJPEGThresh(plugin, x3, y2));
 	y1 += margin;
 	y2 += margin;
-	add_subwindow(new BC_Title(x1, y1, "Pass 2 threshold:"));
+	add_subwindow(new BC_Title(x1, y1, _("Pass 2 threshold:")));
 	add_subwindow(threshold2 = new DenoiseMJPEGThresh2(plugin, x2, y2));
 	y1 += margin;
 	y2 += margin;
-	add_subwindow(new BC_Title(x1, y1, "Sharpness:"));
+	add_subwindow(new BC_Title(x1, y1, _("Sharpness:")));
 	add_subwindow(sharpness = new DenoiseMJPEGSharp(plugin, x3, y2));
 	y1 += margin;
 	y2 += margin;
-	add_subwindow(new BC_Title(x1, y1, "Luma contrast:"));
+	add_subwindow(new BC_Title(x1, y1, _("Luma contrast:")));
 	add_subwindow(lcontrast = new DenoiseMJPEGLContrast(plugin, x2, y2));
 	y1 += margin;
 	y2 += margin;
-	add_subwindow(new BC_Title(x1, y1, "Chroma contrast:"));
+	add_subwindow(new BC_Title(x1, y1, _("Chroma contrast:")));
 	add_subwindow(ccontrast = new DenoiseMJPEGCContrast(plugin, x3, y2));
 	y1 += margin;
 	y2 += margin;
-	add_subwindow(new BC_Title(x1, y1, "Delay frames:"));
+	add_subwindow(new BC_Title(x1, y1, _("Delay frames:")));
 	add_subwindow(delay = new DenoiseMJPEGDelay(plugin, x2, y2));
 	y1 += margin;
 	y2 += margin;
-	add_subwindow(new BC_Title(x1, y1, "Mode:"));
+	add_subwindow(new BC_Title(x1, y1, _("Mode:")));
 	add_subwindow(interlaced = new DenoiseMJPEGModeInterlaced(plugin, this, x2, y1));
 	y1 += margin2;
 	y2 += margin2;
@@ -468,7 +473,7 @@ int DenoiseMJPEG::is_realtime()
 
 char* DenoiseMJPEG::plugin_title()
 {
-	return "Denoise video2";
+	return _("Denoise video2");
 }
 
 VFrame* DenoiseMJPEG::new_picon()

@@ -11,6 +11,11 @@
 #include <stdint.h>
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 class InvertVideoEffect;
 
@@ -162,13 +167,13 @@ InvertVideoWindow::InvertVideoWindow(InvertVideoEffect *plugin, int x, int y)
 void InvertVideoWindow::create_objects()
 {
 	int x = 10, y = 10;
-	add_subwindow(r = new InvertVideoEnable(plugin, &plugin->config.r, x, y, "Invert R"));
+	add_subwindow(r = new InvertVideoEnable(plugin, &plugin->config.r, x, y, _("Invert R")));
 	y += 30;
-	add_subwindow(g = new InvertVideoEnable(plugin, &plugin->config.g, x, y, "Invert G"));
+	add_subwindow(g = new InvertVideoEnable(plugin, &plugin->config.g, x, y, _("Invert G")));
 	y += 30;
-	add_subwindow(b = new InvertVideoEnable(plugin, &plugin->config.b, x, y, "Invert B"));
+	add_subwindow(b = new InvertVideoEnable(plugin, &plugin->config.b, x, y, _("Invert B")));
 	y += 30;
-	add_subwindow(a = new InvertVideoEnable(plugin, &plugin->config.a, x, y, "Invert A"));
+	add_subwindow(a = new InvertVideoEnable(plugin, &plugin->config.a, x, y, _("Invert A")));
 
 	show_window();
 	flush();
@@ -208,7 +213,7 @@ int InvertVideoEffect::is_realtime()
 
 char* InvertVideoEffect::plugin_title()
 {
-	return "Invert Video";
+	return _("Invert Video");
 }
 
 NEW_PICON_MACRO(InvertVideoEffect)

@@ -8,7 +8,7 @@ SUBDIRS=1080to480 720to480 denoisemjpeg motion libfourier libeffecttv \
 				 synthesizer timeavg timestretch titler translate videoscope wave whirl wipe yuv microtheme \
 				 defaulttheme downsample flash gradient level linearblur \
 				 perspective radialblur zoomblur fonts \
-				 histogram
+				 svg histogram
 
 AUTOMAKE_OPTIONS=foreign
 

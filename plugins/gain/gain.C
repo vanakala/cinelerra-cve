@@ -11,6 +11,11 @@
 
 #include <string.h>
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 REGISTER_PLUGIN(Gain)
 
@@ -60,7 +65,7 @@ Gain::~Gain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-char* Gain::plugin_title() { return "Gain"; }
+char* Gain::plugin_title() { return _("Gain"); }
 int Gain::is_realtime() { return 1; }
 
 

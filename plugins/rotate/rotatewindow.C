@@ -1,5 +1,10 @@
 #include "rotatewindow.h"
 
+#include <libintl.h>
+#define _(String) gettext(String)
+#define gettext_noop(String) String
+#define N_(String) gettext_noop (String)
+
 
 RotateThread::RotateThread(RotateMain *client)
  : Thread()
@@ -40,26 +45,26 @@ RotateWindow::~RotateWindow()
 int RotateWindow::create_objects()
 {
 	int x = 10, y = 10;
-	add_tool(new BC_Title(x, y, "Rotate"));
+	add_tool(new BC_Title(x, y, _("Rotate")));
 	x += 50;
 	y += 20;
-	add_tool(toggle0 = new RotateToggle(this, client, client->angle == 0, x, y, 0, "0"));
+	add_tool(toggle0 = new RotateToggle(this, client, client->angle == 0, x, y, 0, _("0")));
     x += RADIUS;
     y += RADIUS;
-	add_tool(toggle90 = new RotateToggle(this, client, client->angle == 90, x, y, 90, "90"));
+	add_tool(toggle90 = new RotateToggle(this, client, client->angle == 90, x, y, 90, _("90")));
     x -= RADIUS;
     y += RADIUS;
-	add_tool(toggle180 = new RotateToggle(this, client, client->angle == 180, x, y, 180, "180"));
+	add_tool(toggle180 = new RotateToggle(this, client, client->angle == 180, x, y, 180, _("180")));
     x -= RADIUS;
     y -= RADIUS;
-	add_tool(toggle270 = new RotateToggle(this, client, client->angle == 270, x, y, 270, "270"));
+	add_tool(toggle270 = new RotateToggle(this, client, client->angle == 270, x, y, 270, _("270")));
 	x += 110;
 	y -= 50;
 	add_tool(fine = new RotateFine(this, client, x, y));
 	y += fine->get_h() + 10;
-	add_tool(new BC_Title(x, y, "Angle"));
+	add_tool(new BC_Title(x, y, _("Angle")));
 	y += 20;
-	add_tool(new BC_Title(x, y, "(Automated)"));
+	add_tool(new BC_Title(x, y, _("(Automated)")));
 }
 
 int RotateWindow::close_event()
