@@ -1,7 +1,6 @@
 #ifndef VIDEODEVICE_H
 #define VIDEODEVICE_H
 
-#include "../hvirtual_config.h"
 #include "asset.inc"
 #include "assets.inc"
 #include "audio1394.inc"
