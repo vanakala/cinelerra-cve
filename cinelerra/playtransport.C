@@ -8,6 +8,7 @@
 #include "theme.h"
 #include "transportque.h"
 #include "vframe.h"
+#include "localsession.h"
 
 
 
@@ -184,6 +185,34 @@ int PlayTransport::keypress_event()
 	}
 
 	subwindow->unlock_window();
+
+	if (subwindow->ctrl_down())
+	{
+		switch(subwindow->get_keypress())
+		{
+			case KPPLUS:
+			case KP6:
+			case KP5:
+			case KP4:
+			case KP1:
+			case KP2:
+			case KP3:
+			case KPENTER:
+			case KPINS:
+			case ' ':
+			case 'k':
+			{
+				if (get_edl()->local_session->in_point > 0)
+					get_edl()->local_session->selectionstart = get_edl()->local_session->in_point;
+				if (get_edl()->local_session->out_point > 0)
+					get_edl()->local_session->selectionend = get_edl()->local_session->out_point;
+				break;
+			}
+			default:
+				break;
+		}
+	}
+
 	switch(subwindow->get_keypress())
 	{
 		case KPPLUS:        handle_transport(FAST_REWIND);                result = 1; break;
@@ -351,7 +380,7 @@ int PTransportButton::set_mode(int mode)
 RewindButton::RewindButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
  : PTransportButton(mwindow, transport, x, y, mwindow->theme->rewind_data)
 {
-	set_tooltip(_("Rewind"));
+	set_tooltip(_("Rewind ( Home )"));
 }
 int RewindButton::handle_event()
 {
@@ -456,7 +485,7 @@ int FastPlayButton::handle_event()
 EndButton::EndButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
  : PTransportButton(mwindow, transport, x, y, mwindow->theme->end_data) 
 {
-	set_tooltip(_("Jump to end"));
+	set_tooltip(_("Jump to end ( End )"));
 }
 int EndButton::handle_event()
 {	
