@@ -461,6 +461,13 @@ int FileMOV::can_copy_from(Edit *edit, int64_t position)
 		if (is_this_dv && is_edit_dv)
 			return 1;
 	}
+	else
+	if(edit->asset->format == FILE_DV)
+	{
+		if(match4(this->asset->vcodec, QUICKTIME_DV) || match4(this->asset->vcodec, QUICKTIME_DVSD))
+			return 1;
+	}
+
 
 	return 0;
 }
