@@ -329,7 +329,6 @@ void BlueDotTheme::initialize()
 	build_transport(fastrev_data, get_image_data("fastrev.png"), transport_bg, 1);
 	build_transport(forward_data, get_image_data("play.png"), transport_bg, 1);
 	build_transport(framefwd_data, get_image_data("framefwd.png"), transport_bg, 1);
-	build_transport(framefwd_data, get_image_data("framefwd.png"), transport_bg, 1);
 	build_transport(framerev_data, get_image_data("framerev.png"), transport_bg, 1);
 	build_transport(pause_data, get_image_data("pause.png"), transport_bg, 1);
 	build_transport(rec_data, get_image_data("record.png"), transport_bg, 1);
