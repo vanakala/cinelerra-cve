@@ -3,10 +3,9 @@
 
 #include <stdint.h>
 
-#define _ISOC9X_SOURCE 1
-#define _ISOC99_SOURCE 1
 
-#include <math.h>
+
+
 
 
 
@@ -23,35 +22,43 @@ FadeUnit::~FadeUnit()
 }
 
 
-#define APPLY_FADE(equivalent, input_rows, output_rows, type, chroma_zero, components) \
+#define APPLY_FADE(equivalent, input_rows, output_rows, max, type, int_type, chroma_zero, components) \
 { \
+	int_type opacity = (int_type)(alpha * max); \
+	int_type transparency = (int_type)(max - opacity); \
+ \
 	for(int i = row1; i < row2; i++) \
 	{ \
 		type *in_row = (type*)input_rows[i]; \
 		type *out_row = (type*)output_rows[i]; \
  \
-		for(int j = 0; j < width; j++) \
+		for(int j = 0; j < width; j++, out_row += components, in_row += components) \
 		{ \
 			if(components == 3) \
 			{ \
-				out_row[j * components] =  \
-					(type)lrintf(in_row[j * components] * alpha); \
-				out_row[j * components + 1] =  \
-					(type)lrintf(alpha * (in_row[j * components + 1] - chroma_zero) + chroma_zero); \
-				out_row[j * components + 2] =  \
-					(type)lrintf(alpha * (in_row[j * components + 2] - chroma_zero) + chroma_zero); \
+				out_row[0] =  \
+					(type)((int_type)in_row[0] * opacity / max); \
+				out_row[1] =  \
+					(type)(((int_type)in_row[1] * opacity +  \
+						(int_type)chroma_zero * transparency) / max); \
+				out_row[2] =  \
+					(type)(((int_type)in_row[2] * opacity +  \
+						(int_type)chroma_zero * transparency) / max); \
 			} \
 			else \
 			{ \
 				if(!equivalent) \
 				{ \
-					out_row[j * components] = in_row[j * components]; \
-					out_row[j * components + 1] = in_row[j * components + 1]; \
-					out_row[j * components + 2] = in_row[j * components + 2]; \
+					out_row[0] = in_row[0]; \
+					out_row[1] = in_row[1]; \
+					out_row[2] = in_row[2]; \
 				} \
  \
-				out_row[j * components + 3] =  \
-					(type)lrintf(in_row[j * components + 3] * alpha); \
+				if(in_row[3] == max) \
+					out_row[3] = opacity; \
+				else \
+				out_row[3] =  \
+					(type)((int_type)in_row[3] * opacity / max); \
 			} \
 		} \
 	} \
@@ -76,28 +83,28 @@ void FadeUnit::process_package(LoadPackage *package)
 		switch(input->get_color_model())
 		{
 			case BC_RGB888:
-				APPLY_FADE(1, out_rows, in_rows, unsigned char, 0x0, 3);
+				APPLY_FADE(1, out_rows, in_rows, 0xff, unsigned char, uint16_t, 0x0, 3);
 				break;
 			case BC_RGBA8888:
-				APPLY_FADE(1, out_rows, in_rows, unsigned char, 0x0, 4);
+				APPLY_FADE(1, out_rows, in_rows, 0xff, unsigned char, uint16_t, 0x0, 4);
 				break;
 			case BC_RGB161616:
-				APPLY_FADE(1, out_rows, in_rows, uint16_t, 0x0, 3);
+				APPLY_FADE(1, out_rows, in_rows, 0xffff, uint16_t, uint32_t, 0x0, 3);
 				break;
 			case BC_RGBA16161616:
-				APPLY_FADE(1, out_rows, in_rows, uint16_t, 0x0, 4);
+				APPLY_FADE(1, out_rows, in_rows, 0xffff, uint16_t, uint32_t, 0x0, 4);
 				break;
 			case BC_YUV888:
-				APPLY_FADE(1, out_rows, in_rows, unsigned char, 0x80, 3);
+				APPLY_FADE(1, out_rows, in_rows, 0xff, unsigned char, uint16_t, 0x80, 3);
 				break;
 			case BC_YUVA8888:
-				APPLY_FADE(1, out_rows, in_rows, unsigned char, 0x80, 4);
+				APPLY_FADE(1, out_rows, in_rows, 0xff, unsigned char, uint16_t, 0x80, 4);
 				break;
 			case BC_YUV161616:
-				APPLY_FADE(1, out_rows, in_rows, uint16_t, 0x8000, 3);
+				APPLY_FADE(1, out_rows, in_rows, 0xffff, uint16_t, uint32_t, 0x8000, 3);
 				break;
 			case BC_YUVA16161616:
-				APPLY_FADE(1, out_rows, in_rows, uint16_t, 0x8000, 4);
+				APPLY_FADE(1, out_rows, in_rows, 0xffff, uint16_t, uint32_t, 0x8000, 4);
 				break;
 		}
 	}
@@ -106,28 +113,28 @@ void FadeUnit::process_package(LoadPackage *package)
 		switch(input->get_color_model())
 		{
 			case BC_RGB888:
-				APPLY_FADE(0, out_rows, in_rows, unsigned char, 0x0, 3);
+				APPLY_FADE(0, out_rows, in_rows, 0xff, unsigned char, uint16_t, 0x0, 3);
 				break;
 			case BC_RGBA8888:
-				APPLY_FADE(0, out_rows, in_rows, unsigned char, 0x0, 4);
+				APPLY_FADE(0, out_rows, in_rows, 0xff, unsigned char, uint16_t, 0x0, 4);
 				break;
 			case BC_RGB161616:
-				APPLY_FADE(0, out_rows, in_rows, uint16_t, 0x0, 3);
+				APPLY_FADE(0, out_rows, in_rows, 0xffff, uint16_t, uint32_t, 0x0, 3);
 				break;
 			case BC_RGBA16161616:
-				APPLY_FADE(0, out_rows, in_rows, uint16_t, 0x0, 4);
+				APPLY_FADE(0, out_rows, in_rows, 0xffff, uint16_t, uint32_t, 0x0, 4);
 				break;
 			case BC_YUV888:
-				APPLY_FADE(0, out_rows, in_rows, unsigned char, 0x80, 3);
+				APPLY_FADE(0, out_rows, in_rows, 0xff, unsigned char, uint16_t, 0x80, 3);
 				break;
 			case BC_YUVA8888:
-				APPLY_FADE(0, out_rows, in_rows, unsigned char, 0x80, 4);
+				APPLY_FADE(0, out_rows, in_rows, 0xff, unsigned char, uint16_t, 0x80, 4);
 				break;
 			case BC_YUV161616:
-				APPLY_FADE(0, out_rows, in_rows, uint16_t, 0x8000, 3);
+				APPLY_FADE(0, out_rows, in_rows, 0xffff, uint16_t, uint32_t, 0x8000, 3);
 				break;
 			case BC_YUVA16161616:
-				APPLY_FADE(0, out_rows, in_rows, uint16_t, 0x8000, 4);
+				APPLY_FADE(0, out_rows, in_rows, 0xffff, uint16_t, uint32_t, 0x8000, 4);
 				break;
 		}
 	}
@@ -155,7 +162,6 @@ void FadeEngine::do_fade(VFrame *output, VFrame *input, float alpha)
 	this->output = output;
 	this->input = input;
 	this->alpha = alpha;
-	
 // Sanity
 	if(alpha == 1)
 		output->copy_from(input);
