@@ -1,21 +1,27 @@
 #include "units.h"
 #include <stdlib.h>
 
+// NOTE: DB::allocated is the original allocation, to which we keep a
+// pointer so that in theory we could have a destructor. DB::topower
+// is a pointer into the middle of DB::allocated, which allows us to
+// do lookups using negative array coefficients.
 float* DB::topower = 0;
+float* DB::allocated = NULL;
+
 int* Freq::freqtable = 0;
 
 
 DB::DB(float infinitygain)
 {
 	this->infinitygain = infinitygain;
-	if(!topower)
+	if(allocated == NULL)
 	{
 		int i;
 		float value;
 
 		// db to power table
-		topower = new float[(MAXGAIN - INFINITYGAIN) * 10 + 1];
-		topower += -INFINITYGAIN * 10;
+		allocated = new float[(MAXGAIN - INFINITYGAIN) * 10 + 1];
+		topower = allocated + (-INFINITYGAIN * 10);
 		for(i = INFINITYGAIN * 10; i <= MAXGAIN * 10; i++)
 		{
 			topower[i] = pow(10, (float)i / 10 / 20);
@@ -27,6 +33,7 @@ DB::DB(float infinitygain)
 	db = 0;
 }
 
+// FUTURE: would bounds checking be possible here?  Or at least make private?
 float DB::fromdb_table() 
 { 
 	return db = topower[(int)(db * 10)]; 
