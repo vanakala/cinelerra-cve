@@ -256,14 +256,7 @@ VModePatch::VModePatch(MWindow *mwindow, VPatchGUI *patch, int x, int y)
 int VModePatch::handle_event()
 {
 // Set menu items
-	for(int i = 0; i < total_items(); i++)
-	{
-		VModePatchItem *item = (VModePatchItem*)get_item(i);
-		if(item->mode == mode) 
-			item->set_checked(1);
-		else
-			item->set_checked(0);
-	}
+	update(mode);
 
 // Set keyframe
 	IntAuto *current;
@@ -319,6 +312,12 @@ int VModePatch::create_objects()
 void VModePatch::update(int mode)
 {
 	set_icon(patch->patchbay->mode_to_icon(mode));
+
+	for(int i = 0; i < total_items(); i++)
+	{
+		VModePatchItem *item = (VModePatchItem*)get_item(i);
+		item->set_checked(item->mode == mode);
+	}
 }
 
 
@@ -373,7 +372,6 @@ VModePatchItem::VModePatchItem(VModePatch *popup, char *text, int mode)
 int VModePatchItem::handle_event()
 {
 	popup->mode = mode;
-	popup->set_icon(popup->patch->patchbay->mode_to_icon(mode));
 	popup->handle_event();
 	return 1;
 }
