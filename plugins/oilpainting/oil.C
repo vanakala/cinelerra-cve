@@ -465,12 +465,10 @@ OilUnit::OilUnit(OilEffect *plugin, OilServer *server)
 		hist[i] = new int[hist_size + 1]; \
 	hist2 = new int[hist_size + 1]; \
  \
-printf("1\n"); \
 	for(int y1 = pkg->row1; y1 < pkg->row2; y1++) \
 	{ \
 		dest = (type*)plugin->output->get_rows()[y1]; \
  \
-printf("2 %d\n", y1); \
 		if(!plugin->config.use_intensity) \
 		{ \
 			for(int x1 = 0; x1 < w; x1++) \
@@ -480,6 +478,7 @@ printf("2 %d\n", y1); \
 				bzero(hist[0], sizeof(int) * (hist_size + 1)); \
 				bzero(hist[1], sizeof(int) * (hist_size + 1)); \
 				bzero(hist[2], sizeof(int) * (hist_size + 1)); \
+				if (components == 4) bzero(hist[3], sizeof(int) * (hist_size + 1)); \
  \
 				int x3 = CLIP((x1 - n), 0, w - 1); \
 				int y3 = CLIP((y1 - n), 0, h - 1); \
@@ -590,7 +589,7 @@ printf("2 %d\n", y1); \
 							val[0] = src[x2 * components + 0]; \
 							val[1] = src[x2 * components + 1]; \
 							val[2] = src[x2 * components + 2]; \
-							if(components == 3) val[3] = src[x2 * components + 3]; \
+							if(components == 4) val[3] = src[x2 * components + 3]; \
 							count2 = c; \
 						} \
 					} \
@@ -599,7 +598,7 @@ printf("2 %d\n", y1); \
 				dest[x1 * components + 0] = val[0]; \
 				dest[x1 * components + 1] = val[1]; \
 				dest[x1 * components + 2] = val[2]; \
-				if(components == 3) dest[x1 * components + 3] = val[3]; \
+				if(components == 4) dest[x1 * components + 3] = val[3]; \
 			} \
 		} \
 	} \
@@ -607,7 +606,6 @@ printf("2 %d\n", y1); \
 	for(int i = 0; i < components; i++) \
 		delete [] hist[i]; \
 	delete [] hist2; \
-printf("10\n"); \
 }
 
 
