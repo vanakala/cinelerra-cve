@@ -408,7 +408,7 @@ void DenoiseMJPEGWindow::create_objects()
 void DenoiseMJPEGWindow::update_mode(int value)
 {
 	plugin->config.mode = value;
-	progressive->update(value == 1);
+	progressive->update(value == 0);
 	interlaced->update(value == 1);
 	fast->update(value == 2);
 }
