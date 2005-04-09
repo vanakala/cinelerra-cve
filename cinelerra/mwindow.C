@@ -1421,10 +1421,10 @@ void MWindow::render_plugin_gui(void *data, int size, Plugin *plugin)
 
 void MWindow::update_plugin_states()
 {
-	int result = 0;
 	plugin_gui_lock->lock("MWindow::update_plugin_states");
 	for(int i = 0; i < plugin_guis->total; i++)
 	{
+		int result = 0;
 // Get a plugin GUI
 		Plugin *src_plugin = plugin_guis->values[i]->plugin;
 		PluginServer *src_plugingui = plugin_guis->values[i];
