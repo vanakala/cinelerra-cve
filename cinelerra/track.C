@@ -506,6 +506,12 @@ void Track::move_plugins_up(PluginSet *plugin_set)
 			PluginSet *temp = this->plugin_set.values[i - 1];
 			this->plugin_set.values[i - 1] = this->plugin_set.values[i];
 			this->plugin_set.values[i] = temp;
+
+			SharedLocation old_location, new_location;
+			new_location.module = old_location.module = tracks->number_of(this);
+			old_location.plugin = i;
+			new_location.plugin = i - 1;
+			tracks->change_plugins(old_location, new_location, 1);
 			break;
 		}
 	}
@@ -522,6 +528,12 @@ void Track::move_plugins_down(PluginSet *plugin_set)
 			PluginSet *temp = this->plugin_set.values[i + 1];
 			this->plugin_set.values[i + 1] = this->plugin_set.values[i];
 			this->plugin_set.values[i] = temp;
+
+			SharedLocation old_location, new_location;
+			new_location.module = old_location.module = tracks->number_of(this);
+			old_location.plugin = i;
+			new_location.plugin = i + 1;
+			tracks->change_plugins(old_location, new_location, 1);
 			break;
 		}
 	}
