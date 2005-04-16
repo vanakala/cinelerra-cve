@@ -263,23 +263,32 @@ Track* Tracks::add_video_track(int above, Track *dst_track)
 }
 
 
-int Tracks::delete_track()
-{
-	delete_track(last);
-	return 0;
-}
-
 int Tracks::delete_track(Track *track)
 {
+	if (!track)
+		return 0;
+
 	int old_location = number_of(track);
-// Shift effects referenced below the deleted track
-	for(Track *current = last; 
-		current && current != track; 
-		current = PREVIOUS)
+	detach_shared_effects(old_location);
+
+// Shift effects referencing effects below the deleted track
+	for(Track *current = track; 
+		current;
+		current = NEXT)
 	{
 		change_modules(number_of(current), number_of(current) - 1, 0);
 	}
 	if(track) delete track;
+
+	return 0;
+}
+
+int Tracks::detach_shared_effects(int module)
+{
+	for(Track *current = first; current; current = NEXT)
+	{
+		current->detach_shared_effects(module);
+	}
 
 	return 0;
 }

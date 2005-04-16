@@ -78,6 +78,7 @@ public:
 		int plugin_type);
 	void insert_plugin_set(Track *track, double position);
 	void detach_effect(Plugin *plugin);
+	void detach_shared_effects(int module);	// detach shared effects referencing module
 // Insert a track from another EDL
 	void insert_track(Track *track, 
 		double position, 
@@ -148,7 +149,6 @@ public:
 	void change_modules(int old_location, 
 		int new_location, 
 		int do_swap);
-	int delete_module_pointers(int deleted_track);
 
 	EDL *edl;
 	Tracks *tracks;
@@ -299,7 +299,6 @@ public:
 	virtual int reset_translation(int64_t start, int64_t end) { return 0; };
 	int feather_edits(int64_t start, int64_t end, int64_t units);
 	int64_t get_feather(int64_t selectionstart, int64_t selectionend);
-	int shift_module_pointers(int deleted_track);
 
 
 // Absolute number of this track

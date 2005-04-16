@@ -74,7 +74,6 @@ public:
 	Track* add_video_track(int above, Track *dst_track);
 //	Track* add_audio_track(int to_end = 1);
 //	Track* add_video_track(int to_end = 1);
-	int delete_track();     // delete last track
 	int delete_track(Track* track);        // delete any track
 
 	EDL *edl;
@@ -116,8 +115,7 @@ public:
 // Change references to shared plugins in all tracks
 	void change_plugins(SharedLocation &old_location, SharedLocation &new_location, int do_swap);
 
-	int delete_audio_track();       // delete the last audio track
-	int delete_video_track();        // delete the last video track
+	int detach_shared_effects(int module);	// detach shared effects referencing module
 	int delete_tracks();     // delete all the recordable tracks
 	int delete_all_tracks();      // delete just the tracks
 

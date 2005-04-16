@@ -143,44 +143,21 @@ int Tracks::copy_default_keyframe(FileXML *file)
 
 int Tracks::delete_tracks()
 {
-	int result = 1, total_deleted = 0;
-	Track *track, *next_track, *shifted_track;
-	int deleted_number;
-	
-	while(result)
+	int total_deleted = 0;
+repeat:
+	for (Track* current = first;
+		current;
+		current = NEXT)
 	{
-// keep deleting until all the recordable tracks are gone
-		result = 0;
-
-//printf("Tracks::delete_tracks 1\n");
-// Stop when first recordable track is reached
-		for(track = first; 
-			track && !result;  
-			track = next_track)
+		if(current->record)
 		{
-//printf("Tracks::delete_tracks 2\n");
-			next_track = track->next;
-			
-			if(track->record)
-			{
-				deleted_number = number_of(track);
-// Delete the track.
-				delete track;
-
-// Shift all the plugin pointers.
-				for(shifted_track = next_track;
-					shifted_track;
-					shifted_track = shifted_track->next)
-				{
-					shifted_track->delete_module_pointers(deleted_number);
-				}
-				result = 1;
-				total_deleted++;
-			}
+			delete_track(current);
+			total_deleted++;
+			// this has garbled the linked list
+			// scan the shorter list again
+			goto repeat;
 		}
-//printf("Tracks::delete_tracks 3\n");
 	}
-//printf("Tracks::delete_tracks 4\n");
 	return total_deleted;
 }
 
@@ -459,30 +436,6 @@ int Tracks::concatenate_tracks(int edit_plugins)
 	}
 
 	return result;
-}
-
-int Tracks::delete_audio_track()
-{
-	Track *current;
-
-	for(current = last; current && current->data_type != TRACK_AUDIO; current = PREVIOUS)
-	{
-		;
-	}
-
-	if(current) delete_track(current);
-}
-
-int Tracks::delete_video_track()
-{
-	Track *current;
-
-	for(current = last; current && current->data_type != TRACK_VIDEO; current = PREVIOUS)
-	{
-		;
-	}
-
-	if(current) delete_track(current);
 }
 
 int Tracks::delete_all_tracks()

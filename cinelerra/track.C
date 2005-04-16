@@ -626,6 +626,38 @@ void Track::detach_effect(Plugin *plugin)
 	}
 }
 
+void Track::detach_shared_effects(int module)
+{
+repeat:
+	for(int i = 0; i < plugin_set.total; i++)
+	{
+		PluginSet *plugin_set = this->plugin_set.values[i];
+		for(Plugin *dest = (Plugin*)plugin_set->first; 
+			dest; 
+			dest = (Plugin*)dest->next)
+		{
+			if ((dest->plugin_type == PLUGIN_SHAREDPLUGIN ||
+				dest->plugin_type == PLUGIN_SHAREDMODULE)
+			    &&
+				dest->shared_location.module == module)
+			{
+				int64_t start = dest->startproject;
+				int64_t end = dest->startproject + dest->length;
+
+				plugin_set->clear(start, end);
+				plugin_set->paste_silence(start, end);
+
+// Delete 0 length pluginsets	
+				plugin_set->optimize();
+				if(!plugin_set->length())  {
+					this->plugin_set.remove_object_number(i);
+					--i;
+				}
+			}
+		}
+	}
+}
+
 void Track::resample(double old_rate, double new_rate)
 {
 	edits->resample(old_rate, new_rate);
@@ -1225,32 +1257,6 @@ void Track::change_modules(int old_location, int new_location, int do_swap)
 	}
 }
 
-
-int Track::delete_module_pointers(int deleted_track)
-{
-	for(int i = 0; i < plugin_set.total; i++)
-	{
-		for(Plugin *plugin = (Plugin*)plugin_set.values[i]->first; 
-			plugin; 
-			plugin = (Plugin*)plugin->next)
-		{
-			if(plugin->plugin_type == PLUGIN_SHAREDPLUGIN ||
-				plugin->plugin_type == PLUGIN_SHAREDMODULE)
-			{
-				if(plugin->shared_location.module == deleted_track)
-				{
-					plugin->on = 0;
-				}
-				else
-				{
-					plugin->shared_location.module--;
-				}
-			}
-		}
-	}
-
-	return 0;
-}
 
 int Track::playable_edit(int64_t position, int direction)
 {

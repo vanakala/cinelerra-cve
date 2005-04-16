@@ -424,18 +424,8 @@ void MWindow::delete_outpoint()
 
 void MWindow::delete_track()
 {
-	undo->update_undo_before(_("delete track"), LOAD_ALL);
-	edl->tracks->delete_track();
-	undo->update_undo_after();
-	save_backup();
-
-	restart_brender();
-	update_plugin_states();
-	gui->update(1, 1, 1, 0, 1, 0, 0);
-	cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
-	    		   CHANGE_EDL,
-	    		   edl,
-	    		   1);
+	if (edl->tracks->last)
+		delete_track(edl->tracks->last);
 }
 
 void MWindow::delete_tracks()
