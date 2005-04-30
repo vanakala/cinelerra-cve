@@ -3,24 +3,29 @@
 #include <string.h>
 
 #define CLIP(x)  ((x) >= 0 ? ((x) < 255 ? (x) : 255) : 0)
+#if defined(__GNUC__) && (__GNUC__ > 3 || __GNUC__ == 3 && __GNUC_MINOR__ >= 3)
+#define USED __attribute__((used))
+#else
+#define USED
+#endif
 
 static long long mpeg3_MMX_0 = 0L;
-static unsigned long  mpeg3_MMX_10w[]         = {0x00100010, 0x00100010};                     /*dd    00010 0010h, 000100010h */
-static unsigned long  mpeg3_MMX_80w[]         = {0x00800080, 0x00800080};                     /*dd    00080 0080h, 000800080h */
+static unsigned long  mpeg3_MMX_10w[]         USED = {0x00100010, 0x00100010};                     /*dd    00010 0010h, 000100010h */
+static unsigned long  mpeg3_MMX_80w[]         USED = {0x00800080, 0x00800080};                     /*dd    00080 0080h, 000800080h */
 
-static unsigned long  mpeg3_MMX_00FFw[]       = {0x00ff00ff, 0x00ff00ff};                     /*dd    000FF 00FFh, 000FF00FFh */
+static unsigned long  mpeg3_MMX_00FFw[]       USED = {0x00ff00ff, 0x00ff00ff};                     /*dd    000FF 00FFh, 000FF00FFh */
 
-static unsigned short mpeg3_MMX_Ublucoeff[]   = {0x81, 0x81, 0x81, 0x81};                     /*dd    00081 0081h, 000810081h */
-static unsigned short mpeg3_MMX_Vredcoeff[]   = {0x66, 0x66, 0x66, 0x66};                     /*dd    00066 0066h, 000660066h */
+static unsigned short mpeg3_MMX_Ublucoeff[]   USED = {0x81, 0x81, 0x81, 0x81};                     /*dd    00081 0081h, 000810081h */
+static unsigned short mpeg3_MMX_Vredcoeff[]   USED = {0x66, 0x66, 0x66, 0x66};                     /*dd    00066 0066h, 000660066h */
 
-static unsigned short mpeg3_MMX_Ugrncoeff[]   = {0xffe8, 0xffe8, 0xffe8, 0xffe8};             /*dd    0FFE7 FFE7h, 0FFE7FFE7h */
-static unsigned short mpeg3_MMX_Vgrncoeff[]   = {0xffcd, 0xffcd, 0xffcd, 0xffcd};             /*dd    0FFCC FFCCh, 0FFCCFFCCh */
+static unsigned short mpeg3_MMX_Ugrncoeff[]   USED = {0xffe8, 0xffe8, 0xffe8, 0xffe8};             /*dd    0FFE7 FFE7h, 0FFE7FFE7h */
+static unsigned short mpeg3_MMX_Vgrncoeff[]   USED = {0xffcd, 0xffcd, 0xffcd, 0xffcd};             /*dd    0FFCC FFCCh, 0FFCCFFCCh */
 
-static unsigned short mpeg3_MMX_Ycoeff[]      = {0x4a, 0x4a, 0x4a, 0x4a};                     /*dd    0004A 004Ah, 0004A004Ah */
+static unsigned short mpeg3_MMX_Ycoeff[]      USED = {0x4a, 0x4a, 0x4a, 0x4a};                     /*dd    0004A 004Ah, 0004A004Ah */
 
-static unsigned short mpeg3_MMX_redmask[]     = {0xf800, 0xf800, 0xf800, 0xf800};             /*dd    07c00 7c00h, 07c007c00h */
+static unsigned short mpeg3_MMX_redmask[]     USED = {0xf800, 0xf800, 0xf800, 0xf800};             /*dd    07c00 7c00h, 07c007c00h */
 
-static unsigned short mpeg3_MMX_grnmask[]     = {0x7e0, 0x7e0, 0x7e0, 0x7e0};                 /*dd    003e0 03e0h, 003e003e0h */
+static unsigned short mpeg3_MMX_grnmask[]     USED = {0x7e0, 0x7e0, 0x7e0, 0x7e0};                 /*dd    003e0 03e0h, 003e003e0h */
 
 static unsigned char mpeg3_601_to_rgb[256];
 
@@ -211,12 +216,12 @@ inline void mpeg3video_rgb16_mmx(unsigned char *lum,
 		);
 }
 
-static unsigned long long  mpeg3_MMX_U_80 = 0x0000008000800000LL;
-static unsigned long long  mpeg3_MMX_V_80 = 0x0000000000800080LL;
-static long long  mpeg3_MMX_U_COEF        = 0x00000058ffd30000LL;
-static long long  mpeg3_MMX_V_COEF        = 0x00000000ffea006fLL;
-static long long  mpeg3_MMX_601_Y_COEF    = 0x0000004800480048LL;
-static long long  mpeg3_MMX_601_Y_DIFF    = 0x0000000000000010LL;
+static unsigned long long  mpeg3_MMX_U_80 USED = 0x0000008000800000LL;
+static unsigned long long  mpeg3_MMX_V_80 USED = 0x0000000000800080LL;
+static long long  mpeg3_MMX_U_COEF        USED = 0x00000058ffd30000LL;
+static long long  mpeg3_MMX_V_COEF        USED = 0x00000000ffea006fLL;
+static long long  mpeg3_MMX_601_Y_COEF    USED = 0x0000004800480048LL;
+static long long  mpeg3_MMX_601_Y_DIFF    USED = 0x0000000000000010LL;
 
 inline void mpeg3_bgra32_mmx(unsigned long y, 
 		unsigned long u, 
@@ -301,10 +306,10 @@ asm(
 : "r" (&y), "r" (&u), "r" (&v), "r" (output));
 }
 
-static unsigned long long  mpeg3_MMX_U_80_RGB    = 0x0000000000800080LL;
-static unsigned long long  mpeg3_MMX_V_80_RGB    = 0x0000008000800000LL;
-static long long  mpeg3_MMX_U_COEF_RGB    = 0x00000000ffd30058LL;
-static long long  mpeg3_MMX_V_COEF_RGB    = 0x0000006fffea0000LL;
+static unsigned long long  mpeg3_MMX_U_80_RGB    USED = 0x0000000000800080LL;
+static unsigned long long  mpeg3_MMX_V_80_RGB    USED = 0x0000008000800000LL;
+static long long  mpeg3_MMX_U_COEF_RGB    USED = 0x00000000ffd30058LL;
+static long long  mpeg3_MMX_V_COEF_RGB    USED = 0x0000006fffea0000LL;
 
 inline void mpeg3_rgba32_mmx(unsigned long y, 
 		unsigned long u, 

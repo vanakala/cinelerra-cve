@@ -3,6 +3,11 @@
 #include <stdio.h>
 
 #ifdef HAVE_MMX
+#if defined(__GNUC__) && (__GNUC__ > 3 || __GNUC__ == 3 && __GNUC_MINOR__ >= 3)
+#define USED __attribute__((used))
+#else
+#define USED
+#endif
 
 #ifdef HAVE_3Dnow
 static inline void recva_mmx(unsigned char *s, unsigned char *d, int lx, int lx2, int h)
@@ -271,8 +276,8 @@ static inline void rec4ac_mmx(unsigned char *s, unsigned char  *d, int lx, int l
 }
 
 #else  // HAVE_3DNOW
-	static long long ADD_1	=	0x0101010101010101LL;
-	static long long MASK_AND = 0x7f7f7f7f7f7f7f7fLL;
+	static long long ADD_1	USED =	0x0101010101010101LL;
+	static long long MASK_AND USED = 0x7f7f7f7f7f7f7f7fLL;
 #endif
 
 static inline void rec_mmx(unsigned char *s, unsigned char *d, int lx2, int h)

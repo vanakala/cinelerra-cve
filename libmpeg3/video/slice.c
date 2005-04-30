@@ -5,8 +5,13 @@
 #include <stdlib.h>
 
 #define CLIP(x)  ((x) >= 0 ? ((x) < 255 ? (x) : 255) : 0)
+#if defined(__GNUC__) && (__GNUC__ > 3 || __GNUC__ == 3 && __GNUC_MINOR__ >= 3)
+#define USED __attribute__((used))
+#else
+#define USED
+#endif
 
-static unsigned long long MMX_128 = 0x80008000800080LL;
+static unsigned long long MMX_128 USED = 0x80008000800080LL;
 
 int mpeg3_new_slice_buffer(mpeg3_slice_buffer_t *slice_buffer)
 {
