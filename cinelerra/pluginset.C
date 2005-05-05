@@ -403,13 +403,13 @@ void PluginSet::shift_effects(int64_t start, int64_t length)
 		}
 		else
 // Extend end of this effect
-		if(current->startproject + current->length >= start)
+		if(current->startproject + current->length > start)
 		{
 			current->length += length;
 		}
 
 // Shift keyframes in this effect
-		if(current->keyframes->default_auto->position >= start)
+		if(current->keyframes->default_auto->position > start)
 			current->keyframes->default_auto->position += length;
 		current->keyframes->paste_silence(start, start + length);
 	}
