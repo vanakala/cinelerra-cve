@@ -310,7 +310,9 @@ int TrackCanvas::drag_motion()
 	}
 
 
-
+// there's no point in drawing highlights has until drag operation has been set
+	if (!mwindow->session->current_operation)
+		return 0;
 
 	if(get_cursor_over_window() &&
 		cursor_x >= 0 && 
@@ -1454,7 +1456,21 @@ void TrackCanvas::draw_highlighting()
 				{
 					draw_box = 1;
 				}
+			}
+			break;
 
+		case DRAG_PLUGINKEY:
+			if(mwindow->session->plugin_highlighted && 
+			   mwindow->session->current_operation == DRAG_PLUGINKEY)
+			{
+// Just highlight the plugin
+				plugin_dimensions(mwindow->session->plugin_highlighted, x, y, w, h);
+
+				if(MWindowGUI::visible(x, x + w, 0, get_w()) &&
+					MWindowGUI::visible(y, y + h, 0, get_h()))
+				{
+					draw_box = 1;
+				}
 			}
 			break;
 
@@ -3542,7 +3558,6 @@ int TrackCanvas::update_drag_auto(int cursor_x, int cursor_y)
 	Auto *current = (Auto*)mwindow->session->drag_auto;
 
 	UPDATE_DRAG_HEAD(1)
-
 	if(position != current->position)
 	{
 		result = 1;
@@ -3565,6 +3580,76 @@ int TrackCanvas::update_drag_auto(int cursor_x, int cursor_y)
 		{
 			mwindow->edl->local_session->selectionstart = position_f;
 			mwindow->edl->local_session->selectionend = position_f;
+		}
+		else
+		if(position_f < center_f)
+		{
+			mwindow->edl->local_session->selectionstart = position_f;
+		}
+		else
+			mwindow->edl->local_session->selectionend = position_f;
+	}
+
+
+	return result;
+}
+
+int TrackCanvas::update_drag_pluginauto(int cursor_x, int cursor_y)
+{
+	KeyFrame *current = (KeyFrame*)mwindow->session->drag_auto;
+
+	UPDATE_DRAG_HEAD(1)
+	if(position != current->position)
+	{
+//	printf("uida: autos: %p, track: %p ta: %p\n", current->autos, current->autos->track, current->autos->track->automation);
+		Track *track = current->autos->track;
+		PluginAutos *pluginautos = (PluginAutos *)current->autos;
+		PluginSet *pluginset;
+		Plugin *plugin;
+		// figure out the correct pluginset & correct plugin 
+		int found = 0;
+		for(int i = 0; i < track->plugin_set.total; i++)
+		{
+			pluginset = track->plugin_set.values[i];
+			for(plugin = (Plugin *)pluginset->first; plugin; plugin = (Plugin *)plugin->next)
+			{
+				KeyFrames *keyframes = plugin->keyframes;
+				for(KeyFrame *currentkeyframe = (KeyFrame *)keyframes->first; currentkeyframe; currentkeyframe = (KeyFrame *) currentkeyframe->next)
+				{
+					if (currentkeyframe == current) 
+					{
+						found = 1;
+						break;
+					}
+ 
+				}
+				if (found) break;			
+			}
+			if (found) break;			
+		}	
+	
+		mwindow->session->plugin_highlighted = plugin;
+		mwindow->session->track_highlighted = track;
+		result = 1;
+		current->position = position;
+
+		char string[BCTEXTLEN];
+		Units::totext(string, 
+			current->autos->track->from_units(current->position),
+			mwindow->edl->session->time_format,
+			mwindow->edl->session->sample_rate,
+			mwindow->edl->session->frame_rate,
+			mwindow->edl->session->frames_per_foot);
+		gui->show_message(string);
+
+		double position_f = current->autos->track->from_units(current->position);
+		double center_f = (mwindow->edl->local_session->selectionstart +
+			mwindow->edl->local_session->selectionend) / 
+			2;
+		if(!shift_down())
+		{
+			mwindow->edl->local_session->selectionstart = position_f;
+ 			mwindow->edl->local_session->selectionend = position_f;
 		}
 		else
 		if(position_f < center_f)
@@ -3685,9 +3770,12 @@ int TrackCanvas::cursor_motion_event()
 		case DRAG_MASK:
 		case DRAG_MODE:
 		case DRAG_PROJECTOR:
-		case DRAG_PLUGINKEY:
 			rerender = update_overlay = 
 				update_drag_auto(get_cursor_x(), get_cursor_y());
+			break;
+		case DRAG_PLUGINKEY:
+			rerender = update_overlay = 
+				update_drag_pluginauto(get_cursor_x(), get_cursor_y());
 			break;
 
 		case SELECT_REGION:
