@@ -1647,6 +1647,19 @@ void MWindow::resize_track(Track *track, int w, int h)
 }
 
 
+class InPointUndoItem : public UndoStackItem
+{
+public:
+	InPointUndoItem(double old_position, double new_position, EDL *edl);
+	void undo();
+	void redo();
+	int get_size();
+private:
+	double old_position;
+	double new_position;
+	EDL *edl;
+};
+
 InPointUndoItem::InPointUndoItem(
       double old_position, double new_position, EDL *edl)
 {
@@ -1704,6 +1717,19 @@ void MWindow::set_inpoint(int is_mwindow)
 		cwindow->gui->unlock_window();
 	}
 }
+
+class OutPointUndoItem : public UndoStackItem
+{
+public:
+	OutPointUndoItem(double old_position, double new_position, EDL *edl);
+	void undo();
+	void redo();
+	int get_size();
+private:
+	double old_position;
+	double new_position;
+	EDL *edl;
+};
 
 OutPointUndoItem::OutPointUndoItem(
       double old_position, double new_position, EDL *edl)
@@ -1844,6 +1870,19 @@ void MWindow::to_clip()
 	save_backup();
 //printf("VWindowEditing::to_clip 3 %d\n", edl->assets->total());
 }
+
+class LabelUndoItem : public UndoStackItem
+{
+public:
+      LabelUndoItem(double position1, double position2, EDL *edl);
+      void undo();
+      void redo();
+      int get_size();
+private:
+      double position1;
+      double position2;
+      EDL *edl;
+};
 
 LabelUndoItem::LabelUndoItem(
       double position1, double position2, EDL *edl)

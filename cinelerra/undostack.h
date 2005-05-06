@@ -87,43 +87,4 @@ public:
    void update_size();
 };
 
-class InPointUndoItem : public UndoStackItem
-{
-   public:
-      InPointUndoItem(double old_position, double new_position, EDL *edl);
-      void undo();
-      void redo();
-      int get_size();
-   private:
-      double old_position;
-      double new_position;
-      EDL *edl;
-};
-
-class OutPointUndoItem : public UndoStackItem
-{
-   public:
-      OutPointUndoItem(double old_position, double new_position, EDL *edl);
-      void undo();
-      void redo();
-      int get_size();
-   private:
-      double old_position;
-      double new_position;
-      EDL *edl;
-};
-
-class LabelUndoItem : public UndoStackItem
-{
-   public:
-      LabelUndoItem(double position1, double position2, EDL *edl);
-      void undo();
-      void redo();
-      int get_size();
-   private:
-      double position1;
-      double position2;
-      EDL *edl;
-};
-
 #endif
