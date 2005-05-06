@@ -345,6 +345,9 @@ BC_ListBox::BC_ListBox(int x,
 
  	current_operation = NO_OPERATION;
 	button_highlighted = 0;
+
+	disabled = 0;
+
 	list_highlighted = 0;
 
  	allow_drag_scroll = 1;
@@ -361,10 +364,11 @@ BC_ListBox::BC_ListBox(int x,
 	popup_h = h;
 
 	for(int i = 0; i < 3; i++)
-	{
-		button_images[i] = 0;
 		column_bg[i] = 0;
-	}
+
+	for(int i = 0; i < 4; i++)
+		button_images[i] = 0;
+
 	for(int i = 0; i < 5; i++)
 		toggle_images[i] = 0;
 
@@ -415,10 +419,9 @@ BC_ListBox::~BC_ListBox()
 	if(xscrollbar) delete xscrollbar;
 	if(yscrollbar) delete yscrollbar;
 	for(int i = 0; i < 3; i++)
-	{
-		if(button_images[i]) delete button_images[i];
 		if(column_bg[i]) delete column_bg[i];
-	}
+	for(int i = 0; i < 4; i++)
+		if(button_images[i]) delete button_images[i];
 	for(int i = 0; i < 5; i++)
 		if(toggle_images[i]) delete toggle_images[i];
 	if(column_sort_up) delete column_sort_up;
@@ -426,6 +429,20 @@ BC_ListBox::~BC_ListBox()
 
 	delete_columns();
 	if(drag_popup) delete drag_popup;
+}
+
+int BC_ListBox::enable()
+{
+  disabled = 0;
+  draw_button();
+  return 1;
+}
+
+int BC_ListBox::disable()
+{
+  disabled = 1;
+  draw_button();
+  return 1;
 }
 
 void BC_ListBox::reset_query()
@@ -499,7 +516,7 @@ int BC_ListBox::initialize()
 {
 	if(is_popup)
 	{
-		for(int i = 0; i < 3; i++)
+		for(int i = 0; i < 4; i++)
 		{
 			button_images[i] = new BC_Pixmap(parent_window, 
 				BC_WindowBase::get_resources()->listbox_button[i], 
@@ -578,6 +595,8 @@ int BC_ListBox::draw_button()
 			image_number = 1;
 		if(current_operation == BUTTON_DN)
 			image_number = 2;
+		if(disabled)
+			image_number = 3;
 
 
 		button_images[image_number]->write_drawable(pixmap, 
@@ -2732,7 +2751,7 @@ int BC_ListBox::button_press_event()
 		draw_button();
 
 // Deploy listbox
-		if(!active)
+		if(!active && !disabled)
 		{
 			top_level->deactivate();
 			activate();

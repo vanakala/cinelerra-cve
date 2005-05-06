@@ -6,7 +6,7 @@
 #include "filesystem.h"
 #include "filexml.h"
 #include "quicktime.h"
-
+#include "interlacemodes.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -68,7 +68,10 @@ int Asset::init_values()
 	strcpy(acodec, QUICKTIME_TWOS);
 	jpeg_quality = 100;
 	aspect_ratio = -1;
-	
+	interlace_autofixoption = BC_ILACE_AUTOFIXOPTION_AUTO;
+	interlace_mode = BC_ILACE_MODE_UNDETECTED;
+	interlace_fixmethod = BC_ILACE_FIXMETHOD_NONE;
+
 	ampeg_bitrate = 256;
 	ampeg_derivative = 3;
 
@@ -192,6 +195,9 @@ void Asset::copy_format(Asset *asset, int do_index)
 	mp3_bitrate = asset->mp3_bitrate;
 	use_header = asset->use_header;
 	aspect_ratio = asset->aspect_ratio;
+	interlace_autofixoption = asset->interlace_autofixoption;
+	interlace_mode = asset->interlace_mode;
+	interlace_fixmethod = asset->interlace_fixmethod;
 
 	video_data = asset->video_data;
 	layers = asset->layers;
@@ -346,6 +352,9 @@ int Asset::equivalent(Asset &asset,
 	{
 		result = (layers == asset.layers && 
 			frame_rate == asset.frame_rate &&
+			asset.interlace_autofixoption == interlace_autofixoption &&
+			asset.interlace_mode    == interlace_mode &&
+			interlace_fixmethod     == asset.interlace_fixmethod &&
 			width == asset.width &&
 			height == asset.height &&
 			!strcmp(vcodec, asset.vcodec) &&
@@ -536,7 +545,9 @@ int Asset::read_video(FileXML *file)
 	jpeg_quality = file->tag.get_property("JPEG_QUALITY", jpeg_quality);
 	aspect_ratio = file->tag.get_property("ASPECT_RATIO", aspect_ratio);
 
-
+	interlace_autofixoption = file->tag.get_property("INTERLACE_AUTOFIXOPTION", BC_ILACE_AUTOFIXOPTION_AUTO);
+	interlace_mode = file->tag.get_property("INTERLACE_MODE", interlace_mode);
+	interlace_fixmethod = file->tag.get_property("INTERLACE_FIXMETHOD", interlace_fixmethod);
 
 	vmpeg_iframe_distance = file->tag.get_property("VMPEG_IFRAME_DISTANCE", vmpeg_iframe_distance);
 	vmpeg_bframe_distance = file->tag.get_property("VMPEG_BFRAME_DISTANCE", vmpeg_bframe_distance);
@@ -767,6 +778,10 @@ int Asset::write_video(FileXML *file)
 	file->tag.set_property("JPEG_QUALITY", jpeg_quality);
 	file->tag.set_property("ASPECT_RATIO", aspect_ratio);
 
+	file->tag.set_property("INTERLACE_AUTOFIXOPTION",interlace_autofixoption);
+	file->tag.set_property("INTERLACE_MODE",interlace_mode);
+	file->tag.set_property("INTERLACE_FIXMETHOD",interlace_fixmethod);
+
 	file->tag.set_property("VMPEG_IFRAME_DISTANCE", vmpeg_iframe_distance);
 	file->tag.set_property("VMPEG_BFRAME_DISTANCE", vmpeg_bframe_distance);
 	file->tag.set_property("VMPEG_PROGRESSIVE", vmpeg_progressive);
@@ -929,6 +944,10 @@ void Asset::load_defaults(Defaults *defaults,
 	jpeg_quality = GET_DEFAULT("JPEG_QUALITY", jpeg_quality);
 	aspect_ratio = GET_DEFAULT("ASPECT_RATIO", aspect_ratio);
 
+	interlace_autofixoption	= BC_ILACE_AUTOFIXOPTION_AUTO;
+	interlace_mode         	= BC_ILACE_MODE_UNDETECTED;
+	interlace_fixmethod    	= BC_ILACE_FIXMETHOD_UPONE;
+
 // MPEG format information
 	vmpeg_iframe_distance = GET_DEFAULT("VMPEG_IFRAME_DISTANCE", vmpeg_iframe_distance);
 	vmpeg_bframe_distance = GET_DEFAULT("VMPEG_BFRAME_DISTANCE", vmpeg_bframe_distance);
@@ -1054,6 +1073,10 @@ void Asset::save_defaults(Defaults *defaults,
 
 	UPDATE_DEFAULT("JPEG_QUALITY", jpeg_quality);
 	UPDATE_DEFAULT("ASPECT_RATIO", aspect_ratio);
+	UPDATE_DEFAULT("INTERLACE_AUTOFIXOPTION", interlace_autofixoption);
+	UPDATE_DEFAULT("INTERLACE_MODE", interlace_mode);
+	UPDATE_DEFAULT("INTERLACE_FIXMETHOD", interlace_fixmethod);
+
 
 // MPEG format information
 	UPDATE_DEFAULT("VMPEG_IFRAME_DISTANCE", vmpeg_iframe_distance);

@@ -305,7 +305,55 @@ public:
 	int *output_value;
 };
 
+class InterlacemodeItem : public BC_ListBoxItem
+{
+public:
+	InterlacemodeItem(char *text, int value);
+	int value;
+};
 
+class InterlacemodePulldown : public BC_ListBox
+{
+public:
+	InterlacemodePulldown(MWindow *mwindow, 
+				BC_TextBox *output_text, 
+				int *output_value,
+				ArrayList<BC_ListBoxItem*> *data,
+				int x,
+				int y);
+	int handle_event();
+	char* interlacemode_to_text();
+	MWindow *mwindow;
+	BC_TextBox *output_text;
+	int *output_value;
+private:
+  	char string[BCTEXTLEN];
+};
+
+class InterlacefixmethodItem : public BC_ListBoxItem
+{
+public:
+	InterlacefixmethodItem(char *text, int value);
+	int value;
+};
+
+class InterlacefixmethodPulldown : public BC_ListBox
+{
+public:
+	InterlacefixmethodPulldown(MWindow *mwindow, 
+				   BC_TextBox *output_text, 
+				   int *output_value,
+				   ArrayList<BC_ListBoxItem*> *data,
+				   int x, 
+				   int y);
+	int handle_event();
+	char* interlacefixmethod_to_text();
+	MWindow *mwindow;
+	BC_TextBox *output_text;
+	int *output_value;
+private:
+  	char string[BCTEXTLEN];
+};
 
 class NewCloneToggle : public BC_Toggle
 {

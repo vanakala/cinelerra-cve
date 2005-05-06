@@ -5,6 +5,8 @@
 #include "defaults.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "formatpresets.h"
+#include "language.h"
 #include "levelwindow.h"
 #include "levelwindowgui.h"
 #include "mainundo.h"
@@ -20,14 +22,12 @@
 #include "vwindow.h"
 #include "vwindowgui.h"
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
+
 
 SetFormat::SetFormat(MWindow *mwindow)
- : BC_MenuItem(_("Format..."))
+ : BC_MenuItem(_("Format..."), "Shift-F", 'F')
 {
+	set_shift(1); 
 	this->mwindow = mwindow;
 	thread = new SetFormatThread(mwindow);
 }
@@ -40,9 +40,16 @@ int SetFormat::handle_event()
 	}
 	else
 	{
-		thread->window_lock->lock();
-		if(thread->window) thread->window->raise_window();
-		thread->window_lock->unlock();
+// window_lock has to be locked but window can't be locked until after
+// it is known to exist, so we neglect window_lock for now
+		if(thread->window)
+		{
+			thread->window_lock->lock("SetFormat::handle_event");
+			thread->window->lock_window("SetFormat::handle_event");
+			thread->window->raise_window();
+			thread->window->unlock_window();
+			thread->window_lock->unlock();
+		}
 	}
 	return 1;
 }
@@ -51,7 +58,7 @@ SetFormatThread::SetFormatThread(MWindow *mwindow)
  : Thread()
 {
 	this->mwindow = mwindow;
-	window_lock = new Mutex;
+	window_lock = new Mutex("SetFormatThread::window_lock");
 	window = 0;
 }
 
@@ -67,15 +74,19 @@ void SetFormatThread::run()
 	new_settings->create_objects();
 	new_settings->copy_session(mwindow->edl);
 
-	window_lock->lock();
-	window = new SetFormatWindow(mwindow, this);
+// This locks mwindow, so it must be done outside window_lock
+ 	int x = mwindow->gui->get_abs_cursor_x(1) - mwindow->theme->setformat_w / 2;
+	int y = mwindow->gui->get_abs_cursor_y(1) - mwindow->theme->setformat_h / 2;
+
+	window_lock->lock("SetFormatThread::run 1");
+	window = new SetFormatWindow(mwindow, this, x, y);
 	window->create_objects();
 	window_lock->unlock();
 
 	int result = window->run_window();
 
 
-	window_lock->lock();
+	window_lock->lock("SetFormatThread::run 2");
 	delete window;
 	window = 0;
 	window_lock->unlock();
@@ -84,9 +95,8 @@ void SetFormatThread::run()
 	if(!result)
 	{
 		apply_changes();
-		
 	}
-	
+
 	mwindow->defaults->update("AUTOASPECT", auto_aspect);
 	delete new_settings;
 }
@@ -144,6 +154,32 @@ void SetFormatThread::apply_changes()
 
 // Flash frame
 	mwindow->sync_parameters(CHANGE_ALL);
+}
+
+void SetFormatThread::update()
+{
+	window->sample_rate->update(new_settings->session->sample_rate);
+	window->channels->update((int64_t)new_settings->session->audio_channels);
+	window->frame_rate->update((float)new_settings->session->frame_rate);
+
+	auto_aspect = 0;
+	window->auto_aspect->update(0);
+
+	constrain_ratio = 0;
+	dimension[0] = new_settings->session->output_w;
+	window->dimension[0]->update((int64_t)dimension[0]);
+	dimension[1] = new_settings->session->output_h;
+	window->dimension[1]->update((int64_t)dimension[1]);
+
+	ratio[0] = (float)dimension[0] / orig_dimension[0];
+	window->ratio[0]->update(ratio[0]);
+	ratio[1] = (float)dimension[1] / orig_dimension[1];
+	window->ratio[1]->update(ratio[1]);
+
+	window->aspect_w->update(new_settings->session->aspect_w);
+	window->aspect_h->update(new_settings->session->aspect_h);
+
+	window->canvas->draw();
 }
 
 void SetFormatThread::update_window()
@@ -207,7 +243,7 @@ void SetFormatThread::update_aspect()
 {
 	if(auto_aspect)
 	{
-		char string[1024];
+		char string[BCTEXTLEN];
 		MWindow::create_aspect_ratio(new_settings->session->aspect_w, 
 			new_settings->session->aspect_h, 
 			dimension[0], 
@@ -227,15 +263,18 @@ void SetFormatThread::update_aspect()
 
 
 
-SetFormatWindow::SetFormatWindow(MWindow *mwindow, SetFormatThread *thread)
+SetFormatWindow::SetFormatWindow(MWindow *mwindow, 
+	SetFormatThread *thread,
+	int x,
+	int y)
  : BC_Window(PROGRAM_NAME ": Set Format",
- 	mwindow->gui->get_abs_cursor_x() - mwindow->theme->setformat_w / 2,
-	mwindow->gui->get_abs_cursor_y() - mwindow->theme->setformat_h / 2,
+ 	x,
+	y,
 	mwindow->theme->setformat_w,
 	mwindow->theme->setformat_h,
 	-1,
 	-1,
-	1,
+	0,
 	0,
 	1)
 {
@@ -245,15 +284,29 @@ SetFormatWindow::SetFormatWindow(MWindow *mwindow, SetFormatThread *thread)
 
 void SetFormatWindow::create_objects()
 {
-	int x, y = mwindow->theme->setformat_y1;
+	int x = 10, y = mwindow->theme->setformat_y1;
 	BC_TextBox *textbox;
+	BC_Title   *titlew;
 
 	mwindow->theme->draw_setformat_bg(this);
+
+
+
+	presets = new SetFormatPresets(mwindow, 
+		this, 
+		x, 
+		y);
+	presets->create_objects();
+	x = presets->x;
+	y = presets->y;
+
+	y = mwindow->theme->setformat_y2;
+
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x1, 
 		y, 
 		_("Audio"), 
 		LARGEFONT));
-	y += mwindow->theme->setformat_margin;
+	y = mwindow->theme->setformat_y3;
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x1, 
 		y,
 		_("Samplerate:")));
@@ -262,25 +315,25 @@ void SetFormatWindow::create_objects()
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x1, 
 		y,
 		_("Samplerate:")));
-	add_subwindow(textbox = new SetSampleRateTextBox(thread, 
+	add_subwindow(sample_rate = new SetSampleRateTextBox(thread, 
 		mwindow->theme->setformat_x2, 
 		y));
 	add_subwindow(new SampleRatePulldown(mwindow, 
-		textbox, 
-		mwindow->theme->setformat_x2 + textbox->get_w(), 
+		sample_rate, 
+		mwindow->theme->setformat_x2 + sample_rate->get_w(), 
 		y));
 
 	y += mwindow->theme->setformat_margin;
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x1, 
 		y, 
 		_("Channels:")));
-	add_subwindow(textbox = new SetChannelsTextBox(thread, 
+	add_subwindow(channels = new SetChannelsTextBox(thread, 
 		mwindow->theme->setformat_x2, 
 		y));
-	add_subwindow(new BC_ITumbler(textbox, 
+	add_subwindow(new BC_ITumbler(channels, 
 		1, 
 		MAXCHANNELS, 
-		mwindow->theme->setformat_x2 + textbox->get_w(), 
+		mwindow->theme->setformat_x2 + channels->get_w(), 
 		y));
 
 	y += mwindow->theme->setformat_margin;
@@ -304,22 +357,22 @@ void SetFormatWindow::create_objects()
 
 
 
-	y = mwindow->theme->setformat_y1;
+	y = mwindow->theme->setformat_y2;
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, 
 		y, 
 		_("Video"), 
 		LARGEFONT));
 
-	y += mwindow->theme->setformat_margin;
+	y = mwindow->theme->setformat_y3;
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, 
 		y, 
 		_("Frame rate:")));
-	add_subwindow(textbox = new SetFrameRateTextBox(thread, 
+	add_subwindow(frame_rate = new SetFrameRateTextBox(thread, 
 		mwindow->theme->setformat_x4, 
 		y));
 	add_subwindow(new FrameRatePulldown(mwindow, 
-		textbox, 
-		mwindow->theme->setformat_x4 + textbox->get_w(), 
+		frame_rate, 
+		mwindow->theme->setformat_x4 + frame_rate->get_w(), 
 		y));
 
 	y += mwindow->theme->setformat_margin;
@@ -369,14 +422,14 @@ void SetFormatWindow::create_objects()
 		y, 
 		_("Color model:")));
 	x = mwindow->theme->setformat_x4;
-	add_subwindow(textbox = new BC_TextBox(x, 
+	add_subwindow(color_model = new BC_TextBox(x, 
 		y, 
 		100, 
 		1, 
 		""));
-	x += textbox->get_w();
+	x += color_model->get_w();
 	add_subwindow(new ColormodelPulldown(mwindow, 
-		textbox, 
+		color_model, 
 		&thread->new_settings->session->color_model,
 		x, 
 		y));
@@ -405,8 +458,25 @@ void SetFormatWindow::create_objects()
 		x, 
 		y));
 	x += 30;
-	add_subwindow(new ScaleAspectAuto(x, y, thread));
+	add_subwindow(auto_aspect = new ScaleAspectAuto(x, y, thread));
+	y += mwindow->theme->setformat_margin;
 
+	// --------------------
+	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, 
+		y, 
+		_("Interlace mode:")));
+	add_subwindow(textbox = new BC_TextBox(mwindow->theme->setformat_x4,
+		y,
+		140, 
+		1, 
+		""));
+	add_subwindow(new InterlacemodePulldown(mwindow, 
+		textbox,
+		&(thread->new_settings->session->interlace_mode),
+		(ArrayList<BC_ListBoxItem*>*)&mwindow->interlace_project_modes,
+		mwindow->theme->setformat_x4 + textbox->get_w(), 
+		y)); 
+	y += mwindow->theme->setformat_margin;
 
 
 	BC_OKButton *ok;
@@ -419,6 +489,53 @@ void SetFormatWindow::create_objects()
 	flash();
 	show_window();
 }
+
+char* SetFormatWindow::get_preset_text()
+{
+	return "";
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+SetFormatPresets::SetFormatPresets(MWindow *mwindow, 
+	SetFormatWindow *gui, 
+	int x, 
+	int y)
+ : FormatPresets(mwindow, 0, gui, x, y)
+{
+	
+}
+
+SetFormatPresets::~SetFormatPresets()
+{
+}
+
+int SetFormatPresets::handle_event()
+{
+	format_gui->thread->update();
+	return 1;
+}
+
+EDL* SetFormatPresets::get_edl()
+{
+	return format_gui->thread->new_settings;
+}
+
+
+
+
 
 
 
@@ -465,22 +582,17 @@ SetChannelsCanvas::SetChannelsCanvas(MWindow *mwindow,
 	w,
 	h)
 {
-//printf("SetChannelsCanvas::SetChannelsCanvas 1\n");
 	this->thread = thread;
 	this->mwindow = mwindow;
 	active_channel = -1;
-//printf("SetChannelsCanvas::SetChannelsCanvas 1\n");
 	box_r = mwindow->theme->channel_position_data->get_w() / 2;
-//printf("SetChannelsCanvas::SetChannelsCanvas 1\n");
 	temp_picon = new VFrame(0, 
 		mwindow->theme->channel_position_data->get_w(),
 		mwindow->theme->channel_position_data->get_h(),
 		mwindow->theme->channel_position_data->get_color_model());
-//printf("SetChannelsCanvas::SetChannelsCanvas 1\n");
 	rotater = new RotateFrame(mwindow->preferences->processors,
 		mwindow->theme->channel_position_data->get_w(),
 		mwindow->theme->channel_position_data->get_h());
-//printf("SetChannelsCanvas::SetChannelsCanvas 2\n");
 }
 SetChannelsCanvas::~SetChannelsCanvas()
 {
@@ -507,7 +619,6 @@ int SetChannelsCanvas::draw(int angle)
 	set_color(mwindow->theme->channel_position_color);
 	for(int i = 0; i < thread->new_settings->session->audio_channels; i++)
 	{
-//printf("SetChannelsCanvas::draw %d\n", thread->new_settings->session->achannel_positions[i]);
 		get_dimensions(thread->new_settings->session->achannel_positions[i], 
 			x, 
 			y, 
@@ -607,9 +718,11 @@ int SetChannelsCanvas::cursor_motion_event()
 		int new_d;
 		new_d = (int)Units::xy_to_polar(get_cursor_x() - this->get_w() / 2, get_cursor_y() - this->get_h() / 2);
 		new_d += 90;
-		if(new_d >= 360) new_d -= 360;
 		new_d -= degree_offset;
-		if(new_d < 0) new_d += 360;
+
+		while(new_d >= 360) new_d -= 360;
+		while(new_d < 0) new_d += 360;
+
 		if(thread->new_settings->session->achannel_positions[active_channel] != new_d)
 		{
 			thread->new_settings->session->achannel_positions[active_channel] = new_d;
@@ -678,14 +791,18 @@ int ScaleSizeText::handle_event()
 
 
 
-ScaleRatioText::ScaleRatioText(int x, int y, SetFormatThread *thread, float *output)
+ScaleRatioText::ScaleRatioText(int x, 
+	int y, 
+	SetFormatThread *thread, 
+	float *output)
  : BC_TextBox(x, y, 100, 1, *output)
 { 
 	this->thread = thread; 
 	this->output = output; 
 }
 ScaleRatioText::~ScaleRatioText()
-{}
+{
+}
 int ScaleRatioText::handle_event()
 {
 	*output = atof(get_text());

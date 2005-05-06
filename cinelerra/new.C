@@ -5,6 +5,7 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
+#include "interlacemodes.h"
 #include "language.h"
 #include "levelwindow.h"
 #include "mainundo.h"
@@ -344,14 +345,24 @@ int NewWindow::create_objects()
 	add_subwindow(new NewAspectAuto(this, x1, y));
 	y += 40;
 	add_subwindow(new BC_Title(x, y, _("Color model:")));
-	x += 100;
-	add_subwindow(textbox = new BC_TextBox(x, y, 200, 1, ""));
-	x += textbox->get_w();
+	add_subwindow(textbox = new BC_TextBox(x + 100, y, 200, 1, ""));
 	add_subwindow(new ColormodelPulldown(mwindow, 
 		textbox, 
 		&new_edl->session->color_model,
-		x, 
+		x + 100 + textbox->get_w(),
 		y));
+	y += textbox->get_h() + 5;
+
+	// --------------------
+	add_subwindow(new BC_Title(x, y, _("Interlace mode:")));
+	add_subwindow(textbox = new BC_TextBox(x + 100, y, 140, 1, ""));
+	add_subwindow(new InterlacemodePulldown(mwindow, 
+		textbox, 
+		&new_edl->session->interlace_mode,
+		(ArrayList<BC_ListBoxItem*>*)&mwindow->interlace_project_modes,
+		x + 100 + textbox->get_w(), 
+		y)); 
+	y += textbox->get_h() + 5;
 
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
@@ -827,14 +838,49 @@ char* ColormodelPulldown::colormodel_to_text()
 	return "Unknown";
 }
 
+InterlacemodeItem::InterlacemodeItem(char *text, int value)
+ : BC_ListBoxItem(text)
+{
+	this->value = value;
+}
 
+InterlacemodePulldown::InterlacemodePulldown(MWindow *mwindow, 
+		BC_TextBox *output_text,
+		int *output_value,
+		ArrayList<BC_ListBoxItem*> *data,
+		int x, 
+		int y)
+ : BC_ListBox(x,
+ 	y,
+	200,
+	150,
+	LISTBOX_TEXT,
+	data,
+	0,
+	0,
+	1,
+	0,
+	1)
+{
+	char string[BCTEXTLEN];
+	this->mwindow = mwindow;
+	this->output_text = output_text;
+	this->output_value = output_value;
+	output_text->update(interlacemode_to_text());
+}
 
+int InterlacemodePulldown::handle_event()
+{
+	output_text->update(get_selection(0, 0)->get_text());
+	*output_value = ((InterlacemodeItem*)get_selection(0, 0))->value;
+	return 1;
+}
 
-
-
-
-
-
+char* InterlacemodePulldown::interlacemode_to_text()
+{
+	ilacemode_to_text(this->string,*output_value);
+	return (this->string);
+}
 
 NewAspectAuto::NewAspectAuto(NewWindow *nwindow, int x, int y)
  : BC_CheckBox(x, y, nwindow->new_thread->auto_aspect, _("Auto aspect ratio"))

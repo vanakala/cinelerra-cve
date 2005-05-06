@@ -102,6 +102,7 @@ OBJS = \
 	$(OBJDIR)/graphics.o \
 	$(OBJDIR)/hdlr.o \
 	$(OBJDIR)/ima4.o \
+	$(OBJDIR)/interlacemodes.o \
 	$(OBJDIR)/jpeg.o \
 	$(OBJDIR)/jpeg_old.o \
 	$(OBJDIR)/libdv.o \
@@ -289,7 +290,7 @@ backup: clean
 install:
 	cp $(SHAREDOUTPUT) /usr/lib/libquicktime.so.1
 	ln -sf /usr/lib/libquicktime.so.1 /usr/lib/libquicktime.so
-	cp quicktime.h qtprivate.h colormodels.h /usr/include
+	cp quicktime.h qtprivate.h colormodels.h interlacemodes.h /usr/include
 
 $(OBJDIR)/dump.o \
 $(OBJDIR)/make_streamable.o \
@@ -326,6 +327,7 @@ $(OBJDIR)/elst.o:			  elst.c
 $(OBJDIR)/graphics.o:			  graphics.c
 $(OBJDIR)/hdlr.o:			  hdlr.c
 $(OBJDIR)/ima4.o:			  ima4.c
+$(OBJDIR)/interlacemodes.o:	  interlacemodes.c
 $(OBJDIR)/jpeg.o:			  jpeg.c
 $(OBJDIR)/jpeg_old.o:			  jpeg_old.c
 $(OBJDIR)/libdv.o:			  libdv.c

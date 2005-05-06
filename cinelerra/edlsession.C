@@ -5,6 +5,7 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
+#include "interlacemodes.h"
 #include "overlayframe.inc"
 #include "playbackconfig.h"
 #include "recordconfig.h"
@@ -50,6 +51,7 @@ EDLSession::EDLSession(EDL *edl)
 	output_h = -1000;
 	video_write_length = -1000;
 	color_model = -100;
+	interlace_mode = -100;
 }
 
 EDLSession::~EDLSession()
@@ -128,6 +130,7 @@ int EDLSession::load_defaults(Defaults *defaults)
 	brender_start = defaults->get("BRENDER_START", brender_start);
 	cmodel_to_text(string, BC_RGBA8888);
 	color_model = cmodel_from_text(defaults->get("COLOR_MODEL", string));
+	interlace_mode = defaults->get("INTERLACE_MODE", interlace_mode);
 	crop_x1 = defaults->get("CROP_X1", 0);
 	crop_x2 = defaults->get("CROP_X2", 320);
 	crop_y1 = defaults->get("CROP_Y1", 0);
@@ -246,6 +249,7 @@ int EDLSession::save_defaults(Defaults *defaults)
 	defaults->update("BRENDER_START", brender_start);
 	cmodel_to_text(string, color_model);
 	defaults->update("COLOR_MODEL", string);
+	defaults->update("INTERLACE_MODE", interlace_mode);
 	defaults->update("CROP_X1", crop_x1);
 	defaults->update("CROP_X2", crop_x2);
 	defaults->update("CROP_Y1", crop_y1);
@@ -615,6 +619,7 @@ int EDLSession::copy(EDLSession *session)
 	autos_follow_edits = session->autos_follow_edits;
 	brender_start = session->brender_start;
 	color_model = session->color_model;
+	interlace_mode = session->interlace_mode;
 	crop_x1 = session->crop_x1;
 	crop_y1 = session->crop_y1;
 	crop_x2 = session->crop_x2;

@@ -126,6 +126,75 @@ public:
 	AssetEditWindow *fwindow;
 };
 
+class Interlaceautofix : public BC_CheckBox
+{
+public:
+	Interlaceautofix(MWindow *mwindow,AssetEditWindow *fwindow, int x, int y);
+	~Interlaceautofix();
+	int handle_event();
+
+	void showhideotherwidgets();
+
+	AssetEditWindow* fwindow;
+	MWindow *mwindow;
+
+	BC_TextBox *ilacemode_textbox;
+	BC_ListBox *ilacemode_listbox;
+	BC_TextBox *ilacefixmethod_textbox;
+	BC_ListBox *ilacefixmethod_listbox;
+private:
+  	char string[BCTEXTLEN];
+};
+
+class AssetEditILaceautofixoption : public BC_TextBox
+{
+public:
+	AssetEditILaceautofixoption(AssetEditWindow *fwindow, char *text, int thedefault, int x, int y, int w);
+
+	int handle_event();
+	int thedefault;
+	AssetEditWindow *fwindow;
+};
+
+class AssetEditILacemode : public BC_TextBox
+{
+public:
+	AssetEditILacemode(AssetEditWindow *fwindow, char *text, int thedefault, int x, int y, int w);
+	int handle_event();
+	int thedefault;	
+	AssetEditWindow *fwindow;
+};
+
+class AssetEditInterlacemodePulldown : public BC_ListBox
+{
+public:
+	AssetEditInterlacemodePulldown(MWindow *mwindow, 
+				BC_TextBox *output_text, 
+				int *output_value,
+				ArrayList<BC_ListBoxItem*> *data,
+				Interlaceautofix *fixoption_chkbox,
+				int x,
+				int y);
+	int handle_event();
+	char* interlacemode_to_text();
+	MWindow *mwindow;
+	BC_TextBox *output_text;
+	int *output_value;
+	Interlaceautofix *fixoption_chkbox;
+private:
+  	char string[BCTEXTLEN];
+};
+
+class AssetEditILacefixmethod : public BC_TextBox
+{
+public:
+	AssetEditILacefixmethod(AssetEditWindow *fwindow, char *text, int thedefault, int x, int y, int w);
+	
+	int handle_event();
+	int thedefault;
+	AssetEditWindow *fwindow;
+};
+
 class AssetEditHeader : public BC_TextBox
 {
 public:

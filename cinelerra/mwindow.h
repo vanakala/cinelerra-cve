@@ -377,6 +377,10 @@ public:
 
 // Menu items
 	ArrayList<ColormodelItem*> colormodels;
+	ArrayList<InterlaceautofixoptionItem*> interlace_asset_autofixoptions;
+	ArrayList<InterlacemodeItem*>          interlace_project_modes;
+	ArrayList<InterlacemodeItem*>          interlace_asset_modes;
+	ArrayList<InterlacefixmethodItem*>     interlace_asset_fixmethods;
 
 	int reset_meters();
 

@@ -185,8 +185,10 @@ public:
 // Set by package render during file creation. -1 means square pixels.
 	double aspect_ratio;
 
-
-
+// for the interlace mode 
+	int interlace_autofixoption;
+	int interlace_mode;
+	int interlace_fixmethod;
 
 // for jpeg compression
 	int jpeg_quality;     

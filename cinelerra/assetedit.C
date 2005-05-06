@@ -19,6 +19,9 @@
 #include "new.h"
 #include "preferences.h"
 #include "transportque.h"
+#include "interlacemodes.h"
+#include "edl.h"
+#include "edlsession.h"
 
 #include <string.h>
 
@@ -127,11 +130,11 @@ void AssetEdit::run()
 AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
  : BC_Window(PROGRAM_NAME ": Asset Info", 
  	mwindow->gui->get_abs_cursor_x(1) - 400 / 2, 
-	mwindow->gui->get_abs_cursor_y(1) - 500 / 2, 
+	mwindow->gui->get_abs_cursor_y(1) - 550 / 2, 
 	400, 
-	600,
+	650,
 	400,
-	500,
+	550,
 	0,
 	0,
 	1)
@@ -177,11 +180,16 @@ static void do_commas(char *string)
 
 int AssetEditWindow::create_objects()
 {
-	int y = 10, x = 10, x1 = 10, x2 = 150;
+	int y = 10, x = 10, x1 = 10, x2 = 160;
 	char string[1024];
 	int vmargin;
 	int hmargin1 = 180, hmargin2 = 290;
 	FileSystem fs;
+	BC_Title    *titlew;
+	BC_TextBox  *textboxw;
+	BC_CheckBox *chkboxw;
+	BC_ListBox  *listboxw;
+	Interlaceautofix *ilacefixoption_chkboxw;
 
 	if(allow_edits) 
 		vmargin = 30;
@@ -406,6 +414,39 @@ int AssetEditWindow::create_objects()
 		sprintf(string, "%d", asset->height);
 		add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
 		y += 30;
+
+		// --------------------
+		add_subwindow(titlew = new BC_Title(x1, y, _("Fix interlacing:")));
+		add_subwindow(ilacefixoption_chkboxw = new Interlaceautofix(mwindow,this, x2, y));
+		y += ilacefixoption_chkboxw->get_h() + 5;
+
+		// --------------------
+		add_subwindow(titlew = new BC_Title(x1, y, _("Asset's interlacing:")));
+		add_subwindow(textboxw = new AssetEditILacemode(this, "", BC_ILACE_ASSET_MODEDEFAULT, x2, y, 200));
+		ilacefixoption_chkboxw->ilacemode_textbox = textboxw;
+		add_subwindow(listboxw = new AssetEditInterlacemodePulldown(mwindow,
+							textboxw, 
+							&asset->interlace_mode,
+							(ArrayList<BC_ListBoxItem*>*)&mwindow->interlace_asset_modes,
+							ilacefixoption_chkboxw,
+							x2 + textboxw->get_w(), 
+							y)); 
+		ilacefixoption_chkboxw->ilacemode_listbox = listboxw;
+		y += textboxw->get_h() + 5;
+
+		// --------------------
+		add_subwindow(titlew = new BC_Title(x1, y, _("Interlace correction:")));
+		add_subwindow(textboxw = new AssetEditILacefixmethod(this, "", BC_ILACE_FIXDEFAULT, x2, y, 200));
+		ilacefixoption_chkboxw->ilacefixmethod_textbox = textboxw;
+		add_subwindow(listboxw = new InterlacefixmethodPulldown(mwindow, 
+							textboxw,
+							&asset->interlace_fixmethod,
+							(ArrayList<BC_ListBoxItem*>*)&mwindow->interlace_asset_fixmethods,
+							x2 + textboxw->get_w(), 
+							y)); 
+		ilacefixoption_chkboxw->ilacefixmethod_listbox = listboxw;
+		ilacefixoption_chkboxw->showhideotherwidgets();
+		y += textboxw->get_h() + 5;
 		
 		x = x1;
 		add_subwindow(new BC_Title(x, y, _("Reel Name:")));
@@ -506,6 +547,175 @@ AssetEditFRate::AssetEditFRate(AssetEditWindow *fwindow, char *text, int x, int 
 int AssetEditFRate::handle_event()
 {
 	fwindow->asset->frame_rate = atof(get_text());
+	return 1;
+}
+
+Interlaceautofix::Interlaceautofix(MWindow *mwindow,AssetEditWindow *fwindow, int x, int y)
+ : BC_CheckBox(x, y, fwindow->asset->interlace_autofixoption, _("Automatically Fix Interlacing"))
+{
+	this->fwindow = fwindow;
+	this->mwindow = mwindow;
+}
+
+Interlaceautofix::~Interlaceautofix()
+{
+}
+
+int Interlaceautofix::handle_event()
+{
+	fwindow->asset->interlace_autofixoption = get_value();
+	showhideotherwidgets();
+	return 1;
+}
+
+void Interlaceautofix::showhideotherwidgets()
+{
+  int thevalue = get_value();
+
+	if (thevalue == BC_ILACE_AUTOFIXOPTION_AUTO) 
+	  {
+	    this->ilacemode_textbox->enable(); 
+	    this->ilacemode_listbox->enable(); 
+	    this->ilacefixmethod_textbox->disable();
+	    this->ilacefixmethod_listbox->disable();
+	    int xx = ilaceautofixmethod(mwindow->edl->session->interlace_mode,fwindow->asset->interlace_mode);
+	    ilacefixmethod_to_text(string,xx);
+	    this->ilacefixmethod_textbox->update(string);
+	  }
+	if (thevalue == BC_ILACE_AUTOFIXOPTION_MANUAL) 
+	  {
+	    this->ilacemode_textbox->disable(); 
+	    this->ilacemode_listbox->disable(); 
+	    this->ilacefixmethod_textbox->enable(); 
+	    this->ilacefixmethod_listbox->enable(); 
+	    ilacefixmethod_to_text(string,fwindow->asset->interlace_fixmethod);
+	    this->ilacefixmethod_textbox->update(string);
+	  }
+}
+
+InterlacefixmethodItem::InterlacefixmethodItem(char *text, int value)
+ : BC_ListBoxItem(text)
+{
+	this->value = value;
+}
+
+InterlacefixmethodPulldown::InterlacefixmethodPulldown(MWindow *mwindow, 
+		BC_TextBox *output_text, 
+		int *output_value,
+		ArrayList<BC_ListBoxItem*> *data,
+		int x, 
+		int y)
+ : BC_ListBox(x,
+ 	y,
+	200,
+	150,
+	LISTBOX_TEXT,
+	data,
+	0,
+	0,
+	1,
+	0,
+	1)
+{
+	char string[BCTEXTLEN];
+
+	this->mwindow = mwindow;
+	this->output_text = output_text;
+	this->output_value = output_value;
+	output_text->update(interlacefixmethod_to_text());
+}
+
+int InterlacefixmethodPulldown::handle_event()
+{
+	output_text->update(get_selection(0, 0)->get_text());
+	*output_value = ((InterlacefixmethodItem*)get_selection(0, 0))->value;
+	return 1;
+}
+
+char* InterlacefixmethodPulldown::interlacefixmethod_to_text()
+{
+	ilacefixmethod_to_text(this->string,*output_value);
+	return (this->string);
+}
+
+AssetEditILaceautofixoption::AssetEditILaceautofixoption(AssetEditWindow *fwindow, char *text, int thedefault, int x, int y, int w)
+ : BC_TextBox(x, y, w, 1, text)
+{
+	this->fwindow = fwindow;
+	this->thedefault = thedefault;
+}
+
+int AssetEditILaceautofixoption::handle_event()
+{
+	fwindow->asset->interlace_autofixoption = ilaceautofixoption_from_text(get_text(), this->thedefault);
+	return 1;
+}
+
+
+AssetEditILacemode::AssetEditILacemode(AssetEditWindow *fwindow, char *text, int thedefault, int x, int y, int w)
+ : BC_TextBox(x, y, w, 1, text)
+{
+	this->fwindow = fwindow;
+	this->thedefault = thedefault;
+}
+
+int AssetEditILacemode::handle_event()
+{
+	fwindow->asset->interlace_mode = ilacemode_from_text(get_text(),this->thedefault);
+	return 1;
+}
+
+AssetEditInterlacemodePulldown::AssetEditInterlacemodePulldown(MWindow *mwindow, 
+		BC_TextBox *output_text,
+		int *output_value,
+		ArrayList<BC_ListBoxItem*> *data,
+		Interlaceautofix *fixoption_chkboxw,
+		int x, 
+		int y)
+ : BC_ListBox(x,
+ 	y,
+	200,
+	150,
+	LISTBOX_TEXT,
+	data,
+	0,
+	0,
+	1,
+	0,
+	1)
+{
+	char string[BCTEXTLEN];
+	this->fixoption_chkbox = fixoption_chkboxw;
+	this->mwindow = mwindow;
+	this->output_text = output_text;
+	this->output_value = output_value;
+	output_text->update(interlacemode_to_text());
+}
+
+int AssetEditInterlacemodePulldown::handle_event()
+{
+	output_text->update(get_selection(0, 0)->get_text());
+	*output_value = ((InterlacemodeItem*)get_selection(0, 0))->value;
+	fixoption_chkbox->showhideotherwidgets();
+	return 1;
+}
+
+char* AssetEditInterlacemodePulldown::interlacemode_to_text()
+{
+	ilacemode_to_text(this->string,*output_value);
+	return (this->string);
+}
+
+AssetEditILacefixmethod::AssetEditILacefixmethod(AssetEditWindow *fwindow, char *text, int thedefault, int x, int y, int w)
+ : BC_TextBox(x, y, w, 1, text)
+{
+	this->fwindow = fwindow;
+	this->thedefault = thedefault;
+}
+
+int AssetEditILacefixmethod::handle_event()
+{
+	fwindow->asset->interlace_fixmethod = ilacefixmethod_from_text(get_text(),this->thedefault);
 	return 1;
 }
 

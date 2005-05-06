@@ -276,6 +276,7 @@ list_bg.png \
 \
 	listbox_button.png \
 	listbox_button_dn.png \
+	listbox_button_disabled.png \
 	listbox_button_hi.png \
 	listbox_button_up.png \
 	listbox_column_dn.png \

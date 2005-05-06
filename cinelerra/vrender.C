@@ -8,6 +8,7 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "file.h"
+#include "interlacemodes.h"
 #include "localsession.h"
 #include "mainsession.h"
 #include "mwindow.h"
@@ -218,6 +219,14 @@ int VRender::get_use_vconsole(Edit* &playable_edit,
 // Asset and output device must have the same dimensions
 	if(playable_edit->asset->width != renderengine->edl->session->output_w ||
 		playable_edit->asset->height != renderengine->edl->session->output_h)
+		return 1;
+
+// Asset and output device must have same resulting de-interlacing method
+	if (ilaceautofixmethod2(renderengine->edl->session->interlace_mode, 
+				playable_edit->asset->interlace_autofixoption,
+				playable_edit->asset->interlace_mode,
+				playable_edit->asset->interlace_fixmethod) 
+	    != BC_ILACE_FIXMETHOD_NONE)
 		return 1;
 
 // If we get here the frame is going to be directly copied.  Whether it is
