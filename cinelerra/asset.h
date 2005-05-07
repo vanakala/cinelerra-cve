@@ -108,6 +108,7 @@ public:
 // Pipe command
 	char pipe[BCTEXTLEN];
 	int use_pipe;
+	int pipe_ilace_spec;
 
 // Prefix used to generate this asset
 	char prefix[BCTEXTLEN];

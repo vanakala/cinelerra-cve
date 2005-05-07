@@ -137,6 +137,7 @@ int Asset::init_values()
 
 	pipe[0] = 0;
 	use_pipe = 0;
+	pipe_ilace_spec = 0;
 
 	strcpy(prefix, "");
 
@@ -268,6 +269,7 @@ void Asset::copy_format(Asset *asset, int do_index)
 
 	strcpy(pipe, asset->pipe);
 	use_pipe = asset->use_pipe;
+	pipe_ilace_spec = asset->pipe_ilace_spec;
 
 	// FUTURE: should this be here or in copy_from()?
 	strcpy(prefix, asset->prefix);
@@ -1009,6 +1011,7 @@ void Asset::load_format_defaults(Defaults *defaults) {
 	sprintf(temp, "FORMAT_%s_USE_PIPE", FILE_FORMAT_PREFIX(format));
 	use_pipe = 0;  
 	use_pipe = GET_DEFAULT(temp, use_pipe);
+	pipe_ilace_spec           = GET_DEFAULT("FORMAT_PIPE_INTERLACE_SPECIFICATION"     , pipe_ilace_spec);
 
 	sprintf(temp, "FORMAT_%s_PIPE", FILE_FORMAT_PREFIX(format));
 	sprintf(pipe, "");
@@ -1139,6 +1142,7 @@ void Asset::save_format_defaults(Defaults *defaults) {
 
 	sprintf(temp, "FORMAT_%s_USE_PIPE", FILE_FORMAT_PREFIX(format));
 	UPDATE_DEFAULT(temp, use_pipe);
+	UPDATE_DEFAULT("FORMAT_PIPE_INTERLACE_SPECIFICATION"     , pipe_ilace_spec);
 
 	sprintf(temp, "FORMAT_%s_PIPE", FILE_FORMAT_PREFIX(format));
 	UPDATE_DEFAULT(temp, pipe);
