@@ -52,13 +52,6 @@
 #define BC_ILACE_FIXDEFAULT         	BC_ILACE_FIXMETHOD_UPONE
 //Note: Do not change what the numbers mean as this will make backward-compatability have erroraneous settings.
 
-// Refer to <mjpegtools/yuv4mpeg.h> (descriptions where cut-and-pasted!)
-#define BC_ILACE_Y4M_UKNOWN_T         "unknown"
-#define BC_ILACE_Y4M_NONE_T           "non-interlaced, progressive frame"
-#define BC_ILACE_Y4M_TOP_FIRST_T      "interlaced, top-field first"
-#define BC_ILACE_Y4M_BOTTOM_FIRST_T   "interlaced, bottom-field first"
-#define BC_ILACE_Y4M_MIXED_T          "mixed, \"refer to frame header\""
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -74,11 +67,6 @@ int  ilacefixmethod_from_text(char *text, int thedefault);
 
 int  ilaceautofixmethod(int projectilacemode, int assetilacemode);
 int  ilaceautofixmethod2(int projectilacemode, int assetautofixoption, int assetilacemode, int assetfixmethod);
-
-int ilace_bc_to_yuv4mpeg(int ilacemode);
-int ilace_yuv4mpeg_to_bc(int ilacemode);
-
-void ilace_yuv4mpeg_mode_to_text(char *string, int ilacemode);
 
 #ifdef __cplusplus
 }

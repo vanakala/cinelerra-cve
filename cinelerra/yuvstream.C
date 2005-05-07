@@ -220,14 +220,6 @@ int YUVStream::write_header() {
 	return 0;
 }
 
-int YUVStream::get_interlace() {
-	return y4m_si_get_interlace(&stream_info);
-}
-
-void YUVStream::set_interlace(int imode) {
-	y4m_si_set_interlace(&stream_info, imode);
-}
-
 int YUVStream::get_width() {
 	return y4m_si_get_width(&stream_info);
 }

@@ -70,8 +70,6 @@ int FileYUV::open_file(int should_read, int should_write)
 		}
 		if (result) return result;
 
-		// not sure if we're supposed to send interlace info with each header??
-		stream->set_interlace(asset->pipe_ilace_spec);
 		stream->set_width(asset->width);
 		stream->set_height(asset->height);
 		stream->set_frame_rate(asset->frame_rate);
@@ -344,7 +342,7 @@ YUVConfigVideo::YUVConfigVideo(BC_WindowBase *parent_window, Asset *asset,
 		    parent_window->get_abs_cursor_x(1),
 		    parent_window->get_abs_cursor_y(1),
 		    500,
-		    240)
+		    150)
 {
 	this->parent_window = parent_window;
 	this->asset = asset;
@@ -381,17 +379,17 @@ int YUVConfigVideo::create_objects()
 	path_recent->load_items(FILE_FORMAT_PREFIX(asset->format));
 
 	x = init_x;
-	y += 30;
+	y += 40;
 
 	pipe_config = new PipeConfig(this, defaults, asset);
 	pipe_config->create_objects(x, y, 350, asset->format);
 	
 
 	x = init_x;
-	y += 120;
+	y += 40;
 
-	add_subwindow(new BC_Title(x, y, _("Pipe Presets:")));
-	x += 130;
+	add_subwindow(new BC_Title(x, y, _("Presets:")));
+	x += 90;
 	mpeg2enc = new PipePreset(x, y, "mpeg2enc", pipe_config);
 	add_subwindow(mpeg2enc);
 	// NOTE: the '%' character will be replaced by the current path

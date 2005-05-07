@@ -31,9 +31,6 @@ class YUVStream {
 	int read_header();
 	int write_header();
 
-	int get_interlace();
-	void set_interlace(int width);
-
 	int get_width();
 	void set_width(int width);
 

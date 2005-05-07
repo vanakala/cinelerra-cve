@@ -9,33 +9,6 @@ extern "C" {
 	extern int sigpipe_received;
 }
 
-class Interlaceyuv4mpegmodeItem : public BC_ListBoxItem
-{
-public:
-	Interlaceyuv4mpegmodeItem(char *text, int value);
-	int value;
-};
-
-
-class Interlaceyuv4mpegmodePulldown : public BC_ListBox
-{
-public:
-	Interlaceyuv4mpegmodePulldown(
-				      BC_TextBox *output_text, 
-				      int *output_value,
-				      ArrayList<BC_ListBoxItem*> *data,
-				      int x,
-				      int y);
-	int handle_event();
-	char* interlacemode_to_text();
-	BC_TextBox *output_text;
-	int *output_value;
-private:
-  	char string[BCTEXTLEN];
-};
-
-
-
 class Pipe {
  public:
 	Pipe::Pipe(char *command, char *sub_str = 0, char sub_char = '%');
@@ -81,11 +54,9 @@ class PipeConfig {
 	BC_RecentList *recent;
 	
  private:
-	int init_menus();
 	BC_WindowBase *window;
 	Defaults *defaults;
 	Asset *asset;
-	ArrayList<Interlaceyuv4mpegmodeItem*>  interlace_asset_yuv4mpeg_modes;
 };
 
 class PipeStatus : public BC_Title
