@@ -7,8 +7,8 @@
 #include "edl.h"
 #include "stringfile.inc"
 
-// Limits the number of undoable operations on the undo stack
-#define UNDOLEVELS 500
+// Minimum number of undoable operations on the undo stack
+#define UNDOMINLEVELS 5
 // Limits the bytes of memory used by the undo stack
 #define UNDOMEMORY 50000000
 
@@ -79,12 +79,7 @@ public:
 	
 	UndoStackItem* current;
 
-   // number of bytes used by the entries on the stack
-   int size;
-
-   // Call when the size of the current entry is first known
-   // Call this function only once for each item pushed onto the stack.
-   void update_size();
+	void prune();
 };
 
 #endif

@@ -23,6 +23,7 @@ MainUndo::~MainUndo()
 void MainUndo::push_undo_item(UndoStackItem *item)
 {
    undo_stack.push(item);
+   undo_stack.prune();
    mwindow->gui->lock_window("MainUndo::update_undo_before");
    mwindow->gui->mainmenu->undo->update_caption(item->description);
    mwindow->gui->mainmenu->redo->update_caption("");
@@ -73,7 +74,7 @@ void MainUndo::update_undo_after()
 		file.terminate_string();
 //printf("MainUndo::update_undo_after 1\n");
 		current_entry->set_data_after(file.string);
-      undo_stack.update_size();
+		undo_stack.prune();
 //printf("MainUndo::update_undo_after 10\n");
 		undo_before_updated = 0;
 	}

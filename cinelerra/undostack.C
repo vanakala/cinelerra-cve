@@ -5,17 +5,12 @@
 #include "edl.h"
 #include "filexml.h"
 #include "mainindexes.h"
-#include "mainmenu.h"
-#include "mainsession.h"
-#include "mainundo.h"
 #include "mwindow.h"
-#include "mwindowgui.h"	
 #include <string.h>
 
 UndoStack::UndoStack() : List<UndoStackItem>()
 {
 	current = 0;
-   size = 0;
 }
 
 UndoStack::~UndoStack()
@@ -33,20 +28,8 @@ void UndoStack::push(UndoStackItem *item)
 // delete future undos if necessary
 	if(current && current->next)
 	{
-		while(current->next) 
-      {
-         size -= last->get_size();
-         remove(last);
-      }
+		while(current->next) remove(last);
 	}
-
-// delete oldest undo if necessary
-   size += item->get_size();
-	if(total() > UNDOLEVELS || size > UNDOMEMORY) 
-   {
-      size -= first->get_size();
-      remove(first);
-   }
 }
 
 UndoStackItem* UndoStack::push()
@@ -60,19 +43,8 @@ UndoStackItem* UndoStack::push()
 // delete future undos if necessary
 	if(current && current->next)
 	{
-		while(current->next) 
-      {
-         size -= last->get_size();
-         remove(last);
-      }
+		while(current->next) remove(last);
 	}
-
-// delete oldest undo if necessary
-	if(total() > UNDOLEVELS || size > UNDOMEMORY) 
-   {
-      size -= first->get_size();
-      remove(first);
-   }
 	
 	return current;
 }
@@ -80,17 +52,6 @@ UndoStackItem* UndoStack::push()
 int UndoStack::pull()
 {
 	if(current) current = PREVIOUS;
-}
-
-void UndoStack::update_size()
-{
-   size += current->get_size();
-// delete oldest undo if necessary
-	if(total() > UNDOLEVELS || size > UNDOMEMORY) 
-   {
-      size -= first->get_size();
-      remove(first);
-   }
 }
 
 UndoStackItem* UndoStack::pull_next()
@@ -106,6 +67,30 @@ UndoStackItem* UndoStack::pull_next()
 		return 0;
 		
 	return current;
+}
+
+// enforces that the undo stack does not exceed a size of UNDOMEMORY
+// except that it always has at least UNDOMINLEVELS entries
+void UndoStack::prune()
+{
+	int size = 0;
+	int levels = 0;
+
+	UndoStackItem* i = last;
+	while (i != 0 && (levels < UNDOMINLEVELS || size <= UNDOMEMORY))
+	{
+		size += i->get_size();
+		++levels;
+		i = i->previous;
+	}
+
+	if (i != 0)
+	{
+// truncate everything before and including i
+		while (first != i)
+			remove(first);
+		remove(first);
+	}
 }
 
 
