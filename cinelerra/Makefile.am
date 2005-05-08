@@ -86,6 +86,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    filebaseulaw.C \
 		    file.C \
 		    filedv.C \
+		    fileogg.C \
 		    fileexr.C \
 		    fileformat.C \
 		    filejpeg.C \
@@ -378,6 +379,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 fileformat.h \
 		 file.h \
 	    filedv.h \
+	    fileogg.h \
 		 fileexr.h \
 		 filejpeg.h \
 		 filelist.h \
@@ -589,7 +591,7 @@ cinelerra_LDADD = \
 	$(top_builddir)/guicast/libguicast.la \
 	$(top_builddir)/libmpeg3/libmpeg3hv.la \
 	$(top_builddir)/libsndfile/src/libsndfilehv.la \
-	-lvorbisfile -lvorbisenc -la52 \
+	-lvorbisfile -lvorbisenc -ltheora -logg -la52 \
 	-lpng -ljpeg -ltiff -lz \
 	$(SOUND_LDFLAGS) \
 	$(FIREWIRE_LDFLAGS) -ldv \

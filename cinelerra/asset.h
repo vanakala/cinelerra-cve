@@ -178,6 +178,14 @@ public:
 	int vorbis_max_bitrate;
 	int vorbis_vbr;
 
+// Theora compression
+	int theora_fix_bitrate;
+	int theora_bitrate;
+	int theora_quality;
+	int theora_sharpness;
+	int theora_keyframe_frequency;
+	int theora_keyframe_force_frequency;
+
 // mp3 compression
 	int mp3_bitrate;
 

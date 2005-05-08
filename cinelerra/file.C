@@ -9,6 +9,7 @@
 #include "fileac3.h"
 #include "fileavi.h"
 #include "filedv.h"
+#include "fileogg.h"
 #include "filebase.h"
 #include "fileexr.h"
 #include "filexml.h"
@@ -125,6 +126,13 @@ int File::get_options(FormatTools *format,
 			break;
 		case FILE_RAWDV:
 			FileDV::get_parameters(parent_window,
+				asset,
+				format_window,
+				audio_options,
+				video_options);
+			break;
+		case FILE_OGG:
+			FileOGG::get_parameters(parent_window,
 				asset,
 				format_window,
 				audio_options,
@@ -475,6 +483,10 @@ int File::open_file(ArrayList<PluginServer*> *plugindb,
 
 		case FILE_VORBIS:
 			file = new FileVorbis(this->asset, this);
+			break;
+
+		case FILE_OGG:
+			file = new FileOGG(this->asset, this);
 			break;
 
 		case FILE_AVI:
@@ -1114,6 +1126,8 @@ int File::strtoformat(ArrayList<PluginServer*> *plugindb, char *format)
 	else
 	if(!strcasecmp(format, _(AVI_AVIFILE_NAME))) return FILE_AVI_AVIFILE;
 	else
+	if(!strcasecmp(format, _(OGG_NAME))) return FILE_OGG;
+	else
 	if(!strcasecmp(format, _(VORBIS_NAME))) return FILE_VORBIS;
 	else
 	if(!strcasecmp(format, _(RAWDV_NAME))) return FILE_RAWDV;
@@ -1206,6 +1220,9 @@ char* File::formattostr(ArrayList<PluginServer*> *plugindb, int format)
 			break;
 		case FILE_AVI_AVIFILE:
 			return _(AVI_AVIFILE_NAME);
+			break;
+		case FILE_OGG:
+			return _(OGG_NAME);
 			break;
 		case FILE_VORBIS:
 			return _(VORBIS_NAME);
@@ -1411,6 +1428,7 @@ int File::supports_video(int format)
 //printf("File::supports_video %d\n", format);
 	switch(format)
 	{
+		case FILE_OGG:
 		case FILE_MOV:
 		case FILE_JPEG:
 		case FILE_JPEG_LIST:

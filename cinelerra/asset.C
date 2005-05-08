@@ -80,6 +80,14 @@ int Asset::init_values()
 	vorbis_bitrate = 128000;
 	vorbis_max_bitrate = -1;
 
+	theora_fix_bitrate = 1;
+	theora_bitrate = 860000;
+	theora_quality = 16;
+	theora_sharpness = 2;
+	theora_keyframe_frequency = 64;
+	theora_keyframe_force_frequency = 64;
+
+
 	mp3_bitrate = 256000;
 
 
@@ -219,6 +227,13 @@ void Asset::copy_format(Asset *asset, int do_index)
 	vorbis_min_bitrate = asset->vorbis_min_bitrate;
 	vorbis_bitrate = asset->vorbis_bitrate;
 	vorbis_max_bitrate = asset->vorbis_max_bitrate;
+	
+	theora_fix_bitrate = asset->theora_fix_bitrate;
+	theora_bitrate = asset->theora_bitrate;
+	theora_quality = asset->theora_quality;
+	theora_sharpness = asset->theora_sharpness;
+	theora_keyframe_frequency = asset->theora_keyframe_frequency;
+	theora_keyframe_force_frequency = asset->theora_keyframe_frequency;
 
 
 
@@ -573,6 +588,13 @@ int Asset::read_video(FileXML *file)
 	divx_fix_bitrate = file->tag.get_property("DIVX_FIX_BITRATE", divx_fix_bitrate);
 	divx_use_deblocking = file->tag.get_property("DIVX_USE_DEBLOCKING", divx_use_deblocking);
 
+	theora_fix_bitrate = file->tag.get_property("THEORA_FIX_BITRATE", theora_fix_bitrate);
+	theora_bitrate = file->tag.get_property("THEORA_BITRATE", theora_bitrate);
+	theora_quality = file->tag.get_property("THEORA_QUALITY", theora_quality);
+	theora_sharpness = file->tag.get_property("THEORA_SHARPNESS", theora_sharpness);
+	theora_keyframe_frequency = file->tag.get_property("THEORA_KEYFRAME_FREQUENCY", theora_keyframe_frequency);
+	theora_keyframe_force_frequency = file->tag.get_property("THEORA_FORCE_KEYFRAME_FEQUENCY", theora_keyframe_force_frequency);
+
 	ms_bitrate = file->tag.get_property("MS_BITRATE", ms_bitrate);
 	ms_bitrate_tolerance = file->tag.get_property("MS_BITRATE_TOLERANCE", ms_bitrate_tolerance);
 	ms_interlaced = file->tag.get_property("MS_INTERLACED", ms_interlaced);
@@ -806,6 +828,13 @@ int Asset::write_video(FileXML *file)
 	file->tag.set_property("DIVX_FIX_BITRATE", divx_fix_bitrate);
 	file->tag.set_property("DIVX_USE_DEBLOCKING", divx_use_deblocking);
 
+	file->tag.set_property("THEORA_FIX_BITRATE", theora_fix_bitrate);
+	file->tag.set_property("THEORA_BITRATE", theora_bitrate);
+	file->tag.set_property("THEORA_QUALITY", theora_quality);
+	file->tag.set_property("THEORA_SHARPNESS", theora_sharpness);
+	file->tag.set_property("THEORA_KEYFRAME_FREQUENCY", theora_keyframe_frequency);
+	file->tag.set_property("THEORA_FORCE_KEYFRAME_FEQUENCY", theora_keyframe_force_frequency);
+
 
 	file->tag.set_property("MS_BITRATE", ms_bitrate);
 	file->tag.set_property("MS_BITRATE_TOLERANCE", ms_bitrate_tolerance);
@@ -972,6 +1001,14 @@ void Asset::load_defaults(Defaults *defaults,
 	divx_quality = GET_DEFAULT("DIVX_QUALITY", divx_quality);
 	divx_fix_bitrate = GET_DEFAULT("DIVX_FIX_BITRATE", divx_fix_bitrate);
 	divx_use_deblocking = GET_DEFAULT("DIVX_USE_DEBLOCKING", divx_use_deblocking);
+
+	theora_fix_bitrate = GET_DEFAULT("THEORA_FIX_BITRATE", theora_fix_bitrate);
+	theora_bitrate = GET_DEFAULT("THEORA_BITRATE", theora_bitrate);
+	theora_quality = GET_DEFAULT("THEORA_QUALITY", theora_quality);
+	theora_sharpness = GET_DEFAULT("THEORA_SHARPNESS", theora_sharpness);
+	theora_keyframe_frequency = GET_DEFAULT("THEORA_KEYFRAME_FREQUENCY", theora_keyframe_frequency);
+	theora_keyframe_force_frequency = GET_DEFAULT("THEORA_FORCE_KEYFRAME_FEQUENCY", theora_keyframe_force_frequency);
+
 
 	ms_bitrate = GET_DEFAULT("MS_BITRATE", ms_bitrate);
 	ms_bitrate_tolerance = GET_DEFAULT("MS_BITRATE_TOLERANCE", ms_bitrate_tolerance);

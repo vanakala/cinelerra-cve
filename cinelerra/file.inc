@@ -40,6 +40,7 @@
 #define FILE_EXR_LIST           27
 #define FILE_RAWDV		28
 #define FILE_YUV		29	// mjpegtools YUV4MPEG (aka YUV4MPEG2)
+#define FILE_OGG		30
 
 // For formats supported by plugins, the format number is the plugin number in the 
 // plugin list ORed with 0x8000.
@@ -74,6 +75,7 @@
 	format == FILE_EXR     ? "EXR" :		\
 	format == FILE_EXR_LIST ? "EXR_LIST" :		\
 	format == FILE_RAWDV   ? "RAWDV" :		\
+	format == FILE_OGG     ? "OGG" :		\
 	format == FILE_YUV     ? "YUV" :		\
 	"UNKNOWN")
 
@@ -105,6 +107,7 @@ N_("MPEG Video")    // For encoding only
 N_("OGG Vorbis")
 N_("EXR")
 N_("EXR Sequence")
+N_("OGG Theora/Vorbis")
 #endif
 
 #define AC3_NAME "AC3"
@@ -118,6 +121,7 @@ N_("EXR Sequence")
 #define AVI_AVIFILE_NAME "AVI Avifile"
 #define AVI_LAVTOOLS_NAME "AVI Lavtools"
 #define RAWDV_NAME "Raw DV"
+#define OGG_NAME "OGG Theora/Vorbis"
 #define JPEG_LIST_NAME "JPEG Sequence"
 #define JPEG_NAME "JPEG"
 #define MOV_NAME "Quicktime for Linux"
