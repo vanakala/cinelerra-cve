@@ -1461,6 +1461,7 @@ int File::supports_audio(int format)
 {
 	switch(format)
 	{
+		case FILE_OGG:
 		case FILE_AC3:
 		case FILE_PCM:
 		case FILE_WAV:
