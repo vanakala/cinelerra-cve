@@ -72,6 +72,8 @@ void FileThread::delete_objects()
 	if(last_buffer)
 		delete [] last_buffer;
 
+	if(output_size)
+		delete [] output_size;
 
 	reset();
 }
