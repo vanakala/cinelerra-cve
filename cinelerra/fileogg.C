@@ -114,7 +114,7 @@ TRACE("FileOGG::open_file 20")
 			
 			tf->ti.frame_width = ((asset->width + 15) >>4)<<4; // round up to the nearest multiple of 16 
 			tf->ti.frame_height = ((asset->height + 15) >>4)<<4; // round up to the nearest multiple of 16
-			if (tf->ti.width != tf->ti.frame_width || tf->ti.height != tf->ti.width)
+			if (tf->ti.width != tf->ti.frame_width || tf->ti.height != tf->ti.height)
 				printf("FileOGG: WARNING: Width and hegiht must be dividable by 16\n");
 			
 
