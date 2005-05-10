@@ -308,7 +308,6 @@ int FileOGG::close_file()
 			write_frames_theora(0, 0, 1); // set eos
 		if (asset->audio_data)
 			write_samples_vorbis(0, 0, 1); // set eos
-		flush_ogg(1);
 		
 		if (asset->audio_data)
 		{
