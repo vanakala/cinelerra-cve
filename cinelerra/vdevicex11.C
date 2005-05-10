@@ -393,6 +393,11 @@ int VDeviceX11::write_buffer(VFrame **output_channels, EDL *edl)
 {
 	int i = 0;
 
+// The reason for not drawing single frame is that it is _always_ drawn 
+// when drawing draw_refresh in cwindowgui and vwindowgui
+	if (device->single_frame) 
+		return 0;
+
 //printf("VDeviceX11::write_buffer 1\n");
 	output->canvas->lock_window("VDeviceX11::write_buffer");
 //printf("VDeviceX11::write_buffer 2\n");
