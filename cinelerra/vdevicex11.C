@@ -93,22 +93,10 @@ int VDeviceX11::close_all()
 
 	if(output && output_frame)
 	{
-// Copy picture to persistent frame buffer with conversion to flat colormodel
-		if(output->refresh_frame &&
-			(output->refresh_frame->get_w() != device->out_w ||
-			output->refresh_frame->get_h() != device->out_h ||
-			output->refresh_frame->get_color_model() != output_frame->get_color_model()))
+// Why copy when we can just use it! 
+		if(output->refresh_frame)
 		{
 			delete output->refresh_frame;
-			output->refresh_frame = 0;
-		}
-
-		if(!output->refresh_frame)
-		{
-			output->refresh_frame = new VFrame(0,
-				device->out_w,
-				device->out_h,
-				output_frame->get_color_model());
 		}
 
 		if(!device->single_frame)
@@ -116,15 +104,16 @@ int VDeviceX11::close_all()
 		else
 			output->stop_single();
 
-		output->refresh_frame->copy_from(output_frame);
-
+		output->refresh_frame = output_frame;
 		output->draw_refresh();
+	} else
+	{
+		if(bitmap)
+			delete output_frame;
 	}
-
 	if(bitmap)
 	{
 		delete bitmap;
-		delete output_frame;
 		bitmap = 0;
 	}
 
