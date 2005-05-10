@@ -76,6 +76,8 @@ int FileOGG::reset_parameters_derived()
 
 int FileOGG::open_file(int rd, int wr)
 {
+	this->rd = rd;
+	this->wr = wr;
 
 TRACE("FileOGG::open_file 10")
 	if (!tf)
