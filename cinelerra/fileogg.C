@@ -109,17 +109,16 @@ TRACE("FileOGG::open_file 20")
 		
 			theora_info_init (&tf->ti);
 			
-			tf->ti.width = asset->width; 
-			tf->ti.height = asset->height;
+			tf->ti.frame_width = asset->width; 
+			tf->ti.frame_height = asset->height;
 			
-			tf->ti.frame_width = ((asset->width + 15) >>4)<<4; // round up to the nearest multiple of 16 
-			tf->ti.frame_height = ((asset->height + 15) >>4)<<4; // round up to the nearest multiple of 16
-			if (tf->ti.width != tf->ti.frame_width || tf->ti.height != tf->ti.height)
-				printf("FileOGG: WARNING: Width and hegiht must be dividable by 16\n");
+			tf->ti.width = ((asset->width + 15) >>4)<<4; // round up to the nearest multiple of 16 
+			tf->ti.height = ((asset->height + 15) >>4)<<4; // round up to the nearest multiple of 16
+			if (tf->ti.width != tf->ti.frame_width || tf->ti.height != tf->ti.frame_height)
+				printf("FileOGG: WARNING: Encoding theora when width or height are not dividable by 16 is suboptimal\n");
 			
-
 			tf->ti.offset_x = 0;
-			tf->ti.offset_y = 0;
+			tf->ti.offset_y = tf->ti.height - tf->ti.frame_height;
 			tf->ti.fps_numerator = (unsigned int)(asset->frame_rate * 1000000);
 			tf->ti.fps_denominator = 1000000;
 			
@@ -162,7 +161,10 @@ TRACE("FileOGG::open_file 20")
 			tf->ti.sharpness = 2;
 			
 					
-			theora_encode_init (&tf->td, &tf->ti);
+			if (theora_encode_init (&tf->td, &tf->ti))
+			{
+				printf("FileOGG: initialization of theora codec failed\n");
+			}
 		}
 		/* init theora done */
 
@@ -304,10 +306,12 @@ int FileOGG::close_file()
 {
 	if (wr)
 	{
-		if (asset->video_data)
-			write_frames_theora(0, 0, 1); // set eos
 		if (asset->audio_data)
 			write_samples_vorbis(0, 0, 1); // set eos
+		if (asset->video_data)
+			write_frames_theora(0, 1, 1); // set eos
+
+		flush_ogg(1); // flush all
 		
 		if (asset->audio_data)
 		{
@@ -391,8 +395,8 @@ int FileOGG::flush_ogg(int e_o_s)
 				tf->videoflag = 1;
 				flushloop=1;
 			}
-		if(e_o_s)
-			break;
+			if(e_o_s)
+				break;
 		}
 
 		while (asset->audio_data && (e_o_s || 
@@ -475,76 +479,87 @@ int FileOGG::write_frames_theora(VFrame ***frames, int len, int e_o_s)
 
 	if(!stream) return 0;
 
-	if (temp_frame) // encode previous frame if available
-	{
-		yuv_buffer yuv;
-		yuv.y_width = tf->ti.frame_width;
-		yuv.y_height = tf->ti.frame_height;
-		yuv.y_stride = temp_frame->get_bytes_per_line();
-
-		yuv.uv_width = tf->ti.frame_width / 2;
-		yuv.uv_height = tf->ti.frame_height / 2;
-		yuv.uv_stride = temp_frame->get_bytes_per_line() /2;
-
-		yuv.y = temp_frame->get_y();
-		yuv.u = temp_frame->get_u();
-		yuv.v = temp_frame->get_v();
-		theora_encode_YUVin (&tf->td, &yuv);
-		theora_encode_packetout (&tf->td, e_o_s, &tf->op); 
-		ogg_stream_packetin (&tf->to, &tf->op);
-		tf->videoflag=1;
-		flush_ogg(0);
-	}
 	
-	if (!e_o_s)
+	for(j = 0; j < len && !result; j++)
 	{
+		if (temp_frame) // encode previous frame if available
+		{
+			yuv_buffer yuv;
+			yuv.y_width = tf->ti.width;
+			yuv.y_height = tf->ti.height;
+			yuv.y_stride = temp_frame->get_bytes_per_line();
+
+			yuv.uv_width = tf->ti.width / 2;
+			yuv.uv_height = tf->ti.height / 2;
+			yuv.uv_stride = temp_frame->get_bytes_per_line() /2;
+
+			yuv.y = temp_frame->get_y();
+			yuv.u = temp_frame->get_u();
+			yuv.v = temp_frame->get_v();
+			int ret = theora_encode_YUVin (&tf->td, &yuv);
+			if (ret)
+			{
+				printf("FileOGG: theora_encode_YUVin failed with code %i\n", ret);
+				printf("yuv_buffer: y_width: %i, y_height: %i, y_stride: %i, uv_width: %i, uv_height: %i, uv_stride: %i\n",
+					yuv.y_width,
+					yuv.y_height,
+					yuv.y_stride,
+					yuv.uv_width,
+					yuv.uv_height,
+					yuv.uv_stride);
+			}
+			theora_encode_packetout (&tf->td, e_o_s, &tf->op); 
+			ogg_stream_packetin (&tf->to, &tf->op);
+			tf->videoflag=1;
+			flush_ogg(0);  // eos flush is done later at close_file
+		}
+// If we have e_o_s, don't encode any new frames
+		if (e_o_s) 
+			break;
+
 		if (!temp_frame)
 		{
 			temp_frame = new VFrame (0, 
-						tf->ti.frame_width, 
-						tf->ti.frame_height,
+						tf->ti.width, 
+						tf->ti.height,
 						BC_YUV420P);
 		} 
-		for(j = 0; j < len && !result; j++)
+		VFrame *frame = frames[0][j];
+		int in_color_model = frame->get_color_model();
+		if (in_color_model == BC_YUV422P &&
+		    temp_frame->get_w() == frame->get_w() &&
+		    temp_frame->get_h() == frame->get_h() &&
+		    temp_frame->get_bytes_per_line() == frame->get_bytes_per_line())
 		{
-			VFrame *frame = frames[0][j];
-			int in_color_model = frame->get_color_model();
-			if (in_color_model == BC_YUV422P &&
-			    temp_frame->get_w() == frame->get_w() &&
-			    temp_frame->get_h() == frame->get_h() &&
-			    temp_frame->get_bytes_per_line() == frame->get_bytes_per_line())
-			{
-				temp_frame->copy_from(frame);
-			} else
-			{
+			temp_frame->copy_from(frame);
+		} else
+		{
 
-				cmodel_transfer(temp_frame->get_rows(),
-					frame->get_rows(),
-					temp_frame->get_y(),
-					temp_frame->get_u(),
-					temp_frame->get_v(),
-					frame->get_y(),
-					frame->get_u(),
-					frame->get_v(),
-					0,
-					0,
-					frame->get_w(),
-					frame->get_h(),
-					0,
-					0,
-					frame->get_w(),  // temp_frame can be larger than frame if width not dividable by 16
-					frame->get_h(),	 // CHECK: does cmodel_transfer to 420 work in above situation ?
-					frame->get_color_model(),
-					BC_YUV420P,
-					0,
-					frame->get_bytes_per_line(),
-					temp_frame->get_bytes_per_line());
+			cmodel_transfer(temp_frame->get_rows(),
+				frame->get_rows(),
+				temp_frame->get_y(),
+				temp_frame->get_u(),
+				temp_frame->get_v(),
+				frame->get_y(),
+				frame->get_u(),
+				frame->get_v(),
+				0,
+				0,
+				frame->get_w(),
+				frame->get_h(),
+				0,
+				0,
+				frame->get_w(),  // temp_frame can be larger than frame if width not dividable by 16
+				frame->get_h(),	 // CHECK: does cmodel_transfer to 420 work in above situation ?
+				frame->get_color_model(),
+				BC_YUV420P,
+				0,
+				frame->get_w(),
+				temp_frame->get_w());
 
-			}
-								
-					
 		}
-	}	
+	}						
+				
 	return 0;
 }
 
