@@ -38,7 +38,7 @@
 #include "transition.h"
 #include "transportque.h"
 #include "units.h"
-#include "undostack.h"
+#include "undostackitem.h"
 #include "vplayback.h"
 #include "vwindow.h"
 #include "vwindowgui.h"

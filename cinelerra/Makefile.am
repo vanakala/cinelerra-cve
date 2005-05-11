@@ -231,6 +231,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    transitionpopup.C \
 		    transportque.C \
 		    undostack.C \
+		    undostackitem.C \
 		    vattachmentpoint.C \
 		    vautomation.C \
 		    vdevice1394.C \
@@ -538,6 +539,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 transitionpopup.h \
 		 transportque.h \
 		 undostack.h \
+		 undostackitem.h \
 		 vattachmentpoint.h \
 		 vautomation.h \
 		 vdevice1394.h \

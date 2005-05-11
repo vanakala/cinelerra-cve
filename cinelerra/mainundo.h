@@ -2,11 +2,14 @@
 #define MAINUNDO_H
 
 
-#include "filexml.inc"
 #include "mwindow.inc"
 #include "undostack.h"
 
 #include <stdint.h>
+
+
+class MainUndoStackItem;
+
 
 class MainUndo
 {
@@ -28,7 +31,7 @@ public:
 
 private:
 	UndoStack undo_stack;
-	UndoStackItem* current_entry; // for setting the after buffer
+	MainUndoStackItem* new_entry;	// for setting the after buffer
 	MWindow *mwindow;
 	int undo_before_updated;
 };
