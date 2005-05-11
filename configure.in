@@ -106,15 +106,10 @@ AC_SUBST(SOUND_LDFLAGS)
 ############### END OF SOUND
 
 ############## MJPEGTOOLS (for YUV4MPEG)
-LDFLAGS="$LDFLAGS -L/usr/local/lib"
-# FIXME: probably have to change to using pkg-config or the like
-CPPFLAGS="$CPPFLAGS -I/usr/local/include/mjpegtools -I/usr/include/mjpegtools";
-AC_CHECK_HEADER(mjpegtools/format_codes.h, ,NOT_FOUND="$NOT_FOUND mjpegtools")
-AC_CHECK_LIB(mjpegutils, y4m_read_frame, :, 
-			 [AC_MSG_WARN([libmjpegutils not found])
-			 NOT_FOUND="$NOT_FOUND libmjpegutils"])
+PKG_CHECK_MODULES(MJPEG, mjpegtools)
+AC_SUBST(MJPEG_CFLAGS)
+AC_SUBST(MJPEG_LIBS)
 ############## END MJPEGTOOLS
-
 
 ############## MISC LIBRARIES
 AC_CHECK_HEADERS(uuid/uuid.h)
@@ -125,11 +120,20 @@ AC_CHECK_LIB(uuid, uuid_clear, :,[AC_MSG_WARN([libuuid not found])
 LARGEFILE_CFLAGS="-D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64"
 AC_SUBST(LARGEFILE_CFLAGS)
 
-# A52DEC
-AC_CHECK_HEADERS(a52dec/a52.h)
-AC_CHECK_LIB(a52, a52_init, true ,[AC_MSG_WARN([a52dec not found])
-	NOT_FOUND="$NOT_FOUND a52dec"])
-#END A52DEC
+############## A52DEC
+AC_CHECK_LIB(a52, a52_init, 
+    [AC_CHECK_HEADER(a52dec/a52.h, [HAVE_A52DEC=yes])],
+    [AC_MSG_WARN([liba52 not found])])
+
+if test "x$HAVE_A52DEC" = xyes; then
+    A52DEC_CFLAGS=
+    A52DEC_LIBS=-la52
+else
+    NOT_FOUND="$NOT_FOUND a52dec"
+fi
+AC_SUBST(A52DEC_CFLAGS)
+AC_SUBST(A52DEC_LDFLAGS)
+############## END OF A52DEC
 
 ############## LAME
 # Just test to see if we have lame installed.
@@ -142,34 +146,24 @@ AC_CHECK_HEADERS(lame/lame.h)
 # Use the provided libsndfile, which will be renamed to libsndfilehv
 AC_CONFIG_SUBDIRS(libsndfile)
 
-############## LIBAVCODEC
-AC_CHECK_HEADERS(ffmpeg/avcodec.h)
-AC_CHECK_LIB(avcodec, avcodec_init, :,[AC_MSG_WARN([libavcodec not found])
-	NOT_FOUND="$NOT_FOUND libavcodec"])
-# END LIBAVCODEC
-
 ############## OpenEXR
-if test "x$OPENEXR" = "x"; then
-  if test "x$prefix" != xNONE; then
-    OPENEXR=$prefix/include/OpenEXR
-  else
-    OPENEXR=$ac_default_prefix/include/OpenEXR
-  fi
-fi
-AC_LANG_PUSH(C++)
-save_CPPFLAGS="$CPPFLAGS"
-CPPFLAGS="$CPPFLAGS -I$OPENEXR"
-AC_CHECK_HEADER(OpenEXR/ImfRgbaFile.h, :, NOT_FOUND="$NOT_FOUND OpenEXR")
-CPPFLAGS="$save_CPPFLAGS"
-AC_LANG_POP(C++)
-AC_SUBST(OPENEXR)
-# END OpenEXR
+PKG_CHECK_MODULES(OPENEXR, OpenEXR)
+AC_SUBST(OPENEXR_CFLAGS)
+AC_SUBST(OPENEXR_LIBS)
+############## END OF OpenEXR
 
 ############## LIBFAAD
-AC_CHECK_HEADERS(faad.h)
-AC_CHECK_LIB(faad, faacDecInit, :,[AC_MSG_WARN([libfaad not found])
-	NOT_FOUND="$NOT_FOUND libfaad,2"])
-# END LIBFAAD
+AC_CHECK_LIB(faad, faacDecInit, 
+    [AC_CHECK_HEADER(faad.h, [HAVE_FAAD=yes])],[AC_MSG_WARN([libfaad not found])])
+if test "x$HAVE_FAAD" = xyes; then
+    FAAD_CFLAGS=
+    FAAD_LIBS="-lfaad"
+else
+	NOT_FOUND="$NOT_FOUND libfaad,2"
+fi
+AC_SUBST(FAAD_CFLAGS)
+AC_SUBST(FAAD_LIBS)
+############## END OF LIBFAAD
 
 ############## FIREWIRE
 # firewire settings are propagated through FIREWIRE_CFLAGS and FIREWIRE_LDFLAGS
@@ -275,9 +269,40 @@ dnl AM_CONDITIONAL(FFMPEG_TARGET_ARCH_ALPHA, false)
 dnl AM_CONDITIONAL(FFMPEG_TARGET_ARCH_POWERPC, false)
 dnl AM_CONDITIONAL(FFMPEG_TARGET_MMI, false)
 dnl AM_CONDITIONAL(FFMPEG_TARGET_ALTIVEC, false)
-dnl 
-LIBAVCODEC_CFLAGS=-I/usr/include/ffmpeg
-LIBAVCODEC_LIBS=-lavcodec
+dnl
+
+dnl Check for ffmpeg-config
+AC_CHECK_PROG(HAVE_FFMPEG_CONFIG, ffmpeg-config, yes, no)
+if test "x$HAVE_FFMPEG_CONFIG" == xyes; then
+    AC_MSG_CHECKING(LIBAVCODEC_CFLAGS)
+    LIBAVCODEC_CFLAGS=`ffmpeg-config --cflags`
+    AC_MSG_RESULT($LIBAVCODEC_CFLAGS)
+
+    AC_MSG_CHECKING(LIBAVCODEC_LIBS)
+    LIBAVCODEC_LIBS=`ffmpeg-config --libs avcodec`
+    AC_MSG_RESULT($LIBAVCODEC_LIBS)
+
+dnl try to find ffmpeg without ffmpeg-config
+else
+    AC_CHECK_HEADERS(ffmpeg/avcodec.h)
+    AC_CHECK_LIB(avcodec, avcodec_init, [HAVE_FFMPEG=yes],
+	[AC_MSG_WARN([ffmpeg not found])])
+
+    if test "x$HAVE_FFMPEG" == xyes; then
+        LIBAVCODEC_CFLAGS=-I/usr/include/ffmpeg
+        LIBAVCODEC_LIBS="-lavcodec $FAAD_LIBS $A52DEC_LIBS"
+
+        AC_CHECK_LIB(dts,dts_init, [
+          AC_CHECK_HEADER(dts.h, [HAVE_DTS=yes])
+          ],,[-lm -lz])
+        if test "x$HAVE_DTS" = xyes; then
+        	LIBAVCODEC_LIBS="$LIBAVCODEC_LIBS -ldts"
+        fi
+   else
+     NOT_FOUND="$NOT_FOUND libavcodec"
+   fi   
+fi
+
 AC_SUBST(LIBAVCODEC_CFLAGS)
 AC_SUBST(LIBAVCODEC_LIBS)
 
@@ -291,6 +316,16 @@ AC_HELP_STRING([--with-ffmpeg],[Use FFMPEG for Quicktime DV encoding/decoding]),
 ])
 
 ############## END OF FFMPEG
+
+############## XIPH
+PKG_CHECK_MODULES(XIPH,ogg >= 1.1 vorbis vorbisenc vorbisfile theora)
+AC_SUBST(XIPH_CFLAGS)
+AC_SUBST(XIPH_LIBS)
+
+PKG_CHECK_MODULES(VORBIS,ogg >= 1.1 vorbis vorbisenc vorbisfile)
+AC_SUBST(VORBIS_CFLAGS)
+AC_SUBST(VORBIS_LIBS)
+############## END OF XIPH
 
 ############## .png TO .o CONVERSION
 

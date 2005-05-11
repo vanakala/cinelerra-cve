@@ -275,14 +275,16 @@ INCLUDES = \
 	-I$(top_srcdir)/quicktime \
 	-I$(top_srcdir)/guicast \
 	-I$(top_srcdir)/libmpeg3 \
-	-I$(top_builddir)/libsndfile/src \
-	-I@OPENEXR@
+	-I$(top_builddir)/libsndfile/src 
 
 AM_CXXFLAGS = \
 	$(LARGEFILE_CFLAGS) \
 	$(FIREWIRE_CFLAGS) \
 	$(SOUND_CFLAGS) \
 	$(AVIFILE_CXXFLAGS) \
+	$(XIPH_CFLAGS) \
+	$(MJPEG_CFLAGS) \
+	$(OPENEXR_CFLAGS) \
 	-DPLUGIN_DIR=\"$(plugindir)\"
 AM_LDFLAGS = -export-dynamic
 
@@ -591,12 +593,13 @@ cinelerra_LDADD = \
 	$(top_builddir)/guicast/libguicast.la \
 	$(top_builddir)/libmpeg3/libmpeg3hv.la \
 	$(top_builddir)/libsndfile/src/libsndfilehv.la \
-	-lvorbisfile -lvorbisenc -ltheora -logg -la52 \
+	$(XIPH_LIBS) \
+	$(A52DEC_LIBS) \
+	$(OPENEXR_LIBS) \
 	-lpng -ljpeg -ltiff -lz \
 	$(SOUND_LDFLAGS) \
 	$(FIREWIRE_LDFLAGS) -ldv \
-	-lIex -lIlmImf -lHalf \
 	-luuid $(AVIFILE_LDFLAGS) \
-	-lmjpegutils
+	$(MJPEG_LIBS)
 
 EXTRA_DIST = gen-feather-h
