@@ -1864,6 +1864,7 @@ void MWindow::to_clip()
 	new_edl->create_objects();
 	new_edl->load_xml(plugindb, &file, LOAD_ALL);
 	sprintf(new_edl->local_session->clip_title, _("Clip %d"), session->clip_number++);
+	new_edl->local_session->selectionstart = new_edl->local_session->selectionend = 0.0;
 
 //printf("VWindowEditing::to_clip 2 %d\n", edl->assets->total());
 	awindow->clip_edit->create_clip(new_edl);
