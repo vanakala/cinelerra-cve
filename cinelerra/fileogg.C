@@ -191,7 +191,7 @@ TRACE("FileOGG::open_file 20")
 					-1, 
 					asset->vorbis_bitrate, 
 					-1);
-				ret |= vorbis_encode_ctl(&tf->vi, OV_ECTL_RATEMANAGE2_SET, NULL);
+				ret |= vorbis_encode_ctl(&tf->vi, OV_ECTL_RATEMANAGE_AVG, NULL);
 				ret |= vorbis_encode_setup_init(&tf->vi);
 			}
 			if (ret)
