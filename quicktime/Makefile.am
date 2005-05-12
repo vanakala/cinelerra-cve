@@ -8,6 +8,7 @@ AM_CFLAGS = \
 	$(FIREWIRE_CFLAGS) \
 	$(VORBIS_CFLAGS) \
 	$(LIBAVCODEC_CFLAGS) \
+	$(MJPEG_CFLAGS) \
 	-DENCORE_INCLUDE=\"encore50/encore.h\"
 
 libquicktimehv_la_LDFLAGS = -version-info 1:0:0 -release 1.6.0 -Wl,--no-undefined 

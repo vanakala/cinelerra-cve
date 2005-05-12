@@ -8,6 +8,7 @@
 #include "file.h"
 #include "filedv.h"
 #include "guicast.h"
+#include "interlacemodes.h"
 #include "language.h"
 #include "mwindow.inc"
 #include "quicktime.h"
@@ -232,6 +233,7 @@ TRACE("FileDV::open_file 60")
 			asset->aspect_ratio = (double) 4 / 3;
 			asset->width = decoder->width;
 			asset->height = decoder->height;
+			asset->interlace_mode = BC_ILACE_MODE_UNDETECTED; // FIXME: Is this set to a standard??
 			if(asset->height == 576)
 			{
 				isPAL = 1;

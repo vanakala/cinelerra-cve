@@ -5,7 +5,7 @@
 #include "guicast.h"
 #include "pipe.h"
 #include "yuvstream.h"
-
+#include "interlacemodes.h"
 
 YUVStream::YUVStream() { 
 	y4m_init_stream_info(&stream_info);
@@ -218,6 +218,14 @@ int YUVStream::write_header() {
 		return 1;
 	}
 	return 0;
+}
+
+int YUVStream::get_interlace() {
+	return ilace_yuv4mpeg_to_bc(y4m_si_get_interlace(&stream_info));
+}
+
+void YUVStream::set_interlace(int imode) {
+	y4m_si_set_interlace(&stream_info, ilace_bc_to_yuv4mpeg(imode));
 }
 
 int YUVStream::get_width() {

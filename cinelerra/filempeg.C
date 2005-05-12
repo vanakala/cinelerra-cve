@@ -6,6 +6,7 @@
 #include "edit.h"
 #include "filempeg.h"
 #include "guicast.h"
+#include "interlacemodes.h"
 #include "language.h"
 #include "libmjpeg.h"
 #include "mwindow.inc"
@@ -121,6 +122,8 @@ int FileMPEG::open_file(int rd, int wr)
 				asset->layers = mpeg3_total_vstreams(fd);
 				asset->width = mpeg3_video_width(fd, 0);
 				asset->height = mpeg3_video_height(fd, 0);
+				asset->interlace_mode = BC_ILACE_MODE_UNDETECTED; // TODO: (to do this, start at hvirtualcvs/libmpeg3/headers.c 
+				                                                  //        and find out how to decode info from the header)
 				asset->video_length = mpeg3_video_frames(fd, 0);
 				asset->vmpeg_cmodel = (mpeg3_colormodel(fd, 0) == MPEG3_YUV422P) ? 1 : 0;
 				if(!asset->frame_rate)

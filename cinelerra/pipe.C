@@ -3,10 +3,11 @@
 #include <errno.h>
 #include <signal.h>
 
-#include "guicast.h"
-#include "pipe.h"
 #include "defaults.h"
 #include "file.h"
+#include "guicast.h"
+#include "interlacemodes.h"
+#include "pipe.h"
 
 extern "C" {
 	int pipe_sigpipe_received;
@@ -136,6 +137,8 @@ PipeConfig::PipeConfig(BC_WindowBase *window, Defaults *defaults, Asset *asset)
 // NOTE: Default destructor should destroy all subwindows
 
 int PipeConfig::create_objects(int x, int y, int textbox_width, int format) {
+	int x1 = x;
+	BC_Title *titlew;
 	// NOTE: out of order so pipe_textbox is available to pipe_checkbox
 	textbox = new BC_TextBox(x + 120, y, textbox_width, 1, asset->pipe);
 	window->add_subwindow(textbox);
@@ -152,6 +155,17 @@ int PipeConfig::create_objects(int x, int y, int textbox_width, int format) {
 				10, x, y, 350, 100);
 	window->add_subwindow(recent);
 	recent->load_items(FILE_FORMAT_PREFIX(format));
+
+	x = x1;
+	y += 30;
+	window->add_subwindow(titlew = new BC_Title(x, y, _("Stream Header:"), MEDIUMFONT, RED));
+	x = x1 + 10;
+	y += 30;
+
+	window->add_subwindow(new BC_Title(x, y, _("Interlacing:")));
+	char string[BCTEXTLEN];
+	ilacemode_to_text(string,asset->interlace_mode);
+	window->add_subwindow(new BC_Title(x + titlew->get_w() + 5, y, string, MEDIUMFONT, YELLOW));
 }
 
 PipeCheckBox::PipeCheckBox(int x, int y, int value, BC_TextBox *textbox)

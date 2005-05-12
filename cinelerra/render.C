@@ -428,6 +428,7 @@ int Render::check_asset(EDL *edl, Asset &asset)
 		asset.layers = 1;
 		asset.width = edl->session->output_w;
 		asset.height = edl->session->output_h;
+		asset.interlace_mode = edl->session->interlace_mode;
 		asset.tcstart = (int64_t) (edl->session->get_frame_offset() +
 			edl->local_session->get_selectionstart() *
 				edl->session->frame_rate);

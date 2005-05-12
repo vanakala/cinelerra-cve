@@ -394,6 +394,8 @@ void FileMOV::format_to_asset()
 // Don't want a user configured frame rate to get destroyed
 		if(!asset->frame_rate)
 			asset->frame_rate = quicktime_frame_rate(fd, 0);
+		if(!asset->interlace_mode)
+			asset->interlace_mode = quicktime_video_interlacemode(fd, 0);
 
 		strncpy(asset->vcodec, quicktime_video_compressor(fd, 0), 4);
 	}

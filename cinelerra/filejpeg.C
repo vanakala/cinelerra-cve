@@ -2,17 +2,15 @@
 #include "edit.h"
 #include "file.h"
 #include "filejpeg.h"
+#include "interlacemodes.h"
 #include "jpegwrapper.h"
+#include "language.h"
 #include "libmjpeg.h"
 #include "mwindow.inc"
 #include "quicktime.h"
 #include "vframe.h"
 #include "videodevice.inc"
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 FileJPEG::FileJPEG(Asset *asset, File *file)
@@ -119,6 +117,7 @@ int FileJPEG::get_best_colormodel(Asset *asset, int driver)
 			break;
 		case CAPTURE_BUZ:
 		case CAPTURE_LML:
+		case VIDEO4LINUX2JPEG:
 			return BC_YUV422;
 			break;
 		case CAPTURE_FIREWIRE:
@@ -194,6 +193,8 @@ int FileJPEG::read_frame_header(char *path)
 	asset->width = jpeg_decompress.image_width;
 	asset->height = jpeg_decompress.image_height;
 
+	asset->interlace_mode = BC_ILACE_MODE_NOTINTERLACED;
+
 	jpeg_destroy((j_common_ptr)&jpeg_decompress);
 	fclose(stream);
 	
@@ -206,11 +207,9 @@ int FileJPEG::read_frame_header(char *path)
 
 int FileJPEG::read_frame(VFrame *output, VFrame *input)
 {
-//printf("FileJPEG::read_frame 1\n");
 	if(!decompressor) decompressor = mjpeg_new(asset->width, 
 		asset->height, 
 		1);
-//printf("FileJPEG::read_frame 1\n");
 	mjpeg_decompress((mjpeg_t*)decompressor, 
 		input->get_data(), 
 		input->get_compressed_size(),
@@ -221,8 +220,6 @@ int FileJPEG::read_frame(VFrame *output, VFrame *input)
 		output->get_v(),
 		output->get_color_model(),
 		1);
-//printf("FileJPEG::read_frame 1\n");
-//printf("FileJPEG::read_frame 2\n");
 	
 	
 	return 0;
@@ -257,8 +254,8 @@ JPEGUnit::~JPEGUnit()
 
 JPEGConfigVideo::JPEGConfigVideo(BC_WindowBase *parent_window, Asset *asset)
  : BC_Window(PROGRAM_NAME ": Video Compression",
- 	parent_window->get_abs_cursor_x(),
- 	parent_window->get_abs_cursor_y(),
+ 	parent_window->get_abs_cursor_x(1),
+ 	parent_window->get_abs_cursor_y(1),
 	400,
 	100)
 {

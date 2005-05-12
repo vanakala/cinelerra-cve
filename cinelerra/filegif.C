@@ -1,10 +1,12 @@
 #include "assets.h"
 #include "file.h"
 #include "filetiff.h"
+#include "interlacemodes.h"
 #include "vframe.h"
 
 
-FileGIF::FileGIF(Asset *asset) : FileBase(asset)
+FileGIF::FileGIF(Asset *asset)
+ : FileBase(asset)
 {
 	reset_parameters();
 	asset->video_data = 1;
@@ -71,6 +73,7 @@ int FileGIF::read_header()
 	
 	GIFGetField(stream, GIFTAG_IMAGEWIDTH, &(asset->width));
 	GIFGetField(stream, GIFTAG_IMAGELENGTH, &(asset->height));
+	asset->interlacemode = BC_ILACE_MODE_NOTINTERLACED;
 	asset->layers = 1;
 
 	GIFClose(stream);
