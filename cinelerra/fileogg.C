@@ -371,6 +371,7 @@ int FileOGG::flush_ogg(int e_o_s)
 {
 	/* flush out the ogg pages to stream */
 // both audio and video thread call this procedure, be sure not to race
+
 	flush_lock->lock();
 	int flushloop=1;
 
@@ -389,12 +390,12 @@ int FileOGG::flush_ogg(int e_o_s)
 				
 				tf->videotime=
 					theora_granule_time (&tf->td, ogg_page_granulepos(&tf->videopage));
-				/* flush a video page */
+//				 flush a video page 
 				tf->video_bytesout +=
 					fwrite (tf->videopage.header, 1, tf->videopage.header_len, stream);
 				tf->video_bytesout +=
 					fwrite (tf->videopage.body, 1, tf->videopage.body_len, stream);
-	
+
 				tf->videoflag = 1;
 				flushloop=1;
 			}
@@ -409,14 +410,14 @@ int FileOGG::flush_ogg(int e_o_s)
 			tf->audioflag = 0;
 			while(ogg_stream_pageout (&tf->vo, &tf->audiopage) > 0)
 			{    
-				/* flush an audio page */
+//				 flush an audio page 
 				tf->audiotime=
 					vorbis_granule_time (&tf->vd, ogg_page_granulepos(&tf->audiopage) + 1);
 				tf->audio_bytesout +=
 					fwrite (tf->audiopage.header, 1, tf->audiopage.header_len, stream);
 				tf->audio_bytesout +=
 					fwrite (tf->audiopage.body, 1, tf->audiopage.body_len, stream);
-
+			
 				tf->audioflag = 1;
 				flushloop=1;
 			}
@@ -424,6 +425,7 @@ int FileOGG::flush_ogg(int e_o_s)
 				break;
 		}
 	}
+
 	flush_lock->unlock();
 	return 0;
 }
@@ -457,7 +459,9 @@ int FileOGG::write_samples_vorbis(double **buffer, int64_t len, int e_o_s)
 	    /* weld packets into the bitstream */
 	    while (vorbis_bitrate_flushpacket (&tf->vd, &tf->op))
 	    {
+		flush_lock->lock();
 		ogg_stream_packetin (&tf->vo, &tf->op);
+		flush_lock->unlock();
 	    }
 
 	}
@@ -514,7 +518,9 @@ int FileOGG::write_frames_theora(VFrame ***frames, int len, int e_o_s)
 					yuv.uv_stride);
 			}
 			theora_encode_packetout (&tf->td, e_o_s, &tf->op); 
+			flush_lock->lock();
 			ogg_stream_packetin (&tf->to, &tf->op);
+			flush_lock->unlock();
 			tf->videoflag=1;
 			flush_ogg(0);  // eos flush is done later at close_file
 		}
