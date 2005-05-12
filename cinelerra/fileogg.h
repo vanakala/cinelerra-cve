@@ -12,22 +12,18 @@
 
 #include <libdv/dv.h>
 
-// TODO: Do we need a thread for audio/video encoding?
+/* This code was aspired by ffmpeg2theora */
+/* Special thanks for help on this code goes out to j@v2v.cc */
+
 
 typedef struct
 {
-    int scale;
-    int wide;
-    double start;
-    double end;
     ogg_page videopage;
     ogg_page audiopage;
     int audioflag;
     int videoflag;
     double audiotime;
     double videotime;
-//    int vkbps;
- //   int akbps;
     ogg_int64_t audio_bytesout;
     ogg_int64_t video_bytesout;
 
@@ -75,8 +71,6 @@ public:
 	int set_audio_position(int64_t x);
 	int write_samples(double **buffer, int64_t len);
 	int write_frames(VFrame ***frames, int len);
-	int colormodel_supported(int colormodel);
-	static int get_best_colormodel(Asset *asset, int driver);
 private:
 	int write_samples_vorbis(double **buffer, int64_t len, int e_o_s);
 	int write_frames_theora(VFrame ***frames, int len, int e_o_s);
@@ -86,6 +80,7 @@ private:
 	
 	theoraframes_info_t *tf;
 	VFrame *temp_frame;
+	Mutex *flush_lock;	
 };
 
 class OGGConfigAudio;

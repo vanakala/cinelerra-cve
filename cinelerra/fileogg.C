@@ -1,4 +1,4 @@
-
+	
 #include "clip.h"
 #include "asset.h"
 #include "bcsignals.h"
@@ -22,6 +22,10 @@
 #include <string.h>
 #include <errno.h>
 
+/* This code was aspired by ffmpeg2theora */
+/* Special thanks for help on this code goes out to j@v2v.cc */
+
+
 FileOGG::FileOGG(Asset *asset, File *file)
  : FileBase(asset, file)
 {
@@ -37,8 +41,8 @@ FileOGG::~FileOGG()
 	int i = 0;
 	if (tf) delete tf;
 	if (temp_frame) delete temp_frame;
-	if(stream) close_file();
-
+	if (stream) close_file();
+	if (flush_lock) delete flush_lock;
 }
 
 void FileOGG::get_parameters(BC_WindowBase *parent_window,
@@ -72,6 +76,7 @@ int FileOGG::reset_parameters_derived()
 	tf = 0;
 	temp_frame = 0;
 	stream = 0;
+	flush_lock = 0;
 }
 
 int FileOGG::open_file(int rd, int wr)
@@ -80,11 +85,8 @@ int FileOGG::open_file(int rd, int wr)
 	this->wr = wr;
 
 TRACE("FileOGG::open_file 10")
-	if (!tf)
-		tf = new theoraframes_info_t;
 	if(wr)
 	{
-
 TRACE("FileOGG::open_file 20")
 
 		if((stream = fopen(asset->path, "w+b")) == 0)
@@ -92,6 +94,8 @@ TRACE("FileOGG::open_file 20")
 			perror(_("FileOGG::open_file rdwr"));
 			return 1;
 		}
+		if (!tf)
+			tf = new theoraframes_info_t;
 
 		tf->audio_bytesout = 0;
 		tf->video_bytesout = 0;
@@ -101,7 +105,6 @@ TRACE("FileOGG::open_file 20")
 		tf->audiotime = 0;
 		/* yayness.  Set up Ogg output stream */
 		srand (time (NULL));
-		ogg_stream_init (&tf->vo, rand ());    
 
 		if(asset->video_data)
 		{
@@ -171,6 +174,7 @@ TRACE("FileOGG::open_file 20")
 		/* initialize Vorbis too, if we have audio. */
 		if(asset->audio_data)
 		{
+			ogg_stream_init (&tf->vo, rand ());    
 			vorbis_info_init (&tf->vi);
 			/* Encoding using a VBR quality mode.  */
 			int ret;
@@ -194,6 +198,7 @@ TRACE("FileOGG::open_file 20")
 				ret |= vorbis_encode_ctl(&tf->vi, OV_ECTL_RATEMANAGE_AVG, NULL);
 				ret |= vorbis_encode_setup_init(&tf->vi);
 			}
+
 			if (ret)
 			{
 				fprintf (stderr,
@@ -236,7 +241,8 @@ TRACE("FileOGG::open_file 20")
 			theora_encode_tables (&tf->td, &tf->op);
 			ogg_stream_packetin (&tf->to, &tf->op);
 		}
-		if(asset->audio_data){
+		if(asset->audio_data)
+		{
 			ogg_packet header;
 			ogg_packet header_comm;
 			ogg_packet header_code;
@@ -289,9 +295,9 @@ TRACE("FileOGG::open_file 20")
 			fwrite (tf->og.header, 1, tf->og.header_len, stream);
 			fwrite (tf->og.body, 1, tf->og.body_len, stream);
 		}
+		flush_lock = new Mutex("OGGFile::Flush lock");
 
-
-	}
+	} else
 	if (rd)
 		return 1;
 	return 0;
@@ -319,6 +325,7 @@ int FileOGG::close_file()
 			vorbis_dsp_clear (&tf->vd);
 			vorbis_comment_clear (&tf->vc);
 			vorbis_info_clear (&tf->vi);
+			ogg_stream_clear (&tf->vo);
 		}
 		if (asset->video_data)
 		{
@@ -327,7 +334,6 @@ int FileOGG::close_file()
 			theora_clear (&tf->td);
 
 		}
-		ogg_stream_clear (&tf->vo);
 		
 		if (stream) fclose(stream);
 		stream = 0;
@@ -364,22 +370,23 @@ int FileOGG::set_audio_position(int64_t x)
 int FileOGG::flush_ogg(int e_o_s)
 {
 	/* flush out the ogg pages to stream */
-
+// both audio and video thread call this procedure, be sure not to race
+	flush_lock->lock();
 	int flushloop=1;
 
 	while(flushloop)
 	{
-		int video = -1;
 		flushloop=0;
 		//some debuging 
 		//fprintf(stderr,"\ndiff: %f\n",info->audiotime-info->videotime);
 		while(asset->video_data && (e_o_s || 
-			((tf->videotime <= tf->audiotime || !asset->video_data) && tf->videoflag == 1)))
+			((tf->videotime <= tf->audiotime || !asset->audio_data) && tf->videoflag == 1)))
 		{
 		    
 			tf->videoflag = 0;
 			while(ogg_stream_pageout (&tf->to, &tf->videopage) > 0)
 			{
+				
 				tf->videotime=
 					theora_granule_time (&tf->td, ogg_page_granulepos(&tf->videopage));
 				/* flush a video page */
@@ -388,10 +395,6 @@ int FileOGG::flush_ogg(int e_o_s)
 				tf->video_bytesout +=
 					fwrite (tf->videopage.body, 1, tf->videopage.body_len, stream);
 	
-	//		    tf->vkbps = rint (tf->video_bytesout * 8. / tf->videotime * .001);
-
-	//		    print_stats(info, tf->videotime);
-				video=1;
 				tf->videoflag = 1;
 				flushloop=1;
 			}
@@ -404,18 +407,16 @@ int FileOGG::flush_ogg(int e_o_s)
 		{
 	
 			tf->audioflag = 0;
-			while(ogg_stream_pageout (&tf->vo, &tf->audiopage) > 0){    
+			while(ogg_stream_pageout (&tf->vo, &tf->audiopage) > 0)
+			{    
 				/* flush an audio page */
 				tf->audiotime=
-					vorbis_granule_time (&tf->vd, ogg_page_granulepos(&tf->audiopage));
+					vorbis_granule_time (&tf->vd, ogg_page_granulepos(&tf->audiopage) + 1);
 				tf->audio_bytesout +=
 					fwrite (tf->audiopage.header, 1, tf->audiopage.header_len, stream);
 				tf->audio_bytesout +=
 					fwrite (tf->audiopage.body, 1, tf->audiopage.body_len, stream);
 
-	//		    tf->akbps = rint (tf->audio_bytesout * 8. / tf->audiotime * .001);
-	//		    print_stats(info, tf->audiotime);
-				video=0;
 				tf->audioflag = 1;
 				flushloop=1;
 			}
@@ -423,6 +424,7 @@ int FileOGG::flush_ogg(int e_o_s)
 				break;
 		}
 	}
+	flush_lock->unlock();
 	return 0;
 }
 
@@ -436,22 +438,25 @@ int FileOGG::write_samples_vorbis(double **buffer, int64_t len, int e_o_s)
 	} else
 	{
 		vorbis_buffer = vorbis_analysis_buffer (&tf->vd, len);
-		/* uninterleave samples */
-		for(i = 0; i<asset->channels; i++){
-			for (j = 0; j < len; j++){
+		/* double to float conversion */
+		for(i = 0; i<asset->channels; i++)
+		{
+			for (j = 0; j < len; j++)
+			{
 				vorbis_buffer[i][j] = buffer[i][j];
 			}
 		}
 		vorbis_analysis_wrote (&tf->vd, len);
 	}
-	while(vorbis_analysis_blockout (&tf->vd, &tf->vb) == 1){
-	    
+	while(vorbis_analysis_blockout (&tf->vd, &tf->vb) == 1)
+	{
 	    /* analysis, assume we want to use bitrate management */
 	    vorbis_analysis (&tf->vb, NULL);
 	    vorbis_bitrate_addblock (&tf->vb);
 	    
 	    /* weld packets into the bitstream */
-	    while (vorbis_bitrate_flushpacket (&tf->vd, &tf->op)){
+	    while (vorbis_bitrate_flushpacket (&tf->vd, &tf->op))
+	    {
 		ogg_stream_packetin (&tf->vo, &tf->op);
 	    }
 
@@ -550,7 +555,7 @@ int FileOGG::write_frames_theora(VFrame ***frames, int len, int e_o_s)
 				0,
 				0,
 				frame->get_w(),  // temp_frame can be larger than frame if width not dividable by 16
-				frame->get_h(),	 // CHECK: does cmodel_transfer to 420 work in above situation ?
+				frame->get_h(),	
 				frame->get_color_model(),
 				BC_YUV420P,
 				0,
@@ -569,45 +574,6 @@ int FileOGG::write_frames(VFrame ***frames, int len)
 	
 	return write_frames_theora(frames, len, 0);
 }
-
-int FileOGG::colormodel_supported(int colormodel)
-{
-	return colormodel;
-}
-
-
-int FileOGG::get_best_colormodel(Asset *asset, int driver)
-{
-	switch(driver)
-	{
-		case PLAYBACK_X11:
-			return BC_RGB888;
-			break;
-		case PLAYBACK_X11_XV:
-			return BC_YUV422;
-			break;
-		case PLAYBACK_DV1394:
-		case PLAYBACK_FIREWIRE:
-			return BC_COMPRESSED;
-			break;
-		case PLAYBACK_LML:
-		case PLAYBACK_BUZ:
-			return BC_YUV422P;
-			break;
-		case VIDEO4LINUX:
-		case VIDEO4LINUX2:
-		case CAPTURE_BUZ:
-		case CAPTURE_LML:
-		case VIDEO4LINUX2JPEG:
-			return BC_YUV422;
-			break;
-		case CAPTURE_FIREWIRE:
-			return BC_COMPRESSED;
-			break;
-	}
-	return BC_RGB888;
-}
-
 
 OGGConfigAudio::OGGConfigAudio(BC_WindowBase *parent_window, Asset *asset)
  : BC_Window(PROGRAM_NAME ": Audio Compression",
