@@ -93,19 +93,44 @@ int VDeviceX11::close_all()
 
 	if(output && output_frame)
 	{
-// Why copy when we can just use it! 
-		if(output->refresh_frame)
+// We need to copy when the memory is shared, which is when bimap_type is primary
+		if (bitmap && bitmap_type == BITMAP_PRIMARY)
 		{
-			delete output->refresh_frame;
+			if(output->refresh_frame &&
+				(output->refresh_frame->get_w() != device->out_w ||
+				output->refresh_frame->get_h() != device->out_h ||
+				output->refresh_frame->get_color_model() != output_frame->get_color_model()))
+			{
+				delete output->refresh_frame;
+				output->refresh_frame = 0;
+			}
+
+			if(!output->refresh_frame)
+			{
+				output->refresh_frame = new VFrame(0,
+					device->out_w,
+					device->out_h,
+					output_frame->get_color_model());
+			}
+
+			output->refresh_frame->copy_from(output_frame);
+		}
+		else 
+		{
+			if(output->refresh_frame)
+				delete output->refresh_frame;
+
+			output->refresh_frame = output_frame;
+			output_frame = 0;
 		}
 
 		if(!device->single_frame)
 			output->stop_video();
 		else
 			output->stop_single();
-
-		output->refresh_frame = output_frame;
 		output->draw_refresh();
+
+
 	} else
 	{
 		if(bitmap)
