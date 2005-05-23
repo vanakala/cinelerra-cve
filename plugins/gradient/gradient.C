@@ -644,7 +644,6 @@ void GradientMain::update_gui()
 		if(load_configuration())
 		{
 			thread->window->lock_window("GradientMain::update_gui");
-			thread->window->angle->update(config.angle);
 			thread->window->rate->set_text(GradientRate::to_text(config.rate));
 			thread->window->in_radius->update(config.in_radius);
 			thread->window->out_radius->update(config.out_radius);
@@ -652,9 +651,9 @@ void GradientMain::update_gui()
 			if(thread->window->angle)
 				thread->window->angle->update(config.angle);
 			if(thread->window->center_x)
-				thread->window->angle->update(config.center_x);
+				thread->window->center_x->update(config.center_x);
 			if(thread->window->center_y)
-				thread->window->angle->update(config.center_y);
+				thread->window->center_y->update(config.center_y);
 			thread->window->update_in_color();
 			thread->window->update_out_color();
 			thread->window->update_shape();
