@@ -154,7 +154,8 @@ AC_SUBST(OPENEXR_LIBS)
 
 ############## LIBFAAD
 AC_CHECK_LIB(faad, faacDecInit, 
-    [AC_CHECK_HEADER(faad.h, [HAVE_FAAD=yes])],[AC_MSG_WARN([libfaad not found])])
+    [AC_CHECK_HEADER(faad.h, [HAVE_FAAD=yes])],
+    [AC_CHECK_LIB(faad, NeAACDecInit, [AC_CHECK_HEADER(faad.h, [HAVE_FAAD=yes])],[AC_MSG_WARN([libfaad not found])])])
 if test "x$HAVE_FAAD" = xyes; then
     FAAD_CFLAGS=
     FAAD_LIBS="-lfaad"
