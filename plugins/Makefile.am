@@ -73,6 +73,7 @@ SUBDIRS= \
 	rgb601 \
 	rotate \
 	scale \
+	seltempavg \
 	shapewipe \
 	sharpen \
 	shiftinterlace \
