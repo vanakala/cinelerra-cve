@@ -972,8 +972,13 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 			}
 
 			codec->encoder_context[current_field] = avcodec_alloc_context();
+#if LIBAVCODEC_BUILD  >=     4754
+			codec->encoder_context[current_field]->time_base.den = FRAME_RATE_BASE *
+				quicktime_frame_rate(file, track);
+#else
 			codec->encoder_context[current_field]->frame_rate = FRAME_RATE_BASE *
 				quicktime_frame_rate(file, track);
+#endif
 			codec->encoder_context[current_field]->width = width_i;
 			codec->encoder_context[current_field]->height = height_i;
 			codec->encoder_context[current_field]->gop_size = codec->gop_size;
