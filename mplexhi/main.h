@@ -447,7 +447,7 @@ extern int verbose;
 extern unsigned int which_streams;
 
 extern int packet_overhead;
-extern int rate_restriction_flag;
+/* extern int rate_restriction_flag; */
 /* extern int pack_header_size; */
 extern int sector_size;
 extern int mux_rate;
