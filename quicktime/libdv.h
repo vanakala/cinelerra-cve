@@ -13,13 +13,13 @@ extern "C" {
 #define DV_NTSC 0
 #define DV_PAL 1
 
+#include <libdv/dv.h>
+#include <pthread.h>
+#include <sys/time.h>
+
 #ifndef u_int64_t
 #define u_int64_t unsigned long long
 #endif
-
-#include "libdv/dv.h"
-#include <pthread.h>
-#include <sys/time.h>
 
 typedef struct
 {
