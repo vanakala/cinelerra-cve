@@ -41,7 +41,7 @@ public:
 	int paranoid;
 	int nosubtract;
 	int offset_restartmarker_keyframe;
-	int offset_fixed_value;
+	int64_t offset_fixed_value;
 	float gain;
 
 };
