@@ -506,7 +506,7 @@ asm(
 	*data++ = 0;
 
 #define STORE_PIXEL_RGB565 \
-	*((unsigned short*)data)++ = \
+	*(*(unsigned short**)(&data))++ = \
 		((CLIP(r_l) & 0xf8) << 8) | \
 		((CLIP(g_l) & 0xfc) << 3) | \
 		((CLIP(b_l) & 0xf8) >> 3);
@@ -538,7 +538,7 @@ int mpeg3video_ditherframe(mpeg3video_t *video,
 	int h = 0;
 	register unsigned char *y_in, *cb_in, *cr_in;
 	long y_l, r_l, b_l, g_l;
-	register unsigned char *data;
+	unsigned char *data;
 	register int uv_subscript, step, w = -1;
 
 
