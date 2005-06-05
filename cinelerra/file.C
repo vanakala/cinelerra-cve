@@ -390,9 +390,16 @@ int File::open_file(ArrayList<PluginServer*> *plugindb,
 				file = new FileTIFF(this->asset, this);
 			}
 			else
+			if(FileOGG::check_sig(this->asset))
+			{
+// OGG file
+				fclose(stream);
+				file = new FileOGG(this->asset, this);
+			}
+			else
 			if(FileVorbis::check_sig(this->asset))
 			{
-// MPEG file
+// OGG Vorbis file
 				fclose(stream);
 				file = new FileVorbis(this->asset, this);
 			}

@@ -43,6 +43,8 @@ void FileVorbis::get_parameters(BC_WindowBase *parent_window,
 
 int FileVorbis::check_sig(Asset *asset)
 {
+// FILEVORBIS DECODING IS DISABLED
+	return 0;
 	FILE *fd = fopen(asset->path, "rb");
 	OggVorbis_File vf;
 

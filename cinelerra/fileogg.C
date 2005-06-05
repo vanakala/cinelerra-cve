@@ -13,7 +13,7 @@
 #include "vframe.h"
 #include "videodevice.inc"
 #include "cmodel_permutation.h"
-
+#include "interlacemodes.h"
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -21,6 +21,8 @@
 #include <unistd.h>
 #include <string.h>
 #include <errno.h>
+
+#define READ_SIZE 66000
 
 /* This code was aspired by ffmpeg2theora */
 /* Special thanks for help on this code goes out to j@v2v.cc */
@@ -37,11 +39,34 @@ FileOGG::FileOGG(Asset *asset, File *file)
 
 FileOGG::~FileOGG()
 {
+	if (tf) 
+	{
 
-	int i = 0;
-	if (tf) delete tf;
+		if (tf->videosync) 
+		{
+			ogg_sync_clear(&tf->videosync->sync);
+			delete tf->videosync;
+			theora_info_clear(&tf->ti);
+			theora_comment_clear(&tf->tc);
+		}
+		if (tf->audiosync) 
+		{
+			ogg_sync_clear(&tf->audiosync->sync);
+			delete tf->audiosync;
+			vorbis_info_clear(&tf->vi);
+			vorbis_comment_clear(&tf->vc);
+		}
+		delete tf;
+	}
 	if (temp_frame) delete temp_frame;
 	if (stream) close_file();
+	if(pcm_history)
+	{
+		for(int i = 0; i < asset->channels; i++)
+			delete [] pcm_history[i];
+		delete [] pcm_history;
+	}
+
 	if (flush_lock) delete flush_lock;
 }
 
@@ -68,7 +93,6 @@ void FileOGG::get_parameters(BC_WindowBase *parent_window,
 		window->run_window();
 		delete window;
 	}
-
 }
 
 int FileOGG::reset_parameters_derived()
@@ -77,12 +101,99 @@ int FileOGG::reset_parameters_derived()
 	temp_frame = 0;
 	stream = 0;
 	flush_lock = 0;
+	pcm_history = 0;
+
 }
+
+int read_buffer(FILE *in, sync_window_t *sw, int buflen)
+{
+	char *buffer = ogg_sync_buffer(&sw->sync, buflen);
+//	printf("reading range: %lli - %lli\n", sw->file_bufpos, sw->file_bufpos + buflen);
+	sw->wlen = fread(buffer, 1, buflen, in);
+	ogg_sync_wrote(&sw->sync, sw->wlen);
+//	printf("XX data: %c %c %c %c\n", sw->sync.data[0], sw->sync.data[1], sw->sync.data[2], sw->sync.data[3]);
+	sw->file_bufpos += sw->wlen;
+//	printf("sb: %i\n",buffer);
+	return (sw->wlen);
+}
+
+int read_buffer_at(FILE *in, sync_window_t *sw, int buflen, off_t filepos)
+{
+//	printf("seeking to %lli %lli\n", filepos, sw->file_bufpos);
+	fseeko(in, filepos, SEEK_SET);
+//	if (sw->file_bufpos != filepos)
+//	{
+		sw->file_bufpos = filepos;
+		sw->file_pagepos = filepos; // this one is not valid until sync_pageseek!
+		ogg_sync_reset(&sw->sync);
+			
+//	}
+	return read_buffer(in, sw, buflen);
+}
+
+int take_page_out_autoadvance(FILE *in, sync_window_t *sw, ogg_page *og)
+{
+	while (1)
+	{
+		int ret = ogg_sync_pageout(&sw->sync, og);
+		if (ret > 0)
+		{
+//		printf("fpa: %lli\n", sw->file_pagepos);
+			sw->file_pagepos += og->header_len + og->body_len; // advance 'virtual' position
+//		printf("ret2: %i %i\n",ret, og->header_len + og->body_len); 
+			return ret;
+		}
+		else if (ret < 0)
+		{
+			printf("FileOGG: Taking page out on nonsynced stream!\n");
+			return ret;
+			
+		} else
+		{
+			// need more data for page
+			if (read_buffer(in, sw, READ_SIZE) == 0) 
+			{
+				printf("FileOGG: There is no more data in the file we are reading from\n");
+				return 0;  // No more data
+			}
+		}
+	}
+	
+}
+
+
+// we never need to autoadvance when syncing, since our read chunks are larger than 
+// maximum page size
+int sync_and_take_page_out(sync_window_t *sw, ogg_page *page)
+{
+	page->header_len = 0;
+	page->body_len = 0;
+	page->header = 0;
+	page->body = 0;
+	int ret = ogg_sync_pageseek(&sw->sync, page);
+	if (ret < 0)
+	{
+		sw->file_pagepos -= ret;
+	}
+	else if (ret > 0)
+	{
+		sw->file_pagepos += ret;
+//		printf("ret: %i %i\n",ret, page->header_len + page->body_len); 
+	}
+	return ret;
+}
+
 
 int FileOGG::open_file(int rd, int wr)
 {
 	this->rd = rd;
 	this->wr = wr;
+	if (!tf)
+	{
+		tf = new theoraframes_info_t;
+		tf->audiosync = 0;
+		tf->videosync = 0;
+	}
 
 TRACE("FileOGG::open_file 10")
 	if(wr)
@@ -94,8 +205,6 @@ TRACE("FileOGG::open_file 20")
 			perror(_("FileOGG::open_file rdwr"));
 			return 1;
 		}
-		if (!tf)
-			tf = new theoraframes_info_t;
 
 		tf->audio_bytesout = 0;
 		tf->video_bytesout = 0;
@@ -207,7 +316,7 @@ TRACE("FileOGG::open_file 20")
 				return 1;
 			}
 
-			vorbis_comment_init (&tf->vc);
+			vorbis_comment_init (&tf->vc); // comment is cleared lateron 
 			vorbis_comment_add_tag (&tf->vc, "ENCODER", PACKAGE_STRING);
 			/* set up the analysis state and auxiliary encoding storage */
 			vorbis_analysis_init (&tf->vd, &tf->vi);
@@ -237,7 +346,6 @@ TRACE("FileOGG::open_file 20")
 			theora_encode_comment (&tf->tc, &tf->op);
 			ogg_stream_packetin (&tf->to, &tf->op);
 			theora_comment_clear(&tf->tc);
-
 			theora_encode_tables (&tf->td, &tf->op);
 			ogg_stream_packetin (&tf->to, &tf->op);
 		}
@@ -249,8 +357,8 @@ TRACE("FileOGG::open_file 20")
 
 			vorbis_analysis_headerout (&tf->vd, &tf->vc, &header,
 				       &header_comm, &header_code);
-			ogg_stream_packetin (&tf->vo, &header);    /* automatically placed in its own
-						 * page */
+			ogg_stream_packetin (&tf->vo, &header);    /* automatically placed in its own page */
+			vorbis_comment_clear(&tf->vc);
 			if (ogg_stream_pageout (&tf->vo, &tf->og) != 1)
 			{
 				fprintf (stderr, "Internal Ogg library error.\n");
@@ -296,20 +404,868 @@ TRACE("FileOGG::open_file 20")
 			fwrite (tf->og.body, 1, tf->og.body_len, stream);
 		}
 		flush_lock = new Mutex("OGGFile::Flush lock");
-
+//		printf("End of headers at position: %lli\n", ftello(stream));
 	} else
 	if (rd)
-		return 1;
+	{
+		TRACE("FileOGG::open_file 30")
+		if((stream = fopen(asset->path, "rb")) == 0)
+		{
+			perror(_("FileOGG::open_file rdwr"));
+			return 1;
+		}
+		/* get file length */
+		struct stat file_stat;
+		stat(asset->path, &file_stat);
+		file_length = file_stat.st_size;
+		/* start up Ogg stream synchronization layer */
+		/* oy is used just here to parse header, we use separate syncs for video and audio*/
+		sync_window_t oy;
+		ogg_sync_init(&oy.sync);
+		// make sure we init the position structures to zero
+		read_buffer_at(stream, &oy, READ_SIZE, 0);
+
+		/* init supporting Vorbis structures needed in header parsing */
+		vorbis_info_init(&tf->vi);
+		vorbis_comment_init(&tf->vc);
+
+		/* init supporting Theora structures needed in header parsing */
+		theora_comment_init(&tf->tc);
+		theora_info_init(&tf->ti);
+
+		TRACE("FileOGG::open_file 40")
+
+		/* Ogg file open; parse the headers */
+		/* Only interested in Vorbis/Theora streams */
+		int stateflag = 0;
+		int theora_p = 0;
+		int vorbis_p = 0;
+		while(!stateflag)
+		{
+//			TRACE("FileOGG::open_file 50")
+
+//			int ret = read_buffer(stream, &oy, 4096);
+			TRACE("FileOGG::open_file 60")
+//			if(ret == 0)
+//				break;
+			
+			while(take_page_out_autoadvance(stream, &oy, &tf->og) > 0)
+			{
+				ogg_stream_state test;
+
+				/* is this a mandated initial header? If not, stop parsing */
+				if(!ogg_page_bos(&tf->og))
+				{
+					/* don't leak the page; get it into the appropriate stream */
+				//	queue_page(&tf->og);
+					if(theora_p)ogg_stream_pagein(&tf->to, &tf->og);
+					if(vorbis_p)ogg_stream_pagein(&tf->vo, &tf->og);
+				
+					stateflag = 1;
+					break;
+				}
+
+				ogg_stream_init(&test, ogg_page_serialno(&tf->og));
+				ogg_stream_pagein(&test, &tf->og);
+				ogg_stream_packetout(&test, &tf->op);
+
+				/* identify the codec: try theora */
+				if(!theora_p && theora_decode_header(&tf->ti, &tf->tc, &tf->op)>=0)
+				{
+					/* it is theora */
+					memcpy(&tf->to, &test, sizeof(test));
+					theora_p = 1;
+	// find out granule shift - from liboggz's oggz_auto.c
+					unsigned char * header = tf->op.packet;
+					theora_keyframe_granule_shift = (char) ((header[40] & 0x03) << 3);
+					theora_keyframe_granule_shift |= (header[41] & 0xe0) >> 5;
+
+				} else if(!vorbis_p && vorbis_synthesis_headerin(&tf->vi, &tf->vc, &tf->op)>=0)
+				{
+					/* it is vorbis */
+					memcpy(&tf->vo, &test, sizeof(test));
+					vorbis_p = 1;
+				} else 
+				{
+					/* whatever it is, we don't care about it */
+					ogg_stream_clear(&test);
+				}
+			}
+		/* fall through to non-bos page parsing */
+		}
+
+		/* we're expecting more header packets. */
+		while((theora_p && theora_p < 3) || (vorbis_p && vorbis_p < 3))
+		{
+			int ret;
+
+			/* look for further theora headers */
+			while(theora_p && (theora_p < 3) && (ret = ogg_stream_packetout(&tf->to, &tf->op)))
+			{
+				if(ret < 0)
+				{
+					fprintf(stderr,"FileOGG: Error parsing Theora stream headers; corrupt stream?\n");
+					return 1;
+				}
+				if(theora_decode_header(&tf->ti, &tf->tc, &tf->op))
+				{
+					printf("FileOGG: Error parsing Theora stream headers; corrupt stream?\n");
+					return 1;
+				}
+				theora_p++;
+				if(theora_p == 3) 
+					break;
+			}
+
+			/* look for more vorbis header packets */
+			while(vorbis_p && (vorbis_p < 3) && (ret = ogg_stream_packetout(&tf->vo, &tf->op)))
+			{
+				if(ret<0)
+				{
+					fprintf(stderr,"FileOGG: Error parsing Vorbis stream headers; corrupt stream?\n");
+					return 1;
+				}
+				if (vorbis_synthesis_headerin(&tf->vi, &tf->vc, &tf->op))
+				{
+					fprintf(stderr,"FileOGG: Error parsing Vorbis stream headers; corrupt stream?\n");
+					return 1;
+				}
+				vorbis_p++;
+				if (vorbis_p == 3)
+					break;
+			}
+
+			if (vorbis_p == 3 && theora_p == 3) 
+				break;
+			/* The header pages/packets will arrive before anything else we
+			    care about, or the stream is not obeying spec */
+
+			if(take_page_out_autoadvance(stream, &oy, &tf->og) > 0)
+			{
+//				queue_page(&tf->og); /* demux into the appropriate stream */
+				if(theora_p) ogg_stream_pagein(&tf->to, &tf->og);
+				if(vorbis_p) ogg_stream_pagein(&tf->vo, &tf->og);
+
+			} else
+			{
+				fprintf(stderr,"FileOGG: End of file while searching for codec headers.\n");
+				return 1;
+			}
+		}
+		// Remember where the real data begins for later seeking purposes
+		filedata_begin = oy.file_pagepos; 
+
+//printf("FileOGG::Data pages begin at %lli\n", filedata_begin);
+
+		/* and now we have it all.  initialize decoders */
+		if(theora_p)
+		{
+			int ret;
+
+// WORKAROUND for bug in alpha4 version of theora:
+			tf->td.internal_encode = 0;
+
+			ret = theora_decode_init(&tf->td, &tf->ti);
+			double fps = (double)tf->ti.fps_numerator/tf->ti.fps_denominator;
+/*			printf("FileOGG: Ogg logical stream %x is Theora %dx%d %.02f fps\n",
+				(unsigned int)tf->to.serialno, tf->ti.width, tf->ti.height, 
+				fps);
+*/
+/*
+Not yet available in alpha4, we assume 420 for now
+
+			switch(tf->ti.pixelformat)
+			{
+				case OC_PF_420: printf(" 4:2:0 video\n"); break;
+				case OC_PF_422: printf(" 4:2:2 video\n"); break;
+				case OC_PF_444: printf(" 4:4:4 video\n"); break;
+				case OC_PF_RSVD:
+				default:
+					printf(" video\n  (UNKNOWN Chroma sampling!)\n");
+				break;
+			}
+*/
+
+			theora_cmodel = BC_YUV420P;
+			
+			if(tf->ti.width!=tf->ti.frame_width || tf->ti.height!=tf->ti.frame_height)
+				printf("FileOGG::  Frame content is %dx%d with offset (%d,%d), We do not support this yet.\n",
+				tf->ti.frame_width, tf->ti.frame_height, tf->ti.offset_x, tf->ti.offset_y);
+
+			tf->videosync = new sync_window_t;
+			ogg_sync_init(&tf->videosync->sync);
+			tf->videosync->wlen = 0;
+
+			ret = ogg_get_first_page(tf->videosync, tf->to.serialno, &tf->videopage);
+			ogg_packet op;
+
+			// we have headers already decoded, so just skip them
+			ogg_stream_reset(&tf->to);
+			ogg_stream_pagein(&tf->to, &tf->videopage);
+			while (1)
+			{
+				while (ogg_stream_packetpeek(&tf->to, NULL) != 1)
+				{
+					if (!ogg_get_next_page(tf->videosync, tf->to.serialno, &tf->videopage))
+					{
+						printf("FileOGG: Cannot find next page while looking for first non-header packet\n");
+						return 1;
+					}
+					ogg_stream_pagein(&tf->to, &tf->videopage);
+				}
+				ogg_stream_packetout(&tf->to, &op);
+				if (!theora_packet_isheader(&op))
+					break;
+			}
+			// now get to the page of the finish of the first packet
+			while (ogg_page_packets(&tf->videopage) == 0) 
+			{
+				if (ogg_page_granulepos(&tf->videopage) != -1)
+				{
+					printf("FileOGG: Broken ogg file - broken page: ogg_page_packets == 0 and granulepos != -1\n");
+					return 1;
+				}
+				ogg_get_next_page(tf->videosync, tf->to.serialno, &tf->videopage);
+			}
+			// FIXME - LOW PRIORITY - start counting at first decodable keyframe!
+			// but then we have to fix a/v sync somehow
+			start_frame = (int64_t) (theora_granule_frame (&tf->td, ogg_page_granulepos(&tf->videopage)) - ogg_page_packets(&tf->videopage)) + 1;
+
+			ret = ogg_get_last_page(tf->videosync, tf->to.serialno, &tf->videopage);
+			last_frame = (int64_t) (theora_granule_frame (&tf->td, ogg_page_granulepos(&tf->videopage)));
+			asset->video_length = last_frame - start_frame + 1;
+//			printf("FileOGG:: first frame: %lli, last frame: %lli, video length: %lli\n", start_frame, last_frame, asset->video_length);
+			
+			asset->layers = 1;
+			// FIXME - LOW PRIORITY Cinelerra does not honor the frame_width and frame_height
+			asset->width = tf->ti.width;
+			asset->height = tf->ti.height;
+// Don't want a user configured frame rate to get destroyed
+			if(!asset->frame_rate)
+				asset->frame_rate = fps;
+// All theora material is noninterlaced by definition
+			if(!asset->interlace_mode)
+				asset->interlace_mode = BC_ILACE_MODE_NOTINTERLACED;
+
+	/*		ogg_get_page_of_frame(tf->videosync, tf->to.serialno, &og, 0 +start_frame);
+			ogg_get_page_of_frame(tf->videosync, tf->to.serialno, &og, 1 +start_frame);
+			ogg_get_page_of_frame(tf->videosync, tf->to.serialno, &og, 5 +start_frame);
+			ogg_get_page_of_frame(tf->videosync, tf->to.serialno, &og, 206 +start_frame);
+			ogg_get_page_of_frame(tf->videosync, tf->to.serialno, &og, 207 +start_frame);
+			ogg_get_page_of_frame(tf->videosync, tf->to.serialno, &og, 208 +start_frame);
+
+			int64_t kf;
+			ogg_seek_to_keyframe(tf->videosync, tf->to.serialno, 0 + start_frame, &kf);
+			ogg_seek_to_keyframe(tf->videosync, tf->to.serialno, 1 + start_frame, &kf);
+			ogg_seek_to_keyframe(tf->videosync, tf->to.serialno, 5 + start_frame, &kf);
+			ogg_seek_to_keyframe(tf->videosync, tf->to.serialno, 66 + start_frame, &kf);
+			//printf("Keyframe: %lli\n", kf);
+			ogg_seek_to_keyframe(tf->videosync, tf->to.serialno, 1274 + start_frame, &kf);
+*/
+	
+			set_video_position(0); // make sure seeking is done to the first sample
+			ogg_frame_position = -10;
+			asset->video_data = 1;
+			strncpy(asset->vcodec, "theo", 4);
+
+
+//		    report_colorspace(&ti);
+//		    dump_comments(&tc);
+		} else 
+		{
+			/* tear down the partial theora setup */
+			theora_info_clear(&tf->ti);
+			theora_comment_clear(&tf->tc);
+		}
+		if(vorbis_p)
+		{
+			vorbis_synthesis_init(&tf->vd, &tf->vi);
+			vorbis_block_init(&tf->vd, &tf->vb);
+/*			fprintf(stderr,"FileOGG: Ogg logical stream %x is Vorbis %d channel %d Hz audio.\n",
+				(unsigned int)tf->vo.serialno, tf->vi.channels, (int)tf->vi.rate);
+*/			
+			/* init audio_sync structure */
+			tf->audiosync = new sync_window_t;
+			ogg_sync_init(&tf->audiosync->sync);
+			tf->audiosync->wlen = 0;
+
+			int ret2 = ogg_get_first_page(tf->audiosync, tf->vo.serialno, &tf->audiopage);
+			int result;
+			ogg_packet op;
+			ogg_stream_reset(&tf->vo);
+			// FIXME - LOW PRIORITY should be getting pages until one has granulepos, probably never happens in pracitce
+			ogg_stream_pagein(&tf->vo, &tf->audiopage);
+			ogg_int64_t accumulated = 0;
+			long        lastblock = -1;
+			while((result = ogg_stream_packetout(&tf->vo, &op)))
+			{
+				if(result > 0)
+				{ // ignore holes 
+					long thisblock =  vorbis_packet_blocksize(&tf->vi, &op);
+					if(lastblock != -1)
+						accumulated += (lastblock + thisblock) >> 2;
+					lastblock = thisblock;
+				}
+			}
+			start_sample = ogg_page_granulepos(&tf->audiopage) - accumulated;
+/*
+			printf("Begin: %lli, To byte: %lli,  granule: %lli, serialno: %x\n", 
+					tf->audiosync->file_pagepos_found,
+					tf->audiosync->file_pagepos_found + tf->audiopage.body_len + tf->audiopage.header_len,
+					ogg_page_granulepos(&tf->audiopage), 
+					ogg_page_serialno(&tf->audiopage));
+			while (ogg_get_next_page(tf->audiosync, tf->vo.serialno, &tf->audiopage))
+				printf("At byte: %lli, To byte: %lli,  granule: %lli, serialno: %x\n", 
+					tf->audiosync->file_pagepos_found,
+					tf->audiosync->file_pagepos_found + tf->audiopage.body_len + tf->audiopage.header_len,
+					ogg_page_granulepos(&tf->audiopage), 
+					ogg_page_serialno(&tf->audiopage));
+*/
+
+			int ret = ogg_get_last_page(tf->audiosync, tf->vo.serialno, &tf->audiopage);
+			last_sample = ogg_page_granulepos(&tf->audiopage);
+			asset->audio_length = last_sample - start_sample;
+						
+/*			printf("FileOGG:: First sample: %lli, last_sample: %lli\n", start_sample, last_sample);
+			printf("FileOGG:: audio length: samples: %lli, playing time: %f\n", asset->audio_length, 1.0 * asset->audio_length / tf->vi.rate);
+*/			
+/*			printf("End: %lli, To byte: %lli,  granule: %lli, serialno: %x\n", 
+					tf->audiosync->file_pagepos_found,
+					tf->audiosync->file_pagepos_found + tf->audiopage.body_len + tf->audiopage.header_len,
+					ogg_page_granulepos(&tf->audiopage), 
+					ogg_page_serialno(&tf->audiopage));
+			while (ogg_get_prev_page(tf->audiosync, tf->vo.serialno, &tf->audiopage))
+				printf("At byte: %lli, To byte: %lli,  granule: %lli, serialno: %x\n", 
+					tf->audiosync->file_pagepos_found,
+					tf->audiosync->file_pagepos_found + tf->audiopage.body_len + tf->audiopage.header_len,
+					ogg_page_granulepos(&tf->audiopage), 
+					ogg_page_serialno(&tf->audiopage));
+*/
+			
+/*			ogg_get_page_of_sample(tf->audiosync, tf->vo.serialno, &tf->audiopage, 0);
+			ogg_get_page_of_sample(tf->audiosync, tf->vo.serialno, &tf->audiopage, 1);
+			ogg_get_page_of_sample(tf->audiosync, tf->vo.serialno, &tf->audiopage, 50);
+			ogg_get_page_of_sample(tf->audiosync, tf->vo.serialno, &tf->audiopage, 5000);
+			ogg_get_page_of_sample(tf->audiosync, tf->vo.serialno, &tf->audiopage, 30000);
+			ogg_get_page_of_sample(tf->audiosync, tf->vo.serialno, &tf->audiopage, 50000);
+			ogg_get_page_of_sample(tf->audiosync, tf->vo.serialno, &tf->audiopage, 90000);
+			ogg_get_page_of_sample(tf->audiosync, tf->vo.serialno, &tf->audiopage, 95999);
+			ogg_get_page_of_sample(tf->audiosync, tf->vo.serialno, &tf->audiopage, 96000);
+			ogg_seek_to_sample(tf->audiosync, tf->vo.serialno, 0);
+			ogg_seek_to_sample(tf->audiosync, tf->vo.serialno, 1);
+			ogg_seek_to_sample(tf->audiosync, tf->vo.serialno, 5000);
+			ogg_seek_to_sample(tf->audiosync, tf->vo.serialno, 30000);
+			ogg_seek_to_sample(tf->audiosync, tf->vo.serialno, 50000);
+			ogg_seek_to_sample(tf->audiosync, tf->vo.serialno, 90000);
+			ogg_seek_to_sample(tf->audiosync, tf->vo.serialno, 95999);
+			ogg_seek_to_sample(tf->audiosync, tf->vo.serialno, 96000);
+*/			
+			asset->channels = tf->vi.channels;
+			if(!asset->sample_rate)
+				asset->sample_rate = tf->vi.rate;
+			asset->audio_data = 1;
+			
+
+			ogg_sample_position = -10;
+			set_audio_position(0); // make sure seeking is done to the first sample
+			strncpy(asset->acodec, "vorb", 4);
+
+
+		} else 
+		{
+			/* tear down the partial vorbis setup */
+			vorbis_info_clear(&tf->vi);
+			vorbis_comment_clear(&tf->vc);
+		}
+		ogg_sync_clear(&oy.sync);
+	}
 	return 0;
 }
 
+int FileOGG::ogg_get_prev_page(sync_window_t *sw, long serialno, ogg_page *og)
+{
+	char *buffer;
+	ogg_page page;
+	off_t filepos = sw->file_pagepos_found - READ_SIZE;
+	int first_page_offset = 0;
+	int done = 0;	
+	int read_len = READ_SIZE;
+
+//	printf("fp: %lli pagepos found: %lli\n", filepos, sw->file_pagepos_found);
+	while (!done)
+	{
+		if (filepos < 0)
+		{
+//			read_len = read_len - (filedata_begin - filepos);
+			read_len = read_len + filepos;
+			filepos = 0;
+		}
+		if (read_len <= 0) 
+			return 0;
+		int have_read = read_buffer_at(stream, sw, read_len, filepos);
+		
+//		printf("reading at %lli, len: %i, read: %i, pagepos: %lli, pageposfound: %lli\n", filepos, read_len, have_read, sw->file_pagepos, sw->file_pagepos_found);
+//		printf("Buffer position: %lli\n", sw->file_bufpos);
+//		printf("SS: storage: %i, fill: %i, returned: %i\n", sw->sync.storage, sw->sync.fill, sw->sync.returned);
+//		printf("US: unsynced%i, headrebytes: %i, bodybyes: %i\n", sw->sync.unsynced, sw->sync.headerbytes, sw->sync.bodybytes);
+//		printf("data: %c %c %c %c\n", sw->sync.data[0], sw->sync.data[1], sw->sync.data[2], sw->sync.data[3]);
+		if (!have_read) 
+			return 0;
+		
+// read all pages in the buffer
+		int page_offset = 0;
+		int page_length = 0;
+		int first_page = 1;
+		while (first_page || page_length) 
+		{
+			// if negative, skip bytes
+			while ((page_length = sync_and_take_page_out(sw, &page)) < 0)
+			{
+				page_offset -= page_length;
+						
+//				if (filepos == 0)
+//					printf("BBBb page_len: %i\n", page_length);
+			}
+//			if (filepos == 0 && page_length)
+//			{
+//				printf("AAAAAAAAAAAAAAAAAAAAAAAAAaaa\n");
+//				printf("pp: %lli %x\n", sw->file_pagepos, ogg_page_serialno(&page));
+//			}
+			if (first_page)
+				first_page_offset = page_offset;
+			first_page = 0;
+//			printf("pl: %i, serial: %x iscem: %x\n", page_length, ogg_page_serialno(&page), serialno);
+			if (page_length && ogg_page_serialno(&page) == serialno)
+			{
+				// we will copy every page until last page in this buffer
+				done = 1;
+				
+				sw->file_pagepos_found = sw->file_pagepos - page.header_len - page.body_len;
+//				printf("got it : %lli %i %i\n", sw->file_pagepos, page.header_len, page.body_len);
+				memcpy(og, &page, sizeof(page));
+			}
+		}
+		off_t old_filepos = filepos;
+//		printf("fpo: %i\n", first_page_offset);
+		filepos = filepos + first_page_offset - READ_SIZE;
+	}
+	
+//	printf("finished\n");
+	if (done) 
+		return 1;
+	else 
+		return 0;
+}
+
+int FileOGG::ogg_get_last_page(sync_window_t *sw, long serialno, ogg_page *og)
+{
+	char *buffer;
+	ogg_page page;
+	off_t filepos = file_length - READ_SIZE;
+	if (filepos < 0) 
+		filepos = 0;
+
+	int first_page_offset = 0;
+	int done = 0;	
+	while (!done && filepos >= 0)
+	{
+		int readlen;
+		readlen = read_buffer_at(stream, sw, READ_SIZE, filepos);
+
+// read all pages in the buffer
+		int page_offset = 0;
+		int page_length = 0;
+		int first_page = 1;
+		while (first_page || page_length) 
+		{
+			// if negative, skip bytes
+			while ((page_length = sync_and_take_page_out(sw, &page)) < 0)
+					page_offset -= page_length;
+			if (first_page)
+				first_page_offset = page_offset;
+			first_page = 0;
+			if (page_length && ogg_page_serialno(&page) == serialno)
+			{
+				// we will copy every page until last page in this buffer
+				done = 1;
+				sw->file_pagepos_found = sw->file_pagepos - page.header_len - page.body_len;
+				memcpy(og, &page, sizeof(page));
+			}
+		}
+		filepos = filepos + first_page_offset - READ_SIZE;		
+	}
+	
+	if (done) 
+		return 1;
+	else 
+		return 0;
+}
+
+int FileOGG::ogg_get_first_page(sync_window_t *sw, long serialno, ogg_page *og)
+{
+//	printf("FileOGG:: Seeking to first page at %lli\n", filedata_begin);
+	read_buffer_at(stream, sw, READ_SIZE, 0);
+// we don't even need to sync since we _know_ it is right
+	return (ogg_get_next_page(sw, serialno, og));
+}
+
+int FileOGG::ogg_get_next_page(sync_window_t *sw, long serialno, ogg_page *og)
+{
+	while (take_page_out_autoadvance(stream, sw, og) > 0)
+	{ 
+		if (ogg_page_serialno(og) == serialno)
+		{
+			sw->file_pagepos_found = sw->file_pagepos - og->header_len - og->body_len;
+			return 1;
+		}
+	}
+	return 0;
+}
+
+int FileOGG::ogg_sync_and_get_next_page(sync_window_t *sw, long serialno, ogg_page *og)
+{
+// TODO: Put better error reporting inhere
+	int ret;
+	while ((ret = sync_and_take_page_out(sw, og)) < 0)
+	{
+		// do nothing;
+	}
+	if (ret == 0) 
+		return 0;
+	if (ogg_page_serialno(og) == serialno)
+	{
+		sw->file_pagepos_found = sw->file_pagepos - og->header_len - og->body_len;
+		return 1;
+	}
+	while (ogg_get_next_page(sw, serialno, og))
+		if (ogg_page_serialno(og) == serialno)
+		{
+			sw->file_pagepos_found = sw->file_pagepos - og->header_len - og->body_len;
+			return 1;
+		}
+	
+	return 0;
+}
+// Returns:
+// >= 0, number of sample within a page
+// <  0 error
+int FileOGG::ogg_get_page_of_sample(sync_window_t *sw, long serialno, ogg_page *og, int64_t sample)
+{
+// First make an educated guess about position
+	if (sample >= asset->audio_length + start_sample)
+	{
+		printf("FileOGG: Illegal seek beyond end of samples\n");
+		return 0;
+	}
+	off_t educated_guess = filedata_begin + (file_length - filedata_begin) * (sample - start_sample) / asset->audio_length - READ_SIZE;
+	if (educated_guess < 0) 
+		educated_guess = 0;
+//	printf("My educated guess: %lli\n", educated_guess); 
+// now see if we won
+	read_buffer_at(stream, sw, READ_SIZE, educated_guess);
+	ogg_sync_and_get_next_page(sw, serialno, og);
+	int64_t end_sample = ogg_page_granulepos(og);
+	// linear seek to the sample
+	int64_t start_sample = 0;
+// TODO: Use bisection also
+//	printf("Next page granulepos: %lli, pagepos: %lli\n", end_sample, sw->file_pagepos_found);
+	if (end_sample <= sample)
+	{
+	// scan forward
+		while (end_sample <= sample)
+		{
+			ogg_get_next_page(sw, serialno, og); 
+			start_sample = end_sample;
+			end_sample = ogg_page_granulepos(og);
+		}
+		ogg_get_prev_page(sw, serialno, og);
+	} else
+	{
+	// scan backward
+		start_sample = end_sample;
+		while (start_sample > sample)
+		{
+//			printf("get prev page: %lli pagepos:%lli\n", ogg_page_granulepos(og), sw->file_pagepos_found);
+			ogg_get_prev_page(sw, serialno, og);
+			end_sample = start_sample;
+			start_sample = ogg_page_granulepos(og);
+		}
+	// go forward one page at the end
+
+	}
+	
+//	printf("For sample %lli we need to start decoding on page with granulepos: %lli\n", sample, ogg_page_granulepos(og));
+	return 1;
+}
+
+// seeks, so next sample returned will be the correct one
+// sample here is still the vorbis sample number (= cinelerra sample number + start_sample)
+// reinits the decoding engine
+
+int FileOGG::ogg_seek_to_sample(sync_window_t *sw, long serialno, int64_t sample)
+{
+	// MAYBE FIXME - find out if we really are decoding previous two packets or not
+	// get to the sample
+	ogg_page og;
+	ogg_packet op;
+//	printf("Calling get page of sample\n");
+	if (!ogg_get_page_of_sample(sw, serialno, &og, sample))
+	{
+		printf("FileOGG: Seeking to sample's page failed\n");
+		return 0;
+	}
+//	printf("Pagepos: %lli\n", sw->file_pagepos);
+	vorbis_synthesis_restart(&tf->vd);
+	ogg_stream_reset(&tf->vo);
+	ogg_stream_pagein(&tf->vo, &og);
+	int sync = 0;
+//	printf("seeking to sample : %lli , starting at page with gpos: %lli\n", sample, ogg_page_granulepos(&og));
+	
+	int64_t current_comming_sample = -1;
+	while (1) 
+	{
+	
+		// make sure we have a packet ready
+		while (ogg_stream_packetpeek(&tf->vo, NULL) != 1)
+		{
+			if (!ogg_get_next_page(sw, serialno, &og))
+			{
+				printf("FileOGG: Cannot find next page while seeking\n");
+				return 0;
+			}
+			ogg_stream_pagein(&tf->vo, &og);
+		}
+		ogg_stream_packetout(&tf->vo, &op);
+		if (sync)
+		{
+			
+			if(!vorbis_synthesis(&tf->vb, &op))
+			{
+				int ret= vorbis_synthesis_blockin(&tf->vd, &tf->vb);
+				int64_t previous_comming_sample = current_comming_sample;
+				current_comming_sample += vorbis_synthesis_pcmout(&tf->vd, NULL);
+				if (current_comming_sample > sample)
+				{
+					vorbis_synthesis_read(&tf->vd, (sample - previous_comming_sample));
+//					printf("WE GOT IT, samples already decoded: %li\n", vorbis_synthesis_pcmout(&tf->vd,NULL));
+					return 1; // YAY next sample read is going to be ours, sexy!
+				} else
+				{
+					// discard decoded data before current sample
+					vorbis_synthesis_read(&tf->vd, (current_comming_sample - previous_comming_sample));
+					
+				}
+ 			}
+		}
+		if (!sync && op.granulepos >= 0)
+		{
+			sync = 1;
+			current_comming_sample = op.granulepos;
+			if(!vorbis_synthesis(&tf->vb, &op))
+			{
+				vorbis_synthesis_blockin(&tf->vd, &tf->vb);
+				if (vorbis_synthesis_pcmout(&tf->vd, NULL) != 0)
+				{
+					printf("FileOGG: Something wrong while trying to seek\n");
+					return 0;
+				}
+			
+			}
+			
+		}
+	}
+	
+	
+	return 0;
+}
+
+int FileOGG::ogg_get_page_of_frame(sync_window_t *sw, long serialno, ogg_page *og, int64_t frame)
+{
+	if (frame >= asset->video_length + start_frame)
+	{
+		printf("FileOGG: Illegal seek beyond end of frames\n");
+		return 0;
+	}
+//	printf("frame: %lli start frame: %lli\n", frame, start_frame);
+//	printf("file_length: %lli filedata_begin: %lli\n", file_length, filedata_begin);
+	off_t educated_guess = filedata_begin + (file_length - filedata_begin) * (frame - start_frame) / asset->video_length - READ_SIZE/2;
+//	educated_guess += 100000;
+	if (educated_guess > file_length - READ_SIZE)
+		educated_guess = file_length - READ_SIZE;
+	if (educated_guess < filedata_begin) 
+		educated_guess = filedata_begin;
+//	printf("My educated guess: %lli\n", educated_guess); 
+// now see if we won
+	read_buffer_at(stream, sw, READ_SIZE, educated_guess);
+	ogg_sync_and_get_next_page(sw, serialno, og);
+	int64_t pageend_frame;
+	int read_back = 0;
+	// find the page with "real" ending
+	while ((pageend_frame = ogg_page_granulepos(og)) == -1)
+	{
+		if (ogg_get_next_page(sw, serialno, og) == 0) 
+		{
+			read_back = 1;
+			break;
+		} 
+	}
+	pageend_frame = theora_granule_frame(&tf->td, ogg_page_granulepos(og));
+
+	// FIXME - MEDIUM PRIORITY: read back if we've gone too far and no page of our serialno at all can be found
+
+	
+	// linear seek to the sample
+	int64_t start_frame = 0;
+// TODO: Use bisection also
+//	printf("Next page granulepos: %lli, pagepos: %lli\n", end_sample, sw->file_pagepos_found);
+	int discard_packets = 0;
+	int missp = 0;
+	int missm = 0;
+	if (pageend_frame <= frame)
+	{
+	// scan forward
+		while (pageend_frame < frame)
+		{
+			do {
+				ogg_get_next_page(sw, serialno, og); 
+			} while (ogg_page_packets(og) == 0);
+			pageend_frame = theora_granule_frame(&tf->td, ogg_page_granulepos(og));
+			missp++;
+		}
+		// go back if this frame starts on previous page
+		if (ogg_page_continued(og) && pageend_frame - ogg_page_packets(og) == frame - 1)
+		{
+			do {
+				ogg_get_prev_page(sw, serialno, og); 
+			} while (ogg_page_packets(og) == 0 && ogg_page_continued(og));		
+		}
+		pageend_frame = theora_granule_frame(&tf->td, ogg_page_granulepos(og));
+	} else
+	{
+	// scan backward
+		int64_t first_frame_on_page = theora_granule_frame(&tf->td, ogg_page_granulepos(og)) - ogg_page_packets(og) + 2;
+		if (!ogg_page_continued(og))
+			first_frame_on_page--;
+		while (first_frame_on_page > frame)
+		{
+//			printf("get prev page: %lli pagepos:%lli\n", ogg_page_granulepos(og), sw->file_pagepos_found);
+			do {
+				ogg_get_prev_page(sw, serialno, og); 
+			} while (ogg_page_packets(og) == 0 && ogg_page_continued(og));		
+			missm++;
+//			pageend_frame = theora_granule_frame(&tf->td, ogg_page_granulepos(og));
+			first_frame_on_page = theora_granule_frame(&tf->td, ogg_page_granulepos(og)) - ogg_page_packets(og) + 2;
+			if (!ogg_page_continued(og))
+				first_frame_on_page--;
+		}
+	}
+//	printf("Miss plus: %i, miss minus: %i\n", missp, missm);
+//	printf("last frame of page with frame : %lli\n", pageend_frame);
+	return 1;			
+}
+
+
+int FileOGG::ogg_seek_to_keyframe(sync_window_t *sw, long serialno, int64_t frame, int64_t *keyframe_number)
+{
+	ogg_page og;
+	ogg_packet op;
+//	printf("Searching for the proper position to start decoding frame %lli\n", frame);
+	if (!ogg_get_page_of_frame(sw, serialno, &og, frame))
+	{
+		printf("FileOGG: Seeking to frame failed\n");
+		return 0;
+	}
+	// TODO: if the frame we are looking for continoues on the next page, we don't need to do this
+	// Now go to previous page in order to find out the granulepos
+	// Don't do it in case this is the first page.
+//	printf("GP: %lli\n", ogg_page_granulepos(&og));
+	int64_t granulepos, iframe, pframe;
+	granulepos = ogg_page_granulepos(&og);
+	iframe = granulepos >> theora_keyframe_granule_shift;
+	pframe = granulepos - (iframe << theora_keyframe_granule_shift);
+	// check if maybe iframe is known from this page already
+	if (granulepos != -1 && iframe <= frame)
+	{
+		// optimisation, iframe is already known from this page
+	} else
+	{
+		// get previous page so we will get the iframe number 
+		do {
+			ogg_get_prev_page(sw, serialno, &og); 
+		} while (ogg_page_packets(&og) == 0);		
+
+		granulepos = ogg_page_granulepos(&og);
+		iframe = granulepos >> theora_keyframe_granule_shift;
+		pframe = granulepos - (iframe << theora_keyframe_granule_shift);
+	}
+	int64_t first_frame_on_page = theora_granule_frame(&tf->td, ogg_page_granulepos(&og)) - ogg_page_packets(&og) + 2;
+	if (!ogg_page_continued(&og))
+		first_frame_on_page--;
+	if (first_frame_on_page <= iframe)
+	{
+		// optimisation, happens mainly in low-bitrate streams, it spares us one seek
+	} else
+	{
+		// get the page where keyframe starts
+		if (!ogg_get_page_of_frame(sw, serialno, &og, iframe))
+		{
+			printf("FileOGG: Seeking to keyframe failed\n");
+			return 0;
+		}
+	}		
+//	printf("looking for frame: %lli, last frame of the page: %lli, last keyframe: %lli\n", frame, pframe+iframe, iframe);
+	ogg_stream_reset(&tf->to);
+	ogg_stream_pagein(&tf->to, &og);
+	// Read until one frame before keyframe
+//	printf("c: %i\n", ogg_page_continued(&og));
+	int numread = iframe - (theora_granule_frame(&tf->td, ogg_page_granulepos(&og)) - ogg_page_packets(&og)) - 1;
+	if (ogg_page_continued(&og))
+		numread--;
+//	printf("numread: %i\n", numread);
+//	printf("FileOGG:: Proper position: %lli\n", theora_granule_frame(&tf->td, ogg_page_granulepos(&og)) + numread - ogg_page_packets(&og));
+	while (numread > 0)
+	{
+		while (ogg_stream_packetpeek(&tf->to, NULL) != 1)
+		{
+			if (!ogg_get_next_page(sw, serialno, &og))
+			{
+				printf("FileOGG: Cannot find next page while seeking\n");
+				return 0;
+			}
+			ogg_stream_pagein(&tf->to, &og);
+		}
+		ogg_stream_packetout(&tf->to, &op);
+		numread --;
+	}
+	*keyframe_number = iframe;
+	return 1;
+}
+
+
 int FileOGG::check_sig(Asset *asset)
 {
+	FILE *fd = fopen(asset->path, "rb");
+// Test for "OggS"
+	fseek(fd, 0, SEEK_SET);
+	char data[4];
+	fread(data, 4, 1, fd);
+	if(data[0] == 'O' &&
+		data[1] == 'g' &&
+		data[2] == 'g' &&
+		data[3] == 'S')
+	{
+		fclose(fd);
+		printf("Yay, we have an ogg file\n");
+		return 1;
+	}
+	fclose(fd);
 	return 0;
+	
 }
 
 int FileOGG::close_file()
 {
+
 	if (wr)
 	{
 		if (asset->audio_data)
@@ -318,12 +1274,11 @@ int FileOGG::close_file()
 			write_frames_theora(0, 1, 1); // set eos
 
 		flush_ogg(1); // flush all
-		
+	
 		if (asset->audio_data)
 		{
 			vorbis_block_clear (&tf->vb);
 			vorbis_dsp_clear (&tf->vd);
-			vorbis_comment_clear (&tf->vc);
 			vorbis_info_clear (&tf->vi);
 			ogg_stream_clear (&tf->vo);
 		}
@@ -332,12 +1287,34 @@ int FileOGG::close_file()
 			theora_info_clear (&tf->ti);
 			ogg_stream_clear (&tf->to);
 			theora_clear (&tf->td);
-
 		}
 		
 		if (stream) fclose(stream);
 		stream = 0;
-	}	
+	} else if (rd) 
+	{	
+		if (asset->audio_data)
+		{
+			vorbis_block_clear (&tf->vb);
+			vorbis_dsp_clear (&tf->vd);
+			vorbis_comment_clear (&tf->vc);
+			vorbis_info_clear (&tf->vi);
+			ogg_stream_clear (&tf->vo);
+		}
+		theora_comment_clear(&tf->tc);
+		if (asset->video_data)
+		{
+			theora_info_clear (&tf->ti);
+			theora_comment_clear (&tf->tc);
+			theora_clear (&tf->td);
+			ogg_stream_clear (&tf->to);
+		}
+		
+			
+		if (stream) fclose(stream);
+		stream = 0;
+
+	}
 }
 
 int FileOGG::close_file_derived()
@@ -349,23 +1326,356 @@ int FileOGG::close_file_derived()
 
 int64_t FileOGG::get_video_position()
 {
-	return 0;
+//	printf("GVP\n");
+	return next_frame_position - start_frame;
 }
 
 int64_t FileOGG::get_audio_position()
 {
-	return 0;
+	return next_sample_position - start_sample;
 }
 
 int FileOGG::set_video_position(int64_t x)
 {
+//	x=0;
+//	printf("SVP: %lli\n", x);
+	
+	next_frame_position = x + start_frame;
+	return 1;
+}
+
+
+int FileOGG::colormodel_supported(int colormodel)
+{
+//	printf("CMS\n");
+
+	if (colormodel == BC_YUV420P)
+		return BC_YUV420P;
+	else
+		return colormodel;
+}
+int FileOGG::get_best_colormodel(Asset *asset, int driver)
+{
+
+	return BC_YUV420P;
+}
+
+
+int FileOGG::read_frame(VFrame *frame)
+{
+
+	if(!stream) return 1;
+
+	
+	// skip is cheaper than seek, do it...
+	int decode_frames = 0;
+	int expect_keyframe = 0;
+	if (ogg_frame_position >= 0 && 
+	    next_frame_position >= ogg_frame_position && 
+	    next_frame_position - ogg_frame_position < 32)
+	{
+		decode_frames = next_frame_position - ogg_frame_position;
+	} else
+	if (next_frame_position != ogg_frame_position)
+	{
+		if (!ogg_seek_to_keyframe(tf->videosync, tf->to.serialno, next_frame_position, &ogg_frame_position))
+		{
+			printf("FileOGG:: Error while seeking to frame's keyframe (frame: %lli, keyframe: %lli)\n", next_frame_position, ogg_frame_position);
+			return 1;
+		}
+//		printf("For frame: %lli, keyframe is: %lli\n", next_frame_position,ogg_frame_position);
+		// skip frames must be > 0 here
+		decode_frames = next_frame_position - ogg_frame_position + 1; 
+		ogg_frame_position --; // ogg_frame_position is at last decoded frame, so it will point right 
+		if (decode_frames <= 0) 
+		{
+			printf("FileOGG:: Error while seeking to keyframe, wrong keyframe number (frame: %lli, keyframe: %lli)\n", next_frame_position, ogg_frame_position);
+			return 1;
+			
+		}
+		expect_keyframe = 1;
+	}
+
+//	printf("Frames to decode: %i\n", decode_frames);
+
+// THIS IS WHAT CAUSES SLOWNESS OF SEEKING, but we can do nothing about it.
+	while (decode_frames > 0)
+	{
+		ogg_page og;
+		ogg_packet op;
+		while (ogg_stream_packetpeek(&tf->to, NULL) != 1)
+		{
+			if (!ogg_get_next_page(tf->videosync, tf->to.serialno, &og))
+			{
+				printf("FileOGG: Cannot find next page while seeking\n");
+				return 1;
+			}
+			ogg_stream_pagein(&tf->to, &og);
+		}
+		ogg_stream_packetout(&tf->to, &op);
+		if (expect_keyframe && !theora_packet_iskeyframe(&op))
+		{
+				printf("FileOGG: Expecting keyframe, but didn't get it\n");
+			//	return 1; this is generally not a fatal error
+		}
+		expect_keyframe = 0;
+		
+		// decode
+		theora_decode_packetin(&tf->td, &op);
+
+		decode_frames --;
+		ogg_frame_position ++;
+	}
+	{
+		yuv_buffer yuv;
+		int ret = theora_decode_YUVout (&tf->td, &yuv);
+		if (ret)
+		{
+			printf("FileOGG: theora_decode_YUVout failed with code %i\n", ret);
+		}
+
+// Dirty magic 
+/*		yuv.y += yuv.y_stride * (yuv.y_height - 1);
+		yuv.u += yuv.uv_stride * (yuv.uv_height - 1);
+		yuv.v += yuv.uv_stride * (yuv.uv_height - 1);
+		yuv.y_stride = - yuv.y_stride;
+		yuv.uv_stride = - yuv.uv_stride;*/
+		VFrame *temp_frame = new VFrame(yuv.y, 
+						0,
+						yuv.u - yuv.y,
+						yuv.v - yuv.y,
+						- yuv.y_stride,
+						yuv.y_height,
+						BC_YUV420P,
+						- yuv.y_stride);
+		// copy into temp frame...
+		
+		cmodel_transfer(frame->get_rows(),
+			temp_frame->get_rows(),
+			frame->get_y(),
+			frame->get_u(),
+			frame->get_v(),
+			temp_frame->get_y(),
+			temp_frame->get_u(),
+			temp_frame->get_v(),
+			0,
+			0,
+			yuv.y_width,
+			yuv.y_height,
+			0,
+			0,
+			yuv.y_width,  // temp_frame can be larger than frame if width not dividable by 16
+			yuv.y_height,	
+			BC_YUV420P,
+			frame->get_color_model(),
+			0,
+			-temp_frame->get_w(),
+			frame->get_w());
+		delete temp_frame;
+	}
+
+	next_frame_position ++;
+	
+	return 0;		
+}
+
+
+
+int FileOGG::ogg_decode_more_samples(sync_window_t *sw, long serialno)
+{
+	ogg_page og;
+	ogg_packet op;
+	int done = 0;
+	while (!done)
+	{
+		while (ogg_stream_packetpeek(&tf->vo, NULL) != 1)
+		{
+			if (!ogg_get_next_page(sw, serialno, &og))
+			{
+				printf("FileOGG: Cannot find next page while trying to decode more samples\n");
+				return 0;
+			}
+			ogg_stream_pagein(&tf->vo, &og);
+		}
+		ogg_stream_packetout(&tf->vo, &op);
+		if(!vorbis_synthesis(&tf->vb, &op))
+		{
+			done = 1;	
+			vorbis_synthesis_blockin(&tf->vd, &tf->vb);
+		}
+	}
 	return 1;
 }
 
 int FileOGG::set_audio_position(int64_t x)
 {
-	return 1;
+	next_sample_position = x + start_sample;
+	return 0;
 }
+
+int FileOGG::move_history(int from, int to, int len)
+{
+	for(int i = 0; i < asset->channels; i++)
+		memmove(pcm_history[i] + to, pcm_history[i] + from, sizeof(float) * len);
+	history_start = history_start + from - to;
+	return 0;
+} 
+
+int FileOGG::read_samples(double *buffer, int64_t len)
+{
+	float **vorbis_buffer;
+	if (len <= 0) 
+		return 0;
+//	printf("Reading samples: Channel: %i, number of samples: %lli, reading at :%lli\n", file->current_channel, len, next_sample_position);
+//		printf("\tnext_sample_position: %lli, length: %i\n", next_sample_position, len);
+//		printf("\thistory_start: %lli, length: %i\n", history_start, history_size);
+
+	if(len > HISTORY_MAX)
+	{
+		printf("FileOGG::read_samples max samples=%d\n", HISTORY_MAX);
+		return 1;
+	}
+
+	if(!pcm_history)
+	{
+		pcm_history = new float*[asset->channels];
+		for(int i = 0; i < asset->channels; i++)
+			pcm_history[i] = new float[HISTORY_MAX];
+		history_start = -100000000; // insane value to trigger reload
+		history_size = 0;
+	}
+
+	int64_t hole_start = -1;
+	int64_t hole_len = -1;
+	int64_t hole_absstart = -1;
+	int64_t hole_fill = 0;
+
+	if (history_start < next_sample_position && history_start + history_size > next_sample_position && history_start + history_size < next_sample_position + len) 
+	{
+//		printf("a\n");
+		hole_fill = 1;
+		hole_start = history_start + history_size - next_sample_position;
+		hole_len = history_size - hole_start;
+		hole_absstart = next_sample_position + hole_start;
+		move_history(next_sample_position - history_start,
+				0,
+				hole_start); //	
+		
+	} else
+	if (next_sample_position < history_start && history_start < next_sample_position + len)
+	{
+//		printf("b\n");
+		hole_fill = 1;
+		hole_start = 0;
+		hole_len = history_start - next_sample_position;
+		hole_absstart = next_sample_position;
+//		printf("hs: %lli, histstart: %lli, next_sample_position: %lli\n", history_size, history_start, next_sample_position);
+//		printf("to: 0, from: %lli, size: %lli\n", 
+ //				history_start - next_sample_position,
+//				history_size - history_start + next_sample_position);
+		move_history(0, 
+				history_start - next_sample_position,
+				history_size - history_start + next_sample_position);
+			
+	} else 
+	if (next_sample_position >= history_start + history_size || next_sample_position + len <= history_start)
+	{
+//		printf("c\n");
+		hole_fill = 1;
+		hole_start = 0;
+		hole_len = HISTORY_MAX;
+		hole_absstart = next_sample_position;
+		history_start = hole_absstart;
+		history_size = hole_len;
+	}
+	
+	if (hole_fill)
+	{
+		if (hole_start < 0 || hole_len <= 0 || hole_absstart < 0)
+		{
+			printf("FileOGG: Error at finding out what to read from file\n");
+			return 1;
+		}
+		
+		if (hole_absstart + hole_len > asset->audio_length + start_sample)
+		{
+			hole_len = asset->audio_length + start_sample - hole_absstart;
+			history_size = asset->audio_length + start_sample - history_start;
+		} else
+		{
+			history_size = HISTORY_MAX;
+		}
+		
+		
+//		printf("Decode samples at position: %lli, samples to read: %lli\n", hole_absstart, hole_len);
+	
+		int64_t samples_read = 0;	 
+		if (ogg_sample_position != hole_absstart)
+		{
+			ogg_sample_position = hole_absstart;
+			if (!ogg_seek_to_sample(tf->audiosync, tf->vo.serialno, ogg_sample_position))
+			{
+				printf("FileOGG:: Error while seeking to sample\n");
+				return 1;
+			}
+		}
+		// now we have ogg_sample_positon aligned
+		int64_t samples_to_read = hole_len;
+		while (samples_read < hole_len)
+		{
+			int64_t waiting_samples = vorbis_synthesis_pcmout(&tf->vd, &vorbis_buffer);
+			int64_t takeout_samples;
+			if (waiting_samples > samples_to_read - samples_read)
+				takeout_samples = samples_to_read - samples_read;
+			else 
+				takeout_samples = waiting_samples;
+
+			int i, j;
+//			printf("takeout samples: %lli, samples_read: %lli\n", takeout_samples, samples_read);
+			for(int i = 0; i < asset->channels; i++)
+			{
+				float *input = vorbis_buffer[i];
+				float *output = pcm_history[i] + hole_start;
+				// TODO: use memcpy
+				for(int j = 0; j < takeout_samples ; j++)
+				{
+					output[j] = input[j];
+				}
+			}                                                                   
+			
+			vorbis_synthesis_read(&tf->vd, takeout_samples);
+			samples_read += takeout_samples;
+			ogg_sample_position += takeout_samples;
+			hole_start += takeout_samples;
+			
+			if (samples_read < hole_len)
+				if (!ogg_decode_more_samples(tf->audiosync, tf->vo.serialno))
+				{
+					ogg_sample_position = -1;
+					return 1;
+				}
+
+
+		}
+	}	
+	
+	// now we can be sure our history is correct, just copy it out
+	if (next_sample_position < history_start || next_sample_position + len > history_start + history_size)
+	{
+		printf("FileOGG:: History not aligned properly \n");
+		printf("\tnext_sample_position: %lli, length: %i\n", next_sample_position, len);
+		printf("\thistory_start: %lli, length: %i\n", history_start, history_size);
+		
+		return 1;
+	}
+	float *input = pcm_history[file->current_channel] + next_sample_position - history_start;
+	for (int i = 0; i < len; i++)
+		buffer[i] = input[i];
+	 
+	next_sample_position += len;
+	return 0;
+}
+
 
 int FileOGG::flush_ogg(int e_o_s)
 {
@@ -412,7 +1722,7 @@ int FileOGG::flush_ogg(int e_o_s)
 			{    
 //				 flush an audio page 
 				tf->audiotime=
-					vorbis_granule_time (&tf->vd, ogg_page_granulepos(&tf->audiopage) + 1);
+					vorbis_granule_time (&tf->vd, ogg_page_granulepos(&tf->audiopage));
 				tf->audio_bytesout +=
 					fwrite (tf->audiopage.header, 1, tf->audiopage.header_len, stream);
 				tf->audio_bytesout +=
@@ -434,6 +1744,8 @@ int FileOGG::write_samples_vorbis(double **buffer, int64_t len, int e_o_s)
 {
 	int i,j, count = 0;
 	float **vorbis_buffer;
+	static int samples = 0;
+	samples += len;
 	if(e_o_s)
 	{
 		vorbis_analysis_wrote (&tf->vd, 0);
