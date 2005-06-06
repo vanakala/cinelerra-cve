@@ -606,6 +606,11 @@ static int decode_wrapper(quicktime_t *file,
 	quicktime_set_video_position(file, frame_number, track);
  
 	bytes = quicktime_frame_size(file, frame_number, track); 
+	if(frame_number == 0 && codec->ffmpeg_id == CODEC_ID_SVQ3 && stsd_table->extradata)
+	{
+		codec->decoder_context[current_field]->extradata_size = stsd_table->extradata_size;	
+		codec->decoder_context[current_field]->extradata = stsd_table->extradata;
+	} else
 	if(frame_number == 0)
 	{
 		header_bytes = stsd_table->mpeg4_header_size;
@@ -618,6 +623,8 @@ static int decode_wrapper(quicktime_t *file,
 		codec->buffer_size = bytes + header_bytes; 
 		codec->work_buffer = calloc(1, codec->buffer_size + 100); 
 	} 
+
+	// Special handling of SVQ3 codec (some others might be alike)
  
 	if(header_bytes)
 		memcpy(codec->work_buffer, stsd_table->mpeg4_header, header_bytes);

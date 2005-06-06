@@ -109,6 +109,30 @@ void quicktime_write_stsd_audio(quicktime_t *file, quicktime_stsd_table_t *table
 	quicktime_write_fixed32(file, table->sample_rate);
 }
 
+// Lifted from mplayer and changed a bit
+struct __attribute__((__packed__)) ImageDescription {
+//  int32_t                    idSize;                     /* total size of ImageDescription including extra data ( CLUTs and other per sequence data ) */
+    char                       cType[4];                   /* what kind of codec compressed this data */
+    int32_t                    resvd1;                     /* reserved for Apple use */
+    int16_t                    resvd2;                     /* reserved for Apple use */
+    int16_t                    dataRefIndex;               /* set to zero  */
+    int16_t                    version;                    /* which version is this data */
+    int16_t                    revisionLevel;              /* what version of that codec did this */
+    char                       vendor[4];                  /* whose  codec compressed this data */
+    uint32_t                   temporalQuality;            /* what was the temporal quality factor  */
+    uint32_t                   spatialQuality;             /* what was the spatial quality factor */
+    int16_t                    width;                      /* how many pixels wide is this data */
+    int16_t                    height;                     /* how many pixels high is this data */
+    int32_t                    hRes;                       /* horizontal resolution */
+    int32_t                    vRes;                       /* vertical resolution */
+    int32_t                    dataSize;                   /* if known, the size of data for this image descriptor */
+    int16_t                    frameCount;                 /* number of frames this description applies to */
+    char                       name[32];                   /* name of codec ( in case not installed )  */
+    int16_t                    depth;                      /* what depth is this data (1-32) or ( 33-40 grayscale ) */
+    int16_t                    clutID;                     /* clut id or if 0 clut follows  or -1 if no clut */
+};
+
+
 void quicktime_read_stsd_video(quicktime_t *file, 
 	quicktime_stsd_table_t *table, 
 	quicktime_atom_t *parent_atom)
@@ -131,7 +155,41 @@ void quicktime_read_stsd_video(quicktime_t *file,
 	quicktime_read_data(file, table->compressor_name, 31);
 	table->depth = quicktime_read_int16(file);
 	table->ctab_id = quicktime_read_int16(file);
+
+
+/* The data needed for SVQ3 codec and maybe some others ? */
+	struct ImageDescription *id;
+	int stsd_size,fourcc,c,d;
+	stsd_size = parent_atom->end - parent_atom->start;
+	table->extradata_size = stsd_size - 4;
+	id = (struct ImageDescription *) malloc(table->extradata_size);     // we do not include size
+	table->extradata = (char *) id;
 	
+	memcpy(id->cType, table->format, 4);         // Fourcc
+	id->version = table->version;
+	id->revisionLevel = table->revision;
+	memcpy(id->vendor, table->vendor, 4);     // I think mplayer screws up on this one, it turns bytes around! :)
+	id->temporalQuality = table->temporal_quality;
+	id->spatialQuality = table->spatial_quality;
+	id->width = table->width;
+	id->height = table->height;
+	id->hRes = table->dpi_horizontal;
+	id->vRes = table->dpi_vertical;
+	id->dataSize = table->data_size;
+	id->frameCount = table->frames_per_sample;
+	id->name[0] = len;
+	memcpy(&(id->name[1]), table->compressor_name, 31);
+	id->depth = table->depth;
+	id->clutID = table->ctab_id;
+	if (quicktime_position(file) < parent_atom->end)
+	{
+		int position = quicktime_position(file);     // remember position
+		int datalen = parent_atom->end - position;
+		quicktime_read_data(file, ((char*)&id->clutID)+2, datalen);
+		quicktime_set_position(file, position);      // return to previous position so parsing can go on
+	}
+	
+
 	while(quicktime_position(file) < parent_atom->end)
 	{
 		quicktime_atom_read_header(file, &leaf_atom);
@@ -274,6 +332,10 @@ void quicktime_stsd_table_init(quicktime_stsd_table_t *table)
 
 	table->mpeg4_header = 0;
 	table->mpeg4_header_size = 0;
+
+	table->extradata = 0;
+	table->extradata_size = 0;
+	
 }
 
 void quicktime_stsd_table_delete(quicktime_stsd_table_t *table)
@@ -282,6 +344,7 @@ void quicktime_stsd_table_delete(quicktime_stsd_table_t *table)
 	quicktime_mjqt_delete(&(table->mjqt));
 	quicktime_mjht_delete(&(table->mjht));
 	if(table->mpeg4_header) free(table->mpeg4_header);
+	if(table->extradata) free(table->extradata);
 }
 
 void quicktime_stsd_video_dump(quicktime_stsd_table_t *table)

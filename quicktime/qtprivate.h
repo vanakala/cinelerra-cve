@@ -184,6 +184,10 @@ typedef struct
 	int bytes_per_packet;
 	int bytes_per_frame;
 	int bytes_per_sample;
+	
+	int extradata_size;
+	char *extradata;
+	
 } quicktime_stsd_table_t;
 
 
