@@ -15,7 +15,8 @@ Build-Depends: debhelper (>> 4), automake1.8, dpatch (>= 1.11),
 Package: cinelerra
 Section: graphics
 Architecture: any
-Depends: ${shlibs:Depends}
+Depends: ${shlibs:Depends}, libguicast (= ${Source-Version}), libsndfilehv (= ${Source-Version}),
+ libquicktimehv (= ${Source-Version}), libmpeg3hv (= ${Source-Version})
 Description: An audio/video authoring tool
  Cinelerra is a complete audio and video authoring
  tool. It understands a lot of multimedia formats
