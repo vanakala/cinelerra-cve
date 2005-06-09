@@ -90,6 +90,10 @@ void LoadFileThread::run()
 		window.create_objects();
 		result = window.run_window();
 
+		if ((!result) && (load_mode == LOAD_REPLACE)) {
+			mwindow->set_filename(window.get_path(0));
+		}
+
 // Collect all selected files
 		if(!result)
 		{
