@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Cinelerra 
+Name[ja]=Cinelerra
+Comment=Video Editor
+Categories=GNOME;Application;Multimedia;
+Encoding=UTF-8
+Exec=cinelerra
+Icon=cinelerra.xpm
+Terminal=false
+Type=Application
