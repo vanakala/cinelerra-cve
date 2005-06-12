@@ -419,7 +419,8 @@ AC_OUTPUT(Makefile cinelerra-cvs-current.spec po/Makefile.in \
 					plugins/perspective/Makefile plugins/radialblur/Makefile plugins/zoomblur/Makefile \
 					plugins/svg/Makefile \
 					plugins/diffkey/Makefile \
-					plugins/fonts/Makefile)
+					plugins/fonts/Makefile \
+					image/Makefile)
 
 if test "$NOT_FOUND" = ""; then
 	AC_MSG_NOTICE([All required libraries were found.])
