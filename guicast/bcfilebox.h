@@ -111,6 +111,14 @@ public:
 	BC_FileBox *filebox;
 };
 
+class BC_FileBoxDirectoryText : public BC_TextBox
+{
+public:
+	BC_FileBoxDirectoryText(int x, int y, BC_FileBox *filebox);
+	int handle_event();
+	BC_FileBox *filebox;
+};
+
 class BC_FileBoxFilterText : public BC_TextBox
 {
 public:
@@ -192,6 +200,7 @@ public:
 	virtual int close_event();
 
 	int refresh();
+	int refresh_fs_change();
 
 // The OK and Use This button submits a path.
 // The cancel button has a current path highlighted but possibly different from the
@@ -207,6 +216,7 @@ public:
 	int update_filter(char *filter);
 	virtual int resize_event(int w, int h);
 	char* get_newfolder_title();
+	FileSystem *fs;
 
 private:
 	int create_icons();
@@ -227,13 +237,12 @@ private:
 	int column_of_type(int type);
 
 	BC_Pixmap *icons[TOTAL_ICONS];
-	FileSystem *fs;
 	BC_FileBoxTextBox *textbox;
 	BC_RecentList *recent;
 	BC_FileBoxListBox *listbox;
 	BC_FileBoxFilterText *filter_text;
 	BC_FileBoxFilterMenu *filter_popup;
-	BC_Title *directory_title;
+	BC_TextBox *directory_title;
 	BC_Button *icon_button, *text_button, *folder_button, *updir_button;
 	BC_Button *ok_button, *cancel_button;
 	BC_FileBoxUseThis *usethis_button;

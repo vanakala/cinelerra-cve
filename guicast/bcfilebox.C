@@ -242,11 +242,26 @@ int BC_FileBoxTextBox::handle_event()
 	return 1;
 }
 
+BC_FileBoxDirectoryText::BC_FileBoxDirectoryText(int x, int y, BC_FileBox *filebox)
+ : BC_TextBox(x, y, filebox->get_w() - 183, 1, filebox->fs->get_current_dir())
+{
+	this->filebox = filebox;
+}
 
-
-
-
-
+int BC_FileBoxDirectoryText::handle_event()
+{
+	char *path;
+	path = get_text();
+	// is a directory, change directories
+	if(!filebox->fs->is_dir(path))
+	{
+		filebox->fs->change_dir(path);
+		filebox->refresh();
+		update(strcat(filebox->fs->get_current_dir(),"/"));
+		filebox->refresh_fs_change();
+	}
+	return 0;
+}
 
 BC_FileBoxFilterText::BC_FileBoxFilterText(int x, int y, BC_FileBox *filebox)
  : BC_TextBox(x, y, filebox->get_w() - 50, 1, filebox->get_resources()->filebox_filter)
@@ -531,9 +546,7 @@ int BC_FileBox::create_objects()
 	add_subwindow(cancel_button = new BC_FileBoxCancel(this));
 
 	add_subwindow(new BC_Title(x, y, caption));
-
-	add_subwindow(directory_title = 
-		new BC_Title(x, y + 20, fs->get_current_dir()));
+	add_subwindow(directory_title = new BC_FileBoxDirectoryText(x, y + 20, this));
 	x = get_w() - 50;
 	add_subwindow(icon_button = new BC_FileBoxIcons(x, y, this));
 	x -= icon_button->get_w();
@@ -610,6 +623,10 @@ int BC_FileBox::resize_event(int w, int h)
 		h - (get_h() - filter_text->get_y()),
 		w - (get_w() - filter_text->get_w()),
 		1);
+	directory_title->reposition_window(directory_title->get_x(),
+					   directory_title->get_y(),
+					   get_w() -  183,
+					   1);
 	textbox->reposition_window(textbox->get_x(), 
 		h - (get_h() - textbox->get_y()),
 		w - (get_w() - textbox->get_w()),
@@ -818,6 +835,14 @@ int BC_FileBox::column_of_type(int type)
 }
 
 
+int BC_FileBox::refresh_fs_change() 
+{
+	strcpy(this->current_path, fs->get_current_dir());
+	strcpy(this->submitted_path, fs->get_current_dir());
+	strcpy(this->directory, fs->get_current_dir());
+	listbox->reset_query();
+	return 1;
+}
 
 int BC_FileBox::refresh()
 {
@@ -924,7 +949,7 @@ int BC_FileBox::submit_file(char *path, int return_value, int use_this)
 	{
 		fs->change_dir(path);
 		refresh();
-		directory_title->update(fs->get_current_dir());
+		directory_title->update(strcat(fs->get_current_dir(),"/"));
 		strcpy(this->current_path, fs->get_current_dir());
 		strcpy(this->submitted_path, fs->get_current_dir());
 		strcpy(this->directory, fs->get_current_dir());
