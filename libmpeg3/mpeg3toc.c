@@ -427,7 +427,7 @@ int main(int argc, char *argv[])
 						if(j == vtracks - 1 && l == frame_count - 1)
 						{
 							total_frames += frame_count;
-							printf("Video: title=%lld total_frames=%d ", title_number, total_frames);
+							printf("Video: title=%lld total_frames=%d (%.1f \%)", title_number, total_frames,100*((float)position)/((float) mpeg3demux_movie_size(demuxer)));
 						}
 					}
 				}
