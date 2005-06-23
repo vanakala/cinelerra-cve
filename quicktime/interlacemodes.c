@@ -47,20 +47,20 @@ void ilacemode_to_text(char *string, int ilacemode)
 {
 	switch(ilacemode)
 	{
-		case BC_ILACE_MODE_UNDETECTED:   	strcpy(string, BC_ILACE_MODE_UNDETECTED_T);   	break;
-		case BC_ILACE_MODE_ODDLEADS:     	strcpy(string, BC_ILACE_MODE_ODDLEADS_T);     	break;
-		case BC_ILACE_MODE_EVENLEADS:    	strcpy(string, BC_ILACE_MODE_EVENLEADS_T);    	break;
-		case BC_ILACE_MODE_NOTINTERLACED:	strcpy(string, BC_ILACE_MODE_NOTINTERLACED_T);	break;
+		case BC_ILACE_MODE_UNDETECTED:     strcpy(string, BC_ILACE_MODE_UNDETECTED_T);      break;
+		case BC_ILACE_MODE_TOP_FIRST:      strcpy(string, BC_ILACE_MODE_TOP_FIRST_T);       break;
+		case BC_ILACE_MODE_BOTTOM_FIRST:   strcpy(string, BC_ILACE_MODE_BOTTOM_FIRST_T);    break;
+		case BC_ILACE_MODE_NOTINTERLACED:  strcpy(string, BC_ILACE_MODE_NOTINTERLACED_T);   break;
 		default: strcpy(string, BC_ILACE_UNKNOWN_T); break;
 	}
 }
 
 int ilacemode_from_text(char *text, int thedefault)
 {
-	if(!strcasecmp(text, BC_ILACE_MODE_UNDETECTED_T))   	return BC_ILACE_MODE_UNDETECTED;
-	if(!strcasecmp(text, BC_ILACE_MODE_ODDLEADS_T))     	return BC_ILACE_MODE_ODDLEADS;
-	if(!strcasecmp(text, BC_ILACE_MODE_EVENLEADS_T))    	return BC_ILACE_MODE_EVENLEADS;
-	if(!strcasecmp(text, BC_ILACE_MODE_NOTINTERLACED_T))	return BC_ILACE_MODE_NOTINTERLACED;
+	if(!strcasecmp(text, BC_ILACE_MODE_UNDETECTED_T))     return BC_ILACE_MODE_UNDETECTED;
+	if(!strcasecmp(text, BC_ILACE_MODE_TOP_FIRST_T))      return BC_ILACE_MODE_TOP_FIRST;
+	if(!strcasecmp(text, BC_ILACE_MODE_BOTTOM_FIRST_T))   return BC_ILACE_MODE_BOTTOM_FIRST;
+	if(!strcasecmp(text, BC_ILACE_MODE_NOTINTERLACED_T))  return BC_ILACE_MODE_NOTINTERLACED;
 	return thedefault;
 }
 
@@ -89,9 +89,9 @@ int  ilaceautofixmethod(int projectmode, int assetmode)
     return BC_ILACE_FIXMETHOD_NONE;
       
   if (
-      (projectmode == BC_ILACE_MODE_EVENLEADS && assetmode == BC_ILACE_MODE_ODDLEADS )
+      (projectmode == BC_ILACE_MODE_BOTTOM_FIRST && assetmode == BC_ILACE_MODE_TOP_FIRST )
       ||
-      (projectmode == BC_ILACE_MODE_ODDLEADS  && assetmode == BC_ILACE_MODE_EVENLEADS)
+      (projectmode == BC_ILACE_MODE_TOP_FIRST  && assetmode == BC_ILACE_MODE_BOTTOM_FIRST)
       )
     return BC_ILACE_FIXDEFAULT;
 
@@ -114,10 +114,10 @@ int ilace_bc_to_yuv4mpeg(int ilacemode)
 	case BC_ILACE_MODE_UNDETECTED:
 		return(Y4M_UNKNOWN);
 		break;
-	case BC_ILACE_MODE_ODDLEADS:		
+	case BC_ILACE_MODE_TOP_FIRST:		
 		return(Y4M_ILACE_TOP_FIRST);
 		break;
-	case BC_ILACE_MODE_EVENLEADS:
+	case BC_ILACE_MODE_BOTTOM_FIRST:
 		return(Y4M_ILACE_BOTTOM_FIRST);
 		break;
 	case BC_ILACE_MODE_NOTINTERLACED:
@@ -137,10 +137,10 @@ int ilace_yuv4mpeg_to_bc(int ilacemode)
 		return (BC_ILACE_MODE_NOTINTERLACED);
 		break;
 	case Y4M_ILACE_TOP_FIRST:
-		return (BC_ILACE_MODE_ODDLEADS);
+		return (BC_ILACE_MODE_TOP_FIRST);
 		break;
 	case Y4M_ILACE_BOTTOM_FIRST:
-		return (BC_ILACE_MODE_EVENLEADS);
+		return (BC_ILACE_MODE_BOTTOM_FIRST);
 		break;
 //	case Y4M_ILACE_MIXED:
 //		return (BC_ILACE_MODE_UNDETECTED);  // fixme!!

@@ -28,14 +28,14 @@
 //Note: Do not change what the numbers mean as this will make backward-compatability have erroraneous settings.
 
 //Interlace Modes
-#define BC_ILACE_MODE_UNDETECTED     	0
-#define BC_ILACE_MODE_UNDETECTED_T   	"Unknown"
-#define BC_ILACE_MODE_ODDLEADS       	1
-#define BC_ILACE_MODE_ODDLEADS_T     	"Bottom Fields First"
-#define BC_ILACE_MODE_EVENLEADS      	2
-#define BC_ILACE_MODE_EVENLEADS_T    	"Top Fields First"
-#define BC_ILACE_MODE_NOTINTERLACED  	3
-#define BC_ILACE_MODE_NOTINTERLACED_T	"Not Interlaced"
+#define BC_ILACE_MODE_UNDETECTED        0
+#define BC_ILACE_MODE_UNDETECTED_T      "Unknown"
+#define BC_ILACE_MODE_TOP_FIRST         1
+#define BC_ILACE_MODE_TOP_FIRST_T       "Top Fields First"
+#define BC_ILACE_MODE_BOTTOM_FIRST      2
+#define BC_ILACE_MODE_BOTTOM_FIRST_T    "Bottom Fields First"
+#define BC_ILACE_MODE_NOTINTERLACED     3
+#define BC_ILACE_MODE_NOTINTERLACED_T   "Not Interlaced"
 
 #define BC_ILACE_ASSET_MODEDEFAULT  	BC_ILACE_MODE_UNDETECTED
 #define BC_ILACE_PROJECT_MODEDEFAULT	BC_ILACE_MODE_NOTINTERLACED_T

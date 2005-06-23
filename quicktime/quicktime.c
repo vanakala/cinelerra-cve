@@ -598,9 +598,9 @@ int quicktime_video_interlacemode(quicktime_t *file, int track)
 			case 0:
 				return BC_ILACE_MODE_UNDETECTED;
 			case 1:
-				return BC_ILACE_MODE_ODDLEADS;
+				return BC_ILACE_MODE_TOP_FIRST;
 			case 6:
-				return BC_ILACE_MODE_EVENLEADS;
+				return BC_ILACE_MODE_BOTTOM_FIRST;
 			}
 		}
 	}
