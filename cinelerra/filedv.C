@@ -233,7 +233,7 @@ TRACE("FileDV::open_file 60")
 			asset->aspect_ratio = (double) 4 / 3;
 			asset->width = decoder->width;
 			asset->height = decoder->height;
-			asset->interlace_mode = BC_ILACE_MODE_UNDETECTED; // FIXME: Is this set to a standard??
+			asset->interlace_mode = BC_ILACE_MODE_BOTTOM_FIRST;
 			if(asset->height == 576)
 			{
 				isPAL = 1;
