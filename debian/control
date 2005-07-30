@@ -10,7 +10,7 @@ Build-Depends: debhelper (>> 4), automake1.8, dpatch (>= 1.11),
  liba52-0.7.4-dev (>= 0.7.4), libpng12-dev (>= 1.2.5), libjpeg62-dev (>= 6b), libtiff4-dev (>= 3.6.0),
  libesd0-dev (>= 0.2.28), libaudiofile-dev (>= 0.2.3), libraw1394-dev (>= 0.9.0), libavc1394-dev (>= 0.4.1),
  libfreetype6-dev (>= 2.1.4), libfontconfig-dev, nasm, uuid-dev, docbook-to-man, libfaad2-dev,
- libmjpegtools-dev (>= 1.6.2), libopenexr-dev (>= 1.1.1), 
+ libmjpegtools-dev (>= 1.6.2), libopenexr-dev (>= 1.1.1), libxxf86vm-dev (>=6.8.2)
 
 Package: cinelerra
 Section: graphics
