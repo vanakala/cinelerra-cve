@@ -1,14 +1,12 @@
 #include "edl.h"
 #include "edlsession.h"
+#include "language.h"
 #include "pluginclient.h"
 #include "pluginserver.h"
 #include "preferences.h"
+#include "transportque.inc"
 
 #include <string.h>
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 PluginClient::PluginClient(PluginServer *server)
 {
@@ -27,15 +25,14 @@ int PluginClient::reset()
 	wr = rd = 0;
 	master_gui_on = 0;
 	client_gui_on = 0;
-	sample_rate = 0;
-	frame_rate = 0;
 	realtime_priority = 0;
 	gui_string[0] = 0;
 	total_in_buffers = 0;
 	total_out_buffers = 0;
-	source_len = 0;
 	source_position = 0;
+	source_start = 0;
 	total_len = 0;
+	direction = PLAY_FORWARD;
 }
 
 
@@ -45,31 +42,29 @@ int PluginClient::plugin_init_realtime(int realtime_priority,
 	int total_in_buffers,
 	int buffer_size)
 {
-//printf("PluginClient::plugin_init_realtime 1\n");
 // Get parameters for all
 	master_gui_on = get_gui_status();
 
-//printf("PluginClient::plugin_init_realtime 1\n");
 // get parameters depending on video or audio
 	init_realtime_parameters();
-//printf("PluginClient::plugin_init_realtime 1\n");
 	smp = server->preferences->processors - 1;
 	this->realtime_priority = realtime_priority;
 	this->total_in_buffers = this->total_out_buffers = total_in_buffers;
 	this->out_buffer_size = this->in_buffer_size = buffer_size;
-//printf("PluginClient::plugin_init_realtime 1\n");
 	return 0;
 }
 
-int PluginClient::plugin_start_loop(int64_t start, int64_t end, int64_t buffer_size, int total_buffers)
+int PluginClient::plugin_start_loop(int64_t start, 
+	int64_t end, 
+	int64_t buffer_size, 
+	int total_buffers)
 {
+	this->source_start = start;
+	this->total_len = end - start;
 	this->start = start;
 	this->end = end;
 	this->in_buffer_size = this->out_buffer_size = buffer_size;
-//printf("PluginClient::plugin_start_loop 1 %d\n", in_buffer_size);
 	this->total_in_buffers = this->total_out_buffers = total_buffers;
-	sample_rate = get_project_samplerate();
-	frame_rate = get_project_framerate();
 	start_loop();
 	return 0;
 }
@@ -93,8 +88,6 @@ MainProgressBar* PluginClient::start_progress(char *string, int64_t length)
 
 int PluginClient::plugin_get_parameters()
 {
-	sample_rate = get_project_samplerate();
-	frame_rate = get_project_framerate();
 	int result = get_parameters();
 	return result;
 }
@@ -109,6 +102,17 @@ int PluginClient::delete_buffer_ptrs() { return 0; }
 char* PluginClient::plugin_title() { return _("Untitled"); }
 VFrame* PluginClient::new_picon() { return 0; }
 Theme* PluginClient::new_theme() { return 0; }
+
+
+
+
+Theme* PluginClient::get_theme()
+{
+	return server->get_theme();
+}
+
+
+
 int PluginClient::is_audio() { return 0; }
 int PluginClient::is_video() { return 0; }
 int PluginClient::is_theme() { return 0; }
@@ -116,10 +120,7 @@ int PluginClient::uses_gui() { return 1; }
 int PluginClient::is_transition() { return 0; }
 int PluginClient::load_defaults() { return 0; }
 int PluginClient::save_defaults() { return 0; }
-//int PluginClient::start_gui() { return 0; }
-//int PluginClient::stop_gui() { return 0; }
 int PluginClient::show_gui() { return 0; }
-//int PluginClient::hide_gui() { return 0; }
 int PluginClient::set_string() { return 0; }
 int PluginClient::get_parameters() { return 0; }
 int PluginClient::get_samplerate() { return get_project_samplerate(); }
@@ -167,7 +168,6 @@ int PluginClient::stop_gui_client()
 {
 	if(!client_gui_on) return 0;
 	client_gui_on = 0;
-//	stop_gui();                      // give to plugin
 	return 0;
 }
 
@@ -207,44 +207,30 @@ int PluginClient::set_string_client(char *string)
 }
 
 
-KeyFrame* PluginClient::get_prev_keyframe(int64_t position)
-{
-	return server->get_prev_keyframe(position);
-}
-
-KeyFrame* PluginClient::get_next_keyframe(int64_t position)
-{
-	return server->get_next_keyframe(position);
-}
-
 int PluginClient::get_interpolation_type()
 {
 	return server->get_interpolation_type();
 }
 
 
-int PluginClient::automation_used()    // If automation is used
-{
-	return 0;
-}
+// int PluginClient::automation_used()    // If automation is used
+// {
+// 	return 0;
+// }
+// 
+// float PluginClient::get_automation_value(int64_t position)     // Get the automation value for the position in the current fragment
+// {
+// 	int i;
+// 	for(i = automation.total - 1; i >= 0; i--)
+// 	{
+// 		if(automation.values[i].position <= position)
+// 		{
+// 			return automation.values[i].intercept + automation.values[i].slope * (position - automation.values[i].position);
+// 		}
+// 	}
+// 	return 0;
+// }
 
-float PluginClient::get_automation_value(int64_t position)     // Get the automation value for the position in the current fragment
-{
-	int i;
-	for(i = automation.total - 1; i >= 0; i--)
-	{
-		if(automation.values[i].position <= position)
-		{
-			return automation.values[i].intercept + automation.values[i].slope * (position - automation.values[i].position);
-		}
-	}
-	return 0;
-}
-
-int64_t PluginClient::get_source_len()
-{
-	return source_len;
-}
 
 int64_t PluginClient::get_source_position()
 {
@@ -253,7 +239,7 @@ int64_t PluginClient::get_source_position()
 
 int64_t PluginClient::get_source_start()
 {
-	return server->get_source_start();
+	return source_start;
 }
 
 int64_t PluginClient::get_total_len()
@@ -261,7 +247,31 @@ int64_t PluginClient::get_total_len()
 	return total_len;
 }
 
+int PluginClient::get_direction()
+{
+	return direction;
+}
 
+
+int64_t PluginClient::local_to_edl(int64_t position)
+{
+	return position;
+}
+
+int64_t PluginClient::edl_to_local(int64_t position)
+{
+	return position;
+}
+
+int PluginClient::get_total_buffers()
+{
+	return total_in_buffers;
+}
+
+int PluginClient::get_buffer_size()
+{
+	return in_buffer_size;
+}
 
 int PluginClient::get_project_smp()
 {
@@ -283,10 +293,22 @@ int PluginClient::send_hide_gui()
 
 int PluginClient::send_configure_change()
 {
-// handle everything using the gui messages
 	KeyFrame* keyframe = server->get_keyframe();
 	save_data(keyframe);
-	server->sync_parameters();
+	server->sync_parameters(get_gui_string());
 	return 0;
+}
+
+
+KeyFrame* PluginClient::get_prev_keyframe(int64_t position, int is_local)
+{
+	if(is_local) position = local_to_edl(position);
+	return server->get_prev_keyframe(position);
+}
+
+KeyFrame* PluginClient::get_next_keyframe(int64_t position, int is_local)
+{
+	if(is_local) position = local_to_edl(position);
+	return server->get_next_keyframe(position);
 }
 

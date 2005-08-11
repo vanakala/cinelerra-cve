@@ -103,11 +103,18 @@ void MainUndo::update_undo_after()
 	{
 // the old data_after is the state before the change
 		new_entry->set_data_before(data_after);
-		data_after = 0;
 
 		push_undo_item(new_entry);
 		new_entry = 0;
 	}
+}
+
+void MainUndo::push_state(char *description, uint32_t load_flags)
+{
+	MainUndoStackItem* new_entry = new MainUndoStackItem(this, description, load_flags);
+// the old data_after is the state before the change
+	new_entry->set_data_before(data_after);
+	push_undo_item(new_entry);
 }
 
 

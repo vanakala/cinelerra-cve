@@ -27,6 +27,9 @@ public:
 	void update_undo_before(char *description, uint32_t load_flags);
 	void update_undo_after();
 
+// alternatively, call this one after the change
+	void push_state(char *description, uint32_t load_flags);
+
 	int undo();
 	int redo();
 

@@ -15,7 +15,6 @@
 #include "maxbuffers.h"
 #include "menueffects.inc"
 #include "module.inc"
-#include "mutex.h"
 #include "mwindow.inc"
 #include "plugin.inc"
 #include "pluginaclientlad.inc"
@@ -26,6 +25,7 @@
 #include "thread.h"
 #include "track.inc"
 #include "vframe.inc"
+#include "virtualnode.inc"
 
 #include <stdio.h>
 #include <stdint.h>
@@ -68,16 +68,18 @@ public:
 	void set_title(char *string);
 // Generate title for display
 	void generate_display_title(char *string);
-// Get keyframes for configuration
+// Get keyframes for configuration.  Position is always relative to EDL rate.
 	KeyFrame* get_prev_keyframe(int64_t position);
 	KeyFrame* get_next_keyframe(int64_t position);
-	int64_t get_source_start();
 // Get interpolation used by EDL
 	int get_interpolation_type();
-// Get or create keyframe for writing, depending on editing status
+// Get or create keyframe for writing, depending on whether auto keyframes
+// is enabled.  Called by PluginClient::send_configure_change
 	KeyFrame* get_keyframe();
-// Create new theme object
+// Create new theme object.  Used by theme plugins.
 	Theme* new_theme();
+// Get theme being used by Cinelerra currently.  Used by all plugins.
+	Theme* get_theme();
 
 
 
@@ -86,13 +88,14 @@ public:
 // save configuration of plugin
 	void save_data(KeyFrame *keyframe);          
 // Update EDL and playback engines to reflect changes
-	void sync_parameters();
+	void sync_parameters(const char *plugin_string);
 // set for realtime processor usage
 	int set_realtime_sched();
 	int get_gui_status();
 // Raise the GUI
 	void raise_window();
 // cause the plugin to show the GUI
+// Called by MWindow::show_plugin
 	void show_gui();          
 // Update GUI with keyframe settings
 	void update_gui();
@@ -100,21 +103,50 @@ public:
 	void client_side_close();
 	
 
-	int set_string(char *string);      // set the string that appears on the plugin title
+// set the string that appears on the plugin title
+	int set_string(char *string);
 // give the buffers and sizes and prepare processing realtime data
 	int init_realtime(int realtime_sched,
 		int total_in_buffers,
 		int buffer_size);   
 // process the data in the buffers
-	void process_realtime(VFrame **input, 
-			VFrame **output, 
-			int64_t current_position,
-			int64_t total_len);  // Total len for transitions
-	void process_realtime(double **input, 
-			double **output,
-			int64_t current_position, 
-			int64_t fragment_size,
-			int64_t total_len);
+// Really process_realtime replaced by pull method but still needed for transitions
+// input - the current edit's data
+// output - the previous edit's data and the destination of the transition output
+// current_position - Position from start of the transition and 
+//     relative to the transition.
+// total_len - total len for transition
+	void process_transition(VFrame *input, 
+		VFrame *output, 
+		int64_t current_position,
+		int64_t total_len);  
+	void process_transition(double *input, 
+		double *output,
+		int64_t current_position, 
+		int64_t fragment_size,
+		int64_t total_len);
+
+// Process using pull method.
+// current_position - start of region if forward, end of region if reverse
+//     relative to requested rate
+// fragment_size - amount of data to put in buffer relative to requested rate
+// sample_rate - sample rate of requested output
+// frame_rate - frame rate of requested output
+// total_len - length of plugin in track units relative to the EDL rate
+// Units are kept relative to the EDL rate so plugins don't need to convert rates
+// to get the keyframes.
+	void process_buffer(VFrame **frame, 
+		int64_t current_position,
+		double frame_rate,
+		int64_t total_len,
+		int direction);
+	void process_buffer(double **buffer,
+		int64_t current_position,
+		int64_t fragment_size,
+		int64_t sample_rate,
+		int64_t total_len,
+		int direction);
+
 // Called by rendering client to cause the GUI to display something with the data.
 	void send_render_gui(void *data);
 	void send_render_gui(void *data, int size);
@@ -151,13 +183,32 @@ public:
 	int process_loop(VFrame **buffers, int64_t &write_length);
 	int process_loop(double **buffers, int64_t &write_length);
 	int stop_loop();
-// Called by non-realtime plugin to read data during rendered effect.
-	int read_frame(VFrame *buffer, int channel, int64_t start_position);
-	int read_samples(double *buffer, int channel, int64_t start_position, int64_t total_samples);
-	int read_samples(double *buffer, int64_t start_position, int64_t total_samples);
+
+
+// Called by client to read data in non-realtime effect
+	int read_frame(VFrame *buffer, 
+		int channel, 
+		int64_t start_position);
+	int read_samples(double *buffer, 
+		int channel, 
+		int64_t start_position, 
+		int64_t total_samples);
+
+
+// Called by client to read data in realtime effect.  Returns -1 if error or 0 
+// if success.
+	int read_frame(VFrame *buffer, 
+		int channel, 
+		int64_t start_position, 
+		double frame_rate);
+	int read_samples(double *buffer,
+		int channel,
+		int64_t sample_rate,
+		int64_t start_position, 
+		int64_t len);
 
 // For non realtime, prompt user for parameters, waits for plugin to finish and returns a result
-	int get_parameters();
+	int get_parameters(int64_t start, int64_t end, int channels);
 	int get_samplerate();      // get samplerate produced by plugin
 	double get_framerate();     // get framerate produced by plugin
 	int get_project_samplerate();            // get samplerate of project data before processing
@@ -174,10 +225,15 @@ public:
 // Set pointer to menueffect window
 	void set_prompt(MenuEffectPrompt *prompt);
 	int set_interactive();             // make this the master plugin for progress bars
-// add track to the list of affected tracks for a non realtime plugin
-	int set_module(Module *module);
 	int set_error();         // flag to send plugin an error on next request
 	MainProgressBar* start_progress(char *string, int64_t length);
+
+// add track to the list of affected tracks for a non realtime plugin
+	void append_module(Module *module);
+// add node for realtime plugin
+	void append_node(VirtualNode *node);
+// reset node table after virtual console reconfiguration
+	void reset_nodes();
 
 	int64_t get_written_samples();   // after samples are written, get the number written
 	int64_t get_written_frames();   // after frames are written, get the number written
@@ -233,7 +289,12 @@ public:
 	char *args[4];
 	int total_args;
 	int error_flag;      // send plugin an error code on next request
-	ArrayList<Module*> *modules;     // tracks affected by this plugin during a non realtime operation
+// Pointers to tracks affected by this plugin during a non realtime operation.
+// Allows read functions to read data.
+	ArrayList<Module*> *modules;
+// Used by realtime read functions to get data.  Corresponds to the buffer table in the
+// attachment point.
+	ArrayList<VirtualNode*> *nodes;
 	AttachmentPoint *attachmentpoint;
 	MWindow *mwindow;
 // Pointer to keyframe when plugin is not available
@@ -262,7 +323,8 @@ private:
 // Handle from dlopen.  Plugins are opened once at startup and stored in the master
 // plugindb.
 	void *plugin_fd;
-// Pointers to C functions
+// If no path, this is going to be set to a function which 
+// instantiates the plugin.
 	PluginClient* (*new_plugin)(PluginServer*);
 
 // LAD support
