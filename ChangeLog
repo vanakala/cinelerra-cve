@@ -7,6 +7,35 @@ Changelog maintainer:
 giskard:
 	- modified debian/control, addedd libtheora-mmx-dev to the 
 	  build-deps.
+j6t:
+
+        - Modified:    cinelerra/hvirtual/cinelerra mainundo.C mainundo.h
+        - Undo items are only pushed if some time has passed since the last push.
+
+        - Modified:    cinelerra/hvirtual/cinelerra mainundo.C mainundo.h
+                        pluginclient.C pluginserver.C pluginserver.h
+        - This enables undo of plugin parameter tweaks. Fixes Bug 154.
+
+
+        - Modified:    cinelerra/hvirtual/cinelerra mainundo.C mwindowedit.C
+                        undostackitem.C undostackitem.h
+        - The UndoStackItem::redo() is dropped and replaced by UndoStackItem::undo().
+          The latter must reverse its state so that the next invocation does a redo.
+
+        - Modified:    cinelerra/hvirtual/cinelerra mainundo.C mainundo.h
+        - Only one project state is stored in an undo item instead of two.
+
+        - Modified:    cinelerra/hvirtual/cinelerra loadfile.C mwindow.C
+        - The invokers of MWindow::load_filenames() instead of this function itself
+          mark the project unchanged.
+          Exception: When a backup is loaded, the project remains marked as changed.
+
+        - Modified:    cinelerra/hvirtual/cinelerra Makefile.am mainundo.C
+                        mainundo.h
+        - Removed:     cinelerra/hvirtual/cinelerra undostack.C undostack.h
+                        undostack.inc
+        - The undo stack is split into an undo stack and a redo stack.
+          This makes class UndoStack unnecessary.
 
 
 19.Oct.2003
