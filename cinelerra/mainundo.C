@@ -111,10 +111,27 @@ void MainUndo::update_undo_after()
 
 void MainUndo::push_state(char *description, uint32_t load_flags)
 {
-	MainUndoStackItem* new_entry = new MainUndoStackItem(this, description, load_flags);
+// ignore this push under certain conditions:
+// - if nothing was undone
+	if (redo_stack.last == 0 &&
+// - if it is not the first push
+		undo_stack.last &&
+// - if it has the same description as the previous undo
+		strcmp(undo_stack.last->description, description) == 0 &&
+// - if it follows closely after the previous undo
+		timestamp.get_difference() < 300 /*millisec*/)
+	{
+		capture_state();
+	}
+	else
+	{
+		MainUndoStackItem* new_entry = new MainUndoStackItem(this, description, load_flags);
 // the old data_after is the state before the change
-	new_entry->set_data_before(data_after);
-	push_undo_item(new_entry);
+		new_entry->set_data_before(data_after);
+		push_undo_item(new_entry);
+	}
+	mwindow->session->changes_made = 1;
+	timestamp.update();
 }
 
 

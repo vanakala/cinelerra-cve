@@ -2,6 +2,7 @@
 #define MAINUNDO_H
 
 
+#include "bctimer.h"
 #include "linklist.h"
 #include "mwindow.inc"
 
@@ -37,6 +38,7 @@ private:
 	List<UndoStackItem> undo_stack;
 	List<UndoStackItem> redo_stack;
 	MainUndoStackItem* new_entry;	// for setting the after buffer
+	Timer timestamp;	// time of last undo
 	MWindow *mwindow;
 	char* data_after;	// the state after a change
 
