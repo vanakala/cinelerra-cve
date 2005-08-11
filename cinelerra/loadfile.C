@@ -5,21 +5,16 @@
 #include "file.h"
 #include "filesystem.h"
 #include "indexfile.h"
+#include "language.h"
 #include "loadfile.h"
 #include "loadmode.h"
 #include "localsession.h"
 #include "mainmenu.h"
 #include "mainundo.h"
+#include "mainsession.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "theme.h"
-
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
-
 
 
 #include <string.h>
@@ -160,6 +155,10 @@ void LoadFileThread::run()
 	mwindow->save_backup();
 	mwindow->restart_brender();
 	mwindow->undo->update_undo_after();
+
+	if(load_mode == LOAD_REPLACE || load_mode == LOAD_REPLACE_CONCATENATE)
+		mwindow->session->changes_made = 0;
+
 	return;
 }
 
@@ -361,6 +360,8 @@ int LoadPrevious::handle_event()
 	mwindow->defaults->update("LOAD_MODE", load_mode);
 	mwindow->undo->update_undo_after();
 	mwindow->save_backup();
+	mwindow->session->changes_made = 0;
+
 	return 1;
 }
 
@@ -410,6 +411,9 @@ int LoadBackup::handle_event()
 	path_list.remove_all_objects();
 	mwindow->undo->update_undo_after();
 	mwindow->save_backup();
+// We deliberately mark the project changed, because the backup is most likely
+// not identical to the project file that it refers to.
+	mwindow->session->changes_made = 1;
 
 	return 1;
 }

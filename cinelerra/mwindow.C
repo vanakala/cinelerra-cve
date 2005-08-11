@@ -1009,10 +1009,6 @@ TRACE("MWindow::load_filenames 110");
 	new_assets.remove_all_objects();
 //printf("MWindow::load_filenames 10 %d\n", edl->session->audio_module_fragment);
 
-	if(load_mode == LOAD_REPLACE ||
-		load_mode == LOAD_REPLACE_CONCATENATE)
-		session->changes_made = 0;
-
 UNTRACE
 	return 0;
 }
