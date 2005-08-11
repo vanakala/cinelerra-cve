@@ -35,9 +35,12 @@ private:
 	List<UndoStackItem> redo_stack;
 	MainUndoStackItem* new_entry;	// for setting the after buffer
 	MWindow *mwindow;
-	int undo_before_updated;
+	char* data_after;	// the state after a change
 
+	void capture_state();
 	void prune_undo();
+
+	friend class MainUndoStackItem;
 };
 
 #endif

@@ -20,11 +20,11 @@
 class MainUndoStackItem : public UndoStackItem
 {
 public:
-	MainUndoStackItem(MWindow* mwindow, char* description);
+	MainUndoStackItem(MainUndo* main_undo, char* description,
+			uint32_t load_flags);
 	virtual ~MainUndoStackItem();
 
-	void set_data_before(char *data, uint32_t load_flags);
-	void set_data_after(char *data);
+	void set_data_before(char *data);
 	virtual void undo();
 	virtual void redo();
 	virtual int get_size();
@@ -33,13 +33,10 @@ private:
 // type of modification
 	unsigned long load_flags;
 	
-// data after the modification for redos
-	char *data_after;          
-	
 // data before the modification for undos
 	char *data_before;          
 
-	MWindow *mwindow;
+	MainUndo *main_undo;
 
 	void load_from_undo(FileXML *file, uint32_t load_flags);	// loads undo from the stringfile to the project
 };
@@ -48,11 +45,16 @@ private:
 MainUndo::MainUndo(MWindow *mwindow)
 { 
 	this->mwindow = mwindow;
-	undo_before_updated = 0;
+	new_entry = 0;
+	data_after = 0;
+
+// get the initial project so we have something that the last undo reverts to
+	capture_state();
 }
 
 MainUndo::~MainUndo()
 {
+	delete [] data_after;
 }
 
 void MainUndo::push_undo_item(UndoStackItem *item)
@@ -65,6 +67,8 @@ void MainUndo::push_undo_item(UndoStackItem *item)
 	undo_stack.append(item);
 	prune_undo();
 
+	capture_state();
+
 	mwindow->session->changes_made = 1;
    mwindow->gui->lock_window("MainUndo::update_undo_before");
    mwindow->gui->mainmenu->undo->update_caption(item->description);
@@ -72,44 +76,38 @@ void MainUndo::push_undo_item(UndoStackItem *item)
    mwindow->gui->unlock_window();
 }
 
+void MainUndo::capture_state()
+{
+	FileXML file;
+	mwindow->edl->save_xml(mwindow->plugindb, 
+		&file, 
+		"",
+		0,
+		0);
+	file.terminate_string();
+	delete [] data_after;
+	data_after = new char[strlen(file.string)+1];
+	strcpy(data_after, file.string);
+}
+
 void MainUndo::update_undo_before(char *description, uint32_t load_flags)
 {
-	if(!undo_before_updated)
+	if(!new_entry)
 	{
-		FileXML file;
-		mwindow->edl->save_xml(mwindow->plugindb, 
-			&file, 
-			"",
-			0,
-			0);
-		file.terminate_string();
-
-		new_entry = new MainUndoStackItem(mwindow, description);
-		new_entry->set_data_before(file.string, load_flags);
-
-		undo_before_updated = 1;
+		new_entry = new MainUndoStackItem(this, description, load_flags);
 	}
 }
 
 void MainUndo::update_undo_after()
 {
-	if(undo_before_updated)
+	if(new_entry)
 	{
-		FileXML file;
-//printf("MainUndo::update_undo_after 1\n");
-		mwindow->edl->save_xml(mwindow->plugindb, 
-			&file, 
-			"",
-			0,
-			0);
-//printf("MainUndo::update_undo_after 1\n");
-		file.terminate_string();
-//printf("MainUndo::update_undo_after 1\n");
-		new_entry->set_data_after(file.string);
-		push_undo_item(new_entry);
+// the old data_after is the state before the change
+		new_entry->set_data_before(data_after);
+		data_after = 0;
 
-//printf("MainUndo::update_undo_after 10\n");
-		undo_before_updated = 0;
+		push_undo_item(new_entry);
+		new_entry = 0;
 	}
 }
 
@@ -132,6 +130,7 @@ int MainUndo::undo()
 			mwindow->gui->mainmenu->redo->update_caption(current_entry->description);
 
       current_entry->undo();
+		capture_state();
 
 		if(mwindow->gui)
 		{
@@ -156,6 +155,7 @@ int MainUndo::redo()
 		undo_stack.append(current_entry);
 
       current_entry->redo();
+		capture_state();
 
 		if(mwindow->gui)
 		{
@@ -198,56 +198,54 @@ void MainUndo::prune_undo()
 
 
 
-MainUndoStackItem::MainUndoStackItem(MWindow* mwindow, char* description)
+MainUndoStackItem::MainUndoStackItem(MainUndo* main_undo, char* description,
+			uint32_t load_flags)
 {
-	data_after = data_before = 0;
-	load_flags = 0;
-	this->mwindow = mwindow;
+	data_before = 0;
+	this->load_flags = load_flags;
+	this->main_undo = main_undo;
 	set_description(description);
 }
 
 MainUndoStackItem::~MainUndoStackItem()
 {
-	delete [] data_after;
 	delete [] data_before;
 }
 
-void MainUndoStackItem::set_data_before(char *data, uint32_t load_flags)
+void MainUndoStackItem::set_data_before(char *data)
 {
-	this->data_before = new char[strlen(data) + 1];
-	strcpy(this->data_before, data);
-	this->load_flags = load_flags;
-}
-
-void MainUndoStackItem::set_data_after(char *data)
-{
-	this->data_after = new char[strlen(data) + 1];
-	strcpy(this->data_after, data);
+	data_before = new char[strlen(data) + 1];
+	strcpy(data_before, data);
 }
 
 void MainUndoStackItem::undo()
 {
+// move the old data_after here
+	char* before = data_before;
+	data_before = 0;
+	set_data_before(main_undo->data_after);
+
+// undo the state
 	FileXML file;
 
-	file.read_from_string(data_before);
+	file.read_from_string(before);
 	load_from_undo(&file, load_flags);
 }
 
 void MainUndoStackItem::redo()
 {
-	FileXML file;
-	file.read_from_string(data_after);
-	load_from_undo(&file, load_flags);
+	undo();
 }
 
 int MainUndoStackItem::get_size()
 {
-	return strlen(data_before) + strlen(data_after);
+	return data_before ? strlen(data_before) : 0;
 }
 
 // Here the master EDL loads 
 void MainUndoStackItem::load_from_undo(FileXML *file, uint32_t load_flags)
 {
+	MWindow* mwindow = main_undo->mwindow;
 	mwindow->edl->load_xml(mwindow->plugindb, file, load_flags);
 	for(Asset *asset = mwindow->edl->assets->first;
 		asset;
