@@ -1,3 +1,14 @@
+11.Aug.2005
+
+Changelog maintainer:
+
+	- Now we have a changelog maintainer. 
+
+giskard:
+	- modified debian/control, addedd libtheora-mmx-dev to the 
+	  build-deps.
+
+
 19.Oct.2003
 Added reporting of missing libraries when configure finishes.
 -Richard Baverstock
