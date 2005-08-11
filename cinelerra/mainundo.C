@@ -11,6 +11,11 @@
 #include "undostackitem.h"
 #include <string.h>
 
+// Minimum number of undoable operations on the undo stack
+#define UNDOMINLEVELS 5
+// Limits the bytes of memory used by the undo stack
+#define UNDOMEMORY 50000000
+
 
 class MainUndoStackItem : public UndoStackItem
 {
@@ -52,8 +57,13 @@ MainUndo::~MainUndo()
 
 void MainUndo::push_undo_item(UndoStackItem *item)
 {
-   undo_stack.push(item);
-   undo_stack.prune();
+// clear redo_stack
+	while (redo_stack.last)
+		redo_stack.remove(redo_stack.last);
+
+// move item onto undo_stack
+	undo_stack.append(item);
+	prune_undo();
 
 	mwindow->session->changes_made = 1;
    mwindow->gui->lock_window("MainUndo::update_undo_before");
@@ -110,20 +120,23 @@ void MainUndo::update_undo_after()
 
 int MainUndo::undo()
 {
-	if(undo_stack.current)
+	if(undo_stack.last)
 	{
-		UndoStackItem* current_entry = undo_stack.current;
+		UndoStackItem* current_entry = undo_stack.last;
+
+// move item to redo_stack
+		undo_stack.remove_pointer(current_entry);
+		redo_stack.append(current_entry);
+
 		if(current_entry->description && mwindow->gui) 
 			mwindow->gui->mainmenu->redo->update_caption(current_entry->description);
 
       current_entry->undo();
 
-		undo_stack.pull();    // move current back
 		if(mwindow->gui)
 		{
-			current_entry = undo_stack.current;
-			if(current_entry)
-				mwindow->gui->mainmenu->undo->update_caption(current_entry->description);
+			if(undo_stack.last)
+				mwindow->gui->mainmenu->undo->update_caption(undo_stack.last->description);
 			else
 				mwindow->gui->mainmenu->undo->update_caption("");
 		}
@@ -133,18 +146,23 @@ int MainUndo::undo()
 
 int MainUndo::redo()
 {
-	UndoStackItem* current_entry = undo_stack.pull_next();
+	UndoStackItem* current_entry = redo_stack.last;
 	
 	if(current_entry)
 	{
+
+// move item to undo_stack
+		redo_stack.remove_pointer(current_entry);
+		undo_stack.append(current_entry);
+
       current_entry->redo();
 
 		if(mwindow->gui)
 		{
 			mwindow->gui->mainmenu->undo->update_caption(current_entry->description);
 			
-			if(current_entry->next)
-				mwindow->gui->mainmenu->redo->update_caption(current_entry->next->description);
+			if(redo_stack.last)
+				mwindow->gui->mainmenu->redo->update_caption(redo_stack.last->description);
 			else
 				mwindow->gui->mainmenu->redo->update_caption("");
 		}
@@ -152,6 +170,29 @@ int MainUndo::redo()
 	return 0;
 }
 
+// enforces that the undo stack does not exceed a size of UNDOMEMORY
+// except that it always has at least UNDOMINLEVELS entries
+void MainUndo::prune_undo()
+{
+	int size = 0;
+	int levels = 0;
+
+	UndoStackItem* i = undo_stack.last;
+	while (i != 0 && (levels < UNDOMINLEVELS || size <= UNDOMEMORY))
+	{
+		size += i->get_size();
+		++levels;
+		i = i->previous;
+	}
+
+	if (i != 0)
+	{
+// truncate everything before and including i
+		while (undo_stack.first != i)
+			undo_stack.remove(undo_stack.first);
+		undo_stack.remove(undo_stack.first);
+	}
+}
 
 
 

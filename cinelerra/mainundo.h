@@ -2,12 +2,13 @@
 #define MAINUNDO_H
 
 
+#include "linklist.h"
 #include "mwindow.inc"
-#include "undostack.h"
 
 #include <stdint.h>
 
 
+class UndoStackItem;
 class MainUndoStackItem;
 
 
@@ -30,10 +31,13 @@ public:
 	int redo();
 
 private:
-	UndoStack undo_stack;
+	List<UndoStackItem> undo_stack;
+	List<UndoStackItem> redo_stack;
 	MainUndoStackItem* new_entry;	// for setting the after buffer
 	MWindow *mwindow;
 	int undo_before_updated;
+
+	void prune_undo();
 };
 
 #endif
