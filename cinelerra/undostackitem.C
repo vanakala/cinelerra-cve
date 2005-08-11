@@ -23,10 +23,6 @@ void UndoStackItem::undo()
 {
 }
 
-void UndoStackItem::redo()
-{
-}
-
 int UndoStackItem::get_size()
 {
 	return 0;

@@ -1652,7 +1652,6 @@ class InPointUndoItem : public UndoStackItem
 public:
 	InPointUndoItem(double old_position, double new_position, EDL *edl);
 	void undo();
-	void redo();
 	int get_size();
 private:
 	double old_position;
@@ -1672,11 +1671,10 @@ InPointUndoItem::InPointUndoItem(
 void InPointUndoItem::undo()
 {
    edl->set_inpoint(old_position);
-}
-
-void InPointUndoItem::redo()
-{
-   edl->set_inpoint(new_position);
+// prepare to undo the undo
+	double tmp = new_position;
+	new_position = old_position;
+	old_position = tmp;
 }
 
 int InPointUndoItem::get_size()
@@ -1723,7 +1721,6 @@ class OutPointUndoItem : public UndoStackItem
 public:
 	OutPointUndoItem(double old_position, double new_position, EDL *edl);
 	void undo();
-	void redo();
 	int get_size();
 private:
 	double old_position;
@@ -1743,11 +1740,10 @@ OutPointUndoItem::OutPointUndoItem(
 void OutPointUndoItem::undo()
 {
    edl->set_outpoint(old_position);
-}
-
-void OutPointUndoItem::redo()
-{
-   edl->set_outpoint(new_position);
+// prepare to undo the undo
+	double tmp = new_position;
+	new_position = old_position;
+	old_position = tmp;
 }
 
 int OutPointUndoItem::get_size()
@@ -1877,7 +1873,6 @@ class LabelUndoItem : public UndoStackItem
 public:
       LabelUndoItem(double position1, double position2, EDL *edl);
       void undo();
-      void redo();
       int get_size();
 private:
       double position1;
@@ -1895,11 +1890,6 @@ LabelUndoItem::LabelUndoItem(
 }
 
 void LabelUndoItem::undo()
-{
-	edl->labels->toggle_label(position1, position2);
-}
-
-void LabelUndoItem::redo()
 {
 	edl->labels->toggle_label(position1, position2);
 }

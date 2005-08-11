@@ -12,12 +12,13 @@ public:
 
 	void set_description(char *description);
 
-// These two virtual functions allow derived objects to be pushed
-// on to the undo stack that are more efficient in time and memory
-// usage than the default action of saving before and after copies
-// of the EDL.  
+// This function must be overridden in derived objects.
+// It is called both to undo and to redo an operation.
+// The override must do the following:
+// - change the EDL to undo an operation;
+// - change the internal information of the item so that the next invocation
+//   of undo() does a redo (i.e. undoes the undone operation).
 	virtual void undo();
-	virtual void redo();
 
 // Return the amount of memory used for the data associated with this
 // object in order to enable limiting the amount of memory used by the

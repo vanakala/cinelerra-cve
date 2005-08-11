@@ -20,13 +20,12 @@
 class MainUndoStackItem : public UndoStackItem
 {
 public:
-	MainUndoStackItem(MainUndo* main_undo, char* description,
+	MainUndoStackItem(MainUndo* undo, char* description,
 			uint32_t load_flags);
 	virtual ~MainUndoStackItem();
 
 	void set_data_before(char *data);
 	virtual void undo();
-	virtual void redo();
 	virtual int get_size();
 
 private:
@@ -118,22 +117,20 @@ void MainUndo::update_undo_after()
 
 int MainUndo::undo()
 {
-	if(undo_stack.last)
-	{
-		UndoStackItem* current_entry = undo_stack.last;
+	UndoStackItem* current_entry = undo_stack.last;
 
+	if(current_entry)
+	{
 // move item to redo_stack
 		undo_stack.remove_pointer(current_entry);
+		current_entry->undo();
 		redo_stack.append(current_entry);
-
-		if(current_entry->description && mwindow->gui) 
-			mwindow->gui->mainmenu->redo->update_caption(current_entry->description);
-
-      current_entry->undo();
 		capture_state();
 
 		if(mwindow->gui)
 		{
+			mwindow->gui->mainmenu->redo->update_caption(current_entry->description);
+
 			if(undo_stack.last)
 				mwindow->gui->mainmenu->undo->update_caption(undo_stack.last->description);
 			else
@@ -149,12 +146,10 @@ int MainUndo::redo()
 	
 	if(current_entry)
 	{
-
 // move item to undo_stack
 		redo_stack.remove_pointer(current_entry);
+		current_entry->undo();
 		undo_stack.append(current_entry);
-
-      current_entry->redo();
 		capture_state();
 
 		if(mwindow->gui)
@@ -230,11 +225,6 @@ void MainUndoStackItem::undo()
 
 	file.read_from_string(before);
 	load_from_undo(&file, load_flags);
-}
-
-void MainUndoStackItem::redo()
-{
-	undo();
 }
 
 int MainUndoStackItem::get_size()
