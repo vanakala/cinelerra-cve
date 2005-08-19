@@ -6,6 +6,7 @@
 #include "edlsession.h"
 #include "labels.h"
 #include "localsession.h"
+#include "maincursor.h"
 #include "mainsession.h"
 #include "mtimebar.h"
 #include "mwindow.h"
@@ -27,39 +28,70 @@ void MWindow::update_plugins()
 }
 
 
-int MWindow::expand_sample()
+int MWindow::expand_sample(double fixed_sample)
 {
 	if(gui)
 	{
 		if(edl->local_session->zoom_sample < 0x100000)
 		{
-			edl->local_session->zoom_sample *= 2;
-			gui->zoombar->sample_zoom->update(edl->local_session->zoom_sample);
-			zoom_sample(edl->local_session->zoom_sample);
+
+			int64_t new_zoom_sample = edl->local_session->zoom_sample * 2;
+			int64_t view_start;
+			if (fixed_sample < 0)
+				view_start = -1;
+			else
+			{
+				double viewstart_position = (double)edl->local_session->view_start * 
+					edl->local_session->zoom_sample /
+					edl->session->sample_rate * 2 - fixed_sample;
+				view_start = Units::round(viewstart_position *
+					edl->session->sample_rate /
+					new_zoom_sample);
+			}
+			
+			zoom_sample(new_zoom_sample, view_start);
 		}
 	}
 	return 0;
 }
 
-int MWindow::zoom_in_sample()
+int MWindow::zoom_in_sample(double fixed_sample)
 {
 	if(gui)
 	{
 		if(edl->local_session->zoom_sample > 1)
 		{
-			edl->local_session->zoom_sample /= 2;
-			gui->zoombar->sample_zoom->update(edl->local_session->zoom_sample);
-			zoom_sample(edl->local_session->zoom_sample);
+			int64_t new_zoom_sample = edl->local_session->zoom_sample / 2;
+			int64_t view_start;
+			if (fixed_sample < 0)
+				view_start = -1;
+			else
+			{
+				double viewstart_position = (double)edl->local_session->view_start * 
+					edl->local_session->zoom_sample /
+					edl->session->sample_rate;
+				viewstart_position = viewstart_position + (fixed_sample - viewstart_position) / 2;
+
+				view_start = Units::round(viewstart_position *
+					edl->session->sample_rate /
+					new_zoom_sample);
+			}
+			
+			zoom_sample(new_zoom_sample, view_start);
 		}
 	}
 	return 0;
 }
 
-int MWindow::zoom_sample(int64_t zoom_sample)
+int MWindow::zoom_sample(int64_t zoom_sample, int64_t view_start)
 {
 	CLIP(zoom_sample, 1, 0x100000);
 	edl->local_session->zoom_sample = zoom_sample;
-	find_cursor();
+	if (view_start < 0)
+		find_cursor();
+	else
+		edl->local_session->view_start = view_start;
+ 			
 	gui->get_scrollbars();
 
 	if(!gui->samplescroll) edl->local_session->view_start = 0;

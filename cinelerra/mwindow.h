@@ -160,9 +160,9 @@ public:
 	void prev_time_format();
 	void time_format_common();
 	int reposition_timebar(int new_pixel, int new_height);
-	int expand_sample();
-	int zoom_in_sample();
-	int zoom_sample(int64_t zoom_sample);
+	int expand_sample(double fixed_sample = -1);    // fixed_sample is the sample that should hold fixed position on the screen after zooming, -1 = selection
+	int zoom_in_sample(double fixed_sample = -1);
+	int zoom_sample(int64_t zoom_sample, int64_t view_start = -1); // what's the supposed view start
 	void zoom_amp(int64_t zoom_amp);
 	void zoom_track(int64_t zoom_track);
 	int fit_sample();

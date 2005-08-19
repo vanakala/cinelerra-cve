@@ -4667,6 +4667,14 @@ int TrackCanvas::button_press_event()
 
 	if(is_event_win() && cursor_inside())
 	{
+		double position = (double)cursor_x * 
+			mwindow->edl->local_session->zoom_sample /
+			mwindow->edl->session->sample_rate + 
+			(double)mwindow->edl->local_session->view_start * 
+			mwindow->edl->local_session->zoom_sample /
+			mwindow->edl->session->sample_rate;
+
+
 		if(!active)
 		{
 			activate();
@@ -4684,15 +4692,30 @@ int TrackCanvas::button_press_event()
 		if(get_buttonpress() == 4)
 		{
 //printf("TrackCanvas::button_press_event 1\n");
-			mwindow->move_up(get_h() / 10);
-			result = 1;
+			if (shift_down())
+			{
+				mwindow->zoom_in_sample(position);
+				result = 1;
+			} else
+			{		
+				mwindow->move_up(get_h() / 10);
+				result = 1;
+			}
 		}
 		else
 		if(get_buttonpress() == 5)
 		{
 //printf("TrackCanvas::button_press_event 2\n");
-			mwindow->move_down(get_h() / 10);
-			result = 1;
+			if (shift_down())
+			{
+				mwindow->expand_sample(position);
+				result = 1;
+
+			} else
+			{		
+				mwindow->move_down(get_h() / 10);
+				result = 1;
+			}		
 		}
 		else
 		switch(mwindow->edl->session->editing_mode)
@@ -4760,12 +4783,6 @@ int TrackCanvas::button_press_event()
 // Test handles only and select a region
 			case EDITING_IBEAM:
 			{
-				double position = (double)cursor_x * 
-					mwindow->edl->local_session->zoom_sample /
-					mwindow->edl->session->sample_rate + 
-					(double)mwindow->edl->local_session->view_start * 
-					mwindow->edl->local_session->zoom_sample /
-					mwindow->edl->session->sample_rate;
 //printf("TrackCanvas::button_press_event %d\n", position);
 
 				if(mwindow->edl->session->auto_conf->transitions && 
