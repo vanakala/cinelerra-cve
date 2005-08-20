@@ -859,7 +859,6 @@ int CWindowCanvas::do_mask(int &redraw,
 	mask_cursor_y -= projector_y;
 	mask_cursor_x = mask_cursor_x / projector_z + half_track_w;
 	mask_cursor_y = mask_cursor_y / projector_z + half_track_h;
-	printf("MCx: %f, MCy: %f\n", mask_cursor_x, mask_cursor_y);
 // Fix cursor origin
 	if(button_press)
 	{
