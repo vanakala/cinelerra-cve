@@ -851,11 +851,15 @@ int CWindowCanvas::do_mask(int &redraw,
 	float mask_cursor_y = get_cursor_y();
 	canvas_to_output(mwindow->edl, 0, mask_cursor_x, mask_cursor_y);
 
+	projector_x += mwindow->edl->session->output_w / 2;
+	projector_y += mwindow->edl->session->output_h / 2;
+                
+
 	mask_cursor_x -= projector_x;
 	mask_cursor_y -= projector_y;
-	mask_cursor_x = half_track_w + (mask_cursor_x - half_track_w) / projector_z;
-	mask_cursor_y = half_track_h + (mask_cursor_y - half_track_h) / projector_z;
-
+	mask_cursor_x = mask_cursor_x / projector_z + half_track_w;
+	mask_cursor_y = mask_cursor_y / projector_z + half_track_h;
+	printf("MCx: %f, MCy: %f\n", mask_cursor_x, mask_cursor_y);
 // Fix cursor origin
 	if(button_press)
 	{
@@ -931,8 +935,8 @@ int CWindowCanvas::do_mask(int &redraw,
 					+ 3 * tpow2 * invt     * y2 
 					+     tpow3            * y3);
 
-				x = half_track_w + (x - half_track_w) * projector_z + projector_x;
-				y = half_track_h + (y - half_track_h) * projector_z + projector_y;
+				x = (x - half_track_w) * projector_z + projector_x;
+				y = (y - half_track_h) * projector_z + projector_y;
 
 
 // Test new point addition
@@ -985,16 +989,16 @@ int CWindowCanvas::do_mask(int &redraw,
 // Test existing point selection
 				if(button_press)
 				{
-					float canvas_x = half_track_w + (x0 - half_track_w) * projector_z + projector_x;
-					float canvas_y = half_track_h + (y0 - half_track_h) * projector_z + projector_y;
+					float canvas_x = (x0 - half_track_w) * projector_z + projector_x;
+					float canvas_y = (y0 - half_track_h) * projector_z + projector_y;
 					int cursor_x = get_cursor_x();
 					int cursor_y = get_cursor_y();
 
 // Test first point
 					if(gui->shift_down())
 					{
-						float control_x = half_track_w + (x1 - half_track_w) * projector_z + projector_x;
-						float control_y = half_track_h + (y1 - half_track_h) * projector_z + projector_y;
+						float control_x = (x1 - half_track_w) * projector_z + projector_x;
+						float control_y = (y1 - half_track_h) * projector_z + projector_y;
 						output_to_canvas(mwindow->edl, 0, control_x, control_y);
 
 						float distance = 
@@ -1024,12 +1028,12 @@ int CWindowCanvas::do_mask(int &redraw,
 					}
 
 // Test second point
-					canvas_x = half_track_w + (x3 - half_track_w) * projector_z + projector_x;
-					canvas_y = half_track_h + (y3 - half_track_h) * projector_z + projector_y;
+					canvas_x = (x3 - half_track_w) * projector_z + projector_x;
+					canvas_y = (y3 - half_track_h) * projector_z + projector_y;
 					if(gui->shift_down())
 					{
-						float control_x = half_track_w + (x2 - half_track_w) * projector_z + projector_x;
-						float control_y = half_track_h + (y2 - half_track_h) * projector_z + projector_y;
+						float control_x = (x2 - half_track_w) * projector_z + projector_x;
+						float control_y = (y2 - half_track_h) * projector_z + projector_y;
 						output_to_canvas(mwindow->edl, 0, control_x, control_y);
 
 						float distance = 
@@ -1099,8 +1103,8 @@ int CWindowCanvas::do_mask(int &redraw,
 							}
 
 // Draw second control point.  Discard x2 and y2 after this.
-							x2 = half_track_w + (x2 - half_track_w) * projector_z + projector_x;
-							y2 = half_track_h + (y2 - half_track_h) * projector_z + projector_y;
+							x2 = (x2 - half_track_w) * projector_z + projector_x;
+							y2 = (y2 - half_track_h) * projector_z + projector_y;
 							output_to_canvas(mwindow->edl, 0, x2, y2);
 							canvas->draw_line((int)x, (int)y, (int)x2, (int)y2);
 							canvas->draw_rectangle((int)x2 - CONTROL_W / 2,
@@ -1126,8 +1130,8 @@ int CWindowCanvas::do_mask(int &redraw,
 // Draw first control point.  Discard x1 and y1 after this.
 					if(draw)
 					{
-						x1 = half_track_w + (x1 - half_track_w) * projector_z + projector_x;
-						y1 = half_track_h + (y1 - half_track_h) * projector_z + projector_y;
+						x1 = (x1 - half_track_w) * projector_z + projector_x;
+						y1 = (y1 - half_track_h) * projector_z + projector_y;
 						output_to_canvas(mwindow->edl, 0, x1, y1);
 						canvas->draw_line((int)x, (int)y, (int)x1, (int)y1);
 						canvas->draw_rectangle((int)x1 - CONTROL_W / 2,

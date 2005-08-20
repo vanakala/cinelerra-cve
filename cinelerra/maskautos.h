@@ -31,6 +31,10 @@ public:
 // Retrieve parameters which don't change over time but are stored somewhere
 // in mask autos.  These parameters are taken from default_auto.
 
+
+// Translates ALL mask points (got all keyframes and submasks) 
+	void translate_masks(float translate_x, float translate_y);
+
 };
 
 

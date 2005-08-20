@@ -56,7 +56,8 @@ public:
 	void dump();
 // Retrieve submask with clamping
 	SubMask* get_submask(int number);
-	
+// Translates all submasks	
+	void translate_submasks(float translate_x, float translate_y);	
 
 	ArrayList<SubMask*> masks;
 // These are constant for the entire track

@@ -149,3 +149,27 @@ int MaskAutos::total_submasks(int64_t position, int direction)
 }
 
 
+// Translates ALL mask points (for all keyframes and submasks) 
+void MaskAutos::translate_masks(float translate_x, float translate_y)
+{
+	((MaskAuto *)default_auto)->translate_submasks(translate_x, translate_y);
+	for(MaskAuto* current = (MaskAuto*)first; 
+		current; 
+		current = (MaskAuto*)NEXT)
+	{
+		current->translate_submasks(translate_x, translate_y);
+		printf("Maskauto\n");
+		for(int i = 0; i < current->masks.total; i++)
+		{
+			printf("Masks\n");
+			SubMask *mask = current->get_submask(i);
+			for (int j = 0; j < mask->points.total; j++) 
+			{
+				mask->points.values[j]->x += translate_x;
+				mask->points.values[j]->y += translate_y;
+				printf("mpx: %f, mpy:%f\n",mask->points.values[j]->x,mask->points.values[j]->y);
+			}
+		}
+		
+	}
+}

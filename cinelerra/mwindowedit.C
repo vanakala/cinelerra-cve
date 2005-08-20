@@ -43,7 +43,8 @@
 #include "vwindow.h"
 #include "vwindowgui.h"
 #include "zoombar.h"
-
+#include "automation.h"
+#include "maskautos.h"
 
 
 #include <string.h>
@@ -1637,6 +1638,9 @@ void MWindow::redo_entry(BC_WindowBase *calling_window_gui)
 void MWindow::resize_track(Track *track, int w, int h)
 {
 	undo->update_undo_before(_("resize track"), LOAD_ALL);
+	// We have to move all maskpoints so they do not move in relation to image areas
+	track->automation->mask_autos->translate_masks((w - track->track_w)/2, (h - track->track_h)/2);
+	
 	track->track_w = w;
 	track->track_h = h;
 	undo->update_undo_after();
