@@ -1141,6 +1141,13 @@ void Asset::save_defaults(Defaults *defaults,
 	UPDATE_DEFAULT("DIVX_FIX_BITRATE", divx_fix_bitrate);
 	UPDATE_DEFAULT("DIVX_USE_DEBLOCKING", divx_use_deblocking);
 
+	UPDATE_DEFAULT("THEORA_FIX_BITRATE", theora_fix_bitrate);
+	UPDATE_DEFAULT("THEORA_BITRATE", theora_bitrate);
+	UPDATE_DEFAULT("THEORA_QUALITY", theora_quality);
+	UPDATE_DEFAULT("THEORA_SHARPNESS", theora_sharpness);
+	UPDATE_DEFAULT("THEORA_KEYFRAME_FREQUENCY", theora_keyframe_frequency);
+	UPDATE_DEFAULT("THEORA_FORCE_KEYFRAME_FEQUENCY", theora_keyframe_force_frequency);
+
 
 	UPDATE_DEFAULT("MS_BITRATE", ms_bitrate);
 	UPDATE_DEFAULT("MS_BITRATE_TOLERANCE", ms_bitrate_tolerance);
