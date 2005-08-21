@@ -573,6 +573,11 @@ void MaskUnit::process_package(LoadPackage *package)
 						while (P < MAXP && chg)
 						{
 						//	printf("Sp: %i %i\n", span[P], span[P+1]);
+							if (span[P] == span[P+1])           /* ignore empty spans */
+							{
+								P +=2;
+								continue;
+							}
 							if (span[P] <= pixelright)          /* if span start is before the end of pixel */
 								coverage += MIN(span[P+1], pixelright)  /* 'clip' the span to pixel */
 		                                                          - MAX(span[P], pixelleft) + 1;
