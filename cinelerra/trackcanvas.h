@@ -38,6 +38,7 @@ public:
 		int indexes_only = 0,     // Redraw only certain audio resources with indexes
 		Asset *index_asset = 0);
 	void draw_highlight_rectangle(int x, int y, int w, int h);
+	void draw_highlight_insertion(int x, int y, int w, int h);
 	void draw_playback_cursor();
 	void draw_highlighting();
 // User can either call draw or draw_overlays to copy a fresh 
@@ -255,6 +256,7 @@ public:
 	int start_selection(double position);
 	int drag_motion();
 	int drag_stop();
+	int64_t get_drop_position (int *is_insertion, Edit *moved_edit, int64_t moved_edit_length);
 	void end_edithandle_selection();
 	void end_pluginhandle_selection();
 // Number of seconds spanned by the trackcanvas

@@ -29,6 +29,7 @@
 #include "patchbay.h"
 #include "playbackengine.h"
 #include "pluginset.h"
+#include "preferences.h"
 #include "recordlabel.h"
 #include "samplescroll.h"
 #include "trackcanvas.h"
@@ -744,7 +745,8 @@ void MWindow::match_output_size(Track *track)
 
 void MWindow::move_edits(ArrayList<Edit*> *edits, 
 		Track *track,
-		double position)
+		double position,
+		int behaviour)
 {
 	undo->update_undo_before(_("move edit"), LOAD_ALL);
 
@@ -752,7 +754,8 @@ void MWindow::move_edits(ArrayList<Edit*> *edits,
 		track, 
 		position,
 		edl->session->labels_follow_edits, 
-		edl->session->plugins_follow_edits);
+		edl->session->plugins_follow_edits,
+		behaviour);
 
 	save_backup();
 	undo->update_undo_after();

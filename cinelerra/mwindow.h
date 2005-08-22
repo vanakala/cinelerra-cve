@@ -262,7 +262,8 @@ public:
 // Move edit to new position
 	void move_edits(ArrayList<Edit*> *edits,
 		Track *track,
-		double position);
+		double position,
+		int behaviour);       // behaviour: 0 - old style (cut and insert elswhere), 1- new style - (clear and overwrite elsewere)
 // Move effect to position
 	void move_effect(Plugin *plugin,
 		PluginSet *plugin_set,

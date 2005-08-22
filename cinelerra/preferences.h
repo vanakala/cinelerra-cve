@@ -53,6 +53,8 @@ public:
 	int index_count;
 // Use thumbnails in AWindow assets.
 	int use_thumbnails;
+// new behavior fro drag'n drop
+	int dragdrop;
 // Title of theme
 	char theme[BCTEXTLEN];
 	double render_preroll;

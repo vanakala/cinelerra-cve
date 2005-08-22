@@ -1,15 +1,11 @@
 #include "deleteallindexes.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "language.h"
 #include "mwindow.h"
 #include "preferences.h"
 #include "preferencesthread.h"
 #include "interfaceprefs.h"
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 #if 0
 N_("Drag all following edits")
@@ -43,37 +39,37 @@ int InterfacePrefs::create_objects()
 	y += 35;
 	add_subwindow(hms = new TimeFormatHMS(pwindow, 
 		this, 
-		pwindow->thread->edl->session->time_format == 0, 
+		pwindow->thread->edl->session->time_format == TIME_HMS, 
 		x, 
 		y));
 	y += 20;
 	add_subwindow(hmsf = new TimeFormatHMSF(pwindow, 
 		this, 
-		pwindow->thread->edl->session->time_format == 1, 
+		pwindow->thread->edl->session->time_format == TIME_HMSF, 
 		x, 
 		y));
 	y += 20;
 	add_subwindow(samples = new TimeFormatSamples(pwindow, 
 		this, 
-		pwindow->thread->edl->session->time_format == 2, 
+		pwindow->thread->edl->session->time_format == TIME_SAMPLES, 
 		x, 
 		y));
 	y += 20;
 	add_subwindow(hex = new TimeFormatHex(pwindow, 
 		this, 
-		pwindow->thread->edl->session->time_format == 3, 
+		pwindow->thread->edl->session->time_format == TIME_SAMPLES_HEX, 
 		x, 
 		y));
 	y += 20;
 	add_subwindow(frames = new TimeFormatFrames(pwindow, 
 		this, 
-		pwindow->thread->edl->session->time_format == 4, 
+		pwindow->thread->edl->session->time_format == TIME_FRAMES, 
 		x, 
 		y));
 	y += 20;
 	add_subwindow(feet = new TimeFormatFeet(pwindow, 
 		this, 
-		pwindow->thread->edl->session->time_format == 5, 
+		pwindow->thread->edl->session->time_format == TIME_FEET_FRAMES, 
 		x, 
 		y));
 	add_subwindow(new BC_Title(260, y, _("frames per foot")));
@@ -82,6 +78,12 @@ int InterfacePrefs::create_objects()
 		x + 155, 
 		y - 5, 
 		string));
+	y += 20;
+	add_subwindow(seconds = new TimeFormatSeconds(pwindow, 
+		this, 
+		pwindow->thread->edl->session->time_format == TIME_SECONDS, 
+		x, 
+		y));
 
 
 	y += 35;
@@ -162,17 +164,25 @@ int InterfacePrefs::create_objects()
 			&(pwindow->thread->edl->session->edit_handle_mode[2])));
 	text->create_objects();
 
-	y += 40;
-	add_subwindow(new BC_Title(x, y, _("Min DB for meter:")));
-	sprintf(string, "%.0f", pwindow->thread->edl->session->min_meter_db);
-	add_subwindow(min_db = new MeterMinDB(pwindow, string, y));
 	y += 30;
-// 	add_subwindow(new BC_Title(x, y, _("Format for meter:")));
-// 	add_subwindow(vu_db = new MeterVUDB(pwindow, _("DB"), y));
-//	add_subwindow(vu_int = new MeterVUInt(pwindow, _("Percent of maximum"), y));
-//	vu_db->vu_int = vu_int;
-//	vu_int->vu_db = vu_db;
+	add_subwindow(new BC_Title(x, y, _("Drag&Drop behavior:")));
+	add_subwindow(dr = new DD_Mode (pwindow, _("Free dragging of edits on timeline"), pwindow->thread->preferences->dragdrop, 180, y - 5));
 	
+	y += 30;
+	int x1 = x;
+	BC_Title *title;
+	add_subwindow(title = new BC_Title(x, y + 5, _("Min DB for meter:")));
+	x += title->get_w() + 10;
+	sprintf(string, "%d", pwindow->thread->edl->session->min_meter_db);
+	add_subwindow(min_db = new MeterMinDB(pwindow, string, x, y));
+
+	x += min_db->get_w() + 10;
+	add_subwindow(title = new BC_Title(x, y + 5, _("Max DB:")));
+	x += title->get_w() + 10;
+	sprintf(string, "%d", pwindow->thread->edl->session->max_meter_db);
+	add_subwindow(max_db = new MeterMaxDB(pwindow, string, x, y));
+
+	x = x1;
 	y += 30;
 	ViewTheme *theme;
 	add_subwindow(new BC_Title(x, y, _("Theme:")));
@@ -208,12 +218,13 @@ int InterfacePrefs::update(int new_value)
 {
 	pwindow->thread->redraw_times = 1;
 	pwindow->thread->edl->session->time_format = new_value;
-	hms->update(new_value == 0);
-	hmsf->update(new_value == 1);
-	samples->update(new_value == 2);
-	hex->update(new_value == 3);
-	frames->update(new_value == 4);
-	feet->update(new_value == 5);
+	hms->update(new_value == TIME_HMS);
+	hmsf->update(new_value == TIME_HMSF);
+	samples->update(new_value == TIME_SAMPLES);
+	hex->update(new_value == TIME_SAMPLES_HEX);
+	frames->update(new_value == TIME_FRAMES);
+	feet->update(new_value == TIME_FEET_FRAMES);
+	seconds->update(new_value == TIME_SECONDS);
 }
 
 InterfacePrefs::~InterfacePrefs()
@@ -225,9 +236,11 @@ InterfacePrefs::~InterfacePrefs()
 	delete hex;
 	delete feet;
 	delete min_db;
+	delete max_db;
 //	delete vu_db;
 //	delete vu_int;
 	delete thumbnails;
+	delete dr;
 }
 
 
@@ -325,7 +338,7 @@ TimeFormatHMS::TimeFormatHMS(PreferencesWindow *pwindow, InterfacePrefs *tfwindo
 
 int TimeFormatHMS::handle_event()
 {
-	tfwindow->update(0);
+	tfwindow->update(TIME_HMS);
 	return 1;
 }
 
@@ -335,7 +348,7 @@ TimeFormatHMSF::TimeFormatHMSF(PreferencesWindow *pwindow, InterfacePrefs *tfwin
 
 int TimeFormatHMSF::handle_event()
 {
-	tfwindow->update(1);
+	tfwindow->update(TIME_HMSF);
 }
 
 TimeFormatSamples::TimeFormatSamples(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y)
@@ -344,7 +357,7 @@ TimeFormatSamples::TimeFormatSamples(PreferencesWindow *pwindow, InterfacePrefs 
 
 int TimeFormatSamples::handle_event()
 {
-	tfwindow->update(2);
+	tfwindow->update(TIME_SAMPLES);
 }
 
 TimeFormatFrames::TimeFormatFrames(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y)
@@ -353,7 +366,7 @@ TimeFormatFrames::TimeFormatFrames(PreferencesWindow *pwindow, InterfacePrefs *t
 
 int TimeFormatFrames::handle_event()
 {
-	tfwindow->update(4);
+	tfwindow->update(TIME_FRAMES);
 }
 
 TimeFormatHex::TimeFormatHex(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y)
@@ -362,7 +375,19 @@ TimeFormatHex::TimeFormatHex(PreferencesWindow *pwindow, InterfacePrefs *tfwindo
 
 int TimeFormatHex::handle_event()
 {
-	tfwindow->update(3);
+	tfwindow->update(TIME_SAMPLES_HEX);
+}
+
+TimeFormatSeconds::TimeFormatSeconds(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y)
+ : BC_Radial(x, y, value, _("Use Seconds"))
+{ 
+	this->pwindow = pwindow; 
+	this->tfwindow = tfwindow; 
+}
+
+int TimeFormatSeconds::handle_event()
+{
+	tfwindow->update(TIME_SECONDS);
 }
 
 TimeFormatFeet::TimeFormatFeet(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y)
@@ -371,7 +396,7 @@ TimeFormatFeet::TimeFormatFeet(PreferencesWindow *pwindow, InterfacePrefs *tfwin
 
 int TimeFormatFeet::handle_event()
 {
-	tfwindow->update(5);
+	tfwindow->update(TIME_FEET_FRAMES);
 }
 
 TimeFormatFeetSetting::TimeFormatFeetSetting(PreferencesWindow *pwindow, int x, int y, char *string)
@@ -437,9 +462,11 @@ int ViewBehaviourItem::handle_event()
 
 
 
-MeterMinDB::MeterMinDB(PreferencesWindow *pwindow, char *text, int y)
- : BC_TextBox(145, y, 50, 1, text)
-{ this->pwindow = pwindow; }
+MeterMinDB::MeterMinDB(PreferencesWindow *pwindow, char *text, int x, int y)
+ : BC_TextBox(x, y, 50, 1, text)
+{ 
+	this->pwindow = pwindow; 
+}
 
 int MeterMinDB::handle_event()
 { 
@@ -448,6 +475,21 @@ int MeterMinDB::handle_event()
 	return 0;
 }
 
+
+
+
+MeterMaxDB::MeterMaxDB(PreferencesWindow *pwindow, char *text, int x, int y)
+ : BC_TextBox(x, y, 50, 1, text)
+{ 
+	this->pwindow = pwindow; 
+}
+
+int MeterMaxDB::handle_event()
+{ 
+	pwindow->thread->redraw_meters = 1;
+	pwindow->thread->edl->session->max_meter_db = atol(get_text()); 
+	return 0;
+}
 
 
 
@@ -546,5 +588,21 @@ int ViewThumbnails::handle_event()
 {
 	pwindow->thread->preferences->use_thumbnails = get_value();
 	return 1;
+}
+
+DD_Mode::DD_Mode (PreferencesWindow *pwindow, char *text, int value, int x, int y)
+ : BC_CheckBox(x, 
+       y, 
+       pwindow->thread->preferences->dragdrop, 
+       text)
+{
+       this->pwindow = pwindow;
+}
+
+int DD_Mode::handle_event()
+{
+       pwindow->thread->preferences->dragdrop = get_value();
+       
+       return 1;
 }
 

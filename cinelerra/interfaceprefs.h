@@ -10,11 +10,14 @@ class TimeFormatSamples;
 class TimeFormatFrames;
 class TimeFormatHex;
 class TimeFormatFeet;
+class TimeFormatSeconds;
 class MeterMinDB;
+class MeterMaxDB;
 class MeterVUDB;
 class MeterVUInt;
 class ViewBehaviourText;
 class ViewThumbnails;
+class DD_Mode;
 
 #include "browsebutton.h"
 #include "deleteallindexes.inc"
@@ -45,12 +48,15 @@ public:
 	TimeFormatHex *hex;
 	TimeFormatFrames *frames;
 	TimeFormatFeet *feet;
+	TimeFormatSeconds *seconds;
 
 	MeterMinDB *min_db;
+	MeterMaxDB *max_db;
 	MeterVUDB *vu_db;
 //	MeterVUInt *vu_int;
 	ViewBehaviourText *button1, *button2, *button3;
 	ViewThumbnails *thumbnails;
+	DD_Mode *dr;
 };
 
 
@@ -134,6 +140,15 @@ public:
 	InterfacePrefs *tfwindow;
 };
 
+class TimeFormatSeconds : public BC_Radial
+{
+public:
+	TimeFormatSeconds(PreferencesWindow *pwindow, InterfacePrefs *tfwindow, int value, int x, int y);
+	int handle_event();
+	PreferencesWindow *pwindow;
+	InterfacePrefs *tfwindow;
+};
+
 class TimeFormatFeetSetting : public BC_TextBox
 {
 public:
@@ -147,7 +162,16 @@ public:
 class MeterMinDB : public BC_TextBox
 {
 public:
-	MeterMinDB(PreferencesWindow *pwindow, char *text, int y);
+	MeterMinDB(PreferencesWindow *pwindow, char *text, int x, int y);
+	int handle_event();
+	PreferencesWindow *pwindow;
+};
+
+
+class MeterMaxDB : public BC_TextBox
+{
+public:
+	MeterMaxDB(PreferencesWindow *pwindow, char *text, int x, int y);
 	int handle_event();
 	PreferencesWindow *pwindow;
 };
@@ -225,6 +249,12 @@ public:
 	ViewTheme *popup;
 };
 
-
+class DD_Mode : public BC_CheckBox
+{
+public:
+       DD_Mode (PreferencesWindow *pwindow, char *text, int value, int x, int y);
+       int handle_event();
+       PreferencesWindow *pwindow;
+};
 
 #endif

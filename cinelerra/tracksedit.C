@@ -165,7 +165,8 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 	Track *track,
 	double position,
 	int edit_labels,  // Ignored
-	int edit_plugins)  // Ignored
+	int edit_plugins,  // Ignored
+	int behaviour)
 {
 //printf("Tracks::move_edits 1\n");
 	for(Track *dest_track = track; dest_track; dest_track = dest_track->next)
@@ -213,67 +214,116 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 //printf("Tracks::move_edits 2 %s %s %d\n", source_track->title, dest_track->title, source_edit->length);
 			if(source_edit)
 			{
-// Copy keyframes
-				FileXML temp;
-				AutoConf temp_autoconf;
 				int64_t position_i = source_track->to_units(position, 0);
 // Source edit changes
 				int64_t source_length = source_edit->length;
+				int64_t source_startproject = source_edit->startproject;
 
-				temp_autoconf.set_all();
+				if (behaviour == 0)
+				{
+				// This works like this: CUT edit, INSERT edit at final position, keyframes also follow
+				// FIXME: there should be a GUI way to tell whenever user also wants to move autos or not
+// Copy keyframes
+					FileXML temp;
+					AutoConf temp_autoconf;
 
-				source_track->automation->copy(source_edit->startproject, 
-					source_edit->startproject + source_edit->length, 
-					&temp, 
-					0,
-					0);
-				temp.terminate_string();
-				temp.rewind();
-// Insert new keyframes
-//printf("Tracks::move_edits 2 %d %p\n", result->startproject, result->asset);
-				source_track->automation->clear(source_edit->startproject,
-					source_edit->startproject + source_edit->length, 
-					&temp_autoconf,
-					1);
-				int64_t position_a = position_i;
-				if (dest_track == source_track)
-                {
-                    if (position_a > source_edit->startproject)
-                            position_a -= source_length;
-                }	        
+					temp_autoconf.set_all();
 
-				dest_track->automation->paste_silence(position_a, 
-					position_a + source_length);
-				while(!temp.read_tag())
-					dest_track->automation->paste(position_a, 
-						source_length, 
-						1.0, 
+					source_track->automation->copy(source_edit->startproject, 
+						source_edit->startproject + source_edit->length, 
 						&temp, 
 						0,
-						&temp_autoconf);
+						0);
+					temp.terminate_string();
+					temp.rewind();
+// Insert new keyframes
+//printf("Tracks::move_edits 2 %d %p\n", result->startproject, result->asset);
+					source_track->automation->clear(source_edit->startproject,
+						source_edit->startproject + source_edit->length, 
+						&temp_autoconf,
+						1);
+					int64_t position_a = position_i;
+					if (dest_track == source_track)
+					{
+						if (position_a > source_edit->startproject)
+							position_a -= source_length;
+					}	        
 
-
+					dest_track->automation->paste_silence(position_a, 
+						position_a + source_length);
+					while(!temp.read_tag())
+						dest_track->automation->paste(position_a, 
+							source_length, 
+							1.0, 
+							&temp, 
+							0,
+							&temp_autoconf);
 
 //printf("Tracks::move_edits 1 %d\n", source_edit->length);
 // Insert new edit
-				Edit *dest_edit = dest_track->edits->shift(position_i, 
-					source_length);
-				Edit *result = dest_track->edits->insert_before(dest_edit, 
-					new Edit(edl, dest_track));
-				result->copy_from(source_edit);
-				result->startproject = position_i;
-				result->length = source_length;
+					Edit *dest_edit = dest_track->edits->shift(position_i, 
+						source_length);
+					Edit *result = dest_track->edits->insert_before(dest_edit, 
+						new Edit(edl, dest_track));
+					result->copy_from(source_edit);
+					result->startproject = position_i;
+					result->length = source_length;
 
 //printf("Tracks::move_edits 5\n");
 //dest_track->dump();
 
 // Clear source
 //printf("Tracks::move_edits 7 %d %d\n", clear_start, clear_end);
-				source_track->edits->clear(source_edit->startproject, 
-					source_edit->startproject + source_length);
+					source_track->edits->clear(source_edit->startproject, 
+						source_edit->startproject + source_length);
 
+	/*
+//this is outline for future thinking how it is supposed to be done trough C&P mechanisms
+					temp.reset_tag();
+					source_track->cut(source_edit->startproject, 
+						source_edit->startproject + source_edit->length, 
+						&temp, 
+						NULL);
+					temp.terminate_string();
+					temp.rewind();
+					dest_track->paste_silence(position_a, 
+						position_a + source_length,
+						edit_plugins);
+					while(!temp.read_tag())
+						dest_track->paste(position_a,          // MISSING PIECE OF FUNCTIONALITY 
+							source_length, 
+							1.0, 
+							&temp, 
+							0,
+							&temp_autoconf);
+	*/
 
-                                
+			
+				} else
+				if (behaviour == 1)
+				// ONLY edit is moved, all other edits stay where they are
+				{
+					// Copy edit to temp, delete the edit, insert the edit
+					Edit *temp_edit = new Edit(edl, dest_track); 
+					temp_edit->copy_from(source_edit);
+					source_track->edits->clear(source_startproject, 
+						source_startproject + source_length);
+					source_track->edits->paste_silence(source_startproject, 
+						source_startproject + source_length); 
+
+					dest_track->edits->clear(position_i, 
+						position_i + source_length);
+					Edit *dest_edit = dest_track->edits->shift(position_i,  source_length);
+					Edit *result = dest_track->edits->insert_before(dest_edit, 
+						new Edit(edl, dest_track));
+					result->copy_from(temp_edit);
+					result->startproject = position_i;
+					result->length = source_length;
+					delete temp_edit;
+				}
+					
+
+					
 //printf("Tracks::move_edits 8 %d %d\n", clear_start, source_edit->length);
 //dest_track->dump();
 //printf("Tracks::move_edits 9\n");

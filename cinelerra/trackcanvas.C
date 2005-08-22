@@ -404,6 +404,11 @@ int TrackCanvas::drag_motion()
 		redraw = 1;
 	}
 
+	if(mwindow->preferences->dragdrop)
+	{
+		redraw = 1;
+	}
+
 //printf("TrackCanvas::drag_motion 2 %p\n", mwindow->session->track_highlighted);
 	if(redraw)
 	{
@@ -485,6 +490,7 @@ int TrackCanvas::drag_stop()
 // In most cases the editing routine redraws and not the drag_stop
 	int result = 0, redraw = 0;
 
+	int insertion = 0;           // used in drag and drop mode
 	switch(mwindow->session->current_operation)
 	{
 		case DRAG_VTRANSITION:
@@ -633,11 +639,54 @@ int TrackCanvas::drag_stop()
 		case DRAG_ASSET:
 			if(mwindow->session->track_highlighted)
 			{
-				int64_t position = mwindow->session->edit_highlighted ?
+				float asset_length_float;
+				int64_t asset_length_units;
+				int64_t position = 0;
+				if (mwindow->preferences->dragdrop)
+				{
+					
+						if(mwindow->session->current_operation == DRAG_ASSET &&
+							mwindow->session->drag_assets->total)
+						{
+							Asset *asset = mwindow->session->drag_assets->values[0];
+
+							// we use video if we are over video and audio if we are over audio
+							if (asset->video_data && mwindow->session->track_highlighted->data_type == TRACK_VIDEO)
+								asset_length_float = asset->video_length / asset->frame_rate;
+							else
+								asset_length_float = asset->audio_length / asset->sample_rate;
+						}
+						if(mwindow->session->current_operation == DRAG_ASSET &&
+							mwindow->session->drag_clips->total)
+						{
+							EDL *clip = mwindow->session->drag_clips->values[0];
+							asset_length_float = clip->tracks->total_length();
+						}
+					
+						asset_length_units = mwindow->session->track_highlighted->to_units(asset_length_float, 0);
+						position = get_drop_position (&insertion, NULL, asset_length_units);
+						if (position == -1)
+						{
+							result = 1;
+							break;		// Do not do anything
+						}
+				} else
+				{
+					position = mwindow->session->edit_highlighted ?
 					mwindow->session->edit_highlighted->startproject :
 					mwindow->session->track_highlighted->edits->length();
+				}
+				
 				double position_f = mwindow->session->track_highlighted->from_units(position);
 				Track *track = mwindow->session->track_highlighted;
+
+				if (!insertion)
+				{
+					// FIXME, we should create an mwindow/EDL method that overwrites, without clearing the keyframes and autos
+					// Unfortunately, this is _a lot_ of work to do right
+					mwindow->edl->tracks->clear(position_f, 
+						position_f + asset_length_float, 0);
+				}
 				mwindow->paste_assets(position_f, track);
 				result = 1;    // need to be one no matter what, since we have track highlited so we have to cleanup....
 			}
@@ -649,14 +698,31 @@ int TrackCanvas::drag_stop()
 			{
 				if(mwindow->session->track_highlighted->data_type == mwindow->session->drag_edit->track->data_type)
 				{
-					int64_t position = mwindow->session->edit_highlighted ?
-						mwindow->session->edit_highlighted->startproject :
-						mwindow->session->track_highlighted->edits->length();
+					int64_t position = 0;
+					if (mwindow->preferences->dragdrop)
+					{
+						
+							position = get_drop_position (&insertion, mwindow->session->drag_edit, mwindow->session->drag_edit->length);
+
+							if (position == -1)
+							{
+								result = 1;
+								break;		// Do not do anything
+							}
+					} else
+					{ // original behavior
+
+						position = mwindow->session->edit_highlighted ?
+							mwindow->session->edit_highlighted->startproject :
+							mwindow->session->track_highlighted->edits->length();
+					}
+					
 					double position_f = mwindow->session->track_highlighted->from_units(position);
 					Track *track = mwindow->session->track_highlighted;
 					mwindow->move_edits(mwindow->session->drag_edits,
 						track,
-						position_f);
+						position_f,
+						!insertion);
 				}
 
 				result = 1;
@@ -695,6 +761,158 @@ int TrackCanvas::drag_stop()
 	return result;
 }
 
+
+int64_t TrackCanvas::get_drop_position (int *is_insertion, Edit *moved_edit, int64_t moved_edit_length)
+{
+	*is_insertion = 0;
+
+	// get the canvas/track position
+	int cursor_x = get_relative_cursor_x();
+	double pos = (double)cursor_x * 
+               	mwindow->edl->local_session->zoom_sample / 
+               	mwindow->edl->session->sample_rate + 
+               	(double)mwindow->edl->local_session->view_start * 
+               	mwindow->edl->local_session->zoom_sample /
+               	mwindow->edl->session->sample_rate;
+	// convert to track's units to operate with them
+	Track *track = mwindow->session->track_highlighted;
+	// cursor relative position - depending on where we started the drag inside the edit
+	int64_t cursor_position;
+	if (moved_edit)  // relative cursor position depends upon grab point
+ 		cursor_position = track->to_units (pos - (mwindow->session->drag_position - moved_edit->track->from_units(moved_edit->startproject)), 1);
+	else             // for clips and assets acts as they were grabbed in the middle
+		cursor_position = track->to_units (pos , 1) - moved_edit_length / 2;
+	   
+	// we use real cursor position for affinity calculations
+	int64_t real_cursor_position = track->to_units (pos, 0); 
+	if (cursor_position < 0) cursor_position = 0;
+	if (real_cursor_position < 0) real_cursor_position = 0;
+	int64_t position = -1;
+	int64_t prev_position = -1;
+	int64_t next_position = -1;
+	int64_t span_start = 0;
+	int64_t span_length = 0;
+
+
+	if (!track->edits->last)
+	{
+		// No edits -> no problems!
+		position = cursor_position;
+	}
+	else
+	{
+		for (Edit *edit = track->edits->first; edit; edit = edit->next)
+		{
+			
+
+			if ((moved_edit && edit == moved_edit) || // treat edit that is moved as empty
+			    (edit->asset == 0 ))                  // real empty edit
+			{
+				span_length += edit->length;        // regard our edit as free
+			} else
+			{ // This is an edit we care about
+
+				span_length = 0;		// we cannot go over this edit
+				span_start = edit->startproject + edit->length;  // start of the next edit
+
+			}
+			
+			// now test for proximity of handle which causes insertion instead movement
+			if (!moved_edit || (moved_edit && edit != moved_edit && edit->previous != moved_edit))
+			{
+				int64_t edit_x, edit_y, edit_w, edit_h;
+				edit_dimensions(edit, edit_x, edit_y, edit_w, edit_h);
+				if (labs(edit_x - cursor_x) < HANDLE_W)          // insertion at beginning of an edit
+				{
+					*is_insertion = 1;
+					position = edit->startproject;
+				} else
+				if (!edit->next && labs(edit_x + edit_w - cursor_x) < HANDLE_W) // special case for last edit in track
+				{
+					*is_insertion = 1;
+					position = edit->startproject + edit->length;
+				}
+				// currently we use this for insertion, WISH: use it for replacement/autotrim to fit dialogue
+				if (edit->asset && cursor_x > edit_x && cursor_x <= edit_x + edit_w / 2)
+				{
+					*is_insertion = 1;
+					position = edit->startproject;				
+				} else
+				if (edit->asset && cursor_x > edit_x + edit_w / 2 && cursor_x <= edit_x + edit_w)
+				{
+					*is_insertion = 1;
+					position = edit->startproject + edit->length;				
+				}
+
+			}
+
+
+			if (position == -1 && 
+			    span_start <= cursor_position && 
+			    span_start + span_length >= cursor_position + moved_edit_length)
+			{
+				position = cursor_position; // We are free to place it where it is
+			} else
+			if (!edit->asset          // only for empty edits  
+				    && position == -1 && 
+				    span_start <= real_cursor_position && 
+				    span_start + span_length >= real_cursor_position &&
+				    span_length < moved_edit_length)
+			{
+				// This is the case when we are over an empty edit, but empty edit is too short to take our asset/edit
+				*is_insertion = 1;
+				if (real_cursor_position <= span_start + span_length/2)
+					position = edit->startproject;				
+				else
+					position = edit->startproject + span_length;
+
+			}
+			if ( span_length >= moved_edit_length &&     // Find position before
+			    span_start + span_length - moved_edit_length < cursor_position) 
+			{
+				prev_position = span_start + span_length - moved_edit_length;
+			}
+			if ( span_length >= moved_edit_length && // find position after
+				next_position == -1 &&
+				span_start > cursor_position)
+			{
+				next_position = span_start;
+			}
+			
+			
+		}
+
+		span_length = 1000000000000LL; // after last edit, we have endless space
+		if (span_start <= cursor_position && span_start + span_length > cursor_position + moved_edit_length)
+		{
+			position = cursor_position; // We are free to place it where it is
+		}
+		if ( span_length > moved_edit_length && // find position after
+			next_position == -1 &&
+			span_start > cursor_position)
+		{
+			next_position = span_start;
+		}
+	
+		if (position == -1) 
+		{
+			// We cannot place it where cursor is, so find which is closer, before or after cursor
+			if (prev_position != -1 && llabs(real_cursor_position - prev_position - moved_edit_length) < llabs(real_cursor_position - next_position))
+				position = prev_position;
+			else
+				position = next_position;           // next has to exist by definition, sice we have endless space at the end
+		}
+	}
+	if (real_cursor_position == 0) 
+	{
+		position = 0;
+		*is_insertion = 1;
+	}
+//	printf("rcp: %lli, position: %lli, insertion: %i\n", real_cursor_position, position, *is_insertion);
+	return position;
+
+
+}
 
 void TrackCanvas::draw(int force, int hide_cursor)
 {
@@ -1007,6 +1225,7 @@ void TrackCanvas::draw_paste_destination()
 	int64_t w = 0;
 	int64_t x;
 	double position;
+	int insertion  = 0;
 
 //printf("TrackCanvas::draw_paste_destination 1\n");
 	if((mwindow->session->current_operation == DRAG_ASSET &&
@@ -1036,7 +1255,7 @@ void TrackCanvas::draw_paste_destination()
 			if(dest->record)
 			{
 // Get source width in pixels
-				w = 0;
+				w = -1;
 
 
 // Use start of highlighted edit
@@ -1048,22 +1267,34 @@ void TrackCanvas::draw_paste_destination()
 					position = mwindow->session->track_highlighted->from_units(
 						mwindow->session->track_highlighted->edits->length());
 
-// Get the x coordinate
-				x = Units::to_int64(position * 
-					mwindow->edl->session->sample_rate /
-					mwindow->edl->local_session->zoom_sample) - 
-					mwindow->edl->local_session->view_start;
 
 				if(dest->data_type == TRACK_AUDIO)
 				{
 					if(asset && current_atrack < asset->channels)
 					{
+					
 						w = Units::to_int64((double)asset->audio_length /
 							asset->sample_rate *
 							mwindow->edl->session->sample_rate / 
 							mwindow->edl->local_session->zoom_sample);
-						current_atrack++;
-						draw_box = 1;
+						
+					// FIXME: more obvious, get_drop_position should be called only ONCE - for highlighted track
+						int64_t asset_length;
+						// we use video if we are over video and audio if we are over audio
+						if (asset->video_data && mwindow->session->track_highlighted->data_type == TRACK_VIDEO)
+							asset_length = mwindow->session->track_highlighted->to_units(asset->video_length / asset->frame_rate, 0);
+						else
+							asset_length = mwindow->session->track_highlighted->to_units(asset->audio_length / asset->sample_rate, 0);
+
+						if (mwindow->preferences->dragdrop)
+							position = mwindow->session->track_highlighted->from_units(get_drop_position(&insertion, NULL, asset_length));
+						if (position < 0) 
+							w = -1;
+						else
+						{
+							current_atrack++;
+							draw_box = 1;
+						}
 					}
 					else
 					if(clip && current_atrack < clip->tracks->total_audio_tracks())
@@ -1072,8 +1303,17 @@ void TrackCanvas::draw_paste_destination()
 							mwindow->edl->session->sample_rate / 
 							mwindow->edl->local_session->zoom_sample);
 //printf("draw_paste_destination %d\n", x);
-						current_atrack++;
-						draw_box = 1;
+						int64_t asset_length = mwindow->session->track_highlighted->to_units((double)clip->tracks->total_length(), 0);
+				
+						if (mwindow->preferences->dragdrop)
+							position = mwindow->session->track_highlighted->from_units(get_drop_position(&insertion, NULL, asset_length));
+						if (position < 0) 
+							w = -1;
+						else
+						{
+							current_atrack++;
+							draw_box = 1;
+						}
 					}
 					else
 					if(mwindow->session->current_operation == DRAG_EDIT &&
@@ -1089,8 +1329,16 @@ void TrackCanvas::draw_paste_destination()
 							edit = mwindow->session->drag_edits->values[current_aedit];
 							w = Units::to_int64(edit->length / mwindow->edl->local_session->zoom_sample);
 
-							current_aedit++;
-							draw_box = 1;
+							if (mwindow->preferences->dragdrop)
+								position = mwindow->session->track_highlighted->from_units(get_drop_position(&insertion, mwindow->session->drag_edit, mwindow->session->drag_edit->length));
+							if (position < 0) 
+								w = -1;
+							else
+							{
+								current_aedit++;
+								draw_box = 1;
+							}
+
 						}
 					}
 				}
@@ -1104,8 +1352,18 @@ void TrackCanvas::draw_paste_destination()
 							asset->frame_rate *
 							mwindow->edl->session->sample_rate /
 							mwindow->edl->local_session->zoom_sample);
-						current_vtrack++;
-						draw_box = 1;
+						int64_t asset_length = mwindow->session->track_highlighted->to_units((double)asset->video_length / 
+							asset->frame_rate, 0);
+				
+						if (mwindow->preferences->dragdrop)
+							position = mwindow->session->track_highlighted->from_units(get_drop_position(&insertion, NULL, asset_length));
+						if (position < 0) 
+							w = -1;
+						else
+						{
+							current_vtrack++;
+							draw_box = 1;
+						}
 					}
 					else
 					if(clip && current_vtrack < clip->tracks->total_video_tracks())
@@ -1113,8 +1371,17 @@ void TrackCanvas::draw_paste_destination()
 						w = Units::to_int64(clip->tracks->total_length() *
 							mwindow->edl->session->sample_rate / 
 							mwindow->edl->local_session->zoom_sample);
-						current_vtrack++;
-						draw_box = 1;
+						int64_t asset_length = mwindow->session->track_highlighted->to_units((double)clip->tracks->total_length(), 0);
+				
+						if (mwindow->preferences->dragdrop)
+							position = mwindow->session->track_highlighted->from_units(get_drop_position(&insertion, NULL, asset_length));
+						if (position < 0) 
+							w = -1;
+						else
+						{
+							current_vtrack++;
+							draw_box = 1;
+						}
 					}
 					else
 					if(mwindow->session->current_operation == DRAG_EDIT &&
@@ -1134,26 +1401,38 @@ void TrackCanvas::draw_paste_destination()
 								mwindow->edl->session->sample_rate / 
 								mwindow->edl->local_session->zoom_sample);
 
-							current_vedit++;
-							draw_box = 1;
+							if (mwindow->preferences->dragdrop)
+								position = mwindow->session->track_highlighted->from_units(get_drop_position(&insertion, mwindow->session->drag_edit, mwindow->session->drag_edit->length));
+							if (position < 0) 
+								w = -1;
+							else
+							{
+								current_vedit++;
+								draw_box = 1;
+							}
 						}
+
 					}
 				}
 
-				if(w)
+				if(w >= 0)
 				{
+// Get the x coordinate
+					x = Units::to_int64(position * 
+						mwindow->edl->session->sample_rate /
+						mwindow->edl->local_session->zoom_sample) - 
+						mwindow->edl->local_session->view_start;
 					int y = dest->y_pixel;
 					int h = dest->vertical_span(mwindow->theme);
 
 
 //printf("TrackCanvas::draw_paste_destination 2 %d %d %d %d\n", x, y, w, h);
-					if(x < -BC_INFINITY)
-					{
-						w -= -BC_INFINITY - x;
-						x += -BC_INFINITY - x;
-					}
-					w = MIN(65535, w);
-					draw_highlight_rectangle(x, y, w, h);
+					if (insertion)
+						draw_highlight_insertion(x, y, w, h);
+					else
+						draw_highlight_rectangle(x, y, w, h);
+					
+
 				}
 			}
 		}
@@ -1185,6 +1464,25 @@ int TrackCanvas::resource_h()
 
 void TrackCanvas::draw_highlight_rectangle(int x, int y, int w, int h)
 {
+
+// if we have to draw a highlighted rectangle completely on the left or completely on the right of the viewport, 
+// just draw arrows, so user has indication that something is there
+// FIXME: get better colors
+
+	if (x + w <= 0)
+	{
+		draw_triangle_left(0, y + h /6, h * 2/3, h * 2/3, BLACK, GREEN, YELLOW, RED, BLUE);
+		return;
+	} else
+	if (x >= get_w())
+	{
+		draw_triangle_right(get_w() - h * 2/3, y + h /6, h * 2/3, h * 2/3, BLACK, GREEN, YELLOW, RED, BLUE);
+		return;
+	}
+
+// Fix bug in heroines & cvs version as of 22.8.2005:
+// If we grab when zoomed in and zoom out while dragging, when edit gets really narrow strange things start happening
+	if (w >= 0 && w < 3) {x -= w /2; w = 3;};
 	if(x < -10)
 	{
 		w += x - -10;
@@ -1203,6 +1501,64 @@ void TrackCanvas::draw_highlight_rectangle(int x, int y, int w, int h)
 	draw_rectangle(x + 1, y + 1, w - 2, h - 2);
 	set_opaque();
 //printf("TrackCanvas::draw_highlight_rectangle %d %d %d %d\n", x, y, w, h);
+}
+
+void TrackCanvas::draw_highlight_insertion(int x, int y, int w, int h)
+{
+
+// if we have to draw a highlighted rectangle completely on the left or completely on the right of the viewport, 
+// just draw arrows, so user has indication that something is there
+// FIXME: get better colors
+
+
+	
+	int h1 = h / 8;
+	int h2 = h / 4;
+	
+	set_inverse();
+
+/* these don't look so good
+
+	draw_line(x, y, x, y+h);
+	draw_line(x - h2 * 2, y + h1*2,   x - h2, y+h1*2);
+	draw_line(x - h2 * 2, y + h1*2+1, x - h2, y+h1*2+1);
+	draw_line(x - h2 * 2, y + h1*6,   x - h2, y+h1*6);
+	draw_line(x - h2 * 2, y + h1*6+1, x - h2, y+h1*6+1);
+*/
+	draw_triangle_right(x - h2, y + h1, h2, h2, BLACK, GREEN, YELLOW, RED, BLUE);
+	draw_triangle_right(x - h2, y + h1*5, h2, h2, BLACK, GREEN, YELLOW, RED, BLUE);
+
+/*	draw_line(x + h2 * 2, y + h1*2,   x + h2, y+h1*2);
+	draw_line(x + h2 * 2, y + h1*2+1, x + h2, y+h1*2+1);
+	draw_line(x + h2 * 2, y + h1*6,   x + h2, y+h1*6);
+	draw_line(x - h2 * 2, y + h1*6+1, x + h2, y+h1*6+1);
+*/
+	draw_triangle_left(x, y + h1, h2, h2, BLACK, GREEN, YELLOW, RED, BLUE);
+	draw_triangle_left(x, y + h1*5, h2, h2, BLACK, GREEN, YELLOW, RED, BLUE);
+	
+// draw the box centred around x
+	x -= w / 2;
+// Fix bug in heroines & cvs version as of 22.8.2005:
+// If we grab when zoomed in and zoom out while dragging, when edit gets really narrow strange things start happening
+	if (w >= 0 && w < 3) {x -= w /2; w = 3;};
+	if(x < -10)
+	{
+		w += x - -10;
+		x = -10;
+	}
+	if(y < -10)
+	{
+		h += y - -10;
+		y = -10;
+	}
+	w = MIN(w, get_w() + 20);
+	h = MIN(h, get_h() + 20);
+	set_color(WHITE);
+	set_inverse();
+	draw_rectangle(x, y, w, h);
+	draw_rectangle(x + 1, y + 1, w - 2, h - 2);
+	set_opaque();
+//printf("TrackCanvas::draw_highlight_insertion %d %d %d %d\n", x, y, w, h);
 }
 
 void TrackCanvas::draw_playback_cursor()
@@ -4205,7 +4561,7 @@ int TrackCanvas::test_edit_handles(int cursor_x,
 		{
 			position = edit_result->track->from_units(edit_result->startproject + edit_result->length);
 			new_cursor = RIGHT_CURSOR;
-		}
+		};
 
 // Reposition cursor
 		if(button_press)
@@ -4432,7 +4788,14 @@ int TrackCanvas::test_edits(int cursor_x,
 						}
 						mwindow->session->drag_origin_x = cursor_x;
 						mwindow->session->drag_origin_y = cursor_y;
-
+						// Where the drag started, so we know relative position inside the edit later
+						mwindow->session->drag_position = (double)cursor_x * 
+							mwindow->edl->local_session->zoom_sample / 
+							mwindow->edl->session->sample_rate + 
+							(double)mwindow->edl->local_session->view_start * 
+							mwindow->edl->local_session->zoom_sample /
+							mwindow->edl->session->sample_rate;
+						
 						drag_popup = new BC_DragWindow(gui, 
 							mwindow->theme->clip_icon, 
 							get_abs_cursor_x(0) - mwindow->theme->clip_icon->get_w() / 2,

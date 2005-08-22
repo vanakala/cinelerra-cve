@@ -29,7 +29,8 @@ public:
 		Track *track,
 		double position,
 		int edit_labels,
-		int edit_plugins);
+		int edit_plugins,
+		int behaviour);
 	void move_effect(Plugin *plugin,
 		PluginSet *plugin_set,
 		Track *track, 
