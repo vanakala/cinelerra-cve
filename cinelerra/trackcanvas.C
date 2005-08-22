@@ -857,7 +857,8 @@ int64_t TrackCanvas::get_drop_position (int *is_insertion, Edit *moved_edit, int
 				    && position == -1 && 
 				    span_start <= real_cursor_position && 
 				    span_start + span_length >= real_cursor_position &&
-				    span_length < moved_edit_length)
+				    span_length < moved_edit_length
+				    && (!moved_edit || (moved_edit && edit != moved_edit && edit->previous != moved_edit && edit->next != moved_edit)))
 			{
 				// This is the case when we are over an empty edit, but empty edit is too short to take our asset/edit
 				*is_insertion = 1;
