@@ -788,12 +788,11 @@ int64_t TrackCanvas::get_drop_position (int *is_insertion, Edit *moved_edit, int
 	if (cursor_position < 0) cursor_position = 0;
 	if (real_cursor_position < 0) real_cursor_position = 0;
 	int64_t position = -1;
-	int64_t prev_position = -1;
-	int64_t next_position = -1;
 	int64_t span_start = 0;
 	int64_t span_length = 0;
+	int span_asset = 0;
 
-
+	
 	if (!track->edits->last)
 	{
 		// No edits -> no problems!
@@ -801,108 +800,87 @@ int64_t TrackCanvas::get_drop_position (int *is_insertion, Edit *moved_edit, int
 	}
 	else
 	{
-		for (Edit *edit = track->edits->first; edit; edit = edit->next)
+		Edit *fake_edit = new Edit(mwindow->edl, track);
+		int last2 = 0; // last2 is a hack that let us make virtual edits at the end so thing works for last edit also
+		               // we do this by appending two VERY long virtual edits at the end
+		
+		for (Edit *edit = track->edits->first; edit || last2 < 2; )
 		{
-			
-
-			if ((moved_edit && edit == moved_edit) || // treat edit that is moved as empty
-			    (edit->asset == 0 ))                  // real empty edit
+		
+			if (edit && 
+			    ((moved_edit && edit == moved_edit && edit->previous && !edit->previous->asset) ||
+			    (moved_edit && edit->previous == moved_edit  && !edit->asset)))
 			{
-				span_length += edit->length;        // regard our edit as free
+				span_length += edit->length;        // our fake edit spans over the edit we are moving
 			} else
-			{ // This is an edit we care about
-
-				span_length = 0;		// we cannot go over this edit
-				span_start = edit->startproject + edit->length;  // start of the next edit
-
-			}
-			
-			// now test for proximity of handle which causes insertion instead movement
-			if (!moved_edit || (moved_edit && edit != moved_edit && edit->previous != moved_edit))
-			{
+			{ // This is a virtual edit
+				fake_edit->startproject = span_start;
+				fake_edit->length = span_length;
 				int64_t edit_x, edit_y, edit_w, edit_h;
-				edit_dimensions(edit, edit_x, edit_y, edit_w, edit_h);
+				edit_dimensions(fake_edit, edit_x, edit_y, edit_w, edit_h);
 				if (labs(edit_x - cursor_x) < HANDLE_W)          // insertion at beginning of an edit
 				{
 					*is_insertion = 1;
-					position = edit->startproject;
+					position = span_start;
 				} else
-				if (!edit->next && labs(edit_x + edit_w - cursor_x) < HANDLE_W) // special case for last edit in track
+				if (labs(edit_x + edit_w - cursor_x) < HANDLE_W)
 				{
 					*is_insertion = 1;
-					position = edit->startproject + edit->length;
-				}
-				// currently we use this for insertion, WISH: use it for replacement/autotrim to fit dialogue
-				if (edit->asset && cursor_x > edit_x && cursor_x <= edit_x + edit_w / 2)
+					position = span_start + span_length;
+
+				}  else
+				if (span_start <= cursor_position && 
+					span_start + span_length >= cursor_position + moved_edit_length)
 				{
-					*is_insertion = 1;
-					position = edit->startproject;				
+					position = cursor_position; // We are free to place it where cursor is
 				} else
-				if (edit->asset && cursor_x > edit_x + edit_w / 2 && cursor_x <= edit_x + edit_w)
+				if (!span_asset & real_cursor_position >= span_start && real_cursor_position <= span_start + span_length && span_length >= moved_edit_length)
+				{
+					if (llabs(real_cursor_position - span_start) < llabs(real_cursor_position - span_start - span_length))
+						position = span_start;
+					else
+						position = span_start + span_length - moved_edit_length;
+				} else
+				if (cursor_x > edit_x && cursor_x <= edit_x + edit_w / 2)
 				{
 					*is_insertion = 1;
-					position = edit->startproject + edit->length;				
-				}
+					position = span_start;				
+				} else
+				if (cursor_x > edit_x + edit_w / 2 && cursor_x <= edit_x + edit_w)
+				{
+					*is_insertion = 1;
+					position = span_start + span_length;				
+				} 				
+				
+
+				if (position != -1) 
+					break;
+				
+				// This is the new edit
+				if (edit)
+				{
+					span_length = edit->length;		
+					span_start = edit->startproject;  
+					if (!edit->asset || (!moved_edit || moved_edit == edit)) 
+						span_asset = 0;
+					else
+						span_asset = 1;
+				} else
+				{
+					span_start = span_length + span_start;
+					span_length = 100000000000000LL;
+					span_asset = 0;
+				};
 
 			}
-
-
-			if (position == -1 && 
-			    span_start <= cursor_position && 
-			    span_start + span_length >= cursor_position + moved_edit_length)
-			{
-				position = cursor_position; // We are free to place it where it is
-			} else
-			if (!edit->asset          // only for empty edits  
-				    && position == -1 && 
-				    span_start <= real_cursor_position && 
-				    span_start + span_length >= real_cursor_position &&
-				    span_length < moved_edit_length
-				    && (!moved_edit || (moved_edit && edit != moved_edit && edit->previous != moved_edit && edit->next != moved_edit)))
-			{
-				// This is the case when we are over an empty edit, but empty edit is too short to take our asset/edit
-				*is_insertion = 1;
-				if (real_cursor_position <= span_start + span_length/2)
-					position = edit->startproject;				
-				else
-					position = edit->startproject + span_length;
-
-			}
-			if ( span_length >= moved_edit_length &&     // Find position before
-			    span_start + span_length - moved_edit_length < cursor_position) 
-			{
-				prev_position = span_start + span_length - moved_edit_length;
-			}
-			if ( span_length >= moved_edit_length && // find position after
-				next_position == -1 &&
-				span_start > cursor_position)
-			{
-				next_position = span_start;
-			}
-			
-			
-		}
-
-		span_length = 1000000000000LL; // after last edit, we have endless space
-		if (span_start <= cursor_position && span_start + span_length > cursor_position + moved_edit_length)
-		{
-			position = cursor_position; // We are free to place it where it is
-		}
-		if ( span_length > moved_edit_length && // find position after
-			next_position == -1 &&
-			span_start > cursor_position)
-		{
-			next_position = span_start;
-		}
-	
-		if (position == -1) 
-		{
-			// We cannot place it where cursor is, so find which is closer, before or after cursor
-			if (prev_position != -1 && llabs(real_cursor_position - prev_position - moved_edit_length) < llabs(real_cursor_position - next_position))
-				position = prev_position;
+			if (edit)
+				edit = edit->next;
 			else
-				position = next_position;           // next has to exist by definition, sice we have endless space at the end
+				last2++;
+			
 		}
+		delete fake_edit;
+
 	}
 	if (real_cursor_position == 0) 
 	{

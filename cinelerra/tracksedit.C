@@ -306,6 +306,7 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 					// Copy edit to temp, delete the edit, insert the edit
 					Edit *temp_edit = new Edit(edl, dest_track); 
 					temp_edit->copy_from(source_edit);
+					// we call the edits directly since we do not want to move keyframes or anything else
 					source_track->edits->clear(source_startproject, 
 						source_startproject + source_length);
 					source_track->edits->paste_silence(source_startproject, 
