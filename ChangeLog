@@ -4,6 +4,16 @@ Changelog maintainer:
 
 	- Now we have a changelog maintainer. 
 
+minmax: 
+	- reworked ga's patch for free dragging
+
+	- fixed a quasi-bug in Edits::paste_silence
+	
+	- fixed mask being off the place when changing track size or when
+	  changing project size/aspect ratio
+
+	- added default options saving for theora (was missing)
+
 giskard:
 	- modified debian/control, addedd libtheora-mmx-dev to the 
 	  build-deps.
