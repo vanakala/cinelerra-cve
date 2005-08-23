@@ -29,7 +29,6 @@
 #include "patchbay.h"
 #include "playbackengine.h"
 #include "pluginset.h"
-#include "preferences.h"
 #include "recordlabel.h"
 #include "samplescroll.h"
 #include "trackcanvas.h"

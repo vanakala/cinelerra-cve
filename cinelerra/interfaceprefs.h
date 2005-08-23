@@ -17,7 +17,6 @@ class MeterVUDB;
 class MeterVUInt;
 class ViewBehaviourText;
 class ViewThumbnails;
-class DD_Mode;
 
 #include "browsebutton.h"
 #include "deleteallindexes.inc"
@@ -56,7 +55,6 @@ public:
 //	MeterVUInt *vu_int;
 	ViewBehaviourText *button1, *button2, *button3;
 	ViewThumbnails *thumbnails;
-	DD_Mode *dr;
 };
 
 
@@ -249,12 +247,6 @@ public:
 	ViewTheme *popup;
 };
 
-class DD_Mode : public BC_CheckBox
-{
-public:
-       DD_Mode (PreferencesWindow *pwindow, char *text, int value, int x, int y);
-       int handle_event();
-       PreferencesWindow *pwindow;
-};
+
 
 #endif

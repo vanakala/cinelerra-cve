@@ -404,7 +404,9 @@ int TrackCanvas::drag_motion()
 		redraw = 1;
 	}
 
-	if(mwindow->preferences->dragdrop)
+	if (mwindow->session->current_operation == DRAG_ASSET ||
+	  mwindow->session->current_operation == DRAG_EDIT)
+
 	{
 		redraw = 1;
 	}
@@ -642,39 +644,31 @@ int TrackCanvas::drag_stop()
 				float asset_length_float;
 				int64_t asset_length_units;
 				int64_t position = 0;
-				if (mwindow->preferences->dragdrop)
-				{
 					
-						if(mwindow->session->current_operation == DRAG_ASSET &&
-							mwindow->session->drag_assets->total)
-						{
-							Asset *asset = mwindow->session->drag_assets->values[0];
+				if(mwindow->session->current_operation == DRAG_ASSET &&
+					mwindow->session->drag_assets->total)
+				{
+					Asset *asset = mwindow->session->drag_assets->values[0];
 
-							// we use video if we are over video and audio if we are over audio
-							if (asset->video_data && mwindow->session->track_highlighted->data_type == TRACK_VIDEO)
-								asset_length_float = asset->video_length / asset->frame_rate;
-							else
-								asset_length_float = asset->audio_length / asset->sample_rate;
-						}
-						if(mwindow->session->current_operation == DRAG_ASSET &&
-							mwindow->session->drag_clips->total)
-						{
-							EDL *clip = mwindow->session->drag_clips->values[0];
-							asset_length_float = clip->tracks->total_length();
-						}
-					
-						asset_length_units = mwindow->session->track_highlighted->to_units(asset_length_float, 0);
-						position = get_drop_position (&insertion, NULL, asset_length_units);
-						if (position == -1)
-						{
-							result = 1;
-							break;		// Do not do anything
-						}
-				} else
+					// we use video if we are over video and audio if we are over audio
+					if (asset->video_data && mwindow->session->track_highlighted->data_type == TRACK_VIDEO)
+						asset_length_float = asset->video_length / asset->frame_rate;
+					else
+						asset_length_float = asset->audio_length / asset->sample_rate;
+				}
+				if(mwindow->session->current_operation == DRAG_ASSET &&
+					mwindow->session->drag_clips->total)
 				{
-					position = mwindow->session->edit_highlighted ?
-					mwindow->session->edit_highlighted->startproject :
-					mwindow->session->track_highlighted->edits->length();
+					EDL *clip = mwindow->session->drag_clips->values[0];
+					asset_length_float = clip->tracks->total_length();
+				}
+			
+				asset_length_units = mwindow->session->track_highlighted->to_units(asset_length_float, 0);
+				position = get_drop_position (&insertion, NULL, asset_length_units);
+				if (position == -1)
+				{
+					result = 1;
+					break;		// Do not do anything
 				}
 				
 				double position_f = mwindow->session->track_highlighted->from_units(position);
@@ -699,22 +693,13 @@ int TrackCanvas::drag_stop()
 				if(mwindow->session->track_highlighted->data_type == mwindow->session->drag_edit->track->data_type)
 				{
 					int64_t position = 0;
-					if (mwindow->preferences->dragdrop)
+				
+					position = get_drop_position (&insertion, mwindow->session->drag_edit, mwindow->session->drag_edit->length);
+
+					if (position == -1)
 					{
-						
-							position = get_drop_position (&insertion, mwindow->session->drag_edit, mwindow->session->drag_edit->length);
-
-							if (position == -1)
-							{
-								result = 1;
-								break;		// Do not do anything
-							}
-					} else
-					{ // original behavior
-
-						position = mwindow->session->edit_highlighted ?
-							mwindow->session->edit_highlighted->startproject :
-							mwindow->session->track_highlighted->edits->length();
+						result = 1;
+						break;		// Do not do anything
 					}
 					
 					double position_f = mwindow->session->track_highlighted->from_units(position);
@@ -834,7 +819,7 @@ int64_t TrackCanvas::get_drop_position (int *is_insertion, Edit *moved_edit, int
 				{
 					position = cursor_position; // We are free to place it where cursor is
 				} else
-				if (!span_asset & real_cursor_position >= span_start && real_cursor_position <= span_start + span_length && span_length >= moved_edit_length)
+				if (!span_asset & real_cursor_position >= span_start && real_cursor_position < span_start + span_length && span_length >= moved_edit_length)
 				{
 					if (llabs(real_cursor_position - span_start) < llabs(real_cursor_position - span_start - span_length))
 						position = span_start;
@@ -1265,8 +1250,7 @@ void TrackCanvas::draw_paste_destination()
 						else
 							asset_length = mwindow->session->track_highlighted->to_units(asset->audio_length / asset->sample_rate, 0);
 
-						if (mwindow->preferences->dragdrop)
-							position = mwindow->session->track_highlighted->from_units(get_drop_position(&insertion, NULL, asset_length));
+						position = mwindow->session->track_highlighted->from_units(get_drop_position(&insertion, NULL, asset_length));
 						if (position < 0) 
 							w = -1;
 						else
@@ -1284,8 +1268,7 @@ void TrackCanvas::draw_paste_destination()
 //printf("draw_paste_destination %d\n", x);
 						int64_t asset_length = mwindow->session->track_highlighted->to_units((double)clip->tracks->total_length(), 0);
 				
-						if (mwindow->preferences->dragdrop)
-							position = mwindow->session->track_highlighted->from_units(get_drop_position(&insertion, NULL, asset_length));
+						position = mwindow->session->track_highlighted->from_units(get_drop_position(&insertion, NULL, asset_length));
 						if (position < 0) 
 							w = -1;
 						else
@@ -1308,8 +1291,7 @@ void TrackCanvas::draw_paste_destination()
 							edit = mwindow->session->drag_edits->values[current_aedit];
 							w = Units::to_int64(edit->length / mwindow->edl->local_session->zoom_sample);
 
-							if (mwindow->preferences->dragdrop)
-								position = mwindow->session->track_highlighted->from_units(get_drop_position(&insertion, mwindow->session->drag_edit, mwindow->session->drag_edit->length));
+							position = mwindow->session->track_highlighted->from_units(get_drop_position(&insertion, mwindow->session->drag_edit, mwindow->session->drag_edit->length));
 							if (position < 0) 
 								w = -1;
 							else
@@ -1334,8 +1316,7 @@ void TrackCanvas::draw_paste_destination()
 						int64_t asset_length = mwindow->session->track_highlighted->to_units((double)asset->video_length / 
 							asset->frame_rate, 0);
 				
-						if (mwindow->preferences->dragdrop)
-							position = mwindow->session->track_highlighted->from_units(get_drop_position(&insertion, NULL, asset_length));
+						position = mwindow->session->track_highlighted->from_units(get_drop_position(&insertion, NULL, asset_length));
 						if (position < 0) 
 							w = -1;
 						else
@@ -1352,8 +1333,7 @@ void TrackCanvas::draw_paste_destination()
 							mwindow->edl->local_session->zoom_sample);
 						int64_t asset_length = mwindow->session->track_highlighted->to_units((double)clip->tracks->total_length(), 0);
 				
-						if (mwindow->preferences->dragdrop)
-							position = mwindow->session->track_highlighted->from_units(get_drop_position(&insertion, NULL, asset_length));
+						position = mwindow->session->track_highlighted->from_units(get_drop_position(&insertion, NULL, asset_length));
 						if (position < 0) 
 							w = -1;
 						else
@@ -1380,8 +1360,7 @@ void TrackCanvas::draw_paste_destination()
 								mwindow->edl->session->sample_rate / 
 								mwindow->edl->local_session->zoom_sample);
 
-							if (mwindow->preferences->dragdrop)
-								position = mwindow->session->track_highlighted->from_units(get_drop_position(&insertion, mwindow->session->drag_edit, mwindow->session->drag_edit->length));
+							position = mwindow->session->track_highlighted->from_units(get_drop_position(&insertion, mwindow->session->drag_edit, mwindow->session->drag_edit->length));
 							if (position < 0) 
 								w = -1;
 							else

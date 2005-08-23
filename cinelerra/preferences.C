@@ -40,7 +40,6 @@ Preferences::Preferences()
 	index_size = 0x300000;
 	index_count = 100;
 	use_thumbnails = 1;
-	dragdrop = 1;
 	theme[0] = 0;
 	use_renderfarm = 0;
 	force_uniprocessor = 0;
@@ -116,7 +115,6 @@ void Preferences::copy_from(Preferences *that)
 	index_size = that->index_size;
 	index_count = that->index_count;
 	use_thumbnails = that->use_thumbnails;
-	dragdrop = that->dragdrop;
 	strcpy(global_plugin_dir, that->global_plugin_dir);
 	strcpy(theme, that->theme);
 
@@ -186,7 +184,6 @@ int Preferences::load_defaults(Defaults *defaults)
 	index_size = defaults->get("INDEX_SIZE", index_size);
 	index_count = defaults->get("INDEX_COUNT", index_count);
 	use_thumbnails = defaults->get("USE_THUMBNAILS", use_thumbnails);
-	dragdrop = defaults->get ("DRAGDROP_BEHAVIOR", dragdrop);
 
 	sprintf(global_plugin_dir, PLUGIN_DIR);
 	defaults->get("GLOBAL_PLUGIN_DIR", global_plugin_dir);
@@ -264,7 +261,6 @@ int Preferences::save_defaults(Defaults *defaults)
 	defaults->update("INDEX_SIZE", index_size);
 	defaults->update("INDEX_COUNT", index_count);
 	defaults->update("USE_THUMBNAILS", use_thumbnails);
-	defaults->update("DRAGDROP_BEHAVIOR", dragdrop);
 	defaults->update("GLOBAL_PLUGIN_DIR", global_plugin_dir);
 	defaults->update("THEME", theme);
 

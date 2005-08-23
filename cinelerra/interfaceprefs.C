@@ -164,11 +164,7 @@ int InterfacePrefs::create_objects()
 			&(pwindow->thread->edl->session->edit_handle_mode[2])));
 	text->create_objects();
 
-	y += 30;
-	add_subwindow(new BC_Title(x, y, _("Drag&Drop behavior:")));
-	add_subwindow(dr = new DD_Mode (pwindow, _("Free dragging of edits on timeline"), pwindow->thread->preferences->dragdrop, 180, y - 5));
-	
-	y += 30;
+	y += 40;
 	int x1 = x;
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y + 5, _("Min DB for meter:")));
@@ -183,7 +179,7 @@ int InterfacePrefs::create_objects()
 	add_subwindow(max_db = new MeterMaxDB(pwindow, string, x, y));
 
 	x = x1;
-	y += 30;
+	y += 20;
 	ViewTheme *theme;
 	add_subwindow(new BC_Title(x, y, _("Theme:")));
 	x += 60;
@@ -240,7 +236,6 @@ InterfacePrefs::~InterfacePrefs()
 //	delete vu_db;
 //	delete vu_int;
 	delete thumbnails;
-	delete dr;
 }
 
 
@@ -588,21 +583,5 @@ int ViewThumbnails::handle_event()
 {
 	pwindow->thread->preferences->use_thumbnails = get_value();
 	return 1;
-}
-
-DD_Mode::DD_Mode (PreferencesWindow *pwindow, char *text, int value, int x, int y)
- : BC_CheckBox(x, 
-       y, 
-       pwindow->thread->preferences->dragdrop, 
-       text)
-{
-       this->pwindow = pwindow;
-}
-
-int DD_Mode::handle_event()
-{
-       pwindow->thread->preferences->dragdrop = get_value();
-       
-       return 1;
 }
 
