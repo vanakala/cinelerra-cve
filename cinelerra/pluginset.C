@@ -123,7 +123,7 @@ Plugin* PluginSet::insert_plugin(char *title,
 	KeyFrame *default_keyframe,
 	int do_optimize)
 {
-	Plugin *plugin = (Plugin*)paste_silence(unit_position, 
+	Plugin *plugin = (Plugin*)create_and_insert_edit(unit_position, 
 		unit_position + unit_length);
 
 

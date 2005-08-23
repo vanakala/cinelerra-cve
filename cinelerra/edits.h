@@ -50,8 +50,11 @@ public:
 		Edits *trim_edits);
 	virtual void shift_keyframes_recursive(int64_t position, int64_t length);
 	virtual void shift_effects_recursive(int64_t position, int64_t length);
+// Does not return an edit - does what it says, nothing more or less
+	void paste_silence(int64_t start, int64_t end);
 // Returns the newly created edit
-	Edit* paste_silence(int64_t start, int64_t end);
+	Edit *create_and_insert_edit(int64_t start, int64_t end);
+
 	void resample(double old_rate, double new_rate);
 // Shift edits on or after position by distance
 // Return the edit now on the position.

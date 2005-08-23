@@ -177,6 +177,8 @@ Edit* Edits::insert_new_edit(int64_t position)
 	Edit *current = 0;
 //printf("Edits::insert_new_edit 1\n");
 	current = split_edit(position);
+	
+	// FIXME: This check can go out now... since split_edit always returns an edit!
 	if(current) current = PREVIOUS;
 
 //printf("Edits::insert_new_edit 1\n");
@@ -196,9 +198,25 @@ Edit* Edits::split_edit(int64_t position)
 
 // No edit found
 	if(!edit)
-	{
-		return 0;
-	}
+		if (!last || last->startproject + last->length <= position)
+		{
+			// Even when track is completely empty or split is beyond last edit, return correct edit
+			Edit *empty = create_edit();
+			if (last)
+				empty->startproject = last->startproject + last->length; // end of last edit
+			else
+				empty->startproject = 0; // empty track
+			empty->length = position - empty->startproject;
+			insert_after(last, empty);
+			edit = empty;
+		} else
+		{  // now we are now surely in situation where we have a) broken edit list or b) negative position... report error!
+			printf("ERROR!\n");       
+			printf("Trying to insert edit at position, but failed: %lli\n", position);
+			printf("Dump is here:\n");
+			track->dump();
+			return 0;
+		}	
 // Split would have created a 0 length
 //	if(edit->startproject == position) return edit;
 // Create anyway so the return value comes before position
@@ -844,8 +862,37 @@ int Edits::modify_handles(double oldposition,
 }
 
 
+// Paste silence should not return anything - since pasting silence to an empty track should produce no edits
+// If we need rutine to create new edit by pushing others forward, write new rutine and call it properly
+// This are two distinctive functions
+// This rutine leaves edits in optimized state!
+void Edits::paste_silence(int64_t start, int64_t end)
+{
+	// paste silence does not do anything if 
+	// a) paste silence is on empty track
+	// b) paste silence is after last edit
+	// in both cases editof returns NULL
+	Edit *new_edit = editof(start, PLAY_FORWARD, 0);
+	if (!new_edit) return;
+
+	if (!new_edit->asset)
+	{ // in this case we extend already existing edit
+		new_edit->length += end - start;
+	} else
+	{ // we are in fact creating a new edit
+		new_edit = insert_new_edit(start);
+		new_edit->length = end - start;
+	}
+	for(Edit *current = new_edit->next; current; current = NEXT)
+	{
+		current->startproject += end - start;
+	}
+	return;
+}
+
 // Used by other editing commands so don't optimize
-Edit* Edits::paste_silence(int64_t start, int64_t end)
+// This is separate from paste_silence, since it has to wrok also on empty tracks/beyond end of track
+Edit *Edits::create_and_insert_edit(int64_t start, int64_t end)
 {
 	Edit *new_edit = insert_new_edit(start);
 	new_edit->length = end - start;
