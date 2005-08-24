@@ -776,8 +776,8 @@ int64_t TrackCanvas::get_drop_position (int *is_insertion, Edit *moved_edit, int
 	int64_t span_start = 0;
 	int64_t span_length = 0;
 	int span_asset = 0;
+	int last_ignore = 0; // used to make sure we can ignore the last edit if that is what we are dragging
 
-	
 	if (!track->edits->last)
 	{
 		// No edits -> no problems!
@@ -792,46 +792,57 @@ int64_t TrackCanvas::get_drop_position (int *is_insertion, Edit *moved_edit, int
 		for (Edit *edit = track->edits->first; edit || last2 < 2; )
 		{
 		
+			if (!edit && last_ignore)
+			{
+				span_length += 100000000000000LL;
+				last_ignore = 0;
+				span_asset = 0;
+			} else
 			if (edit && 
 			    ((moved_edit && edit == moved_edit && edit->previous && !edit->previous->asset) ||
 			    (moved_edit && edit->previous == moved_edit  && !edit->asset)))
 			{
 				span_length += edit->length;        // our fake edit spans over the edit we are moving
+				last_ignore = 1;
 			} else
 			{ // This is a virtual edit
 				fake_edit->startproject = span_start;
 				fake_edit->length = span_length;
 				int64_t edit_x, edit_y, edit_w, edit_h;
 				edit_dimensions(fake_edit, edit_x, edit_y, edit_w, edit_h);
-				if (labs(edit_x - cursor_x) < HANDLE_W)          // insertion at beginning of an edit
+				if (labs(edit_x - cursor_x) < HANDLE_W)			// cursor is close to the beginning of an edit -> insertion
 				{
 					*is_insertion = 1;
 					position = span_start;
 				} else
-				if (labs(edit_x + edit_w - cursor_x) < HANDLE_W)
+				if (labs(edit_x + edit_w - cursor_x) < HANDLE_W)	// cursor is close to the end of an edit -> insertion
 				{
 					*is_insertion = 1;
 					position = span_start + span_length;
 
 				}  else
-				if (span_start <= cursor_position && 
+				if (!span_asset &&		// we have enough empty space to position the edit where user wants 
+					span_start <= cursor_position &&
 					span_start + span_length >= cursor_position + moved_edit_length)
 				{
-					position = cursor_position; // We are free to place it where cursor is
+					position = cursor_position; 
 				} else
-				if (!span_asset & real_cursor_position >= span_start && real_cursor_position < span_start + span_length && span_length >= moved_edit_length)
+				if (!span_asset & 				// we are inside an empty edit, but cannot push the edit as far as user wants, so 'resist moving it further'
+					real_cursor_position >= span_start && 
+					real_cursor_position < span_start + span_length && 
+					span_length >= moved_edit_length)
 				{
 					if (llabs(real_cursor_position - span_start) < llabs(real_cursor_position - span_start - span_length))
 						position = span_start;
 					else
 						position = span_start + span_length - moved_edit_length;
 				} else
-				if (cursor_x > edit_x && cursor_x <= edit_x + edit_w / 2)
+				if (cursor_x > edit_x && cursor_x <= edit_x + edit_w / 2) // we are inside an nonempty edit, - snap to left
 				{
 					*is_insertion = 1;
 					position = span_start;				
 				} else
-				if (cursor_x > edit_x + edit_w / 2 && cursor_x <= edit_x + edit_w)
+				if (cursor_x > edit_x + edit_w / 2 && cursor_x <= edit_x + edit_w) // we are inside an nonempty edit, - snap to right
 				{
 					*is_insertion = 1;
 					position = span_start + span_length;				
@@ -844,18 +855,24 @@ int64_t TrackCanvas::get_drop_position (int *is_insertion, Edit *moved_edit, int
 				// This is the new edit
 				if (edit)
 				{
-					span_length = edit->length;		
-					span_start = edit->startproject;  
-					if (!edit->asset || (!moved_edit || moved_edit == edit)) 
-						span_asset = 0;
-					else
-						span_asset = 1;
+						span_length = edit->length;		
+						span_start = edit->startproject;  
+						last_ignore = 0;
+						if (!edit->asset || (!moved_edit || moved_edit == edit)) 
+						{
+							if (moved_edit && moved_edit == edit)
+								last_ignore = 1;
+		
+							span_asset = 0;
+						} else 
+							span_asset = 1;
 				} else
 				{
 					span_start = span_length + span_start;
 					span_length = 100000000000000LL;
 					span_asset = 0;
 				};
+				
 
 			}
 			if (edit)
