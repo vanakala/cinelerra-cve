@@ -219,7 +219,7 @@ int TrackCanvas::keypress_event()
 				}
 			} else 
 			{
-				Track *this_track;
+				Track *this_track = 0;
 				for(Track *track = mwindow->edl->tracks->first; track; track = track->next)
 				{
 					int64_t track_x, track_y, track_w, track_h;
