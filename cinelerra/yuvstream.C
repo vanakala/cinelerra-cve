@@ -99,7 +99,11 @@ int YUVStream::read_frame(uint8_t *yuv[3]) {
 }
 
 int YUVStream::read_frame_raw(uint8_t *data, long frame_size) {
+#if (MJPEGTOOLS_Y4M_WRITE_FRAME_HEADER__3ARGS)
+	int result = y4m_read_frame_header(stream_fd, &stream_info, &frame_info);
+#else
 	int result = y4m_read_frame_header(stream_fd, &frame_info);
+#endif
 	if (result != Y4M_OK) {
 		printf("y4m_read_frame_header() failed: %s\n", 
 		       y4m_strerr(result));
@@ -124,7 +128,11 @@ int YUVStream::write_frame(uint8_t *yuv[3]) {
 	return 0;
 }
 int YUVStream::write_frame_raw(uint8_t *data, long frame_size) {
+#if (MJPEGTOOLS_Y4M_WRITE_FRAME_HEADER__3ARGS)
+	int result = y4m_write_frame_header(stream_fd, &stream_info, &frame_info);
+#else
 	int result = y4m_write_frame_header(stream_fd, &frame_info);
+#endif
 	if (result != Y4M_OK) {
 		printf("y4m_write_frame_header() failed: %s\n", 
 		       y4m_strerr(result));

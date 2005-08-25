@@ -1,3 +1,8 @@
+25.Aug.2005
+
+pmdumuid
+	- Added a automake patch to cope with the change in mjpegtool's y4m_read_frame_header()
+
 11.Aug.2005
 
 Changelog maintainer:
