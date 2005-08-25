@@ -1,5 +1,10 @@
 25.Aug.2005
 
+minmax	- applied j@v2v.cc patch to ogg muxing to make it standard compliant
+
+	- removed debian dependency to mjpegtools 1.6.3 - since pmdumuid
+	makes it unneccessary
+
 pmdumuid
 	- Added a automake patch to cope with the change in mjpegtool's y4m_read_frame_header()
 
@@ -10,6 +15,9 @@ Changelog maintainer:
 	- Now we have a changelog maintainer. 
 
 minmax: 
+	- boost up requirement for mjpegtools to 1.6.3 (used to be 1.6.2)
+	  and applying patch for it to work...
+
 	- reworked ga's patch for free dragging
 
 	- fixed a quasi-bug in Edits::paste_silence
