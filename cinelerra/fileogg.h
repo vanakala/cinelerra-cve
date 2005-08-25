@@ -26,19 +26,14 @@ typedef struct
 
 typedef struct
 {
-    ogg_page videopage;
     ogg_page audiopage;
-    int audioflag;
-    int videoflag;
+    ogg_page videopage;
+
     double audiotime;
     double videotime;
     ogg_int64_t audio_bytesout;
     ogg_int64_t video_bytesout;
 
-    ogg_stream_state to;    /* take physical pages, weld into a logical
-                             * stream of packets */
-    ogg_stream_state vo;    /* take physical pages, weld into a logical
-                             * stream of packets */
     ogg_page og;    /* one Ogg bitstream page.  Vorbis packets are inside */
     ogg_packet op;  /* one raw packet of data for decode */
 
@@ -46,11 +41,26 @@ typedef struct
     theora_comment tc;
     theora_state td;
 
-
     vorbis_info vi;       /* struct that stores all the static vorbis bitstream settings */
     vorbis_comment vc;    /* struct that stores all the user comments */
     vorbis_dsp_state vd; /* central working state for the packet<->PCM encoder/decoder */
     vorbis_block vb;     /* local working space for packet<->PCM encode/decode */
+
+    /* used for muxing */
+    ogg_stream_state to;    /* take physical pages, weld into a logical
+                             * stream of packets */
+    ogg_stream_state vo;    /* take physical pages, weld into a logical
+                             * stream of packets */
+
+    int apage_valid;
+    int vpage_valid;
+    unsigned char *apage;
+    unsigned char *vpage;
+    int vpage_len;
+    int apage_len;
+    int vpage_buffer_length;
+    int apage_buffer_length;
+
 
 // stuff needed for reading only
 	sync_window_t *audiosync;
@@ -91,7 +101,9 @@ public:
 private:
 	int write_samples_vorbis(double **buffer, int64_t len, int e_o_s);
 	int write_frames_theora(VFrame ***frames, int len, int e_o_s);
-	int flush_ogg(int e_o_s);
+	void flush_ogg(int e_o_s);
+	int write_audio_page();
+	int write_video_page();
 	
 	FILE *stream;
 	off_t file_length;

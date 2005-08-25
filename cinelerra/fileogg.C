@@ -208,10 +208,17 @@ TRACE("FileOGG::open_file 20")
 
 		tf->audio_bytesout = 0;
 		tf->video_bytesout = 0;
-		tf->videoflag = 0;		
-		tf->audioflag = 0;
 		tf->videotime = 0;
 		tf->audiotime = 0;
+
+		tf->vpage_valid = 0;
+		tf->apage_valid = 0;
+		tf->apage_buffer_length = 0;
+		tf->vpage_buffer_length = 0;
+		tf->apage = NULL;
+		tf->vpage = NULL;
+
+
 		/* yayness.  Set up Ogg output stream */
 		srand (time (NULL));
 
@@ -1677,68 +1684,102 @@ int FileOGG::read_samples(double *buffer, int64_t len)
 }
 
 
-int FileOGG::flush_ogg(int e_o_s)
+int FileOGG::write_audio_page()
 {
-	/* flush out the ogg pages to stream */
-// both audio and video thread call this procedure, be sure not to race
+  int ret;
+
+  ret = fwrite(tf->apage, 1, tf->apage_len, stream);
+  if(ret < tf->apage_len) {
+    fprintf(stderr,"error writing audio page\n"); 
+  }
+  tf->apage_valid = 0;
+  return ret;
+}
+
+int FileOGG::write_video_page()
+{
+  int ret;
+
+  ret = fwrite(tf->vpage, 1, tf->vpage_len, stream);
+  if(ret < tf->vpage_len) {
+    fprintf(stderr,"error writing video page\n");
+  }
+  tf->vpage_valid = 0;
+  return ret;
+}
+
+void FileOGG::flush_ogg (int e_o_s)
+{
+    int len;
+    ogg_page og;
 
 	flush_lock->lock();
-	int flushloop=1;
+    /* flush out the ogg pages  */
+    while(1) {
+      /* Get pages for both streams, if not already present, and if available.*/
+      if(asset->video_data && !tf->vpage_valid) {
+        if(ogg_stream_pageout(&tf->to, &og) > 0) {
+          len = og.header_len + og.body_len;
+          if(tf->vpage_buffer_length < len) {
+            tf->vpage = (unsigned char *)realloc(tf->vpage, len);
+            tf->vpage_buffer_length = len;
+          }
+          tf->vpage_len = len;
+          memcpy(tf->vpage, og.header, og.header_len);
+          memcpy(tf->vpage+og.header_len , og.body, og.body_len);
 
-	while(flushloop)
-	{
-		flushloop=0;
-		//some debuging 
-		//fprintf(stderr,"\ndiff: %f\n",info->audiotime-info->videotime);
-		while(asset->video_data && (e_o_s || 
-			((tf->videotime <= tf->audiotime || !asset->audio_data) && tf->videoflag == 1)))
-		{
-		    
-			tf->videoflag = 0;
-			while(ogg_stream_pageout (&tf->to, &tf->videopage) > 0)
-			{
-				
-				tf->videotime=
-					theora_granule_time (&tf->td, ogg_page_granulepos(&tf->videopage));
-//				 flush a video page 
-				tf->video_bytesout +=
-					fwrite (tf->videopage.header, 1, tf->videopage.header_len, stream);
-				tf->video_bytesout +=
-					fwrite (tf->videopage.body, 1, tf->videopage.body_len, stream);
+          tf->vpage_valid = 1;
+          tf->videotime = theora_granule_time (&tf->td,
+                  ogg_page_granulepos(&og));
+        }
+      }
+      if(asset->audio_data && !tf->apage_valid) {
+        if(ogg_stream_pageout(&tf->vo, &og) > 0) {
+          len = og.header_len + og.body_len;
+          if(tf->apage_buffer_length < len) {
+            tf->apage = (unsigned char *)realloc(tf->apage, len);
+            tf->apage_buffer_length = len;
+          }
+          tf->apage_len = len;
+          memcpy(tf->apage, og.header, og.header_len);
+          memcpy(tf->apage+og.header_len , og.body, og.body_len);
 
-				tf->videoflag = 1;
-				flushloop=1;
-			}
-			if(e_o_s)
-				break;
-		}
+          tf->apage_valid = 1;
+          tf->audiotime= vorbis_granule_time (&tf->vd, 
+                  ogg_page_granulepos(&og));
+        }
+      }
 
-		while (asset->audio_data && (e_o_s || 
-			((tf->audiotime < tf->videotime || !asset->video_data) && tf->audioflag==1)))
-		{
-	
-			tf->audioflag = 0;
-			while(ogg_stream_pageout (&tf->vo, &tf->audiopage) > 0)
-			{    
-//				 flush an audio page 
-				tf->audiotime=
-					vorbis_granule_time (&tf->vd, ogg_page_granulepos(&tf->audiopage));
-				tf->audio_bytesout +=
-					fwrite (tf->audiopage.header, 1, tf->audiopage.header_len, stream);
-				tf->audio_bytesout +=
-					fwrite (tf->audiopage.body, 1, tf->audiopage.body_len, stream);
-			
-				tf->audioflag = 1;
-				flushloop=1;
-			}
-			if(e_o_s)
-				break;
-		}
-	}
-
+      if(!asset->audio_data && tf->vpage_valid) {
+        write_video_page();
+      }
+      else if(!asset->video_data && tf->apage_valid) {
+        write_audio_page();
+      }
+      /* We're using both. We can output only:
+       *  a) If we have valid pages for both
+       *  b) At EOS, for the remaining stream.
+       */
+      else if(tf->vpage_valid && tf->apage_valid) {
+        /* Make sure they're in the right order. */
+        if(tf->videotime <= tf->audiotime)
+          write_video_page();
+        else
+          write_audio_page();
+      } 
+      else if(e_o_s && tf->vpage_valid) {
+          write_video_page();
+      }
+      else if(e_o_s && tf->apage_valid) {
+          write_audio_page();
+      }
+      else {
+        break; /* Nothing more writable at the moment */
+      }
+    }
 	flush_lock->unlock();
-	return 0;
 }
+
 
 int FileOGG::write_samples_vorbis(double **buffer, int64_t len, int e_o_s)
 {
@@ -1777,7 +1818,6 @@ int FileOGG::write_samples_vorbis(double **buffer, int64_t len, int e_o_s)
 	    }
 
 	}
-	tf->audioflag=1;
 	flush_ogg(0);
 	return 0;
 
@@ -1829,11 +1869,11 @@ int FileOGG::write_frames_theora(VFrame ***frames, int len, int e_o_s)
 					yuv.uv_height,
 					yuv.uv_stride);
 			}
-			theora_encode_packetout (&tf->td, e_o_s, &tf->op); 
-			flush_lock->lock();
-			ogg_stream_packetin (&tf->to, &tf->op);
-			flush_lock->unlock();
-			tf->videoflag=1;
+			while(theora_encode_packetout (&tf->td, e_o_s, &tf->op)) {
+				flush_lock->lock();
+				ogg_stream_packetin (&tf->to, &tf->op);
+				flush_lock->unlock();
+            }
 			flush_ogg(0);  // eos flush is done later at close_file
 		}
 // If we have e_o_s, don't encode any new frames
