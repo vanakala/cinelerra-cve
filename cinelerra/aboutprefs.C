@@ -77,6 +77,7 @@ mpeg3_release());
 "Jean-Michel POURE\n"
 "Pierre Marc Dumuid\n"
 "Alex Ferrer\n"
+"Jan Gerber\n"
 "Koen Muylkens\n"
 "Eric Seigne\n"
 "Gustavo Iñiguez\n"
