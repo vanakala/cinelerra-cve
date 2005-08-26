@@ -3,17 +3,79 @@
 minmax	- applied j@v2v.cc patch to ogg muxing to make it standard compliant
 
 	- removed debian dependency to mjpegtools 1.6.3 - since pmdumuid
-	makes it unneccessary
-
+	  makes it unneccessary
+	
+	- Modified:    cinelerra/hvirtual/cinelerra aboutprefs.C
+	- Add jan to the credits
 pmdumuid
 	- Added a automake patch to cope with the change in mjpegtool's y4m_read_frame_header()
+
+23.Aug.2005
+
+minmax:
+
+  	- Modified:    cinelerra/hvirtual/cinelerra interfaceprefs.C
+	               interfaceprefs.h mwindow.h mwindowedit.C preferences.C 
+		       preferences.h trackcanvas.C trackcanvas.h tracks.h tracksedit.C
+	- Here it is, infamous ga's patch fixed up and polished and beaten up into
+  	  submission "Just Works" (till the first tester comes at least)
+  
+  	- Modified:    cinelerra/hvirtual/cinelerra trackcanvas.C
+  	- Small fix for the dnd patch
+  
+  	- Modified:    cinelerra/hvirtual/cinelerra edits.C edits.h pluginset.C
+	- Fix a bug when paste_silence didn't return proper editlist
+
+  	- Modified:    cinelerra/hvirtual/cinelerra trackcanvas.C tracksedit.C
+  	- Make position finding rutines nicer...
+  
+  	- Modified:    cinelerra/hvirtual/cinelerra interfaceprefs.C
+                       interfaceprefs.h mwindowedit.C preferences.C
+                       preferences.h trackcanvas.C
+  	- a) remove dragdrop preference - since new mode can give all existing
+  	     behaviours it is sensible that old mode can be discarded
+  	- b) small fix for drop placement - off by one error
+
+  	- Modified:    cinelerra/hvirtual/cinelerra yuvstream.C
+      	- Fix in order to compila with new mjpegtools
+
+21.Aug.2005
+
+minmax:
+	
+	- Modified:    cinelerra/hvirtual/cinelerra maskengine.C
+  	- Small fix to mask engine
+
+20.Aug.2005
+
+minmax:
+	
+	- Modified:	cinelerra/hvirtual/cinelerra mwindow.h mwindowmove.C
+			trackcanvas.C
+	- Fix for bug 176 - implements sample zooming when holding shift and using 
+	  scrollwheel
+
+	- Modified:    cinelerra/hvirtual/debian control
+	- Moved from libavcodec-dev to libavcodec2-dev to make it compile under latest
+	  sid
+
+  	- Modified:    cinelerra/hvirtual/cinelerra cwindowgui.C maskauto.C
+		       maskauto.h maskautos.C maskautos.h mwindowedit.C
+  	- Fixes misplacement of the mask when resizing track and misplacement of the
+  	  mask outline (in compositor window) when resizing project or changing it's
+  	  aspect ratio fixes bug 161
+
+  	- Modified:    cinelerra/hvirtual/cinelerra asset.C
+  	- Forgot to set defaults for theora so they weren't persistent ... now they are
+	
+	- Modified:    cinelerra/hvirtual/cinelerra cwindowgui.C
+  	- Clear out the debug printf
 
 11.Aug.2005
 
 Changelog maintainer:
 
 	- Now we have a changelog maintainer. 
-
 minmax: 
 	- boost up requirement for mjpegtools to 1.6.3 (used to be 1.6.2)
 	  and applying patch for it to work...
@@ -26,6 +88,7 @@ minmax:
 	  changing project size/aspect ratio
 
 	- added default options saving for theora (was missing)
+
 
 giskard:
 	- modified debian/control, addedd libtheora-mmx-dev to the 
