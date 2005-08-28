@@ -226,16 +226,16 @@ int DiffKeyMain::is_realtime() { return 1; }
 			 \
 			if(use_yuv) \
 			{ \
-				HSV::yuv_to_hsv((int)input_row,  \
-					(int)(input_row + 1),  \
-					(int)(input_row + 2),  \
+				HSV::yuv_to_hsv((int)*input_row,  \
+					(int)*(input_row + 1),  \
+					(int)*(input_row + 2),  \
 					in_hue,  \
 					in_sat,  \
 					in_val,  \
 					(int)maximum); \
-				HSV::yuv_to_hsv((int)key_row,  \
-					(int)(key_row + 1),  \
-					(int)(key_row + 2),  \
+				HSV::yuv_to_hsv((int)*key_row,  \
+					(int)*(key_row + 1),  \
+					(int)*(key_row + 2),  \
 					key_hue,  \
 					key_sat,  \
 					key_val,  \
