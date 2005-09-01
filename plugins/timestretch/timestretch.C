@@ -9,134 +9,17 @@
 #include "timestretchengine.h"
 #include "transportque.inc"
 #include "vframe.h"
+#include "filexml.h"
 
 #include <string.h>
 
 
 #define WINDOW_SIZE 4096
 #define INPUT_SIZE 65536
+#define OVERSAMPLE 8
 
 
 REGISTER_PLUGIN(TimeStretch)
-
-
-
-
-
-TimeStretchFraction::TimeStretchFraction(TimeStretch *plugin, int x, int y)
- : BC_TextBox(x, y, 100, 1, (float)plugin->scale)
-{
-	this->plugin = plugin;
-}
-
-int TimeStretchFraction::handle_event()
-{
-	plugin->scale = atof(get_text());
-	return 1;
-}
-
-
-
-
-
-TimeStretchFreq::TimeStretchFreq(TimeStretch *plugin, 
-	TimeStretchWindow *gui, 
-	int x, 
-	int y)
- : BC_Radial(x, y, plugin->use_fft, _("Use fast fourier transform"))
-{
-	this->plugin = plugin;
-	this->gui = gui;
-}
-
-int TimeStretchFreq::handle_event()
-{
-	plugin->use_fft = 1;
-	update(1);
-	gui->time->update(0);
-}
-
-
-
-
-
-
-TimeStretchTime::TimeStretchTime(TimeStretch *plugin, 
-	TimeStretchWindow *gui, 
-	int x, 
-	int y)
- : BC_Radial(x, y, !plugin->use_fft, _("Use overlapping windows"))
-{
-	this->plugin = plugin;
-	this->gui = gui;
-}
-
-int TimeStretchTime::handle_event()
-{
-	plugin->use_fft = 0;
-	update(1);
-	gui->freq->update(0);
-}
-
-
-
-
-
-
-
-
-
-
-
-
-TimeStretchWindow::TimeStretchWindow(TimeStretch *plugin, int x, int y)
- : BC_Window(PROGRAM_NAME ": Time stretch", 
- 				x - 160,
-				y - 75,
- 				320, 
-				150, 
-				320, 
-				150,
-				0,
-				0,
-				1)
-{
-	this->plugin = plugin;
-}
-
-
-TimeStretchWindow::~TimeStretchWindow()
-{
-}
-
-void TimeStretchWindow::create_objects()
-{
-	int x = 10, y = 10;
-
-	add_subwindow(new BC_Title(x, y, _("Fraction of original length:")));
-	y += 20;
-	add_subwindow(new TimeStretchFraction(plugin, x, y));
-
-	y += 30;
-	add_subwindow(freq = new TimeStretchFreq(plugin, this, x, y));
-	y += 20;
-	add_subwindow(time = new TimeStretchTime(plugin, this, x, y));
-
-	add_subwindow(new BC_OKButton(this));
-	add_subwindow(new BC_CancelButton(this));
-	show_window();
-
-
-
-	flush();
-}
-
-
-
-
-
-
-
 
 
 
@@ -144,37 +27,70 @@ PitchEngine::PitchEngine(TimeStretch *plugin)
  : CrossfadeFFT()
 {
 	this->plugin = plugin;
+	last_phase = new double[WINDOW_SIZE];
+	new_freq = new double[WINDOW_SIZE];
+	new_magn = new double[WINDOW_SIZE];
+	sum_phase = new double[WINDOW_SIZE];
+	anal_magn = new double[WINDOW_SIZE];
+	anal_freq = new double[WINDOW_SIZE];
+
 	input_buffer = 0;
 	input_size = 0;
 	input_allocated = 0;
-	current_position = 0;
+	current_output_sample = -100000000000LL;
+
+	
 	temp = 0;
+
 }
 
 PitchEngine::~PitchEngine()
 {
 	if(input_buffer) delete [] input_buffer;
 	if(temp) delete [] temp;
+	delete [] last_phase;
+	delete [] new_freq;
+	delete [] new_magn;
+	delete [] sum_phase;
+	delete [] anal_magn;
+	delete [] anal_freq;
 }
+
+
+
 
 int PitchEngine::read_samples(int64_t output_sample, 
 	int samples, 
 	double *buffer)
 {
+
+// FIXME, make sure this is set at the beginning, always
+// FIXME: we need to do backward play also
+	if (current_output_sample != output_sample)
+	{
+		input_size = 0;
+		double input_point = plugin->get_source_start() + (output_sample - plugin->get_source_start()) / plugin->config.scale;
+		current_input_sample = plugin->local_to_edl((int64_t)input_point);
+		current_output_sample = output_sample;
+
+	}
+
 	while(input_size < samples)
 	{
+		double scale = plugin->config.scale;
 		if(!temp) temp = new double[INPUT_SIZE];
 
 		plugin->read_samples(temp, 
 			0, 
-			plugin->get_source_start() + current_position, 
+			plugin->get_samplerate(),
+			current_input_sample, 
 			INPUT_SIZE);
-		current_position +=INPUT_SIZE;
+		current_input_sample +=INPUT_SIZE;
 
 		plugin->resample->resample_chunk(temp,
 			INPUT_SIZE,
 			1000000,
-			(int)(1000000 * plugin->scale),
+			(int)(1000000 * scale),
 			0);
 
 		int fragment_size = plugin->resample->get_output_size(0);
@@ -203,58 +119,166 @@ int PitchEngine::read_samples(int64_t output_sample,
 		input_buffer + samples, 
 		sizeof(int64_t) * (input_size - samples));
 	input_size -= samples;
+	current_output_sample += samples;
 	return 0;
 }
 
-int PitchEngine::signal_process()
+int PitchEngine::signal_process_oversample(int reset)
 {
-
-	int min_freq = 
-		1 + (int)(20.0 / 
-				((double)plugin->PluginAClient::project_sample_rate / 
-					window_size * 
-					2) + 
-				0.5);
-
-	if(plugin->scale < 1)
+	double scale = plugin->config.scale;
+	
+	memset(new_freq, 0, window_size * sizeof(double));
+	memset(new_magn, 0, window_size * sizeof(double));
+	
+	if (reset)
 	{
-		for(int i = min_freq; i < window_size / 2; i++)
+		memset (last_phase, 0, WINDOW_SIZE * sizeof(double));
+		memset (sum_phase, 0, WINDOW_SIZE * sizeof(double));
+	}
+	
+	// new or old behaviour
+	if (1)
+	{	
+	// expected phase difference between windows
+		double expected_phase_diff = 2.0 * M_PI / oversample; 
+	// frequency per bin
+		double freq_per_bin = (double)plugin->PluginAClient::project_sample_rate / window_size;
+
+	//scale = 1.0;
+		for (int i = 0; i < window_size/2; i++) 
 		{
-			double destination = i * plugin->scale;
-			int dest_i = (int)(destination + 0.5);
-			if(dest_i != i)
+	// Convert to magnitude and phase
+			double magn = sqrt(fftw_data[i][0] * fftw_data[i][0] + fftw_data[i][1] * fftw_data[i][1]);
+			double phase = atan2(fftw_data[i][1], fftw_data[i][0]);
+			
+	// Remember last phase
+			double temp = phase - last_phase[i];
+			last_phase[i] = phase;
+		
+	// Substract the expected advancement of phase
+			temp -= (double)i * expected_phase_diff;
+			
+
+	// wrap temp into -/+ PI ...  good trick!
+			int qpd = (int)(temp/M_PI);
+			if (qpd >= 0) 
+				qpd += qpd&1;
+			else 
+				qpd -= qpd&1;
+			temp -= M_PI*(double)qpd;	
+
+	// Deviation from bin frequency	
+			temp = oversample * temp / (2.0 * M_PI);
+			
+			temp = (double)(temp + i) * freq_per_bin;
+
+			anal_magn[i] = magn;
+			anal_freq[i] = temp;
+
+	// Now temp is the real freq... move it!
+	//		int new_bin = (int)(temp * scale / freq_per_bin + 0.5);
+	/*		int new_bin = (int)(i *scale);
+			if (new_bin >= 0 && new_bin < window_size/2)
 			{
-				if(dest_i <= window_size / 2)
+	//			double tot_magn = new_magn[new_bin] + magn;
+				
+	//			new_freq[new_bin] = (new_freq[new_bin] * new_magn[new_bin] + temp *scale* magn) / tot_magn;
+				new_freq[new_bin] = temp*scale;
+				new_magn[new_bin] += magn;
+			}
+*/
+		}
+		
+		for (int k = 0; k <= window_size/2; k++) {
+			int index = k/scale;
+			if (index <= window_size/2) {
+				new_magn[k] += anal_magn[index];
+				new_freq[k] = anal_freq[index] * scale;
+			} else{
+			
+			new_magn[k] = 0;
+			new_freq[k] = 0;
+			}
+		}
+
+	
+		// Synthesize back the fft window 
+		for (int i = 0; i < window_size/2; i++) 
+		{
+			double magn = new_magn[i];
+			double temp = new_freq[i];
+	// substract the bin frequency
+			temp -= (double)(i) * freq_per_bin;
+
+	// get bin deviation from freq deviation
+			temp /= freq_per_bin;
+			
+	// oversample 
+			temp = 2.0 * M_PI *temp / oversample;
+		
+	// add back the expected phase difference (that we substracted in analysis)
+			temp += (double)(i) * expected_phase_diff;
+
+	// accumulate delta phase, to get bin phase
+			sum_phase[i] += temp;
+			
+			double phase = sum_phase[i];
+
+			fftw_data[i][0] = magn * cos(phase);
+			fftw_data[i][1] = magn * sin(phase);
+		}
+	} else
+	{
+		int min_freq = 
+			1 + (int)(20.0 / ((double)plugin->PluginAClient::project_sample_rate / 
+				window_size * 2) + 0.5);
+		if(plugin->config.scale < 1)
+		{
+			for(int i = min_freq; i < window_size / 2; i++)
+			{
+				double destination = i * plugin->config.scale;
+				int dest_i = (int)(destination + 0.5);
+				if(dest_i != i)
 				{
-					freq_real[dest_i] = freq_real[i];
-					freq_imag[dest_i] = freq_imag[i];
+					if(dest_i <= window_size / 2)
+					{
+						fftw_data[dest_i][0] = fftw_data[i][0];
+						fftw_data[dest_i][1] = fftw_data[i][1];
+					}
+					fftw_data[i][0] = 0;
+					fftw_data[i][1] = 0;
 				}
-				freq_real[i] = 0;
-				freq_imag[i] = 0;
+			}
+		}
+		else
+		if(plugin->config.scale > 1)
+		{
+			for(int i = window_size / 2 - 1; i >= min_freq; i--)
+			{
+				double destination = i * plugin->config.scale;
+				int dest_i = (int)(destination + 0.5);
+				if(dest_i != i)
+				{
+					if(dest_i <= window_size / 2)
+					{
+						fftw_data[dest_i][0] = fftw_data[i][0];
+						fftw_data[dest_i][1] = fftw_data[i][1];
+					}
+					fftw_data[i][0] = 0;
+					fftw_data[i][1] = 0;
+				}
 			}
 		}
 	}
-	else
-	if(plugin->scale > 1)
-	{
-		for(int i = window_size / 2 - 1; i >= min_freq; i--)
-		{
-			double destination = i * plugin->scale;
-			int dest_i = (int)(destination + 0.5);
-			if(dest_i != i)
-			{
-				if(dest_i <= window_size / 2)
-				{
-					freq_real[dest_i] = freq_real[i];
-					freq_imag[dest_i] = freq_imag[i];
-				}
-				freq_real[i] = 0;
-				freq_imag[i] = 0;
-			}
-		}
-	}
 
-	symmetry(window_size, freq_real, freq_imag);
+//symmetry(window_size, freq_real, freq_imag);
+	for (int i = window_size/2; i< window_size; i++)
+	{
+		fftw_data[i][0] = 0;
+		fftw_data[i][1] = 0;
+	}
+	
+
 	return 0;
 }
 
@@ -274,6 +298,7 @@ int PitchEngine::signal_process()
 TimeStretch::TimeStretch(PluginServer *server)
  : PluginAClient(server)
 {
+	PLUGIN_CONSTRUCTOR_MACRO
 	load_defaults();
 	temp = 0;
 	pitch = 0;
@@ -286,8 +311,7 @@ TimeStretch::TimeStretch(PluginServer *server)
 
 TimeStretch::~TimeStretch()
 {
-	save_defaults();
-	delete defaults;
+	PLUGIN_DESTRUCTOR_MACRO
 	if(temp) delete [] temp;
 	if(input) delete [] input;
 	if(pitch) delete pitch;
@@ -298,135 +322,39 @@ TimeStretch::~TimeStretch()
 	
 	
 char* TimeStretch::plugin_title() { return N_("Time stretch"); }
+int TimeStretch::is_realtime() { return 1; }
 
-int TimeStretch::get_parameters()
+void TimeStretch::read_data(KeyFrame *keyframe)
 {
-	BC_DisplayInfo info;
-	TimeStretchWindow window(this, info.get_abs_cursor_x(), info.get_abs_cursor_y());
-	window.create_objects();
-	int result = window.run_window();
-	
-	return result;
-}
+	FileXML input;
+	input.set_shared_string(keyframe->data, strlen(keyframe->data));
 
-VFrame* TimeStretch::new_picon()
-{
-	return new VFrame(picon_png);
-}
-
-
-int TimeStretch::start_loop()
-{
-	scaled_size = (int64_t)(get_total_len() * scale);
-	if(PluginClient::interactive)
-	{
-		char string[BCTEXTLEN];
-		sprintf(string, "%s...", plugin_title());
-		progress = start_progress(string, scaled_size);
-	}
-
-	current_position = get_source_start();
-	total_written = 0;
-	total_read = 0;
-
-
-
-// The FFT case
-	if(use_fft)
-	{
-		pitch = new PitchEngine(this);
-		pitch->initialize(WINDOW_SIZE);
-		resample = new Resample(0, 1);
-	}
-	else
-// The windowing case
-	{
-// Must be short enough to mask beating but long enough to mask humming.
-		stretch = new TimeStretchEngine(scale, PluginAClient::project_sample_rate);
-	}
-
-
-
-	
-	return 0;
-}
-
-int TimeStretch::stop_loop()
-{
-	if(PluginClient::interactive)
-	{
-		progress->stop_progress();
-		delete progress;
-	}
-	return 0;
-}
-
-int TimeStretch::process_loop(double *buffer, int64_t &write_length)
-{
 	int result = 0;
-	int64_t predicted_total = (int64_t)((double)get_total_len() * scale + 0.5);
-
-
-
-
-
-
-	int samples_rendered = 0;
-
-
-
-
-
-
-
-// The FFT case
-	if(use_fft)
+	while(!result)
 	{
-		samples_rendered = get_buffer_size();
-		pitch->process_buffer(total_written,
-					samples_rendered, 
-					buffer, 
-					PLAY_FORWARD);
-	}
-	else
-// The windowing case
-	{
-// Length to read based on desired output size
-		int64_t size = (int64_t)((double)get_buffer_size() / scale);
+		result = input.read_tag();
 
-		if(input_allocated < size)
+		if(!result)
 		{
-			if(input) delete [] input;
-			input = new double[size];
-			input_allocated = size;
-		}
-
-		read_samples(input, 0, current_position, size);
-		current_position += size;
-
-		samples_rendered = stretch->process(input, size);
-		if(samples_rendered)
-		{
-			samples_rendered = MIN(samples_rendered, get_buffer_size());
-			stretch->read_output(buffer, samples_rendered);
+			if(input.tag.title_is("TIMESTRETCH"))
+			{
+				config.scale = input.tag.get_property("SCALE", config.scale);
+			}
 		}
 	}
+}
 
+void TimeStretch::save_data(KeyFrame *keyframe)
+{
+	FileXML output;
+	output.set_shared_string(keyframe->data, MESSAGESIZE);
 
-	total_written += samples_rendered;
+	output.tag.set_title("TIMESTRETCH");
+	output.tag.set_property("SCALE", config.scale);
+	output.append_tag();
+	output.append_newline();
 
-// Trim output to predicted length of stretched selection.
-	if(total_written > predicted_total)
-	{
-		samples_rendered -= total_written - predicted_total;
-		result = 1;
-	}
-
-
-	write_length = samples_rendered;
-	if(PluginClient::interactive) result = progress->update(total_written);
-
-	return result;
+	output.terminate_string();
 }
 
 
@@ -441,15 +369,169 @@ int TimeStretch::load_defaults()
 	defaults = new Defaults(directory);
 	defaults->load();
 
-	scale = defaults->get("SCALE", (double)1);
-	use_fft = defaults->get("USE_FFT", 0);
+	config.scale = defaults->get("SCALE", (double)1);
 	return 0;
 }
 
 int TimeStretch::save_defaults()
 {
-	defaults->update("SCALE", scale);
-	defaults->update("USE_FFT", use_fft);
+	defaults->update("SCALE", config.scale);
 	defaults->save();
 	return 0;
 }
+
+
+TimeStretchConfig::TimeStretchConfig()
+{
+	scale = 1.0;
+}
+
+int TimeStretchConfig::equivalent(TimeStretchConfig &that)
+{
+	return EQUIV(scale, that.scale);
+}
+
+void TimeStretchConfig::copy_from(TimeStretchConfig &that)
+{
+	scale = that.scale;
+}
+
+void TimeStretchConfig::interpolate(TimeStretchConfig &prev, 
+	TimeStretchConfig &next, 
+	int64_t prev_frame, 
+	int64_t next_frame, 
+	int64_t current_frame)
+{
+	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
+	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
+	scale = prev.scale * prev_scale + next.scale * next_scale;
+}
+
+
+
+
+LOAD_CONFIGURATION_MACRO(TimeStretch, TimeStretchConfig)
+
+SHOW_GUI_MACRO(TimeStretch, TimeStretchThread)
+
+RAISE_WINDOW_MACRO(TimeStretch)
+
+SET_STRING_MACRO(TimeStretch)
+
+NEW_PICON_MACRO(TimeStretch)
+
+
+void TimeStretch::update_gui()
+{
+	if(thread)
+	{
+		load_configuration();
+		thread->window->lock_window("TimeStretch::update_gui");
+		thread->window->update();
+		thread->window->unlock_window();
+	}
+}
+
+
+
+int TimeStretch::get_parameters()
+{
+	BC_DisplayInfo info;
+	TimeStretchWindow window(this, info.get_abs_cursor_x(), info.get_abs_cursor_y());
+	window.create_objects();
+	int result = window.run_window();
+	
+	return result;
+}
+
+
+//int TimeStretch::process_loop(double *buffer, int64_t &write_length)
+int TimeStretch::process_buffer(int64_t size, 
+		double *buffer,
+		int64_t start_position,
+		int sample_rate)
+{
+	load_configuration();
+
+	int result = 0;
+
+	if(!pitch)
+	{
+		pitch = new PitchEngine(this);
+		pitch->initialize(WINDOW_SIZE);
+		pitch->ready_oversample(OVERSAMPLE);
+		resample = new Resample(0, 1);
+
+	}
+
+	pitch->process_buffer_oversample(start_position,
+		size, 
+		buffer,
+		get_direction());
+
+
+	return result;
+}
+
+
+
+PLUGIN_THREAD_OBJECT(TimeStretch, TimeStretchThread, TimeStretchWindow) 
+
+
+TimeStretchWindow::TimeStretchWindow(TimeStretch *plugin, int x, int y)
+ : BC_Window(plugin->gui_string, 
+ 	x, 
+	y, 
+	150, 
+	50, 
+	150, 
+	50,
+	0, 
+	0,
+	1)
+{
+	this->plugin = plugin;
+}
+
+void TimeStretchWindow::create_objects()
+{
+	int x = 10, y = 10;
+	
+	add_subwindow(new BC_Title(x, y, _("Scale:")));
+	x += 70;
+	add_subwindow(scale = new TimeStretchScale(plugin, x, y));
+	show_window();
+	flush();
+}
+
+WINDOW_CLOSE_EVENT(TimeStretchWindow)
+
+void TimeStretchWindow::update()
+{
+	scale->update(plugin->config.scale);
+}
+
+
+
+TimeStretchScale::TimeStretchScale(TimeStretch *plugin, int x, int y)
+ : BC_FPot(x, y, (float)plugin->config.scale, .3, 2)
+{
+	this->plugin = plugin;
+	set_precision(0.001);
+}
+
+int TimeStretchScale::handle_event()
+{
+	plugin->config.scale = get_value();
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+
+
+
+
+
+
+

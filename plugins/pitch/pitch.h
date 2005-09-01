@@ -10,6 +10,7 @@
 #include "pluginaclient.h"
 #include "vframe.inc"
 
+
 class PitchEffect;
 
 class PitchScale : public BC_FPot
@@ -56,11 +57,19 @@ class PitchFFT : public CrossfadeFFT
 {
 public:
 	PitchFFT(PitchEffect *plugin);
-	int signal_process();
+	~PitchFFT();
+	int signal_process_oversample(int reset);
 	int read_samples(int64_t output_sample, 
 		int samples, 
 		double *buffer);
 	PitchEffect *plugin;
+	
+	double *last_phase;
+	double *new_freq;
+	double *new_magn;
+	double *sum_phase;
+	double *anal_freq;
+	double *anal_magn;
 };
 
 class PitchEffect : public PluginAClient

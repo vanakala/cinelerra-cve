@@ -9,6 +9,10 @@
 #define HALF_WINDOW (window_size / 2)
 
 
+// we need to do some trickery to get around of fftw thread unsafetyness
+fftw_plan_desc *FFT::fftw_plans = 0;
+Mutex FFT::plans_lock = Mutex();
+
 FFT::FFT()
 {
 }
@@ -154,6 +158,50 @@ int FFT::symmetry(int size, double *freq_real, double *freq_imag)
 	return 0;
 }
 
+// Create a proper fftw plan to be used later
+int FFT::ready_fftw(unsigned int samples)
+{
+// FFTW plan generation is not thread safe, so we have to take precausions
+	FFT::plans_lock.lock();
+	fftw_plan_desc *plan;
+	
+	my_fftw_plan = 0;
+	
+	for (plan = fftw_plans; plan; plan = plan->next)
+		if (plan->samples == samples) 
+		{
+			my_fftw_plan = plan;
+			break;
+		}
+	
+	if (!my_fftw_plan)
+	{
+		fftw_complex *temp_data = (fftw_complex *)fftw_malloc(sizeof(fftw_complex) * samples);
+		my_fftw_plan = new fftw_plan_desc;   // we never discard this, since they are static
+		my_fftw_plan->samples = samples;
+		my_fftw_plan->plan_forward = fftw_plan_dft_1d(samples, temp_data, temp_data, FFTW_FORWARD, FFTW_ESTIMATE);
+		my_fftw_plan->plan_backward = fftw_plan_dft_1d(samples, temp_data, temp_data, FFTW_BACKWARD, FFTW_ESTIMATE);
+		// We will use this plan only in guru mode so we can now discard the temp_data
+		fftw_free(temp_data);
+	
+		// Put the plan into the linked list
+		my_fftw_plan->next = fftw_plans;
+		fftw_plans = my_fftw_plan;
+	}
+	
+	FFT::plans_lock.unlock();
+	return 0;
+}
+
+int FFT::do_fftw_inplace(unsigned int samples,
+		int inverse,
+		fftw_complex *data)
+{
+	if (inverse == 0)
+		fftw_execute_dft(my_fftw_plan->plan_forward, data, data);
+	else
+		fftw_execute_dft(my_fftw_plan->plan_backward, data, data);
+}
 
 
 
@@ -185,6 +233,11 @@ int CrossfadeFFT::reset()
 	output_allocation = 0;
 	output_sample = 0;
 	input_sample = 0;
+	samples_ready = 0;
+	oversample = 0;
+	pre_window = 0;
+	post_window = 0;
+	fftw_data = 0;
 	return 0;
 }
 
@@ -196,6 +249,9 @@ int CrossfadeFFT::delete_fft()
 	if(freq_imag) delete [] freq_imag;
 	if(temp_real) delete [] temp_real;
 	if(temp_imag) delete [] temp_imag;
+	if(pre_window) delete [] pre_window;
+	if(post_window) delete [] post_window;
+	if(fftw_data) fftw_free(fftw_data);
 	reset();
 	return 0;
 }
@@ -234,134 +290,6 @@ int CrossfadeFFT::reconfigure()
 	return 0;
 }
 
-// int CrossfadeFFT::process_fifo(long size, 
-// 	double *input_ptr, 
-// 	double *output_ptr)
-// {
-// // Load next input buffer
-// 	if(input_size + size > input_allocation)
-// 	{
-// 		double *new_input = new double[input_size + size];
-// 		if(input_buffer)
-// 		{
-// 			memcpy(new_input, input_buffer, sizeof(double) * input_size);
-// 			delete [] input_buffer;
-// 		}
-// 		input_buffer = new_input;
-// 		input_allocation = input_size + size;
-// 	}
-// 
-// 	memcpy(input_buffer + input_size, 
-// 		input_ptr, 
-// 		size * sizeof(double));
-// 	input_size += size;
-// 
-// 
-// 
-// 
-// 
-// 
-// 
-// // Have enough to do some windows
-// 	while(input_size >= window_size)
-// 	{
-// 		if(!freq_real) freq_real = new double[window_size];
-// 		if(!freq_imag) freq_imag = new double[window_size];
-// 		if(!temp_real) temp_real = new double[window_size];
-// 		if(!temp_imag) temp_imag = new double[window_size];
-// 	
-// 	
-// 	
-// 		do_fft(window_size,  // must be a power of 2
-//     		0,         // 0 = forward FFT, 1 = inverse
-//     		input_buffer,     // array of input's real samples
-//     		0,     // array of input's imag samples
-//     		freq_real,    // array of output's reals
-//     		freq_imag);
-// 
-// 		int result = signal_process();
-// 
-// 		if(!result)
-// 		{
-// 			do_fft(window_size,  // must be a power of 2
-//     			1,               // 0 = forward FFT, 1 = inverse
-//     			freq_real,     // array of input's real samples
-//     			freq_imag,     // array of input's imag samples
-//     			temp_real,     // array of output's reals
-//     			temp_imag);
-// 		}
-// 
-// 
-// // Crossfade into the output buffer
-// 		long new_allocation = output_size + window_size;
-// 		if(new_allocation > output_allocation)
-// 		{
-// 			double *new_output = new double[new_allocation];
-// 
-// 			if(output_buffer)
-// 			{
-// 				memcpy(new_output, output_buffer, sizeof(double) * output_size);
-// 				delete [] output_buffer;
-// 			}
-// 			output_buffer = new_output;
-// 			output_allocation = new_allocation;
-// 		}
-// 
-// 		if(output_size >= HALF_WINDOW)
-// 		{
-// 			for(int i = 0, j = output_size - HALF_WINDOW; 
-// 				i < HALF_WINDOW; 
-// 				i++, j++)
-// 			{
-// 				double src_level = (double)i / HALF_WINDOW;
-// 				double dst_level = (double)(HALF_WINDOW - i) / HALF_WINDOW;
-// 				output_buffer[j] = output_buffer[j] * dst_level + temp_real[i] * src_level;
-// 			}
-// 
-// 			memcpy(output_buffer + output_size, 
-// 				temp_real + HALF_WINDOW, 
-// 				sizeof(double) * (window_size - HALF_WINDOW));
-// 			output_size += window_size - HALF_WINDOW;
-// 		}
-// 		else
-// 		{
-// // First buffer has no crossfade
-// 			memcpy(output_buffer + output_size, 
-// 				temp_real, 
-// 				sizeof(double) * window_size);
-// 			output_size += window_size;
-// 		}
-// 
-// 
-// // Shift input buffer forward
-// 		for(int i = window_size - HALF_WINDOW, j = 0; 
-// 			i < input_size; 
-// 			i++, j++)
-// 			input_buffer[j] = input_buffer[i];
-// 		input_size -= window_size - HALF_WINDOW;
-// 	}
-// 
-// 
-// 
-// 
-// // Have enough to send to output
-// 	int samples_rendered = 0;
-// 	if(output_size - HALF_WINDOW >= size)
-// 	{
-// 		memcpy(output_ptr, output_buffer, sizeof(double) * size);
-// 		for(int i = size, j = 0; i < output_size; i++, j++)
-// 			output_buffer[j] = output_buffer[i];
-// 		output_size -= size;
-// 		samples_rendered = size;
-// 	}
-// 	else
-// 	{
-// 		bzero(output_ptr, sizeof(double) * size);
-// 	}
-// 
-// 	return samples_rendered;
-// }
-
 
 
 int CrossfadeFFT::process_buffer(int64_t output_sample, 
@@ -372,8 +300,7 @@ int CrossfadeFFT::process_buffer(int64_t output_sample,
 	int result = 0;
 	int step = (direction == PLAY_FORWARD) ? 1 : -1;
 
-// User seeked so output buffer is invalid
-	if(output_sample != this->output_sample)
+	if(output_sample != this->output_sample || first_window)
 	{
 		output_size = 0;
 		input_size = 0;
@@ -487,6 +414,218 @@ int CrossfadeFFT::process_buffer(int64_t output_sample,
 	return 0;
 }
 
+void CrossfadeFFT::ready_oversample(int oversample) 
+{
+// Only powers of two can be used for oversample
+	int oversample_fix = 2;
+	while(oversample_fix < oversample) oversample_fix *= 2;
+	this->oversample = oversample = oversample_fix;
+	
+// Precalculate the pre-envelope hanning window
+	pre_window = new double[window_size];
+	for (int i = 0; i< window_size; i++) 
+		pre_window[i] = 0.5 - 0.5 *cos(2 * M_PI * i / window_size); 
+
+// Precalculate the post-envelope hanning window also, we could have triangle here also
+	post_window = new double[window_size];
+/*	for (int i = 0; i< window_size/2; i++) 
+		post_window[i] = 1.0 * i / (window_size/2) / oversample * 2;
+	for (int i = window_size/2; i< window_size; i++) 
+		post_window[i] = 1.0 * (window_size - i) / (window_size/2) / oversample * 2;
+ */
+	for (int i = 0; i< window_size; i++) 
+		post_window[i] = (0.5 - 0.5 *cos(2 * M_PI * i / window_size)) * 6/ oversample / window_size; 
+
+	ready_fftw(window_size);
+
+} 
+
+void smbFft(double *fftBuffer, long fftFrameSize, long sign);
+
+
+
+
+int CrossfadeFFT::process_buffer_oversample(int64_t output_sample, 
+	long size, 
+	double *output_ptr,
+	int direction)
+{
+	if (oversample <= 0)
+	{
+		printf("ready_oversample() has to be called to use process_buffer_oversample\n");
+		return 1;
+	}
+	int result = 0;
+	int step = (direction == PLAY_FORWARD) ? 1 : -1;
+
+	int overlap_size = window_size / oversample;
+	int total_size;
+	int start_skip;
+
+	if (!output_ptr) 
+	{
+		printf("ERROR, no output pointer!\n");
+		return 1;
+	}
+	if(output_sample != this->output_sample || first_window)
+	{
+		input_size = 0;
+		first_window = 1;
+		this->output_sample = output_sample;
+		samples_ready = 0;
+		start_skip = window_size - overlap_size;
+		total_size = size + start_skip;
+		// signal_process() will always be able to know which window it has by looking at input_sample
+		this->input_sample = output_sample - step * start_skip;
+		if (step == -1) this->input_sample += overlap_size;
+	} else
+	{
+		start_skip = 0;
+		total_size = size;
+		first_window = 0;
+	}
+
+// Find out how big output buffer we will need, take overlapping into account
+	int new_allocation = total_size + window_size;
+	if(new_allocation > output_allocation)
+	{
+		double *new_output = new double[new_allocation];
+		if(output_buffer)
+		{
+			memcpy(new_output, 
+				output_buffer, 
+				sizeof(double) * (samples_ready + window_size - overlap_size));
+			delete [] output_buffer;
+			
+		}
+		output_buffer = new_output;
+		output_allocation = new_allocation;
+	}
+// Fill output buffer by overlap_size at a time until size samples are available
+	while(samples_ready < total_size)
+	{
+		if(!input_buffer) input_buffer = new double[window_size];
+		if(!fftw_data) fftw_data = (fftw_complex *)fftw_malloc(window_size * sizeof(fftw_complex));
+
+// Fill enough input to make a window starting at output_sample
+		int64_t read_start;
+		int write_pos;
+		int read_len;
+
+		if(first_window)
+		{
+			if (step == 1)
+				read_start = this->input_sample;
+			else
+				read_start = this->input_sample - window_size;
+			write_pos = 0;
+			read_len = window_size;
+		} else
+		{ 
+			if (step == 1)
+			{
+				read_start = this->input_sample + window_size - overlap_size;
+				write_pos = window_size - overlap_size;
+			} else 
+			{
+				read_start = this->input_sample - window_size;
+				write_pos = 0;
+			}
+			read_len = overlap_size;
+		}
+
+		if (read_start < 0)
+		{
+// completely outside the track	
+			memset (input_buffer + write_pos, 0, read_len * sizeof(double));
+			result = 1;
+		} else
+		if (read_start + read_len *step < 0)
+		{
+// special case for reading before the track - in general it would be sensible that this behaviour is done by read_samples()
+			memset (input_buffer, 0, (read_len - read_start) * sizeof(double));
+			result = read_samples(read_start,
+				read_start,
+				input_buffer + read_len *step + read_start + write_pos);
+		} else
+		{
+//printf("Readstart: %lli, read len: %i, write pos: %i\n", read_start, read_len, write_pos);
+			result = read_samples(read_start,
+				read_len,
+				input_buffer + write_pos);
+		}
+
+
+// apply Hanning window to input samples
+		for (int i = 0; i< window_size; i++) 
+		{
+			fftw_data[i][0] = input_buffer[i] * pre_window[i];
+			fftw_data[i][1] = 0;
+		}
+
+
+		if(!result) 
+			do_fftw_inplace(window_size, 0, fftw_data);
+		if(!result)
+			result = signal_process_oversample(first_window);
+		if(!result) 
+			do_fftw_inplace(window_size, 1, fftw_data);
+
+// Overlay over existing output - overlap processing
+		if (step == 1)
+		{
+			for (int i = 0; i < window_size - overlap_size; i++)
+				output_buffer[i + samples_ready] += fftw_data[i][0] * post_window[i]; 
+			for (int i = window_size - overlap_size; i < window_size; i++)
+				output_buffer[i + samples_ready] = fftw_data[i][0] * post_window[i];
+		} else
+		{
+			int offset = output_allocation - samples_ready - window_size;
+			for (int i = 0; i < overlap_size; i++)
+				output_buffer[i + offset] = fftw_data[i][0] * post_window[i]; 
+			for (int i = overlap_size; i < window_size; i++)
+				output_buffer[i + offset] += fftw_data[i][0] * post_window[i];
+		}
+
+
+// Shift input buffer
+		if (step == 1) 
+			memmove(input_buffer, input_buffer + overlap_size, (window_size - overlap_size) * sizeof(double));
+		else
+			memmove(input_buffer + overlap_size, input_buffer, (window_size - overlap_size) * sizeof(double));
+		
+		this->input_sample += step * overlap_size;
+
+		samples_ready += overlap_size;
+		first_window = 0;
+	}
+
+	if (step == 1)
+	{
+		memcpy(output_ptr, output_buffer + start_skip , size * sizeof(double));
+		samples_ready -= total_size;
+
+		memmove(output_buffer, 
+			output_buffer + total_size, 
+			(samples_ready + window_size - overlap_size) * sizeof(double));
+		this->output_sample += size;
+		
+	} else
+	{
+		memcpy(output_ptr, output_buffer + output_allocation - total_size , size * sizeof(double));
+		samples_ready -= total_size;
+
+		memmove(output_buffer + output_allocation - (samples_ready + window_size - overlap_size),
+			output_buffer + output_allocation - (samples_ready + window_size - overlap_size) - total_size, 
+			(samples_ready + window_size - overlap_size) * sizeof(double));
+		
+		this->output_sample -= size;
+	}
+	
+
+	return 0;
+}
+
 
 int CrossfadeFFT::read_samples(int64_t output_sample, 
 		int samples, 
@@ -496,6 +635,11 @@ int CrossfadeFFT::read_samples(int64_t output_sample,
 }
 
 int CrossfadeFFT::signal_process()
+{
+	return 0;
+}
+
+int CrossfadeFFT::signal_process_oversample(int reset)
 {
 	return 0;
 }

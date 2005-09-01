@@ -15,50 +15,50 @@
 
 class TimeStretch;
 class TimeStretchWindow;
+class TimeStretchConfig;
 
 
 
-
-class TimeStretchFraction : public BC_TextBox
+class TimeStretchScale : public BC_FPot
 {
 public:
-	TimeStretchFraction(TimeStretch *plugin, int x, int y);
+	TimeStretchScale(TimeStretch *plugin, int x, int y);
 	int handle_event();
 	TimeStretch *plugin;
 };
-
-
-class TimeStretchFreq : public BC_Radial
-{
-public:
-	TimeStretchFreq(TimeStretch *plugin, TimeStretchWindow *gui, int x, int y);
-	int handle_event();
-	TimeStretch *plugin;
-	TimeStretchWindow *gui;
-};
-
-class TimeStretchTime : public BC_Radial
-{
-public:
-	TimeStretchTime(TimeStretch *plugin, TimeStretchWindow *gui, int x, int y);
-	int handle_event();
-	TimeStretch *plugin;
-	TimeStretchWindow *gui;
-};
-
 
 class TimeStretchWindow : public BC_Window
 {
 public:
 	TimeStretchWindow(TimeStretch *plugin, int x, int y);
-	~TimeStretchWindow();
-
 	void create_objects();
-
+	void update();
+	int close_event();
+	TimeStretchScale *scale;
 	TimeStretch *plugin;
-	TimeStretchFreq *freq;
-	TimeStretchTime *time;
 };
+
+PLUGIN_THREAD_HEADER(TimeStretch, TimeStretchThread, TimeStretchWindow)
+
+
+class TimeStretchConfig
+{
+public:
+	TimeStretchConfig();
+
+
+	int equivalent(TimeStretchConfig &that);
+	void copy_from(TimeStretchConfig &that);
+	void interpolate(TimeStretchConfig &prev, 
+		TimeStretchConfig &next, 
+		int64_t prev_frame, 
+		int64_t next_frame, 
+		int64_t current_frame);
+
+
+	double scale;
+};
+
 
 
 class PitchEngine : public CrossfadeFFT
@@ -71,14 +71,24 @@ public:
 	int read_samples(int64_t output_sample, 
 		int samples, 
 		double *buffer);
-	int signal_process();
+	int signal_process_oversample(int reset);
 
 	TimeStretch *plugin;
 	double *temp;
 	double *input_buffer;
 	int input_size;
 	int input_allocated;
-	int64_t current_position;
+	int64_t current_input_sample;
+	int64_t current_output_sample;
+
+	double *last_phase;
+	double *new_freq;
+	double *new_magn;
+	double *sum_phase;
+	double *anal_freq;
+	double *anal_magn;
+
+
 };
 
 class TimeStretch : public PluginAClient
@@ -88,16 +98,29 @@ public:
 	~TimeStretch();
 	
 	
-	char* plugin_title();
-	int get_parameters();
 	VFrame* new_picon();
-	int start_loop();
-	int process_loop(double *buffer, int64_t &write_length);
-	int stop_loop();
+	char* plugin_title();
+	int is_realtime();
+	int get_parameters();
+	void read_data(KeyFrame *keyframe);
+	void save_data(KeyFrame *keyframe);
+
+	int process_buffer(int64_t size, 
+		double *buffer,
+		int64_t start_position,
+		int sample_rate);
+
+
+	int show_gui();
+	void raise_window();
+	int set_string();
+
 	
+	int load_configuration();
 	int load_defaults();
 	int save_defaults();
 	
+	void update_gui();
 	
 	
 
@@ -108,17 +131,12 @@ public:
 	double *input;
 	int input_allocated;
 
-	int use_fft;
 	TimeStretchEngine *stretch;
 
 	Defaults *defaults;
-	MainProgressBar *progress;
-	double scale;
-	int64_t scaled_size;
-	int64_t current_position;
-	int64_t total_written;
-	int64_t current_written;
-	int64_t total_read;
+	TimeStretchConfig config;
+	TimeStretchThread *thread;
+
 };
 
 
