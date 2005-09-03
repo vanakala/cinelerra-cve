@@ -1,3 +1,40 @@
+3.Sep.2005
+
+minmax
+	-Modified:    cinelerra/hvirtual/quicktime stbl.c
+	-Apply patch as per bug 191
+	Fixes crush when opening files produced by Minolta DimageZ3
+
+
+1.Sep.2005
+
+minmax
+	-Added:       cinelerra/hvirtual/po pt_BR.po
+	
+	-Modified:    cinelerra/hvirtual/plugins/pitch pitch.C pitch.h
+	-New pitch control plugin code, and based on the same code new
+	 timestretch plugin which is now realtime!
+
+	-Modified:    cinelerra/hvirtual/plugins/timestretch timestretch.C
+	              timestretch.h
+	-New pitch control plugin code, and based on the same code new
+	 timestretch plugin which is now realtime!
+
+	-Modified: cinelerra/hvirtual/plugins/libfourier fourier.C
+		   fourier.h
+	-New pitch control plugin code, and based on the same code new
+	timestretch plugin which is now realtime!
+	     
+	-Modified:    cinelerra/hvirtual/debian control
+	-Add fftw3-dev to debian dependencies
+
+	
+28.Aug.2005
+
+minmax	
+	-Modified:    cinelerra/hvirtual/plugins/diffkey diffkey.C
+	-Fixed YUV bug in diffkey
+
 25.Aug.2005
 
 minmax	- applied j@v2v.cc patch to ogg muxing to make it standard compliant
