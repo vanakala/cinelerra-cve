@@ -98,7 +98,11 @@ int quicktime_read_stbl(quicktime_t *file, quicktime_minf_t *minf, quicktime_stb
 			{ quicktime_read_stss(file, &(stbl->stss)); }
 		else
 		if(quicktime_atom_is(&leaf_atom, "stsc"))
-			{ quicktime_read_stsc(file, &(stbl->stsc)); }
+		{ 
+			quicktime_read_stsc(file, &(stbl->stsc));
+/* Minolta DimageZ3 pads stsc with zeroes, so we need to jump */
+			quicktime_atom_skip(file, &leaf_atom);
+		}
 		else
 		if(quicktime_atom_is(&leaf_atom, "stsz"))
 			{ quicktime_read_stsz(file, &(stbl->stsz)); }
