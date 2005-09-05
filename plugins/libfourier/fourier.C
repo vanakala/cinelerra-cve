@@ -534,19 +534,19 @@ int CrossfadeFFT::process_buffer_oversample(int64_t output_sample,
 			read_len = overlap_size;
 		}
 
-		if (read_start < 0)
+		if (read_start + read_len * step< 0)
 		{
 // completely outside the track	
 			memset (input_buffer + write_pos, 0, read_len * sizeof(double));
 			result = 1;
 		} else
-		if (read_start + read_len *step < 0)
+		if (read_start < 0)
 		{
 // special case for reading before the track - in general it would be sensible that this behaviour is done by read_samples()
-			memset (input_buffer, 0, (read_len - read_start) * sizeof(double));
-			result = read_samples(read_start,
-				read_start,
-				input_buffer + read_len *step + read_start + write_pos);
+			memset (input_buffer + write_pos, 0, - read_start * sizeof(double));
+			result = read_samples(0,
+				read_start + read_len,
+				input_buffer - read_start + write_pos);
 		} else
 		{
 //printf("Readstart: %lli, read len: %i, write pos: %i\n", read_start, read_len, write_pos);
