@@ -140,6 +140,12 @@ LIBS="$save_LIBS"
 AC_CHECK_HEADERS(uuid/uuid.h)
 AC_CHECK_LIB(uuid, uuid_clear, :,[AC_MSG_WARN([libuuid not found])
 	NOT_FOUND="$NOT_FOUND libuuid"])
+
+AC_CHECK_HEADERS(fftw3.h)
+AC_CHECK_LIB(fftw3, fftw_free, :,[AC_MSG_WARN([libfftw3 not found])
+	NOT_FOUND="$NOT_FOUND libfftw3"])
+############## END OF MISC LIBRARIES
+
 ############## END OF MISC LIBRARIES
 
 LARGEFILE_CFLAGS="-D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64"
