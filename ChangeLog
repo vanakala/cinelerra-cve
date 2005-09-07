@@ -1,3 +1,17 @@
+5.Sep.2005
+
+minmax:
+
+	-Modified:    cinelerra/hvirtual/plugins/libfourier fourier.C
+	-Fix bugs
+
+	-Modified:    cinelerra/hvirtual/plugins/fourier Makefile.am
+	-Add fftw3 to ldadd in Makefile.am
+
+	-Modified:    cinelerra/hvirtual configure.in
+	-Add check for fftw3.h and libfftw3 ..
+
+
 3.Sep.2005
 
 minmax
