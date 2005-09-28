@@ -652,7 +652,6 @@ static void decompress_field(mjpeg_compressor *engine)
 	pthread_mutex_unlock(&(mjpeg->decompress_init));
 	get_rows(mjpeg, engine);
 
-//printf("decompress_field 3 %d\n", engine->jpeg_decompress.output_scanline);
 
 	while(engine->jpeg_decompress.output_scanline < engine->jpeg_decompress.output_height)
 	{
@@ -1087,7 +1086,7 @@ int mjpeg_decompress(mjpeg_t *mjpeg,
 		unsigned char *u_in = mjpeg->temp_rows[1][0];
 		unsigned char *v_in = mjpeg->temp_rows[2][0];
 
-//printf("mjpeg_decompress %p\n", row_pointers);
+//printf("mjpeg_decompress 7 %p\n", row_pointers);
 		cmodel_transfer(row_pointers, 
 			0,
 			y_plane,
@@ -1109,6 +1108,7 @@ int mjpeg_decompress(mjpeg_t *mjpeg,
 			0,
 			mjpeg->coded_w,
 			mjpeg->rowspan ? mjpeg->rowspan : mjpeg->output_w);
+//printf("mjpeg_decompress 8\n");
 	}
 	return 0;
 }

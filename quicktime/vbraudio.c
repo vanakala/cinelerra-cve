@@ -103,25 +103,37 @@ int quicktime_read_vbr(quicktime_t *file,
 		trak, 
 		vbr->sample);
 	int size = quicktime_sample_size(trak, vbr->sample);
+	int new_allocation = vbr->input_size + size;
 	int result = 0;
 
-	if(vbr->input_buffer && vbr->input_allocation < size)
+	if(vbr->input_allocation < new_allocation)
 	{
-		free(vbr->input_buffer);
-		vbr->input_buffer = 0;
+		vbr->input_buffer = realloc(vbr->input_buffer, new_allocation);
+		vbr->input_allocation = new_allocation;
 	}
 
-	if(!vbr->input_buffer)
-	{
-		vbr->input_buffer = calloc(1, size);
-		vbr->input_allocation = size;
-	}
-	vbr->input_size = size;
 
 	quicktime_set_position(file, offset);
-	result = !quicktime_read_data(file, vbr->input_buffer, vbr->input_size);
+	result = !quicktime_read_data(file, vbr->input_buffer + vbr->input_size, size);
+	vbr->input_size += size;
 	vbr->sample++;
 	return result;
+}
+
+void quicktime_shift_vbr(quicktime_audio_map_t *atrack, int bytes)
+{
+	quicktime_vbr_t *vbr = &atrack->vbr;
+	if(bytes >= vbr->input_size)
+	{
+		vbr->input_size = 0;
+	}
+	else
+	{
+		int i, j;
+		for(i = 0, j = bytes; j < vbr->input_size; i++, j++)
+			vbr->input_buffer[i] = vbr->input_buffer[j];
+		vbr->input_size -= bytes;
+	}
 }
 
 void quicktime_store_vbr_float(quicktime_audio_map_t *atrack,
@@ -184,8 +196,6 @@ void quicktime_copy_vbr_int16(quicktime_vbr_t *vbr,
 			input_ptr = 0;
 	}
 }
-
-
 
 
 

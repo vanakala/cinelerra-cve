@@ -12,6 +12,7 @@ static int read_type(char *data, char *type)
 	type[1] = data[5];
 	type[2] = data[6];
 	type[3] = data[7];
+	type[4] = 0;
 
 /*printf("%c%c%c%c ", type[0], type[1], type[2], type[3]); */
 /* need this for quicktime_check_sig */
@@ -68,7 +69,7 @@ static int64_t read_size64(char *data)
 static int reset(quicktime_atom_t *atom)
 {
 	atom->end = 0;
-	atom->type[0] = atom->type[1] = atom->type[2] = atom->type[3] = 0;
+	atom->type[0] = atom->type[1] = atom->type[2] = atom->type[3] = atom->type[4] = 0;
 	return 0;
 }
 
@@ -86,6 +87,7 @@ int quicktime_atom_read_header(quicktime_t *file, quicktime_atom_t *atom)
 		atom->type[1] = header[1];
 		atom->type[2] = header[2];
 		atom->type[3] = header[3];
+		atom->type[4] = 0;
 		atom->size = 
 			(((unsigned char)header[4])      ) |
 			(((unsigned char)header[5]) << 8 ) |
@@ -212,7 +214,7 @@ void quicktime_atom_write_footer(quicktime_t *file, quicktime_atom_t *atom)
 	quicktime_set_position(file, atom->end);
 }
 
-int quicktime_atom_is(quicktime_atom_t *atom, char *type)
+int quicktime_atom_is(quicktime_atom_t *atom, unsigned char *type)
 {
 	if(atom->type[0] == type[0] &&
 		atom->type[1] == type[1] &&
