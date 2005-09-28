@@ -74,7 +74,21 @@ int FileXML::append_text(char *text)
 	return 0;
 }
 
-int FileXML::serialize_and_append_text(char *text)
+int FileXML::append_text(char *text, long len)
+{
+	while(position + len > available)
+	{
+		reallocate_string(available * 2);
+	}
+
+	for(int i = 0; i < len; i++, position++)
+	{
+		string[position] = text[i];
+	}
+	return 0;
+}
+
+int FileXML::encode_text(char *text)
 {
 // We have to encode at least the '<' char
 // We encode three things:
@@ -107,19 +121,7 @@ int FileXML::serialize_and_append_text(char *text)
 	return 0;
 }
 
-int FileXML::append_text(char *text, long len)
-{
-	while(position + len > available)
-	{
-		reallocate_string(available * 2);
-	}
 
-	for(int i = 0; i < len; i++, position++)
-	{
-		string[position] = text[i];
-	}
-	return 0;
-}
 
 int FileXML::reallocate_string(long new_available)
 {
@@ -158,10 +160,10 @@ char* FileXML::read_text()
 // filter out first newline
 		if((i > 0 && i < output_length - 1) || string[text_position] != '\n') 
 		{
-// check if we have to do deserializing
+// check if we have to decode special characters
 // but try to be most backward compatible possible
 			int character = string[text_position];
-			if (string[text_position] == '&') 
+			if (string[text_position] == '&')
 			{
 				if (text_position + 3 < length)
 				{
@@ -207,14 +209,14 @@ int FileXML::read_tag()
 	return tag.read_tag(string, position, length);
 }
 
-int FileXML::read_text_until(char *tag_end, char *output)
+int FileXML::read_text_until(char *tag_end, char *output, int max_len)
 {
 // read to next tag
 	int out_position = 0;
 	int test_position1, test_position2;
 	int result = 0;
 	
-	while(!result && position < length)
+	while(!result && position < length && out_position < max_len - 1)
 	{
 		while(position < length && string[position] != left_delimiter)
 		{

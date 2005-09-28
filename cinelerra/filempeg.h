@@ -2,6 +2,7 @@
 #define FILEMPEG_H
 
 #include "bitspopup.inc"
+#include "condition.inc"
 #include "file.inc"
 #include "filebase.h"
 #include <lame/lame.h>
@@ -52,6 +53,10 @@ public:
 	static int check_sig(Asset *asset);
 	int open_file(int rd, int wr);
 	int close_file();
+	int create_index();
+
+
+	int get_index(char *index_path);
 	int set_video_position(int64_t x);
 	int set_audio_position(int64_t x);
 	int write_samples(double **buffer, 
@@ -71,6 +76,7 @@ public:
 	static char *strtocompression(char *string);
 	static char *compressiontostr(char *string);
 
+
 private:
 	void to_streamchannel(int channel, int &stream_out, int &channel_out);
 	int reset_parameters_derived();
@@ -83,16 +89,38 @@ private:
 	ArrayList<char*> vcommand_line;
 	void append_vcommand_line(const char *string);
 
+
+
+
+
+
+// MJPEGtools encoder
+	FILE *mjpeg_out;	
+	int mjpeg_error;
+	Condition *next_frame_lock;
+	Condition *next_frame_done;
+	int mjpeg_eof;
+	int wrote_header;
+	unsigned char *mjpeg_y;	
+	unsigned char *mjpeg_u;	
+	unsigned char *mjpeg_v;	
+	char mjpeg_command[BCTEXTLEN];
+
+
+
+
+
+
 // Thread for audio encoder
 	FileMPEGAudio *audio_out;
 // Command line for audio encoder
 	ArrayList<char*> acommand_line;
 	void append_acommand_line(const char *string);
-	
+
 
 // Temporary for color conversion
 	VFrame *temp_frame;
-	
+
 	unsigned char *toolame_temp;
 	int toolame_allocation;
 	int toolame_result;
@@ -182,35 +210,18 @@ public:
 
 
 
-class MPEGFixedBitrate;
-class MPEGFixedQuant;
+class MPEGConfigVideo;
 
-class MPEGConfigVideo : public BC_Window
+
+
+class MPEGPreset : public BC_PopupMenu
 {
 public:
-	MPEGConfigVideo(BC_WindowBase *parent_window, 
-		Asset *asset);
-	~MPEGConfigVideo();
-
-	int create_objects();
-	int close_event();
-
-	BC_WindowBase *parent_window;
-	Asset *asset;
-	MPEGFixedBitrate *fixed_bitrate;
-	MPEGFixedQuant *fixed_quant;
-	
-};
-
-class MPEGDerivative : public BC_PopupMenu
-{
-public:
-	MPEGDerivative(int x, int y, MPEGConfigVideo *gui);
+	MPEGPreset(int x, int y, MPEGConfigVideo *gui);
 	void create_objects();
 	int handle_event();
-	static int string_to_derivative(char *string);
-	static char* derivative_to_string(int derivative);
-	
+	static int string_to_value(char *string);
+	static char* value_to_string(int value);
 	MPEGConfigVideo *gui;
 };
 
@@ -222,6 +233,19 @@ public:
 	int handle_event();
 	static int string_to_cmodel(char *string);
 	static char* cmodel_to_string(int cmodel);
+	
+	MPEGConfigVideo *gui;
+};
+
+
+class MPEGDerivative : public BC_PopupMenu
+{
+public:
+	MPEGDerivative(int x, int y, MPEGConfigVideo *gui);
+	void create_objects();
+	int handle_event();
+	static int string_to_derivative(char *string);
+	static char* derivative_to_string(int derivative);
 	
 	MPEGConfigVideo *gui;
 };
@@ -250,6 +274,14 @@ public:
 	MPEGConfigVideo *gui;
 };
 
+class MPEGPFrameDistance : public BC_TumbleTextBox
+{
+public:
+	MPEGPFrameDistance(int x, int y, MPEGConfigVideo *gui);
+	int handle_event();
+	MPEGConfigVideo *gui;
+};
+
 class MPEGFixedBitrate : public BC_Radial
 {
 public:
@@ -274,6 +306,41 @@ public:
 	MPEGConfigVideo *gui;
 };
 
+
+
+
+class MPEGConfigVideo : public BC_Window
+{
+public:
+	MPEGConfigVideo(BC_WindowBase *parent_window, 
+		Asset *asset);
+	~MPEGConfigVideo();
+
+	int create_objects();
+	int close_event();
+	void delete_cmodel_objs();
+	void reset_cmodel();
+	void update_cmodel_objs();
+
+	BC_WindowBase *parent_window;
+	Asset *asset;
+	MPEGPreset *preset;
+	MPEGColorModel *cmodel;
+	MPEGDerivative *derivative;
+	MPEGBitrate *bitrate;
+	MPEGFixedBitrate *fixed_bitrate;
+	MPEGQuant *quant;
+	MPEGFixedQuant *fixed_quant;
+	MPEGIFrameDistance *iframe_distance;
+	MPEGPFrameDistance *pframe_distance;
+	BC_CheckBox *top_field_first;
+	BC_CheckBox *progressive;
+	BC_CheckBox *denoise;
+	BC_CheckBox *seq_codes;
+
+	ArrayList<BC_Title*> titles;
+	ArrayList<BC_SubWindow*> tools;
+};
 
 
 #endif

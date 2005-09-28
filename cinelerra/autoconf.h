@@ -1,10 +1,13 @@
 #ifndef AUTOCONF_H
 #define AUTOCONF_H
 
+#include "automation.h"
 #include "defaults.inc"
 #include "filexml.inc"
 #include "maxchannels.h"
 #include "module.inc"
+
+// Store what automation is visible.
 
 class AutoConf
 {
@@ -20,17 +23,13 @@ public:
 	void save_xml(FileXML *file);
 	int set_all(int value = 1);  // set all parameters to value (default = 1)
 
-	int fade;
-	int pan;
-	int mute;
+
+// The array entries correspond to the Automation enums.
+	int autos[AUTOMATION_TOTAL];
+
+// Other viewable things
 	int transitions;
 	int plugins;
-	int camera;
-	int projector;
-	int mode;
-	int mask;
-	int czoom;
-	int pzoom;
 };
 
 #endif

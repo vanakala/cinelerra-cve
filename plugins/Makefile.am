@@ -1,7 +1,5 @@
 THEMES= \
-	microtheme \
-	bluedottheme \
-	defaulttheme
+	suv
 
 SUBDIRS= \
 	$(THEMES) \
@@ -53,6 +51,7 @@ SUBDIRS= \
 	ivtc \
 	level \
 	linearblur \
+	linearize \
 	loopaudio \
 	loopvideo \
 	motion \

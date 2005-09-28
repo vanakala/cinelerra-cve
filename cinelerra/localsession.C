@@ -27,6 +27,9 @@ LocalSession::LocalSession(EDL *edl)
 	zoom_track = 0;
 	view_start = 0;
 	track_start = 0;
+	automation_min = -10;
+	automation_max = 10;
+	red = green = blue = 0;
 }
 
 LocalSession::~LocalSession()
@@ -52,6 +55,11 @@ void LocalSession::copy_from(LocalSession *that)
 	zoom_track = that->zoom_track;
 	preview_start = that->preview_start;
 	preview_end = that->preview_end;
+	red = that->red;
+	green = that->green;
+	automation_min = that->automation_min;
+	automation_max = that->automation_max;
+	blue = that->blue;
 }
 
 void LocalSession::save_xml(FileXML *file, double start)
@@ -83,6 +91,11 @@ void LocalSession::save_xml(FileXML *file, double start)
 	
 	file->tag.set_property("PREVIEW_START", preview_start);
 	file->tag.set_property("PREVIEW_END", preview_end);
+	file->tag.set_property("RED", red);
+	file->tag.set_property("GREEN", green);
+	file->tag.set_property("BLUE", blue);
+	file->tag.set_property("AUTOMATION_MIN", automation_min);
+	file->tag.set_property("AUTOMATION_MAX", automation_max);
 	file->append_tag();
 	file->tag.set_title("/LOCALSESSION");
 	file->append_tag();
@@ -97,6 +110,9 @@ void LocalSession::synchronize_params(LocalSession *that)
 	loop_end = that->loop_end;
 	preview_start = that->preview_start;
 	preview_end = that->preview_end;
+	red = that->red;
+	green = that->green;
+	blue = that->blue;
 }
 
 
@@ -121,7 +137,14 @@ void LocalSession::load_xml(FileXML *file, unsigned long load_flags)
 		zoom_track = file->tag.get_property("ZOOM_TRACK", zoom_track);
 		preview_start = file->tag.get_property("PREVIEW_START", preview_start);
 		preview_end = file->tag.get_property("PREVIEW_END", preview_end);
+		red = file->tag.get_property("RED", red);
+		green = file->tag.get_property("GREEN", green);
+		blue = file->tag.get_property("BLUE", blue);
+		automation_min = file->tag.get_property("AUTOMATION_MIN", automation_min);
+		automation_max = file->tag.get_property("AUTOMATION_MAX", automation_max);
 	}
+
+
 // on operations like cut, paste, slice, clear... we should also undo the cursor position as users
 // expect - this is additionally important in keyboard-only editing in viewer window
 	if(load_flags & LOAD_SESSION || load_flags & LOAD_TIMEBAR)
@@ -129,6 +152,9 @@ void LocalSession::load_xml(FileXML *file, unsigned long load_flags)
 		selectionstart = file->tag.get_property("SELECTION_START", (double)0);
 		selectionend = file->tag.get_property("SELECTION_END", (double)0);
 	}
+
+
+
 	if(load_flags & LOAD_TIMEBAR)
 	{
 		in_point = file->tag.get_property("IN_POINT", (double)-1);
@@ -153,6 +179,11 @@ int LocalSession::load_defaults(Defaults *defaults)
 	zoom_sample = defaults->get("ZOOM_SAMPLE", 1);
 	zoom_y = defaults->get("ZOOMY", 64);
 	zoom_track = defaults->get("ZOOM_TRACK", 64);
+	red = defaults->get("RED", 0.0);
+	green = defaults->get("GREEN", 0.0);
+	blue = defaults->get("BLUE", 0.0);
+	automation_min = defaults->get("AUTOMATION_MIN", automation_min);
+	automation_max = defaults->get("AUTOMATION_MAX", automation_max);
 	return 0;
 }
 
@@ -168,49 +199,94 @@ int LocalSession::save_defaults(Defaults *defaults)
 	defaults->update("ZOOM_SAMPLE", zoom_sample);
 	defaults->update("ZOOMY", zoom_y);
 	defaults->update("ZOOM_TRACK", zoom_track);
-//	defaults->update("PREVIEW_START", preview_start);
-//	defaults->update("PREVIEW_END", preview_end);
+	defaults->update("RED", red);
+	defaults->update("GREEN", green);
+	defaults->update("BLUE", blue);
+	defaults->update("AUTOMATION_MIN", automation_min);
+	defaults->update("AUTOMATION_MAX", automation_max);
 	return 0;
 }
 
-
-// prefer a complete current selection over in/out points
-double LocalSession::get_selectionstart()
+void LocalSession::set_selectionstart(double value)
 {
-	if (selectionstart >= 0 && 
-	    selectionend >= 0 && 
-	    selectionstart != selectionend) {
+	this->selectionstart = value;
+}
+
+void LocalSession::set_selectionend(double value)
+{
+	this->selectionend = value;
+}
+
+void LocalSession::set_inpoint(double value)
+{
+	in_point = value;
+}
+
+void LocalSession::set_outpoint(double value)
+{
+	out_point = value;
+}
+
+void LocalSession::unset_inpoint()
+{
+	in_point = -1;
+}
+
+void LocalSession::unset_outpoint()
+{
+	out_point = -1;
+}
+
+
+
+double LocalSession::get_selectionstart(int highlight_only)
+{
+	if(highlight_only || !EQUIV(selectionstart, selectionend))
 		return selectionstart;
-	}
-	
-	if(in_point >= 0) {
+
+	if(in_point >= 0)
 		return in_point;
-	}
-
-	if(out_point >= 0) {
+	else
+	if(out_point >= 0)
 		return out_point;
-	}
-
-	return selectionstart;
+	else
+		return selectionstart;
 }
 
-double LocalSession::get_selectionend()
+double LocalSession::get_selectionend(int highlight_only)
 {
-	if (selectionstart >= 0 && 
-	    selectionend >= 0 &&
-	    selectionstart != selectionend) {
+	if(highlight_only || !EQUIV(selectionstart, selectionend))
 		return selectionend;
-	}
 
-	if(out_point >= 0) {
+	if(out_point >= 0)
 		return out_point;
-	}
-
-	if(in_point >= 0) {
+	else
+	if(in_point >= 0)
 		return in_point;
-	}
-	
-	return selectionend;
+	else
+		return selectionend;
 }
+
+double LocalSession::get_inpoint()
+{
+	return in_point;
+}
+
+double LocalSession::get_outpoint()
+{
+	return out_point;
+}
+
+int LocalSession::inpoint_valid()
+{
+	return in_point >= 0;
+}
+
+int LocalSession::outpoint_valid()
+{
+	return out_point >= 0;
+}
+
+
 
 

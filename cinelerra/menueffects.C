@@ -1,4 +1,5 @@
 #include "asset.h"
+#include "clip.h"
 #include "confirmsave.h"
 #include "defaults.h"
 #include "edl.h"
@@ -419,7 +420,7 @@ void MenuEffectThread::run()
 		{
 // open output file in write mode
 			file->set_processors(mwindow->preferences->processors);
-			if(file->open_file(mwindow->plugindb, 
+			if(file->open_file(mwindow->preferences, 
 				asset, 
 				0, 
 				1, 
@@ -474,8 +475,7 @@ void MenuEffectThread::run()
 // paste output to tracks
 	if(!result && load_mode != LOAD_NOTHING)
 	{
-		mwindow->gui->lock_window();
-		mwindow->undo->update_undo_before(title, LOAD_ALL);
+		mwindow->gui->lock_window("MenuEffectThread::run");
 
 		if(load_mode == LOAD_PASTE)
 			mwindow->clear(0);
@@ -489,7 +489,7 @@ void MenuEffectThread::run()
 
 
 		mwindow->save_backup();
-		mwindow->undo->update_undo_after();
+		mwindow->undo->update_undo(title, LOAD_ALL);
 
 
 
@@ -559,16 +559,7 @@ MenuEffectWindow::~MenuEffectWindow()
 {
 	delete format_tools;
 }
-// 
-// int MenuEffectWindow::calculate_w(int use_plugin_list)
-// {
-// 	return use_plugin_list ? 580 : 420;
-// }
-// 
-// int MenuEffectWindow::calculate_h(int use_plugin_list)
-// {
-// 	return 350;
-// }
+
 
 
 int MenuEffectWindow::create_objects()
@@ -585,9 +576,9 @@ int MenuEffectWindow::create_objects()
 			_("Select an effect")));
 		add_subwindow(list = new MenuEffectWindowList(this, 
 			mwindow->theme->menueffect_list_x, 
-			mwindow->theme->menueffect_list_y + 20, 
+			mwindow->theme->menueffect_list_y + list_title->get_h() + 5, 
 			mwindow->theme->menueffect_list_w,
-			mwindow->theme->menueffect_list_h,
+			mwindow->theme->menueffect_list_h - list_title->get_h() - 5,
 			plugin_list));
 	}
 
@@ -641,9 +632,9 @@ int MenuEffectWindow::resize_event(int w, int h)
 		list_title->reposition_window(mwindow->theme->menueffect_list_x, 
 			mwindow->theme->menueffect_list_y);
 		list->reposition_window(mwindow->theme->menueffect_list_x, 
-			mwindow->theme->menueffect_list_y + 20, 
+			mwindow->theme->menueffect_list_y + list_title->get_h() + 5, 
 			mwindow->theme->menueffect_list_w,
-			mwindow->theme->menueffect_list_h);
+			mwindow->theme->menueffect_list_h - list_title->get_h() - 5);
 	}
 
 	file_title->reposition_window(mwindow->theme->menueffect_file_x, 
@@ -672,7 +663,7 @@ int MenuEffectWindowOK::handle_event()
 
 int MenuEffectWindowOK::keypress_event() 
 { 
-	if(get_keypress() == 13) 
+	if(get_keypress() == RETURN) 
 	{ 
 		handle_event(); 
 		return 1; 
@@ -723,33 +714,43 @@ int MenuEffectWindowList::handle_event()
 	window->set_done(0); 
 }
 
-
+#define PROMPT_TEXT _("Set up effect panel and hit \"OK\"")
 
 MenuEffectPrompt::MenuEffectPrompt(MWindow *mwindow)
  : BC_Window(PROGRAM_NAME ": Effect Prompt", 
  		mwindow->gui->get_abs_cursor_x(1) - 260 / 2,
 		mwindow->gui->get_abs_cursor_y(1) - 300,
- 		260, 
-		80, 
-		260,
-		80,
+ 		MenuEffectPrompt::calculate_w(mwindow->gui), 
+		MenuEffectPrompt::calculate_h(mwindow->gui), 
+		MenuEffectPrompt::calculate_w(mwindow->gui),
+		MenuEffectPrompt::calculate_h(mwindow->gui),
 		0,
 		0,
 		1)
 {
 }
 
-MenuEffectPrompt::~MenuEffectPrompt()
+int MenuEffectPrompt::calculate_w(BC_WindowBase *gui)
 {
+	int w = BC_Title::calculate_w(gui, PROMPT_TEXT) + 10;
+	w = MAX(w, BC_OKButton::calculate_w() + BC_CancelButton::calculate_w() + 30);
+	return w;
 }
+
+int MenuEffectPrompt::calculate_h(BC_WindowBase *gui)
+{
+	int h = BC_Title::calculate_h(gui, PROMPT_TEXT);
+	h += BC_OKButton::calculate_h() + 30;
+	return h;
+}
+
 
 int MenuEffectPrompt::create_objects()
 {
 	int x = 10, y = 10;
-	add_subwindow(new BC_Title(x, y, _("Set up effect panel and hit \"OK\"")));
-	y += 20;
+	BC_Title *title;
+	add_subwindow(title = new BC_Title(x, y, PROMPT_TEXT));
 	add_subwindow(new BC_OKButton(this));
-	x = get_w() - 100;
 	add_subwindow(new BC_CancelButton(this));
 	show_window();
 	raise_window();

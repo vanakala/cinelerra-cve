@@ -22,11 +22,10 @@ public:
 
 	void resample(double old_rate, double new_rate);
 
-	int create_objects();
+	virtual void create_objects();
 	void equivalent_output(Autos *autos, int64_t startproject, int64_t *result);
 	void copy_from(Autos *autos);
 	virtual Auto* new_auto();
-	virtual float value_to_percentage();
 // Get existing auto on or before position.
 // If use_default is true, return default_auto if none exists 
 // on or before position.
@@ -39,8 +38,10 @@ public:
 	int auto_exists_for_editing(double position);
 // Returns auto at exact position, null if non-existent. ignores autokeyframming and align on frames
 	Auto* get_auto_at_position(double position = -1);
+
 // Get keyframe for editing with automatic creation if enabled
 	Auto* get_auto_for_editing(double position = -1);
+
 // Insert keyframe at the point if it doesn't exist
 	Auto* insert_auto(int64_t position);
 // Insert keyframe at the point if it doesn't exist
@@ -59,6 +60,15 @@ public:
 	void remove_nonsequential(Auto *keyframe);
 	void optimize();
 
+// Returns a type enumeration
+	int get_type();
+	int64_t get_length();
+	virtual void get_extents(float *min, 
+		float *max,
+		int *coords_undefined,
+		int64_t unit_start,
+		int64_t unit_end);
+
 	EDL *edl;
 	Track *track;
 // Default settings if no autos.
@@ -67,6 +77,13 @@ public:
 // Default auto has position 0 except in effects, where multiple default autos
 // exist.
 	Auto *default_auto;
+
+	int type;
+
+
+
+	virtual void dump();
+
 
 
 
@@ -87,13 +104,10 @@ public:
 	int clear_auto(int64_t position);
 	int save(FileXML *xml);
 	virtual int slope_adjustment(int64_t ax, double slope);
-	virtual float fix_value(float value) {};
 	int release_auto();
 	virtual int release_auto_derived() {};
-	virtual Auto* add_auto(int64_t position, float value) { printf("virtual Autos::add_auto\n"); };
-	virtual Auto* append_auto() { printf("virtual Autos::append_auto();\n"); };
+	Auto* append_auto();
 	int scale_time(float rate_scale, int scale_edits, int scale_autos, int64_t start, int64_t end);
-	int64_t get_length();
 
 // rendering utilities
 	int get_neighbors(int64_t start, int64_t end, Auto **before, Auto **after);
@@ -141,14 +155,11 @@ public:
 	Auto* nearest_before(int64_t position);    // return nearest auto before or 0
 	Auto* nearest_after(int64_t position);     // return nearest auto after or 0
 
-	int color;
 	Auto *selected;
 	int skip_selected;      // if selected was added
 	int64_t selected_position, selected_position_;      // original position for moves
 	double selected_value, selected_value_;      // original position for moves
 	float virtual_h;  // height cursor moves to cover entire range when track height is less than this
-	double min, max;    // boundaries of this auto
-	double default_;
 	int virtual_center;
 	int stack_number;
 	int stack_total;

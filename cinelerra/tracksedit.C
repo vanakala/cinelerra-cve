@@ -144,18 +144,21 @@ int Tracks::copy_default_keyframe(FileXML *file)
 int Tracks::delete_tracks()
 {
 	int total_deleted = 0;
-repeat:
-	for (Track* current = first;
-		current;
-		current = NEXT)
+	int done = 0;
+
+	while(!done)
 	{
-		if(current->record)
+		done = 1;
+		for (Track* current = first;
+			current && done;
+			current = NEXT)
 		{
-			delete_track(current);
-			total_deleted++;
-			// this has garbled the linked list
-			// scan the shorter list again
-			goto repeat;
+			if(current->record)
+			{
+				delete_track(current);
+				total_deleted++;
+				done = 0;
+			}
 		}
 	}
 	return total_deleted;
@@ -259,7 +262,6 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 							0,
 							&temp_autoconf);
 
-//printf("Tracks::move_edits 1 %d\n", source_edit->length);
 // Insert new edit
 					Edit *dest_edit = dest_track->edits->shift(position_i, 
 						source_length);
@@ -269,11 +271,7 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 					result->startproject = position_i;
 					result->length = source_length;
 
-//printf("Tracks::move_edits 5\n");
-//dest_track->dump();
-
 // Clear source
-//printf("Tracks::move_edits 7 %d %d\n", clear_start, clear_end);
 					source_track->edits->clear(source_edit->startproject, 
 						source_edit->startproject + source_length);
 
@@ -325,16 +323,9 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 					
 
 					
-//printf("Tracks::move_edits 8 %d %d\n", clear_start, source_edit->length);
-//dest_track->dump();
-//printf("Tracks::move_edits 9\n");
 				source_track->optimize();
 				dest_track->optimize();
-//printf("Tracks::move_edits 10\n");
-//dump();
-//				delete source_edit;
 			}
-
 		}
 	}
 }

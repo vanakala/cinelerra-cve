@@ -1,4 +1,3 @@
-#include "bezierautos.h"
 #include "clip.h"
 #include "colors.h"
 #include "edl.h"
@@ -28,60 +27,52 @@ VAutomation::~VAutomation()
 int VAutomation::create_objects()
 {
 	Automation::create_objects();
-	fade_autos = new FloatAutos(edl, track, LTGREY, 0, 100, 100);
-	fade_autos->create_objects();
-	((FloatAuto*)fade_autos->default_auto)->value = 100;
-	mode_autos = new IntAutos(edl, track);
-	mode_autos->create_objects();
-	mask_autos = new MaskAutos(edl, track);
-	mask_autos->create_objects();
-	((IntAuto*)mode_autos->default_auto)->value = TRANSFER_NORMAL;
-	camera_autos = new BezierAutos(edl, 
-									track, 
-									WHITE, 
-									0, 
-									0, 
-									1, 
-									edl->session->output_w,
-									edl->session->output_h);
-	camera_autos->create_objects();
 
-	projector_autos = new BezierAutos(edl, 
-									track,
-									WHITE,
-									0,
-									0,
-									1,
-									edl->session->output_w,
-									edl->session->output_h);
-	projector_autos->create_objects();
-	czoom_autos = new FloatAutos(edl, track, LTGREY, 0, 10, 1.0);
-	czoom_autos->create_objects();
-	((FloatAuto*)czoom_autos->default_auto)->value = 1;
-	pzoom_autos = new FloatAutos(edl, track, LTGREY, 0, 10, 1.0);
-	pzoom_autos->create_objects();
-	((FloatAuto*)pzoom_autos->default_auto)->value = 1;
+	autos[AUTOMATION_FADE] = new FloatAutos(edl, track, 100);
+	autos[AUTOMATION_FADE]->create_objects();
 
-	
+	autos[AUTOMATION_MODE] = new IntAutos(edl, track, TRANSFER_NORMAL);
+	autos[AUTOMATION_MODE]->create_objects();
+
+	autos[AUTOMATION_MASK] = new MaskAutos(edl, track);
+	autos[AUTOMATION_MASK]->create_objects();
+
+	autos[AUTOMATION_CAMERA_X] = new FloatAutos(edl, track, 0.0);
+	autos[AUTOMATION_CAMERA_X]->create_objects();
+
+	autos[AUTOMATION_CAMERA_Y] = new FloatAutos(edl, track, 0.0);
+	autos[AUTOMATION_CAMERA_Y]->create_objects();
+
+	autos[AUTOMATION_PROJECTOR_X] = new FloatAutos(edl, track, 0.0);
+	autos[AUTOMATION_PROJECTOR_X]->create_objects();
+
+	autos[AUTOMATION_PROJECTOR_Y] = new FloatAutos(edl, track, 0.0);
+	autos[AUTOMATION_PROJECTOR_Y]->create_objects();
+
+	autos[AUTOMATION_CAMERA_Z] = new FloatAutos(edl, track, 1.0);
+	autos[AUTOMATION_CAMERA_Z]->create_objects();
+
+	autos[AUTOMATION_PROJECTOR_Z] = new FloatAutos(edl, track, 1.0);
+	autos[AUTOMATION_PROJECTOR_Z]->create_objects();
+
+// 	autos[AUTOMATION_NUDGE] = new FloatAutos(edl, track, 0.0);
+// 	autos[AUTOMATION_NUDGE]->create_objects();
+
 	return 0;
 }
 
 int VAutomation::direct_copy_possible(int64_t start, int direction)
 {
-	BezierAuto *before = 0, *after = 0;
-	FloatAuto *previous = 0, *next = 0;
-	float x, y, z;
 	int64_t end = (direction == PLAY_FORWARD) ? (start + 1) : (start - 1);
 
 	if(!Automation::direct_copy_possible(start, direction))
 		return 0;
 
-//printf("VAutomation::direct_copy_possible 1\n");
 // Automation is constant
 	double constant;
-	if(fade_autos->automation_is_constant(start, 1, direction, constant))
+	if(((FloatAutos*)autos[AUTOMATION_FADE])->automation_is_constant(
+		start, 1, direction, constant))
 	{
-//printf("VAutomation::direct_copy_possible 2 %f\n", fade_autos->get_automation_constant(start, end));
 		if(!EQUIV(constant, 100))
 			return 0;
 	}
@@ -89,66 +80,127 @@ int VAutomation::direct_copy_possible(int64_t start, int direction)
 // Automation varies
 		return 0;
 
-//printf("VAutomation::direct_copy_possible 3\n");
 // Track must not be muted
-	if(mute_autos->automation_is_constant(start, end))
+	if(autos[AUTOMATION_MUTE]->automation_is_constant(start, end))
 	{
-//printf("VAutomation::direct_copy_possible 4 %d\n", mute_autos->get_automation_constant(start, end));
-		if(mute_autos->get_automation_constant(start, end) > 0)
+		if(autos[AUTOMATION_MUTE]->get_automation_constant(start, end) > 0)
 			return 0;
 	}
 	else
 		return 0;
 
-//printf("VAutomation::direct_copy_possible 5\n");
-// Projector must be centered in an output channel
-	z = pzoom_autos->get_value(start, direction, previous, next);
+// Projector must be centered.
+	FloatAuto *previous = 0, *next = 0;
+	float z = ((FloatAutos*)autos[AUTOMATION_PROJECTOR_Z])->get_value(
+		start, direction, previous, next);
 	if(!EQUIV(z, 1)) return 0;
 
-	projector_autos->get_center(x, 
-				y, 
-				z, 
-				start,
+	previous = 0;
+	next = 0;
+	float x = ((FloatAutos*)autos[AUTOMATION_PROJECTOR_X])->get_value(start,
 				direction,
-				&before, 
-				&after);
-// FIXME develop channel search using track->get_projection
-	if(!EQUIV(x, 0) || 
-		!EQUIV(y, 0)) return 0;
+				previous, 
+				next);
+	if(!EQUIV(x, 0)) return 0;
+	previous = 0;
+	next = 0;
+	float y = ((FloatAutos*)autos[AUTOMATION_PROJECTOR_Y])->get_value(start,
+				direction,
+				previous, 
+				next);
+	if(!EQUIV(y, 0)) return 0;
 
-//printf("VAutomation::direct_copy_possible 6 %f %f %f\n", x, y, z);
 
 
 
 // Camera must be centered
-	previous = next = 0;
-	z = czoom_autos->get_value(start, direction, previous, next);
+	previous = 0;
+	next = 0;
+	z = ((FloatAutos*)autos[AUTOMATION_CAMERA_Z])->get_value(
+		start, 
+		direction, 
+		previous, 
+		next);
 	if(!EQUIV(z, 1)) return 0;
 
 
 
-	before = 0;
-	after = 0;
-	camera_autos->get_center(x, 
-				y, 
-				z, 
-				start,
+	previous = 0;
+	next = 0;
+	x = ((FloatAutos*)autos[AUTOMATION_CAMERA_X])->get_value(start,
 				direction,
-				&before, 
-				&after);
+				previous, 
+				next);
+	if(!EQUIV(x, 0)) return 0;
 
-//printf("VAutomation::direct_copy_possible 8 %f %f\n", x, y);
-// Translation no longer used
-	if(!EQUIV(x, 0) || 
-		!EQUIV(y, 0)) return 0;
-//printf("VAutomation::direct_copy_possible 9\n");
+	previous = 0;
+	next = 0;
+	y = ((FloatAutos*)autos[AUTOMATION_CAMERA_Y])->get_value(start,
+				direction,
+				previous, 
+				next);
+
+	if(!EQUIV(y, 0)) return 0;
 
 // No mask must exist
-//printf("VAutomation::direct_copy_possible 1\n");
-	if(mask_autos->mask_exists(start, direction))
+	if(((MaskAutos*)autos[AUTOMATION_MASK])->mask_exists(start, direction))
 		return 0;
-//printf("VAutomation::direct_copy_possible 7\n");
 
 	return 1;
+}
+
+void VAutomation::get_projector(float *x, 
+	float *y, 
+	float *z, 
+	int64_t position,
+	int direction)
+{
+	FloatAuto *before, *after;
+	before = 0;
+	after = 0;
+	*x = ((FloatAutos*)autos[AUTOMATION_PROJECTOR_X])->get_value(position,
+		direction,
+		before,
+		after);
+	before = 0;
+	after = 0;
+	*y = ((FloatAutos*)autos[AUTOMATION_PROJECTOR_Y])->get_value(position,
+		direction,
+		before,
+		after);
+	before = 0;
+	after = 0;
+	*z = ((FloatAutos*)autos[AUTOMATION_PROJECTOR_Z])->get_value(position,
+		direction,
+		before,
+		after);
+}
+
+
+void VAutomation::get_camera(float *x, 
+	float *y, 
+	float *z, 
+	int64_t position,
+	int direction)
+{
+	FloatAuto *before, *after;
+	before = 0;
+	after = 0;
+	*x = ((FloatAutos*)autos[AUTOMATION_CAMERA_X])->get_value(position,
+		direction,
+		before,
+		after);
+	before = 0;
+	after = 0;
+	*y = ((FloatAutos*)autos[AUTOMATION_CAMERA_Y])->get_value(position,
+		direction,
+		before,
+		after);
+	before = 0;
+	after = 0;
+	*z = ((FloatAutos*)autos[AUTOMATION_CAMERA_Z])->get_value(position,
+		direction,
+		before,
+		after);
 }
 

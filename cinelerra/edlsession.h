@@ -139,6 +139,8 @@ public:
 // Load files as a duration
 	int si_useduration;
 	float si_duration;
+// Show assets in track canvas
+	int show_assets;
 // Show titles in resources
 	int show_titles;
 // Test for data before rendering a track

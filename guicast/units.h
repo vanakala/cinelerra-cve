@@ -96,12 +96,15 @@ class Units
 public:
 	Units() {};
 
-	// No rounding.
+// No rounding.
 	static float toframes(int64_t samples, int sample_rate, float framerate);
-	// Round up if > .5
+// Round up if > .5
 	static int64_t toframes_round(int64_t samples, int sample_rate, float framerate);
 	static double fix_framerate(double value);
 	static double atoframerate(char *text);
+
+// Punctuate with commas
+	static void punctuate(char *string);
 
 
 // separator strings for BC_TextBox::set_separators

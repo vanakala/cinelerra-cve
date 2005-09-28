@@ -44,6 +44,8 @@ Theme::Theme()
 	data_buffer = 0;
 	contents_buffer = 0;
 	last_image = 0;
+	mtransport_margin = 0;
+	toggle_margin = 0;
 
 	BC_WindowBase::get_resources()->bg_color = BLOND;
 	BC_WindowBase::get_resources()->button_up = 0xffc000;
@@ -63,12 +65,10 @@ Theme::Theme()
 
 #include "data/about_png.h"
 	about_bg = new VFrame(about_png);
-#include "data/microsoft_credit_png.h"
-	about_microsoft = new VFrame(microsoft_credit_png);
 
 
 
-	build_menus();
+	
 
 
 }
@@ -97,6 +97,9 @@ void Theme::flush_images()
 
 void Theme::initialize()
 {
+	message_normal = BLACK;
+	message_error = RED;
+
 // Force to use local data for images
 	extern unsigned char _binary_theme_data_start[];
 	set_data(_binary_theme_data_start);
@@ -111,73 +114,6 @@ void Theme::initialize()
 }
 
 
-// unsigned char* Theme::get_image(char *title)
-// {
-// // Read contents
-// 	if(!data_buffer)
-// 	{
-// 		FILE *fd = fopen(path, "r");
-// 
-// 		if(!fd)
-// 		{
-// 			fprintf(stderr, "Theme::get_image: %s when opening %s\n", strerror(errno), path);
-// 		}
-// 		int data_offset, contents_offset;
-// 		int total_bytes;
-// 		int data_size;
-// 		int contents_size;
-// 
-// 		fseek(fd, -8, SEEK_END);
-// 		total_bytes = ftell(fd);
-// 		fread(&data_offset, 1, 4, fd);
-// 		fread(&contents_offset, 1, 4, fd);
-// 
-// 
-// 		fseek(fd, data_offset, SEEK_SET);
-// 		data_size = contents_offset - data_offset;
-// 		data_buffer = new char[data_size];
-// 		fread(data_buffer, 1, data_size, fd);
-// 
-// 		fseek(fd, contents_offset, SEEK_SET);
-// 		contents_size = total_bytes - contents_offset;
-// 		contents_buffer = new char[contents_size];
-// 		fread(contents_buffer, 1, contents_size, fd);
-// 
-// 		char *start_of_title = contents_buffer;
-// 		for(int i = 0; i < contents_size; )
-// 		{
-// 			if(contents_buffer[i] == 0)
-// 			{
-// 				contents.append(start_of_title);
-// 				i++;
-// 				offsets.append(*(int*)(contents_buffer + i));
-// 				i += 4;
-// 				start_of_title = contents_buffer + i;
-// 			}
-// 			else
-// 				i++;
-// 		}
-// 		fclose(fd);
-// 	}
-// 
-// 	if(last_image && !strcasecmp(last_image, title))
-// 	{
-// 		return (unsigned char*)(data_buffer + last_offset);
-// 	}
-// 	else
-// 	for(int i = 0; i < contents.total; i++)
-// 	{
-// 		if(!strcasecmp(contents.values[i], title))
-// 		{
-// 			last_offset = offsets.values[i];
-// 			last_image = contents.values[i];
-// 			return (unsigned char*)(data_buffer + offsets.values[i]);
-// 		}
-// 	}
-// 
-// 	fprintf(stderr, "Theme::get_image: %s not found.\n", title);
-// 	return 0;
-// }
 
 
 void Theme::build_menus()
@@ -303,14 +239,14 @@ void Theme::overlay(VFrame *dst, VFrame *src, int in_x1, int in_x2)
 	}
 }
 
-void Theme::build_transport(VFrame** &data,
+void Theme::build_transport(char *title,
 	unsigned char *png_overlay,
 	VFrame **bg_data,
 	int third)
 {
 	if(!png_overlay) return;
 	VFrame default_data(png_overlay);
-	data = new VFrame*[3];
+	VFrame *data[3];
 	data[0] = new VFrame(0, default_data.get_w(), default_data.get_h(), BC_RGBA8888);
 	data[1] = new VFrame(0, default_data.get_w(), default_data.get_h(), BC_RGBA8888);
 	data[2] = new VFrame(0, default_data.get_w(), default_data.get_h(), BC_RGBA8888);
@@ -349,6 +285,8 @@ void Theme::build_transport(VFrame** &data,
 		overlay(data[i], 
 			&default_data);
 	}
+
+	new_image_set_images(title, 3, data[0], data[1], data[2]);
 }
 
 
@@ -523,7 +461,6 @@ void Theme::draw_rmonitor_bg(RecordMonitorGUI *gui)
 
 void Theme::draw_rwindow_bg(RecordGUI *gui)
 {
-printf("Theme::draw_rwindow_bg 1\n");
 	gui->clear_box(0, 0, mwindow->session->rwindow_w, mwindow->session->rwindow_h);
 }
 
@@ -542,13 +479,13 @@ void Theme::draw_resource_bg(TrackCanvas *canvas,
 
 	switch(mwindow->edl->local_session->zoom_track)
 	{
-		case 1024: image = resource1024_bg_data;  break;
-		case 512: image = resource512_bg_data;  break;
-		case 256: image = resource256_bg_data;  break;
-		case 128: image = resource128_bg_data;  break;
-		case 64:  image = resource64_bg_data;   break;
+		case 1024: image = get_image("resource1024");  break;
+		case 512: image = get_image("resource512");  break;
+		case 256: image = get_image("resource256");  break;
+		case 128: image = get_image("resource128");  break;
+		case 64:  image = get_image("resource64");   break;
 		default:
-		case 32:  image = resource32_bg_data;   break;
+		case 32:  image = get_image("resource32");   break;
 	}
 
 	canvas->draw_3segmenth(x1, 
@@ -591,7 +528,8 @@ void Theme::get_rmonitor_sizes(int do_audio,
 	int do_video,
 	int do_channel,
 	int do_interlace,
-	int do_avc)
+	int do_avc,
+	int audio_channels)
 {
 	int x = 10;
 	int y = 3;
@@ -630,7 +568,7 @@ void Theme::get_rmonitor_sizes(int do_audio,
 
 	if(do_audio)
 	{
-		rmonitor_meter_x = mwindow->session->rmonitor_w - MeterPanel::get_meters_width(mwindow->edl->session->audio_channels, 1);
+		rmonitor_meter_x = mwindow->session->rmonitor_w - MeterPanel::get_meters_width(audio_channels, 1);
 		rmonitor_meter_y = 40;
 		rmonitor_meter_h = mwindow->session->rmonitor_h - 10 - rmonitor_meter_y;
 	}
@@ -647,31 +585,6 @@ void Theme::get_rmonitor_sizes(int do_audio,
 
 void Theme::get_recordgui_sizes(RecordGUI *gui, int w, int h)
 {
-	recordgui_status_x = 10;
-	recordgui_status_y = 10;
-	recordgui_status_x2 = 150;
-	recordgui_batch_x = 310;
-	recordgui_batch_y = 10;
-	recordgui_batchcaption_x = recordgui_batch_x + 110;
-
-
-	recordgui_transport_x = recordgui_batch_x;
-	recordgui_transport_y = recordgui_batch_y + 150;
-
-	recordgui_buttons_x = recordgui_batch_x - 50;
-	recordgui_buttons_y = recordgui_transport_y + 40;
-	recordgui_options_x = recordgui_buttons_x;
-	recordgui_options_y = recordgui_buttons_y + 40;
-
-	recordgui_batches_x = 10;
-	recordgui_batches_y = 270;
-	recordgui_batches_w = w - 20;
-	recordgui_batches_h = h - recordgui_batches_y - 90;
-	recordgui_loadmode_x = w / 2 - loadmode_w / 2;
-	recordgui_loadmode_y = h - 85;
-
-	recordgui_controls_x = 10;
-	recordgui_controls_y = h - 40;
 }
 
 void Theme::get_batchrender_sizes(BatchRenderGUI *gui,
@@ -715,7 +628,9 @@ void Theme::get_menueffect_sizes(int use_list)
 		menueffect_list_x = 10;
 		menueffect_list_y = 10;
 		menueffect_list_w = mwindow->session->menueffect_w - 400;
-		menueffect_list_h = mwindow->session->menueffect_h - 70;
+		menueffect_list_h = mwindow->session->menueffect_h - 
+			menueffect_list_y -
+			BC_OKButton::calculate_h() - 10;
 	}
 	else
 	{

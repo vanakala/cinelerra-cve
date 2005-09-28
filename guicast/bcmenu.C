@@ -2,8 +2,9 @@
 #include "bcmenubar.h"
 #include "bcmenuitem.h"
 #include "bcmenupopup.h"
+#include "bcpixmap.h"
 #include "bcresources.h"
-
+#include "bcsignals.h"
 #include <string.h>
 
 
@@ -230,38 +231,67 @@ int BC_Menu::set_text(char *text)
 int BC_Menu::draw_title()
 {
 	BC_Resources *resources = top_level->get_resources();
+	int text_offset = 0;
+SET_TRACE
 	if(active && menu_popup)
 	{
 // Menu is pulled down and title is recessed.
-		menu_bar->draw_3d_box(x, y, w, h, 
-			resources->menu_shadow, 
-			BLACK, 
-			resources->menu_down,
-			resources->menu_down,
-			resources->menu_light);
-		menu_bar->set_color(resources->menu_item_text);
+SET_TRACE
+		if(menu_bar->menu_title_bg[0])
+		{
+SET_TRACE
+			menu_bar->draw_9segment(x, 0, w, menu_bar->get_h(), menu_bar->menu_title_bg[2]);
+		}
+		else
+		{
+			menu_bar->draw_3d_box(x, y, w, h, 
+				resources->menu_shadow, 
+				BLACK, 
+				resources->menu_down,
+				resources->menu_down,
+				resources->menu_light);
+		}
+		text_offset = 1;
 	}
 	else
 // Menu is not pulled down.
 	{
 		if(highlighted)
 		{
-			menu_bar->set_color(resources->menu_highlighted);
-			menu_bar->draw_box(x, y, w, h);
-			menu_bar->set_color(resources->menu_highlighted_fontcolor);			
+SET_TRACE
+			if(menu_bar->menu_title_bg[0])
+			{
+SET_TRACE
+				menu_bar->draw_9segment(x, 0, w, menu_bar->get_h(), menu_bar->menu_title_bg[1]);
+			}
+			else
+			{
+				menu_bar->set_color(resources->menu_highlighted);
+				menu_bar->draw_box(x, y, w, h);
+			}
 		}
 		else
 		{
-		  menu_bar->draw_background(x, y, w, h);
-		  menu_bar->set_color(resources->menu_item_text);
+SET_TRACE
+			if(menu_bar->menu_title_bg[0])
+			{
+SET_TRACE
+				menu_bar->draw_9segment(x, 0, w, menu_bar->get_h(), menu_bar->menu_title_bg[0]);
+			}
+			else
+			{
+				menu_bar->draw_background(x, y, w, h);
+			}
 		}
 	}
 
 //	menu_bar->set_color(resources->menu_title_text);
 	menu_bar->set_font(MEDIUMFONT);
-	menu_bar->draw_text(x + 10, h - menu_bar->get_text_descent(MEDIUMFONT), text);
+	menu_bar->draw_text(x + 10 + text_offset, 
+		h - menu_bar->get_text_descent(MEDIUMFONT) + text_offset, 
+		text);
 	menu_bar->flash();
-	menu_bar->flush();
+SET_TRACE
 	return 0;
 }
 

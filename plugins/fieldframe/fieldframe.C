@@ -8,6 +8,7 @@
 #include "mainprogress.h"
 #include "picon_png.h"
 #include "pluginvclient.h"
+#include "transportque.inc"
 #include "vframe.h"
 
 #include <string.h>
@@ -446,6 +447,7 @@ int FieldFrame::process_buffer(VFrame *frame,
 		field1_position -= 1;
 		field2_position -= 1;
 	}
+
 
 // printf("FieldFrame::process_buffer %d %lld %lld\n", 
 // config.field_dominance, 

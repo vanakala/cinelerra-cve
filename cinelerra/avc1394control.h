@@ -2,6 +2,7 @@
 #define _AVC1394Control_H
 
 
+#include "bcwindowbase.inc"
 #include <libavc1394/rom1394.h>
 #include <libavc1394/avc1394.h>
 #include <libavc1394/avc1394_vcr.h>
@@ -41,7 +42,7 @@ public:
 private:
 	rom1394_directory rom_dir;
 	raw1394handle_t handle;
-	
+	char text_return[BCTEXTLEN];
 };
 
 #endif

@@ -173,7 +173,7 @@ int BC_Bitmap::allocate_data()
 								&shm_info);
 					xv_image[i]->data = (char*)data[i];
 				}
-				
+
 				if(color_model == BC_YUV422)
 				{
 					bytes_per_line = w * 2;
@@ -421,9 +421,7 @@ int BC_Bitmap::write_drawable(Drawable &pixmap,
 //printf("BC_Bitmap::write_drawable 1 %p %d\n", this, current_ringbuffer);fflush(stdout);
     if(use_shm)
 	{
-//TRACE("BC_Bitmap::write_drawable 1");
 		if(dont_wait) XSync(top_level->display, False);
-//TRACE("BC_Bitmap::write_drawable 2");
 
 		if(hardware_scaling())
 		{
@@ -440,7 +438,6 @@ int BC_Bitmap::write_drawable(Drawable &pixmap,
 //	pixmap, 
 //	gc,
 //	xv_image[current_ringbuffer]);
-//TRACE("BC_Bitmap::write_drawable 3");
 			XvShmPutImage(top_level->display, 
 				xv_portid, 
 				pixmap, 
@@ -455,7 +452,6 @@ int BC_Bitmap::write_drawable(Drawable &pixmap,
 				dest_w, 
 				dest_h, 
 				False);
-//TRACE("BC_Bitmap::write_drawable 4");
 // Need to pass these to the XvStopVideo
 			last_pixmap = pixmap;
 			last_pixmap_used = 1;

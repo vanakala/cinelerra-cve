@@ -16,7 +16,7 @@
 
 #ifdef HAVE_AV_CONFIG_H
 /* only include the following when compiling package */
-#    include "config.h"
+#    include "avconfig.h"
 
 #    include <stdlib.h>
 #    include <stdio.h>

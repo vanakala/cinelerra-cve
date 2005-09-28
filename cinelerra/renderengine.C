@@ -252,12 +252,12 @@ void RenderEngine::create_render_threads()
 
 int RenderEngine::get_output_w()
 {
-	return edl->calculate_output_w(1);
+	return edl->session->output_w;
 }
 
 int RenderEngine::get_output_h()
 {
-	return edl->calculate_output_h(1);
+	return edl->session->output_h;
 }
 
 int RenderEngine::brender_available(int position, int direction)
@@ -519,10 +519,8 @@ void RenderEngine::interrupt_playback()
 
 int RenderEngine::close_output()
 {
-//printf("RenderEngine::close_output 1\n");
 	if(audio)
 	{
-//printf("RenderEngine::close_output 2\n");
 		audio->close_all();
 		delete audio;
 		audio = 0;
@@ -532,14 +530,10 @@ int RenderEngine::close_output()
 
 	if(video)
 	{
-//printf("RenderEngine::close_output 1\n");
 		video->close_all();
-//printf("RenderEngine::close_output 2\n");
 		delete video;
-//printf("RenderEngine::close_output 3\n");
 		video = 0;
 	}
-//printf("RenderEngine::close_output 4\n");
 	return 0;
 }
 
@@ -547,8 +541,8 @@ void RenderEngine::get_output_levels(double *levels, int64_t position)
 {
 	if(do_audio)
 	{
-		int history_entry = arender->get_history_number(arender->level_samples, position);
-//printf("RenderEngine::get_output_levels %d\n", history_entry);
+		int history_entry = arender->get_history_number(arender->level_samples, 
+			position);
 		for(int i = 0; i < MAXCHANNELS; i++)
 		{
 			if(arender->audio_out[i])

@@ -8,7 +8,6 @@
 #include "bcwindowbase.inc"
 #include "vframe.inc"
 
-
 #include <X11/Xlib.h>
 
 typedef struct
@@ -52,7 +51,7 @@ public:
 
 // beveled box colors
 	int button_light;      
-       	int button_highlighted;
+	int button_highlighted;
 	int button_down;       
 	int button_up;         
 	int button_shadow;     
@@ -70,11 +69,19 @@ public:
 // If these are nonzero, they override the menu backgrounds.
 	VFrame *menu_popup_bg;
 	VFrame **menu_title_bg;
+	VFrame *menu_bar_bg;
+	VFrame **popupmenu_images;
 
+// Minimum menu width
+	int min_menu_w;
 // Menu bar text color
 	int menu_title_text;
 // color of popup title
 	int popup_title_text;
+// Right and left margin for text not including triangle space.
+	int popupmenu_margin;
+// Right margin for triangle not including text margin.
+	int popupmenu_triangle_margin;
 // color for item text
 	int menu_item_text;
 // Override the menu item background if nonzero.
@@ -98,8 +105,6 @@ public:
 	int tooltip_bg_color;
 	int tooltips_enabled;
 
-	int listboxitemselected_color;
-
 	int audiovideo_color;
 
 // default color of text
@@ -115,6 +120,7 @@ public:
 	int text_border3_hi;
 	int text_border4;
 	int text_highlight;
+	int text_inactive_highlight;
 // Not used
 	int text_background_noborder;
 
@@ -133,6 +139,9 @@ public:
 	VFrame **filebox_icons_images;
 	VFrame **filebox_updir_images;
 	VFrame **filebox_newfolder_images;
+	VFrame **filebox_descend_images;
+	VFrame **filebox_delete_images;
+	VFrame **filebox_reload_images;
 
 // Generic button images
 	VFrame **generic_button_images;
@@ -148,6 +157,9 @@ public:
 	VFrame **tumble_data;
 	int tumble_duration;
 
+// Horizontal bar
+	VFrame *bar_data;
+
 // Listbox
 	VFrame *listbox_bg;
 	VFrame **listbox_button;
@@ -155,6 +167,25 @@ public:
 	VFrame **listbox_column;
 	VFrame *listbox_up;
 	VFrame *listbox_dn;
+// Margin for titles in addition to listbox border
+	int listbox_title_margin;
+	int listbox_title_color;
+	int listbox_title_hotspot;
+	int listbox_border1;
+	int listbox_border2_hi;
+	int listbox_border2;
+	int listbox_border3_hi;
+	int listbox_border3;
+	int listbox_border4;
+// Selected row color
+	int listbox_selected;
+// Highlighted row color
+	int listbox_highlighted;
+// Inactive row color
+	int listbox_inactive;
+// Default text color
+	int listbox_text;
+
 
 // Sliders
 	VFrame **horizontal_slider_data;
@@ -191,17 +222,31 @@ public:
 
 // Filebox
 	static suffix_to_type_t suffix_to_type[TOTAL_SUFFIXES];
-	VFrame **type_to_icon;
+	static VFrame *type_to_icon[TOTAL_ICONS];
 // Display mode for fileboxes
 	int filebox_mode;
 // Filter currently used in filebox
 	char filebox_filter[BCTEXTLEN];
+// History of submitted files
+	char filebox_history[FILEBOX_HISTORY_SIZE][BCTEXTLEN];
+// filebox size
 	int filebox_w;
 	int filebox_h;
+// Column types for filebox
 	int filebox_columntype[FILEBOX_COLUMNS];
 	int filebox_columnwidth[FILEBOX_COLUMNS];
 	int filebox_sortcolumn;
 	int filebox_sortorder;
+// Column types for filebox in directory mode
+	int dirbox_columntype[FILEBOX_COLUMNS];
+	int dirbox_columnwidth[FILEBOX_COLUMNS];
+	int dirbox_sortcolumn;
+	int dirbox_sortorder;
+// Bottom margin between list and window
+	int filebox_margin;
+	int dirbox_margin;
+	int directory_color;
+	int file_color;
 
 
 // fonts
@@ -239,7 +284,6 @@ public:
 	int recursive_resizing;
 // Work around X server bugs
 	int use_xvideo;
-
 
 private:
 // Test for availability of shared memory pixmaps

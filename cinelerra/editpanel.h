@@ -6,119 +6,8 @@
 #include "mwindow.inc"
 #include "manualgoto.inc"
 
-class ArrowButton;
-class IBeamButton;
-class KeyFrameButton;
-class EditFit;
-class EditInPoint;
-class EditOutPoint;
-class EditDelInPoint;
-class EditDelOutPoint;
-class EditSplice;
-class EditOverwrite;
-class EditToClip;
-class EditManualGoto;
-class EditLift;
-class EditExtract;
-class EditCut;
-class EditCopy;
-class EditPaste;
-class EditLabelbutton;
-class EditPrevLabel;
-class EditNextLabel;
-class EditUndo;
-class EditRedo;
+class EditPanel;
 
-class EditPanel
-{
-public:
-	EditPanel(MWindow *mwindow, 
-		BC_WindowBase *subwindow,
-		int x, 
-		int y, 
-		int editing_mode,   // From edl.inc
-		int use_editing_mode,
-		int use_keyframe, 
-		int use_splice,   // Extra buttons
-		int use_overwrite,
-		int use_lift,
-		int use_extract,
-		int use_copy,  // Use copy when in EDITING_ARROW
-		int use_paste, 
-		int use_undo,
-		int use_fit, 
-		int use_labels,
-		int use_toclip,
-		int use_meters,
-		int is_mwindow,
-		int use_cut);
-	~EditPanel();
-
-	void set_meters(MeterPanel *meter_panel);
-	void update();
-	void delete_buttons();
-	void create_buttons();
-	void reposition_buttons(int x, int y);
-	int create_objects();
-	int get_w();
-	virtual void copy_selection();
-	virtual void splice_selection();
-	virtual void overwrite_selection();
-	virtual void set_inpoint();
-	virtual void set_outpoint();
-	virtual void clear_inpoint();
-	virtual void clear_outpoint();
-	virtual void to_clip();
-	virtual void toggle_label();
-	virtual void prev_label();
-	virtual void next_label();
-
-	MWindow *mwindow;
-	BC_WindowBase *subwindow;
-	MeterPanel *meter_panel;
-
-	int use_editing_mode;
-	int use_keyframe;
-	int editing_mode;
-	int use_splice;
-	int use_overwrite;
-	int use_lift;
-	int use_extract;
-	int use_paste;
-	int use_undo;
-	int use_fit;
-	int use_copy;
-	int use_labels;
-	int use_toclip;
-	int use_meters;
-	int x, y, x1, y1;
-	int is_mwindow;
-	int use_cut;
-
-	EditFit *fit;
-	EditInPoint *inpoint;
-	EditOutPoint *outpoint;
-//	EditDelInPoint *delinpoint;
-//	EditDelOutPoint *deloutpoint;
-	EditSplice *splice;
-	EditOverwrite *overwrite;
-	EditLift *lift;
-	EditExtract *extract;
-	EditToClip *clip;
-	EditManualGoto *mangoto;
-	EditCut *cut;
-	EditCopy *copy;
-	EditPaste *paste;
-	EditLabelbutton *labelbutton;
-	EditPrevLabel *prevlabel;
-	EditNextLabel *nextlabel;
-	EditUndo *undo;
-	EditRedo *redo;
-	MeterShow *meters;
-	ArrowButton *arrow;
-	IBeamButton *ibeam;
-	KeyFrameButton *keyframe;
-};
 
 class EditInPoint : public BC_Button
 {
@@ -356,6 +245,17 @@ public:
 	EditPanel *panel;
 };
 
+class EditFitAutos : public BC_Button
+{
+public:
+	EditFitAutos(MWindow *mwindow, EditPanel *panel, int x, int y);
+	~EditFitAutos();
+	int keypress_event();
+	int handle_event();
+	MWindow *mwindow;
+	EditPanel *panel;
+};
+
 
 class EditPrevLabel : public BC_Button
 {
@@ -418,6 +318,99 @@ public:
 	KeyFrameButton(MWindow *mwindow, int x, int y);
 	int handle_event();
 	MWindow *mwindow;
+};
+
+
+class EditPanel
+{
+public:
+	EditPanel(MWindow *mwindow, 
+		BC_WindowBase *subwindow,
+		int x, 
+		int y, 
+		int editing_mode,   // From edl.inc
+		int use_editing_mode,
+		int use_keyframe, 
+		int use_splice,   // Extra buttons
+		int use_overwrite,
+		int use_lift,
+		int use_extract,
+		int use_copy,  // Use copy when in EDITING_ARROW
+		int use_paste, 
+		int use_undo,
+		int use_fit, 
+		int use_labels,
+		int use_toclip,
+		int use_meters,
+		int is_mwindow,
+		int use_cut);
+	~EditPanel();
+
+	void set_meters(MeterPanel *meter_panel);
+	void update();
+	void delete_buttons();
+	void create_buttons();
+	void reposition_buttons(int x, int y);
+	int create_objects();
+	int get_w();
+	virtual void copy_selection();
+	virtual void splice_selection();
+	virtual void overwrite_selection();
+	virtual void set_inpoint();
+	virtual void set_outpoint();
+	virtual void clear_inpoint();
+	virtual void clear_outpoint();
+	virtual void to_clip();
+	virtual void toggle_label();
+	virtual void prev_label();
+	virtual void next_label();
+
+	MWindow *mwindow;
+	BC_WindowBase *subwindow;
+	MeterPanel *meter_panel;
+
+	int use_editing_mode;
+	int use_keyframe;
+	int editing_mode;
+	int use_splice;
+	int use_overwrite;
+	int use_lift;
+	int use_extract;
+	int use_paste;
+	int use_undo;
+	int use_fit;
+	int use_copy;
+	int use_labels;
+	int use_toclip;
+	int use_meters;
+	int x, y, x1, y1;
+	int is_mwindow;
+	int use_cut;
+
+	EditFit *fit;
+	EditFitAutos *fit_autos;
+	EditInPoint *inpoint;
+	EditOutPoint *outpoint;
+//	EditDelInPoint *delinpoint;
+//	EditDelOutPoint *deloutpoint;
+	EditSplice *splice;
+	EditOverwrite *overwrite;
+	EditLift *lift;
+	EditExtract *extract;
+	EditToClip *clip;
+	EditManualGoto *mangoto;
+	EditCut *cut;
+	EditCopy *copy;
+	EditPaste *paste;
+	EditLabelbutton *labelbutton;
+	EditPrevLabel *prevlabel;
+	EditNextLabel *nextlabel;
+	EditUndo *undo;
+	EditRedo *redo;
+	MeterShow *meters;
+	ArrowButton *arrow;
+	IBeamButton *ibeam;
+	KeyFrameButton *keyframe;
 };
 
 #endif

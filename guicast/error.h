@@ -19,7 +19,7 @@
 // NOTE: ASSERT is used only when you want to issue a warning in a case 
 //       that should not happen and when there is no way to recover.  
 //       If there is any way to recover, use ERROR() and handle the problem.
-#define ASSERT(x, args...) if (! x) WARN("ASSERT FAILED (" #x ") " args)
+//#define ASSERT(x, args...) if (! x) WARN("ASSERT FAILED (" #x ") " args)
 
 #endif /* _ERROR_H */
 

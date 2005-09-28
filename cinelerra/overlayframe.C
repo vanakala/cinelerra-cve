@@ -119,17 +119,25 @@ OverlayFrame::~OverlayFrame()
 			b = (b * opacity + (temp_type)output[2] * transparency) / max; \
 			break; \
 		case TRANSFER_SUBTRACT: \
-			r = (temp_type)input1 - output[0]; \
-			g = (temp_type)input2 - ((temp_type)output[1] - chroma_offset); \
-			b = (temp_type)input3 - ((temp_type)output[2] - chroma_offset); \
+			r = (temp_type)output[0] - (temp_type)input1; \
+			g = ((temp_type)output[1] - (temp_type)chroma_offset) - \
+				((temp_type)input2 - (temp_type)chroma_offset) + \
+				(temp_type)chroma_offset; \
+			b = ((temp_type)output[2] - (temp_type)chroma_offset) - \
+				((temp_type)input3 - (temp_type)chroma_offset) + \
+				(temp_type)chroma_offset; \
 			r = (r * opacity + output[0] * transparency) / max; \
 			g = (g * opacity + output[1] * transparency) / max; \
 			b = (b * opacity + output[2] * transparency) / max; \
 			break; \
 		case TRANSFER_ADDITION: \
 			r = (temp_type)input1 + output[0]; \
-			g = (temp_type)input2 - chroma_offset + output[1]; \
-			b = (temp_type)input3 - chroma_offset + output[2]; \
+			g = ((temp_type)input2 - chroma_offset) + \
+				((temp_type)output[1] - chroma_offset) + \
+				(temp_type)chroma_offset; \
+			b = ((temp_type)input3 - chroma_offset) + \
+				((temp_type)output[2] - chroma_offset) + \
+				(temp_type)chroma_offset; \
 			r = (r * opacity + output[0] * transparency) / max; \
 			g = (g * opacity + output[1] * transparency) / max; \
 			b = (b * opacity + output[2] * transparency) / max; \
@@ -215,8 +223,12 @@ OverlayFrame::~OverlayFrame()
 			break; \
 		case TRANSFER_SUBTRACT: \
 			r = (temp_type)input1 - output1; \
-			g = (temp_type)input2 - ((temp_type)output2 - chroma_offset); \
-			b = (temp_type)input3 - ((temp_type)output3 - chroma_offset); \
+			g = ((temp_type)output2 - chroma_offset) - \
+				((temp_type)input2 - (temp_type)chroma_offset) + \
+				(temp_type)chroma_offset; \
+			b = ((temp_type)output3 - chroma_offset) - \
+				((temp_type)input3 - (temp_type)chroma_offset) + \
+				(temp_type)chroma_offset; \
 			r = (r * pixel_opacity + output1 * pixel_transparency) / max / max; \
 			g = (g * pixel_opacity + output2 * pixel_transparency) / max / max; \
 			b = (b * pixel_opacity + output3 * pixel_transparency) / max / max; \
@@ -224,8 +236,12 @@ OverlayFrame::~OverlayFrame()
 			break; \
 		case TRANSFER_ADDITION: \
 			r = (temp_type)input1 + output1; \
-			g = (temp_type)input2 - chroma_offset + output2; \
-			b = (temp_type)input3 - chroma_offset + output3; \
+			g = ((temp_type)input2 - chroma_offset) + \
+				((temp_type)output2 - chroma_offset) + \
+				chroma_offset; \
+			b = ((temp_type)input3 - chroma_offset) + \
+				((temp_type)output3 - chroma_offset) + \
+				chroma_offset; \
 			r = (r * pixel_opacity + output1 * pixel_transparency) / max / max; \
 			g = (g * pixel_opacity + output2 * pixel_transparency) / max / max; \
 			b = (b * pixel_opacity + output3 * pixel_transparency) / max / max; \

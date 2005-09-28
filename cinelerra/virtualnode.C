@@ -110,29 +110,26 @@ int VirtualNode::expand_as_module(int duplicate, int64_t current_position)
 		if(plugin == real_plugin) continue;
 
 
-		if(plugin)
+		if(plugin && plugin->on)
 		{
-			if(plugin->on)
+			int plugin_type = plugin->plugin_type;
+			if(plugin_type == PLUGIN_SHAREDMODULE)
 			{
-				int plugin_type = plugin->plugin_type;
-				if(plugin_type == PLUGIN_SHAREDMODULE)
-				{
 // plugin is a module
-					attach_virtual_module(plugin,
-						i, 
-						duplicate, 
-						current_position);
-				}
-				else
-				if(plugin_type == PLUGIN_SHAREDPLUGIN ||
-					plugin_type == PLUGIN_STANDALONE)
-				{
+				attach_virtual_module(plugin,
+					i, 
+					duplicate, 
+					current_position);
+			}
+			else
+			if(plugin_type == PLUGIN_SHAREDPLUGIN ||
+				plugin_type == PLUGIN_STANDALONE)
+			{
 // plugin is a plugin
-					attach_virtual_plugin(plugin, 
-						i, 
-						duplicate, 
-						current_position);
-				}
+				attach_virtual_plugin(plugin, 
+					i, 
+					duplicate, 
+					current_position);
 			}
 		}
 	}
@@ -155,15 +152,12 @@ int VirtualNode::expand_as_plugin(int duplicate)
 // Redirect the real_plugin to the shared plugin.
 		int real_module_number = real_plugin->shared_location.module;
 		int real_plugin_number = real_plugin->shared_location.plugin;
-		Module *real_module = 0;
-
-
-		real_module = vconsole->module_number(real_module_number);
+		Module *real_module = vconsole->module_number(real_module_number);
+		real_plugin = 0;
 // module references are absolute so may get the wrong data type track.
-		if(real_module &&
-			real_plugin_number < real_module->total_attachments)
+		if(real_module)
 		{
-			attachment = real_module->attachments[real_plugin_number];
+			attachment = real_module->get_attachment(real_plugin_number);
 // Attachment is NULL if off
 			if(attachment)
 			{
@@ -172,11 +166,7 @@ int VirtualNode::expand_as_plugin(int duplicate)
 // Real plugin not on then null it.
 				if(!real_plugin || !real_plugin->on) real_plugin = 0;
 			}
-			else
-				real_plugin = 0;
 		}
-		else
-			real_plugin = 0;
 	}
 
 
@@ -220,12 +210,8 @@ int VirtualNode::attach_virtual_module(Plugin *plugin,
 {
 	if(plugin->on)
 	{
-//printf("VirtualNode::attach_virtual_module 1 %p\n", plugin);
 		int real_module_number = plugin->shared_location.module;
-//printf("VirtualNode::attach_virtual_module 1\n");
 		Module *real_module = vconsole->module_number(real_module_number);
-//printf("VirtualNode::attach_virtual_module 1\n");
-
 // If a track is deleted real_module is not found
 		if(!real_module) return 1;
 
@@ -240,12 +226,9 @@ int VirtualNode::attach_virtual_module(Plugin *plugin,
 		VirtualNode *virtual_module = create_module(plugin,
 			real_module,
 			track);
-//printf("VirtualNode::attach_virtual_module 1\n");
 
 		subnodes.append(virtual_module);
-//printf("VirtualNode::attach_virtual_module 1\n");
 		virtual_module->expand(duplicate, current_position);
-//printf("VirtualNode::attach_virtual_module 2\n");
 	}
 
 	return 0;
@@ -256,7 +239,30 @@ int VirtualNode::attach_virtual_plugin(Plugin *plugin,
 	int duplicate, 
 	int64_t current_position)
 {
-	if(plugin->on)
+// Get real plugin and test if it is on.
+	int is_on = 1;
+	if(plugin->plugin_type == PLUGIN_SHAREDPLUGIN)
+	{
+		int real_module_number = plugin->shared_location.module;
+		int real_plugin_number = plugin->shared_location.plugin;
+		Module *real_module = vconsole->module_number(real_module_number);
+		if(real_module)
+		{
+			AttachmentPoint *attachment = real_module->get_attachment(real_plugin_number);
+			if(attachment)
+			{
+				Plugin *real_plugin = attachment->plugin;
+				if(!real_plugin || !real_plugin->on)
+					is_on = 0;
+			}
+			else
+				is_on = 0;
+		}
+		else
+			is_on = 0;
+	}
+
+	if(is_on)
 	{
 		VirtualNode *virtual_plugin = create_plugin(plugin);
 		subnodes.append(virtual_plugin);
@@ -281,187 +287,6 @@ VirtualNode* VirtualNode::get_previous_plugin(VirtualNode *current_node)
 	return 0;
 }
 
-// int VirtualNode::sort(ArrayList<VirtualNode*>*render_list)
-// {
-// 	int result = 0, total_result = 0;
-// 
-// //sleep(1);
-// //printf("VirtualNode::sort %p %p\n", real_module, real_plugin);
-// 	if(real_module)
-// 	{
-// 		sort_as_module(render_list, result, total_result);
-// 	}
-// 	else
-// 	if(real_plugin)
-// 	{
-// 		sort_as_plugin(render_list, result, total_result);
-// 	}
-// 
-// 	if(!result && total_result) result = total_result;
-// // if a plugin that wasn't patched out couldn't be rendered, try again
-// 
-// 	return result;
-// }
-
-// int VirtualNode::sort_as_module(ArrayList<VirtualNode*>*render_list, int &result, int &total_result)
-// {
-// 
-// // Render plugins first.
-// 	for(int i = 0; i < subnodes.total && !result; i++)
-// 	{
-// // stop when rendering can't continue without another higher level module
-// 		result = subnodes.values[i]->sort(render_list);
-// 
-// 		if(result && !subnodes.values[i]->out)
-// 		{
-// 			total_result = 1;
-// 			result = 0;
-// // couldn't render the last plugin but it wasn't patched out so continue to next plugin
-// 		}
-// 	}
-// //printf("VirtualNode::sort_as_module 3\n");
-// 
-// // All plugins rendered.
-// // Render this module.
-// 	if(render_count == 0 && !result)
-// 	{
-// 		render_list->append(this);
-// 		render_count++;
-// 		result = 0;
-// 	}
-// //printf("VirtualNode::sort_as_module 4\n");
-// 	return 0;
-// }
-
-// int VirtualNode::sort_as_plugin(ArrayList<VirtualNode*>*render_list,
-// 	int &result, 
-// 	int &total_result)
-// {
-// // Plugin server does not exist at this point.
-// // need to know if plugin requires all inputs to be armed before rendering
-// //printf("VirtualNode::sort_as_plugin 1\n");
-// 	int multichannel = 0, singlechannel = 0;
-// //sleep(1);
-// 
-// 
-// // Referenced plugin is off
-// 	if(!attachment) return 0;
-// 
-// //printf("VirtualNode::sort_as_plugin 2 %p\n", attachment);
-// 	if(plugin_type == PLUGIN_STANDALONE || plugin_type == PLUGIN_SHAREDPLUGIN)
-// 	{
-// 		multichannel = attachment->multichannel_shared(1);
-// 		singlechannel = attachment->singlechannel();
-// 	}
-// 
-// //printf("VirtualNode::sort_as_plugin 3\n");
-// 	if(plugin_type == PLUGIN_STANDALONE && !multichannel)
-// 	{
-// // unshared single channel plugin
-// // render now
-// //printf("VirtualNode::sort_as_plugin 4\n");
-// 		if(!render_count)
-// 		{
-// 			render_list->append(this);
-// 			render_count++;
-// 			result = 0;
-// 		}
-// //printf("VirtualNode::sort_as_plugin 5\n");
-// 	}
-// 	else
-// 	if(plugin_type == PLUGIN_SHAREDPLUGIN || multichannel)
-// 	{
-// 
-// // Shared plugin
-// //printf("VirtualNode::sort_as_plugin 6\n");
-// 		if(!render_count)
-// 		{
-// 			if(singlechannel)
-// 			{
-// // shared single channel plugin
-// // render now
-// //printf("VirtualNode::sort_as_plugin 7\n");
-// 				render_list->append(this);
-// //printf("VirtualNode::sort_as_plugin 8\n");
-// 				render_count++;
-// 				result = 0;
-// 			}
-// 			else
-// 			{
-// // shared multichannel plugin
-// // all buffers must be armed before rendering at the same time
-// 				if(!waiting_real_plugin)
-// 				{
-// //printf("VirtualNode::sort_as_plugin 9 %p\n", attachment);
-// 					waiting_real_plugin = 1;
-// 					if(real_plugin)
-// 						result = attachment->sort(this);
-// //printf("VirtualNode::sort_as_plugin 10\n");
-// 
-// 					render_list->append(this);
-// //printf("VirtualNode::sort_as_plugin 11\n");
-// 					render_count++;
-// 				}
-// 				else
-// 				{
-// // Assume it was rendered later in the first pass
-// 					result = 0;
-// 				}
-// 			}
-// 		}
-// 	}
-// //printf("VirtualNode::sort_as_plugin 12\n");
-// 	return 0;
-// }
-
-// int VirtualNode::get_plugin_input(int &ring_buffer_in, int64_t &fragment_position_in,
-// 							int &ring_buffer_out, int64_t &fragment_position_out,
-// 							int ring_buffer, int64_t fragment_position)
-// {
-// 	if(input_is_master)
-// 	{
-// 		ring_buffer_in = ring_buffer;
-// 		fragment_position_in = fragment_position;
-// 	}
-// 	else
-// 	{
-// 		ring_buffer_in = 0;
-// 		fragment_position_in = 0;
-// 	}
-// 
-// 	if(output_is_master)
-// 	{
-// 		ring_buffer_out = ring_buffer;
-// 		fragment_position_out = fragment_position;
-// 	}
-// 	else
-// 	{
-// 		ring_buffer_out = 0;
-// 		fragment_position_out = 0;
-// 	}
-// }
-
-// int VirtualNode::render_as_plugin(int64_t source_len,
-// 		int64_t source_position,
-// 		int ring_buffer,
-// 		int64_t fragment_position,
-// 		int64_t fragment_len)
-// {
-// // need numbers for actual buffers
-// 	int direction = renderengine->command->get_direction();
-// 	int ring_buffer_in, ring_buffer_out;
-// 	int64_t fragment_position_in, fragment_position_out;
-// 	int multichannel = 0;
-// //printf("VirtualNode::render_as_plugin 1 %p\n", attachment);
-// 
-// // Abort if no plugin
-// 	if(!attachment ||
-// 		!real_plugin ||
-// 		!real_plugin->on) return 0;
-// 
-// //printf("VirtualNode::render_as_plugin 2\n");
-// }
-// 
 
 
 void VirtualNode::get_mute_fragment(int64_t input_position,
@@ -475,8 +300,12 @@ void VirtualNode::get_mute_fragment(int64_t input_position,
 
 	IntAuto *prev_keyframe = 0;
 	IntAuto *next_keyframe = 0;
-	prev_keyframe = (IntAuto*)autos->get_prev_auto(input_position, direction, (Auto*&)prev_keyframe);
-	next_keyframe = (IntAuto*)autos->get_next_auto(input_position, direction, (Auto*&)next_keyframe);
+	prev_keyframe = (IntAuto*)autos->get_prev_auto(input_position, 
+		direction, 
+		(Auto* &)prev_keyframe);
+	next_keyframe = (IntAuto*)autos->get_next_auto(input_position, 
+		direction, 
+		(Auto* &)next_keyframe);
 
 	if(direction == PLAY_FORWARD)
 	{
@@ -513,75 +342,6 @@ void VirtualNode::get_mute_fragment(int64_t input_position,
 }
 
 
-
-// void VirtualNode::get_fade_automation(double &slope,
-// 	double &intercept,
-// 	int64_t input_position,
-// 	int64_t &slope_len,
-// 	Autos *autos)
-// {
-// 	int direction = renderengine->command->get_direction();
-// 	((FloatAutos*)autos)->get_fade_automation(slope,
-// 		intercept,
-// 		input_position,
-// 		slope_len,
-// 		direction);
-// }
-
-
-// int VirtualNode::init_automation(int &automate, 
-// 				double &constant, 
-// 				int64_t input_position,
-// 				int64_t buffer_len,
-// 				Autos *autos,
-// 				Auto **before, 
-// 				Auto **after)
-// {
-// 	return autos->init_automation(buffer_position,
-// 				input_start, 
-// 				input_end, 
-// 				automate, 
-// 				constant, 
-// 				input_position,
-// 				buffer_len,
-// 				before, 
-// 				after,
-// 				reverse);
-// }
-
-// int VirtualNode::init_slope(Autos *autos, Auto **before, Auto **after)
-// {
-// 	return autos->init_slope(&current_auto,
-// 				slope_start, 
-// 				slope_value,
-// 				slope_position, 
-// 				input_start, 
-// 				input_end, 
-// 				before, 
-// 				after,
-// 				reverse);
-// }
-
-// int VirtualNode::get_slope(Autos *autos, int64_t buffer_len, int64_t buffer_position)
-// {
-// 	return autos->get_slope(&current_auto, 
-// 				slope_start, 
-// 				slope_end, 
-// 				slope_value, 
-// 				slope, 
-// 				buffer_len, 
-// 				buffer_position,
-// 				reverse);
-// }
-// 
-// int VirtualNode::advance_slope(Autos *autos)
-// {
-// 	return autos->advance_slope(&current_auto, 
-// 				slope_start, 
-// 				slope_value,
-// 				slope_position, 
-// 				reverse);
-// }
 
 
 

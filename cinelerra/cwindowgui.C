@@ -1,7 +1,6 @@
 #include "automation.h"
 #include "autos.h"
-#include "bezierauto.h"
-#include "bezierautos.h"
+#include "bcsignals.h"
 #include "canvas.h"
 #include "clip.h"
 #include "cpanel.h"
@@ -36,6 +35,20 @@
 #include "vtrack.h"
 
 
+static double my_zoom_table[] = 
+{
+	0.25,
+	0.33,
+	0.50,
+	0.75,
+	1.0,
+	1.5,
+	2.0,
+	3.0,
+	4.0
+};
+
+static int total_zooms = sizeof(my_zoom_table) / sizeof(double);
 
 
 CWindowGUI::CWindowGUI(MWindow *mwindow, CWindow *cwindow)
@@ -55,7 +68,10 @@ CWindowGUI::CWindowGUI(MWindow *mwindow, CWindow *cwindow)
 	this->mwindow = mwindow;
     this->cwindow = cwindow;
 	affected_track = 0;
-	affected_auto = 0;
+	affected_x = 0;
+	affected_y = 0;
+	affected_z = 0;
+	affected_keyframe = 0;
 	affected_point = 0;
 	x_offset = 0;
 	y_offset = 0;
@@ -66,6 +82,7 @@ CWindowGUI::CWindowGUI(MWindow *mwindow, CWindow *cwindow)
 	translating_zoom = 0;
 	active = 0;
 	inactive = 0;
+	crop_translate = 0;
 }
 
 CWindowGUI::~CWindowGUI()
@@ -83,14 +100,19 @@ CWindowGUI::~CWindowGUI()
 
 int CWindowGUI::create_objects()
 {
-	set_icon(mwindow->theme->cwindow_icon);
+SET_TRACE
+	set_icon(mwindow->theme->get_image("cwindow_icon"));
 
 	active = new BC_Pixmap(this, mwindow->theme->get_image("cwindow_active"));
 	inactive = new BC_Pixmap(this, mwindow->theme->get_image("cwindow_inactive"));
 
+SET_TRACE
 	mwindow->theme->get_cwindow_sizes(this, mwindow->session->cwindow_controls);
+SET_TRACE
 	mwindow->theme->draw_cwindow_bg(this);
+SET_TRACE
 	flash();
+SET_TRACE
 
 // Meters required by composite panel
 	meters = new CWindowMeters(mwindow, 
@@ -99,6 +121,7 @@ int CWindowGUI::create_objects()
 		mwindow->theme->cmeter_y,
 		mwindow->theme->cmeter_h);
 	meters->create_objects();
+SET_TRACE
 
 
 	composite_panel = new CPanel(mwindow, 
@@ -109,8 +132,10 @@ int CWindowGUI::create_objects()
 		mwindow->theme->ccomposite_h);
 	composite_panel->create_objects();
 
+SET_TRACE
 	canvas = new CWindowCanvas(mwindow, this);
 	canvas->create_objects(mwindow->edl);
+SET_TRACE
 
 
 	add_subwindow(timebar = new CTimeBar(mwindow,
@@ -121,6 +146,7 @@ int CWindowGUI::create_objects()
 		mwindow->theme->ctimebar_h));
 	timebar->create_objects();
 
+SET_TRACE
 	add_subwindow(slider = new CWindowSlider(mwindow, 
 		cwindow, 
 		mwindow->theme->cslider_x,
@@ -134,9 +160,13 @@ int CWindowGUI::create_objects()
 	transport->create_objects();
 	transport->set_slider(slider);
 
+SET_TRACE
 	edit_panel = new CWindowEditing(mwindow, cwindow);
+SET_TRACE
 	edit_panel->set_meters(meters);
+SET_TRACE
 	edit_panel->create_objects();
+SET_TRACE
 
 // 	add_subwindow(clock = new MainClock(mwindow, 
 // 		mwindow->theme->ctime_x, 
@@ -167,6 +197,7 @@ int CWindowGUI::create_objects()
 
 	draw_status();
 
+SET_TRACE
 	return 0;
 }
 
@@ -184,15 +215,12 @@ int CWindowGUI::resize_event(int w, int h)
 	mwindow->session->cwindow_w = w;
 	mwindow->session->cwindow_h = h;
 
-//printf("CWindowGUI::resize_event 1\n");
 	mwindow->theme->get_cwindow_sizes(this, mwindow->session->cwindow_controls);
 	mwindow->theme->draw_cwindow_bg(this);
 	flash();
 
-//printf("CWindowGUI::resize_event 1\n");
 	composite_panel->reposition_buttons(mwindow->theme->ccomposite_x,
 		mwindow->theme->ccomposite_y);
-//printf("CWindowGUI::resize_event 1\n");
 
 	canvas->reposition_window(mwindow->edl,
 		mwindow->theme->ccanvas_x,
@@ -207,19 +235,15 @@ int CWindowGUI::resize_event(int w, int h)
 		mwindow->theme->cslider_w);
 // Recalibrate pointer motion range
 	slider->set_position();
-//printf("CWindowGUI::resize_event 1\n");
 
 	transport->reposition_buttons(mwindow->theme->ctransport_x, 
 		mwindow->theme->ctransport_y);
-//printf("CWindowGUI::resize_event 1\n");
 
 	edit_panel->reposition_buttons(mwindow->theme->cedit_x, 
 		mwindow->theme->cedit_y);
-//printf("CWindowGUI::resize_event 1\n");
 
 //	clock->reposition_window(mwindow->theme->ctime_x, 
 //		mwindow->theme->ctime_y);
-//printf("CWindowGUI::resize_event 1\n");
 
 	zoom_panel->reposition_window(mwindow->theme->czoom_x, 
 		mwindow->theme->czoom_y);
@@ -274,18 +298,12 @@ void CWindowGUI::set_operation(int value)
 
 void CWindowGUI::update_tool()
 {
-//printf("CWindowGUI::update_tool 1\n");
 	tool_panel->update_values();
 }
 
 int CWindowGUI::close_event()
 {
-	hide_window();
-	mwindow->session->show_cwindow = 0;
-	mwindow->gui->lock_window("CWindowGUI::close_event");
-	mwindow->gui->mainmenu->show_cwindow->set_checked(0);
-	mwindow->gui->unlock_window();
-	mwindow->save_defaults();
+	cwindow->hide_window();
 	return 1;
 }
 
@@ -294,7 +312,6 @@ int CWindowGUI::keypress_event()
 {
 	int result = 0;
 
-//printf("CWindowGUI::keypress_event 1\n");
 	switch(get_keypress())
 	{
 		case 'w':
@@ -302,14 +319,52 @@ int CWindowGUI::keypress_event()
 			close_event();
 			result = 1;
 			break;
+		case '+':
+		case '=':
+			keyboard_zoomin();
+			result = 1;
+			break;
+		case '-':
+			keyboard_zoomout();
+			result = 1;
+			break;
 	}
 
-//printf("CWindowGUI::keypress_event 1\n");
 	if(!result) result = transport->keypress_event();
 
-//printf("CWindowGUI::keypress_event 2\n");
 	return result;
 }
+
+
+void CWindowGUI::reset_affected()
+{
+	affected_x = 0;
+	affected_y = 0;
+	affected_z = 0;
+}
+
+void CWindowGUI::keyboard_zoomin()
+{
+//	if(mwindow->edl->session->cwindow_scrollbars)
+//	{
+		zoom_panel->zoom_tumbler->handle_up_event();
+//	}
+//	else
+//	{
+//	}
+}
+
+void CWindowGUI::keyboard_zoomout()
+{
+//	if(mwindow->edl->session->cwindow_scrollbars)
+//	{
+		zoom_panel->zoom_tumbler->handle_down_event();
+//	}
+//	else
+//	{
+//	}
+}
+
 
 void CWindowGUI::drag_motion()
 {
@@ -358,8 +413,6 @@ int CWindowGUI::drag_stop()
 		if(mwindow->session->drag_assets->total)
 		{
 			mwindow->gui->lock_window("CWindowGUI::drag_stop 1");
-			mwindow->undo->update_undo_before(_("insert assets"), 
-				LOAD_ALL);
 			mwindow->clear(0);
 			mwindow->load_assets(mwindow->session->drag_assets, 
 				mwindow->edl->local_session->get_selectionstart(), 
@@ -373,8 +426,6 @@ int CWindowGUI::drag_stop()
 		if(mwindow->session->drag_clips->total)
 		{
 			mwindow->gui->lock_window("CWindowGUI::drag_stop 2");
-			mwindow->undo->update_undo_before(_("insert assets"), 
-				LOAD_ALL);
 			mwindow->clear(0);
 			mwindow->paste_edls(mwindow->session->drag_clips, 
 				LOAD_PASTE, 
@@ -390,7 +441,7 @@ int CWindowGUI::drag_stop()
 			mwindow->save_backup();
 			mwindow->restart_brender();
 			mwindow->gui->update(1, 1, 1, 1, 0, 1, 0);
-			mwindow->undo->update_undo_after();
+			mwindow->undo->update_undo(_("insert assets"), LOAD_ALL);
 			mwindow->gui->unlock_window();
 			mwindow->sync_parameters(LOAD_ALL);
 		}
@@ -488,18 +539,16 @@ int CWindowMeters::change_status_event()
 
 
 
-#define MIN_ZOOM 0.25
-#define MAX_ZOOM 4.0
 
 CWindowZoom::CWindowZoom(MWindow *mwindow, CWindowGUI *gui, int x, int y)
  : ZoomPanel(mwindow, 
  	gui, 
-	(long)mwindow->edl->session->cwindow_zoom, 
+	(double)mwindow->edl->session->cwindow_zoom, 
 	x, 
 	y,
-	100, 
-	MIN_ZOOM, 
-	MAX_ZOOM, 
+	80, 
+	my_zoom_table, 
+	total_zooms, 
 	ZOOM_PERCENTAGE)
 {
 	this->mwindow = mwindow;
@@ -589,7 +638,7 @@ void CWindowSlider::set_position()
 
 
 	update(mwindow->theme->cslider_w, 
-		mwindow->edl->local_session->selectionstart, 
+		mwindow->edl->local_session->get_selectionstart(1), 
 		mwindow->edl->local_session->preview_start, 
 		mwindow->edl->local_session->preview_end);
 }
@@ -734,7 +783,7 @@ void CWindowCanvas::draw_refresh()
 		if(refresh_frame)
 		{
 			int in_x, in_y, in_w, in_h, out_x, out_y, out_w, out_h;
-//printf("CWindowCanvas::draw_refresh 3\n");
+//printf("CWindowCanvas::draw_refresh 3 %d\n", refresh_frame->get_color_model());
 			get_transfers(mwindow->edl, 
 				in_x, 
 				in_y, 
@@ -812,8 +861,9 @@ int CWindowCanvas::do_mask(int &redraw,
 	if(!track) return 0;
 //printf("CWindowCanvas::do_mask 3\n");
 
-	MaskAutos *mask_autos = track->automation->mask_autos;
-	int64_t position = track->to_units(mwindow->edl->local_session->selectionstart,
+	MaskAutos *mask_autos = (MaskAutos*)track->automation->autos[AUTOMATION_MASK];
+	int64_t position = track->to_units(
+		mwindow->edl->local_session->get_selectionstart(1),
 		0);
 	ArrayList<MaskPoint*> points;
 	mask_autos->get_points(&points, mwindow->edl->session->cwindow_mask,
@@ -821,29 +871,16 @@ int CWindowCanvas::do_mask(int &redraw,
 		PLAY_FORWARD);
 //printf("CWindowCanvas::do_mask 4\n");
 
-// Translate mask to projection
-	BezierAutos *projector_autos = track->automation->projector_autos;
-	FloatAutos *projector_zooms = track->automation->pzoom_autos;
-	BezierAuto *before = 0, *after = 0;
-	FloatAuto *zoom_before = 0, *zoom_after = 0;
-	float projector_x, projector_y, projector_z;
 // Projector zooms relative to the center of the track output.
 	float half_track_w = (float)track->track_w / 2;
 	float half_track_h = (float)track->track_h / 2;
-	projector_autos->get_center(projector_x, 
-			projector_y, 
-			projector_z, 
-			position, 
-			PLAY_FORWARD, 
-			&before, 
-			&after);
-	projector_z = projector_zooms->get_value(position,
-		PLAY_FORWARD,
-		zoom_before,
-		zoom_after);
-// printf("CWindowCanvas::do_mask 1 %f %f %f\n", projector_x, 
-// 			projector_y, 
-// 			projector_z);
+// Translate mask to projection
+	float projector_x, projector_y, projector_z;
+	track->automation->get_projector(&projector_x,
+		&projector_y,
+		&projector_z,
+		position,
+		PLAY_FORWARD);
 
 
 // Get position of cursor relative to mask
@@ -853,12 +890,12 @@ int CWindowCanvas::do_mask(int &redraw,
 
 	projector_x += mwindow->edl->session->output_w / 2;
 	projector_y += mwindow->edl->session->output_h / 2;
-                
 
 	mask_cursor_x -= projector_x;
 	mask_cursor_y -= projector_y;
 	mask_cursor_x = mask_cursor_x / projector_z + half_track_w;
 	mask_cursor_y = mask_cursor_y / projector_z + half_track_h;
+
 // Fix cursor origin
 	if(button_press)
 	{
@@ -1169,10 +1206,12 @@ int CWindowCanvas::do_mask(int &redraw,
 		gui->affected_track = gui->cwindow->calculate_affected_track();
 // Get current keyframe
 		if(gui->affected_track)
-			gui->affected_auto = 
-				gui->cwindow->calculate_affected_auto(gui->affected_track->automation->mask_autos);
+			gui->affected_keyframe = 
+				gui->cwindow->calculate_affected_auto(
+					gui->affected_track->automation->autos[AUTOMATION_MASK],
+					1);
 
-		MaskAuto *keyframe = (MaskAuto*)gui->affected_auto;
+		MaskAuto *keyframe = (MaskAuto*)gui->affected_keyframe;
 		SubMask *mask = keyframe->get_submask(mwindow->edl->session->cwindow_mask);
 
 
@@ -1209,7 +1248,6 @@ int CWindowCanvas::do_mask(int &redraw,
 			point->control_x2 = 0;
 			point->control_y2 = 0;
 
-			mwindow->undo->update_undo_before(_("mask point"), LOAD_AUTOMATION);
 
 			if(shortest_point2 < shortest_point1)
 			{
@@ -1336,7 +1374,7 @@ int CWindowCanvas::do_mask(int &redraw,
 // Delete the template
 			delete point;
 //printf("CWindowGUI::do_mask 1\n");
-			mwindow->undo->update_undo_after();
+			mwindow->undo->update_undo(_("mask point"), LOAD_AUTOMATION);
 //printf("CWindowGUI::do_mask 10\n");
 
 		}
@@ -1348,7 +1386,7 @@ int CWindowCanvas::do_mask(int &redraw,
 
 	if(button_press && result)
 	{
-		MaskAuto *keyframe = (MaskAuto*)gui->affected_auto;
+		MaskAuto *keyframe = (MaskAuto*)gui->affected_keyframe;
 		SubMask *mask = keyframe->get_submask(mwindow->edl->session->cwindow_mask);
 		MaskPoint *point = mask->points.values[gui->affected_point];
 		gui->center_x = point->x;
@@ -1357,16 +1395,12 @@ int CWindowCanvas::do_mask(int &redraw,
 		gui->control_in_y = point->control_y1;
 		gui->control_out_x = point->control_x2;
 		gui->control_out_y = point->control_y2;
-// printf("CWindowCanvas::do_mask 1 %p %p %d\n", 
-// 	gui->affected_auto, 
-// 	gui->affected_point,
-// 	gui->current_operation);
 	}
 
 //printf("CWindowCanvas::do_mask 8\n");
 	if(cursor_motion)
 	{
-		MaskAuto *keyframe = (MaskAuto*)gui->affected_auto;
+		MaskAuto *keyframe = (MaskAuto*)gui->affected_keyframe;
 		SubMask *mask = keyframe->get_submask(mwindow->edl->session->cwindow_mask);
 		if(gui->affected_point < mask->points.total)
 		{
@@ -1422,7 +1456,6 @@ int CWindowCanvas::do_mask(int &redraw,
 				!EQUIV(last_control_x2, point->control_x2) ||
 				!EQUIV(last_control_y2, point->control_y2))
 			{
-				mwindow->undo->update_undo_before(_("tweek"), LOAD_AUTOMATION);
 				rerender = 1;
 				redraw = 1;
 			}
@@ -1433,6 +1466,113 @@ int CWindowCanvas::do_mask(int &redraw,
 
 	points.remove_all_objects();
 //printf("CWindowCanvas::do_mask 20\n");
+	return result;
+}
+
+
+int CWindowCanvas::do_eyedrop(int &rerender, int button_press)
+{
+	int result = 0;
+	float cursor_x = get_cursor_x();
+	float cursor_y = get_cursor_y();
+
+
+	if(button_press)
+	{
+		gui->current_operation = CWINDOW_EYEDROP;
+	}
+
+	if(gui->current_operation == CWINDOW_EYEDROP)
+	{
+SET_TRACE
+		canvas_to_output(mwindow->edl, 0, cursor_x, cursor_y);
+SET_TRACE
+
+// Get color out of frame.
+// Doesn't work during playback because that bypasses the refresh frame.
+		if(refresh_frame)
+		{
+			CLAMP(cursor_x, 0, refresh_frame->get_w() - 1);
+			CLAMP(cursor_y, 0, refresh_frame->get_h() - 1);
+
+// Decompression coefficients straight out of jpeglib
+#define V_TO_R    1.40200
+#define V_TO_G    -0.71414
+
+#define U_TO_G    -0.34414
+#define U_TO_B    1.77200
+
+#define GET_COLOR(type, components, max, do_yuv) \
+{ \
+	type *row = (type*)(refresh_frame->get_rows()[(int)cursor_y]) + \
+		(int)cursor_x * components; \
+	float red = (float)*row++ / max; \
+	float green = (float)*row++ / max; \
+	float blue = (float)*row++ / max; \
+	if(do_yuv) \
+	{ \
+		mwindow->edl->local_session->red = red + V_TO_R * (blue - 0.5); \
+		mwindow->edl->local_session->green = red + U_TO_G * (green - 0.5) + V_TO_G * (blue - 0.5); \
+		mwindow->edl->local_session->blue = red + U_TO_B * (green - 0.5); \
+	} \
+	else \
+	{ \
+		mwindow->edl->local_session->red = red; \
+		mwindow->edl->local_session->green = green; \
+		mwindow->edl->local_session->blue = blue; \
+	} \
+}
+
+SET_TRACE
+			switch(refresh_frame->get_color_model())
+			{
+				case BC_YUV888:
+					GET_COLOR(unsigned char, 3, 0xff, 1);
+					break;
+				case BC_YUVA8888:
+					GET_COLOR(unsigned char, 4, 0xff, 1);
+					break;
+				case BC_YUV161616:
+					GET_COLOR(uint16_t, 3, 0xffff, 1);
+					break;
+				case BC_YUVA16161616:
+					GET_COLOR(uint16_t, 4, 0xffff, 1);
+					break;
+				case BC_RGB888:
+					GET_COLOR(unsigned char, 3, 0xff, 0);
+					break;
+				case BC_RGBA8888:
+					GET_COLOR(unsigned char, 4, 0xff, 0);
+					break;
+				case BC_RGB_FLOAT:
+					GET_COLOR(float, 3, 1.0, 0);
+					break;
+				case BC_RGBA_FLOAT:
+					GET_COLOR(float, 4, 1.0, 0);
+					break;
+			}
+SET_TRACE
+		}
+		else
+		{
+			mwindow->edl->local_session->red = 0;
+			mwindow->edl->local_session->green = 0;
+			mwindow->edl->local_session->blue = 0;
+		}
+
+SET_TRACE
+
+		gui->update_tool();		
+
+
+SET_TRACE
+
+		result = 1;
+// Can't rerender since the color value is from the output of any effect it
+// goes into.
+//		rerender = 1;
+	}
+
 	return result;
 }
 
@@ -1534,40 +1674,30 @@ void CWindowCanvas::draw_safe_regions()
 
 void CWindowCanvas::reset_keyframe(int do_camera)
 {
-	BezierAuto *translate_keyframe = 0;
-	FloatAuto *zoom_keyframe = 0;
+	FloatAuto *x_keyframe = 0;
+	FloatAuto *y_keyframe = 0;
+	FloatAuto *z_keyframe = 0;
 	Track *affected_track = 0;
 
 	affected_track = gui->cwindow->calculate_affected_track();
 
 	if(affected_track)
 	{
-		if(do_camera)
-		{
-			translate_keyframe = (BezierAuto*)gui->cwindow->calculate_affected_auto(
-				affected_track->automation->camera_autos);
-			zoom_keyframe = (FloatAuto*)gui->cwindow->calculate_affected_auto(
-				affected_track->automation->czoom_autos);
-		}
-		else
-		{
-			translate_keyframe = (BezierAuto*)gui->cwindow->calculate_affected_auto(
-				affected_track->automation->projector_autos);
-			zoom_keyframe = (FloatAuto*)gui->cwindow->calculate_affected_auto(
-				affected_track->automation->pzoom_autos);
-		}
+		gui->cwindow->calculate_affected_autos(&x_keyframe,
+			&y_keyframe,
+			&z_keyframe,
+			affected_track,
+			do_camera,
+			1,
+			1,
+			1);
 
-		translate_keyframe->center_x = 0;
-		translate_keyframe->center_y = 0;
-		translate_keyframe->center_z = 1;
-		zoom_keyframe->value = 1;
+		x_keyframe->value = 0;
+		y_keyframe->value = 0;
+		z_keyframe->value = 1;
 
 		mwindow->sync_parameters(CHANGE_PARAMS);
 		gui->update_tool();
-// 		gui->cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
-// 			CHANGE_NONE,
-// 			mwindow->edl,
-// 			1);
 	}
 }
 
@@ -1654,13 +1784,24 @@ int CWindowCanvas::test_crop(int button_press, int &redraw)
 // Start dragging.
 	if(button_press)
 	{
+		if(gui->alt_down())
+		{
+			gui->crop_translate = 1;
+			gui->crop_origin_x1 = x1;
+			gui->crop_origin_y1 = y1;
+			gui->crop_origin_x2 = x2;
+			gui->crop_origin_y2 = y2;
+		}
+		else
+			gui->crop_translate = 0;
+
 		gui->current_operation = CWINDOW_CROP;
 		gui->crop_handle = handle_selected;
 		gui->x_origin = cursor_x;
 		gui->y_origin = cursor_y;
 		result = 1;
 
-		if(handle_selected < 0) 
+		if(handle_selected < 0 && !gui->crop_translate) 
 		{
 			x2 = x1 = cursor_x;
 			y2 = y1 = cursor_y;
@@ -1672,17 +1813,25 @@ int CWindowCanvas::test_crop(int button_press, int &redraw)
 		}
 	}
     else
+// Translate all 4 points
+	if(gui->current_operation == CWINDOW_CROP && gui->crop_translate)
+	{
+		x1 = cursor_x - gui->x_origin + gui->crop_origin_x1;
+		y1 = cursor_y - gui->y_origin + gui->crop_origin_y1;
+		x2 = cursor_x - gui->x_origin + gui->crop_origin_x2;
+		y2 = cursor_y - gui->y_origin + gui->crop_origin_y2;
+
+		mwindow->edl->session->crop_x1 = (int)x1;
+		mwindow->edl->session->crop_y1 = (int)y1;
+		mwindow->edl->session->crop_x2 = (int)x2;
+		mwindow->edl->session->crop_y2 = (int)y2;
+		result = 1;
+		redraw = 1;
+	}
+	else
 // Update dragging
 	if(gui->current_operation == CWINDOW_CROP)
 	{
-		float x_difference, y_difference;
-		if(gui->crop_handle >= 0)
-		{
-			float zoom_x, zoom_y, conformed_w, conformed_h;
-			get_zooms(mwindow->edl, 0, zoom_x, zoom_y, conformed_w, conformed_h);
-			x_difference = cursor_x - gui->x_origin;
-		}
-
 		switch(gui->crop_handle)
 		{
 			case -1:
@@ -1816,10 +1965,10 @@ int CWindowCanvas::test_crop(int button_press, int &redraw)
 	
 	if(redraw)
 	{
-		CLAMP(mwindow->edl->session->crop_x1, 0, mwindow->edl->calculate_output_w(0));
-		CLAMP(mwindow->edl->session->crop_x2, 0, mwindow->edl->calculate_output_w(0));
-		CLAMP(mwindow->edl->session->crop_y1, 0, mwindow->edl->calculate_output_h(0));
-		CLAMP(mwindow->edl->session->crop_y2, 0, mwindow->edl->calculate_output_h(0));
+		CLAMP(mwindow->edl->session->crop_x1, 0, mwindow->edl->session->output_w);
+		CLAMP(mwindow->edl->session->crop_x2, 0, mwindow->edl->session->output_w);
+		CLAMP(mwindow->edl->session->crop_y1, 0, mwindow->edl->session->output_h);
+		CLAMP(mwindow->edl->session->crop_y2, 0, mwindow->edl->session->output_h);
 // printf("CWindowCanvas::test_crop %d %d %d %d\n", 
 // 	mwindow->edl->session->crop_x2,
 // 	mwindow->edl->session->crop_y2,
@@ -1858,411 +2007,69 @@ void CWindowCanvas::draw_crop()
 
 
 
-#define BEZIER_W 20
-#define BEZIER_H 20
-
-int CWindowCanvas::do_bezier_center(BezierAuto *current, 
-	BezierAutos *camera_autos,
-	BezierAutos *projector_autos, 
-	FloatAutos *czoom_autos,
-	FloatAutos *pzoom_autos,
-	int camera, 
-	int draw)
-{
-	float center_x = 0, center_y = 0, center_z = 0;
-	BezierAuto *before = 0, *after = 0;
-	FloatAuto *previous = 0, *next = 0;
-	VTrack *track = (VTrack*)current->autos->track;
-	int64_t position = track->to_units(
-				mwindow->edl->local_session->selectionstart, 
-				0);
-
-// Get center of current frame.  Draw everything relative to this.
-	if(camera)
-	{
-		camera_autos->get_center(center_x, 
-			center_y, 
-			center_z, 
-			position,
-			PLAY_FORWARD, 
-			&before, 
-			&after);
-		center_z = czoom_autos->get_value(position,
-			PLAY_FORWARD,
-			previous,
-			next);
-
-		float projector_x, projector_y, projector_z;
-		before = after = 0;
-		projector_autos->get_center(projector_x, 
-			projector_y, 
-			projector_z,
-			position,
-			PLAY_FORWARD,
-			&before,
-			&after);
-		previous = next = 0;
-		projector_z = pzoom_autos->get_value(position,
-			PLAY_FORWARD,
-			previous,
-			next);
-
-		center_x -= projector_x;
-		center_y -= projector_y;
-		center_z = projector_z;
-//printf("CWindowCanvas::do_bezier_center 1 %p %f %f\n", 
-//current, projector_y, center_y);
-	}
-	else
-	{
-		center_z = pzoom_autos->get_value(current->position,
-			PLAY_FORWARD,
-			previous,
-			next);
-	}
 
 
-
-	float auto_x = current->center_x - center_x + mwindow->edl->session->output_w / 2;
-	float auto_y = current->center_y - center_y + mwindow->edl->session->output_h / 2;
-	float track_x1 = auto_x - track->track_w / 2 * center_z;
-	float track_y1 = auto_y - track->track_h / 2 * center_z;
-	float track_x2 = track_x1 + track->track_w * center_z;
-	float track_y2 = track_y1 + track->track_h * center_z;
-	float control_in_x = auto_x + current->control_in_x;
-	float control_in_y = auto_y + current->control_in_y;
-	float control_out_x = auto_x + current->control_out_x;
-	float control_out_y = auto_y + current->control_out_y;
-	int control_point = 0;
-
-
-	output_to_canvas(mwindow->edl, 0, auto_x, auto_y);
-	output_to_canvas(mwindow->edl, 0, control_out_x, control_out_y);
-	output_to_canvas(mwindow->edl, 0, control_in_x, control_in_y);
-	output_to_canvas(mwindow->edl, 0, track_x1, track_y1);
-	output_to_canvas(mwindow->edl, 0, track_x2, track_y2);
-
-#define DRAW_THING(offset) \
-	canvas->draw_line((int)control_in_x + offset,  \
-		(int)control_in_y + offset,  \
-		(int)auto_x + offset,  \
-		(int)auto_y + offset); \
-	canvas->draw_line((int)control_out_x + offset,  \
-		(int)control_out_y + offset,  \
-		(int)auto_x + offset,  \
-		(int)auto_y + offset); \
-	canvas->draw_rectangle((int)control_in_x - CONTROL_W / 2 + offset,  \
-		(int)control_in_y - CONTROL_H / 2 + offset, \
-		CONTROL_W, \
-		CONTROL_H); \
-	canvas->draw_rectangle((int)control_out_x - CONTROL_W / 2 + offset,  \
-		(int)control_out_y - CONTROL_H / 2 + offset, \
-		CONTROL_W, \
-		CONTROL_H); \
- \
-	if(0) \
-	{ \
-		canvas->draw_line((int)auto_x - BEZIER_W / 2,  \
-			(int)auto_y - BEZIER_H / 2 + offset, \
-			(int)auto_x + BEZIER_W / 2, \
-			(int)auto_y + BEZIER_H / 2 + offset); \
-		canvas->draw_line((int)auto_x - BEZIER_W / 2,  \
-			(int)auto_y + BEZIER_H / 2 + offset, \
-			(int)auto_x + BEZIER_W / 2, \
-			(int)auto_y - BEZIER_H / 2 + offset); \
-	} \
-	else \
-	{ \
-		canvas->draw_rectangle((int)track_x1 + offset, \
-			(int)track_y1 + offset, \
-			(int)(track_x2 - track_x1), \
-			(int)(track_y2 - track_y1)); \
-		canvas->draw_line((int)track_x1 + offset,  \
-			(int)track_y1 + offset, \
-			(int)track_x2 + offset, \
-			(int)track_y2 + offset); \
-		canvas->draw_line((int)track_x2 + offset,  \
-			(int)track_y1 + offset, \
-			(int)track_x1 + offset, \
-			(int)track_y2 + offset); \
-	}
-
-	if(draw)
-	{
-// Drop shadow
-		canvas->set_color(BLACK);
-		DRAW_THING(1);
-
-		canvas->set_inverse();
-		if(current->position > position)
-			canvas->set_color(GREEN);
-		else
-			canvas->set_color(RED);
-
-		DRAW_THING(0);
-		canvas->set_opaque();
-// printf("CWindowCanvas::do_bezier_center 2 %f,%f %f,%f\n", 
-// control_in_x, 
-// control_in_y, 
-// control_out_x,
-// control_out_y);
-	}
-	else
-	{
-		int cursor_x = get_cursor_x();
-		int cursor_y = get_cursor_y();
-		
-#ifndef SQR
-#define SQR(x) ((x) * (x))
-#endif
-
-		float distance1 = sqrt(SQR(cursor_x - control_in_x) + 
-			SQR(cursor_y - control_in_y));
-		float distance2 = sqrt(SQR(cursor_x - control_out_x) + 
-			SQR(cursor_y - control_out_y));
-// printf("CWindowCanvas::do_bezier_center 3 %f,%f %f,%f\n", 
-// control_in_x, 
-// control_in_y, 
-// control_out_x,
-// control_out_y);
-
-		control_point = distance2 < distance1;
-	}
-	
-	return control_point;
-}
-
-
-
-void CWindowCanvas::draw_bezier_joining(BezierAuto *first, 
-	BezierAuto *last, 
-	BezierAutos *camera_autos,
-	BezierAutos *projector_autos, 
-	FloatAutos *czoom_autos,
-	FloatAutos *pzoom_autos,
-	int camera)
-{
-	if(first == last) return;
-	
-	float center_x = 0, center_y = 0, center_z = 0;
-	BezierAuto *before = 0, *after = 0;
-	int64_t position = first->autos->track->to_units(
-					mwindow->edl->local_session->selectionstart, 
-					0);
-
-// Get center of current position.  Draw everything relative to this.
-	if(camera)
-	{
-		camera_autos->get_center(center_x, 
-				center_y, 
-				center_z, 
-				position, 
-				PLAY_FORWARD, 
-				&before, 
-				&after);
-
-		float projector_x, projector_y, projector_z;
-		before = after = 0;
-		projector_autos->get_center(projector_x, 
-			projector_y, 
-			projector_z,
-			position,
-			PLAY_FORWARD,
-			&before,
-			&after);
-
-		center_x -= projector_x;
-		center_y -= projector_y;
-	}
-
-//	int segments = 10;
-	int segments = MAX(canvas->get_w(), canvas->get_h());
-	int step = (last->position - first->position) / segments;
-	float old_x, old_y;
-	if(step < 1) step = 1;
-
-	for(int64_t frame = first->position; 
-		frame < last->position; 
-		frame += step)
-	{
-		float new_x, new_y, new_z;
-		float x1, y1, x2, y2;
-
-		((BezierAutos*)(first->autos))->get_center(new_x, 
-			new_y, 
-			new_z, 
-			frame, 
-			PLAY_FORWARD, 
-			&before, 
-			&after);
-
-		if(frame == first->position)
-		{
-			old_x = new_x;
-			old_y = new_y;
-		}
-
-		x1 = old_x - center_x + mwindow->edl->session->output_w / 2;
-		y1 = old_y - center_y + mwindow->edl->session->output_h / 2;
-		x2 = new_x - center_x + mwindow->edl->session->output_w / 2;
-		y2 = new_y - center_y + mwindow->edl->session->output_h / 2;
-		output_to_canvas(mwindow->edl, 0, x1, y1);
-		output_to_canvas(mwindow->edl, 0, x2, y2);
-
-// Drop shadow
-//		canvas->set_color(BLACK);
-//		canvas->draw_line((int)x1 + 1, (int)y1 + 1, (int)x2 + 1, (int)y2 + 1);
-
-		if(frame >= position)
-			canvas->set_color(GREEN);
-		else
-			canvas->set_color(RED);
-
-		canvas->set_inverse();
-		canvas->draw_line((int)x1, (int)y1, (int)x2, (int)y2);
-		canvas->set_opaque();
-		old_x = new_x;
-		old_y = new_y;
-	}
-}
 
 
 
 void CWindowCanvas::draw_bezier(int do_camera)
 {
 	Track *track = gui->cwindow->calculate_affected_track();
-	BezierAutos *autos, *camera_autos, *projector_autos;
-	BezierAuto *first = 0, *mid = 0, *last = 0;
-	BezierAuto *before = 0, *after = 0;
-	FloatAutos *czoom_autos, *pzoom_autos;
-
-// No track at initialization
+	
 	if(!track) return;
 
-	camera_autos = track->automation->camera_autos;
-	projector_autos = track->automation->projector_autos;
-	czoom_autos = track->automation->czoom_autos;
-	pzoom_autos = track->automation->pzoom_autos;
+	float center_x;
+	float center_y;
+	float center_z;
+	int64_t position = track->to_units(
+		mwindow->edl->local_session->get_selectionstart(1), 
+		0);
 
+	track->automation->get_projector(&center_x, 
+		&center_y, 
+		&center_z, 
+		position,
+		PLAY_FORWARD);
+
+//	center_x += track->track_w / 2;
+//	center_y += track->track_h / 2;
+	center_x += mwindow->edl->session->output_w / 2;
+	center_y += mwindow->edl->session->output_h / 2;
+	float track_x1 = center_x - track->track_w / 2 * center_z;
+	float track_y1 = center_y - track->track_h / 2 * center_z;
+	float track_x2 = track_x1 + track->track_w * center_z;
+	float track_y2 = track_y1 + track->track_h * center_z;
+
+	output_to_canvas(mwindow->edl, 0, track_x1, track_y1);
+	output_to_canvas(mwindow->edl, 0, track_x2, track_y2);
+
+#define DRAW_PROJECTION(offset) \
+	canvas->draw_rectangle((int)track_x1 + offset, \
+		(int)track_y1 + offset, \
+		(int)(track_x2 - track_x1), \
+		(int)(track_y2 - track_y1)); \
+	canvas->draw_line((int)track_x1 + offset,  \
+		(int)track_y1 + offset, \
+		(int)track_x2 + offset, \
+		(int)track_y2 + offset); \
+	canvas->draw_line((int)track_x2 + offset,  \
+		(int)track_y1 + offset, \
+		(int)track_x1 + offset, \
+		(int)track_y2 + offset); \
+
+
+// Drop shadow
+	canvas->set_color(BLACK);
+	DRAW_PROJECTION(1);
+
+//	canvas->set_inverse();
 	if(do_camera)
-		autos = track->automation->camera_autos;
+		canvas->set_color(GREEN);
 	else
-		autos = track->automation->projector_autos;
+		canvas->set_color(RED);
 
-
-	int64_t position = track->to_units(mwindow->edl->local_session->selectionstart, 
-					0);
-
-
-// Rules for which autos to draw:
-//
-// No automation besides default:
-//     mid = default
-//
-// Automation on or after current position only
-//     mid = first, last = next
-//
-// Automation before current position only
-//     mid = last, first = previous
-// 
-// Automation on current position only
-//     mid = first
-//
-// Automation before and after current position
-//     first = previous, mid = next, last = next->next
-
-	for(first = (BezierAuto*)autos->last; 
-		first; 
-		first = (BezierAuto*)first->previous)
-		if(first->position < position)
-			break;
-
-	if(first)
-	{
-		mid = (BezierAuto*)first->next;
-		if(!mid)
-		{
-			mid = first;
-			first = (BezierAuto*)first->previous;
-		}
-	}
-	else
-		mid = (BezierAuto*)autos->first;
-
-	if(mid)
-		last = (BezierAuto*)mid->next;
-	else
-		mid = (BezierAuto*)autos->default_auto;
-
-	if(!last)
-	{
-		last = mid;
-		mid = first;
-		if(mid) first = (BezierAuto*)mid->previous;
-	}
-	
-	if(!first)
-	{
-		first = mid;
-		mid = last;
-		if(mid) last = (BezierAuto*)mid->next;
-	}
-
-//printf("draw_bezier 1 %p %p %p\n", first, mid, last);
-
-
-
-// Draw joining lines
-	if(first && mid)
-		draw_bezier_joining(first, 
-			mid, 
-			camera_autos, 
-			projector_autos, 
-			czoom_autos,
-			pzoom_autos,
-			do_camera);
-
-	if(mid && last)
-		draw_bezier_joining(mid, 
-			last, 
-			camera_autos, 
-			projector_autos, 
-			czoom_autos,
-			pzoom_autos,
-			do_camera);
-
-//printf("draw_bezier 2 %p %p %p\n", first, mid, last);
-
-
-// Draw centers of autos
-	if(first) 
-		do_bezier_center(first, 
-			camera_autos, 
-			projector_autos, 
-			czoom_autos,
-			pzoom_autos,
-			do_camera, 
-			1);
-	if(mid) 
-		do_bezier_center(mid, 
-			camera_autos, 
-			projector_autos, 
-			czoom_autos,
-			pzoom_autos,
-			do_camera, 
-			1);
-	if(last) 
-		do_bezier_center(last, 
-			camera_autos, 
-			projector_autos, 
-			czoom_autos,
-			pzoom_autos,
-			do_camera, 
-			1);
-
-//printf("draw_bezier 3 %p %p %p\n", first, mid, last);
-
-
+	DRAW_PROJECTION(0);
+//	canvas->set_opaque();
 
 }
 
@@ -2291,87 +2098,89 @@ int CWindowCanvas::test_bezier(int button_press,
 			if(!gui->ctrl_down() && gui->shift_down() && !gui->translating_zoom)
 			{
 				gui->translating_zoom = 1;
-				gui->affected_auto = 0;
+				gui->reset_affected();
 			}
 			else
 			if(!gui->ctrl_down() && !gui->shift_down() && gui->translating_zoom)
 			{
 				gui->translating_zoom = 0;
-				gui->affected_auto = 0;
+				gui->reset_affected();
 			}
 
 // Get target keyframe
-			BezierAutos *camera_autos = gui->affected_track->automation->camera_autos;
-			BezierAutos *projector_autos = gui->affected_track->automation->projector_autos;
-			FloatAutos *czoom_autos = gui->affected_track->automation->czoom_autos;
-			FloatAutos *pzoom_autos = gui->affected_track->automation->pzoom_autos;
 			float last_center_x;
 			float last_center_y;
 			float last_center_z;
 
 
-			if(!gui->affected_auto)
+			if(!gui->affected_x && !gui->affected_y && !gui->affected_z)
 			{
-				mwindow->undo->update_undo_before(_("keyframe"), LOAD_AUTOMATION);
+				Autos *affected_x_autos;
+				Autos *affected_y_autos;
+				Autos *affected_z_autos;
+				if(!gui->affected_track) return 0;
 				if(mwindow->edl->session->cwindow_operation == CWINDOW_CAMERA)
 				{
-					if(gui->translating_zoom)
-					{
-						gui->affected_auto = 
-							gui->cwindow->calculate_affected_auto((Autos*)czoom_autos, 1);
-					}
-					else
-						gui->affected_auto = 
-							gui->cwindow->calculate_affected_auto((Autos*)camera_autos, 1);
+					affected_x_autos = gui->affected_track->automation->autos[AUTOMATION_CAMERA_X];
+					affected_y_autos = gui->affected_track->automation->autos[AUTOMATION_CAMERA_Y];
+					affected_z_autos = gui->affected_track->automation->autos[AUTOMATION_CAMERA_Z];
 				}
 				else
-				if(mwindow->edl->session->cwindow_operation == CWINDOW_PROJECTOR)
 				{
-					if(gui->translating_zoom)
-					{
-						gui->affected_auto = 
-							gui->cwindow->calculate_affected_auto((Autos*)pzoom_autos, 1);
-					}
-					else
-						gui->affected_auto = 
-							gui->cwindow->calculate_affected_auto((Autos*)projector_autos, 1);
+					affected_x_autos = gui->affected_track->automation->autos[AUTOMATION_PROJECTOR_X];
+					affected_y_autos = gui->affected_track->automation->autos[AUTOMATION_PROJECTOR_Y];
+					affected_z_autos = gui->affected_track->automation->autos[AUTOMATION_PROJECTOR_Z];
+				}
+
+				if(gui->translating_zoom)
+				{
+					gui->affected_z = 
+						(FloatAuto*)gui->cwindow->calculate_affected_auto(
+							affected_z_autos, 1);
+				}
+				else
+				{
+					gui->affected_x = 
+						(FloatAuto*)gui->cwindow->calculate_affected_auto(
+							affected_x_autos, 1);
+					gui->affected_y = 
+						(FloatAuto*)gui->cwindow->calculate_affected_auto(
+							affected_y_autos, 1);
 				}
 
 				calculate_origin();
-				
+
 				if(gui->translating_zoom)
 				{
-					gui->center_z = ((FloatAuto*)gui->affected_auto)->value;
+					gui->center_z = gui->affected_z->value;
 				}
 				else
 				{
-					gui->center_x = ((BezierAuto*)gui->affected_auto)->center_x;
-					gui->center_y = ((BezierAuto*)gui->affected_auto)->center_y;
+					gui->center_x = gui->affected_x->value;
+					gui->center_y = gui->affected_y->value;
 				}
 
 				rerender = 1;
 				redraw = 1;
 			}
 
-			BezierAuto *bezier_keyframe = (BezierAuto*)gui->affected_auto;
-			FloatAuto *zoom_keyframe = (FloatAuto*)gui->affected_auto;
 
 			if(gui->translating_zoom)
 			{
-				last_center_z = zoom_keyframe->value;
+				last_center_z = gui->affected_z->value;
 			}
 			else
 			{
-				last_center_x = bezier_keyframe->center_x;
-				last_center_y = bezier_keyframe->center_y;
+				last_center_x = gui->affected_x->value;
+				last_center_y = gui->affected_y->value;
 			}
 
 			if(gui->translating_zoom)
 			{
-				zoom_keyframe->value = gui->center_z + (cursor_y - gui->y_origin) / 128;
-				if(!EQUIV(last_center_z, zoom_keyframe->value))
+				gui->affected_z->value = gui->center_z + 
+					(cursor_y - gui->y_origin) / 128;
+				if(!EQUIV(last_center_z, gui->affected_z->value))
 				{
-					mwindow->undo->update_undo_before(_("tweek"), LOAD_AUTOMATION);
 					rerender = 1;
 					redraw = 1;
 					redraw_canvas = 1;
@@ -2379,51 +2188,15 @@ int CWindowCanvas::test_bezier(int button_press,
 			}
 			else
 			{
-				bezier_keyframe->center_x = gui->center_x + cursor_x - gui->x_origin;
-				bezier_keyframe->center_y = gui->center_y + cursor_y - gui->y_origin;
-				if(!EQUIV(last_center_x,  bezier_keyframe->center_x) ||
-				   	!EQUIV(last_center_y, bezier_keyframe->center_y))
+				gui->affected_x->value = gui->center_x + cursor_x - gui->x_origin;
+				gui->affected_y->value = gui->center_y + cursor_y - gui->y_origin;
+				if(!EQUIV(last_center_x,  gui->affected_x->value) ||
+				   	!EQUIV(last_center_y, gui->affected_y->value))
 				{
-					mwindow->undo->update_undo_before(_("tweek"), LOAD_AUTOMATION);
 					rerender = 1;
 					redraw = 1;
+					redraw_canvas = 1;
 				}
-			}
-		}
-		else
-		if(gui->current_operation == CWINDOW_CAMERA_CONTROL_IN ||
-			gui->current_operation == CWINDOW_PROJECTOR_CONTROL_IN)
-		{
-			BezierAuto *bezier_keyframe = (BezierAuto*)gui->affected_auto;
-			float last_control_in_x = bezier_keyframe->control_in_x;
-			float last_control_in_y = bezier_keyframe->control_in_y;
-			bezier_keyframe->control_in_x = gui->control_in_x + cursor_x - gui->x_origin;
-			bezier_keyframe->control_in_y = gui->control_in_y + cursor_y - gui->y_origin;
-
-			if(!EQUIV(last_control_in_x, bezier_keyframe->control_in_x) ||
-				!EQUIV(last_control_in_y, bezier_keyframe->control_in_y))
-			{
-				mwindow->undo->update_undo_before(_("tweek"), LOAD_AUTOMATION);
-				rerender = 1;
-				redraw = 1;
-			}
-		}
-		else
-		if(gui->current_operation == CWINDOW_CAMERA_CONTROL_OUT ||
-			gui->current_operation == CWINDOW_PROJECTOR_CONTROL_OUT)
-		{
-			BezierAuto *bezier_keyframe = (BezierAuto*)gui->affected_auto;
-			float last_control_out_x = bezier_keyframe->control_out_x;
-			float last_control_out_y = bezier_keyframe->control_out_y;
-			bezier_keyframe->control_out_x = gui->control_out_x + cursor_x - gui->x_origin;
-			bezier_keyframe->control_out_y = gui->control_out_y + cursor_y - gui->y_origin;
-
-			if(!EQUIV(last_control_out_x, bezier_keyframe->control_out_x) ||
-				!EQUIV(last_control_out_y, bezier_keyframe->control_out_y))
-			{
-				mwindow->undo->update_undo_before(_("tweek"), LOAD_AUTOMATION);
-				rerender = 1;
-				redraw = 1;
 			}
 		}
 
@@ -2433,74 +2206,15 @@ int CWindowCanvas::test_bezier(int button_press,
 // Begin drag operation.  Don't create keyframe here.
 	{
 // Get affected track off of the first recordable video track.
-// Calculating based on the alpha channel would require rendering
-// each layer and its effects and trapping the result in VirtualVNode before
-// compositing onto the output.
+// Calculating based on the alpha channel would require recording what layer
+// each output pixel belongs to as they're rendered and stacked.  Forget it.
 		gui->affected_track = gui->cwindow->calculate_affected_track();
-		gui->affected_auto = 0;
+		gui->reset_affected();
 
 		if(gui->affected_track)
 		{
-			BezierAutos *camera_autos = gui->affected_track->automation->camera_autos;
-			BezierAutos *projector_autos = gui->affected_track->automation->projector_autos;
-			FloatAutos *czoom_autos = gui->affected_track->automation->czoom_autos;
-			FloatAutos *pzoom_autos = gui->affected_track->automation->pzoom_autos;
-
-
-			if(!gui->ctrl_down())
-			{
-				gui->current_operation = 
-					mwindow->edl->session->cwindow_operation;
-				gui->affected_auto = 0;
-			}
-			else
-			{
-// Get nearest control point
-				if(mwindow->edl->session->cwindow_operation == CWINDOW_CAMERA)
-					gui->affected_auto = 
-						gui->cwindow->calculate_affected_auto(camera_autos, 0);
-				else
-				if(mwindow->edl->session->cwindow_operation == CWINDOW_PROJECTOR)
-					gui->affected_auto = 
-						gui->cwindow->calculate_affected_auto(projector_autos, 0);
-
-//printf("CWindowCanvas::test_bezier 1 %d\n", gui->current_operation);
-				int control_point = do_bezier_center(
-					(BezierAuto*)gui->affected_auto, 
-					camera_autos,
-					projector_autos,
-					czoom_autos,
-					pzoom_autos,
-					mwindow->edl->session->cwindow_operation == CWINDOW_CAMERA,
-					0);
-
-//printf("CWindowCanvas::test_bezier 2 %d\n", control_point);
-				if(control_point == 0)
-				{
-					if(mwindow->edl->session->cwindow_operation == CWINDOW_CAMERA)
-						gui->current_operation = CWINDOW_CAMERA_CONTROL_IN;
-					else
-						gui->current_operation = CWINDOW_PROJECTOR_CONTROL_IN;
-				}
-				else
-				{
-					if(mwindow->edl->session->cwindow_operation == CWINDOW_CAMERA)
-						gui->current_operation = CWINDOW_CAMERA_CONTROL_OUT;
-					else
-						gui->current_operation = CWINDOW_PROJECTOR_CONTROL_OUT;
-				}
-
-				BezierAuto *keyframe = (BezierAuto*)gui->affected_auto;
-				gui->center_x = keyframe->center_x;
-				gui->center_y = keyframe->center_y;
-				gui->center_z = keyframe->center_z;
-				gui->control_in_x = keyframe->control_in_x;
-				gui->control_in_y = keyframe->control_in_y;
-				gui->control_out_x = keyframe->control_out_x;
-				gui->control_out_y = keyframe->control_out_y;
-			}
-
-
+			gui->current_operation = 
+				mwindow->edl->session->cwindow_operation;
 			result = 1;
 		}
 	}
@@ -2519,8 +2233,8 @@ int CWindowCanvas::test_zoom(int &redraw)
 	{
 		mwindow->edl->session->cwindow_scrollbars = 1;
 		zoom = 1.0;
-		x = 0;
-		y = 0;
+		x = mwindow->edl->session->output_w / 2;
+		y = mwindow->edl->session->output_h / 2;
 	}
 	else
 	{
@@ -2533,39 +2247,31 @@ int CWindowCanvas::test_zoom(int &redraw)
 
 //printf("CWindowCanvas::test_zoom 1 %f %f\n", x, y);
 
+// Find current zoom in table
+		int current_index = 0;
+		for(current_index = 0 ; current_index < total_zooms; current_index++)
+			if(EQUIV(my_zoom_table[current_index], zoom)) break;
+
+
 // Zoom out
 		if(get_buttonpress() == 5 ||
 			gui->ctrl_down() || 
 			gui->shift_down())
 		{
-			if(zoom > MIN_ZOOM)
-			{
-				zoom /= 2;
-				x -= w_visible * 2 / 2;
-				y -= h_visible * 2 / 2;
-			}
-			else
-			{
-				x -= w_visible / 2;
-				y -= h_visible / 2;
-			}
+			current_index--;
 		}
 		else
 // Zoom in
 		{
-			if(zoom < MAX_ZOOM)
-			{
-				zoom *= 2;
-				x -= w_visible / 2 / 2;
-				y -= h_visible / 2 / 2;
-			}
-			else
-			{
-				x -= w_visible / 2;
-				y -= h_visible / 2;
-			}
+			current_index++;
 		}
+		CLAMP(current_index, 0, total_zooms - 1);
+		zoom = my_zoom_table[current_index];
 	}
+
+	x = x - w / zoom / 2;
+	y = y - h / zoom / 2;
+
 
 	int x_i = (int)x;
 	int y_i = (int)y;
@@ -2628,6 +2334,9 @@ int CWindowCanvas::cursor_enter_event()
 		case CWINDOW_MASK:
 			set_cursor(CROSS_CURSOR);
 			break;
+		case CWINDOW_EYEDROP:
+			set_cursor(CROSS_CURSOR);
+			break;
 	}
 	return 1;
 }
@@ -2665,14 +2374,10 @@ int CWindowCanvas::cursor_motion_event()
 		}
 
 		case CWINDOW_CAMERA:
-		case CWINDOW_CAMERA_CONTROL_IN:
-		case CWINDOW_CAMERA_CONTROL_OUT:
 			result = test_bezier(0, redraw, redraw_canvas, rerender, 1);
 			break;
 
 		case CWINDOW_PROJECTOR:
-		case CWINDOW_PROJECTOR_CONTROL_IN:
-		case CWINDOW_PROJECTOR_CONTROL_OUT:
 			result = test_bezier(0, redraw, redraw_canvas, rerender, 0);
 			break;
 
@@ -2692,6 +2397,11 @@ int CWindowCanvas::cursor_motion_event()
 				1,
 				0);
 			break;
+
+		case CWINDOW_EYEDROP:
+			result = do_eyedrop(rerender, 0);
+			break;
+
 	}
 
 
@@ -2788,6 +2498,10 @@ int CWindowCanvas::button_press_event()
 				if(get_buttonpress() == 1)
 					result = do_mask(redraw, rerender, 1, 0, 0);
 				break;
+
+			case CWINDOW_EYEDROP:
+				result = do_eyedrop(rerender, 1);
+				break;
 		}
 	}
 
@@ -2797,7 +2511,8 @@ int CWindowCanvas::button_press_event()
 		gui->update_tool();
 	}
 
-	if(rerender) /* rerendering can also be caused by press event */
+// rerendering can also be caused by press event
+	if(rerender) 
 	{
 		mwindow->restart_brender();
 		mwindow->sync_parameters(CHANGE_PARAMS);
@@ -2819,11 +2534,17 @@ int CWindowCanvas::button_release_event()
 		case CWINDOW_SCROLL:
 			result = 1;
 			break;
+
+		case CWINDOW_CAMERA:
+			mwindow->undo->update_undo(_("camera"), LOAD_AUTOMATION);
+			break;
+
+		case CWINDOW_PROJECTOR:
+			mwindow->undo->update_undo(_("projector"), LOAD_AUTOMATION);
+			break;
 	}
 
 	gui->current_operation = CWINDOW_NONE;
-	mwindow->undo->update_undo_after();
-//printf("CWindowCanvas::button_release_event %d\n", result);
 	return result;
 }
 
@@ -2831,8 +2552,8 @@ void CWindowCanvas::zoom_resize_window(float percentage)
 {
 	int canvas_w, canvas_h;
 	calculate_sizes(mwindow->edl->get_aspect_ratio(), 
-		mwindow->edl->calculate_output_w(0), 
-		mwindow->edl->calculate_output_h(0), 
+		mwindow->edl->session->output_w, 
+		mwindow->edl->session->output_h, 
 		percentage,
 		canvas_w,
 		canvas_h);

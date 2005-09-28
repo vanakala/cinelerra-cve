@@ -83,10 +83,10 @@ int VPatchGUI::update(int x, int y)
 		else
 		{
 			FloatAuto *previous = 0, *next = 0;
-			double unit_position = mwindow->edl->local_session->selectionstart;
+			double unit_position = mwindow->edl->local_session->get_selectionstart(1);
 			unit_position = mwindow->edl->align_to_frame(unit_position, 0);
 			unit_position = vtrack->to_units(unit_position, 0);
-			int value = (int)((FloatAutos*)vtrack->automation->fade_autos)->get_value(
+			int value = (int)((FloatAutos*)vtrack->automation->autos[AUTOMATION_FADE])->get_value(
 				(int64_t)unit_position,
 				PLAY_FORWARD, 
 				previous, 
@@ -175,20 +175,17 @@ VFadePatch::VFadePatch(MWindow *mwindow, VPatchGUI *patch, int x, int y, int w)
 float VFadePatch::update_edl()
 {
 	FloatAuto *current;
-	double position = mwindow->edl->local_session->selectionstart;
-	Autos *fade_autos = patch->vtrack->automation->fade_autos;
-	int update_undo = !fade_autos->auto_exists_for_editing(position);
+	double position = mwindow->edl->local_session->get_selectionstart(1);
+	Autos *fade_autos = patch->vtrack->automation->autos[AUTOMATION_FADE];
+	int need_undo = !fade_autos->auto_exists_for_editing(position);
 
-	if(update_undo)
-		mwindow->undo->update_undo_before(_("fade"), LOAD_AUTOMATION);
 
 	current = (FloatAuto*)fade_autos->get_auto_for_editing(position);
 
 	float result = get_value() - current->value;
 	current->value = get_value();
 
-	if(update_undo)
-		mwindow->undo->update_undo_after();
+	mwindow->undo->update_undo(_("fade"), LOAD_AUTOMATION, need_undo ? 0 : this);
 
 	return result;
 }
@@ -215,7 +212,7 @@ int VFadePatch::handle_event()
 	mwindow->restart_brender();
 	mwindow->sync_parameters(CHANGE_PARAMS);
 	mwindow->gui->lock_window("VFadePatch::handle_event");
-	if(mwindow->edl->session->auto_conf->fade)
+	if(mwindow->edl->session->auto_conf->autos[AUTOMATION_FADE])
 	{
 		mwindow->gui->canvas->draw_overlays();
 		mwindow->gui->canvas->flash();
@@ -225,12 +222,12 @@ int VFadePatch::handle_event()
 
 FloatAuto* VFadePatch::get_keyframe(MWindow *mwindow, VPatchGUI *patch)
 {
-	double unit_position = mwindow->edl->local_session->selectionstart;
+	double unit_position = mwindow->edl->local_session->get_selectionstart(1);
 	unit_position = mwindow->edl->align_to_frame(unit_position, 0);
 	unit_position = patch->vtrack->to_units(unit_position, 0);
 	Auto *current = 0;
 
-	return (FloatAuto*)patch->vtrack->automation->fade_autos->get_prev_auto(
+	return (FloatAuto*)patch->vtrack->automation->autos[AUTOMATION_FADE]->get_prev_auto(
 		(int64_t)unit_position, 
 		PLAY_FORWARD,
 		current);
@@ -242,9 +239,11 @@ FloatAuto* VFadePatch::get_keyframe(MWindow *mwindow, VPatchGUI *patch)
 VModePatch::VModePatch(MWindow *mwindow, VPatchGUI *patch, int x, int y)
  : BC_PopupMenu(x, 
  	y,
-	patch->patchbay->mode_icons[0]->get_w() + 40,
+	patch->patchbay->mode_icons[0]->get_w() + 20,
 	"",
-	1)
+	1,
+	mwindow->theme->get_image_set("mode_popup", 0),
+	10)
 {
 	this->mwindow = mwindow;
 	this->patch = patch;
@@ -256,26 +255,31 @@ VModePatch::VModePatch(MWindow *mwindow, VPatchGUI *patch, int x, int y)
 int VModePatch::handle_event()
 {
 // Set menu items
+//	for(int i = 0; i < total_items(); i++)
+//	{
+//		VModePatchItem *item = (VModePatchItem*)get_item(i);
+//		if(item->mode == mode) 
+//			item->set_checked(1);
+//		else
+//			item->set_checked(0);
+//	}
 	update(mode);
 
 // Set keyframe
 	IntAuto *current;
-	double position = mwindow->edl->local_session->selectionstart;
-	Autos *mode_autos = patch->vtrack->automation->mode_autos;
-	int update_undo = !mode_autos->auto_exists_for_editing(position);
+	double position = mwindow->edl->local_session->get_selectionstart(1);
+	Autos *mode_autos = patch->vtrack->automation->autos[AUTOMATION_MODE];
+	int need_undo = !mode_autos->auto_exists_for_editing(position);
 
-	if(update_undo)
-		mwindow->undo->update_undo_before(_("mode"), LOAD_AUTOMATION);
 
 	current = (IntAuto*)mode_autos->get_auto_for_editing(position);
 	current->value = mode;
 
-	if(update_undo)
-		mwindow->undo->update_undo_after();
+	mwindow->undo->update_undo(_("mode"), LOAD_AUTOMATION, need_undo ? 0 : this);
 
 	mwindow->sync_parameters(CHANGE_PARAMS);
 
-	if(mwindow->edl->session->auto_conf->mode)
+	if(mwindow->edl->session->auto_conf->autos[AUTOMATION_MODE])
 	{
 		mwindow->gui->canvas->draw_overlays();
 		mwindow->gui->canvas->flash();
@@ -287,11 +291,11 @@ int VModePatch::handle_event()
 IntAuto* VModePatch::get_keyframe(MWindow *mwindow, VPatchGUI *patch)
 {
 	Auto *current = 0;
-	double unit_position = mwindow->edl->local_session->selectionstart;
+	double unit_position = mwindow->edl->local_session->get_selectionstart(1);
 	unit_position = mwindow->edl->align_to_frame(unit_position, 0);
 	unit_position = patch->vtrack->to_units(unit_position, 0);
 
-	return (IntAuto*)patch->vtrack->automation->mode_autos->get_prev_auto(
+	return (IntAuto*)patch->vtrack->automation->autos[AUTOMATION_MODE]->get_prev_auto(
 		(int64_t)unit_position, 
 		PLAY_FORWARD,
 		current);
@@ -312,7 +316,6 @@ int VModePatch::create_objects()
 void VModePatch::update(int mode)
 {
 	set_icon(patch->patchbay->mode_to_icon(mode));
-
 	for(int i = 0; i < total_items(); i++)
 	{
 		VModePatchItem *item = (VModePatchItem*)get_item(i);
@@ -372,6 +375,7 @@ VModePatchItem::VModePatchItem(VModePatch *popup, char *text, int mode)
 int VModePatchItem::handle_event()
 {
 	popup->mode = mode;
+//	popup->set_icon(popup->patch->patchbay->mode_to_icon(mode));
 	popup->handle_event();
 	return 1;
 }

@@ -2,17 +2,11 @@
 #include "automation.h"
 #include "autos.h"
 #include "atrack.inc"
-#include "bezierautos.h"
+#include "bcsignals.h"
 #include "colors.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
-#include "floatautos.h"
-#include "intauto.h"
-#include "intautos.h"
-#include "maskautos.h"
-#include "panauto.h"
-#include "panautos.h"
 #include "intautos.h"
 #include "track.h"
 #include "transportque.inc"
@@ -22,36 +16,21 @@ Automation::Automation(EDL *edl, Track *track)
 {
 	this->edl = edl;
 	this->track = track;
-	camera_autos = 0;
-	projector_autos = 0;
-	pan_autos = 0;
-	mute_autos = 0;
-	fade_autos = 0;
-	mode_autos = 0;
-	mask_autos = 0;
-	czoom_autos = 0;
-	pzoom_autos = 0;
+	bzero(autos, sizeof(Autos*) * AUTOMATION_TOTAL);
 }
 
 Automation::~Automation()
 {
-	if(mute_autos) delete mute_autos;
-
-	if(mode_autos) delete mode_autos;
-	if(fade_autos) delete fade_autos;
-	if(pan_autos) delete pan_autos;
-	if(camera_autos) delete camera_autos;
-	if(projector_autos) delete projector_autos;
-	if(mask_autos) delete mask_autos;
-	if(czoom_autos) delete czoom_autos;
-	if(pzoom_autos) delete pzoom_autos;
+	for(int i = 0; i < AUTOMATION_TOTAL; i++)
+	{
+		delete autos[i];
+	}
 }
 
 int Automation::create_objects()
 {
-	mute_autos = new IntAutos(edl, track);
-	mute_autos->create_objects();
-	((IntAuto*)mute_autos->default_auto)->value = 0;
+	autos[AUTOMATION_MUTE] = new IntAutos(edl, track, 0);
+	autos[AUTOMATION_MUTE]->create_objects();
 	return 0;
 }
 
@@ -64,301 +43,99 @@ printf("Automation::operator= 1\n");
 
 void Automation::equivalent_output(Automation *automation, int64_t *result)
 {
-	mute_autos->equivalent_output(automation->mute_autos, 0, result);
-	if(camera_autos) camera_autos->equivalent_output(automation->camera_autos, 0, result);
-	if(projector_autos) projector_autos->equivalent_output(automation->projector_autos, 0, result);
-	if(fade_autos) fade_autos->equivalent_output(automation->fade_autos, 0, result);
-	if(pan_autos) pan_autos->equivalent_output(automation->pan_autos, 0, result);
-	if(mode_autos) mode_autos->equivalent_output(automation->mode_autos, 0, result);
-	if(mask_autos) mask_autos->equivalent_output(automation->mask_autos, 0, result);
-	if(czoom_autos) czoom_autos->equivalent_output(automation->czoom_autos, 0, result);
-	if(pzoom_autos) pzoom_autos->equivalent_output(automation->pzoom_autos, 0, result);
+	for(int i = 0; i < AUTOMATION_TOTAL; i++)
+	{
+		if(autos[i] && automation->autos[i])
+			autos[i]->equivalent_output(automation->autos[i], 0, result);
+	}
 }
 
 void Automation::copy_from(Automation *automation)
 {
-	mute_autos->copy_from(automation->mute_autos);
-	if(camera_autos) camera_autos->copy_from(automation->camera_autos);
-	if(projector_autos) projector_autos->copy_from(automation->projector_autos);
-	if(fade_autos) fade_autos->copy_from(automation->fade_autos);
-	if(pan_autos) pan_autos->copy_from(automation->pan_autos);
-	if(mode_autos) mode_autos->copy_from(automation->mode_autos);
-	if(mask_autos) mask_autos->copy_from(automation->mask_autos);
-	if(czoom_autos) czoom_autos->copy_from(automation->czoom_autos);
-	if(pzoom_autos) pzoom_autos->copy_from(automation->pzoom_autos);
+	for(int i = 0; i < AUTOMATION_TOTAL; i++)
+	{
+		if(autos[i] && automation->autos[i])
+			autos[i]->copy_from(automation->autos[i]);
+	}
 }
+
+// These must match the enumerations
+static char *xml_titles[] = 
+{
+	"MUTEAUTOS",
+	"CAMERA_X",
+	"CAMERA_Y",
+	"CAMERA_Z",
+	"PROJECTOR_X",
+	"PROJECTOR_Y",
+	"PROJECTOR_Z",
+	"FADEAUTOS",
+	"PANAUTOS",
+	"MODEAUTOS",
+	"MASKAUTOS",
+	"NUDGEAUTOS"
+};
 
 int Automation::load(FileXML *file)
 {
-	if(file->tag.title_is("MUTEAUTOS") && mute_autos)
+	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 	{
-		mute_autos->load(file);
-	}
-	else
-	if(file->tag.title_is("FADEAUTOS") && fade_autos)
-	{
-		fade_autos->load(file);
-	}
-	else
-	if(file->tag.title_is("PANAUTOS") && pan_autos)
-	{
-		pan_autos->load(file);
-	}
-	else
-	if(file->tag.title_is("CAMERAAUTOS") && camera_autos)
-	{
-		camera_autos->load(file);
-	}
-	else
-	if(file->tag.title_is("PROJECTORAUTOS") && projector_autos)
-	{
-		projector_autos->load(file);
-	}
-	else
-	if(file->tag.title_is("MODEAUTOS") && mode_autos)
-	{
-		mode_autos->load(file);
-	}
-	else
-	if(file->tag.title_is("MASKAUTOS") && mask_autos)
-	{
-		mask_autos->load(file);
-	}
-	else
-	if(file->tag.title_is("CZOOMAUTOS") && czoom_autos)
-	{
-		czoom_autos->load(file);
-	}
-	else
-	if(file->tag.title_is("PZOOMAUTOS") && pzoom_autos)
-	{
-		pzoom_autos->load(file);
+		if(file->tag.title_is(xml_titles[i]) && autos[i])
+		{
+			autos[i]->load(file);
+			return 1;
+		}
 	}
 	return 0;
 }
 
-void Automation::paste(int64_t start, 
+int Automation::paste(int64_t start, 
 	int64_t length, 
 	double scale,
 	FileXML *file, 
 	int default_only,
 	AutoConf *autoconf)
 {
-//printf("Automation::paste 1\n");
 	if(!autoconf) autoconf = edl->session->auto_conf;
-	if(file->tag.title_is("MUTEAUTOS") && mute_autos && autoconf->mute)
+
+	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 	{
-		mute_autos->paste(start, length, scale, file, default_only);
+		if(file->tag.title_is(xml_titles[i]) && autos[i] && autoconf->autos[i])
+		{
+			autos[i]->paste(start, length, scale, file, default_only);
+			return 1;
+		}
 	}
-	else
-	if(file->tag.title_is("FADEAUTOS") && fade_autos && autoconf->fade)
-	{
-		fade_autos->paste(start, length, scale, file, default_only);
-	}
-	else
-	if(file->tag.title_is("PANAUTOS") && pan_autos && autoconf->pan)
-	{
-		pan_autos->paste(start, length, scale, file, default_only);
-	}
-	else
-	if(file->tag.title_is("CAMERAAUTOS") && camera_autos && autoconf->camera)
-	{
-		camera_autos->paste(start, length, scale, file, default_only);
-	}
-	else
-	if(file->tag.title_is("PROJECTORAUTOS") && projector_autos && autoconf->projector)
-	{
-		projector_autos->paste(start, length, scale, file, default_only);
-	}
-	else
-	if(file->tag.title_is("MODEAUTOS") && mode_autos && autoconf->mode)
-	{
-		mode_autos->paste(start, length, scale, file, default_only);
-	}
-	else
-	if(file->tag.title_is("MASKAUTOS") && mask_autos && autoconf->mask)
-	{
-		mask_autos->paste(start, length, scale, file, default_only);
-	}
-	else
-	if(file->tag.title_is("CZOOMAUTOS") && czoom_autos && autoconf->czoom)
-	{
-		czoom_autos->paste(start, length, scale, file, default_only);
-	}
-	else
-	if(file->tag.title_is("PZOOMAUTOS") && pzoom_autos && autoconf->pzoom)
-	{
-		pzoom_autos->paste(start, length, scale, file, default_only);
-	}
+	return 0;
 }
 
 int Automation::copy(int64_t start, 
 	int64_t end, 
 	FileXML *file, 
 	int default_only,
-	int autos_only,
-	AutoConf *autoconf)
+	int autos_only)
 {
-
-	AutoConf *temp_autoconf = 0;
-
-	if(!autoconf)
+// Copy regardless of what's visible.
+	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 	{
-		temp_autoconf = new AutoConf;
-		temp_autoconf->set_all();
-		autoconf = temp_autoconf;
+		if(autos[i])
+		{
+			file->tag.set_title(xml_titles[i]);
+			file->append_tag();
+			file->append_newline();
+			autos[i]->copy(start, 
+							end, 
+							file, 
+							default_only,
+							autos_only);
+			char string[BCTEXTLEN];
+			sprintf(string, "/%s", xml_titles[i]);
+			file->tag.set_title(string);
+			file->append_tag();
+			file->append_newline();
+		}
 	}
 
-//printf("Automation::copy 1\n");
-// Always save these to save default
-	if(mute_autos && autoconf->mute /* && mute_autos->total() */)
-	{
-		file->tag.set_title("MUTEAUTOS");
-		file->append_tag();
-		file->append_newline();
-		mute_autos->copy(start, 
-						end, 
-						file, 
-						default_only,
-						autos_only);
-		file->tag.set_title("/MUTEAUTOS");
-		file->append_tag();
-		file->append_newline();
-	}
-
-//printf("Automation::copy 1\n");
-	if(fade_autos && autoconf->fade  /* && fade_autos->total() */)
-	{
-		file->tag.set_title("FADEAUTOS");
-		file->append_tag();
-		file->append_newline();
-		fade_autos->copy(start, 
-						end, 
-						file, 
-						default_only,
-						autos_only);
-		file->tag.set_title("/FADEAUTOS");
-		file->append_tag();
-		file->append_newline();
-	}
-
-//printf("Automation::copy 1\n");
-	if(camera_autos && autoconf->camera )
-	{
-		file->tag.set_title("CAMERAAUTOS");
-		file->append_tag();
-		file->append_newline();
-		camera_autos->copy(start, 
-						end, 
-						file, 
-						default_only,
-						autos_only);
-		file->tag.set_title("/CAMERAAUTOS");
-		file->append_tag();
-		file->append_newline();
-	}
-
-//printf("Automation::copy 1\n");
-	if(projector_autos && autoconf->projector )
-	{
-		file->tag.set_title("PROJECTORAUTOS");
-		file->append_tag();
-		file->append_newline();
-		projector_autos->copy(start, 
-						end, 
-						file, 
-						default_only,
-						autos_only);
-		file->tag.set_title("/PROJECTORAUTOS");
-		file->append_tag();
-		file->append_newline();
-	}
-
-//printf("Automation::copy 1\n");
-	if(pan_autos && autoconf->pan )
-	{
-		file->tag.set_title("PANAUTOS");
-		file->append_tag();
-		file->append_newline();
-		pan_autos->copy(start, 
-				end, 
-				file, 
-				default_only,
-				autos_only);
-		file->append_newline();
-		file->tag.set_title("/PANAUTOS");
-		file->append_tag();
-		file->append_newline();
-	}
-
-//printf("Automation::copy 1\n");
-	if(mode_autos && autoconf->mode)
-	{
-		file->tag.set_title("MODEAUTOS");
-		file->append_tag();
-		file->append_newline();
-		mode_autos->copy(start, 
-				end, 
-				file, 
-				default_only,
-				autos_only);
-		file->tag.set_title("/MODEAUTOS");
-		file->append_tag();
-		file->append_newline();
-	}
-
-//printf("Automation::copy 1\n");
-	if(mask_autos && autoconf->mask)
-	{
-		file->tag.set_title("MASKAUTOS");
-		file->append_tag();
-		file->append_newline();
-		mask_autos->copy(start, 
-				end, 
-				file, 
-				default_only,
-				autos_only);
-		file->tag.set_title("/MASKAUTOS");
-		file->append_tag();
-		file->append_newline();
-	}
-
-//printf("Automation::copy 1\n");
-	if(czoom_autos && autoconf->czoom)
-	{
-		file->tag.set_title("CZOOMAUTOS");
-		file->append_tag();
-		file->append_newline();
-		czoom_autos->copy(start, 
-				end, 
-				file, 
-				default_only,
-				autos_only);
-		file->tag.set_title("/CZOOMAUTOS");
-		file->append_tag();
-		file->append_newline();
-	}
-
-//printf("Automation::copy 1\n");
-	if(pzoom_autos && autoconf->pzoom)
-	{
-		file->tag.set_title("PZOOMAUTOS");
-		file->append_tag();
-		file->append_newline();
-		pzoom_autos->copy(start, 
-				end, 
-				file, 
-				default_only,
-				autos_only);
-		file->tag.set_title("/PZOOMAUTOS");
-		file->append_tag();
-		file->append_newline();
-	}
-
-	if (temp_autoconf) 
-		delete temp_autoconf;
-
-//printf("Automation::copy 100\n");
 	return 0;
 }
 
@@ -377,32 +154,13 @@ void Automation::clear(int64_t start,
 		autoconf = temp_autoconf;
 	}
 
-	if(autoconf->mute)
-		mute_autos->clear(start, end, shift_autos);
-
-	if(autoconf->fade)
-		fade_autos->clear(start, end, shift_autos);
-
-	if(camera_autos && autoconf->camera)
-		camera_autos->clear(start, end, shift_autos);
-
-	if(projector_autos && autoconf->projector)
-		projector_autos->clear(start, end, shift_autos);
-
-	if(pan_autos && autoconf->pan)
-		pan_autos->clear(start, end, shift_autos);
-
-	if(mode_autos && autoconf->mode)
-		mode_autos->clear(start, end, shift_autos);
-
-	if(mask_autos && autoconf->mask)
-		mask_autos->clear(start, end, shift_autos);
-
-	if(czoom_autos && autoconf->czoom)
-		czoom_autos->clear(start, end, shift_autos);
-
-	if(pzoom_autos && autoconf->pzoom)
-		pzoom_autos->clear(start, end, shift_autos);
+	for(int i = 0; i < AUTOMATION_TOTAL; i++)
+	{
+		if(autos[i] && autoconf->autos[i])
+		{
+			autos[i]->clear(start, end, shift_autos);
+		}
+	}
 
 	if(temp_autoconf) delete temp_autoconf;
 }
@@ -410,23 +168,11 @@ void Automation::clear(int64_t start,
 void Automation::paste_silence(int64_t start, int64_t end)
 {
 // Unit conversion done in calling routine
-	mute_autos->paste_silence(start, end);
-	fade_autos->paste_silence(start, end);
-
-	if(camera_autos)
-		camera_autos->paste_silence(start, end);
-	if(projector_autos)
-		projector_autos->paste_silence(start, end);
-	if(pan_autos) 
-		pan_autos->paste_silence(start, end);
-	if(mode_autos) 
-		mode_autos->paste_silence(start, end);
-	if(mask_autos) 
-		mask_autos->paste_silence(start, end);
-	if(czoom_autos) 
-		czoom_autos->paste_silence(start, end);
-	if(pzoom_autos) 
-		pzoom_autos->paste_silence(start, end);
+	for(int i = 0; i < AUTOMATION_TOTAL; i++)
+	{
+		if(autos[i])
+			autos[i]->paste_silence(start, end);
+	}
 }
 
 // We don't replace it in pasting but
@@ -437,57 +183,27 @@ void Automation::insert_track(Automation *automation,
 	int64_t length_units,
 	int replace_default)
 {
-	mute_autos->insert_track(automation->mute_autos, 
-		start_unit, 
-		length_units, 
-		replace_default);
-	if(camera_autos)
-		camera_autos->insert_track(automation->camera_autos, 
-		start_unit, 
-		length_units, 
-		replace_default);
-	if(projector_autos) projector_autos->insert_track(automation->projector_autos, 
-		start_unit, 
-		length_units, 
-		replace_default);
-	if(fade_autos) fade_autos->insert_track(automation->fade_autos, 
-		start_unit, 
-		length_units, 
-		replace_default);
-	if(pan_autos) pan_autos->insert_track(automation->pan_autos, 
-		start_unit, 
-		length_units, 
-		replace_default);
-	if(mode_autos) mode_autos->insert_track(automation->mode_autos, 
-		start_unit, 
-		length_units, 
-		replace_default);
-	if(mask_autos) mask_autos->insert_track(automation->mask_autos, 
-		start_unit, 
-		length_units, 
-		replace_default);
-	if(czoom_autos) czoom_autos->insert_track(automation->czoom_autos, 
-		start_unit, 
-		length_units, 
-		replace_default);
-	if(pzoom_autos) pzoom_autos->insert_track(automation->pzoom_autos, 
-		start_unit, 
-		length_units, 
-		replace_default);
+	for(int i = 0; i < AUTOMATION_TOTAL; i++)
+	{
+		if(autos[i] && automation->autos[i])
+		{
+			autos[i]->insert_track(automation->autos[i], 
+				start_unit, 
+				length_units, 
+				replace_default);
+		}
+	}
+
+
 }
 
 void Automation::resample(double old_rate, double new_rate)
 {
 // Run resample for all the autos structures and all the keyframes
-	mute_autos->resample(old_rate, new_rate);
-	if(camera_autos) camera_autos->resample(old_rate, new_rate);
-	if(projector_autos) projector_autos->resample(old_rate, new_rate);
-	if(fade_autos) fade_autos->resample(old_rate, new_rate);
-	if(pan_autos) pan_autos->resample(old_rate, new_rate);
-	if(mode_autos) mode_autos->resample(old_rate, new_rate);
-	if(mask_autos) mask_autos->resample(old_rate, new_rate);
-	if(czoom_autos) czoom_autos->resample(old_rate, new_rate);
-	if(pzoom_autos) pzoom_autos->resample(old_rate, new_rate);
+	for(int i = 0; i < AUTOMATION_TOTAL; i++)
+	{
+		if(autos[i]) autos[i]->resample(old_rate, new_rate);
+	}
 }
 
 
@@ -499,96 +215,72 @@ int Automation::direct_copy_possible(int64_t start, int direction)
 
 
 
+
+void Automation::get_projector(float *x, 
+	float *y, 
+	float *z, 
+	int64_t position,
+	int direction)
+{
+}
+
+void Automation::get_camera(float *x, 
+	float *y, 
+	float *z, 
+	int64_t position,
+	int direction)
+{
+}
+
+
+
+
 int64_t Automation::get_length()
 {
 	int64_t length = 0;
 	int64_t total_length = 0;
 
-	if(length > total_length) total_length = length;
+	for(int i = 0; i < AUTOMATION_TOTAL; i++)
+	{
+		if(autos[i])
+		{
+			length = autos[i]->get_length();
+			if(length > total_length) total_length = length;
+		}
+	}
 
-	if(mute_autos) length = mute_autos->get_length();
-	if(length > total_length) total_length = length;
-
-	if(camera_autos) length = camera_autos->get_length();
-	if(length > total_length) total_length = length;
-
-	if(projector_autos) length = projector_autos->get_length();
-	if(length > total_length) total_length = length;
-
-	if(fade_autos) length = fade_autos->get_length();
-	if(length > total_length) total_length = length;
-
-	if(pan_autos) length = pan_autos->get_length();
-	if(length > total_length) total_length = length;
-
-	if(mode_autos) length = mode_autos->get_length();
-	if(length > total_length) total_length = length;
-
-	if(mask_autos) length = mask_autos->get_length();
-	if(length > total_length) total_length = length;
-
-	if(czoom_autos) length = czoom_autos->get_length();
-	if(length > total_length) total_length = length;
-
-	if(pzoom_autos) length = pzoom_autos->get_length();
-	if(length > total_length) total_length = length;
 
 	return total_length;
 }
 
+void Automation::get_extents(float *min, 
+	float *max,
+	int *coords_undefined,
+	int64_t unit_start,
+	int64_t unit_end)
+{
+	for(int i = 0; i < AUTOMATION_TOTAL; i++)
+	{
+		if(autos[i] && edl->session->auto_conf->autos[i])
+		{
+			autos[i]->get_extents(min, max, coords_undefined, unit_start, unit_end);
+		}
+	}
+}
 
 
 void Automation::dump()
 {
 	printf("   Automation: %p\n", this);
-	printf("    mute_autos %p\n", mute_autos);
-	mute_autos->dump();
 
-	if(fade_autos)
+
+	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 	{
-		printf("    fade_autos %p\n", fade_autos);
-		fade_autos->dump();
+		if(autos[i])
+		{
+			printf("    %s %p\n", xml_titles[i], autos[i]);
+			autos[i]->dump();
+		}
 	}
 
-	if(pan_autos)
-	{
-		printf("    pan_autos %p\n", pan_autos);
-		pan_autos->dump();
-	}
-
-	if(camera_autos)
-	{
-		printf("    camera_autos %p\n", camera_autos);
-		camera_autos->dump();
-	}
-
-	if(projector_autos)
-	{
-		printf("    projector_autos %p\n", projector_autos);
-		projector_autos->dump();
-	}
-
-	if(mode_autos)
-	{
-		printf("    mode_autos %p\n", mode_autos);
-		mode_autos->dump();
-	}
-
-	if(mask_autos)
-	{
-		printf("    mask_autos %p\n", mask_autos);
-		mask_autos->dump();
-	}
-
-	if(czoom_autos)
-	{
-		printf("    czoom_autos %p\n", czoom_autos);
-		czoom_autos->dump();
-	}
-
-	if(pzoom_autos)
-	{
-		printf("    pzoom_autos %p\n", pzoom_autos);
-		pzoom_autos->dump();
-	}
 }

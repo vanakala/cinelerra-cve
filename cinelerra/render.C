@@ -41,6 +41,7 @@
 #include "renderfarm.h"
 #include "render.h"
 #include "statusbar.h"
+#include "theme.h"
 #include "timebar.h"
 #include "tracks.h"
 #include "transportque.h"
@@ -176,7 +177,7 @@ void MainPackageRenderer::set_progress(int64_t value)
 				eta,
 				TIME_HMS2);
 
-			printf("%d%% ETA: %s      \r", (int)(100 * 
+			printf("\r%d%% ETA: %s      ", (int)(100 * 
 				(float)render->total_rendered / 
 					render->progress_max),
 				string);
@@ -534,8 +535,9 @@ void Render::stop_progress()
 		delete progress;
 
 		sprintf(string2, _("Rendering took %s"), string);
-		mwindow->gui->lock_window();
-		mwindow->gui->show_message(string2, BLACK);
+		mwindow->gui->lock_window("");
+		mwindow->gui->show_message(string2);
+		mwindow->gui->stop_hourglass();
 		mwindow->gui->unlock_window();
 	}
 	progress = 0;
@@ -669,8 +671,9 @@ int Render::render(int test_overwrite,
 // Start dispatching external jobs
 		if(mwindow)
 		{
-			mwindow->gui->lock_window();
-			mwindow->gui->show_message(_("Starting render farm"), BLACK);
+			mwindow->gui->lock_window("Render::render 1");
+			mwindow->gui->show_message(_("Starting render farm"));
+			mwindow->gui->start_hourglass();
 			mwindow->gui->unlock_window();
 		}
 		else
@@ -696,8 +699,10 @@ int Render::render(int test_overwrite,
 			{
 				if(mwindow)
 				{
-					mwindow->gui->lock_window();
-					mwindow->gui->show_message(_("Failed to start render farm"), BLACK);
+					mwindow->gui->lock_window("Render::render 2");
+					mwindow->gui->show_message(_("Failed to start render farm"),
+						mwindow->theme->message_error);
+					mwindow->gui->stop_hourglass();
 					mwindow->gui->unlock_window();
 				}
 				else
@@ -814,7 +819,7 @@ int Render::render(int test_overwrite,
 
 
 
-	} // !result
+	}
 
 
 // Paste all packages into timeline if desired
@@ -824,10 +829,9 @@ int Render::render(int test_overwrite,
 		mwindow &&
 		mode != Render::BATCH)
 	{
-		mwindow->gui->lock_window();
+		mwindow->gui->lock_window("Render::render 3");
 
 
-		mwindow->undo->update_undo_before(_("render"), LOAD_ALL);
 
 
 		ArrayList<Asset*> *assets = packages->get_asset_list();
@@ -845,7 +849,7 @@ int Render::render(int test_overwrite,
 
 
 		mwindow->save_backup();
-		mwindow->undo->update_undo_after();
+		mwindow->undo->update_undo(_("render"), LOAD_ALL);
 		mwindow->update_plugin_guis();
 		mwindow->gui->update(1, 
 			2,
@@ -855,6 +859,15 @@ int Render::render(int test_overwrite,
 			1,
 			0);
 		mwindow->sync_parameters(CHANGE_ALL);
+		mwindow->gui->unlock_window();
+	}
+
+
+// Disable hourglass
+	if(mwindow)
+	{
+		mwindow->gui->lock_window("Render::render 3");
+		mwindow->gui->stop_hourglass();
 		mwindow->gui->unlock_window();
 	}
 

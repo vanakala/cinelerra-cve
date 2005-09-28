@@ -1,6 +1,5 @@
 #include "automation.h"
-#include "bezierauto.h"
-#include "bezierautos.h"
+#include "clip.h"
 #include "condition.h"
 #include "cpanel.h"
 #include "cplayback.h"
@@ -61,6 +60,9 @@ void CWindowTool::start_tool(int operation)
 		current_tool = operation;
 		switch(operation)
 		{
+			case CWINDOW_EYEDROP:
+				new_gui = new CWindowEyedropGUI(mwindow, this);
+				break;
 			case CWINDOW_CROP:
 				new_gui = new CWindowCropGUI(mwindow, this);
 				break;
@@ -89,6 +91,12 @@ void CWindowTool::start_tool(int operation)
 			output_lock->lock("CWindowTool::start_tool");
 			this->tool_gui = new_gui;
 			tool_gui->create_objects();
+			
+			if(mwindow->edl->session->tool_window &&
+				mwindow->session->show_cwindow) tool_gui->show_window();
+			tool_gui->flush();
+			
+			
 // Signal thread to run next tool GUI
 			input_lock->unlock();
 		}
@@ -116,6 +124,27 @@ void CWindowTool::stop_tool()
 		tool_gui->unlock_window();
 	}
 }
+
+void CWindowTool::show_tool()
+{
+	if(tool_gui && mwindow->edl->session->tool_window)
+	{
+		tool_gui->lock_window("CWindowTool::show_tool");
+		tool_gui->show_window();
+		tool_gui->unlock_window();
+	}
+}
+
+void CWindowTool::hide_tool()
+{
+	if(tool_gui && mwindow->edl->session->tool_window)
+	{
+		tool_gui->lock_window("CWindowTool::show_tool");
+		tool_gui->hide_window();
+		tool_gui->unlock_window();
+	}
+}
+
 
 void CWindowTool::run()
 {
@@ -202,10 +231,16 @@ int CWindowToolGUI::close_event()
 	hide_window();
 	flush();
 	mwindow->edl->session->tool_window = 0;
+	unlock_window();
+
+
+
 	thread->gui->lock_window("CWindowToolGUI::close_event");
 	thread->gui->composite_panel->set_operation(mwindow->edl->session->cwindow_operation);
 	thread->gui->flush();
 	thread->gui->unlock_window();
+
+	lock_window("CWindowToolGUI::close_event");
 	return 1;
 }
 
@@ -308,43 +343,77 @@ void CWindowCropGUI::create_objects()
 	BC_TumbleTextBox *textbox;
 	BC_Title *title;
 
+	int column1 = 0;
+	int pad = MAX(BC_TextBox::calculate_h(this, MEDIUMFONT, 1, 1), 
+		BC_Title::calculate_h(this, "X")) + 5;
 	add_subwindow(title = new BC_Title(x, y, _("X1:")));
-	x += title->get_w();
-	x1 = new CWindowCoord(thread->tool_gui, x, y, mwindow->edl->session->crop_x1);
-	x1->create_objects();
-	x += x1->get_w() + 10;
-
-	add_subwindow(title = new BC_Title(x, y, _("Y1:")));
-	x += title->get_w();
-	y1 = new CWindowCoord(thread->tool_gui, x, y, mwindow->edl->session->crop_y1);
-	y1->create_objects();
-	y += y1->get_h() + 5;
-	x = 10;
-
-	add_subwindow(title = new BC_Title(x, y, _("X2:")));
-	x += title->get_w();
-	x2 = new CWindowCoord(thread->tool_gui, x, y, mwindow->edl->session->crop_x2);
-	x2->create_objects();
-	x += x2->get_w() + 10;
-
-	add_subwindow(title = new BC_Title(x, y, _("Y2:")));
-	x += title->get_w();
-	y2 = new CWindowCoord(thread->tool_gui, x, y, mwindow->edl->session->crop_y2);
-	y2->create_objects();
-	y += y2->get_h() + 5;
-	x = 10;
+	column1 = MAX(column1, title->get_w());
+	y += pad;
+	add_subwindow(title = new BC_Title(x, y, _("W:")));
+	column1 = MAX(column1, title->get_w());
+	y += pad;
 	add_subwindow(new CWindowCropOK(mwindow, thread->tool_gui, x, y));
 
-	if(mwindow->edl->session->tool_window) show_window();
-	flush();
+	x += column1 + 5;
+	y = 10;
+	x1 = new CWindowCoord(thread->tool_gui, x, y, mwindow->edl->session->crop_x1);
+	x1->create_objects();
+	y += pad;
+	width = new CWindowCoord(thread->tool_gui, 
+		x, 
+		y, 
+		mwindow->edl->session->crop_x2 - 
+			mwindow->edl->session->crop_x1);
+	width->create_objects();
+
+
+	x += x1->get_w() + 10;
+	y = 10;
+	int column2 = 0;
+	add_subwindow(title = new BC_Title(x, y, _("Y1:")));
+	column2 = MAX(column2, title->get_w());
+	y += pad;
+	add_subwindow(title = new BC_Title(x, y, _("H:")));
+	column2 = MAX(column2, title->get_w());
+	y += pad;
+
+	y = 10;
+	x += column2 + 5;
+	y1 = new CWindowCoord(thread->tool_gui, x, y, mwindow->edl->session->crop_y1);
+	y1->create_objects();
+	y += pad;
+	height = new CWindowCoord(thread->tool_gui, 
+		x, 
+		y, 
+		mwindow->edl->session->crop_y2 - 
+			mwindow->edl->session->crop_y1);
+	height->create_objects();
 }
 
 void CWindowCropGUI::handle_event()
 {
-	mwindow->edl->session->crop_x1 = atol(x1->get_text());
-	mwindow->edl->session->crop_y1 = atol(y1->get_text());
-	mwindow->edl->session->crop_x2 = atol(x2->get_text());
-	mwindow->edl->session->crop_y2 = atol(y2->get_text());
+	int new_x1, new_y1;
+	new_x1 = atol(x1->get_text());
+	new_y1 = atol(y1->get_text());
+	if(new_x1 != mwindow->edl->session->crop_x1)
+	{
+		mwindow->edl->session->crop_x2 = new_x1 +
+			mwindow->edl->session->crop_x2 - 
+			mwindow->edl->session->crop_x1;
+		mwindow->edl->session->crop_x1 = new_x1;
+	}
+	if(new_y1 != mwindow->edl->session->crop_y1)
+	{
+		mwindow->edl->session->crop_y2 = new_y1 +
+			mwindow->edl->session->crop_y2 -
+			mwindow->edl->session->crop_y1;
+		mwindow->edl->session->crop_y1 = atol(y1->get_text());
+	}
+ 	mwindow->edl->session->crop_x2 = atol(width->get_text()) + 
+ 		mwindow->edl->session->crop_x1;
+ 	mwindow->edl->session->crop_y2 = atol(height->get_text()) + 
+ 		mwindow->edl->session->crop_y1;
+	update();
 	mwindow->cwindow->gui->lock_window("CWindowCropGUI::handle_event");
 	mwindow->cwindow->gui->canvas->draw_refresh();
 	mwindow->cwindow->gui->unlock_window();
@@ -354,12 +423,67 @@ void CWindowCropGUI::update()
 {
 	x1->update((int64_t)mwindow->edl->session->crop_x1);
 	y1->update((int64_t)mwindow->edl->session->crop_y1);
-	x2->update((int64_t)mwindow->edl->session->crop_x2);
-	y2->update((int64_t)mwindow->edl->session->crop_y2);
+	width->update((int64_t)mwindow->edl->session->crop_x2 - 
+		mwindow->edl->session->crop_x1);
+	height->update((int64_t)mwindow->edl->session->crop_y2 - 
+		mwindow->edl->session->crop_y1);
 }
 
 
 
+
+
+
+CWindowEyedropGUI::CWindowEyedropGUI(MWindow *mwindow, CWindowTool *thread)
+ : CWindowToolGUI(mwindow, 
+ 	thread,
+	PROGRAM_NAME ": Color",
+	150,
+	150)
+{
+}
+
+CWindowEyedropGUI::~CWindowEyedropGUI()
+{
+}
+
+void CWindowEyedropGUI::create_objects()
+{
+	int x = 10;
+	int y = 10;
+	int x2 = 70;
+	BC_Title *title1, *title2, *title3;
+	add_subwindow(title1 = new BC_Title(x, y, "Red:"));
+	y += title1->get_h() + 5;
+	add_subwindow(title2 = new BC_Title(x, y, "Green:"));
+	y += title2->get_h() + 5;
+	add_subwindow(title3 = new BC_Title(x, y, "Blue:"));
+
+
+	add_subwindow(red = new BC_Title(x2, title1->get_y(), "0"));
+	add_subwindow(green = new BC_Title(x2, title2->get_y(), "0"));
+	add_subwindow(blue = new BC_Title(x2, title3->get_y(), "0"));
+
+	y = blue->get_y() + blue->get_h() + 5;
+	add_subwindow(sample = new BC_SubWindow(x, y, 50, 50));
+	update();	
+}
+
+void CWindowEyedropGUI::update()
+{
+	red->update(mwindow->edl->local_session->red);
+	green->update(mwindow->edl->local_session->green);
+	blue->update(mwindow->edl->local_session->blue);
+
+	int red = (int)(CLIP(mwindow->edl->local_session->red, 0, 1) * 0xff);
+	int green = (int)(CLIP(mwindow->edl->local_session->green, 0, 1) * 0xff);
+	int blue = (int)(CLIP(mwindow->edl->local_session->blue, 0, 1) * 0xff);
+	sample->set_color((red << 16) | (green << 8) | blue);
+	sample->draw_box(0, 0, sample->get_w(), sample->get_h());
+	sample->set_color(BLACK);
+	sample->draw_rectangle(0, 0, sample->get_w(), sample->get_h());
+	sample->flash();
+}
 
 
 
@@ -385,18 +509,21 @@ void CWindowCameraGUI::create_objects()
 {
 	int x = 10, y = 10, x1;
 	Track *track = mwindow->cwindow->calculate_affected_track();
-	BezierAuto *keyframe = 0;
-	FloatAuto *zoom_keyframe = 0;
+	FloatAuto *x_auto = 0;
+	FloatAuto *y_auto = 0;
+	FloatAuto *z_auto = 0;
 	BC_Title *title;
 	BC_Button *button;
 
 	if(track)
 	{
-		keyframe = (BezierAuto*)mwindow->cwindow->calculate_affected_auto(
-			track->automation->camera_autos, 
-			0);
-		zoom_keyframe = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
-			track->automation->czoom_autos, 
+		mwindow->cwindow->calculate_affected_autos(&x_auto,
+			&y_auto,
+			&z_auto,
+			track,
+			1,
+			0,
+			0,
 			0);
 	}
 
@@ -405,7 +532,7 @@ void CWindowCameraGUI::create_objects()
 	this->x = new CWindowCoord(this, 
 		x, 
 		y, 
-		keyframe ? keyframe->center_x : (float)0);
+		x_auto ? x_auto->value : (float)0);
 	this->x->create_objects();
 	y += 30;
 	x = 10;
@@ -414,7 +541,7 @@ void CWindowCameraGUI::create_objects()
 	this->y = new CWindowCoord(this, 
 		x, 
 		y, 
-		keyframe ? keyframe->center_y : (float)0);
+		y_auto ? y_auto->value : (float)0);
 	this->y->create_objects();
 	y += 30;
 	x = 10;
@@ -423,7 +550,7 @@ void CWindowCameraGUI::create_objects()
 	this->z = new CWindowCoord(this, 
 		x, 
 		y, 
-		zoom_keyframe ? zoom_keyframe->value : (float)1);
+		z_auto ? z_auto->value : (float)1);
 	this->z->create_objects();
 
 	y += 30;
@@ -442,10 +569,6 @@ void CWindowCameraGUI::create_objects()
 	x1 += button->get_w();
 	add_subwindow(button = new CWindowCameraBottom(mwindow, this, x1, y));
 
-
-
-	if(mwindow->edl->session->tool_window) show_window();
-	flush();
 }
 
 void CWindowCameraGUI::update_preview()
@@ -465,88 +588,103 @@ void CWindowCameraGUI::update_preview()
 
 void CWindowCameraGUI::handle_event()
 {
-	BezierAuto *keyframe = 0;
-	FloatAuto *zoom_keyframe = 0;
+	FloatAuto *x_auto = 0;
+	FloatAuto *y_auto = 0;
+	FloatAuto *z_auto = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
 	if(track)
 	{
+		if(event_caller == x)
+		{
+			x_auto = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
+				track->automation->autos[AUTOMATION_CAMERA_X],
+				1);
+			if(x_auto)
+			{
+				x_auto->value = atof(x->get_text());
+				update_preview();
+			}
+		}
+		else
+		if(event_caller == y)
+		{
+			y_auto = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
+				track->automation->autos[AUTOMATION_CAMERA_Y],
+				1);
+			if(y_auto)
+			{
+				y_auto->value = atof(y->get_text());
+				update_preview();
+			}
+		}
+		else
 		if(event_caller == z)
-			zoom_keyframe = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
-				track->automation->czoom_autos,
+		{
+			z_auto = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
+				track->automation->autos[AUTOMATION_CAMERA_Z],
 				1);
-		else
-			keyframe = (BezierAuto*)mwindow->cwindow->calculate_affected_auto(
-				track->automation->camera_autos,
-				1);
-	}
+			if(z_auto)
+			{
+				float zoom = atof(z->get_text());
+				if(zoom > 10) zoom = 10; 
+				else
+				if(zoom < 0) zoom = 0;
+	// Doesn't allow user to enter from scratch
+	// 		if(zoom != atof(z->get_text())) 
+	// 			z->update(zoom);
 
-	if(keyframe)
-	{
-		keyframe->center_x = atof(x->get_text());
-		keyframe->center_y = atof(y->get_text());
-		update_preview();
-	}
-	else
-	if(zoom_keyframe)
-	{
-		float zoom = atof(z->get_text());
-		if(zoom > 10) zoom = 10; 
-		else
-		if(zoom < 0) zoom = 0;
-// Doesn't allow user to enter from scratch
-// 		if(zoom != atof(z->get_text())) 
-// 			z->update(zoom);
-
-		zoom_keyframe->value = zoom;
-		mwindow->gui->lock_window("CWindowCameraGUI::handle_event");
-		mwindow->gui->canvas->draw_overlays();
-		mwindow->gui->canvas->flash();
-		mwindow->gui->unlock_window();
-		update_preview();
+				z_auto->value = zoom;
+				mwindow->gui->lock_window("CWindowCameraGUI::handle_event");
+				mwindow->gui->canvas->draw_overlays();
+				mwindow->gui->canvas->flash();
+				mwindow->gui->unlock_window();
+				update_preview();
+			}
+		}
 	}
 }
 
 void CWindowCameraGUI::update()
 {
-	BezierAuto *keyframe = 0;
-	FloatAuto *zoom_keyframe = 0;
+	FloatAuto *x_auto = 0;
+	FloatAuto *y_auto = 0;
+	FloatAuto *z_auto = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
 
 	if(track)
 	{
-		keyframe = (BezierAuto*)mwindow->cwindow->calculate_affected_auto(
-			track->automation->camera_autos, 
-			0);
-		zoom_keyframe = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
-			track->automation->czoom_autos, 
+		mwindow->cwindow->calculate_affected_autos(&x_auto,
+			&y_auto,
+			&z_auto,
+			track,
+			1,
+			0,
+			0,
 			0);
 	}
 
-	if(keyframe)
-	{
-		x->update(keyframe->center_x);
-		y->update(keyframe->center_y);
-	}
-
-	if(zoom_keyframe)
-	{
-		z->update(zoom_keyframe->value);
-	}
+	if(x_auto)
+		x->update(x_auto->value);
+	if(y_auto)
+		y->update(y_auto->value);
+	if(z_auto)
+		z->update(z_auto->value);
 }
 
-BezierAuto* CWindowCameraGUI::get_keyframe()
-{
-	BezierAuto *keyframe = 0;
-	Track *track = mwindow->cwindow->calculate_affected_track();
-	if(track)
-		keyframe = (BezierAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->camera_autos);
-	return keyframe;
-}
+// BezierAuto* CWindowCameraGUI::get_keyframe()
+// {
+// 	BezierAuto *keyframe = 0;
+// 	Track *track = mwindow->cwindow->calculate_affected_track();
+// 	if(track)
+// 		keyframe = (BezierAuto*)mwindow->cwindow->calculate_affected_auto(
+// 			track->automation->autos[AUTOMATION_CAMERA]);
+// 	return keyframe;
+// }
 
 
 
 CWindowCameraLeft::CWindowCameraLeft(MWindow *mwindow, CWindowCameraGUI *gui, int x, int y)
- : BC_Button(x, y, mwindow->theme->left_justify)
+ : BC_Button(x, y, mwindow->theme->get_image_set("left_justify"))
 {
 	this->gui = gui;
 	this->mwindow = mwindow;
@@ -554,26 +692,33 @@ CWindowCameraLeft::CWindowCameraLeft(MWindow *mwindow, CWindowCameraGUI *gui, in
 }
 int CWindowCameraLeft::handle_event()
 {
-	BezierAuto *keyframe = 0;
-	FloatAuto *zoom_keyframe = 0;
+	FloatAuto *x_auto = 0;
+	FloatAuto *z_auto = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
 	if(track)
 	{
-		keyframe = (BezierAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->camera_autos, 1);
-		zoom_keyframe = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->czoom_autos, 0);
+		mwindow->cwindow->calculate_affected_autos(&x_auto,
+			0,
+			&z_auto,
+			track,
+			1,
+			1,
+			0,
+			0);
 	}
 
-	if(keyframe)
+	if(x_auto && z_auto)
 	{
 		int w = 0, h = 0;
-		track->get_source_dimensions(mwindow->edl->local_session->selectionstart,
+		track->get_source_dimensions(
+			mwindow->edl->local_session->get_selectionstart(1),
 			w,
 			h);
 
 		if(w && h)
 		{
-			keyframe->center_x = 
-				(double)track->track_w / zoom_keyframe->value / 2 - 
+			x_auto->value = 
+				(double)track->track_w / z_auto->value / 2 - 
 				(double)w / 2;
 			gui->update();
 			gui->update_preview();
@@ -585,7 +730,7 @@ int CWindowCameraLeft::handle_event()
 
 
 CWindowCameraCenter::CWindowCameraCenter(MWindow *mwindow, CWindowCameraGUI *gui, int x, int y)
- : BC_Button(x, y, mwindow->theme->center_justify)
+ : BC_Button(x, y, mwindow->theme->get_image_set("center_justify"))
 {
 	this->gui = gui;
 	this->mwindow = mwindow;
@@ -593,14 +738,16 @@ CWindowCameraCenter::CWindowCameraCenter(MWindow *mwindow, CWindowCameraGUI *gui
 }
 int CWindowCameraCenter::handle_event()
 {
-	BezierAuto *keyframe = 0;
+	FloatAuto *x_auto = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
 	if(track)
-		keyframe = (BezierAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->camera_autos);
+		x_auto = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
+			track->automation->autos[AUTOMATION_CAMERA_X],
+			1);
 
-	if(keyframe)
+	if(x_auto)
 	{
-		keyframe->center_x = 0;
+		x_auto->value = 0;
 		gui->update();
 		gui->update_preview();
 	}
@@ -610,7 +757,7 @@ int CWindowCameraCenter::handle_event()
 
 
 CWindowCameraRight::CWindowCameraRight(MWindow *mwindow, CWindowCameraGUI *gui, int x, int y)
- : BC_Button(x, y, mwindow->theme->right_justify)
+ : BC_Button(x, y, mwindow->theme->get_image_set("right_justify"))
 {
 	this->gui = gui;
 	this->mwindow = mwindow;
@@ -618,25 +765,32 @@ CWindowCameraRight::CWindowCameraRight(MWindow *mwindow, CWindowCameraGUI *gui, 
 }
 int CWindowCameraRight::handle_event()
 {
-	BezierAuto *keyframe = 0;
-	FloatAuto *zoom_keyframe = 0;
+	FloatAuto *x_auto = 0;
+	FloatAuto *z_auto = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
 	if(track)
 	{
-		keyframe = (BezierAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->camera_autos, 1);
-		zoom_keyframe = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->czoom_autos, 0);
+		mwindow->cwindow->calculate_affected_autos(&x_auto,
+			0,
+			&z_auto,
+			track,
+			1,
+			1,
+			0,
+			0);
 	}
 
-	if(keyframe)
+	if(x_auto && z_auto)
 	{
 		int w = 0, h = 0;
-		track->get_source_dimensions(mwindow->edl->local_session->selectionstart,
+		track->get_source_dimensions(
+			mwindow->edl->local_session->get_selectionstart(1),
 			w,
 			h);
 
 		if(w && h)
 		{
-			keyframe->center_x = -((double)track->track_w / zoom_keyframe->value / 2 - 
+			x_auto->value = -((double)track->track_w / z_auto->value / 2 - 
 				(double)w / 2);
 			gui->update();
 			gui->update_preview();
@@ -648,7 +802,7 @@ int CWindowCameraRight::handle_event()
 
 
 CWindowCameraTop::CWindowCameraTop(MWindow *mwindow, CWindowCameraGUI *gui, int x, int y)
- : BC_Button(x, y, mwindow->theme->top_justify)
+ : BC_Button(x, y, mwindow->theme->get_image_set("top_justify"))
 {
 	this->gui = gui;
 	this->mwindow = mwindow;
@@ -656,25 +810,32 @@ CWindowCameraTop::CWindowCameraTop(MWindow *mwindow, CWindowCameraGUI *gui, int 
 }
 int CWindowCameraTop::handle_event()
 {
-	BezierAuto *keyframe = 0;
-	FloatAuto *zoom_keyframe = 0;
+	FloatAuto *y_auto = 0;
+	FloatAuto *z_auto = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
 	if(track)
 	{
-		keyframe = (BezierAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->camera_autos, 1);
-		zoom_keyframe = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->czoom_autos, 0);
+		mwindow->cwindow->calculate_affected_autos(0,
+			&y_auto,
+			&z_auto,
+			track,
+			1,
+			0,
+			1,
+			0);
 	}
 
-	if(keyframe)
+	if(y_auto && z_auto)
 	{
 		int w = 0, h = 0;
-		track->get_source_dimensions(mwindow->edl->local_session->selectionstart,
+		track->get_source_dimensions(
+			mwindow->edl->local_session->get_selectionstart(1),
 			w,
 			h);
 
 		if(w && h)
 		{
-			keyframe->center_y = (double)track->track_h / zoom_keyframe->value / 2 - 
+			y_auto->value = (double)track->track_h / z_auto->value / 2 - 
 				(double)h / 2;
 			gui->update();
 			gui->update_preview();
@@ -686,7 +847,7 @@ int CWindowCameraTop::handle_event()
 
 
 CWindowCameraMiddle::CWindowCameraMiddle(MWindow *mwindow, CWindowCameraGUI *gui, int x, int y)
- : BC_Button(x, y, mwindow->theme->middle_justify)
+ : BC_Button(x, y, mwindow->theme->get_image_set("middle_justify"))
 {
 	this->gui = gui;
 	this->mwindow = mwindow;
@@ -694,14 +855,15 @@ CWindowCameraMiddle::CWindowCameraMiddle(MWindow *mwindow, CWindowCameraGUI *gui
 }
 int CWindowCameraMiddle::handle_event()
 {
-	BezierAuto *keyframe = 0;
+	FloatAuto *y_auto = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
 	if(track)
-		keyframe = (BezierAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->camera_autos);
+		y_auto = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
+			track->automation->autos[AUTOMATION_CAMERA_Y], 1);
 
-	if(keyframe)
+	if(y_auto)
 	{
-		keyframe->center_y = 0;
+		y_auto->value = 0;
 		gui->update();
 		gui->update_preview();
 	}
@@ -711,7 +873,7 @@ int CWindowCameraMiddle::handle_event()
 
 
 CWindowCameraBottom::CWindowCameraBottom(MWindow *mwindow, CWindowCameraGUI *gui, int x, int y)
- : BC_Button(x, y, mwindow->theme->bottom_justify)
+ : BC_Button(x, y, mwindow->theme->get_image_set("bottom_justify"))
 {
 	this->gui = gui;
 	this->mwindow = mwindow;
@@ -719,25 +881,32 @@ CWindowCameraBottom::CWindowCameraBottom(MWindow *mwindow, CWindowCameraGUI *gui
 }
 int CWindowCameraBottom::handle_event()
 {
-	BezierAuto *keyframe = 0;
-	FloatAuto *zoom_keyframe = 0;
+	FloatAuto *y_auto = 0;
+	FloatAuto *z_auto = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
 	if(track)
 	{
-		keyframe = (BezierAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->camera_autos, 1);
-		zoom_keyframe = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->czoom_autos, 0);
+		mwindow->cwindow->calculate_affected_autos(0,
+			&y_auto,
+			&z_auto,
+			track,
+			1,
+			0,
+			1,
+			0);
 	}
 
-	if(keyframe)
+	if(y_auto && z_auto)
 	{
 		int w = 0, h = 0;
-		track->get_source_dimensions(mwindow->edl->local_session->selectionstart,
+		track->get_source_dimensions(
+			mwindow->edl->local_session->get_selectionstart(1),
 			w,
 			h);
 
 		if(w && h)
 		{
-			keyframe->center_y = -((double)track->track_h / zoom_keyframe->value / 2 - 
+			y_auto->value = -((double)track->track_h / z_auto->value / 2 - 
 				(double)h / 2);
 			gui->update();
 			gui->update_preview();
@@ -778,18 +947,21 @@ void CWindowProjectorGUI::create_objects()
 {
 	int x = 10, y = 10, x1;
 	Track *track = mwindow->cwindow->calculate_affected_track();
-	BezierAuto *keyframe = 0;
-	FloatAuto *zoom_keyframe = 0;
+	FloatAuto *x_auto = 0;
+	FloatAuto *y_auto = 0;
+	FloatAuto *z_auto = 0;
 	BC_Title *title;
 	BC_Button *button;
 
 	if(track)
 	{
-		keyframe = (BezierAuto*)mwindow->cwindow->calculate_affected_auto(
-			track->automation->projector_autos, 
-			0);
-		zoom_keyframe = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
-			track->automation->pzoom_autos, 
+		mwindow->cwindow->calculate_affected_autos(&x_auto,
+			&y_auto,
+			&z_auto,
+			track,
+			0,
+			0,
+			0,
 			0);
 	}
 
@@ -798,7 +970,7 @@ void CWindowProjectorGUI::create_objects()
 	this->x = new CWindowCoord(this, 
 		x, 
 		y, 
-		keyframe ? keyframe->center_x : (float)0);
+		x_auto ? x_auto->value : (float)0);
 	this->x->create_objects();
 	y += 30;
 	x = 10;
@@ -807,7 +979,7 @@ void CWindowProjectorGUI::create_objects()
 	this->y = new CWindowCoord(this, 
 		x, 
 		y, 
-		keyframe ? keyframe->center_y : (float)0);
+		y_auto ? y_auto->value : (float)0);
 	this->y->create_objects();
 	y += 30;
 	x = 10;
@@ -816,7 +988,7 @@ void CWindowProjectorGUI::create_objects()
 	this->z = new CWindowCoord(this, 
 		x, 
 		y, 
-		zoom_keyframe ? zoom_keyframe->value : (float)1);
+		z_auto ? z_auto->value : (float)1);
 	this->z->create_objects();
 
 	y += 30;
@@ -835,9 +1007,6 @@ void CWindowProjectorGUI::create_objects()
 	x1 += button->get_w();
 	add_subwindow(button = new CWindowProjectorBottom(mwindow, this, x1, y));
 
-
-	if(mwindow->edl->session->tool_window) show_window();
-	flush();
 }
 
 void CWindowProjectorGUI::update_preview()
@@ -855,82 +1024,99 @@ void CWindowProjectorGUI::update_preview()
 
 void CWindowProjectorGUI::handle_event()
 {
-	BezierAuto *keyframe = 0;
-	FloatAuto *zoom_keyframe = 0;
+	FloatAuto *x_auto = 0;
+	FloatAuto *y_auto = 0;
+	FloatAuto *z_auto = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
 
 	if(track)
 	{
-		if(event_caller == z)
-			zoom_keyframe = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
-				track->automation->pzoom_autos,
+		if(event_caller == x)
+		{
+			x_auto = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
+				track->automation->autos[AUTOMATION_PROJECTOR_X],
 				1);
+			if(x_auto)
+			{
+				x_auto->value = atof(x->get_text());
+				update_preview();
+			}
+		}
 		else
-			keyframe = (BezierAuto*)mwindow->cwindow->calculate_affected_auto(
-				track->automation->projector_autos,
+		if(event_caller == y)
+		{
+			y_auto = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
+				track->automation->autos[AUTOMATION_PROJECTOR_Y],
 				1);
-	}
+			if(y_auto)
+			{
+				y_auto->value = atof(y->get_text());
+				update_preview();
+			}
+		}
+		else
+		if(event_caller == z)
+		{
+			z_auto = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
+				track->automation->autos[AUTOMATION_PROJECTOR_Z],
+				1);
+			if(z_auto)
+			{
+				float zoom = atof(z->get_text());
+				if(zoom > 10000) zoom = 10000; 
+				else 
+				if(zoom < 0) zoom = 0;
+// 			if (zoom != atof(z->get_text())) 
+// 				z->update(zoom);
+				z_auto->value = zoom;
 
-	if(keyframe)
-	{
-		keyframe->center_x = atof(x->get_text());
-		keyframe->center_y = atof(y->get_text());
-		update_preview();
-	}
-	else
-	if(zoom_keyframe)
-	{
-		float zoom = atof(z->get_text());
-		if(zoom > 10000) zoom = 10000; 
-		else 
-		if(zoom < 0) zoom = 0;
-// 		if (zoom != atof(z->get_text())) 
-// 			z->update(zoom);
-		zoom_keyframe->value = zoom;
-		mwindow->gui->lock_window("CWindowProjectorGUI::handle_event");
-		mwindow->gui->canvas->draw_overlays();
-		mwindow->gui->canvas->flash();
-		mwindow->gui->unlock_window();
-		update_preview();
+				mwindow->gui->lock_window("CWindowProjectorGUI::handle_event");
+				mwindow->gui->canvas->draw_overlays();
+				mwindow->gui->canvas->flash();
+				mwindow->gui->unlock_window();
+
+				update_preview();
+			}
+		}
 	}
 }
 
 void CWindowProjectorGUI::update()
 {
-	BezierAuto *keyframe = 0;
-	FloatAuto *zoom_keyframe = 0;
+	FloatAuto *x_auto = 0;
+	FloatAuto *y_auto = 0;
+	FloatAuto *z_auto = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
 
 	if(track)
 	{
-		keyframe = (BezierAuto*)mwindow->cwindow->calculate_affected_auto(
-			track->automation->projector_autos, 
-			0);
-		zoom_keyframe = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
-			track->automation->pzoom_autos, 
+		mwindow->cwindow->calculate_affected_autos(&x_auto,
+			&y_auto,
+			&z_auto,
+			track,
+			0,
+			0,
+			0,
 			0);
 	}
 
-	if(keyframe)
-	{
-		x->update(keyframe->center_x);
-		y->update(keyframe->center_y);
-	}
-
-	if(zoom_keyframe)
-	{
-		z->update(zoom_keyframe->value);
-	}
+	if(x_auto)
+		x->update(x_auto->value);
+	if(y_auto)
+		y->update(y_auto->value);
+	if(z_auto)
+		z->update(z_auto->value);
 }
 
-BezierAuto* CWindowProjectorGUI::get_keyframe()
-{
-	BezierAuto *keyframe = 0;
-	Track *track = mwindow->cwindow->calculate_affected_track();
-	if(track)
-		keyframe = (BezierAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->projector_autos);
-	return keyframe;
-}
+// BezierAuto* CWindowProjectorGUI::get_keyframe()
+// {
+// 	BezierAuto *keyframe = 0;
+// 	Track *track = mwindow->cwindow->calculate_affected_track();
+// 	if(track)
+// 		keyframe = (BezierAuto*)mwindow->cwindow->calculate_affected_auto(
+// 			track->automation->autos[AUTOMATION_PROJECTOR]);
+// 	return keyframe;
+// }
 
 
 
@@ -970,7 +1156,7 @@ BezierAuto* CWindowProjectorGUI::get_keyframe()
 
 
 CWindowProjectorLeft::CWindowProjectorLeft(MWindow *mwindow, CWindowProjectorGUI *gui, int x, int y)
- : BC_Button(x, y, mwindow->theme->left_justify)
+ : BC_Button(x, y, mwindow->theme->get_image_set("left_justify"))
 {
 	this->gui = gui;
 	this->mwindow = mwindow;
@@ -978,17 +1164,23 @@ CWindowProjectorLeft::CWindowProjectorLeft(MWindow *mwindow, CWindowProjectorGUI
 }
 int CWindowProjectorLeft::handle_event()
 {
-	BezierAuto *keyframe = 0;
-	FloatAuto *zoom_keyframe = 0;
+	FloatAuto *x_auto = 0;
+	FloatAuto *z_auto = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
 	if(track)
 	{
-		keyframe = (BezierAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->projector_autos, 1);
-		zoom_keyframe = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->pzoom_autos, 0);
+		mwindow->cwindow->calculate_affected_autos(&x_auto,
+			0,
+			&z_auto,
+			track,
+			0,
+			1,
+			0,
+			0);
 	}
-	if(keyframe)
+	if(x_auto && z_auto)
 	{
-		keyframe->center_x = (double)track->track_w * zoom_keyframe->value / 2 - 
+		x_auto->value = (double)track->track_w * z_auto->value / 2 - 
 			(double)mwindow->edl->session->output_w / 2;
 		gui->update();
 		gui->update_preview();
@@ -999,7 +1191,7 @@ int CWindowProjectorLeft::handle_event()
 
 
 CWindowProjectorCenter::CWindowProjectorCenter(MWindow *mwindow, CWindowProjectorGUI *gui, int x, int y)
- : BC_Button(x, y, mwindow->theme->center_justify)
+ : BC_Button(x, y, mwindow->theme->get_image_set("center_justify"))
 {
 	this->gui = gui;
 	this->mwindow = mwindow;
@@ -1007,14 +1199,16 @@ CWindowProjectorCenter::CWindowProjectorCenter(MWindow *mwindow, CWindowProjecto
 }
 int CWindowProjectorCenter::handle_event()
 {
-	BezierAuto *keyframe = 0;
+	FloatAuto *x_auto = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
 	if(track)
-		keyframe = (BezierAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->projector_autos);
+		x_auto = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
+			track->automation->autos[AUTOMATION_PROJECTOR_X],
+			1);
 
-	if(keyframe)
+	if(x_auto)
 	{
-		keyframe->center_x = 0;
+		x_auto->value = 0;
 		gui->update();
 		gui->update_preview();
 	}
@@ -1024,7 +1218,7 @@ int CWindowProjectorCenter::handle_event()
 
 
 CWindowProjectorRight::CWindowProjectorRight(MWindow *mwindow, CWindowProjectorGUI *gui, int x, int y)
- : BC_Button(x, y, mwindow->theme->right_justify)
+ : BC_Button(x, y, mwindow->theme->get_image_set("right_justify"))
 {
 	this->gui = gui;
 	this->mwindow = mwindow;
@@ -1032,18 +1226,24 @@ CWindowProjectorRight::CWindowProjectorRight(MWindow *mwindow, CWindowProjectorG
 }
 int CWindowProjectorRight::handle_event()
 {
-	BezierAuto *keyframe = 0;
-	FloatAuto *zoom_keyframe = 0;
+	FloatAuto *x_auto = 0;
+	FloatAuto *z_auto = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
 	if(track)
 	{
-		keyframe = (BezierAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->projector_autos, 1);
-		zoom_keyframe = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->pzoom_autos, 0);
+		mwindow->cwindow->calculate_affected_autos(&x_auto,
+			0,
+			&z_auto,
+			track,
+			0,
+			1,
+			0,
+			0);
 	}
 
-	if(keyframe)
+	if(x_auto && z_auto)
 	{
-		keyframe->center_x = -((double)track->track_w * zoom_keyframe->value / 2 - 
+		x_auto->value = -((double)track->track_w * z_auto->value / 2 - 
 			(double)mwindow->edl->session->output_w / 2);
 		gui->update();
 		gui->update_preview();
@@ -1054,7 +1254,7 @@ int CWindowProjectorRight::handle_event()
 
 
 CWindowProjectorTop::CWindowProjectorTop(MWindow *mwindow, CWindowProjectorGUI *gui, int x, int y)
- : BC_Button(x, y, mwindow->theme->top_justify)
+ : BC_Button(x, y, mwindow->theme->get_image_set("top_justify"))
 {
 	this->gui = gui;
 	this->mwindow = mwindow;
@@ -1062,18 +1262,24 @@ CWindowProjectorTop::CWindowProjectorTop(MWindow *mwindow, CWindowProjectorGUI *
 }
 int CWindowProjectorTop::handle_event()
 {
-	BezierAuto *keyframe = 0;
-	FloatAuto *zoom_keyframe = 0;
+	FloatAuto *y_auto = 0;
+	FloatAuto *z_auto = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
 	if(track)
 	{
-		keyframe = (BezierAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->projector_autos, 1);
-		zoom_keyframe = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->pzoom_autos, 0);
+		mwindow->cwindow->calculate_affected_autos(0,
+			&y_auto,
+			&z_auto,
+			track,
+			0,
+			0,
+			1,
+			0);
 	}
 
-	if(keyframe)
+	if(y_auto && z_auto)
 	{
-		keyframe->center_y = (double)track->track_h * zoom_keyframe->value / 2 - 
+		y_auto->value = (double)track->track_h * z_auto->value / 2 - 
 			(double)mwindow->edl->session->output_h / 2;
 		gui->update();
 		gui->update_preview();
@@ -1084,7 +1290,7 @@ int CWindowProjectorTop::handle_event()
 
 
 CWindowProjectorMiddle::CWindowProjectorMiddle(MWindow *mwindow, CWindowProjectorGUI *gui, int x, int y)
- : BC_Button(x, y, mwindow->theme->middle_justify)
+ : BC_Button(x, y, mwindow->theme->get_image_set("middle_justify"))
 {
 	this->gui = gui;
 	this->mwindow = mwindow;
@@ -1092,14 +1298,15 @@ CWindowProjectorMiddle::CWindowProjectorMiddle(MWindow *mwindow, CWindowProjecto
 }
 int CWindowProjectorMiddle::handle_event()
 {
-	BezierAuto *keyframe = 0;
+	FloatAuto *y_auto = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
 	if(track)
-		keyframe = (BezierAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->projector_autos);
+		y_auto = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(
+			track->automation->autos[AUTOMATION_PROJECTOR_Y], 1);
 
-	if(keyframe)
+	if(y_auto)
 	{
-		keyframe->center_y = 0;
+		y_auto->value = 0;
 		gui->update();
 		gui->update_preview();
 	}
@@ -1109,7 +1316,7 @@ int CWindowProjectorMiddle::handle_event()
 
 
 CWindowProjectorBottom::CWindowProjectorBottom(MWindow *mwindow, CWindowProjectorGUI *gui, int x, int y)
- : BC_Button(x, y, mwindow->theme->bottom_justify)
+ : BC_Button(x, y, mwindow->theme->get_image_set("bottom_justify"))
 {
 	this->gui = gui;
 	this->mwindow = mwindow;
@@ -1117,18 +1324,24 @@ CWindowProjectorBottom::CWindowProjectorBottom(MWindow *mwindow, CWindowProjecto
 }
 int CWindowProjectorBottom::handle_event()
 {
-	BezierAuto *keyframe = 0;
-	FloatAuto *zoom_keyframe = 0;
+	FloatAuto *y_auto = 0;
+	FloatAuto *z_auto = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
 	if(track)
 	{
-		keyframe = (BezierAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->projector_autos, 1);
-		zoom_keyframe = (FloatAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->pzoom_autos, 0);
+		mwindow->cwindow->calculate_affected_autos(0,
+			&y_auto,
+			&z_auto,
+			track,
+			0,
+			0,
+			1,
+			0);
 	}
 
-	if(keyframe)
+	if(y_auto && z_auto)
 	{
-		keyframe->center_y = -((double)track->track_h * zoom_keyframe->value / 2 - 
+		y_auto->value = -((double)track->track_h * z_auto->value / 2 - 
 			(double)mwindow->edl->session->output_h / 2);
 		gui->update();
 		gui->update_preview();
@@ -1206,7 +1419,7 @@ int CWindowMaskMode::handle_event()
 
 	if(track)
 	{
-		((MaskAuto*)track->automation->mask_autos->default_auto)->mode = 
+		((MaskAuto*)track->automation->autos[AUTOMATION_MASK]->default_auto)->mode = 
 			text_to_mode(get_text());
 	}
 
@@ -1242,7 +1455,7 @@ int CWindowMaskDelete::handle_event()
 
 	if(track)
 	{
-		MaskAutos *mask_autos = track->automation->mask_autos;
+		MaskAutos *mask_autos = (MaskAutos*)track->automation->autos[AUTOMATION_MASK];
 		for(MaskAuto *current = (MaskAuto*)mask_autos->default_auto;
 			current; )
 		{
@@ -1522,13 +1735,11 @@ CWindowMaskGUI::~CWindowMaskGUI()
 
 void CWindowMaskGUI::create_objects()
 {
-//printf("CWindowMaskGUI::create_objects 1\n");
 	int x = 10, y = 10;
 	MaskAuto *keyframe = 0;
 	Track *track = mwindow->cwindow->calculate_affected_track();
 	if(track)
-		keyframe = (MaskAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->mask_autos, 0);
-//printf("CWindowMaskGUI::create_objects 1\n");
+		keyframe = (MaskAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->autos[AUTOMATION_MASK], 0);
 
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y, _("Mode:")));
@@ -1537,7 +1748,6 @@ void CWindowMaskGUI::create_objects()
 		x + title->get_w(), 
 		y,
 		""));
-//printf("CWindowMaskGUI::create_objects 1\n");
 	mode->create_objects();
 	y += 40;
 	add_subwindow(new BC_Title(x, y, _("Value:")));
@@ -1545,16 +1755,11 @@ void CWindowMaskGUI::create_objects()
 	y += 30;
 	add_subwindow(delete_point = new CWindowMaskDelete(mwindow, this, x, y));
 	y += 30;
-//	add_subwindow(next_point = new CWindowMaskCycleNext(mwindow, this, x, y));
-//	y += 30;
-//	add_subwindow(prev_point = new CWindowMaskCyclePrev(mwindow, this, x, y));
-//	y += 40;
 	add_subwindow(new BC_Title(x, y, _("Mask number:")));
 	number = new CWindowMaskNumber(mwindow, 
 		this, 
 		x + 110, 
 		y);
-//printf("CWindowMaskGUI::create_objects 1\n");
 	number->create_objects();
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Feather:")));
@@ -1579,12 +1784,8 @@ void CWindowMaskGUI::create_objects()
 		y, 
 		(float)0.0);
 	this->y->create_objects();
-//printf("CWindowMaskGUI::create_objects 1\n");
 
 	update();
-	if(mwindow->edl->session->tool_window) show_window();
-	flush();
-//printf("CWindowMaskGUI::create_objects 2\n");
 }
 
 void CWindowMaskGUI::get_keyframe(Track* &track, 
@@ -1596,7 +1797,7 @@ void CWindowMaskGUI::get_keyframe(Track* &track,
 	keyframe = 0;
 	track = mwindow->cwindow->calculate_affected_track();
 	if(track)
-		keyframe = (MaskAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->mask_autos, create_it);
+		keyframe = (MaskAuto*)mwindow->cwindow->calculate_affected_auto(track->automation->autos[AUTOMATION_MASK], create_it);
 	else
 		keyframe = 0;
 
@@ -1650,7 +1851,7 @@ void CWindowMaskGUI::update()
 	if(track)
 	{
 		mode->set_text(
-			CWindowMaskMode::mode_to_text(((MaskAuto*)track->automation->mask_autos->default_auto)->mode));
+			CWindowMaskMode::mode_to_text(((MaskAuto*)track->automation->autos[AUTOMATION_MASK]->default_auto)->mode));
 	}
 //printf("CWindowMaskGUI::update 2\n");
 }

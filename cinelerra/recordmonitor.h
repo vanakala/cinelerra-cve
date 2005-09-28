@@ -66,7 +66,8 @@ class RecordMonitorGUI : public BC_Window
 public:
 	RecordMonitorGUI(MWindow *mwindow,
 		Record *record, 
-		RecordMonitor *thread);
+		RecordMonitor *thread,
+		int min_w);
 	~RecordMonitorGUI();
 
 	int create_objects();

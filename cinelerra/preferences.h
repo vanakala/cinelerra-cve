@@ -88,6 +88,9 @@ public:
 // Consolidate output files
 	int renderfarm_consolidate;
 
+// Tip of the day
+	int use_tipwindow;
+
 // ====================================== Plugin Set ==============================
 	char global_plugin_dir[BCTEXTLEN];
 	char local_plugin_dir[BCTEXTLEN];

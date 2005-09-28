@@ -123,6 +123,9 @@ public:
 // Returns -1 if not set.
 	int get_field2_offset();
 	int set_field2_offset(int value);
+// Set keyframe status
+	void set_keyframe(int value);
+	int get_keyframe();
 // Overlay src onto this with blending and translation of input.
 // Source and this must have alpha
 	void overlay(VFrame *src, 
@@ -173,6 +176,7 @@ private:
 	long image_size;
 // For writing discontinuous frames in background rendering
 	long sequence_number;
+	int is_keyframe;
 };
 
 

@@ -1,4 +1,5 @@
 #include "avc1394transport.h"
+#include "bcsignals.h"
 #include "keys.h"
 #include "language.h"
 #include "recordmonitor.h"
@@ -29,14 +30,19 @@ void AVC1394TransportThread::run()
 	while(!done)
 	{
 		Thread::disable_cancel();
-		label->lock_window("AVC1394TransportThread::run 1");
+SET_TRACE
 		text = avc->timecode();
+SET_TRACE
+		label->lock_window("AVC1394TransportThread::run 1");
+SET_TRACE
 // Sometimes text is set to NULL for some reason...
 		if(text == NULL)
 			label->update("Unknown");
 		else
 			label->update(text);
+SET_TRACE
 		label->unlock_window();
+SET_TRACE
 		Thread::enable_cancel();
 		usleep(POLL_INTERVAL);
 	}
@@ -146,7 +152,7 @@ void AVC1394Transport::reposition_window(int x, int y)
 
 
 AVC1394GUISeekStart::AVC1394GUISeekStart(MWindow *mwindow, AVC1394Control *avc, int x, int y)
- : BC_Button(x, y, mwindow->theme->rewind_data)
+ : BC_Button(x, y, mwindow->theme->get_image_set("rewind"))
 {
    this->avc = avc;
    set_tooltip(_("Rewind ( Home )"));
@@ -171,7 +177,7 @@ int  AVC1394GUISeekStart::keypress_event()
 
 
 AVC1394GUIRewind::AVC1394GUIRewind(MWindow *mwindow, AVC1394Control *avc, int x, int y)
- : BC_Button(x, y, mwindow->theme->fastrev_data)
+ : BC_Button(x, y, mwindow->theme->get_image_set("fastrev"))
 {
 	this->avc = avc;
 	set_tooltip(_("Fast Reverse ( + )"));
@@ -195,7 +201,7 @@ int  AVC1394GUIRewind::keypress_event()
 }
 
 AVC1394GUIReverse::AVC1394GUIReverse(MWindow *mwindow, AVC1394Control *avc, int x, int y)
- : BC_Button(x, y, mwindow->theme->reverse_data)
+ : BC_Button(x, y, mwindow->theme->get_image_set("reverse"))
 {
 	this->avc = avc;
 	set_tooltip(_("Reverse Play ( 6 )"));
@@ -227,7 +233,7 @@ int AVC1394GUIReverse::keypress_event()
 }
 
 AVC1394GUIStop::AVC1394GUIStop(MWindow *mwindow, AVC1394Control *avc, int x, int y)
- : BC_Button(x, y, mwindow->theme->stop_data)
+ : BC_Button(x, y, mwindow->theme->get_image_set("stop"))
 {
 	this->avc = avc;
 	set_tooltip(_("Stop ( 0 )"));
@@ -251,7 +257,7 @@ int AVC1394GUIStop::keypress_event()
 }
 
 AVC1394GUIPlay::AVC1394GUIPlay(MWindow *mwindow, AVC1394Control *avc, int x, int y)
- : BC_Button(x, y, mwindow->theme->forward_data)
+ : BC_Button(x, y, mwindow->theme->get_image_set("play"))
 {
 	this->avc = avc;
 	mode = 0;
@@ -285,7 +291,7 @@ int AVC1394GUIPlay::keypress_event()
 
 AVC1394GUIPause::AVC1394GUIPause(MWindow *mwindow, AVC1394Control *avc, int x,
 int y)
- : BC_Button(x, y, mwindow->theme->pause_data)
+ : BC_Button(x, y, mwindow->theme->get_image_set("pause"))
 {
 	this->avc = avc;
 	set_tooltip(_("Pause"));
@@ -308,7 +314,7 @@ int AVC1394GUIPause::keypress_event()
 }
 
 AVC1394GUIFForward::AVC1394GUIFForward(MWindow *mwindow, AVC1394Control *avc, int x, int y)
- : BC_Button(x, y, mwindow->theme->fastfwd_data)
+ : BC_Button(x, y, mwindow->theme->get_image_set("fastfwd"))
 {
    this->avc = avc;
    set_tooltip(_("Fast Forward ( Enter )"));
@@ -336,7 +342,7 @@ AVC1394GUISeekEnd::AVC1394GUISeekEnd(MWindow *mwindow,
 	AVC1394Control *avc, 
 	int x, 
 	int y)
- : BC_Button(x, y, mwindow->theme->end_data)
+ : BC_Button(x, y, mwindow->theme->get_image_set("end"))
 {
    this->avc = avc;
    set_tooltip(_("Jump to end ( End )"));

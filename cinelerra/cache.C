@@ -313,7 +313,7 @@ CICacheItem::CICacheItem(CICache *cache, Asset *asset)
 
 
 
-	if(result = file->open_file(cache->plugindb, this->asset, 1, 0, -1, -1))
+	if(result = file->open_file(cache->preferences, this->asset, 1, 0, -1, -1))
 	{
 		delete file;
 		file = 0;

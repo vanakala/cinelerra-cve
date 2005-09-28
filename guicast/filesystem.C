@@ -1,12 +1,13 @@
+#include <dirent.h>
+#include <errno.h>
 #include <pwd.h>
 #include <stddef.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/types.h>
 #include <sys/stat.h>
+#include <sys/types.h>
 #include <time.h>
-#include <dirent.h>
 #include <unistd.h>
 
 #include "filesystem.h"
@@ -236,6 +237,11 @@ int FileSystem::combine(ArrayList<FileItem*> *dir_list, ArrayList<FileItem*> *fi
 	return 0;
 }
 
+void FileSystem::alphabetize()
+{
+	sort_table(&dir_list);
+}
+
 int FileSystem::is_root_dir(char *path)
 {
 	if(!strcmp(current_dir, "/")) return 1;
@@ -252,6 +258,7 @@ int FileSystem::test_filter(FileItem *file)
 
 // Don't filter directories
 	if(file->is_dir) return 0;
+
 // Empty filename string
 	if(!file->name) return 1;
 
@@ -372,6 +379,7 @@ int FileSystem::update(char *new_dir)
 	char full_path[BCTEXTLEN], name_only[BCTEXTLEN];
 	ArrayList<FileItem*>directories;
 	ArrayList<FileItem*>files;
+	int result = 0;
 
 	delete_directory();
 	if(new_dir != 0) strcpy(current_dir, new_dir);
@@ -426,7 +434,11 @@ int FileSystem::update(char *new_dir)
 			else
 			{
 //printf("FileSystem::update 3 %s\n", full_path);
+				printf("FileSystem::update %s: %s\n",
+					full_path,
+					strerror(errno));
 				include_this = 0;
+				result = 1;
 			}
 
 // add to list
@@ -447,7 +459,8 @@ int FileSystem::update(char *new_dir)
 	directories.remove_all();
 	files.remove_all();
 
-	return 0;           // success
+	return result;
+// success
 }
 
 int FileSystem::set_filter(char *new_filter)
@@ -653,7 +666,7 @@ int FileSystem::extract_dir(char *out, const char *in)
 
 		complete_path(out);
 
-		for(i = strlen(out); i > 0 && out[i] != '/'; i--)
+		for(i = strlen(out); i > 0 && out[i - 1] != '/'; i--)
 		{
 			;
 		}
@@ -702,7 +715,7 @@ long FileSystem::get_date(char *filename)
 {
 	struct stat file_status;
 	bzero(&file_status, sizeof(struct stat));
-	stat (filename, &file_status);
+	stat(filename, &file_status);
 	return file_status.st_mtime;
 }
 

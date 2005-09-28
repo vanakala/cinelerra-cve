@@ -27,11 +27,14 @@ public:
 	int cursor_motion_event();
 	BC_Pixmap* mode_to_icon(int mode);
 	int icon_to_mode(BC_Pixmap *icon);
+// Get the patch that matches the track.
+	PatchGUI* get_patch_of(Track *track);
 
 // Synchronize with Master EDL
 	int update();
 	void update_meters(ArrayList<double> *module_levels);
 	void stop_meters();
+	void synchronize_nudge(int64_t value, Track *skip);
 	void synchronize_faders(float value, int data_type, Track *skip);
 	void change_meter_format(int mode, int min, int max);
 	void reset_meters();

@@ -1,6 +1,5 @@
 #include "audio1394.h"
 #include "audioalsa.h"
-#include "audioconfig.h"
 #include "audiodevice.h"
 #include "audioesound.h"
 #include "audiooss.h"
@@ -126,6 +125,7 @@ int AudioDevice::create_lowlevel(AudioLowLevel* &lowlevel, int driver)
 #ifdef HAVE_FIREWIRE	
 			case AUDIO_1394:
 			case AUDIO_DV1394:
+			case AUDIO_IEC61883:
 				lowlevel = new Audio1394(this);
 				break;
 #endif

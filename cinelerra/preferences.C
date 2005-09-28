@@ -47,7 +47,7 @@ Preferences::Preferences()
 	render_preroll = 0.5;
 	brender_preroll = 0;
 	renderfarm_mountpoint[0] = 0;
-	renderfarm_vfs = 1;
+	renderfarm_vfs = 0;
 	renderfarm_job_count = 20;
 	processors = calculate_processors();
 
@@ -62,6 +62,8 @@ Preferences::Preferences()
 	use_brender = 0;
 	brender_fragment = 1;
 	local_rate = 0.0;
+
+	use_tipwindow = 1;
 }
 
 Preferences::~Preferences()
@@ -117,6 +119,8 @@ void Preferences::copy_from(Preferences *that)
 	use_thumbnails = that->use_thumbnails;
 	strcpy(global_plugin_dir, that->global_plugin_dir);
 	strcpy(theme, that->theme);
+
+	use_tipwindow = that->use_tipwindow;
 
 	cache_size = that->cache_size;
 	force_uniprocessor = that->force_uniprocessor;
@@ -180,17 +184,18 @@ int Preferences::load_defaults(Defaults *defaults)
 {
 	char string[BCTEXTLEN];
 
+	use_tipwindow = defaults->get("USE_TIPWINDOW", use_tipwindow);
 	defaults->get("INDEX_DIRECTORY", index_directory);
 	index_size = defaults->get("INDEX_SIZE", index_size);
 	index_count = defaults->get("INDEX_COUNT", index_count);
 	use_thumbnails = defaults->get("USE_THUMBNAILS", use_thumbnails);
 
 	sprintf(global_plugin_dir, PLUGIN_DIR);
-	defaults->get("GLOBAL_PLUGIN_DIR", global_plugin_dir);
-	if(getenv("GLOBAL_PLUGIN_DIR"))
-	{
-		strcpy(global_plugin_dir, getenv("GLOBAL_PLUGIN_DIR"));
-	}
+//	defaults->get("GLOBAL_PLUGIN_DIR", global_plugin_dir);
+//	if(getenv("GLOBAL_PLUGIN_DIR"))
+//	{
+//		strcpy(global_plugin_dir, getenv("GLOBAL_PLUGIN_DIR"));
+//	}
 
 	strcpy(theme, DEFAULT_THEME);
 	defaults->get("THEME", theme);
@@ -218,7 +223,7 @@ int Preferences::load_defaults(Defaults *defaults)
 	brender_preroll = defaults->get("BRENDER_PREROLL", brender_preroll);
 	renderfarm_job_count = defaults->get("RENDERFARM_JOBS_COUNT", renderfarm_job_count);
 	renderfarm_consolidate = defaults->get("RENDERFARM_CONSOLIDATE", renderfarm_consolidate);
-	renderfarm_vfs = defaults->get("RENDERFARM_VFS", renderfarm_vfs);
+//	renderfarm_vfs = defaults->get("RENDERFARM_VFS", renderfarm_vfs);
 	defaults->get("RENDERFARM_MOUNTPOINT", renderfarm_mountpoint);
 	int renderfarm_total = defaults->get("RENDERFARM_TOTAL", 0);
 
@@ -256,12 +261,16 @@ int Preferences::load_defaults(Defaults *defaults)
 int Preferences::save_defaults(Defaults *defaults)
 {
 	char string[BCTEXTLEN];
+
+
+	defaults->update("USE_TIPWINDOW", use_tipwindow);
+
 	defaults->update("CACHE_SIZE", cache_size);
 	defaults->update("INDEX_DIRECTORY", index_directory);
 	defaults->update("INDEX_SIZE", index_size);
 	defaults->update("INDEX_COUNT", index_count);
 	defaults->update("USE_THUMBNAILS", use_thumbnails);
-	defaults->update("GLOBAL_PLUGIN_DIR", global_plugin_dir);
+//	defaults->update("GLOBAL_PLUGIN_DIR", global_plugin_dir);
 	defaults->update("THEME", theme);
 
 
@@ -281,7 +290,7 @@ int Preferences::save_defaults(Defaults *defaults)
 	defaults->update("RENDERFARM_PORT", renderfarm_port);
 	defaults->update("RENDERFARM_PREROLL", render_preroll);
 	defaults->update("BRENDER_PREROLL", brender_preroll);
-	defaults->update("RENDERFARM_VFS", renderfarm_vfs);
+//	defaults->update("RENDERFARM_VFS", renderfarm_vfs);
 	defaults->update("RENDERFARM_MOUNTPOINT", renderfarm_mountpoint);
 	defaults->update("RENDERFARM_JOBS_COUNT", renderfarm_job_count);
 	defaults->update("RENDERFARM_CONSOLIDATE", renderfarm_consolidate);

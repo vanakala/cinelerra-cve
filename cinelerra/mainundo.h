@@ -24,9 +24,10 @@ public:
    // be populated before calling this function.
    void push_undo_item(UndoStackItem *item);
 
-   // Use the following functions for the default save/restore undo method
-	void update_undo_before(char *description, uint32_t load_flags);
-	void update_undo_after();
+	void update_undo(char *description, 
+		uint32_t load_flags, 
+		void *creator = 0,
+		int changes_made = 1);
 
 // alternatively, call this one after the change
 	void push_state(char *description, uint32_t load_flags);

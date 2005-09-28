@@ -140,7 +140,7 @@ int VWindowGUI::create_objects()
 {
 	in_point = 0;
 	out_point = 0;
-	set_icon(mwindow->theme->vwindow_icon);
+	set_icon(mwindow->theme->get_image("vwindow_icon"));
 
 //printf("VWindowGUI::create_objects 1\n");
 	mwindow->theme->get_vwindow_sizes(this);
@@ -275,9 +275,14 @@ int VWindowGUI::close_event()
 {
 	hide_window();
 	mwindow->session->show_vwindow = 0;
+	unlock_window();
+	
+	
 	mwindow->gui->lock_window("VWindowGUI::close_event");
 	mwindow->gui->mainmenu->show_vwindow->set_checked(0);
 	mwindow->gui->unlock_window();
+
+	lock_window("VWindowGUI::close_event");
 	mwindow->save_defaults();
 	return 1;
 }
@@ -454,8 +459,8 @@ void VWindowEditing::toggle_label()
 	if(vwindow->get_edl())
 	{
 		EDL *edl = vwindow->get_edl();
-		edl->labels->toggle_label(edl->local_session->selectionstart,
-			edl->local_session->selectionend);
+		edl->labels->toggle_label(edl->local_session->get_selectionstart(1),
+			edl->local_session->get_selectionend(1));
 		vwindow->gui->timebar->update();
 	}
 }
@@ -469,26 +474,24 @@ void VWindowEditing::prev_label()
 		vwindow->playback_engine->interrupt_playback(1);
 		vwindow->gui->lock_window("VWindowEditing::prev_label");
 
-//printf("VWindowEditing::prev_label 1 %f\n", edl->local_session->selectionstart);
-		Label *current = edl->labels->prev_label(edl->local_session->selectionstart);
+		Label *current = edl->labels->prev_label(
+			edl->local_session->get_selectionstart(1));
 		
-//printf("VWindowEditing::prev_label 2 %f\n", current->position);
 
 		if(!current)
 		{
-			edl->local_session->selectionstart = 
-				edl->local_session->selectionend = 0;
+			edl->local_session->set_selectionstart(0);
+			edl->local_session->set_selectionend(0);
 			vwindow->update_position(CHANGE_NONE, 0, 1);
 			vwindow->gui->timebar->update();
 		}
 		else
 		{
-			edl->local_session->selectionstart = 
-				edl->local_session->selectionend = current->position;
+			edl->local_session->set_selectionstart(current->position);
+			edl->local_session->set_selectionend(current->position);
 			vwindow->update_position(CHANGE_NONE, 0, 1);
 			vwindow->gui->timebar->update();
 		}
-//printf("VWindowEditing::prev_label 3 %f\n", edl->local_session->selectionstart);
 	}
 }
 
@@ -497,15 +500,17 @@ void VWindowEditing::next_label()
 	if(vwindow->get_edl())
 	{
 		EDL *edl = vwindow->get_edl();
-		Label *current = edl->labels->next_label(edl->local_session->selectionstart);
+		Label *current = edl->labels->next_label(
+			edl->local_session->get_selectionstart(1));
 		if(!current)
 		{
 			vwindow->gui->unlock_window();
 			vwindow->playback_engine->interrupt_playback(1);
 			vwindow->gui->lock_window("VWindowEditing::next_label 1");
 
-			edl->local_session->selectionstart = 
-				edl->local_session->selectionend = edl->tracks->total_length();
+			double position = edl->tracks->total_length();
+			edl->local_session->set_selectionstart(position);
+			edl->local_session->set_selectionend(position);
 			vwindow->update_position(CHANGE_NONE, 0, 1);
 			vwindow->gui->timebar->update();
 		}
@@ -515,8 +520,8 @@ void VWindowEditing::next_label()
 			vwindow->playback_engine->interrupt_playback(1);
 			vwindow->gui->lock_window("VWindowEditing::next_label 2");
 
-			edl->local_session->selectionstart = 
-				edl->local_session->selectionend = current->position;
+			edl->local_session->set_selectionstart(current->position);
+			edl->local_session->set_selectionend(current->position);
 			vwindow->update_position(CHANGE_NONE, 0, 1);
 			vwindow->gui->timebar->update();
 		}
@@ -577,9 +582,13 @@ void VWindowEditing::to_clip()
 		new_edl->create_objects();
 		new_edl->load_xml(mwindow->plugindb, &file, LOAD_ALL);
 		sprintf(new_edl->local_session->clip_title, _("Clip %d"), mwindow->session->clip_number++);
+		new_edl->local_session->set_selectionstart(0);
+		new_edl->local_session->set_selectionend(0);
+
 
 //printf("VWindowEditing::to_clip 1 %s\n", edl->local_session->clip_title);
-		new_edl->local_session->selectionstart = new_edl->local_session->selectionend = 0.0;
+		new_edl->local_session->set_selectionstart(0.0);
+		new_edl->local_session->set_selectionend(0.0);
 		vwindow->clip_edit->create_clip(new_edl);
 	}
 }
@@ -638,11 +647,8 @@ void VWindowSlider::set_position()
 		if(edl->local_session->preview_start > new_length)
 			edl->local_session->preview_start = 0;
 
-// printf("VWindowSlider::set_position 1 %f %f %f\n", edl->local_session->selectionstart, 
-// 			edl->local_session->preview_start, 
-// 			edl->local_session->preview_end);
 		update(mwindow->theme->vslider_w, 
-			edl->local_session->selectionstart, 
+			edl->local_session->get_selectionstart(1), 
 			edl->local_session->preview_start, 
 			edl->local_session->preview_end);
 	}
@@ -745,8 +751,8 @@ void VWindowCanvas::zoom_resize_window(float percentage)
 
 	int canvas_w, canvas_h;
 	calculate_sizes(edl->get_aspect_ratio(), 
-		edl->calculate_output_w(0), 
-		edl->calculate_output_h(0), 
+		edl->session->output_w, 
+		edl->session->output_h, 
 		percentage,
 		canvas_w,
 		canvas_h);
@@ -882,8 +888,8 @@ void VWindowGUI::update_points()
 			in_point->position = edl->local_session->in_point;
 
 //printf("VWindowGUI::update_points 6\n");
-			if(edl->equivalent(in_point->position, edl->local_session->selectionstart) ||
-				edl->equivalent(in_point->position, edl->local_session->selectionend))
+			if(edl->equivalent(in_point->position, edl->local_session->get_selectionstart(1)) ||
+				edl->equivalent(in_point->position, edl->local_session->get_selectionend(1)))
 				in_point->update(1);
 			else
 				in_point->update(0);
@@ -929,8 +935,8 @@ void VWindowGUI::update_points()
 			}
 			out_point->position = edl->local_session->out_point;
 
-			if(edl->equivalent(out_point->position, edl->local_session->selectionstart) ||
-				edl->equivalent(out_point->position, edl->local_session->selectionend))
+			if(edl->equivalent(out_point->position, edl->local_session->get_selectionstart(1)) ||
+				edl->equivalent(out_point->position, edl->local_session->get_selectionend(1)))
 				out_point->update(1);
 			else
 				out_point->update(0);
@@ -983,8 +989,8 @@ void VWindowGUI::update_labels()
 				labels.values[output]->reposition();
 			}
 
-			if(mwindow->edl->local_session->selectionstart <= current->position &&
-				mwindow->edl->local_session->selectionend >= current->position)
+			if(mwindow->edl->local_session->get_selectionstart(1) <= current->position &&
+				mwindow->edl->local_session->get_selectionend(1) >= current->position)
 				labels.values[output]->update(1);
 			else
 			if(labels.values[output]->get_value())
@@ -1023,9 +1029,8 @@ int VWindowInPoint::handle_event()
 	{
 		double position = edl->align_to_frame(this->position, 0);
 
-		edl->local_session->selectionstart = 
-			edl->local_session->selectionend = 
-			position;
+		edl->local_session->set_selectionstart(position);
+		edl->local_session->set_selectionend(position);
 		gui->timebar->update();
 
 // Que the VWindow
@@ -1057,9 +1062,8 @@ int VWindowOutPoint::handle_event()
 	{
 		double position = edl->align_to_frame(this->position, 0);
 
-		edl->local_session->selectionstart = 
-			edl->local_session->selectionend = 
-			position;
+		edl->local_session->set_selectionstart(position);
+		edl->local_session->set_selectionend(position);
 		gui->timebar->update();
 
 // Que the VWindow

@@ -15,10 +15,12 @@
 #include FT_STROKER_H
 
 #include "language.h"
+#include "mwindow.inc"
 #include "picon_png.h"
 #include "plugincolors.h"
 #include "title.h"
 #include "titlewindow.h"
+#include "transportque.inc"
 
 
 #include <errno.h>
@@ -2270,7 +2272,7 @@ void TitleMain::save_data(KeyFrame *keyframe)
 	output.append_tag();
 	output.append_newline();
 	
-	output.serialize_and_append_text(config.text);
+	output.encode_text(config.text);
 
 	output.tag.set_title("/TITLE");
 	output.append_tag();

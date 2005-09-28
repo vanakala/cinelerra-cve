@@ -20,10 +20,6 @@
 #include <sys/utsname.h>
 
 
-//#include "libavc1394/avc1394.h"
-//#include "libavc1394/avc1394_vcr.h"
-//#include "librom1394/rom1394.h"
-
 
 
 

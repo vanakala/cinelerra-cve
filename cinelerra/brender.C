@@ -232,7 +232,7 @@ void BRender::allocate_map(int64_t brender_start, int64_t start, int64_t end)
 	map_lock->unlock();
 }
 
-void BRender::set_video_map(int64_t position, int value)
+int BRender::set_video_map(int64_t position, int value)
 {
 	int update_gui = 0;
 	map_lock->lock("BRender::set_video_map");
@@ -290,6 +290,7 @@ void BRender::set_video_map(int64_t position, int value)
 		mwindow->gui->timebar->flush();
 		mwindow->gui->unlock_window();
 	}
+	return 0;
 }
 
 

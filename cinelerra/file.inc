@@ -34,13 +34,14 @@
 #define FILE_TIFF 	    		6
 #define FILE_TIFF_LIST  		22
 #define FILE_VMPEG      	  	17    // For encoding only
-#define FILE_VORBIS     	  	18
+#define FILE_OGG		        30
 #define FILE_WAV  	    		2
 #define FILE_EXR                26
 #define FILE_EXR_LIST           27
-#define FILE_RAWDV		28
+#define FILE_CR2                28
 #define FILE_YUV		29	// mjpegtools YUV4MPEG (aka YUV4MPEG2)
-#define FILE_OGG		30
+#define FILE_VORBIS             31
+#define FILE_RAWDV		32
 
 // For formats supported by plugins, the format number is the plugin number in the 
 // plugin list ORed with 0x8000.
@@ -104,7 +105,8 @@ N_("TGA")
 N_("TIFF")
 N_("TIFF Sequence")
 N_("MPEG Video")    // For encoding only
-N_("OGG Vorbis")
+N_("OGG Theora/Vorbis")
+N_("OGG Vorbis")    // For decoding only
 N_("EXR")
 N_("EXR Sequence")
 N_("OGG Theora/Vorbis")
@@ -126,6 +128,8 @@ N_("OGG Theora/Vorbis")
 #define JPEG_NAME "JPEG"
 #define MOV_NAME "Quicktime for Linux"
 #define MPEG_NAME "MPEG"           // For decoding only
+#define OGG_NAME "OGG Theora/Vorbis"
+#define VORBIS_NAME "OGG Vorbis"
 #define PCM_NAME "Raw PCM"
 #define PNG_LIST_NAME "PNG Sequence"
 #define PNG_NAME "PNG"
@@ -135,8 +139,8 @@ N_("OGG Theora/Vorbis")
 #define TIFF_NAME "TIFF"
 #define TIFF_LIST_NAME "TIFF Sequence"
 #define VMPEG_NAME "MPEG Video"    // For encoding only
-#define VORBIS_NAME "OGG Vorbis"
 #define EXR_NAME "EXR"
+#define CR2_NAME "Raw Camera"
 #define EXR_LIST_NAME "EXR Sequence"
 #define YUV_NAME "YUV4MPEG Stream"
 

@@ -36,7 +36,8 @@ Asset::Asset(const int plugin_type, const char *plugin_title) : ListItem<Asset>(
 
 Asset::~Asset()
 {
-	if(index_offsets) delete [] index_offsets;
+	delete [] index_offsets;
+	delete [] index_sizes;
 // Don't delete index buffer since it is shared with the index thread.
 }
 
@@ -87,18 +88,17 @@ int Asset::init_values()
 	theora_keyframe_frequency = 64;
 	theora_keyframe_force_frequency = 64;
 
-
 	mp3_bitrate = 256000;
 
 
-
-
+	mp4a_bitrate = 256000;
+	mp4a_quantqual = 100;
 
 
 
 // mpeg parameters
 	vmpeg_iframe_distance = 45;
-	vmpeg_bframe_distance = 0;
+	vmpeg_pframe_distance = 0;
 	vmpeg_progressive = 0;
 	vmpeg_denoise = 1;
 	vmpeg_bitrate = 1000000;
@@ -107,6 +107,8 @@ int Asset::init_values()
 	vmpeg_cmodel = 0;
 	vmpeg_fix_bitrate = 0;
 	vmpeg_seq_codes = 0;
+	vmpeg_preset = 0;
+	vmpeg_field_order = 0;
 
 // Divx parameters.  Defaults from encore2
 	divx_bitrate = 2000000;
@@ -116,10 +118,14 @@ int Asset::init_values()
 	divx_max_key_interval = 250;
 	divx_max_quantizer = 31;
 	divx_min_quantizer = 1;
-	divx_quantizer = 15;
+	divx_quantizer = 5;
 	divx_quality = 5;
 	divx_fix_bitrate = 1;
 	divx_use_deblocking = 1;
+
+	h264_bitrate = 2000000;
+	h264_quantizer = 5;
+	h264_fix_bitrate = 0;
 
 	ms_bitrate = 1000000;
 	ms_bitrate_tolerance = 500000;
@@ -158,6 +164,7 @@ int Asset::reset_index()
 	index_status = INDEX_NOTTESTED;
 	index_start = old_index_end = index_end = 0;
 	index_offsets = 0;
+	index_sizes = 0;
 	index_zoom = 0;
 	index_bytes = 0;
 	index_buffer = 0;
@@ -201,6 +208,8 @@ void Asset::copy_format(Asset *asset, int do_index)
 	header = asset->header;
 	dither = asset->dither;
 	mp3_bitrate = asset->mp3_bitrate;
+	mp4a_bitrate = asset->mp4a_bitrate;
+	mp4a_quantqual = asset->mp4a_quantqual;
 	use_header = asset->use_header;
 	aspect_ratio = asset->aspect_ratio;
 	interlace_autofixoption = asset->interlace_autofixoption;
@@ -235,13 +244,20 @@ void Asset::copy_format(Asset *asset, int do_index)
 	theora_keyframe_frequency = asset->theora_keyframe_frequency;
 	theora_keyframe_force_frequency = asset->theora_keyframe_frequency;
 
+	
+	theora_fix_bitrate = asset->theora_fix_bitrate;
+	theora_bitrate = asset->theora_bitrate;
+	theora_quality = asset->theora_quality;
+	theora_sharpness = asset->theora_sharpness;
+	theora_keyframe_frequency = asset->theora_keyframe_frequency;
+	theora_keyframe_force_frequency = asset->theora_keyframe_frequency;
 
 
 	jpeg_quality = asset->jpeg_quality;
 
 // mpeg parameters
 	vmpeg_iframe_distance = asset->vmpeg_iframe_distance;
-	vmpeg_bframe_distance = asset->vmpeg_bframe_distance;
+	vmpeg_pframe_distance = asset->vmpeg_pframe_distance;
 	vmpeg_progressive = asset->vmpeg_progressive;
 	vmpeg_denoise = asset->vmpeg_denoise;
 	vmpeg_bitrate = asset->vmpeg_bitrate;
@@ -250,6 +266,8 @@ void Asset::copy_format(Asset *asset, int do_index)
 	vmpeg_cmodel = asset->vmpeg_cmodel;
 	vmpeg_fix_bitrate = asset->vmpeg_fix_bitrate;
 	vmpeg_seq_codes = asset->vmpeg_seq_codes;
+	vmpeg_preset = asset->vmpeg_preset;
+	vmpeg_field_order = asset->vmpeg_field_order;
 
 
 	divx_bitrate = asset->divx_bitrate;
@@ -263,6 +281,11 @@ void Asset::copy_format(Asset *asset, int do_index)
 	divx_quality = asset->divx_quality;
 	divx_fix_bitrate = asset->divx_fix_bitrate;
 	divx_use_deblocking = asset->divx_use_deblocking;
+
+	h264_bitrate = asset->h264_bitrate;
+	h264_quantizer = asset->h264_quantizer;
+	h264_fix_bitrate = asset->h264_fix_bitrate;
+
 
 	ms_bitrate = asset->ms_bitrate;
 	ms_bitrate_tolerance = asset->ms_bitrate_tolerance;
@@ -298,6 +321,14 @@ int64_t Asset::get_index_offset(int channel)
 {
 	if(channel < channels && index_offsets)
 		return index_offsets[channel];
+	else
+		return 0;
+}
+
+int64_t Asset::get_index_size(int channel)
+{
+	if(channel < channels && index_sizes)
+		return index_sizes[channel];
 	else
 		return 0;
 }
@@ -411,13 +442,6 @@ int Asset::test_plugin_title(const char *path)
 int Asset::read(FileXML *file, 
 	int expand_relative)
 {
-	return read(0, file, expand_relative);
-}
-
-int Asset::read(ArrayList<PluginServer*> *plugindb, 
-	FileXML *file, 
-	int expand_relative)
-{
 	int result = 0;
 
 // Check for relative path.
@@ -433,7 +457,8 @@ int Asset::read(ArrayList<PluginServer*> *plugindb,
 
 		fs.extract_dir(asset_directory, path);
 
-// No path in asset
+// No path in asset.
+// Take path of XML file.
 		if(!asset_directory[0])
 		{
 			fs.extract_dir(input_directory, file->filename);
@@ -441,7 +466,7 @@ int Asset::read(ArrayList<PluginServer*> *plugindb,
 // Input file has a path
 			if(input_directory[0])
 			{
-				sprintf(path, "%s/%s", input_directory, new_path);
+				fs.join_names(path, input_directory, new_path);
 			}
 		}
 	}
@@ -470,7 +495,7 @@ int Asset::read(ArrayList<PluginServer*> *plugindb,
 			if(file->tag.title_is("FORMAT"))
 			{
 				char *string = file->tag.get_property("TYPE");
-				format = File::strtoformat(plugindb, string);
+				format = File::strtoformat(string);
 				use_header = 
 					file->tag.get_property("USE_HEADER", use_header);
 			}
@@ -520,15 +545,15 @@ int Asset::read_audio(FileXML *file)
 	
 
 
-	ampeg_bitrate = file->tag.get_property("AMPEG_BITRATE", ampeg_bitrate);
-	ampeg_derivative = file->tag.get_property("AMPEG_DERIVATIVE", ampeg_derivative);
-
-	vorbis_vbr = file->tag.get_property("VORBIS_VBR", vorbis_vbr);
-	vorbis_min_bitrate = file->tag.get_property("VORBIS_MIN_BITRATE", vorbis_min_bitrate);
-	vorbis_bitrate = file->tag.get_property("VORBIS_BITRATE", vorbis_bitrate);
-	vorbis_max_bitrate = file->tag.get_property("VORBIS_MAX_BITRATE", vorbis_max_bitrate);
-
-	mp3_bitrate = file->tag.get_property("MP3_BITRATE", mp3_bitrate);
+// 	ampeg_bitrate = file->tag.get_property("AMPEG_BITRATE", ampeg_bitrate);
+// 	ampeg_derivative = file->tag.get_property("AMPEG_DERIVATIVE", ampeg_derivative);
+// 
+// 	vorbis_vbr = file->tag.get_property("VORBIS_VBR", vorbis_vbr);
+// 	vorbis_min_bitrate = file->tag.get_property("VORBIS_MIN_BITRATE", vorbis_min_bitrate);
+// 	vorbis_bitrate = file->tag.get_property("VORBIS_BITRATE", vorbis_bitrate);
+// 	vorbis_max_bitrate = file->tag.get_property("VORBIS_MAX_BITRATE", vorbis_max_bitrate);
+// 
+// 	mp3_bitrate = file->tag.get_property("MP3_BITRATE", mp3_bitrate);
 
 	if(!video_data)
 	{
@@ -555,64 +580,6 @@ int Asset::read_video(FileXML *file)
 	video_length = file->tag.get_property("VIDEO_LENGTH", 0);
 
 
-
-
-	jpeg_quality = file->tag.get_property("JPEG_QUALITY", jpeg_quality);
-	aspect_ratio = file->tag.get_property("ASPECT_RATIO", aspect_ratio);
-
-	interlace_autofixoption = file->tag.get_property("INTERLACE_AUTOFIXOPTION", BC_ILACE_AUTOFIXOPTION_AUTO);
-	interlace_mode = file->tag.get_property("INTERLACE_MODE", interlace_mode);
-	interlace_fixmethod = file->tag.get_property("INTERLACE_FIXMETHOD", interlace_fixmethod);
-
-	vmpeg_iframe_distance = file->tag.get_property("VMPEG_IFRAME_DISTANCE", vmpeg_iframe_distance);
-	vmpeg_bframe_distance = file->tag.get_property("VMPEG_BFRAME_DISTANCE", vmpeg_bframe_distance);
-	vmpeg_progressive = file->tag.get_property("VMPEG_PROGRESSIVE", vmpeg_progressive);
-	vmpeg_denoise = file->tag.get_property("VMPEG_DENOISE", vmpeg_denoise);
-	vmpeg_bitrate = file->tag.get_property("VMPEG_BITRATE", vmpeg_bitrate);
-	vmpeg_derivative = file->tag.get_property("VMPEG_DERIVATIVE", vmpeg_derivative);
-	vmpeg_quantization = file->tag.get_property("VMPEG_QUANTIZATION", vmpeg_quantization);
-	vmpeg_cmodel = file->tag.get_property("VMPEG_CMODEL", vmpeg_cmodel);
-	vmpeg_fix_bitrate = file->tag.get_property("VMPEG_FIX_BITRATE", vmpeg_fix_bitrate);
-	vmpeg_seq_codes = file->tag.get_property("VMPEG_SEQ_CODES", vmpeg_seq_codes);
-
-
-	divx_bitrate = file->tag.get_property("DIVX_BITRATE", divx_bitrate);
-	divx_rc_period = file->tag.get_property("DIVX_RC_PERIOD", divx_rc_period);
-	divx_rc_reaction_ratio = file->tag.get_property("DIVX_RC_REACTION_RATIO", divx_rc_reaction_ratio);
-	divx_rc_reaction_period = file->tag.get_property("DIVX_RC_REACTION_PERIOD", divx_rc_reaction_period);
-	divx_max_key_interval = file->tag.get_property("DIVX_MAX_KEY_INTERVAL", divx_max_key_interval);
-	divx_max_quantizer = file->tag.get_property("DIVX_MAX_QUANTIZER", divx_max_quantizer);
-	divx_min_quantizer = file->tag.get_property("DIVX_MIN_QUANTIZER", divx_min_quantizer);
-	divx_quantizer = file->tag.get_property("DIVX_QUANTIZER", divx_quantizer);
-	divx_quality = file->tag.get_property("DIVX_QUALITY", divx_quality);
-	divx_fix_bitrate = file->tag.get_property("DIVX_FIX_BITRATE", divx_fix_bitrate);
-	divx_use_deblocking = file->tag.get_property("DIVX_USE_DEBLOCKING", divx_use_deblocking);
-
-	theora_fix_bitrate = file->tag.get_property("THEORA_FIX_BITRATE", theora_fix_bitrate);
-	theora_bitrate = file->tag.get_property("THEORA_BITRATE", theora_bitrate);
-	theora_quality = file->tag.get_property("THEORA_QUALITY", theora_quality);
-	theora_sharpness = file->tag.get_property("THEORA_SHARPNESS", theora_sharpness);
-	theora_keyframe_frequency = file->tag.get_property("THEORA_KEYFRAME_FREQUENCY", theora_keyframe_frequency);
-	theora_keyframe_force_frequency = file->tag.get_property("THEORA_FORCE_KEYFRAME_FEQUENCY", theora_keyframe_force_frequency);
-
-	ms_bitrate = file->tag.get_property("MS_BITRATE", ms_bitrate);
-	ms_bitrate_tolerance = file->tag.get_property("MS_BITRATE_TOLERANCE", ms_bitrate_tolerance);
-	ms_interlaced = file->tag.get_property("MS_INTERLACED", ms_interlaced);
-	ms_quantization = file->tag.get_property("MS_QUANTIZATION", ms_quantization);
-	ms_gop_size = file->tag.get_property("MS_GOP_SIZE", ms_gop_size);
-	ms_fix_bitrate = file->tag.get_property("MS_FIX_BITRATE", ms_fix_bitrate);
-
-
-	ac3_bitrate = file->tag.get_property("AC3_BITRATE", ac3_bitrate);
-
-
-	png_use_alpha = file->tag.get_property("PNG_USE_ALPHA", png_use_alpha);
-	exr_use_alpha = file->tag.get_property("EXR_USE_ALPHA", exr_use_alpha);
-	exr_compression = file->tag.get_property("EXR_COMPRESSION", exr_compression);
-
-	tiff_cmodel = file->tag.get_property("TIFF_CMODEL", tiff_cmodel);
-	tiff_compression = file->tag.get_property("TIFF_COMPRESSION", tiff_compression);
-
 	file->tag.get_property("REEL_NAME", reel_name);
 	reel_number = file->tag.get_property("REEL_NUMBER", reel_number);
 	tcstart = file->tag.get_property("TCSTART", tcstart);
@@ -624,11 +591,18 @@ int Asset::read_video(FileXML *file)
 
 int Asset::read_index(FileXML *file)
 {
-	if(index_offsets) delete [] index_offsets;
+	delete [] index_offsets;
 	index_offsets = new int64_t[channels];
-	for(int i = 0; i < channels; i++) index_offsets[i] = 0;
+	delete [] index_sizes;
+	index_sizes = new int64_t[channels];
+	for(int i = 0; i < channels; i++) 
+	{
+		index_offsets[i] = 0;
+		index_sizes[i] = 0;
+	}
 
 	int current_offset = 0;
+	int current_size = 0;
 	int result = 0;
 
 	index_zoom = file->tag.get_property("ZOOM", 1);
@@ -652,26 +626,65 @@ int Asset::read_index(FileXML *file)
 //printf("Asset::read_index %d %d\n", current_offset - 1, index_offsets[current_offset - 1]);
 				}
 			}
+			else
+			if(file->tag.title_is("SIZE"))
+			{
+				if(current_size < channels)
+				{
+					index_sizes[current_size++] = file->tag.get_property("FLOAT", 0);
+				}
+			}
 		}
 	}
 	return 0;
+}
+
+int Asset::write_index(char *path, int data_bytes)
+{
+	FILE *file;
+	if(!(file = fopen(path, "wb")))
+	{
+// failed to create it
+		printf(_("Asset::write_index Couldn't write index file %s to disk.\n"), path);
+	}
+	else
+	{
+		FileXML xml;
+// Pad index start position
+		fwrite((char*)&(index_start), sizeof(int64_t), 1, file);
+
+		index_status = INDEX_READY;
+// Write encoding information
+		write(&xml, 
+			1, 
+			"");
+		xml.write_to_file(file);
+		index_start = ftell(file);
+		fseek(file, 0, SEEK_SET);
+// Write index start
+		fwrite((char*)&(index_start), sizeof(int64_t), 1, file);
+		fseek(file, index_start, SEEK_SET);
+
+// Write index data
+		fwrite(index_buffer, 
+			data_bytes, 
+			1, 
+			file);
+		fclose(file);
+	}
+
+// Force reread of header
+	index_status = INDEX_NOTTESTED;
+//	index_status = INDEX_READY;
+	index_end = audio_length;
+	old_index_end = 0;
+	index_start = 0;
 }
 
 // Output path is the path of the output file if name truncation is desired.
 // It is a "" if complete names should be used.
 
 int Asset::write(FileXML *file, 
-	int include_index, 
-	char *output_path)
-{
-	write(0, 
-		file, 
-		include_index, 
-		output_path);
-}
-
-int Asset::write(ArrayList<PluginServer*> *plugindb, 
-	FileXML *file, 
 	int include_index, 
 	char *output_path)
 {
@@ -713,7 +726,7 @@ int Asset::write(ArrayList<PluginServer*> *plugindb,
 	file->tag.set_title("FORMAT");
 
 	file->tag.set_property("TYPE", 
-		File::formattostr(plugindb, format));
+		File::formattostr(format));
 	file->tag.set_property("USE_HEADER", use_header);
 
 	file->append_tag();
@@ -742,6 +755,7 @@ int Asset::write_audio(FileXML *file)
 		file->tag.set_title("AUDIO");
 	else
 		file->tag.set_title("AUDIO_OMIT");
+// Necessary for PCM audio
 	file->tag.set_property("CHANNELS", channels);
 	file->tag.set_property("RATE", sample_rate);
 	file->tag.set_property("BITS", bits);
@@ -756,17 +770,18 @@ int Asset::write_audio(FileXML *file)
 
 
 
+// Rely on defaults operations for these.
 
-	file->tag.set_property("AMPEG_BITRATE", ampeg_bitrate);
-	file->tag.set_property("AMPEG_DERIVATIVE", ampeg_derivative);
-
-	file->tag.set_property("VORBIS_VBR", vorbis_vbr);
-	file->tag.set_property("VORBIS_MIN_BITRATE", vorbis_min_bitrate);
-	file->tag.set_property("VORBIS_BITRATE", vorbis_bitrate);
-	file->tag.set_property("VORBIS_MAX_BITRATE", vorbis_max_bitrate);
-
-	file->tag.set_property("MP3_BITRATE", mp3_bitrate);
-
+// 	file->tag.set_property("AMPEG_BITRATE", ampeg_bitrate);
+// 	file->tag.set_property("AMPEG_DERIVATIVE", ampeg_derivative);
+// 
+// 	file->tag.set_property("VORBIS_VBR", vorbis_vbr);
+// 	file->tag.set_property("VORBIS_MIN_BITRATE", vorbis_min_bitrate);
+// 	file->tag.set_property("VORBIS_BITRATE", vorbis_bitrate);
+// 	file->tag.set_property("VORBIS_MAX_BITRATE", vorbis_max_bitrate);
+// 
+// 	file->tag.set_property("MP3_BITRATE", mp3_bitrate);
+// 
 
 
 
@@ -797,63 +812,6 @@ int Asset::write_video(FileXML *file)
 
 
 
-	file->tag.set_property("JPEG_QUALITY", jpeg_quality);
-	file->tag.set_property("ASPECT_RATIO", aspect_ratio);
-
-	file->tag.set_property("INTERLACE_AUTOFIXOPTION",interlace_autofixoption);
-	file->tag.set_property("INTERLACE_MODE",interlace_mode);
-	file->tag.set_property("INTERLACE_FIXMETHOD",interlace_fixmethod);
-
-	file->tag.set_property("VMPEG_IFRAME_DISTANCE", vmpeg_iframe_distance);
-	file->tag.set_property("VMPEG_BFRAME_DISTANCE", vmpeg_bframe_distance);
-	file->tag.set_property("VMPEG_PROGRESSIVE", vmpeg_progressive);
-	file->tag.set_property("VMPEG_DENOISE", vmpeg_denoise);
-	file->tag.set_property("VMPEG_BITRATE", vmpeg_bitrate);
-	file->tag.set_property("VMPEG_DERIVATIVE", vmpeg_derivative);
-	file->tag.set_property("VMPEG_QUANTIZATION", vmpeg_quantization);
-	file->tag.set_property("VMPEG_CMODEL", vmpeg_cmodel);
-	file->tag.set_property("VMPEG_FIX_BITRATE", vmpeg_fix_bitrate);
-	file->tag.set_property("VMPEG_SEQ_CODES", vmpeg_seq_codes);
-
-
-	file->tag.set_property("DIVX_BITRATE", divx_bitrate);
-	file->tag.set_property("DIVX_RC_PERIOD", divx_rc_period);
-	file->tag.set_property("DIVX_RC_REACTION_RATIO", divx_rc_reaction_ratio);
-	file->tag.set_property("DIVX_RC_REACTION_PERIOD", divx_rc_reaction_period);
-	file->tag.set_property("DIVX_MAX_KEY_INTERVAL", divx_max_key_interval);
-	file->tag.set_property("DIVX_MAX_QUANTIZER", divx_max_quantizer);
-	file->tag.set_property("DIVX_MIN_QUANTIZER", divx_min_quantizer);
-	file->tag.set_property("DIVX_QUANTIZER", divx_quantizer);
-	file->tag.set_property("DIVX_QUALITY", divx_quality);
-	file->tag.set_property("DIVX_FIX_BITRATE", divx_fix_bitrate);
-	file->tag.set_property("DIVX_USE_DEBLOCKING", divx_use_deblocking);
-
-	file->tag.set_property("THEORA_FIX_BITRATE", theora_fix_bitrate);
-	file->tag.set_property("THEORA_BITRATE", theora_bitrate);
-	file->tag.set_property("THEORA_QUALITY", theora_quality);
-	file->tag.set_property("THEORA_SHARPNESS", theora_sharpness);
-	file->tag.set_property("THEORA_KEYFRAME_FREQUENCY", theora_keyframe_frequency);
-	file->tag.set_property("THEORA_FORCE_KEYFRAME_FEQUENCY", theora_keyframe_force_frequency);
-
-
-	file->tag.set_property("MS_BITRATE", ms_bitrate);
-	file->tag.set_property("MS_BITRATE_TOLERANCE", ms_bitrate_tolerance);
-	file->tag.set_property("MS_INTERLACED", ms_interlaced);
-	file->tag.set_property("MS_QUANTIZATION", ms_quantization);
-	file->tag.set_property("MS_GOP_SIZE", ms_gop_size);
-	file->tag.set_property("MS_FIX_BITRATE", ms_fix_bitrate);
-
-
-	file->tag.set_property("AC3_BITRATE", ac3_bitrate);
-
-	file->tag.set_property("PNG_USE_ALPHA", png_use_alpha);
-
-	file->tag.set_property("EXR_USE_ALPHA", exr_use_alpha);
-	file->tag.set_property("EXR_COMPRESSION", exr_compression);
-
-	file->tag.set_property("TIFF_CMODEL", tiff_cmodel);
-	file->tag.set_property("TIFF_COMPRESSION", tiff_compression);
-
 	file->tag.set_property("REEL_NAME", reel_name);
 	file->tag.set_property("REEL_NUMBER", reel_number);
 	file->tag.set_property("TCSTART", tcstart);
@@ -865,6 +823,7 @@ int Asset::write_video(FileXML *file)
 		file->tag.set_title("/VIDEO");
 	else
 		file->tag.set_title("/VIDEO_OMIT");
+
 	file->append_tag();
 	file->append_newline();
 	return 0;
@@ -886,6 +845,11 @@ int Asset::write_index(FileXML *file)
 			file->tag.set_property("FLOAT", index_offsets[i]);
 			file->append_tag();
 			file->tag.set_title("/OFFSET");
+			file->append_tag();
+			file->tag.set_title("SIZE");
+			file->tag.set_property("FLOAT", index_sizes[i]);
+			file->append_tag();
+			file->tag.set_title("/SIZE");
 			file->append_tag();
 		}
 	}
@@ -966,9 +930,18 @@ void Asset::load_defaults(Defaults *defaults,
 	vorbis_bitrate = GET_DEFAULT("VORBIS_BITRATE", vorbis_bitrate);
 	vorbis_max_bitrate = GET_DEFAULT("VORBIS_MAX_BITRATE", vorbis_max_bitrate);
 
+	theora_fix_bitrate = GET_DEFAULT("THEORA_FIX_BITRATE", theora_fix_bitrate);
+	theora_bitrate = GET_DEFAULT("THEORA_BITRATE", theora_bitrate);
+	theora_quality = GET_DEFAULT("THEORA_QUALITY", theora_quality);
+	theora_sharpness = GET_DEFAULT("THEORA_SHARPNESS", theora_sharpness);
+	theora_keyframe_frequency = GET_DEFAULT("THEORA_KEYFRAME_FREQUENCY", theora_keyframe_frequency);
+	theora_keyframe_force_frequency = GET_DEFAULT("THEORA_FORCE_KEYFRAME_FEQUENCY", theora_keyframe_force_frequency);
+
+
+
 	mp3_bitrate = GET_DEFAULT("MP3_BITRATE", mp3_bitrate);
-
-
+	mp4a_bitrate = GET_DEFAULT("MP4A_BITRATE", mp4a_bitrate);
+	mp4a_quantqual = GET_DEFAULT("MP4A_QUANTQUAL", mp4a_quantqual);
 
 	jpeg_quality = GET_DEFAULT("JPEG_QUALITY", jpeg_quality);
 	aspect_ratio = GET_DEFAULT("ASPECT_RATIO", aspect_ratio);
@@ -979,7 +952,7 @@ void Asset::load_defaults(Defaults *defaults,
 
 // MPEG format information
 	vmpeg_iframe_distance = GET_DEFAULT("VMPEG_IFRAME_DISTANCE", vmpeg_iframe_distance);
-	vmpeg_bframe_distance = GET_DEFAULT("VMPEG_BFRAME_DISTANCE", vmpeg_bframe_distance);
+	vmpeg_pframe_distance = GET_DEFAULT("VMPEG_PFRAME_DISTANCE", vmpeg_pframe_distance);
 	vmpeg_progressive = GET_DEFAULT("VMPEG_PROGRESSIVE", vmpeg_progressive);
 	vmpeg_denoise = GET_DEFAULT("VMPEG_DENOISE", vmpeg_denoise);
 	vmpeg_bitrate = GET_DEFAULT("VMPEG_BITRATE", vmpeg_bitrate);
@@ -988,6 +961,12 @@ void Asset::load_defaults(Defaults *defaults,
 	vmpeg_cmodel = GET_DEFAULT("VMPEG_CMODEL", vmpeg_cmodel);
 	vmpeg_fix_bitrate = GET_DEFAULT("VMPEG_FIX_BITRATE", vmpeg_fix_bitrate);
 	vmpeg_seq_codes = GET_DEFAULT("VMPEG_SEQ_CODES", vmpeg_seq_codes);
+	vmpeg_preset = GET_DEFAULT("VMPEG_PRESET", vmpeg_preset);
+	vmpeg_field_order = GET_DEFAULT("VMPEG_FIELD_ORDER", vmpeg_field_order);
+
+	h264_bitrate = GET_DEFAULT("H264_BITRATE", h264_bitrate);
+	h264_quantizer = GET_DEFAULT("H264_QUANTIZER", h264_quantizer);
+	h264_fix_bitrate = GET_DEFAULT("H264_FIX_BITRATE", h264_fix_bitrate);
 
 
 	divx_bitrate = GET_DEFAULT("DIVX_BITRATE", divx_bitrate);
@@ -1101,8 +1080,20 @@ void Asset::save_defaults(Defaults *defaults,
 	UPDATE_DEFAULT("VORBIS_MIN_BITRATE", vorbis_min_bitrate);
 	UPDATE_DEFAULT("VORBIS_BITRATE", vorbis_bitrate);
 	UPDATE_DEFAULT("VORBIS_MAX_BITRATE", vorbis_max_bitrate);
-	
+
+
+	UPDATE_DEFAULT("THEORA_FIX_BITRATE", theora_fix_bitrate);
+	UPDATE_DEFAULT("THEORA_BITRATE", theora_bitrate);
+	UPDATE_DEFAULT("THEORA_QUALITY", theora_quality);
+	UPDATE_DEFAULT("THEORA_SHARPNESS", theora_sharpness);
+	UPDATE_DEFAULT("THEORA_KEYFRAME_FREQUENCY", theora_keyframe_frequency);
+	UPDATE_DEFAULT("THEORA_FORCE_KEYFRAME_FEQUENCY", theora_keyframe_force_frequency);
+
+
+
 	UPDATE_DEFAULT("MP3_BITRATE", mp3_bitrate);
+	UPDATE_DEFAULT("MP4A_BITRATE", mp4a_bitrate);
+	UPDATE_DEFAULT("MP4A_QUANTQUAL", mp4a_quantqual);
 
 
 
@@ -1117,7 +1108,7 @@ void Asset::save_defaults(Defaults *defaults,
 
 // MPEG format information
 	UPDATE_DEFAULT("VMPEG_IFRAME_DISTANCE", vmpeg_iframe_distance);
-	UPDATE_DEFAULT("VMPEG_BFRAME_DISTANCE", vmpeg_bframe_distance);
+	UPDATE_DEFAULT("VMPEG_PFRAME_DISTANCE", vmpeg_pframe_distance);
 	UPDATE_DEFAULT("VMPEG_PROGRESSIVE", vmpeg_progressive);
 	UPDATE_DEFAULT("VMPEG_DENOISE", vmpeg_denoise);
 	UPDATE_DEFAULT("VMPEG_BITRATE", vmpeg_bitrate);
@@ -1126,8 +1117,12 @@ void Asset::save_defaults(Defaults *defaults,
 	UPDATE_DEFAULT("VMPEG_CMODEL", vmpeg_cmodel);
 	UPDATE_DEFAULT("VMPEG_FIX_BITRATE", vmpeg_fix_bitrate);
 	UPDATE_DEFAULT("VMPEG_SEQ_CODES", vmpeg_seq_codes);
+	UPDATE_DEFAULT("VMPEG_PRESET", vmpeg_preset);
+	UPDATE_DEFAULT("VMPEG_FIELD_ORDER", vmpeg_field_order);
 
-
+	UPDATE_DEFAULT("H264_BITRATE", h264_bitrate);
+	UPDATE_DEFAULT("H264_QUANTIZER", h264_quantizer);
+	UPDATE_DEFAULT("H264_FIX_BITRATE", h264_fix_bitrate);
 
 	UPDATE_DEFAULT("DIVX_BITRATE", divx_bitrate);
 	UPDATE_DEFAULT("DIVX_RC_PERIOD", divx_rc_period);
@@ -1207,29 +1202,26 @@ void Asset::update_index(Asset *asset)
 	index_bytes = asset->index_bytes;	 // Total bytes in source file for comparison before rebuilding the index
 	index_end = asset->index_end;
 	old_index_end = asset->old_index_end;	 // values for index build
-//printf("Asset::update_index 1\n");
 
-	if(index_offsets)
-	{
-		delete [] index_offsets;
-		index_offsets = 0;
-	}
+	delete [] index_offsets;
+	delete [] index_sizes;
+	index_offsets = 0;
+	index_sizes = 0;
 	
 	if(asset->index_offsets)
 	{
 		index_offsets = new int64_t[asset->channels];
-//printf("Asset::update_index 1\n");
+		index_sizes = new int64_t[asset->channels];
 
 		int i;
 		for(i = 0; i < asset->channels; i++)
 		{
-			index_offsets[i] = asset->index_offsets[i];  // offsets of channels in index file in floats
-
+// offsets of channels in index file in floats
+			index_offsets[i] = asset->index_offsets[i];  
+			index_sizes[i] = asset->index_sizes[i];
 		}
 	}
-//printf("Asset::update_index 1\n");
 	index_buffer = asset->index_buffer;    // pointer
-//printf("Asset::update_index 2\n");
 }
 
 int Asset::set_timecode(char *tc, int format, int end)

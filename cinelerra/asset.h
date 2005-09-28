@@ -40,6 +40,7 @@ public:
 	void copy_format(Asset *asset, int do_index = 1);
 	void copy_index(Asset *asset);
 	int64_t get_index_offset(int channel);
+	int64_t get_index_size(int channel);
 // Get an english description of the compression.  Used by AssetEdit
 	char* get_compression_text(int audio, int video);
 
@@ -76,7 +77,6 @@ public:
 	int test_path(const char *path);
 	int test_plugin_title(const char *path);
 	int read(FileXML *file, int expand_relative = 1);
-	int read(ArrayList<PluginServer*> *plugindb, FileXML *xml, int expand_relative = 1);
 	int read_audio(FileXML *xml);
 	int read_video(FileXML *xml);
 	int read_index(FileXML *xml);
@@ -86,14 +86,12 @@ public:
 	int reset_timecode();
 	
 // Output path is the path of the output file if name truncation is desired.
-// It is a "" if complete names should be used.
+// It is a "" if; complete names should be used.
 	int write(FileXML *file, 
 		int include_index, 
 		char *output_path);
-	int write(ArrayList<PluginServer*> *plugindb, 
-		FileXML *xml, 
-		int include_index, 
-		char *output_path);
+// Write the index data and asset info.  Used by IndexThread.
+	int write_index(char *path, int data_bytes);
 
 
 // Necessary for renderfarm to get encoding parameters
@@ -186,8 +184,13 @@ public:
 	int theora_keyframe_frequency;
 	int theora_keyframe_force_frequency;
 
+
 // mp3 compression
 	int mp3_bitrate;
+
+// mp4a compression
+	int mp4a_bitrate;
+	int mp4a_quantqual;
 
 
 // Set by package render during file creation. -1 means square pixels.
@@ -203,7 +206,6 @@ public:
 
 // for mpeg video compression
 	int vmpeg_iframe_distance;
-	int vmpeg_bframe_distance;
 	int vmpeg_progressive;
 	int vmpeg_denoise;
 	int vmpeg_seq_codes;
@@ -213,6 +215,19 @@ public:
 	int vmpeg_quantization;
 	int vmpeg_cmodel;
 	int vmpeg_fix_bitrate;
+
+// mjpegtools
+	int vmpeg_preset;
+// top field first
+	int vmpeg_field_order;
+	int vmpeg_pframe_distance;
+
+
+
+
+
+
+
 
 // Divx video compression
 	int divx_bitrate;
@@ -226,6 +241,10 @@ public:
 	int divx_quality;
 	int divx_fix_bitrate;
 
+// h264 video compression
+	int h264_bitrate;
+	int h264_quantizer;
+	int h264_fix_bitrate;
 
 // Divx video decompression
 	int divx_use_deblocking;
@@ -266,15 +285,21 @@ public:
 // Edits store data for the transition
 
 // index info
-	int index_status;     // 0 ready  1 not tested  2 being built  3 small source
+	int index_status;     // Macro from assets.inc
 	int64_t index_zoom;      // zoom factor of index data
 	int64_t index_start;     // byte start of index data in the index file
-	int64_t index_bytes;     // Total bytes in source file for comparison before rebuilding the index
+// Total bytes in source file when the index was buillt
+	int64_t index_bytes;
 	int64_t index_end, old_index_end;    // values for index build
-	int64_t* index_offsets;  // offsets of channels in index file in floats
-	float* index_buffer;  
+// offsets of channels in index buffer in floats
+	int64_t *index_offsets;
+// Sizes of channels in index buffer in floats.  This allows
+// variable channel size.
+	int64_t *index_sizes;
+// [ index channel      ][ index channel      ]
+// [high][low][high][low][high][low][high][low]
+	float *index_buffer;  
 	int id;
-
 };
 
 

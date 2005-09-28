@@ -114,7 +114,9 @@ int VDevicePrefs::initialize()
 			break;
 		case PLAYBACK_DV1394:
 		case PLAYBACK_FIREWIRE:
+		case PLAYBACK_IEC61883:
 		case CAPTURE_FIREWIRE:
+		case CAPTURE_IEC61883:
 			create_firewire_objs();
 			break;
 	}
@@ -155,6 +157,7 @@ int VDevicePrefs::create_lml_objs()
 {
 	char *output_char;
 	int x1 = x + menu->get_w() + 5;
+	BC_Resources *resources = BC_WindowBase::get_resources();
 
 	switch(mode)
 	{
@@ -165,7 +168,7 @@ int VDevicePrefs::create_lml_objs()
 			output_char = in_config->lml_in_device;
 			break;
 	}
-	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Device path:"), MEDIUMFONT, BLACK));
+	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Device path:"), MEDIUMFONT, resources->text_default));
 	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y + 20, output_char));
 	return 0;
 }
@@ -176,6 +179,7 @@ int VDevicePrefs::create_buz_objs()
 	int x1 = x + menu->get_w() + 5;
 	int x2 = x1 + 210;
 	int y1 = y;
+	BC_Resources *resources = BC_WindowBase::get_resources();
 
 	switch(mode)
 	{
@@ -186,7 +190,7 @@ int VDevicePrefs::create_buz_objs()
 			output_char = in_config->buz_in_device;
 			break;
 	}
-	dialog->add_subwindow(device_title = new BC_Title(x1, y1, _("Device path:"), MEDIUMFONT, BLACK));
+	dialog->add_subwindow(device_title = new BC_Title(x1, y1, _("Device path:"), MEDIUMFONT, resources->text_default));
 
 	y1 += 20;
 	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y1, output_char));
@@ -213,9 +217,10 @@ int VDevicePrefs::create_buz_objs()
 
 int VDevicePrefs::create_firewire_objs()
 {
-	int *output_int;
-	char *output_char;
+	int *output_int = 0;
+	char *output_char = 0;
 	int x1 = x + menu->get_w() + 5;
+	BC_Resources *resources = BC_WindowBase::get_resources();
 
 // Firewire path
 	switch(mode)
@@ -224,6 +229,7 @@ int VDevicePrefs::create_firewire_objs()
 			if(driver == PLAYBACK_DV1394)
 				output_char = out_config->dv1394_path;
 			else
+			if(driver == PLAYBACK_FIREWIRE)
 				output_char = out_config->firewire_path;
 			break;
 		case MODERECORD:
@@ -234,7 +240,7 @@ int VDevicePrefs::create_firewire_objs()
 
 	if(output_char)
 	{
-		dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Device Path:"), MEDIUMFONT, BLACK));
+		dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Device Path:"), MEDIUMFONT, resources->text_default));
 		dialog->add_subwindow(firewire_path = new VDeviceTextBox(x1, y + 20, output_char));
 		x1 += firewire_path->get_w() + 5;
 	}
@@ -252,7 +258,7 @@ int VDevicePrefs::create_firewire_objs()
 			output_int = &in_config->firewire_port;
 			break;
 	}
-	dialog->add_subwindow(port_title = new BC_Title(x1, y, _("Port:"), MEDIUMFONT, BLACK));
+	dialog->add_subwindow(port_title = new BC_Title(x1, y, _("Port:"), MEDIUMFONT, resources->text_default));
 	dialog->add_subwindow(firewire_port = new VDeviceIntBox(x1, y + 20, output_int));
 	x1 += firewire_port->get_w() + 5;
 
@@ -270,7 +276,7 @@ int VDevicePrefs::create_firewire_objs()
 			break;
 	}
 
-	dialog->add_subwindow(channel_title = new BC_Title(x1, y, _("Channel:"), MEDIUMFONT, BLACK));
+	dialog->add_subwindow(channel_title = new BC_Title(x1, y, _("Channel:"), MEDIUMFONT, resources->text_default));
 	dialog->add_subwindow(firewire_channel = new VDeviceIntBox(x1, y + 20, output_int));
 	x1 += firewire_channel->get_w() + 5;
 
@@ -282,7 +288,10 @@ int VDevicePrefs::create_firewire_objs()
 			if(driver == PLAYBACK_DV1394)
 				output_int = &out_config->dv1394_syt;
 			else
+			if(driver == PLAYBACK_FIREWIRE)
 				output_int = &out_config->firewire_syt;
+			else
+				output_int = 0;
 			break;
 		case MODERECORD:
 			output_int = 0;
@@ -290,7 +299,7 @@ int VDevicePrefs::create_firewire_objs()
 	}
 	if(output_int)
 	{
-		dialog->add_subwindow(syt_title = new BC_Title(x1, y, _("Syt Offset:"), MEDIUMFONT, BLACK));
+		dialog->add_subwindow(syt_title = new BC_Title(x1, y, _("Syt Offset:"), MEDIUMFONT, resources->text_default));
 		dialog->add_subwindow(firewire_syt = new VDeviceIntBox(x1, y + 20, output_int));
 	}
 
@@ -300,9 +309,10 @@ int VDevicePrefs::create_firewire_objs()
 int VDevicePrefs::create_v4l_objs()
 {
 	char *output_char;
+	BC_Resources *resources = BC_WindowBase::get_resources();
 	int x1 = x + menu->get_w() + 5;
 	output_char = pwindow->thread->edl->session->vconfig_in->v4l_in_device;
-	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Device path:"), MEDIUMFONT, BLACK));
+	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Device path:"), MEDIUMFONT, resources->text_default));
 	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y + 20, output_char));
 	return 0;
 }
@@ -310,19 +320,21 @@ int VDevicePrefs::create_v4l_objs()
 int VDevicePrefs::create_v4l2_objs()
 {
 	char *output_char;
+	BC_Resources *resources = BC_WindowBase::get_resources();
 	int x1 = x + menu->get_w() + 5;
 	output_char = pwindow->thread->edl->session->vconfig_in->v4l2_in_device;
-	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Device path:"), MEDIUMFONT, BLACK));
+	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Device path:"), MEDIUMFONT, resources->text_default));
 	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y + 20, output_char));
 	return 0;
 }
 
 int VDevicePrefs::create_v4l2jpeg_objs()
 {
+	BC_Resources *resources = BC_WindowBase::get_resources();
 	char *output_char;
 	int x1 = x + menu->get_w() + 5;
 	output_char = pwindow->thread->edl->session->vconfig_in->v4l2jpeg_in_device;
-	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Device path:"), MEDIUMFONT, BLACK));
+	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Device path:"), MEDIUMFONT, resources->text_default));
 	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y + 20, output_char));
 	return 0;
 }
@@ -332,9 +344,10 @@ int VDevicePrefs::create_v4l2jpeg_objs()
 int VDevicePrefs::create_screencap_objs()
 {
 	char *output_char;
+	BC_Resources *resources = BC_WindowBase::get_resources();
 	int x1 = x + menu->get_w() + 5;
 	output_char = pwindow->thread->edl->session->vconfig_in->screencapture_display;
-	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Display:"), MEDIUMFONT, BLACK));
+	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Display:"), MEDIUMFONT, resources->text_default));
 	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y + 20, output_char));
 	return 0;
 }
@@ -342,9 +355,10 @@ int VDevicePrefs::create_screencap_objs()
 int VDevicePrefs::create_x11_objs()
 {
 	char *output_char;
+	BC_Resources *resources = BC_WindowBase::get_resources();
 	int x1 = x + menu->get_w() + 5;
 	output_char = out_config->x11_host;
-	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Display for compositor:"), MEDIUMFONT, BLACK));
+	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Display for compositor:"), MEDIUMFONT, resources->text_default));
 	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y + 20, output_char));
 	return 0;
 }
@@ -393,6 +407,9 @@ char* VDriverMenu::driver_to_string(int driver)
 		case CAPTURE_FIREWIRE:
 			sprintf(string, CAPTURE_FIREWIRE_TITLE);
 			break;
+		case CAPTURE_IEC61883:
+			sprintf(string, CAPTURE_IEC61883_TITLE);
+			break;
 		case PLAYBACK_X11:
 			sprintf(string, PLAYBACK_X11_TITLE);
 			break;
@@ -410,6 +427,9 @@ char* VDriverMenu::driver_to_string(int driver)
 			break;
 		case PLAYBACK_DV1394:
 			sprintf(string, PLAYBACK_DV1394_TITLE);
+			break;
+		case PLAYBACK_IEC61883:
+			sprintf(string, PLAYBACK_IEC61883_TITLE);
 			break;
 		default:
 			sprintf(string, "");
@@ -429,6 +449,7 @@ int VDriverMenu::create_objects()
 		add_item(new VDriverItem(this, SCREENCAPTURE_TITLE, SCREENCAPTURE));
 		add_item(new VDriverItem(this, CAPTURE_BUZ_TITLE, CAPTURE_BUZ));
 		add_item(new VDriverItem(this, CAPTURE_FIREWIRE_TITLE, CAPTURE_FIREWIRE));
+		add_item(new VDriverItem(this, CAPTURE_IEC61883_TITLE, CAPTURE_IEC61883));
 	}
 	else
 	{
@@ -437,6 +458,7 @@ int VDriverMenu::create_objects()
 		add_item(new VDriverItem(this, PLAYBACK_BUZ_TITLE, PLAYBACK_BUZ));
 		add_item(new VDriverItem(this, PLAYBACK_FIREWIRE_TITLE, PLAYBACK_FIREWIRE));
 		add_item(new VDriverItem(this, PLAYBACK_DV1394_TITLE, PLAYBACK_DV1394));
+		add_item(new VDriverItem(this, PLAYBACK_IEC61883_TITLE, PLAYBACK_IEC61883));
 	}
 	return 0;
 }

@@ -414,7 +414,7 @@ int CrossfadeFFT::process_buffer(int64_t output_sample,
 	return 0;
 }
 
-void CrossfadeFFT::ready_oversample(int oversample) 
+void CrossfadeFFT::set_oversample(int oversample) 
 {
 // Only powers of two can be used for oversample
 	int oversample_fix = 2;
@@ -452,7 +452,7 @@ int CrossfadeFFT::process_buffer_oversample(int64_t output_sample,
 {
 	if (oversample <= 0)
 	{
-		printf("ready_oversample() has to be called to use process_buffer_oversample\n");
+		printf("set_oversample() has to be called to use process_buffer_oversample\n");
 		return 1;
 	}
 	int result = 0;

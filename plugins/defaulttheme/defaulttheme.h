@@ -43,8 +43,6 @@ private:
 // MWindow
 	VFrame *mbutton_left;
 	VFrame *mbutton_right;
-	VFrame *clock_bg;
-	VFrame *patchbay_bg;
 	VFrame *tracks_bg;
 	VFrame *zoombar_left;
 	VFrame *zoombar_right;

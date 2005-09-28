@@ -51,7 +51,8 @@ public:
 		int do_video,
 		int do_channel,
 		int do_interlace,
-		int do_avc);
+		int do_avc,
+		int audio_channels);
 	virtual void get_recordgui_sizes(RecordGUI *gui,
 		int w,
 		int h);
@@ -96,7 +97,7 @@ public:
 
 // Tools for building widgets
 	void overlay(VFrame *dst, VFrame *src, int in_x1 = -1, int in_x2 = -1);
-	void build_transport(VFrame** &data,
+	void build_transport(char *title,
 		unsigned char *png_overlay,
 		VFrame **bg_data,
 		int region);
@@ -116,6 +117,10 @@ public:
 		VFrame *checked_vframe,
 		VFrame *dn_vframe,
 		VFrame *checkedhi_vframe);
+
+// colors for the main message text
+	int message_normal, message_error;
+
 
 // Locations
 	int abinbuttons_x, abinbuttons_y;
@@ -142,8 +147,12 @@ public:
 	int loadfile_pad;
 	int loadmode_w;
 	int mbuttons_x, mbuttons_y, mbuttons_w, mbuttons_h;
+// pixels between end transport button and arrow button
+	int mtransport_margin;
 	int mcanvas_x, mcanvas_y, mcanvas_w, mcanvas_h;
 	int mclock_x, mclock_y, mclock_w, mclock_h;
+	int mhscroll_x, mhscroll_y, mhscroll_w;
+	int mvscroll_x, mvscroll_y, mvscroll_h;
 	int meter_h;
 	int mode_h;
 	int mstatus_x, mstatus_y, mstatus_w, mstatus_h;
@@ -158,7 +167,12 @@ public:
 	int pan_h;
 	int pan_x;
 	int play_h;
+	int preferencescategory_x, preferencescategory_y;
+	int preferencestitle_x, preferencestitle_y;
+	int preferencesoptions_x, preferencesoptions_y;
 	int patchbay_x, patchbay_y, patchbay_w, patchbay_h;
+// pixels between toggles and buttons in edit panel
+	int toggle_margin;
 
 	int plugindialog_new_x, plugindialog_new_y, plugindialog_new_w, plugindialog_new_h;
 	int plugindialog_shared_x, plugindialog_shared_y, plugindialog_shared_w, plugindialog_shared_h;
@@ -175,7 +189,6 @@ public:
 	int recordgui_batches_w, recordgui_batches_h;
 	int recordgui_batches_x, recordgui_batches_y;
 	int recordgui_batch_x, recordgui_batch_y, recordgui_batchcaption_x;
-	int recordgui_buttons_x, recordgui_buttons_y;
 	int recordgui_options_x, recordgui_options_y;
 	int recordgui_controls_x, recordgui_controls_y;
 	int recordgui_loadmode_x, recordgui_loadmode_y;
@@ -214,33 +227,20 @@ public:
 
 // Bitmaps
 	VFrame *about_bg;
-	VFrame *about_microsoft;
 	VFrame **appendasset_data;
 	VFrame **append_data;
-	VFrame **arrow_data;
 	VFrame **asset_append_data;
 	VFrame **asset_disk_data;
 	VFrame **asset_index_data;
 	VFrame **asset_info_data;
 	VFrame **asset_project_data;
-	VFrame **autokeyframe_data;
-	VFrame *awindow_icon;
-	VFrame **bottom_justify;
 	VFrame **browse_data;
 	VFrame **calibrate_data;
-	VFrame **camera_data;
 	VFrame *camerakeyframe_data;
 	VFrame **cancel_data;
-	VFrame **center_justify;
 	VFrame **chain_data;
 	VFrame *channel_bg_data;
-	VFrame **channel_data;
 	VFrame *channel_position_data;
-	VFrame *clip_icon;
-	VFrame **copy_data;
-	VFrame **crop_data;
-	VFrame **cut_data;
-	VFrame *cwindow_icon;
 	VFrame **delete_all_indexes_data;
 	VFrame **deletebin_data;
 	VFrame **delete_data;
@@ -248,107 +248,52 @@ public:
 	VFrame **deleteproject_data;
 	VFrame **detach_data;
 	VFrame **dntriangle_data;
-	VFrame **drawpatch_data;
-	VFrame **duplex_data;
+
 	VFrame **edit_data;
 	VFrame **edithandlein_data;
 	VFrame **edithandleout_data;
-	VFrame **end_data;
-	VFrame **expandpatch_data;
 	VFrame **extract_data;
-	VFrame **fastfwd_data;
-	VFrame **fastrev_data;
-	VFrame **fit_data;
-	VFrame **forward_data;
-	VFrame **framefwd_data;
-	VFrame **framerev_data;
-	VFrame **gangpatch_data;
-	VFrame **ibeam_data;
-	VFrame **in_data;
-	VFrame **indelete_data;
 	VFrame **infoasset_data;
 	VFrame **in_point;
 	VFrame **insert_data;
 	VFrame *keyframe_data;
-	VFrame **labelbutton_data;
 	VFrame **label_toggle;
-	VFrame **left_justify;
 	VFrame **lift_data;
-	VFrame **magnify_button_data;
-	VFrame **magnify_data;
-	VFrame **mask_data;
 	VFrame *maskkeyframe_data;
-	VFrame **middle_justify;
 	VFrame *modekeyframe_data;
 	VFrame **movedn_data;
 	VFrame **moveup_data;
-	VFrame **mutepatch_data;
-	VFrame *mwindow_icon;
 	VFrame **newbin_data;
-	VFrame **nextlabel_data;
 	VFrame **no_data;
 	VFrame **options_data;
-	VFrame **out_data;
-	VFrame **outdelete_data;
 	VFrame **out_point;
 	VFrame **over_button;
 	VFrame **overwrite_data;
 	VFrame *pankeyframe_data;
 	VFrame **pasteasset_data;
-	VFrame **paste_data;
-	VFrame *patchbay_bg;
-	VFrame **pause_data;
 	VFrame **paused_data;
 	VFrame **picture_data;
-	VFrame **playpatch_data;
 	VFrame *plugin_bg_data;
 	VFrame **presentation_data;
 	VFrame **presentation_loop;
 	VFrame **presentation_stop;
-	VFrame **prevlabel_data;
-	VFrame **proj_data;
 	VFrame *projectorkeyframe_data;
-	VFrame **protect_data;
-	VFrame **rec_data;
-	VFrame **recframe_data;
-	VFrame *record_icon;
-	VFrame **recordpatch_data;
-	VFrame **redo_data;
 	VFrame **redrawindex_data;
 	VFrame **renamebin_data;
 	VFrame **reset_data;
-	VFrame *resource1024_bg_data;
-	VFrame *resource128_bg_data;
-	VFrame *resource256_bg_data;
-	VFrame *resource32_bg_data;
-	VFrame *resource512_bg_data;
-	VFrame *resource64_bg_data;
 	VFrame **reverse_data;
 	VFrame **rewind_data;
-	VFrame **right_justify;
 	VFrame **select_data;
-	VFrame **show_meters;
 	VFrame **splice_data;
 	VFrame **start_over_data;
 	VFrame **statusbar_cancel_data;
-	VFrame **stop_data;
-	VFrame **stoprec_data;
-	VFrame *timebar_bg_data;
-	VFrame *timebar_brender_data;
 	VFrame *timebar_view_data;
 	VFrame *title_bg_data;
-	VFrame **titlesafe_data;
-	VFrame **toclip_data;
-	VFrame **tool_data;
-	VFrame **top_justify;
 	VFrame **transition_data;
-	VFrame **undo_data;
 	VFrame **uptriangle_data;
 	VFrame **viewasset_data;
 	VFrame *vtimebar_bg_data;
-	VFrame *vwindow_icon;
-	VFrame **wrench_data;
-	VFrame **yes_data;
+
 
 
 	MWindow *mwindow;

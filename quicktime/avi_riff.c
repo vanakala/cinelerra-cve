@@ -204,6 +204,7 @@ void quicktime_import_avi(quicktime_t *file)
 	
 	if(idx1->table_size > 1)
 	{
+
 		if((idx1->table[0].offset < first_riff->movi.atom.start + 4 ||
         		idx1->table[1].offset < first_riff->movi.atom.start + 4) && 
         	!file->is_odml)

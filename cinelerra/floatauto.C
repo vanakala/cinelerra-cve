@@ -1,7 +1,9 @@
 #include "autos.h"
 #include "clip.h"
+#include "edl.h"
 #include "filexml.h"
 #include "floatauto.h"
+#include "localsession.h"
 
 FloatAuto::FloatAuto(EDL *edl, FloatAutos *autos)
  : Auto(edl, (Autos*)autos)
@@ -40,41 +42,47 @@ int FloatAuto::identical(FloatAuto *src)
 
 float FloatAuto::value_to_percentage()
 {
-//printf("FloatAuto::value_to_percentage %f %f %f %f\n", value, autos->min, autos->max, (value - autos->min) / (autos->max - autos->min));
-	return (value - autos->min) / (autos->max - autos->min);
+	if(!edl) return 0;
+	float automation_min = edl->local_session->automation_min;
+	float automation_max = edl->local_session->automation_max;
+	float automation_range = automation_max - automation_min;
+	return (value - automation_min) / automation_range;
 }
 
 float FloatAuto::invalue_to_percentage()
 {
-//printf("FloatAuto::value_to_percentage %f %f %f %f\n", value, autos->min, autos->max, (value - autos->min) / (autos->max - autos->min));
-	return (value + control_in_value - autos->min) / 
-		(autos->max - autos->min);
+	if(!edl) return 0;
+	float automation_min = edl->local_session->automation_min;
+	float automation_max = edl->local_session->automation_max;
+	float automation_range = automation_max - automation_min;
+	return (value + control_in_value - automation_min) / 
+		automation_range;
 }
 
 float FloatAuto::outvalue_to_percentage()
 {
-//printf("FloatAuto::value_to_percentage %f %f %f %f\n", value, autos->min, autos->max, (value - autos->min) / (autos->max - autos->min));
-	return (value + control_out_value - autos->min) / 
-		(autos->max - autos->min);
+	if(!edl) return 0;
+	float automation_min = edl->local_session->automation_min;
+	float automation_max = edl->local_session->automation_max;
+	float automation_range = automation_max - automation_min;
+	return (value + control_out_value - automation_min) / 
+		automation_range;
 }
 
-float FloatAuto::percentage_to_value(float percentage)
-{
-//printf("FloatAuto::value_to_percentage %f %f %f %f\n", value, autos->min, autos->max, (value - autos->min) / (autos->max - autos->min));
-	return percentage * (autos->max - autos->min) + autos->min;
-}
-
-float FloatAuto::percentage_to_invalue(float percentage)
-{
-//printf("FloatAuto::value_to_percentage %f %f %f %f\n", value, autos->min, autos->max, (value - autos->min) / (autos->max - autos->min));
-	return percentage * (autos->max - autos->min) + autos->min - value;
-}
-
-float FloatAuto::percentage_to_outvalue(float percentage)
-{
-//printf("FloatAuto::value_to_percentage %f %f %f %f\n", value, autos->min, autos->max, (value - autos->min) / (autos->max - autos->min));
-	return percentage * (autos->max - autos->min) + autos->min - value;
-}
+// float FloatAuto::percentage_to_value(float percentage)
+// {
+// 	return percentage * (autos->max - autos->min) + autos->min;
+// }
+// 
+// float FloatAuto::percentage_to_invalue(float percentage)
+// {
+// 	return percentage * (autos->max - autos->min) + autos->min - value;
+// }
+// 
+// float FloatAuto::percentage_to_outvalue(float percentage)
+// {
+// 	return percentage * (autos->max - autos->min) + autos->min - value;
+// }
 
 void FloatAuto::copy_from(Auto *that)
 {
@@ -83,7 +91,6 @@ void FloatAuto::copy_from(Auto *that)
 
 void FloatAuto::copy_from(FloatAuto *that)
 {
-//printf("FloatAuto::copy_from(IntAuto *that) %f %f\n", value, that->value);
 	Auto::copy_from(that);
 	this->value = that->value;
 	this->control_in_value = that->control_in_value;

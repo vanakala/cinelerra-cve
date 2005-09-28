@@ -1,11 +1,13 @@
 #ifndef MAINSESSION_H
 #define MAINSESSION_H
 
+#include "asset.inc"
 #include "assets.inc"
 #include "auto.inc"
 #include "defaults.inc"
 #include "edit.inc"
 #include "edits.inc"
+#include "edl.inc"
 #include "guicast.h"
 #include "mainsession.inc"
 #include "maxchannels.h"
@@ -47,6 +49,8 @@ public:
 	int ccanvas_highlighted;
 // Current drag operation
 	int current_operation;
+// Free drag enabled
+	int free_drag;
 // Item being dragged
 	ArrayList <PluginServer*> *drag_pluginservers;
 	Plugin *drag_plugin;
@@ -98,12 +102,17 @@ public:
 	int cwindow_x, cwindow_y, cwindow_w, cwindow_h;
 	int ctool_x, ctool_y;
 	int awindow_x, awindow_y, awindow_w, awindow_h;
+	int gwindow_x, gwindow_y;
 	int rmonitor_x, rmonitor_y, rmonitor_w, rmonitor_h;
 	int rwindow_x, rwindow_y, rwindow_w, rwindow_h;
 	int afolders_w;
-	int show_vwindow, show_awindow, show_cwindow, show_lwindow;
+	int show_vwindow, show_awindow, show_cwindow, show_gwindow, show_lwindow;
 	int plugindialog_w, plugindialog_h;
 	int menueffect_w, menueffect_h;
+
+
+// Tip of the day
+	int current_tip;
 
 	MWindow *mwindow;
 };

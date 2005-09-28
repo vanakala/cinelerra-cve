@@ -23,11 +23,18 @@ public:
 	void set_data(unsigned char *ptr);
 
 // Compose widgets using standard images.
-// Put in the image table only if the title is nonzero.
+// The arguments are copied into new VFrames for a new image set.
+// The image set is put in the image table only if the title is nonzero.
 	VFrame** new_button(char *overlay_path, 
 		char *up_path, 
 		char *hi_path, 
 		char *dn_path,
+		char *title = 0);
+	VFrame** new_button4(char *overlay_path, 
+		char *up_path, 
+		char *hi_path, 
+		char *dn_path,
+		char *disabled_path,
 		char *title = 0);
 	VFrame** new_button(char *overlay_path,
 		VFrame *up,
@@ -57,7 +64,10 @@ public:
 	VFrame** new_image_set(char *title, int total, va_list *args);
 	VFrame** new_image_set(char *title, int total, ...);
 	VFrame** new_image_set(int total, ...);
-
+// Creates an image set from VFrame pointers.
+// The images are considered not references and deleted with the image set.
+// If the title already exists, the existing entry is deleted and overridden.
+	VFrame** new_image_set_images(char *title, int total, ...);
 
 // Decompresses image and puts on images table before returning it.
 	VFrame* new_image(char *title, char *path);
@@ -67,6 +77,7 @@ public:
 // These retrieve images based on case sensitive title
 	VFrame* get_image(char *title, int use_default = 1);
 	VFrame** get_image_set(char *title, int use_default = 1);
+	BC_ThemeSet* get_image_set_object(char *title);
 
 // Loads compressed data into temporary
 	unsigned char* get_image_data(char *title);

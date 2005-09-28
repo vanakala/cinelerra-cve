@@ -1,6 +1,9 @@
 #include "bcwindowbase.inc"
 #include "units.h"
+
+
 #include <stdlib.h>
+#include <string.h>
 
 // NOTE: DB::allocated is the original allocation, to which we keep a
 // pointer so that in theory we could have a destructor. DB::topower
@@ -217,9 +220,19 @@ char* Units::totext(char *text,
   			hour = (int)(seconds / 3600);
   			minute = (int)(seconds / 60 - hour * 60);
   			second = (int)(seconds - hour * 3600 - minute * 60);
-//  			frame = (int64_t)(frame_rate * 
-//	 			 (float)((float)seconds - (int64_t)hour * 3600 - (int64_t)minute * 60 - second));
-			frame = (int64_t)((double)frame_rate * seconds + 0.0000001) - (int64_t)((double)frame_rate * (hour * 3600 + minute * 60 + second) + 0.0000001);   
+//   			frame = (int64_t)round(frame_rate * 
+//   	 			 (float)((float)seconds - (int64_t)hour * 3600 - (int64_t)minute * 60 - second));
+//   			sprintf(text, "%01d:%02d:%02d:%02ld", hour, minute, second, frame);
+			frame = (int64_t)((double)frame_rate * 
+					seconds + 
+					0.0000001) - 
+				(int64_t)((double)frame_rate * 
+					(hour * 
+					3600 + 
+					minute * 
+					60 + 
+					second) + 
+				0.0000001);   
 			sprintf(text, "%01d:%02d:%02d:%02ld", hour, minute, second, frame);
 			return text;
 		}
@@ -628,6 +641,21 @@ char* Units::format_to_separators(int time_format)
 	return 0;
 }
 
+void Units::punctuate(char *string)
+{
+	int len = strlen(string);
+	int commas = (len - 1) / 3;
+	for(int i = len + commas, j = len, k; j >= 0 && i >= 0; i--, j--)
+	{
+		k = (len - j - 1) / 3;
+		if(k * 3 == len - j - 1 && j != len - 1 && string[j] != 0)
+		{
+			string[i--] = ',';
+		}
+
+		string[i] = string[j];
+	}
+}
 
 
 

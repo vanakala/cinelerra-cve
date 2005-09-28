@@ -15,7 +15,7 @@ Autos::Autos(EDL *edl, Track *track)
 {
 	this->edl = edl;
 	this->track = track;
-//printf("Autos::Autos 1 %p %p %p\n", this, first, last);
+	type = -1;
 }
 
 
@@ -26,13 +26,23 @@ Autos::~Autos()
 	delete default_auto;
 }
 
-int Autos::create_objects()
+void Autos::create_objects()
 {
 // Default
 	default_auto = new_auto();
 	default_auto->is_default = 1;
-	return 0;
 }
+
+int Autos::get_type()
+{
+	return type;
+}
+
+Auto* Autos::append_auto()
+{
+	return append(new_auto());
+}
+
 
 Auto* Autos::new_auto()
 {
@@ -52,10 +62,8 @@ void Autos::resample(double old_rate, double new_rate)
 
 void Autos::equivalent_output(Autos *autos, int64_t startproject, int64_t *result)
 {
-	if(
 // Default keyframe differs
-		(!total() && !(*default_auto == *autos->default_auto))
-		)
+	if(!total() && !(*default_auto == *autos->default_auto))
 	{
 		if(*result < 0 || *result > startproject) *result = startproject;
 	}
@@ -207,7 +215,7 @@ Auto* Autos::get_prev_auto(int64_t position,
 
 Auto* Autos::get_prev_auto(int direction, Auto* &current)
 {
-	double position_double = edl->local_session->selectionstart;
+	double position_double = edl->local_session->get_selectionstart(1);
 	position_double = edl->align_to_frame(position_double, 0);
 	int64_t position = track->to_units(position_double, 0);
 
@@ -256,7 +264,7 @@ Auto* Autos::get_auto_for_editing(double position)
 {
 	if(position < 0)
 	{
-		position = edl->local_session->selectionstart;
+		position = edl->local_session->get_selectionstart(1);
 	}
 
 	Auto *result = 0;
@@ -430,7 +438,7 @@ int Autos::clear_all()
 		current_ = NEXT;
 		remove(current);
 	}
-	add_auto(0, default_);
+	append_auto();
 	return 0;
 }
 
@@ -467,7 +475,7 @@ void Autos::paste(int64_t start,
 		if(!result)
 		{
 // End of list
-			if(strstr(file->tag.get_title(), "AUTOS") && 
+			if(/* strstr(file->tag.get_title(), "AUTOS") && */
 				file->tag.get_title()[0] == '/')
 			{
 				result = 1;
@@ -664,7 +672,10 @@ int Autos::load(FileXML *file)
 		
 		if(!result)
 		{
-			if(strstr(file->tag.get_title(), "AUTOS") && file->tag.get_title()[0] == '/')
+// First tag with leading / is taken as end of autos
+			if(/* strstr(file->tag.get_title(), "AUTOS") && */
+
+				file->tag.get_title()[0] == '/')
 			{
 				result = 1;
 			}
@@ -883,17 +894,26 @@ int Autos::advance_slope(Auto **current_auto,
 	return 0;
 }
 
-float Autos::value_to_percentage()
-{
-	return 0;
-}
-
 int64_t Autos::get_length()
 {
 	if(last) 
 		return last->position + 1;
 	else
 		return 0;
+}
+
+void Autos::get_extents(float *min, 
+	float *max,
+	int *coords_undefined,
+	int64_t unit_start,
+	int64_t unit_end)
+{
+	
+}
+
+
+void Autos::dump()
+{
 }
 
 

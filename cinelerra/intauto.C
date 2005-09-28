@@ -65,6 +65,7 @@ void IntAuto::copy_from(IntAuto *that)
 
 float IntAuto::value_to_percentage()
 {
+// Only used for toggles so this should work.
 	return (float)value;
 }
 

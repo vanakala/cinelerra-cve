@@ -62,14 +62,14 @@ int KeyframePopup::update(Automation *automation, Autos *autos, Auto *auto_keyfr
 	this->keyframe_auto = auto_keyframe;
 
 	/* snap to cursor */
-	double current_position = mwindow->edl->local_session->selectionstart;
+	double current_position = mwindow->edl->local_session->get_selectionstart(1);
 	double new_position = keyframe_automation->track->from_units(keyframe_auto->position);
-	mwindow->edl->local_session->selectionstart = new_position;
-	mwindow->edl->local_session->selectionend = new_position;
+	mwindow->edl->local_session->set_selectionstart(new_position);
+	mwindow->edl->local_session->set_selectionend(new_position);
 	if (current_position != new_position)
 	{
-		mwindow->edl->local_session->selectionstart = new_position;
-		mwindow->edl->local_session->selectionend = new_position;
+		mwindow->edl->local_session->set_selectionstart(new_position);
+		mwindow->edl->local_session->set_selectionend(new_position);
 		mwindow->gui->lock_window();
 		mwindow->gui->update(1, 1, 1, 1, 1, 1, 0);	
 		mwindow->gui->unlock_window();
@@ -90,10 +90,9 @@ KeyframePopupDelete::~KeyframePopupDelete()
 
 int KeyframePopupDelete::handle_event()
 {
-	mwindow->undo->update_undo_before(_("delete keyframe"), LOAD_ALL);
 	delete popup->keyframe_auto;
 	mwindow->save_backup();
-	mwindow->undo->update_undo_after();
+	mwindow->undo->update_undo(_("delete keyframe"), LOAD_ALL);
 
 	mwindow->gui->update(0,
 	        1,      // 1 for incremental drawing.  2 for full refresh
@@ -129,6 +128,7 @@ int KeyframePopupShow::handle_event()
 	} else
 	if (popup->keyframe_automation)
 	{
+/*
 
 		mwindow->cwindow->gui->lock_window();
 		int show_window = 1;
@@ -220,6 +220,7 @@ int KeyframePopupShow::handle_event()
 		mwindow->cwindow->gui->unlock_window();
 
 
+*/
 	}
 	return 1;
 }
@@ -245,6 +246,7 @@ int KeyframePopupCopy::handle_event()
 	- very hard to do, so this is good approximation for now...
 */
 	
+#if 0
 	if (popup->keyframe_automation)
 	{
 		FileXML file;
@@ -325,6 +327,7 @@ int KeyframePopupCopy::handle_event()
 		mwindow->gui->unlock_window();
 
 	} else
+#endif
 		mwindow->copy_automation();
 	return 1;
 }

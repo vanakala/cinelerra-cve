@@ -85,8 +85,8 @@ void MWindowGUI::get_scrollbars()
 
 // Scrollbars are constitutive
 	need_xscroll = need_yscroll = 1;
-	view_h = mwindow->theme->mcanvas_h - BC_ScrollBar::get_span(SCROLL_VERT);
-	view_w = mwindow->theme->mcanvas_w - BC_ScrollBar::get_span(SCROLL_HORIZ);
+	view_h = mwindow->theme->mcanvas_h;
+	view_w = mwindow->theme->mcanvas_w;
 
 // 	for(int i = 0; i < 2; i++)
 // 	{
@@ -122,7 +122,9 @@ void MWindowGUI::get_scrollbars()
 		if(!samplescroll)
 			add_subwindow(samplescroll = new SampleScroll(mwindow, 
 				this, 
-				view_w));
+				mwindow->theme->mhscroll_x, 
+				mwindow->theme->mhscroll_y, 
+				mwindow->theme->mhscroll_w));
 		else
 			samplescroll->resize_event();
 
@@ -142,7 +144,9 @@ void MWindowGUI::get_scrollbars()
 		if(!trackscroll)
 			add_subwindow(trackscroll = new TrackScroll(mwindow, 
 				this,
-				view_h));
+				mwindow->theme->mvscroll_x,
+				mwindow->theme->mvscroll_y,
+				mwindow->theme->mvscroll_h));
 		else
 			trackscroll->resize_event();
 
@@ -164,53 +168,51 @@ void MWindowGUI::get_scrollbars()
 
 int MWindowGUI::create_objects()
 {
-//set_repeat(100);
-
-//printf("MWindowGUI::create_objects 1\n");
-	set_icon(mwindow->theme->mwindow_icon);
+SET_TRACE
+	set_icon(mwindow->theme->get_image("mwindow_icon"));
 	
-//printf("MWindowGUI::create_objects 1\n");
+SET_TRACE
 
 	cursor = 0;
 	add_subwindow(mainmenu = new MainMenu(mwindow, this));
-//printf("MWindowGUI::create_objects 1\n");
+SET_TRACE
 
 	mwindow->theme->get_mwindow_sizes(this, get_w(), get_h());
 	mwindow->theme->draw_mwindow_bg(this);
 	mainmenu->create_objects();
-//printf("MWindowGUI::create_objects 1\n");
+SET_TRACE
 
 	add_subwindow(mbuttons = new MButtons(mwindow, this));
 	mbuttons->create_objects();
-//printf("MWindowGUI::create_objects 1\n");
+SET_TRACE
 
-	add_subwindow(mwindow->timebar = timebar = new MTimeBar(mwindow, 
+	add_subwindow(timebar = new MTimeBar(mwindow, 
 		this,
 		mwindow->theme->mtimebar_x,
  		mwindow->theme->mtimebar_y,
 		mwindow->theme->mtimebar_w,
 		mwindow->theme->mtimebar_h));
 	timebar->create_objects();
-//printf("MWindowGUI::create_objects 2\n");
+SET_TRACE
 
-	add_subwindow(mwindow->patches = patchbay = new PatchBay(mwindow, this));
+	add_subwindow(patchbay = new PatchBay(mwindow, this));
 	patchbay->create_objects();
-//printf("MWindowGUI::create_objects 1\n");
+SET_TRACE
 
 	get_scrollbars();
 
-//printf("MWindowGUI::create_objects 1\n");
+SET_TRACE
 	mwindow->gui->add_subwindow(canvas = new TrackCanvas(mwindow, this));
 	canvas->create_objects();
-//printf("MWindowGUI::create_objects 1\n");
+SET_TRACE
 
 	add_subwindow(zoombar = new ZoomBar(mwindow, this));
 	zoombar->create_objects();
-//printf("MWindowGUI::create_objects 1\n");
+SET_TRACE
 
 	add_subwindow(statusbar = new StatusBar(mwindow, this));
 	statusbar->create_objects();
-//printf("MWindowGUI::create_objects 1\n");
+SET_TRACE
 
 	add_subwindow(mainclock = new MainClock(mwindow, 
 		mwindow->theme->mclock_x,
@@ -221,29 +223,29 @@ int MWindowGUI::create_objects()
 		mwindow->edl->session->frame_rate));
 	mainclock->update(0);
 
-//printf("MWindowGUI::create_objects 1\n");
+SET_TRACE
 
 	cursor = new MainCursor(mwindow, this);
 	cursor->create_objects();
-//printf("MWindowGUI::create_objects 1\n");
+SET_TRACE
 
 	add_subwindow(edit_menu = new EditPopup(mwindow, this));
 	edit_menu->create_objects();
-//printf("MWindowGUI::create_objects 1\n");
+SET_TRACE
 
 	add_subwindow(plugin_menu = new PluginPopup(mwindow, this));
 	plugin_menu->create_objects();
-//printf("MWindowGUI::create_objects 1\n");
+SET_TRACE
 
 	add_subwindow(keyframe_menu = new KeyframePopup(mwindow, this));
 	keyframe_menu->create_objects();
 
 	add_subwindow(transition_menu = new TransitionPopup(mwindow, this));
 	transition_menu->create_objects();
-//printf("MWindowGUI::create_objects 1\n");
+SET_TRACE
 
 	canvas->activate();
-//printf("MWindowGUI::create_objects 1\n");
+SET_TRACE
 	return 0;
 }
 
@@ -262,7 +264,7 @@ void MWindowGUI::redraw_time_dependancies()
 {
 	zoombar->redraw_time_dependancies();
 	timebar->update();
-	mainclock->update(mwindow->edl->local_session->selectionstart);
+	mainclock->update(mwindow->edl->local_session->get_selectionstart(1));
 }
 
 int MWindowGUI::focus_in_event()
@@ -316,7 +318,8 @@ void MWindowGUI::update(int scrollbars,
 //TRACE("MWindowGUI::update 1");
 	if(patchbay) this->patchbay->update();
 //TRACE("MWindowGUI::update 1");
-	if(clock) this->mainclock->update(mwindow->edl->local_session->selectionstart);
+	if(clock) this->mainclock->update(
+		mwindow->edl->local_session->get_selectionstart(1));
 //TRACE("MWindowGUI::update 1");
 	if(canvas)
 	{
@@ -341,6 +344,7 @@ int MWindowGUI::visible(int64_t x1, int64_t x2, int64_t view_x1, int64_t view_x2
 int MWindowGUI::show_message(char *message, int color)
 {
 //printf("MWindowGUI::show_message %s %d\n", message, color);
+	if(color < 0) color = mwindow->theme->message_normal;
 	statusbar->status_text->set_color(color);
 	statusbar->status_text->update(message);
 	return 0;
@@ -463,6 +467,190 @@ int MWindowGUI::keypress_event()
 //printf("MWindowGUI::keypress_event 1 %d\n", get_keypress());
 	int result = 0;
 	result = mbuttons->keypress_event();
+
+	if(!result)
+	{
+		switch(get_keypress())
+		{
+			case LEFT:
+				if(!ctrl_down()) 
+				{ 
+					mwindow->move_left(); 
+					result = 1; 
+				}
+				break;
+			case RIGHT:
+				if(!ctrl_down()) 
+				{ 
+					mwindow->move_right(); 
+					result = 1; 
+				}
+				break;
+
+			case UP:
+				if(ctrl_down())
+				{
+					mwindow->expand_y();
+					result = 1;
+				}
+				else
+				if(alt_down())
+				{
+					mwindow->expand_autos();
+					result = 1;
+				}
+				else
+				{
+					mwindow->expand_sample();
+					result = 1;
+				}
+				break;
+
+			case DOWN:
+				if(ctrl_down())
+				{
+					mwindow->zoom_in_y();
+					result = 1;
+				}
+				else
+				if(alt_down())
+				{
+					mwindow->shrink_autos();
+					result = 1;
+				}
+				else
+				{
+					mwindow->zoom_in_sample();
+					result = 1;
+				}
+				break;
+
+			case PGUP:
+				if(!ctrl_down())
+				{
+					mwindow->move_up();
+					result = 1;
+				}
+				else
+				{
+					mwindow->expand_t();
+					result = 1;
+				}
+				break;
+
+			case PGDN:
+				if(!ctrl_down())
+				{
+					mwindow->move_down();
+					result = 1;
+				}
+				else
+				{
+					mwindow->zoom_in_t();
+					result = 1;
+				}
+				break;
+
+			case TAB:
+			case LEFTTAB:
+				int cursor_x = canvas->get_relative_cursor_x();
+				int cursor_y = canvas->get_relative_cursor_y();
+
+				if(get_keypress() == TAB)
+				{
+// Switch the record button
+					for(Track *track = mwindow->edl->tracks->first; track; track = track->next)
+					{
+						int64_t track_x, track_y, track_w, track_h;
+						canvas->track_dimensions(track, track_x, track_y, track_w, track_h);
+
+						if(cursor_y >= track_y && 
+							cursor_y < track_y + track_h)
+						{
+							if (track->record)
+								track->record = 0;
+							else
+								track->record = 1;
+							result = 1; 
+							break;
+						}
+					}
+				} 
+				else 
+				{
+					Track *this_track = 0;
+					for(Track *track = mwindow->edl->tracks->first; track; track = track->next)
+					{
+						int64_t track_x, track_y, track_w, track_h;
+						canvas->track_dimensions(track, track_x, track_y, track_w, track_h);
+
+						if(cursor_y >= track_y && 
+							cursor_y < track_y + track_h)
+						{
+							// This is our track
+							this_track = track;
+							break;
+						}
+					}
+
+					int total_selected = mwindow->edl->tracks->total_of(Tracks::RECORD);
+
+	// nothing previously selected
+					if(total_selected == 0)
+					{
+						mwindow->edl->tracks->select_all(Tracks::RECORD,
+							1);
+					}
+					else
+					if(total_selected == 1)
+					{
+	// this patch was previously the only one on
+						if(this_track && this_track->record)
+						{
+							mwindow->edl->tracks->select_all(Tracks::RECORD,
+								1);
+						}
+	// another patch was previously the only one on
+						else
+						{
+							mwindow->edl->tracks->select_all(Tracks::RECORD,
+								0);
+							if (this_track) 
+								this_track->record = 1;
+
+						}
+					}
+					else
+					if(total_selected > 1)
+					{
+						mwindow->edl->tracks->select_all(Tracks::RECORD,
+							0);
+						if (this_track) 
+							this_track->record = 1;
+					}
+
+				}
+
+				update (0,
+						1,
+						0,
+						0,
+						1,
+						0,
+						1);
+				unlock_window();
+				mwindow->cwindow->update(0, 1, 1);
+				lock_window("TrackCanvas::keypress_event");
+
+				result = 1;
+				break;
+		}
+
+// since things under cursor have changed...
+		if(result) 
+			cursor_motion_event(); 
+	}
+
 	return result;
 }
 

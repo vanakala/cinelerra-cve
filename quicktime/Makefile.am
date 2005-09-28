@@ -1,4 +1,4 @@
-SUBDIRS=encore50 
+SUBDIRS = encore50 ffmpeg
 
 
 lib_LTLIBRARIES = libquicktimehv.la
@@ -9,20 +9,30 @@ AM_CFLAGS = \
 	$(VORBIS_CFLAGS) \
 	$(LIBAVCODEC_CFLAGS) \
 	$(MJPEG_CFLAGS) \
-	-DENCORE_INCLUDE=\"encore50/encore.h\"
+	-DENCORE_INCLUDE=\"encore50/encore.h\" \
+	-I$(srcdir)/ffmpeg/libavcodec
 
 libquicktimehv_la_LDFLAGS = -version-info 1:0:0 -release 1.6.0 -Wl,--no-undefined 
 
-libquicktimehv_la_LIBADD = -ldv -ljpeg -lpng \
+libquicktimehv_la_LIBADD = \
+	ffmpeg/libavcodec/libavcodec.la \
 	$(VORBIS_LIBS) \
 	-lmp3lame \
-	$(LIBAVCODEC_LIBS) \
 	$(FAAD_LIBS) \
+	-lfaac \
 	encore50/libencore.la \
 	$(top_builddir)/libmpeg3/libmpeg3hv.la \
+	-lx264 \
+	-ldv -ljpeg -lpng \
 	-lz -lpthread -lm
 
-libquicktimehv_la_SOURCES = atom.c avi_hdrl.c avi_idx1.c avi_movi.c avi_strl.c \
+libquicktimehv_la_SOURCES = \
+	atom.c \
+	avcc.c \
+	avi_hdrl.c \
+	avi_idx1.c \
+	avi_movi.c \
+	avi_strl.c \
 			  avi_odml.c avi_ix.c avi_indx.c avi_riff.c \
 	cmodel_default.c \
 	cmodel_float.c \
@@ -33,7 +43,6 @@ libquicktimehv_la_SOURCES = atom.c avi_hdrl.c avi_idx1.c avi_movi.c avi_strl.c \
 	ctab.c \
 	dinf.c \
 	dref.c \
-	dv.c \
 	edts.c \
 	elst.c \
 	esds.c \
@@ -45,6 +54,9 @@ libquicktimehv_la_SOURCES = atom.c avi_hdrl.c avi_idx1.c avi_movi.c avi_strl.c \
 	mp4a.c \
 	mvhd.c \
 	plugin.c \
+	qtdv.c \
+	qtffmpeg.c \
+	qth264.c \
 	qtpng.c \
 	qtmp3.c \
 	quicktime.c \
@@ -62,7 +74,6 @@ noinst_HEADERS = cmodel_permutation.h \
 	colormodels.h \
 	div3.h \
 	divx.h \
-	dv.h \
 	fastjpg.h \
 	fastjpgmacro.h \
 	funcprotos.h \
@@ -76,6 +87,9 @@ noinst_HEADERS = cmodel_permutation.h \
 	mmx.h \
 	mp4a.h \
 	mpeg4.h \
+	qtdv.h \
+	qtffmpeg.h \
+	qth264.h \
 	qtmp3.h \
 	qtpng.h \
 	qtprivate.h \

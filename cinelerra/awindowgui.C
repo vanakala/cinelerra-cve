@@ -221,7 +221,7 @@ void AssetPicon::create_objects()
 		strcpy(name, edl->local_session->clip_title);
 		set_text(name);
 		set_icon(gui->clip_icon);
-		set_icon_vframe(mwindow->theme->clip_icon);
+		set_icon_vframe(mwindow->theme->get_image("clip_icon"));
 	}
 	else
 	if(plugin)
@@ -318,7 +318,7 @@ int AWindowGUI::create_objects()
 	asset_titles[0] = _("Title");
 	asset_titles[1] = _("Comments");
 
-	set_icon(mwindow->theme->awindow_icon);
+	set_icon(mwindow->theme->get_image("awindow_icon"));
 	file_icon = new BC_Pixmap(this, 
 		BC_WindowBase::get_resources()->type_to_icon[ICON_UNKNOWN],
 		PIXMAP_ALPHA);
@@ -336,7 +336,7 @@ int AWindowGUI::create_objects()
 		PIXMAP_ALPHA);
 
 	clip_icon = new BC_Pixmap(this, 
-		mwindow->theme->clip_icon,
+		mwindow->theme->get_image("clip_icon"),
 		PIXMAP_ALPHA);
 
 // Mandatory folders
@@ -480,9 +480,13 @@ int AWindowGUI::close_event()
 {
 	hide_window();
 	mwindow->session->show_awindow = 0;
+	unlock_window();
+
 	mwindow->gui->lock_window("AWindowGUI::close_event");
 	mwindow->gui->mainmenu->show_awindow->set_checked(0);
 	mwindow->gui->unlock_window();
+
+	lock_window("AWindowGUI::close_event");
 	mwindow->save_defaults();
 	return 1;
 }

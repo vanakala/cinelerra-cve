@@ -42,6 +42,4 @@ EXTRA_DIST = \
 	lad_picon.png \
 	lad_picon.xcf.bz2 \
 	lad_picon_png.h \
-	microsoft_credit.png \
-	microsoft_credit_png.h \
 	modes.xcf.bz2

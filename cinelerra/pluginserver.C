@@ -328,13 +328,16 @@ int PluginServer::init_realtime(int realtime_sched,
 		int total_in_buffers, 
 		int buffer_size)
 {
+SET_TRACE
 	if(!plugin_open) return 0;
+SET_TRACE
 // set for realtime priority
 // initialize plugin
 // Call start_realtime
 	client->plugin_init_realtime(realtime_sched, 
 		total_in_buffers, 
 		buffer_size);
+SET_TRACE
 }
 
 
@@ -708,14 +711,14 @@ void PluginServer::show_gui()
 	if(video)
 	{
 		client->source_position = Units::to_int64(
-			mwindow->edl->local_session->selectionstart * 
+			mwindow->edl->local_session->get_selectionstart(1) * 
 				mwindow->edl->session->frame_rate);
 	}
 	else
 	if(audio)
 	{
 		client->source_position = Units::to_int64(
-			mwindow->edl->local_session->selectionstart * 
+			mwindow->edl->local_session->get_selectionstart(1) * 
 				mwindow->edl->session->sample_rate);
 	}
 	client->update_display_title();
@@ -731,14 +734,14 @@ void PluginServer::update_gui()
 	if(video)
 	{
 		client->source_position = Units::to_int64(
-			mwindow->edl->local_session->selectionstart * 
+			mwindow->edl->local_session->get_selectionstart(1) * 
 				mwindow->edl->session->frame_rate);
 	}
 	else
 	if(audio)
 	{
 		client->source_position = Units::to_int64(
-			mwindow->edl->local_session->selectionstart * 
+			mwindow->edl->local_session->get_selectionstart(1) * 
 				mwindow->edl->session->sample_rate);
 	}
 	client->update_gui();
@@ -930,13 +933,9 @@ Theme* PluginServer::get_theme()
 
 
 // Called when plugin interface is tweeked
-void PluginServer::sync_parameters(const char *plugin_string)
+void PluginServer::sync_parameters()
 {
-	char s[BCTEXTLEN];
-	sprintf(s, _("tweak %s"), plugin_string);
-
 	if(video) mwindow->restart_brender();
-	mwindow->undo->push_state(s, LOAD_AUTOMATION | LOAD_TIMEBAR);
 	mwindow->sync_parameters();
 	if(mwindow->edl->session->auto_conf->plugins)
 	{

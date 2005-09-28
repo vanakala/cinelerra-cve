@@ -113,6 +113,28 @@ void Tracks::get_affected_edits(ArrayList<Edit*> *drag_edits, double position, T
 
 }
 
+void Tracks::get_automation_extents(float *min, 
+	float *max,
+	double start,
+	double end)
+{
+	*min = 0;
+	*max = 0;
+	int coords_undefined = 1;
+	for(Track *current = first; current; current = NEXT)
+	{
+		if(current->record)
+		{
+			current->automation->get_extents(min,
+				max,
+				&coords_undefined,
+				current->to_units(start, 1),
+				current->to_units(end, 1));
+		}
+	}
+}
+
+
 void Tracks::copy_from(Tracks *tracks)
 {
 	Track *new_track;
@@ -216,7 +238,8 @@ Track* Tracks::add_audio_track(int above, Track *dst_track)
 
 
 
-	PanAuto* pan_auto = (PanAuto*)new_track->automation->pan_autos->default_auto;
+	PanAuto* pan_auto = 
+		(PanAuto*)new_track->automation->autos[AUTOMATION_PAN]->default_auto;
 	pan_auto->values[current_pan] = 1.0;
 
 	BC_Pan::calculate_stick_position(edl->session->audio_channels, 
@@ -289,9 +312,9 @@ int Tracks::detach_shared_effects(int module)
 	{
 		current->detach_shared_effects(module);
 	}
-
-	return 0;
-}
+ 
+ 	return 0;
+ }
 
 int Tracks::total_of(int type)
 {
@@ -300,11 +323,12 @@ int Tracks::total_of(int type)
 	
 	for(Track *current = first; current; current = NEXT)
 	{
-		long unit_start = current->to_units(edl->local_session->selectionstart, 0);
-		mute_keyframe = (IntAuto*)current->automation->mute_autos->get_prev_auto(
+		long unit_start = current->to_units(edl->local_session->get_selectionstart(1), 0);
+		mute_keyframe = 
+			(IntAuto*)current->automation->autos[AUTOMATION_MUTE]->get_prev_auto(
 			unit_start, 
 			PLAY_FORWARD,
-			(Auto*&)mute_keyframe);
+			(Auto* &)mute_keyframe);
 
 		result += 
 			(current->play && type == PLAY) ||
@@ -434,7 +458,7 @@ void Tracks::translate_camera(float offset_x, float offset_y)
 	{
 		if(current->data_type == TRACK_VIDEO)
 		{
-			((VTrack*)current)->translate_camera(offset_x, offset_y);
+			((VTrack*)current)->translate(offset_x, offset_y, 1);
 		}
 	}
 }
@@ -444,7 +468,7 @@ void Tracks::translate_projector(float offset_x, float offset_y)
 	{
 		if(current->data_type == TRACK_VIDEO)
 		{
-			((VTrack*)current)->translate_projector(offset_x, offset_y);
+			((VTrack*)current)->translate(offset_x, offset_y, 0);
 		}
 	}
 }
@@ -476,7 +500,7 @@ void Tracks::select_all(int type,
 {
 	for(Track* current = first; current; current = NEXT)
 	{
-		double position = edl->local_session->selectionstart;
+		double position = edl->local_session->get_selectionstart(1);
 
 		if(type == PLAY) current->play = value;
 		if(type == RECORD) current->record = value;
@@ -485,7 +509,7 @@ void Tracks::select_all(int type,
 		
 		if(type == MUTE)
 		{
-			((IntAuto*)current->automation->mute_autos->get_auto_for_editing(position))->value = value;
+			((IntAuto*)current->automation->autos[AUTOMATION_MUTE]->get_auto_for_editing(position))->value = value;
 		}
 
 		if(type == EXPAND) current->expand_view = value;

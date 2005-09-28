@@ -1607,11 +1607,11 @@ void BC_WindowBase::draw_9segment(int x,
 
 
 // Segment 2 * n
-	for(int i = out_x2; i < out_x3; i += in_x_third)
+	for(int i = out_x2; i < out_x3; i += in_x3 - in_x2)
 	{
 		if(out_x3 - i > 0)
 		{
-			int w = MIN(in_x_third, out_x3 - i);
+			int w = MIN(in_x3 - in_x2, out_x3 - i);
 			draw_pixmap(src,
 				x + i, 
 				y + out_y1,
@@ -1640,11 +1640,11 @@ void BC_WindowBase::draw_9segment(int x,
 
 
 // Segment 4 * n
-	for(int i = out_y2; i < out_y3; i += in_y_third)
+	for(int i = out_y2; i < out_y3; i += in_y3 - in_y2)
 	{
 		if(out_y3 - i > 0)
 		{
-			int h = MIN(in_y_third, out_y3 - i);
+			int h = MIN(in_y3 - in_y2, out_y3 - i);
 			draw_pixmap(src,
 				x + out_x1, 
 				y + i,
@@ -1658,16 +1658,16 @@ void BC_WindowBase::draw_9segment(int x,
 
 
 // Segment 5 * n * n
-	for(int i = out_y2; i < out_y3; i += in_y_third)
+	for(int i = out_y2; i < out_y3; i += in_y3 - in_y2 /* in_y_third */)
 	{
 		if(out_y3 - i > 0)
 		{
-			int h = MIN(in_y_third, out_y3 - i);
+			int h = MIN(in_y3 - in_y2 /* in_y_third */, out_y3 - i);
 
 
-			for(int j = out_x2; j < out_x3; j += in_x_third)
+			for(int j = out_x2; j < out_x3; j += in_x3 - in_x2 /* in_x_third */)
 			{
-				int w = MIN(in_x_third, out_x3 - j);
+				int w = MIN(in_x3 - in_x2 /* in_x_third */, out_x3 - j);
 				if(out_x3 - j > 0)
 					draw_pixmap(src,
 						x + j, 
@@ -1682,11 +1682,11 @@ void BC_WindowBase::draw_9segment(int x,
 	}
 
 // Segment 6 * n
-	for(int i = out_y2; i < out_y3; i += in_y_third)
+	for(int i = out_y2; i < out_y3; i += in_y3 - in_y2)
 	{
 		if(out_y3 - i > 0)
 		{
-			int h = MIN(in_y_third, out_y3 - i);
+			int h = MIN(in_y3 - in_y2, out_y3 - i);
 			draw_pixmap(src,
 				x + out_x3, 
 				y + i,
@@ -1713,11 +1713,11 @@ void BC_WindowBase::draw_9segment(int x,
 
 
 // Segment 8 * n
-	for(int i = out_x2; i < out_x3; i += in_x_third)
+	for(int i = out_x2; i < out_x3; i += in_x3 - in_x2)
 	{
 		if(out_x3 - i > 0)
 		{
-			int w = MIN(in_x_third, out_x3 - i);
+			int w = MIN(in_x3 - in_y2, out_x3 - i);
 			draw_pixmap(src,
 				x + i, 
 				y + out_y3,
@@ -1810,11 +1810,11 @@ void BC_WindowBase::draw_9segment(int x,
 
 
 // Segment 2 * n
-	for(int i = out_x2; i < out_x3; i += in_x_third)
+	for(int i = out_x2; i < out_x3; i += in_x3 - in_x2)
 	{
 		if(out_x3 - i > 0)
 		{
-			int w = MIN(in_x_third, out_x3 - i);
+			int w = MIN(in_x3 - in_x2, out_x3 - i);
 			draw_bitmap(temp_bitmap,
 				0,
 				x + i, 
@@ -1849,11 +1849,11 @@ void BC_WindowBase::draw_9segment(int x,
 
 
 // Segment 4 * n
-	for(int i = out_y2; i < out_y3; i += in_y_third)
+	for(int i = out_y2; i < out_y3; i += in_y3 - in_y2)
 	{
 		if(out_y3 - i > 0)
 		{
-			int h = MIN(in_y_third, out_y3 - i);
+			int h = MIN(in_y3 - in_y2, out_y3 - i);
 			draw_bitmap(temp_bitmap,
 				0,
 				x + out_x1, 
@@ -1870,16 +1870,16 @@ void BC_WindowBase::draw_9segment(int x,
 
 
 // Segment 5 * n * n
-	for(int i = out_y2; i < out_y3; i += in_y_third)
+	for(int i = out_y2; i < out_y3; i += in_y3 - in_y2)
 	{
 		if(out_y3 - i > 0)
 		{
-			int h = MIN(in_y_third, out_y3 - i);
+			int h = MIN(in_y3 - in_y2, out_y3 - i);
 
 
-			for(int j = out_x2; j < out_x3; j += in_x_third)
+			for(int j = out_x2; j < out_x3; j += in_x3 - in_x2)
 			{
-				int w = MIN(in_x_third, out_x3 - j);
+				int w = MIN(in_x3 - in_x2, out_x3 - j);
 				if(out_x3 - j > 0)
 					draw_bitmap(temp_bitmap,
 						0,

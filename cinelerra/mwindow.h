@@ -18,6 +18,7 @@
 #include "edl.inc"
 #include "filesystem.inc"
 #include "filexml.inc"
+#include "gwindow.inc"
 #include "levelwindow.inc"
 #include "loadmode.inc"
 #include "mainindexes.inc"
@@ -45,6 +46,7 @@
 #include "threadloader.inc"
 #include "timebar.inc"
 #include "timebomb.h"
+#include "tipwindow.inc"
 #include "track.inc"
 #include "tracking.inc"
 #include "tracks.inc"
@@ -89,6 +91,7 @@ public:
 	void show_awindow();
 	void show_lwindow();
 	void show_cwindow();
+	void show_gwindow();
 	void tile_windows();
 	void set_titles(int value);
 	int asset_to_edl(EDL *new_edl, Asset *new_asset, RecordLabels *labels = 0);
@@ -118,7 +121,12 @@ public:
 		int edit_plugins);
 // Reset everything for a load
 	void update_project(int load_mode);
+// Fit selected time to horizontal display range
 	void fit_selection();
+// Fit selected autos to the vertical display range
+	void fit_autos();
+	void expand_autos();
+	void shrink_autos();
 // move the window to include the cursor
 	void find_cursor();
 // Append a plugindb with pointers to the master plugindb
@@ -357,17 +365,11 @@ public:
 
 
 	SplashGUI *splash_window;
-	LevelWindow *level_window;
-	Tracks *tracks;
-	PatchBay *patches;
 	MainUndo *undo;
-	TimeBar *timebar;
 	Defaults *defaults;
 	Assets *assets;
 // CICaches for drawing timeline only
 	CICache *audio_cache, *video_cache;
-	ThreadLoader *threadloader;
-	VideoWindow *video_window;
 	Preferences *preferences;
 	PreferencesThread *preferences_thread;
 	MainSession *session;
@@ -405,7 +407,6 @@ public:
 
 	BatchRenderThread *batch_render;
 	Render *render;
-//	Render *renderlist;
 // Master edl
 	EDL *edl;
 // Main Window GUI
@@ -416,6 +417,10 @@ public:
 	VWindow *vwindow;
 // Asset manager
 	AWindow *awindow;
+// Automation window
+	GWindow *gwindow;
+// Tip of the day
+	TipWindow *twindow;
 // Levels
 	LevelWindow *lwindow;
 // Lock during creation and destruction of GUI
@@ -442,6 +447,8 @@ public:
 		char *config_path);
 	void init_edl();
 	void init_awindow();
+	void init_gwindow();
+	void init_tipwindow();
 // Used by MWindow and RenderFarmClient
 	static void init_plugins(Preferences *preferences, 
 		ArrayList<PluginServer*>* &plugindb,
@@ -463,6 +470,7 @@ public:
 	void init_gui();
 	void init_playbackcursor();
 	void delete_plugins();
+// 
 	void clean_indexes();
 //	TimeBomb timebomb;
 	SigHandler *sighandler;

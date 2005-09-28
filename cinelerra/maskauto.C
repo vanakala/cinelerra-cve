@@ -93,7 +93,7 @@ void SubMask::load(FileXML *file)
 			{
 				char string[BCTEXTLEN];
 				string[0] = 0;
-				file->read_text_until("/POINT", string);
+				file->read_text_until("/POINT", string, BCTEXTLEN);
 
 				MaskPoint *point = new MaskPoint;
 				char *ptr = string;
@@ -369,6 +369,7 @@ void MaskAuto::dump()
 		masks.values[i]->dump();
 	}
 }
+
 void MaskAuto::translate_submasks(float translate_x, float translate_y)
 {
 	for(int i = 0; i < masks.total; i++)
@@ -378,9 +379,9 @@ void MaskAuto::translate_submasks(float translate_x, float translate_y)
 		{
 			mask->points.values[j]->x += translate_x;
 			mask->points.values[j]->y += translate_y;
-//			printf("mpx: %f, mpy:%f\n",mask->points.values[j]->x,mask->points.values[j]->y);
 		}
 	}
-
 }
+
+
 

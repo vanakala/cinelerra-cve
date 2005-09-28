@@ -4,7 +4,7 @@
 #include "asset.inc"
 #include "auto.inc"
 #include "autos.inc"
-#include "bezierauto.inc"
+#include "bctimer.inc"
 #include "edit.inc"
 #include "edithandles.inc"
 #include "floatauto.inc"
@@ -185,6 +185,25 @@ public:
 		double &zoom_sample,
 		double &zoom_units);
 
+// Convert percentage position inside track to value.
+// if is_toggle is 1, the result is either 0 or 1.
+// if reference is nonzero and a FloatAuto, 
+//     the result is made relative to the value in reference.
+	float percentage_to_value(float percentage, 
+		int is_toggle,
+		Auto *reference);
+
+// Get x and y of a FloatAuto relative to center_pixel
+	void calculate_auto_position(double *x, 
+		double *y,
+		double *in_x,
+		double *in_y,
+		double *out_x,
+		double *out_y,
+		Auto *current,
+		double unit_start,
+		double zoom_units,
+		double yscale);
 	void synchronize_autos(float change, Track *skip, FloatAuto *fauto, int fill_gangs);
 
 
@@ -196,7 +215,6 @@ public:
 	void update_edit_handles(Edit *edit, int64_t edit_x, int64_t edit_y, int64_t edit_w, int64_t edit_h);
 	void update_transitions();
 	void update_keyframe_handles(Track *track);
-	void get_keyframe_sizes(Track *track, BezierAuto *current, int64_t &x, int64_t &y, int64_t &w, int64_t &h);
 // Draw everything to synchronize with the view
 	void draw(int force = 0, int hide_cursor = 1);
 // Draw resources during index building
@@ -210,19 +228,19 @@ public:
 	int set_index_file(int flash, Asset *asset);
 	void update_cursor();
 // Get edit and handle the cursor is over
-	int test_edit_handles(int cursor_x, 
+	int do_edit_handles(int cursor_x, 
 		int cursor_y, 
 		int button_press,
 		int &redraw,
 		int &rerender);
 // Get plugin and handle the cursor if over
-	int test_plugin_handles(int cursor_x, 
+	int do_plugin_handles(int cursor_x, 
 		int cursor_y, 
 		int button_press,
 		int &redraw,
 		int &rerender);
 // Get edit the cursor is over
-	int test_edits(int cursor_x, 
+	int do_edits(int cursor_x, 
 		int cursor_y, 
 		int button_press,
 		int drag_start,
@@ -230,17 +248,17 @@ public:
 		int &rerender,
 		int &new_cursor,
 		int &update_cursor);
-	int test_tracks(int cursor_x, 
+	int do_tracks(int cursor_x, 
 		int cursor_y,
 		int button_press);
 	int test_resources(int cursor_x, int cursor_y);
-	int test_plugins(int cursor_x, 
+	int do_plugins(int cursor_x, 
 		int cursor_y, 
 		int drag_start,
 		int button_press,
 		int &redraw,
 		int &rerender);
-	int test_transitions(int cursor_x, 
+	int do_transitions(int cursor_x, 
 		int cursor_y, 
 		int button_press,
 		int &new_cursor,
@@ -274,6 +292,10 @@ public:
 	int get_title_h();
 	int resource_h();
 
+// Display hourglass if timer expired
+	void test_timer();
+
+
 	MWindow *mwindow;
 	MWindowGUI *gui;
 	ArrayList<ResourcePixmap*> resource_pixmaps;
@@ -292,10 +314,16 @@ public:
 	int active;
 // Currently in a drag scroll operation
 	int drag_scroll;
-
+// Don't stop hourglass if it was never started before the operation.
+	int hourglass_enabled;
 
 // Temporary for picon drawing
 	VFrame *temp_picon;
+// Timer for hourglass
+	Timer *resource_timer;
+
+
+
 
 
 

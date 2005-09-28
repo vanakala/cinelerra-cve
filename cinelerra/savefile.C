@@ -94,7 +94,7 @@ int Save::handle_event()
 		{
 			char string[BCTEXTLEN];
 			sprintf(string, _("\"%s\" %dC written"), mwindow->session->filename, strlen(file.string));
-			mwindow->gui->show_message(string, BLACK);
+			mwindow->gui->show_message(string);
 		}
 		mwindow->session->changes_made = 0;
 		if(saveas->quit_now) mwindow->gui->set_done(0);
@@ -194,7 +194,7 @@ void SaveAs::run()
 		char string[BCTEXTLEN];
 		sprintf(string, _("\"%s\" %dC written"), filename, strlen(file.string));
 		mwindow->gui->lock_window();
-		mwindow->gui->show_message(string, BLACK);
+		mwindow->gui->show_message(string);
 		mwindow->gui->unlock_window();
 	}
 
@@ -217,8 +217,7 @@ SaveFileWindow::SaveFileWindow(MWindow *mwindow, char *init_directory)
  	mwindow->gui->get_abs_cursor_y(1) - BC_WindowBase::get_resources()->filebox_h / 2,
  	init_directory, 
 	PROGRAM_NAME ": Save", 
-	_("Enter a filename to save as"),
-	mwindow->defaults)
+	_("Enter a filename to save as"))
 { 
 	this->mwindow = mwindow; 
 }

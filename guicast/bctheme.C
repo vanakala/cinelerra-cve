@@ -71,6 +71,25 @@ VFrame** BC_Theme::new_image_set(char *title, int total, va_list *args)
 	return result->data;
 }
 
+VFrame** BC_Theme::new_image_set_images(char *title, int total, ...)
+{
+	va_list list;
+	va_start(list, total);
+	BC_ThemeSet *existing_image_set = title[0] ? get_image_set_object(title) : 0;
+	if(existing_image_set)
+	{
+		image_sets.remove_object(existing_image_set);
+	}
+
+	BC_ThemeSet *result = new BC_ThemeSet(total, 0, title);
+	image_sets.append(result);
+	for(int i = 0; i < total; i++)
+	{
+		result->data[i] = va_arg(list, VFrame*);
+	}
+	return result->data;
+}
+
 VFrame** BC_Theme::new_image_set(char *title, int total, ...)
 {
 	va_list list;
@@ -152,7 +171,17 @@ VFrame** BC_Theme::get_image_set(char *title, int use_default)
 	return 0;
 }
 
-
+BC_ThemeSet* BC_Theme::get_image_set_object(char *title)
+{
+	for(int i = 0; i < image_sets.total; i++)
+	{
+		if(!strcmp(image_sets.values[i]->title, title))
+		{
+			return image_sets.values[i];
+		}
+	}
+	return 0;
+}
 
 
 
@@ -178,7 +207,32 @@ VFrame** BC_Theme::new_button(char *overlay_path,
 	result->data[1] = new_image(hi_path);
 	result->data[2] = new_image(dn_path);
 	for(int i = 0; i < 3; i++)
+	{
 		overlay(result->data[i], &default_data, -1, -1, (i == 2));
+	}
+	return result->data;
+}
+
+
+VFrame** BC_Theme::new_button4(char *overlay_path, 
+	char *up_path, 
+	char *hi_path, 
+	char *dn_path,
+	char *disabled_path,
+	char *title)
+{
+	VFrame default_data(get_image_data(overlay_path));
+	BC_ThemeSet *result = new BC_ThemeSet(4, 1, title ? title : (char*)"");
+	if(title) image_sets.append(result);
+
+	result->data[0] = new_image(up_path);
+	result->data[1] = new_image(hi_path);
+	result->data[2] = new_image(dn_path);
+	result->data[3] = new_image(disabled_path);
+	for(int i = 0; i < 4; i++)
+	{
+		overlay(result->data[i], &default_data, -1, -1, (i == 2));
+	}
 	return result->data;
 }
 
@@ -306,7 +360,7 @@ void BC_Theme::overlay(VFrame *dst, VFrame *src, int in_x1, int in_x2, int shift
 					break;
 
 				case BC_RGB888:
-					for(int i = 0; i < h; i++)
+					for(int i = shift; i < h; i++)
 					{
 						unsigned char *in_row;
 						unsigned char *out_row = out_rows[i];
@@ -318,12 +372,11 @@ void BC_Theme::overlay(VFrame *dst, VFrame *src, int in_x1, int in_x2, int shift
 						}
 						else
 						{
-							
-							in_row = in_rows[i - 1] + in_x1 * 4;
-							out_row = out_rows[i] + 4;
+							in_row = in_rows[i - 1] + in_x1 * 3;
+							out_row = out_rows[i] + 3;
 						}
 
-						for(int j = 0; j < w; j++)
+						for(int j = shift; j < w; j++)
 						{
 							int opacity = in_row[3];
 							int transparency = 0xff - opacity;

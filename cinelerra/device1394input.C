@@ -204,9 +204,9 @@ void Device1394Input::run()
 				is_overflow = 1;
 
 			char *src = (char*)(input_buffer + buffer_size * status.first_clear_frame);
-static FILE *test = 0;
-if(!test) test = fopen("/tmp/test", "w");
-fwrite(src, buffer_size, 1, test);
+// static FILE *test = 0;
+// if(!test) test = fopen("/tmp/test", "w");
+// fwrite(src, buffer_size, 1, test);
 
 // Export the video
 			if(dst)

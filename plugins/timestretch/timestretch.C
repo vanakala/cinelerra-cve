@@ -190,7 +190,7 @@ int PitchEngine::signal_process_oversample(int reset)
 		}
 		
 		for (int k = 0; k <= window_size/2; k++) {
-			int index = k/scale;
+			int index = int(k/scale);
 			if (index <= window_size/2) {
 				new_magn[k] += anal_magn[index];
 				new_freq[k] = anal_freq[index] * scale;
@@ -459,7 +459,7 @@ int TimeStretch::process_buffer(int64_t size,
 	{
 		pitch = new PitchEngine(this);
 		pitch->initialize(WINDOW_SIZE);
-		pitch->ready_oversample(OVERSAMPLE);
+		pitch->set_oversample(OVERSAMPLE);
 		resample = new Resample(0, 1);
 
 	}

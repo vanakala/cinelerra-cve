@@ -1,158 +1,193 @@
+#ifndef DIFFKEY_H
+#define DIFFKEY_H
+
+#include "bcdisplayinfo.h"
 #include "clip.h"
-#include "colormodels.h"
 #include "defaults.h"
 #include "filexml.h"
-#include "diffkey.h"
-#include "diffkeywindow.h"
+#include "guicast.h"
 #include "language.h"
-#include "picon_png.h"
+#include "loadbalance.h"
 #include "plugincolors.h"
-#include "language.h"
+#include "pluginvclient.h"
 
-#include <stdint.h>
+
 #include <string.h>
 
-REGISTER_PLUGIN(DiffKeyMain)
 
-//#define NO_PROCESS
-//#define NO_PARAM_CODE
-//#define NO_GUI_CODE
 
-#ifdef NO_GUI_CODE
-	#define NO_SAVE_DEFAULTS
-	#define NO_LOAD_DEFAULTS
-	#define NO_SAVE_DATA
-	#define NO_LOAD_DATA
-#endif
+class DiffKeyGUI;
+class DiffKey;
 
-#ifdef NO_PARAM_CODE
-	#define NO_PARAM_COPY
-	#define NO_PARAM_COMPARE
-	#define NO_PARAM_INTERPOLATE
-#endif
 
-int grab_key_frame = 0;
-int add_key_frame = 0;
+
+class DiffKeyConfig
+{
+public:
+	DiffKeyConfig();
+	void copy_from(DiffKeyConfig &src);
+	int equivalent(DiffKeyConfig &src);
+	void interpolate(DiffKeyConfig &prev, 
+		DiffKeyConfig &next, 
+		int64_t prev_frame, 
+		int64_t next_frame, 
+		int64_t current_frame);
+
+	float threshold;
+	float slope;
+	int do_value;
+};
+
+
+class DiffKeyThreshold : public BC_FSlider
+{
+public:
+	DiffKeyThreshold(DiffKey *plugin, int x, int y);
+	int handle_event();
+	DiffKey *plugin;
+};
+
+class DiffKeySlope : public BC_FSlider
+{
+public:
+	DiffKeySlope(DiffKey *plugin, int x, int y);
+	int handle_event();
+	DiffKey *plugin;
+};
+
+class DiffKeyDoValue : public BC_CheckBox
+{
+public:
+	DiffKeyDoValue(DiffKey *plugin, int x, int y);
+	int handle_event();
+	DiffKey *plugin;
+};
+
+
+
+class DiffKeyGUI : public BC_Window
+{
+public:
+	DiffKeyGUI(DiffKey *plugin, int x, int y);
+	~DiffKeyGUI();
+
+
+	void create_objects();
+	int close_event();
+
+
+	DiffKeyThreshold *threshold;
+	DiffKeySlope *slope;
+	DiffKeyDoValue *do_value;
+	DiffKey *plugin;
+};
+
+
+PLUGIN_THREAD_HEADER(DiffKey, DiffKeyThread, DiffKeyGUI)
+
+
+
+class DiffKeyEngine : public LoadServer
+{
+public:
+	DiffKeyEngine(DiffKey *plugin);
+	void init_packages();
+	LoadClient* new_client();
+	LoadPackage* new_package();
+	DiffKey *plugin;
+};
+
+
+class DiffKeyClient : public LoadClient
+{
+public:
+	DiffKeyClient(DiffKeyEngine *engine);
+	~DiffKeyClient();
+
+	void process_package(LoadPackage *pkg);
+	DiffKeyEngine *engine;
+};
+
+class DiffKeyPackage : public LoadPackage
+{
+public:
+	DiffKeyPackage();
+	int row1;
+	int row2;
+};
+
+
+
+class DiffKey : public PluginVClient
+{
+public:
+	DiffKey(PluginServer *server);
+	~DiffKey();
+
+	int process_buffer(VFrame **frame,
+		int64_t start_position,
+		double frame_rate);
+	int is_realtime();
+	int is_multichannel();
+	int load_defaults();
+	int save_defaults();
+	void save_data(KeyFrame *keyframe);
+	void read_data(KeyFrame *keyframe);
+	void update_gui();
+
+
+
+	PLUGIN_CLASS_MEMBERS(DiffKeyConfig, DiffKeyThread)
+
+	DiffKeyEngine *engine;
+	VFrame *top_frame;
+	VFrame *bottom_frame;
+};
+
+
+
+
+
+
+
+
+REGISTER_PLUGIN(DiffKey)
+
 
 DiffKeyConfig::DiffKeyConfig()
 {
-#ifdef DEBUG
-	printf("\nDiffKeyConfig::DiffKeyConfig");
-#endif
-
-	hue_imp = 25;
-	sat_imp = 25;
-	val_imp = 25;
-	r_imp = 25;
-	g_imp = 25;
-	b_imp = 25;
-	vis_thresh = 25;
-	trans_thresh = 25;
-	desat_thresh = 25;
-	hue_on = 0;
-	sat_on = 0;
-	val_on = 0;
-	r_on = 0;
-	g_on = 0;
-	b_on = 1;
-	vis_on = 0;
-	trans_on = 0;
-	desat_on = 0;
-	show_mask = 0;
-
+	threshold = 0.1;
+	slope = 0;
+	do_value = 0;
 }
 
-void DiffKeyConfig::copy_from(DiffKeyConfig &that)
+void DiffKeyConfig::copy_from(DiffKeyConfig &src)
 {
-#ifndef NO_PARAM_COPY
-	#ifdef DEBUG
-	printf("\nDiffKeyConfig::copy_from");
-	#endif
-
-	hue_imp = that.hue_imp;
-	sat_imp = that.sat_imp;
-	val_imp = that.val_imp;
-	r_imp = that.r_imp;
-	g_imp = that.g_imp;
-	b_imp = that.b_imp;
-	vis_thresh = that.vis_thresh;
-	trans_thresh = that.trans_thresh;
-	desat_thresh = that.desat_thresh;
-	hue_on = that.hue_on;
-	sat_on = that.sat_on;
-	val_on = that.val_on;
-	r_on = that.r_on;
-	g_on = that.g_on;
-	b_on = that.b_on;
-	vis_on = that.vis_on;
-	trans_on = that.trans_on;
-	desat_on = that.desat_on;
-	show_mask = that.show_mask;
-#endif
+	this->threshold = src.threshold;
+	this->slope = src.slope;
+	this->do_value = src.do_value;
 }
 
-int DiffKeyConfig::equivalent(DiffKeyConfig &that)
+
+int DiffKeyConfig::equivalent(DiffKeyConfig &src)
 {
-#ifndef NO_PARAM_COMPARE
-	#ifdef DEBUG
-	printf("\nDiffKeyConfig::equivalent");
-	#endif
-	return hue_imp == that.hue_imp &&
-		sat_imp == that.sat_imp &&
-		val_imp == that.val_imp &&
-		r_imp == that.r_imp &&
-		g_imp == that.g_imp &&
-		b_imp == that.b_imp &&
-		vis_thresh == that.vis_thresh &&
-		trans_thresh == that.trans_thresh &&
-		desat_thresh == that.desat_thresh &&
-		hue_on == that.hue_on &&
-		sat_on == that.sat_on &&
-		val_on == that.val_on &&
-		r_on == that.r_on &&
-		g_on == that.g_on &&
-		b_on == that.b_on &&
-		vis_on == that.vis_on &&
-		trans_on == that.trans_on &&
-		desat_on == that.desat_on &&
-		show_mask == that.show_mask;
-#endif
+	return EQUIV(threshold, src.threshold) &&
+		EQUIV(slope, src.slope) &&
+		do_value == src.do_value;
 }
 
 void DiffKeyConfig::interpolate(DiffKeyConfig &prev, 
 	DiffKeyConfig &next, 
-	long prev_frame, 
-	long next_frame, 
-	long current_frame)
+	int64_t prev_frame, 
+	int64_t next_frame, 
+	int64_t current_frame)
 {
-	#ifndef NO_PARAM_INTERPOLATE
-	#ifdef DEBUG
-	printf("\nDiffKeyConfig::interpolate");
-	#endif
-	
-	ftype next_scale = (ftype)(current_frame - prev_frame) / (next_frame - prev_frame);
-	ftype prev_scale = (ftype)(next_frame - current_frame) / (next_frame - prev_frame);
+	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
+	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
 
-	this->hue_imp = (prev.hue_imp * prev_scale + next.hue_imp * next_scale);
-	this->sat_imp = (prev.sat_imp * prev_scale + next.sat_imp * next_scale);
-	this->val_imp = (prev.val_imp * prev_scale + next.val_imp * next_scale);
-	this->r_imp = (prev.r_imp * prev_scale + next.r_imp * next_scale);
-	this->g_imp = (prev.g_imp * prev_scale + next.g_imp * next_scale);
-	this->b_imp = (prev.b_imp * prev_scale + next.b_imp * next_scale);
-	this->vis_thresh = (prev.vis_thresh * prev_scale + next.vis_thresh * next_scale);
-	this->trans_thresh = (prev.trans_thresh * prev_scale + next.trans_thresh * next_scale);
-	this->desat_thresh = (prev.desat_thresh * prev_scale + next.desat_thresh * next_scale);
-	this->hue_on = prev.hue_on;
-	this->sat_on = prev.sat_on;
-	this->val_on = prev.val_on;
-	this->r_on = prev.r_on;
-	this->g_on = prev.g_on;
-	this->b_on = prev.b_on;
-	this->vis_on = prev.vis_on;
-	this->trans_on = prev.trans_on;
-	this->desat_on = prev.desat_on;
-	this->show_mask = prev.show_mask;
-#endif
+	this->threshold = prev.threshold * prev_scale + next.threshold * next_scale;
+	this->slope = prev.slope * prev_scale + next.slope * next_scale;
+	this->do_value = prev.do_value;
 }
 
 
@@ -164,517 +199,135 @@ void DiffKeyConfig::interpolate(DiffKeyConfig &prev,
 
 
 
+DiffKeyThreshold::DiffKeyThreshold(DiffKey *plugin, int x, int y)
+ : BC_FSlider(x, y, 0, 200, 200, 0, 100, plugin->config.threshold)
+{
+	this->plugin = plugin;
+}
+
+int DiffKeyThreshold::handle_event()
+{
+	plugin->config.threshold = get_value();
+	plugin->send_configure_change();
+	return 1;
+}
 
 
 
 
-DiffKeyMain::DiffKeyMain(PluginServer *server)
+
+
+
+
+DiffKeySlope::DiffKeySlope(DiffKey *plugin, int x, int y)
+ : BC_FSlider(x, y, 0, 200, 200, 0, 100, plugin->config.slope)
+{
+	this->plugin = plugin;
+}
+
+int DiffKeySlope::handle_event()
+{
+	plugin->config.slope = get_value();
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+
+DiffKeyDoValue::DiffKeyDoValue(DiffKey *plugin, int x, int y)
+ : BC_CheckBox(x, y, plugin->config.do_value, _("Use Value"))
+{
+	this->plugin = plugin;
+}
+
+int DiffKeyDoValue::handle_event()
+{
+	plugin->config.do_value = get_value();
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+
+
+
+
+
+DiffKeyGUI::DiffKeyGUI(DiffKey *plugin, int x, int y)
+ : BC_Window(plugin->gui_string,
+ 	x,
+	y,
+	320,
+	100,
+	320,
+	100,
+	0,
+	0,
+	1)
+{
+	this->plugin = plugin;
+}
+
+DiffKeyGUI::~DiffKeyGUI()
+{
+}
+
+
+void DiffKeyGUI::create_objects()
+{
+	int x = 10, y = 10, x2;
+	BC_Title *title;
+	add_subwindow(title = new BC_Title(x, y, "Threshold:"));
+	x += title->get_w() + 10;
+	add_subwindow(threshold = new DiffKeyThreshold(plugin, x, y));
+	x = 10;
+	y += threshold->get_h() + 10;
+	add_subwindow(title = new BC_Title(x, y, "Slope:"));
+	x += title->get_w() + 10;
+	add_subwindow(slope = new DiffKeySlope(plugin, x, y));
+	x = 10;
+	y += slope->get_h() + 10;
+	add_subwindow(do_value = new DiffKeyDoValue(plugin, x, y));
+
+
+
+	show_window();
+}
+
+WINDOW_CLOSE_EVENT(DiffKeyGUI)
+
+
+PLUGIN_THREAD_OBJECT(DiffKey, DiffKeyThread, DiffKeyGUI)
+
+
+
+DiffKey::DiffKey(PluginServer *server)
  : PluginVClient(server)
 {
-#ifdef DEBUG
-	printf("\nConstructing DiffKeyMain....");
-	printf("\n");
-#endif
 	PLUGIN_CONSTRUCTOR_MACRO
-	key_frame = 0;
+	engine = 0;
 }
 
-DiffKeyMain::~DiffKeyMain()
+DiffKey::~DiffKey()
 {
-#ifdef DEBUG
-	printf("\nDestroying DiffKeyMain....");
-	printf("\n");
-#endif
-	if (key_frame)
-		delete key_frame;
 	PLUGIN_DESTRUCTOR_MACRO
+	delete engine;
 }
 
-char* DiffKeyMain::plugin_title() { return N_("DiffKey"); }
-int DiffKeyMain::is_realtime() { return 1; }
-	
+SHOW_GUI_MACRO(DiffKey, DiffKeyThread)
+RAISE_WINDOW_MACRO(DiffKey)
+SET_STRING_MACRO(DiffKey)
+#include "picon_png.h"
+NEW_PICON_MACRO(DiffKey)
+LOAD_CONFIGURATION_MACRO(DiffKey, DiffKeyConfig)
 
+char* DiffKey::plugin_title() { return N_("Difference key"); }
+int DiffKey::is_realtime() { return 1; }
+int DiffKey::is_multichannel() { return 1; }
 
-
-
-#define DIFF_KEY_MACRO(type, maximum, use_yuv) \
-{ \
-	type **input_rows, **output_rows, **key_rows; \
-	type *input_row, *output_row, *key_row; \
-	type *oc1, *oc2, *oc3, *oc4; \
-	max = (ftype)maximum; \
-	input_rows = ((type**)input_ptr->get_rows()); \
-	output_rows = ((type**)output_ptr->get_rows()); \
-	key_rows = ((type**)key_frame->get_rows()); \
-	 \
-	 \
-	 \
-	for(i = 0; i < h; i++) \
-	{ \
-		input_row = input_rows[i]; \
-		output_row = output_rows[i]; \
-		key_row = key_rows[i]; \
-		for(k = 0; k < w; k++) \
-		{ \
-			in_r = (ftype)*input_row / max; \
-			in_g = (ftype)*(input_row + 1) / max; \
-			in_b = (ftype)*(input_row + 2) / max; \
-			 \
-			key_r = (ftype)*key_row / max; \
-			key_g = (ftype)*(key_row + 1) / max; \
-			key_b = (ftype)*(key_row + 2) / max; \
-			 \
-			if(use_yuv) \
-			{ \
-				HSV::yuv_to_hsv((int)*input_row,  \
-					(int)*(input_row + 1),  \
-					(int)*(input_row + 2),  \
-					in_hue,  \
-					in_sat,  \
-					in_val,  \
-					(int)maximum); \
-				HSV::yuv_to_hsv((int)*key_row,  \
-					(int)*(key_row + 1),  \
-					(int)*(key_row + 2),  \
-					key_hue,  \
-					key_sat,  \
-					key_val,  \
-					(int)maximum); \
-			} \
-			else \
-			{ \
-				HSV::rgb_to_hsv(in_r,  \
-					in_g,  \
-					in_b,  \
-					in_hue, in_sat, in_val); \
-				HSV::rgb_to_hsv(key_r,  \
-					key_g,  \
-					key_b,  \
-					key_hue, key_sat, key_val); \
-			} \
-			 \
-			difference = alpha = 0; \
-			if (config.hue_on) DO_DIFFERENCE (in_hue, key_hue, hue_imp);\
-			if (config.sat_on) DO_DIFFERENCE (in_sat, key_sat, sat_imp);\
-			if (config.val_on) DO_DIFFERENCE (in_val, key_val, val_imp);\
-			if (config.r_on) DO_DIFFERENCE (in_r, key_r, r_imp);\
-			if (config.g_on) DO_DIFFERENCE (in_g, key_g, g_imp);\
-			if (config.b_on) DO_DIFFERENCE (in_b, key_b, b_imp);\
-			 \
-			if (config.vis_on) alpha *= vis_thresh; \
-			if (alpha > 1) \
-				alpha = 1; \
-			 \
-			alpha = 1 - alpha; \
-			 \
-			if (config.trans_on) alpha *= trans_thresh; \
-			if (alpha > 1) \
-				alpha = 1; \
-			 \
-			 \
-			 \
-			 \
-			if (config.show_mask) \
-			{ \
-			alpha = 1 - alpha; \
-				*output_row = \
-				*(output_row + 1) = \
-				*(output_row + 2) = \
-				(type)(alpha * max); \
-				*(output_row + 3) = maximum; \
-			} \
-			 \
-			else \
-			{ \
-			 \
-			if (config.desat_on) { \
-				DO_DESATURATE (in_r, key_r, out_r);\
-				DO_DESATURATE (in_g, key_g, out_g);\
-				DO_DESATURATE (in_b, key_b, out_b);\
-				*output_row = (type)(out_r * max); \
-				*(output_row + 1) = (type)(out_g * max); \
-				*(output_row + 2) = (type)(out_b * max); \
-			} \
-			else { \
-				*output_row = *input_row; \
-				*(output_row + 1) = *(input_row + 1); \
-				*(output_row + 2) = *(input_row + 2); \
-			} \
-			alpha = 1 - alpha; \
-				*(output_row + 3) = (type)(alpha * max); \
-				 \
-				 \
-			} \
-			 \
-			output_row += 4; \
-			input_row += 4; \
-			key_row += 4; \
-			 \
-		} \
-	} \
-}
-
-
-
-#define DO_DIFFERENCE(input, key, scale) \
-{ \
-	difference = input - key; \
-	if (difference < 0) \
-		difference *= -1; \
-	alpha += difference * scale; \
-}
-
-
-#define DO_DESATURATE(input, key, output) \
-{ \
-	difference = key * alpha * desat_thresh; \
-	output = input - difference; \
-	if (output < 0) \
-		output = 0; \
-}
-
-
-
-int DiffKeyMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+int DiffKey::load_defaults()
 {
-#ifndef NO_PROCESS
-	load_configuration();
-	ftype in_hue, in_sat, in_val, in_r, in_g, in_b;
-	ftype out_hue, out_sat, out_val, out_r, out_g, out_b;
-	ftype key_hue, key_sat, key_val, key_r, key_g, key_b;
-	ftype difference;
-	ftype alpha;
-	ftype max;
-	ftype hue_imp = ((ftype)config.hue_imp / 3200);
-	ftype sat_imp = ((ftype)config.sat_imp / 25);
-	ftype val_imp = ((ftype)config.val_imp / 25);
-	ftype r_imp = ((ftype)config.r_imp / 25);
-	ftype g_imp = ((ftype)config.g_imp / 25);
-	ftype b_imp = ((ftype)config.b_imp / 25);
-	ftype vis_thresh = ((ftype)config.vis_thresh / 50); // was / 50 + 1
-	ftype trans_thresh = ((ftype)config.trans_thresh / 50 + 1);
-	ftype desat_thresh = ((ftype)config.desat_thresh / 100);
-	ftype trans_up = 1 - trans_thresh;
-
-	int i, j, k, l;
-	int w = input_ptr->get_w();
-	int h = input_ptr->get_h();
-	int colormodel = input_ptr->get_color_model();
-
-
-
-
-
-
-
-
-
-	
-#ifdef DEBUG
-	printf("\nAbout to process....");
-	printf("\nConfig values:");
-	printf("\nhue_imp: %f   sat_imp: %f   val_imp: %f", config.hue_imp, config.sat_imp, config.val_imp);
-	printf("\nr_imp: %f   g_imp: %f   b_imp: %f", config.r_imp, config.g_imp, config.b_imp);
-	printf("\nvis_thresh: %f   trans_thresh: %f   show_mask: %i", config.vis_thresh, config.trans_thresh, config.show_mask);
-	printf("\nProcess values:");
-	printf("\nhue_imp: %f   sat_imp: %f   val_imp: %f", hue_imp, sat_imp, val_imp);
-	printf("\nr_imp: %f   g_imp: %f   b_imp: %f", r_imp, g_imp, b_imp);
-	printf("\nvis_thresh: %f   trans_thresh: %f   trans_up: %f", vis_thresh, trans_thresh, trans_up);
-	printf("\n");
-	printf("\n");
-	printf("\n");
-#endif
-
-	if (grab_key_frame || !key_frame)
-	{
-		#ifdef DEBUG
-			printf("\nTrying to grab keyframe...");
-			printf("\n");
-		#endif
-		grab_key_frame = 0;
-		if (key_frame)
-			delete key_frame;
-		key_frame = new VFrame(0, 
-			input_ptr->get_w(),
-			input_ptr->get_h(),
-			PluginVClient::project_color_model);
-		key_frame->copy_from(input_ptr);
-		#ifdef DEBUG
-			printf("\nKey frame grabbed.");
-			printf("\n");
-		#endif
-	}
-
-	switch(colormodel)
-	{
-		case BC_RGBA8888:
-			DIFF_KEY_MACRO(unsigned char, 255, 0);
-			break;
-		case BC_YUVA8888:
-			DIFF_KEY_MACRO(unsigned char, 255, 1);
-			break;
-		case BC_RGBA16161616:
-			DIFF_KEY_MACRO(uint16_t, 65535, 0);
-			break;
-		case BC_YUVA16161616:
-			DIFF_KEY_MACRO(uint16_t, 65535, 1);
-			break;
-		case BC_RGB888: // We need an alpha channel to do anything useful
-		case BC_YUV888:
-		case BC_RGB161616:
-		case BC_YUV161616:
-			output_ptr->copy_from(input_ptr);
-			break;
-	}
-
-	#ifdef DEBUG
-		printf("\nFrame processed.\n");
-		printf("\n");
-		printf("\n");
-	#endif
-#endif
-	return 0;
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-SHOW_GUI_MACRO(DiffKeyMain, DiffKeyThread)
-
-RAISE_WINDOW_MACRO(DiffKeyMain)
-
-SET_STRING_MACRO(DiffKeyMain)
-
-NEW_PICON_MACRO(DiffKeyMain)
-
-LOAD_CONFIGURATION_MACRO(DiffKeyMain, DiffKeyConfig)
-
-void DiffKeyMain::update_gui()
-{
-#ifndef NO_GUI_CODE
-	#ifdef DEBUG
-	printf("\nDiffKeyMain::update_gui");
-	#endif
-	if(thread)
-	{
-		load_configuration();
-		thread->window->lock_window();
-		thread->window->hue_imp->update((int)config.hue_imp);
-		thread->window->sat_imp->update((int)config.sat_imp);
-		thread->window->val_imp->update((int)config.val_imp);
-		thread->window->r_imp->update((int)config.r_imp);
-		thread->window->g_imp->update((int)config.g_imp);
-		thread->window->b_imp->update((int)config.b_imp);
-		thread->window->vis_thresh->update((int)config.vis_thresh);
-		thread->window->trans_thresh->update((int)config.trans_thresh);
-		thread->window->desat_thresh->update((int)config.desat_thresh);
-		thread->window->hue_on->update((int)config.hue_on);
-		thread->window->sat_on->update((int)config.sat_on);
-		thread->window->val_on->update((int)config.val_on);
-		thread->window->r_on->update((int)config.r_on);
-		thread->window->g_on->update((int)config.g_on);
-		thread->window->b_on->update((int)config.b_on);
-		thread->window->vis_on->update((int)config.vis_on);
-		thread->window->trans_on->update((int)config.trans_on);
-		thread->window->desat_on->update((int)config.desat_on);
-		thread->window->show_mask->update((int)config.show_mask);
-		thread->window->unlock_window();
-	}
-#endif
-}
-
-void DiffKeyMain::save_data(KeyFrame *keyframe)
-{
-#ifndef NO_SAVE_DATA
-	#ifdef DEBUG
-	printf("\nDiffKeyMain::save_data");
-	#endif
-	FileXML output;
-// cause data to be stored directly in text
-	output.set_shared_string(keyframe->data, MESSAGESIZE);
-	output.tag.set_title("DIFF_KEY0.01");
-	output.tag.set_property("HUE_IMPORTANCE", config.hue_imp);
-	output.tag.set_property("SATURATION_IMPORTANCE", config.sat_imp);
-	output.tag.set_property("VALUE_IMPORTANCE", config.val_imp);
-	output.tag.set_property("RED_IMPORTANCE", config.r_imp);
-	output.tag.set_property("GREEN_IMPORTANCE", config.g_imp);
-	output.tag.set_property("BLUE_IMPORTANCE", config.b_imp);
-	output.tag.set_property("VISIBILITY_THRESHOLD", config.vis_thresh);
-	output.tag.set_property("TRANSPARENCY_THRESHOLD", config.trans_thresh);
-	output.tag.set_property("DESATURATION_THRESHOLD", config.desat_thresh);
-
-	output.append_tag();
-	if(config.hue_on)
-	{
-		output.tag.set_title("HUE_ON");
-		output.append_tag();
-	}
-
-	if(config.sat_on)
-	{
-		output.tag.set_title("SATURATION_ON");
-		output.append_tag();
-	}
-
-	if(config.val_on)
-	{
-		output.tag.set_title("VALUE_ON");
-		output.append_tag();
-	}
-
-	if(config.r_on)
-	{
-		output.tag.set_title("RED_ON");
-		output.append_tag();
-	}
-
-	if(config.g_on)
-	{
-		output.tag.set_title("GREEN_ON");
-		output.append_tag();
-	}
-
-	if(config.b_on)
-	{
-		output.tag.set_title("BLUE_ON");
-		output.append_tag();
-	}
-
-	if(config.vis_on)
-	{
-		output.tag.set_title("VISIBILITY_ON");
-		output.append_tag();
-	}
-
-	if(config.trans_on)
-	{
-		output.tag.set_title("TRANSPARENCY_ON");
-		output.append_tag();
-	}
-
-	if(config.desat_on)
-	{
-		output.tag.set_title("DESATURATION_ON");
-		output.append_tag();
-	}
-
-	if(config.show_mask)
-	{
-		output.tag.set_title("SHOW_MASK");
-		output.append_tag();
-	}
-
-	output.terminate_string();
-// data is now in *text
-#endif
-}
-
-void DiffKeyMain::read_data(KeyFrame *keyframe)
-{
-#ifndef NO_READ_DATA
-	#ifdef DEBUG
-	printf("\nDiffKeyMain::read_data");
-	#endif
-	FileXML input;
-
-	input.set_shared_string(keyframe->data, strlen(keyframe->data));
-
-	int result = 0;
-	config.show_mask = 
-	config.hue_on = 
-	config.sat_on = 
-	config.val_on = 
-	config.r_on = 
-	config.g_on = 
-	config.b_on = 
-	config.vis_on = 
-	config.trans_on = 
-	config.desat_on = 
-	0;
-
-	while(!result)
-	{
-		result = input.read_tag();
-
-		if(!result)
-		{
-			if(input.tag.title_is("DIFF_KEY0.01"))
-			{
-				config.hue_imp = input.tag.get_property("HUE_IMPORTANCE", config.hue_imp);
-				config.sat_imp = input.tag.get_property("SATURATION_IMPORTANCE", config.sat_imp);
-				config.val_imp = input.tag.get_property("VALUE_IMPORTANCE", config.val_imp);
-				config.r_imp = input.tag.get_property("RED_IMPORTANCE", config.r_imp);
-				config.g_imp = input.tag.get_property("GREEN_IMPORTANCE", config.g_imp);
-				config.b_imp = input.tag.get_property("BLUE_IMPORTANCE", config.b_imp);
-				config.trans_thresh = input.tag.get_property("TRANSPARENCY_THRESHOLD", config.trans_thresh);
-				config.vis_thresh = input.tag.get_property("VISIBILITY_THRESHOLD", config.vis_thresh);
-				config.desat_thresh = input.tag.get_property("DESATURATION_THRESHOLD", config.desat_thresh);
-			}
-
-			if(input.tag.title_is("HUE_ON"))
-				config.hue_on = 1;
-			
-			if(input.tag.title_is("SATURATION_ON"))
-				config.sat_on = 1;
-			
-			if(input.tag.title_is("VALUE_ON"))
-				config.val_on = 1;
-			
-			if(input.tag.title_is("RED_ON"))
-				config.r_on = 1;
-			
-			if(input.tag.title_is("GREEN_ON"))
-				config.g_on = 1;
-			
-			if(input.tag.title_is("BLUE_ON"))
-				config.b_on = 1;
-			
-			if(input.tag.title_is("VISIBILITY_ON"))
-				config.vis_on = 1;
-			
-			if(input.tag.title_is("TRANSPARENCY_ON"))
-				config.trans_on = 1;
-			
-			if(input.tag.title_is("DESATURATION_ON"))
-				config.desat_on = 1;
-			
-			if(input.tag.title_is("SHOW_MASK"))
-				config.show_mask = 1;
-		}
-	}
-#endif
-}
-
-int DiffKeyMain::load_defaults()
-{
-#ifndef NO_LOAD_DEFAULTS
-	#ifdef DEBUG
-	printf("\nDiffKeyMain::load_defaults");
-	#endif
-
-	/*Use directory for saving key frame to disk later*/
-	
-	char directory[BCTEXTLEN], string[BCTEXTLEN];
+	char directory[BCTEXTLEN];
 // set the default directory
 	sprintf(directory, "%sdiffkey.rc", BCASTDIR);
 
@@ -682,37 +335,337 @@ int DiffKeyMain::load_defaults()
 	defaults = new Defaults(directory);
 	defaults->load();
 
-	config.hue_imp = defaults->get("HUE_IMPORTANCE", config.hue_imp);
-	config.sat_imp = defaults->get("SATURATION_IMPORTANCE", config.sat_imp);
-	config.val_imp = defaults->get("VALUE_IMPORTANCE", config.val_imp);
-	config.r_imp = defaults->get("RED_IMPORTANCE", config.r_imp);
-	config.g_imp = defaults->get("GREEN_IMPORTANCE", config.g_imp);
-	config.b_imp = defaults->get("BLUE_IMPORTANCE", config.b_imp);
-	config.vis_thresh = defaults->get("VISIBILITY_THRESHOLD", config.vis_thresh);
-	config.trans_thresh = defaults->get("TRANSPARENCY_THRESHOLD", config.trans_thresh);
-	config.desat_thresh = defaults->get("DESATURATION_THRESHOLD", config.desat_thresh);
-	config.show_mask = defaults->get("SHOW_MASK", config.show_mask);
+	config.threshold = defaults->get("THRESHOLD", config.threshold);
+	config.slope = defaults->get("SLOPE", config.slope);
+	config.do_value = defaults->get("DO_VALUE", config.do_value);
 	return 0;
-#endif
 }
 
-int DiffKeyMain::save_defaults()
+int DiffKey::save_defaults()
 {
-#ifndef NO_SAVE_DEFAULTS
-	#ifdef DEBUG
-	printf("\nDiffKeyMain::save_defaults");
-	#endif
-	defaults->update("HUE_IMPORTANCE", config.hue_imp);
-	defaults->update("SATURATION_IMPORTANCE", config.sat_imp);
-	defaults->update("VALUE_IMPORTANCE", config.val_imp);
-	defaults->update("RED_IMPORTANCE", config.r_imp);
-	defaults->update("GREEN_IMPORTANCE", config.g_imp);
-	defaults->update("BLUE_IMPORTANCE", config.b_imp);
-	defaults->update("VISIBILITY_THRESHOLD", config.vis_thresh);
-	defaults->update("TRANSPARENCY_THRESHOLD", config.trans_thresh);
-	defaults->update("DESATURATION_THRESHOLD", config.desat_thresh);
-	defaults->update("SHOW_MASK", config.show_mask);
+	defaults->update("THRESHOLD", config.threshold);
+	defaults->update("SLOPE", config.slope);
+	defaults->update("DO_VALUE", config.do_value);
 	defaults->save();
 	return 0;
-#endif
 }
+
+void DiffKey::save_data(KeyFrame *keyframe)
+{
+	FileXML output;
+	output.set_shared_string(keyframe->data, MESSAGESIZE);
+	output.tag.set_title("DIFFKEY");
+	output.tag.set_property("THRESHOLD", config.threshold);
+	output.tag.set_property("SLOPE", config.slope);
+	output.tag.set_property("DO_VALUE", config.do_value);
+	output.append_tag();
+	output.terminate_string();
+}
+
+void DiffKey::read_data(KeyFrame *keyframe)
+{
+	FileXML input;
+
+	input.set_shared_string(keyframe->data, strlen(keyframe->data));
+
+	while(!input.read_tag())
+	{
+		if(input.tag.title_is("DIFFKEY"))
+		{
+			config.threshold = input.tag.get_property("THRESHOLD", config.threshold);
+			config.slope = input.tag.get_property("SLOPE", config.slope);
+			config.do_value = input.tag.get_property("DO_VALUE", config.do_value);
+		}
+	}
+}
+
+void DiffKey::update_gui()
+{
+	if(thread)
+	{
+		if(load_configuration())
+		{
+			thread->window->lock_window("DiffKey::update_gui");
+			thread->window->threshold->update(config.threshold);
+			thread->window->slope->update(config.slope);
+			thread->window->do_value->update(config.do_value);
+			thread->window->unlock_window();
+		}
+	}
+}
+
+int DiffKey::process_buffer(VFrame **frame,
+	int64_t start_position,
+	double frame_rate)
+{
+	load_configuration();
+
+// Don't process if only 1 layer.
+	if(get_total_buffers() < 2) 
+	{
+		read_frame(frame[0], 0, start_position, frame_rate);
+		return 0;
+	}
+
+// Read frames from 2 layers
+	read_frame(frame[0], 0, start_position, frame_rate);
+	read_frame(frame[1], 1, start_position, frame_rate);
+
+	top_frame = frame[0];
+	bottom_frame = frame[1];
+
+	if(!engine)
+	{
+		engine = new DiffKeyEngine(this);
+	}
+
+	engine->process_packages();
+
+	return 0;
+}
+
+
+
+
+
+
+
+DiffKeyEngine::DiffKeyEngine(DiffKey *plugin) 
+ : LoadServer(plugin->get_project_smp() + 1, plugin->get_project_smp() + 1)
+{
+	this->plugin = plugin;
+}
+
+void DiffKeyEngine::init_packages()
+{
+	int increment = plugin->top_frame->get_h() / get_total_packages() + 1;
+	int y = 0;
+	for(int i = 0; i < get_total_packages(); i++)
+	{
+		DiffKeyPackage *pkg = (DiffKeyPackage*)get_package(i);
+		pkg->row1 = y;
+		pkg->row2 = MIN(y + increment, plugin->top_frame->get_h()); 
+		y  += increment;
+	}
+}
+
+LoadClient* DiffKeyEngine::new_client()
+{
+	return new DiffKeyClient(this);
+}
+
+LoadPackage* DiffKeyEngine::new_package()
+{
+	return new DiffKeyPackage;
+}
+
+
+
+
+
+
+
+
+
+
+
+DiffKeyClient::DiffKeyClient(DiffKeyEngine *engine)
+ : LoadClient(engine)
+{
+	this->engine = engine;
+}
+
+DiffKeyClient::~DiffKeyClient()
+{
+}
+
+void DiffKeyClient::process_package(LoadPackage *ptr)
+{
+	DiffKeyPackage *pkg = (DiffKeyPackage*)ptr;
+	DiffKey *plugin = engine->plugin;
+	int w = plugin->top_frame->get_w();
+
+#define RGB_TO_VALUE(r, g, b) \
+((r) * R_TO_Y + (g) * G_TO_Y + (b) * B_TO_Y)
+
+#define SQR(x) ((x) * (x))
+
+#define DIFFKEY_MACRO(type, components, max, chroma_offset) \
+{ \
+	float threshold = plugin->config.threshold / 100; \
+	float run = plugin->config.slope / 100; \
+	float threshold_run = threshold + run; \
+ \
+	for(int i = pkg->row1; i < pkg->row2; i++) \
+	{ \
+		type *top_row = (type*)plugin->top_frame->get_rows()[i]; \
+		type *bottom_row = (type*)plugin->bottom_frame->get_rows()[i]; \
+ \
+		for(int j = 0; j < w; j++) \
+		{ \
+			float a = 1.0; \
+ \
+/* Test for value in range */ \
+			if(plugin->config.do_value) \
+			{ \
+				float top_value; \
+				float bottom_value; \
+ \
+/* Convert pixel data into floating point value */ \
+				if(chroma_offset) \
+				{ \
+					float top_r = (float)top_row[0] / max; \
+					float bottom_r = (float)bottom_row[0] / max; \
+					top_value = top_r; \
+					bottom_value = bottom_r; \
+				} \
+				else \
+				{ \
+					float top_r = (float)top_row[0] / max; \
+					float top_g = (float)top_row[1] / max; \
+					float top_b = (float)top_row[2] / max; \
+					top_g -= (float)chroma_offset / max; \
+					top_b -= (float)chroma_offset / max; \
+ \
+					float bottom_r = (float)bottom_row[0] / max; \
+					float bottom_g = (float)bottom_row[1] / max; \
+					float bottom_b = (float)bottom_row[2] / max; \
+					bottom_g -= (float)chroma_offset / max; \
+					bottom_b -= (float)chroma_offset / max; \
+ \
+					top_value = RGB_TO_VALUE(top_r, top_g, top_b); \
+					bottom_value = RGB_TO_VALUE(bottom_r, bottom_g, bottom_b); \
+				} \
+ \
+ 				float min_v = bottom_value - threshold; \
+				float max_v = bottom_value + threshold; \
+ \
+/* Full transparency if in range */ \
+				if(top_value >= min_v && top_value < max_v) \
+				{ \
+					a = 0; \
+				} \
+				else \
+/* Phased out if below or above range */ \
+				if(top_value < min_v) \
+				{ \
+					if(min_v - top_value < run) \
+						a = (min_v - top_value) / run; \
+				} \
+				else \
+				if(top_value - max_v < run) \
+					a = (top_value - max_v) / run; \
+			} \
+			else \
+/* Use color cube */ \
+			{ \
+				float top_r = (float)top_row[0] / max; \
+				float top_g = (float)top_row[1] / max; \
+				float top_b = (float)top_row[2] / max; \
+				top_g -= (float)chroma_offset / max; \
+				top_b -= (float)chroma_offset / max; \
+ \
+				float bottom_r = (float)bottom_row[0] / max; \
+				float bottom_g = (float)bottom_row[1] / max; \
+				float bottom_b = (float)bottom_row[2] / max; \
+				bottom_g -= (float)chroma_offset / max; \
+				bottom_b -= (float)chroma_offset / max; \
+ \
+/* Convert pixel values to RGB float */ \
+ 				if(chroma_offset) \
+				{ \
+					float y = bottom_r; \
+					float u = bottom_g; \
+					float v = bottom_b; \
+					YUV::yuv_to_rgb_f(bottom_r, \
+						bottom_g, \
+						bottom_b, \
+						y, \
+						u, \
+						v); \
+					y = top_r; \
+					u = top_g; \
+					v = top_b; \
+					YUV::yuv_to_rgb_f(top_r, \
+						top_g, \
+						top_b, \
+						y, \
+						u, \
+						v); \
+				} \
+ \
+				float difference = sqrt(SQR(top_r - bottom_r) +  \
+					SQR(top_g - bottom_g) + \
+					SQR(top_b - bottom_b)); \
+ \
+				if(difference < threshold) \
+				{ \
+					a = 0; \
+				} \
+				else \
+				if(difference < threshold_run) \
+				{ \
+					a = (difference - threshold) / run; \
+				} \
+			} \
+ \
+/* multiply alpha */ \
+			if(components == 4) \
+			{ \
+				top_row[3] = MIN((type)(a * max), top_row[3]); \
+			} \
+			else \
+			{ \
+				top_row[0] = (type)(a * top_row[0]); \
+				top_row[1] = (type)(a * (top_row[1] - chroma_offset) + chroma_offset); \
+				top_row[2] = (type)(a * (top_row[2] - chroma_offset) + chroma_offset); \
+			} \
+ \
+			top_row += components; \
+			bottom_row += components; \
+		} \
+	} \
+}
+
+
+
+	switch(plugin->top_frame->get_color_model())
+	{
+		case BC_RGB_FLOAT:
+			DIFFKEY_MACRO(float, 3, 1.0, 0);
+			break;
+		case BC_RGBA_FLOAT:
+			DIFFKEY_MACRO(float, 4, 1.0, 0);
+			break;
+		case BC_RGB888:
+			DIFFKEY_MACRO(unsigned char, 3, 0xff, 0);
+			break;
+		case BC_RGBA8888:
+			DIFFKEY_MACRO(unsigned char, 4, 0xff, 0);
+			break;
+		case BC_YUV888:
+			DIFFKEY_MACRO(unsigned char, 3, 0xff, 0x80);
+			break;
+		case BC_YUVA8888:
+			DIFFKEY_MACRO(unsigned char, 4, 0xff, 0x80);
+			break;
+	}
+
+
+
+}
+
+
+
+
+DiffKeyPackage::DiffKeyPackage()
+ : LoadPackage()
+{
+}
+
+
+
+
+
+
+#endif

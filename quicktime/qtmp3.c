@@ -368,7 +368,8 @@ static int allocate_output(quicktime_mp3_codec_t *codec,
 static int write_frames(quicktime_t *file, 
 	quicktime_audio_map_t *track_map,
 	quicktime_trak_t *trak,
-	quicktime_mp3_codec_t *codec)
+	quicktime_mp3_codec_t *codec,
+	int track)
 {
 	int result = 0;
 	int i, j;
@@ -394,16 +395,27 @@ static int write_frames(quicktime_t *file,
 					0,
 					0);
 
-				quicktime_write_chunk_header(file, trak, &chunk_atom);
-				result = !quicktime_write_data(file, header, frame_size);
-// Knows not to save the chunksizes for audio
-				quicktime_write_chunk_footer(file, 
-					trak, 
-					track_map->current_chunk,
-					&chunk_atom, 
+
+				quicktime_write_vbr_frame(file, 
+					track,
+					header,
+					frame_size,
 					frame_samples);
 
-				track_map->current_chunk++;
+
+
+// 				quicktime_write_chunk_header(file, trak, &chunk_atom);
+// 				result = !quicktime_write_data(file, header, frame_size);
+// // Knows not to save the chunksizes for audio
+// 				quicktime_write_chunk_footer(file, 
+// 					trak, 
+// 					track_map->current_chunk,
+// 					&chunk_atom, 
+// 					frame_samples);
+ 				track_map->current_chunk++;
+
+
+
 				i += frame_size;
 				frames_end = i;
 			}
@@ -524,7 +536,8 @@ static int encode(quicktime_t *file,
 	result = write_frames(file,
 		track_map,
 		trak,
-		codec);
+		codec,
+		track);
 
 	return result;
 }
@@ -564,7 +577,8 @@ static void flush(quicktime_t *file, int track)
 		result = write_frames(file, 
 			track_map,
 			trak,
-			codec);
+			codec,
+			track);
 	}
 }
 

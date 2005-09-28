@@ -5,6 +5,11 @@
 #include "condition.inc"
 #include "filebase.h"
 #include "file.inc"
+
+#ifdef HAVE_STDLIB_H
+#undef HAVE_STDLIB_H
+#endif
+
 #include "libmjpeg.h"
 #include "mutex.inc"
 #include "quicktime.h"
@@ -145,6 +150,7 @@ public:
 	int create_objects();
 	int close_event();
 	void update_parameters();
+	void reset();
 
 	MOVConfigAudioPopup *compression_popup;
 	ArrayList<BC_ListBoxItem*> compression_items;
@@ -159,6 +165,8 @@ public:
 	MOVConfigAudioToggle *vorbis_vbr;
 
 	MOVConfigAudioNum *mp3_bitrate;
+	MOVConfigAudioNum *mp4a_bitrate;
+	MOVConfigAudioNum *mp4a_quantqual;
 };
 
 
@@ -256,6 +264,11 @@ public:
 	MOVConfigVideoNum *divx_quality;
 	MOVConfigVideoFixBitrate *divx_fix_bitrate;
 	MOVConfigVideoFixQuant *divx_fix_quant;
+
+	MOVConfigVideoNum *h264_bitrate;
+	MOVConfigVideoNum *h264_quantizer;
+	MOVConfigVideoFixBitrate *h264_fix_bitrate;
+	MOVConfigVideoFixQuant *h264_fix_quant;
 };
 
 class MOVConfigVideoPopup : public BC_PopupTextBox
@@ -310,6 +323,13 @@ public:
 		char *title_text, 
 		int x, 
 		int y, 
+		int *output);
+	MOVConfigVideoNum(MOVConfigVideo *popup, 
+		char *title_text, 
+		int x, 
+		int y, 
+		int min,
+		int max,
 		int *output);
 	~MOVConfigVideoNum();
 	

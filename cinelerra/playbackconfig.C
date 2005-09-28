@@ -1,3 +1,4 @@
+#include "clip.h"
 #include "defaults.h"
 #include "playbackconfig.h"
 #include "videodevice.inc"
@@ -9,6 +10,8 @@ AudioOutConfig::AudioOutConfig(int duplex)
 
 	fragment_size = 16384;
 	driver = AUDIO_OSS;
+
+	audio_offset = 0.0;
 
 	oss_out_bits = 16;
 	for(int i = 0; i < MAXDEVICES; i++)
@@ -24,6 +27,7 @@ AudioOutConfig::AudioOutConfig(int duplex)
 	sprintf(alsa_out_device, "default");
 	alsa_out_channels = 2;
 	alsa_out_bits = 16;
+	interrupt_workaround = 0;
 
 	firewire_channels = 2;
 	firewire_channel = 63;
@@ -54,16 +58,26 @@ int AudioOutConfig::operator!=(AudioOutConfig &that)
 int AudioOutConfig::operator==(AudioOutConfig &that)
 {
 	return 
-		(fragment_size == that.fragment_size &&
-		driver == that.driver) &&
+		fragment_size == that.fragment_size &&
+		driver == that.driver &&
+		EQUIV(audio_offset, that.audio_offset) &&
+
+
 		!strcmp(oss_out_device[0], that.oss_out_device[0]) && 
 		(oss_out_channels[0] == that.oss_out_channels[0]) && 
 		(oss_out_bits == that.oss_out_bits) && 
+
+
+
 		!strcmp(esound_out_server, that.esound_out_server) && 
 		(esound_out_port == that.esound_out_port) && 
+
+
+
 		!strcmp(alsa_out_device, that.alsa_out_device) &&
 		(alsa_out_channels == that.alsa_out_channels) &&
 		(alsa_out_bits == that.alsa_out_bits) &&
+		(interrupt_workaround == that.interrupt_workaround) &&
 
 		firewire_channels == that.firewire_channels &&
 		firewire_channel == that.firewire_channel &&
@@ -90,6 +104,8 @@ void AudioOutConfig::copy_from(AudioOutConfig *src)
 {
 	fragment_size = src->fragment_size;
 	driver = src->driver;
+	audio_offset = src->audio_offset;
+
 	strcpy(esound_out_server, src->esound_out_server);
 	esound_out_port = src->esound_out_port;
 	for(int i = 0; i < MAXDEVICES; i++)
@@ -103,6 +119,7 @@ void AudioOutConfig::copy_from(AudioOutConfig *src)
 	strcpy(alsa_out_device, src->alsa_out_device);
 	alsa_out_channels = src->alsa_out_channels;
 	alsa_out_bits = src->alsa_out_bits;
+	interrupt_workaround = src->interrupt_workaround;
 
 	firewire_channels = src->firewire_channels;
 	firewire_channel = src->firewire_channel;
@@ -125,8 +142,9 @@ int AudioOutConfig::load_defaults(Defaults *defaults)
 	char string[BCTEXTLEN];
 
 	fragment_size = defaults->get("FRAGMENT_SIZE", fragment_size);
+	audio_offset = defaults->get("AUDIO_OFFSET", audio_offset);
 	sprintf(string, "AUDIO_OUT_DRIVER_%d", duplex);
-	driver =  		              defaults->get(string, driver);
+	driver = defaults->get(string, driver);
 
 	for(int i = 0; i < MAXDEVICES; i++)
 	{
@@ -143,6 +161,7 @@ int AudioOutConfig::load_defaults(Defaults *defaults)
 	defaults->get("ALSA_OUT_DEVICE", alsa_out_device);
 	alsa_out_channels = defaults->get("ALSA_OUT_CHANNELS", alsa_out_channels);
 	alsa_out_bits = defaults->get("ALSA_OUT_BITS", alsa_out_bits);
+	interrupt_workaround = defaults->get("ALSA_INTERRUPT_WORKAROUND", interrupt_workaround);
 
 	sprintf(string, "ESOUND_OUT_SERVER_%d", duplex);
 	defaults->get(string, esound_out_server);
@@ -179,6 +198,8 @@ int AudioOutConfig::save_defaults(Defaults *defaults)
 	char string[BCTEXTLEN];
 
 	defaults->update("FRAGMENT_SIZE", fragment_size);
+	defaults->update("AUDIO_OFFSET", audio_offset);
+
 	sprintf(string, "AUDIO_OUT_DRIVER_%d", duplex);
 	defaults->update(string, driver);
 
@@ -198,6 +219,7 @@ int AudioOutConfig::save_defaults(Defaults *defaults)
 	defaults->update("ALSA_OUT_DEVICE", alsa_out_device);
 	defaults->update("ALSA_OUT_CHANNELS", alsa_out_channels);
 	defaults->update("ALSA_OUT_BITS", alsa_out_bits);
+	defaults->update("ALSA_INTERRUPT_WORKAROUND", interrupt_workaround);
 
 	sprintf(string, "ESOUND_OUT_SERVER_%d", duplex);
 	defaults->update(string, esound_out_server);
@@ -252,6 +274,7 @@ int AudioOutConfig::total_output_channels()
 
 
 		case AUDIO_1394:
+		case AUDIO_IEC61883:
 			return firewire_channels;
 			break;
 

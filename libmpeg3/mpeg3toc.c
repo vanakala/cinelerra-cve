@@ -1,3 +1,135 @@
+// New version.
+// Very basic table of contents utility since most of the time it's going to be
+// built inside a graphical program.
+#if 1
+
+
+#include "libmpeg3.h"
+
+#include <stdint.h>
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
+
+
+
+
+
+int main(int argc, char *argv[])
+{
+	int i, j, l;
+	char *src = 0, *dst = 0;
+	int verbose = 0;
+
+	if(argc < 3)
+	{
+		fprintf(stderr, "Create a table of contents for a DVD or mpeg stream.\n"
+			"Usage: mpeg3toc <path> <output>\n"
+			"\n"
+			"-v Print tracking information\n"
+			"\n"
+			"The path should be absolute unless you plan\n"
+			"to always run your movie editor from the same directory\n"
+			"as the filename.  For renderfarms the filesystem prefix\n"
+			"should be / and the movie directory mounted under the same\n"
+			"directory on each node.\n\n"
+			"Example: mpeg3toc -v /cdrom/video_ts/vts_01_0.ifo titanic.toc\n");
+		exit(1);
+	}
+
+	for(i = 1; i < argc; i++)
+	{
+		if(!strcmp(argv[i], "-v"))
+		{
+			verbose = 1;
+		}
+		else
+		if(argv[i][0] == '-')
+		{
+			fprintf(stderr, "Unrecognized command %s\n", argv[i]);
+			exit(1);
+		}
+		else
+		if(!src)
+		{
+			src = argv[i];
+		}
+		else
+		if(!dst)
+		{
+			dst = argv[i];
+		}
+		else
+		{
+			fprintf(stderr, "Ignoring argument \"%s\"\n", argv[i]);
+		}
+	}
+
+	if(!src)
+	{
+		fprintf(stderr, "source path not supplied.\n");
+		exit(1);
+	}
+
+	if(!dst)
+	{
+		fprintf(stderr, "source path not supplied.\n");
+		exit(1);
+	}
+
+
+
+	int64_t total_bytes;
+	mpeg3_t *file = mpeg3_start_toc(src, dst, &total_bytes);
+	if(!file) exit(1);
+	struct timeval new_time;
+	struct timeval prev_time;
+	struct timeval start_time;
+	struct timeval current_time;
+	gettimeofday(&prev_time, 0);
+	gettimeofday(&start_time, 0);
+	
+	
+	while(1)
+	{
+		int64_t bytes_processed = 0;
+		mpeg3_do_toc(file, &bytes_processed);
+
+		gettimeofday(&new_time, 0);
+		if(verbose && new_time.tv_sec - prev_time.tv_sec > 1)
+		{
+			gettimeofday(&current_time, 0);
+			int64_t elapsed_seconds = current_time.tv_sec - start_time.tv_sec;
+			int64_t total_seconds = elapsed_seconds * total_bytes / bytes_processed;
+			int64_t eta = total_seconds - elapsed_seconds;
+			fprintf(stderr, "%lld%% ETA: %dm%ds        \r", 
+				bytes_processed * 100 / total_bytes,
+				eta / 60,
+				eta % 60);
+			fflush(stdout);
+			prev_time = new_time;
+		}
+
+		if(bytes_processed >= total_bytes) break;
+	}
+
+	mpeg3_stop_toc(file);
+
+	return 0;
+}
+
+
+
+
+
+
+
+#else
+
+
+
+
+
 #include "libmpeg3.h"
 #include "mpeg3protos.h"
 
@@ -257,6 +389,7 @@ int main(int argc, char *argv[])
 				{
 					mpeg3_demuxer_t *demuxer = input->atrack[j]->demuxer;
 					mpeg3demux_seek_byte(demuxer, 0);
+//demuxer->dump = 1;
 				}
 
 				if(!mpeg3_end_of_audio(input, j))
@@ -266,7 +399,6 @@ int main(int argc, char *argv[])
 					int64_t result;
 
 					if(position < MPEG3_IO_SIZE) position = MPEG3_IO_SIZE;
-//					result = (title_number << 56) | (position - MPEG3_IO_SIZE);
 					result = position;
 
 					have_audio = 1;
@@ -286,13 +418,16 @@ int main(int argc, char *argv[])
 						sample_count,         /* Number of samples to decode */
 						j);
 
+printf("\n%lld %lld\n", 
+mpeg3demux_tell_byte(input->atrack[j]->demuxer),
+mpeg3demux_movie_size(input->atrack[j]->demuxer));
 //printf(__FUNCTION__ " 7 %d\n", total_sample_offsets[j]);
 				}
 
 				if(j == atracks - 1)
 				{
 					total_samples += sample_count;
-					printf("Audio: title=%lld total_samples=%d ", title_number, total_samples);
+					fprintf(stderr, "Audio: title=%lld total_samples=%d ", title_number, total_samples);
 				}
 			}
 
@@ -338,7 +473,8 @@ int main(int argc, char *argv[])
 				{
 					if(!mpeg3_end_of_video(input, j))
 					{
-						int64_t position = mpeg3demux_tell_byte(demuxer);
+// Transport streams always return one packet after the start of the frame.
+						int64_t position = mpeg3demux_tell_byte(demuxer) - 2048;
 						int64_t result;
 						uint32_t code = 0;
 						int got_top = 0;
@@ -347,7 +483,6 @@ int main(int argc, char *argv[])
 						int fields = 0;
 
 						if(position < MPEG3_IO_SIZE) position = MPEG3_IO_SIZE;
-//						result = (title_number << 56) | (position - MPEG3_IO_SIZE);
 						result = position;
 						have_video = 1;
 
@@ -427,7 +562,7 @@ int main(int argc, char *argv[])
 						if(j == vtracks - 1 && l == frame_count - 1)
 						{
 							total_frames += frame_count;
-							printf("Video: title=%lld total_frames=%d (%.1f \%)", title_number, total_frames,100*((float)position)/((float) mpeg3demux_movie_size(demuxer)));
+							fprintf(stderr, "Video: title=%lld total_frames=%d (%.1f \%)", title_number, total_frames,100*((float)position)/((float) mpeg3demux_movie_size(demuxer)));
 						}
 					}
 				}
@@ -435,8 +570,8 @@ int main(int argc, char *argv[])
 
 			if(!have_audio && !have_video) done = 1;
 
-			printf("\r");
-			fflush(stdout);
+			fprintf(stderr, "\r");
+			fflush(stderr);
 /*
  * if(total_frames > 10000) 
  * {
@@ -507,19 +642,23 @@ int main(int argc, char *argv[])
 // Write titles
 		for(i = 0; i < input->demuxer->total_titles; i++)
 		{
+			mpeg3_title_t *title = input->demuxer->titles[i];
 // Path
 			fputc(TITLE_PATH, output);
-			fprintf(output, input->demuxer->titles[i]->fs->path);
+			fprintf(output, title->fs->path);
 			fputc(0, output);
 // Total bytes
-			PUT_INT64(input->demuxer->titles[i]->total_bytes);
+			PUT_INT64(title->total_bytes);
 // Byte offsets of cells
 			PUT_INT32(input->demuxer->titles[i]->cell_table_size);
-			for(j = 0; j < input->demuxer->titles[i]->cell_table_size; j++)
+			for(j = 0; j < title->cell_table_size; j++)
 			{
-				PUT_INT64(input->demuxer->titles[i]->cell_table[j].start_byte);
-				PUT_INT64(input->demuxer->titles[i]->cell_table[j].end_byte);
-				PUT_INT32(input->demuxer->titles[i]->cell_table[j].program);
+				mpeg3_cell_t *cell = &title->cell_table[j];
+				PUT_INT64(cell->title_start);
+				PUT_INT64(cell->title_end);
+				PUT_INT64(cell->program_start);
+				PUT_INT64(cell->program_end);
+				PUT_INT32(cell->program);
 			}
 		}
 
@@ -584,3 +723,10 @@ int main(int argc, char *argv[])
 
 	return 0;
 }
+
+
+
+
+
+
+#endif

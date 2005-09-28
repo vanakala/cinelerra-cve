@@ -48,9 +48,7 @@ void MTimeBar::stop_playback()
 
 void MTimeBar::draw_time()
 {
-//printf("TimeBar::draw_time 1\n");
 	draw_range();
-//printf("TimeBar::draw_time 2\n");
 
 // fit the time
 	int64_t windowspan = 0;
@@ -66,7 +64,6 @@ void MTimeBar::draw_time()
 	sample_rate = mwindow->edl->session->sample_rate;
 	windowspan = mwindow->edl->local_session->zoom_sample * get_w();
 	timescale2 = TIMESPACING * mwindow->edl->local_session->zoom_sample;
-//printf("TimeBar::draw_time 2\n");
 
 	if(timescale2 <= sample_rate / 4) timescale1 = sample_rate / 4;
 	else
@@ -81,26 +78,21 @@ void MTimeBar::draw_time()
 	if(timescale2 <= sample_rate * 600) timescale1 = sample_rate * 600;
 	else
 	timescale1 = sample_rate * 3600;
-//printf("TimeBar::draw_time 2\n");
 
 	for(timescale3 = timescale1; timescale3 > timescale2; timescale3 /= 2)
 		;
-//printf("TimeBar::draw_time 2\n");
 
 	timescale1 = (int64_t)(timescale3 * 2);
-//printf("TimeBar::draw_time 2\n");
 
 	sample = (int64_t)(mwindow->edl->local_session->view_start * 
 		mwindow->edl->local_session->zoom_sample + 
 		0.5);
-//printf("TimeBar::draw_time 2 %lld %lld %lld\n", mwindow->edl->local_session->zoom_sample, sample_rate, timescale1);
 
 	sample /= timescale1;
 	sample *= timescale1;
 	pixel = (int64_t)(sample / 
 		mwindow->edl->local_session->zoom_sample - 
 		mwindow->edl->local_session->view_start);
-//printf("TimeBar::draw_time 2\n");
 	sample += (int64_t) ((mwindow->edl->session->get_frame_offset() /
 								mwindow->edl->session->frame_rate) *
 								48000 /
@@ -115,12 +107,11 @@ void MTimeBar::draw_time()
 			mwindow->edl->session->time_format, 
 			mwindow->edl->session->frame_rate,
 			mwindow->edl->session->frames_per_foot);
-	 	set_color(BLACK);
+	 	set_color(get_resources()->default_text_color);
 		set_font(MEDIUMFONT);
 		draw_text(pixel + 4, get_text_ascent(MEDIUMFONT), string);
 		draw_line(pixel, 3, pixel, get_h() - 4);
 	}
-//printf("TimeBar::draw_time 200\n");
 }
 
 void MTimeBar::draw_range()
@@ -137,13 +128,12 @@ void MTimeBar::draw_range()
 			mwindow->edl->local_session->view_start;
 	}
 
-//printf("MTimeBar::draw_range 1 %f %f\n", mwindow->edl->session->brender_start, mwindow->session->brender_end);
 	if(x2 > x1 && 
 		x1 < get_w() && 
 		x2 > 0)
 	{
 		draw_top_background(get_parent(), 0, 0, x1, get_h());
-		draw_3segmenth(x1, 0, x2 - x1, mwindow->theme->timebar_brender_data);
+		draw_3segmenth(x1, 0, x2 - x1, mwindow->theme->get_image("timebar_brender"));
 		draw_top_background(get_parent(), x2, 0, get_w() - x2, get_h());
 	}
 	else
@@ -163,19 +153,21 @@ void MTimeBar::select_label(double position)
 
 	if(shift_down())
 	{
-		if(position > edl->local_session->selectionend / 2 + edl->local_session->selectionstart / 2)
+		if(position > edl->local_session->get_selectionend(1) / 2 + 
+			edl->local_session->get_selectionstart(1) / 2)
 		{
 		
-			edl->local_session->selectionend = position;
+			edl->local_session->set_selectionend(position);
 		}
 		else
 		{
-			edl->local_session->selectionstart = position;
+			edl->local_session->set_selectionstart(position);
 		}
 	}
 	else
 	{
-		edl->local_session->selectionstart = edl->local_session->selectionend = position;
+		edl->local_session->set_selectionstart(position);
+		edl->local_session->set_selectionend(position);
 	}
 
 // Que the CWindow

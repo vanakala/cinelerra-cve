@@ -1,89 +1,53 @@
+#include "automation.inc"
 #include "clip.h"
+#include "edl.h"
+#include "edlsession.h"
 #include "filexml.h"
 #include "floatauto.h"
 #include "floatautos.h"
+#include "track.h"
+#include "localsession.h"
 #include "transportque.inc"
 
 FloatAutos::FloatAutos(EDL *edl,
 				Track *track, 
-				int color, 
-				float min, 
-				float max, 
-				float default_,
-				int virtual_h,
-				int use_floats)
+				float default_)
  : Autos(edl, track)
 {
-	this->max = max; 
-	this->min = min;
 	this->default_ = default_;
-	this->virtual_h = virtual_h;
-	this->use_floats = use_floats;
+	type = AUTOMATION_TYPE_FLOAT;
 }
 
 FloatAutos::~FloatAutos()
 {
 }
 
-int FloatAutos::get_track_pixels(int zoom_track, int pixel, int &center_pixel, float &yscale)
-{
-	center_pixel = pixel + zoom_track / 2;
-	yscale = -(float)zoom_track / (max - min);
-}
-
 int FloatAutos::draw_joining_line(BC_SubWindow *canvas, int vertical, int center_pixel, int x1, int y1, int x2, int y2)
 {
 	if(vertical)
-	canvas->draw_line(center_pixel - y1, x1, center_pixel - y2, x2);
+		canvas->draw_line(center_pixel - y1, x1, center_pixel - y2, x2);
 	else
-	canvas->draw_line(x1, center_pixel + y1, x2, center_pixel + y2);
+		canvas->draw_line(x1, center_pixel + y1, x2, center_pixel + y2);
 }
 
 Auto* FloatAutos::add_auto(int64_t position, float value)
 {
 	FloatAuto* current = (FloatAuto*)autoof(position);
-	FloatAuto* new_auto;
+	FloatAuto* result;
 	
-	insert_before(current, new_auto = new FloatAuto(edl, this));
+	insert_before(current, result = (FloatAuto*)new_auto());
 
-	new_auto->position = position;
-	new_auto->value = value;
+	result->position = position;
+	result->value = value;
 	
-	return new_auto;
-}
-
-Auto* FloatAutos::append_auto()
-{
-	return append(new FloatAuto(edl, this));
+	return result;
 }
 
 Auto* FloatAutos::new_auto()
 {
-	return new FloatAuto(edl, this);
-}
-
-float FloatAutos::fix_value(float value)
-{
-	int value_int;
-	
-	if(use_floats)
-	{
-// Fix precision
-		value_int = (int)(value * 100);
-		value = (float)value_int / 100;
-	}
-	else
-	{
-// not really floating point
-		value_int = (int)value;
-		value = value_int;
-	}
-
-	if(value < min) value = min;
-	else
-	if(value > max) value = max;
-	
-	return value;	
+	FloatAuto *result = new FloatAuto(edl, this);
+	result->value = default_;
+	return result;
 }
 
 int FloatAutos::get_testy(float slope, int cursor_x, int ax, int ay)
@@ -249,8 +213,8 @@ float FloatAutos::get_value(int64_t position,
 	float y0, y1, y2, y3;
  	float t;
 
-	previous = (FloatAuto*)get_prev_auto(position, direction, (Auto*&)previous, 0);
-	next = (FloatAuto*)get_next_auto(position, direction, (Auto*&)next, 0);
+	previous = (FloatAuto*)get_prev_auto(position, direction, (Auto* &)previous, 0);
+	next = (FloatAuto*)get_next_auto(position, direction, (Auto* &)next, 0);
 
 // Constant
 	if(!next && !previous)
@@ -401,13 +365,90 @@ void FloatAutos::get_fade_automation(double &slope,
 	}
 }
 
-float FloatAutos::value_to_percentage(float value)
+void FloatAutos::get_extents(float *min, 
+	float *max,
+	int *coords_undefined,
+	int64_t unit_start,
+	int64_t unit_end)
 {
-	return (value - min) / (max - min);
+	if(!edl)
+	{
+		printf("FloatAutos::get_extents edl == NULL\n");
+		return;
+	}
+
+	if(!track)
+	{
+		printf("FloatAutos::get_extents track == NULL\n");
+		return;
+	}
+
+// Use default auto
+	if(!first)
+	{
+		FloatAuto *current = (FloatAuto*)default_auto;
+		if(*coords_undefined)
+		{
+			*min = *max = current->value;
+			*coords_undefined = 0;
+		}
+
+		*min = MIN(current->value, *min);
+		*max = MAX(current->value, *max);
+	}
+
+// Test all handles
+	for(FloatAuto *current = (FloatAuto*)first; current; current = (FloatAuto*)NEXT)
+	{
+		if(current->position >= unit_start && current->position < unit_end)
+		{
+			if(*coords_undefined)
+			{
+				*min = *max = current->value;
+				*coords_undefined = 0;
+			}
+			
+			*min = MIN(current->value, *min);
+			*min = MIN(current->value + current->control_in_value, *min);
+			*min = MIN(current->value + current->control_out_value, *min);
+
+			*max = MAX(current->value, *max);
+			*max = MAX(current->value + current->control_in_value, *max);
+			*max = MAX(current->value + current->control_out_value, *max);
+		}
+	}
+
+// Test joining regions
+	FloatAuto *prev = 0;
+	FloatAuto *next = 0;
+	int64_t unit_step = edl->local_session->zoom_sample;
+	if(track->data_type == TRACK_VIDEO)
+		unit_step = (int64_t)(unit_step * 
+			edl->session->frame_rate / 
+			edl->session->sample_rate);
+	unit_step = MAX(unit_step, 1);
+	for(int64_t position = unit_start; 
+		position < unit_end; 
+		position += unit_step)
+	{
+		float value = get_value(position,
+			PLAY_FORWARD,
+			prev,
+			next);
+		if(*coords_undefined)
+		{
+			*min = *max = value;
+			*coords_undefined = 0;
+		}
+		else
+		{
+			*min = MIN(value, *min);
+			*max = MAX(value, *max);
+		}	
+	}
 }
 
-
-int FloatAutos::dump()
+void FloatAutos::dump()
 {
 	printf("	FloatAutos::dump %p\n", this);
 	printf("	Default: position %lld value=%f\n", 
@@ -421,5 +462,4 @@ int FloatAutos::dump()
 			((FloatAuto*)current)->control_in_value,
 			((FloatAuto*)current)->control_out_value);
 	}
-	return 0;
 }

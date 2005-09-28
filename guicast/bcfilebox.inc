@@ -10,6 +10,7 @@ class BC_FileBox;
 
 
 #define FILEBOX_COLUMNS 4
+#define DIRBOX_COLUMNS 2
 
 // Column definitions
 #define FILEBOX_NAME 0
@@ -20,6 +21,7 @@ class BC_FileBox;
 #define FILEBOX_NAME_TEXT _("File")
 #define FILEBOX_SIZE_TEXT _("Size")
 #define FILEBOX_DATE_TEXT _("Date")
-#define FILEBOX_EXTENSION_TEXT _("Extension")
+#define FILEBOX_EXTENSION_TEXT _("Ext.")
+#define FILEBOX_HISTORY_SIZE 16
 
 #endif

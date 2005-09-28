@@ -35,6 +35,10 @@ MainSession::MainSession(MWindow *mwindow)
 	brender_end = 0;
 	cwindow_controls = 1;
 	trim_edits = 0;
+	gwindow_x = 0;
+	gwindow_y = 0;
+	show_gwindow = 0;
+	current_tip = 0;
 }
 
 MainSession::~MainSession()
@@ -58,6 +62,8 @@ void MainSession::boundaries()
 	vwindow_y = MAX(0, vwindow_y);
 	awindow_x = MAX(0, awindow_x);
 	awindow_y = MAX(0, awindow_y);
+	gwindow_x = MAX(0, gwindow_x);
+	gwindow_y = MAX(0, gwindow_y);
 	rwindow_x = MAX(0, rwindow_x);
 	rwindow_y = MAX(0, rwindow_y);
 	rmonitor_x = MAX(0, rmonitor_x);
@@ -155,6 +161,8 @@ int MainSession::load_defaults(Defaults *defaults)
 	ctool_x = defaults->get("CTOOL_X", ctool_x);
 	ctool_y = defaults->get("CTOOL_Y", ctool_y);
 
+	gwindow_x = defaults->get("GWINDOW_X", gwindow_x);
+	gwindow_y = defaults->get("GWINDOW_Y", gwindow_y);
 
 	mwindow_x = defaults->get("MWINDOW_X", mwindow_x);
 	mwindow_y = defaults->get("MWINDOW_Y", mwindow_y);
@@ -195,6 +203,7 @@ int MainSession::load_defaults(Defaults *defaults)
 	show_awindow = defaults->get("SHOW_AWINDOW", 1);
 	show_cwindow = defaults->get("SHOW_CWINDOW", 1);
 	show_lwindow = defaults->get("SHOW_LWINDOW", 0);
+	show_gwindow = defaults->get("SHOW_GWINDOW", 0);
 
 	cwindow_controls = defaults->get("CWINDOW_CONTROLS", cwindow_controls);
 
@@ -202,6 +211,8 @@ int MainSession::load_defaults(Defaults *defaults)
 	plugindialog_h = defaults->get("PLUGINDIALOG_H", 415);
 	menueffect_w = defaults->get("MENUEFFECT_W", 580);
 	menueffect_h = defaults->get("MENUEFFECT_H", 350);
+
+	current_tip = defaults->get("CURRENT_TIP", current_tip);
 
 	boundaries();
 	return 0;
@@ -234,6 +245,9 @@ int MainSession::save_defaults(Defaults *defaults)
 	defaults->update("CTOOL_X", ctool_x);
 	defaults->update("CTOOL_Y", ctool_y);
 
+	defaults->update("GWINDOW_X", gwindow_x);
+	defaults->update("GWINDOW_Y", gwindow_y);
+
 	defaults->update("AWINDOW_X", awindow_x);
 	defaults->update("AWINDOW_Y", awindow_y);
 	defaults->update("AWINDOW_W", awindow_w);
@@ -260,6 +274,7 @@ int MainSession::save_defaults(Defaults *defaults)
 	defaults->update("SHOW_AWINDOW", show_awindow);
 	defaults->update("SHOW_CWINDOW", show_cwindow);
 	defaults->update("SHOW_LWINDOW", show_lwindow);
+	defaults->update("SHOW_GWINDOW", show_gwindow);
 
 	defaults->update("CWINDOW_CONTROLS", cwindow_controls);
 
@@ -269,6 +284,7 @@ int MainSession::save_defaults(Defaults *defaults)
 	defaults->update("MENUEFFECT_W", menueffect_w);
 	defaults->update("MENUEFFECT_H", menueffect_h);
 
+	defaults->update("CURRENT_TIP", current_tip);
 
 
 	return 0;

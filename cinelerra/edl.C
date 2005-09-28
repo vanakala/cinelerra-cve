@@ -4,6 +4,7 @@
 #include "autoconf.h"
 #include "automation.h"
 #include "awindowgui.inc"
+#include "bcsignals.h"
 #include "clip.h"
 #include "colormodels.h"
 #include "defaults.h"
@@ -188,8 +189,8 @@ int EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 		if(load_flags & LOAD_TIMEBAR)
 		{
 			while(labels->last) delete labels->last;
-			local_session->in_point = -1;
-			local_session->out_point = -1;
+			local_session->unset_inpoint();
+			local_session->unset_outpoint();
 		}
 
 		do{
@@ -425,8 +426,7 @@ int EDL::copy_assets(double start,
 // Paths relativised here
 	for(int i = 0; i < asset_list.total; i++)
 	{
-		asset_list.values[i]->write(plugindb,
-			file, 
+		asset_list.values[i]->write(file, 
 			0, 
 			output_path);
 	}
@@ -577,7 +577,7 @@ void EDL::rechannel()
 	{
 		if(current->data_type == TRACK_AUDIO)
 		{
-			PanAutos *autos = current->automation->pan_autos;
+			PanAutos *autos = (PanAutos*)current->automation->autos[AUTOMATION_PAN];
 			((PanAuto*)autos->default_auto)->rechannel();
 			for(PanAuto *keyframe = (PanAuto*)autos->first;
 				keyframe;
@@ -636,10 +636,13 @@ int EDL::trim_selection(double start,
 
 int EDL::equivalent(double position1, double position2)
 {
-	double half_frame = (double).5 / session->frame_rate;
-	if((session->cursor_on_frames && 
-		fabs(position2 - position1) < half_frame) ||
-		(fabs(position2 - position1) < half_frame))
+	double threshold = (double).5 / session->frame_rate;
+	if(session->cursor_on_frames) 
+		threshold = (double).5 / session->frame_rate;
+	else
+		threshold = (double)1 / session->sample_rate;
+
+	if(fabs(position2 - position1) < threshold)
     	return 1;
     else
         return 0;
@@ -661,27 +664,31 @@ void EDL::set_project_path(char *path)
 
 void EDL::set_inpoint(double position)
 {
-	if(equivalent(local_session->in_point, position) && local_session->in_point >= 0)
+	if(equivalent(local_session->get_inpoint(), position) && 
+		local_session->get_inpoint() >= 0)
 	{
-		local_session->in_point = -1;
+		local_session->unset_inpoint();
 	}
 	else
 	{
-		local_session->in_point = align_to_frame(position, 0);
-		if(local_session->out_point <= local_session->in_point) local_session->out_point = -1;
+		local_session->set_inpoint(align_to_frame(position, 0));
+		if(local_session->get_outpoint() <= local_session->get_inpoint()) 
+			local_session->unset_outpoint();
 	}
 }
 
 void EDL::set_outpoint(double position)
 {
-	if(equivalent(local_session->out_point, position) && local_session->out_point >= 0)
+	if(equivalent(local_session->get_outpoint(), position) && 
+		local_session->get_outpoint() >= 0)
 	{
-		local_session->out_point = -1;
+		local_session->unset_outpoint();
 	}
 	else
 	{
-		local_session->out_point = align_to_frame(position, 0);
-		if(local_session->in_point >= local_session->out_point) local_session->in_point = -1;
+		local_session->set_outpoint(align_to_frame(position, 0));
+		if(local_session->get_inpoint() >= local_session->get_outpoint()) 
+			local_session->unset_inpoint();
 	}
 }
 
@@ -716,9 +723,9 @@ int EDL::clear(double start,
 
 // Need to put at beginning so a subsequent paste operation starts at the
 // right position.
-	local_session->selectionend = 
-		local_session->selectionstart = 
-		local_session->get_selectionstart();
+	double position = local_session->get_selectionstart();
+	local_session->set_selectionend(position);
+	local_session->set_selectionstart(position);
 	return 0;
 }
 
@@ -850,35 +857,35 @@ int64_t EDL::get_tracks_width()
 	return total_pixels;
 }
 
-int EDL::calculate_output_w(int single_channel)
-{
-	if(single_channel) return session->output_w;
-
-	int widest = 0;
-	for(int i = 0; i < session->video_channels; i++)
-	{
-		if(session->vchannel_x[i] + session->output_w > widest) widest = session->vchannel_x[i] + session->output_w;
-	}
-	return widest;
-}
-
-int EDL::calculate_output_h(int single_channel)
-{
-	if(single_channel) return session->output_h;
-
-	int tallest = 0;
-	for(int i = 0; i < session->video_channels; i++)
-	{
-		if(session->vchannel_y[i] + session->output_h > tallest) tallest = session->vchannel_y[i] + session->output_h;
-	}
-	return tallest;
-}
+// int EDL::calculate_output_w(int single_channel)
+// {
+// 	if(single_channel) return session->output_w;
+// 
+// 	int widest = 0;
+// 	for(int i = 0; i < session->video_channels; i++)
+// 	{
+// 		if(session->vchannel_x[i] + session->output_w > widest) widest = session->vchannel_x[i] + session->output_w;
+// 	}
+// 	return widest;
+// }
+// 
+// int EDL::calculate_output_h(int single_channel)
+// {
+// 	if(single_channel) return session->output_h;
+// 
+// 	int tallest = 0;
+// 	for(int i = 0; i < session->video_channels; i++)
+// 	{
+// 		if(session->vchannel_y[i] + session->output_h > tallest) tallest = session->vchannel_y[i] + session->output_h;
+// 	}
+// 	return tallest;
+// }
 
 // Get the total output size scaled to aspect ratio
 void EDL::calculate_conformed_dimensions(int single_channel, float &w, float &h)
 {
-	w = calculate_output_w(single_channel);
-	h = calculate_output_h(single_channel);
+	w = session->output_w;
+	h = session->output_h;
 
 	if((float)session->output_w / session->output_h > get_aspect_ratio())
 	{
@@ -905,8 +912,8 @@ int EDL::dump()
 		printf("EDL\n");
 	printf("clip_title: %s parent_edl: %p\n", local_session->clip_title, parent_edl);
 	printf("selectionstart %f selectionend %f loop_start %f loop_end %f\n", 
-		local_session->selectionstart, 
-		local_session->selectionend,
+		local_session->get_selectionstart(1), 
+		local_session->get_selectionend(1),
 		local_session->loop_start,
 		local_session->loop_end);
 
@@ -1076,7 +1083,8 @@ void EDL::get_shared_plugins(Track *source,
 		{
 			for(int i = 0; i < track->plugin_set.total; i++)
 			{
-				Plugin *plugin = track->get_current_plugin(local_session->selectionstart, 
+				Plugin *plugin = track->get_current_plugin(
+					local_session->get_selectionstart(1), 
 					i, 
 					PLAY_FORWARD, 
 					1,

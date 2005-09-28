@@ -17,13 +17,14 @@
 #define TOOLTIP_MARGIN 2
 #define BC_INFINITY 65536
 
-#include "bcfilebox.inc"
 #include "arraylist.h"
+#include "bcbar.inc"
 #include "bcbitmap.inc"
 #include "bcbutton.inc"
 #include "bccapture.inc"
-#include "bcdragwindow.inc"
 #include "bcclipboard.inc"
+#include "bcdragwindow.inc"
+#include "bcfilebox.inc"
 #include "bclistbox.inc"
 #include "bcmenubar.inc"
 #include "bcmeter.inc"
@@ -89,6 +90,7 @@ public:
 	BC_WindowBase();
 	virtual ~BC_WindowBase();
 
+	friend class BC_Bar;
 	friend class BC_Bitmap;
 	friend class BC_Button;
 	friend class BC_GenericButton;
@@ -144,7 +146,7 @@ public:
 	virtual int expose_event() { return 0; };
 
 // Check if a hardware accelerated colormodel is available and reserve it
-	int accel_available(int color_model); 
+	int accel_available(int color_model, int lock_it); 
 // Get color model adjusted for byte order and pixel size
 	int get_color_model();
 // return the colormap pixel of the color for all bit depths
@@ -248,9 +250,20 @@ public:
 	void set_color(int64_t color);
 	int get_bgcolor();
 	void set_font(int font);
-	void set_cursor(int cursor);
+// Set the cursor to a macro from cursors.h
+	void set_cursor(int cursor, int is_hourglass = 0);
+// Set the cursor to a character in the X cursor library.  Used by test.C
 	void set_x_cursor(int cursor);
 	int get_cursor();
+
+// Entry point for starting hourglass.  
+// Converts all cursors and saves the previous cursor.
+	void start_hourglass();
+	void stop_hourglass();
+
+// Recursive part of hourglass commands.
+	void start_hourglass_recursive();
+	void stop_hourglass_recursive();
 
 // Drawing
 	void copy_area(int x1, int y1, int x2, int y2, int w, int h, BC_Pixmap *pixmap = 0);
@@ -453,6 +466,7 @@ public:
 #endif
 
 	
+	int test_keypress;
 
 
 private:
@@ -688,6 +702,11 @@ private:
 	Atom ProtoXAtom;
 	Atom RepeaterXAtom;
 	Atom SetDoneXAtom;
+// Cursor before starting an hourglass operation.
+	int prev_cursor;
+// Number of times start_hourglass was called
+	int hourglass_total;
+// Cursor set by last set_cursor.
 	int current_cursor;
 	Cursor arrow_cursor;
 	Cursor cross_cursor;
@@ -703,6 +722,7 @@ private:
 	Cursor upright_resize_cursor;
 	Cursor downleft_resize_cursor;
 	Cursor downright_resize_cursor;
+	Cursor hourglass_cursor;
 
 	int xvideo_port_id;
 	ArrayList<BC_ResizeCall*> resize_history;

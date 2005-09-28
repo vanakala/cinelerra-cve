@@ -85,18 +85,15 @@ int New::create_new_project()
 	mwindow->vwindow->playback_engine->interrupt_playback(0);
 
 	mwindow->gui->lock_window();
-	mwindow->undo->update_undo_before(_("New"), LOAD_ALL);
 
 	new_edl->session->boundaries();
 	new_edl->create_default_tracks();
 
 	mwindow->set_filename("");
-	mwindow->undo->update_undo_after();
+	mwindow->undo->update_undo(_("New"), LOAD_ALL);
 
 	mwindow->hide_plugins();
 	delete mwindow->edl;
-// Delete patches which are pointing to tracks which have been just deleted.
- 	mwindow->patches->delete_all_patches();
 	mwindow->edl = new_edl;
 	mwindow->save_defaults();
 
@@ -364,8 +361,10 @@ int NewWindow::create_objects()
 		y)); 
 	y += textbox->get_h() + 5;
 
-	add_subwindow(new BC_OKButton(this));
-	add_subwindow(new BC_CancelButton(this));
+	add_subwindow(new BC_OKButton(this, 
+		mwindow->theme->get_image_set("new_ok_images")));
+	add_subwindow(new BC_CancelButton(this, 
+		mwindow->theme->get_image_set("new_cancel_images")));
 	flash();
 	update();
 	show_window();
@@ -632,29 +631,6 @@ int FrameRatePulldown::handle_event()
 	output->handle_event();
 	return 1;
 }
-
-// NewTrackW::NewTrackW(NewWindow *nwindow, int x, int y)
-//  : BC_TextBox(x, y, 70, 1, nwindow->new_edl->session->track_w)
-// {
-// 	this->nwindow = nwindow;
-// }
-// int NewTrackW::handle_event()
-// {
-// 	nwindow->new_edl->session->track_w = atol(get_text());
-// 	return 1;
-// }
-// 
-// NewTrackH::NewTrackH(NewWindow *nwindow, int x, int y)
-//  : BC_TextBox(x, y, 70, 1, nwindow->new_edl->session->track_h)
-// {
-// 	this->nwindow = nwindow;
-// }
-// 
-// int NewTrackH::handle_event()
-// {
-// 	nwindow->new_edl->session->track_h = atol(get_text());
-// 	return 1;
-// }
 
 FrameSizePulldown::FrameSizePulldown(MWindow *mwindow, 
 		BC_TextBox *output_w, 

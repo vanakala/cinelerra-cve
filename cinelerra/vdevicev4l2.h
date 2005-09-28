@@ -88,6 +88,7 @@ public:
 	int initialize();
 	int get_best_colormodel(Asset *asset);
 	int read_buffer(VFrame *frame);
+	int has_signal();
 	static int cmodel_to_device(int color_model);
 	static int get_sources(VideoDevice *device,
 		char *path);

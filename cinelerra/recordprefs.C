@@ -5,9 +5,11 @@
 #include "edlsession.h"
 #include "new.h"
 #include "language.h"
+#include "mwindow.h"
 #include "preferences.h"
 #include "recordconfig.h"
 #include "recordprefs.h"
+#include "theme.h"
 #include "vdeviceprefs.h"
 
 
@@ -27,14 +29,20 @@ RecordPrefs::~RecordPrefs()
 
 int RecordPrefs::create_objects()
 {
-	int x = 5, y = 5, x2;
+	int x, y, x2;
 	char string[BCTEXTLEN];
+	BC_Resources *resources = BC_WindowBase::get_resources();
 
-	add_subwindow(new BC_Title(x, y, _("Audio In"), LARGEFONT, BLACK));
-	y += 25;
+	add_subwindow(new BC_Title(mwindow->theme->preferencestitle_x, 
+		mwindow->theme->preferencestitle_y, 
+		_("Audio In"), 
+		LARGEFONT, 
+		resources->text_default));
+	x = mwindow->theme->preferencesoptions_x;
+	y = mwindow->theme->preferencesoptions_y;
 
 
-	add_subwindow(new BC_Title(x, y, _("Record Driver:"), MEDIUMFONT, BLACK));
+	add_subwindow(new BC_Title(x, y, _("Record Driver:"), MEDIUMFONT, resources->text_default));
 	in_device = new ADevicePrefs(x + 110, 
 		y, 
 		pwindow, 
@@ -44,7 +52,7 @@ int RecordPrefs::create_objects()
 		MODERECORD);
 	in_device->initialize();
 
-	y += ADevicePrefs::get_h();
+	y += in_device->get_h();
 
 
 	BC_TextBox *textbox;
@@ -74,10 +82,17 @@ int RecordPrefs::create_objects()
 	x = 5;
 
 
-	add_subwindow(new BC_Title(x, y, _("Video In"), LARGEFONT, BLACK));
+
+
+// Video
+	add_subwindow(new BC_Bar(5, y, 	get_w() - 10));
+	y += 5;
+
+
+	add_subwindow(new BC_Title(x, y, _("Video In"), LARGEFONT, resources->text_default));
 	y += 25;
 
-	add_subwindow(new BC_Title(x, y, _("Record Driver:"), MEDIUMFONT, BLACK));
+	add_subwindow(new BC_Title(x, y, _("Record Driver:"), MEDIUMFONT, resources->text_default));
 	video_in_device = new VDevicePrefs(x + 110, 
 		y, 
 		pwindow, 

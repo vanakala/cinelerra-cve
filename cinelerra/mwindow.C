@@ -23,6 +23,8 @@
 #include "file.h"
 #include "filesystem.h"
 #include "filexml.h"
+#include "gwindow.h"
+#include "gwindowgui.h"
 #include "indexfile.h"
 #include "interlacemodes.h"
 #include "language.h"
@@ -57,6 +59,7 @@
 #include "theme.h"
 #include "threadloader.h"
 #include "timebar.h"
+#include "tipwindow.h"
 #include "trackcanvas.h"
 #include "track.h"
 #include "tracking.h"
@@ -443,9 +446,10 @@ void MWindow::clean_indexes()
 	FileSystem fs;
 	int total_excess;
 	long oldest;
-	int oldest_item;
+	int oldest_item = -1;
 	int result;
 	char string[BCTEXTLEN];
+	char string2[BCTEXTLEN];
 
 // Delete extra indexes
 	fs.set_filter("*.idx");
@@ -486,11 +490,29 @@ void MWindow::clean_indexes()
 			}
 		}
 
-		fs.join_names(string, preferences->index_directory, fs.dir_list.values[oldest_item]->name);
-		if(remove(string))
-			perror("delete_indexes");
-		delete fs.dir_list.values[oldest_item];
-		fs.dir_list.remove_number(oldest_item);
+		if(oldest_item >= 0)
+		{
+// Remove index file
+			fs.join_names(string, 
+				preferences->index_directory, 
+				fs.dir_list.values[oldest_item]->name);
+//printf("MWindow::clean_indexes 1 %s\n", string);
+			if(remove(string))
+				perror("delete_indexes");
+			delete fs.dir_list.values[oldest_item];
+			fs.dir_list.remove_number(oldest_item);
+
+// Remove table of contents if it exists
+			strcpy(string2, string);
+			char *ptr = strrchr(string2, '.');
+			if(ptr)
+			{
+//printf("MWindow::clean_indexes 2 %s\n", string2);
+				sprintf(ptr, ".toc");
+				remove(string2);
+			}
+		}
+
 		total_excess--;
 	}
 }
@@ -501,9 +523,25 @@ void MWindow::init_awindow()
 	awindow->create_objects();
 }
 
+void MWindow::init_gwindow()
+{
+	gwindow = new GWindow(this);
+	gwindow->create_objects();
+}
+
+void MWindow::init_tipwindow()
+{
+	twindow = new TipWindow(this);
+	twindow->start();
+}
+
 void MWindow::init_theme()
 {
 	theme = 0;
+
+// Replace blond theme with SUV since it doesn't work
+	if(!strcasecmp(preferences->theme, "Blond"))
+		strcpy(preferences->theme, DEFAULT_THEME);
 
 	for(int i = 0; i < plugindb->total; i++)
 	{
@@ -525,10 +563,13 @@ void MWindow::init_theme()
 		exit(1);
 	}
 
-// Load user images
-	theme->initialize();
 // Load images which may have been forgotten
 	theme->Theme::initialize();
+// Load user images
+	theme->initialize();
+// Create menus with user colors
+	theme->build_menus();
+	init_menus();
 
 	theme->check_used();
 }
@@ -594,10 +635,10 @@ void MWindow::init_menus()
 	colormodels.append(new ColormodelItem(string, BC_YUV888));
 	cmodel_to_text(string, BC_YUVA8888);
 	colormodels.append(new ColormodelItem(string, BC_YUVA8888));
-	cmodel_to_text(string, BC_YUV161616);
-	colormodels.append(new ColormodelItem(string, BC_YUV161616));
-	cmodel_to_text(string, BC_YUVA16161616);
-	colormodels.append(new ColormodelItem(string, BC_YUVA16161616));
+//	cmodel_to_text(string, BC_YUV161616);
+//	colormodels.append(new ColormodelItem(string, BC_YUV161616));
+//	cmodel_to_text(string, BC_YUVA16161616);
+//	colormodels.append(new ColormodelItem(string, BC_YUVA16161616));
 
 #define ILACEPROJECTMODELISTADD(x) ilacemode_to_text(string, x); \
                            interlace_project_modes.append(new InterlacemodeItem(string, x));
@@ -729,6 +770,10 @@ int MWindow::load_filenames(ArrayList<char*> *filenames,
 TRACE("MWindow::load_filenames 1");
 	ArrayList<EDL*> new_edls;
 	ArrayList<Asset*> new_assets;
+	ArrayList<File*> new_files;
+
+	save_defaults();
+	gui->start_hourglass();
 
 // Need to stop playback since tracking depends on the EDL not getting
 // deleted.
@@ -744,6 +789,7 @@ TRACE("MWindow::load_filenames 1");
 	vwindow->playback_engine->interrupt_playback(0);
 
 
+TRACE("MWindow::load_filenames 80");
 
 // Define new_edls and new_assets to load
 	int result = 0;
@@ -779,8 +825,10 @@ TRACE("MWindow::load_filenames 1");
 		new_edl->copy_session(edl);
 
 		sprintf(string, "Loading %s", new_asset->path);
-		gui->show_message(string, BLACK);
-		result = new_file->open_file(plugindb, new_asset, 1, 0, 0, 0);
+		gui->show_message(string);
+TRACE("MWindow::load_filenames 81");
+		result = new_file->open_file(preferences, new_asset, 1, 0, 0, 0);
+TRACE("MWindow::load_filenames 82");
 
 		switch(result)
 		{
@@ -788,9 +836,14 @@ TRACE("MWindow::load_filenames 1");
 			case FILE_OK:
 				if(load_mode != LOAD_RESOURCESONLY)
 				{
+TRACE("MWindow::load_filenames 83");
 					asset_to_edl(new_edl, new_asset);
+TRACE("MWindow::load_filenames 84");
 					new_edls.append(new_edl);
+TRACE("MWindow::load_filenames 85");
 					delete new_asset;
+					new_asset = 0;
+TRACE("MWindow::load_filenames 86");
 				}
 				else
 				{
@@ -806,13 +859,14 @@ TRACE("MWindow::load_filenames 1");
 					new_edl->local_session->view_start = 0;
 					new_edl->local_session->track_start = 0;
 				}
+
 				result = 0;
 				break;
 
 // File not found
 			case FILE_NOT_FOUND:
 				sprintf(string, _("Failed to open %s"), new_asset->path);
-				gui->show_message(string, RED);
+				gui->show_message(string, theme->message_error);
 				result = 1;
 				break;
 
@@ -888,13 +942,14 @@ TRACE("MWindow::load_filenames 1");
 // Recalculate length
 					delete new_file;
 					new_file = new File;
-					result = new_file->open_file(plugindb, new_asset, 1, 0, 0, 0);
+					result = new_file->open_file(preferences, new_asset, 1, 0, 0, 0);
 
 					if(load_mode != LOAD_RESOURCESONLY)
 					{
 						asset_to_edl(new_edl, new_asset);
 						new_edls.append(new_edl);
 						delete new_asset;
+						new_asset = 0;
 					}
 					else
 					{
@@ -935,13 +990,19 @@ TRACE("MWindow::load_filenames 1");
 			}
 		}
 
+TRACE("MWindow::load_filenames 87");
 		if(result)
 		{
 			delete new_edl;
 			delete new_asset;
+			new_edl = 0;
+			new_asset = 0;
 		}
+TRACE("MWindow::load_filenames 88");
 
-		delete new_file;
+// Store for testing index
+		new_files.append(new_file);
+TRACE("MWindow::load_filenames 89");
 	}
 
 
@@ -950,6 +1011,7 @@ TRACE("MWindow::load_filenames 1");
 
 
 
+TRACE("MWindow::load_filenames 90");
 
 
 
@@ -959,24 +1021,31 @@ TRACE("MWindow::load_filenames 1");
 // Don't back up here.
 	if(new_edls.total)
 	{
+SET_TRACE
 // For pasting, clear the active region
 		if(load_mode == LOAD_PASTE)
 		{
+SET_TRACE
 			double start = edl->local_session->get_selectionstart();
+SET_TRACE
 			double end = edl->local_session->get_selectionend();
+SET_TRACE
 			if(!EQUIV(start, end))
 				edl->clear(start, 
 					end,
 					edl->session->labels_follow_edits,
 					edl->session->plugins_follow_edits);
+SET_TRACE
 		}
 
+SET_TRACE
 		paste_edls(&new_edls, 
 			load_mode,
 			0,
 			-1,
 			edl->session->labels_follow_edits, 
 			edl->session->plugins_follow_edits);
+SET_TRACE
 	}
 
 
@@ -984,12 +1053,29 @@ TRACE("MWindow::load_filenames 1");
 
 
 
+TRACE("MWindow::load_filenames 91");
 
 	if(new_assets.total)
 	{
 		for(int i = 0; i < new_assets.total; i++)
 		{
-			mainindexes->add_next_asset(new_assets.values[i]);
+			Asset *new_asset = new_assets.values[i];
+			File *new_file = 0;
+			File *index_file = 0;
+			int got_it = 0;
+			for(int j = 0; j < new_files.total; j++)
+			{
+				new_file = new_files.values[j];
+				if(!strcmp(new_file->asset->path,
+					new_asset->path))
+				{
+					got_it = 1;
+					break;
+				}
+			}
+
+			mainindexes->add_next_asset(got_it ? new_file : 0, 
+				new_assets.values[i]);
 			edl->assets->update(new_assets.values[i]);
 		}
 
@@ -1006,10 +1092,18 @@ TRACE("MWindow::load_filenames 110");
 //sleep(10);
 
 	new_edls.remove_all_objects();
+TRACE("MWindow::load_filenames 120\n");
 	new_assets.remove_all_objects();
-//printf("MWindow::load_filenames 10 %d\n", edl->session->audio_module_fragment);
+TRACE("MWindow::load_filenames 130\n");
+	new_files.remove_all_objects();
+TRACE("MWindow::load_filenames 140\n");
 
+	undo->update_undo(_("load"), LOAD_ALL, 0);
+
+
+	gui->stop_hourglass();
 UNTRACE
+
 	return 0;
 }
 
@@ -1095,7 +1189,6 @@ void MWindow::create_objects(int want_gui,
 	init_signals();
 
 
-	init_menus();
 TRACE("MWindow::create_objects 1");
 	init_defaults(defaults, config_path);
 TRACE("MWindow::create_objects 2");
@@ -1126,6 +1219,7 @@ TRACE("MWindow::create_objects 12");
 TRACE("MWindow::create_objects 13");
 
 	init_gui();
+	init_gwindow();
 TRACE("MWindow::create_objects 14");
 	init_render();
 	init_brender();
@@ -1139,17 +1233,13 @@ TRACE("MWindow::create_objects 15");
 	if(session->show_cwindow) cwindow->gui->show_window();
 	if(session->show_awindow) awindow->gui->show_window();
 	if(session->show_lwindow) lwindow->gui->show_window();
+	if(session->show_gwindow) gwindow->gui->show_window();
 TRACE("MWindow::create_objects 16");
 
-// 	vwindow->start();
-// 	awindow->start();
-// 	cwindow->start();
-// 	lwindow->start();
-//printf("MWindow::create_objects 1");
 
 	gui->mainmenu->load_defaults(defaults);
 TRACE("MWindow::create_objects 17");
-	gui->mainmenu->update_toggles();
+	gui->mainmenu->update_toggles(0);
 TRACE("MWindow::create_objects 18");
 	gui->patchbay->update();
 TRACE("MWindow::create_objects 19");
@@ -1157,9 +1247,13 @@ TRACE("MWindow::create_objects 19");
 TRACE("MWindow::create_objects 20");
 	gui->cursor->draw();
 TRACE("MWindow::create_objects 21");
-	gui->raise_window();
-TRACE("MWindow::create_objects 22");
 	gui->show_window();
+	gui->raise_window();
+
+	if(preferences->use_tipwindow)
+		init_tipwindow();
+		
+TRACE("MWindow::create_objects 22");
 TRACE("MWindow::create_objects 23");
 
 	hide_splash();
@@ -1192,6 +1286,7 @@ void MWindow::start()
 	awindow->start();
 	cwindow->start();
 	lwindow->start();
+	gwindow->start();
 	gui->run_window();
 }
 
@@ -1220,12 +1315,28 @@ void MWindow::show_awindow()
 void MWindow::show_cwindow()
 {
 	session->show_cwindow = 1;
-	cwindow->gui->lock_window("MWindow::show_cwindow");
-	cwindow->gui->show_window();
-	cwindow->gui->raise_window();
-	cwindow->gui->flush();
-	cwindow->gui->unlock_window();
+	cwindow->show_window();
 	gui->mainmenu->show_cwindow->set_checked(1);
+}
+
+void MWindow::show_gwindow()
+{
+	session->show_gwindow = 1;
+
+SET_TRACE
+	gwindow->gui->lock_window("MWindow::show_gwindow");
+SET_TRACE
+	gwindow->gui->show_window();
+SET_TRACE
+	gwindow->gui->raise_window();
+SET_TRACE
+	gwindow->gui->flush();
+SET_TRACE
+	gwindow->gui->unlock_window();
+SET_TRACE
+
+	gui->mainmenu->show_gwindow->set_checked(1);
+SET_TRACE
 }
 
 void MWindow::show_lwindow()
@@ -1630,7 +1741,7 @@ void MWindow::rebuild_indices()
 		remove(index_filename);
 // Schedule index build
 		session->drag_assets->values[i]->index_status = INDEX_NOTTESTED;
-		mainindexes->add_next_asset(session->drag_assets->values[i]);
+		mainindexes->add_next_asset(0, session->drag_assets->values[i]);
 	}
 	mainindexes->start_build();
 }
@@ -1681,8 +1792,6 @@ int MWindow::create_aspect_ratio(float &w, float &h, int width, int height)
 
 void MWindow::remove_assets_from_project(int push_undo)
 {
-    if(push_undo) undo->update_undo_before(_("remove assets"), LOAD_ALL);
-
 // Remove from caches
 	for(int i = 0; i < session->drag_assets->total; i++)
 	{
@@ -1719,7 +1828,7 @@ printf("MWindow::remove_assets_from_project 100\n");
 	edl->remove_from_project(session->drag_assets);
 	edl->remove_from_project(session->drag_clips);
 	save_backup();
-	if(push_undo) undo->update_undo_after();
+	if(push_undo) undo->update_undo(_("remove assets"), LOAD_ALL);
 	restart_brender();
 
 	gui->lock_window("MWindow::remove_assets_from_project 3");
@@ -1881,7 +1990,7 @@ void MWindow::time_format_common()
 	gui->redraw_time_dependancies();
 	char string[BCTEXTLEN], string2[BCTEXTLEN];
 	sprintf(string, _("Using %s."), Units::print_time_format(edl->session->time_format, string2));
-	gui->show_message(string, BLACK);
+	gui->show_message(string);
 	gui->flush();
 	gui->unlock_window();
 }

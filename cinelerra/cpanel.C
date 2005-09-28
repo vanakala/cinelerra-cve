@@ -45,6 +45,8 @@ int CPanel::create_objects()
 	y += operation[CWINDOW_PROJECTOR]->get_h();
 	subwindow->add_subwindow(operation[CWINDOW_CROP] = new CPanelCrop(mwindow, this, x, y));
 	y += operation[CWINDOW_CROP]->get_h();
+	subwindow->add_subwindow(operation[CWINDOW_EYEDROP] = new CPanelEyedrop(mwindow, this, x, y));
+	y += operation[CWINDOW_EYEDROP]->get_h();
 	subwindow->add_subwindow(operation[CWINDOW_TOOL_WINDOW] = new CPanelToolWindow(mwindow, this, x, y));
 	y += operation[CWINDOW_TOOL_WINDOW]->get_h();
 	subwindow->add_subwindow(operation[CWINDOW_TITLESAFE] = new CPanelTitleSafe(mwindow, this, x, y));
@@ -99,7 +101,7 @@ void CPanel::set_operation(int value)
 CPanelProtect::CPanelProtect(MWindow *mwindow, CPanel *gui, int x, int y)
  : BC_Toggle(x, 
  	y, 
-	mwindow->theme->protect_data, 
+	mwindow->theme->get_image_set("protect"), 
 	mwindow->edl->session->cwindow_operation == CWINDOW_PROTECT)
 {
 	this->mwindow = mwindow;
@@ -123,7 +125,7 @@ int CPanelProtect::handle_event()
 CPanelMask::CPanelMask(MWindow *mwindow, CPanel *gui, int x, int y)
  : BC_Toggle(x, 
  	y, 
-	mwindow->theme->mask_data, 
+	mwindow->theme->get_image_set("mask"), 
 	mwindow->edl->session->cwindow_operation == CWINDOW_MASK)
 {
 	this->mwindow = mwindow;
@@ -143,7 +145,7 @@ int CPanelMask::handle_event()
 CPanelMagnify::CPanelMagnify(MWindow *mwindow, CPanel *gui, int x, int y)
  : BC_Toggle(x, 
  	y, 
-	mwindow->theme->magnify_data, 
+	mwindow->theme->get_image_set("magnify"), 
 	mwindow->edl->session->cwindow_operation == CWINDOW_ZOOM)
 {
 	this->mwindow = mwindow;
@@ -163,7 +165,7 @@ int CPanelMagnify::handle_event()
 CPanelCamera::CPanelCamera(MWindow *mwindow, CPanel *gui, int x, int y)
  : BC_Toggle(x, 
  	y, 
-	mwindow->theme->camera_data, 
+	mwindow->theme->get_image_set("camera"), 
 	mwindow->edl->session->cwindow_operation == CWINDOW_CAMERA)
 {
 	this->mwindow = mwindow;
@@ -183,7 +185,7 @@ int CPanelCamera::handle_event()
 CPanelProj::CPanelProj(MWindow *mwindow, CPanel *gui, int x, int y)
  : BC_Toggle(x, 
  	y, 
-	mwindow->theme->proj_data, 
+	mwindow->theme->get_image_set("projector"), 
 	mwindow->edl->session->cwindow_operation == CWINDOW_PROJECTOR)
 {
 	this->mwindow = mwindow;
@@ -203,16 +205,18 @@ int CPanelProj::handle_event()
 CPanelCrop::CPanelCrop(MWindow *mwindow, CPanel *gui, int x, int y)
  : BC_Toggle(x, 
  	y, 
-	mwindow->theme->crop_data, 
+	mwindow->theme->get_image_set("crop"), 
 	mwindow->edl->session->cwindow_operation == CWINDOW_CROP)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
 	set_tooltip(_("Crop a layer or output"));
 }
+
 CPanelCrop::~CPanelCrop()
 {
 }
+
 int CPanelCrop::handle_event()
 {
 	gui->subwindow->set_operation(CWINDOW_CROP);
@@ -222,19 +226,45 @@ int CPanelCrop::handle_event()
 
 
 
+CPanelEyedrop::CPanelEyedrop(MWindow *mwindow, CPanel *gui, int x, int y)
+ : BC_Toggle(x, 
+ 	y, 
+	mwindow->theme->get_image_set("eyedrop"), 
+	mwindow->edl->session->cwindow_operation == CWINDOW_EYEDROP)
+{
+	this->mwindow = mwindow;
+	this->gui = gui;
+	set_tooltip(_("Get color"));
+}
+
+CPanelEyedrop::~CPanelEyedrop()
+{
+}
+
+int CPanelEyedrop::handle_event()
+{
+	gui->subwindow->set_operation(CWINDOW_EYEDROP);
+	return 1;
+}
+
+
+
+
 CPanelToolWindow::CPanelToolWindow(MWindow *mwindow, CPanel *gui, int x, int y)
  : BC_Toggle(x, 
  	y, 
-	mwindow->theme->tool_data, 
+	mwindow->theme->get_image_set("tool"), 
 	mwindow->edl->session->tool_window)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
 	set_tooltip(_("Show tool info"));
 }
+
 CPanelToolWindow::~CPanelToolWindow()
 {
 }
+
 int CPanelToolWindow::handle_event()
 {
 	mwindow->edl->session->tool_window = get_value();
@@ -254,7 +284,7 @@ int CPanelToolWindow::set_shown(int shown)
 CPanelTitleSafe::CPanelTitleSafe(MWindow *mwindow, CPanel *gui, int x, int y)
  : BC_Toggle(x, 
  	y, 
-	mwindow->theme->titlesafe_data, 
+	mwindow->theme->get_image_set("titlesafe"), 
 	mwindow->edl->session->safe_regions)
 {
 	this->mwindow = mwindow;

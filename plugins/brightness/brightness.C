@@ -591,15 +591,8 @@ void BrightnessEngine::init_packages()
 	for(int i = 0; i < LoadServer::total_packages; i++)
 	{
 		BrightnessPackage *package = (BrightnessPackage*)LoadServer::packages[i];
-		package->row1 = (int)(plugin->input->get_h() / 
-			LoadServer::total_packages * 
-			i);
-		package->row2 = package->row1 + 
-			(int)(plugin->input->get_h() / 
-			LoadServer::total_packages);
-
-		if(i >= LoadServer::total_packages - 1)
-			package->row2 = plugin->input->get_h();
+		package->row1 = plugin->input->get_h() * i / LoadServer::total_packages;
+		package->row2 = plugin->input->get_h() * (i + 1) / LoadServer::total_packages;
 	}
 }
 

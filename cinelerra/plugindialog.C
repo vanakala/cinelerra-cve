@@ -117,7 +117,6 @@ void PluginDialogThread::run()
 		{
 			mwindow->gui->lock_window("PluginDialogThread::run 3");
 
-			mwindow->undo->update_undo_before(_("attach effect"), LOAD_EDITS | LOAD_PATCHES);
 
 			if(plugin)
 			{
@@ -138,7 +137,7 @@ void PluginDialogThread::run()
 
 			
 			mwindow->save_backup();
-			mwindow->undo->update_undo_after();
+			mwindow->undo->update_undo(_("attach effect"), LOAD_EDITS | LOAD_PATCHES);
 			mwindow->restart_brender();
 			mwindow->update_plugin_states();
 			mwindow->sync_parameters(CHANGE_EDL);
@@ -271,7 +270,7 @@ int PluginDialog::create_objects()
 		Track *track = mwindow->edl->tracks->number(plugin_locations.values[i]->module);
 		char *track_title = track->title;
 		int number = plugin_locations.values[i]->plugin;
-		Plugin *plugin = track->get_current_plugin(mwindow->edl->local_session->selectionstart, 
+		Plugin *plugin = track->get_current_plugin(mwindow->edl->local_session->get_selectionstart(1), 
 			number, 
 			PLAY_FORWARD,
 			1,

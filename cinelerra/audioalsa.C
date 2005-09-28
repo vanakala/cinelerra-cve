@@ -52,13 +52,13 @@ void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title)
 
 		if((err = snd_ctl_open(&handle, name, 0)) < 0)
 		{
-			printf("AudioALSA::list_devices (%i): %s", card, snd_strerror(err));
+			printf("AudioALSA::list_devices (%i): %s\n", card, snd_strerror(err));
 			continue;
 		}
 
 		if((err = snd_ctl_card_info(handle, info)) < 0)
 		{
-			printf("AudioALSA::list_devices (%i): %s", card, snd_strerror(err));
+			printf("AudioALSA::list_devices (%i): %s\n", card, snd_strerror(err));
 			snd_ctl_close(handle);
 			continue;
 		}
@@ -69,7 +69,7 @@ void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title)
 		{
 			unsigned int count;
 			if(snd_ctl_pcm_next_device(handle, &dev) < 0)
-				printf("AudioALSA::list_devices: snd_ctl_pcm_next_device");
+				printf("AudioALSA::list_devices: snd_ctl_pcm_next_device\n");
 
 			if (dev < 0)
 				break;
@@ -81,7 +81,7 @@ void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title)
 			if((err = snd_ctl_pcm_info(handle, pcminfo)) < 0) 
 			{
 				if(err != -ENOENT)
-					printf("AudioALSA::list_devices (%i): %s", card, snd_strerror(err));
+					printf("AudioALSA::list_devices (%i): %s\n", card, snd_strerror(err));
 				continue;
 			}
 
@@ -210,7 +210,7 @@ void AudioALSA::set_params(snd_pcm_t *dsp,
 		(int*)0);
 //printf("AudioALSA::set_params 5 %d %d\n", buffer_time, period_time);
 	err = snd_pcm_hw_params(dsp, params);
-	if(err < 0) 
+	if(err < 0)
 	{
 		printf("AudioALSA::set_params: hw_params failed\n");
 		return;
@@ -361,7 +361,7 @@ int AudioALSA::read_buffer(char *buffer, int size)
 //printf("AudioALSA::read_buffer 1\n");
 	int attempts = 0;
 	int done = 0;
-	while(attempts < 2 && !done)
+	while(attempts < 1 && !done)
 	{
 		if(snd_pcm_readi(get_input(), 
 			buffer, 
@@ -437,7 +437,13 @@ int AudioALSA::interrupt_playback()
 	{
 		interrupted = 1;
 // Interrupts the playback but may not have caused snd_pcm_writei to exit.
-//		snd_pcm_drop(get_output());
+// With some soundcards it causes snd_pcm_writei to freeze for a few seconds.
+		if(!device->out_config->interrupt_workaround)
+			snd_pcm_drop(get_output());
+
+// Makes sure the current buffer finishes before stopping.
+//		snd_pcm_drain(get_output());
+
 // The only way to ensure snd_pcm_writei exits, but
 // got a lot of crashes when doing this.
 //		device->Thread::cancel();

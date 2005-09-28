@@ -41,11 +41,11 @@ int mpeg3_release();
 /* Check for file compatibility.  Return 1 if compatible. */
 int mpeg3_check_sig(char *path);
 
-/* Open the MPEG3 stream. */
+/* Open the MPEG stream. */
 mpeg3_t* mpeg3_open(char *path);
 
-/* Open the MPEG3 stream and copy the tables from an already open stream. */
-/* Eliminates the initial timecode search. */
+/* Open the MPEG stream and copy the tables from an already open stream. */
+/* Eliminates some initial scanning and is used for opening audio streams. */
 mpeg3_t* mpeg3_open_copy(char *path, mpeg3_t *old_file);
 int mpeg3_close(mpeg3_t *file);
 
@@ -54,7 +54,6 @@ int mpeg3_close(mpeg3_t *file);
 
 /* Performance */
 int mpeg3_set_cpus(mpeg3_t *file, int cpus);
-int mpeg3_set_mmx(mpeg3_t *file, int use_mmx);
 
 /* Query the MPEG3 stream about audio. */
 int mpeg3_has_audio(mpeg3_t *file);
@@ -196,6 +195,46 @@ int mpeg3_read_video_chunk(mpeg3_t *file,
 /* Master control */
 int mpeg3_total_programs();
 int mpeg3_set_program(int program);
+
+
+
+
+
+
+
+
+
+/* Table of contents generation */
+/* Begin constructing table of contents */
+mpeg3_t* mpeg3_start_toc(char *path, char *toc_path, int64_t *total_bytes);
+/* Set the maximum number of bytes per index track */
+void mpeg3_set_index_bytes(mpeg3_t *file, int64_t bytes);
+/* Process one packet */
+int mpeg3_do_toc(mpeg3_t *file, int64_t *bytes_processed);
+/* Write table of contents */
+void mpeg3_stop_toc(mpeg3_t *file);
+
+
+
+
+
+
+
+
+/* Table of contents queries */
+/* Return number of tracks in the table of contents */
+int mpeg3_index_tracks(mpeg3_t *file);
+/* Return number of channels in track */
+int mpeg3_index_channels(mpeg3_t *file, int track);
+/* Return zoom factor of index */
+int mpeg3_index_zoom(mpeg3_t *file);
+/* Number of high/low pairs in a channel of the track */
+int mpeg3_index_size(mpeg3_t *file, int track);
+/* Get data for one index channel */
+float* mpeg3_index_data(mpeg3_t *file, int track, int channel);
+/* Returns 1 if the file has a table of contents */
+int mpeg3_has_toc(mpeg3_t *file);
+
 
 #ifdef __cplusplus
 }

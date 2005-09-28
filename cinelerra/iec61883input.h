@@ -6,7 +6,7 @@
 #ifdef HAVE_FIREWIRE
 
 #include "condition.inc"
-#include "iec61883.h"
+#include <libiec61883/iec61883.h>
 #include "libdv.h"
 #include "mutex.inc"
 #include "thread.h"

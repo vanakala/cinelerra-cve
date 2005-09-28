@@ -635,7 +635,7 @@ void MotionMain::process_rotation()
 
 
 // Get rotation
-	if(!rotate_engine)
+	if(!motion_rotate)
 		motion_rotate = new RotateScan(this, 
 			get_project_smp() + 1, 
 			get_project_smp() + 1);
@@ -667,8 +667,7 @@ void MotionMain::process_rotation()
 		total_angle = current_angle;
 	}
 
-printf("MotionMain::process_rotation total_angle=%f\n", 
-total_angle);
+printf("MotionMain::process_rotation total_angle=%f\n", total_angle);
 
 
 
@@ -780,7 +779,7 @@ int MotionMain::process_buffer(VFrame **frame,
 	int color_model = frame[0]->get_color_model();
 	w = frame[0]->get_w();
 	h = frame[0]->get_h();
-
+	
 
 printf("MotionMain::process_buffer 1 start_position=%lld\n", start_position);
 
@@ -796,6 +795,7 @@ printf("MotionMain::process_buffer 1 start_position=%lld\n", start_position);
 		PluginClient::total_in_buffers - 1;
 
 
+	output_frame = frame[target_layer];
 
 
 // Get the position of previous reference frame.
@@ -911,6 +911,7 @@ printf("MotionMain::process_buffer 1 start_position=%lld\n", start_position);
 				previous_frame_number, 
 				frame_rate);
 		}
+
 		read_frame(current_global_ref, 
 			reference_layer, 
 			start_position, 
@@ -999,6 +1000,8 @@ printf("MotionMain::process_buffer 1 start_position=%lld\n", start_position);
 		if(config.global) process_global();
 // Get rotation change from previous frame to current frame
 		if(config.rotate) process_rotation();
+//frame[target_layer]->copy_from(prev_rotate_ref);
+//frame[target_layer]->copy_from(current_rotate_ref);
 	}
 
 
@@ -2298,11 +2301,14 @@ void RotateScanUnit::process_package(LoadPackage *package)
 			server->block_x2 - server->block_x1,
 			server->block_y2 - server->block_y1);
 		rotater->set_pivot(server->block_x, server->block_y);
+//pkg->angle = 2;
 		rotater->rotate(temp,
 			server->previous_frame,
 			pkg->angle);
 
 // Scan reduced block size
+//plugin->output_frame->copy_from(server->current_frame);
+//plugin->output_frame->copy_from(temp);
 		pkg->difference = plugin->abs_diff(
 			temp->get_rows()[server->scan_y] + server->scan_x * pixel_size,
 			server->current_frame->get_rows()[server->scan_y] + server->scan_x * pixel_size,
@@ -2311,7 +2317,18 @@ void RotateScanUnit::process_package(LoadPackage *package)
 			server->scan_h,
 			color_model);
 		server->put_cache(pkg->angle, pkg->difference);
-//printf("RotateScanUnit::process_package 10 %f %lld\n", pkg->angle, pkg->difference);
+
+// printf("RotateScanUnit::process_package 10 x=%d y=%d w=%d h=%d block_x=%d block_y=%d angle=%f scan_w=%d scan_h=%d diff=%lld\n", 
+// server->block_x1, 
+// server->block_y1,
+// server->block_x2 - server->block_x1,
+// server->block_y2 - server->block_y1,
+// server->block_x,
+// server->block_y,
+// pkg->angle, 
+// server->scan_w,
+// server->scan_h,
+// pkg->difference);
 	}
 }
 
@@ -2529,6 +2546,7 @@ printf("RotateScan::scan_frame min_angle=%f\n", min_angle * 360 / 2 / M_PI);
 
 
 			set_package_count(total_steps);
+//set_package_count(1);
 			process_packages();
 
 			int64_t min_difference = -1;
@@ -2540,9 +2558,12 @@ printf("RotateScan::scan_frame min_angle=%f\n", min_angle * 360 / 2 / M_PI);
 					min_difference = pkg->difference;
 					result = pkg->angle;
 				}
+//break;
 			}
 
 			angle_range /= 2;
+
+//break;
 		}
 	}
 

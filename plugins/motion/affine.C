@@ -394,6 +394,7 @@ void AffineUnit::process_package(LoadPackage *package)
 		matrix.transform_point(server->x, server->y + server->h, &dx3, &dy3);
 		matrix.transform_point(server->x + server->w, server->y + server->h, &dx4, &dy4);
 
+
 #define ROUND(x) ((int)((x > 0) ? (x) + 0.5 : (x) - 0.5))
 #define MIN4(a,b,c,d) MIN(MIN(MIN(a,b),c),d)
 #define MAX4(a,b,c,d) MAX(MAX(MAX(a,b),c),d)
@@ -416,7 +417,10 @@ void AffineUnit::process_package(LoadPackage *package)
 		xinc = m.values[0][0];
 		yinc = m.values[1][0];
 		winc = m.values[2][0];
-//printf("AffineUnit::process_package 1 %d %d %d %d %f %f\n", tx1, ty1, tx2, ty2, out_x4, out_y4);
+
+//printf("AffineUnit::process_package 1 y1=%d y2=%d\n", pkg->y1, pkg->y2);
+//printf("AffineUnit::process_package 1 %f %f %f %f\n", dy1, dy2, dy3, dy4);
+//printf("AffineUnit::process_package 2 %d ty1=%d %d ty2=%d %f %f\n", tx1, ty1, tx2, ty2, out_x4, out_y4);
 
 
 #define TRANSFORM(components, type, temp_type, chroma_offset, max) \
@@ -768,17 +772,11 @@ total_clients, total_packages
 
 void AffineEngine::init_packages()
 {
-	int package_h = (int)((float)h / 
-			total_packages + 1);
-	int y1 = y;
 	for(int i = 0; i < total_packages; i++)
 	{
 		AffinePackage *package = (AffinePackage*)packages[i];
-		package->y1 = y1;
-		package->y2 = y1 + package_h;
-		package->y1 = MIN(y + h, package->y1);
-		package->y2 = MIN(y + h, package->y2);
-		y1 = package->y2;
+		package->y1 = y + (h * i / total_packages);
+		package->y2 = y + (h * (i + 1) / total_packages);
 	}
 }
 

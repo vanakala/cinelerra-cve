@@ -1,6 +1,7 @@
 #include "asset.h"
 #include "autoconf.h"
 #include "automation.h"
+#include "bcsignals.h"
 #include "clip.h"
 #include "edit.h"
 #include "edits.h"
@@ -293,15 +294,13 @@ int Track::load(FileXML *file, int track_offset, uint32_t load_flags)
 			else
 			if(file->tag.title_is("TITLE"))
 			{
-				file->read_text_until("/TITLE", title);
+				file->read_text_until("/TITLE", title, BCTEXTLEN);
 			}
 			else
-			if(strstr(file->tag.get_title(), "AUTOS"))
+			if(load_flags && automation->load(file)
+			/* strstr(file->tag.get_title(), "AUTOS") */)
 			{
-				if(load_flags)
-				{
-					automation->load(file);
-				}
+				;
 			}
 			else
 			if(file->tag.title_is("EDITS"))
@@ -370,6 +369,7 @@ void Track::insert_track(Track *track,
 	int replace_default,
 	int edit_plugins)
 {
+SET_TRACE
 // Decide whether to copy settings based on load_mode
 	if(replace_default) copy_settings(track);
 
@@ -384,6 +384,7 @@ void Track::insert_track(Track *track,
 		replace_default);
 
 	optimize();
+SET_TRACE
 }
 
 // Called by insert_track
@@ -626,9 +627,17 @@ void Track::detach_effect(Plugin *plugin)
 	}
 }
 
+void Track::resample(double old_rate, double new_rate)
+{
+	edits->resample(old_rate, new_rate);
+	automation->resample(old_rate, new_rate);
+	for(int i = 0; i < plugin_set.total; i++)
+		plugin_set.values[i]->resample(old_rate, new_rate);
+	nudge = (int64_t)(nudge * new_rate / old_rate);
+}
+
 void Track::detach_shared_effects(int module)
 {
-repeat:
 	for(int i = 0; i < plugin_set.total; i++)
 	{
 		PluginSet *plugin_set = this->plugin_set.values[i];
@@ -649,7 +658,8 @@ repeat:
 
 // Delete 0 length pluginsets	
 				plugin_set->optimize();
-				if(!plugin_set->length())  {
+				if(!plugin_set->length())  
+				{
 					this->plugin_set.remove_object_number(i);
 					--i;
 				}
@@ -657,16 +667,6 @@ repeat:
 		}
 	}
 }
-
-void Track::resample(double old_rate, double new_rate)
-{
-	edits->resample(old_rate, new_rate);
-	automation->resample(old_rate, new_rate);
-	for(int i = 0; i < plugin_set.total; i++)
-		plugin_set.values[i]->resample(old_rate, new_rate);
-	nudge = (int64_t)(nudge * new_rate / old_rate);
-}
-
 
 
 void Track::optimize()
@@ -955,14 +955,15 @@ int Track::paste_automation(double selectionstart,
 			if(file->tag.title_is("/TRACK"))
 				result = 1;
 			else
-			if(strstr(file->tag.get_title(), "AUTOS"))
-			{
-				automation->paste(start, 
+			if(automation->paste(start, 
 					length, 
 					scale,
 					file,
 					default_only,
-					0);
+					0))
+			/* strstr(file->tag.get_title(), "AUTOS")) */
+			{
+				;
 			}
 			else
 			if(file->tag.title_is("PLUGINSETS"))
@@ -1037,7 +1038,13 @@ int Track::copy(double start,
 	file->append_tag();
 	file->append_newline();
 
-
+// 	if(data_type == TRACK_AUDIO)
+// 		file->tag.set_property("TYPE", "AUDIO");
+// 	else
+// 		file->tag.set_property("TYPE", "VIDEO");
+// 
+// 	file->append_tag();
+// 	file->append_newline();
 
 	edits->copy(start_unit, end_unit, file, output_path);
 

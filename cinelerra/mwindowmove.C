@@ -111,8 +111,9 @@ void MWindow::find_cursor()
 // 		edl->local_session->zoom_sample / 
 // 		edl->session->sample_rate))
 // 	{
-		edl->local_session->view_start = Units::round((edl->local_session->selectionend + 
-			edl->local_session->selectionstart) / 
+		edl->local_session->view_start = 
+			Units::round((edl->local_session->get_selectionend(1) + 
+			edl->local_session->get_selectionstart(1)) / 
 			2 *
 			edl->session->sample_rate /
 			edl->local_session->zoom_sample - 
@@ -129,9 +130,11 @@ void MWindow::find_cursor()
 
 void MWindow::fit_selection()
 {
-	if(edl->local_session->selectionstart == edl->local_session->selectionend)
+	if(EQUIV(edl->local_session->get_selectionstart(1),
+		edl->local_session->get_selectionend(1)))
 	{
-		double total_samples = edl->tracks->total_length() * edl->session->sample_rate;
+		double total_samples = edl->tracks->total_length() * 
+			edl->session->sample_rate;
 		for(edl->local_session->zoom_sample = 1; 
 			gui->canvas->get_w() * edl->local_session->zoom_sample < total_samples; 
 			edl->local_session->zoom_sample *= 2)
@@ -139,16 +142,95 @@ void MWindow::fit_selection()
 	}
 	else
 	{
-		double total_samples = (edl->local_session->selectionend - edl->local_session->selectionstart) * edl->session->sample_rate;
+		double total_samples = (edl->local_session->get_selectionend(1) - 
+			edl->local_session->get_selectionstart(1)) * 
+			edl->session->sample_rate;
 		for(edl->local_session->zoom_sample = 1; 
 			gui->canvas->get_w() * edl->local_session->zoom_sample < total_samples; 
 			edl->local_session->zoom_sample *= 2)
 			;
 	}
 
-	edl->local_session->zoom_sample = MIN(0x100000, edl->local_session->zoom_sample);
+	edl->local_session->zoom_sample = MIN(0x100000, 
+		edl->local_session->zoom_sample);
 	zoom_sample(edl->local_session->zoom_sample);
 }
+
+
+void MWindow::fit_autos()
+{
+	float min = 0, max = 0;
+	double start, end;
+
+// Test all autos
+	if(EQUIV(edl->local_session->get_selectionstart(1),
+		edl->local_session->get_selectionend(1)))
+	{
+		start = 0;
+		end = edl->tracks->total_length();
+	}
+	else
+// Test autos in highlighting only
+	{
+		start = edl->local_session->get_selectionstart(1);
+		end = edl->local_session->get_selectionend(1);
+	}
+
+// Adjust min and max
+	edl->tracks->get_automation_extents(&min, &max, start, end);
+//printf("MWindow::fit_autos %f %f\n", min, max);
+
+// Pad
+	float range = max - min;
+// No automation visible
+	if(range < 0.001)
+	{
+		min -= 1;
+		max += 1;
+	}
+	float pad = range * 0.33;
+	min -= pad;
+	max += pad;
+	edl->local_session->automation_min = min;
+	edl->local_session->automation_max = max;
+
+// Show range in zoombar
+	gui->zoombar->update();
+
+// Draw
+	gui->canvas->draw_overlays();
+	gui->canvas->flash();
+}
+
+
+void MWindow::expand_autos()
+{
+	float range = edl->local_session->automation_max - 
+		edl->local_session->automation_min;
+	float center = range / 2 + 
+		edl->local_session->automation_min;
+	if(EQUIV(range, 0)) range = 0.002;
+	edl->local_session->automation_min = center - range;
+	edl->local_session->automation_max = center + range;
+	gui->zoombar->update_autozoom();
+	gui->canvas->draw_overlays();
+	gui->canvas->flash();
+}
+
+void MWindow::shrink_autos()
+{
+	float range = edl->local_session->automation_max - 
+		edl->local_session->automation_min;
+	float center = range / 2 + 
+		edl->local_session->automation_min;
+	float new_range = range / 4;
+	edl->local_session->automation_min = center - new_range;
+	edl->local_session->automation_max = center + new_range;
+	gui->zoombar->update_autozoom();
+	gui->canvas->draw_overlays();
+	gui->canvas->flash();
+}
+
 
 void MWindow::zoom_amp(int64_t zoom_amp)
 {
@@ -220,13 +302,12 @@ int MWindow::goto_end()
 
 	if(gui->shift_down())
 	{
-		edl->local_session->selectionend = edl->tracks->total_length();
+		edl->local_session->set_selectionend(edl->tracks->total_length());
 	}
 	else
 	{
-		edl->local_session->selectionstart = 
-			edl->local_session->selectionend = 
-			edl->tracks->total_length();
+		edl->local_session->set_selectionstart(edl->tracks->total_length());
+		edl->local_session->set_selectionend(edl->tracks->total_length());
 	}
 
 	if(edl->local_session->view_start != old_view_start) 
@@ -248,13 +329,12 @@ int MWindow::goto_start()
 	edl->local_session->view_start = 0;
 	if(gui->shift_down())
 	{
-		edl->local_session->selectionstart = 0;
+		edl->local_session->set_selectionstart(0);
 	}
 	else
 	{
-		edl->local_session->selectionstart = 
-			edl->local_session->selectionend = 
-			0;
+		edl->local_session->set_selectionstart(0);
+		edl->local_session->set_selectionend(0);
 	}
 
 	if(edl->local_session->view_start != old_view_start)
@@ -306,8 +386,8 @@ int MWindow::move_right(int64_t distance)
 
 void MWindow::select_all()
 {
-	edl->local_session->selectionstart = 0;
-	edl->local_session->selectionend = edl->tracks->total_length();
+	edl->local_session->set_selectionstart(0);
+	edl->local_session->set_selectionend(edl->tracks->total_length());
 	gui->update(0, 1, 1, 1, 0, 1, 0);
 	gui->canvas->activate();
 	cwindow->update(1, 0, 0);
@@ -320,14 +400,15 @@ int MWindow::next_label()
 
 // Test for label under cursor position
 	for(current = labels->first; 
-		current && !edl->equivalent(current->position, edl->local_session->selectionend); 
+		current && !edl->equivalent(current->position, 
+			edl->local_session->get_selectionend(1)); 
 		current = NEXT)
 		;
 
 // Test for label before cursor position
 	if(!current)
 		for(current = labels->last;
-			current && current->position > edl->local_session->selectionend;
+			current && current->position > edl->local_session->get_selectionend(1);
 			current = PREVIOUS)
 			;
 
@@ -341,18 +422,21 @@ int MWindow::next_label()
 	if(current)
 	{
 
-		edl->local_session->selectionend = current->position;
-		if(!gui->shift_down()) edl->local_session->selectionstart = edl->local_session->selectionend;
+		edl->local_session->set_selectionend(current->position);
+		if(!gui->shift_down()) 
+			edl->local_session->set_selectionstart(
+				edl->local_session->get_selectionend(1));
 
-		if(edl->local_session->selectionend >= (double)edl->local_session->view_start *
+		if(edl->local_session->get_selectionend(1) >= 
+			(double)edl->local_session->view_start *
 			edl->local_session->zoom_sample /
 			edl->session->sample_rate + 
 			gui->canvas->time_visible() ||
-			edl->local_session->selectionend < (double)edl->local_session->view_start *
+			edl->local_session->get_selectionend(1) < (double)edl->local_session->view_start *
 			edl->local_session->zoom_sample /
 			edl->session->sample_rate)
 		{
-			samplemovement((int64_t)(edl->local_session->selectionend *
+			samplemovement((int64_t)(edl->local_session->get_selectionend(1) *
 				edl->session->sample_rate /
 				edl->local_session->zoom_sample - 
 				gui->canvas->get_w() / 
@@ -386,14 +470,16 @@ int MWindow::prev_label()
 
 // Test for label under cursor position
 	for(current = labels->first; 
-		current && !edl->equivalent(current->position, edl->local_session->selectionstart); 
+		current && !edl->equivalent(current->position, 
+			edl->local_session->get_selectionstart(1)); 
 		current = NEXT)
 		;
 
 // Test for label after cursor position
 	if(!current)
 		for(current = labels->first;
-			current && current->position < edl->local_session->selectionstart;
+			current && 
+				current->position < edl->local_session->get_selectionstart(1);
 			current = NEXT)
 			;
 
@@ -406,20 +492,21 @@ int MWindow::prev_label()
 
 	if(current)
 	{
-		edl->local_session->selectionstart = current->position;
-		if(!gui->shift_down()) edl->local_session->selectionend = edl->local_session->selectionstart;
+		edl->local_session->set_selectionstart(current->position);
+		if(!gui->shift_down()) 
+			edl->local_session->set_selectionend(edl->local_session->get_selectionstart(1));
 
 // Scroll the display
-		if(edl->local_session->selectionstart >= edl->local_session->view_start *
+		if(edl->local_session->get_selectionstart(1) >= edl->local_session->view_start *
 			edl->local_session->zoom_sample /
 			edl->session->sample_rate + 
 			gui->canvas->time_visible() 
 		||
-			edl->local_session->selectionstart < edl->local_session->view_start *
+			edl->local_session->get_selectionstart(1) < edl->local_session->view_start *
 			edl->local_session->zoom_sample /
 			edl->session->sample_rate)
 		{
-			samplemovement((int64_t)(edl->local_session->selectionstart *
+			samplemovement((int64_t)(edl->local_session->get_selectionstart(1) *
 				edl->session->sample_rate /
 				edl->local_session->zoom_sample - 
 				gui->canvas->get_w() / 

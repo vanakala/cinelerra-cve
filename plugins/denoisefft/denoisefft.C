@@ -214,9 +214,9 @@ DenoiseFFTWindow::DenoiseFFTWindow(DenoiseFFTEffect *plugin, int x, int y)
  	x, 
 	y, 
 	300, 
-	120, 
+	130, 
 	300, 
-	120,
+	130,
 	0, 
 	0,
 	1)
@@ -230,7 +230,7 @@ void DenoiseFFTWindow::create_objects()
 
 	add_subwindow(new BC_Title(x, y, _("Denoise power:")));
 	add_subwindow(level = new DenoiseFFTLevel(plugin, x + 130, y));
-	y += 35;
+	y += level->get_h() + 10;
 	add_subwindow(new BC_Title(x, y, _("Number of samples for reference:")));
 	y += 20;
 	add_subwindow(new BC_Title(x, y, _("The keyframe is the start of the reference")));

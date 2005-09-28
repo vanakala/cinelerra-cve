@@ -1,7 +1,6 @@
 #ifndef VIRTUALVNODE_H
 #define VIRTUALVNODE_H
 
-#include "bezierauto.inc"
 #include "fadeengine.inc"
 #include "maskengine.inc"
 #include "plugin.inc"
@@ -61,6 +60,7 @@ private:
 			double frame_rate, 
 			Autos *autos,
 			int direction);
+
 
 	FadeEngine *fader;
 	MaskEngine *masker;

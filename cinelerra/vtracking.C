@@ -35,10 +35,9 @@ void VTracking::update_tracker(double position)
 {
 	Asset *asset = vwindow->get_edl()->assets->first;
 //printf("VTracking::update_tracker %ld\n", position);
-	vwindow->gui->lock_window();
-	vwindow->get_edl()->local_session->selectionstart = 
-		vwindow->get_edl()->local_session->selectionend = 
-		position;
+	vwindow->gui->lock_window("VTracking::update_tracker");
+	vwindow->get_edl()->local_session->set_selectionstart(position);
+	vwindow->get_edl()->local_session->set_selectionend(position);
 	vwindow->gui->slider->update(position);
 
 	vwindow->gui->clock->update(position + 
@@ -52,16 +51,18 @@ void VTracking::update_tracker(double position)
 
 	vwindow->gui->unlock_window();
 
-	update_meters((int64_t)(position * mwindow->edl->session->frame_rate));
+	update_meters((int64_t)(position * mwindow->edl->session->sample_rate));
 }
 
 void VTracking::update_meters(int64_t position)
 {
 	double output_levels[MAXCHANNELS];
-	int do_audio = get_playback_engine()->get_output_levels(output_levels, position);
+
+	int do_audio = get_playback_engine()->get_output_levels(output_levels, 
+		position);
 	if(do_audio)
 	{
-		vwindow->gui->lock_window();
+		vwindow->gui->lock_window("VTracking::update_meters");
 		vwindow->gui->meters->update(output_levels);
 		vwindow->gui->unlock_window();
 	}
@@ -69,7 +70,7 @@ void VTracking::update_meters(int64_t position)
 
 void VTracking::stop_meters()
 {
-	vwindow->gui->lock_window();
+	vwindow->gui->lock_window("VTracking::stop_meters");
 	vwindow->gui->meters->stop_meters();
 	vwindow->gui->unlock_window();
 }

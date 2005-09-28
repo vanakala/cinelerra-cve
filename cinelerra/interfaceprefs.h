@@ -247,6 +247,12 @@ public:
 	ViewTheme *popup;
 };
 
-
+class UseTipWindow : public BC_CheckBox
+{
+public:
+	UseTipWindow(PreferencesWindow *pwindow, int x, int y);
+	int handle_event();
+	PreferencesWindow *pwindow;
+};
 
 #endif

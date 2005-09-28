@@ -4,9 +4,9 @@
 class ColorBalanceMain;
 
 #include "colorbalancewindow.h"
+#include "condition.h"
 #include "plugincolors.h"
 #include "guicast.h"
-#include "mutex.h"
 #include "pluginvclient.h"
 #include "thread.h"
 
@@ -27,6 +27,7 @@ public:
 		int64_t next_frame, 
 		int64_t current_frame);
 
+// -100 - 100
 	float cyan;
 	float magenta;
     float yellow;
@@ -40,10 +41,6 @@ public:
 	ColorBalanceEngine(ColorBalanceMain *plugin);
 	~ColorBalanceEngine();
 
-	float calculate_highlight(float in);
-	float calculate_r(float r);
-	float calculate_g(float g);
-	float calculate_b(float b);
 	int start_process_frame(VFrame *output, VFrame *input, int row_start, int row_end);
 	int wait_process_frame();
 	void run();
@@ -51,7 +48,7 @@ public:
 	ColorBalanceMain *plugin;
 	int row_start, row_end;
 	int last_frame;
-	Mutex input_lock, output_lock;
+	Condition input_lock, output_lock;
 	VFrame *input, *output;
 	YUV yuv;
 	float cyan_f, magenta_f, yellow_f;
@@ -78,6 +75,9 @@ public:
 	int save_defaults();
 	VFrame* new_picon();
 
+	int64_t calculate_slider(float in);
+	float calculate_transfer(float in);
+
 // parameters needed for processor
 	int reconfigure();
     int synchronize_params(ColorBalanceSlider *slider, float difference);
@@ -94,13 +94,9 @@ public:
     int r_lookup_8[0x100];
     int g_lookup_8[0x100];
     int b_lookup_8[0x100];
-    double highlights_add_8[0x100];
-    double highlights_sub_8[0x100];
     int r_lookup_16[0x10000];
     int g_lookup_16[0x10000];
     int b_lookup_16[0x10000];
-    double highlights_add_16[0x10000];
-    double highlights_sub_16[0x10000];
     int redo_buffers;
 	int need_reconfigure;
 };

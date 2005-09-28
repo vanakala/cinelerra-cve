@@ -63,8 +63,8 @@ public:
 class VideoDevice
 {
 public:
-// Recording constructor
-	VideoDevice();
+// MWindow is required where picture settings are used, to get the defaults.
+	VideoDevice(MWindow *mwindow = 0);
 	~VideoDevice();
 
 	int close_all();
@@ -111,9 +111,10 @@ public:
 // Set frames to clear after translation change.
 	int set_latency_counter(int value);
 // Values from -100 to 100
-	int set_picture(Picture *picture);
+	int set_picture(PictureConfig *picture);
 	int capture_frame(int frame_number);  // Start the frame_number capturing
 	int read_buffer(VFrame *frame);  // Read the next frame off the device
+	int has_signal();
 	int frame_to_vframe(VFrame *frame, unsigned char *input); // Translate the captured frame to a VFrame
 	int initialize();
 	ArrayList<Channel*>* get_inputs();
@@ -219,7 +220,7 @@ public:
 
 // Copy of the most recent picture controls
 	int picture_changed;
-	Picture *picture;
+	PictureConfig *picture;
 	Mutex *picture_lock;
 
 
@@ -231,6 +232,7 @@ public:
 	VideoInConfig *in_config;
 	VideoOutConfig *out_config;
 	KeepaliveThread *keepalive;
+	MWindow *mwindow;
 };
 
 

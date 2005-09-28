@@ -69,12 +69,14 @@ public:
 	int append_newline();       // append a newline to string
 	int append_tag();           // append tag object
 	int append_text(char *text);
-	int append_text(char *text, long len);        // add generic text to the string
-	int serialize_and_append_text(char *text);       // encode and add generic text to the string, 
+// add generic text to the string
+	int append_text(char *text, long len);        
+// add generic text to the string which contains <>& characters
+ 	int encode_text(char *text);      
 
 // Text array is dynamically allocated and deleted when FileXML is deleted
 	char* read_text();         // read text, put it in *output, and return it
-	int read_text_until(char *tag_end, char *output);     // store text in output until the tag is reached
+	int read_text_until(char *tag_end, char *output, int max_len);     // store text in output until the tag is reached
 	int read_tag();          // read next tag from file, ignoring any text, and put it in tag
 	// return 1 on failure
 

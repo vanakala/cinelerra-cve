@@ -22,11 +22,18 @@ extern "C" {
 #define QUICKTIME_MPG4 "MPG4"
 #define QUICKTIME_MP42 "MP42"
 #define QUICKTIME_DIVX "DIVX"
+#define QUICKTIME_XVID "XVID"
 #define QUICKTIME_MP4V "mp4v"
+
+#define QUICKTIME_H264 "avc1"
+
 
 /* Basterdization of MPEG-4 which encodes alternating fields in series */
 /* NOT STANDARD */
 #define QUICKTIME_HV60 "HV60"
+/* Basterdization of H264 which encodes alternating fields in series */
+/* NOT STANDARD */
+#define QUICKTIME_HV64 "HV64"
 
 /* McRoesoft MPEG-4 */
 #define QUICKTIME_DIV3 "DIV3"
@@ -174,6 +181,9 @@ int quicktime_set_audio(quicktime_t *file,
 /* Samplerate can be set after file is created */
 void quicktime_set_framerate(quicktime_t *file, double framerate);
 
+/* Set aspect ratio.  Only a few codecs support it. */
+void quicktime_set_aspect(quicktime_t *file, double aspect);
+
 /* video is stored one layer per quicktime track */
 int quicktime_set_video(quicktime_t *file, 
 	int tracks, 
@@ -243,6 +253,9 @@ int quicktime_video_interlacemode(quicktime_t *file, int track);
 
 /* Frames per second */
 double quicktime_frame_rate(quicktime_t *file, int track);
+/* Frames per second as numerator over denominator*/
+int quicktime_frame_rate_n(quicktime_t *file, int track);
+int quicktime_frame_rate_d(quicktime_t *file, int track);
 
 /* FourCC of the video compressor */
 char* quicktime_video_compressor(quicktime_t *file, int track);
@@ -293,9 +306,9 @@ int quicktime_read_frame_end(quicktime_t *file, int track);
 /* One keyframe table for each track */
 /* Returns -1 if no keyframe exists.  In AVI this always returns -1 */
 /* if the frame offset is over 1 Gig.  McRowsoft you know. */
-long quicktime_get_keyframe_before(quicktime_t *file, long frame, int track);
-long quicktime_get_keyframe_after(quicktime_t *file, long frame, int track);
-void quicktime_insert_keyframe(quicktime_t *file, long frame, int track);
+int64_t quicktime_get_keyframe_before(quicktime_t *file, int64_t frame, int track);
+int64_t quicktime_get_keyframe_after(quicktime_t *file, int64_t frame, int track);
+void quicktime_insert_keyframe(quicktime_t *file, int64_t frame, int track);
 
 /* Track has keyframes */
 int quicktime_has_keyframes(quicktime_t *file, int track);
@@ -310,12 +323,12 @@ int quicktime_supported_audio(quicktime_t *file, int track);
 
 /* The codecs can all support RGB in and out. */
 /* To find out if other color models are supported, use these functions. */
-/* The codec can generate the color model with no downsampling */
+/* Returns 1 if the codec can generate the color model with no conversion */
 int quicktime_reads_cmodel(quicktime_t *file, 
 		int colormodel, 
 		int track);
 
-/* The codec can write the color model with no upsampling */
+/* Returns 1 if the codec can write the color model with no conversion */
 int quicktime_writes_cmodel(quicktime_t *file, 
 		int colormodel, 
 		int track);
@@ -330,6 +343,8 @@ int quicktime_mpeg4_write_vol(unsigned char *data_start,
 	double frame_rate);
 int quicktime_mpeg4_has_vol(unsigned char *data);
 
+/* Direct copy of H264 */
+int quicktime_h264_is_key(unsigned char *data, long size, char *codec_id);
 
 
 

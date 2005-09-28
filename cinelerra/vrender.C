@@ -106,25 +106,22 @@ int VRender::process_buffer(int64_t input_position)
 	int use_vconsole = 1;
 	int use_brender = 0;
 	int result = 0;
-
-//TRACE("VRender::process_buffer 1");
+SET_TRACE
 
 // Determine the rendering strategy for this frame.
 	use_vconsole = get_use_vconsole(playable_edit, 
 		input_position,
 		use_brender);
 
-//TRACE("VRender::process_buffer 2");
-
+SET_TRACE
 // Negotiate color model
 	colormodel = get_colormodel(playable_edit, use_vconsole, use_brender);
-//TRACE("VRender::process_buffer 3");
+SET_TRACE
 
 // Get output buffer from device
 	if(renderengine->command->realtime)
 		renderengine->video->new_output_buffers(video_out, colormodel);
-//TRACE("VRender::process_buffer 4");
-
+SET_TRACE
 // Read directly from file to video_out
 	if(!use_vconsole)
 	{
@@ -171,10 +168,9 @@ int VRender::process_buffer(int64_t input_position)
 	{
 
 // process this buffer now in the virtual console
-//TRACE("VRender::process_buffer 5");
+SET_TRACE
 		result = ((VirtualVConsole*)vconsole)->process_buffer(input_position);
-//TRACE("VRender::process_buffer 10");
-
+SET_TRACE
 	}
 
 
@@ -324,13 +320,16 @@ int VRender::get_colormodel(Edit* &playable_edit,
 	int use_vconsole,
 	int use_brender)
 {
+SET_TRACE
 	int colormodel = renderengine->edl->session->color_model;
 
-//printf("VRender::get_colormodel 1\n");
+SET_TRACE
 	if(!use_vconsole && !renderengine->command->single_frame())
 	{
 // Get best colormodel supported by the file
+SET_TRACE
 		int driver = renderengine->config->vconfig->driver;
+SET_TRACE
 		File *file;
 		Asset *asset;
 
@@ -343,20 +342,17 @@ int VRender::get_colormodel(Edit* &playable_edit,
 			asset = playable_edit->asset;
 		}
 
-//printf("VRender::get_colormodel 1\n");
+SET_TRACE
 		file = renderengine->get_vcache()->check_out(asset);
-//printf("VRender::get_colormodel 10\n");
+SET_TRACE
 
 		if(file)
 		{
-//printf("VRender::get_colormodel 20n");
 			colormodel = file->get_best_colormodel(driver);
-//printf("VRender::get_colormodel 30\n");
 			renderengine->get_vcache()->check_in(asset);
-//printf("VRender::get_colormodel 40\n");
 		}
+SET_TRACE
 	}
-//printf("VRender::get_colormodel 100\n");
 	return colormodel;
 }
 

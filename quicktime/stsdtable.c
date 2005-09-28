@@ -32,14 +32,14 @@ void quicktime_set_mpeg4_header(quicktime_stsd_table_t *table,
 	unsigned char *data, 
 	int size)
 {
-	if(table->mpeg4_header)
+	if(table->esds.mpeg4_header)
 	{
-		free(table->mpeg4_header);
+		free(table->esds.mpeg4_header);
 	}
 
-	table->mpeg4_header = calloc(1, size);
-	memcpy(table->mpeg4_header, data, size);
-	table->mpeg4_header_size = size;
+	table->esds.mpeg4_header = calloc(1, size);
+	memcpy(table->esds.mpeg4_header, data, size);
+	table->esds.mpeg4_header_size = size;
 }
 
 static void read_wave(quicktime_t *file, 
@@ -52,14 +52,16 @@ static void read_wave(quicktime_t *file,
 		quicktime_atom_read_header(file, &leaf_atom);
 		if(quicktime_atom_is(&leaf_atom, "esds"))
 		{
-			quicktime_read_esds(file, &leaf_atom, table);
+			quicktime_read_esds(file, &leaf_atom, &table->esds);
 		}
 		else
 			quicktime_atom_skip(file, &leaf_atom);
 	}
 }
 
-void quicktime_read_stsd_audio(quicktime_t *file, quicktime_stsd_table_t *table, quicktime_atom_t *parent_atom)
+void quicktime_read_stsd_audio(quicktime_t *file, 
+	quicktime_stsd_table_t *table, 
+	quicktime_atom_t *parent_atom)
 {
 	quicktime_atom_t leaf_atom;
 
@@ -78,23 +80,37 @@ if(table->sample_rate + 65536 == 96000 ||
 
 
 // Version 1 fields
-	if(table->version == 1)
+	if(table->version > 0)
 	{
 		table->samples_per_packet = quicktime_read_int32(file);
 		table->bytes_per_packet = quicktime_read_int32(file);
 		table->bytes_per_frame = quicktime_read_int32(file);
 		table->bytes_per_sample = quicktime_read_int32(file);
+
+// Skip another 20 bytes
+		if(table->version == 2)
+		{
+			quicktime_set_position(file, quicktime_position(file) + 0x14);
+		}
+
 		while(quicktime_position(file) < parent_atom->end)
 		{
 			quicktime_atom_read_header(file, &leaf_atom);
+
 			if(quicktime_atom_is(&leaf_atom, "wave"))
 			{
 				read_wave(file, table, &leaf_atom);
 			}
 			else
+			{
 				quicktime_atom_skip(file, &leaf_atom);
+			}
 		}
 	}
+
+// FFMPEG says the esds sometimes contains a sample rate that overrides
+// the sample table.
+	quicktime_esds_samplerate(table, &table->esds);
 }
 
 void quicktime_write_stsd_audio(quicktime_t *file, quicktime_stsd_table_t *table)
@@ -104,9 +120,36 @@ void quicktime_write_stsd_audio(quicktime_t *file, quicktime_stsd_table_t *table
 	quicktime_write_data(file, table->vendor, 4);
 	quicktime_write_int16(file, table->channels);
 	quicktime_write_int16(file, table->sample_size);
+
 	quicktime_write_int16(file, table->compression_id);
 	quicktime_write_int16(file, table->packet_size);
 	quicktime_write_fixed32(file, table->sample_rate);
+
+// Write header for mp4v
+	if(table->esds.mpeg4_header_size && table->esds.mpeg4_header)
+	{
+// Version 1 info
+		quicktime_write_int32(file, 0);
+		quicktime_write_int32(file, 0);
+		quicktime_write_int32(file, 0);
+		quicktime_write_int32(file, 0);
+
+		quicktime_atom_t wave_atom;
+		quicktime_atom_t frma_atom;
+		quicktime_atom_t mp4a_atom;
+		quicktime_atom_write_header(file, &wave_atom, "wave");
+
+		quicktime_atom_write_header(file, &frma_atom, "frma");
+		quicktime_write_data(file, "mp4a", 4);
+		quicktime_atom_write_footer(file, &frma_atom);
+
+		quicktime_atom_write_header(file, &mp4a_atom, "mp4a");
+		quicktime_write_int32(file, 0x0);
+		quicktime_atom_write_footer(file, &mp4a_atom);
+
+		quicktime_write_esds(file, &table->esds, 0, 1);
+		quicktime_atom_write_footer(file, &wave_atom);
+	}
 }
 
 // Lifted from mplayer and changed a bit
@@ -193,12 +236,21 @@ void quicktime_read_stsd_video(quicktime_t *file,
 	while(quicktime_position(file) < parent_atom->end)
 	{
 		quicktime_atom_read_header(file, &leaf_atom);
-//printf("quicktime_read_stsd_video 1 %llx %llx %llx\n", leaf_atom.start, leaf_atom.end, quicktime_position(file));
+/*
+ * printf("quicktime_read_stsd_video 1 %llx %llx %llx %s\n", 
+ * leaf_atom.start, leaf_atom.end, quicktime_position(file),
+ * leaf_atom.type);
+ */
 
 
 		if(quicktime_atom_is(&leaf_atom, "esds"))
 		{
-			quicktime_read_esds(file, &leaf_atom, table);
+			quicktime_read_esds(file, &leaf_atom, &table->esds);
+		}
+		else
+		if(quicktime_atom_is(&leaf_atom, "avcC"))
+		{
+			quicktime_read_avcc(file, &leaf_atom, &table->avcc);
 		}
 		else
 		if(quicktime_atom_is(&leaf_atom, "ctab"))
@@ -265,10 +317,19 @@ void quicktime_write_stsd_video(quicktime_t *file, quicktime_stsd_table_t *table
 	}
 
 // Write header for mp4v
-	if(table->mpeg4_header_size && table->mpeg4_header)
+	if(table->esds.mpeg4_header_size && table->esds.mpeg4_header)
 	{
-		quicktime_write_esds(file, table, 1, 0);
+		quicktime_write_esds(file, &table->esds, 1, 0);
 	}
+
+	if(table->avcc.data_size)
+	{
+		quicktime_write_avcc(file, &table->avcc);
+	}
+
+// Write another 32 bits
+	if(table->version == 1)
+		quicktime_write_int32(file, 0x0);
 }
 
 void quicktime_read_stsd_table(quicktime_t *file, quicktime_minf_t *minf, quicktime_stsd_table_t *table)
@@ -330,9 +391,6 @@ void quicktime_stsd_table_init(quicktime_stsd_table_t *table)
 	table->packet_size = 0;
 	table->sample_rate = 0;
 
-	table->mpeg4_header = 0;
-	table->mpeg4_header_size = 0;
-
 	table->extradata = 0;
 	table->extradata_size = 0;
 	
@@ -343,8 +401,10 @@ void quicktime_stsd_table_delete(quicktime_stsd_table_t *table)
 	quicktime_ctab_delete(&(table->ctab));
 	quicktime_mjqt_delete(&(table->mjqt));
 	quicktime_mjht_delete(&(table->mjht));
-	if(table->mpeg4_header) free(table->mpeg4_header);
 	if(table->extradata) free(table->extradata);
+	quicktime_delete_avcc(&(table->avcc));
+	quicktime_delete_esds(&(table->esds));
+	
 }
 
 void quicktime_stsd_video_dump(quicktime_stsd_table_t *table)
@@ -372,6 +432,8 @@ void quicktime_stsd_video_dump(quicktime_stsd_table_t *table)
 	if(!table->ctab_id) quicktime_ctab_dump(&(table->ctab));
 	quicktime_mjqt_dump(&(table->mjqt));
 	quicktime_mjht_dump(&(table->mjht));
+	quicktime_esds_dump(&table->esds);
+	quicktime_avcc_dump(&table->avcc);
 }
 
 void quicktime_stsd_audio_dump(quicktime_stsd_table_t *table)
@@ -384,13 +446,15 @@ void quicktime_stsd_audio_dump(quicktime_stsd_table_t *table)
 	printf("       compression_id %d\n", table->compression_id);
 	printf("       packet_size %d\n", table->packet_size);
 	printf("       sample_rate %f\n", table->sample_rate);
-	if(table->version == 1)
+	if(table->version > 0)
 	{
 		printf("       samples_per_packet %d\n", table->samples_per_packet);
 		printf("       bytes_per_packet %d\n", table->bytes_per_packet);
 		printf("       bytes_per_frame %d\n", table->bytes_per_frame);
 		printf("       bytes_per_sample %d\n", table->bytes_per_sample);
 	}
+	quicktime_esds_dump(&table->esds);
+	quicktime_avcc_dump(&table->avcc);
 }
 
 void quicktime_stsd_table_dump(void *minf_ptr, quicktime_stsd_table_t *table)

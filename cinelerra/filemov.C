@@ -17,7 +17,10 @@
 
 #if 0
 N_("MPEG-4")
-N_("Heroine 60")
+N_("Dual H.264")
+N_("Dual MPEG-4")
+N_("H.264")
+N_("H.263")
 N_("Microsoft MPEG-4")
 N_("DV")
 N_("PNG")
@@ -40,12 +43,15 @@ N_("IMA-4")
 N_("U-Law")
 N_("Vorbis")
 N_("MP3")
+N_("MPEG-4 Audio")
 #endif
 
 #define DIVX_NAME "MPEG-4"
+#define HV64_NAME "Dual H.264"
 #define MP4V_NAME "MPEG-4 Video"
+#define H264_NAME "H.264"
 #define H263_NAME "H.263"
-#define HV60_NAME "Heroine 60"
+#define HV60_NAME "Dual MPEG-4"
 #define DIV3_NAME "Microsoft MPEG-4"
 #define DV_NAME "DV"
 #define PNG_NAME "PNG"
@@ -61,13 +67,14 @@ N_("MP3")
 #define QTJPEG_NAME "JPEG Photo"
 #define MJPA_NAME "Motion JPEG A"
 
-
 #define TWOS_NAME "Twos complement"
 #define RAW_NAME "Unsigned"
 #define IMA4_NAME "IMA-4"
 #define ULAW_NAME "U-Law"
 //#define VORBIS_NAME "Vorbis"
 #define MP3_NAME "MP3"
+#define MP4A_NAME "MPEG-4 Audio"
+#define VORBIS_NAME "OGG Vorbis"
 
 
 
@@ -161,6 +168,7 @@ int FileMOV::reset_parameters_derived()
 // for reopening.
 int FileMOV::open_file(int rd, int wr)
 {
+
 	this->rd = rd;
 	this->wr = wr;
 
@@ -200,7 +208,7 @@ int FileMOV::open_file(int rd, int wr)
 										tmp_decoder->height == 576 ? 25 : 30, // FIXME
 										0);
 				// Get frame number
-				asset->tcstart = seconds * (tmp_decoder->height == 576 ? 25 : 30);
+				asset->tcstart = int64_t(seconds * (tmp_decoder->height == 576 ? 25 : 30));
 			}
 			
 		}
@@ -284,6 +292,7 @@ void FileMOV::asset_to_format()
 		quicktime_set_parameter(fd, "vorbis_bitrate", &asset->vorbis_bitrate);
 		quicktime_set_parameter(fd, "vorbis_max_bitrate", &asset->vorbis_max_bitrate);
 		quicktime_set_parameter(fd, "mp3_bitrate", &asset->mp3_bitrate);
+		quicktime_set_parameter(fd, "mp4a_bitrate", &asset->mp4a_bitrate);
 	}
 
 	if(asset->video_data)
@@ -339,14 +348,18 @@ void FileMOV::asset_to_format()
 		quicktime_set_parameter(fd, "divx_quality", &asset->divx_quality);
 		quicktime_set_parameter(fd, "divx_fix_bitrate", &asset->divx_fix_bitrate);
 
-		quicktime_set_parameter(fd, "div3_bitrate", &asset->ms_bitrate);
-		quicktime_set_parameter(fd, "div3_bitrate_tolerance", &asset->ms_bitrate_tolerance);
-		quicktime_set_parameter(fd, "div3_interlaced", &asset->ms_interlaced);
-		quicktime_set_parameter(fd, "div3_quantizer", &asset->ms_quantization);
-		quicktime_set_parameter(fd, "div3_gop_size", &asset->ms_gop_size);
-		quicktime_set_parameter(fd, "div3_fix_bitrate", &asset->ms_fix_bitrate);
+		quicktime_set_parameter(fd, "ffmpeg_bitrate", &asset->ms_bitrate);
+		quicktime_set_parameter(fd, "ffmpeg_bitrate_tolerance", &asset->ms_bitrate_tolerance);
+		quicktime_set_parameter(fd, "ffmpeg_interlaced", &asset->ms_interlaced);
+		quicktime_set_parameter(fd, "ffmpeg_quantizer", &asset->ms_quantization);
+		quicktime_set_parameter(fd, "ffmpeg_gop_size", &asset->ms_gop_size);
+		quicktime_set_parameter(fd, "ffmpeg_fix_bitrate", &asset->ms_fix_bitrate);
 
-//printf("FileMOV::asset_to_format 3.3\n");
+		quicktime_set_parameter(fd, "h264_bitrate", &asset->h264_bitrate);
+		quicktime_set_parameter(fd, "h264_quantizer", &asset->h264_quantizer);
+		quicktime_set_parameter(fd, "h264_fix_bitrate", &asset->h264_fix_bitrate);
+
+
 	}
 //printf("FileMOV::asset_to_format 3.4\n");
 
@@ -425,11 +438,14 @@ int FileMOV::get_best_colormodel(Asset *asset, int driver)
 			if(match4(asset->vcodec, QUICKTIME_DVSD)) return BC_YUV422;
 			if(match4(asset->vcodec, QUICKTIME_MP4V)) return BC_YUV420P;
 			if(match4(asset->vcodec, QUICKTIME_H263)) return BC_YUV420P;
+			if(match4(asset->vcodec, QUICKTIME_H264)) return BC_YUV420P;
+			if(match4(asset->vcodec, QUICKTIME_HV64)) return BC_YUV420P;
 			if(match4(asset->vcodec, QUICKTIME_DIV3)) return BC_YUV420P;
 			break;
 		case PLAYBACK_DV1394:
 		case PLAYBACK_FIREWIRE:
-			if(match4(asset->vcodec, QUICKTIME_DV)) return BC_COMPRESSED;
+			if(match4(asset->vcodec, QUICKTIME_DV) || 
+				match4(asset->vcodec, QUICKTIME_DVSD)) return BC_COMPRESSED;
 			return BC_YUV422P;
 			break;
 		case PLAYBACK_LML:
@@ -468,7 +484,9 @@ int FileMOV::get_best_colormodel(Asset *asset, int driver)
 				return BC_YUV422;
 			break;
 		case CAPTURE_FIREWIRE:
-			if(!strncasecmp(asset->vcodec, QUICKTIME_DV, 4)) 
+		case CAPTURE_IEC61883:
+			if(!strncasecmp(asset->vcodec, QUICKTIME_DV, 4) ||
+				!strncasecmp(asset->vcodec, QUICKTIME_DVSD, 4)) 
 				return BC_COMPRESSED;
 			else
 				return BC_YUV422;
@@ -495,9 +513,11 @@ int FileMOV::can_copy_from(Edit *edit, int64_t position)
 // check for DV...
 		int is_edit_dv = 0;
 		int is_this_dv = 0;
-		if (match4(edit->asset->vcodec, QUICKTIME_DV) || match4(edit->asset->vcodec, QUICKTIME_DVSD))
+		if (match4(edit->asset->vcodec, QUICKTIME_DV) || 
+			match4(edit->asset->vcodec, QUICKTIME_DVSD))
 			is_edit_dv = 1;
-		if (match4(this->asset->vcodec, QUICKTIME_DV) || match4(this->asset->vcodec, QUICKTIME_DVSD))
+		if (match4(this->asset->vcodec, QUICKTIME_DV) || 
+			match4(this->asset->vcodec, QUICKTIME_DVSD))
 			is_this_dv = 1;
 		if (is_this_dv && is_edit_dv)
 			return 1;
@@ -536,8 +556,10 @@ int FileMOV::set_video_position(int64_t x)
 {
 	if(!fd) return 1;
 	if(x >= 0 && x < asset->video_length)
-		return quicktime_set_video_position(fd, x, file->current_layer);
-	else
+	{
+		int result = quicktime_set_video_position(fd, x, file->current_layer);
+		return result;
+	}else
 		return 1;
 }
 
@@ -648,7 +670,7 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 						quicktime_insert_keyframe(fd, file->current_frame + j, i);
 
 
-
+// Write header
 					if(!(file->current_frame + j) && 
 						!quicktime_mpeg4_has_vol(frame->get_data()))
 					{
@@ -682,6 +704,21 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 							frame->get_compressed_size(),
 							i);
 					}
+				}
+				else
+// Determine keyframe status
+				if(!strcmp(asset->vcodec, QUICKTIME_H264) ||
+					!strcmp(asset->vcodec, QUICKTIME_HV64) ||
+					!strcmp(asset->vcodec, QUICKTIME_MP4V))
+				{
+					if(frame->get_keyframe() || file->current_frame + j == 0)
+						quicktime_insert_keyframe(fd, file->current_frame + j, i);
+
+// Write frame
+						result = quicktime_write_frame(fd,
+							frame->get_data(),
+							frame->get_compressed_size(),
+							i);
 				}
 				else
 				if(!strcmp(asset->vcodec, QUICKTIME_DIV3))
@@ -878,6 +915,10 @@ int FileMOV::read_frame(VFrame *frame)
 		case BC_COMPRESSED:
 			frame->allocate_compressed_data(quicktime_frame_size(fd, file->current_frame, file->current_layer));
 			frame->set_compressed_size(quicktime_frame_size(fd, file->current_frame, file->current_layer));
+			frame->set_keyframe((quicktime_get_keyframe_before(fd, 
+				file->current_frame, 
+				file->current_layer) == file->current_frame));
+//printf("FileMOV::read_frame 1 %lld %d\n", file->current_frame, frame->get_keyframe());
 			result = quicktime_read_frame(fd, 
 				frame->get_data(), 
 				file->current_layer);
@@ -927,10 +968,11 @@ int FileMOV::read_compressed_frame(VFrame *buffer)
 	int64_t result;
 	if(!fd) return 0;
 
-//printf("FileMOV::read_compressed_frame 1\n");
 	result = quicktime_read_frame(fd, buffer->get_data(), file->current_layer);
 	buffer->set_compressed_size(result);
-//printf("FileMOV::read_compressed_frame 100\n");
+	buffer->set_keyframe((quicktime_get_keyframe_before(fd, 
+		file->current_frame, 
+		file->current_layer) == file->current_frame));
 	result = !result;
 	return result;
 }
@@ -940,12 +982,10 @@ int FileMOV::write_compressed_frame(VFrame *buffer)
 	int result = 0;
 	if(!fd) return 0;
 
-TRACE("FileMOV::write_compressed_frame 1");
 	result = quicktime_write_frame(fd, 
 		buffer->get_data(), 
 		buffer->get_compressed_size(), 
 		file->current_layer);
-TRACE("FileMOV::write_compressed_frame 100");
 	return result;
 }
 
@@ -959,7 +999,6 @@ int FileMOV::read_raw(VFrame *frame,
 	int64_t i, color_channels, result = 0;
 	if(!fd) return 0;
 
-//printf("FileMOV::read_raw 1\n");
 	quicktime_set_video_position(fd, file->current_frame, file->current_layer);
 // Develop importing strategy
 	switch(frame->get_color_model())
@@ -994,7 +1033,6 @@ int FileMOV::read_samples(double *buffer, int64_t len)
 
 	if(!fd) return 0;
 
-//printf("FileMOV::read_samples 1\n");
 	if(quicktime_track_channels(fd, 0) > file->current_channel &&
 		quicktime_supported_audio(fd, 0))
 	{
@@ -1023,7 +1061,6 @@ int FileMOV::read_samples(double *buffer, int64_t len)
 //printf("FileMOV::read_samples 4 %ld %ld\n", file->current_sample, quicktime_audio_position(fd, 0));
 	}
 
-//printf("FileMOV::read_samples 100\n");
 	return 0;
 }
 
@@ -1031,11 +1068,14 @@ int FileMOV::read_samples(double *buffer, int64_t len)
 char* FileMOV::strtocompression(char *string)
 {
 	if(!strcasecmp(string, _(DIVX_NAME))) return QUICKTIME_DIVX;
+	if(!strcasecmp(string, _(H264_NAME))) return QUICKTIME_H264;
+	if(!strcasecmp(string, _(HV64_NAME))) return QUICKTIME_HV64;
 	if(!strcasecmp(string, _(MP4V_NAME))) return QUICKTIME_MP4V;
 	if(!strcasecmp(string, _(H263_NAME))) return QUICKTIME_H263;
 	if(!strcasecmp(string, _(HV60_NAME))) return QUICKTIME_HV60;
 	if(!strcasecmp(string, _(DIV3_NAME))) return QUICKTIME_DIV3;
-	if(!strcasecmp(string, _(DV_NAME))) return QUICKTIME_DV;
+	if(!strcasecmp(string, _(DV_NAME))) return QUICKTIME_DVSD;
+//	if(!strcasecmp(string, _(DV_NAME))) return QUICKTIME_DV;
 	if(!strcasecmp(string, _(PNG_NAME))) return QUICKTIME_PNG;
 	if(!strcasecmp(string, _(PNGA_NAME))) return MOV_PNGA;
 	if(!strcasecmp(string, _(RGB_NAME))) return QUICKTIME_RAW;
@@ -1054,6 +1094,7 @@ char* FileMOV::strtocompression(char *string)
 	if(!strcasecmp(string, _(IMA4_NAME))) return QUICKTIME_IMA4;
 	if(!strcasecmp(string, _(ULAW_NAME))) return QUICKTIME_ULAW;
 	if(!strcasecmp(string, _(MP3_NAME))) return QUICKTIME_MP3;
+	if(!strcasecmp(string, _(MP4A_NAME))) return QUICKTIME_MP4A;
 	if(!strcasecmp(string, _(VORBIS_NAME))) return QUICKTIME_VORBIS;
 
 
@@ -1064,11 +1105,14 @@ char* FileMOV::strtocompression(char *string)
 char* FileMOV::compressiontostr(char *string)
 {
 	if(match4(string, QUICKTIME_H263)) return _(H263_NAME);
+	if(match4(string, QUICKTIME_H264)) return _(H264_NAME);
+	if(match4(string, QUICKTIME_HV64)) return _(HV64_NAME);
 	if(match4(string, QUICKTIME_DIVX)) return _(DIVX_NAME);
 	if(match4(string, QUICKTIME_MP4V)) return _(MP4V_NAME);
 	if(match4(string, QUICKTIME_HV60)) return _(HV60_NAME);
 	if(match4(string, QUICKTIME_DIV3)) return _(DIV3_NAME);
 	if(match4(string, QUICKTIME_DV)) return _(DV_NAME);
+	if(match4(string, QUICKTIME_DVSD)) return _(DV_NAME);
 	if(match4(string, MOV_PNGA)) return _(PNGA_NAME);
 	if(match4(string, QUICKTIME_RAW)) return _(RGB_NAME);
 	if(match4(string, MOV_RGBA)) return _(RGBA_NAME);
@@ -1090,6 +1134,7 @@ char* FileMOV::compressiontostr(char *string)
 	if(match4(string, QUICKTIME_IMA4)) return _(IMA4_NAME);
 	if(match4(string, QUICKTIME_ULAW)) return _(ULAW_NAME);
 	if(match4(string, QUICKTIME_MP3)) return _(MP3_NAME);
+	if(match4(string, QUICKTIME_MP4A)) return _(MP4A_NAME);
 	if(match4(string, QUICKTIME_VORBIS)) return _(VORBIS_NAME);
 
 
@@ -1249,15 +1294,8 @@ MOVConfigAudio::MOVConfigAudio(BC_WindowBase *parent_window, Asset *asset)
 {
 	this->parent_window = parent_window;
 	this->asset = asset;
-	bits_popup = 0;
-	bits_title = 0;
-	dither = 0;
-	vorbis_min_bitrate = 0;
-	vorbis_bitrate = 0;
-	vorbis_max_bitrate = 0;
-	vorbis_vbr = 0;
 	compression_popup = 0;
-	mp3_bitrate = 0;
+	reset();
 }
 
 MOVConfigAudio::~MOVConfigAudio()
@@ -1267,26 +1305,42 @@ MOVConfigAudio::~MOVConfigAudio()
 	compression_items.remove_all_objects();
 }
 
+
+void MOVConfigAudio::reset()
+{
+	bits_popup = 0;
+	bits_title = 0;
+	dither = 0;
+	vorbis_min_bitrate = 0;
+	vorbis_bitrate = 0;
+	vorbis_max_bitrate = 0;
+	vorbis_vbr = 0;
+	mp3_bitrate = 0;
+	mp4a_bitrate = 0;
+	mp4a_quantqual = 0;
+}
+
 int MOVConfigAudio::create_objects()
 {
 	int x = 10, y = 10;
 
-	
 
 	if(asset->format == FILE_MOV)
 	{
 		compression_items.append(new BC_ListBoxItem(_(TWOS_NAME)));
 		compression_items.append(new BC_ListBoxItem(_(RAW_NAME)));
 		compression_items.append(new BC_ListBoxItem(_(IMA4_NAME)));
-//		compression_items.append(new BC_ListBoxItem(_(MP3_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(MP3_NAME)));
 		compression_items.append(new BC_ListBoxItem(_(ULAW_NAME)));
 		compression_items.append(new BC_ListBoxItem(_(VORBIS_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(MP4A_NAME)));
 	}
 	else
 	{
 		compression_items.append(new BC_ListBoxItem(_(TWOS_NAME)));
 		compression_items.append(new BC_ListBoxItem(_(MP3_NAME)));
 		compression_items.append(new BC_ListBoxItem(_(VORBIS_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(MP4A_NAME)));
 	}
 
 	add_tool(new BC_Title(x, y, _("Compression:")));
@@ -1311,18 +1365,10 @@ void MOVConfigAudio::update_parameters()
 	if(vorbis_max_bitrate) delete vorbis_max_bitrate;
 	if(vorbis_vbr) delete vorbis_vbr;
 	if(mp3_bitrate) delete mp3_bitrate;
+	delete mp4a_bitrate;
+	delete mp4a_quantqual;
 
-	bits_popup = 0;
-	bits_title = 0;
-	dither = 0;
-	vorbis_min_bitrate = 0;
-	vorbis_bitrate = 0;
-	vorbis_max_bitrate = 0;
-	vorbis_vbr = 0;
-
-
-
-	mp3_bitrate = 0;
+	reset();
 
 
 
@@ -1398,6 +1444,26 @@ void MOVConfigAudio::update_parameters()
 		vorbis_bitrate->create_objects();
 		vorbis_max_bitrate->create_objects();
 	}
+	else
+	if(!strcasecmp(asset->acodec, QUICKTIME_MP4A))
+	{
+		mp4a_bitrate = new MOVConfigAudioNum(this, 
+			_("Bitrate:"), 
+			x, 
+			y, 
+			&asset->mp4a_bitrate);
+		mp4a_bitrate->set_increment(1000);
+		mp4a_bitrate->create_objects();
+
+		y += 30;
+		mp4a_quantqual = new MOVConfigAudioNum(this, 
+			_("Quantization Quality (%):"), 
+			x, 
+			y, 
+			&asset->mp4a_quantqual);
+		mp4a_quantqual->set_increment(1);
+		mp4a_quantqual->create_objects();
+	}
 }
 
 int MOVConfigAudio::close_event()
@@ -1435,7 +1501,7 @@ MOVConfigAudioNum::MOVConfigAudioNum(MOVConfigAudio *popup, char *title_text, in
 		(int64_t)*output,
 		(int64_t)-1,
 		(int64_t)25000000,
-		x + 150, 
+		popup->get_w() - 150, 
 		y, 
 		100)
 {
@@ -1533,8 +1599,10 @@ int MOVConfigVideo::create_objects()
 
 	if(asset->format == FILE_MOV)
 	{
-		compression_items.append(new BC_ListBoxItem(_(DIVX_NAME)));
-//		compression_items.append(new BC_ListBoxItem(_(MP4V_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(H264_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(HV64_NAME)));
+//		compression_items.append(new BC_ListBoxItem(_(DIVX_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(MP4V_NAME)));
 		compression_items.append(new BC_ListBoxItem(_(HV60_NAME)));
 		compression_items.append(new BC_ListBoxItem(_(DIV3_NAME)));
 		compression_items.append(new BC_ListBoxItem(_(DV_NAME)));
@@ -1552,7 +1620,10 @@ int MOVConfigVideo::create_objects()
 	}
 	else
 	{
-		compression_items.append(new BC_ListBoxItem(_(DIVX_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(H264_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(HV64_NAME)));
+//		compression_items.append(new BC_ListBoxItem(_(DIVX_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(MP4V_NAME)));
 		compression_items.append(new BC_ListBoxItem(_(HV60_NAME)));
 		compression_items.append(new BC_ListBoxItem(_(DIV3_NAME)));
 		compression_items.append(new BC_ListBoxItem(_(DV_NAME)));
@@ -1612,6 +1683,11 @@ void MOVConfigVideo::reset()
 	divx_fix_bitrate = 0;
 	divx_fix_quant = 0;
 
+	h264_bitrate = 0;
+	h264_quantizer = 0;
+	h264_fix_bitrate = 0;
+	h264_fix_quant = 0;
+
 	ms_bitrate = 0;
 	ms_bitrate_tolerance = 0;
 	ms_quantization = 0;
@@ -1649,10 +1725,50 @@ void MOVConfigVideo::update_parameters()
 	if(ms_fix_bitrate) delete ms_fix_bitrate;
 	if(ms_fix_quant) delete ms_fix_quant;
 
+	delete h264_bitrate;
+	delete h264_quantizer;
+	delete h264_fix_bitrate;
+	delete h264_fix_quant;
+
 	reset();
 
+
+// H264 parameters
+	if(!strcmp(asset->vcodec, QUICKTIME_H264) ||
+		!strcmp(asset->vcodec, QUICKTIME_HV64))
+	{
+		int x = param_x, y = param_y;
+		h264_bitrate = new MOVConfigVideoNum(this, 
+			_("Bitrate:"), 
+			x, 
+			y, 
+			&asset->h264_bitrate);
+		h264_bitrate->set_increment(1000000);
+		h264_bitrate->create_objects();
+		add_subwindow(h264_fix_bitrate = new MOVConfigVideoFixBitrate(x + 260, 
+				y,
+				&asset->h264_fix_bitrate,
+				1));
+		y += 30;
+		h264_quantizer = new MOVConfigVideoNum(this, 
+			_("Quantization:"), 
+			x, 
+			y, 
+			0,
+			51,
+			&asset->h264_quantizer);
+		h264_quantizer->create_objects();
+		add_subwindow(h264_fix_quant = new MOVConfigVideoFixQuant(x + 260, 
+				y,
+				&asset->h264_fix_bitrate,
+				0));
+		h264_fix_bitrate->opposite = h264_fix_quant;
+		h264_fix_quant->opposite = h264_fix_bitrate;
+	}
+	else
 // ffmpeg parameters
-	if(!strcmp(asset->vcodec, QUICKTIME_DIV3))
+	if(!strcmp(asset->vcodec, QUICKTIME_MP4V) ||
+		!strcmp(asset->vcodec, QUICKTIME_DIV3))
 	{
 		int x = param_x, y = param_y;
 		ms_bitrate = new MOVConfigVideoNum(this, 
@@ -1813,6 +1929,28 @@ MOVConfigVideoNum::MOVConfigVideoNum(MOVConfigVideo *popup, char *title_text, in
 		(int64_t)*output,
 		(int64_t)1,
 		(int64_t)25000000,
+		x + 130, 
+		y, 
+		100)
+{
+	this->popup = popup;
+	this->title_text = title_text;
+	this->output = output;
+	this->x = x;
+	this->y = y;
+}
+
+MOVConfigVideoNum::MOVConfigVideoNum(MOVConfigVideo *popup, 
+	char *title_text, 
+	int x, 
+	int y, 
+	int min,
+	int max,
+	int *output)
+ : BC_TumbleTextBox(popup, 
+		(int64_t)*output,
+		(int64_t)min,
+		(int64_t)max,
 		x + 130, 
 		y, 
 		100)

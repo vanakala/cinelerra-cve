@@ -319,10 +319,8 @@ void HoloServer::init_packages()
 	for(int i = 0; i < total_packages; i++)
 	{
 		HoloPackage *package = (HoloPackage*)packages[i];
-		package->row1 = plugin->input_ptr->get_h() / total_packages * i;
-		package->row2 = package->row1 + plugin->input_ptr->get_h() / total_packages;
-		if(i >= total_packages - 1)
-			package->row2 = plugin->input_ptr->get_h();
+		package->row1 = plugin->input_ptr->get_h() * i / total_packages;
+		package->row2 = plugin->input_ptr->get_h() * (i + 1) / total_packages;
 	}
 }
 

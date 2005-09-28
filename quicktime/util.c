@@ -714,3 +714,22 @@ int quicktime_match_24(char *input, char *output)
 	else 
 		return 0;
 }
+
+int quicktime_quantize16(int number)
+{
+	if(number && (number % 16))
+	{
+		number += 16 - (number % 16);
+	}
+	return number;
+}
+
+int quicktime_quantize32(int number)
+{
+	if(number && (number % 32))
+	{
+		number += 32 - (number % 32);
+	}
+	return number;
+}
+

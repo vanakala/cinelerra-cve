@@ -1,4 +1,5 @@
 #include "attachmentpoint.h"
+#include "bcsignals.h"
 #include "commonrender.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -159,6 +160,14 @@ AttachmentPoint* Module::attachment_of(Plugin *plugin)
 	return 0;
 }
 
+AttachmentPoint* Module::get_attachment(int number)
+{
+	if(number < total_attachments)
+		return attachments[number];
+	else
+		return 0;
+}
+
 void Module::reset_attachments()
 {
 //printf("Module::reset_attachments 1 %d\n", total_attachments);
@@ -206,11 +215,13 @@ int Module::test_plugins()
 void Module::update_transition(int64_t current_position, 
 	int direction)
 {
+SET_TRACE
 	Plugin *transition = track->get_current_transition(current_position, 
 		direction,
 		0,
 		0); // position is already nudged in amodule.C and vmodule.C before calling update_transition!
 
+SET_TRACE
 	if((!transition && this->transition) || 
 		(transition && this->transition && strcmp(transition->title, this->transition->title)))
 	{
@@ -220,10 +231,12 @@ void Module::update_transition(int64_t current_position,
 		delete transition_server;
 		transition_server = 0;
 	}
+SET_TRACE
 
 	if(transition && !this->transition)
 	{
 		this->transition = transition;
+SET_TRACE
 
 		if(renderengine)
 		{
@@ -244,17 +257,22 @@ void Module::update_transition(int64_t current_position,
 		else
 		if(plugin_array)
 		{
+SET_TRACE
 			PluginServer *plugin_server = plugin_array->scan_plugindb(transition->title);
+SET_TRACE
 			transition_server = new PluginServer(*plugin_server);
+SET_TRACE
 			transition_server->open_plugin(0, 
 				plugin_array->mwindow->preferences,
 				get_edl(), 
 				transition,
 				-1);
+SET_TRACE
 			transition_server->init_realtime(
 				0,
 				1,
 				get_buffer_size());
+SET_TRACE
 		}
 	}
 }

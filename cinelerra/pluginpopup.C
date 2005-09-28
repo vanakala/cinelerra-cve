@@ -97,10 +97,9 @@ PluginPopupDetach::~PluginPopupDetach()
 int PluginPopupDetach::handle_event()
 {
 	mwindow->hide_plugin(popup->plugin, 1);
-	mwindow->undo->update_undo_before(_("detach effect"), LOAD_ALL);
 	popup->plugin->track->detach_effect(popup->plugin);
 	mwindow->save_backup();
-	mwindow->undo->update_undo_after();
+	mwindow->undo->update_undo(_("detach effect"), LOAD_ALL);
 	mwindow->gui->update(0,
 		1,
 		0,

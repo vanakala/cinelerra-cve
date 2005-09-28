@@ -196,15 +196,8 @@ void FadeEngine::init_packages()
 	for(int i = 0; i < total_packages; i++)
 	{
 		FadePackage *package = (FadePackage*)packages[i];
-		package->out_row1 = (int)(input->get_h() / 
-			total_packages * 
-			i);
-		package->out_row2 = (int)((float)package->out_row1 +
-			input->get_h() / 
-			total_packages);
-
-		if(i >= total_packages - 1)
-			package->out_row2 = input->get_h();
+		package->out_row1 = input->get_h() * i / total_packages;
+		package->out_row2 = input->get_h() * (i + 1) / total_packages;
 	}
 }
 

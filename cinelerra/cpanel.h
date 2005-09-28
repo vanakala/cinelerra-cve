@@ -114,6 +114,16 @@ public:
 	CPanel *gui;
 };
 
+class CPanelEyedrop : public BC_Toggle
+{
+public:
+	CPanelEyedrop(MWindow *mwindow, CPanel *gui, int x, int y);
+	~CPanelEyedrop();
+	int handle_event();
+	MWindow *mwindow;
+	CPanel *gui;
+};
+
 class CPanelToolWindow : public BC_Toggle
 {
 public:

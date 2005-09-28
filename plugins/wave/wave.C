@@ -842,22 +842,11 @@ WaveServer::WaveServer(WaveEffect *plugin, int cpus)
 
 void WaveServer::init_packages()
 {
-	int increment = plugin->input->get_h() / LoadServer::total_packages + 1;
-	int y = 0;
 	for(int i = 0; i < LoadServer::total_packages; i++)
 	{
 		WavePackage *pkg = (WavePackage*)packages[i];
-		pkg->row1 = y;
-		pkg->row2 = y + increment;
-		y += increment;
-		if(pkg->row2 > plugin->input->get_h())
-		{
-			y = pkg->row2 = plugin->input->get_h();
-		}
-		if(pkg->row1 > plugin->input->get_h())
-		{
-			y = pkg->row2 = plugin->input->get_h();
-		}
+		pkg->row1 = plugin->input->get_h() * i / LoadServer::total_packages;
+		pkg->row2 = plugin->input->get_h() * (i + 1) / LoadServer::total_packages;
 	}
 }
 

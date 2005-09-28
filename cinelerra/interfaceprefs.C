@@ -6,6 +6,7 @@
 #include "preferences.h"
 #include "preferencesthread.h"
 #include "interfaceprefs.h"
+#include "theme.h"
 
 #if 0
 N_("Drag all following edits")
@@ -26,17 +27,19 @@ InterfacePrefs::InterfacePrefs(MWindow *mwindow, PreferencesWindow *pwindow)
 
 int InterfacePrefs::create_objects()
 {
-	int y = 5, x = 5, value;
+	int y, x, value;
+	BC_Resources *resources = BC_WindowBase::get_resources();
 	char string[1024];
-// 	add_border(get_resources()->get_bg_shadow1(),
-// 		get_resources()->get_bg_shadow2(),
-// 		get_resources()->get_bg_color(),
-// 		get_resources()->get_bg_light2(),
-// 		get_resources()->get_bg_light1());
-	add_subwindow(new BC_Title(x, y, _("Interface"), LARGEFONT, BLACK));
+	add_subwindow(new BC_Title(mwindow->theme->preferencestitle_x, 
+		mwindow->theme->preferencestitle_y, 
+		_("Interface"), 
+		LARGEFONT, 
+		resources->text_default));
 
 
-	y += 35;
+	x = mwindow->theme->preferencesoptions_x;
+	y = mwindow->theme->preferencesoptions_y;
+
 	add_subwindow(hms = new TimeFormatHMS(pwindow, 
 		this, 
 		pwindow->thread->edl->session->time_format == TIME_HMS, 
@@ -87,14 +90,19 @@ int InterfacePrefs::create_objects()
 
 
 	y += 35;
+	add_subwindow(new UseTipWindow(pwindow, x, y));
 
-	add_subwindow(new BC_Title(x, y, _("Index files"), LARGEFONT, BLACK));
+	y += 35;
+	add_subwindow(new BC_Bar(5, y, 	get_w() - 10));
+	y += 5;
+
+	add_subwindow(new BC_Title(x, y, _("Index files"), LARGEFONT, resources->text_default));
 
 
 	y += 35;
 	add_subwindow(new BC_Title(x, 
 		y + 5, 
-		_("Index files go here:"), MEDIUMFONT, BLACK));
+		_("Index files go here:"), MEDIUMFONT, resources->text_default));
 	add_subwindow(ipathtext = new IndexPathText(x + 230, 
 		y, 
 		pwindow, 
@@ -114,11 +122,11 @@ int InterfacePrefs::create_objects()
 		y + 5, 
 		_("Size of index file:"), 
 		MEDIUMFONT, 
-		BLACK));
+		resources->text_default));
 	sprintf(string, "%ld", pwindow->thread->preferences->index_size);
 	add_subwindow(isize = new IndexSize(x + 230, y, pwindow, string));
 	y += 30;
-	add_subwindow(new BC_Title(x, y + 5, _("Number of index files to keep:"), MEDIUMFONT, BLACK));
+	add_subwindow(new BC_Title(x, y + 5, _("Number of index files to keep:"), MEDIUMFONT, resources->text_default));
 	sprintf(string, "%ld", pwindow->thread->preferences->index_count);
 	add_subwindow(icount = new IndexCount(x + 230, y, pwindow, string));
 	add_subwindow(deleteall = new DeleteAllIndexes(mwindow, pwindow, 350, y));
@@ -128,8 +136,10 @@ int InterfacePrefs::create_objects()
 
 
 	y += 35;
+	add_subwindow(new BC_Bar(5, y, 	get_w() - 10));
+	y += 5;
 
-	add_subwindow(new BC_Title(x, y, _("Editing"), LARGEFONT, BLACK));
+	add_subwindow(new BC_Title(x, y, _("Editing"), LARGEFONT, resources->text_default));
 
 
 	y += 35;
@@ -185,6 +195,7 @@ int InterfacePrefs::create_objects()
 	x += 60;
 	add_subwindow(theme = new ViewTheme(x, y, pwindow));
 	theme->create_objects();
+
 	return 0;
 }
 
@@ -584,4 +595,22 @@ int ViewThumbnails::handle_event()
 	pwindow->thread->preferences->use_thumbnails = get_value();
 	return 1;
 }
+
+
+
+UseTipWindow::UseTipWindow(PreferencesWindow *pwindow, int x, int y)
+ : BC_CheckBox(x, 
+ 	y, 
+	pwindow->thread->preferences->use_tipwindow, 
+	"Show tip of the day")
+{
+	this->pwindow = pwindow;
+}
+int UseTipWindow::handle_event()
+{
+	pwindow->thread->preferences->use_tipwindow = get_value();
+	return 1;
+}
+
+
 

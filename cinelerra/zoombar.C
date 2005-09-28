@@ -1,3 +1,4 @@
+#include "clip.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "language.h"
@@ -37,20 +38,37 @@ ZoomBar::~ZoomBar()
 
 int ZoomBar::create_objects()
 {
-	int x = 3, y = 1;
+	int x = 3;
+	int y = get_h() / 2 - 
+		mwindow->theme->get_image_set("zoombar_menu", 0)[0]->get_h() / 2;
 
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h());
 	sample_zoom = new SampleZoomPanel(mwindow, this, x, y);
+	sample_zoom->set_menu_images(mwindow->theme->get_image_set("zoombar_menu", 0));
+	sample_zoom->set_tumbler_images(mwindow->theme->get_image_set("zoombar_tumbler", 0));
 	sample_zoom->create_objects();
 	x += sample_zoom->get_w();
 	amp_zoom = new AmpZoomPanel(mwindow, this, x, y);
+	amp_zoom->set_menu_images(mwindow->theme->get_image_set("zoombar_menu", 0));
+	amp_zoom->set_tumbler_images(mwindow->theme->get_image_set("zoombar_tumbler", 0));
 	amp_zoom->create_objects();
 	x += amp_zoom->get_w();
 	track_zoom = new TrackZoomPanel(mwindow, this, x, y);
+	track_zoom->set_menu_images(mwindow->theme->get_image_set("zoombar_menu", 0));
+	track_zoom->set_tumbler_images(mwindow->theme->get_image_set("zoombar_tumbler", 0));
 	track_zoom->create_objects();
-	x += track_zoom->get_w() + 5;
+	x += track_zoom->get_w() + 10;
 
-// FIXME
+#define DEFAULT_TEXT "000.00 - 000.00"
+	add_subwindow(auto_zoom_text = new BC_Title(
+		x, 
+		get_h() / 2 - BC_Title::calculate_h(this, "0") / 2, 
+		DEFAULT_TEXT));
+	x += auto_zoom_text->get_w() + 5;
+	add_subwindow(auto_zoom = new AutoZoom(mwindow, this, x, y));
+	update_autozoom();
+	x += auto_zoom->get_w() + 5;
+
 	add_subwindow(from_value = new FromTextBox(mwindow, this, x, y));
 	x += from_value->get_w() + 5;
 	add_subwindow(length_value = new LengthTextBox(mwindow, this, x, y));
@@ -84,12 +102,12 @@ void ZoomBar::resize_event()
 		mwindow->theme->mzoom_h);
 
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h());
-	int x = 3, y = 1;
-	sample_zoom->reposition_window(x, y);
-	x += sample_zoom->get_w();
-	amp_zoom->reposition_window(x, y);
-	x += amp_zoom->get_w();
-	track_zoom->reposition_window(x, y);
+// 	int x = 3, y = 1;
+// 	sample_zoom->reposition_window(x, y);
+// 	x += sample_zoom->get_w();
+// 	amp_zoom->reposition_window(x, y);
+// 	x += amp_zoom->get_w();
+// 	track_zoom->reposition_window(x, y);
 	flash();
 }
 
@@ -101,6 +119,7 @@ void ZoomBar::redraw_time_dependancies()
 	update_formatting(from_value);
 	update_formatting(length_value);
 	update_formatting(to_value);
+	update_autozoom();
 	update_clocks();
 }
 
@@ -110,23 +129,31 @@ int ZoomBar::draw()
 	return 0;
 }
 
+void ZoomBar::update_autozoom()
+{
+	char string[BCTEXTLEN];
+	sprintf(string, "%0.02f - %0.02f\n", 
+		mwindow->edl->local_session->automation_min, 
+		mwindow->edl->local_session->automation_max);
+	auto_zoom_text->update(string);
+}
+
 int ZoomBar::update()
 {
-//printf("ZoomBar::update 1 %f\n", mwindow->edl->local_session->selectionstart);
 	sample_zoom->update(mwindow->edl->local_session->zoom_sample);
 	amp_zoom->update(mwindow->edl->local_session->zoom_y);
 	track_zoom->update(mwindow->edl->local_session->zoom_track);
+	update_autozoom();
 	update_clocks();
 	return 0;
 }
 
 int ZoomBar::update_clocks()
 {
-//printf("ZoomBar::update_clocks 1 %f\n", mwindow->edl->local_session->selectionstart);
-	from_value->update_position(mwindow->edl->local_session->selectionstart);
-	length_value->update_position(mwindow->edl->local_session->selectionend - 
-		mwindow->edl->local_session->selectionstart);
-	to_value->update_position(mwindow->edl->local_session->selectionend);
+	from_value->update_position(mwindow->edl->local_session->get_selectionstart(1));
+	length_value->update_position(mwindow->edl->local_session->get_selectionend(1) - 
+		mwindow->edl->local_session->get_selectionstart(1));
+	to_value->update_position(mwindow->edl->local_session->get_selectionend(1));
 	return 0;
 }
 
@@ -162,15 +189,11 @@ int ZoomBar::resize_event(int w, int h)
 
 int ZoomBar::set_selection(int which_one)
 {
-	double start_position = mwindow->edl->local_session->selectionstart;
-	double end_position = mwindow->edl->local_session->selectionend;
+	double start_position = mwindow->edl->local_session->get_selectionstart(1);
+	double end_position = mwindow->edl->local_session->get_selectionend(1);
 	double length = end_position - start_position;
 
 // Fix bogus results
-// printf("ZoomBar::set_selection 1 %f %f %f\n", 
-// mwindow->edl->local_session->selectionstart, 
-// mwindow->edl->local_session->selectionend, 
-// length);
 
 	switch(which_one)
 	{
@@ -190,7 +213,8 @@ int ZoomBar::set_selection(int which_one)
 			if(end_position < start_position)
 			{
 				start_position = end_position;
-				mwindow->edl->local_session->selectionend = mwindow->edl->local_session->selectionstart;
+				mwindow->edl->local_session->set_selectionend(
+					mwindow->edl->local_session->get_selectionstart(1));
 			}
 			break;
 
@@ -209,7 +233,8 @@ int ZoomBar::set_selection(int which_one)
 			if(end_position < start_position)
 			{
 				end_position = start_position;
-				mwindow->edl->local_session->selectionend = mwindow->edl->local_session->selectionstart;
+				mwindow->edl->local_session->set_selectionend(
+					mwindow->edl->local_session->get_selectionstart(1));
 			}
 			break;
 
@@ -228,19 +253,17 @@ int ZoomBar::set_selection(int which_one)
 			if(end_position < start_position)
 			{
 				start_position = end_position;
-				mwindow->edl->local_session->selectionend = mwindow->edl->local_session->selectionstart;
+				mwindow->edl->local_session->set_selectionend(
+					mwindow->edl->local_session->get_selectionstart(1));
 			}
 			break;
 	}
 
-	mwindow->edl->local_session->selectionstart = 
-		mwindow->edl->align_to_frame(start_position, 1);
-	mwindow->edl->local_session->selectionend = 
-		mwindow->edl->align_to_frame(end_position, 1);
+	mwindow->edl->local_session->set_selectionstart(
+		mwindow->edl->align_to_frame(start_position, 1));
+	mwindow->edl->local_session->set_selectionend(
+		mwindow->edl->align_to_frame(end_position, 1));
 
-// printf("ZoomBar::set_selection 2 %f %f\n", 
-// mwindow->edl->local_session->selectionstart, 
-// mwindow->edl->local_session->selectionend);
 
 	mwindow->gui->timebar->update_highlights();
 	mwindow->gui->cursor->hide();
@@ -272,16 +295,13 @@ SampleZoomPanel::SampleZoomPanel(MWindow *mwindow,
 	mwindow->edl->local_session->zoom_sample, 
 	x, 
 	y, 
-	120, 
+	110, 
 	MIN_ZOOM_TIME, 
 	MAX_ZOOM_TIME, 
 	ZOOM_TIME)
 {
 	this->mwindow = mwindow;
 	this->zoombar = zoombar;
-}
-SampleZoomPanel::~SampleZoomPanel()
-{
 }
 int SampleZoomPanel::handle_event()
 {
@@ -305,16 +325,13 @@ AmpZoomPanel::AmpZoomPanel(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
 	mwindow->edl->local_session->zoom_y, 
 	x, 
 	y, 
-	90,
+	80,
 	MIN_AMP_ZOOM, 
 	MAX_AMP_ZOOM, 
 	ZOOM_LONG)
 {
 	this->mwindow = mwindow;
 	this->zoombar = zoombar;
-}
-AmpZoomPanel::~AmpZoomPanel()
-{
 }
 int AmpZoomPanel::handle_event()
 {
@@ -328,7 +345,7 @@ TrackZoomPanel::TrackZoomPanel(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
 	mwindow->edl->local_session->zoom_track, 
 	x, 
 	y, 
-	80,
+	70,
 	MIN_TRACK_ZOOM, 
 	MAX_TRACK_ZOOM, 
 	ZOOM_LONG)
@@ -336,15 +353,38 @@ TrackZoomPanel::TrackZoomPanel(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
 	this->mwindow = mwindow;
 	this->zoombar = zoombar;
 }
-TrackZoomPanel::~TrackZoomPanel()
-{
-}
 int TrackZoomPanel::handle_event()
 {
 	mwindow->zoom_track((int64_t)get_value());
 	zoombar->amp_zoom->update(mwindow->edl->local_session->zoom_y);
 	return 1;
 }
+
+
+
+
+AutoZoom::AutoZoom(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
+ : BC_Tumbler(x,
+ 	y,
+ 	mwindow->theme->get_image_set("zoombar_tumbler"))
+{
+	this->mwindow = mwindow;
+	this->zoombar = zoombar;
+}
+
+int AutoZoom::handle_up_event()
+{
+	mwindow->expand_autos();
+	return 1;
+}
+
+int AutoZoom::handle_down_event()
+{
+	mwindow->shrink_autos();
+	return 1;
+}
+
+
 
 
 

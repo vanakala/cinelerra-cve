@@ -4,10 +4,12 @@ noinst_PROGRAMS=bootstrap
 libguicast_la_LIBADD = -lXxf86vm -lXv -lXext -lX11 $(X_EXTRA_LIBS)
 libguicast_la_LDFLAGS = $(X_LIBS) -version-info 1:0:0 
 libguicast_la_SOURCES = \
+	bcbar.C \
 	bcbitmap.C \
 	bcbutton.C \
 	bccapture.C \
 	bcclipboard.C \
+	bcdelete.C \
 	bcdialog.C \
 	bcdisplayinfo.C \
 	bcdragwindow.C \
@@ -19,6 +21,7 @@ libguicast_la_SOURCES = \
 	bcmenuitem.C \
 	bcmenupopup.C \
 	bcmeter.C \
+	bcnewfolder.C \
 	bcpan.C \
 	bcpixmap.C \
 	bcpopup.C \
@@ -54,8 +57,20 @@ libguicast_la_SOURCES = \
 	thread.C \
 	units.C \
 												vframe.C workarounds.C bclistboxitem.C bctheme.C condition.C
-noinst_HEADERS = arraylist.h bcbitmap.h bcbitmap.inc bcbutton.h bcbutton.inc bccapture.h bccapture.inc bcclipboard.h \
+noinst_HEADERS = \
+	arraylist.h \
+	bcbar.h \
+	bcbar.inc \
+	bcbitmap.h \
+	bcbitmap.inc \
+	bcbutton.h \
+	bcbutton.inc \
+	bccapture.h \
+	bccapture.inc \
+	bcclipboard.h \
 	bcclipboard.inc \
+	bcdelete.h \
+	bcdelete.inc \
 	bcdialog.h \
 	bcdialog.inc \
 	bcdisplayinfo.h \
@@ -79,8 +94,16 @@ noinst_HEADERS = arraylist.h bcbitmap.h bcbitmap.inc bcbutton.h bcbutton.inc bcc
 	bcmenupopup.inc \
 	bcmeter.h \
 	bcmeter.inc \
+	bcnewfolder.h \
+	bcnewfolder.inc \
 								 bcpan.h bcpan.inc bcpixmap.h bcpixmap.inc bcpopup.h bcpopup.inc \
-								 bcpopupmenu.h bcpopupmenu.inc bcpopuplistbox.inc bcpot.h bcpot.inc bcprogressbox.h bcprogressbox.inc bcprogress.h \
+	bcpopupmenu.h \
+	bcpopupmenu.inc \
+	bcpot.h \
+	bcpot.inc \
+	bcprogressbox.h \
+	bcprogressbox.inc \
+	bcprogress.h \
 	bcprogress.inc \
 	bcrecentlist.h \
 	bcrepeater.h \

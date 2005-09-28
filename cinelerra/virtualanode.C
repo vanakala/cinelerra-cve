@@ -80,17 +80,15 @@ int VirtualANode::read_data(double *output_temp,
 {
 	VirtualNode *previous_plugin = 0;
 
-//printf("VirtualANode::read_data 1 %p\n", this);
 // This is a plugin on parent module with a preceeding effect.
 // Get data from preceeding effect on parent module.
-	if(parent_node && (previous_plugin = parent_node->get_previous_plugin(this)))
+	if(parent_node && 
+		(previous_plugin = parent_node->get_previous_plugin(this)))
 	{
-//printf("VirtualANode::read_data 2\n");
 		((VirtualANode*)previous_plugin)->render(output_temp,
 			start_position,
 			len,
 			sample_rate);
-//printf("VirtualANode::read_data 3\n");
 	}
 	else
 // First plugin on parent module.
@@ -105,16 +103,13 @@ int VirtualANode::read_data(double *output_temp,
 	else
 // This is the first node in the tree
 	{
-//printf("VirtualANode::read_data 8\n");
 		((AModule*)real_module)->render(output_temp,
 			start_position,
 			len,
 			renderengine->command->get_direction(),
 			sample_rate,
 			0);
-//printf("VirtualANode::read_data 9\n");
 	}
-//printf("VirtualANode::read_data 100 %p\n", this);
 	return 0;
 }
 
@@ -126,23 +121,19 @@ int VirtualANode::render(double *output_temp,
 	ARender *arender = ((VirtualAConsole*)vconsole)->arender;
 	if(real_module)
 	{
-//printf("VirtualANode::render 1\n");
 		render_as_module(arender->audio_out, 
 			output_temp,
 			start_position, 
 			len,
 			sample_rate);
-//printf("VirtualANode::render 2\n");
 	}
 	else
 	if(real_plugin)
 	{
-//printf("VirtualANode::render 3\n");
 		render_as_plugin(output_temp,
 			start_position,
 			len,
 			sample_rate);
-//printf("VirtualANode::render 4\n");
 	}
 	return 0;
 }
@@ -152,12 +143,10 @@ void VirtualANode::render_as_plugin(double *output_temp,
 	int64_t len,
 	int64_t sample_rate)
 {
-//printf("VirtualANode::render_as_plugin 1 %p\n", this);
 	if(!attachment ||
 		!real_plugin ||
 		!real_plugin->on) return;
 
-//printf("VirtualANode::render_as_plugin 2 %p\n", output_temp);
 // If we're the first plugin in the parent module, data needs to be read from 
 // what comes before the parent module.  Otherwise, data needs to come from the
 // previous plugin.
@@ -167,7 +156,6 @@ void VirtualANode::render_as_plugin(double *output_temp,
 		start_position,
 		len, 
 	  	sample_rate);
-//printf("VirtualANode::render_as_plugin 100 %p\n", this);
 }
 
 int VirtualANode::render_as_module(double **audio_out, 
@@ -205,7 +193,7 @@ int VirtualANode::render_as_module(double **audio_out,
 				len,
 				start_position,
 				sample_rate,
-				track->automation->fade_autos,
+				track->automation->autos[AUTOMATION_FADE],
 				direction,
 				0);
 
@@ -282,7 +270,7 @@ int VirtualANode::render_as_module(double **audio_out,
 		get_mute_fragment(start_position_project,
 				mute_constant, 
 				mute_fragment_project,
-				(Autos*)track->automation->mute_autos,
+				(Autos*)track->automation->autos[AUTOMATION_MUTE],
 				direction,
 				0);
 // Fragment is playable
@@ -301,7 +289,7 @@ int VirtualANode::render_as_module(double **audio_out,
 								mute_fragment,
 								start_position,
 								sample_rate,
-								(Autos*)track->automation->pan_autos,
+								(Autos*)track->automation->autos[AUTOMATION_PAN],
 								j,
 								direction,
 								0);
@@ -471,8 +459,12 @@ void VirtualANode::get_pan_automation(double &slope,
 
 	PanAuto *prev_keyframe = 0;
 	PanAuto *next_keyframe = 0;
-	prev_keyframe = (PanAuto*)autos->get_prev_auto(input_position, direction, (Auto*&)prev_keyframe);
-	next_keyframe = (PanAuto*)autos->get_next_auto(input_position, direction, (Auto*&)next_keyframe);
+	prev_keyframe = (PanAuto*)autos->get_prev_auto(input_position, 
+		direction, 
+		(Auto* &)prev_keyframe);
+	next_keyframe = (PanAuto*)autos->get_next_auto(input_position, 
+		direction, 
+		(Auto* &)next_keyframe);
 	
 	if(direction == PLAY_FORWARD)
 	{

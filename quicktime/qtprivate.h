@@ -5,8 +5,8 @@
 
 /* Version used internally.  You need to query it with the C functions */
 #define QUICKTIME_MAJOR 2
-#define QUICKTIME_MINOR 0
-#define QUICKTIME_RELEASE 4
+#define QUICKTIME_MINOR 1
+#define QUICKTIME_RELEASE 0
 
 
 #define HEADER_LENGTH 8
@@ -70,6 +70,12 @@ typedef struct
 
 
 
+
+
+
+
+
+
 typedef struct
 {
 /* for AVI it's the end of the 8 byte header in the file */
@@ -78,7 +84,7 @@ typedef struct
 	int64_t end;        /* byte endpoint in file */
 	int64_t size;       /* byte size for writing */
 	int use_64;         /* Use 64 bit header */
-	unsigned char type[4];
+	unsigned char type[5];
 } quicktime_atom_t;
 
 typedef struct
@@ -140,6 +146,18 @@ typedef struct
 
 typedef struct
 {
+	char *mpeg4_header;
+	int mpeg4_header_size;
+} quicktime_esds_t;
+
+typedef struct
+{
+	char *data;
+	int data_size;
+} quicktime_avcc_t;
+
+typedef struct
+{
 	char format[4];
 	char reserved[6];
 	int data_reference;
@@ -176,18 +194,18 @@ typedef struct
 	int compression_id;
 	int packet_size;
 	float sample_rate;
-	char *mpeg4_header;
-	int mpeg4_header_size;
 
 /* Version 1 of audio description */
 	int samples_per_packet;
 	int bytes_per_packet;
 	int bytes_per_frame;
 	int bytes_per_sample;
-	
+
+	quicktime_esds_t esds;
+	quicktime_avcc_t avcc;
+
 	int extradata_size;
 	char *extradata;
-	
 } quicktime_stsd_table_t;
 
 
@@ -212,6 +230,7 @@ typedef struct
 	int version;
 	long flags;
 	long total_entries;
+	int is_vbr;
 	quicktime_stts_table_t *table;
 } quicktime_stts_t;
 
@@ -219,7 +238,7 @@ typedef struct
 /* sync sample */
 typedef struct
 {
-	long sample;
+	int64_t sample;
 } quicktime_stss_table_t;
 
 typedef struct
@@ -460,6 +479,10 @@ typedef struct
 	int name_len;
 	char *info;
 	int info_len;
+	char *require;
+	int require_len;
+	char *encoder;
+	int encoder_len;
 } quicktime_udta_t;
 
 

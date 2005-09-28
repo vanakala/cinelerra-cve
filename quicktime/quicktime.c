@@ -486,7 +486,8 @@ int quicktime_set_video_position(quicktime_t *file, int64_t frame, int track)
 	if(track >= file->total_vtracks)
 	{
 		fprintf(stderr, 
-			"quicktime_set_video_position: track %d >= file->total_vtracks %d\n", 
+			"quicktime_set_video_position: frame=%lld track=%d >= file->total_vtracks %d\n", 
+			frame,
 			track,
 			file->total_vtracks);
 		track = file->total_vtracks - 1;
@@ -501,8 +502,6 @@ int quicktime_set_video_position(quicktime_t *file, int64_t frame, int track)
 		offset = quicktime_sample_to_offset(file, trak, frame);
 		quicktime_set_position(file, offset);
 	}
-	else
-		fprintf(stderr, "quicktime_set_video_position: track >= file->total_vtracks\n");
 	return 0;
 }
 
@@ -515,7 +514,10 @@ int quicktime_has_audio(quicktime_t *file)
 long quicktime_sample_rate(quicktime_t *file, int track)
 {
 	if(file->total_atracks)
-		return file->atracks[track].track->mdia.minf.stbl.stsd.table[0].sample_rate;
+	{
+		quicktime_trak_t *trak = file->atracks[track].track;
+		return trak->mdia.minf.stbl.stsd.table[0].sample_rate;
+	}
 	return 0;
 }
 
@@ -656,9 +658,28 @@ void quicktime_set_depth(quicktime_t *file, int depth, int track)
 double quicktime_frame_rate(quicktime_t *file, int track)
 {
 	if(file->total_vtracks > track)
-		return (float)file->vtracks[track].track->mdia.mdhd.time_scale / 
-			file->vtracks[track].track->mdia.minf.stbl.stts.table[0].sample_duration;
+	{
+		quicktime_trak_t *trak = file->vtracks[track].track;
+		int time_scale = file->vtracks[track].track->mdia.mdhd.time_scale;
+		int sample_duration = quicktime_sample_duration(trak);
+		return (double)time_scale / sample_duration;
+//		return (float)file->vtracks[track].track->mdia.mdhd.time_scale / 
+//			file->vtracks[track].track->mdia.minf.stbl.stts.table[0].sample_duration;
+	}
+	return 0;
+}
 
+int quicktime_frame_rate_n(quicktime_t *file, int track)
+{
+	if(file->total_vtracks > track)
+		return file->vtracks[track].track->mdia.mdhd.time_scale;
+	return 0;
+}
+
+int quicktime_frame_rate_d(quicktime_t *file, int track)
+{
+	if(file->total_vtracks > track)
+		return file->vtracks[track].track->mdia.minf.stbl.stts.table[0].sample_duration;
 	return 0;
 }
 
@@ -819,7 +840,7 @@ long quicktime_read_frame(quicktime_t *file, unsigned char *video_buffer, int tr
 	return bytes;
 }
 
-long quicktime_get_keyframe_before(quicktime_t *file, long frame, int track)
+int64_t quicktime_get_keyframe_before(quicktime_t *file, int64_t frame, int track)
 {
 	quicktime_trak_t *trak = file->vtracks[track].track;
 	quicktime_stss_t *stss = &trak->mdia.minf.stbl.stss;
@@ -841,7 +862,7 @@ long quicktime_get_keyframe_before(quicktime_t *file, long frame, int track)
 	return 0;
 }
 
-long quicktime_get_keyframe_after(quicktime_t *file, long frame, int track)
+int64_t quicktime_get_keyframe_after(quicktime_t *file, int64_t frame, int track)
 {
 	quicktime_trak_t *trak = file->vtracks[track].track;
 	quicktime_stss_t *stss = &trak->mdia.minf.stbl.stss;
@@ -863,7 +884,7 @@ long quicktime_get_keyframe_after(quicktime_t *file, long frame, int track)
 	return 0;
 }
 
-void quicktime_insert_keyframe(quicktime_t *file, long frame, int track)
+void quicktime_insert_keyframe(quicktime_t *file, int64_t frame, int track)
 {
 	quicktime_trak_t *trak = file->vtracks[track].track;
 	quicktime_stss_t *stss = &trak->mdia.minf.stbl.stss;

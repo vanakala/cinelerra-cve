@@ -1,6 +1,10 @@
+#include "bcsignals.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "language.h"
+#include "localsession.h"
+#include "mainundo.h"
+#include "mwindow.h"
 #include "pluginclient.h"
 #include "pluginserver.h"
 #include "preferences.h"
@@ -42,15 +46,23 @@ int PluginClient::plugin_init_realtime(int realtime_priority,
 	int total_in_buffers,
 	int buffer_size)
 {
+SET_TRACE
 // Get parameters for all
 	master_gui_on = get_gui_status();
 
+SET_TRACE
+
 // get parameters depending on video or audio
 	init_realtime_parameters();
+SET_TRACE
 	smp = server->preferences->processors - 1;
+SET_TRACE
 	this->realtime_priority = realtime_priority;
+SET_TRACE
 	this->total_in_buffers = this->total_out_buffers = total_in_buffers;
+SET_TRACE
 	this->out_buffer_size = this->in_buffer_size = buffer_size;
+SET_TRACE
 	return 0;
 }
 
@@ -213,23 +225,39 @@ int PluginClient::get_interpolation_type()
 }
 
 
-// int PluginClient::automation_used()    // If automation is used
-// {
-// 	return 0;
-// }
-// 
-// float PluginClient::get_automation_value(int64_t position)     // Get the automation value for the position in the current fragment
-// {
-// 	int i;
-// 	for(i = automation.total - 1; i >= 0; i--)
-// 	{
-// 		if(automation.values[i].position <= position)
-// 		{
-// 			return automation.values[i].intercept + automation.values[i].slope * (position - automation.values[i].position);
-// 		}
-// 	}
-// 	return 0;
-// }
+float PluginClient::get_red()
+{
+	if(server->mwindow)
+		return server->mwindow->edl->local_session->red;
+	else
+	if(server->edl)
+		return server->edl->local_session->red;
+	else
+		return 0;
+}
+
+float PluginClient::get_green()
+{
+	if(server->mwindow)
+		return server->mwindow->edl->local_session->green;
+	else
+	if(server->edl)
+		return server->edl->local_session->green;
+	else
+		return 0;
+}
+
+float PluginClient::get_blue()
+{
+	if(server->mwindow)
+		return server->mwindow->edl->local_session->blue;
+	else
+	if(server->edl)
+		return server->edl->local_session->blue;
+	else
+		return 0;
+}
+
 
 
 int64_t PluginClient::get_source_position()
@@ -295,7 +323,9 @@ int PluginClient::send_configure_change()
 {
 	KeyFrame* keyframe = server->get_keyframe();
 	save_data(keyframe);
-	server->sync_parameters(get_gui_string());
+	if(server->mwindow)
+		server->mwindow->undo->update_undo("tweek", LOAD_AUTOMATION, this);
+	server->sync_parameters();
 	return 0;
 }
 

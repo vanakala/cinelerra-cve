@@ -95,17 +95,19 @@ int KeepaliveThread::stop()
 
 
 
-VideoDevice::VideoDevice()
+VideoDevice::VideoDevice(MWindow *mwindow)
 {
+	this->mwindow = mwindow;
 	in_config = new VideoInConfig;
 	out_config = new VideoOutConfig;
 	channel = new Channel;
-	picture = new Picture;
+	picture = new PictureConfig(mwindow);
 	sharing_lock = new Mutex("VideoDevice::sharing_lock");
 	channel_lock = new Mutex("VideoDevice::channel_lock");
 	picture_lock = new Mutex("VideoDevice::picture_lock");
 	initialize();
 }
+
 
 VideoDevice::~VideoDevice()
 {
@@ -198,6 +200,7 @@ int VideoDevice::open_input(VideoInConfig *config,
 			break;
 #ifdef HAVE_FIREWIRE
 		case CAPTURE_FIREWIRE:
+		case CAPTURE_IEC61883:
 			input_base = new VDevice1394(this);
 			result = input_base->open_input();
 			break;
@@ -214,7 +217,8 @@ int VideoDevice::is_compressed(int driver, int use_file, int use_fixed)
 	return ((driver == CAPTURE_BUZ && use_fixed) ||
 		(driver == VIDEO4LINUX2JPEG && use_fixed) || 
 		driver == CAPTURE_LML || 
-		driver == CAPTURE_FIREWIRE);
+		driver == CAPTURE_FIREWIRE ||
+		driver == CAPTURE_IEC61883);
 }
 
 int VideoDevice::is_compressed(int use_file, int use_fixed)
@@ -234,7 +238,8 @@ char* VideoDevice::get_vcodec(int driver)
 			break;
 		
 		case CAPTURE_FIREWIRE:
-			return QUICKTIME_DV;
+		case CAPTURE_IEC61883:
+			return QUICKTIME_DVSD;
 			break;
 	}
 	return "";
@@ -271,6 +276,9 @@ char* VideoDevice::drivertostr(int driver)
 			break;
 		case CAPTURE_FIREWIRE:
 			return CAPTURE_FIREWIRE_TITLE;
+			break;
+		case CAPTURE_IEC61883:
+			return CAPTURE_IEC61883_TITLE;
 			break;
 	}
 	return "";
@@ -403,7 +411,7 @@ void VideoDevice::set_cpus(int cpus)
 	this->cpus = cpus;
 }
 
-int VideoDevice::set_picture(Picture *picture)
+int VideoDevice::set_picture(PictureConfig *picture)
 {
 	if(picture)
 	{
@@ -479,6 +487,13 @@ int VideoDevice::set_latency_counter(int value)
 	return 0;
 }
 
+int VideoDevice::has_signal()
+{
+	if(input_base) return input_base->has_signal();
+	return 0;
+}
+
+
 int VideoDevice::read_buffer(VFrame *frame)
 {
 	int result = 0;
@@ -534,6 +549,7 @@ int VideoDevice::open_output(VideoOutConfig *config,
 
 		case PLAYBACK_DV1394:
 		case PLAYBACK_FIREWIRE:
+		case PLAYBACK_IEC61883:
 			output_base = new VDevice1394(this);
 			break;
 	}

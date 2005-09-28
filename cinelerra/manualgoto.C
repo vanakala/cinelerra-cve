@@ -43,13 +43,13 @@ void ManualGoto::open_window()
 	   (masterwindow == (BC_WindowBase *)mwindow->gui->mbuttons))
 	{
 	
-		position = mwindow->edl->local_session->selectionstart;
+		position = mwindow->edl->local_session->get_selectionstart(1);
 		position += mwindow->edl->session->get_frame_offset() / 
 						 mwindow->edl->session->frame_rate;;
 	}
 	else
 		if (mwindow->vwindow->get_edl())
-			position = mwindow->vwindow->get_edl()->local_session->selectionstart;
+			position = mwindow->vwindow->get_edl()->local_session->get_selectionstart(1);
 		else
 			return;
 	if (!gotowindow)
@@ -82,7 +82,7 @@ void ManualGoto::run()
 			{
 				// mwindow/cwindow update
 				
-				double current_position = mwindow->edl->local_session->selectionstart;
+				double current_position = mwindow->edl->local_session->get_selectionstart(1);
 				switch (modifier)
 				{
 					case '+': 
@@ -100,8 +100,8 @@ void ManualGoto::run()
 					new_position = 0;
 				if (current_position != new_position)
 				{
-					mwindow->edl->local_session->selectionstart = new_position;
-					mwindow->edl->local_session->selectionend = new_position;
+					mwindow->edl->local_session->set_selectionstart(new_position);
+					mwindow->edl->local_session->set_selectionend(new_position);
 					mwindow->gui->lock_window();
 					mwindow->find_cursor();
 					mwindow->gui->update(1, 1, 1, 1, 1, 1, 0);	
@@ -114,7 +114,7 @@ void ManualGoto::run()
 			{
 				// vwindow update
 				VWindow *vwindow = mwindow->vwindow;
-				double current_position = vwindow->get_edl()->local_session->selectionstart;
+				double current_position = vwindow->get_edl()->local_session->get_selectionstart(1);
 				switch (modifier)
 				{
 					case '+': 
@@ -133,8 +133,8 @@ void ManualGoto::run()
 				new_position = vwindow->get_edl()->align_to_frame(new_position, 1);
 				if (current_position != new_position)
 				{
-					vwindow->get_edl()->local_session->selectionstart = new_position;
-					vwindow->get_edl()->local_session->selectionend = new_position;
+					vwindow->get_edl()->local_session->set_selectionstart(new_position);
+					vwindow->get_edl()->local_session->set_selectionend(new_position);
 					vwindow->gui->lock_window();
 					vwindow->update_position(CHANGE_NONE, 0, 1);			
 					vwindow->gui->unlock_window();

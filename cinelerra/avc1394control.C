@@ -162,13 +162,10 @@ void AVC1394Control::get_status()
 
 char *AVC1394Control::timecode()
 {
-//printf("AVC1394Control::timecode(): 1\n");
-	char *text;
-	text = (char *) malloc(12);
 	device_lock->lock("AVC1394Control::timecode");
-	text = avc1394_vcr_get_timecode(handle, device);
+	avc1394_vcr_get_timecode2(handle, device, text_return);
 	device_lock->unlock();
-	return text;
+	return text_return;
 }
 
 void AVC1394Control::seek(char *time)

@@ -38,8 +38,6 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    awindowmenu.C \
 		    batch.C \
 		    batchrender.C \
-		    bezierauto.C \
-		    bezierautos.C \
 		    bitspopup.C \
 		    brender.C \
 		    browsebutton.C \
@@ -65,6 +63,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    cwindowgui.C \
 		    cwindowtool.C \
 		    dcoffset.C \
+		    dcraw.c \
 		    deleteallindexes.C \
 		    device1394input.C \
 		    device1394output.C \
@@ -85,6 +84,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    filebaseima4.C \
 		    filebaseulaw.C \
 		    file.C \
+		    filecr2.C \
 		    filedv.C \
 		    fileogg.C \
 		    fileexr.C \
@@ -108,6 +108,10 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    formatpresets.C \
 		    formattools.C \
 		    framecache.C \
+		    gwindow.C \
+		    gwindowgui.C \
+		    iec61883input.C \
+		    iec61883output.C \
 		    indexfile.C \
 		    indexthread.C \
 		    intauto.C \
@@ -220,6 +224,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    threadloader.C \
 		    timebar.C \
 		    timeentry.C \
+		    tipwindow.C \
 		    track.C \
 		    trackcanvas.C \
 		    tracking.C \
@@ -269,13 +274,10 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    zoompanel.C
 
 # set the include path found by configure
-# note that a private, modified copy of libsndfile is used,
-# and that its sndfile.h is a built file that is found in $(builddir)!
 INCLUDES = \
 	-I$(top_srcdir)/quicktime \
 	-I$(top_srcdir)/guicast \
-	-I$(top_srcdir)/libmpeg3 \
-	-I$(top_builddir)/libsndfile/src 
+	-I$(top_srcdir)/libmpeg3
 
 AM_CXXFLAGS = \
 	$(LARGEFILE_CFLAGS) \
@@ -324,8 +326,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 awindowmenu.h \
 		 batch.h \
 		 batchrender.h \
-		 bezierauto.h \
-		 bezierautos.h \
 		 binary.h \
 		 bitspopup.h \
 		 brender.h \
@@ -380,6 +380,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 filebase.h \
 		 fileformat.h \
 		 file.h \
+		 filecr2.h \
 	    filedv.h \
 	    fileogg.h \
 		 fileexr.h \
@@ -403,7 +404,11 @@ noinst_HEADERS = aattachmentpoint.h \
 		 formattools.h \
 		 formatwindow.h \
 		 framecache.h \
+		 gwindow.h \
+		 gwindowgui.h \
 		 headers.h \
+		 iec61883input.h \
+		 iec61883output.h \
 		 ieee1394-ioctl.h \
 		 indexfile.h \
 		 indexthread.h \
@@ -526,7 +531,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 timebar.h \
 		 timebomb.h \
 		 timeentry.h \
-		 toggleautos.h \
+		 tipwindow.h \
 		 trackcanvas.h \
 		 track.h \
 		 tracking.h \
@@ -592,13 +597,13 @@ cinelerra_LDADD = \
 	$(top_builddir)/quicktime/libquicktimehv.la \
 	$(top_builddir)/guicast/libguicast.la \
 	$(top_builddir)/libmpeg3/libmpeg3hv.la \
-	$(top_builddir)/libsndfile/src/libsndfilehv.la \
 	$(XIPH_LIBS) \
 	$(A52DEC_LIBS) \
 	$(OPENEXR_LIBS) \
+	-lsndfile \
 	-lpng -ljpeg -ltiff -lz \
 	$(SOUND_LDFLAGS) \
-	$(FIREWIRE_LDFLAGS) -ldv \
+	$(FIREWIRE_LDFLAGS) -liec61883 -ldv \
 	-luuid $(AVIFILE_LDFLAGS) \
 	$(MJPEG_LIBS)
 

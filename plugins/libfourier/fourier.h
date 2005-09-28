@@ -59,7 +59,7 @@ public:
 	int fix_window_size();
 	int delete_fft();
 	// functioy to be called to initialize oversampling
-	void ready_oversample(int oversample); // 2, 4,8 are good values
+	void set_oversample(int oversample); // 2, 4,8 are good values
 	
 
 

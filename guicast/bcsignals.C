@@ -1,4 +1,5 @@
 #include "bcsignals.h"
+#include "bcwindowbase.inc"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -170,6 +171,13 @@ static void signal_entry(int signum)
 	exit(0);
 }
 
+static void signal_entry_recoverable(int signum)
+{
+	printf("signal_entry_recoverable: got %s my pid=%d\n", 
+		signal_titles[signum],
+		getpid());
+}
+
 BC_Signals::BC_Signals()
 {
 }
@@ -266,12 +274,14 @@ void BC_Signals::initialize2()
 	// signal(SIGKILL, signal_entry);
 	signal(SIGSEGV, signal_entry);
 	signal(SIGTERM, signal_entry);
-	signal(SIGFPE, signal_entry);
+	signal(SIGFPE, signal_entry_recoverable);
+	signal(SIGPIPE, signal_entry_recoverable);
 }
 
 
 void BC_Signals::signal_handler(int signum)
 {
+printf("BC_Signals::signal_handler\n");
 //	exit(0);
 }
 
@@ -287,9 +297,16 @@ void BC_Signals::new_trace(char *text)
 	if(!global_signals) return;
 	pthread_mutex_lock(lock);
 	if(execution_table.size >= TOTAL_TRACES)
-		clear_table(&execution_table, 0);
-	append_table(&execution_table, text);
+		clear_table(&execution_table, 1);
+	append_table(&execution_table, strdup(text));
 	pthread_mutex_unlock(lock);
+}
+
+void BC_Signals::new_trace(const char *file, const char *function, int line)
+{
+	char string[BCTEXTLEN];
+	snprintf(string, BCTEXTLEN, "%s: %s: %d", file, function, line);
+	new_trace(string);
 }
 
 void BC_Signals::delete_traces()

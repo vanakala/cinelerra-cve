@@ -75,6 +75,7 @@ public:
 	int get_text_row();
 	int reposition_window(int x, int y, int w = -1, int rows = -1);
 	int uses_text();
+	static int calculate_h(BC_WindowBase *gui, int font, int has_border, int rows);
 	static int calculate_row_h(int rows, BC_WindowBase *parent_window, int has_border = 1, int font = MEDIUMFONT);
 	static int pixels_to_rows(BC_WindowBase *window, int font, int pixels);
 	void set_precision(int precision);

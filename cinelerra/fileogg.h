@@ -140,8 +140,9 @@ private:
 	int move_history(int from, int to, int len);
 
 	float **pcm_history;
-//#define HISTORY_MAX 0x100000
-#define HISTORY_MAX 100000
+#ifndef HISTORY_MAX
+#define HISTORY_MAX 0x100000
+#endif
 	int64_t history_start;
 	int64_t history_size;
 

@@ -66,10 +66,10 @@ public:
 
 // Pointer to asset for accounting
 	Asset *asset;
-	
 // When not using the VWindow EDL of the master EDL.
-        int edl_shared;
-        
+	int edl_shared;
+// Pointer to clip in master EDL.
+//	EDL *edl;
 };
 
 

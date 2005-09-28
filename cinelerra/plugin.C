@@ -287,7 +287,7 @@ KeyFrame* Plugin::get_prev_keyframe(int64_t position,
 // playback at the same rate as PluginClient::source_position.
 	if(position < 0)
 	{
-		position = track->to_units(edl->local_session->selectionstart, 0);
+		position = track->to_units(edl->local_session->get_selectionstart(1), 0);
 	}
 
 // Get keyframe on or before current position
@@ -325,7 +325,7 @@ KeyFrame* Plugin::get_next_keyframe(int64_t position,
 	if(position < 0)
 	{
 //printf("Plugin::get_next_keyframe position < 0\n");
-		position = track->to_units(edl->local_session->selectionstart, 0);
+		position = track->to_units(edl->local_session->get_selectionstart(1), 0);
 	}
 
 // Get keyframe after current position
@@ -357,7 +357,7 @@ KeyFrame* Plugin::get_keyframe()
 {
 // Search for keyframe on or before selection
 	KeyFrame *result = 
-		get_prev_keyframe(track->to_units(edl->local_session->selectionstart, 0), 
+		get_prev_keyframe(track->to_units(edl->local_session->get_selectionstart(1), 0), 
 			PLAY_FORWARD);
 
 // Return nearest keyframe if not in automatic keyframe generation
@@ -368,9 +368,9 @@ KeyFrame* Plugin::get_keyframe()
 	else
 // Return new keyframe
 	if(result == (KeyFrame*)keyframes->default_auto || 
-		result->position != track->to_units(edl->local_session->selectionstart, 0))
+		result->position != track->to_units(edl->local_session->get_selectionstart(1), 0))
 	{
-		return (KeyFrame*)keyframes->insert_auto(track->to_units(edl->local_session->selectionstart, 0));
+		return (KeyFrame*)keyframes->insert_auto(track->to_units(edl->local_session->get_selectionstart(1), 0));
 	}
 	else
 // Return existing keyframe

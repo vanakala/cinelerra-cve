@@ -13,7 +13,7 @@
 #include "thread.h"
 #include "vframe.inc"
 
-// Common 1394 output for audio and video
+// Common 1394 input for audio and video
 
 // Extracts video and audio from the single DV stream
 class Device1394Input : public Thread
@@ -22,7 +22,7 @@ public:
 	Device1394Input();
 	~Device1394Input();
 
-	int Device1394Input::open(int port,
+	int open(int port,
 		int channel,
 		int length,
 		int channels,
@@ -33,13 +33,6 @@ public:
 	void run();
 	void increment_counter(int *counter);
 	void decrement_counter(int *counter);
-
-	static int dv_iso_handler(raw1394handle_t handle, 
-		int channel, 
-		size_t length,
-		quadlet_t *data);
-	static bus_reset_handler_t dv_reset_handler(raw1394handle_t handle, 
-		unsigned int generation);
 
 // Read a video frame with timed blocking
 

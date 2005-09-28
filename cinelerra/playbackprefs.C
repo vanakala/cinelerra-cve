@@ -10,6 +10,7 @@
 #include "overlayframe.inc"
 #include "playbackprefs.h"
 #include "preferences.h"
+#include "theme.h"
 #include "vdeviceprefs.h"
 #include "videodevice.inc"
 
@@ -18,47 +19,39 @@
 PlaybackPrefs::PlaybackPrefs(MWindow *mwindow, PreferencesWindow *pwindow)
  : PreferencesDialog(mwindow, pwindow)
 {
-//	head_text = 0;
-//	head_count_text = 0;
-//	host_text = 0;
 	video_device = 0;
 }
 
 PlaybackPrefs::~PlaybackPrefs()
 {
-//	delete_strategy();
-//	mwindow->defaults->update("PLAYBACK_HEAD", current_head);
 	delete audio_device;
 	delete video_device;
 }
 
 int PlaybackPrefs::create_objects()
 {
-	int x = 5, y = 5, x2;
+	int x, y, x2;
 	char string[BCTEXTLEN];
 	BC_PopupTextBox *popup;
+	BC_Resources *resources = BC_WindowBase::get_resources();
 
 	playback_config = pwindow->thread->edl->session->playback_config;
-// 	current_head = mwindow->defaults->get("PLAYBACK_HEAD", 0);
-// 	strategies.append(new BC_ListBoxItem(_("Local Host")));
-// 	strategies.append(new BC_ListBoxItem(_("Multihead")));
-// 	strategies.append(new BC_ListBoxItem(_("Blond Symphony")));
 
-// Global playback options
-
-// All strategies use these
-	add_subwindow(new BC_Title(x, y, _("Audio Out"), LARGEFONT, BLACK));
-	y += 30;
+// Audio
+	add_subwindow(new BC_Title(mwindow->theme->preferencestitle_x, 
+		mwindow->theme->preferencestitle_y, 
+		_("Audio Out"), 
+		LARGEFONT, 
+		resources->text_default));
+	x = mwindow->theme->preferencesoptions_x;
+	y = mwindow->theme->preferencesoptions_y;
 
 
 
 	BC_Title *title1, *title2;
-//	add_subwindow(title1 = new BC_Title(x, y, _("Samples to read from disk at a time:"), MEDIUMFONT, BLACK));
-	add_subwindow(title2 = new BC_Title(x, y, _("Samples to send to console at a time:"), MEDIUMFONT, BLACK));
+	add_subwindow(title2 = new BC_Title(x, y, _("Samples to send to console at a time:"), MEDIUMFONT, resources->text_default));
 	x2 = MAX(title2->get_w(), title2->get_w()) + 10;
 
-// 	sprintf(string, "%d", pwindow->thread->edl->session->audio_read_length);
-// 	add_subwindow(new PlaybackReadLength(x2, y, pwindow, this, string));
 	sprintf(string, "%d", playback_config->aconfig->fragment_size);
 	PlaybackModuleFragment *menu;
 	add_subwindow(menu = new PlaybackModuleFragment(x2, 
@@ -75,7 +68,17 @@ int PlaybackPrefs::create_objects()
 	menu->add_item(new BC_MenuItem("131072"));
 	menu->add_item(new BC_MenuItem("262144"));
 
-	y += 30;
+	y += menu->get_h() + 5;
+	x2 = x;
+	add_subwindow(title1 = new BC_Title(x2, y, _("Audio offset (sec):")));
+	x2 += title1->get_w() + 5;
+	PlaybackAudioOffset *audio_offset = new PlaybackAudioOffset(pwindow,
+		this,
+		x2,
+		y);
+	audio_offset->create_objects();
+	y += audio_offset->get_h() + 5;
+
 	add_subwindow(new PlaybackViewFollows(pwindow, pwindow->thread->edl->session->view_follows_playback, y));
 	y += 30;
 	add_subwindow(new PlaybackSoftwareTimer(pwindow, pwindow->thread->edl->session->playback_software_position, y));
@@ -92,14 +95,16 @@ int PlaybackPrefs::create_objects()
 		MODEPLAY);
 	audio_device->initialize();
 
-// Strategic playback options created here
-//	set_strategy(pwindow->thread->edl->session->playback_strategy);
-// 
-// 	add_subwindow(new BC_Title(x, y, _("Playback driver:"), MEDIUMFONT, BLACK));
-// 	add_subwindow(new AudioDriverMenu(x, y + 20, out_device, &(pwindow->thread->preferences->aconfig->audio_out_driver), 0, 1));
- 	y += 60;
 
-	add_subwindow(new BC_Title(x, y, _("Video Out"), LARGEFONT, BLACK));
+
+
+// Video
+ 	y += audio_device->get_h();
+
+	add_subwindow(new BC_Bar(5, y, 	get_w() - 10));
+	y += 5;
+
+	add_subwindow(new BC_Title(x, y, _("Video Out"), LARGEFONT, resources->text_default));
 	y += 30;
 
 	add_subwindow(new VideoEveryFrame(pwindow, x, y));
@@ -130,7 +135,7 @@ int PlaybackPrefs::create_objects()
 		y));
 
 	y += 35;
-	add_subwindow(new BC_Title(x, y, _("Preload buffer for Quicktime:"), MEDIUMFONT, BLACK));
+	add_subwindow(new BC_Title(x, y, _("Preload buffer for Quicktime:"), MEDIUMFONT, resources->text_default));
 	sprintf(string, "%d", pwindow->thread->edl->session->playback_preload);
 	add_subwindow(new PlaybackPreload(x + 210, y, pwindow, this, string));
 
@@ -169,121 +174,6 @@ int PlaybackPrefs::create_objects()
 	return 0;
 }
 
-// char* PlaybackPrefs::strategy_to_string(int strategy)
-// {
-// 	switch(strategy)
-// 	{
-// 		case PLAYBACK_LOCALHOST:
-// 			return _("Local Host");
-// 			break;
-// 		case PLAYBACK_MULTIHEAD:
-// 			return _("Multihead");
-// 			break;
-// 		case PLAYBACK_BLONDSYMPHONY:
-// 			return _("Blond Symphony");
-// 			break;
-// 	}
-// 	return _("Local Host");
-// }
-// 
-// // Delete strategy dependant objects
-// void PlaybackPrefs::delete_strategy()
-// {
-// 	if(head_text) 
-// 	{
-// 		delete head_text;
-// 		delete head_title;
-// 		head_text = 0;
-// 	}
-// 	if(host_text)
-// 	{
-// 		delete host_title;
-// 		delete host_text;
-// 		host_text = 0;
-// 	}
-// 	if(head_count_text)
-// 	{
-// 		delete head_count_title;
-// 		delete head_count_text;
-// 		head_count_text = 0;
-// 	}
-// 	if(video_device)
-// 	{
-// 		delete vdevice_title;
-// 		delete video_device;
-// 		video_device = 0;
-// 	}
-// }
-// 
-// int PlaybackPrefs::set_strategy(int strategy)
-// {
-// 	int x = 350, x1 = 450, y = 10;
-// 	delete_strategy();
-// 
-// 	pwindow->thread->edl->session->playback_strategy = strategy;
-// 	switch(strategy)
-// 	{
-// 		case PLAYBACK_LOCALHOST:
-// 			break;
-// 		case PLAYBACK_MULTIHEAD:
-// 			add_subwindow(head_title = new BC_Title(x, y, _("Head:")));
-// 			head_text = new PlaybackHead(this, x1, y);
-// 			head_text->create_objects();
-// 			y += 25;
-// 			add_subwindow(head_count_title = new BC_Title(x, y, _("Total Heads:")));
-// 			head_count_text = new PlaybackHeadCount(this, x1, y);
-// 			head_count_text->create_objects();
-// 			x = 10;
-// 			y = 390;
-// 			add_subwindow(vdevice_title = new BC_Title(x, y, _("Video Driver:")));
-// 			video_device = new VDevicePrefs(x + 100, 
-// 				y, 
-// 				pwindow, 
-// 				this, 
-// 				playback_config->vconfig, 
-// 				0,
-// 				MODEPLAY);
-// 			video_device->initialize();
-// 			break;
-// 		case PLAYBACK_BLONDSYMPHONY:
-// 			add_subwindow(head_title = new BC_Title(x, y, _("Head:")));
-// 			head_text = new PlaybackHead(this, x1, y);
-// 			head_text->create_objects();
-// 			y += 25;
-// 			add_subwindow(head_count_title = new BC_Title(x, y, _("Total Heads:")));
-// 			head_count_text = new PlaybackHeadCount(this, x1, y);
-// 			head_count_text->create_objects();
-// 			y += 25;
-// 			add_subwindow(host_title = new BC_Title(x, y, _("Hostname:")));
-// 			add_subwindow(host_text = new PlaybackHost(this, x1, y));
-// 			x = 10;
-// 			y = 390;
-// 			add_subwindow(vdevice_title = new BC_Title(x, y, _("Video Driver:")));
-// 			video_device = new VDevicePrefs(x + 100, 
-// 				y, 
-// 				pwindow, 
-// 				this, 
-// 				playback_config->vconfig,
-// 				0,
-// 				MODEPLAY);
-// 			video_device->initialize();
-// 			break;
-// 	}
-// 	
-// 	return 1;
-// }
-
-// ArrayList<PlaybackConfig*>* PlaybackPrefs::current_config_list()
-// {
-// 	return pwindow->thread->edl->session->get_playback_config(
-// 		pwindow->thread->edl->session->playback_strategy);
-// }
-// 
-// PlaybackConfig* PlaybackPrefs::current_config()
-// {
-// 	return current_config_list()->values[current_head];
-// }
-
 
 void PlaybackPrefs::update(int interpolation)
 {
@@ -311,141 +201,30 @@ int PlaybackPrefs::draw_framerate()
 
 
 
+PlaybackAudioOffset::PlaybackAudioOffset(PreferencesWindow *pwindow, 
+	PlaybackPrefs *playback, 
+	int x, 
+	int y)
+ : BC_TumbleTextBox(playback,
+ 	playback->playback_config->aconfig->audio_offset,
+	-10.0,
+	10.0,
+	x,
+	y,
+	100)
+{
+	this->pwindow = pwindow;
+	this->playback = playback;
+	set_precision(2);
+	set_increment(0.1);
+}
 
+int PlaybackAudioOffset::handle_event()
+{
+	playback->playback_config->aconfig->audio_offset = atof(get_text());
+	return 1;
+}
 
-// PlaybackStrategy::PlaybackStrategy(PlaybackPrefs *prefs, 
-// 	int x, 
-// 	int y)
-//  : BC_PopupTextBox(prefs, 
-// 		&prefs->strategies,
-// 		prefs->strategy_to_string(prefs->pwindow->thread->edl->session->playback_strategy),
-// 		x, 
-// 		y, 
-// 		200,
-// 		100)
-// {
-// 	this->prefs = prefs;
-// }
-// 
-// int PlaybackStrategy::handle_event()
-// {
-// 	prefs->set_strategy(get_number());
-// 	return 1;
-// }
-// 
-// 
-// 
-// 
-// 
-// PlaybackHead::PlaybackHead(PlaybackPrefs *prefs, 
-// 	int x, 
-// 	int y)
-//  : BC_TumbleTextBox(prefs, 
-// 		prefs->current_head,
-// 		(int64_t)0, 
-// 		(int64_t)prefs->current_config_list()->total - 1, 
-// 		x,
-// 		y,
-// 		100)
-// {
-// 	this->prefs = prefs;
-// }
-// 
-// int PlaybackHead::handle_event()
-// {
-// 	return 1;
-// }
-// 
-// PlaybackHeadCount::PlaybackHeadCount(PlaybackPrefs *prefs, 
-// 	int x, 
-// 	int y)
-//  : BC_TumbleTextBox(prefs, 
-// 		prefs->current_config_list()->total, 
-// 		1, 
-// 		MAX_CHANNELS,
-// 		x,
-// 		y,
-// 		100)
-// {
-// 	this->prefs = prefs;
-// }
-// 
-// int PlaybackHeadCount::handle_event()
-// {
-// 	return 1;
-// }
-// 
-// 
-// 
-// PlaybackHost::PlaybackHost(PlaybackPrefs *prefs, int x, int y)
-//  : BC_TextBox(x, y, 100, 1, prefs->current_config()->hostname)
-// {
-// 	this->prefs = prefs; 
-// }
-// 
-// int PlaybackHost::handle_event() 
-// {
-// 	strcpy(prefs->current_config()->hostname, get_text()); 
-// 	return 1;
-// }
-
-
-
-
-// PlaybackReadLength::PlaybackReadLength(int x, int y, PreferencesWindow *pwindow, PlaybackPrefs *playback, char *text)
-//  : BC_TextBox(x, y, 100, 1, text)
-// { 
-// 	this->pwindow = pwindow; 
-// 	this->playback = playback; 
-// }
-// 
-// int PlaybackReadLength::handle_event() 
-// { 
-// 	pwindow->thread->edl->session->audio_read_length = atol(get_text()); 
-// 	return 1;
-// }
-//
-// PlaybackBufferSize::PlaybackBufferSize(int x, int y, PreferencesWindow *pwindow, PlaybackPrefs *playback, char *text)
-//  : BC_TextBox(x, y, 100, 1, text)
-// { 
-// 	this->pwindow = pwindow; 
-// 	this->playback = playback; 
-// }
-// 
-// int PlaybackBufferSize::handle_event() 
-// {
-// 	pwindow->thread->edl->session->playback_buffer = atol(get_text()); 
-// 	return 1;
-// }
-// 
-// PlaybackBufferBytes::PlaybackBufferBytes(int x, 
-// 	int y, 
-// 	PreferencesWindow *pwindow, 
-// 	PlaybackPrefs *playback, 
-// 	char *text)
-//  : BC_Title(x, y, text)
-// {
-// 	this->pwindow = pwindow; 
-// 	this->playback = playback;
-// }
-// int PlaybackBufferBytes::update_bytes()
-// {
-// 	sprintf(string, "%d", playback->get_buffer_bytes());
-// 	update(string);
-// 	return 1;
-// }
-// 
-// PlaybackDisableNoEdits::PlaybackDisableNoEdits(PreferencesWindow *pwindow, int value, int y)
-//  : BC_CheckBox(10, y, value, _("Disable tracks when no edits."))
-// {
-// 	this->pwindow = pwindow; 
-// }
-// 
-// int PlaybackDisableNoEdits::handle_event() 
-// { 
-// 	pwindow->thread->edl->session->test_playback_edits = get_value(); 
-// 	return 1;
-// }
 
 
 

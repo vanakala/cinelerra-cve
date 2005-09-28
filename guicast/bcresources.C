@@ -3,7 +3,6 @@
 #include "bclistbox.inc"
 #include "bcresources.h"
 #include "bcsignals.h"
-#include "bctheme.h"
 #include "bcwindowbase.h"
 #include "colors.h"
 #include "colormodels.h"
@@ -25,6 +24,20 @@ int BC_Resources::error = 0;
 
 VFrame* BC_Resources::bg_image = 0;
 VFrame* BC_Resources::menu_bg = 0;
+
+#include "images/file_film_png.h"
+#include "images/file_folder_png.h"
+#include "images/file_sound_png.h"
+#include "images/file_unknown_png.h"
+#include "images/file_column_png.h"
+VFrame* BC_Resources::type_to_icon[] = 
+{
+	new VFrame(file_folder_png),
+	new VFrame(file_unknown_png),
+	new VFrame(file_film_png),
+	new VFrame(file_sound_png),
+	new VFrame(file_column_png)
+};
 
 char* BC_Resources::small_font = N_("-*-helvetica-medium-r-normal-*-10-*");
 char* BC_Resources::small_font2 = N_("-*-helvetica-medium-r-normal-*-11-*");
@@ -69,13 +82,21 @@ BC_Resources::BC_Resources()
 {
 	display_info = new BC_DisplayInfo("", 0);
 
+	for(int i = 0; i < FILEBOX_HISTORY_SIZE; i++)
+		filebox_history[i][0] = 0;
+
 #ifdef HAVE_XFT
 	XftInitFtLibrary();
 #endif
 
 	use_xvideo = 1;
 
-static VFrame* type_to_icon = 0;
+
+#include "images/bar_png.h"
+	static VFrame* default_bar = new VFrame(bar_png);
+	bar_data = default_bar;
+
+
 
 #include "images/cancel_up_png.h"
 #include "images/cancel_hi_png.h"
@@ -107,26 +128,167 @@ static VFrame* type_to_icon = 0;
 		new VFrame(usethis_dn_png)
 	};
 
-	static VFrame* default_checkbox_images = 0;
-	static VFrame* default_radial_images = 0;
-	static VFrame* default_label_images =  0;
 
- 	listbox_button = 0;
-	listbox_bg = 0;
+#include "images/checkbox_checked_png.h"
+#include "images/checkbox_dn_png.h"
+#include "images/checkbox_checkedhi_png.h"
+#include "images/checkbox_up_png.h"
+#include "images/checkbox_hi_png.h"
+	static VFrame* default_checkbox_images[] =  
+	{
+		new VFrame(checkbox_up_png),
+		new VFrame(checkbox_hi_png),
+		new VFrame(checkbox_checked_png),
+		new VFrame(checkbox_dn_png),
+		new VFrame(checkbox_checkedhi_png)
+	};
 
-	static VFrame* default_filebox_text_images = 0; 
-	static VFrame* default_filebox_icons_images = 0;
-	static VFrame* default_filebox_updir_images = 0;
-	static VFrame* default_filebox_newfolder_images = 0; 
+#include "images/radial_checked_png.h"
+#include "images/radial_dn_png.h"
+#include "images/radial_checkedhi_png.h"
+#include "images/radial_up_png.h"
+#include "images/radial_hi_png.h"
+	static VFrame* default_radial_images[] =  
+	{
+		new VFrame(radial_up_png),
+		new VFrame(radial_hi_png),
+		new VFrame(radial_checked_png),
+		new VFrame(radial_dn_png),
+		new VFrame(radial_checkedhi_png)
+	};
 
-	listbox_expand = 0;
-	listbox_column = 0;
-	listbox_up =0;
-	listbox_dn = 0;
+	static VFrame* default_label_images[] =  
+	{
+		new VFrame(radial_up_png),
+		new VFrame(radial_hi_png),
+		new VFrame(radial_checked_png),
+		new VFrame(radial_dn_png),
+		new VFrame(radial_checkedhi_png)
+	};
 
- 	horizontal_slider_data = 0;
- 	vertical_slider_data = 0;
 
+#include "images/file_text_up_png.h"
+#include "images/file_text_hi_png.h"
+#include "images/file_text_dn_png.h"
+#include "images/file_icons_up_png.h"
+#include "images/file_icons_hi_png.h"
+#include "images/file_icons_dn_png.h"
+#include "images/file_newfolder_up_png.h"
+#include "images/file_newfolder_hi_png.h"
+#include "images/file_newfolder_dn_png.h"
+#include "images/file_updir_up_png.h"
+#include "images/file_updir_hi_png.h"
+#include "images/file_updir_dn_png.h"
+#include "images/file_delete_up_png.h"
+#include "images/file_delete_hi_png.h"
+#include "images/file_delete_dn_png.h"
+#include "images/file_reload_up_png.h"
+#include "images/file_reload_hi_png.h"
+#include "images/file_reload_dn_png.h"
+	static VFrame* default_filebox_text_images[] = 
+	{
+		new VFrame(file_text_up_png),
+		new VFrame(file_text_hi_png),
+		new VFrame(file_text_dn_png)
+	};
+
+	static VFrame* default_filebox_icons_images[] = 
+	{
+		new VFrame(file_icons_up_png),
+		new VFrame(file_icons_hi_png),
+		new VFrame(file_icons_dn_png)
+	};
+
+	static VFrame* default_filebox_updir_images[] =  
+	{
+		new VFrame(file_updir_up_png),
+		new VFrame(file_updir_hi_png),
+		new VFrame(file_updir_dn_png)
+	};
+
+	static VFrame* default_filebox_newfolder_images[] = 
+	{
+		new VFrame(file_newfolder_up_png),
+		new VFrame(file_newfolder_hi_png),
+		new VFrame(file_newfolder_dn_png)
+	};
+
+	static VFrame* default_filebox_delete_images[] = 
+	{
+		new VFrame(file_delete_up_png),
+		new VFrame(file_delete_hi_png),
+		new VFrame(file_delete_dn_png)
+	};
+
+	static VFrame* default_filebox_reload_images[] =
+	{
+		new VFrame(file_reload_up_png),
+		new VFrame(file_reload_hi_png),
+		new VFrame(file_reload_dn_png)
+	};
+
+#include "images/listbox_button_dn_png.h"
+#include "images/listbox_button_hi_png.h"
+#include "images/listbox_button_up_png.h"
+#include "images/listbox_button_disabled_png.h"
+	static VFrame* default_listbox_button[] = 
+	{
+		new VFrame(listbox_button_up_png),
+		new VFrame(listbox_button_hi_png),
+		new VFrame(listbox_button_dn_png),
+		new VFrame(listbox_button_disabled_png)
+	};
+	listbox_button = default_listbox_button;
+
+#include "images/list_bg_png.h"
+	static VFrame* default_listbox_bg = new VFrame(list_bg_png);
+	listbox_bg = default_listbox_bg;
+
+#include "images/listbox_expandchecked_png.h"
+#include "images/listbox_expandcheckedhi_png.h"
+#include "images/listbox_expanddn_png.h"
+#include "images/listbox_expandup_png.h"
+#include "images/listbox_expanduphi_png.h"
+	static VFrame* default_listbox_expand[] = 
+	{
+		new VFrame(listbox_expandup_png),
+		new VFrame(listbox_expanduphi_png),
+		new VFrame(listbox_expandchecked_png),
+		new VFrame(listbox_expanddn_png),
+		new VFrame(listbox_expandcheckedhi_png),
+	};
+	listbox_expand = default_listbox_expand;
+
+#include "images/listbox_columnup_png.h"
+#include "images/listbox_columnhi_png.h"
+#include "images/listbox_columndn_png.h"
+	static VFrame* default_listbox_column[] = 
+	{
+		new VFrame(listbox_columnup_png),
+		new VFrame(listbox_columnhi_png),
+		new VFrame(listbox_columndn_png)
+	};
+	listbox_column = default_listbox_column;
+
+
+#include "images/listbox_up_png.h"
+#include "images/listbox_dn_png.h"
+	listbox_up = new VFrame(listbox_up_png);
+	listbox_dn = new VFrame(listbox_dn_png);
+	listbox_title_margin = 0;
+	listbox_title_color = BLACK;
+	listbox_title_hotspot = 5;
+	
+	listbox_border1 = DKGREY;
+	listbox_border2_hi = RED;
+	listbox_border2 = BLACK;
+	listbox_border3_hi = RED;
+	listbox_border3 = MEGREY;
+	listbox_border4 = WHITE;
+	listbox_selected = BLUE;
+	listbox_highlighted = LTGREY;
+	listbox_inactive = WHITE;
+	listbox_text = BLACK;
 
 #include "images/pot_hi_png.h"
 #include "images/pot_up_png.h"
@@ -221,6 +383,7 @@ static VFrame* type_to_icon = 0;
 	ok_images = default_ok_images;
 	cancel_images = default_cancel_images;
 	usethis_button_images = default_usethis_images;
+	filebox_descend_images = default_ok_images;
 
 	menu_light = LTCYAN;
 	menu_highlighted = LTBLUE;
@@ -230,7 +393,13 @@ static VFrame* type_to_icon = 0;
 	menu_popup_bg = 0;
 	menu_title_bg = 0;
 	menu_item_bg = 0;
+	menu_bar_bg = 0;
+	menu_title_bg = 0;
+	popupmenu_images = 0;
+	popupmenu_margin = 10;
+	popupmenu_triangle_margin = 10;
 
+	min_menu_w = 0;
 	menu_title_text = BLACK;
 	popup_title_text = BLACK;
 	menu_item_text = BLACK;
@@ -252,6 +421,7 @@ static VFrame* type_to_icon = 0;
 	text_border3_hi = LTPINK;
 	text_border4 = WHITE;
 	text_highlight = BLUE;
+	text_inactive_highlight = MEGREY;
 
 	toggle_highlight_bg = 0;
 	toggle_text_margin = 0;
@@ -264,6 +434,8 @@ static VFrame* type_to_icon = 0;
 	tooltip_bg_color = YELLOW;
 	tooltips_enabled = 1;
 
+	filebox_margin = 110;
+	dirbox_margin = 90;
 	filebox_mode = LISTBOX_TEXT;
 	sprintf(filebox_filter, "*");
 	filebox_w = 640;
@@ -276,14 +448,24 @@ static VFrame* type_to_icon = 0;
 	filebox_columnwidth[1] = 100;
 	filebox_columnwidth[2] = 100;
 	filebox_columnwidth[3] = 100;
+	dirbox_columntype[0] = FILEBOX_NAME;
+	dirbox_columntype[1] = FILEBOX_DATE;
+	dirbox_columnwidth[0] = 200;
+	dirbox_columnwidth[1] = 100;
 
- 	filebox_text_images = 0;
- 	filebox_icons_images = 0;
- 	filebox_updir_images = 0;
- 	filebox_newfolder_images = 0;
+	filebox_text_images = default_filebox_text_images;
+	filebox_icons_images = default_filebox_icons_images;
+	filebox_updir_images = default_filebox_updir_images;
+	filebox_newfolder_images = default_filebox_newfolder_images;
+	filebox_delete_images = default_filebox_delete_images;
+	filebox_reload_images = default_filebox_reload_images;
+	directory_color = BLUE;
+	file_color = BLACK;
 
 	filebox_sortcolumn = 0;
 	filebox_sortorder = BC_ListBox::SORT_ASCENDING;
+	dirbox_sortcolumn = 0;
+	dirbox_sortorder = BC_ListBox::SORT_ASCENDING;
 
 	pot_images = default_pot_images;
 	pot_offset = 2;
@@ -301,8 +483,6 @@ static VFrame* type_to_icon = 0;
 	meter_title_w = 20;
 	meter_3d = 1;
 	medium_7segment = default_medium_7segment;
-
-	listboxitemselected_color = BLUE;
 
 	audiovideo_color = RED;
 

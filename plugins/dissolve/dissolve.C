@@ -22,8 +22,7 @@ DissolveMain::DissolveMain(PluginServer *server)
 
 DissolveMain::~DissolveMain()
 {
-	if(overlayer)
-		delete overlayer;
+	delete overlayer;
 }
 
 char* DissolveMain::plugin_title() { return N_("Dissolve"); }
@@ -40,12 +39,10 @@ int DissolveMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 			PluginClient::get_total_len();
 
 	if(!overlayer) overlayer = new OverlayFrame(get_project_smp() + 1);
-//printf("DissolveMain::process_realtime %f\n", fade);
 
-// There is a problem when dissolving from fully opaque picture to a picture that uses alpha
-// in order to make it dissolve correctly, we have to manually decrese alpha of opaque picture
-// The other apporach would be to add another mode to overlayer -> very complex
 
+// There is a problem when dissolving from a big picture to a small picture.
+// In order to make it dissolve correctly, we have to manually decrese alpha of big picture.
 	switch (outgoing->get_color_model())
 	{
 		case BC_RGBA8888:
@@ -99,9 +96,9 @@ int DissolveMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 		}
 		default:
 			break;
-		
-
 	}
+
+
 	overlayer->overlay(outgoing, 
 		incoming, 
 		0, 

@@ -285,28 +285,27 @@ int PatchBay::cursor_motion_event()
 						{
 							IntAuto *current = 0;
 							Auto *keyframe = 0;
-							double position = mwindow->edl->local_session->selectionstart;
-							Autos *mute_autos = track->automation->mute_autos;
+							double position = mwindow->edl->local_session->get_selectionstart(1);
+							Autos *mute_autos = track->automation->autos[AUTOMATION_MUTE];
 
 							current = (IntAuto*)mute_autos->get_prev_auto(PLAY_FORWARD, 
 								keyframe);
 
 							if(current->value != new_status)
 							{
-								mwindow->undo->update_undo_before(_("keyframe"), LOAD_AUTOMATION);
 
 								current = (IntAuto*)mute_autos->get_auto_for_editing(position);
 
 								current->value = new_status;
 
-								mwindow->undo->update_undo_after();
+								mwindow->undo->update_undo(_("keyframe"), LOAD_AUTOMATION);
 
 								mwindow->gui->unlock_window();
 								mwindow->restart_brender();
 								mwindow->sync_parameters(CHANGE_PARAMS);
 								mwindow->gui->lock_window();
 
-								if(mwindow->edl->session->auto_conf->mute)
+								if(mwindow->edl->session->auto_conf->autos[AUTOMATION_MUTE])
 								{
 									mwindow->gui->canvas->draw_overlays();
 									mwindow->gui->canvas->flash();
@@ -468,12 +467,9 @@ void PatchBay::synchronize_faders(float change, int data_type, Track *skip)
 			current->record && 
 			current != skip)
 		{
-			FloatAutos *fade_autos = current->automation->fade_autos;
-			double position = mwindow->edl->local_session->selectionstart;
-			int update_undo = !fade_autos->auto_exists_for_editing(position);
+			FloatAutos *fade_autos = (FloatAutos*)current->automation->autos[AUTOMATION_FADE];
+			double position = mwindow->edl->local_session->get_selectionstart(1);
 
-			if(update_undo)
-				mwindow->undo->update_undo_before(_("fade"), LOAD_AUTOMATION);
 
 			FloatAuto *keyframe = (FloatAuto*)fade_autos->get_auto_for_editing(position);
 
@@ -482,21 +478,41 @@ void PatchBay::synchronize_faders(float change, int data_type, Track *skip)
 				CLAMP(keyframe->value, INFINITYGAIN, MAX_AUDIO_FADE);
 			else
 				CLAMP(keyframe->value, 0, MAX_VIDEO_FADE);
-			if(update_undo)
-				mwindow->undo->update_undo_after();
 
 
-			for(int i = 0; i < patches.total; i++)
-			{
-				if(patches.values[i]->track == current)
-					patches.values[i]->update(patches.values[i]->x,
-						patches.values[i]->y);
-			}
+			PatchGUI *patch = get_patch_of(current);
+			if(patch) patch->update(patch->x, patch->y);
 		}
 	}
-
 }
 
+void PatchBay::synchronize_nudge(int64_t value, Track *skip)
+{
+	for(Track *current = mwindow->edl->tracks->first;
+		current;
+		current = NEXT)
+	{
+		if(current->data_type == skip->data_type &&
+			current->gang &&
+			current->record &&
+			current != skip)
+		{
+			current->nudge = value;
+			PatchGUI *patch = get_patch_of(current);
+			if(patch) patch->update(patch->x, patch->y);
+		}
+	}
+}
+
+PatchGUI* PatchBay::get_patch_of(Track *track)
+{
+	for(int i = 0; i < patches.total; i++)
+	{
+		if(patches.values[i]->track == track)
+			return patches.values[i];
+	}
+	return 0;
+}
 
 int PatchBay::resize_event(int top, int bottom)
 {

@@ -1,6 +1,7 @@
 #include "bclistboxitem.h"
 #include "bcpixmap.h"
-
+#include "bcresources.h"
+#include "bcwindowbase.h"
 
 #include <string.h>
 
@@ -10,6 +11,8 @@
 BC_ListBoxItem::BC_ListBoxItem()
 {
 	initialize();
+
+	color = BC_WindowBase::get_resources()->listbox_text;
 	this->text = new char[1];
 	text[0] = 0;
 	selectable = 1;
@@ -20,6 +23,8 @@ BC_ListBoxItem::BC_ListBoxItem(char *text,
 	int color)
 {
 	initialize();
+
+	if(color == -1) color = BC_WindowBase::get_resources()->listbox_text;
 	this->text = new char[strlen(text) + 1];
 	this->icon = icon;
 
@@ -31,6 +36,8 @@ BC_ListBoxItem::BC_ListBoxItem(char *text,
 BC_ListBoxItem::BC_ListBoxItem(char *text, int color)
 {
 	initialize();
+
+	if(color == -1) color = BC_WindowBase::get_resources()->listbox_text;
 	this->text = new char[strlen(text) + 1];
 	strcpy(this->text, text);
 	this->color = color;

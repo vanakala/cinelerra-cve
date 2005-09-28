@@ -130,19 +130,23 @@ float TransportCommand::get_speed()
 }
 
 // Assume starting without pause
-void TransportCommand::set_playback_range(EDL *edl)
+void TransportCommand::set_playback_range(EDL *edl, int use_inout)
 {
 	if(!edl) edl = this->edl;
+
+
+
+
 	switch(command)
 	{
 		case SLOW_FWD:
 		case FAST_FWD:
 		case NORMAL_FWD:
-			start_position = edl->local_session->selectionstart;
-			if(EQUIV(edl->local_session->selectionend, edl->local_session->selectionstart))
+			start_position = edl->local_session->get_selectionstart(1);
+			if(EQUIV(edl->local_session->get_selectionend(1), edl->local_session->get_selectionstart(1)))
 				end_position = edl->tracks->total_playable_length();
 			else
-				end_position = edl->local_session->selectionend;
+				end_position = edl->local_session->get_selectionend(1);
 // this prevents a crash if start position is after the loop when playing forwards
  		    if (edl->local_session->loop_playback && start_position > edl->local_session->loop_end)  
  			{
@@ -153,11 +157,11 @@ void TransportCommand::set_playback_range(EDL *edl)
 		case SLOW_REWIND:
 		case FAST_REWIND:
 		case NORMAL_REWIND:
-			end_position = edl->local_session->selectionend;
-			if(EQUIV(edl->local_session->selectionend, edl->local_session->selectionstart))
+			end_position = edl->local_session->get_selectionend(1);
+			if(EQUIV(edl->local_session->get_selectionend(1), edl->local_session->get_selectionstart(1)))
 				start_position = 0;
 			else
-				start_position = edl->local_session->selectionstart;
+				start_position = edl->local_session->get_selectionstart(1);
 // this prevents a crash if start position is before the loop when playing backwards
 			if (edl->local_session->loop_playback && start_position <= edl->local_session->loop_start)
 			{
@@ -168,18 +172,27 @@ void TransportCommand::set_playback_range(EDL *edl)
 		
 		case CURRENT_FRAME:
 		case SINGLE_FRAME_FWD:
-			start_position = edl->local_session->selectionstart;
+			start_position = edl->local_session->get_selectionstart(1);
 			end_position = start_position + 
 				1.0 / 
 				edl->session->frame_rate;
 			break;
 		
 		case SINGLE_FRAME_REWIND:
-			start_position = edl->local_session->selectionend;
+			start_position = edl->local_session->get_selectionend(1);
 			end_position = start_position - 
 				1.0 / 
 				edl->session->frame_rate;
 			break;
+	}
+
+
+	if(use_inout)
+	{
+		if(edl->local_session->inpoint_valid())
+			start_position = edl->local_session->get_inpoint();
+		if(edl->local_session->outpoint_valid())
+			end_position = edl->local_session->get_outpoint();
 	}
 
 	switch(get_direction())
@@ -192,23 +205,23 @@ void TransportCommand::set_playback_range(EDL *edl)
 			playbackstart = end_position;
 			break;
 	}
-// printf("TransportCommand::set_playback_range %f %f\n", 
-// start_position * edl->session->frame_rate, 
-// end_position * edl->session->frame_rate);
+
 }
 
 void TransportCommand::adjust_playback_range()
 {
-	if(edl->local_session->in_point >= 0 ||
-		edl->local_session->out_point >= 0)
+
+
+	if(edl->local_session->inpoint_valid() ||
+		edl->local_session->outpoint_valid())
 	{
-		if(edl->local_session->in_point >= 0)
-			start_position = edl->local_session->in_point;
+		if(edl->local_session->inpoint_valid())
+			start_position = edl->local_session->get_inpoint();
 		else
 			start_position = 0;
 
-		if(edl->local_session->out_point >= 0)
-			end_position = edl->local_session->out_point;
+		if(edl->local_session->outpoint_valid())
+			end_position = edl->local_session->get_outpoint();
 		else
 			end_position = edl->tracks->total_playable_length();
 	}
@@ -247,7 +260,8 @@ int TransportQue::send_command(int command,
 		int change_type, 
 		EDL *new_edl, 
 		int realtime,
-		int resume)
+		int resume,
+		int use_inout)
 {
 	input_lock->lock("TransportQue::send_command 1");
 	this->command.command = command;
@@ -274,7 +288,7 @@ int TransportQue::send_command(int command,
 		}
 
 // Set playback range
-		this->command.set_playback_range(new_edl);
+		this->command.set_playback_range(new_edl, use_inout);
 	}
 
 	input_lock->unlock();

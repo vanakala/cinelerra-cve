@@ -13,6 +13,11 @@
 
 #include <string.h>
 
+#define VERTICAL_MARGIN 2
+#define VERTICAL_MARGIN_NOBORDER 0
+#define HORIZONTAL_MARGIN 4
+#define HORIZONTAL_MARGIN_NOBORDER 2
+
 BC_TextBox::BC_TextBox(int x, 
 	int y, 
 	int w, 
@@ -110,13 +115,13 @@ int BC_TextBox::initialize()
 	ibeam_letter = strlen(text);
 	if(has_border)
 	{
-		left_margin = right_margin = 4;
-		top_margin = bottom_margin = 2;
+		left_margin = right_margin = HORIZONTAL_MARGIN;
+		top_margin = bottom_margin = VERTICAL_MARGIN;
 	}
 	else
 	{
-		left_margin = right_margin = 2;
-		top_margin = bottom_margin = 0;
+		left_margin = right_margin = HORIZONTAL_MARGIN_NOBORDER;
+		top_margin = bottom_margin = VERTICAL_MARGIN_NOBORDER;
 	}
 	h = get_row_h(rows);
 	text_x = left_margin;
@@ -141,6 +146,16 @@ int BC_TextBox::initialize()
 	draw();
 	set_cursor(IBEAM_CURSOR);
 	return 0;
+}
+
+int BC_TextBox::calculate_h(BC_WindowBase *gui, 
+	int font, 
+	int has_border,
+	int rows)
+{
+	return rows * (gui->get_text_ascent(font) + 1 + 
+		gui->get_text_descent(font) + 1) +
+		2 * (has_border ? VERTICAL_MARGIN : VERTICAL_MARGIN_NOBORDER);
 }
 
 void BC_TextBox::set_precision(int precision)
@@ -375,7 +390,7 @@ void BC_TextBox::draw()
 				if(active && enabled && get_has_focus())
 					set_color(resources->text_highlight);
 				else
-					set_color(MEGREY);
+					set_color(resources->text_inactive_highlight);
 
 				if(highlight_letter1 >= row_begin && highlight_letter1 < row_end)
 					highlight_x1 = get_text_width(font, text_row, highlight_letter1 - row_begin);

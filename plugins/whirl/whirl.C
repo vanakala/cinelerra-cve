@@ -829,15 +829,11 @@ WhirlEngine::WhirlEngine(WhirlEffect *plugin, int cpus)
 }
 void WhirlEngine::init_packages()
 {
-	int increment = plugin->input->get_h() / LoadServer::total_packages;
-	int y = 0;
 	for(int i = 0; i < LoadServer::total_packages; i++)
 	{
 		WhirlPackage *pkg = (WhirlPackage*)packages[i];
-		pkg->row1 = y;
-		pkg->row2 = y + increment;
-		if(i == LoadServer::total_packages - 1) pkg->row2 = plugin->input->get_h();
-		y += increment;
+		pkg->row1 = plugin->input->get_h() * i / LoadServer::total_packages;
+		pkg->row2 = plugin->input->get_h() * (i + 1) / LoadServer::total_packages;
 	}
 	
 }

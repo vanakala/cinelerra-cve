@@ -12,6 +12,8 @@
 #include "pluginserver.h"
 #include "preferences.h"
 #include "renderfarmclient.h"
+
+#include <locale.h>
 #include <stdlib.h>
 #include <string.h>
 

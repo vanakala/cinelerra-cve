@@ -844,17 +844,11 @@ LinearBlurEngine::LinearBlurEngine(LinearBlurMain *plugin,
 
 void LinearBlurEngine::init_packages()
 {
-	int package_h = (int)((float)plugin->output->get_h() / 
-			total_packages + 1);
-	int y1 = 0;
 	for(int i = 0; i < total_packages; i++)
 	{
 		LinearBlurPackage *package = (LinearBlurPackage*)packages[i];
-		package->y1 = y1;
-		package->y2 = y1 + package_h;
-		package->y1 = MIN(plugin->output->get_h(), package->y1);
-		package->y2 = MIN(plugin->output->get_h(), package->y2);
-		y1 = package->y2;
+		package->y1 = plugin->output->get_h() * i / total_packages;
+		package->y2 = plugin->output->get_h() * (i + 1) / total_packages;
 	}
 }
 

@@ -333,9 +333,64 @@ void VDeviceV4L2Thread::run()
 			}
 		}
 
+
+
+
+// Set picture controls.  This driver requires the values to be set once to default
+// values and then again to different values before it takes up the values.
+// Unfortunately VIDIOC_S_CTRL resets the audio to mono in 2.6.7.
+		PictureConfig *picture = device->picture;
+		for(int i = 0; i < picture->controls.total; i++)
+		{
+			struct v4l2_control ctrl_arg;
+			struct v4l2_queryctrl arg;
+			PictureItem *item = picture->controls.values[i];
+			arg.id = item->device_id;
+			if(!ioctl(input_fd, VIDIOC_QUERYCTRL, &arg))
+			{
+				ctrl_arg.id = item->device_id;
+				ctrl_arg.value = 0;
+				if(ioctl(input_fd, VIDIOC_S_CTRL, &ctrl_arg) < 0)
+					perror("VDeviceV4L2Thread::run VIDIOC_S_CTRL");
+			}
+			else
+			{
+				printf("VDeviceV4L2Thread::run VIDIOC_S_CTRL 1 id %d failed\n",
+					item->device_id);
+			}
+		}
+
+		for(int i = 0; i < picture->controls.total; i++)
+		{
+			struct v4l2_control ctrl_arg;
+			struct v4l2_queryctrl arg;
+			PictureItem *item = picture->controls.values[i];
+			arg.id = item->device_id;
+			if(!ioctl(input_fd, VIDIOC_QUERYCTRL, &arg))
+			{
+				ctrl_arg.id = item->device_id;
+				ctrl_arg.value = item->value;
+				if(ioctl(input_fd, VIDIOC_S_CTRL, &ctrl_arg) < 0)
+					perror("VDeviceV4L2Thread::run VIDIOC_S_CTRL");
+			}
+			else
+			{
+				printf("VDeviceV4L2Thread::run VIDIOC_S_CTRL 2 id %d failed\n",
+					item->device_id);
+			}
+		}
+
+
 // Translate input to API structures
 		struct v4l2_tuner tuner;
 		int input = 0;
+
+		if(ioctl(input_fd, VIDIOC_G_TUNER, &tuner) < 0)
+			perror("VDeviceV4L2Thread::run VIDIOC_G_INPUT");
+
+// printf("VDeviceV4L2Thread::run audmode=%d rxsubchans=%d\n",
+// tuner.audmode,
+// tuner.rxsubchans);
 		if(device_channel)
 		{
 			tuner.index = device_channel->device_index;
@@ -348,25 +403,18 @@ void VDeviceV4L2Thread::run()
 		}
 
 		tuner.type = V4L2_TUNER_ANALOG_TV;
-
+		tuner.audmode = V4L2_TUNER_MODE_STEREO;
+		tuner.rxsubchans = V4L2_TUNER_SUB_STEREO;
 
 		if(ioctl(input_fd, VIDIOC_S_INPUT, &input) < 0)
 			perror("VDeviceV4L2Thread::run VIDIOC_S_INPUT");
 
-		if(cap.capabilities & V4L2_CAP_TUNER)
-		{
-			if(ioctl(input_fd, VIDIOC_S_TUNER, &tuner) < 0)
-				perror("VDeviceV4L2Thread::run VIDIOC_S_TUNER");
-// Set frequency
-			struct v4l2_frequency frequency;
-			frequency.tuner = device->channel->tuner;
-			frequency.type = V4L2_TUNER_ANALOG_TV;
-			frequency.frequency = chanlists[
-				device->channel->freqtable].list[
-					device->channel->entry].freq;
-			if(ioctl(input_fd, VIDIOC_S_FREQUENCY, &frequency) < 0)
-				perror("VDeviceV4L2Thread::run VIDIOC_S_FREQUENCY");
-		}
+
+
+
+
+
+
 
 // Set norm
 		v4l2_std_id std_id;
@@ -382,22 +430,26 @@ void VDeviceV4L2Thread::run()
 			perror("VDeviceV4L2Thread::run VIDIOC_S_STD");
 
 
-// printf("VDeviceV4L2Thread::run input=%d norm=%d\n",
-// device->channel->input,
-// device->channel->norm);
-
-// Set picture controls
-		Picture *picture = device->picture;
-		for(int i = 0; i < picture->controls.total; i++)
+		if(cap.capabilities & V4L2_CAP_TUNER)
 		{
-			struct v4l2_control ctrl_arg;
-			PictureItem *item = picture->controls.values[i];
-//printf("VDeviceV4L2Thread::run %x %d\n", item->device_id, item->value);
-			ctrl_arg.id = item->device_id;
-			ctrl_arg.value = item->value;
-			if(ioctl(input_fd, VIDIOC_S_CTRL, &ctrl_arg) < 0)
-				perror("VDeviceV4L2Thread::run VIDIOC_S_CTRL");
+			if(ioctl(input_fd, VIDIOC_S_TUNER, &tuner) < 0)
+				perror("VDeviceV4L2Thread::run VIDIOC_S_TUNER");
+// Set frequency
+			struct v4l2_frequency frequency;
+			frequency.tuner = device->channel->tuner;
+			frequency.type = V4L2_TUNER_ANALOG_TV;
+			frequency.frequency = (int)(chanlists[
+				device->channel->freqtable].list[
+					device->channel->entry].freq * 0.016);
+// printf("VDeviceV4L2Thread::run tuner=%d freq=%d norm=%d\n",
+// device->channel->tuner,
+// frequency.frequency,
+// device->channel->norm);
+			if(ioctl(input_fd, VIDIOC_S_FREQUENCY, &frequency) < 0)
+				perror("VDeviceV4L2Thread::run VIDIOC_S_FREQUENCY");
 		}
+
+
 
 // Set compression
 		if(color_model == BC_COMPRESSED)
@@ -494,6 +546,7 @@ printf("VDeviceV4L2Thread::run got %d buffers\n", total_buffers);
 		}
 		Thread::enable_cancel();
 	}
+
 
 
 // Start capturing
@@ -681,8 +734,13 @@ int VDeviceV4L2::get_sources(VideoDevice *device,
 {
 	int input_fd = -1;
 
+
 	device->channel->use_norm = 1;
 	device->channel->use_input = 1;
+	if(device->in_config->driver != VIDEO4LINUX2JPEG) 
+		device->channel->has_scanning = 1;
+	else
+		device->channel->has_scanning = 0;
 
 	if((input_fd = open(path, O_RDWR)) < 0)
 	{
@@ -725,16 +783,24 @@ int VDeviceV4L2::get_sources(VideoDevice *device,
 // This returns errors for unsupported controls which is what we want.
 			if(!ioctl(input_fd, VIDIOC_QUERYCTRL, &arg))
 			{
-				PictureItem *item = device->picture->new_item((char*)arg.name);
-				item->device_id = arg.id;
-				item->min = arg.minimum;
-				item->max = arg.maximum;
-				item->step = arg.step;
-				item->default_ = arg.default_value;
-				item->type = arg.type;
-				item->value = arg.default_value;
+// Test if control exists already
+				if(!device->picture->get_item((const char*)arg.name, arg.id))
+				{
+// Add control
+					PictureItem *item = device->picture->new_item((const char*)arg.name);
+					item->device_id = arg.id;
+					item->min = arg.minimum;
+					item->max = arg.maximum;
+					item->step = arg.step;
+					item->default_ = arg.default_value;
+					item->type = arg.type;
+					item->value = arg.default_value;
+				}
 			}
 		}
+
+// Load defaults for picture controls
+		device->picture->load_defaults();
 
 		close(input_fd);
 	}
@@ -771,6 +837,17 @@ int VDeviceV4L2::get_best_colormodel(Asset *asset)
 	return result;
 }
 
+int VDeviceV4L2::has_signal()
+{
+	if(thread)
+	{
+		struct v4l2_tuner tuner;
+		if(ioctl(thread->input_fd, VIDIOC_G_TUNER, &tuner) < 0)
+			perror("VDeviceV4L2::has_signal VIDIOC_S_TUNER");
+		return tuner.signal;
+	}
+	return 0;
+}
 
 int VDeviceV4L2::read_buffer(VFrame *frame)
 {

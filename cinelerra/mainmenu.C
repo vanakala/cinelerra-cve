@@ -1,5 +1,6 @@
 #include "assets.h"
 #include "batchrender.h"
+#include "bcsignals.h"
 #include "cache.h"
 #include "cplayback.h"
 #include "cropvideo.h"
@@ -62,15 +63,18 @@ int MainMenu::create_objects()
 	PreferencesMenuitem *preferences;
 
 	recent_load = new BC_RecentList("PATH", mwindow->defaults);
+SET_TRACE
 
 	add_menu(filemenu = new BC_Menu(_("File")));
 	filemenu->add_item(new_project = new New(mwindow));
 	new_project->create_objects();
 
+SET_TRACE
 // file loaders
 	filemenu->add_item(load_file = new Load(mwindow, this));
 	load_file->create_objects();
 
+SET_TRACE
 // new and load can be undone so no need to prompt save
 	Save *save;                   //  affected by saveas
 	filemenu->add_item(save = new Save(mwindow));
@@ -159,28 +163,32 @@ int MainMenu::create_objects()
 
 
 	add_menu(viewmenu = new BC_Menu(_("View")));
+	viewmenu->add_item(show_assets = new ShowAssets(mwindow, "0"));
 	viewmenu->add_item(show_titles = new ShowTitles(mwindow, "1"));
 	viewmenu->add_item(show_transitions = new ShowTransitions(mwindow, "2"));
-	viewmenu->add_item(fade_automation = new FadeAutomation(mwindow, "3"));
-//	viewmenu->add_item(play_automation = new PlayAutomation(mwindow, "4"));
-	viewmenu->add_item(mute_automation = new MuteAutomation(mwindow, "4"));
-	viewmenu->add_item(mode_automation = new ModeAutomation(mwindow, "5"));
-	viewmenu->add_item(pan_automation = new PanAutomation(mwindow, "6"));
-	viewmenu->add_item(camera_automation = new CameraAutomation(mwindow, "7"));
-	viewmenu->add_item(project_automation = new ProjectAutomation(mwindow, "8"));
-	viewmenu->add_item(plugin_automation = new PluginAutomation(mwindow, "9"));
-	viewmenu->add_item(mask_automation = new MaskAutomation(mwindow, "0"));
-	viewmenu->add_item(czoom_automation = new CZoomAutomation(mwindow, "-"));
-	viewmenu->add_item(pzoom_automation = new PZoomAutomation(mwindow, "="));
+	viewmenu->add_item(fade_automation = new ShowAutomation(mwindow, _("Fade"), "3", AUTOMATION_FADE));
+	viewmenu->add_item(mute_automation = new ShowAutomation(mwindow, _("Mute"), "4", AUTOMATION_MUTE));
+	viewmenu->add_item(mode_automation = new ShowAutomation(mwindow, _("Mode"), "5", AUTOMATION_MODE));
+	viewmenu->add_item(pan_automation = new ShowAutomation(mwindow, _("Pan"), "6", AUTOMATION_PAN));
+	viewmenu->add_item(plugin_automation = new PluginAutomation(mwindow, "7"));
+	viewmenu->add_item(mask_automation = new ShowAutomation(mwindow, _("Mask"), "8", AUTOMATION_MASK));
+	viewmenu->add_item(camera_x = new ShowAutomation(mwindow, _("Camera X"), "", AUTOMATION_CAMERA_X));
+	viewmenu->add_item(camera_y = new ShowAutomation(mwindow, _("Camera Y"), "", AUTOMATION_CAMERA_Y));
+	viewmenu->add_item(camera_z = new ShowAutomation(mwindow, _("Camera Z"), "", AUTOMATION_CAMERA_Z));
+	viewmenu->add_item(project_x = new ShowAutomation(mwindow, _("Projector X"), "", AUTOMATION_PROJECTOR_X));
+	viewmenu->add_item(project_y = new ShowAutomation(mwindow, _("Projector Y"), "", AUTOMATION_PROJECTOR_Y));
+	viewmenu->add_item(project_z = new ShowAutomation(mwindow, _("Projector Z"), "", AUTOMATION_PROJECTOR_Z));
 
 
 	add_menu(windowmenu = new BC_Menu(_("Window")));
 	windowmenu->add_item(show_vwindow = new ShowVWindow(mwindow));
 	windowmenu->add_item(show_awindow = new ShowAWindow(mwindow));
 	windowmenu->add_item(show_cwindow = new ShowCWindow(mwindow));
+	windowmenu->add_item(show_gwindow = new ShowGWindow(mwindow));
 	windowmenu->add_item(show_lwindow = new ShowLWindow(mwindow));
 	windowmenu->add_item(new TileWindows(mwindow));
 
+SET_TRACE
 	return 0;
 }
 
@@ -192,25 +200,28 @@ int MainMenu::load_defaults(Defaults *defaults)
 	return 0;
 }
 
-void MainMenu::update_toggles()
+void MainMenu::update_toggles(int use_lock)
 {
+	if(use_lock) lock_window("MainMenu::update_toggles");
 	labels_follow_edits->set_checked(mwindow->edl->session->labels_follow_edits);
 	plugins_follow_edits->set_checked(mwindow->edl->session->plugins_follow_edits);
 	cursor_on_frames->set_checked(mwindow->edl->session->cursor_on_frames);
 	loop_playback->set_checked(mwindow->edl->local_session->loop_playback);
 	show_titles->set_checked(mwindow->edl->session->show_titles);
 	show_transitions->set_checked(mwindow->edl->session->auto_conf->transitions);
-	fade_automation->set_checked(mwindow->edl->session->auto_conf->fade);
-//	play_automation->set_checked(mwindow->edl->session->auto_conf->play);
-	mute_automation->set_checked(mwindow->edl->session->auto_conf->mute);
-	pan_automation->set_checked(mwindow->edl->session->auto_conf->pan);
-	camera_automation->set_checked(mwindow->edl->session->auto_conf->camera);
-	project_automation->set_checked(mwindow->edl->session->auto_conf->projector);
+	fade_automation->update_toggle();
+	mute_automation->update_toggle();
+	pan_automation->update_toggle();
+	camera_x->update_toggle();
+	camera_y->update_toggle();
+	camera_z->update_toggle();
+	project_x->update_toggle();
+	project_y->update_toggle();
+	project_z->update_toggle();
 	plugin_automation->set_checked(mwindow->edl->session->auto_conf->plugins);
-	mode_automation->set_checked(mwindow->edl->session->auto_conf->mode);
-	mask_automation->set_checked(mwindow->edl->session->auto_conf->mask);
-	czoom_automation->set_checked(mwindow->edl->session->auto_conf->czoom);
-	pzoom_automation->set_checked(mwindow->edl->session->auto_conf->pzoom);
+	mode_automation->update_toggle();
+	mask_automation->update_toggle();
+	if(use_lock) mwindow->gui->unlock_window();
 }
 
 int MainMenu::save_defaults(Defaults *defaults)
@@ -1110,6 +1121,19 @@ int ShowCWindow::handle_event()
 }
 
 
+ShowGWindow::ShowGWindow(MWindow *mwindow)
+ : BC_MenuItem(_("Show Overlays"))
+{
+	this->mwindow = mwindow;
+	set_checked(mwindow->session->show_gwindow);
+}
+int ShowGWindow::handle_event()
+{
+	mwindow->show_gwindow();
+	return 1;
+}
+
+
 ShowLWindow::ShowLWindow(MWindow *mwindow)
  : BC_MenuItem(_("Show Levels"))
 {
@@ -1134,32 +1158,3 @@ int TileWindows::handle_event()
 }
 
 
-PanMenu::PanMenu() : BC_SubMenu() {}
-
-PanItem::PanItem(MWindow *mwindow, char *text, int number)
- : BC_MenuItem(text) 
-{
-	this->mwindow = mwindow; 
-	this->number = number; 
-	set_checked(0);
-}
-int PanItem::handle_event()
-{
-//	mwindow->tracks->toggle_auto_pan(number);
-	set_checked(get_checked() ^ 1);
-}
-
-PluginMenu::PluginMenu() : BC_SubMenu() {}
-
-PluginItem::PluginItem(MWindow *mwindow, char *text, int number)
- : BC_MenuItem(text) 
-{
-	this->mwindow = mwindow; 
-	this->number = number; 
-	set_checked(0);
-}
-int PluginItem::handle_event()
-{
-//	mwindow->tracks->toggle_auto_plugin(number);
-	set_checked(get_checked() ^ 1);
-}

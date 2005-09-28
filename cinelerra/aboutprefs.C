@@ -20,22 +20,28 @@ AboutPrefs::~AboutPrefs()
 
 int AboutPrefs::create_objects()
 {
-	int x = 5, y = 20;
+	int x, y;
 
+	BC_Resources *resources = BC_WindowBase::get_resources();
 
-
-
-
-
+	add_subwindow(new BC_Title(mwindow->theme->preferencestitle_x, 
+		mwindow->theme->preferencestitle_y, 
+		_("About"), 
+		LARGEFONT, 
+		resources->text_default));
+	
+	x = mwindow->theme->preferencesoptions_x;
+	y = mwindow->theme->preferencesoptions_y +
+		get_text_height(LARGEFONT);
 
 	char license1[BCTEXTLEN];
 	sprintf(license1, "%s %s", _("Cinelerra "), CINELERRA_VERSION);
 
 	set_font(LARGEFONT);
-	set_color(BLACK);
+	set_color(resources->text_default);
 	draw_text(x, y, license1);
-	y += get_text_height(LARGEFONT);
 
+	y += get_text_height(LARGEFONT);
 	char license2[BCTEXTLEN];
 	sprintf(license2, "%s%s%s", 
 		_("(c) 2005 Heroine Virtual Ltd.\n\n"),
@@ -109,7 +115,7 @@ mpeg3_release());
 	draw_text(x, y, license3);
 
 	x = get_w() - mwindow->theme->about_bg->get_w() - 10;
-	y = 5;
+	y = mwindow->theme->preferencesoptions_y;
 	BC_Pixmap *temp_pixmap = new BC_Pixmap(this, 
 		mwindow->theme->about_bg,
 		PIXMAP_ALPHA);

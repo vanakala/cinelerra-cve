@@ -69,6 +69,7 @@ void ResourcePixmap::resize(int w, int h)
 	BC_Pixmap::resize(new_w, new_h);
 }
 
+
 void ResourcePixmap::draw_data(Edit *edit,
 	int64_t edit_x,
 	int64_t edit_w, 
@@ -80,10 +81,19 @@ void ResourcePixmap::draw_data(Edit *edit,
 {
 // Get new areas to fill in relative to pixmap
 // Area to redraw relative to pixmap
-	int refresh_x = 0, refresh_w = 0;
-	int64_t index_zoom = 0;
+	int refresh_x = 0;
+	int refresh_w = 0;
 
-//printf("ResourcePixmap::draw_data 1\n");
+
+
+	int y = 0;
+	if(mwindow->edl->session->show_titles) y += mwindow->theme->title_bg_data->get_h();
+	Track *track = edit->edits->track;
+
+
+// If index can't be drawn, don't do anything.
+	int need_redraw = 0;
+	int64_t index_zoom = 0;
 	if(indexes_only)
 	{
 		IndexFile indexfile(mwindow);
@@ -92,14 +102,23 @@ void ResourcePixmap::draw_data(Edit *edit,
 			index_zoom = edit->asset->index_zoom;
 			indexfile.close_index();
 		}
+
+		if(index_zoom)
+		{
+			if(data_type == TRACK_AUDIO)
+			{
+				double asset_over_session = (double)edit->asset->sample_rate / 
+					mwindow->edl->session->sample_rate;
+					asset_over_session;
+				if(index_zoom <= mwindow->edl->local_session->zoom_sample *
+					asset_over_session)
+					need_redraw = 1;
+			}
+		}
+
+		if(!need_redraw)
+			return;
 	}
-
-//printf("ResourcePixmap::draw_data 10\n");
-	int y = 0;
-	if(mwindow->edl->session->show_titles) y += mwindow->theme->title_bg_data->get_h();
-	Track *track = edit->edits->track;
-
-//printf("ResourcePixmap::draw_data 20\n");
 
 
 // Redraw everything
@@ -116,8 +135,9 @@ void ResourcePixmap::draw_data(Edit *edit,
 		(data_type == TRACK_AUDIO && 
 			mwindow->edl->local_session->zoom_y != zoom_y) ||
 		force ||
-		(indexes_only && mwindow->edl->local_session->zoom_sample >= index_zoom))
+		need_redraw)
 	{
+// Shouldn't draw at all if zoomed in below index zoom.
 		refresh_x = 0;
 		refresh_w = pixmap_w;
 	}
@@ -288,7 +308,6 @@ void ResourcePixmap::draw_data(Edit *edit,
 		}
 	}
 
-//printf("ResourcePixmap::draw_data 50\n");
 // Update pixmap settings
 	this->edit_id = edit->id;
 	this->startsource = edit->startsource;
@@ -303,11 +322,8 @@ void ResourcePixmap::draw_data(Edit *edit,
 	this->zoom_sample = mwindow->edl->local_session->zoom_sample;
 	this->zoom_track = mwindow->edl->local_session->zoom_track;
 	this->zoom_y = mwindow->edl->local_session->zoom_y;
-//printf("ResourcePixmap::draw_data 2 refresh_x1=%d refresh_w1=%d refresh_x2=%d refresh_w2=%d\n", 
-// 	refresh_x1, refresh_w1, refresh_x2, refresh_w2);
 
 
-//printf("ResourcePixmap::draw_data 60\n");
 
 // Draw in new background
 	if(refresh_w > 0)
@@ -329,13 +345,10 @@ void ResourcePixmap::draw_data(Edit *edit,
 		switch(track->data_type)
 		{
 			case TRACK_AUDIO:
-//printf("ResourcePixmap::draw_data 4\n");
 				draw_audio_resource(edit, refresh_x, refresh_w);
-//printf("ResourcePixmap::draw_data 5\n");
 				break;
 
 			case TRACK_VIDEO:
-//printf("ResourcePixmap::draw_data 6\n");
 				draw_video_resource(edit, 
 					edit_x, 
 					edit_w, 
@@ -343,7 +356,6 @@ void ResourcePixmap::draw_data(Edit *edit,
 					pixmap_w,
 					refresh_x, 
 					refresh_w);
-//printf("ResourcePixmap::draw_data 7\n");
 				break;
 		}
 	}
@@ -351,11 +363,6 @@ void ResourcePixmap::draw_data(Edit *edit,
 // Draw title
 	if(mwindow->edl->session->show_titles)
 		draw_title(edit, edit_x, edit_w, pixmap_x, pixmap_w);
-
-//printf("ResourcePixmap::draw_data 3 refresh_x=%d refresh_w=%d\n", 
-//refresh_x, 
-//refresh_w);
-//printf("ResourcePixmap::draw_data 10\n");
 }
 
 void ResourcePixmap::draw_title(Edit *edit,
@@ -440,9 +447,11 @@ void ResourcePixmap::draw_audio_resource(Edit *edit, int x, int w)
 			if(!indexfile.open_index(edit->asset))
 			{
 				if(edit->asset->index_zoom > 
-					mwindow->edl->local_session->zoom_sample * 
-					asset_over_session)
+						mwindow->edl->local_session->zoom_sample * 
+						asset_over_session)
+				{
 					draw_audio_source(edit, x, w);
+				}
 				else
 					indexfile.draw_index(this, edit, x, w);
 				indexfile.close_index();
@@ -521,6 +530,7 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 		}
 
 		delete [] buffer;
+		canvas->test_timer();
 	}
 	else
 // Multiple sample zoom
@@ -657,6 +667,9 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 
 
 			}
+
+
+			canvas->test_timer();
 		}
 		delete [] buffer;
 	}
@@ -828,6 +841,9 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 			x += Units::round(frame_w);
 			project_frame = (int64_t)((double)(x + pixmap_x - edit_x) / frame_w);
 		}
+
+
+		canvas->test_timer();
 	}
 
 	if(source)

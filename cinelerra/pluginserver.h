@@ -88,7 +88,7 @@ public:
 // save configuration of plugin
 	void save_data(KeyFrame *keyframe);          
 // Update EDL and playback engines to reflect changes
-	void sync_parameters(const char *plugin_string);
+	void sync_parameters();
 // set for realtime processor usage
 	int set_realtime_sched();
 	int get_gui_status();

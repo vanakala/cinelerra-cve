@@ -78,7 +78,6 @@ public:
 		int plugin_type);
 	void insert_plugin_set(Track *track, double position);
 	void detach_effect(Plugin *plugin);
-	void detach_shared_effects(int module);	// detach shared effects referencing module
 // Insert a track from another EDL
 	void insert_track(Track *track, 
 		double position, 
@@ -116,6 +115,8 @@ public:
 		int convert_units,
 		int use_nudge);
 
+// detach shared effects referencing module
+	void detach_shared_effects(int module);	
 
 
 // Called by playable tracks to test for playable server.

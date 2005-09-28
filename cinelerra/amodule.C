@@ -5,6 +5,7 @@
 #include "arender.h"
 #include "asset.h"
 #include "atrack.h"
+#include "bcsignals.h"
 #include "cache.h"
 #include "edits.h"
 #include "edl.h"
@@ -16,6 +17,7 @@
 #include "module.h"
 #include "patch.h"
 #include "plugin.h"
+#include "pluginarray.h"
 #include "preferences.h"
 #include "renderengine.h"
 #include "mainsession.h"
@@ -79,7 +81,10 @@ void AModule::create_objects()
 
 int AModule::get_buffer_size()
 {
-	return renderengine->fragment_len;
+	if(renderengine)
+		return renderengine->fragment_len;
+	else
+		return plugin_array->get_bufsize();
 }
 
 void AModule::reverse_buffer(double *buffer, int64_t len)
@@ -131,12 +136,12 @@ int AModule::render(double *buffer,
 		end_project -= input_len;
 	}
 
-//printf("AModule::render 1 %p %p %d\n", this, buffer, input_len);
+SET_TRACE
 
 // Clear buffer
 	bzero(buffer, input_len * sizeof(double));
 
-//printf("AModule::render 2\n");
+SET_TRACE
 // The EDL is normalized to the requested sample rate because the requested rate may
 // be the project sample rate and a sample rate 
 // might as well be directly from the source rate to the requested rate.
@@ -160,27 +165,28 @@ int AModule::render(double *buffer,
 
 
 
-//printf("AModule::render 50\n");
+SET_TRACE
 
 
 
 // Fill output one fragment at a time
 	while(start_project < end_project)
 	{
+SET_TRACE
 		int64_t fragment_len = input_len;
 
-//printf("AModule::render 51 %lld\n", fragment_len);
 
 		if(fragment_len + start_project > end_project)
 			fragment_len = end_project - start_project;
-//printf("AModule::render 54 %lld\n", fragment_len);
 
+SET_TRACE
 // Normalize position here since update_transition is a boolean operation.
 		update_transition(start_project * 
 				edl_rate / 
 				sample_rate, 
 			PLAY_FORWARD);
 
+SET_TRACE
 		if(playable_edit)
 		{
 // Normalize EDL positions to requested rate
@@ -239,8 +245,7 @@ int AModule::render(double *buffer,
 
 
 
-
-//printf("AModule::render 70\n");
+SET_TRACE
 
 
 // Read transition into temp and render
@@ -334,12 +339,13 @@ int AModule::render(double *buffer,
 						transition->length);
 				}
 			}
+SET_TRACE
 
 			if(playable_edit && start_project + fragment_len >= edit_endproject)
 				playable_edit = (AEdit*)playable_edit->next;
 		}
 
-//printf("AModule::render 90\n");
+SET_TRACE
 		buffer_offset += fragment_len;
 		start_project += fragment_len;
 	}
@@ -349,7 +355,7 @@ int AModule::render(double *buffer,
 	if(direction == PLAY_REVERSE)
 		reverse_buffer(buffer, input_len);
 
-//printf("AModule::render 100\n");
+SET_TRACE
 
 	return result;
 }

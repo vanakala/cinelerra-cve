@@ -41,6 +41,7 @@ public:
 
 // Load the new directory and change current_dir to it.
 // This does not complete the dir path.
+// If any of the files failed to stat, it returns nonzero.
 	int update(char *new_dir = 0);
 
 // Complete the path in the string and change to the directory in the string.
@@ -74,6 +75,10 @@ public:
 	int parse_tildas(char *new_dir);     // expand tildas
 	int parse_directories(char *new_dir);  // add directories
 	int parse_dots(char *new_dir);         // move up directory tree after expanding tildas
+
+// Alphabetize all the directories and files.  By default
+// directories come first.
+	void alphabetize();
 
 // Array of files and directories in the directory pointed to by current_dir.
 // Directories are first.

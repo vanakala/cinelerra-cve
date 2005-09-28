@@ -2,21 +2,15 @@
 #define MAINMENU_H
 
 class AEffectMenu;
-class PanMenu;
-class PanItem;
-class PluginItem;
-class PluginMenu;
 class LabelsFollowEdits;
 class PluginsFollowEdits;
 class CursorOnFrames;
 class LoopPlayback;
 
 class Redo;
-class ShowConsole;
-class ShowLevels;
-class ShowVideo;
 class ShowVWindow;
 class ShowAWindow;
+class ShowGWindow;
 class ShowCWindow;
 class ShowLWindow;
 class Undo;
@@ -63,17 +57,14 @@ public:
 	int save_veffects(Defaults *defaults);
 	int add_veffect(char *title);
 
-
 	int quit();
 // show only one of these at a time
 	int set_show_autos();
-	void update_toggles();
+	void update_toggles(int use_lock);
 
 	MWindowGUI *gui;
 	MWindow *mwindow;
 	ThreadLoader *threadloader;
-	PanMenu *panmenu;
-	PluginMenu *pluginmenu;
 	MenuAEffects *aeffects;
 	MenuVEffects *veffects;
 
@@ -92,32 +83,30 @@ public:
 	int total_aeffects;
 	int total_veffects;
 	BC_Menu *filemenu, *audiomenu, *videomenu;      // needed by most recents
-	ShowConsole *show_console;
-	ShowRenderedOutput *show_output;
-	ShowLevels *show_levels;
-	ShowVideo *show_video;
-	ShowEdits *show_edits;
 
 	LabelsFollowEdits *labels_follow_edits;
 	PluginsFollowEdits *plugins_follow_edits;
 	CursorOnFrames *cursor_on_frames;
 	LoopPlayback *loop_playback;
+	ShowAssets *show_assets;
 	ShowTitles *show_titles;
 	ShowTransitions *show_transitions;
-	FadeAutomation *fade_automation;
-//	PlayAutomation *play_automation;
-	MuteAutomation *mute_automation;
-	PanAutomation *pan_automation;
-	CameraAutomation *camera_automation;
-	ProjectAutomation *project_automation;
+	ShowAutomation *fade_automation;
+	ShowAutomation *mute_automation;
+	ShowAutomation *pan_automation;
+	ShowAutomation *camera_x;
+	ShowAutomation *camera_y;
+	ShowAutomation *camera_z;
+	ShowAutomation *project_x;
+	ShowAutomation *project_y;
+	ShowAutomation *project_z;
 	PluginAutomation *plugin_automation;
-	MaskAutomation *mask_automation;
-	ModeAutomation *mode_automation;
-	CZoomAutomation *czoom_automation;
-	PZoomAutomation *pzoom_automation;
+	ShowAutomation *mask_automation;
+	ShowAutomation *mode_automation;
 	ShowVWindow *show_vwindow;
 	ShowAWindow *show_awindow;
 	ShowCWindow *show_cwindow;
+	ShowGWindow *show_gwindow;
 	ShowLWindow *show_lwindow;
 };
 
@@ -482,7 +471,6 @@ public:
 };
 
 // ========================================== window
-
 class ShowVWindow : public BC_MenuItem
 {
 public:
@@ -495,6 +483,14 @@ class ShowAWindow : public BC_MenuItem
 {
 public:
 	ShowAWindow(MWindow *mwindow);
+	int handle_event();
+	MWindow *mwindow;
+};
+
+class ShowGWindow : public BC_MenuItem
+{
+public:
+	ShowGWindow(MWindow *mwindow);
 	int handle_event();
 	MWindow *mwindow;
 };
@@ -521,53 +517,6 @@ public:
 	TileWindows(MWindow *mwindow);
 	int handle_event();
 	MWindow *mwindow;
-};
-
-class OriginalSize : public BC_MenuItem
-{
-public:
-	OriginalSize(MWindow *mwindow);
-	int handle_event();
-	MWindow *mwindow;
-};
-
-class VerticalTracks : public BC_MenuItem
-{
-public:
-	VerticalTracks(MWindow *mwindow);
-	int handle_event();
-	MWindow *mwindow;
-};
-
-
-class PanMenu : public BC_SubMenu
-{
-public:
-	PanMenu();
-};
-
-class PanItem : public BC_MenuItem
-{
-public:
-	PanItem(MWindow *mwindow, char *text, int number);
-	int handle_event();
-	MWindow *mwindow;
-	int number;
-};
-
-class PluginMenu : public BC_SubMenu
-{
-public:
-	PluginMenu();
-};
-
-class PluginItem : public BC_MenuItem
-{
-public:
-	PluginItem(MWindow *mwindow, char *text, int number);
-	int handle_event();
-	MWindow *mwindow;
-	int number;
 };
 
 #endif

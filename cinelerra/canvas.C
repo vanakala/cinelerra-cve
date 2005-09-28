@@ -94,7 +94,7 @@ float Canvas::get_x_offset(EDL *edl,
 		}
 		else
 			return ((float)-canvas->get_w() / zoom_x + 
-				edl->calculate_output_w(single_channel)) / 2;
+				edl->session->output_w) / 2;
 	}
 	else
 	{
@@ -134,7 +134,7 @@ float Canvas::get_y_offset(EDL *edl,
 		}
 		else
 			return ((float)-canvas->get_h() / zoom_y + 
-				edl->calculate_output_h(single_channel)) / 2;
+				edl->session->output_h) / 2;
 	}
 	else
 	{
@@ -191,10 +191,10 @@ void Canvas::get_zooms(EDL *edl,
 	{
 		zoom_x = get_zoom() * 
 			conformed_w / 
-			edl->calculate_output_w(single_channel);
+			edl->session->output_w;
 		zoom_y = get_zoom() * 
 			conformed_h / 
-			edl->calculate_output_h(single_channel);
+			edl->session->output_h;
 	}
 	else
 	{
@@ -214,8 +214,8 @@ void Canvas::get_zooms(EDL *edl,
 			out_h = (int)((float)out_w / (conformed_w / conformed_h) + 0.5);
 		}
 
-		zoom_x = (float)out_w / edl->calculate_output_w(single_channel);
-		zoom_y = (float)out_h / edl->calculate_output_h(single_channel);
+		zoom_x = (float)out_w / edl->session->output_w;
+		zoom_y = (float)out_h / edl->session->output_h;
 //printf("get zooms 2 %d %d %f %f\n", canvas_w, canvas_h, conformed_w, conformed_h);
 	}
 }
@@ -390,7 +390,7 @@ int Canvas::scrollbars_exist()
 int Canvas::get_output_w(EDL *edl)
 {
 	if(use_scrollbars)
-		return edl->calculate_output_w(0);
+		return edl->session->output_w;
 	else
 		return edl->session->output_w;
 }
@@ -400,7 +400,7 @@ int Canvas::get_output_h(EDL *edl)
 	if(edl)
 	{
 		if(use_scrollbars)
-			return edl->calculate_output_h(0);
+			return edl->session->output_h;
 		else
 			return edl->session->output_h;
 	}
@@ -421,8 +421,8 @@ void Canvas::get_scrollbars(EDL *edl,
 
 	if(edl)
 	{
-		w_needed = edl->calculate_output_w(0);
-		h_needed = edl->calculate_output_h(0);
+		w_needed = edl->session->output_w;
+		h_needed = edl->session->output_h;
 		w_visible = w_needed;
 		h_visible = h_needed;
 	}
@@ -430,8 +430,8 @@ void Canvas::get_scrollbars(EDL *edl,
 
 	if(use_scrollbars)
 	{
-		w_needed = edl->calculate_output_w(0);
-		h_needed = edl->calculate_output_h(0);
+		w_needed = edl->session->output_w;
+		h_needed = edl->session->output_h;
 		get_zooms(edl, 0, zoom_x, zoom_y, conformed_w, conformed_h);
 //printf("Canvas::get_scrollbars 2 %d %d\n", get_xscroll(), get_yscroll());
 
@@ -513,7 +513,7 @@ void Canvas::get_scrollbars(EDL *edl,
 		else
 			yscroll->reposition_window(canvas_x + canvas_w, canvas_y, canvas_h);
 
-		if(yscroll->get_length() != edl->calculate_output_h(0) ||
+		if(yscroll->get_length() != edl->session->output_h ||
 			yscroll->get_handlelength() != h_visible)
 			yscroll->update_length(h_needed, get_yscroll(), h_visible);
 	}
@@ -799,9 +799,14 @@ CanvasPopup::~CanvasPopup()
 void CanvasPopup::create_objects()
 {
 	add_item(new CanvasPopupSize(canvas, _("Zoom 25%"), 0.25));
+	add_item(new CanvasPopupSize(canvas, _("Zoom 33%"), 0.33));
 	add_item(new CanvasPopupSize(canvas, _("Zoom 50%"), 0.5));
+	add_item(new CanvasPopupSize(canvas, _("Zoom 75%"), 0.75));
 	add_item(new CanvasPopupSize(canvas, _("Zoom 100%"), 1.0));
+	add_item(new CanvasPopupSize(canvas, _("Zoom 150%"), 1.5));
 	add_item(new CanvasPopupSize(canvas, _("Zoom 200%"), 2.0));
+	add_item(new CanvasPopupSize(canvas, _("Zoom 300%"), 3.0));
+	add_item(new CanvasPopupSize(canvas, _("Zoom 400%"), 4.0));
 	if(canvas->use_cwindow)
 	{
 		add_item(new CanvasPopupResetCamera(canvas));

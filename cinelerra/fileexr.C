@@ -252,7 +252,7 @@ int FileEXR::get_best_colormodel(Asset *asset, int driver)
 
 int FileEXR::get_memory_usage()
 {
-	int result = FileBase::get_memory_usage();
+	int result = FileList::get_memory_usage();
 	if(temp_y) result += asset->width * asset->height * 3 / 2;
 	return result;
 }
@@ -261,20 +261,26 @@ int FileEXR::get_memory_usage()
 int FileEXR::read_frame_header(char *path)
 {
 	int result = 0;
-	FILE *stream;
 
-	if(!(stream = fopen(path, "rb")))
-	{
-		perror("FileEXR::read_frame_header");
-		return 1;
-	}
-	int size = FileSystem::get_size(path);
-	char *buffer = new char[size];
-	fread(buffer, size, 1, stream);
-	fclose(stream);
+// This may have been used by VFS
+// 	FILE *stream;
+// 
+// 	if(!(stream = fopen(path, "rb")))
+// 	{
+// 		perror("FileEXR::read_frame_header");
+// 		return 1;
+// 	}
+// 	int size = FileSystem::get_size(path);
+// 	char *buffer = new char[size];
+// 	fread(buffer, size, 1, stream);
+// 	fclose(stream);
+// 
+// 	EXRIStream exr_stream(buffer, size);
+// 	Imf::InputFile file(exr_stream);
 
-	EXRIStream exr_stream(buffer, size);
-	Imf::InputFile file(exr_stream);
+
+	Imf::InputFile file(path);
+
 	Imath::Box2i dw = file.header().dataWindow();
 	
 	asset->width = dw.max.x - dw.min.x + 1;
@@ -295,7 +301,7 @@ int FileEXR::read_frame_header(char *path)
 // printf("%s\n", i.name());
 // }
 
-	delete [] buffer;
+//	delete [] buffer;
 	return result;
 }
 
@@ -553,7 +559,7 @@ EXRConfigVideo::EXRConfigVideo(BC_WindowBase *parent_window, Asset *asset)
  	parent_window->get_abs_cursor_x(1),
  	parent_window->get_abs_cursor_y(1),
 	300,
-	100)
+	BC_OKButton::calculate_h() + 100)
 {
 	this->parent_window = parent_window;
 	this->asset = asset;

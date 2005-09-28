@@ -103,6 +103,18 @@ void BatchRenderJob::load(FileXML *file)
 		{
 			file->tag.get_property("SRC", asset->path);
 			asset->read(file, 0);
+// The compression parameters are stored in the defaults to reduce
+// coding maintenance.  The defaults must now be stuffed into the XML for
+// unique storage.
+			Defaults defaults;
+			defaults.load_string(file->read_text());
+			asset->load_defaults(&defaults,
+				"",
+				0,
+				1,
+				0,
+				0,
+				0);
 		}
 	}
 }
@@ -125,6 +137,22 @@ TRACE("BatchRenderJob::save 1");
 	asset->write(file,
 		0,
 		"");
+
+// The compression parameters are stored in the defaults to reduce
+// coding maintenance.  The defaults must now be stuffed into the XML for
+// unique storage.
+	Defaults defaults;
+	asset->save_defaults(&defaults, 
+		"",
+		0,
+		1,
+		0,
+		0,
+		0);
+	char *string;
+	defaults.save_string(string);
+	file->append_text(string);
+	delete [] string;
 TRACE("BatchRenderJob::save 1");
 	file->tag.set_title("/JOB");
 TRACE("BatchRenderJob::save 1");
@@ -701,19 +729,19 @@ void BatchRenderGUI::create_objects()
 		x, 
 		y,
 		get_w() - x - 10,
-		get_h() - y - 50));
+		get_h() - y - BC_GenericButton::calculate_h() - 15));
 
 	y += batch_list->get_h() + 10;
 	add_subwindow(start_button = new BatchRenderStart(thread, 
 	    x, 
 	    y));
 	x = get_w() / 2 -
-		mwindow->theme->get_image_set("batch_render_stop")[0]->get_w() / 2;
+		BC_GenericButton::calculate_w(this, _("Stop")) / 2;
 	add_subwindow(stop_button = new BatchRenderStop(thread, 
 		x, 
 		y));
 	x = get_w() - 
-		mwindow->theme->get_image_set("batch_render_cancel")[0]->get_w() - 
+		BC_GenericButton::calculate_w(this, _("Cancel")) - 
 		10;
 	add_subwindow(cancel_button = new BatchRenderCancel(thread, 
 		x, 
@@ -770,17 +798,18 @@ int BatchRenderGUI::resize_event(int w, int h)
 
 	x = x2;
 	y = y2;
+	int y_margin = get_h() - batch_list->get_h();
 	list_title->reposition_window(x, y);
 	y += 20;
-	batch_list->reposition_window(x, y, w - x - 10, h - y - 50);
+	batch_list->reposition_window(x, y, w - x - 10, h - y_margin);
 
 	y += batch_list->get_h() + 10;
 	start_button->reposition_window(x, y);
 	x = w / 2 - 
-		mwindow->theme->get_image_set("batch_render_stop")[0]->get_w() / 2;
+		stop_button->get_w() / 2;
 	stop_button->reposition_window(x, y);
 	x = w -
-		mwindow->theme->get_image_set("batch_render_cancel")[0]->get_w() - 
+		cancel_button->get_w() - 
 		10;
 	cancel_button->reposition_window(x, y);
 	return 1;
@@ -1066,9 +1095,9 @@ int BatchRenderList::drag_stop_event()
 BatchRenderStart::BatchRenderStart(BatchRenderThread *thread, 
 	int x, 
 	int y)
- : BC_Button(x, 
+ : BC_GenericButton(x, 
  	y, 
-	thread->mwindow->theme->get_image_set(_("batch_render_start")))
+	_("Start"))
 {
 	this->thread = thread;
 }
@@ -1082,9 +1111,9 @@ int BatchRenderStart::handle_event()
 BatchRenderStop::BatchRenderStop(BatchRenderThread *thread, 
 	int x, 
 	int y)
- : BC_Button(x, 
+ : BC_GenericButton(x, 
  	y, 
-	thread->mwindow->theme->get_image_set(_("batch_render_stop")))
+	_("Stop"))
 {
 	this->thread = thread;
 }
@@ -1101,9 +1130,9 @@ int BatchRenderStop::handle_event()
 BatchRenderCancel::BatchRenderCancel(BatchRenderThread *thread, 
 	int x, 
 	int y)
- : BC_Button(x, 
+ : BC_GenericButton(x, 
  	y, 
-	thread->mwindow->theme->get_image_set(_("batch_render_cancel")))
+	_("Cancel"))
 {
 	this->thread = thread;
 }

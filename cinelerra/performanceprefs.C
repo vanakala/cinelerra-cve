@@ -7,6 +7,7 @@
 #include "performanceprefs.h"
 #include "preferences.h"
 #include <string.h>
+#include "theme.h"
 
 
 PerformancePrefs::PerformancePrefs(MWindow *mwindow, PreferencesWindow *pwindow)
@@ -26,25 +27,27 @@ PerformancePrefs::~PerformancePrefs()
 
 int PerformancePrefs::create_objects()
 {
-	int x = 5, y = 5;
-	int xmargin1 = 5;
+	int x, y;
+	int xmargin1;
 	int xmargin2 = 170;
 	int xmargin3 = 250;
 	int xmargin4 = 380;
 	char string[BCTEXTLEN];
+	BC_Resources *resources = BC_WindowBase::get_resources();
 
 	node_list = 0;
 	generate_node_list();
 
-// 	add_border(get_resources()->get_bg_shadow1(),
-// 		get_resources()->get_bg_shadow2(),
-// 		get_resources()->get_bg_color(),
-// 		get_resources()->get_bg_light2(),
-// 		get_resources()->get_bg_light1());
-	add_subwindow(new BC_Title(x, y, _("Performance"), LARGEFONT, BLACK));
+	add_subwindow(new BC_Title(mwindow->theme->preferencestitle_x, 
+		mwindow->theme->preferencestitle_y, 
+		_("Performance"), 
+		LARGEFONT, 
+		resources->text_default));
 
-	y += 30;
-	add_subwindow(new BC_Title(x, y + 5, _("Cache size (MB):"), MEDIUMFONT, BLACK));
+	xmargin1 = x = mwindow->theme->preferencesoptions_x;
+	y = mwindow->theme->preferencesoptions_y;
+	
+	add_subwindow(new BC_Title(x, y + 5, _("Cache size (MB):"), MEDIUMFONT, resources->text_default));
 	cache_size = new CICacheSize(x + 230, 
 		y, 
 		pwindow, 
@@ -64,7 +67,14 @@ int PerformancePrefs::create_objects()
 	y += 35;
 
 
-	add_subwindow(new BC_Title(x, y, _("Background Rendering"), LARGEFONT, BLACK));
+
+
+// Background rendering
+	add_subwindow(new BC_Bar(5, y, 	get_w() - 10));
+	y += 5;
+
+
+	add_subwindow(new BC_Title(x, y, _("Background Rendering (Video only)"), LARGEFONT, resources->text_default));
 	y += 30;
 
 	add_subwindow(new PrefsUseBRender(pwindow, 
@@ -107,7 +117,13 @@ int PerformancePrefs::create_objects()
 		1); // Supply file formats for background rendering
 	x = xmargin1;
 
-	add_subwindow(new BC_Title(x, y, _("Render Farm"), LARGEFONT, BLACK));
+
+// Renderfarm
+	add_subwindow(new BC_Bar(5, y, 	get_w() - 10));
+	y += 5;
+
+
+	add_subwindow(new BC_Title(x, y, _("Render Farm"), LARGEFONT, resources->text_default));
 	y += 25;
 
 	add_subwindow(new PrefsRenderFarm(pwindow, x, y));
@@ -176,10 +192,10 @@ N_("Master node framerate: %0.3f")
 		y);
 	jobs->create_objects();
 	y += 55;
-	add_subwindow(new PrefsRenderFarmVFS(pwindow,
-		this,
-		x,
-		y));
+// 	add_subwindow(new PrefsRenderFarmVFS(pwindow,
+// 		this,
+// 		x,
+// 		y));
 // 	add_subwindow(new BC_Title(x, 
 // 		y, 
 // 		_("Filesystem prefix on remote nodes:")));

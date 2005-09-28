@@ -230,7 +230,7 @@ int TitleWindow::create_objects()
 	x += 110;
 
 	add_tool(color_button = new TitleColorButton(client, this, x, y + 20));
-	x += 90;
+	x += color_button->get_w();
 	color_x = x;
 	color_y = y + 20;
 	color_thread = new TitleColorThread(client, this);

@@ -16,7 +16,7 @@ public:
 	Auto* new_auto();
 
 
-	int dump();
+	void dump();
 
 	static void avg_points(MaskPoint *output, 
 		MaskPoint *input1, 
@@ -28,13 +28,8 @@ public:
 // Perform interpolation
 	void get_points(ArrayList<MaskPoint*> *points, int submask, int64_t position, int direction);
 	int total_submasks(int64_t position, int direction);
-// Retrieve parameters which don't change over time but are stored somewhere
-// in mask autos.  These parameters are taken from default_auto.
-
-
-// Translates ALL mask points (got all keyframes and submasks) 
+// Translates all mask points
 	void translate_masks(float translate_x, float translate_y);
-
 };
 
 

@@ -112,6 +112,8 @@ int cmodel_calculate_max(int colormodel);
 int cmodel_components(int colormodel);
 int cmodel_is_yuv(int colormodel);
 
+
+
 void cmodel_transfer(unsigned char **output_rows, /* Leave NULL if non existent */
 	unsigned char **input_rows,
 	unsigned char *out_y_plane, /* Leave NULL if non existent */
@@ -137,6 +139,7 @@ void cmodel_transfer(unsigned char **output_rows, /* Leave NULL if non existent 
 void cmodel_init_yuv(cmodel_yuv_t *yuv_table);
 void cmodel_delete_yuv(cmodel_yuv_t *yuv_table);
 int cmodel_bc_to_x(int color_model);
+
 // Tell when to use plane arguments or row pointer arguments to functions
 int cmodel_is_planar(int color_model);
 void cmodel_to_text(char *string, int cmodel);

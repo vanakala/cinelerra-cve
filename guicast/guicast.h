@@ -1,6 +1,7 @@
 #ifndef GUICAST_H
 #define GUICAST_H
 
+#include "bcbar.h"
 #include "bcbitmap.h"
 #include "bcbutton.h"
 #include "bcclipboard.h"

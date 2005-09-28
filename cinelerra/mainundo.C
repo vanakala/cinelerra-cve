@@ -56,6 +56,17 @@ MainUndo::~MainUndo()
 	delete [] data_after;
 }
 
+void MainUndo::update_undo(char *description, uint32_t load_flags, 
+		void *creator, int changes_made)
+{
+	MainUndoStackItem* new_entry = new MainUndoStackItem(this, description, load_flags);
+
+// the old data_after is the state before the change
+	new_entry->set_data_before(data_after);
+
+	push_undo_item(new_entry);
+}
+
 void MainUndo::push_undo_item(UndoStackItem *item)
 {
 // clear redo_stack
@@ -87,26 +98,6 @@ void MainUndo::capture_state()
 	delete [] data_after;
 	data_after = new char[strlen(file.string)+1];
 	strcpy(data_after, file.string);
-}
-
-void MainUndo::update_undo_before(char *description, uint32_t load_flags)
-{
-	if(!new_entry)
-	{
-		new_entry = new MainUndoStackItem(this, description, load_flags);
-	}
-}
-
-void MainUndo::update_undo_after()
-{
-	if(new_entry)
-	{
-// the old data_after is the state before the change
-		new_entry->set_data_before(data_after);
-
-		push_undo_item(new_entry);
-		new_entry = 0;
-	}
 }
 
 void MainUndo::push_state(char *description, uint32_t load_flags)
@@ -265,7 +256,7 @@ void MainUndoStackItem::load_from_undo(FileXML *file, uint32_t load_flags)
 		asset;
 		asset = asset->next)
 	{
-		mwindow->mainindexes->add_next_asset(asset);
+		mwindow->mainindexes->add_next_asset(0, asset);
 	}
 	mwindow->mainindexes->start_build();
 }

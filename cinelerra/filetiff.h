@@ -39,11 +39,11 @@ public:
 // values stored in Asset::tiff_cmodel
 // Data types
 		RGB_888,
+		RGB_161616,
 		RGBA_8888,
+		RGBA_16161616,
 		RGB_FLOAT,
 		RGBA_FLOAT,
-		RGB_161616,
-		RGBA_16161616,
 		GREYSCALE,
 // values stored in Asset::tiff_compression
 // Compression types

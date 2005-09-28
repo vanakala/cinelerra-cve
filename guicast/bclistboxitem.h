@@ -14,10 +14,11 @@ class BC_ListBoxItem
 public:
 	BC_ListBoxItem();
 // New items
-	BC_ListBoxItem(char *text, int color = BLACK);
+	BC_ListBoxItem(char *text, 
+		int color = -1);
 	BC_ListBoxItem(char *text, 
 		BC_Pixmap *icon, 
-		int color = BLACK);
+		int color = -1);
 	
 
 

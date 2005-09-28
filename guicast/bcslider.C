@@ -82,6 +82,18 @@ int BC_Slider::initialize()
 	return 0;
 }
 
+int BC_Slider::get_span(int vertical)
+{
+	if(vertical)
+	{
+		return BC_WindowBase::get_resources()->vertical_slider_data[0]->get_w();
+	}
+	else
+	{
+		return BC_WindowBase::get_resources()->horizontal_slider_data[0]->get_h();
+	}
+}
+
 int BC_Slider::draw_face()
 {
 // Clear background

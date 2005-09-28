@@ -842,7 +842,7 @@ WINDOW_CLOSE_EVENT(CompressorWindow)
 void CompressorWindow::draw_scales()
 {
 	set_font(SMALLFONT);
-	set_color(BLACK);
+	set_color(get_resources()->default_text_color);
 
 #define DIVISIONS 8
 	for(int i = 0; i <= DIVISIONS; i++)

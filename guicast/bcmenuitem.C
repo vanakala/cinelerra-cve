@@ -278,10 +278,6 @@ int BC_MenuItem::dispatch_key_press()
 	
 	if(!result)
 	{
-// printf("BC_MenuItem::dispatch_key_press 1 %d == %d %d == %d %d == %d\n",
-// 	top_level->get_keypress(), hotkey, 
-// 	shift_hotkey, top_level->shift_down(),
-// 	alt_hotkey, top_level->alt_down());
 
 		if(top_level->get_keypress() == hotkey && 
 			shift_hotkey == top_level->shift_down() &&
@@ -309,6 +305,7 @@ int BC_MenuItem::draw()
 	}
 	else
 	{
+		int offset = 0;
 		if(highlighted)
 		{
 			int y = this->y;
@@ -318,7 +315,7 @@ int BC_MenuItem::draw()
 // Button down
 			if(top_level->get_button_down() && !submenu)
 			{
-				if(menu_popup->item_bg[2])
+				if(menu_popup->item_bg[MENUITEM_DN])
 				{
 					menu_popup->get_popup()->draw_9segment(MENUITEM_MARGIN,
 						y,
@@ -338,6 +335,7 @@ int BC_MenuItem::draw()
 						resources->menu_down,
 						resources->menu_light);
 				}
+				offset = 1;
 			}
 			else
 // Highlighted
@@ -348,7 +346,7 @@ int BC_MenuItem::draw()
 						y,
 						menu_popup->get_w() - MENUITEM_MARGIN * 2,
 						h,
-						menu_popup->item_bg[1]);
+						menu_popup->item_bg[MENUITEM_HI]);
 				}
 				else
 				{
@@ -367,16 +365,16 @@ int BC_MenuItem::draw()
 		  }
 		if(checked)
 		{
-			menu_popup->get_popup()->draw_check(10, y + 2);
+			menu_popup->get_popup()->draw_check(10 + offset, y + 2 + offset);
 			menu_popup->get_popup()->set_font(MEDIUMFONT);
-			menu_popup->get_popup()->draw_text(30, y + h - text_line - 2, text);
-			menu_popup->get_popup()->draw_text(menu_popup->get_key_x(), y + h - text_line - 2, hotkey_text);
+			menu_popup->get_popup()->draw_text(30 + offset, y + h - text_line - 2 + offset, text);
+			menu_popup->get_popup()->draw_text(menu_popup->get_key_x() + offset, y + h - text_line - 2 + offset, hotkey_text);
 		}
 		else
 		{
 			menu_popup->get_popup()->set_font(MEDIUMFONT);
-			menu_popup->get_popup()->draw_text(10, y + h - text_line - 2, text);
-			menu_popup->get_popup()->draw_text(menu_popup->get_key_x(), y + h - text_line - 2, hotkey_text);
+			menu_popup->get_popup()->draw_text(10 + offset, y + h - text_line - 2 + offset, text);
+			menu_popup->get_popup()->draw_text(menu_popup->get_key_x() + offset, y + h - text_line - 2 + offset, hotkey_text);
 		}
 	}
 	return 0;

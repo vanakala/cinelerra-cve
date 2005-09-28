@@ -370,7 +370,7 @@ void VDeviceBUZ::create_channeldb(ArrayList<Channel*> *channeldb)
 	;
 }
 
-int VDeviceBUZ::set_picture(Picture *picture)
+int VDeviceBUZ::set_picture(PictureConfig *picture)
 {
 	this->brightness = (int)((float)picture->brightness / 100 * 32767 + 32768);
 	this->hue = (int)((float)picture->hue / 100 * 32767 + 32768);

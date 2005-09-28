@@ -133,6 +133,7 @@ BC_WindowBase::~BC_WindowBase()
 
 int BC_WindowBase::initialize()
 {
+	test_keypress = 0;
 	is_deleting = 0;
 	window_lock = 0;
 	x = 0; 
@@ -166,8 +167,9 @@ int BC_WindowBase::initialize()
 	tooltip_popup = 0;
 	tooltip_done = 0;
 	current_font = MEDIUMFONT;
-	current_cursor = ARROW_CURSOR;
 	current_color = BLACK;
+	prev_cursor = current_cursor = ARROW_CURSOR;
+	hourglass_total = 0;
 	is_dragging = 0;
 	shared_bg_pixmap = 0;
 	icon_pixmap = 0;
@@ -402,7 +404,8 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 			CWSaveUnder | 
 			CWCursor;
 
-		attr.event_mask = DEFAULT_EVENT_MASKS;
+		attr.event_mask = DEFAULT_EVENT_MASKS |
+			KeyPressMask;
 
 		if(this->bg_color == -1)
 			this->bg_color = resources.get_bg_color();
@@ -574,6 +577,8 @@ int BC_WindowBase::run_window()
 
 int BC_WindowBase::get_key_masks(XEvent *event)
 {
+// printf("BC_WindowBase::get_key_masks %llx\n", 
+// event->xkey.state);
 // ctrl key down
 	ctrl_mask = (event->xkey.state & ControlMask) ? 1 : 0;
 // shift key down
@@ -603,15 +608,14 @@ int BC_WindowBase::dispatch_event()
 
 // If an event is waiting get it, otherwise
 // wait for next event only if there are no compressed events.
-	if(/* XPending(display) */ 
-		get_event_count() || 
+	if(get_event_count() || 
 		(!motion_events && !resize_events && !translation_events))
 	{
 //		XNextEvent(display, event);
 		event = get_event();
 // Lock out window deletions
 		lock_window("BC_WindowBase::dispatch_event 1");
-		get_key_masks(event);
+//		get_key_masks(event);
 	}
 	else
 // Handle compressed events
@@ -634,10 +638,14 @@ int BC_WindowBase::dispatch_event()
 	switch(event->type)
 	{
 		case ClientMessage:
+			get_key_masks(event);
 // Clear the resize buffer
 			if(resize_events) dispatch_resize_event(last_resize_w, last_resize_h);
 // Clear the motion buffer since this can clear the window
-			if(motion_events) dispatch_motion_event();
+			if(motion_events)
+			{
+				dispatch_motion_event();
+			}
 
 			ptr = (XClientMessageEvent*)event;
 
@@ -678,7 +686,16 @@ int BC_WindowBase::dispatch_event()
 			dispatch_focus_out();
 			break;
 
+// Maximized
+		case MapNotify:
+			break;
+
+// Minimized
+		case UnmapNotify:
+			break;
+
 		case ButtonPress:
+			get_key_masks(event);
 			cursor_x = event->xbutton.x;
 			cursor_y = event->xbutton.y;
 			button_number = event->xbutton.button;
@@ -709,6 +726,7 @@ int BC_WindowBase::dispatch_event()
 			break;
 
 		case ButtonRelease:
+			get_key_masks(event);
 			button_number = event->xbutton.button;
 			event_win = event->xany.window;
 			if (button_number != 4 && button_number != 5) 
@@ -724,6 +742,7 @@ int BC_WindowBase::dispatch_event()
 			break;
 
 		case MotionNotify:
+			get_key_masks(event);
 // Dispatch previous motion event if this is a subsequent motion from a different window
 			if(motion_events && last_motion_win != event->xany.window)
 			{
@@ -738,6 +757,7 @@ int BC_WindowBase::dispatch_event()
 			break;
 
 		case ConfigureNotify:
+			get_key_masks(event);
 			XTranslateCoordinates(top_level->display, 
 				top_level->win, 
 				top_level->rootwin, 
@@ -784,11 +804,19 @@ int BC_WindowBase::dispatch_event()
 			break;
 
 		case KeyPress:
+			get_key_masks(event);
   			keys_return[0] = 0;
   			XLookupString((XKeyEvent*)event, keys_return, 1, &keysym, 0);
-//printf("BC_WindowBase::dispatch_event %08x\n", keys_return[0]);
+
+// printf("BC_WindowBase::dispatch_event 2 %llx\n", 
+// event->xkey.state);
 // block out control keys
 			if(keysym > 0xffe0 && keysym < 0xffff) break;
+
+
+			if(test_keypress) printf("BC_WindowBase::dispatch_event %x\n", keysym);
+
+
   			switch(keysym)
 			{
 // block out extra keys
@@ -962,7 +990,7 @@ int BC_WindowBase::dispatch_motion_event()
 // Test for grab
 		if(get_button_down() && !active_menubar && !active_popup_menu)
 		{
-			if(!result) 
+			if(!result)
 			{
 				cursor_x = last_motion_x;
 				cursor_y = last_motion_y;
@@ -1101,45 +1129,10 @@ int BC_WindowBase::dispatch_button_release()
 	return result;
 }
 
-// int BC_WindowBase::dispatch_repeat_event_master(long duration)
-// {
-// 	int result = 0;
-// 	BC_Repeater *repeater;
-// 
-// // Unlock the repeater if it still exists.
-// 	for(int i = 0; i < repeaters.total; i++)
-// 	{
-// 		if(repeaters.values[i]->repeat_id == repeat_id)
-// 		{
-// 			repeater = repeaters.values[i];
-// 			if(repeater->interrupted)
-// 			{
-// // Disregard
-// 				if(interrupt_now)
-// 				{
-// // Delete now
-// 					repeater->join();
-// 					repeaters.remove(repeater);
-// 					delete repeater;
-// 				}
-// 			}
-// 			else
-// 			{
-// // Propogate to subwindows
-// 				if(active_menubar) result = active_menubar->dispatch_repeat_event(repeat_id);
-// 				if(!result && active_subwindow) result = active_subwindow->dispatch_repeat_event(repeat_id);
-// 				if(!result) result = dispatch_repeat_event(repeat_id);
-// 				repeater->repeat_mutex.unlock();
-// 			}
-// 			i = repeaters.total;
-// 		}
-// 	}
-// 
-// 	return result;
-// }
 
 int BC_WindowBase::dispatch_repeat_event(int64_t duration)
 {
+
 // all repeat event handlers get called and decide based on activity and duration
 // whether to respond
 	for(int i = 0; i < subwindows->total; i++)
@@ -1438,6 +1431,7 @@ void BC_WindowBase::init_cursors()
 	upright_resize_cursor = XCreateFontCursor(display, XC_top_right_corner);
 	downleft_resize_cursor = XCreateFontCursor(display, XC_bottom_left_corner);
 	downright_resize_cursor = XCreateFontCursor(display, XC_bottom_right_corner);
+	hourglass_cursor = XCreateFontCursor(display, XC_watch);
 }
 
 int BC_WindowBase::evaluate_color_model(int client_byte_order, int server_byte_order, int depth)
@@ -1940,15 +1934,25 @@ Cursor BC_WindowBase::get_cursor_struct(int cursor)
 		case UPRIGHT_RESIZE:       return top_level->upright_resize_cursor;    	   break;
 		case DOWNLEFT_RESIZE:      return top_level->downleft_resize_cursor;   	   break;
 		case DOWNRIGHT_RESIZE:     return top_level->downright_resize_cursor;  	   break;
+		case HOURGLASS_CURSOR:     return top_level->hourglass_cursor;  	   break;
 	}
 	return 0;
 }
 
-void BC_WindowBase::set_cursor(int cursor)
+void BC_WindowBase::set_cursor(int cursor, int is_hourglass)
 {
-	XDefineCursor(top_level->display, win, get_cursor_struct(cursor));
-	current_cursor = cursor;
-	flush();
+// don't change cursor if hourglass mode unless the caller is the hourglass routine.
+	if(is_hourglass || current_cursor != HOURGLASS_CURSOR)
+	{
+		XDefineCursor(top_level->display, win, get_cursor_struct(cursor));
+		current_cursor = cursor;
+		flush();
+	}
+	else
+// save new cursor for later
+	{
+		prev_cursor = cursor;
+	}
 }
 
 void BC_WindowBase::set_x_cursor(int cursor)
@@ -1964,6 +1968,49 @@ int BC_WindowBase::get_cursor()
 	return current_cursor;
 }
 
+void BC_WindowBase::start_hourglass()
+{
+	top_level->start_hourglass_recursive();
+	top_level->flush();
+}
+
+void BC_WindowBase::stop_hourglass()
+{
+	top_level->stop_hourglass_recursive();
+	top_level->flush();
+}
+
+void BC_WindowBase::start_hourglass_recursive()
+{
+	if(this == top_level)
+	{
+		hourglass_total++;
+		if(current_cursor == HOURGLASS_CURSOR) return;
+	}
+
+	prev_cursor = current_cursor;
+	set_cursor(HOURGLASS_CURSOR, 1);
+	for(int i = 0; i < subwindows->total; i++)
+	{
+		subwindows->values[i]->start_hourglass_recursive();
+	}
+}
+
+void BC_WindowBase::stop_hourglass_recursive()
+{
+	if(this == top_level)
+	{
+		if(hourglass_total == 0) return;
+		hourglass_total--;
+	}
+
+// Cause set_cursor to perform change
+	set_cursor(prev_cursor, 1);
+	for(int i = 0; i < subwindows->total; i++)
+	{
+		subwindows->values[i]->stop_hourglass_recursive();
+	}
+}
 
 
 
@@ -2237,13 +2284,14 @@ BC_Bitmap* BC_WindowBase::new_bitmap(int w, int h, int color_model)
 	return new BC_Bitmap(top_level, w, h, color_model);
 }
 
-int BC_WindowBase::accel_available(int color_model)
+int BC_WindowBase::accel_available(int color_model, int lock_it)
 {
 	if(window_type != MAIN_WINDOW) 
-		return top_level->accel_available(color_model);
+		return top_level->accel_available(color_model, lock_it);
 
 	int result = 0;
 
+	if(lock_it) lock_window("BC_WindowBase::accel_available");
 	switch(color_model)
 	{
 		case BC_YUV420P:
@@ -2279,6 +2327,8 @@ int BC_WindowBase::accel_available(int color_model)
 			result = 0;
 			break;
 	}
+
+	if(lock_it) unlock_window();
 //printf("BC_WindowBase::accel_available %d %d\n", color_model, result);
 	return result;
 }
@@ -2804,7 +2854,9 @@ int BC_WindowBase::get_abs_cursor_x(int lock_window)
 	unsigned int temp_mask;
 	Window temp_win;
 
+SET_TRACE
 	if(lock_window) this->lock_window("BC_WindowBase::get_abs_cursor_x");
+SET_TRACE
 	XQueryPointer(top_level->display, 
 		top_level->win, 
 		&temp_win, 
@@ -2814,7 +2866,9 @@ int BC_WindowBase::get_abs_cursor_x(int lock_window)
 		&win_x, 
 		&win_y, 
 		&temp_mask);
+SET_TRACE
 	if(lock_window) this->unlock_window();
+SET_TRACE
 	return abs_x;
 }
 
@@ -3185,20 +3239,34 @@ int BC_WindowBase::set_h(int h)
 
 int BC_WindowBase::load_defaults(Defaults *defaults)
 {
-	get_resources()->filebox_mode = defaults->get("FILEBOX_MODE", get_resources()->filebox_mode);
-	get_resources()->filebox_w = defaults->get("FILEBOX_W", get_resources()->filebox_w);
-	get_resources()->filebox_h = defaults->get("FILEBOX_H", get_resources()->filebox_h);
-	defaults->get("FILEBOX_FILTER", get_resources()->filebox_filter);
+	BC_Resources *resources = get_resources();
+	char string[BCTEXTLEN];
+	for(int i = 0; i < FILEBOX_HISTORY_SIZE; i++)
+	{
+		sprintf(string, "FILEBOX_HISTORY%d", i);
+		resources->filebox_history[i][0] = 0;
+		defaults->get(string, resources->filebox_history[i]);
+	}
+	resources->filebox_mode = defaults->get("FILEBOX_MODE", get_resources()->filebox_mode);
+	resources->filebox_w = defaults->get("FILEBOX_W", get_resources()->filebox_w);
+	resources->filebox_h = defaults->get("FILEBOX_H", get_resources()->filebox_h);
+	defaults->get("FILEBOX_FILTER", resources->filebox_filter);
 	return 0;
 }
 
 int BC_WindowBase::save_defaults(Defaults *defaults)
 {
-	defaults->update("FILEBOX_MODE", get_resources()->filebox_mode);
-	defaults->update("FILEBOX_W", get_resources()->filebox_w);
-//printf("BC_ListBox::cursor_motion_event 1 %lld\n", timer.get_difference());
-	defaults->update("FILEBOX_H", get_resources()->filebox_h);
-	defaults->update("FILEBOX_FILTER", get_resources()->filebox_filter);
+	BC_Resources *resources = get_resources();
+	char string[BCTEXTLEN];
+	for(int i = 0; i < FILEBOX_HISTORY_SIZE; i++)
+	{
+		sprintf(string, "FILEBOX_HISTORY%d", i);
+		defaults->update(string, resources->filebox_history[i]);
+	}
+	defaults->update("FILEBOX_MODE", resources->filebox_mode);
+	defaults->update("FILEBOX_W", resources->filebox_w);
+	defaults->update("FILEBOX_H", resources->filebox_h);
+	defaults->update("FILEBOX_FILTER", resources->filebox_filter);
 	return 0;
 }
 
@@ -3401,11 +3469,13 @@ XEvent* BC_WindowBase::get_event()
 	{
 		event_condition->lock("BC_WindowBase::get_event");
 		event_lock->lock("BC_WindowBase::get_event");
+
 		if(common_events.total && !done)
 		{
 			result = common_events.values[0];
 			common_events.remove_number(0);
 		}
+
 		event_lock->unlock();
 	}
 	return result;

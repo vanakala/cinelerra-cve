@@ -11,11 +11,14 @@
 #include "filedv.h"
 #include "fileogg.h"
 #include "filebase.h"
+#include "filecr2.h"
 #include "fileexr.h"
+#include "fileogg.h"
 #include "filexml.h"
 #include "filejpeg.h"
 #include "filemov.h"
 #include "filempeg.h"
+#include "fileogg.h"
 #include "filepng.h"
 #include "filesndfile.h"
 #include "filetga.h"
@@ -81,6 +84,7 @@ void File::reset_parameters()
 	resample = 0;
 	resample_float = 0;
 	use_cache = 0;
+	preferences = 0;
 }
 
 int File::raise_window()
@@ -126,13 +130,6 @@ int File::get_options(FormatTools *format,
 			break;
 		case FILE_RAWDV:
 			FileDV::get_parameters(parent_window,
-				asset,
-				format_window,
-				audio_options,
-				video_options);
-			break;
-		case FILE_OGG:
-			FileOGG::get_parameters(parent_window,
 				asset,
 				format_window,
 				audio_options,
@@ -231,8 +228,8 @@ int File::get_options(FormatTools *format,
 				audio_options, 
 				video_options);
 			break;
-		case FILE_VORBIS:
-			FileVorbis::get_parameters(parent_window,
+		case FILE_OGG:
+			FileOGG::get_parameters(parent_window,
 				asset,
 				format_window,
 				audio_options,
@@ -301,17 +298,19 @@ int File::purge_cache()
 
 
 
-int File::open_file(ArrayList<PluginServer*> *plugindb, 
+int File::open_file(Preferences *preferences, 
 	Asset *asset, 
 	int rd, 
 	int wr,
 	int64_t base_samplerate,
 	float base_framerate)
 {
+	this->preferences = preferences;
 	*this->asset = *asset;
 	file = 0;
 
 
+SET_TRACE
 //printf("File::open_file 1 %s %d\n", asset->path, asset->format);
 	switch(this->asset->format)
 	{
@@ -329,12 +328,7 @@ int File::open_file(ArrayList<PluginServer*> *plugindb,
 			char test[16];
 			fread(test, 16, 1, stream);
 
-// 			if(FileAVI::check_sig(this->asset))
-// 			{
-// 				fclose(stream);
-// 				file = new FileAVI(this->asset, this);
-// 			}
-// 			else
+SET_TRACE
 			if(FileDV::check_sig(this->asset))
 			{
 // libdv
@@ -376,6 +370,13 @@ int File::open_file(ArrayList<PluginServer*> *plugindb,
 				file = new FileYUV(this->asset, this);
 			}
 			else
+			if(FileCR2::check_sig(this->asset))
+			{
+// JPEG file
+				fclose(stream);
+				file = new FileCR2(this->asset, this);
+			}
+			else
 			if(FileTGA::check_sig(this->asset))
 			{
 // TGA file
@@ -399,9 +400,16 @@ int File::open_file(ArrayList<PluginServer*> *plugindb,
 			else
 			if(FileVorbis::check_sig(this->asset))
 			{
-// OGG Vorbis file
+// VorbisFile file
 				fclose(stream);
 				file = new FileVorbis(this->asset, this);
+			}
+			else
+			if(FileOGG::check_sig(this->asset))
+			{
+// OGG file.  Doesn't always work with pure audio files.
+				fclose(stream);
+				file = new FileOGG(this->asset, this);
 			}
 			else
 			if(FileMPEG::check_sig(this->asset))
@@ -415,8 +423,10 @@ int File::open_file(ArrayList<PluginServer*> *plugindb,
 				test[0] == '<' && test[1] == 'H' && test[2] == 'T' && test[3] == 'A' && test[4] == 'L' && test[5] == '>' ||
 				test[0] == '<' && test[1] == '?' && test[2] == 'x' && test[3] == 'm' && test[4] == 'l')
 			{
+SET_TRACE
 // XML file
 				fclose(stream);
+SET_TRACE
 				return FILE_IS_XML;
 			}    // can't load project file
 			else
@@ -468,6 +478,10 @@ int File::open_file(ArrayList<PluginServer*> *plugindb,
 			file = new FileYUV(this->asset, this);
 			break;
 
+		case FILE_CR2:
+			file = new FileCR2(this->asset, this);
+			break;
+
 		case FILE_TGA_LIST:
 		case FILE_TGA:
 			file = new FileTGA(this->asset, this);
@@ -488,12 +502,12 @@ int File::open_file(ArrayList<PluginServer*> *plugindb,
 			file = new FileMPEG(this->asset, this);
 			break;
 
-		case FILE_VORBIS:
-			file = new FileVorbis(this->asset, this);
-			break;
-
 		case FILE_OGG:
 			file = new FileOGG(this->asset, this);
+			break;
+
+		case FILE_VORBIS:
+			file = new FileVorbis(this->asset, this);
 			break;
 
 		case FILE_AVI:
@@ -570,6 +584,19 @@ int File::close_file(int ignore_thread)
 	reset_parameters();
 	return 0;
 }
+
+
+
+int File::get_index(char *index_path)
+{
+	if(file)
+	{
+		return file->get_index(index_path);
+	}
+	return 1;
+}
+
+
 
 int File::start_audio_thread(int64_t buffer_size, int ring_buffers)
 {
@@ -1111,6 +1138,8 @@ int File::strtoformat(ArrayList<PluginServer*> *plugindb, char *format)
 	else
 	if(!strcasecmp(format, _(YUV_NAME))) return FILE_YUV;
 	else
+	if(!strcasecmp(format, _(CR2_NAME))) return FILE_CR2;
+	else
 	if(!strcasecmp(format, _(MPEG_NAME))) return FILE_MPEG;
 	else
 	if(!strcasecmp(format, _(AMPEG_NAME))) return FILE_AMPEG;
@@ -1179,6 +1208,9 @@ char* File::formattostr(ArrayList<PluginServer*> *plugindb, int format)
 			break;
 		case FILE_JPEG_LIST:
 			return _(JPEG_LIST_NAME);
+			break;
+		case FILE_CR2:
+			return _(CR2_NAME);
 			break;
 		case FILE_EXR:
 			return _(EXR_NAME);
@@ -1363,7 +1395,7 @@ int File::get_best_colormodel(Asset *asset, int driver)
 		case FILE_JPEG_LIST:
 			return FileJPEG::get_best_colormodel(asset, driver);
 			break;
-		
+
 		case FILE_EXR:
 		case FILE_EXR_LIST:
 			return FileEXR::get_best_colormodel(asset, driver);
@@ -1439,6 +1471,7 @@ int File::supports_video(int format)
 		case FILE_MOV:
 		case FILE_JPEG:
 		case FILE_JPEG_LIST:
+		case FILE_CR2:
 		case FILE_EXR:
 		case FILE_EXR_LIST:
 	        case FILE_YUV:
@@ -1468,13 +1501,13 @@ int File::supports_audio(int format)
 {
 	switch(format)
 	{
-		case FILE_OGG:
 		case FILE_AC3:
 		case FILE_PCM:
 		case FILE_WAV:
 		case FILE_MOV:
-		case FILE_AMPEG:
+		case FILE_OGG:
 		case FILE_VORBIS:
+		case FILE_AMPEG:
 		case FILE_AU:
 		case FILE_AIFF:
 		case FILE_SND:

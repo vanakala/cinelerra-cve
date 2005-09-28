@@ -59,6 +59,7 @@ public:
 // Translates all submasks	
 	void translate_submasks(float translate_x, float translate_y);	
 
+
 	ArrayList<SubMask*> masks;
 // These are constant for the entire track
 	int mode;

@@ -1,5 +1,6 @@
 #include "asset.h"
 #include "automation.h"
+#include "bcsignals.h"
 #include "clip.h"
 #include "edit.h"
 #include "edits.h"
@@ -84,8 +85,10 @@ int VirtualVNode::read_data(VFrame *output_temp,
 	double frame_rate)
 {
 	VirtualNode *previous_plugin = 0;
+SET_TRACE
 
 	if(!output_temp) printf("VirtualVNode::read_data output_temp=%p\n", output_temp);
+SET_TRACE
 
 	if(vconsole->debug_tree) 
 		printf("  VirtualVNode::read_data position=%lld rate=%f title=%s\n", 
@@ -120,6 +123,7 @@ int VirtualVNode::read_data(VFrame *output_temp,
 			0,
 			vconsole->debug_tree);
 	}
+SET_TRACE
 
 	return 0;
 }
@@ -132,12 +136,12 @@ int VirtualVNode::render(VFrame *output_temp,
 	VRender *vrender = ((VirtualVConsole*)vconsole)->vrender;
 	if(real_module)
 	{
-//printf("VirtualVNode::render 1\n");
+SET_TRACE
 		render_as_module(vrender->video_out, 
 			output_temp,
 			start_position,
 			frame_rate);
-//printf("VirtualVNode::render 10\n");
+SET_TRACE
 	}
 	else
 	if(real_plugin)
@@ -181,6 +185,7 @@ int VirtualVNode::render_as_module(VFrame **video_out,
 
 	if(vconsole->debug_tree) 
 		printf("  VirtualVNode::render_as_module title=%s\n", track->title);
+SET_TRACE
 
 // Process last subnode.  This propogates up the chain of subnodes and finishes
 // the chain.
@@ -198,20 +203,23 @@ int VirtualVNode::render_as_module(VFrame **video_out,
 			start_position,
 			frame_rate);
 	}
+SET_TRACE
 
 	render_fade(output_temp,
 				start_position,
 				frame_rate,
-				track->automation->fade_autos,
+				track->automation->autos[AUTOMATION_FADE],
 				direction);
+SET_TRACE
 
 // Apply mask to output
 	masker->do_mask(output_temp, 
 		start_position,
 		frame_rate,
 		edl_rate,
-		track->automation->mask_autos, 
+		(MaskAutos*)track->automation->autos[AUTOMATION_MASK], 
 		direction);
+SET_TRACE
 
 
 // overlay on the final output
@@ -225,9 +233,10 @@ int VirtualVNode::render_as_module(VFrame **video_out,
 	get_mute_fragment(start_position,
 			mute_constant, 
 			mute_fragment, 
-			(Autos*)((VTrack*)track)->automation->mute_autos,
+			(Autos*)((VTrack*)track)->automation->autos[AUTOMATION_MUTE],
 			direction,
 			0);
+SET_TRACE
 
 	if(!mute_constant)
 	{
@@ -237,6 +246,7 @@ int VirtualVNode::render_as_module(VFrame **video_out,
 			start_position,
 			frame_rate);
 	}
+SET_TRACE
 
 	Edit *edit = 0;
 	if(renderengine->show_tc)
@@ -273,7 +283,7 @@ int VirtualVNode::render_fade(VFrame *output,
 		next);
 
 
-	CLAMP(intercept, 0, 100);
+//	CLAMP(intercept, 0, 100);
 
 
 // Can't use overlay here because overlayer blends the frame with itself.
@@ -335,10 +345,10 @@ int VirtualVNode::render_projector(VFrame *input,
  				int direction = renderengine->command->get_direction();
 				IntAuto *mode_keyframe = 0;
 				mode_keyframe = 
-					(IntAuto*)track->automation->mode_autos->get_prev_auto(
+					(IntAuto*)track->automation->autos[AUTOMATION_MODE]->get_prev_auto(
 						start_position_project, 
 						direction,
-						(Auto*&)mode_keyframe);
+						(Auto* &)mode_keyframe);
 
 				int mode = mode_keyframe->value;
 

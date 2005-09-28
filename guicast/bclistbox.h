@@ -4,7 +4,6 @@
 #include "bcdragwindow.inc"
 #include "bclistboxitem.inc"
 #include "bcpixmap.inc"
-#include "bcpopuplistbox.inc"
 #include "bcscrollbar.h"
 #include "bcsubwindow.h"
 #include "bctoggle.h"
@@ -96,7 +95,6 @@ public:
 		int allow_drag = 0);                  // Allow user to drag icons around
 	virtual ~BC_ListBox();
 
-	friend class BC_PopupListBox;
 	friend class BC_ListBoxToggle;
 
 	int initialize();
@@ -223,7 +221,7 @@ public:
 	int get_w();
 	int get_h();
 	int get_display_mode();
-
+	void set_justify(int value);
 
 
 
@@ -508,12 +506,13 @@ private:
 	BC_Pixmap *toggle_images[5];
 // Background for drawing on
 	BC_Pixmap *bg_surface;
+// Background if 9 segment
 	BC_Pixmap *bg_tile;
 // Drag icon for text mode
 	VFrame *drag_icon_vframe;
 // Drag column icon
 	VFrame *drag_column_icon_vframe;
-// Default background picon
+// Background picon to be drawn in the upper right
 	BC_Pixmap *bg_pixmap;
 
 
@@ -595,6 +594,7 @@ private:
 
 // Window for dragging
 	BC_DragWindow *drag_popup;
+	int justify;
 };
 
 

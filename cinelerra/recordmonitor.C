@@ -1,4 +1,5 @@
 #include "asset.h"
+#include "bcsignals.h"
 #include "channelpicker.h"
 #include "condition.h"
 #include "cursors.h"
@@ -52,9 +53,14 @@ RecordMonitor::~RecordMonitor()
 
 int RecordMonitor::create_objects()
 {
+	int min_w = 150;
+	if(!record->default_asset->video_data)
+		min_w = MeterPanel::get_meters_width(
+			record->default_asset->channels, 1);
 	window = new RecordMonitorGUI(mwindow,
 		record, 
-		this);
+		this,
+		min_w);
 	window->create_objects();
 
 	if(record->default_asset->video_data)
@@ -162,18 +168,20 @@ int RecordMonitor::get_channel_y()
 
 RecordMonitorGUI::RecordMonitorGUI(MWindow *mwindow,
 	Record *record, 
-	RecordMonitor *thread)
+	RecordMonitor *thread,
+	int min_w)
  : BC_Window(PROGRAM_NAME ": Video in", 
  			mwindow->session->rmonitor_x,
 			mwindow->session->rmonitor_y,
  			mwindow->session->rmonitor_w, 
  			mwindow->session->rmonitor_h, 
-			150, 
+			min_w, 
 			50, 
 			1, 
 			1,
 			1)
 {
+//printf("%d %d\n", mwindow->session->rmonitor_w, mwindow->theme->rmonitor_meter_x);
 	this->mwindow = mwindow;
 	this->thread = thread;
 	this->record = record;
@@ -223,7 +231,8 @@ int RecordMonitorGUI::create_objects()
 		record->default_asset->video_data,
 		do_channel,
 		do_interlace,
-		0);
+		0,
+		record->default_asset->channels);
 
 
 
@@ -234,7 +243,8 @@ int RecordMonitorGUI::create_objects()
 	{
 		int driver = mwindow->edl->session->vconfig_in->driver;
 
-		if(driver == CAPTURE_FIREWIRE)
+		if(driver == CAPTURE_FIREWIRE ||
+			driver == CAPTURE_IEC61883)
 		{
 			avc = new AVC1394Control;
 			if(avc->device > -1)
@@ -243,11 +253,12 @@ int RecordMonitorGUI::create_objects()
 					record->default_asset->video_data,
 					do_channel,
 					do_interlace,
-					1);
+					1,
+					record->default_asset->channels);
 				mwindow->theme->draw_rmonitor_bg(this);
 				background_done = 1;
 
-printf("RecordMonitorGUI::create_objects %d %d\n", mwindow->theme->rmonitor_tx_x, mwindow->theme->rmonitor_tx_y);
+SET_TRACE
 				avc1394_transport = new AVC1394Transport(mwindow,
 					avc,
 					this,
@@ -255,6 +266,7 @@ printf("RecordMonitorGUI::create_objects %d %d\n", mwindow->theme->rmonitor_tx_x
 					mwindow->theme->rmonitor_tx_y);
 				avc1394_transport->create_objects();
 
+SET_TRACE
 				add_subwindow(avc1394transport_timecode =
 					new BC_Title(avc1394_transport->x_end,
 						mwindow->theme->rmonitor_tx_y + 10,
@@ -267,17 +279,20 @@ printf("RecordMonitorGUI::create_objects %d %d\n", mwindow->theme->rmonitor_tx_x
 						avc);
 
 				avc1394transport_thread->start();
+SET_TRACE
 
 			}
 		}
 
 
+SET_TRACE
 		if(!background_done)
 		{
 			mwindow->theme->draw_rmonitor_bg(this);
 			background_done = 1;
 		}
 
+SET_TRACE
 		canvas = new RecordMonitorCanvas(mwindow, 
 			this,
 			record, 
@@ -287,6 +302,7 @@ printf("RecordMonitorGUI::create_objects %d %d\n", mwindow->theme->rmonitor_tx_x
 			mwindow->theme->rmonitor_canvas_h);
 		canvas->create_objects(0);
 
+SET_TRACE
 		if(driver == VIDEO4LINUX ||
 			driver == CAPTURE_BUZ ||
 			driver == VIDEO4LINUX2 ||
@@ -301,6 +317,7 @@ printf("RecordMonitorGUI::create_objects %d %d\n", mwindow->theme->rmonitor_tx_x
 			channel_picker->create_objects();
 		}
 
+SET_TRACE
 		if(driver == CAPTURE_BUZ ||
 			driver == VIDEO4LINUX2JPEG)
 		{
@@ -309,6 +326,7 @@ printf("RecordMonitorGUI::create_objects %d %d\n", mwindow->theme->rmonitor_tx_x
 				mwindow->theme->rmonitor_interlace_y));
 		}
 		
+SET_TRACE
 		add_subwindow(monitor_menu = new BC_PopupMenu(0, 
 			0, 
 			0, 
@@ -316,6 +334,7 @@ printf("RecordMonitorGUI::create_objects %d %d\n", mwindow->theme->rmonitor_tx_x
 			0));
 		monitor_menu->add_item(new RecordMonitorFullsize(mwindow, 
 			this));
+SET_TRACE
 	}
 
 
@@ -325,6 +344,7 @@ printf("RecordMonitorGUI::create_objects %d %d\n", mwindow->theme->rmonitor_tx_x
 		background_done = 1;
 	}
 
+SET_TRACE
 	if(record->default_asset->audio_data)
 	{
 		meters = new MeterPanel(mwindow, 
@@ -337,6 +357,7 @@ printf("RecordMonitorGUI::create_objects %d %d\n", mwindow->theme->rmonitor_tx_x
 			1);
 		meters->create_objects();
 	}
+SET_TRACE
 	return 0;
 }
 
@@ -462,7 +483,8 @@ int RecordMonitorGUI::resize_event(int w, int h)
 		record->default_asset->video_data,
 		do_channel,
 		do_interlace,
-		do_avc);
+		do_avc,
+		record->default_asset->channels);
 	mwindow->theme->draw_rmonitor_bg(this);
 	flash();
 
@@ -519,10 +541,17 @@ int RecordMonitorGUI::close_event()
 	thread->record->monitor_video = 0;
 	thread->record->monitor_audio = 0;
 	thread->record->video_window_open = 0;
+	unlock_window();
+
+	record->record_gui->lock_window("RecordMonitorGUI::close_event");
 	if(record->record_gui->monitor_video) record->record_gui->monitor_video->update(0);
 	if(record->record_gui->monitor_audio) record->record_gui->monitor_audio->update(0);
-	hide_window();
 	record->record_gui->flush();
+	record->record_gui->unlock_window();
+
+
+	lock_window("RecordMonitorGUI::close_event");
+	hide_window();
 	return 0;
 }
 
@@ -757,6 +786,7 @@ void RecordMonitorThread::init_output_format()
 			break;
 
 		case CAPTURE_FIREWIRE:
+		case CAPTURE_IEC61883:
 			dv_engine = new RecVideoDVThread(record, this);
 			dv_engine->start_rendering();
 			output_colormodel = BC_YUV422P;
@@ -798,6 +828,7 @@ int RecordMonitorThread::stop_playback()
 			break;
 
 		case CAPTURE_FIREWIRE:
+		case CAPTURE_IEC61883:
 			if(dv_engine)
 			{
 				dv_engine->stop_rendering();
@@ -892,6 +923,7 @@ int RecordMonitorThread::render_frame()
 			break;
 
 		case CAPTURE_FIREWIRE:
+		case CAPTURE_IEC61883:
 			render_dv();
 			break;
 
@@ -1005,7 +1037,7 @@ RecVideoDVThread::~RecVideoDVThread()
 
 int RecVideoDVThread::start_rendering()
 {
-	dv = (void*)dv_new();
+	dv = dv_new();
 	return 0;
 }
 
@@ -1026,5 +1058,6 @@ int RecVideoDVThread::render_frame(VFrame *frame, long size)
 		frame->get_data(), 
 		frame->get_compressed_size(),
 		thread->output_frame[0]->get_color_model());
+
 	return 0;
 }

@@ -43,6 +43,7 @@ public:
 
 
 
+	virtual int get_index(char *index_path) { return 1; };
 	virtual int check_header() { return 0; };  // Test file to see if it is of this type.
 	virtual int reset_parameters_derived() {};
 	virtual int read_header() {};     // WAV files for getting header

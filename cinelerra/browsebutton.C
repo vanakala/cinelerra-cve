@@ -17,7 +17,7 @@ BrowseButton::BrowseButton(MWindow *mwindow,
 	char *caption, 
 	int want_directory,
 	const char *recent_prefix)
- : BC_Button(x, y, mwindow->theme->magnify_button_data), 
+ : BC_Button(x, y, mwindow->theme->get_image_set("magnify_button")), 
    Thread()
 {
 	this->parent_window = parent_window;
@@ -120,7 +120,6 @@ BrowseButtonWindow::BrowseButtonWindow(MWindow *mwindow,
 	      BC_WindowBase::get_resources()->filebox_w / 2, 
 	      button->y - BC_WindowBase::get_resources()->filebox_h / 2,
 	      init_directory, title, caption,
-	      button->mwindow->defaults, button->recent_prefix,
 	      // Set to 1 to get hidden files. 
 	      want_directory,
 	      // Want only directories

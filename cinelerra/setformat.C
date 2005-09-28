@@ -110,7 +110,6 @@ void SetFormatThread::apply_changes()
 	int new_channels = new_settings->session->audio_channels;
 
 
-	mwindow->undo->update_undo_before(_("set format"), LOAD_ALL);
 	mwindow->edl->copy_session(new_settings);
 	mwindow->edl->session->output_w = dimension[0];
 	mwindow->edl->session->output_h = dimension[1];
@@ -118,7 +117,7 @@ void SetFormatThread::apply_changes()
 	mwindow->edl->resample(old_samplerate, new_samplerate, TRACK_AUDIO);
 	mwindow->edl->resample(old_framerate, new_framerate, TRACK_VIDEO);
 	mwindow->save_backup();
-	mwindow->undo->update_undo_after();
+	mwindow->undo->update_undo(_("set format"), LOAD_ALL);
 
 // Update GUIs
 	mwindow->restart_brender();
@@ -479,10 +478,10 @@ void SetFormatWindow::create_objects()
 	y += mwindow->theme->setformat_margin;
 
 
-	BC_OKButton *ok;
-	BC_CancelButton *cancel;
-	add_subwindow(ok = new BC_OKButton(this));
-	add_subwindow(cancel = new BC_CancelButton(this));
+	BC_OKTextButton *ok;
+	BC_CancelTextButton *cancel;
+	add_subwindow(ok = new BC_OKTextButton(this));
+	add_subwindow(cancel = new BC_CancelTextButton(this));
 	add_subwindow(new SetFormatApply((ok->get_x() + cancel->get_x()) / 2, 
 		ok->get_y(), 
 		thread));

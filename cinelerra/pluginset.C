@@ -273,12 +273,12 @@ void PluginSet::paste_keyframes(int64_t start,
 // remember the default keyframe, we'll use it later
 					default_keyframe = 1; 
 					do_default_keyframe = 1;
-					file->read_text_until("/KEYFRAME", data_default_keyframe);
+					file->read_text_until("/KEYFRAME", data_default_keyframe, MESSAGESIZE);
 				}
 				else
 				{
 					default_keyframe = 0;
-					file->read_text_until("/KEYFRAME", data);				
+					file->read_text_until("/KEYFRAME", data, MESSAGESIZE);
 				
 				}
 
@@ -402,15 +402,21 @@ void PluginSet::shift_effects(int64_t start, int64_t length)
 			current->startproject += length;
 		}
 		else
-// Extend end of this effect
-		if(current->startproject + current->length > start)
+// Extend end of this effect.
+// In loading new files, the effect should extend to fill the entire track.
+// In muting, the effect must extend to fill the gap if another effect follows.
+// The user should use Settings->edit effects to disable this.
+		if(current->startproject + current->length >= start)
 		{
 			current->length += length;
 		}
 
-// Shift keyframes in this effect
-		if(current->keyframes->default_auto->position > start)
+// Shift keyframes in this effect.
+// If the default keyframe lands on the starting point, it must be shifted
+// since the effect start is shifted.
+		if(current->keyframes->default_auto->position >= start)
 			current->keyframes->default_auto->position += length;
+
 		current->keyframes->paste_silence(start, start + length);
 	}
 }
