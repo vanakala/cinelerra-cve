@@ -1,17 +1,20 @@
 #ifndef CHANNELEDIT_H
 #define CHANNELEDIT_H
 
+#include "bcdialog.h"
 #include "guicast.h"
 #include "channel.inc"
 #include "channeldb.inc"
 #include "channelpicker.inc"
 #include "condition.inc"
+#include "mainprogress.inc"
 #include "mutex.inc"
 #include "mwindow.inc"
 #include "picture.inc"
 #include "record.h"
 
 class ChannelEditWindow;
+class ScanThread;
 
 class ChannelEditThread : public Thread
 {
@@ -23,14 +26,19 @@ public:
 	~ChannelEditThread();
 	void run();
 	int close_threads();
+	char* value_to_freqtable(int value);
+	char* value_to_norm(int value);
+	char* value_to_input(int value);
 
 	Condition *completion;
 	int in_progress;
 	int current_channel;
+	Channel scan_params;
 	ChannelPicker *channel_picker;
 	ChannelDB *channeldb;
 	ChannelDB *new_channels;
 	ChannelEditWindow *window;
+	ScanThread *scan_thread;
 	MWindow *mwindow;
 	Record *record;
 };
@@ -38,6 +46,7 @@ public:
 class ChannelEditList;
 class ChannelEditEditThread;
 class ChannelEditPictureThread;
+class ConfirmScanThread;
 
 class  ChannelEditWindow : public BC_Window
 {
@@ -58,6 +67,9 @@ public:
 	int move_channel_up();
 	int move_channel_down();
 	int change_channel_from_list(int channel_number);
+	void sort();
+	void scan_confirm();
+	void scan();
 
 
 	ArrayList<BC_ListBoxItem*> channel_list;
@@ -67,6 +79,7 @@ public:
 	ChannelEditEditThread *edit_thread;
 	ChannelEditPictureThread *picture_thread;
 	MWindow *mwindow;
+	ConfirmScanThread *scan_confirm_thread;
 };
 
 class ChannelEditSelect : public BC_GenericButton
@@ -116,6 +129,22 @@ public:
 	ChannelEditWindow *window;
 };
 
+class ChannelEditSort : public BC_GenericButton
+{
+public:
+	ChannelEditSort(MWindow *mwindow, ChannelEditWindow *window, int x, int y);
+	int handle_event();
+	ChannelEditWindow *window;
+};
+
+class ChannelEditScan : public BC_GenericButton
+{
+public:
+	ChannelEditScan(MWindow *mwindow, ChannelEditWindow *window, int x, int y);
+	int handle_event();
+	ChannelEditWindow *window;
+};
+
 class ChannelEditDel : public BC_GenericButton
 {
 public:
@@ -144,6 +173,56 @@ public:
 };
 
 
+
+
+
+
+
+// ============================== Confirm overwrite with scanning
+
+class ConfirmScan : public BC_Window
+{
+public:
+	ConfirmScan(ChannelEditWindow *gui, int x, int y);
+	void create_objects();
+	ChannelEditWindow *gui;
+};
+
+class ConfirmScanThread : public BC_DialogThread
+{
+public:
+	ConfirmScanThread(ChannelEditWindow *gui);
+	void handle_done_event(int result);
+	BC_Window* new_gui();
+	ChannelEditWindow *gui;
+};
+
+
+
+
+
+// ============================= Scan 
+
+class ScanThread : public Thread
+{
+public:
+	ScanThread(ChannelEditThread *edit);
+	~ScanThread();
+
+	void start();
+	void run();
+
+	ChannelEditThread *edit;
+	int interrupt;
+	MainProgressBar *progress;
+};
+
+
+
+
+
+
+
 // ============================= Edit a single channel
 
 class ChannelEditEditSource;
@@ -166,9 +245,6 @@ public:
 	int set_input(int value);
 	int set_norm(int value);
 	int set_freqtable(int value);
-	char* value_to_freqtable(int value);
-	char* value_to_norm(int value);
-	char* value_to_input(int value);
 	int close_threads();
 
 	Channel new_channel;
@@ -234,62 +310,85 @@ public:
 class ChannelEditEditInput : public BC_PopupMenu
 {
 public:
-	ChannelEditEditInput(int x, int y, ChannelEditEditThread *thread, Record *record);
+	ChannelEditEditInput(int x, 
+		int y, 
+		ChannelEditEditThread *thread, 
+		ChannelEditThread *edit);
 	~ChannelEditEditInput();
 	int add_items();
 	int handle_event();
 	ChannelEditEditThread *thread;
-	Record *record;
+	ChannelEditThread *edit;
 };
 
 class ChannelEditEditInputItem : public BC_MenuItem
 {
 public:
-	ChannelEditEditInputItem(ChannelEditEditThread *thread, char *text, int value);
+	ChannelEditEditInputItem(ChannelEditEditThread *thread, 
+		ChannelEditThread *edit,
+		char *text, 
+		int value);
 	~ChannelEditEditInputItem();
 	int handle_event();
 	ChannelEditEditThread *thread;
+	ChannelEditThread *edit;
 	int value;
 };
 
 class ChannelEditEditNorm : public BC_PopupMenu
 {
 public:
-	ChannelEditEditNorm(int x, int y, ChannelEditEditThread *thread);
+	ChannelEditEditNorm(int x, 
+		int y, 
+		ChannelEditEditThread *thread,
+		ChannelEditThread *edit);
 	~ChannelEditEditNorm();
 	int add_items();
 	ChannelEditEditThread *thread;
+	ChannelEditThread *edit;
 };
 
 class ChannelEditEditNormItem : public BC_MenuItem
 {
 public:
-	ChannelEditEditNormItem(ChannelEditEditThread *thread, char *text, int value);
+	ChannelEditEditNormItem(ChannelEditEditThread *thread, 
+		ChannelEditThread *edit,
+		char *text, 
+		int value);
 	~ChannelEditEditNormItem();
 	int handle_event();
 	ChannelEditEditThread *thread;
+	ChannelEditThread *edit;
 	int value;
 };
 
 class ChannelEditEditFreqtable : public BC_PopupMenu
 {
 public:
-	ChannelEditEditFreqtable(int x, int y, ChannelEditEditThread *thread);
+	ChannelEditEditFreqtable(int x, 
+		int y, 
+		ChannelEditEditThread *thread,
+		ChannelEditThread *edit);
 	~ChannelEditEditFreqtable();
 
 	int add_items();
 
 	ChannelEditEditThread *thread;
+	ChannelEditThread *edit;
 };
 
 class ChannelEditEditFreqItem : public BC_MenuItem
 {
 public:
-	ChannelEditEditFreqItem(ChannelEditEditThread *thread, char *text, int value);
+	ChannelEditEditFreqItem(ChannelEditEditThread *thread, 
+		ChannelEditThread *edit,
+		char *text, 
+		int value);
 	~ChannelEditEditFreqItem();
 
 	int handle_event();
 	ChannelEditEditThread *thread;
+	ChannelEditThread *edit;
 	int value;
 };
 
@@ -327,8 +426,11 @@ public:
 class ChannelEditPictureWindow : public BC_Window
 {
 public:
-	ChannelEditPictureWindow(ChannelEditPictureThread *thread, ChannelPicker *channel_picker);
+	ChannelEditPictureWindow(ChannelEditPictureThread *thread, 
+		ChannelPicker *channel_picker);
 	~ChannelEditPictureWindow();
+
+	int calculate_h(ChannelPicker *channel_picker);
 	int create_objects();
 
 	ChannelEditPictureThread *thread;

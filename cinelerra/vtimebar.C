@@ -64,21 +64,21 @@ void VTimeBar::select_label(double position)
 
 		if(shift_down())
 		{
-			if(position > edl->local_session->selectionend / 2 + 
-				edl->local_session->selectionstart / 2)
+			if(position > edl->local_session->get_selectionend(1) / 2 + 
+				edl->local_session->get_selectionstart(1) / 2)
 			{
 
-				edl->local_session->selectionend = position;
+				edl->local_session->set_selectionend(position);
 			}
 			else
 			{
-				edl->local_session->selectionstart = position;
+				edl->local_session->set_selectionstart(position);
 			}
 		}
 		else
 		{
-			edl->local_session->selectionstart = 
-				edl->local_session->selectionend = position;
+			edl->local_session->set_selectionstart(position);
+			edl->local_session->set_selectionend(position);
 		}
 
 // Que the CWindow

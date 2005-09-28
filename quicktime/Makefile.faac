@@ -15,7 +15,11 @@ FAAC_OBJS := \
 
 
 
-FAAC_CFLAGS := $(CFLAGS) -I$(FAAC_DIR) -I$(FAAC_DIR)/libfaac -I$(FAAC_DIR)/include -DHAVE_CONFIG_H
+FAAC_CFLAGS := $(CFLAGS) \
+	-I$(FAAC_DIR) \
+	-I$(FAAC_DIR)/libfaac \
+	-I$(FAAC_DIR)/include \
+	-DHAVE_CONFIG_H
 
 DIRS += $(OBJDIR)/$(FAAC_DIR) $(OBJDIR)/$(FAAC_DIR)/libfaac
 

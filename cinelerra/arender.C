@@ -218,20 +218,6 @@ int ARender::process_buffer(int64_t input_len, int64_t input_position)
 	return result;
 }
 
-// int ARender::restart_playback()
-// {
-// // Use for rebuilding the virtual console during playback.
-// // Send last buffer to old thread.
-// 	if(vconsole)
-// 	{
-// 		send_reconfigure_buffer();
-// 		vconsole->wait_for_completion();
-// 	}
-// 
-// 	CommonRender::restart_playback();
-// 	return 0;
-// }
-
 int ARender::get_history_number(int64_t *table, int64_t position)
 {
 // Get the entry closest to position
@@ -239,16 +225,16 @@ int ARender::get_history_number(int64_t *table, int64_t position)
 	int64_t min_difference = 0x7fffffff;
 	for(int i = 0; i < total_peaks; i++)
 	{
-//printf("%d %d ", i, table[i]);
+
+//printf("%lld ", table[i]);
 		if(labs(table[i] - position) < min_difference)
 		{
-//printf("\n");
 			min_difference = labs(table[i] - position);
 			result = i;
 		}
 	}
 //printf("\n");
-//printf("ARender::get_history_number %ld %d %d\n", position, result, min_difference);
+//printf("ARender::get_history_number %lld %d\n", position, result);
 	return result;
 }
 

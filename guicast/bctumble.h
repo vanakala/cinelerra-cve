@@ -6,7 +6,7 @@
 class BC_Tumbler : public BC_SubWindow
 {
 public:
-	BC_Tumbler(int x, int y);
+	BC_Tumbler(int x, int y, VFrame **data = 0);
 	virtual ~BC_Tumbler();
 
 	virtual int handle_up_event() { return 0; };
@@ -32,6 +32,7 @@ private:
 	BC_Pixmap *images[4];
 	int status;
 	int64_t repeat_count;
+	VFrame **data;
 };
 
 class BC_ITumbler : public BC_Tumbler

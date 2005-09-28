@@ -60,34 +60,31 @@ void CTimeBar::select_label(double position)
 {
 	EDL *edl = mwindow->edl;
 
-//printf("CTimeBar::select_label 1\n");
 	gui->unlock_window();
 	mwindow->gui->mbuttons->transport->handle_transport(STOP, 1);
 	gui->lock_window();
 
-//printf("CTimeBar::select_label 1\n");
 	position = mwindow->edl->align_to_frame(position, 1);
 
-//printf("CTimeBar::select_label 1\n");
 	if(shift_down())
 	{
-		if(position > edl->local_session->selectionend / 2 + 
-			edl->local_session->selectionstart / 2)
+		if(position > edl->local_session->get_selectionend(1) / 2 + 
+			edl->local_session->get_selectionstart(1) / 2)
 		{
 		
-			edl->local_session->selectionend = position;
+			edl->local_session->set_selectionend(position);
 		}
 		else
 		{
-			edl->local_session->selectionstart = position;
+			edl->local_session->set_selectionstart(position);
 		}
 	}
 	else
 	{
-		edl->local_session->selectionstart = edl->local_session->selectionend = position;
+		edl->local_session->set_selectionstart(position);
+		edl->local_session->set_selectionend(position);
 	}
 
-//printf("CTimeBar::select_label 1\n");
 // Que the CWindow
 	mwindow->cwindow->update(1, 0, 0, 0, 1);
 

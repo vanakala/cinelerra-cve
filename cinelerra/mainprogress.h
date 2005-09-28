@@ -23,8 +23,8 @@ public:
 	void stop_progress();
 	int is_cancelled();
 	void update_title(char *string, int default_ = 1);
-	void update_length(long length);
-	int update(long value);
+	void update_length(int64_t length);
+	int update(int64_t value);
 	void get_time(char *text);
 	double get_time(); 
 
@@ -38,8 +38,8 @@ public:
 	char default_title[BCTEXTLEN];
 	Timer *eta_timer;
 // Last time eta was updated
-	long last_eta;
-	long length;
+	int64_t last_eta;
+	int64_t length;
 
 private:
 	void start();
@@ -53,8 +53,11 @@ public:
 	MainProgress(MWindow *mwindow, MWindowGUI *gui);
 	~MainProgress();
 
-// Start a progress sequence and return the bar
-	MainProgressBar* start_progress(char *text, long total_length);
+// Start a progress sequence and return the bar.
+// use_window - force opening of a new window if 1.
+	MainProgressBar* start_progress(char *text, 
+		int64_t total_length, 
+		int use_window = 0);
 	void end_progress(MainProgressBar* progress_bar);
 
 	ArrayList<MainProgressBar*> progress_bars;

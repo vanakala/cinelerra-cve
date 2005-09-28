@@ -48,44 +48,19 @@ int BC_Toggle::initialize()
 {
 // Get the image
 	set_images(data);
-	w = images[0]->get_w();
-	h = images[0]->get_h();
-	toggle_x = 0;
-	toggle_y = 0;
-	text_y = 0;
-	text_x = w + 5;
-
-// Expand subwindow for text
-	if(has_caption())
-	{
-		BC_Resources *resources = get_resources();
-		text_w = get_text_width(MEDIUMFONT, caption);
-		text_h = get_text_height(MEDIUMFONT);
-
-		if(resources->toggle_highlight_bg)
-		{
-			text_w += resources->toggle_text_margin * 2;
-			text_h = MAX(text_h, resources->toggle_highlight_bg->get_h());
-		}
-
-		if(text_h > h)
-		{
-			toggle_y = (text_h - h) >> 1;
-			h = text_h;
-		}
-		else
-			text_y = (h - text_h) >> 1;
-
-		if(bottom_justify)
-		{
-			text_y = h - text_h;
-			text_line = h - get_text_descent(MEDIUMFONT);
-		}
-		else
-			text_line = text_y + get_text_ascent(MEDIUMFONT);
-		
-		w = text_x + text_w;
-	}
+	calculate_extents(this,
+		BC_WindowBase::get_resources()->checkbox_images,
+		bottom_justify,
+		&text_line,
+		&w,
+		&h,
+		&toggle_x,
+		&toggle_y,
+		&text_x, 
+		&text_y,
+		&text_w,
+		&text_h, 
+		has_caption() ? caption : 0);
 
 // Create the subwindow
 	BC_SubWindow::initialize();
@@ -94,6 +69,66 @@ int BC_Toggle::initialize()
 	draw_face();
 	return 0;
 }
+
+
+void BC_Toggle::calculate_extents(BC_WindowBase *gui, 
+	VFrame **images,
+	int bottom_justify,
+	int *text_line,
+	int *w,
+	int *h,
+	int *toggle_x,
+	int *toggle_y,
+	int *text_x,
+	int *text_y, 
+	int *text_w,
+	int *text_h, 
+	char *caption)
+{
+	BC_Resources *resources = get_resources();
+	VFrame *frame = images[0];
+	*w = frame->get_w();
+	*h = frame->get_h();
+	*toggle_x = 0;
+	*toggle_y = 0;
+	*text_x = *w + 5;
+	*text_y = 0;
+	*text_w = 0;
+	*text_h = 0;
+
+	if(caption)
+	{
+		*text_w = gui->get_text_width(MEDIUMFONT, caption);
+		*text_h = gui->get_text_height(MEDIUMFONT);
+
+		if(resources->toggle_highlight_bg)
+		{
+			*text_w += resources->toggle_text_margin * 2;
+			*text_h = MAX(*text_h, resources->toggle_highlight_bg->get_h());
+		}
+
+		if(*text_h > *h)
+		{
+			*toggle_y = (*text_h - *h) >> 1;
+			*h = *text_h;
+		}
+		else
+			*text_y = (*h - *text_h) >> 1;
+
+		if(bottom_justify)
+		{
+			*text_y = *h - *text_h;
+			*text_line = *h - gui->get_text_descent(MEDIUMFONT);
+		}
+		else
+			*text_line = *text_y + gui->get_text_ascent(MEDIUMFONT);
+
+		*w = *text_x + *text_w;
+	}
+
+
+}
+
 
 int BC_Toggle::set_images(VFrame **data)
 {
@@ -452,7 +487,6 @@ int BC_CheckBox::handle_event()
 	*value = get_value();
 	return 1;
 }
-
 
 
 

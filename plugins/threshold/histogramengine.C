@@ -201,18 +201,11 @@ void HistogramEngine::process_packages(VFrame *data)
 
 void HistogramEngine::init_packages()
 {
-	int total_size = data->get_h();
-	int package_size = (int)((float)total_size / 
-		get_total_packages() + 1);
-	int start = 0;
 	for(int i = 0; i < get_total_packages(); i++)
 	{
 		HistogramPackage *package = (HistogramPackage*)get_package(i);
-		package->start = start;
-		package->end = start + package_size;
-		if(package->end > total_size)
-			package->end = total_size;
-		start = package->end;
+		package->start = data->get_h() * i / get_total_packages();
+		package->end = data->get_h() * (i + 1) / get_total_packages();
 	}
 
 // Initialize clients here in case some don't get run.

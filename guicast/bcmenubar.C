@@ -1,12 +1,15 @@
 #include "bcmenu.h"
 #include "bcmenubar.h"
 #include "bcmenupopup.h"
+#include "bcpixmap.h"
 #include "bcpopup.h"
 #include "bcpopupmenu.h"
 #include "bcresources.h"
+#include "bcsignals.h"
 #include "colors.h"
 #include "fonts.h"
 #include <string.h>
+#include "vframe.h"
 
 
 // ================================== Menu bar ==================================
@@ -17,6 +20,9 @@ BC_MenuBar::BC_MenuBar(int x, int y, int w)
 // Height is really determined by the font in create_tool_objects.
 	button_releases = 0;
 	active = 0;
+	menu_bar_bg = 0;
+	for(int i = 0; i < 3; i++)
+		menu_title_bg[i] = 0;
 }
 
 
@@ -25,32 +31,49 @@ BC_MenuBar::~BC_MenuBar()
 // Delete all titles.
 	for(int i = 0; i < menu_titles.total; i++) delete menu_titles.values[i];
 	menu_titles.remove_all();
+	delete menu_bar_bg;
+	for(int i = 0; i < 3; i++)
+		delete menu_title_bg[i];
 }
 
 int BC_MenuBar::initialize()
 {
+SET_TRACE
+	BC_Resources *resources = get_resources();
 // Initialize dimensions
 	h = calculate_height(this);
-	bg_color = top_level->get_resources()->menu_up;
-	
+	bg_color = resources->menu_up;
+
+	if(resources->menu_bar_bg) menu_bar_bg = new BC_Pixmap(this,
+		resources->menu_bar_bg);
+
+	if(resources->menu_title_bg)
+	{
+		for(int i = 0; i < 3; i++)
+			menu_title_bg[i] = new BC_Pixmap(this,
+				resources->menu_title_bg[i]);
+	}
 
 // Create the subwindow
 	BC_SubWindow::initialize();
 
-	if(top_level->get_resources()->menu_bg) 
-		set_background(top_level->get_resources()->menu_bg);
+	if(resources->menu_bg) 
+		set_background(resources->menu_bg);
 	draw_face();
+SET_TRACE
 	return 0;
 }
 
 int BC_MenuBar::calculate_height(BC_WindowBase *window)
 {
-	return window->get_text_height(MEDIUMFONT) + 8;
+	if(get_resources()->menu_bar_bg)
+		return get_resources()->menu_bar_bg->get_h();
+	else
+		return window->get_text_height(MEDIUMFONT) + 8;
 }
 
 void BC_MenuBar::draw_items()
 {
-//printf("BC_MenuBar::draw_items 1\n");
 	for(int i = 0; i < menu_titles.total; i++)
 		menu_titles.values[i]->draw_items();
 	flush();
@@ -205,26 +228,33 @@ int BC_MenuBar::unhighlight()
 
 int BC_MenuBar::draw_face()
 {
-	int lx,ly,ux,uy;
-	int h, w;
-	h = get_h();
-	w = get_w();
-	h--; 
-	w--;
+	if(menu_bar_bg)
+	{
+		draw_9segment(0, 0, get_w(), get_h(), menu_bar_bg);
+	}
+	else
+	{
+		int lx,ly,ux,uy;
+		int h, w;
+		h = get_h();
+		w = get_w();
+		h--; 
+		w--;
 
-	lx = 1;  ly = 1;
-	ux = w - 1;  uy = h - 1;
+		lx = 1;  ly = 1;
+		ux = w - 1;  uy = h - 1;
 
-	set_color(top_level->get_resources()->menu_light);
-	draw_line(0, 0, 0, uy);
-	draw_line(0, 0, ux, 0);
+		set_color(top_level->get_resources()->menu_light);
+		draw_line(0, 0, 0, uy);
+		draw_line(0, 0, ux, 0);
 
-	set_color(top_level->get_resources()->menu_shadow);
-	draw_line(ux, ly, ux, uy);
-	draw_line(lx, uy, ux, uy);
-	set_color(BLACK);
-	draw_line(w, 0, w, h);
-	draw_line(0, h, w, h);
+		set_color(top_level->get_resources()->menu_shadow);
+		draw_line(ux, ly, ux, uy);
+		draw_line(lx, uy, ux, uy);
+		set_color(BLACK);
+		draw_line(w, 0, w, h);
+		draw_line(0, h, w, h);
+	}
 
 	flash();
 	flush();

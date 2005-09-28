@@ -14,6 +14,7 @@ public:
 	static void clamp(int64_t &x, int64_t y, int64_t z);
 	static void clamp(float &x, float y, float z);
 	static void clamp(double &x, double y, double z);
+	static float pow(float x, float y);
 };
 
 

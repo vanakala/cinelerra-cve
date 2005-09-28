@@ -26,6 +26,8 @@ public:
 	friend class BC_QPot;
 	friend class BC_PercentagePot;
 
+
+	static int calculate_h();
 	int initialize();
 	virtual float get_percentage() { return 0; };
 	virtual int percentage_to_value(float percentage) { return 0; };

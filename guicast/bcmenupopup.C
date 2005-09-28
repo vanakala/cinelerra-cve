@@ -5,7 +5,7 @@
 #include "bcpopup.h"
 #include "bcresources.h"
 #include "bcwindowbase.h"
-
+#include "clip.h"
 
 #include <string.h>
 
@@ -66,9 +66,9 @@ int BC_MenuPopup::initialize(BC_WindowBase *top_level,
 	}
 	if(resources->menu_item_bg)
 	{
-		item_bg[0] = new BC_Pixmap(top_level, resources->menu_item_bg[0]);
-		item_bg[1] = new BC_Pixmap(top_level, resources->menu_item_bg[1]);
-		item_bg[2] = new BC_Pixmap(top_level, resources->menu_item_bg[2]);
+		item_bg[0] = new BC_Pixmap(top_level, resources->menu_item_bg[0], PIXMAP_ALPHA);
+		item_bg[1] = new BC_Pixmap(top_level, resources->menu_item_bg[1], PIXMAP_ALPHA);
+		item_bg[2] = new BC_Pixmap(top_level, resources->menu_item_bg[2], PIXMAP_ALPHA);
 	}
 
 	return 0;
@@ -360,6 +360,8 @@ int BC_MenuPopup::get_dimensions()
 		h += menu_items.values[i]->h;
 	}
 	w = widest_text + widest_key + 10;
+
+	w = MAX(w, top_level->get_resources()->min_menu_w);
 // pad for division
 	key_x = widest_text + 5;
 // pad for border

@@ -248,26 +248,32 @@ int mpeg3video_picture_coding_extension(mpeg3video_t *video)
 
 	video->current_repeat = 0;
 
-	if(video->prog_seq)
+/*
+ * printf("%d %d %d %d\n", 
+ * video->prog_seq ? 1 : 0, 
+ * video->prog_frame ? 1 : 0, 
+ * video->topfirst ? 1 : 0, 
+ * video->repeatfirst ? 1 : 0);
+ */
+
+
+
+	if(video->repeatfirst)
 	{
-		if(video->repeatfirst)
+		if(video->prog_seq)
 		{
 			if(video->topfirst)
 				video->repeat_count += 200;
 			else
 				video->repeat_count += 100;
 		}
-	}
-	else
-	if(video->prog_frame)
-	{
-		if(video->repeatfirst)
+		else
+		if(video->prog_frame)
 		{
 			video->repeat_count += 50;
 		}
 	}
 
-//printf("mpeg3video_picture_coding_extension %d\n", video->repeat_count);
 	composite_display_flag = mpeg3bits_getbit_noptr(video->vstream);
 
 	if(composite_display_flag)
@@ -427,8 +433,12 @@ int mpeg3video_getpicturehdr(mpeg3video_t *video)
 int mpeg3video_get_header(mpeg3video_t *video, int dont_repeat)
 {
 	unsigned int code;
+	mpeg3_t *file = video->file;
+	mpeg3_vtrack_t *track = video->track;
+	mpeg3_bits_t *vstream = video->vstream;
+	mpeg3_demuxer_t *demuxer = track->demuxer;
 
-/* a sequence header should be found before returning from `getheader' the */
+/* a sequence header should be found before returning from get_header the */
 /* first time (this is to set horizontal/vertical size properly) */
 
 /* Repeat the frame until it's less than 1 count from repeat_count */
@@ -447,42 +457,24 @@ int mpeg3video_get_header(mpeg3video_t *video, int dont_repeat)
 
 // Case of no picture coding extension
 	if(video->repeat_count < 0) video->repeat_count = 0;
-/*
- * printf("mpeg3video_get_header 2 %lld %lld\n", 
- * video->vstream->demuxer->titles[0]->fs->current_byte, 
- * video->vstream->demuxer->titles[0]->fs->total_bytes);
- */
 
 	while(1)
 	{
-//printf("mpeg3video_get_header 10 %llx\n", mpeg3bits_tell(video->vstream));
 /* look for startcode */
-    	code = mpeg3bits_next_startcode(video->vstream);
+    	code = mpeg3bits_next_startcode(vstream);
 
-//printf("mpeg3video_get_header 20 %08x\n", code);
 
-/*
- * printf("mpeg3video_get_header 2 %llx %llx %08x\n", 
- * video->vstream->demuxer->titles[0]->fs->current_byte, 
- * video->vstream->demuxer->titles[0]->fs->total_bytes,
- * code);
- */
+		if(mpeg3bits_eof(vstream)) return 1;
 
-//printf("mpeg3video_get_header 2 %p\n", video->vstream->demuxer);
-		if(mpeg3bits_eof(video->vstream)) return 1;
-//printf("mpeg3video_get_header 1\n");
-		if(code != MPEG3_SEQUENCE_END_CODE) mpeg3bits_refill(video->vstream);
- 
-//printf("mpeg3video_get_header 1\n");
+
+		if(code != MPEG3_SEQUENCE_END_CODE) mpeg3bits_refill(vstream);
+
     	switch(code)
 		{
     		case MPEG3_SEQUENCE_START_CODE:
     			video->found_seqhdr = 1;
-//printf("mpeg3video_get_header 1\n");
     			mpeg3video_getseqhdr(video);  
-//printf("mpeg3video_get_header 1\n");
     			mpeg3video_ext_user_data(video);
-//printf("mpeg3video_get_header 100\n");
     			break;
 
     		case MPEG3_GOP_START_CODE:
@@ -491,7 +483,6 @@ int mpeg3video_get_header(mpeg3video_t *video, int dont_repeat)
     			break;
 
     		case MPEG3_PICTURE_START_CODE:
-//printf("%x\n", mpeg3bits_tell(video->vstream));
     			mpeg3video_getpicturehdr(video);
     			mpeg3video_ext_user_data(video);
     			if(video->found_seqhdr) return 0;       /* Exit here */
@@ -499,13 +490,15 @@ int mpeg3video_get_header(mpeg3video_t *video, int dont_repeat)
 
     		case MPEG3_SEQUENCE_END_CODE:
 // Continue until the end
-				mpeg3bits_refill(video->vstream);
+				mpeg3bits_refill(vstream);
 				break;
 
     		default:
     			break;
     	}
-  	}
+ 	}
+
+
  	return 1;      /* Shouldn't be reached. */
 }
 
@@ -540,3 +533,5 @@ int mpeg3video_getslicehdr(mpeg3_slice_t *slice, mpeg3video_t *video)
 
 	return slice_vertical_position_extension;
 }
+
+

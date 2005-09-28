@@ -89,18 +89,17 @@ int APatchGUI::update(int x, int y)
 		}
 		else
 		{
-//printf("APatchGUI::update %f\n", fade->get_keyframe(mwindow, this)->value);
 			FloatAuto *previous = 0, *next = 0;
-			double unit_position = mwindow->edl->local_session->selectionstart;
+			double unit_position = mwindow->edl->local_session->get_selectionstart(1);
 			unit_position = mwindow->edl->align_to_frame(unit_position, 0);
 			unit_position = atrack->to_units(unit_position, 0);
-			float value = atrack->automation->fade_autos->get_value(
+			FloatAutos *ptr = (FloatAutos*)atrack->automation->autos[AUTOMATION_FADE];
+			float value = ptr->get_value(
 				(long)unit_position,
 				PLAY_FORWARD, 
 				previous, 
 				next);
 			fade->update(value);
-//			fade->update(fade->get_keyframe(mwindow, this)->value);
 		}
 	}
 	else
@@ -153,10 +152,11 @@ int APatchGUI::update(int x, int y)
 			{
 				int handle_x, handle_y;
 				PanAuto *previous = 0, *next = 0;
-				double unit_position = mwindow->edl->local_session->selectionstart;
+				double unit_position = mwindow->edl->local_session->get_selectionstart(1);
 				unit_position = mwindow->edl->align_to_frame(unit_position, 0);
 				unit_position = atrack->to_units(unit_position, 0);
-				atrack->automation->pan_autos->get_handle(handle_x,
+				PanAutos *ptr = (PanAutos*)atrack->automation->autos[AUTOMATION_PAN];
+				ptr->get_handle(handle_x,
 					handle_y,
 					(long)unit_position, 
 					PLAY_FORWARD,
@@ -207,8 +207,6 @@ AFadePatch::AFadePatch(MWindow *mwindow, APatchGUI *patch, int x, int y, int w)
 			(float)MAX_AUDIO_FADE, 
 			get_keyframe(mwindow, patch)->value)
 {
-//printf("AFadePatch::AFadePatch 1 %p %f\n", patch->track, get_keyframe(mwindow, patch)->value);
-//printf("AFadePatch::AFadePatch 2 %f\n", ((FloatAuto*)patch->track->automation->fade_autos->first)->value);
 	this->mwindow = mwindow;
 	this->patch = patch;
 }
@@ -216,21 +214,18 @@ AFadePatch::AFadePatch(MWindow *mwindow, APatchGUI *patch, int x, int y, int w)
 float AFadePatch::update_edl()
 {
 	FloatAuto *current;
-	double position = mwindow->edl->local_session->selectionstart;
-	Autos *fade_autos = patch->atrack->automation->fade_autos;
-	int update_undo = !fade_autos->auto_exists_for_editing(position);
-
-//printf("AFadePatch::update_edl 1 %d\n", update_undo);
-	if(update_undo)
-		mwindow->undo->update_undo_before(_("fade"), LOAD_AUTOMATION);
+	double position = mwindow->edl->local_session->get_selectionstart(1);
+	Autos *fade_autos = patch->atrack->automation->autos[AUTOMATION_FADE];
+	int need_undo = !fade_autos->auto_exists_for_editing(position);
 
 	current = (FloatAuto*)fade_autos->get_auto_for_editing(position);
 
 	float result = get_value() - current->value;
 	current->value = get_value();
 
-	if(update_undo)
-		mwindow->undo->update_undo_after();
+	mwindow->undo->update_undo(_("fade"), 
+		LOAD_AUTOMATION, 
+		need_undo ? 0 : this);
 
 	return result;
 }
@@ -252,7 +247,7 @@ int AFadePatch::handle_event()
 
 	mwindow->sync_parameters(CHANGE_PARAMS);
 
-	if(mwindow->edl->session->auto_conf->fade)
+	if(mwindow->edl->session->auto_conf->autos[AUTOMATION_FADE])
 	{
 		mwindow->gui->canvas->draw_overlays();
 		mwindow->gui->canvas->flash();
@@ -263,11 +258,12 @@ int AFadePatch::handle_event()
 FloatAuto* AFadePatch::get_keyframe(MWindow *mwindow, APatchGUI *patch)
 {
 	Auto *current = 0;
-	double unit_position = mwindow->edl->local_session->selectionstart;
+	double unit_position = mwindow->edl->local_session->get_selectionstart(1);
 	unit_position = mwindow->edl->align_to_frame(unit_position, 0);
 	unit_position = patch->atrack->to_units(unit_position, 0);
 
-	return (FloatAuto*)patch->atrack->automation->fade_autos->get_prev_auto(
+	FloatAutos *ptr = (FloatAutos*)patch->atrack->automation->autos[AUTOMATION_FADE];
+	return (FloatAuto*)ptr->get_prev_auto(
 		(long)unit_position, 
 		PLAY_FORWARD,
 		current);
@@ -293,12 +289,9 @@ APanPatch::APanPatch(MWindow *mwindow, APatchGUI *patch, int x, int y)
 int APanPatch::handle_event()
 {
 	PanAuto *current;
-	double position = mwindow->edl->local_session->selectionstart;
-	Autos *pan_autos = patch->atrack->automation->pan_autos;
-	int update_undo = !pan_autos->auto_exists_for_editing(position);
-
-	if(update_undo)
-		mwindow->undo->update_undo_before(_("pan"), LOAD_AUTOMATION);
+	double position = mwindow->edl->local_session->get_selectionstart(1);
+	Autos *pan_autos = patch->atrack->automation->autos[AUTOMATION_PAN];
+	int need_undo = !pan_autos->auto_exists_for_editing(position);
 
 	current = (PanAuto*)pan_autos->get_auto_for_editing(position);
 
@@ -306,12 +299,11 @@ int APanPatch::handle_event()
 	current->handle_y = get_stick_y();
 	memcpy(current->values, get_values(), sizeof(float) * mwindow->edl->session->audio_channels);
 
-	if(update_undo)
-		mwindow->undo->update_undo_after();
+	mwindow->undo->update_undo(_("pan"), LOAD_AUTOMATION, need_undo ? 0 : this);
 
 	mwindow->sync_parameters(CHANGE_PARAMS);
 
-	if(update_undo && mwindow->edl->session->auto_conf->pan)
+	if(need_undo && mwindow->edl->session->auto_conf->autos[AUTOMATION_PAN])
 	{
 		mwindow->gui->canvas->draw_overlays();
 		mwindow->gui->canvas->flash();
@@ -322,11 +314,12 @@ int APanPatch::handle_event()
 PanAuto* APanPatch::get_keyframe(MWindow *mwindow, APatchGUI *patch)
 {
 	Auto *current = 0;
-	double unit_position = mwindow->edl->local_session->selectionstart;
+	double unit_position = mwindow->edl->local_session->get_selectionstart(1);
 	unit_position = mwindow->edl->align_to_frame(unit_position, 0);
 	unit_position = patch->atrack->to_units(unit_position, 0);
 
-	return (PanAuto*)patch->atrack->automation->pan_autos->get_prev_auto(
+	PanAutos *ptr = (PanAutos*)patch->atrack->automation->autos[AUTOMATION_PAN];
+	return (PanAuto*)ptr->get_prev_auto(
 		(long)unit_position, 
 		PLAY_FORWARD,
 		current);

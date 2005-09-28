@@ -95,10 +95,6 @@ public:
 		Asset *asset);
 	virtual ~MenuEffectWindow();
 
-/*
- * 	static int calculate_w(int use_plugin_list);
- * 	static int calculate_h(int use_plugin_list);
- */
 	int create_objects();
 	int resize_event(int w, int h);
 
@@ -160,8 +156,9 @@ class MenuEffectPrompt : public BC_Window
 {
 public:
 	MenuEffectPrompt(MWindow *mwindow);
-	~MenuEffectPrompt();
-	
+
+	static int calculate_w(BC_WindowBase *gui);
+	static int calculate_h(BC_WindowBase *gui);	
 	int create_objects();
 
 	MenuEffectPromptOK *ok;

@@ -6,6 +6,7 @@
 #include "cplayback.inc"
 #include "ctracking.inc"
 #include "cwindowgui.inc"
+#include "floatauto.inc"
 #include "mwindow.inc"
 #include "thread.h"
 #include "track.inc"
@@ -24,9 +25,23 @@ public:
 		int operation = 0,
 		int timebar = 0);
 	void run();
-// Get keyframe for editing in the CWindow
 	Track* calculate_affected_track();
-	Auto* calculate_affected_auto(Autos *autos, int create = 1);
+// Get keyframe for editing in the CWindow.
+// create - if 0 forces automatic creation to be off
+//          if 1 uses automatic creation option to create
+	Auto* calculate_affected_auto(Autos *autos, 
+		int create = 1);
+// Same as before.  Provide 0 to Auto arguments to have them ignored.
+	void calculate_affected_autos(FloatAuto **x_auto,
+		FloatAuto **y_auto,
+		FloatAuto **z_auto,
+		Track *track,
+		int use_camera,
+		int create_x,
+		int create_y,
+		int create_z);
+	void show_window();
+	void hide_window();
 
 	int destination;
 	MWindow *mwindow;

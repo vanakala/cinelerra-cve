@@ -1,4 +1,5 @@
 #include "channel.h"
+#include "defaults.h"
 #include "filexml.h"
 #include <string.h>
 
@@ -37,6 +38,7 @@ void Channel::reset()
 	norm = 0;
 	device_index = 0;
 	tuner = 0;
+	has_scanning = 0;
 }
 
 
@@ -64,6 +66,7 @@ void Channel::copy_usage(Channel *channel)
 	this->use_fine = channel->use_fine;
 	this->use_norm = channel->use_norm;
 	this->use_input = channel->use_input;
+	this->has_scanning = channel->has_scanning;
 }
 
 int Channel::load(FileXML *file)
@@ -113,3 +116,21 @@ int Channel::save(FileXML *file)
 	file->append_tag();
 	file->append_newline();
 }
+
+
+
+void Channel::load_defaults(Defaults *defaults)
+{
+	freqtable = defaults->get("SCAN_FREQTABLE", freqtable);
+	input = defaults->get("SCAN_INPUT", input);
+	norm = defaults->get("SCAN_NORM", norm);
+}
+
+void Channel::save_defaults(Defaults *defaults)
+{
+	defaults->update("SCAN_FREQTABLE", freqtable);
+	defaults->update("SCAN_INPUT", input);
+	defaults->update("SCAN_NORM", norm);
+}
+
+

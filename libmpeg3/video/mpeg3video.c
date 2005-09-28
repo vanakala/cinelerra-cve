@@ -8,31 +8,6 @@
 
 // "½Åµ¿ÈÆ" <doogle@shinbiro.com>
 
-unsigned char mpeg3_zig_zag_scan_mmx[64] =
-{
-    0*8+0 /* 0*/, 1*8+0 /* 1*/, 0*8+1 /* 8*/, 0*8+2 /*16*/, 1*8+1 /* 9*/, 2*8+0 /* 2*/, 3*8+0 /* 3*/, 2*8+1 /*10*/,
-    1*8+2 /*17*/, 0*8+3 /*24*/, 0*8+4 /*32*/, 1*8+3 /*25*/, 2*8+2 /*18*/, 3*8+1 /*11*/, 4*8+0 /* 4*/, 5*8+0 /* 5*/,
-    4*8+1 /*12*/, 3*8+2 /*19*/, 2*8+3 /*26*/, 1*8+4 /*33*/, 0*8+5 /*40*/, 0*8+6 /*48*/, 1*8+5 /*41*/, 2*8+4 /*34*/,
-    3*8+3 /*27*/, 4*8+2 /*20*/, 5*8+1 /*13*/, 6*8+0 /* 6*/, 7*8+0 /* 7*/, 6*8+1 /*14*/, 5*8+2 /*21*/, 4*8+3 /*28*/,
-    3*8+4 /*35*/, 2*8+5 /*42*/, 1*8+6 /*49*/, 0*8+7 /*56*/, 1*8+7 /*57*/, 2*8+6 /*50*/, 3*8+5 /*43*/, 4*8+4 /*36*/,
-    5*8+3 /*29*/, 6*8+2 /*22*/, 7*8+1 /*15*/, 7*8+2 /*23*/, 6*8+3 /*30*/, 5*8+4 /*37*/, 4*8+5 /*44*/, 3*8+6 /*51*/,
-    2*8+7 /*58*/, 3*8+7 /*59*/, 4*8+6 /*52*/, 5*8+5 /*45*/, 6*8+4 /*38*/, 7*8+3 /*31*/, 7*8+4 /*39*/, 6*8+5 /*46*/,
-    5*8+6 /*53*/, 4*8+7 /*60*/, 5*8+7 /*61*/, 6*8+6 /*54*/, 7*8+5 /*47*/, 7*8+6 /*55*/, 6*8+7 /*62*/, 7*8+7 /*63*/
-};
-
-/* alternate scan */
-unsigned char mpeg3_alternate_scan_mmx[64] =
-{
-     0*8+0 /*0 */, 0*8+1 /* 8*/, 0*8+2 /*16*/, 0*8+3 /*24*/, 1*8+0 /* 1*/, 1*8+1 /* 9*/, 2*8+0 /* 2*/, 2*8+1 /*10*/,
-     1*8+2 /*17*/, 1*8+3 /*25*/, 0*8+4 /*32*/, 0*8+5 /*40*/, 0*8+6 /*48*/, 0*8+7 /*56*/, 1*8+7 /*57*/, 1*8+6 /*49*/,
-     1*8+5 /*41*/, 1*8+4 /*33*/, 2*8+3 /*26*/, 2*8+2 /*18*/, 3*8+0 /* 3*/, 3*8+1 /*11*/, 4*8+0 /* 4*/, 4*8+1 /*12*/,
-     3*8+2 /*19*/, 3*8+3 /*27*/, 2*8+4 /*34*/, 2*8+5 /*42*/, 2*8+6 /*50*/, 2*8+7 /*58*/, 3*8+4 /*35*/, 3*8+5 /*43*/,
-     3*8+6 /*51*/, 3*8+7 /*59*/, 4*8+2 /*20*/, 4*8+3 /*28*/, 5*8+0 /* 5*/, 5*8+1 /*13*/, 6*8+0 /* 6*/, 6*8+1 /*14*/,
-     5*8+2 /*21*/, 5*8+3 /*29*/, 4*8+4 /*36*/, 4*8+5 /*44*/, 4*8+6 /*52*/, 4*8+7 /*60*/, 5*8+4 /*37*/, 5*8+5 /*45*/,
-     5*8+6 /*53*/, 5*8+7 /*61*/, 6*8+2 /*22*/, 6*8+3 /*30*/, 7*8+0 /* 7*/, 7*8+1 /*15*/, 7*8+2 /*23*/, 7*8+3 /*31*/,
-     6*8+4 /*38*/, 6*8+5 /*46*/, 6*8+6 /*54*/, 6*8+7 /*62*/, 7*8+4 /*39*/, 7*8+5 /*47*/, 7*8+6 /*55*/, 7*8+7 /*63*/
-};
-
 
 /* zig-zag scan */
 unsigned char mpeg3_zig_zag_scan_nommx[64] =
@@ -221,14 +196,6 @@ int mpeg3video_deletedecoder(mpeg3video_t *video)
 
 void mpeg3video_init_scantables(mpeg3video_t *video)
 {
-#ifdef HAVE_MMX
-	if(video->have_mmx)
-	{
-		video->mpeg3_zigzag_scan_table = mpeg3_zig_zag_scan_mmx;
-		video->mpeg3_alternate_scan_table = mpeg3_alternate_scan_mmx;
-	}
-	else
-#endif
 	{
 		video->mpeg3_zigzag_scan_table = mpeg3_zig_zag_scan_nommx;
 		video->mpeg3_alternate_scan_table = mpeg3_alternate_scan_nommx;
@@ -249,7 +216,6 @@ mpeg3video_t* mpeg3video_allocate_struct(mpeg3_t *file, mpeg3_vtrack_t *track)
 
 /* First frame is all green */
 	video->framenum = -1;
-	video->have_mmx = file->have_mmx;
 
 	video->byte_seek = -1;
 	video->frame_seek = -1;
@@ -336,11 +302,6 @@ int mpeg3video_read_frame_backend(mpeg3video_t *video, int skip_bframes)
 
 
 
-#ifdef HAVE_MMX
-	if(video->have_mmx)
-		__asm__ __volatile__ ("emms");
-#endif
-
 	if(!result)
 	{
 		video->last_number = video->framenum;
@@ -401,7 +362,8 @@ static long gop_to_frame(mpeg3video_t *video, mpeg3_timecode_t *gop_timecode)
 
 
 
-mpeg3video_t* mpeg3video_new(mpeg3_t *file, mpeg3_vtrack_t *track)
+mpeg3video_t* mpeg3video_new(mpeg3_t *file, 
+	mpeg3_vtrack_t *track)
 {
 	mpeg3video_t *video;
 	mpeg3_bits_t *bitstream;
@@ -413,37 +375,39 @@ mpeg3video_t* mpeg3video_new(mpeg3_t *file, mpeg3_vtrack_t *track)
 	demuxer = bitstream->demuxer;
 
 // Get encoding parameters from stream
-	result = mpeg3video_get_header(video, 1);
-
-	if(!result)
+	if(file->seekable)
 	{
-		int hour, minute, second, frame;
-		int gop_found;
+		result = mpeg3video_get_header(video, 1);
 
-		mpeg3video_initdecoder(video);
-		video->decoder_initted = 1;
-		track->width = video->horizontal_size;
-		track->height = video->vertical_size;
-		track->frame_rate = video->frame_rate;
+		if(!result)
+		{
+			int hour, minute, second, frame;
+			int gop_found;
+
+			mpeg3video_initdecoder(video);
+			video->decoder_initted = 1;
+			track->width = video->horizontal_size;
+			track->height = video->vertical_size;
+			track->frame_rate = video->frame_rate;
 
 /* Try to get the length of the file from GOP's */
-		if(!track->frame_offsets)
-		{
-			if(file->is_video_stream)
+			if(!track->frame_offsets)
 			{
+				if(file->is_video_stream)
+				{
 /* Load the first GOP */
-				mpeg3bits_seek_byte(bitstream, 0);
-				result = mpeg3video_next_code(bitstream, 
-					MPEG3_GOP_START_CODE);
-				if(!result) mpeg3bits_getbits(bitstream, 32);
-				if(!result) result = mpeg3video_getgophdr(video);
+					mpeg3_rewind_video(video);
+					result = mpeg3video_next_code(bitstream, 
+						MPEG3_GOP_START_CODE);
+					if(!result) mpeg3bits_getbits(bitstream, 32);
+					if(!result) result = mpeg3video_getgophdr(video);
 
-				hour = video->gop_timecode.hour;
-				minute = video->gop_timecode.minute;
-				second = video->gop_timecode.second;
-				frame = video->gop_timecode.frame;
+					hour = video->gop_timecode.hour;
+					minute = video->gop_timecode.minute;
+					second = video->gop_timecode.second;
+					frame = video->gop_timecode.frame;
 
-				video->first_frame = gop_to_frame(video, &video->gop_timecode);
+					video->first_frame = gop_to_frame(video, &video->gop_timecode);
 
 /*
  * 			video->first_frame = (long)(hour * 3600 * video->frame_rate + 
@@ -454,28 +418,28 @@ mpeg3video_t* mpeg3video_new(mpeg3_t *file, mpeg3_vtrack_t *track)
 
 /* GOPs are supposed to have 16 frames */
 
-				video->frames_per_gop = 16;
+					video->frames_per_gop = 16;
 
 /* Read the last GOP in the file by seeking backward. */
-				mpeg3demux_seek_byte(demuxer, 
-					mpeg3demux_movie_size(demuxer));
-				mpeg3demux_start_reverse(demuxer);
-				result = mpeg3video_prev_code(demuxer, 
-					MPEG3_GOP_START_CODE);
-				mpeg3demux_start_forward(demuxer);
+					mpeg3demux_seek_byte(demuxer, 
+						mpeg3demux_movie_size(demuxer));
+					mpeg3demux_start_reverse(demuxer);
+					result = mpeg3video_prev_code(demuxer, 
+						MPEG3_GOP_START_CODE);
+					mpeg3demux_start_forward(demuxer);
 
 
 
-				mpeg3bits_reset(bitstream);
-				mpeg3bits_getbits(bitstream, 8);
-				if(!result) result = mpeg3video_getgophdr(video);
+					mpeg3bits_reset(bitstream);
+					mpeg3bits_getbits(bitstream, 8);
+					if(!result) result = mpeg3video_getgophdr(video);
 
-				hour = video->gop_timecode.hour;
-				minute = video->gop_timecode.minute;
-				second = video->gop_timecode.second;
-				frame = video->gop_timecode.frame;
+					hour = video->gop_timecode.hour;
+					minute = video->gop_timecode.minute;
+					second = video->gop_timecode.second;
+					frame = video->gop_timecode.frame;
 
-				video->last_frame = gop_to_frame(video, &video->gop_timecode);
+					video->last_frame = gop_to_frame(video, &video->gop_timecode);
 
 /*
  * 			video->last_frame = (long)((double)hour * 3600 * video->frame_rate + 
@@ -487,24 +451,24 @@ mpeg3video_t* mpeg3video_new(mpeg3_t *file, mpeg3_vtrack_t *track)
 //printf("mpeg3video_new 3 %p\n", video);
 
 /* Count number of frames to end */
-				while(!result)
-				{
-					result = mpeg3video_next_code(bitstream, MPEG3_PICTURE_START_CODE);
-					if(!result)
+					while(!result)
 					{
-						mpeg3bits_getbyte_noptr(bitstream);
-						video->last_frame++;
+						result = mpeg3video_next_code(bitstream, MPEG3_PICTURE_START_CODE);
+						if(!result)
+						{
+							mpeg3bits_getbyte_noptr(bitstream);
+							video->last_frame++;
+						}
 					}
-				}
 
-				track->total_frames = video->last_frame - video->first_frame + 1;
+					track->total_frames = video->last_frame - video->first_frame + 1;
 //printf("mpeg3video_new 3 %ld\n", track->total_frames);
-				mpeg3bits_seek_byte(video->vstream, 0);
-			}
-			else
+					mpeg3_rewind_video(video);
+				}
+				else
 // Try to get the length of the file from the multiplexing.
 // Need a table of contents
-			{
+				{
 /*
  * 				video->first_frame = 0;
  * 				track->total_frames = video->last_frame = 
@@ -512,30 +476,28 @@ mpeg3video_t* mpeg3video_new(mpeg3_t *file, mpeg3_vtrack_t *track)
  * 						video->frame_rate);
  * 				video->first_frame = 0;
  */
+				}
 			}
+			else
+// Get length from table of contents
+			{
+				track->total_frames = track->total_frame_offsets;
+			}
+
+
+
+			video->maxframe = track->total_frames;
+			video->repeat_count = 0;
+			mpeg3_rewind_video(video);
+			mpeg3video_get_firstframe(video);
 		}
 		else
-// Get length from table of contents
 		{
-			track->total_frames = track->total_frame_offsets;
+			mpeg3video_delete(video);
+			video = 0;
 		}
-
-
-
-		video->maxframe = track->total_frames;
-		video->repeat_count = 0;
-//printf("mpeg3video_new 2\n");
-		mpeg3bits_seek_byte(video->vstream, 0);
-//printf("mpeg3video_new 3\n");
-		mpeg3video_get_firstframe(video);
-	}
-	else
-	{
-		mpeg3video_delete(video);
-		video = 0;
 	}
 
-//printf("mpeg3video_new 4\n");
 	return video;
 }
 
@@ -556,7 +518,6 @@ int mpeg3video_set_cpus(mpeg3video_t *video, int cpus)
 
 int mpeg3video_set_mmx(mpeg3video_t *video, int use_mmx)
 {
-	video->have_mmx = use_mmx;
 	mpeg3video_init_scantables(video);
 	return 0;
 }
@@ -585,7 +546,7 @@ int mpeg3video_read_raw(mpeg3video_t *video,
 }
 
 int mpeg3video_read_frame(mpeg3video_t *video, 
-		long frame_number, 
+		int frame_number, 
 		unsigned char **output_rows,
 		int in_x, 
 		int in_y, 
@@ -693,13 +654,11 @@ int mpeg3video_read_yuvframe_ptr(mpeg3video_t *video,
 
 	video->want_yvu = 1;
 
-//printf("mpeg3video_read_yuvframe_ptr 1\n");
 // Only decode if it's a different frame
 	if(video->frame_seek < 0 || 
 		video->last_number < 0 ||
 		video->frame_seek != video->last_number)
 	{
-//printf("mpeg3video_read_yuvframe_ptr 1 %d\n", video->framenum);
 		if(!result) result = mpeg3video_seek(video);
 		if(!result) result = mpeg3video_read_frame_backend(video, 0);
 	}
@@ -709,7 +668,6 @@ int mpeg3video_read_yuvframe_ptr(mpeg3video_t *video,
 		video->last_number = video->frame_seek;
 		video->frame_seek = -1;
 	}
-//printf("mpeg3video_read_yuvframe_ptr 10\n");
 
 	if(video->output_src)
 	{
@@ -721,12 +679,10 @@ int mpeg3video_read_yuvframe_ptr(mpeg3video_t *video,
 	{
 		*y_output = *u_output = *v_output = 0;
 	}
-//printf("mpeg3video_read_yuvframe_ptr 20\n");
 
 	video->want_yvu = 0;
 	video->byte_seek = -1;
 
-//printf("mpeg3video_read_yuvframe_ptr 100\n");
 
 	return result;
 }

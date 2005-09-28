@@ -2,11 +2,11 @@
 #include "mpeg3private.h"
 #include "mpeg3protos.h"
 
+#include <errno.h>
 #include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
 
-#define MAX(a, b) ((a) > (b) ? (a) : (b))
 
 int mpeg3_major()
 {
@@ -31,27 +31,47 @@ mpeg3_t* mpeg3_new(char *path)
 	mpeg3_t *file = calloc(1, sizeof(mpeg3_t));
 	file->cpus = 1;
 	file->fs = mpeg3_new_fs(path);
-//	file->have_mmx = mpeg3_mmx_test();
 // Late compilers don't produce usable code.
-	file->have_mmx = 0;
 	file->demuxer = mpeg3_new_demuxer(file, 0, 0, -1);
 	file->seekable = 1;
+	file->index_bytes = 0x300000;
 	return file;
+}
+
+mpeg3_index_t* mpeg3_new_index()
+{
+	mpeg3_index_t *index = calloc(1, sizeof(mpeg3_index_t));
+	index->index_zoom = 1;
+	return index;
+}
+
+void mpeg3_delete_index(mpeg3_index_t *index)
+{
+	int i;
+	for(i = 0;i < index->index_channels; i++)
+		free(index->index_data[i]);
+	free(index->index_data);
+	free(index);
 }
 
 int mpeg3_delete(mpeg3_t *file)
 {
 	int i;
+	const int debug = 0;
 
+if(debug) printf("mpeg3_delete 1\n");
 	for(i = 0; i < file->total_vstreams; i++)
 		mpeg3_delete_vtrack(file, file->vtrack[i]);
+if(debug) printf("mpeg3_delete 1\n");
 
 	for(i = 0; i < file->total_astreams; i++)
 		mpeg3_delete_atrack(file, file->atrack[i]);
 
+if(debug) printf("mpeg3_delete 1\n");
 	mpeg3_delete_fs(file->fs);
 	mpeg3_delete_demuxer(file->demuxer);
 
+if(debug) printf("mpeg3_delete 1\n");
 	if(file->frame_offsets)
 	{
 		for(i = 0; i < file->total_vstreams; i++)
@@ -60,12 +80,14 @@ int mpeg3_delete(mpeg3_t *file)
 			free(file->keyframe_numbers[i]);
 		}
 
+if(debug) printf("mpeg3_delete 1\n");
 		free(file->frame_offsets);
 		free(file->keyframe_numbers);
 		free(file->total_frame_offsets);
 		free(file->total_keyframe_numbers);
 	}
 
+if(debug) printf("mpeg3_delete 1\n");
 	if(file->sample_offsets)
 	{
 		for(i = 0; i < file->total_astreams; i++)
@@ -74,10 +96,25 @@ int mpeg3_delete(mpeg3_t *file)
 		free(file->sample_offsets);
 		free(file->total_sample_offsets);
 	}
+
+if(debug) printf("mpeg3_delete 1\n");
+
 	if(file->channel_counts)
 		free(file->channel_counts);
 
+if(debug) printf("mpeg3_delete 2\n");
+	if(file->indexes)
+	{
+		for(i = 0; i < file->total_indexes; i++)
+			mpeg3_delete_index(file->indexes[i]);
+if(debug) printf("mpeg3_delete 3\n");
+			
+		free(file->indexes);
+	}
+
+if(debug) printf("mpeg3_delete 4\n");
 	free(file);
+if(debug) printf("mpeg3_delete 5\n");
 	return 0;
 }
 
@@ -139,424 +176,147 @@ int mpeg3_check_sig(char *path)
 }
 
 
-static uint32_t read_int32(unsigned char *buffer, int *position)
+
+
+
+
+
+
+
+
+static int is_toc(uint32_t bits)
 {
-	uint32_t temp;
-
-	if(MPEG3_LITTLE_ENDIAN)
-	{
-		((unsigned char*)&temp)[3] = buffer[(*position)++];
-		((unsigned char*)&temp)[2] = buffer[(*position)++];
-		((unsigned char*)&temp)[1] = buffer[(*position)++];
-		((unsigned char*)&temp)[0] = buffer[(*position)++];
-	}
-	else
-	{
-		((unsigned char*)&temp)[0] = buffer[(*position)++];
-		((unsigned char*)&temp)[1] = buffer[(*position)++];
-		((unsigned char*)&temp)[2] = buffer[(*position)++];
-		((unsigned char*)&temp)[3] = buffer[(*position)++];
-	}
-	
-	return temp;
-}
-
-static uint64_t read_int64(unsigned char *buffer, int *position)
-{
-	uint64_t temp;
-
-	if(MPEG3_LITTLE_ENDIAN)
-	{
-		((unsigned char*)&temp)[7] = buffer[(*position)++];
-		((unsigned char*)&temp)[6] = buffer[(*position)++];
-		((unsigned char*)&temp)[5] = buffer[(*position)++];
-		((unsigned char*)&temp)[4] = buffer[(*position)++];
-		((unsigned char*)&temp)[3] = buffer[(*position)++];
-		((unsigned char*)&temp)[2] = buffer[(*position)++];
-		((unsigned char*)&temp)[1] = buffer[(*position)++];
-		((unsigned char*)&temp)[0] = buffer[(*position)++];
-	}
-	else
-	{
-		((unsigned char*)&temp)[0] = buffer[(*position)++];
-		((unsigned char*)&temp)[1] = buffer[(*position)++];
-		((unsigned char*)&temp)[2] = buffer[(*position)++];
-		((unsigned char*)&temp)[3] = buffer[(*position)++];
-		((unsigned char*)&temp)[4] = buffer[(*position)++];
-		((unsigned char*)&temp)[5] = buffer[(*position)++];
-		((unsigned char*)&temp)[6] = buffer[(*position)++];
-		((unsigned char*)&temp)[7] = buffer[(*position)++];
-	}
-
-	return temp;
+	return (bits == MPEG3_TOC_PREFIX);
 }
 
 
-
-
-
-
-static int read_toc(mpeg3_t *file, int *atracks_return, int *vtracks_return)
+static int is_ifo(uint32_t bits)
 {
-	unsigned char *buffer;
-	int file_type;
-	int position = 4;
-	int stream_type;
-	int i, j;
-	int is_vfs = 0;
-	int vfs_len = strlen(RENDERFARM_FS_PREFIX);
-	int toc_version;
-	int64_t current_byte = 0;
+	return (bits == MPEG3_IFO_PREFIX);
+}
 
-// Fix title paths for Cinelerra VFS
-	if(!strncmp(file->fs->path, RENDERFARM_FS_PREFIX, vfs_len))
-		is_vfs = 1;
+static int is_transport(uint32_t bits)
+{
+	return (((bits >> 24) & 0xff) == MPEG3_SYNC_BYTE);
+}
 
-	buffer = malloc(mpeg3io_total_bytes(file->fs));
-	mpeg3io_seek(file->fs, 0);
-	mpeg3io_read_data(buffer, mpeg3io_total_bytes(file->fs), file->fs);
+static int is_program(uint32_t bits)
+{
+	return (bits == MPEG3_PACK_START_CODE);
+}
 
-// Test version
-	if((toc_version = buffer[position++]) != MPEG3_TOC_VERSION)
+static int is_mpeg_audio(uint32_t bits)
+{
+	return (bits & 0xfff00000) == 0xfff00000 ||
+		(bits & 0xffff0000) == 0xffe30000 ||
+		((bits >> 8) == MPEG3_ID3_PREFIX) ||
+		(bits == MPEG3_RIFF_CODE);
+}
+
+static int is_mpeg_video(uint32_t bits)
+{
+	return (bits == MPEG3_SEQUENCE_START_CODE ||
+			bits == MPEG3_PICTURE_START_CODE);
+}
+
+static int is_ac3(uint32_t bits)
+{
+	return (((bits & 0xffff0000) >> 16) == MPEG3_AC3_START_CODE);
+}
+
+static int calculate_packet_size(int is_transport,
+	int is_program,
+	int is_audio,
+	int is_video)
+{
+	if(is_transport)
+		return MPEG3_TS_PACKET_SIZE;
+	else
+	if(is_program)
+		return 0;
+	else
+	if(is_audio)
+		return MPEG3_DVD_PACKET_SIZE;
+	else
+	if(is_video)
+		return MPEG3_DVD_PACKET_SIZE;
+}
+
+int mpeg3_get_file_type(mpeg3_t *file, 
+	mpeg3_t *old_file,
+	int *toc_atracks,
+	int *toc_vtracks)
+{
+	uint32_t bits = mpeg3io_read_int32(file->fs);
+
+/* TOC  */
+	if(is_toc(bits))   
 	{
-		fprintf(stderr,
-			"read_toc: invalid TOC version %x\n", 
-			toc_version);
-		return 1;
-	}
-
-//printf("read_toc %lld\n", mpeg3io_total_bytes(file->fs));
-
-// File type
-	file_type = buffer[position++];
-	switch(file_type)
-	{
-		case FILE_TYPE_PROGRAM:
-			file->is_program_stream = 1;
-			break;
-		case FILE_TYPE_TRANSPORT:
-			file->is_transport_stream = 1;
-			break;
-		case FILE_TYPE_AUDIO:
-			file->is_audio_stream = 1;
-			break;
-		case FILE_TYPE_VIDEO:
-			file->is_video_stream = 1;
-			break;
-	}
-
-//printf("read_toc 10\n");
-
-// Stream ID's
-	while((stream_type = buffer[position]) != TITLE_PATH)
-	{
-		int offset;
-		int stream_id;
-
-//printf("read_toc %d %x\n", position, buffer[position]);
-		position++;
-		offset = read_int32(buffer, &position);
-		stream_id = read_int32(buffer, &position);
-
-		if(stream_type == STREAM_AUDIO)
+/* Table of contents for another title set */
+		if(!old_file)
 		{
-			file->demuxer->astream_table[offset] = stream_id;
-		}
-
-		if(stream_type == STREAM_VIDEO)
-		{
-			file->demuxer->vstream_table[offset] = stream_id;
-		}
-	}
-
-
-
-//printf("read_toc 10\n");
-
-
-// Titles
-	while(buffer[position] == TITLE_PATH)
-	{
-		char string[MPEG3_STRLEN];
-		int string_len = 0;
-		mpeg3_title_t *title;
-		FILE *test_fd;
-
-// Construct title path from VFS prefix and path.
-		position++;
-		if(is_vfs)
-		{
-			strcpy(string, RENDERFARM_FS_PREFIX);
-			string_len = vfs_len;
-		}
-		while(buffer[position] != 0) string[string_len++] = buffer[position++];
-		string[string_len++] = 0;
-		position++;
-
-// Test title availability
-		test_fd = fopen(string, "r");
-		if(test_fd) 
-		{
-			fclose(test_fd);
-		}
-		else
-		{
-// Try concatenating title and toc directory if title is not absolute and
-// toc path has a directory section.
-			if((!is_vfs && string[0] != '/') ||
-				(is_vfs && string[vfs_len] != '/'))
+			if(toc_atracks && toc_vtracks)
 			{
-// Get toc filename without path
-				char *ptr = strrchr(file->fs->path, '/');
-				if(ptr)
+				if(mpeg3_read_toc(file, toc_atracks, toc_vtracks))
 				{
-					char string2[MPEG3_STRLEN];
-
-// Stack filename on toc path
-					strcpy(string2, file->fs->path);
-					if(!is_vfs)
-						strcpy(&string2[ptr - file->fs->path + 1], string);
-					else
-						strcpy(&string2[ptr - file->fs->path + 1], string + vfs_len);
-
-					test_fd = fopen(string2, "r");
-					if(test_fd)
-					{
-						fclose(test_fd);
-						strcpy(string, string2);
-					}
-					else
-					{
-						fprintf(stderr, 
-							"read_toc: failed to open %s or %s\n",
-							string,
-							string2);
-						return 1;
-					}
-				}
-				else
-				{
-					fprintf(stderr,
-						"read_toc: failed to open %s\n", 
-						string);
+					mpeg3io_close_file(file->fs);
+					mpeg3_delete(file);
 					return 1;
 				}
 			}
 			else
 			{
-				fprintf(stderr, 
-					"read_toc: failed to open %s\n", 
-					string);
-				return 1;
-			}
-		}
-
-		title = 
-			file->demuxer->titles[file->demuxer->total_titles++] = 
-			mpeg3_new_title(file, string);
-
-		title->total_bytes = read_int64(buffer, &position);
-		title->start_byte = current_byte;
-		title->end_byte = title->start_byte + title->total_bytes;
-		current_byte = title->end_byte;
-
-// Cells
-		title->cell_table_size = 
-			title->cell_table_allocation = 
-			read_int32(buffer, &position);
-		title->cell_table = calloc(title->cell_table_size, sizeof(mpeg3demux_cell_t));
-		for(i = 0; i < title->cell_table_size; i++)
-		{
-			title->cell_table[i].start_byte = read_int64(buffer, &position);
-			title->cell_table[i].end_byte = read_int64(buffer, &position);
-			title->cell_table[i].program = read_int32(buffer, &position);
-		}
-	}
-//printf("read_toc 10\n");
-
-
-
-// Audio streams
-// Skip ATRACK_COUNT
-	position++;
-	*atracks_return = read_int32(buffer, &position);
-//printf("read_toc 10\n");
-
-// Skip VTRACK_COUNT
-	position++;
-	*vtracks_return = read_int32(buffer, &position);
-//printf("read_toc 10\n");
-
-
-	if(*atracks_return)
-	{
-		file->channel_counts = calloc(sizeof(int), *atracks_return);
-		file->sample_offsets = malloc(sizeof(int64_t*) * *atracks_return);
-		file->total_sample_offsets = malloc(sizeof(int*) * *atracks_return);
-
-		for(i = 0; i < *atracks_return; i++)
-		{
-			file->channel_counts[i] = read_int32(buffer, &position);
-			file->total_sample_offsets[i] = read_int32(buffer, &position);
-			file->sample_offsets[i] = malloc(file->total_sample_offsets[i] * sizeof(int64_t));
-			for(j = 0; j < file->total_sample_offsets[i]; j++)
-			{
-				file->sample_offsets[i][j] = read_int64(buffer, &position);
-//printf("samples %llx\n", file->sample_offsets[i][j]);
-			}
-		}
-	}
-//printf("read_toc 10\n");
-
-	if(*vtracks_return)
-	{
-		file->frame_offsets = malloc(sizeof(int64_t*) * *vtracks_return);
-		file->total_frame_offsets = malloc(sizeof(int*) * *vtracks_return);
-		file->keyframe_numbers = malloc(sizeof(int64_t*) * *vtracks_return);
-		file->total_keyframe_numbers = malloc(sizeof(int*) * *vtracks_return);
-
-		for(i = 0; i < *vtracks_return; i++)
-		{
-			file->total_frame_offsets[i] = read_int32(buffer, &position);
-			file->frame_offsets[i] = malloc(file->total_frame_offsets[i] * sizeof(int64_t));
-			for(j = 0; j < file->total_frame_offsets[i]; j++)
-			{
-				file->frame_offsets[i][j] = read_int64(buffer, &position);
-//printf("frame %llx\n", file->frame_offsets[i][j]);
-			}
-
-
-			file->total_keyframe_numbers[i] = read_int32(buffer, &position);
-			file->keyframe_numbers[i] = malloc(file->total_keyframe_numbers[i] * sizeof(int64_t));
-			for(j = 0; j < file->total_keyframe_numbers[i]; j++)
-			{
-				file->keyframe_numbers[i][j] = read_int64(buffer, &position);
-			}
-		}
-	}
-//printf("read_toc 10\n");
-
-	free(buffer);
-//printf("read_toc 10\n");
-
-
-
-//printf("read_toc 1\n");
-	mpeg3demux_open_title(file->demuxer, 0);
-//printf("read_toc 10\n");
-
-//printf("read_toc 2 %llx\n", mpeg3demux_tell(file->demuxer));
-	return 0;
-}
-
-
-
-
-mpeg3_t* mpeg3_open_copy(char *path, mpeg3_t *old_file)
-{
-	mpeg3_t *file = 0;
-	unsigned int bits;
-	int i, done;
-/* The table of contents may have fewer tracks than are in the demuxer */
-/* This limits the track count */
-	int toc_atracks = 0x7fffffff;
-	int toc_vtracks = 0x7fffffff;
-
-/* Initialize the file structure */
-	file = mpeg3_new(path);
-
-
-
-
-
-
-
-//printf("mpeg3_open_copy 1 %s\n", path);
-
-/* Need to perform authentication before reading a single byte. */
-	if(mpeg3io_open_file(file->fs))
-	{
-		mpeg3_delete(file);
-		return 0;
-	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* =============================== Create the title objects ========================= */
-	bits = mpeg3io_read_int32(file->fs);
-//printf("mpeg3_open 1 %p %d %d %d %d\n", old_file, file->is_transport_stream, file->is_program_stream, file->is_video_stream, file->is_audio_stream);
-
-	if(bits == MPEG3_TOC_PREFIX)   /* TOC  */
-	{
-/* Table of contents for another title set */
-		if(!old_file)
-		{
-			if(read_toc(file, &toc_atracks, &toc_vtracks))
-			{
 				mpeg3io_close_file(file->fs);
 				mpeg3_delete(file);
-				return 0;
+				return 1;
 			}
 		}
 		mpeg3io_close_file(file->fs);
 	}
 	else
-// IFO file
-    if(bits == MPEG3_IFO_PREFIX)
+/* IFO file */
+    if(is_ifo(bits))
     {
     	if(!old_file)
 		{
+			file->is_program_stream = 1;
 			if(mpeg3_read_ifo(file, 0))
         	{
 				mpeg3_delete(file);
 				mpeg3io_close_file(file->fs);
-				return 0;
+				return 1;
         	}
 		}
 		file->is_ifo_file = 1;
 		mpeg3io_close_file(file->fs);
     }
     else
-	if(((bits >> 24) & 0xff) == MPEG3_SYNC_BYTE)
+	if(is_transport(bits))
 	{
 /* Transport stream */
 		file->is_transport_stream = 1;
 	}
 	else
-	if(bits == MPEG3_PACK_START_CODE)
+	if(is_program(bits))
 	{
 /* Program stream */
 /* Determine packet size empirically */
 		file->is_program_stream = 1;
 	}
 	else
-	if((bits & 0xfff00000) == 0xfff00000 ||
-		(bits & 0xffff0000) == 0xffe30000 ||
-		((bits >> 8) == MPEG3_ID3_PREFIX) ||
-		(bits == MPEG3_RIFF_CODE))
+	if(is_mpeg_audio(bits))
 	{
 /* MPEG Audio only */
 		file->is_audio_stream = 1;
 	}
 	else
-	if(bits == MPEG3_SEQUENCE_START_CODE ||
-		bits == MPEG3_PICTURE_START_CODE)
+	if(is_mpeg_video(bits))
 	{
 /* Video only */
 		file->is_video_stream = 1;
 	}
 	else
-	if(((bits & 0xffff0000) >> 16) == MPEG3_AC3_START_CODE)
+	if(is_ac3(bits))
 	{
 /* AC3 Audio only */
 		file->is_audio_stream = 1;
@@ -564,8 +324,8 @@ mpeg3_t* mpeg3_open_copy(char *path, mpeg3_t *old_file)
 	else
 	{
 		mpeg3_delete(file);
-		fprintf(stderr, "mpeg3_open: not an MPEG 2 stream\n");
-		return 0;
+		fprintf(stderr, "mpeg3_get_file_type: not a readable stream.\n");
+		return 1;
 	}
 
 /*
@@ -578,6 +338,45 @@ mpeg3_t* mpeg3_open_copy(char *path, mpeg3_t *old_file)
  */
 
 
+	file->packet_size = calculate_packet_size(file->is_transport_stream,
+		file->is_program_stream,
+		file->is_audio_stream,
+		file->is_video_stream);
+
+	return 0;
+}
+
+
+mpeg3_t* mpeg3_open_copy(char *path, mpeg3_t *old_file)
+{
+	mpeg3_t *file = 0;
+	int i, done;
+/* The table of contents may have fewer tracks than are in the demuxer */
+/* This limits the track count */
+	int toc_atracks = 0x7fffffff;
+	int toc_vtracks = 0x7fffffff;
+
+/* Initialize the file structure */
+	file = mpeg3_new(path);
+
+
+
+/* Need to perform authentication before reading a single byte. */
+	if(mpeg3io_open_file(file->fs))
+	{
+		mpeg3_delete(file);
+		return 0;
+	}
+
+
+
+
+
+/* =============================== Create the title objects ========================= */
+	if(mpeg3_get_file_type(file, 
+		old_file,
+		&toc_atracks, 
+		&toc_vtracks)) return 0;
 
 
 
@@ -588,32 +387,6 @@ mpeg3_t* mpeg3_open_copy(char *path, mpeg3_t *old_file)
 
 
 
-// Configure packet size
-	if(file->is_transport_stream)
-		file->packet_size = MPEG3_TS_PACKET_SIZE;
-	else
-	if(file->is_program_stream)
-		file->packet_size = 0;
-	else
-	if(file->is_audio_stream)
-		file->packet_size = MPEG3_DVD_PACKET_SIZE;
-	else
-	if(file->is_video_stream)
-		file->packet_size = MPEG3_DVD_PACKET_SIZE;
-
-
-
-
-
-
-
-
-
-
-
-
-
-//printf("mpeg3_open 1\n");
 
 /* Create titles */
 /* Copy timecodes from an old demuxer */
@@ -627,12 +400,11 @@ mpeg3_t* mpeg3_open_copy(char *path, mpeg3_t *old_file)
 /* Start from scratch */
 	if(!file->demuxer->total_titles)
 	{
-		mpeg3demux_create_title(file->demuxer, 0, 0);
+		mpeg3_create_title(file->demuxer, 0);
 	}
 
 
 
-//printf("mpeg3_open 50\n");
 
 
 
@@ -705,7 +477,9 @@ mpeg3_t* mpeg3_open_copy(char *path, mpeg3_t *old_file)
 
 
 
+
 	mpeg3io_close_file(file->fs);
+
 	return file;
 }
 
@@ -727,15 +501,6 @@ int mpeg3_set_cpus(mpeg3_t *file, int cpus)
 	file->cpus = cpus;
 	for(i = 0; i < file->total_vstreams; i++)
 		mpeg3video_set_cpus(file->vtrack[i]->video, cpus);
-	return 0;
-}
-
-int mpeg3_set_mmx(mpeg3_t *file, int use_mmx)
-{
-	int i;
-	file->have_mmx = use_mmx;
-	for(i = 0; i < file->total_vstreams; i++)
-		mpeg3video_set_mmx(file->vtrack[i]->video, use_mmx);
 	return 0;
 }
 
@@ -1204,3 +969,6 @@ int mpeg3_read_video_chunk(mpeg3_t *file,
 	}
 	return result;
 }
+
+
+

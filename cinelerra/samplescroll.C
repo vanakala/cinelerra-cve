@@ -12,13 +12,15 @@
 #include "trackcanvas.h"
 #include "tracks.h"
 
-SampleScroll::SampleScroll(MWindow *mwindow, MWindowGUI *gui, int pixels)
- : BC_ScrollBar(mwindow->theme->mcanvas_x, 
- 	mwindow->theme->mcanvas_y + 
-		mwindow->theme->mcanvas_h - 
-		BC_ScrollBar::get_span(SCROLL_HORIZ),
+SampleScroll::SampleScroll(MWindow *mwindow, 
+	MWindowGUI *gui, 
+	int x,
+	int y,
+	int w)
+ : BC_ScrollBar(x, 
+ 	y,
 	SCROLL_HORIZ, 
-	pixels, 
+	w, 
 	0, 
 	0, 
 	0)
@@ -45,12 +47,9 @@ int SampleScroll::in_use()
 
 int SampleScroll::resize_event()
 {
-	reposition_window(mwindow->theme->mcanvas_x,
-		mwindow->theme->mcanvas_y + 
-			mwindow->theme->mcanvas_h - 
-			BC_ScrollBar::get_span(SCROLL_VERT), 
-		mwindow->theme->mcanvas_w - 
-			BC_ScrollBar::get_span(SCROLL_HORIZ));
+	reposition_window(mwindow->theme->mhscroll_x,
+		mwindow->theme->mhscroll_y, 
+		mwindow->theme->mhscroll_w);
 	return 0;
 }
 

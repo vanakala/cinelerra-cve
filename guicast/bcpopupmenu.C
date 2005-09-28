@@ -6,16 +6,51 @@
 #include "colors.h"
 #include "fonts.h"
 #include <string.h>
+#include "vframe.h"
 
 #define BUTTON_UP 0
 #define BUTTON_HI 1
 #define BUTTON_DN 2
+#define TOTAL_IMAGES 3
+
+
+#define TRIANGLE_W 10
+#define TRIANGLE_H 10
+
 
 BC_PopupMenu::BC_PopupMenu(int x, 
 		int y, 
 		int w, 
 		char *text, 
-		int use_title)
+		int use_title,
+		VFrame **data,
+		int margin)
+ : BC_SubWindow(x, y, 0, 0, -1)
+{
+	highlighted = popup_down = 0;
+	menu_popup = 0;
+	icon = 0;
+	if(margin >= 0)
+		this->margin = margin;
+	else
+		this->margin = BC_WindowBase::get_resources()->popupmenu_margin;
+
+	this->use_title = use_title;
+	strcpy(this->text, text);
+	for(int i = 0; i < TOTAL_IMAGES; i++)
+	{
+		images[i] = 0;
+	}
+	this->data = data;
+	this->w_argument = w;
+	status = BUTTON_UP;
+}
+
+BC_PopupMenu::BC_PopupMenu(int x, 
+		int y, 
+		char *text, 
+		int use_title,
+		VFrame **data)
  : BC_SubWindow(x, y, w, -1, -1)
 {
 	highlighted = popup_down = 0;
@@ -23,17 +58,19 @@ BC_PopupMenu::BC_PopupMenu(int x,
 	icon = 0;
 	this->use_title = use_title;
 	strcpy(this->text, text);
-	for(int i = 0; i < 9; i++)
+	for(int i = 0; i < TOTAL_IMAGES; i++)
 	{
 		images[i] = 0;
 	}
+	this->data = data;
+	this->w_argument = 0;
 	status = BUTTON_UP;
 }
 
 BC_PopupMenu::~BC_PopupMenu()
 {
 	if(menu_popup) delete menu_popup;
-	for(int i = 0; i < 9; i++)
+	for(int i = 0; i < TOTAL_IMAGES; i++)
 	{
 		if(images[i]) delete images[i];
 	}
@@ -66,7 +103,13 @@ int BC_PopupMenu::initialize()
 {
 	if(use_title)
 	{
-		set_images(BC_WindowBase::get_resources()->generic_button_images);
+		if(data)
+			set_images(data);
+		else
+		if(BC_WindowBase::get_resources()->popupmenu_images)
+			set_images(BC_WindowBase::get_resources()->popupmenu_images);
+		else
+			set_images(BC_WindowBase::get_resources()->generic_button_images);
 	}
 	else
 // Move outside window if no title
@@ -93,14 +136,38 @@ int BC_PopupMenu::initialize()
 
 int BC_PopupMenu::set_images(VFrame **data)
 {
+	BC_Resources *resources = get_resources();
 	for(int i = 0; i < 3; i++)
 	{
 		if(images[i]) delete images[i];
 		images[i] = new BC_Pixmap(parent_window, data[i], PIXMAP_ALPHA);
 	}
 
+	if(w_argument > 0)
+		w = w_argument + 
+			margin +
+			resources->popupmenu_triangle_margin;
+	else
+		w = get_text_width(MEDIUMFONT, text) + 
+			margin +
+			resources->popupmenu_triangle_margin;
+
 	h = images[BUTTON_UP]->get_h();
 	return 0;
+}
+
+int BC_PopupMenu::calculate_h(VFrame **data)
+{
+	if(data)
+		;
+	else
+	if(BC_WindowBase::get_resources()->popupmenu_images)
+		data = BC_WindowBase::get_resources()->popupmenu_images;
+	else
+		data = BC_WindowBase::get_resources()->generic_button_images;
+
+	
+	return data[BUTTON_UP]->get_h();
 }
 
 int BC_PopupMenu::add_item(BC_MenuItem *item)
@@ -126,13 +193,10 @@ BC_MenuItem* BC_PopupMenu::get_item(int i)
 	return menu_popup->menu_items.values[i];
 }
 
-#define MARGIN 10
-#define TRIANGLE_W 10
-#define TRIANGLE_H 10
-
 int BC_PopupMenu::draw_title()
 {
 	if(!use_title) return 0;
+	BC_Resources *resources = get_resources();
 
 // Background
 	draw_top_background(parent_window, 0, 0, w, h);
@@ -140,22 +204,26 @@ int BC_PopupMenu::draw_title()
 
 // Overlay text
 	set_color(get_resources()->popup_title_text);
+	int offset = 0;
+	if(status == BUTTON_DN)
+		offset = 1;
 	if(!icon)
 	{
 		set_font(MEDIUMFONT);
-		BC_WindowBase::draw_center_text((get_w() - MARGIN - TRIANGLE_W) / 2, 
-			(int)((float)get_h() / 2 + get_text_ascent(MEDIUMFONT) / 2 - 2), 
+		BC_WindowBase::draw_center_text(
+			(get_w() - margin * 2 - resources->popupmenu_triangle_margin) / 2 + margin + offset, 
+			(int)((float)get_h() / 2 + get_text_ascent(MEDIUMFONT) / 2 - 2) + offset, 
 			text);
 	}
 
 	if(icon)
 	{
 		draw_pixmap(icon,
-			MARGIN,
-			get_h() / 2 - icon->get_h() / 2);
+			(get_w() - margin * 2 - resources->popupmenu_triangle_margin) / 2 + margin + offset - icon->get_w() / 2 ,
+			get_h() / 2 - icon->get_h() / 2 + offset);
 	}
 
-	draw_triangle_down_flat(get_w() - MARGIN - TRIANGLE_W, 
+	draw_triangle_down_flat(get_w() - margin - resources->popupmenu_triangle_margin, 
 		get_h() / 2 - TRIANGLE_H / 2, 
 		TRIANGLE_W, TRIANGLE_H);
 
@@ -224,6 +292,14 @@ int BC_PopupMenu::activate_menu()
 int BC_PopupMenu::deactivate_menu()
 {
 	deactivate();
+	return 0;
+}
+
+
+int BC_PopupMenu::reposition_window(int x, int y)
+{
+	BC_WindowBase::reposition_window(x, y);
+	draw_title();
 	return 0;
 }
 

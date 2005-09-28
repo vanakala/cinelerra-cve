@@ -95,29 +95,16 @@ public:
 	TimeEntry *batch_start;
 	TimeEntry *batch_duration;
 	RecordStartType *start_type;
-	BC_Title *transport_title;
 	RecordTransport *record_transport;
 	BrowseButton *batch_browse;
 	RecordSource *batch_source;
 	RecordMode *batch_mode;
-//	RecordNews *batch_news;
-	BC_Title *batch_number_title;
-	BC_Title *batch_start_title;
-	BC_Title *batch_path_title;
-	BC_Title *batch_browse_title;
-	BC_Title *batch_duration_title;
-	BC_Title *batch_source_title;
-	BC_Title *batch_mode_title;
-	BC_Title *batch_news_title;
 	RecordGUINewBatch *new_batch;
 	RecordGUIDeleteBatch *delete_batch;
 	RecordGUIStartBatches *start_batches;
 	RecordGUIStopbatches *stop_batches;
 	RecordGUIActivateBatch *activate_batch;
 	RecordGUILabel *label_button;
-	RecordGUISave *save;
-//	RecordGUIStartOver *start_over;
-	RecordGUICancel *cancel;
 	RecordGUIFillFrames *fill_frames;
 	RecordGUIMonitorVideo *monitor_video;
 	RecordGUIMonitorAudio *monitor_audio;
@@ -214,10 +201,10 @@ public:
 	RecordGUI *gui;
 };
 
-class RecordGUISave : public BC_GenericButton
+class RecordGUISave : public BC_Button
 {
 public:
-	RecordGUISave(Record *record, RecordGUI *record_gui, int x, int y);
+	RecordGUISave(Record *record, RecordGUI *record_gui);
 	int handle_event();
 	int keypress_event();
 	RecordGUI *gui;
@@ -225,10 +212,10 @@ public:
 };
 
 
-class RecordGUICancel : public BC_GenericButton
+class RecordGUICancel : public BC_Button
 {
 public:
-	RecordGUICancel(Record *record, RecordGUI *record_gui, int x, int y);
+	RecordGUICancel(Record *record, RecordGUI *record_gui);
 	int handle_event();
 	int keypress_event();
 	RecordGUI *gui;

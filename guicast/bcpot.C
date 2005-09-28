@@ -24,6 +24,11 @@ BC_Pot::~BC_Pot()
 {
 }
 
+int BC_Pot::calculate_h()
+{
+	return BC_WindowBase::get_resources()->pot_images[0]->get_h();
+}
+
 int BC_Pot::initialize()
 {
 	if(!data)

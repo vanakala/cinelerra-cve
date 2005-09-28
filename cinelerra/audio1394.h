@@ -4,6 +4,9 @@
 #include "audiodevice.h"
 #include "device1394input.inc"
 #include "device1394output.inc"
+#include "iec61883input.inc"
+#include "iec61883output.inc"
+#include "vdevice1394.inc"
 
 
 #ifdef HAVE_FIREWIRE
@@ -16,6 +19,9 @@ public:
 	Audio1394(AudioDevice *device);
 	~Audio1394();
 
+
+	friend class VDevice1394;
+
 	int initialize();
 
 	int open_input();
@@ -26,11 +32,13 @@ public:
 	int64_t device_position();
 	int flush_device();
 	int interrupt_playback();
-	Device1394Input *input_thread;
-	Device1394Output *output_thread;
 
 	
 private:
+	Device1394Input *input_thread;
+	Device1394Output *output_thread;
+	IEC61883Input *input_iec;
+	IEC61883Output *output_iec;
 	int bytes_per_sample;
 };
 

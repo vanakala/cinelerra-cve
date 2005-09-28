@@ -15,7 +15,7 @@
 #include "render.inc"
 #include "renderfarm.inc"
 #include "renderfarmclient.inc"
-#include "renderfarmfsserver.inc"
+//#include "renderfarmfsserver.inc"
 #include "thread.h"
 
 #include <stdint.h>
@@ -164,7 +164,7 @@ public:
 	void send_edl();
 	void send_package(unsigned char *buffer);
 	void set_progress(unsigned char *buffer);
-	void set_video_map(unsigned char *buffer);
+	int set_video_map(unsigned char *buffer);
 	void set_result(unsigned char *buffer);
 	void get_result();
 	void reallocate_buffer(int size);
@@ -175,7 +175,7 @@ public:
 //	MWindow *mwindow;
 	ArrayList<PluginServer*> *plugindb;
 	RenderFarmServer *server;
-	RenderFarmFSServer *fs_server;
+//	RenderFarmFSServer *fs_server;
 	int socket_fd;
 	int number;
 // Rate of last job or 0

@@ -10,13 +10,14 @@
 #define TUMBLETOP_DN 3
 #define TOTAL_STATES 4
 
-BC_Tumbler::BC_Tumbler(int x, int y)
+BC_Tumbler::BC_Tumbler(int x, int y, VFrame **data)
  : BC_SubWindow(x, y, 0, 0, -1)
 {
 	for(int i = 0; i < TOTAL_STATES; i++)
 		images[i] = 0;
 	status = TUMBLE_UP;
 	repeat_count = 0;
+	this->data = data;
 }
 
 
@@ -31,7 +32,10 @@ BC_Tumbler::~BC_Tumbler()
 int BC_Tumbler::initialize()
 {
 // Get the image
-	set_images(get_resources()->tumble_data);
+	if(data)
+		set_images(data);
+	else
+		set_images(get_resources()->tumble_data);
 	w = images[TUMBLE_UP]->get_w();
 	h = images[TUMBLE_UP]->get_h();
 

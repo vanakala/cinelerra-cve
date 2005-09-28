@@ -1,5 +1,6 @@
 #include <ctype.h>
 #include "defaults.h"
+#include "mwindow.h"
 #include "picture.h"
 #include <string.h>
 
@@ -38,9 +39,9 @@ void PictureItem::copy_from(PictureItem *src)
 
 char* PictureItem::get_default_string(char *string)
 {
-	sprintf(string, "VIDEO_%s", name);
-	for(int j = 0; string[j]; j++)
-		string[j] = toupper(string[j]);
+	sprintf(string, "VIDEO_%s_VALUE", name);
+	for(int i = 0; i < strlen(string); i++)
+		string[i] = toupper(string[i]);
 	return string;
 }
 
@@ -51,8 +52,9 @@ char* PictureItem::get_default_string(char *string)
 
 
 
-Picture::Picture()
+PictureConfig::PictureConfig(MWindow *mwindow)
 {
+	this->mwindow = mwindow;
 	brightness = -1;
 	hue = -1;
 	color = -1;
@@ -66,12 +68,12 @@ Picture::Picture()
 	use_whiteness = 0;
 }
 
-Picture::~Picture()
+PictureConfig::~PictureConfig()
 {
 	controls.remove_all_objects();
 }
 
-void Picture::copy_settings(Picture *picture)
+void PictureConfig::copy_settings(PictureConfig *picture)
 {
 	this->brightness = picture->brightness;
 	this->hue = picture->hue;
@@ -101,7 +103,7 @@ void Picture::copy_settings(Picture *picture)
 	}
 }
 
-void Picture::copy_usage(Picture *picture)
+void PictureConfig::copy_usage(PictureConfig *picture)
 {
 	this->use_brightness = picture->use_brightness;
 	this->use_contrast = picture->use_contrast;
@@ -131,39 +133,54 @@ void Picture::copy_usage(Picture *picture)
 	}
 }
 
-void Picture::load_defaults(Defaults *defaults)
+void PictureConfig::load_defaults()
 {
-	brightness = defaults->get("VIDEO_BRIGHTNESS", 0);
-	hue = defaults->get("VIDEO_HUE", 0);
-	color = defaults->get("VIDEO_COLOR", 0);
-	contrast = defaults->get("VIDEO_CONTRAST", 0);
-	whiteness = defaults->get("VIDEO_WHITENESS", 0);
+	if(!mwindow)
+	{
+		printf("PictureConfig::load_defaults: mwindow not set.\n");
+		return;
+	}
+	brightness = mwindow->defaults->get("VIDEO_BRIGHTNESS", 0);
+	hue = mwindow->defaults->get("VIDEO_HUE", 0);
+	color = mwindow->defaults->get("VIDEO_COLOR", 0);
+	contrast = mwindow->defaults->get("VIDEO_CONTRAST", 0);
+	whiteness = mwindow->defaults->get("VIDEO_WHITENESS", 0);
+
+// The device must be probed first to keep unsupported controls from getting 
+// displayed.
 	for(int i = 0; i < controls.total; i++)
 	{
 		PictureItem *item = controls.values[i];
 		char string[BCTEXTLEN];
 		item->get_default_string(string);
-		item->value = defaults->get(string, item->value);
+		item->value = mwindow->defaults->get(string, item->value);
+//printf("PictureConfig::load_defaults %s %d %d\n", item->name, item->device_id, item->value);
 	}
 }
 
-void Picture::save_defaults(Defaults *defaults)
+void PictureConfig::save_defaults()
 {
-	defaults->update("VIDEO_BRIGHTNESS", brightness);
-	defaults->update("VIDEO_HUE", hue);
-	defaults->update("VIDEO_COLOR", color);
-	defaults->update("VIDEO_CONTRAST", contrast);
-	defaults->update("VIDEO_WHITENESS", whiteness);
+	if(!mwindow)
+	{
+		printf("PictureConfig::save_defaults: mwindow not set.\n");
+		return;
+	}
+	mwindow->defaults->update("VIDEO_BRIGHTNESS", brightness);
+	mwindow->defaults->update("VIDEO_HUE", hue);
+	mwindow->defaults->update("VIDEO_COLOR", color);
+	mwindow->defaults->update("VIDEO_CONTRAST", contrast);
+	mwindow->defaults->update("VIDEO_WHITENESS", whiteness);
 	for(int i = 0; i < controls.total; i++)
 	{
 		PictureItem *item = controls.values[i];
 		char string[BCTEXTLEN];
 		item->get_default_string(string);
-		defaults->update(string, item->value);
+		mwindow->defaults->update(string, item->value);
+//printf("PictureConfig::save_defaults %s %d %d\n", string, item->device_id, item->value);
 	}
 }
 
-PictureItem* Picture::new_item(char *name)
+PictureItem* PictureConfig::new_item(const char *name)
 {
 	for(int i = 0; i < controls.total; i++)
 	{
@@ -175,7 +192,17 @@ PictureItem* Picture::new_item(char *name)
 	return item;
 }
 
-void Picture::set_item(int device_id, int value)
+PictureItem* PictureConfig::get_item(const char *name, int id)
+{
+	for(int i = 0; i < controls.total; i++)
+	{
+		if(!strcmp(controls.values[i]->name, name) &&
+			controls.values[i]->device_id == id) return controls.values[i];
+	}
+	return 0;
+}
+
+void PictureConfig::set_item(int device_id, int value)
 {
 	for(int i = 0; i < controls.total; i++)
 	{

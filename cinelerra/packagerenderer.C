@@ -146,7 +146,7 @@ void PackageRenderer::create_output()
 
 	file->set_processors(preferences->processors);
 
-	result = file->open_file(plugindb, 
+	result = file->open_file(preferences, 
 					asset, 
 					0, 
 					1, 
@@ -367,14 +367,18 @@ void PackageRenderer::do_video()
 						(i < asset->layers) ? 
 							video_output[i][video_write_position] : 
 							0;
- 				result |= render_engine->vrender->process_buffer(
-					video_output_ptr, 
-					video_position, 
-					0);
+
+ 				if(!result)
+					result = render_engine->vrender->process_buffer(
+						video_output_ptr, 
+						video_position, 
+						0);
 
 
 
- 				if(mwindow && video_device->output_visible())
+ 				if(!result && 
+					mwindow && 
+					video_device->output_visible())
 				{
 // Vector for video device
 					VFrame *preview_output[MAX_CHANNELS];
@@ -390,19 +394,17 @@ void PackageRenderer::do_video()
 				}
 
 
-//printf("PackageRenderer::do_video 6\n");
 
-// Write to file
-				if(video_preroll)
+// Don't write to file
+				if(video_preroll && !result)
 				{
-//printf("PackageRenderer::do_video 6.1\n");
 					video_preroll--;
 // Keep the write position at 0 until ready to write real frames
-					result |= file->write_video_buffer(0);
-//printf("PackageRenderer::do_video 6.2\n");
+					result = file->write_video_buffer(0);
 					video_write_position = 0;
 				}
 				else
+				if(!result)
 	 			{
 //printf("PackageRenderer::do_video 7\n");
 // Set background rendering parameters
@@ -418,23 +420,27 @@ void PackageRenderer::do_video()
 					if(video_write_position >= video_write_length)
 					{
 //printf("PackageRenderer::do_video 9\n");
-						result |= file->write_video_buffer(video_write_position);
-//printf("PackageRenderer::do_video 10\n");
+						result = file->write_video_buffer(video_write_position);
 // Update the brender map after writing the files.
 						if(package->use_brender)
-							for(int i = 0; i < video_write_position; i++)
-								set_video_map(video_position + 1 - video_write_position + i, 
+						{
+//printf("PackageRenderer::do_video 10\n");
+							for(int i = 0; i < video_write_position && !result; i++)
+							{
+								result = set_video_map(video_position + 1 - video_write_position + i, 
 									BRender::RENDERED);
+							}
+//printf("PackageRenderer::do_video 11 %d\n", result);
+						}
 						video_write_position = 0;
 					}
-//printf("PackageRenderer::do_video 11\n");
 				}
 
 
 			}
 
 			video_position++;
-			if(get_result()) result = 1;
+			if(!result && get_result()) result = 1;
 			if(!result && progress_cancelled()) result = 1;
 		}
 	}
@@ -442,7 +448,6 @@ void PackageRenderer::do_video()
 	{
 		video_position += video_read_length;
 	}
-//printf("PackageRenderer::do_video 14 %d %d\n", video_position, result);
 }
 
 
@@ -455,6 +460,7 @@ void PackageRenderer::stop_engine()
 
 void PackageRenderer::stop_output()
 {
+	int error = 0;
 	if(asset->audio_data)
 	{
 // stop file I/O
@@ -467,11 +473,15 @@ void PackageRenderer::stop_output()
 		if(video_write_position)
 			file->write_video_buffer(video_write_position);
 		if(package->use_brender)
-			for(int i = 0; i < video_write_position; i++)
-				set_video_map(video_position - video_write_position + i, 
+		{
+			for(int i = 0; i < video_write_position && !error; i++)
+			{
+				error = set_video_map(video_position - video_write_position + i, 
 					BRender::RENDERED);
+			}
+		}
 		video_write_position = 0;	
-		file->stop_video_thread();
+		if(!error) file->stop_video_thread();
 		if(mwindow)
 		{
 			video_device->stop_playback();
@@ -602,25 +612,25 @@ int PackageRenderer::render_package(RenderPackage *package)
 				result = get_result();
 		}
 
-//printf("PackageRenderer::render_package 10\n");
+//printf("PackageRenderer::render_package 20\n");
 		stop_engine();
-//printf("PackageRenderer::render_package 11\n");
+//printf("PackageRenderer::render_package 30\n");
 
 		stop_output();
-//printf("PackageRenderer::render_package 12\n");
+//printf("PackageRenderer::render_package 40\n");
 
 
 	}
 
 
 
-//printf("PackageRenderer::render_package 13\n");
+//printf("PackageRenderer::render_package 50\n");
 	close_output();
-//printf("PackageRenderer::render_package 14\n");
+//printf("PackageRenderer::render_package 60\n");
 
 
 	set_result(result);
-//printf("PackageRenderer::render_package 15\n");
+//printf("PackageRenderer::render_package 70\n");
 
 
 
@@ -644,7 +654,6 @@ int PackageRenderer::direct_frame_copy(EDL *edl,
 	Track *playable_track;
 	Edit *playable_edit;
 	int64_t frame_size;
-	int result = 0;
 
 //printf("Render::direct_frame_copy 1\n");
 	if(direct_copy_possible(edl, 
@@ -682,16 +691,18 @@ int PackageRenderer::direct_frame_copy(EDL *edl,
 		else
 		if(!error)
 		{
-// Don't background render this one
 			if(package->use_brender)
-				set_video_map(video_position, BRender::SCANNED);
-
-			if(!package->use_brender)
+			{
+//printf("PackageRenderer::direct_frame_copy 1\n");
+				error = set_video_map(video_position, BRender::SCANNED);
+//printf("PackageRenderer::direct_frame_copy 10 %d\n", error);
+			}
+			else
 			{
 				VFrame ***temp_output = new VFrame**[1];
 				temp_output[0] = new VFrame*[1];
 				temp_output[0][0] = compressed_output;
-				error |= file->write_frames(temp_output, 1);
+				error = file->write_frames(temp_output, 1);
 				delete temp_output[0];
 				delete temp_output;
 			}
@@ -793,7 +804,7 @@ void PackageRenderer::set_progress(int64_t value)
 {
 }	
 
-void PackageRenderer::set_video_map(int64_t position, int value)
+int PackageRenderer::set_video_map(int64_t position, int value)
 {
 }
 

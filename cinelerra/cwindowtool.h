@@ -18,9 +18,15 @@ class CWindowTool : public Thread
 public:
 	CWindowTool(MWindow *mwindow, CWindowGUI *gui);
 	~CWindowTool();
-	
+
+// Called depending on state of toggle button
 	void start_tool(int operation);
 	void stop_tool();
+
+// Called when window is visible
+	void show_tool();
+	void hide_tool();
+
 	void run();
 	void update_show_window();
 	void update_values();
@@ -95,7 +101,7 @@ public:
 	void update();
 // Update the gui
 	void handle_event();
-	CWindowCoord *x1, *y1, *x2, *y2;
+	CWindowCoord *x1, *y1, *width, *height;
 };
 
 class CWindowMaskMode : public BC_PopupMenu
@@ -197,6 +203,21 @@ public:
 
 
 
+class CWindowEyedropGUI : public CWindowToolGUI
+{
+public:
+	CWindowEyedropGUI(MWindow *mwindow, CWindowTool *thread);
+	~CWindowEyedropGUI();
+
+	void create_objects();
+	void update();
+
+	BC_Title *red, *green, *blue;
+	BC_SubWindow *sample;
+};
+
+
+
 class CWindowCameraGUI : public CWindowToolGUI
 {
 public:
@@ -208,7 +229,7 @@ public:
 
 // Update the keyframe from text boxes
 	void handle_event();
-	BezierAuto* get_keyframe();
+//	BezierAuto* get_keyframe();
 	CWindowCoord *x, *y, *z;
 };
 
@@ -275,7 +296,7 @@ public:
 	void update();
 	void update_preview();
 	void handle_event();
-	BezierAuto* get_keyframe();
+//	BezierAuto* get_keyframe();
 	CWindowCoord *x, *y, *z;
 };
 

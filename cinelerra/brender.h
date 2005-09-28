@@ -78,7 +78,7 @@ public:
 // Allocate map with locking
 	void allocate_map(int64_t brender_start, int64_t start, int64_t end);
 // Mark a frame as finished
-	void set_video_map(int64_t position, int value);
+	int set_video_map(int64_t position, int value);
 
 	void initialize();
 	void run();

@@ -37,15 +37,17 @@
 #include "mpeg3css.h"
 #include "mpeg3private.h"
 
+
 #include <unistd.h>
 #include <fcntl.h>
+// Must unlink /usr/include directories from the kernel source for this to work.
+#include <linux/cdrom.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/ioctl.h>
-#include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <linux/cdrom.h>
+
 
 #ifndef FIBMAP
 #define FIBMAP	   _IO(0x00,1)	/* bmap access */

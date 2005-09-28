@@ -1,9 +1,13 @@
+#include "automation.inc"
+#include "clip.h"
 #include "intauto.h"
 #include "intautos.h"
 
-IntAutos::IntAutos(EDL *edl, Track *track)
+IntAutos::IntAutos(EDL *edl, Track *track, int default_)
  : Autos(edl, track)
 {
+	this->default_ = default_;
+	type = AUTOMATION_TYPE_INT;
 }
 
 IntAutos::~IntAutos()
@@ -13,7 +17,9 @@ IntAutos::~IntAutos()
 
 Auto* IntAutos::new_auto()
 {
-	return new IntAuto(edl, this);
+	IntAuto *result = new IntAuto(edl, this);
+	result->value = default_;
+	return result;
 }
 
 int IntAutos::automation_is_constant(int64_t start, int64_t end)
@@ -67,6 +73,43 @@ double IntAutos::get_automation_constant(int64_t start, int64_t end)
 	return ((IntAuto*)current_auto)->value;
 }
 
+
+void IntAutos::get_extents(float *min, 
+	float *max,
+	int *coords_undefined,
+	int64_t unit_start,
+	int64_t unit_end)
+{
+	if(!first)
+	{
+		IntAuto *current = (IntAuto*)default_auto;
+		if(*coords_undefined)
+		{
+			*min = *max = current->value;
+			*coords_undefined = 0;
+		}
+
+		*min = MIN(current->value, *min);
+		*max = MAX(current->value, *max);
+	}
+
+	for(IntAuto *current = (IntAuto*)first; current; current = (IntAuto*)NEXT)
+	{
+		if(current->position >= unit_start && current->position < unit_end)
+		{
+			if(coords_undefined)
+			{
+				*max = *min = current->value;
+				*coords_undefined = 0;
+			}
+			else
+			{
+				*min = MIN(current->value, *min);
+				*max = MAX(current->value, *max);
+			}
+		}
+	}
+}
 
 void IntAutos::dump()
 {

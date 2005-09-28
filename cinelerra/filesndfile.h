@@ -36,9 +36,6 @@ public:
 		int audio_options,
 		int video_options);
 
-// File must be opened here to get the VFS override.  libsndfile-1.0.5 uses
-// open instead of fopen.
-	FILE *fileptr;
 	SNDFILE *fd;
 	SF_INFO fd_config;
 // Temp for interleaved channels

@@ -29,7 +29,7 @@ public:
 	static int get_transport_width(MWindow *mwindow);
 	int flip_vertical(int vertical, int &x, int &y);
 	int keypress_event();
-	void handle_transport(int command, int wait_tracking = 0);
+	void handle_transport(int command, int wait_tracking = 0, int use_inout = 0);
 
 	int pause_transport();
 	int reset_transport();

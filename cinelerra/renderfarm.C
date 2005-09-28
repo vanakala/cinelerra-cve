@@ -7,12 +7,11 @@
 #include "filexml.h"
 #include "language.h"
 #include "mutex.h"
-//#include "mwindow.h"
 #include "packagedispatcher.h"
 #include "preferences.h"
 #include "render.h"
 #include "renderfarm.h"
-#include "renderfarmfsserver.h"
+//#include "renderfarmfsserver.h"
 #include "bctimer.h"
 #include "transportque.h"
 
@@ -346,10 +345,12 @@ void RenderFarmServerThread::run()
 
 	buffer = 0;
 	buffer_allocated = 0;
-	fs_server = new RenderFarmFSServer(this);
-	fs_server->initialize();
+//	fs_server = new RenderFarmFSServer(this);
+//	fs_server->initialize();
 	while(!done)
 	{
+
+//printf("RenderFarmServerThread::run 1\n");
 // Wait for requests.
 // Requests consist of request ID's and accompanying buffers.
 // Get request ID.
@@ -365,7 +366,7 @@ void RenderFarmServerThread::run()
 							(((u_int32_t)header[3]) << 8)  |
 							(u_int32_t)header[4];
 
-//printf("RenderFarmServerThread::run 1 %d %lld\n", request_id, request_size);
+//printf("RenderFarmServerThread::run 2 %d %lld\n", request_id, request_size);
 		reallocate_buffer(request_size);
 
 // Get accompanying buffer
@@ -375,7 +376,6 @@ void RenderFarmServerThread::run()
 			continue;
 		}
 
-//printf("RenderFarmServerThread::run 1 %d\n", request_id);
 		switch(request_id)
 		{
 			case RENDERFARM_PREFERENCES:
@@ -416,17 +416,17 @@ void RenderFarmServerThread::run()
 
 
 			default:
-				if(!fs_server->handle_request(request_id, request_size, (unsigned char*)buffer))
+//				if(!fs_server->handle_request(request_id, request_size, (unsigned char*)buffer))
 				{
 					printf(_("RenderFarmServerThread::run: unknown request %02x\n"), request_id);
 				}
 				break;
 		}
-//printf("RenderFarmServerThread::run 5\n");
+//printf("RenderFarmServerThread::run 10 %d %lld\n", request_id, request_size);
 	}
 	
 	if(buffer) delete [] buffer;
-	delete fs_server;
+//	delete fs_server;
 }
 
 int RenderFarmServerThread::write_string(int socket_fd, char *string)
@@ -451,10 +451,8 @@ void RenderFarmServerThread::send_preferences()
 	Defaults defaults;
 	char *string;
 
-//printf("RenderFarmServerThread::send_preferences 1\n");
 	server->preferences->save_defaults(&defaults);
 	defaults.save_string(string);
-//printf("RenderFarmServerThread::send_preferences 2 \n%s\n", string);
 	write_string(socket_fd, string);
 
 	delete [] string;
@@ -462,18 +460,28 @@ void RenderFarmServerThread::send_preferences()
 
 void RenderFarmServerThread::send_asset()
 {
-	FileXML file;
-//printf("RenderFarmServerThread::send_asset 1\n");
+	Defaults defaults;
+	char *string1;
 
-	server->default_asset->write(plugindb, 
-		&file, 
+// The asset must be sent in two segments.
+// One segment is stored in the EDL and contains decoding information.
+// One segment is stored in the asset and contains encoding information.
+	server->default_asset->save_defaults(&defaults, 
 		0, 
-		0);
+		1,
+		1,
+		1,
+		1,
+		1);
+	defaults.save_string(string1);
+
+	FileXML file;
+	server->default_asset->write(&file, 0, 0);
 	file.terminate_string();
 
-//printf("RenderFarmServerThread::send_asset 2\n");
+	write_string(socket_fd, string1);
 	write_string(socket_fd, file.string);
-//printf("RenderFarmServerThread::send_asset 3\n");
+	delete [] string1;
 }
 
 
@@ -555,9 +563,10 @@ void RenderFarmServerThread::set_progress(unsigned char *buffer)
 	server->total_return_lock->unlock();
 }
 
-void RenderFarmServerThread::set_video_map(unsigned char *buffer)
+int RenderFarmServerThread::set_video_map(unsigned char *buffer)
 {
 	if(server->brender)
+	{
 		server->brender->set_video_map((int64_t)(((u_int32_t)buffer[0]) << 24) |
 							(((u_int32_t)buffer[1]) << 16) |
 							(((u_int32_t)buffer[2]) << 8)  |
@@ -566,6 +575,12 @@ void RenderFarmServerThread::set_video_map(unsigned char *buffer)
 							(((u_int32_t)buffer[5]) << 16) |
 							(((u_int32_t)buffer[6]) << 8)  |
 							((u_int32_t)buffer[7]));
+		char return_value[1];
+		return_value[0] = 0;
+		write_socket(return_value, 1, RENDERFARM_TIMEOUT);
+		return 0;
+	}
+	return 1;
 }
 
 

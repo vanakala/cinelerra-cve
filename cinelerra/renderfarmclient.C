@@ -11,7 +11,7 @@
 #include "preferences.h"
 #include "renderfarm.h"
 #include "renderfarmclient.h"
-#include "renderfarmfsclient.h"
+//#include "renderfarmfsclient.h"
 #include "sighandler.h"
 
 #include <arpa/inet.h>
@@ -207,13 +207,13 @@ RenderFarmClientThread::RenderFarmClientThread(RenderFarmClient *client)
 	this->client = client;
 	frames_per_second = 0;
 	Thread::set_synchronous(0);
-	fs_client = 0;
+//	fs_client = 0;
 	mutex_lock = new Mutex("RenderFarmClientThread::mutex_lock");
 }
 
 RenderFarmClientThread::~RenderFarmClientThread()
 {
-	if(fs_client) delete fs_client;
+//	if(fs_client) delete fs_client;
 	delete mutex_lock;
 }
 
@@ -226,8 +226,8 @@ int RenderFarmClientThread::send_request_header(int request,
 
 	int i = 1;
 	STORE_INT32(len);
-//printf("RenderFarmClientThread::send_request_header %02x%02x%02x%02x%02x\n",
-//	datagram[0], datagram[1], datagram[2], datagram[3], datagram[4]);
+// printf("RenderFarmClientThread::send_request_header %d %02x%02x%02x%02x%02x\n",
+// request, datagram[0], datagram[1], datagram[2], datagram[3], datagram[4]);
 
 	return (write_socket((char*)datagram, 
 		5, 
@@ -236,29 +236,38 @@ int RenderFarmClientThread::send_request_header(int request,
 
 int RenderFarmClientThread::write_socket(char *data, int len, int timeout)
 {
-	return RenderFarmServerThread::write_socket(socket_fd, 
+	int result = RenderFarmServerThread::write_socket(socket_fd, 
 		data, 
 		len, 
 		timeout);
+// Assume the stream is offset and give up future accesses.
+	if(result <= 0) abort();
 }
 
 int RenderFarmClientThread::read_socket(char *data, int len, int timeout)
 {
-	return RenderFarmServerThread::read_socket(socket_fd, 
+	int result = RenderFarmServerThread::read_socket(socket_fd, 
 		data, 
 		len, 
 		timeout);
+// Assume the stream is offset and give up future accesses.
+	if(result <= 0) abort();
+}
+
+void RenderFarmClientThread::abort()
+{
+	send_completion(socket_fd);
+	close(socket_fd);
+	exit(1);
 }
 
 void RenderFarmClientThread::lock(char *location)
 {
-//printf("RenderFarmClientThread::lock 1 %p %p\n", this, mutex_lock);
 	mutex_lock->lock(location);
 }
 
 void RenderFarmClientThread::unlock()
 {
-//printf("RenderFarmClientThread::unlock 1\n");
 	mutex_lock->unlock();
 }
 
@@ -275,8 +284,6 @@ void RenderFarmClientThread::read_string(int socket_fd, char* &string)
 				(((u_int32_t)header[1]) << 16) | 
 				(((u_int32_t)header[2]) << 8) | 
 				((u_int32_t)header[3]);
-//printf("RenderFarmClientThread::read_string %d %02x%02x%02x%02x\n",
-//len, header[0], header[1], header[2], header[3]);
 
 	if(len)
 	{
@@ -290,26 +297,21 @@ void RenderFarmClientThread::read_string(int socket_fd, char* &string)
 	else
 		string = 0;
 
-//printf("RenderFarmClientThread::read_string \n%s\n", string);
 }
 
 
 void RenderFarmClientThread::read_preferences(int socket_fd, 
 	Preferences *preferences)
 {
-//printf("RenderFarmClientThread::read_preferences 1\n");
 	send_request_header(RENDERFARM_PREFERENCES, 
 		0);
 
-//printf("RenderFarmClientThread::read_preferences 2\n");
 	char *string;
 	read_string(socket_fd, string);
-//printf("RenderFarmClientThread::read_preferences 3\n%s\n", string);
 
 	Defaults defaults;
 	defaults.load_string((char*)string);
 	preferences->load_defaults(&defaults);
-//printf("RenderFarmClientThread::read_preferences 4\n");
 
 	delete [] string;
 }
@@ -321,15 +323,31 @@ void RenderFarmClientThread::read_asset(int socket_fd, Asset *asset)
 	send_request_header(RENDERFARM_ASSET, 
 		0);
 
-	char *string;
-	read_string(socket_fd, string);
-//printf("RenderFarmClientThread::read_asset\n%s\n", string);
+	char *string1;
+	char *string2;
+	read_string(socket_fd, string1);
+	read_string(socket_fd, string2);
+
+
 
 	FileXML file;
-	file.read_from_string((char*)string);
-	asset->read(client->plugindb, &file);
+	file.read_from_string((char*)string2);
+	asset->read(&file);
+	
 
-	delete [] string;
+
+	Defaults defaults;
+	defaults.load_string((char*)string1);
+	asset->load_defaults(&defaults,
+		0,
+		1,
+		1,
+		1,
+		1,
+		1);
+
+	delete [] string1;
+	delete [] string2;
 }
 
 void RenderFarmClientThread::read_edl(int socket_fd, 
@@ -364,20 +382,20 @@ void RenderFarmClientThread::read_edl(int socket_fd,
 // Tag input paths for VFS here.
 // Create VFS object.
 	FileSystem fs;
-	if(preferences->renderfarm_vfs)
-	{
-		fs_client = new RenderFarmFSClient(this);
-		fs_client->initialize();
-
-		for(Asset *asset = edl->assets->first;
-			asset;
-			asset = asset->next)
-		{
-			char string2[BCTEXTLEN];
-			strcpy(string2, asset->path);
-			sprintf(asset->path, RENDERFARM_FS_PREFIX "%s", string2);
-		}
-	}
+//	if(preferences->renderfarm_vfs)
+//	{
+//		fs_client = new RenderFarmFSClient(this);
+//		fs_client->initialize();
+// 
+// 		for(Asset *asset = edl->assets->first;
+// 			asset;
+// 			asset = asset->next)
+// 		{
+// 			char string2[BCTEXTLEN];
+// 			strcpy(string2, asset->path);
+// 			sprintf(asset->path, RENDERFARM_FS_PREFIX "%s", string2);
+// 		}
+// 	}
 
 // 	for(Asset *asset = edl->assets->first;
 // 		asset;
@@ -636,16 +654,27 @@ void FarmPackageRenderer::set_progress(int64_t total_samples)
 	thread->unlock();
 }
 
-void FarmPackageRenderer::set_video_map(int64_t position, int value)
+int FarmPackageRenderer::set_video_map(int64_t position, int value)
 {
+	int result = 0;
+	unsigned char datagram[8];
+	char return_value[1];
+	int i = 0;
+
 	thread->lock("FarmPackageRenderer::set_video_map");
 	thread->send_request_header(RENDERFARM_SET_VMAP, 
 		8);
-	unsigned char datagram[8];
-	int i = 0;
 	STORE_INT32(position);
 	STORE_INT32(value);
 	thread->write_socket((char*)datagram, 8, RENDERFARM_TIMEOUT);
+
+// Get completion since the GUI may be locked for a long time.
+	if(!thread->read_socket(return_value, 1, RENDERFARM_TIMEOUT))
+	{
+		result = 1;
+	}
+
 	thread->unlock();
+	return result;
 }
 

@@ -193,7 +193,7 @@ int PluginArray::run_plugins()
 
 		sprintf(string, _("%s took %s"), plugin_server->title, string2);
 		mwindow->gui->lock_window();
-		mwindow->gui->show_message(string2, BLACK);
+		mwindow->gui->show_message(string2);
 		mwindow->gui->unlock_window();
 	}
 	else

@@ -38,11 +38,15 @@ void FileAC3::get_parameters(BC_WindowBase *parent_window,
 		int audio_options,
 		int video_options)
 {
-	AC3ConfigAudio *window = new AC3ConfigAudio(parent_window, asset);
-	format_window = window;
-	window->create_objects();
-	window->run_window();
-	delete window;
+	if(audio_options)
+	{
+
+		AC3ConfigAudio *window = new AC3ConfigAudio(parent_window, asset);
+		format_window = window;
+		window->create_objects();
+		window->run_window();
+		delete window;
+	}
 }
 
 int FileAC3::check_sig()
@@ -209,9 +213,9 @@ AC3ConfigAudio::AC3ConfigAudio(BC_WindowBase *parent_window,
  	parent_window->get_abs_cursor_x(1),
  	parent_window->get_abs_cursor_y(1),
 	500,
-	300,
-	-1,
-	-1,
+	BC_OKButton::calculate_h() + 100,
+	500,
+	BC_OKButton::calculate_h() + 100,
 	0,
 	0,
 	1)

@@ -1,7 +1,5 @@
 #include "asset.h"
 #include "autoconf.h"
-#include "bezierauto.h"
-#include "bezierautos.h"
 #include "cache.h"
 #include "clip.h"
 #include "datatype.h"
@@ -10,6 +8,7 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
+#include "floatauto.h"
 #include "floatautos.h"
 #include "language.h"
 #include "localsession.h"
@@ -308,27 +307,20 @@ void VTrack::calculate_input_transfer(Asset *asset,
 	float &out_h)
 {
 	float auto_x, auto_y, auto_z;
-	BezierAuto *before = 0, *after = 0;
-	FloatAuto *previous = 0, *next = 0;
 	float camera_z = 1;
 	float camera_x = asset->width / 2;
 	float camera_y = asset->height / 2;
-	float z[6], x[6], y[6];        // camera and output coords
+// camera and output coords
+	float z[6], x[6], y[6];        
 
 //printf("VTrack::calculate_input_transfer %lld\n", position);
 
 // get camera center in asset
-	automation->camera_autos->get_center(auto_x, 
-		auto_y, 
-		auto_z, 
+	automation->get_camera(&auto_x, 
+		&auto_y, 
+		&auto_z, 
 		position, 
-		direction, 
-		&before, 
-		&after);
-	auto_z = automation->czoom_autos->get_value(position,
-		direction,
-		previous,
-		next);
+		direction);
 
 	camera_z *= auto_z;
 	camera_x += auto_x;
@@ -378,6 +370,9 @@ void VTrack::calculate_input_transfer(Asset *asset,
 	in_y = y[0];
 	in_w = x[1] - x[0];
 	in_h = y[1] - y[0];
+// printf("VTrack::calculate_input_transfer %f %f %f %f -> %f %f %f %f\n", 
+// in_x, in_y, in_w, in_h,
+// out_x, out_y, out_w, out_h);
 }
 
 void VTrack::calculate_output_transfer(int channel, 
@@ -392,8 +387,6 @@ void VTrack::calculate_output_transfer(int channel,
 	float &out_w, 
 	float &out_h)
 {
-	BezierAuto *before = 0, *after = 0;
-	FloatAuto *previous = 0, *next = 0;
 	float center_x, center_y, center_z;
 	float x[4], y[4];
 	float channel_x1 = edl->session->vchannel_x[channel];
@@ -406,17 +399,11 @@ void VTrack::calculate_output_transfer(int channel,
 	x[1] = track_w;
 	y[1] = track_h;
 
-	automation->projector_autos->get_center(center_x, 
-		center_y, 
-		center_z, 
+	automation->get_projector(&center_x, 
+		&center_y, 
+		&center_z, 
 		position, 
-		direction, 
-		&before, 
-		&after);
-	center_z = automation->pzoom_autos->get_value(position, 
-		direction,
-		previous,
-		next);
+		direction);
 
 	center_x += edl->session->output_w / 2;
 	center_y += edl->session->output_h / 2;
@@ -456,6 +443,9 @@ void VTrack::calculate_output_transfer(int channel,
 	out_y = y[2];
 	out_w = x[3] - x[2];
 	out_h = y[3] - y[2];
+// printf("VTrack::calculate_output_transfer %f %f %f %f -> %f %f %f %f\n", 
+// in_x, in_y, in_w, in_h,
+// out_x, out_y, out_w, out_h);
 }
 
 
@@ -476,20 +466,12 @@ int VTrack::get_projection(int channel,
 {
 	float center_x, center_y, center_z;
 	float x[4], y[4];
-	BezierAuto *before = 0, *after = 0;
-	FloatAuto *previous = 0, *next = 0;
 
-	automation->projector_autos->get_center(center_x, 
-		center_y, 
-		center_z, 
+	automation->get_projector(&center_x, 
+		&center_y, 
+		&center_z, 
 		real_position, 
-		direction, 
-		&before, 
-		&after);
-	center_z = automation->pzoom_autos->get_value(real_position,
-		direction,
-		previous,
-		next);
+		direction);
 
 	x[0] = y[0] = 0;
 	x[1] = frame_w;
@@ -536,30 +518,39 @@ int VTrack::get_projection(int channel,
 }
 
 
-void VTrack::translate_camera(float offset_x, float offset_y)
+void VTrack::translate(float offset_x, float offset_y, int do_camera)
 {
-	((BezierAuto*)automation->camera_autos->default_auto)->center_x += offset_x;
-	((BezierAuto*)automation->camera_autos->default_auto)->center_y += offset_y;
+	int subscript;
+	if(do_camera) 
+		subscript = AUTOMATION_CAMERA_X;
+	else
+		subscript = AUTOMATION_PROJECTOR_X;
+	
+// Translate default keyframe
+	((FloatAuto*)automation->autos[subscript]->default_auto)->value += offset_x;
+	((FloatAuto*)automation->autos[subscript + 1]->default_auto)->value += offset_y;
 
-	for(Auto *current = automation->camera_autos->first; 
+// Translate everyone else
+	for(Auto *current = automation->autos[subscript]->first; 
 		current; 
 		current = NEXT)
 	{
-		((BezierAuto*)current)->center_x += offset_x;
-		((BezierAuto*)current)->center_y += offset_y;
+		((FloatAuto*)current)->value += offset_x;
 	}
-}
 
-void VTrack::translate_projector(float offset_x, float offset_y)
-{
-	((BezierAuto*)automation->projector_autos->default_auto)->center_x += offset_x;
-	((BezierAuto*)automation->projector_autos->default_auto)->center_y += offset_y;
-
-	for(Auto *current = automation->projector_autos->first; 
+	for(Auto *current = automation->autos[subscript + 1]->first; 
 		current; 
 		current = NEXT)
 	{
-		((BezierAuto*)current)->center_x += offset_x;
-		((BezierAuto*)current)->center_y += offset_y;
+		((FloatAuto*)current)->value += offset_y;
 	}
 }
+
+
+
+
+
+
+
+
+

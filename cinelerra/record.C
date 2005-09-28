@@ -117,7 +117,7 @@ Record::Record(MWindow *mwindow, RecordMenuItem *menu_item)
 	file = 0;
 	editing_batch = 0;
 	current_batch = 0;
-	picture = new Picture;
+	picture = new PictureConfig(mwindow);
 	channeldb = new ChannelDB;
 	master_channel = new Channel;
 	window_lock = new Mutex("Record::window_lock");
@@ -165,8 +165,11 @@ int Record::load_defaults()
 		mwindow->edl->session->vconfig_in->driver == VIDEO4LINUX2JPEG)
 		strncpy(default_asset->vcodec, QUICKTIME_MJPA, 4);
 	else
-	if(mwindow->edl->session->vconfig_in->driver == CAPTURE_FIREWIRE)
-		strncpy(default_asset->vcodec, QUICKTIME_DV, 4);
+	if(mwindow->edl->session->vconfig_in->driver == CAPTURE_FIREWIRE ||
+		mwindow->edl->session->vconfig_in->driver == CAPTURE_IEC61883)
+	{
+		strncpy(default_asset->vcodec, QUICKTIME_DVSD, 4);
+	}
 
 
 
@@ -207,7 +210,7 @@ int Record::load_defaults()
 	video_y = defaults->get("RECORD_VIDEO_Y", 0);
 	video_zoom = defaults->get("RECORD_VIDEO_Z", (float)1);
 
-	picture->load_defaults(defaults);
+	picture->load_defaults();
 
 	reverse_interlace = defaults->get("REVERSE_INTERLACE", 0);
 	for(int i = 0; i < MAXCHANNELS; i++) 
@@ -274,7 +277,7 @@ int Record::save_defaults()
 	defaults->update("RECORD_VIDEO_Y", video_y);
 	defaults->update("RECORD_VIDEO_Z", video_zoom);
 	
-	picture->save_defaults(defaults);
+	picture->save_defaults();
 	defaults->update("REVERSE_INTERLACE", reverse_interlace);
 	for(int i = 0; i < MAXCHANNELS; i++)
 	{
@@ -415,31 +418,47 @@ void Record::run()
 		edl->session->aspect_h = mwindow->edl->session->aspect_h;
 
 		window_lock->lock("Record::run 3");
+SET_TRACE
 		record_gui = new RecordGUI(mwindow, this);
+SET_TRACE
 		record_gui->load_defaults();
+SET_TRACE
 		record_gui->create_objects();
+SET_TRACE
 
 		record_monitor = new RecordMonitor(mwindow, this);
+SET_TRACE
 		record_monitor->create_objects();
+SET_TRACE
 		record_gui->update_batch_sources();
+SET_TRACE
 
 		menu_item->current_state = RECORD_CAPTURING;
+SET_TRACE
 		record_engine = new RecordThread(mwindow, this);
+SET_TRACE
 		record_engine->create_objects();
+SET_TRACE
 		monitor_engine = new RecordThread(mwindow, this);
+SET_TRACE
 		monitor_engine->create_objects();
+SET_TRACE
 
 
 		record_gui->show_window();
+SET_TRACE
 		record_gui->flush();
+SET_TRACE
 		if(video_window_open)
 		{
 			record_monitor->window->show_window();
 			record_monitor->window->raise_window();
 			record_monitor->window->flush();
 		}
+SET_TRACE
 
 		start_monitor();
+SET_TRACE
 
 		window_lock->unlock();
 
@@ -511,7 +530,6 @@ TRACE("Record::run 3");
 
 		if(new_edls.total)
 		{
-			mwindow->undo->update_undo_before(_("render"), LOAD_ALL);
 
 // For pasting, clear the active region
 			if(load_mode == LOAD_PASTE)
@@ -531,7 +549,7 @@ TRACE("Record::run 3");
 //printf("Record::run 8\n");
 
 			mwindow->save_backup();
-			mwindow->undo->update_undo_after();
+			mwindow->undo->update_undo(_("record"), LOAD_ALL);
 			mwindow->restart_brender();
 			mwindow->update_plugin_guis();
 			mwindow->gui->update(1, 
@@ -665,7 +683,7 @@ int Record::open_output_file()
 		delete_output_file();
 
 		file = new File;
-		result = file->open_file(mwindow->plugindb, 
+		result = file->open_file(mwindow->preferences, 
 			batch->get_current_asset(), 
 			0, 
 			1, 
@@ -971,7 +989,7 @@ int Record::open_input_devices(int duplex, int context)
 		adevice = 0;
 
 	if(default_asset->video_data)
-		vdevice = new VideoDevice;
+		vdevice = new VideoDevice(mwindow);
 	else
 		vdevice = 0;
 
@@ -1222,6 +1240,12 @@ int Record::set_channel(int channel)
 void Record::set_channel(Channel *channel)
 {
 	if(vdevice) vdevice->set_channel(channel);
+}
+
+int Record::has_signal()
+{
+	if(vdevice) return vdevice->has_signal();
+	return 0;
 }
 
 void Record::get_current_time(double &seconds, int &day)

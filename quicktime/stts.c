@@ -40,6 +40,59 @@ void quicktime_stts_init_audio(quicktime_t *file, quicktime_stts_t *stts, int sa
 	table->sample_duration = 1;
 }
 
+void quicktime_stts_append_audio(quicktime_t *file, 
+	quicktime_stts_t *stts, 
+	int sample_duration)
+{
+	quicktime_stts_table_t *table;
+	if(stts->total_entries)
+		table = &(stts->table[stts->total_entries - 1]);
+	else
+		table = 0;
+
+	stts->is_vbr = 1;
+
+// Expand existing entry
+	if(table && table->sample_count)
+	{
+		if(table->sample_duration == sample_duration)
+		{
+			table->sample_count++;
+			return;
+		}
+	}
+	else
+// Override existing entry
+	if(table && table->sample_count == 0)
+	{
+		table->sample_duration = sample_duration;
+		table->sample_count = 1;
+		return;
+	}
+
+// Append new entry
+	stts->total_entries++;
+	stts->table = realloc(stts->table, 
+		sizeof(quicktime_stts_table_t) * stts->total_entries);
+	table = &(stts->table[stts->total_entries - 1]);
+	table->sample_duration = sample_duration;
+	table->sample_count++;
+}
+
+
+int64_t quicktime_stts_total_samples(quicktime_t *file, 
+	quicktime_stts_t *stts)
+{
+	int i;
+	int64_t result = 0;
+	for(i = 0; i < stts->total_entries; i++)
+	{
+		result += stts->table[i].sample_count;
+	}
+	return result;
+}
+
+
 void quicktime_stts_delete(quicktime_stts_t *stts)
 {
 	if(stts->total_entries) free(stts->table);

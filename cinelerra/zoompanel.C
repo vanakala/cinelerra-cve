@@ -23,6 +23,21 @@ ZoomHash::~ZoomHash()
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ZoomPanel::ZoomPanel(MWindow *mwindow, 
 	BC_WindowBase *subwindow, 
 	double value, 
@@ -42,6 +57,35 @@ ZoomPanel::ZoomPanel(MWindow *mwindow,
 	this->min = min;
 	this->max = max;
 	this->zoom_type = zoom_type;
+	this->menu_images = 0;
+	this->tumbler_images = 0;
+	this->user_table = 0;
+	this->user_size = 0;
+}
+
+ZoomPanel::ZoomPanel(MWindow *mwindow, 
+	BC_WindowBase *subwindow, 
+	double value, 
+	int x, 
+	int y,
+	int w, 
+	double *user_table,
+	int user_size,
+	int zoom_type)
+{
+	this->mwindow = mwindow;
+	this->subwindow = subwindow;
+	this->x = x;
+	this->y = y;
+	this->w = w;
+	this->value = value;
+	this->min = min;
+	this->max = max;
+	this->zoom_type = zoom_type;
+	this->menu_images = 0;
+	this->tumbler_images = 0;
+	this->user_table = user_table;
+	this->user_size = user_size;
 }
 
 ZoomPanel::~ZoomPanel()
@@ -53,11 +97,21 @@ ZoomPanel::~ZoomPanel()
 
 void ZoomPanel::calculate_menu()
 {
-	for(double zoom = min; zoom <= max; zoom *= 2)
+	if(user_size)
 	{
-		zoom_text->add_item(new BC_MenuItem(value_to_text(zoom, 0)));
-//printf("ZoomPanel::calculate_menu 1 %s\n", value_to_text(zoom, 0));
-		zoom_table.append(new ZoomHash(zoom, value_to_text(zoom, 0)));
+		for(int i = 0; i < user_size; i++)
+		{
+			zoom_text->add_item(new BC_MenuItem(value_to_text(user_table[i], 0)));
+			zoom_table.append(new ZoomHash(user_table[i], value_to_text(user_table[i], 0)));
+		}
+	}
+	else
+	{
+		for(double zoom = min; zoom <= max; zoom *= 2)
+		{
+			zoom_text->add_item(new BC_MenuItem(value_to_text(zoom, 0)));
+			zoom_table.append(new ZoomHash(zoom, value_to_text(zoom, 0)));
+		}
 	}
 }
 
@@ -72,12 +126,27 @@ void ZoomPanel::update_menu()
 	calculate_menu();
 }
 
+void ZoomPanel::set_menu_images(VFrame **data)
+{
+	this->menu_images = data;
+}
+
+void ZoomPanel::set_tumbler_images(VFrame **data)
+{
+	this->tumbler_images = data;
+}
 
 int ZoomPanel::create_objects()
 {
-	subwindow->add_subwindow(zoom_text = new ZoomPopup(mwindow, this, x, y));
+	subwindow->add_subwindow(zoom_text = new ZoomPopup(mwindow, 
+		this, 
+		x, 
+		y));
 	x += zoom_text->get_w();
-	subwindow->add_subwindow(zoom_tumbler = new ZoomTumbler(mwindow, this, x, y));
+	subwindow->add_subwindow(zoom_tumbler = new ZoomTumbler(mwindow, 
+		this, 
+		x, 
+		y));
 	calculate_menu();
 	return 0;
 }
@@ -220,7 +289,8 @@ ZoomPopup::ZoomPopup(MWindow *mwindow, ZoomPanel *panel, int x, int y)
 		y, 
 		panel->w, 
 		panel->value_to_text(panel->value, 0), 
-		1)
+		1,
+		panel->menu_images)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
@@ -240,7 +310,9 @@ int ZoomPopup::handle_event()
 
 
 ZoomTumbler::ZoomTumbler(MWindow *mwindow, ZoomPanel *panel, int x, int y)
- : BC_Tumbler(x, y)
+ : BC_Tumbler(x, 
+ 	y,
+ 	panel->tumbler_images)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
@@ -252,8 +324,21 @@ ZoomTumbler::~ZoomTumbler()
 
 int ZoomTumbler::handle_up_event()
 {
-	panel->value *= 2;
-	RECLIP(panel->value, panel->min, panel->max);
+	if(panel->user_table)
+	{
+		int current_index = 0;
+		for(current_index = 0; current_index < panel->user_size; current_index++)
+			if(EQUIV(panel->user_table[current_index], panel->value)) break;
+		current_index++;
+		CLAMP(current_index, 0, panel->user_size - 1);
+		panel->value = panel->user_table[current_index];
+	}
+	else
+	{
+		panel->value *= 2;
+		RECLIP(panel->value, panel->min, panel->max);
+	}
+
 	panel->zoom_text->set_text(panel->value_to_text(panel->value));
 	panel->handle_event();
 	return 1;
@@ -261,8 +346,20 @@ int ZoomTumbler::handle_up_event()
 
 int ZoomTumbler::handle_down_event()
 {
-	panel->value /= 2;
-	RECLIP(panel->value, panel->min, panel->max);
+	if(panel->user_table)
+	{
+		int current_index = 0;
+		for(current_index = 0; current_index < panel->user_size; current_index++)
+			if(EQUIV(panel->user_table[current_index], panel->value)) break;
+		current_index--;
+		CLAMP(current_index, 0, panel->user_size - 1);
+		panel->value = panel->user_table[current_index];
+	}
+	else
+	{
+		panel->value /= 2;
+		RECLIP(panel->value, panel->min, panel->max);
+	}
 	panel->zoom_text->set_text(panel->value_to_text(panel->value));
 	panel->handle_event();
 	return 1;

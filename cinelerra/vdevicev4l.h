@@ -17,7 +17,7 @@ public:
 	int read_buffer(VFrame *frame);
 	int get_best_colormodel(Asset *asset);
 	int set_channel(Channel *channel);
-	int set_picture(Picture *picture);
+	int set_picture(PictureConfig *picture);
 
 private:
 	int set_cloexec_flag(int desc, int value);
@@ -27,7 +27,7 @@ private:
 	unsigned long translate_colormodel(int colormodel);
 	int v4l1_set_channel(Channel *channel);
 	int v4l1_get_norm(int norm);
-	int v4l1_set_picture(Picture *picture);
+	int v4l1_set_picture(PictureConfig *picture);
 	void v4l1_start_capture();
 	int capture_frame(int capture_frame_number);
 	int wait_v4l_frame();

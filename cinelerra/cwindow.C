@@ -5,9 +5,12 @@
 #include "ctracking.h"
 #include "cwindow.h"
 #include "cwindowgui.h"
+#include "cwindowtool.h"
 #include "defaults.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "mainmenu.h"
+#include "mainsession.h"
 #include "mwindowgui.h"
 #include "playbackengine.h"
 #include "playtransport.h"
@@ -55,6 +58,36 @@ int CWindow::create_objects()
     return 0;
 }
 
+
+void CWindow::show_window()
+{
+	gui->lock_window("CWindow::show_cwindow");
+	gui->show_window();
+	gui->raise_window();
+	gui->flush();
+	gui->unlock_window();
+
+	gui->tool_panel->show_tool();
+}
+
+void CWindow::hide_window()
+{
+	gui->hide_window();
+	gui->mwindow->session->show_cwindow = 0;
+// Unlock in case MWindow is waiting for it.
+	gui->unlock_window();
+
+	gui->tool_panel->hide_tool();
+
+	mwindow->gui->lock_window("CWindowGUI::close_event");
+	mwindow->gui->mainmenu->show_cwindow->set_checked(0);
+	mwindow->gui->unlock_window();
+	mwindow->save_defaults();
+
+	gui->lock_window("CWindow::hide_window");
+}
+
+
 Track* CWindow::calculate_affected_track()
 {
 	Track* affected_track = 0;
@@ -80,6 +113,8 @@ Auto* CWindow::calculate_affected_auto(Autos *autos, int create)
 	{
 		int total = autos->total();
 		affected_auto = autos->get_auto_for_editing();
+
+// Got created
 		if(total != autos->total())
 		{
 			mwindow->gui->lock_window("CWindow::calculate_affected_auto");
@@ -95,6 +130,47 @@ Auto* CWindow::calculate_affected_auto(Autos *autos, int create)
 
 	return affected_auto;
 }
+
+
+
+void CWindow::calculate_affected_autos(FloatAuto **x_auto,
+	FloatAuto **y_auto,
+	FloatAuto **z_auto,
+	Track *track,
+	int use_camera,
+	int create_x,
+	int create_y,
+	int create_z)
+{
+	if(x_auto) (*x_auto) = 0;
+	if(y_auto) (*y_auto) = 0;
+	if(z_auto) (*z_auto) = 0;
+
+	if(!track) return;
+
+	if(use_camera)
+	{
+		if(x_auto) (*x_auto) = (FloatAuto*)calculate_affected_auto(
+			track->automation->autos[AUTOMATION_CAMERA_X], create_x);
+		if(y_auto) (*y_auto) = (FloatAuto*)calculate_affected_auto(
+			track->automation->autos[AUTOMATION_CAMERA_Y], create_y);
+		if(z_auto) (*z_auto) = (FloatAuto*)calculate_affected_auto(
+			track->automation->autos[AUTOMATION_CAMERA_Z], create_z);
+	}
+	else
+	{
+		if(x_auto) (*x_auto) = (FloatAuto*)calculate_affected_auto(
+			track->automation->autos[AUTOMATION_PROJECTOR_X], create_x);
+		if(y_auto) (*y_auto) = (FloatAuto*)calculate_affected_auto(
+			track->automation->autos[AUTOMATION_PROJECTOR_Y], create_y);
+		if(z_auto) (*z_auto) = (FloatAuto*)calculate_affected_auto(
+			track->automation->autos[AUTOMATION_PROJECTOR_Z], create_z);
+	}
+}
+
+
+
+
 
 void CWindow::run()
 {

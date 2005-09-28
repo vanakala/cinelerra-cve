@@ -7,6 +7,7 @@
 #include "arraylist.h"
 #include "bcwindowbase.inc"
 #include "defaults.inc"
+#include "mwindow.inc"
 
 class PictureItem
 {
@@ -27,19 +28,19 @@ public:
 };
 
 
-class Picture
+class PictureConfig
 {
 public:
-	Picture();
-	~Picture();
-	void copy_settings(Picture *picture);
-	void copy_usage(Picture *picture);
-	void load_defaults(Defaults *defaults);
-	void save_defaults(Defaults *defaults);
+	PictureConfig(MWindow *mwindow);
+	~PictureConfig();
+	void copy_settings(PictureConfig *picture);
+	void copy_usage(PictureConfig *picture);
+	void load_defaults();
+	void save_defaults();
 	void set_item(int device_id, int value);
 
 	int brightness;
-	int hue;
+	int hue;\
 	int color;
 	int contrast;
 	int whiteness;
@@ -53,9 +54,11 @@ public:
 
 // For the latest APIs the controls are defined by the driver
 // Search for existing driver with name.  If none exists, create it.
-	PictureItem* new_item(char *name);
+	PictureItem* new_item(const char *name);
+	PictureItem* get_item(const char *name, int id);
 	ArrayList<PictureItem*> controls;
-	
+// To get defaults
+	MWindow *mwindow;
 };
 
 

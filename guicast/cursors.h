@@ -14,5 +14,6 @@
 #define DOWNLEFT_RESIZE     10
 #define DOWNRIGHT_RESIZE    11
 #define CROSS_CURSOR        12
+#define HOURGLASS_CURSOR    13
 
 #endif

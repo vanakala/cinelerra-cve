@@ -10,7 +10,7 @@
 #include "bcpixmap.h"
 #include "bcresources.h"
 
-BC_ProgressBar::BC_ProgressBar(int x, int y, int w, long length, int do_text)
+BC_ProgressBar::BC_ProgressBar(int x, int y, int w, int64_t length, int do_text)
  : BC_SubWindow(x, y, w, 0, -1)
 {
 	this->length = length;
@@ -93,14 +93,14 @@ int BC_ProgressBar::draw(int force)
 	return 0;
 }
 
-int BC_ProgressBar::update(long position)
+int BC_ProgressBar::update(int64_t position)
 {
 	this->position = position;
 	draw();
 	return 0;
 }
 
-int BC_ProgressBar::update_length(long length)
+int BC_ProgressBar::update_length(int64_t length)
 {
 	this->length = length;
 	position = 0;

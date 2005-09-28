@@ -2,6 +2,7 @@
 #include "clip.h"
 #include "condition.h"
 #include "mutex.h"
+#include "playbackconfig.h"
 #include "sema.h"
 
 #include <string.h>
@@ -287,7 +288,6 @@ int64_t AudioDevice::current_position()
 	if(w)
 	{
 		frame = get_obits() / 8;
-//		if(get_obits() == 24) frame = 4;
 
 // get hardware position
 		if(!software_position_info)
@@ -305,23 +305,27 @@ int64_t AudioDevice::current_position()
 			timer_lock->unlock();
 
 			if(software_result < last_position) 
-			software_result = last_position;
+				software_result = last_position;
 			else
-			last_position = software_result;
+				last_position = software_result;
 		}
+
+		int64_t offset_samples = -(int64_t)(get_orate() * 
+			out_config->audio_offset);
+
+		if(hardware_result < 0 || software_position_info) 
+			return software_result + offset_samples;
+		else
+			return hardware_result + offset_samples;
 	}
 	else
 	if(r)
 	{
-//printf("AudioDevice 1\n");
-		return total_samples_read + record_timer.get_scaled_difference(get_irate());
-//printf("AudioDevice 2\n");
+		int64_t result = total_samples_read + 
+			record_timer.get_scaled_difference(get_irate());
+		return result;
 	}
 
-	if(hardware_result < 0 || software_position_info) 
-		return software_result;
-	else
-		return hardware_result;
 	return 0;
 }
 

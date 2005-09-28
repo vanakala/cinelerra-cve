@@ -4,7 +4,7 @@
 
 
 #include <stdlib.h>
-
+#include <string.h>
 
 mpeg3_title_t* mpeg3_new_title(mpeg3_t *file, char *path)
 {
@@ -39,7 +39,7 @@ int mpeg3_copy_title(mpeg3_title_t *dst, mpeg3_title_t *src)
 	{
 		dst->cell_table_allocation = src->cell_table_allocation;
 		dst->cell_table_size = src->cell_table_size;
-		dst->cell_table = calloc(1, sizeof(mpeg3demux_cell_t) * dst->cell_table_allocation);
+		dst->cell_table = calloc(1, sizeof(mpeg3_cell_t) * dst->cell_table_allocation);
 
 		for(i = 0; i < dst->cell_table_size; i++)
 		{
@@ -60,9 +60,11 @@ int mpeg3_dump_title(mpeg3_title_t *title)
 		title->cell_table_size);
 	for(i = 0; i < title->cell_table_size; i++)
 	{
-		printf("%llx - %llx %x\n", 
-			title->cell_table[i].start_byte, 
-			title->cell_table[i].end_byte, 
+		printf("%llx-%llx %llx-%llx %x\n", 
+			title->cell_table[i].title_start, 
+			title->cell_table[i].title_end, 
+			title->cell_table[i].program_start, 
+			title->cell_table[i].program_end, 
 			title->cell_table[i].program);
 	}
 	return 0;
@@ -76,90 +78,49 @@ static void extend_cell_table(mpeg3_title_t *title)
 		title->cell_table_allocation <= title->cell_table_size)
 	{
 		long new_allocation;
-		mpeg3demux_cell_t *new_table;
+		mpeg3_cell_t *new_table;
 		int i;
 
-//printf("extend_cell_table 1\n");
 		new_allocation = title->cell_table_allocation ? 
 			title->cell_table_size * 2 : 
 			64;
-		new_table = calloc(1, sizeof(mpeg3demux_cell_t) * new_allocation);
-//printf("extend_cell_table 1\n");
-		memcpy(new_table, 
-			title->cell_table, 
-			sizeof(mpeg3demux_cell_t) * title->cell_table_allocation);
-//printf("extend_cell_table 1 %p %d %d\n", title->cell_table, title->cell_table_allocation,
-//	(new_allocation - title->cell_table_allocation));
-		free(title->cell_table);
+		new_table = calloc(1, sizeof(mpeg3_cell_t) * new_allocation);
+
+		if(title->cell_table)
+		{
+			memcpy(new_table, 
+				title->cell_table, 
+				sizeof(mpeg3_cell_t) * title->cell_table_allocation);
+			free(title->cell_table);
+		}
 		title->cell_table = new_table;
-//printf("extend_cell_table 2\n");
 		title->cell_table_allocation = new_allocation;
-//printf("extend_cell_table 2\n");
 	}
 }
 
 void mpeg3_new_cell(mpeg3_title_t *title, 
-		long start_byte, 
-		double start_time,
-		long end_byte,
-		double end_time,
+		int64_t program_start, 
+		int64_t program_end,
+		int64_t title_start,
+		int64_t title_end,
 		int program)
 {
-	mpeg3demux_cell_t *new_cell;
+	mpeg3_cell_t *new_cell;
 
 	extend_cell_table(title);
 	new_cell = &title->cell_table[title->cell_table_size];
 	
-	new_cell->start_byte = start_byte;
-	new_cell->end_byte = end_byte;
+	new_cell->program_start = program_start;
+	new_cell->program_end = program_end;
+	new_cell->title_start = title_start;
+	new_cell->title_end = title_end;
 	new_cell->program = program;
 	title->cell_table_size++;
 }
 
-mpeg3demux_cell_t* mpeg3_append_cell(mpeg3_demuxer_t *demuxer, 
-		mpeg3_title_t *title, 
-		long prev_byte, 
-		double prev_time, 
-		long start_byte, 
-		double start_time,
-		int dont_store,
-		int program)
-{
-	mpeg3demux_cell_t *new_cell, *old_cell;
-	long i;
-
-	extend_cell_table(title);
-/*
- * printf("mpeg3_append_cell 1 %d %f %d %f %d %d\n", prev_byte, 
- * 		prev_time, 
- * 		start_byte, 
- * 		start_time,
- * 		dont_store,
- * 		program);
- */
-
-	new_cell = &title->cell_table[title->cell_table_size];
-	if(!dont_store)
-	{
-		new_cell->start_byte = start_byte;
-
-		if(title->cell_table_size > 0)
-		{
-			old_cell = &title->cell_table[title->cell_table_size - 1];
-			old_cell->end_byte = prev_byte;
-		}
-	}
-
-	title->cell_table_size++;
-	return new_cell;
-}
-
-/* Create a title. */
-/* Build a table of cells contained in the program stream. */
-/* If toc is 0 just read the first and last cell. */
-int mpeg3demux_create_title(mpeg3_demuxer_t *demuxer, 
-		int cell_search, 
-		FILE *toc)
+/* Create a title and get PID's by scanning first few bytes. */
+int mpeg3_create_title(mpeg3_demuxer_t *demuxer, 
+	FILE *toc)
 {
 	int result = 0, done = 0, counter_start, counter;
 	mpeg3_t *file = demuxer->file;
@@ -168,7 +129,6 @@ int mpeg3demux_create_title(mpeg3_demuxer_t *demuxer,
 	long i;
 	mpeg3_title_t *title;
 	u_int32_t test_header = 0;
-	mpeg3demux_cell_t *cell = 0;
 
 	demuxer->error_flag = 0;
 	demuxer->read_all = 1;
@@ -186,9 +146,16 @@ int mpeg3demux_create_title(mpeg3_demuxer_t *demuxer,
 	title->start_byte = 0;
 	title->end_byte = title->total_bytes;
 
+// Create default cell
+	mpeg3_new_cell(title, 
+		0, 
+		title->end_byte,
+		0,
+		title->end_byte,
+		0);
 
 
-/* Get information about file */
+/* Get PID's and tracks */
 	if(file->is_transport_stream || file->is_program_stream)
 	{
 		mpeg3io_seek(title->fs, 0);
@@ -198,22 +165,7 @@ int mpeg3demux_create_title(mpeg3_demuxer_t *demuxer,
 			result = mpeg3_read_next_packet(demuxer);
 
 /* Just get the first bytes if not building a toc to get the stream ID's. */
-			if(next_byte > 0x1000000 && 
-				(!cell_search || !toc)) done = 1;
-//printf("mpeg3demux_create_title 1 %lld %d %p\n", next_byte, cell_search, toc);
-		}
-
-/* Get the last cell */
-		if(!toc || !cell_search)
-		{
-			demuxer->read_all = 0;
-			result = mpeg3io_seek(title->fs, title->total_bytes);
-			if(!result) result = mpeg3_read_prev_packet(demuxer);
-		}
-
-		if(title->cell_table && cell)
-		{
-			cell->end_byte = title->total_bytes;
+			if(next_byte > 0x1000000 && !toc) done = 1;
 		}
 	}
 
@@ -224,7 +176,7 @@ int mpeg3demux_create_title(mpeg3_demuxer_t *demuxer,
 
 int mpeg3demux_print_cells(mpeg3_title_t *title, FILE *output)
 {
-	mpeg3demux_cell_t *cell;
+	mpeg3_cell_t *cell;
 	mpeg3_t *file = title->file;
 	int i;
 
@@ -234,9 +186,11 @@ int mpeg3demux_print_cells(mpeg3_title_t *title, FILE *output)
 		{
 			cell = &title->cell_table[i];
 
-			fprintf(output, "REGION: %ld %ld %f %f %d\n",
-				cell->start_byte,
-				cell->end_byte,
+			fprintf(output, "REGION: %llx-%llx %llx-%llx %f %f %d\n",
+				cell->program_start,
+				cell->program_end,
+				cell->title_start,
+				cell->title_end,
 				cell->program);
 		}
 	}

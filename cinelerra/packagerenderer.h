@@ -77,8 +77,10 @@ public:
 	virtual int get_result();
 	virtual void set_result(int value);
 	virtual void set_progress(int64_t total_samples);
-// Used by background rendering
-	virtual void set_video_map(int64_t position, int value);
+// Used by background rendering to mark a frame as finished.
+// If the GUI is locked for a long time this may abort, 
+// assuming the server crashed.
+	virtual int set_video_map(int64_t position, int value);
 	virtual int progress_cancelled();
 
 	void create_output();
@@ -103,6 +105,7 @@ public:
 	int64_t audio_preroll;
 	int64_t audio_read_length;
 	File *file;
+// This is 1 if an error is encountered.
 	int result;
 	VFrame ***video_output;
 // A nonzero mwindow signals master render engine to the engine.

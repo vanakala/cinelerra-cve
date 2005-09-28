@@ -69,6 +69,8 @@ void TimeEntry::create_objects()
 	char string[BCTEXTLEN];
 	int time_w = DEFAULT_TIMEW;
 
+	day_text = 0;
+	day_tumbler = 0;
 	if(output_day)
 	{
 		gui->add_subwindow(day_text = new DayText(this, 
@@ -96,6 +98,20 @@ void TimeEntry::create_objects()
 			*output_time, 
 			time_format)));
 	time_text->set_separators(Units::format_to_separators(time_format));
+}
+
+int TimeEntry::get_h()
+{
+	return time_text->get_h();
+}
+
+int TimeEntry::get_w()
+{
+	int w = 0;
+	if(day_text) w += day_text->get_w();
+	if(day_tumbler) w += day_tumbler->get_w();
+	w += time_text->get_w();
+	return w;
 }
 
 void TimeEntry::reposition_window(int x, int y)

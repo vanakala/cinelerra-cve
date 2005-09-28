@@ -48,7 +48,7 @@ int Assets::load(ArrayList<PluginServer*> *plugindb,
 //printf("Assets::load 3\n");
 				Asset new_asset(path ? path : SILENCE);
 //printf("Assets::load 4\n");
-				new_asset.read(plugindb, file);
+				new_asset.read(file);
 //printf("Assets::load 5\n");
 				update(&new_asset);
 //printf("Assets::load 6\n");
@@ -67,8 +67,7 @@ int Assets::save(ArrayList<PluginServer*> *plugindb, FileXML *file, char *path)
 
 	for(Asset* current = first; current; current = NEXT)
 	{
-		current->write(plugindb, 
-			file, 
+		current->write(file, 
 			0, 
 			path);
 	}

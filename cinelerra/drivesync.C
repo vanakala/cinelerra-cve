@@ -18,7 +18,6 @@ DriveSync::~DriveSync()
 
 void DriveSync::run()
 {
-// Task switching too slow on alpha
 	while(!done)
 	{
 		sync();

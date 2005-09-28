@@ -33,6 +33,17 @@ LoadClient::LoadClient(LoadServer *server)
 	completion_lock = new Condition(0, "LoadClient::completion_lock");
 }
 
+LoadClient::LoadClient()
+ : Thread()
+{
+	Thread::set_synchronous(1);
+	server = 0;
+	done = 0;
+	package_number = 0;
+	input_lock = new Condition(0, "LoadClient::input_lock");
+	completion_lock = new Condition(0, "LoadClient::completion_lock");
+}
+
 LoadClient::~LoadClient()
 {
 	done = 1;
@@ -150,6 +161,7 @@ void LoadServer::create_clients()
 		for(int i = 0; i < total_clients; i++)
 		{
 			clients[i] = new_client();
+			clients[i]->server = this;
 			clients[i]->start();
 		}
 	}

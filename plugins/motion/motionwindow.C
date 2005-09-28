@@ -84,14 +84,14 @@ int MotionWindow::create_objects()
 	add_subwindow(global_search_positions = new GlobalSearchPositions(plugin, 
 		x1 + title->get_w() + 10, 
 		y, 
-		100));
+		80));
 	global_search_positions->create_objects();
 
 	add_subwindow(title = new BC_Title(x2, y, _("Rotation search steps:")));
 	add_subwindow(rotation_search_positions = new RotationSearchPositions(plugin, 
 		x2 + title->get_w() + 10, 
 		y, 
-		100));
+		80));
 	rotation_search_positions->create_objects();
 
 	y += 40;

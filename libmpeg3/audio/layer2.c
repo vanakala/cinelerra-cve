@@ -197,12 +197,12 @@ static int step_one(mpeg3_layer_t *audio, unsigned int *bit_alloc, int *scale)
     if(stereo)
     {
 /* Stereo */
-    	for(i = jsbound;i ; i--, alloc1 += (1 << step))
+    	for(i = jsbound; i; i--, alloc1 += (1 << step))
     	{
         	*bita++ = (char)mpeg3bits_getbits(audio->stream, step = alloc1->bits);
         	*bita++ = (char)mpeg3bits_getbits(audio->stream, step);
     	}
-    	for(i = sblimit-jsbound; i; i--, alloc1 += (1 << step))
+    	for(i = sblimit - jsbound; i; i--, alloc1 += (1 << step))
     	{
         	bita[0] = (char)mpeg3bits_getbits(audio->stream, step = alloc1->bits);
         	bita[1] = bita[0];

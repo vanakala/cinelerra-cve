@@ -33,6 +33,8 @@ public:
 	static int day_to_int(char *day);
 	void update(int *day, double *time);
 	void reposition_window(int x, int y);
+	int get_h();
+	int get_w();
 
 	BC_WindowBase *gui;
 	int x, y;

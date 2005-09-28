@@ -28,6 +28,12 @@ public:
 
 	int fragment_size;
 
+// Which channels to send output to
+	int do_channel[MAXCHANNELS];
+
+// Offset for synchronization in seconds
+	float audio_offset;
+
 // Change default titles for duplex
 	int duplex;
 	int driver;
@@ -35,13 +41,17 @@ public:
 	char oss_out_device[MAXDEVICES][BCTEXTLEN];
 	int oss_out_channels[MAXDEVICES];
 	int oss_out_bits;
+
+
+
 	char esound_out_server[BCTEXTLEN];
 	int esound_out_port;
-// Which channels to send output to
-	int do_channel[MAXCHANNELS];
+
+// ALSA options
 	char alsa_out_device[BCTEXTLEN];
 	int alsa_out_channels;
 	int alsa_out_bits;
+	int interrupt_workaround;
 
 // Firewire options
 	int firewire_channels;

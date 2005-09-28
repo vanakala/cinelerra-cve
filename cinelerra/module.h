@@ -41,6 +41,10 @@ public:
 	virtual int get_buffer_size() { return 0; };
 	int test_plugins();
 	AttachmentPoint* attachment_of(Plugin *plugin);
+	
+// Get attachment number or return 0 if out of range.
+	AttachmentPoint* get_attachment(int number);
+
 	void dump();
 	int render_init();
 // Current_position is relative to the EDL rate.

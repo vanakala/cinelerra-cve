@@ -57,6 +57,7 @@ int VirtualVConsole::process_buffer(int64_t input_position)
 
 
 
+SET_TRACE
 
 
 	if(debug_tree) printf("VirtualVConsole::process_buffer begin\n");
@@ -67,9 +68,11 @@ int VirtualVConsole::process_buffer(int64_t input_position)
 			vrender->video_out[i]->clear_frame();
 	}
 
+SET_TRACE
 
 // Reset plugin rendering status
 	reset_attachments();
+SET_TRACE
 
 // Render exit nodes from bottom to top
 	for(int i = exit_nodes.total - 1; i >= 0; i--)
@@ -101,6 +104,7 @@ int VirtualVConsole::process_buffer(int64_t input_position)
 			input_position + track->nudge,
 			renderengine->edl->session->frame_rate);
 	}
+SET_TRACE
 
 	if(debug_tree) printf("VirtualVConsole::process_buffer end\n");
 	return result;

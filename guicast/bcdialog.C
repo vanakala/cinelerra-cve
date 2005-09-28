@@ -1,4 +1,5 @@
 #include "bcdialog.h"
+#include "condition.h"
 #include "mutex.h"
 
 
@@ -9,7 +10,7 @@ BC_DialogThread::BC_DialogThread()
  : Thread(1, 0, 0)
 {
 	gui = 0;
-	startup_lock = new Mutex("BC_DialogThread::startup_lock");
+	startup_lock = new Condition(1, "BC_DialogThread::startup_lock");
 	window_lock = new Mutex("BC_DialogThread::window_lock");
 }
 
@@ -59,6 +60,8 @@ void BC_DialogThread::run()
 	startup_lock->unlock();
 	int result = gui->run_window();
 
+	handle_done_event(result);
+
 	window_lock->lock("BC_DialogThread::run");
 	delete gui;
 	gui = 0;
@@ -71,6 +74,15 @@ BC_Window* BC_DialogThread::new_gui()
 {
 	printf("BC_DialogThread::new_gui called\n");
 	return 0;
+}
+
+BC_Window* BC_DialogThread::get_gui()
+{
+	return gui;
+}
+
+void BC_DialogThread::handle_done_event(int result)
+{
 }
 
 void BC_DialogThread::handle_close_event(int result)

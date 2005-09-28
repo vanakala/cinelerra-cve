@@ -19,8 +19,22 @@ public:
 
 // Get selected range based on precidence of in/out points and
 // highlighted region.
-	double get_selectionstart();
-	double get_selectionend();
+// 1) If a highlighted selection exists it's used.
+// 2) If in_point or out_point exists they're used.
+// 3) If no in/out points exist, the insertion point is returned.
+// highlight_only - forces it to use highlighted region only.
+	double get_selectionstart(int highlight_only = 0);
+	double get_selectionend(int highlight_only = 0);
+	double get_inpoint();
+	double get_outpoint();
+	int inpoint_valid();
+	int outpoint_valid();
+	void set_selectionstart(double value);
+	void set_selectionend(double value);
+	void set_inpoint(double value);
+	void set_outpoint(double value);
+	void unset_inpoint();
+	void unset_outpoint();
 
 
 	void copy_from(LocalSession *that);
@@ -28,6 +42,7 @@ public:
 	void load_xml(FileXML *file, unsigned long load_flags);
 	int load_defaults(Defaults *defaults);
 	int save_defaults(Defaults *defaults);
+// Used to copy parameters that affect rendering.
 	void synchronize_params(LocalSession *that);
 
 	void boundaries();
@@ -46,16 +61,6 @@ public:
 // Folder in parent EDL of clip
 	char folder[BCTEXTLEN];
 
-// The reason why selection ranges and inpoints have to be separate:
-// The selection position has to change to set new in points.
-// For editing functions we have a precidence for what determines
-// the selection.
-
-// 1) If in_point or out_point exists they're used.
-// The highlight is ignored except for setting in and out points.
-// 2) If a highlighted selection exists it's used.
-	double selectionstart, selectionend;
-	double in_point, out_point;
 	int loop_playback;
 	double loop_start;
 	double loop_end;
@@ -70,10 +75,25 @@ public:
 	int64_t zoom_y;
 // Track zoom
 	int64_t zoom_track;
+// Vertical automation scale
+	float automation_min;
+	float automation_max;
+
+// Eye dropper
+	float red, green, blue;
 
 // Range for CWindow and VWindow preview in seconds.
 	double preview_start;
 	double preview_end;
+
+private:
+// The reason why selection ranges and inpoints have to be separate:
+// The selection position has to change to set new in points.
+// For editing functions we have a precidence for what determines
+// the selection.
+
+	double selectionstart, selectionend;
+	double in_point, out_point;
 };
 
 #endif

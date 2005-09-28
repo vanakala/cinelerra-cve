@@ -1,16 +1,12 @@
 #include "asset.h"
 #include "file.h"
+#include "language.h"
 #include "mwindow.h"
 #include "record.h"
 #include "recordgui.h"
 #include "recordtransport.h"
 #include "theme.h"
 #include "units.h"
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 
 RecordTransport::RecordTransport(MWindow *mwindow, 
@@ -39,6 +35,7 @@ int RecordTransport::create_objects()
 	window->add_subwindow(record_button = new RecordGUIRec(mwindow, record, x, y));
 	x += record_button->get_w();
 
+	record_frame = 0;
 	if(record->default_asset->video_data)
 	{
 		window->add_subwindow(
@@ -83,8 +80,18 @@ void RecordTransport::reposition_window(int x, int y)
 	x_end = x + 10;
 }
 
+int RecordTransport::get_h()
+{
+	return rewind_button->get_h();
+}
 
-
+int RecordTransport::get_w()
+{
+	return rewind_button->get_w() + 
+		record_button->get_w() +
+		(record_frame ? record_frame->get_w() : 0) +
+		stop_button->get_w();
+}
 
 
 
@@ -121,7 +128,7 @@ int RecordTransport::keypress_event()
 
 
 RecordGUIRec::RecordGUIRec(MWindow *mwindow, Record *record, int x, int y)
- : BC_Button(x, y, mwindow->theme->rec_data)
+ : BC_Button(x, y, mwindow->theme->get_image_set("record"))
 {
 	this->mwindow = mwindow;
 	this->record = record;
@@ -146,7 +153,7 @@ int RecordGUIRec::keypress_event()
 }
 
 RecordGUIRecFrame::RecordGUIRecFrame(MWindow *mwindow, Record *record, int x, int y)
- : BC_Button(x, y, mwindow->theme->recframe_data)
+ : BC_Button(x, y, mwindow->theme->get_image_set("recframe"))
 { 
 	this->record = record; 
 	set_tooltip(_("Record single frame"));
@@ -170,7 +177,7 @@ int RecordGUIRecFrame::keypress_event()
 }
 
 RecordGUIPlay::RecordGUIPlay(MWindow *mwindow, int x, int y)
- : BC_Button(x, y, mwindow->theme->forward_data)
+ : BC_Button(x, y, mwindow->theme->get_image_set("play"))
 { 
 //	this->engine = engine; 
 	set_tooltip(_("Preview recording"));
@@ -195,7 +202,7 @@ int RecordGUIPlay::keypress_event()
 
 
 RecordGUIStop::RecordGUIStop(MWindow *mwindow, Record *record, int x, int y)
- : BC_Button(x, y, mwindow->theme->stoprec_data)
+ : BC_Button(x, y, mwindow->theme->get_image_set("stoprec"))
 { 
 	this->record = record; 
 	set_tooltip(_("Stop operation"));
@@ -221,9 +228,10 @@ int RecordGUIStop::keypress_event()
 
 
 RecordGUIRewind::RecordGUIRewind(MWindow *mwindow, Record *record, int x, int y)
- : BC_Button(x, y, mwindow->theme->rewind_data)
+ : BC_Button(x, y, mwindow->theme->get_image_set("rewind"))
 { 
 	this->record = record; 
+	set_tooltip(_("Start over"));
 }
 
 RecordGUIRewind::~RecordGUIRewind()
@@ -245,7 +253,7 @@ int RecordGUIRewind::keypress_event()
 
 
 RecordGUIBack::RecordGUIBack(MWindow *mwindow, Record *record, int x, int y)
- : BC_Button(x, y, mwindow->theme->fastrev_data)
+ : BC_Button(x, y, mwindow->theme->get_image_set("fastrev"))
 { 
 	this->record = record; 
 	set_tooltip(_("Fast rewind"));
@@ -307,7 +315,7 @@ int RecordGUIBack::keypress_event()
 
 
 RecordGUIFwd::RecordGUIFwd(MWindow *mwindow, Record *record, int x, int y)
- : BC_Button(x, y, mwindow->theme->fastfwd_data)
+ : BC_Button(x, y, mwindow->theme->get_image_set("fastfwd"))
 { 
 	this->engine = engine; 
 	this->record = record; 
@@ -367,7 +375,7 @@ int RecordGUIFwd::keypress_event()
 
 
 RecordGUIEnd::RecordGUIEnd(MWindow *mwindow, Record *record, int x, int y)
- : BC_Button(x, y, mwindow->theme->end_data)
+ : BC_Button(x, y, mwindow->theme->get_image_set("end"))
 { 
 	this->engine = engine; 
 	this->record = record; 

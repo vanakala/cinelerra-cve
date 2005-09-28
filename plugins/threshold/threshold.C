@@ -387,17 +387,11 @@ void ThresholdEngine::process_packages(VFrame *data)
 
 void ThresholdEngine::init_packages()
 {
-	int total_size = data->get_h();
-	int package_size = (int)((float)total_size /
-		get_total_packages() + 1);
-	int start = 0;
 	for(int i = 0; i < get_total_packages(); i++)
 	{
 		ThresholdPackage *package = (ThresholdPackage*)get_package(i);
-		package->start = start;
-		package->end = start + package_size;
-		package->end = MIN(total_size, package->end);
-		start = package->end;
+		package->start = data->get_h() * i / get_total_packages();
+		package->end = data->get_h() * (i + 1) / get_total_packages();
 	}
 }
 

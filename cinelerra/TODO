@@ -2,66 +2,49 @@ Big bugs
 ----------------
 Master node framerate not displaying.
 If region in VWindow and CWindow is 100% it should follow the timeline length.
-Autoplacement of new clips in AWindow doesn't work.
 Hitting space rapidly locks up recording sometimes.
 Drawing cache not cleared after recording.
-Stop immediately followed by paste in CWindow locks up
-Lockup when playing and interrupting in certain places.
 Drag effect before timeline is finished drawing after a load -> lockup
 Test 0 for loop video.
-Interpolate video shouldn't always use different frames if framerate is fractionally different
-diffkey debug
 Overlay doesn't handle different sized tracks
-Quicktime mp4a not decoded properly
 Quicktime mp3 needs standards check
-Having shared plugin off but sharing instance on creates mono sound.
 Importing assets of the same name but different resolutions crashes because the
 formats aren't updated.
-Attach shared reverb to both tracks.  Attach different compressor on each track.
- - Get artifacts in track with shared reverb.
 Default pan keyframe gets pasted when dragging edit from one track to another.
 Undo doesn't restore project title from previous load.
  - New file can be saved under old filename if undo is used.
  - Current title changes in save function and could not be restored in redo.
-Not retaining picture settings after recording.
-Drag bezier keyframe doesn't work on dewopp.
 Load a sound file.  Change the file on the disk.  Crash on exit.
-Not loading mp4a in 64 bit mode.
+Drop effect on empty track and cut.  Effect GUI not closed.
+Can't redo last operation in many places.
 
 
 
-
-Small bugs
-----------------
-List problems:
-	Click drag doesn't drag selection over sublists.
-	First column text not indented in sublist.
-	Shift dragging to create multiple selections doesn't handle crossing over center of selection.
-	Vertical range not recalculated when expanding or collapsing rows.
 
 
 
 Big Features
 ----------------
-Put back mpeg3toc.
+Denoise from mjpeg tools.
+ - yuvdeinterlace
+
+Check for output asset being used in project before rendering.
+Mpeg stream splice utility
+ - uses the first track
+ - requires all edits to be the same MPEG format, 
+ 	same sample rate, 
+	same resolution
+ - remember to convert to asset frame rate
+Networked audio for long buffer recording.
+ - connect to Cinelerra client
 Special asset for live audio.
-Seconds notation for time.
-Replace index size with factor to simplify usage.
-Show curves instead of camera, projector, pan icons.
-Show curves without assets.
-Min and max adjustment for curve display with fit.
-Delete files function.
-Favorite directories
+IDAC
+Time average with median.
 Remove unused resources function.
-Document new time average features.
 Session management
-Hourglass
-Float colormodel
 Signal handling for non interactive rendering.
 Sound level using readahead buffer.
-color curves
 hide cursor when over video output
-SUV theme
 Asset searches.
 Asset organization in subfolders.
 Field based reverse video.
@@ -106,20 +89,12 @@ Quit freezes when background rendering is on.
 Delete track which is being shared causes crash.
  - not reproducible
 Crash during failure to open output file for rendering.
-Dissolve transition quirks.
-Deadlock when CWindow handles events during load.
 
 
 
 
 
-Redo plugin keyframes.
-Paste from load file after recording doesn't work.
-Changing channel count -> crash
 Close out of RecordGUI before firewire signal starts -> crash
-
-In/Out shifting locks up sometimes.
- - More reproducable if building index of AC3 file
 Lockup of APatchPan if GUI is updated after every event and pan keyframes are visible.
 Plugin server locks up in sync_parameters when show plugin keyframes is on.
 Effect tweeking locks up if the time taken to render it is really long.
@@ -132,11 +107,9 @@ Effect tweeking locks up if the time taken to render it is really long.
 B
 -----------
 Advancemame/scale2x filter
-Fourier with window size less than fragment size crashed.
 Moving icons in AWindow should reorder the contents in memory.
 Changes_made not set after tweek.
 Video playback not turned off after rendering.
-Denoise from mjpeg tools.
 Effects from audacity.
 Shift matching surrounding keyframes.
 Popup in CWindow and VWindow to set maximum preview size.
@@ -148,8 +121,6 @@ Remember Asset list position.
 More crash recovery in record.
 Lockup during channel change using RecordMonitor and BUZ driver.
 Ignore frames which return errors when monitoring recording.
-Color adjustments in Channel picker are thrown away when using Buz.
-Preferences crash after changing Playback device to Buz.
 Either audio or video plays back in Microsoft Media Player but not both.
 
 
@@ -161,6 +132,5 @@ Either audio or video plays back in Microsoft Media Player but not both.
 
 On hold
 --------------
-Effect editing.
 Paste non realtime plugins leading to a dialog box.
 Elimination of Audio and Video menus.

@@ -8,7 +8,7 @@
 class SampleScroll : public BC_ScrollBar
 {
 public:
-	SampleScroll(MWindow *mwindow, MWindowGUI *gui, int pixels);
+	SampleScroll(MWindow *mwindow, MWindowGUI *gui, int x, int y, int w);
 	~SampleScroll();
 
 	int create_objects();

@@ -3,7 +3,7 @@
 
 
 class PictureItem;
-class Picture;
+class PictureConfig;
 
 
 

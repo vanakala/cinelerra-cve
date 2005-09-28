@@ -87,13 +87,13 @@ int mpeg3io_close_file(mpeg3_fs_t *fs)
 	return 0;
 }
 
-int mpeg3io_read_data(unsigned char *buffer, long bytes, mpeg3_fs_t *fs)
+int mpeg3io_read_data(unsigned char *buffer, int64_t bytes, mpeg3_fs_t *fs)
 {
 	int result = 0, i, fragment_size;
+//printf("mpeg3io_read_data 1 %d\n", bytes);
 	
 	for(i = 0; bytes > 0 && !result; )
 	{
-//printf("mpeg3io_read_data 1 %d\n", bytes);
 		result = mpeg3io_sync_buffer(fs);
 //printf("mpeg3io_read_data 2\n");
 
@@ -119,17 +119,18 @@ int mpeg3io_read_data(unsigned char *buffer, long bytes, mpeg3_fs_t *fs)
 
 int mpeg3io_seek(mpeg3_fs_t *fs, int64_t byte)
 {
+//printf("mpeg3io_seek 1 %lld\n", byte);
 	fs->current_byte = byte;
 	return (fs->current_byte < 0) || (fs->current_byte > fs->total_bytes);
 }
 
-int mpeg3io_seek_relative(mpeg3_fs_t *fs, long bytes)
+int mpeg3io_seek_relative(mpeg3_fs_t *fs, int64_t bytes)
 {
+//printf("mpeg3io_seek_relative 1 %lld\n", bytes);
 	fs->current_byte += bytes;
 	return (fs->current_byte < 0) || (fs->current_byte > fs->total_bytes);
 }
 
-#define MIN(x, y) ((x) > (y) ? (y) : (x))
 
 void mpeg3io_read_buffer(mpeg3_fs_t *fs)
 {
@@ -153,9 +154,12 @@ void mpeg3io_read_buffer(mpeg3_fs_t *fs)
 		int remainder = new_buffer_position + new_buffer_size - fs->buffer_position;
 		if(remainder < 0) remainder = 0;
 		int remainder_start = new_buffer_size - remainder;
-		int i;
 		if(remainder)
+		{
 			memmove(fs->buffer + remainder_start, fs->buffer, remainder);
+		}
+
+
 
 		fseeko64(fs->fd, new_buffer_position, SEEK_SET);
 		fread(fs->buffer, 1, remainder_start, fs->fd);
@@ -173,6 +177,7 @@ void mpeg3io_read_buffer(mpeg3_fs_t *fs)
 		fs->buffer_offset = 0;
 
 		result = fseeko64(fs->fd, fs->buffer_position, SEEK_SET);
+//printf("mpeg3io_read_buffer 2 %llx %llx\n", fs->buffer_position, ftell(fs->fd));
 		fs->buffer_size = fread(fs->buffer, 1, MPEG3_IO_SIZE, fs->fd);
 
 

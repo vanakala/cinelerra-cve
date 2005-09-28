@@ -65,7 +65,7 @@ public:
 	int set_channel(Channel *channel);
 	int get_norm(int norm);
 	static void get_inputs(ArrayList<Channel*> *input_sources);
-	int set_picture(Picture *picture);
+	int set_picture(PictureConfig *picture);
 	int get_best_colormodel(int colormodel);
 	void create_channeldb(ArrayList<Channel*> *channeldb);
 	void new_output_buffer(VFrame **outputs, int colormodel);

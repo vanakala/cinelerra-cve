@@ -22,14 +22,13 @@ int AAutomation::create_objects()
 {
 	Automation::create_objects();
 
-//printf("AAutomation::create_objects 1\n");
-	fade_autos = new FloatAutos(edl, track, LTGREY, INFINITYGAIN, 6.0, 0.0);
-	fade_autos->create_objects();
-//printf("AAutomation::create_objects 1\n");
-	((FloatAuto*)fade_autos->default_auto)->value = 0.0;
-	pan_autos = new PanAutos(edl, track);
-	pan_autos->create_objects();
+	autos[AUTOMATION_FADE] = new FloatAutos(edl, track, 0.0);
+	autos[AUTOMATION_FADE]->create_objects();
 
-//printf("AAutomation::create_objects 2\n");
+
+
+	autos[AUTOMATION_PAN] = new PanAutos(edl, track);
+	autos[AUTOMATION_PAN]->create_objects();
+
 	return 0;
 }

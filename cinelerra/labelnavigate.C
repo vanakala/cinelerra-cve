@@ -36,7 +36,7 @@ void LabelNavigate::create_objects()
 
 
 PrevLabel::PrevLabel(MWindow *mwindow, LabelNavigate *navigate, int x, int y)
- : BC_Button(x, y, mwindow->theme->prevlabel_data)
+ : BC_Button(x, y, mwindow->theme->get_image_set("prevlabel"))
 { 
 	this->mwindow = mwindow; 
 	this->navigate = navigate;
@@ -54,7 +54,7 @@ int PrevLabel::handle_event()
 
 
 NextLabel::NextLabel(MWindow *mwindow, LabelNavigate *navigate, int x, int y)
- : BC_Button(x, y, mwindow->theme->nextlabel_data)
+ : BC_Button(x, y, mwindow->theme->get_image_set("nextlabel"))
 { 
 	this->mwindow = mwindow; 
 	this->navigate = navigate; 

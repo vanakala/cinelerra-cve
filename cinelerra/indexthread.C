@@ -32,14 +32,17 @@ IndexThread::IndexThread(MWindow *mwindow,
 // initialize output data
 	int64_t index_size = mwindow->preferences->index_size / 
 		sizeof(float) + 1;      // size of output file in floats
-	if(asset->index_buffer) delete [] asset->index_buffer;
-	if(asset->index_offsets) delete [] asset->index_offsets;
+
+	delete [] asset->index_buffer;
+	delete [] asset->index_offsets;
+	delete [] asset->index_sizes;
+
 // buffer used for drawing during the build.  This is not deleted in the asset
 	asset->index_buffer = new float[index_size];  
 // This is deleted in the asset's destructor
 	asset->index_offsets = new int64_t[asset->channels];
+	asset->index_sizes = new int64_t[asset->channels];
 	bzero(asset->index_buffer, index_size * sizeof(float));
-//printf("IndexThread::IndexThread %d\n", index_size);
 
 // initialization is completed in run
 	for(int i = 0; i < TOTAL_BUFFERS; i++)
@@ -111,21 +114,15 @@ void IndexThread::run()
 			(length_source / asset->index_zoom * 2 + 1) * channel;
 		lowpoint[channel] = highpoint[channel] + 1;
 
-// Not effective when index_zoom == 1
-// zero the first point
-// 		asset->index_buffer[highpoint[channel]] = 0;
-// 		asset->index_buffer[lowpoint[channel]] = 0;
 		frame_position[channel] = 0;
 	}
 
 	int64_t index_start = 0;    // end of index during last edit update
 	asset->index_end = 0;      // samples in source completed
 	asset->old_index_end = 0;
-	asset->index_status = 2;
+	asset->index_status = INDEX_BUILDING;
 	int64_t zoomx = asset->index_zoom;
 	float *index_buffer = asset->index_buffer;    // output of index build
-
-//	index_file->redraw_edits();
 
 	while(!interrupt_flag && !done)
 	{
@@ -137,7 +134,6 @@ void IndexThread::run()
 // process buffer
 			int64_t fragment_size = input_len[current_buffer];
 
-//printf("IndexThread::run 1\n");
 			for(int channel = 0; channel < asset->channels; channel++)
 			{
 				int64_t *highpoint_channel = &highpoint[channel];
@@ -153,7 +149,12 @@ void IndexThread::run()
 						*lowpoint_channel += 2;
 						*frame_position_channel = 0;
 // store and reset output values
-						index_buffer[*highpoint_channel] = index_buffer[*lowpoint_channel] = buffer_source[i];
+						index_buffer[*highpoint_channel] = 
+							index_buffer[*lowpoint_channel] = 
+							buffer_source[i];
+						asset->index_sizes[channel] = *lowpoint_channel - 
+							asset->index_offsets[channel] + 
+							1;
 					}
 					else
 					{
@@ -176,20 +177,14 @@ void IndexThread::run()
 					(*frame_position_channel)++;
 				} // end index one buffer
 			}
-//printf("IndexThread::run 2\n");
 
 			asset->index_end += fragment_size;
 
 // draw simultaneously with build
-//printf("IndexThread::run 2.1\n");
 			index_file->redraw_edits(0);
-//printf("IndexThread::run 2.2\n");
 			index_start = asset->index_end;
-//printf("IndexThread::run 2.3\n");
-//printf("IndexThread::run 3\n");
 		}
 
-//printf("IndexThread::run %ld\n", lowpoint[asset->channels - 1] + 1);
 		input_lock[current_buffer]->unlock();
 		current_buffer++;
 		if(current_buffer >= TOTAL_BUFFERS) current_buffer = 0;
@@ -197,42 +192,16 @@ void IndexThread::run()
 
 	index_file->redraw_edits(1);
 
-// ================================== write the index file to disk
-	FILE *file;
-	if(!(file = fopen(index_filename, "wb")))
-	{
-// failed to create it
-		printf(_("IndexThread::run() Couldn't write index file %s to disk.\n"), index_filename);
-	}
-	else
-	{
-		FileXML xml;
-		fwrite((char*)&(asset->index_start), sizeof(int64_t), 1, file);
 
-		asset->index_status = INDEX_READY;
-		asset->write(mwindow->plugindb, 
-			&xml, 
-			1, 
-			"");
-		xml.write_to_file(file);
-		asset->index_start = ftell(file);
-		fseek(file, 0, SEEK_SET);
-		fwrite((char*)&(asset->index_start), sizeof(int64_t), 1, file);
-		fseek(file, asset->index_start, SEEK_SET);
-		
-		fwrite(asset->index_buffer, (lowpoint[asset->channels - 1] + 1) * sizeof(float), 1, file);
-		fclose(file);
-	}
+// write the index file to disk
+	asset->write_index(index_filename, 
+		(lowpoint[asset->channels - 1] + 1) * sizeof(float));
 
-// done
-// Force reread of header
-	asset->index_status = INDEX_NOTTESTED;
-//	asset->index_status = INDEX_READY;
-	asset->index_end = length_source;
-	asset->old_index_end = 0;
-	asset->index_start = 0;
-	
+
 	delete [] highpoint;
 	delete [] lowpoint;
 	delete [] frame_position;
 }
+
+
+

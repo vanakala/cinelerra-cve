@@ -8,6 +8,8 @@
 #include "playbackconfig.h"
 #include "device1394input.h"
 #include "device1394output.h"
+#include "iec61883input.h"
+#include "iec61883output.h"
 #include "preferences.h"
 #include "recordconfig.h"
 #include "videoconfig.h"
@@ -31,12 +33,14 @@ int Audio1394::initialize()
 {
 	input_thread = 0;
 	output_thread = 0;
+	input_iec = 0;
+	output_iec = 0;
 }
 
 int Audio1394::open_input()
 {
 	int result = 0;
-	if(!input_thread)
+	if(!input_thread && !input_iec)
 	{
 // Lock the channels for the DV format
 		device->in_channels = 2;
@@ -44,19 +48,41 @@ int Audio1394::open_input()
 		bytes_per_sample = device->in_channels * device->in_bits / 8;
 
 
-		input_thread = new Device1394Input;
-		result = input_thread->open(device->in_config->firewire_port, 
-			device->in_config->firewire_channel, 
-			30,
-			device->in_channels,
-			device->in_samplerate,
-			device->in_bits,
-			device->vconfig->w,
-			device->vconfig->h);
+		if(device->driver == AUDIO_DV1394 ||
+			device->driver == AUDIO_1394)
+		{
+			input_thread = new Device1394Input;
+			result = input_thread->open(device->in_config->firewire_port, 
+				device->in_config->firewire_channel, 
+				30,
+				device->in_channels,
+				device->in_samplerate,
+				device->in_bits,
+				device->vconfig->w,
+				device->vconfig->h);
+		}
+		else
+		{
+			input_iec = new IEC61883Input;
+			result = input_iec->open(device->in_config->firewire_port, 
+				device->in_config->firewire_channel, 
+				30,
+				device->in_channels,
+				device->in_samplerate,
+				device->in_bits,
+				device->vconfig->w,
+				device->vconfig->h);
+		}
+
+
+
+
 		if(result)
 		{
 			delete input_thread;
 			input_thread = 0;
+			delete input_iec;
+			input_iec = 0;
 		}
 	}
 
@@ -65,17 +91,17 @@ int Audio1394::open_input()
 
 int Audio1394::open_output()
 {
-	if(!output_thread)
+	if(!output_thread && !output_iec)
 	{
 // Lock the channels for the DV format
 		device->out_channels = 2;
 		device->out_bits = 16;
 		bytes_per_sample = device->out_channels * device->out_bits / 8;
 
-		output_thread = new Device1394Output(device);
 
 		if(device->driver == AUDIO_DV1394)
 		{
+			output_thread = new Device1394Output(device);
 			output_thread->open(device->out_config->dv1394_path,
 				device->out_config->dv1394_port,
 				device->out_config->dv1394_channel,
@@ -86,9 +112,22 @@ int Audio1394::open_output()
 				device->out_config->dv1394_syt);
 		}
 		else
+		if(device->driver == AUDIO_1394)
 		{
+			output_thread = new Device1394Output(device);
 			output_thread->open(device->out_config->firewire_path,
 				device->out_config->firewire_port,
+				device->out_config->firewire_channel,
+				30,
+				device->out_channels, 
+				device->out_bits, 
+				device->out_samplerate,
+				device->out_config->firewire_syt);
+		}
+		else
+		{
+			output_iec = new IEC61883Output(device);
+			output_iec->open(device->out_config->firewire_port,
 				device->out_config->firewire_channel,
 				30,
 				device->out_channels, 
@@ -110,6 +149,8 @@ int Audio1394::close_all()
 	{
 		delete output_thread;
 	}
+	delete input_iec;
+	delete output_iec;
 
 	initialize();
 	return 0;
@@ -122,6 +163,11 @@ int Audio1394::read_buffer(char *buffer, int bytes)
 	{
 		input_thread->read_audio(buffer, bytes / bytes_per_sample);
 	}
+	else
+	if(input_iec)
+	{
+		input_iec->read_audio(buffer, bytes / bytes_per_sample);
+	}
 
 	return 0;
 }
@@ -130,6 +176,9 @@ int Audio1394::write_buffer(char *buffer, int bytes)
 {
 	if(output_thread)
 		output_thread->write_samples(buffer, bytes / bytes_per_sample);
+	else
+	if(output_iec)
+		output_iec->write_samples(buffer, bytes / bytes_per_sample);
 	return 0;
 }
 
@@ -137,6 +186,9 @@ int64_t Audio1394::device_position()
 {
 	if(output_thread)
 		return output_thread->get_audio_position();
+	else
+	if(output_iec)
+		return output_iec->get_audio_position();
 	else
 		return 0;
 }
@@ -146,6 +198,9 @@ int Audio1394::flush_device()
 {
 	if(output_thread)
 		output_thread->flush();
+	else
+	if(output_iec)
+		output_iec->flush();
 	return 0;
 }
 
@@ -153,6 +208,9 @@ int Audio1394::interrupt_playback()
 {
 	if(output_thread)
 		output_thread->interrupt();
+	else
+	if(output_iec)
+		output_iec->interrupt();
 	return 0;
 }
 

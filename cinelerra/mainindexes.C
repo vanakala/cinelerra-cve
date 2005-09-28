@@ -1,6 +1,7 @@
 #include "asset.h"
 #include "defaults.h"
 #include "edl.h"
+#include "file.h"
 #include "filesystem.h"
 #include "indexfile.h"
 #include "condition.h"
@@ -11,6 +12,7 @@
 #include "mainprogress.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
+#include "preferences.h"
 
 #include <string.h>
 
@@ -38,22 +40,58 @@ MainIndexes::~MainIndexes()
 	delete interrupt_lock;
 }
 
-void MainIndexes::add_next_asset(Asset *asset)
+void MainIndexes::add_next_asset(File *file, Asset *asset)
 {
 	next_lock->lock("MainIndexes::add_next_asset");
 
 // Test current asset
 	IndexFile indexfile(mwindow);
 
-//printf("MainIndexes::add_next_asset 1 %s\n", asset->path);
+	int got_it = 0;
+
 	if(!indexfile.open_index(asset))
 	{
-//printf("MainIndexes::add_next_asset 2\n");
 		asset->index_status = INDEX_READY;
 		indexfile.close_index();
+		got_it = 1;
 	}
-	else
+
+	if(!got_it)
+	{
+		File *this_file = file;
+
+		if(!file)
+		{
+			this_file = new File;
+			this_file->open_file(mwindow->preferences,
+				asset,
+				1,
+				0,
+				0,
+				0);
+		}
+
+		char index_filename[BCTEXTLEN];
+		char source_filename[BCTEXTLEN];
+		IndexFile::get_index_filename(source_filename, 
+			mwindow->preferences->index_directory, 
+			index_filename, 
+			asset->path);
+		if(!this_file->get_index(index_filename))
+		{
+			if(!indexfile.open_index(asset))
+			{
+				indexfile.close_index();
+				asset->index_status = INDEX_READY;
+				got_it = 1;
+			}
+		}
+		if(!file) delete this_file;
+	}
+
+
 // Put copy of asset in stack, not the real thing.
+	if(!got_it)
 	{
 //printf("MainIndexes::add_next_asset 3\n");
 		Asset *new_asset = new Asset;
@@ -74,7 +112,7 @@ void MainIndexes::delete_current_assets()
 void MainIndexes::start_loop()
 {
 	interrupt_flag = 0;
-	start();
+	Thread::start();
 }
 
 void MainIndexes::stop_loop()
@@ -150,14 +188,15 @@ void MainIndexes::run()
 			if(current_asset->index_status == INDEX_NOTTESTED && 
 				current_asset->audio_data)
 			{
-//printf("MainIndexes::run 4\n");
 
 
-// Doesn't exist.
-// Try to create index now.
+
+
+
+// Doesn't exist if this returns 1.
 				if(indexfile->open_index(current_asset))
 				{
-//printf("MainIndexes::run 5 %p %s %p %p\n", current_asset, current_asset->path, mwindow, mwindow->mainprogress);
+// Try to create index now.
 					if(!progress)
 					{
 						if(mwindow->gui) mwindow->gui->lock_window("MainIndexes::run 1");

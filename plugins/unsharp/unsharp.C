@@ -630,14 +630,11 @@ UnsharpEngine::~UnsharpEngine()
 
 void UnsharpEngine::init_packages()
 {
-	int package_size = src->get_h() / get_total_packages() + 1;
 	for(int i = 0; i < get_total_packages(); i++)
 	{
 		UnsharpPackage *pkg = (UnsharpPackage*)get_package(i);
-		pkg->y1 = i * package_size;
-		pkg->y2 = (i + 1) * package_size;
-		if(pkg->y1 > src->get_h()) pkg->y1 = src->get_h();
-		if(pkg->y2 > src->get_h()) pkg->y2 = src->get_h();
+		pkg->y1 = src->get_h() * i / get_total_packages();
+		pkg->y2 = src->get_h() * (i + 1) / get_total_packages();
 	}
 }
 

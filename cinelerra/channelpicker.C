@@ -85,6 +85,11 @@ void PrefsChannelPicker::set_channel_number(int number)
 	set_channel(get_current_channel_struct());
 }
 
+int PrefsChannelPicker::has_signal()
+{
+	return 0;
+}
+
 int PrefsChannelPicker::set_brightness(int value)
 {
 	prefs->out_config->brightness = value;
@@ -150,7 +155,7 @@ PictureItem* PrefsChannelPicker::get_control(int i)
 	return 0;
 }
 
-Picture* PrefsChannelPicker::get_picture_usage()
+PictureConfig* PrefsChannelPicker::get_picture_usage()
 {
 	return 0;
 }
@@ -211,120 +216,157 @@ void ChannelPicker::update_channel_list()
 
 BC_WindowBase* ChannelPicker::get_subwindow()
 {
-	return record_monitor->window;
+	if(record_monitor) return record_monitor->window;
+	return 0;
 }
 
 Channel* ChannelPicker::get_current_channel_struct()
 {
 //printf("ChannelPicker::get_current_channel_struct 1\n");
-	return record->get_current_channel_struct();
+	if(record) return record->get_current_channel_struct();
+	return 0;
 }
 
 int ChannelPicker::get_current_channel_number()
 {
-	return record->get_editing_channel();
+	if(record) return record->get_editing_channel();
+	return 0;
 }
 
 ArrayList<Channel*>* ChannelPicker::get_video_inputs() 
 {
-	return record->get_video_inputs();
+	if(record) return record->get_video_inputs();
+	return 0;
 }
 
 Channel* ChannelPicker::get_channel_usage()
 {
-	return record->master_channel;
+	if(record) return record->master_channel;
+	return 0;
 }
 
 void ChannelPicker::set_channel_number(int number)
 {
-	record->set_channel(number);
+	if(record) record->set_channel(number);
 }
 
 void ChannelPicker::set_channel(Channel *channel)
 {
-	record->set_channel(channel);
+	if(record) record->set_channel(channel);
+}
+
+int ChannelPicker::has_signal()
+{
+	if(record) return record->has_signal();
+	return 0;
 }
 
 int ChannelPicker::set_brightness(int value)
 {
-	record->picture->brightness = value;
-	record->set_video_picture();
+	if(record)
+	{
+		record->picture->brightness = value;
+		record->set_video_picture();
+	}
 	return 0;
 }
 
 int ChannelPicker::set_hue(int value)
 {
-	record->picture->hue = value;
-	record->set_video_picture();
+	if(record)
+	{
+		record->picture->hue = value;
+		record->set_video_picture();
+	}
 	return 0;
 }
 
 int ChannelPicker::set_color(int value)
 {
-	record->picture->color = value;
-	record->set_video_picture();
+	if(record)
+	{
+		record->picture->color = value;
+		record->set_video_picture();
+	}
 	return 0;
 }
 
 int ChannelPicker::set_contrast(int value)
 {
-	record->picture->contrast = value;
-	record->set_video_picture();
+	if(record)
+	{
+		record->picture->contrast = value;
+		record->set_video_picture();
+	}
 	return 0;
 }
 
 int ChannelPicker::set_whiteness(int value)
 {
-	record->picture->whiteness = value;
-	record->set_video_picture();
+	if(record)
+	{
+		record->picture->whiteness = value;
+		record->set_video_picture();
+	}
 	return 0;
 }
 
 int ChannelPicker::set_picture(int device_id, int value)
 {
-	record->picture->set_item(device_id, value);
-	record->set_video_picture();
+	if(record) 
+	{
+		record->picture->set_item(device_id, value);
+		record->set_video_picture();
+	}
 	return 0;
 }
 
 int ChannelPicker::get_brightness()
 {
-	return record->picture->brightness;
+	if(record) return record->picture->brightness;
+	return 0;
 }
 
 int ChannelPicker::get_hue()
 {
-	return record->picture->hue;
+	if(record) return record->picture->hue;
+	return 0;
 }
 
 int ChannelPicker::get_color()
 {
-	return record->picture->color;
+	if(record) return record->picture->color;
+	return 0;
 }
 
 int ChannelPicker::get_contrast()
 {
-	return record->picture->contrast;
+	if(record) return record->picture->contrast;
+	return 0;
 }
 
 int ChannelPicker::get_whiteness()
 {
-	return record->picture->whiteness;
+	if(record) return record->picture->whiteness;
+	return 0;
 }
 
 int ChannelPicker::get_controls()
 {
-	return record->picture->controls.total;
+	if(record) return record->picture->controls.total;
+	return 0;
 }
 
 PictureItem* ChannelPicker::get_control(int i)
 {
-	return record->picture->controls.values[i];
+	if(record) return record->picture->controls.values[i];
+	return 0;
 }
 
-Picture* ChannelPicker::get_picture_usage()
+PictureConfig* ChannelPicker::get_picture_usage()
 {
-	return record->picture;
+	if(record) return record->picture;
+	return 0;
 }
 
 
@@ -403,7 +445,7 @@ int ChannelPicker::channel_up()
 
 
 ChannelButton::ChannelButton(MWindow *mwindow, ChannelPicker *channel_picker, int x, int y)
- : BC_Button(x, y, mwindow->theme->channel_data)
+ : BC_Button(x, y, mwindow->theme->get_image_set("channel"))
 {
 	this->channel_picker = channel_picker;
 	this->mwindow = mwindow;
@@ -522,3 +564,5 @@ int ChannelTumbler::keypress_event()
 	else
 	return 0;
 }
+
+

@@ -2,6 +2,7 @@
 #define BCDIALOG_H
 
 #include "bcdialog.inc"
+#include "condition.inc"
 #include "guicast.h"
 #include "mutex.inc"
 #include "thread.h"
@@ -21,15 +22,19 @@ public:
 	void start();
 	void run();
 
+// After the window is closed, this is called
+	virtual void handle_done_event(int result);
+
 // After the window is closed and deleted, this is called.
 	virtual void handle_close_event(int result);
 
 // User creates the window and initializes it here.
 	virtual BC_Window* new_gui();
+	BC_Window* get_gui();
 
 private:
 	BC_Window *gui;
-	Mutex *startup_lock;
+	Condition *startup_lock;
 	Mutex *window_lock;
 };
 

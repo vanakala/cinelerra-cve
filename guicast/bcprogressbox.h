@@ -10,15 +10,15 @@
 class BC_ProgressBox : public Thread
 {
 public:
-	BC_ProgressBox(int x, int y, char *text, long length);
+	BC_ProgressBox(int x, int y, char *text, int64_t length);
 	virtual ~BC_ProgressBox();
 	
 	friend class BC_ProgressWindow;
 
 	void run();
-	int update(long position);    // return 1 if cancelled
-	int update_title(char *title);
-	int update_length(long length);
+	int update(int64_t position, int lock_it);    // return 1 if cancelled
+	int update_title(char *title, int lock_it);
+	int update_length(int64_t length, int lock_it);
 	int is_cancelled();      // return 1 if cancelled
 	int stop_progress();
 	void lock_window();
@@ -29,7 +29,7 @@ private:
 	char *display;
 	char *text;
 	int cancelled;
-	long length;
+	int64_t length;
 };
 
 
@@ -39,7 +39,7 @@ public:
 	BC_ProgressWindow(int x, int y);
 	virtual ~BC_ProgressWindow();
 
-	int create_objects(char *text, long length);
+	int create_objects(char *text, int64_t length);
 
 	char *text;
 	BC_ProgressBar *bar;

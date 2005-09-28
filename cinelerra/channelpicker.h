@@ -40,6 +40,7 @@ public:
 // Set the current state of the channel
 	virtual void set_channel_number(int number);
 	virtual void set_channel(Channel *channel);
+	virtual int has_signal();
 // Get what inputs the device supports, one Channel structure for every input.
 	virtual ArrayList<Channel*>* get_video_inputs();
 // Get a structure containing what parameters the device supports
@@ -62,7 +63,7 @@ public:
 	virtual int get_controls();
 	virtual PictureItem* get_control(int i);
 // Get a structure containing what parameters the device supports
-	virtual Picture* get_picture_usage();
+	virtual PictureConfig* get_picture_usage();
 
 	
 
@@ -114,6 +115,7 @@ public:
 // Set the current state of the channel
 	void set_channel(Channel *channel);
 	void set_channel_number(int number);
+	int has_signal();
 // Get what inputs the device supports, one Channel structure for every input.
 	ArrayList<Channel*>* get_video_inputs();
 // Get a structure containing what parameters the device supports
@@ -138,7 +140,7 @@ public:
 	int get_controls();
 	PictureItem* get_control(int i);
 // Get a structure containing what parameters the device supports
-	virtual Picture* get_picture_usage();
+	virtual PictureConfig* get_picture_usage();
 
 	ArrayList<Channel*> input_sources;	
 	VDevicePrefs *prefs;

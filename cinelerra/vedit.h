@@ -2,7 +2,6 @@
 #define VEDIT_H
 
 #include "guicast.h"
-#include "bezierauto.inc"
 #include "cache.inc"
 #include "edit.h"
 #include "vedits.inc"

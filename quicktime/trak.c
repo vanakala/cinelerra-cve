@@ -230,22 +230,31 @@ long quicktime_track_samples(quicktime_t *file, quicktime_trak_t *trak)
 	{
 /* get the sample count when reading only */
 		quicktime_stts_t *stts = &(trak->mdia.minf.stbl.stts);
-		int i;
 		int64_t total = 0;
+		int i;
 
-		for(i = 0; i < stts->total_entries; i++)
-		{
-			total += stts->table[i].sample_count *
-				stts->table[i].sample_duration;
-		}
-
-/* Convert to samples */
 		if(trak->mdia.minf.is_audio)
+		{
+
+// Get total sample duration
+			for(i = 0; i < stts->total_entries; i++)
+			{
+				total += stts->table[i].sample_count *
+					stts->table[i].sample_duration;
+			}
+
 			return total;
+		}
 		else
 		if(trak->mdia.minf.is_video)
-			return total /
-				stts->table[0].sample_duration;
+		{
+/* Get total number of samples */
+			for(i = 0; i < stts->total_entries; i++)
+			{
+				total += stts->table[i].sample_count;
+			}
+			return total;
+		}
 		return total;
 	}
 }
@@ -513,7 +522,7 @@ void quicktime_write_chunk_footer(quicktime_t *file,
 	{
 		quicktime_atom_write_footer(file, chunk);
 
-// Save original index entry for first RIFF only
+// Save version 1 index entry for first RIFF only
 		if(file->total_riffs < 2)
 		{
 			quicktime_update_idx1table(file, 
@@ -544,6 +553,67 @@ void quicktime_write_chunk_footer(quicktime_t *file,
 	quicktime_update_stsc(&(trak->mdia.minf.stbl.stsc), 
 		current_chunk, 
 		samples);
+}
+
+int quicktime_write_vbr_frame(quicktime_t *file, 
+	int track,
+	char *data,
+	int data_size,
+	int samples)
+{
+	quicktime_audio_map_t *track_map = &(file->atracks[track]);
+	quicktime_trak_t *trak = track_map->track;
+	quicktime_atom_t chunk_atom;
+	int result = 0;
+
+
+	quicktime_write_chunk_header(file, trak, &chunk_atom);
+	result = !quicktime_write_data(file, data, data_size);
+	int64_t offset = chunk_atom.start;
+
+// AVI case
+	if(file->use_avi)
+	{
+		quicktime_atom_write_footer(file, &chunk_atom);
+// Save version 1 index entry for first RIFF only
+		if(file->total_riffs < 2)
+		{
+			quicktime_update_idx1table(file, 
+				trak, 
+				offset, 
+				data_size);
+		}
+
+// Save version 2 index entry
+		quicktime_update_ixtable(file, 
+			trak, 
+			offset, 
+			data_size);
+	}
+
+// Update MDAT size
+	if(offset + data_size > file->mdat.atom.size)
+		file->mdat.atom.size = offset + data_size;
+
+// Update time to sample table
+	quicktime_stts_append_audio(file, 
+		&(trak->mdia.minf.stbl.stts), 
+		samples);
+
+	int64_t total_chunks = quicktime_stts_total_samples(file,
+		&(trak->mdia.minf.stbl.stts));
+	quicktime_update_stco(&(trak->mdia.minf.stbl.stco), 
+		total_chunks, 
+		offset);
+	quicktime_update_stsc(&(trak->mdia.minf.stbl.stsc), 
+		total_chunks, 
+		1);
+	quicktime_update_stsz(&(trak->mdia.minf.stbl.stsz), 
+		total_chunks - 1, 
+		data_size);
+
+
+	return result;
 }
 
 
@@ -599,14 +669,16 @@ int quicktime_trak_fix_counts(quicktime_t *file, quicktime_trak_t *trak)
 {
 	long samples = quicktime_track_samples(file, trak);
 
-	trak->mdia.minf.stbl.stts.table[0].sample_count = samples;
-
-	if(!trak->mdia.minf.stbl.stsz.total_entries)
+	if(!trak->mdia.minf.stbl.stts.is_vbr)
 	{
-		trak->mdia.minf.stbl.stsz.sample_size = 1;
-		trak->mdia.minf.stbl.stsz.total_entries = samples;
-	}
+		trak->mdia.minf.stbl.stts.table[0].sample_count = samples;
 
+		if(!trak->mdia.minf.stbl.stsz.total_entries)
+		{
+			trak->mdia.minf.stbl.stsz.sample_size = 1;
+			trak->mdia.minf.stbl.stsz.total_entries = samples;
+		}
+	}
 	return 0;
 }
 
@@ -637,3 +709,29 @@ int quicktime_trak_shift_offsets(quicktime_trak_t *trak, int64_t offset)
 	}
 	return 0;
 }
+
+char* quicktime_compressor(quicktime_trak_t *track)
+{
+	return track->mdia.minf.stbl.stsd.table[0].format;
+}
+
+
+int quicktime_sample_duration(quicktime_trak_t *trak)
+{
+	quicktime_stts_t *stts = &trak->mdia.minf.stbl.stts;
+	int i;
+	int max_count = 0;
+	int result = 1;
+	for(i = 0; i < stts->total_entries; i++)
+	{
+		quicktime_stts_table_t *table = &stts->table[i];
+		if(table->sample_count > max_count)
+		{
+			max_count = table->sample_count;
+			result = table->sample_duration;
+		}
+	}
+	return result;
+}
+
+

@@ -123,9 +123,8 @@ void CTracking::update_tracker(double position)
 // Update mwindow cursor
 	mwindow->gui->lock_window("CTracking::update_tracker 2");
 
-	mwindow->edl->local_session->selectionstart = 
-		mwindow->edl->local_session->selectionend = 
-		position;
+	mwindow->edl->local_session->set_selectionstart(position);
+	mwindow->edl->local_session->set_selectionend(position);
 
 	updated_scroll = update_scroll(position);
 

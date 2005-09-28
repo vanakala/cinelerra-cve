@@ -3,6 +3,7 @@
 
 #include "bcmenu.inc"
 #include "bcmenubar.inc"
+#include "bcpixmap.inc"
 #include "bcsubwindow.h"
 
 class BC_MenuBar : public BC_SubWindow
@@ -40,6 +41,8 @@ private:
 	int button_releases;        
 // When a menu is pulled down
 	int active;
+	BC_Pixmap *menu_bar_bg;
+	BC_Pixmap *menu_title_bg[3];
 };
 
 

@@ -11,13 +11,11 @@
 #include "tracks.h"
 #include "trackscroll.h"
 
-TrackScroll::TrackScroll(MWindow *mwindow, MWindowGUI *gui, int pixels)
- : BC_ScrollBar(mwindow->theme->mcanvas_x + 
- 		mwindow->theme->mcanvas_w - 
-		BC_ScrollBar::get_span(SCROLL_VERT), 
- 	mwindow->theme->mcanvas_y, 
+TrackScroll::TrackScroll(MWindow *mwindow, MWindowGUI *gui, int x, int y, int h)
+ : BC_ScrollBar(x, 
+ 	y, 
 	SCROLL_VERT, 
-	pixels, 
+	h, 
 	0, 
 	0, 
 	0)
@@ -43,12 +41,9 @@ int TrackScroll::update()
 
 int TrackScroll::resize_event()
 {
-	reposition_window(mwindow->theme->mcanvas_x + 
-			mwindow->theme->mcanvas_w - 
-			BC_ScrollBar::get_span(SCROLL_VERT), 
-		mwindow->theme->mcanvas_y, 
-		mwindow->theme->mcanvas_h - 
-			BC_ScrollBar::get_span(SCROLL_HORIZ)); // fix scrollbar
+	reposition_window(mwindow->theme->mvscroll_x, 
+		mwindow->theme->mvscroll_y, 
+		mwindow->theme->mvscroll_h);
 	update();
 	return 0;
 }

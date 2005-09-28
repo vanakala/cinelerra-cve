@@ -29,6 +29,19 @@ public:
 	void enable();
 	void disable();
 	void set_status(int value);
+	static void calculate_extents(BC_WindowBase *gui, 
+		VFrame **images,
+		int bottom_justify,
+		int *text_line,
+		int *w,
+		int *h,
+		int *toggle_x,
+		int *toggle_y,
+		int *text_x,
+		int *text_y, 
+		int *text_w,
+		int *text_h, 
+		char *caption);
 
 	int initialize();
 	int set_images(VFrame **data);
@@ -106,6 +119,7 @@ public:
 		int font = MEDIUMFONT,
 		int color = -1);
 	virtual int handle_event();
+
 
 	int *value;
 };

@@ -1,6 +1,7 @@
 #include "libmpeg3.h"
 #include "mpeg3protos.h"
 #include <stdlib.h>
+#include <string.h>
 
 #define BUFSIZE 65536
 
@@ -29,7 +30,7 @@ int main(int argc, char *argv[])
 	int decompress_audio = 0, decompress_video = 0;
 	int audio_track = 0;
 /* Print cell offsets */
-	int print_offsets = 1;
+	int print_offsets = 0;
 	int print_pids = 1;
 
 	outfile[0] = 0;
@@ -90,7 +91,6 @@ int main(int argc, char *argv[])
 	{
 
 // Audio streams
-		fprintf(stderr, "have_mmx=%d\n", file->have_mmx);
 		fprintf(stderr, "total_astreams=%d\n", mpeg3_total_astreams(file));
 
 		for(i = 0; i < mpeg3_total_astreams(file); i++)
@@ -162,9 +162,11 @@ int main(int argc, char *argv[])
 			if(print_offsets)
 			{
 				for(j = 0; j < file->demuxer->titles[i]->cell_table_size; j++)
-					fprintf(stderr, "    Cell: %llx-%llx program=%d\n", 
-						file->demuxer->titles[i]->cell_table[j].start_byte, 
-						file->demuxer->titles[i]->cell_table[j].end_byte,
+					fprintf(stderr, "    Cell: %llx-%llx %llx-%llx program=%d\n", 
+						file->demuxer->titles[i]->cell_table[j].program_start, 
+						file->demuxer->titles[i]->cell_table[j].program_end,
+						file->demuxer->titles[i]->cell_table[j].title_start, 
+						file->demuxer->titles[i]->cell_table[j].title_end,
 						file->demuxer->titles[i]->cell_table[j].program);
 			}
 		}

@@ -33,6 +33,7 @@ public:
 		int mode);
 	~ADevicePrefs();
 
+	void reset();
 	static int get_h();
 	int update(AudioOutConfig *out_config);
 	int initialize();
@@ -72,9 +73,13 @@ private:
 	ADeviceIntBox *firewire_channels;
 	ADeviceTextBox *firewire_path;
 	ADeviceIntBox *firewire_syt;
+
+
 	ALSADevice *alsa_device;
 	BitsPopup *alsa_bits;
 	ADeviceIntBox *alsa_channels;
+	BC_CheckBox *alsa_workaround;
+
 	ArrayList<BC_ListBoxItem*> *alsa_drivers;
 };
 

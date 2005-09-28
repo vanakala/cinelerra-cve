@@ -4,8 +4,10 @@
 #include "channeledit.h"
 #include "channelpicker.h"
 #include "chantables.h"
+#include "clip.h"
 #include "condition.h"
 #include "language.h"
+#include "mainprogress.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "picture.h"
@@ -13,8 +15,10 @@
 #include "recordgui.h"
 #include "theme.h"
 #include "videodevice.h"
-
+#include <ctype.h>
 #include <string.h>
+#include <unistd.h>
+
 
 ChannelEditThread::ChannelEditThread(MWindow *mwindow, 
 	ChannelPicker *channel_picker,
@@ -30,9 +34,13 @@ ChannelEditThread::ChannelEditThread(MWindow *mwindow,
 	this->window = 0;
 	new_channels = new ChannelDB;
 	completion = new Condition(1, "ChannelEditThread::completion");
+	scan_thread = 0;
 }
 ChannelEditThread::~ChannelEditThread()
 {
+	channel_picker->get_subwindow()->unlock_window();
+	delete scan_thread;
+	channel_picker->get_subwindow()->lock_window("ChannelEditThread::~ChannelEditThread");
 	delete new_channels;
 	delete completion;
 }
@@ -79,7 +87,6 @@ void ChannelEditThread::run()
 			record->record_gui->lock_window("ChannelEditThread::run");
 			record->record_gui->update_batch_sources();
 
-//printf("ChannelEditThread::run 10 %d\n", current_channel);
 			record->set_channel(current_channel);
 			record->record_gui->unlock_window();
 			record->save_defaults();
@@ -116,6 +123,75 @@ int ChannelEditThread::close_threads()
 	}
 }
 
+char *ChannelEditThread::value_to_freqtable(int value)
+{
+	switch(value)
+	{
+		case NTSC_BCAST:
+			return _("NTSC_BCAST");
+			break;
+		case NTSC_CABLE:
+			return _("NTSC_CABLE");
+			break;
+		case NTSC_HRC:
+			return _("NTSC_HRC");
+			break;
+		case NTSC_BCAST_JP:
+			return _("NTSC_BCAST_JP");
+			break;
+		case NTSC_CABLE_JP:
+			return _("NTSC_CABLE_JP");
+			break;
+		case PAL_AUSTRALIA:
+			return _("PAL_AUSTRALIA");
+			break;
+		case PAL_EUROPE:
+			return _("PAL_EUROPE");
+			break;
+		case PAL_E_EUROPE:
+			return _("PAL_E_EUROPE");
+			break;
+		case PAL_ITALY:
+			return _("PAL_ITALY");
+			break;
+		case PAL_IRELAND:
+			return _("PAL_IRELAND");
+			break;
+		case PAL_NEWZEALAND:
+			return _("PAL_NEWZEALAND");
+			break;
+	}
+}
+
+char* ChannelEditThread::value_to_norm(int value)
+{
+	switch(value)
+	{
+		case NTSC:
+			return _("NTSC");
+			break;
+		case PAL:
+			return _("PAL");
+			break;
+		case SECAM:
+			return _("SECAM");
+			break;
+	}
+}
+
+char* ChannelEditThread::value_to_input(int value)
+{
+	if(channel_picker->get_video_inputs()->total > value)
+		return channel_picker->get_video_inputs()->values[value]->device_name;
+	else
+		return _("None");
+}
+
+
+
+
+
+
 
 ChannelEditWindow::ChannelEditWindow(MWindow *mwindow, 
 	ChannelEditThread *thread, 
@@ -123,10 +199,10 @@ ChannelEditWindow::ChannelEditWindow(MWindow *mwindow,
  : BC_Window(PROGRAM_NAME ": Channels", 
  	mwindow->gui->get_abs_cursor_x(1) - 330, 
 	mwindow->gui->get_abs_cursor_y(1), 
-	330, 
-	330, 
-	330, 
-	330,
+	350, 
+	400, 
+	350, 
+	400,
 	0,
 	0,
 	1)
@@ -134,6 +210,7 @@ ChannelEditWindow::ChannelEditWindow(MWindow *mwindow,
 	this->thread = thread;
 	this->channel_picker = channel_picker;
 	this->mwindow = mwindow;
+	scan_confirm_thread = 0;
 }
 ChannelEditWindow::~ChannelEditWindow()
 {
@@ -145,6 +222,7 @@ ChannelEditWindow::~ChannelEditWindow()
 	channel_list.remove_all();
 	delete edit_thread;
 	delete picture_thread;
+	delete scan_confirm_thread;
 }
 
 int ChannelEditWindow::create_objects()
@@ -173,6 +251,15 @@ int ChannelEditWindow::create_objects()
 	y += 30;
 	add_subwindow(new ChannelEditMoveDown(mwindow, this, x, y));
 	y += 30;
+	add_subwindow(new ChannelEditSort(mwindow, this, x, y));
+	y += 30;
+
+	Channel *channel_usage = channel_picker->get_channel_usage();
+	if(channel_usage->has_scanning)
+	{
+		add_subwindow(new ChannelEditScan(mwindow, this, x, y));
+		y += 30;
+	}
 	add_subwindow(new ChannelEditDel(mwindow, this, x, y));
 	y += 30;
 	add_subwindow(new ChannelEditPicture(mwindow, this, x, y));
@@ -236,6 +323,15 @@ int ChannelEditWindow::add_channel()
 
 int ChannelEditWindow::update_list()
 {
+// Create channel list
+	channel_list.remove_all_objects();
+	for(int i = 0; i < thread->new_channels->size(); i++)
+	{
+		channel_list.append(
+			new BC_ListBoxItem(
+				thread->new_channels->get(i)->title));
+	}
+
 	list_box->update(&channel_list, 0, 0, 1, list_box->get_yposition());
 }
 
@@ -270,6 +366,53 @@ int ChannelEditWindow::edit_picture()
 {
 	picture_thread->edit_picture();
 }
+
+void ChannelEditWindow::scan_confirm()
+{
+	thread->scan_params.load_defaults(mwindow->defaults);
+	if(!scan_confirm_thread) scan_confirm_thread = new ConfirmScanThread(this);
+	unlock_window();
+	scan_confirm_thread->start();
+	lock_window("ChannelEditWindow::scan_confirm");
+}
+
+void ChannelEditWindow::scan()
+{
+	thread->new_channels->clear();
+	update_list();
+
+	if(!thread->scan_thread) thread->scan_thread = new ScanThread(thread);
+	thread->scan_thread->start();
+}
+
+
+void ChannelEditWindow::sort()
+{
+	int done = 0;
+	while(!done)
+	{
+		done = 1;
+		for(int i = 0; i < thread->new_channels->size() - 1; i++)
+		{
+			Channel *channel1 = thread->new_channels->get(i);
+			Channel *channel2 = thread->new_channels->get(i + 1);
+			int is_num = 1;
+			for(int j = 0; j < strlen(channel1->title); j++)
+				if(!isdigit(channel1->title[j])) is_num = 0;
+			for(int j = 0; j < strlen(channel2->title); j++)
+				if(!isdigit(channel2->title[j])) is_num = 0;
+			if(is_num && atoi(channel1->title) > atoi(channel2->title) ||
+				!is_num && strcasecmp(channel2->title, channel1->title) < 0)
+			{
+				thread->new_channels->set(i, channel2);
+				thread->new_channels->set(i + 1, channel1);
+				done = 0;
+			}
+		}
+	}
+	update_list();
+}
+
 
 int ChannelEditWindow::delete_channel(int number)
 {
@@ -393,7 +536,7 @@ ChannelEditList::ChannelEditList(MWindow *mwindow, ChannelEditWindow *window, in
  : BC_ListBox(x, 
  			y, 
 			185, 
-			250, 
+			window->get_h() - BC_OKButton::calculate_h() - y - 10, 
 			LISTBOX_TEXT, 
 			&(window->channel_list))
 {
@@ -437,6 +580,28 @@ int ChannelEditMoveDown::handle_event()
 	unlock_window();
 }
 
+ChannelEditSort::ChannelEditSort(MWindow *mwindow, ChannelEditWindow *window, int x, int y)
+ : BC_GenericButton(x, y, _("Sort"))
+{
+	this->window = window;
+}
+int ChannelEditSort::handle_event()
+{
+	lock_window("ChannelEditSort::handle_event");
+	window->sort();
+	unlock_window();
+}
+
+ChannelEditScan::ChannelEditScan(MWindow *mwindow, ChannelEditWindow *window, int x, int y)
+ : BC_GenericButton(x, y, _("Scan"))
+{
+	this->window = window;
+}
+int ChannelEditScan::handle_event()
+{
+	window->scan_confirm();
+}
+
 ChannelEditDel::ChannelEditDel(MWindow *mwindow, ChannelEditWindow *window, int x, int y)
  : BC_GenericButton(x, y, _("Delete"))
 {
@@ -475,6 +640,199 @@ int ChannelEditPicture::handle_event()
 {
 	window->edit_picture();
 }
+
+
+
+
+
+
+
+
+
+
+
+
+// ========================= confirm overwrite by channel scannin
+
+
+ConfirmScan::ConfirmScan(ChannelEditWindow *gui, int x, int y)
+ : BC_Window(PROGRAM_NAME ": Scan confirm",
+ 	x,
+	y,
+	350,
+	BC_OKButton::calculate_h() + 130,
+	0,
+	0,
+	0,
+	0,
+	1)
+{
+	this->gui = gui;
+}
+
+void ConfirmScan::create_objects()
+{
+	int x = 10, y = 10;
+	int y2 = 0, x2 = 0;
+	BC_Title *title;
+	add_subwindow(title = new BC_Title(x, y, _("Set parameters for channel scanning.")));
+	y += title->get_h() + 10;
+	y2 = y;
+
+	add_subwindow(title = new BC_Title(x, y, _("Frequency table:")));
+	x2 = title->get_w();
+	y += BC_PopupMenu::calculate_h();
+	add_subwindow(title = new BC_Title(x, y, _("Norm:")));
+	x2 = MAX(x2, title->get_w());
+	y += BC_PopupMenu::calculate_h();
+	add_subwindow(title = new BC_Title(x, y, _("Input:")));
+	x2 = MAX(x2, title->get_w());
+	y += BC_PopupMenu::calculate_h();
+	x2 += x + 5;
+
+	y = y2;
+	x = x2;
+	ChannelEditEditFreqtable *table;
+	add_subwindow(table = new ChannelEditEditFreqtable(x, 
+		y, 
+		0, 
+		gui->thread));
+	table->add_items();
+	y += table->get_h() + 10;
+
+	ChannelEditEditNorm *norm;
+	add_subwindow(norm = new ChannelEditEditNorm(x, 
+		y, 
+		0,
+		gui->thread));
+	norm->add_items();
+	y += norm->get_h() + 10;
+
+	ChannelEditEditInput *input;
+	add_subwindow(input = new ChannelEditEditInput(x, 
+		y, 
+		0, 
+		gui->thread));
+	input->add_items();
+
+
+	add_subwindow(new BC_OKButton(this));
+	add_subwindow(new BC_CancelButton(this));
+	show_window();
+}
+
+
+
+
+
+
+
+ConfirmScanThread::ConfirmScanThread(ChannelEditWindow *gui)
+ : BC_DialogThread()
+{
+	this->gui = gui;
+}
+
+void ConfirmScanThread::handle_done_event(int result)
+{
+	gui->thread->scan_params.save_defaults(gui->thread->mwindow->defaults);
+	if(!result)
+	{
+		get_gui()->hide_window();
+		gui->lock_window("ConfirmScanThread::handle_done_event");
+		gui->scan();
+		gui->unlock_window();
+	}
+}
+
+BC_Window* ConfirmScanThread::new_gui()
+{
+	int x = gui->get_abs_cursor_x(1);
+	int y = gui->get_abs_cursor_y(1);
+	ConfirmScan *result = new ConfirmScan(gui, x, y);
+	result->create_objects();
+	return result;
+}
+
+
+
+
+
+
+ScanThread::ScanThread(ChannelEditThread *edit)
+ : Thread(1, 0, 0)
+{
+	this->edit = edit;
+	interrupt = 0;
+	progress = 0;
+}
+
+ScanThread::~ScanThread()
+{
+	interrupt = 1;
+	Thread::join();
+
+	delete progress;
+}
+
+
+void ScanThread::start()
+{
+// Cancel previous job
+	interrupt = 1;
+	Thread::join();
+	delete progress;
+	interrupt = 0;
+
+
+	progress = edit->mwindow->mainprogress->start_progress("Scanning", 
+		chanlists[edit->scan_params.freqtable].count, 
+		1);
+	Thread::start();
+}
+
+void ScanThread::run()
+{
+	for(int i = 0; 
+		i < chanlists[edit->scan_params.freqtable].count &&
+			!interrupt && 
+			!progress->is_cancelled();
+		i++)
+	{
+		edit->scan_params.entry = i;
+		char string[BCTEXTLEN];
+		sprintf(edit->scan_params.title, 
+			"%s", 
+			chanlists[edit->scan_params.freqtable].list[i].name);
+		sprintf(string, 
+			"Scanning %s", 
+			edit->scan_params.title);
+		progress->update_title(string);
+		progress->update(i);
+		edit->channel_picker->set_channel(&edit->scan_params);
+
+
+		sleep(2);
+
+	    int got_signal = edit->channel_picker->has_signal();
+		if(got_signal)
+		{
+			Channel *new_channel = new Channel;
+			new_channel->copy_usage(&edit->scan_params);
+			new_channel->copy_settings(&edit->scan_params);
+			edit->window->lock_window("ScanThread::run");
+			edit->new_channels->append(new_channel);
+			edit->window->update_list();
+			edit->window->unlock_window();
+		}
+	}
+	delete progress;
+	progress = 0;
+}
+
+
+
+
 
 
 
@@ -537,69 +895,6 @@ int ChannelEditEditThread::edit_channel(Channel *channel, int editing)
 	Thread::start();
 }
 
-char *ChannelEditEditThread::value_to_freqtable(int value)
-{
-	switch(value)
-	{
-		case NTSC_BCAST:
-			return _("NTSC_BCAST");
-			break;
-		case NTSC_CABLE:
-			return _("NTSC_CABLE");
-			break;
-		case NTSC_HRC:
-			return _("NTSC_HRC");
-			break;
-		case NTSC_BCAST_JP:
-			return _("NTSC_BCAST_JP");
-			break;
-		case NTSC_CABLE_JP:
-			return _("NTSC_CABLE_JP");
-			break;
-		case PAL_AUSTRALIA:
-			return _("PAL_AUSTRALIA");
-			break;
-		case PAL_EUROPE:
-			return _("PAL_EUROPE");
-			break;
-		case PAL_E_EUROPE:
-			return _("PAL_E_EUROPE");
-			break;
-		case PAL_ITALY:
-			return _("PAL_ITALY");
-			break;
-		case PAL_IRELAND:
-			return _("PAL_IRELAND");
-			break;
-		case PAL_NEWZEALAND:
-			return _("PAL_NEWZEALAND");
-			break;
-	}
-}
-
-char* ChannelEditEditThread::value_to_norm(int value)
-{
-	switch(value)
-	{
-		case NTSC:
-			return _("NTSC");
-			break;
-		case PAL:
-			return _("PAL");
-			break;
-		case SECAM:
-			return _("SECAM");
-			break;
-	}
-}
-
-char* ChannelEditEditThread::value_to_input(int value)
-{
-	if(channel_picker->get_video_inputs()->total > value)
-		return channel_picker->get_video_inputs()->values[value]->device_name;
-	else
-		return _("None");
-}
 
 void ChannelEditEditThread::set_device()
 {
@@ -702,9 +997,9 @@ ChannelEditEditWindow::ChannelEditEditWindow(ChannelEditEditThread *thread,
  	channel_picker->mwindow->gui->get_abs_cursor_x(1), 
 	channel_picker->mwindow->gui->get_abs_cursor_y(1), 
  	390, 
-	270, 
+	300, 
 	390, 
-	270,
+	300,
 	0,
 	0,
 	1)
@@ -749,7 +1044,10 @@ int ChannelEditEditWindow::create_objects(Channel *channel)
 
 		add_subwindow(new BC_Title(x, y, _("Frequency table:")));
 		ChannelEditEditFreqtable *table;
-		add_subwindow(table = new ChannelEditEditFreqtable(x + 130, y, thread));
+		add_subwindow(table = new ChannelEditEditFreqtable(x + 130, 
+			y, 
+			thread, 
+			window->thread));
 		table->add_items();
 		y += 30;
 	}
@@ -765,7 +1063,10 @@ int ChannelEditEditWindow::create_objects(Channel *channel)
 	{
 		add_subwindow(new BC_Title(x, y, _("Norm:")));
 		ChannelEditEditNorm *norm;
-		add_subwindow(norm = new ChannelEditEditNorm(x + 130, y, thread));
+		add_subwindow(norm = new ChannelEditEditNorm(x + 130, 
+			y, 
+			thread,
+			window->thread));
 		norm->add_items();
 		y += 30;
 	}
@@ -774,14 +1075,17 @@ int ChannelEditEditWindow::create_objects(Channel *channel)
 	{
 		add_subwindow(new BC_Title(x, y, _("Input:")));
 		ChannelEditEditInput *input;
-		add_subwindow(input = new ChannelEditEditInput(x + 130, y, thread, thread->record));
+		add_subwindow(input = new ChannelEditEditInput(x + 130, 
+			y, 
+			thread, 
+			window->thread));
 		input->add_items();
 		y += 30;
 	}
 
-	add_subwindow(new BC_OKButton(x, y));
+	add_subwindow(new BC_OKButton(this));
 	x += 200;
-	add_subwindow(new BC_CancelButton(x, y));
+	add_subwindow(new BC_CancelButton(this));
 	show_window();
 	return 0;
 }
@@ -842,11 +1146,17 @@ int ChannelEditEditSourceTumbler::handle_down_event()
 	thread->source_down();
 }
 
-ChannelEditEditInput::ChannelEditEditInput(int x, int y, ChannelEditEditThread *thread, Record *record)
- : BC_PopupMenu(x, y, 150, thread->value_to_input(thread->new_channel.input))
+ChannelEditEditInput::ChannelEditEditInput(int x, 
+	int y, 
+	ChannelEditEditThread *thread, 
+	ChannelEditThread *edit)
+ : BC_PopupMenu(x, 
+ 	y, 
+	150, 
+	edit->value_to_input(thread ? thread->new_channel.input : edit->scan_params.input))
 {
 	this->thread = thread;
-	this->record = record;
+	this->edit = edit;
 }
 ChannelEditEditInput::~ChannelEditEditInput()
 {
@@ -854,12 +1164,15 @@ ChannelEditEditInput::~ChannelEditEditInput()
 int ChannelEditEditInput::add_items()
 {
 	ArrayList<Channel*> *inputs;
-	inputs = thread->channel_picker->get_video_inputs();
-	
+	inputs = edit->channel_picker->get_video_inputs();
+
 	if(inputs)
 		for(int i = 0; i < inputs->total; i++)
 		{
-			add_item(new ChannelEditEditInputItem(thread, inputs->values[i]->device_name, i));
+			add_item(new ChannelEditEditInputItem(thread, 
+				edit,
+				inputs->values[i]->device_name, 
+				i));
 		}
 }
 int ChannelEditEditInput::handle_event()
@@ -867,10 +1180,14 @@ int ChannelEditEditInput::handle_event()
 	return 0;
 }
 
-ChannelEditEditInputItem::ChannelEditEditInputItem(ChannelEditEditThread *thread, char *text, int value)
+ChannelEditEditInputItem::ChannelEditEditInputItem(ChannelEditEditThread *thread, 
+	ChannelEditThread *edit,
+	char *text, 
+	int value)
  : BC_MenuItem(text)
 {
 	this->thread = thread;
+	this->edit = edit;
 	this->value = value;
 }
 ChannelEditEditInputItem::~ChannelEditEditInputItem()
@@ -879,7 +1196,7 @@ ChannelEditEditInputItem::~ChannelEditEditInputItem()
 int ChannelEditEditInputItem::handle_event()
 {
 	get_popup_menu()->set_text(get_text());
-	if(!thread->user_title)
+	if(thread && !thread->user_title)
 	{
 		strcpy(thread->new_channel.title, get_text());
 		if(thread->edit_window->title_text)
@@ -887,30 +1204,50 @@ int ChannelEditEditInputItem::handle_event()
 			thread->edit_window->title_text->update(get_text());
 		}
 	}
-	thread->set_input(value);
+	if(thread) 
+		thread->set_input(value);
+	else
+		edit->scan_params.input = value;
 }
 
-ChannelEditEditNorm::ChannelEditEditNorm(int x, int y, ChannelEditEditThread *thread)
- : BC_PopupMenu(x, y, 100, thread->value_to_norm(thread->new_channel.norm))
+ChannelEditEditNorm::ChannelEditEditNorm(int x, 
+	int y, 
+	ChannelEditEditThread *thread,
+	ChannelEditThread *edit)
+ : BC_PopupMenu(x, 
+ 	y, 
+	100, 
+	edit->value_to_norm(thread ? thread->new_channel.norm : edit->scan_params.norm))
 {
 	this->thread = thread;
+	this->edit = edit;
 }
 ChannelEditEditNorm::~ChannelEditEditNorm()
 {
 }
 int ChannelEditEditNorm::add_items()
 {
-	add_item(new ChannelEditEditNormItem(thread, thread->value_to_norm(NTSC), NTSC));
-	add_item(new ChannelEditEditNormItem(thread, thread->value_to_norm(PAL), PAL));
-	add_item(new ChannelEditEditNormItem(thread, thread->value_to_norm(SECAM), SECAM));
+	add_item(new ChannelEditEditNormItem(thread, 
+		edit, 
+		edit->value_to_norm(NTSC), NTSC));
+	add_item(new ChannelEditEditNormItem(thread, 
+		edit, 
+		edit->value_to_norm(PAL), PAL));
+	add_item(new ChannelEditEditNormItem(thread, 
+		edit, 
+		edit->value_to_norm(SECAM), SECAM));
 	return 0;
 }
 
 
-ChannelEditEditNormItem::ChannelEditEditNormItem(ChannelEditEditThread *thread, char *text, int value)
+ChannelEditEditNormItem::ChannelEditEditNormItem(ChannelEditEditThread *thread, 
+	ChannelEditThread *edit,
+	char *text, 
+	int value)
  : BC_MenuItem(text)
 {
 	this->value = value;
+	this->edit = edit;
 	this->thread = thread;
 }
 ChannelEditEditNormItem::~ChannelEditEditNormItem()
@@ -919,38 +1256,51 @@ ChannelEditEditNormItem::~ChannelEditEditNormItem()
 int ChannelEditEditNormItem::handle_event()
 {
 	get_popup_menu()->set_text(get_text());
-	thread->set_norm(value);
+	if(thread)
+		thread->set_norm(value);
+	else
+		edit->scan_params.norm = value;
 }
 
 
-ChannelEditEditFreqtable::ChannelEditEditFreqtable(int x, int y, ChannelEditEditThread *thread)
- : BC_PopupMenu(x, y, 150, thread->value_to_freqtable(thread->new_channel.freqtable))
+ChannelEditEditFreqtable::ChannelEditEditFreqtable(int x, 
+	int y, 
+	ChannelEditEditThread *thread,
+	ChannelEditThread *edit)
+ : BC_PopupMenu(x, 
+ 	y, 
+	150, 
+	edit->value_to_freqtable(thread ? thread->new_channel.freqtable : edit->scan_params.freqtable))
 {
 	this->thread = thread;
+	this->edit = edit;
 }
 ChannelEditEditFreqtable::~ChannelEditEditFreqtable()
 {
 }
 int ChannelEditEditFreqtable::add_items()
 {
-	add_item(new ChannelEditEditFreqItem(thread, thread->value_to_freqtable(NTSC_BCAST), NTSC_BCAST));
-	add_item(new ChannelEditEditFreqItem(thread, thread->value_to_freqtable(NTSC_CABLE), NTSC_CABLE));
-	add_item(new ChannelEditEditFreqItem(thread, thread->value_to_freqtable(NTSC_HRC), NTSC_HRC));
-	add_item(new ChannelEditEditFreqItem(thread, thread->value_to_freqtable(NTSC_BCAST_JP), NTSC_BCAST_JP));
-	add_item(new ChannelEditEditFreqItem(thread, thread->value_to_freqtable(NTSC_CABLE_JP), NTSC_CABLE_JP));
-	add_item(new ChannelEditEditFreqItem(thread, thread->value_to_freqtable(PAL_AUSTRALIA), PAL_AUSTRALIA));
-	add_item(new ChannelEditEditFreqItem(thread, thread->value_to_freqtable(PAL_EUROPE), PAL_EUROPE));
-	add_item(new ChannelEditEditFreqItem(thread, thread->value_to_freqtable(PAL_E_EUROPE), PAL_E_EUROPE));
-	add_item(new ChannelEditEditFreqItem(thread, thread->value_to_freqtable(PAL_ITALY), PAL_ITALY));
-	add_item(new ChannelEditEditFreqItem(thread, thread->value_to_freqtable(PAL_IRELAND), PAL_IRELAND));
-	add_item(new ChannelEditEditFreqItem(thread, thread->value_to_freqtable(PAL_NEWZEALAND), PAL_NEWZEALAND));
+	add_item(new ChannelEditEditFreqItem(thread, edit, edit->value_to_freqtable(NTSC_BCAST), NTSC_BCAST));
+	add_item(new ChannelEditEditFreqItem(thread, edit, edit->value_to_freqtable(NTSC_CABLE), NTSC_CABLE));
+	add_item(new ChannelEditEditFreqItem(thread, edit, edit->value_to_freqtable(NTSC_HRC), NTSC_HRC));
+	add_item(new ChannelEditEditFreqItem(thread, edit, edit->value_to_freqtable(NTSC_BCAST_JP), NTSC_BCAST_JP));
+	add_item(new ChannelEditEditFreqItem(thread, edit, edit->value_to_freqtable(NTSC_CABLE_JP), NTSC_CABLE_JP));
+	add_item(new ChannelEditEditFreqItem(thread, edit, edit->value_to_freqtable(PAL_AUSTRALIA), PAL_AUSTRALIA));
+	add_item(new ChannelEditEditFreqItem(thread, edit, edit->value_to_freqtable(PAL_EUROPE), PAL_EUROPE));
+	add_item(new ChannelEditEditFreqItem(thread, edit, edit->value_to_freqtable(PAL_E_EUROPE), PAL_E_EUROPE));
+	add_item(new ChannelEditEditFreqItem(thread, edit, edit->value_to_freqtable(PAL_ITALY), PAL_ITALY));
+	add_item(new ChannelEditEditFreqItem(thread, edit, edit->value_to_freqtable(PAL_IRELAND), PAL_IRELAND));
+	add_item(new ChannelEditEditFreqItem(thread, edit, edit->value_to_freqtable(PAL_NEWZEALAND), PAL_NEWZEALAND));
 	return 0;
 }
 
-ChannelEditEditFreqItem::ChannelEditEditFreqItem(ChannelEditEditThread *thread, char *text, int value)
+ChannelEditEditFreqItem::ChannelEditEditFreqItem(ChannelEditEditThread *thread, 
+	ChannelEditThread *edit,
+	char *text, int value)
  : BC_MenuItem(text)
 {
 	this->value = value;
+	this->edit = edit;
 	this->thread = thread;
 }
 ChannelEditEditFreqItem::~ChannelEditEditFreqItem()
@@ -959,12 +1309,17 @@ ChannelEditEditFreqItem::~ChannelEditEditFreqItem()
 int ChannelEditEditFreqItem::handle_event()
 {
 	get_popup_menu()->set_text(get_text());
-	thread->set_freqtable(value);
+	if(thread)
+		thread->set_freqtable(value);
+	else
+		edit->scan_params.freqtable = value;
 }
 
 
 
-ChannelEditEditFine::ChannelEditEditFine(int x, int y, ChannelEditEditThread *thread)
+ChannelEditEditFine::ChannelEditEditFine(int x, 
+	int y, 
+	ChannelEditEditThread *thread)
  : BC_ISlider(x, 
  		y, 
 		0, 
@@ -1019,7 +1374,8 @@ int ChannelEditPictureThread::edit_picture()
 
 void ChannelEditPictureThread::run()
 {
-	ChannelEditPictureWindow edit_window(this, channel_picker);
+	ChannelEditPictureWindow edit_window(this, 
+		channel_picker);
 	edit_window.create_objects();
 	this->edit_window = &edit_window;
 	int result = edit_window.run_window();
@@ -1039,14 +1395,15 @@ int ChannelEditPictureThread::close_threads()
 }
 
 
-ChannelEditPictureWindow::ChannelEditPictureWindow(ChannelEditPictureThread *thread, ChannelPicker *channel_picker)
+ChannelEditPictureWindow::ChannelEditPictureWindow(ChannelEditPictureThread *thread, 
+	ChannelPicker *channel_picker)
  : BC_Window(PROGRAM_NAME ": Picture", 
  	channel_picker->mwindow->gui->get_abs_cursor_x(1) - 200, 
 	channel_picker->mwindow->gui->get_abs_cursor_y(1) - 220, 
  	200, 
-	250, 
+	calculate_h(channel_picker), 
 	200, 
-	250)
+	calculate_h(channel_picker))
 {
 	this->thread = thread;
 	this->channel_picker = channel_picker;
@@ -1054,13 +1411,35 @@ ChannelEditPictureWindow::ChannelEditPictureWindow(ChannelEditPictureThread *thr
 ChannelEditPictureWindow::~ChannelEditPictureWindow()
 {
 }
+
+int ChannelEditPictureWindow::calculate_h(ChannelPicker *channel_picker)
+{
+	PictureConfig *picture_usage = channel_picker->get_picture_usage();
+	int pad = BC_Pot::calculate_h();
+	int result = 20 + BC_OKButton::calculate_h();
+
+	if(picture_usage->use_brightness)
+		result += pad;
+	if(picture_usage->use_contrast)
+		result += pad;
+	if(picture_usage->use_color)
+		result += pad;
+	if(picture_usage->use_hue)
+		result += pad;
+	if(picture_usage->use_whiteness)
+		result += pad;
+	result += channel_picker->get_controls() * pad;
+	return result;
+}
+
 int ChannelEditPictureWindow::create_objects()
 {
 	int x = 10, y = 10;
 	int x1 = 110, x2 = 145;
+	int pad = BC_Pot::calculate_h();
 #define SWAP_X x1 ^= x2; x2 ^= x1; x1 ^= x2;
 
-	Picture *picture_usage = channel_picker->get_picture_usage();
+	PictureConfig *picture_usage = channel_picker->get_picture_usage();
 
 	if(!picture_usage ||
 		(!picture_usage->use_brightness &&
@@ -1078,7 +1457,7 @@ int ChannelEditPictureWindow::create_objects()
 	{
 		add_subwindow(new BC_Title(x, y + 10, _("Brightness:")));
 		add_subwindow(new ChannelEditBright(x1, y, channel_picker, channel_picker->get_brightness()));
-		y += 30;
+		y += pad;
 		SWAP_X
 		
 	}
@@ -1087,7 +1466,7 @@ int ChannelEditPictureWindow::create_objects()
 	{
 		add_subwindow(new BC_Title(x, y + 10, _("Contrast:")));
 		add_subwindow(new ChannelEditContrast(x1, y, channel_picker, channel_picker->get_contrast()));
-		y += 30;
+		y += pad;
 		SWAP_X
 	}
 
@@ -1095,7 +1474,7 @@ int ChannelEditPictureWindow::create_objects()
 	{
 		add_subwindow(new BC_Title(x, y + 10, _("Color:")));
 		add_subwindow(new ChannelEditColor(x1, y, channel_picker, channel_picker->get_color()));
-		y += 30;
+		y += pad;
 		SWAP_X
 	}
 
@@ -1103,7 +1482,7 @@ int ChannelEditPictureWindow::create_objects()
 	{
 		add_subwindow(new BC_Title(x, y + 10, _("Hue:")));
 		add_subwindow(new ChannelEditHue(x1, y, channel_picker, channel_picker->get_hue()));
-		y += 30;
+		y += pad;
 		SWAP_X
 	}
 
@@ -1111,7 +1490,7 @@ int ChannelEditPictureWindow::create_objects()
 	{
 		add_subwindow(new BC_Title(x, y + 10, _("Whiteness:")));
 		add_subwindow(new ChannelEditWhiteness(x1, y, channel_picker, channel_picker->get_whiteness()));
-		y += 30;
+		y += pad;
 		SWAP_X
 	}
 
@@ -1124,13 +1503,13 @@ int ChannelEditPictureWindow::create_objects()
 			y, 
 			channel_picker,
 			channel_picker->get_control(i)));
-		y += 30;
+		y += pad;
 		SWAP_X
 	}
 
 
-	y += 20;
-	add_subwindow(new BC_OKButton(x + 70, y));
+	y += pad;
+	add_subwindow(new BC_OKButton(this));
 	return 0;
 }
 

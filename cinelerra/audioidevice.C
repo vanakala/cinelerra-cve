@@ -121,7 +121,6 @@ int AudioDevice::read_buffer(double **input,
 	input_channels = get_ichannels();
 	frame = input_channels * bits / 8;
 
-	//if(bits == 24) frame = 4;
 	dither_scale = 0;
 	total_samples_read += samples;
 
@@ -310,7 +309,7 @@ int AudioDevice::read_buffer(double **input,
 	if(dc_offset_thread->getting_dc_offset) 
 	{
 		dc_offset_thread->dc_offset_count += samples * channels;
-		if(dc_offset_thread->progress->update(dc_offset_thread->dc_offset_count))
+		if(dc_offset_thread->progress->update(dc_offset_thread->dc_offset_count, 1))
 		{
 			dc_offset_thread->getting_dc_offset = 0;
 			dc_offset_thread->dc_offset_lock->unlock();

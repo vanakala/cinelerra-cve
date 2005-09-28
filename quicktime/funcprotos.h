@@ -10,6 +10,7 @@ int quicktime_atom_write_header64(quicktime_t *file, quicktime_atom_t *atom, cha
 int64_t quicktime_byte_position(quicktime_t *file);
 // Used internally to replace ftello values
 int64_t quicktime_ftell(quicktime_t *file);
+int quicktime_atom_is(quicktime_atom_t *atom, unsigned char *type);
 
 quicktime_trak_t* quicktime_add_track(quicktime_t *file);
 
@@ -55,10 +56,12 @@ int quicktime_match_32(char *input, char *output);
 int quicktime_match_24(char *input, char *output);
 void quicktime_write_pascal(quicktime_t *file, char *data);
 int quicktime_read_data(quicktime_t *file, char *data, int64_t size);
+/* Quantize the number to the nearest multiple of 16 */
+/* Used by ffmpeg codecs */
+int quicktime_quantize16(int number);
+int quicktime_quantize32(int number);
 
-/* Most codecs don't specify the actual number of bits on disk in the stbl. */
-/* Convert the samples to the number of bytes for reading depending on the codec. */
-int64_t quicktime_samples_to_bytes(quicktime_trak_t *track, long samples);
+
 
 /* Convert Microsoft audio id to codec */
 void quicktime_id_to_codec(char *result, int id);
@@ -69,11 +72,27 @@ int quicktime_find_acodec(quicktime_audio_map_t *atrack);
 
 
 
+/* Track functions */
+
+
+/* Most codecs don't specify the actual number of bits on disk in the stbl. */
+/* Convert the samples to the number of bytes for reading depending on the codec. */
+int64_t quicktime_samples_to_bytes(quicktime_trak_t *track, long samples);
+
+char* quicktime_compressor(quicktime_trak_t *trak);
+
+/* Get median duration of video frames for calculating frame rate. */
+int quicktime_sample_duration(quicktime_trak_t *trak);
+
+/* Get alternative mpeg4 parameters from esds table */
+void quicktime_esds_samplerate(quicktime_stsd_table_t *table, 
+	quicktime_esds_t *esds);
 
 
 
 /* Graphics */
 quicktime_scaletable_t* quicktime_new_scaletable(int input_w, int input_h, int output_w, int output_h);
+
 
 
 /* chunks always start on 1 */
@@ -131,19 +150,31 @@ void quicktime_read_hdrl(quicktime_t *file,
 	quicktime_atom_t *parent_atom);
 void quicktime_init_hdrl(quicktime_t *file, quicktime_hdrl_t *hdrl);
 void quicktime_finalize_hdrl(quicktime_t *file, quicktime_hdrl_t *hdrl);
+
+
+void quicktime_delete_esds(quicktime_esds_t *esds);
 void quicktime_read_esds(quicktime_t *file, 
 	quicktime_atom_t *parent_atom, 
-	quicktime_stsd_table_t *table);
+	quicktime_esds_t *esds);
 void quicktime_write_esds(quicktime_t *file, 
-	quicktime_stsd_table_t *table,
+	quicktime_esds_t *esds,
 	int do_video,
 	int do_audio);
 // Set esds header to a copy of the argument
 void quicktime_set_mpeg4_header(quicktime_stsd_table_t *table,
 	unsigned char *data, 
 	int size);
+void quicktime_esds_dump(quicktime_esds_t *esds);
 
 
+void quicktime_delete_avcc(quicktime_avcc_t *avcc);
+int quicktime_read_avcc(quicktime_t *file, 
+	quicktime_atom_t *parent_atom,
+	quicktime_avcc_t *avcc);
+void quicktime_avcc_dump(quicktime_avcc_t *avcc);
+void quicktime_set_avcc_header(quicktime_avcc_t *avcc,
+	unsigned char *data, 
+	int size);
 
 
 
@@ -292,6 +323,15 @@ quicktime_trak_t* quicktime_add_trak(quicktime_t *file);
 
 int quicktime_time_to_sample(quicktime_stts_t *stts,
 	int64_t *start_time);
+/* Used by VBR to append a sample of known duration to the table. */
+/* Overrides any previous fixed bitrate entry. */
+/* Sets the is_vbr flag to prevent post processing of the table. */
+void quicktime_stts_append_audio(quicktime_t *file, 
+	quicktime_stts_t *stts, 
+	int sample_duration);
+/* Get total stts samples for VBR encoding. */
+int64_t quicktime_stts_total_samples(quicktime_t *file, 
+	quicktime_stts_t *stts);
 
 
 void quicktime_write_chunk_header(quicktime_t *file, 
@@ -301,6 +341,12 @@ void quicktime_write_chunk_footer(quicktime_t *file,
 	quicktime_trak_t *trak,
 	int current_chunk,
 	quicktime_atom_t *chunk, 
+	int samples);
+/* Write VBR frame */
+int quicktime_write_vbr_frame(quicktime_t *file, 
+	int track,
+	char *data,
+	int data_size,
 	int samples);
 /* update all the tables after writing a buffer */
 /* set sample_size to 0 if no sample size should be set */
@@ -401,7 +447,12 @@ unsigned long quicktime_current_time(void);
 
 
 
-// Utility functions for vbr audio codecs
+
+
+
+
+
+// Utility functions for decoding vbr audio codecs
 
 // Delete buffers from the vbr structure when finished
 void quicktime_clear_vbr(quicktime_vbr_t  *ptr);
@@ -412,13 +463,20 @@ void quicktime_init_vbr(quicktime_vbr_t *ptr, int channels);
 // Return 1 if not possible to handle the sample count.
 int quicktime_align_vbr(quicktime_audio_map_t *atrack, 
 	int samples);
+
 // The current endpoint of the buffer
 int64_t quicktime_vbr_end(quicktime_vbr_t  *ptr);
 unsigned char* quicktime_vbr_input(quicktime_vbr_t *ptr);
 int quicktime_vbr_input_size(quicktime_vbr_t *ptr);
-// Read the next sample/frame of compressed data and advance the counters.
+
+// Append the next sample/frame of compressed data to the input buffer
+// and advance the counters.
 int quicktime_read_vbr(quicktime_t *file,
 	quicktime_audio_map_t *atrack);
+
+// Shift the input buffer
+void quicktime_shift_vbr(quicktime_audio_map_t *atrack, int bytes);
+
 // Put the next sample/frame of uncompressed data in the buffer and advance the
 // counters
 void quicktime_store_vbr_float(quicktime_audio_map_t *atrack,
@@ -430,6 +488,11 @@ void quicktime_copy_vbr_float(quicktime_vbr_t *vbr,
 	int samples,
 	float *output, 
 	int channel);
+
+
+
+
+
 
 
 #endif

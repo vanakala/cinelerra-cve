@@ -244,7 +244,7 @@ int MeterMeter::button_press_event()
 MeterShow::MeterShow(MWindow *mwindow, MeterPanel *panel, int x, int y)
  : BC_Toggle(x, 
  		y, 
-		mwindow->theme->show_meters, 
+		mwindow->theme->get_image_set("meters"), 
 		panel->use_meters)
 {
 	this->mwindow = mwindow;

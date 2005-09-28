@@ -125,7 +125,7 @@ int VDeviceV4L::v4l_init()
 		device->in_config->w = window_params.width;
 		device->in_config->h = window_params.height;
 
-		Picture picture;
+		PictureConfig picture(0);
 		set_picture(&picture);
 
 		if(ioctl(input_fd, VIDIOCGMBUF, &capture_params) < 0)
@@ -341,13 +341,13 @@ int VDeviceV4L::v4l1_get_norm(int norm)
 	return 0;
 }
 
-int VDeviceV4L::set_picture(Picture *picture)
+int VDeviceV4L::set_picture(PictureConfig *picture)
 {
 	v4l1_set_picture(picture);
 }
 
 
-int VDeviceV4L::v4l1_set_picture(Picture *picture)
+int VDeviceV4L::v4l1_set_picture(PictureConfig *picture)
 {
 	int brightness = (int)((float)picture->brightness / 100 * 32767 + 32768);
 	int hue = (int)((float)picture->hue / 100 * 32767 + 32768);

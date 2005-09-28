@@ -20,23 +20,34 @@ DeleteAllIndexes::DeleteAllIndexes(MWindow *mwindow, PreferencesWindow *pwindow,
 	this->pwindow = pwindow;
 }
 
-DeleteAllIndexes::~DeleteAllIndexes() { }
+DeleteAllIndexes::~DeleteAllIndexes() 
+{
+}
 
-int DeleteAllIndexes::handle_event() { start(); }
+int DeleteAllIndexes::handle_event() 
+{ 
+	start(); 
+}
+
+static int test_filter(char *string, char *filter)
+{
+	return (strlen(string) > strlen(filter) &&
+			!strcmp(string + strlen(string) - strlen(filter), filter));
+}
 
 void DeleteAllIndexes::run()
 {
-	char string1[1024], string2[1024];
+	char string[BCTEXTLEN], string1[BCTEXTLEN], string2[BCTEXTLEN];
 // prepare directory
 	strcpy(string1, pwindow->thread->preferences->index_directory);
 	FileSystem dir;
 	dir.update(pwindow->thread->preferences->index_directory);
 	dir.complete_path(string1);
 // prepare filter
-	char *filter = ".idx";
+	char *filter1 = ".idx";
+	char *filter2 = ".toc";
 
 //	pwindow->disable_window();
-	char string[1024];
 	sprintf(string, _("Delete all indexes in %s?"), string1);
 //	QuestionWindow confirm(mwindow);
 //	confirm.create_objects(string, 0);
@@ -53,13 +64,12 @@ void DeleteAllIndexes::run()
   			result = 1;
 			sprintf(string2, "%s%s", string1, dir.dir_list.values[i]->name);
 // test filter
-			for(j = strlen(string2) - 1, k = strlen(filter) - 1; 
-    			j > 0 && k > 0 && string2[j] == filter[k]; j--, k--)
+			if(test_filter(string2, filter1) ||
+				test_filter(string2, filter2))
 			{
-				;
+				remove(string2);
+printf("DeleteAllIndexes::run %s\n", string2);
 			}
-			if(k == 0) result = 0;
-			if(!result) remove(string2);
 		}
 	}
 

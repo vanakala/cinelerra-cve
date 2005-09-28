@@ -78,7 +78,7 @@ thread_class::~thread_class() \
 { \
 	delete window; \
 } \
-	 \
+ \
 void thread_class::run() \
 { \
 	BC_DisplayInfo info; \
@@ -355,13 +355,10 @@ public:
 // Get interpolation used by EDL from overlayframe.inc
 	int get_interpolation_type();
 
-// If automation is used.  Obsolete.
-//	int automation_used();
-// Get the automation value for the position in the current fragment
-// The position is relative to the current fragment
-// Obsolete.
-//	float get_automation_value(int64_t position);
-
+// Get the values from the color picker
+	float get_red();
+	float get_green();
+	float get_blue();
 
 
 

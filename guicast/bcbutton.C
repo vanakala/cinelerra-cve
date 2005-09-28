@@ -4,6 +4,7 @@
 #include "colors.h"
 #include "fonts.h"
 #include "keys.h"
+#include "language.h"
 #include "vframe.h"
 
 
@@ -127,7 +128,6 @@ int BC_Button::draw_face()
 			0,
 			0);
 	flash();
-	flush();
 	return 0;
 }
 
@@ -223,17 +223,35 @@ int BC_Button::cursor_motion_event()
 }
 
 
+
+
+
+
+
+
+
+
+
 BC_OKButton::BC_OKButton(int x, int y)
  : BC_Button(x, y, 
  	BC_WindowBase::get_resources()->ok_images)
 {
 }
 
+BC_OKButton::BC_OKButton(BC_WindowBase *parent_window, VFrame **images)
+ : BC_Button(10, 
+ 	parent_window->get_h() - images[0]->get_h() - 10, 
+ 	images)
+{
+	set_tooltip("OK");
+}
+
 BC_OKButton::BC_OKButton(BC_WindowBase *parent_window)
  : BC_Button(10, 
- 	parent_window->get_h() - BC_WindowBase::get_resources()->cancel_images[0]->get_h() - 10, 
+ 	parent_window->get_h() - BC_WindowBase::get_resources()->ok_images[0]->get_h() - 10, 
  	BC_WindowBase::get_resources()->ok_images)
 {
+	set_tooltip("OK");
 }
 
 int BC_OKButton::handle_event()
@@ -255,10 +273,33 @@ int BC_OKButton::keypress_event()
 	return 0;
 }
 
+int BC_OKButton::calculate_h()
+{
+	return BC_WindowBase::get_resources()->ok_images[0]->get_h();
+}
+
+int BC_OKButton::calculate_w()
+{
+	return BC_WindowBase::get_resources()->ok_images[0]->get_w();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 BC_CancelButton::BC_CancelButton(int x, int y)
  : BC_Button(x, y, 
  	BC_WindowBase::get_resources()->cancel_images)
 {
+	set_tooltip("Cancel");
 }
 
 BC_CancelButton::BC_CancelButton(BC_WindowBase *parent_window)
@@ -266,6 +307,15 @@ BC_CancelButton::BC_CancelButton(BC_WindowBase *parent_window)
  	parent_window->get_h() - BC_WindowBase::get_resources()->cancel_images[0]->get_h() - 10, 
  	BC_WindowBase::get_resources()->cancel_images)
 {
+	set_tooltip("Cancel");
+}
+
+BC_CancelButton::BC_CancelButton(BC_WindowBase *parent_window, VFrame **images)
+ : BC_Button(parent_window->get_w() - images[0]->get_w() - 10, 
+ 	parent_window->get_h() - images[0]->get_h() - 10, 
+ 	images)
+{
+	set_tooltip("Cancel");
 }
 
 int BC_CancelButton::handle_event()
@@ -286,6 +336,22 @@ int BC_CancelButton::keypress_event()
 	if(get_keypress() == ESC) return handle_event();
 	return 0;
 }
+
+int BC_CancelButton::calculate_h()
+{
+	return BC_WindowBase::get_resources()->cancel_images[0]->get_h();
+}
+
+int BC_CancelButton::calculate_w()
+{
+	return BC_WindowBase::get_resources()->cancel_images[0]->get_w();
+}
+
+
+
+
+
+
 
 
 
@@ -330,11 +396,24 @@ int BC_GenericButton::set_images(VFrame **data)
 		w = w_argument;
 	else
 		w = get_text_width(MEDIUMFONT, text) + 
-			resources->generic_button_margin * 2;
+				resources->generic_button_margin * 2;
 
 
 	h = images[BUTTON_UP]->get_h();
 	return 0;
+}
+
+int BC_GenericButton::calculate_w(BC_WindowBase *gui, char *text)
+{
+	BC_Resources *resources = gui->get_resources();
+	return gui->get_text_width(MEDIUMFONT, text) + 
+				resources->generic_button_margin * 2;
+}
+
+int BC_GenericButton::calculate_h()
+{
+	BC_Resources *resources = BC_WindowBase::get_resources();
+	return resources->generic_button_images[0]->get_h();
 }
 
 int BC_GenericButton::draw_face()
@@ -354,6 +433,11 @@ int BC_GenericButton::draw_face()
 	w = get_text_width(current_font, text, strlen(text)) + 
 		resources->generic_button_margin * 2;
 	x = get_w() / 2 - w / 2 + resources->generic_button_margin;
+	if(status == BUTTON_DOWNHI)
+	{
+		x++;
+		y++;
+	}
 	draw_text(x, 
 		y, 
 		text);
@@ -372,12 +456,68 @@ int BC_GenericButton::draw_face()
 	}
 
 	flash();
-	flush();
 	return 0;
 }
 
 
 
+
+
+BC_OKTextButton::BC_OKTextButton(BC_WindowBase *parent_window)
+ : BC_GenericButton(10,
+ 	parent_window->get_h() - BC_GenericButton::calculate_h() - 10,
+	_("OK"))
+{
+	this->parent_window = parent_window;
+}
+
+int BC_OKTextButton::resize_event(int w, int h)
+{
+	reposition_window(10,
+		parent_window->get_h() - BC_GenericButton::calculate_h() - 10);
+	return 1;
+}
+
+int BC_OKTextButton::handle_event()
+{
+	get_top_level()->set_done(0);
+	return 0;
+}
+
+int BC_OKTextButton::keypress_event()
+{
+	if(get_keypress() == RETURN) return handle_event();
+	return 0;
+}
+
+
+
+BC_CancelTextButton::BC_CancelTextButton(BC_WindowBase *parent_window)
+ : BC_GenericButton(parent_window->get_w() - BC_GenericButton::calculate_w(parent_window, _("Cancel")) - 10,
+ 	parent_window->get_h() - BC_GenericButton::calculate_h() - 10,
+	_("Cancel"))
+{
+	this->parent_window = parent_window;
+}
+
+int BC_CancelTextButton::resize_event(int w, int h)
+{
+	reposition_window(parent_window->get_w() - BC_GenericButton::calculate_w(parent_window, _("Cancel")) - 10,
+		parent_window->get_h() - BC_GenericButton::calculate_h() - 10);
+	return 1;
+}
+
+int BC_CancelTextButton::handle_event()
+{
+	get_top_level()->set_done(1);
+	return 1;
+}
+
+int BC_CancelTextButton::keypress_event()
+{
+	if(get_keypress() == ESC) return handle_event();
+	return 0;
+}
 
 
 

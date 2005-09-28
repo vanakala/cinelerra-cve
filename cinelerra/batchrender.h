@@ -166,7 +166,7 @@ public:
 	int dragging_item;
 	BatchRenderThread *thread;
 };
-class BatchRenderStart : public BC_Button
+class BatchRenderStart : public BC_GenericButton
 {
 public:
 	BatchRenderStart(BatchRenderThread *thread, 
@@ -176,7 +176,7 @@ public:
 	BatchRenderThread *thread;
 };
 
-class BatchRenderStop : public BC_Button
+class BatchRenderStop : public BC_GenericButton
 {
 public:
 	BatchRenderStop(BatchRenderThread *thread, 
@@ -186,7 +186,7 @@ public:
 	BatchRenderThread *thread;
 };
 
-class BatchRenderCancel : public BC_Button
+class BatchRenderCancel : public BC_GenericButton
 {
 public:
 	BatchRenderCancel(BatchRenderThread *thread, 

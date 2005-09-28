@@ -35,7 +35,9 @@ int StatusBar::create_objects()
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h());
 	add_subwindow(status_text = new BC_Title(mwindow->theme->mstatus_message_x, 
 		mwindow->theme->mstatus_message_y, 
-		""));
+		"",
+		MEDIUMFONT,
+		mwindow->theme->message_normal));
 	x = get_w() - 290;
 //printf("StatusBar::create_objects 1\n");
 	add_subwindow(main_progress = 
@@ -85,7 +87,7 @@ void StatusBar::set_message(char *text)
 
 void StatusBar::default_message()
 {
-	status_text->set_color(BLACK);
+	status_text->set_color(mwindow->theme->message_normal);
 	status_text->update(_("Welcome to Cinelerra."));
 }
 

@@ -18,15 +18,18 @@ public:
 	virtual ~BC_Title();
 	
 	int initialize();
+	static int calculate_w(BC_WindowBase *gui, char *text, int font = MEDIUMFONT);
+	static int calculate_h(BC_WindowBase *gui, char *text, int font = MEDIUMFONT);
 	int resize(int w, int h);
 	int reposition(int x, int y);
 	int set_color(int color);
 	int update(char *text);
+	void update(float value);
 	char* get_text();
 
 private:
 	int draw();
-	int get_size(int &w, int &h);
+	static void get_size(BC_WindowBase *gui, int font, char *text, int fixed_w, int &w, int &h);
 	
 	char text[BCTEXTLEN];
 	int color;

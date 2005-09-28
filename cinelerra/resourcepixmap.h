@@ -1,6 +1,7 @@
 #ifndef RESOURCEPIXMAP_H
 #define RESOURCEPIXMAP_H
 
+#include "bctimer.inc"
 #include "edit.inc"
 #include "guicast.h"
 #include "mwindow.inc"
@@ -25,7 +26,9 @@ public:
 		int64_t pixmap_h,
 		int force,
 		int indexes_only);
-	void draw_audio_resource(Edit *edit, int x, int w);
+	void draw_audio_resource(Edit *edit, 
+		int x, 
+		int w);
 	void draw_video_resource(Edit *edit, 
 		int64_t edit_x, 
 		int64_t edit_w, 
@@ -36,6 +39,8 @@ public:
 	void draw_audio_source(Edit *edit, int x, int w);
 	void draw_title(Edit *edit, int64_t edit_x, int64_t edit_w, int64_t pixmap_x, int64_t pixmap_w);
 	void reset();
+// Change to hourglass if timer expired
+	void test_timer();
 
 	void dump();
 
@@ -51,6 +56,8 @@ public:
 	double source_framerate, project_framerate;
 	int64_t source_samplerate, project_samplerate;
 	int data_type;
+// Timer to cause an hourglass to appear
+	Timer *timer;
 };
 
 #endif

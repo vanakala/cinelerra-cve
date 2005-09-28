@@ -57,7 +57,7 @@ class EDL;
 // Active tool in CWindow corresponds to a member of the CPanel array
 // and the current drag operation
 
-#define CPANEL_OPERATIONS 8
+#define CPANEL_OPERATIONS 9
 
 
 #define CWINDOW_NONE -1
@@ -67,15 +67,12 @@ class EDL;
 #define CWINDOW_CAMERA      3
 #define CWINDOW_PROJECTOR   4
 #define CWINDOW_CROP        5
-#define CWINDOW_TOOL_WINDOW 6
-#define CWINDOW_TITLESAFE   7
+#define CWINDOW_EYEDROP     6
+#define CWINDOW_TOOL_WINDOW 7
+#define CWINDOW_TITLESAFE   8
 
 // Current dragging operations not available in the CPanel
 #define CWINDOW_SCROLL 0x10
-#define CWINDOW_CAMERA_CONTROL_IN 0x11
-#define CWINDOW_CAMERA_CONTROL_OUT 0x12
-#define CWINDOW_PROJECTOR_CONTROL_IN 0x13
-#define CWINDOW_PROJECTOR_CONTROL_OUT 0x14
 #define CWINDOW_MASK_CONTROL_IN 0x15
 #define CWINDOW_MASK_CONTROL_OUT 0x16
 #define CWINDOW_MASK_TRANSLATE 0x17

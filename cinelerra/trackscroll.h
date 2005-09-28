@@ -9,7 +9,7 @@
 class TrackScroll : public BC_ScrollBar
 {
 public:
-	TrackScroll(MWindow *mwindow, MWindowGUI *gui, int pixels);
+	TrackScroll(MWindow *mwindow, MWindowGUI *gui, int x, int y, int h);
 	~TrackScroll();
 
 	int create_objects(int top, int bottom);

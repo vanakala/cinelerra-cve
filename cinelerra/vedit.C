@@ -1,6 +1,4 @@
 #include "asset.h"
-#include "bezierauto.h"
-#include "bezierautos.h"
 #include "cache.h"
 #include "edl.h"
 #include "edlsession.h"

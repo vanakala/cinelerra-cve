@@ -3,8 +3,6 @@
 
 #include "arraylist.h"
 #include "autoconf.inc"
-#include "bezierauto.inc"
-#include "bezierautos.inc"
 #include "edl.inc"
 #include "filexml.inc"
 #include "floatautos.inc"
@@ -93,8 +91,7 @@ public:
 	int draw_floating_autos_derived(float view_start, float zoom_units, AutoConf *auto_conf, int flash);
 	int select_auto_derived(float zoom_units, float view_start, AutoConf *auto_conf, int cursor_x, int cursor_y);
 	int move_auto_derived(float zoom_units, float view_start, AutoConf *auto_conf, int cursor_x, int cursor_y, int shift_down);
-	void translate_camera(float offset_x, float offset_y);
-	void translate_projector(float offset_x, float offset_y);
+	void translate(float offset_x, float offset_y, int do_camera);
 
 // ===================================== for handles, titles, etc
 

@@ -130,11 +130,6 @@ int mpeg3video_getintrablock(mpeg3_slice_t *slice,
 	else                
   		bp[0] = (dc_dct_pred[2] += mpeg3video_getdcchrom(slice_buffer)) << 3;
 
-#ifdef HAVE_MMX
-	if(video->have_mmx)
-  		bp[0] <<= 4;
-#endif
-
   	if(slice->fault) return 1;
 
 /* decode AC coefficients */
@@ -200,18 +195,8 @@ int mpeg3video_getintrablock(mpeg3_slice_t *slice,
 		}
 			
 
-#ifdef HAVE_MMX
-		if(video->have_mmx)
-		{
-    		val = (val * slice->quant_scale * video->intra_quantizer_matrix[j]) << 1;
-    		val = (val - 16) | 16;
-		}
-		else
-#endif
-		{
-    		val = (val * slice->quant_scale * video->intra_quantizer_matrix[j]) >> 3;
-    		val = (val - 1) | 1;
-		}
+    	val = (val * slice->quant_scale * video->intra_quantizer_matrix[j]) >> 3;
+    	val = (val - 1) | 1;
 
     	bp[j] = sign ? -val : val;
 	}
@@ -299,18 +284,8 @@ int mpeg3video_getinterblock(mpeg3_slice_t *slice,
 
     	j = video->mpeg3_zigzag_scan_table[i];
 
-#ifdef HAVE_MMX
-		if(video->have_mmx)
-		{
-    		val = (((val << 1)+1) * slice->quant_scale * video->non_intra_quantizer_matrix[j]);
-    		val = (val - 16) | 16;
-		}
-		else
-#endif
-		{
-    		val = (((val << 1)+1) * slice->quant_scale * video->non_intra_quantizer_matrix[j]) >> 4;
-    		val = (val - 1) | 1;
-		}
+   		val = (((val << 1)+1) * slice->quant_scale * video->non_intra_quantizer_matrix[j]) >> 4;
+   		val = (val - 1) | 1;
 
     	bp[j] = sign ? -val : val;
 	}
@@ -354,12 +329,7 @@ int mpeg3video_getmpg2intrablock(mpeg3_slice_t *slice,
 		val = (dc_dct_pred[2] += mpeg3video_getdcchrom(slice_buffer));
 
   	if(slice->fault) return 0;
-#ifdef HAVE_MMX
-	if(video->have_mmx)
-  		bp[0] = val << (7 - video->dc_prec);
-	else
-#endif
-  		bp[0] = val << (3 - video->dc_prec);
+	bp[0] = val << (3 - video->dc_prec);
 
   	nc = 0;
 
@@ -432,12 +402,7 @@ int mpeg3video_getmpg2intrablock(mpeg3_slice_t *slice,
 
     	j = (video->altscan ? video->mpeg3_alternate_scan_table : video->mpeg3_zigzag_scan_table)[i];
 
-#ifdef HAVE_MMX
-		if(video->have_mmx)
-	    	val = (val * slice->quant_scale * qmat[j]);
-		else
-#endif
-    		val = (val * slice->quant_scale * qmat[j]) >> 4;
+   		val = (val * slice->quant_scale * qmat[j]) >> 4;
 
     	bp[j] = sign ? -val : val;
     	nc++;
@@ -532,12 +497,7 @@ int mpeg3video_getmpg2interblock(mpeg3_slice_t *slice,
 
     	j = (video->altscan ? video->mpeg3_alternate_scan_table : video->mpeg3_zigzag_scan_table)[i];
 
-#ifdef HAVE_MMX
- 		if(video->have_mmx)
-    		val = (((val << 1)+1) * slice->quant_scale * qmat[j]) >> 1;
-		else
-#endif
-     		val = (((val << 1)+1) * slice->quant_scale * qmat[j]) >> 5;
+   		val = (((val << 1)+1) * slice->quant_scale * qmat[j]) >> 5;
 
     	bp[j] = sign ? (-val) : val ;
     	nc++;

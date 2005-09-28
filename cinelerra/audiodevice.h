@@ -119,6 +119,7 @@ public:
 // set software positioning on or off
 	int set_software_positioning(int status = 1);
 // total samples played
+//  + audio offset from configuration if playback
 	int64_t current_position();
 // If interrupted
 	int get_interrupted();

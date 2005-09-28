@@ -7,6 +7,8 @@ class ColorBalanceWindow;
 class ColorBalanceSlider;
 class ColorBalancePreserve;
 class ColorBalanceLock;
+class ColorBalanceWhite;
+class ColorBalanceReset;
 
 #include "filexml.h"
 #include "guicast.h"
@@ -25,6 +27,7 @@ public:
 
 	int create_objects();
 	int close_event();
+	void update();
 
 	ColorBalanceMain *client;
 	ColorBalanceSlider *cyan;
@@ -32,6 +35,8 @@ public:
 	ColorBalanceSlider *yellow;
     ColorBalanceLock *lock_params;
     ColorBalancePreserve *preserve;
+	ColorBalanceWhite *use_eyedrop;
+	ColorBalanceReset *reset;
 };
 
 class ColorBalanceSlider : public BC_ISlider
@@ -64,6 +69,24 @@ public:
     
     int handle_event();
     ColorBalanceMain *client;
+};
+
+class ColorBalanceWhite : public BC_GenericButton
+{
+public:
+	ColorBalanceWhite(ColorBalanceMain *plugin, ColorBalanceWindow *gui, int x, int y);
+	int handle_event();
+	ColorBalanceMain *plugin;
+	ColorBalanceWindow *gui;
+};
+
+class ColorBalanceReset : public BC_GenericButton
+{
+public:
+	ColorBalanceReset(ColorBalanceMain *plugin, ColorBalanceWindow *gui, int x, int y);
+	int handle_event();
+	ColorBalanceMain *plugin;
+	ColorBalanceWindow *gui;
 };
 
 #endif

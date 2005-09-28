@@ -9,7 +9,7 @@
 #include "pluginserver.inc"
 #include "preferences.inc"
 #include "renderfarmclient.inc"
-#include "renderfarmfsclient.inc"
+//#include "renderfarmfsclient.inc"
 #include "thread.h"
 
 // The render client waits for connections from the server.
@@ -61,6 +61,7 @@ public:
 		int len);
 	int write_socket(char *data, int len, int timeout);
 	int read_socket(char *data, int len, int timeout);
+	void abort();
 	void read_string(int socket_fd, char* &string);
 	void lock(char *location);
 	void unlock();
@@ -85,7 +86,7 @@ public:
 	int socket_fd;
 // Read only
 	RenderFarmClient *client;
-	RenderFarmFSClient *fs_client;
+//	RenderFarmFSClient *fs_client;
 	double frames_per_second;
 	Mutex *mutex_lock;
 };
@@ -112,7 +113,7 @@ public:
 	int get_result();
 	void set_result(int value);
 	void set_progress(int64_t total_samples);
-	void set_video_map(int64_t position, int value);
+	int set_video_map(int64_t position, int value);
 
 	
 	int socket_fd;

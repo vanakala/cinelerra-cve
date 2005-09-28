@@ -103,12 +103,31 @@ public:
 class PreferencesApply : public BC_GenericButton
 {
 public:
-	PreferencesApply(MWindow *mwindow, PreferencesThread *thread, int x, int y);
-	~PreferencesApply();
-	
+	PreferencesApply(MWindow *mwindow, PreferencesThread *thread);
 	int handle_event();
 	MWindow *mwindow;
 	PreferencesThread *thread;
 };
+
+class PreferencesOK : public BC_GenericButton
+{
+public:
+	PreferencesOK(MWindow *mwindow, PreferencesThread *thread);
+	int keypress_event();
+	int handle_event();
+	MWindow *mwindow;
+	PreferencesThread *thread;
+};
+
+class PreferencesCancel : public BC_GenericButton
+{
+public:
+	PreferencesCancel(MWindow *mwindow, PreferencesThread *thread);
+	int keypress_event();
+	int handle_event();
+	MWindow *mwindow;
+	PreferencesThread *thread;
+};
+
 
 #endif

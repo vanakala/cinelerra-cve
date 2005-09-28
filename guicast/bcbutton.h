@@ -33,6 +33,7 @@ public:
 	int update_bitmaps(VFrame **data);
 	int reposition_window(int x, int y);
 	void set_underline(int number);
+	
 
 private:
 
@@ -54,9 +55,31 @@ public:
 	BC_GenericButton(int x, int y, int w, char *text, VFrame **data = 0);
 	int set_images(VFrame **data);
 	int draw_face();
+	static int calculate_w(BC_WindowBase *gui, char *text);
+	static int calculate_h();
 
 private:
 	char text[BCTEXTLEN];
+};
+
+class BC_OKTextButton : public BC_GenericButton
+{
+public:
+	BC_OKTextButton(BC_WindowBase *parent_window);
+	virtual int resize_event(int w, int h);
+	virtual int handle_event();
+	virtual int keypress_event();
+	BC_WindowBase *parent_window;
+};
+
+class BC_CancelTextButton : public BC_GenericButton
+{
+public:
+	BC_CancelTextButton(BC_WindowBase *parent_window);
+	virtual int resize_event(int w, int h);
+	virtual int handle_event();
+	virtual int keypress_event();
+	BC_WindowBase *parent_window;
 };
 
 class BC_OKButton : public BC_Button
@@ -64,6 +87,9 @@ class BC_OKButton : public BC_Button
 public:
 	BC_OKButton(int x, int y);
 	BC_OKButton(BC_WindowBase *parent_window);
+	BC_OKButton(BC_WindowBase *parent_window, VFrame **images);
+	static int calculate_h();
+	static int calculate_w();
 	virtual int resize_event(int w, int h);
 	virtual int handle_event();
 	virtual int keypress_event();
@@ -74,6 +100,9 @@ class BC_CancelButton : public BC_Button
 public:
 	BC_CancelButton(int x, int y);
 	BC_CancelButton(BC_WindowBase *parent_window);
+	BC_CancelButton(BC_WindowBase *parent_window, VFrame **images);
+	static int calculate_h();
+	static int calculate_w();
 	virtual int resize_event(int w, int h);
 	virtual int handle_event();
 	virtual int keypress_event();

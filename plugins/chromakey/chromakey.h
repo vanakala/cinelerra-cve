@@ -4,14 +4,15 @@
 
 
 
+#include "colorpicker.h"
 #include "guicast.h"
 #include "loadbalance.h"
 #include "pluginvclient.h"
 
 
 class ChromaKey;
+class ChromaKey;
 class ChromaKeyWindow;
-
 
 class ChromaKeyConfig
 {
@@ -25,32 +26,34 @@ public:
 		int64_t prev_frame, 
 		int64_t next_frame, 
 		int64_t current_frame);
+	int get_color();
 
-	float hue;
+	float red;
+	float green;
+	float blue;
 	float threshold;
-	float value;
 	float slope;
 	int use_value;
 };
 
-class ChromaKeyHue : public BC_FSlider
+class ChromaKeyColor : public BC_GenericButton
 {
 public:
-	ChromaKeyHue(ChromaKey *plugin, int x, int y);
+	ChromaKeyColor(ChromaKey *plugin, 
+		ChromaKeyWindow *gui, 
+		int x, 
+		int y);
+
 	int handle_event();
+
 	ChromaKey *plugin;
+	ChromaKeyWindow *gui;
 };
+
 class ChromaKeyThreshold : public BC_FSlider
 {
 public:
 	ChromaKeyThreshold(ChromaKey *plugin, int x, int y);
-	int handle_event();
-	ChromaKey *plugin;
-};
-class ChromaKeyValue : public BC_FSlider
-{
-public:
-	ChromaKeyValue(ChromaKey *plugin, int x, int y);
 	int handle_event();
 	ChromaKey *plugin;
 };
@@ -69,20 +72,46 @@ public:
 	ChromaKey *plugin;
 };
 
+class ChromaKeyUseColorPicker : public BC_GenericButton
+{
+public:
+	ChromaKeyUseColorPicker(ChromaKey *plugin, ChromaKeyWindow *gui, int x, int y);
+	int handle_event();
+	ChromaKey *plugin;
+	ChromaKeyWindow *gui;
+};
+
+
+class ChromaKeyColorThread : public ColorThread
+{
+public:
+	ChromaKeyColorThread(ChromaKey *plugin, ChromaKeyWindow *gui);
+	int handle_new_color(int output, int alpha);
+	ChromaKey *plugin;
+	ChromaKeyWindow *gui;
+};
+
+
 class ChromaKeyWindow : public BC_Window
 {
 public:
 	ChromaKeyWindow(ChromaKey *plugin, int x, int y);
 	~ChromaKeyWindow();
+
 	void create_objects();
 	int close_event();
-	ChromaKeyHue *hue;
-	ChromaKeyValue *value;
+	void update_sample();
+
+	ChromaKeyColor *color;
 	ChromaKeyThreshold *threshold;
 	ChromaKeyUseValue *use_value;
+	ChromaKeyUseColorPicker *use_colorpicker;
 	ChromaKeySlope *slope;
+	BC_SubWindow *sample;
 	ChromaKey *plugin;
+	ChromaKeyColorThread *color_thread;
 };
+
 
 
 PLUGIN_THREAD_HEADER(ChromaKey, ChromaKeyThread, ChromaKeyWindow)

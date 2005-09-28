@@ -26,6 +26,8 @@ public:
 	int create_objects();
 	void reposition_window(int x, int y);
 	int keypress_event();
+	int get_h();
+	int get_w();
 
  	MWindow *mwindow;
 	BC_WindowBase *window;

@@ -16,11 +16,39 @@ static int decode_length(quicktime_t *file)
 	return result;
 }
 
+void quicktime_delete_esds(quicktime_esds_t *esds)
+{
+	if(esds->mpeg4_header) free(esds->mpeg4_header);
+}
+
+void quicktime_esds_samplerate(quicktime_stsd_table_t *table, 
+	quicktime_esds_t *esds)
+{
+// Straight out of ffmpeg
+	if(esds->mpeg4_header_size > 1 &&
+		quicktime_match_32(table->format, QUICKTIME_MP4A))
+	{
+		static int samplerate_table[] = 
+		{
+             96000, 88200, 64000, 48000, 44100, 32000, 
+             24000, 22050, 16000, 12000, 11025, 8000,
+             7350, 0, 0, 0
+        };
+
+		unsigned char *ptr = esds->mpeg4_header;
+		int samplerate_index = ((ptr[0] & 7) << 1) + ((ptr[1] >> 7) & 1);
+		table->channels = (ptr[1] >> 3) & 0xf;
+		table->sample_rate = 
+			samplerate_table[samplerate_index];
+// Faad decodes 1/2 the requested samplerate if the samplerate is <= 22050.
+	}
+}
 
 void quicktime_read_esds(quicktime_t *file, 
 	quicktime_atom_t *parent_atom, 
-	quicktime_stsd_table_t *table)
+	quicktime_esds_t *esds)
 {
+
 // version
 	quicktime_read_char(file);
 // flags
@@ -52,14 +80,17 @@ void quicktime_read_esds(quicktime_t *file,
 // decoder specific description tag
 			if(quicktime_read_char(file) == 0x5)
 			{
-				table->mpeg4_header_size = decode_length(file);
-				if(!table->mpeg4_header_size) return;
+				esds->mpeg4_header_size = decode_length(file);
+				if(!esds->mpeg4_header_size) return;
 
-				table->mpeg4_header = calloc(1, table->mpeg4_header_size);
-// Get mpeg4 sequence header
+// Need padding for FFMPEG
+				esds->mpeg4_header = calloc(1, 
+					esds->mpeg4_header_size + 1024);
+// Get extra data for decoder
 				quicktime_read_data(file, 
-					table->mpeg4_header, 
-					table->mpeg4_header_size);
+					esds->mpeg4_header, 
+					esds->mpeg4_header_size);
+
 // skip rest
 				quicktime_atom_skip(file, parent_atom);
 				return;
@@ -89,7 +120,7 @@ void quicktime_read_esds(quicktime_t *file,
 
 
 void quicktime_write_esds(quicktime_t *file, 
-	quicktime_stsd_table_t *table,
+	quicktime_esds_t *esds,
 	int do_video,
 	int do_audio)
 {
@@ -109,11 +140,14 @@ void quicktime_write_esds(quicktime_t *file,
 	quicktime_write_char(file, 0x00);
 
 // elementary stream id
-	quicktime_write_int16(file, 0);
+	quicktime_write_int16(file, 0x1);
+
 // stream priority
-	if(do_video)
-		quicktime_write_char(file, 0x1f);
-	else
+/*
+ * 	if(do_video)
+ * 		quicktime_write_char(file, 0x1f);
+ * 	else
+ */
 		quicktime_write_char(file, 0);
 
 
@@ -132,11 +166,14 @@ void quicktime_write_esds(quicktime_t *file,
 // stream type
 		quicktime_write_char(file, 0x11);
 // buffer size
-		quicktime_write_int24(file, 0x007b00);
+//		quicktime_write_int24(file, 0x007b00);
+		quicktime_write_int24(file, 0x000000);
 // max bitrate
-		quicktime_write_int32(file, 0x00014800);
+//		quicktime_write_int32(file, 0x00014800);
+		quicktime_write_int32(file, 0x000030d40);
 // average bitrate
-		quicktime_write_int32(file, 0x00014800);
+//		quicktime_write_int32(file, 0x00014800);
+		quicktime_write_int32(file, 0x00000000);
 	}
 	else
 	{
@@ -160,11 +197,11 @@ void quicktime_write_esds(quicktime_t *file,
 	quicktime_write_char(file, 0x00);
 
 // mpeg4 sequence header
-	quicktime_write_data(file, table->mpeg4_header, table->mpeg4_header_size);
+	quicktime_write_data(file, esds->mpeg4_header, esds->mpeg4_header_size);
 
 
-	int64_t current_length2 = quicktime_position(file) - length2 - 4;
-	int64_t current_length3 = quicktime_position(file) - length3 - 4;
+	int64_t current_length2 = quicktime_position(file) - length2 - 1;
+	int64_t current_length3 = quicktime_position(file) - length3 - 1;
 
 // unknown tag, length and data
 	quicktime_write_char(file, 0x06);
@@ -174,7 +211,7 @@ void quicktime_write_esds(quicktime_t *file,
 
 
 // write lengths
-	int64_t current_length1 = quicktime_position(file) - length1 - 4;
+	int64_t current_length1 = quicktime_position(file) - length1 - 1;
 	quicktime_atom_write_footer(file, &atom);
 	int64_t current_position = quicktime_position(file);
 //	quicktime_set_position(file, length1 + 3);
@@ -188,4 +225,16 @@ void quicktime_write_esds(quicktime_t *file,
 	quicktime_write_char(file, current_length3);
 	quicktime_set_position(file, current_position);
 }
+
+void quicktime_esds_dump(quicktime_esds_t *esds)
+{
+	printf("       elementary stream description\n");
+	printf("        mpeg4_header_size=0x%x\n", esds->mpeg4_header_size);
+	printf("        mpeg4_header=");
+	int i;
+	for(i = 0; i < esds->mpeg4_header_size; i++)
+		printf("%02x ", (unsigned char)esds->mpeg4_header[i]);
+	printf("\n");
+}
+
 

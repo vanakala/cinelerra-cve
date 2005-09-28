@@ -20,6 +20,10 @@
 #define ICON_MARGIN      1
 #define LISTBOX_INDENT   10
 
+// Justification for popup listbox
+#define LISTBOX_LEFT     0
+#define LISTBOX_RIGHT    1
+
 class BC_ListBoxItem;
 class BC_ListBox;
 

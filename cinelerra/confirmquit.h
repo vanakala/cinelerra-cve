@@ -22,7 +22,7 @@ public:
 class ConfirmQuitYesButton : public BC_GenericButton
 {
 public:
-	ConfirmQuitYesButton(MWindow *mwindow, int x, int y);
+	ConfirmQuitYesButton(MWindow *mwindow, ConfirmQuitWindow *gui);
 
 	int handle_event();
 	int keypress_event();
@@ -31,16 +31,16 @@ public:
 class ConfirmQuitNoButton : public BC_GenericButton
 {
 public:
-	ConfirmQuitNoButton(MWindow *mwindow, int x, int y);
+	ConfirmQuitNoButton(MWindow *mwindow, ConfirmQuitWindow *gui);
 
 	int handle_event();
 	int keypress_event();
 };
 
-class ConfirmQuitCancelButton : public BC_CancelButton
+class ConfirmQuitCancelButton : public BC_GenericButton
 {
 public:
-	ConfirmQuitCancelButton(MWindow *mwindow, int x, int y);
+	ConfirmQuitCancelButton(MWindow *mwindow, ConfirmQuitWindow *gui);
 
 	int handle_event();
 	int keypress_event();

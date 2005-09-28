@@ -16,6 +16,7 @@ public:
 
 	virtual int open_input() { return 1; };
 	virtual int close_all() { return 1; };
+	virtual int has_signal() { return 0; };
 	virtual int read_buffer(VFrame *frame) { return 1; };
 	virtual int write_buffer(VFrame **outputs, EDL *edl) { return 1; };
 	virtual void new_output_buffer(VFrame **outputs, int colormodel) {};
@@ -26,7 +27,7 @@ public:
 // Extra work must sometimes be done in here to set up the device.
 	virtual int get_best_colormodel(Asset *asset);
 	virtual int set_channel(Channel *channel) { return 0; };
-	virtual int set_picture(Picture *picture) { return 0; };
+	virtual int set_picture(PictureConfig *picture) { return 0; };
 
 	virtual int open_output() { return 1; };
 	virtual int output_visible() { return 0; };

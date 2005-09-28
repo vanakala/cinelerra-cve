@@ -109,6 +109,7 @@ public:
 				1)
 	{
 		current_cursor = 0;
+		test_keypress = 1;
 	};
 
 	int close_event()

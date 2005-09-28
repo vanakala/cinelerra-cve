@@ -28,6 +28,7 @@ public:
 	virtual int handle_event() { return 0; };
 
 	int initialize();
+	static int get_span(int vertical);
 	int get_button_pixels();
 	virtual int value_to_pixel() { return 0; };
 	int keypress_event();

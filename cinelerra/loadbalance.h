@@ -25,7 +25,7 @@ public:
 	
 	Condition *completion_lock;
 // Range to search in the total scan area
-	int pixel1, pixel2;
+//	int pixel1, pixel2;
 };
 
 
@@ -33,6 +33,7 @@ class LoadClient : public Thread
 {
 public:
 	LoadClient(LoadServer *server);
+	LoadClient();
 	virtual ~LoadClient();
 	
 	void run();

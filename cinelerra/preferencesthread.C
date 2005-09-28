@@ -325,7 +325,6 @@ PreferencesWindow::~PreferencesWindow()
 
 int PreferencesWindow::create_objects()
 {
-	int x = 10, y = 10;
 	BC_Button *button;
 
 
@@ -334,50 +333,34 @@ int PreferencesWindow::create_objects()
 	flash();
 
 
-//printf("PreferencesWindow::create_objects 1\n");
 	for(int i = 0; i < CATEGORIES; i++)
 		categories.append(new BC_ListBoxItem(thread->category_to_text(i)));
-//	add_subwindow(new BC_Title(x, y, _("Category:"), LARGEFONT_3D, RED));
-	category = new PreferencesCategory(mwindow, thread, x, y);
+	category = new PreferencesCategory(mwindow, 
+		thread, 
+		mwindow->theme->preferencescategory_x, 
+		mwindow->theme->preferencescategory_y);
 	category->create_objects();
 
-//printf("PreferencesWindow::create_objects 1\n");
-	y += category->get_h();
 
-//printf("PreferencesWindow::create_objects 1\n");
-	add_subwindow(button = new BC_OKButton(this));
-//printf("PreferencesWindow::create_objects 1\n");
-	add_subwindow(new PreferencesApply(mwindow, 
-		thread, 
-		get_w() / 2 - 50, 
-		button->get_y()));
-	x = get_w() - 100;
-//printf("PreferencesWindow::create_objects 1\n");
-	add_subwindow(new BC_CancelButton(this));
+	add_subwindow(button = new PreferencesOK(mwindow, thread));
+	add_subwindow(new PreferencesApply(mwindow, thread));
+	add_subwindow(new PreferencesCancel(mwindow, thread));
 
-//printf("PreferencesWindow::create_objects 1\n");
 	set_current_dialog(thread->current_dialog);
-//printf("PreferencesWindow::create_objects 1\n");
 	show_window();
-//printf("PreferencesWindow::create_objects 2\n");
 	return 0;
 }
 
 int PreferencesWindow::update_framerate()
 {
 	lock_window("PreferencesWindow::update_framerate");
-//printf("PreferencesWindow::update_framerate 1\n");
 	if(thread->current_dialog == 0)
 	{
-//printf("PreferencesWindow::update_framerate 2\n");
 		thread->edl->session->actual_frame_rate = 
 			mwindow->edl->session->actual_frame_rate;
-//printf("PreferencesWindow::update_framerate 3\n");
 		dialog->draw_framerate();
-//printf("PreferencesWindow::update_framerate 4\n");
 		flash();
 	}
-//printf("PreferencesWindow::update_framerate 5\n");
 	unlock_window();
 	return 0;
 }
@@ -428,7 +411,10 @@ int PreferencesWindow::set_current_dialog(int number)
 
 
 PreferencesDialog::PreferencesDialog(MWindow *mwindow, PreferencesWindow *pwindow)
- : BC_SubWindow(10, 40, pwindow->get_w() - 20, pwindow->get_h() - 100)
+ : BC_SubWindow(10, 
+ 	40, 
+	pwindow->get_w() - 20, 
+ 	pwindow->get_h() - BC_GenericButton::calculate_h() - 10 - 40)
 {
 	this->pwindow = pwindow;
 	this->mwindow = mwindow;
@@ -444,15 +430,13 @@ PreferencesDialog::~PreferencesDialog()
 
 
 
-PreferencesApply::PreferencesApply(MWindow *mwindow, PreferencesThread *thread, int x, int y)
- : BC_GenericButton(x, y, _("Apply"))
+PreferencesApply::PreferencesApply(MWindow *mwindow, PreferencesThread *thread)
+ : BC_GenericButton(thread->window->get_w() / 2 - BC_GenericButton::calculate_w(thread->window, _("Apply")) / 2, 
+ 	thread->window->get_h() - BC_GenericButton::calculate_h() - 10, 
+	_("Apply"))
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
-}
-
-PreferencesApply::~PreferencesApply()
-{
 }
 
 int PreferencesApply::handle_event()
@@ -460,6 +444,66 @@ int PreferencesApply::handle_event()
 	thread->apply_settings();
 	return 1;
 }
+
+
+
+
+PreferencesOK::PreferencesOK(MWindow *mwindow, PreferencesThread *thread)
+ : BC_GenericButton(10, 
+ 	thread->window->get_h() - BC_GenericButton::calculate_h() - 10,
+	_("OK"))
+{
+	this->mwindow = mwindow;
+	this->thread = thread;
+}
+
+int PreferencesOK::keypress_event()
+{
+	if(get_keypress() == RETURN)
+	{
+		thread->window->set_done(0);
+		return 1;
+	}
+	return 0;
+}
+int PreferencesOK::handle_event()
+{
+	thread->window->set_done(0);
+	return 1;
+}
+
+
+
+PreferencesCancel::PreferencesCancel(MWindow *mwindow, PreferencesThread *thread)
+ : BC_GenericButton(thread->window->get_w() - BC_GenericButton::calculate_w(thread->window, _("Cancel")) - 10,
+ 	thread->window->get_h() - BC_GenericButton::calculate_h() - 10,
+ 	_("Cancel"))
+{
+	this->mwindow = mwindow;
+	this->thread = thread;
+}
+int PreferencesCancel::keypress_event()
+{
+	if(get_keypress() == ESC)
+	{
+		thread->window->set_done(1);
+		return 1;
+	}
+	return 0;
+}
+
+int PreferencesCancel::handle_event()
+{
+	thread->window->set_done(1);
+	return 1;
+}
+
+
+
+
+
+
+
 
 
 

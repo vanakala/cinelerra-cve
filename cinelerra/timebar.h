@@ -143,12 +143,6 @@ public:
 
 // ========================================= editing
 
-	int copy(int64_t start, int64_t end, FileXML *xml);
-	int paste(int64_t start, int64_t end, int64_t sample_length, FileXML *xml);
-	int paste_output(int64_t startproject, int64_t endproject, int64_t startsource, int64_t endsource, RecordLabels *new_labels);
-	int clear(int64_t start, int64_t end);
-	int paste_silence(int64_t start, int64_t end);
-	int modify_handles(int64_t oldposition, int64_t newposition, int currentend);
 	int select_region(double position);
 	void get_edl_length();
 

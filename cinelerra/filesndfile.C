@@ -1,15 +1,13 @@
 #include "asset.h"
 #include "assets.h"
+#include "bcsignals.h"
 #include "bitspopup.h"
 #include "clip.h"
 #include "file.h"
 #include "filesndfile.h"
+#include "language.h"
 #include "mwindow.inc"
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 FileSndFile::FileSndFile(Asset *asset, File *file)
  : FileBase(asset, file)
@@ -17,7 +15,6 @@ FileSndFile::FileSndFile(Asset *asset, File *file)
 	temp_double = 0;
 	temp_allocated = 0;
 	fd_config.format = 0;
-	fileptr = 0;
 	fd = 0;
 }
 
@@ -31,16 +28,11 @@ int FileSndFile::check_sig(Asset *asset)
 	int result = 0;
 	SF_INFO fd_config;
 	fd_config.format = 0;
-	FILE *fileptr = fopen(asset->path, "r");
-	if(fileptr)
+	SNDFILE *fd = sf_open(asset->path, SFM_READ, &fd_config);
+	if(fd)
 	{
-		SNDFILE *fd = sf_open_fd(fileptr, asset->path, SFM_READ, &fd_config, 0);
-		if(fd)
-		{
-			sf_close(fd);
-			result = 1;
-		}
-		fclose(fileptr);
+		sf_close(fd);
+		result = 1;
 	}
 
 	return result;
@@ -70,7 +62,7 @@ void FileSndFile::asset_to_format()
 		case BITSLINEAR16:
 			fd_config.format |= SF_FORMAT_PCM_16;
 
-			if(asset->byte_order)
+			if(asset->byte_order || asset->format == FILE_WAV)
 				fd_config.format |= SF_ENDIAN_LITTLE;
 			else
 				fd_config.format |= SF_ENDIAN_BIG;
@@ -79,7 +71,7 @@ void FileSndFile::asset_to_format()
 		case BITSLINEAR24:
 			fd_config.format |= SF_FORMAT_PCM_24;
 
-			if(asset->byte_order)
+			if(asset->byte_order || asset->format == FILE_WAV)
 				fd_config.format |= SF_ENDIAN_LITTLE;
 			else
 				fd_config.format |= SF_ENDIAN_BIG;
@@ -88,7 +80,7 @@ void FileSndFile::asset_to_format()
 		case BITSLINEAR32:
 			fd_config.format |= SF_FORMAT_PCM_32;
 
-			if(asset->byte_order)
+			if(asset->byte_order || asset->format == FILE_WAV)
 				fd_config.format |= SF_ENDIAN_LITTLE;
 			else
 				fd_config.format |= SF_ENDIAN_BIG;
@@ -96,13 +88,10 @@ void FileSndFile::asset_to_format()
 
 		case BITSULAW: 
 			fd_config.format |= SF_FORMAT_ULAW; 
-			fd_config.format |= SF_FORMAT_PCM_16;
 			break;
 
 		case BITSFLOAT: 
-//printf("FileSndFile::asset_to_format 1\n");
 			fd_config.format |= SF_FORMAT_FLOAT; 
-			fd_config.format |= SF_FORMAT_PCM_16;
 			break;
 
 		case BITS_ADPCM: 
@@ -209,40 +198,29 @@ int FileSndFile::open_file(int rd, int wr)
 		if(asset->format == FILE_PCM)
 		{
 			asset_to_format();
-			fileptr = fopen(asset->path, "r");
-			if(fileptr)
-			{
-				fd = sf_open_fd(fileptr, asset->path, SFM_READ, &fd_config, 0);
+			fd = sf_open(asset->path, SFM_READ, &fd_config);
 // Already given by user
-				if(fd) format_to_asset();
-			}
+			if(fd) format_to_asset();
 		}
 		else
 		{
-			fileptr = fopen(asset->path, "r");
-			if(fileptr)
-			{
-				fd = sf_open_fd(fileptr, asset->path, SFM_READ, &fd_config, 0);
+			fd = sf_open(asset->path, SFM_READ, &fd_config);
 // Doesn't calculate the length
-				if(fd) format_to_asset();
-			}
+			if(fd) format_to_asset();
 		}
+SET_TRACE
 	}
 	else
 	if(wr)
 	{
 		asset_to_format();
-		fileptr = fopen(asset->path, "w");
-		if(fileptr)
-		{
-			fd = sf_open_fd(fileptr, asset->path, SFM_WRITE, &fd_config, 0);
-		}
+		fd = sf_open(asset->path, SFM_WRITE, &fd_config);
 	}
 
 	if(!fd) 
 	{
 		result = 1;
-		printf("FileSndFile::open_file:\n");
+		printf("FileSndFile::open_file: ");
 		sf_perror(0);
 	}
 
@@ -253,8 +231,6 @@ int FileSndFile::close_file()
 {
 	if(fd) sf_close(fd);
 	fd = 0;
-	if(fileptr) fclose(fileptr);
-	fileptr = 0;
 	FileBase::close_file();
 	fd_config.format = 0;
 	return 0;
@@ -374,7 +350,7 @@ SndFileConfig::SndFileConfig(BC_WindowBase *parent_window, Asset *asset)
  	parent_window->get_abs_cursor_x(1),
  	parent_window->get_abs_cursor_y(1),
 	250,
-	200)
+	250)
 {
 	this->parent_window = parent_window;
 	this->asset = asset;

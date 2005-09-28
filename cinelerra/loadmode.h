@@ -27,6 +27,10 @@ public:
 	
 	int create_objects();
 	int reposition_window(int x, int y);
+	static int calculate_h(BC_WindowBase *gui);
+	int get_h();
+	int get_x();
+	int get_y();
 
 	char* mode_to_text();
 

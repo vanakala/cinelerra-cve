@@ -78,9 +78,8 @@ void MainCursor::draw()
 {
 	if(!visible)
 	{
-//printf("MainCursor::draw 1\n");
-		selectionstart = mwindow->edl->local_session->selectionstart;
-		selectionend = mwindow->edl->local_session->selectionend;
+		selectionstart = mwindow->edl->local_session->get_selectionstart(1);
+		selectionend = mwindow->edl->local_session->get_selectionend(1);
 		view_start = mwindow->edl->local_session->view_start;
 		zoom_sample = mwindow->edl->local_session->zoom_sample;
 

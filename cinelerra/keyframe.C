@@ -28,7 +28,7 @@ void KeyFrame::load(FileXML *file)
 //	position = file->tag.get_property("POSITION", position);
 //printf("KeyFrame::load 1\n");
 
-	file->read_text_until("/KEYFRAME", data);
+	file->read_text_until("/KEYFRAME", data, MESSAGESIZE);
 //printf("KeyFrame::load 2 data=\n%s\nend of data\n", data);
 }
 

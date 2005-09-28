@@ -1,16 +1,14 @@
 #ifndef CWINDOWGUI_H
 #define CWINDOWGUI_H
 
-//#include "apanel.inc"
 #include "auto.inc"
-#include "bezierauto.inc"
-#include "bezierautos.inc"
 #include "canvas.h"
 #include "cpanel.inc"
 #include "ctimebar.inc"
 #include "cwindow.inc"
 #include "cwindowtool.inc"
 #include "editpanel.h"
+#include "floatauto.inc"
 #include "floatautos.inc"
 #include "guicast.h"
 #include "mainclock.inc"
@@ -50,6 +48,10 @@ public:
 	void drag_motion();
 	int drag_stop();
 	void draw_status();
+// Zero out pointers to affected auto
+	void reset_affected();
+	void keyboard_zoomin();
+	void keyboard_zoomout();
 
 	MWindow *mwindow;
     CWindow *cwindow;
@@ -78,8 +80,12 @@ public:
 // must be integers and recalculted for every keypress.
 // Track being modified in canvas
 	Track *affected_track;
-// Keyframe being modified
-	Auto *affected_auto;
+// Transformation keyframe being modified
+	FloatAuto *affected_x;
+	FloatAuto *affected_y;
+	FloatAuto *affected_z;
+// Keyfrom not affecting transformation being affected
+	Auto *affected_keyframe;
 // Mask point being modified
 	int affected_point;
 // Scrollbar offsets during last button press relative to output
@@ -89,8 +95,14 @@ public:
 	float x_origin, y_origin;
 // Crop handle being dragged
 	int crop_handle;
+// If dragging crop translation
+	int crop_translate;
 // Origin of crop handle during last button press
 	float crop_origin_x, crop_origin_y;
+// Origin of all 4 crop points during last button press
+	float crop_origin_x1, crop_origin_y1;
+	float crop_origin_x2, crop_origin_y2;
+
 // Origin for camera and projector operations during last button press
 	float center_x, center_y, center_z;
 	float control_in_x, control_in_y, control_out_x, control_out_y;
@@ -198,6 +210,7 @@ public:
 	int get_xscroll();
 	int get_yscroll();
 	float get_zoom();
+	int do_eyedrop(int &rerender, int button_press);
 	int do_mask(int &redraw, 
 		int &rerender, 
 		int button_press, 
@@ -223,20 +236,8 @@ public:
 	void reset_projector();
 	void reset_keyframe(int do_camera);
 	void draw_crophandle(int x, int y);
-	int do_bezier_center(BezierAuto *current, 
-		BezierAutos *camera_autos,
-		BezierAutos *projector_autos, 
-		FloatAutos *czoom_autos,
-		FloatAutos *pzoom_autos,
-		int camera, 
-		int draw);
-	void draw_bezier_joining(BezierAuto *first, 
-		BezierAuto *last, 
-		BezierAutos *camera_autos,
-		BezierAutos *projector_autos, 
-		FloatAutos *czoom_autos,
-		FloatAutos *pzoom_autos,
-		int camera);
+
+// Draw the projector overlay in different colors.
 	void draw_bezier(int do_camera);
 	void draw_crop();
 	void calculate_origin();

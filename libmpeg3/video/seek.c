@@ -153,6 +153,19 @@ int mpeg3video_seek_frame(mpeg3video_t *video, long frame)
 	return 0;
 }
 
+int mpeg3_rewind_video(mpeg3video_t *video)
+{
+	mpeg3_vtrack_t *track = video->track;
+	mpeg3_bits_t *vstream = video->vstream;
+
+	if(track->frame_offsets)
+		mpeg3bits_seek_byte(vstream, track->frame_offsets[0]);
+	else
+		mpeg3bits_seek_byte(vstream, 0);
+
+	return 0;
+}
+
 int mpeg3video_seek(mpeg3video_t *video)
 {
 	long this_gop_start;
@@ -214,7 +227,7 @@ int mpeg3video_seek(mpeg3video_t *video)
 			video->repeat_count = 0;
 			mpeg3bits_reset(vstream);
 			mpeg3video_read_frame_backend(video, 0);
-			mpeg3bits_seek_byte(vstream, 0);
+			mpeg3_rewind_video(video);
 			video->repeat_count = 0;
 		}
 
@@ -272,7 +285,7 @@ int mpeg3video_seek(mpeg3video_t *video)
 
 						frame = track->keyframe_numbers[i];
 						if(frame == 0)
-							byte = 0;
+							byte = track->frame_offsets[0];
 						else
 							byte = track->frame_offsets[frame];
 						video->framenum = track->keyframe_numbers[i];

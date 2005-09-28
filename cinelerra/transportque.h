@@ -20,7 +20,7 @@ public:
 	void copy_from(TransportCommand *command);
 	TransportCommand& operator=(TransportCommand &command);
 // Get the range to play back from the EDL
-	void set_playback_range(EDL *edl = 0);
+	void set_playback_range(EDL *edl = 0, int use_inout = 0);
 
 // Adjust playback range with in/out points for rendering
 	void adjust_playback_range();
@@ -61,7 +61,8 @@ public:
 		EDL *new_edl,
 		int realtime,
 // Persistent starting point
-		int resume = 0);
+		int resume = 0,
+		int use_inout = 0);
 	void update_change_type(int change_type);
 
 	TransportCommand command;

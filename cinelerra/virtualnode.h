@@ -54,27 +54,10 @@ public:
 							Track *track) { return 0; };
 	virtual VirtualNode* create_plugin(Plugin *real_plugin) { return 0; };
 
-/*
- * 	int render_as_plugin(int64_t source_len,
- * 						int64_t source_position,
- * 						int ring_buffer,
- * 						int64_t fragment_position,
- * 						int64_t fragment_len);
- */
 
 // Called by read_data to get the previous plugin in a parent node's subnode
 // table.
 	VirtualNode* get_previous_plugin(VirtualNode *current_plugin);
-
-/*
- * 	int get_plugin_input(int &double_buffer_in, int64_t &fragment_position_in,
- * 					int &double_buffer_out, int64_t &fragment_position_out,
- * 					int double_buffer, int64_t fragment_position);
- */
-
-// Get the order to render modules and plugins attached to this.
-// Return 1 if not completed after this pass.
-//	int sort(ArrayList<VirtualNode*>*render_list);
 
 // subnodes this node owns
 // was vplugins

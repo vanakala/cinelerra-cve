@@ -9,7 +9,7 @@ class ToTextBox;
 class SampleZoomPanel;
 class AmpZoomPanel;
 class TrackZoomPanel;
-
+class AutoZoom;
 
 
 #include "guicast.h"
@@ -29,6 +29,7 @@ public:
 	int resize_event(int w, int h);
 	void redraw_time_dependancies();
 	int update();          // redraw the current values
+	void update_autozoom();
 	int update_clocks();
 	int update_playback(int64_t new_position);       // update the playback position
 	int set_selection(int which_one);
@@ -39,6 +40,8 @@ public:
 	SampleZoomPanel *sample_zoom;
 	AmpZoomPanel *amp_zoom;
 	TrackZoomPanel *track_zoom;
+	AutoZoom *auto_zoom;
+	BC_Title *auto_zoom_text;
 
 	BC_Title *zoom_value, *playback_value;
 	LengthTextBox *length_value;
@@ -52,7 +55,6 @@ class SampleZoomPanel : public ZoomPanel
 {
 public:
 	SampleZoomPanel(MWindow *mwindow, ZoomBar *zoombar, int x, int y);
-	~SampleZoomPanel();
 	int handle_event();
 	MWindow *mwindow;
 	ZoomBar *zoombar;
@@ -62,7 +64,6 @@ class AmpZoomPanel : public ZoomPanel
 {
 public:
 	AmpZoomPanel(MWindow *mwindow, ZoomBar *zoombar, int x, int y);
-	~AmpZoomPanel();
 	int handle_event();
 	MWindow *mwindow;
 	ZoomBar *zoombar;
@@ -72,8 +73,17 @@ class TrackZoomPanel : public ZoomPanel
 {
 public:
 	TrackZoomPanel(MWindow *mwindow, ZoomBar *zoombar, int x, int y);
-	~TrackZoomPanel();
 	int handle_event();
+	MWindow *mwindow;
+	ZoomBar *zoombar;
+};
+
+class AutoZoom : public BC_Tumbler
+{
+public:
+	AutoZoom(MWindow *mwindow, ZoomBar *zoombar, int x, int y);
+	int handle_up_event();
+	int handle_down_event();
 	MWindow *mwindow;
 	ZoomBar *zoombar;
 };

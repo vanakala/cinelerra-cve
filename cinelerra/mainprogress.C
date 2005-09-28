@@ -79,39 +79,35 @@ void MainProgressBar::update_title(char *string, int default_)
 
 	if(progress_box)
 	{
-		progress_box->lock_window();
-		progress_box->update_title(string);
-		progress_box->unlock_window();
+		progress_box->update_title(string, 1);
 	}
 	else
 	if(progress_bar)
 	{
-		mwindow->gui->lock_window();
-		mwindow->gui->show_message(string, BLACK);
+		mwindow->gui->lock_window("MainProgressBar::update_title");
+		mwindow->gui->show_message(string);
 		mwindow->gui->unlock_window();
 	}
 }
 
-void MainProgressBar::update_length(long length)
+void MainProgressBar::update_length(int64_t length)
 {
 	this->length = length;
 //printf("MainProgressBar::update_length %d\n", length);
 	if(progress_box)
 	{
-		progress_box->lock_window();
-		progress_box->update_length(length);
-		progress_box->unlock_window();
+		progress_box->update_length(length, 1);
 	}
 	else
 	if(progress_bar)
 	{
-		mwindow->gui->lock_window();
+		mwindow->gui->lock_window("MainProgressBar::update_length");
 		progress_bar->update_length(length);
 		mwindow->gui->unlock_window();
 	}
 }
 
-int MainProgressBar::update(long value)
+int MainProgressBar::update(int64_t value)
 {
 // Print ETA on title
 	double current_eta = (double)eta_timer->get_scaled_difference(1000);
@@ -134,28 +130,31 @@ int MainProgressBar::update(long value)
 			eta = 0;
 
 //printf("MainProgressBar::update %f %d %d %f\n", current_eta, length, value, eta);
-		Units::totext(time_string, 
-			eta,
-			TIME_HMS2);
+ 		Units::totext(time_string, 
+ 			eta,
+ 			TIME_HMS2);
+// 		sprintf(time_string, 
+// 			"%dh%dm%ds", 
+// 			(int64_t)eta / 3600,
+// 			((int64_t)eta / 60) % 60,
+// 			(int64_t)eta % 60);
 
 		sprintf(string, _("%s ETA: %s"), 
 			default_title, 
 			time_string);
 		update_title(string, 0);
 
-		last_eta = (long)current_eta;
+		last_eta = (int64_t)current_eta;
 	}
 
 	if(progress_box)
 	{
-		progress_box->lock_window();
-		progress_box->update(value);
-		progress_box->unlock_window();
+		progress_box->update(value, 1);
 	}
 	else
 	if(progress_bar)
 	{
-		mwindow->gui->lock_window();
+		mwindow->gui->lock_window("MainProgressBar::update");
 		progress_bar->update(value);
 		mwindow->gui->unlock_window();
 	}
@@ -200,12 +199,14 @@ MainProgress::~MainProgress()
 {
 }
 
-MainProgressBar* MainProgress::start_progress(char *text, long total_length)
+MainProgressBar* MainProgress::start_progress(char *text, 
+	int64_t total_length,
+	int use_window)
 {
 	MainProgressBar *result = 0;
 
 // Default to main window
-	if(!mwindow_progress)
+	if(!mwindow_progress && !use_window)
 	{
 		mwindow_progress = new MainProgressBar(mwindow, this);
 		mwindow_progress->progress_bar = gui->statusbar->main_progress;

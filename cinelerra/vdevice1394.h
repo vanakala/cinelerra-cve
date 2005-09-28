@@ -4,6 +4,8 @@
 #include "device1394input.inc"
 #include "device1394output.inc"
 #include "guicast.h"
+#include "iec61883input.inc"
+#include "iec61883output.inc"
 #include "libdv.h"
 #include "quicktime.h"
 #include "sema.h"
@@ -36,6 +38,8 @@ public:
 private:
 	Device1394Input *input_thread;
 	Device1394Output *output_thread;
+	IEC61883Input *input_iec;
+	IEC61883Output *output_iec;
 	VFrame *user_frame;
 };
 

@@ -35,6 +35,15 @@ public:
 		double min = 1,
 		double max = 131072,
 		int zoom_type = ZOOM_PERCENTAGE);
+	ZoomPanel(MWindow *mwindow, 
+		BC_WindowBase *subwindow, 
+		double value, 
+		int x, 
+		int y, 
+		int w, 
+		double *user_table,
+		int user_size,
+		int zoom_type = ZOOM_PERCENTAGE);
 	~ZoomPanel();
 
 	virtual int handle_event() { return 1; };
@@ -50,6 +59,9 @@ public:
 	void update(double value);
 	void update(char *value);
 	void reposition_window(int x, int y);
+// Set images to be used
+	void set_menu_images(VFrame **data);
+	void set_tumbler_images(VFrame **data);
 
 	MWindow *mwindow;
 	BC_WindowBase *subwindow;
@@ -62,8 +74,12 @@ public:
 	ZoomTumbler *zoom_tumbler;
 	char string[BCTEXTLEN];
 	double min, max;
+	double *user_table;
+	int user_size;
 	int zoom_type;
 	ArrayList<ZoomHash*> zoom_table;
+	VFrame **menu_images;
+	VFrame **tumbler_images;
 };
 
 class ZoomPopup : public BC_PopupMenu

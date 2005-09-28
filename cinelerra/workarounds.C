@@ -1,3 +1,4 @@
+#include <math.h>
 #include "workarounds.h"
 
 
@@ -39,3 +40,9 @@ void Workarounds::clamp(double &x, double y, double z)
 	else
 	if(x > z) x = z;
 }
+
+float Workarounds::pow(float x, float y)
+{
+	return powf(x, y);
+}
+

@@ -86,6 +86,7 @@ public:
 // Set the channel in the current batch and the picture controls
 	int set_channel(int channel);
 	void set_channel(Channel *channel);
+	int has_signal();
 
 	void toggle_label();
 // Set values in batch structures
@@ -185,7 +186,7 @@ public:
 // Color model for uncompressed device interface
 	int color_model;
 // Picture quality and parameters the device supports
-	Picture *picture;
+	PictureConfig *picture;
 // Fill dropped frames with duplicates
 	int fill_frames;
 // Parameters for video monitor

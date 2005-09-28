@@ -12,6 +12,7 @@
 
 typedef struct
 {
+// Bytes relative to start of stream.
 	int64_t start_byte;
 	int64_t end_byte;
 // Used in final table
@@ -109,10 +110,10 @@ static int ifo_vmg(ifo_t *ifo)
 	return -1;
 }
 
-static int ifo_table(ifo_t *ifo, unsigned long offset, unsigned long tbl_id)
+static int ifo_table(ifo_t *ifo, int64_t offset, unsigned long tbl_id)
 {
 	unsigned char *data;
-	unsigned long len = 0;
+	int64_t len = 0;
 	int i;
 	u_int32_t *ptr;
 
@@ -337,11 +338,20 @@ static void get_ifo_playlist(mpeg3_t *file, mpeg3_demuxer_t *demuxer)
 					mpeg3_title_t *title;
 
 					mpeg3io_joinpath(title_path, directory, new_filename->d_name);
-					title = demuxer->titles[demuxer->total_titles++] = mpeg3_new_title(file, title_path);
+					title = demuxer->titles[demuxer->total_titles++] = 
+						mpeg3_new_title(file, title_path);
 					title->total_bytes = mpeg3io_path_total_bytes(title_path);
 					title->start_byte = total_bytes;
 					title->end_byte = total_bytes + title->total_bytes;
 					total_bytes += title->total_bytes;
+					
+					mpeg3_new_cell(title, 
+						0, 
+						title->end_byte,
+						0,
+						title->end_byte,
+						0);
+	
 //printf("%s\n", title_path);
 				}
 			}
@@ -499,8 +509,8 @@ static void cellplayinfo(ifo_t *ifo, mpeg3ifo_celltable_t *cells)
 			for(i = 0; i < total_cells; i++)
 			{
 				ifo_pgci_cell_addr_t *cell_addr = (ifo_pgci_cell_addr_t *)cell_info;
-				long start_byte = bswap_32(cell_addr->vobu_start);
-				long end_byte = bswap_32(cell_addr->vobu_last_end);
+				int64_t start_byte = bswap_32(cell_addr->vobu_start);
+				int64_t end_byte = bswap_32(cell_addr->vobu_last_end);
 				int cell_type = cell_addr->chain_info;
 
 				if(!cells->total_cells && start_byte > 0)
@@ -543,10 +553,6 @@ static void celladdresses(ifo_t *ifo, mpeg3ifo_celltable_t *cell_addresses)
 			cell->end_byte = (int64_t)bswap_32(cell_addr->end);
 			cell->vob_id = bswap_16(cell_addr->vob_id);
 			cell->cell_id = cell_addr->cell_id;
-/*
- * printf("celladdresses vob id: %x cell id: %x start: %ld end: %ld\n", 
- * 	bswap_16(cell_addr->vob_id), cell_addr->cell_id, (long)cell->start_byte, (long)cell->end_byte);
- */
 			cell_addr++;
 		}
 	}
@@ -576,8 +582,6 @@ static void celladdresses(ifo_t *ifo, mpeg3ifo_celltable_t *cell_addresses)
 	for(i = 0; i < total_addresses; i++)
 	{
 		mpeg3ifo_cell_t *cell = &cell_addresses->cells[i];
-//printf("celladdresses vob id: %x cell id: %x start: %ld end: %ld\n", 
-//	cell->vob_id, cell->cell_id, (long)cell->start_byte, (long)cell->end_byte);
 	}
 }
 
@@ -591,7 +595,7 @@ static void finaltable(mpeg3ifo_celltable_t *final_cells,
 	int i, j;
 	int current_vobid;
 // Start and end bytes of programs
-	long program_start_byte[256], program_end_byte[256];
+	int64_t program_start_byte[256], program_end_byte[256];
 
 	final_cells->total_cells = 0;
 	final_cells->cells_allocated = cell_addresses->total_cells;
@@ -662,34 +666,30 @@ return;
 
 
 /* Read the title information from a ifo */
-static int read_ifo(mpeg3_t *file, 
-	mpeg3_demuxer_t *demuxer, 
+int mpeg3_read_ifo(mpeg3_t *file, 
 	int read_cells)
 {
 	int64_t last_ifo_byte = 0, first_ifo_byte = 0;
 	mpeg3ifo_celltable_t *cells, *cell_addresses, *final_cells;
+	mpeg3_demuxer_t *demuxer = file->demuxer;
 	int current_title = 0, current_cell = 0;
-	int i;
+	int i, j;
 	ifo_t *ifo;
     int fd = mpeg3io_get_fd(file->fs);
 	int64_t title_start_byte = 0;
 	int result;
 
-//printf("read_ifo 1\n");
-	if(!(ifo = ifo_open(fd, 0))) 
+	if(!(ifo = ifo_open(fd, 0)))
 	{
 		fprintf(stderr, "read_ifo: Error decoding ifo.\n");
 		return 1;
 	}
 
-//printf("read_ifo 1\n");
-//	file->packet_size = 2048;
 	demuxer->read_all = 1;
 	cells = calloc(1, sizeof(mpeg3ifo_celltable_t));
 	cell_addresses = calloc(1, sizeof(mpeg3ifo_celltable_t));
 	final_cells = calloc(1, sizeof(mpeg3ifo_celltable_t));
 
-//printf("read_ifo 1\n");
 	get_ifo_playlist(file, demuxer);
 	get_ifo_header(demuxer, ifo);
 	cellplayinfo(ifo, cells);
@@ -698,8 +698,36 @@ static int read_ifo(mpeg3_t *file,
 		cells, 
 		cell_addresses);
 
-//printf("read_ifo 2\n");
-// Assign cells to titles
+// Get maximum program for program_bytes table
+	int total_programs = 0;
+	if(final_cells)
+	{
+		for(i = 0; i < final_cells->total_cells; i++)
+		{
+			mpeg3ifo_cell_t *cell = &final_cells->cells[i];
+			if(cell->program > total_programs - 1)
+				total_programs = cell->program + 1;
+		}
+	}
+	int64_t *program_bytes = calloc(total_programs, sizeof(int64_t));
+
+
+// Clear out old cells
+	for(i = 0; i < demuxer->total_titles; i++)
+	{
+		mpeg3_title_t *title = demuxer->titles[i];
+		if(title->cell_table)
+		{
+			for(j = 0; j < title->cell_table_size; j++)
+			{
+				free(title->cell_table);
+				title->cell_table = 0;
+			}
+		}
+	}
+
+
+// Assign new cells to titles
 	while(final_cells && current_cell < final_cells->total_cells)
 	{
 		mpeg3_title_t *title;
@@ -712,34 +740,34 @@ static int read_ifo(mpeg3_t *file,
 		cell_start = cell->start_byte;
 		cell_end = cell->end_byte;
 
-//printf("read_ifo 1 %d %llx %llx %d\n", current_cell, (int64_t)cell->start_byte, (int64_t)cell->end_byte, cell->program);
-		while(cell_start < cell_end && length)
+// Cell may be split by a title so handle in fragments.
+		while(cell_start < cell_end && length > 0)
 		{
 			length = cell_end - cell_start;
 
+// Clamp length to end of current title
 			if(cell_start + length - title_start_byte > title->total_bytes)
 				length = title->total_bytes - cell_start + title_start_byte;
 
+//printf("%llx %llx %llx %llx\n", cell_end, cell_start, title_start_byte, length);
 
 // Should never fail.  If it does it means the length of the cells and the
 // length of the titles don't match.  The title lengths must match or else
 // the cells won't line up.
-			if(length)
+			if(length > 0)
 			{
-/*
- * printf("read_ifo title=%d start=%lx end=%lx\n", 
- * current_title, 
- * (long)(cell_start - title_start_byte), 
- * (long)(cell_start - title_start_byte + length));
- */
+				int64_t program_start = program_bytes[cell->program];
+				int64_t program_end = program_start + length;
+				int64_t title_start = cell_start - title_start_byte;
+				int64_t title_end = title_start + length;
 				mpeg3_new_cell(title, 
-					(long)(cell_start - title_start_byte), 
-					0,
-					(long)(cell_start - title_start_byte + length),
-					0,
+					program_start, 
+					program_end,
+					title_start,
+					title_end,
 					cell->program);
-
 				cell_start += length;
+				program_bytes[cell->program] += length;
 			}
 			else
 			{
@@ -766,56 +794,11 @@ static int read_ifo(mpeg3_t *file,
 		current_cell++;
 	}
 
-//printf("read_ifo 4\n");
-// Look up time values for the cells
-// Should only be used for building a TOC
-/*
- * 	if(read_cells)
- * 	{
- * 		for(current_title = 0; current_title < demuxer->total_titles; current_title++)
- * 		{
- * 			mpeg3_title_t *title = demuxer->titles[current_title];
- * 			mpeg3demux_open_title(demuxer, current_title);
- * 
- * 			for(i = 0; i < title->cell_table_size; i++)
- * 			{
- * 				mpeg3demux_cell_t *cell = &title->cell_table[i];
- * 
- * 				mpeg3io_seek(title->fs, cell->start_byte);
- * 				mpeg3_read_next_packet(demuxer);
- * 				cell->start_time = demuxer->time;
- * 
- * 				mpeg3io_seek(title->fs, cell->end_byte);
- * 				if(cell->end_byte >= title->total_bytes)
- * 					mpeg3_read_prev_packet(demuxer);
- * 				else
- * 					mpeg3_read_next_packet(demuxer);
- * 
- * 				cell->end_time = demuxer->time;
- * 			}
- * 		}
- * 		mpeg3demux_open_title(demuxer, 0);
- * 	}
- */
-
-//for(i = 0; i < demuxer->total_titles; i++) mpeg3_dump_title(demuxer->titles[i]);
-
+	free(program_bytes);
 	delete_celltable(cells);
 	delete_celltable(cell_addresses);
 	delete_celltable(final_cells);
 	ifo_close(ifo);
-
-//printf("read_ifo 5\n");
-	mpeg3demux_assign_programs(demuxer);
-//printf("read_ifo 6\n");
-	return 0;
-}
-
-int mpeg3_read_ifo(mpeg3_t *file, int read_cells)
-{
-	file->is_program_stream = 1;
-
-	read_ifo(file, file->demuxer, read_cells);
 	return 0;
 }
 

@@ -1,3 +1,4 @@
+#include "clip.h"
 #include "loadmode.h"
 #include "mwindow.h"
 #include "theme.h"
@@ -47,6 +48,10 @@ LoadMode::~LoadMode()
 		delete load_modes.values[i];
 }
 
+int LoadMode::calculate_h(BC_WindowBase *gui)
+{
+	return BC_TextBox::calculate_h(gui, MEDIUMFONT, 1, 1);
+}
 
 char* LoadMode::mode_to_text()
 {
@@ -77,8 +82,28 @@ int LoadMode::create_objects()
 	return 0;
 }
 
+int LoadMode::get_h()
+{
+	int result = 0;
+	result = MAX(result, title->get_h());
+	result = MAX(result, textbox->get_h());
+	return result;
+}
+
+int LoadMode::get_x()
+{
+	return x;
+}
+
+int LoadMode::get_y()
+{
+	return y;
+}
+
 int LoadMode::reposition_window(int x, int y)
 {
+	this->x = x;
+	this->y = y;
 	title->reposition_window(x, y);
 	y += 20;
 	textbox->reposition_window(x, y);
@@ -116,10 +141,8 @@ LoadModeListBox::~LoadModeListBox()
 
 int LoadModeListBox::handle_event()
 {
-//printf("LoadModeListBox::handle_event 1 %d\n", get_selection(0, 0));
 	if(get_selection(0, 0) >= 0)
 	{
-//printf("LoadModeListBox::handle_event 2 %s\n", get_selection(0, 0)->get_text());
 		loadmode->textbox->update(get_selection(0, 0)->get_text());
 		*(loadmode->output) = ((LoadModeItem*)get_selection(0, 0))->value;
 	}

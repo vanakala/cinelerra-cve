@@ -10,7 +10,7 @@
 #include "recordconfig.h"
 #include <string.h>
 
-#define DEVICE_H 25
+#define DEVICE_H 50
 
 ADevicePrefs::ADevicePrefs(int x, 
 	int y, 
@@ -20,6 +20,7 @@ ADevicePrefs::ADevicePrefs(int x,
 	AudioInConfig *in_config, 
 	int mode)
 {
+	reset();
 	this->pwindow = pwindow;
 	this->dialog = dialog;
 	this->driver = -1;
@@ -28,13 +29,6 @@ ADevicePrefs::ADevicePrefs(int x,
 	this->in_config = in_config;
 	this->x = x;
 	this->y = y;
-	menu = 0;
-	firewire_channels = 0;
-	firewire_path = 0;
-	firewire_syt = 0;
-	syt_title = 0;
-	channels_title = 0;
-	path_title = 0;
 }
 
 ADevicePrefs::~ADevicePrefs()
@@ -43,7 +37,25 @@ ADevicePrefs::~ADevicePrefs()
 	if(menu) delete menu;
 }
 
+void ADevicePrefs::reset()
+{
+	menu = 0;
+	firewire_channels = 0;
+	firewire_path = 0;
+	firewire_syt = 0;
+	syt_title = 0;
+	channels_title = 0;
+	path_title = 0;
 
+	alsa_drivers = 0;
+	path_title = 0;
+	bits_title = 0;
+	channels_title = 0;
+	alsa_device = 0;
+	alsa_bits = 0;
+	alsa_channels = 0;
+	alsa_workaround = 0;
+}
 
 int ADevicePrefs::initialize()
 {
@@ -88,6 +100,7 @@ int ADevicePrefs::initialize()
 			break;
 		case AUDIO_1394:
 		case AUDIO_DV1394:
+		case AUDIO_IEC61883:
 			create_firewire_objs();
 			break;
 	}
@@ -97,7 +110,6 @@ int ADevicePrefs::initialize()
 int ADevicePrefs::get_h()
 {
 	return DEVICE_H + 25;
-	return MAXDEVICES * DEVICE_H + 25;
 }
 
 int ADevicePrefs::delete_objects()
@@ -116,9 +128,11 @@ int ADevicePrefs::delete_objects()
 			break;
 		case AUDIO_1394:
 		case AUDIO_DV1394:
+		case AUDIO_IEC61883:
 			delete_firewire_objs();
 			break;
 	}
+	reset();
 	driver = -1;
 	return 0;
 }
@@ -186,6 +200,7 @@ int ADevicePrefs::delete_alsa_objs()
 	delete alsa_device;
 	delete alsa_bits;
 	delete alsa_channels;
+	delete alsa_workaround;
 #endif
 	return 0;
 }
@@ -196,6 +211,7 @@ int ADevicePrefs::create_oss_objs()
 	char *output_char;
 	int *output_int;
 	int y1 = y;
+	BC_Resources *resources = BC_WindowBase::get_resources();
 
 	for(int i = 0; i < MAXDEVICES; i++)
 	{
@@ -230,7 +246,7 @@ int ADevicePrefs::create_oss_objs()
 			y, 
 			_("Device path:"), 
 			MEDIUMFONT, 
-			BLACK));
+			resources->text_default));
 		dialog->add_subwindow(oss_path[i] = new ADeviceTextBox(x1, 
 			y1 + 20, 
 			output_char));
@@ -250,7 +266,7 @@ int ADevicePrefs::create_oss_objs()
 					output_int = &out_config->oss_out_bits;
 					break;
 			}
-			if(i == 0) dialog->add_subwindow(bits_title = new BC_Title(x1, y, _("Bits:"), MEDIUMFONT, BLACK));
+			if(i == 0) dialog->add_subwindow(bits_title = new BC_Title(x1, y, _("Bits:"), MEDIUMFONT, resources->text_default));
 			oss_bits = new BitsPopup(dialog, 
 				x1, 
 				y1 + 20, 
@@ -276,7 +292,7 @@ int ADevicePrefs::create_oss_objs()
 				output_int = &out_config->oss_out_channels[i];
 				break;
 		}
-		if(i == 0) dialog->add_subwindow(channels_title = new BC_Title(x1, y1, _("Channels:"), MEDIUMFONT, BLACK));
+		if(i == 0) dialog->add_subwindow(channels_title = new BC_Title(x1, y1, _("Channels:"), MEDIUMFONT, resources->text_default));
 		dialog->add_subwindow(oss_channels[i] = new ADeviceIntBox(x1, y1 + 20, output_int));
 		y1 += DEVICE_H;
 break;
@@ -291,6 +307,7 @@ int ADevicePrefs::create_alsa_objs()
 	char *output_char;
 	int *output_int;
 	int y1 = y;
+	BC_Resources *resources = BC_WindowBase::get_resources();
 
 	int x1 = x + menu->get_w() + 5;
 
@@ -315,13 +332,14 @@ int ADevicePrefs::create_alsa_objs()
 			output_char = out_config->alsa_out_device;
 			break;
 	}
-	dialog->add_subwindow(path_title = new BC_Title(x1, y, _("Device:"), MEDIUMFONT, BLACK));
+	dialog->add_subwindow(path_title = new BC_Title(x1, y, _("Device:"), MEDIUMFONT, resources->text_default));
 	alsa_device = new ALSADevice(dialog,
 		x1, 
 		y1 + 20, 
 		output_char,
 		alsa_drivers);
 	alsa_device->create_objects();
+	int x2 = x1;
 
 	x1 += alsa_device->get_w() + 5;
 	switch(mode)
@@ -336,7 +354,7 @@ int ADevicePrefs::create_alsa_objs()
 			output_int = &out_config->alsa_out_bits;
 			break;
 	}
-	dialog->add_subwindow(bits_title = new BC_Title(x1, y, _("Bits:"), MEDIUMFONT, BLACK));
+	dialog->add_subwindow(bits_title = new BC_Title(x1, y, _("Bits:"), MEDIUMFONT, resources->text_default));
 	alsa_bits = new BitsPopup(dialog, 
 		x1, 
 		y1 + 20, 
@@ -361,9 +379,21 @@ int ADevicePrefs::create_alsa_objs()
 			output_int = &out_config->alsa_out_channels;
 			break;
 	}
-	dialog->add_subwindow(channels_title = new BC_Title(x1, y, _("Channels:"), MEDIUMFONT, BLACK));
+	dialog->add_subwindow(channels_title = new BC_Title(x1, y, _("Channels:"), MEDIUMFONT, resources->text_default));
 	dialog->add_subwindow(alsa_channels = new ADeviceIntBox(x1, y1 + 20, output_int));
-	y1 += DEVICE_H;
+	y1 += alsa_channels->get_h() + 20 + 5;
+	x1 = x2;
+
+	if(mode == MODEPLAY)
+	{
+		dialog->add_subwindow(alsa_workaround = 
+			new BC_CheckBox(x1, 
+				y1, 
+				&out_config->interrupt_workaround,
+				_("Stop playback locks up.")));
+	}
+
+
 #endif
 
 	return 0;
@@ -374,6 +404,7 @@ int ADevicePrefs::create_esound_objs()
 	int x1 = x + menu->get_w() + 5;
 	char *output_char;
 	int *output_int;
+	BC_Resources *resources = BC_WindowBase::get_resources();
 
 	switch(mode)
 	{
@@ -387,7 +418,7 @@ int ADevicePrefs::create_esound_objs()
 			output_char = out_config->esound_out_server;
 			break;
 	}
-	dialog->add_subwindow(server_title = new BC_Title(x1, y, _("Server:"), MEDIUMFONT, BLACK));
+	dialog->add_subwindow(server_title = new BC_Title(x1, y, _("Server:"), MEDIUMFONT, resources->text_default));
 	dialog->add_subwindow(esound_server = new ADeviceTextBox(x1, y + 20, output_char));
 
 	switch(mode)
@@ -403,7 +434,7 @@ int ADevicePrefs::create_esound_objs()
 			break;
 	}
 	x1 += esound_server->get_w() + 5;
-	dialog->add_subwindow(port_title = new BC_Title(x1, y, _("Port:"), MEDIUMFONT, BLACK));
+	dialog->add_subwindow(port_title = new BC_Title(x1, y, _("Port:"), MEDIUMFONT, resources->text_default));
 	dialog->add_subwindow(esound_port = new ADeviceIntBox(x1, y + 20, output_int));
 	return 0;
 }
@@ -411,8 +442,9 @@ int ADevicePrefs::create_esound_objs()
 int ADevicePrefs::create_firewire_objs()
 {
 	int x1 = x + menu->get_w() + 5;
-	int *output_int;
-	char *output_char;
+	int *output_int = 0;
+	char *output_char = 0;
+	BC_Resources *resources = BC_WindowBase::get_resources();
 
 // Firewire path
 	switch(mode)
@@ -421,6 +453,7 @@ int ADevicePrefs::create_firewire_objs()
 			if(driver == AUDIO_DV1394)
 				output_char = out_config->dv1394_path;
 			else
+			if(driver == AUDIO_1394)
 				output_char = out_config->firewire_path;
 			break;
 // Our version of raw1394 doesn't support changing the path
@@ -431,7 +464,7 @@ int ADevicePrefs::create_firewire_objs()
 
 	if(output_char)
 	{
-		dialog->add_subwindow(path_title = new BC_Title(x1, y, _("Device Path:"), MEDIUMFONT, BLACK));
+		dialog->add_subwindow(path_title = new BC_Title(x1, y, _("Device Path:"), MEDIUMFONT, resources->text_default));
 		dialog->add_subwindow(firewire_path = new ADeviceTextBox(x1, y + 20, output_char));
 		x1 += firewire_path->get_w() + 5;
 	}
@@ -452,7 +485,7 @@ int ADevicePrefs::create_firewire_objs()
 //			output_int = &out_config->afirewire_out_port;
 			break;
 	}
-	dialog->add_subwindow(port_title = new BC_Title(x1, y, _("Port:"), MEDIUMFONT, BLACK));
+	dialog->add_subwindow(port_title = new BC_Title(x1, y, _("Port:"), MEDIUMFONT, resources->text_default));
 	dialog->add_subwindow(firewire_port = new ADeviceIntBox(x1, y + 20, output_int));
 
 	x1 += firewire_port->get_w() + 5;
@@ -470,7 +503,7 @@ int ADevicePrefs::create_firewire_objs()
 			output_int = &in_config->firewire_channel;
 			break;
 	}
-	dialog->add_subwindow(channel_title = new BC_Title(x1, y, _("Channel:"), MEDIUMFONT, BLACK));
+	dialog->add_subwindow(channel_title = new BC_Title(x1, y, _("Channel:"), MEDIUMFONT, resources->text_default));
 	dialog->add_subwindow(firewire_channel = new ADeviceIntBox(x1, y + 20, output_int));
 	x1 += firewire_channel->get_w() + 5;
 
@@ -490,7 +523,7 @@ int ADevicePrefs::create_firewire_objs()
 
 	if(output_int)
 	{
-		dialog->add_subwindow(channels_title = new BC_Title(x1, y, _("Channels:"), MEDIUMFONT, BLACK));
+		dialog->add_subwindow(channels_title = new BC_Title(x1, y, _("Channels:"), MEDIUMFONT, resources->text_default));
 		dialog->add_subwindow(firewire_channels = new ADeviceIntBox(x1, y + 20, output_int));
 		x1 += firewire_channels->get_w() + 5;
 	}
@@ -502,7 +535,10 @@ int ADevicePrefs::create_firewire_objs()
 			if(driver == AUDIO_DV1394)
 				output_int = &out_config->dv1394_syt;
 			else
+			if(driver == AUDIO_1394)
 				output_int = &out_config->firewire_syt;
+			else
+				output_int = 0;
 			break;
 		case MODERECORD:
 			output_int = 0;
@@ -511,7 +547,7 @@ int ADevicePrefs::create_firewire_objs()
 
 	if(output_int)
 	{
-		dialog->add_subwindow(syt_title = new BC_Title(x1, y, _("Syt Offset:"), MEDIUMFONT, BLACK));
+		dialog->add_subwindow(syt_title = new BC_Title(x1, y, _("Syt Offset:"), MEDIUMFONT, resources->text_default));
 		dialog->add_subwindow(firewire_syt = new ADeviceIntBox(x1, y + 20, output_int));
 		x1 += firewire_syt->get_w() + 5;
 	}
@@ -546,8 +582,9 @@ void ADriverMenu::create_objects()
 
 	if(!do_input) add_item(new ADriverItem(this, AUDIO_ESOUND_TITLE, AUDIO_ESOUND));
 //	add_item(new ADriverItem(this, AUDIO_NAS_TITLE, AUDIO_NAS));
-	add_item(new ADriverItem(this, AUDIO_1394_TITLE, AUDIO_1394));
-	if(!do_input) add_item(new ADriverItem(this, AUDIO_DV1394_TITLE, AUDIO_DV1394));
+	if(!do_input) add_item(new ADriverItem(this, AUDIO_1394_TITLE, AUDIO_1394));
+	add_item(new ADriverItem(this, AUDIO_DV1394_TITLE, AUDIO_DV1394));
+	add_item(new ADriverItem(this, AUDIO_IEC61883_TITLE, AUDIO_IEC61883));
 }
 
 char* ADriverMenu::adriver_to_string(int driver)
@@ -574,6 +611,9 @@ char* ADriverMenu::adriver_to_string(int driver)
 			break;
 		case AUDIO_DV1394:
 			sprintf(string, AUDIO_DV1394_TITLE);
+			break;
+		case AUDIO_IEC61883:
+			sprintf(string, AUDIO_IEC61883_TITLE);
 			break;
 	}
 	return string;
