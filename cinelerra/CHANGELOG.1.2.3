@@ -1,0 +1,116 @@
+H.264 Video, MPEG-4 Audio and Video encoding in Quicktime, compatible with Quicktime player.
+ - The ffmpeg front end has been improved to where it generates useful quality.
+ - Certain frame rates and compression options don't work in Win.
+
+Refurbished MPEG table of contents.
+ - Tables of contents now detect changes in PID.
+ - Tables of contents are created twice as fast.
+ - Load any MPEG or IFO file with video in Cinelerra and a table of 
+   contents is automatically created.
+ - Audio indexes are created simultaneously with MPEG tables of contents.
+ - Still possible to create permanent tables of contents with mpeg3toc.
+ - Using MPEG files in a renderfarm still requires mpeg3toc due to the fact that the
+ automatic .toc files are hidden.
+
+Fewer lockups when resizing video window.
+Fewer crashes due to socket timeouts in background rendering.
+Directory search boxes only contain relevant information for directories.
+Hourglass displayed in main window during time consuming operations.
+Having shared effect off but sharing instance on doesn't create mono sound anymore.
+Tool options get closed when CWindow is closed.
+Picture settings retained after recording from V4L2.  Workaround for V4L2 driver
+	where 2 different picture settings must be uploaded.
+Bitrate displayed in asset info box.
+64 bit plugins are stored in /usr/lib64 so 64 bit executables can be run on the
+	same systems as 32 bit executables without renaming the directory.
+Color picker in compositor window allows selecting colors from the output frame
+	for use in effects.
+Refurbushed chroma key:
+ - uses color cube instead of hue for color comparison
+ - uses the color picker to select the color
+Support for raw digital camera importing.
+ - Uses dcraw to decode the images into floating point RGB.
+ - tested on Canon .cr2 and .tiff files.
+ - Linearize effect is provided to convert gamma values.
+White balance function in colorbalance effect.
+ - Select the grey color in the compositor window.
+ - Hit the white balance button.
+
+YUV 16 bit colormodels have been depreciated.  The only practical
+colormodels have been 8 bit and floating point.  Even with raw sensor
+data, the precision needs to be higher to handle the gamma correction.
+
+Difference key using different tracks.
+Undo buffers use compression to reduce memory usage.
+Undo supports effect tweeks.
+Nudge textboxes are ganged.
+Mouse wheel changes nudge value.
+
+Holding CTRL when doing any playback operation causes the in/out points to be used
+for the playback range.
+
+Moved from the unified camera and projector keyframes to discrete x
+and y curves.
+ - Z was already made discrete out of necessary utility.
+ - Too much information was drawn on the Compositor window.
+ - The timeline functionality is extended to better handle curves.
+
+Alt+up and Alt+down zoom the automation vertically.
+
+Dedicated window provided for selecting which automation overlays to show.
+
+The problem with virtual filesystem:
+ - VFS was developed back when we wanted to use some high powered servers but
+ didn't have root access to mount filesystems on them.  That situation ended and 
+ it was taking an enourmous amount of effort to work VFS around the number of 
+ strange things libraries do like accessing megabytes using fgetc.  
+ VFS has now been phased out.
+
+Fixed lockups due to MWindow locking CWindow when MWindow was still locked.
+Fixed problems loading ulaw sound files.
+
+Tip of the day shown.
+Filebox supports deleting files and refreshing.
+Extra zoom levels added to Compositor window.
+
+Highlighted region overrides in/out points if it is nonzero length.
+
+Blond theme has not been updated.  Instead it has been replaced by the
+SUV theme.  The SUV theme is extremely manly and dark and should make
+the media stand out more.
+
+MPEG4 audio decodes on x86_64.  Had to put stdint.h in faad.h and
+change all the unsigned long to uint32_t because those structures were
+redefined in structs.h with uint32_t.
+
+Channel changing for Video4Linux2 ported to kernel 2.6.7. Automatic
+channel scanning and sorting is supported for the 1 guy who still uses
+these cards.
+
+Pressing ALT while clicking in cropping window causes translation of
+all 4 cropping points.
+
+Rotation effect supports a variable pivot and drawing of the pivot in
+the frame.
+
+DV support migrated to latest API rewrite: libIEC61883
+
+MPEG video encoding provides a graphical interface for YUV 4:2:0
+encoding on the mjpegtools version of mpeg2enc.  
+
+The audio playback options support a global offset for audio
+synchronization.  This doesn't affect the audio playback or the
+rendering.  It just compensates for inaccuracy in the Linux sound
+drivers.
+
+The ALSA options allow compensation for lockups at end of playback
+depending on the ALSA version, soundcard, and ALSA rewrite.
+
+Press Tab while the cursor is anywhere over a track to toggle the track
+arming status.  Press Shift-Tab while the cursor is over a track to
+toggle the arming status of every other track. 
+
+Resample effect changed to match the behavior of the Reframe effects. 
+Scale factors > 1 shorten the length of the audio.
+
+
