@@ -99,19 +99,4 @@ $AUTOMAKE --foreign --add-missing &&
 echo "Running autoconf ..." &&
 $AUTOCONF &&
 
-echo "Running aclocal in libsndfile ..." &&
-(cd libsndfile && $ACLOCAL) &&
-
-echo "Running libtoolize in libsndfile ..."
-(cd libsndfile && libtoolize --force) &&
-
-echo "Running autoheader in libsndfile ..." &&
-(cd libsndfile && $AUTOHEADER) &&
-
-echo "Running automake in libsndfile ..." &&
-(cd libsndfile && $AUTOMAKE --foreign --add-missing) &&
-
-echo "Running autoconf in libsndfile ..." &&
-(cd libsndfile && $AUTOCONF) &&
-
 echo "Finished" 

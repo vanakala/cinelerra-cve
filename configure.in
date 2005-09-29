@@ -209,24 +209,23 @@ AC_ARG_ENABLE(firewire,
 							[ enable_firewire=yes ])
 
 if test "x$enable_firewire" = "xyes"; then
-	AC_CHECK_LIB(raw1394, raw1394_new_handle, :,[AC_MSG_WARN([libraw1394 not found])
-	NOT_FOUND="$NOT_FOUND libraw1394"
-	FIREWIRE="no"])
+	PKG_CHECK_MODULES(LIBRAW1394, libraw1394 >= 1.2.0)
+	PKG_CHECK_MODULES(LIBIEC61883, libiec61883)
 
 	AC_CHECK_LIB(avc1394, avc1394_send_command, :,[AC_MSG_WARN([libavc1394 not found])
 	NOT_FOUND="$NOT_FOUND libavc1394"
-	FIREWIRE="no"],-lraw1394)
+	FIREWIRE="no"],$LIBRAW1394_LIBS)
 
 	AC_CHECK_LIB(rom1394, rom1394_get_bus_id, :,[AC_MSG_WARN([librom1394 not found])
 	NOT_FOUND="$NOT_FOUND librom1394"
-	FIREWIRE="no"],-lraw1394)
+	FIREWIRE="no"],$LIBRAW1394_LIBS)
 
 	if test "$FIREWIRE" = "no"; then
 		FIREWIRE_CFLAGS=""
 		FIREWIRE_LDFLAGS=""
 	else
-		FIREWIRE_CFLAGS="-DHAVE_FIREWIRE"
-		FIREWIRE_LDFLAGS="-lavc1394 -lrom1394 -lraw1394"
+		FIREWIRE_CFLAGS="-DHAVE_FIREWIRE $LIBIEC61883_CFLAGS $LIBRAW1394_CFLAGS"
+		FIREWIRE_LDFLAGS="-lavc1394 -lrom1394 $LIBIEC61883_LIBS $LIBRAW1394_LIBS"
 	fi
 fi
 AC_SUBST(FIREWIRE_CFLAGS)
@@ -261,17 +260,18 @@ have_asm_sse=false
 have_asm_nasm=false
 have_x86cpu=false
 
+
+############## libx264
+
+AC_CHECK_LIB(x264, x264_encoder_open, 
+    [AC_CHECK_HEADERS(x264.h, [HAVE_LIBX264=yes])],[AC_MSG_WARN([libx264 not found])])
+if test "x$HAVE_LIBX264" = xyes; then :; else
+	NOT_FOUND="$NOT_FOUND libx264"
+fi
+##############
+
 ############## MMX / 3DNOW  POWERPC / ALTIVEC
 
-AC_ARG_ENABLE(arch,
-	AC_HELP_STRING([--enable-arch=arch], [use ppc or x86 as args, using x86 is the same as use --enable-x86 --enable-mmx]),
-		[ enable_arch=$enablevel ],
-		[ enable_arch=x86 ])
-
-AC_ARG_ENABLE(x86, 
-							AC_HELP_STRING([--enable-x86], [enables x86 specific features autodetection in libmpeg3 and mpeg2enc (default is disabled)]),
-							[ enable_x86=$enableval ],
-							[ enable_x86=no ])
 AC_ARG_ENABLE(mmx, 
 							AC_HELP_STRING([--enable-mmx], [enables support for mmx (default is disabled)]), 
 							[ enable_mmx=$enableval ],
@@ -281,24 +281,20 @@ AC_ARG_ENABLE(3dnow,
 							[ enable_3dnow=$enableval ],
 							[ enable_3dnow=no ])
 
-AC_ARG_ENABLE(powerpc, 
-		AC_HELP_STRING([--enable-powerpc], [enables powerpc support in ffmpeg (default is disabled)]),
-		[ enable_powerpc=$enableval ],
-		[ enable_powerpc=no ])
-
 AC_ARG_ENABLE(altivec, 
 		AC_HELP_STRING([--enable-altivec], [enables altivec support (default is disabled)]),
 		[ enable_altivec=$enableval ],
 		[ enable_altivec=no ])
 
-if test "x$enable_spefarch" = "xx86"; then
-	enable_x86=yes
-	enable_mmx=yes
-elif test "x$enable_spefarch" = "xpowerpc"; then
-	enable_powerpc=yes
-fi
+enable_mmx=no
+enable_3dnow=no
+enable_powerpc=no
+enable_altivec=no
 
-if test "x$enable_x86" = "xyes"; then
+case "$target_cpu" in
+i586 | i686)
+	enable_mmx=yes
+
 	CPU_CFLAGS="-DX86_CPU $CPU_CFLAGS"
 	have_x86cpu=true
 
@@ -309,24 +305,15 @@ if test "x$enable_x86" = "xyes"; then
 	if test "x$enable_3dnow" = "xyes"; then
 		CPU_CFLAGS="-DHAVE_3Dnow $CPU_CFLAGS" # -DUSE_3DNOW --> don't use, not compilin
 	fi
-	enable_powerpc=no
-	enable_altivec=no
-else
-	enable_mmx=no
-	enable_3dnow=no
-fi
-
-if test "x$enable_powerpc" = "xyes"; then
-	CPU_CFLAGS=""
+;;
+powerpc)
+	CPU_CFLAGS="-mcpu=powerpc $CPU_CFLAGS"
 	if test "x$enable_altivec" = "xyes"; then
-	CPU_CFLAGS=""
+	CPU_CFLAGS="-maltivec -mabi=altivec $CPU_CFLAGS"
 	fi
-	enable_x86=no
-	enable_mmx=no
-	enable_3dnow=no
-else
-	enable_altivec=no
-fi
+	enable_powerpc=yes
+;;
+esac
 
 AM_CONDITIONAL(USEMMX, test "x$enable_mmx" = "xyes")
 AM_CONDITIONAL(TARGET_BUILTIN_VECTOR,test "x$enable_mmx" = "xyes")
