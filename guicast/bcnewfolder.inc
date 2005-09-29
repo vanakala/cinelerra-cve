@@ -3,6 +3,7 @@
 
 
 class BC_NewFolder;
+class BC_NewFolderThread;
 
 
 #endif
