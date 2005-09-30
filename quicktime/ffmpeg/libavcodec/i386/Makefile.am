@@ -20,7 +20,8 @@ libavcodeci386_la_SOURCES = \
 	dsputil_mmx.c mpegvideo_mmx.c \
 	idct_mmx.c motion_est_mmx.c \
 	simple_idct_mmx.c vp3dsp_mmx.c \
-	vp3dsp_sse2.c
+	vp3dsp_sse2.c \
+	$(SSE_FILES)
 
 EXTRA_DIST = cputest.c \
 	dsputil_h264_template_mmx.c \
