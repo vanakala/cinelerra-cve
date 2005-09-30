@@ -27,7 +27,7 @@
 
 /*#define MMX */
 
-#ifdef MMX
+#ifdef USE_MMX
 #include "mmx.h"
 #endif
 
@@ -60,7 +60,7 @@ typedef struct
 
 	__s16 *RTjpeg_old=NULL;
 
-#ifdef MMX
+#ifdef USE_MMX
 	mmx_t RTjpeg_lmask;
 	mmx_t RTjpeg_cmask;
 #else

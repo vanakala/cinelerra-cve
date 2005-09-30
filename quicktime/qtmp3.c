@@ -1,14 +1,6 @@
 #include "funcprotos.h"
 
-#ifdef MMX
-#define MMX_TEMP
-#undef MMX
-#endif
 #include <lame/lame.h>
-                                                                                
-#ifdef MMX_TEMP
-#define MMX
-#endif
 
 
 #include "mpeg3private.h"

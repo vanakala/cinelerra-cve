@@ -299,7 +299,7 @@ i586 | i686)
 	have_x86cpu=true
 
 	if test "x$enable_mmx" = "xyes"; then
-	CPU_CFLAGS="-DHAVE_MMX -DMMX -DUSE_MMX $CPU_CFLAGS" # -D_MMX_ doesn't work
+	CPU_CFLAGS="-DHAVE_MMX -DUSE_MMX $CPU_CFLAGS" # -D_MMX_ doesn't work
 	have_asm_mmx=true
 	fi
 	if test "x$enable_3dnow" = "xyes"; then

@@ -169,7 +169,7 @@ int RTjpeg_s2b(__s16 *data, __s8 *strm, __u8 bt8, __u32 *qtbl)
  return (int)ci;
 }
 
-#if defined(MMX)
+#if defined(USE_MMX)
 void RTjpeg_quant_init(void)
 {
  int i;
@@ -238,7 +238,7 @@ void RTjpeg_quant(__s16 *block, __s32 *qtbl)
 /*
  * Perform the forward DCT on one block of samples.
  */
-#ifdef MMX
+#ifdef USE_MMX
 static mmx_t RTjpeg_C4   =(mmx_t)(long long)0x2D412D412D412D41LL;
 static mmx_t RTjpeg_C6   =(mmx_t)(long long)0x187E187E187E187ELL;
 static mmx_t RTjpeg_C2mC6=(mmx_t)(long long)0x22A322A322A322A3LL;
@@ -1198,7 +1198,7 @@ void RTjpeg_idct_init(void)
 
 void RTjpeg_idct(__u8 *odata, __s16 *data, int rskip)
 {
-#ifdef MMX
+#ifdef USE_MMX
 
 static mmx_t fix_141			= (mmx_t)(long long)0x5a825a825a825a82LL;
 static mmx_t fix_184n261	= (mmx_t)(long long)0xcf04cf04cf04cf04LL;
@@ -2492,7 +2492,7 @@ int RTjpeg_compressYUV420(__s8 *sp, unsigned char *bp)
  register __s8 * bp3 = bp2 + (RTjpeg_Csize>>1);
  register int i, j, k;
 
-#ifdef MMX
+#ifdef USE_MMX
  emms();
 #endif
  sb=sp;
@@ -2532,7 +2532,7 @@ int RTjpeg_compressYUV420(__s8 *sp, unsigned char *bp)
   bp3+=RTjpeg_width<<2;
 			 
  }
-#ifdef MMX
+#ifdef USE_MMX
  emms();
 #endif
  return (sp-sb);
@@ -2545,7 +2545,7 @@ int RTjpeg_compressYUV422(__s8 *sp, unsigned char *bp)
  register __s8 * bp3 = bp2 + RTjpeg_Csize;
  register int i, j, k;
 
-#ifdef MMX
+#ifdef USE_MMX
  emms();
 #endif
  sb=sp;
@@ -2576,7 +2576,7 @@ int RTjpeg_compressYUV422(__s8 *sp, unsigned char *bp)
   bp3+=RTjpeg_width<<2;
 			 
  }
-#ifdef MMX
+#ifdef USE_MMX
  emms();
 #endif
  return (sp-sb);
@@ -2587,7 +2587,7 @@ int RTjpeg_compress8(__s8 *sp, unsigned char *bp)
  __s8 * sb;
  int i, j;
 
-#ifdef MMX
+#ifdef USE_MMX
  emms();
 #endif
  
@@ -2604,7 +2604,7 @@ int RTjpeg_compress8(__s8 *sp, unsigned char *bp)
   bp+=RTjpeg_width;
  }
 
-#ifdef MMX
+#ifdef USE_MMX
  emms();
 #endif
  return (sp-sb);
@@ -2616,7 +2616,7 @@ void RTjpeg_decompressYUV422(__s8 *sp, __u8 *bp)
  register __s8 * bp3 = bp2 + (RTjpeg_Csize);
  int i, j,k;
 
-#ifdef MMX
+#ifdef USE_MMX
  emms();
 #endif
 
@@ -2653,7 +2653,7 @@ void RTjpeg_decompressYUV422(__s8 *sp, __u8 *bp)
   bp2+=RTjpeg_width<<2;
   bp3+=RTjpeg_width<<2;
  }
-#ifdef MMX
+#ifdef USE_MMX
  emms();
 #endif
 }
@@ -2665,7 +2665,7 @@ void RTjpeg_decompressYUV420(__s8 *sp, __u8 *bp)
  register __s8 * bp3 = bp2 + (RTjpeg_Csize>>1);
  int i, j,k;
 
-#ifdef MMX
+#ifdef USE_MMX
  emms();
 #endif
 
@@ -2715,7 +2715,7 @@ void RTjpeg_decompressYUV420(__s8 *sp, __u8 *bp)
   bp2+=RTjpeg_width<<2;
   bp3+=RTjpeg_width<<2;
  }
-#ifdef MMX
+#ifdef USE_MMX
  emms();
 #endif
 }
@@ -2724,7 +2724,7 @@ void RTjpeg_decompress8(__s8 *sp, __u8 *bp)
 {
  int i, j;
 
-#ifdef MMX
+#ifdef USE_MMX
  emms();
 #endif
 
@@ -2769,7 +2769,7 @@ void RTjpeg_init_mcompress(void)
  bzero(RTjpeg_old, ((4*RTjpeg_width*RTjpeg_height)));
 }
 
-#ifdef MMX
+#ifdef USE_MMX
 
 int RTjpeg_bcomp(__s16 *old, mmx_t *mask)
 {
@@ -2846,7 +2846,7 @@ int RTjpeg_mcompressYUV420(__s8 *sp, unsigned char *bp, __u16 lmask, __u16 cmask
  register __s8 * bp3 = bp2 + (RTjpeg_Csize>>1);
  register int i, j, k;
 
-#ifdef MMX
+#ifdef USE_MMX
  emms();
  RTjpeg_lmask=(mmx_t)(((__u64)lmask<<48)|((__u64)lmask<<32)|((__u64)lmask<<16)|lmask);
  RTjpeg_cmask=(mmx_t)(((__u64)cmask<<48)|((__u64)cmask<<32)|((__u64)cmask<<16)|cmask);
@@ -2922,7 +2922,7 @@ int RTjpeg_mcompressYUV420(__s8 *sp, unsigned char *bp, __u16 lmask, __u16 cmask
   bp3+=RTjpeg_width<<2;
 			 
  }
-#ifdef MMX
+#ifdef USE_MMX
  emms();
 #endif
  return (sp-sb);
@@ -2937,7 +2937,7 @@ int RTjpeg_mcompressYUV422(__s8 *sp, unsigned char *bp, __u16 lmask, __u16 cmask
  register __s8 * bp3;
  register int i, j, k;
 
-#ifdef MMX
+#ifdef USE_MMX
  emms();
  RTjpeg_lmask=(mmx_t)(((__u64)lmask<<48)|((__u64)lmask<<32)|((__u64)lmask<<16)|lmask);
  RTjpeg_cmask=(mmx_t)(((__u64)cmask<<48)|((__u64)cmask<<32)|((__u64)cmask<<16)|cmask);
@@ -2999,7 +2999,7 @@ int RTjpeg_mcompressYUV422(__s8 *sp, unsigned char *bp, __u16 lmask, __u16 cmask
   bp3+=RTjpeg_width<<2;
  }
  printf ("%d\n", block - RTjpeg_old);
-#ifdef MMX
+#ifdef USE_MMX
  emms();
 #endif
  return (sp-sb);
@@ -3011,7 +3011,7 @@ int RTjpeg_mcompress8(__s8 *sp, unsigned char *bp, __u16 lmask)
  __s16 *block;
  int i, j;
 
-#ifdef MMX
+#ifdef USE_MMX
  emms();
  RTjpeg_lmask=(mmx_t)(((__u64)lmask<<48)|((__u64)lmask<<32)|((__u64)lmask<<16)|lmask);
 #else
@@ -3037,7 +3037,7 @@ int RTjpeg_mcompress8(__s8 *sp, unsigned char *bp, __u16 lmask)
   }
   bp+=RTjpeg_width<<3;
  }
-#ifdef MMX
+#ifdef USE_MMX
  emms();
 #endif
  return (sp-sb);
