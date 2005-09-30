@@ -603,7 +603,7 @@ cinelerra_LDADD = \
 	-lsndfile \
 	-lpng -ljpeg -ltiff -lz \
 	$(SOUND_LDFLAGS) \
-	$(FIREWIRE_LDFLAGS) -liec61883 -ldv \
+	$(FIREWIRE_LDFLAGS) -ldv \
 	-luuid $(AVIFILE_LDFLAGS) \
 	$(MJPEG_LIBS)
 
