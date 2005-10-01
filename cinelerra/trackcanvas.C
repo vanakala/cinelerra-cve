@@ -2027,7 +2027,9 @@ int TrackCanvas::do_keyframes(int cursor_x,
 			{
 				switch(i)
 				{
+					case AUTOMATION_PAN:
 					case AUTOMATION_MODE:
+					case AUTOMATION_MASK:
 						result = do_autos(track, 
 							automation->autos[i],
 							cursor_x, 
