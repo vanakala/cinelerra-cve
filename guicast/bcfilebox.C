@@ -664,6 +664,10 @@ int BC_FileBox::resize_event(int w, int h)
 		text_button->get_y());
 	folder_button->reposition_window(w - (get_w() - folder_button->get_x()), 
 		folder_button->get_y());
+	reload_button->reposition_window(w - (get_w() - reload_button->get_x()),
+		reload_button->get_y());
+	delete_button->reposition_window(w - (get_w() - delete_button->get_x()),
+		delete_button->get_y());
 	updir_button->reposition_window(w - (get_w() - updir_button->get_x()), 
 		updir_button->get_y());
 	set_w(w);
