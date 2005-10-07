@@ -472,7 +472,7 @@ void Autos::paste(int64_t start,
 	do{
 		result = file->read_tag();
 
-		if(!result)
+		if(!result && !file->tag.title_is("/AUTO"))
 		{
 // End of list
 			if(/* strstr(file->tag.get_title(), "AUTOS") && */
@@ -670,7 +670,7 @@ int Autos::load(FileXML *file)
 	do{
 		result = file->read_tag();
 		
-		if(!result)
+		if(!result && !file->tag.title_is("/AUTO"))
 		{
 // First tag with leading / is taken as end of autos
 			if(/* strstr(file->tag.get_title(), "AUTOS") && */
