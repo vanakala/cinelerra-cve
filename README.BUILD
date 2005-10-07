@@ -43,16 +43,3 @@ The others are maybe part of your distrib. If they aren't,
 you can find most of them on ftp://ftp.nerim.net/debian-marillat/
 and the rest on http://www.kiberpipa.org/~minmax/cinelerra/builds/
 (if not, please complain to cinelerra@skolelinux.no!)
-
-http://lpnotfr.free.fr/cinelerra-libs
-	- libdv (0.103)
-	- liba52 (0.7.4)
-	- libaudiofile (0.2.3)
-	- libraw1394 (0.9.0)
-	- libavc1394 (0.4.1)
-	- liblame-dev
-	- libavcodec
-	- libavcodec-dev
-	- libuuid
-	- libfaad2
-	- nasm (for mmx optimization)
