@@ -285,7 +285,7 @@ SET_TRACE
 		}
 	}
 
-//	menu_bar->set_color(resources->menu_title_text);
+	menu_bar->set_color(resources->menu_title_text);
 	menu_bar->set_font(MEDIUMFONT);
 	menu_bar->draw_text(x + 10 + text_offset, 
 		h - menu_bar->get_text_descent(MEDIUMFONT) + text_offset, 
