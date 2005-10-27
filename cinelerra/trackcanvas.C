@@ -159,18 +159,6 @@ int TrackCanvas::drag_motion()
 		cursor_x < get_w() && 
 		cursor_y < get_h())
 	{
-//printf("drag motion 1 %d\n", ctrl_down());
-		if(mwindow->session->free_drag) redraw = 1;
-		if(ctrl_down()) 
-		{
-			redraw = 1;
-			mwindow->session->free_drag = 1;
-		}
-		else
-		{
-			mwindow->session->free_drag = 0;
-		}
-
 // Find the edit and track the cursor is over
 		for(Track *track = mwindow->edl->tracks->first; track; track = track->next)
 		{
@@ -307,8 +295,6 @@ int TrackCanvas::drag_start_event()
 			result = 1;
 		}
 	}
-
-	if(result) mwindow->session->free_drag = ctrl_down();
 
 	return result;
 }
@@ -556,18 +542,7 @@ int TrackCanvas::drag_stop()
 						break;		// Do not do anything
 					}
 					
-					double position_f;
-					if(mwindow->session->free_drag)
-						position_f = (double)(get_cursor_x() + mwindow->edl->local_session->view_start) *
-							mwindow->edl->local_session->zoom_sample /
-							mwindow->edl->session->sample_rate;
-					else
-					{
-						position = mwindow->session->edit_highlighted ?
-							mwindow->session->edit_highlighted->startproject :
-							mwindow->session->track_highlighted->edits->length();
-						position_f = mwindow->session->track_highlighted->from_units(position);
-					}
+					double position_f = mwindow->session->track_highlighted->from_units(position);
 					Track *track = mwindow->session->track_highlighted;
 					mwindow->move_edits(mwindow->session->drag_edits,
 						track,
@@ -1106,12 +1081,6 @@ void TrackCanvas::draw_paste_destination()
 // Get source width in pixels
 				w = -1;
 
-// Use current cursor position
-				if(mwindow->session->free_drag)
-					position = (double)(get_cursor_x() + mwindow->edl->local_session->view_start) *
-						mwindow->edl->local_session->zoom_sample /
-						mwindow->edl->session->sample_rate;
-				else
 // Use start of highlighted edit
 				if(mwindow->session->edit_highlighted)
 					position = mwindow->session->track_highlighted->from_units(
@@ -1466,7 +1435,6 @@ void TrackCanvas::draw_highlighting()
 {
 	int64_t x, y, w, h;
 	int draw_box = 0;
-
 
 
 

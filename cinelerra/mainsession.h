@@ -49,8 +49,6 @@ public:
 	int ccanvas_highlighted;
 // Current drag operation
 	int current_operation;
-// Free drag enabled
-	int free_drag;
 // Item being dragged
 	ArrayList <PluginServer*> *drag_pluginservers;
 	Plugin *drag_plugin;
