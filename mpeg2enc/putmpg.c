@@ -53,7 +53,7 @@ void putintrablk(slice_engine_t *engine,
 	for(n = 1; n < 64; n++)
 	{
 /* use appropriate entropy scanning pattern */
-    	signed_level = blk[(picture->altscan ? alternate_scan : mpeg2_zig_zag_scan)[n]];
+    	signed_level = blk[(picture->altscan ? alternate_scan_hv : mpeg2_zig_zag_scan)[n]];
     	if (signed_level!=0)
     	{
 //printf("putintrablk 1 %d\n", picture->altscan);slice_testbits(engine);
@@ -85,7 +85,7 @@ void putnonintrablk(slice_engine_t *engine,
 	for(n = 0; n < 64; n++)
 	{
 /* use appropriate entropy scanning pattern */
-      signed_level = blk[(picture->altscan ? alternate_scan : mpeg2_zig_zag_scan)[n]];
+      signed_level = blk[(picture->altscan ? alternate_scan_hv : mpeg2_zig_zag_scan)[n]];
 
       if (signed_level!=0)
       {

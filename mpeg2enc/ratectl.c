@@ -167,7 +167,7 @@ static int scale_quant(pict_data_s *picture, double quant )
 			iquant = 112;
 
 		iquant =
-			non_linear_mquant_table[map_non_linear_mquant[iquant]];
+			non_linear_mquant_table_hv[map_non_linear_mquant_hv[iquant]];
 	}
 	else
 	{

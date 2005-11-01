@@ -72,7 +72,7 @@ static void (*psub_pred) (uint8_t *pred, uint8_t *cur,
  */
 
 
-void init_transform()
+void init_transform_hv()
 {
 	int flags;
 	flags = cpu_accel();

@@ -71,7 +71,7 @@
  * upwards which partly compensates.
  */
  
-int quant_non_intra_3dnow(	
+int quant_non_intra_hv_3dnow(	
 	pict_data_s *picture,
 	int16_t *src, int16_t *dst,
 	int mquant,
@@ -181,7 +181,7 @@ restart:
 
 			if( saturated )
 			{
-				int new_mquant = next_larger_quant( picture, mquant );
+				int new_mquant = next_larger_quant_hv( picture, mquant );
 				if( new_mquant != mquant )
 				{
 					mquant = new_mquant;
@@ -189,7 +189,7 @@ restart:
 				}
 				else
 				{
-					return quant_non_intra(picture, src, dst, mquant, 
+					return quant_non_intra_hv(picture, src, dst, mquant, 
 										   nonsat_mquant);
 				}
 			}
@@ -212,7 +212,7 @@ restart:
  */
 static int trunc_mxcsr = 0x7f80;
  
-int quant_non_intra_sse(	
+int quant_non_intra_hv_sse(	
 	pict_data_s *picture,
 	int16_t *src, int16_t *dst,
 	int mquant,
@@ -316,7 +316,7 @@ restart:
 
 			if( saturated )
 			{
-				int new_mquant = next_larger_quant( picture, mquant );
+				int new_mquant = next_larger_quant_hv( picture, mquant );
 				if( new_mquant != mquant )
 				{
 					mquant = new_mquant;
@@ -324,7 +324,7 @@ restart:
 				}
 				else
 				{
-					return quant_non_intra(picture, src, dst, mquant, 
+					return quant_non_intra_hv(picture, src, dst, mquant, 
 										   nonsat_mquant);
 				}
 			}
@@ -351,7 +351,7 @@ restart:
  * through the whole lot...
  */
 																							     											     
-int quant_non_intra_mmx(
+int quant_non_intra_hv_mmx(
 	pict_data_s *picture,
 	int16_t *src, int16_t *dst,
 	int mquant,
@@ -371,7 +371,7 @@ int quant_non_intra_mmx(
 	/* MMX routine does not work right for MQ=2 ... (no unsigned mult) */
 	if( mquant == 2 )
 	{
-		return quant_non_intra(picture, src, dst, mquant, nonsat_mquant);
+		return quant_non_intra_hv(picture, src, dst, mquant, nonsat_mquant);
 	}
 	/* If available use the fast MMX quantiser.  It returns
 	   flags to signal if coefficients are outside its limited range or
@@ -400,7 +400,7 @@ int quant_non_intra_mmx(
   
 		if( (flags & 0xff00) != 0 )
 		{
-			int new_mquant = next_larger_quant( picture, mquant );
+			int new_mquant = next_larger_quant_hv( picture, mquant );
 			if( new_mquant != mquant )
 			{
 				mquant = new_mquant;
@@ -433,7 +433,7 @@ int quant_non_intra_mmx(
 	fall back to the original 32-bit int version: this is rare */
 	if(  (flags & 0xff) != 0 || saturated)
 	{
-		return quant_non_intra(picture, src, dst, mquant, nonsat_mquant);
+		return quant_non_intra_hv(picture, src, dst, mquant, nonsat_mquant);
 	}
 
 	*nonsat_mquant = mquant;

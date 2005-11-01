@@ -97,17 +97,17 @@ int toolame_buffer_read(char *dst, int size, int n)
 	int got_it = 0;
 	int result = 0;
 
-//printf("toolame_buffer_read 1 %d %d %d\n", got_it, toolame_eof, toolame_error);
 	while(!got_it && !toolame_eof && !toolame_error)
 	{
-//printf("toolame_buffer_read 2\n");
 		pthread_mutex_lock(&toolame_input_lock);
-//printf("toolame_buffer_read 3\n");
+// printf("toolame_buffer_read 1 size=%d n=%d eof=%d %d %d\n", 
+// size, n, toolame_eof, got_it, toolame_error);
 		if(toolame_eof || toolame_buffer_bytes >= size * n)
 			got_it = 1;
 		else
 			pthread_mutex_unlock(&toolame_output_lock);
 	}
+
 	result = size * n;
 	if(result > toolame_buffer_bytes)
 		result = toolame_buffer_bytes;
@@ -266,12 +266,15 @@ int toolame (int argc, char **argv)
   else
     parse_args (argc, argv, &frame, &model, &num_samples, original_file_name,
 		encoded_file_name);
+
   print_config (&frame, &model, original_file_name, encoded_file_name);
 
   /* this will load the alloc tables and do some other stuff */
   hdr_to_frps (&frame);
   nch = frame.nch;
   error_protection = header.error_protection;
+
+
 
   while (get_audio (musicin, buffer, num_samples, nch, &header) > 0) {
     if (glopts.verbosity > 1)
@@ -1023,9 +1026,11 @@ void parse_args (int argc, char **argv, frame_info * frame, int *psy,
   if ((header->bitrate_index = toolame_BitrateIndex (brate, header->version)) < 0)
     err = 1;
 
+
   /* All options are hunky dory, open the input audio file and
      return to the main drag */
   open_bit_stream_w (&bs, outPath, BUFFER_SIZE);
+
 }
 
 

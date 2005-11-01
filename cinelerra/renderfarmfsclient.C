@@ -7,7 +7,7 @@
 #include "renderfarm.h"
 #include "renderfarmclient.h"
 #include "renderfarmfsclient.h"
-#include "renderfarmfsserver.inc"
+#include "renderfarmfsserver.h"
 #include "units.h"
 
 #include <dlfcn.h>
@@ -80,7 +80,6 @@ FILE* fopen64(const char *path, const char *mode)
 // This pointer is meaningless except on the server.
 	FILE *result = 0;
 
-//printf("fopen64 %s\n", path);
   	if (!func)
     	func = (FILE*(*)(const char *path, const char *mode))dlsym(RTLD_NEXT, "fopen64");
 
@@ -294,7 +293,6 @@ size_t fwrite (__const void *__restrict __ptr, size_t __size,
 	int done = 0;
 	if(!func)
     	func = (int(*)(__const void *, size_t, size_t, FILE *))dlsym(RTLD_NEXT, "fwrite");
-//printf("fwrite\n");
 
 	if(renderfarm_fs_global)
 	{
@@ -491,7 +489,30 @@ char *fgets (char *__restrict __s, int __n, FILE *__restrict __stream)
 	return result;
 }
 
+int fscanf (FILE *__restrict __stream,
+		   __const char *__restrict __format, ...)
+{
+	int result = 0;
+	int done = 0;
+	va_list ap;
+	va_start(ap, __format);
 
+	if(renderfarm_fs_global)
+	{
+		renderfarm_fs_global->lock();
+		if(renderfarm_fs_global->is_open(__stream))
+		{
+// Since this is currently only used in one place in dcraw, leave it blank.
+// The future implementation may just read until the next \n and scan the string.
+			result = renderfarm_fs_global->fscanf(__stream, __format, ap);
+			done = 1;
+		}
+		renderfarm_fs_global->unlock();
+	}
+
+	if(!done) result = vfscanf(__stream, __format, ap);
+	return result;
+}
 
 
 
@@ -517,7 +538,7 @@ char *fgets (char *__restrict __s, int __n, FILE *__restrict __stream)
 
 RenderFarmFSClient::RenderFarmFSClient(RenderFarmClientThread *client)
 {
-	mutex_lock = new Mutex;
+	mutex_lock = new Mutex("RenderFarmFSClient::mutex_lock");
 	this->client = client;
 }
 
@@ -535,7 +556,7 @@ void RenderFarmFSClient::initialize()
 
 void RenderFarmFSClient::lock()
 {
-	mutex_lock->lock();
+	mutex_lock->lock("RenderFarmFSClient::lock");
 }
 
 void RenderFarmFSClient::unlock()
@@ -550,27 +571,51 @@ int RenderFarmFSClient::is_open(FILE *ptr)
 	return 0;
 }
 
-void RenderFarmFSClient::set_open(FILE *ptr)
+void RenderFarmFSClient::set_open(FILE *ptr, int64_t pointer)
 {
 	files.append(ptr);
+	if(sizeof(FILE*) == 4)
+		pointers.append(pointer);
 }
 
-void RenderFarmFSClient::unset_open(FILE *ptr)
+void RenderFarmFSClient::unset_open(FILE *ptr, int64_t pointer)
 {
 	files.remove(ptr);
+	if(sizeof(FILE*) == 4)
+		pointers.remove(pointer);
+}
+
+int64_t RenderFarmFSClient::get_64(FILE *ptr)
+{
+	if(sizeof(FILE*) == 4)
+	{
+		for(int i = 0; i < files.total; i++)
+		{
+			if(files.values[i] == ptr)
+				return pointers.values[i];
+		}
+	}
+	else
+		return Units::ptr_to_int64(ptr);
+
+	printf("RenderFarmFSClient::get_64 file %p not found\n", ptr);
+	return 0;
 }
 
 
 FILE* RenderFarmFSClient::fopen(const char *path, const char *mode)
 {
+if(DEBUG)
+printf("RenderFarmFSClient::fopen 1\n");
 	int len = strlen(path) - strlen(RENDERFARM_FS_PREFIX) + strlen(mode) + 2;
 	char *buffer = new char[len];
 	FILE *file = 0;
+	int64_t file_int64;
 	strcpy(buffer, path + strlen(RENDERFARM_FS_PREFIX));
 	strcpy(buffer + strlen(buffer) + 1, mode);
 
 
-	client->lock();
+	client->lock("RenderFarmFSClient::fopen");
 	if(!client->send_request_header(RENDERFARM_FOPEN, 
 		len))
 	{
@@ -579,13 +624,13 @@ FILE* RenderFarmFSClient::fopen(const char *path, const char *mode)
 			unsigned char data[8];
 			if(client->read_socket((char*)data, 8, RENDERFARM_TIMEOUT) == 8)
 			{
-				int64_t file_int64 = READ_INT64(data);
+				file_int64 = READ_INT64(data);
 				file = (FILE*)Units::int64_to_ptr(file_int64);
 			}
 		}
 	}
 	client->unlock();
-	if(file) set_open(file);
+	if(file) set_open(file, file_int64);
 	delete [] buffer;
 
 if(DEBUG)
@@ -599,10 +644,10 @@ int RenderFarmFSClient::fclose(FILE *file)
 	int result = 0;
 	unsigned char datagram[8];
 	int i = 0;
-	int file_int64 = Units::ptr_to_int64(file);
+	int64_t file_int64 = get_64(file);
 	STORE_INT64(file_int64);
 
-	client->lock();
+	client->lock("RenderFarmFSClient::fclose");
 	if(!client->send_request_header(RENDERFARM_FCLOSE, 8))
 	{
 		if(client->write_socket((char*)datagram, 8, RENDERFARM_TIMEOUT) == 8)
@@ -613,7 +658,7 @@ int RenderFarmFSClient::fclose(FILE *file)
 	else
 		result = -1;
 	client->unlock();
-	unset_open(file);
+	unset_open(file, file_int64);
 if(DEBUG)
 printf("RenderFarmFSClient::fclose file=%p\n", file);
 	return result;
@@ -621,13 +666,15 @@ printf("RenderFarmFSClient::fclose file=%p\n", file);
 
 int RenderFarmFSClient::fileno(FILE *file)
 {
+if(DEBUG)
+printf("RenderFarmFSClient::fileno file=%p\n", file);
 	int result = 0;
 	unsigned char datagram[8];
 	int i = 0;
-	int file_int64 = Units::ptr_to_int64(file);
+	int64_t file_int64 = get_64(file);
 	STORE_INT64(file_int64);
 
-	client->lock();
+	client->lock("RenderFarmFSClient::fileno");
 	if(!client->send_request_header(RENDERFARM_FILENO, 8))
 	{
 		if(client->write_socket((char*)datagram, 8, RENDERFARM_TIMEOUT) == 8)
@@ -656,7 +703,7 @@ int RenderFarmFSClient::remove (__const char *__filename)
 	char *datagram = new char[len];
 	strcpy(datagram, __filename);
 	
-	client->lock();
+	client->lock("RenderFarmFSClient::remove");
 	if(!client->send_request_header(RENDERFARM_REMOVE, len))
 	{
 		if(client->write_socket(datagram, len, RENDERFARM_TIMEOUT) != len)
@@ -682,7 +729,7 @@ int RenderFarmFSClient::rename (__const char *__old, __const char *__new)
 	strcpy(datagram, __old);
 	strcpy(datagram + strlen(__old) + 1, __new);
 	
-	client->lock();
+	client->lock("RenderFarmFSClient::rename");
 	if(!client->send_request_header(RENDERFARM_RENAME, len))
 	{
 		if(client->write_socket(datagram, len, RENDERFARM_TIMEOUT) != len)
@@ -702,13 +749,15 @@ printf("RenderFarmFSClient::remove old=%s new=%s\n", __old, __new);
 
 int RenderFarmFSClient::fgetc (FILE *__stream)
 {
+if(DEBUG)
+printf("RenderFarmFSClient::fgetc 1\n");
 	int result = 0;
 	unsigned char datagram[8];
 	int i = 0;
-	int file_int64 = Units::ptr_to_int64(__stream);
+	int64_t file_int64 = get_64(__stream);
 	STORE_INT64(file_int64);
 	
-	client->lock();
+	client->lock("RenderFarmFSClient::fgetc");
 	if(!client->send_request_header(RENDERFARM_FGETC, 8))
 	{
 		if(client->write_socket((char*)datagram, 8, RENDERFARM_TIMEOUT) != 8)
@@ -734,14 +783,16 @@ printf("RenderFarmFSClient::fgetc file=%p result=%02x\n", __stream, result);
 
 int RenderFarmFSClient::fputc (int __c, FILE *__stream)
 {
+if(DEBUG)
+printf("RenderFarmFSClient::fputc 1\n");
 	int result = 0;
 	unsigned char datagram[9];
 	int i = 0;
-	int file_int64 = Units::ptr_to_int64(__stream);
+	int64_t file_int64 = get_64(__stream);
 	STORE_INT64(file_int64);
 	datagram[i++] = __c;
 	
-	client->lock();
+	client->lock("RenderFarmFSClient::fputc");
 	if(!client->send_request_header(RENDERFARM_FPUTC, 9))
 	{
 		if(client->write_socket((char*)datagram, 9, RENDERFARM_TIMEOUT) != 9)
@@ -758,17 +809,24 @@ printf("RenderFarmFSClient::fputc file=%p result=%02x\n", __stream, result);
 	return result;
 }
 
+int RenderFarmFSClient::fscanf(FILE *__restrict stream, const char *__restrict format, va_list ap)
+{
+	char string[BCTEXTLEN];
+	fgets (string, BCTEXTLEN, stream);
+	return 0;
+}
+
 char* RenderFarmFSClient::fgets (char *__restrict __s, int __n, FILE *__restrict __stream)
 {
 	char *result = 0;
 	int bytes = 0;
 	unsigned char datagram[12];
 	int i = 0;
-	int file_int64 = Units::ptr_to_int64(__stream);
+	int64_t file_int64 = get_64(__stream);
 	STORE_INT64(file_int64);
 	STORE_INT32(__n);
 	
-	client->lock();
+	client->lock("RenderFarmFSClient::fgets");
 	if(!client->send_request_header(RENDERFARM_FGETS, 12))
 	{
 		if(client->write_socket((char*)datagram, 12, RENDERFARM_TIMEOUT) == 12)
@@ -805,12 +863,12 @@ size_t RenderFarmFSClient::fread (void *__restrict __ptr, size_t __size,
 	size_t result = 0;
 	unsigned char datagram[16];
 	int i = 0;
-	int file_int64 = Units::ptr_to_int64(__stream);
+	int64_t file_int64 = get_64(__stream);
 	STORE_INT64(file_int64);
 	STORE_INT32(__size);
 	STORE_INT32(__n);
 	
-	client->lock();
+	client->lock("RenderFarmFSClient::fread");
 	if(!client->send_request_header(RENDERFARM_FREAD, 16))
 	{
 		if(client->write_socket((char*)datagram, 16, RENDERFARM_TIMEOUT) != 16)
@@ -843,15 +901,17 @@ __stream, __size, __n, result);
 size_t RenderFarmFSClient::fwrite (__const void *__restrict __ptr, size_t __size,
 		      size_t __n, FILE *__restrict __s)
 {
+if(DEBUG)
+printf("RenderFarmFSClient::fwrite 1\n");
 	size_t result = 0;
 	unsigned char datagram[16];
 	int i = 0;
-	int file_int64 = Units::ptr_to_int64(__s);
+	int64_t file_int64 = get_64(__s);
 	STORE_INT64(file_int64);
 	STORE_INT32(__size);
 	STORE_INT32(__n);
 	
-	client->lock();
+	client->lock("RenderFarmFSClient::fwrite");
 	if(!client->send_request_header(RENDERFARM_FWRITE, 16))
 	{
 		if(client->write_socket((char*)datagram, 16, RENDERFARM_TIMEOUT) != 16)
@@ -886,15 +946,19 @@ __s, __size, __n, result);
 
 int RenderFarmFSClient::fseek (FILE *__stream, int64_t __off, int __whence)
 {
+if(DEBUG)
+printf("RenderFarmFSClient::fseek 1\n");
 	int result = 0;
 	unsigned char datagram[20];
 	int i = 0;
-	int file_int64 = Units::ptr_to_int64(__stream);
+	int64_t file_int64 = get_64(__stream);
 	STORE_INT64(file_int64);
 	STORE_INT64(__off);
 	STORE_INT32(__whence);
 
-	client->lock();
+// printf("RenderFarmFSClient::fseek %p %llx datagram=%02x%02x%02x%02x%02x%02x%02x%02x\n",
+// __stream, file_int64, datagram[0], datagram[1], datagram[2], datagram[3], datagram[4], datagram[5], datagram[6], datagram[7]);
+	client->lock("RenderFarmFSClient::fseek");
 	if(!client->send_request_header(RENDERFARM_FSEEK, 20))
 	{
 		if(client->write_socket((char*)datagram, 20, RENDERFARM_TIMEOUT) != 20)
@@ -921,10 +985,10 @@ int64_t RenderFarmFSClient::ftell (FILE *__stream)
 	int64_t result = 0;
 	unsigned char datagram[8];
 	int i = 0;
-	int file_int64 = Units::ptr_to_int64(__stream);
+	int64_t file_int64 = get_64(__stream);
 	STORE_INT64(file_int64);
 
-	client->lock();
+	client->lock("RenderFarmFSClient::ftell");
 	if(!client->send_request_header(RENDERFARM_FTELL, 8))
 	{
 		if(client->write_socket((char*)datagram, 8, RENDERFARM_TIMEOUT) != 8)
@@ -952,7 +1016,7 @@ int RenderFarmFSClient::stat (__const char *__restrict __file,
 	int len = strlen(__file) + 1;
 	int result = 0;
 
-	client->lock();
+	client->lock("RenderFarmFSClient::stat");
 	if(!client->send_request_header(RENDERFARM_STAT, len))
 	{
 		if(client->write_socket((char*)__file + strlen(RENDERFARM_FS_PREFIX), len, RENDERFARM_TIMEOUT) == len)
@@ -983,15 +1047,30 @@ int RenderFarmFSClient::stat64 (__const char *__restrict __file,
 {
 	int len = strlen(__file) + 1;
 	int result = 0;
+	bzero(__buf, sizeof(struct stat64));
 
-	client->lock();
+	client->lock("RenderFarmFSClient::stat64");
 	if(!client->send_request_header(RENDERFARM_STAT64, len))
 	{
 		if(client->write_socket((char*)__file + strlen(RENDERFARM_FS_PREFIX), len, RENDERFARM_TIMEOUT) == len)
 		{
-			if(client->read_socket((char*)__buf, sizeof(struct stat64), RENDERFARM_TIMEOUT) == sizeof(struct stat64))
+			vfs_stat_t arg;
+			if(client->read_socket((char*)&arg, sizeof(arg), RENDERFARM_TIMEOUT) == sizeof(arg))
 			{
-				;
+				__buf->st_dev = arg.dev;
+//				__buf->__st_ino = arg.ino32;
+				__buf->st_ino = arg.ino;
+				__buf->st_mode = arg.mode;
+				__buf->st_nlink = arg.nlink;
+				__buf->st_uid = arg.uid;
+				__buf->st_gid = arg.gid;
+				__buf->st_rdev = arg.rdev;
+				__buf->st_size = arg.size;
+				__buf->st_blksize = arg.blksize;
+				__buf->st_blocks = arg.blocks;
+				__buf->st_atim.tv_sec = arg.atim;
+				__buf->st_mtim.tv_sec = arg.mtim;
+				__buf->st_ctim.tv_sec = arg.ctim;
 			}
 			else
 				result = 1;

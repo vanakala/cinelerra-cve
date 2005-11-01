@@ -56,7 +56,7 @@ static void iquant_non_intra_m1(int16_t *src, int16_t *dst, uint16_t *quant_mat)
   Currently just setting up MMX routines if available...
  */
 
-void init_quantizer()
+void init_quantizer_hv()
 {
   int flags;
   flags = cpu_accel();
@@ -67,16 +67,16 @@ void init_quantizer()
 		if( (flags & ACCEL_X86_3DNOW) != 0 )
 		{
 			if(verbose) fprintf( stderr, "3DNOW and ");
-			pquant_non_intra = quant_non_intra_3dnow;
+			pquant_non_intra = quant_non_intra_hv_3dnow;
 		}
 		else if ( (flags & ACCEL_X86_MMXEXT) != 0 )
 		{
 			if(verbose) fprintf( stderr, "SSE and ");
-			pquant_non_intra = quant_non_intra_sse;
+			pquant_non_intra = quant_non_intra_hv_sse;
 		}
 		else 
 		{
-			pquant_non_intra = quant_non_intra;
+			pquant_non_intra = quant_non_intra_hv;
 		}
 
 		if ( (flags & ACCEL_X86_MMXEXT) != 0 )
@@ -96,7 +96,7 @@ void init_quantizer()
   else
 #endif
 	{
-	  pquant_non_intra = quant_non_intra;	  
+	  pquant_non_intra = quant_non_intra_hv;	  
 	  pquant_weight_coeff_sum = quant_weight_coeff_sum;
 	  piquant_non_intra_m1 = iquant_non_intra_m1;
 	}
@@ -113,14 +113,14 @@ void init_quantizer()
  */
  
 
-int next_larger_quant( pict_data_s *picture, int quant )
+int next_larger_quant_hv( pict_data_s *picture, int quant )
 {
 	if( picture->q_scale_type )
 		{
-			if( map_non_linear_mquant[quant]+1 > 31 )
+			if( map_non_linear_mquant_hv[quant]+1 > 31 )
 				return quant;
 			else
-				return non_linear_mquant_table[map_non_linear_mquant[quant]+1];
+				return non_linear_mquant_table_hv[map_non_linear_mquant_hv[quant]+1];
 		}
 	else 
 		{
@@ -144,7 +144,7 @@ int next_larger_quant( pict_data_s *picture, int quant )
  * RETURN: 1 If non-zero coefficients left after quantisaiont 0 otherwise
  */
 
-void quant_intra(
+void quant_intra_hv(
 	pict_data_s *picture,
 	int16_t *src, 
 	int16_t *dst,
@@ -184,7 +184,7 @@ void quant_intra(
 			if ( y > clipvalue )
 			  {
 				clipping = 1;
-				mquant = next_larger_quant( picture, mquant );
+				mquant = next_larger_quant_hv( picture, mquant );
 				quant_mat = intra_q_tbl[mquant];
 				break;
 			  }
@@ -242,7 +242,7 @@ int quant_weight_coeff_sum( int16_t *blk, uint16_t * i_quant_mat )
  * PPro conditional moves...
  */
 																							     											     
-int quant_non_intra(
+int quant_non_intra_hv(
 						   pict_data_s *picture,
 						   int16_t *src, int16_t *dst,
 						   int mquant,
@@ -288,7 +288,7 @@ restart:
 			}
 			else
 			{
-				int new_mquant = next_larger_quant( picture, mquant );
+				int new_mquant = next_larger_quant_hv( picture, mquant );
 				if( new_mquant != mquant )
 				{
 					mquant = new_mquant;

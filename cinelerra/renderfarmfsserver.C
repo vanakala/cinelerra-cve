@@ -23,7 +23,7 @@ void RenderFarmFSServer::initialize()
 {
 }
 
-int RenderFarmFSServer::handle_request(int request_id, int request_size, char *buffer)
+int RenderFarmFSServer::handle_request(int request_id, int request_size, unsigned char *buffer)
 {
 	int result = 0;
 
@@ -41,8 +41,8 @@ printf("RenderFarmFSServer::handle_request request_id=%d\n", request_id);
 			int64_t file_int64;
 
 
-			path = buffer;
-			mode = buffer + strlen(path) + 1;
+			path = (char*)buffer;
+			mode = (char*)buffer + strlen(path) + 1;
 
 
 			file = fopen64(path, mode);
@@ -50,8 +50,8 @@ printf("RenderFarmFSServer::handle_request request_id=%d\n", request_id);
 			STORE_INT64(file_int64);
 			server->write_socket((char*)datagram, 8, RENDERFARM_TIMEOUT);
 if(DEBUG)
-printf("RenderFarmFSServer::handle_request file=%p path=%s mode=%s\n", 
-file, path, mode);
+printf("RenderFarmFSServer::handle_request RENDERFARM_FOPEN file=%p file_int64=%llx datagram=%02x%02x%02x%02x%02x%02x%02x%02x path=%s mode=%s\n",
+file, file_int64, datagram[0], datagram[1], datagram[2], datagram[3], datagram[4], datagram[5], datagram[6], datagram[7], path, mode);
 			result = 1;
 			break;
 		}
@@ -61,7 +61,7 @@ file, path, mode);
 			int64_t pointer = READ_INT64((unsigned char*)buffer);
 			FILE *file = (FILE*)Units::int64_to_ptr(pointer);
 if(DEBUG)
-printf("RenderFarmFSServer::handle_request file=%p\n", file);
+printf("RenderFarmFSServer::handle_request RENDERFARM_FCLOSE file=%p\n", file);
 			fclose(file);
 			result = 1;
 			break;
@@ -69,7 +69,7 @@ printf("RenderFarmFSServer::handle_request file=%p\n", file);
 
 		case RENDERFARM_REMOVE:
 		{
-			remove(buffer);
+			remove((char*)buffer);
 if(DEBUG)
 printf("RenderFarmFSServer::handle_request path=%s\n", buffer);
 			result = 1;
@@ -78,8 +78,8 @@ printf("RenderFarmFSServer::handle_request path=%s\n", buffer);
 
 		case RENDERFARM_RENAME:
 		{
-			char *oldpath = buffer;
-			char *newpath = buffer + strlen(oldpath) + 1;
+			char *oldpath = (char*)buffer;
+			char *newpath = (char*)buffer + strlen(oldpath) + 1;
 			rename(oldpath, newpath);
 if(DEBUG)
 printf("RenderFarmFSServer::handle_request old=%s new=%s\n", oldpath, newpath);
@@ -120,6 +120,12 @@ printf("RenderFarmFSServer::handle_request file=%p\n", file);
 			unsigned char datagram[4];
 			int i = 0;
 			int bytes;
+// printf("RenderFarmFSServer::handle_request RENDERFARM_FREAD %02x%02x%02x%02x%02x%02x%02x%02x %p %d %d\n", 
+// buffer[0], buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6], buffer[7], 
+// pointer,
+// file,
+// size,
+// num);
 
 			server->reallocate_buffer(size * num);
 			bytes = fread(server->buffer, size, num, file);
@@ -189,7 +195,7 @@ file, return_value);
 			server->write_socket((char*)datagram, 4, RENDERFARM_TIMEOUT);
 			result = 1;
 if(DEBUG)
-printf("RenderFarmFSServer::handle_request file=%p size=%d num=%d bytes=%d\n", 
+printf("RenderFarmFSServer::handle_request RENDERFARM_FWRITE file=%p size=%d num=%d bytes=%d\n", 
 file, size, num, bytes);
 			break;
 		}
@@ -198,6 +204,8 @@ file, size, num, bytes);
 		{
 			int64_t pointer = READ_INT64((unsigned char*)buffer);
 			FILE *file = (FILE*)Units::int64_to_ptr(pointer);
+// printf("RENDERFARM_FSEEK 1 buffer=%02x%02x%02x%02x%02x%02x%02x%02x %p %llx\n",
+// buffer[0], buffer[1], buffer[2], buffer[3], buffer[4], buffer[5], buffer[6], buffer[7],  file, pointer);
 			int64_t offset = READ_INT64((unsigned char*)buffer + 8);
 			int whence = READ_INT32((unsigned char*)buffer + 16);
 			int return_value;
@@ -233,7 +241,7 @@ file, return_value);
 		case RENDERFARM_STAT:
 		{
 			struct stat stat_buf;
-			int return_value = stat(buffer, &stat_buf);
+			int return_value = stat((char*)buffer, &stat_buf);
 			server->write_socket((char*)&stat_buf, sizeof(struct stat), RENDERFARM_TIMEOUT);
 			result = 1;
 if(DEBUG)
@@ -245,8 +253,23 @@ buffer, return_value);
 		case RENDERFARM_STAT64:
 		{
 			struct stat64 stat_buf;
-			int return_value = stat64(buffer, &stat_buf);
-			server->write_socket((char*)&stat_buf, sizeof(struct stat64), RENDERFARM_TIMEOUT);
+			int return_value = stat64((char*)buffer, &stat_buf);
+			vfs_stat_t arg;
+			arg.dev = stat_buf.st_dev;
+//			arg.ino32 = stat_buf.__st_ino;
+			arg.ino = stat_buf.st_ino;
+			arg.nlink = stat_buf.st_nlink;
+			arg.mode = stat_buf.st_mode;
+			arg.uid = stat_buf.st_uid;
+			arg.gid = stat_buf.st_gid;
+			arg.rdev = stat_buf.st_rdev;
+			arg.size = stat_buf.st_size;
+			arg.blksize = stat_buf.st_blksize;
+			arg.blocks = stat_buf.st_blocks;
+			arg.atim = stat_buf.st_atim.tv_sec;
+			arg.mtim = stat_buf.st_mtim.tv_sec;
+			arg.ctim = stat_buf.st_ctim.tv_sec;
+			server->write_socket((char*)&arg, sizeof(arg), RENDERFARM_TIMEOUT);
 			result = 1;
 if(DEBUG)
 printf("RenderFarmFSServer::handle_request path=%s result=%d\n", 

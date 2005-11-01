@@ -26,7 +26,7 @@ global quantize_ni_mmx
 ;		              short *quant_mat, short *i_quant_mat,
 ;                     int imquant, int mquant, int sat_limit)
 
-;  See quantize.c: quant_non_intra_inv()  for reference implementation in C...
+;  See quantize.c: quant_non_intra_hv_inv()  for reference implementation in C...
 		;;  mquant is not currently used.
 ; eax = row counter...
 ; ebx = pqm
@@ -163,7 +163,7 @@ nextquadniq:
 
 	;;
 	;; Do the second multiplication, again we ned to make a rounding adjustment
-	;; EXPERIMENT:	 see comments in quantize.c:quant_non_intra don't adjust...
+	;; EXPERIMENT:	 see comments in quantize.c:quant_non_intra_hv don't adjust...
 ;	movq    mm3, mm2				
 ;	pmullw  mm3, mm0          
 ;	movq    mm7, mm2

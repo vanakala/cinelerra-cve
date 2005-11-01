@@ -211,7 +211,7 @@ void putpictcodext(pict_data_s *picture)
   mpeg2enc_putbits(0,1); /* concealment_motion_vectors  -- currently not implemented */
   mpeg2enc_putbits(picture->q_scale_type,1); /* q_scale_type */
   mpeg2enc_putbits(picture->intravlc,1); /* intra_vlc_format */
-  mpeg2enc_putbits(picture->altscan,1); /* alternate_scan */
+  mpeg2enc_putbits(picture->altscan,1); /* alternate_scan_hv */
   mpeg2enc_putbits(picture->repeatfirst,1); /* repeat_first_field */
   mpeg2enc_putbits(picture->prog_frame,1); /* chroma_420_type */
   mpeg2enc_putbits(picture->prog_frame,1); /* progressive_frame */

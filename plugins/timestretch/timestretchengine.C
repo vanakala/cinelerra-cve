@@ -4,6 +4,9 @@
 #include <stdio.h>
 #include <string.h>
 
+// Size of window in milliseconds
+#define WINDOW_TIME 40
+
 
 TimeStretchEngine::TimeStretchEngine(double scale, int sample_rate)
 {
@@ -17,7 +20,7 @@ TimeStretchEngine::TimeStretchEngine(double scale, int sample_rate)
 	output_sample = 0;
 	this->scale = scale;
 	this->sample_rate = sample_rate;
-	window_time = 20;
+	window_time = WINDOW_TIME;
 	window_size = (int64_t)sample_rate * (int64_t)window_time / (int64_t)1000;
 	window_skirt = window_size / 2;
 }

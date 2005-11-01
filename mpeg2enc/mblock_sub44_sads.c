@@ -61,17 +61,24 @@ static inline void mmx_zero_reg (void)
  *
  */
 
-static __inline__ void load_blk(uint8_t *blk,uint32_t rowstride,int h)
+static __inline__ void load_blk(uint8_t *blk, uint32_t rowstride, int h)
 {
+// Required to get GCC 4.0 to use the right registers as the source argument to
+// movq
+	uint8_t *blk2 = blk + rowstride * 2;
+
 	movq_m2r( *blk, mm0);
 	blk += rowstride;
 	movq_m2r( *blk, mm1);
+
+
 	if( h == 2 )
 		return;
-	blk += rowstride;
-	movq_m2r( *blk, mm2);
-	blk += rowstride;
-	movq_m2r( *blk, mm3);
+
+
+	movq_m2r( *blk2, mm2);
+	blk2 += rowstride;
+	movq_m2r( *blk2, mm3);
 }
 
 /*

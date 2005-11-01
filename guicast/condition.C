@@ -2,6 +2,7 @@
 #include "condition.h"
 
 #include <errno.h>
+#include <stdio.h>
 #include <sys/time.h>
 
 Condition::Condition(int init_value, char *title)
@@ -33,6 +34,7 @@ void Condition::lock(char *location)
 	SET_LOCK(this, title, location);
     pthread_mutex_lock(&mutex);
     while(value <= 0) pthread_cond_wait(&cond, &mutex);
+	SET_LOCK2
 	value--;
     pthread_mutex_unlock(&mutex);
 }
@@ -65,10 +67,14 @@ int Condition::timed_lock(int microseconds, char *location)
 
     if(result == ETIMEDOUT) 
 	{
+//printf("Condition::timed_lock 1 %s %s\n", title, location);
+		UNSET_LOCK2
 		result = 1;
     } 
 	else 
 	{
+//printf("Condition::timed_lock 2 %s %s\n", title, location);
+		SET_LOCK2
 		value--;
 		result = 0;
     }

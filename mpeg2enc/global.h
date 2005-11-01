@@ -62,7 +62,7 @@ EXTERN_ unsigned char mpeg2_zig_zag_scan[64]
 ;
 
 /* alternate scan */
-EXTERN_ unsigned char alternate_scan[64]
+EXTERN_ unsigned char alternate_scan_hv[64]
 #ifdef GLOBAL_
 =
 {
@@ -75,7 +75,7 @@ EXTERN_ unsigned char alternate_scan[64]
 ;
 
 /* default intra quantization matrix */
-EXTERN_ uint16_t default_intra_quantizer_matrix[64]
+EXTERN_ uint16_t default_intra_quantizer_matrix_hv[64]
 #ifdef GLOBAL_
 =
 {
@@ -91,7 +91,7 @@ EXTERN_ uint16_t default_intra_quantizer_matrix[64]
 #endif
 ;
 
-EXTERN_ uint16_t hires_intra_quantizer_matrix[64]
+EXTERN_ uint16_t hires_intra_quantizer_matrix_hv[64]
 #ifdef GLOBAL_
 =
 {
@@ -110,7 +110,7 @@ EXTERN_ uint16_t hires_intra_quantizer_matrix[64]
 /* Our default non intra quantization matrix
 	This is *not* the MPEG default
 	 */
-EXTERN_ uint16_t default_nonintra_quantizer_matrix[64]
+EXTERN_ uint16_t default_nonintra_quantizer_matrix_hv[64]
 #ifdef GLOBAL_
 =
 
@@ -130,7 +130,7 @@ EXTERN_ uint16_t default_nonintra_quantizer_matrix[64]
 
 /* Hires non intra quantization matrix.  THis *is*
 	the MPEG default...	 */
-EXTERN_ uint16_t hires_nonintra_quantizer_matrix[64]
+EXTERN_ uint16_t hires_nonintra_quantizer_matrix_hv[64]
 #ifdef GLOBAL_
 =
 {
@@ -147,7 +147,7 @@ EXTERN_ uint16_t hires_nonintra_quantizer_matrix[64]
 ;
 
 /* non-linear quantization coefficient table */
-EXTERN_ unsigned char non_linear_mquant_table[32]
+EXTERN_ unsigned char non_linear_mquant_table_hv[32]
 #ifdef GLOBAL_
 =
 {
@@ -164,7 +164,7 @@ EXTERN_ unsigned char non_linear_mquant_table[32]
  * it is up to the designer to determine most of the quantization levels
  */
 
-EXTERN_ unsigned char map_non_linear_mquant[113] 
+EXTERN_ unsigned char map_non_linear_mquant_hv[113] 
 #ifdef GLOBAL_
 =
 {
@@ -646,16 +646,16 @@ extern int (*pquant_weight_coeff_sum)(int16_t *blk, uint16_t*i_quant_mat );
 /* quantize.c */
 
 void iquantize( pict_data_s *picture );
-void quant_intra (	pict_data_s *picture,
+void quant_intra_hv (	pict_data_s *picture,
 					int16_t *src, int16_t *dst, 
 					int mquant, int *nonsat_mquant);
-int quant_non_intra( pict_data_s *picture,
+int quant_non_intra_hv( pict_data_s *picture,
 						   int16_t *src, int16_t *dst,
 							int mquant, int *nonsat_mquant);
 void iquant_intra ( int16_t *src, int16_t *dst, int dc_prec, int mquant);
 void iquant_non_intra (int16_t *src, int16_t *dst, int mquant);
-void init_quantizer();
-int  next_larger_quant( pict_data_s *picture, int quant );
+void init_quantizer_hv();
+int  next_larger_quant_hv( pict_data_s *picture, int quant );
 
 extern int (*pquant_non_intra)(pict_data_s *picture, int16_t *src, int16_t *dst,
 						int mquant, int *nonsat_mquant);

@@ -105,21 +105,17 @@ int mpeg2enc(int argc, char *argv[])
 	
 	verbose = 1;
 
-printf("mpeg2enc 1\n");
 
 /* Read command line */
 	readcmdline(argc, argv);
-printf("mpeg2enc 2\n");
 
 /* read quantization matrices */
 	readquantmat();
-printf("mpeg2enc 3\n");
 
 	if(!strlen(out_path))
 	{
 		fprintf(stderr, "No output file given.\n");
 	}
-printf("mpeg2enc 4\n");
 
 /* open output file */
 	if(!(outfile = fopen(out_path, "wb")))
@@ -127,10 +123,8 @@ printf("mpeg2enc 4\n");
       sprintf(errortext,"Couldn't create output file %s", out_path);
       error(errortext);
 	}
-printf("mpeg2enc 5\n");
 
 	init();
-//printf("mpeg2enc 6\n");
 
 	if(nframes < 0x7fffffff)
 		printf("Frame    Completion    Current bitrate     Predicted file size\n");
@@ -228,9 +222,9 @@ static void init()
 	init_fdct();
 	init_idct();
 	init_motion();
-	init_predict();
-	init_quantizer();
-	init_transform();
+	init_predict_hv();
+	init_quantizer_hv();
+	init_transform_hv();
 
 /* round picture dimensions to nZearest multiple of 16 or 32 */
 	mb_width = (horizontal_size+15)/16;
@@ -443,6 +437,8 @@ static void readcmdline(int argc, char *argv[])
 	do_stdin = 0;
 	do_buffers = 1;
 	seq_header_every_gop = 0;
+/* aspect_ratio_information 1=square pel, 2=4:3, 3=16:9, 4=2.11:1 */
+	aspectratio = 1;  
 
 
 
@@ -455,6 +451,7 @@ static void readcmdline(int argc, char *argv[])
 	sprintf(out_path, "");
 
 #define INTTOYES(x) ((x) ? "Yes" : "No")
+// This isn't used anymore as this is a library entry point.
   if(argc < 2)
   {
     printf("mpeg2encode V1.3, 2000/01/10\n"
@@ -506,6 +503,20 @@ INTTOYES(prog_seq));
 		if(!strcmp(argv[i], "-1"))
 		{
 			mpeg1 = 1;
+		}
+		else
+		if(!strcmp(argv[i], "-a"))
+		{
+			i++;
+			if(i < argc)
+			{
+				aspectratio = atoi(argv[i]);
+			}
+			else
+			{
+				fprintf(stderr, "-i needs an aspect ratio enumeration.\n");
+				exit(1);
+			}
 		}
 		else
 		if(!strcmp(argv[i], "-b"))
@@ -743,7 +754,6 @@ INTTOYES(prog_seq));
 	
 	h = m = s = f =            0;  /* timecode of first frame */
 	fieldpic =                 0;  /* 0: progressive, 1: bottom first, 2: top first, 3 = progressive seq, field MC and DCT in picture */
-	aspectratio =              1;  /* aspect_ratio_information 1=square pel, 2=4:3, 3=16:9, 4=2.11:1 */
 	low_delay =                0;  /* low_delay  */
 	constrparms =              0;  /* constrained_parameters_flag */
 	profile =                  4;  /* Profile ID: Simple = 5, Main = 4, SNR = 3, Spatial = 2, High = 1 */
@@ -773,9 +783,9 @@ INTTOYES(prog_seq));
 	intravlc_tab[0] 		 = 0;  /* intra_vlc_format (I P B)*/
 	intravlc_tab[1] 		 = 0;  /* intra_vlc_format (I P B)*/
 	intravlc_tab[2] 		 = 0;  /* intra_vlc_format (I P B)*/
-	altscan_tab[0]  		 = 0;  /* alternate_scan (I P B) */
-	altscan_tab[1]  		 = 0;  /* alternate_scan (I P B) */
-	altscan_tab[2]  		 = 0;  /* alternate_scan (I P B) */
+	altscan_tab[0]  		 = 0;  /* alternate_scan_hv (I P B) */
+	altscan_tab[1]  		 = 0;  /* alternate_scan_hv (I P B) */
+	altscan_tab[2]  		 = 0;  /* alternate_scan_hv (I P B) */
 	opt_dc_prec         = 0;  /* 8 bits */
 	opt_topfirst        = (fieldpic == 2);
 	opt_repeatfirst     = 0;
@@ -861,13 +871,13 @@ INTTOYES(prog_seq));
 		printf("   %d processors\n", processors);
 		printf("   %.02f frames per second\n", frame_rate);
 		printf("   Denoise %s\n", INTTOYES(use_denoise_quant));
+		printf("   Aspect ratio index %d\n", aspectratio);
 		printf("   Hires quantization %s\n", INTTOYES(use_hires_quant));
 
 
 		if(mpeg_file)
 		{
 			fprintf(stderr, "(MPEG to MPEG transcoding for official use only.)\n");
-			mpeg3_set_mmx(mpeg_file, 0);
 		}
 	}
 
@@ -1157,7 +1167,7 @@ static void readquantmat()
 		load_iquant |= 1;
 		for (i=0; i<64; i++)
 		{
-			intra_q[i] = hires_intra_quantizer_matrix[i];
+			intra_q[i] = hires_intra_quantizer_matrix_hv[i];
 		}	
 	}
 	else
@@ -1165,7 +1175,7 @@ static void readquantmat()
 		load_iquant = use_denoise_quant;
 		for (i=0; i<64; i++)
 		{
-			v = quant_hfnoise_filt(default_intra_quantizer_matrix[i], i);
+			v = quant_hfnoise_filt(default_intra_quantizer_matrix_hv[i], i);
 			if (v<1 || v>255)
 				error("value in intra quant matrix invalid (after noise filt adjust)");
 			intra_q[i] = v;
@@ -1180,7 +1190,7 @@ static void readquantmat()
 		{
 			for (i=0; i<64; i++)
 			{
-				inter_q[i] = hires_nonintra_quantizer_matrix[i];
+				inter_q[i] = hires_nonintra_quantizer_matrix_hv[i];
 			}	
 		}
 		else
@@ -1190,7 +1200,7 @@ static void readquantmat()
 			load_niquant |= 1;
 			for (i=0; i<64; i++)
 			{
-				v = quant_hfnoise_filt(default_nonintra_quantizer_matrix[i],i);
+				v = quant_hfnoise_filt(default_nonintra_quantizer_matrix_hv[i],i);
 				if (v<1 || v>255)
 					error("value in non-intra quant matrix invalid (after noise filt adjust)");
 				inter_q[i] = v;

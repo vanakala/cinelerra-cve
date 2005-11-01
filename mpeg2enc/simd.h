@@ -44,11 +44,11 @@ int mblock_sub44_dists_mmx( uint8_t *blk,  uint8_t *ref,
 							int threshold,
 							int h, int rowstride, mc_result_s *resvec);
 
-int quant_non_intra_3dnow(	struct pict_data *picture,int16_t *src, int16_t *dst,
+int quant_non_intra_hv_3dnow(	struct pict_data *picture,int16_t *src, int16_t *dst,
 							int mquant, int *nonsat_mquant);
-int quant_non_intra_sse(	struct pict_data *picture,int16_t *src, int16_t *dst,
+int quant_non_intra_hv_sse(	struct pict_data *picture,int16_t *src, int16_t *dst,
 							int mquant, int *nonsat_mquant);
-int quant_non_intra_mmx(	struct pict_data *picture,int16_t *src, int16_t *dst,
+int quant_non_intra_hv_mmx(	struct pict_data *picture,int16_t *src, int16_t *dst,
 							int mquant, int *nonsat_mquant);
 							
 int quantize_ni_mmx(short *dst, short *src, short *quant_mat, 

@@ -78,7 +78,7 @@ static void (*ppred_comp)(
 	uint8_t *src, uint8_t *dst,
 	int lx, int w, int h, int x, int y, int dx, int dy, int addflag);
 
-void init_predict()
+void init_predict_hv()
 {
 	int cpucap = cpu_accel();
 

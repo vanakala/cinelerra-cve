@@ -175,12 +175,12 @@ void* slice_engine_loop(slice_engine_t *engine)
 /* quantiser_scale_code */
 //printf("putpic 1\n");slice_testbits(engine);
         				slice_putbits(engine, 
-							picture->q_scale_type ? map_non_linear_mquant[engine->prev_mquant] : engine->prev_mquant >> 1, 
+							picture->q_scale_type ? map_non_linear_mquant_hv[engine->prev_mquant] : engine->prev_mquant >> 1, 
 							5);
 
         				slice_putbits(engine, 0, 1); /* extra_bit_slice */
 
-//printf("putpic 1 %d %d %d\n",engine->prev_mquant, map_non_linear_mquant[engine->prev_mquant], engine->prev_mquant >> 1);
+//printf("putpic 1 %d %d %d\n",engine->prev_mquant, map_non_linear_mquant_hv[engine->prev_mquant], engine->prev_mquant >> 1);
 //slice_testbits(engine);
         				/* reset predictors */
 
@@ -205,7 +205,7 @@ void* slice_engine_loop(slice_engine_t *engine)
     				if(mb_type & MB_INTRA)
     				{
 //printf("putpic 2 %d\n", cur_mb->mquant);
-						quant_intra( picture,
+						quant_intra_hv( picture,
 					        		 picture->blocks[cur_mb_blocks],
 									 quant_blocks[cur_mb_blocks],
 									 cur_mb->mquant, 
@@ -350,7 +350,7 @@ void* slice_engine_loop(slice_engine_t *engine)
     				if(mb_type & MB_QUANT)
     				{
         				slice_putbits(engine, 
-							picture->q_scale_type ? map_non_linear_mquant[cur_mb->mquant] : cur_mb->mquant >> 1,
+							picture->q_scale_type ? map_non_linear_mquant_hv[cur_mb->mquant] : cur_mb->mquant >> 1,
 							5);
         				engine->prev_mquant = cur_mb->mquant;
     				}

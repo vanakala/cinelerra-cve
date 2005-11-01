@@ -30,7 +30,7 @@ read_samples (FILE * musicin, short sample_buffer[2304],
 
   if (init) {
     samples_to_read = num_samples;
-    init = FALSE;
+//    init = FALSE;
   }
   if (samples_to_read >= frame_size)
     samples_read = frame_size;
