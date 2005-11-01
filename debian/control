@@ -20,7 +20,7 @@ Build-Depends: debhelper (>> 4), automake1.8, dpatch (>= 1.11),
 Package: cinelerra
 Section: graphics
 Architecture: any
-Depends: ${shlibs:Depends}, libguicast (= ${Source-Version}), libsndfilehv (= ${Source-Version}),
+Depends: ${shlibs:Depends}, libguicast (= ${Source-Version}),
  libquicktimehv (= ${Source-Version}), libmpeg3hv (= ${Source-Version})
 Description: An audio/video authoring tool
  Cinelerra is a complete audio and video authoring
@@ -35,13 +35,6 @@ Depends: ${shlibs:Depends}
 Description: A toolkit library
  libguicast is a toolkit library mainly used by HeroineVirtual's
  softwares
-
-Package: libsndfilehv
-Section: libs
-Architecture: any
-Depends: ${shlibs:Depends}
-Description: A custom modified Cinelerra's libsndfile library
- Custom modified Cinelerra's libsndfile library
 
 Package: libquicktimehv
 Section: libs
