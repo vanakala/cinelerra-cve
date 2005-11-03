@@ -493,8 +493,13 @@ int TrackCanvas::drag_stop()
 					// we use video if we are over video and audio if we are over audio
 					if (asset->video_data && mwindow->session->track_highlighted->data_type == TRACK_VIDEO)
 						asset_length_float = asset->video_length / asset->frame_rate;
-					else
+					else if (asset->audio_data && mwindow->session->track_highlighted->data_type == TRACK_AUDIO)
 						asset_length_float = asset->audio_length / asset->sample_rate;
+					else
+					{
+						result = 1;
+						break;	// Do not do anything
+					}
 				}
 				if(mwindow->session->current_operation == DRAG_ASSET &&
 					mwindow->session->drag_clips->total)
