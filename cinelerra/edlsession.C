@@ -51,7 +51,7 @@ EDLSession::EDLSession(EDL *edl)
 	output_h = -1000;
 	video_write_length = -1000;
 	color_model = -100;
-	interlace_mode = -100;
+	interlace_mode = BC_ILACE_MODE_UNDETECTED;
 }
 
 EDLSession::~EDLSession()
