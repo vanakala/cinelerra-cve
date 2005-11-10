@@ -1,5 +1,6 @@
 THEMES= \
-	suv
+	suv \
+	defaulttheme
 
 SUBDIRS= \
 	$(THEMES) \

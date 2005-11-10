@@ -21,7 +21,6 @@
 #include "trackcanvas.h"
 #include "vframe.h"
 #include "vwindowgui.h"
-#include "zoombar.h"
 
 
 
@@ -48,7 +47,7 @@ BlondThemeMain::~BlondThemeMain()
 
 char* BlondThemeMain::plugin_title()
 {
-	return "Blond";
+	return "Blond-cv";
 }
 
 Theme* BlondThemeMain::new_theme()
@@ -78,6 +77,128 @@ BlondTheme::~BlondTheme()
 void BlondTheme::initialize()
 {
 	BC_Resources *resources = BC_WindowBase::get_resources();
+
+
+	resources->text_default = 0x000000;
+	resources->text_background = 0xffffff;
+	resources->text_border1 = 0x4a484a; // (top outer)
+	resources->text_border2 = 0x000000; // (top inner)
+	resources->text_border3 = 0xacaeac; // (bottom inner)
+	resources->text_border4 = 0xffffff; // (bottom outer)
+	resources->text_inactive_highlight = 0xacacac;
+
+	resources->bg_color = BLOND;
+	resources->default_text_color = 0x000000;
+	resources->menu_title_text    = 0x000000;
+	resources->popup_title_text   = 0x000000;
+	resources->menu_item_text     = 0x000000;
+	resources->generic_button_margin = 15;
+	resources->pot_needle_color = resources->text_default;
+	resources->pot_offset = 1;
+	resources->progress_text = resources->text_default;
+	resources->meter_font_color = RED;
+
+	resources->menu_light = 0x00cacd;
+	resources->menu_highlighted = 0x9c95ff;
+	resources->menu_down = 0x007d7b;
+	resources->menu_up = 0x009594;
+	resources->menu_shadow = 0x004a4a;
+	resources->popupmenu_margin = 10;          // ugly
+	resources->popupmenu_triangle_margin = 15; // ugly
+
+	resources->listbox_title_color = 0x000000;
+
+	resources->listbox_title_margin = 0;
+	resources->listbox_title_hotspot = 5;  // No. of pixels around the borders to allow dragging
+	resources->listbox_border1 = 0x4a484a; // (top outer)
+	resources->listbox_border2 = 0x000000; // (top inner)
+	resources->listbox_border3 = 0xffe200; // (bottom inner)
+	resources->listbox_border4 = 0xffffff; // (bottom outer)
+	resources->listbox_highlighted = 0xeee6ee;
+	resources->listbox_inactive = 0xffffffff; // (background)
+	resources->listbox_bg = new_image("list_bg.png");
+	resources->listbox_text = 0x000000;
+
+	resources->dirbox_margin = 50;
+	resources->filebox_margin = 101;
+	resources->file_color      = 0x000000;
+	resources->directory_color = 0x0000ff;
+
+
+	
+
+	resources->filebox_icons_images = new_button("icons.png",
+		"fileboxbutton_up.png",
+		"fileboxbutton_hi.png",
+		"fileboxbutton_dn.png");
+
+	resources->filebox_text_images = new_button("text.png",
+		"fileboxbutton_up.png",
+		"fileboxbutton_hi.png",
+		"fileboxbutton_dn.png");
+
+	resources->filebox_newfolder_images = new_button("folder.png",
+		"fileboxbutton_up.png",
+		"fileboxbutton_hi.png",
+		"fileboxbutton_dn.png");
+
+	resources->filebox_updir_images = new_button("updir.png",
+		"fileboxbutton_up.png",
+		"fileboxbutton_hi.png",
+		"fileboxbutton_dn.png");
+
+	resources->filebox_delete_images = new_button("delete.png",
+		"fileboxbutton_up.png",
+		"fileboxbutton_hi.png",
+		"fileboxbutton_dn.png");
+
+	resources->filebox_reload_images = new_button("reload.png",
+		"fileboxbutton_up.png",
+		"fileboxbutton_hi.png",
+		"fileboxbutton_dn.png");
+
+	resources->filebox_descend_images = new_button("openfolder.png",
+		"generic_up.png", 
+		"generic_hi.png", 
+		"generic_dn.png");
+
+	resources->usethis_button_images = 
+		resources->ok_images = new_button("ok.png",
+		"generic_up.png", 
+		"generic_hi.png", 
+		"generic_dn.png");
+
+	new_button("ok.png",
+		"generic_up.png", 
+		"generic_hi.png", 
+		"generic_dn.png",
+		"new_ok_images");
+
+	resources->cancel_images = new_button("cancel.png",
+		"generic_up.png", 
+		"generic_hi.png", 
+		"generic_dn.png");
+
+	new_button("cancel.png",
+		"generic_up.png", 
+		"generic_hi.png", 
+		"generic_dn.png",
+		"new_cancel_images");
+
+	resources->bar_data = new_image("bar", "bar.png");
+
+
+	resources->min_menu_w = 0;
+	resources->menu_popup_bg = 0;  // if (0) use menu_light, menu_up, menu_shadow
+	resources->menu_item_bg = 0;   // if (0) use menu_light, menu_highlighted, menu_down, menu_shadow
+	resources->menu_bar_bg = 0;    // if (0) use menu_light, menu_shadow, and height of MEDIUMFONT + 8
+	resources->menu_title_bg =  0; // if (0) use menu_light, menu_highlighted, menu_down, menu_shadow
+
+
+	resources->popupmenu_images = 0; // if (0) get_resources()->use generic_button_images
+
+	resources->toggle_highlight_bg = 0; // if (0) "Draw a plain box" as per bctoggle.C
+
 	resources->generic_button_images = new_image_set(3, 
 			"generic_up.png", 
 			"generic_hi.png", 
@@ -108,7 +229,7 @@ void BlondTheme::initialize()
 		"listbox_button_up.png",
 		"listbox_button_hi.png",
 		"listbox_button_dn.png",
-		"listbox_button_disabled.png");
+		"listbox_button_disabled.png"); // probably need to make this for the suv theme
 	resources->listbox_column = new_image_set(3,
 		"listbox_column_up.png",
 		"listbox_column_hi.png",
@@ -118,7 +239,7 @@ void BlondTheme::initialize()
 		"listbox_expanduphi.png",
 		"listbox_expandchecked.png",
 		"listbox_expanddn.png",
-        	"listbox_expandcheckedhi.png");
+		"listbox_expandcheckedhi.png");
 	resources->listbox_up = new_image("listbox_up.png");
 	resources->listbox_dn = new_image("listbox_dn.png");
 	resources->pan_data = new_image_set(7,
@@ -189,15 +310,10 @@ void BlondTheme::initialize()
 			"vscroll_fwd_hi.png",
 			"vscroll_fwd_dn.png");
 
-	resources->ok_images = new_button("ok.png", 
-			"generic_up.png",
-			"generic_hi.png",
-			"generic_dn.png");
 
-	resources->cancel_images = new_button("cancel.png", 
-			"generic_up.png",
-			"generic_hi.png",
-			"generic_dn.png");
+	new_button("prevtip.png", "tipbutton_up.png", "tipbutton_hi.png", "tipbutton_dn.png", "prev_tip");
+	new_button("nexttip.png", "tipbutton_up.png", "tipbutton_hi.png", "tipbutton_dn.png", "next_tip");
+	new_button("closetip.png", "tipbutton_up.png", "tipbutton_hi.png", "tipbutton_dn.png", "close_tip");
 
 
 // Record windows
@@ -208,41 +324,61 @@ void BlondTheme::initialize()
 	rmonitor_meters = new_image("recordmonitor_meters.png");
 
 
+	preferencescategory_x = 5;
+	preferencescategory_y = 5;
+	preferencestitle_x = 5;
+	preferencestitle_y = 10;
+	preferencesoptions_x = 5;
+	preferencesoptions_y = 40;
+
+
 // MWindow
-	mbutton_left = new_image("mbutton_left.png");
-	mbutton_right = new_image("mbutton_right.png");
+	message_normal = resources->text_default;
+	audio_color = BLACK;
+	mtransport_margin = 11;
+	toggle_margin = 11;
+	new_image("mbutton_bg", "mbutton_bg.png");
+	new_image("mbutton_blue", "mbutton_blue.png");
 	new_image("timebar_bg", "timebar_bg.png");
 	new_image("timebar_brender", "timebar_brender.png");
 	new_image("clock_bg", "mclock.png");
 	new_image("patchbay_bg", "patchbay_bg.png");
-	tracks_bg = new_image("tracks_bg.png");
-	zoombar_left = new_image("zoombar_left.png");
-	zoombar_right = new_image("zoombar_right.png");
-	statusbar_left = new_image("statusbar_left.png");
-	statusbar_right = new_image("statusbar_right.png");
+	new_image("tracks_bg","tracks_bg.png");
+	new_image("zoombar_left","zoombar_left.png");
+	new_image("zoombar_right","zoombar_right.png");
+	new_image("statusbar_left","statusbar_left.png");
+	new_image("statusbar_right","statusbar_right.png");
+
+	new_image_set("zoombar_menu", 3, "generic_up.png", "generic_hi.png", "generic_dn.png");
+	new_image_set("zoombar_tumbler", 4, "tumble_up.png", "tumble_hi.png", "tumble_botdn.png", "tumble_topdn.png");
+
+	new_image_set("mode_popup", 3, "generic_up.png", "generic_hi.png", "generic_dn.png");
+	new_image("mode_add", "mode_add.png");
+	new_image("mode_divide", "mode_divide.png");
+	new_image("mode_multiply", "mode_multiply.png");
+	new_image("mode_normal", "mode_normal.png");
+	new_image("mode_replace", "mode_replace.png");
+	new_image("mode_subtract", "mode_subtract.png");
 
 // CWindow
-	cpanel_bg = new_image("cpanel_bg.png");
-	cbuttons_left = new_image("cbuttons_left.png");
-	cbuttons_right = new_image("cbuttons_right.png");
-	cmeter_bg = new_image("cmeter_bg.png");
+	new_image("cpanel_bg", "cpanel_bg.png");
+	new_image("cbuttons_left", "cbuttons_left.png");
+	new_image("cbuttons_right", "cbuttons_right.png");
+	new_image("cmeter_bg", "cmeter_bg.png");
 
 // VWindow
-	vbuttons_left = new_image("vbuttons_left.png");
-	vbuttons_right = new_image("vbuttons_right.png");
-	vmeter_bg = new_image("vmeter_bg.png");
+	new_image("vbuttons_left", "vbuttons_left.png");
 
-	preferences_bg = new_image("preferences_bg.png");
+	new_image("preferences_bg", "preferences_bg.png");
 
 
-	new_bg = new_image("new_bg.png");
-	setformat_bg = new_image("setformat_bg2.png");
-
+	new_image("new_bg", "new_bg.png");
+	new_image("setformat_bg", "setformat_bg2.png");
 
 	timebar_view_data = new_image("timebar_view.png");
 
-	setformat_w = 600;
-	setformat_h = 560;
+	setformat_w = get_image("setformat_bg")->get_w();
+	setformat_h = get_image("setformat_bg")->get_h();
 	setformat_x1 = 15;
 	setformat_x2 = 100;
 
@@ -257,27 +393,61 @@ void BlondTheme::initialize()
 	setformat_channels_w = 250;
 	setformat_channels_h = 250;
 
-	loadfile_pad = 70;
+	loadfile_pad = 52;
 	browse_pad = 20;
 
+	new_image_set("playpatch_data", 
+		5,
+		"playpatch_up.png",
+		"playpatch_hi.png",
+		"playpatch_checked.png",
+		"playpatch_dn.png",
+		"playpatch_checkedhi.png");
 
+	new_image_set("recordpatch_data", 
+		5,
+		"recordpatch_up.png",
+		"recordpatch_hi.png",
+		"recordpatch_checked.png",
+		"recordpatch_dn.png",
+		"recordpatch_checkedhi.png");
 
+	new_image_set("gangpatch_data", 
+		5,
+		"gangpatch_up.png",
+		"gangpatch_hi.png",
+		"gangpatch_checked.png",
+		"gangpatch_dn.png",
+		"gangpatch_checkedhi.png");
 
+	new_image_set("drawpatch_data", 
+		5,
+		"drawpatch_up.png",
+		"drawpatch_hi.png",
+		"drawpatch_checked.png",
+		"drawpatch_dn.png",
+		"drawpatch_checkedhi.png");
 
+	new_image_set("mutepatch_data", 
+		5,
+		"mutepatch_up.png",
+		"mutepatch_hi.png",
+		"mutepatch_checked.png",
+		"mutepatch_dn.png",
+		"mutepatch_checkedhi.png");
 
+	new_image_set("expandpatch_data", 
+		5,
+		"expandpatch_up.png",
+		"expandpatch_hi.png",
+		"expandpatch_checked.png",
+		"expandpatch_dn.png",
+		"expandpatch_checkedhi.png");
 
 	build_icons();
 	build_bg_data();
-
-	new_image_set("drawpatch_data", 5, "drawpatch_up.png", "drawpatch_hi.png", "drawpatch_checked.png", "drawpatch_dn.png", "drawpatch_checkedhi.png");
-	new_image_set("expandpatch_data", 5, "expandpatch_up.png", "expandpatch_hi.png", "expandpatch_checked.png", "expandpatch_dn.png", "expandpatch_checkedhi.png");
-	new_image_set("gangpatch_data", 5, "gangpatch_up.png", "gangpatch_hi.png", "gangpatch_checked.png", "gangpatch_dn.png", "gangpatch_checkedhi.png");
-	new_image_set("mutepatch_data", 5, "mutepatch_up.png", "mutepatch_hi.png", "mutepatch_checked.png", "mutepatch_dn.png", "mutepatch_checkedhi.png");
-	new_image_set("playpatch_data", 5, "playpatch_up.png", "playpatch_hi.png", "playpatch_checked.png", "playpatch_dn.png", "playpatch_checkedhi.png");
-	new_image_set("recordpatch_data", 5, "recordpatch_up.png", "recordpatch_hi.png", "recordpatch_checked.png", "recordpatch_dn.png", "recordpatch_checkedhi.png");
-
-
 	build_overlays();
+
 
 
 
@@ -314,18 +484,21 @@ void BlondTheme::initialize()
 	VFrame *editpanel_checked = new_image("editpanel_checked.png");
 	VFrame *editpanel_checkedhi = new_image("editpanel_checkedhi.png");
 
-	bottom_justify = new_button("bottom_justify.png", editpanel_up, editpanel_hi, editpanel_dn);
-	center_justify = new_button("center_justify.png", editpanel_up, editpanel_hi, editpanel_dn);
-	channel_data = new_button("channel.png", editpanel_up, editpanel_hi, editpanel_dn);
+	new_image("panel_divider", "panel_divider.png");
+	new_button("bottom_justify.png", editpanel_up, editpanel_hi, editpanel_dn, "bottom_justify");
+	new_button("center_justify.png", editpanel_up, editpanel_hi, editpanel_dn, "center_justify");
+	new_button("channel.png", editpanel_up, editpanel_hi, editpanel_dn, "channel");
+
+
 	new_button("copy.png", editpanel_up, editpanel_hi, editpanel_dn, "copy");
 	new_button("cut.png", editpanel_up, editpanel_hi, editpanel_dn, "cut");
 	new_button("fit.png", editpanel_up, editpanel_hi, editpanel_dn, "fit");
 	new_button("fitautos.png", editpanel_up, editpanel_hi, editpanel_dn, "fitautos");
 	new_button("inpoint.png", editpanel_up, editpanel_hi, editpanel_dn, "inbutton");
 	new_button("label.png", editpanel_up, editpanel_hi, editpanel_dn, "labelbutton");
-	left_justify = new_button("left_justify.png", editpanel_up, editpanel_hi, editpanel_dn);
-	magnify_button_data = new_button("magnify.png", editpanel_up, editpanel_hi, editpanel_dn);
-	middle_justify = new_button("middle_justify.png", editpanel_up, editpanel_hi, editpanel_dn);
+	new_button("left_justify.png", editpanel_up, editpanel_hi, editpanel_dn, "left_justify");
+	new_button("magnify.png", editpanel_up, editpanel_hi, editpanel_dn, "magnify_button");
+	new_button("middle_justify.png", editpanel_up, editpanel_hi, editpanel_dn, "middle_justify");
 	new_button("nextlabel.png", editpanel_up, editpanel_hi, editpanel_dn, "nextlabel");
 	new_button("outpoint.png", editpanel_up, editpanel_hi, editpanel_dn, "outbutton");
 	over_button = new_button("over.png", editpanel_up, editpanel_hi, editpanel_dn);
@@ -333,12 +506,32 @@ void BlondTheme::initialize()
 	new_button("paste.png", editpanel_up, editpanel_hi, editpanel_dn, "paste");
 	new_button("prevlabel.png", editpanel_up, editpanel_hi, editpanel_dn, "prevlabel");
 	new_button("redo.png", editpanel_up, editpanel_hi, editpanel_dn, "redo");
-	right_justify = new_button("right_justify.png", editpanel_up, editpanel_hi, editpanel_dn);
+	new_button("right_justify.png", editpanel_up, editpanel_hi, editpanel_dn, "right_justify");
 	splice_data = new_button("splice.png", editpanel_up, editpanel_hi, editpanel_dn);
 	new_button("toclip.png", editpanel_up, editpanel_hi, editpanel_dn, "toclip");
-	top_justify = new_button("top_justify.png", editpanel_up, editpanel_hi, editpanel_dn);
+	new_button("top_justify.png", editpanel_up, editpanel_hi, editpanel_dn, "top_justify");
 	new_button("undo.png", editpanel_up, editpanel_hi, editpanel_dn, "undo");
-	wrench_data = new_button("wrench.png", editpanel_up, editpanel_hi, editpanel_dn);
+	new_button("wrench.png", editpanel_up, editpanel_hi, editpanel_dn, "wrench");
+
+#define TRANSPORT_LEFT_IMAGES  "transport_left_up.png", "transport_left_hi.png", "transport_left_dn.png"
+#define TRANSPORT_CENTER_IMAGES  "transport_center_up.png", "transport_center_hi.png", "transport_center_dn.png"
+#define TRANSPORT_RIGHT_IMAGES  "transport_right_up.png", "transport_right_hi.png", "transport_right_dn.png"
+
+	new_button("end.png", TRANSPORT_RIGHT_IMAGES, "end");
+	new_button("fastfwd.png",TRANSPORT_CENTER_IMAGES, "fastfwd");
+	new_button("fastrev.png",TRANSPORT_CENTER_IMAGES, "fastrev");
+	new_button("play.png",TRANSPORT_CENTER_IMAGES, "play");
+	new_button("framefwd.png", TRANSPORT_CENTER_IMAGES, "framefwd");
+	new_button("framerev.png", TRANSPORT_CENTER_IMAGES, "framerev");
+	new_button("pause.png", TRANSPORT_CENTER_IMAGES, "pause");
+	new_button("record.png", TRANSPORT_CENTER_IMAGES, "record");
+	new_button("singleframe.png", TRANSPORT_CENTER_IMAGES, "recframe");
+	new_button("reverse.png", TRANSPORT_CENTER_IMAGES, "reverse");
+	new_button("rewind.png", TRANSPORT_LEFT_IMAGES, "rewind");
+	new_button("stop.png", TRANSPORT_CENTER_IMAGES, "stop");
+	new_button("stop.png", TRANSPORT_RIGHT_IMAGES, "stoprec");
+
+
 
 // CWindow icons
 	new_image("cwindow_inactive", "cwindow_inactive.png");
@@ -363,44 +556,28 @@ void BlondTheme::initialize()
 
 	new_toggle("arrow.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "arrow");
 	new_toggle("autokeyframe.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "autokeyframe");
-	camera_data = new_toggle("camera.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
-	crop_data = new_toggle("crop.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
 	new_toggle("ibeam.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "ibeam");
-	magnify_data = new_toggle("magnify.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
-	mask_data = new_toggle("mask.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
-	proj_data = new_toggle("projector.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
-	protect_data = new_toggle("protect.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
-	show_meters = new_toggle("show_meters.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
-	titlesafe_data = new_toggle("titlesafe.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
-	tool_data = new_toggle("toolwindow.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
-	new_toggle("eyedrop.png", 
-		editpanel_up, 
-		editpanel_hi, 
-		editpanel_checked, 
-		editpanel_dn, 
-		editpanel_checkedhi, 
-		"cwindow_eyedrop");
+	new_toggle("show_meters.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "meters");
+
+	VFrame *cpanel_up = new_image("editpanel_up.png");
+	VFrame *cpanel_hi = new_image("editpanel_hi.png");
+	VFrame *cpanel_dn = new_image("editpanel_dn.png");
+	VFrame *cpanel_checked = new_image("editpanel_checked.png");
+	VFrame *cpanel_checkedhi = new_image("editpanel_checkedhi.png");
+
+
+	new_toggle("camera.png", cpanel_up, cpanel_hi, cpanel_checked, cpanel_dn, cpanel_checkedhi, "camera");
+	new_toggle("crop.png", cpanel_up, cpanel_hi, cpanel_checked, cpanel_dn, cpanel_checkedhi, "crop");
+	new_toggle("eyedrop.png", cpanel_up, cpanel_hi, cpanel_checked, cpanel_dn, cpanel_checkedhi, "eyedrop");
+	new_toggle("magnify.png", cpanel_up, cpanel_hi, cpanel_checked, cpanel_dn, cpanel_checkedhi, "magnify");
+	new_toggle("mask.png", cpanel_up, cpanel_hi, cpanel_checked, cpanel_dn, cpanel_checkedhi, "mask");
+	new_toggle("projector.png", cpanel_up, cpanel_hi, cpanel_checked, cpanel_dn, cpanel_checkedhi, "projector");
+	new_toggle("protect.png", cpanel_up, cpanel_hi, cpanel_checked, cpanel_dn, cpanel_checkedhi, "protect");
+	new_toggle("titlesafe.png", cpanel_up, cpanel_hi, cpanel_checked, cpanel_dn, cpanel_checkedhi, "titlesafe");
+	new_toggle("toolwindow.png", cpanel_up, cpanel_hi, cpanel_checked, cpanel_dn, cpanel_checkedhi, "tool");
 
 
 
-
-	static VFrame **transport_bg = new_image_set(3,
-		"transportup.png", 
-		"transporthi.png", 
-		"transportdn.png");
-	build_transport("end", get_image_data("end.png"), transport_bg, 2);
-	build_transport("fastfwd", get_image_data("fastfwd.png"), transport_bg, 1);
-	build_transport("fastrev", get_image_data("fastrev.png"), transport_bg, 1);
-	build_transport("play", get_image_data("play.png"), transport_bg, 1);
-	build_transport("framefwd", get_image_data("framefwd.png"), transport_bg, 1);
-	build_transport("framerev", get_image_data("framerev.png"), transport_bg, 1);
-	build_transport("pause", get_image_data("pause.png"), transport_bg, 1);
-	build_transport("record", get_image_data("record.png"), transport_bg, 1);
-	build_transport("singleframe", get_image_data("singleframe.png"), transport_bg, 1);
-	build_transport("reverse", get_image_data("reverse.png"), transport_bg, 1);
-	build_transport("rewind", get_image_data("rewind.png"), transport_bg, 0);
-	build_transport("stop", get_image_data("stop.png"), transport_bg, 1);
-	build_transport("stoprec", get_image_data("stoprec.png"), transport_bg, 2);
 	flush_images();
 
 	title_font = MEDIUMFONT_3D;
@@ -415,25 +592,6 @@ void BlondTheme::initialize()
 	// (asset) edit info text color
 	edit_font_color = YELLOW;
 
-	//bgcolor
-	resources->bg_color = BLOND;
-
-	//checkbox
- 	resources->checkbox_images = new_image_set(5,
-  		"checkbox_up.png", 
-  		"checkbox_uphi.png", 
-  		"checkbox_checked.png", 
-  		"checkbox_down.png", 
-  		"checkbox_checkedhi.png");
-
-	//radiobox
- 	resources->radial_images = new_image_set(5,
-  		"radial_up.png", 
-  		"radial_uphi.png", 
-  		"radial_checked.png", 
-  		"radial_down.png", 
-  		"radial_checkedhi.png");
-	
 	//labels
  	resources->label_images = new_image_set(5,
   		"radial_up.png", 
@@ -442,35 +600,13 @@ void BlondTheme::initialize()
   		"radial_down.png", 
   		"radial_checkedhi.png");
 
-	//filebox
-  	resources->filebox_text_images = new_image_set(3,
-  		"file_text_up.png", 
-  		"file_text_uphi.png", 
-  		"file_text_dn.png");
-  	resources->filebox_icons_images = new_image_set(3,
-  		"file_icons_up.png", 
-  		"file_icons_uphi.png", 
-  		"file_icons_dn.png");
-  	resources->filebox_updir_images = new_image_set(3,
-  		"file_updir_up.png", 
-  		"file_updir_uphi.png", 
-  		"file_updir_dn.png");
-  	resources->filebox_newfolder_images = new_image_set(3,
-  		"file_newfolder_up.png", 
-  		"file_newfolder_uphi.png", 
-  		"file_newfolder_dn.png");
-
-	resources->type_to_icon = new_image_set(5,
-                "file_folder.png",
+	/*	resources->type_to_icon = new_image_set(5,
+            "file_folder.png",
 	        "file_unknown.png",
           	"file_film.png",
 	        "file_sound.png",
-	        "file_column.png");
-
-	//listbox
-	resources->listbox_bg = new_image("list_bg.png");
-
-
+	        "file_column.png"); 
+   */
 }
 
 #define CWINDOW_METER_MARGIN 5
@@ -479,43 +615,54 @@ void BlondTheme::initialize()
 void BlondTheme::get_mwindow_sizes(MWindowGUI *gui, int w, int h)
 {
 	mbuttons_x = 0;
-	mbuttons_y = gui->mainmenu->get_h();
+	mbuttons_y = gui->mainmenu->get_h() + 1;
 	mbuttons_w = w;
-	mbuttons_h = mbutton_left->get_h();
+	mbuttons_h = get_image("mbutton_bg")->get_h();
+
 	mclock_x = 10;
-	mclock_y = mbuttons_y + mbuttons_h + CWINDOW_METER_MARGIN;
+	mclock_y = mbuttons_y - 1 + mbuttons_h + CWINDOW_METER_MARGIN;
 	mclock_w = get_image("clock_bg")->get_w() - 40;
 	mclock_h = get_image("clock_bg")->get_h();
+
 	mtimebar_x = get_image("patchbay_bg")->get_w();
-	mtimebar_y = mbuttons_y + mbuttons_h;
+	mtimebar_y = mbuttons_y - 1 + mbuttons_h;
 	mtimebar_w = w - mtimebar_x;
 	mtimebar_h = get_image("timebar_bg")->get_h();
+
+	mzoom_h =  get_image("zoombar_left")->get_h();
+	mzoom_x = 0;
+	mzoom_y = h - get_image("statusbar_left")->get_h() - mzoom_h;
+	mzoom_w = w;
+
 	mstatus_x = 0;
-	mstatus_y = h - statusbar_left->get_h();
+	mstatus_y = mzoom_y + mzoom_h;
 	mstatus_w = w;
-	mstatus_h = statusbar_left->get_h();
+	mstatus_h = h - mstatus_y;
+
 	mstatus_message_x = 10;
 	mstatus_message_y = 5;
-	mstatus_progress_x = mstatus_w - statusbar_cancel_data[0]->get_w() - 240;
-	mstatus_progress_y = mstatus_h - BC_WindowBase::get_resources()->progress_images[0]->get_h();
+
 	mstatus_progress_w = 230;
-	mstatus_cancel_x = mstatus_w - statusbar_cancel_data[0]->get_w();
-	mstatus_cancel_y = mstatus_h - statusbar_cancel_data[0]->get_h();
-	mzoom_x = 0;
-	mzoom_y = mstatus_y - zoombar_left->get_h();
-	mzoom_h = zoombar_left->get_h();
-	mzoom_w = w;
+	mstatus_progress_x = mstatus_w - statusbar_cancel_data[0]->get_w() - 2*3 - mstatus_progress_w;
+	mstatus_progress_y = mstatus_h/2 - BC_WindowBase::get_resources()->progress_images[0]->get_h()/2;
+
+	mstatus_cancel_x = mstatus_w - statusbar_cancel_data[0]->get_w() - 3;
+	mstatus_cancel_y = mstatus_h/2 - statusbar_cancel_data[0]->get_h()/2;
+
 	patchbay_x = 0;
 	patchbay_y = mtimebar_y + mtimebar_h;
 	patchbay_w = get_image("patchbay_bg")->get_w();
-	patchbay_h = mzoom_y - patchbay_y;
+	patchbay_h = mzoom_y - patchbay_y - BC_ScrollBar::get_span(SCROLL_HORIZ);
+
 	mcanvas_x = patchbay_x + patchbay_w;
-	mcanvas_y = mtimebar_y + mtimebar_h;
+	mcanvas_y = patchbay_y;
 	mcanvas_w = w - patchbay_w - BC_ScrollBar::get_span(SCROLL_VERT);
 	mcanvas_h = patchbay_h;
+
 	mhscroll_x = 0;
-	mhscroll_y = mcanvas_y + mcanvas_h;
-	mhscroll_w = w - BC_ScrollBar::get_span(SCROLL_VERT) - patchbay_w;
+	mhscroll_y = mzoom_y - BC_ScrollBar::get_span(SCROLL_HORIZ);
+	mhscroll_w = w - BC_ScrollBar::get_span(SCROLL_VERT);
+
 	mvscroll_x = mcanvas_x + mcanvas_w;
 	mvscroll_y = mcanvas_y;
 	mvscroll_h = mcanvas_h;
@@ -525,10 +672,12 @@ void BlondTheme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 {
 	if(cwindow_controls)
 	{
+SET_TRACE
 		ccomposite_x = 0;
 		ccomposite_y = 5;
-		ccomposite_w = cpanel_bg->get_w();
-		ccomposite_h = mwindow->session->cwindow_h - cbuttons_left->get_h();
+		ccomposite_w = get_image("cpanel_bg")->get_w();
+		ccomposite_h = mwindow->session->cwindow_h - 
+			get_image("cbuttons_left")->get_h();
 		cslider_x = 5;
 		cslider_y = ccomposite_h + 23;
 		cedit_x = 10;
@@ -551,13 +700,15 @@ void BlondTheme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 			cmeter_x = mwindow->session->cwindow_w;
 			ccanvas_w = cmeter_x - ccanvas_x;
 		}
+SET_TRACE
 	}
 	else
 	{
-		ccomposite_x = -cpanel_bg->get_w();
+SET_TRACE
+		ccomposite_x = -get_image("cpanel_bg")->get_w();
 		ccomposite_y = 0;
-		ccomposite_w = cpanel_bg->get_w();
-		ccomposite_h = mwindow->session->cwindow_h - cbuttons_left->get_h();
+		ccomposite_w = get_image("cpanel_bg")->get_w();
+		ccomposite_h = mwindow->session->cwindow_h - get_image("cbuttons_left")->get_h();
 
 		cslider_x = 5;
 		cslider_y = mwindow->session->cwindow_h;
@@ -572,8 +723,10 @@ void BlondTheme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 		cmeter_x = mwindow->session->cwindow_w;
 		cstatus_x = mwindow->session->cwindow_w;
 		cstatus_y = mwindow->session->cwindow_h;
+SET_TRACE
 	}
 
+SET_TRACE
 
 	czoom_x = ctransport_x + PlayTransport::get_transport_width(mwindow) + 20;
 	czoom_y = ctransport_y + 5;
@@ -582,7 +735,7 @@ void BlondTheme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 	cmeter_y = 5;
 	cmeter_h = mwindow->session->cwindow_h - cmeter_y;
 
-	cslider_w = ccanvas_x + ccanvas_w - cslider_x;
+	cslider_w = ccanvas_x + ccanvas_w - cslider_x - 5;
 	ctimebar_x = ccanvas_x;
 	ctimebar_y = ccanvas_y + ccanvas_h;
 	ctimebar_w = ccanvas_w;
@@ -594,39 +747,35 @@ void BlondTheme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 	ctime_y = ctransport_y;
 	cdest_x = czoom_x;
 	cdest_y = czoom_y + 30;
+SET_TRACE
 }
 
 
 
 void BlondTheme::get_recordgui_sizes(RecordGUI *gui, int w, int h)
 {
-	recordgui_status_x = 10;
-	recordgui_status_y = 10;
-	recordgui_status_x2 = 160;
-	recordgui_batch_x = 310;
-	recordgui_batch_y = 10;
-	recordgui_batchcaption_x = recordgui_batch_x + 110;
-
-
-	recordgui_transport_x = recordgui_batch_x;
-	recordgui_transport_y = recordgui_batch_y + 150;
-
-	recordgui_buttons_x = recordgui_batch_x - 50;
-	recordgui_buttons_y = recordgui_transport_y + 40;
-	recordgui_options_x = recordgui_buttons_x;
-	recordgui_options_y = recordgui_buttons_y + 35;
-
-	recordgui_batches_x = 10;
-	recordgui_batches_y = 270;
-	recordgui_batches_w = w - 20;
-	recordgui_batches_h = h - recordgui_batches_y - 70;
-	recordgui_loadmode_x = w / 2 - loadmode_w / 2;
-	recordgui_loadmode_y = h - 60;
-
-	recordgui_controls_x = 10;
-	recordgui_controls_y = h - 40;
+	
 }
 
+void BlondTheme::get_rmonitor_sizes(int do_audio, 
+	int do_video,
+	int do_channel,
+	int do_interlace,
+	int do_avc,
+	int audio_channels)
+{
+	Theme::get_rmonitor_sizes(do_audio, 
+		do_video,
+		do_channel,
+		do_interlace,
+		do_avc,
+		audio_channels);
+	if(!do_video && do_audio)
+	{
+		rmonitor_meter_y -= 30;
+		rmonitor_meter_h += 30;
+	}
+}
 
 
 void BlondTheme::get_vwindow_sizes(VWindowGUI *gui)
@@ -635,7 +784,7 @@ void BlondTheme::get_vwindow_sizes(VWindowGUI *gui)
 	vmeter_h = mwindow->session->vwindow_h - cmeter_y;
 	vcanvas_x = 0;
 	vcanvas_y = 0;
-	vcanvas_h = mwindow->session->vwindow_h - vbuttons_left->get_h();
+	vcanvas_h = mwindow->session->vwindow_h - get_image("vbuttons_left")->get_h();
 
 	if(mwindow->edl->session->vwindow_meter)
 	{
@@ -660,12 +809,13 @@ void BlondTheme::get_vwindow_sizes(VWindowGUI *gui)
 	vslider_y = vtimebar_y + 25;
 	vslider_w = vtimebar_w - vslider_x;
 	vedit_x = 10;
-	vedit_y = vslider_y + 17;
+	vedit_y = vslider_y + BC_Slider::get_span(0);
 	vtransport_x = 10;
-	vtransport_y = mwindow->session->vwindow_h - get_image_set("autokeyframe")[0]->get_h();
-	vtime_x = 370;
+	vtransport_y = mwindow->session->vwindow_h - 
+		get_image_set("autokeyframe")[0]->get_h();
+	vtime_x = 380;
 	vtime_y = vedit_y + 10;
-	vtime_w = 150;
+	vtime_w = 125;
 
 
 
@@ -682,12 +832,12 @@ void BlondTheme::get_vwindow_sizes(VWindowGUI *gui)
 
 void BlondTheme::build_icons()
 {
-	mwindow_icon = new VFrame(get_image_data("heroine_icon.png"));
-	vwindow_icon = new VFrame(get_image_data("heroine_icon.png"));
-	cwindow_icon = new VFrame(get_image_data("heroine_icon.png"));
-	awindow_icon = new VFrame(get_image_data("heroine_icon.png"));
-	record_icon = new VFrame(get_image_data("heroine_icon.png"));
-	clip_icon = new VFrame(get_image_data("clip_icon.png"));
+	new_image("mwindow_icon", "heroine_icon.png");
+	new_image("vwindow_icon", "heroine_icon.png");
+	new_image("cwindow_icon", "heroine_icon.png");
+	new_image("awindow_icon", "heroine_icon.png");
+	new_image("record_icon", "heroine_icon.png");
+	new_image("clip_icon", "clip_icon.png");
 }
 
 
@@ -711,25 +861,6 @@ void BlondTheme::build_bg_data()
 }
 
 
-void BlondTheme::build_patches()
-{
-	static VFrame *default_drawpatch_data[] = { new VFrame(get_image_data("drawpatch_up.png")), new VFrame(get_image_data("drawpatch_hi.png")), new VFrame(get_image_data("drawpatch_checked.png")), new VFrame(get_image_data("drawpatch_dn.png")), new VFrame(get_image_data("drawpatch_checkedhi.png")) };
-	static VFrame *default_expandpatch_data[] = { new VFrame(get_image_data("expandpatch_up.png")), new VFrame(get_image_data("expandpatch_hi.png")), new VFrame(get_image_data("expandpatch_checked.png")), new VFrame(get_image_data("expandpatch_dn.png")), new VFrame(get_image_data("expandpatch_checkedhi.png")) };
-	static VFrame *default_gangpatch_data[] = { new VFrame(get_image_data("gangpatch_up.png")), new VFrame(get_image_data("gangpatch_hi.png")), new VFrame(get_image_data("gangpatch_checked.png")), new VFrame(get_image_data("gangpatch_dn.png")), new VFrame(get_image_data("gangpatch_checkedhi.png")) };
-	static VFrame *default_mutepatch_data[] = { new VFrame(get_image_data("mutepatch_up.png")), new VFrame(get_image_data("mutepatch_hi.png")), new VFrame(get_image_data("mutepatch_checked.png")), new VFrame(get_image_data("mutepatch_dn.png")), new VFrame(get_image_data("mutepatch_checkedhi.png")) };
-	static VFrame *default_patchbay_bg = new VFrame(get_image_data("patchbay_bg.png"));
-	static VFrame *default_playpatch_data[] = { new VFrame(get_image_data("playpatch_up.png")), new VFrame(get_image_data("playpatch_hi.png")), new VFrame(get_image_data("playpatch_checked.png")), new VFrame(get_image_data("playpatch_dn.png")), new VFrame(get_image_data("playpatch_checkedhi.png")) };
-	static VFrame *default_recordpatch_data[] = { new VFrame(get_image_data("recordpatch_up.png")), new VFrame(get_image_data("recordpatch_hi.png")), new VFrame(get_image_data("recordpatch_checked.png")), new VFrame(get_image_data("recordpatch_dn.png")), new VFrame(get_image_data("recordpatch_checkedhi.png")) };
-
-
-	drawpatch_data = default_drawpatch_data;
-	expandpatch_data = default_expandpatch_data;
-	gangpatch_data = default_gangpatch_data;
-	mutepatch_data = default_mutepatch_data;
-	patchbay_bg = default_patchbay_bg;
-	playpatch_data = default_playpatch_data;
-	recordpatch_data = default_recordpatch_data;
-}
 
 void BlondTheme::build_overlays()
 {
@@ -751,42 +882,42 @@ void BlondTheme::build_overlays()
 
 void BlondTheme::draw_rwindow_bg(RecordGUI *gui)
 {
-	int y;
-	int margin = 50;
-	int margin2 = 80;
-	gui->draw_9segment(recordgui_batch_x - margin,
-		0,
-		mwindow->session->rwindow_w - recordgui_status_x + margin,
-		recordgui_buttons_y,
-		rgui_batch);
-	gui->draw_3segmenth(recordgui_options_x - margin2,
-		recordgui_buttons_y - 5,
-		mwindow->session->rwindow_w - recordgui_options_x + margin2,
-		rgui_controls);
-	y = recordgui_buttons_y - 5 + rgui_controls->get_h();
-	gui->draw_9segment(0,
-		y,
-		mwindow->session->rwindow_w,
-		mwindow->session->rwindow_h - y,
-		rgui_list);
+// 	int y;
+// 	int margin = 50;
+// 	int margin2 = 80;
+// 	gui->draw_9segment(recordgui_batch_x - margin,
+// 		0,
+// 		mwindow->session->rwindow_w - recordgui_status_x + margin,
+// 		recordgui_buttons_y,
+// 		rgui_batch);
+// 	gui->draw_3segmenth(recordgui_options_x - margin2,
+// 		recordgui_buttons_y - 5,
+// 		mwindow->session->rwindow_w - recordgui_options_x + margin2,
+// 		rgui_controls);
+// 	y = recordgui_buttons_y - 5 + rgui_controls->get_h();
+// 	gui->draw_9segment(0,
+// 		y,
+// 		mwindow->session->rwindow_w,
+// 		mwindow->session->rwindow_h - y,
+// 		rgui_list);
 }
 
 void BlondTheme::draw_rmonitor_bg(RecordMonitorGUI *gui)
 {
-	int margin = 45;
-	int panel_w = 300;
-	int x = rmonitor_meter_x - margin;
-	int w = mwindow->session->rmonitor_w - x;
-	if(w < rmonitor_meters->get_w()) w = rmonitor_meters->get_w();
-	gui->clear_box(0, 
-		0, 
-		mwindow->session->rmonitor_w, 
-		mwindow->session->rmonitor_h);
-	gui->draw_9segment(x,
-		0,
-		w,
-		mwindow->session->rmonitor_h,
-		rmonitor_meters);
+// 	int margin = 45;
+// 	int panel_w = 300;
+// 	int x = rmonitor_meter_x - margin;
+// 	int w = mwindow->session->rmonitor_w - x;
+// 	if(w < rmonitor_meters->get_w()) w = rmonitor_meters->get_w();
+// 	gui->clear_box(0, 
+// 		0, 
+// 		mwindow->session->rmonitor_w, 
+// 		mwindow->session->rmonitor_h);
+// 	gui->draw_9segment(x,
+// 		0,
+// 		w,
+// 		mwindow->session->rmonitor_h,
+// 		rmonitor_meters);
 }
 
 
@@ -797,33 +928,48 @@ void BlondTheme::draw_rmonitor_bg(RecordMonitorGUI *gui)
 void BlondTheme::draw_mwindow_bg(MWindowGUI *gui)
 {
 // Button bar
-	gui->draw_3segmenth(mbuttons_x, 
-		mbuttons_y, 
-		750, 
-		mbutton_left);
-	gui->draw_3segmenth(mbuttons_x + 750, 
-		mbuttons_y, 
-		mbuttons_w - 500, 
-		mbutton_right);
+
+#define MBUTTONS_RIGHTEDGE 842
+  gui->draw_3segmenth(mbuttons_x, 
+		      mbuttons_y,
+		      MBUTTONS_RIGHTEDGE, 
+		      mbuttons_x,
+		      MBUTTONS_RIGHTEDGE,
+		      get_image("mbutton_bg"),
+		      0);
+
+  gui->draw_3segmenth(mbuttons_x + MBUTTONS_RIGHTEDGE, 
+		      mbuttons_y, 
+		      mwindow->session->mwindow_w, 
+		      get_image("mbutton_blue"));
+
+
+	gui->draw_vframe(get_image("panel_divider"),
+		mbuttons_x + 294,
+		mbuttons_y - 1);
+
+	gui->draw_vframe(get_image("panel_divider"),
+		mbuttons_x + 382,
+		mbuttons_y - 1);
 
 // Clock
 	gui->draw_3segmenth(0, 
-		mbuttons_y + mbutton_left->get_h(),
+		mbuttons_y + get_image("mbutton_bg")->get_h() - 1,
 		get_image("patchbay_bg")->get_w(), 
 		get_image("clock_bg"));
 
 // Patchbay
 	gui->draw_3segmentv(patchbay_x, 
 		patchbay_y, 
-		patchbay_h + 20, 
+		patchbay_h, 
 		get_image("patchbay_bg"));
 
 // Track canvas
 	gui->draw_9segment(mcanvas_x, 
 		mcanvas_y, 
 		mcanvas_w, 
-		patchbay_h + 20, 
-		tracks_bg);
+		mcanvas_h, 
+		get_image("tracks_bg"));
 
 // Timebar
 	gui->draw_3segmenth(mtimebar_x, 
@@ -832,78 +978,83 @@ void BlondTheme::draw_mwindow_bg(MWindowGUI *gui)
 		get_image("timebar_bg"));
 
 // Zoombar
-	int zoombar_center = 710;
+#define ZOOMBAR_CENTER 888
 	gui->draw_3segmenth(mzoom_x, 
-		mzoom_y,
-		zoombar_center, 
-		zoombar_left);
-	if(mzoom_w > zoombar_center)
-		gui->draw_3segmenth(mzoom_x + zoombar_center, 
-			mzoom_y, 
-			mzoom_w - zoombar_center, 
-			zoombar_right);
+			    mzoom_y,
+			    ZOOMBAR_CENTER, 
+			    get_image("zoombar_left"));
+	if(mzoom_w > ZOOMBAR_CENTER)
+		gui->draw_3segmenth(mzoom_x + ZOOMBAR_CENTER, 
+				    mzoom_y, 
+				    mzoom_w - ZOOMBAR_CENTER, 
+				    get_image("zoombar_right"));
+
 
 // Status
 	gui->draw_3segmenth(mstatus_x, 
-		mstatus_y,
-		zoombar_center, 
-		statusbar_left);
+			    mstatus_y,
+			    ZOOMBAR_CENTER, 
+			    get_image("statusbar_left"));
 
-	if(mstatus_w > zoombar_center)
-		gui->draw_3segmenth(mstatus_x + zoombar_center, 
-			mstatus_y,
-			mstatus_w - zoombar_center, 
-			statusbar_right);
+	if(mstatus_w > ZOOMBAR_CENTER)
+	  gui->draw_3segmenth(mstatus_x + ZOOMBAR_CENTER, 
+			      mstatus_y,
+			      mstatus_w - ZOOMBAR_CENTER, 
+			      get_image("statusbar_right"));
+
 }
 
 void BlondTheme::draw_cwindow_bg(CWindowGUI *gui)
 {
-	const int button_division = 530;
-	gui->draw_3segmentv(0, 0, ccomposite_h, cpanel_bg);
-	gui->draw_3segmenth(0, ccomposite_h, button_division, cbuttons_left);
+	const int button_division = 560;
+	gui->draw_3segmentv(0, 0, ccomposite_h, get_image("cpanel_bg"));
+	gui->draw_3segmenth(0, ccomposite_h, button_division, get_image("cbuttons_left"));
 	if(mwindow->edl->session->cwindow_meter)
 	{
 		gui->draw_3segmenth(button_division, 
 			ccomposite_h, 
 			cmeter_x - CWINDOW_METER_MARGIN - button_division, 
-			cbuttons_right);
+			get_image("cbuttons_right"));
 		gui->draw_9segment(cmeter_x - CWINDOW_METER_MARGIN, 
 			0, 
 			mwindow->session->cwindow_w - cmeter_x + CWINDOW_METER_MARGIN, 
 			mwindow->session->cwindow_h, 
-			cmeter_bg);
+			get_image("cmeter_bg"));
 	}
 	else
 	{
 		gui->draw_3segmenth(button_division, 
 			ccomposite_h, 
 			cmeter_x - CWINDOW_METER_MARGIN - button_division + 100, 
-			cbuttons_right);
+			get_image("cbuttons_right"));
 	}
 }
 
 void BlondTheme::draw_vwindow_bg(VWindowGUI *gui)
 {
 	const int button_division = 400;
-	gui->draw_3segmenth(0, vcanvas_h, button_division, vbuttons_left);
+	gui->draw_3segmenth(0, 
+		vcanvas_h, 
+		button_division, 
+		get_image("vbuttons_left"));
 	if(mwindow->edl->session->vwindow_meter)
 	{
 		gui->draw_3segmenth(button_division, 
 			vcanvas_h, 
 			vmeter_x - VWINDOW_METER_MARGIN - button_division, 
-			vbuttons_right);
+			get_image("cbuttons_right"));
 		gui->draw_9segment(vmeter_x - VWINDOW_METER_MARGIN,
 			0,
 			mwindow->session->vwindow_w - vmeter_x + VWINDOW_METER_MARGIN, 
 			mwindow->session->vwindow_h, 
-			vmeter_bg);
+			get_image("cmeter_bg"));
 	}
 	else
 	{
 		gui->draw_3segmenth(button_division, 
 			vcanvas_h, 
 			vmeter_x - VWINDOW_METER_MARGIN - button_division + 100, 
-			vbuttons_right);
+			get_image("cbuttons_right"));
 	}
 }
 
@@ -914,7 +1065,7 @@ void BlondTheme::get_preferences_sizes()
 
 void BlondTheme::draw_preferences_bg(PreferencesWindow *gui)
 {
-	gui->draw_9segment(0, 0, gui->get_w(), gui->get_h() - 40, preferences_bg);
+	gui->draw_vframe(get_image("preferences_bg"), 0, 0);
 }
 
 void BlondTheme::get_new_sizes(NewWindow *gui)
@@ -923,14 +1074,40 @@ void BlondTheme::get_new_sizes(NewWindow *gui)
 
 void BlondTheme::draw_new_bg(NewWindow *gui)
 {
-	gui->draw_vframe(new_bg, 0, 0);
+	gui->draw_vframe(get_image("new_bg"), 0, 0);
 }
 
 void BlondTheme::draw_setformat_bg(SetFormatWindow *gui)
 {
-	gui->draw_vframe(setformat_bg, 0, 0);
+	gui->draw_vframe(get_image("setformat_bg"), 0, 0);
 }
 
+
+// pmd: SUV (same), 1_2_2blond (nonexist)
+void BlondTheme::get_plugindialog_sizes()
+{
+	int x = 10, y = 30;
+	plugindialog_new_x = x;
+	plugindialog_new_y = y;
+	plugindialog_shared_x = mwindow->session->plugindialog_w / 3;
+	plugindialog_shared_y = y;
+	plugindialog_module_x = mwindow->session->plugindialog_w * 2 / 3;
+	plugindialog_module_y = y;
+
+	plugindialog_new_w = plugindialog_shared_x - plugindialog_new_x - 10;
+	plugindialog_new_h = mwindow->session->plugindialog_h - 120;
+	plugindialog_shared_w = plugindialog_module_x - plugindialog_shared_x - 10;
+	plugindialog_shared_h = mwindow->session->plugindialog_h - 120;
+	plugindialog_module_w = mwindow->session->plugindialog_w - plugindialog_module_x - 10;
+	plugindialog_module_h = mwindow->session->plugindialog_h - 120;
+
+	plugindialog_newattach_x = plugindialog_new_x + 20;
+	plugindialog_newattach_y = plugindialog_new_y + plugindialog_new_h + 10;
+	plugindialog_sharedattach_x = plugindialog_shared_x + 20;
+	plugindialog_sharedattach_y = plugindialog_shared_y + plugindialog_shared_h + 10;
+	plugindialog_moduleattach_x = plugindialog_module_x + 20;
+	plugindialog_moduleattach_y = plugindialog_module_y + plugindialog_module_h + 10;
+}
 
 
 

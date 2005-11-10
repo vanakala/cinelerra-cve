@@ -413,6 +413,8 @@ AC_OUTPUT(Makefile cinelerra-cvs-current.spec po/Makefile.in \
 					plugins/shiftinterlace/Makefile plugins/slide/Makefile plugins/spectrogram/Makefile \
 	plugins/suv/Makefile \
 	plugins/suv/data/Makefile \
+	plugins/defaulttheme/Makefile \
+	plugins/defaulttheme/data/Makefile \
 					plugins/swapchannels/Makefile \
 					plugins/synthesizer/Makefile \
 					plugins/threshold/Makefile \
