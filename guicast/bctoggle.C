@@ -49,7 +49,7 @@ int BC_Toggle::initialize()
 // Get the image
 	set_images(data);
 	calculate_extents(this,
-		BC_WindowBase::get_resources()->checkbox_images,
+		data,
 		bottom_justify,
 		&text_line,
 		&w,

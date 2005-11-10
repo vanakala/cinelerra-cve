@@ -929,7 +929,7 @@ void BlondTheme::draw_mwindow_bg(MWindowGUI *gui)
 {
 // Button bar
 
-#define MBUTTONS_RIGHTEDGE 842
+#define MBUTTONS_RIGHTEDGE 857
   gui->draw_3segmenth(mbuttons_x, 
 		      mbuttons_y,
 		      MBUTTONS_RIGHTEDGE, 
@@ -949,7 +949,7 @@ void BlondTheme::draw_mwindow_bg(MWindowGUI *gui)
 		mbuttons_y - 1);
 
 	gui->draw_vframe(get_image("panel_divider"),
-		mbuttons_x + 382,
+		mbuttons_x + 395,
 		mbuttons_y - 1);
 
 // Clock
@@ -1006,7 +1006,7 @@ void BlondTheme::draw_mwindow_bg(MWindowGUI *gui)
 
 void BlondTheme::draw_cwindow_bg(CWindowGUI *gui)
 {
-	const int button_division = 560;
+	const int button_division = 570;
 	gui->draw_3segmentv(0, 0, ccomposite_h, get_image("cpanel_bg"));
 	gui->draw_3segmenth(0, ccomposite_h, button_division, get_image("cbuttons_left"));
 	if(mwindow->edl->session->cwindow_meter)
