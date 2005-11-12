@@ -21,7 +21,7 @@ class MainUndoStackItem : public UndoStackItem
 {
 public:
 	MainUndoStackItem(MainUndo* undo, char* description,
-			uint32_t load_flags);
+			uint32_t load_flags, void* creator);
 	virtual ~MainUndoStackItem();
 
 	void set_data_before(char *data);
@@ -46,6 +46,7 @@ MainUndo::MainUndo(MWindow *mwindow)
 	this->mwindow = mwindow;
 	new_entry = 0;
 	data_after = 0;
+	last_update = new Timer;
 
 // get the initial project so we have something that the last undo reverts to
 	capture_state();
@@ -54,12 +55,19 @@ MainUndo::MainUndo(MWindow *mwindow)
 MainUndo::~MainUndo()
 {
 	delete [] data_after;
+	delete last_update;
 }
 
 void MainUndo::update_undo(char *description, uint32_t load_flags, 
 		void *creator, int changes_made)
 {
-	MainUndoStackItem* new_entry = new MainUndoStackItem(this, description, load_flags);
+	if (ignore_push(description, load_flags, creator))
+	{
+		capture_state();
+		return;
+	}
+
+	MainUndoStackItem* new_entry = new MainUndoStackItem(this, description, load_flags, creator);
 
 // the old data_after is the state before the change
 	new_entry->set_data_before(data_after);
@@ -100,29 +108,37 @@ void MainUndo::capture_state()
 	strcpy(data_after, file.string);
 }
 
-void MainUndo::push_state(char *description, uint32_t load_flags)
+bool MainUndo::ignore_push(char *description, uint32_t load_flags, void* creator)
 {
 // ignore this push under certain conditions:
 // - if nothing was undone
-	if (redo_stack.last == 0 &&
+	bool ignore = redo_stack.last == 0 &&
 // - if it is not the first push
 		undo_stack.last &&
 // - if it has the same description as the previous undo
 		strcmp(undo_stack.last->description, description) == 0 &&
+// - if it originates from the same creator
+		undo_stack.last->creator == creator &&
 // - if it follows closely after the previous undo
-		timestamp.get_difference() < 300 /*millisec*/)
+		last_update->get_difference() < 300 /*millisec*/;
+	last_update->update();
+	return ignore;
+}
+
+void MainUndo::push_state(char *description, uint32_t load_flags, void* creator)
+{
+	if (ignore_push(description, load_flags, creator))
 	{
 		capture_state();
 	}
 	else
 	{
-		MainUndoStackItem* new_entry = new MainUndoStackItem(this, description, load_flags);
+		MainUndoStackItem* new_entry = new MainUndoStackItem(this, description, load_flags, creator);
 // the old data_after is the state before the change
 		new_entry->set_data_before(data_after);
 		push_undo_item(new_entry);
 	}
 	mwindow->session->changes_made = 1;
-	timestamp.update();
 }
 
 
@@ -152,6 +168,8 @@ int MainUndo::undo()
 				mwindow->gui->mainmenu->undo->update_caption("");
 		}
 	}
+
+	reset_creators();
 	return 0;
 }
 
@@ -177,6 +195,7 @@ int MainUndo::redo()
 				mwindow->gui->mainmenu->redo->update_caption("");
 		}
 	}
+	reset_creators();
 	return 0;
 }
 
@@ -209,12 +228,13 @@ void MainUndo::prune_undo()
 
 
 MainUndoStackItem::MainUndoStackItem(MainUndo* main_undo, char* description,
-			uint32_t load_flags)
+			uint32_t load_flags, void* creator)
 {
 	data_before = 0;
 	this->load_flags = load_flags;
 	this->main_undo = main_undo;
 	set_description(description);
+	set_creator(creator);
 }
 
 MainUndoStackItem::~MainUndoStackItem()
@@ -261,6 +281,16 @@ void MainUndoStackItem::load_from_undo(FileXML *file, uint32_t load_flags)
 	mwindow->mainindexes->start_build();
 }
 
+
+void MainUndo::reset_creators()
+{
+	for(UndoStackItem *current = undo_stack.first;
+		current;
+		current = NEXT)
+	{
+		current->set_creator(0);
+	}
+}
 
 
 

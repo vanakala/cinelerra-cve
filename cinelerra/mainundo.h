@@ -2,7 +2,7 @@
 #define MAINUNDO_H
 
 
-#include "bctimer.h"
+#include "bctimer.inc"
 #include "linklist.h"
 #include "mwindow.inc"
 
@@ -30,7 +30,10 @@ public:
 		int changes_made = 1);
 
 // alternatively, call this one after the change
-	void push_state(char *description, uint32_t load_flags);
+	void push_state(char *description, uint32_t load_flags, void* creator);
+
+// Used in undo and redo to reset the creators in all the records.
+	void reset_creators();
 
 	int undo();
 	int redo();
@@ -39,12 +42,14 @@ private:
 	List<UndoStackItem> undo_stack;
 	List<UndoStackItem> redo_stack;
 	MainUndoStackItem* new_entry;	// for setting the after buffer
-	Timer timestamp;	// time of last undo
+
 	MWindow *mwindow;
+	Timer *last_update;
 	char* data_after;	// the state after a change
 
 	void capture_state();
 	void prune_undo();
+	bool ignore_push(char *description, uint32_t load_flags, void* creator);
 
 	friend class MainUndoStackItem;
 };

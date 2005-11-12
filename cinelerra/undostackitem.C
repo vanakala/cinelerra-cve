@@ -6,6 +6,7 @@
 UndoStackItem::UndoStackItem() : ListItem<UndoStackItem>()
 {
 	description = 0;
+	creator = 0;
 }
 
 UndoStackItem::~UndoStackItem()
@@ -17,6 +18,11 @@ void UndoStackItem::set_description(char *description)
 {
 	this->description = new char[strlen(description) + 1];
 	strcpy(this->description, description);
+}
+
+void UndoStackItem::set_creator(void *creator)
+{
+	this->creator = creator;
 }
 
 void UndoStackItem::undo()

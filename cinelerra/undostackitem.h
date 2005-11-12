@@ -11,6 +11,7 @@ public:
 	virtual ~UndoStackItem();
 
 	void set_description(char *description);
+	void set_creator(void *creator);
 
 // This function must be overridden in derived objects.
 // It is called both to undo and to redo an operation.
@@ -30,6 +31,8 @@ public:
 	
 // command description for the menu item
 	char *description;
+// who created this item
+	void* creator;
 };
 
 #endif
