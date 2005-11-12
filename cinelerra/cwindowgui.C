@@ -2542,6 +2542,13 @@ int CWindowCanvas::button_release_event()
 		case CWINDOW_PROJECTOR:
 			mwindow->undo->update_undo(_("projector"), LOAD_AUTOMATION);
 			break;
+
+		case CWINDOW_MASK:
+		case CWINDOW_MASK_CONTROL_IN:
+		case CWINDOW_MASK_CONTROL_OUT:
+		case CWINDOW_MASK_TRANSLATE:
+			mwindow->undo->update_undo(_("mask point"), LOAD_AUTOMATION);
+			break;
 	}
 
 	gui->current_operation = CWINDOW_NONE;
