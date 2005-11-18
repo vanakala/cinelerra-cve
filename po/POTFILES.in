@@ -8,8 +8,10 @@ cinelerra/assetedit.h
 cinelerra/assetpopup.C
 cinelerra/assetremove.C
 cinelerra/atrack.C
+cinelerra/avc1394transport.C
 cinelerra/awindowgui.C
 cinelerra/awindowmenu.C
+cinelerra/batch.C
 cinelerra/batchrender.C
 cinelerra/brender.C
 cinelerra/browsebutton.C
@@ -45,11 +47,13 @@ cinelerra/filevorbis.C
 # cinelerra/flipbook.C
 cinelerra/formatcheck.C
 cinelerra/formatpopup.C
+cinelerra/formatpresets.C
 cinelerra/formattools.C
 # cinelerra/formatwindow.C
 cinelerra/indexfile.C
 cinelerra/indexthread.C
 cinelerra/interfaceprefs.C
+cinelerra/keyframepopup.C
 cinelerra/labelnavigate.C
 cinelerra/loadfile.C
 cinelerra/loadmode.C
@@ -102,6 +106,7 @@ cinelerra/sharedlocation.C
 cinelerra/splashgui.C
 cinelerra/statusbar.C
 cinelerra/threadindexer.C
+cinelerra/tipwindow.C
 # cinelerra/toggleauto.C
 cinelerra/trackcanvas.C
 cinelerra/transitionpopup.C
@@ -140,6 +145,7 @@ plugins/colorbalance/colorbalancewindow.C
 plugins/colors/colorpicker.C
 plugins/compressor/compressor.C
 plugins/crossfade/crossfade.C
+plugins/decimate/decimate.C
 plugins/deinterlace/deinterlace.C
 plugins/deinterlace/deinterwindow.C
 plugins/delayaudio/delayaudio.C
@@ -150,6 +156,7 @@ plugins/denoisemjpeg/denoisemjpeg.C
 plugins/denoisevideo/denoisevideo.C
 plugins/despike/despike.C
 plugins/despike/despikewindow.C
+plugins/diffkey/diffkey.C
 plugins/dissolve/dissolve.C
 plugins/dot/dot.C
 plugins/dot/dotwindow.C
@@ -179,7 +186,10 @@ plugins/ivtc/ivtc.C
 plugins/ivtc/ivtcwindow.C
 plugins/level/leveleffect.C
 plugins/linearblur/linearblur.C
+plugins/loopaudio/loopaudio.C
+plugins/loopvideo/loopvideo.C
 plugins/motion/motion.C
+plugins/motion/motionwindow.C
 plugins/normalize/normalize.C
 plugins/normalize/normalizewindow.C
 plugins/oilpainting/oil.C
@@ -193,6 +203,7 @@ plugins/polar/polar.C
 # plugins/quark/quarkwindow.C
 plugins/radialblur/radialblur.C
 plugins/reframe/reframe.C
+plugins/reframert/reframert.C
 plugins/resample/resample.C
 plugins/reverb/reverb.C
 plugins/reverb/reverbwindow.C
@@ -204,6 +215,7 @@ plugins/rotate/rotate.C
 # plugins/rotate/rotatewindow.C
 plugins/scale/scale.C
 plugins/scale/scalewin.C
+plugins/shapewipe/shapewipe.C
 plugins/sharpen/sharpen.C
 plugins/sharpen/sharpenwindow.C
 plugins/shiftinterlace/shiftinterlace.C
@@ -213,6 +225,7 @@ plugins/svg/svg.C
 plugins/svg/svgwin.C
 plugins/swapchannels/swapchannels.C
 plugins/synthesizer/synthesizer.C
+plugins/threshold/threshold.C
 plugins/timeavg/timeavg.C
 plugins/timeavg/timeavgwindow.C
 plugins/timestretch/timestretch.C
@@ -220,6 +233,8 @@ plugins/titler/title.C
 plugins/titler/titlewindow.C
 plugins/translate/translate.C
 plugins/translate/translatewin.C
+plugins/unsharp/unsharp.C
+plugins/unsharp/unsharpwindow.C
 plugins/videoscope/videoscope.C
 plugins/wave/wave.C
 plugins/whirl/whirl.C
