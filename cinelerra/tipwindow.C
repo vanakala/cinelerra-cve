@@ -13,34 +13,34 @@
 // Table of tips of the day
 static char *tips[] = 
 {
-	"When configuring slow effects, disable playback for the track.  After configuring it,\n"
-	"re-enable playback to process a single frame.",
+	N_("When configuring slow effects, disable playback for the track.  After configuring it,\n"
+	"re-enable playback to process a single frame."),
 
-	"Ctrl + any transport command causes playback to only cover\n"
-	"the region defined by the in/out points.",
+	N_("Ctrl + any transport command causes playback to only cover\n"
+	"the region defined by the in/out points."),
 
-	"Shift + clicking a patch causes all other patches except the\n"
-	"selected one to toggle.",
+	N_("Shift + clicking a patch causes all other patches except the\n"
+	"selected one to toggle."),
 
-	"Clicking on a patch and dragging across other tracks causes\n"
-	"the other patches to match the first one.",
+	N_("Clicking on a patch and dragging across other tracks causes\n"
+	"the other patches to match the first one."),
 
-	"Shift + clicking on an effect boundary causes dragging to affect\n"
-	"just the one effect.",
+	N_("Shift + clicking on an effect boundary causes dragging to affect\n"
+	"just the one effect."),
 
-	"Load multiple files by clicking on one file and shift + clicking on\n"
-	"another file.  Ctrl + clicking toggles individual files.",
+	N_("Load multiple files by clicking on one file and shift + clicking on\n"
+	"another file.  Ctrl + clicking toggles individual files."),
 
-	"Ctrl + left clicking on the time bar cycles forward a time format.\n"
-	"Ctrl + middle clicking on the time bar cycles backward a time format.",
+	N_("Ctrl + left clicking on the time bar cycles forward a time format.\n"
+	"Ctrl + middle clicking on the time bar cycles backward a time format."),
 
-	"Use the +/- keys in the Compositor window to zoom in and out.\n",
+	N_("Use the +/- keys in the Compositor window to zoom in and out.\n"),
 
-	"Pressing Alt while clicking in the cropping window causes translation of\n"
-	"all 4 points.\n",
+	N_("Pressing Alt while clicking in the cropping window causes translation of\n"
+	"all 4 points.\n"),
 
-	"Pressing Tab over a track toggles the Record status.\n"
-	"Pressing Shift-Tab over a track toggles the Record status of all the other tracks.\n"
+	N_("Pressing Tab over a track toggles the Record status.\n"
+	"Pressing Shift-Tab over a track toggles the Record status of all the other tracks.\n")
 };
 
 static int total_tips = sizeof(tips) / sizeof(char*);
@@ -70,7 +70,7 @@ BC_Window* TipWindow::new_gui()
 char* TipWindow::get_current_tip()
 {
 	CLAMP(mwindow->session->current_tip, 0, total_tips - 1);
-	char *result = tips[mwindow->session->current_tip];
+	char *result = _(tips[mwindow->session->current_tip]);
 	mwindow->session->current_tip++;
 	if(mwindow->session->current_tip >= total_tips)
 		mwindow->session->current_tip = 0;
