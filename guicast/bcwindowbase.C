@@ -3076,6 +3076,11 @@ int BC_WindowBase::resize_event(int w, int h)
 	return 0;
 }
 
+int BC_WindowBase::reposition_widget(int x, int y, int w, int h) 
+{
+  return(reposition_window(x, y, w, h));
+}
+
 int BC_WindowBase::reposition_window(int x, int y, int w, int h)
 {
 	int resize = 0;

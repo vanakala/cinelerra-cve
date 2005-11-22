@@ -24,12 +24,14 @@ libguicast_la_SOURCES = \
 	bcnewfolder.C \
 	bcpan.C \
 	bcpixmap.C \
+	bcpixmapsw.C \
 	bcpopup.C \
 	bcpopupmenu.C \
 	bcpot.C \
 	bcprogress.C \
 	bcprogressbox.C	\
 	bcrecentlist.C \
+	bcrelocatablewidget.C \
 	bcrepeater.C \
 	bcresources.C \
 	bcscrollbar.C \
@@ -41,6 +43,7 @@ libguicast_la_SOURCES = \
 	bctitle.C \
 	bctoggle.C \
 	bctumble.C \
+	bcwidgetgrid.C \
 	bcwindow.C \
 	bcwindowbase.C \
 	bcwindowdraw.C \
@@ -96,7 +99,12 @@ noinst_HEADERS = \
 	bcmeter.inc \
 	bcnewfolder.h \
 	bcnewfolder.inc \
-								 bcpan.h bcpan.inc bcpixmap.h bcpixmap.inc bcpopup.h bcpopup.inc \
+	bcpan.h bcpan.inc \
+	bcpixmap.h \
+	bcpixmap.inc \
+	bcpixmapsw.h \
+	bcpixmapsw.inc \
+	bcpopup.h bcpopup.inc \
 	bcpopupmenu.h \
 	bcpopupmenu.inc \
 	bcpot.h \
@@ -106,6 +114,8 @@ noinst_HEADERS = \
 	bcprogress.h \
 	bcprogress.inc \
 	bcrecentlist.h \
+	bcrelocatablewidget.h \
+	bcrelocatablewidget.inc \
 	bcrepeater.h \
 	bcrepeater.inc \
 	bcresources.h \
@@ -123,6 +133,8 @@ noinst_HEADERS = \
 	bctoggle.inc \
 	bctumble.h \
 	bctumble.inc \
+	bcwidgetgrid.h \
+	bcwidgetgrid.inc \
 	bcwindowbase.h \
 	bcwindowbase.inc \
 	bcwindowevents.h \
