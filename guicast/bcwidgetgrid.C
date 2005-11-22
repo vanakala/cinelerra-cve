@@ -131,11 +131,11 @@ void BC_WidgetGrid::set_align(int r,int c,int va, int ha){
 	widget_halign[r][c] = ha;
 }
 
-int BC_WidgetGrid::reposition_widget(int x, int y){
+int BC_WidgetGrid::reposition_widget(int x, int y, int w1, int h){
 	x_l = x;
 	y_t = y;
 	move_widgets();
-	return(1);
+	return(0);
 }
 
 void BC_WidgetGrid::move_widgets(){

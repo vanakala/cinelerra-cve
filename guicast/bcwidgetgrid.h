@@ -30,7 +30,7 @@ public:
 	void calculate_maxs();
 	void move_widgets();
 
-	int reposition_widget(int x, int y);
+	int reposition_widget(int x, int y, int w = -1, int h = -1);
 
 	int  getw_w(int row, int column);
 	int  getw_h(int row, int column);
