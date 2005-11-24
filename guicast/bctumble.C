@@ -47,8 +47,11 @@ int BC_Tumbler::initialize()
 	return 0;
 }
 
-int BC_Tumbler::reposition_window(int x, int y)
+int BC_Tumbler::reposition_window(int x, int y, int w, int h)
 {
+	if (w > 0 || h > 0) 
+		printf("BC_Tumbler::reposition_window - w & h haven't been implemented yet!! (probably never will be)");
+
 	BC_WindowBase::reposition_window(x, y);
 	draw_face();
 	return 0;

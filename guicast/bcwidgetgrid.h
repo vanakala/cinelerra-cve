@@ -14,15 +14,8 @@ public:
 //	BC_WidgetGrid();
 	BC_WidgetGrid(int x, int y, int x_r, int y_b, int colgaps, int rowgaps);
 
-	BC_CheckBox          * add_checkbox     (BC_CheckBox          *bth, int row, int column);
-	BC_Pot               * add_pot          (BC_Pot               *bth, int row, int column);
-	BC_Radial            * add_radial       (BC_Radial            *bth, int row, int column);
-	BC_Slider            * add_slider       (BC_Slider            *bth, int row, int column);
-	BC_SubWindow         * add_subwindow    (BC_SubWindow         *bth, int row, int column);
-	BC_Title             * add_title        (BC_Title             *bth, int row, int column);
-	BC_TumbleTextBox     * add_tumbletextbox(BC_TumbleTextBox     *bth, int row, int column);
-	BC_RelocatableWidget * add_widget       (BC_RelocatableWidget *bth, int row, int column);
-	BC_WidgetGrid        * add_widgetgrid   (BC_WidgetGrid        *bth, int row, int column);
+	BC_RelocatableWidget * add(BC_RelocatableWidget *h, int row, int column);
+
 
 	void clear_widget(int row, int column);
 	void set_align(int r,int c,int va, int ha);
@@ -61,21 +54,15 @@ public:
 
 	enum {
 		BC_WT_NONE ,
-		BC_WT_SubWindow,
-		BC_WT_TumbleTextBox,
-		BC_WT_WidgetGrid,
 		BC_WT_RelocatableWidget
 	};
 
 private:
 // Types of widgets:
-
-
 	int            widget_types[BC_WG_Rows][BC_WG_Cols];
 	int            widget_valign[BC_WG_Rows][BC_WG_Cols];
 	int            widget_halign[BC_WG_Rows][BC_WG_Cols];
 	// array of pointers:
-	BC_TumbleTextBox  *widget_ttbxs[BC_WG_Rows][BC_WG_Cols];
 	BC_RelocatableWidget *widget_widgs[BC_WG_Rows][BC_WG_Cols];
 
 	int rowgaps;

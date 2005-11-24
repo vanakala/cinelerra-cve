@@ -21,7 +21,7 @@ public:
 	int button_release_event();
 	int cursor_motion_event();
 	int update_bitmaps(VFrame **data);
-	int reposition_window(int x, int y);
+	int reposition_window(int x, int y, int w=-1, int h=-1); // w & h don't do anything, except to inherit BC_Subwindow::(reposition_window)
 	virtual void set_boundaries(int64_t min, int64_t max) {};
 	virtual void set_boundaries(float min, float max) {};
 	virtual void set_increment(float value) {};

@@ -266,7 +266,7 @@ public:
 class BC_TumbleTextBoxText;
 class BC_TumbleTextBoxTumble;
 
-class BC_TumbleTextBox
+class BC_TumbleTextBox : public BC_RelocatableWidget
 {
 public:
 	BC_TumbleTextBox(BC_WindowBase *parent_window, 
@@ -303,6 +303,7 @@ public:
 	int get_y();
 	int get_w();
 	int get_h();
+	int  reposition_widget(int x, int y, int w = -1, int h = -1);
 	void reposition_window(int x, int y);
 	void set_boundaries(int64_t min, int64_t max);
 	void set_boundaries(float min, float max);

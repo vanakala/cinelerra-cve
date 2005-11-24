@@ -20,36 +20,16 @@ BC_WidgetGrid::BC_WidgetGrid(int x1, int y1, int x2, int y2,int cgs,int rgs){
 		}
 }
 
-#define ADD_WIDGFUNCTION(type, name) \
- type * BC_WidgetGrid::name(type *bth, int row, int column) {  \
-	widget_types[row][column] = BC_WT_RelocatableWidget;   \
-	widget_widgs[row][column] = bth;                       \
-	return(bth);                                           \
+BC_RelocatableWidget * BC_WidgetGrid::add(BC_RelocatableWidget *h, int row, int column) {
+	widget_types[row][column] = BC_WT_RelocatableWidget;
+	widget_widgs[row][column] = h;
+	return(h);
 }
-
-ADD_WIDGFUNCTION(BC_CheckBox          , add_checkbox    )
-ADD_WIDGFUNCTION(BC_Pot               , add_pot         )
-ADD_WIDGFUNCTION(BC_Radial            , add_radial      )
-ADD_WIDGFUNCTION(BC_Slider            , add_slider      )
-ADD_WIDGFUNCTION(BC_SubWindow         , add_subwindow   )
-ADD_WIDGFUNCTION(BC_Title             , add_title       )
-
-ADD_WIDGFUNCTION(BC_RelocatableWidget , add_widget      )
-ADD_WIDGFUNCTION(BC_WidgetGrid        , add_widgetgrid  )
-
-BC_TumbleTextBox * BC_WidgetGrid::add_tumbletextbox(BC_TumbleTextBox *bth, int row, int column) {
-	widget_types[row][column] = BC_WT_TumbleTextBox;
-	widget_ttbxs[row][column] = bth;
-	return(bth);
-}
-
 
 int BC_WidgetGrid::getw_h(int row, int column) {
 	switch (widget_types[row][column]) {
 	case BC_WT_NONE:
 		return(0);
-	case BC_WT_TumbleTextBox: 
-		return(widget_ttbxs[row][column]->get_h());
 	case BC_WT_RelocatableWidget: 
 		return(widget_widgs[row][column]->get_h());
 	}
@@ -59,8 +39,6 @@ int BC_WidgetGrid::getw_w(int row, int column) {
 	switch (widget_types[row][column]) {
 	case BC_WT_NONE:
 		return(0);
-	case BC_WT_TumbleTextBox:
-		return(widget_ttbxs[row][column]->get_w());
 	case BC_WT_RelocatableWidget: 
 		return(widget_widgs[row][column]->get_w());
 	}
@@ -69,9 +47,6 @@ int BC_WidgetGrid::getw_w(int row, int column) {
 void BC_WidgetGrid::setw_position(int row,int column,int x, int y) {
 	switch (widget_types[row][column]) {
 	case BC_WT_NONE:
-		break;
- 	case BC_WT_TumbleTextBox:
-		widget_ttbxs[row][column]->reposition_window(x,y);
 		break;
 	case BC_WT_RelocatableWidget: 
 		widget_widgs[row][column]->reposition_widget(x,y);

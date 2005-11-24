@@ -2107,6 +2107,11 @@ int BC_TumbleTextBox::handle_event()
 	return 1;
 }
 
+int BC_TumbleTextBox::reposition_widget(int x, int y, int w, int h) {
+	reposition_window(x, y);
+	return(0);
+}
+
 void BC_TumbleTextBox::reposition_window(int x, int y)
 {
 	this->x = x;
