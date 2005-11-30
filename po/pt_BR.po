@@ -3408,52 +3408,70 @@ msgid ""
 "configuring it,\n"
 "re-enable playback to process a single frame."
 msgstr ""
+"Ao configurar efeitos lentos, desabilite a reprodução para"
+"a trilha. Depois de configura-la,\n"
+"re-habilite a reprodução para processar um único quadro"
 
 #: cinelerra/tipwindow.C:19
 msgid ""
 "Ctrl + any transport command causes playback to only cover\n"
 "the region defined by the in/out points."
 msgstr ""
+"Ctrl + qualquer comando de transporte faz com que a repodução só atue\n"
+"na região definida pelos pontos de entrada e saída."
+
 
 #: cinelerra/tipwindow.C:22
 msgid ""
 "Shift + clicking a patch causes all other patches except the\n"
 "selected one to toggle."
 msgstr ""
+"Ao clicar em um grupo  segurando-se a tecla  shift pressionada "
+"todos os outros grupos, exceto o corrente, serão ligados ou desligados. "
 
 #: cinelerra/tipwindow.C:25
 msgid ""
 "Clicking on a patch and dragging across other tracks causes\n"
 "the other patches to match the first one."
 msgstr ""
+"Clicar num grupo e arrasta-lo por outras trilhas faz\n"
+"com que as outras trilhas se tornem equivalentes à  primeira. "
 
 #: cinelerra/tipwindow.C:28
 msgid ""
 "Shift + clicking on an effect boundary causes dragging to affect\n"
 "just the one effect."
 msgstr ""
+"Clicar com shift pressionado no limite de um efeito faz com que\n"
+"o arrasto só afete esse efeito."
 
 #: cinelerra/tipwindow.C:31
 msgid ""
 "Load multiple files by clicking on one file and shift + clicking on\n"
 "another file.  Ctrl + clicking toggles individual files."
 msgstr ""
+"Abra múltiplos arquivos clicando em um arquivo, e usando shift + click \n"
+"para extender a seleção. Use ctrl + click para escolher arquvos individuais."
 
 #: cinelerra/tipwindow.C:34
 msgid ""
 "Ctrl + left clicking on the time bar cycles forward a time format.\n"
 "Ctrl + middle clicking on the time bar cycles backward a time format."
 msgstr ""
+"Ctrl + botão esquerdo  na barra de tempo avança o formato de tempo \n"
+"Ctrl + botão do meio na barra de tempo retorna um formato de tempo."
 
 #: cinelerra/tipwindow.C:37
 msgid "Use the +/- keys in the Compositor window to zoom in and out.\n"
-msgstr ""
+msgstr "Use as teclas + e - na janela do Compositor para fazer zoom.\n"
 
 #: cinelerra/tipwindow.C:39
 msgid ""
 "Pressing Alt while clicking in the cropping window causes translation of\n"
 "all 4 points.\n"
 msgstr ""
+"Pressionar Alt ao clicar na janela de corte faz com que todos os\n"
+"quatro pontos sejam transladados.\n"
 
 #: cinelerra/tipwindow.C:42
 msgid ""
@@ -3461,6 +3479,9 @@ msgid ""
 "Pressing Shift-Tab over a track toggles the Record status of all the other "
 "tracks.\n"
 msgstr ""
+"Pressionar Tab sobre uma trilha liga ou desliga o estado de Gravação.\n"
+"Pressionar Shift + Tab sobre uma trilha liga ou desliga o estado "
+"de gravação de todas as outras trilhas.\n"
 
 #: cinelerra/tipwindow.C:172
 msgid "Show tip of the day."
