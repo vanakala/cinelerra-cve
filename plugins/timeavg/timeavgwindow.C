@@ -155,7 +155,7 @@ TimeAvgParanoid::TimeAvgParanoid(TimeAvgMain *client, int x, int y)
  : BC_CheckBox(x, 
  	y, 
 	client->config.paranoid,
-	"Reprocess frame again")
+	_("Reprocess frame again"))
 {
 	this->client = client;
 }
@@ -175,7 +175,7 @@ TimeAvgNoSubtract::TimeAvgNoSubtract(TimeAvgMain *client, int x, int y)
  : BC_CheckBox(x, 
  	y, 
 	client->config.nosubtract,
-	"Disable subtraction")
+	_("Disable subtraction"))
 {
 	this->client = client;
 }
