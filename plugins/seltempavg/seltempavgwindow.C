@@ -107,7 +107,7 @@ WINDOW_CLOSE_EVENT(SelTempAvgWindow)
 
 
 SelTempAvgThreshSlider::SelTempAvgThreshSlider(SelTempAvgMain *client, int x, int y, int id, float currentval)
-  : BC_TextBox(x,y, 80, 1, currentval)
+  : BC_TextBox(x,y, 80, 1, currentval, 1, MEDIUMFONT, 8)
 {
   //	float val;
   //	int   ival;

@@ -52,12 +52,14 @@ BC_TextBox::BC_TextBox(int x,
 	int rows, 
 	float text, 
 	int has_border, 
-	int font)
+	int font,
+	int precision)
  : BC_SubWindow(x, y, w, 0, -1)
 {
 	skip_cursor = 0;
 	reset_parameters(rows, has_border, font);
-	sprintf(this->text, "%0.4f", text);
+	this->precision = precision;
+	sprintf(this->text, "%0.*f", precision, text);
 }
 
 BC_TextBox::BC_TextBox(int x, 
@@ -192,10 +194,7 @@ int BC_TextBox::update(int64_t value)
 int BC_TextBox::update(float value)
 {
 	char string[BCTEXTLEN];
-	sprintf(string, "%f", value);
-	char *ptr = strchr(string, '.');
-
-	if(ptr) ptr[precision + 1] = 0;
+	sprintf(string, "%0.*f", precision, value);
 
 	update(string);
 	return 0;

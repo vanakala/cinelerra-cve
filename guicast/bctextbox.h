@@ -41,7 +41,8 @@ public:
 		int rows, 
 		float text, 
 		int has_border = 1, 
-		int font = MEDIUMFONT);
+		int font = MEDIUMFONT,
+		int precision = 4);
 	virtual ~BC_TextBox();
 
 // Whenever the contents of the text change
