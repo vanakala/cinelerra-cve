@@ -1957,13 +1957,13 @@ int TrackCanvas::do_keyframes(int cursor_x,
 	EDLSession *session = mwindow->edl->session;
 
 
-	if(buttonpress == 3)
+/*	if(buttonpress == 3)
 	{
 		update_cursor = 1;
 		return 0;
 	}
 
-
+*/
 
 	BC_Pixmap *auto_pixmaps[] = 
 	{
@@ -2049,13 +2049,23 @@ int TrackCanvas::do_keyframes(int cursor_x,
 						rerender = 1;
 					if(buttonpress)
 					{
-						if(i == AUTOMATION_FADE) 
-							synchronize_autos(0, 
-								track, 
-								(FloatAuto*)mwindow->session->drag_auto, 
-								1);
-						mwindow->session->current_operation = pre_auto_operations[i];
-						update_drag_caption();
+						if (buttonpress != 3)
+						{
+							if(i == AUTOMATION_FADE) 
+								synchronize_autos(0, 
+									track, 
+									(FloatAuto*)mwindow->session->drag_auto, 
+									1);
+							mwindow->session->current_operation = pre_auto_operations[i];
+							update_drag_caption();
+						} else
+						if (buttonpress == 3) 
+						{
+							gui->keyframe_menu->update(automation, autos, auto_keyframe);
+							gui->keyframe_menu->activate_menu();
+							rerender = 1; // the position changes
+
+						}
 					}
 				}
 			}
