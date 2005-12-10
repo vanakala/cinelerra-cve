@@ -920,7 +920,7 @@ void Asset::load_defaults(Defaults *defaults,
 	}
 
 	// NOTE: this should never be saved
-	strcpy(this->prefix, prefix);
+	strcpy(this->prefix, prefix ? prefix : "");
 
 	ampeg_bitrate = GET_DEFAULT("AMPEG_BITRATE", ampeg_bitrate);
 	ampeg_derivative = GET_DEFAULT("AMPEG_DERIVATIVE", ampeg_derivative);
