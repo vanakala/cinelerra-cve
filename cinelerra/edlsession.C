@@ -137,7 +137,7 @@ int EDLSession::load_defaults(Defaults *defaults)
 	crop_y2 = defaults->get("CROP_Y2", 240);
 	sprintf(current_folder, MEDIA_FOLDER);
 	defaults->get("CURRENT_FOLDER", current_folder);
-	cursor_on_frames = defaults->get("CURSOR_ON_FRAMES", 0);
+	cursor_on_frames = defaults->get("CURSOR_ON_FRAMES", 1);
 	cwindow_dest = defaults->get("CWINDOW_DEST", 0);
 	cwindow_mask = defaults->get("CWINDOW_MASK", 0);
 	cwindow_meter = defaults->get("CWINDOW_METER", 1);
