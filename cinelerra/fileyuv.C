@@ -404,8 +404,8 @@ int YUVConfigVideo::create_objects()
 	x += 160;
 	ffmpeg = new PipePreset(x, y, "ffmpeg", pipe_config);
 	add_subwindow(ffmpeg);
-	ffmpeg->add_item(new BC_MenuItem("(DVD) | ffmpeg -f yuv4mpegpipe -i - -y -target dvd %"));
-	ffmpeg->add_item(new BC_MenuItem("(VCD) | ffmpeg -f yuv4mpegpipe -i - -y -target vcd %"));
+	ffmpeg->add_item(new BC_MenuItem("(DVD) | ffmpeg -f yuv4mpegpipe -i - -y -target dvd -ilme -ildct -hq -f mpeg2video %"));
+	ffmpeg->add_item(new BC_MenuItem("(VCD) | ffmpeg -f yuv4mpegpipe -i - -y -target vcd -hq -f mpeg2video %"));
 
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
