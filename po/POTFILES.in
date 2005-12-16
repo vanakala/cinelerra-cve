@@ -172,20 +172,24 @@ plugins/gain/gain.C
 plugins/gain/gainwindow.C
 plugins/gradient/gradient.C
 plugins/histogram/histogram.C
+plugins/histogram/histogramwindow.C
 plugins/holo/holo.C
 plugins/holo/holowindow.C
 plugins/huesaturation/huesaturation.C
 # plugins/huesaturation/huewindow.C
 # plugins/interpolate/interpolate.C
+plugins/interpolatevideo/interpolatevideo.C
 plugins/interpolateall/interpolateall.C
 plugins/invertaudio/invert.C
 plugins/invertvideo/invert.C
-# plugins/invertvideo/invertwindow.C
+plugins/invertvideo/invertwindow.C
 plugins/irissquare/irissquare.C
 plugins/ivtc/ivtc.C
+plugins/ivtc/ivtc.h
 plugins/ivtc/ivtcwindow.C
 plugins/level/leveleffect.C
 plugins/linearblur/linearblur.C
+plugins/linearize/linearizewindow.C
 plugins/loopaudio/loopaudio.C
 plugins/loopvideo/loopvideo.C
 plugins/motion/motion.C
@@ -194,6 +198,7 @@ plugins/normalize/normalize.C
 plugins/normalize/normalizewindow.C
 plugins/oilpainting/oil.C
 # plugins/oilpainting/oilwindow.C
+plugins/overlay/overlay.C
 plugins/parametric/parametric.C
 plugins/perspective/perspective.C
 plugins/pitch/pitch.C
@@ -215,6 +220,8 @@ plugins/rotate/rotate.C
 # plugins/rotate/rotatewindow.C
 plugins/scale/scale.C
 plugins/scale/scalewin.C
+plugins/seltempavg/seltempavg.C
+plugins/seltempavg/seltempavgwindow.C
 plugins/shapewipe/shapewipe.C
 plugins/sharpen/sharpen.C
 plugins/sharpen/sharpenwindow.C

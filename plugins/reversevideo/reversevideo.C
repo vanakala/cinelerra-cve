@@ -127,7 +127,7 @@ ReverseVideoEnabled::ReverseVideoEnabled(ReverseVideo *plugin,
  : BC_CheckBox(x, 
 	y, 
 	plugin->config.enabled,
-	"Enabled")
+	_("Enabled"))
 {
 	this->plugin = plugin;
 }

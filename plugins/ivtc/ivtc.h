@@ -1,6 +1,8 @@
 #ifndef IVTC_H
 #define IVTC_H
 
+#include "language.h"
+
 class IVTCMain;
 class IVTCEngine;
 
@@ -8,9 +10,9 @@ class IVTCEngine;
 
 static char *pattern_text[] = 
 {
-	"A  B  BC  CD  D",
-	"AB  BC  CD  DE  EF",
-	"Automatic"
+	N_("A  B  BC  CD  D"),
+	N_("AB  BC  CD  DE  EF"),
+	N_("Automatic")
 };
 
 #include "defaults.h"

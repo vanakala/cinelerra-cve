@@ -129,7 +129,7 @@ ReverseAudioEnabled::ReverseAudioEnabled(ReverseAudio *plugin,
  : BC_CheckBox(x, 
 	y, 
 	plugin->config.enabled,
-	"Enabled")
+	_("Enabled"))
 {
 	this->plugin = plugin;
 }

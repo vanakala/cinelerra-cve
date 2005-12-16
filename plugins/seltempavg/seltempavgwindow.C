@@ -268,7 +268,7 @@ SelTempAvgParanoid::SelTempAvgParanoid(SelTempAvgMain *client, int x, int y)
  : BC_CheckBox(x, 
  	y, 
 	client->config.paranoid,
-	"Reprocess frame again")
+	_("Reprocess frame again"))
 {
 	this->client = client;
 }
@@ -285,7 +285,7 @@ SelTempAvgNoSubtract::SelTempAvgNoSubtract(SelTempAvgMain *client, int x, int y)
  : BC_CheckBox(x, 
  	y, 
 	client->config.nosubtract,
-	"Disable subtraction")
+	_("Disable subtraction"))
 {
 	this->client = client;
 }
@@ -330,7 +330,7 @@ SelTempAvgStartKeyframe::SelTempAvgStartKeyframe(SelTempAvgMain *client, int x, 
  : BC_CheckBox(x, 
  	y, 
 	client->config.nosubtract,
-	"This Frame is a start of a section")
+	_("This Frame is a start of a section"))
 {
 	this->client = client;
 }

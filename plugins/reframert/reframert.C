@@ -176,7 +176,7 @@ void ReframeRTWindow::create_objects()
 {
 	int x = 10, y = 10;
 
-	add_subwindow(new BC_Title(x, y, "Scale by amount:"));
+	add_subwindow(new BC_Title(x, y, _("Scale by amount:")));
 	y += 20;
 	scale = new ReframeRTScale(plugin, 
 		this,
@@ -235,7 +235,7 @@ ReframeRTStretch::ReframeRTStretch(ReframeRT *plugin,
 	ReframeRTWindow *gui,
 	int x,
 	int y)
- : BC_Radial(x, y, plugin->config.stretch, "Stretch")
+ : BC_Radial(x, y, plugin->config.stretch, _("Stretch"))
 {
 	this->plugin = plugin;
 	this->gui = gui;
@@ -254,7 +254,7 @@ ReframeRTDownsample::ReframeRTDownsample(ReframeRT *plugin,
 	ReframeRTWindow *gui,
 	int x,
 	int y)
- : BC_Radial(x, y, !plugin->config.stretch, "Downsample")
+ : BC_Radial(x, y, !plugin->config.stretch, _("Downsample"))
 {
 	this->plugin = plugin;
 	this->gui = gui;

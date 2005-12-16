@@ -53,7 +53,7 @@ int IVTCWindow::create_objects()
 		add_subwindow(pattern[i] = new IVTCPattern(client, 
 			this, 
 			i, 
-			pattern_text[i], 
+			_(pattern_text[i]), 
 			x, 
 			y));
 		y += 20;

@@ -182,8 +182,8 @@ char* OverlayConfig::direction_to_text(int direction)
 {
 	switch(direction)
 	{
-		case OverlayConfig::BOTTOM_FIRST: return "Bottom first";
-		case OverlayConfig::TOP_FIRST:    return "Top first";
+		case OverlayConfig::BOTTOM_FIRST: return _("Bottom first");
+		case OverlayConfig::TOP_FIRST:    return _("Top first");
 	}
 	return "";
 }
@@ -192,8 +192,8 @@ char* OverlayConfig::output_to_text(int output_layer)
 {
 	switch(output_layer)
 	{
-		case OverlayConfig::TOP:    return "Top";
-		case OverlayConfig::BOTTOM: return "Bottom";
+		case OverlayConfig::TOP:    return _("Top");
+		case OverlayConfig::BOTTOM: return _("Bottom");
 	}
 	return "";
 }
@@ -230,21 +230,21 @@ void OverlayWindow::create_objects()
 	int x = 10, y = 10;
 
 	BC_Title *title;
-	add_subwindow(title = new BC_Title(x, y, "Mode:"));
+	add_subwindow(title = new BC_Title(x, y, _("Mode:")));
 	add_subwindow(mode = new OverlayMode(plugin, 
 		x + title->get_w() + 5, 
 		y));
 	mode->create_objects();
 
 	y += 30;
-	add_subwindow(title = new BC_Title(x, y, "Layer order:"));
+	add_subwindow(title = new BC_Title(x, y, _("Layer order:")));
 	add_subwindow(direction = new OverlayDirection(plugin, 
 		x + title->get_w() + 5, 
 		y));
 	direction->create_objects();
 
 	y += 30;
-	add_subwindow(title = new BC_Title(x, y, "Output layer:"));
+	add_subwindow(title = new BC_Title(x, y, _("Output layer:")));
 	add_subwindow(output = new OverlayOutput(plugin, 
 		x + title->get_w() + 5, 
 		y));

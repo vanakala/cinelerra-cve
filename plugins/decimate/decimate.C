@@ -238,7 +238,7 @@ void DecimateWindow::create_objects()
 	frame_rates.append(new BC_ListBoxItem("60"));
 
 	BC_Title *title;
-	add_subwindow(title = new BC_Title(x, y, "Input frames per second:"));
+	add_subwindow(title = new BC_Title(x, y, _("Input frames per second:")));
 	y += 30;
 	add_subwindow(rate = new DecimateRate(plugin, 
 		this, 
@@ -249,7 +249,7 @@ void DecimateWindow::create_objects()
 		x + rate->get_w() + 5, 
 		y));
 	y += 30;
-	add_subwindow(title = new BC_Title(x, y, "Last frame dropped: "));
+	add_subwindow(title = new BC_Title(x, y, _("Last frame dropped: ")));
 	add_subwindow(last_dropped = new BC_Title(x + title->get_w() + 5, y, ""));
 
 // 	y += 30;

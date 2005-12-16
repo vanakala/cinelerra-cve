@@ -104,7 +104,7 @@ void LoopVideoWindow::create_objects()
 {
 	int x = 10, y = 10;
 
-	add_subwindow(new BC_Title(x, y, "Frames to loop:"));
+	add_subwindow(new BC_Title(x, y, _("Frames to loop:")));
 	y += 20;
 	add_subwindow(frames = new LoopVideoFrames(plugin, 
 		x, 

@@ -602,7 +602,7 @@ UseTipWindow::UseTipWindow(PreferencesWindow *pwindow, int x, int y)
  : BC_CheckBox(x, 
  	y, 
 	pwindow->thread->preferences->use_tipwindow, 
-	"Show tip of the day")
+	_("Show tip of the day"))
 {
 	this->pwindow = pwindow;
 }

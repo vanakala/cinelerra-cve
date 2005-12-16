@@ -259,7 +259,7 @@ LinearizeColorPicker::LinearizeColorPicker(LinearizeMain *plugin,
 	LinearizeWindow *gui, 
 	int x, 
 	int y)
- : BC_GenericButton(x, y, "Use Color Picker")
+ : BC_GenericButton(x, y, _("Use Color Picker"))
 {
 	this->plugin = plugin;
 	this->gui = gui;

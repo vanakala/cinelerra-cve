@@ -105,7 +105,7 @@ void LoopAudioWindow::create_objects()
 {
 	int x = 10, y = 10;
 
-	add_subwindow(new BC_Title(x, y, "Samples to loop:"));
+	add_subwindow(new BC_Title(x, y, _("Samples to loop:")));
 	y += 20;
 	add_subwindow(samples = new LoopAudioSamples(plugin, 
 		x, 

@@ -277,12 +277,12 @@ void DiffKeyGUI::create_objects()
 {
 	int x = 10, y = 10, x2;
 	BC_Title *title;
-	add_subwindow(title = new BC_Title(x, y, "Threshold:"));
+	add_subwindow(title = new BC_Title(x, y, _("Threshold:")));
 	x += title->get_w() + 10;
 	add_subwindow(threshold = new DiffKeyThreshold(plugin, x, y));
 	x = 10;
 	y += threshold->get_h() + 10;
-	add_subwindow(title = new BC_Title(x, y, "Slope:"));
+	add_subwindow(title = new BC_Title(x, y, _("Slope:")));
 	x += title->get_w() + 10;
 	add_subwindow(slope = new DiffKeySlope(plugin, x, y));
 	x = 10;

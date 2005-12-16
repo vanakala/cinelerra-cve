@@ -141,7 +141,7 @@ ColorBalanceWhite::ColorBalanceWhite(ColorBalanceMain *plugin,
 	ColorBalanceWindow *gui,
 	int x, 
 	int y)
- : BC_GenericButton(x, y, "White balance")
+ : BC_GenericButton(x, y, _("White balance"))
 {
 	this->plugin = plugin;
 	this->gui = gui;
@@ -182,7 +182,7 @@ ColorBalanceReset::ColorBalanceReset(ColorBalanceMain *plugin,
 	ColorBalanceWindow *gui, 
 	int x, 
 	int y)
- : BC_GenericButton(x, y, "Reset")
+ : BC_GenericButton(x, y, _("Reset"))
 {
 	this->plugin = plugin;
 	this->gui = gui;
