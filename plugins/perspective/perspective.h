@@ -47,7 +47,7 @@ public:
 		int x, 
 		int y, 
 		int w,
-		int w);
+		int h);
 	int button_press_event();
 	int button_release_event();
 	int cursor_motion_event();
