@@ -11,16 +11,16 @@ extern "C" {
 
 class Pipe {
  public:
-	Pipe::Pipe(char *command, char *sub_str = 0, char sub_char = '%');
- 	Pipe::~Pipe() ;		
-	int Pipe::open_read() ;
-	int Pipe::open_write() ;
-	void Pipe::close() ;
+	Pipe(char *command, char *sub_str = 0, char sub_char = '%');
+ 	~Pipe() ;		
+	int open_read() ;
+	int open_write() ;
+	void close() ;
 
 	int fd;
  private:
-	int Pipe::substitute() ;
- 	int Pipe::open(char *mode) ;
+	int substitute() ;
+ 	int open(char *mode) ;
 	
 	char sub_char;
 	char *sub_str;

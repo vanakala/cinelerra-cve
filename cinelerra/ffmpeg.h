@@ -24,11 +24,11 @@ class FFMPEG
 	static int convert_cmodel_transfer(VFrame *frame_in,VFrame *frame_out);
 	static int init_picture_from_frame(AVPicture *picture, VFrame *frame);
 
-	static CodecID FFMPEG::codec_id(char *codec_string);
+	static CodecID codec_id(char *codec_string);
 
  private:
 	static PixelFormat color_model_to_pix_fmt(int color_model);
-	static int FFMPEG::pix_fmt_to_color_model(PixelFormat pix_fmt);
+	static int pix_fmt_to_color_model(PixelFormat pix_fmt);
 
 	int got_picture;
 	Asset *asset;

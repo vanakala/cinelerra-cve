@@ -354,7 +354,7 @@ private:
 
 	int get_title_h();
 	int calculate_item_coords();
-	void BC_ListBox::calculate_last_coords_recursive(
+	void calculate_last_coords_recursive(
 		ArrayList<BC_ListBoxItem*> *data,
 		int *icon_x,
 		int *next_icon_x,

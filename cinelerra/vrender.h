@@ -48,7 +48,7 @@ public:
 // Flash the output on the display
 	int flash_output();
 // Determine if data can be copied directly from the file to the output device.
-	void VRender::get_render_strategy(Edit* &playable_edit, 
+	void get_render_strategy(Edit* &playable_edit, 
 		int &colormodel, 
 		int &use_vconsole,
 		int64_t position);

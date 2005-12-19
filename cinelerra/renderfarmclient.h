@@ -70,7 +70,7 @@ public:
 
 
 
-	void RenderFarmClientThread::read_preferences(int socket_fd, 
+	void read_preferences(int socket_fd, 
 		Preferences *preferences);
 	void read_asset(int socket_fd, Asset *asset);
 	void read_edl(int socket_fd, 

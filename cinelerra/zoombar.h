@@ -24,7 +24,7 @@ public:
 	~ZoomBar();
 
 	int create_objects();
-	void ZoomBar::resize_event();
+	void resize_event();
 	int draw();
 	int resize_event(int w, int h);
 	void redraw_time_dependancies();

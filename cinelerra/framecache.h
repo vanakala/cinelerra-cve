@@ -72,7 +72,7 @@ private:
 		int64_t position,
 		double frame_rate,
 		int *item_return);
-	int FrameCache::frame_exists(int64_t position, 
+	int frame_exists(int64_t position, 
 		double frame_rate,
 		int color_model,
 		int w,

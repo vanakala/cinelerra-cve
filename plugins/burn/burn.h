@@ -75,7 +75,7 @@ public:
 
 
 
-	void BurnMain::HSItoRGB(double H, 
+	void HSItoRGB(double H, 
 		double S, 
 		double I, 
 		int *r, 

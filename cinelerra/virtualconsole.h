@@ -28,7 +28,7 @@ public:
 
 // Called during each process buffer operation to reset the status
 // of the attachments to unprocessed.
-	void VirtualConsole::reset_attachments();
+	void reset_attachments();
 	void dump();
 
 

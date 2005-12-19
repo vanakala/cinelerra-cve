@@ -62,7 +62,7 @@ public:
 	int wait_process_frame();
 	void run();
 	void get_pixel(const int &x, const int &y, VPixel *pixel, VPixel **input_rows);
-	int PolarEngine::calc_undistorted_coords(int wx,
+	int calc_undistorted_coords(int wx,
 			 int wy,
 			 double &x,
 			 double &y);

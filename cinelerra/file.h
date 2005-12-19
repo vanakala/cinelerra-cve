@@ -139,7 +139,7 @@ public:
 
 
 // Read frame of video into the argument
-	int File::read_frame(VFrame *frame);
+	int read_frame(VFrame *frame);
 
 
 // The following involve no extra copies.
