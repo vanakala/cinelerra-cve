@@ -180,6 +180,8 @@ public:
 	void move_down(int64_t distance = 0);
 	int next_label();   // seek to labels
 	int prev_label();
+	int next_edit_handle();   // seek to labels
+	int prev_edit_handle();  // seek to edit handles
 	void trackmovement(int track_start);
 	int samplemovement(int64_t view_start);     // view_start is pixels
 	void select_all();
