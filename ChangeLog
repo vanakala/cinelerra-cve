@@ -1,4 +1,10 @@
+
+22. dec. 2005
+minmax:
+	- Alt + left / alt + right moves cursor trough edit handles
+
 21. dec. 2005
+minmax:
 	- Fix for dragndrop crushing bug in trackcanvas.C
 
 5.Sep.2005
