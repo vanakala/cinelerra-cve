@@ -395,29 +395,8 @@ void MWindow::select_all()
 
 int MWindow::next_label()
 {
-	Label *current;
-	Labels *labels = edl->labels;
-
-// Test for label under cursor position
-	for(current = labels->first; 
-		current && !edl->equivalent(current->position, 
-			edl->local_session->get_selectionend(1)); 
-		current = NEXT)
-		;
-
-// Test for label before cursor position
-	if(!current)
-		for(current = labels->last;
-			current && current->position > edl->local_session->get_selectionend(1);
-			current = PREVIOUS)
-			;
-
-// Test for label after cursor position
-	if(!current)
-		current = labels->first;
-	else
-// Get next label
-		current = NEXT;
+	Label *current = edl->labels->next_label(
+			edl->local_session->get_selectionstart(1));
 
 	if(current)
 	{
@@ -465,30 +444,8 @@ int MWindow::next_label()
 
 int MWindow::prev_label()
 {
-	Label *current;
-	Labels *labels = edl->labels;
-
-// Test for label under cursor position
-	for(current = labels->first; 
-		current && !edl->equivalent(current->position, 
-			edl->local_session->get_selectionstart(1)); 
-		current = NEXT)
-		;
-
-// Test for label after cursor position
-	if(!current)
-		for(current = labels->first;
-			current && 
-				current->position < edl->local_session->get_selectionstart(1);
-			current = NEXT)
-			;
-
-// Test for label before cursor position
-	if(!current) 
-		current = labels->last;
-	else
-// Get previous label
-		current = PREVIOUS;
+	Label *current = edl->labels->prev_label(
+			edl->local_session->get_selectionstart(1));;
 
 	if(current)
 	{
