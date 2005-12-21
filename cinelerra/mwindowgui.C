@@ -474,15 +474,21 @@ int MWindowGUI::keypress_event()
 		{
 			case LEFT:
 				if(!ctrl_down()) 
-				{ 
-					mwindow->move_left(); 
+				{
+					if (alt_down())
+						mwindow->prev_edit_handle();
+					else
+						mwindow->move_left(); 
 					result = 1; 
 				}
 				break;
 			case RIGHT:
 				if(!ctrl_down()) 
 				{ 
-					mwindow->move_right(); 
+					if (alt_down())
+						mwindow->next_edit_handle();
+					else
+						mwindow->move_right(); 
 					result = 1; 
 				}
 				break;
