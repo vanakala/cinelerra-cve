@@ -489,10 +489,20 @@ int TrackCanvas::drag_stop()
 					mwindow->session->drag_assets->total)
 				{
 					Asset *asset = mwindow->session->drag_assets->values[0];
-
 					// we use video if we are over video and audio if we are over audio
 					if (asset->video_data && mwindow->session->track_highlighted->data_type == TRACK_VIDEO)
-						asset_length_float = asset->video_length / asset->frame_rate;
+					{
+						// Images have length -1
+						double video_length = asset->video_length;
+						if (video_length < 0)
+						{
+							if(mwindow->edl->session->si_useduration)
+								video_length = mwindow->edl->session->si_duration;
+							else	
+								video_length = 1.0 / mwindow->edl->session->frame_rate ; 
+						}
+						asset_length_float = video_length / asset->frame_rate;
+					}
 					else if (asset->audio_data && mwindow->session->track_highlighted->data_type == TRACK_AUDIO)
 						asset_length_float = asset->audio_length / asset->sample_rate;
 					else
@@ -500,12 +510,15 @@ int TrackCanvas::drag_stop()
 						result = 1;
 						break;	// Do not do anything
 					}
-				}
+				} else
 				if(mwindow->session->current_operation == DRAG_ASSET &&
 					mwindow->session->drag_clips->total)
 				{
 					EDL *clip = mwindow->session->drag_clips->values[0];
 					asset_length_float = clip->tracks->total_length();
+				} else
+				{
+					printf("DRAG_ASSET error: Asset dropped, but both drag_clips and drag_assets total is zero\n");
 				}
 			
 				asset_length_units = mwindow->session->track_highlighted->to_units(asset_length_float, 0);
@@ -1110,7 +1123,18 @@ void TrackCanvas::draw_paste_destination()
 						int64_t asset_length;
 						// we use video if we are over video and audio if we are over audio
 						if (asset->video_data && mwindow->session->track_highlighted->data_type == TRACK_VIDEO)
-							asset_length = mwindow->session->track_highlighted->to_units(asset->video_length / asset->frame_rate, 0);
+						{
+							// Images have length -1
+							double video_length = asset->video_length;
+							if (video_length < 0)
+							{
+								if(mwindow->edl->session->si_useduration)
+									video_length = mwindow->edl->session->si_duration;
+								else	
+									video_length = 1.0 / mwindow->edl->session->frame_rate ; 
+							}
+							asset_length = mwindow->session->track_highlighted->to_units(video_length / asset->frame_rate, 0);
+						}
 						else
 							asset_length = mwindow->session->track_highlighted->to_units(asset->audio_length / asset->sample_rate, 0);
 
@@ -1173,11 +1197,20 @@ void TrackCanvas::draw_paste_destination()
 //printf("draw_paste_destination 1\n");
 					if(asset && current_vtrack < asset->layers)
 					{
-						w = Units::to_int64((double)asset->video_length / 
+						// Images have length -1
+						double video_length = asset->video_length;
+						if (video_length < 0)
+						{
+							if(mwindow->edl->session->si_useduration)
+								video_length = mwindow->edl->session->si_duration;
+							else	
+								video_length = 1.0 / mwindow->edl->session->frame_rate ; 
+						}
+						w = Units::to_int64((double)video_length / 
 							asset->frame_rate *
 							mwindow->edl->session->sample_rate /
 							mwindow->edl->local_session->zoom_sample);
-						int64_t asset_length = mwindow->session->track_highlighted->to_units((double)asset->video_length / 
+						int64_t asset_length = mwindow->session->track_highlighted->to_units((double)video_length / 
 							asset->frame_rate, 0);
 				
 						position = mwindow->session->track_highlighted->from_units(get_drop_position(&insertion, NULL, asset_length));
