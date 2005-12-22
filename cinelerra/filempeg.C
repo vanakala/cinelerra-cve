@@ -273,7 +273,7 @@ int FileMPEG::open_file(int rd, int wr)
 			}
 			else
 			{
-				sprintf(string, " -b %d -q %d", asset->vmpeg_bitrate, asset->vmpeg_quantization);
+				sprintf(string, " -b %d -q %d", 0, asset->vmpeg_quantization);
 			}
 			strcat(mjpeg_command, string);
 
@@ -358,7 +358,7 @@ int FileMPEG::open_file(int rd, int wr)
 			sprintf(string, " -R %d", CLAMP(asset->vmpeg_pframe_distance, 0, 2));
 			strcat(mjpeg_command, string);
 
-			sprintf(string, " -o %s", asset->path);
+			sprintf(string, " -o '%s'", asset->path);
 			strcat(mjpeg_command, string);
 
 
