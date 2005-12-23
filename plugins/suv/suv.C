@@ -92,6 +92,7 @@ void SUV::initialize()
 	resources->menu_title_text = 0xbfbfbf;
 	resources->popup_title_text = 0xbfbfbf;
 	resources->menu_item_text = 0xbfbfbf;
+	resources->menu_highlighted_fontcolor = WHITE;
 	resources->generic_button_margin = 30;
 	resources->pot_needle_color = resources->text_default;
 	resources->pot_offset = 1;
