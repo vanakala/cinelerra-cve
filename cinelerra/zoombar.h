@@ -1,6 +1,8 @@
 #ifndef ZOOMBAR_H
 #define ZOOMBAR_H
 
+class ZoomTextBox;
+
 class FromTextBox;
 class LengthTextBox;
 class ToTextBox;
@@ -41,7 +43,7 @@ public:
 	AmpZoomPanel *amp_zoom;
 	TrackZoomPanel *track_zoom;
 	AutoZoom *auto_zoom;
-	BC_Title *auto_zoom_text;
+	ZoomTextBox *auto_zoom_text;
 
 	BC_Title *zoom_value, *playback_value;
 	LengthTextBox *length_value;
@@ -93,6 +95,14 @@ public:
 
 
 
+class ZoomTextBox : public BC_TextBox
+{
+public:
+	ZoomTextBox(MWindow *mwindow, ZoomBar *zoombar, int x, int y, char *text);
+	int handle_event();
+	MWindow *mwindow;
+	ZoomBar *zoombar;
+};
 
 
 

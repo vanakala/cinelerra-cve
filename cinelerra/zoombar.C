@@ -59,8 +59,10 @@ int ZoomBar::create_objects()
 	track_zoom->create_objects();
 	x += track_zoom->get_w() + 10;
 
-#define DEFAULT_TEXT "000.00 - 000.00"
-	add_subwindow(auto_zoom_text = new BC_Title(
+#define DEFAULT_TEXT "000.00 to 000.00"
+	add_subwindow(auto_zoom_text = new ZoomTextBox(
+		mwindow,
+  	        this,
 		x, 
 		get_h() / 2 - BC_Title::calculate_h(this, "0") / 2, 
 		DEFAULT_TEXT));
@@ -132,7 +134,7 @@ int ZoomBar::draw()
 void ZoomBar::update_autozoom()
 {
 	char string[BCTEXTLEN];
-	sprintf(string, "%0.02f - %0.02f\n", 
+	sprintf(string, "%0.02f to %0.02f\n", 
 		mwindow->edl->local_session->automation_min, 
 		mwindow->edl->local_session->automation_max);
 	auto_zoom_text->update(string);
@@ -386,6 +388,26 @@ int AutoZoom::handle_down_event()
 
 
 
+ZoomTextBox::ZoomTextBox(MWindow *mwindow, ZoomBar *zoombar, int x, int y, char *text)
+ : BC_TextBox(x, y, 130, 1, text)
+{
+	this->mwindow = mwindow;
+	this->zoombar = zoombar;
+}
+
+int ZoomTextBox::handle_event()
+{
+	float min, max;
+	sscanf(this->get_text(),"%f to %f",&min, &max);
+	if (max > min) {
+		mwindow->edl->local_session->automation_min = min;
+		mwindow->edl->local_session->automation_max = max;
+		mwindow->gui->zoombar->update_autozoom();
+		mwindow->gui->canvas->draw_overlays();
+		mwindow->gui->canvas->flash();
+	}
+	return 0;
+}
 
 
 
