@@ -398,14 +398,14 @@ ZoomTextBox::ZoomTextBox(MWindow *mwindow, ZoomBar *zoombar, int x, int y, char 
 int ZoomTextBox::handle_event()
 {
 	float min, max;
-	sscanf(this->get_text(),"%f to %f",&min, &max);
-	if (max > min) {
-		mwindow->edl->local_session->automation_min = min;
-		mwindow->edl->local_session->automation_max = max;
-		mwindow->gui->zoombar->update_autozoom();
-		mwindow->gui->canvas->draw_overlays();
-		mwindow->gui->canvas->flash();
-	}
+	if (sscanf(this->get_text(),"%f to %f",&min, &max))
+		if (max > min) {
+			mwindow->edl->local_session->automation_min = min;
+			mwindow->edl->local_session->automation_max = max;
+			mwindow->gui->zoombar->update_autozoom();
+			mwindow->gui->canvas->draw_overlays();
+			mwindow->gui->canvas->flash();
+		}
 	return 0;
 }
 
