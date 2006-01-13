@@ -398,7 +398,7 @@ ZoomTextBox::ZoomTextBox(MWindow *mwindow, ZoomBar *zoombar, int x, int y, char 
 int ZoomTextBox::handle_event()
 {
 	float min, max;
-	if (sscanf(this->get_text(),"%f to %f",&min, &max))
+	if (sscanf(this->get_text(),"%f to%f",&min, &max) == 2)
 		if (max > min) {
 			mwindow->edl->local_session->automation_min = min;
 			mwindow->edl->local_session->automation_max = max;
