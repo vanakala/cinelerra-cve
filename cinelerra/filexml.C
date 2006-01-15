@@ -590,17 +590,7 @@ char* XMLTag::get_property(char *property, char *value)
 	{
 		if(!strcasecmp(tag_properties[i], property))
 		{
-			int j = 0, k = 0;
-			char *tv = tag_property_values[i];
-			while (j < strlen(tag_property_values[i])) {
-				if (!strncmp(tv + j,"&#034;",6)) {
-					value[k++] = '\"';
-					j += 6;
-				} else {
-					value[k++] = tv[j++];
-				}
-			}
-			value[k] = 0;
+			strcpy(value, tag_property_values[i]);
 			result = 1;
 		}
 	}
@@ -742,23 +732,8 @@ int XMLTag::set_property(char *text, char *value)
 {
 	tag_properties[total_properties] = new char[strlen(text) + 1];
 	strcpy(tag_properties[total_properties], text);
-
-	char *tmp = new char[strlen(value) + 20*5]; // Allow for 20 quotes
-	int j = 0;
-	for (int i = 0; i < strlen(value); i++) {
-	  switch (value[i]){
-	  case '"':
-	    tmp[j] = 0;
-	    strcat(tmp,"&#034;");
-	    j += 6;
-	    break;
-	  default:
-	    tmp[j++] = value[i];
-	  }
-	}
-	tmp[j] = 0;
-	tag_property_values[total_properties] = new char[strlen(tmp) + 1];
-	strcpy(tag_property_values[total_properties], tmp);
+	tag_property_values[total_properties] = new char[strlen(value) + 1];
+	strcpy(tag_property_values[total_properties], value);
 	total_properties++;
 	return 0;
 }
