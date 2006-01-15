@@ -590,7 +590,17 @@ char* XMLTag::get_property(char *property, char *value)
 	{
 		if(!strcasecmp(tag_properties[i], property))
 		{
-			strcpy(value, tag_property_values[i]);
+			int j = 0, k = 0;
+			char *tv = tag_property_values[i];
+			while (j < strlen(tag_property_values[i])) {
+				if (!strncmp(tv + j,"&#034;",6)) {
+					value[k++] = '\"';
+					j += 6;
+				} else {
+					value[k++] = tv[j++];
+				}
+			}
+			value[k] = 0;
 			result = 1;
 		}
 	}
@@ -732,8 +742,29 @@ int XMLTag::set_property(char *text, char *value)
 {
 	tag_properties[total_properties] = new char[strlen(text) + 1];
 	strcpy(tag_properties[total_properties], text);
-	tag_property_values[total_properties] = new char[strlen(value) + 1];
-	strcpy(tag_property_values[total_properties], value);
+
+	// Count quotes
+	int qcount = 0;
+	for (int i = strlen(value)-1; i >= 0; i--)
+		if (value[i] == '"')
+			qcount++;
+
+	// Allocate space, and replace quotes with &#034;
+	tag_property_values[total_properties] = new char[strlen(value) + qcount*5 + 1];
+	int j = 0;
+	for (int i = 0; i < strlen(value); i++) {
+		switch (value[i]){
+		case '"':
+			tag_property_values[total_properties][j] = 0;
+			strcat(tag_property_values[total_properties],"&#034;");
+			j += 6;
+			break;
+		default:
+			tag_property_values[total_properties][j++] = value[i];
+		}
+	}
+	tag_property_values[total_properties][j] = 0;
+	
 	total_properties++;
 	return 0;
 }
