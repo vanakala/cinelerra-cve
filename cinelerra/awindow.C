@@ -3,6 +3,7 @@
 #include "awindow.h"
 #include "awindowgui.h"
 #include "clipedit.h"
+#include "labeledit.h"
 
 AWindow::AWindow(MWindow *mwindow) : Thread()
 {
@@ -14,6 +15,7 @@ AWindow::AWindow(MWindow *mwindow) : Thread()
 AWindow::~AWindow()
 {
 	delete asset_edit;
+	if (label_edit) delete label_edit;
 }
 
 int AWindow::create_objects()
@@ -24,6 +26,7 @@ int AWindow::create_objects()
 	asset_remove = new AssetRemoveThread(mwindow);
 	asset_edit = new AssetEdit(mwindow);
 	clip_edit = new ClipEdit(mwindow, this, 0);
+	label_edit = new LabelEdit(mwindow, this, 0);
 	return 0;
 }
 

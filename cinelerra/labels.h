@@ -28,13 +28,14 @@ public:
 class Label : public ListItem<Label>
 {
 public:
-	Label(EDL *edl, Labels *labels, double position);
+	Label(EDL *edl, Labels *labels, double position, char *textstr);
 	Label();
 	~Label();
 
 
 	EDL *edl;
 	Labels *labels;
+	char textstr[BCTEXTLEN];
 // Seconds
 	double position;
 };

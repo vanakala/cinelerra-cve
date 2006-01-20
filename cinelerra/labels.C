@@ -31,7 +31,7 @@ void Labels::dump()
 {
 	for(Label *current = first; current; current = NEXT)
 	{
-		printf("  label: %f\n", current->position);
+		printf("  label: %f '%s'\n", current->position, current->textstr);
 	}
 }
 
@@ -77,9 +77,9 @@ void Labels::insert_labels(Labels *labels, double start, double length, int past
 		if(!exists)
 		{
 			if(old_label)
-				insert_before(old_label, new Label(edl, this, new_label->position + start));
+				insert_before(old_label, new Label(edl, this, new_label->position + start, new_label->textstr));
 			else
-				append(new Label(edl, this, new_label->position + start));
+				append(new Label(edl, this, new_label->position + start, new_label->textstr));
 		}
 	}
 }
@@ -109,13 +109,13 @@ int Labels::toggle_label(double start, double end)
 		}
 		else
 		{        // insert before it
-			current = insert_before(current, new Label(edl, this, start));
+			current = insert_before(current, new Label(edl, this, start, ""));
 		}
 	}
 	else
 	{           // insert after last
 //printf("Labels::toggle_label 1\n");
-		current = append(new Label(edl, this, start));
+		current = append(new Label(edl, this, start, ""));
 	}
 
 // handle selection end
@@ -138,12 +138,12 @@ int Labels::toggle_label(double start, double end)
 			}
 			else
 			{
-				current = insert_before(current, new Label(edl, this, end));
+				current = insert_before(current, new Label(edl, this, end, ""));
 			}
 		}
 		else
 		{
-			current = append(new Label(edl, this, end));
+			current = append(new Label(edl, this, end, ""));
 		}
 	}
 	return 0;
@@ -172,6 +172,7 @@ int Labels::copy(double start, double end, FileXML *xml)
 	{
 		xml->tag.set_title(string);
 		xml->tag.set_property("SAMPLE", (double)current->position - start);
+		xml->tag.set_property("TEXTSTR", current->textstr);
 //printf("Labels::copy %f\n", current->position - start);
 		xml->append_tag();
 	}
@@ -202,7 +203,7 @@ void Labels::copy_from(Labels *labels)
 
 	for(Label *current = labels->first; current; current = NEXT)
 	{
-		append(new Label(edl, this, current->position));
+		append(new Label(edl, this, current->position, current->textstr));
 	}
 }
 
@@ -227,6 +228,7 @@ int Labels::save(FileXML *xml)
 	{
 		xml->tag.set_title("LABEL");
 		xml->tag.set_property("SAMPLE", (double)current->position);
+		xml->tag.set_property("TEXTSTR", current->textstr);
 		xml->append_tag();
 	}
 	
@@ -263,7 +265,8 @@ int Labels::load(FileXML *xml, uint32_t load_flags)
 				if(position > -1)
 				{
 					Label *current = label_of(position);
-					current = insert_before(current, new Label(edl, this, position));
+					current = insert_before(current, new Label(edl, this, position, ""));
+					xml->tag.get_property("TEXTSTR", current->textstr);
 				}
 			}
 			else
@@ -479,12 +482,16 @@ Label::Label()
 {
 }
 
-Label::Label(EDL *edl, Labels *labels, double position)
+Label::Label(EDL *edl, Labels *labels, double position, char *textstr = 0)
  : ListItem<Label>()
 {
 	this->edl = edl;
 	this->labels = labels;
 	this->position = position;
+	if (textstr)
+		strcpy(this->textstr, textstr);
+	else
+		strcpy(this->textstr, "");
 }
 
 

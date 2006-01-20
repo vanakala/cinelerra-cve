@@ -68,6 +68,11 @@ int AssetListFormat::handle_event()
 			break;
 	}
 
+	
+	if (!mwindow->awindow->gui->allow_iconlisting) {
+		mwindow->edl->session->assetlist_format = ASSETS_TEXT;
+	}
+
 	mwindow->awindow->gui->asset_list->update_format(
 		mwindow->edl->session->assetlist_format, 
 		1);

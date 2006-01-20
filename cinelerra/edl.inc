@@ -39,6 +39,8 @@ class EDL;
 #define ATRANSITION_FOLDER "Audio Transitions"
 #define VTRANSITION_FOLDER "Video Transitions"
 
+#define LABEL_FOLDER "Labels"
+
 // Default folders
 #define CLIP_FOLDER "Clips"
 #define MEDIA_FOLDER "Media"

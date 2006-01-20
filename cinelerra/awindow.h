@@ -6,6 +6,7 @@
 #include "awindowgui.inc"
 #include "bcwindowbase.inc"
 #include "clipedit.inc"
+#include "labeledit.inc"
 #include "mwindow.inc"
 #include "thread.h"
 
@@ -25,6 +26,7 @@ public:
 	AssetEdit *asset_edit;
 	AssetRemoveThread *asset_remove;
 	ClipEdit *clip_edit;
+	LabelEdit *label_edit;
 };
 
 #endif

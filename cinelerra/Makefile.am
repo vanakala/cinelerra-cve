@@ -121,6 +121,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    keyframehandles.C \
 		    keyframepopup.C \
 		    keyframes.C \
+		    labeledit.C \
 		    labelnavigate.C \
 		    labels.C \
 		    levelwindow.C \
@@ -420,6 +421,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 keyframehandles.h \
 		 keyframepopup.h \
 		 keyframes.h \
+		 labeledit.h \
 		 labelnavigate.h \
 		 labels.h \
 		 ladspa.h \
