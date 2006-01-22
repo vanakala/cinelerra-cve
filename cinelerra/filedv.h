@@ -11,7 +11,6 @@
 
 #include <libdv/dv.h>
 
-// TODO: Do we need a thread for audio/video encoding?
 
 class FileDV : public FileBase
 {
@@ -27,47 +26,65 @@ public:
 	
 	int reset_parameters_derived();
 	int open_file(int rd, int wr);
+
 	static int check_sig(Asset *asset);
-	int close_file();
 	int close_file_derived();
+	
 	int64_t get_video_position();
 	int64_t get_audio_position();
+	
 	int set_video_position(int64_t x);
 	int set_audio_position(int64_t x);
+
+	int audio_samples_copy(double **buffer, int64_t len);
+	
 	int write_samples(double **buffer, int64_t len);
 	int write_frames(VFrame ***frames, int len);
+	
 	int read_compressed_frame(VFrame *buffer);
 	int write_compressed_frame(VFrame *buffers);
+	
 	int64_t compressed_frame_size();
+	
 	int read_samples(double *buffer, int64_t len);
 	int read_frame(VFrame *frame);
+	
 	int colormodel_supported(int colormodel);
+	
 	int can_copy_from(Edit *edit, int64_t position);
+	
 	static int get_best_colormodel(Asset *asset, int driver);
-	int calculate_samples(int frame_count);
+	
+	int get_audio_frame(int64_t pos);
+	int get_audio_offset(int64_t pos);
 
 private:
 	FILE *stream;
-#ifdef DV_USE_FFMPEG
-	AVCodec *codec;
-	AVCodecContext *context;
-	AVFrame *picture;
-#endif // DV_USE_FFMPEG
+
+	Mutex *stream_lock;
+	Mutex *decoder_lock;
+	Mutex *video_position_lock;
+	
 	dv_decoder_t *decoder;
 	dv_encoder_t *encoder;
+	dv_encoder_t *audio_encoder;
+		
 	int64_t audio_position;
 	int64_t video_position;
-	unsigned char *output;
-	unsigned char *input;
+	
+	unsigned char *video_buffer;
+	unsigned char *audio_buffer;
+
+	int16_t **audio_sample_buffer;
+	int audio_sample_buffer_start;
+	int audio_sample_buffer_end;
+	int audio_sample_buffer_len;
+	int audio_sample_buffer_maxsize;
+	
+	int audio_frames_written;
+	
 	int output_size;
-	int64_t audio_offset;
-	int64_t video_offset;
-	int samples_offset[4];
-	int frames_written;
-	int16_t **audio_buffer;
-	int samples_in_buffer;
 	int isPAL;
-	int current_frame;
 };
 
 
