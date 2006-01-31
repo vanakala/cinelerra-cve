@@ -754,7 +754,7 @@ int FileDV::read_samples(double *buffer, int64_t len)
 		delete[] out_buffer[i];
 	delete[] out_buffer;
 
-//	audio_position += len;
+	audio_position += len;
 	
 	return result;
 }
@@ -917,154 +917,16 @@ int FileDV::get_best_colormodel(Asset *asset, int driver)
 
 int FileDV::get_audio_frame(int64_t pos)
 {
-	if(isPAL)
-	{
-		// Pal is simple. In only the last frame of a second is there
-		// a change in the number of samples; thus, we don't
-		// have to worry about any offset.
-		int frame = pos / asset->sample_rate; // second
-		frame += (pos % asset->sample_rate) / asset->frame_rate;
-		return frame;
-	}
-	else
-	{
-		// NTSC is a bit more of a challenge. Since various frames
-		// in each sample rate contain different number of samples,
-		// we need to make sure we point to the correct frame
-		// within the final "second".
-
-		// Frame at the start of the last second
-		int frame = pos / asset->sample_rate;			// This is actually the last full second
-
-		// Samples needed from the last second
-		int leftover = pos - frame * asset->sample_rate;
-
-		frame *= 30; 	// Now it's actually the frame. We use 30, since the below
-							// algorithm takes into account the dropped frames.
-							// If the frame rate happens to be a frame rate other than
-							// 29.97, this will be incorrect.
-
-		// Frame offset within the last second		
-		int sf_count = 0;
-
-		switch(asset->sample_rate)
-		{
-			case 48000:
-				for(; leftover >= 0; sf_count++)
-				{
-					frame++;
-					if(sf_count % 5 != 0)
-						leftover -= 1602;
-					else
-						leftover -= 1600;
-				}
-				break;
-			case 44100:
-				for(; leftover >= 0; sf_count++)
-				{
-					frame++;
-					if(sf_count % 300 == 0)
-						leftover -= 1471;
-					else if(sf_count % 30 == 0)
-						leftover -= 1470;
-					else if(sf_count % 2 == 0)
-						leftover -= 1472;
-					else
-						leftover -= 1471;
-				}
-				break;
-			case 32000:
-				for(; leftover >= 0; sf_count++)
-				{
-					frame++;
-					if(sf_count % 30 == 0)
-						leftover -= 1068;
-					else if(sf_count % 29 == 0)
-						leftover -= 1067;
-					else if(sf_count % 4 == 2)
-						leftover -= 1067;
-					else
-						leftover -= 1068;
-				}
-			default:
-				break;
-		}
-		return frame;
-	}
+	return (double) pos * asset->frame_rate / asset->sample_rate;
 }
 
-
+// Get the sample offset from the frame start reported by get_audio_frame
 int FileDV::get_audio_offset(int64_t pos)
 {
-	if(isPAL)
-	{
-		// Pal is simple. Get the number of samples into the last
-		// frame
-		int samples = pos % asset->sample_rate; // samples in last second
-		samples -= ((int) (samples / asset->frame_rate) * asset->frame_rate);
-		return samples;
-	}
-	else
-	{
-		// NTSC is a bit more of a challenge. Since various frames
-		// in each sample rate contain different number of samples,
-		// we need to make sure we point to the correct frame
-		// within the final "second".
-
-		// Sample offset from the last frame.
-		int offset = 0;
-
-		// Samples needed from the last second
-		int leftover = pos % asset->sample_rate;
-
-		// Frame offset up to start of last second
-		int sf_count = pos * asset->frame_rate / asset->sample_rate;
-
-		switch(asset->sample_rate)
-		{
-			case 48000:
-				for(; leftover >= 0; sf_count++)
-				{
-					offset = leftover;
-					if(sf_count % 5 != 0)
-						leftover -= 1602;
-					else
-						leftover -= 1600;
-				}
-				break;
-			case 44100:
-				for(; leftover >= 0; sf_count++)
-				{
-					offset = leftover;
-					if(sf_count % 300 == 0)
-						leftover -= 1471;
-					else if(sf_count % 30 == 0)
-						leftover -= 1470;
-					else if(sf_count % 2 == 0)
-						leftover -= 1472;
-					else
-						leftover -= 1471;
-				}
-				break;
-			case 32000:
-				for(; leftover >= 0; sf_count++)
-				{
-					offset = leftover;
-					if(sf_count % 30 == 0)
-						leftover -= 1068;
-					else if(sf_count % 29 == 0)
-						leftover -= 1067;
-					else if(sf_count % 4 == 2)
-						leftover -= 1067;
-					else
-						leftover -= 1068;
-				}
-				break;
-			default:
-				break;
-		}
-		return offset;
-	}
+	int frame = get_audio_frame(pos);
+		
+	// Samples needed from last frame
+	return  pos - frame * asset->sample_rate / asset->frame_rate;
 }
 
 
