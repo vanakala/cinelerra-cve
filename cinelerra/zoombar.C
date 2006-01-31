@@ -64,7 +64,7 @@ int ZoomBar::create_objects()
 		mwindow,
   	        this,
 		x, 
-		get_h() / 2 - BC_Title::calculate_h(this, "0") / 2, 
+		y,
 		DEFAULT_TEXT));
 	x += auto_zoom_text->get_w() + 5;
 	add_subwindow(auto_zoom = new AutoZoom(mwindow, this, x, y));
