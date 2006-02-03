@@ -240,7 +240,7 @@ int FileMPEG::open_file(int rd, int wr)
 				append_vcommand_line(asset->vmpeg_cmodel == MPEG_YUV422 ? "-422" : "");
 				if(asset->vmpeg_fix_bitrate)
 				{
-					append_vcommand_line("-b");
+					append_vcommand_line("--cbr -b");
 					append_vcommand_line(bitrate_string);
 				}
 				else
@@ -269,11 +269,11 @@ int FileMPEG::open_file(int rd, int wr)
 
 			if(asset->vmpeg_fix_bitrate)
 			{
-				sprintf(string, " -b %d -q %d", asset->vmpeg_bitrate, 0);
+				sprintf(string, " --cbr -b %d", asset->vmpeg_bitrate, 0);
 			}
 			else
 			{
-				sprintf(string, " -b %d -q %d", 0, asset->vmpeg_quantization);
+				sprintf(string, " -q %d", 0, asset->vmpeg_quantization);
 			}
 			strcat(mjpeg_command, string);
 
