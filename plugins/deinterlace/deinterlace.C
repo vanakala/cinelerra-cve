@@ -216,8 +216,8 @@ int DeInterlaceMain::is_realtime() { return 1; }
 		{ \
 			temp1 = input_row1[j]; \
 			temp2 = input_row2[j]; \
-			output_row1[j] = temp2; \
-			output_row2[j] = temp1; \
+			output_row1[j] = temp1; \
+			output_row2[j] = temp2; \
 		} \
 	} \
 }
