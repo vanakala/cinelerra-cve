@@ -269,11 +269,11 @@ int FileMPEG::open_file(int rd, int wr)
 
 			if(asset->vmpeg_fix_bitrate)
 			{
-				sprintf(string, " --cbr -b %d", asset->vmpeg_bitrate, 0);
+				sprintf(string, " --cbr -b %d", asset->vmpeg_bitrate);
 			}
 			else
 			{
-				sprintf(string, " -q %d", 0, asset->vmpeg_quantization);
+				sprintf(string, " -q %d", asset->vmpeg_quantization);
 			}
 			strcat(mjpeg_command, string);
 
