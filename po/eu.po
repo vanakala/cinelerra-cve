@@ -1,7 +1,10 @@
 # Spanish translation of cinelerra.
 # Copyright (C) 2003 Heroine Warrior Inc.
 # This file is distributed under the same license as the cinelerra package.
-# Gustavo Iñiguez <ga@kutxa.homeunix.org>, 2003.
+# Gustavo Iñiguez <ga@kutxa.homeunix.org>, 2006.
+# 
+# Mesedez, itzulpen hau hobetzeko gai bazara, lagun iezadazu!
+#
 msgid ""
 msgstr ""
 "Project-Id-Version: cinelerra 2.0\n"
@@ -9,14 +12,14 @@ msgstr ""
 "POT-Creation-Date: 2006-02-02 00:25+0100\n"
 "PO-Revision-Date: 2006-02-01 15:00+0200\n"
 "Last-Translator: ga <ga@kutxa.homeunix.org>\n"
-"Language-Team: es <ga@kutxa.homeunix.org>\n"
+"Language-Team: eu <ga@kutxa.homeunix.org>\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=iso-8859-1\n"
 "Content-Transfer-Encoding: 8bit\n"
 
 #: cinelerra/aboutprefs.C:29 cinelerra/preferencesthread.C:270
 msgid "About"
-msgstr "Acerca de"
+msgstr "Zeri buruz"
 
 #: cinelerra/aboutprefs.C:38
 msgid "Cinelerra "
@@ -32,7 +35,7 @@ msgstr ""
 
 #: cinelerra/aboutprefs.C:48
 msgid "Build date: "
-msgstr "Día de compilación: "
+msgstr "Kompilazio eguna: "
 
 #: cinelerra/aboutprefs.C:59
 #, c-format
@@ -40,8 +43,8 @@ msgid ""
 "Quicktime version %d.%d.%d\n"
 "Libmpeg3 version %d.%d.%d\n"
 msgstr ""
-"Versión de Quicktime %d.%d.%d\n"
-"Versión de Libmpeg3 %d.%d.%d\n"
+"Quicktime bertsioa %d.%d.%d\n"
+"Libmpeg3 betsioa %d.%d.%d\n"
 
 #: cinelerra/aboutprefs.C:107
 msgid ""
@@ -66,12 +69,11 @@ msgstr ""
 "elección) cualquier versión posterior.\n"
 "\n"
 "Este programa es distribuido con la esperanza"
-"de que sea útil, pero SIN NINGUNA GARANTÍA\n;"
+"de que sea útil, pero SIN NINGUNA GARANTÍA;\n"
 "sin la garantía que implica MERCANTIBILIDAD o AJUSTES"
 "PARA UN PROPÓSITO PARTICULAR.\n"
 "Lee la Licencia General Pública GNU para más "
 "detalles.\n"
-"\n"
 
 #: cinelerra/adeviceprefs.C:247 cinelerra/vdeviceprefs.C:171
 #: cinelerra/vdeviceprefs.C:193 cinelerra/vdeviceprefs.C:315
@@ -88,11 +90,11 @@ msgstr "Bits:"
 #: cinelerra/adeviceprefs.C:526 cinelerra/assetedit.C:248
 #: cinelerra/fileformat.C:52 cinelerra/new.C:250 cinelerra/setformat.C:328
 msgid "Channels:"
-msgstr "Canales:"
+msgstr "Kanalak:"
 
 #: cinelerra/adeviceprefs.C:335
 msgid "Device:"
-msgstr "Dispositivo:"
+msgstr "Dispositiboa:"
 
 #: cinelerra/adeviceprefs.C:393
 msgid "Stop playback locks up."
@@ -100,7 +102,7 @@ msgstr "Evitar que el play se bloquee"
 
 #: cinelerra/adeviceprefs.C:421
 msgid "Server:"
-msgstr "Servidor:"
+msgstr "Serbitzaria:"
 
 #: cinelerra/adeviceprefs.C:437 cinelerra/adeviceprefs.C:488
 #: cinelerra/performanceprefs.C:133 cinelerra/vdeviceprefs.C:261
@@ -114,7 +116,7 @@ msgstr "Ruta al dispositivo:"
 #: cinelerra/adeviceprefs.C:506 cinelerra/channeledit.C:1039
 #: cinelerra/vdeviceprefs.C:279
 msgid "Channel:"
-msgstr "Canal:"
+msgstr "Kanala:"
 
 #: cinelerra/adeviceprefs.C:550 cinelerra/vdeviceprefs.C:302
 msgid "Syt Offset:"
@@ -123,7 +125,7 @@ msgstr "Syt Offset:"
 #: cinelerra/amodule.C:221 cinelerra/amodule.C:297
 #, c-format
 msgid "VirtualAConsole::load_track Couldn't open %s.\n"
-msgstr "VirtualAConsole::load_track No se pudo abrir %s .\n"
+msgstr "VirtualAConsole::load_track Ezin izan da %s ireki.\n"
 
 #: cinelerra/apatchgui.C:226 cinelerra/vpatchgui.C:188
 msgid "fade"
@@ -139,7 +141,7 @@ msgstr "Seleccionar un fichero para este clip:"
 
 #: cinelerra/assetedit.C:191
 msgid "File format:"
-msgstr "Formato de fichero:"
+msgstr "Fitxategiko formatua:"
 
 #: cinelerra/assetedit.C:198
 msgid "Bytes:"
@@ -147,11 +149,11 @@ msgstr "Bytes:"
 
 #: cinelerra/assetedit.C:217
 msgid "Bitrate (bits/sec):"
-msgstr "Bitrate (bits/sec):"
+msgstr "Bitrate (bits/seg):"
 
 #: cinelerra/assetedit.C:231 cinelerra/formattools.C:138
 msgid "Audio:"
-msgstr "Audio:"
+msgstr "Soinua:"
 
 #: cinelerra/assetedit.C:237 cinelerra/assetedit.C:376
 #: cinelerra/filemov.C:1346 cinelerra/filemov.C:1635
@@ -191,7 +193,7 @@ msgstr "Los valores están definidos"
 
 #: cinelerra/assetedit.C:369 cinelerra/formattools.C:171
 msgid "Video:"
-msgstr "Video:"
+msgstr "Bideo:"
 
 #: cinelerra/assetedit.C:387 cinelerra/setformat.C:368
 msgid "Frame rate:"
@@ -200,11 +202,11 @@ msgstr "Fotograma/seg:"
 #: cinelerra/assetedit.C:397 cinelerra/setformat.C:383
 #: plugins/freeverb/freeverb.C:327
 msgid "Width:"
-msgstr "Anchura:"
+msgstr "Bilbea:"
 
 #: cinelerra/assetedit.C:404 cinelerra/setformat.C:390
 msgid "Height:"
-msgstr "Altura:"
+msgstr "Irazkia:"
 
 #: cinelerra/assetedit.C:411
 msgid "Fix interlacing:"
@@ -220,11 +222,11 @@ msgstr "Corrección de entrelazado:"
 
 #: cinelerra/assetedit.C:444 cinelerra/loadfile.C:459
 msgid "Reel Name:"
-msgstr "Nombre:"
+msgstr "Izena:"
 
 #: cinelerra/assetedit.C:450 cinelerra/loadfile.C:473
 msgid "Reel Number:"
-msgstr "Número:"
+msgstr "Zenbakia:"
 
 #: cinelerra/assetedit.C:456
 msgid "Time Code Start:"
@@ -236,11 +238,11 @@ msgstr "Arreglar entrelazado automáticamente"
 
 #: cinelerra/assetedit.h:69
 msgid "Select a file"
-msgstr "Seleccionar un fichero"
+msgstr "Fitxategi bat erabaki"
 
 #: cinelerra/assetpopup.C:92
 msgid "Info..."
-msgstr "Información..."
+msgstr "Informazioa..."
 
 #: cinelerra/assetpopup.C:134
 msgid "Rebuild index"
@@ -248,15 +250,15 @@ msgstr "Reconstruir el índice"
 
 #: cinelerra/assetpopup.C:158 cinelerra/awindowmenu.C:87
 msgid "Sort items"
-msgstr "Organizar objetos"
+msgstr "Objetuak lerrotu"
 
 #: cinelerra/assetpopup.C:181 cinelerra/mainmenu.C:165
 msgid "View"
-msgstr "Ver"
+msgstr "Ikusi"
 
 #: cinelerra/assetpopup.C:214 cinelerra/mainmenu.C:674
 msgid "Paste"
-msgstr "Pegar"
+msgstr "Itsatsi"
 
 #: cinelerra/assetpopup.C:238
 msgid "Match project size"
@@ -264,15 +266,15 @@ msgstr "Ajustar al tamaño del proyecto"
 
 #: cinelerra/assetpopup.C:268
 msgid "Remove from project"
-msgstr "Quitar del proyecto"
+msgstr "Proiektutik kendu"
 
 #: cinelerra/assetpopup.C:290
 msgid "Remove from disk"
-msgstr "Borrar del disco duro"
+msgstr "Disko gogorratik ezabatu"
 
 #: cinelerra/assetremove.C:25
 msgid "Permanently remove from disk?"
-msgstr "¿Borrarlo permanente del disco duro?"
+msgstr "¿Disko gogorratik betiko ezabatu?"
 
 #: cinelerra/atrack.C:119
 #, c-format
@@ -281,19 +283,19 @@ msgstr "Audio %d"
 
 #: cinelerra/avc1394transport.C:158 cinelerra/playtransport.C:365
 msgid "Rewind ( Home )"
-msgstr "Volver ( Home )"
+msgstr "Itzuli ( Home )"
 
 #: cinelerra/avc1394transport.C:183
 msgid "Fast Reverse ( + )"
-msgstr "Retroceder rápido ( + )"
+msgstr "Arin atzeratu ( + )"
 
 #: cinelerra/avc1394transport.C:207
 msgid "Reverse Play ( 6 )"
-msgstr "Retroceder ( 6 )"
+msgstr "Atzeratu ( 6 )"
 
 #: cinelerra/avc1394transport.C:239 cinelerra/playtransport.C:481
 msgid "Stop ( 0 )"
-msgstr "Parar ( 0 )"
+msgstr "Gelditu ( 0 )"
 
 #: cinelerra/avc1394transport.C:264
 msgid "Play ( 3 )"
@@ -301,24 +303,24 @@ msgstr "Play ( 3 )"
 
 #: cinelerra/avc1394transport.C:297
 msgid "Pause"
-msgstr "Parar"
+msgstr "Gelditu"
 
 #: cinelerra/avc1394transport.C:320
 msgid "Fast Forward ( Enter )"
-msgstr "Avanzar rápido ( Enter )"
+msgstr "Arin aurreratu ( Enter )"
 
 #: cinelerra/avc1394transport.C:348 cinelerra/playtransport.C:468
 msgid "Jump to end ( End )"
-msgstr "Saltar al final ( Fin )"
+msgstr "Hamiera salto egin ( Fin )"
 
 #: cinelerra/awindowgui.C:353 cinelerra/awindowgui.C:884
 #: cinelerra/awindowgui.C:911 plugins/titler/title.C:1041
 msgid "Title"
-msgstr "Título"
+msgstr "Izenburua"
 
 #: cinelerra/awindowgui.C:354 cinelerra/awindowgui.C:885
 msgid "Comments"
-msgstr "Comentarios"
+msgstr "Iruzkinak"
 
 #: cinelerra/awindowgui.C:910
 msgid "Time Stamps"
@@ -338,19 +340,19 @@ msgstr "Renombrar binario"
 
 #: cinelerra/awindowgui.C:1463
 msgid "Delete asset from disk"
-msgstr "Borrar clips del disco"
+msgstr "Disko gogorratik klipak ezabatu"
 
 #: cinelerra/awindowgui.C:1476
 msgid "Delete asset from project"
-msgstr "Eliminar clips del proyecto"
+msgstr "Proiektutik klipak kendu"
 
 #: cinelerra/awindowgui.C:1489
 msgid "Edit information on asset"
-msgstr "Editar información del clip"
+msgstr "Klipako informazioa editatu"
 
 #: cinelerra/awindowgui.C:1503
 msgid "Redraw index"
-msgstr "Redibujar el índice"
+msgstr "Indizea berregin"
 
 #: cinelerra/awindowgui.C:1516
 msgid "Paste asset on recordable tracks"
@@ -358,29 +360,29 @@ msgstr "Pegar clip en pistas editables"
 
 #: cinelerra/awindowgui.C:1529
 msgid "Append asset in new tracks"
-msgstr "Añadir clip en nuevas pistas"
+msgstr "Klipak pista berrietan gehitu"
 
 #: cinelerra/awindowgui.C:1542
 msgid "View asset"
-msgstr "Ver clip"
+msgstr "Klipa ikusi"
 
 #: cinelerra/awindowgui.C:1576 cinelerra/channeledit.C:619
 msgid "Edit..."
-msgstr "Editar..."
+msgstr "Editatu..."
 
 #: cinelerra/awindowmenu.C:56 cinelerra/awindowmenu.C:127
 #: guicast/bcfilebox.C:327
 msgid "Display icons"
-msgstr "Mostrar iconos"
+msgstr "Ikonoak erakutsi"
 
 #: cinelerra/awindowmenu.C:56 cinelerra/awindowmenu.C:127
 #: guicast/bcfilebox.C:314
 msgid "Display text"
-msgstr "Mostrar texto"
+msgstr "Testua erakutsi"
 
 #: cinelerra/batch.C:86
 msgid "Open"
-msgstr "Abrir"
+msgstr "Ireki"
 
 #: cinelerra/batch.C:95
 #, c-format
@@ -391,7 +393,7 @@ msgstr "Existe el fichero"
 #: cinelerra/record.C:667
 #, c-format
 msgid "OK"
-msgstr "OK"
+msgstr "Adoz"
 
 #: cinelerra/batch.C:150 cinelerra/recordgui.C:1312
 msgid "Untimed"
@@ -404,7 +406,7 @@ msgstr "Timed"
 #: cinelerra/batch.C:162 cinelerra/batchrender.C:858 cinelerra/file.C:1273
 #: cinelerra/filemov.C:1142 cinelerra/loadmode.C:63
 msgid "Unknown"
-msgstr "Desconocido"
+msgstr "Ezezaguna"
 
 #: cinelerra/batchrender.C:30 plugins/freezeframe/freezeframe.C:82
 #: plugins/reverseaudio/reverseaudio.C:132
@@ -414,7 +416,7 @@ msgstr "Permitido"
 
 #: cinelerra/batchrender.C:31 plugins/compressor/compressor.C:959
 msgid "Output"
-msgstr "Salida"
+msgstr "Irteera"
 
 #: cinelerra/batchrender.C:32
 msgid "EDL"
@@ -430,7 +432,7 @@ msgstr "Renderizado por lotes..."
 
 #: cinelerra/batchrender.C:396
 msgid "EDL %s not found.\n"
-msgstr "EDL %s No encontrado.\n"
+msgstr "EDL hau %s ez da aurkitu.\n"
 
 #: cinelerra/batchrender.C:663
 msgid "Output path:"
@@ -455,31 +457,31 @@ msgstr "Lotes a renderizar:"
 #: cinelerra/batchrender.C:739 cinelerra/batchrender.C:1116
 #: cinelerra/recordgui.C:1011
 msgid "Stop"
-msgstr "Parar"
+msgstr "Gelditu"
 
 #: cinelerra/batchrender.C:744 cinelerra/batchrender.C:1135
 #: cinelerra/confirmquit.C:84 cinelerra/confirmquit.C:86
 #: cinelerra/preferencesthread.C:478 cinelerra/preferencesthread.C:480
 msgid "Cancel"
-msgstr "Cancelar"
+msgstr "Ezeztatu"
 
 #: cinelerra/batchrender.C:967 cinelerra/new.C:93 cinelerra/recordgui.C:965
 msgid "New"
-msgstr "Nuevo"
+msgstr "Berria"
 
 #: cinelerra/batchrender.C:981 cinelerra/channeledit.C:606
 #: cinelerra/cwindowtool.C:1442 cinelerra/recordgui.C:980
 #: plugins/synthesizer/synthesizer.C:886
 msgid "Delete"
-msgstr "Borrar"
+msgstr "Ezabatu"
 
 #: cinelerra/batchrender.C:1100 cinelerra/recordgui.C:995
 msgid "Start"
-msgstr "Empezar"
+msgstr "Hasi"
 
 #: cinelerra/brender.C:133
 msgid "BRender::fork_background: can't open /proc/self/cmdline.\n"
-msgstr "BRender::fork_background: no se puede abrir /proc/self/cmdline.\n"
+msgstr "BRender::fork_background: Ezin da /proc/self/cmdline ireki.\n"
 
 #: cinelerra/brender.C:243
 #, c-format
@@ -533,27 +535,27 @@ msgstr "Zoom 400%"
 
 #: cinelerra/canvas.C:846
 msgid "Reset camera"
-msgstr "Restaurar cámara"
+msgstr "Kamera berrezarri"
 
 #: cinelerra/canvas.C:859
 msgid "Reset projector"
-msgstr "Restaurar proyector"
+msgstr "Proiektorea berrezarri"
 
 #: cinelerra/canvas.C:872
 msgid "Reset translation"
-msgstr "Restaurar traslación"
+msgstr "Aldaketa berrezarri"
 
 #: cinelerra/canvas.C:899
 msgid "Show controls"
-msgstr "Mostrar controles"
+msgstr "Kontroleak erakutsi"
 
 #: cinelerra/canvas.C:901
 msgid "Hide controls"
-msgstr "Ocultar controles"
+msgstr "Kontroleak izkutu"
 
 #: cinelerra/canvas.C:908
 msgid "Close source"
-msgstr "Cerrar origen"
+msgstr "Jatorria itxi"
 
 #: cinelerra/channeledit.C:131
 msgid "NTSC_BCAST"
@@ -618,37 +620,37 @@ msgstr "SECAM"
 #: plugins/parametric/parametric.C:256
 #, c-format
 msgid "None"
-msgstr "Nada"
+msgstr "Ezer"
 
 #: cinelerra/channeledit.C:509
 msgid "Select"
-msgstr "Seleccionar"
+msgstr "Aukeratu"
 
 #: cinelerra/channeledit.C:523
 msgid "Add..."
-msgstr "Añadir..."
+msgstr "Gehitu..."
 
 #: cinelerra/channeledit.C:554 cinelerra/editpopup.C:94
 #: cinelerra/pluginpopup.C:206
 msgid "Move up"
-msgstr "Mover hacia arriba"
+msgstr "Gorantz mugitu"
 
 #: cinelerra/channeledit.C:569 cinelerra/editpopup.C:111
 #: cinelerra/pluginpopup.C:221
 msgid "Move down"
-msgstr "Mover hacia abajo"
+msgstr "Beherantz mugitu"
 
 #: cinelerra/channeledit.C:584
 msgid "Sort"
-msgstr "Ordenar"
+msgstr "Lerrotu"
 
 #: cinelerra/channeledit.C:596
 msgid "Scan"
-msgstr "Analizar"
+msgstr "Analizatu"
 
 #: cinelerra/channeledit.C:632
 msgid "Picture..."
-msgstr "Dibujo..."
+msgstr "Irudia..."
 
 #: cinelerra/channeledit.C:678
 msgid "Set parameters for channel scanning."
@@ -664,11 +666,11 @@ msgstr "Norm:"
 
 #: cinelerra/channeledit.C:688 cinelerra/channeledit.C:1076
 msgid "Input:"
-msgstr "Entrada:"
+msgstr "Sarrera:"
 
 #: cinelerra/channeledit.C:1032 cinelerra/clipedit.C:157
 msgid "Title:"
-msgstr "Título:"
+msgstr "Izenburua:"
 
 #: cinelerra/channeledit.C:1057
 msgid "Fine:"
@@ -684,7 +686,7 @@ msgstr "Contraste:"
 
 #: cinelerra/channeledit.C:1475 plugins/chromakey/chromakey.C:110
 msgid "Color:"
-msgstr "Color:"
+msgstr "Kolore:"
 
 #: cinelerra/channeledit.C:1483 plugins/huesaturation/huesaturation.C:287
 msgid "Hue:"
@@ -696,11 +698,11 @@ msgstr "Brillo:"
 
 #: cinelerra/channelpicker.C:424
 msgid "Channel"
-msgstr "Canal:"
+msgstr "Kanala:"
 
 #: cinelerra/channelpicker.C:456
 msgid "Edit channels"
-msgstr "Editar canales"
+msgstr "Kanalak aldatu"
 
 #: cinelerra/clipedit.C:161
 msgid "Comments:"
@@ -708,16 +710,16 @@ msgstr "Comentarios:"
 
 #: cinelerra/confirmquit.C:32
 msgid "( Answering No will destroy changes )"
-msgstr "( Respondiendo no destruirá los cambios )"
+msgstr "( Ez erantzuten baduzu aldaketak ezabatuko ditu )"
 
 #: cinelerra/confirmquit.C:44 cinelerra/question.C:39
 msgid "Yes"
-msgstr "Sí"
+msgstr "Bai"
 
 #: cinelerra/confirmquit.C:63 cinelerra/confirmquit.C:65
 #: cinelerra/question.C:57
 msgid "No"
-msgstr "No"
+msgstr "Ez"
 
 #: cinelerra/confirmsave.C:107
 msgid "The following files exist.  Overwrite them?"
@@ -753,15 +755,15 @@ msgstr "Obtener color"
 
 #: cinelerra/cpanel.C:261
 msgid "Show tool info"
-msgstr "Mostrar información de la herramienta"
+msgstr "Tresnako informazioa erakutsi"
 
 #: cinelerra/cpanel.C:292
 msgid "Show safe regions"
-msgstr "Mostrar zonas segurase"
+msgstr "Mostrar zonas seguras"
 
 #: cinelerra/cwindowgui.C:444
 msgid "insert assets"
-msgstr "insertar clips"
+msgstr "klipak sartu"
 
 #: cinelerra/cwindowgui.C:1377 cinelerra/cwindowgui.C:2550
 msgid "mask point"
@@ -769,15 +771,15 @@ msgstr "punto de máscara"
 
 #: cinelerra/cwindowgui.C:2539
 msgid "camera"
-msgstr "Cámara"
+msgstr "kamera"
 
 #: cinelerra/cwindowgui.C:2543
 msgid "projector"
-msgstr "proyector"
+msgstr "proiektorea"
 
 #: cinelerra/cwindowtool.C:298
 msgid "Do it"
-msgstr "Hazlo"
+msgstr "Egin ezazu"
 
 #: cinelerra/cwindowtool.C:349
 msgid "X1:"
@@ -856,12 +858,12 @@ msgstr "Ciclar previo"
 #: cinelerra/cwindowtool.C:1745 cinelerra/recordgui.C:157
 #: plugins/denoisemjpeg/denoisemjpeg.C:392 plugins/overlay/overlay.C:233
 msgid "Mode:"
-msgstr "Modo:"
+msgstr "Modua:"
 
 #: cinelerra/cwindowtool.C:1753 cinelerra/fileavi.C:920
 #: plugins/huesaturation/huesaturation.C:293
 msgid "Value:"
-msgstr "Valor:"
+msgstr "Balorea:"
 
 #: cinelerra/cwindowtool.C:1758
 msgid "Mask number:"
@@ -882,7 +884,7 @@ msgstr "Borrar los índices existentes"
 #: cinelerra/deleteallindexes.C:51
 #, c-format
 msgid "Delete all indexes in %s?"
-msgstr "¿Borrar todos los index en %s?"
+msgstr "¿%s-ko indize guztiak ezabatu?"
 
 #: cinelerra/editpanel.C:475
 msgid "In point ( [ )"
@@ -894,11 +896,11 @@ msgstr "Punto final ( ] )"
 
 #: cinelerra/editpanel.C:531
 msgid "Next label ( ctrl -> )"
-msgstr "Siguiente etiqueta ( Strg -> )"
+msgstr "Hurrengo etiketa ( Ctrl -> )"
 
 #: cinelerra/editpanel.C:558
 msgid "Previous label ( ctrl <- )"
-msgstr "Etiqueta anterior ( Strg <- )"
+msgstr "Aurreko etiketa ( Ctrl <- )"
 
 #: cinelerra/editpanel.C:580
 msgid "Lift"
@@ -910,11 +912,11 @@ msgstr "Sobreescribir ( b )"
 
 #: cinelerra/editpanel.C:620
 msgid "Extract"
-msgstr "Extraer"
+msgstr "Ateratu"
 
 #: cinelerra/editpanel.C:636
 msgid "To clip ( i )"
-msgstr "A clip ( i )"
+msgstr "Klipara ( i )"
 
 #: cinelerra/editpanel.C:663
 msgid "Manual goto ( g )"
@@ -922,27 +924,27 @@ msgstr "Saltar manualmente ( g )"
 
 #: cinelerra/editpanel.C:691
 msgid "Splice ( v )"
-msgstr "Separar ( v )"
+msgstr "Banandu ( v )"
 
 #: cinelerra/editpanel.C:716
 msgid "Cut ( x )"
-msgstr "Cortar ( x )"
+msgstr "Ebaki ( x )"
 
 #: cinelerra/editpanel.C:741
 msgid "Copy ( c )"
-msgstr "Copiar ( c )"
+msgstr "Kopiatu ( c )"
 
 #: cinelerra/editpanel.C:764
 msgid "Append to end of track"
-msgstr "Añadir al final de la pista"
+msgstr "Pistaren amaieran gehitu"
 
 #: cinelerra/editpanel.C:782
 msgid "Insert before beginning of track"
-msgstr "Insertar al inicio de la pista"
+msgstr "Pistaren hasieran gehitu"
 
 #: cinelerra/editpanel.C:801
 msgid "Paste ( v )"
-msgstr "Pegar ( v )"
+msgstr "Itsatsi ( v )"
 
 #: cinelerra/editpanel.C:828
 msgid "Set transition"
@@ -954,11 +956,11 @@ msgstr "Poner la presentación a la posición actual"
 
 #: cinelerra/editpanel.C:858
 msgid "Undo ( z )"
-msgstr "Deshacer ( z )"
+msgstr "Desegin ( z )"
 
 #: cinelerra/editpanel.C:880
 msgid "Redo ( shift Z )"
-msgstr "Rehacer ( Shift Z )"
+msgstr "Berregin ( Shift Z )"
 
 #: cinelerra/editpanel.C:906
 msgid "Toggle label at current position ( l )"
@@ -986,7 +988,7 @@ msgstr "Generar fotogramas clave mientras editas"
 
 #: cinelerra/editpopup.C:72
 msgid "Attach effect..."
-msgstr "Adjuntar efecto..."
+msgstr "Efektua gehitu..."
 
 #: cinelerra/editpopup.C:129
 msgid "Resize track..."
@@ -998,27 +1000,27 @@ msgstr "Ajustar al tamaño de salida"
 
 #: cinelerra/editpopup.C:175 cinelerra/mainmenu.C:786 cinelerra/mainmenu.C:829
 msgid "Delete track"
-msgstr "Eliminar pista"
+msgstr "Pista ezabatu"
 
 #: cinelerra/editpopup.C:192 cinelerra/mainmenu.C:774 cinelerra/mainmenu.C:815
 msgid "Add track"
-msgstr "Añadir pista"
+msgstr "Pista gehitu"
 
 #: cinelerra/editpopup.C:213
 msgid "User title..."
-msgstr "Título..."
+msgstr "Izenburua..."
 
 #: cinelerra/editpopup.C:290
 msgid "User title"
-msgstr "Título de usuario"
+msgstr "Erabiltzailearen izenburua"
 
 #: cinelerra/file.C:250
 msgid "This format doesn't support audio."
-msgstr "Este formato no soporta audio."
+msgstr "Formatu honek ez dauka audiorik."
 
 #: cinelerra/file.C:253
 msgid "This format doesn't support video."
-msgstr "Este formato no soporta video."
+msgstr "Formatu honek ez dauka bideorik."
 
 #: cinelerra/file.C:1329 cinelerra/file.C:1335 cinelerra/fileformat.C:139
 #: cinelerra/filesndfile.C:424
@@ -1124,7 +1126,7 @@ msgstr "Secuencia TIFF"
 
 #: cinelerra/file.inc:107
 msgid "MPEG Video"
-msgstr "Video MPEG"
+msgstr "MPEG bideoa"
 
 #: cinelerra/file.inc:108 cinelerra/file.inc:112
 msgid "OGG Theora/Vorbis"
@@ -1204,7 +1206,7 @@ msgstr "Asumir PCM raw:"
 
 #: cinelerra/filejpeg.C:279 cinelerra/filemov.C:1898 cinelerra/filemov.C:1908
 msgid "Quality:"
-msgstr "Calidad:"
+msgstr "Kalitatea:"
 
 #: cinelerra/filemov.C:19
 msgid "MPEG-4"
@@ -1439,7 +1441,7 @@ msgstr "I Frame distance:"
 
 #: cinelerra/filempeg.C:1647
 msgid "P frame distance:"
-msgstr "P Frame distance:"
+msgstr "P frame distance:"
 
 #: cinelerra/filempeg.C:1653 plugins/fieldframe/fieldframe.C:225
 #: plugins/framefield/framefield.C:240
@@ -1621,15 +1623,15 @@ msgstr "Presets:"
 
 #: cinelerra/formattools.C:103
 msgid "Output to file"
-msgstr "Fichero de salida"
+msgstr "Atera fitxategira"
 
 #: cinelerra/formattools.C:104
 msgid "Select a file to write to:"
-msgstr "Seleccionar un fichero para escribir:"
+msgstr "Fitxategi bat idazteko aukeratu:"
 
 #: cinelerra/formattools.C:120
 msgid "File Format:"
-msgstr "Formato de fichero:"
+msgstr "Fitxategiko formatua:"
 
 #: cinelerra/formattools.C:153
 msgid "Number of audio channels to record:"
@@ -1645,7 +1647,7 @@ msgstr "Configurar la compresión de video"
 
 #: cinelerra/formattools.C:444
 msgid "Record audio tracks"
-msgstr "Grabar pistas de audio"
+msgstr "Audio pistak grabatu"
 
 #: cinelerra/formattools.C:444
 msgid "Render audio tracks"
@@ -1653,7 +1655,7 @@ msgstr "Renderizar pistas de audio"
 
 #: cinelerra/formattools.C:459
 msgid "Record video tracks"
-msgstr "Grabar pistas de video"
+msgstr "Bideo pistak grabatu"
 
 #: cinelerra/formattools.C:459
 msgid "Render video tracks"
@@ -1665,12 +1667,12 @@ msgstr "Sobreescribir el proyecto con la salida nueva"
 
 #: cinelerra/formattools.C:553
 msgid "Create new file at each label"
-msgstr "Crear un fichero nuevo en cada etiqueta"
+msgstr "Etiketa bakoitzean fitxategi berri bat sortu"
 
 #: cinelerra/indexfile.C:278
 #, c-format
 msgid "Creating %s."
-msgstr "Creando %s."
+msgstr "%s sortzen."
 
 #: cinelerra/indexfile.C:396
 #, c-format
@@ -1679,7 +1681,7 @@ msgstr "IndexFile::draw_index: El index tiene un zoom de 0\n"
 
 #: cinelerra/interfaceprefs.C:12
 msgid "Drag all following edits"
-msgstr "Arrastrar todos (?)"
+msgstr "Arrastrar todos"
 
 #: cinelerra/interfaceprefs.C:13
 msgid "Drag only one edit"
@@ -1691,7 +1693,7 @@ msgstr "Arrastrar origen"
 
 #: cinelerra/interfaceprefs.C:15
 msgid "No effect"
-msgstr "Sin efecto"
+msgstr "Efekturik barik"
 
 #: cinelerra/interfaceprefs.C:35 cinelerra/preferencesthread.C:264
 msgid "Interface"
@@ -1727,7 +1729,7 @@ msgstr "Número de índices a guardar:"
 
 #: cinelerra/interfaceprefs.C:142
 msgid "Editing"
-msgstr "Editando"
+msgstr "Editatzen"
 
 #: cinelerra/interfaceprefs.C:149
 msgid "Clicking on in/out points does what:"
@@ -1755,7 +1757,7 @@ msgstr "Max DB:"
 
 #: cinelerra/interfaceprefs.C:194
 msgid "Theme:"
-msgstr "Apariencia:"
+msgstr "Itxura:"
 
 #: cinelerra/interfaceprefs.C:342
 msgid "Use Hours:Minutes:Seconds.xxx"
@@ -1771,7 +1773,7 @@ msgstr "Usar muestras"
 
 #: cinelerra/interfaceprefs.C:370
 msgid "Use Frames"
-msgstr "Usar fotogramas"
+msgstr "Fotogramak erabili"
 
 #: cinelerra/interfaceprefs.C:379
 msgid "Use Hex Samples"
@@ -1779,7 +1781,7 @@ msgstr "Usar muestras Hex"
 
 #: cinelerra/interfaceprefs.C:388
 msgid "Use Seconds"
-msgstr "Usar segundos:"
+msgstr "Segunduak erabili:"
 
 #: cinelerra/interfaceprefs.C:400
 msgid "Use Feet-frames"
@@ -1791,7 +1793,7 @@ msgstr "Usar miniaturas en la ventana de recursos"
 
 #: cinelerra/interfaceprefs.C:605
 msgid "Show tip of the day"
-msgstr "Mostrar consejo del día"
+msgstr "Egungo aholkua erakutsi"
 
 #: cinelerra/keyframepopup.C:81
 msgid "Delete keyframe"
@@ -1811,55 +1813,55 @@ msgstr "Copiar fotograma clave"
 
 #: cinelerra/labelnavigate.C:43
 msgid "Previous label"
-msgstr "Etiqueta anterior"
+msgstr "Aurreko etiketa"
 
 #: cinelerra/labelnavigate.C:61
 msgid "Next label"
-msgstr "Siguiente etiqueta"
+msgstr "Hurrengo etiketa"
 
 #: cinelerra/loadfile.C:24
 msgid "Load files..."
-msgstr "Cargar ficheros..."
+msgstr "Fitxategiak sortatu..."
 
 #: cinelerra/loadfile.C:181
 msgid "Select files to load:"
-msgstr "Seleccionar ficheros para cargar:"
+msgstr "Fitxategiak sortatzeko aukeratu:"
 
 #: cinelerra/loadfile.C:229
 msgid "Replace current project."
-msgstr "Reemplazar proyecto actual."
+msgstr "Oraingo proiektua kendu."
 
 #: cinelerra/loadfile.C:246
 msgid "Replace current project and concatenate tracks."
-msgstr "Reemplazar proyecto actual y concatenar pistas."
+msgstr "Jadaneko proiektua kendu eta pistak lotu."
 
 #: cinelerra/loadfile.C:263
 msgid "Append in new tracks."
-msgstr "Añadir en una pista nueva."
+msgstr "Pista berrietan gehitu."
 
 #: cinelerra/loadfile.C:280
 msgid "Concatenate to existing tracks."
-msgstr "Concatenar con las pistas existentes."
+msgstr "Lotu daukazun pisteekin."
 
 #: cinelerra/loadfile.C:297
 msgid "Create new resources only."
-msgstr "Crear nuevo recurso únicamente."
+msgstr "Crear solamente nuevos recursos."
 
 #: cinelerra/loadfile.C:362
 msgid "load previous"
-msgstr "Cargar anterior"
+msgstr "Aurrenekoa sortatu"
 
 #: cinelerra/loadfile.C:388
 msgid "Load backup"
-msgstr "Cargar copia de seguridad"
+msgstr "Backup sortatu"
 
 #: cinelerra/loadfile.C:412
 msgid "load backup"
-msgstr "cargar copia de seguridad"
+msgstr "backup sortatu"
 
 #: cinelerra/loadfile.C:426
 msgid "Please enter the reel name and number"
-msgstr "Por favor, introduce el nombre y número"
+msgstr "Mesedez, izena eta zenbakia sartu"
 
 #: cinelerra/loadfile.C:507
 msgid "Use default or previous name and number"
@@ -1867,23 +1869,23 @@ msgstr "Usar nombre y número anterior"
 
 #: cinelerra/loadmode.C:33
 msgid "Insert nothing"
-msgstr "No insertar nada"
+msgstr "Ez gehitu ezer"
 
 #: cinelerra/loadmode.C:34
 msgid "Replace current project"
-msgstr "Reemplazar proyecto actual"
+msgstr "Oraingo proiektua kendu"
 
 #: cinelerra/loadmode.C:35
 msgid "Replace current project and concatenate tracks"
-msgstr "Reemplazar proyecto actual y concatenar pistas"
+msgstr "Oraingu proiektua kendu eta pistak lotu"
 
 #: cinelerra/loadmode.C:36
 msgid "Append in new tracks"
-msgstr "Añadir en una pista nueva"
+msgstr "Pista berrietan gehitu"
 
 #: cinelerra/loadmode.C:37
 msgid "Concatenate to existing tracks"
-msgstr "Concatenar con las pistas existentes"
+msgstr "Lotu daukazun pisteekin"
 
 #: cinelerra/loadmode.C:38
 msgid "Paste at insertion point"
@@ -1912,8 +1914,8 @@ msgid ""
 "%s [-f] [-c configuration] [-d port] [-n nice] [-r batch file] [filenames]\n"
 "\n"
 msgstr ""
-"%s [-f] [-c configuración] [-d puerto] [-n nice] [-r fichero delotes]\n"
-" [ficheros]\n"
+"%s [-f] [-c configurazioa] [-d puerto] [-n nice] [-r fichero delotes]\n"
+" [fitxategiak]\n"
 
 #: cinelerra/main.C:195
 msgid ""
@@ -1960,15 +1962,15 @@ msgstr ""
 
 #: cinelerra/mainindexes.C:203 cinelerra/threadindexer.C:115
 msgid "Building Indexes..."
-msgstr "Creando índices..."
+msgstr "Indizeak sortzen..."
 
 #: cinelerra/mainmenu.C:68 plugins/reverb/reverbwindow.C:234
 msgid "File"
-msgstr "Fichero"
+msgstr "Fitxategia"
 
 #: cinelerra/mainmenu.C:98 plugins/svg/svgwin.C:263
 msgid "Edit"
-msgstr "Edición"
+msgstr "Edizioa"
 
 #: cinelerra/mainmenu.C:114
 msgid "Keyframes"
@@ -1980,15 +1982,15 @@ msgstr "Audio"
 
 #: cinelerra/mainmenu.C:131 cinelerra/new.C:266 cinelerra/setformat.C:362
 msgid "Video"
-msgstr "Video"
+msgstr "Bideo"
 
 #: cinelerra/mainmenu.C:136
 msgid "Tracks"
-msgstr "Pistas"
+msgstr "Pistak"
 
 #: cinelerra/mainmenu.C:143
 msgid "Settings"
-msgstr "Preferencias"
+msgstr "Hobespenak"
 
 #: cinelerra/mainmenu.C:169
 msgid "Fade"
@@ -1996,12 +1998,12 @@ msgstr "Desvanecer"
 
 #: cinelerra/mainmenu.C:170
 msgid "Mute"
-msgstr "Silenciar"
+msgstr "Isildu"
 
 #: cinelerra/mainmenu.C:171 cinelerra/recordgui.C:77
 #: plugins/parametric/parametric.C:361
 msgid "Mode"
-msgstr "Modo"
+msgstr "Modua"
 
 #: cinelerra/mainmenu.C:172
 msgid "Pan"
@@ -2013,31 +2015,31 @@ msgstr "Máscara"
 
 #: cinelerra/mainmenu.C:175
 msgid "Camera X"
-msgstr "Cámara X"
+msgstr "X kamera"
 
 #: cinelerra/mainmenu.C:176
 msgid "Camera Y"
-msgstr "Cámara Y"
+msgstr "Y kamera"
 
 #: cinelerra/mainmenu.C:177
 msgid "Camera Z"
-msgstr "Cámara Z"
+msgstr "Z kamera"
 
 #: cinelerra/mainmenu.C:178
 msgid "Projector X"
-msgstr "Proyector X"
+msgstr "Proiektorea X"
 
 #: cinelerra/mainmenu.C:179
 msgid "Projector Y"
-msgstr "Proyector Y"
+msgstr "Proiektorea Y"
 
 #: cinelerra/mainmenu.C:180
 msgid "Projector Z"
-msgstr "Proyector Z"
+msgstr "Proiektorea Z"
 
 #: cinelerra/mainmenu.C:183
 msgid "Window"
-msgstr "Ventana"
+msgstr "Lehioa"
 
 #: cinelerra/mainmenu.C:459
 msgid "Dump CICache"
@@ -2045,28 +2047,28 @@ msgstr "CICache anzeigen"
 
 #: cinelerra/mainmenu.C:468
 msgid "Dump EDL"
-msgstr "Volcar EDL"
+msgstr "EDL bota"
 
 #: cinelerra/mainmenu.C:482
 msgid "Dump Plugins"
-msgstr "Volcar Plugins"
+msgstr "Pluginak atera"
 
 #: cinelerra/mainmenu.C:497
 msgid "Dump Assets"
-msgstr "Volcar clips"
+msgstr "Klipak atera"
 
 #: cinelerra/mainmenu.C:507
 msgid "Undo"
-msgstr "Deshacer"
+msgstr "Desegin"
 
 #: cinelerra/mainmenu.C:519
 #, c-format
 msgid "Undo %s"
-msgstr "Deshacer %s"
+msgstr "%s desegin"
 
 #: cinelerra/mainmenu.C:524
 msgid "Redo"
-msgstr "Rehacer"
+msgstr "Berregin"
 
 #: cinelerra/mainmenu.C:539
 #, c-format
@@ -2107,32 +2109,32 @@ msgstr "Eliminar fotograma clave por defecto"
 
 #: cinelerra/mainmenu.C:650
 msgid "Cut"
-msgstr "Cortar"
+msgstr "Ebaki"
 
 #: cinelerra/mainmenu.C:662
 msgid "Copy"
-msgstr "Copiar"
+msgstr "Kopiatu"
 
 #: cinelerra/mainmenu.C:686 plugins/compressor/compressor.C:1202
 #: plugins/synthesizer/synthesizer.C:957
 msgid "Clear"
-msgstr "Limpiar"
+msgstr "Garbitu"
 
 #: cinelerra/mainmenu.C:700
 msgid "Paste silence"
-msgstr "Pegar silencio"
+msgstr "Isiltasuna itsatsi"
 
 #: cinelerra/mainmenu.C:713
 msgid "Select All"
-msgstr "Seleccionar todo"
+msgstr "Dena hautatu"
 
 #: cinelerra/mainmenu.C:724
 msgid "Clear labels"
-msgstr "Eliminar etiquetas"
+msgstr "Etiketak kendu"
 
 #: cinelerra/mainmenu.C:736
 msgid "Mute Region"
-msgstr "Silenciar región"
+msgstr "Mute region"
 
 #: cinelerra/mainmenu.C:749
 msgid "Trim Selection"
@@ -2144,27 +2146,27 @@ msgstr "Transición por defecto"
 
 #: cinelerra/mainmenu.C:842
 msgid "Reset Translation"
-msgstr "Restaurar transformación"
+msgstr "Aldaketa berrezarri"
 
 #: cinelerra/mainmenu.C:883
 msgid "Delete tracks"
-msgstr "Eliminar pistas"
+msgstr "Pistak ezabatu"
 
 #: cinelerra/mainmenu.C:895
 msgid "Delete last track"
-msgstr "Eliminar última pista"
+msgstr "Azkenengo pista kendu"
 
 #: cinelerra/mainmenu.C:907
 msgid "Move tracks up"
-msgstr "Mover pistas hacia arriba"
+msgstr "Pistak gorantz mugitu"
 
 #: cinelerra/mainmenu.C:919
 msgid "Move tracks down"
-msgstr "Mover pistas hacia abajo"
+msgstr "Pistak beherantz mugitu"
 
 #: cinelerra/mainmenu.C:934
 msgid "Concatenate tracks"
-msgstr "Concatenar pistas"
+msgstr "Pistak lotu"
 
 #: cinelerra/mainmenu.C:951
 msgid "Loop Playback"
@@ -2176,11 +2178,11 @@ msgstr "Ajustar renderizado en background"
 
 #: cinelerra/mainmenu.C:988
 msgid "Edit labels"
-msgstr "Editar etiquetas"
+msgstr "Etiketak editatu"
 
 #: cinelerra/mainmenu.C:1004
 msgid "Edit effects"
-msgstr "Editar efectos"
+msgstr "Efectuak editatu"
 
 #: cinelerra/mainmenu.C:1020
 msgid "Autos follow edits"
@@ -2200,15 +2202,15 @@ msgstr "Fast Shuttle"
 
 #: cinelerra/mainmenu.C:1066
 msgid "Save settings now"
-msgstr "Guardar preferencias"
+msgstr "Hobespenak gorde orain"
 
 #: cinelerra/mainmenu.C:1075
 msgid "Saved settings."
-msgstr "Preferencias guardadas."
+msgstr "Hobespenak gordetak."
 
 #: cinelerra/mainmenu.C:1088
 msgid "Show Viewer"
-msgstr "Mostrar visor"
+msgstr "Bisorea erakutsi"
 
 #: cinelerra/mainmenu.C:1100
 msgid "Show Resources"
@@ -2216,7 +2218,7 @@ msgstr "Mostrar recursos"
 
 #: cinelerra/mainmenu.C:1112
 msgid "Show Compositor"
-msgstr "Mostrar compositor"
+msgstr "Konpositorea erakutsi"
 
 #: cinelerra/mainmenu.C:1125
 msgid "Show Overlays"
@@ -2242,7 +2244,7 @@ msgstr "Renderizar efecto..."
 #: cinelerra/menueffects.C:111
 #, c-format
 msgid "No recordable tracks specified."
-msgstr "No se han especificado pistas modificables."
+msgstr "Ez dituzu aipatu alda dezaketen pistak."
 
 #: cinelerra/menueffects.C:121
 #, c-format
@@ -2265,11 +2267,11 @@ msgstr "No se ha seleccionado una región para procesar."
 #: cinelerra/savefile.C:85
 #, c-format
 msgid "Couldn't open %s"
-msgstr "No se puedo abrir %s"
+msgstr "Ezin izan da %s ireki"
 
 #: cinelerra/menueffects.C:576
 msgid "Select an effect"
-msgstr "Seleccionar un efecto"
+msgstr "Efektu bat aukeratu"
 
 #: cinelerra/menueffects.C:588 cinelerra/render.C:1051
 msgid "Select the first file to render to:"
@@ -2281,7 +2283,7 @@ msgstr "Selecciona un fichero a renderizar:"
 
 #: cinelerra/menueffects.C:717
 msgid "Set up effect panel and hit \"OK\""
-msgstr "Abrir el panel de efectos y presionar \"OK\""
+msgstr "Efektuen panel ireki eta \"Bai\" sakatu"
 
 #: cinelerra/messages.C:51 cinelerra/messages.C:67 cinelerra/messages.C:88
 #, c-format
@@ -2314,7 +2316,7 @@ msgstr "MWindow::init_theme: No se encontró la piel %s.\n"
 #: cinelerra/mwindow.C:868
 #, c-format
 msgid "Failed to open %s"
-msgstr "Error al abrir %s"
+msgstr "Akats bat egon da %s irekitakoan"
 
 #: cinelerra/mwindow.C:916
 msgid "'s format couldn't be determined."
@@ -2322,11 +2324,11 @@ msgstr ". No se pudo determinar el formato."
 
 #: cinelerra/mwindow.C:1101
 msgid "load"
-msgstr "cargar"
+msgstr "Sortatu"
 
 #: cinelerra/mwindow.C:1198
 msgid "Initializing GUI"
-msgstr "Inicializando la interfaz"
+msgstr "Interfazea eraikitzen"
 
 #: cinelerra/mwindow.C:1768
 #, c-format
@@ -2335,24 +2337,24 @@ msgstr "No se pudo abrir %s para escritura."
 
 #: cinelerra/mwindow.C:1831
 msgid "remove assets"
-msgstr "eliminar clips"
+msgstr "Klipak kendu"
 
 #: cinelerra/mwindow.C:1992
 #, c-format
 msgid "Using %s."
-msgstr "Usando %s."
+msgstr "%s erabiltzen."
 
 #: cinelerra/mwindowedit.C:66 cinelerra/mwindowedit.C:84
 msgid "add track"
-msgstr "Añadir pista"
+msgstr "pista bat gehitu"
 
 #: cinelerra/mwindowedit.C:147
 msgid "asset to size"
-msgstr "clip a tamaño"
+msgstr "Klipa tamainura"
 
 #: cinelerra/mwindowedit.C:161
 msgid "clear"
-msgstr "limpiar"
+msgstr "garbitu"
 
 #: cinelerra/mwindowedit.C:191
 msgid "clear keyframes"
@@ -2364,19 +2366,19 @@ msgstr "eliminar fotograma clave por defecto"
 
 #: cinelerra/mwindowedit.C:222
 msgid "clear labels"
-msgstr "eliminar etiquetas"
+msgstr "etiketak kendu"
 
 #: cinelerra/mwindowedit.C:239
 msgid "concatenate tracks"
-msgstr "concatenar pistas"
+msgstr "pistak lotu"
 
 #: cinelerra/mwindowedit.C:353
 msgid "crop"
-msgstr "cortar"
+msgstr "ebaki"
 
 #: cinelerra/mwindowedit.C:378
 msgid "cut"
-msgstr "cortar"
+msgstr "ebaki"
 
 #: cinelerra/mwindowedit.C:397
 msgid "cut keyframes"
@@ -2388,19 +2390,19 @@ msgstr "cortar fotograma clave por defecto"
 
 #: cinelerra/mwindowedit.C:450
 msgid "delete tracks"
-msgstr "eliminar pistas"
+msgstr "pistak ezabatu"
 
 #: cinelerra/mwindowedit.C:465
 msgid "delete track"
-msgstr "eliminar pista"
+msgstr "pista ezabatu"
 
 #: cinelerra/mwindowedit.C:483
 msgid "detach transition"
-msgstr "quitar transición"
+msgstr "transizioa kendu"
 
 #: cinelerra/mwindowedit.C:567 cinelerra/mwindowedit.C:604
 msgid "insert effect"
-msgstr "insertar efecto"
+msgstr "efektua gehitu"
 
 #: cinelerra/mwindowedit.C:728
 msgid "drag handle"
@@ -2412,39 +2414,39 @@ msgstr "ajustar al tamaño de salida"
 
 #: cinelerra/mwindowedit.C:762
 msgid "move edit"
-msgstr "mover trozo de video"
+msgstr "klipa mugitu"
 
 #: cinelerra/mwindowedit.C:792
 msgid "move effect"
-msgstr "mover el efecto"
+msgstr "efektua mugitu"
 
 #: cinelerra/mwindowedit.C:816
 msgid "move effect up"
-msgstr "mover el efecto hacia arriba"
+msgstr "efektua gorantz mugitu"
 
 #: cinelerra/mwindowedit.C:834
 msgid "move effect down"
-msgstr "mover el efecto hacia abajo"
+msgstr "efektua beherantz mugitu"
 
 #: cinelerra/mwindowedit.C:850
 msgid "move track down"
-msgstr "mover la pista hacia abajo"
+msgstr "pista beherantz mugitu"
 
 #: cinelerra/mwindowedit.C:862
 msgid "move tracks down"
-msgstr "mover las pistas hacia abajo"
+msgstr "pistak gorantz mugitu"
 
 #: cinelerra/mwindowedit.C:874
 msgid "move track up"
-msgstr "mover la pista hacia arriba"
+msgstr "pista gorantz mugitu"
 
 #: cinelerra/mwindowedit.C:885
 msgid "move tracks up"
-msgstr "mover las pistas hacia arriba"
+msgstr "pistak gorantz mugitu"
 
 #: cinelerra/mwindowedit.C:906
 msgid "mute"
-msgstr "silenciar"
+msgstr "isildu"
 
 #: cinelerra/mwindowedit.C:966
 msgid "overwrite"
@@ -2452,11 +2454,11 @@ msgstr "sobreescribir"
 
 #: cinelerra/mwindowedit.C:1033
 msgid "paste"
-msgstr "pegar"
+msgstr "itsatsi"
 
 #: cinelerra/mwindowedit.C:1077
 msgid "paste assets"
-msgstr "pegar clip"
+msgstr "klipak itsatsi"
 
 #: cinelerra/mwindowedit.C:1155
 msgid "paste keyframes"
@@ -2468,12 +2470,12 @@ msgstr "pegar fotograma clave por defecto"
 
 #: cinelerra/mwindowedit.C:1531
 msgid "silence"
-msgstr "silencio"
+msgstr "isiltasuna"
 
 #: cinelerra/mwindowedit.C:1554 cinelerra/mwindowedit.C:1565
 #: cinelerra/mwindowedit.C:1585 cinelerra/mwindowedit.C:1606
 msgid "transition"
-msgstr "transición"
+msgstr "transizioa"
 
 #: cinelerra/mwindowedit.C:1578 cinelerra/mwindowedit.C:1598
 #, c-format
@@ -2494,15 +2496,15 @@ msgstr "Punto de salida"
 
 #: cinelerra/mwindowedit.C:1850
 msgid "splice"
-msgstr "separar"
+msgstr "banandu"
 
 #: cinelerra/mwindowedit.C:1886 cinelerra/vwindowgui.C:584
 msgid "Clip %d"
-msgstr "Clip %d"
+msgstr "Klipa %d"
 
 #: cinelerra/mwindowedit.C:1909
 msgid "label"
-msgstr "etiqueta"
+msgstr "etiketa"
 
 #: cinelerra/mwindowedit.C:1987
 msgid "trim selection"
@@ -2510,19 +2512,19 @@ msgstr "eliminar espacios de la selección"
 
 #: cinelerra/mwindowedit.C:2058
 msgid "new folder"
-msgstr "directorio nuevo"
+msgstr "direktorio berria"
 
 #: cinelerra/new.C:33
 msgid "New..."
-msgstr "Nuevo..."
+msgstr "Berria..."
 
 #: cinelerra/new.C:190
 msgid "Cinelerra: New Project"
-msgstr "Cinelerra: Proyecto nuevo"
+msgstr "Cinelerra: Proiektu berria"
 
 #: cinelerra/new.C:194
 msgid ": New Project"
-msgstr ": Proyecto nuevo"
+msgstr ": Proiektu berria"
 
 #: cinelerra/new.C:223
 msgid "Parameters for the new project:"
@@ -2530,7 +2532,7 @@ msgstr "Parámetros para el nuevo proyecto:"
 
 #: cinelerra/new.C:242 cinelerra/new.C:269
 msgid "Tracks:"
-msgstr "Pistas:"
+msgstr "Pistak:"
 
 #: cinelerra/new.C:258 cinelerra/recordgui.C:224 cinelerra/setformat.C:311
 #: cinelerra/setformat.C:316
@@ -2539,7 +2541,7 @@ msgstr "Velocidad de muestreo:"
 
 #: cinelerra/new.C:284 cinelerra/recordgui.C:237
 msgid "Framerate:"
-msgstr "Fotograma/seg:"
+msgstr "Fotogramas/s:"
 
 #: cinelerra/new.C:310 cinelerra/setformat.C:380
 msgid "Canvas size:"
@@ -2551,7 +2553,7 @@ msgstr "Ratio de Aspecto:"
 
 #: cinelerra/new.C:354 cinelerra/setformat.C:466
 msgid "Interlace mode:"
-msgstr "Modo de entrelazado:"
+msgstr "Entrelazado:"
 
 #: cinelerra/new.C:862
 msgid "Auto aspect ratio"
@@ -2563,7 +2565,7 @@ msgstr "Introduce el nombre del directorio:"
 
 #: cinelerra/newfolder.C:41 cinelerra/pluginclient.C:114
 msgid "Untitled"
-msgstr "Sin título"
+msgstr "Izenbururik barik"
 
 #: cinelerra/patchbay.C:301 cinelerra/patchgui.C:593
 #: cinelerra/trackcanvas.C:4302
@@ -2620,7 +2622,7 @@ msgstr "título de la pista"
 
 #: cinelerra/patchgui.C:725
 msgid "Nudge"
-msgstr "Retrasar"
+msgstr "Atzeratu"
 
 #: cinelerra/performanceprefs.C:43 cinelerra/preferencesthread.C:261
 msgid "Performance"
@@ -2710,15 +2712,15 @@ msgstr "Consolidate output files on completion"
 
 #: cinelerra/performanceprefs.C:579
 msgid "Add Node"
-msgstr "Añadir nodo"
+msgstr "Nodo bat gehitu"
 
 #: cinelerra/performanceprefs.C:607
 msgid "Apply Changes"
-msgstr "Aplicar cambios"
+msgstr "Aldaketak aplikatu"
 
 #: cinelerra/performanceprefs.C:634
 msgid "Delete Node"
-msgstr "Eliminar nodo"
+msgstr "Nodoa ezabatu"
 
 #: cinelerra/performanceprefs.C:662
 msgid "Sort nodes"
@@ -2726,7 +2728,7 @@ msgstr "Ordenar nodos"
 
 #: cinelerra/performanceprefs.C:689
 msgid "Reset rates"
-msgstr "Restaurar rates"
+msgstr "Rates berrezarri"
 
 #: cinelerra/performanceprefs.C:770
 msgid "Use virtual filesystem"
@@ -2734,7 +2736,7 @@ msgstr "Usar sistema de ficheros virtual"
 
 #: cinelerra/playbackprefs.C:43
 msgid "Audio Out"
-msgstr "Salida de audio"
+msgstr "Audio irteera"
 
 #: cinelerra/playbackprefs.C:52
 msgid "Samples to send to console at a time:"
@@ -2750,7 +2752,7 @@ msgstr "Driver de Audio:"
 
 #: cinelerra/playbackprefs.C:107
 msgid "Video Out"
-msgstr "Salida de video"
+msgstr "Bideo irteera"
 
 #: cinelerra/playbackprefs.C:112
 msgid "Framerate achieved:"
@@ -2811,7 +2813,7 @@ msgstr "Bilinear enlarge and bilinear reduce"
 
 #: cinelerra/playbackprefs.C:384
 msgid "Play every frame"
-msgstr "Ver cada fotograma"
+msgstr "Fotograma bakoitza ikusi"
 
 #: cinelerra/playtransport.C:378
 msgid "Fast reverse ( + )"
@@ -2827,25 +2829,25 @@ msgstr "Retroceder un fotograma ( 4 )"
 
 #: cinelerra/playtransport.C:423
 msgid "Normal forward ( 3 )"
-msgstr "Avanzar ( 3 )"
+msgstr "Aurreratu ( 3 )"
 
 #: cinelerra/playtransport.C:440
 msgid "Frame forward ( 1 )"
-msgstr "Avanzar un fotograma ( 1 )"
+msgstr "Fotograma bat aurreratu ( 1 )"
 
 #: cinelerra/playtransport.C:455
 msgid "Fast forward ( Enter )"
-msgstr "Avanzar rápido ( Intro )"
+msgstr "Arin aurreratu ( Intro )"
 
 #: cinelerra/pluginaclientlad.C:458
 #, c-format
 msgid "Author: %s"
-msgstr "Autor: %s"
+msgstr "Autorea: %s"
 
 #: cinelerra/pluginaclientlad.C:461
 #, c-format
 msgid "License: %s"
-msgstr "Licencia: %s"
+msgstr "Litzentzia: %s"
 
 #: cinelerra/pluginarray.C:168
 #, c-format
@@ -2864,11 +2866,11 @@ msgstr "No hay proceso definido para este plugin.\n"
 
 #: cinelerra/plugindialog.C:140
 msgid "attach effect"
-msgstr "añadir efecto"
+msgstr "efektua gehitu"
 
 #: cinelerra/plugindialog.C:297
 msgid "Plugins:"
-msgstr "Plugins:"
+msgstr "Pluginak:"
 
 #: cinelerra/plugindialog.C:325
 msgid "Shared effects:"
@@ -2881,25 +2883,25 @@ msgstr "Pistas compartidas:"
 #: cinelerra/plugindialog.C:497 cinelerra/pluginpopup.C:87
 #: cinelerra/transitionpopup.C:191
 msgid "Detach"
-msgstr "Quitar"
+msgstr "Kendu"
 
 #: cinelerra/plugindialog.C:555 cinelerra/plugindialog.C:626
 #: cinelerra/plugindialog.C:701
 msgid "Attach"
-msgstr "Añadir"
+msgstr "Gehitu"
 
 #: cinelerra/plugindialog.C:570 cinelerra/plugindialog.C:642
 #: cinelerra/plugindialog.C:717
 msgid "Change"
-msgstr "Cambiar"
+msgstr "Aldatu"
 
 #: cinelerra/plugindialog.C:744 cinelerra/pluginpopup.C:122
 msgid "Send"
-msgstr "Enviar"
+msgstr "Bidali"
 
 #: cinelerra/plugindialog.C:773 cinelerra/pluginpopup.C:144
 msgid "Receive"
-msgstr "Recibir"
+msgstr "Jasan"
 
 #: cinelerra/plugindialog.C:802
 msgid "Thru"
@@ -2907,19 +2909,19 @@ msgstr "Thru"
 
 #: cinelerra/pluginpopup.C:60
 msgid "Change..."
-msgstr "Cambiar..."
+msgstr "Aldatu..."
 
 #: cinelerra/pluginpopup.C:102
 msgid "detach effect"
-msgstr "quitar efecto"
+msgstr "efektua kendu"
 
 #: cinelerra/pluginpopup.C:166 cinelerra/transitionpopup.C:232
 msgid "Show"
-msgstr "Mostrar"
+msgstr "Erakutsi"
 
 #: cinelerra/preferencesthread.C:43
 msgid "Preferences..."
-msgstr "Preferencias..."
+msgstr "Hobespenak..."
 
 #: cinelerra/preferencesthread.C:255
 msgid "Playback"
@@ -2927,20 +2929,20 @@ msgstr "PlayBack"
 
 #: cinelerra/preferencesthread.C:258
 msgid "Recording"
-msgstr "Grabación"
+msgstr "Grabaketa"
 
 #: cinelerra/preferencesthread.C:434 cinelerra/preferencesthread.C:436
 #: cinelerra/setformat.C:854
 msgid "Apply"
-msgstr "Aplicar"
+msgstr "Aplikatu"
 
 #: cinelerra/quit.C:25
 msgid "Quit"
-msgstr "Salir"
+msgstr "Irten"
 
 #: cinelerra/quit.C:64
 msgid "Can't quit while a recording is in progress."
-msgstr "No se puede salir mientras se esté grabando."
+msgstr "Ezin da irten grabatzen ari den bitartean."
 
 #: cinelerra/quit.C:74
 msgid "Can't quit while a render is in progress."
@@ -2948,29 +2950,29 @@ msgstr "No se puede salir mientras haya un render en proceso."
 
 #: cinelerra/quit.C:87
 msgid "Save edit list before exiting?"
-msgstr "¿Salvar la lista de edición antes de salir?"
+msgstr "Egin dituzun aldaketak gorde nahi dituzu?"
 
 #: cinelerra/recconfirmdelete.C:28
 #, c-format
 msgid "Delete this file and %s?"
-msgstr "¿Eliminar este fichero y %s?"
+msgstr "¿Fitxategi hau eta beste hau %s ezabatu?"
 
 #: cinelerra/record.C:52
 msgid "Record..."
-msgstr "Grabar..."
+msgstr "Grabatu..."
 
 #: cinelerra/record.C:552
 msgid "record"
-msgstr "grabar"
+msgstr "grabatu"
 
 #: cinelerra/record.C:660
 #, c-format
 msgid "Deleting"
-msgstr "Borrando"
+msgstr "Ezabatzen"
 
 #: cinelerra/recordaudio.C:248 cinelerra/recordvideo.C:332
 msgid "No space left on disk."
-msgstr "No queda espacio en disco."
+msgstr "Ez dago lekurik disko gogorrean."
 
 #: cinelerra/recordgui.C:72
 msgid "Path"
@@ -2978,7 +2980,7 @@ msgstr "Ruta"
 
 #: cinelerra/recordgui.C:73
 msgid "News"
-msgstr "Noticias"
+msgstr "Berriak"
 
 #: cinelerra/recordgui.C:74
 msgid "Start time"
@@ -2986,11 +2988,11 @@ msgstr "Tiempo de inicio"
 
 #: cinelerra/recordgui.C:75
 msgid "Duration"
-msgstr "Duración"
+msgstr "Iraupena"
 
 #: cinelerra/recordgui.C:76
 msgid "Source"
-msgstr "Fuente"
+msgstr "Jatorria"
 
 #: cinelerra/recordgui.C:145
 msgid "Path:"
@@ -3002,11 +3004,11 @@ msgstr "Tiempo de inicio:"
 
 #: cinelerra/recordgui.C:151
 msgid "Duration time:"
-msgstr "Duración:"
+msgstr "Iraupena:"
 
 #: cinelerra/recordgui.C:154
 msgid "Source:"
-msgstr "Origen:"
+msgstr "Jatorria:"
 
 #: cinelerra/recordgui.C:160
 msgid "Transport:"
@@ -3018,7 +3020,7 @@ msgstr "Seleccionar el fichero donde grabar:"
 
 #: cinelerra/recordgui.C:215
 msgid "Format:"
-msgstr "Formato:"
+msgstr "Formatua:"
 
 #: cinelerra/recordgui.C:221
 msgid "Audio compression:"
@@ -3038,7 +3040,7 @@ msgstr "Fotogramas detrás:"
 
 #: cinelerra/recordgui.C:245
 msgid "Position:"
-msgstr "Posición:"
+msgstr "Posizioa:"
 
 #: cinelerra/recordgui.C:248
 msgid "Prev label:"
@@ -3086,11 +3088,11 @@ msgstr "Offset"
 
 #: cinelerra/recordgui.C:969
 msgid "Create new clip."
-msgstr "Crear clip nuevo."
+msgstr "Klipa berria sortu."
 
 #: cinelerra/recordgui.C:984
 msgid "Delete clip."
-msgstr "Eliminar Clip."
+msgstr "Klipa ezabatu."
 
 #: cinelerra/recordgui.C:999
 msgid ""
@@ -3102,7 +3104,7 @@ msgstr ""
 
 #: cinelerra/recordgui.C:1023
 msgid "Activate"
-msgstr "Activar"
+msgstr "Aktibatu"
 
 #: cinelerra/recordgui.C:1027
 msgid ""
@@ -3114,7 +3116,7 @@ msgstr ""
 
 #: cinelerra/recordgui.C:1037
 msgid "Label"
-msgstr "Etiqueta"
+msgstr "Etiketa"
 
 #: cinelerra/recordgui.C:1105
 msgid "Quit without pasting into project?"
@@ -3134,7 +3136,7 @@ msgstr "Intercambiar campos"
 
 #: cinelerra/recordprefs.C:38
 msgid "Audio In"
-msgstr "Entrada de audio"
+msgstr "Audio sarrera"
 
 #: cinelerra/recordprefs.C:45 cinelerra/recordprefs.C:95
 msgid "Record Driver:"
@@ -3146,11 +3148,11 @@ msgstr "Muestras a escribir al disco a la vez:"
 
 #: cinelerra/recordprefs.C:61
 msgid "Sample rate for recording:"
-msgstr "Velocidad de muestreo para grabrar:"
+msgstr "Velocidad de muetreo para grabrar:"
 
 #: cinelerra/recordprefs.C:92
 msgid "Video In"
-msgstr "Entrada de Video"
+msgstr "Bideo sarrera"
 
 #: cinelerra/recordprefs.C:109
 msgid "Frames to record to disk at a time:"
@@ -3170,11 +3172,11 @@ msgstr "Fotogramas/seg para grabar:"
 
 #: cinelerra/recordprefs.C:153
 msgid "Images"
-msgstr "Imágenes"
+msgstr "Irudiak"
 
 #: cinelerra/recordprefs.C:164
 msgid "Seconds"
-msgstr "Segundos"
+msgstr "Segunduak"
 
 #: cinelerra/recordprefs.C:186
 msgid "Record in realtime priority (root only)"
@@ -3218,7 +3220,7 @@ msgstr "Rebobinado rápido"
 
 #: cinelerra/recordtransport.C:322
 msgid "Fast forward"
-msgstr "Avanzar rápido"
+msgstr "Arin aurreratu"
 
 #: cinelerra/recordtransport.C:382
 msgid "Seek to end of recording"
@@ -3310,7 +3312,7 @@ msgstr "RenderFarmClientThread::run: sesión finalizada.\n"
 
 #: cinelerra/resizetrackthread.C:100 plugins/titler/titlewindow.C:164
 msgid "Size:"
-msgstr "Tamaño:"
+msgstr "Tamainua:"
 
 #: cinelerra/resizetrackthread.C:107 cinelerra/resizetrackthread.C:129
 #: plugins/compressor/compressor.C:830
@@ -3331,15 +3333,15 @@ msgstr ""
 
 #: cinelerra/savefile.C:31
 msgid "Save backup"
-msgstr "Salvar copia"
+msgstr "Backup gorde"
 
 #: cinelerra/savefile.C:38
 msgid "Saved backup."
-msgstr "Copia salvada."
+msgstr "Backup gordeta."
 
 #: cinelerra/savefile.C:52
 msgid "Save"
-msgstr "Guardar"
+msgstr "Gorde"
 
 #: cinelerra/savefile.C:96 cinelerra/savefile.C:195
 #, c-format
@@ -3353,7 +3355,7 @@ msgstr "Guardar como..."
 #: cinelerra/savefile.C:184 plugins/reverb/reverb.C:396
 #, c-format
 msgid "Couldn't open %s."
-msgstr "No se pudo abrir %s."
+msgstr "Ezin izan da %s ireki."
 
 #: cinelerra/savefile.C:220
 msgid "Enter a filename to save as"
@@ -3361,7 +3363,7 @@ msgstr "Introducir un nombre de fichero para guardar."
 
 #: cinelerra/setformat.C:28
 msgid "Format..."
-msgstr "Formato..."
+msgstr "Formatua..."
 
 #: cinelerra/setformat.C:120
 msgid "set format"
@@ -3386,24 +3388,24 @@ msgstr "%d grado"
 
 #: cinelerra/setformat.C:819
 msgid "Auto"
-msgstr "Automático"
+msgstr "Automatikoa"
 
 #: cinelerra/splashgui.C:48
 msgid "Loading..."
-msgstr "Cargando..."
+msgstr "Sortatzen..."
 
 #: cinelerra/statusbar.C:91
 msgid "Welcome to Cinelerra."
-msgstr "Bienvenido a cinelerra."
+msgstr "Ongietorria Cinelerrara."
 
 #: cinelerra/statusbar.C:99
 msgid "Cancel operation"
-msgstr "Cancelar operación"
+msgstr "Operazioa ezeztatu"
 
 #: cinelerra/threadindexer.C:69
 #, c-format
 msgid "Where is %s?"
-msgstr "¿Dónde está %s?"
+msgstr "¿%s non dago?"
 
 #: cinelerra/tipwindow.C:16
 msgid ""
@@ -3488,27 +3490,27 @@ msgstr ""
 
 #: cinelerra/tipwindow.C:172
 msgid "Show tip of the day."
-msgstr "Mostrar consejo del día."
+msgstr "Egungo aholkua erakutsi."
 
 #: cinelerra/tipwindow.C:193
 msgid "Next tip"
-msgstr "Siguiente consejo"
+msgstr "Hurrengo aholkua"
 
 #: cinelerra/tipwindow.C:216
 msgid "Previous tip"
-msgstr "Consejo anterior"
+msgstr "Aurreko aholkua"
 
 #: cinelerra/tipwindow.C:242
 msgid "Close"
-msgstr "Cerrar"
+msgstr "Itxi"
 
 #: cinelerra/trackcanvas.C:4319
 msgid "select"
-msgstr "seleccionar"
+msgstr "aukeratu"
 
 #: cinelerra/transitionpopup.C:61
 msgid "Seconds:"
-msgstr "Segundos:"
+msgstr "Segunduak:"
 
 #: cinelerra/transitionpopup.C:159
 #, c-format
@@ -3517,7 +3519,7 @@ msgstr "Tiempo: %2.2f segundos"
 
 #: cinelerra/transitionpopup.C:169
 msgid "Attach..."
-msgstr "Añadir..."
+msgstr "Gehitu..."
 
 #: cinelerra/transitionpopup.C:256
 msgid "Length"
@@ -3525,27 +3527,27 @@ msgstr "Longitud"
 
 #: cinelerra/vdeviceprefs.C:206
 msgid "Output channel:"
-msgstr "Canal de salida:"
+msgstr "Irteerako kanala:"
 
 #: cinelerra/vdeviceprefs.C:350
 msgid "Display:"
-msgstr "Mostrar:"
+msgstr "Erakutsi:"
 
 #: cinelerra/vdeviceprefs.C:361
 msgid "Display for compositor:"
-msgstr "Mostrar el compositor:"
+msgstr "Kompositorea erakutsi:"
 
 #: cinelerra/viewmenu.C:18
 msgid "Show assets"
-msgstr "Mostrar clips"
+msgstr "Klipak erakutsi"
 
 #: cinelerra/viewmenu.C:45
 msgid "Show titles"
-msgstr "Mostrar títulos"
+msgstr "Izenburuak erakutsi"
 
 #: cinelerra/viewmenu.C:71
 msgid "Show transitions"
-msgstr "Mostrar transiciones"
+msgstr "Transizioak erakutsi"
 
 #: cinelerra/viewmenu.C:125
 msgid "Plugin keyframes"
@@ -3553,15 +3555,15 @@ msgstr "Fotogramas clave de plugin"
 
 #: cinelerra/vpatchgui.C:278
 msgid "mode"
-msgstr "Modo"
+msgstr "modua"
 
 #: cinelerra/vpatchgui.C:332 cinelerra/vpatchgui.C:356
 msgid "Normal"
-msgstr "Normal"
+msgstr "Normala"
 
 #: cinelerra/vpatchgui.C:336
 msgid "Replace"
-msgstr "Reemplazar"
+msgstr "Ordeztu"
 
 #: cinelerra/vpatchgui.C:340
 msgid "Addition"
@@ -3582,11 +3584,11 @@ msgstr "Dividir"
 #: cinelerra/vtrack.C:98
 #, c-format
 msgid "Video %d"
-msgstr "Video %d"
+msgstr "Bideo %d"
 
 #: cinelerra/vwindow.C:197 cinelerra/vwindow.C:204
 msgid "Viewer"
-msgstr "Visor"
+msgstr "Bisorea"
 
 #: guicast/bccapture.C:44
 #, c-format
@@ -3604,15 +3606,15 @@ msgstr "Cambiar el filtro"
 
 #: guicast/bcfilebox.C:237
 msgid "Cancel the operation"
-msgstr "Cancelar la operación"
+msgstr "Operazioa ezeztatu"
 
 #: guicast/bcfilebox.C:265
 msgid "Submit the directory"
-msgstr "Meter el directorio"
+msgstr "Direktorioa bidali"
 
 #: guicast/bcfilebox.C:290
 msgid "Descend directory"
-msgstr "Bajar un directorio"
+msgstr "Direktorio bat jaitsi"
 
 #: guicast/bcfilebox.C:292
 msgid "Submit the file"
@@ -3620,11 +3622,11 @@ msgstr "Meter el fichero"
 
 #: guicast/bcfilebox.C:340
 msgid "Create new folder"
-msgstr "Crear directorio nuevo"
+msgstr "Direktorio berria sortu"
 
 #: guicast/bcfilebox.C:352
 msgid "Up a directory"
-msgstr "Subir un directorio"
+msgstr "Direktorio bat igo"
 
 #: guicast/bcfilebox.C:357
 #, c-format
@@ -3633,19 +3635,19 @@ msgstr ".."
 
 #: guicast/bcfilebox.C:366
 msgid "Delete files"
-msgstr "Borrar ficheros"
+msgstr "Fitxategiak ezabatu"
 
 #: guicast/bcfilebox.C:380
 msgid "Refresh"
-msgstr "Refrescar"
+msgstr "Freskatu"
 
 #: guicast/bcfilebox.C:1140
 msgid ": New folder"
-msgstr ": Nuevo directorio"
+msgstr ": Direktorio berria"
 
 #: guicast/bcfilebox.C:1155
 msgid ": Delete"
-msgstr ": Borrar"
+msgstr ": Ezabatu"
 
 #: guicast/bcresources.C:42
 msgid "-*-helvetica-medium-r-normal-*-10-*"
@@ -3729,12 +3731,12 @@ msgstr "Dust"
 #: plugins/bandslide/bandslide.C:57 plugins/bandwipe/bandwipe.C:57
 #: plugins/irissquare/irissquare.C:29 plugins/slide/slide.C:76
 msgid "In"
-msgstr "Entrada"
+msgstr "Sarrera"
 
 #: plugins/bandslide/bandslide.C:79 plugins/bandwipe/bandwipe.C:79
 #: plugins/irissquare/irissquare.C:51 plugins/slide/slide.C:98
 msgid "Out"
-msgstr "Fuera"
+msgstr "Irteera"
 
 #: plugins/bandslide/bandslide.C:126 plugins/bandwipe/bandwipe.C:125
 msgid "Bands:"
@@ -3744,7 +3746,7 @@ msgstr "Bandas:"
 #: plugins/shapewipe/shapewipe.C:185 plugins/slide/slide.C:145
 #: plugins/slide/slide.C:159 plugins/wipe/wipe.C:98
 msgid "Direction:"
-msgstr "Dirección"
+msgstr "Direkzioa:"
 
 #: plugins/bandslide/bandslide.C:175
 msgid "BandSlide"
@@ -3866,7 +3868,7 @@ msgstr "A"
 
 #: plugins/cdripper/cdripwindow.C:62
 msgid "CD Device:"
-msgstr "Dispositivo del CD"
+msgstr "CD dispositiboa"
 
 #: plugins/chromakey/chromakey.C:118 plugins/diffkey/diffkey.C:285
 msgid "Slope:"
@@ -3880,11 +3882,11 @@ msgstr "Threshold:"
 
 #: plugins/chromakey/chromakey.C:169 plugins/titler/titlewindow.C:566
 msgid "Color..."
-msgstr "Color..."
+msgstr "Kolorea..."
 
 #: plugins/chromakey/chromakey.C:229
 msgid "Use value"
-msgstr "Usar valor"
+msgstr "Balorea erabili"
 
 #: plugins/chromakey/chromakey.C:245
 msgid "Use color picker"
@@ -3892,7 +3894,7 @@ msgstr "Usar selector de color"
 
 #: plugins/chromakey/chromakey.C:265 plugins/gradient/gradient.C:488
 msgid "Inner color"
-msgstr "Color interior"
+msgstr "Barneko kolorea"
 
 #: plugins/chromakey/chromakey.C:538
 msgid "Chroma key"
@@ -3914,11 +3916,11 @@ msgstr "Azul Cyan"
 #: plugins/swapchannels/swapchannels.C:427
 #: plugins/swapchannels/swapchannels.C:452 plugins/zoomblur/zoomblur.C:277
 msgid "Red"
-msgstr "Rojo"
+msgstr "Gorria"
 
 #: plugins/colorbalance/colorbalancewindow.C:42
 msgid "Magenta"
-msgstr "Violeta (Magenta)"
+msgstr "Ubel"
 
 #: plugins/colorbalance/colorbalancewindow.C:44
 #: plugins/colors/colorpicker.C:172 plugins/denoisevideo/denoisevideo.C:181
@@ -3927,11 +3929,11 @@ msgstr "Violeta (Magenta)"
 #: plugins/swapchannels/swapchannels.C:430
 #: plugins/swapchannels/swapchannels.C:453 plugins/zoomblur/zoomblur.C:279
 msgid "Green"
-msgstr "Verde"
+msgstr "Orlegia"
 
 #: plugins/colorbalance/colorbalancewindow.C:46
 msgid "Yellow"
-msgstr "Amarillo"
+msgstr "Oria"
 
 #: plugins/colorbalance/colorbalancewindow.C:48
 #: plugins/colors/colorpicker.C:178 plugins/denoisevideo/denoisevideo.C:183
@@ -3940,7 +3942,7 @@ msgstr "Amarillo"
 #: plugins/swapchannels/swapchannels.C:433
 #: plugins/swapchannels/swapchannels.C:454 plugins/zoomblur/zoomblur.C:281
 msgid "Blue"
-msgstr "Azul"
+msgstr "Urdina"
 
 #: plugins/colorbalance/colorbalancewindow.C:105
 msgid "Preserve luminosity"
@@ -3958,7 +3960,7 @@ msgstr "Balance de blancos"
 #: plugins/histogram/histogramwindow.C:492
 #: plugins/perspective/perspective.C:508
 msgid "Reset"
-msgstr "Restaurar"
+msgstr "Berrezarri"
 
 #: plugins/colors/colorpicker.C:62
 msgid "Color Picker"
@@ -4009,7 +4011,7 @@ msgstr "Nivel de entrada"
 
 #: plugins/compressor/compressor.C:962
 msgid "Input"
-msgstr "Entrada"
+msgstr "Sarrera"
 
 #: plugins/compressor/compressor.C:1219
 msgid "Smooth only"
@@ -4026,7 +4028,7 @@ msgstr "Fotogramas de entrada por segundo:"
 
 #: plugins/decimate/decimate.C:252
 msgid "Last frame dropped: "
-msgstr "Último fotograma eliminado: "
+msgstr "Azkenengo fotograma ezabatu: "
 
 #: plugins/decimate/decimate.C:743
 msgid "Decimate"
@@ -4233,7 +4235,7 @@ msgstr "Flash"
 
 #: plugins/flip/flip.C:68
 msgid "Flip"
-msgstr "Dar la vuelta"
+msgstr "Buelta heman"
 
 #: plugins/framefield/framefield.C:265
 msgid "Average empty rows"
@@ -4440,11 +4442,11 @@ msgstr "Telecine inverso"
 
 #: plugins/ivtc/ivtc.h:13
 msgid "A  B  BC  CD  D"
-msgstr "A B BC CD D"
+msgstr ""
 
 #: plugins/ivtc/ivtc.h:14
 msgid "AB  BC  CD  DE  EF"
-msgstr "AB BC CD DE EF"
+msgstr ""
 
 #: plugins/ivtc/ivtcwindow.C:41
 msgid "Pattern offset:"
@@ -4577,15 +4579,15 @@ msgstr "Capa maestra:"
 
 #: plugins/motion/motionwindow.C:176
 msgid "Action:"
-msgstr "Acción:"
+msgstr "Ekintza:"
 
 #: plugins/motion/motionwindow.C:187
 msgid "Calculation:"
-msgstr "Cálculo:"
+msgstr "Kalkulua:"
 
 #: plugins/motion/motionwindow.C:457
 msgid "Track translation"
-msgstr "Modificar pista"
+msgstr "Pistal aldatu"
 
 #: plugins/motion/motionwindow.C:477
 msgid "Track rotation"
@@ -4635,7 +4637,7 @@ msgstr "Estabilizar Pixel"
 
 #: plugins/motion/motionwindow.C:825 plugins/motion/motionwindow.C:845
 msgid "Do Nothing"
-msgstr "No hacer nada"
+msgstr "Ez egin ezer"
 
 #: plugins/motion/motionwindow.C:892 plugins/motion/motionwindow.C:903
 msgid "Don't Calculate"
@@ -4663,7 +4665,7 @@ msgstr "Enter the DB to overload by:"
 
 #: plugins/normalize/normalizewindow.C:68
 msgid "Treat tracks independantly"
-msgstr "Manejar pistas independientemente"
+msgstr "Treat tracks independiently"
 
 #: plugins/oilpainting/oil.C:223
 msgid "Use intensity"
@@ -4802,7 +4804,7 @@ msgstr "Heroine College Concert Hall"
 #: plugins/reverb/reverb.C:430
 #, c-format
 msgid "Couldn't save %s."
-msgstr "No se pudo cargar %s."
+msgstr "Ezin izan da %s sortatu."
 
 #: plugins/reverb/reverbwindow.C:40
 msgid "Initial signal level:"
@@ -4838,11 +4840,11 @@ msgstr "End band for lowpass"
 
 #: plugins/reverb/reverbwindow.C:331
 msgid "Load..."
-msgstr "Cargar..."
+msgstr "Sortatu..."
 
 #: plugins/reverb/reverbwindow.C:348
 msgid "Save..."
-msgstr "Guardar..."
+msgstr "Gorde..."
 
 #: plugins/reverb/reverbwindow.C:365
 msgid "Set default"
@@ -4930,7 +4932,7 @@ msgstr "Usar método:"
 
 #: plugins/seltempavg/seltempavgwindow.C:42
 msgid "None "
-msgstr "Nada "
+msgstr "Ezer "
 
 #: plugins/seltempavg/seltempavgwindow.C:45
 msgid "Selective Temporal Averaging: "
@@ -4946,15 +4948,15 @@ msgstr ""
 
 #: plugins/seltempavg/seltempavgwindow.C:53
 msgid "R / Y"
-msgstr "R / Y"
+msgstr ""
 
 #: plugins/seltempavg/seltempavgwindow.C:59
 msgid "G / U"
-msgstr "G / U"
+msgstr ""
 
 #: plugins/seltempavg/seltempavgwindow.C:65
 msgid "B / V"
-msgstr "B / V"
+msgstr ""
 
 #: plugins/seltempavg/seltempavgwindow.C:71
 #: plugins/timeavg/timeavgwindow.C:116
@@ -4963,7 +4965,7 @@ msgstr "Media"
 
 #: plugins/seltempavg/seltempavgwindow.C:73
 msgid "Standard Deviation"
-msgstr "Desviación estándar"
+msgstr ""
 
 #: plugins/seltempavg/seltempavgwindow.C:76
 msgid "First frame in average:"
@@ -4979,7 +4981,7 @@ msgstr ""
 
 #: plugins/seltempavg/seltempavgwindow.C:90
 msgid "Other Options:"
-msgstr "Otras opciones:"
+msgstr "Beste aukerak:"
 
 #: plugins/seltempavg/seltempavgwindow.C:271
 #: plugins/timeavg/timeavgwindow.C:158
@@ -5009,11 +5011,11 @@ msgstr "Anti-aliasing"
 
 #: plugins/shapewipe/shapewipe.C:83
 msgid "Preserve shape aspect ratio"
-msgstr "Preservar el ratio de aspecto de la curva"
+msgstr ""
 
 #: plugins/shapewipe/shapewipe.C:123
 msgid "Browse..."
-msgstr "Buscando..."
+msgstr "Bilatzen..."
 
 #: plugins/shapewipe/shapewipe.C:155
 msgid "Choose Shape"
@@ -5120,17 +5122,17 @@ msgstr "Fuera Y:"
 
 #: plugins/svg/svgwin.C:159
 msgid "New/Open SVG..."
-msgstr "Nuevo/Abrir SVG..."
+msgstr "Berria/SVGa ireki..."
 
 #: plugins/svg/svgwin.C:341
 #, c-format
 msgid "Sodipodi has exited\n"
-msgstr "Sodipodi ha salido\n"
+msgstr "Sodipodi irten da\n"
 
 #: plugins/svg/svgwin.C:344
 #, c-format
 msgid "Plugin window has closed\n"
-msgstr "La ventana de plugin se ha cerrado\n"
+msgstr "Plugineko lehioa itxi da\n"
 
 #: plugins/svg/svgwin.C:381
 #, c-format
@@ -5147,7 +5149,7 @@ msgstr "SVG Plugin: Selecciona un fichero SVG"
 
 #: plugins/svg/svgwin.C:402
 msgid "Open an existing SVG file or create a new one"
-msgstr "Abrir un SVG existente o crear uno nuevo"
+msgstr "SVG bat ireki edo berri bat sortu"
 
 #: plugins/swapchannels/swapchannels.C:86
 #: plugins/swapchannels/swapchannels.C:196
@@ -5156,19 +5158,19 @@ msgstr "Intercambiar canales"
 
 #: plugins/swapchannels/swapchannels.C:88
 msgid "-> Red"
-msgstr "-> Rojo"
+msgstr "-> Gorria"
 
 #: plugins/swapchannels/swapchannels.C:92
 msgid "-> Green"
-msgstr "-> Verde"
+msgstr "-> Orlegia"
 
 #: plugins/swapchannels/swapchannels.C:96
 msgid "-> Blue"
-msgstr "-> Azul"
+msgstr "-> Urdina"
 
 #: plugins/swapchannels/swapchannels.C:100
 msgid "-> Alpha"
-msgstr "-> Alpha"
+msgstr "-> Alfa"
 
 #: plugins/swapchannels/swapchannels.C:439
 #: plugins/swapchannels/swapchannels.C:456
@@ -5289,7 +5291,7 @@ msgstr "Time average"
 
 #: plugins/timeavg/timeavgwindow.C:93
 msgid "Accumulate"
-msgstr "Acumular"
+msgstr "Pilatu"
 
 #: plugins/timeavg/timeavgwindow.C:137
 msgid "Inclusive Or"
@@ -5302,7 +5304,7 @@ msgstr "Ajustar el tiempo"
 #: plugins/titler/title.C:60
 #, c-format
 msgid "hello world"
-msgstr "Hola mundo"
+msgstr "Kaixo mundua"
 
 #: plugins/titler/title.C:269
 #, c-format
@@ -5326,27 +5328,27 @@ msgstr "Conversión de Iconv de %s a Unicode UCS-4 no disponible\n"
 
 #: plugins/titler/title.C:1920
 msgid "No motion"
-msgstr "Sin movimiento"
+msgstr "Mugimendurik barik"
 
 #: plugins/titler/title.C:1921
 msgid "Bottom to top"
-msgstr "De abajo a arriba"
+msgstr "Behetik gora"
 
 #: plugins/titler/title.C:1922
 msgid "Top to bottom"
-msgstr "De arriba a abajo"
+msgstr "Goitik bera"
 
 #: plugins/titler/title.C:1923
 msgid "Right to left"
-msgstr "De derecha a izquierda"
+msgstr "Eskuinatik ezkerrara"
 
 #: plugins/titler/title.C:1924
 msgid "Left to right"
-msgstr "De izquierda a derecha"
+msgstr "Ezkerratik eskuinara"
 
 #: plugins/titler/titlewindow.C:157
 msgid "Font:"
-msgstr "Fuente:"
+msgstr "Iturria:"
 
 #: plugins/titler/titlewindow.C:170
 msgid "Style:"
@@ -5358,7 +5360,7 @@ msgstr "Justificar:"
 
 #: plugins/titler/titlewindow.C:202
 msgid "Motion type:"
-msgstr "Tipo de movimiento:"
+msgstr "Mugimendu mota:"
 
 #: plugins/titler/titlewindow.C:214
 msgid "Drop shadow:"
@@ -5374,7 +5376,7 @@ msgstr "Difuminado hacia afuera (Segs):"
 
 #: plugins/titler/titlewindow.C:227
 msgid "Speed:"
-msgstr "Velocidad:"
+msgstr "Abiadura:"
 
 #: plugins/titler/titlewindow.C:240
 msgid "Encoding:"
@@ -5386,7 +5388,7 @@ msgstr "Grosor de borde:"
 
 #: plugins/titler/titlewindow.C:267
 msgid "Text:"
-msgstr "Texto:"
+msgstr "Testua:"
 
 #: plugins/titler/titlewindow.C:470
 msgid "Bold"
