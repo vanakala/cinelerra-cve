@@ -49,6 +49,16 @@ public:
 	HistogramMain *plugin;
 };
 
+class HistogramSplit : public BC_CheckBox
+{
+public:
+	HistogramSplit(HistogramMain *plugin, 
+		int x, 
+		int y);
+	int handle_event();
+	HistogramMain *plugin;
+};
+
 class HistogramMode : public BC_Radial
 {
 public:
@@ -136,6 +146,7 @@ public:
 
 	HistogramSlider *output;
 	HistogramAuto *automatic;
+	HistogramSplit *split;
 	HistogramMode *mode_v, *mode_r, *mode_g, *mode_b /*,  *mode_a */;
 	HistogramOutputText *output_min;
 	HistogramOutputText *output_max;

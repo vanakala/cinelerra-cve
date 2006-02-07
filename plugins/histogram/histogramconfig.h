@@ -61,6 +61,7 @@ public:
 	float output_max[HISTOGRAM_MODES];
 	int automatic;
 	float threshold;
+	int split;
 };
 
 

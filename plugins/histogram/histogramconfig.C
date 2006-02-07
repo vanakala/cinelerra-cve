@@ -163,6 +163,7 @@ void HistogramConfig::reset(int do_mode)
 	{
 		automatic = 0;
 		threshold = 0.1;
+		split = 0;
 	}
 }
 
@@ -214,6 +215,7 @@ void HistogramConfig::copy_from(HistogramConfig &that)
 
 	automatic = that.automatic;
 	threshold = that.threshold;
+	split = that.split;
 }
 
 void HistogramConfig::interpolate(HistogramConfig &prev, 
@@ -234,6 +236,7 @@ void HistogramConfig::interpolate(HistogramConfig &prev,
 
 	threshold = prev.threshold * prev_scale + next.threshold * next_scale;
 	automatic = prev.automatic;
+	split = prev.split;
 }
 
 

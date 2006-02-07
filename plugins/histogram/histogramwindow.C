@@ -180,7 +180,9 @@ int HistogramWindow::create_objects()
 		y,
 		&plugin->config.threshold);
 	threshold->create_objects();
-
+	x = x1;
+	y += 40;	
+	add_subwindow(split = new HistogramSplit(plugin, x, y));
 
 	show_window();
 
@@ -679,6 +681,24 @@ HistogramAuto::HistogramAuto(HistogramMain *plugin,
 int HistogramAuto::handle_event()
 {
 	plugin->config.automatic = get_value();
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+
+
+HistogramSplit::HistogramSplit(HistogramMain *plugin, 
+	int x, 
+	int y)
+ : BC_CheckBox(x, y, plugin->config.split, _("Split picture"))
+{
+	this->plugin = plugin;
+}
+
+int HistogramSplit::handle_event()
+{
+	plugin->config.split = get_value();
 	plugin->send_configure_change();
 	return 1;
 }

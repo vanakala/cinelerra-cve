@@ -171,6 +171,7 @@ int HistogramMain::load_defaults()
 	mode = defaults->get("MODE", mode);
 	CLAMP(mode, 0, HISTOGRAM_MODES - 1);
 	config.threshold = defaults->get("THRESHOLD", config.threshold);
+	config.split = defaults->get("SPLIT", config.split);
 	config.boundaries();
 	return 0;
 }
@@ -212,6 +213,7 @@ int HistogramMain::save_defaults()
 	defaults->update("AUTOMATIC", config.automatic);
 	defaults->update("MODE", mode);
 	defaults->update("THRESHOLD", config.threshold);
+	defaults->update("SPLIT", config.split);
 	defaults->save();
 	return 0;
 }
@@ -240,6 +242,7 @@ void HistogramMain::save_data(KeyFrame *keyframe)
 
 	output.tag.set_property("AUTOMATIC", config.automatic);
 	output.tag.set_property("THRESHOLD", config.threshold);
+	output.tag.set_property("SPLIT", config.split);
 	output.append_tag();
 	output.append_newline();
 
@@ -308,6 +311,7 @@ void HistogramMain::read_data(KeyFrame *keyframe)
 				}
 				config.automatic = input.tag.get_property("AUTOMATIC", config.automatic);
 				config.threshold = input.tag.get_property("THRESHOLD", config.threshold);
+				config.split = input.tag.get_property("SPLIT", config.split);
 			}
 			else
 			if(input.tag.title_is("POINTS"))
@@ -841,6 +845,8 @@ void HistogramUnit::process_package(LoadPackage *package)
 		type *row = (type*)input->get_rows()[i]; \
 		for(int j = 0; j < w; j++) \
 		{ \
+			if ( plugin->config.split && ((j + i * w / h) < w) ) \
+		    	continue; \
 			row[0] = lookup_r[row[0]]; \
 			row[1] = lookup_g[row[1]]; \
 			row[2] = lookup_b[row[2]]; \
@@ -856,6 +862,8 @@ void HistogramUnit::process_package(LoadPackage *package)
 		type *row = (type*)input->get_rows()[i]; \
 		for(int j = 0; j < w; j++) \
 		{ \
+			if ( plugin->config.split && ((j + i * w / h) < w) ) \
+		    	continue; \
 /* Convert to 16 bit RGB */ \
 			if(max == 0xff) \
 			{ \
@@ -904,6 +912,8 @@ void HistogramUnit::process_package(LoadPackage *package)
 		float *row = (float*)input->get_rows()[i]; \
 		for(int j = 0; j < w; j++) \
 		{ \
+			if ( plugin->config.split && ((j + i * w / h) < w) ) \
+		    	continue; \
 			float r = row[0]; \
 			float g = row[1]; \
 			float b = row[2]; \
