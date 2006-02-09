@@ -84,6 +84,7 @@ SUBDIRS= \
 	synthesizer \
 	threshold \
 	timeavg \
+	timefront \
 	timestretch \
 	titler \
 	translate \
