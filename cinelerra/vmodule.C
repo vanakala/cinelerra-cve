@@ -344,7 +344,6 @@ int VModule::render(VFrame *output,
 	int result = 0;
 	double edl_rate = get_edl()->session->frame_rate;
 
-
 	if(use_nudge) start_position += (int64_t)(track->nudge * 
 		frame_rate / 
 		edl_rate);
@@ -454,8 +453,8 @@ SET_TRACE
 	}
 	
 	masker->do_mask(output, 
-		start_position_project,
-		frame_rate,
+		renderengine->vrender->current_position,
+		edl_rate,
 		edl_rate,
 		(MaskAutos*)track->automation->autos[AUTOMATION_MASK], 
 		direction,
