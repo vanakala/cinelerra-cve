@@ -13,24 +13,22 @@ class DeInterlaceMain;
 
 
 #define THRESHOLD_SCALAR 1000
-
 enum
 {
 	DEINTERLACE_NONE,
-	DEINTERLACE_EVEN,
-	DEINTERLACE_ODD,
+	DEINTERLACE_KEEP,
+	DEINTERLACE_AVG_1F,
 	DEINTERLACE_AVG,
-	DEINTERLACE_SWAP_ODD,
-	DEINTERLACE_SWAP_EVEN,
-	DEINTERLACE_TEMPORALSWAP_TOP,
-	DEINTERLACE_TEMPORALSWAP_BOTTOM,
-	DEINTERLACE_AVG_ODD,
-	DEINTERLACE_AVG_EVEN
+	DEINTERLACE_BOBWEAVE,
+	DEINTERLACE_SWAP,
+	DEINTERLACE_TEMPORALSWAP,
 };
 
 class DeInterlaceConfig
 {
 public:
+
+
 	DeInterlaceConfig();
 
 	int equivalent(DeInterlaceConfig &that);
@@ -44,6 +42,7 @@ public:
 	int mode;
 	int adaptive;
 	int threshold;
+	volatile int dominance; /* top or bottom field */
 };
 
 class DeInterlaceMain : public PluginVClient
@@ -66,11 +65,12 @@ public:
 	int save_defaults();
 	void render_gui(void *data);
 
-	void deinterlace_avg_even(VFrame *input, VFrame *output, int dominance);
-	void deinterlace_even(VFrame *input, VFrame *output, int dominance);
+	void deinterlace_avg_top(VFrame *input, VFrame *output, int dominance);
+	void deinterlace_top(VFrame *input, VFrame *output, int dominance);
 	void deinterlace_avg(VFrame *input, VFrame *output);
 	void deinterlace_swap(VFrame *input, VFrame *output, int dominance);
-	void deinterlace_temporalswap(VFrame *input, VFrame *nextfrane, VFrame *output, int dominance);
+	void deinterlace_temporalswap(VFrame *input, VFrame *prevframe, VFrame *output, int dominance);
+	void deinterlace_bobweave(VFrame *input, VFrame *prevframe, VFrame *output, int dominance);
 
 	int changed_rows;
 	VFrame *temp;

@@ -18,7 +18,7 @@
 
 #include <stdint.h>
 #include <string.h>
-
+#include <math.h>
 
 REGISTER_PLUGIN(DeInterlaceMain)
 
@@ -27,7 +27,8 @@ REGISTER_PLUGIN(DeInterlaceMain)
 
 DeInterlaceConfig::DeInterlaceConfig()
 {
-	mode = DEINTERLACE_EVEN;
+	mode = DEINTERLACE_AVG;
+	dominance = 0;
 	adaptive = 1;
 	threshold = 40;
 }
@@ -35,6 +36,7 @@ DeInterlaceConfig::DeInterlaceConfig()
 int DeInterlaceConfig::equivalent(DeInterlaceConfig &that)
 {
 	return mode == that.mode &&
+		dominance == that.dominance &&
 		adaptive == that.adaptive &&
 		threshold == that.threshold;
 }
@@ -42,6 +44,7 @@ int DeInterlaceConfig::equivalent(DeInterlaceConfig &that)
 void DeInterlaceConfig::copy_from(DeInterlaceConfig &that)
 {
 	mode = that.mode;
+	dominance = that.dominance;
 	adaptive = that.adaptive;
 	threshold = that.threshold;
 }
@@ -79,7 +82,7 @@ int DeInterlaceMain::is_realtime() { return 1; }
 
 
 
-#define DEINTERLACE_EVEN_MACRO(type, components, dominance) \
+#define DEINTERLACE_TOP_MACRO(type, components, dominance) \
 { \
 	int w = input->get_w(); \
 	int h = input->get_h(); \
@@ -94,7 +97,7 @@ int DeInterlaceMain::is_realtime() { return 1; }
 	} \
 }
 
-#define DEINTERLACE_AVG_EVEN_MACRO(type, temp_type, components, dominance) \
+#define DEINTERLACE_AVG_TOP_MACRO(type, temp_type, components, dominance) \
 { \
 	int w = input->get_w(); \
 	int h = input->get_h(); \
@@ -256,60 +259,118 @@ int DeInterlaceMain::is_realtime() { return 1; }
 }
 
 
-void DeInterlaceMain::deinterlace_even(VFrame *input, VFrame *output, int dominance)
+/* Bob & Weave deinterlacer:
+
+For each pixel, 
+	if it's similar to the previous frame 
+	then keep it
+	else average with line above and below
+
+Similar is defined as in abs(difference)/(sum) < threshold
+*/
+#define FABS(a) (((a)<0)?(0-(a)):(a))
+#define FMAX(a,b) (((a)>(b))?(a):(b))
+#define FMIN(a,b) (((a)<(b))?(a):(b))
+
+#define SQ(a) ((a)*(a))
+// threshold < 100 -> a-b/a+b <
+ 
+
+#define DEINTERLACE_BOBWEAVE_MACRO(type, temp_type, components, dominance, threshold, noise_threshold) \
+{ \
+	/* Ooooohh, I like fudge factors */ \
+	double exp_threshold=exp(((double)threshold - 85 )/15);\
+	int w = input->get_w(); \
+	int h = input->get_h(); \
+	type *row_above=(type*)input->get_rows()[0]; \
+	for(int i = dominance ?0:1; i < h - 1; i += 2) \
+	{ \
+		type *input_row;\
+		type *input_row2; \
+		type *old_row; \
+		type *output_row1 = (type*)output->get_rows()[i]; \
+		type *output_row2 = (type*)output->get_rows()[i + 1]; \
+		temp_type pixel, below, old, above; \
+		\
+		input_row = (type*)input->get_rows()[i]; \
+		input_row2 = (type*)input->get_rows()[i+1]; \
+		old_row = (type*)prevframe->get_rows()[i]; \
+\
+		for(int j = 0; j < w * components; j++) \
+		{ \
+			pixel = input_row[j]; \
+			below = input_row2[j]; \
+			old = old_row[j]; \
+			above = row_above[j]; \
+\
+			if  ( ( FABS(pixel-old) <= noise_threshold )  \
+			|| ((pixel+old != 0) && (((FABS((double) pixel-old))/((double) pixel+old)) > exp_threshold )) \
+			|| ((above+below != 0) && (((FABS((double) pixel-old))/((double) above+below)) > exp_threshold )) \
+			) {\
+				pixel=(above+below)/2 ;\
+			}\
+			output_row1[j] = pixel; \
+			output_row2[j] = below; \
+		} \
+		row_above=input_row2; \
+	} \
+}
+
+
+void DeInterlaceMain::deinterlace_top(VFrame *input, VFrame *output, int dominance)
 {
 	switch(input->get_color_model())
 	{
 		case BC_RGB888:
 		case BC_YUV888:
-			DEINTERLACE_EVEN_MACRO(unsigned char, 3, dominance);
+			DEINTERLACE_TOP_MACRO(unsigned char, 3, dominance);
 			break;
 		case BC_RGB_FLOAT:
-			DEINTERLACE_EVEN_MACRO(float, 3, dominance);
+			DEINTERLACE_TOP_MACRO(float, 3, dominance);
 			break;
 		case BC_RGBA8888:
 		case BC_YUVA8888:
-			DEINTERLACE_EVEN_MACRO(unsigned char, 4, dominance);
+			DEINTERLACE_TOP_MACRO(unsigned char, 4, dominance);
 			break;
 		case BC_RGBA_FLOAT:
-			DEINTERLACE_EVEN_MACRO(float, 4, dominance);
+			DEINTERLACE_TOP_MACRO(float, 4, dominance);
 			break;
 		case BC_RGB161616:
 		case BC_YUV161616:
-			DEINTERLACE_EVEN_MACRO(uint16_t, 3, dominance);
+			DEINTERLACE_TOP_MACRO(uint16_t, 3, dominance);
 			break;
 		case BC_RGBA16161616:
 		case BC_YUVA16161616:
-			DEINTERLACE_EVEN_MACRO(uint16_t, 4, dominance);
+			DEINTERLACE_TOP_MACRO(uint16_t, 4, dominance);
 			break;
 	}
 }
 
-void DeInterlaceMain::deinterlace_avg_even(VFrame *input, VFrame *output, int dominance)
+void DeInterlaceMain::deinterlace_avg_top(VFrame *input, VFrame *output, int dominance)
 {
 	switch(input->get_color_model())
 	{
 		case BC_RGB888:
 		case BC_YUV888:
-			DEINTERLACE_AVG_EVEN_MACRO(unsigned char, int64_t, 3, dominance);
+			DEINTERLACE_AVG_TOP_MACRO(unsigned char, int64_t, 3, dominance);
 			break;
 		case BC_RGB_FLOAT:
-			DEINTERLACE_AVG_EVEN_MACRO(float, double, 3, dominance);
+			DEINTERLACE_AVG_TOP_MACRO(float, double, 3, dominance);
 			break;
 		case BC_RGBA8888:
 		case BC_YUVA8888:
-			DEINTERLACE_AVG_EVEN_MACRO(unsigned char, int64_t, 4, dominance);
+			DEINTERLACE_AVG_TOP_MACRO(unsigned char, int64_t, 4, dominance);
 			break;
 		case BC_RGBA_FLOAT:
-			DEINTERLACE_AVG_EVEN_MACRO(float, double, 4, dominance);
+			DEINTERLACE_AVG_TOP_MACRO(float, double, 4, dominance);
 			break;
 		case BC_RGB161616:
 		case BC_YUV161616:
-			DEINTERLACE_AVG_EVEN_MACRO(uint16_t, int64_t, 3, dominance);
+			DEINTERLACE_AVG_TOP_MACRO(uint16_t, int64_t, 3, dominance);
 			break;
 		case BC_RGBA16161616:
 		case BC_YUVA16161616:
-			DEINTERLACE_AVG_EVEN_MACRO(uint16_t, int64_t, 4, dominance);
+			DEINTERLACE_AVG_TOP_MACRO(uint16_t, int64_t, 4, dominance);
 			break;
 	}
 }
@@ -401,6 +462,38 @@ void DeInterlaceMain::deinterlace_temporalswap(VFrame *input, VFrame *prevframe,
 	}
 }
 
+void DeInterlaceMain::deinterlace_bobweave(VFrame *input, VFrame *prevframe, VFrame *output, int dominance)
+{
+	int threshold=config.threshold;
+	int noise_threshold=0;
+
+	switch(input->get_color_model())
+	{
+		case BC_RGB888:
+		case BC_YUV888:
+			DEINTERLACE_BOBWEAVE_MACRO(unsigned char, uint64_t, 3, dominance, threshold, noise_threshold);
+			break;
+		case BC_RGB_FLOAT:
+			DEINTERLACE_BOBWEAVE_MACRO(float, double, 3, dominance, threshold, noise_threshold);
+			break;
+		case BC_RGBA8888:
+		case BC_YUVA8888:
+			DEINTERLACE_BOBWEAVE_MACRO(unsigned char, uint64_t, 4, dominance, threshold, noise_threshold);
+			break;
+		case BC_RGBA_FLOAT:
+			DEINTERLACE_BOBWEAVE_MACRO(float, double, 4, dominance, threshold, noise_threshold);
+			break;
+		case BC_RGB161616:
+		case BC_YUV161616:
+			DEINTERLACE_BOBWEAVE_MACRO(uint16_t, uint64_t, 3, dominance, threshold, noise_threshold);
+			break;
+		case BC_RGBA16161616:
+		case BC_YUVA16161616:
+			DEINTERLACE_BOBWEAVE_MACRO(uint16_t, uint64_t, 4, dominance, threshold, noise_threshold);
+			break;
+	}
+}
+
 
 int DeInterlaceMain::process_realtime(VFrame *input, VFrame *output)
 {
@@ -423,41 +516,32 @@ int DeInterlaceMain::process_realtime(VFrame *input, VFrame *output)
 		case DEINTERLACE_NONE:
 			output->copy_from(input);
 			break;
-		case DEINTERLACE_EVEN:
-			deinterlace_even(input, output, 0);
-			break;
-		case DEINTERLACE_ODD:
-			deinterlace_even(input, output, 1);
+		case DEINTERLACE_KEEP:
+			deinterlace_top(input, output, config.dominance);
 			break;
 		case DEINTERLACE_AVG:
 			deinterlace_avg(input, output);
 			break;
-		case DEINTERLACE_AVG_EVEN:
-			deinterlace_avg_even(input, output, 0);
+		case DEINTERLACE_AVG_1F:
+			deinterlace_avg_top(input, output, config.dominance);
 			break;
-		case DEINTERLACE_AVG_ODD:
-			deinterlace_avg_even(input, output, 1);
+		case DEINTERLACE_SWAP:
+			deinterlace_swap(input, output, config.dominance);
 			break;
-		case DEINTERLACE_SWAP_ODD:
-			deinterlace_swap(input, output, 1);
-			break;
-		case DEINTERLACE_SWAP_EVEN:
-			deinterlace_swap(input, output, 0);
-			break;
-		case DEINTERLACE_TEMPORALSWAP_TOP:
+		case DEINTERLACE_BOBWEAVE:
 			if (get_source_position()==0)
 				read_frame(temp_prevframe,0, get_source_position(), get_framerate());
 			else 
 				read_frame(temp_prevframe,0, get_source_position()-1, get_framerate());
-			deinterlace_temporalswap(temp_prevframe, input, output, 1);
+			deinterlace_bobweave(input, temp_prevframe, output, config.dominance);
+			break;
+		case DEINTERLACE_TEMPORALSWAP:
+			if (get_source_position()==0)
+				read_frame(temp_prevframe,0, get_source_position(), get_framerate());
+			else 
+				read_frame(temp_prevframe,0, get_source_position()-1, get_framerate());
+			deinterlace_temporalswap(input, temp_prevframe, output, config.dominance);
 			break; 
-		case DEINTERLACE_TEMPORALSWAP_BOTTOM:
-			if (get_source_position()==0)
-				read_frame(temp_prevframe,0, get_source_position(), get_framerate());
-			else 
-				read_frame(temp_prevframe,0, get_source_position()-1, get_framerate());
-			deinterlace_temporalswap(temp_prevframe, input ,output, 0);
-			break;
 	}
 	send_render_gui(&changed_rows);
 	return 0;
@@ -492,6 +576,7 @@ int DeInterlaceMain::load_defaults()
 	defaults = new Defaults(directory);
 	defaults->load();
 	config.mode = defaults->get("MODE", config.mode);
+	config.dominance = defaults->get("DOMINANCE", config.dominance);
 	config.adaptive = defaults->get("ADAPTIVE", config.adaptive);
 	config.threshold = defaults->get("THRESHOLD", config.threshold);
 	return 0;
@@ -501,6 +586,7 @@ int DeInterlaceMain::load_defaults()
 int DeInterlaceMain::save_defaults()
 {
 	defaults->update("MODE", config.mode);
+	defaults->update("DOMINANCE", config.dominance);
 	defaults->update("ADAPTIVE", config.adaptive);
 	defaults->update("THRESHOLD", config.threshold);
 	defaults->save();
@@ -513,6 +599,7 @@ void DeInterlaceMain::save_data(KeyFrame *keyframe)
 	output.set_shared_string(keyframe->data, MESSAGESIZE);
 	output.tag.set_title("DEINTERLACE");
 	output.tag.set_property("MODE", config.mode);
+	output.tag.set_property("DOMINANCE", config.dominance);
 	output.tag.set_property("ADAPTIVE", config.adaptive);
 	output.tag.set_property("THRESHOLD", config.threshold);
 	output.append_tag();
@@ -529,6 +616,7 @@ void DeInterlaceMain::read_data(KeyFrame *keyframe)
 		if(input.tag.title_is("DEINTERLACE"))
 		{
 			config.mode = input.tag.get_property("MODE", config.mode);
+			config.dominance = input.tag.get_property("DOMINANCE", config.dominance);
 			config.adaptive = input.tag.get_property("ADAPTIVE", config.adaptive);
 			config.threshold = input.tag.get_property("THRESHOLD", config.threshold);
 		}
@@ -543,6 +631,7 @@ void DeInterlaceMain::update_gui()
 		load_configuration();
 		thread->window->lock_window();
 		thread->window->set_mode(config.mode, 1);
+		thread->window->dominance->update(config.dominance);
 		thread->window->adaptive->update(config.adaptive);
 		thread->window->threshold->update(config.threshold);
 		thread->window->unlock_window();

@@ -13,6 +13,8 @@ class DeInterlaceWindow;
 PLUGIN_THREAD_HEADER(DeInterlaceMain, DeInterlaceThread, DeInterlaceWindow);
 
 class DeInterlaceOption;
+class DeInterlaceMode;
+class DeInterlaceDominance;
 class DeInterlaceAdaptive;
 class DeInterlaceThreshold;
 
@@ -26,19 +28,10 @@ public:
 	int close_event();
 	int set_mode(int mode, int recursive);
 	void get_status_string(char *string, int changed_rows);
-	
 	DeInterlaceMain *client;
-	DeInterlaceOption *odd_fields;
-	DeInterlaceOption *even_fields;
-	DeInterlaceOption *average_fields;
-	DeInterlaceOption *swap_odd_fields;
-	DeInterlaceOption *swap_even_fields;
-	DeInterlaceOption *temporalswap_top_fields;
-	DeInterlaceOption *temporalswap_bottom_fields;
-	DeInterlaceOption *avg_even;
-	DeInterlaceOption *avg_odd;
-	DeInterlaceOption *none;
+	DeInterlaceMode *mode;
 	DeInterlaceAdaptive *adaptive;
+	DeInterlaceDominance *dominance;
 	DeInterlaceThreshold *threshold;
 	BC_Title *status;
 };
@@ -65,6 +58,16 @@ class DeInterlaceAdaptive : public BC_CheckBox
 public:
 	DeInterlaceAdaptive(DeInterlaceMain *client, int x, int y);
 	int handle_event();
+	void update_mode(int mode, int adaptive_value);
+	DeInterlaceMain *client;
+};
+
+class DeInterlaceDominance : public BC_CheckBox
+{
+public:
+	DeInterlaceDominance(DeInterlaceMain *client, int x, int y);
+	int handle_event();
+	void update_mode(int mode, int dominance_value);
 	DeInterlaceMain *client;
 };
 
@@ -77,6 +80,21 @@ public:
 };
 
 
+
+class DeInterlaceMode : public BC_PopupMenu
+{
+public:
+	DeInterlaceMode(DeInterlaceMain *client, 
+		DeInterlaceWindow *window, 
+		int x, 
+		int y);
+	void create_objects();
+	static char* to_text(int shape);
+	static int from_text(char *text);
+	int handle_event();
+	DeInterlaceMain *plugin;
+	DeInterlaceWindow *gui;
+};
 
 
 #endif
