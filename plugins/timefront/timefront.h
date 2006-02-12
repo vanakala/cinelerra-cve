@@ -44,7 +44,8 @@ public:
 		RADIAL,
 		LOG,
 		SQUARE,
-		OTHERTRACK
+		OTHERTRACK,
+		ALPHA
 	};
 
 

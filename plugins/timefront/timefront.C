@@ -282,8 +282,38 @@ void TimeFrontWindow::update_shape()
 			track_usage->create_objects();
 
 		}
+	} else
+	if(plugin->config.shape == TimeFrontConfig::ALPHA)
+	{
+		delete center_x_title;
+		delete center_y_title;
+		delete center_x;
+		delete center_y;
+		delete angle_title;
+		delete angle;
+		delete rate_title;
+		delete rate;
+		delete in_radius_title;
+		delete in_radius;
+		delete out_radius_title;
+		delete out_radius;
+		delete track_usage_title;
+		delete track_usage;
+		center_x_title = 0;
+		center_y_title = 0;
+		center_x = 0;
+		center_y = 0;
+		angle_title = 0;
+		angle = 0;
+		rate_title = 0;
+		rate = 0;
+		in_radius_title = 0;
+		in_radius = 0;
+		out_radius_title = 0;
+		out_radius = 0;
+		track_usage_title = 0;
+		track_usage = 0;
 
-		
 	}
 
 }
@@ -318,6 +348,7 @@ void TimeFrontShape::create_objects()
 {
 	add_item(new BC_MenuItem(to_text(TimeFrontConfig::LINEAR)));
 	add_item(new BC_MenuItem(to_text(TimeFrontConfig::RADIAL)));
+	add_item(new BC_MenuItem(to_text(TimeFrontConfig::ALPHA)));
 	add_item(new BC_MenuItem(to_text(TimeFrontConfig::OTHERTRACK)));
 }
 char* TimeFrontShape::to_text(int shape)
@@ -328,6 +359,8 @@ char* TimeFrontShape::to_text(int shape)
 			return _("Linear");
 		case TimeFrontConfig::OTHERTRACK:
 			return _("Other track as timefront");
+		case TimeFrontConfig::ALPHA:
+			return _("Alpha as timefront");
 		default:
 			return _("Radial");
 	}
@@ -338,6 +371,8 @@ int TimeFrontShape::from_text(char *text)
 		return TimeFrontConfig::LINEAR;
 	if(!strcmp(text, to_text(TimeFrontConfig::OTHERTRACK))) 
 		return TimeFrontConfig::OTHERTRACK;
+	if(!strcmp(text, to_text(TimeFrontConfig::ALPHA))) 
+		return TimeFrontConfig::ALPHA;
 	return TimeFrontConfig::RADIAL;
 }
 int TimeFrontShape::handle_event()
@@ -651,6 +686,16 @@ int TimeFrontMain::is_synthesis()
 		} \
 	}
 
+#define SETALPHA(type, max) \
+	for(int i = 0; i < outframes[0]->get_h(); i++) \
+	{ \
+		type *out_row = (type *)outframes[0]->get_rows()[i]; \
+		for(int j = 0; j < outframes[0]->get_w(); j++) \
+		{ \
+			out_row[j * 4 + 3] = max; \
+		} \
+	}
+
 #define GRADIENTTOPICTURE(type, inttype, components, max, invertion) \
 	for(int i = 0; i < height; i++) \
 	{ \
@@ -713,13 +758,11 @@ int TimeFrontMain::process_buffer(VFrame **frame,
 {
 	VFrame **outframes = frame;
 	VFrame *(framelist[1024]);
-	
 	framelist[0] = new VFrame (0, outframes[0]->get_w(), outframes[0]->get_h(), outframes[0]->get_color_model());
 	read_frame(framelist[0],
 		0,
 		start_position,
 		frame_rate);
-
 	this->input = framelist[0];
 	this->output = outframes[0];
 	need_reconfigure |= load_configuration();
@@ -750,7 +793,8 @@ int TimeFrontMain::process_buffer(VFrame **frame,
 			BC_A8);
 
 			
-		if (config.shape != TimeFrontConfig::OTHERTRACK)
+		if (config.shape != TimeFrontConfig::OTHERTRACK &&
+		    config.shape != TimeFrontConfig::ALPHA)
 		{
 			if(!engine) engine = new TimeFrontServer(this,
 				get_project_smp() + 1,
@@ -759,6 +803,34 @@ int TimeFrontMain::process_buffer(VFrame **frame,
 		}
 		
 	}
+	if (config.shape == TimeFrontConfig::ALPHA)
+	{
+		if(!gradient) gradient = new VFrame(0, 
+			outframes[0]->get_w(),
+			outframes[0]->get_h(),
+			BC_A8);
+		VFrame *tfframe = framelist[0];
+		switch (tfframe->get_color_model())
+		{
+			case BC_YUVA8888:
+			case BC_RGBA8888:
+				GRADIENTFROMCHANNEL(unsigned char, 4, 255, 3);
+
+
+				break;
+			case BC_RGBA_FLOAT:
+				GRADIENTFROMCHANNEL(float, 4, 1.0f, 3);
+				break;
+			
+			default:
+				{
+					printf("TimeFront plugin error: ALPHA used, but project color model does not have alpha\n");
+					return 1;
+					break;
+				}
+		}
+
+	} else
 	if (config.shape == TimeFrontConfig::OTHERTRACK)
 	{
 		if(!gradient) gradient = new VFrame(0, 
@@ -943,6 +1015,23 @@ int TimeFrontMain::process_buffer(VFrame **frame,
 				COMPOSITEIMAGE(float, 4, config.frame_range -);
 				break;
 
+			default:
+				break;
+		}
+	}
+	if (config.shape == TimeFrontConfig::ALPHA)
+	{
+		// Set alpha to max
+		switch (outframes[0]->get_color_model())
+		{
+			case BC_YUVA8888:
+			case BC_RGBA8888:
+				SETALPHA(unsigned char, 255);
+				break;
+			case BC_RGBA_FLOAT:
+				SETALPHA(float, 1.0f);
+				break;
+				
 			default:
 				break;
 		}
