@@ -235,12 +235,12 @@ SET_TRACE
 
 // file -> temp
 // Cache for single frame only
-				if(renderengine && renderengine->command->single_frame())
+//				if(renderengine && renderengine->command->single_frame())
 					source->set_cache_frames(1);
 SET_TRACE
 				result = source->read_frame((*input));
 SET_TRACE
-				if(renderengine && renderengine->command->single_frame())
+//				if(renderengine && renderengine->command->single_frame())
 					source->set_cache_frames(0);
 
 //printf("VModule::import_frame 1 %lld %f\n", input_position, frame_rate);
@@ -306,10 +306,10 @@ SET_TRACE
 			{
 //printf("VModule::import_frame 30 %p\n", output);
 // Cache single frames only
-				if(renderengine && renderengine->command->single_frame())
+//				if(renderengine && renderengine->command->single_frame())
 					source->set_cache_frames(1);
 				result = source->read_frame(output);
-				if(renderengine && renderengine->command->single_frame())
+//				if(renderengine && renderengine->command->single_frame())
 					source->set_cache_frames(0);
 //printf("VModule::import_frame 40\n");
 			}
