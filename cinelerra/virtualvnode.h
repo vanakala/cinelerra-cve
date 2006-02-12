@@ -63,7 +63,6 @@ private:
 
 
 	FadeEngine *fader;
-	MaskEngine *masker;
 };
 
 

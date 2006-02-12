@@ -38,6 +38,7 @@ ChannelEditThread::ChannelEditThread(MWindow *mwindow,
 }
 ChannelEditThread::~ChannelEditThread()
 {
+	printf("ST: %i\n", scan_thread);
 	channel_picker->get_subwindow()->unlock_window();
 	delete scan_thread;
 	channel_picker->get_subwindow()->lock_window("ChannelEditThread::~ChannelEditThread");

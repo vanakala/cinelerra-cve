@@ -66,6 +66,7 @@ public:
 	float feather;
 // 0 - 100
 	int value;
+	int apply_before_plugins;
 };
 
 

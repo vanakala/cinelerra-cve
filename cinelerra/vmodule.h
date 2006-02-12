@@ -23,6 +23,7 @@ class VModuleMode;
 #include "track.inc"
 #include "vedit.inc"
 #include "vframe.inc"
+#include "maskengine.inc"
 
 class VModule : public Module
 {
@@ -61,6 +62,7 @@ public:
 	VFrame *transition_temp;
 // Engine for transferring from file to buffer_in
 	OverlayFrame *overlay_temp;
+	MaskEngine *masker;
 };
 
 #endif

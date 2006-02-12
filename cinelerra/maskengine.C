@@ -950,7 +950,8 @@ void MaskEngine::do_mask(VFrame *output,
 	double frame_rate,
 	double project_frame_rate,
 	MaskAutos *keyframe_set, 
-	int direction)
+	int direction,
+	int before_plugins)
 {
 	int64_t start_position_project = (int64_t)(start_position *
 		project_frame_rate / 
@@ -960,6 +961,9 @@ void MaskEngine::do_mask(VFrame *output,
 	MaskAuto *keyframe = (MaskAuto*)keyframe_set->get_prev_auto(start_position_project, 
 		direction,
 		current);
+	
+	if (keyframe->apply_before_plugins != before_plugins)
+		return;
 
 
 	int total_points = 0;

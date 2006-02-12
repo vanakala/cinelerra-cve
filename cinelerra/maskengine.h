@@ -77,7 +77,8 @@ public:
 		double frame_rate,
 		double project_frame_rate,
 		MaskAutos *keyframe_set, 
-		int direction);
+		int direction,
+		int before_plugins);
 	int points_equivalent(ArrayList<MaskPoint*> *new_points, 
 		ArrayList<MaskPoint*> *points);
 

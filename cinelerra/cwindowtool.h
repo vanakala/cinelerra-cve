@@ -174,6 +174,16 @@ public:
 	CWindowToolGUI *gui;
 };
 
+class CWindowMaskBeforePlugins : public BC_CheckBox
+{
+public:
+	CWindowMaskBeforePlugins(CWindowToolGUI *gui, int x, int y);
+	int handle_event();
+	CWindowToolGUI *gui;
+};
+
+
+
 
 class CWindowMaskGUI : public CWindowToolGUI
 {
@@ -199,6 +209,7 @@ public:
 //	CWindowMaskCyclePrev *prev_point;
 	CWindowMaskNumber *number;
 	CWindowMaskValue *value;
+	CWindowMaskBeforePlugins *apply_before_plugins;
 };
 
 
@@ -353,7 +364,6 @@ public:
 	MWindow *mwindow;
 	CWindowProjectorGUI *gui;
 };
-
 
 
 #endif

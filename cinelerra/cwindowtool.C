@@ -1692,6 +1692,7 @@ CWindowMaskValue::~CWindowMaskValue()
 
 int CWindowMaskValue::handle_event()
 {
+
 	MaskAuto *keyframe;
 	Track *track;
 	MaskPoint *point;
@@ -1709,6 +1710,31 @@ int CWindowMaskValue::handle_event()
 
 
 
+CWindowMaskBeforePlugins::CWindowMaskBeforePlugins(CWindowToolGUI *gui, int x, int y)
+ : BC_CheckBox(x, 
+ 	y, 
+	1, 
+	_("Apply mask before plugins"))
+{
+	this->gui = gui;
+}
+
+int CWindowMaskBeforePlugins::handle_event()
+{
+	MaskAuto *keyframe;
+	Track *track;
+	MaskPoint *point;
+	SubMask *mask;
+	((CWindowMaskGUI*)gui)->get_keyframe(track, 
+		keyframe,
+		mask, 
+		point,
+		1);
+
+	keyframe->apply_before_plugins = get_value();
+	gui->update_preview();
+	return 1;
+}
 
 
 
@@ -1785,6 +1811,15 @@ void CWindowMaskGUI::create_objects()
 		(float)0.0);
 	this->y->create_objects();
 
+	y += 30;
+//	add_subwindow(title = new BC_Title(x, y, _("Apply mask before plugins:")));
+	
+	add_subwindow(this->apply_before_plugins = new CWindowMaskBeforePlugins(this, 
+		10, 
+		y));
+//	this->apply_before_plugins->create_objects();
+
+
 	update();
 }
 
@@ -1842,6 +1877,7 @@ void CWindowMaskGUI::update()
 	{
 		feather->update((int64_t)keyframe->feather);
 		value->update((int64_t)keyframe->value);
+		apply_before_plugins->update((int64_t)keyframe->apply_before_plugins);
 	}
 //printf("CWindowMaskGUI::update 1\n");
 

@@ -192,6 +192,7 @@ MaskAuto::MaskAuto(EDL *edl, MaskAutos *autos)
 	mode = MASK_SUBTRACT_ALPHA;
 	feather = 0;
 	value = 100;
+	apply_before_plugins = 0;
 
 // We define a fixed number of submasks so that interpolation for each
 // submask matches.
@@ -223,7 +224,8 @@ int MaskAuto::identical(MaskAuto *src)
 	if(value != src->value ||
 		mode != src->mode ||
 		feather != src->feather ||
-		masks.total != src->masks.total) return 0;
+		masks.total != src->masks.total ||
+		apply_before_plugins != src->apply_before_plugins) return 0;
 
 	for(int i = 0; i < masks.total; i++)
 		if(!(*masks.values[i] == *src->masks.values[i])) return 0;
@@ -243,6 +245,7 @@ void MaskAuto::copy_from(MaskAuto *src)
 	mode = src->mode;
 	feather = src->feather;
 	value = src->value;
+	apply_before_plugins = src->apply_before_plugins;
 
 	masks.remove_all_objects();
 	for(int i = 0; i < src->masks.total; i++)
@@ -265,6 +268,7 @@ int MaskAuto::interpolate_from(Auto *a1, Auto *a2, int64_t position) {
 	this->mode = mask_auto1->mode;
 	this->feather = mask_auto1->feather;
 	this->value = mask_auto1->value;
+	this->apply_before_plugins = mask_auto1->apply_before_plugins;
 	this->position = position;
 	masks.remove_all_objects();
 
@@ -308,6 +312,7 @@ void MaskAuto::load(FileXML *file)
 	mode = file->tag.get_property("MODE", mode);
 	feather = file->tag.get_property("FEATHER", feather);
 	value = file->tag.get_property("VALUE", value);
+	apply_before_plugins = file->tag.get_property("APPLY_BEFORE_PLUGINS", apply_before_plugins);
 	for(int i = 0; i < masks.total; i++)
 	{
 		delete masks.values[i];
@@ -340,6 +345,8 @@ void MaskAuto::copy(int64_t start, int64_t end, FileXML *file, int default_auto)
 	file->tag.set_property("MODE", mode);
 	file->tag.set_property("VALUE", value);
 	file->tag.set_property("FEATHER", feather);
+	file->tag.set_property("APPLY_BEFORE_PLUGINS", apply_before_plugins);
+
 	if(default_auto)
 		file->tag.set_property("POSITION", 0);
 	else

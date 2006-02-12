@@ -28,6 +28,8 @@
 #include "vtrack.h"
 #include <string.h>
 #include "interlacemodes.h"
+#include "maskengine.h"
+#include "automation.h"
 
 VModule::VModule(RenderEngine *renderengine, 
 	CommonRender *commonrender, 
@@ -39,6 +41,8 @@ VModule::VModule(RenderEngine *renderengine,
 	overlay_temp = 0;
 	input_temp = 0;
 	transition_temp = 0;
+	masker = new MaskEngine(renderengine->preferences->processors);
+
 }
 
 VModule::~VModule()
@@ -46,6 +50,7 @@ VModule::~VModule()
 	if(overlay_temp) delete overlay_temp;
 	if(input_temp) delete input_temp;
 	if(transition_temp) delete transition_temp;
+	delete masker;
 }
 
 
@@ -369,6 +374,9 @@ SET_TRACE
 	if(!current_edit)
 	{
 		output->clear_frame();
+		// We do not apply mask here, since alpha is 0, and neither substracting nor multypling changes it
+		// Another mask mode - "addition" should be added to be able to create mask from empty frames
+		// in this case we would call masking here too...
 		return 0;
 	}
 
@@ -444,6 +452,14 @@ SET_TRACE
 			direction);
 SET_TRACE
 	}
+	
+	masker->do_mask(output, 
+		start_position_project,
+		frame_rate,
+		edl_rate,
+		(MaskAutos*)track->automation->autos[AUTOMATION_MASK], 
+		direction,
+		1);      // we are calling before plugins
 
 
 	return result;

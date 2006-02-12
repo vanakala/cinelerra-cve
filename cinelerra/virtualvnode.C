@@ -48,13 +48,11 @@ VirtualVNode::VirtualVNode(RenderEngine *renderengine,
 {
 	VRender *vrender = ((VirtualVConsole*)vconsole)->vrender;
 	fader = new FadeEngine(renderengine->preferences->processors);
-	masker = new MaskEngine(renderengine->preferences->processors);
 }
 
 VirtualVNode::~VirtualVNode()
 {
 	delete fader;
-	delete masker;
 }
 
 VirtualNode* VirtualVNode::create_module(Plugin *real_plugin, 
@@ -213,12 +211,13 @@ SET_TRACE
 SET_TRACE
 
 // Apply mask to output
-	masker->do_mask(output_temp, 
+	((VModule *)real_module)->masker->do_mask(output_temp, 
 		start_position,
 		frame_rate,
 		edl_rate,
 		(MaskAutos*)track->automation->autos[AUTOMATION_MASK], 
-		direction);
+		direction,
+		0);      // we are not before plugins
 SET_TRACE
 
 
