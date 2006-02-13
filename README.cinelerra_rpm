@@ -1,7 +1,94 @@
-Nov 9, 2004  K Brosius <cobra@compuserve.com>
+Feb 5, 2006  K Brosius <cobra@compuserve.com>
 
-Cinelerra 1.2.1 - SUSE 9.2
+
+Cinelerra 2.0
 ===============
+
+For packages I build locally, here's a quick description:
+
+Optimized pentium/i686 binary
+  SUSE92/cinelerra-2.0.cvs.cobra-20060204.i686.rpm
+
+Athlon
+  SUSE90/cinelerra-2.0.cvs.cobra-20060205.athlon.rpm
+
+Debug binaries
+  SUSE92/cinelerra-2.0.cvs.cobra-20060204.i586.rpm
+  SUSE90/cinelerra-2.0.cvs.cobra-20060205.i586.rpm
+
+x264
+  If you haven't built x264 yet on your system, there are binaries here.
+
+
+
+Other packages needed
+=====================
+
+suse packages needed
+
+fftw3
+ftw3-threads
+fftw3-devel
+ftw3-threads-devel
+libsndfile
+libsndfile-devel
+
+update packages
+
+libraw1394 >= 1.2.0
+
+http://packman.links2linux.org/index.php4?action=586&vn=6
+libraw1394-1.2.0-1.pm.2.i586.rpm
+libraw1394-devel-1.2.0-1.pm.2.i586.rpm
+
+libiec61883
+
+http://packman.links2linux.org/index.php4?action=587&vn=6
+libiec61883-1.0.0-1.pm.1.i586.rpm
+libiec61883-devel-1.0.0-1.pm.1.i586.rpm
+
+faad2
+faad2-2.0-0.pm.5.i686.rpm
+faad2-devel-2.0-0.pm.5.i686.rpm
+
+faac
+faac-1.24-0.pm.0.i686.rpm
+
+avc
+libavc1394-0.5.0-1.pm.1.i586.rpm
+libavc1394-devel-0.5.0-1.pm.1.i586.rpm
+
+mjpegtools
+mjpegtools-1.8.0-0.pm.1.i686 / i586.rpm
+
+
+
+
+You'll probably need to update the below also, if you don't have them already:
+
+Cinelerra 1.2.2
+===============
+
+depends from 1.2.1, as well as updating ogg and vorbis to version 1.1 and
+theora.
+
+http://packman.links2linux.org/
+
+ libogg-1.1.2-0.pm.0.i686.rpm
+ libogg-devel-1.1.2-0.pm.0.i686.rpm
+
+ libvorbis-1.1.1-0.pm.0.i686.rpm
+ libvorbis-devel-1.1.1-0.pm.0.i686.rpm
+
+ libtheora-1.0alpha4-0.pm.0.i686.rpm
+ libtheora-devel-1.0alpha4-0.pm.0.i686.rpm 
+
+
+Cinelerra 1.2.1
+===============
+
+SUSE 9.2 requirements / dependencies
+====================================
 
 packman
 http://packman.links2linux.org/
@@ -19,7 +106,7 @@ xvid-devel-1.0.2-0.pm.0.i686.rpm
 lame-3.96.1-pm.1.i686.rpm
 
 SUSE 9.2 dist
-===========
+=============
 
 OpenEXR (OpenEXR-devel)
 fltk (fltk-devel)
@@ -33,7 +120,7 @@ libtiff-devel
 
 
 Cinelerra 1.2.1 - SUSE 9.0
-===============
+==========================
 
 Added dependencies
 
