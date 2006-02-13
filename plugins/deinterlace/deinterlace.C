@@ -219,8 +219,8 @@ int DeInterlaceMain::is_realtime() { return 1; }
 		{ \
 			temp1 = input_row1[j]; \
 			temp2 = input_row2[j]; \
-			output_row1[j] = temp1; \
-			output_row2[j] = temp2; \
+			output_row1[j] = temp2; \
+			output_row2[j] = temp1; \
 		} \
 	} \
 }
@@ -252,8 +252,8 @@ int DeInterlaceMain::is_realtime() { return 1; }
 		{ \
 			temp1 = input_row1[j]; \
 			temp2 = input_row2[j]; \
-			output_row1[j] = temp2; \
-			output_row2[j] = temp1; \
+			output_row1[j] = temp1; \
+			output_row2[j] = temp2; \
 		} \
 	} \
 }
@@ -279,7 +279,7 @@ Similar is defined as in abs(difference)/(sum) < threshold
 #define DEINTERLACE_BOBWEAVE_MACRO(type, temp_type, components, dominance, threshold, noise_threshold) \
 { \
 	/* Ooooohh, I like fudge factors */ \
-	double exp_threshold=exp(((double)threshold - 85 )/15);\
+	double exp_threshold=exp(((double)threshold - 50 )/2);\
 	int w = input->get_w(); \
 	int h = input->get_h(); \
 	type *row_above=(type*)input->get_rows()[0]; \
@@ -304,8 +304,8 @@ Similar is defined as in abs(difference)/(sum) < threshold
 			above = row_above[j]; \
 \
 			if  ( ( FABS(pixel-old) <= noise_threshold )  \
-			|| ((pixel+old != 0) && (((FABS((double) pixel-old))/((double) pixel+old)) > exp_threshold )) \
-			|| ((above+below != 0) && (((FABS((double) pixel-old))/((double) above+below)) > exp_threshold )) \
+			|| ((pixel+old != 0) && (((FABS((double) pixel-old))/((double) pixel+old)) >= exp_threshold )) \
+			|| ((above+below != 0) && (((FABS((double) pixel-old))/((double) above+below)) >= exp_threshold )) \
 			) {\
 				pixel=(above+below)/2 ;\
 			}\
@@ -631,9 +631,14 @@ void DeInterlaceMain::update_gui()
 		load_configuration();
 		thread->window->lock_window();
 		thread->window->set_mode(config.mode, 1);
-		thread->window->dominance->update(config.dominance);
-		thread->window->adaptive->update(config.adaptive);
-		thread->window->threshold->update(config.threshold);
+		if (thread->window->dominance_top)
+			thread->window->dominance_top->update(config.dominance?0:BC_Toggle::TOGGLE_CHECKED);
+		if (thread->window->dominance_bottom)
+			thread->window->dominance_bottom->update(config.dominance?BC_Toggle::TOGGLE_CHECKED:0);
+		if (thread->window->adaptive)
+			thread->window->adaptive->update(config.adaptive);
+		if (thread->window->threshold)
+			thread->window->threshold->update(config.threshold);
 		thread->window->unlock_window();
 	}
 }

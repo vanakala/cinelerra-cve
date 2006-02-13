@@ -14,7 +14,8 @@ PLUGIN_THREAD_HEADER(DeInterlaceMain, DeInterlaceThread, DeInterlaceWindow);
 
 class DeInterlaceOption;
 class DeInterlaceMode;
-class DeInterlaceDominance;
+class DeInterlaceDominanceTop;
+class DeInterlaceDominanceBottom;
 class DeInterlaceAdaptive;
 class DeInterlaceThreshold;
 
@@ -31,8 +32,10 @@ public:
 	DeInterlaceMain *client;
 	DeInterlaceMode *mode;
 	DeInterlaceAdaptive *adaptive;
-	DeInterlaceDominance *dominance;
+	DeInterlaceDominanceTop *dominance_top;
+	DeInterlaceDominanceBottom *dominance_bottom;
 	DeInterlaceThreshold *threshold;
+	int optional_controls_x,optional_controls_y;
 	BC_Title *status;
 };
 
@@ -58,25 +61,36 @@ class DeInterlaceAdaptive : public BC_CheckBox
 public:
 	DeInterlaceAdaptive(DeInterlaceMain *client, int x, int y);
 	int handle_event();
-	void update_mode(int mode, int adaptive_value);
 	DeInterlaceMain *client;
 };
 
-class DeInterlaceDominance : public BC_CheckBox
+class DeInterlaceDominanceTop : public BC_Radial
 {
 public:
-	DeInterlaceDominance(DeInterlaceMain *client, int x, int y);
+	DeInterlaceDominanceTop(DeInterlaceMain *client, DeInterlaceWindow *window, int x, int y, char * title);
 	int handle_event();
-	void update_mode(int mode, int dominance_value);
 	DeInterlaceMain *client;
+	DeInterlaceWindow *window;
+
+};
+class DeInterlaceDominanceBottom : public BC_Radial
+{
+public:
+	DeInterlaceDominanceBottom(DeInterlaceMain *client, DeInterlaceWindow *window, int x, int y, char * title);
+	int handle_event();
+	DeInterlaceMain *client;
+	DeInterlaceWindow *window;
 };
 
 class DeInterlaceThreshold : public BC_IPot
 {
 public:
 	DeInterlaceThreshold(DeInterlaceMain *client, int x, int y);
+	~DeInterlaceThreshold();
+
 	int handle_event();
 	DeInterlaceMain *client;
+	BC_Title *title_caption;
 };
 
 

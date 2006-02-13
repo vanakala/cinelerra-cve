@@ -27,6 +27,7 @@ DeInterlaceWindow::DeInterlaceWindow(DeInterlaceMain *client, int x, int y)
 	1)
 { 
 	this->client = client; 
+	adaptive=0; dominance_top=0; dominance_bottom=0; threshold=0;
 
 }
 
@@ -42,11 +43,9 @@ int DeInterlaceWindow::create_objects()
 	add_tool(mode = new DeInterlaceMode(client, this, x, y));
 	mode->create_objects();
 	y += 25;
-	add_tool(dominance = new DeInterlaceDominance(client, x, y));
-	y += 25;
-	add_tool(adaptive = new DeInterlaceAdaptive(client, x, y));
-	add_tool(threshold = new DeInterlaceThreshold(client, x + 150, y));
-	y += 50;
+	optional_controls_x=x;
+	optional_controls_y=y;
+	y += 125;
 	char string[BCTEXTLEN];
 	get_status_string(string, 0);
 	add_tool(status = new BC_Title(x, y, string));
@@ -66,9 +65,80 @@ void DeInterlaceWindow::get_status_string(char *string, int changed_rows)
 
 int DeInterlaceWindow::set_mode(int mode, int recursive)
 {
+	int x,y;
 	client->config.mode = mode;
-	dominance->update_mode(mode, client->config.dominance);
-	adaptive->update_mode(mode, client->config.adaptive);
+	
+/* Restore position of controls */
+	x=optional_controls_x;
+	y=optional_controls_y;
+	if (adaptive) { delete adaptive; adaptive=0; }
+	if (threshold) { delete threshold; threshold=0; }
+	if (dominance_top) { delete dominance_top; dominance_top=0; }
+	if (dominance_bottom) { delete dominance_bottom; dominance_bottom=0; }
+
+/* Display Dominance controls */
+	switch (mode) 
+	{
+		case DEINTERLACE_KEEP:
+		case DEINTERLACE_BOBWEAVE:
+			add_subwindow(dominance_top = new DeInterlaceDominanceTop(client, this, x, y, _("Keep top field")));
+			y+=25;
+			add_subwindow(dominance_bottom = new DeInterlaceDominanceBottom(client, this, x, y, _("Keep bottom field")));
+			y+=25;
+			break;
+		case DEINTERLACE_AVG_1F: 
+			add_subwindow(dominance_top = new DeInterlaceDominanceTop(client, this, x, y, _("Average top fields")));
+			y+=25;
+			add_subwindow(dominance_bottom = new DeInterlaceDominanceBottom(client, this, x, y,"Average bottom fields"));
+			y+=25;
+			break;
+		case DEINTERLACE_SWAP:
+			add_subwindow(dominance_top = new DeInterlaceDominanceTop(client, this, x, y, _("Top field first")));
+			y+=25;
+			add_subwindow(dominance_bottom = new DeInterlaceDominanceBottom(client, this, x, y, _("Bottom field first")));
+			y+=25;
+			break;
+		case DEINTERLACE_TEMPORALSWAP:
+			add_subwindow(dominance_top = new DeInterlaceDominanceTop(client, this, x, y, _("Top field first")));
+			y+=25;
+			add_subwindow(dominance_bottom = new DeInterlaceDominanceBottom(client, this, x, y, _("Bottom field first")));
+			y+=25;
+			break;
+		case DEINTERLACE_NONE:
+		case  DEINTERLACE_AVG:
+		default:
+			;
+	}
+
+	if (dominance_top&&dominance_bottom)  {
+		dominance_top->update(client->config.dominance?0:BC_Toggle::TOGGLE_CHECKED);
+		dominance_bottom->update(client->config.dominance?BC_Toggle::TOGGLE_CHECKED:0);
+	}
+	
+/* Display Threshold and adaptive controls */
+	switch (mode) {
+		case  DEINTERLACE_AVG_1F:
+			add_subwindow(adaptive = new DeInterlaceAdaptive(client, x, y));
+
+			add_subwindow(threshold = new DeInterlaceThreshold(client, x + 150, y));
+			add_subwindow(threshold->title_caption=new BC_Title(x+150, y + 50, _("Threshold")));
+			adaptive->update(client->config.adaptive?BC_Toggle::TOGGLE_CHECKED:0);
+			break;
+		case DEINTERLACE_BOBWEAVE:
+			add_subwindow(threshold = new DeInterlaceThreshold(client, x + 150, y));
+			add_subwindow(threshold->title_caption=new BC_Title(x+150, y + 50, _("Bob Threshold")));
+			break;
+		case DEINTERLACE_NONE:
+		case DEINTERLACE_KEEP:
+		case DEINTERLACE_AVG:
+		case DEINTERLACE_SWAP:
+		case DEINTERLACE_TEMPORALSWAP:
+		default:
+
+		break;
+	}	
+
+
 	if(!recursive)
 		client->send_configure_change();
 	return 0;
@@ -93,13 +163,13 @@ DeInterlaceOption::~DeInterlaceOption()
 }
 int DeInterlaceOption::handle_event()
 {
-	window->set_mode(output, 0);
+	window->set_mode(output, 0); 
 	return 1;
 }
 
 
 DeInterlaceAdaptive::DeInterlaceAdaptive(DeInterlaceMain *client, int x, int y)
- : BC_CheckBox(x, y, client->config.adaptive, _("Setting Disabled                                 "))
+ : BC_CheckBox(x, y, client->config.adaptive, _("Adaptive") )
 {
 	this->client = client;
 }
@@ -109,83 +179,36 @@ int DeInterlaceAdaptive::handle_event()
 	client->send_configure_change();
 	return 1;
 }
-void DeInterlaceAdaptive::update_mode (int mode, int adaptive_value)
-{
 
-	switch (client->config.mode) {
-		case  DEINTERLACE_AVG:
-			strcpy(this->caption,"Adaptive");
-			this->enable();
-			this->update(adaptive_value?BC_Toggle::TOGGLE_CHECKED:0);
-			break;
-		case DEINTERLACE_BOBWEAVE:
-			strcpy(this->caption,"Adaptive");
-			this->disable();
-			this->update(TOGGLE_CHECKED);
-			break;
-		case DEINTERLACE_NONE:
-		case DEINTERLACE_KEEP:
-		case DEINTERLACE_AVG_1F:
-		case DEINTERLACE_SWAP:
-		case DEINTERLACE_TEMPORALSWAP:
-		default:
-			strcpy(this->caption,"Setting disabled");
-			this->disable();
-			this->update(0);
-
-		break;
-	}	
-
-}
-
-DeInterlaceDominance::DeInterlaceDominance(DeInterlaceMain *client, int x, int y)
- : BC_CheckBox(x, y, client->config.dominance, _("Keep Bottom fields (checked) or Top fields (unchecked)                  "))
+DeInterlaceDominanceTop::DeInterlaceDominanceTop(DeInterlaceMain *client, DeInterlaceWindow *window, int x, int y, char * title)
+ : BC_Radial(x, y, client->config.dominance, title)
 {
 	this->client = client;
-}
-int DeInterlaceDominance::handle_event()
-{
+	this->window = window;
 
-	client->config.dominance = get_value();
+}
+int DeInterlaceDominanceTop::handle_event()
+{
+	client->config.dominance = (get_value()==0);
+	window->dominance_bottom->update(client->config.dominance?BC_Toggle::TOGGLE_CHECKED:0);
 	client->send_configure_change();
 	return 1;
 }
 
-void DeInterlaceDominance::update_mode (int mode, int dominance_value)
+
+DeInterlaceDominanceBottom::DeInterlaceDominanceBottom(DeInterlaceMain *client, DeInterlaceWindow *window, int x, int y, char * title)
+ : BC_Radial(x, y, client->config.dominance, title)
+{
+	this->client = client;
+	this->window = window;
+}
+int DeInterlaceDominanceBottom::handle_event()
 {
 
-	switch (mode) 
-	{
-		case DEINTERLACE_NONE:
-		case  DEINTERLACE_AVG:
-			strcpy(this->caption,"Setting disabled");
-			this->disable();
-			this->update(0);
-			break;
-		case DEINTERLACE_KEEP:
-		case DEINTERLACE_BOBWEAVE:
-			strcpy(this->caption,"Keep top (unchecked) or bottom (checked)");
-			this->enable();
-			this->update(dominance_value?BC_Toggle::TOGGLE_CHECKED:0);
-			break;
-		case DEINTERLACE_AVG_1F:
-			strcpy(this->caption,"Average top (unchecked) or bottom (checked) fields");
-			this->enable();
-			this->update(dominance_value?BC_Toggle::TOGGLE_CHECKED:0);
-			break;
-		case DEINTERLACE_SWAP:
-			strcpy(this->caption,"Swap top (unchecked) or bottom (checked) fields");
-			this->enable();
-			this->update(dominance_value?BC_Toggle::TOGGLE_CHECKED:0);
-			break;
-		case DEINTERLACE_TEMPORALSWAP:
-			strcpy(this->caption,"Top (unchecked) or bottom (checked) field first");
-			this->enable();
-			this->update(dominance_value?BC_Toggle::TOGGLE_CHECKED:0);
-			break;
-		default:
-			;
-	}
+	client->config.dominance = (get_value() != 0 );
+	window->dominance_top->update(client->config.dominance?0:BC_Toggle::TOGGLE_CHECKED);
+	client->send_configure_change();
+	return 1;
 }
 
 
@@ -193,6 +216,7 @@ DeInterlaceThreshold::DeInterlaceThreshold(DeInterlaceMain *client, int x, int y
  : BC_IPot(x, y, client->config.threshold, 0, 100)
 {
 	this->client = client;
+	title_caption=NULL;
 }
 int DeInterlaceThreshold::handle_event()
 {
@@ -201,6 +225,10 @@ int DeInterlaceThreshold::handle_event()
 	return 1;
 }
 
+DeInterlaceThreshold::~DeInterlaceThreshold()
+{
+  if (title_caption) delete title_caption;
+}
 
 DeInterlaceMode::DeInterlaceMode(DeInterlaceMain*plugin, 
 	DeInterlaceWindow *gui, 
@@ -239,7 +267,7 @@ char* DeInterlaceMode::to_text(int mode)
 		case DEINTERLACE_TEMPORALSWAP:
 			return _("Temporal field swap");
 		default:
-			return ("Do Nothing");
+			return _("Do Nothing");
 	}
 }
 int DeInterlaceMode::from_text(char *text)
