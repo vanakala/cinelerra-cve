@@ -17,6 +17,7 @@ SUBDIRS= \
 	burn \
 	cdripper \
 	chromakey \
+	chromakey-hsv \
 	colorbalance \
 	compressor \
 	crossfade \
