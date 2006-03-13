@@ -60,6 +60,8 @@ TitleConfig::TitleConfig()
 	sprintf(text, _("hello world"));
 #define DEFAULT_ENCODING "ISO8859-1"
 	sprintf(encoding, DEFAULT_ENCODING);
+#define DEFAULT_TIMECODEFORMAT "h:mm:ss:ff"
+	sprintf(timecodeformat, DEFAULT_TIMECODEFORMAT);
 	pixels_per_second = 1.0;
 	timecode = 0;
 	stroke_width = 1.0;
@@ -75,6 +77,7 @@ int TitleConfig::equivalent(TitleConfig &that)
 		color_stroke == that.color_stroke &&
 		stroke_width == that.stroke_width &&
 		timecode == that.timecode && 
+		!strcasecmp(timecodeformat, that.timecodeformat) &&
 		hjustification == that.hjustification &&
 		vjustification == that.vjustification &&
 		EQUIV(pixels_per_second, that.pixels_per_second) &&
@@ -102,6 +105,7 @@ void TitleConfig::copy_from(TitleConfig &that)
 	y = that.y;
 	dropshadow = that.dropshadow;
 	timecode = that.timecode;
+	strcpy(timecodeformat, that.timecodeformat);
 	strcpy(text, that.text);
 	strcpy(encoding, that.encoding);
 }
@@ -137,6 +141,7 @@ void TitleConfig::interpolate(TitleConfig &prev,
 	this->x = prev.x;
 	this->y = prev.y;
 	timecode = prev.timecode;
+	strcpy(timecodeformat, prev.timecodeformat);
 //	this->dropshadow = (int)(prev.dropshadow * prev_scale + next.dropshadow * next_scale);
 	this->dropshadow = prev.dropshadow;
 }
@@ -1955,9 +1960,15 @@ int TitleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		int64_t rendered_frame = get_source_position();
 		if (get_direction() == PLAY_REVERSE)
 			rendered_frame -= 1;
+
+		int tcf = Units::timeformat_totype(config.timecodeformat);
+		if (tcf < 0) {
+			tcf = TIME_HMSF;
+			strcpy(config.timecodeformat, DEFAULT_TIMECODEFORMAT);
+		}
 		Units::totext(config.text, 
 				(double)rendered_frame / PluginVClient::project_frame_rate, 
-				TIME_HMSF, 
+				tcf, 
 				0,
 				PluginVClient::project_frame_rate, 
 				0);
@@ -2119,6 +2130,7 @@ int TitleMain::load_defaults()
 	config.y = defaults->get("TITLE_Y", config.y);
 	config.dropshadow = defaults->get("DROPSHADOW", config.dropshadow);
 	config.timecode = defaults->get("TIMECODE", config.timecode);
+	defaults->get("TIMECODEFORMAT", config.timecodeformat);
 	window_w = defaults->get("WINDOW_W", 660);
 	window_h = defaults->get("WINDOW_H", 480);
 
@@ -2164,6 +2176,7 @@ int TitleMain::save_defaults()
 	defaults->update("TITLE_Y", config.y);
 	defaults->update("DROPSHADOW", config.dropshadow);
 	defaults->update("TIMECODE", config.timecode);
+	defaults->update("TIMECODEFORMAT", config.timecodeformat);
 	defaults->update("WINDOW_W", window_w);
 	defaults->update("WINDOW_H", window_h);
 	defaults->save();
@@ -2269,6 +2282,7 @@ void TitleMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("TITLE_Y", config.y);
 	output.tag.set_property("DROPSHADOW", config.dropshadow);
 	output.tag.set_property("TIMECODE", config.timecode);
+	output.tag.set_property("TIMECODEFORMAT", config.timecodeformat);
 	output.append_tag();
 	output.append_newline();
 	
@@ -2320,6 +2334,7 @@ void TitleMain::read_data(KeyFrame *keyframe)
 				config.y = input.tag.get_property("TITLE_Y", config.y);
 				config.dropshadow = input.tag.get_property("DROPSHADOW", config.dropshadow);
 				config.timecode = input.tag.get_property("TIMECODE", config.timecode);
+				input.tag.get_property("TIMECODEFORMAT", config.timecodeformat);
 				strcpy(config.text, input.read_text());
 //printf("TitleMain::read_data 1\n%s\n", input.string);
 //printf("TitleMain::read_data 2\n%s\n", config.text);
