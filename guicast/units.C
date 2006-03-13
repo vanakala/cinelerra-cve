@@ -409,6 +409,18 @@ double Units::text_to_seconds(char *text,
 
 
 
+int Units::timeformat_totype(char *tcf) {
+	if (!strcmp(tcf,TIME_SECONDS__STR)) return(TIME_SECONDS);
+	if (!strcmp(tcf,TIME_HMS__STR)) return(TIME_HMS);
+	if (!strcmp(tcf,TIME_HMS2__STR)) return(TIME_HMS2);
+	if (!strcmp(tcf,TIME_HMS3__STR)) return(TIME_HMS3);
+	if (!strcmp(tcf,TIME_HMSF__STR)) return(TIME_HMSF);
+	if (!strcmp(tcf,TIME_SAMPLES__STR)) return(TIME_SAMPLES);
+	if (!strcmp(tcf,TIME_SAMPLES_HEX__STR)) return(TIME_SAMPLES_HEX);
+	if (!strcmp(tcf,TIME_FRAMES__STR)) return(TIME_FRAMES);
+	if (!strcmp(tcf,TIME_FEET_FRAMES__STR)) return(TIME_FEET_FRAMES);
+	return(-1);
+}
 
 
 float Units::toframes(int64_t samples, int sample_rate, float framerate) 

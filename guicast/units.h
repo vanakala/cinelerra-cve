@@ -26,6 +26,15 @@
 #define TIME_FRAMES 4
 // fffff-ff
 #define TIME_FEET_FRAMES 5
+#define TIME_SECONDS__STR      "ssss.sss"
+#define TIME_HMS__STR          "h:mm:ss.sss"
+#define TIME_HMS2__STR         "h:mm:ss"
+#define TIME_HMS3__STR         "hh:mm:ss"
+#define TIME_HMSF__STR         "h:mm:ss:ff"
+#define TIME_SAMPLES__STR      "audio samples"
+#define TIME_SAMPLES_HEX__STR  "audio samples (hex)"
+#define TIME_FRAMES__STR       "video frames"
+#define TIME_FEET_FRAMES__STR  "video frames (feet)"
 
 class DB
 {
@@ -95,6 +104,8 @@ class Units
 {
 public:
 	Units() {};
+
+	static int timeformat_totype(char *tcf);
 
 // No rounding.
 	static float toframes(int64_t samples, int sample_rate, float framerate);
