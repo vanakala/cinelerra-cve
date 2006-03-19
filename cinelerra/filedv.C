@@ -1,5 +1,3 @@
-#ifdef HAVE_FIREWIRE
-
 #include "asset.h"
 #include "bcsignals.h"
 #include "byteorder.h"
@@ -1011,6 +1009,3 @@ int DVConfigVideo::close_event()
 	set_done(0);
 	return 1;
 }
-
-
-#endif

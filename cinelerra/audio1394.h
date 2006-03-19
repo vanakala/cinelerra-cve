@@ -9,7 +9,6 @@
 #include "vdevice1394.inc"
 
 
-#ifdef HAVE_FIREWIRE
 
 #include "libdv.h"
 
@@ -41,9 +40,5 @@ private:
 	IEC61883Output *output_iec;
 	int bytes_per_sample;
 };
-
-#endif
-
-
 
 #endif

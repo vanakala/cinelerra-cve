@@ -12,7 +12,6 @@
 #include "vdevicebase.h"
 
 
-#ifdef HAVE_FIREWIRE
 
 
 
@@ -42,7 +41,5 @@ private:
 	IEC61883Output *output_iec;
 	VFrame *user_frame;
 };
-
-#endif
 
 #endif

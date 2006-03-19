@@ -1,4 +1,6 @@
+#ifdef HAVE_FIREWIRE
 #include "audio1394.h"
+#endif
 #include "audioalsa.h"
 #include "audiodevice.h"
 #include "audioesound.h"

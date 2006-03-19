@@ -15,7 +15,6 @@
 #include "videodevice.h"
 
 
-#ifdef HAVE_FIREWIRE
 
 
 
@@ -259,15 +258,3 @@ int VDevice1394::can_copy_from(Asset *asset, int output_w, int output_h)
 {
 	return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
-#endif // HAVE_FIREWIRE

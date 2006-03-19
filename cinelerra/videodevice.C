@@ -7,9 +7,12 @@
 #include "playbackconfig.h"
 #include "playbackengine.h"
 #include "preferences.h"
+#include "quicktime.h"
 #include "recordconfig.h"
 #include "recordmonitor.h"
+#ifdef HAVE_FIREWIRE
 #include "vdevice1394.h"
+#endif
 #include "vdevicebuz.h"
 #include "vdevicev4l.h"
 #include "vdevicev4l2.h"
@@ -274,12 +277,14 @@ char* VideoDevice::drivertostr(int driver)
 		case CAPTURE_BUZ:
 			return CAPTURE_BUZ_TITLE;
 			break;
+#ifdef HAVE_FIREWIRE
 		case CAPTURE_FIREWIRE:
 			return CAPTURE_FIREWIRE_TITLE;
 			break;
 		case CAPTURE_IEC61883:
 			return CAPTURE_IEC61883_TITLE;
 			break;
+#endif
 	}
 	return "";
 }
@@ -547,11 +552,13 @@ int VideoDevice::open_output(VideoOutConfig *config,
 			output_base = new VDeviceX11(this, output);
 			break;
 
+#ifdef HAVE_FIREWIRE
 		case PLAYBACK_DV1394:
 		case PLAYBACK_FIREWIRE:
 		case PLAYBACK_IEC61883:
 			output_base = new VDevice1394(this);
 			break;
+#endif
 	}
 //printf("VideoDevice::open_output 2 %d\n", out_config->driver);
 

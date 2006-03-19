@@ -7,7 +7,6 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 
-#include "audio1394.inc"
 #include "audioalsa.inc"
 #include "audioconfig.inc"
 #include "audiodevice.inc"
@@ -17,15 +16,18 @@
 #include "binary.h"
 #include "condition.inc"
 #include "dcoffset.inc"
-#include "device1394output.inc"
 #include "maxchannels.h"
 #include "mutex.inc"
 #include "preferences.inc"
 #include "recordgui.inc"
 #include "sema.inc"
 #include "thread.h"
-#include "vdevice1394.inc"
 #include "videodevice.inc"
+#ifdef HAVE_FIREWIRE
+#include "audio1394.inc"
+#include "device1394output.inc"
+#include "vdevice1394.inc"
+#endif
 
 class AudioLowLevel
 {

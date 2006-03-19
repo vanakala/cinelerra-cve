@@ -24,8 +24,10 @@ enum
 #define AUDIO_ESOUND_TITLE "ESound"
 #define AUDIO_NAS_TITLE "NAS"
 #define AUDIO_ALSA_TITLE "ALSA"
+#ifdef HAVE_FIREWIRE
 #define AUDIO_1394_TITLE "RAW 1394"
 #define AUDIO_DV1394_TITLE "DV 1394"
 #define AUDIO_IEC61883_TITLE "IEC 61883"
+#endif
 
 #endif

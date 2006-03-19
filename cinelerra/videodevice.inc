@@ -19,8 +19,10 @@ class VideoDevice;
 #define SCREENCAPTURE_TITLE    "Screencapture"
 #define CAPTURE_LML_TITLE      "LML 33"
 #define CAPTURE_BUZ_TITLE      "Buz"
+#ifdef HAVE_FIREWIRE
 #define CAPTURE_FIREWIRE_TITLE "DV 1394"
 #define CAPTURE_IEC61883_TITLE "IEC 61883"
+#endif
 
 #define PLAYBACK_X11 	  10
 #define PLAYBACK_X11_XV   14
@@ -34,9 +36,11 @@ class VideoDevice;
 #define PLAYBACK_X11_XV_TITLE   "X11-XV"
 #define PLAYBACK_BUZ_TITLE  	"Buz"
 #define PLAYBACK_LML_TITLE  	"LML 33"
+#ifdef HAVE_FIREWIRE
 #define PLAYBACK_FIREWIRE_TITLE "RAW 1394"
 #define PLAYBACK_DV1394_TITLE   "DV 1394"
 #define PLAYBACK_IEC61883_TITLE "IEC 61883"
+#endif
 
 // Output formats required for direct frame copy
 // RGB is for either RGB or RGBA as defined in the VFrame

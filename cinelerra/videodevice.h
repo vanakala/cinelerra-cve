@@ -3,13 +3,11 @@
 
 #include "asset.inc"
 #include "assets.inc"
-#include "audio1394.inc"
 #include "audiodevice.inc"
 #include "bccapture.inc"
 #include "bctimer.h"
 #include "canvas.inc"
 #include "channel.inc"
-#include "device1394output.inc"
 #include "edl.inc"
 #include "guicast.h"
 #include "mwindow.inc"
@@ -19,13 +17,17 @@
 #include "thread.h"
 #include "picture.inc"
 #include "vdevicebase.inc"
-#include "vdevice1394.inc"
 #include "vdevicebuz.inc"
 #include "vdevicelml.inc"
 #include "vdevicev4l.inc"
 #include "vdevicex11.inc"
 #include "videoconfig.inc"
 #include "videowindow.inc"
+#ifdef HAVE_FIREWIRE
+#include "audio1394.inc"
+#include "device1394output.inc"
+#include "vdevice1394.inc"
+#endif
 
 
 // The keepalive thread runs continuously during recording.

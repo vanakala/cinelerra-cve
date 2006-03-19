@@ -20,7 +20,6 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    assets.C \
 		    atrack.C \
 		    attachmentpoint.C \
-		    audio1394.C \
 		    audioalsa.C \
 		    audiodevice.C \
 		    audioesound.C \
@@ -31,8 +30,6 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    autoconf.C \
 		    automation.C \
 		    autos.C \
-			 avc1394control.C \
-			 avc1394transport.C \
 		    awindow.C \
 		    awindowgui.C \
 		    awindowmenu.C \
@@ -65,8 +62,6 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    dcoffset.C \
 		    dcraw.c \
 		    deleteallindexes.C \
-		    device1394input.C \
-		    device1394output.C \
 		    drivesync.C \
 		    edit.C \
 		    edithandles.C \
@@ -110,8 +105,6 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    framecache.C \
 		    gwindow.C \
 		    gwindowgui.C \
-		    iec61883input.C \
-		    iec61883output.C \
 		    indexfile.C \
 		    indexthread.C \
 		    intauto.C \
@@ -239,7 +232,6 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    undostackitem.C \
 		    vattachmentpoint.C \
 		    vautomation.C \
-		    vdevice1394.C \
 		    vdevicebase.C \
 		    vdevicebuz.C \
 		    vdeviceprefs.C \
@@ -272,7 +264,20 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    workarounds.C \
                     yuvstream.C \
 		    zoombar.C \
-		    zoompanel.C
+		    zoompanel.C \
+	$(firewire_sources)
+
+if HAVE_FIREWIRE
+firewire_sources = \
+	audio1394.C \
+	avc1394control.C \
+	avc1394transport.C \
+	device1394input.C \
+	device1394output.C \
+	iec61883input.C \
+	iec61883output.C \
+	vdevice1394.C
+endif
 
 # set the include path found by configure
 INCLUDES = \

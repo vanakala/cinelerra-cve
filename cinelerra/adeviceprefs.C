@@ -582,9 +582,11 @@ void ADriverMenu::create_objects()
 
 	if(!do_input) add_item(new ADriverItem(this, AUDIO_ESOUND_TITLE, AUDIO_ESOUND));
 //	add_item(new ADriverItem(this, AUDIO_NAS_TITLE, AUDIO_NAS));
+#ifdef HAVE_FIREWIRE
 	if(!do_input) add_item(new ADriverItem(this, AUDIO_1394_TITLE, AUDIO_1394));
 	add_item(new ADriverItem(this, AUDIO_DV1394_TITLE, AUDIO_DV1394));
 	add_item(new ADriverItem(this, AUDIO_IEC61883_TITLE, AUDIO_IEC61883));
+#endif
 }
 
 char* ADriverMenu::adriver_to_string(int driver)
@@ -606,6 +608,7 @@ char* ADriverMenu::adriver_to_string(int driver)
 		case AUDIO_ALSA:
 			sprintf(string, AUDIO_ALSA_TITLE);
 			break;
+#ifdef HAVE_FIREWIRE
 		case AUDIO_1394:
 			sprintf(string, AUDIO_1394_TITLE);
 			break;
@@ -615,6 +618,7 @@ char* ADriverMenu::adriver_to_string(int driver)
 		case AUDIO_IEC61883:
 			sprintf(string, AUDIO_IEC61883_TITLE);
 			break;
+#endif
 	}
 	return string;
 }

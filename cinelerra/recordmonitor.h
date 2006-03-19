@@ -1,7 +1,9 @@
 #ifndef RECORDMONITOR_H
 #define RECORDMONITOR_H
 
+#ifdef HAVE_FIREWIRE
 #include "avc1394transport.h"
+#endif
 #include "canvas.h"
 #include "condition.inc"
 #include "guicast.h"
@@ -75,8 +77,10 @@ public:
 	MeterPanel *meters;
 	Canvas *canvas;
 //	RecordTransport *record_transport;
+#ifdef HAVE_FIREWIRE
 	AVC1394Transport *avc1394_transport;
 	AVC1394TransportThread *avc1394transport_thread;
+#endif
 	ChannelPicker *channel_picker;
 	ReverseInterlace *reverse_interlace;
 	int cursor_x_origin, cursor_y_origin;
@@ -113,9 +117,11 @@ public:
 	BC_Bitmap *bitmap;
 	RecordMonitor *thread;
 	Record *record;
+#ifdef HAVE_FIREWIRE
 	AVC1394Control *avc;
 	BC_Title *avc1394transport_title;
 	BC_Title *avc1394transport_timecode;
+#endif
 };
 
 

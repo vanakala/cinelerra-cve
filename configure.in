@@ -230,6 +230,7 @@ if test "x$enable_firewire" = "xyes"; then
 fi
 AC_SUBST(FIREWIRE_CFLAGS)
 AC_SUBST(FIREWIRE_LDFLAGS)
+AM_CONDITIONAL(HAVE_FIREWIRE,test "x$enable_firewire" = "xyes")
 ############## END OF FIREWIRE
 
 ############## AVIFILE SUPPORT
