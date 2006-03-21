@@ -39,9 +39,11 @@ ChannelEditThread::ChannelEditThread(MWindow *mwindow,
 ChannelEditThread::~ChannelEditThread()
 {
 	printf("ST: %i\n", scan_thread);
-	channel_picker->get_subwindow()->unlock_window();
+	if(channel_picker->get_subwindow())
+		channel_picker->get_subwindow()->unlock_window();
 	delete scan_thread;
-	channel_picker->get_subwindow()->lock_window("ChannelEditThread::~ChannelEditThread");
+	if(channel_picker->get_subwindow())
+		channel_picker->get_subwindow()->lock_window("ChannelEditThread::~ChannelEditThread");
 	delete new_channels;
 	delete completion;
 }
@@ -256,7 +258,7 @@ int ChannelEditWindow::create_objects()
 	y += 30;
 
 	Channel *channel_usage = channel_picker->get_channel_usage();
-	if(channel_usage->has_scanning)
+	if(channel_usage && channel_usage->has_scanning)
 	{
 		add_subwindow(new ChannelEditScan(mwindow, this, x, y));
 		y += 30;
@@ -1035,7 +1037,7 @@ int ChannelEditEditWindow::create_objects(Channel *channel)
 		y += 50;
 	}
 
-	if(channel_usage->use_frequency)
+	if(channel_usage && channel_usage->use_frequency)
 	{
 		add_subwindow(new BC_Title(x, y, _("Channel:")));
 		y += 20;
@@ -1053,14 +1055,14 @@ int ChannelEditEditWindow::create_objects(Channel *channel)
 		y += 30;
 	}
 
-	if(channel_usage->use_fine)
+	if(channel_usage && channel_usage->use_fine)
 	{
 		add_subwindow(new BC_Title(x, y, _("Fine:")));
 		add_subwindow(new ChannelEditEditFine(x + 130, y, thread));
 		y += 30;
 	}
 
-	if(channel_usage->use_norm)
+	if(channel_usage && channel_usage->use_norm)
 	{
 		add_subwindow(new BC_Title(x, y, _("Norm:")));
 		ChannelEditEditNorm *norm;
@@ -1072,7 +1074,7 @@ int ChannelEditEditWindow::create_objects(Channel *channel)
 		y += 30;
 	}
 
-	if(channel_usage->use_input)
+	if(channel_usage && channel_usage->use_input)
 	{
 		add_subwindow(new BC_Title(x, y, _("Input:")));
 		ChannelEditEditInput *input;
@@ -1417,19 +1419,27 @@ int ChannelEditPictureWindow::calculate_h(ChannelPicker *channel_picker)
 {
 	PictureConfig *picture_usage = channel_picker->get_picture_usage();
 	int pad = BC_Pot::calculate_h();
-	int result = 20 + BC_OKButton::calculate_h();
+	int result = 0;
 
-	if(picture_usage->use_brightness)
-		result += pad;
-	if(picture_usage->use_contrast)
-		result += pad;
-	if(picture_usage->use_color)
-		result += pad;
-	if(picture_usage->use_hue)
-		result += pad;
-	if(picture_usage->use_whiteness)
-		result += pad;
+	if(picture_usage)
+	{
+		if(picture_usage->use_brightness)
+			result += pad;
+		if(picture_usage->use_contrast)
+			result += pad;
+		if(picture_usage->use_color)
+			result += pad;
+		if(picture_usage->use_hue)
+			result += pad;
+		if(picture_usage->use_whiteness)
+			result += pad;
+	}
 	result += channel_picker->get_controls() * pad;
+
+	if (result == 0)
+		result += 20;	// space for "Device has no controls"
+
+	result += 20 + BC_OKButton::calculate_h();
 	return result;
 }
 
@@ -1454,7 +1464,7 @@ int ChannelEditPictureWindow::create_objects()
 		y += 50;
 	}
 
-	if(picture_usage->use_brightness)
+	if(picture_usage && picture_usage->use_brightness)
 	{
 		add_subwindow(new BC_Title(x, y + 10, _("Brightness:")));
 		add_subwindow(new ChannelEditBright(x1, y, channel_picker, channel_picker->get_brightness()));
@@ -1463,7 +1473,7 @@ int ChannelEditPictureWindow::create_objects()
 		
 	}
 
-	if(picture_usage->use_contrast)
+	if(picture_usage && picture_usage->use_contrast)
 	{
 		add_subwindow(new BC_Title(x, y + 10, _("Contrast:")));
 		add_subwindow(new ChannelEditContrast(x1, y, channel_picker, channel_picker->get_contrast()));
@@ -1471,7 +1481,7 @@ int ChannelEditPictureWindow::create_objects()
 		SWAP_X
 	}
 
-	if(picture_usage->use_color)
+	if(picture_usage && picture_usage->use_color)
 	{
 		add_subwindow(new BC_Title(x, y + 10, _("Color:")));
 		add_subwindow(new ChannelEditColor(x1, y, channel_picker, channel_picker->get_color()));
@@ -1479,7 +1489,7 @@ int ChannelEditPictureWindow::create_objects()
 		SWAP_X
 	}
 
-	if(picture_usage->use_hue)
+	if(picture_usage && picture_usage->use_hue)
 	{
 		add_subwindow(new BC_Title(x, y + 10, _("Hue:")));
 		add_subwindow(new ChannelEditHue(x1, y, channel_picker, channel_picker->get_hue()));
@@ -1487,7 +1497,7 @@ int ChannelEditPictureWindow::create_objects()
 		SWAP_X
 	}
 
-	if(picture_usage->use_whiteness)
+	if(picture_usage && picture_usage->use_whiteness)
 	{
 		add_subwindow(new BC_Title(x, y + 10, _("Whiteness:")));
 		add_subwindow(new ChannelEditWhiteness(x1, y, channel_picker, channel_picker->get_whiteness()));
