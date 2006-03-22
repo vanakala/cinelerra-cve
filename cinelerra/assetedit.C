@@ -69,6 +69,7 @@ void AssetEdit::run()
 
 		window = new AssetEditWindow(mwindow, this);
 		window->create_objects();
+		window->raise_window();
 		result = window->run_window();
 
  		if(!result)

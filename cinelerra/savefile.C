@@ -87,6 +87,7 @@ int Save::handle_event()
 				mwindow->gui->get_abs_cursor_x(1),
 				mwindow->gui->get_abs_cursor_y(1));
 			error.create_objects(string2);
+			error.raise_window();
 			error.run_window();
 			return 1;		
 		}
@@ -186,6 +187,7 @@ void SaveAs::run()
 			mwindow->gui->get_abs_cursor_x(1),
 			mwindow->gui->get_abs_cursor_y(1));
 		error.create_objects(string2);
+		error.raise_window();
 		error.run_window();
 		return;		
 	}

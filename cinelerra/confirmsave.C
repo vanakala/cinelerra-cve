@@ -47,6 +47,7 @@ int ConfirmSave::test_files(MWindow *mwindow,
 		{
 			ConfirmSaveWindow window(mwindow, &list);
 			window.create_objects();
+			window.raise_window();
 			result = window.run_window();
 		}
 		else

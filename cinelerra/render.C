@@ -251,6 +251,7 @@ void Render::start_interactive()
 					   mwindow->gui->get_abs_cursor_x(1),
 					   mwindow->gui->get_abs_cursor_y(1));
 			error_box.create_objects("Already rendering");
+			error_box.raise_window();
 			error_box.run_window();
 		}
 	}
@@ -272,6 +273,7 @@ void Render::start_batches(ArrayList<BatchRenderJob*> *jobs)
 			mwindow->gui->get_abs_cursor_x(1),
 			mwindow->gui->get_abs_cursor_y(1));
 		error_box.create_objects("Already rendering");
+		error_box.raise_window();
 		error_box.run_window();
 	}
 }
@@ -803,6 +805,7 @@ int Render::render(int test_overwrite,
 					mwindow->gui->get_abs_cursor_x(1),
 					mwindow->gui->get_abs_cursor_y(1));
 				error_box.create_objects(_("Error rendering data."));
+				error_box.raise_window();
 				error_box.run_window();
 			}
 			else
