@@ -125,12 +125,13 @@ inline void MaskUnit::draw_line_clamped(
 	} 
 }
 
+template<class T>
 void MaskUnit::blur_strip(float *val_p, 
 	float *val_m, 
 	float *dst, 
 	float *src, 
 	int size,
-	int max)
+	T max)
 {
 	float *sp_p = src;
 	float *sp_m = src + size - 1;
@@ -372,6 +373,10 @@ void MaskUnit::do_feather(VFrame *output,
 		case BC_A16:
 			DO_FEATHER(uint16_t, 0xffff);
 			break;
+
+		case BC_A_FLOAT:
+			DO_FEATHER(float, 1.0f);
+			break;
 	}
 
 
@@ -513,7 +518,7 @@ void MaskUnit::process_package(LoadPackage *package)
 			if (mask_color_model == BC_A8)
 				value = (int)((float)engine->value / 100 * 0xff);
 			else
-				value = (int)((float)engine->value / 100 * 0xffff);
+				value = (int)((float)engine->value / 100 * 0xffff);	// also for BC_A_FLOAT
 
 			/* Scaneline sampling, inspired by Graphics gems I, page 81 */
 			for (int i = ptr->row1; i < ptr->row2; i++) 
@@ -609,15 +614,21 @@ void MaskUnit::process_package(LoadPackage *package)
 					if(OVERSAMPLE == 2) coverage >>= 1; \
 					else coverage /= OVERSAMPLE * OVERSAMPLE; \
 
-					
-					if (mask_color_model == BC_A8) 
+					// when we have multiple masks the highest coverage wins
+					switch (mask_color_model)
 					{
-						if (((unsigned char *) output_row)[h] < coverage) /* when we have multiple masks... we don't want aliasing inside areas */
+					case BC_A8:
+						if (((unsigned char *) output_row)[h] < coverage)
 							((unsigned char*)output_row)[h] = coverage;
-					} else
-					{
-						if (((uint16_t *) output_row)[h] < coverage) /* when we have multiple masks... we don't want aliasing inside areas */
+						break;
+					case BC_A16:
+						if (((uint16_t *) output_row)[h] < coverage)
 							((uint16_t *) output_row)[h] = coverage;
+						break;
+					case BC_A_FLOAT:
+						if (((float *) output_row)[h] < coverage/float(0xffff))
+							((float *) output_row)[h] = coverage/float(0xffff);
+						break;
 					}
 					/* possible optimization: do joining of multiple masks by span logics, not by bitmap logics*/
 					
@@ -632,9 +643,13 @@ void MaskUnit::process_package(LoadPackage *package)
 								memset((char *)output_row + h + 1, value, right_end - h);
 							else {
 								/* we are fucked, since there is no 16bit memset */
-								for (int z = h +1; z <= right_end; z++)
-									((uint16_t *) output_row)[z] =  value;
-		
+								if (mask_color_model == BC_A16) {
+									for (int z = h +1; z <= right_end; z++)
+										((uint16_t *) output_row)[z] =  value;
+								} else {
+									for (int z = h +1; z <= right_end; z++)
+										((float *) output_row)[z] =  value/float(0xffff);
+								}
 							}
 							h = right_end;  
 						}
@@ -774,7 +789,7 @@ void MaskUnit::process_package(LoadPackage *package)
 /* possible optimisation: lookup for  X * (max - *mask_row) / max, where max is known mask_row and X are variabiles */
 #define APPLY_MASK_SUBTRACT_ALPHA(type, max, components, do_yuv) \
 { \
-	int chroma_offset = (max + 1) / 2; \
+	type chroma_offset = (max + 1) / 2; \
 	for(int i = start_row; i < end_row; i++) \
 	{ \
 	type *output_row = (type*)engine->output->get_rows()[i]; \
@@ -808,7 +823,7 @@ void MaskUnit::process_package(LoadPackage *package)
 
 #define APPLY_MASK_MULTIPLY_ALPHA(type, max, components, do_yuv) \
 { \
-	int chroma_offset = (max + 1) / 2; \
+	type chroma_offset = (max + 1) / 2; \
 		for(int i = ptr->row1; i < ptr->row2; i++) \
 		{ \
 	type *output_row = (type*)engine->output->get_rows()[i]; \
@@ -871,6 +886,12 @@ void MaskUnit::process_package(LoadPackage *package)
 				case BC_RGBA16161616:
 					APPLY_MASK_MULTIPLY_ALPHA(uint16_t, 0xffff, 4, 0);
 					break;
+				case BC_RGB_FLOAT:
+					APPLY_MASK_MULTIPLY_ALPHA(float, 1.0f, 3, 0);
+					break;
+				case BC_RGBA_FLOAT:
+					APPLY_MASK_MULTIPLY_ALPHA(float, 1.0f, 4, 0);
+					break;
 			}
 			break;
 
@@ -896,6 +917,12 @@ void MaskUnit::process_package(LoadPackage *package)
 				case BC_YUVA16161616:
 				case BC_RGBA16161616:
 					APPLY_MASK_SUBTRACT_ALPHA(uint16_t, 0xffff, 4, 0);
+					break;
+				case BC_RGB_FLOAT:
+					APPLY_MASK_SUBTRACT_ALPHA(float, 1.0f, 3, 0);
+					break;
+				case BC_RGBA_FLOAT:
+					APPLY_MASK_SUBTRACT_ALPHA(float, 1.0f, 4, 0);
 					break;
 			}
 			break;
@@ -1007,6 +1034,11 @@ void MaskEngine::do_mask(VFrame *output,
 		case BC_YUV161616:
 		case BC_YUVA16161616:
 			new_color_model = BC_A16;
+			break;
+
+		case BC_RGB_FLOAT:
+		case BC_RGBA_FLOAT:
+			new_color_model = BC_A_FLOAT;
 			break;
 	}
 

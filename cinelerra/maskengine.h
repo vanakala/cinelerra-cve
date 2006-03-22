@@ -39,6 +39,7 @@ public:
 	~MaskUnit();
 
 	void process_package(LoadPackage *package);
+private:
 	void draw_line_clamped(int x1, int y1, int x2, int y2, int w, int h, int hoffset);
 	void do_feather(VFrame *output,
 		VFrame *input, 
@@ -50,12 +51,13 @@ public:
 		float feather, 
 		int start_out, 
 		int end_out);
+	template<class T>
 	void blur_strip(float *val_p, 
 		float *val_m, 
 		float *dst, 
 		float *src, 
 		int size,
-		int max);
+		T max);
 
     float n_p[5], n_m[5];
     float d_p[5], d_m[5];
