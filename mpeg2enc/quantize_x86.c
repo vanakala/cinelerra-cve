@@ -234,7 +234,7 @@ int quant_non_intra_hv_sse(
 			  "movd %%eax, %%mm6\n"
 			  : :"g" (1) : "eax" );
 	/* Set up SSE rounding mode */
-	__asm__ ( "ldmxcsr %0\n" : : "X" (trunc_mxcsr) );
+	__asm__ ( "ldmxcsr %0" : : "m" (&trunc_mxcsr) );
 
 	/* Load satlim into mm1 */
 	movd_m2r( satlim, mm1 );
