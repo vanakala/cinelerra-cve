@@ -1,6 +1,19 @@
 SUBDIRS = data
 
 bin_PROGRAMS = cinelerra
+
+if HAVE_FIREWIRE
+firewire_SOURCES = \
+	audio1394.C \
+	avc1394control.C \
+	avc1394transport.C \
+	device1394input.C \
+	device1394output.C \
+	iec61883input.C \
+	iec61883output.C \
+	vdevice1394.C
+endif
+
 cinelerra_SOURCES = aattachmentpoint.C \
 		    aautomation.C \
 		    aboutprefs.C \
@@ -265,19 +278,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
                     yuvstream.C \
 		    zoombar.C \
 		    zoompanel.C \
-	$(firewire_sources)
-
-if HAVE_FIREWIRE
-firewire_sources = \
-	audio1394.C \
-	avc1394control.C \
-	avc1394transport.C \
-	device1394input.C \
-	device1394output.C \
-	iec61883input.C \
-	iec61883output.C \
-	vdevice1394.C
-endif
+	$(firewire_SOURCES)
 
 # set the include path found by configure
 INCLUDES = \
