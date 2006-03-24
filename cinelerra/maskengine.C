@@ -607,12 +607,7 @@ void MaskUnit::process_package(LoadPackage *package)
 					}
 					// calculate coverage
 					coverage *= value;
-					if(OVERSAMPLE == 8) coverage >>= 6; \
-					else \
-					if(OVERSAMPLE == 4) coverage >>= 2; \
-					else \
-					if(OVERSAMPLE == 2) coverage >>= 1; \
-					else coverage /= OVERSAMPLE * OVERSAMPLE; \
+					coverage /= OVERSAMPLE * OVERSAMPLE;
 
 					// when we have multiple masks the highest coverage wins
 					switch (mask_color_model)
