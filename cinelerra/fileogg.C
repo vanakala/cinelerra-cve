@@ -217,7 +217,8 @@ TRACE("FileOGG::open_file 20")
 		tf->vpage_buffer_length = 0;
 		tf->apage = NULL;
 		tf->vpage = NULL;
-
+    tf->v_pkg=0; 
+    tf->a_pkg=0; 
 
 		/* yayness.  Set up Ogg output stream */
 		srand (time (NULL));
@@ -1693,6 +1694,7 @@ int FileOGG::write_audio_page()
     fprintf(stderr,"error writing audio page\n"); 
   }
   tf->apage_valid = 0;
+  tf->a_pkg -= ogg_page_packets((ogg_page *)&tf->apage);
   return ret;
 }
 
@@ -1705,6 +1707,7 @@ int FileOGG::write_video_page()
     fprintf(stderr,"error writing video page\n");
   }
   tf->vpage_valid = 0;
+  tf->v_pkg -= ogg_page_packets((ogg_page *)&tf->vpage);
   return ret;
 }
 
@@ -1718,7 +1721,16 @@ void FileOGG::flush_ogg (int e_o_s)
     while(1) {
       /* Get pages for both streams, if not already present, and if available.*/
       if(asset->video_data && !tf->vpage_valid) {
-        if(ogg_stream_pageout(&tf->to, &og) > 0) {
+        // this way seeking is much better,
+        // not sure if 23 packets  is a good value. it works though
+        int v_next=0;
+        if(tf->v_pkg>22 && ogg_stream_flush(&tf->to, &og) > 0) {
+          v_next=1;
+        }
+        else if(ogg_stream_pageout(&tf->to, &og) > 0) {
+          v_next=1;
+        }
+        if(v_next) {
           len = og.header_len + og.body_len;
           if(tf->vpage_buffer_length < len) {
             tf->vpage = (unsigned char *)realloc(tf->vpage, len);
@@ -1734,7 +1746,16 @@ void FileOGG::flush_ogg (int e_o_s)
         }
       }
       if(asset->audio_data && !tf->apage_valid) {
-        if(ogg_stream_pageout(&tf->vo, &og) > 0) {
+        // this way seeking is much better,
+        // not sure if 23 packets  is a good value. it works though
+        int a_next=0;
+        if(tf->a_pkg>22 && ogg_stream_flush(&tf->vo, &og) > 0) {
+          a_next=1;
+        }
+        else if(ogg_stream_pageout(&tf->vo, &og) > 0) {
+          a_next=1;
+        }
+        if(a_next) {
           len = og.header_len + og.body_len;
           if(tf->apage_buffer_length < len) {
             tf->apage = (unsigned char *)realloc(tf->apage, len);
@@ -1814,6 +1835,7 @@ int FileOGG::write_samples_vorbis(double **buffer, int64_t len, int e_o_s)
 	    {
 		flush_lock->lock();
 		ogg_stream_packetin (&tf->vo, &tf->op);
+		tf->a_pkg++; 
 		flush_lock->unlock();
 	    }
 
@@ -1872,6 +1894,7 @@ int FileOGG::write_frames_theora(VFrame ***frames, int len, int e_o_s)
 			while(theora_encode_packetout (&tf->td, e_o_s, &tf->op)) {
 				flush_lock->lock();
 				ogg_stream_packetin (&tf->to, &tf->op);
+				tf->v_pkg++;
 				flush_lock->unlock();
             }
 			flush_ogg(0);  // eos flush is done later at close_file
