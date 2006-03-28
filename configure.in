@@ -73,42 +73,45 @@ AC_DEFINE(HAVE_LIBXXF86VM)
 AC_ARG_ENABLE(oss, 
 							AC_HELP_STRING([--disable-oss], [disable support for oss (default=enabled)]))
 AC_ARG_ENABLE(alsa, 
-							AC_HELP_STRING([--enable-alsa], [enable support for alsa (default=autodetect)]),
-							[ enable_alsa=$enableval ],
-							[ enable_alsa=default ])
+	AC_HELP_STRING([--disable-alsa],[disable support for ALSA (default=autodetect)]),
+	[enable_alsa=$enableval],[enable_alsa=yes])
 AC_ARG_ENABLE(esd, 
-							AC_HELP_STRING([--disable-esound], [disable support for esound (default=enabled)]))
+	AC_HELP_STRING([--disable-esd], [disable support for ESD (default=autodetect)]),
+	[enable_esd=$enableval],[enable_esd=yes])
 
 if test "x$enable_oss" = "xyes" || test "x$enable_oss" = "x"; then
 	SOUND_CFLAGS="-DHAVE_OSS $SOUND_CFLAGS"
 fi
-if test "x$enable_alsa" = "xdefault" || test "x$enable_alsa" = "xyes"; then
-	AM_PATH_ALSA(1.0.2,
-		[ SOUND_CFLAGS="$ALSA_CFLAGS -DHAVE_ALSA $SOUND_CFLAGS"
-		SOUND_LDFLAGS="$ALSA_LIBS $SOUND_LDFLAGS" ],
-		[ if test "x$enable_alsa" = "xyes"; then
-		 		AC_MSG_WARN([alsa library >= 1.0.2 not found])
-				NOT_FOUND="$NOT_FOUND alsa,library,>=,1.0.2"
-			fi ])
+if test "x$enable_alsa" = "xyes"; then
+	AM_PATH_ALSA(1.0.2,[alsa=yes])
+	if test "x$alsa" = "xyes"; then
+		SOUND_CFLAGS="$ALSA_CFLAGS -DHAVE_ALSA $SOUND_CFLAGS"
+		SOUND_LDFLAGS="$ALSA_LIBS $SOUND_LDFLAGS"
+		enable_alsa=ok
+	fi
 	dnl This added -lasound to LIBS. LIBS is used in every link command.
 	dnl But we do not want to link all shared libraries against -lasound.
 	dnl So we remove it again.
 	LIBS=`echo "$LIBS" | sed -e s/-lasound//g`
 fi
 
-if test "x$enable_esd" = "xyes" || test "x$enable_esd" = "x"; then
-	AM_PATH_ESD
-	SOUND_CFLAGS="$ESD_CFLAGS -DHAVE_ESOUND $SOUND_CFLAGS"
-	SOUND_LDFLAGS="$ESD_LIBS $SOUND_LDFLAGS"
+if test "x$enable_esd" = "xyes"; then
+	AM_PATH_ESD(,[esound=yes])
+	if test "x$esound" = xyes; then
+		SOUND_CFLAGS="$ESD_CFLAGS -DHAVE_ESOUND $SOUND_CFLAGS"
+		SOUND_LDFLAGS="$ESD_LIBS $SOUND_LDFLAGS"
+		enable_esd=ok
+	fi
 fi
 AC_SUBST(SOUND_CFLAGS)
 AC_SUBST(SOUND_LDFLAGS)
 ############### END OF SOUND
 
 ############## MJPEGTOOLS (for YUV4MPEG)
-PKG_CHECK_MODULES(MJPEG, mjpegtools)
+PKG_CHECK_MODULES(MJPEG, mjpegtools,[mjpegtools=yes],:)
 AC_SUBST(MJPEG_CFLAGS)
 AC_SUBST(MJPEG_LIBS)
+AC_MSG_CHECKING([for number of arguments to y4m_write_frame_header])
 # check if mjpegtools has 3 arguements for y4m_write_frame_header
 # Note: this test came from transcode...
 save_CFLAGS="$CFLAGS"
@@ -125,77 +128,56 @@ AC_TRY_LINK(
 AC_DEFINE(
 	   [MJPEGTOOLS_Y4M_WRITE_FRAME_HEADER__3ARGS], 
            [1], 
-           [using mjpegtool's y4m_write_frame_header with 3 arguments]
+           [using y4m_write_frame_header with 3 arguments]
           )
 mjpeg_version_info="3 arguments (new versions)"
 ],[mjpeg_version_info="assuming 2 arguments (older versions)"])
-AC_MSG_CHECKING([for number of arguments to mjpegtool's y4m_write_frame_header])
 AC_MSG_RESULT($mjpeg_version_info)
 CFLAGS="$save_CFLAGS"
 LIBS="$save_LIBS"
-
 ############## END MJPEGTOOLS
 
 ############## MISC LIBRARIES
-AC_CHECK_HEADERS(uuid/uuid.h)
-AC_CHECK_LIB(uuid, uuid_clear, :,[AC_MSG_WARN([libuuid not found])
-	NOT_FOUND="$NOT_FOUND libuuid"])
+AC_CHECK_HEADER(uuid/uuid.h,[libuuidh=yes])
+AC_CHECK_LIB(uuid, uuid_clear,[libuuid=yes])
 
-AC_CHECK_HEADERS(fftw3.h)
-AC_CHECK_LIB(fftw3, fftw_free, :,[AC_MSG_WARN([libfftw3 not found])
-	NOT_FOUND="$NOT_FOUND libfftw3"])
-############## END OF MISC LIBRARIES
-
+AC_CHECK_HEADER(fftw3.h,[libfftw3h=yes])
+AC_CHECK_LIB(fftw3, fftw_free,[libfftw3=yes])
 ############## END OF MISC LIBRARIES
 
 LARGEFILE_CFLAGS="-D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64"
 AC_SUBST(LARGEFILE_CFLAGS)
 
 ############## A52DEC
-AC_CHECK_LIB(a52, a52_init, 
-    [AC_CHECK_HEADER(a52dec/a52.h, [HAVE_A52DEC=yes])],
-    [AC_MSG_WARN([liba52 not found])])
+AC_CHECK_LIB(a52,a52_init,[liba52=yes])
+AC_CHECK_HEADER(a52dec/a52.h,[liba52h=yes])
 
-if test "x$HAVE_A52DEC" = xyes; then
+if test "x$liba52$liba52h" = "xyesyes"; then
     A52DEC_CFLAGS=
     A52DEC_LIBS=-la52
-else
-    NOT_FOUND="$NOT_FOUND a52dec"
 fi
 AC_SUBST(A52DEC_CFLAGS)
 AC_SUBST(A52DEC_LDFLAGS)
 ############## END OF A52DEC
 
-############## LAME
-# Just test to see if we have lame installed.
-AC_CHECK_HEADERS(lame/lame.h)
-#AC_CHECK_LIB(mp3lame, lame_init, :,[AC_MSG_WARN([libmp3lame not found])
-#	NOT_FOUND="$NOT_FOUND libmp3lame"])
-# END LAME
-
 ############## LIBSNDFILE
-AC_CHECK_LIB(sndfile, sf_open, 
-    [AC_CHECK_HEADERS(sndfile.h, [HAVE_SNDFILE=yes])],[AC_MSG_WARN([libsndfile not found])])
-if test "x$HAVE_SNDFILE" = xyes; then :; else
-    NOT_FOUND="$NOT_FOUND libsndfile"
-fi
+AC_CHECK_LIB(sndfile, sf_open,[libsndfile=yes])
+AC_CHECK_HEADERS(sndfile.h,[libsndfileh=yes])
 ############## END OF LIBSNDFILE
 
 ############## OpenEXR
-PKG_CHECK_MODULES(OPENEXR, OpenEXR)
+PKG_CHECK_MODULES(OPENEXR, OpenEXR,[libOpenEXR=yes],:)
 AC_SUBST(OPENEXR_CFLAGS)
 AC_SUBST(OPENEXR_LIBS)
 ############## END OF OpenEXR
 
 ############## LIBFAAD
-AC_CHECK_LIB(faad, faacDecInit, 
-    [AC_CHECK_HEADER(faad.h, [HAVE_FAAD=yes])],
-    [AC_CHECK_LIB(faad, NeAACDecInit, [AC_CHECK_HEADER(faad.h, [HAVE_FAAD=yes])],[AC_MSG_WARN([libfaad not found])])])
-if test "x$HAVE_FAAD" = xyes; then
+AC_CHECK_LIB(faad, faacDecInit,[libfaad=yes],
+	AC_CHECK_LIB(faad, NeAACDecInit,[libfaad=yes]))
+AC_CHECK_HEADER(faad.h,[libfaadh=yes])
+if test "x$libfaad$libfaadh" = xyesyes; then
     FAAD_CFLAGS=
     FAAD_LIBS="-lfaad"
-else
-	NOT_FOUND="$NOT_FOUND libfaad,2"
 fi
 AC_SUBST(FAAD_CFLAGS)
 AC_SUBST(FAAD_LIBS)
@@ -209,28 +191,23 @@ AC_ARG_ENABLE(firewire,
 							[ enable_firewire=yes ])
 
 if test "x$enable_firewire" = "xyes"; then
-	PKG_CHECK_MODULES(LIBRAW1394, libraw1394 >= 1.2.0)
-	PKG_CHECK_MODULES(LIBIEC61883, libiec61883)
+	PKG_CHECK_MODULES(LIBRAW1394, libraw1394 >= 1.2.0,[libraw1394=yes],:)
+	PKG_CHECK_MODULES(LIBIEC61883, libiec61883,[libiec61883=yes],:)
 
-	AC_CHECK_LIB(avc1394, avc1394_send_command, :,[AC_MSG_WARN([libavc1394 not found])
-	NOT_FOUND="$NOT_FOUND libavc1394"
-	FIREWIRE="no"],$LIBRAW1394_LIBS)
+	AC_CHECK_LIB(avc1394, avc1394_send_command,[libavc1394=yes],:,$LIBRAW1394_LIBS)
+	AC_CHECK_HEADER([libavc1394/avc1394.h],[libavc1394h=yes])
+	AC_CHECK_LIB(rom1394, rom1394_get_bus_id,[librom1394=yes],:,$LIBRAW1394_LIBS)
+	AC_CHECK_HEADER([libavc1394/rom1394.h],[librom1394h=yes])
+fi
 
-	AC_CHECK_LIB(rom1394, rom1394_get_bus_id, :,[AC_MSG_WARN([librom1394 not found])
-	NOT_FOUND="$NOT_FOUND librom1394"
-	FIREWIRE="no"],$LIBRAW1394_LIBS)
-
-	if test "$FIREWIRE" = "no"; then
-		FIREWIRE_CFLAGS=""
-		FIREWIRE_LDFLAGS=""
-	else
-		FIREWIRE_CFLAGS="-DHAVE_FIREWIRE $LIBIEC61883_CFLAGS $LIBRAW1394_CFLAGS"
-		FIREWIRE_LDFLAGS="-lavc1394 -lrom1394 $LIBIEC61883_LIBS $LIBRAW1394_LIBS"
-	fi
+if test "x$enable_firewire$libraw1394$libiec61883$libavc1394$libavc1394h$librom1394$librom1394h" = "xyesyesyesyesyesyesyes"; then
+	FIREWIRE_CFLAGS="-DHAVE_FIREWIRE $LIBIEC61883_CFLAGS $LIBRAW1394_CFLAGS"
+	FIREWIRE_LDFLAGS="-lavc1394 -lrom1394 $LIBIEC61883_LIBS $LIBRAW1394_LIBS"
+	enable_firewire=ok
 fi
 AC_SUBST(FIREWIRE_CFLAGS)
 AC_SUBST(FIREWIRE_LDFLAGS)
-AM_CONDITIONAL(HAVE_FIREWIRE,test "x$enable_firewire" = "xyes")
+AM_CONDITIONAL(HAVE_FIREWIRE,test "x$enable_firewire" = "xok")
 ############## END OF FIREWIRE
 
 ############## AVIFILE SUPPORT
@@ -263,12 +240,8 @@ have_x86cpu=false
 
 
 ############## libx264
-
-AC_CHECK_LIB(x264, x264_encoder_open, 
-    [AC_CHECK_HEADERS(x264.h, [HAVE_LIBX264=yes])],[AC_MSG_WARN([libx264 not found])])
-if test "x$HAVE_LIBX264" = xyes; then :; else
-	NOT_FOUND="$NOT_FOUND libx264"
-fi
+AC_CHECK_LIB(x264, x264_encoder_open,[libx264=yes],,-lpthread -lm)
+AC_CHECK_HEADER(x264.h, [libx264h=yes])
 ##############
 
 ############## MMX / 3DNOW  POWERPC / ALTIVEC
@@ -328,14 +301,26 @@ AC_SUBST(CPU_CFLAGS)
 ############## END OF MMX / 3DNOW
 
 ############## XIPH
-PKG_CHECK_MODULES(XIPH,ogg >= 1.1 vorbis vorbisenc vorbisfile theora)
+PKG_CHECK_MODULES(libogg,ogg >= 1.1,[libogg=yes],:)
+PKG_CHECK_MODULES(libvorbis,vorbis,[libvorbis=yes],:)
+PKG_CHECK_MODULES(libvorbisenc,vorbisenc,[libvorbisenc=yes],:)
+PKG_CHECK_MODULES(libvorbisfile,vorbisfile,[libvorbisfile=yes],:)
+PKG_CHECK_MODULES(libtheora,theora,[libtheora=yes],:)
+VORBIS_CFLAGS="$libogg_CFLAGS $libvorbis_CFLAGS $libvorbisenc_CFLAGS $libvorbisfile_CFLAGS"
+VORBIS_LIBS="$libogg_LIBS $libvorbis_LIBS $libvorbisenc_LIBS $libvorbisfile_LIBS"
+XIPH_CFLAGS="$VORBIS_CFLAGS $libtheora_CFLAGS"
+XIPH_LIBS="$VORBIS_LIBS $libtheora_LIBS"
 AC_SUBST(XIPH_CFLAGS)
 AC_SUBST(XIPH_LIBS)
-
-PKG_CHECK_MODULES(VORBIS,ogg >= 1.1 vorbis vorbisenc vorbisfile)
 AC_SUBST(VORBIS_CFLAGS)
 AC_SUBST(VORBIS_LIBS)
 ############## END OF XIPH
+
+############## LAME
+# Just test to see if we have lame installed.
+AC_CHECK_HEADER(lame/lame.h,[libmp3lameh=yes])
+AC_CHECK_LIB(mp3lame,lame_init,[libmp3lame=yes],,[$VORBIS_LIBS])
+# END LAME
 
 ############## .png TO .o CONVERSION
 
@@ -440,24 +425,59 @@ AC_OUTPUT(Makefile cinelerra-cvs-current.spec po/Makefile.in \
 					plugins/fonts/Makefile \
 					image/Makefile)
 
-if test "$NOT_FOUND" = ""; then
-	AC_MSG_NOTICE([All required libraries were found.])
+succeeded=yes
+AC_DEFUN([RPT],[if test "x$$1" = "xyes"; then status=found; else status=missing; succeeded=no; fi
+echo "AC_HELP_STRING($2,$status)"])
+
+echo
+echo "Summary of mandatory components:"
+RPT(libogg,libogg)
+RPT(libvorbis,libvorbis)
+RPT(libvorbisenc,libvorbisenc)
+RPT(libvorbisfile,libvorbisfile)
+RPT(libtheora,libtheora)
+RPT(libOpenEXR,OpenEXR)
+RPT(libx264,libx264 libraries)
+RPT(libx264h,libx264 headers)
+RPT(libuuid,libuuid libraries)
+RPT(libuuidh,libuuid headers)
+RPT(mjpegtools,mjpegtools)
+RPT(libfftw3,libfftw3 libraries)
+RPT(libfftw3h,libfftw3 headers)
+RPT(liba52,liba52 libraries)
+RPT(liba52h,liba52 headers)
+RPT(libmp3lame,libmp3lame libraries)
+RPT(libmp3lameh,libmp3lame headers)
+RPT(libsndfile,libsndfile libraries)
+RPT(libsndfileh,libsndfile headers)
+RPT(libfaad,libfaad libraries)
+RPT(libfaadh,libfaad headers)
+mandatory="$succeeded"
+
+echo
+echo "Summary of optional components:"
+AC_DEFUN([ORPT],[if test "x$$1" = "xno"; then
+	echo "$2 was opted out with $3"
 else
-	AC_MSG_WARN([The following libraries were not found:])
-	for i in $NOT_FOUND; do
-		l=`echo $i | sed -e 's/,/ /'`
-		AC_MSG_WARN([	$l])
-	done
-	AC_MSG_WARN([Compilation may fail! Remember, you need the developer])
-	AC_MSG_WARN([packages too, not just the runtime libraries!])
-	AC_MSG_WARN([])
-	case $NOT_FOUND in
-	*OpenEXR*)
-	  AC_MSG_WARN([Use ./configure OPENEXR=/path/to/OpenEXR to specify])
-	  AC_MSG_WARN([the directory that contains the OpenEXR include files])
-	  AC_MSG_WARN([(default is \$prefix/include/OpenEXR).]) ;;
-	*mjpeg*)
-          AC_MSG_WARN([mjpegtools is needed for YUV4MPEG export to tools])
-	  AC_MSG_WARN([like mpeg2enc.  See http://mjpeg.sourceforge.net/]) ;;
-	esac
+	if test "x$$1" = "xok"; then component=enabled; else component=disabled; fi
+	$4
+	echo "$2 is $component"
+fi])
+ORPT(enable_esd,ESD (Enlightenment Sound Daemon),--disable-esd,RPT(esound,ESD subsystem))
+ORPT(enable_alsa,ALSA,--disable-alsa,RPT(alsa,ALSA subsystem))
+ORPT(enable_firewire,Firewire,--disable-firewire,
+	RPT(libraw1394,libraw1394)
+	RPT(libiec61883,libiec61883)
+	RPT(libavc1394,libavc1394 libraries)
+	RPT(libavc1394h,libavc1394 headers)
+	RPT(librom1394,librom1394 libraries)
+	RPT(librom1394h,librom1394 headers)
+)
+
+if test "x$mandatory" = "xno"; then
+	echo
+	echo "WARNING: Mandatory components are missing; compilation may fail!"
+else
+	echo
+	echo "Now type"; echo "          make"; echo; echo "to start compilation"
 fi
