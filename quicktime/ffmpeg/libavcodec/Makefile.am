@@ -15,6 +15,7 @@ noinst_LTLIBRARIES = libavcodec.la
 AM_CFLAGS = \
 	$(LARGEFILE_CFLAGS) \
 	$(CPU_CFLAGS) \
+	$(XIPH_CFLAGS) \
 	$(MM_FLAGS) \
 	-D_GNU_SOURCE -DHAVE_AV_CONFIG_H -I$(srcdir)/..
 
@@ -141,10 +142,8 @@ libavcodec_la_LIBADD += -lx264
 libavcodec_la_SOURCES  += mp3lameaudio.c
 libavcodec_la_LIBADD += -lmp3lame
 libavcodec_la_SOURCES  += oggvorbis.c
-libavcodec_la_LIBADD += -lvorbisenc -lvorbis
 libavcodec_la_SOURCES  += oggtheora.c
-libavcodec_la_LIBADD += -ltheora
-libavcodec_la_LIBADD += -logg
+libavcodec_la_LIBADD += $(XIPH_LIBS)
 #libavcodec_la_SOURCES  += libgsm.c
 #libavcodec_la_LIBADD += -lgsm
 

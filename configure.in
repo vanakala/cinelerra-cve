@@ -143,6 +143,15 @@ AC_CHECK_LIB(uuid, uuid_clear,[libuuid=yes])
 
 AC_CHECK_HEADER(fftw3.h,[libfftw3h=yes])
 AC_CHECK_LIB(fftw3, fftw_free,[libfftw3=yes])
+
+PKG_CHECK_MODULES(LIBDV,libdv >= 0.103,[libdv=yes],:)
+AC_SUBST(LIBDV_CFLAGS)
+AC_SUBST(LIBDV_LIBS)
+
+PKG_CHECK_MODULES(PNG,libpng,[libpng=yes],:)
+
+AC_CHECK_HEADER(jpeglib.h,[libjpegh=yes])
+AC_CHECK_LIB(jpeg,jpeg_start_decompress,[libjpeg=yes])
 ############## END OF MISC LIBRARIES
 
 LARGEFILE_CFLAGS="-D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64"
@@ -209,16 +218,6 @@ AC_SUBST(FIREWIRE_CFLAGS)
 AC_SUBST(FIREWIRE_LDFLAGS)
 AM_CONDITIONAL(HAVE_FIREWIRE,test "x$enable_firewire" = "xok")
 ############## END OF FIREWIRE
-
-############## AVIFILE SUPPORT
-dnl if test "x$enable_avifile" = "xyes"; then
-dnl 	AM_PATH_AVIFILE(0.7.0)
-dnl 	if test "x$HAVE_AVIFILE" = "xyes"; then
-dnl 		AVIFILE_CXXFLAGS="-DUSE_AVIFILE $AVIFILE_CXXFLAGS"
-dnl 	fi
-dnl fi
-dnl AC_ARG_ENABLE(avifile, [  --enable-avifile	enable support for avifile [default=no]])
-############## END OF AVIFILE SUPPORT
 
 ############# CSS SUPPORT IN LIBMPEG3
 if test "x$enable_css" = "xyes"; then
@@ -306,20 +305,16 @@ PKG_CHECK_MODULES(libvorbis,vorbis,[libvorbis=yes],:)
 PKG_CHECK_MODULES(libvorbisenc,vorbisenc,[libvorbisenc=yes],:)
 PKG_CHECK_MODULES(libvorbisfile,vorbisfile,[libvorbisfile=yes],:)
 PKG_CHECK_MODULES(libtheora,theora,[libtheora=yes],:)
-VORBIS_CFLAGS="$libogg_CFLAGS $libvorbis_CFLAGS $libvorbisenc_CFLAGS $libvorbisfile_CFLAGS"
-VORBIS_LIBS="$libogg_LIBS $libvorbis_LIBS $libvorbisenc_LIBS $libvorbisfile_LIBS"
-XIPH_CFLAGS="$VORBIS_CFLAGS $libtheora_CFLAGS"
-XIPH_LIBS="$VORBIS_LIBS $libtheora_LIBS"
+XIPH_CFLAGS="$libogg_CFLAGS $libvorbis_CFLAGS $libvorbisenc_CFLAGS $libvorbisfile_CFLAGS $libtheora_CFLAGS"
+XIPH_LIBS="$libogg_LIBS $libvorbis_LIBS $libvorbisenc_LIBS $libvorbisfile_LIBS $libtheora_LIBS"
 AC_SUBST(XIPH_CFLAGS)
 AC_SUBST(XIPH_LIBS)
-AC_SUBST(VORBIS_CFLAGS)
-AC_SUBST(VORBIS_LIBS)
 ############## END OF XIPH
 
 ############## LAME
 # Just test to see if we have lame installed.
 AC_CHECK_HEADER(lame/lame.h,[libmp3lameh=yes])
-AC_CHECK_LIB(mp3lame,lame_init,[libmp3lame=yes],,[$VORBIS_LIBS])
+AC_CHECK_LIB(mp3lame,lame_init,[libmp3lame=yes],,[$XIPH_LIBS])
 # END LAME
 
 ############## .png TO .o CONVERSION
@@ -437,6 +432,10 @@ RPT(libvorbisenc,libvorbisenc)
 RPT(libvorbisfile,libvorbisfile)
 RPT(libtheora,libtheora)
 RPT(libOpenEXR,OpenEXR)
+RPT(libdv,libdv)
+RPT(libpng,libpng)
+RPT(libjpeg,libjpeg libraries)
+RPT(libjpegh,libjpeg headers)
 RPT(libx264,libx264 libraries)
 RPT(libx264h,libx264 headers)
 RPT(libuuid,libuuid libraries)

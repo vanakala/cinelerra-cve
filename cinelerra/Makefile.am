@@ -290,11 +290,12 @@ AM_CXXFLAGS = \
 	$(LARGEFILE_CFLAGS) \
 	$(FIREWIRE_CFLAGS) \
 	$(SOUND_CFLAGS) \
-	$(AVIFILE_CXXFLAGS) \
 	$(XIPH_CFLAGS) \
 	$(MJPEG_CFLAGS) \
 	$(OPENEXR_CFLAGS) \
+	$(LIBDV_CFLAGS) \
 	-DPLUGIN_DIR=\"$(plugindir)\"
+
 AM_LDFLAGS = -export-dynamic
 
 noinst_HEADERS = aattachmentpoint.h \
@@ -611,8 +612,9 @@ cinelerra_LDADD = \
 	-lsndfile \
 	-lpng -ljpeg -ltiff -lz \
 	$(SOUND_LDFLAGS) \
-	$(FIREWIRE_LDFLAGS) -ldv \
-	-luuid $(AVIFILE_LDFLAGS) \
+	$(FIREWIRE_LDFLAGS) \
+	$(LIBDV_LIBS) \
+	-luuid \
 	$(MJPEG_LIBS)
 
 EXTRA_DIST = gen-feather-h

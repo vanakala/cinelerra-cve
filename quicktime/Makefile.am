@@ -6,9 +6,9 @@ AM_CFLAGS = \
 	$(LARGEFILE_CFLAGS) \
 	$(CPU_CFLAGS) \
 	$(FIREWIRE_CFLAGS) \
-	$(VORBIS_CFLAGS) \
-	$(LIBAVCODEC_CFLAGS) \
+	$(XIPH_CFLAGS) \
 	$(MJPEG_CFLAGS) \
+	$(LIBDV_CFLAGS) \
 	-DENCORE_INCLUDE=\"encore50/encore.h\" \
 	-I$(srcdir)/ffmpeg/libavcodec
 
@@ -16,14 +16,15 @@ libquicktimehv_la_LDFLAGS = -version-info 1:0:0 -release 1.6.0 -Wl,--no-undefine
 
 libquicktimehv_la_LIBADD = \
 	ffmpeg/libavcodec/libavcodec.la \
-	$(VORBIS_LIBS) \
+	$(XIPH_LIBS) \
 	-lmp3lame \
 	$(FAAD_LIBS) \
 	-lfaac \
 	encore50/libencore.la \
 	$(top_builddir)/libmpeg3/libmpeg3hv.la \
 	-lx264 \
-	-ldv -ljpeg -lpng \
+	$(LIBDV_LIBS) \
+	-ljpeg -lpng \
 	-lz -lpthread -lm
 
 libquicktimehv_la_SOURCES = \
