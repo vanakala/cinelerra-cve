@@ -141,6 +141,13 @@ void FileMOV::fix_codecs(Asset *asset)
 // 		}
 // 		strcpy(asset->acodec, QUICKTIME_MP3);
 // 	}
+
+	if (asset->format == FILE_MOV)
+	{
+		if(!strcasecmp(asset->vcodec, QUICKTIME_DVSD))
+		{printf("n\n");
+			strcpy(asset->vcodec, QUICKTIME_DV);	}
+	}
 }
 
 int FileMOV::check_sig(Asset *asset)
