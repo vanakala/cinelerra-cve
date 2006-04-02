@@ -74,6 +74,7 @@
 #include "vwindowgui.h"
 #include "vwindow.h"
 #include "zoombar.h"
+#include "exportedl.h"
 
 #include <string.h>
 
@@ -694,6 +695,11 @@ void MWindow::init_render()
 	batch_render = new BatchRenderThread(this);
 }
 
+void MWindow::init_exportedl()
+{
+	exportedl = new ExportEDL(this);
+}
+
 void MWindow::init_brender()
 {
 	if(preferences->use_brender && !brender)
@@ -1223,6 +1229,7 @@ TRACE("MWindow::create_objects 13");
 TRACE("MWindow::create_objects 14");
 	init_render();
 	init_brender();
+	init_exportedl();
 	mainprogress = new MainProgress(this, gui);
 	undo = new MainUndo(this);
 

@@ -55,6 +55,7 @@
 #include "videowindow.inc"
 #include "vwindow.inc"
 #include "bcwindowbase.inc"
+#include "exportedl.inc"
 
 #include <stdint.h>
 
@@ -408,7 +409,11 @@ public:
 
 
 	BatchRenderThread *batch_render;
-	Render *render;
+	Render *render; 
+
+ 	ExportEDL *exportedl;
+
+
 // Master edl
 	EDL *edl;
 // Main Window GUI
@@ -433,6 +438,7 @@ public:
 // Initialize channel DB's for playback
 	void init_channeldb();
 	void init_render();
+	void init_exportedl();
 // These three happen synchronously with each other
 // Make sure this is called after synchronizing EDL's.
 	void init_brender();

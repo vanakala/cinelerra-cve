@@ -193,32 +193,6 @@ int FileMOV::open_file(int rd, int wr)
 	{
 		format_to_asset();
 		
-		// If DV stream, get the timecode
-		if(match4(asset->vcodec, QUICKTIME_DV))
-		{
-			char tc[12];
-			dv_decoder_t *tmp_decoder = dv_decoder_new(0,0,0);
-			VFrame *frame = new VFrame(0, 0, 0, BC_COMPRESSED);
-			
-			read_frame(frame);
-			set_video_position(0);
-			
-			if(dv_parse_header(tmp_decoder, frame->get_data()) > -1)
-			{
-				dv_parse_packs(tmp_decoder, frame->get_data());
-				dv_get_timestamp(tmp_decoder, tc);
-				printf("Timestamp %s\n", tc);
-			
-				float seconds = Units::text_to_seconds(tc,
-										1, // Use 1 as sample rate, doesn't matter
-										TIME_HMSF,
-										tmp_decoder->height == 576 ? 25 : 30, // FIXME
-										0);
-				// Get frame number
-				asset->tcstart = int64_t(seconds * (tmp_decoder->height == 576 ? 25 : 30));
-			}
-			
-		}
 	}
 
 	if(wr) asset_to_format();
@@ -418,6 +392,40 @@ void FileMOV::format_to_asset()
 			asset->interlace_mode = quicktime_video_interlacemode(fd, 0);
 
 		strncpy(asset->vcodec, quicktime_video_compressor(fd, 0), 4);
+
+		// If DV stream, get the timecode 
+		// This should become part of libquicktime functionality... for all formats
+		if(match4(asset->vcodec, QUICKTIME_DV))
+		{
+			char tc[12];
+			dv_decoder_t *tmp_decoder = dv_decoder_new(0,0,0);
+			VFrame *frame = new VFrame(0, 0, 0, BC_COMPRESSED);
+			
+			read_frame(frame);
+			set_video_position(0);
+			
+			if(dv_parse_header(tmp_decoder, frame->get_data()) > -1)
+			{
+				dv_parse_packs(tmp_decoder, frame->get_data());
+				dv_get_timestamp(tmp_decoder, tc);
+//				printf("Timestamp %s\n", tc);
+			
+				float seconds = Units::text_to_seconds(tc,
+										1, // Use 1 as sample rate, doesn't matter
+										TIME_HMSF,
+										asset->frame_rate,
+										0);
+				// Set tcstart if it hasn't been set yet, this is a bit problematic
+				// FIXME: The problem arises if file has nonzero tcstart and user manualy sets it to zero - every time project will load it will be set to nonzero
+				if (asset->tcstart == 0)
+					asset->tcstart = int64_t(seconds * asset->frame_rate);
+			}
+			delete frame;
+			dv_decoder_free(tmp_decoder);
+			
+		}
+
+
 	}
 }
 

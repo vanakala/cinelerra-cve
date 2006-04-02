@@ -42,6 +42,7 @@
 #include "transportque.h"
 #include "viewmenu.h"
 #include "zoombar.h"
+#include "exportedl.h"
 
 #include <string.h>
 
@@ -85,6 +86,7 @@ SET_TRACE
 	filemenu->add_item(record = new RecordMenuItem(mwindow));
 
 	filemenu->add_item(render = new RenderItem(mwindow));
+	filemenu->add_item(new ExportEDLItem(mwindow));
 	filemenu->add_item(new BatchRenderMenuItem(mwindow));
 	filemenu->add_item(new BC_MenuItem("-"));
 	filemenu->add_item(quit_program = new Quit(mwindow));
