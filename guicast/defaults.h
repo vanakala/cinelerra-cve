@@ -8,6 +8,7 @@
 
 #include "stringfile.inc"
 #include "units.h"
+#include "properties.h"
 
 
 class Defaults
@@ -36,9 +37,7 @@ public:
 	int64_t get(char *name, int64_t default_);   // retrieve a value if it exists
 	char* get(char *name, char *default_); // return 1 if it doesn't
 	
-	char *names[1024];  // list of string names
-	char *values[1024];    // list of values
-	int total;             // number of defaults
+	Properties *properties;  // list of defaults
 	char filename[1024];        // filename the defaults are stored in
 };
 

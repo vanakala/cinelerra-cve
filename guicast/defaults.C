@@ -7,25 +7,21 @@
 Defaults::Defaults()
 {
 	this->filename[0] = 0;
-	total = 0;
+	this->properties = new Properties();
 }
 
 Defaults::Defaults(char *filename)
 {
 	strcpy(this->filename, filename);
+	this->properties = new Properties();
 	FileSystem directory;
 	
 	directory.parse_tildas(this->filename);
-	total = 0;
 }
 
 Defaults::~Defaults()
 {
-	for(int i = 0; i < total; i++)
-	{
-		delete [] names[i];
-		delete [] values[i];
-	}
+	delete properties;
 }
 
 int Defaults::load()
@@ -38,23 +34,18 @@ int Defaults::load()
 void Defaults::load_stringfile(StringFile *file)
 {
 	char arg1[1024], arg2[1024];
-	total = 0;
 	while(file->get_pointer() < file->get_length())
 	{
 		file->readline(arg1, arg2);
-		names[total] = new char[strlen(arg1) + 1];
-		values[total] = new char[strlen(arg2) + 1];
-		strcpy(names[total], arg1);
-		strcpy(values[total], arg2);
-		total++;
+		update(arg1, arg2);
 	}
 }
 
 void Defaults::save_stringfile(StringFile *file)
 {
-	for(int i = 0; i < total; i++)
+	for(Property *current=properties->first; current; current=NEXT)
 	{
-		file->writeline(names[i], values[i], 0);
+		file->writeline(current->getProperty(), current->getValue(), 0);
 	}
 }
 
@@ -87,65 +78,53 @@ int Defaults::save_string(char* &string)
 
 int32_t Defaults::get(char *name, int32_t default_)
 {
-	for(int i = 0; i < total; i++)
-	{
-		if(!strcmp(names[i], name))
-		{
-			return (int32_t)atol(values[i]);
-		}
-	}
+	Property *property = properties->get(name);
+
+	if (property)
+		return (int32_t)atol(property->getValue());
+
 	return default_;  // failed
 }
 
 int64_t Defaults::get(char *name, int64_t default_)
 {
+	Property *property = properties->get(name);
 	int64_t result = default_;
-	for(int i = 0; i < total; i++)
-	{
-		if(!strcmp(names[i], name))
-		{
-			sscanf(values[i], "%lld", &result);
-			return result;
-		}
-	}
+
+	if (property)
+		sscanf(property->getValue(), "%lld", &result);
+
 	return result;
 }
 
 double Defaults::get(char *name, double default_)
 {
-	for(int i = 0; i < total; i++)
-	{
-		if(!strcmp(names[i], name))
-		{
-			return atof(values[i]);
-		}
-	}
+	Property *property = properties->get(name);
+
+	if (property)
+		return atof(property->getValue());
+
 	return default_;  // failed
 }
 
 float Defaults::get(char *name, float default_)
 {
-	for(int i = 0; i < total; i++)
-	{
-		if(!strcmp(names[i], name))
-		{
-			return atof(values[i]);
-		}
-	}
+	Property *property = properties->get(name);
+
+	if (property)
+		return atof(property->getValue());
+
 	return default_;  // failed
 }
 
 char* Defaults::get(char *name, char *default_)
 {
-	for(int i = 0; i < total; i++)
-	{
-		if(!strcmp(names[i], name))
-		{
-			strcpy(default_, values[i]);
-			return values[i];
-		}
-	}
-	return default_;  // failed
+	Property *property = properties->get(name);
+
+	if (property)
+		strcpy(default_, property->getValue());
+
+	return default_;
 }
 
 int Defaults::update(char *name, double value) // update a value if it exists
@@ -178,21 +157,16 @@ int Defaults::update(char *name, int64_t value) // update a value if it exists
 
 int Defaults::update(char *name, char *value)
 {
-	for(int i = 0; i < total; i++)
+	Property *property = properties->get(name);
+
+	if (property)
 	{
-		if(!strcmp(names[i], name))
-		{
-			delete [] values[i];
-			values[i] = new char[strlen(value) + 1];
-			strcpy(values[i], value);
-			return 0;
-		}
+		property->setValue(value);
+		return 0;
 	}
-// didn't find so create new entry
-	names[total] = new char[strlen(name) + 1];
-	strcpy(names[total], name);
-	values[total] = new char[strlen(value) + 1];
-	strcpy(values[total], value);
-	total++;
-	return 1;
+	else
+	{
+		properties->append(new Property(name, value));
+		return 1;
+	}
 }
