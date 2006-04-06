@@ -176,16 +176,21 @@ Edit* Edits::insert_new_edit(int64_t position)
 {
 	Edit *current = 0;
 //printf("Edits::insert_new_edit 1\n");
+	Edit *new_edit;
 	current = split_edit(position);
 	
-	// FIXME: This check can go out now... since split_edit always returns an edit!
-	if(current) current = PREVIOUS;
+//printf("Edits::insert_new_edit 1\n");
 
+	if (current->length == 0) // when creating a split we got 0-length edit, just use it!
+		new_edit = current;
+	else      // we need to insert 
+	{
+		current = PREVIOUS;
+		new_edit = create_edit();
+		insert_after(current, new_edit);
+	}
 //printf("Edits::insert_new_edit 1\n");
-	Edit *new_edit = create_edit();
-//printf("Edits::insert_new_edit 1\n");
-	insert_after(current, new_edit);
-	new_edit->startproject = position;
+ 	new_edit->startproject = position;
 //printf("Edits::insert_new_edit 2\n");
 	return new_edit;
 }
@@ -195,11 +200,15 @@ Edit* Edits::split_edit(int64_t position)
 {
 // Get edit containing position
 	Edit *edit = editof(position, PLAY_FORWARD, 0);
-
-// No edit found
-	if(!edit)
-		if (!last || last->startproject + last->length <= position)
+// No edit found, make one - except when we are at zero position!
+	if(!edit && position != 0)
+		if (last && last->startproject + last->length == position)
 		{
+			edit = last; // we do not need any edit to extend past the last one
+		} else
+		if (!last || last->startproject + last->length < position)
+		{
+
 			// Even when track is completely empty or split is beyond last edit, return correct edit
 			Edit *empty = create_edit();
 			if (last)
@@ -223,24 +232,29 @@ Edit* Edits::split_edit(int64_t position)
 
 	Edit *new_edit = create_edit();
 	insert_after(edit, new_edit);
-	new_edit->copy_from(edit);
-	new_edit->length = new_edit->startproject + new_edit->length - position;
-	edit->length = position - edit->startproject;
-	new_edit->startproject = edit->startproject + edit->length;
-	new_edit->startsource += edit->length;
-
-
+	new_edit->startproject = position;
+	if (edit)  // if we have actually split the edit, do the funky stuff!
+	{	
+		new_edit->copy_from(edit);
+		new_edit->length = new_edit->startproject + new_edit->length - position;
+		edit->length = position - edit->startproject;
+		new_edit->startsource += edit->length;
 // Decide what to do with the transition
-	if(edit->length && edit->transition)
-	{
-		delete new_edit->transition;
-		new_edit->transition = 0;
-	}
+		if(edit->length && edit->transition)
+		{
+			delete new_edit->transition;
+			new_edit->transition = 0;
+		}
 
-	if(edit->transition && edit->transition->length > edit->length) 
-		edit->transition->length = edit->length;
-	if(new_edit->transition && new_edit->transition->length > new_edit->length)
-		new_edit->transition->length = new_edit->length;
+		if(edit->transition && edit->transition->length > edit->length) 
+			edit->transition->length = edit->length;
+		if(new_edit->transition && new_edit->transition->length > new_edit->length)
+			new_edit->transition->length = new_edit->length;
+	} else
+		new_edit->length = 0;
+
+
+
 	return new_edit;
 }
 
