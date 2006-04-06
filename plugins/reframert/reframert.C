@@ -304,35 +304,55 @@ int ReframeRT::process_buffer(VFrame *frame,
 		int64_t start_position,
 		double frame_rate)
 {
-	load_configuration();
-
-// Calculate input frame number from the start of the effect, not the timeline.
-	int64_t input_frame = 0;
+	int64_t input_frame = get_source_start();
+	KeyFrame *tmp_keyframe, *next_keyframe = get_prev_keyframe(get_source_start());
+	int64_t tmp_position, next_position;
+	int64_t segment_len;
 	double input_rate = frame_rate;
-	if(config.stretch)
+	int is_current_keyframe;
+
+	// the first keyframe can be unique -
+	// it doesn't have to be at the effect start and it controls settings before it
+	// so, if needed, let's calculate using a fake keyframe with the same settings but position == effect start
+	KeyFrame *fake_keyframe = new KeyFrame();
+	if (get_source_start() < edl_to_local(next_keyframe->position))
 	{
-// Keep same rate but stretch time.
-		int64_t effect_start = get_source_start();
-		int64_t relative_frame = start_position - get_source_start();
-		int64_t scaled_relative = (int64_t)(relative_frame * config.scale);
-		input_frame = scaled_relative + effect_start;
+		fake_keyframe->copy_from(next_keyframe);
+		fake_keyframe->position = local_to_edl(get_source_start());
+		next_keyframe = fake_keyframe;
 	}
-	else
+
+	// calculate input_frame accounting for all previous keyframes
+	do
 	{
-// Change rate
-		input_rate = frame_rate * config.scale;
-		input_frame = (int64_t)(start_position * input_rate / frame_rate);
-	}
-// printf("ReframeRT::process_buffer %f %d %lld %f\n", 
-// config.scale, 
-// config.stretch,
-// input_frame,
-// input_rate);
+		tmp_keyframe = next_keyframe;
+		next_keyframe = get_next_keyframe(tmp_keyframe->position+1, 0);
+
+		tmp_position = edl_to_local(tmp_keyframe->position);
+		next_position = edl_to_local(next_keyframe->position);
+
+		read_data(tmp_keyframe);
+
+		is_current_keyframe = next_position > start_position || next_keyframe->position == tmp_keyframe->position;
+
+		if (is_current_keyframe)
+			next_position = start_position;
+
+		segment_len = next_position - tmp_position;
+
+		input_frame += (int64_t)(segment_len * config.scale);
+	} while (!is_current_keyframe);
+
+	// Change rate
+	if (!config.stretch)
+		input_rate *= config.scale;
 
 	read_frame(frame,
 		0,
 		input_frame,
 		input_rate);
+
+	delete fake_keyframe;
 
 	return 0;
 }
