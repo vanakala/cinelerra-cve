@@ -41,8 +41,11 @@ VModule::VModule(RenderEngine *renderengine,
 	overlay_temp = 0;
 	input_temp = 0;
 	transition_temp = 0;
-	masker = new MaskEngine(renderengine->preferences->processors);
-
+	if (renderengine)
+		masker = new MaskEngine(renderengine->preferences->processors);
+	else
+		masker = new MaskEngine(plugin_array->mwindow->preferences->processors);
+	
 }
 
 VModule::~VModule()
@@ -452,8 +455,13 @@ SET_TRACE
 SET_TRACE
 	}
 	
+	int64_t mask_position;
+	if (renderengine)
+		mask_position = renderengine->vrender->current_position;
+	else 
+		mask_position = start_position;
 	masker->do_mask(output, 
-		renderengine->vrender->current_position,
+		mask_position,
 		edl_rate,
 		edl_rate,
 		(MaskAutos*)track->automation->autos[AUTOMATION_MASK], 
