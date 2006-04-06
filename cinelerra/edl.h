@@ -191,6 +191,8 @@ public:
 	ArrayList<EDL*> clips;
 // VWindow
 	EDL *vwindow_edl;
+// is the vwindow_edl shared and therefore should not be deleted in destructor
+	int vwindow_edl_shared;
 
 // Media files
 // Shared between all EDLs

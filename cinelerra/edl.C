@@ -34,6 +34,7 @@ EDL::EDL(EDL *parent_edl)
 	labels = 0;
 	local_session = 0;
 	vwindow_edl = 0;
+	vwindow_edl_shared = 0;
 
 	folders.set_array_delete();
 	new_folder(CLIP_FOLDER);
@@ -60,7 +61,7 @@ EDL::~EDL()
 		delete local_session;
 	}
 
-	if(vwindow_edl)
+	if(vwindow_edl && !vwindow_edl_shared)
 		delete vwindow_edl;
 
 	if(!parent_edl)
@@ -286,8 +287,9 @@ int EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 
 					if((load_flags & LOAD_ALL) == LOAD_ALL)
 					{
-						if(vwindow_edl) delete vwindow_edl;
+						if(vwindow_edl && !vwindow_edl_shared) delete vwindow_edl;
 						vwindow_edl = new_edl;
+						vwindow_edl_shared = 0;
 					}
 					else
 					{
@@ -340,8 +342,9 @@ int EDL::copy_all(EDL *edl)
 
 void EDL::copy_clips(EDL *edl)
 {
-	if(vwindow_edl) delete vwindow_edl;
+	if(vwindow_edl && !vwindow_edl_shared) delete vwindow_edl;
 	vwindow_edl = 0;
+	vwindow_edl_shared = 0;
 	if(edl->vwindow_edl)
 	{
 		vwindow_edl = new EDL(this);
