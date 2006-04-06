@@ -232,7 +232,6 @@ Edit* Edits::split_edit(int64_t position)
 
 	Edit *new_edit = create_edit();
 	insert_after(edit, new_edit);
-	new_edit->startproject = position;
 	if (edit)  // if we have actually split the edit, do the funky stuff!
 	{	
 		new_edit->copy_from(edit);
@@ -252,7 +251,7 @@ Edit* Edits::split_edit(int64_t position)
 			new_edit->transition->length = new_edit->length;
 	} else
 		new_edit->length = 0;
-
+	new_edit->startproject = position;
 
 
 	return new_edit;
