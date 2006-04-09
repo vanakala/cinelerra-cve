@@ -171,6 +171,10 @@ int TrackCanvas::drag_motion()
 				over_track = track;
 				for(Edit *edit = track->edits->first; edit; edit = edit->next)
 				{
+					if (mwindow->session->current_operation != DRAG_ATRANSITION && 
+						mwindow->session->current_operation != DRAG_VTRANSITION &&
+						edit == track->edits->last) 
+						break;	
 					int64_t edit_x, edit_y, edit_w, edit_h;
 					edit_dimensions(edit, edit_x, edit_y, edit_w, edit_h);
 
@@ -191,7 +195,7 @@ int TrackCanvas::drag_motion()
 
 
 					for(Plugin *plugin = (Plugin*)pluginset->first;
-						plugin;
+						plugin != pluginset->last;
 						plugin = (Plugin*)plugin->next)
 					{
 						int64_t plugin_x, plugin_y, plugin_w, plugin_h;
@@ -258,7 +262,6 @@ int TrackCanvas::drag_motion()
 		flash();
 		unlock_window();
 	}
-
 	return 0;
 }
 
@@ -399,7 +402,7 @@ int TrackCanvas::drag_stop()
 						mwindow->move_effect(mwindow->session->drag_plugin,
 							mwindow->session->pluginset_highlighted,
 							0,
-							mwindow->session->pluginset_highlighted->length());
+							mwindow->session->pluginset_highlighted->last->startproject);
 					}
 					result = 1;
 				}
@@ -449,7 +452,7 @@ int TrackCanvas::drag_stop()
 				else
 				if(mwindow->session->pluginset_highlighted)
 				{
-					start = track->from_units(plugin_set->length());
+					start = track->from_units(plugin_set->last->startproject);
 					length = track->get_length() - start;
 					if(length <= 0) length = track->get_length();
 				}
@@ -1106,7 +1109,7 @@ void TrackCanvas::draw_paste_destination()
 				else
 // Use end of highlighted track, disregarding effects
 					position = mwindow->session->track_highlighted->from_units(
-						mwindow->session->track_highlighted->edits->length());
+						mwindow->session->track_highlighted->edits->last->startproject);
 
 
 				if(dest->data_type == TRACK_AUDIO)
@@ -4585,7 +4588,7 @@ int TrackCanvas::do_edits(int cursor_x,
 		track = track->next)
 	{
 		for(Edit *edit = track->edits->first;
-			edit && !result;
+			edit != track->edits->last && !result;
 			edit = edit->next)
 		{
 			int64_t edit_x, edit_y, edit_w, edit_h;

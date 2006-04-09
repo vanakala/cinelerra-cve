@@ -9,6 +9,7 @@
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "undostackitem.h"
+#include "tracks.h"
 #include <string.h>
 
 // Minimum number of undoable operations on the undo stack

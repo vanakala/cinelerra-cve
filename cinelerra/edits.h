@@ -12,12 +12,16 @@
 #include "track.inc"
 #include "transition.inc"
 
+
+
+#define LAST_VIRTUAL_LENGTH 1000000000
+
 // Generic list of edits of something
 
 class Edits : public List<Edit>
 {
 public:
-	Edits(EDL *edl, Track *track);
+	Edits(EDL *edl, Track *track, Edit *default_edit);
 	virtual ~Edits();	
 
 	void equivalent_output(Edits *edits, int64_t *result);
@@ -105,7 +109,7 @@ public:
 		Edits *trim_edits);
 	virtual int optimize();
 
-
+	int64_t loaded_length;
 private:
 	virtual int clone_derived(Edit* new_edit, Edit* old_edit) {};
 };

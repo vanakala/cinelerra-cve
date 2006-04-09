@@ -211,21 +211,18 @@ double Track::get_length()
 	double length = 0;
 
 // Test edits
-	if(edits->last)
-	{
-		length = from_units(edits->last->startproject + edits->last->length);
-		if(length > total_length) total_length = length;
-	}
+	int64_t unit_end;
+	unit_end = edits->last->startproject;
+	if (edits->last->transition)
+		unit_end += edits->last->transition->length + 1; // add one so transition is finished...
+	length = from_units(unit_end);
+	if(length > total_length) total_length = length;
 
 // Test plugins
 	for(int i = 0; i < plugin_set.total; i++)
 	{
-		if(plugin_set.values[i]->last)
-		{
-			length = from_units(plugin_set.values[i]->last->startproject + 
-				plugin_set.values[i]->last->length);
-			if(length > total_length) total_length = length;
-		}
+		length = from_units(plugin_set.values[i]->last->startproject);
+		if(length > total_length) total_length = length;
 	}
 
 // Test keyframes
@@ -1362,7 +1359,7 @@ int64_t Track::edit_change_duration(int64_t input_position,
 			if(current && 
 				((test_transitions && current->transition) ||
 				(!test_transitions && current->asset)))
-				edit_length = input_position - edits->last->startproject - edits->last->length + 1;
+				edit_length = input_position - edits->length() + 1;
 		}
 	}
 	else

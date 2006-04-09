@@ -484,6 +484,8 @@ void Tracks::update_y_pixels(Theme *theme)
 	}
 }
 
+
+
 int Tracks::dump()
 {
 	for(Track* current = first; current; current = NEXT)

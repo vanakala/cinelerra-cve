@@ -20,11 +20,18 @@
 
 #include <string.h>
 
-Edits::Edits(EDL *edl, Track *track)
+Edits::Edits(EDL *edl, Track *track, Edit *default_edit)
  : List<Edit>()
 {
 	this->edl = edl;
 	this->track = track;
+
+	List<Edit>::List<Edit>();
+	default_edit->track = track;
+	default_edit->startproject = 0;
+	default_edit->length = LAST_VIRTUAL_LENGTH;
+	insert_after(0, default_edit);
+	loaded_length = 0;
 }
 
 Edits::~Edits()
@@ -45,7 +52,7 @@ void Edits::equivalent_output(Edits *edits, int64_t *result)
 //printf("Edits::equivalent_output 1 %d\n", *result);
 		if(!current && that_current)
 		{
-			int64_t position1 = (last ? last->startproject + last->length : 0);
+			int64_t position1 = length();
 			int64_t position2 = that_current->startproject;
 			if(*result < 0 || *result > MIN(position1, position2))
 				*result = MIN(position1, position2);
@@ -54,7 +61,7 @@ void Edits::equivalent_output(Edits *edits, int64_t *result)
 		else
 		if(current && !that_current)
 		{
-			int64_t position1 = (edits->last ? edits->last->startproject + edits->last->length : 0);
+			int64_t position1 = edits->length();
 			int64_t position2 = current->startproject;
 			if(*result < 0 || *result > MIN(position1, position2))
 				*result = MIN(position1, position2);
@@ -77,6 +84,7 @@ void Edits::copy_from(Edits *edits)
 		Edit *new_edit = append(create_edit());
 		new_edit->copy_from(current);
 	}
+	loaded_length = edits->loaded_length;
 }
 
 
@@ -119,15 +127,7 @@ void Edits::insert_edits(Edits *source_edits, int64_t position)
 		track->to_units(source_edits->edl->local_session->clipboard_length, 1);
 	int64_t clipboard_end = position + clipboard_length;
 
-
-// Fill region between end of edit table and beginning of pasted segment
-// with silence.  Can't call from insert_new_edit because it's recursive.
-	if(position > length())
-	{
-		paste_silence(length(), position);
-	}
-
-
+	int64_t total_length = 0;
 	for(Edit *source_edit = source_edits->first;
 		source_edit;
 		source_edit = source_edit->next)
@@ -148,6 +148,11 @@ void Edits::insert_edits(Edits *source_edits, int64_t position)
 		dest_edit->shift_keyframes(position);
 
 
+		total_length += dest_edit->length;
+		if (source_edits->loaded_length && total_length > source_edits->loaded_length)
+		{
+			dest_edit->length -= (total_length - source_edits->loaded_length);
+		}
 
 // Shift following edits and keyframes in following edits by length
 // in current source edit.
@@ -202,17 +207,17 @@ Edit* Edits::split_edit(int64_t position)
 	Edit *edit = editof(position, PLAY_FORWARD, 0);
 // No edit found, make one - except when we are at zero position!
 	if(!edit && position != 0)
-		if (last && last->startproject + last->length == position)
+		if (length() == position)
 		{
 			edit = last; // we do not need any edit to extend past the last one
 		} else
-		if (!last || last->startproject + last->length < position)
+		if (!last || length() < position)
 		{
 
 			// Even when track is completely empty or split is beyond last edit, return correct edit
 			Edit *empty = create_edit();
 			if (last)
-				empty->startproject = last->startproject + last->length; // end of last edit
+				empty->startproject = length(); // end of last edit
 			else
 				empty->startproject = 0; // empty track
 			empty->length = position - empty->startproject;
@@ -359,11 +364,18 @@ int Edits::optimize()
 
 // delete 0 length edits
 		for(current = first; 
-			current && !result; )
+			current != last && !result; )
 		{
 			if(current->length == 0)
 			{
 				Edit* next = current->next;
+				// Be smart with transitions!
+				if (next && current->transition && !next->transition)
+				{
+					next->transition = current->transition;
+					next->transition->edit = next;
+					current->transition = 0;
+				}
 				delete current;
 				result = 1;
 				current = next;
@@ -395,13 +407,20 @@ int Edits::optimize()
 		}
 
 // delete last edit of 0 length or silence
-		if(last && 
-			(last->silence() || 
-			!last->length))
-		{
-			delete last;
-			result = 1;
-		}
+	}
+	if (!last || !last->silence())
+	{
+// No last empty edit available... create one
+		Edit *empty_edit = create_edit();
+		if (!last) 
+			empty_edit->startproject = 0;
+		else
+			empty_edit->startproject = last->startproject + last->length;
+		empty_edit->length = LAST_VIRTUAL_LENGTH;
+		insert_after(last, empty_edit);
+	} else
+	{
+		last->length = LAST_VIRTUAL_LENGTH;
 	}
 
 //track->dump();
@@ -433,7 +452,8 @@ int Edits::load(FileXML *file, int track_offset)
 {
 	int result = 0;
 	int64_t startproject = 0;
-
+	while (last) 
+		delete last;
 	do{
 		result = file->read_tag();
 
@@ -452,6 +472,10 @@ int Edits::load(FileXML *file, int track_offset)
 		}
 	}while(!result);
 
+	if (last)
+		loaded_length = last->startproject + last->length;
+	else 
+		loaded_length = 0;
 //track->dump();
 	optimize();
 }
@@ -545,17 +569,6 @@ int64_t Edits::length()
 	else 
 		return 0;
 }
-// 
-// int64_t Edits::total_length() 
-// {
-// 	int64_t total = 0;
-// 	Edit* current;
-// 	for(current = first; current; current = NEXT)
-// 	{
-// 		total += current->length;
-// 	}
-// 	return total; 
-// };
 
 Edit* Edits::editof(int64_t position, int direction, int use_nudge)
 {

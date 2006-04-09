@@ -11,7 +11,7 @@
 #include <string.h>
 
 PluginSet::PluginSet(EDL *edl, Track *track)
- : Edits(edl, track)
+ : Edits(edl, track, create_edit())
 {
 	record = 1;
 }
@@ -449,7 +449,7 @@ void PluginSet::load(FileXML *file, uint32_t load_flags)
 // Current plugin being amended
 	Plugin *plugin = (Plugin*)first;
 	int64_t startproject = 0;
-
+	loaded_length = 0;
 	record = file->tag.get_property("RECORD", record);
 	do{
 		result = file->read_tag();
@@ -465,6 +465,7 @@ void PluginSet::load(FileXML *file, uint32_t load_flags)
 			if(file->tag.title_is("PLUGIN"))
 			{
 				int64_t length = file->tag.get_property("LENGTH", (int64_t)0);
+				loaded_length += length;
 				int plugin_type = file->tag.get_property("TYPE", 1);
 				char title[BCTEXTLEN];
 				title[0] = 0;
@@ -497,6 +498,7 @@ void PluginSet::load(FileXML *file, uint32_t load_flags)
 			}
 		}
 	}while(!result);
+	optimize();
 }
 
 
@@ -604,16 +606,22 @@ int PluginSet::optimize()
     		current_edit = (Plugin*)current_edit->next;
 		}
 
-// delete last edit if 0 length or silence
-		if(last)
-		{
-			if(last->silence() || !last->length)
-			{
-				delete last;
-				result = 1;
-			}
-		}
 	}
+	if (!last || !last->silence())
+	{
+// No last empty edit available... create one
+		Edit *empty_edit = create_edit();
+		if (!last) 
+			empty_edit->startproject = 0;
+		else
+			empty_edit->startproject = last->startproject + last->length;
+		empty_edit->length = LAST_VIRTUAL_LENGTH;
+		insert_after(last, empty_edit);
+	} else
+	{
+		last->length = LAST_VIRTUAL_LENGTH;
+	}
+
 
 	return 0;
 }
