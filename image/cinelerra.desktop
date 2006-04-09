@@ -1,8 +1,11 @@
 [Desktop Entry]
 Name=Cinelerra 
 Name[ja]=Cinelerra
+Name[sl]=Cinelerra
+Name[fr]=Cinelerra
+Name[es]=Cinelerra
 Comment=Video Editor
-Categories=GNOME;Application;Multimedia;
+Categories=Application;AudioVideo;Multimedia;
 Encoding=UTF-8
 Exec=cinelerra
 Icon=cinelerra.xpm
