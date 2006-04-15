@@ -681,7 +681,7 @@ int FileDV::read_samples(double *buffer, int64_t len)
 	int count = 0;
 	int result = 0;
 	int frame_count = get_audio_frame(audio_position);
-	int frame_offset = get_audio_offset(audio_position);
+	int offset = get_audio_offset(audio_position);
 	
 	stream_lock->lock("FileDV::read_samples");
 	if(stream == 0)
@@ -704,9 +704,6 @@ int FileDV::read_samples(double *buffer, int64_t len)
 
 	while(count < len)
 	{
-		int samples = 0;
-		int offset = 0;
-		
 		stream_lock->lock();
 		
 		if(fseek(stream, frame_count * output_size, SEEK_SET) != 0)
@@ -734,18 +731,16 @@ int FileDV::read_samples(double *buffer, int64_t len)
 			fprintf(stderr, "Error decoding audio frame %d\n", frame_count - 1);
 		}
 
-		samples = dv_get_num_samples(decoder);
+		int end = dv_get_num_samples(decoder);
 		decoder_lock->unlock();
 
-		if(count + samples >= len) samples = len - count;
-		if(count == 0) offset = frame_offset;
+		if(len - count + offset < end)
+			end = len - count + offset;
 
-		samples -= offset;
+		for(int i = offset; i < end; i++)
+			buffer[count++] = out_buffer[file->current_channel][i] / 32767.0;
 
-		for(int i = 0; i < samples; i++)
-			buffer[i + count] = (double) out_buffer[file->current_channel][i + offset] / 32767;
-		
-		count += samples;
+		offset = 0;
 	}
 	
 	for(int i = 0; i < channels; i++)
