@@ -180,7 +180,10 @@ AC_SUBST(OPENEXR_CFLAGS)
 AC_SUBST(OPENEXR_LIBS)
 ############## END OF OpenEXR
 
-############## LIBFAAD
+############## LIBFAAD, LIBFAAC
+AC_CHECK_LIB(faac, faacEncOpen,[libfaac=yes])
+AC_CHECK_HEADER(faac.h,[libfaach=yes])
+
 AC_CHECK_LIB(faad, faacDecInit,[libfaad=yes],
 	AC_CHECK_LIB(faad, NeAACDecInit,[libfaad=yes]))
 AC_CHECK_HEADER(faad.h,[libfaadh=yes])
@@ -190,7 +193,7 @@ if test "x$libfaad$libfaadh" = xyesyes; then
 fi
 AC_SUBST(FAAD_CFLAGS)
 AC_SUBST(FAAD_LIBS)
-############## END OF LIBFAAD
+############## END OF LIBFAAD, LIBFAAC
 
 ############## FIREWIRE
 # firewire settings are propagated through FIREWIRE_CFLAGS and FIREWIRE_LDFLAGS
@@ -449,6 +452,8 @@ RPT(libmp3lame,libmp3lame libraries)
 RPT(libmp3lameh,libmp3lame headers)
 RPT(libsndfile,libsndfile libraries)
 RPT(libsndfileh,libsndfile headers)
+RPT(libfaac,libfaac libraries)
+RPT(libfaach,libfaac headers)
 RPT(libfaad,libfaad libraries)
 RPT(libfaadh,libfaad headers)
 mandatory="$succeeded"
@@ -478,5 +483,5 @@ if test "x$mandatory" = "xno"; then
 	echo "WARNING: Mandatory components are missing; compilation may fail!"
 else
 	echo
-	echo "Now type"; echo "          make"; echo; echo "to start compilation"
+	echo "Now type"; echo "          make"; echo; echo "to start compilation."
 fi
