@@ -21,6 +21,8 @@
 #include <string.h>
 #include <errno.h>
 
+#include <iostream>
+
 FileDV::FileDV(Asset *asset, File *file)
  : FileBase(asset, file)
 {
@@ -296,7 +298,7 @@ TRACE("FileDV::open_file 60")
 			asset->video_data = 0;
 		}
 
-		fseek(stream, 0, SEEK_SET);
+		fseeko(stream, 0, SEEK_SET);
 TRACE("FileDV::open_file 80")
 
 		delete[] temp;
@@ -479,9 +481,9 @@ TRACE("FileDV::write_samples 220")
 	for(int i = 0; i < nFrames; i++)
 	{
 		stream_lock->lock("FileDV::write_samples 10");
-		if(fseek(stream, audio_frames_written * output_size, SEEK_SET) != 0)
+		if(fseeko(stream, (off_t) audio_frames_written * output_size, SEEK_SET) != 0)
 		{
-			fprintf(stderr, "ERROR: Unable to set audio write position\n");
+			fprintf(stderr, "ERROR: Unable to set audio write position to %lli\n", (off_t) audio_frames_written * output_size);
 			stream_lock->unlock();
 			return 1;
 		}
@@ -539,9 +541,9 @@ TRACE("FileDV::write_samples 260")
 TRACE("FileDV::write_samples 270")
 
 		stream_lock->lock("FileDV::write_samples 20");
-		if(fseek(stream, audio_frames_written * output_size, SEEK_SET) != 0)
+		if(fseeko(stream, (off_t) audio_frames_written * output_size, SEEK_SET) != 0)
 		{
-			fprintf(stderr, "ERROR: Unable to relocate for audio write\n");
+			fprintf(stderr, "ERROR: Unable to relocate for audio write to %lli\n", (off_t) audio_frames_written * output_size);
 			stream_lock->unlock();
 			return 1;
 		}
@@ -644,14 +646,13 @@ int FileDV::write_frames(VFrame ***frames, int len)
 		// This is the only thread that modifies video_position,
 		// so video_position_lock can remain unlocked for reads.
 		stream_lock->lock("FileDV::write_frames");
-		if(fseek(stream, video_position * output_size, SEEK_SET) != 0)
+		if(fseeko(stream, (off_t) video_position * output_size, SEEK_SET) != 0)
 		{
-			fprintf(stderr, "FileDV::write_frames: Unable to seek file to %d.",
-						video_position * output_size);		
+			fprintf(stderr, "FileDV::write_frames: Unable to seek file to %lli\n", (off_t)(video_position * output_size));
 		}
 		if(fwrite(video_buffer, output_size, 1, stream) < 1)
 		{
-			fprintf(stderr, "FileDV::write_frames: Unable to write video data.");		
+			fprintf(stderr, "FileDV::write_frames: Unable to write video data.\n");		
 		}
 		stream_lock->unlock();
 		
@@ -668,7 +669,10 @@ int FileDV::read_compressed_frame(VFrame *buffer)
 	int64_t result;
 	if(stream == 0) return 0;
 
-	fseek(stream, video_position * output_size, SEEK_SET);
+	if (fseeko(stream, (off_t) video_position * output_size, SEEK_SET))
+	{
+		fprintf(stderr, "FileDV::read_compressed_frame: Unable to seek file to %lli\n", (off_t)(video_position * output_size));
+	}
 	result = fread(buffer->get_data(), output_size, 1, stream);
 	video_position++;
 
@@ -682,8 +686,10 @@ int FileDV::write_compressed_frame(VFrame *buffer)
 	int result = 0;
 	if(stream == 0) return 0;
 
-
-	fseek(stream, video_position * output_size, SEEK_SET);
+	if (fseeko(stream, (off_t) video_position * output_size, SEEK_SET))
+	{
+		fprintf(stderr, "FileDV::read_compressed_frame: Unable to seek file to %lli", (off_t)(video_position * output_size));
+	}
 	result = fwrite(buffer->get_data(), buffer->get_compressed_size(), 1, stream);
 	video_position++;
 	return result != 0;
@@ -699,7 +705,7 @@ int FileDV::read_samples(double *buffer, int64_t len)
 	int count = 0;
 	int result = 0;
 	int frame_count = get_audio_frame(audio_position);
-	int offset = get_audio_offset(audio_position);
+	int frame_offset = get_audio_offset(audio_position);
 	
 	stream_lock->lock("FileDV::read_samples");
 	if(stream == 0)
@@ -722,9 +728,12 @@ int FileDV::read_samples(double *buffer, int64_t len)
 
 	while(count < len)
 	{
+		int samples = 0;
+		int offset = 0;
+		
 		stream_lock->lock();
 		
-		if(fseek(stream, frame_count * output_size, SEEK_SET) != 0)
+		if(fseeko(stream, (off_t) frame_count * output_size, SEEK_SET) != 0)
 		{
 			stream_lock->unlock();
 			result = 1;
@@ -749,16 +758,18 @@ int FileDV::read_samples(double *buffer, int64_t len)
 			fprintf(stderr, "Error decoding audio frame %d\n", frame_count - 1);
 		}
 
-		int end = dv_get_num_samples(decoder);
+		samples = dv_get_num_samples(decoder);
 		decoder_lock->unlock();
 
-		if(len - count + offset < end)
-			end = len - count + offset;
+		if(count + samples >= len) samples = len - count;
+		if(count == 0) offset = frame_offset;
 
-		for(int i = offset; i < end; i++)
-			buffer[count++] = out_buffer[file->current_channel][i] / 32767.0;
+		samples -= offset;
 
-		offset = 0;
+		for(int i = 0; i < samples; i++)
+			buffer[i + count] = (double) out_buffer[file->current_channel][i + offset] / 32767;
+		
+		count += samples;
 	}
 	
 	for(int i = 0; i < channels; i++)
@@ -783,8 +794,9 @@ TRACE("FileDV::read_frame 10")
 
 	// Seek to video position
 	stream_lock->lock("FileDV::read_frame");
-	if(fseek(stream, video_position * output_size, SEEK_SET) < 0)
+	if(fseeko(stream, (off_t) video_position * output_size, SEEK_SET) < 0)
 	{
+		fprintf(stderr, "FileDV::read_frame: Unable to seek file to %lli", (off_t)(video_position * output_size));
 		stream_lock->unlock();
 		return 1;
 	}
