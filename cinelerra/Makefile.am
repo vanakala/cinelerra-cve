@@ -592,7 +592,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 vtimebar.h \
 		 vtrack.h \
 		 vtracking.h \
-		 vtransition.h \
 		 vwindowgui.h \
 		 vwindow.h \
 		 workarounds.h \
