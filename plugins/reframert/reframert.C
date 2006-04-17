@@ -311,16 +311,13 @@ int ReframeRT::process_buffer(VFrame *frame,
 	double input_rate = frame_rate;
 	int is_current_keyframe;
 
-	// the first keyframe can be unique -
-	// it doesn't have to be at the effect start and it controls settings before it
-	// so, if needed, let's calculate using a fake keyframe with the same settings but position == effect start
+	// if there are no keyframes, the default keyframe is used, and its position is always 0;
+	// if there are keyframes, the first keyframe can be after the effect start (and it controls settings before it)
+	// so let's calculate using a fake keyframe with the same settings but position == effect start
 	KeyFrame *fake_keyframe = new KeyFrame();
-	if (get_source_start() < edl_to_local(next_keyframe->position))
-	{
-		fake_keyframe->copy_from(next_keyframe);
-		fake_keyframe->position = local_to_edl(get_source_start());
-		next_keyframe = fake_keyframe;
-	}
+	fake_keyframe->copy_from(next_keyframe);
+	fake_keyframe->position = local_to_edl(get_source_start());
+	next_keyframe = fake_keyframe;
 
 	// calculate input_frame accounting for all previous keyframes
 	do
@@ -333,7 +330,10 @@ int ReframeRT::process_buffer(VFrame *frame,
 
 		read_data(tmp_keyframe);
 
-		is_current_keyframe = next_position > start_position || next_keyframe->position == tmp_keyframe->position;
+		is_current_keyframe =
+			next_position > start_position // the next keyframe is after the current position
+			|| next_keyframe->position == tmp_keyframe->position // there are no more keyframes
+			|| !next_keyframe->position; // there are no keyframes at all
 
 		if (is_current_keyframe)
 			next_position = start_position;
