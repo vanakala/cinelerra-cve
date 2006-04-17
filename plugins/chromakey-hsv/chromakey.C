@@ -622,7 +622,7 @@ ChromaKeyUnit::process_chromakey (int components, component_type max,
 	  else if ((out_slope != 0) && (ABS (h - hk) < tolerance * 180))
 	    ah = ABS (h - hk) / tolerance / 360;	/* we scale alpha between 0 and 1/2 */
 	  else if (ABS (h - hk) < tolerance_out * 180)
-	    ah = 1 / 2 + ABS (h - hk) / tolerance_out / 360;	/* we scale alpha between 1/2 and 1 */
+	    ah = 0.5 + ABS (h - hk) / tolerance_out / 360;	/* we scale alpha between 1/2 and 1 */
 	  else
 	    has_match = false;
 
@@ -634,9 +634,9 @@ ChromaKeyUnit::process_chromakey (int components, component_type max,
 	      else if (s - sat >= min_s_in)
 		as = 0;
 	      else if ((out_slope != 0) && (s - sat > min_s))
-		as = (s - sat - min_s / min_s) / 2;
+		as = (s - sat - min_s) / (min_s * 2); 
 	      else if (s - sat > min_s_out)
-		as = 1 / 2 + (s - sat - min_s_out) / (min_s_out * 2);
+		as = 0.5 + (s - sat - min_s_out) / (min_s_out * 2);
 	      else
 		has_match = false;
 	    }
@@ -649,9 +649,9 @@ ChromaKeyUnit::process_chromakey (int components, component_type max,
 	      else if (v >= min_v_in)
 		av = 0;
 	      else if ((out_slope != 0) && (v > min_v))
-		av = (s - min_v / min_v) / 2;
+		av = (v - min_v ) / (min_v * 2) ;
 	      else if (v > min_v_out)
-		av = 1 / 2 + (v - min_v_out) / (min_v_out * 2);
+		av = 0.5 + (v - min_v_out) / (min_v_out * 2);
 	      else
 		has_match = false;
 	    }
@@ -664,9 +664,9 @@ ChromaKeyUnit::process_chromakey (int components, component_type max,
 	      else if (v <= max_v_in)
 		avm = 0;
 	      else if ((out_slope != 0) && (v < max_v))
-		avm = (s - max_v / max_v) / 2;
+		avm = (v - max_v) / ( max_v * 2);
 	      else if (v < max_v_out)
-		avm = 1 / 2 + (v - max_v_out / max_v_out) / 2;
+		avm = 0.5 + (v - max_v_out ) / (max_v_out *2); 
 	      else
 		has_match = false;
 	    }
