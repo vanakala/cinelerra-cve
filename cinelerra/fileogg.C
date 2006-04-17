@@ -321,6 +321,8 @@ TRACE("FileOGG::open_file 20")
 				fprintf (stderr,
 					"The Vorbis encoder could not set up a mode according to\n"
 					"the requested quality or bitrate.\n\n");
+				fclose (stream);
+				stream = 0;
 				return 1;
 			}
 
