@@ -157,6 +157,24 @@ TRACE("FileDV::open_file 10")
 
 TRACE("FileDV::open_file 20")
 
+		
+		if (!(asset->height == 576 && asset->width == 720 && asset->frame_rate == 25) &&
+		    !(asset->height == 480 && asset->width == 720 && asset->frame_rate == 30))
+		{
+			printf("Resolution not supported for dv: %ix%i framerate: %f\n", asset->height, asset->width, asset->frame_rate); 
+			return 1;	
+		}   
+		if (!(asset->channels == 2 && (asset->sample_rate == 48000 || asset->sample_rate == 44100)) &&
+		    !((asset->channels == 4 || asset->channels == 2) && asset->sample_rate == 32000))
+		{
+			printf("Audio configuration not supported for dv: channels: %i, sample rate: %i\n", asset->channels, asset->sample_rate); 
+			return 1;	
+		}   
+		  
+		
+		    
+		    
+
 		if((stream = fopen(asset->path, "w+b")) == 0)
 		{
 			perror(_("FileDV::open_file rdwr"));
