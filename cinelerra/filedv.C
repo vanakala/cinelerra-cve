@@ -161,9 +161,13 @@ TRACE("FileDV::open_file 20")
 
 		
 		if (!(asset->height == 576 && asset->width == 720 && asset->frame_rate == 25) &&
-		    !(asset->height == 480 && asset->width == 720 && asset->frame_rate == 30))
+		    !(asset->height == 480 && asset->width == 720 && (asset->frame_rate >= 29.96 && asset->frame_rate <= 29.98)))
 		{
-			printf("Resolution not supported for dv: %ix%i framerate: %f\n", asset->height, asset->width, asset->frame_rate); 
+			printf("Resolution not supported for dv: %ix%i framerate: %f\n", asset->width, asset->height, asset->frame_rate); 
+			if (asset->height == 480 && asset->width == 720 && asset->frame_rate == 30)
+			{
+				printf("Suggestion: Proper frame rate for NTSC DV is 29.97\n");
+			}
 			return 1;	
 		}   
 		if (!(asset->channels == 2 && (asset->sample_rate == 48000 || asset->sample_rate == 44100)) &&
