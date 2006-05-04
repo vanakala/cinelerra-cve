@@ -615,9 +615,8 @@ void Track::detach_effect(Plugin *plugin)
 // Delete 0 length pluginsets	
 				plugin_set->optimize();
 //printf("Track::detach_effect 2 %d\n", plugin_set->length());
-				if(!plugin_set->length()) 
-					this->plugin_set.remove_object(plugin_set);
-
+				if(plugin_set->last == plugin_set->first && plugin_set->last->silence())
+					remove_pluginset(plugin_set);
 				return;
 			}
 		}
@@ -655,7 +654,7 @@ void Track::detach_shared_effects(int module)
 
 // Delete 0 length pluginsets	
 				plugin_set->optimize();
-				if(!plugin_set->length())  
+				if(plugin_set->last == plugin_set->first && plugin_set->last->silence())
 				{
 					this->plugin_set.remove_object_number(i);
 					--i;
@@ -671,11 +670,13 @@ void Track::optimize()
 	edits->optimize();
 	for(int i = 0; i < plugin_set.total; i++)
 	{
-		plugin_set.values[i]->optimize();
+		PluginSet *plugin_set = this->plugin_set.values[i];
+		plugin_set->optimize();
 //printf("Track::optimize %d\n", plugin_set.values[i]->total());
-		if(plugin_set.values[i]->total() <= 0)
+// new definition of empty track...
+		if(plugin_set->last == plugin_set->first && plugin_set->last->silence())
 		{
-			remove_pluginset(plugin_set.values[i]);
+			remove_pluginset(plugin_set);
 			i--;
 		}
 	}
