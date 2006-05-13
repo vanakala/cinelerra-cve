@@ -337,6 +337,15 @@ int RenderEngine::open_output()
 		if(do_audio)
 		{
 			audio = new AudioDevice;
+			if (audio->open_output(config->aconfig, 
+				edl->session->sample_rate, 
+				adjusted_fragment_len,
+				edl->session->real_time_playback))
+			{
+				do_audio = 0;
+				delete audio;
+				audio = 0;
+			}
 		}
 
 		if(do_video)
@@ -359,18 +368,8 @@ int RenderEngine::open_output()
 // Retool playback configuration
 		if(do_audio)
 		{	
-			if (audio->open_output(config->aconfig, 
-				   edl->session->sample_rate, 
-				   adjusted_fragment_len,
-				   edl->session->real_time_playback))
-			{
-				do_audio = 0;
-			}
-			else
-			{
-				audio->set_software_positioning(edl->session->playback_software_position);
-				audio->start_playback();
-			}
+			audio->set_software_positioning(edl->session->playback_software_position);
+			audio->start_playback();
 		}
 
 		if(do_video)
