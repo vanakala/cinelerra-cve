@@ -511,6 +511,7 @@ int EDL::copy(double start,
 		}
 
 // Media
+		if(!is_clip)
 		copy_assets(start, 
 			end, 
 			file, 
