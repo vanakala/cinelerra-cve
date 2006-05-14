@@ -1248,26 +1248,6 @@ SET_TRACE
 	}
 SET_TRACE
 
-// Assume any paste operation from the same EDL won't contain any clips.
-// If it did it would duplicate every clip here.
-	for(int i = 0; i < new_edls->total; i++)
-	{
-		EDL *new_edl = new_edls->values[i];
-
-		for(int j = 0; j < new_edl->clips.total; j++)
-		{
-			edl->add_clip(new_edl->clips.values[j]);
-		}
-
-		if(new_edl->vwindow_edl)
-		{
-			if(edl->vwindow_edl) delete edl->vwindow_edl;
-			edl->vwindow_edl = new EDL(edl);
-			edl->vwindow_edl->create_objects();
-			edl->vwindow_edl->copy_all(new_edl->vwindow_edl);
-		}
-	}
-SET_TRACE
 
 // Create new tracks in master EDL
 	if(load_mode == LOAD_REPLACE || 
@@ -1497,6 +1477,27 @@ SET_TRACE
 			current_position += edl_length;
 	}
 
+// Move loading of clips and vwindow to the end - this fixes some strange issue, for index not being shown
+// Assume any paste operation from the same EDL won't contain any clips.
+// If it did it would duplicate every clip here.
+	for(int i = 0; i < new_edls->total; i++)
+	{
+		EDL *new_edl = new_edls->values[i];
+
+		for(int j = 0; j < new_edl->clips.total; j++)
+		{
+			edl->add_clip(new_edl->clips.values[j]);
+		}
+
+		if(new_edl->vwindow_edl)
+		{
+			if(edl->vwindow_edl) delete edl->vwindow_edl;
+			edl->vwindow_edl = new EDL(edl);
+			edl->vwindow_edl->create_objects();
+			edl->vwindow_edl->copy_all(new_edl->vwindow_edl);
+		}
+	}
+SET_TRACE
 
 
 SET_TRACE
