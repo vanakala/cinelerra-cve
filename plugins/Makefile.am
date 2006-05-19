@@ -57,6 +57,7 @@ SUBDIRS= \
 	loopaudio \
 	loopvideo \
 	motion \
+	motionblur \
 	normalize \
 	oilpainting \
 	overlay \

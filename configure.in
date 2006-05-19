@@ -362,10 +362,10 @@ AC_OUTPUT(Makefile cinelerra-cvs-current.spec po/Makefile.in \
 					plugins/Makefile plugins/1080to480/Makefile \
 					plugins/histogram/Makefile \
 					plugins/720to480/Makefile \
-					plugins/denoisemjpeg/Makefile \
-					plugins/motion/Makefile \
 					plugins/bandslide/Makefile \
-					plugins/bandwipe/Makefile plugins/blur/Makefile plugins/brightness/Makefile \
+					plugins/bandwipe/Makefile 
+					plugins/blur/Makefile 
+					plugins/brightness/Makefile \
 					plugins/burn/Makefile plugins/parametric/Makefile plugins/aging/Makefile \
 					plugins/cdripper/Makefile \
 					plugins/chromakey/Makefile \
@@ -376,6 +376,7 @@ AC_OUTPUT(Makefile cinelerra-cvs-current.spec po/Makefile.in \
 					plugins/decimate/Makefile \
 					plugins/deinterlace/Makefile plugins/delayaudio/Makefile plugins/delayvideo/Makefile \
 					plugins/denoise/Makefile plugins/denoisefft/Makefile plugins/denoisevideo/Makefile \
+					plugins/denoisemjpeg/Makefile \
 					plugins/despike/Makefile plugins/dissolve/Makefile plugins/dot/Makefile \
 					plugins/fieldframe/Makefile plugins/flip/Makefile plugins/framefield/Makefile \
 					plugins/freeverb/Makefile plugins/freezeframe/Makefile plugins/gain/Makefile \
@@ -387,6 +388,8 @@ AC_OUTPUT(Makefile cinelerra-cvs-current.spec po/Makefile.in \
 					plugins/linearize/Makefile \
 					plugins/loopaudio/Makefile \
 					plugins/loopvideo/Makefile \
+					plugins/motion/Makefile \
+					plugins/motionblur/Makefile \
 					plugins/normalize/Makefile \
 					plugins/oilpainting/Makefile \
 					plugins/overlay/Makefile \
