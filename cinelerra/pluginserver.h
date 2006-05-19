@@ -62,6 +62,11 @@ public:
 // close the plugin
 	int close_plugin();    
 	void dump();
+// get camera and projector autos
+	void get_camera(float *x, float *y, float *z,
+			int64_t position, int direction);
+	void get_projector(float *x, float *y, float *z,
+			int64_t position, int direction);
 
 
 // queries
