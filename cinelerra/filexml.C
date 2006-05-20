@@ -726,14 +726,20 @@ int XMLTag::set_property(char *text, int64_t value)
 
 int XMLTag::set_property(char *text, float value)
 {
-	sprintf(temp_string, "%.6e", value);
+	if (value - (float)((int64_t)value) == 0)
+		sprintf(temp_string, "%lld", (int64_t)value);
+	else
+		sprintf(temp_string, "%.6e", value);
 	set_property(text, temp_string);
 	return 0;
 }
 
 int XMLTag::set_property(char *text, double value)
 {
-	sprintf(temp_string, "%.16e", value);
+	if (value - (double)((int64_t)value) == 0)
+		sprintf(temp_string, "%lld", (int64_t)value);
+	else
+		sprintf(temp_string, "%.16e", value);
 	set_property(text, temp_string);
 	return 0;
 }
