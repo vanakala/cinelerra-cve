@@ -345,6 +345,7 @@ void Track::insert_asset(Asset *asset,
 		to_units(length, 1), 
 		to_units(position, 0), 
 		track_number);
+	edits->loaded_length += to_units(length, 1);
 }
 
 // Insert data
