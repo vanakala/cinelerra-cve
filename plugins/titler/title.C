@@ -401,7 +401,7 @@ void GlyphUnit::process_package(LoadPackage *package)
 					plugin->config.stroke_width * 64)) >> 6;
 				return;
 			}
-			FT_Stroker_New(((FT_LibraryRec *)freetype_library)->memory, &stroker);
+			FT_Stroker_New(freetype_library, &stroker);
 			FT_Stroker_Set(stroker, (int)(plugin->config.stroke_width * 64), FT_STROKER_LINECAP_ROUND, FT_STROKER_LINEJOIN_ROUND, 0);
 			FT_Stroker_ParseOutline(stroker, &((FT_OutlineGlyph) glyph_image)->outline,1);
 			FT_Stroker_GetCounts(stroker,&npoints, &ncontours);
