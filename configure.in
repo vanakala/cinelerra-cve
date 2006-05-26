@@ -152,6 +152,8 @@ PKG_CHECK_MODULES(PNG,libpng,[libpng=yes],:)
 
 AC_CHECK_HEADER(jpeglib.h,[libjpegh=yes])
 AC_CHECK_LIB(jpeg,jpeg_start_decompress,[libjpeg=yes])
+
+PKG_CHECK_MODULES(FREETYPE,freetype2,[freetype2=yes],:)
 ############## END OF MISC LIBRARIES
 
 LARGEFILE_CFLAGS="-D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64"
@@ -442,6 +444,7 @@ RPT(libdv,libdv)
 RPT(libpng,libpng)
 RPT(libjpeg,libjpeg libraries)
 RPT(libjpegh,libjpeg headers)
+RPT(freetype2,FreeType 2)
 RPT(libx264,libx264 libraries)
 RPT(libx264h,libx264 headers)
 RPT(libuuid,libuuid libraries)
