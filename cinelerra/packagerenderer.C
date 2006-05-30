@@ -79,6 +79,9 @@ PackageRenderer::~PackageRenderer()
 	delete vconfig;
 }
 
+// PackageRenderer::initialize happens only once for every node when doing rendering session
+// This is not called for each package!
+
 int PackageRenderer::initialize(MWindow *mwindow,
 		EDL *edl, 
 		Preferences *preferences, 
@@ -520,6 +523,11 @@ int PackageRenderer::render_package(RenderPackage *package)
 // 	package->video_end - package->video_start);
 
 
+// FIXME: The design that we only get EDL once does not give us neccessary flexiblity to do things the way they should be donek
+	default_asset->video_data = package->video_do;
+	default_asset->audio_data = package->audio_do;
+	Render::check_asset(edl, *default_asset);
+	
 	create_output();
 
 	if(!asset->video_data) video_done = 1;

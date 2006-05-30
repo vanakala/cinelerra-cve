@@ -39,6 +39,8 @@ public:
 	int64_t video_end;
 	int done;
 	int use_brender;
+	int video_do;
+	int audio_do;
 };
 
 

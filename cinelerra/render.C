@@ -504,11 +504,8 @@ void Render::start_progress()
 	char string[BCTEXTLEN];
 	FileSystem fs;
 
-	progress_max = Units::to_int64(default_asset->sample_rate * 
-			(total_end - total_start)) +
-		Units::to_int64(preferences->render_preroll * 
-			packages->total_allocated * 
-			default_asset->sample_rate);
+	progress_max = packages->get_progress_max();
+
 	progress_timer->update();
 	last_eta = 0;
 	if(mwindow)
@@ -790,6 +787,7 @@ int Render::render(int test_overwrite,
 		if(strategy == SINGLE_PASS_FARM || strategy == FILE_PER_LABEL_FARM)
 		{
 			farm_server->wait_clients();
+			result |= packages->packages_are_done();
 		}
 
 //printf("Render::render 90\n");

@@ -454,6 +454,10 @@ int RenderFarmClientThread::read_package(int socket_fd, RenderPackage *package)
 	package->video_end = READ_INT32(data_ptr);
 	data_ptr += 4;
 	package->use_brender = READ_INT32(data_ptr);
+	data_ptr += 4;
+	package->audio_do = READ_INT32(data_ptr);
+	data_ptr += 4;
+	package->video_do = READ_INT32(data_ptr);
 
 	delete [] data;
 

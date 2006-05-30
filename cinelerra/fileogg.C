@@ -35,6 +35,7 @@ FileOGG::FileOGG(Asset *asset, File *file)
 		asset->format = FILE_OGG;
 	asset->byte_order = 0;
 	reset_parameters();
+	final_write = 1;
 }
 
 FileOGG::~FileOGG()
@@ -153,7 +154,8 @@ int take_page_out_autoadvance(FILE *in, sync_window_t *sw, ogg_page *og)
 			// need more data for page
 			if (read_buffer(in, sw, READ_SIZE) == 0) 
 			{
-				printf("FileOGG: There is no more data in the file we are reading from\n");
+// FIXME We should report that just in some situations... sometimes we go to the end
+//				printf("FileOGG: There is no more data in the file we are reading from\n");
 				return 0;  // No more data
 			}
 		}
@@ -545,7 +547,7 @@ TRACE("FileOGG::open_file 20")
 					break;
 			}
 
-			if (vorbis_p == 3 && theora_p == 3) 
+			if ((!vorbis_p || vorbis_p == 3) && (!theora_p || theora_p == 3)) 
 				break;
 			/* The header pages/packets will arrive before anything else we
 			    care about, or the stream is not obeying spec */
@@ -919,6 +921,15 @@ int FileOGG::ogg_get_first_page(sync_window_t *sw, long serialno, ogg_page *og)
 	return (ogg_get_next_page(sw, serialno, og));
 }
 
+int FileOGG::ogg_seek_to_databegin(sync_window_t *sw, long serialno)
+{
+	
+//	printf("FileOGG:: Seeking to first page at %lli\n", filedata_begin);
+	read_buffer_at(stream, sw, READ_SIZE, filedata_begin);
+// we don't even need to sync since we _know_ it is right
+	return (0);
+}
+
 int FileOGG::ogg_get_next_page(sync_window_t *sw, long serialno, ogg_page *og)
 {
 	while (take_page_out_autoadvance(stream, sw, og) > 0)
@@ -1058,6 +1069,8 @@ int FileOGG::ogg_seek_to_sample(sync_window_t *sw, long serialno, int64_t sample
 				current_comming_sample += vorbis_synthesis_pcmout(&tf->vd, NULL);
 				if (current_comming_sample > sample)
 				{
+					if (previous_comming_sample > sample)
+						printf("Ogg decoding error while seeking sample\n");
 					vorbis_synthesis_read(&tf->vd, (sample - previous_comming_sample));
 //					printf("WE GOT IT, samples already decoded: %li\n", vorbis_synthesis_pcmout(&tf->vd,NULL));
 					return 1; // YAY next sample read is going to be ours, sexy!
@@ -1267,7 +1280,7 @@ int FileOGG::check_sig(Asset *asset)
 		data[3] == 'S')
 	{
 		fclose(fd);
-		printf("Yay, we have an ogg file\n");
+//		printf("Yay, we have an ogg file\n");
 		return 1;
 	}
 	fclose(fd);
@@ -1280,11 +1293,13 @@ int FileOGG::close_file()
 
 	if (wr)
 	{
-		if (asset->audio_data)
-			write_samples_vorbis(0, 0, 1); // set eos
-		if (asset->video_data)
-			write_frames_theora(0, 1, 1); // set eos
-
+		if (final_write)
+		{
+			if (asset->audio_data)
+				write_samples_vorbis(0, 0, 1); // set eos
+			if (asset->video_data)
+				write_frames_theora(0, 1, 1); // set eos
+		}
 		flush_ogg(1); // flush all
 	
 		if (asset->audio_data)

@@ -459,11 +459,7 @@ void BatchRenderThread::calculate_dest_paths(ArrayList<char*> *paths,
 				0);
 
 // Append output paths allocated to total
-			for(int j = 0; j < packages->get_total_packages(); j++)
-			{
-				RenderPackage *package = packages->get_package(j);
-				paths->append(strdup(package->path));
-			}
+			packages->get_package_paths(paths);
 
 // Delete package harness
 			delete packages;
@@ -504,6 +500,8 @@ void BatchRenderThread::start_rendering(char *config_path,
 		plugindb);
 
 	int result = ConfirmSave::test_files(0, &paths);
+	paths.remove_all_objects();
+
 // Abort on any existing file because it's so hard to set this up.
 	if(result) return;
 

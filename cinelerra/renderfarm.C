@@ -543,6 +543,8 @@ void RenderFarmServerThread::send_package(unsigned char *buffer)
 		STORE_INT32(package->video_end);
 		int use_brender = (server->brender ? 1 : 0);
 		STORE_INT32(use_brender);
+		STORE_INT32(package->audio_do);
+		STORE_INT32(package->video_do);
 
 		int len = i;
 		i = 0;

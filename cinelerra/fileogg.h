@@ -74,6 +74,7 @@ theoraframes_info_t;
 
 class FileOGG : public FileBase
 {
+friend class PackagingEngineOgg;
 public:
 	FileOGG(Asset *asset, File *file);
 	~FileOGG();
@@ -128,6 +129,7 @@ private:
 
 	int ogg_get_page_of_frame(sync_window_t *sw, long serialno, ogg_page *og, int64_t frame);
 	int ogg_seek_to_keyframe(sync_window_t *sw, long serialno, int64_t frame, int64_t *keyframe_number);
+	int ogg_seek_to_databegin(sync_window_t *sw, long serialno);
 
 
 	int64_t start_sample; // first and last sample inside this file
@@ -152,6 +154,7 @@ private:
 	int64_t ogg_frame_position;    // LAST decoded frame position
 	int64_t next_frame_position;   // what is the next sample read_frames must deliver
 	char theora_keyframe_granule_shift;
+	int final_write;
 };
 
 class OGGConfigAudio;
