@@ -216,7 +216,6 @@ void Module::update_transition(int64_t current_position,
 	int direction)
 {
 SET_TRACE
-	Plugin *prev_transition = transition;
 	transition = track->get_current_transition(current_position, 
 		direction,
 		0,
@@ -226,7 +225,7 @@ SET_TRACE
 // for situations where we had transition and have no more, we keep the server open:
 // maybe the same transition will follow and we won't need to reinit... (happens a lot while scrubbing over transitions left and right)
 //	if((prev_transition && !transition) ||
-	if ((transition && prev_transition && strcmp(transition->title, prev_transition->title)))
+	if ((transition && transition_server && strcmp(transition->title, transition_server->plugin->title)))
 	{
 		transition_server->close_plugin();
 		delete transition_server;
