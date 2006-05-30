@@ -989,11 +989,13 @@ int FileOGG::ogg_get_page_of_sample(sync_window_t *sw, long serialno, ogg_page *
 			end_sample = ogg_page_granulepos(og);
 		}
 		ogg_get_prev_page(sw, serialno, og);
+		while (ogg_page_continued(og) && ogg_page_packets(og) == 1)
+			ogg_get_prev_page(sw, serialno, og);
 	} else
 	{
 	// scan backward
 		start_sample = end_sample;
-		while (start_sample > sample)
+		while (start_sample > sample || (ogg_page_continued(og) && ogg_page_packets(og) == 1))
 		{
 //			printf("get prev page: %lli pagepos:%lli\n", ogg_page_granulepos(og), sw->file_pagepos_found);
 			ogg_get_prev_page(sw, serialno, og);
