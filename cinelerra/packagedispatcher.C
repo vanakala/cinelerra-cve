@@ -202,8 +202,7 @@ int PackageDispatcher::create_packages(MWindow *mwindow,
 		ArrayList<char*> paths;
 		get_package_paths(&paths);
 		result = ConfirmSave::test_files(mwindow, &paths);
-		for (int i = 0; i < paths.total; i++)
-			free(paths.values[i]);
+		paths.remove_all_objects();
 	}
 	
 	return result;
@@ -214,9 +213,10 @@ void PackageDispatcher::get_package_paths(ArrayList<char*> *path_list)
 		if (strategy == SINGLE_PASS_FARM)
 			packaging_engine->get_package_paths(path_list);
 		else
-		for(int i = 0; i < total_allocated; i++)
 		{
-			path_list->append(strdup(packages[i]->path));
+			for(int i = 0; i < total_allocated; i++)
+				path_list->append(strdup(packages[i]->path));
+			path_list->set_free();
 		}
 
 }

@@ -2436,6 +2436,7 @@ void PackagingEngineOGG::get_package_paths(ArrayList<char*> *path_list)
 	}
 // We will mux to the the final file at the end!
 	path_list->append(strdup(default_asset->path));
+	path_list->set_free();
 }
 
 int64_t PackagingEngineOGG::get_progress_max()

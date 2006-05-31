@@ -711,7 +711,7 @@ int PackageRenderer::direct_frame_copy(EDL *edl,
 				temp_output[0] = new VFrame*[1];
 				temp_output[0][0] = compressed_output;
 				error = file->write_frames(temp_output, 1);
-				delete temp_output[0];
+				delete [] temp_output[0];
 				delete temp_output;
 			}
 		}

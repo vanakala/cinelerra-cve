@@ -179,6 +179,7 @@ void PackagingEngineDefault::get_package_paths(ArrayList<char*> *path_list)
 	{
 		path_list->append(strdup(packages[i]->path));
 	}
+	path_list->set_free();
 }
 
 int64_t PackagingEngineDefault::get_progress_max()

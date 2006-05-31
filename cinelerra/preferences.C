@@ -318,6 +318,7 @@ void Preferences::add_node(char *text, int port, int enabled, float rate)
 	char *new_item = new char[strlen(text) + 1];
 	strcpy(new_item, text);
 	renderfarm_nodes.append(new_item);
+	renderfarm_nodes.set_array_delete();
 	renderfarm_ports.append(port);
 	renderfarm_enabled.append(enabled);
 	renderfarm_rate.append(rate);

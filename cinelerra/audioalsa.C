@@ -42,6 +42,7 @@ void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title)
 #define DEFAULT_DEVICE "default"
 	char *result = new char[strlen(DEFAULT_DEVICE) + 1];
 	devices->append(result);
+	devices->set_array_delete();     // since we are allocating by new[]
 	strcpy(result, DEFAULT_DEVICE);
 
 	while(snd_card_next(&card) >= 0)
