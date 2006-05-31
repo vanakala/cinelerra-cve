@@ -212,7 +212,7 @@ public:
 	int64_t normalized_sample_rate;
 	Preferences *preferences;
 
-	static PackagingEngine *File::new_packaging_engine(Asset *asset);
+	static PackagingEngine *new_packaging_engine(Asset *asset);
 
 private:
 	void reset_parameters();
