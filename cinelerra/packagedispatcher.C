@@ -10,7 +10,7 @@
 #include "packagerenderer.h"
 #include "preferences.h"
 #include "render.h"
-
+#include "file.h"
 
 
 
