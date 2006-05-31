@@ -500,7 +500,8 @@ void BatchRenderThread::start_rendering(char *config_path,
 		plugindb);
 
 	int result = ConfirmSave::test_files(0, &paths);
-	paths.remove_all_objects();
+	for (int i = 0; i < paths.total; i++)
+		free(paths.values[i]);
 
 // Abort on any existing file because it's so hard to set this up.
 	if(result) return;

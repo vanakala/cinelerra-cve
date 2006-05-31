@@ -166,6 +166,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    overlayframe.C \
 		    packagedispatcher.C \
 		    packagerenderer.C \
+		    packagingengine.C \
 		    panauto.C \
 		    panautos.C \
 		    patchbay.C \
@@ -467,6 +468,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 overlayframe.h \
 		 packagedispatcher.h \
 		 packagerenderer.h \
+		 packagingengine.h \
 		 panauto.h \
 		 panautos.h \
 		 patchbay.h \

@@ -22,6 +22,10 @@
 #include <string.h>
 #include <errno.h>
 
+// Needed for packaging engine
+#include "preferences.h"
+#include "render.h"
+
 #define READ_SIZE 66000
 
 /* This code was aspired by ffmpeg2theora */
@@ -2281,5 +2285,359 @@ int OGGTheoraSharpness::handle_event()
 	gui->asset->theora_sharpness = atol(get_text());
 	return 1;
 }
+
+
+PackagingEngineOGG::PackagingEngineOGG()
+{
+	packages = 0;
+	default_asset = 0;
+}
+
+PackagingEngineOGG::~PackagingEngineOGG()
+{
+	if(packages)
+	{
+		for(int i = 0; i < total_packages; i++)
+			delete packages[i];
+		delete [] packages;
+	}
+	if (default_asset)
+		delete default_asset;
+}
+
+
+
+int PackagingEngineOGG::create_packages_single_farm(
+		EDL *edl,
+		Preferences *preferences,
+		Asset *default_asset, 
+		double total_start, 
+		double total_end)
+{
+	this->total_start = total_start;
+	this->total_end = total_end;
+	this->edl = edl;
+
+	this->preferences = preferences;
+
+// We make A COPY of the asset, because we set audio_data = 0 on local asset which is the same copy as default_asset... 
+// Should be taken care of somewhere else actually
+	this->default_asset = new Asset(*default_asset);
+
+	audio_start = Units::to_int64(total_start * default_asset->sample_rate);
+	video_start = Units::to_int64(total_start * default_asset->frame_rate);
+	audio_position = audio_start;
+	video_position = video_start;
+	audio_end = Units::to_int64(total_end * default_asset->sample_rate);
+	video_end = Units::to_int64(total_end * default_asset->frame_rate);
+	current_package = 0;
+
+	double total_len = total_end - total_start;
+//printf("PackageDispatcher::create_packages: %f / %d = %f\n", total_len, total_packages, package_len);
+
+	total_packages = 0;
+	if (default_asset->audio_data)
+		total_packages++;
+	if (default_asset->video_data)
+		total_packages += preferences->renderfarm_job_count;
+
+	packages = new RenderPackage*[total_packages];
+
+	int local_current_package = 0;
+	if (default_asset->audio_data)
+	{
+		packages[local_current_package] = new RenderPackage;
+		sprintf(packages[current_package]->path, "%s.audio", default_asset->path);
+		local_current_package++;
+	}
+	
+	if (default_asset->video_data)
+	{
+		video_package_len = (total_len) / preferences->renderfarm_job_count;
+		int current_number;    // The number being injected into the filename.
+		int number_start;      // Character in the filename path at which the number begins
+		int total_digits;      // Total number of digits including padding the user specified.
+
+		Render::get_starting_number(default_asset->path, 
+			current_number,
+			number_start, 
+			total_digits,
+			3);
+
+		for(int i = 0; i < preferences->renderfarm_job_count; i++)
+		{
+			RenderPackage *package = packages[local_current_package] = new RenderPackage;
+			Render::create_filename(package->path, 
+				default_asset->path, 
+				current_number,
+				total_digits,
+				number_start);
+			current_number++;
+			local_current_package++;
+		}
+	}
+}
+
+RenderPackage* PackagingEngineOGG::get_package_single_farm(double frames_per_second, 
+		int client_number,
+		int use_local_rate)
+{
+
+//printf("PackageDispatcher::get_package %ld %ld %ld %ld\n", audio_position, video_position, audio_end, video_end);
+	if (current_package == total_packages)
+		return 0;
+
+	RenderPackage *result = 0;
+	if (current_package == 0 && default_asset->audio_data)
+	{
+		result = packages[0];
+		result->audio_start = audio_start;
+		result->video_start = video_start;
+		result->audio_end = audio_end;
+		result->video_end = video_end;
+		result->audio_do = 1;
+		result->video_do = 0;
+	} else if (default_asset->video_data)
+	{
+		// Do not do any scaling according to node speed, so we know we can get evenly distributed 'forced' keyframes
+		result = packages[current_package];
+		result->audio_do = 0;
+		result->video_do = 1;
+
+		result->audio_start = audio_position;
+		result->video_start = video_position;
+		result->audio_end = audio_position + 
+			Units::round(video_package_len * default_asset->sample_rate);
+		result->video_end = video_position + 
+			Units::round(video_package_len * default_asset->frame_rate);
+
+// Last package... take it all!
+		if (current_package == total_packages -1 ) 
+		{
+			result->audio_end = audio_end;
+			result->video_end = video_end;
+		}
+
+		audio_position = result->audio_end;
+		video_position = result->video_end;
+
+	}
+	
+	current_package ++;
+	return result;
+
+}
+
+void PackagingEngineOGG::get_package_paths(ArrayList<char*> *path_list)
+{
+	for(int i = 0; i < total_packages; i++)
+	{
+		path_list->append(strdup(packages[i]->path));
+	}
+// We will mux to the the final file at the end!
+	path_list->append(strdup(default_asset->path));
+}
+
+int64_t PackagingEngineOGG::get_progress_max()
+{
+	return Units::to_int64(default_asset->sample_rate * 
+			(total_end - total_start)) * 2+
+		Units::to_int64(preferences->render_preroll * 
+			total_packages *
+			default_asset->sample_rate);
+}
+
+int PackagingEngineOGG::packages_are_done()
+{
+
+
+// Mux audio and video into one file	
+
+// First fix our asset... have to workaround the bug of corruption of local asset
+//	Render::check_asset(edl, *default_asset);
+
+	Asset *video_asset, *audio_asset;
+	File *audio_file_gen, *video_file_gen;
+	FileOGG *video_file, *audio_file;
+	ogg_stream_state audio_in_stream, video_in_stream;
+	
+	int local_current_package = 0;
+	if (default_asset->audio_data)
+	{
+		audio_asset = new Asset(packages[local_current_package]->path);
+		local_current_package++;
+
+		audio_file_gen = new File();
+		audio_file_gen->open_file(preferences, 
+			audio_asset, 
+			1, //rd 
+			0, //wr
+			0, //base sample rate
+			0); // base_frame rate
+		audio_file = (FileOGG*) audio_file_gen->file;
+		ogg_stream_init(&audio_in_stream, audio_file->tf->vo.serialno);
+		audio_file->ogg_seek_to_databegin(audio_file->tf->audiosync, audio_file->tf->vo.serialno);
+	}
+
+	if (default_asset->video_data)
+	{
+		video_asset = new Asset(packages[local_current_package]->path);
+		local_current_package++;
+
+		video_file_gen = new File();
+		video_file_gen->open_file(preferences, 
+			video_asset, 
+			1, //rd 
+			0, //wr
+			0, //base sample rate
+			0); // base_frame rate
+		video_file = (FileOGG*) video_file_gen->file;
+		ogg_stream_init(&video_in_stream, video_file->tf->to.serialno);
+		video_file->ogg_seek_to_databegin(video_file->tf->videosync, video_file->tf->to.serialno);
+	}
+
+// Output file
+	File *output_file_gen = new File();
+	output_file_gen->open_file(preferences,
+		default_asset,
+		0,
+		1,
+		default_asset->sample_rate, 
+		default_asset->frame_rate);
+	FileOGG *output_file = (FileOGG*) output_file_gen->file;
+
+	ogg_page og;    /* one Ogg bitstream page.  Vorbis packets are inside */
+	ogg_packet op;  /* one raw packet of data for decode */
+
+
+	int audio_ready = default_asset->audio_data;
+	int video_ready = default_asset->video_data;
+	int64_t video_packetno = 1;
+	int64_t audio_packetno = 1;
+	int64_t frame_offset = 0;
+	int64_t current_frame = 0;
+	while ((default_asset->audio_data && audio_ready) || (default_asset->video_data && video_ready))
+	{
+		if (video_ready)
+		{
+			while (ogg_stream_packetpeek(&video_in_stream, NULL) != 1) // get as many pages as needed for one package
+			{
+				if (!video_file->ogg_get_next_page(video_file->tf->videosync, video_file->tf->to.serialno, &video_file->tf->videopage))
+				{
+					// We are at the end of our file, see if it is more and open more if there is
+					if (local_current_package < total_packages)
+					{
+						frame_offset = current_frame +1;
+						ogg_stream_clear(&video_in_stream);
+						video_file_gen->close_file();
+						delete video_file_gen;
+						delete video_asset;
+						video_asset = new Asset(packages[local_current_package]->path);
+						local_current_package++;
+
+						video_file_gen = new File();
+						video_file_gen->open_file(preferences, 
+							video_asset, 
+							1, //rd 
+							0, //wr
+							0, //base sample rate
+							0); // base_frame rate
+						video_file = (FileOGG*) video_file_gen->file;
+						ogg_stream_init(&video_in_stream, video_file->tf->to.serialno);
+						int64_t fp   = 0;
+						video_file->ogg_seek_to_databegin(video_file->tf->videosync, video_file->tf->to.serialno);
+
+					} else
+						video_ready = 0;
+					break;
+				}
+				ogg_stream_pagein(&video_in_stream, &video_file->tf->videopage);
+			}
+			while (ogg_stream_packetpeek(&video_in_stream, NULL) == 1) // get all packets out of the page
+			{
+				ogg_stream_packetout(&video_in_stream, &op);
+				if (local_current_package != total_packages) // keep it from closing the stream
+					op.e_o_s = 0;
+				if (video_packetno != 1)		     // if this is not the first video package do not start with b_o_s
+					op.b_o_s = 0;
+				else
+					op.b_o_s = 1;
+				op.packetno = video_packetno;
+				video_packetno ++;
+				int64_t granulepos = op.granulepos;
+				if (granulepos != -1)
+				{
+				// Fix granulepos!	
+					int64_t rel_iframe = granulepos >> video_file->theora_keyframe_granule_shift;
+					int64_t rel_pframe = granulepos - (rel_iframe << video_file->theora_keyframe_granule_shift);
+					int64_t rel_current_frame = rel_iframe + rel_pframe;
+					current_frame = frame_offset + rel_current_frame;
+					int64_t abs_iframe = current_frame - rel_pframe;
+					
+					op.granulepos = (abs_iframe << video_file->theora_keyframe_granule_shift) + rel_pframe;
+					
+//					printf("iframe: %i, pframe: %i, granulepos: %i, op.packetno %lli, abs_iframe: %i\n", rel_iframe, rel_pframe, granulepos, op.packetno, abs_iframe);				
+				
+				}
+				ogg_stream_packetin (&output_file->tf->to, &op);
+				output_file->tf->v_pkg++; 
+			}
+		}
+		if (audio_ready)
+		{
+			while (ogg_stream_packetpeek(&audio_in_stream, NULL) != 1) // get as many pages as needed for one package
+			{
+				if (!audio_file->ogg_get_next_page(audio_file->tf->audiosync, audio_file->tf->vo.serialno, &audio_file->tf->audiopage))
+				{
+					audio_ready = 0;
+					break;
+				}
+				ogg_stream_pagein(&audio_in_stream, &audio_file->tf->audiopage);
+			}
+			while (ogg_stream_packetpeek(&audio_in_stream, NULL) == 1) // get all packets out of the page
+			{
+				ogg_stream_packetout(&audio_in_stream, &op);
+				ogg_stream_packetin (&output_file->tf->vo, &op);
+				audio_packetno++;
+				output_file->tf->a_pkg++; 
+			}
+		}
+		
+		output_file->flush_ogg(0);
+		
+	
+	}
+	
+// flush_ogg(1) is called on file closing time...	
+//	output_file->flush_ogg(1);
+
+// Just prevent thet write_samples and write_frames are called
+	output_file->final_write = 0;
+		
+	if (default_asset->audio_data)
+	{
+		ogg_stream_clear(&audio_in_stream);
+		audio_file_gen->close_file();
+		delete audio_file_gen;
+		delete audio_asset;
+	}
+	if (default_asset->video_data)
+	{
+		ogg_stream_clear(&video_in_stream);
+		video_file_gen->close_file();
+		delete video_file_gen;
+		delete video_asset;
+	}
+
+	output_file_gen->close_file();
+	delete output_file_gen;
+
+// Now delete the temp files
+	for(int i = 0; i < total_packages; i++)
+		unlink(packages[i]->path);
+
+	return 0;
+}
+
 
 

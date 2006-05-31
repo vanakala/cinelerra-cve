@@ -19,6 +19,7 @@
 #include "preferences.inc"
 #include "resample.inc"
 #include "vframe.inc"
+#include "packagingengine.h"
 
 // ======================================= include file types here
 
@@ -211,6 +212,7 @@ public:
 	int64_t normalized_sample_rate;
 	Preferences *preferences;
 
+	static PackagingEngine *File::new_packaging_engine(Asset *asset);
 
 private:
 	void reset_parameters();
