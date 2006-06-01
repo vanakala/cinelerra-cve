@@ -105,6 +105,7 @@ static void register_vcodecs()
 	register_vcodec(quicktime_init_codec_rle);
 
 	register_vcodec(quicktime_init_codec_yuv2);
+	register_vcodec(quicktime_init_codec_2vuy);
 	register_vcodec(quicktime_init_codec_yuv4);
 	register_vcodec(quicktime_init_codec_yv12);
 	register_vcodec(quicktime_init_codec_v410);

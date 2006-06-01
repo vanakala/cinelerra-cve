@@ -28,7 +28,8 @@ N_("PNG with Alpha")
 N_("Uncompressed RGB")
 N_("Uncompressed RGBA")
 N_("YUV 4:2:0 Planar")
-N_("Component Video")
+N_("Component Y'CbCr 8-bit 4:2:2 (yuv2)")
+N_("Component Y'CbCr 8-bit 4:2:2 (2vuy)")
 N_("YUV 4:1:1 Packed")
 N_("Component Y'CbCr 8-bit 4:4:4")
 N_("Component Y'CbCrA 8-bit 4:4:4:4")
@@ -59,7 +60,8 @@ N_("MPEG-4 Audio")
 #define RGB_NAME "Uncompressed RGB"
 #define RGBA_NAME "Uncompressed RGBA"
 #define YUV420_NAME "YUV 4:2:0 Planar"
-#define YUV422_NAME "Component Video"
+#define YUV422_NAME "Component Y'CbCr 8-bit 4:2:2 (yuv2)"
+#define TWOVUY_NAME "Component Y'CbCr 8-bit 4:2:2 (2vuy)"
 #define YUV411_NAME "YUV 4:1:1 Packed"
 #define YUV444_NAME "Component Y'CbCr 8-bit 4:4:4"
 #define YUVA4444_NAME "Component Y'CbCrA 8-bit 4:4:4:4"
@@ -443,7 +445,8 @@ int FileMOV::get_best_colormodel(Asset *asset, int driver)
 			break;
 		case PLAYBACK_X11_XV:
 			if(match4(asset->vcodec, QUICKTIME_YUV420)) return BC_YUV420P;
-			if(match4(asset->vcodec, QUICKTIME_YUV422)) return BC_YUV422P;
+			if(match4(asset->vcodec, QUICKTIME_YUV422)) return BC_YUV422;
+			if(match4(asset->vcodec, QUICKTIME_2VUY)) return BC_YUV422;
 			if(match4(asset->vcodec, QUICKTIME_JPEG)) return BC_YUV420P;
 			if(match4(asset->vcodec, QUICKTIME_MJPA)) return BC_YUV422P;
 			if(match4(asset->vcodec, QUICKTIME_DV)) return BC_YUV422;
@@ -475,6 +478,8 @@ int FileMOV::get_best_colormodel(Asset *asset, int driver)
 			if(!strncasecmp(asset->vcodec, QUICKTIME_YUV420, 4)) return BC_YUV422;
 			else
 			if(!strncasecmp(asset->vcodec, QUICKTIME_YUV422, 4)) return BC_YUV422;
+			else
+			if(!strncasecmp(asset->vcodec, QUICKTIME_2VUY, 4)) return BC_YUV422;
 			else
 			if(!strncasecmp(asset->vcodec, QUICKTIME_YUV411, 4)) return BC_YUV411P;
 			else
@@ -799,6 +804,7 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 		}
 		else
 		if(match4(asset->vcodec, QUICKTIME_YUV420) ||
+			match4(asset->vcodec, QUICKTIME_2VUY) ||
 			match4(asset->vcodec, QUICKTIME_YUV422) ||
 			match4(asset->vcodec, QUICKTIME_RAW))
 		{
@@ -1100,6 +1106,7 @@ char* FileMOV::strtocompression(char *string)
 	if(!strcasecmp(string, _(YUV420_NAME))) return QUICKTIME_YUV420;
 	if(!strcasecmp(string, _(YUV411_NAME))) return QUICKTIME_YUV411;
 	if(!strcasecmp(string, _(YUV422_NAME))) return QUICKTIME_YUV422;
+	if(!strcasecmp(string, _(TWOVUY_NAME))) return QUICKTIME_2VUY;
 	if(!strcasecmp(string, _(YUV444_NAME))) return QUICKTIME_YUV444;
 	if(!strcasecmp(string, _(YUVA4444_NAME))) return QUICKTIME_YUVA4444;
 	if(!strcasecmp(string, _(YUV444_10BIT_NAME))) return QUICKTIME_YUV444_10bit;
@@ -1136,6 +1143,7 @@ char* FileMOV::compressiontostr(char *string)
 	if(match4(string, QUICKTIME_YUV420)) return _(YUV420_NAME);
 	if(match4(string, QUICKTIME_YUV411)) return _(YUV411_NAME);
 	if(match4(string, QUICKTIME_YUV422)) return _(YUV422_NAME);
+	if(match4(string, QUICKTIME_2VUY)) return _(TWOVUY_NAME);
 	if(match4(string, QUICKTIME_YUV444)) return _(YUV444_NAME);
 	if(match4(string, QUICKTIME_YUVA4444)) return _(YUVA4444_NAME);
 	if(match4(string, QUICKTIME_YUV444_10bit)) return _(YUV444_10BIT_NAME);
@@ -1629,6 +1637,7 @@ int MOVConfigVideo::create_objects()
 		compression_items.append(new BC_ListBoxItem(_(RGBA_NAME)));
 		compression_items.append(new BC_ListBoxItem(_(YUV420_NAME)));
 		compression_items.append(new BC_ListBoxItem(_(YUV422_NAME)));
+		compression_items.append(new BC_ListBoxItem(_(TWOVUY_NAME)));
 		compression_items.append(new BC_ListBoxItem(_(YUV444_NAME)));
 		compression_items.append(new BC_ListBoxItem(_(YUVA4444_NAME)));
 		compression_items.append(new BC_ListBoxItem(_(YUV444_10BIT_NAME)));

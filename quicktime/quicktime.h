@@ -64,6 +64,9 @@ extern "C" {
 /* YUV 4:2:2 */
 #define QUICKTIME_YUV2 "yuv2"
 
+/* 8 bit Packed YUV (video range) 4:2:2 */
+#define QUICKTIME_2VUY "2vuy"
+
 /* Crazy YUV 4:2:0 configuration for early tests.  NOT STANDARD. */
 #define QUICKTIME_YUV4 "yuv4"
 
