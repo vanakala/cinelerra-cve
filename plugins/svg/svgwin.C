@@ -303,7 +303,7 @@ void EditSvgButton::run()
 	char filename_raw[1024];
 	char filename_fifo[1024];
 	struct fifo_struct fifo_buf;
-	SvgSodipodiThread *sodipodi_thread = new SvgSodipodiThread(client, window);
+	SvgInkscapeThread *inkscape_thread = new SvgInkscapeThread(client, window);
 	
 	strcpy(filename_raw, client->config.svg_file);
 	strcat(filename_raw, ".raw");
@@ -319,9 +319,9 @@ void EditSvgButton::run()
 	} 
 	fh_fifo = open(filename_fifo, O_RDWR);
 	fifo_buf.action = 0;
-	sodipodi_thread->fh_fifo = fh_fifo;
-	sodipodi_thread->start();
-	while (sodipodi_thread->running() && (!quit_now)) { 
+	inkscape_thread->fh_fifo = fh_fifo;
+	inkscape_thread->start();
+	while (inkscape_thread->running() && (!quit_now)) { 
 //		pausetimer.delay(200); // poll file every 200ms
 		read(fh_fifo, &fifo_buf, sizeof(fifo_buf));
 
@@ -338,16 +338,16 @@ void EditSvgButton::run()
 //			}
 		} else 
 		if (fifo_buf.action == 2) {
-			printf(_("Sodipodi has exited\n"));
+			printf(_("Inkscape has exited\n"));
 		} else
 		if (fifo_buf.action == 3) {
 			printf(_("Plugin window has closed\n"));
-			delete sodipodi_thread;
+			delete inkscape_thread;
 			close(fh_fifo);
 			return;
 		}
 	}
-	sodipodi_thread->join();
+	inkscape_thread->join();
 	close(fh_fifo);
 	window->editing_lock.lock();
 	window->editing = 0;
@@ -355,28 +355,28 @@ void EditSvgButton::run()
 
 }
 
-SvgSodipodiThread::SvgSodipodiThread(SvgMain *client, SvgWin *window)
+SvgInkscapeThread::SvgInkscapeThread(SvgMain *client, SvgWin *window)
  : Thread(1)
 {
 	this->client = client;
 	this->window = window;
 }
 
-SvgSodipodiThread::~SvgSodipodiThread()
+SvgInkscapeThread::~SvgInkscapeThread()
 {
-	// what do we do? kill sodipodi?
+	// what do we do? kill inkscape?
 	cancel();
 }
 
-void SvgSodipodiThread::run()
+void SvgInkscapeThread::run()
 {
-// Runs the sodipodi
+// Runs the inkscape
 	char command[1024];
 	char filename_raw[1024];
 	strcpy(filename_raw, client->config.svg_file);
 	strcat(filename_raw, ".raw");
 
-	sprintf(command, "sodipodi --cinelerra-export-file=%s %s",
+	sprintf(command, "inkscape --cinelerra-export-file=%s %s",
 		filename_raw, client->config.svg_file);
 	printf(_("Running external SVG editor: %s\n"), command);		
 	enable_cancel();

@@ -40,6 +40,7 @@ public:
 // required for all realtime plugins
 	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
 	int is_realtime();
+	int is_synthesis();
 	char* plugin_title();
 	int show_gui();
 	void raise_window();

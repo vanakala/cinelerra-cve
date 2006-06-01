@@ -90,11 +90,11 @@ public:
 	SvgWin *window;
 };
 
-class SvgSodipodiThread : public Thread
+class SvgInkscapeThread : public Thread
 {
 public:
-	SvgSodipodiThread(SvgMain *client, SvgWin *window);
-	~SvgSodipodiThread();
+	SvgInkscapeThread(SvgMain *client, SvgWin *window);
+	~SvgInkscapeThread();
 	void run();
 	SvgMain *client;
 	SvgWin *window;

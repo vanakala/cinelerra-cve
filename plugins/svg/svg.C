@@ -120,8 +120,9 @@ SvgMain::~SvgMain()
 	overlayer = 0;
 }
 
-char* SvgMain::plugin_title() { return N_("SVG via Sodipodi"); }
+char* SvgMain::plugin_title() { return N_("SVG via Inkscape"); }
 int SvgMain::is_realtime() { return 1; }
+int SvgMain::is_synthesis() { return 1; }
 
 NEW_PICON_MACRO(SvgMain)
 
@@ -252,7 +253,7 @@ int SvgMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		need_reconfigure = 1;
 		char command[1024];
 		sprintf(command,
-			"sodipodi --without-gui --cinelerra-export-file=%s %s",
+			"inkscape --without-gui --cinelerra-export-file=%s %s",
 			filename_raw, config.svg_file);
 		printf(_("Running command %s\n"), command);
 		system(command);
@@ -267,7 +268,7 @@ int SvgMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 
 	// file exists, ... lock it, mmap it and check time_of_creation
-	lockf(fh_raw, F_LOCK, 0);    // Blocking call - will wait for sodipodi to finish!
+	lockf(fh_raw, F_LOCK, 0);    // Blocking call - will wait for inkscape to finish!
 	fstat (fh_raw, &st_raw);
 	raw_buffer = (unsigned char *)mmap (NULL, st_raw.st_size, PROT_READ, MAP_SHARED, fh_raw, 0); 
 	raw_data = (struct raw_struct *) raw_buffer;
@@ -281,7 +282,7 @@ int SvgMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	}
 	if (raw_data->struct_version > 1) 
 	{
-		printf (_("Unsupported version of RAWC file %s. This means your Sodipodi uses newer RAWC format than Cinelerra. Please upgrade Cinelerra.\n"), filename_raw);
+		printf (_("Unsupported version of RAWC file %s. This means your Inkscape uses newer RAWC format than Cinelerra. Please upgrade Cinelerra.\n"), filename_raw);
 		lockf(fh_raw, F_ULOCK, 0);
 		close(fh_raw);
 		return (0);
