@@ -561,7 +561,7 @@ int BC_FileBox::create_objects()
 		x + directory_title->get_w(),
 		y,
 		directory_title->get_w(),
-		recent_popup->get_h());
+		200);
 
 	
 
