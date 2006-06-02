@@ -153,7 +153,11 @@ PKG_CHECK_MODULES(PNG,libpng,[libpng=yes],:)
 AC_CHECK_HEADER(jpeglib.h,[libjpegh=yes])
 AC_CHECK_LIB(jpeg,jpeg_start_decompress,[libjpeg=yes])
 
-PKG_CHECK_MODULES(FREETYPE,freetype2,[freetype2=yes],:)
+AC_ARG_ENABLE(freetype2,
+	AC_HELP_STRING([--enable-freetype2],[enables freetype2 usage (default is use pkg-config detection)]),
+	[ 
+	  [freetype2=yes] ],
+	[ PKG_CHECK_MODULES(FREETYPE,freetype2,[freetype2=yes],:) ])
 ############## END OF MISC LIBRARIES
 
 LARGEFILE_CFLAGS="-D_LARGEFILE_SOURCE -D_LARGEFILE64_SOURCE -D_FILE_OFFSET_BITS=64"

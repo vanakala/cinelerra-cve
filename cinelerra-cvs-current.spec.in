@@ -4,7 +4,7 @@
 Summary: Cinelerra CVS
 Name: cinelerra
 #Version: 1.2.0.cvs.cobra
-Version: @VERSION@.cvs.%{build_nick}
+Version: @VERSION@.CV.svn.%{build_nick}
 Release: %(date '+%Y%m%d')
 License: GPL
 Group: X11
@@ -26,7 +26,7 @@ Cinelerra unofficial cvs package
 %setup -n %{name}-@VERSION@
 
 %build
-./configure --prefix=%{prefix}
+./configure --prefix=%{prefix} --enable-freetype2
 #./configure
 %{__make} %{?_smp_mflags} %{?mflags}
 
@@ -87,6 +87,40 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Thu Jun 1 2006 Kevin Brosius <cobra@compuserve.com> - 2.0.0.cvs.cobra-date
+- transitions fix, Ogg renderfarm support, po email address fix
+- file.h compile fix, fix thread delete race condition
+- a bunch of mem management fixes
+
+* Mon May 29 2006 Kevin Brosius <cobra@compuserve.com> - 2.0.0.cvs.cobra-date
+- reading ogg vorbis fix, Freetype2 2.2.1 compatibility
+- mjpeg load fixes (bug139, 148, 259), fix insertion of media files directly
+- shorten xml files, motion blur plugin
+- camera and projector automation for plugins, waveform not shown fix
+- change every clip all media files behavior in saved xml
+- work without audio enabled, delete pluginsets fix
+
+* Tue May 02 2006 Kevin Brosius <cobra@compuserve.com> - 2.0.0.cvs.cobra-date
+- fseek0 fix bug244, bug250, check sound/audio in dv format
+- bug249 vorbis setup fix, chromakey fix, check for libfaac
+- fix DV audio read sample impl., move icon in Gnome
+- bug30 allow transition at end of track, bug243
+- fix crash when rendering plugins, fix null plugin usage
+- fix load XML crash, bug242 >1024 properties
+
+* Sat Apr 03 2006 Kevin Brosius <cobra@compuserve.com> - 2.0.0.cvs.cobra-date
+- EDL export, .mov DV fourcc -> dvc, multi transitions with diff lengths fix
+- debian build fixes, new configure checks and libavcodec header fixes
+- mux fixes for long silence/empty video, ubuntu build fixes
+- RGB*_FLOAT color models for mask engine, gcc 4.1.0 fixes/mpeg2enc
+- Makefile cleanups, raise_window() commands, BUZ driver channel editor fixes
+- format selection for timecode in titler, build date and CV versioning
+- fix --disable-firewire, chromakey-hsv plugin, pt_BR translation updates
+- deinterlace plugin updates, cache frames even when not static
+- new deinterlacer, timefronts - take from alpha
+- fix apply-mask-before-plugins for masks, new timefront plugin
+- add histogram split checkbox
+
 * Sat Feb 04 2006 Kevin Brosius <cobra@compuserve.com> - 2.0.0.cvs.cobra-date
 - vertical pos of auto-zoom text, dv audio offset/framing fix
 - Italian translation, Spanish update, deinterlace fix
