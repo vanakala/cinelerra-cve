@@ -517,6 +517,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 recordwindow.h \
 		 renderengine.h \
 		 renderfarmclient.h \
+		 renderfarmfsserver.h \
 		 renderfarm.h \
 		 render.h \
 		 resample.h \
