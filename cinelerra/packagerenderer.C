@@ -135,12 +135,7 @@ void PackageRenderer::create_output()
 
 
 
-// Tag output paths for VFS here.
-//	if(!mwindow && preferences->renderfarm_vfs && preferences->use_renderfarm)
-	if(!get_master() && preferences->renderfarm_vfs && preferences->use_renderfarm)
-		sprintf(asset->path, RENDERFARM_FS_PREFIX "%s", package->path);
-	else
-		strcpy(asset->path, package->path);
+	strcpy(asset->path, package->path);
 
 
 	
