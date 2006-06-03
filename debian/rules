@@ -6,9 +6,10 @@ package=hvirtual
 export DH_COMPAT=4
 
 CONFFLAGS=
-ARCH=$(DEB_HOST_ARCH)
+#since we are building from .svn
++export DH_ALWAYS_EXCLUDE=.svn
 
-ifneq ($(ARCH),powerpc)
+ifneq ($(DEB_HOST_ARCH),powerpc)
 	CFLAGS=-ffast-math -O3 -mmmx -march=pentium4 -msse -msse2 -minline-all-stringops -fprefetch-loop-arrays -funroll-loops
 	# CFLAGS=-ffast-math -g -mmmx -march=pentium-mmx
 	CXXFLAGS=$(CFLAGS) -fno-check-new
