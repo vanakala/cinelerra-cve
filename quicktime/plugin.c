@@ -96,6 +96,7 @@ static void register_vcodecs()
 	register_vcodec(quicktime_init_codec_svq3);
 	register_vcodec(quicktime_init_codec_h263);
 	register_vcodec(quicktime_init_codec_dv);
+	register_vcodec(quicktime_init_codec_dvcp);
 	register_vcodec(quicktime_init_codec_dvsd);
 
 	register_vcodec(quicktime_init_codec_jpeg);

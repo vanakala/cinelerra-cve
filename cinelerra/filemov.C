@@ -106,7 +106,6 @@ void FileMOV::get_parameters(BC_WindowBase *parent_window,
 	int video_options,
 	int lock_compressor)
 {
-	fix_codecs(asset);
 	if(audio_options)
 	{
 		MOVConfigAudio *window = new MOVConfigAudio(parent_window, asset);
@@ -128,27 +127,19 @@ void FileMOV::get_parameters(BC_WindowBase *parent_window,
 	}
 }
 
-void FileMOV::fix_codecs(Asset *asset)
+void FileMOV::fix_codecs_for_writing(Asset *asset)
 {
-// 	if(asset->format == FILE_MOV)
-// 	{
-// 		if(!strcasecmp(asset->acodec, QUICKTIME_MP3))
-// 			strcpy(asset->acodec, QUICKTIME_TWOS);
-// 	}
-// 	else
-// 	{
-// 		if(strcasecmp(asset->vcodec, QUICKTIME_DIV3))
-// 		{
-// 			strcpy(asset->vcodec, QUICKTIME_DIV3);
-// 		}
-// 		strcpy(asset->acodec, QUICKTIME_MP3);
-// 	}
-
-	if (asset->format == FILE_MOV)
+	if(!strcasecmp(asset->vcodec, QUICKTIME_DV) ||
+	   !strcasecmp(asset->vcodec, QUICKTIME_DVSD) || 
+	   !strcasecmp(asset->vcodec, QUICKTIME_DVCP))
 	{
-		if(!strcasecmp(asset->vcodec, QUICKTIME_DVSD))
-		{printf("n\n");
-			strcpy(asset->vcodec, QUICKTIME_DV);	}
+		printf("AF: %i, AH: %i, VC: %s\n", asset->format, asset->height, asset->vcodec);
+		if (asset->format == FILE_AVI)
+			strcpy (asset->vcodec, QUICKTIME_DVSD);
+		else if (asset->format == FILE_MOV && asset->height == 576) 
+			strcpy (asset->vcodec, QUICKTIME_DVCP);
+		else if (asset->format == FILE_MOV && asset->height == 480)
+			strcpy (asset->vcodec, QUICKTIME_DV);
 	}
 }
 
@@ -255,9 +246,8 @@ void FileMOV::set_frame_start(int64_t offset)
 void FileMOV::asset_to_format()
 {
 	if(!fd) return;
-	char audio_codec[5];
 
-	fix_codecs(asset);
+	fix_codecs_for_writing(asset);
 
 // Fix up the Quicktime file.
 	quicktime_set_copyright(fd, _("Made with Cinelerra for Linux"));
@@ -450,10 +440,10 @@ int FileMOV::get_best_colormodel(Asset *asset, int driver)
 			if(match4(asset->vcodec, QUICKTIME_JPEG)) return BC_YUV420P;
 			if(match4(asset->vcodec, QUICKTIME_MJPA)) return BC_YUV422P;
 			if(match4(asset->vcodec, QUICKTIME_DV)) return BC_YUV422;
+			if(match4(asset->vcodec, QUICKTIME_DVCP)) return BC_YUV422;
 			if(match4(asset->vcodec, QUICKTIME_DVSD)) return BC_YUV422;
 			if(match4(asset->vcodec, QUICKTIME_HV60)) return BC_YUV420P;
 			if(match4(asset->vcodec, QUICKTIME_DIVX)) return BC_YUV420P;
-			if(match4(asset->vcodec, QUICKTIME_DVSD)) return BC_YUV422;
 			if(match4(asset->vcodec, QUICKTIME_MP4V)) return BC_YUV420P;
 			if(match4(asset->vcodec, QUICKTIME_H263)) return BC_YUV420P;
 			if(match4(asset->vcodec, QUICKTIME_H264)) return BC_YUV420P;
@@ -463,7 +453,8 @@ int FileMOV::get_best_colormodel(Asset *asset, int driver)
 		case PLAYBACK_DV1394:
 		case PLAYBACK_FIREWIRE:
 			if(match4(asset->vcodec, QUICKTIME_DV) || 
-				match4(asset->vcodec, QUICKTIME_DVSD)) return BC_COMPRESSED;
+				match4(asset->vcodec, QUICKTIME_DVSD) ||
+				match4(asset->vcodec, QUICKTIME_DVCP)) return BC_COMPRESSED;
 			return BC_YUV422P;
 			break;
 		case PLAYBACK_LML:
@@ -506,7 +497,8 @@ int FileMOV::get_best_colormodel(Asset *asset, int driver)
 		case CAPTURE_FIREWIRE:
 		case CAPTURE_IEC61883:
 			if(!strncasecmp(asset->vcodec, QUICKTIME_DV, 4) ||
-				!strncasecmp(asset->vcodec, QUICKTIME_DVSD, 4)) 
+				!strncasecmp(asset->vcodec, QUICKTIME_DVSD, 4) ||
+				!strncasecmp(asset->vcodec, QUICKTIME_DVCP, 4)) 
 				return BC_COMPRESSED;
 			else
 				return BC_YUV422;
@@ -534,10 +526,12 @@ int FileMOV::can_copy_from(Edit *edit, int64_t position)
 		int is_edit_dv = 0;
 		int is_this_dv = 0;
 		if (match4(edit->asset->vcodec, QUICKTIME_DV) || 
-			match4(edit->asset->vcodec, QUICKTIME_DVSD))
+			match4(edit->asset->vcodec, QUICKTIME_DVSD) ||
+			match4(edit->asset->vcodec, QUICKTIME_DVCP))
 			is_edit_dv = 1;
 		if (match4(this->asset->vcodec, QUICKTIME_DV) || 
-			match4(this->asset->vcodec, QUICKTIME_DVSD))
+			match4(this->asset->vcodec, QUICKTIME_DVSD) ||
+			match4(this->asset->vcodec, QUICKTIME_DVCP))
 			is_this_dv = 1;
 		if (is_this_dv && is_edit_dv)
 			return 1;
@@ -545,7 +539,9 @@ int FileMOV::can_copy_from(Edit *edit, int64_t position)
 	else
 	if(edit->asset->format == FILE_RAWDV)
 	{
-		if(match4(this->asset->vcodec, QUICKTIME_DV) || match4(this->asset->vcodec, QUICKTIME_DVSD))
+		if(match4(this->asset->vcodec, QUICKTIME_DV) || 
+			match4(this->asset->vcodec, QUICKTIME_DVSD) || 
+			match4(this->asset->vcodec, QUICKTIME_DVCP))
 			return 1;
 	}
 
@@ -1095,8 +1091,7 @@ char* FileMOV::strtocompression(char *string)
 	if(!strcasecmp(string, _(H263_NAME))) return QUICKTIME_H263;
 	if(!strcasecmp(string, _(HV60_NAME))) return QUICKTIME_HV60;
 	if(!strcasecmp(string, _(DIV3_NAME))) return QUICKTIME_DIV3;
-	if(!strcasecmp(string, _(DV_NAME))) return QUICKTIME_DVSD;
-//	if(!strcasecmp(string, _(DV_NAME))) return QUICKTIME_DV;
+	if(!strcasecmp(string, _(DV_NAME))) return QUICKTIME_DV;
 	if(!strcasecmp(string, _(PNG_NAME))) return QUICKTIME_PNG;
 	if(!strcasecmp(string, _(PNGA_NAME))) return MOV_PNGA;
 	if(!strcasecmp(string, _(RGB_NAME))) return QUICKTIME_RAW;
@@ -1134,6 +1129,7 @@ char* FileMOV::compressiontostr(char *string)
 	if(match4(string, QUICKTIME_HV60)) return _(HV60_NAME);
 	if(match4(string, QUICKTIME_DIV3)) return _(DIV3_NAME);
 	if(match4(string, QUICKTIME_DV)) return _(DV_NAME);
+	if(match4(string, QUICKTIME_DVCP)) return _(DV_NAME);
 	if(match4(string, QUICKTIME_DVSD)) return _(DV_NAME);
 	if(match4(string, MOV_PNGA)) return _(PNGA_NAME);
 	if(match4(string, QUICKTIME_RAW)) return _(RGB_NAME);
