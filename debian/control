@@ -16,7 +16,7 @@ Build-Depends: debhelper (>> 4), automake1.8 | automake1.9, dpatch (>= 1.11),
  libopenexr-dev (>= 1.1.1), libxxf86vm-dev (>=6.8.2), fftw3-dev,
  libsndfile1-dev, libiec61883-dev (>= 1.0.0), libx264-dev,
  libfaac-dev (>= 1.24), libx11-dev, libxext-dev, libxft-dev,
- libxv-dev, libxvmc-dev, libxxf86vm-dev, xorg-dev
+ libxv-dev, libxvmc-dev, libxxf86vm-dev, xorg-dev, fftw3-dev
 
 Package: cinelerra
 Section: graphics
