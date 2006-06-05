@@ -46,7 +46,8 @@ int Audio1394::open_input()
 			device->driver == AUDIO_1394)
 		{
 			input_thread = new Device1394Input;
-			result = input_thread->open(device->in_config->firewire_port, 
+			result = input_thread->open(device->in_config->firewire_path,
+				device->in_config->firewire_port, 
 				device->in_config->firewire_channel, 
 				30,
 				device->in_channels,

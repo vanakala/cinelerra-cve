@@ -22,7 +22,8 @@ public:
 	Device1394Input();
 	~Device1394Input();
 
-	int open(int port,
+	int open(const char *path,
+		int port,
 		int channel,
 		int length,
 		int channels,

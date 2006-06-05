@@ -79,7 +79,8 @@ Device1394Input::~Device1394Input()
 	}
 }
 
-int Device1394Input::open(int port,
+int Device1394Input::open(const char *path,
+	int port,
 	int channel,
 	int length,
 	int channels,
@@ -104,10 +105,9 @@ int Device1394Input::open(int port,
 // Initialize grabbing
 	if(fd < 0)
 	{
-#define PATH "/dev/dv1394"
-		if((fd = ::open(PATH, O_RDWR)) < 0)
+		if((fd = ::open(path, O_RDWR)) < 0)
 		{
-			printf("Device1394Input::open %s: %s\n", PATH, strerror(errno));
+			printf("Device1394Input::open %s: %s\n", path, strerror(errno));
 		}
 		else
 		{

@@ -21,7 +21,7 @@ AudioInConfig::AudioInConfig()
 	oss_in_bits = 16;
 	firewire_port = 0;
 	firewire_channel = 63;
-	strcpy(firewire_path, "/dev/raw1394");
+	strcpy(firewire_path, "/dev/dv1394");
 	sprintf(esound_in_server, "");
 	esound_in_port = 0;
 
@@ -165,7 +165,7 @@ VideoInConfig::VideoInConfig()
 	sprintf(screencapture_display, "");
 	firewire_port = 0;
 	firewire_channel = 63;
-	sprintf(firewire_path, "/dev/raw1394");
+	sprintf(firewire_path, "/dev/dv1394");
 // number of frames to read from device during video recording.
 //	capture_length = 15;   
 	capture_length = 2;   

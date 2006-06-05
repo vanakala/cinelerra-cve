@@ -456,9 +456,9 @@ int ADevicePrefs::create_firewire_objs()
 			if(driver == AUDIO_1394)
 				output_char = out_config->firewire_path;
 			break;
-// Our version of raw1394 doesn't support changing the path
 		case MODERECORD:
-			output_char = 0;
+			if(driver == AUDIO_DV1394 || driver == AUDIO_1394)
+				output_char = in_config->firewire_path;
 			break;
 	}
 

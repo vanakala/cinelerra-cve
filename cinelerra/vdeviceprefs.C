@@ -233,8 +233,8 @@ int VDevicePrefs::create_firewire_objs()
 				output_char = out_config->firewire_path;
 			break;
 		case MODERECORD:
-// Our version of raw1394 doesn't support changing the input path
-			output_char = 0;
+			if(driver == CAPTURE_FIREWIRE)
+				output_char = in_config->firewire_path;
 			break;
 	}
 

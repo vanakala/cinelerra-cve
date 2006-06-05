@@ -64,7 +64,8 @@ int VDevice1394::open_input()
 		if(device->in_config->driver == CAPTURE_FIREWIRE)
 		{
 			input_thread = new Device1394Input;
-			result = input_thread->open(device->in_config->firewire_port, 
+			result = input_thread->open(device->in_config->firewire_path,
+				device->in_config->firewire_port, 
 				device->in_config->firewire_channel, 
 				device->in_config->capture_length,
 				2,
