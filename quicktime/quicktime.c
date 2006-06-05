@@ -1315,6 +1315,7 @@ int quicktime_close(quicktime_t *file)
 // Finalize last header
 			quicktime_finalize_riff(file, file->riff[file->total_riffs - 1]);
 
+			int64_t position = quicktime_position(file);
 
 // Finalize the odml header
 			quicktime_finalize_odml(file, &file->riff[0]->hdrl);
@@ -1323,6 +1324,7 @@ int quicktime_close(quicktime_t *file)
 			quicktime_finalize_indx(file);
 
 // Pad ending
+			quicktime_set_position(file, position);
 			quicktime_atom_write_header(file, &junk_atom, "JUNK");
 			for(i = 0; i < 0x406; i++)
 				quicktime_write_int32_le(file, 0);
