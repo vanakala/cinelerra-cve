@@ -473,10 +473,10 @@ int OverlayFrame::overlay(VFrame *output,
 		(!EQUIV(w_scale, 1) || !EQUIV(h_scale, 1)))
 	{
 // Create integer boundaries for interpolation
-		int in_x1_int = (int)in_x1;
-		int in_y1_int = (int)in_y1;
-		int in_x2_int = MIN((int)ceil(in_x2), input->get_w());
-		int in_y2_int = MIN((int)ceil(in_y2), input->get_h());
+		float in_x1_float = in_x1;
+		float in_y1_float = in_y1;
+		float in_x2_float = MIN(in_x2, input->get_w());
+		float in_y2_float = MIN(in_y2, input->get_h());
 		int out_x1_int = (int)out_x1;
 		int out_y1_int = (int)out_y1;
 		int out_x2_int = MIN((int)ceil(out_x2), output->get_w());
@@ -494,8 +494,8 @@ int OverlayFrame::overlay(VFrame *output,
 	EQUIV(in_y1, 0) && \
 	EQUIV(out_x1, 0) && \
 	EQUIV(out_y1, 0) && \
-	EQUIV(in_x2, in_x2_int) && \
-	EQUIV(in_y2, in_y2_int) && \
+	EQUIV(in_x2, in_x2_float) && \
+	EQUIV(in_y2, in_y2_float) && \
 	EQUIV(out_x2, temp_w) && \
 	EQUIV(out_y2, temp_h))
 
@@ -569,8 +569,8 @@ int OverlayFrame::overlay(VFrame *output,
 		scale_engine->scale_input = input;
 		scale_engine->w_scale = w_scale;
 		scale_engine->h_scale = h_scale;
-		scale_engine->in_x1_int = in_x1_int;
-		scale_engine->in_y1_int = in_y1_int;
+		scale_engine->in_x1_float = in_x1_float;
+		scale_engine->in_y1_float = in_y1_float;
 		scale_engine->out_w_int = temp_w;
 		scale_engine->out_h_int = temp_h;
 		scale_engine->interpolation_type = interpolation_type;
@@ -666,12 +666,11 @@ int OverlayFrame::overlay(VFrame *output,
 
 			scaletranslate_engine->output = output;
 			scaletranslate_engine->input = translation_input;
-			scaletranslate_engine->in_x1 = (int)in_x1;
-			scaletranslate_engine->in_y1 = (int)in_y1;
-// we need to do this mumbo-jumbo in order to get numerical stability
-// other option would be to round all the coordinates
- 			scaletranslate_engine->in_x2 = (int)in_x1 + (int)(in_x2 - in_x1);
- 			scaletranslate_engine->in_y2 = (int)in_y1 + (int)(in_y2 - in_y1);
+// Input for Scaletranslate is subpixel precise!
+			scaletranslate_engine->in_x1 = in_x1;
+			scaletranslate_engine->in_y1 = in_y1;
+ 			scaletranslate_engine->in_x2 = in_x2;
+ 			scaletranslate_engine->in_y2 = in_y2;
 			scaletranslate_engine->out_x1 = (int)out_x1;
 			scaletranslate_engine->out_y1 = (int)out_y1;
  			scaletranslate_engine->out_x2 = (int)out_x1 + (int)(out_x2 - out_x1);
@@ -837,7 +836,7 @@ void ScaleUnit::tabulate_reduction(bilinear_table_t* &table,
 
 void ScaleUnit::tabulate_enlarge(bilinear_table_t* &table,
 	float scale,
-	int in_pixel1, 
+	float in_pixel1, 
 	int out_total,
 	int in_total)
 {
@@ -847,11 +846,11 @@ void ScaleUnit::tabulate_enlarge(bilinear_table_t* &table,
 	for(int i = 0; i < out_total; i++)
 	{
 		bilinear_table_t *entry = table + i;
-		float in_pixel = i * scale;
+		float in_pixel = i * scale + in_pixel1;
 		entry->input_pixel1 = (int)floor(in_pixel);
 		entry->input_pixel2 = entry->input_pixel1 + 1;
 
-		if(in_pixel <= in_total)
+		if(in_pixel - in_pixel1 <= in_total)
 		{
 			entry->input_fraction3 = in_pixel - entry->input_pixel1;
 		}
@@ -861,17 +860,17 @@ void ScaleUnit::tabulate_enlarge(bilinear_table_t* &table,
 			entry->input_pixel2 = 0;
 		}
 
-		if(in_pixel >= 0)
+		if(in_pixel - in_pixel1 >= 0)
 		{
 			entry->input_fraction1 = entry->input_pixel2 - in_pixel;
 		}
 		else
 		{
 			entry->input_fraction1 = 0;
-			entry->input_pixel1 = 0;
+			entry->input_pixel1 = (int)in_pixel1;
 		}
 
-		if(entry->input_pixel2 >= in_total - in_pixel1)
+		if(entry->input_pixel2 >= in_total)
 		{
 			entry->input_pixel2 = entry->input_pixel1;
 			entry->input_fraction3 = 1.0 - entry->input_fraction1;
@@ -880,8 +879,6 @@ void ScaleUnit::tabulate_enlarge(bilinear_table_t* &table,
 		entry->total_fraction = 
 			entry->input_fraction1 + 
 			entry->input_fraction3;
-		entry->input_pixel1 += in_pixel1;
-		entry->input_pixel2 += in_pixel1;
 // 
 // printf("ScaleUnit::tabulate_enlarge %d %d %f %f %f\n",
 // entry->input_pixel1,
@@ -950,26 +947,26 @@ void ScaleUnit::dump_bilinear(bilinear_table_t *table, int total)
  	if(scale_w < 1) \
 		tabulate_reduction(x_table, \
 			1.0 / scale_w, \
-			in_x1_int, \
+			(int)in_x1_float, \
 			out_w_int, \
 			input->get_w()); \
 	else \
 		tabulate_enlarge(x_table, \
 			1.0 / scale_w, \
-			in_x1_int, \
+			in_x1_float, \
 			out_w_int, \
 			input->get_w()); \
  \
  	if(scale_h < 1) \
 		tabulate_reduction(y_table, \
 			1.0 / scale_h, \
-			in_y1_int, \
+			(int)in_y1_float, \
 			out_h_int, \
 			input->get_h()); \
 	else \
 		tabulate_enlarge(y_table, \
 			1.0 / scale_h, \
-			in_y1_int, \
+			in_y1_float, \
 			out_h_int, \
 			input->get_h()); \
 /* dump_bilinear(y_table, out_h_int); */\
@@ -1074,7 +1071,7 @@ void ScaleUnit::dump_bilinear(bilinear_table_t *table, int total)
 		k_x,  \
 		0,  \
 		out_w_int, \
-		in_x1_int,  \
+		in_x1_float,  \
 		in_w_int); \
  	tabulate_blinear_f(table_int_y1,  \
 		table_int_y2,  \
@@ -1083,7 +1080,7 @@ void ScaleUnit::dump_bilinear(bilinear_table_t *table, int total)
 		k_y,  \
 		pkg->out_row1,  \
 		pkg->out_row2,  \
-		in_y1_int, \
+		in_y1_float, \
 		in_h_int); \
  \
 	for(int i = 0; i < out_h; i++) \
@@ -1186,7 +1183,7 @@ void ScaleUnit::dump_bilinear(bilinear_table_t *table, int total)
 	tabulate_bcubic_f(bspline_x_f,  \
 		in_x_table, \
 		k_x, \
-		in_x1_int, \
+		in_x1_float, \
 		out_w_int, \
 		in_w_int, \
 		-1); \
@@ -1194,7 +1191,7 @@ void ScaleUnit::dump_bilinear(bilinear_table_t *table, int total)
 	tabulate_bcubic_f(bspline_y_f,  \
 		in_y_table, \
 		k_y, \
-		in_y1_int, \
+		in_y1_float, \
 		out_h_int, \
 		in_h_int, \
 		1); \
@@ -1313,7 +1310,7 @@ float ScaleUnit::cubic_bspline(float x)
 void ScaleUnit::tabulate_bcubic_f(float* &coef_table, 
 	int* &coord_table,
 	float scale,
-	int start, 
+	float start, 
 	int pixels,
 	int total_pixels,
 	float coefficient)
@@ -1322,13 +1319,13 @@ void ScaleUnit::tabulate_bcubic_f(float* &coef_table,
 	coord_table = new int[pixels * 4];
 	for(int i = 0, j = 0; i < pixels; i++)
 	{
-		float f_x = (float)i * scale;
+		float f_x = (float)i * scale + start;
 		float a = f_x - floor(f_x);
 		
 		for(float m = -1; m < 3; m++)
 		{
 			coef_table[j] = cubic_bspline(coefficient * (m - a));
-			coord_table[j] = (int)(start + (int)f_x + m);
+			coord_table[j] = (int)(f_x + m);
 			CLAMP(coord_table[j], 0, total_pixels - 1);
 			j++;
 		}
@@ -1348,13 +1345,13 @@ void ScaleUnit::tabulate_bcubic_i(int* &coef_table,
 	coord_table = new int[pixels * 4];
 	for(int i = 0, j = 0; i < pixels; i++)
 	{
-		float f_x = (float)i * scale;
+		float f_x = (float)i * scale + start;
 		float a = f_x - floor(f_x);
 		
 		for(float m = -1; m < 3; m++)
 		{
 			coef_table[j] = (int)(cubic_bspline(coefficient * (m - a)) * 0x10000);
-			coord_table[j] = (int)(start + (int)f_x + m);
+			coord_table[j] = (int)(f_x + m);
 			CLAMP(coord_table[j], 0, total_pixels - 1);
 			j++;
 		}
@@ -1369,7 +1366,7 @@ void ScaleUnit::tabulate_blinear_f(int* &table_int1,
 		float scale,
 		int pixel1,
 		int pixel2,
-		int start,
+		float start,
 		int total_pixels)
 {
 	table_int1 = new int[pixel2 - pixel1];
@@ -1379,12 +1376,12 @@ void ScaleUnit::tabulate_blinear_f(int* &table_int1,
 
 	for(int i = pixel1, j = 0; i < pixel2; i++, j++)
 	{
-		float f_x = (float)i * scale;
+		float f_x = (float)i * scale + start;
 		int i_x = (int)floor(f_x);
 		float a = (f_x - floor(f_x));
 
-		table_int1[j] = i_x + start;
-		table_int2[j] = i_x + start + 1;
+		table_int1[j] = i_x;
+		table_int2[j] = i_x + 1;
 		CLAMP(table_int1[j], 0, total_pixels - 1);
 		CLAMP(table_int2[j], 0, total_pixels - 1);
 		table_frac[j] = a;
@@ -1400,7 +1397,7 @@ void ScaleUnit::tabulate_blinear_i(int* &table_int1,
 		float scale,
 		int pixel1,
 		int pixel2,
-		int start,
+		float start,
 		int total_pixels)
 {
 	table_int1 = new int[pixel2 - pixel1];
@@ -1410,12 +1407,12 @@ void ScaleUnit::tabulate_blinear_i(int* &table_int1,
 
 	for(int i = pixel1, j = 0; i < pixel2; i++, j++)
 	{
-		double f_x = (float)i * scale;
+		double f_x = (float)i * scale + start;
 		int i_x = (int)floor(f_x);
 		float a = (f_x - floor(f_x));
 
-		table_int1[j] = i_x + start;
-		table_int2[j] = i_x + start + 1;
+		table_int1[j] = i_x;
+		table_int2[j] = i_x + 1;
 		CLAMP(table_int1[j], 0, total_pixels - 1);
 		CLAMP(table_int2[j], 0, total_pixels - 1);
 		table_frac[j] = (int)(a * 0xffff);
@@ -1434,8 +1431,8 @@ void ScaleUnit::process_package(LoadPackage *package)
 	VFrame *input = engine->scale_input;
 	float scale_w = engine->w_scale;
 	float scale_h = engine->h_scale;
-	int in_x1_int = engine->in_x1_int;
-	int in_y1_int = engine->in_y1_int;
+	float in_x1_float = engine->in_x1_float;
+	float in_y1_float = engine->in_y1_float;
 	int out_h_int = engine->out_h_int;
 	int out_w_int = engine->out_w_int;
 	int do_yuv = 
@@ -2133,7 +2130,7 @@ LoadPackage* TranslateEngine::new_package()
 	for(int i = pkg->out_row1; i < pkg->out_row2; i++) \
 	{ \
 		int in_y = y_table[i - out_y1]; \
-		type *in_row = (type*)in_rows[in_y] + in_x1 * components; \
+		type *in_row = (type*)in_rows[in_y]; \
 		type *output = (type*)out_rows[i] + out_x1 * components; \
  \
 /* X direction is scaled and requires a table lookup */ \
@@ -2164,6 +2161,7 @@ LoadPackage* TranslateEngine::new_package()
 		else \
 /* X direction is not scaled */ \
 		{ \
+			in_row += in_x1 * components; \
 			for(int j = 0; j < out_w; j++) \
 			{ \
 				temp_type input1, input2, input3, input4; \
@@ -2202,33 +2200,19 @@ ScaleTranslateUnit::~ScaleTranslateUnit()
 {
 }
 
-void ScaleTranslateUnit::scale_array(int* &table, 
+void ScaleTranslateUnit::scale_array_f(int* &table, 
 	int out_x1, 
 	int out_x2,
-	int in_x1,
-	int in_x2,
-	int is_x)
+	float in_x1,
+	float in_x2)
 {
 	float scale = (float)(out_x2 - out_x1) / (in_x2 - in_x1);
 
-	table = new int[out_x2 - out_x1];
+	table = new int[(int)out_x2 - out_x1];
 	
-	if(!is_x)
-	{
-		for(int i = 0; i < out_x2 - out_x1; i++)
-		{
-			table[i] = (int)((float)i / scale + in_x1);
-		}
-	}
-	else
-	{	
-		for(int i = 0; i < out_x2 - out_x1; i++)
-		{
-			table[i] = (int)((float)i / scale);
-		}
-	}
+	for(int i = 0; i < out_x2 - out_x1; i++)
+		table[i] = (int)((float)i / scale + in_x1);
 }
-
 
 void ScaleTranslateUnit::process_package(LoadPackage *package)
 {
@@ -2237,10 +2221,10 @@ void ScaleTranslateUnit::process_package(LoadPackage *package)
 // Args for NEAREST_NEIGHBOR_MACRO
 	VFrame *output = scale_translate->output;
 	VFrame *input = scale_translate->input;
-	int in_x1 = scale_translate->in_x1;
-	int in_y1 = scale_translate->in_y1;
-	int in_x2 = scale_translate->in_x2;
-	int in_y2 = scale_translate->in_y2;
+	int in_x1 = (int)scale_translate->in_x1;
+	int in_y1 = (int)scale_translate->in_y1;
+	int in_x2 = (int)scale_translate->in_x2;
+	int in_y2 = (int)scale_translate->in_y2;
 	int out_x1 = scale_translate->out_x1;
 	int out_y1 = scale_translate->out_y1;
 	int out_x2 = scale_translate->out_x2;
@@ -2249,7 +2233,7 @@ void ScaleTranslateUnit::process_package(LoadPackage *package)
 	int mode = scale_translate->mode;
 	int out_w = out_x2 - out_x1;
 
-	int *x_table;
+	int *x_table = 0;
 	int *y_table;
 	unsigned char **in_rows = input->get_rows();
 	unsigned char **out_rows = output->get_rows();
@@ -2259,19 +2243,17 @@ void ScaleTranslateUnit::process_package(LoadPackage *package)
 //printf("ScaleTranslateUnit::process_package 1 %d\n", mode);
 	if(out_w != in_x2 - in_x1)
 	{
-		scale_array(x_table, 
+		scale_array_f(x_table, 
 			out_x1, 
 			out_x2,
-			in_x1,
-			in_x2,
-			1);
+			scale_translate->in_x1,
+			scale_translate->in_x2);
 	}
-	scale_array(y_table, 
+	scale_array_f(y_table, 
 		out_y1, 
 		out_y2,
-		in_y1,
-		in_y2,
-		0);
+		scale_translate->in_y1,
+		scale_translate->in_y2);
 
 
  	if (mode == TRANSFER_REPLACE && (out_w == in_x2 - in_x1)) 
@@ -2335,7 +2317,7 @@ void ScaleTranslateUnit::process_package(LoadPackage *package)
 	}
 	
 //printf("blend mode %i, took %li ms\n", mode, a.get_difference());
-	if(out_x2 - out_x1 != in_x2 - in_x1)
+	if(x_table)
 		delete [] x_table;
 	delete [] y_table;
 

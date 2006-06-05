@@ -85,7 +85,7 @@ public:
 	void tabulate_bcubic_f(float* &coef_table, 
 		int* &coord_table,
 		float scale,
-		int start, 
+		float start, 
 		int pixels,
 		int total_pixels,
 		float coefficient);
@@ -96,7 +96,7 @@ public:
 		float scale,
 		int pixel1,
 		int pixel2,
-		int start,
+		float start,
 		int total_pixels);
 
 	void tabulate_bcubic_i(int* &coef_table, 
@@ -113,7 +113,7 @@ public:
 		float scale,
 		int pixel1,
 		int pixel2,
-		int start,
+		float start,
 		int total_pixels);
 	void tabulate_reduction(bilinear_table_t* &table,
 		float scale,
@@ -122,7 +122,7 @@ public:
 		int in_total);
 	void tabulate_enlarge(bilinear_table_t* &table,
 		float scale,
-		int pixel1,
+		float pixel1,
 		int out_total,
 		int in_total);
 	void dump_bilinear(bilinear_table_t *table, int total);
@@ -149,8 +149,8 @@ public:
 	VFrame *scale_input;
 	float w_scale;
 	float h_scale;
-	int in_x1_int;
-	int in_y1_int;
+	float in_x1_float;
+	float in_y1_float;
 	int out_w_int;
 	int out_h_int;
 	int interpolation_type;
@@ -269,12 +269,11 @@ public:
 	~ScaleTranslateUnit();
 
 	void process_package(LoadPackage *package);
-	void scale_array(int* &table, 
+	void scale_array_f(int* &table, 
 		int out_x1, 
 		int out_x2,
-		int in_x1,
-		int in_x2,
-		int is_x);
+		float in_x1,
+		float in_x2);
 	
 	OverlayFrame *overlay;
 	ScaleTranslateEngine *scale_translate;
@@ -296,10 +295,10 @@ public:
 // Arguments
 	VFrame *output;
 	VFrame *input;
-	int in_x1;
-	int in_y1;
-	int in_x2;
-	int in_y2;
+	float in_x1;
+	float in_y1;
+	float in_x2;
+	float in_y2;
 	int out_x1;
 	int out_y1;
 	int out_x2;
