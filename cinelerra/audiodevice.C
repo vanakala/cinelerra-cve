@@ -166,7 +166,7 @@ int AudioDevice::open_output(AudioOutConfig *config,
 	out_samples = samples;
 	out_realtime = realtime;
 	create_lowlevel(lowlevel_out, config->driver);
-	return lowlevel_out->open_output();
+	return lowlevel_out == 0 || lowlevel_out->open_output();
 }
 
 int AudioDevice::open_duplex(AudioOutConfig *out_config, int rate, int samples, int realtime)
