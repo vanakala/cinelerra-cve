@@ -61,6 +61,7 @@ cinelerra/main.C
 cinelerra/mainindexes.C
 cinelerra/mainmenu.C
 cinelerra/mainprogress.C
+cinelerra/manualgoto.C
 cinelerra/menueffects.C
 cinelerra/messages.C
 cinelerra/meterpanel.C
@@ -140,6 +141,7 @@ plugins/burn/burnwindow.C
 plugins/cdripper/cdripper.C
 plugins/cdripper/cdripwindow.C
 plugins/chromakey/chromakey.C
+plugins/chromakey-hsv/chromakey.C
 plugins/colorbalance/colorbalance.C
 plugins/colorbalance/colorbalancewindow.C
 plugins/colors/colorpicker.C
@@ -235,6 +237,7 @@ plugins/synthesizer/synthesizer.C
 plugins/threshold/threshold.C
 plugins/timeavg/timeavg.C
 plugins/timeavg/timeavgwindow.C
+plugins/timefront/timefront.C
 plugins/timestretch/timestretch.C
 plugins/titler/title.C
 plugins/titler/titlewindow.C
