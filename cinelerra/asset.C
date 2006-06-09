@@ -567,6 +567,8 @@ int Asset::read_audio(FileXML *file)
 
 int Asset::read_video(FileXML *file)
 {
+	char string[BCTEXTLEN];
+
 	if(file->tag.title_is("VIDEO")) video_data = 1;
 	height = file->tag.get_property("HEIGHT", height);
 	width = file->tag.get_property("WIDTH", width);
@@ -579,6 +581,13 @@ int Asset::read_video(FileXML *file)
 
 	video_length = file->tag.get_property("VIDEO_LENGTH", 0);
 
+	interlace_autofixoption = file->tag.get_property("INTERLACE_AUTOFIX",0);
+
+	ilacemode_to_xmltext(string, BC_ILACE_MODE_NOTINTERLACED);
+	interlace_mode = ilacemode_from_xmltext(file->tag.get_property("INTERLACE_MODE",string), BC_ILACE_MODE_NOTINTERLACED);
+
+	ilacefixmethod_to_xmltext(string, BC_ILACE_FIXMETHOD_NONE);
+	interlace_fixmethod = ilacefixmethod_from_xmltext(file->tag.get_property("INTERLACE_FIXMETHOD",string), BC_ILACE_FIXMETHOD_NONE);
 
 	file->tag.get_property("REEL_NAME", reel_name);
 	reel_number = file->tag.get_property("REEL_NUMBER", reel_number);
@@ -797,6 +806,8 @@ int Asset::write_audio(FileXML *file)
 
 int Asset::write_video(FileXML *file)
 {
+	char string[BCTEXTLEN];
+
 	if(video_data)
 		file->tag.set_title("VIDEO");
 	else
@@ -810,6 +821,13 @@ int Asset::write_video(FileXML *file)
 
 	file->tag.set_property("VIDEO_LENGTH", video_length);
 
+	file->tag.set_property("INTERLACE_AUTOFIX", interlace_autofixoption);
+
+	ilacemode_to_xmltext(string, interlace_mode);
+	file->tag.set_property("INTERLACE_MODE", string);
+
+	ilacefixmethod_to_xmltext(string, interlace_fixmethod);
+	file->tag.set_property("INTERLACE_FIXMETHOD", string);
 
 
 	file->tag.set_property("REEL_NAME", reel_name);
@@ -1101,9 +1119,6 @@ void Asset::save_defaults(Defaults *defaults,
 
 	UPDATE_DEFAULT("JPEG_QUALITY", jpeg_quality);
 	UPDATE_DEFAULT("ASPECT_RATIO", aspect_ratio);
-	UPDATE_DEFAULT("INTERLACE_AUTOFIXOPTION", interlace_autofixoption);
-	UPDATE_DEFAULT("INTERLACE_MODE", interlace_mode);
-	UPDATE_DEFAULT("INTERLACE_FIXMETHOD", interlace_fixmethod);
 
 
 // MPEG format information

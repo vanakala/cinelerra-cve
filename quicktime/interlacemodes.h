@@ -47,11 +47,15 @@
 
 //Interlace Compensation Methods
 #define BC_ILACE_FIXMETHOD_NONE     	0
+#define BC_ILACE_FIXMETHOD_NONE_XMLT   	"DO_NOTHING"
 #define BC_ILACE_FIXMETHOD_NONE_T   	"Do Nothing"
 #define BC_ILACE_FIXMETHOD_UPONE    	1
+#define BC_ILACE_FIXMETHOD_UPONE_XMLT  	"SHIFT_UPONE"
 #define BC_ILACE_FIXMETHOD_UPONE_T  	"Shift Up 1 pixel"
 #define BC_ILACE_FIXMETHOD_DOWNONE  	2
+#define BC_ILACE_FIXMETHOD_DOWNONE_XMLT	"SHIFT_DOWNONE"
 #define BC_ILACE_FIXMETHOD_DOWNONE_T	"Shift Down 1 pixel"
+
 // the following is for project/asset having odd/even, or even/odd  
 #define BC_ILACE_FIXDEFAULT         	BC_ILACE_FIXMETHOD_UPONE
 //Note: Do not change what the numbers mean as this will make backward-compatability have erroraneous settings.
@@ -72,12 +76,14 @@ int  ilaceautofixoption_from_text(char *text, int thedefault);
 
 void ilacemode_to_text(char *string, int ilacemode);
 int  ilacemode_from_text(char *text, int thedefault);
-
 void ilacemode_to_xmltext(char *string, int ilacemode);
 int  ilacemode_from_xmltext(char *text, int thedefault);
 
 void ilacefixmethod_to_text(char *string, int fixmethod);
 int  ilacefixmethod_from_text(char *text, int thedefault);
+void ilacefixmethod_to_xmltext(char *string, int fixmethod);
+int  ilacefixmethod_from_xmltext(char *text, int thedefault);
+
 
 int  ilaceautofixmethod(int projectilacemode, int assetilacemode);
 int  ilaceautofixmethod2(int projectilacemode, int assetautofixoption, int assetilacemode, int assetfixmethod);

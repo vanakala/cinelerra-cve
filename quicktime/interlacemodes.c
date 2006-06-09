@@ -26,6 +26,8 @@
 
 #include "interlacemodes.h"
 
+// AUTO FIX METHOD ====================
+
 void ilaceautofixoption_to_text(char *string, int autofixoption)
 {
 	switch(autofixoption)
@@ -42,6 +44,8 @@ int ilaceautofixoption_from_text(char *text, int thedefault)
 	if(!strcasecmp(text, BC_ILACE_AUTOFIXOPTION_MANUAL_T))	return BC_ILACE_AUTOFIXOPTION_MANUAL;
 	return thedefault;
 }
+
+// INTERLACE MODE ====================
 
 void ilacemode_to_text(char *string, int ilacemode)
 {
@@ -85,6 +89,8 @@ int ilacemode_from_xmltext(char *text, int thedefault)
 	return thedefault;
 }
 
+// INTERLACE FIX METHOD ====================
+
 void ilacefixmethod_to_text(char *string, int fixmethod)
 {
 	switch(fixmethod)
@@ -101,6 +107,25 @@ int ilacefixmethod_from_text(char *text, int thedefault)
 	if(!strcasecmp(text, BC_ILACE_FIXMETHOD_NONE_T))   	return BC_ILACE_FIXMETHOD_NONE;
 	if(!strcasecmp(text, BC_ILACE_FIXMETHOD_UPONE_T))  	return BC_ILACE_FIXMETHOD_UPONE;
 	if(!strcasecmp(text, BC_ILACE_FIXMETHOD_DOWNONE_T))	return BC_ILACE_FIXMETHOD_DOWNONE;
+	return thedefault; 
+}
+
+void ilacefixmethod_to_xmltext(char *string, int fixmethod)
+{
+	switch(fixmethod)
+	{
+		case BC_ILACE_FIXMETHOD_NONE:   	strcpy(string, BC_ILACE_FIXMETHOD_NONE_XMLT);   	break;
+		case BC_ILACE_FIXMETHOD_UPONE:  	strcpy(string, BC_ILACE_FIXMETHOD_UPONE_XMLT);  	break;
+		case BC_ILACE_FIXMETHOD_DOWNONE:	strcpy(string, BC_ILACE_FIXMETHOD_DOWNONE_XMLT);	break;
+		default: strcpy(string, BC_ILACE_UNKNOWN_T);	break;
+	}
+}
+
+int ilacefixmethod_from_xmltext(char *text, int thedefault)
+{
+	if(!strcasecmp(text, BC_ILACE_FIXMETHOD_NONE_XMLT))   	return BC_ILACE_FIXMETHOD_NONE;
+	if(!strcasecmp(text, BC_ILACE_FIXMETHOD_UPONE_XMLT))  	return BC_ILACE_FIXMETHOD_UPONE;
+	if(!strcasecmp(text, BC_ILACE_FIXMETHOD_DOWNONE_XMLT))	return BC_ILACE_FIXMETHOD_DOWNONE;
 	return thedefault; 
 }
 
