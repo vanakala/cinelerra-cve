@@ -64,6 +64,27 @@ int ilacemode_from_text(char *text, int thedefault)
 	return thedefault;
 }
 
+void ilacemode_to_xmltext(char *string, int ilacemode)
+{
+	switch(ilacemode)
+	{
+		case BC_ILACE_MODE_UNDETECTED:     strcpy(string, BC_ILACE_MODE_UNDETECTED_XMLT);      break;
+		case BC_ILACE_MODE_TOP_FIRST:      strcpy(string, BC_ILACE_MODE_TOP_FIRST_XMLT);       break;
+		case BC_ILACE_MODE_BOTTOM_FIRST:   strcpy(string, BC_ILACE_MODE_BOTTOM_FIRST_XMLT);    break;
+		case BC_ILACE_MODE_NOTINTERLACED:  strcpy(string, BC_ILACE_MODE_NOTINTERLACED_XMLT);   break;
+		default: strcpy(string, BC_ILACE_UNKNOWN_T); break;
+	}
+}
+
+int ilacemode_from_xmltext(char *text, int thedefault)
+{
+	if(!strcasecmp(text, BC_ILACE_MODE_UNDETECTED_XMLT))     return BC_ILACE_MODE_UNDETECTED;
+	if(!strcasecmp(text, BC_ILACE_MODE_TOP_FIRST_XMLT))      return BC_ILACE_MODE_TOP_FIRST;
+	if(!strcasecmp(text, BC_ILACE_MODE_BOTTOM_FIRST_XMLT))   return BC_ILACE_MODE_BOTTOM_FIRST;
+	if(!strcasecmp(text, BC_ILACE_MODE_NOTINTERLACED_XMLT))  return BC_ILACE_MODE_NOTINTERLACED;
+	return thedefault;
+}
+
 void ilacefixmethod_to_text(char *string, int fixmethod)
 {
 	switch(fixmethod)

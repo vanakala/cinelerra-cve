@@ -130,7 +130,8 @@ int EDLSession::load_defaults(Defaults *defaults)
 	brender_start = defaults->get("BRENDER_START", brender_start);
 	cmodel_to_text(string, BC_RGBA8888);
 	color_model = cmodel_from_text(defaults->get("COLOR_MODEL", string));
-	interlace_mode = defaults->get("INTERLACE_MODE", interlace_mode);
+	ilacemode_to_xmltext(string, BC_ILACE_MODE_NOTINTERLACED);
+	interlace_mode = ilacemode_from_xmltext(defaults->get("INTERLACE_MODE",string), BC_ILACE_MODE_NOTINTERLACED);
 	crop_x1 = defaults->get("CROP_X1", 0);
 	crop_x2 = defaults->get("CROP_X2", 320);
 	crop_y1 = defaults->get("CROP_Y1", 0);
@@ -250,7 +251,8 @@ int EDLSession::save_defaults(Defaults *defaults)
 	defaults->update("BRENDER_START", brender_start);
 	cmodel_to_text(string, color_model);
 	defaults->update("COLOR_MODEL", string);
-	defaults->update("INTERLACE_MODE", interlace_mode);
+	ilacemode_to_xmltext(string, interlace_mode);
+	defaults->update("INTERLACE_MODE", string);
 	defaults->update("CROP_X1", crop_x1);
 	defaults->update("CROP_X2", crop_x2);
 	defaults->update("CROP_Y1", crop_y1);
@@ -380,6 +382,7 @@ int EDLSession::load_video_config(FileXML *file, int append_mode, uint32_t load_
 	interpolation_type = file->tag.get_property("INTERPOLATION_TYPE", interpolation_type);
 	cmodel_to_text(string, color_model);
 	color_model = cmodel_from_text(file->tag.get_property("COLORMODEL", string));
+	interlace_mode = ilacemode_from_xmltext(file->tag.get_property("INTERLACE_MODE"), BC_ILACE_MODE_NOTINTERLACED);
 	video_channels = file->tag.get_property("CHANNELS", video_channels);
 	for(int i = 0; i < video_channels; i++)
 	{
@@ -556,6 +559,8 @@ int EDLSession::save_video_config(FileXML *file)
 	file->tag.set_property("INTERPOLATION_TYPE", interpolation_type);
 	cmodel_to_text(string, color_model);
 	file->tag.set_property("COLORMODEL", string);
+	ilacemode_to_xmltext(string, interlace_mode);
+	file->tag.set_property("INTERLACE_MODE",string);
     file->tag.set_property("CHANNELS", video_channels);
 	for(int i = 0; i < video_channels; i++)
 	{

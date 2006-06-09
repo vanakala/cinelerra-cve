@@ -28,14 +28,18 @@
 //Note: Do not change what the numbers mean as this will make backward-compatability have erroraneous settings.
 
 //Interlace Modes
-#define BC_ILACE_MODE_UNDETECTED        0
-#define BC_ILACE_MODE_UNDETECTED_T      "Unknown"
-#define BC_ILACE_MODE_TOP_FIRST         1
-#define BC_ILACE_MODE_TOP_FIRST_T       "Top Fields First"
-#define BC_ILACE_MODE_BOTTOM_FIRST      2
-#define BC_ILACE_MODE_BOTTOM_FIRST_T    "Bottom Fields First"
-#define BC_ILACE_MODE_NOTINTERLACED     3
-#define BC_ILACE_MODE_NOTINTERLACED_T   "Not Interlaced"
+#define BC_ILACE_MODE_UNDETECTED         0
+#define BC_ILACE_MODE_UNDETECTED_XMLT    "UNKNOWN"
+#define BC_ILACE_MODE_UNDETECTED_T       "Unknown"
+#define BC_ILACE_MODE_TOP_FIRST          1
+#define BC_ILACE_MODE_TOP_FIRST_XMLT     "TOP_FIELD_FIRST"
+#define BC_ILACE_MODE_TOP_FIRST_T        "Top Fields First"
+#define BC_ILACE_MODE_BOTTOM_FIRST       2
+#define BC_ILACE_MODE_BOTTOM_FIRST_XMLT  "BOTTOM_FIELD_FIRST"
+#define BC_ILACE_MODE_BOTTOM_FIRST_T     "Bottom Fields First"
+#define BC_ILACE_MODE_NOTINTERLACED      3
+#define BC_ILACE_MODE_NOTINTERLACED_XMLT "NOTINTERLACED"
+#define BC_ILACE_MODE_NOTINTERLACED_T    "Not Interlaced"
 
 #define BC_ILACE_ASSET_MODEDEFAULT  	BC_ILACE_MODE_UNDETECTED
 #define BC_ILACE_PROJECT_MODEDEFAULT	BC_ILACE_MODE_NOTINTERLACED_T
@@ -68,6 +72,9 @@ int  ilaceautofixoption_from_text(char *text, int thedefault);
 
 void ilacemode_to_text(char *string, int ilacemode);
 int  ilacemode_from_text(char *text, int thedefault);
+
+void ilacemode_to_xmltext(char *string, int ilacemode);
+int  ilacemode_from_xmltext(char *text, int thedefault);
 
 void ilacefixmethod_to_text(char *string, int fixmethod);
 int  ilacefixmethod_from_text(char *text, int thedefault);
