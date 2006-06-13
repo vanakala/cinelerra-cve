@@ -82,6 +82,7 @@ void ilacemode_to_xmltext(char *string, int ilacemode)
 
 int ilacemode_from_xmltext(char *text, int thedefault)
 {
+	if(!text) return thedefault;
 	if(!strcasecmp(text, BC_ILACE_MODE_UNDETECTED_XMLT))     return BC_ILACE_MODE_UNDETECTED;
 	if(!strcasecmp(text, BC_ILACE_MODE_TOP_FIRST_XMLT))      return BC_ILACE_MODE_TOP_FIRST;
 	if(!strcasecmp(text, BC_ILACE_MODE_BOTTOM_FIRST_XMLT))   return BC_ILACE_MODE_BOTTOM_FIRST;
