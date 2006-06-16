@@ -382,6 +382,7 @@ void Render::run()
 					plugindb = mwindow->plugindb;
 				edl->load_xml(plugindb, file, LOAD_ALL);
 
+				check_asset(edl, *job->asset);
 				render(0, job->asset, edl, job->strategy);
 
 				delete edl;
