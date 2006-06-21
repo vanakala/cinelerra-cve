@@ -149,6 +149,40 @@ public:
 	BatchRenderThread *thread;
 };
 
+
+
+class BatchRenderSaveList : public BC_GenericButton, public Thread
+{
+public:
+	BatchRenderSaveList(BatchRenderThread *thread, 
+			    int x, 
+			    int y);
+	~BatchRenderSaveList();
+	int handle_event();
+	BatchRenderThread *thread;
+	BC_FileBox *gui;
+	void run();
+	virtual int keypress_event();
+	Mutex *startup_lock;
+};
+
+class BatchRenderLoadList : public BC_GenericButton, public Thread
+{
+public:
+	BatchRenderLoadList(BatchRenderThread *thread, 
+			    int x, 
+			    int y);
+	~BatchRenderLoadList();
+	int handle_event();
+	BatchRenderThread *thread;
+	BC_FileBox *gui;
+	void run();
+	virtual int keypress_event();
+	Mutex *startup_lock;
+};
+
+
+
 class BatchRenderList : public BC_ListBox
 {
 public:
@@ -246,6 +280,8 @@ public:
 	BC_Title *list_title;
 	BatchRenderNew *new_batch;
 	BatchRenderDelete *delete_batch;
+	BatchRenderSaveList *savelist_batch;
+	BatchRenderLoadList *loadlist_batch;
 	BatchRenderList *batch_list;
 	BatchRenderStart *start_button;
 	BatchRenderStop *stop_button;
