@@ -211,7 +211,7 @@ public:
 class BC_PopupTextBoxText;
 class BC_PopupTextBoxList;
 
-class BC_PopupTextBox
+class BC_PopupTextBox : public BC_RelocatableWidget
 {
 public:
 	BC_PopupTextBox(BC_WindowBase *parent_window, 
@@ -232,6 +232,7 @@ public:
 	int get_h();
 	void update(char *text);
 	void update_list(ArrayList<BC_ListBoxItem*> *data);
+	int  reposition_widget(int x, int y, int w = -1, int h = -1);
 	void reposition_window(int x, int y);
 
 	friend class BC_PopupTextBoxText;

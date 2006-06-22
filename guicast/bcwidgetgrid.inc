@@ -3,5 +3,6 @@
 
 
 class BC_WidgetGrid;
+class BC_WidgetGridList;
 
 #endif

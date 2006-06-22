@@ -457,7 +457,7 @@ BC_CheckBox::BC_CheckBox(int x,
 	BC_WindowBase::get_resources()->checkbox_images, 
 	value, 
 	caption, 
-	1, 
+	0, 
 	font,
 	color)
 {
