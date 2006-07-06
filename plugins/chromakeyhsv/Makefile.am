@@ -1,7 +1,7 @@
-plugin_LTLIBRARIES = chromakey_hsv.la
-chromakey_hsv_la_LDFLAGS = -avoid-version -module -shared 
-chromakey_hsv_la_LIBADD = $(top_builddir)/plugins/colors/libcolors.la
-chromakey_hsv_la_SOURCES = chromakey.C 
+plugin_LTLIBRARIES = chromakeyhsv.la
+chromakeyhsv_la_LDFLAGS = -avoid-version -module -shared 
+chromakeyhsv_la_LIBADD = $(top_builddir)/plugins/colors/libcolors.la
+chromakeyhsv_la_SOURCES = chromakey.C 
 AM_CXXFLAGS = $(LARGEFILE_CFLAGS)
 
 INCLUDES = -I$(top_srcdir)/guicast -I$(top_srcdir)/cinelerra -I$(top_srcdir)/quicktime -I$(top_srcdir)/plugins/colors
