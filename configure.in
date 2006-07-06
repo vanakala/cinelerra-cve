@@ -406,7 +406,7 @@ AC_OUTPUT(Makefile cinelerra-cvs-current.spec po/Makefile.in \
 					plugins/reverseaudio/Makefile plugins/reversevideo/Makefile plugins/rgb601/Makefile \
 					plugins/rotate/Makefile \
 					plugins/scale/Makefile \
-					plugins/seltempavg/Makefile \
+					plugins/denoiseseltempavg/Makefile \
 					plugins/shapewipe/Makefile \
 					plugins/sharpen/Makefile \
 					plugins/shiftinterlace/Makefile plugins/slide/Makefile plugins/spectrogram/Makefile \
