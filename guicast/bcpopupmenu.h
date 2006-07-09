@@ -3,8 +3,9 @@
 
 #include "bcmenubar.inc"
 #include "bcmenuitem.inc"
-#include "bcsubwindow.h"
 #include "bcmenupopup.inc"
+#include "bcsubwindow.h"
+
 
 // A menu that pops up in the middle of a window or under a button.
 
