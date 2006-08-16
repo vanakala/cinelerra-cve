@@ -141,7 +141,7 @@ plugins/burn/burnwindow.C
 plugins/cdripper/cdripper.C
 plugins/cdripper/cdripwindow.C
 plugins/chromakey/chromakey.C
-plugins/chromakey-hsv/chromakey.C
+plugins/chromakeyhsv/chromakey.C
 plugins/colorbalance/colorbalance.C
 plugins/colorbalance/colorbalancewindow.C
 plugins/colors/colorpicker.C
@@ -155,6 +155,8 @@ plugins/delayvideo/delayvideo.C
 plugins/denoise/denoise.C
 plugins/denoisefft/denoisefft.C
 plugins/denoisemjpeg/denoisemjpeg.C
+plugins/denoiseseltempavg/seltempavg.C
+plugins/denoiseseltempavg/seltempavgwindow.C
 plugins/denoisevideo/denoisevideo.C
 plugins/despike/despike.C
 plugins/despike/despikewindow.C
@@ -222,8 +224,6 @@ plugins/rotate/rotate.C
 # plugins/rotate/rotatewindow.C
 plugins/scale/scale.C
 plugins/scale/scalewin.C
-plugins/seltempavg/seltempavg.C
-plugins/seltempavg/seltempavgwindow.C
 plugins/shapewipe/shapewipe.C
 plugins/sharpen/sharpen.C
 plugins/sharpen/sharpenwindow.C
