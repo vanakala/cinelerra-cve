@@ -1,3 +1,4 @@
+#include "bcsignals.h"
 #include "clip.h"
 #include "framecache.h"
 #include "mutex.h"
@@ -5,6 +6,9 @@
 
 
 #include <math.h>
+#include <string.h>
+
+
 
 FrameCacheItem::FrameCacheItem()
 {

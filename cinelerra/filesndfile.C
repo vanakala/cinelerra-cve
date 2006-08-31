@@ -53,6 +53,9 @@ void FileSndFile::asset_to_format()
 	switch(asset->bits)
 	{
 		case BITSLINEAR8:
+			if(asset->format == FILE_WAV)
+				fd_config.format |= SF_FORMAT_PCM_U8;
+			else
 			if(asset->signed_)
 				fd_config.format |= SF_FORMAT_PCM_S8;
 			else

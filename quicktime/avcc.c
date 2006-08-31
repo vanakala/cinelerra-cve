@@ -1,6 +1,6 @@
 #include "funcprotos.h"
 #include "quicktime.h"
-
+#include <string.h>
 
 
 void quicktime_delete_avcc(quicktime_avcc_t *avcc)

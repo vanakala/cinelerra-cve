@@ -11,6 +11,7 @@
 #include "guicast.h"
 #include "mainindexes.h"
 #include "mainprogress.h"
+#include "mutex.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "preferences.h"

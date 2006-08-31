@@ -542,10 +542,10 @@ int BC_FileBox::create_objects()
 	add_subwindow(text_button = new BC_FileBoxText(x, y, this));
 	x -= resources->filebox_newfolder_images[0]->get_w() + 5;
 	add_subwindow(folder_button = new BC_FileBoxNewfolder(x, y, this));
-	x -= resources->filebox_reload_images[0]->get_w() + 5;
-	add_subwindow(reload_button = new BC_FileBoxReload(x, y, this));
 	x -= resources->filebox_delete_images[0]->get_w() + 5;
 	add_subwindow(delete_button = new BC_FileBoxDelete(x, y, this));
+	x -= resources->filebox_reload_images[0]->get_w() + 5;
+	add_subwindow(reload_button = new BC_FileBoxReload(x, y, this));
 	x -= resources->filebox_updir_images[0]->get_w() + 5;
 	add_subwindow(updir_button = new BC_FileBoxUpdir(x, y, this));
 
@@ -602,10 +602,10 @@ int BC_FileBox::get_listbox_h(int y)
 	int result = get_h() - 
 		y - 
 		h_padding;
-	if(!want_directory)
-		result -= BC_WindowBase::get_resources()->filebox_margin;
-	else
+	if(want_directory)
 		result -= BC_WindowBase::get_resources()->dirbox_margin;
+	else
+		result -= BC_WindowBase::get_resources()->filebox_margin;
 
 	return result;
 }
@@ -1017,6 +1017,7 @@ int BC_FileBox::submit_file(char *path, int use_this)
 		fs->extract_dir(directory, path);     
 
 		fs->extract_name(filename, path);     // save filename
+
 		fs->complete_path(path);
 		strcpy(this->current_path, path);          // save complete path
 		strcpy(this->submitted_path, path);          // save complete path

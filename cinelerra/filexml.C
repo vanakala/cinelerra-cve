@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "bcsignals.h"
 #include "filexml.h"
 
 
@@ -312,12 +313,13 @@ int FileXML::read_from_file(char *filename, int ignore_error)
 	if(in = fopen(filename, "rb"))
 	{
 		fseek(in, 0, SEEK_END);
-		length = ftell(in);
+		int new_length = ftell(in);
 		fseek(in, 0, SEEK_SET);
-		reallocate_string(length + 1);
-		fread(string, length, 1, in);
-		string[length] = 0;
+		reallocate_string(new_length + 1);
+		fread(string, new_length, 1, in);
+		string[new_length] = 0;
 		position = 0;
+		length = new_length;
 	}
 	else
 	{
@@ -529,6 +531,7 @@ int XMLTag::read_tag(char *input, long &position, long length)
 			j < MAX_LENGTH &&
 			position < length &&
 			input[position] != right_delimiter &&
+			input[position] != '\n' &&
 			input[position] != terminating_char;
 			j++, position++)
 		{

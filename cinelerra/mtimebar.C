@@ -1,3 +1,4 @@
+#include "bcsignals.h"
 #include "cwindow.h"
 #include "edl.h"
 #include "edlsession.h"

@@ -909,6 +909,18 @@ KeyFrame* PluginServer::get_keyframe()
 		return keyframe;
 }
 
+void PluginServer::get_camera(float *x, float *y, float *z,
+	int64_t position, int direction)
+{
+	plugin->track->automation->get_camera(x, y, z, position, direction);
+}
+
+void PluginServer::get_projector(float *x, float *y, float *z,
+	int64_t position, int direction)
+{
+	plugin->track->automation->get_projector(x, y, z, position, direction);
+}
+
 
 int PluginServer::get_interpolation_type()
 {
@@ -953,16 +965,3 @@ void PluginServer::dump()
 {
 	printf("    PluginServer %s %s\n", path, title);
 }
-
-void PluginServer::get_camera(float *x, float *y, float *z,
-				int64_t position, int direction)
-{
-	plugin->track->automation->get_camera(x, y, z, position, direction);
-}
-
-void PluginServer::get_projector(float *x, float *y, float *z,
-				int64_t position, int direction)
-{
-	plugin->track->automation->get_projector(x, y, z, position, direction);
-}
-

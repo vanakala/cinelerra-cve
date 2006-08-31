@@ -1,4 +1,5 @@
 #include "asset.h"
+#include "bcsignals.h"
 #include "cache.h"
 #include "edl.h"
 #include "edlsession.h"

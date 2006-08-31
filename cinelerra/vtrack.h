@@ -59,8 +59,7 @@ public:
 
 // ===================================== rendering
 
-	int get_projection(int channel, 
-		float &in_x1, 
+	int get_projection(float &in_x1, 
 		float &in_y1, 
 		float &in_x2, 
 		float &in_y2, 

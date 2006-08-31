@@ -1134,6 +1134,7 @@ void FileMPEG::to_streamchannel(int channel, int &stream_out, int &channel_out)
 int FileMPEG::read_samples(double *buffer, int64_t len)
 {
 	if(!fd) return 0;
+	if(len < 0) return 0;
 
 // This is directed to a FileMPEGBuffer
 	float *temp_float = new float[len];

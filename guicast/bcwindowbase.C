@@ -20,6 +20,7 @@
 #include "fonts.h"
 #include "keys.h"
 #include "language.h"
+#include "mutex.h"
 #include "sizes.h"
 #include "vframe.h"
 
@@ -104,7 +105,8 @@ BC_WindowBase::~BC_WindowBase()
         }
 		
 
-	XFreePixmap(top_level->display, pixmap);
+		delete pixmap;
+
 	XDestroyWindow(top_level->display, win);
 
 	if(bg_pixmap && !shared_bg_pixmap) delete bg_pixmap;
@@ -176,6 +178,7 @@ int BC_WindowBase::initialize()
 	active_menubar = 0;
 	active_popup_menu = 0;
 	active_subwindow = 0;
+	pixmap = 0;
 	bg_pixmap = 0;
 	tooltip_text[0] = 0;
 	persistant_tooltip = 0;
@@ -473,11 +476,8 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 	}
 
 // Create pixmap for all windows
-	pixmap = XCreatePixmap(top_level->display, 
-		win, 
-		this->w, 
-		this->h, 
-		top_level->default_depth);
+	pixmap = new BC_Pixmap(this, this->w, this->h);
+
 
 // Create truetype rendering surface
 #ifdef HAVE_XFT
@@ -946,17 +946,15 @@ int BC_WindowBase::dispatch_expose_event()
 
 int BC_WindowBase::dispatch_resize_event(int w, int h)
 {
+// Can't store new w and h until the event is handles 
+// because bcfilebox depends on the old w and h to
+// reposition widgets.
 	if(window_type == MAIN_WINDOW)
 	{
 		resize_events = 0;
-// Can't store w and h here because bcfilebox depends on the old w and h to
-// reposition widgets.
-		XFreePixmap(top_level->display, pixmap);
-		pixmap = XCreatePixmap(top_level->display, 
-			win, 
-			w, 
-			h, 
-			top_level->default_depth);
+		delete pixmap;
+		pixmap = new BC_Pixmap(this, w, h);
+
 		clear_box(0, 0, w, h);
 	}
 
@@ -1661,16 +1659,16 @@ int BC_WindowBase::init_gc()
 
 int BC_WindowBase::init_fonts()
 {
-	if((largefont = XLoadQueryFont(display, _(resources.large_font))) == NULL &&
-		(largefont = XLoadQueryFont(display, _(resources.large_font2))) == NULL) 
+	if((largefont = XLoadQueryFont(display, _(resources.large_font))) == NULL)
+		if((largefont = XLoadQueryFont(display, _(resources.large_font2))) == NULL)
 		largefont = XLoadQueryFont(display, "fixed"); 
 
-	if((mediumfont = XLoadQueryFont(display, _(resources.medium_font))) == NULL &&
-		(mediumfont = XLoadQueryFont(display, _(resources.medium_font2))) == NULL)
+	if((mediumfont = XLoadQueryFont(display, _(resources.medium_font))) == NULL)
+		if((mediumfont = XLoadQueryFont(display, _(resources.medium_font2))) == NULL)
 		mediumfont = XLoadQueryFont(display, "fixed"); 
 
-	if((smallfont = XLoadQueryFont(display, _(resources.small_font))) == NULL &&
-		(smallfont = XLoadQueryFont(display, _(resources.small_font2))) == NULL)
+	if((smallfont = XLoadQueryFont(display, _(resources.small_font))) == NULL)
+		if((smallfont = XLoadQueryFont(display, _(resources.small_font2))) == NULL)
 		smallfont = XLoadQueryFont(display, "fixed");
 
 #ifdef HAVE_XFT
@@ -1785,6 +1783,8 @@ printf("BC_WindowBase::init_fonts: %s=%p %s=%p %s=%p\n",
 
 	return 0;
 }
+
+
 
 int BC_WindowBase::get_color(int64_t color) 
 {
@@ -2494,7 +2494,7 @@ BC_WidgetGrid* BC_WindowBase::add_widgetgrid(BC_WidgetGrid *widgetgrid)
 int BC_WindowBase::flash(int x, int y, int w, int h, int flush)
 {
 	set_opaque();
-	XSetWindowBackgroundPixmap(top_level->display, win, pixmap);
+	XSetWindowBackgroundPixmap(top_level->display, win, pixmap->opaque_pixmap);
 	if(x >= 0)
 	{
 		XClearArea(top_level->display, win, x, y, w, h, 0);
@@ -3074,8 +3074,8 @@ int BC_WindowBase::resize_window(int w, int h)
 
 	this->w = w;
 	this->h = h;
-	XFreePixmap(top_level->display, pixmap);
-	pixmap = XCreatePixmap(top_level->display, win, w, h, top_level->default_depth);
+	delete pixmap;
+	pixmap = new BC_Pixmap(this, w, h);
 
 // Propagate to menubar
 	for(int i = 0; i < subwindows->total; i++)
@@ -3156,13 +3156,8 @@ int BC_WindowBase::reposition_window(int x, int y, int w, int h)
 
 	if(resize)
 	{
-		XFreePixmap(top_level->display, pixmap);
- 		pixmap = XCreatePixmap(top_level->display, 
-			win, 
-			this->w, 
-			this->h, 
-			top_level->default_depth);
-
+		delete pixmap;
+		pixmap = new BC_Pixmap(this, this->w, this->h);
 // Propagate to menubar
 		for(int i = 0; i < subwindows->total; i++)
 		{

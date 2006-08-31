@@ -449,8 +449,7 @@ void VTrack::calculate_output_transfer(int channel,
 
 
 
-int VTrack::get_projection(int channel, 
-	float &in_x1, 
+int VTrack::get_projection(float &in_x1, 
 	float &in_y1, 
 	float &in_x2, 
 	float &in_y2, 

@@ -1,6 +1,7 @@
 #include "avcodec.h"
 #include "funcprotos.h"
 #include "quicktime.h"
+#include <string.h>
 #include "wma.h"
 
 /* McRowesoft media player audio */

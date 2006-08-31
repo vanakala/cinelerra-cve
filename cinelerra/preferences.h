@@ -44,7 +44,8 @@ public:
 	void set_rate(float rate, int node);
 // Calculate the number of cpus to use.  
 // Determined by /proc/cpuinfo and force_uniprocessor.
-	int calculate_processors();
+// interactive forces it to ignore force_uniprocessor
+	int calculate_processors(int interactive = 0);
 
 // ================================= Performance ================================
 // directory to look in for indexes
@@ -62,6 +63,8 @@ public:
 // The number of cpus to use when rendering.
 // Determined by /proc/cpuinfo and force_uniprocessor
 	int processors;
+// Number of processors for interactive operations.
+	int real_processors;
 
 
 	Asset *brender_asset;

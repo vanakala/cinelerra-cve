@@ -11,6 +11,7 @@
 #include "keys.h"
 #include "language.h"
 #include "mainsession.h"
+#include "mutex.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "packagedispatcher.h"
@@ -750,7 +751,7 @@ void BatchRenderGUI::create_objects()
 		x, 
 		y));
 	x = get_w() - 
-		BC_GenericButton::calculate_w(this, _("Cancel")) - 
+		BC_GenericButton::calculate_w(this, _("Close")) - 
 		10;
 	add_subwindow(cancel_button = new BatchRenderCancel(thread, 
 		x, 

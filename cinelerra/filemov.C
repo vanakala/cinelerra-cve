@@ -8,6 +8,7 @@
 #include "filemov.h"
 #include "guicast.h"
 #include "language.h"
+#include "mutex.h"
 #include "mwindow.inc"
 #include "vframe.h"
 #include "videodevice.inc"
@@ -109,6 +110,7 @@ void FileMOV::get_parameters(BC_WindowBase *parent_window,
 	int video_options,
 	int lock_compressor)
 {
+	fix_codecs(asset);
 	if(audio_options)
 	{
 		MOVConfigAudio *window = new MOVConfigAudio(parent_window, asset);
@@ -130,7 +132,7 @@ void FileMOV::get_parameters(BC_WindowBase *parent_window,
 	}
 }
 
-void FileMOV::fix_codecs_for_writing(Asset *asset)
+void FileMOV::fix_codecs(Asset *asset)
 {
 	if(!strcasecmp(asset->vcodec, QUICKTIME_DV) ||
 	   !strcasecmp(asset->vcodec, QUICKTIME_DVSD) ||
@@ -246,7 +248,7 @@ void FileMOV::asset_to_format()
 {
 	if(!fd) return;
 
-	fix_codecs_for_writing(asset);
+	fix_codecs(asset);
 
 // Fix up the Quicktime file.
 	quicktime_set_copyright(fd, _("Made with Cinelerra for Linux"));
@@ -436,10 +438,10 @@ int FileMOV::get_best_colormodel(Asset *asset, int driver)
 			if(match4(asset->vcodec, QUICKTIME_JPEG)) return BC_YUV420P;
 			if(match4(asset->vcodec, QUICKTIME_MJPA)) return BC_YUV422P;
 			if(match4(asset->vcodec, QUICKTIME_DV)) return BC_YUV422;
-			if(match4(asset->vcodec, QUICKTIME_DVCP)) return BC_YUV422;
 			if(match4(asset->vcodec, QUICKTIME_DVSD)) return BC_YUV422;
 			if(match4(asset->vcodec, QUICKTIME_HV60)) return BC_YUV420P;
 			if(match4(asset->vcodec, QUICKTIME_DIVX)) return BC_YUV420P;
+			if(match4(asset->vcodec, QUICKTIME_DVCP)) return BC_YUV422;
 			if(match4(asset->vcodec, QUICKTIME_MP4V)) return BC_YUV420P;
 			if(match4(asset->vcodec, QUICKTIME_H263)) return BC_YUV420P;
 			if(match4(asset->vcodec, QUICKTIME_H264)) return BC_YUV420P;
@@ -1751,9 +1753,12 @@ void MOVConfigVideo::update_parameters()
 	reset();
 
 
+	char *vcodec = asset->vcodec;
+
+
 // H264 parameters
-	if(!strcmp(asset->vcodec, QUICKTIME_H264) ||
-		!strcmp(asset->vcodec, QUICKTIME_HV64))
+	if(!strcmp(vcodec, QUICKTIME_H264) ||
+		!strcmp(vcodec, QUICKTIME_HV64))
 	{
 		int x = param_x, y = param_y;
 		h264_bitrate = new MOVConfigVideoNum(this, 
@@ -1785,8 +1790,8 @@ void MOVConfigVideo::update_parameters()
 	}
 	else
 // ffmpeg parameters
-	if(!strcmp(asset->vcodec, QUICKTIME_MP4V) ||
-		!strcmp(asset->vcodec, QUICKTIME_DIV3))
+	if(!strcmp(vcodec, QUICKTIME_MP4V) ||
+		!strcmp(vcodec, QUICKTIME_DIV3))
 	{
 		int x = param_x, y = param_y;
 		ms_bitrate = new MOVConfigVideoNum(this, 
@@ -1838,9 +1843,9 @@ void MOVConfigVideo::update_parameters()
 	}
 	else
 // OpenDivx parameters
-	if(!strcmp(asset->vcodec, QUICKTIME_DIVX) ||
-		!strcmp(asset->vcodec, QUICKTIME_H263) ||
-		!strcmp(asset->vcodec, QUICKTIME_HV60))
+	if(!strcmp(vcodec, QUICKTIME_DIVX) ||
+		!strcmp(vcodec, QUICKTIME_H263) ||
+		!strcmp(vcodec, QUICKTIME_HV60))
 	{
 		int x = param_x, y = param_y;
 		divx_bitrate = new MOVConfigVideoNum(this, 
@@ -1920,8 +1925,8 @@ void MOVConfigVideo::update_parameters()
 		divx_quality->create_objects();
 	}
 	else
-	if(!strcmp(asset->vcodec, QUICKTIME_JPEG) ||
-		!strcmp(asset->vcodec, QUICKTIME_MJPA))
+	if(!strcmp(vcodec, QUICKTIME_JPEG) ||
+		!strcmp(vcodec, QUICKTIME_MJPA))
 	{
 		add_subwindow(jpeg_quality_title = new BC_Title(param_x, param_y, _("Quality:")));
 		add_subwindow(jpeg_quality = new BC_ISlider(param_x + 80, 

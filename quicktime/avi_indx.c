@@ -1,5 +1,6 @@
 #include "funcprotos.h"
 #include "quicktime.h"
+#include <string.h>
 
 
 void quicktime_delete_indx(quicktime_indx_t *indx)

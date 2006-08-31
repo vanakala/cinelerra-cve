@@ -7,6 +7,7 @@
 #include "language.h"
 #include "motion.h"
 #include "motionwindow.h"
+#include "mutex.h"
 #include "overlayframe.h"
 #include "picon_png.h"
 #include "rotateframe.h"

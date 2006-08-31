@@ -18,6 +18,7 @@
 #include "dcoffset.inc"
 #include "maxchannels.h"
 #include "mutex.inc"
+#include "mwindow.inc"
 #include "preferences.inc"
 #include "recordgui.inc"
 #include "sema.inc"

@@ -8,6 +8,7 @@
 #include "clip.h"
 #include "condition.h"
 #include "file.h"
+#include "mutex.h"
 #include "picture.h"
 #include "preferences.h"
 #include "quicktime.h"

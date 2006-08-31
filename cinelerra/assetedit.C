@@ -165,7 +165,7 @@ AssetEditWindow::~AssetEditWindow()
 int AssetEditWindow::create_objects()
 {
 	int y = 10, x = 10, x1 = 10, x2 = 160;
-	char string[1024];
+	char string[BCTEXTLEN];
 	int vmargin;
 	int hmargin1 = 180, hmargin2 = 290;
 	FileSystem fs;

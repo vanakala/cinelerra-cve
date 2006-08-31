@@ -170,7 +170,7 @@ int FileTIFF::read_frame_header(char *path)
 	if(bitspersample == 32 && components == 4)
 		asset->tiff_cmodel = FileTIFF::RGBA_FLOAT;
 	else
-	if(bitspersample == 8 && components == 1)
+	if(bitspersample == 8 && (components == 1 || components == 0))
 		asset->tiff_cmodel = FileTIFF::GREYSCALE;
 
 //printf("FileTIFF::read_frame_header %d %d %d\n", bitspersample, components, asset->tiff_cmodel);

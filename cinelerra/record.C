@@ -20,6 +20,7 @@
 #include "language.h"
 #include "localsession.h"
 #include "mainundo.h"
+#include "mutex.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "picture.h"

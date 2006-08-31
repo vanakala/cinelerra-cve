@@ -62,12 +62,6 @@ public:
 // close the plugin
 	int close_plugin();    
 	void dump();
-// get camera and projector autos
-	void get_camera(float *x, float *y, float *z,
-			int64_t position, int direction);
-	void get_projector(float *x, float *y, float *z,
-			int64_t position, int direction);
-
 
 // queries
 	void set_title(char *string);
@@ -76,6 +70,11 @@ public:
 // Get keyframes for configuration.  Position is always relative to EDL rate.
 	KeyFrame* get_prev_keyframe(int64_t position);
 	KeyFrame* get_next_keyframe(int64_t position);
+// get camera and projector positions
+	void get_camera(float *x, float *y, float *z,
+			int64_t position, int direction);
+	void get_projector(float *x, float *y, float *z,
+			int64_t position, int direction);
 // Get interpolation used by EDL
 	int get_interpolation_type();
 // Get or create keyframe for writing, depending on whether auto keyframes

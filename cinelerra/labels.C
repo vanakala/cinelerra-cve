@@ -171,7 +171,7 @@ int Labels::copy(double start, double end, FileXML *xml)
 		current = NEXT)
 	{
 		xml->tag.set_title(string);
-		xml->tag.set_property("SAMPLE", (double)current->position - start);
+		xml->tag.set_property("TIME", (double)current->position - start);
 		xml->tag.set_property("TEXTSTR", current->textstr);
 //printf("Labels::copy %f\n", current->position - start);
 		xml->append_tag();
@@ -227,7 +227,7 @@ int Labels::save(FileXML *xml)
 	for(current = first; current; current = NEXT)
 	{
 		xml->tag.set_title("LABEL");
-		xml->tag.set_property("SAMPLE", (double)current->position);
+		xml->tag.set_property("TIME", (double)current->position);
 		xml->tag.set_property("TEXTSTR", current->textstr);
 		xml->append_tag();
 	}
@@ -260,7 +260,9 @@ int Labels::load(FileXML *xml, uint32_t load_flags)
 			else
 			if(xml->tag.title_is(string2))
 			{
-				double position = xml->tag.get_property("SAMPLE", (double)-1);
+				double position = xml->tag.get_property("TIME", (double)-1);
+				if(position < 0)
+					position = xml->tag.get_property("SAMPLE", (double)-1);
 //printf("Labels::load %f\n", position);
 				if(position > -1)
 				{
@@ -272,7 +274,9 @@ int Labels::load(FileXML *xml, uint32_t load_flags)
 			else
 			if(xml->tag.title_is("INPOINT"))
 			{
-				double position = xml->tag.get_property("SAMPLE", (double)-1);
+				double position = xml->tag.get_property("TIME", (double)-1);
+				if(position < 0)
+					position = xml->tag.get_property("SAMPLE", (double)-1);
 				if(position > -1)
 				{
 					;
@@ -281,7 +285,9 @@ int Labels::load(FileXML *xml, uint32_t load_flags)
 			else
 			if(xml->tag.title_is("OUTPOINT"))
 			{
-				double position = xml->tag.get_property("SAMPLE", (double)-1);
+				double position = xml->tag.get_property("TIME", (double)-1);
+				if(position < 0)
+					position = xml->tag.get_property("SAMPLE", (double)-1);
 				if(position > -1)
 				{
 					;

@@ -8,6 +8,7 @@
 #include "guicast.h"
 #include "interlacemodes.h"
 #include "language.h"
+#include "mutex.h"
 #include "mwindow.inc"
 #include "quicktime.h"
 #include "vframe.h"

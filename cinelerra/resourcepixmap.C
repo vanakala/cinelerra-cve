@@ -87,7 +87,7 @@ void ResourcePixmap::draw_data(Edit *edit,
 
 
 	int y = 0;
-	if(mwindow->edl->session->show_titles) y += mwindow->theme->title_bg_data->get_h();
+	if(mwindow->edl->session->show_titles) y += mwindow->theme->get_image("title_bg_data")->get_h();
 	Track *track = edit->edits->track;
 
 
@@ -388,7 +388,7 @@ void ResourcePixmap::draw_title(Edit *edit,
 		w, 
 		total_x,
 		total_w,
-		mwindow->theme->title_bg_data,
+		mwindow->theme->get_image("title_bg_data"),
 		this);
 
 	if(total_x > -BC_INFINITY)
@@ -494,7 +494,7 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 		mwindow->edl->session->sample_rate;
 	int source_len = w * mwindow->edl->local_session->zoom_sample;
 	int center_pixel = mwindow->edl->local_session->zoom_track / 2;
-	if(mwindow->edl->session->show_titles) center_pixel += mwindow->theme->title_bg_data->get_h();
+	if(mwindow->edl->session->show_titles) center_pixel += mwindow->theme->get_image("title_bg_data")->get_h();
 
 // Single sample zoom
 	if(mwindow->edl->local_session->zoom_sample == 1)
@@ -722,7 +722,7 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 	int x = 0;
 	int y = 0;
 	if(mwindow->edl->session->show_titles) 
-		y += mwindow->theme->title_bg_data->get_h();
+		y += mwindow->theme->get_image("title_bg_data")->get_h();
 // Frame in project touched by current pixel
 	int64_t project_frame;
 

@@ -226,13 +226,13 @@ int BC_Toggle::draw_face()
 void BC_Toggle::enable()
 {
 	enabled = 1;
-	draw_face();
+	if(parent_window) draw_face();
 }
 
 void BC_Toggle::disable()
 {
 	enabled = 0;
-	draw_face();
+	if(parent_window) draw_face();
 }
 
 void BC_Toggle::set_status(int value)

@@ -245,8 +245,8 @@ Track* Tracks::add_audio_track(int above, Track *dst_track)
 	BC_Pan::calculate_stick_position(edl->session->audio_channels, 
 		edl->session->achannel_positions, 
 		pan_auto->values, 
-		1, 
-		50,
+		MAX_PAN, 
+		PAN_RADIUS,
 		pan_auto->handle_x,
 		pan_auto->handle_y);
 	return new_track;

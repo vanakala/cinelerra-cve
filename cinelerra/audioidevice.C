@@ -1,8 +1,11 @@
 #include "audiodevice.h"
+#include "bcprogressbox.h"
+#include "bcsignals.h"
 #include "condition.h"
 #include "dcoffset.h"
-#include "bcprogressbox.h"
+#include "mutex.h"
 
+#include <string.h>
 
 int AudioDevice::set_record_dither(int bits)
 {

@@ -74,7 +74,7 @@ public:
 	static char *compressiontostr(char *string);
 
 // Fix codec to what AVI or MOV support
-	static void fix_codecs_for_writing(Asset *asset);
+	static void fix_codecs(Asset *asset);
 
 // set programme timecode
 	void set_frame_start(int64_t offset);

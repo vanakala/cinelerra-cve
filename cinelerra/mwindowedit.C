@@ -151,6 +151,33 @@ void MWindow::asset_to_size()
 }
 
 
+void MWindow::asset_to_rate()
+{
+	if(session->drag_assets->total &&
+		session->drag_assets->values[0]->video_data)
+	{
+		double new_framerate = session->drag_assets->values[0]->frame_rate;
+		double old_framerate = edl->session->frame_rate;
+
+		edl->session->frame_rate = new_framerate;
+		edl->resample(old_framerate, new_framerate, TRACK_VIDEO);
+
+		save_backup();
+
+		undo->update_undo(_("asset to rate"), LOAD_ALL);
+		restart_brender();
+		gui->update(1,
+			2,
+			1,
+			1,
+			1, 
+			1,
+			0);
+		sync_parameters(CHANGE_ALL);
+	}
+}
+
+
 
 void MWindow::clear_entry()
 {

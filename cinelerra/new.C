@@ -10,6 +10,7 @@
 #include "levelwindow.h"
 #include "mainundo.h"
 #include "mainmenu.h"
+#include "mutex.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "new.h"

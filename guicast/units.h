@@ -169,6 +169,9 @@ public:
 	static void* int64_to_ptr(uint64_t value);
 	static uint64_t ptr_to_int64(void *ptr);
 
+// Comparisons between double seem to work more often when this is called
+// on the comparison values.
+	static void fix_double(double *x);
 };
 
 #endif

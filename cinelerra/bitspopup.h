@@ -21,6 +21,7 @@ public:
 	~BitsPopup();
 	int create_objects();
 	int get_w();
+	int get_h();
 	
 	BitsPopupMenu *menu;
 	ArrayList<BC_ListBoxItem*> bits_items;

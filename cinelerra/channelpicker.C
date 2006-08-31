@@ -1,3 +1,4 @@
+#include "bcsignals.h"
 #include "channel.h"
 #include "channeldb.h"
 #include "channeledit.h"

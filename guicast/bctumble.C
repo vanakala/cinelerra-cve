@@ -80,7 +80,7 @@ int BC_Tumbler::set_images(VFrame **data)
 int BC_Tumbler::draw_face()
 {
 	draw_top_background(parent_window, 0, 0, w, h);
-	images[status]->write_drawable(pixmap, 
+	pixmap->draw_pixmap(images[status], 
 			0, 
 			0,
 			w,

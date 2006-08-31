@@ -2,6 +2,7 @@
 #include "assetremove.h"
 #include "awindow.h"
 #include "awindowgui.h"
+#include "bcsignals.h"
 #include "clipedit.h"
 #include "labeledit.h"
 

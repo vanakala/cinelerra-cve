@@ -58,8 +58,8 @@ BC_TextBox::BC_TextBox(int x,
  : BC_SubWindow(x, y, w, 0, -1)
 {
 	skip_cursor = 0;
-	reset_parameters(rows, has_border, font);
 	this->precision = precision;
+	reset_parameters(rows, has_border, font);
 	sprintf(this->text, "%0.*f", precision, text);
 }
 
@@ -164,6 +164,14 @@ int BC_TextBox::calculate_h(BC_WindowBase *gui,
 void BC_TextBox::set_precision(int precision)
 {
 	this->precision = precision;
+}
+
+void BC_TextBox::set_selection(int char1, int char2, int ibeam)
+{
+	highlight_letter1 = char1;
+	highlight_letter2 = char2;
+	ibeam_letter = ibeam;
+	draw();
 }
 
 int BC_TextBox::update(char *text)
@@ -1735,8 +1743,12 @@ BC_PopupTextBoxList::BC_PopupTextBoxList(BC_PopupTextBox *popup, int x, int y)
 }
 int BC_PopupTextBoxList::handle_event()
 {
-	popup->textbox->update(get_selection(0, 0)->get_text());
+	BC_ListBoxItem *item = get_selection(0, 0);
+	if(item)
+	{
+		popup->textbox->update(item->get_text());
 	popup->handle_event();
+	}
 	return 1;
 }
 

@@ -35,7 +35,7 @@ public:
 	int cursor_enter_event();
 	int cursor_leave_event();
 	int button_press_event();
-	int button_release_event();
+	virtual int button_release_event();
 	int get_pointer_motion_range();
 	int cursor_motion_event();
 	int repeat_event(int64_t repeat_id);
@@ -101,7 +101,7 @@ public:
 	int increase_value();
 	int decrease_value();
 	virtual int handle_event();
-	char* get_caption();
+	virtual char* get_caption();
 
 private:
 	int value_to_pixel();

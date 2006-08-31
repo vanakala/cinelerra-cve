@@ -1,5 +1,6 @@
 #include "bcdisplayinfo.h"
 #include "histogramengine.h"
+#include "language.h"
 #include "threshold.h"
 #include "thresholdwindow.h"
 
@@ -293,7 +294,7 @@ int ThresholdWindow::create_objects()
 	canvas->draw();
 	y += canvas->get_h() + 10;
 
-	add_subwindow(new BC_Title(x, y, "Min:"));
+	add_subwindow(new BC_Title(x, y, _("Min:")));
 	x += 50;
 	min = new ThresholdMin(plugin,
 		this,
@@ -304,7 +305,7 @@ int ThresholdWindow::create_objects()
 	min->set_increment(0.1);
 
 	x += 200;
-	add_subwindow(new BC_Title(x, y, "Max:"));
+	add_subwindow(new BC_Title(x, y, _("Max:")));
 	x += 50;
 	max = new ThresholdMax(plugin,
 		this,

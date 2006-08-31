@@ -13,8 +13,8 @@
 void BC_WindowBase::copy_area(int x1, int y1, int x2, int y2, int w, int h, BC_Pixmap *pixmap)
 {
 	XCopyArea(top_level->display, 
-		pixmap ? pixmap->opaque_pixmap : this->pixmap, 
-		pixmap ? pixmap->opaque_pixmap : this->pixmap, 
+		pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap, 
+		pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap, 
 		top_level->gc, 
 		x1, 
 		y1, 
@@ -29,7 +29,7 @@ void BC_WindowBase::draw_box(int x, int y, int w, int h, BC_Pixmap *pixmap)
 {
 //if(x == 0) printf("BC_WindowBase::draw_box %d %d %d %d\n", x, y, w, h);
 	XFillRectangle(top_level->display, 
-		pixmap ? pixmap->opaque_pixmap : this->pixmap, 
+		pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap, 
 		top_level->gc, 
 		x, 
 		y, 
@@ -41,7 +41,7 @@ void BC_WindowBase::draw_box(int x, int y, int w, int h, BC_Pixmap *pixmap)
 void BC_WindowBase::draw_circle(int x, int y, int w, int h, BC_Pixmap *pixmap)
 {
 	XDrawArc(top_level->display, 
-		pixmap ? pixmap->opaque_pixmap : this->pixmap, 
+		pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap, 
 		top_level->gc, 
 		x, 
 		y, 
@@ -54,7 +54,7 @@ void BC_WindowBase::draw_circle(int x, int y, int w, int h, BC_Pixmap *pixmap)
 void BC_WindowBase::draw_disc(int x, int y, int w, int h, BC_Pixmap *pixmap)
 {
 	XFillArc(top_level->display, 
-		pixmap ? pixmap->opaque_pixmap : this->pixmap, 
+		pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap, 
 		top_level->gc, 
 		x, 
 		y, 
@@ -68,7 +68,7 @@ void BC_WindowBase::clear_box(int x, int y, int w, int h, BC_Pixmap *pixmap)
 {
 	set_color(bg_color);
 	XFillRectangle(top_level->display, 
-		pixmap ? pixmap->opaque_pixmap : this->pixmap, 
+		pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap, 
 		top_level->gc, 
 		x, 
 		y, 
@@ -217,7 +217,7 @@ void BC_WindowBase::draw_text(int x,
 // (FcChar8*)&text[j],
 // i - j);
 							XftDrawString8 (
-								(XftDraw*)(pixmap ? pixmap->opaque_xft_draw : this->xft_drawable),
+		(XftDraw*)(pixmap ? pixmap->opaque_xft_draw : this->pixmap->opaque_xft_draw),
 								&xft_color,
 								top_level->get_xft_struct(top_level->current_font),
 								x2 + k, 
@@ -234,7 +234,7 @@ void BC_WindowBase::draw_text(int x,
 						if(get_resources()->use_fontset && top_level->get_curr_fontset())
 						{
         					XmbDrawString(top_level->display, 
-                				pixmap ? pixmap->opaque_pixmap : this->pixmap, 
+                				pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap, 
                 				top_level->get_curr_fontset(),
                 				top_level->gc, 
                 				x2 + k, 
@@ -246,7 +246,7 @@ void BC_WindowBase::draw_text(int x,
 						{
 //printf("BC_WindowBase::draw_text 3\n");
 							XDrawString(top_level->display, 
-								pixmap ? pixmap->opaque_pixmap : this->pixmap, 
+								pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap, 
 								top_level->gc, 
 								x2 + k, 
 								y2 + k, 
@@ -278,7 +278,7 @@ void BC_WindowBase::draw_center_text(int x, int y, char *text, int length)
 void BC_WindowBase::draw_line(int x1, int y1, int x2, int y2, BC_Pixmap *pixmap)
 {
 	XDrawLine(top_level->display, 
-		pixmap ? pixmap->opaque_pixmap : this->pixmap, 
+		pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap, 
 		top_level->gc, 
 		x1, 
 		y1, 
@@ -298,7 +298,7 @@ void BC_WindowBase::draw_polygon(ArrayList<int> *x, ArrayList<int> *y, BC_Pixmap
 	}
 
 	XDrawLines(top_level->display,
-    	pixmap ? pixmap->opaque_pixmap : this->pixmap,
+    	pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap,
     	top_level->gc,
     	points,
     	npoints,
@@ -311,7 +311,7 @@ void BC_WindowBase::draw_polygon(ArrayList<int> *x, ArrayList<int> *y, BC_Pixmap
 void BC_WindowBase::draw_rectangle(int x, int y, int w, int h)
 {
 	XDrawRectangle(top_level->display, 
-		pixmap, 
+		pixmap->opaque_pixmap, 
 		top_level->gc, 
 		x, 
 		y, 
@@ -464,7 +464,7 @@ void BC_WindowBase::draw_triangle_down_flat(int x, int y, int w, int h)
 	point[1].y = y1; point[2].x = x1; point[2].y = y1;
 
 	XFillPolygon(top_level->display, 
-		pixmap, 
+		pixmap->opaque_pixmap, 
 		top_level->gc, 
 		(XPoint *)point, 
 		3, 
@@ -487,7 +487,7 @@ void BC_WindowBase::draw_triangle_up(int x, int y, int w, int h,
 
 	set_color(middle);
 	XFillPolygon(top_level->display, 
-		pixmap, 
+		pixmap->opaque_pixmap, 
 		top_level->gc, 
 		(XPoint *)point, 
 		3, 
@@ -523,9 +523,10 @@ void BC_WindowBase::draw_triangle_down(int x, int y, int w, int h,
 
 	set_color(middle);
 	XFillPolygon(top_level->display, 
-		pixmap, 
+		pixmap->opaque_pixmap, 
 		top_level->gc, 
-		(XPoint *)point, 3, 
+		(XPoint *)point, 
+		3, 
 		Nonconvex, 
 		CoordModeOrigin);
 
@@ -559,7 +560,7 @@ void BC_WindowBase::draw_triangle_left(int x, int y, int w, int h,
 
 	set_color(middle);
   	XFillPolygon(top_level->display, 
-		pixmap, 
+		pixmap->opaque_pixmap, 
 		top_level->gc, 
 		(XPoint *)point, 
 		3, 
@@ -595,7 +596,7 @@ void BC_WindowBase::draw_triangle_right(int x, int y, int w, int h,
 
 	set_color(middle);
   	XFillPolygon(top_level->display, 
-		pixmap, 
+		pixmap->opaque_pixmap, 
 		top_level->gc, 
 		(XPoint *)point, 
 		3, 
@@ -690,8 +691,8 @@ void BC_WindowBase::draw_top_background(BC_WindowBase *parent_window,
 			&tempwin);
 
 	XCopyArea(top_level->display, 
-		parent_window->pixmap, 
-		pixmap ? pixmap->opaque_pixmap : this->pixmap, 
+		parent_window->pixmap->opaque_pixmap, 
+		pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap, 
 		top_level->gc, 
 		top_x, 
 		top_y, 
@@ -764,7 +765,7 @@ void BC_WindowBase::draw_bitmap(BC_Bitmap *bitmap,
 	}
 	else
 	{
-		bitmap->write_drawable(pixmap ? pixmap->opaque_pixmap : this->pixmap, 
+		bitmap->write_drawable(pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap, 
 			top_level->gc, 
 			dest_x, 
 			dest_y, 
@@ -781,7 +782,7 @@ void BC_WindowBase::draw_bitmap(BC_Bitmap *bitmap,
 void BC_WindowBase::draw_pixel(int x, int y, BC_Pixmap *pixmap)
 {
 	XDrawPoint(top_level->display, 
-		pixmap ? pixmap->opaque_pixmap : this->pixmap, 
+		pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap, 
 		top_level->gc, 
 		x, 
 		y);
@@ -797,7 +798,7 @@ void BC_WindowBase::draw_pixmap(BC_Pixmap *pixmap,
 	int src_y,
 	BC_Pixmap *dst)
 {
-	pixmap->write_drawable(dst ? dst->opaque_pixmap : this->pixmap,
+	pixmap->write_drawable(dst ? dst->opaque_pixmap : this->pixmap->opaque_pixmap,
 			dest_x, 
 			dest_y,
 			dest_w,
@@ -881,15 +882,15 @@ void BC_WindowBase::slide_left(int distance)
 	if(distance < w)
 	{
 		XCopyArea(top_level->display, 
-		pixmap, 
-		pixmap, 
-		top_level->gc, 
-		distance, 
-		0, 
-		w - distance,
-		 h, 
-		0, 
-		0);
+			pixmap->opaque_pixmap, 
+			pixmap->opaque_pixmap, 
+			top_level->gc, 
+			distance, 
+			0, 
+			w - distance, 
+		 	h, 
+			0, 
+			0);
 	}
 }
 
@@ -898,15 +899,15 @@ void BC_WindowBase::slide_right(int distance)
 	if(distance < w)
 	{
 		XCopyArea(top_level->display, 
-		pixmap, 
-		pixmap, 
-		top_level->gc, 
-		0, 
-		0, 
-		w - distance, 
-		h, 
-		distance, 
-		0);
+			pixmap->opaque_pixmap, 
+			pixmap->opaque_pixmap, 
+			top_level->gc, 
+			0, 
+			0, 
+			w - distance, 
+			h, 
+			distance, 
+			0);
 	}
 }
 
@@ -915,23 +916,23 @@ void BC_WindowBase::slide_up(int distance)
 	if(distance < h)
 	{
 		XCopyArea(top_level->display, 
-		pixmap, 
-		pixmap, 
-		top_level->gc, 
-		0, 
-		distance, 
-		w, 
-		h - distance, 
-		0, 
-		0);
+			pixmap->opaque_pixmap, 
+			pixmap->opaque_pixmap, 
+			top_level->gc, 
+			0, 
+			distance, 
+			w, 
+			h - distance, 
+			0, 
+			0);
 		set_color(bg_color);
 		XFillRectangle(top_level->display, 
-		pixmap, 
-		top_level->gc, 
-		0, 
-		h - distance, 
-		w, 
-		distance);
+			pixmap->opaque_pixmap, 
+			top_level->gc, 
+			0, 
+			h - distance, 
+			w, 
+			distance);
 	}
 }
 
@@ -940,23 +941,23 @@ void BC_WindowBase::slide_down(int distance)
 	if(distance < h)
 	{
 		XCopyArea(top_level->display, 
-		pixmap, 
-		pixmap, 
-		top_level->gc, 
-		0, 
-		0, 
-		w, 
-		h - distance, 
-		0, 
-		distance);
+			pixmap->opaque_pixmap, 
+			pixmap->opaque_pixmap, 
+			top_level->gc, 
+			0, 
+			0, 
+			w, 
+			h - distance, 
+			0, 
+			distance);
 		set_color(bg_color);
 		XFillRectangle(top_level->display, 
-		pixmap, 
-		top_level->gc, 
-		0, 
-		0, 
-		w, 
-		distance);
+			pixmap->opaque_pixmap, 
+			top_level->gc, 
+			0, 
+			0, 
+			w, 
+			distance);
 	}
 }
 
@@ -999,7 +1000,7 @@ void BC_WindowBase::draw_3segment(int x,
 		else
 			if(i + output_w > w) output_w = w - i;
 
-		image->write_drawable(pixmap ? pixmap->opaque_pixmap : this->pixmap, 
+		image->write_drawable(pixmap ? pixmap->opaque_pixmap : this->pixmap->opaque_pixmap, 
 				x + i, 
 				y,
 				output_w,

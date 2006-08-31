@@ -4,7 +4,7 @@
 #include "quicktime.h"
 #include "qtffmpeg.h"
 #include "qtprivate.h"
-
+#include <string.h>
 // FFMPEG front end for quicktime.
 
 
@@ -248,6 +248,8 @@ int quicktime_ffmpeg_decode(quicktime_ffmpeg_t *ffmpeg,
 			do_i_frame = 0;
 		}
 
+
+//printf("quicktime_ffmpeg_decode 2 %d\n", ffmpeg->last_frame[current_field]);
 		while(frame1 <= frame2)
 		{
 			result = decode_wrapper(file, 

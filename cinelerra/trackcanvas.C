@@ -1013,7 +1013,7 @@ void TrackCanvas::get_pixmap_size(Edit *edit,
 // 	}
 
 	pixmap_h = mwindow->edl->local_session->zoom_track;
-	if(mwindow->edl->session->show_titles) pixmap_h += mwindow->theme->title_bg_data->get_h();
+	if(mwindow->edl->session->show_titles) pixmap_h += mwindow->theme->get_image("title_bg_data")->get_h();
 //printf("get_pixmap_size %d %d %d %d\n", edit_x, edit_w, pixmap_x, pixmap_w);
 }
 
@@ -1044,7 +1044,7 @@ void TrackCanvas::edit_dimensions(Edit *edit,
 	y = edit->edits->track->y_pixel;
 
 	if(mwindow->edl->session->show_titles) 
-		h += mwindow->theme->title_bg_data->get_h();
+		h += mwindow->theme->get_image("title_bg_data")->get_h();
 }
 
 void TrackCanvas::track_dimensions(Track *track, int64_t &x, int64_t &y, int64_t &w, int64_t &h)
@@ -1302,10 +1302,10 @@ void TrackCanvas::plugin_dimensions(Plugin *plugin, int64_t &x, int64_t &y, int6
 	y = plugin->track->y_pixel + 
 			mwindow->edl->local_session->zoom_track +
 			plugin->plugin_set->get_number() * 
-			mwindow->theme->plugin_bg_data->get_h();
+			mwindow->theme->get_image("plugin_bg_data")->get_h();
 	if(mwindow->edl->session->show_titles)
-		y += mwindow->theme->title_bg_data->get_h();
-	h = mwindow->theme->plugin_bg_data->get_h();
+		y += mwindow->theme->get_image("title_bg_data")->get_h();
+	h = mwindow->theme->get_image("plugin_bg_data")->get_h();
 }
 
 int TrackCanvas::resource_h()
@@ -1431,7 +1431,7 @@ void TrackCanvas::get_handle_coords(Edit *edit, int64_t &x, int64_t &y, int64_t 
 
 	if(mwindow->edl->session->show_titles)
 	{
-		y += mwindow->theme->title_bg_data->get_h();
+		y += mwindow->theme->get_image("title_bg_data")->get_h();
 	}
 	else
 	{
@@ -1457,10 +1457,10 @@ void TrackCanvas::get_transition_coords(int64_t &x, int64_t &y, int64_t &w, int6
 //printf("TrackCanvas::get_transition_coords 1\n");
 
 	if(mwindow->edl->session->show_titles)
-		y += mwindow->theme->title_bg_data->get_h();
+		y += mwindow->theme->get_image("title_bg_data")->get_h();
 //printf("TrackCanvas::get_transition_coords 2\n");
 
-	y += (h - mwindow->theme->title_bg_data->get_h()) / 2 - transition_h / 2;
+	y += (h - mwindow->theme->get_image("title_bg_data")->get_h()) / 2 - transition_h / 2;
 	x -= transition_w / 2;
 
 	h = transition_h;
@@ -1738,7 +1738,7 @@ void TrackCanvas::draw_plugins()
 							w, 
 							total_x,
 							total_w,
-							mwindow->theme->plugin_bg_data,
+							mwindow->theme->get_image("plugin_bg_data"),
 							0);
 						set_color(WHITE);
 						set_font(MEDIUMFONT_3D);
@@ -1820,7 +1820,7 @@ void TrackCanvas::draw_transitions()
 				strip_x = x ;
 				strip_y = y;
 				if(mwindow->edl->session->show_titles)
-					strip_y += mwindow->theme->title_bg_data->get_h();
+					strip_y += mwindow->theme->get_image("title_bg_data")->get_h();
 
 				get_transition_coords(x, y, w, h);
 				strip_w = Units::round(edit->track->from_units(edit->transition->length) * 
@@ -1859,7 +1859,7 @@ void TrackCanvas::draw_transitions()
 						w, 
 						strip_x,
 						strip_w,
-						mwindow->theme->plugin_bg_data,
+						mwindow->theme->get_image("plugin_bg_data"),
 						0);
 
 				}
@@ -2692,7 +2692,7 @@ void TrackCanvas::calculate_viewport(Track *track,
 	yscale = mwindow->edl->local_session->zoom_track;
 	center_pixel = (int)(track->y_pixel + yscale / 2) + 
 		(mwindow->edl->session->show_titles ? 
-			mwindow->theme->title_bg_data->get_h() : 
+			mwindow->theme->get_image("title_bg_data")->get_h() : 
 			0);
 	zoom_sample = mwindow->edl->local_session->zoom_sample;
 
@@ -3368,8 +3368,8 @@ int TrackCanvas::do_plugin_autos(Track *track,
 		PluginSet *plugin_set = track->plugin_set.values[i];
 		int center_pixel = (int)(track->y_pixel + 
 			mwindow->edl->local_session->zoom_track +
-			(i + 0.5) * mwindow->theme->plugin_bg_data->get_h() + 
-			(mwindow->edl->session->show_titles ? mwindow->theme->title_bg_data->get_h() : 0));
+			(i + 0.5) * mwindow->theme->get_image("plugin_bg_data")->get_h() + 
+			(mwindow->edl->session->show_titles ? mwindow->theme->get_image("title_bg_data")->get_h() : 0));
 
 		for(Plugin *plugin = (Plugin*)plugin_set->first; 
 			plugin && !result; 

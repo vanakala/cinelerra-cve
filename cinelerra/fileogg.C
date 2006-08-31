@@ -8,6 +8,7 @@
 #include "fileogg.h"
 #include "guicast.h"
 #include "language.h"
+#include "mutex.h"
 #include "mwindow.inc"
 #include "quicktime.h"
 #include "vframe.h"
@@ -110,7 +111,7 @@ int FileOGG::reset_parameters_derived()
 
 }
 
-int read_buffer(FILE *in, sync_window_t *sw, int buflen)
+static int read_buffer(FILE *in, sync_window_t *sw, int buflen)
 {
 	char *buffer = ogg_sync_buffer(&sw->sync, buflen);
 //	printf("reading range: %lli - %lli\n", sw->file_bufpos, sw->file_bufpos + buflen);
@@ -122,7 +123,7 @@ int read_buffer(FILE *in, sync_window_t *sw, int buflen)
 	return (sw->wlen);
 }
 
-int read_buffer_at(FILE *in, sync_window_t *sw, int buflen, off_t filepos)
+static int read_buffer_at(FILE *in, sync_window_t *sw, int buflen, off_t filepos)
 {
 //	printf("seeking to %lli %lli\n", filepos, sw->file_bufpos);
 	fseeko(in, filepos, SEEK_SET);
@@ -136,7 +137,7 @@ int read_buffer_at(FILE *in, sync_window_t *sw, int buflen, off_t filepos)
 	return read_buffer(in, sw, buflen);
 }
 
-int take_page_out_autoadvance(FILE *in, sync_window_t *sw, ogg_page *og)
+static int take_page_out_autoadvance(FILE *in, sync_window_t *sw, ogg_page *og)
 {
 	while (1)
 	{
@@ -170,7 +171,7 @@ int take_page_out_autoadvance(FILE *in, sync_window_t *sw, ogg_page *og)
 
 // we never need to autoadvance when syncing, since our read chunks are larger than 
 // maximum page size
-int sync_and_take_page_out(sync_window_t *sw, ogg_page *page)
+static int sync_and_take_page_out(sync_window_t *sw, ogg_page *page)
 {
 	page->header_len = 0;
 	page->body_len = 0;
@@ -223,8 +224,9 @@ int FileOGG::open_file(int rd, int wr)
 		tf->vpage_buffer_length = 0;
 		tf->apage = NULL;
 		tf->vpage = NULL;
-    tf->v_pkg=0; 
-    tf->a_pkg=0; 
+	    tf->v_pkg=0;
+    	tf->a_pkg=0;
+
 
 		/* yayness.  Set up Ogg output stream */
 		srand (time (NULL));
@@ -1019,7 +1021,8 @@ int FileOGG::ogg_get_page_of_sample(sync_window_t *sw, long serialno, ogg_page *
 	{
 	// scan backward
 		start_sample = end_sample;
-		while (start_sample > sample || (ogg_page_continued(og) && ogg_page_packets(og) == 1))
+		while (start_sample > sample || (ogg_page_continued(og) && 
+			ogg_page_packets(og) == 1))
 		{
 //			printf("get prev page: %lli pagepos:%lli\n", ogg_page_granulepos(og), sw->file_pagepos_found);
 			ogg_get_prev_page(sw, serialno, og);
@@ -1875,7 +1878,7 @@ int FileOGG::write_samples_vorbis(double **buffer, int64_t len, int e_o_s)
 	    {
 		flush_lock->lock();
 		ogg_stream_packetin (&tf->vo, &tf->op);
-		tf->a_pkg++; 
+		tf->a_pkg++;
 		flush_lock->unlock();
 	    }
 

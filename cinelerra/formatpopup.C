@@ -1,3 +1,4 @@
+#include "bcsignals.h"
 #include "file.inc"
 #include "formatpopup.h"
 #include "language.h"

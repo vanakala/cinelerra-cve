@@ -600,7 +600,7 @@ int BC_ListBox::draw_button()
 			image_number = 3;
 
 
-		button_images[image_number]->write_drawable(pixmap, 
+		pixmap->draw_pixmap(button_images[image_number], 
 			0, 
 			0,
 			w,
@@ -2782,39 +2782,45 @@ int BC_ListBox::button_press_event()
 		}
 
 // Wheel mouse pressed
-		if(get_buttonpress() == 4 && current_operation == NO_OPERATION)
+		if(get_buttonpress() == 4)
 		{
-			current_operation = WHEEL;
-			if(yscrollbar)
+			if(current_operation == NO_OPERATION)
 			{
-				set_yposition(yposition - gui->get_h() / 10, 0);
-				clamp_positions();
-				update_scrollbars();
-				highlighted_ptr = 0;
-				highlighted_item = get_cursor_item(data,
-					top_level->cursor_x, 
-					top_level->cursor_y, 
-					&highlighted_ptr);
-				draw_items(1);
-				result = 1;
+				current_operation = WHEEL;
+				if(yscrollbar)
+				{
+					set_yposition(yposition - gui->get_h() / 10, 0);
+					clamp_positions();
+					update_scrollbars();
+					highlighted_ptr = 0;
+					highlighted_item = get_cursor_item(data,
+						top_level->cursor_x, 
+						top_level->cursor_y, 
+						&highlighted_ptr);
+					draw_items(1);
+					result = 1;
+				}
 			}
 		}
 		else
-		if(get_buttonpress() == 5 && current_operation == NO_OPERATION)
+		if(get_buttonpress() == 5)
 		{
-			current_operation = WHEEL;
-			if(yscrollbar)
+			if(current_operation == NO_OPERATION)
 			{
-				set_yposition(yposition + gui->get_h() / 10, 0);
-				clamp_positions();
-				update_scrollbars();
-				highlighted_ptr = 0;
-				highlighted_item = get_cursor_item(data,
-					top_level->cursor_x, 
-					top_level->cursor_y,
-					&highlighted_ptr);
-				draw_items(1);
-				result = 1;
+				current_operation = WHEEL;
+				if(yscrollbar)
+				{
+					set_yposition(yposition + gui->get_h() / 10, 0);
+					clamp_positions();
+					update_scrollbars();
+					highlighted_ptr = 0;
+					highlighted_item = get_cursor_item(data,
+						top_level->cursor_x, 
+						top_level->cursor_y,
+						&highlighted_ptr);
+					draw_items(1);
+					result = 1;
+				}
 			}
 		}
 		else
@@ -4099,7 +4105,7 @@ int BC_ListBox::draw_items(int flash)
 // Draw icons
 					gui->set_color(get_item_color(data, 0, i));
 					if(item->icon)
-						item->icon->write_drawable(gui->pixmap, 
+						gui->pixmap->draw_pixmap(item->icon, 
 							icon_x + ICON_MARGIN, 
 							icon_y + ICON_MARGIN);
 					gui->draw_text(text_x + ICON_MARGIN, 

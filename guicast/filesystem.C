@@ -338,7 +338,8 @@ int FileSystem::test_filter(FileItem *file)
 					else
 // Subfilter must exist at this point in the string
 					{
-						if(strncasecmp(path, string2, strlen(string2))) 
+						if(strncmp(path, string2, strlen(string2))) 
+//						if(strncasecmp(path, string2, strlen(string2))) 
 						{
 							result = 1;
 							token_done = 1;

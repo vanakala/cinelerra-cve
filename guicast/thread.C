@@ -1,4 +1,6 @@
+#ifndef NO_GUICAST
 #include "bcsignals.h"
+#endif
 #include <sys/wait.h>
 #include <sched.h>
 #include <signal.h>

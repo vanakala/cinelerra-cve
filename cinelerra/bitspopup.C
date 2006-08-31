@@ -1,4 +1,5 @@
 #include "bitspopup.h"
+#include "clip.h"
 #include "file.h"
 
 
@@ -51,6 +52,11 @@ int BitsPopup::create_objects()
 int BitsPopup::get_w()
 {
 	return menu->get_w() + textbox->get_w();
+}
+
+int BitsPopup::get_h()
+{
+	return MAX(menu->get_h(), textbox->get_h());
 }
 
 BitsPopupMenu::BitsPopupMenu(BitsPopup *popup, int x, int y)

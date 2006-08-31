@@ -8,6 +8,7 @@
 #include "file.inc"
 #include "filesystem.h"
 #include "guicast.h"
+#include "mutex.h"
 #include "preferences.h"
 #include "theme.h"
 #include "videoconfig.h"
@@ -49,7 +50,8 @@ Preferences::Preferences()
 	renderfarm_mountpoint[0] = 0;
 	renderfarm_vfs = 0;
 	renderfarm_job_count = 20;
-	processors = calculate_processors();
+	processors = calculate_processors(0);
+	real_processors = calculate_processors(1);
 
 // Default brender asset
 	brender_asset = new Asset;
@@ -124,7 +126,8 @@ void Preferences::copy_from(Preferences *that)
 
 	cache_size = that->cache_size;
 	force_uniprocessor = that->force_uniprocessor;
-	processors = calculate_processors();
+	processors = that->processors;
+	real_processors = that->real_processors;
 	renderfarm_nodes.remove_all_objects();
 	renderfarm_ports.remove_all();
 	renderfarm_enabled.remove_all();
@@ -212,7 +215,6 @@ int Preferences::load_defaults(BC_Hash *defaults)
 
 
 	force_uniprocessor = defaults->get("FORCE_UNIPROCESSOR", 0);
-	processors = calculate_processors();
 	use_brender = defaults->get("USE_BRENDER", use_brender);
 	brender_fragment = defaults->get("BRENDER_FRAGMENT", brender_fragment);
 	cache_size = defaults->get("CACHE_SIZE", cache_size);
@@ -513,13 +515,13 @@ int Preferences::get_node_port(int number)
 }
 
 
-int Preferences::calculate_processors()
+int Preferences::calculate_processors(int interactive)
 {
 /* Get processor count */
 	int result = 1;
 	FILE *proc;
 
-	if(force_uniprocessor) return 1;
+	if(force_uniprocessor && !interactive) return 1;
 
 	if(proc = fopen("/proc/cpuinfo", "r"))
 	{

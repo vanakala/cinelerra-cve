@@ -95,7 +95,8 @@ int ARender::init_meters()
 	for(int i = 0; i < MAXCHANNELS;i++)
 	{
 		current_level[i] = 0;
-		if(audio_out[i] && !level_history[i]) level_history[i] = new double[total_peaks];
+		if(audio_out[i] && !level_history[i]) 
+			level_history[i] = new double[total_peaks];
 	}
 
 	for(int i = 0; i < total_peaks; i++)

@@ -1,5 +1,6 @@
 #include "funcprotos.h"
 #include "quicktime.h"
+#include <string.h>
 
 void quicktime_dref_table_init(quicktime_dref_table_t *table)
 {

@@ -1,4 +1,6 @@
+#ifndef NO_GUICAST
 #include "bcsignals.h"
+#endif
 #include "condition.h"
 
 #include <errno.h>
@@ -17,7 +19,9 @@ Condition:: ~Condition()
 {
     pthread_cond_destroy(&cond);
     pthread_mutex_destroy(&mutex);
+#ifndef NO_GUICAST
 	UNSET_ALL_LOCKS(this);
+#endif
 }
 
 void Condition::reset()
@@ -31,17 +35,23 @@ void Condition::reset()
 
 void Condition::lock(char *location)
 {
+#ifndef NO_GUICAST
 	SET_LOCK(this, title, location);
+#endif
     pthread_mutex_lock(&mutex);
     while(value <= 0) pthread_cond_wait(&cond, &mutex);
+#ifndef NO_GUICAST
 	SET_LOCK2
+#endif
 	value--;
     pthread_mutex_unlock(&mutex);
 }
 
 void Condition::unlock()
 {
+#ifndef NO_GUICAST
 	UNSET_LOCK(this);
+#endif
     pthread_mutex_lock(&mutex);
     value++;
     pthread_cond_signal(&cond);
@@ -54,7 +64,9 @@ int Condition::timed_lock(int microseconds, char *location)
     struct timespec timeout;
     int result = 0;
 
+#ifndef NO_GUICAST
 	SET_LOCK(this, title, location);
+#endif
     pthread_mutex_lock(&mutex);
     gettimeofday(&now, 0);
     timeout.tv_sec = now.tv_sec + microseconds / 1000000;
@@ -68,13 +80,17 @@ int Condition::timed_lock(int microseconds, char *location)
     if(result == ETIMEDOUT) 
 	{
 //printf("Condition::timed_lock 1 %s %s\n", title, location);
+#ifndef NO_GUICAST
 		UNSET_LOCK2
+#endif
 		result = 1;
     } 
 	else 
 	{
 //printf("Condition::timed_lock 2 %s %s\n", title, location);
+#ifndef NO_GUICAST
 		SET_LOCK2
+#endif
 		value--;
 		result = 0;
     }

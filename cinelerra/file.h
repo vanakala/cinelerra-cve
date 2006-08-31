@@ -45,7 +45,8 @@ public:
 
 // ===================================== start here
 	int set_processors(int cpus);   // Set the number of cpus for certain codecs.
-	int set_preload(int64_t size);     // Set the number of bytes to preload during reads.
+// Set the number of bytes to preload during reads for Quicktime.
+	int set_preload(int64_t size);
 // When loading, the asset is deleted and a copy created in the EDL.
 	void set_asset(Asset *asset);
 
@@ -89,12 +90,6 @@ public:
 // ignore_thread is used by SigHandler to break out of the threads.
 	int close_file(int ignore_thread = 0);
 
-// set channel for buffer accesses
-	int set_channel(int channel);
-
-// set layer for video read
-	int set_layer(int layer);
-
 // get length of file normalized to base samplerate
 	int64_t get_audio_length(int64_t base_samplerate = -1);
 	int64_t get_video_length(float base_framerate = -1);
@@ -104,10 +99,6 @@ public:
 	int64_t get_video_position(float base_framerate = -1);
 	
 
-// set position in samples
-	int set_audio_position(int64_t position, float base_samplerate);
-// set position in frames
-	int set_video_position(int64_t position, float base_framerate);
 
 // write samples for the current channel
 // written to disk and file pointer updated after last channel is written
@@ -115,7 +106,7 @@ public:
 // subsequent writes must be <= than first write's size because of buffers
 	int write_samples(double **buffer, int64_t len);
 
-// Only called by filethread
+// Only called by filethread to write an array of an array of channels of frames.
 	int write_frames(VFrame ***frames, int len);
 
 
@@ -133,6 +124,14 @@ public:
 	int write_audio_buffer(int64_t len);
 	int write_video_buffer(int64_t len);
 
+
+
+
+// set channel for buffer accesses
+	int set_channel(int channel);
+// set position in samples
+	int set_audio_position(int64_t position, float base_samplerate);
+
 // Read samples for one channel into a shared memory segment.
 // The offset is the offset in floats from the beginning of the buffer and the len
 // is the length in floats from the offset.
@@ -140,6 +139,11 @@ public:
 // return 1 if failed
 	int read_samples(double *buffer, int64_t len, int64_t base_samplerate, float *buffer_float = 0);
 
+
+// set layer for video read
+	int set_layer(int layer);
+// set position in frames
+	int set_video_position(int64_t position, float base_framerate);
 
 // Read frame of video into the argument
 	int read_frame(VFrame *frame);
@@ -170,6 +174,8 @@ public:
 
 	static int supports_video(ArrayList<PluginServer*> *plugindb, char *format);   // returns 1 if the format supports video or audio
 	static int supports_audio(ArrayList<PluginServer*> *plugindb, char *format);
+// Get the extension for the filename
+	static char* get_tag(int format);
 	static int supports_video(int format);   // returns 1 if the format supports video or audio
 	static int supports_audio(int format);
 	static int strtoformat(char *format);

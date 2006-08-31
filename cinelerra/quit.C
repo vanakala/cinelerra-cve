@@ -2,6 +2,7 @@
 #include "mbuttons.h"
 #include "confirmquit.h"
 #include "errorbox.h"
+#include "language.h"
 #include "levelwindow.h"
 #include "levelwindowgui.h"
 #include "mainmenu.h"
@@ -16,10 +17,6 @@
 #include "videowindowgui.h"
 
 #include <unistd.h>
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 Quit::Quit(MWindow *mwindow)
  : BC_MenuItem(_("Quit"), "q", 'q'), Thread() 

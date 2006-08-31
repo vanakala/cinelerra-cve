@@ -73,7 +73,6 @@ private:
 	BitsPopup *alsa_bits;
 	ADeviceIntBox *alsa_channels;
 	BC_CheckBox *alsa_workaround;
-
 	ArrayList<BC_ListBoxItem*> *alsa_drivers;
 };
 

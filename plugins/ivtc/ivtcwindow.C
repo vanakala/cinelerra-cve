@@ -1,11 +1,17 @@
 #include "bcdisplayinfo.h"
 #include "ivtcwindow.h"
+#include "language.h"
 
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
+static char *pattern_text[] =
+{
+	"A  B  BC  CD  D",
+	"AB  BC  CD  DE  EF",
+	"Automatic",
+	N_("A  B  BC  CD  D"),
+	N_("AB  BC  CD  DE  EF"),
+	N_("Automatic")
+};
 
 
 PLUGIN_THREAD_OBJECT(IVTCMain, IVTCThread, IVTCWindow)

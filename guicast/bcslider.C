@@ -225,9 +225,9 @@ int BC_Slider::keypress_event()
 
 	if(result)
 	{
+		handle_event();
 		show_value_tooltip();
 		draw_face();
-		handle_event();
 	}
 	return result;
 }
@@ -279,17 +279,17 @@ int BC_Slider::button_press_event()
 			if(get_buttonpress() == 4)
 			{
 				increase_value();
+				handle_event();
 				show_value_tooltip();
 				draw_face();
-				handle_event();
 			}
 			else
 			if(get_buttonpress() == 5)
 			{
 				decrease_value();
+				handle_event();
 				show_value_tooltip();
 				draw_face();
-				handle_event();
 			}
 			else
 			if(get_buttonpress() == 1)
@@ -335,8 +335,8 @@ int BC_Slider::cursor_motion_event()
 		if(button_pixel != old_pixel) draw_face();
 		if(result) 
 		{
-			set_tooltip(get_caption());
 			handle_event();
+			set_tooltip(get_caption());
 		}
 		return 1;
 	}

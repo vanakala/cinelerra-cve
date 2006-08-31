@@ -195,12 +195,12 @@ int Track::vertical_span(Theme *theme)
 	if(expand_view)
 		result = edl->local_session->zoom_track + 
 			plugin_set.total * 
-			theme->plugin_bg_data->get_h();
+			theme->get_image("plugin_bg_data")->get_h();
 	else
 		result = edl->local_session->zoom_track;
 
 	if(edl->session->show_titles)
-		result += theme->title_bg_data->get_h();
+		result += theme->get_image("title_bg_data")->get_h();
 
 	return result;
 }
@@ -1048,7 +1048,7 @@ int Track::copy(double start,
 	edits->copy(start_unit, end_unit, file, output_path);
 
 	AutoConf auto_conf;
-	auto_conf.set_all();
+	auto_conf.set_all(1);
 	automation->copy(start_unit, end_unit, file, 0, 0);
 
 

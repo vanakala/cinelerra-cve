@@ -45,10 +45,10 @@ extern "C" {
 #define QUICKTIME_H263 "h263"
 
 /* Dee Vee */
-#define QUICKTIME_DV "dvc "            // NTSC video inside Quicktime
-#define QUICKTIME_DVCP "dvcp"          // PAL video inside Quicktime
+#define QUICKTIME_DV "dvc "
 #define QUICKTIME_DV25 "dv25"
-#define QUICKTIME_DVSD "dvsd"          // PAL or NTSC inside AVI
+#define QUICKTIME_DVSD "dvsd"
+#define QUICKTIME_DVCP "dvcp"          // PAL video inside Quicktime
 
 /* RGB uncompressed.  Allows alpha */
 #define QUICKTIME_RAW  "raw "

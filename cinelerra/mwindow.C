@@ -4,6 +4,7 @@
 #include "awindow.h"
 #include "batchrender.h"
 #include "bcdisplayinfo.h"
+#include "bcsignals.h"
 #include "brender.h"
 #include "cache.h"
 #include "channel.h"

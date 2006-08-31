@@ -86,6 +86,17 @@ LOAD_CONFIGURATION_MACRO(BrightnessMain, BrightnessConfig)
 int BrightnessMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
 	load_configuration();
+
+
+//
+	if(0)
+	{
+		return 0;
+	}
+
+
+
+
 	if(!engine) engine = new BrightnessEngine(this, PluginClient::smp + 1);
 
 	this->input = input_ptr;
@@ -111,18 +122,20 @@ void BrightnessMain::update_gui()
 {
 	if(thread)
 	{
-		load_configuration();
-		thread->window->lock_window();
-		thread->window->brightness->update(config.brightness);
-		thread->window->contrast->update(config.contrast);
-		thread->window->luma->update(config.luma);
-		thread->window->unlock_window();
+		if(load_configuration())
+		{
+			thread->window->lock_window("BrightnessMain::update_gui");
+			thread->window->brightness->update(config.brightness);
+			thread->window->contrast->update(config.contrast);
+			thread->window->luma->update(config.luma);
+			thread->window->unlock_window();
+		}
 	}
 }
 
 int BrightnessMain::load_defaults()
 {
-	char directory[1024], string[1024];
+	char directory[BCTEXTLEN], string[BCTEXTLEN];
 // set the default directory
 	sprintf(directory, "%sbrightness.rc", BCASTDIR);
 

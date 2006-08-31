@@ -295,7 +295,7 @@ public:
 // is_local - if 1, the position is converted to the EDL rate.
 	KeyFrame* get_prev_keyframe(int64_t position, int is_local = 1);
 	KeyFrame* get_next_keyframe(int64_t position, int is_local = 1);
-// get camera and projector autos
+// get current camera and projector position
 	void get_camera(float *x, float *y, float *z, int64_t position);
 	void get_projector(float *x, float *y, float *z, int64_t position);
 // When this plugin is adjusted, propogate parameters back to EDL and virtual

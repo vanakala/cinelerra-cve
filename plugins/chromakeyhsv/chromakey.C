@@ -1,4 +1,5 @@
 #include "bcdisplayinfo.h"
+#include "bcsignals.h"
 #include "chromakey.h"
 #include "clip.h"
 #include "bchash.h"

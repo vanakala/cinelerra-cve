@@ -230,7 +230,7 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 					FileXML temp;
 					AutoConf temp_autoconf;
 
-					temp_autoconf.set_all();
+					temp_autoconf.set_all(1);
 
 					source_track->automation->copy(source_edit->startproject, 
 						source_edit->startproject + source_edit->length, 

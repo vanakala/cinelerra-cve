@@ -855,9 +855,9 @@ void BlondTheme::build_bg_data()
 	new_image("resource128", "resource128.png");
 	new_image("resource64", "resource64.png");
 	new_image("resource32", "resource32.png");
-	plugin_bg_data = new VFrame(get_image_data("plugin_bg.png"));
-	title_bg_data = new VFrame(get_image_data("title_bg.png"));
-	vtimebar_bg_data = new VFrame(get_image_data("vwindow_timebar.png"));
+	new_image("plugin_bg_data", "plugin_bg.png");
+	new_image("title_bg_data", "title_bg.png");
+	new_image("vtimebar_bg_data", "vwindow_timebar.png");
 }
 
 

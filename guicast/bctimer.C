@@ -5,6 +5,7 @@
 
 Timer::Timer()
 {
+	update();
 }
 
 Timer::~Timer()

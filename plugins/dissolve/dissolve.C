@@ -5,6 +5,8 @@
 #include "picon_png.h"
 #include "vframe.h"
 
+#include <string.h>
+
 PluginClient* new_plugin(PluginServer *server)
 {
 	return new DissolveMain(server);

@@ -668,6 +668,10 @@ void Units::punctuate(char *string)
 	}
 }
 
+void Units::fix_double(double *x)
+{
+	*x = *x;
+}
 
 
 

@@ -1,6 +1,8 @@
 #include "bcdisplayinfo.h"
 #include "colorpicker.h"
+#include "condition.h"
 #include "language.h"
+#include "mutex.h"
 #include "mwindow.inc"
 #include "plugincolors.h"
 #include "vframe.h"
@@ -10,14 +12,14 @@
 
 
 ColorThread::ColorThread(int do_alpha, char *title)
- : Thread(), 
-	 completion(1, "ColorThread::completion"),
-	 mutex("ColorThread::mutex")
+ : Thread()
 {
 	window = 0;
 	this->title = title;
 	this->do_alpha = do_alpha;
 	set_synchronous(0);
+	mutex = new Mutex("ColorThread::mutex");
+	completion = new Condition(1, "ColorThread::completion");
 }
 
 ColorThread::~ColorThread()
@@ -25,21 +27,23 @@ ColorThread::~ColorThread()
 	if(running())
 	{
 		window->set_done(0);
-		completion.lock();
-		completion.unlock();
+		completion->lock("ColorThread::~ColorThread");
+		completion->unlock();
 	}
+	delete mutex;
+	delete completion;
 }
 
 void ColorThread::start_window(int output, int alpha)
 {
-	mutex.lock("ColorThread::start_window 1");
+	mutex->lock("ColorThread::start_window 1");
 	this->output = output;
 	this->alpha = alpha;
-	mutex.unlock();
+	mutex->unlock();
 
 	if(!running())
 	{
-		completion.lock();
+		completion->lock("ColorThread::start_window");
 		Thread::start();
 	}
 	else
@@ -62,24 +66,24 @@ void ColorThread::run()
 		strcat(window_title, _("Color Picker"));
 
 
-	mutex.lock("ColorThread::run 1");
+	mutex->lock("ColorThread::run 1");
 	window = new ColorWindow(this, 
 		info.get_abs_cursor_x() - 200, 
 		info.get_abs_cursor_y() - 200,
 		window_title);
 	window->create_objects();
-	mutex.unlock();
+	mutex->unlock();
 	window->run_window();
-	mutex.lock("lorThread::run 2");
+	mutex->lock("lorThread::run 2");
 	delete window;
 	window = 0;
-	mutex.unlock();
-	completion.unlock();
+	mutex->unlock();
+	completion->unlock();
 }
 
 void ColorThread::update_gui(int output, int alpha)
 {
-	mutex.lock("ColorThread::update_gui");
+	mutex->lock("ColorThread::update_gui");
 	if (window)
 	{
 		this->output = output;
@@ -89,7 +93,7 @@ void ColorThread::update_gui(int output, int alpha)
 		window->update_display();
 		window->unlock_window();
 	}
-	mutex.unlock();
+	mutex->unlock();
 }
 
 int ColorThread::handle_new_color(int output, int alpha)

@@ -9,6 +9,14 @@
 #include <string.h>
 
 
+static char *pattern_text[] = 
+{
+	N_("A  B  BC  CD  D"),
+	N_("AB  BC  CD  DE  EF"),
+	N_("Automatic")
+};
+
+
 REGISTER_PLUGIN(IVTCMain)
 
 IVTCConfig::IVTCConfig()

@@ -79,10 +79,10 @@ int AutoConf::set_all(int value)
 {
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 	{
-		autos[i] = 1;
+		autos[i] = value;
 	}
-	transitions = 1;
-	plugins = 1;
+	transitions = value;
+	plugins = value;
 	return 0;
 }
 

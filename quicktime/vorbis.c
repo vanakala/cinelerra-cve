@@ -1,6 +1,7 @@
 #include "funcprotos.h"
 #include "quicktime.h"
 #include "qtvorbis.h"
+#include <string.h>
 #include "vorbis/vorbisenc.h"
 
 // Attempts to read more samples than this will crash

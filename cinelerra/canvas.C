@@ -1,8 +1,10 @@
+#include "bcsignals.h"
 #include "canvas.h"
 #include "clip.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "language.h"
+#include "mutex.h"
 #include "vframe.h"
 
 

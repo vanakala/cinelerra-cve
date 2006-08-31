@@ -372,7 +372,7 @@ char* Asset::get_compression_text(int audio, int video)
 Asset& Asset::operator=(Asset &asset)
 {
 	copy_location(&asset);
-	copy_format(&asset);
+	copy_format(&asset, 1);
 	return *this;
 }
 

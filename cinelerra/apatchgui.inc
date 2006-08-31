@@ -3,7 +3,6 @@
 
 
 
-#define PAN_RADIUS 50
 #define MAX_AUDIO_FADE 6
 
 

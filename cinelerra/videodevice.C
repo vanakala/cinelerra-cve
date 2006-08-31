@@ -1,5 +1,6 @@
 #include "assets.h"
 #include "bccapture.h"
+#include "bcsignals.h"
 #include "channel.h"
 #include "chantables.h"
 #include "mutex.h"

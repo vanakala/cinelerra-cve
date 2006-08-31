@@ -252,9 +252,8 @@ int CICache::delete_oldest()
 
 int CICache::dump()
 {
-	lock_all();
 	CICacheItem *current;
-
+	total_lock->lock("CICache::dump");
 	printf("CICache::dump total size %lld\n", get_memory_usage());
 	for(current = first; current; current = NEXT)
 	{
@@ -264,9 +263,16 @@ int CICache::dump()
 			current->asset->path, 
 			current->counter);
 	}
-	
-	unlock_all();
+	total_lock->unlock();
 }
+
+
+
+
+
+
+
+
 
 int CICache::lock_all()
 {

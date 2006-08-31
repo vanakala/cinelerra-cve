@@ -1,6 +1,7 @@
 #include "audiodevice.h"
 #include "audioalsa.h"
 #include "bcsignals.h"
+#include "mutex.h"
 #include "playbackconfig.h"
 #include "preferences.h"
 #include "recordconfig.h"

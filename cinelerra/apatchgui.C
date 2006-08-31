@@ -274,7 +274,7 @@ APanPatch::APanPatch(MWindow *mwindow, APatchGUI *patch, int x, int y)
  : BC_Pan(x, 
 		y, 
 		PAN_RADIUS, 
-		1, 
+		MAX_PAN, 
 		mwindow->edl->session->audio_channels, 
 		mwindow->edl->session->achannel_positions, 
 		get_keyframe(mwindow, patch)->handle_x, 

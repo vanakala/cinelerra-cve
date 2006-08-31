@@ -4,6 +4,7 @@
 #include <pthread.h>
 #include "qtffmpeg.h"
 #include "quicktime.h"
+#include <string.h>
 #include "workarounds.h"
 #include "x264.h"
 

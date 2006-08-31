@@ -1,8 +1,9 @@
 #ifndef COLORPICKER_H
 #define COLORPICKER_H
 
-#include "condition.h"
+#include "condition.inc"
 #include "guicast.h"
+#include "mutex.inc"
 #include "thread.h"
 #include "vframe.inc"
 
@@ -34,9 +35,9 @@ private:
 	friend class ColorWindow;
 
 	ColorWindow *window;
-	Condition completion;
+	Condition *completion;
 // protects window, output, alpha
-	Mutex mutex;	
+	Mutex *mutex;	
 // Starting color
 	int output;
 	int alpha;

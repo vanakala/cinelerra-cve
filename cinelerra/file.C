@@ -30,6 +30,7 @@
 #include "formattools.h"
 #include "framecache.h"
 #include "language.h"
+#include "mutex.h"
 #include "pluginserver.h"
 #include "resample.h"
 #include "stringfile.h"
@@ -60,7 +61,7 @@ File::~File()
 	if(temp_frame) delete temp_frame;
 
 	close_file(0);
-	reset_parameters();
+	
 	delete asset;
 	delete format_completion;
 	delete write_lock;
@@ -1515,6 +1516,35 @@ int File::supports_audio(int format)
 	}
 }
 
+char* File::get_tag(int format)
+{
+	switch(format)
+	{
+		case FILE_AC3:          return "ac3";
+		case FILE_AIFF:         return "aif";
+		case FILE_AMPEG:        return "mp3";
+		case FILE_AU:           return "au";
+		case FILE_AVI:          return "avi";
+		case FILE_EXR:          return "exr";
+		case FILE_EXR_LIST:     return "exr";
+		case FILE_JPEG:         return "jpg";
+		case FILE_JPEG_LIST:    return "jpg";
+		case FILE_MOV:          return "mov";
+		case FILE_OGG:          return "ogg";
+		case FILE_PCM:          return "pcm";
+		case FILE_PNG:          return "png";
+		case FILE_PNG_LIST:     return "png";
+		case FILE_TGA:          return "tga";
+		case FILE_TGA_LIST:     return "tga";
+		case FILE_TIFF:         return "tif";
+		case FILE_TIFF_LIST:    return "tif";
+		case FILE_VMPEG:        return "m2v";
+		case FILE_VORBIS:       return "ogg";
+		case FILE_WAV:          return "wav";
+	}
+	return 0;
+}
+
 PackagingEngine *File::new_packaging_engine(Asset *asset)
 {
 	PackagingEngine *result;
@@ -1530,3 +1560,12 @@ PackagingEngine *File::new_packaging_engine(Asset *asset)
 
 	return result;
 }
+
+
+
+
+
+
+
+
+

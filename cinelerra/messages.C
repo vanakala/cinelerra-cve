@@ -1,14 +1,11 @@
 #include <string.h>
 #include "bcipc.h"
+#include "language.h"
 #include "messages.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 Messages::Messages(int input_flag, int output_flag, int id)
 {

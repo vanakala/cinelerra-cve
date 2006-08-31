@@ -203,9 +203,9 @@ int SelTempAvgMain::process_buffer(VFrame *frame,
 // Create new history frames based on current frame
 		int64_t *new_history_frames = new int64_t[history_size];
 
-		int64_t theoffset = config.offset_fixed_value;
+		int64_t theoffset = (int64_t) config.offset_fixed_value;
 		if (config.offsetmode == SelTempAvgConfig::OFFSETMODE_RESTARTMARKERSYS)
-			theoffset = restartoffset;
+			theoffset = (int64_t) restartoffset;
 
 		for(int i = 0; i < history_size; i++)
 		{
@@ -938,22 +938,22 @@ void SelTempAvgMain::update_gui()
 			thread->window->paranoid->update(config.paranoid);
 			thread->window->no_subtract->update(config.nosubtract);
 
-			thread->window->offset_fixed_value->update(config.offset_fixed_value);
+			thread->window->offset_fixed_value->update((int64_t)config.offset_fixed_value);
 			thread->window->gain->update(config.gain);
 
-			thread->window->avg_threshold_RY->update(config.avg_threshold_RY);
-			thread->window->avg_threshold_GU->update(config.avg_threshold_GU);
-			thread->window->avg_threshold_BV->update(config.avg_threshold_BV);
-			thread->window->std_threshold_RY->update(config.std_threshold_RY);
-			thread->window->std_threshold_GU->update(config.std_threshold_GU);
-			thread->window->std_threshold_BV->update(config.std_threshold_BV);
+			thread->window->avg_threshold_RY->update((float)config.avg_threshold_RY);
+			thread->window->avg_threshold_GU->update((float)config.avg_threshold_GU);
+			thread->window->avg_threshold_BV->update((float)config.avg_threshold_BV);
+			thread->window->std_threshold_RY->update((float)config.std_threshold_RY);
+			thread->window->std_threshold_GU->update((float)config.std_threshold_GU);
+			thread->window->std_threshold_BV->update((float)config.std_threshold_BV);
 
 			thread->window->mask_RY->update(config.mask_RY);
 			thread->window->mask_GU->update(config.mask_GU);
 			thread->window->mask_BV->update(config.mask_BV);
 			thread->window->unlock_window();
 		}
-		thread->window->offset_restartmarker_pos->update(restartoffset);
+		thread->window->offset_restartmarker_pos->update((int64_t)restartoffset);
 		thread->window->offset_restartmarker_keyframe->update((config.offset_restartmarker_keyframe) && (onakeyframe));
 	}
 }

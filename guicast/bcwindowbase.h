@@ -51,7 +51,7 @@
 #include "condition.inc"
 #include "bchash.inc"
 #include "linklist.h"
-#include "mutex.h"
+#include "mutex.inc"
 #include "vframe.inc"
 
 
@@ -246,7 +246,6 @@ public:
 	int get_toggle_value();
 // Get if toggle is being dragged
 	int get_toggle_drag();
-
 
 // Set the gc to the color
 	void set_color(int64_t color);
@@ -561,7 +560,6 @@ private:
 	int find_prev_textbox(BC_WindowBase **last_textbox, BC_WindowBase **prev_textbox, int &result);
 
 
-
 	void translate_coordinates(Window src_w, 
 		Window dest_w,
 		int src_x,
@@ -694,7 +692,6 @@ private:
 // Display to send events on
 	Display *event_display;
  	Window win;
-	Pixmap pixmap;
 #ifdef HAVE_GL
 	GLXContext gl_context;
 #endif
@@ -731,6 +728,8 @@ private:
 
 	int xvideo_port_id;
 	ArrayList<BC_ResizeCall*> resize_history;
+// Back buffer
+	BC_Pixmap *pixmap;
 // Background tile if tiled
 	BC_Pixmap *bg_pixmap;
 // Icon

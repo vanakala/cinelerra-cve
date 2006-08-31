@@ -16,6 +16,7 @@
 #include "mainsession.h"
 #include "maskauto.h"
 #include "maskautos.h"
+#include "mutex.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "theme.h"

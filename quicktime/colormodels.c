@@ -19,6 +19,7 @@
 
 #include "colormodels.h"
 #include <stdlib.h>
+#include <string.h>
 
 
 cmodel_yuv_t *yuv_table = 0;

@@ -4,6 +4,7 @@
 #include "bctitle.h"
 #include "filesystem.h"
 #include "language.h"
+#include "mutex.h"
 
 #include <sys/stat.h>
 

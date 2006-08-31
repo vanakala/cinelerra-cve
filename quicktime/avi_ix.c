@@ -1,5 +1,6 @@
 #include "funcprotos.h"
 #include "quicktime.h"
+#include <string.h>
 
 
 static char* make_tag(int number, char *tag)

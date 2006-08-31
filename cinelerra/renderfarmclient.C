@@ -6,6 +6,7 @@
 #include "filesystem.h"
 #include "filexml.h"
 #include "language.h"
+#include "mutex.h"
 #include "mwindow.h"
 #include "pluginserver.h"
 #include "preferences.h"

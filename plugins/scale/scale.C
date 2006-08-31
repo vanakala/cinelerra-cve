@@ -1,15 +1,12 @@
 #include "clip.h"
 #include "filexml.h"
+#include "language.h"
 #include "picon_png.h"
 #include "scale.h"
 #include "scalewin.h"
 
 #include <string.h>
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 REGISTER_PLUGIN(ScaleMain)
 

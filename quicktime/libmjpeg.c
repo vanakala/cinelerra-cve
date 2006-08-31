@@ -1172,7 +1172,6 @@ int mjpeg_decompress(mjpeg_t *mjpeg,
 				lock_compress_loop(mjpeg->decompressors[i]);
 		}
 	}
-//printf("mjpeg_decompress 6\n");
 
 /* Convert colormodel */
 // User colormodel didn't match decompressor
@@ -1183,6 +1182,7 @@ int mjpeg_decompress(mjpeg_t *mjpeg,
  * 		mjpeg->coded_h != mjpeg->output_h))
  */
 
+//printf("mjpeg_decompress 6 %d %d %d %d\n", mjpeg->coded_w, mjpeg->coded_h, mjpeg->output_w, mjpeg->output_h);
  	if((mjpeg->jpeg_color_model != mjpeg->color_model ||
  		mjpeg->coded_w != mjpeg->output_w ||
  		mjpeg->coded_h != mjpeg->output_h) 
@@ -1194,7 +1194,11 @@ int mjpeg_decompress(mjpeg_t *mjpeg,
 		unsigned char *u_in = mjpeg->temp_rows[1][0];
 		unsigned char *v_in = mjpeg->temp_rows[2][0];
 
-//printf("mjpeg_decompress 7 %p\n", row_pointers);
+/*
+ * printf("mjpeg_decompress 7 in_rowspan=%d out_rowspan=%d\n", 
+ * mjpeg->coded_w,
+ * mjpeg->rowspan ? mjpeg->rowspan : mjpeg->output_w);
+ */
 		cmodel_transfer(row_pointers, 
 			0,
 			y_plane,

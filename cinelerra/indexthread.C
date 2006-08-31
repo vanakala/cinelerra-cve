@@ -1,4 +1,5 @@
 #include "asset.h"
+#include "bcsignals.h"
 #include "condition.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -10,6 +11,7 @@
 #include "mwindowgui.h"
 #include "preferences.h"
 #include "mainsession.h"
+#include <unistd.h>
 #include "trackcanvas.h"
 #include "tracks.h"
 

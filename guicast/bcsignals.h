@@ -46,7 +46,7 @@ public:
 // Add a trace
 #define TRACE(text) BC_Signals::new_trace(text);
 #define SET_TRACE BC_Signals::new_trace(__FILE__, __FUNCTION__, __LINE__);
-
+#define PRINT_TRACE { printf("%s: %d\n", __FILE__, __LINE__); fflush(stdout); }
 // Delete all traces
 #define UNTRACE BC_Signals::delete_traces();
 
@@ -54,6 +54,7 @@ public:
 
 #define TRACE(text) ;
 #define UNTRACE ;
+#define PRINT_TRACE ;
 
 #endif
 
@@ -62,8 +63,10 @@ public:
 
 // Before user acquires
 #define SET_LOCK(ptr, title, location) int table_id = BC_Signals::set_lock(ptr, title, location);
-// After successful acquisition
+// After successful acquisition of a mutex, the table is flagged
 #define SET_LOCK2 BC_Signals::set_lock2(table_id);
+// After successful acquisition of a condition, the table is removed because
+// the user never unlocks a condition after locking it.
 // Release current lock table after failing to acquire
 #define UNSET_LOCK2 BC_Signals::unset_lock2(table_id);
 
@@ -88,7 +91,9 @@ public:
 
 #define ENABLE_BUFFER BC_Signals::enable_memory();
 #define DISABLE_BUFFER BC_Signals::disable_memory();
+// Note the size, pointer, and location of an allocation
 #define BUFFER(size, ptr, location) BC_Signals::set_buffer(size, ptr, location);
+// Remove a pointer from the allocation table
 #define UNBUFFER(ptr) BC_Signals::unset_buffer(ptr);
 
 #else

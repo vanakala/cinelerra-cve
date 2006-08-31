@@ -1,3 +1,4 @@
+#include "bcsignals.h"
 #include "ctimebar.h"
 #include "cwindow.h"
 #include "cwindowgui.h"

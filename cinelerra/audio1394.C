@@ -131,6 +131,7 @@ int Audio1394::open_output()
 				device->out_config->firewire_syt);
 		}
 	}
+	return 0;
 }
 
 int Audio1394::close_all()

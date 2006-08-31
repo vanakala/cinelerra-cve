@@ -10,6 +10,7 @@ class IVTCWindow;
 #include "mutex.h"
 #include "ivtc.h"
 
+#define TOTAL_PATTERNS 3
 
 PLUGIN_THREAD_HEADER(IVTCMain, IVTCThread, IVTCWindow)
 

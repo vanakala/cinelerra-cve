@@ -428,6 +428,7 @@ int FileEXR::read_frame(VFrame *frame, VFrame *data)
 			}
 		}
 	}
+	return 0;
 }
 
 
@@ -512,6 +513,7 @@ int FileEXR::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 				sizeof(float) * components * output_frame->get_w()));
 	file.setFrameBuffer(framebuffer);
 	file.writePixels(asset->height);
+	return 0;
 }
 
 FrameWriterUnit* FileEXR::new_writer_unit(FrameWriter *writer)

@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "bcdisplayinfo.h"
+#include "bcsignals.h"
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
@@ -442,6 +443,7 @@ int ZoomBlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 // table to avoid green borders
 	if(need_reconfigure)
 	{
+SET_TRACE
 		float w = input->get_w();
 		float h = input->get_h();
 		float center_x = (float)config.x / 100 * w;
@@ -459,6 +461,7 @@ int ZoomBlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		float max_x2;
 		float max_y2;
 		
+SET_TRACE
 
 // printf("ZoomBlurMain::process_realtime 1 %d %d\n", 
 // config.x,
@@ -479,6 +482,7 @@ int ZoomBlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		max_x2 = w;
 		max_y2 = h;
 
+SET_TRACE
 // printf("ZoomBlurMain::process_realtime 2 w=%f radius=%f center_x=%f\n", 
 // w,
 // radius,
@@ -492,7 +496,7 @@ int ZoomBlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		scale_y_table = new int*[config.steps];
 		table_entries = config.steps;
 
-
+SET_TRACE
 		for(int i = 0; i < config.steps; i++)
 		{
 			float fraction = (float)i / config.steps;
@@ -512,6 +516,7 @@ int ZoomBlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 			int *y_table;
 			scale_y_table[i] = y_table = new int[(int)(h + 1)];
 			scale_x_table[i] = x_table = new int[(int)(w + 1)];
+SET_TRACE
 
 			for(int j = 0; j < h; j++)
 			{
@@ -523,8 +528,15 @@ int ZoomBlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 //printf("ZoomBlurMain::process_realtime %d %d\n", j, x_table[j]);
 			}
 		}
+SET_TRACE
 		need_reconfigure = 0;
 	}
+
+
+
+
+
+
 
 	bzero(accum, input_ptr->get_w() * 
 		input_ptr->get_h() *

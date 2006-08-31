@@ -87,4 +87,7 @@ class EDL;
 #define MIN_TRACK_ZOOM 32
 #define MAX_TRACK_ZOOM 1024
 
+#define MAX_PAN 1.0
+#define PAN_RADIUS 50
+
 #endif

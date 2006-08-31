@@ -2,6 +2,7 @@
 #include "guicast.h"
 #include "file.h"
 #include "formattools.h"
+#include "language.h"
 #include "maxchannels.h"
 #include "mwindow.h"
 #include "preferences.h"
@@ -9,10 +10,6 @@
 #include <string.h>
 #include "pipe.h"
 
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
 
 FormatTools::FormatTools(MWindow *mwindow,
 				BC_WindowBase *window, 
@@ -212,6 +209,31 @@ int FormatTools::handle_event()
 Asset* FormatTools::get_asset()
 {
 	return asset;
+}
+
+void FormatTools::update_extension()
+{
+	char *extension = File::get_tag(asset->format);
+	if(extension)
+	{
+		char *ptr = strrchr(asset->path, '.');
+		if(!ptr)
+		{
+			ptr = asset->path + strlen(asset->path);
+			*ptr = '.';
+		}
+		ptr++;
+		sprintf(ptr, extension);
+
+		int character1 = ptr - asset->path;
+		int character2 = ptr - asset->path + strlen(extension);
+		*(asset->path + character2) = 0;
+		if(path_textbox) 
+		{
+			path_textbox->update(asset->path);
+			path_textbox->set_selection(character1, character2, character2);
+		}
+	}
 }
 
 void FormatTools::update(Asset *asset, int *strategy)
@@ -502,6 +524,7 @@ int FormatFormat::handle_event()
 			// update the render window to match
 			format->format_text->
 				update(get_selection(0, 0)->get_text());
+			format->update_extension();
 			format->path_textbox->update(format->asset->path);
 			format->pipe_status->set_status(format->asset);
 			format->path_recent->load_items

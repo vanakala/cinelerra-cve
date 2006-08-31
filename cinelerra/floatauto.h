@@ -34,7 +34,8 @@ public:
 
 // Control values are relative to value
 	float value, control_in_value, control_out_value;
-// Control positions relative to value position for drawing
+// X control positions relative to value position for drawing.
+// In native units of the track.
 	int64_t control_in_position, control_out_position;
 
 private:

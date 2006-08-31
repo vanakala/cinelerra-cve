@@ -66,9 +66,10 @@ typedef struct
 	sync_window_t *audiosync;
 	sync_window_t *videosync;
 	
-    //to do some manual page flusing 
+    //to do some manual page flusing
     int v_pkg;
     int a_pkg;
+
 }
 theoraframes_info_t;
 

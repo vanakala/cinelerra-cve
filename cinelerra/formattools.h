@@ -46,6 +46,8 @@ public:
 	void reposition_window(int &init_x, int &init_y);
 // Put new asset's parameters in and change asset.
 	void update(Asset *asset, int *strategy);
+// Update filename extension when format is changed.
+	void update_extension();
 	void close_format_windows();
 	Asset* get_asset();
 

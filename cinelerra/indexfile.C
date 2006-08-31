@@ -1,4 +1,5 @@
 #include "asset.h"
+#include "bcsignals.h"
 #include "clip.h"
 #include "condition.h"
 #include "edit.h"
@@ -448,7 +449,7 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 	int buffer_shared = 0;
 	int i;
 	int center_pixel = mwindow->edl->local_session->zoom_track / 2;
-	if(mwindow->edl->session->show_titles) center_pixel += mwindow->theme->title_bg_data->get_h();
+	if(mwindow->edl->session->show_titles) center_pixel += mwindow->theme->get_image("title_bg_data")->get_h();
 	int miny = center_pixel - mwindow->edl->local_session->zoom_track / 2;
 	int maxy = center_pixel + mwindow->edl->local_session->zoom_track / 2;
 	int x1 = 0, y1, y2;

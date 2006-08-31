@@ -1,5 +1,6 @@
 #include "funcprotos.h"
 #include "quicktime.h"
+#include <string.h>
 
 #define DEFAULT_INFO "Made with Quicktime for Linux"
 static unsigned char cpy_tag[] = {0xa9, 'c', 'p', 'y'};

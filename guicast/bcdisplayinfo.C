@@ -211,6 +211,7 @@ void BC_DisplayInfo::init_window(char *display_name, int show_error)
   			printf("BC_DisplayInfo::init_window: cannot connect to X server.\n");
   			if(getenv("DISPLAY") == NULL)
     			printf("'DISPLAY' environment variable not set.\n");
+			exit(1);
 		}
 		return;
  	}

@@ -1,5 +1,6 @@
 #include "bcbitmap.h"
 #include "bcpixmap.h"
+#include "bcsignals.h"
 #include "bcwindowbase.h"
 #include "vframe.h"
 

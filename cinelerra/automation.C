@@ -150,7 +150,7 @@ void Automation::clear(int64_t start,
 	if(!autoconf)
 	{
 		temp_autoconf = new AutoConf;
-		temp_autoconf->set_all();
+		temp_autoconf->set_all(1);
 		autoconf = temp_autoconf;
 	}
 

@@ -4,6 +4,7 @@
 #include "filelist.h"
 #include "guicast.h"
 #include "interlacemodes.h"
+#include "mutex.h"
 #include "mwindow.inc"
 #include "render.h"
 #include "renderfarmfsserver.inc"
@@ -14,6 +15,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <sys/stat.h>
+#include <unistd.h>
 
 
 FileList::FileList(Asset *asset, 

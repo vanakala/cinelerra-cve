@@ -6,6 +6,7 @@
 // Hash table with persistent storage in stringfiles.
 
 
+#include "bcwindowbase.inc"
 #include "stringfile.inc"
 #include "units.h"
 #include "properties.h"
@@ -38,7 +39,7 @@ public:
 	char* get(char *name, char *default_); // return 1 if it doesn't
 	
 	Properties *properties;  // list of defaults
-	char filename[1024];        // filename the defaults are stored in
+	char filename[BCTEXTLEN];        // filename the defaults are stored in
 };
 
 #endif

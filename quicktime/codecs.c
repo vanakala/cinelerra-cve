@@ -1,6 +1,7 @@
 #include "colormodels.h"
 #include "funcprotos.h"
 #include "quicktime.h"
+#include <string.h>
 
 static int delete_vcodec_stub(quicktime_video_map_t *vtrack)
 {

@@ -7,6 +7,9 @@
 #include "mpeg3protos.h"
 #include "quicktime.h"
 #include "qtmp3.h"
+#include <string.h>
+
+
 
 #define CLAMP(x, y, z) ((x) = ((x) <  (y) ? (y) : ((x) > (z) ? (z) : (x))))
 

@@ -41,10 +41,25 @@ void Channel::reset()
 	has_scanning = 0;
 }
 
+void Channel::dump()
+{
+	printf("Channel::dump title=%s\n"
+		"use_freq=%d\n"
+		"use_fine=%d\n"
+		"use_norm=%d\n"
+		"use_input=%d\n"
+		"has_scanning=%d\n",
+		title,
+		use_frequency,
+		use_fine,
+		use_norm,
+		use_input,
+		has_scanning);
+}
 
 Channel& Channel::operator=(Channel &channel)
 {
-	printf("Channel::operator= not supported.\n");
+	printf("Channel::operator= is not supported.\n");
 	return *this;
 }
 

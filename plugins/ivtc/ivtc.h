@@ -1,19 +1,8 @@
 #ifndef IVTC_H
 #define IVTC_H
 
-#include "language.h"
-
 class IVTCMain;
 class IVTCEngine;
-
-#define TOTAL_PATTERNS 3
-
-static char *pattern_text[] = 
-{
-	N_("A  B  BC  CD  D"),
-	N_("AB  BC  CD  DE  EF"),
-	N_("Automatic")
-};
 
 #include "bchash.h"
 #include "loadbalance.h"

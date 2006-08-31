@@ -2,6 +2,7 @@
 #include "arender.h"
 #include "asset.h"
 #include "audiodevice.h"
+#include "bcsignals.h"
 #include "channeldb.h"
 #include "condition.h"
 #include "edl.h"
@@ -220,7 +221,6 @@ void RenderEngine::get_duty()
 	do_video = 0;
 
 //edl->dump();
-//printf("RenderEngine::get_duty 1 %d %d\n", edl->tracks->playable_audio_tracks(), config->vconfig->total_playable_channels());
 	if(!command->single_frame() &&
 		edl->tracks->playable_audio_tracks() &&
 		config->aconfig->total_playable_channels())
@@ -228,7 +228,6 @@ void RenderEngine::get_duty()
 		do_audio = 1;
 	}
 
-//printf("RenderEngine::get_duty 2 %d %d\n", edl->tracks->playable_video_tracks(), config->vconfig->total_playable_channels());
 	if(edl->tracks->playable_video_tracks() &&
 		config->vconfig->total_playable_channels())
 	{

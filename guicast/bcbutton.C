@@ -121,7 +121,7 @@ int BC_Button::set_images(VFrame **data)
 int BC_Button::draw_face()
 {
 	draw_top_background(parent_window, 0, 0, w, h);
-	images[status]->write_drawable(pixmap, 
+	pixmap->draw_pixmap(images[status], 
 			0, 
 			0,
 			w,

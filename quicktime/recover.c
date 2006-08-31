@@ -139,6 +139,24 @@ int main(int argc, char *argv[])
 	int64_t field_size;
 	int64_t field_allocation;
 
+// Dump codec settings
+	printf("Codec settings:\n"
+		"   WIDTH=%d HEIGHT=%d\n"
+		"   FRAMERATE=%.2f\n"
+		"   CHANNELS=%d\n"
+		"   SAMPLERATE=%d\n"
+		"   BITS=%d\n"
+		"   audio chunk=%d\n"
+		"   VCODEC=\"%s\"\n",
+		WIDTH,
+		HEIGHT,
+		FRAMERATE,
+		CHANNELS,
+		SAMPLERATE,
+		BITS,
+		audio_chunk,
+		VCODEC);
+
 	if(argc < 2)
 	{
 		printf("Recover JPEG and PCM audio in a corrupted movie.\n"
@@ -176,24 +194,6 @@ int main(int argc, char *argv[])
 		}
 	}
 
-
-// Dump codec settings
-	printf("Codec settings:\n"
-		"   WIDTH=%d HEIGHT=%d\n"
-		"   FRAMERATE=%.2f\n"
-		"   CHANNELS=%d\n"
-		"   SAMPLERATE=%d\n"
-		"   BITS=%d\n"
-		"   audio chunk=%d\n"
-		"   VCODEC=\"%s\"\n",
-		WIDTH,
-		HEIGHT,
-		FRAMERATE,
-		CHANNELS,
-		SAMPLERATE,
-		BITS,
-		audio_chunk,
-		VCODEC);
 
 
 

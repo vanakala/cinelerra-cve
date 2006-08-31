@@ -1,11 +1,6 @@
 #include "bcdisplayinfo.h"
 #include "brightnesswindow.h"
-
-
-#include <libintl.h>
-#define _(String) gettext(String)
-#define gettext_noop(String) String
-#define N_(String) gettext_noop (String)
+#include "language.h"
 
 
 PLUGIN_THREAD_OBJECT(BrightnessMain, BrightnessThread, BrightnessWindow)
