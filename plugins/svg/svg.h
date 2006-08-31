@@ -6,7 +6,7 @@
 class SvgMain;
 class SvgThread;
 
-#include "defaults.h"
+#include "bchash.h"
 #include "mutex.h"
 #include "svgwin.h"
 #include "overlayframe.h"
@@ -58,7 +58,7 @@ public:
 
 	OverlayFrame *overlayer;   // To translate images
 	VFrame *temp_frame;        // Used if buffers are the same
-	Defaults *defaults;
+	BC_Hash *defaults;
 	SvgConfig config;
 	int need_reconfigure;
 	int force_raw_render;     //force rendering of PNG on first start

@@ -1,7 +1,7 @@
 #ifndef TIMESTRETCH_H
 #define TIMESTRETCH_H
 
-#include "defaults.inc"
+#include "bchash.inc"
 #include "fourier.h"
 #include "guicast.h"
 #include "mainprogress.inc"
@@ -133,7 +133,7 @@ public:
 
 	TimeStretchEngine *stretch;
 
-	Defaults *defaults;
+	BC_Hash *defaults;
 	TimeStretchConfig config;
 	TimeStretchThread *thread;
 

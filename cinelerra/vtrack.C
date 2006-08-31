@@ -81,7 +81,7 @@ PluginSet* VTrack::new_plugins()
 	return new VPluginSet(edl, this);
 }
 
-int VTrack::load_defaults(Defaults *defaults)
+int VTrack::load_defaults(BC_Hash *defaults)
 {
 	Track::load_defaults(defaults);
 	return 0;

@@ -1,5 +1,5 @@
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "playbackconfig.h"
 #include "videodevice.inc"
 #include <string.h>
@@ -137,7 +137,7 @@ void AudioOutConfig::copy_from(AudioOutConfig *src)
 		do_channel[i] = src->do_channel[i];
 }
 
-int AudioOutConfig::load_defaults(Defaults *defaults)
+int AudioOutConfig::load_defaults(BC_Hash *defaults)
 {
 	char string[BCTEXTLEN];
 
@@ -193,7 +193,7 @@ int AudioOutConfig::load_defaults(Defaults *defaults)
 	return 0;
 }
 
-int AudioOutConfig::save_defaults(Defaults *defaults)
+int AudioOutConfig::save_defaults(BC_Hash *defaults)
 {
 	char string[BCTEXTLEN];
 
@@ -441,7 +441,7 @@ char* VideoOutConfig::get_path()
 	return buz_out_device;
 }
 
-int VideoOutConfig::load_defaults(Defaults *defaults)
+int VideoOutConfig::load_defaults(BC_Hash *defaults)
 {
 	char string[BCTEXTLEN];
 	sprintf(string, "VIDEO_OUT_DRIVER");
@@ -480,7 +480,7 @@ int VideoOutConfig::load_defaults(Defaults *defaults)
 	return 0;
 }
 
-int VideoOutConfig::save_defaults(Defaults *defaults)
+int VideoOutConfig::save_defaults(BC_Hash *defaults)
 {
 	char string[BCTEXTLEN];
 	sprintf(string, "VIDEO_OUT_DRIVER");
@@ -561,7 +561,7 @@ void PlaybackConfig::copy_from(PlaybackConfig *src)
 	port = src->port;
 }
 
-int PlaybackConfig::load_defaults(Defaults *defaults)
+int PlaybackConfig::load_defaults(BC_Hash *defaults)
 {
 	char string[1024];
 	sprintf(string, "PLAYBACK_HOSTNAME");
@@ -573,7 +573,7 @@ int PlaybackConfig::load_defaults(Defaults *defaults)
 	return 0;
 }
 
-int PlaybackConfig::save_defaults(Defaults *defaults)
+int PlaybackConfig::save_defaults(BC_Hash *defaults)
 {
 	char string[1024];
 	sprintf(string, "PLAYBACK_HOSTNAME");

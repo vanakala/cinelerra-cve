@@ -16,7 +16,7 @@
 #include "colors.h"
 #include "condition.h"
 #include "cursors.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "fonts.h"
 #include "keys.h"
 #include "language.h"
@@ -3266,7 +3266,7 @@ int BC_WindowBase::set_h(int h)
 	return 0;
 }
 
-int BC_WindowBase::load_defaults(Defaults *defaults)
+int BC_WindowBase::load_defaults(BC_Hash *defaults)
 {
 	BC_Resources *resources = get_resources();
 	char string[BCTEXTLEN];
@@ -3283,7 +3283,7 @@ int BC_WindowBase::load_defaults(Defaults *defaults)
 	return 0;
 }
 
-int BC_WindowBase::save_defaults(Defaults *defaults)
+int BC_WindowBase::save_defaults(BC_Hash *defaults)
 {
 	BC_Resources *resources = get_resources();
 	char string[BCTEXTLEN];

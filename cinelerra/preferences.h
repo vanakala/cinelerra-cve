@@ -3,7 +3,7 @@
 
 #include "asset.inc"
 #include "audioconfig.inc"
-#include "defaults.inc"
+#include "bchash.inc"
 #include "guicast.h"
 #include "maxchannels.h"
 #include "mutex.inc"
@@ -19,8 +19,8 @@ public:
 
 	Preferences& operator=(Preferences &that);
 	void copy_from(Preferences *that);
-	int load_defaults(Defaults *defaults);
-	int save_defaults(Defaults *defaults);
+	int load_defaults(BC_Hash *defaults);
+	int save_defaults(BC_Hash *defaults);
 	void boundaries();
 
 

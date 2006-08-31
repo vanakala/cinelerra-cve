@@ -1,6 +1,6 @@
 #include "bandslide.h"
 #include "bcdisplayinfo.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edl.inc"
 #include "filexml.h"
 #include "language.h"
@@ -194,7 +194,7 @@ int BandSlideMain::load_defaults()
 	sprintf(directory, "%sbandslide.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	bands = defaults->get("BANDS", bands);

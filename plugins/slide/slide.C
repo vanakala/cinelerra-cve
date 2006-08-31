@@ -1,5 +1,5 @@
 #include "bcdisplayinfo.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edl.inc"
 #include "filexml.h"
 #include "overlayframe.h"
@@ -217,7 +217,7 @@ int SlideMain::load_defaults()
 	sprintf(directory, "%sslide.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	motion_direction = defaults->get("MOTION_DIRECTION", motion_direction);

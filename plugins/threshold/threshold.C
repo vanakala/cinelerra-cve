@@ -1,5 +1,5 @@
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "histogramengine.h"
 #include "language.h"
@@ -129,7 +129,7 @@ int ThresholdMain::load_defaults()
 {
 	char directory[BCTEXTLEN], string[BCTEXTLEN];
 	sprintf(directory, "%sthreshold.rc", BCASTDIR);
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 	config.min = defaults->get("MIN", config.min);
 	config.max = defaults->get("MAX", config.max);

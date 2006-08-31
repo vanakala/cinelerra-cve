@@ -1,7 +1,7 @@
 #ifndef DELAYAUDIO_H
 #define DELAYAUDIO_H
 
-#include "defaults.inc"
+#include "bchash.inc"
 #include "guicast.h"
 #include "mutex.h"
 #include "pluginaclient.h"
@@ -108,7 +108,7 @@ public:
 	int64_t input_start;
 	int need_reconfigure;
 	DelayAudioThread *thread;
-	Defaults *defaults;
+	BC_Hash *defaults;
 	DelayAudioConfig config;
 };
 

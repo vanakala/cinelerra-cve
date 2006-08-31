@@ -6,7 +6,7 @@
 
 
 
-#include "defaults.inc"
+#include "bchash.inc"
 #include "fourier.h"
 #include "guicast.h"
 #include "mutex.h"
@@ -103,7 +103,7 @@ public:
 	int done;
 
 	int need_reconfigure;
-	Defaults *defaults;
+	BC_Hash *defaults;
 	SpectrogramConfig config;
 	SpectrogramThread *thread;
 	SpectrogramFFT *fft;

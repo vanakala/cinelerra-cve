@@ -1,7 +1,7 @@
 #include "atrack.h"
 #include "automation.h"
 #include "cursor.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edit.h"
 #include "edits.h"
 #include "edl.h"

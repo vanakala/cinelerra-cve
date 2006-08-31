@@ -80,7 +80,7 @@ int Track::get_id()
 }
 
 
-int Track::load_defaults(Defaults *defaults)
+int Track::load_defaults(BC_Hash *defaults)
 {
 	return 0;
 }

@@ -1,5 +1,5 @@
 #include "bcdisplayinfo.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "guicast.h"
 #include "language.h"
@@ -265,7 +265,7 @@ int ReverseVideo::load_defaults()
 	sprintf(directory, "%sreversevideo.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.enabled = defaults->get("ENABLED", config.enabled);

@@ -3,7 +3,7 @@
 
 #include "playbackconfig.inc"
 #include "bcwindowbase.inc"
-#include "defaults.inc"
+#include "bchash.inc"
 
 // This structure is passed to the driver
 class AudioInConfig
@@ -14,8 +14,8 @@ public:
 	
 	AudioInConfig& operator=(AudioInConfig &that);
 	void copy_from(AudioInConfig *src);
-	int load_defaults(Defaults *defaults);
-	int save_defaults(Defaults *defaults);
+	int load_defaults(BC_Hash *defaults);
+	int save_defaults(BC_Hash *defaults);
 
 // Determine if the two devices need to be opened in duplex mode
 	static int is_duplex(AudioInConfig *in, AudioOutConfig *out);
@@ -46,8 +46,8 @@ public:
 	
 	VideoInConfig& operator=(VideoInConfig &that);
 	void copy_from(VideoInConfig *src);
-	int load_defaults(Defaults *defaults);
-	int save_defaults(Defaults *defaults);
+	int load_defaults(BC_Hash *defaults);
+	int save_defaults(BC_Hash *defaults);
 	char* get_path();
 
 	int driver;

@@ -133,7 +133,7 @@ int SvgMain::load_defaults()
 	sprintf(directory, "%ssvg.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 

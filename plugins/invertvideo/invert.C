@@ -1,6 +1,6 @@
 #include "bcdisplayinfo.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "guicast.h"
 #include "language.h"
@@ -75,7 +75,7 @@ public:
 
 	InvertVideoConfig config;
 	InvertVideoThread *thread;
-	Defaults *defaults;
+	BC_Hash *defaults;
 };
 
 
@@ -226,7 +226,7 @@ int InvertVideoEffect::load_defaults()
 {
 	char directory[BCTEXTLEN];
 	sprintf(directory, "%sinvertvideo.rc", BCASTDIR);
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 	config.r = defaults->get("R", config.r);
 	config.g = defaults->get("G", config.g);

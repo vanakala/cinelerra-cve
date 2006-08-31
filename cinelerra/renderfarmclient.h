@@ -3,7 +3,7 @@
 
 #include "arraylist.h"
 #include "asset.inc"
-#include "defaults.inc"
+#include "bchash.inc"
 #include "edl.inc"
 #include "packagerenderer.h"
 #include "pluginserver.inc"
@@ -36,7 +36,7 @@ public:
 // PID to be returned to background render object
 	int this_pid;
 // The plugin paths must be known before any threads are started
-	Defaults *boot_defaults;
+	BC_Hash *boot_defaults;
 	Preferences *boot_preferences;
 	ArrayList<PluginServer*> *plugindb;
 };

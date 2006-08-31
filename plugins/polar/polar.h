@@ -48,7 +48,7 @@ public:
 	PolarThread *thread;
 
 private:
-	Defaults *defaults;
+	BC_Hash *defaults;
 	PolarEngine **engine;
 };
 

@@ -17,7 +17,7 @@ class Undo;
 
 #include "arraylist.h"
 #include "guicast.h"
-#include "defaults.inc"
+#include "bchash.inc"
 #include "loadfile.inc"
 #include "mwindow.inc"
 #include "mwindowgui.inc"
@@ -42,19 +42,19 @@ public:
 	MainMenu(MWindow *mwindow, MWindowGUI *gui);
 	~MainMenu();
 	int create_objects();
-	int load_defaults(Defaults *defaults);
-	int save_defaults(Defaults *defaults);
+	int load_defaults(BC_Hash *defaults);
+	int save_defaults(BC_Hash *defaults);
 
 // most recent loads
-	int add_load(char *new_path);
-	int init_loads(Defaults *defaults);
+	int add_load(char *path);
+	int init_loads(BC_Hash *defaults);
 
 // most recent effects
-	int init_aeffects(Defaults *defaults);
-	int save_aeffects(Defaults *defaults);
+	int init_aeffects(BC_Hash *defaults);
+	int save_aeffects(BC_Hash *defaults);
 	int add_aeffect(char *title);
-	int init_veffects(Defaults *defaults);
-	int save_veffects(Defaults *defaults);
+	int init_veffects(BC_Hash *defaults);
+	int save_veffects(BC_Hash *defaults);
 	int add_veffect(char *title);
 
 	int quit();

@@ -1,6 +1,6 @@
 #include "bandwipe.h"
 #include "bcdisplayinfo.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edl.inc"
 #include "filexml.h"
 #include "language.h"
@@ -192,7 +192,7 @@ int BandWipeMain::load_defaults()
 	sprintf(directory, "%sbandwipe.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	bands = defaults->get("BANDS", bands);

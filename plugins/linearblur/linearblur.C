@@ -4,7 +4,7 @@
 
 #include "bcdisplayinfo.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "keyframe.h"
 #include "language.h"
@@ -528,7 +528,7 @@ int LinearBlurMain::load_defaults()
 	sprintf(directory, "%slinearblur.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.radius = defaults->get("RADIUS", config.radius);
@@ -844,11 +844,11 @@ LinearBlurEngine::LinearBlurEngine(LinearBlurMain *plugin,
 
 void LinearBlurEngine::init_packages()
 {
-	for(int i = 0; i < total_packages; i++)
+	for(int i = 0; i < get_total_packages(); i++)
 	{
-		LinearBlurPackage *package = (LinearBlurPackage*)packages[i];
-		package->y1 = plugin->output->get_h() * i / total_packages;
-		package->y2 = plugin->output->get_h() * (i + 1) / total_packages;
+		LinearBlurPackage *package = (LinearBlurPackage*)get_package(i);
+		package->y1 = plugin->output->get_h() * i / get_total_packages();
+		package->y2 = plugin->output->get_h() * (i + 1) / get_total_packages();
 	}
 }
 

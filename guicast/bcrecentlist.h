@@ -1,9 +1,9 @@
 #ifndef BCRECENTLIST_H
 #define BCRECENTLIST_H
 
+#include "bchash.inc"
 #include "bclistbox.h"
 #include "bctextbox.inc"
-#include "defaults.inc"
 
 // Maintain a list of text items (up to 'max') from session to session.
 // List automatically saved to Cinelerra_rc as 'RECENT_prefix_0', etc.
@@ -15,11 +15,11 @@
 class BC_RecentList : public BC_ListBox
 {
  public:
-	BC_RecentList(const char *type, Defaults *defaults, 
+	BC_RecentList(const char *type, BC_Hash *defaults, 
 		      BC_TextBox *textbox, int max,
 		      int x, int y, int w, int h);
-	BC_RecentList(const char *type, Defaults *defaults);
-	BC_RecentList(const char *type, Defaults *defaults, 
+	BC_RecentList(const char *type, BC_Hash *defaults);
+	BC_RecentList(const char *type, BC_Hash *defaults, 
 		      BC_TextBox *textbox);
 
 	~BC_RecentList();
@@ -32,7 +32,7 @@ class BC_RecentList : public BC_ListBox
  private: 
 	const char *type;
 	BC_TextBox *textbox;
-	Defaults *defaults;
+	BC_Hash *defaults;
 };
 
 #endif /* BCRECENTLIST_H */

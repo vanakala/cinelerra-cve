@@ -1,6 +1,6 @@
 #include "audioconfig.h"
 #include "audiodevice.inc"
-#include "defaults.h"
+#include "bchash.h"
 #include "maxchannels.h"
 #include <string.h>
 #include <string.h>
@@ -49,7 +49,7 @@ AudioConfig& AudioConfig::operator=(AudioConfig &that)
 	return *this;
 }
 
-int AudioConfig::load_defaults(Defaults *defaults)
+int AudioConfig::load_defaults(BC_Hash *defaults)
 {
 	audio_in_driver =             defaults->get("AUDIOINDRIVER", AUDIO_OSS);
 	afirewire_in_port =           defaults->get("AFIREWIRE_IN_PORT", 0);
@@ -83,7 +83,7 @@ int AudioConfig::load_defaults(Defaults *defaults)
 	return 0;
 }
 
-int AudioConfig::save_defaults(Defaults *defaults)
+int AudioConfig::save_defaults(BC_Hash *defaults)
 {
 	defaults->update("AUDIOINDRIVER", audio_in_driver);
 	defaults->update("AFIREWIRE_IN_PORT", afirewire_in_port);

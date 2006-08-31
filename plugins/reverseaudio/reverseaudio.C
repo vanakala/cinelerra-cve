@@ -1,5 +1,5 @@
 #include "bcdisplayinfo.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "guicast.h"
 #include "language.h"
@@ -300,7 +300,7 @@ int ReverseAudio::load_defaults()
 	sprintf(directory, "%sreverseaudio.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.enabled = defaults->get("ENABLED", config.enabled);

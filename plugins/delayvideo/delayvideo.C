@@ -1,6 +1,6 @@
 #include "bcdisplayinfo.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "delayvideo.h"
 #include "filexml.h"
 #include "language.h"
@@ -293,7 +293,7 @@ int DelayVideo::load_defaults()
 {
 	char directory[BCTEXTLEN];
 	sprintf(directory, "%sdelayvideo.rc", BCASTDIR);
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 	config.length = defaults->get("LENGTH", (double)1);
 	return 0;

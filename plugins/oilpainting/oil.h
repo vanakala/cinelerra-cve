@@ -48,7 +48,7 @@ public:
 	OilThread *thread;
 
 private:
-	Defaults *defaults;
+	BC_Hash *defaults;
 	VFrame *temp_frame;
 };
 

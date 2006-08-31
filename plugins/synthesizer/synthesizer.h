@@ -425,8 +425,8 @@ public:
 	int equivalent(SynthOscillatorConfig &that);
 	void copy_from(SynthOscillatorConfig& that);
 	void reset();
-	void load_defaults(Defaults *defaults);
-	void save_defaults(Defaults *defaults);
+	void load_defaults(BC_Hash *defaults);
+	void save_defaults(BC_Hash *defaults);
 	void read_data(FileXML *file);
 	void save_data(FileXML *file);
 	int is_realtime();
@@ -515,7 +515,7 @@ public:
 
 	double *dsp_buffer;
 	int need_reconfigure;
-	Defaults *defaults;
+	BC_Hash *defaults;
 	SynthThread *thread;
 	SynthConfig config;
 	int w, h;

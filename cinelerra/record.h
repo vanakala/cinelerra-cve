@@ -10,7 +10,7 @@
 #include "bitspopup.h"
 #include "browsebutton.h"
 #include "channel.inc"
-#include "defaults.inc"
+#include "bchash.inc"
 #include "edl.inc"
 #include "file.inc"
 #include "filexml.inc"

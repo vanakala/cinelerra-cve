@@ -2,7 +2,7 @@
 #define LOCALSESSION_H
 
 #include "bcwindowbase.inc"
-#include "defaults.inc"
+#include "bchash.inc"
 #include "edl.inc"
 #include "filexml.inc"
 
@@ -40,8 +40,8 @@ public:
 	void copy_from(LocalSession *that);
 	void save_xml(FileXML *file, double start);
 	void load_xml(FileXML *file, unsigned long load_flags);
-	int load_defaults(Defaults *defaults);
-	int save_defaults(Defaults *defaults);
+	int load_defaults(BC_Hash *defaults);
+	int save_defaults(BC_Hash *defaults);
 // Used to copy parameters that affect rendering.
 	void synchronize_params(LocalSession *that);
 

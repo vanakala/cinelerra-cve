@@ -145,7 +145,7 @@ public:
 	int preserve_aspect;
 	int last_preserve_aspect;
 	ShapeWipeThread *thread;
-	Defaults *defaults;
+	BC_Hash *defaults;
 };
 
 #endif

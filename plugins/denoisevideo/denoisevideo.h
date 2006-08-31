@@ -5,7 +5,7 @@ class DenoiseVideo;
 class DenoiseVideoWindow;
 
 #include "bcdisplayinfo.h"
-#include "defaults.inc"
+#include "bchash.inc"
 #include "pluginvclient.h"
 #include "vframe.inc"
 
@@ -104,7 +104,7 @@ public:
 	float *accumulation;
 	DenoiseVideoThread *thread;
 	DenoiseVideoConfig config;
-	Defaults *defaults;
+	BC_Hash *defaults;
 };
 
 

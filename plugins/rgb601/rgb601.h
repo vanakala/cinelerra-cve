@@ -5,7 +5,7 @@ class RGB601Main;
 
 #define TOTAL_PATTERNS 2
 
-#include "defaults.h"
+#include "bchash.h"
 #include "mutex.h"
 #include "pluginvclient.h"
 #include "rgb601window.h"
@@ -45,7 +45,7 @@ public:
 	
 	RGB601Thread *thread;
 	RGB601Config config;
-	Defaults *defaults;
+	BC_Hash *defaults;
 	int forward_table[0x10000], reverse_table[0x10000];
 };
 

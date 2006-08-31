@@ -5,7 +5,7 @@
 
 class DeInterlaceMain;
 
-#include "defaults.inc"
+#include "bchash.inc"
 #include "deinterwindow.h"
 #include "pluginvclient.h"
 #include "vframe.inc"

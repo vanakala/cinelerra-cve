@@ -1,6 +1,6 @@
 #include "bcdisplayinfo.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "guicast.h"
 #include "filexml.h"
 #include "picon_png.h"
@@ -155,7 +155,7 @@ public:
 	void update_gui();
 
 
-	Defaults *defaults;
+	BC_Hash *defaults;
 	FreeverbThread *thread;
 	FreeverbConfig config;
 	revmodel *engine;
@@ -523,7 +523,7 @@ int FreeverbEffect::load_defaults()
 {
 	char directory[BCTEXTLEN], string[BCTEXTLEN];
 	sprintf(directory, "%sfreeverb.rc", BCASTDIR);
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.gain = defaults->get("GAIN", config.gain);

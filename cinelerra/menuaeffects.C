@@ -1,6 +1,6 @@
 #include "asset.h"
 #include "apluginarray.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "file.h"
@@ -41,7 +41,7 @@ int MenuAEffectThread::get_recordable_tracks(Asset *asset)
 }
 
 
-int MenuAEffectThread::get_derived_attributes(Asset *asset, Defaults *defaults)
+int MenuAEffectThread::get_derived_attributes(Asset *asset, BC_Hash *defaults)
 {
 	asset->load_defaults(defaults, 
 		"AEFFECT_",
@@ -60,7 +60,7 @@ int MenuAEffectThread::get_derived_attributes(Asset *asset, Defaults *defaults)
 	return 0;
 }
 
-int MenuAEffectThread::save_derived_attributes(Asset *asset, Defaults *defaults)
+int MenuAEffectThread::save_derived_attributes(Asset *asset, BC_Hash *defaults)
 {
 	asset->save_defaults(defaults, 
 		"AEFFECT_",

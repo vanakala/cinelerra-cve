@@ -4,7 +4,7 @@
 
 #include "bcdisplayinfo.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "keyframe.h"
 #include "language.h"
@@ -424,7 +424,7 @@ int RadialBlurMain::load_defaults()
 	sprintf(directory, "%sradialblur.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.x = defaults->get("X", config.x);
@@ -711,11 +711,11 @@ RadialBlurEngine::RadialBlurEngine(RadialBlurMain *plugin,
 
 void RadialBlurEngine::init_packages()
 {
-	for(int i = 0; i < total_packages; i++)
+	for(int i = 0; i < get_total_packages(); i++)
 	{
-		RadialBlurPackage *package = (RadialBlurPackage*)packages[i];
-		package->y1 = plugin->output->get_h() * i / total_packages;
-		package->y2 = plugin->output->get_h() * (i + 1) / total_packages;
+		RadialBlurPackage *package = (RadialBlurPackage*)get_package(i);
+		package->y1 = plugin->output->get_h() * i / get_total_packages();
+		package->y2 = plugin->output->get_h() * (i + 1) / get_total_packages();
 	}
 }
 

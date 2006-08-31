@@ -49,7 +49,7 @@ public:
 	HueThread *thread;
 
 private:
-	Defaults *defaults;
+	BC_Hash *defaults;
 	HueEngine **engine;
 };
 

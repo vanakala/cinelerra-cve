@@ -1,7 +1,7 @@
 #include "assets.h"
 #include "autoconf.h"
 #include "colormodels.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
@@ -92,7 +92,7 @@ void EDLSession::equivalent_output(EDLSession *session, double *result)
 }
 
 
-int EDLSession::load_defaults(Defaults *defaults)
+int EDLSession::load_defaults(BC_Hash *defaults)
 {
 	char string[BCTEXTLEN];
 
@@ -223,7 +223,7 @@ int EDLSession::load_defaults(Defaults *defaults)
 	return 0;
 }
 
-int EDLSession::save_defaults(Defaults *defaults)
+int EDLSession::save_defaults(BC_Hash *defaults)
 {
 	char string[BCTEXTLEN];
 

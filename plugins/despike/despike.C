@@ -1,6 +1,6 @@
 #include "clip.h"
 #include "confirmsave.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "errorbox.h"
 #include "filexml.h"
 #include "picon_png.h"
@@ -82,7 +82,7 @@ int Despike::load_defaults()
 	
 // load the defaults
 
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 
 	defaults->load();
 

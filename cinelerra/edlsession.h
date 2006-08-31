@@ -1,7 +1,7 @@
 #ifndef EDLSESSION_H
 #define EDLSESSION_H
 
-#include "defaults.inc"
+#include "bchash.inc"
 #include "edl.inc"
 #include "filexml.inc"
 
@@ -25,8 +25,8 @@ public:
     int save_audio_config(FileXML *xml);
 	int load_video_config(FileXML *file, int append_mode, uint32_t load_flags);
     int save_video_config(FileXML *xml);
-	int load_defaults(Defaults *defaults);
-	int save_defaults(Defaults *defaults);
+	int load_defaults(BC_Hash *defaults);
+	int save_defaults(BC_Hash *defaults);
 // Used by CWindowGUI during initialization.
 	char* get_cwindow_display();
 	void boundaries();

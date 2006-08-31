@@ -1,7 +1,7 @@
 #include "affine.h"
 #include "bcdisplayinfo.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "keyframe.h"
 #include "language.h"
@@ -283,7 +283,7 @@ int MotionMain::load_defaults()
 	sprintf(directory, "%smotion.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.block_count = defaults->get("BLOCK_COUNT", config.block_count);

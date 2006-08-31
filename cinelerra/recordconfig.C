@@ -1,5 +1,5 @@
 #include "audiodevice.inc"
-#include "defaults.h"
+#include "bchash.h"
 #include "playbackconfig.h"
 #include "recordconfig.h"
 #include "videodevice.inc"
@@ -90,7 +90,7 @@ AudioInConfig& AudioInConfig::operator=(AudioInConfig &that)
 	return *this;
 }
 
-int AudioInConfig::load_defaults(Defaults *defaults)
+int AudioInConfig::load_defaults(BC_Hash *defaults)
 {
 	char string[BCTEXTLEN];
 	driver =                      defaults->get("AUDIOINDRIVER", driver);
@@ -118,7 +118,7 @@ int AudioInConfig::load_defaults(Defaults *defaults)
 	return 0;
 }
 
-int AudioInConfig::save_defaults(Defaults *defaults)
+int AudioInConfig::save_defaults(BC_Hash *defaults)
 {
 	char string[BCTEXTLEN];
 	defaults->update("AUDIOINDRIVER", driver);
@@ -222,7 +222,7 @@ VideoInConfig& VideoInConfig::operator=(VideoInConfig &that)
 	return *this;
 }
 
-int VideoInConfig::load_defaults(Defaults *defaults)
+int VideoInConfig::load_defaults(BC_Hash *defaults)
 {
 	driver = defaults->get("VIDEO_IN_DRIVER", driver);
 	defaults->get("V4L_IN_DEVICE", v4l_in_device);
@@ -241,7 +241,7 @@ int VideoInConfig::load_defaults(Defaults *defaults)
 	return 0;
 }
 
-int VideoInConfig::save_defaults(Defaults *defaults)
+int VideoInConfig::save_defaults(BC_Hash *defaults)
 {
 	defaults->update("VIDEO_IN_DRIVER", driver);
 	defaults->update("V4L_IN_DEVICE", v4l_in_device);

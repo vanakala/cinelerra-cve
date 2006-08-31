@@ -1,5 +1,6 @@
 #include "asset.h"
-#include "defaults.h"
+#include "bcsignals.h"
+#include "bchash.h"
 #include "edl.h"
 #include "file.h"
 #include "filesystem.h"

@@ -1,13 +1,13 @@
 #include <string.h>
 
-#include "defaults.h"
+#include "bchash.h"
 #include "bctextbox.h"
 #include "bclistbox.h"
 #include "bclistboxitem.h"
 #include "bcrecentlist.h"
 
 // NOTE: textbox can be NULL if no textbox is associated
-BC_RecentList::BC_RecentList(const char *type, Defaults *defaults, 
+BC_RecentList::BC_RecentList(const char *type, BC_Hash *defaults, 
 			     BC_TextBox *textbox, int max, 
 			     int x, int y, int w, int h) 
 	: BC_ListBox(x, y, w, h, LISTBOX_TEXT, 0, 0, 0, 1, 0, 1) 
@@ -18,7 +18,7 @@ BC_RecentList::BC_RecentList(const char *type, Defaults *defaults,
 	set_tooltip("Choose from recently used");
 }
 
-BC_RecentList::BC_RecentList(const char *type, Defaults *defaults, 
+BC_RecentList::BC_RecentList(const char *type, BC_Hash *defaults, 
 			     BC_TextBox *textbox) 
 	: BC_ListBox(textbox->get_x() + textbox->get_w(), textbox->get_y(),
 		     textbox->get_w(), RECENT_POPUP_HEIGHT,
@@ -30,7 +30,7 @@ BC_RecentList::BC_RecentList(const char *type, Defaults *defaults,
 	set_tooltip("Choose from recently used");
 }
 
-BC_RecentList::BC_RecentList(const char *type, Defaults *defaults) 
+BC_RecentList::BC_RecentList(const char *type, BC_Hash *defaults) 
 	: BC_ListBox(-1, -1, -1, -1, LISTBOX_TEXT, 0, 0, 0, 1, 0, 1)
 {
 	this->type = type;

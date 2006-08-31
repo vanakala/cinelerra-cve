@@ -5,7 +5,7 @@
 #include "arraylist.h"
 #include "asset.inc"
 #include "brender.inc"
-#include "defaults.inc"
+#include "bchash.inc"
 #include "edl.inc"
 #include "mutex.inc"
 #include "mwindow.inc"

@@ -1,6 +1,6 @@
 #include "bcdisplayinfo.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "guicast.h"
@@ -143,7 +143,7 @@ void MainSession::default_window_positions()
 	batchrender_y = root_h / 2 - batchrender_h / 2;
 }
 
-int MainSession::load_defaults(Defaults *defaults)
+int MainSession::load_defaults(BC_Hash *defaults)
 {
 // Setup main windows
 	default_window_positions();
@@ -218,7 +218,7 @@ int MainSession::load_defaults(Defaults *defaults)
 	return 0;
 }
 
-int MainSession::save_defaults(Defaults *defaults)
+int MainSession::save_defaults(BC_Hash *defaults)
 {
 
 // Window positions

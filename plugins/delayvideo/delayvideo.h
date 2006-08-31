@@ -3,7 +3,7 @@
 
 
 
-#include "defaults.inc"
+#include "bchash.inc"
 #include "guicast.h"
 #include "mutex.h"
 #include "pluginvclient.h"
@@ -98,7 +98,7 @@ public:
 	DelayVideoConfig config;
 	DelayVideoThread *thread;
 	VFrame **buffer;
-	Defaults *defaults;
+	BC_Hash *defaults;
 	VFrame *input, *output;
 };
 

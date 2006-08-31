@@ -136,7 +136,7 @@ int SharpenMain::load_defaults()
 	sprintf(directory, "%squark.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	sharpness = defaults->get("SHARPNESS", 50);

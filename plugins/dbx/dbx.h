@@ -3,7 +3,7 @@
 
 
 
-#include "defaults.inc"
+#include "bchash.inc"
 #include "guicast.h"
 #include "mutex.h"
 #include "pluginaclient.h"
@@ -139,7 +139,7 @@ public:
 
 
 
-	Defaults *defaults;
+	BC_Hash *defaults;
 	DBXThread *thread;
 	DBXConfig config;
 };

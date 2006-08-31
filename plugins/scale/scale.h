@@ -10,7 +10,7 @@ class ScaleConstrain;
 class ScaleThread;
 class ScaleWin;
 
-#include "defaults.h"
+#include "bchash.h"
 #include "guicast.h"
 #include "mutex.h"
 #include "scalewin.h"
@@ -109,7 +109,7 @@ public:
 	ScaleThread *thread;
 
 	OverlayFrame *overlayer;   // To scale images
-	Defaults *defaults;
+	BC_Hash *defaults;
 	ScaleConfig config;
 };
 

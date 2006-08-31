@@ -2,7 +2,7 @@
 #define PARAMETRIC_H
 
 
-#include "defaults.inc"
+#include "bchash.inc"
 #include "fourier.h"
 #include "guicast.h"
 #include "mutex.h"

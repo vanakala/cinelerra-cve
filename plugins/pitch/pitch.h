@@ -3,7 +3,7 @@
 
 
 
-#include "defaults.inc"
+#include "bchash.inc"
 #include "fourier.h"
 #include "guicast.h"
 #include "mutex.h"
@@ -101,7 +101,7 @@ public:
 	void update_gui();
 
 
-	Defaults *defaults;
+	BC_Hash *defaults;
 	PitchThread *thread;
 	PitchFFT *fft;
 	PitchConfig config;

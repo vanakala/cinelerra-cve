@@ -1,6 +1,6 @@
 #include "bcdisplayinfo.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filesystem.h"
 #include "filexml.h"
 #include "guicast.h"
@@ -348,7 +348,7 @@ void DenoiseFFTEffect::save_data(KeyFrame *keyframe)
 
 int DenoiseFFTEffect::load_defaults()
 {
-	defaults = new Defaults(BCASTDIR "denoisefft.rc");
+	defaults = new BC_Hash(BCASTDIR "denoisefft.rc");
 	defaults->load();
 
 	config.level = defaults->get("LEVEL", config.level);

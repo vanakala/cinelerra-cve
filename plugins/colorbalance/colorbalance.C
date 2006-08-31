@@ -1,6 +1,6 @@
 #include "filexml.h"
 #include "colorbalance.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "language.h"
 #include "picon_png.h"
 
@@ -531,7 +531,7 @@ int ColorBalanceMain::load_defaults()
 	sprintf(directory, "%scolorbalance.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.cyan = defaults->get("CYAN", config.cyan);

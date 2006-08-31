@@ -4,7 +4,7 @@
 #include "asset.inc"
 #include "assets.inc"
 #include "auto.inc"
-#include "defaults.inc"
+#include "bchash.inc"
 #include "edit.inc"
 #include "edits.inc"
 #include "edl.inc"
@@ -24,8 +24,8 @@ public:
 	MainSession(MWindow *mwindow);
 	~MainSession();
 
-	int load_defaults(Defaults *defaults);
-	int save_defaults(Defaults *defaults);
+	int load_defaults(BC_Hash *defaults);
+	int save_defaults(BC_Hash *defaults);
 	void default_window_positions();
 	void boundaries();
 

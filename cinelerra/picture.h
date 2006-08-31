@@ -6,7 +6,7 @@
 
 #include "arraylist.h"
 #include "bcwindowbase.inc"
-#include "defaults.inc"
+#include "bchash.inc"
 #include "mwindow.inc"
 
 class PictureItem

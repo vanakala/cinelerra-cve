@@ -1,6 +1,6 @@
 #include "bcdisplayinfo.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "guicast.h"
 #include "language.h"
@@ -108,7 +108,7 @@ public:
 
 	ShiftInterlaceConfig config;
 	ShiftInterlaceThread *thread;
-	Defaults *defaults;
+	BC_Hash *defaults;
 };
 
 
@@ -282,7 +282,7 @@ int ShiftInterlaceMain::load_defaults()
 	sprintf(directory, "%sshiftinterlace.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.odd_offset = defaults->get("ODD_OFFSET", config.odd_offset);

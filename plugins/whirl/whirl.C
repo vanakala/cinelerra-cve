@@ -1,6 +1,6 @@
 #include "bcdisplayinfo.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "guicast.h"
 #include "keyframe.h"
@@ -144,7 +144,7 @@ public:
 	VFrame *temp_frame;
 	VFrame *input, *output;
 	WhirlConfig config;
-	Defaults *defaults;
+	BC_Hash *defaults;
 	WhirlThread *thread;
 	int need_reconfigure;
 };
@@ -400,7 +400,7 @@ int WhirlEffect::load_defaults()
 	sprintf(directory, "%swhirl.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.angle = defaults->get("ANGLE", config.angle);
@@ -829,11 +829,11 @@ WhirlEngine::WhirlEngine(WhirlEffect *plugin, int cpus)
 }
 void WhirlEngine::init_packages()
 {
-	for(int i = 0; i < LoadServer::total_packages; i++)
+	for(int i = 0; i < LoadServer::get_total_packages(); i++)
 	{
-		WhirlPackage *pkg = (WhirlPackage*)packages[i];
-		pkg->row1 = plugin->input->get_h() * i / LoadServer::total_packages;
-		pkg->row2 = plugin->input->get_h() * (i + 1) / LoadServer::total_packages;
+		WhirlPackage *pkg = (WhirlPackage*)get_package(i);
+		pkg->row1 = plugin->input->get_h() * i / LoadServer::get_total_packages();
+		pkg->row2 = plugin->input->get_h() * (i + 1) / LoadServer::get_total_packages();
 	}
 	
 }

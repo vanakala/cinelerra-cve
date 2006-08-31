@@ -1,6 +1,6 @@
 #include "bcdisplayinfo.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "language.h"
 #include "mainprogress.h"
 #include "picon_png.h"
@@ -366,7 +366,7 @@ int TimeStretch::load_defaults()
 // set the default directory
 	sprintf(directory, "%stimestretch.rc", BCASTDIR);
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.scale = defaults->get("SCALE", (double)1);

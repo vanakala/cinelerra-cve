@@ -29,7 +29,7 @@ class TitleEngine;
 class GlyphEngine;
 class TitleTranslate;
 
-#include "defaults.h"
+#include "bchash.h"
 #include "loadbalance.h"
 #include "mutex.h"
 #include "overlayframe.h"
@@ -358,7 +358,7 @@ public:
 
 	static ArrayList<FontEntry*> *fonts;
 
-	Defaults *defaults;
+	BC_Hash *defaults;
 	ArrayList<TitleGlyph*> glyphs;
 	Mutex glyph_lock;
 

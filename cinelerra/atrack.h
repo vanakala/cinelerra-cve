@@ -22,7 +22,7 @@ public:
 	~ATrack();
 
 	int create_objects();
-	int load_defaults(Defaults *defaults);
+	int load_defaults(BC_Hash *defaults);
 	void set_default_title();
 	PluginSet* new_plugins();
 	int vertical_span(Theme *theme);

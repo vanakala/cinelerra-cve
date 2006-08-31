@@ -269,7 +269,7 @@ public:
 	VFrame *input, *output;
 	ChromaKeyServer *engine;
 	ChromaKeyThread *thread;
-	Defaults *defaults;
+	BC_Hash *defaults;
 };
 
 

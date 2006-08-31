@@ -1574,13 +1574,13 @@ ScaleEngine::~ScaleEngine()
 
 void ScaleEngine::init_packages()
 {
-	for(int i = 0; i < total_packages; i++)
+	for(int i = 0; i < get_total_packages(); i++)
 	{
-		ScalePackage *package = (ScalePackage*)packages[i];
-		package->out_row1 = out_h_int / total_packages * i;
-		package->out_row2 = package->out_row1 + out_h_int / total_packages;
+		ScalePackage *package = (ScalePackage*)get_package(i);
+		package->out_row1 = out_h_int / get_total_packages() * i;
+		package->out_row2 = package->out_row1 + out_h_int / get_total_packages();
 
-		if(i >= total_packages - 1)
+		if(i >= get_total_packages() - 1)
 			package->out_row2 = out_h_int;
 	}
 }
@@ -2087,16 +2087,16 @@ void TranslateEngine::init_packages()
 	int out_y2_int = MIN((int)ceil(translate_out_y2), translate_output->get_h());
 	int out_h = out_y2_int - out_y1_int;
 
-	for(int i = 0; i < total_packages; i++)
+	for(int i = 0; i < get_total_packages(); i++)
 	{
-		TranslatePackage *package = (TranslatePackage*)packages[i];
+		TranslatePackage *package = (TranslatePackage*)get_package(i);
 		package->out_row1 = (int)(out_y1_int + out_h / 
-			total_packages * 
+			get_total_packages() * 
 			i);
 		package->out_row2 = (int)((float)package->out_row1 + 
 			out_h / 
-			total_packages);
-		if(i >= total_packages - 1)
+			get_total_packages());
+		if(i >= get_total_packages() - 1)
 			package->out_row2 = out_y2_int;
 	}
 }
@@ -2345,16 +2345,16 @@ void ScaleTranslateEngine::init_packages()
 {
 	int out_h = out_y2 - out_y1;
 
-	for(int i = 0; i < total_packages; i++)
+	for(int i = 0; i < get_total_packages(); i++)
 	{
-		ScaleTranslatePackage *package = (ScaleTranslatePackage*)packages[i];
+		ScaleTranslatePackage *package = (ScaleTranslatePackage*)get_package(i);
 		package->out_row1 = (int)(out_y1 + out_h / 
-			total_packages * 
+			get_total_packages() * 
 			i);
 		package->out_row2 = (int)((float)package->out_row1 + 
 			out_h / 
-			total_packages);
-		if(i >= total_packages - 1)
+			get_total_packages());
+		if(i >= get_total_packages() - 1)
 			package->out_row2 = out_y2;
 	}
 }
@@ -2723,17 +2723,17 @@ BlendEngine::~BlendEngine()
 
 void BlendEngine::init_packages()
 {
-	for(int i = 0; i < total_packages; i++)
+	for(int i = 0; i < get_total_packages(); i++)
 	{
-		BlendPackage *package = (BlendPackage*)packages[i];
+		BlendPackage *package = (BlendPackage*)get_package(i);
 		package->out_row1 = (int)(input->get_h() / 
-			total_packages * 
+			get_total_packages() * 
 			i);
 		package->out_row2 = (int)((float)package->out_row1 +
 			input->get_h() / 
-			total_packages);
+			get_total_packages());
 
-		if(i >= total_packages - 1)
+		if(i >= get_total_packages() - 1)
 			package->out_row2 = input->get_h();
 	}
 }

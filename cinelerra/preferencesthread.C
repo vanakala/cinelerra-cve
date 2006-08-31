@@ -6,7 +6,7 @@
 #include "cplayback.h"
 #include "cwindow.h"
 #include "cwindowgui.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "filesystem.h"

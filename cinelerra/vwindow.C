@@ -1,7 +1,7 @@
 #include "asset.h"
 #include "assets.h"
 #include "clipedit.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "filesystem.h"

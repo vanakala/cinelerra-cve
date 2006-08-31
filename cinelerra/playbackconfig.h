@@ -3,7 +3,7 @@
 
 #include "audiodevice.inc"
 #include "bcwindowbase.inc"
-#include "defaults.inc"
+#include "bchash.inc"
 #include "maxchannels.h"
 #include "playbackconfig.inc"
 
@@ -18,8 +18,8 @@ public:
 	int operator==(AudioOutConfig &that);
 	AudioOutConfig& operator=(AudioOutConfig &that);
 	void copy_from(AudioOutConfig *src);
-	int load_defaults(Defaults *defaults);
-	int save_defaults(Defaults *defaults);
+	int load_defaults(BC_Hash *defaults);
+	int save_defaults(BC_Hash *defaults);
 // Total channels in do_channels
 	int total_playable_channels();
 	int playable_channel_number(int number);
@@ -82,8 +82,8 @@ public:
 	int operator==(VideoOutConfig &that);
 	VideoOutConfig& operator=(VideoOutConfig &that);
 	void copy_from(VideoOutConfig *src);
-	int load_defaults(Defaults *defaults);
-	int save_defaults(Defaults *defaults);
+	int load_defaults(BC_Hash *defaults);
+	int save_defaults(BC_Hash *defaults);
 	int total_playable_channels();
 	char* get_path();
 
@@ -137,8 +137,8 @@ public:
 
 	PlaybackConfig& operator=(PlaybackConfig &that);
 	void copy_from(PlaybackConfig *src);
-	int load_defaults(Defaults *defaults);
-	int save_defaults(Defaults *defaults);
+	int load_defaults(BC_Hash *defaults);
+	int save_defaults(BC_Hash *defaults);
 
 	char hostname[BCTEXTLEN];
 	int port;

@@ -7467,14 +7467,14 @@ int save_defaults();
 
 The load defaults functions are used in realtime and non-realtime
 plugins.  The load defaults functions translate the plugin
-configuration between a Defaults object and the plugin's
-configuration.  The Defaults object stores configurations in a discrete
+configuration between a BC_Hash object and the plugin's
+configuration.  The BC_Hash object stores configurations in a discrete
 file on disk for each plugin but doesn't isolate different
 configurations for different projects.
 
 The function overriding @b{load_defaults} also needs to create the
-Defaults object.  See any existing plugin to see the usage of
-Defaults.
+BC_Hash object.  See any existing plugin to see the usage of
+BC_Hash.
 
 Other standard members may be defined in the processing object,
 depending on the plugin type.
@@ -7801,10 +7801,10 @@ XML object.
 int load_defaults();
 
 Another way the plugin gets parameters is from a defaults file.  The
-load and save defaults routines use a Defaults object to parse the
+load and save defaults routines use a BC_Hash object to parse the
 defaults file.  The defaults object is created in @b{load_defaults} and
 destroyed in the plugin's destructor.  See an existing plugin to see
-how the Defaults object is used.
+how the BC_Hash object is used.
 
 @item
 int save_defaults();
@@ -7837,7 +7837,7 @@ The nonrealtime plugin should contain a pointer to a defaults object.
 
 @example
 
-Defaults *defaults;
+BC_Hash *defaults;
 
 @end example
 
@@ -8095,7 +8095,7 @@ you do in a realtime plugin.
 
 If the transition has a GUI, you can use PLUGIN_CONSTRUCTOR_MACRO and 
 PLUGIN_DESTRUCTOR_MACRO to initialize the processing object.  You'll
-also need a Defaults object and a Thread object for these macros.
+also need a BC_Hash object and a Thread object for these macros.
 
 Since the GUI is optional, overwrite a function called @b{uses_gui()}
 to signifiy whether or not the transition has a GUI.  Return 1 if it

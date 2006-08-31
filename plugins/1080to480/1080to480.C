@@ -1,6 +1,6 @@
 #include "1080to480.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "bcdisplayinfo.h"
 #include "keyframe.h"
@@ -254,7 +254,7 @@ int _1080to480Main::load_defaults()
 	char directory[BCTEXTLEN], string[BCTEXTLEN];
 	sprintf(directory, "%s1080to480.rc", BCASTDIR);
 	
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 	config.first_field = defaults->get("FIRST_FIELD", config.first_field);
 	return 0;

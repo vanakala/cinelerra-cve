@@ -59,7 +59,7 @@ public:
 // a thread for the GUI
 	BrightnessThread *thread;
 	BrightnessEngine *engine;
-	Defaults *defaults;
+	BC_Hash *defaults;
     int redo_buffers;
 	static YUV yuv;
 	

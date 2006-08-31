@@ -4,7 +4,7 @@
 #include "asset.inc"
 #include "assets.inc"
 #include "autoconf.inc"
-#include "defaults.inc"
+#include "bchash.inc"
 #include "edits.inc"
 #include "edl.inc"
 #include "edlsession.inc"
@@ -52,8 +52,8 @@ public:
 	EDL& operator=(EDL &edl);
 
 // Load configuration and track counts
-	int load_defaults(Defaults *defaults);
-	int save_defaults(Defaults *defaults);
+	int load_defaults(BC_Hash *defaults);
+	int save_defaults(BC_Hash *defaults);
 // Clip default settings to boundaries.
 	void boundaries();
 // Create tracks using existing configuration

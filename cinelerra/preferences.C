@@ -4,7 +4,7 @@
 #include "bcmeter.inc"
 #include "cache.inc"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "file.inc"
 #include "filesystem.h"
 #include "guicast.h"
@@ -180,7 +180,7 @@ printf("Preferences::operator=\n");
 	return *this;
 }
 
-int Preferences::load_defaults(Defaults *defaults)
+int Preferences::load_defaults(BC_Hash *defaults)
 {
 	char string[BCTEXTLEN];
 
@@ -258,7 +258,7 @@ int Preferences::load_defaults(Defaults *defaults)
 	return 0;
 }
 
-int Preferences::save_defaults(Defaults *defaults)
+int Preferences::save_defaults(BC_Hash *defaults)
 {
 	char string[BCTEXTLEN];
 

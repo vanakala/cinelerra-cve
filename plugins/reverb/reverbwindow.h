@@ -132,9 +132,9 @@ public:
 	ReverbMenu(Reverb *reverb, ReverbWindow *window);
 	~ReverbMenu();
 	
-	int create_objects(Defaults *defaults);
-	int load_defaults(Defaults *defaults);
-	int save_defaults(Defaults *defaults);
+	int create_objects(BC_Hash *defaults);
+	int load_defaults(BC_Hash *defaults);
+	int save_defaults(BC_Hash *defaults);
 // most recent loads
 	int add_load(char *path);
 	ReverbLoadPrevThread *prev_load_thread;

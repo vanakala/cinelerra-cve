@@ -1,5 +1,5 @@
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edl.h"
 #include "filexml.h"
 #include "localsession.h"
@@ -167,7 +167,7 @@ void LocalSession::boundaries()
 	zoom_sample = MAX(1, zoom_sample);
 }
 
-int LocalSession::load_defaults(Defaults *defaults)
+int LocalSession::load_defaults(BC_Hash *defaults)
 {
 	loop_playback = defaults->get("LOOP_PLAYBACK", 0);
 	loop_start = defaults->get("LOOP_START", (double)0);
@@ -187,7 +187,7 @@ int LocalSession::load_defaults(Defaults *defaults)
 	return 0;
 }
 
-int LocalSession::save_defaults(Defaults *defaults)
+int LocalSession::save_defaults(BC_Hash *defaults)
 {
 	defaults->update("LOOP_PLAYBACK", loop_playback);
 	defaults->update("LOOP_START", loop_start);

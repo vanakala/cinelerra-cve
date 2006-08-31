@@ -3,7 +3,7 @@
 #include "audiodevice.inc"
 #include "bcsignals.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "language.h"

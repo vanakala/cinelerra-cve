@@ -4,7 +4,7 @@
 class QuarkMain;
 #define MAXSHARPNESS 100
 
-#include "defaults.h"
+#include "bchash.h"
 #include "mutex.h"
 #include "pluginvclient.h"
 #include "quarkwindow.h"
@@ -124,7 +124,7 @@ public:
 
 private:
 	int get_luts(int *pos_lut, int *neg_lut, int color_model);
-	Defaults *defaults;
+	BC_Hash *defaults;
 	QuarkEngine **engine;
 	int total_engines;
 };

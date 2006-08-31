@@ -3,7 +3,7 @@
 
 class TimeAvgMain;
 
-#include "defaults.inc"
+#include "bchash.inc"
 #include "pluginvclient.h"
 #include "timeavgwindow.h"
 #include "vframe.inc"
@@ -71,7 +71,7 @@ public:
 // When subtraction is disabled, this detects no change for paranoid mode.
 	int64_t prev_frame;
 
-	Defaults *defaults;
+	BC_Hash *defaults;
 };
 
 

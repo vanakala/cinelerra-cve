@@ -1,4 +1,4 @@
-#include "defaults.h"
+#include "bchash.h"
 #include "mainundo.h"
 #include "mwindow.h"
 #include "scale.h"

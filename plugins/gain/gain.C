@@ -1,6 +1,6 @@
 #include "clip.h"
 #include "confirmsave.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "errorbox.h"
 #include "filexml.h"
 #include "language.h"
@@ -96,7 +96,7 @@ int Gain::load_defaults()
 	
 // load the defaults
 
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 
 	defaults->load();
 

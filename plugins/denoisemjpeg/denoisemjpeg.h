@@ -4,7 +4,7 @@
 class DenoiseMJPEG;
 
 #include "bcdisplayinfo.h"
-#include "defaults.inc"
+#include "bchash.inc"
 #include "pluginvclient.h"
 #include "vframe.inc"
 
@@ -181,7 +181,7 @@ public:
 	float *accumulation;
 	DenoiseMJPEGThread *thread;
 	DenoiseMJPEGConfig config;
-	Defaults *defaults;
+	BC_Hash *defaults;
 };
 
 

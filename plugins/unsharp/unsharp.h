@@ -5,7 +5,7 @@
 #include <stdint.h>
 #include <string.h>
 
-#include "defaults.inc"
+#include "bchash.inc"
 #include "filexml.inc"
 #include "keyframe.inc"
 #include "loadbalance.h"

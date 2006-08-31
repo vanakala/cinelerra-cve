@@ -4,7 +4,7 @@
 class AgingMain;
 class AgingEngine;
 
-#include "defaults.h"
+#include "bchash.h"
 #include "loadbalance.h"
 #include "mutex.h"
 #include "pluginvclient.h"
@@ -122,7 +122,7 @@ public:
 	AgingClient *aging_client;
 	AgingConfig config;
 
-	Defaults *defaults;
+	BC_Hash *defaults;
 	AgingEngine **engine;
 	VFrame *input_ptr, *output_ptr;
 };

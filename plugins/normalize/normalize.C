@@ -1,5 +1,5 @@
 #include "bcdisplayinfo.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "mainprogress.h"
 #include "normalize.h"
 #include "normalizewindow.h"
@@ -54,7 +54,7 @@ int NormalizeMain::load_defaults()
 	
 // load the defaults
 
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 
 	defaults->load();
 

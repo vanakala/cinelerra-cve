@@ -1,7 +1,7 @@
 #include "clip.h"
 #include "filexml.h"
 #include "linearize.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "language.h"
 #include "picon_png.h"
 #include "../colors/plugincolors.h"
@@ -464,7 +464,7 @@ int LinearizeMain::load_defaults()
 	sprintf(directory, "%slinearize.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.max = defaults->get("MAX", config.max);

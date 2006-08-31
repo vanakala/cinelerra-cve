@@ -1,10 +1,10 @@
 #include "bcdisplayinfo.h"
 #include "clip.h"
-#include "defaults.h"
 #include "guicast.h"
 #include "filexml.h"
 #include "language.h"
 #include "pluginaclient.h"
+#include "interpolate.h"
 
 #include <string.h>
 
@@ -81,7 +81,7 @@ public:
 	int save_defaults();
 
 
-	Defaults *defaults;
+	BC_Hash *defaults;
 	MainProgressBar *progress;
 	InterpolateConfig config;
 };
@@ -366,7 +366,7 @@ int InterpolateEffect::load_defaults()
 {
 	char directory[BCTEXTLEN], string[BCTEXTLEN];
 	sprintf(directory, "%sfreeverb.rc", BCASTDIR);
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.gain = defaults->get("GAIN", config.gain);

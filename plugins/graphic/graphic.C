@@ -1,6 +1,6 @@
 #include "bcdisplayinfo.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "picon_png.h"
 #include "units.h"
@@ -51,7 +51,7 @@ public:
 
 	double envelope[WINDOW_SIZE / 2];
 	int need_reconfigure;
-	Defaults *defaults;
+	BC_Hash *defaults;
 	GraphicThread *thread;
 	GraphicFFT *fft;
 	GraphicConfig config;

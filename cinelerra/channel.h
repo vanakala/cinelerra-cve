@@ -2,7 +2,7 @@
 #define CHANNEL_H
 
 #include "bcwindowbase.inc"
-#include "defaults.inc"
+#include "bchash.inc"
 #include "filexml.inc"
 
 // Used by both GUI to change channels and devices to map channels to
@@ -22,8 +22,8 @@ public:
 	int load(FileXML *file);
 	int save(FileXML *file);
 // Only used for channel scanning
-	void load_defaults(Defaults *defaults);
-	void save_defaults(Defaults *defaults);
+	void load_defaults(BC_Hash *defaults);
+	void save_defaults(BC_Hash *defaults);
 	
 
 // Flags for GUI settings the device uses

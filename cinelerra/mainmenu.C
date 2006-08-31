@@ -6,7 +6,7 @@
 #include "cropvideo.h"
 #include "cwindow.h"
 #include "cwindowgui.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "featheredits.h"
@@ -194,7 +194,7 @@ SET_TRACE
 	return 0;
 }
 
-int MainMenu::load_defaults(Defaults *defaults)
+int MainMenu::load_defaults(BC_Hash *defaults)
 {
 	init_loads(defaults);
 	init_aeffects(defaults);
@@ -226,7 +226,7 @@ void MainMenu::update_toggles(int use_lock)
 	if(use_lock) mwindow->gui->unlock_window();
 }
 
-int MainMenu::save_defaults(Defaults *defaults)
+int MainMenu::save_defaults(BC_Hash *defaults)
 {
 	save_aeffects(defaults);
 	save_veffects(defaults);
@@ -249,7 +249,7 @@ int MainMenu::quit()
 
 // ================================== load most recent
 
-int MainMenu::init_aeffects(Defaults *defaults)
+int MainMenu::init_aeffects(BC_Hash *defaults)
 {
 	total_aeffects = defaults->get("TOTAL_AEFFECTS", 0);
 	
@@ -265,7 +265,7 @@ int MainMenu::init_aeffects(Defaults *defaults)
 	return 0;
 }
 
-int MainMenu::init_veffects(Defaults *defaults)
+int MainMenu::init_veffects(BC_Hash *defaults)
 {
 	total_veffects = defaults->get("TOTAL_VEFFECTS", 0);
 	
@@ -281,7 +281,7 @@ int MainMenu::init_veffects(Defaults *defaults)
 	return 0;
 }
 
-int MainMenu::init_loads(Defaults *defaults)
+int MainMenu::init_loads(BC_Hash *defaults)
 {
 	char string[BCTEXTLEN], path[BCTEXTLEN], filename[BCTEXTLEN];
 	FileSystem dir;
@@ -304,7 +304,7 @@ int MainMenu::init_loads(Defaults *defaults)
 
 // ============================ save most recent
 
-int MainMenu::save_aeffects(Defaults *defaults)
+int MainMenu::save_aeffects(BC_Hash *defaults)
 {
 	defaults->update("TOTAL_AEFFECTS", total_aeffects);
 	char string[1024];
@@ -316,7 +316,7 @@ int MainMenu::save_aeffects(Defaults *defaults)
 	return 0;
 }
 
-int MainMenu::save_veffects(Defaults *defaults)
+int MainMenu::save_veffects(BC_Hash *defaults)
 {
 	defaults->update("TOTAL_VEFFECTS", total_veffects);
 	char string[1024];

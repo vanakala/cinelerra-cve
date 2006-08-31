@@ -1,7 +1,7 @@
 #include "clip.h"
 #include "filexml.h"
 #include "brightness.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "language.h"
 #include "picon_png.h"
 
@@ -127,7 +127,7 @@ int BrightnessMain::load_defaults()
 	sprintf(directory, "%sbrightness.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.brightness = defaults->get("BRIGHTNESS", config.brightness);
@@ -588,11 +588,11 @@ BrightnessEngine::~BrightnessEngine()
 
 void BrightnessEngine::init_packages()
 {
-	for(int i = 0; i < LoadServer::total_packages; i++)
+	for(int i = 0; i < LoadServer::get_total_packages(); i++)
 	{
-		BrightnessPackage *package = (BrightnessPackage*)LoadServer::packages[i];
-		package->row1 = plugin->input->get_h() * i / LoadServer::total_packages;
-		package->row2 = plugin->input->get_h() * (i + 1) / LoadServer::total_packages;
+		BrightnessPackage *package = (BrightnessPackage*)LoadServer::get_package(i);
+		package->row1 = plugin->input->get_h() * i / LoadServer::get_total_packages();
+		package->row2 = plugin->input->get_h() * (i + 1) / LoadServer::get_total_packages();
 	}
 }
 

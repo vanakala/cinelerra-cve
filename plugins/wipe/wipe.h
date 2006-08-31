@@ -78,7 +78,7 @@ public:
 
 	int direction;
 	WipeThread *thread;
-	Defaults *defaults;
+	BC_Hash *defaults;
 };
 
 #endif

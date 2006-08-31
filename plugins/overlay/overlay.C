@@ -1,6 +1,6 @@
 #include "bcdisplayinfo.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "guicast.h"
 #include "keyframe.h"
@@ -22,6 +22,8 @@ class OverlayConfig
 {
 public:
 	OverlayConfig();
+
+
 
 	static char* mode_to_text(int mode);
 	int mode;
@@ -530,7 +532,7 @@ int Overlay::load_defaults()
 	sprintf(directory, "%soverlay.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.mode = defaults->get("MODE", config.mode);

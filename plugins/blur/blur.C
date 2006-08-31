@@ -1,7 +1,7 @@
 #include "filexml.h"
 #include "blur.h"
 #include "blurwindow.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "keyframe.h"
 #include "language.h"
 #include "picon_png.h"
@@ -227,7 +227,7 @@ int BlurMain::load_defaults()
 	sprintf(directory, "%sblur.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.vertical = defaults->get("VERTICAL", config.vertical);

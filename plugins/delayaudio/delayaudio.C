@@ -1,6 +1,6 @@
 #include "bcdisplayinfo.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "delayaudio.h"
 #include "filexml.h"
 #include "picon_png.h"
@@ -81,7 +81,7 @@ int DelayAudio::load_defaults()
 	char directory[BCTEXTLEN];
 
 	sprintf(directory, "%sdelayaudio.rc", BCASTDIR);
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 	config.length = defaults->get("LENGTH", (double)1);
 	return 0;

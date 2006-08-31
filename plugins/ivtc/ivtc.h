@@ -15,7 +15,7 @@ static char *pattern_text[] =
 	N_("Automatic")
 };
 
-#include "defaults.h"
+#include "bchash.h"
 #include "loadbalance.h"
 #include "mutex.h"
 #include "pluginvclient.h"

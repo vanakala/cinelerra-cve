@@ -6,7 +6,7 @@
 #include <string.h>
 
 #include "affine.inc"
-#include "defaults.inc"
+#include "bchash.inc"
 #include "filexml.inc"
 #include "keyframe.inc"
 #include "loadbalance.h"

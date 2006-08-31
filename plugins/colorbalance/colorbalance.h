@@ -90,7 +90,7 @@ public:
 	int total_engines;
 
 
-	Defaults *defaults;
+	BC_Hash *defaults;
     int r_lookup_8[0x100];
     int g_lookup_8[0x100];
     int b_lookup_8[0x100];

@@ -55,7 +55,7 @@ class YUVConfigVideo : public BC_Window
 	BC_WindowBase *parent_window;
 	Asset *asset;
 	FormatTools *format;
-	Defaults *defaults;
+	BC_Hash *defaults;
 	BC_TextBox *path_textbox;
 	BC_RecentList *path_recent;
 	PipeConfig *pipe_config;

@@ -8,7 +8,7 @@
 #include "asset.inc"
 #include "assets.inc"
 #include "batch.inc"
-#include "defaults.inc"
+#include "bchash.inc"
 #include "edl.inc"
 #include "filexml.inc"
 #include "guicast.h"

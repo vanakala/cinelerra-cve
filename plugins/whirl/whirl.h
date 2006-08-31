@@ -49,7 +49,7 @@ public:
 	WhirlThread *thread;
 
 private:
-	Defaults *defaults;
+	BC_Hash *defaults;
 	WhirlEngine **engine;
 };
 

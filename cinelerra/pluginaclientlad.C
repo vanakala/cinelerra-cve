@@ -1,6 +1,6 @@
 #include "clip.h"
 #include "data/lad_picon_png.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "pluginaclientlad.h"
 #include "pluginserver.h"
@@ -604,7 +604,7 @@ int PluginAClientLAD::load_defaults()
 //printf("PluginAClientLAD::load_defaults %s\n", directory);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 	config.initialize(server);
 

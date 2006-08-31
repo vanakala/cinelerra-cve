@@ -4,7 +4,7 @@
 
 #include "bcdisplayinfo.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "timefront.h"
 #include "keyframe.h"
@@ -1088,7 +1088,7 @@ int TimeFrontMain::load_defaults()
 	sprintf(directory, "%stimefront.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 // printf("TimeFrontMain::load_defaults %d %d %d %d\n",
@@ -1341,15 +1341,15 @@ TimeFrontServer::TimeFrontServer(TimeFrontMain *plugin,
 
 void TimeFrontServer::init_packages()
 {
-	for(int i = 0; i < total_packages; i++)
+	for(int i = 0; i < get_total_packages(); i++)
 	{
-		TimeFrontPackage *package = (TimeFrontPackage*)packages[i];
+		TimeFrontPackage *package = (TimeFrontPackage*)get_package(i);
 		package->y1 = plugin->input->get_h() * 
 			i / 
-			total_packages;
+			get_total_packages();
 		package->y2 = plugin->input->get_h() * 
 			(i + 1) /
-			total_packages;
+			get_total_packages();
 	}
 }
 

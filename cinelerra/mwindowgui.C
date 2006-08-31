@@ -3,7 +3,7 @@
 #include "bcsignals.h"
 #include "cwindowgui.h"
 #include "cwindow.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "editpopup.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -447,7 +447,7 @@ int MWindowGUI::translation_event()
 }
 
 
-int MWindowGUI::save_defaults(Defaults *defaults)
+int MWindowGUI::save_defaults(BC_Hash *defaults)
 {
 	defaults->update("MWINDOWWIDTH", get_w());
 	defaults->update("MWINDOWHEIGHT", get_h());

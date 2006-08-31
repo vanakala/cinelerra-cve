@@ -21,8 +21,8 @@ public:
 	~MenuVEffectThread();
 
 	int get_recordable_tracks(Asset *asset);
-	int get_derived_attributes(Asset *asset, Defaults *defaults);
-	int save_derived_attributes(Asset *asset, Defaults *defaults);
+	int get_derived_attributes(Asset *asset, BC_Hash *defaults);
+	int save_derived_attributes(Asset *asset, BC_Hash *defaults);
 	PluginArray* create_plugin_array();
 	int fix_menu(char *title);
 

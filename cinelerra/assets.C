@@ -3,7 +3,7 @@
 #include "awindowgui.inc"
 #include "batch.h"
 #include "cache.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edl.h"
 #include "file.h"
 #include "filexml.h"

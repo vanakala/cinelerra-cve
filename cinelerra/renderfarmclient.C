@@ -1,7 +1,7 @@
 #include "asset.h"
 #include "assets.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edl.h"
 #include "filesystem.h"
 #include "filexml.h"
@@ -309,7 +309,7 @@ void RenderFarmClientThread::read_preferences(int socket_fd,
 	char *string;
 	read_string(socket_fd, string);
 
-	Defaults defaults;
+	BC_Hash defaults;
 	defaults.load_string((char*)string);
 	preferences->load_defaults(&defaults);
 
@@ -336,7 +336,7 @@ void RenderFarmClientThread::read_asset(int socket_fd, Asset *asset)
 	
 
 
-	Defaults defaults;
+	BC_Hash defaults;
 	defaults.load_string((char*)string1);
 	asset->load_defaults(&defaults,
 		0,

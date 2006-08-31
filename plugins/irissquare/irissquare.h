@@ -78,7 +78,7 @@ public:
 
 	int direction;
 	IrisSquareThread *thread;
-	Defaults *defaults;
+	BC_Hash *defaults;
 };
 
 #endif

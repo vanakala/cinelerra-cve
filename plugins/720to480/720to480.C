@@ -1,6 +1,6 @@
 #include "720to480.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "bcdisplayinfo.h"
 #include "keyframe.h"
@@ -188,7 +188,7 @@ int _720to480Main::load_defaults()
 	char directory[BCTEXTLEN], string[BCTEXTLEN];
 	sprintf(directory, "%s720to480.rc", BCASTDIR);
 	
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 	config.first_field = defaults->get("FIRST_FIELD", config.first_field);
 	config.direction = defaults->get("DIRECTION", config.direction);

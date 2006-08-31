@@ -7,7 +7,7 @@
 #include "bcsignals.h"
 #include "clip.h"
 #include "colormodels.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"
@@ -107,7 +107,7 @@ printf("EDL::operator= 1\n");
 	return *this;
 }
 
-int EDL::load_defaults(Defaults *defaults)
+int EDL::load_defaults(BC_Hash *defaults)
 {
 	if(!parent_edl)
 		session->load_defaults(defaults);
@@ -116,7 +116,7 @@ int EDL::load_defaults(Defaults *defaults)
 	return 0;
 }
 
-int EDL::save_defaults(Defaults *defaults)
+int EDL::save_defaults(BC_Hash *defaults)
 {
 	if(!parent_edl)
 		session->save_defaults(defaults);

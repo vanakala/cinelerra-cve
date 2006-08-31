@@ -25,7 +25,7 @@ public:
 	int load_defaults();  
 	int save_defaults();  
 
-	Defaults *defaults;
+	BC_Hash *defaults;
 
 // parameters needed
 	int track1, min1, sec1, track2, min2, sec2;

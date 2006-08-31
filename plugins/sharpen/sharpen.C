@@ -169,7 +169,7 @@ int SharpenMain::load_defaults()
 	sprintf(directory, "%ssharpen.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.sharpness = defaults->get("SHARPNESS", config.sharpness);

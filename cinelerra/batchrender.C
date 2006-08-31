@@ -2,7 +2,7 @@
 #include "batchrender.h"
 #include "bcsignals.h"
 #include "confirmsave.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "errorbox.h"
@@ -106,7 +106,7 @@ void BatchRenderJob::load(FileXML *file)
 // The compression parameters are stored in the defaults to reduce
 // coding maintenance.  The defaults must now be stuffed into the XML for
 // unique storage.
-			Defaults defaults;
+			BC_Hash defaults;
 			defaults.load_string(file->read_text());
 			asset->load_defaults(&defaults,
 				"",
@@ -141,7 +141,7 @@ TRACE("BatchRenderJob::save 1");
 // The compression parameters are stored in the defaults to reduce
 // coding maintenance.  The defaults must now be stuffed into the XML for
 // unique storage.
-	Defaults defaults;
+	BC_Hash defaults;
 	asset->save_defaults(&defaults, 
 		"",
 		0,
@@ -278,7 +278,7 @@ void BatchRenderThread::save_jobs(char *path)
 		file.write_to_file(create_path(path));
 }
 
-void BatchRenderThread::load_defaults(Defaults *defaults)
+void BatchRenderThread::load_defaults(BC_Hash *defaults)
 {
 	if(default_job)
 	{
@@ -300,7 +300,7 @@ void BatchRenderThread::load_defaults(Defaults *defaults)
 	}
 }
 
-void BatchRenderThread::save_defaults(Defaults *defaults)
+void BatchRenderThread::save_defaults(BC_Hash *defaults)
 {
 	if(default_job)
 	{
@@ -473,7 +473,7 @@ void BatchRenderThread::calculate_dest_paths(ArrayList<char*> *paths,
 void BatchRenderThread::start_rendering(char *config_path,
 	char *batch_path)
 {
-	Defaults *boot_defaults;
+	BC_Hash *boot_defaults;
 	Preferences *preferences;
 	Render *render;
 	ArrayList<PluginServer*> *plugindb;

@@ -49,7 +49,7 @@
 #include "bcwindowbase.inc"
 #include "bcwindowevents.inc"
 #include "condition.inc"
-#include "defaults.inc"
+#include "bchash.inc"
 #include "linklist.h"
 #include "mutex.h"
 #include "vframe.inc"
@@ -458,8 +458,8 @@ public:
 	int show_tooltip(int w = -1, int h = -1);
 	int hide_tooltip();
 	int set_icon(VFrame *data);
-	int load_defaults(Defaults *defaults);
-	int save_defaults(Defaults *defaults);
+	int load_defaults(BC_Hash *defaults);
+	int save_defaults(BC_Hash *defaults);
 
 #ifdef HAVE_LIBXXF86VM
 // Mode switch methods.

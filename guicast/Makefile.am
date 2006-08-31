@@ -14,6 +14,7 @@ libguicast_la_SOURCES = \
 	bcdisplayinfo.C \
 	bcdragwindow.C \
 	bcfilebox.C \
+	bchash.C \
 	bcipc.C \
 	bclistbox.C \
 	bcmenu.C \
@@ -51,7 +52,6 @@ libguicast_la_SOURCES = \
 	debug.h \
         error.h \
 	errorbox.C \
-	defaults.C \
 	filesystem.C \
 	mutex.C \
 	properties.C \
@@ -83,6 +83,8 @@ noinst_HEADERS = \
 	bcdragwindow.inc \
 	bcfilebox.h \
 	bcfilebox.inc \
+	bchash.h \
+	bchash.inc \
 	bcipc.h \
 	bclistbox.h \
 	bclistbox.inc \
@@ -140,7 +142,14 @@ noinst_HEADERS = \
 	bcwindowbase.inc \
 	bcwindowevents.h \
 	bcwindowevents.inc \
-								 bcwindow.h bcwindow.inc clip.h colors.h condition.inc cursors.h defaults.h defaults.inc errorbox.h errorbox.inc \
+	bcwindow.h \
+	bcwindow.inc \
+	clip.h \
+	colors.h \
+	condition.inc \
+	cursors.h \
+	errorbox.h \
+	errorbox.inc \
 	filesystem.h \
 	filesystem.inc \
 	fonts.h \

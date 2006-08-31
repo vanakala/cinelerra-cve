@@ -1,4 +1,4 @@
-#include "defaults.h"
+#include "bchash.h"
 #include "levelwindow.h"
 #include "mainmenu.h"
 #include "mwindow.h"
@@ -30,13 +30,13 @@ VideoWindow::~VideoWindow()
 	}
 }
 
-int VideoWindow::load_defaults(Defaults *defaults)
+int VideoWindow::load_defaults(BC_Hash *defaults)
 {
 	video_visible = defaults->get("VIDEOVISIBLE", 1);
 	video_window_w = defaults->get("PLAYVIDEOW", video_window_w);
 }
 
-int VideoWindow::update_defaults(Defaults *defaults)
+int VideoWindow::update_defaults(BC_Hash *defaults)
 {
 	defaults->update("VIDEOVISIBLE", video_visible);
 	defaults->update("PLAYVIDEOW", video_window_w);

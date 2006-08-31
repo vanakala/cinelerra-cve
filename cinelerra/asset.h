@@ -4,7 +4,7 @@
 
 #include "arraylist.h"
 #include "bcwindowbase.inc"
-#include "defaults.inc"
+#include "bchash.inc"
 #include "filexml.inc"
 #include "linklist.h"
 #include "pluginserver.inc"
@@ -46,14 +46,14 @@ public:
 
 // Load and save parameters for a render dialog
 // Used by render, record, menueffects, preferences
-	void load_defaults(Defaults *defaults, 
+	void load_defaults(BC_Hash *defaults, 
 		char *prefix /* = 0 */, 
 		int do_format /* = 0 */,
 		int do_compression,
 		int do_path,
 		int do_data_types,
 		int do_bits);
-	void save_defaults(Defaults *defaults, 
+	void save_defaults(BC_Hash *defaults, 
 		char *prefix /* = 0 */,
 		int do_format,     /* Don't save format which is autodetected by file loader */
 		int do_compression,    /* Don't save compression which is fixed by driver */
@@ -63,8 +63,8 @@ public:
 	char* construct_param(char *param, char *prefix, char *return_value);
 
 // defaults which are specific to format used	
-	void load_format_defaults(Defaults *defaults);
-	void save_format_defaults(Defaults *defaults);
+	void load_format_defaults(BC_Hash *defaults);
+	void save_format_defaults(BC_Hash *defaults);
 
 // Executed during index building only
 	void update_index(Asset *asset);

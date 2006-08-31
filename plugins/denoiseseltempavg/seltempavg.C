@@ -1,5 +1,5 @@
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "keyframe.h"
 #include "language.h"
@@ -713,7 +713,7 @@ int SelTempAvgMain::load_defaults()
 	sprintf(directory, "%sdenoiseseltempavg.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.frames = defaults->get("FRAMES", config.frames);

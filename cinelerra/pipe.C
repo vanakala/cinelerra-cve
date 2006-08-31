@@ -3,7 +3,7 @@
 #include <errno.h>
 #include <signal.h>
 
-#include "defaults.h"
+#include "bchash.h"
 #include "file.h"
 #include "guicast.h"
 #include "interlacemodes.h"
@@ -127,7 +127,7 @@ void Pipe::close() {
 }
 
 
-PipeConfig::PipeConfig(BC_WindowBase *window, Defaults *defaults, Asset *asset)
+PipeConfig::PipeConfig(BC_WindowBase *window, BC_Hash *defaults, Asset *asset)
 {
 	this->window = window;
 	this->defaults = defaults;

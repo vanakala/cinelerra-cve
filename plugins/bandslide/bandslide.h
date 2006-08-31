@@ -92,7 +92,7 @@ public:
 	int bands;
 	int direction;
 	BandSlideThread *thread;
-	Defaults *defaults;
+	BC_Hash *defaults;
 };
 
 #endif

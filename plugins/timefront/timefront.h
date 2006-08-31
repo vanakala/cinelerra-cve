@@ -8,7 +8,7 @@ class TimeFrontWindow;
 class TimeFrontServer;
 
 
-#include "defaults.inc"
+#include "bchash.inc"
 #include "filexml.inc"
 #include "guicast.h"
 #include "loadbalance.h"

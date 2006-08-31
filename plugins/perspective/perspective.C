@@ -641,7 +641,7 @@ int PerspectiveMain::load_defaults()
 	sprintf(directory, "%sperspective.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.x1 = defaults->get("X1", config.x1);

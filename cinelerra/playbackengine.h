@@ -7,7 +7,7 @@
 #include "canvas.inc"
 #include "channeldb.inc"
 #include "condition.inc"
-#include "defaults.inc"
+#include "bchash.inc"
 #include "edl.inc"
 #include "mwindow.inc"
 #include "maxchannels.h"

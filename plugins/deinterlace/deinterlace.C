@@ -1,5 +1,5 @@
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "deinterlace.h"
 #include "deinterwindow.h"
 #include "filexml.h"
@@ -573,7 +573,7 @@ int DeInterlaceMain::load_defaults()
 	char directory[BCTEXTLEN], string[BCTEXTLEN];
 	sprintf(directory, "%sdeinterlace.rc", BCASTDIR);
 	
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 	config.mode = defaults->get("MODE", config.mode);
 	config.dominance = defaults->get("DOMINANCE", config.dominance);

@@ -1,5 +1,5 @@
 #include "bcdisplayinfo.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "mainprogress.h"
 #include "picon_png.h"
 #include "../../cinelerra/resample.h"
@@ -112,7 +112,7 @@ int ResampleEffect::load_defaults()
 // set the default directory
 	sprintf(directory, "%sresample.rc", BCASTDIR);
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	scale = defaults->get("SCALE", (double)1);

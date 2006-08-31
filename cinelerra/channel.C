@@ -1,5 +1,5 @@
 #include "channel.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include <string.h>
 
@@ -119,14 +119,14 @@ int Channel::save(FileXML *file)
 
 
 
-void Channel::load_defaults(Defaults *defaults)
+void Channel::load_defaults(BC_Hash *defaults)
 {
 	freqtable = defaults->get("SCAN_FREQTABLE", freqtable);
 	input = defaults->get("SCAN_INPUT", input);
 	norm = defaults->get("SCAN_NORM", norm);
 }
 
-void Channel::save_defaults(Defaults *defaults)
+void Channel::save_defaults(BC_Hash *defaults)
 {
 	defaults->update("SCAN_FREQTABLE", freqtable);
 	defaults->update("SCAN_INPUT", input);

@@ -51,7 +51,7 @@ public:
 
 	double scale;
 
-	Defaults *defaults;
+	BC_Hash *defaults;
 	MainProgressBar *progress;
 	int64_t current_position;
 };

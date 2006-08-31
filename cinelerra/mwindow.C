@@ -14,7 +14,7 @@
 #include "ctimebar.h"
 #include "cwindowgui.h"
 #include "cwindow.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "editpanel.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -170,7 +170,7 @@ SET_TRACE
 void MWindow::create_defaults_path(char *string)
 {
 // set the .bcast path
-		FileSystem fs;
+	FileSystem fs;
 
 	sprintf(string, "%s", BCASTDIR);
 	fs.complete_path(string);
@@ -183,7 +183,7 @@ void MWindow::create_defaults_path(char *string)
 	strcat(string, "Cinelerra_rc");
 }
 
-void MWindow::init_defaults(Defaults* &defaults, char *config_path)
+void MWindow::init_defaults(BC_Hash* &defaults, char *config_path)
 {
 	char path[BCTEXTLEN];
 // Use user supplied path
@@ -196,7 +196,7 @@ void MWindow::init_defaults(Defaults* &defaults, char *config_path)
 		create_defaults_path(path);
 	}
 
-	defaults = new Defaults(path);
+	defaults = new BC_Hash(path);
 	defaults->load();
 }
 

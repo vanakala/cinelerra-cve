@@ -1,7 +1,7 @@
 #include "asset.h"
 #include "clip.h"
 #include "confirmsave.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "errorbox.h"
@@ -93,7 +93,7 @@ void MenuEffectThread::run()
 {
 // get stuff from main window
 	ArrayList<PluginServer*> *plugindb = mwindow->plugindb;
-	Defaults *defaults = mwindow->defaults;
+	BC_Hash *defaults = mwindow->defaults;
 	ArrayList<BC_ListBoxItem*> plugin_list;
 	ArrayList<PluginServer*> local_plugindb;
 	char string[1024];

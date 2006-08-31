@@ -62,7 +62,7 @@ int RGB601Main::load_defaults()
 	sprintf(directory, "%srgb601.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.direction = defaults->get("DIRECTION", config.direction);

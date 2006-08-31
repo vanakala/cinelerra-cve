@@ -1,6 +1,6 @@
 #include "bcdisplayinfo.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "guicast.h"
 #include "keyframe.h"
@@ -124,7 +124,7 @@ public:
 	void update_gui();
 
 	PolarConfig config;
-	Defaults *defaults;
+	BC_Hash *defaults;
 	PolarThread *thread;
 	PolarEngine *engine;
 	VFrame *temp_frame;
@@ -312,7 +312,7 @@ int PolarEffect::load_defaults()
 	sprintf(directory, "%spolar.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.depth = defaults->get("DEPTH", config.depth);
@@ -813,11 +813,11 @@ PolarEngine::PolarEngine(PolarEffect *plugin, int cpus)
 
 void PolarEngine::init_packages()
 {
-	for(int i = 0; i < LoadServer::total_packages; i++)
+	for(int i = 0; i < LoadServer::get_total_packages(); i++)
 	{
-		PolarPackage *pkg = (PolarPackage*)packages[i];
-		pkg->row1 = plugin->input->get_h() * i / LoadServer::total_packages;
-		pkg->row2 = plugin->input->get_h() * (i + 1) / LoadServer::total_packages;
+		PolarPackage *pkg = (PolarPackage*)get_package(i);
+		pkg->row1 = plugin->input->get_h() * i / LoadServer::get_total_packages();
+		pkg->row2 = plugin->input->get_h() * (i + 1) / LoadServer::get_total_packages();
 	}
 }
 

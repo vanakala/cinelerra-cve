@@ -1,5 +1,5 @@
 #include "bcdisplayinfo.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filesystem.h"
 #include "reverb.h"
 #include "reverbwindow.h"
@@ -229,7 +229,7 @@ ReverbMenu::~ReverbMenu()
 	delete prev_load_thread;
 }
 
-int ReverbMenu::create_objects(Defaults *defaults)
+int ReverbMenu::create_objects(BC_Hash *defaults)
 {
 	add_menu(filemenu = new BC_Menu(_("File")));
 	filemenu->add_item(load = new ReverbLoad(reverb, this));
@@ -240,7 +240,7 @@ int ReverbMenu::create_objects(Defaults *defaults)
 	return 0;
 }
 
-int ReverbMenu::load_defaults(Defaults *defaults)
+int ReverbMenu::load_defaults(BC_Hash *defaults)
 {
 	FileSystem fs;
 	total_loads = defaults->get("TOTAL_LOADS", 0);
@@ -261,7 +261,7 @@ int ReverbMenu::load_defaults(Defaults *defaults)
 	return 0;
 }
 
-int ReverbMenu::save_defaults(Defaults *defaults)
+int ReverbMenu::save_defaults(BC_Hash *defaults)
 {
 	if(total_loads > 0)
 	{

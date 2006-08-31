@@ -43,7 +43,7 @@ class PipeCheckBox : public BC_CheckBox
 
 class PipeConfig {
  public:
-	PipeConfig(BC_WindowBase *window, Defaults *defaults, Asset *asset);
+	PipeConfig(BC_WindowBase *window, BC_Hash *defaults, Asset *asset);
 	// NOTE: Default destructor should destroy all subwindows
 
 	int create_objects(int x, int y, int textbox_width, int format);
@@ -55,7 +55,7 @@ class PipeConfig {
 	
  private:
 	BC_WindowBase *window;
-	Defaults *defaults;
+	BC_Hash *defaults;
 	Asset *asset;
 };
 

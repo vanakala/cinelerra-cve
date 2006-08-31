@@ -1,7 +1,7 @@
 #ifndef VIDEOCONFIG_H
 #define VIDEOCONFIG_H
 
-#include "defaults.inc"
+#include "bchash.inc"
 
 
 
@@ -17,8 +17,8 @@ public:
 	~VideoConfig();
 	
 	VideoConfig& operator=(VideoConfig &that);
-	int load_defaults(Defaults *defaults);
-	int save_defaults(Defaults *defaults);
+	int load_defaults(BC_Hash *defaults);
+	int save_defaults(BC_Hash *defaults);
 
 // Input
 	int video_in_driver;

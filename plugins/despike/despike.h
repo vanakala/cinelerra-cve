@@ -51,7 +51,7 @@ public:
 // non realtime support
 	int load_defaults();
 	int save_defaults();
-	Defaults *defaults;
+	BC_Hash *defaults;
 	
 	DespikeThread *thread;
 	double last_sample;

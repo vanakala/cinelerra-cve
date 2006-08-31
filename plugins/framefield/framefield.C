@@ -1,5 +1,6 @@
 #include "bcdisplayinfo.h"
-#include "defaults.h"
+#include "bcsignals.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "guicast.h"
 #include "keyframe.h"
@@ -587,7 +588,7 @@ int FrameField::load_defaults()
 	sprintf(directory, "%sframefield.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.field_dominance = defaults->get("DOMINANCE", config.field_dominance);

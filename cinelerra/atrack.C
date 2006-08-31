@@ -102,7 +102,7 @@ PluginSet* ATrack::new_plugins()
 	return new APluginSet(edl, this);
 }
 
-int ATrack::load_defaults(Defaults *defaults)
+int ATrack::load_defaults(BC_Hash *defaults)
 {
 	Track::load_defaults(defaults);
 	return 0;

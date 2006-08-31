@@ -1,4 +1,4 @@
-#include "defaults.h"
+#include "bchash.h"
 #include "videoconfig.h"
 #include "videodevice.inc"
 #include <string.h>
@@ -31,7 +31,7 @@ VideoConfig& VideoConfig::operator=(VideoConfig &that)
 	return *this;
 }
 
-int VideoConfig::load_defaults(Defaults *defaults)
+int VideoConfig::load_defaults(BC_Hash *defaults)
 {
 	video_in_driver = defaults->get("VIDEO_IN_DRIVER", VIDEO4LINUX);
 	sprintf(v4l_in_device, "/dev/video");
@@ -50,7 +50,7 @@ int VideoConfig::load_defaults(Defaults *defaults)
 	return 0;
 }
 
-int VideoConfig::save_defaults(Defaults *defaults)
+int VideoConfig::save_defaults(BC_Hash *defaults)
 {
 	defaults->update("VIDEO_IN_DRIVER", video_in_driver);
 	defaults->update("V4L_IN_DEVICE", v4l_in_device);

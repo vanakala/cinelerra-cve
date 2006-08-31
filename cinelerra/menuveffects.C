@@ -1,5 +1,5 @@
 #include "asset.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "file.h"
@@ -41,7 +41,7 @@ int MenuVEffectThread::get_recordable_tracks(Asset *asset)
 	return asset->layers;
 }
 
-int MenuVEffectThread::get_derived_attributes(Asset *asset, Defaults *defaults)
+int MenuVEffectThread::get_derived_attributes(Asset *asset, BC_Hash *defaults)
 {
 
 	asset->load_defaults(defaults, 
@@ -65,7 +65,7 @@ int MenuVEffectThread::get_derived_attributes(Asset *asset, Defaults *defaults)
 	return 0;
 }
 
-int MenuVEffectThread::save_derived_attributes(Asset *asset, Defaults *defaults)
+int MenuVEffectThread::save_derived_attributes(Asset *asset, BC_Hash *defaults)
 {
 	asset->save_defaults(defaults,
 		"VEFFECT_",

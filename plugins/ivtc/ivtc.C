@@ -52,7 +52,7 @@ int IVTCMain::load_defaults()
 	sprintf(directory, "%sivtc.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.frame_offset = defaults->get("FRAME_OFFSET", config.frame_offset);

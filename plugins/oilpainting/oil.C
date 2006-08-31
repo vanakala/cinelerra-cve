@@ -1,6 +1,6 @@
 #include "bcdisplayinfo.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "guicast.h"
 #include "keyframe.h"
@@ -133,7 +133,7 @@ public:
 	OilConfig config;
 	VFrame *temp_frame;
 	VFrame *input, *output;
-	Defaults *defaults;
+	BC_Hash *defaults;
 	OilThread *thread;
 	OilServer *engine;
 	int need_reconfigure;
@@ -336,7 +336,7 @@ int OilEffect::load_defaults()
 	sprintf(directory, "%soilpainting.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.radius = defaults->get("RADIUS", config.radius);
@@ -662,11 +662,11 @@ OilServer::OilServer(OilEffect *plugin, int cpus)
 
 void OilServer::init_packages()
 {
-	for(int i = 0; i < LoadServer::total_packages; i++)
+	for(int i = 0; i < LoadServer::get_total_packages(); i++)
 	{
-		OilPackage *pkg = (OilPackage*)packages[i];
-		pkg->row1 = plugin->input->get_h() * i / LoadServer::total_packages;
-		pkg->row2 = plugin->input->get_h() * (i + 1) / LoadServer::total_packages;
+		OilPackage *pkg = (OilPackage*)get_package(i);
+		pkg->row1 = plugin->input->get_h() * i / LoadServer::get_total_packages();
+		pkg->row2 = plugin->input->get_h() * (i + 1) / LoadServer::get_total_packages();
 	}
 }
 

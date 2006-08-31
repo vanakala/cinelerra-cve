@@ -781,11 +781,11 @@ total_clients, total_packages
 
 void AffineEngine::init_packages()
 {
-	for(int i = 0; i < total_packages; i++)
+	for(int i = 0; i < get_total_packages(); i++)
 	{
-		AffinePackage *package = (AffinePackage*)packages[i];
-		package->y1 = y + (h * i / total_packages);
-		package->y2 = y + (h * (i + 1) / total_packages);
+		AffinePackage *package = (AffinePackage*)get_package(i);
+		package->y1 = y + (h * i / get_total_packages());
+		package->y2 = y + (h * (i + 1) / get_total_packages());
 	}
 }
 

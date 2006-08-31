@@ -6,7 +6,7 @@
 #include "bcdisplayinfo.h"
 #include "bcsignals.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "histogram.h"
 #include "histogramconfig.h"
@@ -138,7 +138,7 @@ int HistogramMain::load_defaults()
 	sprintf(directory, "%shistogram.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	for(int j = 0; j < HISTOGRAM_MODES; j++)

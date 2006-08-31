@@ -84,7 +84,7 @@ public:
 
 
 
-
+private:
 	int current_package;
 	LoadPackage **packages;
 	int total_packages;

@@ -1,5 +1,5 @@
 #include <ctype.h>
-#include "defaults.h"
+#include "bchash.h"
 #include "mwindow.h"
 #include "picture.h"
 #include <string.h>

@@ -3,7 +3,7 @@
 
 #include "bcdisplayinfo.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "guicast.h"
 #include "language.h"
@@ -332,7 +332,7 @@ int DiffKey::load_defaults()
 	sprintf(directory, "%sdiffkey.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.threshold = defaults->get("THRESHOLD", config.threshold);

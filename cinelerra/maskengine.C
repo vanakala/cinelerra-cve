@@ -1146,7 +1146,7 @@ SET_TRACE
 // Always a multiple of 2 packages exist
 	for(int i = 0; i < get_total_packages(); i++)
 	{
-		MaskPackage *pkg = (MaskPackage*)packages[i];
+		MaskPackage *pkg = (MaskPackage*)get_package(i);
 		pkg->row1 = division * i;
 		pkg->row2 = MIN (division * i + division, output->get_h());
 		

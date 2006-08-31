@@ -8,7 +8,6 @@
 #include "cache.inc"
 #include "compresspopup.h"
 #include "condition.inc"
-#include "defaults.inc"
 #include "edit.inc"
 #include "errorbox.inc"
 #include "file.inc"

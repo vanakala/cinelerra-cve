@@ -1,5 +1,5 @@
 #include "assets.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edl.h"
 #include "errorbox.h"
 #include "file.h"

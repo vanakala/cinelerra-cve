@@ -1,5 +1,5 @@
 #include "autoconf.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 
 
@@ -33,7 +33,7 @@ static int auto_defaults[] =
 	0
 };
 
-int AutoConf::load_defaults(Defaults* defaults)
+int AutoConf::load_defaults(BC_Hash* defaults)
 {
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 	{
@@ -54,7 +54,7 @@ void AutoConf::load_xml(FileXML *file)
 	plugins = file->tag.get_property("SHOW_PLUGINS", 1);
 }
 
-int AutoConf::save_defaults(Defaults* defaults)
+int AutoConf::save_defaults(BC_Hash* defaults)
 {
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 	{

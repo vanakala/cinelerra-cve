@@ -1,7 +1,7 @@
 #include "../motion/affine.h"
 #include "bcdisplayinfo.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "guicast.h"
 #include "language.h"
@@ -184,7 +184,7 @@ public:
 	RotateConfig config;
 	AffineEngine *engine;
 	RotateThread *thread;
-	Defaults *defaults;
+	BC_Hash *defaults;
 	int need_reconfigure;
 };
 
@@ -636,7 +636,7 @@ int RotateEffect::load_defaults()
 	sprintf(directory, "%srotate.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.angle = defaults->get("ANGLE", (float)config.angle);

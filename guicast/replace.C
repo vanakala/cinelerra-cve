@@ -5,7 +5,7 @@
 
 
 #include "bcdisplayinfo.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "guicast.h"
 
 
@@ -43,7 +43,7 @@ int main(int argc, char *argv[])
 {
 	char input[1024], output[1024];
 	int result;
-	Defaults defaults("~/.replacerc");
+	BC_Hash defaults("~/.replacerc");
 
 	input[0] = 0;
 	output[0] = 0;

@@ -83,7 +83,7 @@ int ScaleMain::load_defaults()
 	sprintf(directory, "%sscale.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.w = defaults->get("WIDTH", config.w);

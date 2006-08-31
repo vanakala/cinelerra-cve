@@ -102,7 +102,7 @@ void thread_class::run() \
 	int show_gui(); \
 	int set_string(); \
 	void raise_window(); \
-	Defaults *defaults; \
+	BC_Hash *defaults; \
 	config_name config; \
 	thread_name *thread;
 

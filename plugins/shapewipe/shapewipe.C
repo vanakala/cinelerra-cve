@@ -1,5 +1,5 @@
 #include "bcdisplayinfo.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edl.inc"
 #include "filexml.h"
 #include "language.h"
@@ -271,7 +271,7 @@ int ShapeWipeMain::load_defaults()
 	sprintf(directory, "%sshapewipe.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	direction = defaults->get("DIRECTION", direction);

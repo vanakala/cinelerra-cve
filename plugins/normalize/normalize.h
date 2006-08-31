@@ -1,7 +1,7 @@
 #ifndef NORMALIZE_H
 #define NORMALIZE_H
 
-#include "defaults.inc"
+#include "bchash.inc"
 #include "guicast.h"
 #include "mainprogress.inc"
 #include "pluginaclient.h"
@@ -35,7 +35,7 @@ public:
 	int load_defaults();  
 	int save_defaults();  
 
-	Defaults *defaults;
+	BC_Hash *defaults;
 	MainProgressBar *progress;
 
 // Current state of process_loop

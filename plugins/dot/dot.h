@@ -4,7 +4,7 @@
 class DotMain;
 class DotEngine;
 
-#include "defaults.h"
+#include "bchash.h"
 #include "effecttv.h"
 #include "loadbalance.h"
 #include "mutex.h"
@@ -95,7 +95,7 @@ public:
 	DotClient *dot_client;
 	DotConfig config;
 
-	Defaults *defaults;
+	BC_Hash *defaults;
 	VFrame *input_ptr, *output_ptr;
 	int dots_width;
 	int dots_height;

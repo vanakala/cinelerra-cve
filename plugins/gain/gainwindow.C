@@ -1,5 +1,5 @@
 #include "bcdisplayinfo.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filesystem.h"
 #include "gainwindow.h"
 #include "language.h"

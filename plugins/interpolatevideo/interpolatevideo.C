@@ -1,6 +1,6 @@
 #include "bcdisplayinfo.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "guicast.h"
 #include "keyframe.h"
@@ -627,7 +627,7 @@ int InterpolateVideo::load_defaults()
 	sprintf(directory, "%sinterpolatevideo.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.input_rate = defaults->get("INPUT_RATE", config.input_rate);

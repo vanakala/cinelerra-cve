@@ -1,7 +1,7 @@
 #include "asset.h"
 #include "brender.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edl.h"
 #include "filesystem.h"
 #include "filexml.h"
@@ -444,7 +444,7 @@ int RenderFarmServerThread::write_string(int socket_fd, char *string)
 
 void RenderFarmServerThread::send_preferences()
 {
-	Defaults defaults;
+	BC_Hash defaults;
 	char *string;
 
 	server->preferences->save_defaults(&defaults);
@@ -456,7 +456,7 @@ void RenderFarmServerThread::send_preferences()
 
 void RenderFarmServerThread::send_asset()
 {
-	Defaults defaults;
+	BC_Hash defaults;
 	char *string1;
 
 // The asset must be sent in two segments.

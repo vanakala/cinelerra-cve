@@ -1,6 +1,6 @@
 #include "clip.h"
 #include "colormodels.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "flip.h"
 #include "flipwindow.h"
@@ -246,7 +246,7 @@ int FlipMain::load_defaults()
 	sprintf(directory, "%sflip.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.flip_horizontal = defaults->get("FLIP_HORIZONTAL", config.flip_horizontal);

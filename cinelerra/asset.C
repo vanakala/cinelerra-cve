@@ -1,13 +1,15 @@
 
 #include "asset.h"
-#include "defaults.h"
 #include "assets.h"
+#include "bchash.h"
+#include "bcsignals.h"
 #include "edl.h"
 #include "file.h"
 #include "filesystem.h"
 #include "filexml.h"
 #include "quicktime.h"
 #include "interlacemodes.h"
+
 
 #include <stdio.h>
 #include <string.h>
@@ -111,7 +113,7 @@ int Asset::init_values()
 	vmpeg_preset = 0;
 	vmpeg_field_order = 0;
 
-// Divx parameters.  Defaults from encore2
+// Divx parameters.  BC_Hash from encore2
 	divx_bitrate = 2000000;
 	divx_rc_period = 50;
 	divx_rc_reaction_ratio = 45;
@@ -895,7 +897,7 @@ char* Asset::construct_param(char *param, char *prefix, char *return_value)
 #define UPDATE_DEFAULT(x, y) defaults->update(construct_param(x, prefix, string), y);
 #define GET_DEFAULT(x, y) defaults->get(construct_param(x, prefix, string), y);
 
-void Asset::load_defaults(Defaults *defaults, 
+void Asset::load_defaults(BC_Hash *defaults, 
 	char *prefix, 
 	int do_format,
 	int do_compression,
@@ -1033,7 +1035,7 @@ void Asset::load_defaults(Defaults *defaults,
 }
 
 // FUTURE: put more of the format specific variables in here
-void Asset::load_format_defaults(Defaults *defaults) {
+void Asset::load_format_defaults(BC_Hash *defaults) {
 	char temp[BCTEXTLEN];
 	char string[BCTEXTLEN];
 	if (! format) return;
@@ -1055,7 +1057,7 @@ void Asset::load_format_defaults(Defaults *defaults) {
 }
 	
 
-void Asset::save_defaults(Defaults *defaults, 
+void Asset::save_defaults(BC_Hash *defaults, 
 	char *prefix,
 	int do_format,
 	int do_compression,
@@ -1187,7 +1189,7 @@ void Asset::save_defaults(Defaults *defaults,
 
 
 // FUTURE: put more of the format specific variables in here
-void Asset::save_format_defaults(Defaults *defaults) {
+void Asset::save_format_defaults(BC_Hash *defaults) {
 	char temp[BCTEXTLEN];
 	char string[BCTEXTLEN];
 	if (! format) return;

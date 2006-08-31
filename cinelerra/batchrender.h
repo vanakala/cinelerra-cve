@@ -73,8 +73,8 @@ public:
 	void load_jobs(char *path, Preferences *preferences);
 // Not applicable to western civilizations
 	void save_jobs(char *path);
-	void load_defaults(Defaults *defaults);
-	void save_defaults(Defaults *defaults);
+	void load_defaults(BC_Hash *defaults);
+	void save_defaults(BC_Hash *defaults);
 // Create path for persistent storage functions
 	char* create_path(char *string);
 	void new_job();

@@ -10,7 +10,7 @@
 #include "confirmsave.h"
 #include "cwindowgui.h"
 #include "cwindow.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edits.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -279,7 +279,7 @@ void Render::start_batches(ArrayList<BatchRenderJob*> *jobs)
 }
 
 void Render::start_batches(ArrayList<BatchRenderJob*> *jobs,
-	Defaults *boot_defaults,
+	BC_Hash *boot_defaults,
 	Preferences *preferences,
 	ArrayList<PluginServer*> *plugindb)
 {

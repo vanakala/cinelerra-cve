@@ -193,11 +193,11 @@ void FadeEngine::do_fade(VFrame *output, VFrame *input, float alpha)
 
 void FadeEngine::init_packages()
 {
-	for(int i = 0; i < total_packages; i++)
+	for(int i = 0; i < get_total_packages(); i++)
 	{
-		FadePackage *package = (FadePackage*)packages[i];
-		package->out_row1 = input->get_h() * i / total_packages;
-		package->out_row2 = input->get_h() * (i + 1) / total_packages;
+		FadePackage *package = (FadePackage*)get_package(i);
+		package->out_row1 = input->get_h() * i / get_total_packages();
+		package->out_row2 = input->get_h() * (i + 1) / get_total_packages();
 	}
 }
 

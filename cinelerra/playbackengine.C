@@ -1,6 +1,6 @@
 #include "cache.h"
 #include "condition.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "localsession.h"

@@ -13,7 +13,7 @@
 #include "channel.inc"
 #include "channeldb.inc"
 #include "cwindow.inc"
-#include "defaults.inc"
+#include "bchash.inc"
 #include "edit.inc"
 #include "edl.inc"
 #include "filesystem.inc"
@@ -370,7 +370,7 @@ public:
 
 	SplashGUI *splash_window;
 	MainUndo *undo;
-	Defaults *defaults;
+	BC_Hash *defaults;
 	Assets *assets;
 // CICaches for drawing timeline only
 	CICache *audio_cache, *video_cache;
@@ -453,7 +453,7 @@ public:
 	int brender_available(int position);
 	void set_brender_start();
 
-	static void init_defaults(Defaults* &defaults, 
+	static void init_defaults(BC_Hash* &defaults, 
 		char *config_path);
 	void init_edl();
 	void init_awindow();

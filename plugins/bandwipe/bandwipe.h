@@ -92,7 +92,7 @@ public:
 	int bands;
 	int direction;
 	BandWipeThread *thread;
-	Defaults *defaults;
+	BC_Hash *defaults;
 };
 
 #endif

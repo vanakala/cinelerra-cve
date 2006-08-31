@@ -4,7 +4,7 @@
 
 #include "bcdisplayinfo.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "gradient.h"
 #include "keyframe.h"
@@ -672,7 +672,7 @@ int GradientMain::load_defaults()
 	sprintf(directory, "%sgradient.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 // printf("GradientMain::load_defaults %d %d %d %d\n",
@@ -1140,15 +1140,15 @@ GradientServer::GradientServer(GradientMain *plugin,
 
 void GradientServer::init_packages()
 {
-	for(int i = 0; i < total_packages; i++)
+	for(int i = 0; i < get_total_packages(); i++)
 	{
-		GradientPackage *package = (GradientPackage*)packages[i];
+		GradientPackage *package = (GradientPackage*)get_package(i);
 		package->y1 = plugin->input->get_h() * 
 			i / 
-			total_packages;
+			get_total_packages();
 		package->y2 = plugin->input->get_h() * 
 			(i + 1) /
-			total_packages;
+			get_total_packages();
 	}
 }
 

@@ -4,7 +4,7 @@
 
 #include "bcdisplayinfo.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "keyframe.h"
 #include "loadbalance.h"
@@ -462,7 +462,7 @@ int DownSampleMain::load_defaults()
 	sprintf(directory, "%sdownsample.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.horizontal = defaults->get("HORIZONTAL", config.horizontal);
@@ -694,11 +694,11 @@ void DownSampleServer::init_packages()
 {
 	int y1 = plugin->config.vertical_y - plugin->config.vertical;
 	int total_strips = (int)((float)plugin->output->get_h() / plugin->config.vertical + 1);
-	int strips_per_package = (int)((float)total_strips / total_packages + 1);
+	int strips_per_package = (int)((float)total_strips / get_total_packages() + 1);
 
-	for(int i = 0; i < total_packages; i++)
+	for(int i = 0; i < get_total_packages(); i++)
 	{
-		DownSamplePackage *package = (DownSamplePackage*)packages[i];
+		DownSamplePackage *package = (DownSamplePackage*)get_package(i);
 		package->y1 = y1;
 		package->y2 = y1 + strips_per_package * plugin->config.vertical;
 		package->y1 = MIN(plugin->output->get_h(), package->y1);

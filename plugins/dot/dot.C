@@ -232,11 +232,11 @@ LoadPackage* DotServer::new_package()
 
 void DotServer::init_packages()
 {
-	for(int i = 0; i < total_packages; i++)
+	for(int i = 0; i < get_total_packages(); i++)
 	{
-		DotPackage *package = (DotPackage*)packages[i];
-		package->row1 = plugin->input_ptr->get_h() * i / total_packages;
-		package->row2 = plugin->input_ptr->get_h() * (i + 1) / total_packages;
+		DotPackage *package = (DotPackage*)get_package(i);
+		package->row1 = plugin->input_ptr->get_h() * i / get_total_packages();
+		package->row2 = plugin->input_ptr->get_h() * (i + 1) / get_total_packages();
 	}
 }
 

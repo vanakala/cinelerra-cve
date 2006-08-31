@@ -2,7 +2,7 @@
 #define VIDEOWINDOW_H
 
 
-#include "defaults.inc"
+#include "bchash.inc"
 #include "mwindow.inc"
 #include "thread.h"
 #include "vframe.inc"
@@ -17,8 +17,8 @@ public:
 	
 	int create_objects();
 	int init_window();
-	int load_defaults(Defaults *defaults);
-	int update_defaults(Defaults *defaults);
+	int load_defaults(BC_Hash *defaults);
+	int update_defaults(BC_Hash *defaults);
 	int get_aspect_ratio(float &aspect_w, float &aspect_h);
 	int fix_size(int &w, int &h, int width_given, float aspect_ratio);
 	int get_full_sizes(int &w, int &h);

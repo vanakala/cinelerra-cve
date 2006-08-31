@@ -1,6 +1,6 @@
 #include "bcdisplayinfo.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "language.h"
 #include "picon_png.h"
@@ -360,7 +360,7 @@ int Spectrogram::load_defaults()
 	char directory[BCTEXTLEN];
 
 	sprintf(directory, "%sspectrogram.rc", BCASTDIR);
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 	config.level = defaults->get("LEVEL", config.level);
 	return 0;

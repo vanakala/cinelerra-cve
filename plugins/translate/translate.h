@@ -5,7 +5,7 @@
 
 class TranslateMain;
 
-#include "defaults.h"
+#include "bchash.h"
 #include "mutex.h"
 #include "translatewin.h"
 #include "overlayframe.h"
@@ -53,7 +53,7 @@ public:
 
 	OverlayFrame *overlayer;   // To translate images
 	VFrame *temp_frame;        // Used if buffers are the same
-	Defaults *defaults;
+	BC_Hash *defaults;
 	TranslateConfig config;
 };
 

@@ -73,7 +73,7 @@ public:
 // non realtime support
 	int load_defaults();
 	int save_defaults();
-	Defaults *defaults;
+	BC_Hash *defaults;
 	
 	ReverbThread *thread;
 	ReverbEngine **engine;

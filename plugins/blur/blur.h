@@ -7,7 +7,7 @@ class BlurEngine;
 #define MAXRADIUS 100
 
 #include "blurwindow.inc"
-#include "defaults.inc"
+#include "bchash.inc"
 #include "mutex.h"
 #include "pluginvclient.h"
 #include "thread.h"

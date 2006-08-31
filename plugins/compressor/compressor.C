@@ -3,7 +3,7 @@
 #include "clip.h"
 #include "compressor.h"
 #include "cursors.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "language.h"
 #include "picon_png.h"
@@ -163,7 +163,7 @@ int CompressorEffect::load_defaults()
 {
 	char directory[BCTEXTLEN], string[BCTEXTLEN];
 	sprintf(directory, "%scompression.rc", BCASTDIR);
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.trigger = defaults->get("TRIGGER", config.trigger);

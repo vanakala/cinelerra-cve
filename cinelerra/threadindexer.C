@@ -2,7 +2,7 @@
 #include "assets.h"
 #include "bcprogressbox.h"
 #include "condition.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filesystem.h"
 #include "guicast.h"
 #include "indexfile.h"

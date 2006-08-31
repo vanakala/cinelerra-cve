@@ -22,7 +22,7 @@ public:
 	~VTrack();
 
 	int create_objects();
-	int load_defaults(Defaults *defaults);
+	int load_defaults(BC_Hash *defaults);
 	void set_default_title();
 	PluginSet* new_plugins();
 	int channel_is_playable(int64_t position, int direction, int *do_channel);

@@ -6,7 +6,7 @@
 #include "autoconf.inc"
 #include "automation.inc"
 #include "datatype.h"
-#include "defaults.inc"
+#include "bchash.inc"
 #include "edit.inc"
 #include "edits.inc"
 #include "edl.inc"
@@ -40,7 +40,7 @@ public:
 
 	int create_objects();
 	int get_id();
-	virtual int load_defaults(Defaults *defaults);
+	virtual int load_defaults(BC_Hash *defaults);
 	int load(FileXML *file, int track_offset, uint32_t load_flags);
 	virtual int save_header(FileXML *file) { return 0; };
 	virtual int save_derived(FileXML *file) { return 0; };

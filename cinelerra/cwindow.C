@@ -6,7 +6,7 @@
 #include "cwindow.h"
 #include "cwindowgui.h"
 #include "cwindowtool.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "mainmenu.h"

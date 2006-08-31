@@ -5,7 +5,7 @@
 #include "channelpicker.h"
 #include "clip.h"
 #include "condition.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "file.h"

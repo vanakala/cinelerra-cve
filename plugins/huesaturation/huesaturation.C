@@ -1,6 +1,6 @@
 #include "bcdisplayinfo.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "guicast.h"
 #include "language.h"
@@ -129,7 +129,7 @@ public:
 	
 	HueConfig config;
 	VFrame *input, *output;
-	Defaults *defaults;
+	BC_Hash *defaults;
 	HueThread *thread;
 	HueEngine *engine;
 };
@@ -315,11 +315,11 @@ HueEngine::HueEngine(HueEffect *plugin, int cpus)
 }
 void HueEngine::init_packages()
 {
-	for(int i = 0; i < LoadServer::total_packages; i++)
+	for(int i = 0; i < LoadServer::get_total_packages(); i++)
 	{
-		HuePackage *pkg = (HuePackage*)packages[i];
-		pkg->row1 = plugin->input->get_h() * i / LoadServer::total_packages;
-		pkg->row2 = plugin->input->get_h() * (i + 1) / LoadServer::total_packages;
+		HuePackage *pkg = (HuePackage*)get_package(i);
+		pkg->row1 = plugin->input->get_h() * i / LoadServer::get_total_packages();
+		pkg->row2 = plugin->input->get_h() * (i + 1) / LoadServer::get_total_packages();
 	}
 }
 LoadClient* HueEngine::new_client()
@@ -545,7 +545,7 @@ int HueEffect::load_defaults()
 {
 	char directory[BCTEXTLEN];
 	sprintf(directory, "%shuesaturation.rc", BCASTDIR);
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 	config.hue = defaults->get("HUE", config.hue);
 	config.saturation = defaults->get("SATURATION", config.saturation);

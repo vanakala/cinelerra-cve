@@ -1,7 +1,7 @@
 #ifndef SWAPCHANNELS_H
 #define SWAPCHANNELS_H
 
-#include "defaults.inc"
+#include "bchash.inc"
 #include "guicast.h"
 #include "mutex.h"
 #include "pluginvclient.h"
@@ -127,7 +127,7 @@ public:
 	VFrame *temp;
 	SwapConfig config;
 	SwapThread *thread;
-	Defaults *defaults;
+	BC_Hash *defaults;
 };
 
 

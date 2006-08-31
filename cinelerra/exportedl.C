@@ -1,7 +1,7 @@
 #include "asset.h"
+#include "bchash.h"
 #include "condition.h"
 #include "confirmsave.h"
-#include "defaults.h"
 #include "edits.h"
 #include "edl.h"
 #include "edlsession.h"

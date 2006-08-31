@@ -6,7 +6,7 @@
 #include "channeldb.h"
 #include "channelpicker.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "errorbox.h"
@@ -137,7 +137,7 @@ Record::~Record()
 int Record::load_defaults()
 {
 	char string[BCTEXTLEN];
-	Defaults *defaults = mwindow->defaults;
+	BC_Hash *defaults = mwindow->defaults;
 
 // Load default asset
 	default_asset->load_defaults(defaults, 
@@ -231,7 +231,7 @@ SET_TRACE
 int Record::save_defaults()
 {
 	char string[BCTEXTLEN];
-	Defaults *defaults = mwindow->defaults;
+	BC_Hash *defaults = mwindow->defaults;
 	editing_batch = 0;
 
 // Save default asset

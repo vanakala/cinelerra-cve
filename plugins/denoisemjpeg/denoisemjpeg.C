@@ -1,5 +1,5 @@
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "denoisemjpeg.h"
 #include "filexml.h"
 #include "guicast.h"
@@ -494,7 +494,7 @@ int DenoiseMJPEG::load_defaults()
 	sprintf(directory, "%sdenoisevideo.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.radius = defaults->get("RADIUS", config.radius);

@@ -45,7 +45,7 @@ public:
 	YUVThread *thread;
 
 private:
-	Defaults *defaults;
+	BC_Hash *defaults;
 	YUVEngine **engine;
 };
 

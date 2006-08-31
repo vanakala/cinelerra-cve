@@ -4,7 +4,7 @@
 class BlurZoomMain;
 class BlurZoomEngine;
 
-#include "defaults.h"
+#include "bchash.h"
 #include "loadbalance.h"
 #include "mutex.h"
 #include "pluginvclient.h"
@@ -105,7 +105,7 @@ public:
 
 	int y_threshold;
 
-	Defaults *defaults;
+	BC_Hash *defaults;
 	BlurZoomEngine **engine;
 	VFrame *input_ptr, *output_ptr;
 };

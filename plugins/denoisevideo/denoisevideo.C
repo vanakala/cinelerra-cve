@@ -1,5 +1,5 @@
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "denoisevideo.h"
 #include "filexml.h"
 #include "guicast.h"
@@ -356,7 +356,7 @@ int DenoiseVideo::load_defaults()
 	sprintf(directory, "%sdenoisevideo.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.frames = defaults->get("FRAMES", config.frames);

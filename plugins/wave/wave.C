@@ -1,6 +1,6 @@
 #include "bcdisplayinfo.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "guicast.h"
 #include "keyframe.h"
@@ -183,7 +183,7 @@ public:
 	WaveConfig config;
 	VFrame *temp_frame;
 	VFrame *input, *output;
-	Defaults *defaults;
+	BC_Hash *defaults;
 	WaveThread *thread;
 	WaveServer *engine;
 };
@@ -486,7 +486,7 @@ int WaveEffect::load_defaults()
 	sprintf(directory, "%swave.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.mode = defaults->get("MODE", config.mode);
@@ -842,11 +842,11 @@ WaveServer::WaveServer(WaveEffect *plugin, int cpus)
 
 void WaveServer::init_packages()
 {
-	for(int i = 0; i < LoadServer::total_packages; i++)
+	for(int i = 0; i < LoadServer::get_total_packages(); i++)
 	{
-		WavePackage *pkg = (WavePackage*)packages[i];
-		pkg->row1 = plugin->input->get_h() * i / LoadServer::total_packages;
-		pkg->row2 = plugin->input->get_h() * (i + 1) / LoadServer::total_packages;
+		WavePackage *pkg = (WavePackage*)get_package(i);
+		pkg->row1 = plugin->input->get_h() * i / LoadServer::get_total_packages();
+		pkg->row2 = plugin->input->get_h() * (i + 1) / LoadServer::get_total_packages();
 	}
 }
 

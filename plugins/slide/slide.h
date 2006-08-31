@@ -106,7 +106,7 @@ public:
 	int motion_direction;
 	int direction;
 	SlideThread *thread;
-	Defaults *defaults;
+	BC_Hash *defaults;
 };
 
 #endif

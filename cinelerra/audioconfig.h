@@ -1,7 +1,7 @@
 #ifndef AUDIOCONFIG_H
 #define AUDIOCONFIG_H
 
-#include "defaults.inc"
+#include "bchash.inc"
 
 // OSS requires specific channel and bitrate settings for full duplex
 
@@ -12,8 +12,8 @@ public:
 	~AudioConfig();
 
 	AudioConfig& operator=(AudioConfig &that);
-	int load_defaults(Defaults *defaults);
-	int save_defaults(Defaults *defaults);
+	int load_defaults(BC_Hash *defaults);
+	int save_defaults(BC_Hash *defaults);
 
 // Input
 	int audio_in_driver;

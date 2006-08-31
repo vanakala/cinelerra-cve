@@ -1,6 +1,6 @@
 #include "bcdisplayinfo.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "guicast.h"
 #include "language.h"
@@ -135,7 +135,7 @@ public:
 	VFrame *input;
 	VideoScopeConfig config;
 	VideoScopeEngine *engine;
-	Defaults *defaults;
+	BC_Hash *defaults;
 	VideoScopeThread *thread;
 };
 
@@ -398,7 +398,7 @@ int VideoScopeEffect::load_defaults()
 	sprintf(directory, "%svideoscope.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	w = defaults->get("W", w);
@@ -717,11 +717,11 @@ VideoScopeEngine::~VideoScopeEngine()
 
 void VideoScopeEngine::init_packages()
 {
-	for(int i = 0; i < LoadServer::total_packages; i++)
+	for(int i = 0; i < LoadServer::get_total_packages(); i++)
 	{
-		VideoScopePackage *pkg = (VideoScopePackage*)packages[i];
-		pkg->row1 = plugin->input->get_h() * i / LoadServer::total_packages;
-		pkg->row2 = plugin->input->get_h() * (i + 1) / LoadServer::total_packages;
+		VideoScopePackage *pkg = (VideoScopePackage*)get_package(i);
+		pkg->row1 = plugin->input->get_h() * i / LoadServer::get_total_packages();
+		pkg->row2 = plugin->input->get_h() * (i + 1) / LoadServer::get_total_packages();
 	}
 }
 

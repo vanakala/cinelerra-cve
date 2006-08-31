@@ -1,5 +1,5 @@
 #include "bcdisplayinfo.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "freezeframe.h"
 #include "language.h"
@@ -240,7 +240,7 @@ int FreezeFrameMain::load_defaults()
 	sprintf(directory, "%sfreezeframe.rc", BCASTDIR);
 
 // load the defaults
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 
 	config.enabled = defaults->get("ENABLED", config.enabled);

@@ -264,8 +264,8 @@ void BlurZoomMain::raise_window()
 
 
 
-BlurZoomServer::BlurZoomServer(BlurZoomMain *plugin, int total_clients, int total_packages)
- : LoadServer(total_clients, total_packages)
+BlurZoomServer::BlurZoomServer(BlurZoomMain *plugin, int total_clients, total_packages)
+ : LoadServer(total_clients, get_total_packages())
 {
 	this->plugin = plugin;
 }
@@ -288,12 +288,12 @@ LoadPackage* BlurZoomServer::new_package()
 
 void BlurZoomServer::init_packages()
 {
-	for(int i = 0; i < total_packages; i++)
+	for(int i = 0; i < get_total_packages(); i++)
 	{
-		BlurZoomPackage *package = (BlurZoomPackage*)packages[i];
-		package->row1 = plugin->input_ptr->get_h() / total_packages * i;
-		package->row2 = package->row1 + plugin->input_ptr->get_h() / total_packages;
-		if(i >= total_packages - 1)
+		BlurZoomPackage *package = (BlurZoomPackage*)get_package(i);
+		package->row1 = plugin->input_ptr->get_h() / get_total_packages() * i;
+		package->row2 = package->row1 + plugin->input_ptr->get_h() / get_total_packages();
+		if(i >= get_total_packages() - 1)
 			package->row2 = plugin->input_ptr->get_h();
 	}
 }

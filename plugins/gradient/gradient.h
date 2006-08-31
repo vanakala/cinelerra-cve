@@ -11,7 +11,7 @@ class GradientServer;
 #define MAXRADIUS 10000
 
 #include "colorpicker.h"
-#include "defaults.inc"
+#include "bchash.inc"
 #include "filexml.inc"
 #include "guicast.h"
 #include "loadbalance.h"

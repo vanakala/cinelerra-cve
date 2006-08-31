@@ -1,7 +1,7 @@
 #include "clip.h"
 #include "cplayback.h"
 #include "cwindow.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "filexml.h"

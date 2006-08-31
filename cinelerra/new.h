@@ -6,7 +6,7 @@
 #include "file.inc"
 #include "filexml.inc"
 #include "guicast.h"
-#include "defaults.inc"
+#include "bchash.inc"
 #include "formatpresets.h"
 #include "mwindow.inc"
 #include "thread.h"

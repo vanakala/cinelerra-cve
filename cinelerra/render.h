@@ -9,7 +9,7 @@
 #include "cache.inc"
 #include "compresspopup.h"
 #include "condition.inc"
-#include "defaults.inc"
+#include "bchash.inc"
 #include "edit.inc"
 #include "errorbox.inc"
 #include "file.inc"
@@ -88,7 +88,7 @@ public:
 	void start_batches(ArrayList<BatchRenderJob*> *jobs);
 // The batches are processed in the foreground in non interactive mode.
 	void start_batches(ArrayList<BatchRenderJob*> *jobs,
-		Defaults *boot_defaults,
+		BC_Hash *boot_defaults,
 		Preferences *preferences,
 		ArrayList<PluginServer*> *plugindb);
 // Called by BatchRender to stop the operation.

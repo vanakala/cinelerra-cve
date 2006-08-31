@@ -1,5 +1,5 @@
 #include "bcdisplayinfo.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "language.h"
 #include "mainprogress.h"
 #include "picon_png.h"
@@ -47,7 +47,7 @@ int ReFrame::load_defaults()
 
 // load the defaults
 
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 
 	defaults->load();
 

@@ -1,6 +1,6 @@
 #include "bcdisplayinfo.h"
 #include "clip.h"
-#include "defaults.h"
+#include "bchash.h"
 #include "filexml.h"
 #include "guicast.h"
 #include "language.h"
@@ -74,7 +74,7 @@ public:
 
 	YUVConfig config;
 	YUVThread *thread;
-	Defaults *defaults;
+	BC_Hash *defaults;
 };
 
 
@@ -237,7 +237,7 @@ int YUVEffect::load_defaults()
 {
 	char directory[BCTEXTLEN];
 	sprintf(directory, "%syuv.rc", BCASTDIR);
-	defaults = new Defaults(directory);
+	defaults = new BC_Hash(directory);
 	defaults->load();
 	config.y = defaults->get("Y", config.y);
 	config.u = defaults->get("U", config.u);
