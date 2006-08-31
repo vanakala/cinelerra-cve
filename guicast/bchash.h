@@ -1,5 +1,5 @@
-#ifndef DEFAULTS_H
-#define DEFAULTS_H
+#ifndef BCHASH_H
+#define BCHASH_H
 
 
 
@@ -11,12 +11,12 @@
 #include "properties.h"
 
 
-class Defaults
+class BC_Hash
 {
 public:
-	Defaults();
-	Defaults(char *filename);
-	virtual ~Defaults();
+	BC_Hash();
+	BC_Hash(char *filename);
+	virtual ~BC_Hash();
 
 	int load();        // load from disk file
 	int save();        // save to disk file

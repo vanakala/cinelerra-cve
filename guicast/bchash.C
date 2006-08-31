@@ -1,16 +1,17 @@
 #include <stdlib.h>
 #include <string.h>
-#include "defaults.h"
+#include "bchash.h"
+#include "bcsignals.h"
 #include "filesystem.h"
 #include "stringfile.h"
 
-Defaults::Defaults()
+BC_Hash::BC_Hash()
 {
 	this->filename[0] = 0;
 	this->properties = new Properties();
 }
 
-Defaults::Defaults(char *filename)
+BC_Hash::BC_Hash(char *filename)
 {
 	strcpy(this->filename, filename);
 	this->properties = new Properties();
@@ -19,19 +20,19 @@ Defaults::Defaults(char *filename)
 	directory.parse_tildas(this->filename);
 }
 
-Defaults::~Defaults()
+BC_Hash::~BC_Hash()
 {
 	delete properties;
 }
 
-int Defaults::load()
+int BC_Hash::load()
 {
 	StringFile stringfile(filename);
 	load_stringfile(&stringfile);
 	return 0;
 }
 
-void Defaults::load_stringfile(StringFile *file)
+void BC_Hash::load_stringfile(StringFile *file)
 {
 	char arg1[1024], arg2[1024];
 	while(file->get_pointer() < file->get_length())
@@ -41,7 +42,7 @@ void Defaults::load_stringfile(StringFile *file)
 	}
 }
 
-void Defaults::save_stringfile(StringFile *file)
+void BC_Hash::save_stringfile(StringFile *file)
 {
 	for(Property *current=properties->first; current; current=NEXT)
 	{
@@ -49,7 +50,7 @@ void Defaults::save_stringfile(StringFile *file)
 	}
 }
 
-int Defaults::save()
+int BC_Hash::save()
 {
 	StringFile stringfile;
 	save_stringfile(&stringfile);
@@ -57,7 +58,7 @@ int Defaults::save()
 	return 0;
 }
 
-int Defaults::load_string(char *string)
+int BC_Hash::load_string(char *string)
 {
 	StringFile stringfile;
 	stringfile.read_from_string(string);
@@ -65,7 +66,7 @@ int Defaults::load_string(char *string)
 	return 0;
 }
 
-int Defaults::save_string(char* &string)
+int BC_Hash::save_string(char* &string)
 {
 	StringFile stringfile;
 	save_stringfile(&stringfile);
@@ -76,7 +77,7 @@ int Defaults::save_string(char* &string)
 
 
 
-int32_t Defaults::get(char *name, int32_t default_)
+int32_t BC_Hash::get(char *name, int32_t default_)
 {
 	Property *property = properties->get(name);
 
@@ -86,7 +87,7 @@ int32_t Defaults::get(char *name, int32_t default_)
 	return default_;  // failed
 }
 
-int64_t Defaults::get(char *name, int64_t default_)
+int64_t BC_Hash::get(char *name, int64_t default_)
 {
 	Property *property = properties->get(name);
 	int64_t result = default_;
@@ -97,7 +98,7 @@ int64_t Defaults::get(char *name, int64_t default_)
 	return result;
 }
 
-double Defaults::get(char *name, double default_)
+double BC_Hash::get(char *name, double default_)
 {
 	Property *property = properties->get(name);
 
@@ -107,7 +108,7 @@ double Defaults::get(char *name, double default_)
 	return default_;  // failed
 }
 
-float Defaults::get(char *name, float default_)
+float BC_Hash::get(char *name, float default_)
 {
 	Property *property = properties->get(name);
 
@@ -117,7 +118,7 @@ float Defaults::get(char *name, float default_)
 	return default_;  // failed
 }
 
-char* Defaults::get(char *name, char *default_)
+char* BC_Hash::get(char *name, char *default_)
 {
 	Property *property = properties->get(name);
 
@@ -127,35 +128,35 @@ char* Defaults::get(char *name, char *default_)
 	return default_;
 }
 
-int Defaults::update(char *name, double value) // update a value if it exists
+int BC_Hash::update(char *name, double value) // update a value if it exists
 {
 	char string[1024];
 	sprintf(string, "%.16e", value);
 	return update(name, string);
 }
 
-int Defaults::update(char *name, float value) // update a value if it exists
+int BC_Hash::update(char *name, float value) // update a value if it exists
 {
 	char string[1024];
 	sprintf(string, "%.6e", value);
 	return update(name, string);
 }
 
-int32_t Defaults::update(char *name, int32_t value) // update a value if it exists
+int32_t BC_Hash::update(char *name, int32_t value) // update a value if it exists
 {
 	char string[1024];
 	sprintf(string, "%d", value);
 	return update(name, string);
 }
 
-int Defaults::update(char *name, int64_t value) // update a value if it exists
+int BC_Hash::update(char *name, int64_t value) // update a value if it exists
 {
 	char string[1024];
 	sprintf(string, "%lld", value);
 	return update(name, string);
 }
 
-int Defaults::update(char *name, char *value)
+int BC_Hash::update(char *name, char *value)
 {
 	Property *property = properties->get(name);
 
