@@ -58,8 +58,9 @@ Theme::Theme()
 	pan_h = 32;
 	pan_x = 50;
 	play_h = 22;
-	title_h = 22;
+	title_h = 23;
 
+	preferences_category_overlap = 0;
 
 	loadmode_w = 350;
 

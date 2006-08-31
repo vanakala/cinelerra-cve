@@ -24,11 +24,11 @@ int AboutPrefs::create_objects()
 
 	BC_Resources *resources = BC_WindowBase::get_resources();
 
-	add_subwindow(new BC_Title(mwindow->theme->preferencestitle_x, 
-		mwindow->theme->preferencestitle_y, 
-		_("About"), 
-		LARGEFONT, 
-		resources->text_default));
+// 	add_subwindow(new BC_Title(mwindow->theme->preferencestitle_x, 
+// 		mwindow->theme->preferencestitle_y, 
+// 		_("About"), 
+// 		LARGEFONT, 
+// 		resources->text_default));
 	
 	x = mwindow->theme->preferencesoptions_x;
 	y = mwindow->theme->preferencesoptions_y +

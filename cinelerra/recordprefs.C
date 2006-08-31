@@ -32,15 +32,17 @@ int RecordPrefs::create_objects()
 	int x, y, x2;
 	char string[BCTEXTLEN];
 	BC_Resources *resources = BC_WindowBase::get_resources();
+	BC_Title *title;
 
-	add_subwindow(new BC_Title(mwindow->theme->preferencestitle_x, 
-		mwindow->theme->preferencestitle_y, 
-		_("Audio In"), 
-		LARGEFONT, 
-		resources->text_default));
 	x = mwindow->theme->preferencesoptions_x;
 	y = mwindow->theme->preferencesoptions_y;
 
+	add_subwindow(title = new BC_Title(x, 
+		y, 
+		_("File Format:"), 
+		LARGEFONT, 
+		resources->text_default));
+	y += title->get_h() + 5;
 
 	add_subwindow(new BC_Title(x, y, _("Record Driver:"), MEDIUMFONT, resources->text_default));
 	in_device = new ADevicePrefs(x + 110, 

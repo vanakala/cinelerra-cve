@@ -323,12 +323,13 @@ void SUV::initialize()
 	rmonitor_meters = new_image("recordmonitor_meters.png");
 
 
-	preferencescategory_x = 5;
+	preferences_category_overlap = 0;
+	preferencescategory_x = 0;
 	preferencescategory_y = 5;
 	preferencestitle_x = 5;
 	preferencestitle_y = 10;
 	preferencesoptions_x = 5;
-	preferencesoptions_y = 40;
+	preferencesoptions_y = 0;
 
 // MWindow
 	message_normal = resources->text_default;
@@ -553,6 +554,23 @@ void SUV::initialize()
 		"batchcancel_up.png",
 		"batchcancel_hi.png",
 		"batchcancel_dn.png");
+
+	new_image_set("category_button",
+		3,
+		"preferencesbutton_dn.png",
+		"preferencesbutton_dnhi.png",
+		"preferencesbutton_dnlo.png");
+
+	new_image_set("category_button_checked",
+		3,
+		"preferencesbutton_up.png",
+		"preferencesbutton_uphi.png",
+		"preferencesbutton_dnlo.png");
+
+
+
+
+
 
 	new_toggle("arrow.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "arrow");
 	new_toggle("autokeyframe.png", transport_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "autokeyframe");

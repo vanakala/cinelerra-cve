@@ -401,6 +401,11 @@ PNGS = \
 	pot_hi.png \
 	pot_up.png \
 	preferences_bg.png \
+	preferencesbutton_dn.png \
+	preferencesbutton_dnhi.png \
+	preferencesbutton_dnlo.png \
+	preferencesbutton_up.png \
+	preferencesbutton_uphi.png \
 	presentation_dn.png \
 	presentation_hi.png \
 	presentation_up.png \

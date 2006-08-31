@@ -39,14 +39,16 @@ int PerformancePrefs::create_objects()
 	node_list = 0;
 	generate_node_list();
 
-	add_subwindow(new BC_Title(mwindow->theme->preferencestitle_x, 
-		mwindow->theme->preferencestitle_y, 
-		_("Performance"), 
-		LARGEFONT, 
-		resources->text_default));
-
 	xmargin1 = x = mwindow->theme->preferencesoptions_x;
 	y = mwindow->theme->preferencesoptions_y;
+
+// 	add_subwindow(new BC_Title(x, 
+// 		y, 
+// 		_("Time Format"), 
+// 		LARGEFONT, 
+// 		resources->text_default));
+// 
+// 	y += get_text_height(LARGEFONT) + 5;
 	
 	add_subwindow(new BC_Title(x, y + 5, _("Cache size (MB):"), MEDIUMFONT, resources->text_default));
 	cache_size = new CICacheSize(x + 230, 

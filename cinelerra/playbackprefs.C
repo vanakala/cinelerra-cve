@@ -38,15 +38,18 @@ int PlaybackPrefs::create_objects()
 
 	playback_config = pwindow->thread->edl->session->playback_config;
 
-// Audio
-	add_subwindow(new BC_Title(mwindow->theme->preferencestitle_x, 
-		mwindow->theme->preferencestitle_y, 
-		_("Audio Out"), 
-		LARGEFONT, 
-		resources->text_default));
 	x = mwindow->theme->preferencesoptions_x;
 	y = mwindow->theme->preferencesoptions_y;
 
+// Audio
+	add_subwindow(new BC_Title(x, 
+		y, 
+		_("Audio Out"), 
+		LARGEFONT));
+
+SET_TRACE
+
+	y += get_text_height(LARGEFONT) + 5;
 
 
 	BC_Title *title1, *title2;
@@ -111,14 +114,14 @@ SET_TRACE
 	y += 5;
 
 SET_TRACE
-	add_subwindow(new BC_Title(x, y, _("Video Out"), LARGEFONT, resources->text_default));
+	add_subwindow(new BC_Title(x, y, _("Video Out"), LARGEFONT));
 	y += 30;
 
 SET_TRACE
 	add_subwindow(new VideoEveryFrame(pwindow, x, y));
 
-	add_subwindow(new BC_Title(x + 200, y + 10, _("Framerate achieved:")));
-	add_subwindow(framerate_title = new BC_Title(x + 350, y + 10, _("--"), MEDIUMFONT, RED));
+	add_subwindow(new BC_Title(x + 200, y + 5, _("Framerate achieved:")));
+	add_subwindow(framerate_title = new BC_Title(x + 350, y + 5, _("--"), MEDIUMFONT, RED));
 	draw_framerate();
 
 	y += 35;

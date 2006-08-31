@@ -168,6 +168,8 @@ public:
 	int pan_x;
 	int play_h;
 	int preferencescategory_x, preferencescategory_y;
+// Overlap between category buttons
+	int preferences_category_overlap;
 	int preferencestitle_x, preferencestitle_y;
 	int preferencesoptions_x, preferencesoptions_y;
 	int patchbay_x, patchbay_y, patchbay_w, patchbay_h;

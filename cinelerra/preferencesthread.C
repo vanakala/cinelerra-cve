@@ -256,19 +256,19 @@ char* PreferencesThread::category_to_text(int category)
 {
 	switch(category)
 	{
-		case 0:
+		case PLAYBACK:
 			return _("Playback");
 			break;
-		case 1:
+		case RECORD:
 			return _("Recording");
 			break;
-		case 2:
+		case PERFORMANCE:
 			return _("Performance");
 			break;
-		case 3:
+		case INTERFACE:
 			return _("Interface");
 			break;
-		case 4:
+		case ABOUT:
 			return _("About");
 			break;
 	}
@@ -317,6 +317,7 @@ PreferencesWindow::PreferencesWindow(MWindow *mwindow,
 	this->mwindow = mwindow;
 	this->thread = thread;
 	dialog = 0;
+	category = 0;
 }
 
 PreferencesWindow::~PreferencesWindow()
@@ -336,14 +337,31 @@ int PreferencesWindow::create_objects()
 	mwindow->theme->draw_preferences_bg(this);
 	flash();
 
-
+	int x = mwindow->theme->preferencescategory_x;
+	int y = mwindow->theme->preferencescategory_y;
 	for(int i = 0; i < CATEGORIES; i++)
-		categories.append(new BC_ListBoxItem(thread->category_to_text(i)));
-	category = new PreferencesCategory(mwindow, 
-		thread, 
-		mwindow->theme->preferencescategory_x, 
-		mwindow->theme->preferencescategory_y);
-	category->create_objects();
+	{
+		add_subwindow(category_button[i] = new PreferencesButton(mwindow,
+			thread,
+			x,
+			y,
+			i,
+			thread->category_to_text(i),
+			(i == thread->current_dialog) ?
+				mwindow->theme->get_image_set("category_button_checked") : 
+				mwindow->theme->get_image_set("category_button")));
+		x += category_button[i]->get_w() -
+			mwindow->theme->preferences_category_overlap;
+	}
+
+
+// 	for(int i = 0; i < CATEGORIES; i++)
+// 		categories.append(new BC_ListBoxItem(thread->category_to_text(i)));
+// 	category = new PreferencesCategory(mwindow, 
+// 		thread, 
+// 		mwindow->theme->preferencescategory_x, 
+// 		mwindow->theme->preferencescategory_y);
+// 	category->create_objects();
 
 
 	add_subwindow(button = new PreferencesOK(mwindow, thread));
@@ -375,29 +393,44 @@ int PreferencesWindow::set_current_dialog(int number)
 	if(dialog) delete dialog;
 	dialog = 0;
 
+// Redraw category buttons
+	for(int i = 0; i < CATEGORIES; i++)
+	{
+		if(i == number)
+		{
+			category_button[i]->set_images(
+				mwindow->theme->get_image_set("category_button_checked"));
+		}
+		else
+		{
+			category_button[i]->set_images(
+				mwindow->theme->get_image_set("category_button"));
+		}
+		category_button[i]->draw_face();
+
+// Copy face to background for next button's overlap.
+// Still can't to state changes right.
+	}
+
 	switch(number)
 	{
-		case 0:
+		case PreferencesThread::PLAYBACK:
 			add_subwindow(dialog = new PlaybackPrefs(mwindow, this));
 			break;
 	
-		case 1:
+		case PreferencesThread::RECORD:
 			add_subwindow(dialog = new RecordPrefs(mwindow, this));
 			break;
 	
-		case 2:
+		case PreferencesThread::PERFORMANCE:
 			add_subwindow(dialog = new PerformancePrefs(mwindow, this));
 			break;
 	
-		case 3:
+		case PreferencesThread::INTERFACE:
 			add_subwindow(dialog = new InterfacePrefs(mwindow, this));
 			break;
 	
-// 		case 4:
-// 			add_subwindow(dialog = new PluginPrefs(mwindow, this));
-// 			break;
-	
-		case 4:
+		case PreferencesThread::ABOUT:
 			add_subwindow(dialog = new AboutPrefs(mwindow, this));
 			break;
 	}
@@ -411,7 +444,41 @@ int PreferencesWindow::set_current_dialog(int number)
 	return 0;
 }
 
-// ================================== save values
+
+
+
+
+
+
+
+
+
+
+PreferencesButton::PreferencesButton(MWindow *mwindow, 
+	PreferencesThread *thread, 
+	int x, 
+	int y,
+	int category,
+	char *text,
+	VFrame **images)
+ : BC_GenericButton(x, y, text, images)
+{
+	this->mwindow = mwindow;
+	this->thread = thread;
+	this->category = category;
+}
+
+int PreferencesButton::handle_event()
+{
+	thread->window->set_current_dialog(category);
+	return 1;
+}
+
+
+
+
+
+
 
 
 

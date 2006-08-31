@@ -9,7 +9,6 @@
 #include "preferencesthread.inc"
 #include "thread.h"
 
-#define CATEGORIES 5
 
 class PreferencesMenuitem : public BC_MenuItem
 {
@@ -50,6 +49,17 @@ public:
 // Copy of mwindow preferences
 	Preferences *preferences;
 	EDL *edl;
+
+// Categories
+#define CATEGORIES 5
+	enum
+	{
+		PLAYBACK,
+		RECORD,
+		PERFORMANCE,
+		INTERFACE,
+		ABOUT
+	};
 };
 
 class PreferencesDialog : public BC_SubWindow
@@ -66,6 +76,7 @@ public:
 };
 
 class PreferencesCategory;
+class PreferencesButton;
 
 class PreferencesWindow : public BC_Window
 {
@@ -85,9 +96,28 @@ public:
 	PreferencesThread *thread;
 	ArrayList<BC_ListBoxItem*> categories;
 	PreferencesCategory *category;
+	PreferencesButton *category_button[CATEGORIES];
 
 private:
 	PreferencesDialog *dialog;
+};
+
+class PreferencesButton : public BC_GenericButton
+{
+public:
+	PreferencesButton(MWindow *mwindow, 
+		PreferencesThread *thread, 
+		int x, 
+		int y,
+		int category,
+		char *text,
+		VFrame **images);
+
+	int handle_event();
+
+	MWindow *mwindow;
+	PreferencesThread *thread;
+	int category;
 };
 
 class PreferencesCategory : public BC_PopupTextBox
