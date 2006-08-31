@@ -1,6 +1,7 @@
 #include "bcclipboard.h"
 #include "bclistboxitem.h"
 #include "bcresources.h"
+#include "bcsignals.h"
 #include "bctextbox.h"
 #include "clip.h"
 #include "colors.h"

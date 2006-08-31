@@ -249,6 +249,7 @@ int mpeg3video_delete_struct(mpeg3video_t *video)
 	for(i = 0; i < video->slice_buffers_initialized; i++)
 		mpeg3_delete_slice_buffer(&(video->slice_buffers[i]));
 
+
 	free(video);
 	return 0;
 }
@@ -298,7 +299,13 @@ int mpeg3video_read_frame_backend(mpeg3video_t *video, int skip_bframes)
 		video->framenum >= 0);
 // The way they do field based encoding, 
 // the I frames have the top field but both the I frame and
-// subsequent P frame make the keyframe.
+// subsequent P frame are interlaced to make the keyframe.
+
+
+
+//printf("mpeg3video_read_frame_backend 10\n");
+
+
 
 
 
@@ -545,6 +552,17 @@ int mpeg3video_read_raw(mpeg3video_t *video,
 	return mpeg3bits_eof(vstream);
 }
 
+
+
+
+
+
+
+
+
+
+
+
 int mpeg3video_read_frame(mpeg3video_t *video, 
 		int frame_number, 
 		unsigned char **output_rows,
@@ -596,7 +614,6 @@ int mpeg3video_read_frame(mpeg3video_t *video,
 		video->frame_seek != video->last_number)
 	{
 		if(!result) result = mpeg3video_seek(video);
-
 		if(!result) result = mpeg3video_read_frame_backend(video, 0);
 	}
 	else
@@ -634,8 +651,9 @@ int mpeg3video_read_yuvframe(mpeg3video_t *video,
 	video->in_h = in_h;
 
 	if(!result) result = mpeg3video_seek(video);
-
 	if(!result) result = mpeg3video_read_frame_backend(video, 0);
+
+
 
 	if(video->output_src) mpeg3video_present_frame(video);
 

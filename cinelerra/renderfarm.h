@@ -78,19 +78,19 @@ enum
 	RENDERFARM_SET_VMAP,     // 8 Update video map in background rendering
 
 // VFS commands
-	RENDERFARM_FOPEN,      // 9
+	RENDERFARM_FOPEN,  
 	RENDERFARM_FCLOSE,
 	RENDERFARM_REMOVE,
 	RENDERFARM_RENAME,
 	RENDERFARM_FGETC,
 	RENDERFARM_FPUTC,
-	RENDERFARM_FREAD,      // 15
+	RENDERFARM_FREAD,  
 	RENDERFARM_FWRITE,
 	RENDERFARM_FSEEK,
 	RENDERFARM_FTELL,
 	RENDERFARM_STAT,
-	RENDERFARM_STAT64,     // 20
-	RENDERFARM_FGETS,      // 21
+	RENDERFARM_STAT64, 
+	RENDERFARM_FGETS,  
 	RENDERFARM_FILENO
 };
 
@@ -138,8 +138,6 @@ public:
 };
 
 
-// Waits for requests from every client.
-// Joins when the client is finished.
 class RenderFarmServerThread : public Thread
 {
 public:
@@ -147,12 +145,11 @@ public:
 		RenderFarmServer *server, 
 		int number);
 	~RenderFarmServerThread();
-	
+
 	static int read_socket(int socket_fd, char *data, int len, int timeout);
 	static int write_socket(int socket_fd, char *data, int len, int timeout);
 // Inserts header and writes string to socket
 	static int write_string(int socket_fd, char *string);
-
 
 
 

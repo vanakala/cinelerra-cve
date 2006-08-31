@@ -1,3 +1,4 @@
+#include "bcsignals.h"
 #include "clip.h"
 #include "condition.h"
 #include "maskauto.h"
@@ -676,6 +677,7 @@ void MaskUnit::process_package(LoadPackage *package)
 //		printf("diff: %lli\n", dif);
 	}	/* END OF RECALCULATION! */
 
+SET_TRACE
 
 	/* possible optimization: this could be useful for do_feather also */
 
@@ -1015,6 +1017,7 @@ void MaskEngine::do_mask(VFrame *output,
 
 	int new_color_model = 0;
 	recalculate = 0;
+
 	switch(output->get_color_model())
 	{
 		case BC_RGB888:
@@ -1038,6 +1041,7 @@ void MaskEngine::do_mask(VFrame *output,
 	}
 
 // Determine if recalculation is needed
+SET_TRACE
 
 	if(mask && 
 		(mask->get_w() != output->get_w() ||
@@ -1119,7 +1123,9 @@ void MaskEngine::do_mask(VFrame *output,
 
 
 // Run units
+SET_TRACE
 	process_packages();
+SET_TRACE
 
 
 //printf("MaskEngine::do_mask 6\n");
@@ -1127,6 +1133,7 @@ void MaskEngine::do_mask(VFrame *output,
 
 void MaskEngine::init_packages()
 {
+SET_TRACE
 //printf("MaskEngine::init_packages 1\n");
 	int division = (int)((float)output->get_h() / (get_total_packages()) + 0.5);
 	if(division < 1) division = 1;
@@ -1149,6 +1156,7 @@ void MaskEngine::init_packages()
 		}
 
 	}
+SET_TRACE
 //printf("MaskEngine::init_packages 2\n");
 }
 

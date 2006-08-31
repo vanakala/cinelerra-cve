@@ -83,10 +83,9 @@ int VirtualVNode::read_data(VFrame *output_temp,
 	double frame_rate)
 {
 	VirtualNode *previous_plugin = 0;
-SET_TRACE
 
-	if(!output_temp) printf("VirtualVNode::read_data output_temp=%p\n", output_temp);
-SET_TRACE
+	if(!output_temp) 
+		printf("VirtualVNode::read_data output_temp=%p\n", output_temp);
 
 	if(vconsole->debug_tree) 
 		printf("  VirtualVNode::read_data position=%lld rate=%f title=%s\n", 
@@ -121,7 +120,6 @@ SET_TRACE
 			0,
 			vconsole->debug_tree);
 	}
-SET_TRACE
 
 	return 0;
 }
@@ -134,12 +132,10 @@ int VirtualVNode::render(VFrame *output_temp,
 	VRender *vrender = ((VirtualVConsole*)vconsole)->vrender;
 	if(real_module)
 	{
-SET_TRACE
 		render_as_module(vrender->video_out, 
 			output_temp,
 			start_position,
 			frame_rate);
-SET_TRACE
 	}
 	else
 	if(real_plugin)
@@ -182,8 +178,8 @@ int VirtualVNode::render_as_module(VFrame **video_out,
 	double edl_rate = renderengine->edl->session->frame_rate;
 
 	if(vconsole->debug_tree) 
-		printf("  VirtualVNode::render_as_module title=%s\n", track->title);
-SET_TRACE
+		printf("  VirtualVNode::render_as_module title=%s\n", 
+			track->title);
 
 // Process last subnode.  This propogates up the chain of subnodes and finishes
 // the chain.
@@ -201,14 +197,12 @@ SET_TRACE
 			start_position,
 			frame_rate);
 	}
-SET_TRACE
 
 	render_fade(output_temp,
 				start_position,
 				frame_rate,
 				track->automation->autos[AUTOMATION_FADE],
 				direction);
-SET_TRACE
 
 // Apply mask to output
 	((VModule *)real_module)->masker->do_mask(output_temp, 
@@ -218,7 +212,6 @@ SET_TRACE
 		(MaskAutos*)track->automation->autos[AUTOMATION_MASK], 
 		direction,
 		0);      // we are not before plugins
-SET_TRACE
 
 
 // overlay on the final output
@@ -235,7 +228,6 @@ SET_TRACE
 			(Autos*)((VTrack*)track)->automation->autos[AUTOMATION_MUTE],
 			direction,
 			0);
-SET_TRACE
 
 	if(!mute_constant)
 	{
@@ -245,7 +237,7 @@ SET_TRACE
 			start_position,
 			frame_rate);
 	}
-SET_TRACE
+
 
 	Edit *edit = 0;
 	if(renderengine->show_tc)

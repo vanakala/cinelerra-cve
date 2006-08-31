@@ -152,7 +152,7 @@ int PatchBay::create_objects()
 	mode_icons[TRANSFER_REPLACE] = new BC_Pixmap(this, 
 		mwindow->theme->get_image("mode_replace"),
 		PIXMAP_ALPHA);
-	
+
 	add_subwindow(nudge_popup = new NudgePopup(mwindow, this));
 	nudge_popup->create_objects();
 

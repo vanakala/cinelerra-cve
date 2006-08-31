@@ -52,6 +52,8 @@ public:
 		int &colormodel, 
 		int &use_vconsole,
 		int64_t position);
+
+
 	int get_use_vconsole(Edit* &playable_edit, 
 		int64_t position,
 		int &get_use_vconsole);

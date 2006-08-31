@@ -2,6 +2,7 @@
 #include "cplayback.h"
 #include "cwindow.h"
 #include "cwindowgui.h"
+#include "edits.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "labels.h"
@@ -19,7 +20,7 @@
 #include "tracks.h"
 #include "transportque.h"
 #include "zoombar.h"
-#include "edits.h"
+
 
 void MWindow::update_plugins()
 {
@@ -491,6 +492,11 @@ int MWindow::prev_label()
 	return 0;
 }
 
+
+
+
+
+
 int MWindow::next_edit_handle()
 {
 	double position = edl->local_session->get_selectionend(1);
@@ -615,6 +621,11 @@ int MWindow::prev_edit_handle()
 	}
 	return 0;
 }
+
+
+
+
+
 
 
 

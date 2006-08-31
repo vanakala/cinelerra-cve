@@ -1,6 +1,7 @@
 #include "adeviceprefs.h"
 #include "audioconfig.h"
 #include "audiodevice.inc"
+#include "bcsignals.h"
 #include "clip.h"
 #include "defaults.h"
 #include "edl.h"
@@ -52,6 +53,7 @@ int PlaybackPrefs::create_objects()
 	add_subwindow(title2 = new BC_Title(x, y, _("Samples to send to console at a time:"), MEDIUMFONT, resources->text_default));
 	x2 = MAX(title2->get_w(), title2->get_w()) + 10;
 
+SET_TRACE
 	sprintf(string, "%d", playback_config->aconfig->fragment_size);
 	PlaybackModuleFragment *menu;
 	add_subwindow(menu = new PlaybackModuleFragment(x2, 
@@ -68,6 +70,7 @@ int PlaybackPrefs::create_objects()
 	menu->add_item(new BC_MenuItem("131072"));
 	menu->add_item(new BC_MenuItem("262144"));
 
+SET_TRACE
 	y += menu->get_h() + 5;
 	x2 = x;
 	add_subwindow(title1 = new BC_Title(x2, y, _("Audio offset (sec):")));
@@ -79,6 +82,7 @@ int PlaybackPrefs::create_objects()
 	audio_offset->create_objects();
 	y += audio_offset->get_h() + 5;
 
+SET_TRACE
 	add_subwindow(new PlaybackViewFollows(pwindow, pwindow->thread->edl->session->view_follows_playback, y));
 	y += 30;
 	add_subwindow(new PlaybackSoftwareTimer(pwindow, pwindow->thread->edl->session->playback_software_position, y));
@@ -95,18 +99,22 @@ int PlaybackPrefs::create_objects()
 		MODEPLAY);
 	audio_device->initialize();
 
+SET_TRACE
 
 
 
 // Video
  	y += audio_device->get_h();
 
+SET_TRACE
 	add_subwindow(new BC_Bar(5, y, 	get_w() - 10));
 	y += 5;
 
+SET_TRACE
 	add_subwindow(new BC_Title(x, y, _("Video Out"), LARGEFONT, resources->text_default));
 	y += 30;
 
+SET_TRACE
 	add_subwindow(new VideoEveryFrame(pwindow, x, y));
 
 	add_subwindow(new BC_Title(x + 200, y + 10, _("Framerate achieved:")));
@@ -114,6 +122,8 @@ int PlaybackPrefs::create_objects()
 	draw_framerate();
 
 	y += 35;
+
+SET_TRACE
  	add_subwindow(new BC_Title(x, y, _("Scaling equation:")));
 	y += 20;
 	add_subwindow(nearest_neighbor = new PlaybackNearest(pwindow, 
@@ -134,11 +144,13 @@ int PlaybackPrefs::create_objects()
 		10, 
 		y));
 
+SET_TRACE
 	y += 35;
 	add_subwindow(new BC_Title(x, y, _("Preload buffer for Quicktime:"), MEDIUMFONT, resources->text_default));
 	sprintf(string, "%d", pwindow->thread->edl->session->playback_preload);
 	add_subwindow(new PlaybackPreload(x + 210, y, pwindow, this, string));
 
+SET_TRACE
 //	y += 30;
 //	add_subwindow(new PlaybackDeblock(pwindow, 10, y));
 
@@ -167,9 +179,7 @@ int PlaybackPrefs::create_objects()
 		MODEPLAY);
 	video_device->initialize();
 
-// Strategic playback options created here
-//	set_strategy(pwindow->thread->edl->session->playback_strategy, y);
-	
+SET_TRACE	
 
 	return 0;
 }
@@ -396,21 +406,12 @@ int VideoEveryFrame::handle_event()
 
 
 
-// PlaybackDeblock::PlaybackDeblock(PreferencesWindow *pwindow, int x, int y)
-//  : BC_CheckBox(x, 
-//  	y, 
-// 	pwindow->thread->edl->session->mpeg4_deblock, 
-// 	_("MPEG-4 Deblocking"))
-// {
-// 	this->pwindow = pwindow;
-// }
-// 
-// int PlaybackDeblock::handle_event()
-// {
-// 	pwindow->thread->edl->session->mpeg4_deblock = get_value();
-// 	return 1;
-// }
-// 
+
+
+
+
+
+
 
 
 

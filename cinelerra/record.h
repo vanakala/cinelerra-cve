@@ -182,7 +182,8 @@ public:
 	int video_x;
 	int video_y;
 	float video_zoom;
-	int reverse_interlace;     // Reverse the interlace in the video window display only
+// Reverse the interlace in the video window display only
+	int reverse_interlace;
 // Color model for uncompressed device interface
 	int color_model;
 // Picture quality and parameters the device supports

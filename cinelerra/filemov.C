@@ -95,8 +95,11 @@ FileMOV::FileMOV(Asset *asset, File *file)
 
 FileMOV::~FileMOV()
 {
+SET_TRACE
 	close_file();
+SET_TRACE
 	delete threadframe_lock;
+SET_TRACE
 }
 
 void FileMOV::get_parameters(BC_WindowBase *parent_window, 
@@ -130,16 +133,16 @@ void FileMOV::get_parameters(BC_WindowBase *parent_window,
 void FileMOV::fix_codecs_for_writing(Asset *asset)
 {
 	if(!strcasecmp(asset->vcodec, QUICKTIME_DV) ||
-	   !strcasecmp(asset->vcodec, QUICKTIME_DVSD) || 
+	   !strcasecmp(asset->vcodec, QUICKTIME_DVSD) ||
 	   !strcasecmp(asset->vcodec, QUICKTIME_DVCP))
 	{
-		printf("AF: %i, AH: %i, VC: %s\n", asset->format, asset->height, asset->vcodec);
-		if (asset->format == FILE_AVI)
-			strcpy (asset->vcodec, QUICKTIME_DVSD);
-		else if (asset->format == FILE_MOV && asset->height == 576) 
-			strcpy (asset->vcodec, QUICKTIME_DVCP);
-		else if (asset->format == FILE_MOV && asset->height == 480)
-			strcpy (asset->vcodec, QUICKTIME_DV);
+//        printf("AF: %i, AH: %i, VC: %s\n", asset->format, asset->height, asset->vcodec);
+        if (asset->format == FILE_AVI)
+                strcpy (asset->vcodec, QUICKTIME_DVSD);
+        else if (asset->format == FILE_MOV && asset->height == 576)
+                strcpy (asset->vcodec, QUICKTIME_DVCP);
+        else if (asset->format == FILE_MOV && asset->height == 480)
+                strcpy (asset->vcodec, QUICKTIME_DV);
 	}
 }
 
@@ -182,11 +185,7 @@ int FileMOV::open_file(int rd, int wr)
 
 	quicktime_set_cpus(fd, file->cpus);
 
-	if(rd)
-	{
-		format_to_asset();
-		
-	}
+	if(rd) format_to_asset();
 
 	if(wr) asset_to_format();
 
@@ -295,6 +294,7 @@ void FileMOV::asset_to_format()
 			depth = 24;
 		}
 
+
 		quicktime_vtracks = quicktime_set_video(fd, 
 					asset->layers, 
 					asset->width, 
@@ -334,10 +334,6 @@ void FileMOV::asset_to_format()
 
 
 	}
-//printf("FileMOV::asset_to_format 3.4\n");
-
-//printf("FileMOV::asset_to_format 4 %d %d\n", wr, 
-//				asset->format);
 
 	if(wr && asset->format == FILE_AVI)
 	{
@@ -519,6 +515,7 @@ int FileMOV::can_copy_from(Edit *edit, int64_t position)
 	if((edit->asset->format == FILE_MOV || 
 		edit->asset->format == FILE_AVI))
 	{
+//printf("FileMOV::can_copy_from %s %s\n", edit->asset->vcodec, this->asset->vcodec);
 		if(match4(edit->asset->vcodec, this->asset->vcodec))
 			return 1;
 // there are combinations where the same codec has multiple fourcc codes
@@ -526,11 +523,11 @@ int FileMOV::can_copy_from(Edit *edit, int64_t position)
 		int is_edit_dv = 0;
 		int is_this_dv = 0;
 		if (match4(edit->asset->vcodec, QUICKTIME_DV) || 
-			match4(edit->asset->vcodec, QUICKTIME_DVSD) ||
+			match4(edit->asset->vcodec, QUICKTIME_DVSD) || 
 			match4(edit->asset->vcodec, QUICKTIME_DVCP))
 			is_edit_dv = 1;
 		if (match4(this->asset->vcodec, QUICKTIME_DV) || 
-			match4(this->asset->vcodec, QUICKTIME_DVSD) ||
+			match4(this->asset->vcodec, QUICKTIME_DVSD) || 
 			match4(this->asset->vcodec, QUICKTIME_DVCP))
 			is_this_dv = 1;
 		if (is_this_dv && is_edit_dv)
@@ -916,7 +913,7 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 	}
 
 
-//printf("FileMOV::write_frames 100\n");
+//printf("FileMOV::write_frames 100 %d\n", result);
 	return result;
 }
 
@@ -1603,6 +1600,7 @@ MOVConfigVideo::MOVConfigVideo(BC_WindowBase *parent_window,
 	this->asset = asset;
 	this->lock_compressor = lock_compressor;
 	compression_popup = 0;
+
 	reset();
 }
 

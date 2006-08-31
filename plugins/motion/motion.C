@@ -1763,6 +1763,7 @@ void MotionScanUnit::process_package(LoadPackage *package)
 		sub_x %= OVERSAMPLE;
 		sub_y %= OVERSAMPLE;
 
+
 		unsigned char *prev_ptr = server->previous_frame->get_rows()[
 			search_y] +
 			search_x * pixel_size;
@@ -2121,7 +2122,7 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 // (float)y_result / 4);
 
 
-// If a new search is required, recale results back to pixels.
+// If a new search is required, rescale results back to pixels.
 				if(total_steps >= total_pixels)
 				{
 // Single pixel accuracy reached.  Now do exhaustive subpixel search.
@@ -2158,6 +2159,8 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 		dx_result *= -1;
 		dy_result *= -1;
 	}
+
+
 
 
 

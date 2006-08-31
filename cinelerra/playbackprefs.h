@@ -43,10 +43,6 @@ public:
 	static char* strategy_to_string(int strategy);
 	void delete_strategy();
 
-/*
- * 	ArrayList<PlaybackConfig*>* current_config_list();
- * 	PlaybackConfig* current_config();
- */
 	void update(int interpolation);
 	int draw_framerate();
 
@@ -62,14 +58,7 @@ public:
 	PlaybackBilinearBilinear *linear_linear;
 	PlaybackDeblock *mpeg4_deblock;
 
-//	int64_t current_head;
-//	BC_Title *head_title;
-//	BC_Title *host_title;
-//	BC_Title *head_count_title;
 	BC_Title *vdevice_title;
-//	PlaybackHead *head_text;
-//	PlaybackHeadCount *head_count_text;
-//	PlaybackHost *host_text;
 };
 
 class PlaybackModuleFragment : public BC_PopupMenu
@@ -125,7 +114,9 @@ public:
 class VideoEveryFrame : public BC_CheckBox
 {
 public:
-	VideoEveryFrame(PreferencesWindow *pwindow, int x, int y);
+	VideoEveryFrame(PreferencesWindow *pwindow, 
+		int x, 
+		int y);
 	int handle_event();
 	PreferencesWindow *pwindow;
 };

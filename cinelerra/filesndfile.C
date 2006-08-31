@@ -213,8 +213,11 @@ SET_TRACE
 	else
 	if(wr)
 	{
+printf("FileSNDFile::open 1\n");
 		asset_to_format();
+printf("FileSNDFile::open 1\n");
 		fd = sf_open(asset->path, SFM_WRITE, &fd_config);
+printf("FileSNDFile::open 10 %p\n", fd);
 	}
 
 	if(!fd) 

@@ -180,10 +180,15 @@ Channel* Batch::get_current_channel_struct()
 
 char* Batch::get_source_text()
 {
-	// Driver sensitive
+// Driver sensitive
 	Channel *channel = get_current_channel_struct();
+
+
 	if(channel)
+	{
+//printf("Batch::get_source_text 1 %s\n", channel->title);
 		return channel->title;
+	}
 	else
 		return "";
 }

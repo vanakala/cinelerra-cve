@@ -537,7 +537,6 @@ void BC_Pan::calculate_stick_position(int total_values,
 			angle = value_positions[i];
 		}
 	}
-
 	rdtoxy(stick_x, stick_y, angle, virtual_r);
 }
 

@@ -42,12 +42,6 @@ static int read_header(mpeg3audio_t *audio)
 	switch(track->format)
 	{
 		case AUDIO_AC3:
-/*
- * printf("read_header 1 %lld %x %x\n", 
- * mpeg3demux_tell_byte(track->demuxer),
- * track->demuxer->audio_pid,
- * track->pid);
- */
 			audio->packet_position = 8;
 			result = mpeg3demux_read_data(track->demuxer, 
 				audio->packet_buffer + 1, 
@@ -66,6 +60,7 @@ static int read_header(mpeg3audio_t *audio)
 						mpeg3demux_read_char(track->demuxer);
 					result = mpeg3demux_eof(track->demuxer);
 				}
+//printf("read_header 10 %d\n", mpeg3demux_eof(track->demuxer));
 
 				if(!result)
 				{
@@ -74,6 +69,12 @@ static int read_header(mpeg3audio_t *audio)
 				}
 				else
 					break;
+
+/*
+ * printf("read_header 100 offset=%llx got_it=%d\n", 
+ * mpeg3demux_tell_byte(track->demuxer),
+ * got_it);
+ */
 			}while(!result && !got_it && try < 0x10000);
 
 
@@ -258,7 +259,7 @@ static int read_frame(mpeg3audio_t *audio, int render)
 		}
 	}
 
-//sleep(1);
+
 	if(!result)
 	{
 		switch(track->format)
@@ -416,6 +417,7 @@ int calculate_format(mpeg3_t *file, mpeg3_atrack_t *track)
 			header, 
 			8))
 		{
+//printf("calculate_format %lld\n", mpeg3demux_tell_byte(track->demuxer));
 			if(!mpeg3_ac3_check(header))
 				track->format = AUDIO_AC3;
 			else
@@ -458,7 +460,7 @@ mpeg3audio_t* mpeg3audio_new(mpeg3_t *file,
 	if(file->seekable)
 		if(calculate_format(file, track)) result = 1;
 
-
+//printf("mpeg3audio_new %lld\n", mpeg3demux_tell_byte(track->demuxer));
 /* get stream parameters */
 	if(!result && file->seekable)
 	{
@@ -483,6 +485,7 @@ mpeg3audio_t* mpeg3audio_new(mpeg3_t *file,
 
 
 		result = read_header(audio);
+//printf("mpeg3audio_new 1 %d\n", result);
 	}
 
 
@@ -697,6 +700,7 @@ int mpeg3audio_read_raw(mpeg3audio_t *audio,
 				output, 
 				audio->framesize);
 			*size = audio->framesize;
+//printf("mpeg3audio_read_raw 1 %d\n", audio->framesize);
 			break;
 
 		case AUDIO_MPEG:

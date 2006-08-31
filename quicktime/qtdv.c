@@ -438,8 +438,9 @@ void quicktime_init_codec_dv(quicktime_video_map_t *vtrack)
 
 void quicktime_init_codec_dvcp(quicktime_video_map_t *vtrack)
 {
-	init_codec_common(vtrack, QUICKTIME_DVCP);
+    init_codec_common(vtrack, QUICKTIME_DVCP);
 }
+
 
 void quicktime_init_codec_dv25(quicktime_video_map_t *vtrack)
 {

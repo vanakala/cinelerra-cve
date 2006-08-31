@@ -120,6 +120,7 @@ int VirtualAConsole::process_buffer(int64_t len,
 	for(int i = 0; i < MAX_CHANNELS; i++)
 	{
 		double *current_buffer = arender->audio_out[i];
+
 		if(current_buffer)
 		{
 
@@ -180,7 +181,9 @@ int VirtualAConsole::process_buffer(int64_t len,
 		int k;
 		double *audio_out_packed[MAX_CHANNELS];
 
-		for(int i = 0, j = 0; i < MAX_CHANNELS; i++)
+		for(int i = 0, j = 0; 
+			i < MAX_CHANNELS; 
+			i++)
 		{
 			if(renderengine->config->aconfig->do_channel[i])
 			{

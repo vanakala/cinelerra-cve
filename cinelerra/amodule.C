@@ -136,12 +136,10 @@ int AModule::render(double *buffer,
 		end_project -= input_len;
 	}
 
-SET_TRACE
 
 // Clear buffer
 	bzero(buffer, input_len * sizeof(double));
 
-SET_TRACE
 // The EDL is normalized to the requested sample rate because the requested rate may
 // be the project sample rate and a sample rate 
 // might as well be directly from the source rate to the requested rate.
@@ -165,28 +163,24 @@ SET_TRACE
 
 
 
-SET_TRACE
 
 
 
 // Fill output one fragment at a time
 	while(start_project < end_project)
 	{
-SET_TRACE
 		int64_t fragment_len = input_len;
 
 
 		if(fragment_len + start_project > end_project)
 			fragment_len = end_project - start_project;
 
-SET_TRACE
 // Normalize position here since update_transition is a boolean operation.
 		update_transition(start_project * 
 				edl_rate / 
 				sample_rate, 
 			PLAY_FORWARD);
 
-SET_TRACE
 		if(playable_edit)
 		{
 // Normalize EDL positions to requested rate
@@ -245,7 +239,6 @@ SET_TRACE
 
 
 
-SET_TRACE
 
 
 // Read transition into temp and render
@@ -339,13 +332,11 @@ SET_TRACE
 						transition->length);
 				}
 			}
-SET_TRACE
 
 			if(playable_edit && start_project + fragment_len >= edit_endproject)
 				playable_edit = (AEdit*)playable_edit->next;
 		}
 
-SET_TRACE
 		buffer_offset += fragment_len;
 		start_project += fragment_len;
 	}
@@ -355,7 +346,6 @@ SET_TRACE
 	if(direction == PLAY_REVERSE)
 		reverse_buffer(buffer, input_len);
 
-SET_TRACE
 
 	return result;
 }

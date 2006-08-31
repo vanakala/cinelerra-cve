@@ -30,19 +30,14 @@ void AVC1394TransportThread::run()
 	while(!done)
 	{
 		Thread::disable_cancel();
-SET_TRACE
 		text = avc->timecode();
-SET_TRACE
 		label->lock_window("AVC1394TransportThread::run 1");
-SET_TRACE
 // Sometimes text is set to NULL for some reason...
 		if(text == NULL)
 			label->update("Unknown");
 		else
 			label->update(text);
-SET_TRACE
 		label->unlock_window();
-SET_TRACE
 		Thread::enable_cancel();
 		usleep(POLL_INTERVAL);
 	}

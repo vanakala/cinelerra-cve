@@ -233,6 +233,9 @@ public:
 	static int create_aspect_ratio(float &w, float &h, int width, int height);
 	void cut();
 
+// Calculate defaults path
+	static void create_defaults_path(char *string);
+
 	void delete_folder(char *folder);
 	void delete_inpoint();
 	void delete_outpoint();    
@@ -332,6 +335,7 @@ public:
 	void undo_entry(BC_WindowBase *calling_window_gui);
 	void redo_entry(BC_WindowBase *calling_window_gui);
 
+
 	int cut_automation();
 	int copy_automation();
 	int paste_automation();
@@ -358,12 +362,9 @@ public:
 	void update_caches();
 	int optimize_assets();            // delete unused assets from the cache and assets
 
-// ================================= cursor selection ======================
 
 	void select_point(double position);
 	int set_loop_boundaries();         // toggle loop playback and set boundaries for loop playback
-
-// ================================ handle selection =======================
 
 
 
@@ -434,6 +435,7 @@ public:
 	Mutex *plugin_gui_lock;
 // Lock during creation and destruction of brender so playback doesn't use it.
 	Mutex *brender_lock;
+
 
 // Initialize channel DB's for playback
 	void init_channeldb();

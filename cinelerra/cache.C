@@ -1,5 +1,6 @@
 #include "asset.h"
 #include "assets.h"
+#include "bcsignals.h"
 #include "cache.h"
 #include "datatype.h"
 #include "edl.h"
@@ -303,6 +304,7 @@ CICacheItem::CICacheItem(CICache *cache, Asset *asset)
 	this->cache = cache;
 	checked_out = 0;
 
+
 	file = new File;
 	file->set_processors(cache->preferences->processors);
 	file->set_preload(cache->edl->session->playback_preload);
@@ -315,9 +317,12 @@ CICacheItem::CICacheItem(CICache *cache, Asset *asset)
 
 	if(result = file->open_file(cache->preferences, this->asset, 1, 0, -1, -1))
 	{
+SET_TRACE
 		delete file;
+SET_TRACE
 		file = 0;
 	}
+
 }
 
 // File already opened

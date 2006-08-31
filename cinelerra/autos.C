@@ -344,7 +344,6 @@ Auto* Autos::insert_auto(int64_t position)
 		;
 	}
 
-//printf("Autos::insert_auto %p\n", current);
 // Insert new
 	if(!current)
 	{

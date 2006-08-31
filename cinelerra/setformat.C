@@ -850,6 +850,8 @@ int ScaleAspectText::handle_event()
 
 
 
+
+
 SetFormatApply::SetFormatApply(int x, int y, SetFormatThread *thread)
  : BC_GenericButton(x, y, _("Apply"))
 {
@@ -861,3 +863,21 @@ int SetFormatApply::handle_event()
 	thread->apply_changes();
 	return 1;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

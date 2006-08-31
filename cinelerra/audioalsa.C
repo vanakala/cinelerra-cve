@@ -53,13 +53,13 @@ void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title)
 
 		if((err = snd_ctl_open(&handle, name, 0)) < 0)
 		{
-			printf("AudioALSA::list_devices (%i): %s\n", card, snd_strerror(err));
+			printf("AudioALSA::list_devices card=%i: %s\n", card, snd_strerror(err));
 			continue;
 		}
 
 		if((err = snd_ctl_card_info(handle, info)) < 0)
 		{
-			printf("AudioALSA::list_devices (%i): %s\n", card, snd_strerror(err));
+			printf("AudioALSA::list_devices card=%i: %s\n", card, snd_strerror(err));
 			snd_ctl_close(handle);
 			continue;
 		}
@@ -82,7 +82,7 @@ void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title)
 			if((err = snd_ctl_pcm_info(handle, pcminfo)) < 0) 
 			{
 				if(err != -ENOENT)
-					printf("AudioALSA::list_devices (%i): %s\n", card, snd_strerror(err));
+					printf("AudioALSA::list_devices card=%i: %s\n", card, snd_strerror(err));
 				continue;
 			}
 
@@ -254,6 +254,7 @@ int AudioALSA::open_input()
 	device->in_bits = device->in_config->alsa_in_bits;
 
 	translate_name(pcm_name, device->in_config->alsa_in_device);
+//printf("AudioALSA::open_input %s\n", pcm_name);
 
 	err = snd_pcm_open(&dsp_in, pcm_name, stream, open_mode);
 

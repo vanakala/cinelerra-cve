@@ -206,6 +206,15 @@ restart:
 	return nzflag;
 }
 
+
+
+
+
+
+
+/* Disabled in mjpegtools */
+
+#if 0
 /*
  * SSE version: simply truncates to zero, however, the tables have a 2% bias
  * upwards which partly compensates.
@@ -234,7 +243,7 @@ int quant_non_intra_hv_sse(
 			  "movd %%eax, %%mm6\n"
 			  : :"g" (1) : "eax" );
 	/* Set up SSE rounding mode */
-	__asm__ ( "ldmxcsr %0" : : "m" (*&trunc_mxcsr) );
+	__asm__ ( "ldmxcsr (%0)\n" : : "X" (trunc_mxcsr) );
 
 	/* Load satlim into mm1 */
 	movd_m2r( satlim, mm1 );
@@ -340,6 +349,8 @@ restart:
 	//nzflag = (nzflag<<1) | (!!flags);
 	return nzflag;
 }
+
+#endif
 
 /*
  * The ordinary MMX version.  Due to the limited dynamic range afforded by working

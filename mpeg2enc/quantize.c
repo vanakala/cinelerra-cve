@@ -69,11 +69,13 @@ void init_quantizer_hv()
 			if(verbose) fprintf( stderr, "3DNOW and ");
 			pquant_non_intra = quant_non_intra_hv_3dnow;
 		}
-		else if ( (flags & ACCEL_X86_MMXEXT) != 0 )
-		{
-			if(verbose) fprintf( stderr, "SSE and ");
-			pquant_non_intra = quant_non_intra_hv_sse;
-		}
+/*
+ * 		else if ( (flags & ACCEL_X86_MMXEXT) != 0 )
+ * 		{
+ * 			if(verbose) fprintf( stderr, "SSE and ");
+ * 			pquant_non_intra = quant_non_intra_hv_sse;
+ * 		}
+ */
 		else 
 		{
 			pquant_non_intra = quant_non_intra_hv;

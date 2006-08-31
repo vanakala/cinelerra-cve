@@ -1,6 +1,7 @@
 #include "bcbutton.h"
-#include "bcresources.h"
 #include "bcpixmap.h"
+#include "bcresources.h"
+#include "bcsignals.h"
 #include "colors.h"
 #include "fonts.h"
 #include "keys.h"
@@ -189,20 +190,16 @@ int BC_Button::button_press_event()
 
 int BC_Button::button_release_event()
 {
-//printf("BC_Button::button_release_event 1\n");
 	if(top_level->event_win == win)
 	{
 		hide_tooltip();
-//printf("BC_Button::button_release_event 2\n");
 		if(status == BUTTON_DOWNHI) 
 		{
-//printf("BC_Button::button_release_event 3\n");
 			status = BUTTON_UPHI;
 			draw_face();
 
 			if(cursor_inside())
 			{
-//printf("BC_Button::button_release_event 4\n");
 				handle_event();
 				return 1;
 			}

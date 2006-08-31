@@ -104,6 +104,7 @@ int mpeg3_video_height(mpeg3_t *file, int stream);
 float mpeg3_aspect_ratio(mpeg3_t *file, int stream); /* aspect ratio.  0 if none */
 double mpeg3_frame_rate(mpeg3_t *file, int stream);  /* Frames/sec */
 
+
 /* Total length.   */
 /* This is meaningless except for TOC files. */
 long mpeg3_video_frames(mpeg3_t *file, int stream);

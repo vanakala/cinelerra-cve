@@ -74,6 +74,7 @@ public:
 	MaskEngine(int cpus);
 	~MaskEngine();
 
+
 	void do_mask(VFrame *output, 
 		int64_t start_position,
 		double frame_rate,

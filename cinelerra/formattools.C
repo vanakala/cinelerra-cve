@@ -116,7 +116,6 @@ int FormatTools::create_objects(int &init_x,
        	
 	y += 25;
 
-//printf("FormatTools::create_objects 3\n");
 	window->add_subwindow(format_title = new BC_Title(x, y, _("File Format:")));
 	x += 90;
 	window->add_subwindow(format_text = new BC_TextBox(x, 
@@ -130,7 +129,6 @@ int FormatTools::create_objects(int &init_x,
 		this));
 	format_button->create_objects();
 
-//printf("FormatTools::create_objects 4\n");
 	x = init_x;
 	y += format_button->get_h() + 10;
 	if(do_audio)
@@ -146,7 +144,6 @@ int FormatTools::create_objects(int &init_x,
 		x = init_x;
 		y += aparams_button->get_h() + 20;
 
-//printf("FormatTools::create_objects 5\n");
 // Audio channels only used for recording.
 		if(prompt_audio_channels)
 		{
@@ -252,7 +249,6 @@ void FormatTools::reposition_window(int &init_x, int &init_y)
 	path_textbox->reposition_window(x, y);
 	x += 305;
 	path_button->reposition_window(x, y);
-
 	x -= 305;
 	y += 35;
 	format_title->reposition_window(x, y);
@@ -331,7 +327,6 @@ int FormatTools::set_audio_options()
 	{
 		aparams_thread->file->raise_window();
 	}
-
 	return 0;
 }
 
@@ -345,6 +340,7 @@ int FormatTools::set_video_options()
 	{
 		vparams_thread->file->raise_window();
 	}
+
 	return 0;
 }
 

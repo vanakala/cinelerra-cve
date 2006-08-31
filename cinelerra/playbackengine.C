@@ -359,9 +359,7 @@ void PlaybackEngine::run()
 // Wait for current command to finish
 		que->output_lock->lock("PlaybackEngine::run");
 
-//printf("PlaybackEngine::run 1\n");
 		wait_render_engine();
-//printf("PlaybackEngine::run 2\n");
 
 
 // Read the new command
@@ -372,6 +370,7 @@ void PlaybackEngine::run()
 		que->command.reset();
 		que->input_lock->unlock();
 
+//printf("PlaybackEngine::run 1 %d\n", command->command);
 
 
 		switch(command->command)

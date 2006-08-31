@@ -40,8 +40,10 @@ public:
 	void remove_all();
 // Remove pointer and objects for each array entry
 	void remove_all_objects();
+// Get last element in list
 	TYPE last();
-
+// Call this if the TYPE is a pointer to an array which must be
+// deleted by delete [].
 	void set_array_delete();
 	void set_free();
 

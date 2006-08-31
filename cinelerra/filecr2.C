@@ -83,13 +83,16 @@ void FileCR2::format_to_asset()
 
 int FileCR2::read_frame(VFrame *frame)
 {
-	cr2_mutex.lock("FileCR2::check_sig");
+	cr2_mutex.lock("FileCR2::read_frame");
 	if(frame->get_color_model() == BC_RGBA_FLOAT)
 		dcraw_alpha = 1;
 	else
 		dcraw_alpha = 0;
 
 
+
+// printf("FileCR2::read_frame %d\n", interpolate);
+// frame->dump_stacks();
 // output to stdout
 	int argc = 3;
 	char *argv[3] = 
@@ -101,6 +104,9 @@ int FileCR2::read_frame(VFrame *frame)
 	dcraw_data = (float**)frame->get_rows();
 
 	int result = dcraw_main(argc, argv);
+
+// printf("FileCR2::read_frame\n");
+// frame->dump_params();
 
 	cr2_mutex.unlock();
 	return 0;

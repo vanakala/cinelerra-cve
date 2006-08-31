@@ -1,3 +1,4 @@
+#include "bcsignals.h"
 #include "channelpicker.h"
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -46,11 +47,14 @@ VDevicePrefs::~VDevicePrefs()
 
 void VDevicePrefs::reset_objects()
 {
+	device_title = 0;
 	device_text = 0;
 
 	port_title = 0;
+
+	
+
 	channel_title = 0;
-	device_title = 0;
 	syt_title = 0;
 
 	firewire_port = 0;
@@ -58,6 +62,7 @@ void VDevicePrefs::reset_objects()
 	firewire_channels = 0;
 	firewire_syt = 0;
 	firewire_path = 0;
+
 }
 
 int VDevicePrefs::initialize()
@@ -123,8 +128,12 @@ int VDevicePrefs::initialize()
 	return 0;
 }
 
+
+
+
 int VDevicePrefs::delete_objects()
 {
+SET_TRACE
 	switch(driver)
 	{
 		case PLAYBACK_LML:
@@ -140,14 +149,23 @@ int VDevicePrefs::delete_objects()
 	if(device_text) delete device_text;
 
 	if(port_title) delete port_title;
+SET_TRACE
 	if(firewire_port) delete firewire_port;
+SET_TRACE
 	if(channel_title) delete channel_title;
+SET_TRACE
 	if(firewire_channel) delete firewire_channel;
+SET_TRACE
+SET_TRACE
 	if(device_title) delete device_title;
+SET_TRACE
 	if(firewire_path) delete firewire_path;
+SET_TRACE
 	if(syt_title) delete syt_title;
+SET_TRACE
 	if(firewire_syt) delete firewire_syt;
 
+SET_TRACE
 	reset_objects();
 	driver = -1;
 	return 0;
@@ -325,6 +343,7 @@ int VDevicePrefs::create_v4l2_objs()
 	output_char = pwindow->thread->edl->session->vconfig_in->v4l2_in_device;
 	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Device path:"), MEDIUMFONT, resources->text_default));
 	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y + 20, output_char));
+
 	return 0;
 }
 
@@ -336,6 +355,7 @@ int VDevicePrefs::create_v4l2jpeg_objs()
 	output_char = pwindow->thread->edl->session->vconfig_in->v4l2jpeg_in_device;
 	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Device path:"), MEDIUMFONT, resources->text_default));
 	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y + 20, output_char));
+
 	return 0;
 }
 
@@ -516,6 +536,8 @@ int VDeviceIntBox::handle_event()
 	*output = atol(get_text()); 
 	return 1;
 }
+
+
 
 
 

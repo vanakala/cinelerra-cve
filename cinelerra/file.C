@@ -310,8 +310,6 @@ int File::open_file(Preferences *preferences,
 	file = 0;
 
 
-SET_TRACE
-//printf("File::open_file 1 %s %d\n", asset->path, asset->format);
 	switch(this->asset->format)
 	{
 // get the format now
@@ -423,10 +421,8 @@ SET_TRACE
 				test[0] == '<' && test[1] == 'H' && test[2] == 'T' && test[3] == 'A' && test[4] == 'L' && test[5] == '>' ||
 				test[0] == '<' && test[1] == '?' && test[2] == 'x' && test[3] == 'm' && test[4] == 'l')
 			{
-SET_TRACE
 // XML file
 				fclose(stream);
-SET_TRACE
 				return FILE_IS_XML;
 			}    // can't load project file
 			else
@@ -530,16 +526,13 @@ SET_TRACE
 			return 1;
 			break;
 	}
-//printf("File::open_file 2\n");
 
 // Reopen file with correct parser and get header.
 	if(file->open_file(rd, wr))
 	{
-//printf("File::open_file 2.5\n");
 		delete file;
 		file = 0;
 	}
-//printf("File::open_file 3\n");
 
 
 // Set extra writing parameters to mandatory settings.
@@ -547,6 +540,7 @@ SET_TRACE
 	{
 		if(this->asset->dither) file->set_dither();
 	}
+
 
 // Synchronize header parameters
 	*asset = *this->asset;
@@ -611,18 +605,15 @@ int File::start_video_thread(int64_t buffer_size,
 	int compressed)
 {
 	video_thread = new FileThread(this, 0, 1);
-//printf("File::start_video_thread 1\n");
 	video_thread->start_writing(buffer_size, 
 		color_model, 
 		ring_buffers, 
 		compressed);
-//printf("File::start_video_thread 2\n");
 	return 0;
 }
 
 int File::stop_audio_thread()
 {
-//printf("File::stop_audio_thread 1\n");
 	if(audio_thread)
 	{
 		audio_thread->stop_writing();
@@ -634,7 +625,6 @@ int File::stop_audio_thread()
 
 int File::stop_video_thread()
 {
-//printf("File::stop_video_thread 1\n");
 	if(video_thread)
 	{
 		video_thread->stop_writing();
@@ -672,7 +662,6 @@ int File::set_layer(int layer)
 	if(file && layer < asset->layers)
 	{
 		current_layer = layer;
-//printf("File::set_layer 1 %d\n", layer);
 		return 0; 
 	}
 	else
@@ -907,7 +896,6 @@ VFrame*** File::get_video_buffer()
 int File::read_samples(double *buffer, int64_t len, int64_t base_samplerate, float *buffer_float)
 {
 	int result = 0;
-//printf("File::read_samples 1\n");
 
 // Never try to read more samples than exist in the file
 	if (current_sample + len > asset->audio_length) {
@@ -1009,29 +997,35 @@ int File::read_frame(VFrame *frame)
 		int supported_colormodel = colormodel_supported(frame->get_color_model());
 		int advance_position = 1;
 
-
-		// Test cache
+// Test cache
 		if(use_cache &&
-		   frame_cache->get_frame(frame,
-					  current_frame,
-					  asset->frame_rate)) {
-			// Can't advance position if cache used.
+			frame_cache->get_frame(frame,
+				current_frame,
+				asset->frame_rate))
+		{
+// Can't advance position if cache used.
 			advance_position = 0;
 		}
-		else if(frame->get_color_model() != BC_COMPRESSED &&
+		else
+// Need temp
+		if(frame->get_color_model() != BC_COMPRESSED &&
 			(supported_colormodel != frame->get_color_model() ||
-			 frame->get_w() != asset->width ||
-			 frame->get_h() != asset->height)) {
-			// Need temp				
-			// Can't advance position here because it needs to be added to cache
-			if(temp_frame) {
-				if(!temp_frame->params_match(asset->width, asset->height, supported_colormodel)) {
+			frame->get_w() != asset->width ||
+			frame->get_h() != asset->height))
+		{
+
+// Can't advance position here because it needs to be added to cache
+			if(temp_frame)
+			{
+				if(!temp_frame->params_match(asset->width, asset->height, supported_colormodel))
+				{
 					delete temp_frame;
 					temp_frame = 0;
 				}
 			}
-			
-			if(!temp_frame)	{
+
+			if(!temp_frame)
+			{
 				temp_frame = new VFrame(0,
 							asset->width,
 							asset->height,
@@ -1039,10 +1033,6 @@ int File::read_frame(VFrame *frame)
 			}
 			
 			file->read_frame(temp_frame);
-			//struct timeval start_time;
-			//gettimeofday(&start_time, 0);
-			//printf("tarnsfering from : %i to %i\n", frame->get_color_model(),temp_frame->get_color_model());
-
 // FUTURE: convert from YUV planar if cmodel_is_planar(temp_frame)
 			cmodel_transfer(frame->get_rows(), 
 					temp_frame->get_rows(),
@@ -1065,20 +1055,20 @@ int File::read_frame(VFrame *frame)
 					0,
 					temp_frame->get_w(),
 					frame->get_w());
-			//	int64_t dif= get_difference(&start_time);
-			//	printf("diff: %lli\n", dif);
-			
 		}
-		else {
+		else
+		{
 			// Can't advance position here because it needs to be added to cache
 			file->read_frame(frame);
 		}
 		
 		if(use_cache) frame_cache->put_frame(frame,
-						     current_frame,
-						     asset->frame_rate,
-						     1);
-		
+			current_frame,
+			asset->frame_rate,
+			1);
+// printf("File::read_frame\n");
+// frame->dump_params();
+
 		if(advance_position) current_frame++;
 		return 0;
 	}

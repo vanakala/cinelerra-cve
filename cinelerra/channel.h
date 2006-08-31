@@ -40,7 +40,12 @@ public:
 	char title[BCTEXTLEN];
 // Name given by device for the channel
 	char device_name[BCTEXTLEN];
+
+
+
+
 // Number of the table entry in the appropriate freqtable
+// or channel number.
 	int entry;
 // Table to use
 	int freqtable;

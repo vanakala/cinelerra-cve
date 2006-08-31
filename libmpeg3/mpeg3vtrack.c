@@ -33,6 +33,7 @@ mpeg3_vtrack_t* mpeg3_new_vtrack(mpeg3_t *file,
 /* Get information about the track here. */
 	new_vtrack->video = mpeg3video_new(file, 
 		new_vtrack);
+
 	if(!new_vtrack->video)
 	{
 /* Failed */

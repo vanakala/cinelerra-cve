@@ -215,13 +215,11 @@ int Module::test_plugins()
 void Module::update_transition(int64_t current_position, 
 	int direction)
 {
-SET_TRACE
 	transition = track->get_current_transition(current_position, 
 		direction,
 		0,
 		0); // position is already nudged in amodule.C and vmodule.C before calling update_transition!
 
-SET_TRACE
 // for situations where we had transition and have no more, we keep the server open:
 // maybe the same transition will follow and we won't need to reinit... (happens a lot while scrubbing over transitions left and right)
 //	if((prev_transition && !transition) ||
@@ -231,12 +229,9 @@ SET_TRACE
 		delete transition_server;
 		transition_server = 0;
 	}
-SET_TRACE
 
 	if(transition && !transition_server)
 	{
-SET_TRACE
-
 		if(renderengine)
 		{
 			PluginServer *plugin_server = renderengine->scan_plugindb(transition->title,
@@ -256,22 +251,17 @@ SET_TRACE
 		else
 		if(plugin_array)
 		{
-SET_TRACE
 			PluginServer *plugin_server = plugin_array->scan_plugindb(transition->title);
-SET_TRACE
 			transition_server = new PluginServer(*plugin_server);
-SET_TRACE
 			transition_server->open_plugin(0, 
 				plugin_array->mwindow->preferences,
 				get_edl(), 
 				transition,
 				-1);
-SET_TRACE
 			transition_server->init_realtime(
 				0,
 				1,
 				get_buffer_size());
-SET_TRACE
 		}
 	}
 }

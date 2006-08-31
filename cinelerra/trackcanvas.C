@@ -759,7 +759,6 @@ int64_t TrackCanvas::get_drop_position (int *is_insertion, Edit *moved_edit, int
 void TrackCanvas::draw(int force, int hide_cursor)
 {
 // Swap pixmap layers
-TRACE("TrackCanvas::draw 1")
  	if(get_w() != background_pixmap->get_w() ||
  		get_h() != background_pixmap->get_h())
  	{
@@ -767,17 +766,12 @@ TRACE("TrackCanvas::draw 1")
  		background_pixmap = new BC_Pixmap(this, get_w(), get_h());
  	}
 
-TRACE("TrackCanvas::draw 10")
 // Cursor disappears after resize when this is called.
 // Cursor doesn't redraw after editing when this isn't called.
 	if(gui->cursor && hide_cursor) gui->cursor->hide();
-TRACE("TrackCanvas::draw 20")
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h(), background_pixmap);
-TRACE("TrackCanvas::draw 30")
 	draw_resources(force);
-TRACE("TrackCanvas::draw 40")
 	draw_overlays();
-UNTRACE
 }
 
 void TrackCanvas::update_cursor()
@@ -900,6 +894,7 @@ void TrackCanvas::draw_resources(int force,
 					if(pixmap_w < pixmap->pixmap_w ||
 						pixmap_h < pixmap->pixmap_h)
 						pixmap->resize(pixmap_w, pixmap_h);
+
 // Copy pixmap to background canvas
 					background_pixmap->draw_pixmap(pixmap, 
 						pixmap->pixmap_x, 
@@ -3443,7 +3438,6 @@ int TrackCanvas::do_plugin_autos(Track *track,
 void TrackCanvas::draw_overlays()
 {
 	int new_cursor, update_cursor, rerender;
-//TRACE("TrackCanvas::draw_overlays 1")
 
 // Move background pixmap to foreground pixmap
 	draw_pixmap(background_pixmap, 
@@ -3453,29 +3447,23 @@ void TrackCanvas::draw_overlays()
 		get_h(),
 		0,
 		0);
-//TRACE("TrackCanvas::draw_overlays 10")
 
 // In/Out points
 	draw_inout_points();
 
-//TRACE("TrackCanvas::draw_overlays 11");
 // Transitions
 	if(mwindow->edl->session->auto_conf->transitions) draw_transitions();
 
-//TRACE("TrackCanvas::draw_overlays 12");
 // Plugins
 	draw_plugins();
 
-//TRACE("TrackCanvas::draw_overlays 13");
 // Loop points
 	draw_loop_points();
 	draw_brender_start();
 
-//TRACE("TrackCanvas::draw_overlays 14");
 // Highlighted areas
 	draw_highlighting();
 
-//TRACE("TrackCanvas::draw_overlays 15");
 // Automation
 	do_keyframes(0, 
 		0, 
@@ -3485,15 +3473,12 @@ void TrackCanvas::draw_overlays()
 		update_cursor,
 		rerender);
 
-//TRACE("TrackCanvas::draw_overlays 16\n");
 // Selection cursor
 	if(gui->cursor) gui->cursor->restore();
 
-//TRACE("TrackCanvas::draw_overlays 17\n");
 // Handle dragging
 	draw_drag_handle();
 
-//TRACE("TrackCanvas::draw_overlays 20");
 // Playback cursor
 	draw_playback_cursor();
 
@@ -5069,7 +5054,9 @@ int TrackCanvas::button_press_event()
 // Highlight selection
 				else
 				{
+SET_TRACE
 					rerender = start_selection(position);
+SET_TRACE
 					mwindow->session->current_operation = SELECT_REGION;
 					update_cursor = 1;
 				}
@@ -5079,22 +5066,26 @@ int TrackCanvas::button_press_event()
 		}
 
 
+SET_TRACE
 		if(rerender)
 		{
 			gui->unlock_window();
 			mwindow->cwindow->update(1, 0, 0, 0, 1);
+
 			gui->lock_window("TrackCanvas::button_press_event 2");
 // Update faders
 			mwindow->update_plugin_guis();
 			gui->patchbay->update();
 		}
 
+SET_TRACE
 		if(update_overlay)
 		{
 			draw_overlays();
 			flash();
 		}
 
+SET_TRACE
 		if(update_cursor)
 		{
 			gui->timebar->update_highlights();
@@ -5105,6 +5096,7 @@ int TrackCanvas::button_press_event()
 			result = 1;
 		}
 
+SET_TRACE
 
 
 	}
@@ -5115,6 +5107,7 @@ int TrackCanvas::start_selection(double position)
 {
 	int rerender = 0;
 	position = mwindow->edl->align_to_frame(position, 0);
+
 
 // Extend a border
 	if(shift_down())

@@ -62,7 +62,8 @@ public:
 	int set_sort_field(int field);
 	int create_dir(char *new_dir_);    // create a new directory
 	int complete_path(char *filename);   // use the filename and the current_dir to create a complete filename
-	int is_dir(const char *new_dir_);	  // return 0 if the text is a directory
+// return 0 if the text is a directory
+	int is_dir(const char *new_dir_);	  
 	int extract_dir(char *out, const char *in);    // extract the directory from the path
 	int extract_name(char *out, const char *in, int test_dir = 1);	// extract the name from the path
 	int join_names(char *out, char *dir_in, char *name_in);    // combine a directory and filename

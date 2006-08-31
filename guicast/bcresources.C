@@ -67,6 +67,7 @@ suffix_to_type_t BC_Resources::suffix_to_type[] =
 
 BC_Signals* BC_Resources::signal_handler = 0;
 
+
 int BC_Resources::x_error_handler(Display *display, XErrorEvent *event)
 {
 	char string[1024];

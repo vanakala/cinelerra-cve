@@ -393,11 +393,11 @@ int MotionBlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	x_offset = (int)(xd * config.radius);
 	y_offset = (int)(yd * config.radius);
 
-        min_w = w * zradius;
-        min_h = h * zradius;
-        max_w = w;
-        max_h = h;
-        min_x1 = center_x - min_w / 2;
+    min_w = w * zradius;
+    min_h = h * zradius;
+    max_w = w;
+    max_h = h;
+    min_x1 = center_x - min_w / 2;
 	min_y1 = center_y - min_h / 2;
 	min_x2 = center_x + min_w / 2;
 	min_y2 = center_y + min_h / 2;

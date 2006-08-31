@@ -1,6 +1,7 @@
 #ifndef AUDIOALSA_H
 #define AUDIOALSA_H
 
+#include "adeviceprefs.inc"
 #include "arraylist.h"
 #include "audiodevice.h"
 

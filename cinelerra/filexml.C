@@ -101,7 +101,7 @@ int FileXML::encode_text(char *text)
 	char *replacement;
 	int len = strlen(text);
 	int lastpos = 0;
-	for (int i = 0; i < len; i++) 
+	for (int i = 0; i < len; i++)
 	{
 		switch (text[i]) {
 			case '<': replacement = leftb; break;
@@ -440,7 +440,7 @@ int XMLTag::read_tag(char *input, long &position, long length)
 	while(input[position] != left_delimiter && position < length) position++;
 	
 	if(position >= length) return 1;
-	
+
 // find the start
 	while(position < length &&
 		(input[position] == ' ' ||         // skip spaces
@@ -521,7 +521,8 @@ int XMLTag::read_tag(char *input, long &position, long length)
 			terminating_char = '\"';     // use quotes to terminate
 			if(position < length) position++;   // don't store the quote itself
 		}
-		else terminating_char = ' ';         // use space to terminate
+		else 
+			terminating_char = ' ';         // use space to terminate
 
 // read until the terminating char
 		for(j = 0;
@@ -549,7 +550,10 @@ int XMLTag::read_tag(char *input, long &position, long length)
 // skip the >
 	if(position < length && input[position] == right_delimiter) position++;
 
-	if(total_properties || tag_title[0]) return 0; else return 1;
+	if(total_properties || tag_title[0]) 
+		return 0; 
+	else 
+		return 1;
 	return 0;
 }
 
@@ -590,6 +594,7 @@ char* XMLTag::get_property(char *property, char *value)
 	{
 		if(!strcasecmp(tag_properties[i], property))
 		{
+//printf("XMLTag::get_property %s %s\n", tag_properties[i], tag_property_values[i]);
 			int j = 0, k = 0;
 			char *tv = tag_property_values[i];
 			while (j < strlen(tag_property_values[i])) {
@@ -716,13 +721,6 @@ int XMLTag::set_property(char *text, int64_t value)
 	set_property(text, temp_string);
 	return 0;
 }
-
-// int XMLTag::set_property(char *text, int value)
-// {
-// 	sprintf(temp_string, "%d", value);
-// 	set_property(text, temp_string);
-// 	return 0;
-// }
 
 int XMLTag::set_property(char *text, float value)
 {

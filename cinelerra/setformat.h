@@ -185,6 +185,7 @@ public:
 	SetChannelsCanvas *canvas;
 // Screen size width, height
 	ScaleSizeText* dimension[2];
+	SetFormatPresets *presets;
 // Size ratio width, height
 	ScaleRatioText* ratio[2];
 // Aspect ratio
@@ -194,7 +195,6 @@ public:
 	SetChannelsTextBox *channels;
 	SetFrameRateTextBox *frame_rate;
 	BC_TextBox *color_model;
-	SetFormatPresets *presets;
 	ScaleAspectAuto *auto_aspect;
 };
 

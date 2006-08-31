@@ -6,7 +6,6 @@
 #include "pluginclient.h"
 #include "vframe.inc"
 
-
 // Maximum dimensions for a temporary frame a plugin should retain between 
 // process_buffer calls.  This allows memory conservation.
 #define PLUGIN_MAX_W 2000
@@ -50,6 +49,7 @@ public:
 	virtual int process_buffer(VFrame *frame,
 		int64_t start_position,
 		double frame_rate);
+
 
 // Called by plugin server to render the GUI with rendered data.
 	void plugin_render_gui(void *data);
@@ -104,7 +104,7 @@ public:
 	int64_t local_to_edl(int64_t position);
 	int64_t edl_to_local(int64_t position);
 
-// Non realtime buffer pointers
+// ======================== Non realtime buffer pointers =======================
 // Channels of arrays of frames that the client uses.
 	VFrame ***video_in, ***video_out;
 
@@ -116,6 +116,8 @@ public:
 	VFrame ***input_ptr_render;
 	VFrame ***output_ptr_render;
 
+
+
 // Frame rate of EDL
 	double project_frame_rate;
 // Local parameters set by non realtime plugin about the file to be generated.
@@ -124,10 +126,15 @@ public:
 // requested rates.
 	double frame_rate;
 	int project_color_model;
-	int use_float;   // Whether user wants floating point calculations.
-	int use_alpha;   // Whether user wants alpha calculations.
-	int use_interpolation;   // Whether user wants pixel interpolation.
-	float aspect_w, aspect_h;  // Aspect ratio
+// Whether user wants floating point calculations.
+	int use_float;   
+// Whether user wants alpha calculations.
+	int use_alpha;   
+// Whether user wants pixel interpolation.
+	int use_interpolation;   
+// Aspect ratio
+	float aspect_w;
+	float aspect_h;  
 
 // Tempo
 	VFrame *temp;

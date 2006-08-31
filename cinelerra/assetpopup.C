@@ -304,3 +304,7 @@ int AssetPopupDiskRemove::handle_event()
 	mwindow->awindow->asset_remove->start();
 	return 1;
 }
+
+
+
+

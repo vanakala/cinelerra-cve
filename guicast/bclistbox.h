@@ -283,6 +283,8 @@ public:
 
 
 
+// Draw the list items
+	int draw_items(int flash);
 
 
 
@@ -299,8 +301,6 @@ private:
 		int columns);
 // Draw the button for a popup listbox
 	int draw_button();
-// Draw the list items
-	int draw_items(int flash);
 // Draw list border
 	int draw_border(int flash);
 // Draw column titles

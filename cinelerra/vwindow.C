@@ -42,7 +42,7 @@ VWindow::~VWindow()
 void VWindow::delete_edl()
 {
 //printf("VWindow::delete_edl 1\n");
-	if(mwindow->edl->vwindow_edl && !mwindow->edl->vwindow_edl_shared) 
+	if(mwindow->edl->vwindow_edl && !mwindow->edl->vwindow_edl_shared)
 	{
 		delete mwindow->edl->vwindow_edl;
 		mwindow->edl->vwindow_edl = 0;

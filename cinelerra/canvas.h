@@ -195,7 +195,6 @@ public:
 	~CanvasXScroll();
 
 	int handle_event();
-
 	Canvas *canvas;
 	EDL *edl;
 };

@@ -136,6 +136,10 @@ int VDeviceX11::close_all()
 		if(bitmap)
 			delete output_frame;
 	}
+
+
+
+
 	if(bitmap)
 	{
 		delete bitmap;
@@ -146,6 +150,7 @@ int VDeviceX11::close_all()
 
 	if(output)
 	{
+	
 		output->canvas->unlock_window();
 	}
 
@@ -203,15 +208,13 @@ int VDeviceX11::get_best_colormodel(int colormodel)
 		}
 	}
 
-//printf("VDeviceX11::get_best_colormodel %d %d %d\n", device->single_frame, colormodel, result);
 	return result;
 }
 
 
 void VDeviceX11::new_output_buffer(VFrame **output_channels, int colormodel)
 {
-//TRACE("VDeviceX11::new_output_buffer 1");
-	
+//printf("VDeviceX11::new_output_buffer 1\n");
 	output->canvas->lock_window("VDeviceX11::new_output_buffer");
 
 	for(int i = 0; i < MAX_CHANNELS; i++)
@@ -250,14 +253,12 @@ void VDeviceX11::new_output_buffer(VFrame **output_channels, int colormodel)
 		if(bitmap_type == BITMAP_PRIMARY)
 		{
 
-//printf("VDeviceX11::new_output_buffer\n");
 			output_frame->set_memory((unsigned char*)bitmap->get_data() /* + bitmap->get_shm_offset() */,
 						bitmap->get_y_offset(),
 						bitmap->get_u_offset(),
 						bitmap->get_v_offset());
 		}
 	}
-//TRACE("VDeviceX11::new_output_buffer 10");
 
 // Create new bitmap
 	if(!bitmap)
@@ -266,17 +267,14 @@ void VDeviceX11::new_output_buffer(VFrame **output_channels, int colormodel)
 		switch(best_colormodel)
 		{
 			case BC_YUV420P:
-//TRACE("VDeviceX11::new_output_buffer 10");
 				if(device->out_config->driver == PLAYBACK_X11_XV &&
 					output->canvas->accel_available(best_colormodel, 0))
 				{
-//TRACE("VDeviceX11::new_output_buffer 20");
 					bitmap = new BC_Bitmap(output->canvas, 
 						device->out_w,
 						device->out_h,
 						best_colormodel,
 						1);
-//TRACE("VDeviceX11::new_output_buffer 30");
 					output_frame = new VFrame((unsigned char*)bitmap->get_data() + bitmap->get_shm_offset(), 
 						bitmap->get_y_offset(),
 						bitmap->get_u_offset(),
@@ -370,12 +368,17 @@ void VDeviceX11::new_output_buffer(VFrame **output_channels, int colormodel)
 				device->out_w,
 				device->out_h,
 				colormodel);
+// printf("VDeviceX11::new_outout_buffer %p %d %d %d %p\n", 
+// device,
+// device->out_w,
+// device->out_h,
+// colormodel,
+// output_frame->get_rows());
+//BUFFER2(output_frame->get_rows()[0], "VDeviceX11::new_output_buffer 2");
 			bitmap_type = BITMAP_TEMP;
 		}
 		color_model_selected = 1;
 	}
-
-//TRACE("VDeviceX11::new_output_buffer 100");
 
 // Fill arguments
 	if(bitmap_type == BITMAP_PRIMARY)
@@ -389,13 +392,12 @@ void VDeviceX11::new_output_buffer(VFrame **output_channels, int colormodel)
 		output_frame->set_shm_offset(0);
 	}
 
-//printf("VDeviceX11::new_output_buffer 200\n");
 
 // Temporary until multichannel X
 	output_channels[0] = output_frame;
 
 	output->canvas->unlock_window();
-
+//printf("VDeviceX11::new_output_buffer 10\n");
 }
 
 
@@ -438,11 +440,6 @@ int VDeviceX11::write_buffer(VFrame **output_channels, EDL *edl)
 		(bitmap_type == BITMAP_TEMP && !bitmap->hardware_scaling()) ? bitmap->get_w() : -1,
 		(bitmap_type == BITMAP_TEMP && !bitmap->hardware_scaling()) ? bitmap->get_h() : -1);
 
-//output->canvas->unlock_window();
-//return 0;
-// printf("VDeviceX11::write_buffer 2 %d\n", bitmap_type);
-// for(int j = 0; j < output_channels[0]->get_w() * 3 * 5; j++)
-// 	output_channels[0]->get_rows()[0][j] = 255;
 
 // Convert colormodel
 	if(bitmap_type == BITMAP_TEMP)
@@ -457,11 +454,11 @@ int VDeviceX11::write_buffer(VFrame **output_channels, EDL *edl)
 // 			out_x, 
 // 			out_y, 
 // 			out_w, 
-// 			out_h );fflush(stdout);
+// 			out_h );
+// fflush(stdout);
 
 //printf("VDeviceX11::write_buffer 2\n");
 
-//printf("VDeviceX11::write_buffer 3 %p %p\n", bitmap->get_row_pointers(), output_channels[0]->get_rows());
 
 		if(bitmap->hardware_scaling())
 		{
@@ -518,17 +515,17 @@ int VDeviceX11::write_buffer(VFrame **output_channels, EDL *edl)
 //printf("VDeviceX11::write_buffer 2 %d %d %d\n", bitmap_type, 
 //	bitmap->get_color_model(), 
 //	output->get_color_model());fflush(stdout);
-// printf("VDeviceX11::write_buffer 2 %d %d, %d %d %d %d -> %d %d %d %d\n",
-// 			output->w,
-// 			output->h,
-// 			in_x, 
-// 			in_y, 
-// 			in_w, 
-// 			in_h,
-// 			out_x, 
-// 			out_y, 
-// 			out_w, 
-// 			out_h);
+// printf("VDeviceX11::write_buffer 2 %d %d, %f %f %f %f -> %f %f %f %f\n",
+// output->w,
+// output->h,
+// output_x1, 
+// output_y1, 
+// output_x2, 
+// output_y2, 
+// canvas_x1, 
+// canvas_y1, 
+// canvas_x2, 
+// canvas_y2);
 
 
 // Select field if using field mode.  This may be a useful feature later on

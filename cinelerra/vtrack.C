@@ -273,7 +273,6 @@ int VTrack::draw_floating_autos_derived(float view_start, float zoom_units, Auto
 int VTrack::channel_is_playable(int64_t position, int direction, int *do_channel)
 {
 	int result = 0;
-//printf("VTrack::channel_is_playable 1 %d\n", do_channel[0]);
 	for(int i = 0; i < edl->session->video_channels && !result; i++)
 	{
 		if(do_channel[i])
@@ -285,7 +284,7 @@ int VTrack::channel_is_playable(int64_t position, int direction, int *do_channel
 				in_x, in_y, in_w, in_h,
 				out_x, out_y, out_w, out_h);
 
-//printf("VTrack::channel_is_playable %0.0f %0.0f %0.0f %0.0f %0.0f %0.0f %0.0f %0.0f\n", 
+//printf("VTrack::is_playable %0.0f %0.0f %0.0f %0.0f %0.0f %0.0f %0.0f %0.0f\n", 
 //in_x, in_y, in_w, in_h, out_x, out_y, out_w, out_h);
 			if(out_w > 0 && out_h > 0) 
 				result = 1;

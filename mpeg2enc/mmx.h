@@ -19,6 +19,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include "attributes.h"
+
 /*
  * The type of an value that fits in an MMX register (note that long
  * long constant values MUST be suffixed by LL and unsigned long long
@@ -26,31 +28,41 @@
  */
 
 typedef	union {
-	long long		q;	/* Quadword (64-bit) value */
-	unsigned long long	uq;	/* Unsigned Quadword */
-	int			d[2];	/* 2 Doubleword (32-bit) values */
-	unsigned int		ud[2];	/* 2 Unsigned Doubleword */
-	short			w[4];	/* 4 Word (16-bit) values */
-	unsigned short		uw[4];	/* 4 Unsigned Word */
-	char			b[8];	/* 8 Byte (8-bit) values */
-	unsigned char		ub[8];	/* 8 Unsigned Byte */
+	int64_t  		q;	/* Quadword (64-bit) value */
+	uint64_t          	uq;	/* Unsigned Quadword */
+	int32_t                 d[2];	/* 2 Doubleword (32-bit) values */
+	uint32_t    		ud[2];	/* 2 Unsigned Doubleword */
+	int16_t         	w[4];	/* 4 Word (16-bit) values */
+	uint16_t      		uw[4];	/* 4 Unsigned Word */
+	int8_t          	b[8];	/* 8 Byte (8-bit) values */
+	uint8_t      		ub[8];	/* 8 Unsigned Byte */
 	float			s[2];	/* Single-precision (32-bit) value */
 } ATTR_ALIGN(8) mmx_t;	/* On an 8-byte (64-bit) boundary */
 
 
-#define	mmx_i2r(op,imm,reg) \
+#define	mmx_si2r(op,imm,reg) \
 	__asm__ __volatile__ (#op " %0, %%" #reg \
 			      : /* nothing */ \
-			      : "X" (imm) )
+			      : "J" (imm) )
 
 #define	mmx_m2r(op,mem,reg) \
 	__asm__ __volatile__ (#op " %0, %%" #reg \
 			      : /* nothing */ \
-			      : "X" (mem))
+			      : "m" (mem))
 
 #define	mmx_r2m(op,reg,mem) \
 	__asm__ __volatile__ (#op " %%" #reg ", %0" \
-			      : "=X" (mem) \
+			      : "=m" (mem) \
+			      : /* nothing */ )
+
+#define	mmx_g2r(op,mem,reg) \
+	__asm__ __volatile__ (#op " %0, %%" #reg \
+			      : /* nothing */ \
+			      : "rm" (mem))
+
+#define	mmx_r2g(op,reg,mem) \
+	__asm__ __volatile__ (#op " %%" #reg ", %0" \
+			      : "=rm" (mem) \
 			      : /* nothing */ )
 
 #define	mmx_r2r(op,regs,regd) \
@@ -62,6 +74,8 @@ typedef	union {
 
 #define	movd_m2r(var,reg)	mmx_m2r (movd, var, reg)
 #define	movd_r2m(reg,var)	mmx_r2m (movd, reg, var)
+#define	movd_g2r(var,reg)	mmx_g2r (movd, var, reg)
+#define	movd_r2g(reg,var)	mmx_r2g (movd, reg, var)
 #define	movd_r2r(regs,regd)	mmx_r2r (movd, regs, regd)
 
 #define	movq_m2r(var,reg)	mmx_m2r (movq, var, reg)
@@ -125,30 +139,30 @@ typedef	union {
 #define	por_m2r(var,reg)	mmx_m2r (por, var, reg)
 #define	por_r2r(regs,regd)	mmx_r2r (por, regs, regd)
 
-#define	pslld_i2r(imm,reg)	mmx_i2r (pslld, imm, reg)
+#define	pslld_i2r(imm,reg)	mmx_si2r (pslld, imm, reg)
 #define	pslld_m2r(var,reg)	mmx_m2r (pslld, var, reg)
 #define	pslld_r2r(regs,regd)	mmx_r2r (pslld, regs, regd)
-#define	psllq_i2r(imm,reg)	mmx_i2r (psllq, imm, reg)
+#define	psllq_i2r(imm,reg)	mmx_si2r (psllq, imm, reg)
 #define	psllq_m2r(var,reg)	mmx_m2r (psllq, var, reg)
 #define	psllq_r2r(regs,regd)	mmx_r2r (psllq, regs, regd)
-#define	psllw_i2r(imm,reg)	mmx_i2r (psllw, imm, reg)
+#define	psllw_i2r(imm,reg)	mmx_si2r (psllw, imm, reg)
 #define	psllw_m2r(var,reg)	mmx_m2r (psllw, var, reg)
 #define	psllw_r2r(regs,regd)	mmx_r2r (psllw, regs, regd)
 
-#define	psrad_i2r(imm,reg)	mmx_i2r (psrad, imm, reg)
+#define	psrad_i2r(imm,reg)	mmx_si2r (psrad, imm, reg)
 #define	psrad_m2r(var,reg)	mmx_m2r (psrad, var, reg)
 #define	psrad_r2r(regs,regd)	mmx_r2r (psrad, regs, regd)
-#define	psraw_i2r(imm,reg)	mmx_i2r (psraw, imm, reg)
+#define	psraw_i2r(imm,reg)	mmx_si2r (psraw, imm, reg)
 #define	psraw_m2r(var,reg)	mmx_m2r (psraw, var, reg)
 #define	psraw_r2r(regs,regd)	mmx_r2r (psraw, regs, regd)
 
-#define	psrld_i2r(imm,reg)	mmx_i2r (psrld, imm, reg)
+#define	psrld_i2r(imm,reg)	mmx_si2r (psrld, imm, reg)
 #define	psrld_m2r(var,reg)	mmx_m2r (psrld, var, reg)
 #define	psrld_r2r(regs,regd)	mmx_r2r (psrld, regs, regd)
-#define	psrlq_i2r(imm,reg)	mmx_i2r (psrlq, imm, reg)
+#define	psrlq_i2r(imm,reg)	mmx_si2r (psrlq, imm, reg)
 #define	psrlq_m2r(var,reg)	mmx_m2r (psrlq, var, reg)
 #define	psrlq_r2r(regs,regd)	mmx_r2r (psrlq, regs, regd)
-#define	psrlw_i2r(imm,reg)	mmx_i2r (psrlw, imm, reg)
+#define	psrlw_i2r(imm,reg)	mmx_si2r (psrlw, imm, reg)
 #define	psrlw_m2r(var,reg)	mmx_m2r (psrlw, var, reg)
 #define	psrlw_r2r(regs,regd)	mmx_r2r (psrlw, regs, regd)
 
@@ -192,16 +206,16 @@ typedef	union {
 #define mmx_m2ri(op,mem,reg,imm) \
         __asm__ __volatile__ (#op " %1, %0, %%" #reg \
                               : /* nothing */ \
-                              : "X" (mem), "X" (imm))
+                              : "m" (mem), "i" (imm))
 #define mmx_r2ri(op,regs,regd,imm) \
         __asm__ __volatile__ (#op " %0, %%" #regs ", %%" #regd \
                               : /* nothing */ \
-                              : "X" (imm) )
+                              : "i" (imm) )
 
 #define	mmx_fetch(mem,hint) \
 	__asm__ __volatile__ ("prefetch" #hint " %0" \
 			      : /* nothing */ \
-			      : "X" (mem))
+			      : "m" (mem))
 
 /* 3DNow goodies */
 #define pfmul_m2r(var,reg) mmx_m2r( pfmul, var, reg )
@@ -212,15 +226,35 @@ typedef	union {
 #define pi2fd_r2r(regs,regd) mmx_r2r( pi2fd, regs, regd )
 
 /* SSE goodies */
+#define addps_m2r( var, regd) mmx_m2r( addps, var, regd )
+#define addps_r2r( regs, regd) mmx_r2r( addps, regs, regd )
+#define subps_r2r( regs, regd) mmx_r2r( subps, regs, regd )
+
+#define minps_r2r( regs, regd) mmx_r2r( minps, regs, regd )
+#define maxps_r2r( regs, regd) mmx_r2r( maxps, regs, regd )
+
 #define mulps_r2r( regs, regd) mmx_r2r( mulps, regs, regd )
 #define mulps_m2r( var, regd) mmx_m2r( mulps, var, regd )
+#define movups_r2r(reg1, reg2) mmx_r2r( movups, reg1, reg2 )
 #define movups_m2r(var, reg) mmx_m2r( movups, var, reg )
 #define movaps_m2r(var, reg) mmx_m2r( movaps, var, reg )
+#define movaps_r2r(reg1, reg2) mmx_r2r( movaps, reg1, reg2 )
+#define movlps_m2r(var, reg) mmx_m2r( movlps, var, reg )
+#define movlps_r2m(reg, var) mmx_r2m( movlps, reg, var )
+#define movlhps_m2r(var, reg) mmx_m2r( movlhps, var, reg )
+#define movlhps_r2r(reg1, reg2) mmx_r2r( movlhps, reg1, reg2 )
+#define movhlps_r2r(reg1, reg2) mmx_r2r( movhlps, reg1, reg2 )
 #define movups_r2m(reg, var) mmx_r2m( movups, reg, var )
 #define movaps_r2m(reg, var) mmx_r2m( movaps, reg, var )
+
+#define movss_r2m(reg, var) mmx_r2m( movss, reg, var )
+
+#define cvttps2pi_r2r(regs,regd) mmx_r2r( cvttps2pi, regs, regd )
 #define cvtps2pi_r2r(regs,regd) mmx_r2r( cvtps2pi, regs, regd )
 #define cvtpi2ps_r2r(regs,regd) mmx_r2r( cvtpi2ps, regs, regd )
 #define shufps_r2ri(regs, regd, imm) mmx_r2ri( shufps, regs, regd, imm )
+#define unpcklps_r2r(reg1, reg2) mmx_r2r( unpcklps, reg1, reg2 )
+#define unpckhps_r2r(reg1, reg2) mmx_r2r( unpckhps, reg1, reg2 )
 
 
 #define	maskmovq(regs,maskreg)		mmx_r2ri (maskmovq, regs, maskreg)

@@ -91,6 +91,7 @@ int ARender::init_meters()
 	if(level_samples) delete [] level_samples;
 	calculate_history_size();
 	level_samples = new int64_t[total_peaks];
+
 	for(int i = 0; i < MAXCHANNELS;i++)
 	{
 		current_level[i] = 0;

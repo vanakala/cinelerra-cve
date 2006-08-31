@@ -191,6 +191,8 @@ int MotionWindow::create_objects()
 		y));
 	mode2->create_objects();
 
+
+
 	show_window();
 	flush();
 	return 0;

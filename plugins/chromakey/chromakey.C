@@ -1,4 +1,5 @@
 #include "bcdisplayinfo.h"
+#include "bcsignals.h"
 #include "chromakey.h"
 #include "clip.h"
 #include "defaults.h"
@@ -531,6 +532,7 @@ int ChromaKey::process_realtime(VFrame *input, VFrame *output)
 		if(!engine) engine = new ChromaKeyServer(this);
 		engine->process_packages();
 	}
+SET_TRACE
 
 	return 0;
 }
@@ -544,6 +546,7 @@ LOAD_CONFIGURATION_MACRO(ChromaKey, ChromaKeyConfig)
 
 int ChromaKey::load_defaults()
 {
+SET_TRACE
 	char directory[BCTEXTLEN];
 // set the default directory
 	sprintf(directory, "%schromakey.rc", BCASTDIR);
@@ -558,11 +561,13 @@ int ChromaKey::load_defaults()
 	config.threshold = defaults->get("THRESHOLD", config.threshold);
 	config.slope = defaults->get("SLOPE", config.slope);
 	config.use_value = defaults->get("USE_VALUE", config.use_value);
+SET_TRACE
 	return 0;
 }
 
 int ChromaKey::save_defaults()
 {
+SET_TRACE
 	defaults->update("RED", config.red);
 	defaults->update("GREEN", config.green);
 	defaults->update("BLUE", config.blue);
@@ -570,6 +575,7 @@ int ChromaKey::save_defaults()
     defaults->update("SLOPE", config.slope);
     defaults->update("USE_VALUE", config.use_value);
 	defaults->save();
+SET_TRACE
 	return 0;
 }
 
@@ -629,7 +635,6 @@ void ChromaKey::update_gui()
 		thread->window->unlock_window();
 	}
 }
-
 
 
 

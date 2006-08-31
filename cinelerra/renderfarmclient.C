@@ -360,7 +360,6 @@ void RenderFarmClientThread::read_edl(int socket_fd,
 	char *string;
 	read_string(socket_fd, string);
 
-//printf("RenderFarmClientThread::read_edl 1\n");
 
 	FileXML file;
 	file.read_from_string((char*)string);
@@ -476,6 +475,7 @@ int RenderFarmClientThread::send_completion(int socket_fd)
 void RenderFarmClientThread::main_loop(int socket_fd)
 {
 	 this->socket_fd = socket_fd;
+
 	 Thread::start();
 }
 
@@ -496,13 +496,24 @@ void RenderFarmClientThread::run()
 
 
 	int socket_fd = this->socket_fd;
-//printf("RenderFarmClientThread::run 1\n");
+
+
+//printf("RenderFarmClientThread::run command=%d\n", command);
+
+SET_TRACE
+
+
 	EDL *edl;
 	RenderPackage *package;
 	Asset *default_asset;
 	Preferences *preferences;
+
+
+
 	FarmPackageRenderer package_renderer(this, socket_fd);
 	int result = 0;
+
+
 
 //printf("RenderFarmClientThread::run 2\n");
 // Read settings
@@ -552,7 +563,7 @@ void RenderFarmClientThread::run()
 // Finished list
 		if(result)
 		{
-//printf("RenderFarmClientThread::run 7 %d\n", result);
+//printf("RenderFarmClientThread::run 7\n");
 
 			result = send_completion(socket_fd);
 			break;
@@ -585,14 +596,7 @@ void RenderFarmClientThread::run()
 	delete edl;
 //printf("RenderFarmClientThread::run 11\n");
 	delete preferences;
-//printf("RenderFarmClientThread::run 12\n");
 printf(_("RenderFarmClientThread::run: Session finished.\n"));
-
-// Socket error should be the only cause of this
-	if(result)
-	{
-		;
-	}
 
 	_exit(0);
 }
@@ -681,4 +685,13 @@ int FarmPackageRenderer::set_video_map(int64_t position, int value)
 	thread->unlock();
 	return result;
 }
+
+
+
+
+
+
+
+
+
 

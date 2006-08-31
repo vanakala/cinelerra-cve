@@ -2,7 +2,7 @@
 #define PICTURE_H
 
 
-// Container for picture controls
+// Container for picture controls like brightness.
 
 #include "arraylist.h"
 #include "bcwindowbase.inc"
@@ -57,7 +57,7 @@ public:
 	PictureItem* new_item(const char *name);
 	PictureItem* get_item(const char *name, int id);
 	ArrayList<PictureItem*> controls;
-// To get defaults
+// Pointer to MWindow::defaults get defaults
 	MWindow *mwindow;
 };
 

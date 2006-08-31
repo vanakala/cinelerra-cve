@@ -129,7 +129,14 @@ ChromaKeyConfig::get_color ()
 
 ChromaKeyWindow::ChromaKeyWindow (ChromaKey * plugin, int x, int y):BC_Window (plugin->gui_string,
 	   x,
-	   y, 370, 500, 370, 500, 0, 0, 1)
+	   y, 
+	   370,
+	   500, 
+	   370, 
+	   500, 
+	   0, 
+	   0, 
+	   1)
 {
   this->plugin = plugin;
   color_thread = 0;
@@ -518,6 +525,7 @@ ChromaKeyUnit::ChromaKeyUnit (ChromaKey * plugin, ChromaKeyServer * server):Load
 {
   this->plugin = plugin;
 }
+
 
 
 

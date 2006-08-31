@@ -38,7 +38,6 @@ BC_MenuBar::~BC_MenuBar()
 
 int BC_MenuBar::initialize()
 {
-SET_TRACE
 	BC_Resources *resources = get_resources();
 // Initialize dimensions
 	h = calculate_height(this);
@@ -60,7 +59,6 @@ SET_TRACE
 	if(resources->menu_bg) 
 		set_background(resources->menu_bg);
 	draw_face();
-SET_TRACE
 	return 0;
 }
 

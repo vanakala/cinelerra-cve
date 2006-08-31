@@ -3,6 +3,7 @@
 #include "bcpixmap.h"
 #include "bcpopupmenu.h"
 #include "bcresources.h"
+#include "bcsignals.h"
 #include "colors.h"
 #include "fonts.h"
 #include <string.h>
@@ -355,7 +356,6 @@ int BC_PopupMenu::button_release_event()
 	int result = 0;
 
 	button_releases++;
-//printf("BC_PopupMenu::button_release_event 1 %d\n", result);
 
 	if(is_event_win() && use_title)
 	{
@@ -366,7 +366,6 @@ int BC_PopupMenu::button_release_event()
 			draw_title();
 		}
 	}
-//printf("BC_PopupMenu::button_release_event 2 %d\n", result);
 
 	if(popup_down)
 	{
@@ -378,21 +377,17 @@ int BC_PopupMenu::button_release_event()
 	{
 		deactivate();
 	}
-//printf("BC_PopupMenu::button_release_event 3 %d\n", result);
 
 	if(!result && use_title && cursor_inside() && is_event_win())
 	{
-//printf("BC_PopupMenu::button_release_event 4 %d\n", result);
 		hide_tooltip();
 		result = 1;
 	}
 	else
 	if(!result && !use_title && popup_down && button_releases < 2)
 	{
-//printf("BC_PopupMenu::button_release_event 5 %d\n", result);
 		result = 1;
 	}
-//printf("BC_PopupMenu::button_release_event 6 %d\n", result);
 
 
 	if(!result && popup_down)
@@ -401,7 +396,6 @@ int BC_PopupMenu::button_release_event()
 		deactivate();
 		result = 1;
 	}
-//printf("BC_PopupMenu::button_release_event 5 %d\n", result);
 
 	return result;
 

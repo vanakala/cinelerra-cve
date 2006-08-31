@@ -183,14 +183,6 @@ int VWindowGUI::create_objects()
 		mwindow->theme->vtime_y,
 		mwindow->theme->vtime_w));
 
-//printf("VWindowGUI::create_objects 1\n");
-// 	add_subwindow(new BC_Title(mwindow->theme->vzoom_x, mwindow->theme->vzoom_y, "Zoom:"));
-// 	zoom_panel = new VWindowZoom(mwindow, 
-// 		this, 
-// 		mwindow->theme->vzoom_x + 60, 
-// 		mwindow->theme->vzoom_y);
-// 	zoom_panel->create_objects();
-// 
 	canvas = new VWindowCanvas(mwindow, this);
 	canvas->create_objects(mwindow->edl);
 

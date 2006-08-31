@@ -435,7 +435,6 @@ int FileEXR::read_frame(VFrame *frame, VFrame *data)
 
 int FileEXR::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 {
-//printf("FileEXR::write_frame 1\n");
 	EXRUnit *exr_unit = (EXRUnit*)unit;
 	int result = 0;
 
@@ -513,7 +512,6 @@ int FileEXR::write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit)
 				sizeof(float) * components * output_frame->get_w()));
 	file.setFrameBuffer(framebuffer);
 	file.writePixels(asset->height);
-//printf("FileEXR::write_frame 10\n");
 }
 
 FrameWriterUnit* FileEXR::new_writer_unit(FrameWriter *writer)

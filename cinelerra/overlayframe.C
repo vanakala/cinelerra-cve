@@ -2581,7 +2581,7 @@ void BlendUnit::process_package(LoadPackage *package)
 				BLEND_ONLY_TRANSFER_REPLACE(uint16_t, 4);
 				break;
 		}
-	} 
+	}
 	else
 	if (mode == TRANSFER_NORMAL) 
 	{

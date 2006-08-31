@@ -341,8 +341,8 @@ printf("IndexFile::create_index 1\n");
 		index_thread->input_lock[current_buffer]->lock("IndexFile::create_index 2");
 		index_thread->last_buffer[current_buffer] = 1;
 		index_thread->output_lock[current_buffer]->unlock();
-
 		index_thread->stop_build();
+
 		delete index_thread;
 	}
 
@@ -350,10 +350,12 @@ printf("IndexFile::create_index 1\n");
 	source.close_file();
 
 
+
 	open_index(asset);
+
 	close_index();
+
 	mwindow->edl->set_index_file(asset);
-//printf("IndexFile::create_index 11\n");
 	return 0;
 }
 
@@ -567,7 +569,9 @@ int IndexFile::close_index()
 {
 	if(file)
 	{
+
 		fclose(file);
+
 		file = 0;
 	}
 }

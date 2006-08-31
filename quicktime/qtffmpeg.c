@@ -38,6 +38,7 @@ quicktime_ffmpeg_t* quicktime_new_ffmpeg(int cpus,
 	ptr->width = w;
 	ptr->height = h;
 	ptr->ffmpeg_id = ffmpeg_id;
+//printf("quicktime_new_ffmpeg 1 %d\n", ptr->ffmpeg_id);
 	if(ffmpeg_id == CODEC_ID_SVQ1)
 	{
 		ptr->width_i = quicktime_quantize32(ptr->width);
@@ -141,6 +142,7 @@ static int decode_wrapper(quicktime_t *file,
 	quicktime_trak_t *trak = vtrack->track;
 	quicktime_stsd_table_t *stsd_table = &trak->mdia.minf.stbl.stsd.table[0];
 
+//printf("decode_wrapper %d\n", frame_number);
 	quicktime_set_video_position(file, frame_number, track);
 
 	bytes = quicktime_frame_size(file, frame_number, track); 
@@ -172,7 +174,7 @@ static int decode_wrapper(quicktime_t *file,
 // No way to determine if there was an error based on nonzero status.
 // Need to test row pointers to determine if an error occurred.
 		if(drop_it)
-			ffmpeg->decoder_context[current_field]->skip_frame = AVDISCARD_NONREF;
+			ffmpeg->decoder_context[current_field]->skip_frame = AVDISCARD_NONREF /* AVDISCARD_BIDIR */;
 		else
 			ffmpeg->decoder_context[current_field]->skip_frame = AVDISCARD_DEFAULT;
 		result = avcodec_decode_video(ffmpeg->decoder_context[current_field], 

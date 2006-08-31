@@ -1,12 +1,6 @@
 #ifndef ADEVICEPREFS_H
 #define ADEVICEPREFS_H
 
-// Modes
-#ifndef MODEPLAY
-#define MODEPLAY 0
-#define MODERECORD 1
-#define MODEDUPLEX 2
-#endif
 
 class OSSEnable;
 class ALSADevice;

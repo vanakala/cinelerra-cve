@@ -93,7 +93,6 @@ int VModule::import_frame(VFrame *output,
 	float out_w1;
 	float out_h1;
 	int result = 0;
-SET_TRACE
 	double edl_rate = get_edl()->session->frame_rate;
 	int64_t input_position_project = (int64_t)(input_position * 
 		edl_rate / 
@@ -101,7 +100,6 @@ SET_TRACE
 		0.001);
 	if(!output) printf("VModule::import_frame 10 output=%p\n", output);
 
-SET_TRACE
 	corrected_position = input_position;
 	corrected_position_project = input_position_project;
 	if(direction == PLAY_REVERSE)
@@ -115,9 +113,7 @@ SET_TRACE
 		current_edit->asset)
 	{
 		get_cache()->age();
-SET_TRACE
 		File *source = get_cache()->check_out(current_edit->asset);
-SET_TRACE
 //		get_cache()->dump();
 
 		if(source)
@@ -137,7 +133,6 @@ SET_TRACE
 			source->set_video_position(position,
 				frame_rate);
 			source->set_layer(current_edit->channel);
-SET_TRACE
 
 			((VTrack*)track)->calculate_input_transfer(current_edit->asset, 
 				input_position_project, 
@@ -182,7 +177,6 @@ SET_TRACE
 				default:
 					printf("vmodule::importframe WARNING - unknown fix method for interlacing, no compensation in effect\n");
 			}
-SET_TRACE
 
 
 // file -> temp -> output
@@ -197,7 +191,10 @@ SET_TRACE
 				!EQUIV(in_w1, current_edit->asset->width) ||
 				!EQUIV(in_h1, current_edit->asset->height))
 			{
-//printf("VModule::import_frame 1\n");
+
+
+
+
 // Get temporary input buffer
 				VFrame **input = 0;
 // Realtime playback
@@ -236,18 +233,19 @@ SET_TRACE
 
 
 
+
 // file -> temp
 // Cache for single frame only
 //				if(renderengine && renderengine->command->single_frame())
 					source->set_cache_frames(1);
-SET_TRACE
 				result = source->read_frame((*input));
-SET_TRACE
 //				if(renderengine && renderengine->command->single_frame())
 					source->set_cache_frames(0);
 
 //printf("VModule::import_frame 1 %lld %f\n", input_position, frame_rate);
+
 				OverlayFrame *overlayer = 0;
+
 // Realtime playback
 				if(commonrender)
 				{
@@ -302,21 +300,17 @@ SET_TRACE
 					mode,
 					get_edl()->session->interpolation_type);
 				result = 1;
-//printf("VModule::import_frame 20\n");
 			}
 			else
 // file -> output
 			{
-//printf("VModule::import_frame 30 %p\n", output);
 // Cache single frames only
 //				if(renderengine && renderengine->command->single_frame())
 					source->set_cache_frames(1);
 				result = source->read_frame(output);
 //				if(renderengine && renderengine->command->single_frame())
 					source->set_cache_frames(0);
-//printf("VModule::import_frame 40\n");
 			}
-SET_TRACE
 
 			get_cache()->check_in(current_edit->asset);
 		}
@@ -331,6 +325,7 @@ SET_TRACE
 	{
 		output->clear_frame();
 	}
+
 
 	return result;
 }
@@ -351,7 +346,6 @@ int VModule::render(VFrame *output,
 		frame_rate / 
 		edl_rate);
 
-
 	int64_t start_position_project = (int64_t)(start_position *
 		edl_rate /
 		frame_rate + 
@@ -365,13 +359,12 @@ int VModule::render(VFrame *output,
 
 	update_transition(start_position_project, 
 		direction);
-SET_TRACE
 
 	VEdit* current_edit = (VEdit*)track->edits->editof(start_position_project, 
 		direction,
 		0);
-SET_TRACE
 	VEdit* previous_edit = 0;
+
 
 	if(!current_edit)
 	{
@@ -446,13 +439,11 @@ SET_TRACE
 	else
 	{
 // Load output buffer
-SET_TRACE
 		result = import_frame(output, 
 			current_edit, 
 			start_position,
 			frame_rate,
 			direction);
-SET_TRACE
 	}
 	
 	int64_t mask_position;

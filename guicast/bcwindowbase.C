@@ -62,7 +62,6 @@ BC_WindowBase::BC_WindowBase()
 
 BC_WindowBase::~BC_WindowBase()
 {
-
 #ifdef HAVE_LIBXXF86VM
    if(window_type == VIDMODE_SCALED_WINDOW && vm_switched)
    {
@@ -76,8 +75,9 @@ BC_WindowBase::~BC_WindowBase()
 		if(top_level->active_menubar == this) top_level->active_menubar = 0;
 		if(top_level->active_popup_menu == this) top_level->active_popup_menu = 0;
 		if(top_level->active_subwindow == this) top_level->active_subwindow = 0;
-                parent_window->subwindows->remove(this);
-        }
+// Remove pointer from parent window to this
+		parent_window->subwindows->remove(this);
+	}
 
 
 // Delete the subwindows
@@ -112,9 +112,11 @@ BC_WindowBase::~BC_WindowBase()
 	if(temp_bitmap) delete temp_bitmap;
 
 
+
+
+
 	if(window_type == MAIN_WINDOW) 
 	{
-		
 		XFreeGC(display, gc);
 #ifdef HAVE_XFT
 		if(largefont_xft) 
@@ -140,6 +142,7 @@ BC_WindowBase::~BC_WindowBase()
 	common_events.remove_all_objects();
 	delete event_lock;
 	delete event_condition;
+
 	UNSET_ALL_LOCKS(this)
 }
 
@@ -293,13 +296,14 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 		if(this->x < 0) this->x = 0;
 		if(this->y < 0) this->y = 0;
 		screen = DefaultScreen(display);
-
 		rootwin = RootWindow(display, screen);
+
+
 		vis = DefaultVisual(display, screen);
 		default_depth = DefaultDepth(display, screen);
+
 		client_byte_order = (*(u_int32_t*)"a   ") & 0x00000001;
 		server_byte_order = (XImageByteOrder(display) == MSBFirst) ? 0 : 1;
-
 
 
 // This must be done before fonts to know if antialiasing is available.
@@ -311,6 +315,10 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 
 		if(this->bg_color == -1)
 			this->bg_color = resources.get_bg_color();
+
+// printf("bcwindowbase 1 %s\n", title);
+// if(window_type == MAIN_WINDOW) sleep(1);
+// printf("bcwindowbase 10\n");
 		init_fonts();
 		init_gc();
 		init_cursors();
@@ -1034,6 +1042,7 @@ int BC_WindowBase::dispatch_motion_event()
 		result = subwindows->values[i]->dispatch_motion_event();
 	}
 
+
 	if(!result) result = cursor_motion_event();    // give to user
 	return result;
 }
@@ -1118,27 +1127,21 @@ int BC_WindowBase::dispatch_button_release()
 	if(top_level == this)
 	{
 		if(active_menubar) result = active_menubar->dispatch_button_release();
-//printf("BC_WindowBase::dispatch_button_release 1 %d\n", result);
 		if(active_popup_menu && !result) result = active_popup_menu->dispatch_button_release();
-//printf("BC_WindowBase::dispatch_button_release 2 %p %d\n", active_subwindow, result);
 		if(active_subwindow && !result) result = active_subwindow->dispatch_button_release();
-//printf("BC_WindowBase::dispatch_button_release 3 %d\n", result);
 		if(!result && button_number != 4 && button_number != 5)
 			result = dispatch_drag_stop();
 	}
-//printf("BC_WindowBase::dispatch_button_release 4 %d\n", result);
 
 	for(int i = 0; i < subwindows->total && !result; i++)
 	{
 		result = subwindows->values[i]->dispatch_button_release();
 	}
-//printf("BC_WindowBase::dispatch_button_release 5 %d\n", result);
 
 	if(!result)
 	{
 		result = button_release_event();
 	}
-//printf("BC_WindowBase::dispatch_button_release 6 %d\n", result);
 
 	return result;
 }
@@ -1153,9 +1156,13 @@ int BC_WindowBase::dispatch_repeat_event(int64_t duration)
 	{
 		subwindows->values[i]->dispatch_repeat_event(duration);
 	}
+
+
 	repeat_event(duration);
 
-// Unlock next signal
+
+
+// Unlock next repeat signal
 	if(window_type == MAIN_WINDOW)
 	{
 		for(int i = 0; i < repeaters.total; i++)
@@ -1948,7 +1955,7 @@ Cursor BC_WindowBase::get_cursor_struct(int cursor)
 		case UPRIGHT_RESIZE:       return top_level->upright_resize_cursor;    	   break;
 		case DOWNLEFT_RESIZE:      return top_level->downleft_resize_cursor;   	   break;
 		case DOWNRIGHT_RESIZE:     return top_level->downright_resize_cursor;  	   break;
-		case HOURGLASS_CURSOR:     return top_level->hourglass_cursor;  	   break;
+		case HOURGLASS_CURSOR:     return top_level->hourglass_cursor;  	       break;
 	}
 	return 0;
 }
@@ -2875,9 +2882,7 @@ int BC_WindowBase::get_abs_cursor_x(int lock_window)
 	unsigned int temp_mask;
 	Window temp_win;
 
-SET_TRACE
 	if(lock_window) this->lock_window("BC_WindowBase::get_abs_cursor_x");
-SET_TRACE
 	XQueryPointer(top_level->display, 
 		top_level->win, 
 		&temp_win, 
@@ -2887,9 +2892,7 @@ SET_TRACE
 		&win_x, 
 		&win_y, 
 		&temp_mask);
-SET_TRACE
 	if(lock_window) this->unlock_window();
-SET_TRACE
 	return abs_x;
 }
 

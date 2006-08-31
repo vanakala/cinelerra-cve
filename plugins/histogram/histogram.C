@@ -40,9 +40,6 @@ REGISTER_PLUGIN(HistogramMain)
 
 
 
-
-
-
 HistogramMain::HistogramMain(PluginServer *server)
  : PluginVClient(server)
 {
@@ -98,9 +95,12 @@ void HistogramMain::render_gui(void *data)
 
 		if(config.automatic)
 		{
+SET_TRACE
 			calculate_automatic((VFrame*)data);
+
 		}
 
+SET_TRACE
 		thread->window->lock_window("HistogramMain::render_gui");
 		thread->window->update_canvas();
 		if(config.automatic)
@@ -108,6 +108,7 @@ void HistogramMain::render_gui(void *data)
 			thread->window->update_input();
 		}
 		thread->window->unlock_window();
+SET_TRACE
 	}
 }
 
@@ -412,15 +413,14 @@ float HistogramMain::calculate_linear(float input,
 
 
 
+// Linear
 		if(!EQUIV(x2 - x1, 0))
 			output = (input - x1) * (y2 - y1) / (x2 - x1) + y1;
 		else
-// Linear
 			output = input * y2;
 
 
 
-// 
 
 
 	}
@@ -476,15 +476,19 @@ void HistogramMain::calculate_histogram(VFrame *data)
 		for(int i = 0; i < HISTOGRAM_MODES; i++)
 			accum[i] = new int[HISTOGRAM_SLOTS];
 	}
+
 	engine->process_packages(HistogramEngine::HISTOGRAM, data);
 
 	for(int i = 0; i < engine->get_total_clients(); i++)
 	{
 		HistogramUnit *unit = (HistogramUnit*)engine->get_client(i);
+
 		if(i == 0)
 		{
 			for(int j = 0; j < HISTOGRAM_MODES; j++)
+			{
 				memcpy(accum[j], unit->accum[j], sizeof(int) * HISTOGRAM_SLOTS);
+			}
 		}
 		else
 		{
@@ -550,7 +554,6 @@ void HistogramMain::calculate_automatic(VFrame *data)
 
 		config.points[i].insert(max_level, 1.0);
 		config.points[i].insert(min_level, 0.0);
-
 	}
 }
 
@@ -563,6 +566,7 @@ int HistogramMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 {
 SET_TRACE
 	int need_reconfigure = load_configuration();
+
 
 SET_TRACE
 
@@ -602,7 +606,6 @@ SET_TRACE
 			tabulate_curve(i, 1);
 SET_TRACE
 	}
-
 
 
 
@@ -648,7 +651,6 @@ void HistogramMain::tabulate_curve(int subscript, int use_value)
 		current_smooth[i] = current_linear[i];
 		prev = current_smooth[i];
 	}
-
 
 // Generate lookup tables for integer colormodels
 	if(input)
@@ -712,6 +714,7 @@ void HistogramUnit::process_package(LoadPackage *package)
 
 	if(server->operation == HistogramEngine::HISTOGRAM)
 	{
+
 
 #define HISTOGRAM_HEAD(type) \
 { \

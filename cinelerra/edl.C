@@ -36,9 +36,13 @@ EDL::EDL(EDL *parent_edl)
 	vwindow_edl = 0;
 	vwindow_edl_shared = 0;
 
+
 	folders.set_array_delete();
+
 	new_folder(CLIP_FOLDER);
+
 	new_folder(MEDIA_FOLDER);
+
 	id = next_id();
 	project_path[0] = 0;
 }
@@ -46,7 +50,7 @@ EDL::EDL(EDL *parent_edl)
 
 EDL::~EDL()
 {
-//printf("EDL::~EDL 1\n");
+
 	if(tracks)
 	{
 		delete tracks;
@@ -73,7 +77,6 @@ EDL::~EDL()
 
 	folders.remove_all_objects();
 	clips.remove_all_objects();
-//printf("EDL::~EDL 2\n");
 }
 
 
@@ -149,6 +152,7 @@ int EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 	int result = 0;
 // Track numbering offset for replacing undo data.
 	int track_offset = 0;
+
 
 	folders.remove_all_objects();
 
@@ -299,10 +303,8 @@ int EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 				}
 			}
 		}while(!result);
-//printf("EDL::load_xml 4\n");
 	}
 	boundaries();
-//printf("EDL::load_xml 6 %p\n", parent_edl);
 //dump();
 
 	return 0;

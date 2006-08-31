@@ -195,6 +195,8 @@ int BC_FileBoxFilterText::handle_event()
 }
 
 
+
+
 BC_FileBoxFilterMenu::BC_FileBoxFilterMenu(int x, int y, BC_FileBox *filebox)
  : BC_ListBox(x, 
  	y, 
@@ -402,7 +404,7 @@ BC_FileBox::BC_FileBox(int x,
 		int show_all_files,
 		int want_directory,
 		int multiple_files,
-	        int h_padding)
+		int h_padding)
  : BC_Window(title, 
  	x,
 	y,
@@ -510,6 +512,7 @@ int BC_FileBox::create_objects()
 
 // Create recent dir list
 	create_history();
+
 // Directories aren't filtered in FileSystem so skip this
 	if(!want_directory)
 	{
@@ -532,6 +535,7 @@ int BC_FileBox::create_objects()
 	add_subwindow(cancel_button = new BC_FileBoxCancel(this));
 
 	add_subwindow(new BC_Title(x, y, caption));
+
 	x = get_w() - resources->filebox_icons_images[0]->get_w() - 10;
 	add_subwindow(icon_button = new BC_FileBoxIcons(x, y, this));
 	x -= resources->filebox_text_images[0]->get_w() + 5;
@@ -563,11 +567,6 @@ int BC_FileBox::create_objects()
 		directory_title->get_w(),
 		200);
 
-	
-
-
-
-
 	x = 10;
 	y += directory_title->get_h() + 5;
 	listbox = 0;
@@ -575,13 +574,14 @@ int BC_FileBox::create_objects()
 	create_listbox(x, y, get_display_mode());
 	y += listbox->get_h() + 10;
 	add_subwindow(textbox = new BC_FileBoxTextBox(x, y, this));
-
 	y += textbox->get_h() + 10;
+
+
 	if(!want_directory)
 	{
 		add_subwindow(filter_text = new BC_FileBoxFilterText(x, y, this));
 		add_subwindow(filter_popup = 
-			new BC_FileBoxFilterMenu(x + filter_text->get_w(), y, this));
+			new BC_FileBoxFilterMenu(x + filter_text->get_w(), y, this));;
 	}
 
 // listbox has to be active because refresh might be called from newfolder_thread
@@ -633,9 +633,13 @@ int BC_FileBox::resize_event(int w, int h)
 // 		h - (get_h() - cancel_button->get_y()));
 	if(usethis_button)
 		usethis_button->reposition_window(w / 2 - 50, h - (get_h() - usethis_button->get_y()));
+
+
 	if(filter_popup) filter_popup->reposition_window(w - (get_w() - filter_popup->get_x()), 
 		h - (get_h() - filter_popup->get_y()),
 		w - 30);
+
+
 	if(filter_text) filter_text->reposition_window(filter_text->get_x(), 
 		h - (get_h() - filter_text->get_y()),
 		w - (get_w() - filter_text->get_w()),
@@ -725,6 +729,7 @@ int BC_FileBox::create_tables()
 
 	fs->set_sort_order(sort_order);
 	fs->set_sort_field(column_type[sort_column]);
+
 // Directory is entered before this from a random source
 	fs->update(0);
 	for(int i = 0; i < fs->total_files(); i++)
@@ -1008,7 +1013,9 @@ int BC_FileBox::submit_file(char *path, int use_this)
 	else
 // Is a file or desired directory.  Quit the operation.
 	{
-		fs->extract_dir(directory, path);     // save directory for defaults
+// save directory for defaults
+		fs->extract_dir(directory, path);     
+
 		fs->extract_name(filename, path);     // save filename
 		fs->complete_path(path);
 		strcpy(this->current_path, path);          // save complete path
@@ -1165,6 +1172,7 @@ void BC_FileBox::delete_files()
 	FileSystem fs;
 	while((path = get_path(i)))
 	{
+// Not directory.  Remove it.
 		if(fs.is_dir(path))
 		{
 printf("BC_FileBox::delete_files: removing \"%s\"\n", path);

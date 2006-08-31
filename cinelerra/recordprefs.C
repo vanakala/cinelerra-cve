@@ -92,7 +92,11 @@ int RecordPrefs::create_objects()
 	add_subwindow(new BC_Title(x, y, _("Video In"), LARGEFONT, resources->text_default));
 	y += 25;
 
-	add_subwindow(new BC_Title(x, y, _("Record Driver:"), MEDIUMFONT, resources->text_default));
+	add_subwindow(new BC_Title(x, 
+		y, 
+		_("Record Driver:"), 
+		MEDIUMFONT, 
+		resources->text_default));
 	video_in_device = new VDevicePrefs(x + 110, 
 		y, 
 		pwindow, 
@@ -182,8 +186,15 @@ int RecordWriteLength::handle_event()
 
 
 
-RecordRealTime::RecordRealTime(MWindow *mwindow, PreferencesWindow *pwindow, int x, int y, int value)
- : BC_CheckBox(x, y, value, _("Record in realtime priority (root only)"))
+RecordRealTime::RecordRealTime(MWindow *mwindow, 
+	PreferencesWindow *pwindow, 
+	int x, 
+	int y, 
+	int value)
+ : BC_CheckBox(x, 
+ 	y, 
+	value, 
+	_("Record in realtime priority (root only)"))
 { 
 	this->pwindow = pwindow; 
 }
@@ -249,6 +260,11 @@ int RecordFrameRate::handle_event()
 	pwindow->thread->edl->session->vconfig_in->in_framerate = atof(get_text());
 	return 1;
 }
+
+
+
+
+
 
 
 VideoWriteLength::VideoWriteLength(PreferencesWindow *pwindow, char *text, int y)
@@ -355,4 +371,5 @@ int StillImageDuration::handle_event()
 	pwindow->thread->edl->session->si_duration = atof(get_text());
 	return 1;
 }
+
 

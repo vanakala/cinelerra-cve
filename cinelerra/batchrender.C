@@ -1309,7 +1309,7 @@ BatchRenderCancel::BatchRenderCancel(BatchRenderThread *thread,
 	int y)
  : BC_GenericButton(x, 
  	y, 
-	_("Cancel"))
+	_("Close"))
 {
 	this->thread = thread;
 }

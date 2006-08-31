@@ -200,8 +200,8 @@ public:
 		int64_t total_samples);
 
 
-// Called by client to read data in realtime effect.  Returns -1 if error or 0 
-// if success.
+// Called by client to read data in realtime effect.  
+// Returns -1 if error or 0 if success.
 	int read_frame(VFrame *buffer, 
 		int channel, 
 		int64_t start_position, 
@@ -286,7 +286,8 @@ public:
 	int uses_gui;
 // Plugin is a transition
 	int transition;
-// name of plugin in english.  Compared against the title value in the plugin.
+// name of plugin in english.
+// Compared against the title value in the plugin for resolving symbols.
 	char *title;
 	int64_t written_samples, written_frames;
 	char *path;           // location of plugin on disk

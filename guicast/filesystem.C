@@ -698,7 +698,7 @@ int FileSystem::join_names(char *out, char *dir_in, char *name_in)
 	strcpy(out, dir_in);
 	int len = strlen(out);
 	int result = 0;
-	
+
 	while(!result)
 		if(len == 0 || out[len] != 0) result = 1; else len--;
 	

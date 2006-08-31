@@ -1,5 +1,6 @@
 #include "bcpixmap.h"
 #include "bcresources.h"
+#include "bcsignals.h"
 #include "bctoggle.h"
 #include "clip.h"
 #include "colors.h"

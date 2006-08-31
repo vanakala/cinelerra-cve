@@ -33,7 +33,9 @@ class FadeEngine : public LoadServer
 public:
 	FadeEngine(int cpus);
 	~FadeEngine();
-	
+
+// the input pointer is never different than the output pointer in any
+// of the callers
 	void do_fade(VFrame *output, VFrame *input, float alpha);
 	
 	void init_packages();

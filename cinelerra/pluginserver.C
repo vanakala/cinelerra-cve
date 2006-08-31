@@ -328,16 +328,16 @@ int PluginServer::init_realtime(int realtime_sched,
 		int total_in_buffers, 
 		int buffer_size)
 {
-SET_TRACE
+
 	if(!plugin_open) return 0;
-SET_TRACE
+
 // set for realtime priority
 // initialize plugin
 // Call start_realtime
 	client->plugin_init_realtime(realtime_sched, 
 		total_in_buffers, 
 		buffer_size);
-SET_TRACE
+
 }
 
 
@@ -393,6 +393,7 @@ void PluginServer::process_buffer(VFrame **frame,
 		vclient->project_frame_rate :
 		0);
 	vclient->direction = direction;
+
 
 	if(multichannel)
 	{

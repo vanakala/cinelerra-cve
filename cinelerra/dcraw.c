@@ -70,7 +70,7 @@ typedef unsigned short ushort;
 
 
 
-// Cinelerra
+// CINELERRA
 char dcraw_info[1024];
 float **dcraw_data;
 int dcraw_alpha;
@@ -396,14 +396,11 @@ void CLASS crw_init_tables (unsigned table)
   static const uchar first_tree[3][29] = {
     { 0,1,4,2,3,1,2,0,0,0,0,0,0,0,0,0,
       0x04,0x03,0x05,0x06,0x02,0x07,0x01,0x08,0x09,0x00,0x0a,0x0b,0xff  },
-
     { 0,2,2,3,1,1,1,1,2,0,0,0,0,0,0,0,
       0x03,0x02,0x04,0x01,0x05,0x00,0x06,0x07,0x09,0x08,0x0a,0x0b,0xff  },
-
     { 0,0,6,3,1,1,2,0,0,0,0,0,0,0,0,0,
       0x06,0x05,0x07,0x04,0x08,0x03,0x09,0x02,0x00,0x0a,0x01,0x0b,0xff  },
   };
-
   static const uchar second_tree[3][180] = {
     { 0,2,2,2,1,4,2,1,2,5,1,1,0,0,0,139,
       0x03,0x04,0x02,0x05,0x01,0x06,0x07,0x08,
@@ -420,7 +417,6 @@ void CLASS crw_init_tables (unsigned table)
       0xe1,0x4a,0x6a,0xe6,0xb3,0xf1,0xd3,0xa5,0x8a,0xb2,0x9a,0xba,
       0x84,0xa4,0x63,0xe5,0xc5,0xf3,0xd2,0xc4,0x82,0xaa,0xda,0xe4,
       0xf2,0xca,0x83,0xa3,0xa2,0xc3,0xea,0xc2,0xe2,0xe3,0xff,0xff  },
-
     { 0,2,2,1,4,1,4,1,3,3,1,0,0,0,0,140,
       0x02,0x03,0x01,0x04,0x05,0x12,0x11,0x06,
       0x13,0x07,0x08,0x14,0x22,0x09,0x21,0x00,0x23,0x15,0x31,0x32,
@@ -436,7 +432,6 @@ void CLASS crw_init_tables (unsigned table)
       0xa2,0xa3,0xe3,0xc2,0x66,0x67,0x93,0xaa,0xd4,0xd5,0xe7,0xf8,
       0x88,0x9a,0xd7,0x77,0xc4,0x64,0xe2,0x98,0xa5,0xca,0xda,0xe8,
       0xf3,0xf6,0xa9,0xb2,0xb3,0xf2,0xd2,0x83,0xba,0xd3,0xff,0xff  },
-
     { 0,0,6,2,1,3,3,2,5,1,2,2,8,10,0,117,
       0x04,0x05,0x03,0x06,0x02,0x07,0x01,0x08,
       0x09,0x12,0x13,0x14,0x11,0x15,0x0a,0x16,0x17,0xf0,0x00,0x22,
@@ -453,7 +448,6 @@ void CLASS crw_init_tables (unsigned table)
       0xd3,0xaa,0xc4,0xca,0xf2,0xb1,0xe4,0xd1,0x83,0x63,0xea,0xc3,
       0xe2,0x82,0xf1,0xa3,0xc2,0xa1,0xc1,0xe3,0xa2,0xe1,0xff,0xff  }
   };
-
   if (table > 2) table = 2;
   init_decoder();
   make_decoder ( first_tree[table], 0);
@@ -499,7 +493,6 @@ void CLASS canon_compressed_load_raw()
   fseek (ifp, 540 + lowbits*raw_height*raw_width/4, SEEK_SET);
   zero_after_ff = 1;
   getbits(-1);
-
   for (row = 0; row < raw_height; row += 8) {
     for (block=0; block < raw_width >> 3; block++) {
       memset (diffbuf, 0, sizeof diffbuf);
@@ -528,7 +521,7 @@ void CLASS canon_compressed_load_raw()
       }
     }
     if (lowbits) {
-      save = ftell(ifp);			/* Don't lose our place */
+      save = ftell(ifp);
       fseek (ifp, 26 + row*raw_width/4, SEEK_SET);
       for (prow=pixel, i=0; i < raw_width*2; i++) {
 	c = fgetc(ifp);
@@ -1331,8 +1324,7 @@ void CLASS kodak_dc120_load_raw()
   uchar pixel[848];
   int row, shift, col;
 
-  for (row=0; row < height; row++)
-  {
+  for (row=0; row < height; row++) {
     fread (pixel, 848, 1, ifp);
     shift = row * mul[row & 3] + add[row & 3];
     for (col=0; col < width; col++)
@@ -2540,8 +2532,7 @@ void CLASS vng_interpolate()
     for (col=0; col < 2; col++) 
 	{
       ip = code[row][col];
-      for (cp=terms, t=0; t < 64; t++) 
-	  {
+      for (cp=terms, t=0; t < 64; t++) {
 	y1 = *cp++;  x1 = *cp++;
 	y2 = *cp++;  x2 = *cp++;
 	weight = *cp++;
@@ -2569,27 +2560,12 @@ void CLASS vng_interpolate()
       }
     }
   }
-
-
-
-
   brow[4] = calloc (width*3, sizeof **brow);
   merror (brow[4], "vng_interpolate()");
   for (row=0; row < 3; row++)
     brow[row] = brow[4] + row*width;
-
-/* Do VNG interpolation */
-  for (row=2; row < height-2; row++) 
-  {		
-
-
-
-
-
-    for (col=2; col < width-2; col++) 
-	{
-
-
+  for (row=2; row < height-2; row++) {		/* Do VNG interpolation */
+    for (col=2; col < width-2; col++) {
       pix = image[row*width+col];
       ip = code[row & 7][col & 1];
       memset (gval, 0, sizeof gval);
@@ -2607,23 +2583,14 @@ void CLASS vng_interpolate()
 	 			 gval[g] += diff;
       }
       ip++;
-
-
-
       gmin = gmax = gval[0];			/* Choose a threshold */
-      for (g=1; g < 8; g++) 
-	  {
-			if (gmin > gval[g]) gmin = gval[g];
-			if (gmax < gval[g]) gmax = gval[g];
+      for (g=1; g < 8; g++) {
+	if (gmin > gval[g]) gmin = gval[g];
+	if (gmax < gval[g]) gmax = gval[g];
       }
-
-
-
-
-      if (gmax == 0) 
-	  {
-			memcpy (brow[2][col], pix, sizeof *image);
-			continue;
+      if (gmax == 0) {
+	memcpy (brow[2][col], pix, sizeof *image);
+	continue;
       }
 
 
@@ -2684,14 +2651,6 @@ void CLASS vng_interpolate()
     for (g=0; g < 4; g++)
       brow[(g-1) & 3] = brow[g];
   }
-
-
-
-
-
-
-
-
   memcpy (image[(row-2)*width+2], brow[0]+2, (width-4)*sizeof *image);
   memcpy (image[(row-1)*width+2], brow[1]+2, (width-4)*sizeof *image);
   free(brow[4]);
@@ -2779,7 +2738,6 @@ void CLASS nef_parse_makernote()
   int base=0, offset=0, entries, tag, type, len, val, save;
   short sorder;
   char buf[10];
-
 /*
    The MakerNote might have its own TIFF header (possibly with
    its own byte-order!), or it might just be a table.
@@ -4132,13 +4090,13 @@ konica_400z:
     } else if (!strcmp(model,"Digital Camera 40")) {
       strcpy (model, "DC40");
       height = 512;
-      width = 768;
+      width  = 768;
       data_offset = 1152;
       load_raw = kodak_radc_load_raw;
     } else if (strstr(model,"DC50")) {
       strcpy (model, "DC50");
       height = 512;
-      width = 768;
+      width  = 768;
       data_offset = 19712;
       load_raw = kodak_radc_load_raw;
     } else if (strstr(model,"DC120")) {
@@ -4918,11 +4876,10 @@ int CLASS dcraw_main (int argc, char **argv)
     fprintf (stderr, "No files to process.\n");
     return 1;
   }
+
+
   if (write_to_stdout) {
-
-
-
-// Cinelerra
+// CINELERRA
     if (0 /* isatty(1) */) {
       fprintf (stderr, "Will not write an image to the terminal!\n");
       return 1;
@@ -4939,14 +4896,14 @@ int CLASS dcraw_main (int argc, char **argv)
 #endif
   }
 
-  for ( ; arg < argc; arg++)
-  {
+
+  for ( ; arg < argc; arg++) {
     status = 1;
     image = NULL;
     if (setjmp (failure)) {
       if (fileno(ifp) > 2) fclose(ifp);
       if (fileno(ofp) > 2) fclose(ofp);
-      if (image) free(image);
+      if (image) free (image);
       status = 1;
       continue;
     }
@@ -5033,16 +4990,14 @@ int CLASS dcraw_main (int argc, char **argv)
 	goto cleanup;
       }
     }
-
-
     if (verbose)
       fprintf (stderr, "Writing data to %s...\n", ofname);
     (*write_fun)(ofp);
     if (ofp != stdout)
       fclose(ofp);
 cleanup:
-    free(ofname);
-    free(image);
+    free (ofname);
+    free (image);
   }
   return status;
 }

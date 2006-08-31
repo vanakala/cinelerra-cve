@@ -534,7 +534,6 @@ float Units::quantize(float value, float precision)
 	return value;
 }
 
-
 int64_t Units::to_int64(double result)
 {
 // This must round up if result is one sample within cieling.

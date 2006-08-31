@@ -2,6 +2,7 @@
 #include "bcpixmap.h"
 #include "bcpopup.h"
 #include "bcresources.h"
+#include "bcsignals.h"
 #include "bcwindowbase.h"
 #include "clip.h"
 #include "colors.h"
@@ -187,9 +188,6 @@ void BC_WindowBase::draw_text(int x,
 					if(text[i] == '\n' || text[i] == 0)
 					{
 #ifdef HAVE_XFT
-// printf("BC_WindowBase::draw_text 1 %d %p\n", 
-// get_resources()->use_xft, 
-// top_level->get_xft_struct(top_level->current_font));
 						if(get_resources()->use_xft && 
 							top_level->get_xft_struct(top_level->current_font))
 						{
@@ -465,7 +463,13 @@ void BC_WindowBase::draw_triangle_down_flat(int x, int y, int w, int h)
 	point[0].x = x2; point[0].y = y2; point[1].x = x3;
 	point[1].y = y1; point[2].x = x1; point[2].y = y1;
 
-	XFillPolygon(top_level->display, pixmap, top_level->gc, (XPoint *)point, 3, Nonconvex, CoordModeOrigin);
+	XFillPolygon(top_level->display, 
+		pixmap, 
+		top_level->gc, 
+		(XPoint *)point, 
+		3, 
+		Nonconvex, 
+		CoordModeOrigin);
 }
 
 void BC_WindowBase::draw_triangle_up(int x, int y, int w, int h, 
@@ -482,7 +486,13 @@ void BC_WindowBase::draw_triangle_up(int x, int y, int w, int h,
 	point[1].y = y2; point[2].x = x1; point[2].y = y2;
 
 	set_color(middle);
-	XFillPolygon(top_level->display, pixmap, top_level->gc, (XPoint *)point, 3, Nonconvex, CoordModeOrigin);
+	XFillPolygon(top_level->display, 
+		pixmap, 
+		top_level->gc, 
+		(XPoint *)point, 
+		3, 
+		Nonconvex, 
+		CoordModeOrigin);
 
 // bottom and top right
 	set_color(shadow1);
@@ -512,7 +522,12 @@ void BC_WindowBase::draw_triangle_down(int x, int y, int w, int h,
 	point[1].y = y1; point[2].x = x1; point[2].y = y1;
 
 	set_color(middle);
-	XFillPolygon(top_level->display, pixmap, top_level->gc, (XPoint *)point, 3, Nonconvex, CoordModeOrigin);
+	XFillPolygon(top_level->display, 
+		pixmap, 
+		top_level->gc, 
+		(XPoint *)point, 3, 
+		Nonconvex, 
+		CoordModeOrigin);
 
 // top and bottom left
 	set_color(light2);
@@ -543,7 +558,13 @@ void BC_WindowBase::draw_triangle_left(int x, int y, int w, int h,
 	point[1].y = y1; point[2].x = x2; point[2].y = y3;
 
 	set_color(middle);
-  	XFillPolygon(top_level->display, pixmap, top_level->gc, (XPoint *)point, 3, Nonconvex, CoordModeOrigin);
+  	XFillPolygon(top_level->display, 
+		pixmap, 
+		top_level->gc, 
+		(XPoint *)point, 
+		3, 
+		Nonconvex, 
+		CoordModeOrigin);
 
 // right and bottom right
 	set_color(shadow1);
@@ -573,7 +594,13 @@ void BC_WindowBase::draw_triangle_right(int x, int y, int w, int h,
 	point[1].y = y2; point[2].x = x1; point[2].y = y3;
 
 	set_color(middle);
-  	XFillPolygon(top_level->display, pixmap, top_level->gc, (XPoint *)point, 3, Nonconvex, CoordModeOrigin);
+  	XFillPolygon(top_level->display, 
+		pixmap, 
+		top_level->gc, 
+		(XPoint *)point, 
+		3, 
+		Nonconvex, 
+		CoordModeOrigin);
 
 // left and top right
 	set_color(light2);
@@ -853,7 +880,16 @@ void BC_WindowBase::slide_left(int distance)
 {
 	if(distance < w)
 	{
-		XCopyArea(top_level->display, pixmap, pixmap, top_level->gc, distance, 0, w - distance, h, 0, 0);
+		XCopyArea(top_level->display, 
+		pixmap, 
+		pixmap, 
+		top_level->gc, 
+		distance, 
+		0, 
+		w - distance,
+		 h, 
+		0, 
+		0);
 	}
 }
 
@@ -861,7 +897,16 @@ void BC_WindowBase::slide_right(int distance)
 {
 	if(distance < w)
 	{
-		XCopyArea(top_level->display, pixmap, pixmap, top_level->gc, 0, 0, w - distance, h, distance, 0);
+		XCopyArea(top_level->display, 
+		pixmap, 
+		pixmap, 
+		top_level->gc, 
+		0, 
+		0, 
+		w - distance, 
+		h, 
+		distance, 
+		0);
 	}
 }
 
@@ -869,9 +914,24 @@ void BC_WindowBase::slide_up(int distance)
 {
 	if(distance < h)
 	{
-		XCopyArea(top_level->display, pixmap, pixmap, top_level->gc, 0, distance, w, h - distance, 0, 0);
+		XCopyArea(top_level->display, 
+		pixmap, 
+		pixmap, 
+		top_level->gc, 
+		0, 
+		distance, 
+		w, 
+		h - distance, 
+		0, 
+		0);
 		set_color(bg_color);
-		XFillRectangle(top_level->display, pixmap, top_level->gc, 0, h - distance, w, distance);
+		XFillRectangle(top_level->display, 
+		pixmap, 
+		top_level->gc, 
+		0, 
+		h - distance, 
+		w, 
+		distance);
 	}
 }
 
@@ -879,9 +939,24 @@ void BC_WindowBase::slide_down(int distance)
 {
 	if(distance < h)
 	{
-		XCopyArea(top_level->display, pixmap, pixmap, top_level->gc, 0, 0, w, h - distance, 0, distance);
+		XCopyArea(top_level->display, 
+		pixmap, 
+		pixmap, 
+		top_level->gc, 
+		0, 
+		0, 
+		w, 
+		h - distance, 
+		0, 
+		distance);
 		set_color(bg_color);
-		XFillRectangle(top_level->display, pixmap, top_level->gc, 0, 0, w, distance);
+		XFillRectangle(top_level->display, 
+		pixmap, 
+		top_level->gc, 
+		0, 
+		0, 
+		w, 
+		distance);
 	}
 }
 

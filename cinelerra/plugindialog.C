@@ -113,6 +113,8 @@ void PluginDialogThread::run()
 // Done at closing
 	if(!result)
 	{
+
+
 		if(plugin_type)
 		{
 			mwindow->gui->lock_window("PluginDialogThread::run 3");

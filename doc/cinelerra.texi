@@ -11,7 +11,7 @@
 @subtitle Version 2.0.0
 @author Heroine Virtual Ltd.
 @page
-Copyright @copyright{} 2005 Heroine Virtual Ltd.
+Copyright @copyright{} 2006 Heroine Virtual Ltd.
 @end titlepage
 
 
@@ -25,7 +25,8 @@ Copyright @copyright{} 2005 Heroine Virtual Ltd.
 * ABOUT CINELERRA::          Cinelerra in brief.
 * INSTALLATION::             Making Cinelerra work on your system.
 * CONFIGURATION::            Adjusting the behavior of Cinelerra.
-* THE MAIN WINDOWS::         The most often used user interface.
+* CREATING A NEW PROJECT::   Creating a new project
+* THE MAIN WINDOWS::         The most often used user interfaces.
 * LOADING AND SAVING FILES:: Moving media between disk and Cinelerra.
 * NAVIGATING THE PROJECT::   Moving around the media.
 * EDITING::                  Moving the media in time.
@@ -46,7 +47,6 @@ Copyright @copyright{} 2005 Heroine Virtual Ltd.
 
 @contents
 
-@contents
 
 
 
@@ -136,7 +136,8 @@ interface.  As always, quality improvements would happen.
 This manual is relevant only for the heroinewarrior.com version of
 Cinelerra.  If you are using the cinelerra.org fork, you should use the
 manual for that version.  The behavior of different forks is highly
-variable.
+variable.  This manual has been copied and translated into many
+languages.
 
 Organizing information in the easiest manner for users to find out what
 they need to know is sort of like cataloging the internet.  They've
@@ -403,6 +404,8 @@ Go to @b{settings->preferences} and to see the options.
 
 @menu
 * ENVIRONMENT VARIABLES::  These environment variables are recognized by Cinelerra
+* AUDIO DRIVERS::          Information about the audio drivers
+* VIDEO DRIVERS::          Information about the video drivers
 * PLAYBACK::               Configuring parameters related to playback.
 * RECORDING::              Configuring parameters related to recording.
 * PERFORMANCE::            Configuring parameters related to how fast things go.
@@ -429,6 +432,257 @@ EFFECTS}.
 
 
 @end itemize
+
+
+
+
+
+
+@node AUDIO DRIVERS
+@section AUDIO DRIVERS
+
+The audio drivers are used for both recording and playback to get data
+to and from the hardware.  Since the same drivers are used for both
+recording and playback, their functionality is described here in a
+separate section.
+
+
+
+
+@menu
+* COMMON SOUND DRIVER ATTRIBUTES:: Attributes used for more than one sound driver.
+* OSS:: Notes about the OSS driver
+* OSS Envy24:: Notes about the OSS driver for the Envy24 chip
+* ALSA:: Notes about the ALSA driver
+* ESOUND:: Notes about the ESound driver
+* RAW 1394:: Notes about the Raw1394 driver
+* DV 1394:: Notes about the DV1394 driver
+* IEC 61883:: Notes about the IEC 61883 driver
+@end menu
+
+@node COMMON SOUND DRIVER ATTRIBUTES
+@subsection COMMON SOUND DRIVER ATTRIBUTES
+
+@itemize
+
+@item
+DEVICE PATH
+
+Usually a file in the @b{/dev/} directory which controls the
+device.
+
+@item
+
+BITS
+
+The number of bits of precision Cinelerra should set the device for. 
+This sometimes has a figuritive meaning.  Some sound drivers need to be
+set to 32 bits to perform 24 bit playback and won't play anything when
+set to 24 bits.  Some sound drivers need to be set to 24 bits for 24
+bit playback.
+
+@end itemize
+
+
+
+@node OSS
+@subsection OSS
+
+This was the first Linux sound driver.  It had an open source
+implementation and a commercial implementation with more sound cards
+supported.  It was the standard sound driver up to linux 2.4.  It still
+is the only sound driver which an i386 binary can use when running on
+an x86_64 system.
+
+@node OSS Envy24
+@subsection OSS Envy24
+
+The commercial version of OSS had a variant for 24 bit 96 Khz
+soundcards.  This variant required significant changes to the way the
+sound drivers were used, which is what the OSS Envy24 variant is for.
+
+
+@node ALSA
+@subsection ALSA
+
+ALSA is the most common sound driver in Linux 2.6.  It supports the
+most sound cards now.  It takes advantage of low latency features in
+Linux 2.6 to get better performance than OSS had in 2.4 but roughly the
+same performance that OSS had in 2.0.  Unfortunately ALSA is constantly
+changing.  A program which works with it one day may not the next day. 
+New wrappers are being developed on top of ALSA at such a pace, we plan
+to support them at regular intervals, not at every new release of a new
+wrapper.
+
+ALSA is no longer portable between i386 and x86_64.  If an i386 binary
+tries to play back on an x86_64 kernel it'll crash.  For this scenario,
+use OSS.
+
+@node ESOUND
+@subsection ESOUND
+
+ESOUND was a sound server that sat on top of OSS.  It was written for a
+window manager called Enlightenment.  It supported a limited number of
+bits and had high latency compared to modern times but multiplexed
+multiple audio sources.  It's unknown whether it still works.
+
+@node RAW 1394
+@subsection RAW 1394
+
+The first interface between linux software and firewire camcorders. 
+This was the least reliable way to play audio to a camcorder.  It
+consisted of a library on top of the kernel commands.
+
+@node DV 1394
+@subsection DV 1394
+
+The second rewrite of DV camcorder support in Linux.  This was the most
+reliable way to play audio to a camcorder.  This consisted of direct
+kernel commands.
+
+@node IEC 61883
+@subsection IEC 61883
+
+The third rewrite of DV camcorder support in Linux.  This is a library
+on top of RAW 1394 which is a library on top of the kernel commands. 
+It's less reliable than DV 1394 but more reliable than RAW 1394.  The
+next rewrite ought to fix that.
+
+
+
+
+
+
+
+
+@node VIDEO DRIVERS
+@section VIDEO DRIVERS
+
+The audio drivers are used for both recording and playback to get data
+to and from the hardware.  Since the same drivers are used for both
+recording and playback, their functionality is described here in a
+separate section.
+
+
+@menu
+* COMMON VIDEO DRIVER ATTRIBUTES:: Parameters used by more than one driver.
+* X11::
+* X11-XV::
+* BUZ::
+* RAW 1394 VIDEO PLAYBACK::
+* DV 1394 VIDEO PLAYBACK::
+* IEC 61883 VIDEO PLAYBACK::
+@end menu
+
+@node COMMON VIDEO DRIVER ATTRIBUTES
+@subsection COMMON VIDEO DRIVER ATTRIBUTES
+
+
+@itemize
+
+@item
+
+DISPLAY
+
+The is intended for dual monitor
+displays.  Depending on the value of Display, the Compositor window
+will appear on a different monitor from the rest of the windows.
+
+@item
+
+DEVICE PATH
+
+Usually a file in the @b{/dev/} directory
+which controls the device.
+
+@item
+
+SWAP FIELDS
+
+Make the even lines odd and the odd lines even
+when sending to the device.  On an NTSC or 1080i monitor the fields may
+need to be swapped to prevent jittery motion.
+
+@item
+
+OUTPUT CHANNEL
+
+Devices with multiple outputs may need a
+specific connector to send video on.
+
+@item
+
+PORT
+
+The IEEE1394 standard specifies something known as the
+@b{port}.  This is probably the firewire card number in the system
+to use.
+
+@item
+
+CHANNEL
+
+The IEEE1394 standard specifies something known as the
+@b{channel}.  For DV cameras it's always @b{63}.
+
+@end itemize
+
+@node X11
+@subsection X11
+
+This was the first method of video playback on any UNIX system, valid
+all the way until 1999.  It just writes the RGB triplet for each pixel
+directly to the window.  It's the slowest playback method.  It's still
+useful as a fallback when graphics hardware can't handle very large
+frames.
+
+@node X11-XV
+@subsection X11-XV
+
+This was the second big method of video playback in UNIX starting in
+1999.  It converts YUV to RGB in hardware with scaling.  It's the
+preferred playback method but can't handle large frame sizes.  The
+maximum video size for XV is usually 1920x1080.
+
+
+
+@node BUZ
+@subsection BUZ
+
+This is a method for playing motion JPEG-A files directly to a
+composite analog signal.  It uses a popular hack of the Video4Linux 1
+driver from 2000 to decompress JPEG in hardware.  Sadly, even though
+analog output is largely obsolete, newer drivers have replaced BUZ.
+
+@node RAW 1394 VIDEO PLAYBACK
+@subsection RAW 1394 VIDEO PLAYBACK
+
+The first interface between linux software and firewire camcorders. 
+This was the least reliable way to play video to a camcorder.  It
+consisted of a library on top of the kernel commands.
+
+
+@node DV 1394 VIDEO PLAYBACK
+@subsection DV 1394 VIDEO PLAYBACK
+
+The second rewrite of DV camcorder support in Linux.  This was the most
+reliable way to play video to a camcorder.  This consisted of direct
+kernel commands.
+
+@node IEC 61883 VIDEO PLAYBACK
+@subsection IEC 61883 VIDEO PLAYBACK
+
+
+The third rewrite of DV camcorder support in Linux.  This is a library
+on top of RAW 1394 which is a library on top of the kernel commands. 
+It's less reliable than DV 1394 but more reliable than RAW 1394.  The
+next rewrite ought to fix that.
+
+
+
+
+
+
 
 @node PLAYBACK
 @section PLAYBACK
@@ -531,124 +785,11 @@ output.  You must be root to get realtime priority.
 AUDIO DRIVER
 
 There are many sound drivers for Linux.  This allows selecting one
-sound driver and setting parameters specific to it.  Here is a
-description of the sound drivers.
+sound driver and setting parameters specific to it.  The sound drivers
+and their parameters are described in the sound driver section. 
+@xref{AUDIO DRIVERS}.
 
 @end itemize
-
-@menu
-* COMMON SOUND DRIVER ATTRIBUTES::
-* OSS::
-* OSS Envy24::
-* ALSA::
-* ESOUND::
-* RAW 1394::
-* DV 1394::
-* IEC 61883::
-@end menu
-
-@node COMMON SOUND DRIVER ATTRIBUTES
-@subsubsection COMMON SOUND DRIVER ATTRIBUTES
-
-@itemize
-
-@item
-DEVICE PATH
-
-Usually a file in the @b{/dev/} directory which controls the
-device.
-
-@item
-
-BITS
-
-The number of bits of precision Cinelerra should set the device for. 
-This sometimes has a figuritive meaning.  Some sound drivers need to be
-set to 32 bits to perform 24 bit playback and won't play anything when
-set to 24 bits.  Some sound drivers need to be set to 24 bits for 24
-bit playback.
-
-@item
-
-CHANNELS
-
-The number of channels Cinelerra should set the device for.  Regardless
-of the number of channels in the project, the number of channels set
-here will be written to the device.  When this is set to 2 and the
-project has 1 channel you'll hear sound through the left speaker and
-not centered as expected for a monaural project.  When this is set to 1
-and the project has 2 channels you'll hear the left channel centered
-and not 2 channels mixed together.
-
-@end itemize
-
-
-
-@node OSS
-@subsubsection OSS
-
-This was the first Linux sound driver.  It had an open source
-implementation and a commercial implementation with more sound cards
-supported.  It was the standard sound driver up to linux 2.4.  It still
-is the only sound driver which an i386 binary can use when running on
-an x86_64 system.
-
-@node OSS Envy24
-@subsubsection OSS Envy24
-
-The commercial version of OSS had a variant for 24 bit 96 Khz
-soundcards.  This variant required significant changes to the way the
-sound drivers were used, which is what the OSS Envy24 variant is for.
-
-
-@node ALSA
-@subsubsection ALSA
-
-ALSA is the most common sound driver in Linux 2.6.  It supports the
-most sound cards now.  It takes advantage of low latency features in
-Linux 2.6 to get better performance than OSS had in 2.4 but roughly the
-same performance that OSS had in 2.0.  Unfortunately ALSA is constantly
-changing.  A program which works with it one day may not the next day. 
-New wrappers are being developed on top of ALSA at such a pace, we plan
-to support them at regular intervals, not at every new release of a new
-wrapper.
-
-ALSA is no longer portable between i386 and x86_64.  If an i386 binary
-tries to play back on an x86_64 kernel it'll crash.  For this scenario,
-use OSS.
-
-@node ESOUND
-@subsubsection ESOUND
-
-ESOUND is a sound server that sits on top of OSS.  It was written for a
-window manager.  It supports a limited number of bits and has high
-latency compared to modern times.
-
-@node RAW 1394
-@subsubsection RAW 1394
-
-The first interface between linux software and firewire camcorders. 
-This was the least reliable way to play audio to a camcorder.  It
-consisted of a library on top of the kernel commands.
-
-@node DV 1394
-@subsubsection DV 1394
-
-The second rewrite of DV camcorder support in Linux.  This was the most
-reliable way to play audio to a camcorder.  This consisted of direct
-kernel commands.
-
-@node IEC 61883
-@subsubsection IEC 61883
-
-The third rewrite of DV camcorder support in Linux.  This is a library
-on top of RAW 1394 which is a library on top of the kernel commands. 
-It's less reliable than DV 1394 but more reliable than RAW 1394.  The
-next rewrite ought to fix that.
-
-
-
-
 
 
 
@@ -660,12 +801,23 @@ These determine how video gets from the timeline to your eyes.
 
 @itemize
 
+
+@item PLAY EVERY FRAME
+
+Causes every frame of video to be displayed even if it means falling
+behind the audio.  This should always be on unless you use mostly
+uncompressed codecs.  Most compressed codecs don't support frame
+dropping anymore.
+
+
+
 @item
 
 FRAMERATE ACHIEVED
 
-The number of frames per second being displayed during playback.  Start
-playback and stare at this intently.
+The number of frames per second being displayed during playback.  This
+is only updated during playback.
+
 
 @item
 
@@ -714,7 +866,10 @@ around 10000000.  This reduces the amount of seeking required.
 Unfortunately when reading high bitrate sources from a hard drive, this
 tends to slow it down.  For normal use this should be 0.
 
-@item
+
+@item 
+
+
 
 
 VIDEO DRIVER
@@ -726,119 +881,12 @@ be set to send video to another output device during continuous
 playback.  This doesn't affect where video goes when the insertion
 point is repositioned, however.
 
-The video drivers are now described.
+The video drivers and their parameters are described in the video
+driver section.  @xref{VIDEO DRIVERS}.
+
 
 @end itemize
 
-@menu
-* COMMON VIDEO DRIVER ATTRIBUTES::
-* X11::
-* X11-XV::
-* BUZ::
-* RAW 1394 VIDEO PLAYBACK::
-* DV 1394 VIDEO PLAYBACK::
-* IEC 61883 VIDEO PLAYBACK::
-@end menu
-
-@node COMMON VIDEO DRIVER ATTRIBUTES
-@subsubsection COMMON VIDEO DRIVER ATTRIBUTES
-
-
-@itemize
-
-@item
-
-DISPLAY
-
-The is intended for dual monitor
-displays.  Depending on the value of Display, the Compositor window
-will appear on a different monitor from the rest of the windows.
-
-@item
-
-DEVICE PATH
-
-Usually a file in the @b{/dev/} directory
-which controls the device.
-
-@item
-
-SWAP FIELDS
-
-Make the even lines odd and the odd lines even
-when sending to the device.  On an NTSC or 1080i monitor the fields may
-need to be swapped to prevent jittery motion.
-
-@item
-
-OUTPUT CHANNEL
-
-Devices with multiple outputs may need a
-specific connector to send video on.
-
-@item
-
-PORT
-
-The IEEE1394 standard specifies something known as the
-@b{port}.  This is probably the firewire card number in the system
-to use.
-
-@item
-
-CHANNEL
-
-The IEEE1394 standard specifies something known as the
-@b{channel}.  For DV cameras it's always @b{63}.
-
-@end itemize
-
-@node X11
-@subsubsection X11
-
-This was the first method of video playback on any UNIX system, valid
-all the way until 1999.  It just writes the RGB triplet for each pixel
-directly to the window.  It's the slowest playback method.  It's still
-useful as a fallback when graphics hardware can't handle very large
-frames.
-
-@node X11-XV
-@subsubsection X11-XV
-
-This was the second big method of video playback in UNIX starting in
-1999.  It converts YUV to RGB in hardware with scaling.  It's the
-preferred playback method but can't handle large frame sizes.
-
-@node BUZ
-@subsubsection BUZ
-
-This is a method for playing motion JPEG-A files directly to a
-composite analog signal.  It uses a hack of the Video4Linux 1 driver to
-decompress JPEG in hardware.
-
-@node RAW 1394 VIDEO PLAYBACK
-@subsubsection RAW 1394 VIDEO PLAYBACK
-
-The first interface between linux software and firewire camcorders. 
-This was the least reliable way to play video to a camcorder.  It
-consisted of a library on top of the kernel commands.
-
-
-@node DV 1394 VIDEO PLAYBACK
-@subsubsection DV 1394 VIDEO PLAYBACK
-
-The second rewrite of DV camcorder support in Linux.  This was the most
-reliable way to play video to a camcorder.  This consisted of direct
-kernel commands.
-
-@node IEC 61883 VIDEO PLAYBACK
-@subsubsection IEC 61883 VIDEO PLAYBACK
-
-
-The third rewrite of DV camcorder support in Linux.  This is a library
-on top of RAW 1394 which is a library on top of the kernel commands. 
-It's less reliable than DV 1394 but more reliable than RAW 1394.  The
-next rewrite ought to fix that.
 
 
 
@@ -846,9 +894,42 @@ next rewrite ought to fix that.
 @section RECORDING
 
 @menu
+* FILE FORMAT::
 * AUDIO IN::
 * VIDEO IN::
 @end menu
+
+
+
+The parameters here affect what happens when you go to
+@b{File->Record...}.  The intention was to make @b{File->Record...} go
+as fast as possible into the record monitoring window, without a
+lengthy dialog to configure the file format.  Instead the file format
+for recording is set here and it is applied to all recordings.  Also
+set here is the hardware for recording, since the hardware determines
+the supported file format in most cases.
+
+
+@node FILE FORMAT
+@subsection FILE FORMAT
+
+This determines the output file format for recordings.  It depends
+heavily on the type of driver used.  The interface is the same as the
+rendering interface.  The @b{Record audio tracks} toggle must be
+enabled to record audio.  The @b{Record video tracks} toggle must be
+enabled to record video.  The wrench button left of each toggle opens a
+configuration dialog to set the codec corresponding to audio and
+video.  The audio and video is wrapped in a wrapper defined by the
+@b{File Format} menu.  Different wrappers may record audio only, video
+only, or both.
+
+Some video drivers can only record to a certain wrapper.  DV, for
+example, can only record to Quicktime with DV as the video compression.
+If the video driver is changed, the file format may be updated to give
+the supported output.  If you change the file format to an unsupported
+format, it may not work with the video driver.
+
+
 
 @node AUDIO IN
 @subsection AUDIO IN
@@ -884,17 +965,7 @@ set to 32 bits to perform 24 bit recording and won't record anything
 when set to 24 bits.  Some sound drivers need to be set to 24 bits for
 24 bit recording.
 
-@item
-CHANNELS
 
-The number of channels Cinelerra should set the device for.  Regardless
-of the number of channels in the record operation, the number of
-channels set here will be read from the device.  When this is set to 2
-and the record operation has 1 channel you'll record the left speaker
-and not a mix of the left and right speakers as expected for a monaural
-project.  When this is set to 1 and the project has 2 channels you'll
-record the left and right channels mixed into the left speaker and not
-1 channel spead across two speakers.
 
 @end itemize
 
@@ -1316,6 +1387,119 @@ Cinelerra to see it.
 This section gives you information about the copyright, the time of the
 current build, the lack of a warranty, and the versions of some of the
 libraries.  Be sure to agree to the terms of the lack of the warranty.
+
+
+
+
+
+
+
+@node CREATING A NEW PROJECT
+@chapter CREATING A NEW PROJECT
+
+There are 2 ways to create a new project: going to @b{File->New} or
+loading new files @xref{LOADING FILES}.  Once a new project is
+created, all the parameters can be changed later without creating a new
+project.  
+
+
+@menu
+* USING THE NEW PROJECT DIALOG::
+* CHANGING PARAMETERS AFTER LOADING::
+@end menu
+
+
+
+@node USING THE NEW PROJECT DIALOG
+@section USING THE NEW PROJECT DIALOG
+
+One way is to go to @b{File->New}.  This dialog contains the parameters
+for the new project.  The sections of the @b{New} dialog are described
+here:
+
+@itemize
+
+@item
+
+@b{Presets} - Select an option from this menu to have all the project
+settings set to one of the known standards.
+
+@item
+@b{Audio -> Tracks} - Sets the number of audio tracks the new project
+should have.  Tracks can be added or deleted later, but options are
+provided here for convenience.
+
+@item
+@b{Audio -> Channels} - Sets the number of audio channels the new
+project should have.  The number of audio channels doesn't have to be
+the same as the number of tracks.
+
+@item
+@b{Audio -> Samplerate} - Sets the samplerate of the audio.  The
+project samplerate doesn't have to be the same as the media sample rate
+that you load.  Media is resampled to match the project sample rate.
+
+@item
+@b{Video -> Tracks} - Sets the number of video tracks the new project
+should have.  Tracks can be added or deleted later, but options are
+provided here for convenience.
+
+@item
+@b{Video -> Framerate} - Sets the framerate of the video.  The project
+framerate doesn't have to be the same as the media frame rate that you
+load.  Media is reframed to match the project framerate.
+
+@item
+@b{Video -> Canvas size} - Sets the size of the video output.  Each
+track also has its own frame size.  Initially the @b{New} dialog
+creates video tracks whose sizes all match the video output, but the
+video track sizes can be changed later without changing the video
+output.
+
+@item
+@b{Video -> Aspect ratio} - Sets the aspect ratio.  The aspect ratio is
+applied to the video output.  The aspect ratio can be different than
+the number of horizontal pixels / the number of vertical pixels. 
+Setting a different aspect ratio than the number of pixels results in
+nonsquare pixels.
+
+@item
+@b{Video -> Auto aspect ratio} - If this is checked, the @b{New} dialog
+always recalculates the @b{Aspect ratio} setting when the @b{Canvas
+size} is changed.  This ensures pixels are always square.
+
+@item 
+@b{Video -> Color model} - This sets the color model video intermediates
+in the project will be stored in.  Color models are described in a 
+separate section @xref{COLOR MODEL}.
+
+@end itemize
+
+
+
+
+
+
+
+
+
+
+
+
+
+@node CHANGING PARAMETERS AFTER LOADING
+@section CHANGING PARAMETERS AFTER LOADING
+
+After a project is created, you have to use the set format dialog to
+change parameters without deleting the project.  Go to @b{Settings->Set
+format}.  
+
+Most of the options are identical to the @b{File->New}
+options except the lack of a number of tracks to create and the
+addition of audio channel locations.
+
+This section is discussed in @xref{SETTING PROJECT ATTRIBUTES}.
+
 
 
 
@@ -1823,13 +2007,14 @@ DVD's are spit into a number of programs, each identified by a unique
 and a table of contents will be built.  Alternatively for renderfarm
 usage, a table of contents can be created separately.
 
+Run
+
 @example
-mpeg3toc /cdrom/video_ts/vts_01_0.ifo dvd.toc
+mpeg3toc -v /cdrom/video_ts/vts_01_0.ifo dvd.toc
 @end example
 
 or something similar.  Then load @b{dvd.toc}.
 
-You need to run @b{mpeg3toc} on these just like MPEG 1,2 video. 
 
 
 @node MPEG 1 AUDIO
@@ -1846,7 +2031,7 @@ have a table of contents created with @b{mpeg3toc}.
 The OGG format is an antiquated but supposedly unpatented way of
 compressing audio and video.  The quality isn't as good as H.264 or
 MPEG-4 Audio.  In reality, anyone with enough money and desire can find
-a patent in anything so the justification for OGG is questionable.
+a patent violation so the justification for OGG is questionable.
 
 @node EDIT DECISION LIST
 @subsection EDIT DECISION LIST
@@ -2058,7 +2243,7 @@ difficult to retouch any editing decisions in the pure movie file,
 however, so keep the original assets and XML file around several days
 after you render it.
 
-All rendering operations are based on a region of the timeling to be
+All rendering operations are based on a region of the timeline to be
 rendered.  You need to define this region on the timeline.  The
 navigation section describes methods of defining regions. 
 @xref{NAVIGATING THE PROJECT}.  The rendering functions define the
@@ -2880,7 +3065,8 @@ attribute.
 
 @menu
 * THE PATCHBAY::           Enabling different features on different tracks
-* NUDGING TRACKS::         Moving entire tracks horizontally
+* NUDGING TRACKS::         Move entire tracks horizontally
+* PANNING TRACKS::         Changing the audio output channels
 * MANIPULATING TRACKS::    Moving whole tracks around
 * TWO SCREEN EDITING::     Using two video windows to edit
 * DRAG AND DROP EDITING::  Dragging objects to edit
@@ -3004,13 +3190,23 @@ Hold down @b{shift} and drag a fader to center it on 0.
 @node NUDGING TRACKS
 @section NUDGING TRACKS
 
-Each track has a nudge textbox in the patchbay under the fader and on
-the right.  You may have to expand the track to see it.  The nudge is
-the amount the track is shifted left or right during playback.  The
-track is not displayed shifted on the timeline, but it is shifted when
-it's played back.  This is useful for synchronizing audio with video,
-creating fake stereo, or compensating for an effect which shifts time,
-all without tampering with any edits.
+Each track has a nudge textbox in its patchbay.  You may have to expand
+the track to see it.  These are views of the patchbays when expanded.
+
+@image{apatches}
+
+Pan and nudge for an audio track.
+
+@image{vpatches}
+
+Overlay mode and nudge for a video track.
+
+
+The nudge is the amount the track is shifted left or right during
+playback.  The track is not displayed shifted on the timeline, but it
+is shifted when it's played back.  This is useful for synchronizing
+audio with video, creating fake stereo, or compensating for an effect
+which shifts time, all without tampering with any edits.
 
 Merely enter in the amount of time to shift by to instantly shift the
 track.  Negative numbers make the track play later.  Positive numbers
@@ -3023,6 +3219,31 @@ Nudge settings are ganged with the @b{Gang faders} toggle and the
 
 Use the mouse wheel over the nudge textbox to increment and decriment
 it.
+
+
+
+
+
+@node PANNING TRACKS
+@section PANNING TRACKS
+
+Audio tracks have a panning box in their patchbay.  It may have to be
+expanded to see it.  The panning box is shown here.
+
+@image{apatches}
+
+Pan and nudge for an audio track.
+
+Position the pointer in the panning box and click/drag to reposition
+the audio output among the speaker arrangement.  The loudness of each
+speaker is printed during the dragging operation.  The panning box uses
+a special algorithm to try to allow audio to be focused through one
+speaker or branched between the nearest speakers when more than 2
+speakers are used.
+
+
+
+
 
 
 
@@ -3749,8 +3970,8 @@ resampled.  If a video file's frame size is different than the project
 attributes, it is composited on a black frame, either cropped or
 bordered with black.
 
-The project attributes are adjusted in @b{settings->format} and in
-to a more limited extent in @b{file->new}.  When you adjust project
+The project attributes are adjusted in @b{Settings->Set Format} and in
+to a more limited extent in @b{File->New}.  When you adjust project
 settings in @b{file->new} a new timeline is created with no data. 
 Every timeline created from this point uses the same settings.  When
 you adjust settings in @b{settings->format}, the timeline is not
@@ -3761,21 +3982,50 @@ In addition to the traditional settings for sample rate, frame rate,
 frame size, Cinelerra uses some unusual settings like @b{channel
 positions, color model, and aspect ratio.}
 
-@itemize
 
-@item
 
-Channel positions is the only setting which doesn't affect the output
-necessarily.  Click on a speaker icon and drag to change the position
-of a channel.  It is merely a convenience so when more than 2 channels
-are used, the pan controls on the timeline are effective.  Channels 3,
-4, and 5 wouldn't be very adjustible if they occupied the same
-locations as channels 1 and 2 on a pan control.  Normally a 6 channel
-configuration would look like this:
+@menu
+* AUDIO CHANNEL POSITIONS::
+* COLOR MODEL::
+* ASPECT RATIO::
+@end menu
+
+
+
+
+
+@node AUDIO CHANNEL POSITIONS
+@section AUDIO CHANNEL POSITIONS
+
+The currently enabled audio channels and their positions in the user
+interface boxes are displayed in the channel position widget.
 
 @sp 2
 @image{channelpositions}
 @sp 2
+
+
+The channels are numbered.  When rendered, the output from channel 1 is
+rendered to the first output track in the file or the first soundcard
+channel of the soundcard.  Later channels are rendered to their
+successively numbered output tracks.
+
+The audio channel locations correspond to where in the panning widgets
+each of the audio outputs is.  The closer the panning position is to
+one of the audio outputs, the more signal that speaker gets.  Click on
+a speaker icon and drag to change the audio channel location.
+
+The speakers can be in any orientation.  A different speaker
+arrangement is stored for every number of audio channels since normally
+you don't want the same speaker arrangement for different numbers of
+channels.
+
+Channel positions is the only setting which doesn't affect the output
+necessarily.  Click on a speaker icon and drag to change the position
+of a channel.  It is merely a convenience so when more than 2 channels
+are used, the pan controls on the timeline can distinguish between
+them.  It has nothing to do with the actual arrangement of speakers.
+
 
 But different channels can be positioned very close together to make
 them have the same output.
@@ -3783,36 +4033,80 @@ them have the same output.
 
 
 
-@item
+@node COLOR MODEL
+@section COLOR MODEL
 
-Color model is very important for video playback.  The video is stored
-on disk in one colormodel, normally compressed using a YUV derivative. 
-When played back, Cinelerra decompresses it from the file format
-directly into the format of the output device.  If effects are
-processed, the decompression is into an internal colormodel first and
-the internal colormodel is then converted to the format of the output
-device.  The selection of internal colormodel determines how accurate
-and fast the effects are.
+Color model is very important for video playback because video has the
+disadvantage of being very slow.  Although it isn't noticable, audio
+intermediates contain much more information than the audio on disk and
+the audio which is played.  Audio always uses the highest bandwidth
+intermediate because it's fast.
+
+Video intermediates must use the least amount of data for the required
+quality because it's slow, but video intermediates still use a higher
+bandwidth color model than video which is stored and video which is
+played.  This allows more processing to be done with less destruction
+of the original data.   
+
+The video is stored on disk in one colormodel, normally compressed
+using a YUV derivative.  When played back, Cinelerra decompresses it
+from the file format directly into the format of the output device.  If
+effects are processed, the decompression is into an intermediate
+colormodel first and the intermediate colormodel is then converted to
+the format of the output device.  The selection of intermediate
+colormodel determines how accurate and fast the effects are.
 
 Cinelerra colormodels are described using a certain packing order of
 components and a certain number of bits for each component.  The
 packing order is printed on the left and the bit allocation is printed
 on the right.
 
-@b{RGB888} uses red, green, blue with 8 bits per channel.
+@itemize
+@item
 
-@b{RGBA8888} uses red, green, blue, and alpha with 8 bits per
-channel.
+@b{RGB-888} 
 
-@b{YUV888} uses luminance and color with 8 bits per channel.
+This allocates 8 bits for the R, G, and B channels and no alpha. This
+is normally used for uncompressed media with low dynamic range.
 
-@b{YUVA8888} uses luminance, color, and alpha with 8 bits per
-channel.
+@item
 
-@b{RGB Float} uses red, green, blue with 32 bit floats per channel.
+@b{RGBA-8888} 
 
-@b{RGBA Float} uses red, green, blue, and alpha with 32 bit floats per
-channel.
+This allocates an alpha channel to the 8 bit RGB colormodel.  It's used
+for overlaying multiple tracks.
+
+@item
+
+@b{YUV-888} 
+
+This allocates 8 bits for Y, U, and V.  This is used for low dynamic
+range operations in which the media is compressed in the YUV color
+space.  Most compressed media is in YUV and this allows it to be
+processed fast with the least color degradation. 
+
+@item
+
+@b{YUVA-8888} 
+
+This allocates an alpha channel to the 8 bit YUV colormodel for
+transparency.
+
+@item
+
+@b{RGB-Float} 
+
+This allocates a 32 bit float for the R, G, and B channels and no
+alpha.  This is used for high dynamic range processing with no
+transparency.
+
+@item
+
+@b{RGBA-Float} This adds a 32 bit float for alpha to RGB-Float.  This
+is used for high dynamic range processing with transparency.
+
+@end itemize
+
 
 
 In order to do effects which involve alpha channels, a colormodel with
@@ -3836,9 +4130,10 @@ amount of improvement.
 
 RGB float doesn't destroy information when used with YUV source
 footage.  It also supports brightness above 100%.  Be aware that some
-effects, like Histogram, clip above 100%.
+effects, like Histogram, still clip above 100% when in floating point.
 
-@item
+@node ASPECT RATIO
+@section ASPECT RATIO
 
 Aspect ratio determines the shape of the video output when using the
 X11 video output.  The numbers in each direction can be any floating
@@ -3851,7 +4146,6 @@ the file.
 
 
 
-@end itemize
 
 
 
@@ -4941,20 +5235,17 @@ int x_accum, y_accum;
 Next, the section which says something like:
 
 @example
-case EV_REL:
 	switch (code) @{
   		case REL_X:	mousedev->packet.dx += value; break;
   		case REL_Y:	mousedev->packet.dy -= value; break;
   		case REL_WHEEL:	mousedev->packet.dz -= value; break;
 	@}
-	break;
 @end example
 
 must be replaced by
 
 @example
 
-case EV_REL:
 	switch (code) @{
      		case REL_X:
      			mousedev->packet.x_accum += value * DOWNSAMPLE_N;
@@ -4968,7 +5259,6 @@ case EV_REL:
      			break;
      		case REL_WHEEL:	mousedev->packet.dz -= value; break;
 	@}
-	break;
 
 
 
@@ -5243,6 +5533,10 @@ library.  You need to apply linearize after blur to get it to work.
 @node SECRETS OF CINELERRA
 @chapter SECRETS OF CINELERRA
 
+In this section, you'll find ways to apply Cinelerra to common
+problems.  Other sections are arranged in order of the tools and what
+the tools are used for.  This section is arranged in order of the
+problems and what tools are used to solve the problems.
 
 @menu
 * DOLBY PRO LOGIC ENCODING::
@@ -5250,6 +5544,10 @@ library.  You need to apply linearize after blur to get it to work.
 * DEFEATING INTERLACING::
 * MAKING VIDEO LOOK LIKE FILM::
 * CLEARING OUT HAZE::
+* MAKING A DVD::
+* MAKING A RINGTONE::
+* TIME STRETCHING AUDIO::
+* PITCH SHIFTING AUDIO::
 @end menu
 
 
@@ -5402,8 +5700,12 @@ the odd lines.  When played back at full framerates it gives the
 illusion of progressive video with no loss of detail.
 
 Best of all, this effect can be reversed with the @b{Fields to frames}
-nonrealtime effect.  That one combines two frames of footage back into
-the one original interlaced frame of half the framerate.
+effect.  That one combines two frames of footage back into the one
+original interlaced frame of half the framerate.
+
+Be aware that frames to fields inputs frames at half the framerate as
+the project.  Effects before frames to fields process at the reduced
+framerate.
 
 Unfortunately, the output of @b{Frames to Fields} can't be compressed
 as efficiently as the original because it introduces vertical twitter
@@ -5518,6 +5820,182 @@ Some scenes may work better with orange or brown for an evening feel.
 
 
 
+@node MAKING A DVD
+@section MAKING A DVD
+
+@b{A single chapter DVD}
+
+Make a single chapter DVD by rendering video to an MPEG video file. 
+The video should be 720x480, 29.97fps.  The aspect ratio should be 16x9
+or 4x3.
+
+Use the YUV 4:2:0 color model and DVD preset.  Set the bitrate to the
+desired bitrate.  It's not clear exactly what other parameters the MPEG
+encoder uses in the DVD preset but we've enabled the following:
+
+@example
+Derivative: MPEG-2
+Fixed bitrate
+I frame distance: 15
+P frame distance: 0
+Sequence start codes in every GOP
+@end example
+
+Render the audio to an AC3 audio file.  Any bitrate can be used.
+
+@b{Dvdrtools} must be downloaded to generate the actual DVD
+filesystem.  The actual usage of dvdrtools changes frequently but
+currently it involves the mkisofs and ifogen programs.  Mkisofs is
+built automatically in dvdrtools but ifogen may have to be built
+manually by entering the @b{video} directory and running @b{make
+ifogen}.  Mkisofs and ifogen must be put into /usr/bin manually.
+
+Also, the @b{mplex} program from @b{mjpegtools} must be installed.  The
+mjpegtools package is built in the hvirtual distribution and the mplex
+utility may be extracted from there.
+
+Given the files audio.ac3 and video.m2v, rendered by Cinelerra, the
+following commands pack them into a dvd readable by commercial
+appliances.
+
+@example
+mplex -M -f 8 -o final.mpg audio.ac3 video.m2v
+mkdir -p dvd/VIDEO_TS
+ifogen final.mpg -o dvd
+ifogen -T -o dvd
+mkisofs -dvd-video -udf -o dvd.iso dvd/
+@end example
+
+dvd.iso can be burned directly to a DVD with the following:
+
+@example
+dvdrecord -ignsize -dao -v dev=0,0,0 fs=67108864 dvd.iso
+@end example
+
+The argument to dev= is determined by running @b{dvdrecord -scanbus}
+and picking the right 3 digit device number.  This also requires
+interfacing the DVD drive through the scsi modules @b{ide-scsi, cdrom,
+sg}.
+
+
+
+
+
+
+
+
+@node MAKING A RINGTONE
+@section MAKING A RINGTONE
+
+This is how we made ringtones for the low end Motorola V180's and it'll
+probably work with any new phone.  Go to @b{File->Load files...} and
+load a sound file with Insertion strategy: @b{Replace current
+project}.  Go to @b{Settings->Format} change @b{Channels} to 1 and
+@b{Samplerate} to 16000 or 22050.
+
+Either highlight a region of the timeline or set in/out points to use
+for the ringtone.  To improve sound quality on the cell phone, you need
+the maximum amplitude in as many parts of the sound as possible.  Right
+click on track Audio 1 and select @b{Attach effect..}.  Highlight the
+@b{Compressor} effect and hit @b{Attach} in the attachment popup.
+
+Make sure the insertion point or highlighted area is in the region with
+the Compressor effect. Right click on track Audio 2 and select
+@b{Attach effect..}.  Highlight @b{Audio 1: Compressor} and hit
+@b{Attach}.  Click the Audio1 Compressor's magnifying glass
+@image{magnify} to bring up the compressor GUI.
+
+Set the following parameters:
+
+@example
+Reaction secs: @b{-0.1}
+Decay secs: @b{0.1}
+Trigger Type: @b{Total}
+Trigger: @b{0}
+Smooth only: @b{No}
+@end example
+
+
+Click @b{Clear} to clear the graph.  Click anywhere in the
+grid area and drag a new point to 0 Output and -50 Input.  The graph
+should look like this.
+
+@sp 1
+@image{compress}
+
+Go to @b{File->Render}.  Specify the name of an mp3 file to output to. 
+Set the file format to @b{MPEG Audio}.  Click the wrench @image{wrench}
+for Audio and set @b{Layer} to @b{III} and @b{Kbits per second} to
+@b{24} or @b{32}.  Check @b{Render audio tracks} and uncheck @b{Render
+video tracks}.  Hit OK to render the file.
+
+The resulting .mp3 file must be uploaded to a web server.  Then, the
+phone's web browser must download the .mp3 file directly from the URL.
+There also may be a size limit on the file.
+
+
+
+
+
+
+
+@node TIME STRETCHING AUDIO
+@section TIME STRETCHING AUDIO
+
+It may appear that time stretching audio is a matter of selecting a
+region of the audio tracks, enabling recording for the desired tracks,
+going to @b{Audio->Render Effect}, and applying @b{Time Stretch}.  In
+actuality there are 3 audio effects for time stretching: @b{Time
+Stretch}, @b{Resample}, and @b{Asset info dialog}.
+
+Time Stretch applies a fast fourier transform to try to change the
+duration without changing the pitch, but this introduces windowing
+artifacts to the audio.  It's only useful for large changes in time
+because obvious changes in duration make windowing artifacts less
+obtrusive.
+
+For smaller changes in duration, in the range of 5%, @b{Resample}
+should be used.  This changes the pitch of the audio but small enough
+changes aren't noticable.  Resample doesn't introduce any windowing
+artifacts, so this is most useful for slight duration changes where the
+listener isn't supposed to know what's going on.
+
+Another way to change duration slightly is to go to the @b{Resources}
+window, highlight the @b{media} folder, right click on an audio file,
+click on @b{Info}.  Adjust the sample rate in the @b{Info} dialog to
+adjust the duration.  This method also requires left clicking on the
+right boundary of the audio tracks and dragging left or right to
+correspond to the length changes.
+
+
+@node PITCH SHIFTING AUDIO
+@section PITCH SHIFTING AUDIO
+
+Like the time stretching methods, there are three pitch shifting
+methods: @b{Pitch shift}, @b{Resample}, and @b{Asset info dialog}. 
+Pitch shift is a realtime effect which can be dragged and dropped onto
+recordable audio tracks.  Pitch shift uses a fast fourier transform to
+try to change the pitch without changing the duration, but this
+introduces windowing artifacts.
+
+Because the windowing artifacts are less obtrusive in audio which is
+obvously pitch shifted, Pitch shift is mainly useful for extreme pitch
+changes.  For mild pitch changes, use @b{Resample} from the
+@b{Audio->Render Effect} interface.  Resample can change the pitch
+within 5% without a noticable change in duration.
+
+Another way to change pitch slightly is to go to the @b{Resources}
+window, highlight the @b{media} folder, right click on an audio file,
+click on @b{Info}.  Adjust the sample rate in the @b{Info} dialog to
+adjust the pitch.  This method also requires left clicking on the right
+boundary of the audio tracks and dragging left or right to correspond
+to the length changes.
+
+
+
+
+
+
 
 
 @node SECRETS OF CINELERRA EFFECTS
@@ -5535,6 +6013,7 @@ utilize fully by mere experimentation.
 * DECIMATE::          How to reduce frame rates by eliminating similar frames.
 * DEINTERLACE::       How to convert interlaced video to progressive video.
 * DIFFERENCE KEY::    Create transparency based on color differences.
+* FIELDS TO FRAMES::  How to recover interlaced video from bobbed video
 * FREEZE FRAME::      How to stop action in the timeline.
 * HISTOGRAM::         How to change the mapping of different brightness values.
 * INVERSE TELECINE::  How to convert pulled down frames to progressive frames.
@@ -5573,11 +6052,15 @@ resampled image without extra circuitry to handle 720x480 interlacing
 in a 1920x1080 image.
 
 If you merely deinterlaced the 1920x1080 images, you would end up with
-details of 720x240.  The 1080 to 480 effect properly extracts two
-1920x540 size fields from the image, resizes them separately, and
-combines them again to restore the original 720x480.  Tracks to which
-it is applied need to be at 1920x1080 resolution.  The project settings
-in @b{settings->format} should be at 720x480 resolution.
+resolution of 720x240.  The @b{1080 to 480} effect properly extracts
+two 1920x540 size fields from the image, resizes them separately, and
+combines them again to restore a 1920x480 interlaced image.  The
+@b{scale} effect must then be applied to reduce the horizontal size to
+960 or 720 depending on the original aspect ratio.
+
+The tracks to which @b{1080 to 480} is applied need to be at 1920x1080
+resolution.  The project settings in @b{settings->format} should be at
+least 720x480 resolution.
 
 The effect doesn't know if the first row in the 1920x1080 image belongs
 to the first row of the 720x480 original.  You have to specify what the
@@ -5696,17 +6179,18 @@ is less than the current peak it ramps the gain down.  The time taken
 to ramp the gain down can be greater than the time taken to ramp the
 gain up.  This ramping down time is the decay seconds.
 
+@b{Trigger type:}  The compressor is a multichannel effect.  Several
+tracks can share one compressor.  How the signal from many tracks is
+interpreted is determined by the trigger type.
+
+
+
 @b{Trigger:} The compressor is a multichannel effect.  Several tracks
 can share one compressor.  Normally only one track is scanned for the
 input peak.  This track is specified by the @b{Trigger}.  By sharing
 several tracks and playing with the trigger value, you can make a sine
 wave on one track follow the amplitude of a drum on another track for
 example.
-
-@b{No trigger:} The compressor can use one track as the trigger or it
-can take the highest value in any track as the peak to assign to all
-the tracks.  Enabling @b{No trigger} causes it to assign the highest
-value in any track as the peak for all tracks.
 
 @b{Smooth only:} For visualizing what the compressor is doing to the
 soundlevel, this option causes it to replace the soundwave with just
@@ -5738,9 +6222,6 @@ decimate input rate and every effect layered after decimate processes
 video at the project frame rate.  Computationally intensive effects
 should come below decimate.
 
-Decimate is not to be confused with @b{frames to fields}.  Frames to
-fields does not have a different input rate than output rate.  It
-merely replicates each frame.
 
 
 
@@ -5799,6 +6280,26 @@ can soften the transparency border.
 
 
 
+
+@node FIELDS TO FRAMES
+@section FIELDS TO FRAMES
+
+This effects reads frames at twice the project framerate, combining 2
+input frames into a single interlaced output frame.  Effects preceeding
+@b{fields to frames} process frames at twice the project frame rate. 
+Each input frame is called a field.
+
+@b{Fields to frames} needs to know what field corresponds to what lines
+in the output frame.  The easiest way to figure it out is to try both
+options in the window.  If the input fields are the result of a line
+doubling process like @b{frames to fields}, the wrong setting results
+in blurrier output.  If the input fields are the result of a standards
+conversion process like @b{1080 to 480}, the wrong setting won't make
+any difference.
+
+The debobber which converts 720x480 interlaced into 1920x1080
+interlaced or 1280x720 progressive seems to degrade the vertical
+resolution to the point that it can't be recovered.
 
 
 
@@ -5898,9 +6399,9 @@ Select which transfer to view by selecting one of the channels on the
 top of the histogram.
 
 
+@b{PLOT HISTOGRAM}
 
-
-
+@b{SPLIT OUTPUT}
 
 
 
@@ -5987,6 +6488,14 @@ The @b{use color picker} option uses the value currently in the color
 picker to set the @b{max} value.  Note that every time you pick a color
 from the compositor window, you need to hit @b{use color picker} to
 apply the new value.
+
+
+
+
+
+
+
+
 
 
 
@@ -6569,8 +7078,9 @@ support fonts in the titler is to have a directory for them at
 The titler supports mainly @b{TTF}, true type fonts.  It supports
 others but TTF are the most reliable.  To add true type fonts, copy the
 @b{.TTF} files to the @b{/usr/lib/cinelerra/fonts} directory.  In that
-directory run @b{ttmkfdir > fonts.dir} and restart Cinelerra.  The new
-fonts should appear.
+directory run @b{ttmkfdir && mv fonts.scale fonts.dir} and restart
+Cinelerra.  The new fonts should appear.  The usage of ttmkfdir changes
+frequently so this technique might not work.
 
 
 @node THE TITLE-SAFE REGION
@@ -6619,8 +7129,8 @@ scope for all the different video drivers.
 The plugin API in Cinelerra dates back to 1997, before the LADSPA and
 before VST became popular.  It's fundamentally the same as it was in
 1997, with minor modifications to handle keyframes and GUI feedback. 
-Unfortunately, the GUI is not abstracted from the programmer.  This
-allows the programmer to use whatever toolkit they want and allows more
+The GUI is not abstracted from the programmer.  This allows the
+programmer to use whatever toolkit they want and allows more
 flexibility in appearance but it costs more.
 
 There are several types of plugins, each with a common procedure of
@@ -6648,19 +7158,20 @@ out of the group and rename the symbols.
 @node INTRODUCING THE PULL METHOD
 @section INTRODUCING THE PULL METHOD
 
-The simplest way to design plugins is with the push method.  The push
-method is intuitive.  A source pushes data to a plugin, the plugin does
-math operations on it, and the plugin pushes it to a destination.  For
-6 years this was the way all realtime plugins were driven internally
-but it didn't allow you to reduce the rate of data in realtime.  While
-plugins can still be written as if they're being pushed data, this is
-not the way they're processed internally anymore.
+Originally plugins were designed with the push method.  The push method
+is intuitive and simple.  A source pushes data to a plugin, the plugin
+does math operations on it, and the plugin pushes it to a destination. 
+For 6 years this was the way all realtime plugins were driven
+internally but it didn't allow you to reduce the rate of playback in
+realtime.  While plugins can still be designed as if they're pushing
+data, this is not the way they're processed internally anymore.
 
 The latest evolution in Cinelerra's plugin design is the pull method. 
-The rendering pipeline starts at the end and the final steps in the
-rendering pipeline request data from the steps before them.  When the
-rendering pipleline eventually requests data from a plugin chain, each
-plugin requests data from the plugin before it.
+The rendering pipeline starts at the final output and the final steps
+in the rendering pipeline are reading the data from disk.  Every step
+in the rendering chain involves requesting data from the previous
+step.  When the rendering pipleline eventually requests data from a
+plugin chain, each plugin requests data from the plugin before it.
 
 This is less intuitive than the push method but is much more powerful. 
 Realtime plugins written using the pull method can change the rate data
@@ -6670,23 +7181,24 @@ it out.
 
 To get the power of rate independance, the pull method requires plugins
 to know more about the data than they needed to under the push method. 
-Plugins need to know what rate the project is at and what rate their
-individual requested output is at.  These two data rates have to be
-interchanged for a plugin to configure itself properly.
+Plugins need to know what rate the project is at, what rate their
+output is supposed to be at and what rate their input is supposed to be
+at.  These different data rates have to be correlated for a plugin to
+configure itself properly.
 
 Keyframes for a plugin are stored relative to the project frame rate. 
-Queries for the current playback position are given relative to the
-project frame rate.  This is useless if the plugin was requested data
-at twice the project frame rate since the keyframes wouldn't match up
-to the right data positions.  Two classes of data rates were created to
-handle this problem.
+Queries from a plugin for for the current playback position are given
+relative to the project frame rate.  If the plugin's output was
+requested to be at twice the project frame rate, the positions need to
+be converted to the project rate for keyframes to match up.  Two
+classes of data rates were created to handle this problem.
 
 Rate conversions are done in terms of the @b{project rate} and the
 @b{requested rate}.  The project rate is identical for all plugins.  It
 is determined by the @b{settings->format} window.  The requested rate
 is determined by the downstream plugin requesting data from the current
-plugin.  It is arbitrary.  Exactly how to use these rates is described
-below.
+plugin.  The requested rate is arbitrary.  Exactly how to use these
+rates is described below.
 
 
 
@@ -7013,9 +7525,11 @@ required functions and the configuration variables.
 
 
 Now you must define the three functions.  @b{Equivalent} is called by
-LOAD_CONFIGURATION_MACRO to get the return value.  If equivalent
-returns 0, the load configuration function causes the GUI to redraw. 
-If equivalent returns 1, the GUI doesn't redraw.
+LOAD_CONFIGURATION_MACRO to determine if the local configuration
+parameters are identical to the configuration parameters in the
+arguement.  If equivalent returns 0, the LOAD_CONFIGURATION_MACRO 
+causes the GUI to redraw.  If equivalent returns 1, the
+LOAD_CONFIGURATION_MACRO doesn't redraw the GUI.
 
 Then there's @b{copy_from} which transfers the configuration values
 from the argument to the local variables.  This is once again used in
@@ -7039,8 +7553,8 @@ void MyPluginConfig::interpolate(MyPluginConfig &prev,
 	double prev_scale = (double)(next_position - current_position) / (next_position - prev_position);
 @end example
 
-Then the scales are applied to the previous and next configuration
-object to yield the current values.
+Then the fractions are applied to the previous and next configuration
+variables to yield the current values.
 
 @example
 
@@ -7052,28 +7566,28 @@ object to yield the current values.
 @end example
 
 Alternatively you can copy the values from the previous configuration
-argument for no interpolation.
+argument if no interpolation is desired.
 
-This usage is the same in audio and video plugins.  In video playback,
-the interpolation function is called for every frame, yielding smooth
-interpolation.  In audio playback, the interpolation function is called
-only once for every console fragment and once every time the insertion
-point moves.  This is good enough for updating the GUI while selecting
-regions on the timeline but it may not be accurate enough for really
-smooth rendering of the effect.
+This usage of the configuration object is the same in audio and video
+plugins.  In video playback, the interpolation function is called for
+every frame, yielding smooth interpolation.  In audio playback, the
+interpolation function is called only once for every console fragment
+and once every time the insertion point moves.  This is good enough for
+updating the GUI while selecting regions on the timeline but it may not
+be accurate enough for really smooth rendering of the effect.
 
 For really smooth rendering of audio, you can still use
-load_configuration when updating the GUI.  For process_realtime;
-however, ignore load_configuration and write your own interpolation
-routine which loads all the keyframes in a console fragment and
-interpolates every sample.  This would be really slow and hard to
-debug, yielding improvement which may not be audible.  Then of course,
-every century has its set of wierdos.
+load_configuration when updating the GUI.  For process_buffer; however,
+ignore load_configuration and write your own interpolation routine
+which loads all the keyframes in a console fragment and interpolates
+every sample.  This would be really slow and hard to debug, yielding
+improvement which may not be audible.  Then of course, every country
+has its own wierdos.
 
 An easier way to get smoother interpolation is to reduce the console
 fragment to 1 sample.  This would have to be rendered and played back
-in a separate program of course.  The Linux sound driver can't play
-fragments of 1 sample.
+with the console fragment back over 2048 of course.  The Linux sound
+drivers can't play fragments of 1 sample.
 
 
 
@@ -7679,6 +8193,14 @@ should typecast this pointer into something useful.
 
 
 
+
+
+
+
+
+
+
+
 @node PLUGIN QUERIES
 @section PLUGIN QUERIES
 
@@ -7836,6 +8358,15 @@ Do this by using edl_to_local on the keyframe positions.
 
 
 
+
+
+
+
+
+
+
+
+
 @node KEYBOARD SHORTCUTS
 @chapter KEYBOARD SHORTCUTS
 
@@ -7871,8 +8402,6 @@ shift + click   When done over an edit causes the highlighted selection to exten
 l             Toggle label at current position
 Ctrl <-       Go to Previous Label
 Ctrl ->       Go to Next Label
-f             Fit time displayed to selection
-Alt f         Fit curve amplitude to highlighted section of curves
 @end example
 
 
@@ -7887,6 +8416,8 @@ Ctrl Up          Expand waveform amplitude
 Ctrl Dn          Shrink waveform amplitude
 Alt Up           Expand curve amplitude
 Alt Dn           Shrink curve amplitude
+f                Fit time displayed to selection
+Alt f            Fit curve amplitude to highlighted section of curves
 Page Up          Move up*
 Page Dn          Move down*
 Ctrl Page Up     Expand track height

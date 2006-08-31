@@ -209,11 +209,9 @@ int FileJPEG::read_frame_header(char *path)
 
 int FileJPEG::read_frame(VFrame *output, VFrame *input)
 {
-SET_TRACE
 	if(!decompressor) decompressor = mjpeg_new(asset->width, 
 		asset->height, 
 		1);
-SET_TRACE
 	mjpeg_decompress((mjpeg_t*)decompressor, 
 		input->get_data(), 
 		input->get_compressed_size(),
@@ -224,7 +222,6 @@ SET_TRACE
 		output->get_v(),
 		output->get_color_model(),
 		1);
-SET_TRACE
 
 
 	return 0;

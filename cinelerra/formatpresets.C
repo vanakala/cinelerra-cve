@@ -76,8 +76,6 @@ void FormatPresets::create_objects()
 	item->edl->session->video_channels = 1;
 	item->edl->session->video_tracks = 1;
 	item->edl->session->frame_rate = (double)60000.0 / 1001;
-// 	item->edl->session->track_w = 1280;
-// 	item->edl->session->track_h = 720;
 	item->edl->session->output_w = 1280;
 	item->edl->session->output_h = 720;
 	item->edl->session->aspect_w = 16;
@@ -91,8 +89,6 @@ void FormatPresets::create_objects()
 	item->edl->session->video_channels = 1;
 	item->edl->session->video_tracks = 1;
 	item->edl->session->frame_rate = (double)60000.0 / 1001;
-// 	item->edl->session->track_w = 720;
-// 	item->edl->session->track_h = 480;
 	item->edl->session->output_w = 720;
 	item->edl->session->output_h = 480;
 	item->edl->session->aspect_w = 4;
@@ -106,8 +102,6 @@ void FormatPresets::create_objects()
 	item->edl->session->video_channels = 1;
 	item->edl->session->video_tracks = 1;
 	item->edl->session->frame_rate = (double)30000.0 / 1001;
-// 	item->edl->session->track_w = 720;
-// 	item->edl->session->track_h = 480;
 	item->edl->session->output_w = 720;
 	item->edl->session->output_h = 480;
 	item->edl->session->aspect_w = 4;
@@ -121,8 +115,6 @@ void FormatPresets::create_objects()
 	item->edl->session->video_channels = 1;
 	item->edl->session->video_tracks = 1;
 	item->edl->session->frame_rate = (double)30000.0 / 1001;
-// 	item->edl->session->track_w = 360;
-// 	item->edl->session->track_h = 240;
 	item->edl->session->output_w = 360;
 	item->edl->session->output_h = 240;
 	item->edl->session->aspect_w = 4;
@@ -136,8 +128,6 @@ void FormatPresets::create_objects()
 	item->edl->session->video_channels = 1;
 	item->edl->session->video_tracks = 1;
 	item->edl->session->frame_rate = 15;
-// 	item->edl->session->track_w = 320;
-// 	item->edl->session->track_h = 240;
 	item->edl->session->output_w = 320;
 	item->edl->session->output_h = 240;
 	item->edl->session->aspect_w = 4;
@@ -151,8 +141,6 @@ void FormatPresets::create_objects()
 	item->edl->session->video_channels = 1;
 	item->edl->session->video_tracks = 0;
 	item->edl->session->frame_rate = (double)30000.0 / 1001;
-// 	item->edl->session->track_w = 720;
-// 	item->edl->session->track_h = 480;
 	item->edl->session->output_w = 720;
 	item->edl->session->output_h = 480;
 	item->edl->session->aspect_w = 4;
@@ -166,8 +154,6 @@ void FormatPresets::create_objects()
 	item->edl->session->video_channels = 1;
 	item->edl->session->video_tracks = 0;
 	item->edl->session->frame_rate = (double)30000.0 / 1001;
-// 	item->edl->session->track_w = 720;
-// 	item->edl->session->track_h = 480;
 	item->edl->session->output_w = 720;
 	item->edl->session->output_h = 480;
 	item->edl->session->aspect_w = 4;

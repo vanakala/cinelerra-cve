@@ -133,7 +133,9 @@ void MTimeBar::draw_range()
 		x2 > 0)
 	{
 		draw_top_background(get_parent(), 0, 0, x1, get_h());
+
 		draw_3segmenth(x1, 0, x2 - x1, mwindow->theme->get_image("timebar_brender"));
+
 		draw_top_background(get_parent(), x2, 0, get_w() - x2, get_h());
 	}
 	else

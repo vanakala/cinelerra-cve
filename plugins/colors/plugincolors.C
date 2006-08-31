@@ -20,11 +20,10 @@ int HSV::rgb_to_hsv(float r, float g, float b, float &h, float &s, float &v)
 	float f, p, q, t;
 	min = ((r < g) ? r : g) < b ? ((r < g) ? r : g) : b;
 	max = ((r > g) ? r : g) > b ? ((r > g) ? r : g) : b;
-	v = max;                               // v
+	v = max; 
 
 	delta = max - min;
 
-//printf("HSV::rgb_to_hsv %f %f %f\n", max, min, delta);
 	if(max != 0 && delta != 0)
         s = delta / max;               // s
 	else 

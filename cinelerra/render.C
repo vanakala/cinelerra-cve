@@ -316,45 +316,58 @@ void Render::run()
 	if(mode == Render::INTERACTIVE)
 	{
 // Fix the asset for rendering
+printf("Render::run 1\n");
 		Asset *asset = new Asset;
 		load_defaults(asset);
+printf("Render::run 2\n");
 		check_asset(mwindow->edl, *asset);
+printf("Render::run 3\n");
 
 // Get format from user
 		if(!result)
 		{
+printf("Render::run 4\n");
 			do
 			{
 				format_error = 0;
 				result = 0;
 
 				{
-					render_window = new RenderWindow(mwindow, this, asset);
-					render_window->create_objects();
-					result = render_window->run_window();
+printf("Render::run 5\n");
+					RenderWindow window(mwindow, this, asset);
+printf("Render::run 6\n");
+					window.create_objects();
+printf("Render::run 7\n");
+					result = window.run_window();
+printf("Render::run 8\n");
 					if (! result) {
 						// add to recentlist only on OK
-						render_window->format_tools->path_recent->add_item(FILE_FORMAT_PREFIX(asset->format), asset->path);
+						window.format_tools->path_recent->add_item(FILE_FORMAT_PREFIX(asset->format), asset->path);
 					}
-					delete render_window;
-					render_window = 0;
 				}
 
 				if(!result)
 				{
+printf("Render::run 8.1\n");
 // Check the asset format for errors.
 					FormatCheck format_check(asset);
+printf("Render::run 8.2\n");
 					format_error = format_check.check_format();
+printf("Render::run 8.3\n");
 				}
 			}while(format_error && !result);
 		}
+printf("Render::run 9\n");
 
 		save_defaults(asset);
 		mwindow->save_defaults();
+printf("Render::run 10\n");
 
 		if(!result) render(1, asset, mwindow->edl, strategy);
+printf("Render::run 11\n");
 
 		delete asset;
+printf("Render::run 12\n");
 	}
 	else
 	if(mode == Render::BATCH)
@@ -418,6 +431,7 @@ void Render::run()
 			mwindow->batch_render->update_done(-1, 0, 0);
 		}
 	}
+printf("Render::run 100\n");
 }
 
 
@@ -778,10 +792,9 @@ int Render::render(int test_overwrite,
 
 
 
-//printf("Render::run: Session finished.\n");
+printf("Render::run: Session finished.\n");
 
 
-//printf("Render::render 80\n");
 
 
 
@@ -791,7 +804,7 @@ int Render::render(int test_overwrite,
 			result |= packages->packages_are_done();
 		}
 
-//printf("Render::render 90\n");
+printf("Render::render 90\n");
 
 // Notify of error
 		if(result && 

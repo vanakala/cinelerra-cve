@@ -62,16 +62,16 @@ int mpeg3_delete(mpeg3_t *file)
 if(debug) printf("mpeg3_delete 1\n");
 	for(i = 0; i < file->total_vstreams; i++)
 		mpeg3_delete_vtrack(file, file->vtrack[i]);
-if(debug) printf("mpeg3_delete 1\n");
+if(debug) printf("mpeg3_delete 2\n");
 
 	for(i = 0; i < file->total_astreams; i++)
 		mpeg3_delete_atrack(file, file->atrack[i]);
 
-if(debug) printf("mpeg3_delete 1\n");
+if(debug) printf("mpeg3_delete 3\n");
 	mpeg3_delete_fs(file->fs);
 	mpeg3_delete_demuxer(file->demuxer);
 
-if(debug) printf("mpeg3_delete 1\n");
+if(debug) printf("mpeg3_delete 4\n");
 	if(file->frame_offsets)
 	{
 		for(i = 0; i < file->total_vstreams; i++)
@@ -80,14 +80,14 @@ if(debug) printf("mpeg3_delete 1\n");
 			free(file->keyframe_numbers[i]);
 		}
 
-if(debug) printf("mpeg3_delete 1\n");
+if(debug) printf("mpeg3_delete 5\n");
 		free(file->frame_offsets);
 		free(file->keyframe_numbers);
 		free(file->total_frame_offsets);
 		free(file->total_keyframe_numbers);
 	}
 
-if(debug) printf("mpeg3_delete 1\n");
+if(debug) printf("mpeg3_delete 6\n");
 	if(file->sample_offsets)
 	{
 		for(i = 0; i < file->total_astreams; i++)
@@ -97,24 +97,24 @@ if(debug) printf("mpeg3_delete 1\n");
 		free(file->total_sample_offsets);
 	}
 
-if(debug) printf("mpeg3_delete 1\n");
+if(debug) printf("mpeg3_delete 7\n");
 
 	if(file->channel_counts)
 		free(file->channel_counts);
 
-if(debug) printf("mpeg3_delete 2\n");
+if(debug) printf("mpeg3_delete 8\n");
 	if(file->indexes)
 	{
 		for(i = 0; i < file->total_indexes; i++)
 			mpeg3_delete_index(file->indexes[i]);
-if(debug) printf("mpeg3_delete 3\n");
+if(debug) printf("mpeg3_delete 9\n");
 			
 		free(file->indexes);
 	}
 
-if(debug) printf("mpeg3_delete 4\n");
+if(debug) printf("mpeg3_delete 10\n");
 	free(file);
-if(debug) printf("mpeg3_delete 5\n");
+if(debug) printf("mpeg3_delete 11\n");
 	return 0;
 }
 
@@ -242,6 +242,8 @@ static int calculate_packet_size(int is_transport,
 		return MPEG3_DVD_PACKET_SIZE;
 }
 
+
+
 int mpeg3_get_file_type(mpeg3_t *file, 
 	mpeg3_t *old_file,
 	int *toc_atracks,
@@ -329,7 +331,7 @@ int mpeg3_get_file_type(mpeg3_t *file,
 	}
 
 /*
- * printf("mpeg3_open 2 %p %d %d %d %d\n", 
+ * printf("mpeg3_get_file_type 2 %p %d %d %d %d\n", 
  * old_file, 
  * file->is_transport_stream, 
  * file->is_program_stream, 
@@ -356,9 +358,9 @@ mpeg3_t* mpeg3_open_copy(char *path, mpeg3_t *old_file)
 	int toc_atracks = 0x7fffffff;
 	int toc_vtracks = 0x7fffffff;
 
+
 /* Initialize the file structure */
 	file = mpeg3_new(path);
-
 
 
 /* Need to perform authentication before reading a single byte. */
@@ -402,7 +404,6 @@ mpeg3_t* mpeg3_open_copy(char *path, mpeg3_t *old_file)
 	{
 		mpeg3_create_title(file->demuxer, 0);
 	}
-
 
 
 

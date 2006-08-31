@@ -456,10 +456,12 @@ void FloatAutos::dump()
 		((FloatAuto*)default_auto)->value);
 	for(Auto* current = first; current; current = NEXT)
 	{
-		printf("	position %lld value=%f invalue=%f outvalue=%f\n", 
+		printf("	position %lld value=%f invalue=%f outvalue=%f inposition=%lld outposition=%lld\n", 
 			current->position, 
 			((FloatAuto*)current)->value,
 			((FloatAuto*)current)->control_in_value,
-			((FloatAuto*)current)->control_out_value);
+			((FloatAuto*)current)->control_out_value,
+			((FloatAuto*)current)->control_in_position,
+			((FloatAuto*)current)->control_out_position);
 	}
 }

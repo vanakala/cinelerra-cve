@@ -376,6 +376,13 @@ void mpeg3bits_reset(mpeg3_bits_t *stream);
 
 
 
+
+
+
+
+
+
+
 #define mpeg3bits_error(stream) mpeg3demux_error((stream)->demuxer)
 
 #define mpeg3bits_eof(stream) mpeg3demux_eof((stream)->demuxer)

@@ -3,6 +3,7 @@
 #include "bclistboxitem.h"
 #include "bcpixmap.h"
 #include "bcresources.h"
+#include "bcsignals.h"
 #include "clip.h"
 #include "cursors.h"
 #include "fonts.h"
@@ -505,7 +506,7 @@ void BC_ListBox::init_column_width()
 		int widest = 5, w;
 		for(int i = 0; i < data[0].total; i++)
 		{
-			w = get_text_width(MEDIUMFONT, data[0].values[i]->get_text()) + 2 * LISTBOX_MARGIN;
+		w = get_text_width(MEDIUMFONT, data[0].values[i]->get_text()) + 2 * LISTBOX_MARGIN;
 			if(w > widest) widest = w;
 		}
 		default_column_width[0] = widest;
@@ -1496,7 +1497,6 @@ int BC_ListBox::update(ArrayList<BC_ListBoxItem*> *data,
 	int recalc_positions,
 	int draw)
 {
-
 	set_columns(column_titles, 
 		column_widths, 
 		columns);
@@ -2746,7 +2746,6 @@ int BC_ListBox::button_press_event()
 	int do_selection_change = 0;
 
 	hide_tooltip();
-
 
 
 // Pressed in button

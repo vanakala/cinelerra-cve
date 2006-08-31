@@ -33,19 +33,19 @@ FileTGA::~FileTGA()
 int FileTGA::check_sig(Asset *asset)
 {
 
-SET_TRACE
+
 // Test file extension
 	int result = 0;
 	char *ext = strrchr(asset->path, '.');
-SET_TRACE
+
 	if(ext)
 	{
-SET_TRACE
+
 		if(!strncasecmp(ext, ".tga", 4)) result = 1;
-SET_TRACE
+
 	}
 
-SET_TRACE
+
 
 // Test for list
 	if(!result)
@@ -70,7 +70,7 @@ SET_TRACE
 			
 		}
 	}
-SET_TRACE
+
 
 	return result;
 }

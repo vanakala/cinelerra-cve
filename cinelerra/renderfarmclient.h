@@ -12,8 +12,6 @@
 //#include "renderfarmfsclient.inc"
 #include "thread.h"
 
-// The render client waits for connections from the server.
-// Then it starts a thread for each connection.
 class RenderFarmClient
 {
 public:
@@ -24,7 +22,9 @@ public:
 	~RenderFarmClient();
 	
 	void main_loop();
-	
+
+
+
 
 // After a socket times out, kill the render node.
 	void kill_client();
@@ -90,11 +90,6 @@ public:
 	double frames_per_second;
 	Mutex *mutex_lock;
 };
-
-
-
-
-
 
 
 

@@ -541,15 +541,17 @@ int RecordGUI::resize_event(int w, int h)
 
 	int new_h = mwindow->session->rwindow_h - bottom_margin - batch_list->get_y();
 	if(new_h < 10) new_h = 10;
+printf("RecordGUI::resize_event 1 %d\n", mwindow->session->rwindow_h - bottom_margin - batch_list->get_y());
 	batch_list->reposition_window(batch_list->get_x(), 
 		batch_list->get_y(),
 		mwindow->session->rwindow_w - 20,
 		mwindow->session->rwindow_h - bottom_margin - batch_list->get_y());
 
-
 	load_mode->reposition_window(mwindow->session->rwindow_w / 2 - 
 			mwindow->theme->loadmode_w / 2,
 		mwindow->session->rwindow_h - mode_margin);
+
+	
 
 	flash();
 	return 1;
@@ -742,6 +744,18 @@ int RecordGUICancel::keypress_event()
 
 	return 0;
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 RecordGUIStartOver::RecordGUIStartOver(Record *record, RecordGUI *record_gui, int x, int y)
  : BC_GenericButton(x, y, _("Start Over"))

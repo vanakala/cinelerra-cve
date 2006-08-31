@@ -76,13 +76,6 @@ int FormatPopup::create_objects()
 	}
 
 	format_items.append(new BC_ListBoxItem(_(TIFF_LIST_NAME)));
-// 	for(i = 0; i < plugindb->total; i++)
-// 	{
-// 		if(plugindb->values[i]->fileio)
-// 		{
-// 			add_item(format_items[total_items++] = new FormatPopupItem(this, plugindb->values[i]->title));
-// 		}
-// 	}
 	update(&format_items,
 		0,
 		0,

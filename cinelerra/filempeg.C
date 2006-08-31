@@ -144,6 +144,7 @@ int FileMPEG::reset_parameters_derived()
 // for reopening.
 int FileMPEG::open_file(int rd, int wr)
 {
+SET_TRACE
 	int result = 0;
 	this->rd = rd;
 	this->wr = wr;
@@ -330,7 +331,8 @@ int FileMPEG::open_file(int rd, int wr)
 
 
 
-			strcat(mjpeg_command, asset->vmpeg_progressive ? " -I 0" : " -I 1");
+			strcat(mjpeg_command, 
+				asset->vmpeg_progressive ? " -I 0" : " -I 1");
 			
 
 
@@ -431,7 +433,7 @@ int FileMPEG::open_file(int rd, int wr)
 	}
 
 //asset->dump();
-//printf("FileMPEG::open_file 100\n");
+SET_TRACE
 	return result;
 }
 
@@ -523,15 +525,21 @@ int FileMPEG::create_index()
 
 		progress->stop_progress();
 		delete progress;
+
+// Remove if error
 		if(result)
 		{
 			remove(index_filename);
 			return 1;
 		}
+		else
+// Fix date to date of source if success
+		{
+		}
+
 	}
 
 
-// Failed
 
 // Reopen file from index path instead of asset path.
 	if(fd) mpeg3_close(fd);
@@ -749,6 +757,7 @@ int FileMPEG::set_video_position(int64_t x)
 	if(!fd) return 1;
 	if(x >= 0 && x < asset->video_length)
 	{
+//printf("FileMPEG::set_video_position 1 %lld\n", x);
 		mpeg3_set_frame(fd, x, file->current_layer);
 	}
 	else
@@ -1020,14 +1029,16 @@ int FileMPEG::read_frame(VFrame *frame)
 	int result = 0;
 	int src_cmodel;
 
-SET_TRACE
+// printf("FileMPEG::read_frame\n");
+// frame->dump_stacks();
+// frame->dump_params();
+
 	if(mpeg3_colormodel(fd, 0) == MPEG3_YUV420P)
 		src_cmodel = BC_YUV420P;
 	else
 	if(mpeg3_colormodel(fd, 0) == MPEG3_YUV422P)
 		src_cmodel = BC_YUV422P;
 
-SET_TRACE
 	switch(frame->get_color_model())
 	{
 		case MPEG3_RGB565:
@@ -1036,6 +1047,7 @@ SET_TRACE
 		case MPEG3_RGB888:
 		case MPEG3_RGBA8888:
 		case MPEG3_RGBA16161616:
+SET_TRACE
 			mpeg3_read_frame(fd, 
 					frame->get_rows(), /* Array of pointers to the start of each output row */
 					0,                    /* Location in input frame to take picture */
@@ -1046,6 +1058,7 @@ SET_TRACE
 					asset->height, 
 					frame->get_color_model(),             /* One of the color model #defines */
 					file->current_layer);
+SET_TRACE
 			break;
 
 // Use Temp
@@ -1053,6 +1066,7 @@ SET_TRACE
 // Read these directly
 			if(frame->get_color_model() == src_cmodel)
 			{
+SET_TRACE
 				mpeg3_read_yuvframe(fd,
 					(char*)frame->get_y(),
 					(char*)frame->get_u(),
@@ -1062,17 +1076,19 @@ SET_TRACE
 					asset->width,
 					asset->height,
 					file->current_layer);
-
+SET_TRACE
 			}
 			else
 // Process through temp frame
 			{
 				char *y, *u, *v;
+SET_TRACE
 				mpeg3_read_yuvframe_ptr(fd,
 					&y,
 					&u,
 					&v,
 					file->current_layer);
+SET_TRACE
 				if(y && u && v)
 				{
 					cmodel_transfer(frame->get_rows(), 
@@ -1098,12 +1114,13 @@ SET_TRACE
 						frame->get_w());
 				}
 			}
-SET_TRACE
 			break;
 	}
 
+SET_TRACE
 	return result;
 }
+
 
 void FileMPEG::to_streamchannel(int channel, int &stream_out, int &channel_out)
 {

@@ -11,7 +11,8 @@ public:
 	Timer();
 	virtual ~Timer();
 	
-	int update();                // set last update to now
+// set last update to now
+	int update();
 	
 // get difference between now and last update in milliseconds
 // must be positive or error results

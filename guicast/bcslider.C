@@ -658,11 +658,12 @@ int BC_FSlider::update_selection(int cursor_x, int cursor_y)
 	if(value > maxvalue) value = maxvalue;
 	if(value < minvalue) value = minvalue;
 	button_pixel = value_to_pixel();
-// printf("BC_FSlider::update_selection 1 %d %d %d %d %f\n", 
+// printf("BC_FSlider::update_selection 1 %d %d %d %d %f %f\n", 
 // pointer_motion_range, 
 // min_pixel,
 // max_pixel,
 // cursor_x, 
+// precision,
 // value);
 
 	if(old_value != value)

@@ -404,15 +404,10 @@ void PackageRenderer::do_video()
 				else
 				if(!result)
 	 			{
-//printf("PackageRenderer::do_video 7\n");
 // Set background rendering parameters
-//					if(package->use_brender)
-//					{
 // Allow us to skip sections of the output file by setting the frame number.
 // Used by background render and render farm.
-						video_output_ptr[0]->set_number(video_position);
-//printf("PackageRenderer::do_video 8 %p %lld\n", video_output_ptr[0], video_position);
-//					}
+					video_output_ptr[0]->set_number(video_position);
 					video_write_position++;
 
 					if(video_write_position >= video_write_length)

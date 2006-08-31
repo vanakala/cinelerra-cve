@@ -19,8 +19,11 @@ public:
 		int do_video);
 	void delete_objects();
 	void reset();
+
+
+// ============================== writing section ==============================
 	int start_writing();
-// Allocate the buffers and start loop.
+// Allocate the buffers and start loop for writing.
 // compressed - if 1 write_compressed_frames is called in the file
 //            - if 0 write_frames is called
 	int start_writing(long buffer_size, 
@@ -28,6 +31,11 @@ public:
 			int ring_buffers, 
 			int compressed);
 	int stop_writing();
+
+
+
+
+
 // write data into next available buffer
 	int write_buffer(long size);
 // get pointer to next buffer to be written and lock it

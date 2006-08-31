@@ -37,8 +37,10 @@ public:
 	int focus_in_event();
 	int focus_out_event();
 
+// canvas - 1 for incremental drawing of resources
+//          2 for delete and redraw of resources
 	void update(int scrollbars,
-		int canvas,      // 1 for incremental drawing.  2 for full refresh
+		int canvas, 
 		int timebar,
 		int zoombar,
 		int patchbay, 

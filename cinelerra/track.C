@@ -367,7 +367,7 @@ void Track::insert_track(Track *track,
 	int replace_default,
 	int edit_plugins)
 {
-SET_TRACE
+
 // Decide whether to copy settings based on load_mode
 	if(replace_default) copy_settings(track);
 
@@ -382,7 +382,7 @@ SET_TRACE
 		replace_default);
 
 	optimize();
-SET_TRACE
+
 }
 
 // Called by insert_track

@@ -178,7 +178,9 @@ SET_TRACE
 SET_TRACE
 
 	mwindow->theme->get_mwindow_sizes(this, get_w(), get_h());
+SET_TRACE
 	mwindow->theme->draw_mwindow_bg(this);
+SET_TRACE
 	mainmenu->create_objects();
 SET_TRACE
 
@@ -307,20 +309,13 @@ void MWindowGUI::update(int scrollbars,
 	int clock,
 	int buttonbar)
 {
-//TRACE("MWindowGUI::update 1");
 	mwindow->edl->tracks->update_y_pixels(mwindow->theme);
-//TRACE("MWindowGUI::update 1");
 	if(scrollbars) this->get_scrollbars();
-//TRACE("MWindowGUI::update 1");
 	if(timebar) this->timebar->update();
-//TRACE("MWindowGUI::update 1");
 	if(zoombar) this->zoombar->update();
-//TRACE("MWindowGUI::update 1");
 	if(patchbay) this->patchbay->update();
-//TRACE("MWindowGUI::update 1");
 	if(clock) this->mainclock->update(
 		mwindow->edl->local_session->get_selectionstart(1));
-//TRACE("MWindowGUI::update 1");
 	if(canvas)
 	{
 		this->canvas->draw(canvas == 2);
@@ -328,9 +323,7 @@ void MWindowGUI::update(int scrollbars,
 		this->canvas->flash();
 		this->canvas->activate();
 	}
-//TRACE("MWindowGUI::update 1");
 	if(buttonbar) mbuttons->update();
-//TRACE("MWindowGUI::update 100");
 }
 
 int MWindowGUI::visible(int64_t x1, int64_t x2, int64_t view_x1, int64_t view_x2)
@@ -474,7 +467,7 @@ int MWindowGUI::keypress_event()
 		{
 			case LEFT:
 				if(!ctrl_down()) 
-				{
+				{ 
 					if (alt_down())
 						mwindow->prev_edit_handle();
 					else
@@ -646,7 +639,7 @@ int MWindowGUI::keypress_event()
 						1);
 				unlock_window();
 				mwindow->cwindow->update(0, 1, 1);
-				lock_window("TrackCanvas::keypress_event");
+				lock_window("TrackCanvas::keypress_event 3");
 
 				result = 1;
 				break;

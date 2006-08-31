@@ -35,9 +35,9 @@ public:
 // Get attributes for various file formats.
 // The dither parameter is carried over from recording, where dither is done at the device.
 	int get_options(FormatTools *format, 
-			int audio_options,
-			int video_options,
-			int lock_compressor);
+		int audio_options,
+		int video_options,
+		int lock_compressor);
 
 	int raise_window();
 // Close parameter window
@@ -117,6 +117,8 @@ public:
 
 // Only called by filethread
 	int write_frames(VFrame ***frames, int len);
+
+
 
 // For writing buffers in a background thread use these functions to get the buffer.
 // Get a pointer to a buffer to write to.

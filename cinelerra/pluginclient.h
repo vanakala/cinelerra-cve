@@ -271,24 +271,13 @@ public:
 
 	int get_configure_change();                             // get propogated configuration change from a send_configure_change
 
-// Replaced by pull method
-/*
- * 	virtual void plugin_process_realtime(double **input, 
- * 		double **output, 
- * 		int64_t current_position, 
- * 		int64_t fragment_size,
- * 		int64_t total_len) {};
- * 	virtual void plugin_process_realtime(VFrame **input, 
- * 		VFrame **output, 
- * 		int64_t current_position,
- * 		int64_t total_len) {};
- */
 // Called by plugin server to update GUI with rendered data.
 	virtual void plugin_render_gui(void *data) {};
 	virtual void plugin_render_gui(void *data, int size) {};
 	virtual int plugin_process_loop(VFrame **buffers, int64_t &write_length) { return 1; };
 	virtual int plugin_process_loop(double **buffers, int64_t &write_length) { return 1; };
-	virtual int init_realtime_parameters();     // get parameters depending on video or audio
+// get parameters depending on video or audio
+	virtual int init_realtime_parameters();     
 	int get_gui_status();
 	char* get_gui_string();
 

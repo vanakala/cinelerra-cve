@@ -76,8 +76,6 @@ int RenderFarmServer::start_clients()
 
 		result = client->start_loop();
 		client_lock->unlock();
-//usleep(100000);
-// Fails to connect all without a delay
 	}
 
 	return result;
@@ -134,7 +132,6 @@ int RenderFarmServerThread::start_loop()
 {
 	int result = 0;
 	char *hostname = server->preferences->get_node_hostname(number);
-//printf("RenderFarmServerThread::start_loop 1\n");
 
 // Open file for master node
 	if(hostname[0] == '/')
@@ -157,29 +154,25 @@ int RenderFarmServerThread::start_loop()
 #define ATTEMPT_DELAY 100000
 			int done = 0;
 			int attempt = 0;
-//printf("RenderFarmServerThread::start_loop 2 %s\n", hostname);
+
 			do
 			{
-//printf("RenderFarmServerThread::start_loop 3\n");
 				if(connect(socket_fd, (struct sockaddr*)&addr, size) < 0)
 				{
 					attempt++;
 					if(attempt > 30000000 / ATTEMPT_DELAY)
 					{
-//printf("RenderFarmServerThread::start_loop 4 %s\n", hostname);
-						fprintf(stderr, _("RenderFarmServerThread::start_loop: %s: %s\n"), 
+						fprintf(stderr, _("RenderFarmServerThread::open_client: %s: %s\n"), 
 							hostname, 
 							strerror(errno));
 						result = 1;
 					}
 					else
 						usleep(ATTEMPT_DELAY);
-//printf("RenderFarmServerThread::start_loop 5 %s\n", hostname);
 				}
 				else
 					done = 1;
 			}while(!result && !done);
-//printf("RenderFarmServerThread::start_loop 6\n");
 		}
 	}
 	else
@@ -200,7 +193,7 @@ int RenderFarmServerThread::start_loop()
 			hostinfo = gethostbyname(hostname);
 			if(hostinfo == NULL)
     		{
-    			fprintf(stderr, _("RenderFarmServerThread::start_loop: unknown host %s.\n"), 
+    			fprintf(stderr, _("RenderFarmServerThread::open_client: unknown host %s.\n"), 
 					server->preferences->get_node_hostname(number));
     			result = 1;
     		}
@@ -210,7 +203,7 @@ int RenderFarmServerThread::start_loop()
 
 				if(connect(socket_fd, (struct sockaddr*)&addr, sizeof(addr)) < 0)
 				{
-					fprintf(stderr, _("RenderFarmServerThread::start_loop: %s: %s\n"), 
+					fprintf(stderr, _("RenderFarmServerThread::open_client: %s: %s\n"), 
 						server->preferences->get_node_hostname(number), 
 						strerror(errno));
 					result = 1;
@@ -218,7 +211,7 @@ int RenderFarmServerThread::start_loop()
 			}
 		}
 	}
-//printf("RenderFarmServerThread::start_loop 7\n");
+
 
 	if(!result) Thread::start();
 
@@ -226,13 +219,19 @@ int RenderFarmServerThread::start_loop()
 }
 
 
+
+
+
+
+
+
+
+
+
 int RenderFarmServerThread::read_socket(int socket_fd, char *data, int len, int timeout)
 {
 	int bytes_read = 0;
 	int offset = 0;
-//timeout = 0;
-
-//printf("RenderFarmServerThread::read_socket 1\n");
 	while(len > 0 && bytes_read >= 0)
 	{
 		int result = 0;
@@ -252,7 +251,6 @@ int RenderFarmServerThread::read_socket(int socket_fd, char *data, int len, int 
 				0, 
 				&tv);
 			FD_ZERO(&read_fds);
-//printf("RenderFarmServerThread::read_socket 1 %d\n", result);
 		}
 		else
 			result = 1;
@@ -267,17 +265,14 @@ int RenderFarmServerThread::read_socket(int socket_fd, char *data, int len, int 
 			}
 			else
 			{
-//printf("RenderFarmServerThread::read_socket got 0 len=%d\n", len);
 				break;
 			}
 		}
 		else
 		{
-printf("RenderFarmServerThread::read_socket timed out. len=%d\n", len);
 			break;
 		}
 	}
-//printf("RenderFarmServerThread::read_socket 2\n");
 
 	return offset;
 }
@@ -350,7 +345,6 @@ void RenderFarmServerThread::run()
 	while(!done)
 	{
 
-//printf("RenderFarmServerThread::run 1\n");
 // Wait for requests.
 // Requests consist of request ID's and accompanying buffers.
 // Get request ID.
@@ -366,7 +360,6 @@ void RenderFarmServerThread::run()
 							(((u_int32_t)header[3]) << 8)  |
 							(u_int32_t)header[4];
 
-//printf("RenderFarmServerThread::run 2 %d %lld\n", request_id, request_size);
 		reallocate_buffer(request_size);
 
 // Get accompanying buffer
@@ -375,6 +368,7 @@ void RenderFarmServerThread::run()
 			done = 1;
 			continue;
 		}
+//printf("RenderFarmServerThread::run 3\n");
 
 		switch(request_id)
 		{
@@ -411,6 +405,7 @@ void RenderFarmServerThread::run()
 				break;
 
 			case RENDERFARM_DONE:
+//printf("RenderFarmServerThread::run 10\n");
 				done = 1;
 				break;
 
@@ -426,6 +421,7 @@ void RenderFarmServerThread::run()
 	}
 	
 	if(buffer) delete [] buffer;
+//printf("RenderFarmServerThread::run 20\n");
 //	delete fs_server;
 }
 
@@ -518,7 +514,6 @@ void RenderFarmServerThread::send_package(unsigned char *buffer)
 			server->use_local_rate);
 
 //printf("RenderFarmServerThread::send_package 2\n");
-
 	char datagram[BCTEXTLEN];
 
 // No more packages

@@ -6,6 +6,7 @@
 #include "awindowgui.inc"
 #include "awindow.h"
 #include "awindowmenu.h"
+#include "bcsignals.h"
 #include "cache.h"
 #include "colormodels.h"
 #include "cursors.h"
@@ -349,9 +350,12 @@ int AWindowGUI::create_objects()
 	int x, y;
 	AssetPicon *picon;
 
+SET_TRACE
 //printf("AWindowGUI::create_objects 1\n");
 	asset_titles[0] = _("Title");
 	asset_titles[1] = _("Comments");
+
+SET_TRACE
 
 	set_icon(mwindow->theme->get_image("awindow_icon"));
 	file_icon = new BC_Pixmap(this, 
@@ -370,9 +374,13 @@ int AWindowGUI::create_objects()
 		BC_WindowBase::get_resources()->type_to_icon[ICON_FILM],
 		PIXMAP_ALPHA);
 
+SET_TRACE
+
 	clip_icon = new BC_Pixmap(this, 
 		mwindow->theme->get_image("clip_icon"),
 		PIXMAP_ALPHA);
+
+SET_TRACE
 
 // Mandatory folders
 	folders.append(picon = new AssetPicon(mwindow,
@@ -397,25 +405,38 @@ int AWindowGUI::create_objects()
 	picon->persistent = 1;
 
 	create_label_folder();
+
+SET_TRACE
+
 	create_persistent_folder(&aeffects, 1, 0, 1, 0);
 	create_persistent_folder(&veffects, 0, 1, 1, 0);
 	create_persistent_folder(&atransitions, 1, 0, 0, 1);
 	create_persistent_folder(&vtransitions, 0, 1, 0, 1);
 
+SET_TRACE
+
 	mwindow->theme->get_awindow_sizes(this);
+
+SET_TRACE
 	add_subwindow(asset_list = new AWindowAssets(mwindow,
 		this,
  		mwindow->theme->alist_x, 
     	mwindow->theme->alist_y, 
     	mwindow->theme->alist_w, 
     	mwindow->theme->alist_h));
+
+SET_TRACE
 	add_subwindow(divider = new AWindowDivider(mwindow,
 		this,
 		mwindow->theme->adivider_x,
 		mwindow->theme->adivider_y,
 		mwindow->theme->adivider_w,
 		mwindow->theme->adivider_h));
+
+SET_TRACE
 	divider->set_cursor(HSEPARATE_CURSOR);
+
+SET_TRACE
 	add_subwindow(folder_list = new AWindowFolders(mwindow,
 		this,
  		mwindow->theme->afolders_x, 
@@ -423,8 +444,12 @@ int AWindowGUI::create_objects()
     	mwindow->theme->afolders_w, 
     	mwindow->theme->afolders_h));
 	
+SET_TRACE
+
 	x = mwindow->theme->abuttons_x;
 	y = mwindow->theme->abuttons_y;
+
+SET_TRACE
 
 	newfolder_thread = new NewFolderThread(mwindow, this);
 
@@ -434,12 +459,20 @@ int AWindowGUI::create_objects()
 	add_subwindow(label_menu = new LabelPopup(mwindow, this));
 	label_menu->create_objects();
 
+SET_TRACE
+
 	add_subwindow(assetlist_menu = new AssetListMenu(mwindow, this));
+
+SET_TRACE
 	assetlist_menu->create_objects();
+
+SET_TRACE
 
 	add_subwindow(folderlist_menu = new FolderListMenu(mwindow, this));
 	folderlist_menu->create_objects();
 //printf("AWindowGUI::create_objects 2\n");
+
+SET_TRACE
 
 	return 0;
 }

@@ -77,6 +77,7 @@ int RecordAudio::stop_recording()
 	if(record->adevice)
 	{
 		record->adevice->interrupt_crash();
+// Joined in RecordThread
 		//Thread::join();
 	}
 	return 0;
@@ -249,7 +250,7 @@ TRACE("RecordAudio::run 4");
 		error_box.run_window();
 		batch_done = 1;
 	}
-TRACE("RecordAudio::run 10\n");
+TRACE("RecordAudio::run 10");
 
 	if(!record_thread->monitor)
 	{
@@ -267,7 +268,7 @@ TRACE("RecordAudio::run 10\n");
 		delete [] input;
 		input = 0;
 	}
-TRACE("RecordAudio::run 11\n");
+TRACE("RecordAudio::run 11");
 
 // reset meter
 	gui->lock_window("RecordAudio::run 2");
@@ -275,12 +276,12 @@ TRACE("RecordAudio::run 11\n");
 	{
 		record->record_monitor->window->meters->meters.values[channel]->reset();
 	}
-TRACE("RecordAudio::run 12\n");
+TRACE("RecordAudio::run 12");
 
 	gui->unlock_window();
 	delete [] max;
 	delete [] over;
-TRACE("RecordAudio::run 100\n");
+TRACE("RecordAudio::run 100");
 }
 
 void RecordAudio::write_buffer(int skip_new)

@@ -283,12 +283,16 @@ double Edit::frames_per_picon()
 
 double Edit::frame_w()
 {
-	return track->from_units(1) * edl->session->sample_rate / edl->local_session->zoom_sample;
+	return track->from_units(1) * 
+		edl->session->sample_rate / 
+		edl->local_session->zoom_sample;
 }
 
 double Edit::picon_w()
 {
-	return (double)edl->local_session->zoom_track * asset->width / asset->height;
+	return (double)edl->local_session->zoom_track * 
+		asset->width / 
+		asset->height;
 }
 
 int Edit::picon_h()

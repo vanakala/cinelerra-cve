@@ -2,8 +2,9 @@
 #include "funcprotos.h"
 #include "interlacemodes.h"
 #include "quicktime.h"
-#include "workarounds.h"
+#include <string.h>
 #include <sys/stat.h>
+#include "workarounds.h"
 
 int quicktime_make_streamable(char *in_path, char *out_path)
 {
@@ -1176,7 +1177,6 @@ int quicktime_dump(quicktime_t *file)
 
 
 
-// ================================== Entry points =============================
 
 int quicktime_check_sig(char *path)
 {

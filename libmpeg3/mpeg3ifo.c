@@ -479,7 +479,9 @@ static void cellplayinfo(ifo_t *ifo, mpeg3ifo_celltable_t *cells)
 	for(j = 0; j < program_chains; j++)
 	{
 // Cell header
+// Program Chain Information
 		pgci(hdr, j, &cell_hdr);
+
 		cell_hdr_start = cell_hdr;
 // Unknown
 		cell_hdr += 2;
@@ -665,7 +667,7 @@ return;
 
 
 
-/* Read the title information from a ifo */
+/* Read the title information from an ifo */
 int mpeg3_read_ifo(mpeg3_t *file, 
 	int read_cells)
 {

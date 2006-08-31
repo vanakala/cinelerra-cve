@@ -143,7 +143,7 @@ void LoadFileThread::run()
 	reel_name = "none";
 	reel_number = 0;
 	overwrite_reel = 0;
-	
+
 	mwindow->interrupt_indexes();
 	mwindow->gui->lock_window("LoadFileThread::run");
 	result = mwindow->load_filenames(&path_list, load_mode, 0, reel_name, reel_number, overwrite_reel);
@@ -153,6 +153,7 @@ void LoadFileThread::run()
 
 
 	mwindow->save_backup();
+
 	mwindow->restart_brender();
 //	mwindow->undo->update_undo(_("load"), LOAD_ALL);
 

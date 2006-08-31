@@ -69,10 +69,6 @@
 #ifdef HAVE_LIBXXF86VM
 #include <X11/extensions/xf86vmode.h>
 #endif
-
-
-
-
 #ifdef HAVE_GL
 typedef void* GLXContext;
 #endif

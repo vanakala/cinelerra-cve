@@ -14,7 +14,6 @@
 #include "sema.h"
 
 
-
 AudioLowLevel::AudioLowLevel(AudioDevice *device)
 {
 	this->device = device;
@@ -82,7 +81,9 @@ int AudioDevice::initialize()
 	arm_buffer_num = 0;
 	is_playing_back = 0;
 	is_recording = 0;
-	last_buffer_size = total_samples = position_correction = 0;
+	last_buffer_size = 0;
+	total_samples = 0;
+	position_correction = 0;
 	last_position = 0;
 	interrupt = 0;
 	lowlevel_in = lowlevel_out = lowlevel_duplex = 0;
@@ -145,7 +146,6 @@ int AudioDevice::open_input(AudioInConfig *config,
 	duplex_init = 0;
 	this->in_config->copy_from(config);
 	this->vconfig->copy_from(vconfig);
-//printf("AudioDevice::open_input %s\n", this->in_config->oss_in_device[0]);
 	in_samplerate = rate;
 	in_samples = samples;
 	create_lowlevel(lowlevel_in, config->driver);
@@ -207,7 +207,7 @@ int AudioDevice::close_all()
 	if(input_buffer) 
 	{
 		delete [] input_buffer; 
-		input_buffer = 0; 
+		input_buffer = 0;
 	}
 	
 	is_recording = 0;
@@ -223,16 +223,19 @@ int AudioDevice::close_all()
 		delete lowlevel_in;
 		lowlevel_in = 0;
 	}
+
 	if(lowlevel_out)
 	{
 		delete lowlevel_out;
 		lowlevel_out = 0;
 	}
+
 	if(lowlevel_duplex)
 	{
 		delete lowlevel_duplex;
 		lowlevel_duplex = 0;
 	}
+
 	return 0;
 }
 
@@ -296,7 +299,8 @@ int AudioDevice::get_irate()
 int AudioDevice::get_orealtime()
 {
 	if(w) return out_realtime;
-	else if(d) return duplex_realtime;
+	else 
+	if(d) return duplex_realtime;
 	return 0;
 }
 

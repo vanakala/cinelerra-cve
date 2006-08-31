@@ -523,6 +523,7 @@ int mpeg3video_get_macroblocks(mpeg3video_t *video, int framenum)
 /* Load every slice into a buffer array */
 	video->total_slice_buffers = 0;
 	current_buffer = 0;
+
 	while(!mpeg3bits_eof(vstream) && 
 		mpeg3bits_showbits32_noptr(vstream) >= MPEG3_SLICE_MIN_START && 
 		mpeg3bits_showbits32_noptr(vstream) <= MPEG3_SLICE_MAX_START &&
@@ -563,6 +564,8 @@ int mpeg3video_get_macroblocks(mpeg3video_t *video, int framenum)
 		current_buffer++;
 		video->total_slice_buffers++;
 	}
+
+
 
 /* Run the slice decoders */
 	if(video->total_slice_buffers > 0)

@@ -311,6 +311,7 @@ public:
 	BC_Pixmap *pankeyframe_pixmap;
 	BC_Pixmap *projectorkeyframe_pixmap;
 	BC_Pixmap *maskkeyframe_pixmap;
+
 	int active;
 // Currently in a drag scroll operation
 	int drag_scroll;
@@ -321,8 +322,6 @@ public:
 	VFrame *temp_picon;
 // Timer for hourglass
 	Timer *resource_timer;
-
-
 
 
 

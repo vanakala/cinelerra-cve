@@ -2,6 +2,7 @@
 #define BCPIXMAP_H
 
 #include <X11/Xlib.h>
+
 #ifdef HAVE_XFT
 #include <X11/Xft/Xft.h>
 #endif

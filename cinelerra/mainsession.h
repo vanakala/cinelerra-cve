@@ -94,14 +94,21 @@ public:
 	int batchrender_x, batchrender_y, batchrender_w, batchrender_h;
 
 // Window positions
+// level window
 	int lwindow_x, lwindow_y, lwindow_w, lwindow_h;
+// main window
 	int mwindow_x, mwindow_y, mwindow_w, mwindow_h;
+// viewer
 	int vwindow_x, vwindow_y, vwindow_w, vwindow_h;
+// compositor
 	int cwindow_x, cwindow_y, cwindow_w, cwindow_h;
 	int ctool_x, ctool_y;
+// asset window
 	int awindow_x, awindow_y, awindow_w, awindow_h;
 	int gwindow_x, gwindow_y;
+// record monitor
 	int rmonitor_x, rmonitor_y, rmonitor_w, rmonitor_h;
+// record status
 	int rwindow_x, rwindow_y, rwindow_w, rwindow_h;
 	int afolders_w;
 	int show_vwindow, show_awindow, show_cwindow, show_gwindow, show_lwindow;

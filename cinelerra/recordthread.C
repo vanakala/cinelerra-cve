@@ -39,13 +39,17 @@ RecordThread::RecordThread(MWindow *mwindow, Record *record)
 
 RecordThread::~RecordThread()
 {
-TRACE("RecordThread::~RecordThread 1");
+SET_TRACE
 	delete record_timer;
+SET_TRACE
 	delete pause_lock;
+SET_TRACE
 	delete startup_lock;
+SET_TRACE
 	delete loop_lock;
+SET_TRACE
 	delete state_lock;
-TRACE("RecordThread::~RecordThread 10");
+SET_TRACE
 }
 
 int RecordThread::create_objects()
@@ -82,15 +86,19 @@ int RecordThread::start_recording(int monitor, int context)
 
 int RecordThread::stop_recording(int resume_monitor)
 {
+SET_TRACE
 // Stop RecordThread while waiting for batch
 	state_lock->lock("RecordThread::stop_recording");
+
 	engine_done = 1;
 
+SET_TRACE
 	this->resume_monitor = resume_monitor;
 // In the monitor engine, stops the engine.
 // In the recording engine, causes the monitor engine not to be restarted.
 // Video thread stops the audio thread itself
 // printf("RecordThread::stop_recording 1\n");
+SET_TRACE
 	if(record_video)
 	{
 		record_video->batch_done = 1;
@@ -105,7 +113,9 @@ int RecordThread::stop_recording(int resume_monitor)
 		record_audio->stop_recording();
 	}
 
+SET_TRACE
 	Thread::join();
+SET_TRACE
 	return 0;
 }
 
@@ -372,12 +382,14 @@ TRACE("RecordThread::run 20");
 
 				if(drivesync) delete drivesync;
 			}
+SET_TRACE
 		}
 		else
 		{
 			state_lock->unlock();
 		}
 
+SET_TRACE
 // Wait for thread to stop before closing devices
 		loop_lock->unlock();
 		if(monitor)
@@ -386,9 +398,12 @@ TRACE("RecordThread::run 20");
 			pause_lock->lock("RecordThread::run");
 			pause_lock->unlock();
 		}
+SET_TRACE
 	}while(!engine_done);
 
+SET_TRACE
 	record->close_input_devices();
+SET_TRACE
 
 // Resume monitoring only if not a monitor ourselves
 	if(!monitor)
@@ -400,5 +415,6 @@ TRACE("RecordThread::run 20");
 	{
 		record->capture_state = IS_DONE;
 	}
+SET_TRACE
 }
 

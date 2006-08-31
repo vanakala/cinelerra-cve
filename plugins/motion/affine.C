@@ -2,6 +2,7 @@
 #include "clip.h"
 #include "vframe.h"
 
+
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>
@@ -280,9 +281,16 @@ float AffineUnit::transform_cubic(float dx,
                                float jp2)
 {
 /* Catmull-Rom - not bad */
-  	float result = ((( ( - jm1 + 3 * j - 3 * jp1 + jp2 ) * dx +
-            	       ( 2 * jm1 - 5 * j + 4 * jp1 - jp2 ) ) * dx +
+  	float result = ((( ( - jm1 + 3.0 * j - 3.0 * jp1 + jp2 ) * dx +
+            	       ( 2.0 * jm1 - 5.0 * j + 4.0 * jp1 - jp2 ) ) * dx +
             	       ( - jm1 + jp1 ) ) * dx + (j + j) ) / 2.0;
+// printf("%f %f %f %f %f\n", 
+// result,
+// jm1,
+// j,
+// jp1,
+// jp2);
+
 
   	return result;
 }
@@ -338,15 +346,6 @@ void AffineUnit::process_package(LoadPackage *package)
 
 
 
-// printf("AffineUnit::process_package 10 %f %f %f %f %f %f %f %f\n", 
-// out_x1,
-// out_y1,
-// out_x2,
-// out_y2,
-// out_x3,
-// out_y3,
-// out_x4,
-// out_y4);
 
 
 
@@ -365,6 +364,15 @@ void AffineUnit::process_package(LoadPackage *package)
 			out_y4,
 			&matrix);
 
+// printf("AffineUnit::process_package 10 %f %f %f %f %f %f %f %f\n", 
+// out_x1,
+// out_y1,
+// out_x2,
+// out_y2,
+// out_x3,
+// out_y3,
+// out_x4,
+// out_y4);
 		int interpolate = 1;
 		int reverse = !server->forward;
 		float tx, ty, tw;
@@ -394,16 +402,15 @@ void AffineUnit::process_package(LoadPackage *package)
 		matrix.transform_point(server->x, server->y + server->h, &dx3, &dy3);
 		matrix.transform_point(server->x + server->w, server->y + server->h, &dx4, &dy4);
 
+//printf("AffineUnit::process_package 1 y1=%d y2=%d\n", pkg->y1, pkg->y2);
+//printf("AffineUnit::process_package 1 %f %f %f %f\n", dy1, dy2, dy3, dy4);
+//printf("AffineUnit::process_package 2 %d ty1=%d %d ty2=%d %f %f\n", tx1, ty1, tx2, ty2, out_x4, out_y4);
+
+
 
 #define ROUND(x) ((int)((x > 0) ? (x) + 0.5 : (x) - 0.5))
 #define MIN4(a,b,c,d) MIN(MIN(MIN(a,b),c),d)
 #define MAX4(a,b,c,d) MAX(MAX(MAX(a,b),c),d)
-#define CUBIC_ROW(in_row, chroma_offset) \
-	transform_cubic(dx, \
-		in_row[col1_offset] - chroma_offset, \
-		in_row[col2_offset] - chroma_offset, \
-		in_row[col3_offset] - chroma_offset, \
-		in_row[col4_offset] - chroma_offset)
 
     	tx1 = ROUND(MIN4(dx1, dx2, dx3, dx4));
     	ty1 = ROUND(MIN4(dy1, dy2, dy3, dy4));
@@ -418,10 +425,13 @@ void AffineUnit::process_package(LoadPackage *package)
 		yinc = m.values[1][0];
 		winc = m.values[2][0];
 
-//printf("AffineUnit::process_package 1 y1=%d y2=%d\n", pkg->y1, pkg->y2);
-//printf("AffineUnit::process_package 1 %f %f %f %f\n", dy1, dy2, dy3, dy4);
-//printf("AffineUnit::process_package 2 %d ty1=%d %d ty2=%d %f %f\n", tx1, ty1, tx2, ty2, out_x4, out_y4);
 
+#define CUBIC_ROW(in_row, chroma_offset) \
+	transform_cubic(dx, \
+		in_row[col1_offset] - chroma_offset, \
+		in_row[col2_offset] - chroma_offset, \
+		in_row[col3_offset] - chroma_offset, \
+		in_row[col4_offset] - chroma_offset)
 
 #define TRANSFORM(components, type, temp_type, chroma_offset, max) \
 { \
@@ -618,13 +628,13 @@ void AffineUnit::process_package(LoadPackage *package)
 		switch(server->input->get_color_model())
 		{
 			case BC_RGB_FLOAT:
-				TRANSFORM(3, float, float, 0x0, 1)
+				TRANSFORM(3, float, float, 0x0, 1.0)
 				break;
 			case BC_RGB888:
 				TRANSFORM(3, unsigned char, int, 0x0, 0xff)
 				break;
 			case BC_RGBA_FLOAT:
-				TRANSFORM(4, float, float, 0x0, 1)
+				TRANSFORM(4, float, float, 0x0, 1.0)
 				break;
 			case BC_RGBA8888:
 				TRANSFORM(4, unsigned char, int, 0x0, 0xff)
@@ -649,7 +659,6 @@ void AffineUnit::process_package(LoadPackage *package)
 				break;
 		}
 
-//printf("AffineUnit::process_package 50\n");
 	}
 	else
 	{
@@ -817,6 +826,8 @@ void AffineEngine::process(VFrame *output,
 	this->x4 = x4;
 	this->y4 = y4;
 	this->forward = forward;
+
+
 	if(!user_viewport)
 	{
 		x = 0;
@@ -875,7 +886,7 @@ void AffineEngine::rotate(VFrame *output,
 	x4 = ((pivot_x - x) - sin(angle4) * radius4) * 100 / w;
 	y4 = ((pivot_y - y) + cos(angle4) * radius4) * 100 / h;
 
-// printf("AffineEngine::process x=%d y=%d w=%d h=%d pivot_x=%d pivot_y=%d angle=%f\n",
+// printf("AffineEngine::rotate x=%d y=%d w=%d h=%d pivot_x=%d pivot_y=%d angle=%f\n",
 // x, y, w, h, 
 // pivot_x, 
 // pivot_y,

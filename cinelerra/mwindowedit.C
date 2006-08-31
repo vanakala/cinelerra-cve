@@ -510,21 +510,21 @@ void MWindow::insert(double position,
 	EDL edl(parent_edl);
 	ArrayList<EDL*> new_edls;
 	uint32_t load_flags = LOAD_ALL;
-SET_TRACE
+
 
 	new_edls.append(&edl);
 	edl.create_objects();
-SET_TRACE
+
 
 
 
 	if(parent_edl) load_flags &= ~LOAD_SESSION;
 	if(!edl.session->autos_follow_edits) load_flags &= ~LOAD_AUTOMATION;
 	if(!edl.session->labels_follow_edits) load_flags &= ~LOAD_TIMEBAR;
-SET_TRACE
+
 	edl.load_xml(plugindb, file, load_flags);
 
-SET_TRACE
+
 
 
 
@@ -665,10 +665,6 @@ void MWindow::insert_effect(char *title,
 
 int MWindow::modify_edithandles()
 {
-
-
-
-
 
 	edl->modify_edithandles(session->drag_start, 
 		session->drag_position, 
@@ -993,7 +989,7 @@ int MWindow::paste(double start,
 // For editing use insertion point position
 void MWindow::paste()
 {
-SET_TRACE
+
 	double start = edl->local_session->get_selectionstart();
 	double end = edl->local_session->get_selectionend();
 	int64_t len = gui->get_clipboard()->clipboard_len(SECONDARY_SELECTION);
@@ -1002,7 +998,7 @@ SET_TRACE
 	{
 		char *string = new char[len + 1];
 
-SET_TRACE
+
 
 		gui->get_clipboard()->from_clipboard(string, 
 			len, 
@@ -1010,22 +1006,22 @@ SET_TRACE
 		FileXML file;
 		file.read_from_string(string);
 
-SET_TRACE
+
 
 
 		clear(0);
-SET_TRACE
+
 		insert(start, 
 			&file, 
 			edl->session->labels_follow_edits, 
 			edl->session->plugins_follow_edits);
-SET_TRACE
+
 		edl->optimize();
-SET_TRACE
+
 
 		delete [] string;
 
-SET_TRACE
+
 
 		save_backup();
 
@@ -1037,7 +1033,7 @@ SET_TRACE
 		awindow->gui->update_assets();
 		sync_parameters(CHANGE_EDL);
 	}
-SET_TRACE
+
 }
 
 int MWindow::paste_assets(double position, Track *dest_track)
@@ -1207,54 +1203,56 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 	int edit_labels,
 	int edit_plugins)
 {
-SET_TRACE
+
 	ArrayList<Track*> destination_tracks;
 	int need_new_tracks = 0;
 
 	if(!new_edls->total) return 0;
+
+
 SET_TRACE
-//printf("MWindow::paste_edls 1\n");
 
 // Delete current project
 	if(load_mode == LOAD_REPLACE ||
 		load_mode == LOAD_REPLACE_CONCATENATE)
 	{
-SET_TRACE
 		edl->save_defaults(defaults);
-SET_TRACE
+
 		hide_plugins();
-SET_TRACE
+
 		delete edl;
-SET_TRACE
+
 		edl = new EDL;
-SET_TRACE
+
 		edl->create_objects();
-SET_TRACE
+
 		edl->copy_session(new_edls->values[0]);
-SET_TRACE
+
 		gui->mainmenu->update_toggles(0);
-SET_TRACE
+
 
 		gui->unlock_window();
-SET_TRACE
+
 		gwindow->gui->update_toggles(1);
-SET_TRACE
+
 		gui->lock_window("MWindow::paste_edls");
-SET_TRACE
+
 
 // Insert labels for certain modes constitutively
 		edit_labels = 1;
 		edit_plugins = 1;
 	}
+
 SET_TRACE
 
 
+SET_TRACE
 // Create new tracks in master EDL
 	if(load_mode == LOAD_REPLACE || 
 		load_mode == LOAD_REPLACE_CONCATENATE ||
 		load_mode == LOAD_NEW_TRACKS)
 	{
-SET_TRACE
+
 		need_new_tracks = 1;
 		for(int i = 0; i < new_edls->total; i++)
 		{
@@ -1281,13 +1279,13 @@ SET_TRACE
 // Base track count on first EDL only for concatenation
 			if(load_mode == LOAD_REPLACE_CONCATENATE) break;
 		}
-SET_TRACE
+
 	}
 	else
 // Recycle existing tracks of master EDL
 	if(load_mode == LOAD_CONCATENATE || load_mode == LOAD_PASTE)
 	{
-SET_TRACE
+
 // The point of this is to shift forward labels after the selection so they can
 // then be shifted back to their original locations without recursively
 // shifting back every paste.
@@ -1313,32 +1311,35 @@ SET_TRACE
 // 						1);
 			}
 		}
-SET_TRACE
+
 	}
 
 
-SET_TRACE
+
 
 	int destination_track = 0;
 	double *paste_position = new double[destination_tracks.total];
 
-SET_TRACE
 
+
+SET_TRACE
 
 
 // Iterate through the edls
 	for(int i = 0; i < new_edls->total; i++)
 	{
-SET_TRACE
+
 		EDL *new_edl = new_edls->values[i];
+SET_TRACE
 		double edl_length = new_edl->local_session->clipboard_length ?
 			new_edl->local_session->clipboard_length :
 			new_edl->tracks->total_length();
 // printf("MWindow::paste_edls 2\n");
 // new_edl->dump();
 
-
 SET_TRACE
+
+
 
 // Resample EDL to master rates
 		new_edl->resample(new_edl->session->sample_rate, 
@@ -1351,6 +1352,7 @@ SET_TRACE
 SET_TRACE
 
 
+
 // Add assets and prepare index files
 		for(Asset *new_asset = new_edl->assets->first;
 			new_asset;
@@ -1358,10 +1360,12 @@ SET_TRACE
 		{
 			mainindexes->add_next_asset(0, new_asset);
 		}
+SET_TRACE
 // Capture index file status from mainindex test
 		edl->update_assets(new_edl);
 
 SET_TRACE
+
 
 // Get starting point of insertion.  Need this to paste labels.
 		switch(load_mode)
@@ -1399,8 +1403,9 @@ SET_TRACE
 		}
 
 
-SET_TRACE
 
+
+SET_TRACE
 
 // Insert edl
 		if(load_mode != LOAD_RESOURCESONLY)
@@ -1473,11 +1478,14 @@ SET_TRACE
 			}
 		}
 
+SET_TRACE
 		if(load_mode == LOAD_PASTE)
 			current_position += edl_length;
 	}
 
-// Move loading of clips and vwindow to the end - this fixes some strange issue, for index not being shown
+
+// Move loading of clips and vwindow to the end - this fixes some
+// strange issue, for index not being shown
 // Assume any paste operation from the same EDL won't contain any clips.
 // If it did it would duplicate every clip here.
 	for(int i = 0; i < new_edls->total; i++)
@@ -1497,25 +1505,25 @@ SET_TRACE
 			edl->vwindow_edl->copy_all(new_edl->vwindow_edl);
 		}
 	}
-SET_TRACE
 
 
 SET_TRACE
 	if(paste_position) delete [] paste_position;
+
 
 SET_TRACE
 // This is already done in load_filenames and everything else that uses paste_edls
 //	update_project(load_mode);
 
 SET_TRACE
-
 // Start examining next batch of index files
 	mainindexes->start_build();
 SET_TRACE
 
+
 // Don't save a backup after loading since the loaded file is on disk already.
 
-SET_TRACE
+
 	return 0;
 }
 

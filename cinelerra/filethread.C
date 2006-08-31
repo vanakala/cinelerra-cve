@@ -8,6 +8,10 @@
 
 #include <unistd.h>
 
+
+
+
+
 FileThread::FileThread(File *file, int do_audio, int do_video)
  : Thread(1, 0, 0)
 {
@@ -20,7 +24,6 @@ FileThread::FileThread(File *file, int do_audio, int do_video)
 FileThread::~FileThread()
 {
 	delete_objects();
-
 
 
 	delete file_lock;
@@ -98,10 +101,8 @@ void FileThread::run()
 				file_lock->lock("FileThread::run 2");
 				if(do_audio)
 				{
-TRACE("FileThread::run 4");
 					result = file->write_samples(audio_buffer[local_buffer], 
 						output_size[local_buffer]);
-TRACE("FileThread::run 5");
 				}
 				else
 				if(do_video)
@@ -335,3 +336,5 @@ int FileThread::swap_buffer()
 	current_buffer++;
 	if(current_buffer >= ring_buffers) current_buffer = 0;
 }
+
+

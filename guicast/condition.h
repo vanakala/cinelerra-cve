@@ -9,6 +9,7 @@ public:
 	Condition(int init_value = 0, char *title = 0);
 	~Condition();
 
+
 // Reset to init_value whether locked or not.
 	void reset();
 // Block if value <= 0, then decrease value

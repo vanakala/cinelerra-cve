@@ -92,8 +92,8 @@ public:
 // Return codec to store on disk if compressed
 	static char* get_vcodec(int driver);
 	static char* drivertostr(int driver);
-// Get the best colormodel for recording given the file format
-// Must be called between open_input and read_buffer
+// Get the best colormodel for recording given the file format.
+// Must be called between open_input and read_buffer.
 	int get_best_colormodel(Asset *asset);
 
 // Specify the audio device opened concurrently with this video device

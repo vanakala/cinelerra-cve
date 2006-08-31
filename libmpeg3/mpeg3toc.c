@@ -73,7 +73,7 @@ int main(int argc, char *argv[])
 
 	if(!dst)
 	{
-		fprintf(stderr, "source path not supplied.\n");
+		fprintf(stderr, "destination path not supplied.\n");
 		exit(1);
 	}
 

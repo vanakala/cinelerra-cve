@@ -115,6 +115,9 @@ public:
 
 // start the thread processing buffers
 	int start_playback();
+
+
+
 // interrupt the playback thread
 	int interrupt_playback();
 	int set_play_dither(int status);

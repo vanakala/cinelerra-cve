@@ -22,6 +22,7 @@
 #include "vplayback.h"
 #include "vwindow.h"
 
+
 #include <string.h>
 
 
@@ -148,9 +149,7 @@ void NewThread::run()
 	}
 	else
 	{
-//printf("NewThread::run 4\n");
 		new_project->create_new_project();
-//printf("NewThread::run 5\n");
 	}
 }
 
@@ -874,30 +873,9 @@ int NewAspectAuto::handle_event()
 }
 
 
-#if 0
 
-NewCloneToggle::NewCloneToggle(MWindow *mwindow, NewWindow *nwindow, int x, int y)
- : BC_Toggle(x, 
- 	y, 
-	mwindow->theme->chain_data, 
-	nwindow->new_thread->auto_sizes,
-	"",
-	0, 
-	0, 
-	0)
-{
-	this->mwindow = mwindow;
-	this->nwindow = nwindow;
-}
 
-int NewCloneToggle::handle_event()
-{
-	nwindow->canvas_w_text->update((int64_t)nwindow->new_edl->session->track_w);
-	nwindow->canvas_h_text->update((int64_t)nwindow->new_edl->session->track_h);
-	nwindow->new_edl->session->output_w = nwindow->new_edl->session->track_w;
-	nwindow->new_edl->session->output_h = nwindow->new_edl->session->track_h;
-	nwindow->new_thread->update_aspect();
-	return 1;
-}
 
-#endif
+
+
+

@@ -162,7 +162,6 @@ int AudioOSS::open_input()
 
 			set_cloexec_flag(dsp_in[i], 1);
 
-//printf("AudioOSS::open_input %d %d %d\n", device->in_samples, device->in_config->oss_in_channels[i], device->in_config->oss_in_bits);
 // For the ice1712 the buffer must be maximum or no space will be allocated.
 			if(device->driver == AUDIO_OSS_ENVY24) buffer_info = 0x7fff000f;
 			if(ioctl(dsp_in[i], SNDCTL_DSP_SETFRAGMENT, &buffer_info)) printf("SNDCTL_DSP_SETFRAGMENT failed.\n");
@@ -185,7 +184,6 @@ int AudioOSS::open_input()
 
 int AudioOSS::open_output()
 {
-//printf("AudioOSS::open_output 1\n");
 	device->out_channels = 0;
 	
 	for(int i = 0; i < MAXDEVICES; i++)

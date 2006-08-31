@@ -120,7 +120,7 @@ public:
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
 
-
+// Constructs odd or even rows from the average of the surrounding rows.
 	void average_rows(int offset, VFrame *frame);
 
 // Last frame requested
@@ -449,6 +449,7 @@ int FrameField::process_buffer(VFrame *frame,
 	last_frame = start_position;
 	return 0;
 }
+
 
 // Averaging 2 pixels
 #define AVERAGE(type, temp_type, components, offset) \

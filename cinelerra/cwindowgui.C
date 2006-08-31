@@ -100,19 +100,14 @@ CWindowGUI::~CWindowGUI()
 
 int CWindowGUI::create_objects()
 {
-SET_TRACE
 	set_icon(mwindow->theme->get_image("cwindow_icon"));
 
 	active = new BC_Pixmap(this, mwindow->theme->get_image("cwindow_active"));
 	inactive = new BC_Pixmap(this, mwindow->theme->get_image("cwindow_inactive"));
 
-SET_TRACE
 	mwindow->theme->get_cwindow_sizes(this, mwindow->session->cwindow_controls);
-SET_TRACE
 	mwindow->theme->draw_cwindow_bg(this);
-SET_TRACE
 	flash();
-SET_TRACE
 
 // Meters required by composite panel
 	meters = new CWindowMeters(mwindow, 
@@ -121,7 +116,6 @@ SET_TRACE
 		mwindow->theme->cmeter_y,
 		mwindow->theme->cmeter_h);
 	meters->create_objects();
-SET_TRACE
 
 
 	composite_panel = new CPanel(mwindow, 
@@ -132,10 +126,8 @@ SET_TRACE
 		mwindow->theme->ccomposite_h);
 	composite_panel->create_objects();
 
-SET_TRACE
 	canvas = new CWindowCanvas(mwindow, this);
 	canvas->create_objects(mwindow->edl);
-SET_TRACE
 
 
 	add_subwindow(timebar = new CTimeBar(mwindow,
@@ -146,7 +138,6 @@ SET_TRACE
 		mwindow->theme->ctimebar_h));
 	timebar->create_objects();
 
-SET_TRACE
 	add_subwindow(slider = new CWindowSlider(mwindow, 
 		cwindow, 
 		mwindow->theme->cslider_x,
@@ -160,13 +151,9 @@ SET_TRACE
 	transport->create_objects();
 	transport->set_slider(slider);
 
-SET_TRACE
 	edit_panel = new CWindowEditing(mwindow, cwindow);
-SET_TRACE
 	edit_panel->set_meters(meters);
-SET_TRACE
 	edit_panel->create_objects();
-SET_TRACE
 
 // 	add_subwindow(clock = new MainClock(mwindow, 
 // 		mwindow->theme->ctime_x, 
@@ -197,7 +184,6 @@ SET_TRACE
 
 	draw_status();
 
-SET_TRACE
 	return 0;
 }
 
@@ -267,13 +253,18 @@ void CWindowGUI::draw_status()
 	if(canvas->canvas && 
 		canvas->canvas->get_video_on() ||
 		canvas->is_processing)
+	{
 		draw_pixmap(active, 
 			mwindow->theme->cstatus_x, 
 			mwindow->theme->cstatus_y);
+	}
 	else
+	{
 		draw_pixmap(inactive, 
 			mwindow->theme->cstatus_x, 
 			mwindow->theme->cstatus_y);
+	}
+	
 	flash(mwindow->theme->cstatus_x,
 		mwindow->theme->cstatus_y,
 		active->get_w(),
@@ -776,14 +767,11 @@ void CWindowCanvas::draw_refresh()
 {
 	if(!canvas->video_is_on())
 	{
-//printf("CWindowCanvas::draw_refresh 1 %f\n", mwindow->edl->session->cwindow_zoom);
 		canvas->clear_box(0, 0, canvas->get_w(), canvas->get_h());
-//printf("CWindowCanvas::draw_refresh 2\n");
 
 		if(refresh_frame)
 		{
 			int in_x, in_y, in_w, in_h, out_x, out_y, out_w, out_h;
-//printf("CWindowCanvas::draw_refresh 3 %d\n", refresh_frame->get_color_model());
 			get_transfers(mwindow->edl, 
 				in_x, 
 				in_y, 
@@ -794,13 +782,10 @@ void CWindowCanvas::draw_refresh()
 				out_w, 
 				out_h);
 
-
 // printf("CWindowCanvas::draw_refresh %d %d %d %d -> %d %d %d %d\n", 
 // in_x, in_y, in_w, in_h, out_x, out_y, out_w, out_h);
-//canvas->clear_box(0, 0, canvas->get_w(), canvas->get_h());
 
 
-//printf("CWindowCanvas::draw_refresh 5\n");
 			if(out_w > 0 && out_h > 0 && in_w > 0 && in_h > 0)
 				canvas->draw_vframe(refresh_frame,
 						out_x, 
@@ -812,16 +797,12 @@ void CWindowCanvas::draw_refresh()
 						in_w, 
 						in_h,
 						0);
-//printf("CWindowCanvas::draw_refresh 6\n");
 		}
 		else
 		{
-//printf("CWindowCanvas::draw_refresh 7\n");
 			canvas->clear_box(0, 0, canvas->get_w(), canvas->get_h());
-//printf("CWindowCanvas::draw_refresh 8\n");
 		}
 
-//printf("CWindowCanvas::draw_refresh 9\n");
 		draw_overlays();
 		canvas->flash();
 		canvas->flush();
@@ -1484,9 +1465,7 @@ int CWindowCanvas::do_eyedrop(int &rerender, int button_press)
 
 	if(gui->current_operation == CWINDOW_EYEDROP)
 	{
-SET_TRACE
 		canvas_to_output(mwindow->edl, 0, cursor_x, cursor_y);
-SET_TRACE
 
 // Get color out of frame.
 // Doesn't work during playback because that bypasses the refresh frame.
@@ -1523,7 +1502,6 @@ SET_TRACE
 	} \
 }
 
-SET_TRACE
 			switch(refresh_frame->get_color_model())
 			{
 				case BC_YUV888:
@@ -1551,7 +1529,6 @@ SET_TRACE
 					GET_COLOR(float, 4, 1.0, 0);
 					break;
 			}
-SET_TRACE
 		}
 		else
 		{
@@ -1560,12 +1537,10 @@ SET_TRACE
 			mwindow->edl->local_session->blue = 0;
 		}
 
-SET_TRACE
 
 		gui->update_tool();		
 
 
-SET_TRACE
 
 		result = 1;
 // Can't rerender since the color value is from the output of any effect it
@@ -1578,7 +1553,6 @@ SET_TRACE
 
 void CWindowCanvas::draw_overlays()
 {
-//printf("CWindowCanvas::draw_overlays 1\n");
 	if(mwindow->edl->session->safe_regions)
 	{
 		draw_safe_regions();

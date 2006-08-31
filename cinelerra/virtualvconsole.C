@@ -25,8 +25,12 @@ VirtualVConsole::VirtualVConsole(RenderEngine *renderengine, VRender *vrender)
 
 VirtualVConsole::~VirtualVConsole()
 {
-	if(output_temp) delete output_temp;
+	if(output_temp)
+	{
+		delete output_temp;
+	}
 }
+
 
 void VirtualVConsole::get_playable_tracks()
 {
@@ -57,10 +61,11 @@ int VirtualVConsole::process_buffer(int64_t input_position)
 
 
 
-SET_TRACE
+
+	if(debug_tree) 
+		printf("VirtualVConsole::process_buffer begin\n");
 
 
-	if(debug_tree) printf("VirtualVConsole::process_buffer begin\n");
 // clear output buffers
 	for(i = 0; i < MAX_CHANNELS; i++)
 	{
@@ -68,11 +73,9 @@ SET_TRACE
 			vrender->video_out[i]->clear_frame();
 	}
 
-SET_TRACE
 
 // Reset plugin rendering status
 	reset_attachments();
-SET_TRACE
 
 // Render exit nodes from bottom to top
 	for(int i = exit_nodes.total - 1; i >= 0; i--)
@@ -82,6 +85,11 @@ SET_TRACE
 
 // Create temporary output to match the track size, which is acceptable since
 // most projects don't have variable track sizes.
+
+
+
+
+
 		if(output_temp && 
 			(output_temp->get_w() != track->track_w ||
 			output_temp->get_h() != track->track_h))
@@ -89,6 +97,7 @@ SET_TRACE
 			delete output_temp;
 			output_temp = 0;
 		}
+
 
 		if(!output_temp)
 		{
@@ -104,7 +113,7 @@ SET_TRACE
 			input_position + track->nudge,
 			renderengine->edl->session->frame_rate);
 	}
-SET_TRACE
+//printf("VirtualVConsole::process_buffer timer=%lld\n", timer.get_difference());
 
 	if(debug_tree) printf("VirtualVConsole::process_buffer end\n");
 	return result;

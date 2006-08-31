@@ -1,4 +1,5 @@
 #include "batch.h"
+#include "bcsignals.h"
 #include "channel.h"
 #include "channeldb.h"
 #include "channeledit.h"
@@ -38,7 +39,6 @@ ChannelEditThread::ChannelEditThread(MWindow *mwindow,
 }
 ChannelEditThread::~ChannelEditThread()
 {
-	printf("ST: %i\n", scan_thread);
 	if(channel_picker->get_subwindow())
 		channel_picker->get_subwindow()->unlock_window();
 	delete scan_thread;
@@ -964,9 +964,13 @@ int ChannelEditEditThread::set_freqtable(int value)
 
 void ChannelEditEditThread::run()
 {
+SET_TRACE
 	ChannelEditEditWindow edit_window(this, window, channel_picker);
+SET_TRACE
 	edit_window.create_objects(&new_channel);
+SET_TRACE
 	this->edit_window = &edit_window;
+SET_TRACE
 	int result = edit_window.run_window();
 	this->edit_window = 0;
 
@@ -1020,6 +1024,7 @@ int ChannelEditEditWindow::create_objects(Channel *channel)
 	Channel *channel_usage = channel_picker->get_channel_usage();
 	title_text = 0;
 
+SET_TRACE
 	int x = 10, y = 10;
 	if(!channel_usage ||
 		(!channel_usage->use_frequency && 
@@ -1039,6 +1044,7 @@ int ChannelEditEditWindow::create_objects(Channel *channel)
 
 	if(channel_usage && channel_usage->use_frequency)
 	{
+SET_TRACE
 		add_subwindow(new BC_Title(x, y, _("Channel:")));
 		y += 20;
 		add_subwindow(thread->source_text = new ChannelEditEditSource(x, y, thread));
@@ -1055,6 +1061,7 @@ int ChannelEditEditWindow::create_objects(Channel *channel)
 		y += 30;
 	}
 
+SET_TRACE
 	if(channel_usage && channel_usage->use_fine)
 	{
 		add_subwindow(new BC_Title(x, y, _("Fine:")));
@@ -1062,6 +1069,7 @@ int ChannelEditEditWindow::create_objects(Channel *channel)
 		y += 30;
 	}
 
+SET_TRACE
 	if(channel_usage && channel_usage->use_norm)
 	{
 		add_subwindow(new BC_Title(x, y, _("Norm:")));
@@ -1073,6 +1081,7 @@ int ChannelEditEditWindow::create_objects(Channel *channel)
 		norm->add_items();
 		y += 30;
 	}
+SET_TRACE
 
 	if(channel_usage && channel_usage->use_input)
 	{
@@ -1086,10 +1095,12 @@ int ChannelEditEditWindow::create_objects(Channel *channel)
 		y += 30;
 	}
 
+SET_TRACE
 	add_subwindow(new BC_OKButton(this));
 	x += 200;
 	add_subwindow(new BC_CancelButton(this));
 	show_window();
+SET_TRACE
 	return 0;
 }
 
@@ -1377,13 +1388,20 @@ int ChannelEditPictureThread::edit_picture()
 
 void ChannelEditPictureThread::run()
 {
+SET_TRACE
 	ChannelEditPictureWindow edit_window(this, 
 		channel_picker);
+SET_TRACE
 	edit_window.create_objects();
+SET_TRACE
 	this->edit_window = &edit_window;
+SET_TRACE
 	int result = edit_window.run_window();
+SET_TRACE
 	this->edit_window = 0;
+SET_TRACE
 	completion->unlock();
+SET_TRACE
 	in_progress = 0;
 }
 
@@ -1450,7 +1468,9 @@ int ChannelEditPictureWindow::create_objects()
 	int pad = BC_Pot::calculate_h();
 #define SWAP_X x1 ^= x2; x2 ^= x1; x1 ^= x2;
 
+SET_TRACE
 	PictureConfig *picture_usage = channel_picker->get_picture_usage();
+SET_TRACE
 
 	if(!picture_usage ||
 		(!picture_usage->use_brightness &&
@@ -1464,6 +1484,7 @@ int ChannelEditPictureWindow::create_objects()
 		y += 50;
 	}
 
+SET_TRACE
 	if(picture_usage && picture_usage->use_brightness)
 	{
 		add_subwindow(new BC_Title(x, y + 10, _("Brightness:")));
@@ -1473,6 +1494,7 @@ int ChannelEditPictureWindow::create_objects()
 		
 	}
 
+SET_TRACE
 	if(picture_usage && picture_usage->use_contrast)
 	{
 		add_subwindow(new BC_Title(x, y + 10, _("Contrast:")));
@@ -1481,6 +1503,7 @@ int ChannelEditPictureWindow::create_objects()
 		SWAP_X
 	}
 
+SET_TRACE
 	if(picture_usage && picture_usage->use_color)
 	{
 		add_subwindow(new BC_Title(x, y + 10, _("Color:")));
@@ -1489,6 +1512,7 @@ int ChannelEditPictureWindow::create_objects()
 		SWAP_X
 	}
 
+SET_TRACE
 	if(picture_usage && picture_usage->use_hue)
 	{
 		add_subwindow(new BC_Title(x, y + 10, _("Hue:")));
@@ -1497,6 +1521,7 @@ int ChannelEditPictureWindow::create_objects()
 		SWAP_X
 	}
 
+SET_TRACE
 	if(picture_usage && picture_usage->use_whiteness)
 	{
 		add_subwindow(new BC_Title(x, y + 10, _("Whiteness:")));
@@ -1505,6 +1530,7 @@ int ChannelEditPictureWindow::create_objects()
 		SWAP_X
 	}
 
+SET_TRACE
 	for(int i = 0; i < channel_picker->get_controls(); i++)
 	{
 		add_subwindow(new BC_Title(x, 
@@ -1518,6 +1544,7 @@ int ChannelEditPictureWindow::create_objects()
 		SWAP_X
 	}
 
+SET_TRACE
 
 	y += pad;
 	add_subwindow(new BC_OKButton(this));

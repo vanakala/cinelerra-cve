@@ -117,7 +117,9 @@ Record::Record(MWindow *mwindow, RecordMenuItem *menu_item)
 	file = 0;
 	editing_batch = 0;
 	current_batch = 0;
+SET_TRACE
 	picture = new PictureConfig(mwindow);
+SET_TRACE
 	channeldb = new ChannelDB;
 	master_channel = new Channel;
 	window_lock = new Mutex("Record::window_lock");
@@ -159,6 +161,8 @@ int Record::load_defaults()
 	default_asset->layers = 1;
 
 
+
+// Fix encoding parameters depending on driver.
 // These are locked by a specific driver.
 	if(mwindow->edl->session->vconfig_in->driver == CAPTURE_LML ||
 		mwindow->edl->session->vconfig_in->driver == CAPTURE_BUZ ||
@@ -210,7 +214,9 @@ int Record::load_defaults()
 	video_y = defaults->get("RECORD_VIDEO_Y", 0);
 	video_zoom = defaults->get("RECORD_VIDEO_Z", (float)1);
 
+SET_TRACE
 	picture->load_defaults();
+SET_TRACE
 
 	reverse_interlace = defaults->get("REVERSE_INTERLACE", 0);
 	for(int i = 0; i < MAXCHANNELS; i++) 
@@ -277,7 +283,9 @@ int Record::save_defaults()
 	defaults->update("RECORD_VIDEO_Y", video_y);
 	defaults->update("RECORD_VIDEO_Z", video_zoom);
 	
+SET_TRACE
 	picture->save_defaults();
+SET_TRACE
 	defaults->update("REVERSE_INTERLACE", reverse_interlace);
 	for(int i = 0; i < MAXCHANNELS; i++)
 	{
@@ -417,49 +425,42 @@ void Record::run()
 		edl->session->aspect_w = mwindow->edl->session->aspect_w;
 		edl->session->aspect_h = mwindow->edl->session->aspect_h;
 
+SET_TRACE
 		window_lock->lock("Record::run 3");
 SET_TRACE
 		record_gui = new RecordGUI(mwindow, this);
-SET_TRACE
 		record_gui->load_defaults();
-SET_TRACE
 		record_gui->create_objects();
-SET_TRACE
 
+SET_TRACE
 		record_monitor = new RecordMonitor(mwindow, this);
 SET_TRACE
 		record_monitor->create_objects();
 SET_TRACE
 		record_gui->update_batch_sources();
-SET_TRACE
 
+SET_TRACE
 		menu_item->current_state = RECORD_CAPTURING;
-SET_TRACE
 		record_engine = new RecordThread(mwindow, this);
-SET_TRACE
 		record_engine->create_objects();
-SET_TRACE
 		monitor_engine = new RecordThread(mwindow, this);
-SET_TRACE
 		monitor_engine->create_objects();
-SET_TRACE
 
+SET_TRACE
 
 		record_gui->show_window();
-SET_TRACE
 		record_gui->flush();
-SET_TRACE
 		if(video_window_open)
 		{
 			record_monitor->window->show_window();
 			record_monitor->window->raise_window();
 			record_monitor->window->flush();
 		}
-SET_TRACE
 
+SET_TRACE
 		start_monitor();
-SET_TRACE
 
+SET_TRACE
 		window_lock->unlock();
 
 		result = record_gui->run_window();
@@ -470,25 +471,33 @@ SET_TRACE
 		else
 			monitor_engine->record_audio->batch_done = 1;
 
-		stop_operation(0);;
+SET_TRACE
+		stop_operation(0);
 
 		close_output_file();
+SET_TRACE
 
 		window_lock->lock("Record::run 4");
+
+SET_TRACE
 		delete record_monitor;
 		record_monitor = 0;
+SET_TRACE
 
+
+
+SET_TRACE
 		record_gui->save_defaults();
 
-TRACE("Record::run 1");
+SET_TRACE
 		delete record_gui;
 		record_gui = 0;
 		window_lock->unlock();
 
-TRACE("Record::run 2");
+SET_TRACE
 		delete edl;
 
-TRACE("Record::run 3");
+SET_TRACE
 	}
 
 	menu_item->current_state = RECORD_NOTHING;
@@ -689,7 +698,6 @@ int Record::open_output_file()
 			1, 
 			default_asset->sample_rate, 
 			default_asset->frame_rate);
-//printf("Record::open_output_file 1\n");
 
 		if(result)
 		{
@@ -707,9 +715,7 @@ int Record::open_output_file()
 			record_gui->update_batches();
 			record_gui->unlock_window();
 		}
-//printf("Record::open_output_file 1\n");
 	}
-//printf("Record::open_output_file 2\n");
 	return result;
 }
 
@@ -982,6 +988,7 @@ int Record::open_input_devices(int duplex, int context)
 	int video_opened = 0;
 	AudioInConfig *aconfig_in = mwindow->edl->session->aconfig_in;
 
+
 // Create devices
 	if(default_asset->audio_data && context != CONTEXT_SINGLEFRAME)
 		adevice = new AudioDevice;
@@ -1187,10 +1194,12 @@ int Record::stop_operation(int resume_monitor)
 
 // Remember to change meters if you change this.
 // Return the size of the fragments to read from the audio device.
-int Record::get_in_length() 
+int Record::get_in_length()
 {
 	int64_t fragment_size = 1;
-	while(fragment_size < default_asset->sample_rate / mwindow->edl->session->record_speed) fragment_size *= 2;
+	while(fragment_size < default_asset->sample_rate / 
+		mwindow->edl->session->record_speed)
+		fragment_size *= 2;
 	fragment_size /= 2;
 	return fragment_size;
 }

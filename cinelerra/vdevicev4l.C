@@ -6,6 +6,7 @@
 
 
 #include "assets.h"
+#include "bcsignals.h"
 #include "channel.h"
 #include "chantables.h"
 #include "clip.h"
@@ -103,7 +104,7 @@ int VDeviceV4L::v4l_init()
 	input_fd = open(device->in_config->v4l_in_device, O_RDWR);
 
 	if(input_fd < 0)
-		perror("VDeviceV4L::init_video4linux");
+		perror("VDeviceV4L::v4l_init");
 	else
 	{
 		set_cloexec_flag(input_fd, 1);
@@ -517,6 +518,7 @@ int VDeviceV4L::read_buffer(VFrame *frame)
 {
 	int result = 0;
 
+SET_TRACE
 	if(shared_memory)
 	{
 // Read the current frame
@@ -533,6 +535,7 @@ int VDeviceV4L::read_buffer(VFrame *frame)
 		read(input_fd, capture_buffer, capture_params.size);
 	}
 	got_first_frame = 1;
+SET_TRACE
 
 	return 0;
 }

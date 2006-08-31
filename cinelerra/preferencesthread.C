@@ -1,6 +1,7 @@
 #include "aboutprefs.h"
 #include "asset.h"
 #include "audiodevice.inc"
+#include "bcsignals.h"
 #include "cache.h"
 #include "cplayback.h"
 #include "cwindow.h"
@@ -159,7 +160,7 @@ int PreferencesThread::apply_settings()
 	AudioOutConfig *aconfig = mwindow->edl->session->playback_config->aconfig;
 	VideoOutConfig *vconfig = mwindow->edl->session->playback_config->vconfig;
 
-
+	
 	rerender = 
 		(edl->session->playback_preload != mwindow->edl->session->playback_preload) ||
 		(edl->session->interpolation_type != mwindow->edl->session->interpolation_type) ||
@@ -232,10 +233,14 @@ int PreferencesThread::apply_settings()
 
 	if(rerender)
 	{
+//printf("PreferencesThread::apply_settings 1\n");
+// This doesn't stop and restart, only reloads the assets before
+// the next play command.
 		mwindow->cwindow->playback_engine->que->send_command(CURRENT_FRAME,
 			CHANGE_ALL,
 			mwindow->edl,
 			1);
+//printf("PreferencesThread::apply_settings 10\n");
 	}
 
 	if(redraw_times || redraw_overlays)
@@ -263,9 +268,6 @@ char* PreferencesThread::category_to_text(int category)
 		case 3:
 			return _("Interface");
 			break;
-// 		case 4:
-// 			return _("Plugin Set");
-// 			break;
 		case 4:
 			return _("About");
 			break;
@@ -275,6 +277,7 @@ char* PreferencesThread::category_to_text(int category)
 
 int PreferencesThread::text_to_category(char *category)
 {
+SET_TRACE
 	int min_result = -1, result, result_num = 0;
 	for(int i = 0; i < CATEGORIES; i++)
 	{
@@ -285,6 +288,7 @@ int PreferencesThread::text_to_category(char *category)
 			result_num = i;
 		}
 	}
+SET_TRACE
 	return result_num;
 }
 
@@ -397,6 +401,7 @@ int PreferencesWindow::set_current_dialog(int number)
 			add_subwindow(dialog = new AboutPrefs(mwindow, this));
 			break;
 	}
+
 	if(dialog)
 	{
 		dialog->draw_top_background(this, 0, 0, dialog->get_w(), dialog->get_h());
@@ -526,6 +531,8 @@ PreferencesCategory::~PreferencesCategory()
 
 int PreferencesCategory::handle_event()
 {
+SET_TRACE
 	thread->window->set_current_dialog(thread->text_to_category(get_text()));
+SET_TRACE
 	return 1;
 }

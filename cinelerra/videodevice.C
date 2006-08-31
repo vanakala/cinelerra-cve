@@ -301,7 +301,6 @@ int VideoDevice::close_all()
 {
 	int i;
 
-//printf("VideoDevice::close_all 1\n");
 	if(w)
 	{
 		if(output_base)
@@ -311,7 +310,6 @@ int VideoDevice::close_all()
 		}
 	}
 
-//printf("VideoDevice::close_all 2\n");
 	if(r && capturing)
 	{
 		capturing = 0;
@@ -319,6 +317,7 @@ int VideoDevice::close_all()
 		{
 			input_base->close_all();
 			delete input_base;
+
 			input_base = 0;
 		}
 
@@ -329,13 +328,11 @@ int VideoDevice::close_all()
 		}
 	}
 
-//printf("VideoDevice::close_all 3\n");
+
 	input_sources.remove_all_objects();
 
-//printf("VideoDevice::close_all 4\n");
 	initialize();
 
-//printf("VideoDevice::close_all 5\n");
 	return 0;
 }
 

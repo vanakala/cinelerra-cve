@@ -438,6 +438,7 @@ void BC_Signals::set_buffer(int size, void *ptr, char* location)
 	if(!global_signals) return;
 	if(!trace_memory) return;
 
+//printf("BC_Signals::set_buffer %p %s\n", ptr, location);
 	pthread_mutex_lock(lock);
 	append_table(&memory_table, new_bc_buffertrace(size, ptr, location));
 	pthread_mutex_unlock(lock);
@@ -447,18 +448,21 @@ int BC_Signals::unset_buffer(void *ptr)
 {
 	if(!global_signals) return 0;
 	if(!trace_memory) return 0;
+
 	pthread_mutex_lock(lock);
 	for(int i = 0; i < memory_table.size; i++)
 	{
 		if(((bc_buffertrace_t*)memory_table.values[i])->ptr == ptr)
 		{
+//printf("BC_Signals::unset_buffer %p\n", ptr);
 			clear_table_entry(&memory_table, i, 1);
 			pthread_mutex_unlock(lock);
 			return 0;
 		}
 	}
+
 	pthread_mutex_unlock(lock);
-	fprintf(stderr, "BC_Signals::unset_buffer buffer %p not found.\n", ptr);
+//	fprintf(stderr, "BC_Signals::unset_buffer buffer %p not found.\n", ptr);
 	return 1;
 }
 

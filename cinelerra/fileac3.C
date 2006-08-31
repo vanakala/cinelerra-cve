@@ -132,6 +132,21 @@ int FileAC3::close_file()
 	FileBase::close_file();
 }
 
+// Channel conversion matrices because ffmpeg encodes a
+// different channel order than liba52 decodes.
+// Each row is an output channel.
+// Each column is an input channel.
+// static int channels5[] = 
+// {
+// 	{ }
+// };
+// 
+// static int channels6[] = 
+// {
+// 	{ }
+// };
+
+
 int FileAC3::write_samples(double **buffer, int64_t len)
 {
 // Convert buffer to encoder format

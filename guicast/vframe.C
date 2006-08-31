@@ -36,11 +36,8 @@ public:
 
 VFrame::VFrame(unsigned char *png_data)
 {
-//printf("VFrame::VFrame 1\n");
 	reset_parameters();
-//printf("VFrame::VFrame 1\n");
 	read_png(png_data);
-//printf("VFrame::VFrame 2\n");
 }
 
 VFrame::VFrame(const PngData& png_data)
@@ -57,7 +54,6 @@ VFrame::VFrame(VFrame &frame)
 	reset_parameters();
 	allocate_data(0, 0, 0, 0, frame.w, frame.h, frame.color_model, frame.bytes_per_line);
 	memcpy(data, frame.data, bytes_per_line * h);
-//	counter.up();
 }
 
 VFrame::VFrame(unsigned char *data, 
@@ -68,7 +64,6 @@ VFrame::VFrame(unsigned char *data,
 {
 	reset_parameters();
 	allocate_data(data, 0, 0, 0, w, h, color_model, bytes_per_line);
-//	counter.up();
 }
 
 VFrame::VFrame(unsigned char *data, 
@@ -89,14 +84,12 @@ VFrame::VFrame(unsigned char *data,
 		h, 
 		color_model, 
 		bytes_per_line);
-//	counter.up();
 }
 
 VFrame::VFrame()
 {
 	reset_parameters();
 	this->color_model = BC_COMPRESSED;
-//	counter.up();
 }
 
 
@@ -112,7 +105,6 @@ VFrame::VFrame()
 VFrame::~VFrame()
 {
 	clear_objects();
-//	counter.down();
 }
 
 int VFrame::equivalent(VFrame *src)
@@ -167,7 +159,6 @@ int VFrame::reset_parameters()
 int VFrame::clear_objects()
 {
 // Delete data
-//printf("VFrame::clear_objects 1 %p %d\n", this, shared);
 	if(!shared)
 	{
 int size = calculate_data_size(this->w, this->h, this->bytes_per_line, this->color_model);
@@ -188,6 +179,7 @@ UNBUFFER(data);
 			delete [] rows;
 			break;
 	}
+
 
 	return 0;
 }
@@ -315,6 +307,7 @@ int VFrame::allocate_data(unsigned char *data,
 			this->color_model);
 		this->data = new unsigned char[size];
 
+// Memory check
 if(size > 2560 * 1920)
 BUFFER(size, this->data, "VFrame::allocate_data");
 

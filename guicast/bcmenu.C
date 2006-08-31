@@ -232,14 +232,14 @@ int BC_Menu::draw_title()
 {
 	BC_Resources *resources = top_level->get_resources();
 	int text_offset = 0;
-SET_TRACE
+
 	if(active && menu_popup)
 	{
 // Menu is pulled down and title is recessed.
-SET_TRACE
+
 		if(menu_bar->menu_title_bg[0])
 		{
-SET_TRACE
+
 			menu_bar->draw_9segment(x, 0, w, menu_bar->get_h(), menu_bar->menu_title_bg[2]);
 		}
 		else
@@ -258,10 +258,10 @@ SET_TRACE
 	{
 		if(highlighted)
 		{
-SET_TRACE
+
 			if(menu_bar->menu_title_bg[0])
 			{
-SET_TRACE
+
 				menu_bar->draw_9segment(x, 0, w, menu_bar->get_h(), menu_bar->menu_title_bg[1]);
 			}
 			else
@@ -272,10 +272,10 @@ SET_TRACE
 		}
 		else
 		{
-SET_TRACE
+
 			if(menu_bar->menu_title_bg[0])
 			{
-SET_TRACE
+
 				menu_bar->draw_9segment(x, 0, w, menu_bar->get_h(), menu_bar->menu_title_bg[0]);
 			}
 			else
@@ -291,7 +291,7 @@ SET_TRACE
 		h - menu_bar->get_text_descent(MEDIUMFONT) + text_offset, 
 		text);
 	menu_bar->flash();
-SET_TRACE
+
 	return 0;
 }
 

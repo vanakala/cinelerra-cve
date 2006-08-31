@@ -195,7 +195,6 @@ ChannelPicker::~ChannelPicker()
 
 void ChannelPicker::update_channel_list()
 {
-//printf("ChannelPicker::update_channel_list 1\n");
 	channel_listitems.remove_all_objects();
 	for(int i = 0; i < channeldb->size(); i++)
 	{
@@ -204,7 +203,6 @@ void ChannelPicker::update_channel_list()
 
 	if(channel_text)
 		channel_text->update_list(&channel_listitems);
-//printf("ChannelPicker::update_channel_list 2\n");
 }
 
 

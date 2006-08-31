@@ -135,9 +135,10 @@ public:
    int video1394_talk_wait_buffer;
    int video1394_listen_poll_buffer;
 
-	// To keep track of the delay between putting the audio in the buffer
-	// and when it is actually presented on the DV device
+// To keep track of the delay between putting the audio in the buffer
+// and when it is actually presented on the DV device
 	long *position_presented;
+
 };
 
 

@@ -241,7 +241,6 @@ int CompressorEffect::process_buffer(int64_t size,
 		int64_t start_position,
 		int sample_rate)
 {
-
 	load_configuration();
 
 	int reaction_samples = (int)(config.reaction_len * sample_rate + 0.5);
@@ -1103,10 +1102,8 @@ CompressorReaction::CompressorReaction(CompressorEffect *plugin, int x, int y)
 
 int CompressorReaction::handle_event()
 {
-//printf("CompressorReaction::handle_event 1\n");
 	plugin->config.reaction_len = atof(get_text());
 	plugin->send_configure_change();
-//printf("CompressorReaction::handle_event 2\n");
 	return 1;
 }
 

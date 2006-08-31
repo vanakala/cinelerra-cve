@@ -899,6 +899,7 @@ typedef struct
 	double frame_rate;
 	float aspect_ratio;
 	mpeg3_demuxer_t *demuxer;
+/* Video decoding object */
 	mpeg3video_t *video;
 	int current_position;  /* Number of next frame to be played */
 	int total_frames;     /* Total frames in the file */

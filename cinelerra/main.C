@@ -177,7 +177,7 @@ int main(int argc, char *argv[])
 		PROGRAM_NAME " " 
 		CINELERRA_VERSION " " 
 		BUILDDATE 
-		" (C)2005 Heroine Virtual Ltd.\n\n"
+		" (C)2006 Heroine Virtual Ltd.\n\n"
 
 PROGRAM_NAME " is free software, covered by the GNU General Public License,\n"
 "and you are welcome to change it and/or distribute copies of it under\n"
@@ -256,7 +256,7 @@ PROGRAM_NAME " is free software, covered by the GNU General Public License,\n"
 // load the initial files on seperate tracks
 			if(filenames.total)
 			{
-				mwindow.gui->lock_window();
+				mwindow.gui->lock_window("main");
 				mwindow.load_filenames(&filenames, LOAD_REPLACE);
 				if(filenames.total == 1)
 					mwindow.gui->mainmenu->add_load(filenames.values[0]);

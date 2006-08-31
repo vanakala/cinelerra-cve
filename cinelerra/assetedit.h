@@ -66,7 +66,13 @@ public:
 class AssetEditPath : public BrowseButton
 {
 public:
-	AssetEditPath(MWindow *mwindow, AssetEditWindow *fwindow, BC_TextBox *textbox, int y, char *text, char *window_title = "2000: Path", char *window_caption = _("Select a file"));
+	AssetEditPath(MWindow *mwindow, 
+		AssetEditWindow *fwindow, 
+		BC_TextBox *textbox, 
+		int y, 
+		char *text, 
+		char *window_title = "2000: Path", 
+		char *window_caption = _("Select a file"));
 	~AssetEditPath();
 	
 	AssetEditWindow *fwindow;

@@ -23,7 +23,8 @@
 #define FILE_JPEG 	    		5
 #define FILE_JPEG_LIST  		8
 #define FILE_MOV  	    		3
-#define FILE_MPEG       	  	15    // Libmpeg3 decoding only
+// Libmpeg3 decoding and transport stream capture only
+#define FILE_MPEG       	  	15    
 #define FILE_PCM  	    		1
 #define FILE_PLUGIN     	  	0x8000
 #define FILE_PNG  	    		4

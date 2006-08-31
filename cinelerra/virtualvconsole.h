@@ -33,7 +33,6 @@ public:
 	int64_t absolute_frame;        
 
 	VFrame *output_temp;
-
 	VRender *vrender;
 };
 

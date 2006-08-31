@@ -201,10 +201,10 @@ int FileOGG::open_file(int rd, int wr)
 		tf->videosync = 0;
 	}
 
-TRACE("FileOGG::open_file 10")
+
 	if(wr)
 	{
-TRACE("FileOGG::open_file 20")
+
 
 		if((stream = fopen(asset->path, "w+b")) == 0)
 		{
@@ -424,16 +424,18 @@ TRACE("FileOGG::open_file 20")
 	} else
 	if (rd)
 	{
-		TRACE("FileOGG::open_file 30")
+
 		if((stream = fopen(asset->path, "rb")) == 0)
 		{
 			perror(_("FileOGG::open_file rdwr"));
 			return 1;
 		}
+
 		/* get file length */
 		struct stat file_stat;
 		stat(asset->path, &file_stat);
 		file_length = file_stat.st_size;
+
 		/* start up Ogg stream synchronization layer */
 		/* oy is used just here to parse header, we use separate syncs for video and audio*/
 		sync_window_t oy;
@@ -441,15 +443,17 @@ TRACE("FileOGG::open_file 20")
 		// make sure we init the position structures to zero
 		read_buffer_at(stream, &oy, READ_SIZE, 0);
 
+
 		/* init supporting Vorbis structures needed in header parsing */
 		vorbis_info_init(&tf->vi);
 		vorbis_comment_init(&tf->vc);
+
 
 		/* init supporting Theora structures needed in header parsing */
 		theora_comment_init(&tf->tc);
 		theora_info_init(&tf->ti);
 
-		TRACE("FileOGG::open_file 40")
+
 
 		/* Ogg file open; parse the headers */
 		/* Only interested in Vorbis/Theora streams */
@@ -458,7 +462,7 @@ TRACE("FileOGG::open_file 20")
 		int vorbis_p = 0;
 		while(!stateflag)
 		{
-//			TRACE("FileOGG::open_file 50")
+
 
 //			int ret = read_buffer(stream, &oy, 4096);
 			TRACE("FileOGG::open_file 60")
@@ -509,6 +513,7 @@ TRACE("FileOGG::open_file 20")
 			}
 		/* fall through to non-bos page parsing */
 		}
+
 
 		/* we're expecting more header packets. */
 		while((theora_p && theora_p < 3) || (vorbis_p && vorbis_p < 3))
@@ -571,7 +576,7 @@ TRACE("FileOGG::open_file 20")
 		// Remember where the real data begins for later seeking purposes
 		filedata_begin = oy.file_pagepos; 
 
-//printf("FileOGG::Data pages begin at %lli\n", filedata_begin);
+
 
 		/* and now we have it all.  initialize decoders */
 		if(theora_p)
@@ -693,6 +698,8 @@ Not yet available in alpha4, we assume 420 for now
 			theora_info_clear(&tf->ti);
 			theora_comment_clear(&tf->tc);
 		}
+
+
 		if(vorbis_p)
 		{
 			vorbis_synthesis_init(&tf->vd, &tf->vi);
@@ -793,7 +800,9 @@ Not yet available in alpha4, we assume 420 for now
 			vorbis_info_clear(&tf->vi);
 			vorbis_comment_clear(&tf->vc);
 		}
+
 		ogg_sync_clear(&oy.sync);
+
 	}
 	return 0;
 }
@@ -1273,21 +1282,29 @@ int FileOGG::ogg_seek_to_keyframe(sync_window_t *sw, long serialno, int64_t fram
 
 int FileOGG::check_sig(Asset *asset)
 {
+
 	FILE *fd = fopen(asset->path, "rb");
+
 // Test for "OggS"
 	fseek(fd, 0, SEEK_SET);
 	char data[4];
+
 	fread(data, 4, 1, fd);
+
 	if(data[0] == 'O' &&
 		data[1] == 'g' &&
 		data[2] == 'g' &&
 		data[3] == 'S')
 	{
+
 		fclose(fd);
 //		printf("Yay, we have an ogg file\n");
+
 		return 1;
 	}
+
 	fclose(fd);
+
 	return 0;
 	
 }

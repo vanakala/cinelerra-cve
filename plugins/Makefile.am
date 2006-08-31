@@ -28,6 +28,7 @@ SUBDIRS= \
 	denoise \
 	denoisefft \
 	denoisemjpeg \
+	denoiseseltempavg \
 	denoisevideo \
 	despike \
 	diffkey \
@@ -75,7 +76,6 @@ SUBDIRS= \
 	rgb601 \
 	rotate \
 	scale \
-	denoiseseltempavg \
 	shapewipe \
 	sharpen \
 	shiftinterlace \

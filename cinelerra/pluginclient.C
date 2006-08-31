@@ -46,23 +46,23 @@ int PluginClient::plugin_init_realtime(int realtime_priority,
 	int total_in_buffers,
 	int buffer_size)
 {
-SET_TRACE
+
 // Get parameters for all
 	master_gui_on = get_gui_status();
 
-SET_TRACE
+
 
 // get parameters depending on video or audio
 	init_realtime_parameters();
-SET_TRACE
+
 	smp = server->preferences->processors - 1;
-SET_TRACE
+
 	this->realtime_priority = realtime_priority;
-SET_TRACE
+
 	this->total_in_buffers = this->total_out_buffers = total_in_buffers;
-SET_TRACE
+
 	this->out_buffer_size = this->in_buffer_size = buffer_size;
-SET_TRACE
+
 	return 0;
 }
 

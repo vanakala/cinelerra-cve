@@ -54,20 +54,26 @@ RecordMonitor::~RecordMonitor()
 int RecordMonitor::create_objects()
 {
 	int min_w = 150;
+
 	if(!record->default_asset->video_data)
 		min_w = MeterPanel::get_meters_width(
 			record->default_asset->channels, 1);
+SET_TRACE
 	window = new RecordMonitorGUI(mwindow,
 		record, 
 		this,
 		min_w);
+SET_TRACE
 	window->create_objects();
+SET_TRACE
 
 	if(record->default_asset->video_data)
 	{
 // Configure the output for record monitoring
 		VideoOutConfig config;
+SET_TRACE
 		device = new VideoDevice;
+SET_TRACE
 
 
 
@@ -76,6 +82,7 @@ int RecordMonitor::create_objects()
 			PLAYBACK_X11_XV) config.driver = PLAYBACK_X11_XV;
 		config.x11_use_fields = 0;
 
+SET_TRACE
 
 		device->open_output(&config, 
 						record->default_asset->frame_rate, 
@@ -83,10 +90,14 @@ int RecordMonitor::create_objects()
 						record->default_asset->height,
 						window->canvas,
 						0);
+SET_TRACE
 
 		thread = new RecordMonitorThread(mwindow, record, this);
+SET_TRACE
 		thread->start_playback();
+SET_TRACE
 	}
+SET_TRACE
 
 	Thread::start();
 	return 0;
@@ -263,7 +274,6 @@ int RecordMonitorGUI::create_objects()
 				mwindow->theme->draw_rmonitor_bg(this);
 				background_done = 1;
 
-SET_TRACE
 				avc1394_transport = new AVC1394Transport(mwindow,
 					avc,
 					this,
@@ -271,7 +281,6 @@ SET_TRACE
 					mwindow->theme->rmonitor_tx_y);
 				avc1394_transport->create_objects();
 
-SET_TRACE
 				add_subwindow(avc1394transport_timecode =
 					new BC_Title(avc1394_transport->x_end,
 						mwindow->theme->rmonitor_tx_y + 10,
@@ -284,21 +293,18 @@ SET_TRACE
 						avc);
 
 				avc1394transport_thread->start();
-SET_TRACE
 
 			}
 		}
 #endif
 
 
-SET_TRACE
 		if(!background_done)
 		{
 			mwindow->theme->draw_rmonitor_bg(this);
 			background_done = 1;
 		}
 
-SET_TRACE
 		canvas = new RecordMonitorCanvas(mwindow, 
 			this,
 			record, 
@@ -308,7 +314,6 @@ SET_TRACE
 			mwindow->theme->rmonitor_canvas_h);
 		canvas->create_objects(0);
 
-SET_TRACE
 		if(driver == VIDEO4LINUX ||
 			driver == CAPTURE_BUZ ||
 			driver == VIDEO4LINUX2 ||
@@ -323,7 +328,6 @@ SET_TRACE
 			channel_picker->create_objects();
 		}
 
-SET_TRACE
 		if(driver == CAPTURE_BUZ ||
 			driver == VIDEO4LINUX2JPEG)
 		{
@@ -332,7 +336,6 @@ SET_TRACE
 				mwindow->theme->rmonitor_interlace_y));
 		}
 		
-SET_TRACE
 		add_subwindow(monitor_menu = new BC_PopupMenu(0, 
 			0, 
 			0, 
@@ -340,7 +343,6 @@ SET_TRACE
 			0));
 		monitor_menu->add_item(new RecordMonitorFullsize(mwindow, 
 			this));
-SET_TRACE
 	}
 
 
@@ -350,7 +352,6 @@ SET_TRACE
 		background_done = 1;
 	}
 
-SET_TRACE
 	if(record->default_asset->audio_data)
 	{
 		meters = new MeterPanel(mwindow, 
@@ -363,7 +364,6 @@ SET_TRACE
 			1);
 		meters->create_objects();
 	}
-SET_TRACE
 	return 0;
 }
 
@@ -622,7 +622,8 @@ RecordMonitorCanvas::RecordMonitorCanvas(MWindow *mwindow,
 	this->window = window;
 	this->mwindow = mwindow;
 	this->record = record;
-//printf("RecordMonitorCanvas::RecordMonitorCanvas 1 %d\n", mwindow->edl->session->vconfig_in->driver);
+printf("RecordMonitorCanvas::RecordMonitorCanvas 1 %d %d %d %d\n", 
+x, y, w, h);
 //printf("RecordMonitorCanvas::RecordMonitorCanvas 2\n");
 }
 
@@ -643,6 +644,7 @@ int RecordMonitorCanvas::get_output_h()
 
 int RecordMonitorCanvas::button_press_event()
 {
+
 	if(Canvas::button_press_event()) return 1;
 	
 	if(mwindow->edl->session->vconfig_in->driver == SCREENCAPTURE)
@@ -681,11 +683,14 @@ int RecordMonitorCanvas::button_release_event()
 
 int RecordMonitorCanvas::cursor_motion_event()
 {
+SET_TRACE
 	if(window->current_operation == MONITOR_TRANSLATE)
 	{
+SET_TRACE
 		record->set_translation(
 			get_cursor_x() - window->cursor_x_origin + window->translate_x_origin,
 			get_cursor_y() - window->cursor_y_origin + window->translate_y_origin);
+SET_TRACE
 	}
 
 	return 0;
@@ -902,18 +907,7 @@ int RecordMonitorThread::render_dv()
 
 void RecordMonitorThread::render_uncompressed()
 {
-// printf("RecordMonitorThread::render_uncompressed 1 %p %p %p %p %p %p %p\n", 
-//  	output_frame[0],
-//  	output_frame[0]->get_y(), 
-//  	output_frame[0]->get_u(), 
-//  	output_frame[0]->get_v(),
-// 	input_frame->get_y(),
-// 	input_frame->get_u(),
-// 	input_frame->get_v());
-
 	output_frame[0]->copy_from(input_frame);
-
-//printf("RecordMonitorThread::render_uncompressed 2\n");
 }
 
 void RecordMonitorThread::show_output_frame()
@@ -951,9 +945,7 @@ int RecordMonitorThread::render_frame()
 void RecordMonitorThread::new_output_frame()
 {
 	long offset;
-//printf("RecordMonitorThread::new_output_frame %d %p %p\n", output_colormodel, record_monitor, record_monitor->device);
 	record_monitor->device->new_output_buffers(output_frame, output_colormodel);
-//printf("RecordMonitorThread::new_output_frame 2\n");
 }
 
 void RecordMonitorThread::run()
@@ -962,19 +954,22 @@ void RecordMonitorThread::run()
 	while(!done)
 	{
 // Wait for next frame
+SET_TRACE
 		output_lock->lock("RecordMonitorThread::run");
+
 		if(done)
 		{
 			unlock_input();
 			return;
 		}
-//printf("RecordMonitorThread::run 1\n");
+
+SET_TRACE
 		new_output_frame();
-//printf("RecordMonitorThread::run 2\n");
+SET_TRACE
 		render_frame();
-//printf("RecordMonitorThread::run 3\n");
+SET_TRACE
 		show_output_frame();
-//printf("RecordMonitorThread::run 4\n");
+SET_TRACE
 		unlock_input();
 // Get next frame
 		ready = 1;

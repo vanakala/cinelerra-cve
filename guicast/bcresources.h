@@ -1,6 +1,13 @@
 #ifndef BCRESOURCES_H
 #define BCRESOURCES_H
 
+
+
+// Global objects for the user interface
+
+
+
+
 #include "bcdisplayinfo.inc"
 #include "bcfilebox.h"
 #include "bcresources.inc"
@@ -15,6 +22,8 @@ typedef struct
 	char *suffix;
 	int icon_type;
 } suffix_to_type_t;
+
+
 
 class BC_Resources
 {
@@ -203,7 +212,7 @@ public:
 // Pots
 	VFrame **pot_images;
 	int pot_x1, pot_y1, pot_r;
-// Amoun of deflection of pot when down
+// Amount of deflection of pot when down
 	int pot_offset;
 	int pot_needle_color;
 

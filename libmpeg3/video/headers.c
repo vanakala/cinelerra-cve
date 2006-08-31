@@ -369,6 +369,12 @@ int mpeg3video_ext_user_data(mpeg3video_t *video)
    		}
    		code = mpeg3bits_next_startcode(video->vstream);
   	}
+
+/*
+ * printf("mpeg3video_ext_user_data prog_seq=%d prog_frame=%d\n", 
+ * video->prog_seq, 
+ * video->prog_frame);
+ */
 	return 0;
 }
 

@@ -29,6 +29,7 @@ static uint32_t read_int32(unsigned char *buffer, int *position)
 	return temp;
 }
 
+
 static uint64_t read_int64(unsigned char *buffer, int *position)
 {
 	uint64_t temp;
@@ -68,7 +69,9 @@ static int read_data(unsigned char *buffer,
 	*position += bytes;
 }
 
-int mpeg3_read_toc(mpeg3_t *file, int *atracks_return, int *vtracks_return)
+int mpeg3_read_toc(mpeg3_t *file, 
+	int *atracks_return, 
+	int *vtracks_return)
 {
 	unsigned char *buffer;
 	int file_type;
@@ -79,8 +82,8 @@ int mpeg3_read_toc(mpeg3_t *file, int *atracks_return, int *vtracks_return)
 	int vfs_len = strlen(RENDERFARM_FS_PREFIX);
 	int toc_version;
 	int64_t current_byte = 0;
+const int debug = 0;
 
-//printf("read_toc 1\n");
 // Fix title paths for Cinelerra VFS
 	if(!strncmp(file->fs->path, RENDERFARM_FS_PREFIX, vfs_len))
 		is_vfs = 1;
@@ -98,7 +101,6 @@ int mpeg3_read_toc(mpeg3_t *file, int *atracks_return, int *vtracks_return)
 		return 1;
 	}
 
-//printf("read_toc %lld\n", mpeg3io_total_bytes(file->fs));
 
 // File type
 	file_type = buffer[position++];
@@ -118,7 +120,6 @@ int mpeg3_read_toc(mpeg3_t *file, int *atracks_return, int *vtracks_return)
 			break;
 	}
 
-//printf("read_toc 10\n");
 
 // Stream ID's
 	while((stream_type = buffer[position]) != TITLE_PATH)
@@ -324,7 +325,7 @@ int mpeg3_read_toc(mpeg3_t *file, int *atracks_return, int *vtracks_return)
 	for(i = 0; i < *atracks_return; i++)
 	{
 		mpeg3_index_t *index = file->indexes[i] = mpeg3_new_index();
-		
+	
 		index->index_size = read_int32(buffer, &position);
 		index->index_zoom = read_int32(buffer, &position);
 //printf("mpeg3_read_toc %d %d %d\n", i, index->index_size, index->index_zoom);
@@ -349,13 +350,12 @@ int mpeg3_read_toc(mpeg3_t *file, int *atracks_return, int *vtracks_return)
 
 
 	free(buffer);
-//printf("read_toc 10\n");
+if(debug) printf("mpeg3_read_toc 90\n");
 
 
 
-//printf("read_toc 1\n");
 	mpeg3demux_open_title(file->demuxer, 0);
-//printf("read_toc 10\n");
+if(debug) printf("mpeg3_read_toc 100\n");
 
 	return 0;
 }
@@ -365,6 +365,7 @@ mpeg3_t* mpeg3_start_toc(char *path, char *toc_path, int64_t *total_bytes)
 {
 	*total_bytes = 0;
 	mpeg3_t *file = mpeg3_new(path);
+
 
 	file->toc_fd = fopen(toc_path, "w");
 	if(!file->toc_fd)
@@ -416,6 +417,7 @@ mpeg3_t* mpeg3_start_toc(char *path, char *toc_path, int64_t *total_bytes)
 	file->demuxer->read_all = 1;
 	*total_bytes = mpeg3demux_movie_size(file->demuxer);
 
+//*total_bytes = 500000000;
 	return file;
 }
 
@@ -628,13 +630,7 @@ int mpeg3_toc_video(mpeg3_t *file,
 {
 	mpeg3video_t *video = vtrack->video;
 
-/*
- * static FILE *test = 0;
- * if(!test) test = fopen("test.m2v", "w");
- * fwrite(file->demuxer->data_buffer, 1, file->demuxer->data_size, test);
- * static int counter = 0;
- * printf("%x %d\n", vtrack->pid, counter++);
- */
+
 // Assume last packet of stream
 	vtrack->video_eof = mpeg3demux_tell_byte(file->demuxer);
 
@@ -654,6 +650,7 @@ int mpeg3_toc_video(mpeg3_t *file,
 		vtrack->demuxer->data_position];
 	uint32_t code = (ptr[0] << 24) | (ptr[1] << 16) | (ptr[2] << 8) | (ptr[3]);
 	ptr += 4;
+
 	while(vtrack->demuxer->data_size - vtrack->demuxer->data_position > 
 		MPEG3_VIDEO_STREAM_SIZE)
 	{
@@ -756,7 +753,11 @@ int mpeg3_do_toc(mpeg3_t *file, int64_t *bytes_processed)
 				mpeg3_atrack_t *atrack = file->atrack[i];
 				if(custom_id == atrack->pid)
 				{
-//printf("mpeg3_do_toc 2 %x\n", atrack->pid);
+/*
+ * printf("mpeg3_do_toc 2 offset=0x%llx pid=0x%x\n", 
+ * start_byte, 
+ * atrack->pid);
+ */
 // Update an audio track
 					mpeg3_toc_audio(file, i);
 					atrack->prev_offset = start_byte;
