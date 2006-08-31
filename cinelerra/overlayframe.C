@@ -77,7 +77,7 @@ OverlayFrame::~OverlayFrame()
 // (65535 * 32767 + 65535 * (65535 - 32767)) / 65535 = 65535
 
 
-// Branch prediction 4 U
+// Permutation 4 U
 
 #define BLEND_3(max, temp_type, type, chroma_offset) \
 { \
@@ -87,7 +87,7 @@ OverlayFrame::~OverlayFrame()
 	switch(mode) \
 	{ \
 		case TRANSFER_DIVIDE: \
-			r = output[0] ? (((temp_type)input1 * max) / output[0]) : max; \
+			r = input1 ? (((temp_type)output[0] * max) / input1) : max; \
 			if(chroma_offset) \
 			{ \
 				g = my_abs((temp_type)input2 - chroma_offset) > my_abs((temp_type)output[1] - chroma_offset) ? input2 : output[1]; \
@@ -95,8 +95,8 @@ OverlayFrame::~OverlayFrame()
 			} \
 			else \
 			{ \
-				g = output[1] ? (temp_type)input2 * max / (temp_type)output[1] : max; \
-				b = output[2] ? (temp_type)input3 * max / (temp_type)output[2] : max; \
+				g = input2 ? (temp_type)output[1] * max / (temp_type)input2 : max; \
+				b = input3 ? (temp_type)output[2] * max / (temp_type)input3 : max; \
 			} \
 			r = (r * opacity + (temp_type)output[0] * transparency) / max; \
 			g = (g * opacity + (temp_type)output[1] * transparency) / max; \
@@ -126,6 +126,9 @@ OverlayFrame::~OverlayFrame()
 			b = ((temp_type)output[2] - (temp_type)chroma_offset) - \
 				((temp_type)input3 - (temp_type)chroma_offset) + \
 				(temp_type)chroma_offset; \
+			if(r < 0) r = 0; \
+			if(g < 0) g = 0; \
+			if(b < 0) b = 0; \
 			r = (r * opacity + output[0] * transparency) / max; \
 			g = (g * opacity + output[1] * transparency) / max; \
 			b = (b * opacity + output[2] * transparency) / max; \
@@ -142,6 +145,30 @@ OverlayFrame::~OverlayFrame()
 			g = (g * opacity + output[1] * transparency) / max; \
 			b = (b * opacity + output[2] * transparency) / max; \
 			break; \
+		case TRANSFER_MAX: \
+		{ \
+			r = (temp_type)MAX(input1, output[0]); \
+			temp_type g1 = ((temp_type)input2 - chroma_offset); \
+			if(g1 < 0) g1 = -g1; \
+			temp_type g2 = ((temp_type)output[1] - chroma_offset); \
+			if(g2 < 0) g2 = -g2; \
+			if(g1 > g2) \
+				g = input2; \
+			else \
+				g = output[1]; \
+			temp_type b1 = ((temp_type)input3 - chroma_offset); \
+			if(b1 < 0) b1 = -b1; \
+			temp_type b2 = ((temp_type)output[2] - chroma_offset); \
+			if(b2 < 0) b2 = -b2; \
+			if(b1 > b2) \
+				b = input3; \
+			else \
+				b = output[2]; \
+			r = (r * opacity + output[0] * transparency) / max; \
+			g = (g * opacity + output[1] * transparency) / max; \
+			b = (b * opacity + output[2] * transparency) / max; \
+			break; \
+		} \
 		case TRANSFER_REPLACE: \
 			r = input1; \
 			g = input2; \
@@ -188,7 +215,7 @@ OverlayFrame::~OverlayFrame()
 	switch(mode) \
 	{ \
 		case TRANSFER_DIVIDE: \
-			r = output1 ? (((temp_type)input1 * max) / output1) : max; \
+			r = input1 ? (((temp_type)output1 * max) / input1) : max; \
 			if(chroma_offset) \
 			{ \
 				g = my_abs((temp_type)input2 - chroma_offset) > my_abs((temp_type)output2 - chroma_offset) ? input2 : output2; \
@@ -196,8 +223,8 @@ OverlayFrame::~OverlayFrame()
 			} \
 			else \
 			{ \
-				g = output2 ? (temp_type)input2 * max / (temp_type)output2 : max; \
-				b = output3 ? (temp_type)input3 * max / (temp_type)output3 : max; \
+				g = input2 ? (temp_type)output2 * max / (temp_type)input2 : max; \
+				b = input3 ? (temp_type)output3 * max / (temp_type)input3 : max; \
 			} \
 			r = (r * pixel_opacity + (temp_type)output1 * pixel_transparency) / max / max; \
 			g = (g * pixel_opacity + (temp_type)output2 * pixel_transparency) / max / max; \
@@ -222,13 +249,16 @@ OverlayFrame::~OverlayFrame()
 			a = input4 > output4 ? input4 : output4; \
 			break; \
 		case TRANSFER_SUBTRACT: \
-			r = (temp_type)input1 - output1; \
+			r = (temp_type)output1 - input1; \
 			g = ((temp_type)output2 - chroma_offset) - \
 				((temp_type)input2 - (temp_type)chroma_offset) + \
 				(temp_type)chroma_offset; \
 			b = ((temp_type)output3 - chroma_offset) - \
 				((temp_type)input3 - (temp_type)chroma_offset) + \
 				(temp_type)chroma_offset; \
+			if(r < 0) r = 0; \
+			if(g < 0) g = 0; \
+			if(b < 0) b = 0; \
 			r = (r * pixel_opacity + output1 * pixel_transparency) / max / max; \
 			g = (g * pixel_opacity + output2 * pixel_transparency) / max / max; \
 			b = (b * pixel_opacity + output3 * pixel_transparency) / max / max; \
@@ -247,6 +277,31 @@ OverlayFrame::~OverlayFrame()
 			b = (b * pixel_opacity + output3 * pixel_transparency) / max / max; \
 			a = input4 > output4 ? input4 : output4; \
 			break; \
+		case TRANSFER_MAX: \
+		{ \
+			r = (temp_type)MAX(input1, output1); \
+			temp_type g1 = ((temp_type)input2 - chroma_offset); \
+			if(g1 < 0) g1 = -g1; \
+			temp_type g2 = ((temp_type)output2 - chroma_offset); \
+			if(g2 < 0) g2 = -g2; \
+			if(g1 > g2) \
+				g = input2; \
+			else \
+				g = output2; \
+			temp_type b1 = ((temp_type)input3 - chroma_offset); \
+			if(b1 < 0) b1 = -b1; \
+			temp_type b2 = ((temp_type)output3 - chroma_offset); \
+			if(b2 < 0) b2 = -b2; \
+			if(b1 > b2) \
+				b = input3; \
+			else \
+				b = output3; \
+			r = (r * pixel_opacity + output1 * pixel_transparency) / max / max; \
+			g = (g * pixel_opacity + output2 * pixel_transparency) / max / max; \
+			b = (b * pixel_opacity + output3 * pixel_transparency) / max / max; \
+			a = input4 > output4 ? input4 : output4; \
+			break; \
+		} \
 		case TRANSFER_REPLACE: \
 			r = input1; \
 			g = input2; \
@@ -2683,25 +2738,25 @@ void BlendUnit::process_package(LoadPackage *package)
 			BLEND_ONLY(float, float, 1.0, 4, 0);
 			break;
 		case BC_RGB888:
-			BLEND_ONLY(uint32_t, unsigned char, 0xff, 3, 0);
+			BLEND_ONLY(int32_t, unsigned char, 0xff, 3, 0);
 			break;
 		case BC_YUV888:
 			BLEND_ONLY(int32_t, unsigned char, 0xff, 3, 0x80);
 			break;
 		case BC_RGBA8888:
-			BLEND_ONLY(uint32_t, unsigned char, 0xff, 4, 0);
+			BLEND_ONLY(int32_t, unsigned char, 0xff, 4, 0);
 			break;
 		case BC_YUVA8888:
 			BLEND_ONLY(int32_t, unsigned char, 0xff, 4, 0x80);
 			break;
 		case BC_RGB161616:
-			BLEND_ONLY(uint64_t, uint16_t, 0xffff, 3, 0);
+			BLEND_ONLY(int64_t, uint16_t, 0xffff, 3, 0);
 			break;
 		case BC_YUV161616:
 			BLEND_ONLY(int64_t, uint16_t, 0xffff, 3, 0x8000);
 			break;
 		case BC_RGBA16161616:
-			BLEND_ONLY(uint64_t, uint16_t, 0xffff, 4, 0);
+			BLEND_ONLY(int64_t, uint16_t, 0xffff, 4, 0);
 			break;
 		case BC_YUVA16161616:
 			BLEND_ONLY(int64_t, uint16_t, 0xffff, 4, 0x8000);

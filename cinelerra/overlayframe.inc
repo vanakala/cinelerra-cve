@@ -3,7 +3,7 @@
 
 // Modes
 
-#define TRANSFER_TYPES 6
+#define TRANSFER_TYPES 7
 
 #define TRANSFER_NORMAL       0
 #define TRANSFER_ADDITION     1
@@ -11,6 +11,7 @@
 #define TRANSFER_MULTIPLY     3
 #define TRANSFER_DIVIDE 	  4
 #define TRANSFER_REPLACE      5
+#define TRANSFER_MAX          6
 
 // Interpolation types
 

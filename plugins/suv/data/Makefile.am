@@ -312,6 +312,7 @@ PNGS = \
 	mode_divide.png \
 	mode_dn.png \
 	mode_hi.png \
+	mode_max.png \
 	mode_multiply.png \
 	mode_normal.png \
 	mode_replace.png \

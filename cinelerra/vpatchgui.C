@@ -310,6 +310,7 @@ int VModePatch::create_objects()
 	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_MULTIPLY), TRANSFER_MULTIPLY));
 	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_DIVIDE), TRANSFER_DIVIDE));
 	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_REPLACE), TRANSFER_REPLACE));
+	add_item(new VModePatchItem(this, mode_to_text(TRANSFER_MAX), TRANSFER_MAX));
 	return 0;
 }
 
@@ -350,6 +351,10 @@ char* VModePatch::mode_to_text(int mode)
 
 		case TRANSFER_DIVIDE:
 			return _("Divide");
+			break;
+
+		case TRANSFER_MAX:
+			return _("Max");
 			break;
 
 		default:

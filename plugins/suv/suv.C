@@ -355,6 +355,8 @@ void SUV::initialize()
 	new_image("mode_normal", "mode_normal.png");
 	new_image("mode_replace", "mode_replace.png");
 	new_image("mode_subtract", "mode_subtract.png");
+	new_image("mode_max", "mode_max.png");
+
 
 // CWindow
 	new_image("cpanel_bg", "cpanel_bg.png");
