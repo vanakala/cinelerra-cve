@@ -22,6 +22,41 @@ FloatAutos::~FloatAutos()
 {
 }
 
+void FloatAutos::straighten(int64_t start, int64_t end)
+{
+	FloatAuto *current = (FloatAuto*)first;
+	while(current)
+	{
+		FloatAuto *previous_auto = (FloatAuto*)PREVIOUS;
+		FloatAuto *next_auto = (FloatAuto*)NEXT;
+
+// Is current auto in range?		
+		if(current->position >= start && current->position < end)
+		{
+			float current_value = current->value;
+
+// Determine whether to set the control in point.
+			if(previous_auto && previous_auto->position >= start)
+			{
+				float previous_value = previous_auto->value;
+				current->control_in_value = (previous_value - current_value) / 6.0;
+				if(!current->control_in_position)
+					current->control_in_position = -track->to_units(1.0, 0);
+			}
+
+// Determine whether to set the control out point
+			if(next_auto && next_auto->position < end)
+			{
+				float next_value = next_auto->value;
+				current->control_out_value = (next_value - current_value) / 6.0;
+				if(!current->control_out_position)
+					current->control_out_position = track->to_units(1.0, 0);
+			}
+		}
+		current = (FloatAuto*)NEXT;
+	}
+}
+
 int FloatAutos::draw_joining_line(BC_SubWindow *canvas, int vertical, int center_pixel, int x1, int y1, int x2, int y2)
 {
 	if(vertical)

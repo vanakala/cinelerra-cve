@@ -341,6 +341,7 @@ public:
 	int copy_automation();
 	int paste_automation();
 	void clear_automation();
+	void straighten_automation();
 	int cut_default_keyframe();
 	int copy_default_keyframe();
 // Use paste_automation to paste the default keyframe in other position.

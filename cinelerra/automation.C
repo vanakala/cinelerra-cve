@@ -165,6 +165,31 @@ void Automation::clear(int64_t start,
 	if(temp_autoconf) delete temp_autoconf;
 }
 
+void Automation::straighten(int64_t start, 
+	int64_t end, 
+	AutoConf *autoconf)
+{
+	AutoConf *temp_autoconf = 0;
+
+	if(!autoconf)
+	{
+		temp_autoconf = new AutoConf;
+		temp_autoconf->set_all(1);
+		autoconf = temp_autoconf;
+	}
+
+	for(int i = 0; i < AUTOMATION_TOTAL; i++)
+	{
+		if(autos[i] && autoconf->autos[i])
+		{
+			autos[i]->straighten(start, end);
+		}
+	}
+
+	if(temp_autoconf) delete temp_autoconf;
+}
+
+
 void Automation::paste_silence(int64_t start, int64_t end)
 {
 // Unit conversion done in calling routine

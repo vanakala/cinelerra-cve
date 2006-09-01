@@ -1002,6 +1002,17 @@ void Track::clear_automation(double selectionstart,
 
 }
 
+void Track::straighten_automation(double selectionstart, 
+	double selectionend)
+{
+	int64_t start = to_units(selectionstart, 0);
+	int64_t end = to_units(selectionend, 0);
+
+	automation->straighten(start, end, edl->session->auto_conf);
+}
+
+
+
 
 int Track::copy(double start, 
 	double end, 

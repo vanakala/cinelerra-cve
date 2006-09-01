@@ -62,6 +62,20 @@ void Tracks::clear_automation(double selectionstart, double selectionend)
 	}
 }
 
+void Tracks::straighten_automation(double selectionstart, double selectionend)
+{
+	Track* current_track;
+
+	for(current_track = first; current_track; current_track = current_track->next)
+	{
+		if(current_track->record)
+		{
+			current_track->straighten_automation(selectionstart, 
+				selectionend); 
+		}
+	}
+}
+
 int Tracks::clear_default_keyframe()
 {
 	for(Track *current = first; current; current = NEXT)

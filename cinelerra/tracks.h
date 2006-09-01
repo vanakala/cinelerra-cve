@@ -147,6 +147,8 @@ public:
 // -1 means nothing changed.
 	void clear_automation(double selectionstart, 
 		double selectionend);
+	void straighten_automation(double selectionstart, 
+		double selectionend);
 	int clear_default_keyframe();
 	int clear_handle(double start, 
 		double end,

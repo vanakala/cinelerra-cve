@@ -225,6 +225,8 @@ public:
 		double selectionend, 
 		int shift_autos   /* = 1 */,
 		int default_only  /* = 0 */);
+	void straighten_automation(double selectionstart, 
+		double selectionend);
 	virtual int clear_automation_derived(AutoConf *auto_conf, 
 		double selectionstart, 
 		double selectionend, 

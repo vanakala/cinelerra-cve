@@ -101,6 +101,7 @@ public:
 	void clear(int64_t start, 
 		int64_t end, 
 		int shift_autos);
+	virtual void straighten(int64_t start, int64_t end);
 	int clear_auto(int64_t position);
 	int save(FileXML *xml);
 	virtual int slope_adjustment(int64_t ax, double slope);

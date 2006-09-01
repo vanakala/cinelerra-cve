@@ -210,6 +210,23 @@ void MWindow::clear(int clear_handle)
 	}
 }
 
+void MWindow::straighten_automation()
+{
+	edl->tracks->straighten_automation(
+		edl->local_session->get_selectionstart(), 
+		edl->local_session->get_selectionend()); 
+	save_backup();
+	undo->update_undo(_("straighten curves"), LOAD_AUTOMATION); 
+
+	restart_brender();
+	update_plugin_guis();
+	gui->canvas->draw_overlays();
+	gui->canvas->flash();
+	sync_parameters(CHANGE_PARAMS);
+	gui->patchbay->update();
+	cwindow->update(1, 0, 0);
+}
+
 void MWindow::clear_automation()
 {
 	edl->tracks->clear_automation(edl->local_session->get_selectionstart(), 

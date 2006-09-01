@@ -60,6 +60,9 @@ public:
 		int64_t end, 
 		AutoConf *autoconf, 
 		int shift_autos);
+	void straighten(int64_t start, 
+		int64_t end, 
+		AutoConf *autoconf);
 	void paste_silence(int64_t start, int64_t end);
 	void insert_track(Automation *automation, 
 		int64_t start_unit, 

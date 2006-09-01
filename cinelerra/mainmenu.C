@@ -118,6 +118,7 @@ SET_TRACE
 	keyframemenu->add_item(new CopyKeyframes(mwindow));
 	keyframemenu->add_item(new PasteKeyframes(mwindow));
 	keyframemenu->add_item(new ClearKeyframes(mwindow));
+	keyframemenu->add_item(new StraightenKeyframes(mwindow));
 	keyframemenu->add_item(new BC_MenuItem("-"));
 	keyframemenu->add_item(new CopyDefaultKeyframe(mwindow));
 	keyframemenu->add_item(new PasteDefaultKeyframe(mwindow));
@@ -591,6 +592,22 @@ int ClearKeyframes::handle_event()
 	mwindow->clear_automation();
 	return 1;
 }
+
+
+StraightenKeyframes::StraightenKeyframes(MWindow *mwindow)
+ : BC_MenuItem(_("Straighten curves"))
+{
+	this->mwindow = mwindow; 
+}
+
+int StraightenKeyframes::handle_event()
+{
+	mwindow->straighten_automation();
+	return 1;
+}
+
+
+
 
 
 

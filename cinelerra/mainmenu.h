@@ -228,6 +228,14 @@ public:
 	MWindow *mwindow;
 };
 
+class StraightenKeyframes : public BC_MenuItem
+{
+public:
+	StraightenKeyframes(MWindow *mwindow);
+	int handle_event();
+	MWindow *mwindow;
+};
+
 class CutDefaultKeyframe : public BC_MenuItem
 {
 public:
