@@ -175,7 +175,6 @@ int CICache::delete_entry(Asset *asset)
 
 int CICache::age()
 {
-	check_out_lock->lock("CICache::age");
 	CICacheItem *current;
 
 	for(current = first; current; current = NEXT)
@@ -188,29 +187,27 @@ int CICache::age()
 	int result = 0;
 	do
 	{
-		memory_usage = get_memory_usage();
+		memory_usage = get_memory_usage(1);
 		
-//printf("CICache::age 3 %p %lld %lld\n", this, memory_usage, preferences->cache_size);
 		if(memory_usage > preferences->cache_size)
 		{
 			result = delete_oldest();
 		}
 	}while(memory_usage > preferences->cache_size && !result);
 
-	check_out_lock->unlock();
 }
 
-int64_t CICache::get_memory_usage()
+int64_t CICache::get_memory_usage(int use_lock)
 {
 	CICacheItem *current;
 	int64_t result = 0;
-	
+	if(use_lock) total_lock->lock("CICache::get_memory_usage");
 	for(current = first; current; current = NEXT)
 	{
 		File *file = current->file;
 		if(file) result += file->get_memory_usage();
 	}
-	
+	if(use_lock) total_lock->unlock();
 	return result;
 }
 
@@ -254,7 +251,7 @@ int CICache::dump()
 {
 	CICacheItem *current;
 	total_lock->lock("CICache::dump");
-	printf("CICache::dump total size %lld\n", get_memory_usage());
+	printf("CICache::dump total size %lld\n", get_memory_usage(0));
 	for(current = first; current; current = NEXT)
 	{
 		printf("cache item %x asset %x %s counter %lld\n", 

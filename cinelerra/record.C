@@ -119,7 +119,7 @@ Record::Record(MWindow *mwindow, RecordMenuItem *menu_item)
 	editing_batch = 0;
 	current_batch = 0;
 SET_TRACE
-	picture = new PictureConfig(mwindow);
+	picture = new PictureConfig(mwindow->defaults);
 SET_TRACE
 	channeldb = new ChannelDB;
 	master_channel = new Channel;
@@ -374,39 +374,40 @@ void Record::run()
 
 	if(fixed_compression)
 	{
-		strcpy(default_asset->vcodec, 
-			VideoDevice::get_vcodec(mwindow->edl->session->vconfig_in->driver));
+		VideoDevice device;
+		device.fix_asset(default_asset, 
+			mwindow->edl->session->vconfig_in->driver);
 	}
 
 
 	menu_item->current_state = RECORD_INTRO;
 
-// Get information about the file format
-	do
-	{
- 		int x = mwindow->gui->get_root_w(0, 1) / 2 - RECORD_WINDOW_WIDTH / 2;
-		int y = mwindow->gui->get_root_h(1) / 2 - RECORD_WINDOW_HEIGHT / 2;
-		
-		window_lock->lock("Record::run 1");
-		record_window = new RecordWindow(mwindow, this, x, y);
-		record_window->create_objects();
-		window_lock->unlock();
-
-
-		result = record_window->run_window();
-		window_lock->lock("Record::run 2");
-		delete record_window;
-		record_window = 0;
-		window_lock->unlock();
-
-
-
-		if(!result)
-		{
-			FormatCheck check_format(default_asset);
-			format_error = check_format.check_format();
-		}
-	}while(format_error && !result);
+// // Get information about the file format
+// 	do
+// 	{
+//  		int x = mwindow->gui->get_root_w(0, 1) / 2 - RECORD_WINDOW_WIDTH / 2;
+// 		int y = mwindow->gui->get_root_h(1) / 2 - RECORD_WINDOW_HEIGHT / 2;
+//
+// 		window_lock->lock("Record::run 1");
+// 		record_window = new RecordWindow(mwindow, this, x, y);
+// 		record_window->create_objects();
+// 		window_lock->unlock();
+// 
+// 
+// 		result = record_window->run_window();
+// 		window_lock->lock("Record::run 2");
+// 		delete record_window;
+// 		record_window = 0;
+// 		window_lock->unlock();
+// 
+// 
+// 
+// 		if(!result)
+// 		{
+// 			FormatCheck check_format(default_asset);
+// 			format_error = check_format.check_format();
+// 		}
+// 	}while(format_error && !result);
 
 	channeldb->save(get_channeldb_prefix());
 	save_defaults();

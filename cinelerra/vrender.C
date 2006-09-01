@@ -547,7 +547,7 @@ SET_TRACE
 SET_TRACE
 // In case we were interrupted before the first loop
 	renderengine->first_frame_lock->unlock();
-
+	stop_plugins();
 }
 
 

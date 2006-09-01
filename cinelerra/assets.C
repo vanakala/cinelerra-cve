@@ -81,7 +81,7 @@ int Assets::save(ArrayList<PluginServer*> *plugindb, FileXML *file, char *path)
 
 void Assets::copy_from(Assets *assets)
 {
-	while(last) delete last;
+	delete_all();
 
 	for(Asset *current = assets->first; current; current = NEXT)
 	{

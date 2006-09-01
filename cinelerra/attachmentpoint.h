@@ -34,6 +34,9 @@ public:
 // Called after virtual console expansion.
 	int render_init();
 
+// Cause plugins to free any resources which are required after stopping
+	void render_stop();
+
 // Called before every buffer processing
 	void reset_status();
 
@@ -98,8 +101,6 @@ public:
 	int multichannel_shared(int search_new);
 	int singlechannel();
 
-// Simply deletes the virtual plugin 
-	int render_stop(int duplicate);
 
 
 	int dump();

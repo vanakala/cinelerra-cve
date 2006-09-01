@@ -60,7 +60,7 @@ public:
 
 // Subclass should call this to add the base class allocation.
 // Only used in read mode.
-	virtual int get_memory_usage() { return 0; };
+	virtual int64_t get_memory_usage() { return 0; };
 
 	virtual int write_samples(double **buffer, 
 		int64_t len) { return 0; };

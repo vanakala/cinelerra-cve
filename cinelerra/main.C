@@ -2,11 +2,13 @@
 #include "batchrender.h"
 #include "bcsignals.h"
 #include "builddate.h"
+#include "edl.h"
 #include "filexml.h"
 #include "filesystem.h"
 #include "language.h"
 #include "loadfile.inc"
 #include "mainmenu.h"
+#include "mutex.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "pluginserver.h"
@@ -51,8 +53,7 @@ int main(int argc, char *argv[])
 	config_path[0] = 0;
 	batch_path[0] = 0;
 	deamon_path[0] = 0;
-
-
+	EDL::id_lock = new Mutex("EDL::id_lock");
 
 // detect an UTF-8 locale and try to use a non-Unicode locale instead
 // <---Beginning of dirty hack

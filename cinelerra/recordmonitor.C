@@ -415,6 +415,7 @@ SET_TRACE
 	if(canvas && canvas->get_canvas())
 	{
 SET_TRACE
+		canvas->get_canvas()->unhide_cursor();
 SET_TRACE
 		return canvas->cursor_motion_event();
 	}

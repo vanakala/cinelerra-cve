@@ -62,6 +62,8 @@ public:
 // close the plugin
 	int close_plugin();    
 	void dump();
+// Release any objects which are required after playback stops.
+	void render_stop();
 
 // queries
 	void set_title(char *string);

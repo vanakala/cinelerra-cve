@@ -1252,7 +1252,7 @@ SET_TRACE
 SET_TRACE
 	gui->canvas->draw();
 SET_TRACE
-	gui->cursor->draw();
+	gui->cursor->draw(1);
 SET_TRACE
 	gui->show_window();
 	gui->raise_window();

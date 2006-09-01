@@ -13,13 +13,13 @@ public:
 
 	void create_objects();
 	int repeat_event(int64_t duration);
-	void draw();
-	void hide();
+	void draw(int flash);
+	void hide(int do_plugintoggles = 1);
 	void flash();
 	void activate();
 	void deactivate();
-	void show();
-	void restore();
+	void show(int do_plugintoggles = 1);
+	void restore(int do_plugintoggles);
 	void update();
 	void focus_in_event();
 	void focus_out_event();

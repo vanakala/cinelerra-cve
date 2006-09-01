@@ -14,6 +14,7 @@
 #include "guicast.h"
 #include "labels.h"
 #include "localsession.h"
+#include "mutex.h"
 #include "panauto.h"
 #include "panautos.h"
 #include "playbackconfig.h"
@@ -26,6 +27,13 @@
 #include "tracks.h"
 #include "transportque.inc"
 #include "vtrack.h"
+
+
+
+
+Mutex* EDL::id_lock = 0;
+
+
 
 EDL::EDL(EDL *parent_edl)
 {
@@ -513,6 +521,8 @@ int EDL::copy(double start,
 		}
 
 // Media
+// Don't replicate all assets for every clip.
+// The assets for the clips are probably in the mane EDL.
 		if(!is_clip)
 		copy_assets(start, 
 			end, 
@@ -1076,7 +1086,10 @@ void EDL::optimize()
 
 int EDL::next_id()
 {
-	return EDLSession::current_id++;
+	id_lock->lock("EDL::next_id");
+	int result = EDLSession::current_id++;
+	id_lock->unlock();
+	return result;
 }
 
 void EDL::get_shared_plugins(Track *source, 

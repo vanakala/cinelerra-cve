@@ -306,6 +306,17 @@ int FileThread::start_writing(long buffer_size,
 	return 0;
 }
 
+
+int64_t FileThread::get_memory_usage()
+{
+	frame_lock->lock("FileThread::get_memory_usage");
+	int64_t result = 0;
+// 2.0 to 2.1 Dummy place-holder patch for until variables better implemented  
+	frame_lock->unlock();
+	return result;
+}
+
+
 double** FileThread::get_audio_buffer()
 {
 	swap_buffer();

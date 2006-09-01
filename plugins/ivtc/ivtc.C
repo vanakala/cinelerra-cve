@@ -33,6 +33,7 @@ IVTCMain::IVTCMain(PluginServer *server)
 {
 	PLUGIN_CONSTRUCTOR_MACRO
 	engine = 0;
+	previous_min = 0x4000000000000000LL;
 }
 
 IVTCMain::~IVTCMain()
@@ -144,6 +145,12 @@ void IVTCMain::read_data(KeyFrame *keyframe)
 	}
 }
 
+
+
+void IVTCMain::render_stop()
+{
+	previous_min = 0x4000000000000000LL;
+}
 
 
 

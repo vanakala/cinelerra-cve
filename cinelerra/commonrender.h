@@ -29,6 +29,7 @@ public:
 	virtual VirtualConsole* new_vconsole_object() { return 0; };
 	virtual void init_output_buffers() {};
 	void start_plugins();
+	void stop_plugins();
 	int test_reconfigure(int64_t position, int64_t &length);
 
 	void evaluate_current_position();

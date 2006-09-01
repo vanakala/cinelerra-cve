@@ -58,7 +58,7 @@ int TrackScroll::handle_event()
 	mwindow->edl->local_session->track_start = get_value();
 	mwindow->edl->tracks->update_y_pixels(mwindow->theme);
 	mwindow->gui->canvas->draw();
-	mwindow->gui->cursor->draw();
+	mwindow->gui->cursor->draw(1);
 	mwindow->gui->patchbay->update();
 	mwindow->gui->canvas->flash();
 // Scrollbar must be active to trap button release events

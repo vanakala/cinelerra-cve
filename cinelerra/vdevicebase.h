@@ -1,6 +1,7 @@
 #ifndef VDEVICEBASE_H
 #define VDEVICEBASE_H
 
+#include "asset.inc"
 #include "assets.inc"
 #include "channel.inc"
 #include "edl.inc"
@@ -38,6 +39,10 @@ public:
 // Called by KeepaliveThread when the device appears to be stuck.
 // Should restart the device if that's what it takes to get it to work.
 	virtual void goose_input() {};
+
+// Called by Record::run to fix compression for certain devices.
+// Not saved as default asset.
+	virtual void fix_asset(Asset *asset) {};
 
 	VideoDevice *device;
 };

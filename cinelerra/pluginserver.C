@@ -324,6 +324,13 @@ void PluginServer::client_side_close()
 	}
 }
 
+void PluginServer::render_stop()
+{
+	if(client)
+		client->render_stop();
+}
+
+
 int PluginServer::init_realtime(int realtime_sched,
 		int total_in_buffers, 
 		int buffer_size)

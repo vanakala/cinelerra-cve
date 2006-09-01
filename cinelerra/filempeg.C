@@ -767,6 +767,16 @@ int FileMPEG::set_video_position(int64_t x)
 		return 1;
 }
 
+int64_t FileMPEG::get_memory_usage()
+{
+	if(rd && fd)
+	{
+		int64_t result = mpeg3_memory_usage(fd);
+		return result;
+	}
+	return 0;
+}
+
 
 int FileMPEG::write_samples(double **buffer, int64_t len)
 {

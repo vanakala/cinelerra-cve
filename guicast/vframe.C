@@ -36,12 +36,6 @@ public:
 
 VFrame::VFrame(unsigned char *png_data)
 {
-	reset_parameters();
-	read_png(png_data);
-}
-
-VFrame::VFrame(const PngData& png_data)
-{
 //printf("VFrame::VFrame 1\n");
 	reset_parameters();
 //printf("VFrame::VFrame 1\n");
@@ -400,24 +394,16 @@ int VFrame::allocate_compressed_data(long bytes)
 
 int VFrame::read_png(unsigned char *data)
 {
-	PngData d;
-	d.size = (((unsigned long)data[0]) << 24) | 
-		(((unsigned long)data[1]) << 16) | 
-		(((unsigned long)data[2]) << 8) | 
-		(unsigned char)data[3];
-	d.data = data + 4;
-	read_png(d);
-}
-
-int VFrame::read_png(const PngData& data)
-{
 	png_structp png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING, 0, 0, 0);
 	png_infop info_ptr = png_create_info_struct(png_ptr);
 	int new_color_model;
 
 	image_offset = 0;
-	image = data.data;
-	image_size = data.size;
+	image = data + 4;
+	image_size = (((unsigned long)data[0]) << 24) | 
+		(((unsigned long)data[1]) << 16) | 
+		(((unsigned long)data[2]) << 8) | 
+		(unsigned char)data[3];
 	png_set_read_fn(png_ptr, this, PngReadFunction::png_read_function);
 	png_read_info(png_ptr, info_ptr);
 

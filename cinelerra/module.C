@@ -148,6 +148,15 @@ int Module::render_init()
 	return 0;
 }
 
+void Module::render_stop()
+{
+	for(int i = 0; i < total_attachments; i++)
+	{
+		if(attachments[i])
+			attachments[i]->render_stop();
+	}
+}
+
 AttachmentPoint* Module::attachment_of(Plugin *plugin)
 {
 //printf("Module::attachment_of 1 %d\n", total_attachments);

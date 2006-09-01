@@ -303,6 +303,9 @@ private:
  	VFrame **list_pointers[100];
  	int list_lengths[100];
  	int list_total;
+
+	Mutex *id_lock;
+
 };
 
 

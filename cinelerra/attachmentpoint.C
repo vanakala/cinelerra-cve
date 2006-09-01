@@ -122,24 +122,15 @@ int AttachmentPoint::render_init()
 	return 0;
 }
 
-int AttachmentPoint::render_stop(int duplicate)
+void AttachmentPoint::render_stop()
 {
-	if(!this) printf("AttachmentPoint::render_stop NULL\n");
-// stop plugins
-// Can't use the on value here because it may have changed.
-	if(plugin_server && plugin->on && virtual_plugins.total && !duplicate)
+	if(plugin_server && plugin->on)
 	{
-// close the plugins if not shared
-		for(int i = 0; i < virtual_plugins.total; i++)
+		for(int i = 0; i < plugin_servers.total; i++)
 		{
-			if(i == 0 || !plugin_server->multichannel)
-			{
-				plugin_servers.values[i]->close_plugin();
-			}
+			plugin_servers.values[i]->render_stop();
 		}
-		plugin_servers.remove_all_objects();
 	}
-	return 0;
 }
 
 int AttachmentPoint::attach_virtual_plugin(VirtualNode *virtual_plugin)

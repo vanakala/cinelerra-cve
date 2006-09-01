@@ -348,6 +348,7 @@ int VWindowGUI::cursor_motion_event()
 {
 	if(canvas->get_canvas())
 	{
+		canvas->get_canvas()->unhide_cursor();
 		return canvas->cursor_motion_event();
 	}
 	return 0;
@@ -775,16 +776,16 @@ void VWindowTransport::goto_end()
 VWindowCanvas::VWindowCanvas(MWindow *mwindow, VWindowGUI *gui)
  : Canvas(mwindow,
  	gui,
- 		mwindow->theme->vcanvas_x, 
-		mwindow->theme->vcanvas_y, 
-		mwindow->theme->vcanvas_w, 
-		mwindow->theme->vcanvas_h,
-		0,
-		0,
-		0,
-		0,
-		0,
-		1)
+ 	mwindow->theme->vcanvas_x, 
+	mwindow->theme->vcanvas_y, 
+	mwindow->theme->vcanvas_w, 
+	mwindow->theme->vcanvas_h,
+	0,
+	0,
+	0,
+	0,
+	0,
+	1)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
@@ -819,8 +820,8 @@ void VWindowCanvas::draw_refresh()
 {
 	EDL *edl = gui->vwindow->get_edl();
 
-	if(!get_canvas()->video_is_on()) get_canvas()->clear_box(0, 0, get_canvas()->get_w(), get_canvas()->get_h());
-	if(!get_canvas()->video_is_on() && refresh_frame && edl)
+	if(!get_canvas()->get_video_on()) get_canvas()->clear_box(0, 0, get_canvas()->get_w(), get_canvas()->get_h());
+	if(!get_canvas()->get_video_on() && refresh_frame && edl)
 	{
 		int in_x, in_y, in_w, in_h, out_x, out_y, out_w, out_h;
 		get_transfers(edl, 
@@ -844,11 +845,10 @@ void VWindowCanvas::draw_refresh()
 				0);
 	}
 
-	if(!get_canvas()->video_is_on())
+	if(!get_canvas()->get_video_on())
 	{
 		draw_overlays();
 		get_canvas()->flash();
-		get_canvas()->flush();
 	}
 }
 

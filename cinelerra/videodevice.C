@@ -1,8 +1,10 @@
+#include "asset.h"
 #include "assets.h"
 #include "bccapture.h"
 #include "bcsignals.h"
 #include "channel.h"
 #include "chantables.h"
+#include "file.inc"
 #include "mutex.h"
 #include "picture.h"
 #include "playbackconfig.h"
@@ -105,7 +107,7 @@ VideoDevice::VideoDevice(MWindow *mwindow)
 	in_config = new VideoInConfig;
 	out_config = new VideoOutConfig;
 	channel = new Channel;
-	picture = new PictureConfig(mwindow);
+	picture = new PictureConfig(mwindow ? mwindow->defaults : 0);
 	sharing_lock = new Mutex("VideoDevice::sharing_lock");
 	channel_lock = new Mutex("VideoDevice::channel_lock");
 	picture_lock = new Mutex("VideoDevice::picture_lock");
@@ -157,7 +159,7 @@ int VideoDevice::open_input(VideoInConfig *config,
 	int input_x, 
 	int input_y, 
 	float input_z,
-	float frame_rate)
+	double frame_rate)
 {
 	int result = 0;
 
@@ -173,18 +175,18 @@ int VideoDevice::open_input(VideoInConfig *config,
 		case VIDEO4LINUX:
 			keepalive = new KeepaliveThread(this);
 			keepalive->start_keepalive();
-			input_base = new VDeviceV4L(this);
+			new_device_base();
 			result = input_base->open_input();
 			break;
 
 
 #ifdef HAVE_VIDEO4LINUX2
 		case VIDEO4LINUX2:
-			input_base = new VDeviceV4L2(this);
+			new_device_base();
 			result = input_base->open_input();
 			break;
 		case VIDEO4LINUX2JPEG:
-			input_base = new VDeviceV4L2JPEG(this);
+			new_device_base();
 			result = input_base->open_input();
 			break;
 #endif
@@ -192,20 +194,20 @@ int VideoDevice::open_input(VideoInConfig *config,
 		case SCREENCAPTURE:
 			this->input_x = input_x;
 			this->input_y = input_y;
-			input_base = new VDeviceX11(this, 0);
+			new_device_base();
 			result = input_base->open_input();
 			break;
 		case CAPTURE_BUZ:
 //printf("VideoDevice 1\n");
 			keepalive = new KeepaliveThread(this);
 			keepalive->start_keepalive();
-			input_base = new VDeviceBUZ(this);
+			new_device_base();
 			result = input_base->open_input();
 			break;
 #ifdef HAVE_FIREWIRE
 		case CAPTURE_FIREWIRE:
 		case CAPTURE_IEC61883:
-			input_base = new VDevice1394(this);
+			new_device_base();
 			result = input_base->open_input();
 			break;
 #endif
@@ -213,6 +215,42 @@ int VideoDevice::open_input(VideoInConfig *config,
 	
 	if(!result) capturing = 1;
 	return 0;
+}
+
+VDeviceBase* VideoDevice::new_device_base()
+{
+	switch(in_config->driver)
+	{
+		case VIDEO4LINUX:
+			return input_base = new VDeviceV4L(this);
+
+#ifdef HAVE_VIDEO4LINUX2
+		case VIDEO4LINUX2:
+			return input_base = new VDeviceV4L2(this);
+
+		case VIDEO4LINUX2JPEG:
+			return input_base = new VDeviceV4L2JPEG(this);
+#endif
+
+		case SCREENCAPTURE:
+			return input_base = new VDeviceX11(this, 0);
+
+		case CAPTURE_BUZ:
+			return input_base = new VDeviceBUZ(this);
+
+#ifdef HAVE_FIREWIRE
+		case CAPTURE_FIREWIRE:
+		case CAPTURE_IEC61883:
+			return input_base = new VDevice1394(this);
+#endif
+	}
+	return 0;
+}
+
+
+VDeviceBase* VideoDevice::get_output_base()
+{
+	return output_base;
 }
 
 int VideoDevice::is_compressed(int driver, int use_file, int use_fixed)
@@ -231,22 +269,35 @@ int VideoDevice::is_compressed(int use_file, int use_fixed)
 }
 
 
-char* VideoDevice::get_vcodec(int driver)
+void VideoDevice::fix_asset(Asset *asset, int driver)
 {
+// Fix asset using legacy routine
 	switch(driver)
 	{
 		case CAPTURE_BUZ:
 		case CAPTURE_LML:
 		case VIDEO4LINUX2JPEG:
-			return QUICKTIME_MJPA;
-			break;
+			if(asset->format != FILE_AVI &&
+				asset->format != FILE_MOV)
+				asset->format = FILE_MOV;
+			strcpy(asset->vcodec, QUICKTIME_MJPA);
+			return;
 		
 		case CAPTURE_FIREWIRE:
 		case CAPTURE_IEC61883:
-			return QUICKTIME_DVSD;
-			break;
+			if(asset->format != FILE_AVI &&
+				asset->format != FILE_MOV)
+				asset->format = FILE_MOV;
+			strcpy(asset->vcodec, QUICKTIME_DVSD);
+			return;
 	}
-	return "";
+
+// Fix asset using inherited routine
+	new_device_base();
+
+	if(input_base) input_base->fix_asset(asset);
+	delete input_base;
+	input_base = 0;
 }
 
 

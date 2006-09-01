@@ -26,7 +26,7 @@ AudioALSA::~AudioALSA()
 	delete timer;
 }
 
-void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title)
+void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title, int mode)
 {
 	snd_ctl_t *handle;
 	int card, err, dev, idx;
@@ -35,6 +35,15 @@ void AudioALSA::list_devices(ArrayList<char*> *devices, int pcm_title)
 	char string[BCTEXTLEN];
 	snd_pcm_stream_t stream = SND_PCM_STREAM_PLAYBACK;
 	int error;
+	switch(mode)
+	{
+		case MODERECORD:
+			stream = SND_PCM_STREAM_CAPTURE;
+			break;
+		case MODEPLAY:
+			stream = SND_PCM_STREAM_PLAYBACK;
+			break;
+	}
 
 	snd_ctl_card_info_alloca(&info);
 	snd_pcm_info_alloca(&pcminfo);
@@ -114,9 +123,13 @@ void AudioALSA::translate_name(char *output, char *input)
 {
 	ArrayList<char*> titles;
 	ArrayList<char*> pcm_titles;
+	int mode;
+	if(device->r) mode = MODERECORD;
+	else
+	if(device->w) mode = MODEPLAY;
 	
-	list_devices(&titles, 0);
-	list_devices(&pcm_titles, 1);
+	list_devices(&titles, 0, mode);
+	list_devices(&pcm_titles, 1, mode);
 
 	sprintf(output, "default");	
 	for(int i = 0; i < titles.total; i++)

@@ -44,6 +44,7 @@ public:
 	void read_data(KeyFrame *keyframe);
 	PLUGIN_CLASS_MEMBERS(IVTCConfig, IVTCThread)
 	void update_gui();
+	void render_stop();
 
 	int load_defaults();
 	int save_defaults();
@@ -66,6 +67,9 @@ public:
 	int64_t even_vs_prev;
 	int64_t odd_vs_current;
 	int64_t odd_vs_prev;
+
+// Closest combination of fields in previous calculation.
+	int64_t previous_min;
 	IVTCEngine *engine;
 };
 

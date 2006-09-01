@@ -3474,7 +3474,7 @@ void TrackCanvas::draw_overlays()
 		rerender);
 
 // Selection cursor
-	if(gui->cursor) gui->cursor->restore();
+	if(gui->cursor) gui->cursor->restore(1);
 
 // Handle dragging
 	draw_drag_handle();
@@ -3980,8 +3980,8 @@ int TrackCanvas::cursor_motion_event()
 // Don't que the CWindow
 			}
 
-			gui->cursor->hide();
-			gui->cursor->draw();
+			gui->cursor->hide(0);
+			gui->cursor->draw(1);
 			flash();
 			result = 1;
 			update_clock = 1;
@@ -4415,8 +4415,8 @@ int TrackCanvas::do_edit_handles(int cursor_x,
 			}
 			gui->timebar->update_highlights();
 			gui->zoombar->update();
-			gui->cursor->hide();
-			gui->cursor->draw();
+			gui->cursor->hide(0);
+			gui->cursor->draw(1);
 			draw_overlays();
 			flash();
 			flush();
@@ -4512,8 +4512,8 @@ int TrackCanvas::do_plugin_handles(int cursor_x,
 			}
 			gui->timebar->update_highlights();
 			gui->zoombar->update();
-			gui->cursor->hide();
-			gui->cursor->draw();
+			gui->cursor->hide(0);
+			gui->cursor->draw(1);
 			draw_overlays();
 			flash();
 			flush();

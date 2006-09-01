@@ -1,6 +1,5 @@
 #include <ctype.h>
 #include "bchash.h"
-#include "mwindow.h"
 #include "picture.h"
 #include <string.h>
 
@@ -52,9 +51,9 @@ char* PictureItem::get_default_string(char *string)
 
 
 
-PictureConfig::PictureConfig(MWindow *mwindow)
+PictureConfig::PictureConfig(BC_Hash *defaults)
 {
-	this->mwindow = mwindow;
+	this->defaults = defaults;
 	brightness = -1;
 	hue = -1;
 	color = -1;
@@ -135,16 +134,16 @@ void PictureConfig::copy_usage(PictureConfig *picture)
 
 void PictureConfig::load_defaults()
 {
-	if(!mwindow)
+	if(!defaults)
 	{
-		printf("PictureConfig::load_defaults: mwindow not set.\n");
+		printf("PictureConfig::load_defaults: no defaults pointer.\n");
 		return;
 	}
-	brightness = mwindow->defaults->get("VIDEO_BRIGHTNESS", 0);
-	hue = mwindow->defaults->get("VIDEO_HUE", 0);
-	color = mwindow->defaults->get("VIDEO_COLOR", 0);
-	contrast = mwindow->defaults->get("VIDEO_CONTRAST", 0);
-	whiteness = mwindow->defaults->get("VIDEO_WHITENESS", 0);
+	brightness = defaults->get("VIDEO_BRIGHTNESS", 0);
+	hue = defaults->get("VIDEO_HUE", 0);
+	color = defaults->get("VIDEO_COLOR", 0);
+	contrast = defaults->get("VIDEO_CONTRAST", 0);
+	whiteness = defaults->get("VIDEO_WHITENESS", 0);
 
 // The device must be probed first to keep unsupported controls from getting 
 // displayed.
@@ -153,30 +152,46 @@ void PictureConfig::load_defaults()
 		PictureItem *item = controls.values[i];
 		char string[BCTEXTLEN];
 		item->get_default_string(string);
-		item->value = mwindow->defaults->get(string, item->value);
+		item->value = defaults->get(string, item->value);
 //printf("PictureConfig::load_defaults %s %d %d\n", item->name, item->device_id, item->value);
 	}
 }
 
 void PictureConfig::save_defaults()
 {
-	if(!mwindow)
+	if(!defaults)
 	{
-		printf("PictureConfig::save_defaults: mwindow not set.\n");
+		printf("PictureConfig::save_defaults: no defaults pointer.\n");
 		return;
 	}
-	mwindow->defaults->update("VIDEO_BRIGHTNESS", brightness);
-	mwindow->defaults->update("VIDEO_HUE", hue);
-	mwindow->defaults->update("VIDEO_COLOR", color);
-	mwindow->defaults->update("VIDEO_CONTRAST", contrast);
-	mwindow->defaults->update("VIDEO_WHITENESS", whiteness);
+	defaults->update("VIDEO_BRIGHTNESS", brightness);
+	defaults->update("VIDEO_HUE", hue);
+	defaults->update("VIDEO_COLOR", color);
+	defaults->update("VIDEO_CONTRAST", contrast);
+	defaults->update("VIDEO_WHITENESS", whiteness);
 	for(int i = 0; i < controls.total; i++)
 	{
 		PictureItem *item = controls.values[i];
 		char string[BCTEXTLEN];
 		item->get_default_string(string);
-		mwindow->defaults->update(string, item->value);
+		defaults->update(string, item->value);
 //printf("PictureConfig::save_defaults %s %d %d\n", string, item->device_id, item->value);
+	}
+}
+
+void PictureConfig::dump()
+{
+	printf("    VIDEO_BRIGHTNESS=%d\n", brightness);
+	printf("    VIDEO_HUE=%d\n", hue);
+	printf("    VIDEO_COLOR=%d\n", color);
+	printf("    VIDEO_CONTRAST=%d\n", contrast);
+	printf("    VIDEO_WHITENESS=%d\n", whiteness);
+	for(int i = 0; i < controls.total; i++)
+	{
+		PictureItem *item = controls.values[i];
+		char string[BCTEXTLEN];
+		item->get_default_string(string);
+		printf("    %s=%d\n", string, item->value);
 	}
 }
 

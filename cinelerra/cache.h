@@ -68,6 +68,9 @@ public:
 	int delete_entry(Asset *asset);
 	int delete_entry(char *path);
 
+	int64_t get_memory_usage(int use_lock);
+
+
 // increment counters after rendering a buffer length
 // since you can't know how big the cache is until after rendering the buffer
 // deletes oldest assets until under the memory limit
@@ -82,7 +85,6 @@ private:
 // returns 1 if nothing was available to delete
 // 0 if successful
 	int delete_oldest();
-	int64_t get_memory_usage();
 
 // for deleting items
 	int lock_all();

@@ -419,6 +419,17 @@ void FileMOV::format_to_asset()
 	}
 }
 
+int64_t FileMOV::get_memory_usage()
+{
+	if(rd && fd)
+	{
+		int64_t result = quicktime_memory_usage(fd);
+//printf("FileMOV::get_memory_usage 1 %d\n", result);
+		return result;
+	}
+	return 0;
+}
+
 int FileMOV::colormodel_supported(int colormodel)
 {
 	return colormodel;

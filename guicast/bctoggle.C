@@ -4,6 +4,7 @@
 #include "bctoggle.h"
 #include "clip.h"
 #include "colors.h"
+#include "cursors.h"
 #include "fonts.h"
 #include "vframe.h"
 
@@ -65,7 +66,7 @@ int BC_Toggle::initialize()
 
 // Create the subwindow
 	BC_SubWindow::initialize();
-
+	set_cursor(UPRIGHT_ARROW_CURSOR);
 // Display the bitmap
 	draw_face();
 	return 0;

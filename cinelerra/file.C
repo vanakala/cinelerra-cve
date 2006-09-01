@@ -327,7 +327,6 @@ int File::open_file(Preferences *preferences,
 			char test[16];
 			fread(test, 16, 1, stream);
 
-SET_TRACE
 			if(FileDV::check_sig(this->asset))
 			{
 // libdv
@@ -897,6 +896,7 @@ VFrame*** File::get_video_buffer()
 int File::read_samples(double *buffer, int64_t len, int64_t base_samplerate, float *buffer_float)
 {
 	int result = 0;
+	if(len < 0) return 0;
 
 // Never try to read more samples than exist in the file
 	if (current_sample + len > asset->audio_length) {
@@ -1420,9 +1420,9 @@ int File::colormodel_supported(int colormodel)
 }
 
 
-int File::get_memory_usage()
+int64_t File::get_memory_usage() 
 {
-	int result = 0;
+	int64_t result = 0;
 	if(temp_frame) result += temp_frame->get_data_size();
 	if(file) result += file->get_memory_usage();
 	result += frame_cache->get_memory_usage();

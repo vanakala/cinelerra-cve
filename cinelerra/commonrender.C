@@ -120,6 +120,14 @@ void CommonRender::start_plugins()
 	}
 }
 
+void CommonRender::stop_plugins()
+{
+	for(int i = 0; i < total_modules; i++)
+	{
+		modules[i]->render_stop();
+	}
+}
+
 int CommonRender::test_reconfigure(int64_t position, int64_t &length)
 {
 	if(!vconsole) return 1;

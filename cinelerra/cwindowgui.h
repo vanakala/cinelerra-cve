@@ -49,6 +49,7 @@ public:
 	int cursor_motion_event();
 
 
+	void zoom_canvas(int do_auto, double value, int update_menu);
 
 	int close_event();
 	int keypress_event();

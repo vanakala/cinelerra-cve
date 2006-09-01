@@ -46,7 +46,10 @@ public:
 	AttachmentPoint* get_attachment(int number);
 
 	void dump();
+// Start plugin rendering
 	int render_init();
+// Stop plugin rendering in case any resources have to be freed.
+	void render_stop();
 // Current_position is relative to the EDL rate.
 // If direction is REVERSE, the object before current_position is tested.
 	void update_transition(int64_t current_position, int direction);

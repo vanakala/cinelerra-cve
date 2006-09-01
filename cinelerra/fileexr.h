@@ -22,7 +22,7 @@ public:
 	int colormodel_supported(int colormodel);
 	int read_frame_header(char *path);
 	int read_frame(VFrame *frame, VFrame *data);
-	int get_memory_usage();
+	int64_t get_memory_usage();
 	int write_frame(VFrame *frame, VFrame *data, FrameWriterUnit *unit);
 	FrameWriterUnit* new_writer_unit(FrameWriter *writer);
 

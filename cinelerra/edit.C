@@ -278,7 +278,7 @@ int Edit::operator==(Edit &edit)
 
 double Edit::frames_per_picon()
 {
-	return picon_w() / frame_w();
+	return Units::round(picon_w()) / frame_w();
 }
 
 double Edit::frame_w()

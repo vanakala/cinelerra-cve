@@ -428,8 +428,8 @@ int MWindow::next_label()
 			update_plugin_guis();
 			gui->patchbay->update();
 			gui->timebar->update();
-			gui->cursor->hide();
-			gui->cursor->draw();
+			gui->cursor->hide(0);
+			gui->cursor->draw(1);
 			gui->zoombar->update();
 			gui->canvas->flash();
 			gui->flush();
@@ -477,8 +477,8 @@ int MWindow::prev_label()
 			update_plugin_guis();
 			gui->patchbay->update();
 			gui->timebar->update();
-			gui->cursor->hide();
-			gui->cursor->draw();
+			gui->cursor->hide(0);
+			gui->cursor->draw(1);
 			gui->zoombar->update();
 			gui->canvas->flash();
 			gui->flush();
@@ -544,8 +544,8 @@ int MWindow::next_edit_handle()
 			update_plugin_guis();
 			gui->patchbay->update();
 			gui->timebar->update();
-			gui->cursor->hide();
-			gui->cursor->draw();
+			gui->cursor->hide(0);
+			gui->cursor->draw(1);
 			gui->zoombar->update();
 			gui->canvas->flash();
 			gui->flush();
@@ -607,8 +607,8 @@ int MWindow::prev_edit_handle()
 			update_plugin_guis();
 			gui->patchbay->update();
 			gui->timebar->update();
-			gui->cursor->hide();
-			gui->cursor->draw();
+			gui->cursor->hide(0);
+			gui->cursor->draw(1);
 			gui->zoombar->update();
 			gui->canvas->flash();
 			gui->flush();

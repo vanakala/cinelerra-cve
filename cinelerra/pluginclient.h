@@ -278,6 +278,8 @@ public:
 	virtual int plugin_process_loop(double **buffers, int64_t &write_length) { return 1; };
 // get parameters depending on video or audio
 	virtual int init_realtime_parameters();     
+// release objects which are required after playback stops
+	virtual void render_stop() {};
 	int get_gui_status();
 	char* get_gui_string();
 

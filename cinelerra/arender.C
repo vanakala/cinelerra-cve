@@ -318,6 +318,7 @@ void ARender::run()
 	if(!interrupt) send_last_buffer();
 	if(renderengine->command->realtime) wait_device_completion();
 	vconsole->stop_rendering(0);
+	stop_plugins();
 }
 
 

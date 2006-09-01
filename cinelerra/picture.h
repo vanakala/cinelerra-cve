@@ -31,16 +31,17 @@ public:
 class PictureConfig
 {
 public:
-	PictureConfig(MWindow *mwindow);
+	PictureConfig(BC_Hash *defaults);
 	~PictureConfig();
 	void copy_settings(PictureConfig *picture);
 	void copy_usage(PictureConfig *picture);
 	void load_defaults();
 	void save_defaults();
 	void set_item(int device_id, int value);
+	void dump();
 
 	int brightness;
-	int hue;\
+	int hue;
 	int color;
 	int contrast;
 	int whiteness;
@@ -58,7 +59,7 @@ public:
 	PictureItem* get_item(const char *name, int id);
 	ArrayList<PictureItem*> controls;
 // Pointer to MWindow::defaults get defaults
-	MWindow *mwindow;
+	BC_Hash *defaults;
 };
 
 

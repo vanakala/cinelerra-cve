@@ -35,6 +35,7 @@ public:
 
 
 
+	int64_t get_memory_usage();
 
 // write data into next available buffer
 	int write_buffer(long size);
@@ -68,6 +69,8 @@ public:
 	int color_model;
 // Whether to use the compressed data in the frame
 	int compressed;
+// Lock access to read_frames
+	Mutex *frame_lock;
 };
 
 

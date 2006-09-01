@@ -175,8 +175,8 @@ void MTimeBar::select_label(double position)
 
 // Que the CWindow
 	mwindow->cwindow->update(1, 0, 0);
-	mwindow->gui->cursor->hide();
-	mwindow->gui->cursor->draw();
+	mwindow->gui->cursor->hide(0);
+	mwindow->gui->cursor->draw(1);
 	mwindow->gui->canvas->activate();
 	mwindow->gui->zoombar->update();
 	update_highlights();

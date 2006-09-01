@@ -1,4 +1,5 @@
 #include "bcsignals.h"
+#include "cursors.h"
 #include "guicast.h"
 #include "keys.h"
 #include "language.h"
@@ -133,7 +134,8 @@ public:
 				break;
 		}
 		printf("%d\n", current_cursor);
-		set_x_cursor(current_cursor);
+//		set_x_cursor(current_cursor);
+set_cursor(TRANSPARENT_CURSOR);
 	}
 	
 	int current_cursor;

@@ -122,10 +122,10 @@ Device1394Output::~Device1394Output()
 	if(temp_frame) delete temp_frame;
 	if(temp_frame2) delete temp_frame2;
 	if(video_encoder) dv_delete(video_encoder);
+	if(position_presented) delete position_presented;
 	if(audio_encoder) dv_delete(audio_encoder);
 	if(buffer_lock) delete buffer_lock;
 	if(position_lock) delete position_lock;
-	if(position_presented) delete position_presented;
 }
 
 

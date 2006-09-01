@@ -41,6 +41,7 @@
 #include "bcslider.inc"
 #include "bcsubwindow.inc"
 #include "bctextbox.inc"
+#include "bctimer.inc"
 #include "bctitle.inc"
 #include "bctoggle.inc"
 #include "bctumble.inc"
@@ -252,10 +253,15 @@ public:
 	int get_bgcolor();
 	void set_font(int font);
 // Set the cursor to a macro from cursors.h
-	void set_cursor(int cursor, int is_hourglass = 0);
+// Set override if the caller is enabling hourglass or hiding the cursor
+	void set_cursor(int cursor, int override = 0);
 // Set the cursor to a character in the X cursor library.  Used by test.C
 	void set_x_cursor(int cursor);
 	int get_cursor();
+// Shows the cursor after it's hidden by video playback
+	void unhide_cursor();
+// Called by video updating routines to hide the cursor after a timeout
+	void update_video_cursor();
 
 // Entry point for starting hourglass.  
 // Converts all cursors and saves the previous cursor.
@@ -387,7 +393,6 @@ public:
 	char* get_title();
 	void start_video();
 	void stop_video();
-	int video_is_on();
 	void set_done(int return_value);
 // Get a bitmap to draw on the window with
 	BC_Bitmap* new_bitmap(int w, int h, int color_model = -1);
@@ -704,12 +709,14 @@ private:
 	Atom ProtoXAtom;
 	Atom RepeaterXAtom;
 	Atom SetDoneXAtom;
-// Cursor before starting an hourglass operation.
-	int prev_cursor;
 // Number of times start_hourglass was called
 	int hourglass_total;
-// Cursor set by last set_cursor.
+// Cursor set by last set_cursor which wasn't an hourglass or transparent.
 	int current_cursor;
+// If hourglass overrides current cursor.  Only effective in top level.
+	int is_hourglass;
+// If transparent overrides all cursors.  Only effective in subwindow.
+	int is_transparent;
 	Cursor arrow_cursor;
 	Cursor cross_cursor;
 	Cursor ibeam_cursor;
@@ -725,6 +732,7 @@ private:
 	Cursor downleft_resize_cursor;
 	Cursor downright_resize_cursor;
 	Cursor hourglass_cursor;
+	Cursor transparent_cursor;
 
 	int xvideo_port_id;
 	ArrayList<BC_ResizeCall*> resize_history;
@@ -755,6 +763,8 @@ private:
 	Condition *event_condition;
 	BC_WindowEvents *event_thread;
 	int is_deleting;
+// Hide cursor when video is enabled
+	Timer *cursor_timer;
 };
 
 

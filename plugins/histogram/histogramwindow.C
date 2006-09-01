@@ -1,5 +1,6 @@
 #include "bcdisplayinfo.h"
 #include "bcsignals.h"
+#include "cursors.h"
 #include "histogram.h"
 #include "histogramconfig.h"
 #include "histogramwindow.h"
@@ -180,6 +181,7 @@ int HistogramWindow::create_objects()
 		y,
 		&plugin->config.threshold);
 	threshold->create_objects();
+
 	x = x1;
 	y += 40;	
 	add_subwindow(split = new HistogramSplit(plugin, x, y));
@@ -702,7 +704,6 @@ int HistogramSplit::handle_event()
 	plugin->send_configure_change();
 	return 1;
 }
-
 
 
 

@@ -76,9 +76,15 @@ public:
 		int input_x, 
 		int input_y, 
 		float input_z,
-		float frame_rate);
+		double frame_rate);
+
+// Call the constructor of the desired device.
+// Used by fix_asset and open_input
+	VDeviceBase* new_device_base();
 
 
+// Used for calling OpenGL functions
+	VDeviceBase* get_output_base();
 
 // Return 1 if the data is compressed.
 // Called by Record::run to determine if compression option is fixed.
@@ -90,7 +96,7 @@ public:
 
 
 // Return codec to store on disk if compressed
-	static char* get_vcodec(int driver);
+	void fix_asset(Asset *asset, int driver);
 	static char* drivertostr(int driver);
 // Get the best colormodel for recording given the file format.
 // Must be called between open_input and read_buffer.
@@ -188,7 +194,7 @@ public:
 
 
 	int is_recording; // status of thread
-	float frame_rate; // Frame rate to set in device
+	double frame_rate; // Frame rate to set in device
 // Location of input frame in captured frame
 	int frame_in_capture_x1, frame_in_capture_x2, frame_in_capture_y1, frame_in_capture_y2;
 	int capture_in_frame_x1, capture_in_frame_x2, capture_in_frame_y1, capture_in_frame_y2;

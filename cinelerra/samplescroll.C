@@ -79,7 +79,7 @@ int SampleScroll::handle_event()
 
 //printf("SampleScroll::handle_event 1 %ld\n", mwindow->edl->local_session->view_start);
 	mwindow->gui->canvas->draw();
-	mwindow->gui->cursor->draw();
+	mwindow->gui->cursor->draw(1);
 
 //printf("SampleScroll::handle_event 1\n");
 	mwindow->gui->canvas->flash();

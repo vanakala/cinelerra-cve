@@ -68,6 +68,8 @@ public:
 	int read_samples_float(float *buffer, int64_t len);
 	int prefer_samples_float();
 
+	int64_t get_memory_usage();
+
 // Direct copy routines
 	static int get_best_colormodel(Asset *asset, int driver);
 	int colormodel_supported(int colormodel);

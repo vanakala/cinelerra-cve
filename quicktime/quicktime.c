@@ -985,6 +985,16 @@ int quicktime_delete_video_map(quicktime_video_map_t *vtrack)
 	return 0;
 }
 
+int64_t quicktime_memory_usage(quicktime_t *file)
+{
+	int i;
+	int64_t result = 0;
+//printf("quicktime_memory_usage %d\n", file->total_vtracks);
+// 2.0 to 2.1 patch placeholder
+	return result;
+}
+
+
 int quicktime_init_audio_map(quicktime_audio_map_t *atrack, quicktime_trak_t *trak)
 {
 	atrack->track = trak;

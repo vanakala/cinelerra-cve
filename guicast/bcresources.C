@@ -82,6 +82,7 @@ int BC_Resources::x_error_handler(Display *display, XErrorEvent *event)
 BC_Resources::BC_Resources()
 {
 	display_info = new BC_DisplayInfo("", 0);
+	id_lock = new Mutex("BC_Resources::id_lock");
 
 	for(int i = 0; i < FILEBOX_HISTORY_SIZE; i++)
 		filebox_history[i][0] = 0;

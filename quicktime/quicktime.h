@@ -384,6 +384,9 @@ long quicktime_decode_video(quicktime_t *file,
 	unsigned char **row_pointers, 
 	int track);
 
+/* Get memory used by video decoders.  Only counts frame caches. */
+int64_t quicktime_memory_usage(quicktime_t *file);
+
 /* Decode or encode audio for a single channel into the buffer. */
 /* Pass a buffer for the _i or the _f argument if you want int16 or float data. */
 /* Notice that encoding requires an array of pointers to each channel. */

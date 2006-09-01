@@ -12,6 +12,7 @@
 #include "labels.inc"
 #include "localsession.inc"
 #include "maxchannels.h"
+#include "mutex.inc"
 #include "playbackconfig.h"
 #include "pluginserver.h"
 #include "preferences.inc"
@@ -219,6 +220,8 @@ public:
 // Use parent Assets if nonzero
 	EDL *parent_edl;
 
+
+	static Mutex *id_lock;
 
 // unique ID of this EDL for resource window
 	int id;

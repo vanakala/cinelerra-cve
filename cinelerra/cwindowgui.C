@@ -280,6 +280,7 @@ int CWindowGUI::cursor_motion_event()
 {
 	if(canvas->get_canvas())
 	{
+		canvas->get_canvas()->unhide_cursor();
 		return canvas->cursor_motion_event();
 	}
 	return 0;
@@ -314,6 +315,35 @@ void CWindowGUI::draw_status()
 		active->get_h());
 }
 
+
+void CWindowGUI::zoom_canvas(int do_auto, double value, int update_menu)
+{
+	if(do_auto)
+		mwindow->edl->session->cwindow_scrollbars = 0;
+	else
+		mwindow->edl->session->cwindow_scrollbars = 1;
+
+	float old_zoom = mwindow->edl->session->cwindow_zoom;
+	float new_zoom = value;
+	float x = canvas->w / 2;
+	float y = canvas->h / 2;
+	canvas->canvas_to_output(mwindow->edl, 
+				0, 
+				x, 
+				y);
+	x -= canvas->w_visible / 2 * old_zoom / new_zoom;
+	y -= canvas->h_visible / 2 * old_zoom / new_zoom;
+
+	canvas->update_zoom((int)x, 
+		(int)y, 
+		new_zoom);
+	canvas->reposition_window(mwindow->edl, 
+		mwindow->theme->ccanvas_x,
+		mwindow->theme->ccanvas_y,
+		mwindow->theme->ccanvas_w,
+		mwindow->theme->ccanvas_h);
+	canvas->draw_refresh();
+}
 
 
 // TODO
@@ -611,32 +641,13 @@ int CWindowZoom::handle_event()
 {
 	if(!strcasecmp(AUTO_ZOOM, get_text()))
 	{
-		mwindow->edl->session->cwindow_scrollbars = 0;
+		gui->zoom_canvas(1, get_value(), 0);
 	}
 	else
 	{
-		mwindow->edl->session->cwindow_scrollbars = 1;
+		gui->zoom_canvas(0, get_value(), 0);
 	}
 
-	float old_zoom = mwindow->edl->session->cwindow_zoom;
-	float new_zoom = get_value();
-	float x = gui->canvas->w / 2;
-	float y = gui->canvas->h / 2;
-	gui->canvas->canvas_to_output(mwindow->edl, 
-				0, 
-				x, 
-				y);
-	x -= gui->canvas->w_visible / 2 * old_zoom / new_zoom;
-	y -= gui->canvas->h_visible / 2 * old_zoom / new_zoom;
-	gui->canvas->update_zoom((int)x, 
-		(int)y, 
-		new_zoom);
-	gui->canvas->reposition_window(mwindow->edl, 
-		mwindow->theme->ccanvas_x,
-		mwindow->theme->ccanvas_y,
-		mwindow->theme->ccanvas_w,
-		mwindow->theme->ccanvas_h);
-	gui->canvas->draw_refresh();
 	return 1;
 }
 
@@ -778,14 +789,14 @@ void CWindowTransport::goto_end()
 CWindowCanvas::CWindowCanvas(MWindow *mwindow, CWindowGUI *gui)
  : Canvas(mwindow,
  	gui,
-		mwindow->theme->ccanvas_x,
-		mwindow->theme->ccanvas_y,
-		mwindow->theme->ccanvas_w,
-		mwindow->theme->ccanvas_h,
-		0,
-		0,
-		mwindow->edl->session->cwindow_scrollbars,
-		1)
+	mwindow->theme->ccanvas_x,
+	mwindow->theme->ccanvas_y,
+	mwindow->theme->ccanvas_w,
+	mwindow->theme->ccanvas_h,
+	0,
+	0,
+	mwindow->edl->session->cwindow_scrollbars,
+	1)
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
@@ -834,7 +845,7 @@ float CWindowCanvas::get_zoom()
 
 void CWindowCanvas::draw_refresh()
 {
-	if(!get_canvas()->video_is_on())
+	if(get_canvas() && !get_canvas()->get_video_on())
 	{
 		get_canvas()->clear_box(0, 0, get_canvas()->get_w(), get_canvas()->get_h());
 
@@ -874,7 +885,6 @@ void CWindowCanvas::draw_refresh()
 
 		draw_overlays();
 		get_canvas()->flash();
-		get_canvas()->flush();
 	}
 //printf("CWindowCanvas::draw_refresh 10\n");
 }
@@ -2157,22 +2167,23 @@ int CWindowCanvas::test_bezier(int button_press,
 
 			if(!gui->affected_x && !gui->affected_y && !gui->affected_z)
 			{
-				Autos *affected_x_autos;
-				Autos *affected_y_autos;
-				Autos *affected_z_autos;
+				FloatAutos *affected_x_autos;
+				FloatAutos *affected_y_autos;
+				FloatAutos *affected_z_autos;
 				if(!gui->affected_track) return 0;
 				if(mwindow->edl->session->cwindow_operation == CWINDOW_CAMERA)
 				{
-					affected_x_autos = gui->affected_track->automation->autos[AUTOMATION_CAMERA_X];
-					affected_y_autos = gui->affected_track->automation->autos[AUTOMATION_CAMERA_Y];
-					affected_z_autos = gui->affected_track->automation->autos[AUTOMATION_CAMERA_Z];
+					affected_x_autos = (FloatAutos*)gui->affected_track->automation->autos[AUTOMATION_CAMERA_X];
+					affected_y_autos = (FloatAutos*)gui->affected_track->automation->autos[AUTOMATION_CAMERA_Y];
+					affected_z_autos = (FloatAutos*)gui->affected_track->automation->autos[AUTOMATION_CAMERA_Z];
 				}
 				else
 				{
-					affected_x_autos = gui->affected_track->automation->autos[AUTOMATION_PROJECTOR_X];
-					affected_y_autos = gui->affected_track->automation->autos[AUTOMATION_PROJECTOR_Y];
-					affected_z_autos = gui->affected_track->automation->autos[AUTOMATION_PROJECTOR_Z];
+					affected_x_autos = (FloatAutos*)gui->affected_track->automation->autos[AUTOMATION_PROJECTOR_X];
+					affected_y_autos = (FloatAutos*)gui->affected_track->automation->autos[AUTOMATION_PROJECTOR_Y];
+					affected_z_autos = (FloatAutos*)gui->affected_track->automation->autos[AUTOMATION_PROJECTOR_Z];
 				}
+
 
 				if(gui->translating_zoom)
 				{

@@ -3,9 +3,11 @@
 #include "bcpopup.h"
 #include "bcresources.h"
 #include "bcsignals.h"
+#include "bctimer.h"
 #include "bcwindowbase.h"
 #include "clip.h"
 #include "colors.h"
+#include "cursors.h"
 #include "fonts.h"
 #include "vframe.h"
 #include <string.h>
@@ -726,6 +728,10 @@ void BC_WindowBase::draw_bitmap(BC_Bitmap *bitmap,
 	int src_h,
 	BC_Pixmap *pixmap)
 {
+
+// Hide cursor if video enabled
+	update_video_cursor();
+
 //printf("BC_WindowBase::draw_bitmap 1\n");
 	if(dest_w <= 0 || dest_h <= 0)
 	{

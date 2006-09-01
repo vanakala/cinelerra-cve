@@ -312,7 +312,7 @@ int ADevicePrefs::create_alsa_objs()
 	int x1 = x + menu->get_w() + 5;
 
 	ArrayList<char*> *alsa_titles = new ArrayList<char*>;
-	AudioALSA::list_devices(alsa_titles);
+	AudioALSA::list_devices(alsa_titles, 0, mode);
 
 	alsa_drivers = new ArrayList<BC_ListBoxItem*>;
 	for(int i = 0; i < alsa_titles->total; i++)

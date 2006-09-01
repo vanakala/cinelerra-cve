@@ -9,6 +9,7 @@
 #include "bcresources.h"
 #include "bcsignals.h"
 #include "bcsubwindow.h"
+#include "bctimer.h"
 #include "bcwidgetgrid.h"
 #include "bcwindowbase.h"
 #include "bcwindowevents.h"
@@ -187,7 +188,7 @@ int BC_WindowBase::initialize()
 	tooltip_done = 0;
 	current_font = MEDIUMFONT;
 	current_color = BLACK;
-	prev_cursor = current_cursor = ARROW_CURSOR;
+	current_cursor = ARROW_CURSOR;
 	hourglass_total = 0;
 	is_dragging = 0;
 	shared_bg_pixmap = 0;
@@ -201,6 +202,8 @@ int BC_WindowBase::initialize()
 	toggle_value = 0;
 	toggle_drag = 0;
 	has_focus = 0;
+	is_hourglass = 0;
+	is_transparent = 0;
 #ifdef HAVE_LIBXXF86VM
     vm_switched = 0;
 #endif
@@ -211,6 +214,7 @@ int BC_WindowBase::initialize()
 // Need these right away since put_event is called before run_window sometimes.
 	event_lock = new Mutex("BC_WindowBase::event_lock");
 	event_condition = new Condition(0, "BC_WindowBase::event_condition");
+	cursor_timer = new Timer;
 	event_thread = 0;
 
 	return 0;
@@ -436,6 +440,9 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 			this->bg_color = resources.get_bg_color();
 		attr.background_pixel = top_level->get_color(bg_color);
 		attr.colormap = top_level->cmap;
+		if(top_level->is_hourglass)
+			attr.cursor = top_level->get_cursor_struct(HOURGLASS_CURSOR);
+		else
 		attr.cursor = top_level->get_cursor_struct(ARROW_CURSOR);
 		attr.override_redirect = True;
 		attr.save_under = True;
@@ -456,9 +463,15 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 
 	if(window_type == SUB_WINDOW)
 	{
-		mask = CWBackPixel | CWEventMask;
+		mask = CWBackPixel | 
+			CWEventMask | 
+			CWCursor;
 		attr.event_mask = DEFAULT_EVENT_MASKS;
 		attr.background_pixel = top_level->get_color(this->bg_color);
+		if(top_level->is_hourglass)
+			attr.cursor = top_level->get_cursor_struct(HOURGLASS_CURSOR);
+		else
+			attr.cursor = top_level->get_cursor_struct(ARROW_CURSOR);
 		win = XCreateWindow(top_level->display, 
 			parent_window->win, 
 			this->x, 
@@ -1001,6 +1014,7 @@ int BC_WindowBase::dispatch_translation_event()
 int BC_WindowBase::dispatch_motion_event()
 {
 	int result = 0;
+	unhide_cursor();
 
 	if(top_level == this)
 	{
@@ -1175,8 +1189,42 @@ int BC_WindowBase::dispatch_repeat_event(int64_t duration)
 	return 0;
 }
 
+void BC_WindowBase::unhide_cursor()
+{
+	if(is_transparent)
+	{
+		is_transparent = 0;
+		if(top_level->is_hourglass)
+			set_cursor(HOURGLASS_CURSOR, 1);
+		else
+			set_cursor(current_cursor, 1);
+	}
+	cursor_timer->update();
+}
+
+
+void BC_WindowBase::update_video_cursor()
+{
+	if(video_on && !is_transparent)
+	{
+		if(cursor_timer->get_difference() > VIDEO_CURSOR_TIMEOUT && !is_transparent)
+		{
+			is_transparent = 1;
+			set_cursor(TRANSPARENT_CURSOR, 1);
+			cursor_timer->update();
+		}
+	}
+	else
+	{
+		cursor_timer->update();
+	}
+}
+
+
 int BC_WindowBase::dispatch_cursor_leave()
 {
+	unhide_cursor();
+
 	for(int i = 0; i < subwindows->total; i++)
 	{
 		subwindows->values[i]->dispatch_cursor_leave();
@@ -1189,6 +1237,8 @@ int BC_WindowBase::dispatch_cursor_leave()
 int BC_WindowBase::dispatch_cursor_enter()
 {
 	int result = 0;
+
+	unhide_cursor();
 
 	if(active_menubar) result = active_menubar->dispatch_cursor_enter();
 	if(!result && active_popup_menu) result = active_popup_menu->dispatch_cursor_enter();
@@ -1451,6 +1501,26 @@ void BC_WindowBase::init_cursors()
 	downleft_resize_cursor = XCreateFontCursor(display, XC_bottom_left_corner);
 	downright_resize_cursor = XCreateFontCursor(display, XC_bottom_right_corner);
 	hourglass_cursor = XCreateFontCursor(display, XC_watch);
+
+
+	char cursor_data[] = { 0,0,0,0, 0,0,0,0 };
+	Colormap colormap = DefaultColormap(display, screen);
+	Pixmap pixmap_bottom = XCreateBitmapFromData(display, 
+		rootwin,
+		cursor_data, 
+		8,
+		8);
+	XColor black, dummy;
+    XAllocNamedColor(display, colormap, "black", &black, &dummy);
+	transparent_cursor = XCreatePixmapCursor(display,
+		pixmap_bottom,
+		pixmap_bottom,
+		&black,
+		&black,
+		0,
+		0);
+//	XDefineCursor(display, win, transparent_cursor);
+	XFreePixmap(display, pixmap_bottom);
 }
 
 int BC_WindowBase::evaluate_color_model(int client_byte_order, int server_byte_order, int depth)
@@ -1895,13 +1965,9 @@ int64_t BC_WindowBase::get_color_bgr24(int color)
 	return result;
 }
 
-int BC_WindowBase::video_is_on()
-{
-	return video_on;
-}
-
 void BC_WindowBase::start_video()
 {
+	cursor_timer->update();
 	video_on = 1;
 //	set_color(BLACK);
 //	draw_box(0, 0, get_w(), get_h());
@@ -1911,6 +1977,7 @@ void BC_WindowBase::start_video()
 void BC_WindowBase::stop_video()
 {
 	video_on = 0;
+	unhide_cursor();
 }
 
 
@@ -1956,24 +2023,22 @@ Cursor BC_WindowBase::get_cursor_struct(int cursor)
 		case DOWNLEFT_RESIZE:      return top_level->downleft_resize_cursor;   	   break;
 		case DOWNRIGHT_RESIZE:     return top_level->downright_resize_cursor;  	   break;
 		case HOURGLASS_CURSOR:     return top_level->hourglass_cursor;  	       break;
+		case TRANSPARENT_CURSOR:   return top_level->transparent_cursor;  	       break;
 	}
 	return 0;
 }
 
-void BC_WindowBase::set_cursor(int cursor, int is_hourglass)
+void BC_WindowBase::set_cursor(int cursor, int override)
 {
-// don't change cursor if hourglass mode unless the caller is the hourglass routine.
-	if(is_hourglass || current_cursor != HOURGLASS_CURSOR)
+// don't change cursor if overridden
+	if((!top_level->is_hourglass && !is_transparent) || 
+		override)
 	{
 		XDefineCursor(top_level->display, win, get_cursor_struct(cursor));
-		current_cursor = cursor;
 		flush();
 	}
-	else
-// save new cursor for later
-	{
-		prev_cursor = cursor;
-	}
+
+	if(!override) current_cursor = cursor;
 }
 
 void BC_WindowBase::set_x_cursor(int cursor)
@@ -2006,14 +2071,16 @@ void BC_WindowBase::start_hourglass_recursive()
 	if(this == top_level)
 	{
 		hourglass_total++;
-		if(current_cursor == HOURGLASS_CURSOR) return;
+		is_hourglass = 1;
 	}
 
-	prev_cursor = current_cursor;
-	set_cursor(HOURGLASS_CURSOR, 1);
-	for(int i = 0; i < subwindows->total; i++)
+	if(!is_transparent)
 	{
-		subwindows->values[i]->start_hourglass_recursive();
+		set_cursor(HOURGLASS_CURSOR, 1);
+		for(int i = 0; i < subwindows->total; i++)
+		{
+			subwindows->values[i]->start_hourglass_recursive();
+		}
 	}
 }
 
@@ -2022,14 +2089,21 @@ void BC_WindowBase::stop_hourglass_recursive()
 	if(this == top_level)
 	{
 		if(hourglass_total == 0) return;
-		hourglass_total--;
+		top_level->hourglass_total--;
 	}
 
-// Cause set_cursor to perform change
-	set_cursor(prev_cursor, 1);
-	for(int i = 0; i < subwindows->total; i++)
+	if(!top_level->hourglass_total)
 	{
-		subwindows->values[i]->stop_hourglass_recursive();
+		top_level->is_hourglass = 0;
+
+// Cause set_cursor to perform change
+		if(!is_transparent)
+			set_cursor(current_cursor, 1);
+
+		for(int i = 0; i < subwindows->total; i++)
+		{
+			subwindows->values[i]->stop_hourglass_recursive();
+		}
 	}
 }
 

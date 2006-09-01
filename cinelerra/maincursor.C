@@ -67,14 +67,14 @@ int MainCursor::repeat_event(int64_t duration)
 	{
 		if(!playing_back || (playing_back && !visible))
 		{
-			draw();
+			draw(1);
 			flash();
 		}
 	}
 	return 1;
 }
 
-void MainCursor::draw()
+void MainCursor::draw(int do_plugintoggles)
 {
 	if(!visible)
 	{
@@ -102,6 +102,9 @@ void MainCursor::draw()
 	gui->canvas->set_inverse();
 	gui->canvas->draw_box(pixel1, 0, pixel2 - pixel1 + 1, gui->canvas->get_h());
 	gui->canvas->set_opaque();
+	// Dangling line from a partial 2.0 -> 2.1 patch
+        //   We still need to add the function, refresh_plugintoggles()
+	// if(do_plugintoggles) ; gui->canvas->refresh_plugintoggles();
 	visible = !visible;
 }
 
@@ -110,10 +113,11 @@ void MainCursor::update()
 {
 	if(visible)
 	{
-		hide();
+		hide(0);
 		flash();
 	}
-	show();
+
+	show(1);
 	flash();
 }
 
@@ -124,22 +128,22 @@ void MainCursor::flash()
 	gui->flush();
 }
 
-void MainCursor::hide()
+void MainCursor::hide(int do_plugintoggles)
 {
-	if(visible) draw();
+	if(visible) draw(do_plugintoggles);
 }
 
-void MainCursor::show()
+void MainCursor::show(int do_plugintoggles)
 {
-	if(!visible) draw();
+	if(!visible) draw(do_plugintoggles);
 }
 
 // Constitutively redraw the cursor after it is overwritten by a draw
-void MainCursor::restore()
+void MainCursor::restore(int do_plugintoggles)
 {
 	if(visible)
 	{
-		draw();
+		draw(do_plugintoggles);
 		visible = 1;
 	}
 }

@@ -250,10 +250,10 @@ int FileEXR::get_best_colormodel(Asset *asset, int driver)
 		return BC_RGB_FLOAT;
 }
 
-int FileEXR::get_memory_usage()
+int64_t FileEXR::get_memory_usage()
 {
-	int result = FileList::get_memory_usage();
-	if(temp_y) result += asset->width * asset->height * 3 / 2;
+	int64_t result = FileList::get_memory_usage();
+	if(temp_y) result += (int64_t)asset->width * asset->height * 3 / 2;
 	return result;
 }
 
