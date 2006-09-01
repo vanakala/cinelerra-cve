@@ -19,13 +19,15 @@ ThresholdConfig::ThresholdConfig()
 int ThresholdConfig::equivalent(ThresholdConfig &that)
 {
 	return EQUIV(min, that.min) &&
-		EQUIV(max, that.max);
+		EQUIV(max, that.max) &&
+		plot == that.plot;
 }
 
 void ThresholdConfig::copy_from(ThresholdConfig &that)
 {
 	min = that.min;
 	max = that.max;
+	plot = that.plot;
 }
 
 void ThresholdConfig::interpolate(ThresholdConfig &prev,
@@ -41,12 +43,14 @@ void ThresholdConfig::interpolate(ThresholdConfig &prev,
 
 	min = prev.min * prev_scale + next.min * next_scale;
 	max = prev.max * prev_scale + next.max * next_scale;
+	plot = prev.plot;
 }
 
 void ThresholdConfig::reset()
 {
 	min = 0.0;
 	max = 1.0;
+	plot = 1;
 }
 
 void ThresholdConfig::boundaries()
@@ -133,6 +137,7 @@ int ThresholdMain::load_defaults()
 	defaults->load();
 	config.min = defaults->get("MIN", config.min);
 	config.max = defaults->get("MAX", config.max);
+	config.plot = defaults->get("PLOT", config.plot);
 	config.boundaries();
 	return 0;
 }
@@ -141,6 +146,7 @@ int ThresholdMain::save_defaults()
 {
 	defaults->update("MIN", config.min);
 	defaults->update("MAX", config.max);
+	defaults->update("PLOT", config.plot);
 	defaults->save();
 }
 
@@ -151,6 +157,7 @@ void ThresholdMain::save_data(KeyFrame *keyframe)
 	file.tag.set_title("THRESHOLD");
 	file.tag.set_property("MIN", config.min);
 	file.tag.set_property("MAX", config.max);
+	file.tag.set_property("PLOT", config.plot);
 	file.append_tag();
 	file.terminate_string();
 }
@@ -167,6 +174,7 @@ void ThresholdMain::read_data(KeyFrame *keyframe)
 		{
 			config.min = file.tag.get_property("MIN", config.min);
 			config.max = file.tag.get_property("MAX", config.max);
+			config.plot = file.tag.get_property("PLOT", config.plot);
 		}
 	}
 	config.boundaries();
@@ -181,6 +189,7 @@ void ThresholdMain::update_gui()
 		{
 			thread->window->min->update(config.min);
 			thread->window->max->update(config.max);
+			thread->window->plot->update(config.plot);
 		}
 		thread->window->unlock_window();
 	}

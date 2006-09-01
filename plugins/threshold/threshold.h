@@ -27,6 +27,7 @@ public:
 
 	float min;
 	float max;
+	int plot;
 };
 
 

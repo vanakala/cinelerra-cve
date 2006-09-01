@@ -59,6 +59,7 @@ CompressorEffect::~CompressorEffect()
 {
 	PLUGIN_DESTRUCTOR_MACRO
 	delete_dsp();
+	levels.remove_all();
 }
 
 void CompressorEffect::delete_dsp()
@@ -116,7 +117,7 @@ void CompressorEffect::read_data(KeyFrame *keyframe)
 				config.decay_len = input.tag.get_property("DECAY_LEN", config.decay_len);
 				config.trigger = input.tag.get_property("TRIGGER", config.trigger);
 				config.smoothing_only = input.tag.get_property("SMOOTHING_ONLY", config.smoothing_only);
-				config.no_trigger = input.tag.get_property("NO_TRIGGER", config.no_trigger);
+				config.input = input.tag.get_property("INPUT", config.input);
 			}
 			else
 			if(input.tag.title_is("LEVEL"))
@@ -141,7 +142,7 @@ void CompressorEffect::save_data(KeyFrame *keyframe)
 	output.tag.set_property("REACTION_LEN", config.reaction_len);
 	output.tag.set_property("DECAY_LEN", config.decay_len);
 	output.tag.set_property("SMOOTHING_ONLY", config.smoothing_only);
-	output.tag.set_property("NO_TRIGGER", config.no_trigger);
+	output.tag.set_property("INPUT", config.input);
 	output.append_tag();
 	output.append_newline();
 
@@ -170,7 +171,7 @@ int CompressorEffect::load_defaults()
 	config.reaction_len = defaults->get("REACTION_LEN", config.reaction_len);
 	config.decay_len = defaults->get("DECAY_LEN", config.decay_len);
 	config.smoothing_only = defaults->get("SMOOTHING_ONLY", config.smoothing_only);
-	config.no_trigger = defaults->get("NO_TRIGGER", config.no_trigger);
+	config.input = defaults->get("INPUT", config.input);
 
 	config.levels.remove_all();
 	int total_levels = defaults->get("TOTAL_LEVELS", 0);
@@ -195,7 +196,7 @@ int CompressorEffect::save_defaults()
 	defaults->update("DECAY_LEN", config.decay_len);
 	defaults->update("SMOOTHING_ONLY", config.smoothing_only);
 	defaults->update("TOTAL_LEVELS", config.levels.total);
-	defaults->update("NO_TRIGGER", config.no_trigger);
+	defaults->update("INPUT", config.input);
 
 	defaults->update("TOTAL_LEVELS", config.levels.total);
 	for(int i = 0; i < config.levels.total; i++)
@@ -243,6 +244,20 @@ int CompressorEffect::process_buffer(int64_t size,
 {
 	load_configuration();
 
+// Calculate linear transfer from db 
+	levels.remove_all();
+	for(int i = 0; i < config.levels.total; i++)
+	{
+		levels.append();
+		levels.values[i].x = DB::fromdb(config.levels.values[i].x);
+		levels.values[i].y = DB::fromdb(config.levels.values[i].y);
+	}
+	min_x = DB::fromdb(config.min_db);
+	min_y = DB::fromdb(config.min_db);
+	max_x = 1.0;
+	max_y = 1.0;
+
+
 	int reaction_samples = (int)(config.reaction_len * sample_rate + 0.5);
 	int decay_samples = (int)(config.decay_len * sample_rate + 0.5);
 	int trigger = CLIP(config.trigger, 0, PluginAClient::total_in_buffers - 1);
@@ -274,7 +289,9 @@ int CompressorEffect::process_buffer(int64_t size,
 // Get slope required to reach current sample from smoothed sample over reaction
 // length.
 			double sample;
-			if(config.no_trigger)
+			switch(config.input)
+			{
+				case CompressorConfig::MAX:
 			{
 				double max = 0;
 				for(int j = 0; j < total_buffers; j++)
@@ -283,10 +300,24 @@ int CompressorEffect::process_buffer(int64_t size,
 					if(sample > max) max = sample;
 				}
 				sample = max;
+					break;
 			}
-			else
-			{
+
+				case CompressorConfig::TRIGGER:
 				sample = fabs(trigger_buffer[i]);
+					break;
+				
+				case CompressorConfig::SUM:
+				{
+					double max = 0;
+					for(int j = 0; j < total_buffers; j++)
+					{
+						sample = fabs(buffer[j][i]);
+						max += sample;
+					}
+					sample = max;
+					break;
+				}
 			}
 
 			double new_slope = (sample - current_value) /
@@ -435,7 +466,9 @@ int CompressorEffect::process_buffer(int64_t size,
 				j++)
 			{
 				double sample;
-				if(config.no_trigger)
+				switch(config.input)
+				{
+					case CompressorConfig::MAX:
 				{
 					double max = 0;
 					for(int k = 0; k < total_buffers; k++)
@@ -444,11 +477,26 @@ int CompressorEffect::process_buffer(int64_t size,
 						if(sample > max) max = sample;
 					}
 					sample = max;
+						break;
 				}
-				else
-				{
+
+					case CompressorConfig::TRIGGER:
 					sample = fabs(trigger_buffer[i + j]);
+						break;
+
+					case CompressorConfig::SUM:
+					{
+						double max = 0;
+						for(int k = 0; k < total_buffers; k++)
+						{
+							sample = fabs(input_buffer[k][i + j]);
+							max += sample;
 				}
+						sample = max;
+						break;
+					}
+				}
+
 
 
 
@@ -522,12 +570,49 @@ int CompressorEffect::process_buffer(int64_t size,
 	return 0;
 }
 
+double CompressorEffect::calculate_output(double x)
+{
+	if(x > 0.999) return 1.0;
+
+	for(int i = levels.total - 1; i >= 0; i--)
+	{
+		if(levels.values[i].x <= x)
+		{
+			if(i < levels.total - 1)
+			{
+				return levels.values[i].y + 
+					(x - levels.values[i].x) *
+					(levels.values[i + 1].y - levels.values[i].y) / 
+					(levels.values[i + 1].x - levels.values[i].x);
+			}
+			else
+			{
+				return levels.values[i].y +
+					(x - levels.values[i].x) * 
+					(max_y - levels.values[i].y) / 
+					(max_x - levels.values[i].x);
+			}
+		}
+	}
+
+	if(levels.total)
+	{
+		return min_y + 
+			(x - min_x) * 
+			(levels.values[0].y - min_y) / 
+			(levels.values[0].x - min_x);
+	}
+	else
+		return x;
+}
+
 
 double CompressorEffect::calculate_gain(double input)
 {
-	double x_db = DB::todb(input);
-	double y_db = config.calculate_db(x_db);
-	double y_linear = DB::fromdb(y_db);
+//  	double x_db = DB::todb(input);
+//  	double y_db = config.calculate_db(x_db);
+//  	double y_linear = DB::fromdb(y_db);
+	double y_linear = calculate_output(input);
 	double gain;
 	if(input != 0)
 		gain = y_linear / input;
@@ -554,7 +639,7 @@ CompressorConfig::CompressorConfig()
 	max_x = 0;
 	max_y = 0;
 	trigger = 0;
-	no_trigger = 1;
+	input = CompressorConfig::TRIGGER;
 	smoothing_only = 0;
 	decay_len = 1.0;
 }
@@ -569,7 +654,7 @@ void CompressorConfig::copy_from(CompressorConfig &that)
 	this->max_x = that.max_x;
 	this->max_y = that.max_y;
 	this->trigger = that.trigger;
-	this->no_trigger = that.no_trigger;
+	this->input = that.input;
 	this->smoothing_only = that.smoothing_only;
 	levels.remove_all();
 	for(int i = 0; i < that.levels.total; i++)
@@ -581,7 +666,7 @@ int CompressorConfig::equivalent(CompressorConfig &that)
 	if(!EQUIV(this->reaction_len, that.reaction_len) ||
 		!EQUIV(this->decay_len, that.decay_len) ||
 		this->trigger != that.trigger ||
-		this->no_trigger != that.no_trigger ||
+		this->input != that.input ||
 		this->smoothing_only != that.smoothing_only)
 		return 0;
 	if(this->levels.total != that.levels.total) return 0;
@@ -647,7 +732,6 @@ double CompressorConfig::get_x(int number)
 		return levels.values[number].x;
 }
 
-// Returns linear output given linear input
 double CompressorConfig::calculate_db(double x)
 {
 	if(x > -0.001) return 0.0;
@@ -779,9 +863,9 @@ CompressorWindow::CompressorWindow(CompressorEffect *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
  	x, 
 	y, 
-	640, 
+	650, 
 	480, 
-	640, 
+	650, 
 	480,
 	0, 
 	0,
@@ -793,7 +877,7 @@ CompressorWindow::CompressorWindow(CompressorEffect *plugin, int x, int y)
 void CompressorWindow::create_objects()
 {
 	int x = 35, y = 10;
-	int control_margin = 120;
+	int control_margin = 130;
 
 	add_subwindow(canvas = new CompressorCanvas(plugin, 
 		x, 
@@ -810,12 +894,15 @@ void CompressorWindow::create_objects()
 	y += 20;
 	add_subwindow(decay = new CompressorDecay(plugin, x, y));
 	y += 30;
+	add_subwindow(new BC_Title(x, y, _("Trigger Type:")));
+	y += 20;
+	add_subwindow(input = new CompressorInput(plugin, x, y));
+	input->create_objects();
+	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Trigger:")));
 	y += 20;
 	add_subwindow(trigger = new CompressorTrigger(plugin, x, y));
-	y += 30;
-	add_subwindow(no_trigger = new CompressorNoTrigger(plugin, x, y));
-	if(plugin->config.no_trigger) trigger->disable();
+	if(plugin->config.input != CompressorConfig::TRIGGER) trigger->disable();
 	y += 30;
 	add_subwindow(smooth = new CompressorSmooth(plugin, x, y));
 	y += 60;
@@ -913,13 +1000,13 @@ void CompressorWindow::update_textboxes()
 {
 	if(atol(trigger->get_text()) != plugin->config.trigger)
 		trigger->update((int64_t)plugin->config.trigger);
-	if(no_trigger->get_value() != plugin->config.no_trigger)
-		no_trigger->update(plugin->config.no_trigger);
+	if(strcmp(input->get_text(), CompressorInput::value_to_text(plugin->config.input)))
+		input->set_text(CompressorInput::value_to_text(plugin->config.input));
 
-	if(plugin->config.no_trigger && trigger->get_enabled())
+	if(plugin->config.input != CompressorConfig::TRIGGER && trigger->get_enabled())
 		trigger->disable();
 	else
-	if(!plugin->config.no_trigger && !trigger->get_enabled())
+	if(plugin->config.input == CompressorConfig::TRIGGER && !trigger->get_enabled())
 		trigger->enable();
 
 	if(!EQUIV(atof(reaction->get_text()), plugin->config.reaction_len))
@@ -1107,6 +1194,27 @@ int CompressorReaction::handle_event()
 	return 1;
 }
 
+int CompressorReaction::button_press_event()
+{
+	if(is_event_win())
+	{
+		if(get_buttonpress() < 4) return BC_TextBox::button_press_event();
+		if(get_buttonpress() == 4)
+		{
+			plugin->config.reaction_len += 0.1;
+		}
+		else
+		if(get_buttonpress() == 5)
+		{
+			plugin->config.reaction_len -= 0.1;
+		}
+		update((float)plugin->config.reaction_len);
+		plugin->send_configure_change();
+		return 1;
+	}
+	return 0;
+}
+
 CompressorDecay::CompressorDecay(CompressorEffect *plugin, int x, int y) 
  : BC_TextBox(x, y, 100, 1, (float)plugin->config.decay_len)
 {
@@ -1117,6 +1225,27 @@ int CompressorDecay::handle_event()
 	plugin->config.decay_len = atof(get_text());
 	plugin->send_configure_change();
 	return 1;
+}
+
+int CompressorDecay::button_press_event()
+{
+	if(is_event_win())
+	{
+		if(get_buttonpress() < 4) return BC_TextBox::button_press_event();
+		if(get_buttonpress() == 4)
+		{
+			plugin->config.decay_len += 0.1;
+		}
+		else
+		if(get_buttonpress() == 5)
+		{
+			plugin->config.decay_len -= 0.1;
+		}
+		update((float)plugin->config.decay_len);
+		plugin->send_configure_change();
+		return 1;
+	}
+	return 0;
 }
 
 
@@ -1173,21 +1302,76 @@ int CompressorTrigger::handle_event()
 	return 1;
 }
 
+int CompressorTrigger::button_press_event()
+{
+	if(is_event_win())
+	{
+		if(get_buttonpress() < 4) return BC_TextBox::button_press_event();
+		if(get_buttonpress() == 4)
+		{
+			plugin->config.trigger++;
+		}
+		else
+		if(get_buttonpress() == 5)
+		{
+			plugin->config.trigger--;
+		}
+		update((int64_t)plugin->config.trigger);
+		plugin->send_configure_change();
+		return 1;
+	}
+	return 0;
+}
 
 
 
 
-CompressorNoTrigger::CompressorNoTrigger(CompressorEffect *plugin, int x, int y) 
- : BC_CheckBox(x, y, plugin->config.no_trigger, "No trigger")
+
+CompressorInput::CompressorInput(CompressorEffect *plugin, int x, int y) 
+ : BC_PopupMenu(x, 
+	y, 
+	100, 
+	CompressorInput::value_to_text(plugin->config.input), 
+	1)
 {
 	this->plugin = plugin;
 }
-int CompressorNoTrigger::handle_event()
+int CompressorInput::handle_event()
 {
-	plugin->config.no_trigger = get_value();
+	plugin->config.input = text_to_value(get_text());
 	plugin->thread->window->update();
 	plugin->send_configure_change();
 	return 1;
+}
+
+void CompressorInput::create_objects()
+{
+	for(int i = 0; i < 3; i++)
+	{
+		add_item(new BC_MenuItem(value_to_text(i)));
+	}
+}
+
+char* CompressorInput::value_to_text(int value)
+{
+	switch(value)
+	{
+		case CompressorConfig::TRIGGER: return "Trigger";
+		case CompressorConfig::MAX: return "Maximum";
+		case CompressorConfig::SUM: return "Total";
+	}
+
+	return "Trigger";
+}
+
+int CompressorInput::text_to_value(char *text)
+{
+	for(int i = 0; i < 3; i++)
+	{
+		if(!strcmp(value_to_text(i), text)) return i;
+	}
+
+	return CompressorConfig::TRIGGER;
 }
 
 

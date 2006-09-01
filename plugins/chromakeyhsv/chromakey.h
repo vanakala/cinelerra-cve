@@ -10,8 +10,8 @@
 #include "pluginvclient.h"
 
 
-class ChromaKey;
-class ChromaKey;
+class ChromaKeyHSV;
+class ChromaKeyHSV;
 class ChromaKeyWindow;
 
 enum {
@@ -58,14 +58,14 @@ public:
 class ChromaKeyColor : public BC_GenericButton
 {
 public:
-	ChromaKeyColor(ChromaKey *plugin, 
+	ChromaKeyColor(ChromaKeyHSV *plugin, 
 		ChromaKeyWindow *gui, 
 		int x, 
 		int y);
 
 	int handle_event();
 
-	ChromaKey *plugin;
+	ChromaKeyHSV *plugin;
 	ChromaKeyWindow *gui;
 };
 
@@ -73,33 +73,33 @@ public:
 class ChromaKeyMinBrightness : public BC_FSlider
 {
 	public:
-		ChromaKeyMinBrightness(ChromaKey *plugin, int x, int y);
+		ChromaKeyMinBrightness(ChromaKeyHSV *plugin, int x, int y);
 		int handle_event();
-		ChromaKey *plugin;
+		ChromaKeyHSV *plugin;
 };
 
 class ChromaKeyMaxBrightness : public BC_FSlider
 {
 	public:
-		ChromaKeyMaxBrightness(ChromaKey *plugin, int x, int y);
+		ChromaKeyMaxBrightness(ChromaKeyHSV *plugin, int x, int y);
 		int handle_event();
-		ChromaKey *plugin;
+		ChromaKeyHSV *plugin;
 };
 
 class ChromaKeySaturation : public BC_FSlider
 {
 	public:
-		ChromaKeySaturation(ChromaKey *plugin, int x, int y);
+		ChromaKeySaturation(ChromaKeyHSV *plugin, int x, int y);
 		int handle_event();
-		ChromaKey *plugin;
+		ChromaKeyHSV *plugin;
 };
 
 class ChromaKeyMinSaturation : public BC_FSlider
 {
 	public:
-		ChromaKeyMinSaturation(ChromaKey *plugin, int x, int y);
+		ChromaKeyMinSaturation(ChromaKeyHSV *plugin, int x, int y);
 		int handle_event();
-		ChromaKey *plugin;
+		ChromaKeyHSV *plugin;
 };
 
 
@@ -107,56 +107,56 @@ class ChromaKeyMinSaturation : public BC_FSlider
 class ChromaKeyTolerance : public BC_FSlider
 {
 public:
-	ChromaKeyTolerance(ChromaKey *plugin, int x, int y);
+	ChromaKeyTolerance(ChromaKeyHSV *plugin, int x, int y);
 	int handle_event();
-	ChromaKey *plugin;
+	ChromaKeyHSV *plugin;
 };
 
 class ChromaKeyInSlope : public BC_FSlider
 {
 	public:
-		ChromaKeyInSlope(ChromaKey *plugin, int x, int y);
+		ChromaKeyInSlope(ChromaKeyHSV *plugin, int x, int y);
 		int handle_event();
-		ChromaKey *plugin;
+		ChromaKeyHSV *plugin;
 };
 
 class ChromaKeyOutSlope : public BC_FSlider
 {
 	public:
-		ChromaKeyOutSlope(ChromaKey *plugin, int x, int y);
+		ChromaKeyOutSlope(ChromaKeyHSV *plugin, int x, int y);
 		int handle_event();
-		ChromaKey *plugin;
+		ChromaKeyHSV *plugin;
 };
 
 class ChromaKeyAlphaOffset : public BC_FSlider
 {
 	public:
-		ChromaKeyAlphaOffset(ChromaKey *plugin, int x, int y);
+		ChromaKeyAlphaOffset(ChromaKeyHSV *plugin, int x, int y);
 		int handle_event();
-		ChromaKey *plugin;
+		ChromaKeyHSV *plugin;
 };
 
 class ChromaKeySpillThreshold : public BC_FSlider
 {
 public:
-	ChromaKeySpillThreshold(ChromaKey *plugin, int x, int y);
+	ChromaKeySpillThreshold(ChromaKeyHSV *plugin, int x, int y);
 	int handle_event();
-	ChromaKey *plugin;
+	ChromaKeyHSV *plugin;
 };
 class ChromaKeySpillAmount : public BC_FSlider
 {
 public:
-	ChromaKeySpillAmount(ChromaKey *plugin, int x, int y);
+	ChromaKeySpillAmount(ChromaKeyHSV *plugin, int x, int y);
 	int handle_event();
-	ChromaKey *plugin;
+	ChromaKeyHSV *plugin;
 };
 
 class ChromaKeyUseColorPicker : public BC_GenericButton
 {
 public:
-	ChromaKeyUseColorPicker(ChromaKey *plugin, ChromaKeyWindow *gui, int x, int y);
+	ChromaKeyUseColorPicker(ChromaKeyHSV *plugin, ChromaKeyWindow *gui, int x, int y);
 	int handle_event();
-	ChromaKey *plugin;
+	ChromaKeyHSV *plugin;
 	ChromaKeyWindow *gui;
 };
 
@@ -164,18 +164,18 @@ public:
 class ChromaKeyColorThread : public ColorThread
 {
 public:
-	ChromaKeyColorThread(ChromaKey *plugin, ChromaKeyWindow *gui);
+	ChromaKeyColorThread(ChromaKeyHSV *plugin, ChromaKeyWindow *gui);
 	int handle_new_color(int output, int alpha);
-	ChromaKey *plugin;
+	ChromaKeyHSV *plugin;
 	ChromaKeyWindow *gui;
 };
 
 class ChromaKeyShowMask : public BC_CheckBox
 {
 public:
-	ChromaKeyShowMask(ChromaKey *plugin, int x, int y);
+	ChromaKeyShowMask(ChromaKeyHSV *plugin, int x, int y);
 	int handle_event();
-	ChromaKey *plugin;
+	ChromaKeyHSV *plugin;
 };
 
 
@@ -183,7 +183,7 @@ public:
 class ChromaKeyWindow : public BC_Window
 {
 public:
-	ChromaKeyWindow(ChromaKey *plugin, int x, int y);
+	ChromaKeyWindow(ChromaKeyHSV *plugin, int x, int y);
 	~ChromaKeyWindow();
 
 	void create_objects();
@@ -204,23 +204,25 @@ public:
 	ChromaKeySpillAmount *spill_amount;
 	ChromaKeyShowMask *show_mask;
 	BC_SubWindow *sample;
-	ChromaKey *plugin;
+	ChromaKeyHSV *plugin;
 	ChromaKeyColorThread *color_thread;
 };
 
 
 
-PLUGIN_THREAD_HEADER(ChromaKey, ChromaKeyThread, ChromaKeyWindow)
+
+
+PLUGIN_THREAD_HEADER(ChromaKeyHSV, ChromaKeyThread, ChromaKeyWindow)
 
 
 class ChromaKeyServer : public LoadServer
 {
 public:
-	ChromaKeyServer(ChromaKey *plugin);
+	ChromaKeyServer(ChromaKeyHSV *plugin);
 	void init_packages();
 	LoadClient* new_client();
 	LoadPackage* new_package();
-	ChromaKey *plugin;
+	ChromaKeyHSV *plugin;
 };
 
 class ChromaKeyPackage : public LoadPackage
@@ -233,23 +235,23 @@ public:
 class ChromaKeyUnit : public LoadClient
 {
 public:
-	ChromaKeyUnit(ChromaKey *plugin, ChromaKeyServer *server);
+	ChromaKeyUnit(ChromaKeyHSV *plugin, ChromaKeyServer *server);
 	void process_package(LoadPackage *package);
 	template <typename component_type> void process_chromakey(int components, component_type max, bool use_yuv, ChromaKeyPackage *pkg);
 	bool is_same_color(float r, float g, float b, float rk,float bk,float gk, float color_threshold, float light_threshold, int key_main_component);
 
-	ChromaKey *plugin;
+	ChromaKeyHSV *plugin;
 
 };
 
 
 
 
-class ChromaKey : public PluginVClient
+class ChromaKeyHSV : public PluginVClient
 {
 public:
-	ChromaKey(PluginServer *server);
-	~ChromaKey();
+	ChromaKeyHSV(PluginServer *server);
+	~ChromaKeyHSV();
 	
 	int process_realtime(VFrame *input, VFrame *output);
 	int is_realtime();

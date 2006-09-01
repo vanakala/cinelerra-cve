@@ -41,6 +41,7 @@ class CompressorReaction : public BC_TextBox
 public:
 	CompressorReaction(CompressorEffect *plugin, int x, int y);
 	int handle_event();
+	int button_press_event();
 	CompressorEffect *plugin;
 };
 
@@ -73,6 +74,7 @@ class CompressorTrigger : public BC_TextBox
 public:
 	CompressorTrigger(CompressorEffect *plugin, int x, int y);
 	int handle_event();
+	int button_press_event();
 	CompressorEffect *plugin;
 };
 
@@ -81,6 +83,7 @@ class CompressorDecay : public BC_TextBox
 public:
 	CompressorDecay(CompressorEffect *plugin, int x, int y);
 	int handle_event();
+	int button_press_event();
 	CompressorEffect *plugin;
 };
 
@@ -92,11 +95,14 @@ public:
 	CompressorEffect *plugin;
 };
 
-class CompressorNoTrigger : public BC_CheckBox
+class CompressorInput : public BC_PopupMenu
 {
 public:
-	CompressorNoTrigger(CompressorEffect *plugin, int x, int y);
+	CompressorInput(CompressorEffect *plugin, int x, int y);
+	void create_objects();
 	int handle_event();
+	static char* value_to_text(int value);
+	static int text_to_value(char *text);
 	CompressorEffect *plugin;
 };
 
@@ -122,7 +128,7 @@ public:
 	CompressorTrigger *trigger;
 	CompressorDecay *decay;
 	CompressorSmooth *smooth;
-	CompressorNoTrigger *no_trigger;
+	CompressorInput *input;
 	CompressorEffect *plugin;
 };
 
@@ -154,13 +160,19 @@ public:
 // Return values of a specific point
 	double get_y(int number);
 	double get_x(int number);
-// Returns db output given linear input
+// Returns db output from db input
 	double calculate_db(double x);
 	int set_point(double x, double y);
 	void dump();
 
 	int trigger;
-	int no_trigger;
+	int input;
+	enum
+	{
+		TRIGGER,
+		MAX,
+		SUM
+	};
 	double min_db;
 	double reaction_len;
 	double decay_len;
@@ -186,7 +198,8 @@ public:
 		int sample_rate);
 	double calculate_gain(double input);
 
-
+// Calculate linear output from linear input
+	double calculate_output(double x);
 
 
 	int load_defaults();
@@ -216,6 +229,10 @@ public:
 	int target_current_sample;
 // current smoothed input value
 	double current_value;
+// Temporaries for linear transfer
+	ArrayList<compressor_point_t> levels;
+	double min_x, min_y;
+	double max_x, max_y;
 };
 
 

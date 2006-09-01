@@ -32,6 +32,16 @@ public:
 	ThresholdWindow *gui;
 };
 
+class ThresholdPlot : public BC_CheckBox
+{
+public:
+	ThresholdPlot(ThresholdMain *plugin,
+		int x,
+		int y);
+	int handle_event();
+	ThresholdMain *plugin;
+};
+
 class ThresholdCanvas : public BC_SubWindow
 {
 public:
@@ -72,6 +82,7 @@ public:
 	ThresholdMin *min;
 	ThresholdMax *max;
 	ThresholdCanvas *canvas;
+	ThresholdPlot *plot;
 };
 
 PLUGIN_THREAD_HEADER(ThresholdMain, ThresholdThread, ThresholdWindow)

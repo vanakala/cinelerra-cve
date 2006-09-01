@@ -349,18 +349,24 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 
 #define SQR(x) ((x) * (x))
 
-	float value = RGB_TO_VALUE(plugin->config.red,
-		plugin->config.green,
-		plugin->config.blue);
-	float min_v = value - plugin->config.threshold / 100;
-	float max_v = value + plugin->config.threshold / 100;
-	float threshold = plugin->config.threshold / 100;
-	float red = plugin->config.red;
-	float green = plugin->config.green;
-	float blue = plugin->config.blue;
-
-	float run = plugin->config.slope / 100;
+#define OUTER_VARIABLES(plugin) \
+	YUV yuv; \
+	float value = RGB_TO_VALUE(plugin->config.red, \
+		plugin->config.green, \
+		plugin->config.blue); \
+	float threshold = plugin->config.threshold / 100; \
+	float min_v = value - threshold; \
+	float max_v = value + threshold; \
+	float r_key = plugin->config.red; \
+	float g_key = plugin->config.green; \
+	float b_key = plugin->config.blue; \
+	int y_key, u_key, v_key; \
+	yuv.rgb_to_yuv_8((int)(r_key * 0xff), (int)(g_key * 0xff), (int)(b_key * 0xff), y_key, u_key, v_key); \
+	float run = plugin->config.slope / 100; \
 	float threshold_run = threshold + run;
+
+	OUTER_VARIABLES(plugin)
+
 
 
 #define CHROMAKEY(type, components, max, use_yuv) \
@@ -409,22 +415,25 @@ void ChromaKeyUnit::process_package(LoadPackage *package)
 			else \
 /* Use color cube */ \
 			{ \
-				float r = (float)row[0] / max; \
-				float g = (float)row[1] / max; \
-				float b = (float)row[2] / max; \
+				float difference; \
 				if(use_yuv) \
 				{ \
-/* Convert pixel to RGB float */ \
-					float y = r; \
-					float u = g; \
-					float v = b; \
-					YUV::yuv_to_rgb_f(r, g, b, y, u - 0.5, v - 0.5); \
+					type y = row[0]; \
+					type u = row[1]; \
+					type v = row[2]; \
+					difference = sqrt(SQR(y - y_key) + \
+						SQR(u - u_key) + \
+						SQR(v - v_key)) / max; \
 				} \
- \
-				float difference = sqrt(SQR(r - red) +  \
-					SQR(g - green) + \
-					SQR(b - blue)); \
- \
+				else \
+				{ \
+					float r = (float)row[0] / max; \
+					float g = (float)row[1] / max; \
+					float b = (float)row[2] / max; \
+					difference = sqrt(SQR(r - r_key) +  \
+						SQR(g - g_key) + \
+						SQR(b - b_key)); \
+				} \
 				if(difference < threshold) \
 				{ \
 					a = 0; \
@@ -518,6 +527,8 @@ ChromaKey::~ChromaKey()
 
 int ChromaKey::process_realtime(VFrame *input, VFrame *output)
 {
+SET_TRACE
+
 	load_configuration();
 	this->input = input;
 	this->output = output;
