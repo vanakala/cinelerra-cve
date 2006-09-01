@@ -1,6 +1,14 @@
 noinst_LTLIBRARIES = libmpeg3_video.la
 libmpeg3_video_la_SOURCES = getpicture.c headers.c idct.c macroblocks.c mmxtest.c motion.c \
-														mpeg3video.c output.c reconstruct.c seek.c slice.c vlc.c 
+	mpeg3cache.c \
+	mpeg3video.c \
+	output.c \
+	reconstruct.c \
+	seek.c \
+	slice.c \
+	subtitle.c \
+	vlc.c
+
 if USEMMX
 libmpeg3_video_la_SOURCES += mmxidct.S reconmmx.s
 else

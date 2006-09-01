@@ -2,6 +2,14 @@
 #define MPEG3PROTOS_H
 
 
+
+
+
+#ifndef CLAMP
+#define CLAMP(x, y, z) ((x) = ((x) < (y) ? (y) : ((x) > (z) ? (z) : (x))))
+#endif
+
+
 /* CSS */
 
 mpeg3_css_t* mpeg3_new_css();
@@ -57,6 +65,37 @@ mpeg3_vtrack_t* mpeg3_new_vtrack(mpeg3_t *file,
 int mpeg3_delete_vtrack(mpeg3_t *file, mpeg3_vtrack_t *vtrack);
 
 void mpeg3_append_frame(mpeg3_vtrack_t *vtrack, int64_t offset, int is_keyframe);
+
+
+
+/* STRACK */
+mpeg3_strack_t* mpeg3_new_strack(int id);
+void mpeg3_delete_strack(mpeg3_strack_t *ptr);
+void mpeg3_copy_strack(mpeg3_strack_t *dst, mpeg3_strack_t *src);
+
+/* Get matching subtitle track based on ID or return 0 if it doesn't exist. */
+mpeg3_strack_t* mpeg3_get_strack_id(mpeg3_t *file, int id);
+/* get the subtitle track based on number starting from 0 */
+mpeg3_strack_t* mpeg3_get_strack(mpeg3_t *file, int number);
+/* Create new subtitle track and add to table in right order. */
+mpeg3_strack_t* mpeg3_create_strack(mpeg3_t *file, int id);
+/* Append program offset of a subtitle to the track */
+void mpeg3_append_subtitle_offset(mpeg3_strack_t *dst, int64_t program_offset);
+/* Delete a subtitle object */
+void mpeg3_delete_subtitle(mpeg3_subtitle_t *subtitle);
+/* Store subtitle object as current subtitle. */
+/* The object is deleted by the subtitle track. */
+void mpeg3_append_subtitle(mpeg3_strack_t *strack, mpeg3_subtitle_t *subtitle);
+/* Get the first subtitle in the track which is not currently being drawn. */
+mpeg3_subtitle_t* mpeg3_get_subtitle(mpeg3_strack_t *strack);
+/* Remove the pointer and delete the first subtitle from the track. */
+void mpeg3_pop_subtitle(mpeg3_strack_t *strack, int number, int delete_it);
+/* Remove all subtitles from track. */
+void mpeg3_pop_all_subtitles(mpeg3_strack_t *strack);
+/* Remove all subtitles from all buffers */
+void mpeg3_reset_subtitles(mpeg3_t *file);
+
+
 
 
 /* AUDIO */
@@ -180,7 +219,6 @@ mpeg3video_t* mpeg3video_new(mpeg3_t *file,
 	mpeg3_vtrack_t *track);
 int mpeg3video_delete(mpeg3video_t *video);
 int mpeg3video_read_frame(mpeg3video_t *video, 
-		int frame_number, 
 		unsigned char **output_rows,
 		int in_x, 
 		int in_y, 
@@ -194,6 +232,64 @@ int mpeg3video_prev_code(mpeg3_demuxer_t *demuxer, unsigned int code);
 int mpeg3video_next_code(mpeg3_bits_t* stream, unsigned int code);
 void mpeg3video_toc_error();
 int mpeg3_rewind_video(mpeg3video_t *video);
+int mpeg3_read_yuvframe_ptr(mpeg3_t *file,
+		char **y_output,
+		char **u_output,
+		char **v_output,
+		int stream);
+int mpeg3_read_yuvframe(mpeg3_t *file,
+		char *y_output,
+		char *u_output,
+		char *v_output,
+		int in_x, 
+		int in_y,
+		int in_w,
+		int in_h,
+		int stream);
+// cache_it - store dropped frames in cache
+int mpeg3video_drop_frames(mpeg3video_t *video, long frames, int cache_it);
+void mpeg3_decode_subtitle(mpeg3video_t *video);
+
+
+
+
+
+
+
+
+
+
+
+
+/* FRAME CACHING */
+mpeg3_cache_t* mpeg3_new_cache();
+void mpeg3_delete_cache(mpeg3_cache_t *ptr);
+void mpeg3_reset_cache(mpeg3_cache_t *ptr);
+void mpeg3_cache_put_frame(mpeg3_cache_t *ptr,
+	int64_t frame_number,
+	unsigned char *y,
+	unsigned char *u,
+	unsigned char *v,
+	int y_size,
+	int u_size,
+	int v_size);
+// Return 1 if the frame was found.
+int mpeg3_cache_get_frame(mpeg3_cache_t *ptr,
+	int64_t frame_number,
+	unsigned char **y,
+	unsigned char **u,
+	unsigned char **v);
+int mpeg3_ceche_has_frame(mpeg3_cache_t *ptr,
+	int64_t frame_number);
+int64_t mpeg3_cache_usage(mpeg3_cache_t *ptr);
+
+
+
+
+
+
+
+
 
 
 
@@ -217,6 +313,8 @@ mpeg3_t* mpeg3_new(char *path);
 mpeg3_index_t* mpeg3_new_index();
 void mpeg3_delete_index(mpeg3_index_t *index);
 int mpeg3_delete(mpeg3_t *file);
+/* Returns 1 on error. */
+/* Returns 2 if TOC is wrong version. */
 int mpeg3_get_file_type(mpeg3_t *file, 
 	mpeg3_t *old_file,
 	int *toc_atracks,
@@ -315,6 +413,9 @@ double mpeg3demux_scan_pts(mpeg3_demuxer_t *demuxer);
 /* seek using sequential search to the pts given.  Used in byte seeking. */
 int mpeg3demux_goto_pts(mpeg3_demuxer_t *demuxer, double pts);
 
+/* Get number of finished subtitles in the table matching id. */
+/* If id = -1, get all finished subtitles. */
+int mpeg3_finished_subtitles(mpeg3_demuxer_t *demuxer, int id);
 
 unsigned char mpeg3demux_read_char_packet(mpeg3_demuxer_t *demuxer);
 unsigned char mpeg3demux_read_prev_char_packet(mpeg3_demuxer_t *demuxer);

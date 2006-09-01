@@ -13,6 +13,7 @@ mpeg3_vtrack_t* mpeg3_new_vtrack(mpeg3_t *file,
 
 	new_vtrack = calloc(1, sizeof(mpeg3_vtrack_t));
 	new_vtrack->demuxer = mpeg3_new_demuxer(file, 0, 1, custom_id);
+	new_vtrack->frame_cache = mpeg3_new_cache();
 	if(file->seekable)
 	{
 		mpeg3demux_copy_titles(new_vtrack->demuxer, demuxer);
@@ -54,10 +55,19 @@ int mpeg3_delete_vtrack(mpeg3_t *file, mpeg3_vtrack_t *vtrack)
 		if(vtrack->frame_offsets) free(vtrack->frame_offsets);
 		if(vtrack->keyframe_numbers) free(vtrack->keyframe_numbers);
 	}
+	mpeg3_delete_cache(vtrack->frame_cache);
+
+	int i;
+	for(i = 0; i < vtrack->total_subtitles; i++)
+	{
+		mpeg3_delete_subtitle(vtrack->subtitles[i]);
+	}
+	if(vtrack->subtitles) free(vtrack->subtitles);
 	free(vtrack);
 	return 0;
 }
 
+static int last_keyframe = 0;
 void mpeg3_append_frame(mpeg3_vtrack_t *vtrack, int64_t offset, int is_keyframe)
 {
 	if(vtrack->total_frame_offsets >= vtrack->frame_offsets_allocated)
@@ -87,7 +97,7 @@ void mpeg3_append_frame(mpeg3_vtrack_t *vtrack, int64_t offset, int is_keyframe)
 		vtrack->keyframe_numbers[vtrack->total_keyframe_numbers++] = 
 			corrected_frame;
 	}
-	
+
 	vtrack->private_offsets = 1;
 }
 

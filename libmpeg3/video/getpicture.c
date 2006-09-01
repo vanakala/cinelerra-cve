@@ -560,7 +560,7 @@ int mpeg3video_get_macroblocks(mpeg3video_t *video, int framenum)
 		slice_buffer->data[slice_buffer->buffer_size++] = 0;
 		slice_buffer->bits_size = 0;
 
-		pthread_mutex_lock(&(slice_buffer->completion_lock)); fflush(stdout);
+		pthread_mutex_lock(&(slice_buffer->completion_lock)); 
 		current_buffer++;
 		video->total_slice_buffers++;
 	}
@@ -696,18 +696,24 @@ int mpeg3video_getpicture(mpeg3video_t *video, int framenum)
   			result = mpeg3video_get_macroblocks(video, framenum);
 
 /* Set the frame to display */
-	video->output_src = 0;
+	video->output_src[0] = 0;
+	video->output_src[1] = 0;
+	video->output_src[2] = 0;
 	if(framenum > -1 && !result)
 	{
     	if(video->pict_struct == FRAME_PICTURE || video->secondfield)
 		{
      	  	if(video->pict_type == B_TYPE)
 			{
-				video->output_src = video->auxframe;
+				video->output_src[0] = video->auxframe[0];
+				video->output_src[1] = video->auxframe[1];
+				video->output_src[2] = video->auxframe[2];
 			}
      	  	else
 			{
-				video->output_src = video->oldrefframe;
+				video->output_src[0] = video->oldrefframe[0];
+				video->output_src[1] = video->oldrefframe[1];
+				video->output_src[2] = video->oldrefframe[2];
 			}
     	}
     	else 

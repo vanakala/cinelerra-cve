@@ -4,7 +4,11 @@ libmpeg3hv_la_LDFLAGS = -version-info 1:0:0 -release 1.5.0 -Wl,--no-undefined
 libmpeg3hv_la_LIBADD = -la52 video/libmpeg3_video.la audio/libmpeg3_audio.la -lm \
 		     -lpthread
 libmpeg3hv_la_SOURCES = bitstream.c libmpeg3.c mpeg3atrack.c mpeg3css.c \
-											mpeg3demux.c mpeg3ifo.c mpeg3io.c mpeg3title.c \
+	mpeg3demux.c \
+	mpeg3ifo.c \
+	mpeg3io.c \
+	mpeg3strack.c \
+	mpeg3title.c \
 	mpeg3tocutil.c \
 											mpeg3vtrack.c workarounds.c 
 bin_PROGRAMS = mpeg3dump mpeg3toc mpeg3cat

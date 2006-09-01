@@ -194,7 +194,8 @@ int main(int argc, char *argv[])
 	for(stream = 0; stream < streams; stream++)
 	{
 		int is_audio, is_video;
-		mpeg3_t *file = mpeg3_open(path[stream]);
+		int error_return;
+		mpeg3_t *file = mpeg3_open(path[stream], &error_return);
 
 		if(!file)
 		{

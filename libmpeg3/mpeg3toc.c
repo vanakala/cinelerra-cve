@@ -23,7 +23,8 @@ int main(int argc, char *argv[])
 
 	if(argc < 3)
 	{
-		fprintf(stderr, "Create a table of contents for a DVD or mpeg stream.\n"
+		fprintf(stderr, "Table of contents generator version %d.%d.%d\n"
+			"Create a table of contents for a DVD or mpeg stream.\n"
 			"Usage: mpeg3toc <path> <output>\n"
 			"\n"
 			"-v Print tracking information\n"
@@ -33,7 +34,10 @@ int main(int argc, char *argv[])
 			"as the filename.  For renderfarms the filesystem prefix\n"
 			"should be / and the movie directory mounted under the same\n"
 			"directory on each node.\n\n"
-			"Example: mpeg3toc -v /cdrom/video_ts/vts_01_0.ifo titanic.toc\n");
+			"Example: mpeg3toc -v /cdrom/video_ts/vts_01_0.ifo titanic.toc\n",
+			mpeg3_major(),
+			mpeg3_minor(),
+			mpeg3_release());
 		exit(1);
 	}
 
@@ -114,6 +118,14 @@ int main(int argc, char *argv[])
 	}
 
 	mpeg3_stop_toc(file);
+	gettimeofday(&current_time, 0);
+	int64_t elapsed = current_time.tv_sec - start_time.tv_sec;
+	if(verbose)
+	{
+		fprintf(stderr, "%dm%ds elapsed           \n", 
+			elapsed / 60,
+			elapsed % 60);
+	}
 
 	return 0;
 }

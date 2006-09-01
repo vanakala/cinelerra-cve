@@ -258,9 +258,10 @@ static int pgci(ifo_hdr_t *hdr, int title, char **ptr)
 	return 0;
 }
 
-static int program_map(char *pgc, char **ptr)
+static int program_map(mpeg3_t *file, char *pgc, unsigned char **ptr)
 {
 	int num;
+	int i;
 	*ptr = pgc;
 
 	if (!pgc)
@@ -273,7 +274,40 @@ static int program_map(char *pgc, char **ptr)
 	*ptr += 8 * 2;			// AUDIO
 	*ptr += 32 * 4;			// SUBPICTURE
 	*ptr += 8;
-	*ptr += 16 * PGCI_COLOR_LEN;	// CLUT
+// subtitle color palette
+//	*ptr += 16 * PGCI_COLOR_LEN;
+
+	if(!file->have_palette)
+	{
+		for(i = 0; i < 16; i++)
+		{
+			int r = (int)*(*ptr)++;
+			int g = (int)*(*ptr)++;
+			int b = (int)*(*ptr)++;
+			(*ptr)++;
+
+			int y = (int)(0.29900 * r  + 0.58700 * g  + 0.11400 * b);
+			int u = (int)(-0.16874 * r + -0.33126 * g + 0.50000 * b + 0x80);
+			int v = (int)(0.50000 * r  + -0.41869 * g + -0.08131 * b + 0x80);
+			CLAMP(y, 0, 0xff);
+			CLAMP(u, 0, 0xff);
+			CLAMP(v, 0, 0xff);
+
+			file->palette[i * 4] = y;
+			file->palette[i * 4 + 1] = u;
+			file->palette[i * 4 + 2] = v;
+//printf("color %02d: 0x%02x 0x%02x 0x%02x\n", i, y, u, v);
+		}
+
+		file->have_palette = 1;
+		
+
+	}
+	else
+	{
+		(*ptr) += 16 * 4;
+	}
+
 	*ptr += 2;
 
 	*ptr = get2bytes((unsigned char*)*ptr) + pgc;
@@ -467,7 +501,7 @@ static void delete_celltable(mpeg3ifo_celltable_t *table)
 	free(table);
 }
 
-static void cellplayinfo(ifo_t *ifo, mpeg3ifo_celltable_t *cells)
+static void cellplayinfo(mpeg3_t *file, ifo_t *ifo, mpeg3ifo_celltable_t *cells)
 {
 	int i, j;
 	char *cell_hdr, *cell_hdr_start, *cell_info;
@@ -500,7 +534,7 @@ static void cellplayinfo(ifo_t *ifo, mpeg3ifo_celltable_t *cells)
 // Skip CLUT
 // Skip PGC commands
 // Program map
-		if(program_map(cell_hdr_start, &cell_hdr))
+		if(program_map(file, cell_hdr_start, &cell_hdr))
 			;
 
 // Cell Positions
@@ -694,7 +728,7 @@ int mpeg3_read_ifo(mpeg3_t *file,
 
 	get_ifo_playlist(file, demuxer);
 	get_ifo_header(demuxer, ifo);
-	cellplayinfo(ifo, cells);
+	cellplayinfo(file, ifo, cells);
 	celladdresses(ifo, cell_addresses);
 	finaltable(final_cells, 
 		cells, 

@@ -56,7 +56,11 @@ int mpeg3_ac3_header(mpeg3_ac3_t *audio, unsigned char *header)
 
 		if(audio->flags & A52_LFE)
 			audio->channels++;
-//printf("mpeg3_ac3_header %02x %02x\n", audio->flags & A52_LFE, audio->flags & A52_CHANNEL_MASK);
+/*
+ * printf("mpeg3_ac3_header %08x %08x\n", 
+ * audio->flags & A52_LFE, 
+ * audio->flags & A52_CHANNEL_MASK);
+ */
 		switch(audio->flags & A52_CHANNEL_MASK)
 		{
 			case A52_CHANNEL:
@@ -122,11 +126,36 @@ int mpeg3audio_doac3(mpeg3_ac3_t *audio,
 			l = 0;
 			if(render)
 			{
+// Remap the channels to conform to encoders.
 				for(j = 0; j < audio->channels; j++)
 				{
+					int dst_channel = j;
+
+// Make LFE last channel.
+// Shift all other channels down 1.
+					if((audio->flags & A52_LFE))
+					{
+						if(j == 0)
+							dst_channel = audio->channels - 1;
+						else
+							dst_channel--;
+					}
+
+// Swap front left and center for certain configurations
+					switch(audio->flags & A52_CHANNEL_MASK)
+					{
+						case A52_3F:
+						case A52_3F1R:
+						case A52_3F2R:
+							if(dst_channel == 0) dst_channel = 1;
+							else
+							if(dst_channel == 1) dst_channel = 0;
+							break;
+					}
+
 					for(k = 0; k < 256; k++)
 					{
-						output[j][output_position + k] = ((sample_t*)audio->output)[l];
+						output[dst_channel][output_position + k] = ((sample_t*)audio->output)[l];
 						l++;
 					}
 				}

@@ -80,7 +80,7 @@ int main(int argc, char *argv[])
 				
 				if(argv[i][2] != 0)
 				{
-					stream = argv[i][2] - 48;
+					stream = argv[i][2] - '0';
 				}
 			}
 		}
@@ -106,7 +106,8 @@ int main(int argc, char *argv[])
 	{
 		strcpy(inpath, inpaths[current_file]);
 
-		if(!(in = mpeg3_open(inpath)))
+		int error = 0;
+		if(!(in = mpeg3_open(inpath, &error)))
 		{
 			fprintf(stderr, "Skipping %s\n", inpath);
 			continue;
@@ -122,6 +123,12 @@ int main(int argc, char *argv[])
 		{
 			do_audio = 1;
 /* Add audio stream to end */
+			if(stream >= in->total_astreams)
+			{
+				fprintf(stderr, "No audio stream %d\n", stream);
+				exit(1);
+			}
+
 			mpeg3demux_seek_byte(in->atrack[stream]->demuxer, 0);
 //			mpeg3bits_refill(in->atrack[stream]->audio->astream);
 //printf("mpeg3cat 1\n");
@@ -152,6 +159,12 @@ int main(int argc, char *argv[])
 			unsigned long code;
 			float carry;
 			int i, offset;
+
+			if(stream >= in->total_vstreams)
+			{
+				fprintf(stderr, "No audio stream %d\n", stream);
+				exit(1);
+			}
 			
 			mpeg3demux_seek_byte(in->vtrack[stream]->demuxer, 0);
 			mpeg3bits_refill(in->vtrack[stream]->video->vstream);

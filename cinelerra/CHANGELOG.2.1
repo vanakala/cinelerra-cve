@@ -1,10 +1,30 @@
 Compressor can use sum of all channels in addition to highest channel
 and trigger.
 
+
+
+
+
+
+
+
+
+Channel mapping for the AC3/A52 decoder is fixed for 5.1 channels.
+Liba52 outputs LFE, FL, C, FR, BL, BR but every other library expects 
+C, FL, FR, BL, BR, LFE, which caused errors when the BR channel from 
+liba52 was encoded straight through as LFE.
+
+
+
+
+
+
 Fullscreen video in compositor window, recording monitor.  Lots of new
 menu options in the compositor popup.
 
 Tabs instead of pulldown menu for changing preferences dialogs.
+
+MPEG-2 decoding directly from unencrypted Blu-Ray disks.
 
 Option to match project frame rate in asset popup.
 

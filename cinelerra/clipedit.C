@@ -164,7 +164,9 @@ void ClipEditWindow::create_objects()
 		x1, 
 		y, 
 		get_w() - x1 * 2, 
-		BC_TextBox::pixels_to_rows(this, MEDIUMFONT, get_h() - 10 - 40 - y)));
+		BC_TextBox::pixels_to_rows(this, 
+			MEDIUMFONT, 
+			get_h() - 10 - BC_OKButton::calculate_h() - y)));
 
 
 

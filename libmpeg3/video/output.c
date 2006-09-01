@@ -346,7 +346,10 @@ int mpeg3video_init_output()
 int mpeg3video_present_frame(mpeg3video_t *video)
 {
 	int i, j, k, l;
-	unsigned char **src = video->output_src;
+	unsigned char *src[3];
+	src[0] = video->output_src[0];
+	src[1] = video->output_src[1];
+	src[2] = video->output_src[2];
 
 /* Copy YUV buffers */
 	if(video->want_yvu)

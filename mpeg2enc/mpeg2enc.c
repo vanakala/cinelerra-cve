@@ -677,7 +677,8 @@ INTTOYES(prog_seq));
 	else
 	if(mpeg3_check_sig(tplorg))
 	{
-		mpeg_file = mpeg3_open(tplorg);
+		int error_return;
+		mpeg_file = mpeg3_open(tplorg, &error_return);
 		inputtype = T_MPEG;
 	}
 	else

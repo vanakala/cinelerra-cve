@@ -183,7 +183,7 @@ static int select_table(mpeg3_layer_t *audio)
 
 static int step_one(mpeg3_layer_t *audio, 
 	unsigned int *bit_alloc, 
-	 int *scale)
+	int *scale)
 {
    	int stereo = audio->channels - 1;
     int sblimit = audio->II_sblimit;
@@ -193,18 +193,23 @@ static int step_one(mpeg3_layer_t *audio,
     int i, result = 0;
     unsigned int *scfsi_buf = audio->layer2_scfsi_buf;
     unsigned int *scfsi, *bita;
+	unsigned int *bita_end = bit_alloc + 64;
     int sc, step;
 
     bita = bit_alloc;
     if(stereo)
     {
 /* Stereo */
-    	for(i = jsbound; i; i--, alloc1 += (1 << step))
+    	for(i = jsbound; 
+			i && bita < bita_end - 2; 
+			i--, alloc1 += (1 << step))
     	{
         	*bita++ = (char)mpeg3bits_getbits(audio->stream, step = alloc1->bits);
         	*bita++ = (char)mpeg3bits_getbits(audio->stream, step);
     	}
-    	for(i = sblimit - jsbound; i; i--, alloc1 += (1 << step))
+    	for(i = sblimit - jsbound; 
+			i && bita < bita_end - 2; 
+			i--, alloc1 += (1 << step))
     	{
         	bita[0] = (char)mpeg3bits_getbits(audio->stream, 
 				step = alloc1->bits);

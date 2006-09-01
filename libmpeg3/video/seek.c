@@ -12,6 +12,42 @@ void mpeg3video_toc_error()
 		"to generate a table of contents and load the table of contents instead.\n");
 }
 
+int mpeg3video_drop_frames(mpeg3video_t *video, long frames, int cache_it)
+{
+	int result = 0;
+	long frame_number = video->framenum + frames;
+	mpeg3_vtrack_t *track = video->track;
+/* first 3 frames are garbage as proven by printfs in the read_frame calls */
+	int drop_count = 3;
+
+/* Read the selected number of frames and skip b-frames */
+	while(!result && frame_number > video->framenum)
+	{
+		if(cache_it)
+		{
+			result = mpeg3video_read_frame_backend(video, 0);
+        	if(video->output_src[0] && drop_count--)
+        	{
+				mpeg3_cache_put_frame(track->frame_cache,
+					video->framenum - 1,
+					video->output_src[0],
+					video->output_src[1],
+					video->output_src[2],
+					video->coded_picture_width * video->coded_picture_height,
+					video->chrom_width * video->chrom_height,
+					video->chrom_width * video->chrom_height);
+//printf("mpeg3video_drop_frames 1 %d\n", video->framenum);
+        	}
+		}
+		else
+		{
+			result = mpeg3video_read_frame_backend(video, frame_number - video->framenum);
+		}
+	}
+
+	return result;
+}
+
 unsigned int mpeg3bits_next_startcode(mpeg3_bits_t* stream)
 {
 /* Perform forwards search */
@@ -191,6 +227,11 @@ int mpeg3video_seek(mpeg3video_t *video)
 		video->byte_seek = -1;
 		mpeg3demux_seek_byte(demuxer, byte);
 
+
+// Clear subtitles
+		mpeg3_reset_subtitles(file);
+
+
 // Rewind 2 I-frames
 		if(byte > 0)
 		{
@@ -259,6 +300,10 @@ int mpeg3video_seek(mpeg3video_t *video)
 /* Seek to a frame */
 	if(video->frame_seek >= 0)
 	{
+// Clear subtitles
+		mpeg3_reset_subtitles(file);
+
+
 		frame_number = video->frame_seek;
 		video->frame_seek = -1;
 		if(frame_number < 0) frame_number = 0;
@@ -266,9 +311,13 @@ int mpeg3video_seek(mpeg3video_t *video)
 
 //printf("mpeg3video_seek 1 %ld %ld\n", frame_number, video->framenum);
 
-/* Seek to I frame in table of contents */
+/* Seek to I frame in table of contents. */
+/* Determine time between seek position and previous subtitle. */
+/* Subtract time difference from subtitle display time. */
 		if(track->frame_offsets)
 		{
+			mpeg3_reset_cache(track->frame_cache);
+
 			if((frame_number < video->framenum || 
 				frame_number - video->framenum > MPEG3_SEEK_THRESHOLD))
 			{
@@ -303,7 +352,9 @@ int mpeg3video_seek(mpeg3video_t *video)
 					
 
 						video->repeat_count = 0;
-						mpeg3video_drop_frames(video, frame_number - video->framenum);
+
+// Read up to current frame
+						mpeg3video_drop_frames(video, frame_number - video->framenum, 1);
 						break;
 					}
 				}
@@ -311,11 +362,11 @@ int mpeg3video_seek(mpeg3video_t *video)
 			else
 			{
 				video->repeat_count = 0;
-				mpeg3video_drop_frames(video, frame_number - video->framenum);
+				mpeg3video_drop_frames(video, frame_number - video->framenum, 0);
 			}
 		}
 		else
-/* Discontinue support of seeking without table of contents */
+/* No support for seeking without table of contents */
 		{
 			mpeg3video_toc_error();
 		}
@@ -377,20 +428,4 @@ int mpeg3video_previous_frame(mpeg3video_t *video)
 
 	video->repeat_count = 0;
 	return 0;
-}
-
-int mpeg3video_drop_frames(mpeg3video_t *video, long frames)
-{
-	int result = 0;
-	long frame_number = video->framenum + frames;
-
-//printf("mpeg3video_drop_frames 1 %d %d\n", frame_number, video->framenum);
-/* Read the selected number of frames and skip b-frames */
-	while(!result && frame_number > video->framenum)
-	{
-		result = mpeg3video_read_frame_backend(video, frame_number - video->framenum);
-	}
-//printf("mpeg3video_drop_frames 100\n");
-
-	return result;
 }

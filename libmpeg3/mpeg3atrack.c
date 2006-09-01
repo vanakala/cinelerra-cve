@@ -30,6 +30,7 @@ mpeg3_atrack_t* mpeg3_new_atrack(mpeg3_t *file,
 	{
 		new_atrack->sample_offsets = file->sample_offsets[number];
 		new_atrack->total_sample_offsets = file->total_sample_offsets[number];
+		new_atrack->total_samples = file->total_samples[number];
 		new_atrack->demuxer->stream_end = file->audio_eof[number];
 	}
 

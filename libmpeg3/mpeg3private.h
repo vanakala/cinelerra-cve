@@ -13,7 +13,7 @@
 /* Constants */
 
 #define MPEG3_MAJOR   1
-#define MPEG3_MINOR   6
+#define MPEG3_MINOR   7
 #define MPEG3_RELEASE 0
 
 #define RENDERFARM_FS_PREFIX "vfs://"
@@ -22,7 +22,8 @@
 #define MPEG3_FLOAT32 float
 
 #define MPEG3_TOC_PREFIX                 0x544f4320
-#define MPEG3_TOC_VERSION                0xfd
+// This decreases with every new version
+#define MPEG3_TOC_VERSION                0x000000fa
 #define MPEG3_ID3_PREFIX                 0x494433
 #define MPEG3_IFO_PREFIX                 0x44564456
 #define MPEG3_IO_SIZE                    0x100000     /* Bytes read by mpeg3io at a time */
@@ -30,6 +31,7 @@
 #define MPEG3_RIFF_CODE                  0x52494646
 #define MPEG3_PROC_CPUINFO               "/proc/cpuinfo"
 #define MPEG3_RAW_SIZE                   0x100000     /* Largest possible packet */
+#define MPEG3_BD_PACKET_SIZE             192
 #define MPEG3_TS_PACKET_SIZE             188
 #define MPEG3_DVD_PACKET_SIZE            0x800
 #define MPEG3_SYNC_BYTE                  0x47
@@ -55,6 +57,9 @@
 #define MPEG3_MAX_CPUS                   256
 #define MPEG3_MAX_STREAMS                0x10000
 #define MPEG3_MAX_PACKSIZE               262144
+/* Maximum number of complete subtitles to buffer in a subtitle track */
+/* or number of incomplete subtitles to buffer in demuxer. */
+#define MPEG3_MAX_SUBTITLES              5
 /* Positive difference before declaring timecodes discontinuous */
 #define MPEG3_CONTIGUOUS_THRESHOLD       10  
 /* Minimum number of seconds before interleaving programs */
@@ -82,22 +87,26 @@
 #define AUDIO_JESUS  5
 
 
-/* Table of contents */
-#define FILE_TYPE_PROGRAM 0x0
-#define FILE_TYPE_TRANSPORT 0x1
-#define FILE_TYPE_AUDIO 0x2
-#define FILE_TYPE_VIDEO 0x3
+/* Table of contents sections */
+#define FILE_TYPE_PROGRAM 0x00000000
+#define FILE_TYPE_TRANSPORT 0x00000001
+#define FILE_TYPE_AUDIO 0x00000002
+#define FILE_TYPE_VIDEO 0x00000003
 
-#define STREAM_AUDIO 0x4
-#define STREAM_VIDEO 0x5
+#define STREAM_AUDIO 0x00000004
+#define STREAM_VIDEO 0x00000005
+#define STREAM_SUBTITLE 0x00000006
 
-#define OFFSETS_AUDIO 0x6
-#define OFFSETS_VIDEO 0x7
+#define OFFSETS_AUDIO 0x00000007
+#define OFFSETS_VIDEO 0x00000008
 
-#define ATRACK_COUNT 0x8
-#define VTRACK_COUNT 0x9
+#define ATRACK_COUNT 0x9
+#define VTRACK_COUNT 0xa
+#define STRACK_COUNT 0xb
 
-#define TITLE_PATH 0x2
+#define TITLE_PATH 0xc
+#define IFO_PALETTE 0xd
+#define FILE_INFO 0xe
 
 // Combine the pid and the stream id into one unit
 #define CUSTOM_ID(pid, stream_id) (((pid << 8) | stream_id) & 0xffff)
@@ -245,6 +254,55 @@ typedef struct
 
 
 
+/* Subtitle object. */
+/* Created by the demuxer to store subtitles. */
+
+
+
+
+
+
+
+typedef struct
+{
+/* Raw data of subtitle */
+	unsigned char *data;
+/* number of bytes of data */
+	int size;
+/* Number of stream starting at 0x20 */
+	int id;
+	int done;
+/* Program offset of start of subtitle */
+	int64_t offset;
+
+/* image in YUV 4:2:0 */
+	unsigned char *image_y;
+	unsigned char *image_u;
+	unsigned char *image_v;
+	unsigned char *image_a;
+	int x1;
+	int x2;
+	int y1;
+	int y2;
+	int w;
+	int h;
+/* Force display */
+	int force;
+/* Time after detection of subtitle to display it in 1/100sec */
+	int start_time;
+/* Time after detection of subtitle to hide it in 1/100sec */
+	int stop_time;
+/* Indexes in the main palette */
+	int palette[4];
+	int alpha[4];
+/* The subtitle is being drawn */
+	int active;
+} mpeg3_subtitle_t;
+
+
+
+
+
 
 
 
@@ -296,6 +354,14 @@ typedef struct
 	int video_allocated;
 	int video_size;
 	int video_start;
+
+
+/* Subtitle objects */
+	mpeg3_subtitle_t **subtitles;
+	int total_subtitles;
+
+
+
 
 
 /* What type of data to read. */
@@ -360,6 +426,8 @@ typedef struct
 	int video_pid;
 	int got_audio;
 	int got_video;
+/* if subtitle object was created in last packet */
+	int got_subtitle;
 /* When only one stream is to be read, these store the stream IDs */
 /* Video stream ID being decoded.  -1 = select first ID in stream */
 	int astream;     
@@ -635,7 +703,7 @@ typedef struct
 	mpeg3_demuxer_t *demuxer;
 	mpeg3audio_t *audio;
 	int current_position;
-	int total_samples;
+	int64_t total_samples;
 	int format;               /* format of audio */
 	unsigned int pid;
 /* If we got the header information yet.  Used in streaming mode. */
@@ -793,6 +861,24 @@ typedef struct
 } mpeg3_timecode_t;
 
 
+
+typedef struct
+{
+	unsigned char *y, *u, *v;
+	int y_size;
+	int u_size;
+	int v_size;
+	int64_t frame_number;
+} mpeg3_cacheframe_t;
+
+typedef struct
+{
+	mpeg3_cacheframe_t *frames;
+	int total;
+	int allocation;
+} mpeg3_cache_t;
+
+
 typedef struct
 {
 	void* file;
@@ -843,7 +929,7 @@ typedef struct
 	unsigned char *mpeg3_zigzag_scan_table;
 	unsigned char *mpeg3_alternate_scan_table;
 // Source for the next frame presentation
-	unsigned char **output_src;
+	unsigned char *output_src[3];
 /* Pointers to frame buffers. */
 	unsigned char *newframe[3];
 	int horizontal_size, vertical_size, mb_width, mb_height;
@@ -876,6 +962,9 @@ typedef struct
 	int qscale_type, altscan;      /* picture coding extension */
 	int pict_scal;                /* picture spatial scalable extension */
 	int scalable_mode;            /* sequence scalable extension */
+
+/* Subtitling frame */
+	unsigned char *subtitle_frame[3];
 } mpeg3video_t;
 
 
@@ -901,6 +990,9 @@ typedef struct
 	mpeg3_demuxer_t *demuxer;
 /* Video decoding object */
 	mpeg3video_t *video;
+/* Table of current subtitles being overlayed */
+	mpeg3_subtitle_t **subtitles;
+	int total_subtitles;
 	int current_position;  /* Number of next frame to be played */
 	int total_frames;     /* Total frames in the file */
 	unsigned int pid;
@@ -917,14 +1009,46 @@ typedef struct
 	int keyframe_numbers_allocated;
 /* Starting byte of previous packet for making TOC */
 	int64_t prev_offset;
+/* Starting byte of previous packet when the start code was found. */
+/* Used for headers which require multiple packets. */
+	int64_t prev_frame_offset;
 /* End of stream in table of contents construction */
 	int64_t video_eof;
+
+
+	mpeg3_cache_t *frame_cache;
+
+
 
 /* If these tables must be deleted by the track */
 	int private_offsets;
 } mpeg3_vtrack_t;
 
 
+
+
+
+
+
+/* Subtitle track */
+/* Stores the program offsets of subtitle images. */
+/* Only used for seeking off of table of contents for editing. */
+/* Doesn't have its own demuxer but hangs off the video demuxer. */
+
+typedef struct
+{
+/* 0x2X */
+	int id;
+/* Offsets in program of subtitle packets */
+	int64_t *offsets;
+	int total_offsets;
+	int allocated_offsets;
+
+/* Last subtitle objects found in stream. */
+	mpeg3_subtitle_t **subtitles;
+	int total_subtitles;
+	int allocated_subtitles;
+} mpeg3_strack_t;
 
 
 
@@ -943,10 +1067,11 @@ typedef struct
 
 /* Media specific */
 	int total_astreams;
-	int total_vstreams;
 	mpeg3_atrack_t *atrack[MPEG3_MAX_STREAMS];
+	int total_vstreams;
 	mpeg3_vtrack_t *vtrack[MPEG3_MAX_STREAMS];
-
+	int total_sstreams;
+	mpeg3_strack_t *strack[MPEG3_MAX_STREAMS];
 
 /* Table of contents storage */
 	int64_t **frame_offsets;
@@ -956,6 +1081,7 @@ typedef struct
 	int64_t *audio_eof;
 	int *total_frame_offsets;
 	int *total_sample_offsets;
+	int64_t *total_samples;
 	int *total_keyframe_numbers;
 /* Handles changes in channel count after the start of a stream */
 	int *channel_counts;
@@ -974,11 +1100,16 @@ typedef struct
 	int is_ifo_file;
 	int is_audio_stream;         /* Elemental stream */
 	int is_video_stream;         /* Elemental stream */
+// Special kind of transport stream
+	int is_bd;
 /* > 0 if known otherwise determine empirically for every packet */
 	int packet_size;
 /* Type and stream for getting current absolute byte */
 	int last_type_read;  /* 1 - audio   2 - video */
 	int last_stream_read;
+
+/* Subtitle track to composite if >= 0 */
+	int subtitle_track;
 
 /* Number of program to play */
 	int program;
@@ -996,6 +1127,17 @@ typedef struct
  * Then the next operation to seek needs to match its pts to this value.
  */
 	int64_t byte_pts;
+
+/*
+ * The first color palette in the IFO file.  Used for subtitles.
+ * Byte order: YUVX * 16
+ */
+	int have_palette;
+	unsigned char palette[16 * 4];
+
+/* Date of source file index was created from. */
+/* Used to compare DVD source file to table of contents source. */
+	int64_t source_date;
 } mpeg3_t;
 
 

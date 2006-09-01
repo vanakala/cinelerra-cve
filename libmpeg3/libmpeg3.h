@@ -30,7 +30,10 @@ extern "C" {
 #define MPEG3_YUV422P 13
 
 
-
+/* Error codes for the error_return variable */
+#define MPEG3_UNDEFINED_ERROR 1
+#define MPEG3_INVALID_TOC_VERSION 2
+#define MPEG3_TOC_DATE_MISMATCH 3
 
 /* Get version information */
 int mpeg3_major();
@@ -42,11 +45,13 @@ int mpeg3_release();
 int mpeg3_check_sig(char *path);
 
 /* Open the MPEG stream. */
-mpeg3_t* mpeg3_open(char *path);
+/* An error code is put into *error_return if it fails and error_return is nonzero. */
+mpeg3_t* mpeg3_open(char *path, int *error_return);
 
 /* Open the MPEG stream and copy the tables from an already open stream. */
 /* Eliminates some initial scanning and is used for opening audio streams. */
-mpeg3_t* mpeg3_open_copy(char *path, mpeg3_t *old_file);
+/* An error code is put into *error_return if it fails and error_return is nonzero. */
+mpeg3_t* mpeg3_open_copy(char *path, mpeg3_t *old_file, int *error_return);
 int mpeg3_close(mpeg3_t *file);
 
 
@@ -197,6 +202,23 @@ int mpeg3_read_video_chunk(mpeg3_t *file,
 int mpeg3_total_programs();
 int mpeg3_set_program(int program);
 
+/* Memory used by video caches. */
+int64_t mpeg3_memory_usage(mpeg3_t *file);
+
+
+
+
+
+
+
+/* subtitle functions */
+/* get number of subtitle tracks */
+int mpeg3_subtitle_tracks(mpeg3_t *file);
+/* Enable overlay of a subtitle track. */
+/* track - the number of the subtitle track starting from 0 */
+/* The same subtitle track is overlayed for all video tracks. */
+/* Pass -1 to disable subtitles. */
+void mpeg3_show_subtitle(mpeg3_t *file, int track);
 
 
 
@@ -215,7 +237,11 @@ int mpeg3_do_toc(mpeg3_t *file, int64_t *bytes_processed);
 /* Write table of contents */
 void mpeg3_stop_toc(mpeg3_t *file);
 
-
+/* Get modification date of source file from table of contents. */
+/* Used to compare DVD source file to table of contents source. */
+int64_t mpeg3_get_source_date(mpeg3_t *file);
+/* Get modification date of source file from source file. */
+int64_t mpeg3_calculate_source_date(char *path);
 
 
 
@@ -235,6 +261,8 @@ int mpeg3_index_size(mpeg3_t *file, int track);
 float* mpeg3_index_data(mpeg3_t *file, int track, int channel);
 /* Returns 1 if the file has a table of contents */
 int mpeg3_has_toc(mpeg3_t *file);
+/* Return the path of the title number or 0 if no more titles. */
+char* mpeg3_title_path(mpeg3_t *file, int number);
 
 
 #ifdef __cplusplus

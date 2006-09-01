@@ -84,7 +84,10 @@ static int read_header(mpeg3audio_t *audio)
 					track->channels = audio->ac3_decoder->channels;
 				track->sample_rate = audio->ac3_decoder->samplerate;
 				audio->framesize = audio->ac3_decoder->framesize;
+				if(track->sample_rate <= 0) track->sample_rate = 48000;
+//printf("read_header %d %d %d\n", track->channels, track->sample_rate, audio->framesize);
 			}
+			if(track->sample_rate <= 0) track->sample_rate = 48000;
 			break;
 
 
@@ -358,7 +361,7 @@ static int get_length(mpeg3audio_t *audio)
 			samples = read_frame(audio, 0);
 		}
 
-		result = track->total_sample_offsets * MPEG3_AUDIO_CHUNKSIZE;
+		result = track->total_samples;
 	}
 	else
 // Estimate using multiplexed stream size in seconds
@@ -680,7 +683,7 @@ int mpeg3audio_seek_sample(mpeg3audio_t *audio, long sample)
 	return 0;
 }
 
-/* Read raw frames for concatenation purposes */
+/* Read raw frames for the mpeg3cat utility */
 int mpeg3audio_read_raw(mpeg3audio_t *audio, 
 	unsigned char *output, 
 	long *size, 
@@ -691,6 +694,46 @@ int mpeg3audio_read_raw(mpeg3audio_t *audio,
 	mpeg3_atrack_t *track = audio->track;
 	*size = 0;
 
+
+	switch(track->format)
+	{
+		case AUDIO_AC3:
+/* Just write the AC3 stream */
+			result = mpeg3demux_read_data(track->demuxer, 
+				output, 
+				0x800);
+			*size = 0x800;
+			break;
+
+		case AUDIO_MPEG:
+/* Fix the mpeg stream */
+			if(!result)
+			{
+				if(mpeg3demux_read_data(track->demuxer, 
+					output, 
+					0x800))
+					return 1;
+
+				*size += 0x800;
+			}
+			break;
+		
+		case AUDIO_PCM:
+// This is required to strip the headers
+			if(mpeg3demux_read_data(track->demuxer, 
+				output, 
+				audio->framesize))
+				return 1;
+			*size = audio->framesize;
+			break;
+	}
+	return result;
+
+
+
+
+#if 0
+// This probably doesn't work.
 	result = read_header(audio);
 	switch(track->format)
 	{
@@ -725,6 +768,8 @@ int mpeg3audio_read_raw(mpeg3audio_t *audio,
 			break;
 	}
 	return result;
+#endif
+
 }
 
 void mpeg3_shift_audio(mpeg3audio_t *audio, int diff)

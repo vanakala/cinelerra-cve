@@ -74,7 +74,8 @@ int main(int argc, char *argv[])
 		}
 	}
 
-	file = mpeg3_open(argv[argc - 1]);
+	int error = 0;
+	file = mpeg3_open(argv[argc - 1], &error);
 	if(outfile[0])
 	{
 		out = fopen(outfile, "wb");
@@ -149,6 +150,23 @@ int main(int argc, char *argv[])
 			}
 		}
 
+// Subtitle tracks
+		printf("total subtitle tracks: %d\n", mpeg3_subtitle_tracks(file));
+		for(i = 0; i < mpeg3_subtitle_tracks(file); i++)
+		{
+			mpeg3_strack_t *strack = file->strack[i];
+			printf("  stream: 0x%02x total_offsets: %d\n", 
+				strack->id,
+				strack->total_offsets);
+			if(print_offsets)
+			{
+				for(j = 0; j < strack->total_offsets; j++)
+				{
+					printf("%llx ", strack->offsets[j]);
+				}
+				printf("\n");
+			}
+		}
 
 // Titles
 		fprintf(stderr, "total_titles=%d\n", file->demuxer->total_titles);

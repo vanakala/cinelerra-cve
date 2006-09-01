@@ -151,7 +151,8 @@ SET_TRACE
 
 	if(rd)
 	{
-		if(!(fd = mpeg3_open(asset->path)))
+		int error = 0;
+		if(!(fd = mpeg3_open(asset->path, &error)))
 		{
 			printf("FileMPEG::open_file %s\n", asset->path);
 			result = 1;
@@ -454,6 +455,8 @@ int FileMPEG::create_index()
 		index_filename, 
 		asset->path);
 	char *ptr = strrchr(index_filename, '.');
+	int error = 0;
+
 	if(!ptr) return 1;
 
 	sprintf(ptr, ".toc");
@@ -543,7 +546,7 @@ int FileMPEG::create_index()
 
 // Reopen file from index path instead of asset path.
 	if(fd) mpeg3_close(fd);
-	if(!(fd = mpeg3_open(index_filename)))
+	if(!(fd = mpeg3_open(index_filename, &error)))
 	{
 		return 1;
 	}

@@ -16,8 +16,8 @@ int main(int argc, char *argv[])
 		exit(1);
 	}
 
-
-	file = mpeg3_open(argv[1]);
+	int error = 0;
+	file = mpeg3_open(argv[1], &error);
 	if(file)
 	{
 		if(!mpeg3_total_vstreams(file))
