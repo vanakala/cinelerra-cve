@@ -64,12 +64,16 @@ int VDeviceX11::open_output()
 {
 	if(output)
 	{
-		output->canvas->lock_window("VDeviceX11::open_output");
+		output->lock_canvas("VDeviceX11::open_output");
+		output->get_canvas()->lock_window("VDeviceX11::open_output");
 		if(!device->single_frame)
 			output->start_video();
 		else
 			output->start_single();
-		output->canvas->unlock_window();
+		output->get_canvas()->unlock_window();
+
+
+		output->unlock_canvas();
 	}
 	return 0;
 }
@@ -77,10 +81,19 @@ int VDeviceX11::open_output()
 
 int VDeviceX11::output_visible()
 {
-	if(!output || output->canvas->get_hidden()) 
+	if(!output) return 0;
+
+	output->lock_canvas("VDeviceX11::output_visible");
+	if(output->get_canvas()->get_hidden()) 
+	{
+		output->unlock_canvas();
 		return 0; 
+	}
 	else 
+	{
+		output->unlock_canvas();
 		return 1;
+	}
 }
 
 
@@ -88,7 +101,8 @@ int VDeviceX11::close_all()
 {
 	if(output)
 	{
-		output->canvas->lock_window("VDeviceX11::close_all");
+		output->lock_canvas("VDeviceX11::close_all 1");
+		output->get_canvas()->lock_window("VDeviceX11::close_all 1");
 	}
 
 	if(output && output_frame)
@@ -150,8 +164,10 @@ int VDeviceX11::close_all()
 
 	if(output)
 	{
+
 	
-		output->canvas->unlock_window();
+		output->get_canvas()->unlock_window();
+		output->unlock_canvas();
 	}
 
 
@@ -203,7 +219,9 @@ int VDeviceX11::get_best_colormodel(int colormodel)
 				break;
 
 			default:
-				result = output->canvas->get_color_model();
+				output->lock_canvas("VDeviceX11::get_best_colormodel");
+				result = output->get_canvas()->get_color_model();
+				output->unlock_canvas();
 				break;
 		}
 	}
@@ -215,7 +233,8 @@ int VDeviceX11::get_best_colormodel(int colormodel)
 void VDeviceX11::new_output_buffer(VFrame **output_channels, int colormodel)
 {
 //printf("VDeviceX11::new_output_buffer 1\n");
-	output->canvas->lock_window("VDeviceX11::new_output_buffer");
+	output->lock_canvas("VDeviceX11::new_output_buffer");
+	output->get_canvas()->lock_window("VDeviceX11::new_output_buffer 1");
 
 	for(int i = 0; i < MAX_CHANNELS; i++)
 		output_channels[i] = 0;
@@ -226,15 +245,16 @@ void VDeviceX11::new_output_buffer(VFrame **output_channels, int colormodel)
 // Conform existing bitmap to new colormodel and output size
 	if(bitmap)
 	{
-// Restart if output size changed or output colormodel changed
+// Restart if output size changed or output colormodel changed.
+// May have to recreate if transferring between windowed and fullscreen.
 		if(!color_model_selected ||
 			(!bitmap->hardware_scaling() && 
-				(bitmap->get_w() != output->canvas->get_w() ||
-				bitmap->get_h() != output->canvas->get_h())) ||
+				(bitmap->get_w() != output->get_canvas()->get_w() ||
+				bitmap->get_h() != output->get_canvas()->get_h())) ||
 			colormodel != output_frame->get_color_model())
 		{
-			int size_change = (bitmap->get_w() != output->canvas->get_w() ||
-				bitmap->get_h() != output->canvas->get_h());
+			int size_change = (bitmap->get_w() != output->get_canvas()->get_w() ||
+				bitmap->get_h() != output->get_canvas()->get_h());
 			delete bitmap;
 			delete output_frame;
 			bitmap = 0;
@@ -243,9 +263,9 @@ void VDeviceX11::new_output_buffer(VFrame **output_channels, int colormodel)
 // Blank only if size changed
 			if(size_change)
 			{
-				output->canvas->set_color(BLACK);
-				output->canvas->draw_box(0, 0, output->w, output->h);
-				output->canvas->flash();
+				output->get_canvas()->set_color(BLACK);
+				output->get_canvas()->draw_box(0, 0, output->w, output->h);
+				output->get_canvas()->flash();
 			}
 		}
 		else
@@ -268,9 +288,9 @@ void VDeviceX11::new_output_buffer(VFrame **output_channels, int colormodel)
 		{
 			case BC_YUV420P:
 				if(device->out_config->driver == PLAYBACK_X11_XV &&
-					output->canvas->accel_available(best_colormodel, 0))
+					output->get_canvas()->accel_available(best_colormodel, 0))
 				{
-					bitmap = new BC_Bitmap(output->canvas, 
+					bitmap = new BC_Bitmap(output->get_canvas(), 
 						device->out_w,
 						device->out_h,
 						best_colormodel,
@@ -288,9 +308,9 @@ void VDeviceX11::new_output_buffer(VFrame **output_channels, int colormodel)
 
 			case BC_YUV422P:
 				if(device->out_config->driver == PLAYBACK_X11_XV &&
-					output->canvas->accel_available(best_colormodel, 0))
+					output->get_canvas()->accel_available(best_colormodel, 0))
 				{
-					bitmap = new BC_Bitmap(output->canvas, 
+					bitmap = new BC_Bitmap(output->get_canvas(), 
 						device->out_w,
 						device->out_h,
 						best_colormodel,
@@ -306,9 +326,9 @@ void VDeviceX11::new_output_buffer(VFrame **output_channels, int colormodel)
 				}
 				else
 				if(device->out_config->driver == PLAYBACK_X11_XV &&
-					output->canvas->accel_available(BC_YUV422, 0))
+					output->get_canvas()->accel_available(BC_YUV422, 0))
 				{
-					bitmap = new BC_Bitmap(output->canvas, 
+					bitmap = new BC_Bitmap(output->get_canvas(), 
 						device->out_w,
 						device->out_h,
 						BC_YUV422,
@@ -319,9 +339,9 @@ void VDeviceX11::new_output_buffer(VFrame **output_channels, int colormodel)
 
 			case BC_YUV422:
 				if(device->out_config->driver == PLAYBACK_X11_XV &&
-					output->canvas->accel_available(best_colormodel, 0))
+					output->get_canvas()->accel_available(best_colormodel, 0))
 				{
-					bitmap = new BC_Bitmap(output->canvas, 
+					bitmap = new BC_Bitmap(output->get_canvas(), 
 						device->out_w,
 						device->out_h,
 						best_colormodel,
@@ -337,9 +357,9 @@ void VDeviceX11::new_output_buffer(VFrame **output_channels, int colormodel)
 				}
 				else
 				if(device->out_config->driver == PLAYBACK_X11_XV &&
-					output->canvas->accel_available(BC_YUV422P, 0))
+					output->get_canvas()->accel_available(BC_YUV422P, 0))
 				{
-					bitmap = new BC_Bitmap(output->canvas, 
+					bitmap = new BC_Bitmap(output->get_canvas(), 
 						device->out_w,
 						device->out_h,
 						BC_YUV422P,
@@ -352,10 +372,10 @@ void VDeviceX11::new_output_buffer(VFrame **output_channels, int colormodel)
 // Not accelerated --- use specified Format/Video/Color model instead
 		if(!bitmap)
 		{
-			best_colormodel = output->canvas->get_color_model();
-			bitmap = new BC_Bitmap(output->canvas, 
-				output->canvas->get_w(),
-				output->canvas->get_h(),
+			best_colormodel = output->get_canvas()->get_color_model();
+			bitmap = new BC_Bitmap(output->get_canvas(), 
+				output->get_canvas()->get_w(),
+				output->get_canvas()->get_h(),
 				best_colormodel,
 				1);
 			bitmap_type = BITMAP_TEMP;
@@ -396,7 +416,8 @@ void VDeviceX11::new_output_buffer(VFrame **output_channels, int colormodel)
 // Temporary until multichannel X
 	output_channels[0] = output_frame;
 
-	output->canvas->unlock_window();
+	output->get_canvas()->unlock_window();
+	output->unlock_canvas();
 //printf("VDeviceX11::new_output_buffer 10\n");
 }
 
@@ -420,14 +441,16 @@ int VDeviceX11::stop_playback()
 
 int VDeviceX11::write_buffer(VFrame **output_channels, EDL *edl)
 {
-	int i = 0;
-
 // The reason for not drawing single frame is that it is _always_ drawn 
 // when drawing draw_refresh in cwindowgui and vwindowgui
 	if (device->single_frame) 
 		return 0;
 
-	output->canvas->lock_window("VDeviceX11::write_buffer");
+	int i = 0;
+	output->lock_canvas("VDeviceX11::write_buffer");
+	output->get_canvas()->lock_window("VDeviceX11::write_buffer 1");
+
+
 	output->get_transfers(edl, 
 		in_x, 
 		in_y, 
@@ -542,7 +565,7 @@ int VDeviceX11::write_buffer(VFrame **output_channels, EDL *edl)
 // Cause X server to display it
 	if(bitmap->hardware_scaling())
 	{
-		output->canvas->draw_bitmap(bitmap,
+		output->get_canvas()->draw_bitmap(bitmap,
 			!device->single_frame,
 			out_x, 
 			out_y, 
@@ -556,7 +579,7 @@ int VDeviceX11::write_buffer(VFrame **output_channels, EDL *edl)
 	}
 	else
 	{
-		output->canvas->draw_bitmap(bitmap,
+		output->get_canvas()->draw_bitmap(bitmap,
 			!device->single_frame,
 			out_x, 
 			out_y, 
@@ -570,7 +593,8 @@ int VDeviceX11::write_buffer(VFrame **output_channels, EDL *edl)
 	}
 
 
-	output->canvas->unlock_window();
+	output->get_canvas()->unlock_window();
+	output->unlock_canvas();
 	return 0;
 }
 

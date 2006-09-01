@@ -73,6 +73,10 @@ public:
 	~RecordMonitorGUI();
 
 	int create_objects();
+	int cursor_leave_event();
+	int cursor_enter_event();
+	int button_release_event();
+	int cursor_motion_event();
 
 	MeterPanel *meters;
 	Canvas *canvas;
@@ -102,14 +106,11 @@ public:
 
 
 	int translation_event();
+	int button_press_event();
 	int resize_event(int w, int h);
 	int set_title();
 	int close_event();
 	int create_bitmap();
-	int button_press();
-	int button_release();
-	int cursor_motion();
-	int get_virtual_center();
 	int keypress_event();
 
 	MWindow *mwindow;
@@ -209,6 +210,10 @@ public:
 	int keypress_event();
 	int get_output_w();
 	int get_output_h();
+	int get_fullscreen();
+	void set_fullscreen(int value);
+
+
 
 	RecordMonitorGUI *window;
 	MWindow *mwindow;

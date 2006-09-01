@@ -115,6 +115,9 @@ public:
 	int plugindialog_w, plugindialog_h;
 	int menueffect_w, menueffect_h;
 
+	int cwindow_fullscreen;
+	int rwindow_fullscreen;
+	int vwindow_fullscreen;
 
 // Tip of the day
 	int current_tip;

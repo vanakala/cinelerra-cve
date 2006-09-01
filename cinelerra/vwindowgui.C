@@ -10,6 +10,7 @@
 #include "filesystem.h"
 #include "filexml.h"
 #include "fonts.h"
+#include "keys.h"
 #include "labels.h"
 #include "language.h"
 #include "localsession.h"
@@ -295,11 +296,63 @@ int VWindowGUI::keypress_event()
 		case 'Z':
 			mwindow->redo_entry(this);
 			break;
+		case 'f':
+			unlock_window();
+			if(mwindow->session->vwindow_fullscreen)
+				canvas->stop_fullscreen();
+			else
+				canvas->start_fullscreen();
+			lock_window("VWindowGUI::keypress_event 1");
+			break;
+		case ESC:
+			unlock_window();
+			if(mwindow->session->vwindow_fullscreen)
+				canvas->stop_fullscreen();
+			lock_window("VWindowGUI::keypress_event 2");
+			break;
 	}
 	if(!result) result = transport->keypress_event();
 	
 	return result;
 }
+
+int VWindowGUI::button_press_event()
+{
+	if(canvas->get_canvas())
+		return canvas->button_press_event_base(canvas->get_canvas());
+	return 0;
+}
+
+int VWindowGUI::cursor_leave_event()
+{
+	if(canvas->get_canvas())
+		return canvas->cursor_leave_event_base(canvas->get_canvas());
+	return 0;
+}
+
+int VWindowGUI::cursor_enter_event()
+{
+	if(canvas->get_canvas())
+		return canvas->cursor_enter_event_base(canvas->get_canvas());
+	return 0;
+}
+
+int VWindowGUI::button_release_event()
+{
+	if(canvas->get_canvas())
+		return canvas->button_release_event();
+	return 0;
+}
+
+int VWindowGUI::cursor_motion_event()
+{
+	if(canvas->get_canvas())
+	{
+		return canvas->cursor_motion_event();
+	}
+	return 0;
+}
+
 
 void VWindowGUI::drag_motion()
 {
@@ -720,7 +773,8 @@ void VWindowTransport::goto_end()
 
 
 VWindowCanvas::VWindowCanvas(MWindow *mwindow, VWindowGUI *gui)
- : Canvas(gui,
+ : Canvas(mwindow,
+ 	gui,
  		mwindow->theme->vcanvas_x, 
 		mwindow->theme->vcanvas_y, 
 		mwindow->theme->vcanvas_w, 
@@ -765,8 +819,8 @@ void VWindowCanvas::draw_refresh()
 {
 	EDL *edl = gui->vwindow->get_edl();
 
-	if(!canvas->video_is_on()) canvas->clear_box(0, 0, canvas->get_w(), canvas->get_h());
-	if(!canvas->video_is_on() && refresh_frame && edl)
+	if(!get_canvas()->video_is_on()) get_canvas()->clear_box(0, 0, get_canvas()->get_w(), get_canvas()->get_h());
+	if(!get_canvas()->video_is_on() && refresh_frame && edl)
 	{
 		int in_x, in_y, in_w, in_h, out_x, out_y, out_w, out_h;
 		get_transfers(edl, 
@@ -778,7 +832,7 @@ void VWindowCanvas::draw_refresh()
 			out_y, 
 			out_w, 
 			out_h);
-		canvas->draw_vframe(refresh_frame,
+		get_canvas()->draw_vframe(refresh_frame,
 				out_x, 
 				out_y, 
 				out_w, 
@@ -790,11 +844,11 @@ void VWindowCanvas::draw_refresh()
 				0);
 	}
 
-	if(!canvas->video_is_on())
+	if(!get_canvas()->video_is_on())
 	{
 		draw_overlays();
-		canvas->flash();
-		canvas->flush();
+		get_canvas()->flash();
+		get_canvas()->flush();
 	}
 }
 
@@ -802,12 +856,22 @@ void VWindowCanvas::draw_overlays()
 {
 	if(mwindow->session->vcanvas_highlighted)
 	{
-		canvas->set_color(WHITE);
-		canvas->set_inverse();
-		canvas->draw_rectangle(0, 0, canvas->get_w(), canvas->get_h());
-		canvas->draw_rectangle(1, 1, canvas->get_w() - 2, canvas->get_h() - 2);
-		canvas->set_opaque();
+		get_canvas()->set_color(WHITE);
+		get_canvas()->set_inverse();
+		get_canvas()->draw_rectangle(0, 0, get_canvas()->get_w(), get_canvas()->get_h());
+		get_canvas()->draw_rectangle(1, 1, get_canvas()->get_w() - 2, get_canvas()->get_h() - 2);
+		get_canvas()->set_opaque();
 	}
+}
+
+int VWindowCanvas::get_fullscreen()
+{
+	return mwindow->session->vwindow_fullscreen;
+}
+
+void VWindowCanvas::set_fullscreen(int value)
+{
+	mwindow->session->vwindow_fullscreen = value;
 }
 
 

@@ -37,6 +37,11 @@ public:
 	int translation_event();
 	int close_event();
 	int keypress_event();
+	int button_press_event();
+	int cursor_leave_event();
+	int cursor_enter_event();
+	int button_release_event();
+	int cursor_motion_event();
 // Update source pulldown with new assets
 	void update_sources(char *title);
 // Update GUI to reflect new source
@@ -92,6 +97,8 @@ public:
 	void draw_refresh();
 	void draw_overlays();
 	void close_source();
+	int get_fullscreen();
+	void set_fullscreen(int value);
 
 	MWindow *mwindow;
 	VWindowGUI *gui;

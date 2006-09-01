@@ -15,6 +15,7 @@
 #include "edlsession.h"
 #include "floatauto.h"
 #include "floatautos.h"
+#include "keys.h"
 #include "language.h"
 #include "localsession.h"
 #include "mainclock.h"
@@ -247,11 +248,53 @@ int CWindowGUI::resize_event(int w, int h)
 	return 1;
 }
 
+int CWindowGUI::button_press_event()
+{
+	if(canvas->get_canvas())
+		return canvas->button_press_event_base(canvas->get_canvas());
+	return 0;
+}
+
+int CWindowGUI::cursor_leave_event()
+{
+	if(canvas->get_canvas())
+		return canvas->cursor_leave_event_base(canvas->get_canvas());
+	return 0;
+}
+
+int CWindowGUI::cursor_enter_event()
+{
+	if(canvas->get_canvas())
+		return canvas->cursor_enter_event_base(canvas->get_canvas());
+	return 0;
+}
+
+int CWindowGUI::button_release_event()
+{
+	if(canvas->get_canvas())
+		return canvas->button_release_event();
+	return 0;
+}
+
+int CWindowGUI::cursor_motion_event()
+{
+	if(canvas->get_canvas())
+	{
+		return canvas->cursor_motion_event();
+	}
+	return 0;
+}
+
+
+
+
+
+
 
 void CWindowGUI::draw_status()
 {
-	if(canvas->canvas && 
-		canvas->canvas->get_video_on() ||
+	if(canvas->get_canvas() && 
+		canvas->get_canvas()->get_video_on() ||
 		canvas->is_processing)
 	{
 		draw_pixmap(active, 
@@ -318,6 +361,20 @@ int CWindowGUI::keypress_event()
 		case '-':
 			keyboard_zoomout();
 			result = 1;
+			break;
+		case 'f':
+			unlock_window();
+			if(mwindow->session->cwindow_fullscreen)
+				canvas->stop_fullscreen();
+			else
+				canvas->start_fullscreen();
+			lock_window("CWindowGUI::keypress_event 1");
+			break;
+		case ESC:
+			unlock_window();
+			if(mwindow->session->cwindow_fullscreen)
+				canvas->stop_fullscreen();
+			lock_window("CWindowGUI::keypress_event 2");
 			break;
 	}
 
@@ -719,7 +776,8 @@ void CWindowTransport::goto_end()
 
 
 CWindowCanvas::CWindowCanvas(MWindow *mwindow, CWindowGUI *gui)
- : Canvas(gui,
+ : Canvas(mwindow,
+ 	gui,
 		mwindow->theme->ccanvas_x,
 		mwindow->theme->ccanvas_y,
 		mwindow->theme->ccanvas_w,
@@ -737,6 +795,17 @@ void CWindowCanvas::status_event()
 {
 	gui->draw_status();
 }
+
+int CWindowCanvas::get_fullscreen()
+{
+	return mwindow->session->cwindow_fullscreen;
+}
+
+void CWindowCanvas::set_fullscreen(int value)
+{
+	mwindow->session->cwindow_fullscreen = value;
+}
+
 
 void CWindowCanvas::update_zoom(int x, int y, float zoom)
 {
@@ -765,9 +834,9 @@ float CWindowCanvas::get_zoom()
 
 void CWindowCanvas::draw_refresh()
 {
-	if(!canvas->video_is_on())
+	if(!get_canvas()->video_is_on())
 	{
-		canvas->clear_box(0, 0, canvas->get_w(), canvas->get_h());
+		get_canvas()->clear_box(0, 0, get_canvas()->get_w(), get_canvas()->get_h());
 
 		if(refresh_frame)
 		{
@@ -787,7 +856,7 @@ void CWindowCanvas::draw_refresh()
 
 
 			if(out_w > 0 && out_h > 0 && in_w > 0 && in_h > 0)
-				canvas->draw_vframe(refresh_frame,
+				get_canvas()->draw_vframe(refresh_frame,
 						out_x, 
 						out_y, 
 						out_w, 
@@ -800,14 +869,14 @@ void CWindowCanvas::draw_refresh()
 		}
 		else
 		{
-			canvas->clear_box(0, 0, canvas->get_w(), canvas->get_h());
+			get_canvas()->clear_box(0, 0, get_canvas()->get_w(), get_canvas()->get_h());
 		}
 
 		draw_overlays();
-		canvas->flash();
-		canvas->flush();
-//printf("CWindowCanvas::draw_refresh 10\n");
+		get_canvas()->flash();
+		get_canvas()->flush();
 	}
+//printf("CWindowCanvas::draw_refresh 10\n");
 }
 
 #define CROPHANDLE_W 10
@@ -815,7 +884,7 @@ void CWindowCanvas::draw_refresh()
 
 void CWindowCanvas::draw_crophandle(int x, int y)
 {
-	canvas->draw_box(x, y, CROPHANDLE_W, CROPHANDLE_H);
+	get_canvas()->draw_box(x, y, CROPHANDLE_W, CROPHANDLE_H);
 }
 
 #define CONTROL_W 10
@@ -904,8 +973,8 @@ int CWindowCanvas::do_mask(int &redraw,
 	{
 		if(draw)
 		{
-			canvas->set_color(WHITE);
-			canvas->set_inverse();
+			get_canvas()->set_color(WHITE);
+			get_canvas()->set_inverse();
 		}
 //printf("CWindowCanvas::do_mask 1 %d\n", points.total);
 
@@ -1105,12 +1174,12 @@ int CWindowCanvas::do_mask(int &redraw,
 							if(i < points.total - 1)
 							{
 								if(i == gui->affected_point - 1)
-									canvas->draw_disc((int)x - CONTROL_W / 2, 
+									get_canvas()->draw_disc((int)x - CONTROL_W / 2, 
 										(int)y - CONTROL_W / 2, 
 										CONTROL_W, 
 										CONTROL_W);
 								else
-									canvas->draw_circle((int)x - CONTROL_W / 2, 
+									get_canvas()->draw_circle((int)x - CONTROL_W / 2, 
 										(int)y - CONTROL_W / 2, 
 										CONTROL_W, 
 										CONTROL_W);
@@ -1123,8 +1192,8 @@ int CWindowCanvas::do_mask(int &redraw,
 							x2 = (x2 - half_track_w) * projector_z + projector_x;
 							y2 = (y2 - half_track_h) * projector_z + projector_y;
 							output_to_canvas(mwindow->edl, 0, x2, y2);
-							canvas->draw_line((int)x, (int)y, (int)x2, (int)y2);
-							canvas->draw_rectangle((int)x2 - CONTROL_W / 2,
+							get_canvas()->draw_line((int)x, (int)y, (int)x2, (int)y2);
+							get_canvas()->draw_rectangle((int)x2 - CONTROL_W / 2,
 								(int)y2 - CONTROL_H / 2,
 								CONTROL_W,
 								CONTROL_H);
@@ -1138,7 +1207,7 @@ int CWindowCanvas::do_mask(int &redraw,
 // Draw first anchor
 					if(i == 0 && draw)
 					{
-						canvas->draw_disc((int)x - FIRST_CONTROL_W / 2, 
+						get_canvas()->draw_disc((int)x - FIRST_CONTROL_W / 2, 
 							(int)y - FIRST_CONTROL_H / 2, 
 							FIRST_CONTROL_W, 
 							FIRST_CONTROL_H);
@@ -1150,8 +1219,8 @@ int CWindowCanvas::do_mask(int &redraw,
 						x1 = (x1 - half_track_w) * projector_z + projector_x;
 						y1 = (y1 - half_track_h) * projector_z + projector_y;
 						output_to_canvas(mwindow->edl, 0, x1, y1);
-						canvas->draw_line((int)x, (int)y, (int)x1, (int)y1);
-						canvas->draw_rectangle((int)x1 - CONTROL_W / 2,
+						get_canvas()->draw_line((int)x, (int)y, (int)x1, (int)y1);
+						get_canvas()->draw_rectangle((int)x1 - CONTROL_W / 2,
 							(int)y1 - CONTROL_H / 2,
 							CONTROL_W,
 							CONTROL_H);
@@ -1170,8 +1239,8 @@ int CWindowCanvas::do_mask(int &redraw,
 
 		if(draw)
 		{
-			canvas->draw_polygon(&x_points, &y_points);
-			canvas->set_opaque();
+			get_canvas()->draw_polygon(&x_points, &y_points);
+			get_canvas()->set_opaque();
 		}
 //printf("CWindowCanvas::do_mask 1\n");
 	}
@@ -1569,24 +1638,24 @@ void CWindowCanvas::draw_overlays()
 		output_to_canvas(mwindow->edl, 0, x1, y1);
 		output_to_canvas(mwindow->edl, 0, x2, y2);
 
-		canvas->set_inverse();
-		canvas->set_color(WHITE);
+		get_canvas()->set_inverse();
+		get_canvas()->set_color(WHITE);
 
-		canvas->draw_rectangle((int)x1, 
+		get_canvas()->draw_rectangle((int)x1, 
 				(int)y1, 
 				(int)(x2 - x1), 
 				(int)(y2 - y1));
 
-		canvas->set_opaque();
+		get_canvas()->set_opaque();
 	}
 
 	if(mwindow->session->ccanvas_highlighted)
 	{
-		canvas->set_color(WHITE);
-		canvas->set_inverse();
-		canvas->draw_rectangle(0, 0, canvas->get_w(), canvas->get_h());
-		canvas->draw_rectangle(1, 1, canvas->get_w() - 2, canvas->get_h() - 2);
-		canvas->set_opaque();
+		get_canvas()->set_color(WHITE);
+		get_canvas()->set_inverse();
+		get_canvas()->draw_rectangle(0, 0, get_canvas()->get_w(), get_canvas()->get_h());
+		get_canvas()->draw_rectangle(1, 1, get_canvas()->get_w() - 2, get_canvas()->get_h() - 2);
+		get_canvas()->set_opaque();
 	}
 
 	int temp1 = 0, temp2 = 0;
@@ -1609,7 +1678,6 @@ void CWindowCanvas::draw_overlays()
 			do_mask(temp1, temp2, 0, 0, 1);
 			break;
 	}
-//printf("CWindowCanvas::draw_overlays 2\n");
 }
 
 void CWindowCanvas::draw_safe_regions()
@@ -1631,19 +1699,19 @@ void CWindowCanvas::draw_safe_regions()
 	output_to_canvas(mwindow->edl, 0, title_x1, title_y1);
 	output_to_canvas(mwindow->edl, 0, title_x2, title_y2);
 
-	canvas->set_inverse();
-	canvas->set_color(WHITE);
+	get_canvas()->set_inverse();
+	get_canvas()->set_color(WHITE);
 
-	canvas->draw_rectangle((int)action_x1, 
+	get_canvas()->draw_rectangle((int)action_x1, 
 			(int)action_y1, 
 			(int)(action_x2 - action_x1), 
 			(int)(action_y2 - action_y1));
-	canvas->draw_rectangle((int)title_x1, 
+	get_canvas()->draw_rectangle((int)title_x1, 
 			(int)title_y1, 
 			(int)(title_x2 - title_x1), 
 			(int)(title_y2 - title_y1));
 
-	canvas->set_opaque();
+	get_canvas()->set_opaque();
 }
 
 void CWindowCanvas::reset_keyframe(int do_camera)
@@ -1955,8 +2023,8 @@ int CWindowCanvas::test_crop(int button_press, int &redraw)
 
 void CWindowCanvas::draw_crop()
 {
-	canvas->set_inverse();
-	canvas->set_color(WHITE);
+	get_canvas()->set_inverse();
+	get_canvas()->set_color(WHITE);
 
 	float x1 = mwindow->edl->session->crop_x1;
 	float y1 = mwindow->edl->session->crop_y1;
@@ -1967,7 +2035,7 @@ void CWindowCanvas::draw_crop()
 	output_to_canvas(mwindow->edl, 0, x2, y2);
 
 	if(x2 - x1 && y2 - y1)
-		canvas->draw_rectangle((int)x1, 
+		get_canvas()->draw_rectangle((int)x1, 
 			(int)y1, 
 			(int)(x2 - x1), 
 			(int)(y2 - y1));
@@ -1976,7 +2044,7 @@ void CWindowCanvas::draw_crop()
 	draw_crophandle((int)x2 - CROPHANDLE_W, (int)y1);
 	draw_crophandle((int)x1, (int)y2 - CROPHANDLE_H);
 	draw_crophandle((int)x2 - CROPHANDLE_W, (int)y2 - CROPHANDLE_H);
-	canvas->set_opaque();
+	get_canvas()->set_opaque();
 }
 
 
@@ -2018,29 +2086,29 @@ void CWindowCanvas::draw_bezier(int do_camera)
 	output_to_canvas(mwindow->edl, 0, track_x2, track_y2);
 
 #define DRAW_PROJECTION(offset) \
-	canvas->draw_rectangle((int)track_x1 + offset, \
+	get_canvas()->draw_rectangle((int)track_x1 + offset, \
 		(int)track_y1 + offset, \
 		(int)(track_x2 - track_x1), \
 		(int)(track_y2 - track_y1)); \
-	canvas->draw_line((int)track_x1 + offset,  \
+	get_canvas()->draw_line((int)track_x1 + offset,  \
 		(int)track_y1 + offset, \
 		(int)track_x2 + offset, \
 		(int)track_y2 + offset); \
-	canvas->draw_line((int)track_x2 + offset,  \
+	get_canvas()->draw_line((int)track_x2 + offset,  \
 		(int)track_y1 + offset, \
 		(int)track_x1 + offset, \
 		(int)track_y2 + offset); \
 
 
 // Drop shadow
-	canvas->set_color(BLACK);
+	get_canvas()->set_color(BLACK);
 	DRAW_PROJECTION(1);
 
 //	canvas->set_inverse();
 	if(do_camera)
-		canvas->set_color(GREEN);
+		get_canvas()->set_color(GREEN);
 	else
-		canvas->set_color(RED);
+		get_canvas()->set_color(RED);
 
 	DRAW_PROJECTION(0);
 //	canvas->set_opaque();
@@ -2523,6 +2591,7 @@ int CWindowCanvas::button_release_event()
 		case CWINDOW_MASK_TRANSLATE:
 			mwindow->undo->update_undo(_("mask point"), LOAD_AUTOMATION);
 			break;
+
 	}
 
 	gui->current_operation = CWINDOW_NONE;

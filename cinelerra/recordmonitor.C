@@ -54,6 +54,7 @@ RecordMonitor::~RecordMonitor()
 int RecordMonitor::create_objects()
 {
 	int min_w = 150;
+	mwindow->session->rwindow_fullscreen = 0;
 
 	if(!record->default_asset->video_data)
 		min_w = MeterPanel::get_meters_width(
@@ -213,6 +214,7 @@ RecordMonitorGUI::RecordMonitorGUI(MWindow *mwindow,
 
 RecordMonitorGUI::~RecordMonitorGUI()
 {
+	delete canvas;
 	if(bitmap) delete bitmap;
 	if(channel_picker) delete channel_picker;
 #ifdef HAVE_FIREWIRE
@@ -367,8 +369,11 @@ int RecordMonitorGUI::create_objects()
 	return 0;
 }
 
-int RecordMonitorGUI::button_press()
+int RecordMonitorGUI::button_press_event()
 {
+	if(mwindow->session->rwindow_fullscreen && canvas && canvas->get_canvas())
+		return canvas->button_press_event_base(canvas->get_canvas());
+		
 	if(get_buttonpress() == 2)
 	{
 		return 0;
@@ -383,17 +388,36 @@ int RecordMonitorGUI::button_press()
 	return 0;
 }
 
-int RecordMonitorGUI::button_release()
+int RecordMonitorGUI::cursor_leave_event()
 {
+	if(canvas && canvas->get_canvas())
+		return canvas->cursor_leave_event_base(canvas->get_canvas());
 	return 0;
 }
 
-int RecordMonitorGUI::get_virtual_center()
+int RecordMonitorGUI::cursor_enter_event()
 {
+	if(canvas && canvas->get_canvas())
+		return canvas->cursor_enter_event_base(canvas->get_canvas());
+	return 0;
 }
 
-int RecordMonitorGUI::cursor_motion()
+int RecordMonitorGUI::button_release_event()
 {
+	if(canvas && canvas->get_canvas())
+		return canvas->button_release_event();
+	return 0;
+}
+
+int RecordMonitorGUI::cursor_motion_event()
+{
+SET_TRACE
+	if(canvas && canvas->get_canvas())
+	{
+SET_TRACE
+SET_TRACE
+		return canvas->cursor_motion_event();
+	}
 	return 0;
 }
 
@@ -454,8 +478,9 @@ int RecordMonitorGUI::keypress_event()
 			close_event();
 			break;
 		default:
+			result = canvas->keypress_event(this);
 #ifdef HAVE_FIREWIRE
-			if(avc1394_transport)
+			if(!result && avc1394_transport)
 				result = avc1394_transport->keypress_event(get_keypress());
 #endif
 			break;
@@ -513,7 +538,7 @@ int RecordMonitorGUI::resize_event(int w, int h)
 	if(channel_picker) channel_picker->reposition();
 	if(reverse_interlace) reverse_interlace->reposition_window(reverse_interlace->get_x(),
 		reverse_interlace->get_y());
-	if(record->default_asset->video_data)
+	if(canvas && record->default_asset->video_data)
 	{
 		canvas->reposition_window(0,
 			mwindow->theme->rmonitor_canvas_x, 
@@ -578,7 +603,7 @@ int RecordMonitorGUI::create_bitmap()
 		bitmap = 0;
 	}
 
-	if(!bitmap)
+	if(!bitmap && canvas)
 	{
 //		bitmap = canvas->new_bitmap(get_w(), thread->get_canvas_height());
 	}
@@ -608,7 +633,8 @@ RecordMonitorCanvas::RecordMonitorCanvas(MWindow *mwindow,
 	int y, 
 	int w, 
 	int h)
- : Canvas(window, 
+ : Canvas(mwindow,
+ 	window, 
  	x, 
 	y, 
 	w, 
@@ -675,6 +701,17 @@ void RecordMonitorCanvas::zoom_resize_window(float percentage)
 	window->resize_event(new_w, new_h);
 }
 
+int RecordMonitorCanvas::get_fullscreen()
+{
+	return mwindow->session->rwindow_fullscreen;
+}
+
+void RecordMonitorCanvas::set_fullscreen(int value)
+{
+	mwindow->session->rwindow_fullscreen = value;
+}
+
+
 int RecordMonitorCanvas::button_release_event()
 {
 	window->current_operation = MONITOR_NONE;
@@ -711,7 +748,7 @@ void RecordMonitorCanvas::reset_translation()
 int RecordMonitorCanvas::keypress_event()
 {
 	int result = 0;
-	switch(canvas->get_keypress())
+	switch(get_canvas() && get_canvas()->get_keypress())
 	{
 		case LEFT:
 			record->set_translation(--record->video_x, record->video_y);

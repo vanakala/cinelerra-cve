@@ -40,6 +40,16 @@ public:
 
     int create_objects();
 	int resize_event(int w, int h);
+
+// Events for the fullscreen canvas fall through to here.
+	int button_press_event();
+	int cursor_leave_event();
+	int cursor_enter_event();
+	int button_release_event();
+	int cursor_motion_event();
+
+
+
 	int close_event();
 	int keypress_event();
 	int translation_event();
@@ -225,6 +235,8 @@ public:
 	int cursor_motion_event();
 	int button_press_event();
 	int button_release_event();
+	int get_fullscreen();
+	void set_fullscreen(int value);
 	int test_crop(int button_press, int &redraw);
 	int test_bezier(int button_press, 
 		int &redraw, 
