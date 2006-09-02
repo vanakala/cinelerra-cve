@@ -617,19 +617,24 @@ int PluginServer::read_frame(VFrame *buffer,
 //     backward propogation and produces the data.
 // If we're a Module, render in the module produces the data.
 
+	int result = -1;
 	if(!multichannel) channel = 0;
 
+// Push our name on the next effect stack
+	buffer->push_next_effect(title);
+//printf("PluginServer::read_frame %p\n", buffer);
+//buffer->dump_stacks();
 
 	if(nodes->total > channel)
 	{
-		return ((VirtualVNode*)nodes->values[channel])->read_data(buffer,
+		result = ((VirtualVNode*)nodes->values[channel])->read_data(buffer,
 			start_position,
 			frame_rate);
 	}
 	else
 	if(modules->total > channel)
 	{
-		return ((VModule*)modules->values[channel])->render(buffer,
+		result = ((VModule*)modules->values[channel])->render(buffer,
 			start_position,
 			PLAY_FORWARD,
 			frame_rate,
@@ -641,9 +646,11 @@ int PluginServer::read_frame(VFrame *buffer,
 		printf("PluginServer::read_frame no object available for channel=%d\n",
 			channel);
 	}
-//printf("PluginServer::read_frame 10\n");
 
-	return -1;
+// Pop our name from the next effect stack
+	buffer->pop_next_effect();
+
+	return result;
 }
 
 int PluginServer::read_samples(double *buffer,

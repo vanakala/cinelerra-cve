@@ -152,7 +152,7 @@ public:
 // Input frame being rendered
 	VFrame *input_frame;    
 // Frames for the rendered output
-	VFrame *output_frame[MAX_CHANNELS];  
+	VFrame *output_frame;
 // Best color model given by device
 	int output_colormodel;
 // Block until new input data

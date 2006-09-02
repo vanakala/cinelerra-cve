@@ -649,13 +649,10 @@ void VideoDevice::goose_input()
 	if(input_base) input_base->goose_input();
 }
 
-void VideoDevice::new_output_buffers(VFrame **outputs, int colormodel)
+void VideoDevice::new_output_buffer(VFrame **output, int colormodel)
 {
-	for(int i = 0; i < MAX_CHANNELS; i++)
-		outputs[i] = 0;
-
 	if(!output_base) return;
-	output_base->new_output_buffer(outputs, colormodel);
+	output_base->new_output_buffer(output, colormodel);
 }
 
 
@@ -665,10 +662,10 @@ int VideoDevice::interrupt_playback()
 	return 0;
 }
 
-int VideoDevice::write_buffer(VFrame **outputs, EDL *edl)
+int VideoDevice::write_buffer(VFrame *output, EDL *edl)
 {
 //printf("VideoDevice::write_buffer 1 %p\n", output_base);
-	if(output_base) return output_base->write_buffer(outputs, edl);
+	if(output_base) return output_base->write_buffer(output, edl);
 	return 1;
 }
 

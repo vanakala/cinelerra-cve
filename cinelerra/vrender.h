@@ -40,7 +40,7 @@ public:
 	int get_datatype();
 
 // process frames to put in buffer_out
-	int process_buffer(VFrame **video_out, 
+	int process_buffer(VFrame *video_out, 
 		int64_t input_position, 
 		int last_buffer);
 // load an array of buffers for each track to send to the thread
@@ -79,7 +79,7 @@ public:
 // frames to send to video device (1)
 	int64_t playback_buffer;            
 // Output frame
-	VFrame *video_out[MAX_CHANNELS];
+	VFrame *video_out;
 // Byte offset of video_out
 	int64_t output_offset;
 

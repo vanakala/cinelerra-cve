@@ -25,7 +25,7 @@ public:
 	int load_defaults(BC_Hash *defaults);
 	void set_default_title();
 	PluginSet* new_plugins();
-	int channel_is_playable(int64_t position, int direction, int *do_channel);
+	int is_playable(int64_t position, int direction);
 	int save_header(FileXML *file);
 	int save_derived(FileXML *file);
 	int load_header(FileXML *file, uint32_t load_flags);
@@ -40,7 +40,7 @@ public:
 		float &in_x, float &in_y, float &in_w, float &in_h,
 		float &out_x, float &out_y, float &out_w, float &out_h);
 
-	void calculate_output_transfer(int channel, int64_t position, int direction, 
+	void calculate_output_transfer(int64_t position, int direction, 
 		float &in_x, float &in_y, float &in_w, float &in_h,
 		float &out_x, float &out_y, float &out_w, float &out_h);
 

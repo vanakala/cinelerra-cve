@@ -160,6 +160,12 @@ int VDeviceX11::close_all()
 		bitmap = 0;
 	}
 
+	if(output_frame)
+	{
+		delete output_frame;
+		output_frame = 0;
+	}
+
 	if(capture_bitmap) delete capture_bitmap;
 
 	if(output)
@@ -230,14 +236,11 @@ int VDeviceX11::get_best_colormodel(int colormodel)
 }
 
 
-void VDeviceX11::new_output_buffer(VFrame **output_channels, int colormodel)
+void VDeviceX11::new_output_buffer(VFrame **result, int colormodel)
 {
 //printf("VDeviceX11::new_output_buffer 1\n");
 	output->lock_canvas("VDeviceX11::new_output_buffer");
 	output->get_canvas()->lock_window("VDeviceX11::new_output_buffer 1");
-
-	for(int i = 0; i < MAX_CHANNELS; i++)
-		output_channels[i] = 0;
 
 // Get the best colormodel the display can handle.
 	int best_colormodel = get_best_colormodel(colormodel);
@@ -413,8 +416,7 @@ void VDeviceX11::new_output_buffer(VFrame **output_channels, int colormodel)
 	}
 
 
-// Temporary until multichannel X
-	output_channels[0] = output_frame;
+	*result = output_frame;
 
 	output->get_canvas()->unlock_window();
 	output->unlock_canvas();
@@ -439,7 +441,7 @@ int VDeviceX11::stop_playback()
 	return 0;
 }
 
-int VDeviceX11::write_buffer(VFrame **output_channels, EDL *edl)
+int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
 {
 // The reason for not drawing single frame is that it is _always_ drawn 
 // when drawing draw_refresh in cwindowgui and vwindowgui
@@ -486,37 +488,37 @@ int VDeviceX11::write_buffer(VFrame **output_channels, EDL *edl)
 		if(bitmap->hardware_scaling())
 		{
 			cmodel_transfer(bitmap->get_row_pointers(), 
-				output_channels[0]->get_rows(),
+				output_channels->get_rows(),
 				0,
 				0,
 				0,
-				output_channels[0]->get_y(),
-				output_channels[0]->get_u(),
-				output_channels[0]->get_v(),
+				output_channels->get_y(),
+				output_channels->get_u(),
+				output_channels->get_v(),
 				0, 
 				0, 
-				output_channels[0]->get_w(), 
-				output_channels[0]->get_h(),
+				output_channels->get_w(), 
+				output_channels->get_h(),
 				0, 
 				0, 
 				bitmap->get_w(), 
 				bitmap->get_h(),
-				output_channels[0]->get_color_model(), 
+				output_channels->get_color_model(), 
 				bitmap->get_color_model(),
 				0,
-				output_channels[0]->get_w(),
+				output_channels->get_w(),
 				bitmap->get_w());
 		}
 		else
 		{
 			cmodel_transfer(bitmap->get_row_pointers(), 
-				output_channels[0]->get_rows(),
+				output_channels->get_rows(),
 				0,
 				0,
 				0,
-				output_channels[0]->get_y(),
-				output_channels[0]->get_u(),
-				output_channels[0]->get_v(),
+				output_channels->get_y(),
+				output_channels->get_u(),
+				output_channels->get_v(),
 				in_x, 
 				in_y, 
 				in_w, 
@@ -525,10 +527,10 @@ int VDeviceX11::write_buffer(VFrame **output_channels, EDL *edl)
 				0, 
 				out_w, 
 				out_h,
-				output_channels[0]->get_color_model(), 
+				output_channels->get_color_model(), 
 				bitmap->get_color_model(),
 				0,
-				output_channels[0]->get_w(),
+				output_channels->get_w(),
 				bitmap->get_w());
 		}
 	}
@@ -549,16 +551,6 @@ int VDeviceX11::write_buffer(VFrame **output_channels, EDL *edl)
 // canvas_y1, 
 // canvas_x2, 
 // canvas_y2);
-
-
-// Select field if using field mode.  This may be a useful feature later on
-// but currently it's being superceded by the heroine 60 encoding.
-// Doing time base conversion in the display routine produces 
-// pretty big compression artifacts.  It also requires implementing a
-// different transform for each X visual.
-	if(device->out_config->x11_use_fields)
-	{
-	}
 
 
 

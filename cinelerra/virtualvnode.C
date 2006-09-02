@@ -168,7 +168,7 @@ void VirtualVNode::render_as_plugin(VFrame *output_temp,
 }
 
 
-int VirtualVNode::render_as_module(VFrame **video_out, 
+int VirtualVNode::render_as_module(VFrame *video_out, 
 	VFrame *output_temp,
 	int64_t start_position,
 	double frame_rate)
@@ -176,10 +176,17 @@ int VirtualVNode::render_as_module(VFrame **video_out,
 
 	int direction = renderengine->command->get_direction();
 	double edl_rate = renderengine->edl->session->frame_rate;
+// Get position relative to project, compensated for direction
+	int64_t start_position_project = (int64_t)(start_position *
+		edl_rate / 
+		frame_rate);
+	if(direction == PLAY_REVERSE) start_position_project--;
 
 	if(vconsole->debug_tree) 
 		printf("  VirtualVNode::render_as_module title=%s\n", 
 			track->title);
+
+	output_temp->push_next_effect("VirtualVNode::render_as_module");
 
 // Process last subnode.  This propogates up the chain of subnodes and finishes
 // the chain.
@@ -197,6 +204,8 @@ int VirtualVNode::render_as_module(VFrame **video_out,
 			start_position,
 			frame_rate);
 	}
+
+	output_temp->pop_next_effect();
 
 	render_fade(output_temp,
 				start_position,
@@ -231,13 +240,16 @@ int VirtualVNode::render_as_module(VFrame **video_out,
 
 	if(!mute_constant)
 	{
-// Fragment is playable
+// Frame is playable
 		render_projector(output_temp,
 			video_out,
 			start_position,
 			frame_rate);
 	}
 
+	output_temp->push_prev_effect("VirtualVNode::render_as_module");
+//printf("VirtualVNode::render_as_module\n");
+//output_temp->dump_stacks();
 
 	Edit *edit = 0;
 	if(renderengine->show_tc)
@@ -290,7 +302,7 @@ int VirtualVNode::render_fade(VFrame *output,
 
 // Start of input fragment in project if forward.  End of input fragment if reverse.
 int VirtualVNode::render_projector(VFrame *input,
-			VFrame **output,
+			VFrame *output,
 			int64_t start_position,
 			double frame_rate)
 {
@@ -302,60 +314,58 @@ int VirtualVNode::render_projector(VFrame *input,
 		frame_rate);
 	VRender *vrender = ((VirtualVConsole*)vconsole)->vrender;
 	if(vconsole->debug_tree) 
-		printf("  VirtualVNode::render_projector title=%s\n", track->title);
+		printf("  VirtualVNode::render_projector input=%p output=%p title=%s\n", 
+			input, output, track->title);
 
-	for(int i = 0; i < MAX_CHANNELS; i++)
+	if(output)
 	{
-		if(output[i])
-		{
-			((VTrack*)track)->calculate_output_transfer(i,
-				start_position_project,
-				renderengine->command->get_direction(),
-				in_x1, 
-				in_y1, 
-				in_x2, 
-				in_y2,
-				out_x1, 
-				out_y1, 
-				out_x2, 
-				out_y2);
+		((VTrack*)track)->calculate_output_transfer(start_position_project,
+			renderengine->command->get_direction(),
+			in_x1, 
+			in_y1, 
+			in_x2, 
+			in_y2,
+			out_x1, 
+			out_y1, 
+			out_x2, 
+			out_y2);
 
-			in_x2 += in_x1;
-			in_y2 += in_y1;
-			out_x2 += out_x1;
-			out_y2 += out_y1;
+		in_x2 += in_x1;
+		in_y2 += in_y1;
+		out_x2 += out_x1;
+		out_y2 += out_y1;
 
 //for(int j = 0; j < input->get_w() * 3 * 5; j++)
 //	input->get_rows()[0][j] = 255;
 // 
-			if(out_x2 > out_x1 && 
-				out_y2 > out_y1 && 
-				in_x2 > in_x1 && 
-				in_y2 > in_y1)
-			{
- 				int direction = renderengine->command->get_direction();
-				IntAuto *mode_keyframe = 0;
-				mode_keyframe = 
-					(IntAuto*)track->automation->autos[AUTOMATION_MODE]->get_prev_auto(
-						start_position_project, 
-						direction,
-						(Auto* &)mode_keyframe);
+		if(out_x2 > out_x1 && 
+			out_y2 > out_y1 && 
+			in_x2 > in_x1 && 
+			in_y2 > in_y1)
+		{
+ 			int direction = renderengine->command->get_direction();
+			IntAuto *mode_keyframe = 0;
+			mode_keyframe = 
+				(IntAuto*)track->automation->autos[AUTOMATION_MODE]->get_prev_auto(
+					start_position_project, 
+					direction,
+					(Auto* &)mode_keyframe);
 
-				int mode = mode_keyframe->value;
+			int mode = mode_keyframe->value;
 
 // Fade is performed in render_fade so as to allow this module
 // to be chained in another module, thus only 4 component colormodels
 // can do dissolves, although a blend equation is still required for 3 component
 // colormodels since fractional translation requires blending.
 
-// If this is the only playable video track and the mode_keyframe is "normal"
-// the mode keyframe may be overridden with "replace".  Replace is faster.
-				if(mode == TRANSFER_NORMAL &&
-					vconsole->total_entry_nodes == 1)
-					mode = TRANSFER_REPLACE;
+// If this is the first playable video track and the mode_keyframe is "normal"
+// the mode may be overridden with "replace".  Replace is faster.
+			if(mode == TRANSFER_NORMAL &&
+				vconsole->current_exit_node == vconsole->total_exit_nodes - 1)
+				mode = TRANSFER_REPLACE;
 
-
-				vrender->overlayer->overlay(output[i], 
+			{
+				vrender->overlayer->overlay(output, 
 					input,
 					in_x1, 
 					in_y1, 
@@ -369,8 +379,6 @@ int VirtualVNode::render_projector(VFrame *input,
 					mode, 
 					renderengine->edl->session->interpolation_type);
 			}
-// for(int j = 0; j < output[i]->get_w() * 3 * 5; j++)
-//  	output[i]->get_rows()[0][j] = 255;
 		}
 	}
 	return 0;

@@ -116,12 +116,6 @@ int PackageRenderer::initialize(MWindow *mwindow,
 	PlaybackConfig *config = command->get_edl()->session->playback_config;
 	aconfig = new AudioOutConfig(0);
 	vconfig = new VideoOutConfig;
-//	playback_config = new PlaybackConfig(PLAYBACK_LOCALHOST, 0);
-	for(int i = 0; i < MAX_CHANNELS; i++)
-	{
-		vconfig->do_channel[i] = (i < command->get_edl()->session->video_channels);
-	}
-
 
 	return result;
 }
@@ -360,11 +354,7 @@ void PackageRenderer::do_video()
 
 
 // Construct layered output buffer
-				for(int i = 0; i < MAX_CHANNELS; i++)
-					video_output_ptr[i] = 
-						(i < asset->layers) ? 
-							video_output[i][video_write_position] : 
-							0;
+				video_output_ptr = video_output[0][video_write_position];
 
  				if(!result)
 					result = render_engine->vrender->process_buffer(
@@ -379,14 +369,12 @@ void PackageRenderer::do_video()
 					video_device->output_visible())
 				{
 // Vector for video device
-					VFrame *preview_output[MAX_CHANNELS];
+					VFrame *preview_output;
 
-					video_device->new_output_buffers(preview_output,
+					video_device->new_output_buffer(&preview_output,
 						command->get_edl()->session->color_model);
 
-					for(int i = 0; i < MAX_CHANNELS; i++)
-						if(preview_output[i])
-							preview_output[i]->copy_from(video_output_ptr[i]);
+					preview_output->copy_from(video_output_ptr);
 					video_device->write_buffer(preview_output, 
 						command->get_edl());
 				}
@@ -407,7 +395,7 @@ void PackageRenderer::do_video()
 // Set background rendering parameters
 // Allow us to skip sections of the output file by setting the frame number.
 // Used by background render and render farm.
-					video_output_ptr[0]->set_number(video_position);
+					video_output_ptr->set_number(video_position);
 					video_write_position++;
 
 					if(video_write_position >= video_write_length)

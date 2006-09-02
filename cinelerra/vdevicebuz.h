@@ -59,7 +59,7 @@ public:
 	int open_output();
 	int close_all();
 	int read_buffer(VFrame *frame);
-	int write_buffer(VFrame **frames, EDL *edl);
+	int write_buffer(VFrame *frames, EDL *edl);
 	int reset_parameters();
 	ArrayList<int>* get_render_strategies();
 	int set_channel(Channel *channel);
@@ -68,7 +68,7 @@ public:
 	int set_picture(PictureConfig *picture);
 	int get_best_colormodel(int colormodel);
 	void create_channeldb(ArrayList<Channel*> *channeldb);
-	void new_output_buffer(VFrame **outputs, int colormodel);
+	void new_output_buffer(VFrame *output, int colormodel);
 
 
 private:

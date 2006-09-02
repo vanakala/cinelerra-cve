@@ -1,10 +1,17 @@
 #ifndef VFRAME_H
 #define VFRAME_H
 
+#include "arraylist.h"
 #include "colormodels.h"
 #include "vframe.inc"
 
 class PngReadFunction;
+
+
+// Maximum number of prev or next effects to be pushed onto the stacks.
+#define MAX_STACK_ELEMENTS 255
+
+
 
 class VFrame
 {
@@ -124,6 +131,18 @@ public:
 		int out_x1, 
 		int out_y1);
 
+// Because OpenGL is faster if multiple effects are combined, we need
+// to provide ways for effects to aggregate.
+// The prev_effect is the object providing the data to read_frame.
+// The next_effect is the object which called read_frame.
+// Push and pop are only called from Cinelerra internals, so
+// if an object calls read_frame with a temporary, the stack before and after
+// the temporary is lost.
+	void push_prev_effect(char *name);
+	void pop_prev_effect();
+	void push_next_effect(char *name);
+	void pop_next_effect();
+
 private:
 	int clear_objects();
 	int reset_parameters();
@@ -169,6 +188,9 @@ private:
 // For writing discontinuous frames in background rendering
 	long sequence_number;
 	int is_keyframe;
+
+	ArrayList<char*> prev_effects;
+	ArrayList<char*> next_effects;
 };
 
 

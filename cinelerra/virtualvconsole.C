@@ -1,4 +1,5 @@
 #include "bcsignals.h"
+#include "bctimer.h"
 #include "datatype.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -63,28 +64,33 @@ int VirtualVConsole::process_buffer(int64_t input_position)
 
 
 	if(debug_tree) 
-		printf("VirtualVConsole::process_buffer begin\n");
+		printf("VirtualVConsole::process_buffer begin exit_nodes=%d\n", 
+			exit_nodes.total);
 
 
-// clear output buffers
-	for(i = 0; i < MAX_CHANNELS; i++)
 	{
-		if(vrender->video_out[i])
-			vrender->video_out[i]->clear_frame();
+// clear device buffer
+		vrender->video_out->clear_frame();
 	}
+
+
+
+
 
 
 // Reset plugin rendering status
 	reset_attachments();
 
+Timer timer;
 // Render exit nodes from bottom to top
-	for(int i = exit_nodes.total - 1; i >= 0; i--)
+	for(current_exit_node = exit_nodes.total - 1; current_exit_node >= 0; current_exit_node--)
 	{
-		VirtualVNode *node = (VirtualVNode*)exit_nodes.values[i];
+		VirtualVNode *node = (VirtualVNode*)exit_nodes.values[current_exit_node];
 		Track *track = node->track;
 
 // Create temporary output to match the track size, which is acceptable since
 // most projects don't have variable track sizes.
+// If the project has variable track sizes, this object is recreated for each track.
 
 
 

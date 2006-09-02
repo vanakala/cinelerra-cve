@@ -908,7 +908,7 @@ int RecordMonitorThread::write_frame(VFrame *new_frame)
 // Need to wait until after Record creates the input device before starting monitor
 // because the input device deterimes the output format.
 // First time
-		if(!output_frame[0]) init_output_format();
+		if(!output_frame) init_output_format();
 		if(!shared_data)
 		{
 			if(!input_frame) input_frame = new VFrame;
@@ -945,7 +945,7 @@ int RecordMonitorThread::render_dv()
 
 void RecordMonitorThread::render_uncompressed()
 {
-	output_frame[0]->copy_from(input_frame);
+	output_frame->copy_from(input_frame);
 }
 
 void RecordMonitorThread::show_output_frame()
@@ -983,7 +983,7 @@ int RecordMonitorThread::render_frame()
 void RecordMonitorThread::new_output_frame()
 {
 	long offset;
-	record_monitor->device->new_output_buffers(output_frame, output_colormodel);
+	record_monitor->device->new_output_buffer(&output_frame, output_colormodel);
 }
 
 void RecordMonitorThread::run()
@@ -1057,11 +1057,11 @@ int RecVideoMJPGThread::render_frame(VFrame *frame, long size)
 		frame->get_data(), 
 		frame->get_compressed_size(), 
 		frame->get_field2_offset(), 
-		thread->output_frame[0]->get_rows(), 
-		thread->output_frame[0]->get_y(), 
-		thread->output_frame[0]->get_u(), 
-		thread->output_frame[0]->get_v(),
-		thread->output_frame[0]->get_color_model(),
+		thread->output_frame->get_rows(), 
+		thread->output_frame->get_y(), 
+		thread->output_frame->get_u(), 
+		thread->output_frame->get_v(),
+		thread->output_frame->get_color_model(),
 		record->mwindow->preferences->processors);
 	return 0;
 }
@@ -1096,14 +1096,14 @@ int RecVideoDVThread::stop_rendering()
 int RecVideoDVThread::render_frame(VFrame *frame, long size)
 {
 	unsigned char *yuv_planes[3];
-	yuv_planes[0] = thread->output_frame[0]->get_y();
-	yuv_planes[1] = thread->output_frame[0]->get_u();
-	yuv_planes[2] = thread->output_frame[0]->get_v();
+	yuv_planes[0] = thread->output_frame->get_y();
+	yuv_planes[1] = thread->output_frame->get_u();
+	yuv_planes[2] = thread->output_frame->get_v();
 	dv_read_video(((dv_t*)dv), 
 		yuv_planes, 
 		frame->get_data(), 
 		frame->get_compressed_size(),
-		thread->output_frame[0]->get_color_model());
+		thread->output_frame->get_color_model());
 
 	return 0;
 }

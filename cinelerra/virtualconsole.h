@@ -56,9 +56,11 @@ public:
 	CommonRender *commonrender;
 
 
-// Total entry nodes.  Corresponds to the total playable tracks.
+// Total exit nodes.  Corresponds to the total playable tracks.
 // Was total_tracks
-	int total_entry_nodes;          
+	int total_exit_nodes;
+// Current exit node being processed.  Used to speed up video.
+	int current_exit_node;
 // Entry node for each playable track
 // Was toplevel_nodes
 	VirtualNode **entry_nodes;
@@ -99,7 +101,8 @@ public:
 //	int sort_virtual_console();
 	int delete_virtual_console();
 
-// Set duplicate when this virtual console is to share the old resources.
+// Signal effects to deallocate any resources which must be deallocated
+// after playback.
 	virtual int stop_rendering(int duplicate) {};
 
 	virtual int send_last_output_buffer() {};

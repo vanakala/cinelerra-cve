@@ -99,6 +99,9 @@ VFrame::VFrame()
 VFrame::~VFrame()
 {
 	clear_objects();
+// Delete effect stack
+	prev_effects.remove_all_objects();
+	next_effects.remove_all_objects();
 }
 
 int VFrame::equivalent(VFrame *src)
@@ -147,6 +150,9 @@ int VFrame::reset_parameters()
 	v_offset = 0;
 	sequence_number = -1;
 	is_keyframe = 0;
+
+	prev_effects.set_array_delete();
+	next_effects.set_array_delete();
 	return 0;
 }
 
@@ -155,8 +161,10 @@ int VFrame::clear_objects()
 // Delete data
 	if(!shared)
 	{
-int size = calculate_data_size(this->w, this->h, this->bytes_per_line, this->color_model);
-if(size > 2560 * 1920)
+
+// Memory check
+//int size = calculate_data_size(this->w, this->h, this->bytes_per_line, this->color_model);
+//if(size > 2560 * 1920)
 UNBUFFER(data);
 		if(data) delete [] data;
 		data = 0;
@@ -302,8 +310,8 @@ int VFrame::allocate_data(unsigned char *data,
 		this->data = new unsigned char[size];
 
 // Memory check
-if(size > 2560 * 1920)
-BUFFER(size, this->data, "VFrame::allocate_data");
+//if(size >= 720 * 480 * 3)
+//BUFFER2(this->data, "VFrame::allocate_data");
 
 if(!this->data)
 printf("VFrame::allocate_data %dx%d: memory exhausted.\n", this->w, this->h);
@@ -377,6 +385,7 @@ int VFrame::allocate_compressed_data(long bytes)
 	{
 		unsigned char *new_data = new unsigned char[bytes];
 		bcopy(data, new_data, compressed_allocated);
+UNBUFFER(data);
 		delete [] data;
 		data = new_data;
 		compressed_allocated = bytes;
@@ -799,6 +808,33 @@ long VFrame::get_number()
 	return sequence_number;
 }
 
+void VFrame::push_prev_effect(char *name)
+{
+	char *ptr;
+	prev_effects.append(ptr = new char[strlen(name) + 1]);
+	strcpy(ptr, name);
+	if(prev_effects.total > MAX_STACK_ELEMENTS) prev_effects.remove_object(0);
+}
+
+void VFrame::pop_prev_effect()
+{
+	if(prev_effects.total)
+		prev_effects.remove_object(prev_effects.last());
+}
+
+void VFrame::push_next_effect(char *name)
+{
+	char *ptr;
+	next_effects.append(ptr = new char[strlen(name) + 1]);
+	strcpy(ptr, name);
+	if(next_effects.total > MAX_STACK_ELEMENTS) next_effects.remove_object(0);
+}
+
+void VFrame::pop_next_effect()
+{
+	if(next_effects.total)
+		next_effects.remove_object(next_effects.last());
+}
 
 
 

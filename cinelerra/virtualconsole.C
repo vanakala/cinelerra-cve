@@ -23,7 +23,7 @@ VirtualConsole::VirtualConsole(RenderEngine *renderengine,
 	this->renderengine = renderengine;
 	this->commonrender = commonrender;
 	this->data_type = data_type;
-	total_entry_nodes = 0;
+	total_exit_nodes = 0;
 	playable_tracks = 0;
 	entry_nodes = 0;
 	debug_tree = 0;
@@ -44,7 +44,7 @@ void VirtualConsole::create_objects()
 	done = 0;
 
 	get_playable_tracks();
-	total_entry_nodes = playable_tracks->total;
+	total_exit_nodes = playable_tracks->total;
 	build_virtual_console(1);
 //dump();
 }
@@ -98,9 +98,9 @@ void VirtualConsole::build_virtual_console(int persistent_plugins)
 // allocate the entry nodes
 	if(!entry_nodes)
 	{
-		entry_nodes = new VirtualNode*[total_entry_nodes];
+		entry_nodes = new VirtualNode*[total_exit_nodes];
 
-		for(int i = 0; i < total_entry_nodes; i++)
+		for(int i = 0; i < total_exit_nodes; i++)
 		{
 			entry_nodes[i] = new_entry_node(playable_tracks->values[i], 
 				module_of(playable_tracks->values[i]), 
@@ -144,7 +144,7 @@ void VirtualConsole::dump()
 	for(int i = 0; i < commonrender->total_modules; i++)
 		commonrender->modules[i]->dump();
 	printf(" Nodes\n");
-	for(int i = 0; i < total_entry_nodes; i++)
+	for(int i = 0; i < total_exit_nodes; i++)
 		entry_nodes[i]->dump(0);
 }
 
@@ -265,7 +265,7 @@ int VirtualConsole::test_reconfigure(int64_t position,
 int VirtualConsole::delete_virtual_console()
 {
 // delete the virtual node tree
-	for(int i = 0; i < total_entry_nodes; i++)
+	for(int i = 0; i < total_exit_nodes; i++)
 	{
 		delete entry_nodes[i];
 	}

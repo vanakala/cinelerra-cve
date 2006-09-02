@@ -126,7 +126,7 @@ public:
 	TransportCommand *command;
 	int direct_frame_copying;
 	VideoDevice *video_device;
-	VFrame *video_output_ptr[MAX_CHANNELS];
+	VFrame *video_output_ptr;
 	int64_t video_preroll;
 	int64_t video_position;
 	int64_t video_read_length;

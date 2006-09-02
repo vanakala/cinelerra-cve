@@ -270,26 +270,21 @@ int VTrack::draw_floating_autos_derived(float view_start, float zoom_units, Auto
 	return 0;
 }
 
-int VTrack::channel_is_playable(int64_t position, int direction, int *do_channel)
+int VTrack::is_playable(int64_t position, int direction)
 {
 	int result = 0;
-	for(int i = 0; i < edl->session->video_channels && !result; i++)
-	{
-		if(do_channel[i])
-		{
-			float in_x, in_y, in_w, in_h;
-			float out_x, out_y, out_w, out_h;
+	float in_x, in_y, in_w, in_h;
+	float out_x, out_y, out_w, out_h;
 
-			calculate_output_transfer(i, position, direction, 
-				in_x, in_y, in_w, in_h,
-				out_x, out_y, out_w, out_h);
+	calculate_output_transfer(position, 
+		direction, 
+		in_x, in_y, in_w, in_h,
+		out_x, out_y, out_w, out_h);
 
 //printf("VTrack::is_playable %0.0f %0.0f %0.0f %0.0f %0.0f %0.0f %0.0f %0.0f\n", 
 //in_x, in_y, in_w, in_h, out_x, out_y, out_w, out_h);
-			if(out_w > 0 && out_h > 0) 
-				result = 1;
-		}
-	}
+	if(out_w > 0 && out_h > 0) 
+		result = 1;
 	return result;
 }
 
@@ -374,8 +369,7 @@ void VTrack::calculate_input_transfer(Asset *asset,
 // out_x, out_y, out_w, out_h);
 }
 
-void VTrack::calculate_output_transfer(int channel, 
-	int64_t position, 
+void VTrack::calculate_output_transfer(int64_t position, 
 	int direction, 
 	float &in_x, 
 	float &in_y, 
@@ -388,10 +382,6 @@ void VTrack::calculate_output_transfer(int channel,
 {
 	float center_x, center_y, center_z;
 	float x[4], y[4];
-	float channel_x1 = edl->session->vchannel_x[channel];
-	float channel_y1 = edl->session->vchannel_y[channel];
-	float channel_x2 = channel_x1 + edl->session->output_w;
-	float channel_y2 = channel_y1 + edl->session->output_h;
 
 	x[0] = 0;
 	y[0] = 0;
@@ -412,26 +402,26 @@ void VTrack::calculate_output_transfer(int channel,
 	x[3] = x[2] + track_w * center_z;
 	y[3] = y[2] + track_h * center_z;
 
-// Clip to boundaries of channel
-	if(x[2] < channel_x1)
+// Clip to boundaries of output
+	if(x[2] < 0)
 	{
-		x[0] -= (x[2] - channel_x1) / center_z;
-		x[2] = channel_x1;
+		x[0] -= (x[2] - 0) / center_z;
+		x[2] = 0;
 	}
 	if(y[2] < 0)
 	{
-		y[0] -= (y[2] - channel_y1) / center_z;
+		y[0] -= (y[2] - 0) / center_z;
 		y[2] = 0;
 	}
-	if(x[3] > channel_x2)
+	if(x[3] > edl->session->output_w)
 	{
-		x[1] -= (x[3] - channel_x2) / center_z;
-		x[3] = channel_x2;
+		x[1] -= (x[3] - edl->session->output_w) / center_z;
+		x[3] = edl->session->output_w;
 	}
-	if(y[3] > channel_y2)
+	if(y[3] > edl->session->output_h)
 	{
-		y[1] -= (y[3] - channel_y2) / center_z;
-		y[3] = channel_y2;
+		y[1] -= (y[3] - edl->session->output_h) / center_z;
+		y[3] = edl->session->output_h;
 	}
 
 	in_x = x[0];

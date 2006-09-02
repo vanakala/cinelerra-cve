@@ -23,14 +23,14 @@ public:
 	int read_buffer(VFrame *frame);
 	int reset_parameters();
 // User always gets the colormodel requested
-	void new_output_buffer(VFrame **output_frames, int colormodel);
+	void new_output_buffer(VFrame **output, int colormodel);
 
 	int open_output();
 	int start_playback();
 	int stop_playback();
 	int output_visible();
 // After loading the bitmap with a picture, write it
-	int write_buffer(VFrame **outputs, EDL *edl);
+	int write_buffer(VFrame *result, EDL *edl);
 
 private:
 // Closest colormodel the hardware can do for playback

@@ -73,7 +73,7 @@ int VRender::flash_output()
 	return renderengine->video->write_buffer(video_out, renderengine->edl);
 }
 
-int VRender::process_buffer(VFrame **video_out, 
+int VRender::process_buffer(VFrame *video_out, 
 	int64_t input_position, 
 	int last_buffer)
 {
@@ -83,8 +83,7 @@ int VRender::process_buffer(VFrame **video_out,
 	int reconfigure = 0;
 
 
-	for(i = 0; i < MAX_CHANNELS; i++)
-		this->video_out[i] = video_out[i];
+	this->video_out = video_out;
 	this->last_playback = last_buffer;
 
 	current_position = input_position;
@@ -119,7 +118,7 @@ SET_TRACE
 
 // Get output buffer from device
 	if(renderengine->command->realtime)
-		renderengine->video->new_output_buffers(video_out, colormodel);
+		renderengine->video->new_output_buffer(&video_out, colormodel);
 
 
 // printf("VRender::process_buffer use_vconsole=%d colormodel=%d video_out=%p\n", 
@@ -146,7 +145,7 @@ SET_TRACE
 					file->set_cache_frames(1);
 				file->set_video_position(corrected_position, 
 					renderengine->edl->session->frame_rate);
-				file->read_frame(video_out[0]);
+				file->read_frame(video_out);
 				if(renderengine->command->single_frame())
 					file->set_cache_frames(0);
 				renderengine->get_vcache()->check_in(asset);
@@ -156,7 +155,7 @@ SET_TRACE
 		else
 		if(playable_edit)
 		{
-			result = ((VEdit*)playable_edit)->read_frame(video_out[0], 
+			result = ((VEdit*)playable_edit)->read_frame(video_out, 
 				current_position, 
 				renderengine->command->get_direction(),
 				renderengine->get_vcache(),
@@ -166,7 +165,7 @@ SET_TRACE
 			if(renderengine->show_tc)
 				insert_timecode(playable_edit,
 					input_position,
-					video_out[0]);
+					video_out);
 		}
 	}
 	else
@@ -197,7 +196,7 @@ int VRender::get_use_vconsole(Edit* &playable_edit,
 
 
 // Total number of playable tracks is 1
-	if(vconsole->total_entry_nodes != 1) return 1;
+	if(vconsole->total_exit_nodes != 1) return 1;
 
 	playable_track = vconsole->playable_tracks->values[0];
 
@@ -582,7 +581,7 @@ VRender::VRender(MWindow *mwindow, RenderEngine *renderengine)
 	session_frame = 0;
 	asynchronous = 0;     // render 1 frame at a time
 	framerate_counter = 0;
-	video_out[0] = 0;
+	video_out = 0;
 	render_strategy = -1;
 }
 
@@ -591,7 +590,7 @@ int VRender::init_device_buffers()
 // allocate output buffer if there is a video device
 	if(renderengine->video)
 	{
-		video_out[0] = 0;
+		video_out = 0;
 		render_strategy = -1;
 	}
 }

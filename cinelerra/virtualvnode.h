@@ -42,7 +42,7 @@ public:
 		double frame_rate);
 
 private:
-	int render_as_module(VFrame **video_out, 
+	int render_as_module(VFrame *video_out, 
 		VFrame *output_temp,
 		int64_t start_position,
 		double frame_rate);
@@ -51,7 +51,7 @@ private:
 		double frame_rate);
 
 	int render_projector(VFrame *input,
-			VFrame **output,
+			VFrame *output,
 			int64_t start_position,
 			double frame_rate);  // Start of input fragment in project if forward.  End of input fragment if reverse.
 

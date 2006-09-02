@@ -212,7 +212,7 @@ int VDevice1394::read_buffer(VFrame *frame)
 }
 
 
-void VDevice1394::new_output_buffer(VFrame **outputs,
+void VDevice1394::new_output_buffer(VFrame **output,
 	int colormodel)
 {
 	if(user_frame)
@@ -241,14 +241,14 @@ void VDevice1394::new_output_buffer(VFrame **outputs,
 		}
 	}
 	user_frame->set_shm_offset(0);
-	outputs[0] = user_frame;
+	*output = user_frame;
 }
 
-int VDevice1394::write_buffer(VFrame **frame, EDL *edl)
+int VDevice1394::write_buffer(VFrame *frame, EDL *edl)
 {
-	if(output_thread) output_thread->write_frame(frame[0]);
+	if(output_thread) output_thread->write_frame(frame);
 	else
-	if(output_iec) output_iec->write_frame(frame[0]);
+	if(output_iec) output_iec->write_frame(frame);
 	return 0;
 }
 

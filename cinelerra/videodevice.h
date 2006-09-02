@@ -147,7 +147,7 @@ public:
 	int interrupt_playback();
 // Get output buffer for playback using colormodel.
 // colormodel argument should be as close to best_colormodel as possible
-	void new_output_buffers(VFrame **outputs, int colormodel);
+	void new_output_buffer(VFrame **output, int colormodel);
 	int wait_for_startup();
 	int wait_for_completion();
 	int output_visible();     // Whether the output is visible or not.
@@ -156,7 +156,7 @@ public:
 	long current_position();     // last frame rendered
 // absolute frame of last frame in buffer.
 // The EDL parameter is passed to Canvas and can be 0.
-	int write_buffer(VFrame **outputs, EDL *edl);   
+	int write_buffer(VFrame *output, EDL *edl);   
 
 
 

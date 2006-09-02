@@ -659,7 +659,7 @@ int VDeviceBUZ::open_output_core(Channel *channel)
 
 
 
-int VDeviceBUZ::write_buffer(VFrame **frames, EDL *edl)
+int VDeviceBUZ::write_buffer(VFrame *frame, EDL *edl)
 {
 //printf("VDeviceBUZ::write_buffer 1\n");
 	tuner_lock->lock("VDeviceBUZ::write_buffer");
@@ -667,7 +667,7 @@ int VDeviceBUZ::write_buffer(VFrame **frames, EDL *edl)
 	if(!jvideo_fd) open_output_core(0);
 
 	VFrame *ptr = 0;
-	if(frames[0]->get_color_model() != BC_COMPRESSED)
+	if(frame->get_color_model() != BC_COMPRESSED)
 	{
 		if(!temp_frame) temp_frame = new VFrame;
 		if(!mjpeg)
@@ -678,18 +678,18 @@ int VDeviceBUZ::write_buffer(VFrame **frames, EDL *edl)
 		}
 		ptr = temp_frame;
 		mjpeg_compress(mjpeg, 
-			frames[0]->get_rows(), 
-			frames[0]->get_y(), 
-			frames[0]->get_u(), 
-			frames[0]->get_v(),
-			frames[0]->get_color_model(),
+			frame->get_rows(), 
+			frame->get_y(), 
+			frame->get_u(), 
+			frame->get_v(),
+			frame->get_color_model(),
 			device->cpus);
 		temp_frame->allocate_compressed_data(mjpeg_output_size(mjpeg));
 		temp_frame->set_compressed_size(mjpeg_output_size(mjpeg));
 		bcopy(mjpeg_output_buffer(mjpeg), temp_frame->get_data(), mjpeg_output_size(mjpeg));
 	}
 	else
-		ptr = frames[0];
+		ptr = frame;
 
 // Wait for frame to become available
 // Caused close_output_core to lock up.
@@ -733,7 +733,7 @@ int VDeviceBUZ::write_buffer(VFrame **frames, EDL *edl)
 	return 0;
 }
 
-void VDeviceBUZ::new_output_buffer(VFrame **outputs,
+void VDeviceBUZ::new_output_buffer(VFrame *output,
 	int colormodel)
 {
 //printf("VDeviceBUZ::new_output_buffer 1 %d\n", colormodel);
@@ -763,7 +763,7 @@ void VDeviceBUZ::new_output_buffer(VFrame **outputs,
 		}
 	}
 	user_frame->set_shm_offset(0);
-	outputs[0] = user_frame;
+	output = user_frame;
 //printf("VDeviceBUZ::new_output_buffer 2\n");
 }
 

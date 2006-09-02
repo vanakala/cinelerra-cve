@@ -25,13 +25,13 @@ public:
 	int open_output();
 	int close_all();
 	int read_buffer(VFrame *frame);
-	int write_buffer(VFrame **frame, EDL *edl);
+	int write_buffer(VFrame *frame, EDL *edl);
 // Called by the audio device to share a buffer
 //	int get_shared_data(unsigned char *data, long size);
 	int initialize();
 	int can_copy_from(Asset *asset, int output_w, int output_h);
 //	int stop_sharing();
-	void new_output_buffer(VFrame **outputs, int colormodel);
+	void new_output_buffer(VFrame **output, int colormodel);
 	void encrypt(unsigned char *output, unsigned char *data, int data_size);
 
 private:
