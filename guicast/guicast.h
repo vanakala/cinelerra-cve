@@ -1,6 +1,8 @@
 #ifndef GUICAST_H
 #define GUICAST_H
 
+#define GL_GLEXT_PROTOTYPES
+
 #include "bcbar.h"
 #include "bcbitmap.h"
 #include "bcbutton.h"
@@ -23,7 +25,9 @@
 #include "bcscrollbar.h"
 #include "bcslider.h"
 #include "bcsubwindow.h"
+#include "bcsynchronous.h"
 #include "bctextbox.h"
+#include "bctexture.h"
 #include "bctheme.h"
 #include "bctitle.h"
 #include "bctoggle.h"

@@ -4,6 +4,7 @@
 #include "canvas.inc"
 #include "edl.inc"
 #include "guicast.h"
+#include "pluginclient.inc"
 #include "thread.h"
 #include "vdevicebase.h"
 
@@ -32,26 +33,93 @@ public:
 // After loading the bitmap with a picture, write it
 	int write_buffer(VFrame *result, EDL *edl);
 
-private:
 // Closest colormodel the hardware can do for playback
 	int get_best_colormodel(int colormodel);
 // Get best colormodel for recording
 	int get_best_colormodel(Asset *asset);
 
-	BC_Bitmap *bitmap;        // Bitmap to be written to device
-	VFrame *output_frame;     // Wrapper for bitmap or intermediate frame
-	int bitmap_type;           // Type of output_frame
-	int bitmap_w, bitmap_h;   // dimensions of buffers written to window
+
+//=========================== compositing stages ===============================
+// For compositing with OpenGL, must clear the frame buffer
+// before overlaying tracks.
+	void clear_output();
+
+// Called by VModule::import_frame
+	void do_camera(VFrame *output,
+		VFrame *input,
+		float in_x1, 
+		float in_y1, 
+		float in_x2, 
+		float in_y2, 
+		float out_x1, 
+		float out_y1, 
+		float out_x2, 
+		float out_y2);
+
+// Called by VModule::import_frame for cases with no media.
+	void clear_input(VFrame *frame);
+
+	void do_fade(VFrame *output_temp, float fade);
+
+
+// The idea is to composite directly in the frame buffer if OpenGL.
+// OpenGL can do all the blending using the frame buffer.
+// Unfortunately if the output is lower resolution than the frame buffer, the
+// rendered output is the resolution of the frame buffer, not the output.
+// Also, the frame buffer has to be copied back to textures for nonstandard
+// blending equations and blended at the framebuffer resolution.
+// If the frame buffer is higher resolution than the
+// output frame, like a 2560x1600 display, it could cause unnecessary slowness.
+// Finally, there's the problem of updating the refresh frame.
+// It requires recompositing the previous frame in software every time playback was
+// stops, a complicated operation.
+	void overlay(VFrame *output_frame,
+		VFrame *input, 
+		float in_x1, 
+		float in_y1, 
+		float in_x2, 
+		float in_y2, 
+		float out_x1, 
+		float out_y1, 
+		float out_x2, 
+		float out_y2, 
+		float alpha,        // 0 - 1
+		int mode,
+		EDL *edl);
+
+// For plugins, lock the canvas, enable opengl, and run a function in the
+// plugin client in the synchronous thread.  The user must override the
+// pluginclient function.
+	void run_plugin(PluginClient *client);
+
+// For multichannel plugins, copy from the temporary pbuffer to 
+// the plugin output texture.
+// Set the output OpenGL state to TEXTURE.
+	void copy_frame(VFrame *dst, VFrame *src);
+
+// Bitmap to be written to device
+	BC_Bitmap *bitmap;        
+// Wrapper for bitmap or intermediate buffer for user to write to
+	VFrame *output_frame;     
+// Type of output_frame
+	int bitmap_type;           
+// dimensions of buffers written to window
+	int bitmap_w, bitmap_h;   
 	ArrayList<int> render_strategies;
 // Canvas for output
 	Canvas *output;
 	int color_model;
 	int color_model_selected;
-// Transfers for last frame rendered.
+// Transfer coordinates from the output frame to the canvas 
+// for last frame rendered.
 // These stick the last frame to the display.
-	int in_x, in_y, in_w, in_h, out_x, out_y, out_w, out_h;
+// Must be floats to support OpenGL
+	float output_x1, output_y1, output_x2, output_y2;
+	float canvas_x1, canvas_y1, canvas_x2, canvas_y2;
 // Screen capture
 	BC_Capture *capture_bitmap;
+// Set when OpenGL rendering has cleared the frame buffer before write_buffer
+	int is_cleared;
 };
 
 #endif

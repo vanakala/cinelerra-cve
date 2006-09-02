@@ -9,6 +9,7 @@
 #include "language.h"
 #include "levelwindow.h"
 #include "levelwindowgui.h"
+#include "mainerror.h"
 #include "mainundo.h"
 #include "mutex.h"
 #include "mwindow.h"
@@ -150,6 +151,17 @@ void SetFormatThread::apply_changes()
 	mwindow->lwindow->gui->panel->set_meters(new_channels, 1);
 	mwindow->lwindow->gui->flush();
 	mwindow->lwindow->gui->unlock_window();
+
+// Warn user
+	if(((mwindow->edl->session->output_w % 4) ||
+		(mwindow->edl->session->output_h % 4)) &&
+		mwindow->edl->session->playback_config->vconfig->driver == PLAYBACK_X11_GL)
+	{
+		MainError::show_error(
+			_("This project's dimensions are not multiples of 4 so\n"
+			"it can't be rendered by OpenGL."));
+	}
+
 
 // Flash frame
 	mwindow->sync_parameters(CHANGE_ALL);

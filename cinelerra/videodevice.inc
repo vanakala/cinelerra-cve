@@ -26,6 +26,7 @@ class VideoDevice;
 
 #define PLAYBACK_X11 	  10
 #define PLAYBACK_X11_XV   14
+#define PLAYBACK_X11_GL   17
 #define PLAYBACK_BUZ 	  11
 #define PLAYBACK_LML 	  12
 #define PLAYBACK_FIREWIRE 13
@@ -34,6 +35,7 @@ class VideoDevice;
 
 #define PLAYBACK_X11_TITLE  	"X11"
 #define PLAYBACK_X11_XV_TITLE   "X11-XV"
+#define PLAYBACK_X11_GL_TITLE   "X11-OpenGL"
 #define PLAYBACK_BUZ_TITLE  	"Buz"
 #define PLAYBACK_LML_TITLE  	"LML 33"
 #ifdef HAVE_FIREWIRE

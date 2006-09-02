@@ -32,23 +32,28 @@ public:
 // Called by VirtualVConsole::process_buffer to process exit nodes.
 // start_position - end of frame if reverse.  start of frame if forward.
 // frame_rate - rate start_position is relative to
+// use_opengl - if opengl is available for this step
 	int render(VFrame *output_temp, 
 		int64_t start_position,
-		double frame_rate);
+		double frame_rate,
+		int use_opengl);
 
 // Read data from what comes before this node.
 	int read_data(VFrame *output_temp,
 		int64_t start_position,
-		double frame_rate);
+		double frame_rate,
+		int use_opengl);
 
 private:
 	int render_as_module(VFrame *video_out, 
 		VFrame *output_temp,
 		int64_t start_position,
-		double frame_rate);
+		double frame_rate,
+		int use_opengl);
 	void render_as_plugin(VFrame *output_temp, 
 		int64_t start_position,
-		double frame_rate);
+		double frame_rate,
+		int use_opengl);
 
 	int render_projector(VFrame *input,
 			VFrame *output,
@@ -61,6 +66,9 @@ private:
 			Autos *autos,
 			int direction);
 
+	void render_mask(VFrame *output_temp,
+		int64_t start_position_project,
+		int use_opengl);
 
 	FadeEngine *fader;
 };

@@ -108,6 +108,9 @@ int FileJPEG::get_best_colormodel(Asset *asset, int driver)
 		case PLAYBACK_FIREWIRE:
 			return BC_YUV420P;
 			break;
+		case PLAYBACK_X11_GL:
+			return BC_YUV888;
+			break;
 		case PLAYBACK_LML:
 		case PLAYBACK_BUZ:
 			return BC_YUV422P;

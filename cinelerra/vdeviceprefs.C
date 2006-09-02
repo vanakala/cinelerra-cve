@@ -115,6 +115,7 @@ int VDevicePrefs::initialize()
 			break;
 		case PLAYBACK_X11:
 		case PLAYBACK_X11_XV:
+		case PLAYBACK_X11_GL:
 			create_x11_objs();
 			break;
 		case PLAYBACK_DV1394:
@@ -438,6 +439,9 @@ char* VDriverMenu::driver_to_string(int driver)
 		case PLAYBACK_X11_XV:
 			sprintf(string, PLAYBACK_X11_XV_TITLE);
 			break;
+		case PLAYBACK_X11_GL:
+			sprintf(string, PLAYBACK_X11_GL_TITLE);
+			break;
 		case PLAYBACK_LML:
 			sprintf(string, PLAYBACK_LML_TITLE);
 			break;
@@ -481,6 +485,9 @@ int VDriverMenu::create_objects()
 	{
 		add_item(new VDriverItem(this, PLAYBACK_X11_TITLE, PLAYBACK_X11));
 		add_item(new VDriverItem(this, PLAYBACK_X11_XV_TITLE, PLAYBACK_X11_XV));
+#ifdef HAVE_GL
+		add_item(new VDriverItem(this, PLAYBACK_X11_GL_TITLE, PLAYBACK_X11_GL));
+#endif
 		add_item(new VDriverItem(this, PLAYBACK_BUZ_TITLE, PLAYBACK_BUZ));
 #ifdef HAVE_FIREWIRE
 		add_item(new VDriverItem(this, PLAYBACK_FIREWIRE_TITLE, PLAYBACK_FIREWIRE));

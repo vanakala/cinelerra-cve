@@ -29,6 +29,7 @@
 #include "bcmenubar.inc"
 #include "bcmeter.inc"
 #include "bcpan.inc"
+#include "bcpbuffer.inc"
 #include "bcpixmap.inc"
 #include "bcpopup.inc"
 #include "bcpopupmenu.inc"
@@ -40,6 +41,7 @@
 #include "bcscrollbar.inc"
 #include "bcslider.inc"
 #include "bcsubwindow.inc"
+#include "bcsynchronous.inc"
 #include "bctextbox.inc"
 #include "bctimer.inc"
 #include "bctitle.inc"
@@ -71,7 +73,13 @@
 #include <X11/extensions/xf86vmode.h>
 #endif
 #ifdef HAVE_GL
-typedef void* GLXContext;
+#include <GL/glx.h>
+#endif
+
+
+
+#ifdef HAVE_GL
+//typedef void* GLXContext;
 #endif
 
 class BC_ResizeCall
@@ -105,6 +113,7 @@ public:
 	friend class BC_MenuPopup;
 	friend class BC_Meter;
 	friend class BC_Pan;
+	friend class BC_PBuffer;
 	friend class BC_Pixmap;
 	friend class BC_PixmapSW;
 	friend class BC_Popup;
@@ -116,6 +125,7 @@ public:
 	friend class BC_ScrollBar;
 	friend class BC_Slider;
 	friend class BC_SubWindow;
+	friend class BC_Synchronous;
 	friend class BC_TextBox;
 	friend class BC_Title;
 	friend class BC_Toggle;
@@ -160,10 +170,19 @@ public:
 // Shouldn't deference a pointer to delete a window if a parent is 
 // currently being deleted.  This returns 1 if any parent is being deleted.
 	int get_deleting();
+
+
+
+//============================= OpenGL functions ===============================
+// OpenGL functions must be called from inside a BC_Synchronous command.
+// Create openGL context and bind it to the current window.
+// If it's called inside start_video/stop_video, the context is bound to the window.
+// If it's called outside start_video/stop_video, the context is bound to the pixmap.
+// Must be called at the beginning of any opengl routine to make sure
+// the context is current.
+// No locking is performed.
 	void enable_opengl();
 	void disable_opengl();
-	void lock_opengl();
-	void unlock_opengl();
 	void flip_opengl();
 
 	int flash(int x, int y, int w, int h, int flush = 1);
@@ -182,6 +201,9 @@ public:
 
 
 	static BC_Resources* get_resources();
+// User must create synchronous object first
+	static BC_Synchronous* get_synchronous();
+
 // Dimensions
 	virtual int get_w();
 	virtual int get_h();
@@ -393,6 +415,7 @@ public:
 	char* get_title();
 	void start_video();
 	void stop_video();
+	int get_id();
 	void set_done(int return_value);
 // Get a bitmap to draw on the window with
 	BC_Bitmap* new_bitmap(int w, int h, int color_model = -1);
@@ -496,6 +519,9 @@ private:
 				int group_it);
 
 	static Display* init_display(char *display_name);
+// Get display from top level
+	Display* get_display();
+	int get_screen();
 	virtual int initialize();
 	int get_atoms();
 	void init_cursors();
@@ -698,9 +724,10 @@ private:
 	Display *event_display;
  	Window win;
 #ifdef HAVE_GL
-	GLXContext gl_context;
+// The first context to be created and the one whose texture id 
+// space is shared with the other contexts.
+	GLXContext gl_win_context;
 #endif
-	static Mutex opengl_lock;
 	int window_lock;
 	GC gc;
 // Depth given by the X Server
@@ -765,6 +792,8 @@ private:
 	int is_deleting;
 // Hide cursor when video is enabled
 	Timer *cursor_timer;
+// unique ID of window.
+	int id;
 };
 
 

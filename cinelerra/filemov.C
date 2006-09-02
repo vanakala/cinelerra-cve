@@ -459,6 +459,25 @@ int FileMOV::get_best_colormodel(Asset *asset, int driver)
 			if(match4(asset->vcodec, QUICKTIME_HV64)) return BC_YUV420P;
 			if(match4(asset->vcodec, QUICKTIME_DIV3)) return BC_YUV420P;
 			break;
+		case PLAYBACK_X11_GL:
+			if(match4(asset->vcodec, QUICKTIME_YUV420) ||
+				match4(asset->vcodec, QUICKTIME_YUV422) ||
+				match4(asset->vcodec, QUICKTIME_2VUY) ||
+				match4(asset->vcodec, QUICKTIME_JPEG) ||
+				match4(asset->vcodec, QUICKTIME_MJPA) ||
+				match4(asset->vcodec, QUICKTIME_DV) ||
+				match4(asset->vcodec, QUICKTIME_DVCP) ||
+				match4(asset->vcodec, QUICKTIME_DVSD) ||
+				match4(asset->vcodec, QUICKTIME_HV60) ||
+				match4(asset->vcodec, QUICKTIME_DIVX) ||
+				match4(asset->vcodec, QUICKTIME_DVSD) ||
+				match4(asset->vcodec, QUICKTIME_MP4V) ||
+				match4(asset->vcodec, QUICKTIME_H263) ||
+				match4(asset->vcodec, QUICKTIME_H264) ||
+				match4(asset->vcodec, QUICKTIME_HV64) ||
+				match4(asset->vcodec, QUICKTIME_DIV3) || 
+				match4(asset->vcodec, QUICKTIME_DVSD)) return BC_YUV888;
+			break;
 		case PLAYBACK_DV1394:
 		case PLAYBACK_FIREWIRE:
 			if(match4(asset->vcodec, QUICKTIME_DV) || 

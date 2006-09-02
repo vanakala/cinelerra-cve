@@ -20,8 +20,10 @@
 #include "transportque.h"
 #include "units.h"
 #include "vattachmentpoint.h"
+#include "vdevicex11.h"
 #include "vedit.h"
 #include "vframe.h"
+#include "videodevice.h"
 #include "vmodule.h"
 #include "vrender.h"
 #include "vplugin.h"
@@ -79,7 +81,8 @@ int VModule::import_frame(VFrame *output,
 	VEdit *current_edit,
 	int64_t input_position,
 	double frame_rate,
-	int direction)
+	int direction,
+	int use_opengl)
 {
 	int64_t corrected_position;
 	int64_t corrected_position_project;
@@ -107,6 +110,17 @@ int VModule::import_frame(VFrame *output,
 		corrected_position--;
 		input_position_project--;
 	}
+
+	VDeviceX11 *x11_device = 0;
+	if(use_opengl)
+	{
+		if(renderengine && renderengine->video)
+		{
+			x11_device = (VDeviceX11*)renderengine->video->get_output_base();
+			output->set_opengl_state(VFrame::RAM);
+		}
+	}
+
 
 // Load frame into output
 	if(current_edit &&
@@ -233,6 +247,7 @@ int VModule::import_frame(VFrame *output,
 
 
 
+				(*input)->copy_stacks(output);
 
 // file -> temp
 // Cache for single frame only
@@ -241,11 +256,18 @@ int VModule::import_frame(VFrame *output,
 				result = source->read_frame((*input));
 //				if(renderengine && renderengine->command->single_frame())
 					source->set_cache_frames(0);
+				(*input)->set_opengl_state(VFrame::RAM);
 
 //printf("VModule::import_frame 1 %lld %f\n", input_position, frame_rate);
 
+// Find an overlayer object to perform the camera transformation
 				OverlayFrame *overlayer = 0;
 
+// OpenGL playback uses hardware
+				if(use_opengl)
+				{
+				}
+				else
 // Realtime playback
 				if(commonrender)
 				{
@@ -278,28 +300,50 @@ int VModule::import_frame(VFrame *output,
 // for(int j = 0; j < output->get_w() * 3 * 5; j++)
 // 	output->get_rows()[0][j] = 255;
 
-				output->clear_frame();
+				if(use_opengl)
+				{
+					x11_device->do_camera(output,
+						(*input), 
+						in_x1,
+						in_y1,
+						in_x1 + in_w1,
+						in_y1 + in_h1,
+						out_x1,
+						out_y1,
+						out_x1 + out_w1,
+						out_y1 + out_h1);
+				}
+				else
+				{
+					output->clear_frame();
 
 
 // get_cache()->check_in(current_edit->asset);
 // return;
 
-				int mode = TRANSFER_REPLACE;
+// TRANSFER_REPLACE is the fastest transfer mode but it has the disadvantage
+// of producing green borders in floating point translation of YUV
+					int mode = TRANSFER_REPLACE;
+					if(get_edl()->session->interpolation_type != NEAREST_NEIGHBOR &&
+						cmodel_is_yuv(output->get_color_model()))
+						mode = TRANSFER_NORMAL;
 
-				overlayer->overlay(output,
-					(*input), 
-					in_x1,
-					in_y1,
-					in_x1 + in_w1,
-					in_y1 + in_h1,
-					out_x1,
-					out_y1,
-					out_x1 + out_w1,
-					out_y1 + out_h1,
-					1,
-					mode,
-					get_edl()->session->interpolation_type);
+					overlayer->overlay(output,
+						(*input), 
+						in_x1,
+						in_y1,
+						in_x1 + in_w1,
+						in_y1 + in_h1,
+						out_x1,
+						out_y1,
+						out_x1 + out_w1,
+						out_y1 + out_h1,
+						1,
+						mode,
+						get_edl()->session->interpolation_type);
+				}
 				result = 1;
+				output->copy_stacks((*input));
 			}
 			else
 // file -> output
@@ -310,20 +354,35 @@ int VModule::import_frame(VFrame *output,
 				result = source->read_frame(output);
 //				if(renderengine && renderengine->command->single_frame())
 					source->set_cache_frames(0);
+				output->set_opengl_state(VFrame::RAM);
 			}
 
 			get_cache()->check_in(current_edit->asset);
 		}
 		else
 		{
-			output->clear_frame();
+			if(use_opengl)
+			{
+				x11_device->clear_input(output);
+			}
+			else
+			{
+				output->clear_frame();
+			}
 			result = 1;
 		}
 	}
 	else
 // Silence
 	{
-		output->clear_frame();
+		if(use_opengl)
+		{
+			x11_device->clear_input(output);
+		}
+		else
+		{
+			output->clear_frame();
+		}
 	}
 
 
@@ -337,7 +396,8 @@ int VModule::render(VFrame *output,
 	int direction,
 	double frame_rate,
 	int use_nudge,
-	int debug_render)
+	int debug_render,
+	int use_opengl)
 {
 	int result = 0;
 	double edl_rate = get_edl()->session->frame_rate;
@@ -351,12 +411,6 @@ int VModule::render(VFrame *output,
 		frame_rate + 
 		0.5);
 
-	if(debug_render)
-		printf("    VModule::render %d %lld %s\n", 
-			use_nudge, 
-			start_position_project,
-			track->title);
-
 	update_transition(start_position_project, 
 		direction);
 
@@ -365,6 +419,15 @@ int VModule::render(VFrame *output,
 		0);
 	VEdit* previous_edit = 0;
 
+	if(debug_render)
+		printf("    VModule::render %d %lld %s transition=%p opengl=%d current_edit=%p output=%p\n", 
+			use_nudge, 
+			start_position_project,
+			track->title,
+			transition,
+			use_opengl,
+			current_edit,
+			output);
 
 	if(!current_edit)
 	{
@@ -416,7 +479,8 @@ int VModule::render(VFrame *output,
 			current_edit, 
 			start_position,
 			frame_rate,
-			direction);
+			direction,
+			use_opengl);
 
 
 // Load transition buffer
@@ -426,9 +490,12 @@ int VModule::render(VFrame *output,
 			previous_edit, 
 			start_position,
 			frame_rate,
-			direction);
+			direction,
+			use_opengl);
 
 // Execute plugin with transition_input and output here
+		if(renderengine) 
+			transition_server->set_use_opengl(use_opengl, renderengine->video);
 		transition_server->process_transition((*transition_input), 
 			output,
 			(direction == PLAY_FORWARD) ? 
@@ -443,7 +510,8 @@ int VModule::render(VFrame *output,
 			current_edit, 
 			start_position,
 			frame_rate,
-			direction);
+			direction,
+			use_opengl);
 	}
 	
 	int64_t mask_position;

@@ -4,6 +4,7 @@
 #include "guicast.h"
 #include "maxbuffers.h"
 #include "vframe.inc"
+#include "videodevice.inc"
 #include "virtualconsole.h"
 #include "vrender.inc"
 #include "vtrack.inc"
@@ -25,6 +26,8 @@ public:
 		Module *module, 
 		int track_number);
 
+	VDeviceBase* get_vdriver();
+
 // Composite a frame
 // start_position - start of buffer in project if forward. end of buffer if reverse
 	int process_buffer(int64_t input_position);
@@ -34,6 +37,8 @@ public:
 
 	VFrame *output_temp;
 	VRender *vrender;
+// Calculated at the start of every process_buffer
+	int use_opengl;
 };
 
 

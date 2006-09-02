@@ -3,6 +3,7 @@
 #include "bclistbox.inc"
 #include "bcresources.h"
 #include "bcsignals.h"
+#include "bcsynchronous.h"
 #include "bcwindowbase.h"
 #include "colors.h"
 #include "colormodels.h"
@@ -81,8 +82,10 @@ int BC_Resources::x_error_handler(Display *display, XErrorEvent *event)
 
 BC_Resources::BC_Resources()
 {
+	synchronous = 0;
 	display_info = new BC_DisplayInfo("", 0);
 	id_lock = new Mutex("BC_Resources::id_lock");
+	id = 0;
 
 	for(int i = 0; i < FILEBOX_HISTORY_SIZE; i++)
 		filebox_history[i][0] = 0;
@@ -547,6 +550,25 @@ int BC_Resources::init_shm(BC_WindowBase *window)
 	return 0;
 }
 
+
+
+
+BC_Synchronous* BC_Resources::get_synchronous()
+{
+	return synchronous;
+}
+
+void BC_Resources::set_synchronous(BC_Synchronous *synchronous)
+{
+	this->synchronous = synchronous;
+}
+
+
+
+
+
+
+
 int BC_Resources::get_top_border()
 {
 	return display_info->get_top_border();
@@ -577,4 +599,13 @@ int BC_Resources::get_bg_shadow2() { return bg_shadow2; }
 int BC_Resources::get_bg_light1() { return bg_light1; }
 
 int BC_Resources::get_bg_light2() { return bg_light2; }
+
+
+int BC_Resources::get_id()
+{
+	id_lock->lock("BC_Resources::get_id");
+	int result = id++;
+	id_lock->unlock();
+	return result;
+}
 

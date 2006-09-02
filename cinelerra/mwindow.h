@@ -32,6 +32,7 @@
 #include "mwindowgui.inc"
 #include "new.inc"
 #include "patchbay.inc"
+#include "playback3d.inc"
 #include "playbackengine.inc"
 #include "plugin.inc"
 #include "pluginserver.inc"
@@ -44,6 +45,7 @@
 #include "sighandler.inc"
 #include "splashgui.inc"
 #include "theme.inc"
+#include "thread.h"
 #include "threadloader.inc"
 #include "timebar.inc"
 #include "timebomb.h"
@@ -63,7 +65,7 @@
 // All entry points for commands except for window locking should be here.
 // This allows scriptability.
 
-class MWindow
+class MWindow : public Thread
 {
 public:
 	MWindow();
@@ -76,6 +78,7 @@ public:
 	void show_splash();
 	void hide_splash();
 	void start();
+	void run();
 
 	int run_script(FileXML *script);
 	int new_project();
@@ -209,6 +212,11 @@ public:
 // Searches for matching plugin and renders data in it.
 	void render_plugin_gui(void *data, Plugin *plugin);
 	void render_plugin_gui(void *data, int size, Plugin *plugin);
+
+// Called from PluginVClient::process_buffer
+// Returns 1 if a GUI for the plugin is open so OpenGL routines can determine if
+// they can run.
+	int plugin_gui_open(Plugin *plugin);
 
 
 // ============================= editing commands ========================
@@ -370,8 +378,10 @@ public:
 	int set_loop_boundaries();         // toggle loop playback and set boundaries for loop playback
 
 
+	Playback3D *playback_3d;
 
 	SplashGUI *splash_window;
+// Main undo stack
 	MainUndo *undo;
 	BC_Hash *defaults;
 	Assets *assets;
@@ -482,6 +492,7 @@ public:
 	void init_menus();
 	void init_indexes();
 	void init_gui();
+	void init_3d();
 	void init_playbackcursor();
 	void delete_plugins();
 // 

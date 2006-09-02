@@ -176,6 +176,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    picture.C \
                     pipe.C \
 		    playabletracks.C \
+		    playback3d.C \
 		    playbackconfig.C \
 		    playbackengine.C \
 		    playbackprefs.C \
@@ -480,6 +481,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 picture.h \
                  pipe.h \
 		 playabletracks.h \
+		 playback3d.h \
 		 playbackconfig.h \
 		 playbackengine.h \
 		 playbackprefs.h \

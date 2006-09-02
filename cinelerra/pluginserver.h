@@ -25,6 +25,7 @@
 #include "thread.h"
 #include "track.inc"
 #include "vframe.inc"
+#include "videodevice.inc"
 #include "virtualnode.inc"
 
 #include <stdio.h>
@@ -107,7 +108,19 @@ public:
 	void update_gui();
 	void update_title();
 	void client_side_close();
-	
+// Set to 1 before every process call if the user supports OpenGL buffers.
+// Also provides the driver location.
+	void set_use_opengl(int value, VideoDevice *vdevice);
+// Plugin must call this before performing OpenGL operations.
+	int get_use_opengl();
+
+// Called from plugin client
+// Returns 1 if a GUI is open so OpenGL routines can determine if
+// they can run.
+	int gui_open();
+
+// Called by plugin client to request synchronous routine.
+	void run_opengl(PluginClient *plugin_client);
 
 // set the string that appears on the plugin title
 	int set_string(char *string);
@@ -116,7 +129,6 @@ public:
 		int total_in_buffers,
 		int buffer_size);   
 // process the data in the buffers
-// Really process_realtime replaced by pull method but still needed for transitions
 // input - the current edit's data
 // output - the previous edit's data and the destination of the transition output
 // current_position - Position from start of the transition and 
@@ -206,7 +218,9 @@ public:
 	int read_frame(VFrame *buffer, 
 		int channel, 
 		int64_t start_position, 
-		double frame_rate);
+		double frame_rate,
+// Set to 1 if the reader can use OpenGL objects.
+		int use_opengl = 0);
 	int read_samples(double *buffer,
 		int channel,
 		int64_t sample_rate,
@@ -338,6 +352,9 @@ private:
 	int is_lad;
 	LADSPA_Descriptor_Function lad_descriptor_function;
 	const LADSPA_Descriptor *lad_descriptor;
+	int use_opengl;
+// Driver for opengl calls.
+	VideoDevice *vdevice;
 };
 
 

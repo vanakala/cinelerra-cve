@@ -1,5 +1,7 @@
 #include "edl.h"
+#include "edlsession.h"
 #include "language.h"
+#include "mainerror.h"
 #include "mainundo.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
@@ -64,6 +66,15 @@ void ResizeTrackThread::run()
 		{
 			mwindow->resize_track(track, w, h);
 		}
+	}
+
+	if(((w % 4) || 
+		(h % 4)) && 
+		mwindow->edl->session->playback_config->vconfig->driver == PLAYBACK_X11_GL)
+	{
+		MainError::show_error(
+			_("This track's dimensions are not multiples of 4 so\n"
+			"it can't be rendered by OpenGL."));
 	}
 }
 

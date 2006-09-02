@@ -9,6 +9,7 @@
 #include "bcresources.h"
 #include "bcsignals.h"
 #include "bcsubwindow.h"
+#include "bcsynchronous.h"
 #include "bctimer.h"
 #include "bcwidgetgrid.h"
 #include "bcwindowbase.h"
@@ -50,7 +51,6 @@ BC_ResizeCall::BC_ResizeCall(int w, int h)
 
 
 
-Mutex BC_WindowBase::opengl_lock;
 
 BC_Resources BC_WindowBase::resources;
 
@@ -84,16 +84,15 @@ BC_WindowBase::~BC_WindowBase()
 
 // Delete the subwindows
 	is_deleting = 1;
-        if(subwindows)
-        {
-                while (subwindows->total) 
-                {
-                        // NOTE: since the value is itself a subwindow, the
-                        //       recursion removes the item from subwindows
-                        delete subwindows->values[0];
-                }
-                delete subwindows;
-        }
+	if(subwindows)
+	{
+		while(subwindows->total)
+		{
+// Subwindow removes its own pointer
+			delete subwindows->values[0];
+		}
+		delete subwindows;
+	}
 
 	if(widgetgrids)
 	{
@@ -106,9 +105,13 @@ BC_WindowBase::~BC_WindowBase()
         }
 		
 
-		delete pixmap;
+	delete pixmap;
 
-	XDestroyWindow(top_level->display, win);
+// Destroyed in synchronous thread if gl context exists.
+#ifdef HAVE_GL
+	if(!gl_win_context || !get_resources()->get_synchronous())
+#endif
+		XDestroyWindow(top_level->display, win);
 
 	if(bg_pixmap && !shared_bg_pixmap) delete bg_pixmap;
 	if(icon_pixmap) delete icon_pixmap;
@@ -130,9 +133,12 @@ BC_WindowBase::~BC_WindowBase()
 			XftFontClose (display, (XftFont*)smallfont_xft);
 #endif
 		flush();
-// Can't close display if another thread is waiting for events
-		XCloseDisplay(display);
-//		XCloseDisplay(event_display);
+// Can't close display if another thread is waiting for events.
+// Synchronous thread must delete display if gl_context exists.
+#ifdef HAVE_GL
+		if(!gl_win_context || !get_resources()->get_synchronous())
+#endif
+			XCloseDisplay(display);
 		clipboard->stop_clipboard();
 		delete clipboard;
 	}
@@ -140,6 +146,18 @@ BC_WindowBase::~BC_WindowBase()
 	{
 		flush();
 	}
+
+// Must be last reference to display.
+// This only works if it's a MAIN_WINDOW since the display deletion for
+// a subwindow is not determined by the subwindow.
+#ifdef HAVE_GL
+	if(gl_win_context && get_resources()->get_synchronous())
+	{
+		printf("BC_WindowBase::~BC_WindowBase window deleted but opengl deletion is not\n"
+			"implemented for BC_Pixmap.\n");
+		get_resources()->get_synchronous()->delete_window(this);
+	}
+#endif
 
 	resize_history.remove_all_objects();
 	common_events.remove_all_objects();
@@ -216,6 +234,9 @@ int BC_WindowBase::initialize()
 	event_condition = new Condition(0, "BC_WindowBase::event_condition");
 	cursor_timer = new Timer;
 	event_thread = 0;
+#ifdef HAVE_GL
+	gl_win_context = 0;
+#endif
 
 	return 0;
 }
@@ -253,6 +274,8 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 #ifdef HAVE_LIBXXF86VM
     int vm;
 #endif
+
+	id = get_resources()->get_id();
 
     if(parent_window) top_level = parent_window->top_level;
 
@@ -443,7 +466,7 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 		if(top_level->is_hourglass)
 			attr.cursor = top_level->get_cursor_struct(HOURGLASS_CURSOR);
 		else
-		attr.cursor = top_level->get_cursor_struct(ARROW_CURSOR);
+			attr.cursor = top_level->get_cursor_struct(ARROW_CURSOR);
 		attr.override_redirect = True;
 		attr.save_under = True;
 
@@ -572,6 +595,16 @@ Display* BC_WindowBase::init_display(char *display_name)
 		}
  	}
 	return display;
+}
+
+Display* BC_WindowBase::get_display()
+{
+	return top_level->display;
+}
+
+int BC_WindowBase::get_screen()
+{
+	return top_level->screen;
 }
 
 int BC_WindowBase::run_window()
@@ -1731,15 +1764,15 @@ int BC_WindowBase::init_fonts()
 {
 	if((largefont = XLoadQueryFont(display, _(resources.large_font))) == NULL)
 		if((largefont = XLoadQueryFont(display, _(resources.large_font2))) == NULL)
-		largefont = XLoadQueryFont(display, "fixed"); 
+			largefont = XLoadQueryFont(display, "fixed"); 
 
 	if((mediumfont = XLoadQueryFont(display, _(resources.medium_font))) == NULL)
 		if((mediumfont = XLoadQueryFont(display, _(resources.medium_font2))) == NULL)
-		mediumfont = XLoadQueryFont(display, "fixed"); 
+			mediumfont = XLoadQueryFont(display, "fixed"); 
 
 	if((smallfont = XLoadQueryFont(display, _(resources.small_font))) == NULL)
 		if((smallfont = XLoadQueryFont(display, _(resources.small_font2))) == NULL)
-		smallfont = XLoadQueryFont(display, "fixed");
+			smallfont = XLoadQueryFont(display, "fixed");
 
 #ifdef HAVE_XFT
 	if(get_resources()->use_xft)
@@ -2296,7 +2329,7 @@ int BC_WindowBase::get_text_ascent(int font)
 			(FcChar8*)"O", 
 			1,
 			&extents);
-		return extents.y;
+		return extents.y + 2;
 	}
 	else
 #endif
@@ -2762,6 +2795,11 @@ int BC_WindowBase::get_color_model()
 BC_Resources* BC_WindowBase::get_resources()
 {
 	return &BC_WindowBase::resources;
+}
+
+BC_Synchronous* BC_WindowBase::get_synchronous()
+{
+	return BC_WindowBase::resources.get_synchronous();
 }
 
 int BC_WindowBase::get_bg_color()
@@ -3469,88 +3507,22 @@ void BC_WindowBase::restore_vm()
 #endif
 
 
-#ifdef HAVE_GL
-
-extern "C"
-{
-	GLXContext glXCreateContext(Display *dpy,
-                               XVisualInfo *vis,
-                               GLXContext shareList,
-                               int direct);
-	
-  	int glXMakeCurrent(Display *dpy,
-                       Drawable drawable,
-                       GLXContext ctx);
-
-	void glXSwapBuffers(Display *dpy,
-                       Drawable drawable);
-};
 
 
 
-void BC_WindowBase::enable_opengl()
-{
-	lock_window("BC_WindowBase::enable_opengl");
-	opengl_lock.lock();
 
-	XVisualInfo viproto;
-	XVisualInfo *visinfo;
-	int nvi;
 
-	viproto.screen = top_level->screen;
-	visinfo = XGetVisualInfo(top_level->display,
-    	VisualScreenMask,
-    	&viproto,
-    	&nvi);
 
-	gl_context = glXCreateContext(top_level->display,
-		visinfo,
-		0,
-		1);
 
-	glXMakeCurrent(top_level->display,
-		win,
-		gl_context);
 
-// Need expose events for 3D
-	unsigned long valuemask = CWEventMask;
-	XSetWindowAttributes attributes;
-	attributes.event_mask = DEFAULT_EVENT_MASKS |
-			ExposureMask;
-	XChangeWindowAttributes(top_level->display, win, valuemask, &attributes);
 
-	opengl_lock.unlock();
-	unlock_window();
-}
 
-void BC_WindowBase::disable_opengl()
-{
-	unsigned long valuemask = CWEventMask;
-	XSetWindowAttributes attributes;
-	attributes.event_mask = DEFAULT_EVENT_MASKS;
-	XChangeWindowAttributes(top_level->display, win, valuemask, &attributes);
-}
 
-void BC_WindowBase::lock_opengl()
-{
-	lock_window("BC_WindowBase::lock_opengl");
-	opengl_lock.lock();
-	glXMakeCurrent(top_level->display,
-		win,
-		gl_context);
-}
 
-void BC_WindowBase::unlock_opengl()
-{
-	opengl_lock.unlock();
-	unlock_window();
-}
 
-void BC_WindowBase::flip_opengl()
-{
-	glXSwapBuffers(top_level->display, win);
-}
-#endif
+
+
+
 
 int BC_WindowBase::get_event_count()
 {
@@ -3587,7 +3559,10 @@ void BC_WindowBase::put_event(XEvent *event)
 	event_condition->unlock();
 }
 
-
+int BC_WindowBase::get_id()
+{
+	return id;
+}
 
 
 

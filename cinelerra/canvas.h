@@ -92,15 +92,20 @@ public:
 
 
 // Provide canvas dimensions since a BC_Bitmap containing obsolete dimensions
-// is often the output being transferred to
-	void get_transfers(EDL *edl, int &in_x, 
-		int &in_y, 
-		int &in_w, 
-		int &in_h,
-		int &out_x, 
-		int &out_y, 
-		int &out_w, 
-		int &out_h,
+// is often the output being transferred to.
+// This gets the input coordinates on the device output_frame
+// and the corresponding output coordinates on the canvas.
+// Must be floating point to support OpenGL.
+	void get_transfers(EDL *edl, 
+		float &output_x1, 
+		float &output_y1, 
+		float &output_x2, 
+		float &output_y2,
+		float &canvas_x1, 
+		float &canvas_y1, 
+		float &canvas_x2, 
+		float &canvas_y2,
+// passing -1 causes automatic size detection
 		int canvas_w = -1,
 		int canvas_h = -1);
 	void reposition_window(EDL *edl, int x, int y, int w, int h);
@@ -173,7 +178,8 @@ public:
 	int use_vwindow;
 // Used in record monitor
 	int output_w, output_h;
-// Store frame in native format after playback for refreshes
+// Last frame played is stored here in driver format for 
+// refreshes.
 	VFrame *refresh_frame;
 // Results from last get_scrollbars
 	int w_needed;

@@ -17,6 +17,7 @@ libguicast_la_SOURCES = \
 	bchash.C \
 	bcipc.C \
 	bclistbox.C \
+	bclistboxitem.C \
 	bcmenu.C \
 	bcmenubar.C \
 	bcmenuitem.C \
@@ -24,6 +25,7 @@ libguicast_la_SOURCES = \
 	bcmeter.C \
 	bcnewfolder.C \
 	bcpan.C \
+	bcpbuffer.C \
 	bcpixmap.C \
 	bcpixmapsw.C \
 	bcpopup.C \
@@ -39,16 +41,21 @@ libguicast_la_SOURCES = \
 	bcsignals.C \
 	bcslider.C  \
 	bcsubwindow.C \
+	bcsynchronous.C \
 	bctextbox.C \
+	bctexture.C \
+	bctheme.C \
 	bctimer.C \
 	bctitle.C \
 	bctoggle.C \
 	bctumble.C \
 	bcwidgetgrid.C \
 	bcwindow.C \
+	bcwindow3d.C \
 	bcwindowbase.C \
 	bcwindowdraw.C \
 	bcwindowevents.C \
+	condition.C \
 	debug.h \
         error.h \
 	errorbox.C \
@@ -60,7 +67,10 @@ libguicast_la_SOURCES = \
 	stringfile.C \
 	thread.C \
 	units.C \
-												vframe.C workarounds.C bclistboxitem.C bctheme.C condition.C
+	vframe.C \
+	vframe3d.C \
+	workarounds.C
+
 noinst_HEADERS = \
 	arraylist.h \
 	bcbar.h \
@@ -103,6 +113,8 @@ noinst_HEADERS = \
 	bcnewfolder.h \
 	bcnewfolder.inc \
 	bcpan.h bcpan.inc \
+	bcpbuffer.h \
+	bcpbuffer.inc \
 	bcpixmap.h \
 	bcpixmap.inc \
 	bcpixmapsw.h \
@@ -125,7 +137,18 @@ noinst_HEADERS = \
 	bcresources.inc \
 	bcscrollbar.h \
 	bcscrollbar.inc \
-								 bcsignals.h bcsignals.inc bcslider.h bcslider.inc bcsubwindow.h bcsubwindow.inc bctextbox.h bctextbox.inc \
+	bcsignals.h \
+	bcsignals.inc \
+	bcslider.h \
+	bcslider.inc \
+	bcsubwindow.h \
+	bcsubwindow.inc \
+	bcsynchronous.h \
+	bcsynchronous.inc \
+	bctextbox.h \
+	bctextbox.inc \
+	bctextbox.h \
+	bctextbox.inc \
 	bctheme.h \
 	bctheme.inc \
 	bctimer.h \

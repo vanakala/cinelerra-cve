@@ -9,6 +9,7 @@
 #include "renderengine.h"
 #include "tracks.h"
 #include "transportque.h"
+#include "vdevicex11.h"
 #include "vframe.h"
 #include "videodevice.h"
 #include "virtualvconsole.h"
@@ -32,6 +33,10 @@ VirtualVConsole::~VirtualVConsole()
 	}
 }
 
+VDeviceBase* VirtualVConsole::get_vdriver()
+{
+	return renderengine->video->get_output_base();
+}
 
 void VirtualVConsole::get_playable_tracks()
 {
@@ -62,12 +67,30 @@ int VirtualVConsole::process_buffer(int64_t input_position)
 
 
 
+// The use of single frame is determined in RenderEngine::arm_command
+	use_opengl = (renderengine->video && 
+		renderengine->video->out_config->driver == PLAYBACK_X11_GL);
+// printf("VirtualVConsole::process_buffer %p %d %d\n", 
+// renderengine->video, 
+// renderengine->video->out_config->driver,
+// use_opengl);
 
 	if(debug_tree) 
 		printf("VirtualVConsole::process_buffer begin exit_nodes=%d\n", 
 			exit_nodes.total);
 
 
+	if(use_opengl)
+	{
+// clear hardware framebuffer
+
+		((VDeviceX11*)get_vdriver())->clear_output();
+
+// que OpenGL driver that everything is overlaid in the framebuffer
+		vrender->video_out->set_opengl_state(VFrame::SCREEN);
+
+	}
+	else
 	{
 // clear device buffer
 		vrender->video_out->clear_frame();
@@ -107,6 +130,7 @@ Timer timer;
 
 		if(!output_temp)
 		{
+// Texture is created on demand
 			output_temp = new VFrame(0, 
 				track->track_w, 
 				track->track_h, 
@@ -114,10 +138,19 @@ Timer timer;
 				-1);
 		}
 
-//printf("VirtualVConsole::process_buffer %p\n", output_temp->get_rows());
+// Reset OpenGL state
+		if(use_opengl)
+			output_temp->set_opengl_state(VFrame::RAM);
+
+
+// Assume openGL is used for the final stage and let console
+// disable.
+		output_temp->clear_stacks();
 		result |= node->render(output_temp,
 			input_position + track->nudge,
-			renderengine->edl->session->frame_rate);
+			renderengine->edl->session->frame_rate,
+			use_opengl);
+
 	}
 //printf("VirtualVConsole::process_buffer timer=%lld\n", timer.get_difference());
 

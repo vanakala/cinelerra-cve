@@ -46,6 +46,7 @@
 #include "mwindow.h"
 #include "new.h"
 #include "patchbay.h"
+#include "playback3d.h"
 #include "playbackengine.h"
 #include "plugin.h"
 #include "pluginserver.h"
@@ -122,6 +123,7 @@ int atexit(void (*function)(void))
 
 
 MWindow::MWindow()
+ : Thread(1, 0, 0)
 {
 	plugin_gui_lock = new Mutex("MWindow::plugin_gui_lock");
 	brender_lock = new Mutex("MWindow::brender_lock");
@@ -588,6 +590,12 @@ void MWindow::init_theme()
 	init_menus();
 
 	theme->check_used();
+}
+
+void MWindow::init_3d()
+{
+	playback_3d = new Playback3D(this);
+	playback_3d->create_objects();
 }
 
 void MWindow::init_edl()
@@ -1218,6 +1226,8 @@ void MWindow::create_objects(int want_gui,
 	edl = 0;
 
 
+
+	init_3d();
 	show_splash();
 
 // For some reason, init_signals must come after show_splash or the signals won't
@@ -1320,11 +1330,18 @@ void MWindow::hide_splash()
 
 void MWindow::start()
 {
+ENABLE_BUFFER
 	vwindow->start();
 	awindow->start();
 	cwindow->start();
 	lwindow->start();
 	gwindow->start();
+	Thread::start();
+	playback_3d->start();
+}
+
+void MWindow::run()
+{
 	gui->run_window();
 }
 
@@ -1522,8 +1539,12 @@ void MWindow::show_plugin(Plugin *plugin)
 
 void MWindow::hide_plugin(Plugin *plugin, int lock)
 {
-	if(lock) plugin_gui_lock->lock("MWindow::hide_plugin");
 	plugin->show = 0;
+	gui->lock_window("MWindow::hide_plugin");
+	gui->update(0, 1, 0, 0, 0, 0, 0);
+	gui->unlock_window();
+
+	if(lock) plugin_gui_lock->lock("MWindow::hide_plugin");
 	for(int i = 0; i < plugin_guis->total; i++)
 	{
 		if(plugin_guis->values[i]->plugin == plugin)
@@ -1556,6 +1577,22 @@ void MWindow::update_plugin_guis()
 		plugin_guis->values[i]->update_gui();
 	}
 	plugin_gui_lock->unlock();
+}
+
+int MWindow::plugin_gui_open(Plugin *plugin)
+{
+	int result = 0;
+	plugin_gui_lock->lock("MWindow::plugin_gui_open");
+	for(int i = 0; i < plugin_guis->total; i++)
+	{
+		if(plugin_guis->values[i]->plugin->identical_location(plugin))
+		{
+			result = 1;
+			break;
+		}
+	}
+	plugin_gui_lock->unlock();
+	return result;
 }
 
 void MWindow::render_plugin_gui(void *data, Plugin *plugin)

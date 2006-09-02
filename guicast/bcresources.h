@@ -12,6 +12,7 @@
 #include "bcfilebox.h"
 #include "bcresources.inc"
 #include "bcsignals.inc"
+#include "bcsynchronous.inc"
 #include "bcwindowbase.inc"
 #include "vframe.inc"
 
@@ -33,6 +34,8 @@ public:
 
 	int initialize_display(BC_WindowBase *window);
 
+// Get unique ID
+	int get_id();
 	int get_bg_color();          // window backgrounds
 	int get_bg_shadow1();        // border for windows
 	int get_bg_shadow2();
@@ -43,7 +46,10 @@ public:
 	int get_left_border();
 	int get_right_border();
 	int get_bottom_border();
-
+// Get synchronous thread for OpenGL
+	BC_Synchronous* get_synchronous();
+// Called by user after synchronous thread is created.
+	void set_synchronous(BC_Synchronous *synchronous);
 // Pointer to signal handler class to run after ipc
 	static BC_Signals *signal_handler;
 
@@ -306,6 +312,9 @@ private:
 
 	Mutex *id_lock;
 
+	BC_Synchronous *synchronous;
+
+	int id;
 };
 
 

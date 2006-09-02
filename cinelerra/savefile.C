@@ -10,6 +10,7 @@
 #include "mainmenu.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
+#include "playback3d.h"
 #include "savefile.h"
 #include "mainsession.h"
 
@@ -94,7 +95,9 @@ int Save::handle_event()
 			mwindow->gui->show_message(string);
 		}
 		mwindow->session->changes_made = 0;
+// Last command in program
 		if(saveas->quit_now) mwindow->gui->set_done(0);
+		if(saveas->quit_now) mwindow->playback_3d->quit();
 	}
 	return 1;
 }
@@ -199,7 +202,9 @@ void SaveAs::run()
 
 	mwindow->session->changes_made = 0;
 	mmenu->add_load(filename);
+// Last command in program
 	if(quit_now) mwindow->gui->set_done(0);
+	if(quit_now) mwindow->playback_3d->quit();
 	return;
 }
 

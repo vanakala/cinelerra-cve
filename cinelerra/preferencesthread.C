@@ -16,6 +16,7 @@
 #include "language.h"
 #include "levelwindow.h"
 #include "levelwindowgui.h"
+#include "mainerror.h"
 #include "meterpanel.h"
 #include "mutex.h"
 #include "mwindow.h"
@@ -37,7 +38,7 @@
 
 
 #define WIDTH 750
-#define HEIGHT 700
+#define HEIGHT 730
 
 
 PreferencesMenuitem::PreferencesMenuitem(MWindow *mwindow)
@@ -181,6 +182,16 @@ int PreferencesThread::apply_settings()
 	mwindow->edl->copy_session(edl);
 	mwindow->preferences->copy_from(preferences);
 	mwindow->init_brender();
+
+	if(((mwindow->edl->session->output_w % 4) || 
+		(mwindow->edl->session->output_h % 4)) && 
+		mwindow->edl->session->playback_config->vconfig->driver == PLAYBACK_X11_GL)
+	{
+		MainError::show_error(
+			_("This project's dimensions are not multiples of 4 so\n"
+			"it can't be rendered by OpenGL."));
+	}
+
 
 	if(redraw_meters)
 	{

@@ -338,6 +338,10 @@ public:
 // Get the direction of the most recent process_buffer
 	int get_direction();
 
+// Plugin must call this before performing OpenGL operations.
+// Returns 1 if the user supports opengl buffers.
+	int get_use_opengl();
+
 // Get total tracks to process
 	int get_total_buffers();
 

@@ -7,8 +7,9 @@
 #include <stdio.h>
 #include <sys/time.h>
 
-Condition::Condition(int init_value, char *title)
+Condition::Condition(int init_value, char *title, int is_binary)
 {
+	this->is_binary = is_binary;
 	this->title = title;
 	pthread_mutex_init(&mutex, 0);
 	pthread_cond_init(&cond, NULL);
@@ -41,19 +42,26 @@ void Condition::lock(char *location)
     pthread_mutex_lock(&mutex);
     while(value <= 0) pthread_cond_wait(&cond, &mutex);
 #ifndef NO_GUICAST
-	SET_LOCK2
+	UNSET_LOCK2
 #endif
-	value--;
+	if(is_binary)
+		value = 0;
+	else
+		value--;
     pthread_mutex_unlock(&mutex);
 }
 
 void Condition::unlock()
 {
-#ifndef NO_GUICAST
-	UNSET_LOCK(this);
-#endif
+// The lock trace is created and removed by the acquirer
+//#ifndef NO_GUICAST
+//	UNSET_LOCK(this);
+//#endif
     pthread_mutex_lock(&mutex);
-    value++;
+    if(is_binary)
+		value = 1;
+	else
+		value++;
     pthread_cond_signal(&cond);
     pthread_mutex_unlock(&mutex);
 }
@@ -89,9 +97,12 @@ int Condition::timed_lock(int microseconds, char *location)
 	{
 //printf("Condition::timed_lock 2 %s %s\n", title, location);
 #ifndef NO_GUICAST
-		SET_LOCK2
+		UNSET_LOCK2
 #endif
-		value--;
+		if(is_binary)
+			value = 0;
+		else
+			value--;
 		result = 0;
     }
     pthread_mutex_unlock(&mutex);

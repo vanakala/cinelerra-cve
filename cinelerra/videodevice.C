@@ -311,6 +311,9 @@ char* VideoDevice::drivertostr(int driver)
 		case PLAYBACK_X11_XV:
 			return PLAYBACK_X11_XV_TITLE;
 			break;
+		case PLAYBACK_X11_GL:
+			return PLAYBACK_X11_GL_TITLE;
+			break;
 		case PLAYBACK_BUZ:
 			return PLAYBACK_BUZ_TITLE;
 			break;
@@ -598,6 +601,7 @@ int VideoDevice::open_output(VideoOutConfig *config,
 			break;
 		case PLAYBACK_X11:
 		case PLAYBACK_X11_XV:
+		case PLAYBACK_X11_GL:
 			output_base = new VDeviceX11(this, output);
 			break;
 

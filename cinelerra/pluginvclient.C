@@ -230,6 +230,16 @@ int PluginVClient::plugin_process_loop(VFrame **buffers, int64_t &write_length)
 	return result;
 }
 
+int PluginVClient::handle_opengl()
+{
+	return 0;
+}
+
+
+
+
+
+
 
 int PluginVClient::read_frame(VFrame *buffer, 
 	int channel, 
@@ -251,12 +261,14 @@ int PluginVClient::read_frame(VFrame *buffer,
 int PluginVClient::read_frame(VFrame *buffer, 
 		int channel, 
 		int64_t start_position,
-		double frame_rate)
+		double frame_rate,
+		int use_opengl)
 {
 	return server->read_frame(buffer,
 		channel,
 		start_position,
-		frame_rate);
+		frame_rate,
+		use_opengl);
 }
 
 

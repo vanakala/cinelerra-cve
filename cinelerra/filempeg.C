@@ -656,6 +656,9 @@ int FileMPEG::get_best_colormodel(Asset *asset, int driver)
 			if(asset->vmpeg_cmodel == MPEG_YUV420) return BC_YUV420P;
 			if(asset->vmpeg_cmodel == MPEG_YUV422) return BC_YUV422P;
 			break;
+		case PLAYBACK_X11_GL:
+			return BC_YUV888;
+			break;
 		case PLAYBACK_LML:
 		case PLAYBACK_BUZ:
 			return BC_YUV422P;

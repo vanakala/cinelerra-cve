@@ -201,7 +201,12 @@ void AttachmentPoint::render_gui(void *data, int size)
 		renderengine->mwindow->render_plugin_gui(data, size, plugin);
 }
 
-
+int AttachmentPoint::gui_open()
+{
+	if(renderengine && renderengine->mwindow)
+		return renderengine->mwindow->plugin_gui_open(plugin);
+	return 0;
+}
 
 
 

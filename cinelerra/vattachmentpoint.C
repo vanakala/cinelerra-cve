@@ -8,6 +8,8 @@
 #include "renderengine.h"
 #include "transportque.h"
 #include "vattachmentpoint.h"
+#include "vdevicex11.h"
+#include "videodevice.h"
 #include "vframe.h"
 
 VAttachmentPoint::VAttachmentPoint(RenderEngine *renderengine, Plugin *plugin)
@@ -67,15 +69,17 @@ void VAttachmentPoint::render(VFrame *output,
 	int buffer_number,
 	int64_t start_position,
 	double frame_rate,
-	int debug_render)
+	int debug_render,
+	int use_opengl)
 {
 	if(!this) printf("VAttachmentPoint::render NULL\n");
 	if(!plugin_server || !plugin->on) return;
 
 	if(debug_render)
-		printf("    VAttachmentPoint::render %s %d\n", 
+		printf("    VAttachmentPoint::render \"%s\" multi=%d opengl=%d\n", 
 			plugin_server->title,
-			plugin_server->multichannel);
+			plugin_server->multichannel,
+			use_opengl);
 
 	if(plugin_server->multichannel)
 	{
@@ -84,7 +88,22 @@ void VAttachmentPoint::render(VFrame *output,
 			this->start_position == start_position &&
 			EQUIV(this->frame_rate, frame_rate))
 		{
-			output->copy_from(buffer_vector[buffer_number]);
+// Need to copy PBuffer if OpenGL, regardless of use_opengl
+			if(buffer_vector[buffer_number]->get_opengl_state() == VFrame::RAM)
+			{
+				output->copy_from(buffer_vector[buffer_number]);
+				output->set_opengl_state(VFrame::RAM);
+			}
+			else
+			if(renderengine && renderengine->video)
+			{
+// Need to copy PBuffer to texture
+// printf("VAttachmentPoint::render temp=%p output=%p\n", 
+// buffer_vector[buffer_number],
+// output);
+				VDeviceX11 *x11_device = (VDeviceX11*)renderengine->video->get_output_base();
+				x11_device->copy_frame(output, buffer_vector[buffer_number]);
+			}
 			return;
 		}
 
@@ -92,7 +111,7 @@ void VAttachmentPoint::render(VFrame *output,
 		this->start_position = start_position;
 		this->frame_rate = frame_rate;
 
-// Allocate buffer vector
+// Allocate buffer vector for subsequent render calls
 		new_buffer_vector(output->get_w(), 
 			output->get_h(), 
 			output->get_color_model());
@@ -109,6 +128,9 @@ void VAttachmentPoint::render(VFrame *output,
 
 // Process plugin
 //printf("VAttachmentPoint::render 1 %d\n", buffer_number);
+		if(renderengine)
+			plugin_servers.values[0]->set_use_opengl(use_opengl,
+				renderengine->video);
 		plugin_servers.values[0]->process_buffer(output_temp,
 			start_position,
 			frame_rate,
@@ -126,6 +148,9 @@ void VAttachmentPoint::render(VFrame *output,
 	{
 		VFrame *output_temp[1];
 		output_temp[0] = output;
+		if(renderengine)
+			plugin_servers.values[buffer_number]->set_use_opengl(use_opengl,
+				renderengine->video);
 		plugin_servers.values[buffer_number]->process_buffer(output_temp,
 			start_position,
 			frame_rate,

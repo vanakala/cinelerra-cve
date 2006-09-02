@@ -22,8 +22,9 @@
 #include "transition.h"
 #include "transportque.h"
 #include "vattachmentpoint.h"
-#include "vedit.h"
+#include "vdevicex11.h"
 #include "vframe.h"
+#include "videodevice.h"
 #include "virtualvconsole.h"
 #include "virtualvnode.h"
 #include "vmodule.h"
@@ -80,54 +81,63 @@ VirtualNode* VirtualVNode::create_plugin(Plugin *real_plugin)
 
 int VirtualVNode::read_data(VFrame *output_temp,
 	int64_t start_position,
-	double frame_rate)
+	double frame_rate,
+	int use_opengl)
 {
 	VirtualNode *previous_plugin = 0;
+	int result = 0;
 
 	if(!output_temp) 
 		printf("VirtualVNode::read_data output_temp=%p\n", output_temp);
 
 	if(vconsole->debug_tree) 
-		printf("  VirtualVNode::read_data position=%lld rate=%f title=%s\n", 
+		printf("  VirtualVNode::read_data position=%lld rate=%f title=%s opengl=%d\n", 
 			start_position,
 			frame_rate,
-			track->title);
+			track->title, 
+			use_opengl);
 
 // This is a plugin on parent module with a preceeding effect.
 // Get data from preceeding effect on parent module.
 	if(parent_node && (previous_plugin = parent_node->get_previous_plugin(this)))
 	{
-		return ((VirtualVNode*)previous_plugin)->render(output_temp,
+		result = ((VirtualVNode*)previous_plugin)->render(output_temp,
 			start_position,
-			frame_rate);
+			frame_rate,
+			use_opengl);
 	}
 	else
-// First plugin on parent module.
+// The current node is the first plugin on parent module.
+// The parent module has an edit to read from or the current node
+// has no source to read from.
 // Read data from parent module
 	if(parent_node)
 	{
-		return ((VirtualVNode*)parent_node)->read_data(output_temp,
+		result = ((VirtualVNode*)parent_node)->read_data(output_temp,
 			start_position,
-			frame_rate);
+			frame_rate,
+			use_opengl);
 	}
 	else
 	{
 // This is the first node in the tree
-		return ((VModule*)real_module)->render(output_temp,
+		result = ((VModule*)real_module)->render(output_temp,
 			start_position,
 			renderengine->command->get_direction(),
 			frame_rate,
 			0,
-			vconsole->debug_tree);
+			vconsole->debug_tree,
+			use_opengl);
 	}
 
-	return 0;
+	return result;
 }
 
 
 int VirtualVNode::render(VFrame *output_temp, 
 	int64_t start_position,
-	double frame_rate)
+	double frame_rate,
+	int use_opengl)
 {
 	VRender *vrender = ((VirtualVConsole*)vconsole)->vrender;
 	if(real_module)
@@ -135,21 +145,24 @@ int VirtualVNode::render(VFrame *output_temp,
 		render_as_module(vrender->video_out, 
 			output_temp,
 			start_position,
-			frame_rate);
+			frame_rate,
+			use_opengl);
 	}
 	else
 	if(real_plugin)
 	{
 		render_as_plugin(output_temp,
 			start_position,
-			frame_rate);
+			frame_rate,
+			use_opengl);
 	}
 	return 0;
 }
 
 void VirtualVNode::render_as_plugin(VFrame *output_temp, 
 	int64_t start_position,
-	double frame_rate)
+	double frame_rate,
+	int use_opengl)
 {
 	if(!attachment ||
 		!real_plugin ||
@@ -157,21 +170,25 @@ void VirtualVNode::render_as_plugin(VFrame *output_temp,
 
 
 	if(vconsole->debug_tree) 
-		printf("  VirtualVNode::render_as_plugin title=%s\n", track->title);
+		printf("  VirtualVNode::render_as_plugin title=%s use_opengl=%d\n", 
+			track->title,
+			use_opengl);
 
 	((VAttachmentPoint*)attachment)->render(
 		output_temp,
 		plugin_buffer_number,
 		start_position,
 		frame_rate,
-		vconsole->debug_tree);
+		vconsole->debug_tree,
+		use_opengl);
 }
 
 
 int VirtualVNode::render_as_module(VFrame *video_out, 
 	VFrame *output_temp,
 	int64_t start_position,
-	double frame_rate)
+	double frame_rate,
+	int use_opengl)
 {
 
 	int direction = renderengine->command->get_direction();
@@ -183,8 +200,11 @@ int VirtualVNode::render_as_module(VFrame *video_out,
 	if(direction == PLAY_REVERSE) start_position_project--;
 
 	if(vconsole->debug_tree) 
-		printf("  VirtualVNode::render_as_module title=%s\n", 
-			track->title);
+		printf("  VirtualVNode::render_as_module title=%s use_opengl=%d video_out=%p output_temp=%p\n", 
+			track->title,
+			use_opengl,
+			video_out,
+			output_temp);
 
 	output_temp->push_next_effect("VirtualVNode::render_as_module");
 
@@ -195,14 +215,16 @@ int VirtualVNode::render_as_module(VFrame *video_out,
 		VirtualVNode *node = (VirtualVNode*)subnodes.values[subnodes.total - 1];
 		node->render(output_temp,
 			start_position,
-			frame_rate);
+			frame_rate,
+			use_opengl);
 	}
 	else
 // Read data from previous entity
 	{
 		read_data(output_temp,
 			start_position,
-			frame_rate);
+			frame_rate,
+			use_opengl);
 	}
 
 	output_temp->pop_next_effect();
@@ -290,11 +312,16 @@ int VirtualVNode::render_fade(VFrame *output,
 
 
 // Can't use overlay here because overlayer blends the frame with itself.
-// The fade engine can compensate for lack of alpha channels by reducing the 
-// color components.
+// The fade engine can compensate for lack of alpha channels by multiplying the 
+// color components by alpha.
 	if(!EQUIV(intercept / 100, 1))
 	{
-		fader->do_fade(output, output, intercept / 100);
+		if(((VirtualVConsole*)vconsole)->use_opengl)
+			((VDeviceX11*)((VirtualVConsole*)vconsole)->get_vdriver())->do_fade(
+				output, 
+				intercept / 100);
+		else
+			fader->do_fade(output, output, intercept / 100);
 	}
 
 	return 0;
@@ -364,6 +391,24 @@ int VirtualVNode::render_projector(VFrame *input,
 				vconsole->current_exit_node == vconsole->total_exit_nodes - 1)
 				mode = TRANSFER_REPLACE;
 
+			if(((VirtualVConsole*)vconsole)->use_opengl)
+			{
+				((VDeviceX11*)((VirtualVConsole*)vconsole)->get_vdriver())->overlay(
+					output,
+					input,
+					in_x1, 
+					in_y1, 
+					in_x2, 
+					in_y2,
+					out_x1, 
+					out_y1, 
+					out_x2, 
+					out_y2, 
+					1,
+					mode, 
+					renderengine->edl);
+			}
+			else
 			{
 				vrender->overlayer->overlay(output, 
 					input,

@@ -5,7 +5,9 @@
 #include "edlsession.h"
 #include "keys.h"
 #include "language.h"
+#include "mainsession.h"
 #include "mutex.h"
+#include "mwindow.h"
 #include "vframe.h"
 
 
@@ -287,14 +289,14 @@ void Canvas::output_to_canvas(EDL *edl, int single_channel, float &x, float &y)
 
 
 void Canvas::get_transfers(EDL *edl, 
-	int &in_x, 
-	int &in_y, 
-	int &in_w, 
-	int &in_h,
-	int &out_x, 
-	int &out_y, 
-	int &out_w, 
-	int &out_h,
+	float &output_x1, 
+	float &output_y1, 
+	float &output_x2, 
+	float &output_y2,
+	float &canvas_x1, 
+	float &canvas_y1, 
+	float &canvas_x2, 
+	float &canvas_y2,
 	int canvas_w,
 	int canvas_h)
 {
@@ -356,14 +358,14 @@ void Canvas::get_transfers(EDL *edl,
 // printf("Canvas::get_transfers 2 %.0f %.0f %.0f %.0f -> %.0f %.0f %.0f %.0f\n",
 // 			in_x1, in_y1, in_x2, in_y2, out_x1, out_y1, out_x2, out_y2);
 
-		in_x = (int)in_x1;
-		in_y = (int)in_y1;
-		in_w = (int)(in_x2 - in_x1);
-		in_h = (int)(in_y2 - in_y1);
-		out_x = (int)out_x1;
-		out_y = (int)out_y1;
-		out_w = (int)(out_x2 - out_x1);
-		out_h = (int)(out_y2 - out_y1);
+		output_x1 = in_x1;
+		output_y1 = in_y1;
+		output_x2 = in_x2;
+		output_y2 = in_y2;
+		canvas_x1 = out_x1;
+		canvas_y1 = out_y1;
+		canvas_x2 = out_x2;
+		canvas_y2 = out_y2;
 
 // Center on canvas
 //		if(!scrollbars_exist())
@@ -374,47 +376,66 @@ void Canvas::get_transfers(EDL *edl,
 
 	}
 	else
+// The output frame is normalized to the canvas
 	{
-		out_x = 0;
-		out_y = 0;
-		out_w = canvas_w;
-		out_h = canvas_h;
+// Default canvas coords fill the entire canvas
+		canvas_x1 = 0;
+		canvas_y1 = 0;
+		canvas_x2 = canvas_w;
+		canvas_y2 = canvas_h;
 
 		if(edl)
 		{
-			if((float)out_w / out_h > edl->get_aspect_ratio())
+// Use EDL aspect ratio to shrink one of the canvas dimensions
+			float out_w = canvas_x2 - canvas_x1;
+			float out_h = canvas_y2 - canvas_y1;
+			if(out_w / out_h > edl->get_aspect_ratio())
 			{
 				out_w = (int)(out_h * edl->get_aspect_ratio() + 0.5);
-				out_x = canvas_w / 2 - out_w / 2;
+				canvas_x1 = canvas_w / 2 - out_w / 2;
 			}
 			else
 			{
 				out_h = (int)(out_w / edl->get_aspect_ratio() + 0.5);
-				out_y = canvas_h / 2 - out_h / 2;
+				canvas_y1 = canvas_h / 2 - out_h / 2;
 			}
+			canvas_x2 = canvas_x1 + out_w;
+			canvas_y2 = canvas_y1 + out_h;
 
-			in_x = 0;
-			in_y = 0;
-			in_w = get_output_w(edl);
-			in_h = get_output_h(edl);
+// Get output frame coords from EDL
+			output_x1 = 0;
+			output_y1 = 0;
+			output_x2 = get_output_w(edl);
+			output_y2 = get_output_h(edl);
 		}
 		else
+// No EDL to get aspect ratio or output frame coords from
 		{
-			in_x = 0;
-			in_y = 0;
-			in_w = this->output_w;
-			in_h = this->output_h;
+			output_x1 = 0;
+			output_y1 = 0;
+			output_x2 = this->output_w;
+			output_y2 = this->output_h;
 		}
 	}
 
-	in_x = MAX(0, in_x);
-	in_y = MAX(0, in_y);
-	in_w = MAX(0, in_w);
-	in_h = MAX(0, in_h);
-	out_x = MAX(0, out_x);
-	out_y = MAX(0, out_y);
-	out_w = MAX(0, out_w);
-	out_h = MAX(0, out_h);
+// Clamp to minimum value
+	output_x1 = MAX(0, output_x1);
+	output_y1 = MAX(0, output_y1);
+	output_x2 = MAX(output_x1, output_x2);
+	output_y2 = MAX(output_y1, output_y2);
+	canvas_x1 = MAX(0, canvas_x1);
+	canvas_y1 = MAX(0, canvas_y1);
+	canvas_x2 = MAX(canvas_x1, canvas_x2);
+	canvas_y2 = MAX(canvas_y1, canvas_y2);
+// printf("Canvas::get_transfers 2 %f,%f %f,%f -> %f,%f %f,%f\n",
+// output_x1,
+// output_y1,
+// output_x2,
+// output_y2,
+// canvas_x1,
+// canvas_y1,
+// canvas_x2,
+// canvas_y2);
 }
 
 int Canvas::scrollbars_exist()
@@ -643,7 +664,7 @@ int Canvas::button_press_event()
 		if(get_fullscreen())
 			fullscreen_menu->activate_menu();
 		else
-		canvas_menu->activate_menu();
+			canvas_menu->activate_menu();
 		result = 1;
 	}
 

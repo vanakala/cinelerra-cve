@@ -52,6 +52,7 @@ public:
 // Called by plugin server to render GUI with data.
 	void render_gui(void *data);
 	void render_gui(void *data, int size);
+	int gui_open();
 	virtual int get_buffer_size() { return 0; };
 
 // For unshared plugins, virtual plugins to send configuration events to and 

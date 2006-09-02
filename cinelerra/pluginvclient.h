@@ -87,7 +87,13 @@ public:
 	int read_frame(VFrame *buffer, 
 		int channel, 
 		int64_t start_position,
-		double frame_rate);
+		double frame_rate,
+		int use_opengl = 0);
+
+// Called by Playback3D to run opengl commands synchronously.
+// Overridden by the user with the commands to run synchronously.
+	virtual int handle_opengl();
+
 
 // Called by user to allocate the temporary for the current process_buffer.  
 // It may be deleted after the process_buffer to conserve memory.
@@ -116,6 +122,10 @@ public:
 	VFrame ***input_ptr_render;
 	VFrame ***output_ptr_render;
 
+// ======================== Realtime buffer pointers ===========================
+// These are provided by the plugin server for the opengl handler.
+	VFrame **input;
+	VFrame **output;
 
 
 // Frame rate of EDL

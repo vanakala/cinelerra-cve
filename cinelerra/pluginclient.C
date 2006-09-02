@@ -291,6 +291,11 @@ int64_t PluginClient::edl_to_local(int64_t position)
 	return position;
 }
 
+int PluginClient::get_use_opengl()
+{
+	return server->get_use_opengl();
+}
+
 int PluginClient::get_total_buffers()
 {
 	return total_in_buffers;

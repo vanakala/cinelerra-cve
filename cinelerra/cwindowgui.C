@@ -851,36 +851,45 @@ void CWindowCanvas::draw_refresh()
 
 		if(refresh_frame)
 		{
-			int in_x, in_y, in_w, in_h, out_x, out_y, out_w, out_h;
+			float in_x1, in_y1, in_x2, in_y2;
+			float out_x1, out_y1, out_x2, out_y2;
 			get_transfers(mwindow->edl, 
-				in_x, 
-				in_y, 
-				in_w, 
-				in_h, 
-				out_x, 
-				out_y, 
-				out_w, 
-				out_h);
+				in_x1, 
+				in_y1, 
+				in_x2, 
+				in_y2, 
+				out_x1, 
+				out_y1, 
+				out_x2, 
+				out_y2);
 
-// printf("CWindowCanvas::draw_refresh %d %d %d %d -> %d %d %d %d\n", 
-// in_x, in_y, in_w, in_h, out_x, out_y, out_w, out_h);
+			get_canvas()->clear_box(0, 
+				0, 
+				get_canvas()->get_w(), 
+				get_canvas()->get_h());
+
+// printf("CWindowCanvas::draw_refresh %f %f %f %f -> %f %f %f %f\n", 
+// in_x1, in_y1, in_x2, in_y2, out_x1, out_y1, out_x2, out_y2);
 
 
-			if(out_w > 0 && out_h > 0 && in_w > 0 && in_h > 0)
+			if(out_x2 > out_x1 && 
+				out_y2 > out_y1 && 
+				in_x2 > in_x1 && 
+				in_y2 > in_y1)
+			{
+// Can't use OpenGL here because it is called asynchronously of the
+// playback operation.
 				get_canvas()->draw_vframe(refresh_frame,
-						out_x, 
-						out_y, 
-						out_w, 
-						out_h,
-						in_x, 
-						in_y, 
-						in_w, 
-						in_h,
+						(int)out_x1, 
+						(int)out_y1, 
+						(int)(out_x2 - out_x1), 
+						(int)(out_y2 - out_y1),
+						(int)in_x1, 
+						(int)in_y1, 
+						(int)(in_x2 - in_x1), 
+						(int)(in_y2 - in_y1),
 						0);
-		}
-		else
-		{
-			get_canvas()->clear_box(0, 0, get_canvas()->get_w(), get_canvas()->get_h());
+			}
 		}
 
 		draw_overlays();
