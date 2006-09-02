@@ -21,6 +21,7 @@
 #include "gwindow.inc"
 #include "levelwindow.inc"
 #include "loadmode.inc"
+#include "mainerror.inc"
 #include "mainindexes.inc"
 #include "mainprogress.inc"
 #include "mainsession.inc"
@@ -455,6 +456,7 @@ public:
 	int brender_available(int position);
 	void set_brender_start();
 
+	void init_error();
 	static void init_defaults(BC_Hash* &defaults, 
 		char *config_path);
 	void init_edl();

@@ -110,6 +110,8 @@ public:
 	int rmonitor_x, rmonitor_y, rmonitor_w, rmonitor_h;
 // record status
 	int rwindow_x, rwindow_y, rwindow_w, rwindow_h;
+// error window
+	int ewindow_w, ewindow_h;
 	int afolders_w;
 	int show_vwindow, show_awindow, show_cwindow, show_gwindow, show_lwindow;
 	int plugindialog_w, plugindialog_h;

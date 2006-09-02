@@ -34,6 +34,7 @@
 #include "loadfile.inc"
 #include "localsession.h"
 #include "maincursor.h"
+#include "mainerror.h"
 #include "mainindexes.h"
 #include "mainmenu.h"
 #include "mainprogress.h"
@@ -166,6 +167,11 @@ SET_TRACE
 	plugin_guis->remove_all_objects();
 	delete plugin_guis;
 	delete plugin_gui_lock;
+}
+
+void MWindow::init_error()
+{
+	new MainError(this);
 }
 
 void MWindow::create_defaults_path(char *string)
@@ -848,6 +854,20 @@ SET_TRACE
 		{
 // Convert media file to EDL
 			case FILE_OK:
+// Warn about odd image dimensions
+				if(new_asset->video_data &&
+					((new_asset->width % 2) ||
+					(new_asset->height % 2)))
+				{
+					char string[BCTEXTLEN];
+					sprintf(string, "%s's resolution is %dx%d.\nImages with odd dimensions may not decode properly.",
+						new_asset->path,
+						new_asset->width,
+						new_asset->height);
+					MainError::show_error(string);
+				}
+
+
 				if(load_mode != LOAD_RESOURCESONLY)
 				{
 SET_TRACE
@@ -1118,6 +1138,7 @@ SET_TRACE
 
 void MWindow::test_plugins(EDL *new_edl, char *path)
 {
+	char string[BCTEXTLEN];
 // Do a check weather plugins exist
 	for(Track *track = new_edl->tracks->first; track; track = track->next)
 	{
@@ -1143,7 +1164,12 @@ void MWindow::test_plugins(EDL *new_edl, char *path)
 					}
 					if (!plugin_found) 
 					{
-						printf("\nWARNING: The plugin '%s' named in file '%s' is not part of your installation of Cinelerra. This means project will not be rendered as it was meant and it might result in Cinelerra crashing.\n", plugin->title, path); 
+						sprintf(string, 
+							"The effect '%s' in file '%s' is not part of your installation of Cinelerra.\n"
+							"The project won't be rendered as it was meant and Cinelerra might crash.\n",
+							plugin->title, 
+							path); 
+						MainError::show_error(string);
 					}
 				}
 			}
@@ -1167,7 +1193,12 @@ void MWindow::test_plugins(EDL *new_edl, char *path)
 				}
 				if (!transition_found) 
 				{
-					printf("\nWARNING: The transition '%s' named in file '%s' is not part of your installation of Cinelerra. This means project will not be rendered as it was meant and it might result in Cinelerra crashing.\n", edit->transition->title, path); 
+					sprintf(string, 
+						"The transition '%s' in file '%s' is not part of your installation of Cinelerra.\n"
+						"The project won't be rendered as it was meant and Cinelerra might crash.\n",
+						edit->transition->title, 
+						path); 
+					MainError::show_error(string);
 				}
 			}
 		}
@@ -1193,6 +1224,7 @@ void MWindow::create_objects(int want_gui,
 // get trapped.
 	init_signals();
 
+	init_error();
 
 SET_TRACE
 

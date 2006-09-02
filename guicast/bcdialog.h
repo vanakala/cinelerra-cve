@@ -19,6 +19,7 @@ public:
 	BC_DialogThread();
 	virtual ~BC_DialogThread();
 
+// User calls this to create or raise the dialog box.
 	void start();
 	void run();
 
@@ -31,6 +32,10 @@ public:
 // User creates the window and initializes it here.
 	virtual BC_Window* new_gui();
 	BC_Window* get_gui();
+
+// Called by user to access the gui pointer
+	void lock_window(char *location);
+	void unlock_window();
 
 private:
 	BC_Window *gui;

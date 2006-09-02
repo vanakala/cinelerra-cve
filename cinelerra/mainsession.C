@@ -121,6 +121,9 @@ void MainSession::default_window_positions()
 	awindow_w = root_x + root_w - awindow_x - border_left - border_right;
 	awindow_h = mwindow_h;
 
+	ewindow_w = 640;
+	ewindow_h = 240;
+
 	if(mwindow->edl)
 		lwindow_w = MeterPanel::get_meters_width(mwindow->edl->session->audio_channels, 1);
 	else
@@ -182,6 +185,9 @@ int MainSession::load_defaults(BC_Hash *defaults)
 	awindow_y = defaults->get("AWINDOW_Y", awindow_y);
 	awindow_w = defaults->get("AWINDOW_W", awindow_w);
 	awindow_h = defaults->get("AWINDOW_H", awindow_h);
+
+	ewindow_w = defaults->get("EWINDOW_W", ewindow_w);
+	ewindow_h = defaults->get("EWINDOW_H", ewindow_h);
 
 //printf("MainSession::load_defaults 1\n");
 
@@ -255,6 +261,9 @@ int MainSession::save_defaults(BC_Hash *defaults)
 	defaults->update("AWINDOW_Y", awindow_y);
 	defaults->update("AWINDOW_W", awindow_w);
 	defaults->update("AWINDOW_H", awindow_h);
+
+	defaults->update("EWINDOW_W", ewindow_w);
+	defaults->update("EWINDOW_H", ewindow_h);
 
  	defaults->update("ABINS_W", afolders_w);
 

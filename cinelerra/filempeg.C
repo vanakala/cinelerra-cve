@@ -13,6 +13,7 @@
 #include "indexfile.h"
 #include "interlacemodes.h"
 #include "language.h"
+#include "mainerror.h"
 #include "mwindow.inc"
 #include "preferences.h"
 #include "vframe.h"
@@ -154,20 +155,34 @@ SET_TRACE
 		int error = 0;
 		if(!(fd = mpeg3_open(asset->path, &error)))
 		{
-			printf("FileMPEG::open_file %s\n", asset->path);
+			char string[BCTEXTLEN];
+			if(error == MPEG3_INVALID_TOC_VERSION)
+			{
+				sprintf(string, 
+					"Couldn't open %s because it has an invalid table of contents version.\n"
+					"Rebuild the table of contents with mpeg3toc.",
+					asset->path);
+				MainError::show_error(string);
+			}
+			else
+			if(error == MPEG3_TOC_DATE_MISMATCH)
+			{
+				sprintf(string, 
+					"Couldn't open %s because the table of contents date differs from the source date.\n"
+					"Rebuild the table of contents with mpeg3toc.",
+					asset->path);
+				MainError::show_error(string);
+			}
 			result = 1;
 		}
 		else
 		{
 // Determine if the file needs a table of contents and create one if needed.
-			if(!mpeg3_has_toc(fd))
-			{
 // If it has video it must be scanned since video has keyframes.
 				if(mpeg3_total_vstreams(fd))
 				{
 					if(create_index()) return 1;
 				}
-			}
 
 			mpeg3_set_cpus(fd, file->cpus);
 

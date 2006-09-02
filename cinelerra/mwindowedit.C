@@ -23,6 +23,7 @@
 #include "localsession.h"
 #include "mainclock.h"
 #include "maincursor.h"
+#include "mainerror.h"
 #include "mainindexes.h"
 #include "mainmenu.h"
 #include "mainsession.h"

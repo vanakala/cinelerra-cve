@@ -140,6 +140,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    main.C \
 		    mainclock.C \
 		    maincursor.C \
+		    mainerror.C \
 		    mainindexes.C \
 		    mainmenu.C \
 		    mainprogress.C \
@@ -441,6 +442,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 localsession.h \
 		 mainclock.h \
 		 maincursor.h \
+		 mainerror.h \
 		 mainindexes.h \
 		 mainmenu.h \
 		 mainprogress.h \

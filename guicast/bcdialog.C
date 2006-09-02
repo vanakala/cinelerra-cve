@@ -30,6 +30,16 @@ BC_DialogThread::~BC_DialogThread()
 	delete window_lock;
 }
 
+void BC_DialogThread::lock_window(char *location)
+{
+	window_lock->lock(location);
+}
+
+void BC_DialogThread::unlock_window()
+{
+	window_lock->unlock();
+}
+
 void BC_DialogThread::start()
 {
 	if(Thread::running())
