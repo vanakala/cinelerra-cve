@@ -491,8 +491,10 @@ int FileSystem::is_dir(const char *path)      // return 0 if the text is a direc
 
 	strcpy(new_dir, path);
 	complete_path(new_dir);
-	if(!stat(new_dir, &ostat) && S_ISDIR(ostat.st_mode)) return 0;
+	if(!stat(new_dir, &ostat) && S_ISDIR(ostat.st_mode)) 
 	return 1;
+	else
+		return 0;
 }
 
 int FileSystem::create_dir(char *new_dir_)
@@ -660,7 +662,7 @@ int FileSystem::complete_path(char *filename)
 int FileSystem::extract_dir(char *out, const char *in)
 {
 	strcpy(out, in);
-	if(is_dir(in))
+	if(!is_dir(in))
 	{
 // complete string is not directory
 		int i;
@@ -680,7 +682,7 @@ int FileSystem::extract_name(char *out, const char *in, int test_dir)
 {
 	int i;
 
-	if(test_dir && !is_dir(in))
+	if(test_dir && is_dir(in))
 		sprintf(out, "");    // complete string is directory
 	else
 	{

@@ -187,7 +187,7 @@ public:
 // Want only directories
 		int want_directory = 0,
 		int multiple_files = 0,
-		int h_padding = 0);
+		int h_padding = -1);
 	virtual ~BC_FileBox();
 
 	friend class BC_FileBoxCancel;

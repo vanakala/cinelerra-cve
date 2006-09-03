@@ -301,6 +301,16 @@ public:
 	void draw_circle(int x, int y, int w, int h, BC_Pixmap *pixmap = 0);
 	void draw_disc(int x, int y, int w, int h, BC_Pixmap *pixmap = 0);
 	void draw_text(int x, int y, char *text, int length = -1, BC_Pixmap *pixmap = 0);
+	void draw_xft_text(int x, 
+		int y, 
+		char *text, 
+		int length, 
+		BC_Pixmap *pixmap,
+		int x2,
+		int k,
+		int y2,
+		int j,
+		int i);
 	void draw_center_text(int x, int y, char *text, int length = -1);
 	void draw_line(int x1, int y1, int x2, int y2, BC_Pixmap *pixmap = 0);
 	void draw_polygon(ArrayList<int> *x, ArrayList<int> *y, BC_Pixmap *pixmap = 0);
@@ -536,6 +546,7 @@ private:
 	int allocate_color_table();
 	int init_gc();
 	int init_fonts();
+	void init_xft();
 	int get_color_rgb8(int color);
 	int64_t get_color_rgb16(int color);
 	int64_t get_color_bgr16(int color);
@@ -692,11 +703,7 @@ private:
 	int current_font;
 	XFontStruct *largefont, *mediumfont, *smallfont;
 
-// Xft
-//	XftDraw *xft_drawable;
-//	XftFont *largefont_xft, *mediumfont_xft, *smallfont_xft;
 // Must be void so users don't need to include the wrong libpng version.
-	void *xft_drawable;
 	void *largefont_xft, *mediumfont_xft, *smallfont_xft;
 
 

@@ -281,6 +281,11 @@ public:
 	static char *medium_font_xft;
 	static char *small_font_xft;
 
+// Backup of fonts in case the first choices don't exist
+	static char *large_font_xft2;
+	static char *medium_font_xft2;
+	static char *small_font_xft2;
+
 	VFrame **medium_7segment;
 
 //clock

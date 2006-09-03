@@ -9,6 +9,7 @@
 #include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "localsession.h"
 #include "mainmenu.h"
 #include "mainsession.h"
 #include "mwindowgui.h"
@@ -105,9 +106,13 @@ Track* CWindow::calculate_affected_track()
 	return affected_track;
 }
 
-Auto* CWindow::calculate_affected_auto(Autos *autos, int create)
+Auto* CWindow::calculate_affected_auto(Autos *autos, 
+	int create,
+	int *created,
+	int redraw)
 {
 	Auto* affected_auto = 0;
+	if(created) *created = 0;
 
 	if(create)
 	{
@@ -117,10 +122,14 @@ Auto* CWindow::calculate_affected_auto(Autos *autos, int create)
 // Got created
 		if(total != autos->total())
 		{
+			if(created) *created = 1;
+			if(redraw)
+			{
 			mwindow->gui->lock_window("CWindow::calculate_affected_auto");
 			mwindow->gui->canvas->draw_overlays();
 			mwindow->gui->canvas->flash();
 			mwindow->gui->unlock_window();
+			}
 		}
 	}
 	else

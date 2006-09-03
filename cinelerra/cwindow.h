@@ -30,7 +30,9 @@ public:
 // create - if 0 forces automatic creation to be off
 //          if 1 uses automatic creation option to create
 	Auto* calculate_affected_auto(Autos *autos, 
-		int create = 1);
+		int create = 1,
+		int *created = 0,
+		int redraw = 1);
 // Same as before.  Provide 0 to Auto arguments to have them ignored.
 	void calculate_affected_autos(FloatAuto **x_auto,
 		FloatAuto **y_auto,

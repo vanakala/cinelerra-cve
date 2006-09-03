@@ -51,9 +51,12 @@ char* BC_Resources::small_fontset = "6x12,*";
 char* BC_Resources::medium_fontset = "7x14,*";
 char* BC_Resources::large_fontset = "8x16,*";
 
-char* BC_Resources::small_font_xft = N_("-microsoft-verdana-*-*-*-*-*-*-*-*-*-*-*-*");
-char* BC_Resources::medium_font_xft = N_("-microsoft-verdana-*-*-*-*-*-*-*-*-*-*-*-*");
-char* BC_Resources::large_font_xft = N_("-microsoft-verdana-*-*-*-*-*-*-*-*-*-*-*-*");
+char* BC_Resources::small_font_xft = N_("-*-luxi sans-*-r-*-*-12-*-*-*-*-*-*-*");
+char* BC_Resources::small_font_xft2 = N_("-microsoft-verdana-*-*-*-*-*-*-*-*-*-*-*-*");
+char* BC_Resources::medium_font_xft = N_("-*-luxi sans-*-r-*-*-16-*-*-*-*-*-*-*");
+char* BC_Resources::medium_font_xft2 = N_("-microsoft-verdana-*-*-*-*-*-*-*-*-*-*-*-*");
+char* BC_Resources::large_font_xft = N_("-*-luxi sans-bold-r-*-*-20-*-*-*-*-*-*-*");
+char* BC_Resources::large_font_xft2 = N_("-microsoft-verdana-*-*-*-*-*-*-*-*-*-*-*-*");
 
 suffix_to_type_t BC_Resources::suffix_to_type[] = 
 {
@@ -75,6 +78,12 @@ int BC_Resources::x_error_handler(Display *display, XErrorEvent *event)
 	XGetErrorText(event->display, event->error_code, string, 1024);
 //	printf("BC_Resources::x_error_handler: %s\n", string);
 	BC_Resources::error = 1;
+// This bug only happens in 32 bit mode.
+	if(sizeof(long) == 4) 
+	{
+		BC_WindowBase::get_resources()->use_xft = 0;
+		printf("Now turning use_xft off!\n");
+	}
 	return 0;
 }
 
@@ -495,6 +504,7 @@ BC_Resources::BC_Resources()
 
 // Xft has priority over font set
 #ifdef HAVE_XFT
+// But Xft dies in 32 bit mode after some amount of drawing.
 	use_xft = 1;
 #else
 	use_xft = 0;

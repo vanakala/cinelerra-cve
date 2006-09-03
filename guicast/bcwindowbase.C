@@ -225,7 +225,6 @@ int BC_WindowBase::initialize()
 #ifdef HAVE_LIBXXF86VM
     vm_switched = 0;
 #endif
-	xft_drawable = 0;
 	largefont_xft = 0;
 	mediumfont_xft = 0;
 	smallfont_xft = 0;
@@ -514,28 +513,6 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 // Create pixmap for all windows
 	pixmap = new BC_Pixmap(this, this->w, this->h);
 
-
-// Create truetype rendering surface
-#ifdef HAVE_XFT
-	if(get_resources()->use_xft)
-	{
-// printf("BC_WindowBase::create_window 1 %p %p %p %p\n", 
-// top_level->display,
-// pixmap,
-// top_level->vis,
-// top_level->cmap);
-		xft_drawable = XftDrawCreate(top_level->display,
-		       pixmap,
-		       top_level->vis,
-		       top_level->cmap);
-// printf("BC_WindowBase::create_window 10 %p %p %p %p %p\n", 
-// xft_drawable, 
-// top_level->display,
-// pixmap,
-// top_level->vis,
-// top_level->cmap);
-	}
-#endif
 
 // Set up options for main window
 	if(window_type == MAIN_WINDOW)
@@ -1774,79 +1751,7 @@ int BC_WindowBase::init_fonts()
 		if((smallfont = XLoadQueryFont(display, _(resources.small_font2))) == NULL)
 			smallfont = XLoadQueryFont(display, "fixed");
 
-#ifdef HAVE_XFT
-	if(get_resources()->use_xft)
-	{
-
-
-//printf("BC_WindowBase::init_fonts 1 %p %p %s\n", display, screen, resources.large_font_xft);
-
-		if(!(largefont_xft = XftFontOpenXlfd(display,
-		    screen,
-		    resources.large_font_xft)))
-		{
-			largefont_xft = XftFontOpenXlfd(display,
-		    	screen,
-		    	"fixed");
-		}
-//printf("BC_WindowBase::init_fonts 1 %p\n", largefont_xft);
-		if(!(largefont_xft = XftFontOpenXlfd(display,
-		    screen,
-		    resources.large_font_xft)))
-		{
-			largefont_xft = XftFontOpenXlfd(display,
-		    	screen,
-		    	"fixed");
-		}
-//printf("BC_WindowBase::init_fonts 2 %p\n", largefont_xft);
-
-
-		if(!(mediumfont_xft = XftFontOpenXlfd(display,
-		      screen,
-		      resources.medium_font_xft)))
-		{
-			mediumfont_xft = XftFontOpenXlfd(display,
-		    	screen,
-		    	"fixed");
-		}
-
-
-		if(!(smallfont_xft = XftFontOpenXlfd(display,
-		      screen,
-		      resources.small_font_xft)))
-		{
-			  smallfont_xft = XftFontOpenXlfd(display,
-		    	  screen,
-		    	  "fixed");
-		}
-
-//printf("BC_WindowBase::init_fonts 100 %s %p\n", 
-//resources.medium_font, 
-//mediumfont_xft);
-
-printf("BC_WindowBase::init_fonts: %s=%p %s=%p %s=%p\n",
-	resources.large_font_xft,
-	largefontset,
-	resources.medium_font_xft,
-	mediumfontset,
-	resources.small_font_xft,
-	smallfontset);
-
-// Extension failed to locate fonts
-		if(!largefontset || !mediumfontset || !smallfontset)
-		{
-			printf("BC_WindowBase::init_fonts: no xft fonts found %s=%p %s=%p %s=%p\n",
-				resources.large_font_xft,
-				largefontset,
-				resources.medium_font_xft,
-				mediumfontset,
-				resources.small_font_xft,
-				smallfontset);
-			get_resources()->use_xft = 0;
-		}
-	}
-	else
-#endif
+	init_xft();
 	if(get_resources()->use_fontset)
 	{
 		char **m, *d;
@@ -1887,6 +1792,57 @@ printf("BC_WindowBase::init_fonts: %s=%p %s=%p %s=%p\n",
 	return 0;
 }
 
+
+void BC_WindowBase::init_xft()
+{
+#ifdef HAVE_XFT
+	if(!(largefont_xft = XftFontOpenXlfd(display,
+		screen,
+		resources.large_font_xft)))
+		if(!(largefont_xft = XftFontOpenXlfd(display,
+			screen,
+			resources.large_font_xft2)))
+			largefont_xft = XftFontOpenXlfd(display,
+		    	screen,
+		    	"fixed");
+
+
+	if(!(mediumfont_xft = XftFontOpenXlfd(display,
+		  screen,
+		  resources.medium_font_xft)))
+		if(!(mediumfont_xft = XftFontOpenXlfd(display,
+			  screen,
+			  resources.medium_font_xft2)))
+			mediumfont_xft = XftFontOpenXlfd(display,
+		    	screen,
+		    	"fixed");
+
+
+	if(!(smallfont_xft = XftFontOpenXlfd(display,
+	      screen,
+	      resources.small_font_xft)))
+		if(!(smallfont_xft = XftFontOpenXlfd(display,
+	    	  screen,
+	    	  resources.small_font_xft2)))
+			  smallfont_xft = XftFontOpenXlfd(display,
+		    	  screen,
+		    	  "fixed");
+
+
+// Extension failed to locate fonts
+	if(!largefont_xft || !mediumfont_xft || !smallfont_xft)
+	{
+		printf("BC_WindowBase::init_fonts: no xft fonts found %s=%p %s=%p %s=%p\n",
+			resources.large_font_xft,
+			largefont_xft,
+			resources.medium_font_xft,
+			mediumfont_xft,
+			resources.small_font_xft,
+			smallfont_xft);
+		get_resources()->use_xft = 0;
+	}
+#endif
+}
 
 
 int BC_WindowBase::get_color(int64_t color) 

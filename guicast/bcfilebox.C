@@ -23,7 +23,9 @@ BC_FileBoxRecent::BC_FileBoxRecent(BC_FileBox *filebox, int x, int y)
  : BC_ListBox(x, 
 	y, 
 	250, 
-	200,
+	filebox->get_text_height(MEDIUMFONT) * FILEBOX_HISTORY_SIZE + 
+		BC_ScrollBar::get_span(SCROLL_HORIZ) +
+		LISTBOX_MARGIN * 2,
 	LISTBOX_TEXT, 
 	&filebox->recent_dirs, 
 	0, 
@@ -417,12 +419,13 @@ BC_FileBox::BC_FileBox(int x,
 	1)
 {
 	fs = new FileSystem;
-	if(want_directory)
-	{
-		fs->set_want_directory();
-		columns = DIRBOX_COLUMNS;
-	}
-	else
+// 	if(want_directory)
+// 	{
+// 		fs->set_want_directory();
+// 		columns = DIRBOX_COLUMNS;
+// 		columns = FILEBOX_COLUMNS;
+// 	}
+// 	else
 	{
 		columns = FILEBOX_COLUMNS;
 	}
@@ -447,18 +450,18 @@ BC_FileBox::BC_FileBox(int x,
 	fs->extract_name(filename, this->current_path);
 
 
-	if(want_directory)
-	{
-		for(int i = 0; i < columns; i++)
-		{
-			column_type[i] = get_resources()->dirbox_columntype[i];
-			column_width[i] = get_resources()->dirbox_columnwidth[i];
-			column_titles[i] = BC_FileBox::columntype_to_text(column_type[i]);
-		}
-		sort_column = get_resources()->dirbox_sortcolumn;
-		sort_order = get_resources()->dirbox_sortorder;
-	}
-	else
+// 	if(want_directory)
+// 	{
+// 		for(int i = 0; i < columns; i++)
+// 		{
+// 			column_type[i] = get_resources()->dirbox_columntype[i];
+// 			column_width[i] = get_resources()->dirbox_columnwidth[i];
+// 			column_titles[i] = BC_FileBox::columntype_to_text(column_type[i]);
+// 		}
+// 		sort_column = get_resources()->dirbox_sortcolumn;
+// 		sort_order = get_resources()->dirbox_sortorder;
+// 	}
+// 	else
 	{
 		for(int i = 0; i < columns; i++)
 		{
@@ -483,6 +486,11 @@ BC_FileBox::BC_FileBox(int x,
 	}
 
 
+	if(h_padding == -1)
+	{
+		h_padding = BC_WindowBase::get_resources()->ok_images[0]->get_h() - 
+			20;
+	}
 	this->h_padding = h_padding;
 	delete_thread = new BC_DeleteThread(this);
 }
@@ -746,8 +754,8 @@ int BC_FileBox::create_tables()
 		list_column[column_of_type(FILEBOX_NAME)].append(new_item);
 	
 // Size entry
-		if(!want_directory)
-		{
+// 		if(!want_directory)
+// 		{
 			if(!is_dir)
 			{
 				sprintf(string, "%lld", file_item->size);
@@ -759,7 +767,7 @@ int BC_FileBox::create_tables()
 			}
 
 	 		list_column[column_of_type(FILEBOX_SIZE)].append(new_item);
-		}
+//		}
 
 // Date entry
 		if(!is_dir || 1)
@@ -979,8 +987,10 @@ int BC_FileBox::submit_dir(char *dir)
 
 int BC_FileBox::submit_file(char *path, int use_this)
 {
-// blank.  Take the current directory as the desired file.
-	if(!path[0])
+// blank.  
+// If file wanted, take the current directory as the desired file.
+// If directory wanted, ignore it.
+	if(!path[0] && !want_directory)
 	{
 // save complete path
 		strcpy(this->current_path, directory);
@@ -994,7 +1004,7 @@ int BC_FileBox::submit_file(char *path, int use_this)
 	}
 
 // is a directory, change directories
-	if(!fs->is_dir(path) && !use_this)
+	if(fs->is_dir(path) && !use_this)
 	{
 		fs->change_dir(path);
 		refresh();
@@ -1016,7 +1026,17 @@ int BC_FileBox::submit_file(char *path, int use_this)
 // save directory for defaults
 		fs->extract_dir(directory, path);     
 
+// Just take the directory
+		if(want_directory)
+		{
+			filename[0] = 0;
+			strcpy(path, directory);
+		}
+		else
+// Take the complete path
+		{
 		fs->extract_name(filename, path);     // save filename
+		}
 
 		fs->complete_path(path);
 		strcpy(this->current_path, path);          // save complete path
@@ -1174,7 +1194,7 @@ void BC_FileBox::delete_files()
 	while((path = get_path(i)))
 	{
 // Not directory.  Remove it.
-		if(fs.is_dir(path))
+		if(!fs.is_dir(path))
 		{
 printf("BC_FileBox::delete_files: removing \"%s\"\n", path);
 			remove(path);

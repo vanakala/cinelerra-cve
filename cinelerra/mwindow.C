@@ -226,7 +226,7 @@ void MWindow::init_plugin_path(Preferences *preferences,
 			strcpy(path, fs->dir_list.values[i]->path);
 
 // File is a directory
-			if(!fs->is_dir(path))
+			if(fs->is_dir(path))
 			{
 				continue;
 			}
@@ -483,7 +483,7 @@ void MWindow::clean_indexes()
 		for(int i = 0; i < fs.dir_list.total && !result; i++)
 		{
 			fs.join_names(string, preferences->index_directory, fs.dir_list.values[i]->name);
-			if(!fs.is_dir(string))
+			if(fs.is_dir(string))
 			{
 				delete fs.dir_list.values[i];
 				fs.dir_list.remove_number(i);
