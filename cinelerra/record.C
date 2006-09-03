@@ -140,20 +140,16 @@ int Record::load_defaults()
 	char string[BCTEXTLEN];
 	BC_Hash *defaults = mwindow->defaults;
 
-// Load default asset
-	default_asset->load_defaults(defaults, 
-		"RECORD_", 
-		1,
-		1,
-		1,
-		1,
-		1);
-
-
-
-
-
-
+// Load file format
+// 	default_asset->load_defaults(defaults, 
+// 		"RECORD_", 
+// 		1,
+// 		1,
+// 		1,
+// 		1,
+// 		1);
+// This reads back everything that was saved in save_defaults.
+	default_asset->copy_from(mwindow->edl->session->recording_format, 0);
 	default_asset->sample_rate = mwindow->edl->session->aconfig_in->in_samplerate;
 	default_asset->frame_rate = mwindow->edl->session->vconfig_in->in_framerate;
 	default_asset->width = mwindow->edl->session->vconfig_in->w;
@@ -235,14 +231,26 @@ int Record::save_defaults()
 	BC_Hash *defaults = mwindow->defaults;
 	editing_batch = 0;
 
-// Save default asset
+// Save default asset path but not the format because that's
+// overridden by the driver.
+// The format is saved in preferences.
+	if(batches.total)
+		strcpy(default_asset->path, batches.values[0]->assets.values[0]->path);
 	default_asset->save_defaults(defaults,
 		"RECORD_",
-		1,
-		!fixed_compression,
-		1,
-		1,
-		1);
+		0,
+		0,
+		0,
+		0,
+		0);
+
+// 	default_asset->save_defaults(defaults,
+// 		"RECORD_",
+// 		1,
+// 		!fixed_compression,
+// 		1,
+// 		1,
+// 		1);
 
 	defaults->update("RECORD_CHANNELS", default_asset->channels);
 
@@ -466,6 +474,8 @@ SET_TRACE
 		window_lock->unlock();
 
 		result = record_gui->run_window();
+// Must unlock to stop operation
+		record_gui->unlock_window();
 
 // Force monitor to quit without resuming
 		if(monitor_engine->record_video) 
@@ -474,7 +484,12 @@ SET_TRACE
 			monitor_engine->record_audio->batch_done = 1;
 
 SET_TRACE
-		stop_operation(0);
+//		stop_operation(0);
+// Need to stop everything this time
+		monitor_engine->stop_recording(0);
+SET_TRACE
+		record_engine->stop_recording(0);
+SET_TRACE
 
 		close_output_file();
 SET_TRACE
@@ -487,6 +502,12 @@ SET_TRACE
 SET_TRACE
 
 
+		delete record_engine;
+		record_engine = 0;
+SET_TRACE
+
+		delete monitor_engine;
+		monitor_engine = 0;
 
 SET_TRACE
 		record_gui->save_defaults();
@@ -711,7 +732,7 @@ int Record::open_output_file()
 			mwindow->sighandler->push_file(file);
 			IndexFile::delete_index(mwindow->preferences, 
 				batch->get_current_asset());
-			file->set_processors(mwindow->preferences->processors);
+			file->set_processors(mwindow->preferences->real_processors);
 			batch->calculate_news();
 			record_gui->lock_window("Record::open_output_file");
 			record_gui->update_batches();

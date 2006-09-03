@@ -1084,6 +1084,82 @@ void Asset::save_defaults(BC_Hash *defaults,
 	{
 		UPDATE_DEFAULT("AUDIO_CODEC", acodec);
 		UPDATE_DEFAULT("VIDEO_CODEC", vcodec);
+
+		UPDATE_DEFAULT("AMPEG_BITRATE", ampeg_bitrate);
+		UPDATE_DEFAULT("AMPEG_DERIVATIVE", ampeg_derivative);
+
+		UPDATE_DEFAULT("VORBIS_VBR", vorbis_vbr);
+		UPDATE_DEFAULT("VORBIS_MIN_BITRATE", vorbis_min_bitrate);
+		UPDATE_DEFAULT("VORBIS_BITRATE", vorbis_bitrate);
+		UPDATE_DEFAULT("VORBIS_MAX_BITRATE", vorbis_max_bitrate);
+
+
+		UPDATE_DEFAULT("THEORA_FIX_BITRATE", theora_fix_bitrate);
+		UPDATE_DEFAULT("THEORA_BITRATE", theora_bitrate);
+		UPDATE_DEFAULT("THEORA_QUALITY", theora_quality);
+		UPDATE_DEFAULT("THEORA_SHARPNESS", theora_sharpness);
+		UPDATE_DEFAULT("THEORA_KEYFRAME_FREQUENCY", theora_keyframe_frequency);
+		UPDATE_DEFAULT("THEORA_FORCE_KEYFRAME_FEQUENCY", theora_keyframe_force_frequency);
+
+
+
+		UPDATE_DEFAULT("MP3_BITRATE", mp3_bitrate);
+		UPDATE_DEFAULT("MP4A_BITRATE", mp4a_bitrate);
+		UPDATE_DEFAULT("MP4A_QUANTQUAL", mp4a_quantqual);
+
+
+
+
+
+		UPDATE_DEFAULT("JPEG_QUALITY", jpeg_quality);
+		UPDATE_DEFAULT("ASPECT_RATIO", aspect_ratio);
+
+// MPEG format information
+		UPDATE_DEFAULT("VMPEG_IFRAME_DISTANCE", vmpeg_iframe_distance);
+		UPDATE_DEFAULT("VMPEG_PFRAME_DISTANCE", vmpeg_pframe_distance);
+		UPDATE_DEFAULT("VMPEG_PROGRESSIVE", vmpeg_progressive);
+		UPDATE_DEFAULT("VMPEG_DENOISE", vmpeg_denoise);
+		UPDATE_DEFAULT("VMPEG_BITRATE", vmpeg_bitrate);
+		UPDATE_DEFAULT("VMPEG_DERIVATIVE", vmpeg_derivative);
+		UPDATE_DEFAULT("VMPEG_QUANTIZATION", vmpeg_quantization);
+		UPDATE_DEFAULT("VMPEG_CMODEL", vmpeg_cmodel);
+		UPDATE_DEFAULT("VMPEG_FIX_BITRATE", vmpeg_fix_bitrate);
+		UPDATE_DEFAULT("VMPEG_SEQ_CODES", vmpeg_seq_codes);
+		UPDATE_DEFAULT("VMPEG_PRESET", vmpeg_preset);
+		UPDATE_DEFAULT("VMPEG_FIELD_ORDER", vmpeg_field_order);
+
+		UPDATE_DEFAULT("H264_BITRATE", h264_bitrate);
+		UPDATE_DEFAULT("H264_QUANTIZER", h264_quantizer);
+		UPDATE_DEFAULT("H264_FIX_BITRATE", h264_fix_bitrate);
+
+		UPDATE_DEFAULT("DIVX_BITRATE", divx_bitrate);
+		UPDATE_DEFAULT("DIVX_RC_PERIOD", divx_rc_period);
+		UPDATE_DEFAULT("DIVX_RC_REACTION_RATIO", divx_rc_reaction_ratio);
+		UPDATE_DEFAULT("DIVX_RC_REACTION_PERIOD", divx_rc_reaction_period);
+		UPDATE_DEFAULT("DIVX_MAX_KEY_INTERVAL", divx_max_key_interval);
+		UPDATE_DEFAULT("DIVX_MAX_QUANTIZER", divx_max_quantizer);
+		UPDATE_DEFAULT("DIVX_MIN_QUANTIZER", divx_min_quantizer);
+		UPDATE_DEFAULT("DIVX_QUANTIZER", divx_quantizer);
+		UPDATE_DEFAULT("DIVX_QUALITY", divx_quality);
+		UPDATE_DEFAULT("DIVX_FIX_BITRATE", divx_fix_bitrate);
+		UPDATE_DEFAULT("DIVX_USE_DEBLOCKING", divx_use_deblocking);
+
+
+		UPDATE_DEFAULT("MS_BITRATE", ms_bitrate);
+		UPDATE_DEFAULT("MS_BITRATE_TOLERANCE", ms_bitrate_tolerance);
+		UPDATE_DEFAULT("MS_INTERLACED", ms_interlaced);
+		UPDATE_DEFAULT("MS_QUANTIZATION", ms_quantization);
+		UPDATE_DEFAULT("MS_GOP_SIZE", ms_gop_size);
+		UPDATE_DEFAULT("MS_FIX_BITRATE", ms_fix_bitrate);
+
+		UPDATE_DEFAULT("AC3_BITRATE", ac3_bitrate);
+
+
+		UPDATE_DEFAULT("PNG_USE_ALPHA", png_use_alpha);
+		UPDATE_DEFAULT("EXR_USE_ALPHA", exr_use_alpha);
+		UPDATE_DEFAULT("EXR_COMPRESSION", exr_compression);
+		UPDATE_DEFAULT("TIFF_CMODEL", tiff_cmodel);
+		UPDATE_DEFAULT("TIFF_COMPRESSION", tiff_compression);
 	}
 
 	if(do_bits)
@@ -1093,90 +1169,6 @@ void Asset::save_defaults(BC_Hash *defaults,
 		UPDATE_DEFAULT("SIGNED", signed_);
 		UPDATE_DEFAULT("BYTE_ORDER", byte_order);
 	}
-
-	UPDATE_DEFAULT("AMPEG_BITRATE", ampeg_bitrate);
-	UPDATE_DEFAULT("AMPEG_DERIVATIVE", ampeg_derivative);
-
-	UPDATE_DEFAULT("VORBIS_VBR", vorbis_vbr);
-	UPDATE_DEFAULT("VORBIS_MIN_BITRATE", vorbis_min_bitrate);
-	UPDATE_DEFAULT("VORBIS_BITRATE", vorbis_bitrate);
-	UPDATE_DEFAULT("VORBIS_MAX_BITRATE", vorbis_max_bitrate);
-
-
-	UPDATE_DEFAULT("THEORA_FIX_BITRATE", theora_fix_bitrate);
-	UPDATE_DEFAULT("THEORA_BITRATE", theora_bitrate);
-	UPDATE_DEFAULT("THEORA_QUALITY", theora_quality);
-	UPDATE_DEFAULT("THEORA_SHARPNESS", theora_sharpness);
-	UPDATE_DEFAULT("THEORA_KEYFRAME_FREQUENCY", theora_keyframe_frequency);
-	UPDATE_DEFAULT("THEORA_FORCE_KEYFRAME_FEQUENCY", theora_keyframe_force_frequency);
-
-
-
-	UPDATE_DEFAULT("MP3_BITRATE", mp3_bitrate);
-	UPDATE_DEFAULT("MP4A_BITRATE", mp4a_bitrate);
-	UPDATE_DEFAULT("MP4A_QUANTQUAL", mp4a_quantqual);
-
-
-
-
-
-	UPDATE_DEFAULT("JPEG_QUALITY", jpeg_quality);
-	UPDATE_DEFAULT("ASPECT_RATIO", aspect_ratio);
-
-
-// MPEG format information
-	UPDATE_DEFAULT("VMPEG_IFRAME_DISTANCE", vmpeg_iframe_distance);
-	UPDATE_DEFAULT("VMPEG_PFRAME_DISTANCE", vmpeg_pframe_distance);
-	UPDATE_DEFAULT("VMPEG_PROGRESSIVE", vmpeg_progressive);
-	UPDATE_DEFAULT("VMPEG_DENOISE", vmpeg_denoise);
-	UPDATE_DEFAULT("VMPEG_BITRATE", vmpeg_bitrate);
-	UPDATE_DEFAULT("VMPEG_DERIVATIVE", vmpeg_derivative);
-	UPDATE_DEFAULT("VMPEG_QUANTIZATION", vmpeg_quantization);
-	UPDATE_DEFAULT("VMPEG_CMODEL", vmpeg_cmodel);
-	UPDATE_DEFAULT("VMPEG_FIX_BITRATE", vmpeg_fix_bitrate);
-	UPDATE_DEFAULT("VMPEG_SEQ_CODES", vmpeg_seq_codes);
-	UPDATE_DEFAULT("VMPEG_PRESET", vmpeg_preset);
-	UPDATE_DEFAULT("VMPEG_FIELD_ORDER", vmpeg_field_order);
-
-	UPDATE_DEFAULT("H264_BITRATE", h264_bitrate);
-	UPDATE_DEFAULT("H264_QUANTIZER", h264_quantizer);
-	UPDATE_DEFAULT("H264_FIX_BITRATE", h264_fix_bitrate);
-
-	UPDATE_DEFAULT("DIVX_BITRATE", divx_bitrate);
-	UPDATE_DEFAULT("DIVX_RC_PERIOD", divx_rc_period);
-	UPDATE_DEFAULT("DIVX_RC_REACTION_RATIO", divx_rc_reaction_ratio);
-	UPDATE_DEFAULT("DIVX_RC_REACTION_PERIOD", divx_rc_reaction_period);
-	UPDATE_DEFAULT("DIVX_MAX_KEY_INTERVAL", divx_max_key_interval);
-	UPDATE_DEFAULT("DIVX_MAX_QUANTIZER", divx_max_quantizer);
-	UPDATE_DEFAULT("DIVX_MIN_QUANTIZER", divx_min_quantizer);
-	UPDATE_DEFAULT("DIVX_QUANTIZER", divx_quantizer);
-	UPDATE_DEFAULT("DIVX_QUALITY", divx_quality);
-	UPDATE_DEFAULT("DIVX_FIX_BITRATE", divx_fix_bitrate);
-	UPDATE_DEFAULT("DIVX_USE_DEBLOCKING", divx_use_deblocking);
-
-	UPDATE_DEFAULT("THEORA_FIX_BITRATE", theora_fix_bitrate);
-	UPDATE_DEFAULT("THEORA_BITRATE", theora_bitrate);
-	UPDATE_DEFAULT("THEORA_QUALITY", theora_quality);
-	UPDATE_DEFAULT("THEORA_SHARPNESS", theora_sharpness);
-	UPDATE_DEFAULT("THEORA_KEYFRAME_FREQUENCY", theora_keyframe_frequency);
-	UPDATE_DEFAULT("THEORA_FORCE_KEYFRAME_FEQUENCY", theora_keyframe_force_frequency);
-
-
-	UPDATE_DEFAULT("MS_BITRATE", ms_bitrate);
-	UPDATE_DEFAULT("MS_BITRATE_TOLERANCE", ms_bitrate_tolerance);
-	UPDATE_DEFAULT("MS_INTERLACED", ms_interlaced);
-	UPDATE_DEFAULT("MS_QUANTIZATION", ms_quantization);
-	UPDATE_DEFAULT("MS_GOP_SIZE", ms_gop_size);
-	UPDATE_DEFAULT("MS_FIX_BITRATE", ms_fix_bitrate);
-
-	UPDATE_DEFAULT("AC3_BITRATE", ac3_bitrate);
-
-
-	UPDATE_DEFAULT("PNG_USE_ALPHA", png_use_alpha);
-	UPDATE_DEFAULT("EXR_USE_ALPHA", exr_use_alpha);
-	UPDATE_DEFAULT("EXR_COMPRESSION", exr_compression);
-	UPDATE_DEFAULT("TIFF_CMODEL", tiff_cmodel);
-	UPDATE_DEFAULT("TIFF_COMPRESSION", tiff_compression);
 
 	UPDATE_DEFAULT("REEL_NAME", reel_name);
 	UPDATE_DEFAULT("REEL_NUMBER", reel_number);

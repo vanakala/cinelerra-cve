@@ -307,6 +307,8 @@ int RecordMonitorGUI::create_objects()
 			background_done = 1;
 		}
 
+		mwindow->theme->rmonitor_canvas_w = MAX(10, mwindow->theme->rmonitor_canvas_w);
+		mwindow->theme->rmonitor_canvas_h = MAX(10, mwindow->theme->rmonitor_canvas_h);
 		canvas = new RecordMonitorCanvas(mwindow, 
 			this,
 			record, 
@@ -807,7 +809,7 @@ RecordMonitorThread::RecordMonitorThread(MWindow *mwindow,
 void RecordMonitorThread::reset_parameters()
 {
 	input_frame = 0;
-	output_frame[0] = 0;
+	output_frame = 0;
 	shared_data = 0;
 	jpeg_engine = 0;
 	dv_engine = 0;

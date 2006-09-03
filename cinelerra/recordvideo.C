@@ -39,12 +39,24 @@ RecordVideo::RecordVideo(MWindow *mwindow,
 	this->gui = record->record_gui;
 	unhang_lock = new Mutex("RecordVideo::unhang_lock");
 	trigger_lock = new Condition(1, "RecordVideo::trigger_lock");
+	capture_frame = 0;
+	frame_ptr = 0;
 }
 
 RecordVideo::~RecordVideo()
 {
 	delete unhang_lock;
 	delete trigger_lock;
+// These objects are shared with the file if recording.
+	if(record_thread->monitor)
+	{
+		if(frame_ptr)
+		{
+			if(frame_ptr[0]) delete [] frame_ptr[0];
+			delete [] frame_ptr;
+		}
+		delete capture_frame;
+	}
 }
 
 void RecordVideo::reset_parameters()
@@ -96,6 +108,7 @@ int RecordVideo::stop_recording()
 			cleanup_recording();
 		}
 	}
+// Joined in RecordThread
 	return 0;
 }
 
@@ -110,14 +123,17 @@ int RecordVideo::cleanup_recording()
 	}
 	else
 	{
-		delete [] frame_ptr[0];
-		delete [] frame_ptr;
-		delete capture_frame;
+// RecordMonitorThread still needs capture_frame if uncompressed.
+// 		delete [] frame_ptr[0];
+// 		delete [] frame_ptr;
+// 		delete capture_frame;
 	}
 	return 0;
 }
 
 void RecordVideo::get_capture_frame()
+{
+	if(!capture_frame)
 {
 	if(record->fixed_compression)
 	{
@@ -134,6 +150,7 @@ void RecordVideo::get_capture_frame()
 	frame_ptr = new VFrame**[1];
 	frame_ptr[0] = new VFrame*[1];
 	frame_ptr[0][0] = capture_frame;
+	}
 }
 
 

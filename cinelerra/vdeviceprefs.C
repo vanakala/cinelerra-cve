@@ -5,6 +5,7 @@
 #endif
 #include "edl.h"
 #include "edlsession.h"
+#include "formattools.h"
 #include "language.h"
 #include "mwindow.h"
 #include "vdeviceprefs.h"
@@ -14,6 +15,7 @@
 #include "preferences.h"
 #include "preferencesthread.h"
 #include "recordconfig.h"
+#include "recordprefs.h"
 #include <string.h>
 
 
@@ -63,9 +65,12 @@ void VDevicePrefs::reset_objects()
 	firewire_syt = 0;
 	firewire_path = 0;
 
+	buz_swap_channels = 0;
+	output_title = 0;
+	channel_picker = 0;
 }
 
-int VDevicePrefs::initialize()
+int VDevicePrefs::initialize(int creation)
 {
 	int *driver = 0;
 	delete_objects();
@@ -126,30 +131,33 @@ int VDevicePrefs::initialize()
 			create_firewire_objs();
 			break;
 	}
+
+
+
+// Update driver dependancies in file format
+	if(mode == MODERECORD && dialog && !creation)
+	{
+		RecordPrefs *record_prefs = (RecordPrefs*)dialog;
+		record_prefs->recording_format->update_driver(this->driver);
+	}
+
 	return 0;
 }
-
-
-
 
 int VDevicePrefs::delete_objects()
 {
 SET_TRACE
-	switch(driver)
-	{
-		case PLAYBACK_LML:
-		case PLAYBACK_BUZ:
-			delete output_title;
-			delete channel_picker;
-			delete buz_swap_channels;
-			break;
-	}
+		delete output_title;
+SET_TRACE
+	delete channel_picker;
+SET_TRACE
+	delete buz_swap_channels;
+SET_TRACE
+	delete device_title;
+	delete device_text;
 
-
-	
-	if(device_text) delete device_text;
-
-	if(port_title) delete port_title;
+	delete port_title;
+SET_TRACE
 SET_TRACE
 	if(firewire_port) delete firewire_port;
 SET_TRACE
@@ -157,8 +165,6 @@ SET_TRACE
 SET_TRACE
 	if(firewire_channel) delete firewire_channel;
 SET_TRACE
-SET_TRACE
-	if(device_title) delete device_title;
 SET_TRACE
 	if(firewire_path) delete firewire_path;
 SET_TRACE

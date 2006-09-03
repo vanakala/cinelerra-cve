@@ -1,3 +1,4 @@
+#include "asset.h"
 #include "assets.h"
 #include "autoconf.h"
 #include "colormodels.h"
@@ -21,6 +22,7 @@ EDLSession::EDLSession(EDL *edl)
 	aconfig_in = new AudioInConfig;
 	aconfig_duplex = new AudioOutConfig(1);
 	vconfig_in = new VideoInConfig;
+	recording_format = new Asset;
 	interpolation_type = CUBIC_LINEAR;
 	test_playback_edits = 1;
 	brender_start = 0.0;
@@ -299,6 +301,13 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("RECORD_SYNC_DRIVES", record_sync_drives);
 	defaults->update("RECORD_SPEED", record_speed);  // Full lockup on anything higher
 	defaults->update("RECORD_WRITE_LENGTH", record_write_length); // Heroine kernel 2.2 scheduling sucks.
+	recording_format->save_defaults(defaults,
+		"RECORD_",
+		1,
+		1,
+		1,
+		1,
+		1);
 	defaults->update("SAFE_REGIONS", safe_regions);
 	defaults->update("SAMPLERATE", sample_rate);
     defaults->update("SCRUB_SPEED", scrub_speed);
@@ -679,6 +688,7 @@ int EDLSession::copy(EDLSession *session)
 	record_speed = session->record_speed;
 	record_sync_drives = session->record_sync_drives;
 	record_write_length = session->record_write_length;
+	recording_format->copy_from(session->recording_format, 0);
 	safe_regions = session->safe_regions;
 	sample_rate = session->sample_rate;
 	scrub_speed = session->scrub_speed;

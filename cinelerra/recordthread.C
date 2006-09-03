@@ -40,6 +40,10 @@ RecordThread::RecordThread(MWindow *mwindow, Record *record)
 RecordThread::~RecordThread()
 {
 SET_TRACE
+	delete record_audio;
+SET_TRACE
+	delete record_video;
+SET_TRACE
 	delete record_timer;
 SET_TRACE
 	delete pause_lock;
@@ -91,6 +95,10 @@ SET_TRACE
 	state_lock->lock("RecordThread::stop_recording");
 
 	engine_done = 1;
+	if(monitor)
+	{
+		pause_lock->unlock();
+	}
 
 SET_TRACE
 	this->resume_monitor = resume_monitor;

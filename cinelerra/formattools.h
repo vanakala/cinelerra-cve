@@ -43,6 +43,11 @@ public:
 						int recording, // Change captions for recording
 						int *strategy,  // If nonzero, prompt for insertion strategy
 						int brender); // Supply file formats for background rendering
+// In recording preferences, aspects of the format are locked 
+// depending on the driver used.
+	void update_driver(int driver);
+
+
 	void reposition_window(int &init_x, int &init_y);
 // Put new asset's parameters in and change asset.
 	void update(Asset *asset, int *strategy);
@@ -97,6 +102,8 @@ public:
 	int prompt_video_compression;
 	int *strategy;
 	int w;
+// Determines what the configuration buttons do.
+	int video_driver;
 };
 
 

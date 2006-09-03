@@ -6,7 +6,9 @@
 #include "maxchannels.h"
 #include "mwindow.h"
 #include "preferences.h"
+#include "quicktime.h"
 #include "theme.h"
+#include "videodevice.inc"
 #include <string.h>
 #include "pipe.h"
 
@@ -22,6 +24,8 @@ FormatTools::FormatTools(MWindow *mwindow,
 
 	aparams_thread = 0;
 	vparams_thread = 0;
+	path_textbox = 0;
+	path_button = 0;
 	w = 0;
 }
 
@@ -82,36 +86,41 @@ int FormatTools::create_objects(int &init_x,
 	}
 
 //printf("FormatTools::create_objects 1\n");
-	window->add_subwindow(path_textbox = new FormatPathText(x, y, this));
-	x += 300;
-	path_recent = new BC_RecentList("PATH", mwindow->defaults,
+	if(!recording)
+	{
+		window->add_subwindow(path_textbox = new FormatPathText(x, y, this));
+		x += 305;
+		path_recent = new BC_RecentList("PATH", mwindow->defaults,
 					path_textbox, 10, x, y, 300, 100);
-	window->add_subwindow(path_recent);
-	path_recent->load_items(FILE_FORMAT_PREFIX(asset->format));
+		window->add_subwindow(path_recent);
+		path_recent->load_items(FILE_FORMAT_PREFIX(asset->format));
 
-	x += 18;
-	window->add_subwindow(path_button = new BrowseButton(
-		mwindow,
-		window,
-		path_textbox, 
-		x, 
-		y - 4, 
-		asset->path,
-		_("Output to file"),
-		_("Select a file to write to:"),
-		0));
+		x += 18;
+		window->add_subwindow(path_button = new BrowseButton(
+			mwindow,
+			window,
+			path_textbox, 
+			x, 
+			y, 
+			asset->path,
+			_("Output to file"),
+			_("Select a file to write to:"),
+			0));
 
-	w = x + path_button->get_w() + 5;
-//printf("FormatTools::create_objects 2\n");
-	x -= 305;
+// Set w for user.
+		w = x + path_button->get_w() + 5;
+		x -= 305;
 
-	y += 25;
+		y += 25;
 
-	pipe_status = new PipeStatus(x, y, "");
-	window->add_subwindow(pipe_status);
-	pipe_status->set_status(asset);
-       	
-	y += 25;
+		pipe_status = new PipeStatus(x, y, "");
+		window->add_subwindow(pipe_status);
+		pipe_status->set_status(asset);
+
+		y += 35;
+	}
+	else
+		w = x + 305;
 
 	window->add_subwindow(format_title = new BC_Title(x, y, _("File Format:")));
 	x += 90;
@@ -201,6 +210,52 @@ int FormatTools::create_objects(int &init_x,
 	return 0;
 }
 
+void FormatTools::update_driver(int driver)
+{
+	this->video_driver = driver;
+
+	switch(driver)
+	{
+		case CAPTURE_IEC61883:
+		case CAPTURE_FIREWIRE:
+			if(asset->format != FILE_AVI &&
+				asset->format != FILE_MOV)
+			{
+				format_text->update(MOV_NAME);
+				asset->format = FILE_MOV;
+			}
+			else
+				format_text->update(File::formattostr(asset->format));
+			strcpy(asset->vcodec, QUICKTIME_DVSD);
+			audio_switch->update(asset->audio_data);
+			video_switch->update(asset->video_data);
+			break;
+
+		case CAPTURE_BUZ:
+		case VIDEO4LINUX2JPEG:
+			if(asset->format != FILE_AVI &&
+				asset->format != FILE_MOV)
+			{
+				format_text->update(MOV_NAME);
+				asset->format = FILE_MOV;
+			}
+			else
+				format_text->update(File::formattostr(asset->format));
+			audio_switch->update(asset->audio_data);
+			video_switch->update(asset->video_data);
+			break;
+
+		default:
+			format_text->update(File::formattostr(asset->format));
+			audio_switch->update(asset->audio_data);
+			video_switch->update(asset->video_data);
+			break;
+	}
+	close_format_windows();
+}
+
+
+
 int FormatTools::handle_event()
 {
 	return 0;
@@ -241,7 +296,8 @@ void FormatTools::update(Asset *asset, int *strategy)
 	this->asset = asset;
 	this->strategy = strategy;
 
-	path_textbox->update(asset->path);
+	if(path_textbox) 
+		path_textbox->update(asset->path);
 	format_text->update(File::formattostr(plugindb, asset->format));
 	if(do_audio && audio_switch) audio_switch->update(asset->audio_data);
 	if(do_video && video_switch) video_switch->update(asset->video_data);
@@ -268,11 +324,15 @@ void FormatTools::reposition_window(int &init_x, int &init_y)
 	int x = init_x;
 	int y = init_y;
 
-	path_textbox->reposition_window(x, y);
-	x += 305;
-	path_button->reposition_window(x, y);
-	x -= 305;
-	y += 35;
+	if(path_textbox) 
+	{
+		path_textbox->reposition_window(x, y);
+		x += 305;
+		path_button->reposition_window(x, y);
+		x -= 305;
+		y += 35;
+	}
+
 	format_title->reposition_window(x, y);
 	x += 90;
 	format_text->reposition_window(x, y);

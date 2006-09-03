@@ -9,6 +9,7 @@ class RecordWriteLength;
 class RecordRealTime;
 
 #include "adeviceprefs.inc"
+#include "formattools.inc"
 #include "mwindow.inc"
 #include "preferencesthread.h"
 #include "recordprefs.inc"
@@ -22,6 +23,7 @@ public:
 
 	int create_objects();
 
+	FormatTools *recording_format;
 	ADevicePrefs *in_device /*, *duplex_device */;
 	VDevicePrefs *video_in_device;
 	MWindow *mwindow;

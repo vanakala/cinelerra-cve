@@ -159,6 +159,7 @@ public:
 // Recording
 	int video_channels;
 	VideoInConfig *vconfig_in;
+	Asset *recording_format;
 // play every frame
 	int video_every_frame;  
 	int video_tracks;

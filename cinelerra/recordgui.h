@@ -36,7 +36,7 @@ class RecordGUIMode;
 class RecordGUIOK;
 class RecordGUIReset;
 class RecordStartoverThread;
-class RecordCancelThread;
+class EndRecordThread;
 
 #include "browsebutton.inc"
 #include "condition.inc"
@@ -109,7 +109,7 @@ public:
 	RecordGUIMonitorVideo *monitor_video;
 	RecordGUIMonitorAudio *monitor_audio;
 	RecordStartoverThread *startover_thread;
-	RecordCancelThread *cancel_thread;
+	EndRecordThread *interrupt_thread;
 	static char *batch_titles[BATCH_COLUMNS];
 	int column_widths[BATCH_COLUMNS];
 	LoadMode *load_mode;
@@ -212,12 +212,21 @@ public:
 };
 
 
-class RecordGUICancel : public BC_Button
+class RecordGUICancel : public BC_CancelButton
 {
 public:
 	RecordGUICancel(Record *record, RecordGUI *record_gui);
 	int handle_event();
 	int keypress_event();
+	RecordGUI *gui;
+	Record *record;
+};
+
+class RecordGUIOK : public BC_OKButton
+{
+public:
+	RecordGUIOK(Record *record, RecordGUI *record_gui);
+	int handle_event();
 	RecordGUI *gui;
 	Record *record;
 };
@@ -263,16 +272,20 @@ public:
 	Record *record;
 };
 
-class RecordCancelThread : public Thread
+class EndRecordThread : public Thread
 {
 public:
-	RecordCancelThread(Record *record, RecordGUI *record_gui);
-	~RecordCancelThread();
+	EndRecordThread(Record *record, RecordGUI *record_gui);
+	~EndRecordThread();
+
+	void start(int is_ok);
 	void run();
 
 	RecordGUI *gui;
 	Record *record;
 	QuestionWindow *window;
+// OK Button was pressed
+	int is_ok;
 };
 
 class RecordStartoverThread : public Thread
@@ -454,15 +467,6 @@ public:
 
 
 
-
-class RecordGUIOK : public BC_OKButton
-{
-public:
-	RecordGUIOK(MWindow *mwindow, int y);
-	~RecordGUIOK();
-
-	int handle_event();
-};
 
 
 class RecordGUIModeMenu : public BC_PopupMenu

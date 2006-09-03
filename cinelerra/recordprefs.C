@@ -3,6 +3,7 @@
 #include "clip.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "formattools.h"
 #include "new.h"
 #include "language.h"
 #include "mwindow.h"
@@ -24,6 +25,7 @@ RecordPrefs::RecordPrefs(MWindow *mwindow, PreferencesWindow *pwindow)
 RecordPrefs::~RecordPrefs()
 {
 	delete in_device;
+	delete recording_format;
 //	delete duplex_device;
 }
 
@@ -44,6 +46,28 @@ int RecordPrefs::create_objects()
 		resources->text_default));
 	y += title->get_h() + 5;
 
+	recording_format = 
+		new FormatTools(mwindow,
+			this, 
+			pwindow->thread->edl->session->recording_format);
+	recording_format->create_objects(x, 
+		y, 
+		1,  // Include tools for audio
+		1,  // Include tools for video
+		1,  // Include checkbox for audio
+		1,  // Include checkbox for video
+		0,
+		1,
+		0,  // Select compressors to be offered
+		1,  // Prompt for recording options
+		0,  // If nonzero, prompt for insertion strategy
+		0); // Supply file formats for background rendering
+
+
+
+
+
+
 	add_subwindow(new BC_Title(x, y, _("Record Driver:"), MEDIUMFONT, resources->text_default));
 	in_device = new ADevicePrefs(x + 110, 
 		y, 
@@ -53,7 +77,6 @@ int RecordPrefs::create_objects()
 		pwindow->thread->edl->session->aconfig_in, 
 		MODERECORD);
 	in_device->initialize();
-
 	y += in_device->get_h();
 
 
@@ -106,7 +129,7 @@ int RecordPrefs::create_objects()
 		0, 
 		pwindow->thread->edl->session->vconfig_in, 
 		MODERECORD);
-	video_in_device->initialize();
+	video_in_device->initialize(1);
 
 	y += 55;
 	sprintf(string, "%d", pwindow->thread->edl->session->video_write_length);
