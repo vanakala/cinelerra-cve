@@ -2,6 +2,7 @@
 #define VFRAME_H
 
 #include "arraylist.h"
+#include "bchash.inc"
 #include "bcpbuffer.inc"
 #include "bctexture.inc"
 #include "colormodels.h"
@@ -44,7 +45,7 @@ public:
 
 // Return 1 if the colormodel and dimensions are the same
 // Used by FrameCache
-	int equivalent(VFrame *src);
+	int equivalent(VFrame *src, int test_stacks = 0);
 
 // Reallocate a frame without deleting the class
 	int reallocate(unsigned char *data, 
@@ -243,14 +244,24 @@ public:
 	void push_next_effect(char *name);
 	void pop_next_effect();
 
+// It isn't enough to know the name of the neighboring effects.
+// Relevant configuration parameters must be passed on.
+	BC_Hash* get_params();	
+
+// Compare stacks and params from 2 images and return 1 if equal.
+	int equal_stacks(VFrame *src);
 
 // Copy stacks and params from another frame
 // Replaces the stacks with the src stacks but only updates the params.
 	void copy_stacks(VFrame *src);
+// Updates the params with values from src
+	void copy_params(VFrame *src);
 
 // This clears the stacks and the param table
 	void clear_stacks();
 
+	void dump_stacks();
+	void dump_params();
 
 private:
 
@@ -321,6 +332,7 @@ private:
 
 	ArrayList<char*> prev_effects;
 	ArrayList<char*> next_effects;
+	BC_Hash *params;
 };
 
 

@@ -67,7 +67,7 @@ public:
 	int extract_dir(char *out, const char *in);    // extract the directory from the path
 	int extract_name(char *out, const char *in, int test_dir = 1);	// extract the name from the path
 	int join_names(char *out, char *dir_in, char *name_in);    // combine a directory and filename
-	long get_date(char *filename);        // get the date of the filename modification
+	static int64_t get_date(char *filename);        // get the date of the filename modification
 	static int64_t get_size(char *filename);        // Get the number of bytes in the file.
 	int add_end_slash(char *new_dir);
 	int total_files();

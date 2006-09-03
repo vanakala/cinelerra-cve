@@ -453,11 +453,13 @@ int FileMOV::get_best_colormodel(Asset *asset, int driver)
 			if(match4(asset->vcodec, QUICKTIME_HV60)) return BC_YUV420P;
 			if(match4(asset->vcodec, QUICKTIME_DIVX)) return BC_YUV420P;
 			if(match4(asset->vcodec, QUICKTIME_DVCP)) return BC_YUV422;
+			if(match4(asset->vcodec, QUICKTIME_DVSD)) return BC_YUV422;
 			if(match4(asset->vcodec, QUICKTIME_MP4V)) return BC_YUV420P;
 			if(match4(asset->vcodec, QUICKTIME_H263)) return BC_YUV420P;
 			if(match4(asset->vcodec, QUICKTIME_H264)) return BC_YUV420P;
 			if(match4(asset->vcodec, QUICKTIME_HV64)) return BC_YUV420P;
-			if(match4(asset->vcodec, QUICKTIME_DIV3)) return BC_YUV420P;
+			if(match4(asset->vcodec, QUICKTIME_DIV3) ||
+				match4(asset->vcodec, QUICKTIME_SVQ3)) return BC_YUV420P;
 			break;
 		case PLAYBACK_X11_GL:
 			if(match4(asset->vcodec, QUICKTIME_YUV420) ||
@@ -481,7 +483,7 @@ int FileMOV::get_best_colormodel(Asset *asset, int driver)
 		case PLAYBACK_DV1394:
 		case PLAYBACK_FIREWIRE:
 			if(match4(asset->vcodec, QUICKTIME_DV) || 
-				match4(asset->vcodec, QUICKTIME_DVSD) ||
+				match4(asset->vcodec, QUICKTIME_DVSD) || 
 				match4(asset->vcodec, QUICKTIME_DVCP)) return BC_COMPRESSED;
 			return BC_YUV422P;
 			break;
@@ -1120,6 +1122,9 @@ char* FileMOV::strtocompression(char *string)
 	if(!strcasecmp(string, _(H263_NAME))) return QUICKTIME_H263;
 	if(!strcasecmp(string, _(HV60_NAME))) return QUICKTIME_HV60;
 	if(!strcasecmp(string, _(DIV3_NAME))) return QUICKTIME_DIV3;
+// Students say QUICKTIME_DV is required for compression even though
+// QUICKTIME_DVSD is produced by other software
+//	if(!strcasecmp(string, _(DV_NAME))) return QUICKTIME_DVSD;
 	if(!strcasecmp(string, _(DV_NAME))) return QUICKTIME_DV;
 	if(!strcasecmp(string, _(PNG_NAME))) return QUICKTIME_PNG;
 	if(!strcasecmp(string, _(PNGA_NAME))) return MOV_PNGA;

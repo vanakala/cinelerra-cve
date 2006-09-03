@@ -194,6 +194,7 @@ int VDevicePrefs::create_lml_objs()
 			break;
 	}
 	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Device path:"), MEDIUMFONT, resources->text_default));
+	x1 += device_title->get_w() + 10;
 	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y + 20, output_char));
 	return 0;
 }

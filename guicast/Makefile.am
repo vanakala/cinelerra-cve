@@ -61,7 +61,6 @@ libguicast_la_SOURCES = \
 	errorbox.C \
 	filesystem.C \
 	mutex.C \
-	properties.C \
 	rotateframe.C \
 	sema.C \
 	stringfile.C \
@@ -182,7 +181,6 @@ noinst_HEADERS = \
 	linklist.h \
 	mutex.h \
 	mutex.inc \
-	properties.h \
 	rotateframe.h \
 	rotateframe.inc \
 	sema.h \

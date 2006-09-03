@@ -276,6 +276,9 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 
 	id = get_resources()->get_id();
 
+
+	get_resources()->create_window_lock->lock("BC_WindowBase::create_window");
+
     if(parent_window) top_level = parent_window->top_level;
 
 #ifdef HAVE_LIBXXF86VM
@@ -544,6 +547,8 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 		init_window_shape();
 		if(!hidden) show_window();
 	}
+	get_resources()->create_window_lock->unlock();
+
 	return 0;
 }
 

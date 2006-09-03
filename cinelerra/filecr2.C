@@ -6,7 +6,15 @@
 #include <unistd.h>
 
 // Only allow one instance of the decoder to run simultaneously.
-static Mutex cr2_mutex;
+static Mutex cr2_mutex("cr2_mutex");
+
+extern "C"
+{
+extern char dcraw_info[1024];
+extern float **dcraw_data;
+extern int dcraw_alpha;
+int dcraw_main (int argc, char **argv);
+}
 
 
 FileCR2::FileCR2(Asset *asset, File *file)

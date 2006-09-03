@@ -25,6 +25,7 @@ public:
 
 	friend class BC_WindowBase;
 
+	void reset();
 	void resize(int w, int h);
 	void copy_area(int x, int y, int w, int h, int x2, int y2);
 	int write_drawable(Drawable &pixmap,
@@ -66,6 +67,7 @@ private:
 	void *opaque_xft_draw, *alpha_xft_draw;
 	int w, h;
 	int mode;
+// GC's only used if alpha pixmap
 	GC alpha_gc, copy_gc;
 };
 

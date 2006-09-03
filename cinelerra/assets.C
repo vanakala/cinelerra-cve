@@ -131,9 +131,9 @@ Asset* Assets::update(Asset *asset)
 
 int Assets::delete_all()
 {
-	while(last)
+	while(first) 
 	{
-		remove(last);
+		remove_asset(first);
 	}
 	return 0;
 }

@@ -304,6 +304,8 @@ public:
 	int recursive_resizing;
 // Work around X server bugs
 	int use_xvideo;
+// Seems to help if only 1 window is created at a time.
+	Mutex *create_window_lock;
 
 private:
 // Test for availability of shared memory pixmaps

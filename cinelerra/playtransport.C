@@ -240,11 +240,13 @@ void PlayTransport::goto_end()
 
 void PlayTransport::handle_transport(int command, 
 	int wait_tracking,
-	int use_inout)
+	int use_inout,
+	int update_refresh)
 {
 	if(!get_edl()) return;
 
-
+// Stop requires transferring the output buffer to a refresh buffer.
+	int do_stop = 0;
 //printf("PlayTransport::handle_transport 1 %d\n", command);
 	int prev_command = engine->command->command;
 	int prev_direction = engine->command->get_direction();
@@ -262,24 +264,18 @@ void PlayTransport::handle_transport(int command,
 		case SLOW_FWD:
 		case NORMAL_FWD:
 		case FAST_FWD:
-// Stop
-			if(engine->command->command == command && 
-				!engine->command->single_frame())
+// Same direction pressed twice.  Stop
+			if(prev_command == command && 
+				!prev_single_frame)
 			{
-				engine->que->send_command(STOP,
-					CHANGE_NONE, 
-					0,
-					0,
-					0,
-					0);
-				engine->interrupt_playback(wait_tracking);
+				do_stop = 1;
 			}
 			else
 // Resume or change direction
-			if(engine->command->command != STOP &&
-				engine->command->command != COMMAND_NONE &&
-				engine->command->command != SINGLE_FRAME_FWD &&
-				engine->command->command != SINGLE_FRAME_REWIND)
+			if(prev_command != STOP &&
+				prev_command != COMMAND_NONE &&
+				prev_command != SINGLE_FRAME_FWD &&
+				prev_command != SINGLE_FRAME_REWIND)
 			{
 				engine->que->send_command(STOP,
 					CHANGE_NONE, 
@@ -309,6 +305,9 @@ void PlayTransport::handle_transport(int command,
 
 // Commands that stop
 		case STOP:
+			do_stop = 1;
+			break;
+
 		case REWIND:
 		case GOTO_END:
 			engine->que->send_command(STOP,
@@ -319,6 +318,33 @@ void PlayTransport::handle_transport(int command,
 				0);
 			engine->interrupt_playback(wait_tracking);
 			break;
+	}
+
+	if(do_stop)
+	{
+		engine->que->send_command(STOP,
+			CHANGE_NONE, 
+			0,
+			0,
+			0,
+			0);
+		engine->interrupt_playback(wait_tracking);
+// This is necessary to get an OpenGL output buffer
+// printf("PlayTransport::handle_transport 2 update_refresh=%d prev_command=%d prev_direction=%d\n", 
+// update_refresh, prev_command, prev_direction);
+		if(!prev_single_frame && 
+			update_refresh &&
+			prev_command != STOP &&
+			prev_command != COMMAND_NONE)
+		{
+			engine->que->send_command(
+				(prev_direction == PLAY_FORWARD) ? SINGLE_FRAME_REWIND : SINGLE_FRAME_FWD,
+				CHANGE_NONE, 
+				get_edl(),
+				1,
+				0,
+				0);
+		}
 	}
 }
 

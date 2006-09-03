@@ -714,7 +714,7 @@ int FileSystem::join_names(char *out, char *dir_in, char *name_in)
 	return 0;
 }
 
-long FileSystem::get_date(char *filename)
+int64_t FileSystem::get_date(char *filename)
 {
 	struct stat file_status;
 	bzero(&file_status, sizeof(struct stat));

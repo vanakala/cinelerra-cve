@@ -113,6 +113,20 @@ int FileMPEG::check_sig(Asset *asset)
 	return mpeg3_check_sig(asset->path);
 }
 
+void FileMPEG::get_info(Asset *asset, int64_t *bytes, int *stracks)
+{
+	mpeg3_t *fd;
+
+	int error = 0;
+	if((fd = mpeg3_open(asset->path, &error)))
+	{
+		*bytes = mpeg3_get_bytes(fd);
+		*stracks = mpeg3_subtitle_tracks(fd);
+		mpeg3_close(fd);
+	}
+	return;
+}
+
 int FileMPEG::reset_parameters_derived()
 {
 	wrote_header = 0;
@@ -284,13 +298,25 @@ SET_TRACE
 			char string[BCTEXTLEN];
 			sprintf(mjpeg_command, MJPEG_EXE);
 
+// Must disable interlacing if MPEG-1
+			switch (asset->vmpeg_preset)
+			{
+				case 0: asset->vmpeg_progressive = 1; break;
+				case 1: asset->vmpeg_progressive = 1; break;
+				case 2: asset->vmpeg_progressive = 1; break;
+			}
+
+
+
+// The current usage of mpeg2enc requires bitrate of 0 when quantization is fixed and
+// quantization of 1 when bitrate is fixed.  Perfectly intuitive.
 			if(asset->vmpeg_fix_bitrate)
 			{
-				sprintf(string, " --cbr -b %d", asset->vmpeg_bitrate);
+				sprintf(string, " -b %d -q 1", asset->vmpeg_bitrate / 1000);
 			}
 			else
 			{
-				sprintf(string, " -q %d", asset->vmpeg_quantization);
+				sprintf(string, " -b 0 -q %d", asset->vmpeg_quantization);
 			}
 			strcat(mjpeg_command, string);
 
@@ -391,7 +417,7 @@ SET_TRACE
 			video_out->start();
 		}
 	}
-
+	else
 	if(wr && asset->format == FILE_AMPEG)
 	{
 		char command_line[BCTEXTLEN];
@@ -474,16 +500,18 @@ int FileMPEG::create_index()
 
 	if(!ptr) return 1;
 
+// File is a table of contents.
+	if(fd && mpeg3_has_toc(fd)) return 0;
+
 	sprintf(ptr, ".toc");
 
-// Test existence of TOC
-	FILE *test = fopen(index_filename, "r");
-	if(test)
-	{
-// Reopen with table of contents
-		fclose(test);
-	}
-	else
+	int need_toc = 1;
+
+// Test existing copy of TOC
+	if((fd = mpeg3_open(index_filename, &error)))
+		need_toc = 0;
+
+	if(need_toc)
 	{
 // Create progress window.
 // This gets around the fact that MWindowGUI is locked.
@@ -555,17 +583,23 @@ int FileMPEG::create_index()
 		{
 		}
 
+		if(fd) mpeg3_close(fd);
+		fd = 0;
 	}
 
 
 
 // Reopen file from index path instead of asset path.
-	if(fd) mpeg3_close(fd);
+	if(!fd)
+	{
 	if(!(fd = mpeg3_open(index_filename, &error)))
 	{
 		return 1;
 	}
 	else
+			return 0;
+	}
+
 		return 0;
 }
 
@@ -1404,6 +1438,14 @@ int MPEGConfigAudio::create_objects()
 	int x1 = 150;
 	MPEGLayer *layer;
 
+
+	if(asset->format == FILE_MPEG)
+	{
+		add_subwindow(new BC_Title(x, y, _("No options for MPEG transport stream.")));
+		return 0;
+	}
+
+
 	add_tool(new BC_Title(x, y, _("Layer:")));
 	add_tool(layer = new MPEGLayer(x1, y, this));
 	layer->create_objects();
@@ -1592,6 +1634,11 @@ int MPEGConfigVideo::create_objects()
 	int x1 = x + 150;
 	int x2 = x + 300;
 
+	if(asset->format == FILE_MPEG)
+	{
+		add_subwindow(new BC_Title(x, y, _("No options for MPEG transport stream.")));
+		return 0;
+	}
 
 	add_subwindow(new BC_Title(x, y, _("Color model:")));
 	add_subwindow(cmodel = new MPEGColorModel(x1, y, this));

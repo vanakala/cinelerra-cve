@@ -394,7 +394,7 @@ void MWindow::select_all()
 	cwindow->update(1, 0, 0);
 }
 
-int MWindow::next_label()
+int MWindow::next_label(int shift_down)
 {
 	Label *current = edl->labels->next_label(
 			edl->local_session->get_selectionstart(1));
@@ -403,7 +403,7 @@ int MWindow::next_label()
 	{
 
 		edl->local_session->set_selectionend(current->position);
-		if(!gui->shift_down()) 
+		if(!shift_down) 
 			edl->local_session->set_selectionstart(
 				edl->local_session->get_selectionend(1));
 
@@ -443,7 +443,7 @@ int MWindow::next_label()
 	return 0;
 }
 
-int MWindow::prev_label()
+int MWindow::prev_label(int shift_down)
 {
 	Label *current = edl->labels->prev_label(
 			edl->local_session->get_selectionstart(1));;
@@ -451,7 +451,7 @@ int MWindow::prev_label()
 	if(current)
 	{
 		edl->local_session->set_selectionstart(current->position);
-		if(!gui->shift_down()) 
+		if(!shift_down) 
 			edl->local_session->set_selectionend(edl->local_session->get_selectionstart(1));
 
 // Scroll the display
@@ -497,7 +497,7 @@ int MWindow::prev_label()
 
 
 
-int MWindow::next_edit_handle()
+int MWindow::next_edit_handle(int shift_down)
 {
 	double position = edl->local_session->get_selectionend(1);
 	double new_position = INFINITY;
@@ -519,7 +519,8 @@ int MWindow::next_edit_handle()
 	{
 
 		edl->local_session->set_selectionend(new_position);
-		if(!gui->shift_down()) 
+printf("MWindow::next_edit_handle %d\n", shift_down);
+		if(!shift_down) 
 			edl->local_session->set_selectionstart(
 				edl->local_session->get_selectionend(1));
 
@@ -559,7 +560,7 @@ int MWindow::next_edit_handle()
 	return 0;
 }
 
-int MWindow::prev_edit_handle()
+int MWindow::prev_edit_handle(int shift_down)
 {
 	double position = edl->local_session->get_selectionstart(1);
 	double new_position = -1;
@@ -581,7 +582,8 @@ int MWindow::prev_edit_handle()
 	{
 
 		edl->local_session->set_selectionstart(new_position);
-		if(!gui->shift_down()) 
+printf("MWindow::next_edit_handle %d\n", shift_down);
+		if(!shift_down) 
 			edl->local_session->set_selectionend(edl->local_session->get_selectionstart(1));
 
 // Scroll the display

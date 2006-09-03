@@ -424,7 +424,7 @@ int FieldFrame::process_buffer(VFrame *frame,
 	int result = 0;
 	load_configuration();
 
-	if(input && !input->equivalent(frame))
+	if(input && !input->equivalent(frame, 0))
 	{
 		delete input;
 		input = 0;

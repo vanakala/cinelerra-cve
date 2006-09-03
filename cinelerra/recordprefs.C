@@ -24,7 +24,7 @@ RecordPrefs::RecordPrefs(MWindow *mwindow, PreferencesWindow *pwindow)
 
 RecordPrefs::~RecordPrefs()
 {
-	delete in_device;
+	delete audio_in_device;
 	delete recording_format;
 //	delete duplex_device;
 }
@@ -69,15 +69,15 @@ int RecordPrefs::create_objects()
 
 
 	add_subwindow(new BC_Title(x, y, _("Record Driver:"), MEDIUMFONT, resources->text_default));
-	in_device = new ADevicePrefs(x + 110, 
+	audio_in_device = new ADevicePrefs(x + 110, 
 		y, 
 		pwindow, 
 		this, 
 		0,
 		pwindow->thread->edl->session->aconfig_in, 
 		MODERECORD);
-	in_device->initialize();
-	y += in_device->get_h();
+	audio_in_device->initialize(1);
+	y += audio_in_device->get_h();
 
 
 	BC_TextBox *textbox;

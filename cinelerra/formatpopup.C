@@ -34,12 +34,9 @@ int FormatPopup::create_objects()
 		format_items.append(new BC_ListBoxItem(_(AC3_NAME)));
 		format_items.append(new BC_ListBoxItem(_(AIFF_NAME)));
 		format_items.append(new BC_ListBoxItem(_(AU_NAME)));
-//		format_items.append(new BC_ListBoxItem(_(AVI_ARNE1_NAME)));
-//		format_items.append(new BC_ListBoxItem(_(AVI_ARNE2_NAME)));
 #ifdef USE_AVIFILE
 		format_items.append(new BC_ListBoxItem(_(AVI_AVIFILE_NAME)));
 #endif
-//		format_items.append(new BC_ListBoxItem(_(AVI_LAVTOOLS_NAME)));
 		format_items.append(new BC_ListBoxItem(_(JPEG_NAME)));
 	}
 

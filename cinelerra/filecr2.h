@@ -15,13 +15,6 @@
 
 // <path>
 // Decode the file.
-extern "C"
-{
-extern char dcraw_info[1024];
-extern float **dcraw_data;
-extern int dcraw_alpha;
-int dcraw_main (int argc, char **argv);
-}
 
 class FileCR2 : public FileBase
 {

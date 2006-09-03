@@ -51,6 +51,9 @@ public:
 		int video_options);
 
 	static int check_sig(Asset *asset);
+
+// Get extra info for info dialog.
+	static void get_info(Asset *asset, int64_t *bytes, int *stracks);
 	int open_file(int rd, int wr);
 	int close_file();
 	int create_index();

@@ -24,7 +24,7 @@ public:
 	int create_objects();
 
 	FormatTools *recording_format;
-	ADevicePrefs *in_device /*, *duplex_device */;
+	ADevicePrefs *audio_in_device;
 	VDevicePrefs *video_in_device;
 	MWindow *mwindow;
 };

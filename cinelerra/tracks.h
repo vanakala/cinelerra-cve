@@ -143,8 +143,6 @@ public:
 		double end, 
 		int all);
 	int clear(double start, double end, int clear_plugins);
-// Returns the point to restart background rendering at.
-// -1 means nothing changed.
 	void clear_automation(double selectionstart, 
 		double selectionend);
 	void straighten_automation(double selectionstart, 

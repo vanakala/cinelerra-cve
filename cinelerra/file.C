@@ -264,7 +264,7 @@ int File::get_options(FormatTools *format,
 
 void File::set_asset(Asset *asset)
 {
-	*this->asset = *asset;
+	this->asset->copy_from(asset, 1);
 }
 
 int File::set_processors(int cpus)   // Set the number of cpus for certain codecs
@@ -307,7 +307,7 @@ int File::open_file(Preferences *preferences,
 	float base_framerate)
 {
 	this->preferences = preferences;
-	*this->asset = *asset;
+	this->asset->copy_from(asset, 1);
 	file = 0;
 
 
@@ -543,7 +543,10 @@ int File::open_file(Preferences *preferences,
 
 
 // Synchronize header parameters
-	*asset = *this->asset;
+	if(file)
+	{
+		asset->copy_from(this->asset, 1);
+	}
 
 	if(file)
 		return FILE_OK;

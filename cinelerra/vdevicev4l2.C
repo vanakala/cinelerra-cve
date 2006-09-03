@@ -560,6 +560,7 @@ printf("VDeviceV4L2Thread::run got %d buffers\n", total_buffers);
 		{
 			struct v4l2_buffer buffer;
 			buffer.type = V4L2_BUF_TYPE_VIDEO_CAPTURE;
+			buffer.memory = V4L2_MEMORY_MMAP;
 			buffer.index = i;
 			if(ioctl(input_fd, VIDIOC_QBUF, &buffer) < 0)
 			{

@@ -168,7 +168,7 @@ int FrameCache::frame_exists(VFrame *format,
 		FrameCacheItem *item = items.values[i];
 		if(item->position == position &&
 			EQUIV(item->frame_rate, frame_rate) &&
-			format->equivalent(item->data))
+			format->equivalent(item->data, 1))
 		{
 			*item_return = i;
 			return 1;

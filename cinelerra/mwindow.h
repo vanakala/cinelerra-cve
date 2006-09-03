@@ -183,10 +183,15 @@ public:
 	int move_right(int64_t distance = 0);
 	void move_up(int64_t distance = 0);
 	void move_down(int64_t distance = 0);
-	int next_label();   // seek to labels
-	int prev_label();
-	int next_edit_handle();   // seek to labels
-	int prev_edit_handle();  // seek to edit handles
+
+// seek to labels
+// shift_down must be passed by the caller because different windows call
+// into this
+	int next_label(int shift_down);   
+	int prev_label(int shift_down);
+// seek to edit handles
+	int next_edit_handle(int shift_down);
+	int prev_edit_handle(int shift_down);  
 	void trackmovement(int track_start);
 	int samplemovement(int64_t view_start);     // view_start is pixels
 	void select_all();

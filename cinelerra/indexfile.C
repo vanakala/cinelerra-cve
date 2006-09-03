@@ -22,6 +22,7 @@
 #include "bctimer.h"
 #include "trackcanvas.h"
 #include "tracks.h"
+#include <unistd.h>
 #include "vframe.h"
 
 // Use native sampling rates for files so the same index can be used in
@@ -115,23 +116,25 @@ int IndexFile::open_file()
 	{
 // Index file already exists.
 // Get its last size without changing the status.
-		Asset test_asset;
-		test_asset = *asset;
-		read_info(&test_asset);
+		Asset *test_asset = new Asset;
+		*test_asset = *asset;
+		read_info(test_asset);
 
 		FileSystem fs;
-		if(fs.get_date(index_filename) < fs.get_date(test_asset.path))
+		if(fs.get_date(index_filename) < fs.get_date(test_asset->path))
 		{
 // index older than source
 			result = 2;
 			fclose(file);
+			file = 0;
 		}
 		else
-		if(fs.get_size(asset->path) != test_asset.index_bytes)
+		if(fs.get_size(asset->path) != test_asset->index_bytes)
 		{
 // source file is a different size than index source file
 			result = 2;
 			fclose(file);	
+			file = 0;
 		}
 		else
 		{
@@ -140,6 +143,7 @@ int IndexFile::open_file()
 			fseek(file, 0, SEEK_SET);
 			result = 0;
 		}
+		delete test_asset;
 	}
 	else
 	{

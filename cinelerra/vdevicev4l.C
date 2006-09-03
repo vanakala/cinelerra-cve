@@ -93,6 +93,7 @@ int VDeviceV4L::unmap_v4l_shmem()
 			munmap(capture_buffer, capture_params.size);
 		else
 			delete capture_buffer;
+		capture_buffer = 0;
 	}
 	return 0;
 }

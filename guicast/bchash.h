@@ -9,7 +9,6 @@
 #include "bcwindowbase.inc"
 #include "stringfile.inc"
 #include "units.h"
-#include "properties.h"
 
 
 class BC_Hash
@@ -37,8 +36,24 @@ public:
 	int32_t get(char *name, int32_t default_);   // retrieve a value if it exists
 	int64_t get(char *name, int64_t default_);   // retrieve a value if it exists
 	char* get(char *name, char *default_); // return 1 if it doesn't
-	
-	Properties *properties;  // list of defaults
+
+// Update values with values from another table.
+// Adds values that don't exist and updates existing values.
+	void copy_from(BC_Hash *src);
+// Return 1 if the tables are equivalent
+	int equivalent(BC_Hash *src);
+
+	void dump();
+
+
+private:
+// Reallocate table so at least total entries exist
+	void reallocate_table(int total);
+
+	char **names;  // list of string names
+	char **values;    // list of values
+	int total;             // number of defaults
+	int allocated;         // allocated defaults
 	char filename[BCTEXTLEN];        // filename the defaults are stored in
 };
 

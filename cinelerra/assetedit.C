@@ -9,6 +9,7 @@
 #include "cplayback.h"
 #include "cwindow.h"
 #include "file.h"
+#include "filempeg.h"
 #include "filesystem.h"
 #include "indexfile.h"
 #include "language.h"
@@ -169,7 +170,7 @@ int AssetEditWindow::create_objects()
 	int vmargin;
 	int hmargin1 = 180, hmargin2 = 290;
 	FileSystem fs;
-	BC_Title    *titlew;
+	BC_Title *title;
 	BC_TextBox  *textboxw;
 	BC_CheckBox *chkboxw;
 	BC_ListBox  *listboxw;
@@ -195,7 +196,18 @@ int AssetEditWindow::create_objects()
 	x = x1;
 	y += 20;
 
-	int64_t bytes = fs.get_size(asset->path);
+	int64_t bytes = 1;
+	int subtitle_tracks = 0;
+	if(asset->format == FILE_MPEG &&
+		asset->video_data)
+	{
+// Get length from TOC
+		FileMPEG::get_info(asset, &bytes, &subtitle_tracks);
+	}
+	else
+	{
+		bytes = fs.get_size(asset->path);
+	}
 	add_subwindow(new BC_Title(x, y, _("Bytes:")));
 	sprintf(string, "%lld", bytes);
 	Units::punctuate(string);
@@ -405,16 +417,26 @@ int AssetEditWindow::create_objects()
 		add_subwindow(new BC_Title(x, y, _("Height:")));
 		x = x2;
 		sprintf(string, "%d", asset->height);
-		add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
-		y += 30;
+		add_subwindow(title = new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
+		y += title->get_h() + 5;
+
+		if(asset->format == FILE_MPEG)
+		{
+			x = x1;
+			add_subwindow(new BC_Title(x, y, _("Subtitle tracks:")));
+			x = x2;
+			sprintf(string, "%d", subtitle_tracks);
+			add_subwindow(title = new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
+			y += title->get_h() + 5;
+		}
 
 		// --------------------
-		add_subwindow(titlew = new BC_Title(x1, y, _("Fix interlacing:")));
+		add_subwindow(title = new BC_Title(x1, y, _("Fix interlacing:")));
 		add_subwindow(ilacefixoption_chkboxw = new Interlaceautofix(mwindow,this, x2, y));
 		y += ilacefixoption_chkboxw->get_h() + 5;
 
 		// --------------------
-		add_subwindow(titlew = new BC_Title(x1, y, _("Asset's interlacing:")));
+		add_subwindow(title = new BC_Title(x1, y, _("Asset's interlacing:")));
 		add_subwindow(textboxw = new AssetEditILacemode(this, "", BC_ILACE_ASSET_MODEDEFAULT, x2, y, 200));
 		ilacefixoption_chkboxw->ilacemode_textbox = textboxw;
 		add_subwindow(listboxw = new AssetEditInterlacemodePulldown(mwindow,
@@ -428,7 +450,7 @@ int AssetEditWindow::create_objects()
 		y += textboxw->get_h() + 5;
 
 		// --------------------
-		add_subwindow(titlew = new BC_Title(x1, y, _("Interlace correction:")));
+		add_subwindow(title = new BC_Title(x1, y, _("Interlace correction:")));
 		add_subwindow(textboxw = new AssetEditILacefixmethod(this, "", BC_ILACE_FIXDEFAULT, x2, y, 200));
 		ilacefixoption_chkboxw->ilacefixmethod_textbox = textboxw;
 		add_subwindow(listboxw = new InterlacefixmethodPulldown(mwindow, 

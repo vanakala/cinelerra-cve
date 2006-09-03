@@ -206,7 +206,9 @@ int AudioDevice::reset_output()
 	}
 
 	is_playing_back = 0;
-	software_position_info = position_correction = last_buffer_size = 0;
+	software_position_info = 0;
+	position_correction = 0;
+	last_buffer_size = 0;
 	total_samples = 0;
 	play_dither == 0;
 	arm_buffer_num = 0;

@@ -469,7 +469,12 @@ int MWindowGUI::keypress_event()
 				if(!ctrl_down()) 
 				{ 
 					if (alt_down())
-						mwindow->prev_edit_handle();
+					{
+						unlock_window();
+						mbuttons->transport->handle_transport(STOP, 1, 0, 0);
+						lock_window("MWindowGUI::keypress_event 1");
+						mwindow->prev_edit_handle(shift_down());
+					}
 					else
 						mwindow->move_left(); 
 					result = 1; 
@@ -479,7 +484,12 @@ int MWindowGUI::keypress_event()
 				if(!ctrl_down()) 
 				{ 
 					if (alt_down())
-						mwindow->next_edit_handle();
+					{
+						unlock_window();
+						mbuttons->transport->handle_transport(STOP, 1, 0, 0);
+						lock_window("MWindowGUI::keypress_event 2");
+						mwindow->next_edit_handle(shift_down());
+					}
 					else
 						mwindow->move_right(); 
 					result = 1; 

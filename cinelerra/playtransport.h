@@ -29,9 +29,17 @@ public:
 	static int get_transport_width(MWindow *mwindow);
 	int flip_vertical(int vertical, int &x, int &y);
 	int keypress_event();
+// Abstract TransportQue::send_command.
+// wait_tracking - causes stop to wail until the final tracking position 
+// is updated before returning
+// use_inout - causes the in/out points to determine the beginning and end 
+// of playback
+// update_refresh - causes a frame advance to be issued after STOP to update
+// the refresh frame.
 	void handle_transport(int command, 
 		int wait_tracking = 0, 
-		int use_inout = 0);
+		int use_inout = 0,
+		int update_refresh = 1);
 
 	int pause_transport();
 	int reset_transport();

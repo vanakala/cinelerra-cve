@@ -12,6 +12,8 @@ BC_Pixmap::BC_Pixmap(BC_WindowBase *parent_window,
 	int mode,
 	int icon_offset)
 {
+	reset();
+
 	BC_Bitmap *opaque_bitmap, *alpha_bitmap, *mask_bitmap;
 	if(frame->get_color_model() != BC_RGBA8888 &&
 		mode == PIXMAP_ALPHA)
@@ -91,6 +93,7 @@ BC_Pixmap::BC_Pixmap(BC_WindowBase *parent_window,
 
 BC_Pixmap::BC_Pixmap(BC_WindowBase *parent_window, int w, int h)
 {
+	reset();
 	initialize(parent_window, w, h, PIXMAP_OPAQUE);
 }
 
@@ -117,15 +120,20 @@ BC_Pixmap::~BC_Pixmap()
 	}
 }
 
+
+
+void BC_Pixmap::reset()
+{
+	parent_window = 0;
+	top_level = 0;
+	opaque_pixmap = 0;
+	alpha_pixmap = 0;
+	opaque_xft_draw = 0;
+	alpha_xft_draw = 0;
+}
+
 int BC_Pixmap::initialize(BC_WindowBase *parent_window, int w, int h, int mode)
 {
-	unsigned long gcmask = GCGraphicsExposures | GCForeground | GCBackground | GCFunction;
-	XGCValues gcvalues;
-	gcvalues.graphics_exposures = 0;        // prevent expose events for every redraw
-	gcvalues.foreground = 0;
-	gcvalues.background = 1;
-	gcvalues.function = GXcopy;
-
 	this->w = w;
 	this->h = h;
 	this->parent_window = parent_window;
@@ -152,6 +160,16 @@ int BC_Pixmap::initialize(BC_WindowBase *parent_window, int w, int h, int mode)
 
 	if(use_alpha())
 	{
+	unsigned long gcmask = GCGraphicsExposures | 
+			GCForeground | 
+			GCBackground | 
+			GCFunction;
+		XGCValues gcvalues;
+		gcvalues.graphics_exposures = 0;        // prevent expose events for every redraw
+		gcvalues.foreground = 0;
+		gcvalues.background = 1;
+		gcvalues.function = GXcopy;
+
 		alpha_pixmap = XCreatePixmap(top_level->display, 
 			top_level->win, 
 			w, 

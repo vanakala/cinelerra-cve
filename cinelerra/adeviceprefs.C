@@ -57,7 +57,7 @@ void ADevicePrefs::reset()
 	alsa_workaround = 0;
 }
 
-int ADevicePrefs::initialize()
+int ADevicePrefs::initialize(int creation)
 {
 	int *driver;
 	delete_objects();

@@ -267,6 +267,7 @@ void EditPanel::toggle_label()
 
 void EditPanel::prev_label()
 {
+	int shift_down = subwindow->shift_down();
 	if(is_mwindow)
 	{
 		mwindow->gui->unlock_window();
@@ -274,14 +275,14 @@ void EditPanel::prev_label()
 	else
 		subwindow->unlock_window();
 
-	mwindow->gui->mbuttons->transport->handle_transport(STOP, 1);
+	mwindow->gui->mbuttons->transport->handle_transport(STOP, 1, 0, 0);
 
 	if(!is_mwindow)
 		subwindow->lock_window("EditPanel::prev_label 1");
 
 	mwindow->gui->lock_window("EditPanel::prev_label 2");
 
-	mwindow->prev_label();
+	mwindow->prev_label(shift_down);
 
 	if(!is_mwindow)
 		mwindow->gui->unlock_window();
@@ -289,6 +290,7 @@ void EditPanel::prev_label()
 
 void EditPanel::next_label()
 {
+	int shift_down = subwindow->shift_down();
 	if(is_mwindow)
 	{
 		mwindow->gui->unlock_window();
@@ -296,14 +298,14 @@ void EditPanel::next_label()
 	else
 		subwindow->unlock_window();
 
-	mwindow->gui->mbuttons->transport->handle_transport(STOP, 1);
+	mwindow->gui->mbuttons->transport->handle_transport(STOP, 1, 0, 0);
 
 	if(!is_mwindow)
 		subwindow->lock_window("EditPanel::next_label 1");
 
 	mwindow->gui->lock_window("EditPanel::next_label 2");
 
-	mwindow->next_label();
+	mwindow->next_label(shift_down);
 
 	if(!is_mwindow)
 		mwindow->gui->unlock_window();

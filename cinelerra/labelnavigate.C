@@ -47,7 +47,7 @@ PrevLabel::~PrevLabel() {}
 
 int PrevLabel::handle_event()
 {
-	mwindow->prev_label();
+	mwindow->prev_label(shift_down());
 	return 1;
 }
 
@@ -65,7 +65,7 @@ NextLabel::~NextLabel() {}
 
 int NextLabel::handle_event()
 {
-	mwindow->next_label();
+	mwindow->next_label(shift_down());
 	return 1;
 }
 

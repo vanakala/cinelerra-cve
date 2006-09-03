@@ -1988,13 +1988,6 @@ int TrackCanvas::do_keyframes(int cursor_x,
 	EDLSession *session = mwindow->edl->session;
 
 
-/*	if(buttonpress == 3)
-	{
-		update_cursor = 1;
-		return 0;
-	}
-
-*/
 
 	BC_Pixmap *auto_pixmaps[] = 
 	{
@@ -2018,7 +2011,7 @@ int TrackCanvas::do_keyframes(int cursor_x,
 		track && !result;
 		track = track->next)
 	{
-		Auto *auto_keyframe;
+        Auto *auto_keyframe;
 		Automation *automation = track->automation;
 
 
@@ -2080,8 +2073,8 @@ int TrackCanvas::do_keyframes(int cursor_x,
 						rerender = 1;
 					if(buttonpress)
 					{
-						if (buttonpress != 3)
-						{
+                        if (buttonpress != 3)
+                        {
 							if(i == AUTOMATION_FADE) 
 								synchronize_autos(0, 
 									track, 
@@ -2089,14 +2082,13 @@ int TrackCanvas::do_keyframes(int cursor_x,
 									1);
 							mwindow->session->current_operation = pre_auto_operations[i];
 							update_drag_caption();
-						} else
-						if (buttonpress == 3) 
-						{
-							gui->keyframe_menu->update(automation, autos, auto_keyframe);
-							gui->keyframe_menu->activate_menu();
-							rerender = 1; // the position changes
-
-						}
+							}
+							else
+							{
+                                gui->keyframe_menu->update(automation, autos, auto_keyframe);
+                                gui->keyframe_menu->activate_menu();
+                                rerender = 1; // the position changes
+							}
 					}
 				}
 			}
@@ -2282,7 +2274,7 @@ int TrackCanvas::test_auto(Auto *current,
 
 	if(cursor_x >= x1 && cursor_x < x2 && cursor_y >= y1 && cursor_y < y2)
 	{
-		if(buttonpress)
+		if(buttonpress && buttonpress != 3)
 		{
 			mwindow->session->drag_auto = current;
 			mwindow->session->drag_start_percentage = current->value_to_percentage();
@@ -4884,7 +4876,7 @@ int TrackCanvas::button_press_event()
 		if(get_buttonpress() == 1)
 		{
 			gui->unlock_window();
-			gui->mbuttons->transport->handle_transport(STOP, 1);
+			gui->mbuttons->transport->handle_transport(STOP, 1, 0, 0);
 			gui->lock_window("TrackCanvas::button_press_event");
 		}
 

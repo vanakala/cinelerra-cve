@@ -3,7 +3,7 @@
 #include <string.h>
 #include <stdint.h>
 
-//#include "bccounter.h"
+#include "bchash.h"
 #include "bcpbuffer.h"
 #include "bcsignals.h"
 #include "clip.h"
@@ -38,6 +38,7 @@ public:
 VFrame::VFrame(unsigned char *png_data)
 {
 	reset_parameters(1);
+	params = new BC_Hash;
 	read_png(png_data);
 //printf("VFrame::VFrame 2\n");
 }
@@ -45,8 +46,10 @@ VFrame::VFrame(unsigned char *png_data)
 VFrame::VFrame(VFrame &frame)
 {
 	reset_parameters(1);
+	params = new BC_Hash;
 	allocate_data(0, 0, 0, 0, frame.w, frame.h, frame.color_model, frame.bytes_per_line);
 	memcpy(data, frame.data, bytes_per_line * h);
+	copy_stacks(&frame);
 }
 
 VFrame::VFrame(unsigned char *data, 
@@ -56,6 +59,7 @@ VFrame::VFrame(unsigned char *data,
 	long bytes_per_line)
 {
 	reset_parameters(1);
+	params = new BC_Hash;
 	allocate_data(data, 0, 0, 0, w, h, color_model, bytes_per_line);
 }
 
@@ -69,6 +73,7 @@ VFrame::VFrame(unsigned char *data,
 		long bytes_per_line)
 {
 	reset_parameters(1);
+	params = new BC_Hash;
 	allocate_data(data, 
 		y_offset, 
 		u_offset, 
@@ -82,6 +87,7 @@ VFrame::VFrame(unsigned char *data,
 VFrame::VFrame()
 {
 	reset_parameters(1);
+	params = new BC_Hash;
 	this->color_model = BC_COMPRESSED;
 }
 
@@ -101,14 +107,16 @@ VFrame::~VFrame()
 // Delete effect stack
 	prev_effects.remove_all_objects();
 	next_effects.remove_all_objects();
+	delete params;
 }
 
-int VFrame::equivalent(VFrame *src)
+int VFrame::equivalent(VFrame *src, int test_stacks)
 {
 	return (src->get_color_model() == get_color_model() &&
 		src->get_w() == get_w() &&
 		src->get_h() == get_h() &&
-		src->bytes_per_line == bytes_per_line);
+		src->bytes_per_line == bytes_per_line &&
+		(!test_stacks || equal_stacks(src)));
 }
 
 long VFrame::set_shm_offset(long offset)
@@ -849,12 +857,24 @@ void VFrame::pop_next_effect()
 		next_effects.remove_object(next_effects.last());
 }
 
+
+BC_Hash* VFrame::get_params()
+{
+	return params;
+}
+
 void VFrame::clear_stacks()
 {
 	next_effects.remove_all_objects();
 	prev_effects.remove_all_objects();
+	delete params;
+	params = new BC_Hash;
 }
 
+void VFrame::copy_params(VFrame *src)
+{
+	params->copy_from(src->params);
+}
 
 void VFrame::copy_stacks(VFrame *src)
 {
@@ -872,8 +892,39 @@ void VFrame::copy_stacks(VFrame *src)
 		prev_effects.append(ptr = new char[strlen(src->prev_effects.values[i]) + 1]);
 		strcpy(ptr, src->prev_effects.values[i]);
 	}
+
+	params->copy_from(src->params);
 }
 
+int VFrame::equal_stacks(VFrame *src)
+{
+	for(int i = 0; i < src->next_effects.total && i < next_effects.total; i++)
+	{
+		if(strcmp(src->next_effects.values[i], next_effects.values[i])) return 0;
+	}
+	for(int i = 0; i < src->prev_effects.total && i < prev_effects.total; i++)
+	{
+		if(strcmp(src->prev_effects.values[i], prev_effects.values[i])) return 0;
+	}
+	if(!params->equivalent(src->params)) return 0;
+	return 1;
+}
+
+void VFrame::dump_stacks()
+{
+	printf("VFrame::dump_stacks\n");
+	printf("	next_effects:\n");
+	for(int i = next_effects.total - 1; i >= 0; i--)
+		printf("		%s\n", next_effects.values[i]);
+	printf("	prev_effects:\n");
+	for(int i = prev_effects.total - 1; i >= 0; i--)
+		printf("		%s\n", prev_effects.values[i]);
+}
+
+void VFrame::dump_params()
+{
+	params->dump();
+}
 
 
 
