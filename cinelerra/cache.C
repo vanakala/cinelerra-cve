@@ -2,6 +2,7 @@
 #include "assets.h"
 #include "bcsignals.h"
 #include "cache.h"
+#include "condition.h"
 #include "datatype.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -13,163 +14,187 @@
 #include <string.h>
 
 // edl came from a command which won't exist anymore
-CICache::CICache(EDL *edl, 
-	Preferences *preferences,
+CICache::CICache(Preferences *preferences,
 	ArrayList<PluginServer*> *plugindb)
  : List<CICacheItem>()
 {
-	this->edl = new EDL;
-	this->edl->create_objects();
-	this->edl->copy_all(edl);
 	this->plugindb = plugindb;
 	this->preferences = preferences;
-	check_in_lock = new Mutex("CICache::check_in_lock");
-	check_out_lock = new Mutex("CICache::check_out_lock");
+	check_out_lock = new Condition(0, "CICache::check_out_lock", 0);
 	total_lock = new Mutex("CICache::total_lock");
 }
 
 CICache::~CICache()
 {
-	while(last) delete last;
-	delete edl;
-	delete check_in_lock;
+	while(last)
+	{
+		CICacheItem *item = last;
+//printf("CICache::~CICache: %s\n", item->asset->path);
+		remove_pointer(item);
+		Garbage::delete_object(item);
+	}
 	delete check_out_lock;
 	delete total_lock;
 }
 
-void CICache::set_edl(EDL *edl)
+
+
+
+
+
+File* CICache::check_out(Asset *asset, EDL *edl, int block)
 {
-	this->edl->copy_all(edl);
-}
-
-void CICache::update(File* &file)
-{
-// Check if exists
-	for(CICacheItem *current = first; current; current = NEXT)
-	{
-		if(!current->asset->test_path(file->asset->path))
-		{
-			if(file != current->file)
-			{
-				delete file;
-				file = current->file;
-			}
-			return;
-		}
-	}
-
-	CICacheItem *item;
-	append(item = new CICacheItem(this, file));
-	item->asset = new Asset(*(file->asset));
-	file->set_asset(item->asset);
-}
-
-File* CICache::check_out(Asset *asset)
-{
-	File *result = 0;
-
-	check_out_lock->lock("CICache::check_out");
-
-// search for it in the cache
 	CICacheItem *current, *new_item = 0;
 
-	for(current = first; current && !new_item; current = NEXT)
+	while(1)
 	{
-		if(!strcmp(current->asset->path, asset->path))
+// Scan directory for item
+		int got_it = 0;
+		total_lock->lock("CICache::check_out");
+		for(current = first; current && !got_it; current = NEXT)
 		{
-			current->counter = 0;
-			new_item = current;
+			if(!strcmp(current->asset->path, asset->path))
+			{
+				got_it = 1;
+				break;
+			}
 		}
-	}
 
-// didn't find it so create a new one
-	if(!new_item)
-	{
-		new_item = append(new CICacheItem(this, asset));
-	}
-
-	if(new_item)
-	{
-		if(new_item->file)
+// Test availability
+		if(got_it)
 		{
-// opened successfully
-			new_item->item_lock->lock("CICache::check_out");
-			new_item->checked_out = 1;
-
-			result = new_item->file;
+			if(!current->checked_out)
+			{
+// Return it
+				current->age = EDL::next_id();
+				current->checked_out = 1;
+				current->GarbageObject::add_user();
+				total_lock->unlock();
+				return current->file;
+			}
 		}
 		else
 		{
-// failed
-			delete new_item;
-			new_item = 0;
+// Create new item
+			new_item = append(new CICacheItem(this, edl, asset));
+
+			if(new_item->file)
+			{
+// opened successfully.
+				new_item->age = EDL::next_id();
+				new_item->checked_out = 1;
+				new_item->GarbageObject::add_user();
+				total_lock->unlock();
+				return new_item->file;
+			}
+// Failed to open
+			else
+			{
+				remove_pointer(new_item);
+				Garbage::delete_object(new_item);
+				total_lock->unlock();
+				return 0;
+			}
 		}
+
+// Try again after blocking
+		total_lock->unlock();
+		if(block)
+			check_out_lock->lock("CICache::check_out");
+		else
+			return 0;
 	}
 
-
-//printf("CICache::check_out %s\n", asset->path);
-	check_out_lock->unlock();
-
-	return result;
+	return 0;
 }
 
 int CICache::check_in(Asset *asset)
 {
-	check_in_lock->lock("CICache::check_in");
-
 	CICacheItem *current;
-	int result = 0;
+	int got_it = 0;
+
 	total_lock->lock("CICache::check_in");
-	for(current = first; current && !result; current = NEXT)
+	for(current = first; current; current = NEXT)
 	{
-// Pointers are different
+// Need to compare paths because
+// asset pointers are different
 		if(!strcmp(current->asset->path, asset->path))
 		{
 			current->checked_out = 0;
-			current->item_lock->unlock();
-			result = 1;
+			current->GarbageObject::remove_user();
+// Pointer no longer valid here
+			break;
 		}
 	}
 	total_lock->unlock();
 
-	check_in_lock->unlock();
+// Release for blocking check_out operations
+	check_out_lock->unlock();
 
 	age();
-//dump();
-	return result;
+	return 0;
+}
+
+void CICache::remove_all()
+{
+	total_lock->lock("CICache::remove_all");
+	CICacheItem *current, *temp;
+	for(current = first; current; current = temp)
+	{
+		temp = current->next;
+// Must not be checked out because we need the pointer to check back in.
+// Really need to give the user the CacheItem.
+		if(!current->checked_out)
+		{
+//printf("CICache::remove_all: %s\n", current->asset->path);
+			remove_pointer(current);
+			Garbage::delete_object(current);
+		}
+	}
+	total_lock->unlock();
 }
 
 int CICache::delete_entry(char *path)
 {
-	Asset *asset = edl->assets->get_asset(path);
-	if(asset) delete_entry(asset);
+	total_lock->lock("CICache::delete_entry");
+	for(CICacheItem *current = first; current; current = NEXT)
+	{
+		if(!strcmp(current->asset->path, path))
+		{
+			if(!current->checked_out)
+			{
+//printf("CICache::delete_entry: %s\n", current->asset->path);
+				remove_pointer(current);
+				Garbage::delete_object(current);
+				break;
+			}
+		}
+	}
+	total_lock->unlock();
 	return 0;
 }
 
 int CICache::delete_entry(Asset *asset)
 {
-	lock_all();
+	total_lock->lock("CICache::delete_entry");
 	int result = 0;
 	CICacheItem *current, *temp;
 
-	for(current = first; current; current = temp)
+	for(current = first; current; current = NEXT)
 	{
-		temp = NEXT;
-		if(current->asset->equivalent(*asset, 0, 0))
+		if(!strcmp(current->asset->path, asset->path))
 		{
 			if(!current->checked_out)
 			{
-				delete current;
-			}
-			else
-			{
-				printf("CICache::delete_entry asset checked out\n");
+//printf("CICache::delete_entry: %s\n", current->asset->path);
+				remove_pointer(current);
+				Garbage::delete_object(current);
+				break;
 			}
 		}
-		current = temp;
 	}
 
-	unlock_all();
+	total_lock->unlock();
 	return 0;
 }
 
@@ -177,12 +202,8 @@ int CICache::age()
 {
 	CICacheItem *current;
 
-	for(current = first; current; current = NEXT)
-	{
-		current->counter++;
-	}
-
 // delete old assets if memory usage is exceeded
+	int64_t prev_memory_usage;
 	int64_t memory_usage;
 	int result = 0;
 	do
@@ -191,9 +212,14 @@ int CICache::age()
 		
 		if(memory_usage > preferences->cache_size)
 		{
+//printf("CICache::age 3 %p %lld %lld\n", this, memory_usage, preferences->cache_size);
 			result = delete_oldest();
 		}
-	}while(memory_usage > preferences->cache_size && !result);
+		prev_memory_usage = memory_usage;
+		memory_usage = get_memory_usage(0);
+	}while(prev_memory_usage != memory_usage &&
+		memory_usage > preferences->cache_size && 
+		!result);
 
 }
 
@@ -211,39 +237,69 @@ int64_t CICache::get_memory_usage(int use_lock)
 	return result;
 }
 
+int CICache::get_oldest()
+{
+	CICacheItem *current;
+	int oldest = 0x7fffffff;
+	total_lock->lock("CICache::get_oldest");
+	for(current = last; current; current = PREVIOUS)
+	{
+		if(current->age < oldest)
+		{
+			oldest = current->age;
+		}
+	}
+	total_lock->unlock();
+
+	return oldest;
+}
+
 int CICache::delete_oldest()
 {
 	CICacheItem *current;
-	int highest_counter = 1;
+	int lowest_age = 0x7fffffff;
 	CICacheItem *oldest = 0;
 
-	for(current = last; current; current =  PREVIOUS)
+	total_lock->lock("CICache::delete_oldest");
+
+	for(current = last; current; current = PREVIOUS)
 	{
-		if(current->counter >= highest_counter)
+		if(current->age < lowest_age)
 		{
 			oldest = current;
-			highest_counter = current->counter;
+			lowest_age = current->age;
 		}
 	}
 
-//	if(highest_counter > 1 && oldest)
+
 	if(oldest)
 	{
-		total_lock->lock("CICache::delete_oldest");
-
-
 // Got the oldest file.  Try requesting cache purge.
+
 		if(!oldest->file || oldest->file->purge_cache())
 		{
+
 // Delete the file if cache already empty and not checked out.
-			if(!oldest->checked_out) delete oldest;
+			if(!oldest->checked_out)
+			{
+
+				remove_pointer(oldest);
+
+				Garbage::delete_object(oldest);
+
+			}
+
 		}
+
 		total_lock->unlock();
-		return 0;    // success
+// success
+		return 0;    
 	}
 	else
 	{
-		return 1;    // nothing was old enough to delete
+		total_lock->unlock();
+// nothing was old enough to delete
+		return 1;   
 	}
 }
 
@@ -254,11 +310,11 @@ int CICache::dump()
 	printf("CICache::dump total size %lld\n", get_memory_usage(0));
 	for(current = first; current; current = NEXT)
 	{
-		printf("cache item %x asset %x %s counter %lld\n", 
+		printf("cache item %x asset %x %s age=%d\n", 
 			current, 
 			current->asset,
 			current->asset->path, 
-			current->counter);
+			current->age);
 	}
 	total_lock->unlock();
 }
@@ -271,37 +327,23 @@ int CICache::dump()
 
 
 
-int CICache::lock_all()
+CICacheItem::CICacheItem()
+: ListItem<CICacheItem>(), GarbageObject("CICacheItem")
 {
-	check_in_lock->lock("CICache::lock_all");
-	check_out_lock->lock("CICache::lock_all");
-}
-
-int CICache::unlock_all()
-{
-	check_in_lock->unlock();
-	check_out_lock->unlock();
 }
 
 
-
-
-
-
-
-
-
-
-
-// File not already opened.
-CICacheItem::CICacheItem(CICache *cache, Asset *asset)
- : ListItem<CICacheItem>()
+CICacheItem::CICacheItem(CICache *cache, EDL *edl, Asset *asset)
+ : ListItem<CICacheItem>(), GarbageObject("CICacheItem")
 {
 	int result = 0;
-	counter = 0;
+	age = EDL::next_id();
+
 	this->asset = new Asset;
-	item_lock = new Mutex("CICacheItem::item_lock");
+
+	item_lock = new Condition(1, "CICacheItem::item_lock", 0);
 	
+
 // Must copy Asset since this belongs to an EDL which won't exist forever.
 	*this->asset = *asset;
 	this->cache = cache;
@@ -310,11 +352,11 @@ CICacheItem::CICacheItem(CICache *cache, Asset *asset)
 
 	file = new File;
 	file->set_processors(cache->preferences->processors);
-	file->set_preload(cache->edl->session->playback_preload);
+	file->set_preload(edl->session->playback_preload);
 
 
 // Copy decoding parameters from session to asset so file can see them.
-	this->asset->divx_use_deblocking = cache->edl->session->mpeg4_deblock;
+	this->asset->divx_use_deblocking = edl->session->mpeg4_deblock;
 
 
 
@@ -328,25 +370,9 @@ SET_TRACE
 
 }
 
-// File already opened
-CICacheItem::CICacheItem(CICache *cache, File *file)
- : ListItem<CICacheItem>()
-{
-	counter = 0;
-	this->asset = new Asset;
-	item_lock = new Mutex("CICacheItem::item_lock");
-	*this->asset = *file->asset;
-	this->file = file;
-	this->cache = cache;
-	checked_out = 0;
-
-	file->set_processors(cache->preferences->processors);
-	file->set_preload(cache->edl->session->playback_preload);
-}
-
 CICacheItem::~CICacheItem()
 {
-	delete file;
-	delete asset;
-	delete item_lock;
+	if(file) delete file;
+	if(asset) Garbage::delete_object(asset);
+	if(item_lock) delete item_lock;
 }

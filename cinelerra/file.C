@@ -61,8 +61,7 @@ File::~File()
 	if(temp_frame) delete temp_frame;
 
 	close_file(0);
-	reset_parameters();
-	delete asset;
+	Garbage::delete_object(asset);
 	delete format_completion;
 	delete write_lock;
 	if(frame_cache) delete frame_cache;

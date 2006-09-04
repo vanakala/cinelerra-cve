@@ -5,6 +5,7 @@
 #include "edl.h"
 #include "filexml.h"
 #include "filesystem.h"
+#include "garbage.h"
 #include "language.h"
 #include "loadfile.inc"
 #include "mainmenu.h"
@@ -53,6 +54,7 @@ int main(int argc, char *argv[])
 	config_path[0] = 0;
 	batch_path[0] = 0;
 	deamon_path[0] = 0;
+	Garbage::garbage = new Garbage;
 	EDL::id_lock = new Mutex("EDL::id_lock");
 
 // detect an UTF-8 locale and try to use a non-Unicode locale instead

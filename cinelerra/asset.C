@@ -15,24 +15,28 @@
 #include <string.h>
 
 
-Asset::Asset() : ListItem<Asset>()
+Asset::Asset()
+ : ListItem<Asset>(), GarbageObject("Asset")
 {
 	init_values();
 }
 
-Asset::Asset(Asset &asset) : ListItem<Asset>()
+Asset::Asset(Asset &asset)
+ : ListItem<Asset>(), GarbageObject("Asset")
 {
 	init_values();
 	*this = asset;
 }
 
-Asset::Asset(const char *path) : ListItem<Asset>()
+Asset::Asset(const char *path)
+ : ListItem<Asset>(), GarbageObject("Asset")
 {
 	init_values();
 	strcpy(this->path, path);
 }
 
-Asset::Asset(const int plugin_type, const char *plugin_title) : ListItem<Asset>()
+Asset::Asset(const int plugin_type, const char *plugin_title)
+ : ListItem<Asset>(), GarbageObject("Asset")
 {
 	init_values();
 }

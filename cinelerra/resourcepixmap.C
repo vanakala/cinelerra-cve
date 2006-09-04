@@ -480,7 +480,8 @@ void ResourcePixmap::draw_audio_resource(Edit *edit, int x, int w)
 
 void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 {
-	File *source = mwindow->audio_cache->check_out(edit->asset);
+	File *source = mwindow->audio_cache->check_out(edit->asset,
+		mwindow->edl);
 
 	if(!source)
 	{
@@ -742,7 +743,7 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 		x = Units::round((double)project_frame * frame_w + edit_x - pixmap_x);
  	}
 
-	File *source = mwindow->video_cache->check_out(edit->asset);
+	File *source = mwindow->video_cache->check_out(edit->asset, mwindow->edl);
 	if(!source) return;
 
 	while(x < refresh_x + refresh_w)

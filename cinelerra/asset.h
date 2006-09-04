@@ -6,6 +6,7 @@
 #include "bcwindowbase.inc"
 #include "bchash.inc"
 #include "filexml.inc"
+#include "garbage.h"
 #include "linklist.h"
 #include "pluginserver.inc"
 
@@ -23,7 +24,7 @@
 // 2) an EDL
 // 3) a log
 // The EDL can reference itself if it contains a media file
-class Asset : public ListItem<Asset>
+class Asset : public ListItem<Asset>, public GarbageObject
 {
 public:
 	Asset();

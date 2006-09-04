@@ -143,7 +143,7 @@ int IndexFile::open_file()
 			fseek(file, 0, SEEK_SET);
 			result = 0;
 		}
-		delete test_asset;
+		Garbage::delete_object(test_asset);
 	}
 	else
 	{

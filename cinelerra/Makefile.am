@@ -53,6 +53,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    browsebutton.C \
 		    byteorderpopup.C \
 		    cache.C \
+		    cachebase.C \
 		    canvas.C \
 		    canvastools.C \
 		    channel.C \
@@ -117,6 +118,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    formatpresets.C \
 		    formattools.C \
 		    framecache.C \
+		    garbage.C \
 		    gwindow.C \
 		    gwindowgui.C \
 		    indexfile.C \
@@ -345,6 +347,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 byteorder.h \
 		 byteorderpopup.h \
 		 cache.h \
+		 cachebase.h \
 		 cameraauto.h \
 		 canvas.h \
 		 canvastools.h \
@@ -415,6 +418,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 formattools.h \
 		 formatwindow.h \
 		 framecache.h \
+		 garbage.h \
 		 gwindow.h \
 		 gwindowgui.h \
 		 headers.h \

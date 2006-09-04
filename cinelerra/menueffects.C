@@ -100,18 +100,19 @@ void MenuEffectThread::run()
 	int i;
 	int result = 0;
 // Default configuration
-	Asset default_asset;
+	Asset *default_asset = new Asset;
 // Output
 	ArrayList<Asset*> assets;
 
 
 // check for recordable tracks
-	if(!get_recordable_tracks(&default_asset))
+	if(!get_recordable_tracks(default_asset))
 	{
 		sprintf(string, _("No recordable tracks specified."));
 		ErrorBox error(PROGRAM_NAME ": Error");
 		error.create_objects(string);
 		error.run_window();
+		Garbage::delete_object(default_asset);
 		return;
 	}
 
@@ -122,13 +123,14 @@ void MenuEffectThread::run()
 		ErrorBox error(PROGRAM_NAME ": Error");
 		error.create_objects(string);
 		error.run_window();
+		Garbage::delete_object(default_asset);
 		return;
 	}
 
 
 // get default attributes for output file
 // used after completion
-	get_derived_attributes(&default_asset, defaults);
+	get_derived_attributes(default_asset, defaults);
 //	to_tracks = defaults->get("RENDER_EFFECT_TO_TRACKS", 1);
 	load_mode = defaults->get("RENDER_EFFECT_LOADMODE", LOAD_PASTE);
 	strategy = defaults->get("RENDER_EFFECT_STRATEGY", SINGLE_PASS);
@@ -143,8 +145,8 @@ void MenuEffectThread::run()
 // generate a list of plugins for the window
 	if(need_plugin)
 	{
-		mwindow->create_plugindb(default_asset.audio_data, 
-			default_asset.video_data, 
+		mwindow->create_plugindb(default_asset->audio_data, 
+			default_asset->video_data, 
 			-1, 
 			0,
 			0,
@@ -165,7 +167,7 @@ void MenuEffectThread::run()
 			MenuEffectWindow window(mwindow, 
 				this, 
 				need_plugin ? &plugin_list : 0, 
-				&default_asset);
+				default_asset);
 			window.create_objects();
 			result = window.run_window();
 			plugin_number = window.result;
@@ -173,13 +175,13 @@ void MenuEffectThread::run()
 
 		if(!result)
 		{
-			FormatCheck format_check(&default_asset);
+			FormatCheck format_check(default_asset);
 			format_error = format_check.check_format();
 		}
 	}while(format_error && !result);
 
 // save defaults
-	save_derived_attributes(&default_asset, defaults);
+	save_derived_attributes(default_asset, defaults);
 	defaults->update("RENDER_EFFECT_LOADMODE", load_mode);
 	defaults->update("RENDER_EFFECT_STRATEGY", strategy);
 	mwindow->save_defaults();
@@ -215,7 +217,7 @@ void MenuEffectThread::run()
 		fix_menu(title);
 	}
 
-	if(!result && !strlen(default_asset.path))
+	if(!result && !strlen(default_asset->path))
 	{
 		result = 1;        // no output path given
 		ErrorBox error(PROGRAM_NAME ": Error");
@@ -303,8 +305,8 @@ void MenuEffectThread::run()
 // Close plugin.
 			plugin->save_data(&plugin_data);
 			delete plugin;
-			default_asset.sample_rate = mwindow->edl->session->sample_rate;
-			default_asset.frame_rate = mwindow->edl->session->frame_rate;
+			default_asset->sample_rate = mwindow->edl->session->sample_rate;
+			default_asset->frame_rate = mwindow->edl->session->frame_rate;
 			realtime = 1;
 		}
 		else
@@ -314,22 +316,22 @@ void MenuEffectThread::run()
 			plugin->open_plugin(0, mwindow->preferences, mwindow->edl, 0, -1);
 			result = plugin->get_parameters((int64_t)total_start, 
 				(int64_t)total_end, 
-				get_recordable_tracks(&default_asset));
+				get_recordable_tracks(default_asset));
 // some plugins can change the sample rate and the frame rate
 
 
 			if(!result)
 			{
-				default_asset.sample_rate = plugin->get_samplerate();
-				default_asset.frame_rate = plugin->get_framerate();
+				default_asset->sample_rate = plugin->get_samplerate();
+				default_asset->frame_rate = plugin->get_framerate();
 			}
 			delete plugin;
 			realtime = 0;
 		}
 
 // Should take from first recordable track
-		default_asset.width = mwindow->edl->session->output_w;
-		default_asset.height = mwindow->edl->session->output_h;
+		default_asset->width = mwindow->edl->session->output_w;
+		default_asset->height = mwindow->edl->session->output_h;
 	}
 
 // Process the total length in fragments
@@ -342,7 +344,7 @@ void MenuEffectThread::run()
 		int current_number;
 		int number_start;
 		int total_digits;
-		Render::get_starting_number(default_asset.path, 
+		Render::get_starting_number(default_asset->path, 
 			current_number,
 			number_start, 
 			total_digits);
@@ -374,12 +376,12 @@ void MenuEffectThread::run()
 			char path[BCTEXTLEN];
 			if(strategy == FILE_PER_LABEL || strategy == FILE_PER_LABEL_FARM) 
 				Render::create_filename(path, 
-					default_asset.path, 
+					default_asset->path, 
 					current_number,
 					total_digits,
 					number_start);
 			else
-				strcpy(path, default_asset.path);
+				strcpy(path, default_asset->path);
 			current_number++;
 
 			MenuEffectPacket *packet = new MenuEffectPacket(path, 
@@ -405,7 +407,7 @@ void MenuEffectThread::run()
 		current_packet < packets.total && !result; 
 		current_packet++)
 	{
-		Asset *asset = new Asset(default_asset);
+		Asset *asset = new Asset(*default_asset);
 		MenuEffectPacket *packet = packets.values[current_packet];
 		int64_t fragment_start = packet->start;
 		int64_t fragment_end = packet->end;
@@ -506,7 +508,10 @@ void MenuEffectThread::run()
 		mwindow->gui->unlock_window();
 	}
 
-	assets.remove_all_objects();
+	for(int i = 0; i < assets.total; i++)
+		Garbage::delete_object(assets.values[i]);
+	assets.remove_all();
+	Garbage::delete_object(default_asset);
 }
 
 

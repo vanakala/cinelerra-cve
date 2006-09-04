@@ -133,7 +133,8 @@ SET_TRACE
 		{
 SET_TRACE
 			Asset *asset = renderengine->preferences->brender_asset;
-			File *file = renderengine->get_vcache()->check_out(asset);
+			File *file = renderengine->get_vcache()->check_out(asset,
+				renderengine->edl);
 			if(file)
 			{
 				int64_t corrected_position = current_position;
@@ -341,7 +342,8 @@ int VRender::get_colormodel(Edit* &playable_edit,
 			asset = playable_edit->asset;
 		}
 
-		file = renderengine->get_vcache()->check_out(asset);
+		file = renderengine->get_vcache()->check_out(asset,
+			renderengine->edl);
 
 		if(file)
 		{

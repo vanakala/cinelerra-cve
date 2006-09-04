@@ -208,7 +208,8 @@ int AModule::render(double *buffer,
 
 
 
-				if(!(source = get_cache()->check_out(playable_edit->asset)))
+				if(!(source = get_cache()->check_out(playable_edit->asset,
+					get_edl())))
 				{
 // couldn't open source file / skip the edit
 					result = 1;
@@ -284,7 +285,9 @@ int AModule::render(double *buffer,
 					{
 						File *source;
 						get_cache()->age();
-						if(!(source = get_cache()->check_out(previous_edit->asset)))
+						if(!(source = get_cache()->check_out(
+							previous_edit->asset,
+							get_edl())))
 						{
 // couldn't open source file / skip the edit
 							printf(_("VirtualAConsole::load_track Couldn't open %s.\n"), playable_edit->asset->path);

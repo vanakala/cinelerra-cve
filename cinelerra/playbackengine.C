@@ -147,14 +147,9 @@ void PlaybackEngine::create_cache()
 	if(video_cache) delete video_cache;
 	video_cache = 0;
 	if(!audio_cache) 
-		audio_cache = new CICache(command->get_edl(), preferences, mwindow->plugindb);
-	else
-		audio_cache->set_edl(command->get_edl());
-
+		audio_cache = new CICache(preferences, mwindow->plugindb);
 	if(!video_cache) 
-		video_cache = new CICache(command->get_edl(), preferences, mwindow->plugindb);
-	else
-		video_cache->set_edl(command->get_edl());
+		video_cache = new CICache(preferences, mwindow->plugindb);
 }
 
 
@@ -165,8 +160,6 @@ void PlaybackEngine::perform_change()
 		case CHANGE_ALL:
 			create_cache();
 		case CHANGE_EDL:
-			audio_cache->set_edl(command->get_edl());
-			video_cache->set_edl(command->get_edl());
 			create_render_engine();
 		case CHANGE_PARAMS:
 			if(command->change_type != CHANGE_EDL &&

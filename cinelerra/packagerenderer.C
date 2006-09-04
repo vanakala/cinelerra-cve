@@ -110,8 +110,8 @@ int PackageRenderer::initialize(MWindow *mwindow,
 		command->get_edl()->session->aspect_h;
 	result = Render::check_asset(edl, *default_asset);
 
-	audio_cache = new CICache(command->get_edl(), preferences, plugindb);
-	video_cache = new CICache(command->get_edl(), preferences, plugindb);
+	audio_cache = new CICache(preferences, plugindb);
+	video_cache = new CICache(preferences, plugindb);
 
 	PlaybackConfig *config = command->get_edl()->session->playback_config;
 	aconfig = new AudioOutConfig(0);
@@ -479,7 +479,7 @@ void PackageRenderer::close_output()
 		mwindow->sighandler->pull_file(file);
 	file->close_file();
 	delete file;
-	delete asset;
+	Garbage::delete_object(asset);
 }
 
 // Aborts and returns 1 if an error is encountered.

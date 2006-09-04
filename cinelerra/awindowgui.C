@@ -142,7 +142,7 @@ void AssetPicon::create_objects()
 		{
 			if(mwindow->preferences->use_thumbnails)
 			{
-				File *file = mwindow->video_cache->check_out(asset);
+				File *file = mwindow->video_cache->check_out(asset, mwindow->edl);
 
 				if(file)
 				{

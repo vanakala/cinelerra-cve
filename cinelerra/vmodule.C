@@ -127,7 +127,8 @@ int VModule::import_frame(VFrame *output,
 		current_edit->asset)
 	{
 		get_cache()->age();
-		File *source = get_cache()->check_out(current_edit->asset);
+		File *source = get_cache()->check_out(current_edit->asset,
+			get_edl());
 //		get_cache()->dump();
 
 		if(source)

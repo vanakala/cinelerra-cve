@@ -27,6 +27,7 @@ AVC1394TransportThread::~AVC1394TransportThread()
 void AVC1394TransportThread::run()
 {
 	char *text;
+	sleep(5);
 	while(!done)
 	{
 		Thread::disable_cancel();

@@ -63,6 +63,7 @@ EDLSession::~EDLSession()
 	delete auto_conf;
 	delete vconfig_in;
 	delete playback_config;
+	Garbage::delete_object(recording_format);
 }
 
 
@@ -184,6 +185,13 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	record_sync_drives = defaults->get("RECORD_SYNC_DRIVES", 0);
 	record_speed = defaults->get("RECORD_SPEED", 8);
 	record_write_length = defaults->get("RECORD_WRITE_LENGTH", 131072);
+	recording_format->load_defaults(defaults,
+		"RECORD_", 
+		1,
+		1,
+		1,
+		1,
+		1);
 	safe_regions = defaults->get("SAFE_REGIONS", 1);
 	sample_rate = defaults->get("SAMPLERATE", 48000);
 	scrub_speed = defaults->get("SCRUB_SPEED", (float)2);

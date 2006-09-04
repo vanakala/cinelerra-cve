@@ -330,7 +330,9 @@ public:
 	void paste_audio_transition();
 	void paste_video_transition();
 	void rebuild_indices();
-// Asset removal
+// Asset removal from caches
+	void reset_caches();
+	void remove_asset_from_caches(Asset *asset);
 	void remove_assets_from_project(int push_undo = 0);
 	void remove_assets_from_disk();
 	void resize_track(Track *track, int w, int h);
@@ -375,7 +377,7 @@ public:
 	
 
 // Send new EDL to caches
-	void update_caches();
+	void age_caches();
 	int optimize_assets();            // delete unused assets from the cache and assets
 
 

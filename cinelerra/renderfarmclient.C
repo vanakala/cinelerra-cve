@@ -592,7 +592,7 @@ SET_TRACE
 
 
 //printf("RenderFarmClientThread::run 9\n");
-	delete default_asset;
+	Garbage::delete_object(default_asset);
 //printf("RenderFarmClientThread::run 10\n");
 	delete edl;
 //printf("RenderFarmClientThread::run 11\n");

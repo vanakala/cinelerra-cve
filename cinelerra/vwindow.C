@@ -49,7 +49,7 @@ void VWindow::delete_edl()
 		mwindow->edl->vwindow_edl_shared = 0;
 	}
 
-	if(asset) delete asset;
+	if(asset) Garbage::delete_object(asset);
 	asset = 0;
 }
 
@@ -109,7 +109,7 @@ void VWindow::change_source()
 	}
 	else
 	{
-		if(asset) delete asset;
+		if(asset) Garbage::delete_object(asset);
 		asset = 0;
 		mwindow->edl->vwindow_edl_shared = 0;
 	}

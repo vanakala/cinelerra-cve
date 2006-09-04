@@ -599,7 +599,7 @@ SET_TRACE
 // Delete everything
 	script = 0;
 	batches.remove_all_objects();
-	delete default_asset;
+	Garbage::delete_object(default_asset);
 }
 
 void Record::activate_batch(int number, int stop_operation)

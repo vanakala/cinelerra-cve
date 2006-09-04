@@ -108,7 +108,9 @@ void MainIndexes::add_next_asset(File *file, Asset *asset)
 
 void MainIndexes::delete_current_assets()
 {
-	current_assets.remove_all_objects();
+	for(int i = 0; i < current_assets.total; i++)
+		Garbage::delete_object(current_assets.values[i]);
+	current_assets.remove_all();
 }
 
 void MainIndexes::start_loop()

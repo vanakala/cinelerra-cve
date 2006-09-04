@@ -116,7 +116,7 @@ void AssetEdit::run()
  			}
  		}
 
-		delete new_asset;
+		Garbage::delete_object(new_asset);
 		delete window;
 		window = 0;
 	}

@@ -366,7 +366,7 @@ printf("Render::run 10\n");
 		if(!result) render(1, asset, mwindow->edl, strategy);
 printf("Render::run 11\n");
 
-		delete asset;
+		Garbage::delete_object(asset);
 printf("Render::run 12\n");
 	}
 	else
@@ -619,8 +619,8 @@ int Render::render(int test_overwrite,
 	}
 
 // Create caches
-	audio_cache = new CICache(command->get_edl(), preferences, plugindb);
-	video_cache = new CICache(command->get_edl(), preferences, plugindb);
+	audio_cache = new CICache(preferences, plugindb);
+	video_cache = new CICache(preferences, plugindb);
 
 	default_asset->frame_rate = command->get_edl()->session->frame_rate;
 	default_asset->sample_rate = command->get_edl()->session->sample_rate;

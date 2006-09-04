@@ -70,7 +70,7 @@ Preferences::Preferences()
 
 Preferences::~Preferences()
 {
-	delete brender_asset;
+	Garbage::delete_object(brender_asset);
 	delete preferences_lock;
 }
 

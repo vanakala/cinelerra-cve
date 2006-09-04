@@ -628,8 +628,8 @@ void MWindow::init_viewer()
 
 void MWindow::init_cache()
 {
-	audio_cache = new CICache(edl, preferences, plugindb);
-	video_cache = new CICache(edl, preferences, plugindb);
+	audio_cache = new CICache(preferences, plugindb);
+	video_cache = new CICache(preferences, plugindb);
 }
 
 void MWindow::init_channeldb()
@@ -883,7 +883,7 @@ SET_TRACE
 SET_TRACE
 					new_edls.append(new_edl);
 SET_TRACE
-					delete new_asset;
+					Garbage::delete_object(new_asset);
 					new_asset = 0;
 SET_TRACE
 				}
@@ -990,7 +990,7 @@ SET_TRACE
 					{
 						asset_to_edl(new_edl, new_asset);
 						new_edls.append(new_edl);
-						delete new_asset;
+						Garbage::delete_object(new_asset);
 						new_asset = 0;
 					}
 					else
@@ -1036,7 +1036,7 @@ SET_TRACE
 		if(result)
 		{
 			delete new_edl;
-			delete new_asset;
+			Garbage::delete_object(new_asset);
 			new_edl = 0;
 			new_asset = 0;
 		}
@@ -1109,8 +1109,9 @@ SET_TRACE
 			}
 
 			mainindexes->add_next_asset(got_it ? new_file : 0, 
-				new_assets.values[i]);
-			edl->assets->update(new_assets.values[i]);
+				new_asset);
+			edl->assets->update(new_asset);
+
 		}
 
 
@@ -1126,7 +1127,10 @@ SET_TRACE
 
 	new_edls.remove_all_objects();
 SET_TRACE
-	new_assets.remove_all_objects();
+	for(int i = 0; i < new_assets.total; i++)
+		Garbage::delete_object(new_assets.values[i]);
+SET_TRACE
+	new_assets.remove_all();
 SET_TRACE
 	new_files.remove_all_objects();
 
@@ -1490,10 +1494,34 @@ void MWindow::sync_parameters(int change_type)
 	}
 }
 
-void MWindow::update_caches()
+void MWindow::age_caches()
 {
-	audio_cache->set_edl(edl);
-	video_cache->set_edl(edl);
+	int64_t prev_memory_usage;
+	int64_t memory_usage;
+	int result = 0;
+	do
+	{
+		memory_usage = audio_cache->get_memory_usage(1) +
+			video_cache->get_memory_usage(1);
+
+		if(memory_usage > preferences->cache_size)
+		{
+			int target = 1;
+			int oldest1 = audio_cache->get_oldest();
+			int oldest2 = video_cache->get_oldest();
+			if(oldest2 < oldest1) target = 2;
+			switch(target)
+			{
+				case 1: audio_cache->delete_oldest(); break;
+				case 2: video_cache->delete_oldest(); break;
+			}
+		}
+		prev_memory_usage = memory_usage;
+		memory_usage = audio_cache->get_memory_usage(1) +
+			video_cache->get_memory_usage(1);
+	}while(!result && 
+		prev_memory_usage != memory_usage && 
+		memory_usage > preferences->cache_size);
 }
 
 void MWindow::show_plugin(Plugin *plugin)
@@ -1751,8 +1779,6 @@ void MWindow::update_project(int load_mode)
 	restart_brender();
 	edl->tracks->update_y_pixels(theme);
 
-// Draw timeline
-	update_caches();
 
 	gui->update(1, 1, 1, 1, 1, 1, 1);
 
@@ -1846,19 +1872,43 @@ int MWindow::create_aspect_ratio(float &w, float &h, int width, int height)
 	return 0;
 }
 
+void MWindow::reset_caches()
+{
+	audio_cache->remove_all();
+	video_cache->remove_all();
+	if(cwindow->playback_engine && cwindow->playback_engine->audio_cache)
+		cwindow->playback_engine->audio_cache->remove_all();
+	if(cwindow->playback_engine && cwindow->playback_engine->video_cache)
+		cwindow->playback_engine->video_cache->remove_all();
+	if(vwindow->playback_engine && vwindow->playback_engine->audio_cache)
+		vwindow->playback_engine->audio_cache->remove_all();
+	if(vwindow->playback_engine && vwindow->playback_engine->video_cache)
+		vwindow->playback_engine->video_cache->remove_all();
+}
+
+void MWindow::remove_asset_from_caches(Asset *asset)
+{
+	audio_cache->delete_entry(asset);
+	video_cache->delete_entry(asset);
+	if(cwindow->playback_engine && cwindow->playback_engine->audio_cache)
+		cwindow->playback_engine->audio_cache->delete_entry(asset);
+	if(cwindow->playback_engine && cwindow->playback_engine->video_cache)
+		cwindow->playback_engine->video_cache->delete_entry(asset);
+	if(vwindow->playback_engine && vwindow->playback_engine->audio_cache)
+		vwindow->playback_engine->audio_cache->delete_entry(asset);
+	if(vwindow->playback_engine && vwindow->playback_engine->video_cache)
+		vwindow->playback_engine->video_cache->delete_entry(asset);
+}
+
 
 
 void MWindow::remove_assets_from_project(int push_undo)
 {
-// Remove from caches
 	for(int i = 0; i < session->drag_assets->total; i++)
 	{
-		audio_cache->delete_entry(session->drag_assets->values[i]);
-		video_cache->delete_entry(session->drag_assets->values[i]);
+		Asset *asset = session->drag_assets->values[i];
+		remove_asset_from_caches(asset);
 	}
-
-video_cache->dump();
-audio_cache->dump();
 
 // Remove from VWindow.
 	for(int i = 0; i < session->drag_clips->total; i++)

@@ -46,7 +46,8 @@ int VEdit::read_frame(VFrame *video_out,
 	int use_nudge,
 	int use_cache)
 {
-	File *file = cache->check_out(asset);
+	File *file = cache->check_out(asset,
+		edl);
 	int result = 0;
 	if(use_nudge) input_position += track->nudge;
 
