@@ -156,6 +156,17 @@ VideoInConfig::VideoInConfig()
 	sprintf(lml_in_device, "/dev/mvideo/stream");
 	sprintf(buz_in_device, "/dev/video0");
 	sprintf(screencapture_display, "");
+
+
+// DVB
+	sprintf(dvb_in_host, "echephyle");
+	dvb_in_port = 400;
+	dvb_in_number = 0;
+
+
+
+
+
 	firewire_port = 0;
 	firewire_channel = 63;
 	sprintf(firewire_path, "/dev/dv1394");
@@ -187,6 +198,9 @@ char* VideoInConfig::get_path()
 		case CAPTURE_BUZ:
 			return buz_in_device;
 			break;
+		case CAPTURE_DVB:
+			return dvb_in_host;
+			break;
 	}
 	return v4l_in_device;
 }
@@ -200,6 +214,19 @@ void VideoInConfig::copy_from(VideoInConfig *src)
 	strcpy(lml_in_device, src->lml_in_device);
 	strcpy(buz_in_device, src->buz_in_device);
 	strcpy(screencapture_display, src->screencapture_display);
+
+
+
+
+
+	strcmp(dvb_in_host, src->dvb_in_host);
+	dvb_in_port = src->dvb_in_port;
+	dvb_in_number = src->dvb_in_number;
+
+
+
+
+
 	firewire_port = src->firewire_port;
 	firewire_channel = src->firewire_channel;
 	strcpy(firewire_path, src->firewire_path);
@@ -224,6 +251,11 @@ int VideoInConfig::load_defaults(BC_Hash *defaults)
 	defaults->get("LML_IN_DEVICE", lml_in_device);
 	defaults->get("BUZ_IN_DEVICE", buz_in_device);
 	defaults->get("SCREENCAPTURE_DISPLAY", screencapture_display);
+
+	defaults->get("DVB_IN_HOST", dvb_in_host);
+	dvb_in_port = defaults->get("DVB_IN_PORT", dvb_in_port);
+	dvb_in_number = defaults->get("DVB_IN_NUMBER", dvb_in_number);
+
 	firewire_port = defaults->get("VFIREWIRE_IN_PORT", firewire_port);
 	firewire_channel = defaults->get("VFIREWIRE_IN_CHANNEL", firewire_channel);
 	defaults->get("VFIREWIRE_IN_PATH", firewire_path);
@@ -243,6 +275,18 @@ int VideoInConfig::save_defaults(BC_Hash *defaults)
 	defaults->update("LML_IN_DEVICE", lml_in_device);
 	defaults->update("BUZ_IN_DEVICE", buz_in_device);
 	defaults->update("SCREENCAPTURE_DISPLAY", screencapture_display);
+
+
+
+
+	defaults->update("DVB_IN_HOST", dvb_in_host);
+	defaults->update("DVB_IN_PORT", dvb_in_port);
+	defaults->update("DVB_IN_NUMBER", dvb_in_number);
+
+
+
+
+
 	defaults->update("VFIREWIRE_IN_PORT", firewire_port);
 	defaults->update("VFIREWIRE_IN_CHANNEL", firewire_channel);
 	defaults->update("VFIREWIRE_IN_PATH", firewire_path);

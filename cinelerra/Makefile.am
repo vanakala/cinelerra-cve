@@ -34,7 +34,9 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    atrack.C \
 		    attachmentpoint.C \
 		    audioalsa.C \
+		    audiocine.C \
 		    audiodevice.C \
+		    audiodvb.C \
 		    audioesound.C \
 		    audioidevice.C \
 		    audioodevice.C \
@@ -76,7 +78,9 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    dcoffset.C \
 		    dcraw.c \
 		    deleteallindexes.C \
+		    devicedvbinput.C \
 		    drivesync.C \
+		    dvbtune.C \
 		    edit.C \
 		    edithandles.C \
 		    editpanel.C \
@@ -247,11 +251,13 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    transitionhandles.C \
 		    transitionpopup.C \
 		    transportque.C \
+		    tunerserver.C \
 		    undostackitem.C \
 		    vattachmentpoint.C \
 		    vautomation.C \
 		    vdevicebase.C \
 		    vdevicebuz.C \
+		    vdevicedvb.C \
 		    vdeviceprefs.C \
 		    vdevicev4l.C \
 		    vdevicev4l2.C \
@@ -324,8 +330,10 @@ noinst_HEADERS = aattachmentpoint.h \
 		 attachmentpoint.h \
 		 audio1394.h \
 		 audioalsa.h \
+		 audiocine.h \
 		 audioconfig.h \
 		 audiodevice.h \
+		 audiodvb.h \
 		 audioesound.h \
 		 audiooss.h \
 		 autoconf.h \
@@ -376,8 +384,10 @@ noinst_HEADERS = aattachmentpoint.h \
 		 deleteallindexes.h \
 		 device1394input.h \
 		 device1394output.h \
+		 devicedvbinput.h \
 		 drivesync.h \
 		 dv1394.h \
+		 dvbtune.h \
 		 edit.h \
 		 edithandles.h \
 		 editpanel.h \
@@ -562,12 +572,14 @@ noinst_HEADERS = aattachmentpoint.h \
 		 transitionhandles.h \
 		 transitionpopup.h \
 		 transportque.h \
+		 tunerserver.h \
 		 undostackitem.h \
 		 vattachmentpoint.h \
 		 vautomation.h \
 		 vdevice1394.h \
 		 vdevicebase.h \
 		 vdevicebuz.h \
+		 vdevicedvb.h \
 		 vdevicelml.h \
 		 vdeviceprefs.h \
 		 vdevicev4l.h \

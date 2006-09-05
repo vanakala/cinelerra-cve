@@ -5,6 +5,7 @@
 #include "asset.inc"
 #include "bchash.inc"
 #include "edl.inc"
+#include "mutex.inc"
 #include "packagerenderer.h"
 #include "pluginserver.inc"
 #include "preferences.inc"
@@ -61,15 +62,21 @@ public:
 		int len);
 	int write_socket(char *data, int len, int timeout);
 	int read_socket(char *data, int len, int timeout);
+// Return 1 if error
+	int write_int64(int64_t number);
+	int64_t read_int64(int *error = 0);
+	void read_string(char* &string);
 	void abort();
-	void read_string(int socket_fd, char* &string);
 	void lock(char *location);
 	void unlock();
 
 
 
+	void do_tuner(int socket_fd);
+	void do_packages(int socket_fd);
 
 
+	void get_command(int socket_fd, int *command);
 	void read_preferences(int socket_fd, 
 		Preferences *preferences);
 	void read_asset(int socket_fd, Asset *asset);

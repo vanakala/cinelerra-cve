@@ -2,6 +2,7 @@
 #include "assets.h"
 #include "clip.h"
 #include "bchash.h"
+#include "dvbtune.h"
 #include "edl.h"
 #include "filesystem.h"
 #include "filexml.h"
@@ -272,7 +273,46 @@ void RenderFarmClientThread::unlock()
 	mutex_lock->unlock();
 }
 
-void RenderFarmClientThread::read_string(int socket_fd, char* &string)
+int RenderFarmClientThread::write_int64(int64_t value)
+{
+	unsigned char data[sizeof(int64_t)];
+	data[0] = (value >> 56) & 0xff;
+	data[1] = (value >> 48) & 0xff;
+	data[2] = (value >> 40) & 0xff;
+	data[3] = (value >> 32) & 0xff;
+	data[4] = (value >> 24) & 0xff;
+	data[5] = (value >> 16) & 0xff;
+	data[6] = (value >> 8) & 0xff;
+	data[7] = value & 0xff;
+	return (write_socket((char*)data, sizeof(int64_t), RENDERFARM_TIMEOUT) != sizeof(int64_t));
+}
+
+int64_t RenderFarmClientThread::read_int64(int *error)
+{
+	int temp = 0;
+	if(!error) error = &temp;
+
+	unsigned char data[sizeof(int64_t)];
+	*error = (read_socket((char*)data, sizeof(int64_t), RENDERFARM_TIMEOUT) != sizeof(int64_t));
+
+// Make it return 1 if error so it can be used to read a result code from the
+// server.
+	int64_t result = 1;
+	if(!*error)
+	{
+		result = (((int64_t)data[0]) << 56) |
+			(((uint64_t)data[1]) << 48) | 
+			(((uint64_t)data[2]) << 40) |
+			(((uint64_t)data[3]) << 32) |
+			(((uint64_t)data[4]) << 24) |
+			(((uint64_t)data[5]) << 16) |
+			(((uint64_t)data[6]) << 8)  |
+			data[7];
+	}
+	return result;
+}
+
+void RenderFarmClientThread::read_string(char* &string)
 {
 	unsigned char header[4];
 	if(read_socket((char*)header, 4, RENDERFARM_TIMEOUT) != 4)
@@ -301,6 +341,19 @@ void RenderFarmClientThread::read_string(int socket_fd, char* &string)
 }
 
 
+void RenderFarmClientThread::get_command(int socket_fd, int *command)
+{
+	unsigned char data[4];
+	int error;
+	*command = read_int64(&error);
+	if(error)
+	{
+		*command = 0;
+		return;
+	}
+}
+
+
 void RenderFarmClientThread::read_preferences(int socket_fd, 
 	Preferences *preferences)
 {
@@ -308,7 +361,7 @@ void RenderFarmClientThread::read_preferences(int socket_fd,
 		0);
 
 	char *string;
-	read_string(socket_fd, string);
+	read_string(string);
 
 	BC_Hash defaults;
 	defaults.load_string((char*)string);
@@ -326,8 +379,8 @@ void RenderFarmClientThread::read_asset(int socket_fd, Asset *asset)
 
 	char *string1;
 	char *string2;
-	read_string(socket_fd, string1);
-	read_string(socket_fd, string2);
+	read_string(string1);
+	read_string(string2);
 
 
 
@@ -359,7 +412,7 @@ void RenderFarmClientThread::read_edl(int socket_fd,
 		0);
 
 	char *string;
-	read_string(socket_fd, string);
+	read_string(string);
 
 
 	FileXML file;
@@ -429,7 +482,7 @@ int RenderFarmClientThread::read_package(int socket_fd, RenderPackage *package)
 //printf("RenderFarmClientThread::read_package 1 %f %ld\n", frames_per_second, fixed);
 	char *data;
 	unsigned char *data_ptr;
-	read_string(socket_fd, data);
+	read_string(data);
 //printf("RenderFarmClientThread::read_package 2 %p\n", data);
 // Signifies end of session.
 	if(!data) 
@@ -499,10 +552,46 @@ void RenderFarmClientThread::run()
 	int socket_fd = this->socket_fd;
 
 
+// Get command to run
+	int command;
+SET_TRACE
+	lock("RenderFarmClientThread::run");
+SET_TRACE
+	get_command(socket_fd, &command);
+SET_TRACE
+	unlock();
+
 //printf("RenderFarmClientThread::run command=%d\n", command);
 
 SET_TRACE
+	switch(command)
+	{
+		case RENDERFARM_TUNER:
+			do_tuner(socket_fd);
+			break;
+		case RENDERFARM_PACKAGES:
+			do_packages(socket_fd);
+			break;
+	}
 
+	_exit(0);
+}
+
+
+
+
+
+void RenderFarmClientThread::do_tuner(int socket_fd)
+{
+// Currently only 1 tuner driver.  Maybe more someday.
+	DVBTune server(this);
+	server.main_loop();
+	::close(socket_fd);
+}
+
+
+void RenderFarmClientThread::do_packages(int socket_fd)
+{
 
 	EDL *edl;
 	RenderPackage *package;

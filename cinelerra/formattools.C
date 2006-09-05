@@ -216,6 +216,20 @@ void FormatTools::update_driver(int driver)
 
 	switch(driver)
 	{
+		case CAPTURE_DVB:
+// Just give the user information about how the stream is going to be
+// stored but don't change the asset.
+// Want to be able to revert to user settings.
+			if(asset->format != FILE_MPEG)
+			{
+				format_text->update(_("MPEG transport stream"));
+				asset->format = FILE_MPEG;
+			}
+			lock_compressor = 0;
+			audio_switch->update(1);
+			video_switch->update(1);
+			break;
+
 		case CAPTURE_IEC61883:
 		case CAPTURE_FIREWIRE:
 			if(asset->format != FILE_AVI &&
@@ -401,6 +415,11 @@ void FormatTools::reposition_window(int &init_x, int &init_y)
 
 int FormatTools::set_audio_options()
 {
+//	if(video_driver == CAPTURE_DVB)
+//	{
+//		return 0;
+//	}
+
 	if(!aparams_thread->running())
 	{
 		aparams_thread->start();
@@ -414,6 +433,11 @@ int FormatTools::set_audio_options()
 
 int FormatTools::set_video_options()
 {
+//	if(video_driver == CAPTURE_DVB)
+//	{
+//		return 0;
+//	}
+
 	if(!vparams_thread->running())
 	{
 		vparams_thread->start();

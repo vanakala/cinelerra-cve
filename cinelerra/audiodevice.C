@@ -2,7 +2,9 @@
 #include "audio1394.h"
 #endif
 #include "audioalsa.h"
+#include "audiocine.h"
 #include "audiodevice.h"
+#include "audiodvb.h"
 #include "audioesound.h"
 #include "audiooss.h"
 #include "bctimer.h"
@@ -142,6 +144,18 @@ int AudioDevice::create_lowlevel(AudioLowLevel* &lowlevel, int driver)
 				lowlevel = new Audio1394(this);
 				break;
 #endif
+
+
+
+			case AUDIO_DVB:
+				lowlevel = new AudioDVB(this);
+				break;
+
+
+
+			case AUDIO_CINE:
+				lowlevel = new AudioCine(this);
+				break;
 		}
 	}
 	return 0;

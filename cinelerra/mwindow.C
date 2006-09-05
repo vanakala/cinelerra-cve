@@ -16,6 +16,7 @@
 #include "cwindowgui.h"
 #include "cwindow.h"
 #include "bchash.h"
+#include "devicedvbinput.inc"
 #include "editpanel.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -131,6 +132,8 @@ MWindow::MWindow()
 	session = 0;
 	channeldb_buz = new ChannelDB;
 	channeldb_v4l2jpeg = new ChannelDB;
+	dvb_input = 0;
+	dvb_input_lock = new Mutex("MWindow::dvb_input_lock");
 }
 
 MWindow::~MWindow()

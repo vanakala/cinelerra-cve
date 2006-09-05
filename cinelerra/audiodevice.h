@@ -9,6 +9,7 @@
 
 #include "audioalsa.inc"
 #include "audioconfig.inc"
+#include "audiodvb.inc"
 #include "audiodevice.inc"
 #include "audioesound.inc"
 #include "audiooss.inc"
@@ -60,6 +61,7 @@ public:
 	~AudioDevice();
 
 	friend class AudioALSA;
+	friend class AudioDVB;
 	friend class AudioOSS;
 	friend class AudioESound;
 	friend class Audio1394;

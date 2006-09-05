@@ -3,6 +3,7 @@
 #include "bccapture.h"
 #include "bcsignals.h"
 #include "channel.h"
+#include "channeldb.h"
 #include "chantables.h"
 #include "file.inc"
 #include "mutex.h"
@@ -17,6 +18,7 @@
 #include "vdevice1394.h"
 #endif
 #include "vdevicebuz.h"
+#include "vdevicedvb.h"
 #include "vdevicev4l.h"
 #include "vdevicev4l2.h"
 #include "vdevicev4l2jpeg.h"
@@ -211,6 +213,11 @@ int VideoDevice::open_input(VideoInConfig *config,
 			result = input_base->open_input();
 			break;
 #endif
+
+		case CAPTURE_DVB:
+			new_device_base();
+			result = input_base->open_input();
+			break;
 	}
 	
 	if(!result) capturing = 1;
@@ -243,8 +250,45 @@ VDeviceBase* VideoDevice::new_device_base()
 		case CAPTURE_IEC61883:
 			return input_base = new VDevice1394(this);
 #endif
+
+		case CAPTURE_DVB:
+			return input_base = new VDeviceDVB(this);
 	}
 	return 0;
+}
+
+static char* get_channeldb_path(VideoInConfig *vconfig_in)
+{
+	char *path = "";
+	switch(vconfig_in->driver)
+	{
+		case VIDEO4LINUX:
+			path = "channels_v4l";
+			break;
+		case VIDEO4LINUX2:
+			path = "channels_v4l2";
+			break;
+		case VIDEO4LINUX2JPEG:
+			path = "channels_v4l2jpeg";
+			break;
+		case CAPTURE_BUZ:
+			path = "channels_buz";
+			break;
+		case CAPTURE_DVB:
+			path = "channels_dvb";
+			break;
+	}
+	return path;
+}
+
+void VideoDevice::load_channeldb(ChannelDB *channeldb, VideoInConfig *vconfig_in)
+{
+	channeldb->load(get_channeldb_path(vconfig_in));
+}
+
+void VideoDevice::save_channeldb(ChannelDB *channeldb, VideoInConfig *vconfig_in)
+{
+	channeldb->save(get_channeldb_path(vconfig_in));
 }
 
 

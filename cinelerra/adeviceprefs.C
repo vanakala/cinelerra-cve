@@ -51,6 +51,9 @@ void ADevicePrefs::reset()
 	alsa_device = 0;
 	alsa_bits = 0;
 	alsa_workaround = 0;
+
+	cine_bits = 0;
+	cine_path = 0;
 }
 
 int ADevicePrefs::initialize(int creation)
@@ -99,6 +102,9 @@ int ADevicePrefs::initialize(int creation)
 		case AUDIO_IEC61883:
 			create_firewire_objs();
 			break;
+		case AUDIO_CINE:
+			create_cine_objs();
+			break;
 	}
 	return 0;
 }
@@ -131,6 +137,10 @@ int ADevicePrefs::delete_objects()
 			delete_firewire_objs();
 			break;
 	}
+
+	delete cine_bits;
+	delete cine_path;
+
 	reset();
 	driver = -1;
 	return 0;
@@ -493,6 +503,17 @@ int ADevicePrefs::create_firewire_objs()
 	return 0;
 }
 
+
+
+int ADevicePrefs::create_cine_objs()
+{
+	BC_Resources *resources = BC_WindowBase::get_resources();
+	int x1 = x + menu->get_w() + 5;
+	
+}
+
+
+
 ADriverMenu::ADriverMenu(int x, 
 	int y, 
 	ADevicePrefs *device_prefs, 
@@ -525,6 +546,7 @@ void ADriverMenu::create_objects()
 	add_item(new ADriverItem(this, AUDIO_DV1394_TITLE, AUDIO_DV1394));
 	add_item(new ADriverItem(this, AUDIO_IEC61883_TITLE, AUDIO_IEC61883));
 #endif
+	add_item(new ADriverItem(this, AUDIO_DVB_TITLE, AUDIO_DVB));
 }
 
 char* ADriverMenu::adriver_to_string(int driver)
@@ -557,6 +579,9 @@ char* ADriverMenu::adriver_to_string(int driver)
 			sprintf(string, AUDIO_IEC61883_TITLE);
 			break;
 #endif
+		case AUDIO_DVB:
+			sprintf(string, AUDIO_DVB_TITLE);
+			break;
 	}
 	return string;
 }

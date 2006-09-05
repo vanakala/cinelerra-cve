@@ -8,6 +8,8 @@
 #include "bctimer.h"
 #include "canvas.inc"
 #include "channel.inc"
+#include "channeldb.inc"
+#include "device1394output.inc"
 #include "edl.inc"
 #include "guicast.h"
 #include "mwindow.inc"
@@ -93,6 +95,9 @@ public:
 	static int is_compressed(int driver, int use_file, int use_fixed);
 	int is_compressed(int use_file, int use_fixed);
 
+// Load the specific channeldb for the device type
+	static void load_channeldb(ChannelDB *channeldb, VideoInConfig *vconfig_in);
+	static void save_channeldb(ChannelDB *channeldb, VideoInConfig *vconfig_in);
 
 
 // Return codec to store on disk if compressed

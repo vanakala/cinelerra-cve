@@ -62,6 +62,12 @@ public:
 	int device_index;
 // Tuner number used by the device
 	int tuner;
+// PID's to capture for digital TV
+	int audio_pid;
+	int video_pid;
+// All available PID's detected by the receiver.
+	int *audio_pids;
+	int *video_pids;
 };
 
 

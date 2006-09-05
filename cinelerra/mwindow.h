@@ -14,6 +14,7 @@
 #include "channeldb.inc"
 #include "cwindow.inc"
 #include "bchash.inc"
+#include "devicedvbinput.inc"
 #include "edit.inc"
 #include "edl.inc"
 #include "filesystem.inc"
@@ -455,6 +456,13 @@ public:
 	Mutex *plugin_gui_lock;
 // Lock during creation and destruction of brender so playback doesn't use it.
 	Mutex *brender_lock;
+
+// Single device drivers which must be shared between audio and video go here.
+// They are managed by the garbage collector.
+	DeviceDVBInput *dvb_input;
+// Must be locked before accessing dvb_input or Garbage functions in it.
+	Mutex *dvb_input_lock;
+
 
 
 // Initialize channel DB's for playback

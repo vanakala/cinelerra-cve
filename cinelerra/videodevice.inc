@@ -12,6 +12,7 @@ class VideoDevice;
 #define CAPTURE_FIREWIRE     5
 #define CAPTURE_BUZ          6
 #define CAPTURE_IEC61883     7
+#define CAPTURE_DVB          8
 
 #define VIDEO4LINUX_TITLE      "Video4Linux"
 #define VIDEO4LINUX2_TITLE     "Video4Linux2"
@@ -23,6 +24,7 @@ class VideoDevice;
 #define CAPTURE_FIREWIRE_TITLE "DV 1394"
 #define CAPTURE_IEC61883_TITLE "IEC 61883"
 #endif
+#define CAPTURE_DVB_TITLE      "DVB"
 
 #define PLAYBACK_X11 	  10
 #define PLAYBACK_X11_XV   14

@@ -39,6 +39,9 @@ void Channel::reset()
 	device_index = 0;
 	tuner = 0;
 	has_scanning = 0;
+
+	audio_pid = 0x14;
+	video_pid = 0x11;
 }
 
 void Channel::dump()
@@ -73,6 +76,8 @@ void Channel::copy_settings(Channel *channel)
 	this->norm = channel->norm;
 	this->device_index = channel->device_index;
 	this->tuner = channel->tuner;
+	this->audio_pid = channel->audio_pid;
+	this->video_pid = channel->video_pid;
 }
 
 void Channel::copy_usage(Channel *channel)
@@ -104,6 +109,8 @@ int Channel::load(FileXML *file)
 				norm = file->tag.get_property("NORM", norm);
 				device_index = file->tag.get_property("DEVICE_INDEX", device_index);
 				tuner = file->tag.get_property("TUNER", tuner);
+				audio_pid = file->tag.get_property("AUDIO_PID", audio_pid);
+				video_pid = file->tag.get_property("VIDEO_PID", video_pid);
 				text = file->read_text();
 				strcpy(title, text);
 			}
@@ -125,6 +132,8 @@ int Channel::save(FileXML *file)
 	file->tag.set_property("NORM", norm);
 	file->tag.set_property("DEVICE_INDEX", device_index);
 	file->tag.set_property("TUNER", tuner);
+	file->tag.set_property("AUDIO_PID", audio_pid);
+	file->tag.set_property("VIDEO_PID", video_pid);
 	file->append_tag();
 	file->append_text(title);
 	file->tag.set_title("/CHANNEL");

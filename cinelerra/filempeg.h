@@ -96,6 +96,9 @@ private:
 
 
 
+// DVB capture
+	FILE *dvb_out;
+
 
 
 

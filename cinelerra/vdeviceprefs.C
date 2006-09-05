@@ -53,7 +53,10 @@ void VDevicePrefs::reset_objects()
 	device_text = 0;
 
 	port_title = 0;
+	device_port = 0;
 
+	number_title = 0;
+	device_number = 0;
 	
 
 	channel_title = 0;
@@ -130,6 +133,9 @@ int VDevicePrefs::initialize(int creation)
 		case CAPTURE_IEC61883:
 			create_firewire_objs();
 			break;
+		case CAPTURE_DVB:
+			create_dvb_objs();
+			break;
 	}
 
 
@@ -157,6 +163,11 @@ SET_TRACE
 	delete device_text;
 
 	delete port_title;
+	delete device_port;
+
+	delete number_title;
+	delete device_number;
+
 SET_TRACE
 SET_TRACE
 	if(firewire_port) delete firewire_port;
@@ -176,6 +187,21 @@ SET_TRACE
 	reset_objects();
 	driver = -1;
 	return 0;
+}
+
+int VDevicePrefs::create_dvb_objs()
+{
+	int x1 = x + menu->get_w() + 5;
+	dialog->add_subwindow(device_title = new BC_Title(x1, y, _("Host:")));
+	dialog->add_subwindow(device_text = new VDeviceTextBox(x1, y + 20, in_config->dvb_in_host));
+	x1 += device_text->get_w() + 10;
+	dialog->add_subwindow(port_title = new BC_Title(x1, y, _("Port:")));
+	device_port = new VDeviceTumbleBox(this, x1, y + 20,  &in_config->dvb_in_port, 1, 65536);
+	device_port->create_objects();
+	x1 += device_port->get_w() + 10;
+	dialog->add_subwindow(number_title = new BC_Title(x1, y, _("Adaptor:")));
+	device_number = new VDeviceTumbleBox(this, x1, y + 20,  &in_config->dvb_in_number, 0, 16);
+	device_number->create_objects();
 }
 
 int VDevicePrefs::create_lml_objs()
@@ -440,6 +466,9 @@ char* VDriverMenu::driver_to_string(int driver)
 			sprintf(string, CAPTURE_IEC61883_TITLE);
 			break;
 #endif
+		case CAPTURE_DVB:
+			sprintf(string, CAPTURE_DVB_TITLE);
+			break;
 		case PLAYBACK_X11:
 			sprintf(string, PLAYBACK_X11_TITLE);
 			break;
@@ -487,6 +516,7 @@ int VDriverMenu::create_objects()
 		add_item(new VDriverItem(this, CAPTURE_FIREWIRE_TITLE, CAPTURE_FIREWIRE));
 		add_item(new VDriverItem(this, CAPTURE_IEC61883_TITLE, CAPTURE_IEC61883));
 #endif
+		add_item(new VDriverItem(this, CAPTURE_DVB_TITLE, CAPTURE_DVB));
 	}
 	else
 	{
@@ -538,6 +568,34 @@ int VDeviceTextBox::handle_event()
 { 
 	strcpy(output, get_text()); 
 }
+
+VDeviceTumbleBox::VDeviceTumbleBox(VDevicePrefs *prefs, 
+	int x, 
+	int y, 
+	int *output,
+	int min,
+	int max)
+ : BC_TumbleTextBox(prefs->dialog,
+	*output,
+	min,
+	max,
+ 	x, 
+	y, 
+	60)
+{ 
+	this->output = output; 
+}
+
+int VDeviceTumbleBox::handle_event() 
+{
+	*output = atol(get_text()); 
+	return 1;
+}
+
+
+
+
+
 
 VDeviceIntBox::VDeviceIntBox(int x, int y, int *output)
  : BC_TextBox(x, y, 60, 1, *output)

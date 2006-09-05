@@ -60,6 +60,11 @@ public:
 	char screencapture_display[BCTEXTLEN];
 
 
+// DVB
+	char dvb_in_host[BCTEXTLEN];
+	int dvb_in_port;
+	int dvb_in_number;
+
 	int firewire_port, firewire_channel;
 	char firewire_path[BCTEXTLEN];
 

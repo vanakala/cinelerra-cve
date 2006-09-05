@@ -135,6 +135,8 @@ int FileMPEG::reset_parameters_derived()
 	mjpeg_error = 0;
 
 
+	dvb_out = 0;
+
 
 	fd = 0;
 	video_out = 0;
@@ -472,6 +474,7 @@ SET_TRACE
 				perror("FileMPEG::open_file");
 				lame_close(lame_global);
 				lame_global = 0;
+				result = 1;
 			}
 		}
 		else
@@ -480,6 +483,18 @@ SET_TRACE
 			result = 1;
 		}
 	}
+	else
+// Transport stream for DVB capture
+	if(wr)
+	{
+		if(!(dvb_out = fopen(asset->path, "w")))
+		{
+			perror("FileMPEG::open_file");
+			result = 1;
+		}
+		
+	}
+
 
 //asset->dump();
 SET_TRACE
@@ -677,6 +692,11 @@ int FileMPEG::close_file()
 	if(lame_fd) fclose(lame_fd);
 
 	if(mjpeg_out) fclose(mjpeg_out);
+
+
+	if(dvb_out)
+		fclose(dvb_out);
+
 	reset_parameters();
 
 	FileBase::close_file();

@@ -76,6 +76,8 @@ enum
 	RENDERFARM_GET_RESULT,   // Retrieve error status
 	RENDERFARM_DONE,         // Quit
 	RENDERFARM_SET_VMAP,     // 8 Update video map in background rendering
+	RENDERFARM_TUNER,        // Run a tuner server
+	RENDERFARM_PACKAGES,     // Run packages
 
 // VFS commands
 	RENDERFARM_FOPEN,  
