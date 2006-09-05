@@ -107,6 +107,10 @@ public:
 	int highlighted_track;
 // Enumeration for how to scale from edl.inc.
 	int interpolation_type;
+// Whether to interpolate CR2 images
+	int interpolate_raw;
+// Whether to white balance CR2 images
+	int white_balance_raw;
 // labels follow edits during editing
 	int labels_follow_edits;
 	int mpeg4_deblock;
@@ -119,6 +123,8 @@ public:
 	int64_t playback_buffer;
 	int playback_cursor_visible;
 	int64_t playback_preload;
+	int decode_subtitles;
+	int subtitle_number;
 	int playback_software_position;
 //	int playback_strategy;
 // Play audio in realtime priority

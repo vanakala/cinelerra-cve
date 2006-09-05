@@ -353,6 +353,10 @@ CICacheItem::CICacheItem(CICache *cache, EDL *edl, Asset *asset)
 	file = new File;
 	file->set_processors(cache->preferences->processors);
 	file->set_preload(edl->session->playback_preload);
+	file->set_subtitle(edl->session->decode_subtitles ? 
+		edl->session->subtitle_number : -1);
+	file->set_interpolate_raw(edl->session->interpolate_raw);
+	file->set_white_balance_raw(edl->session->white_balance_raw);
 
 
 // Copy decoding parameters from session to asset so file can see them.

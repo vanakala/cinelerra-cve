@@ -323,9 +323,10 @@ int RecordMonitorGUI::create_objects()
 			driver == VIDEO4LINUX2 ||
 			driver == VIDEO4LINUX2JPEG)
 		{
-			channel_picker = new ChannelPicker(mwindow,
+			channel_picker = new RecordChannelPicker(mwindow,
 				record,
 				thread,
+				this,
 				record->channeldb,
 				mwindow->theme->rmonitor_channel_x, 
 				mwindow->theme->rmonitor_channel_y);

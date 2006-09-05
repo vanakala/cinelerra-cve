@@ -315,11 +315,14 @@ int NewWindow::create_objects()
 	x1 += 10;
 	add_subwindow(output_h_text = new NewOutputH(this, x1, y));
 	x1 += output_h_text->get_w();
-	add_subwindow(new FrameSizePulldown(mwindow, 
+	FrameSizePulldown *pulldown;
+	add_subwindow(pulldown = new FrameSizePulldown(mwindow, 
 		output_w_text, 
 		output_h_text, 
 		x1, 
 		y));
+	x1 += pulldown->get_w() + 5;
+	add_subwindow(new NewSwapExtents(mwindow, this, x1, y));
 	y += output_h_text->get_h() + 5;
 
 	x1 = x;
@@ -876,6 +879,29 @@ int NewAspectAuto::handle_event()
 
 
 
+
+
+
+
+NewSwapExtents::NewSwapExtents(MWindow *mwindow, NewWindow *gui, int x, int y)
+ : BC_Button(x, y, mwindow->theme->get_image_set("swap_extents"))
+{
+	this->mwindow = mwindow;
+	this->gui = gui;
+	set_tooltip("Swap dimensions");
+}
+
+int NewSwapExtents::handle_event()
+{
+	int w = gui->new_edl->session->output_w;
+	int h = gui->new_edl->session->output_h;
+	gui->new_edl->session->output_w = h;
+	gui->new_edl->session->output_h = w;
+	gui->output_w_text->update((int64_t)h);
+	gui->output_h_text->update((int64_t)w);
+	gui->new_thread->update_aspect();
+	return 1;
+}
 
 
 

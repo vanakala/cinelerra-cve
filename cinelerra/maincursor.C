@@ -102,9 +102,7 @@ void MainCursor::draw(int do_plugintoggles)
 	gui->canvas->set_inverse();
 	gui->canvas->draw_box(pixel1, 0, pixel2 - pixel1 + 1, gui->canvas->get_h());
 	gui->canvas->set_opaque();
-	// Dangling line from a partial 2.0 -> 2.1 patch
-        //   We still need to add the function, refresh_plugintoggles()
-	// if(do_plugintoggles) ; gui->canvas->refresh_plugintoggles();
+	if(do_plugintoggles) gui->canvas->refresh_plugintoggles();
 	visible = !visible;
 }
 

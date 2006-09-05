@@ -85,6 +85,8 @@ void File::reset_parameters()
 	resample_float = 0;
 	use_cache = 0;
 	preferences = 0;
+	playback_subtitle = -1;
+	interpolate_raw = 1;
 }
 
 int File::raise_window()
@@ -276,6 +278,21 @@ int File::set_preload(int64_t size)
 {
 	this->playback_preload = size;
 	return 0;
+}
+
+void File::set_subtitle(int value)
+{
+	this->playback_subtitle = value;
+}
+
+void File::set_interpolate_raw(int value)
+{
+	this->interpolate_raw = value;
+}
+
+void File::set_white_balance_raw(int value)
+{
+	this->white_balance_raw = value;
 }
 
 void File::set_cache_frames(int value)

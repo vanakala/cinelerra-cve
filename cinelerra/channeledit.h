@@ -2,14 +2,13 @@
 #define CHANNELEDIT_H
 
 #include "bcdialog.h"
+#include "bcprogressbox.inc"
 #include "guicast.h"
 #include "channel.inc"
 #include "channeldb.inc"
 #include "channelpicker.inc"
 #include "condition.inc"
-#include "mainprogress.inc"
 #include "mutex.inc"
-#include "mwindow.inc"
 #include "picture.inc"
 #include "record.h"
 
@@ -19,10 +18,8 @@ class ScanThread;
 class ChannelEditThread : public Thread
 {
 public:
-	ChannelEditThread(MWindow *mwindow, 
-		ChannelPicker *channel_picker,
-		ChannelDB *channeldb,
-		Record *Record);
+	ChannelEditThread(ChannelPicker *channel_picker,
+		ChannelDB *channeldb);
 	~ChannelEditThread();
 	void run();
 	int close_threads();
@@ -39,8 +36,6 @@ public:
 	ChannelDB *new_channels;
 	ChannelEditWindow *window;
 	ScanThread *scan_thread;
-	MWindow *mwindow;
-	Record *record;
 };
 
 class ChannelEditList;
@@ -51,7 +46,8 @@ class ConfirmScanThread;
 class  ChannelEditWindow : public BC_Window
 {
 public:
-	ChannelEditWindow(MWindow *mwindow, ChannelEditThread *thread, ChannelPicker *channel_picker);
+	ChannelEditWindow(ChannelEditThread *thread, 
+		ChannelPicker *channel_picker);
 	~ChannelEditWindow();
 
 	int create_objects();
@@ -78,14 +74,13 @@ public:
 	ChannelPicker *channel_picker;
 	ChannelEditEditThread *edit_thread;
 	ChannelEditPictureThread *picture_thread;
-	MWindow *mwindow;
 	ConfirmScanThread *scan_confirm_thread;
 };
 
 class ChannelEditSelect : public BC_GenericButton
 {
 public:
-	ChannelEditSelect(MWindow *mwindow, ChannelEditWindow *window, int x, int y);
+	ChannelEditSelect(ChannelEditWindow *window, int x, int y);
 	~ChannelEditSelect();
 	int handle_event();
 	ChannelEditWindow *window;
@@ -95,7 +90,7 @@ public:
 class ChannelEditAdd : public BC_GenericButton
 {
 public:
-	ChannelEditAdd(MWindow *mwindow, ChannelEditWindow *window, int x, int y);
+	ChannelEditAdd(ChannelEditWindow *window, int x, int y);
 	~ChannelEditAdd();
 	int handle_event();
 	ChannelEditWindow *window;
@@ -104,7 +99,7 @@ public:
 class ChannelEditList : public BC_ListBox
 {
 public:
-	ChannelEditList(MWindow *mwindow, ChannelEditWindow *window, int x, int y);
+	ChannelEditList(ChannelEditWindow *window, int x, int y);
 	~ChannelEditList();
 	int handle_event();
 	ChannelEditWindow *window;
@@ -114,7 +109,7 @@ public:
 class ChannelEditMoveUp : public BC_GenericButton
 {
 public:
-	ChannelEditMoveUp(MWindow *mwindow, ChannelEditWindow *window, int x, int y);
+	ChannelEditMoveUp(ChannelEditWindow *window, int x, int y);
 	~ChannelEditMoveUp();
 	int handle_event();
 	ChannelEditWindow *window;
@@ -123,7 +118,7 @@ public:
 class ChannelEditMoveDown : public BC_GenericButton
 {
 public:
-	ChannelEditMoveDown(MWindow *mwindow, ChannelEditWindow *window, int x, int y);
+	ChannelEditMoveDown(ChannelEditWindow *window, int x, int y);
 	~ChannelEditMoveDown();
 	int handle_event();
 	ChannelEditWindow *window;
@@ -132,7 +127,7 @@ public:
 class ChannelEditSort : public BC_GenericButton
 {
 public:
-	ChannelEditSort(MWindow *mwindow, ChannelEditWindow *window, int x, int y);
+	ChannelEditSort(ChannelEditWindow *window, int x, int y);
 	int handle_event();
 	ChannelEditWindow *window;
 };
@@ -140,7 +135,7 @@ public:
 class ChannelEditScan : public BC_GenericButton
 {
 public:
-	ChannelEditScan(MWindow *mwindow, ChannelEditWindow *window, int x, int y);
+	ChannelEditScan(ChannelEditWindow *window, int x, int y);
 	int handle_event();
 	ChannelEditWindow *window;
 };
@@ -148,7 +143,7 @@ public:
 class ChannelEditDel : public BC_GenericButton
 {
 public:
-	ChannelEditDel(MWindow *mwindow, ChannelEditWindow *window, int x, int y);
+	ChannelEditDel(ChannelEditWindow *window, int x, int y);
 	~ChannelEditDel();
 	int handle_event();
 	ChannelEditWindow *window;
@@ -157,7 +152,7 @@ public:
 class ChannelEdit : public BC_GenericButton
 {
 public:
-	ChannelEdit(MWindow *mwindow, ChannelEditWindow *window, int x, int y);
+	ChannelEdit(ChannelEditWindow *window, int x, int y);
 	~ChannelEdit();
 	int handle_event();
 	ChannelEditWindow *window;
@@ -166,7 +161,7 @@ public:
 class ChannelEditPicture : public BC_GenericButton
 {
 public:
-	ChannelEditPicture(MWindow *mwindow, ChannelEditWindow *window, int x, int y);
+	ChannelEditPicture(ChannelEditWindow *window, int x, int y);
 	~ChannelEditPicture();
 	int handle_event();
 	ChannelEditWindow *window;
@@ -214,7 +209,7 @@ public:
 
 	ChannelEditThread *edit;
 	int interrupt;
-	MainProgressBar *progress;
+	BC_ProgressBox *progress;
 };
 
 
@@ -232,8 +227,7 @@ class ChannelEditEditThread : public Thread
 {
 public:
 	ChannelEditEditThread(ChannelEditWindow *window, 
-		ChannelPicker *channel_picker,
-		Record *record);
+		ChannelPicker *channel_picker);
 	~ChannelEditEditThread();
 
 	void run();
@@ -253,7 +247,6 @@ public:
 	ChannelEditWindow *window;
 	ChannelEditEditSource *source_text;
 	ChannelEditEditWindow *edit_window;
-	Record *record;
 	int editing;   // Tells whether or not to delete the channel on cancel
 	int in_progress;   // Allow only 1 thread at a time
 	int user_title;
@@ -398,6 +391,7 @@ public:
 	ChannelEditEditFine(int x, int y, ChannelEditEditThread *thread);
 	~ChannelEditEditFine();
 	int handle_event();
+	int button_release_event();
 	ChannelEditEditThread *thread;
 };
 

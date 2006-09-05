@@ -39,6 +39,7 @@
 #include "pluginpopup.h"
 #include "pluginset.h"
 #include "pluginserver.h"
+#include "plugintoggles.h"
 #include "preferences.h"
 #include "resourcepixmap.h"
 #include "mainsession.h"
@@ -1703,8 +1704,15 @@ void TrackCanvas::draw_highlighting()
 void TrackCanvas::draw_plugins()
 {
 	char string[BCTEXTLEN];
+	int current_toggle = 0;
 
-	if(!mwindow->edl->session->show_assets) return;
+	if(!mwindow->edl->session->show_assets) goto done;
+
+	for(int i = 0; i < plugin_on_toggles.total; i++)
+		plugin_on_toggles.values[i]->in_use = 0;
+	for(int i = 0; i < plugin_show_toggles.total; i++)
+		plugin_show_toggles.values[i]->in_use = 0;
+
 
 	for(Track *track = mwindow->edl->tracks->first;
 		track;
@@ -1726,6 +1734,7 @@ void TrackCanvas::draw_plugins()
 						plugin->plugin_type != PLUGIN_NONE)
 					{
 						int x = total_x, w = total_w, left_margin = 5;
+						int right_margin = 5;
 						if(x < 0)
 						{
 							w -= -x;
@@ -1765,13 +1774,66 @@ void TrackCanvas::draw_plugins()
 							string,
 							strlen(string),
 							0);
+
+
+// Update plugin toggles
+						int toggle_x = total_x + total_w;
+						toggle_x = MIN(get_w() - right_margin, toggle_x);
+						toggle_x -= PluginOn::calculate_w(mwindow) + 10;
+						int toggle_y = y;
+						if(current_toggle >= plugin_on_toggles.total)
+						{
+							PluginOn *plugin_on = new PluginOn(mwindow, toggle_x, toggle_y, plugin);
+							add_subwindow(plugin_on);
+							plugin_on_toggles.append(plugin_on);
+						}
+						else
+						{
+							plugin_on_toggles.values[current_toggle]->update(toggle_x, toggle_y, plugin);
+						}
+
+						toggle_x -= PluginShow::calculate_w(mwindow) + 10;
+						if(current_toggle >= plugin_show_toggles.total)
+						{
+							PluginShow *plugin_off = new PluginShow(mwindow, toggle_x, toggle_y, plugin);
+							add_subwindow(plugin_off);
+							plugin_show_toggles.append(plugin_off);
+						}
+						else
+						{
+							plugin_show_toggles.values[current_toggle]->update(toggle_x, toggle_y, plugin);
+						}
+						current_toggle++;
 					}
 				}
 			}
 		}
 	}
+
+
+done:
+	int i = current_toggle;
+	while(i < plugin_on_toggles.total &&
+		i < plugin_show_toggles.total)
+	{
+		plugin_on_toggles.remove_object_number(current_toggle);
+		plugin_show_toggles.remove_object_number(current_toggle);
+	}
 }
 
+void TrackCanvas::refresh_plugintoggles()
+{
+	for(int i = 0; i < plugin_on_toggles.total; i++)
+	{
+		PluginOn *on = plugin_on_toggles.values[i];
+		on->reposition_window(on->get_x(), on->get_y());
+	}
+	for(int i = 0; i < plugin_show_toggles.total; i++)
+	{
+		PluginShow *show = plugin_show_toggles.values[i];
+		show->reposition_window(show->get_x(), show->get_y());
+	}
+}
 
 void TrackCanvas::draw_inout_points()
 {

@@ -24,6 +24,8 @@ EDLSession::EDLSession(EDL *edl)
 	vconfig_in = new VideoInConfig;
 	recording_format = new Asset;
 	interpolation_type = CUBIC_LINEAR;
+	interpolate_raw = 1;
+	white_balance_raw = 1;
 	test_playback_edits = 1;
 	brender_start = 0.0;
 	mpeg4_deblock = 1;
@@ -54,6 +56,8 @@ EDLSession::EDLSession(EDL *edl)
 	video_write_length = -1000;
 	color_model = -100;
 	interlace_mode = BC_ILACE_MODE_UNDETECTED;
+	decode_subtitles = 0;
+	subtitle_number = 0;
 }
 
 EDLSession::~EDLSession()
@@ -84,7 +88,11 @@ void EDLSession::equivalent_output(EDLSession *session, double *result)
 		session->frame_rate != frame_rate ||
 		session->color_model != color_model ||
 		session->interpolation_type != interpolation_type ||
-		session->mpeg4_deblock != mpeg4_deblock)
+		session->interpolate_raw != interpolate_raw ||
+		session->white_balance_raw != white_balance_raw ||
+		session->mpeg4_deblock != mpeg4_deblock ||
+		session->decode_subtitles != decode_subtitles ||
+		session->subtitle_number != subtitle_number)
 		*result = 0;
 
 // If it's before the current brender_start, render extra data.
@@ -164,6 +172,8 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	frame_rate = defaults->get("FRAMERATE", (double)30000.0/1001);
 	frames_per_foot = defaults->get("FRAMES_PER_FOOT", (float)16);
 	interpolation_type = defaults->get("INTERPOLATION_TYPE", interpolation_type);
+	interpolate_raw = defaults->get("INTERPOLATE_RAW", interpolate_raw);
+	white_balance_raw = defaults->get("WHITE_BALANCE_RAW", white_balance_raw);
 	labels_follow_edits = defaults->get("LABELS_FOLLOW_EDITS", 1);
 	plugins_follow_edits = defaults->get("PLUGINS_FOLLOW_EDITS", 1);
 	auto_keyframes = defaults->get("AUTO_KEYFRAMES", 0);
@@ -224,6 +234,10 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	video_write_length = defaults->get("VIDEO_WRITE_LENGTH", 30);
 	view_follows_playback = defaults->get("VIEW_FOLLOWS_PLAYBACK", 1);
 	vwindow_meter = defaults->get("VWINDOW_METER", 1);
+
+
+	decode_subtitles = defaults->get("DECODE_SUBTITLES", decode_subtitles);
+	subtitle_number = defaults->get("SUBTITLE_NUMBER", subtitle_number);
 	
 	vwindow_folder[0] = 0;
 	vwindow_source = -1;
@@ -290,6 +304,8 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("FRAMES_PER_FOOT", frames_per_foot);
 	defaults->update("HIGHLIGHTED_TRACK", highlighted_track);
     defaults->update("INTERPOLATION_TYPE", interpolation_type);
+    defaults->update("INTERPOLATE_RAW", interpolate_raw);
+    defaults->update("WHITE_BALANCE_RAW", white_balance_raw);
 	defaults->update("LABELS_FOLLOW_EDITS", labels_follow_edits);
 	defaults->update("PLUGINS_FOLLOW_EDITS", plugins_follow_edits);
 	defaults->update("AUTO_KEYFRAMES", auto_keyframes);
@@ -348,6 +364,10 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("VWINDOW_METER", vwindow_meter);
 	defaults->update("VWINDOW_ZOOM", vwindow_zoom);
 
+	defaults->update("DECODE_SUBTITLES", decode_subtitles);
+	defaults->update("SUBTITLE_NUMBER", subtitle_number);
+
+
 	return 0;
 }
 
@@ -382,6 +402,9 @@ void EDLSession::boundaries()
 	Workarounds::clamp(crop_y1, 0, output_h);
 	Workarounds::clamp(crop_y2, 0, output_h);
 	if(brender_start < 0) brender_start = 0.0;
+
+	Workarounds::clamp(subtitle_number, 0, 31);
+	
 // Correct framerates
 	frame_rate = Units::fix_framerate(frame_rate);
 //printf("EDLSession::boundaries 1 %p %p\n", edl->assets, edl->tracks);
@@ -397,6 +420,8 @@ int EDLSession::load_video_config(FileXML *file, int append_mode, uint32_t load_
 	char string[1024];
 	if(append_mode) return 0;
 	interpolation_type = file->tag.get_property("INTERPOLATION_TYPE", interpolation_type);
+	interpolate_raw = file->tag.get_property("INTERPOLATE_RAW", interpolate_raw);
+	white_balance_raw = file->tag.get_property("WHITE_BALANCE_RAW", white_balance_raw);
 	cmodel_to_text(string, color_model);
 	color_model = cmodel_from_text(file->tag.get_property("COLORMODEL", string));
 	interlace_mode = ilacemode_from_xmltext(file->tag.get_property("INTERLACE_MODE"), BC_ILACE_MODE_NOTINTERLACED);
@@ -499,6 +524,9 @@ int EDLSession::load_xml(FileXML *file,
 		file->tag.get_property("VWINDOW_FOLDER", vwindow_folder);
 		vwindow_source = file->tag.get_property("VWINDOW_SOURCE", vwindow_source);
 		vwindow_zoom = file->tag.get_property("VWINDOW_ZOOM", vwindow_zoom);
+
+		decode_subtitles = file->tag.get_property("DECODE_SUBTITLES", decode_subtitles);
+		subtitle_number = file->tag.get_property("subtitle_number", subtitle_number);
 		boundaries();
 	}
 	
@@ -560,6 +588,13 @@ int EDLSession::save_xml(FileXML *file)
 	file->tag.set_property("VWINDOW_FOLDER", vwindow_folder);
 	file->tag.set_property("VWINDOW_SOURCE", vwindow_source);
 	file->tag.set_property("VWINDOW_ZOOM", vwindow_zoom);
+
+
+	file->tag.set_property("DECODE_SUBTITLES", decode_subtitles);
+	file->tag.set_property("subtitle_number", subtitle_number);
+
+
+
 	file->append_tag();
 	file->tag.set_title("/SESSION");
 	file->append_tag();
@@ -574,6 +609,8 @@ int EDLSession::save_video_config(FileXML *file)
 	char string[1024];
 	file->tag.set_title("VIDEO");
 	file->tag.set_property("INTERPOLATION_TYPE", interpolation_type);
+	file->tag.set_property("INTERPOLATE_RAW", interpolate_raw);
+	file->tag.set_property("WHITE_BALANCE_RAW", white_balance_raw);
 	cmodel_to_text(string, color_model);
 	file->tag.set_property("COLORMODEL", string);
 	ilacemode_to_xmltext(string, interlace_mode);
@@ -673,6 +710,8 @@ int EDLSession::copy(EDLSession *session)
 	frames_per_foot = session->frames_per_foot;
 	highlighted_track = session->highlighted_track;
 	interpolation_type = session->interpolation_type;
+	interpolate_raw = session->interpolate_raw;
+	white_balance_raw = session->white_balance_raw;
 	labels_follow_edits = session->labels_follow_edits;
 	plugins_follow_edits = session->plugins_follow_edits;
 	auto_keyframes = session->auto_keyframes;
@@ -727,6 +766,10 @@ int EDLSession::copy(EDLSession *session)
 	strcpy(vwindow_folder, session->vwindow_folder);
 	vwindow_source = session->vwindow_source;
 	vwindow_zoom = session->vwindow_zoom;
+
+	subtitle_number = session->subtitle_number;
+	decode_subtitles = session->decode_subtitles;
+	
 	return 0;
 }
 
@@ -743,7 +786,7 @@ void EDLSession::dump()
 {
 	printf("EDLSession::dump\n");
 	printf("    audio_tracks=%d audio_channels=%d sample_rate=%lld\n"
-			"video_tracks=%d frame_rate=%f output_w=%d output_h=%d aspect_w=%f aspect_h=%f\n", 
+			"video_tracks=%d frame_rate=%f output_w=%d output_h=%d aspect_w=%f aspect_h=%f decode subtitles=%d subtitle_number=%d\n", 
 		audio_tracks, 
 		audio_channels, 
 		sample_rate, 
@@ -752,5 +795,7 @@ void EDLSession::dump()
 		output_w, 
 		output_h, 
 		aspect_w, 
-		aspect_h);
+		aspect_h,
+		decode_subtitles,
+		subtitle_number);
 }

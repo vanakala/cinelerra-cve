@@ -40,7 +40,13 @@ static char *tips[] =
 	"all 4 points.\n"),
 
 	N_("Pressing Tab over a track toggles the Record status.\n"
-	"Pressing Shift-Tab over a track toggles the Record status of all the other tracks.\n")
+	"Pressing Shift-Tab over a track toggles the Record status of all the other tracks.\n"),
+
+	N_("Audio->Map 1:1 maps each recordable audio track to a different channel.\n"
+	"Map 5.1:1 maps 6 recordable AC3 tracks to 2 channels.\n"),
+
+	N_("Alt + left moves to the previous edit handle.\n"
+	"Alt + right moves to the next edit handle.\n")
 };
 
 static int total_tips = sizeof(tips) / sizeof(char*);

@@ -47,6 +47,12 @@ public:
 	int set_processors(int cpus);   // Set the number of cpus for certain codecs.
 // Set the number of bytes to preload during reads for Quicktime.
 	int set_preload(int64_t size);
+// Set the subtitle for libmpeg3.  -1 disables subtitles.
+	void set_subtitle(int value);
+// Set whether to interpolate raw images
+	void set_interpolate_raw(int value);
+// Set whether to white balance raw images.  Always 0 if no interpolation.
+	void set_white_balance_raw(int value);
 // When loading, the asset is deleted and a copy created in the EDL.
 	void set_asset(Asset *asset);
 
@@ -205,6 +211,9 @@ public:
 	Condition *write_lock;
 	int cpus;
 	int64_t playback_preload;
+	int playback_subtitle;
+	int interpolate_raw;
+	int white_balance_raw;
 
 // Position information is migrated here to allow samplerate conversion.
 // Current position in file's samplerate.

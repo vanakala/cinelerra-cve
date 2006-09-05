@@ -14,6 +14,7 @@
 #include "mwindow.inc"
 #include "mwindowgui.inc"
 #include "plugin.inc"
+#include "plugintoggles.inc"
 #include "resourcepixmap.inc"
 #include "track.inc"
 #include "tracks.inc"
@@ -212,6 +213,7 @@ public:
 	void draw_transitions();
 	void draw_drag_handle();
 	void draw_plugins();
+	void refresh_plugintoggles();
 	void update_edit_handles(Edit *edit, int64_t edit_x, int64_t edit_y, int64_t edit_w, int64_t edit_h);
 	void update_transitions();
 	void update_keyframe_handles(Track *track);
@@ -323,6 +325,9 @@ public:
 // Timer for hourglass
 	Timer *resource_timer;
 
+// Plugin toggle interfaces
+	ArrayList<PluginOn*> plugin_on_toggles;
+	ArrayList<PluginShow*> plugin_show_toggles;
 
 
 

@@ -86,6 +86,15 @@ public:
 };
 
 
+class NewSwapExtents : public BC_Button
+{
+public:
+	NewSwapExtents(MWindow *mwindow, NewWindow *gui, int x, int y);
+	int handle_event();
+	MWindow *mwindow;
+	NewWindow *gui;
+};
+
 
 
 class NewATracks : public BC_TextBox
@@ -355,13 +364,5 @@ private:
   	char string[BCTEXTLEN];
 };
 
-class NewCloneToggle : public BC_Toggle
-{
-public:
-	NewCloneToggle(MWindow *mwindow, NewWindow *nwindow, int x, int y);
-	int handle_event();
-	MWindow *mwindow;
-	NewWindow *nwindow;
-};
 
 #endif

@@ -398,6 +398,16 @@ PNGS = \
 	playpatch_up.png \
 	plugin.png \
 	plugin_bg.png \
+	plugin_on.png \
+	plugin_ondn.png \
+	plugin_onhi.png \
+	plugin_onselect.png \
+	plugin_onselecthi.png \
+	plugin_show.png \
+	plugin_showdn.png \
+	plugin_showhi.png \
+	plugin_showselect.png \
+	plugin_showselecthi.png \
 	pot_dn.png \
 	pot_hi.png \
 	pot_up.png \
@@ -489,6 +499,7 @@ PNGS = \
 	statusbar_cancel_hi.png \
 	statusbar_cancel_up.png \
 	stop.png \
+	swap_extents.png \
 	text.png \
 	text_highlight.png \
 	timebar_bg.png \

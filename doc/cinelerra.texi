@@ -869,6 +869,20 @@ tends to slow it down.  For normal use this should be 0.
 
 @item 
 
+DVD SUBTITLE TO DISPLAY
+
+DVD IFO files usually contain subtitle tracks.  These must be decoded
+with by the MPEG decoder.  Select @b{Enable subtitles} to enable
+subtitle decoding.  There are usually multiple subtitle tracks starting
+from 0.  The subtitle track to be decoded for all MPEG streams goes in
+the DVD subtitlee to display text box.  Go to the asset corresponding
+to the MPEG file in the Resources window and right click.  Click on
+Info.  The number of subtitle tracks is given at the bottom.
+
+
+@item 
+
+
 
 
 

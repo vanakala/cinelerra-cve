@@ -297,7 +297,7 @@ void SetFormatWindow::create_objects()
 {
 	int x = 10, y = mwindow->theme->setformat_y1;
 	BC_TextBox *textbox;
-	BC_Title   *titlew;
+	BC_Title *title;
 
 	mwindow->theme->draw_setformat_bg(this);
 
@@ -392,7 +392,7 @@ void SetFormatWindow::create_objects()
 		_("Canvas size:")));
 
 	y += mwindow->theme->setformat_margin;
-	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, y, _("Width:")));
+	add_subwindow(title = new BC_Title(mwindow->theme->setformat_x3, y, _("Width:")));
 	add_subwindow(dimension[0] = new ScaleSizeText(mwindow->theme->setformat_x4, 
 		y, 
 		thread, 
@@ -404,10 +404,19 @@ void SetFormatWindow::create_objects()
 		y, 
 		thread, 
 		&(thread->dimension[1])));
-	add_subwindow(new FrameSizePulldown(mwindow, 
+
+	x = mwindow->theme->setformat_x4 + dimension[0]->get_w();
+	FrameSizePulldown *pulldown;
+	add_subwindow(pulldown = new FrameSizePulldown(mwindow, 
 		dimension[0], 
 		dimension[1], 
-		mwindow->theme->setformat_x4 + dimension[0]->get_w(), 
+		x, 
+		y - mwindow->theme->setformat_margin));
+
+	add_subwindow(new FormatSwapExtents(mwindow, 
+		thread, 
+		this, 
+		x + pulldown->get_w() + 5,
 		y - mwindow->theme->setformat_margin));
 
 	y += mwindow->theme->setformat_margin;
@@ -888,7 +897,31 @@ int SetFormatApply::handle_event()
 
 
 
+FormatSwapExtents::FormatSwapExtents(MWindow *mwindow, 
+	SetFormatThread *thread,
+	SetFormatWindow *gui, 
+	int x, 
+	int y)
+ : BC_Button(x, y, mwindow->theme->get_image_set("swap_extents"))
+{
+	this->mwindow = mwindow;
+	this->thread = thread;
+	this->gui = gui;
+	set_tooltip("Swap dimensions");
+}
 
+int FormatSwapExtents::handle_event()
+{
+	int w = thread->dimension[0];
+	int h = thread->dimension[1];
+	thread->dimension[0] = -h;
+	gui->dimension[0]->update((int64_t)h);
+	gui->dimension[1]->update((int64_t)w);
+	thread->update_window();
+	thread->dimension[1] = -w;
+	thread->update_window();
+	return 1;
+}
 
 
 

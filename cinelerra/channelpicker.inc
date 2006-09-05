@@ -3,5 +3,6 @@
 
 class ChannelPicker;
 class PrefsChannelPicker;
+class RecordChannelPicker;
 
 #endif

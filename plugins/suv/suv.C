@@ -313,6 +313,11 @@ void SUV::initialize()
 	new_button("prevtip.png", "tipbutton_up.png", "tipbutton_hi.png", "tipbutton_dn.png", "prev_tip");
 	new_button("nexttip.png", "tipbutton_up.png", "tipbutton_hi.png", "tipbutton_dn.png", "next_tip");
 	new_button("closetip.png", "tipbutton_up.png", "tipbutton_hi.png", "tipbutton_dn.png", "close_tip");
+	new_button("swap_extents.png",
+		"editpanel_up.png",
+		"editpanel_hi.png",
+		"editpanel_dn.png",
+		"swap_extents");
 
 
 // Record windows
@@ -357,6 +362,8 @@ void SUV::initialize()
 	new_image("mode_subtract", "mode_subtract.png");
 	new_image("mode_max", "mode_max.png");
 
+	new_image_set("plugin_on", 5, "plugin_on.png", "plugin_onhi.png", "plugin_onselect.png", "plugin_ondn.png", "plugin_onselecthi.png");
+	new_image_set("plugin_show", 5, "plugin_show.png", "plugin_showhi.png", "plugin_showselect.png", "plugin_showdn.png", "plugin_showselecthi.png");
 
 // CWindow
 	new_image("cpanel_bg", "cpanel_bg.png");

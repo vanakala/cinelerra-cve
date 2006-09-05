@@ -1,26 +1,28 @@
 #ifndef PLAYBACKPREFS_H
 #define PLAYBACKPREFS_H
 
-class PlaybackOutPath;
-class PlaybackOutBits;
-class PlaybackBufferSize;
-class PlaybackBufferBytes;
-class PlaybackOutChannels;
-class PlaybackViewFollows;
-class PlaybackRealTime;
-class PlaybackSoftwareTimer;
-class PlaybackModuleFragment;
-class PlaybackReadLength;
-class PlaybackDisableNoEdits;
-class PlaybackPreload;
-class PlaybackNearest;
 class PlaybackBicubicBicubic;
 class PlaybackBicubicBilinear;
 class PlaybackBilinearBilinear;
+class PlaybackBufferBytes;
+class PlaybackBufferSize;
 class PlaybackDeblock;
+class PlaybackDisableNoEdits;
 class PlaybackHead;
 class PlaybackHeadCount;
 class PlaybackHost;
+class PlaybackInterpolateRaw;
+class PlaybackModuleFragment;
+class PlaybackNearest;
+class PlaybackOutBits;
+class PlaybackOutChannels;
+class PlaybackOutPath;
+class PlaybackPreload;
+class PlaybackReadLength;
+class PlaybackRealTime;
+class PlaybackSoftwareTimer;
+class PlaybackViewFollows;
+class PlaybackWhiteBalanceRaw;
 class TimecodeOffset;
 
 
@@ -57,6 +59,8 @@ public:
 	PlaybackBicubicBilinear *cubic_linear;
 	PlaybackBilinearBilinear *linear_linear;
 	PlaybackDeblock *mpeg4_deblock;
+	PlaybackInterpolateRaw *interpolate_raw;
+	PlaybackWhiteBalanceRaw *white_balance_raw;
 
 	BC_Title *vdevice_title;
 };
@@ -194,17 +198,65 @@ public:
 	PlaybackPrefs *playback;
 };
 
-class TimecodeOffset : public BC_TextBox
+class PlaybackInterpolateRaw : public BC_CheckBox
 {
 public:
-   TimecodeOffset(int x, int y, PreferencesWindow *pwindow,
-            PlaybackPrefs *playback, char *text, int unit);
-   int handle_event();
-	int unit;
-   PlaybackPrefs *playback;
-   PreferencesWindow *pwindow;
+	PlaybackInterpolateRaw(int x, 
+		int y, 
+		PreferencesWindow *pwindow, 
+		PlaybackPrefs *playback);
+	int handle_event();
+	PreferencesWindow *pwindow;
+	PlaybackPrefs *playback;
 };
 
+class PlaybackWhiteBalanceRaw : public BC_CheckBox
+{
+public:
+	PlaybackWhiteBalanceRaw(int x, 
+		int y, 
+		PreferencesWindow *pwindow, 
+		PlaybackPrefs *playback);
+	int handle_event();
+	PreferencesWindow *pwindow;
+	PlaybackPrefs *playback;
+};
+
+class TimecodeOffset : public BC_TextBox
+{
+	public:
+		TimecodeOffset(int x, int y, PreferencesWindow *pwindow,
+			       PlaybackPrefs *playback, char *text, int unit);
+		int handle_event();
+		int unit;
+		PlaybackPrefs *playback;
+		PreferencesWindow *pwindow;
+};
+
+
+class PlaybackSubtitle : public BC_CheckBox
+{
+public:
+	PlaybackSubtitle(int x, 
+		int y, 
+		PreferencesWindow *pwindow, 
+		PlaybackPrefs *playback);
+	int handle_event();
+	PreferencesWindow *pwindow;
+	PlaybackPrefs *playback;
+};
+
+class PlaybackSubtitleNumber : public BC_TumbleTextBox
+{
+public:
+	PlaybackSubtitleNumber(int x, 
+		int y, 
+		PreferencesWindow *pwindow, 
+		PlaybackPrefs *playback);
+	int handle_event();
+	PreferencesWindow *pwindow;
+	PlaybackPrefs *playback;
+};
 
 
 #endif

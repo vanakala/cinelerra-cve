@@ -151,13 +151,48 @@ SET_TRACE
 	y += 35;
 	add_subwindow(new BC_Title(x, y, _("Preload buffer for Quicktime:"), MEDIUMFONT, resources->text_default));
 	sprintf(string, "%d", pwindow->thread->edl->session->playback_preload);
-	add_subwindow(new PlaybackPreload(x + 210, y, pwindow, this, string));
+	PlaybackPreload *preload;
+	add_subwindow(preload = new PlaybackPreload(x + 210, y, pwindow, this, string));
+
+	y += preload->get_h() + 5;
+	add_subwindow(title1 = new BC_Title(x, y, _("DVD Subtitle to display:")));
+	PlaybackSubtitleNumber *subtitle_number;
+	subtitle_number = new PlaybackSubtitleNumber(x + title1->get_w() + 10, 
+		y, 
+		pwindow, 
+		this);
+	subtitle_number->create_objects();
+
+	PlaybackSubtitle *subtitle_toggle;
+	add_subwindow(subtitle_toggle = new PlaybackSubtitle(
+		x + title1->get_w() + 10 + subtitle_number->get_w() + 10, 
+		y, 
+		pwindow, 
+		this));
+	y += subtitle_number->get_h();
+
+
+	add_subwindow(interpolate_raw = new PlaybackInterpolateRaw(
+		x, 
+		y,
+		pwindow,
+		this));
+	y += interpolate_raw->get_h();
+
+	add_subwindow(white_balance_raw = new PlaybackWhiteBalanceRaw(
+		x, 
+		y,
+		pwindow,
+		this));
+	y += white_balance_raw->get_h() + 10;
+	if(!pwindow->thread->edl->session->interpolate_raw) 
+		white_balance_raw->disable();
+
 
 SET_TRACE
 //	y += 30;
 //	add_subwindow(new PlaybackDeblock(pwindow, 10, y));
 
-	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Timecode offset:"), MEDIUMFONT, BLACK));
 	sprintf(string, "%d", pwindow->thread->edl->session->timecode_offset[3]);
 	add_subwindow(new TimecodeOffset(x + 120, y, pwindow, this, string, 3));
@@ -173,7 +208,7 @@ SET_TRACE
 
 	y += 35;
 	add_subwindow(vdevice_title = new BC_Title(x, y, _("Video Driver:")));
-	video_device = new VDevicePrefs(x + 100, 
+	video_device = new VDevicePrefs(x + vdevice_title->get_w() + 10, 
 		y, 
 		pwindow, 
 		this, 
@@ -392,6 +427,65 @@ int PlaybackPreload::handle_event()
 }
 
 
+PlaybackInterpolateRaw::PlaybackInterpolateRaw(
+	int x, 
+	int y, 
+	PreferencesWindow *pwindow, 
+	PlaybackPrefs *playback)
+ : BC_CheckBox(x, 
+ 	y, 
+	pwindow->thread->edl->session->interpolate_raw, 
+	_("Interpolate CR2 images"))
+{
+	this->pwindow = pwindow;
+	this->playback = playback;
+}
+
+int PlaybackInterpolateRaw::handle_event()
+{
+	pwindow->thread->edl->session->interpolate_raw = get_value();
+	if(!pwindow->thread->edl->session->interpolate_raw)
+	{
+		playback->white_balance_raw->update(0, 0);
+		playback->white_balance_raw->disable();
+	}
+	else
+	{
+		playback->white_balance_raw->update(pwindow->thread->edl->session->white_balance_raw, 0);
+		playback->white_balance_raw->enable();
+	}
+	return 1;
+}
+
+
+
+
+PlaybackWhiteBalanceRaw::PlaybackWhiteBalanceRaw(
+	int x, 
+	int y, 
+	PreferencesWindow *pwindow, 
+	PlaybackPrefs *playback)
+ : BC_CheckBox(x, 
+ 	y, 
+	pwindow->thread->edl->session->interpolate_raw &&
+		pwindow->thread->edl->session->white_balance_raw, 
+	_("White balance CR2 images"))
+{
+	this->pwindow = pwindow;
+	this->playback = playback;
+	if(!pwindow->thread->edl->session->interpolate_raw) disable();
+}
+
+int PlaybackWhiteBalanceRaw::handle_event()
+{
+	pwindow->thread->edl->session->white_balance_raw = get_value();
+	return 1;
+}
+
+
+
+
+
 
 VideoEveryFrame::VideoEveryFrame(PreferencesWindow *pwindow, int x, int y)
  : BC_CheckBox(x, y, pwindow->thread->edl->session->video_every_frame, _("Play every frame"))
@@ -411,9 +505,55 @@ int VideoEveryFrame::handle_event()
 
 
 
+PlaybackSubtitle::PlaybackSubtitle(int x, 
+	int y, 
+	PreferencesWindow *pwindow, 
+	PlaybackPrefs *playback)
+ : BC_CheckBox(x, 
+ 	y, 
+	pwindow->thread->edl->session->decode_subtitles,
+	_("Enable subtitles"))
+{
+	this->pwindow = pwindow;
+	this->playback = playback;
+}
+
+int PlaybackSubtitle::handle_event()
+{
+	pwindow->thread->edl->session->decode_subtitles = get_value();
+	return 1;
+}
 
 
 
+
+
+
+
+
+
+
+PlaybackSubtitleNumber::PlaybackSubtitleNumber(int x, 
+	int y, 
+	PreferencesWindow *pwindow, 
+	PlaybackPrefs *playback)
+ : BC_TumbleTextBox(playback,
+ 	pwindow->thread->edl->session->subtitle_number,
+ 	0,
+	31,
+	x, 
+ 	y, 
+	50)
+{
+	this->pwindow = pwindow;
+	this->playback = playback;
+}
+
+int PlaybackSubtitleNumber::handle_event()
+{
+	pwindow->thread->edl->session->subtitle_number = atoi(get_text());
+	return 1;
+}
 
 
 

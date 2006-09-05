@@ -226,6 +226,11 @@ SET_TRACE
 					(mpeg3_colormodel(fd, 0) == MPEG3_YUV422P) ? MPEG_YUV422 : MPEG_YUV420;
 				if(!asset->frame_rate)
 					asset->frame_rate = mpeg3_frame_rate(fd, 0);
+
+// Enable subtitles
+//printf("FileMPEG::open %d\n", file->playback_subtitle);
+				if(file->playback_subtitle >= 0)
+					mpeg3_show_subtitle(fd, file->playback_subtitle);
 			}
 		}
 	}

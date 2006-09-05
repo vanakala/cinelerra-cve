@@ -194,6 +194,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    pluginserver.C \
 		    pluginset.C \
 		    plugintclient.C \
+		    plugintoggles.C \
 		    pluginvclient.C \
 		    preferences.C \
 		    preferencesthread.C \
@@ -503,6 +504,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 pluginserver.h \
 		 pluginset.h \
 		 plugintclient.h \
+		 plugintoggles.h \
 		 pluginvclient.h \
 		 preferences.h \
 		 preferencesthread.h \

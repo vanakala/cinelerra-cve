@@ -5,6 +5,7 @@
 #include "avc1394transport.h"
 #endif
 #include "canvas.h"
+#include "channelpicker.inc"
 #include "condition.inc"
 #include "guicast.h"
 #include "channelpicker.inc"
@@ -85,7 +86,7 @@ public:
 	AVC1394Transport *avc1394_transport;
 	AVC1394TransportThread *avc1394transport_thread;
 #endif
-	ChannelPicker *channel_picker;
+	RecordChannelPicker *channel_picker;
 	ReverseInterlace *reverse_interlace;
 	int cursor_x_origin, cursor_y_origin;
 	int translate_x_origin, translate_y_origin;
