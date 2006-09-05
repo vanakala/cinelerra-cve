@@ -149,25 +149,6 @@ Workarounds::clamp(vconfig->do_channel[i], 0, 1);
 				edl_channels--;
 			}
 		}
-
-		device_channels = aconfig->total_output_channels();
-		edl_channels = command->get_edl()->session->audio_channels;
-
-		for(int i = 0; i < MAX_CHANNELS; i++)
-		{
-
-			aconfig->do_channel[i] = 
-				(i == current_achannel && 
-					device_channels &&
-					edl_channels);
-			if(aconfig->do_channel[i])
-			{
-				current_achannel++;
-				device_channels--;
-				edl_channels--;
-			}
-		}
-
 	}
 	else
 	{
@@ -176,7 +157,6 @@ Workarounds::clamp(vconfig->do_channel[i], 0, 1);
 		{
 			vconfig->do_channel[i] = (i < command->get_edl()->session->video_channels);
 			vconfig->do_channel[i] = (i < command->get_edl()->session->video_channels);
-			aconfig->do_channel[i] = (i < command->get_edl()->session->audio_channels);
 		}
 	}
 
@@ -223,7 +203,7 @@ void RenderEngine::get_duty()
 //edl->dump();
 	if(!command->single_frame() &&
 		edl->tracks->playable_audio_tracks() &&
-		config->aconfig->total_playable_channels())
+		edl->session->audio_channels)
 	{
 		do_audio = 1;
 	}
@@ -339,6 +319,7 @@ int RenderEngine::open_output()
 			if (audio->open_output(config->aconfig, 
 				edl->session->sample_rate, 
 				adjusted_fragment_len,
+				edl->session->audio_channels,
 				edl->session->real_time_playback))
 			{
 				do_audio = 0;
@@ -660,7 +641,6 @@ int RenderEngine::reset_parameters()
 	end_position = 0;
 	infinite = 0;
 	start_position = 0;
-	audio_channels = 0;
 	do_audio = 0;
 	do_video = 0;
 	done = 0;
@@ -669,10 +649,8 @@ int RenderEngine::reset_parameters()
 int RenderEngine::arm_playback_audio(int64_t input_length, 
 			int64_t amodule_render_fragment, 
 			int64_t playback_buffer, 
-			int64_t output_length, 
-			int audio_channels)
+			int64_t output_length)
 {
-	this->audio_channels = audio_channels;
 
 	do_audio = 1;
 

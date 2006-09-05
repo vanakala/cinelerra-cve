@@ -15,7 +15,9 @@ class RGB601Config
 {
 public:
 	RGB601Config();
-// 0 -> none 1 -> RGB->601 2 -> 601->RGB
+// 0 -> none 
+// 1 -> RGB -> 601 
+// 2 -> 601 -> RGB
 	int direction;
 };
 

@@ -1747,7 +1747,7 @@ int BC_PopupTextBoxList::handle_event()
 	if(item)
 	{
 		popup->textbox->update(item->get_text());
-	popup->handle_event();
+		popup->handle_event();
 	}
 	return 1;
 }

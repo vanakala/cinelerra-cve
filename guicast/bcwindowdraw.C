@@ -257,21 +257,21 @@ void BC_WindowBase::draw_xft_text(int x,
 // printf("BC_WindowBase::draw_xft_text_synch 1 %d %p\n", 
 // get_resources()->use_xft, 
 // top_level->get_xft_struct(top_level->current_font));
-							XRenderColor color;
-							XftColor xft_color;
-							color.red = (top_level->current_color & 0xff0000) >> 16;
-							color.red |= color.red << 8;
-							color.green = (top_level->current_color & 0xff00) >> 8;
-							color.green |= color.green << 8;
-							color.blue = (top_level->current_color & 0xff);
-							color.blue |= color.blue << 8;
-							color.alpha = 0xffff;
+	XRenderColor color;
+	XftColor xft_color;
+	color.red = (top_level->current_color & 0xff0000) >> 16;
+	color.red |= color.red << 8;
+	color.green = (top_level->current_color & 0xff00) >> 8;
+	color.green |= color.green << 8;
+	color.blue = (top_level->current_color & 0xff);
+	color.blue |= color.blue << 8;
+	color.alpha = 0xffff;
 
-							XftColorAllocValue(top_level->display,
-			    				top_level->vis,
-			    				top_level->cmap,
-			    				&color,
-			    				&xft_color);
+	XftColorAllocValue(top_level->display,
+		top_level->vis,
+		top_level->cmap,
+		&color,
+		&xft_color);
 
 // printf("BC_WindowBase::draw_text 1 %u   %p %p %p %d %d %s %d\n",
 // xft_color.pixel,
@@ -282,18 +282,18 @@ void BC_WindowBase::draw_xft_text(int x,
 // y2 + k,
 // (FcChar8*)&text[j],
 // i - j);
-							XftDrawString8 (
+	XftDrawString8 (
 		(XftDraw*)(pixmap ? pixmap->opaque_xft_draw : this->pixmap->opaque_xft_draw),
-								&xft_color,
-								top_level->get_xft_struct(top_level->current_font),
-								x2 + k, 
-								y2 + k,
-								(FcChar8*)&text[j],
-								i - j);
-							XftColorFree(top_level->display,
-	    						top_level->vis,
-	    						top_level->cmap,
-	    						&xft_color);
+		&xft_color,
+		top_level->get_xft_struct(top_level->current_font),
+		x2 + k, 
+		y2 + k,
+		(FcChar8*)&text[j],
+		i - j);
+	XftColorFree(top_level->display,
+	    top_level->vis,
+	    top_level->cmap,
+	    &xft_color);
 #endif
 }
 
@@ -923,7 +923,7 @@ void BC_WindowBase::slide_left(int distance)
 			distance, 
 			0, 
 			w - distance, 
-		 	h, 
+			h, 
 			0, 
 			0);
 	}

@@ -12,10 +12,11 @@
 #include "audiodevice.inc"
 #include "audioesound.inc"
 #include "audiooss.inc"
-#include "bctimer.h"
+#include "bctimer.inc"
 #include "binary.h"
 #include "condition.inc"
 #include "dcoffset.inc"
+#include "device1394output.inc"
 #include "maxchannels.h"
 #include "mutex.inc"
 #include "mwindow.inc"
@@ -54,7 +55,8 @@ public:
 class AudioDevice : public Thread
 {
 public:
-	AudioDevice();
+// MWindow is required where global input is used, to get the pointer.
+	AudioDevice(MWindow *mwindow = 0);
 	~AudioDevice();
 
 	friend class AudioALSA;
@@ -67,9 +69,14 @@ public:
 	int open_input(AudioInConfig *config, 
 		VideoInConfig *vconfig,
 		int rate, 
-		int samples);
-	int open_output(AudioOutConfig *config, int rate, int samples, int realtime);
-	int open_duplex(AudioOutConfig *config, int rate, int samples, int realtime);
+		int samples,
+		int channels,
+		int realtime);
+	int open_output(AudioOutConfig *config, 
+		int rate, 
+		int samples, 
+		int channels,
+		int realtime);
 	int close_all();
 	int reset_output();
 	int restart();
@@ -83,27 +90,27 @@ public:
 // Conversion between double and int is done in AudioDevice
 	int read_buffer(double **input, 
 		int samples, 
-		int channels, 
 		int *over, 
 		double *max, 
 		int input_offset = 0);  
 	int set_record_dither(int value);
 
+	void start_recording();
 	int stop_recording();
 // If a firewire device crashed
 	int interrupt_crash();
 
 // ================================== dc offset
 
-// get and set offset
-	int get_dc_offset(int *output, RecordGUIDCOffsetText **dc_offset_text);
-// set new offset
-	int set_dc_offset(int dc_offset, int channel);
 // writes to whichever buffer is free or blocks until one becomes free
-	int write_buffer(double **output, int samples, int channels = -1); 
+	int write_buffer(double **output, int samples); 
 
-// play back buffers
-	void run();           
+// background loop for buffering
+	void run();
+// background loop for playback
+	void run_output();
+// background loop for recording
+	void run_input();
 
 // After the last buffer is written call this to terminate.
 // A separate buffer for termination is required since the audio device can be
@@ -138,7 +145,7 @@ private:
 	int initialize();
 // Create a lowlevel driver out of the driver ID
 	int create_lowlevel(AudioLowLevel* &lowlevel, int driver);
-	int arm_buffer(int buffer, double **output, int samples, int channels);
+	int arm_buffer(int buffer, double **output, int samples);
 	int get_obits();
 	int get_ochannels();
 	int get_ibits();
@@ -146,10 +153,11 @@ private:
 	int get_orate();
 	int get_irate();
 	int get_orealtime();
+	int get_irealtime();
 
-	DC_Offset *dc_offset_thread;
 // Override configured parameters depending on the driver
 	int in_samplerate, in_bits, in_channels, in_samples;
+	int in_realtime;
 	int out_samplerate, out_bits, out_channels, out_samples;
 	int duplex_samplerate, duplex_bits, duplex_channels, duplex_samples;
 	int out_realtime, duplex_realtime;
@@ -174,22 +182,36 @@ private:
 	int play_dither;        
 	int sharing;
 
+// bytes in buffer
 	int buffer_size[TOTAL_BUFFERS];
 	int last_buffer[TOTAL_BUFFERS];    // not written to device
-// formatted buffers for output
-	char *buffer[TOTAL_BUFFERS], *input_buffer;
+// formatted buffers for reading and writing the soundcard
+	char *output_buffer[TOTAL_BUFFERS];
+	char *input_buffer[TOTAL_BUFFERS];
 	Sema *play_lock[TOTAL_BUFFERS];
 	Sema *arm_lock[TOTAL_BUFFERS];
 	Mutex *timer_lock;
+// Get buffer_lock to delay before locking to allow read_buffer to lock it.
+	int read_waiting;
+	Mutex *buffer_lock;
+	Condition *polling_lock;
 	int arm_buffer_num;
 
 // for position information
-	int total_samples, last_buffer_size, position_correction;
+	int total_samples;
+// samples in buffer
+	int last_buffer_size;
+	int position_correction;
 	int device_buffer;
-	int last_position;  // prevent the counter from going backwards
-	Timer playback_timer, record_timer;
+// prevent the counter from going backwards
+	int last_position;  
+	Timer *playback_timer;
+	Timer *record_timer;
 // Current operation
-	int is_playing_back, is_recording, global_timer_started, software_position_info;
+	int is_playing_back;
+	int is_recording;
+	int global_timer_started;
+	int software_position_info;
 	int interrupt;
 	int driver;
 
@@ -201,8 +223,11 @@ private:
 // Extra configuration if shared with video
 	VideoInConfig *vconfig;
 
-	int thread_buffer_num, thread_result;
+// Buffer being used by the hardware
+	int thread_buffer_num;
+	int thread_result;
 	int64_t total_samples_read;
+	MWindow *mwindow;
 };
 
 

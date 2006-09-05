@@ -376,7 +376,9 @@ void EDL::copy_assets(EDL *edl)
 	}
 }
 
-void EDL::copy_session(EDL *edl)
+void EDL::copy_session(EDL *edl, int session_only)
+{
+	if(!session_only)
 {
 	strcpy(this->project_path, edl->project_path);
 
@@ -387,13 +389,17 @@ void EDL::copy_session(EDL *edl)
 		folders.append(new_folder = new char[strlen(edl->folders.values[i]) + 1]);
 		strcpy(new_folder, edl->folders.values[i]);
 	}
+	}
 
 	if(!parent_edl)
 	{
 		session->copy(edl->session);
 	}
 	
+	if(!session_only)
+	{
 	local_session->copy_from(edl->local_session);
+	}
 }
 
 int EDL::copy_assets(double start, 

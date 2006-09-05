@@ -159,13 +159,13 @@ int main(int argc, char *argv[])
 			unsigned long code;
 			float carry;
 			int i, offset;
-
+			
 			if(stream >= in->total_vstreams)
 			{
 				fprintf(stderr, "No audio stream %d\n", stream);
 				exit(1);
 			}
-			
+
 			mpeg3demux_seek_byte(in->vtrack[stream]->demuxer, 0);
 			mpeg3bits_refill(in->vtrack[stream]->video->vstream);
 			do_video = 1;

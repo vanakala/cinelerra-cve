@@ -7,6 +7,7 @@ class RecordVUDB;
 class RecordVUInt;
 class RecordWriteLength;
 class RecordRealTime;
+class RecordChannels;
 
 #include "adeviceprefs.inc"
 #include "formattools.inc"
@@ -138,6 +139,17 @@ class RecordFrameRateText : public BC_TextBox
 	RecordFrameRateText(PreferencesWindow *pwindow, int x, int y);
 	int handle_event();
 	PreferencesWindow *pwindow;
+};
+
+class RecordChannels : public BC_TumbleTextBox
+{
+	public:
+		RecordChannels(PreferencesWindow *pwindow, 
+			       BC_SubWindow *gui, 
+			       int x, 
+			       int y);
+		int handle_event();
+		PreferencesWindow *pwindow;
 };
 
 class StillImageUseDuration : public BC_CheckBox

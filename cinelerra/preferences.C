@@ -66,6 +66,16 @@ Preferences::Preferences()
 	local_rate = 0.0;
 
 	use_tipwindow = 1;
+
+	for(int i = 0; i < MAXCHANNELS; i++)
+	{
+		for(int j = 0; j < i + 1; j++)
+		{
+			int position = 180 - (360 * j / (i + 1));
+			while(position < 0) position += 360;
+			channel_positions[i * MAXCHANNELS + j] = position;
+		}
+	}
 }
 
 Preferences::~Preferences()
@@ -183,6 +193,45 @@ printf("Preferences::operator=\n");
 	return *this;
 }
 
+void Preferences::print_channels(char *string, 
+	int *channel_positions, 
+	int channels)
+{
+	char string3[BCTEXTLEN];
+	string[0] = 0;
+	for(int j = 0; j < channels; j++)
+	{
+		sprintf(string3, "%d", channel_positions[j]);
+		strcat(string, string3);
+		if(j < channels - 1)
+			strcat(string, ",");
+	}
+}
+
+void Preferences::scan_channels(char *string, 
+	int *channel_positions, 
+	int channels)
+{
+	char string2[BCTEXTLEN];
+	int len = strlen(string);
+	int current_channel = 0;
+	for(int i = 0; i < len; i++)
+	{
+		strcpy(string2, &string[i]);
+		for(int j = 0; j < BCTEXTLEN; j++)
+		{
+			if(string2[j] == ',' || string2[j] == 0)
+			{
+				i += j;
+				string2[j] = 0;
+				break;
+			}
+		}
+		channel_positions[current_channel++] = atoi(string2);
+		if(current_channel >= channels) break;
+	}
+}
+
 int Preferences::load_defaults(BC_Hash *defaults)
 {
 	char string[BCTEXTLEN];
@@ -203,6 +252,20 @@ int Preferences::load_defaults(BC_Hash *defaults)
 	strcpy(theme, DEFAULT_THEME);
 	defaults->get("THEME", theme);
 
+	for(int i = 0; i < MAXCHANNELS; i++)
+	{
+		char string2[BCTEXTLEN];
+		sprintf(string, "CHANNEL_POSITIONS%d", i);
+		print_channels(string2, 
+			&channel_positions[i * MAXCHANNELS], 
+			i + 1);
+
+		defaults->get(string, string2);
+		
+		scan_channels(string2,
+			&channel_positions[i * MAXCHANNELS], 
+			i + 1);
+	}
 
 	brender_asset->load_defaults(defaults, 
 		"BRENDER_", 
@@ -276,6 +339,13 @@ int Preferences::save_defaults(BC_Hash *defaults)
 	defaults->update("THEME", theme);
 
 
+	for(int i = 0; i < MAXCHANNELS; i++)
+	{
+		char string2[BCTEXTLEN];
+		sprintf(string, "CHANNEL_POSITIONS%d", i);
+		print_channels(string2, &channel_positions[i * MAXCHANNELS], i + 1);
+		defaults->update(string, string2);
+	}
 
 	defaults->update("FORCE_UNIPROCESSOR", force_uniprocessor);
 	brender_asset->save_defaults(defaults, 

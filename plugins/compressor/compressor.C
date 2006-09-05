@@ -292,19 +292,19 @@ int CompressorEffect::process_buffer(int64_t size,
 			switch(config.input)
 			{
 				case CompressorConfig::MAX:
-			{
-				double max = 0;
-				for(int j = 0; j < total_buffers; j++)
 				{
-					sample = fabs(buffer[j][i]);
-					if(sample > max) max = sample;
-				}
-				sample = max;
+					double max = 0;
+					for(int j = 0; j < total_buffers; j++)
+					{
+						sample = fabs(buffer[j][i]);
+						if(sample > max) max = sample;
+					}
+					sample = max;
 					break;
-			}
+				}
 
 				case CompressorConfig::TRIGGER:
-				sample = fabs(trigger_buffer[i]);
+					sample = fabs(trigger_buffer[i]);
 					break;
 				
 				case CompressorConfig::SUM:
@@ -469,19 +469,19 @@ int CompressorEffect::process_buffer(int64_t size,
 				switch(config.input)
 				{
 					case CompressorConfig::MAX:
-				{
-					double max = 0;
-					for(int k = 0; k < total_buffers; k++)
 					{
-						sample = fabs(input_buffer[k][i + j]);
-						if(sample > max) max = sample;
-					}
-					sample = max;
+						double max = 0;
+						for(int k = 0; k < total_buffers; k++)
+						{
+							sample = fabs(input_buffer[k][i + j]);
+							if(sample > max) max = sample;
+						}
+						sample = max;
 						break;
-				}
+					}
 
 					case CompressorConfig::TRIGGER:
-					sample = fabs(trigger_buffer[i + j]);
+						sample = fabs(trigger_buffer[i + j]);
 						break;
 
 					case CompressorConfig::SUM:
@@ -491,7 +491,7 @@ int CompressorEffect::process_buffer(int64_t size,
 						{
 							sample = fabs(input_buffer[k][i + j]);
 							max += sample;
-				}
+						}
 						sample = max;
 						break;
 					}

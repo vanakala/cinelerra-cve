@@ -16,7 +16,7 @@
 //#ifdef TRACE_LOCKS
 //#undef TRACE_LOCKS
 //#endif
-//#define TRACE_MEMORY
+#define TRACE_MEMORY
 
 
 // Need to use structs to avoid the memory manager.
@@ -80,6 +80,7 @@ public:
 
 #define SET_LOCK(ptr, title, location) ;
 #define SET_LOCK2 ;
+#define SET_LOCK2_CONDITION ;
 #define UNSET_LOCK(ptr) ;
 #define UNSET_LOCK2 ;
 #define UNSET_ALL_LOCKS(ptr) ;
@@ -93,6 +94,8 @@ public:
 #define DISABLE_BUFFER BC_Signals::disable_memory();
 // Note the size, pointer, and location of an allocation
 #define BUFFER(size, ptr, location) BC_Signals::set_buffer(size, ptr, location);
+// Note the pointer and location of an allocation
+#define BUFFER2(ptr, location) BC_Signals::set_buffer(0, ptr, location);
 // Remove a pointer from the allocation table
 #define UNBUFFER(ptr) BC_Signals::unset_buffer(ptr);
 
@@ -119,6 +122,7 @@ public:
 
 	static int set_lock(void *ptr, char *title, char *location);
 	static void set_lock2(int table_id);
+	static void set_lock2_condition(int table_id);
 	static void unset_lock2(int table_id);
 	static void unset_lock(void *ptr);
 // Used in lock destructors so takes away all references

@@ -81,7 +81,10 @@ public:
 	void rechannel();
 	void resample(double old_rate, double new_rate, int data_type);
 	void copy_tracks(EDL *edl);
-	void copy_session(EDL *edl);
+// Copies project path, folders, EDLSession, and LocalSession from edl argument.
+// session_only - used by preferences and format specify 
+// whether to only copy EDLSession
+	void copy_session(EDL *edl, int session_only = 0);
 	int copy_all(EDL *edl);
 	void copy_assets(EDL *edl);
 	void copy_clips(EDL *edl);

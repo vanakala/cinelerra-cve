@@ -109,9 +109,14 @@ void SetFormatThread::apply_changes()
 	double new_framerate = new_settings->session->frame_rate;
 	double old_framerate = mwindow->edl->session->frame_rate;
 	int new_channels = new_settings->session->audio_channels;
+	CLAMP(new_channels, 1, MAXCHANNELS);
+
+	memcpy(&mwindow->preferences->channel_positions[MAXCHANNELS * (new_channels - 1)],
+		new_settings->session->achannel_positions,
+		sizeof(int) * MAXCHANNELS);
 
 
-	mwindow->edl->copy_session(new_settings);
+	mwindow->edl->copy_session(new_settings, 1);
 	mwindow->edl->session->output_w = dimension[0];
 	mwindow->edl->session->output_h = dimension[1];
 	mwindow->edl->rechannel();
@@ -585,7 +590,19 @@ SetChannelsTextBox::SetChannelsTextBox(SetFormatThread *thread, int x, int y)
 }
 int SetChannelsTextBox::handle_event()
 {
-	thread->new_settings->session->audio_channels = CLIP(atol(get_text()), 1, MAXCHANNELS - 1);
+	int new_channels = CLIP(atoi(get_text()), 1, MAXCHANNELS);
+	
+	thread->new_settings->session->audio_channels = new_channels;
+
+
+	if(new_channels > 0)
+	{
+		memcpy(thread->new_settings->session->achannel_positions,
+			&thread->mwindow->preferences->channel_positions[MAXCHANNELS * (new_channels - 1)],
+			sizeof(int) * MAXCHANNELS);
+	}
+
+
 	thread->window->canvas->draw();
 	return 1;
 }
@@ -746,6 +763,10 @@ int SetChannelsCanvas::cursor_motion_event()
 		if(thread->new_settings->session->achannel_positions[active_channel] != new_d)
 		{
 			thread->new_settings->session->achannel_positions[active_channel] = new_d;
+			int new_channels = thread->new_settings->session->audio_channels;
+			memcpy(&thread->mwindow->preferences->channel_positions[MAXCHANNELS * (new_channels - 1)],
+				thread->new_settings->session->achannel_positions,
+				sizeof(int) * MAXCHANNELS);
 			draw(thread->new_settings->session->achannel_positions[active_channel]);
 		}
 		return 1;

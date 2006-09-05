@@ -150,6 +150,7 @@ public:
 	static int write_socket(int socket_fd, char *data, int len, int timeout);
 // Inserts header and writes string to socket
 	static int write_string(int socket_fd, char *string);
+	static int open_client(char *hostname, int port);
 
 
 
@@ -172,7 +173,6 @@ public:
 //	MWindow *mwindow;
 	ArrayList<PluginServer*> *plugindb;
 	RenderFarmServer *server;
-//	RenderFarmFSServer *fs_server;
 	int socket_fd;
 	int number;
 // Rate of last job or 0

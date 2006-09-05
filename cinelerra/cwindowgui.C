@@ -24,6 +24,7 @@
 #include "mainsession.h"
 #include "maskauto.h"
 #include "maskautos.h"
+#include "mbuttons.h"
 #include "meterpanel.h"
 #include "mwindowgui.h"
 #include "mwindow.h"
@@ -333,6 +334,17 @@ void CWindowGUI::zoom_canvas(int do_auto, double value, int update_menu)
 				y);
 	x -= canvas->w_visible / 2 * old_zoom / new_zoom;
 	y -= canvas->h_visible / 2 * old_zoom / new_zoom;
+	if(update_menu)
+	{
+		if(do_auto)
+		{
+			zoom_panel->update(AUTO_ZOOM);
+		}
+		else
+		{
+			zoom_panel->update(value);
+		}
+	}
 
 	canvas->update_zoom((int)x, 
 		(int)y, 
@@ -405,6 +417,48 @@ int CWindowGUI::keypress_event()
 			if(mwindow->session->cwindow_fullscreen)
 				canvas->stop_fullscreen();
 			lock_window("CWindowGUI::keypress_event 2");
+			break;
+		case LEFT:
+			if(!ctrl_down()) 
+			{ 
+				if (alt_down())
+				{
+					int shift_down = this->shift_down();
+					unlock_window();
+					mwindow->gui->mbuttons->transport->handle_transport(STOP, 1, 0, 0);
+
+					mwindow->gui->lock_window("CWindowGUI::keypress_event 2");
+					mwindow->prev_edit_handle(shift_down);
+					mwindow->gui->unlock_window();
+
+					lock_window("CWindowGUI::keypress_event 1");
+				}
+				else
+				{
+					mwindow->move_left(); 
+				}
+ 				result = 1; 
+			}
+			break;
+		case RIGHT:
+			if(!ctrl_down()) 
+			{ 
+				if (alt_down())
+				{
+					int shift_down = this->shift_down();
+					unlock_window();
+					mwindow->gui->mbuttons->transport->handle_transport(STOP, 1, 0, 0);
+
+					mwindow->gui->lock_window("CWindowGUI::keypress_event 2");
+					mwindow->next_edit_handle(shift_down);
+					mwindow->gui->unlock_window();
+
+					lock_window("CWindowGUI::keypress_event 2");
+				}
+				else
+					mwindow->move_right(); 
+				result = 1; 
+			}
 			break;
 	}
 
@@ -825,6 +879,11 @@ void CWindowCanvas::update_zoom(int x, int y, float zoom)
 	mwindow->edl->session->cwindow_xscroll = x;
 	mwindow->edl->session->cwindow_yscroll = y;
 	mwindow->edl->session->cwindow_zoom = zoom;
+}
+
+void CWindowCanvas::zoom_auto()
+{
+	gui->zoom_canvas(1, 1.0, 1);
 }
 
 int CWindowCanvas::get_xscroll()

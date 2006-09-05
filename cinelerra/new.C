@@ -17,6 +17,7 @@
 #include "newpresets.h"
 #include "mainsession.h"
 #include "patchbay.h"
+#include "preferences.h"
 #include "theme.h"
 #include "transportque.h"
 #include "videowindow.h"
@@ -88,6 +89,10 @@ int New::create_new_project()
 
 	mwindow->gui->lock_window();
 
+	memcpy(new_edl->session->achannel_positions,
+		&mwindow->preferences->channel_positions[
+			MAXCHANNELS * (new_edl->session->audio_channels - 1)],
+		sizeof(int) * MAXCHANNELS);
 	new_edl->session->boundaries();
 	new_edl->create_default_tracks();
 

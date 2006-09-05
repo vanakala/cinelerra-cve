@@ -127,9 +127,9 @@ public:
 		int direction);
 
 // Used by PlayableTracks::is_playable
-	virtual int channel_is_playable(int64_t position, 
-		int direction, 
-		int *do_channel);
+// Returns 1 if the track is in the output boundaries.
+	virtual int is_playable(int64_t position, 
+		int direction);
 
 // Test direct copy conditions common to all the rendering routines
 	virtual int direct_copy_possible(int64_t start, int direction, int use_nudge);

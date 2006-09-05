@@ -2130,7 +2130,6 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 					if(plugin->config.mode1 == MotionConfig::STABILIZE ||
 						plugin->config.mode1 == MotionConfig::TRACK ||
 						plugin->config.mode1 == MotionConfig::NOTHING)
-//if(0)
 					{
 						x_result /= OVERSAMPLE;
 						y_result /= OVERSAMPLE;

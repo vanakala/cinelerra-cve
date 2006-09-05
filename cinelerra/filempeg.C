@@ -193,10 +193,10 @@ SET_TRACE
 		{
 // Determine if the file needs a table of contents and create one if needed.
 // If it has video it must be scanned since video has keyframes.
-				if(mpeg3_total_vstreams(fd))
-				{
-					if(create_index()) return 1;
-				}
+			if(mpeg3_total_vstreams(fd))
+			{
+				if(create_index()) return 1;
+			}
 
 			mpeg3_set_cpus(fd, file->cpus);
 
@@ -234,8 +234,8 @@ SET_TRACE
 			}
 		}
 	}
-	
-	
+
+
 	
 	if(wr && asset->format == FILE_VMPEG)
 	{
@@ -458,6 +458,8 @@ SET_TRACE
 			lame_set_quality(lame_global, 0);
 			lame_set_in_samplerate(lame_global, 
 				asset->sample_rate);
+			lame_set_num_channels(lame_global,
+				asset->channels);
 			if((result = lame_init_params(lame_global)) < 0)
 			{
 				printf(_("encode: lame_init_params returned %d\n"), result);

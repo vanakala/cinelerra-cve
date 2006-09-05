@@ -135,6 +135,7 @@ void FrameCache::put_frame(VFrame *frame,
 		item->data = frame;
 	}
 
+// Copy metadata
 	item->position = position;
 	item->frame_rate = frame_rate;
 	item->age = get_age();

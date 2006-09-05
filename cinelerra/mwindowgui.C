@@ -477,7 +477,7 @@ int MWindowGUI::keypress_event()
 					}
 					else
 						mwindow->move_left(); 
-					result = 1; 
+ 					result = 1; 
 				}
 				break;
 			case RIGHT:

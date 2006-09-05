@@ -65,7 +65,9 @@ public:
 	void get_audio_write_length(int &buffer_size, 
 		int &fragment_size);
 	int open_input_devices(int duplex, int context);
-	int close_input_devices();
+// is_monitor - set by caller to make sure the caller is the same one
+// that opened the device.
+	int close_input_devices(int is_monitor);
 	void start_file_threads();
 	int start_recording(int duplex, 
 		int context /* = CONTEXT_INTERACTIVE */);

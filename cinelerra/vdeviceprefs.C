@@ -147,7 +147,7 @@ int VDevicePrefs::initialize(int creation)
 int VDevicePrefs::delete_objects()
 {
 SET_TRACE
-		delete output_title;
+	delete output_title;
 SET_TRACE
 	delete channel_picker;
 SET_TRACE

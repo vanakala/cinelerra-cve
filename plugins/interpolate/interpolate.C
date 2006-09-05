@@ -179,7 +179,6 @@ void InterpolateWindow::create_objects()
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
 	show_window();
-	flush();
 }
 
 WINDOW_CLOSE_EVENT(InterpolateWindow)

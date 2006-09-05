@@ -120,13 +120,10 @@ void ARender::init_output_buffers()
 		for(int i = 0; i < MAXCHANNELS; i++)
 		{
 // Reset the output buffers in case speed changed
-			if(audio_out[i])
-			{
-				delete [] audio_out[i];
-				audio_out[i] = 0;
-			}
+			delete [] audio_out[i];
+			audio_out[i] = 0;
 
-			if(renderengine->config->aconfig->do_channel[i])
+			if(i < renderengine->edl->session->audio_channels)
 			{
 				audio_out[i] = new double[renderengine->adjusted_fragment_len];
 			}

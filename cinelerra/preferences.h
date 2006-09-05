@@ -23,6 +23,12 @@ public:
 	int save_defaults(BC_Hash *defaults);
 	void boundaries();
 
+	static void print_channels(char *string, 
+		int *channel_positions, 
+		int channels);
+	static void scan_channels(char *string, 
+		int *channel_positions, 
+		int channels);
 
 	void add_node(char *text, int port, int enabled, float rate);
 	void delete_node(int number);
@@ -66,6 +72,8 @@ public:
 // Number of processors for interactive operations.
 	int real_processors;
 
+// Default positions for channels
+	int channel_positions[MAXCHANNELS * MAXCHANNELS];
 
 	Asset *brender_asset;
 	int use_brender;

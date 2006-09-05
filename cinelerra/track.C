@@ -1453,7 +1453,7 @@ int Track::asset_used(Asset *asset)
 	return result;
 }
 
-int Track::channel_is_playable(int64_t position, int direction, int *do_channel)
+int Track::is_playable(int64_t position, int direction)
 {
 	return 1;
 }

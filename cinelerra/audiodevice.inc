@@ -5,6 +5,7 @@ class AudioDevice;
 class AudioLowLevel;
 
 #define TOTAL_BUFFERS 2
+#define INPUT_BUFFER_BYTES 0x400000
 
 // Supported devices
 enum

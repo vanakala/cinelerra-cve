@@ -41,7 +41,7 @@ int PerformancePrefs::create_objects()
 
 	xmargin1 = x = mwindow->theme->preferencesoptions_x;
 	y = mwindow->theme->preferencesoptions_y;
-
+	
 // 	add_subwindow(new BC_Title(x, 
 // 		y, 
 // 		_("Time Format"), 
@@ -49,7 +49,7 @@ int PerformancePrefs::create_objects()
 // 		resources->text_default));
 // 
 // 	y += get_text_height(LARGEFONT) + 5;
-	
+
 	add_subwindow(new BC_Title(x, y + 5, _("Cache size (MB):"), MEDIUMFONT, resources->text_default));
 	cache_size = new CICacheSize(x + 230, 
 		y, 

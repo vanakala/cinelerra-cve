@@ -35,6 +35,10 @@ public:
 //	ArrayList<PlaybackConfig*>* get_playback_config(int strategy);
 //	int get_playback_heads(int strategy);
 
+// Called by PreferencesThread to determine if preference changes need to be
+// rendered.
+	int need_rerender(EDLSession *ptr);
+// Called by BRender to determine if any background rendered frames are valid.
 	void equivalent_output(EDLSession *session, double *result);
 	void dump();
 
@@ -44,7 +48,6 @@ public:
 // Audio
 	int achannel_positions[MAXCHANNELS];
 	AudioOutConfig *aconfig_duplex;
-	AudioInConfig *aconfig_in;
 // AWindow format
 	int assetlist_format;
 // AWindow column widths
@@ -165,6 +168,7 @@ public:
 // Recording
 	int video_channels;
 	VideoInConfig *vconfig_in;
+	AudioInConfig *aconfig_in;
 	Asset *recording_format;
 // play every frame
 	int video_every_frame;  

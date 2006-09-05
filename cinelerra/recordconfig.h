@@ -23,7 +23,6 @@ public:
 	int driver;
 	int oss_enable[MAXDEVICES];
 	char oss_in_device[MAXDEVICES][BCTEXTLEN];
-	int oss_in_channels[MAXDEVICES];
 	int oss_in_bits;
 
 	int firewire_port, firewire_channel;
@@ -32,9 +31,11 @@ public:
 	char esound_in_server[BCTEXTLEN];
 	int esound_in_port;
 	char alsa_in_device[BCTEXTLEN];
-	int alsa_in_channels;
 	int alsa_in_bits;
 	int in_samplerate;
+
+// This should come from EDLSession::recording_format
+	int channels;
 };
 
 // This structure is passed to the driver

@@ -151,16 +151,16 @@ int FormatTools::create_objects(int &init_x,
 		y += aparams_button->get_h() + 20;
 
 // Audio channels only used for recording.
-		if(prompt_audio_channels)
-		{
-			window->add_subwindow(channels_title = new BC_Title(x, y, _("Number of audio channels to record:")));
-			x += 260;
-			window->add_subwindow(channels_button = new FormatChannels(x, y, this));
-			x += channels_button->get_w() + 5;
-			window->add_subwindow(channels_tumbler = new BC_ITumbler(channels_button, 1, MAXCHANNELS, x, y));
-			y += channels_button->get_h() + 20;
-			x = init_x;
-		}
+// 		if(prompt_audio_channels)
+// 		{
+// 			window->add_subwindow(channels_title = new BC_Title(x, y, _("Number of audio channels to record:")));
+// 			x += 260;
+// 			window->add_subwindow(channels_button = new FormatChannels(x, y, this));
+// 			x += channels_button->get_w() + 5;
+// 			window->add_subwindow(channels_tumbler = new BC_ITumbler(channels_button, 1, MAXCHANNELS, x, y));
+// 			y += channels_button->get_h() + 20;
+// 			x = init_x;
+// 		}
 
 //printf("FormatTools::create_objects 6\n");
 		aparams_thread = new FormatAThread(this);

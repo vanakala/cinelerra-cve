@@ -1035,7 +1035,7 @@ int BC_FileBox::submit_file(char *path, int use_this)
 		else
 // Take the complete path
 		{
-		fs->extract_name(filename, path);     // save filename
+			fs->extract_name(filename, path);     // save filename
 		}
 
 		fs->complete_path(path);

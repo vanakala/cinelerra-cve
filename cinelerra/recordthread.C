@@ -154,7 +154,7 @@ int RecordThread::pause_recording()
 
 
 
-	record->close_input_devices();
+	record->close_input_devices(monitor);
 //printf("RecordThread::pause_recording 2\n");
 	record->capture_state = IS_DONE;
 	return 0;
@@ -378,7 +378,7 @@ TRACE("RecordThread::run 18");
 					if(record->get_next_batch() >= 0 && context != CONTEXT_SINGLEFRAME)
 					{
 						record->activate_batch(record->get_next_batch(), 0);
-						record->close_input_devices();
+						record->close_input_devices(monitor);
 					}
 					else
 // End loop
@@ -410,7 +410,7 @@ SET_TRACE
 	}while(!engine_done);
 
 SET_TRACE
-	record->close_input_devices();
+	record->close_input_devices(monitor);
 SET_TRACE
 
 // Resume monitoring only if not a monitor ourselves

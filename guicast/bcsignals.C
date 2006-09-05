@@ -53,6 +53,8 @@ typedef struct
 	void **values;
 	int size;
 	int allocation;
+// This points to the next value to replace if the table wraps around
+	int current_value;
 } bc_table_t;
 
 static void* append_table(bc_table_t *table, void *ptr)
@@ -79,6 +81,15 @@ static void* append_table(bc_table_t *table, void *ptr)
 	return ptr;
 }
 
+// Replace item in table pointed to by current_value and advance
+// current_value
+static void* overwrite_table(bc_table_t *table, void *ptr)
+{
+	free(table->values[table->current_value]);
+	table->values[table->current_value++] = ptr;
+	if(table->current_value >= table->size) table->current_value = 0;
+}
+
 static void clear_table(bc_table_t *table, int delete_objects)
 {
 	if(delete_objects)
@@ -103,15 +114,15 @@ static void clear_table_entry(bc_table_t *table, int number, int delete_object)
 
 
 // Table of functions currently running.
-static bc_table_t execution_table = { 0, 0, 0 };
+static bc_table_t execution_table = { 0, 0, 0, 0 };
 
 // Table of locked positions
-static bc_table_t lock_table = { 0, 0, 0 };
+static bc_table_t lock_table = { 0, 0, 0, 0 };
 
 // Table of buffers
-static bc_table_t memory_table = { 0, 0, 0 };
+static bc_table_t memory_table = { 0, 0, 0, 0 };
 
-static bc_table_t temp_files = { 0, 0, 0 };
+static bc_table_t temp_files = { 0, 0, 0, 0 };
 
 // Can't use Mutex because it would be recursive
 static pthread_mutex_t *lock = 0;
@@ -168,7 +179,7 @@ static void signal_entry(int signum)
 // Call user defined signal handler
 	BC_Signals::global_signals->signal_handler(signum);
 
-	exit(0);
+	abort();
 }
 
 static void signal_entry_recoverable(int signum)
@@ -187,7 +198,9 @@ void BC_Signals::dump_traces()
 // Dump trace table
 	if(execution_table.size)
 	{
-		for(int i = 0; i < execution_table.size; i++)
+		for(int i = execution_table.current_value; i < execution_table.size; i++)
+			printf("    %s\n", execution_table.values[i]);
+		for(int i = 0; i < execution_table.current_value; i++)
 			printf("    %s\n", execution_table.values[i]);
 	}
 
@@ -274,7 +287,7 @@ void BC_Signals::initialize2()
 	// signal(SIGKILL, signal_entry);
 	signal(SIGSEGV, signal_entry);
 	signal(SIGTERM, signal_entry);
-	signal(SIGFPE, signal_entry_recoverable);
+	signal(SIGFPE, signal_entry);
 	signal(SIGPIPE, signal_entry_recoverable);
 }
 
@@ -290,15 +303,23 @@ char* BC_Signals::sig_to_str(int number)
 	return signal_titles[number];
 }
 
-#define TOTAL_TRACES 100
+#define TOTAL_TRACES 16
 
 void BC_Signals::new_trace(char *text)
 {
 	if(!global_signals) return;
 	pthread_mutex_lock(lock);
+
+// Wrap around
 	if(execution_table.size >= TOTAL_TRACES)
-		clear_table(&execution_table, 1);
+	{
+		overwrite_table(&execution_table, strdup(text));
+//		clear_table(&execution_table, 1);
+	}
+	else
+	{
 	append_table(&execution_table, strdup(text));
+	}
 	pthread_mutex_unlock(lock);
 }
 
@@ -480,40 +501,39 @@ int BC_Signals::unset_buffer(void *ptr)
 
 #ifdef TRACE_MEMORY
 
-// Vice president of memory management
-void* operator new(size_t size) 
-{
-//printf("new 1 %d\n", size);
-    void *result = malloc(size);
-	BUFFER(size, result, "new");
-//printf("new 2 %d\n", size);
-	return result;
-}
-
-void* operator new[](size_t size) 
-{
-//printf("new [] 1 %d\n", size);
-    void *result = malloc(size);
-	BUFFER(size, result, "new []");
-//printf("new [] 2 %d\n", size);
-	return result;
-}
-
-void operator delete(void *ptr) 
-{
-//printf("delete 1 %p\n", ptr);
-	UNBUFFER(ptr);
-//printf("delete 2 %p\n", ptr);
-    free(ptr);
-}
-
-void operator delete[](void *ptr) 
-{
-//printf("delete [] 1 %p\n", ptr);
-	UNBUFFER(ptr);
-    free(ptr);
-//printf("delete [] 2 %p\n", ptr);
-}
+// void* operator new(size_t size) 
+// {
+// //printf("new 1 %d\n", size);
+//     void *result = malloc(size);
+// 	BUFFER(size, result, "new");
+// //printf("new 2 %d\n", size);
+// 	return result;
+// }
+// 
+// void* operator new[](size_t size) 
+// {
+// //printf("new [] 1 %d\n", size);
+//     void *result = malloc(size);
+// 	BUFFER(size, result, "new []");
+// //printf("new [] 2 %d\n", size);
+// 	return result;
+// }
+// 
+// void operator delete(void *ptr) 
+// {
+// //printf("delete 1 %p\n", ptr);
+// 	UNBUFFER(ptr);
+// //printf("delete 2 %p\n", ptr);
+//     free(ptr);
+// }
+// 
+// void operator delete[](void *ptr) 
+// {
+// //printf("delete [] 1 %p\n", ptr);
+// 	UNBUFFER(ptr);
+//     free(ptr);
+// //printf("delete [] 2 %p\n", ptr);
+// }
 
 
 #endif

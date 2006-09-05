@@ -1,4 +1,5 @@
 #include "audiodevice.h"
+#include "bctimer.h"
 #include "clip.h"
 #include "condition.h"
 #include "mutex.h"
@@ -7,11 +8,11 @@
 
 #include <string.h>
 
-int AudioDevice::write_buffer(double **output, int samples, int channels)
+int AudioDevice::write_buffer(double **output, int samples)
 {
 // find free buffer to fill
 	if(interrupt) return 0;
-	arm_buffer(arm_buffer_num, output, samples, channels);
+	arm_buffer(arm_buffer_num, output, samples);
 	arm_buffer_num++;
 	if(arm_buffer_num >= TOTAL_BUFFERS) arm_buffer_num = 0;
 	return 0;
@@ -34,8 +35,7 @@ int AudioDevice::set_last_buffer()
 // must send maximum size buffer the first time or risk reallocation while threaded
 int AudioDevice::arm_buffer(int buffer_num, 
 	double **output, 
-	int samples, 
-	int channels)
+	int samples)
 {
 	int bits;
 	int new_size;
@@ -53,7 +53,6 @@ int AudioDevice::arm_buffer(int buffer_num,
 	char *buffer_num_buffer;
 	double *buffer_in_channel;
 
-	if(channels == -1) channels = get_ochannels();
 	bits = get_obits();
 
 	frame = device_channels * (bits / 8);
@@ -68,24 +67,21 @@ int AudioDevice::arm_buffer(int buffer_num,
 
 	if(new_size > buffer_size[buffer_num])
 	{
-		if(buffer_size[buffer_num] != 0)
-		{
-			delete [] buffer[buffer_num];
-		}
-		buffer[buffer_num] = new char[new_size];
+		delete [] output_buffer[buffer_num];
+		output_buffer[buffer_num] = new char[new_size];
 		buffer_size[buffer_num] = new_size;
 	}
 
 	buffer_size[buffer_num] = new_size;
 
-	buffer_num_buffer = buffer[buffer_num];
+	buffer_num_buffer = output_buffer[buffer_num];
 	bzero(buffer_num_buffer, new_size);
 	
-	last_input_channel = channels - 1;
+	last_input_channel = device_channels - 1;
 // copy data
 // intel byte order only to correspond with bits_to_fmt
 
-	for(channel = 0; channel < device_channels && channel < channels; channel++)
+	for(channel = 0; channel < device_channels; channel++)
 	{
 		buffer_in_channel = output[channel];
 		switch(bits)
@@ -197,8 +193,8 @@ int AudioDevice::reset_output()
 {
 	for(int i = 0; i < TOTAL_BUFFERS; i++)
 	{
-		if(buffer_size[i]) { delete [] buffer[i]; }
-		buffer[i] = 0;
+		delete [] output_buffer[i];
+		output_buffer[i] = 0;
 		buffer_size[i] = 0;
 		arm_lock[i]->reset();
 		play_lock[i]->reset(); 
@@ -236,7 +232,7 @@ int AudioDevice::start_playback()
 	is_playing_back = 1;
 	interrupt = 0;
 // zero timers
-	playback_timer.update();
+	playback_timer->update();
 	last_position = 0;
 
 	Thread::set_realtime(get_orealtime());
@@ -303,7 +299,7 @@ int64_t AudioDevice::current_position()
 			timer_lock->lock("AudioDevice::current_position");
 			software_result = total_samples - last_buffer_size - 
 				device_buffer / frame / get_ochannels();
-			software_result += playback_timer.get_scaled_difference(get_orate());
+			software_result += playback_timer->get_scaled_difference(get_orate());
 			timer_lock->unlock();
 
 			if(software_result < last_position) 
@@ -324,19 +320,19 @@ int64_t AudioDevice::current_position()
 	if(r)
 	{
 		int64_t result = total_samples_read + 
-			record_timer.get_scaled_difference(get_irate());
+			record_timer->get_scaled_difference(get_irate());
 		return result;
 	}
 
 	return 0;
 }
 
-void AudioDevice::run()
+void AudioDevice::run_output()
 {
 	thread_buffer_num = 0;
 
 	startup_lock->unlock();
-	playback_timer.update();
+	playback_timer->update();
 
 
 //printf("AudioDevice::run 1 %d\n", Thread::calculate_realtime());
@@ -366,12 +362,13 @@ void AudioDevice::run()
 			timer_lock->lock("AudioDevice::run 3");
 			last_buffer_size = buffer_size[thread_buffer_num] / (get_obits() / 8) / get_ochannels();
 			total_samples += last_buffer_size;
-			playback_timer.update();
+			playback_timer->update();
 			timer_lock->unlock();
 
 
 // write converted buffer synchronously
-			thread_result = get_lowlevel_out()->write_buffer(buffer[thread_buffer_num], 
+			thread_result = get_lowlevel_out()->write_buffer(
+				output_buffer[thread_buffer_num], 
 				buffer_size[thread_buffer_num]);
 
 // allow writing to the buffer

@@ -163,13 +163,7 @@ int PreferencesThread::apply_settings()
 
 	
 	rerender = 
-		(edl->session->playback_preload != mwindow->edl->session->playback_preload) ||
-		(edl->session->interpolation_type != mwindow->edl->session->interpolation_type) ||
-		(edl->session->video_every_frame != mwindow->edl->session->video_every_frame) ||
-		(edl->session->real_time_playback != mwindow->edl->session->real_time_playback) ||
-		(edl->session->playback_software_position != mwindow->edl->session->playback_software_position) ||
-		(edl->session->test_playback_edits != mwindow->edl->session->test_playback_edits) ||
-		(edl->session->playback_buffer != mwindow->edl->session->playback_buffer) ||
+		edl->session->need_rerender(mwindow->edl->session) ||
 		(preferences->force_uniprocessor != preferences->force_uniprocessor) ||
 		(*this_aconfig != *aconfig) ||
 		(*this_vconfig != *vconfig) ||
@@ -178,8 +172,7 @@ int PreferencesThread::apply_settings()
 
 
 
-// TODO: Need to copy just the parameters in PreferencesThread
-	mwindow->edl->copy_session(edl);
+	mwindow->edl->copy_session(edl, 1);
 	mwindow->preferences->copy_from(preferences);
 	mwindow->init_brender();
 

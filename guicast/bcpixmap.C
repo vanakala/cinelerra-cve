@@ -160,7 +160,7 @@ int BC_Pixmap::initialize(BC_WindowBase *parent_window, int w, int h, int mode)
 
 	if(use_alpha())
 	{
-	unsigned long gcmask = GCGraphicsExposures | 
+		unsigned long gcmask = GCGraphicsExposures | 
 			GCForeground | 
 			GCBackground | 
 			GCFunction;

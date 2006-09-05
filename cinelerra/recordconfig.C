@@ -16,7 +16,6 @@ AudioInConfig::AudioInConfig()
 	{
 		oss_enable[i] = (i == 0);
 		sprintf(oss_in_device[i], "/dev/dsp");
-		oss_in_channels[i] = 2;
 	}
 	oss_in_bits = 16;
 	firewire_port = 0;
@@ -26,9 +25,9 @@ AudioInConfig::AudioInConfig()
 	esound_in_port = 0;
 
 	sprintf(alsa_in_device, "default");
-	alsa_in_channels = 2;
 	alsa_in_bits = 16;
 	in_samplerate = 48000;
+	channels = 2;
 }
 
 AudioInConfig::~AudioInConfig()
@@ -44,8 +43,7 @@ int AudioInConfig::is_duplex(AudioInConfig *in, AudioOutConfig *out)
 			case AUDIO_OSS:
 			case AUDIO_OSS_ENVY24:
 				return (!strcmp(in->oss_in_device[0], out->oss_out_device[0]) &&
-					in->oss_in_bits == out->oss_out_bits &&
-					in->oss_in_channels[0] == out->oss_out_channels[0]);
+					in->oss_in_bits == out->oss_out_bits);
 				break;
 
 // ALSA always opens 2 devices
@@ -74,14 +72,13 @@ void AudioInConfig::copy_from(AudioInConfig *src)
 	{
 		oss_enable[i] = src->oss_enable[i];
 		strcpy(oss_in_device[i], src->oss_in_device[i]);
-		oss_in_channels[i] = src->oss_in_channels[i];
 		oss_in_bits = src->oss_in_bits;
 	}
 
 	strcpy(alsa_in_device, src->alsa_in_device);
 	alsa_in_bits = src->alsa_in_bits;
-	alsa_in_channels = src->alsa_in_channels;
 	in_samplerate = src->in_samplerate;
+	channels = src->channels;
 }
 
 AudioInConfig& AudioInConfig::operator=(AudioInConfig &that)
@@ -103,8 +100,6 @@ int AudioInConfig::load_defaults(BC_Hash *defaults)
 		oss_enable[i] = defaults->get(string, oss_enable[i]);
 		sprintf(string, "OSS_IN_DEVICE_%d", i);
 		defaults->get(string, oss_in_device[i]);
-		sprintf(string, "OSS_IN_CHANNELS_%d", i);
-		oss_in_channels[i] = defaults->get(string, oss_in_channels[i]);
 	}
 	sprintf(string, "OSS_IN_BITS");
 	oss_in_bits = defaults->get(string, oss_in_bits);
@@ -113,8 +108,8 @@ int AudioInConfig::load_defaults(BC_Hash *defaults)
 
 	defaults->get("ALSA_IN_DEVICE", alsa_in_device);
 	alsa_in_bits = defaults->get("ALSA_IN_BITS", alsa_in_bits);
-	alsa_in_channels = defaults->get("ALSA_IN_CHANNELS", alsa_in_channels);
 	in_samplerate = defaults->get("IN_SAMPLERATE", in_samplerate);
+	channels = defaults->get("IN_CHANNELS", channels);
 	return 0;
 }
 
@@ -132,8 +127,6 @@ int AudioInConfig::save_defaults(BC_Hash *defaults)
 		defaults->update(string, oss_enable[i]);
 		sprintf(string, "OSS_IN_DEVICE_%d", i);
 		defaults->update(string, oss_in_device[i]);
-		sprintf(string, "OSS_IN_CHANNELS_%d", i);
-		defaults->update(string, oss_in_channels[i]);
 	}
 
 	sprintf(string, "OSS_IN_BITS");
@@ -143,8 +136,8 @@ int AudioInConfig::save_defaults(BC_Hash *defaults)
 
 	defaults->update("ALSA_IN_DEVICE", alsa_in_device);
 	defaults->update("ALSA_IN_BITS", alsa_in_bits);
-	defaults->update("ALSA_IN_CHANNELS", alsa_in_channels);
 	defaults->update("IN_SAMPLERATE", in_samplerate);
+	defaults->update("IN_CHANNELS", channels);
 	return 0;
 }
 

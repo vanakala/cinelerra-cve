@@ -123,7 +123,6 @@ void MainCursor::update()
 void MainCursor::flash()
 {
 	gui->canvas->flash(pixel1, 0, pixel2 - pixel1 + 1, gui->canvas->get_h());
-	gui->flush();
 }
 
 void MainCursor::hide(int do_plugintoggles)

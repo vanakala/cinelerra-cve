@@ -180,19 +180,17 @@ int VirtualAConsole::process_buffer(int64_t len,
 		double sample;
 		int k;
 		double *audio_out_packed[MAX_CHANNELS];
+		int audio_channels = renderengine->edl->session->audio_channels;
 
 		for(int i = 0, j = 0; 
-			i < MAX_CHANNELS; 
+			i < audio_channels; 
 			i++)
 		{
-			if(renderengine->config->aconfig->do_channel[i])
-			{
-				audio_out_packed[j++] = arender->audio_out[i];
-			}
+			audio_out_packed[j++] = arender->audio_out[i];
 		}
 
 		for(int i = 0; 
-			i < renderengine->config->aconfig->total_playable_channels(); 
+			i < audio_channels; 
 			i++)
 		{
 			int in, out;
@@ -246,8 +244,7 @@ int VirtualAConsole::process_buffer(int64_t len,
 		if(!renderengine->audio->get_interrupted())
 		{
 			renderengine->audio->write_buffer(audio_out_packed, 
-				real_output_len, 
-				renderengine->config->aconfig->total_playable_channels());
+				real_output_len);
 		}
 
 		if(renderengine->audio->get_interrupted()) interrupt = 1;

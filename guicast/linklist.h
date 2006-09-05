@@ -281,6 +281,8 @@ void List<TYPE>::remove_pointer(ListItem<TYPE> *item)
 //printf("List<TYPE>::remove_pointer %x %x %x\n", item, last, first);
 	if(!item) return;
 
+	item->owner = 0;
+
 	if(item == last && item == first)
 	{
 // last item

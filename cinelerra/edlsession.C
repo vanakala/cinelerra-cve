@@ -56,6 +56,7 @@ EDLSession::EDLSession(EDL *edl)
 	video_write_length = -1000;
 	color_model = -100;
 	interlace_mode = BC_ILACE_MODE_UNDETECTED;
+	record_speed = 24;
 	decode_subtitles = 0;
 	subtitle_number = 0;
 }
@@ -79,7 +80,20 @@ char* EDLSession::get_cwindow_display()
 		return 0;
 }
 
-
+int EDLSession::need_rerender(EDLSession *ptr)
+{
+	return (playback_preload != ptr->playback_preload) ||
+		(interpolation_type != ptr->interpolation_type) ||
+		(video_every_frame != ptr->video_every_frame) ||
+		(real_time_playback != ptr->real_time_playback) ||
+		(playback_software_position != ptr->playback_software_position) ||
+		(test_playback_edits != ptr->test_playback_edits) ||
+		(playback_buffer != ptr->playback_buffer) ||
+		(decode_subtitles != ptr->decode_subtitles) ||
+		(subtitle_number != ptr->subtitle_number) ||
+		(interpolate_raw != ptr->interpolate_raw) ||
+		(white_balance_raw != ptr->white_balance_raw);
+}
 
 void EDLSession::equivalent_output(EDLSession *session, double *result)
 {
@@ -193,7 +207,7 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	real_time_record = defaults->get("REALTIME_RECORD", 0);
 	record_software_position = defaults->get("RECORD_SOFTWARE_POSITION", 1);
 	record_sync_drives = defaults->get("RECORD_SYNC_DRIVES", 0);
-	record_speed = defaults->get("RECORD_SPEED", 8);
+//	record_speed = defaults->get("RECORD_SPEED", 24);
 	record_write_length = defaults->get("RECORD_WRITE_LENGTH", 131072);
 	recording_format->load_defaults(defaults,
 		"RECORD_", 
@@ -238,7 +252,7 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 
 	decode_subtitles = defaults->get("DECODE_SUBTITLES", decode_subtitles);
 	subtitle_number = defaults->get("SUBTITLE_NUMBER", subtitle_number);
-	
+
 	vwindow_folder[0] = 0;
 	vwindow_source = -1;
 	vwindow_zoom = defaults->get("VWINDOW_ZOOM", (float)1);
@@ -323,7 +337,7 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("REALTIME_RECORD", real_time_record);
     defaults->update("RECORD_SOFTWARE_POSITION", record_software_position);
 	defaults->update("RECORD_SYNC_DRIVES", record_sync_drives);
-	defaults->update("RECORD_SPEED", record_speed);  // Full lockup on anything higher
+//	defaults->update("RECORD_SPEED", record_speed);  
 	defaults->update("RECORD_WRITE_LENGTH", record_write_length); // Heroine kernel 2.2 scheduling sucks.
 	recording_format->save_defaults(defaults,
 		"RECORD_",
@@ -732,7 +746,7 @@ int EDLSession::copy(EDLSession *session)
 	real_time_playback = session->real_time_playback;
 	real_time_record = session->real_time_record;
 	record_software_position = session->record_software_position;
-	record_speed = session->record_speed;
+//	record_speed = session->record_speed;
 	record_sync_drives = session->record_sync_drives;
 	record_write_length = session->record_write_length;
 	recording_format->copy_from(session->recording_format, 0);

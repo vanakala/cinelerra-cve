@@ -165,11 +165,14 @@ public:
 
 // These are separated into two routines so a file doesn't have to be
 // allocated.
-// Get best colormodel to translate for hardware acceleration
+// Get best colormodel to translate for hardware accelerated playback.
+// Called by VRender.
 	int get_best_colormodel(int driver);
+// Get best colormodel for hardware accelerated recording.
+// Called by VideoDevice.
 	static int get_best_colormodel(Asset *asset, int driver);
-// Get nearest colormodel in format after the file is opened and the 
-// direction determined to know whether to use a temp.
+// Get nearest colormodel that can be decoded without a temporary frame.
+// Used by read_frame.
 	int colormodel_supported(int colormodel);
 
 // Used by CICache to calculate the total size of the cache.

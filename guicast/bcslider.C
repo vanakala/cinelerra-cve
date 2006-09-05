@@ -604,7 +604,7 @@ char* BC_FSlider::get_caption()
 
 int BC_FSlider::increase_value()
 {
-	value += 0.1;
+	value += precision;
 	if(value > maxvalue) value = maxvalue;
 	button_pixel = value_to_pixel();
 	return 0;
@@ -612,7 +612,7 @@ int BC_FSlider::increase_value()
 
 int BC_FSlider::decrease_value()
 {
-	value -= 0.1;
+	value -= precision;
 	if(value < minvalue) value = minvalue;
 	button_pixel = value_to_pixel();
 	return 0;
@@ -711,7 +711,7 @@ char* BC_PercentageSlider::get_caption()
 
 int BC_PercentageSlider::increase_value()
 {
-	value += 1;
+	value += precision;
 	if(value > maxvalue) value = maxvalue;
 	button_pixel = value_to_pixel();
 //printf("BC_PercentageSlider::increase_value %f\n", value);
@@ -720,7 +720,7 @@ int BC_PercentageSlider::increase_value()
 
 int BC_PercentageSlider::decrease_value()
 {
-	value -= 1;
+	value -= precision;
 	if(value < minvalue) value = minvalue;
 	button_pixel = value_to_pixel();
 //printf("BC_PercentageSlider::decrease_value %f\n", value);

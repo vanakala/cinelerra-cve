@@ -52,7 +52,6 @@ int DeInterlaceWindow::create_objects()
 	flash();
 	show_window();
 	set_mode(client->config.mode,0);
-	flush();
 	return 0;
 }
 

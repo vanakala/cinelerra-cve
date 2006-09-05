@@ -50,16 +50,6 @@ int PlayableTracks::is_playable(Track *current_track,
 	if(use_nudge) position += current_track->nudge;
 
 	Auto *current = 0;
-	int *do_channel;
-	switch(data_type)
-	{
-		case TRACK_AUDIO:
-			do_channel = renderengine->config->aconfig->do_channel;
-			break;
-		case TRACK_VIDEO:
-			do_channel = renderengine->config->vconfig->do_channel;
-			break;
-	}
 
 	if(current_track->data_type != data_type) result = 0;
 	
@@ -70,7 +60,7 @@ int PlayableTracks::is_playable(Track *current_track,
 	if(result)
 	{
 		if(!current_track->plugin_used(position, direction) &&
-			!current_track->channel_is_playable(position, direction, do_channel))
+			!current_track->is_playable(position, direction))
 			result = 0;
 	}
 

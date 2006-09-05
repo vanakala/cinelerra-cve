@@ -464,7 +464,6 @@ SET_TRACE
 SET_TRACE	
 	update_canvas();
 	show_window();
-	flush();
 SET_TRACE	
 }
 
@@ -541,7 +540,6 @@ void ParametricWindow::update_canvas()
 // 	}
 
 	canvas->flash();
-	flush();
 }
 
 

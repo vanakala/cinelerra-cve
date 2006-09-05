@@ -128,10 +128,10 @@ RenderFarmServerThread::~RenderFarmServerThread()
 }
 
 
-int RenderFarmServerThread::start_loop()
+int RenderFarmServerThread::open_client(char *hostname, int port)
 {
+	int socket_fd = -1;
 	int result = 0;
-	char *hostname = server->preferences->get_node_hostname(number);
 
 // Open file for master node
 	if(hostname[0] == '/')
@@ -189,12 +189,12 @@ int RenderFarmServerThread::start_loop()
 			struct sockaddr_in addr;
 			struct hostent *hostinfo;
    			addr.sin_family = AF_INET;
-			addr.sin_port = htons(server->preferences->get_node_port(number));
+			addr.sin_port = htons(port);
 			hostinfo = gethostbyname(hostname);
 			if(hostinfo == NULL)
     		{
     			fprintf(stderr, _("RenderFarmServerThread::open_client: unknown host %s.\n"), 
-					server->preferences->get_node_hostname(number));
+					hostname);
     			result = 1;
     		}
 			else
@@ -204,13 +204,27 @@ int RenderFarmServerThread::start_loop()
 				if(connect(socket_fd, (struct sockaddr*)&addr, sizeof(addr)) < 0)
 				{
 					fprintf(stderr, _("RenderFarmServerThread::open_client: %s: %s\n"), 
-						server->preferences->get_node_hostname(number), 
+						hostname, 
 						strerror(errno));
 					result = 1;
 				}
 			}
 		}
 	}
+
+	if(result) socket_fd = -1;
+
+	return socket_fd;
+}
+
+int RenderFarmServerThread::start_loop()
+{
+	int result = 0;
+
+	socket_fd = open_client(server->preferences->get_node_hostname(number), 
+		server->preferences->get_node_port(number));
+
+	if(socket_fd < 0) result = 1;
 
 
 	if(!result) Thread::start();

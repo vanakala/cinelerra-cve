@@ -59,7 +59,8 @@ int RecordAudio::arm_recording()
 	record->get_audio_write_length(buffer_size, fragment_size);
 	record_channels = record->default_asset->channels;
 
-	if(mwindow->edl->session->real_time_record) Thread::set_realtime();
+// Realtime is set in the audio driver
+//	if(mwindow->edl->session->real_time_record) Thread::set_realtime();
 
 	timer.update();
 	trigger_lock->lock("RecordAudio::arm_recording");
@@ -136,7 +137,6 @@ void RecordAudio::run()
 //printf("RecordAudio::run 2.1\n");
 				grab_result = record->adevice->read_buffer(input, 
 					fragment_size, 
-					record_channels, 
 					over, 
 					max, 
 					fragment_position);
@@ -148,7 +148,6 @@ void RecordAudio::run()
 //printf("RecordAudio::run 1\n");
 				grab_result = record->adevice->read_buffer(input, 
 					fragment_size, 
-					record_channels, 
 					over, 
 					max, 
 					0);

@@ -125,10 +125,10 @@ Auto* CWindow::calculate_affected_auto(Autos *autos,
 			if(created) *created = 1;
 			if(redraw)
 			{
-			mwindow->gui->lock_window("CWindow::calculate_affected_auto");
-			mwindow->gui->canvas->draw_overlays();
-			mwindow->gui->canvas->flash();
-			mwindow->gui->unlock_window();
+				mwindow->gui->lock_window("CWindow::calculate_affected_auto");
+				mwindow->gui->canvas->draw_overlays();
+				mwindow->gui->canvas->flash();
+				mwindow->gui->unlock_window();
 			}
 		}
 	}

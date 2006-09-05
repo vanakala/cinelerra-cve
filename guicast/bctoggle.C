@@ -220,7 +220,6 @@ int BC_Toggle::draw_face()
 
 	draw_pixmap(images[status]);
 	flash();
-	flush();
 	return 0;
 }
 

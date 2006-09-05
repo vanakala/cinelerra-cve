@@ -642,7 +642,7 @@ void HistogramMain::tabulate_curve(int subscript, int use_value)
 
 
 
-// Make smooth curve
+// Make smooth curve (currently a copy of the linear curve)
 	float prev = 0.0;
 	for(i = 0; i < HISTOGRAM_SLOTS; i++)
 	{

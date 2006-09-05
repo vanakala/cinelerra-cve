@@ -18,30 +18,25 @@ AudioOutConfig::AudioOutConfig(int duplex)
 	{
 		oss_enable[i] = (i == 0);
 		sprintf(oss_out_device[i], "/dev/dsp");
-		oss_out_channels[i] = 2;
 	}
 
 	sprintf(esound_out_server, "");
 	esound_out_port = 0;
 
 	sprintf(alsa_out_device, "default");
-	alsa_out_channels = 2;
 	alsa_out_bits = 16;
 	interrupt_workaround = 0;
 
-	firewire_channels = 2;
 	firewire_channel = 63;
 	firewire_port = 0;
 	strcpy(firewire_path, "/dev/video1394");
 	firewire_syt = 30000;
 
-	dv1394_channels = 2;
 	dv1394_channel = 63;
 	dv1394_port = 0;
 	strcpy(dv1394_path, "/dev/dv1394");
 	dv1394_syt = 30000;
 
-	bzero(do_channel, sizeof(int) * MAX_CHANNELS);
 }
 
 AudioOutConfig::~AudioOutConfig()
@@ -64,7 +59,6 @@ int AudioOutConfig::operator==(AudioOutConfig &that)
 
 
 		!strcmp(oss_out_device[0], that.oss_out_device[0]) && 
-		(oss_out_channels[0] == that.oss_out_channels[0]) && 
 		(oss_out_bits == that.oss_out_bits) && 
 
 
@@ -75,17 +69,14 @@ int AudioOutConfig::operator==(AudioOutConfig &that)
 
 
 		!strcmp(alsa_out_device, that.alsa_out_device) &&
-		(alsa_out_channels == that.alsa_out_channels) &&
 		(alsa_out_bits == that.alsa_out_bits) &&
 		(interrupt_workaround == that.interrupt_workaround) &&
 
-		firewire_channels == that.firewire_channels &&
 		firewire_channel == that.firewire_channel &&
 		firewire_port == that.firewire_port &&
 		firewire_syt == that.firewire_syt &&
 		!strcmp(firewire_path, that.firewire_path) &&
 
-		dv1394_channels == that.dv1394_channels &&
 		dv1394_channel == that.dv1394_channel &&
 		dv1394_port == that.dv1394_port &&
 		dv1394_syt == that.dv1394_syt &&
@@ -112,29 +103,23 @@ void AudioOutConfig::copy_from(AudioOutConfig *src)
 	{
 		oss_enable[i] = src->oss_enable[i];
 		strcpy(oss_out_device[i], src->oss_out_device[i]);
-		oss_out_channels[i] = src->oss_out_channels[i];
 	}
 	oss_out_bits = src->oss_out_bits;
 
 	strcpy(alsa_out_device, src->alsa_out_device);
-	alsa_out_channels = src->alsa_out_channels;
 	alsa_out_bits = src->alsa_out_bits;
 	interrupt_workaround = src->interrupt_workaround;
 
-	firewire_channels = src->firewire_channels;
 	firewire_channel = src->firewire_channel;
 	firewire_port = src->firewire_port;
 	firewire_syt = src->firewire_syt;
 	strcpy(firewire_path, src->firewire_path);
 
-	dv1394_channels = src->dv1394_channels;
 	dv1394_channel = src->dv1394_channel;
 	dv1394_port = src->dv1394_port;
 	dv1394_syt = src->dv1394_syt;
 	strcpy(dv1394_path, src->dv1394_path);
 
-	for(int i = 0; i < MAXCHANNELS; i++)
-		do_channel[i] = src->do_channel[i];
 }
 
 int AudioOutConfig::load_defaults(BC_Hash *defaults)
@@ -152,14 +137,11 @@ int AudioOutConfig::load_defaults(BC_Hash *defaults)
 		oss_enable[i] = defaults->get(string, oss_enable[i]);
 		sprintf(string, "OSS_OUT_DEVICE_%d_%d", i, duplex);
 		defaults->get(string, oss_out_device[i]);
-		sprintf(string, "OSS_OUT_CHANNELS_%d_%d", i, duplex);
-		oss_out_channels[i] = defaults->get(string, oss_out_channels[i]);
 	}
 	sprintf(string, "OSS_OUT_BITS_%d", duplex);
 	oss_out_bits = defaults->get(string, oss_out_bits);
 
 	defaults->get("ALSA_OUT_DEVICE", alsa_out_device);
-	alsa_out_channels = defaults->get("ALSA_OUT_CHANNELS", alsa_out_channels);
 	alsa_out_bits = defaults->get("ALSA_OUT_BITS", alsa_out_bits);
 	interrupt_workaround = defaults->get("ALSA_INTERRUPT_WORKAROUND", interrupt_workaround);
 
@@ -168,8 +150,6 @@ int AudioOutConfig::load_defaults(BC_Hash *defaults)
 	sprintf(string, "ESOUND_OUT_PORT_%d", duplex);
 	esound_out_port =             defaults->get(string, esound_out_port);
 
-	sprintf(string, "AFIREWIRE_OUT_CHANNELS");
-	firewire_channels = defaults->get(string, firewire_channels);
 	sprintf(string, "AFIREWIRE_OUT_CHANNEL");
 	firewire_channel = defaults->get(string, firewire_channel);
 	sprintf(string, "AFIREWIRE_OUT_PORT");
@@ -179,8 +159,6 @@ int AudioOutConfig::load_defaults(BC_Hash *defaults)
 	sprintf(string, "AFIREWIRE_OUT_SYT");
 	firewire_syt = defaults->get(string, firewire_syt);
 
-	sprintf(string, "ADV1394_OUT_CHANNELS");
-	dv1394_channels = defaults->get(string, dv1394_channels);
 	sprintf(string, "ADV1394_OUT_CHANNEL");
 	dv1394_channel = defaults->get(string, dv1394_channel);
 	sprintf(string, "ADV1394_OUT_PORT");
@@ -209,15 +187,12 @@ int AudioOutConfig::save_defaults(BC_Hash *defaults)
 		defaults->update(string, oss_enable[i]);
 		sprintf(string, "OSS_OUT_DEVICE_%d_%d", i, duplex);
 		defaults->update(string, oss_out_device[i]);
-		sprintf(string, "OSS_OUT_CHANNELS_%d_%d", i, duplex);
-		defaults->update(string, oss_out_channels[i]);
 	}
 	sprintf(string, "OSS_OUT_BITS_%d", duplex);
 	defaults->update(string, oss_out_bits);
 
 
 	defaults->update("ALSA_OUT_DEVICE", alsa_out_device);
-	defaults->update("ALSA_OUT_CHANNELS", alsa_out_channels);
 	defaults->update("ALSA_OUT_BITS", alsa_out_bits);
 	defaults->update("ALSA_INTERRUPT_WORKAROUND", interrupt_workaround);
 
@@ -226,8 +201,6 @@ int AudioOutConfig::save_defaults(BC_Hash *defaults)
 	sprintf(string, "ESOUND_OUT_PORT_%d", duplex);
 	defaults->update(string, esound_out_port);
 
-	sprintf(string, "AFIREWIRE_OUT_CHANNELS");
-	defaults->update(string, firewire_channels);
 	sprintf(string, "AFIREWIRE_OUT_CHANNEL");
 	defaults->update(string, firewire_channel);
 	sprintf(string, "AFIREWIRE_OUT_PORT");
@@ -238,8 +211,6 @@ int AudioOutConfig::save_defaults(BC_Hash *defaults)
 	defaults->update(string, firewire_syt);
 
 
-	sprintf(string, "ADV1394_OUT_CHANNELS");
-	defaults->update(string, dv1394_channels);
 	sprintf(string, "ADV1394_OUT_CHANNEL");
 	defaults->update(string, dv1394_channel);
 	sprintf(string, "ADV1394_OUT_PORT");
@@ -252,67 +223,6 @@ int AudioOutConfig::save_defaults(BC_Hash *defaults)
 	return 0;
 }
 
-int AudioOutConfig::total_output_channels()
-{
-	switch(driver)
-	{
-		case AUDIO_OSS:
-		case AUDIO_OSS_ENVY24:
-		{
-			int total = 0;
-			for(int i = 0; i < MAXDEVICES; i++)
-			{
-				if(oss_enable[i]) total += oss_out_channels[i];
-			}
-			return total;
-			break;
-		}
-
-		case AUDIO_ALSA:
-			return alsa_out_channels;
-			break;
-
-
-		case AUDIO_1394:
-		case AUDIO_IEC61883:
-			return firewire_channels;
-			break;
-
-		case AUDIO_DV1394:
-			return dv1394_channels;
-			break;
-
-		case AUDIO_ESOUND:
-			return 2;
-			break;
-
-		default:
-			return 0;
-			break;
-	}
-	return 0;
-}
-
-int AudioOutConfig::total_playable_channels()
-{
-	int result = 0;
-	for(int i = 0; i < MAXCHANNELS; i++)
-		if(do_channel[i]) result++;
-	return result;
-}
-
-int AudioOutConfig::playable_channel_number(int number)
-{
-	for(int i = 0; i < MAXCHANNELS; i++)
-	{
-		if(do_channel[i])
-		{
-			number--;
-			if(number < 0) return i;
-		}
-	}
-	return 0;
-}
 
 
 

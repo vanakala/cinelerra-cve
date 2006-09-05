@@ -20,16 +20,9 @@ public:
 	void copy_from(AudioOutConfig *src);
 	int load_defaults(BC_Hash *defaults);
 	int save_defaults(BC_Hash *defaults);
-// Total channels in do_channels
-	int total_playable_channels();
-	int playable_channel_number(int number);
-// Total channels device can handle
-	int total_output_channels();
 
 	int fragment_size;
 
-// Which channels to send output to
-	int do_channel[MAXCHANNELS];
 
 // Offset for synchronization in seconds
 	float audio_offset;
@@ -39,7 +32,6 @@ public:
 	int driver;
 	int oss_enable[MAXDEVICES];
 	char oss_out_device[MAXDEVICES][BCTEXTLEN];
-	int oss_out_channels[MAXDEVICES];
 	int oss_out_bits;
 
 
@@ -49,12 +41,10 @@ public:
 
 // ALSA options
 	char alsa_out_device[BCTEXTLEN];
-	int alsa_out_channels;
 	int alsa_out_bits;
 	int interrupt_workaround;
 
 // Firewire options
-	int firewire_channels;
 	int firewire_channel;
 	int firewire_port;
 	int firewire_frames;
@@ -63,7 +53,6 @@ public:
 
 
 // DV1394 options
-	int dv1394_channels;
 	int dv1394_channel;
 	int dv1394_port;
 	int dv1394_frames;

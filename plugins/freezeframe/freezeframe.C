@@ -268,7 +268,6 @@ int FreezeFrameMain::process_buffer(VFrame *frame,
 	int64_t previous_first_frame = first_frame_position;
 	load_configuration();
 
-
 // Just entered frozen range
 	if(!first_frame && config.enabled)
 	{

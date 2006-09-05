@@ -8432,6 +8432,8 @@ Alt Up           Expand curve amplitude
 Alt Dn           Shrink curve amplitude
 f                Fit time displayed to selection
 Alt f            Fit curve amplitude to highlighted section of curves
+Alt Left         Move left one edit
+Alt Right        Move right one edit
 Page Up          Move up*
 Page Dn          Move down*
 Ctrl Page Up     Expand track height

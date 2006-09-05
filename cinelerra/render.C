@@ -615,7 +615,6 @@ int Render::render(int test_overwrite,
 	{
 		vconfig.do_channel[i] = (i < command->get_edl()->session->video_channels);
 		playback_config->vconfig->do_channel[i] = (i < command->get_edl()->session->video_channels);
-		playback_config->aconfig->do_channel[i] = (i < command->get_edl()->session->audio_channels);
 	}
 
 // Create caches

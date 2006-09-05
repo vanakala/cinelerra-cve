@@ -18,6 +18,7 @@ AudioALSA::AudioALSA(AudioDevice *device)
 	delay = 0;
 	timer_lock = new Mutex("AudioALSA::timer_lock");
 	interrupted = 0;
+	dsp_out = 0;
 }
 
 AudioALSA::~AudioALSA()
@@ -264,7 +265,7 @@ int AudioALSA::open_input()
 	int open_mode = 0;
 	int err;
 
-	device->in_channels = device->in_config->alsa_in_channels;
+	device->in_channels = device->get_ichannels();
 	device->in_bits = device->in_config->alsa_in_bits;
 
 	translate_name(pcm_name, device->in_config->alsa_in_device);
@@ -279,7 +280,7 @@ int AudioALSA::open_input()
 	}
 
 	set_params(dsp_in, 
-		device->in_config->alsa_in_channels, 
+		device->get_ichannels(), 
 		device->in_config->alsa_in_bits,
 		device->in_samplerate,
 		device->in_samples);
@@ -294,7 +295,7 @@ int AudioALSA::open_output()
 	int open_mode = 0;
 	int err;
 
-	device->out_channels = device->out_config->alsa_out_channels;
+	device->out_channels = device->get_ochannels();
 	device->out_bits = device->out_config->alsa_out_bits;
 
 	translate_name(pcm_name, device->out_config->alsa_out_device);
@@ -303,12 +304,13 @@ int AudioALSA::open_output()
 
 	if(err < 0)
 	{
+		dsp_out = 0;
 		printf("AudioALSA::open_output %s: %s\n", pcm_name, snd_strerror(err));
 		return 1;
 	}
 
 	set_params(dsp_out, 
-		device->out_config->alsa_out_channels, 
+		device->get_ochannels(), 
 		device->out_config->alsa_out_bits,
 		device->out_samplerate,
 		device->out_samples);
@@ -324,7 +326,7 @@ int AudioALSA::open_duplex()
 
 int AudioALSA::close_output()
 {
-	if(device->w)
+	if(device->w && dsp_out)
 	{
 		snd_pcm_close(dsp_out);
 	}
@@ -377,11 +379,18 @@ int AudioALSA::read_buffer(char *buffer, int size)
 //printf("AudioALSA::read_buffer 1\n");
 	int attempts = 0;
 	int done = 0;
+
+	if(!get_input())
+	{
+		sleep(1);
+		return 0;
+	}
+
 	while(attempts < 1 && !done)
 	{
 		if(snd_pcm_readi(get_input(), 
 			buffer, 
-			size / (device->in_bits / 8) / device->in_channels) < 0)
+			size / (device->in_bits / 8) / device->get_ichannels()) < 0)
 		{
 			printf("AudioALSA::read_buffer overrun at sample %lld\n", 
 				device->total_samples_read);
@@ -401,7 +410,10 @@ int AudioALSA::write_buffer(char *buffer, int size)
 // Don't give up and drop the buffer on the first error.
 	int attempts = 0;
 	int done = 0;
-	int samples = size / (device->out_bits / 8) / device->out_channels;
+	int samples = size / (device->out_bits / 8) / device->get_ochannels();
+
+	if(!get_output()) return 0;
+
 	while(attempts < 2 && !done && !interrupted)
 	{
 // Buffers written must be equal to period_time

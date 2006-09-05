@@ -492,7 +492,7 @@ int FileSystem::is_dir(const char *path)      // return 0 if the text is a direc
 	strcpy(new_dir, path);
 	complete_path(new_dir);
 	if(!stat(new_dir, &ostat) && S_ISDIR(ostat.st_mode)) 
-	return 1;
+		return 1;
 	else
 		return 0;
 }

@@ -4374,13 +4374,11 @@ int TrackCanvas::button_release_event()
 	{
 		draw_overlays();
 		flash();
-		flush();
 	}
 	if(redraw)
 	{
 		draw();
 		flash();
-		flush();
 	}
 	return result;
 }

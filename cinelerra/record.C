@@ -150,11 +150,11 @@ int Record::load_defaults()
 // 		1);
 // This reads back everything that was saved in save_defaults.
 	default_asset->copy_from(mwindow->edl->session->recording_format, 0);
+	default_asset->channels = mwindow->edl->session->aconfig_in->channels;
 	default_asset->sample_rate = mwindow->edl->session->aconfig_in->in_samplerate;
 	default_asset->frame_rate = mwindow->edl->session->vconfig_in->in_framerate;
 	default_asset->width = mwindow->edl->session->vconfig_in->w;
 	default_asset->height = mwindow->edl->session->vconfig_in->h;
-	default_asset->channels = defaults->get("RECORD_CHANNELS", 2);
 	default_asset->layers = 1;
 
 
@@ -252,7 +252,7 @@ int Record::save_defaults()
 // 		1,
 // 		1);
 
-	defaults->update("RECORD_CHANNELS", default_asset->channels);
+//	defaults->update("RECORD_CHANNELS", default_asset->channels);
 
 
 
@@ -1014,7 +1014,7 @@ int Record::open_input_devices(int duplex, int context)
 
 // Create devices
 	if(default_asset->audio_data && context != CONTEXT_SINGLEFRAME)
-		adevice = new AudioDevice;
+		adevice = new AudioDevice(mwindow);
 	else
 		adevice = 0;
 
@@ -1034,32 +1034,27 @@ int Record::open_input_devices(int duplex, int context)
 	if(adevice)
 	{
 		adevice->set_software_positioning(mwindow->edl->session->record_software_position);
-		adevice->set_record_dither(default_asset->dither);
-
-		for(int i = 0; i < default_asset->channels; i++)
-		{
-			adevice->set_dc_offset(dc_offset[i], i);
-		}
 
 // Initialize full duplex
 // Duplex is only needed if the timeline and the recording have audio
 		if(duplex && mwindow->edl->tracks->playable_audio_tracks())
 		{
 // Case 1: duplex device is identical to input device
-			if(AudioInConfig::is_duplex(aconfig_in, mwindow->edl->session->aconfig_duplex))
-			{
-			  	adevice->open_duplex(mwindow->edl->session->aconfig_duplex,
-							default_asset->sample_rate,
-							get_in_length(),
-							mwindow->edl->session->real_time_playback);
-				audio_opened = 1;
-			}
-			else
+// 			if(AudioInConfig::is_duplex(aconfig_in, mwindow->edl->session->aconfig_duplex))
+// 			{
+// 			  	adevice->open_duplex(mwindow->edl->session->aconfig_duplex,
+// 							default_asset->sample_rate,
+// 							get_in_length(),
+// 							mwindow->edl->session->real_time_playback);
+// 				audio_opened = 1;
+// 			}
+// 			else
 // Case 2: two separate devices
 			{
 			  	adevice->open_output(mwindow->edl->session->aconfig_duplex,
 						default_asset->sample_rate,
 						mwindow->edl->session->playback_buffer,
+						mwindow->edl->session->audio_channels,
 						mwindow->edl->session->real_time_playback);
 			}
 		}
@@ -1069,7 +1064,10 @@ int Record::open_input_devices(int duplex, int context)
 			adevice->open_input(mwindow->edl->session->aconfig_in, 
 				mwindow->edl->session->vconfig_in, 
 				default_asset->sample_rate, 
-				get_in_length());
+				get_in_length(),
+				default_asset->channels,
+				mwindow->edl->session->real_time_record);
+			adevice->start_recording();
 		}
 	}
 
@@ -1097,8 +1095,10 @@ int Record::open_input_devices(int duplex, int context)
 	return 0;
 }
 
-int Record::close_input_devices()
+int Record::close_input_devices(int is_monitor)
 {
+	if(is_monitor && capture_state != IS_MONITORING) return 0;
+
 	if(vdevice)
 	{
 		vdevice->close_all();
@@ -1224,6 +1224,7 @@ int Record::get_in_length()
 		mwindow->edl->session->record_speed)
 		fragment_size *= 2;
 	fragment_size /= 2;
+	fragment_size = MAX(fragment_size, 512);
 	return fragment_size;
 }
 

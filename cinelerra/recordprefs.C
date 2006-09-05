@@ -67,6 +67,18 @@ int RecordPrefs::create_objects()
 
 
 
+// Audio hardware
+	add_subwindow(new BC_Bar(5, y, 	get_w() - 10));
+	y += 5;
+
+
+	add_subwindow(title = new BC_Title(x, 
+		y, 
+		_("Audio In"), 
+		LARGEFONT, 
+		resources->text_default));
+
+	y += title->get_h() + 5;
 
 	add_subwindow(new BC_Title(x, y, _("Record Driver:"), MEDIUMFONT, resources->text_default));
 	audio_in_device = new ADevicePrefs(x + 110, 
@@ -77,14 +89,16 @@ int RecordPrefs::create_objects()
 		pwindow->thread->edl->session->aconfig_in, 
 		MODERECORD);
 	audio_in_device->initialize(1);
-	y += audio_in_device->get_h();
+	y += audio_in_device->get_h(1);
 
 
 	BC_TextBox *textbox;
-	BC_Title *title1, *title2;
+	BC_Title *title1, *title2, *title3;
 	add_subwindow(title1 = new BC_Title(x, y, _("Samples to write to disk at a time:")));
 	add_subwindow(title2 = new BC_Title(x, y + 30, _("Sample rate for recording:")));
+	add_subwindow(title3 = new BC_Title(x, y + 60, _("Channels to record:")));
 	x2 = MAX(title1->get_w(), title2->get_w()) + 10;
+	x2 = MAX(x2, title3->get_w() + 10);
 
 	sprintf(string, "%ld", pwindow->thread->edl->session->record_write_length);
 	add_subwindow(textbox = new RecordWriteLength(mwindow, 
@@ -95,7 +109,10 @@ int RecordPrefs::create_objects()
 	add_subwindow(textbox = new RecordSampleRate(pwindow, x2, y + 30));
 	add_subwindow(new SampleRatePulldown(mwindow, textbox, x2 + textbox->get_w(), y + 30));
 
-	y += 60;
+	RecordChannels *channels = new RecordChannels(pwindow, this, x2, y + 60);
+	channels->create_objects();
+
+	y += 90;
 
 
 	add_subwindow(new RecordRealTime(mwindow, 
@@ -109,7 +126,7 @@ int RecordPrefs::create_objects()
 
 
 
-// Video
+// Video hardware
 	add_subwindow(new BC_Bar(5, y, 	get_w() - 10));
 	y += 5;
 
@@ -288,7 +305,23 @@ int RecordFrameRate::handle_event()
 
 
 
+RecordChannels::RecordChannels(PreferencesWindow *pwindow, BC_SubWindow *gui, int x, int y)
+ : BC_TumbleTextBox(gui, 
+		pwindow->thread->edl->session->aconfig_in->channels,
+		1,
+		MAX_CHANNELS,
+		x, 
+		y, 
+		100)
+{
+	this->pwindow = pwindow; 
+}
 
+int RecordChannels::handle_event()
+{
+	pwindow->thread->edl->session->aconfig_in->channels = atoi(get_text());
+	return 1;
+}
 
 
 
