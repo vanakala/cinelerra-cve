@@ -5,7 +5,7 @@
 
 /* Version used internally.  You need to query it with the C functions */
 #define QUICKTIME_MAJOR 2
-#define QUICKTIME_MINOR 1
+#define QUICKTIME_MINOR 2
 #define QUICKTIME_RELEASE 0
 
 
@@ -630,13 +630,29 @@ typedef struct
 	int have_hdrl;
 } quicktime_riff_t;
 
+typedef struct
+{
+	unsigned char *y, *u, *v;
+	int y_size;
+	int u_size;
+	int v_size;
+	int64_t frame_number;
+} quicktime_cacheframe_t;
+
+typedef struct
+{
+	quicktime_cacheframe_t *frames;
+	int total;
+	int allocation;
+} quicktime_cache_t;
+
 /* table of pointers to every track */
 typedef struct
 {
 	quicktime_trak_t *track; /* real quicktime track corresponding to this table */
 	int channels;            /* number of audio channels in the track */
-	long current_position;   /* current sample in output file */
-	long current_chunk;      /* current chunk in output file */
+	int64_t current_position;   /* current sample in output file */
+	int64_t current_chunk;      /* current chunk in output file */
 	quicktime_vbr_t vbr;     /* Stores for vbr codecs */
 
 	void *codec;
@@ -645,8 +661,10 @@ typedef struct
 typedef struct
 {
 	quicktime_trak_t *track;
-	long current_position;   /* current frame in output file */
-	long current_chunk;      /* current chunk in output file */
+	int64_t current_position;   /* current frame in output file */
+	int64_t current_chunk;      /* current chunk in output file */
+// Cache for the current GOP after a seek.
+	quicktime_cache_t *frame_cache;
 
 	void *codec;
 } quicktime_video_map_t;
@@ -798,6 +816,9 @@ typedef struct
 
 /* English description of codec.  Optional. */
 	char *desc;
+
+/* Frame cache for seeking only. */
+	
 
 /* Proprietary data for the codec to allocate and delete. */
 	void *priv;

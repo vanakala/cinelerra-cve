@@ -975,6 +975,7 @@ int quicktime_init_video_map(quicktime_video_map_t *vtrack, quicktime_trak_t *tr
 	vtrack->current_position = 0;
 	vtrack->current_chunk = 1;
 	quicktime_init_vcodec(vtrack);
+	vtrack->frame_cache = quicktime_new_cache();
 	return 0;
 }
 
@@ -982,6 +983,8 @@ int quicktime_delete_video_map(quicktime_video_map_t *vtrack)
 {
 	int i;
 	quicktime_delete_vcodec(vtrack);
+	if(vtrack->frame_cache) quicktime_delete_cache(vtrack->frame_cache);
+	vtrack->frame_cache = 0;
 	return 0;
 }
 
@@ -990,7 +993,10 @@ int64_t quicktime_memory_usage(quicktime_t *file)
 	int i;
 	int64_t result = 0;
 //printf("quicktime_memory_usage %d\n", file->total_vtracks);
-// 2.0 to 2.1 patch placeholder
+	for(i = 0; i < file->total_vtracks; i++)
+	{
+		result += quicktime_cache_usage(file->vtracks[i].frame_cache);
+	}
 	return result;
 }
 

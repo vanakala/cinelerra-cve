@@ -34,6 +34,7 @@ dv_t* dv_new()
 	}
 
 	dv->decoder = dv_decoder_new(0, 0, 0);
+	dv_set_error_log (dv->decoder, 0);
 	dv->decoder->quality = DV_QUALITY_BEST;
 	dv->decoder->prev_frame_decoded = 0;
 	dv->use_mmx = 1;

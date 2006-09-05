@@ -67,30 +67,37 @@ quicktime_ffmpeg_t* quicktime_new_ffmpeg(int cpus,
 			quicktime_delete_ffmpeg(ptr);
 			return 0;
 		}
-		ptr->decoder_context[i] = avcodec_alloc_context();
-		ptr->decoder_context[i]->width = w;
-		ptr->decoder_context[i]->height = h;
+
+		AVCodecContext *context = ptr->decoder_context[i] = avcodec_alloc_context();
+		static char fake_data[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+		context->width = ptr->width_i;
+		context->height = ptr->height_i;
+//		context->width = w;
+//		context->height = h;
+		context->extradata = fake_data;
+		context->extradata_size = 0;
 		if(esds->mpeg4_header && esds->mpeg4_header_size) 
 		{
-			ptr->decoder_context[i]->extradata = esds->mpeg4_header;
-			ptr->decoder_context[i]->extradata_size = esds->mpeg4_header_size;
+			context->extradata = esds->mpeg4_header;
+			context->extradata_size = esds->mpeg4_header_size;
 		}
 		if(avcc->data && avcc->data_size)
 		{
-			ptr->decoder_context[i]->extradata = avcc->data;
-			ptr->decoder_context[i]->extradata_size = avcc->data_size;
+			context->extradata = avcc->data;
+			context->extradata_size = avcc->data_size;
 		}
 		if(cpus > 1)
 		{
-			avcodec_thread_init(ptr->decoder_context[i], cpus);
-			ptr->decoder_context[i]->thread_count = cpus;
+			avcodec_thread_init(context, cpus);
+			context->thread_count = cpus;
 		}
-		if(avcodec_open(ptr->decoder_context[i], 
+		if(avcodec_open(context, 
 			ptr->decoder[i]) < 0)
 		{
 			printf("quicktime_new_ffmpeg: avcodec_open failed.\n");
 			quicktime_delete_ffmpeg(ptr);
 		}
+		ptr->last_frame[i] = -1;
 	}
 	pthread_mutex_unlock(&ffmpeg_lock);
 
@@ -204,7 +211,32 @@ static int decode_wrapper(quicktime_t *file,
 	return result;
 }
 
-
+// Get amount chroma planes are downsampled from luma plane.
+// Used for copying planes into cache.
+static int get_chroma_factor(quicktime_ffmpeg_t *ffmpeg, int current_field)
+{
+	switch(ffmpeg->decoder_context[current_field]->pix_fmt)
+	{
+		case PIX_FMT_YUV420P:
+			return 4;
+			break;
+		case PIX_FMT_YUV422:
+			return 2;
+			break;
+		case PIX_FMT_YUV422P:
+			return 2;
+			break;
+		case PIX_FMT_YUV410P:
+			return 9;
+			break;
+		default:
+			fprintf(stderr, 
+				"get_chroma_factor: unrecognized color model %d\n", 
+				ffmpeg->decoder_context[current_field]->pix_fmt);
+			return 9;
+			break;
+	}
+}
 
 int quicktime_ffmpeg_decode(quicktime_ffmpeg_t *ffmpeg,
 	quicktime_t *file, 
@@ -219,50 +251,101 @@ int quicktime_ffmpeg_decode(quicktime_ffmpeg_t *ffmpeg,
 	int seeking_done = 0;
 	int i;
 
-	pthread_mutex_lock(&ffmpeg_lock);
+// Try frame cache
+	result = quicktime_get_frame(vtrack->frame_cache,
+		vtrack->current_position,
+		&ffmpeg->picture[current_field].data[0],
+		&ffmpeg->picture[current_field].data[1],
+		&ffmpeg->picture[current_field].data[2]);
+
+
+// Didn't get frame
+	if(!result)
+	{
+// Codecs which work without locking:
+// H264
+// MPEG-4
+//		pthread_mutex_lock(&ffmpeg_lock);
+
+//printf("quicktime_ffmpeg_decode 1 %d\n", ffmpeg->last_frame[current_field]);
+
+		if(ffmpeg->last_frame[current_field] == -1 &&
+			ffmpeg->ffmpeg_id != CODEC_ID_H264)
+		{
+			int current_frame = vtrack->current_position;
+// For certain codecs,
+// must decode frame with stream header first but only the first frame in the
+// field sequence has a stream header.
+			result = decode_wrapper(file, 
+				vtrack, 
+				ffmpeg, 
+				current_field, 
+				current_field, 
+				track,
+				0);
+// Reset position because decode wrapper set it
+			quicktime_set_video_position(file, current_frame, track);
+			ffmpeg->last_frame[current_field] = current_field;
+		}
+
 
 // Handle seeking
-	if(quicktime_has_keyframes(file, track) && 
-		vtrack->current_position != ffmpeg->last_frame[current_field] + ffmpeg->fields)
-	{
-		int frame1;
-		int frame2 = vtrack->current_position;
-		int current_frame = frame2;
-		int do_i_frame = 1;
+// Seeking requires keyframes
+		if(quicktime_has_keyframes(file, track) && 
+// Not next frame
+			vtrack->current_position != ffmpeg->last_frame[current_field] + ffmpeg->fields &&
+// Same frame requested twice
+			vtrack->current_position != ffmpeg->last_frame[current_field])
+		{
+			int frame1;
+			int first_frame;
+			int frame2 = vtrack->current_position;
+			int current_frame = frame2;
+			int do_i_frame = 1;
+
+// If an interleaved codec, the opposite field would have been decoded in the previous
+// seek.
+			if(!quicktime_has_frame(vtrack->frame_cache, vtrack->current_position + 1))
+				quicktime_reset_cache(vtrack->frame_cache);
 
 // Get first keyframe of same field
-		do
-		{
-			frame1 = quicktime_get_keyframe_before(file, 
-				current_frame--, 
-				track);
-		}while(frame1 > 0 && (frame1 % ffmpeg->fields) != current_field);
+			frame1 = current_frame;
+			do
+			{
+				frame1 = quicktime_get_keyframe_before(file, 
+					frame1 - 1, 
+					track);
+			}while(frame1 > 0 && (frame1 % ffmpeg->fields) != current_field);
+//printf("quicktime_ffmpeg_decode 1 %d\n", frame1);
+
+// For MPEG-4, get another keyframe before first keyframe.
+// The Sanyo tends to glitch with only 1 keyframe.
+// Not enough memory.
+			if( 0 /* frame1 > 0 && ffmpeg->ffmpeg_id == CODEC_ID_MPEG4 */)
+			{
+				do
+				{
+					frame1 = quicktime_get_keyframe_before(file,
+						frame1 - 1,
+						track);
+				}while(frame1 > 0 && (frame1 & ffmpeg->fields) != current_field);
+//printf("quicktime_ffmpeg_decode 2 %d\n", frame1);
+			}
 
 // Keyframe is before last decoded frame and current frame is after last decoded
 // frame, so instead of rerendering from the last keyframe we can rerender from
 // the last decoded frame.
-		if(frame1 < ffmpeg->last_frame[current_field] &&
-			frame2 > ffmpeg->last_frame[current_field])
-		{
-			frame1 = ffmpeg->last_frame[current_field] + ffmpeg->fields;
-			do_i_frame = 0;
-		}
+			if(frame1 < ffmpeg->last_frame[current_field] &&
+				frame2 > ffmpeg->last_frame[current_field])
+			{
+				frame1 = ffmpeg->last_frame[current_field] + ffmpeg->fields;
+				do_i_frame = 0;
+			}
 
+			first_frame = frame1;
 
 //printf("quicktime_ffmpeg_decode 2 %d\n", ffmpeg->last_frame[current_field]);
-		while(frame1 <= frame2)
-		{
-			result = decode_wrapper(file, 
-				vtrack, 
-				ffmpeg, 
-				frame1, 
-				current_field, 
-				track,
-				(frame1 < frame2));
-
-
-// May need to do the first I frame twice.
-			if(do_i_frame)
+			while(frame1 <= frame2)
 			{
 				result = decode_wrapper(file, 
 					vtrack, 
@@ -270,32 +353,67 @@ int quicktime_ffmpeg_decode(quicktime_ffmpeg_t *ffmpeg,
 					frame1, 
 					current_field, 
 					track,
-					0);
-				do_i_frame = 0;
+// Don't drop if we want to cache it
+					0 /* (frame1 < frame2) */);
+
+				if(ffmpeg->picture[current_field].data[0] &&
+// FFmpeg seems to glitch out if we include the first frame.
+					frame1 > first_frame)
+				{
+					int y_size = ffmpeg->picture[current_field].linesize[0] * ffmpeg->height_i;
+					int u_size = y_size / get_chroma_factor(ffmpeg, current_field);
+					int v_size = y_size / get_chroma_factor(ffmpeg, current_field);
+					quicktime_put_frame(vtrack->frame_cache,
+						frame1,
+						ffmpeg->picture[current_field].data[0],
+						ffmpeg->picture[current_field].data[1],
+						ffmpeg->picture[current_field].data[2],
+						y_size,
+						u_size,
+						v_size);
+				}
+
+// For some codecs,
+// may need to do the same frame twice if it is the first I frame.
+				if(do_i_frame)
+				{
+					result = decode_wrapper(file, 
+						vtrack, 
+						ffmpeg, 
+						frame1, 
+						current_field, 
+						track,
+						0);
+					do_i_frame = 0;
+				}
+				frame1 += ffmpeg->fields;
 			}
-			frame1 += ffmpeg->fields;
+
+			vtrack->current_position = frame2;
+			seeking_done = 1;
 		}
 
-		vtrack->current_position = frame2;
-		seeking_done = 1;
+// Not decoded in seeking process
+		if(!seeking_done &&
+// Same frame not requested
+			vtrack->current_position != ffmpeg->last_frame[current_field])
+		{
+			result = decode_wrapper(file, 
+				vtrack, 
+				ffmpeg, 
+				vtrack->current_position, 
+				current_field, 
+				track,
+				0);
+		}
+
+//		pthread_mutex_unlock(&ffmpeg_lock);
+
+
+		ffmpeg->last_frame[current_field] = vtrack->current_position;
 	}
 
-	if(!seeking_done)
-	{
-		result = decode_wrapper(file, 
-			vtrack, 
-			ffmpeg, 
-			vtrack->current_position, 
-			current_field, 
-			track,
-			0);
-	}
-
-	pthread_mutex_unlock(&ffmpeg_lock);
-
-
-	ffmpeg->last_frame[current_field] = vtrack->current_position;
-
+// Hopefully this setting will be left over if the cache was used.
 	switch(ffmpeg->decoder_context[current_field]->pix_fmt)
 	{
 		case PIX_FMT_YUV420P:

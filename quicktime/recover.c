@@ -45,7 +45,7 @@ with the BUZ driver with PCM audio.
 #define FRAMERATE (double)30000/1001
 #define CHANNELS 2
 #define SAMPLERATE 48000
-#define BITS 16
+#define BITS 24
 #define TEMP_FILE "/tmp/temp.mov"
 #define VCODEC QUICKTIME_MJPA
 //#define VCODEC QUICKTIME_JPEG

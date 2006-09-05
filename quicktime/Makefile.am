@@ -55,6 +55,7 @@ libquicktimehv_la_SOURCES = \
 	mp4a.c \
 	mvhd.c \
 	plugin.c \
+	qtcache.c \
 	qtdv.c \
 	qtffmpeg.c \
 	qth264.c \
