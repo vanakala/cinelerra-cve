@@ -18,9 +18,9 @@ MotionWindow::MotionWindow(MotionMain *plugin, int x, int y)
  	x,
 	y,
 	600, 
-	600, 
+	650, 
 	600,
-	600,
+	650,
 	0, 
 	1)
 {
@@ -52,10 +52,15 @@ int MotionWindow::create_objects()
 
 	add_subwindow(title = new BC_Title(x1, 
 		y, 
-		_("Translation search radius:\n(Percent of image)")));
-	add_subwindow(global_range = new GlobalRange(plugin, 
+		_("Translation search radius:\n(W/H Percent of image)")));
+	add_subwindow(global_range_w = new GlobalRange(plugin, 
 		x1 + title->get_w() + 10, 
-		y));
+		y,
+		&plugin->config.global_range_w));
+	add_subwindow(global_range_h = new GlobalRange(plugin, 
+		x1 + title->get_w() + 10 + global_range_w->get_w(), 
+		y,
+		&plugin->config.global_range_h));
 
 	add_subwindow(title = new BC_Title(x2, 
 		y, 
@@ -67,17 +72,27 @@ int MotionWindow::create_objects()
 	y += 50;
 	add_subwindow(title = new BC_Title(x1, 
 		y, 
-		_("Translation block size:\n(Percent of image)")));
-	add_subwindow(global_block_size = new GlobalBlockSize(plugin, 
+		_("Translation block size:\n(W/H Percent of image)")));
+	add_subwindow(global_block_w = new BlockSize(plugin, 
 		x1 + title->get_w() + 10, 
-		y));
+		y,
+		&plugin->config.global_block_w));
+	add_subwindow(global_block_h = new BlockSize(plugin, 
+		x1 + title->get_w() + 10 + global_block_w->get_w(), 
+		y,
+		&plugin->config.global_block_h));
 
 	add_subwindow(title = new BC_Title(x2, 
 		y, 
-		_("Rotation block size:\n(Percent of image)")));
-	add_subwindow(rotation_block_size = new RotationBlockSize(plugin, 
+		_("Rotation block size:\n(W/H Percent of image)")));
+	add_subwindow(rotation_block_w = new BlockSize(plugin, 
 		x2 + title->get_w() + 10, 
-		y));
+		y,
+		&plugin->config.rotation_block_w));
+	add_subwindow(rotation_block_h = new BlockSize(plugin, 
+		x2 + title->get_w() + 10 + rotation_block_w->get_w(), 
+		y,
+		&plugin->config.rotation_block_h));
 
 	y += 50;
 	add_subwindow(title = new BC_Title(x1, y, _("Translation search steps:")));
@@ -93,6 +108,14 @@ int MotionWindow::create_objects()
 		y, 
 		80));
 	rotation_search_positions->create_objects();
+
+	y += 50;
+	add_subwindow(title = new BC_Title(x, y, _("Translation direction:")));
+	add_subwindow(mode3 = new Mode3(plugin, 
+		this, 
+		x + title->get_w() + 10, 
+		y));
+	mode3->create_objects();
 
 	y += 40;
 	add_subwindow(title = new BC_Title(x, y + 10, _("Block X:")));
@@ -200,7 +223,10 @@ int MotionWindow::create_objects()
 
 void MotionWindow::update_mode()
 {
-	global_range->update(plugin->config.global_range,
+	global_range_w->update(plugin->config.global_range_w,
+	 	MIN_RADIUS,
+	 	MAX_RADIUS);
+	global_range_h->update(plugin->config.global_range_h,
 	 	MIN_RADIUS,
 	 	MAX_RADIUS);
 	rotation_range->update(plugin->config.rotation_range,
@@ -225,20 +251,22 @@ WINDOW_CLOSE_EVENT(MotionWindow)
 
 GlobalRange::GlobalRange(MotionMain *plugin, 
 	int x, 
-	int y)
+	int y,
+	int *value)
  : BC_IPot(x, 
 		y, 
-		(int64_t)plugin->config.global_range,
+		(int64_t)*value,
 		(int64_t)MIN_RADIUS,
 		(int64_t)MAX_RADIUS)
 {
 	this->plugin = plugin;
+	this->value = value;
 }
 
 
 int GlobalRange::handle_event()
 {
-	plugin->config.global_range = (int)get_value();
+	*value = (int)get_value();
 	plugin->send_configure_change();
 	return 1;
 }
@@ -273,47 +301,29 @@ int RotationRange::handle_event()
 
 
 
-GlobalBlockSize::GlobalBlockSize(MotionMain *plugin, 
+BlockSize::BlockSize(MotionMain *plugin, 
 	int x, 
-	int y)
+	int y,
+	int *value)
  : BC_IPot(x, 
 		y, 
-		(int64_t)plugin->config.global_block_size,
+		(int64_t)*value,
 		(int64_t)MIN_BLOCK,
 		(int64_t)MAX_BLOCK)
 {
 	this->plugin = plugin;
+	this->value = value;
 }
 
 
-int GlobalBlockSize::handle_event()
+int BlockSize::handle_event()
 {
-	plugin->config.global_block_size = (int)get_value();
+	*value = (int)get_value();
 	plugin->send_configure_change();
 	return 1;
 }
 
 
-
-RotationBlockSize::RotationBlockSize(MotionMain *plugin, 
-	int x, 
-	int y)
- : BC_IPot(x, 
-		y, 
-		(int64_t)plugin->config.rotation_block_size,
-		(int64_t)MIN_BLOCK,
-		(int64_t)MAX_BLOCK)
-{
-	this->plugin = plugin;
-}
-
-
-int RotationBlockSize::handle_event()
-{
-	plugin->config.rotation_block_size = (int)get_value();
-	plugin->send_configure_change();
-	return 1;
-}
 
 
 
@@ -524,7 +534,7 @@ MotionBlockY::MotionBlockY(MotionMain *plugin,
 	int y)
  : BC_FPot(x,
  	y,
-	(float)plugin->config.block_x,
+	(float)plugin->config.block_y,
 	(float)0, 
 	(float)100)
 {
@@ -928,4 +938,58 @@ int Mode2::calculate_w(MotionWindow *gui)
 
 
 
+
+
+
+
+
+
+
+Mode3::Mode3(MotionMain *plugin, MotionWindow *gui, int x, int y)
+ : BC_PopupMenu(x, 
+ 	y, 
+	calculate_w(gui),
+	to_text(plugin->config.horizontal_only, plugin->config.vertical_only))
+{
+	this->plugin = plugin;
+	this->gui = gui;
+}
+
+int Mode3::handle_event()
+{
+	from_text(&plugin->config.horizontal_only, &plugin->config.vertical_only, get_text());
+	plugin->send_configure_change();
+	return 1;
+}
+
+void Mode3::create_objects()
+{
+	add_item(new BC_MenuItem(to_text(1, 0)));
+	add_item(new BC_MenuItem(to_text(0, 1)));
+	add_item(new BC_MenuItem(to_text(0, 0)));
+}
+
+void Mode3::from_text(int *horizontal_only, int *vertical_only, char *text)
+{
+	*horizontal_only = 0;
+	*vertical_only = 0;
+	if(!strcmp(text, to_text(1, 0))) *horizontal_only = 1;
+	if(!strcmp(text, to_text(0, 1))) *vertical_only = 1;
+}
+
+char* Mode3::to_text(int horizontal_only, int vertical_only)
+{
+	if(horizontal_only) return _("Horizontal only");
+	if(vertical_only) return _("Vertical only");
+	return _("Both");
+}
+
+int Mode3::calculate_w(MotionWindow *gui)
+{
+	int result = 0;
+	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(1, 0)));
+	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(0, 1)));
+	result = MAX(result, gui->get_text_width(MEDIUMFONT, to_text(0, 0)));
+	return result + 50;
+}
 

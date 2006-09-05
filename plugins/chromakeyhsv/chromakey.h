@@ -253,7 +253,9 @@ public:
 	ChromaKeyHSV(PluginServer *server);
 	~ChromaKeyHSV();
 	
-	int process_realtime(VFrame *input, VFrame *output);
+	int process_buffer(VFrame *frame,
+		int64_t start_position,
+		double frame_rate);
 	int is_realtime();
 	char* plugin_title();
 	VFrame* new_picon();

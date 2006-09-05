@@ -145,12 +145,14 @@ void HistogramPoints::interpolate(HistogramPoints *prev,
 
 HistogramConfig::HistogramConfig()
 {
+	plot = 1;
+	split = 0;
 	reset(1);
 }
 
 void HistogramConfig::reset(int do_mode)
 {
-	reset_points();
+	reset_points(0);
 
 	
 	for(int i = 0; i < HISTOGRAM_MODES; i++)
@@ -163,15 +165,15 @@ void HistogramConfig::reset(int do_mode)
 	{
 		automatic = 0;
 		threshold = 0.1;
-		split = 0;
 	}
 }
 
-void HistogramConfig::reset_points()
+void HistogramConfig::reset_points(int colors_only)
 {
 	for(int i = 0; i < HISTOGRAM_MODES; i++)
 	{
-		while(points[i].last) delete points[i].last;
+		if(i != HISTOGRAM_VALUE || !colors_only)
+			while(points[i].last) delete points[i].last;
 	}
 }
 
@@ -201,6 +203,8 @@ int HistogramConfig::equivalent(HistogramConfig &that)
 	if(automatic != that.automatic ||
 		!EQUIV(threshold, that.threshold)) return 0;
 
+	if(plot != that.plot ||
+		split != that.split) return 0;
 	return 1;
 }
 
@@ -215,6 +219,7 @@ void HistogramConfig::copy_from(HistogramConfig &that)
 
 	automatic = that.automatic;
 	threshold = that.threshold;
+	plot = that.plot;
 	split = that.split;
 }
 
@@ -229,13 +234,14 @@ void HistogramConfig::interpolate(HistogramConfig &prev,
 
 	for(int i = 0; i < HISTOGRAM_MODES; i++)
 	{
-		points[i].interpolate(&prev.points[i], &next.points[i], next_scale, prev_scale);
+		points[i].interpolate(&prev.points[i], &next.points[i], prev_scale, next_scale);
 		output_min[i] = prev.output_min[i] * prev_scale + next.output_min[i] * next_scale;
 		output_max[i] = prev.output_max[i] * prev_scale + next.output_max[i] * next_scale;
 	}
 
 	threshold = prev.threshold * prev_scale + next.threshold * next_scale;
 	automatic = prev.automatic;
+	plot = prev.plot;
 	split = prev.split;
 }
 
@@ -244,7 +250,7 @@ void HistogramConfig::dump()
 {
 	for(int j = 0; j < HISTOGRAM_MODES; j++)
 	{
-		printf("HistogramConfig::dump mode=%d\n", j);
+		printf("HistogramConfig::dump mode=%d plot=%d split=%d\n", j, plot, split);
 		HistogramPoints *points = &this->points[j];
 		HistogramPoint *current = points->first;
 		while(current)

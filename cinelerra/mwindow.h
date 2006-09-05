@@ -477,6 +477,8 @@ public:
 	Mutex *dvb_input_lock;
 
 
+// Initialize shared memory
+	void init_shm();
 
 // Initialize channel DB's for playback
 	void init_channeldb();

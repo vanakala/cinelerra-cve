@@ -27,7 +27,7 @@ public:
 		int64_t next_frame, 
 		int64_t current_frame);
 
-// -100 - 100
+// -1000 - 1000
 	float cyan;
 	float magenta;
     float yellow;
@@ -61,7 +61,9 @@ public:
 	~ColorBalanceMain();
 
 // required for all realtime plugins
-	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
+	int process_buffer(VFrame *frame,
+		int64_t start_position,
+		double frame_rate);
 	int is_realtime();
 	char* plugin_title();
 	int show_gui();

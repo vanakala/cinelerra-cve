@@ -117,6 +117,7 @@ public:
 		double frame_rate);
 	int is_realtime();
 	int is_multichannel();
+	int is_synthesis();
 	int load_defaults();
 	int save_defaults();
 	void save_data(KeyFrame *keyframe);
@@ -171,6 +172,10 @@ char* OverlayConfig::mode_to_text(int mode)
 
 		case TRANSFER_DIVIDE:
 			return "Divide";
+			break;
+
+		case TRANSFER_MAX:
+			return "Max";
 			break;
 
 		default:
@@ -506,7 +511,7 @@ int Overlay::process_buffer(VFrame **frame,
 char* Overlay::plugin_title() { return N_("Overlay"); }
 int Overlay::is_realtime() { return 1; }
 int Overlay::is_multichannel() { return 1; }
-
+int Overlay::is_synthesis() { return 1; }
 
 
 NEW_PICON_MACRO(Overlay) 

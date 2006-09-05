@@ -21,6 +21,7 @@ public:
 	char* plugin_title();
 	VFrame* new_picon();
 	OverlayFrame *overlayer;
+	float fade;
 };
 
 #endif

@@ -19,9 +19,9 @@ HistogramWindow::HistogramWindow(HistogramMain *plugin, int x, int y)
  	x,
 	y,
 	440, 
-	480, 
+	500, 
 	440, 
-	480, 
+	500, 
 	0, 
 	1,
 	1)
@@ -103,7 +103,7 @@ int HistogramWindow::create_objects()
 	x = x1;
 
 	canvas_w = get_w() - x - x;
-	canvas_h = get_h() - y - 170;
+	canvas_h = get_h() - y - 190;
 	title1_x = x;
 	title2_x = x + (int)(canvas_w * -MIN_INPUT / FLOAT_RANGE);
 	title3_x = x + (int)(canvas_w * (1.0 - MIN_INPUT) / FLOAT_RANGE);
@@ -114,6 +114,8 @@ int HistogramWindow::create_objects()
 		y, 
 		canvas_w, 
 		canvas_h));
+// Calculate output curve with no value function
+	plugin->tabulate_curve(plugin->mode, 0);
 	draw_canvas_overlay();
 	canvas->flash();
 
@@ -183,8 +185,16 @@ int HistogramWindow::create_objects()
 	threshold->create_objects();
 
 	x = x1;
-	y += 40;	
-	add_subwindow(split = new HistogramSplit(plugin, x, y));
+	y += 30;
+	add_subwindow(plot = new HistogramPlot(plugin, 
+		x, 
+		y));
+
+	y += plot->get_h() + 5;
+	add_subwindow(split = new HistogramSplit(plugin, 
+		x, 
+		y));
+
 
 	show_window();
 
@@ -245,6 +255,8 @@ void HistogramWindow::update_mode()
 	mode_b->update(plugin->mode == HISTOGRAM_BLUE ? 1 : 0);
 	output_min->output = &plugin->config.output_min[plugin->mode];
 	output_max->output = &plugin->config.output_max[plugin->mode];
+	plot->update(plugin->config.plot);
+	split->update(plugin->config.split);
 }
 
 void HistogramWindow::draw_canvas_overlay()
@@ -252,8 +264,6 @@ void HistogramWindow::draw_canvas_overlay()
 	canvas->set_color(0x00ff00);
 	int y1;
 
-// Calculate output curve
-	plugin->tabulate_curve(plugin->mode, 0);
 
 // Draw output line
 	for(int i = 0; i < canvas_w; i++)
@@ -277,12 +287,24 @@ void HistogramWindow::draw_canvas_overlay()
 	int number = 0;
 	while(current)
 	{
-		int x = (int)((current->x - MIN_INPUT) * canvas_w / FLOAT_RANGE);
-		int y = (int)(canvas_h - current->y * canvas_h);
+		int x1;
+		int y1;
+		int x2;
+		int y2;
+		int x;
+		int y;
+		get_point_extents(current,
+			&x1, 
+			&y1, 
+			&x2, 
+			&y2,
+			&x,
+			&y);
+
 		if(number == plugin->current_point)
-			canvas->draw_box(x - BOX_SIZE / 2, y - BOX_SIZE / 2, BOX_SIZE, BOX_SIZE);
+			canvas->draw_box(x1, y1, x2 - x1, y2 - y1);
 		else
-			canvas->draw_rectangle(x - BOX_SIZE / 2, y - BOX_SIZE / 2, BOX_SIZE, BOX_SIZE);
+			canvas->draw_rectangle(x1, y1, x2 - x1, y2 - y1);
 		current = NEXT;
 		number++;
 	}
@@ -307,6 +329,9 @@ void HistogramWindow::update_canvas()
 	float accum_per_canvas_f = (float)HISTOGRAM_SLOTS / canvas_w;
 	int normalize = 0;
 	int max = 0;
+
+// Calculate output curve with no value function
+	plugin->tabulate_curve(plugin->mode, 0);
 
 	for(int i = 0; i < HISTOGRAM_SLOTS; i++)
 	{
@@ -346,6 +371,21 @@ void HistogramWindow::update_canvas()
 	canvas->flash();
 }
 
+void HistogramWindow::get_point_extents(HistogramPoint *current,
+	int *x1, 
+	int *y1, 
+	int *x2, 
+	int *y2,
+	int *x,
+	int *y)
+{
+	*x = (int)((current->x - MIN_INPUT) * canvas_w / FLOAT_RANGE);
+	*y = (int)(canvas_h - current->y * canvas_h);
+	*x1 = *x - BOX_SIZE / 2;
+	*y1 = *y - BOX_SIZE / 2;
+	*x2 = *x1 + BOX_SIZE;
+	*y2 = *y1 + BOX_SIZE;
+}
 
 
 
@@ -374,7 +414,8 @@ int HistogramCanvas::button_press_event()
 	int result = 0;
 	if(is_event_win() && cursor_inside())
 	{
-		if(!plugin->dragging_point)
+		if(!plugin->dragging_point && 
+			(!plugin->config.automatic || plugin->mode == HISTOGRAM_VALUE))
 		{
 			HistogramPoint *new_point = 0;
 			gui->deactivate();
@@ -454,6 +495,43 @@ int HistogramCanvas::cursor_motion_event()
 		gui->update_canvas();
 		plugin->send_configure_change();
 		return 1;
+	}
+	else
+	if(is_event_win() && cursor_inside())
+	{
+		HistogramPoint *current = plugin->config.points[plugin->mode].first;
+		int done = 0;
+		while(current && !done)
+		{
+			int x1;
+			int y1;
+			int x2;
+			int y2;
+			int x;
+			int y;
+			gui->get_point_extents(current,
+				&x1, 
+				&y1, 
+				&x2, 
+				&y2,
+				&x,
+				&y);
+			int new_cursor = ARROW_CURSOR;
+			if(get_cursor_x() >= x1 && 
+				get_cursor_y() >= y1 &&
+				get_cursor_x() < x2 &&
+				get_cursor_y() < y2)
+			{
+				new_cursor = UPRIGHT_ARROW_CURSOR;
+				done = 1;
+			}
+
+			if(new_cursor != get_cursor())
+				set_cursor(new_cursor);
+
+
+			current = NEXT;
+		}
 	}
 	return 0;
 }
@@ -690,10 +768,28 @@ int HistogramAuto::handle_event()
 
 
 
+HistogramPlot::HistogramPlot(HistogramMain *plugin, 
+	int x, 
+	int y)
+ : BC_CheckBox(x, y, plugin->config.plot, _("Plot histogram"))
+{
+	this->plugin = plugin;
+}
+
+int HistogramPlot::handle_event()
+{
+	plugin->config.plot = get_value();
+	plugin->send_configure_change();
+	return 1;
+}
+
+
+
+
 HistogramSplit::HistogramSplit(HistogramMain *plugin, 
 	int x, 
 	int y)
- : BC_CheckBox(x, y, plugin->config.split, _("Split picture"))
+ : BC_CheckBox(x, y, plugin->config.split, _("Split output"))
 {
 	this->plugin = plugin;
 }

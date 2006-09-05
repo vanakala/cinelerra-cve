@@ -275,9 +275,6 @@ PNGS = \
 	labeltoggle_uphi.png \
 	left_justify.png \
 	listbox_button.png \
-	listbox_column_dn.png \
-	listbox_column_hi.png \
-	listbox_column_up.png \
 	listbox_dn.png \
 	listbox_up.png \
 	magnify.png \
@@ -396,7 +393,6 @@ PNGS = \
 	playpatch_dn.png \
 	playpatch_hi.png \
 	playpatch_up.png \
-	plugin.png \
 	plugin_bg.png \
 	plugin_on.png \
 	plugin_ondn.png \

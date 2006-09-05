@@ -7,8 +7,8 @@
 #include <stdio.h>
 #include <string.h>
 
-// 100 corresponds to (1.0 + MAX_COLOR) * input
-#define MAX_COLOR 4.0
+// 1000 corresponds to (1.0 + MAX_COLOR) * input
+#define MAX_COLOR 1.0
 #define SQR(a) ((a) * (a))
 
 REGISTER_PLUGIN(ColorBalanceMain)
@@ -377,12 +377,12 @@ int64_t ColorBalanceMain::calculate_slider(float in)
 {
 	if(in < 1.0)
 	{
-		return (int64_t)(in * 100 - 100.0);
+		return (int64_t)(in * 1000 - 1000.0);
 	}
 	else
 	if(in > 1.0)
 	{
-		return (int64_t)(100 * (in - 1.0) / MAX_COLOR);
+		return (int64_t)(1000 * (in - 1.0) / MAX_COLOR);
 	}
 	else
 		return 0;
@@ -392,12 +392,12 @@ float ColorBalanceMain::calculate_transfer(float in)
 {
 	if(in < 0)
 	{
-		return (100.0 + in) / 100.0;
+		return (1000.0 + in) / 1000.0;
 	}
 	else
 	if(in > 0)
 	{
-		return 1.0 + in / 100.0 * MAX_COLOR;
+		return 1.0 + in / 1000.0 * MAX_COLOR;
 	}
 	else
 		return 1.0;
@@ -409,8 +409,8 @@ float ColorBalanceMain::calculate_transfer(float in)
 int ColorBalanceMain::test_boundary(float &value)
 {
 
-	if(value < -100) value = -100;
-    if(value > 100) value = 100;
+	if(value < -1000) value = -1000;
+    if(value > 1000) value = 1000;
 	return 0;
 }
 
@@ -455,7 +455,9 @@ SET_STRING_MACRO(ColorBalanceMain)
 
 
 
-int ColorBalanceMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+int ColorBalanceMain::process_buffer(VFrame *frame,
+	int64_t start_position,
+	double frame_rate)
 {
 	need_reconfigure |= load_configuration();
 
@@ -479,15 +481,19 @@ int ColorBalanceMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 		need_reconfigure = 0;
 	}
 
+	read_frame(frame,
+		0,
+		get_source_position(),
+		get_framerate());
 
 	if(!EQUIV(config.cyan, 0) || !EQUIV(config.magenta, 0) || !EQUIV(config.yellow, 0))
 	{
 		for(int i = 0; i < total_engines; i++)
 		{
-			engine[i]->start_process_frame(output_ptr, 
-				input_ptr, 
-				input_ptr->get_h() * i / total_engines, 
-				input_ptr->get_h() * (i + 1) / total_engines);
+			engine[i]->start_process_frame(frame, 
+				frame, 
+				frame->get_h() * i / total_engines, 
+				frame->get_h() * (i + 1) / total_engines);
 		}
 
 		for(int i = 0; i < total_engines; i++)
@@ -495,12 +501,7 @@ int ColorBalanceMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 			engine[i]->wait_process_frame();
 		}
 	}
-	else
-// Data never processed so copy if necessary
-	if(input_ptr->get_rows()[0] != output_ptr->get_rows()[0])
-	{
-		output_ptr->copy_from(input_ptr);
-	}
+
 
 	return 0;
 }

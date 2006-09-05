@@ -100,7 +100,9 @@ public:
 	ZoomBlurMain(PluginServer *server);
 	~ZoomBlurMain();
 
-	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
+	int process_buffer(VFrame *frame,
+		int64_t start_position,
+		double frame_rate);
 	int is_realtime();
 	int load_defaults();
 	int save_defaults();
@@ -412,31 +414,20 @@ void ZoomBlurMain::delete_tables()
 	table_entries = 0;
 }
 
-int ZoomBlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+int ZoomBlurMain::process_buffer(VFrame *frame,
+		int64_t start_position,
+		double frame_rate)
 {
 	need_reconfigure |= load_configuration();
 
-	if(!engine) engine = new ZoomBlurEngine(this,
-		get_project_smp() + 1,
-		get_project_smp() + 1);
-	if(!accum) accum = new unsigned char[input_ptr->get_w() * 
-		input_ptr->get_h() *
-		cmodel_components(input_ptr->get_color_model()) *
-		MAX(sizeof(int), sizeof(float))];
 
-	this->input = input_ptr;
-	this->output = output_ptr;
+SET_TRACE
+	read_frame(frame,
+		0,
+		get_source_position(),
+		get_framerate());
 
-
-	if(input_ptr->get_rows()[0] == output_ptr->get_rows()[0])
-	{
-		if(!temp) temp = new VFrame(0,
-			input_ptr->get_w(),
-			input_ptr->get_h(),
-			input_ptr->get_color_model());
-		temp->copy_from(input_ptr);
-		this->input = temp;
-	}
+SET_TRACE
 
 // Generate tables here.  The same table is used by many packages to render
 // each horizontal stripe.  Need to cover the entire output range in  each
@@ -444,8 +435,8 @@ int ZoomBlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	if(need_reconfigure)
 	{
 SET_TRACE
-		float w = input->get_w();
-		float h = input->get_h();
+		float w = frame->get_w();
+		float h = frame->get_h();
 		float center_x = (float)config.x / 100 * w;
 		float center_y = (float)config.y / 100 * h;
 		float radius = (float)(100 + config.radius) / 100;
@@ -532,15 +523,33 @@ SET_TRACE
 		need_reconfigure = 0;
 	}
 
+SET_TRACE
 
 
 
+	if(!engine) engine = new ZoomBlurEngine(this,
+		get_project_smp() + 1,
+		get_project_smp() + 1);
+	if(!accum) accum = new unsigned char[frame->get_w() * 
+		frame->get_h() *
+		cmodel_components(frame->get_color_model()) *
+		MAX(sizeof(int), sizeof(float))];
+
+	this->input = frame;
+	this->output = frame;
 
 
+	if(!temp) temp = new VFrame(0,
+		frame->get_w(),
+		frame->get_h(),
+		frame->get_color_model());
+	temp->copy_from(frame);
+	this->input = temp;
 
-	bzero(accum, input_ptr->get_w() * 
-		input_ptr->get_h() *
-		cmodel_components(input_ptr->get_color_model()) *
+	bzero(accum, 
+		frame->get_w() * 
+		frame->get_h() *
+		cmodel_components(frame->get_color_model()) *
 		MAX(sizeof(int), sizeof(float)));
 	engine->process_packages();
 	return 0;

@@ -36,9 +36,19 @@ int RGB601Window::create_objects()
 {
 	int x = 10, y = 10;
 	
-	add_tool(forward = new RGB601Direction(this, x, y, &client->config.direction, 1, _("RGB -> 601")));
+	add_tool(forward = new RGB601Direction(this, 
+		x, 
+		y, 
+		&client->config.direction, 
+		1, 
+		_("RGB -> 601 compression")));
 	y += 30;
-	add_tool(reverse = new RGB601Direction(this, x, y, &client->config.direction, 2, _("601 -> RGB")));
+	add_tool(reverse = new RGB601Direction(this, 
+		x, 
+		y, 
+		&client->config.direction, 
+		2, 
+		_("601 -> RGB expansion")));
 
 	show_window();
 	flush();

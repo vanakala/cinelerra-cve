@@ -35,13 +35,15 @@ int BrightnessWindow::create_objects()
 	add_tool(brightness = new BrightnessSlider(client, 
 		&(client->config.brightness), 
 		x + 80, 
-		y));
+		y,
+		1));
 	y += 25;
 	add_tool(new BC_Title(x, y, _("Contrast:")));
 	add_tool(contrast = new BrightnessSlider(client, 
 		&(client->config.contrast), 
 		x + 80, 
-		y));
+		y,
+		0));
 	y += 30;
 	add_tool(luma = new BrightnessLuma(client, 
 		x, 
@@ -61,7 +63,8 @@ int BrightnessWindow::close_event()
 BrightnessSlider::BrightnessSlider(BrightnessMain *client, 
 	float *output, 
 	int x, 
-	int y)
+	int y,
+	int is_brightness)
  : BC_FSlider(x, 
  	y, 
 	0, 
@@ -73,6 +76,7 @@ BrightnessSlider::BrightnessSlider(BrightnessMain *client,
 {
 	this->client = client;
 	this->output = output;
+	this->is_brightness = is_brightness;
 }
 BrightnessSlider::~BrightnessSlider()
 {
@@ -83,6 +87,24 @@ int BrightnessSlider::handle_event()
 	client->send_configure_change();
 	return 1;
 }
+
+char* BrightnessSlider::get_caption()
+{
+	float fraction;
+	if(is_brightness)
+	{
+		fraction = *output / 100;
+	}
+	else
+	{
+		fraction = (*output < 0) ? 
+			(*output + 100) / 100 : 
+			(*output + 25) / 25;
+	}
+	sprintf(string, "%0.4f", fraction);
+	return string;
+}
+
 
 BrightnessLuma::BrightnessLuma(BrightnessMain *client, 
 	int x, 

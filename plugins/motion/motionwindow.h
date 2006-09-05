@@ -40,6 +40,20 @@ public:
 	MotionWindow *gui;
 };
 
+class Mode3 : public BC_PopupMenu
+{
+public:
+	Mode3(MotionMain *plugin, MotionWindow *gui, int x, int y);
+	int handle_event();
+	void create_objects();
+	static int calculate_w(MotionWindow *gui);
+	static void from_text(int *horizontal_only, int *vertical_only, char *text);
+	static char* to_text(int horizontal_only, int vertical_only);
+	MotionMain *plugin;
+	MotionWindow *gui;
+};
+
+
 class TrackSingleFrame : public BC_Radial
 {
 public:
@@ -93,9 +107,11 @@ class GlobalRange : public BC_IPot
 public:
 	GlobalRange(MotionMain *plugin, 
 		int x, 
-		int y);
+		int y,
+		int *value);
 	int handle_event();
 	MotionMain *plugin;
+	int *value;
 };
 
 class RotationRange : public BC_IPot
@@ -108,24 +124,16 @@ public:
 	MotionMain *plugin;
 };
 
-class GlobalBlockSize : public BC_IPot
+class BlockSize : public BC_IPot
 {
 public:
-	GlobalBlockSize(MotionMain *plugin, 
+	BlockSize(MotionMain *plugin, 
 		int x, 
-		int y);
+		int y,
+		int *value);
 	int handle_event();
 	MotionMain *plugin;
-};
-
-class RotationBlockSize : public BC_IPot
-{
-public:
-	RotationBlockSize(MotionMain *plugin, 
-		int x, 
-		int y);
-	int handle_event();
-	MotionMain *plugin;
+	int *value;
 };
 
 class MotionBlockX : public BC_FPot
@@ -272,10 +280,13 @@ public:
 	void update_mode();
 	char* get_radius_title();
 
-	GlobalRange *global_range;
+	GlobalRange *global_range_w;
+	GlobalRange *global_range_h;
 	RotationRange *rotation_range;
-	GlobalBlockSize *global_block_size;
-	RotationBlockSize *rotation_block_size;
+	BlockSize *global_block_w;
+	BlockSize *global_block_h;
+	BlockSize *rotation_block_w;
+	BlockSize *rotation_block_h;
 	MotionBlockX *block_x;
 	MotionBlockY *block_y;
 	MotionBlockXText *block_x_text;
@@ -294,6 +305,7 @@ public:
 	PreviousFrameSameBlock *previous_same;
 	MasterLayer *master_layer;
 	Mode2 *mode2;
+	Mode3 *mode3;
 
 	MotionMain *plugin;
 };

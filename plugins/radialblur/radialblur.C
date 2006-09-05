@@ -98,7 +98,9 @@ public:
 	RadialBlurMain(PluginServer *server);
 	~RadialBlurMain();
 
-	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
+	int process_buffer(VFrame *frame,
+		int64_t start_position,
+		double frame_rate);
 	int is_realtime();
 	int load_defaults();
 	int save_defaults();
@@ -371,27 +373,32 @@ RAISE_WINDOW_MACRO(RadialBlurMain)
 
 LOAD_CONFIGURATION_MACRO(RadialBlurMain, RadialBlurConfig)
 
-int RadialBlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+int RadialBlurMain::process_buffer(VFrame *frame,
+							int64_t start_position,
+							double frame_rate)
 {
 	load_configuration();
+
+
+	read_frame(frame,
+		0,
+		get_source_position(),
+		get_framerate());
 
 	if(!engine) engine = new RadialBlurEngine(this,
 		get_project_smp() + 1,
 		get_project_smp() + 1);
 
-	this->input = input_ptr;
-	this->output = output_ptr;
+	this->input = frame;
+	this->output = frame;
 
 
-	if(input_ptr->get_rows()[0] == output_ptr->get_rows()[0])
-	{
-		if(!temp) temp = new VFrame(0,
-			input_ptr->get_w(),
-			input_ptr->get_h(),
-			input_ptr->get_color_model());
-		temp->copy_from(input_ptr);
-		this->input = temp;
-	}
+	if(!temp) temp = new VFrame(0,
+		frame->get_w(),
+		frame->get_h(),
+		frame->get_color_model());
+	temp->copy_from(frame);
+	this->input = temp;
 
 	engine->process_packages();
 	return 0;

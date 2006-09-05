@@ -131,10 +131,10 @@ void RGB601Main::read_data(KeyFrame *keyframe)
 { \
 	for(int i = 0; i < max; i++) \
 	{ \
-		forward_table[i] = (int)((double)0.8588 * i + max * 0.0627 + 0.5); \
-		reverse_table[i] = (int)((double)1.1644 * i - max * 0.0627 + 0.5); \
-		CLAMP(forward_table[i], 0, max); \
-		CLAMP(reverse_table[i], 0, max); \
+		int forward_output = (int)((double)0.8588 * i + max * 0.0627 + 0.5); \
+		int reverse_output = (int)((double)1.1644 * i - max * 0.0627 + 0.5); \
+		forward_table[i] = CLIP(forward_output, 0, max - 1); \
+		reverse_table[i] = CLIP(reverse_output, 0, max - 1); \
 	} \
 }
 
@@ -146,14 +146,14 @@ void RGB601Main::create_table(VFrame *input_ptr)
 		case BC_YUV888:
 		case BC_RGBA8888:
 		case BC_YUVA8888:
-			CREATE_TABLE(0xff);
+			CREATE_TABLE(0x100);
 			break;
 
 		case BC_RGB161616:
 		case BC_YUV161616:
 		case BC_RGBA16161616:
 		case BC_YUVA16161616:
-			CREATE_TABLE(0xffff);
+			CREATE_TABLE(0x10000);
 			break;
 	}
 }
@@ -281,25 +281,21 @@ void RGB601Main::process(int *table, VFrame *input_ptr, VFrame *output_ptr)
 				PROCESS(reverse_table, u_int16_t, 4, 0);
 				break;
 		}
-	else
-	if(input_ptr->get_rows()[0] != output_ptr->get_rows()[0])
-		output_ptr->copy_from(input_ptr);
 }
 
-int RGB601Main::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+int RGB601Main::process_buffer(VFrame *frame,
+	int64_t start_position,
+	double frame_rate)
 {
 	load_configuration();
 
-	create_table(input_ptr);
+	create_table(frame);
 
 	if(config.direction == 1)
-		process(forward_table, input_ptr, output_ptr);
+		process(forward_table, frame, frame);
 	else
 	if(config.direction == 2)
-		process(reverse_table, input_ptr, output_ptr);
-	else
-	if(input_ptr->get_rows()[0] != output_ptr->get_rows()[0])
-		output_ptr->copy_from(input_ptr);
+		process(reverse_table, frame, frame);
 
 	return 0;
 }

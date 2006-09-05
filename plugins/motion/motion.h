@@ -62,13 +62,17 @@ public:
 	void boundaries();
 
 	int block_count;
-	int global_range;
+	int global_range_w;
+	int global_range_h;
 	int rotation_range;
 	int magnitude;
 	int return_speed;
 	int draw_vectors;
-	int global_block_size;
-	int rotation_block_size;
+// Percent of image size
+	int global_block_w;
+	int global_block_h;
+	int rotation_block_w;
+	int rotation_block_h;
 // Number of search positions in each refinement of the log search
 	int global_positions;
 	int rotate_positions;
@@ -76,6 +80,8 @@ public:
 	double block_x;
 	double block_y;
 
+	int horizontal_only;
+	int vertical_only;
 	int global;
 	int rotate;
 // Track or stabilize, single pixel, scan only, or nothing

@@ -17,7 +17,6 @@
 #include "mainsession.h"
 #include "trackcanvas.h"
 #include "transportque.h"
-#include "videodevice.h"
 #include "vrender.h"
 
 

@@ -49,7 +49,7 @@ public:
 		int64_t current_frame);
 // Used by constructor and reset button
 	void reset(int do_mode);
-	void reset_points();
+	void reset_points(int colors_only);
 	void boundaries();
 	void dump();
 
@@ -61,6 +61,7 @@ public:
 	float output_max[HISTOGRAM_MODES];
 	int automatic;
 	float threshold;
+	int plot;
 	int split;
 };
 

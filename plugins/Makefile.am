@@ -7,7 +7,7 @@ SUBDIRS= \
 	libfourier \
 	colors \
 	libeffecttv \
-	1080to480 \
+	1080to540 \
 	720to480 \
 	aging \
 	bandslide \
@@ -46,6 +46,7 @@ SUBDIRS= \
 	histogram \
 	holo \
 	huesaturation \
+	interpolate \
 	interpolateaudio \
 	interpolatevideo \
 	invertaudio \
@@ -54,7 +55,6 @@ SUBDIRS= \
 	ivtc \
 	level \
 	linearblur \
-	linearize \
 	loopaudio \
 	loopvideo \
 	motion \

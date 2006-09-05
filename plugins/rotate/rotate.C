@@ -167,7 +167,9 @@ public:
 	RotateEffect(PluginServer *server);
 	~RotateEffect();
 	
-	int process_realtime(VFrame *input, VFrame *output);
+	int process_buffer(VFrame *frame,
+		int64_t start_position,
+		double frame_rate);
 	int is_realtime();
 	char* plugin_title();
 	VFrame* new_picon();
@@ -701,22 +703,30 @@ void RotateEffect::read_data(KeyFrame *keyframe)
 	}
 }
 
-int RotateEffect::process_realtime(VFrame *input, VFrame *output)
+int RotateEffect::process_buffer(VFrame *frame,
+	int64_t start_position,
+	double frame_rate)
 {
 	load_configuration();
-	int w = output->get_w();
-	int h = output->get_h();
-
+	int w = frame->get_w();
+	int h = frame->get_h();
 //printf("RotateEffect::process_realtime 1 %d %f\n", config.bilinear, config.angle);
 
-	VFrame *temp_frame = PluginVClient::new_temp(input->get_w(),
-		input->get_h(),
-		input->get_color_model());
+
+	if(config.angle == 0)
+	{
+		read_frame(frame, 
+			0, 
+			start_position, 
+			frame_rate);
+		return 1;
+	}
 
 	if(!engine) engine = new AffineEngine(PluginClient::smp + 1, 
 		PluginClient::smp + 1);
+	engine->set_pivot((int)(config.pivot_x * get_input()->get_w() / 100), 
+		(int)(config.pivot_y * get_input()->get_h() / 100));
 
-	temp_frame->copy_from(input);
 
 // engine->set_viewport(50, 
 // 50, 
@@ -724,10 +734,16 @@ int RotateEffect::process_realtime(VFrame *input, VFrame *output)
 // 100);
 // engine->set_pivot(100, 100);
 
-	engine->set_pivot((int)(config.pivot_x * input->get_w() / 100), 
-		(int)(config.pivot_y * input->get_h() / 100));
-	output->clear_frame();
-	engine->rotate(output, 
+
+	VFrame *temp_frame = PluginVClient::new_temp(get_input()->get_w(),
+		get_input()->get_h(),
+		get_input()->get_color_model());
+	read_frame(temp_frame, 
+		0, 
+		start_position, 
+		frame_rate);
+	frame->clear_frame();
+	engine->rotate(frame, 
 		temp_frame, 
 		config.angle);
 
@@ -737,9 +753,7 @@ int RotateEffect::process_realtime(VFrame *input, VFrame *output)
 #define CENTER_W 20
 #define DRAW_CENTER(components, type, max) \
 { \
-	type **rows = (type**)output->get_rows(); \
-	int center_x = (int)(config.pivot_x * w / 100); \
-	int center_y = (int)(config.pivot_y * h / 100); \
+	type **rows = (type**)get_output()->get_rows(); \
 	if(center_x >= 0 && center_x < w || \
 		center_y >= 0 && center_y < h) \
 	{ \
@@ -770,7 +784,9 @@ int RotateEffect::process_realtime(VFrame *input, VFrame *output)
 
 	if(config.draw_pivot)
 	{
-		switch(output->get_color_model())
+		int center_x = (int)(config.pivot_x * w / 100); \
+		int center_y = (int)(config.pivot_y * h / 100); \
+		switch(get_output()->get_color_model())
 		{
 			case BC_RGB_FLOAT:
 				DRAW_CENTER(3, float, 1.0)
@@ -794,8 +810,8 @@ int RotateEffect::process_realtime(VFrame *input, VFrame *output)
 	}
 
 // Conserve memory by deleting large frames
-	if(input->get_w() > PLUGIN_MAX_W &&
-		input->get_h() > PLUGIN_MAX_H)
+	if(get_input()->get_w() > PLUGIN_MAX_W &&
+		get_input()->get_h() > PLUGIN_MAX_H)
 	{
 		delete engine;
 		engine = 0;

@@ -66,6 +66,11 @@ void PluginVClient::age_temp()
 	}
 }
 
+VFrame* PluginVClient::get_temp()
+{
+	return temp;
+}
+
 // Run before every realtime buffer is to be rendered.
 int PluginVClient::get_render_ptrs()
 {
@@ -235,6 +240,15 @@ int PluginVClient::handle_opengl()
 	return 0;
 }
 
+VFrame* PluginVClient::get_input(int channel)
+{
+	return input[channel];
+}
+
+VFrame* PluginVClient::get_output(int channel)
+{
+	return output[channel];
+}
 
 
 

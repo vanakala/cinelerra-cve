@@ -1226,6 +1226,37 @@ void MWindow::test_plugins(EDL *new_edl, char *path)
 }
 
 
+void MWindow::init_shm()
+{
+// Fix shared memory
+	FILE *fd = fopen("/proc/sys/kernel/shmmax", "w");
+	if(fd)
+	{
+		fprintf(fd, "0x7fffffff");
+		fclose(fd);
+	}
+	fd = 0;
+
+	fd = fopen("/proc/sys/kernel/shmmax", "r");
+	if(!fd)
+	{
+		MainError::show_error("MWindow::init_shm: couldn't open /proc/sys/kernel/shmmax for reading.\n");
+		return;
+	}
+
+	int64_t result = 0;
+	fscanf(fd, "%lld", &result);
+	fclose(fd);
+	fd = 0;
+	if(result < 0x7fffffff)
+	{
+		char string[BCTEXTLEN];
+		sprintf(string, "MWindow::init_shm: /proc/sys/kernel/shmmax is 0x%llx.\n"
+			"It should be at least 0x7fffffff for Cinelerra.\n",
+			result);
+		MainError::show_error(string);
+	}
+}
 
 
 
@@ -1318,6 +1349,7 @@ SET_TRACE
 
 	hide_splash();
 SET_TRACE
+	init_shm();
 }
 
 

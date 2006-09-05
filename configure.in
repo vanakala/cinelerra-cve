@@ -365,7 +365,8 @@ AC_OUTPUT(Makefile cinelerra-cvs-current.spec po/Makefile.in \
 					plugins/colors/Makefile \
 					plugins/libfourier/Makefile \
 					plugins/libeffecttv/Makefile \
-					plugins/Makefile plugins/1080to480/Makefile \
+					plugins/Makefile
+					plugins/1080to540/Makefile \
 					plugins/histogram/Makefile \
 					plugins/720to480/Makefile \
 					plugins/bandslide/Makefile \
@@ -387,11 +388,11 @@ AC_OUTPUT(Makefile cinelerra-cvs-current.spec po/Makefile.in \
 					plugins/fieldframe/Makefile plugins/flip/Makefile plugins/framefield/Makefile \
 					plugins/freeverb/Makefile plugins/freezeframe/Makefile plugins/gain/Makefile \
 					plugins/holo/Makefile plugins/huesaturation/Makefile \
+					plugins/interpolate/Makefile \
 					plugins/interpolateaudio/Makefile \
 					plugins/interpolatevideo/Makefile \
 					plugins/invertaudio/Makefile plugins/invertvideo/Makefile plugins/irissquare/Makefile \
 					plugins/ivtc/Makefile \
-					plugins/linearize/Makefile \
 					plugins/loopaudio/Makefile \
 					plugins/loopvideo/Makefile \
 					plugins/motion/Makefile \

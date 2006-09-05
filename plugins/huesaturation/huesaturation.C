@@ -56,7 +56,9 @@ class SaturationSlider : public BC_FSlider
 public:
 	SaturationSlider(HueEffect *plugin, int x, int y, int w);
 	int handle_event();
+	char* get_caption();
 	HueEffect *plugin;
+	char string[BCTEXTLEN];
 };
 
 class ValueSlider : public BC_FSlider
@@ -64,7 +66,9 @@ class ValueSlider : public BC_FSlider
 public:
 	ValueSlider(HueEffect *plugin, int x, int y, int w);
 	int handle_event();
+	char* get_caption();
 	HueEffect *plugin;
+	char string[BCTEXTLEN];
 };
 
 class HueWindow : public BC_Window
@@ -113,7 +117,9 @@ public:
 	HueEffect(PluginServer *server);
 	~HueEffect();
 	
-	int process_realtime(VFrame *input, VFrame *output);
+	int process_buffer(VFrame *frame,
+		int64_t start_position,
+		double frame_rate);
 	int is_realtime();
 	char* plugin_title();
 	VFrame* new_picon();
@@ -235,6 +241,14 @@ int SaturationSlider::handle_event()
 	return 1;
 }
 
+char* SaturationSlider::get_caption()
+{
+	float fraction = ((float)plugin->config.saturation - MINSATURATION) / 
+		MAXSATURATION;;
+	sprintf(string, "%0.4f", fraction);
+	return string;
+}
+
 
 
 
@@ -260,6 +274,12 @@ int ValueSlider::handle_event()
 	return 1;
 }
 
+char* ValueSlider::get_caption()
+{
+	float fraction = ((float)plugin->config.value - MINVALUE) / MAXVALUE;
+	sprintf(string, "%0.4f", fraction);
+	return string;
+}
 
 
 
@@ -513,15 +533,23 @@ HueEffect::~HueEffect()
 	if(engine) delete engine;
 }
 
-int HueEffect::process_realtime(VFrame *input, VFrame *output)
+int HueEffect::process_buffer(VFrame *frame,
+	int64_t start_position,
+	double frame_rate)
 {
 	load_configuration();
-	this->input = input;
-	this->output = output;
+
+	read_frame(frame, 
+		0, 
+		start_position, 
+		frame_rate);
+	
+
+	this->input = frame;
+	this->output = frame;
 	if(EQUIV(config.hue, 0) && EQUIV(config.saturation, 0) && EQUIV(config.value, 0))
 	{
-		if(input->get_rows()[0] != output->get_rows()[0])
-			output->copy_from(input);
+		return 0;
 	}
 	else
 	{

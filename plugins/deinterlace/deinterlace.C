@@ -495,52 +495,63 @@ void DeInterlaceMain::deinterlace_bobweave(VFrame *input, VFrame *prevframe, VFr
 }
 
 
-int DeInterlaceMain::process_realtime(VFrame *input, VFrame *output)
+int DeInterlaceMain::process_buffer(VFrame *frame,
+	int64_t start_position,
+	double frame_rate)
 {
-	changed_rows = input->get_h();
+	changed_rows = frame->get_h();
 	load_configuration();
-	if(!temp)
-		temp = new VFrame(0,
-			input->get_w(),
-			input->get_h(),
-			input->get_color_model());
-	
+
+	read_frame(frame, 
+		0, 
+		start_position, 
+		frame_rate);
+
+// Temp was used for adaptive deinterlacing where it took deinterlacing
+// an entire frame to decide if the deinterlaced output should be used.
+	temp = frame;
+
+// 	if(!temp)
+// 		temp = new VFrame(0,
+// 			frame->get_w(),
+// 			frame->get_h(),
+// 			frame->get_color_model());
 	if(!temp_prevframe)
 		temp_prevframe = new VFrame(0,
-			input->get_w(),
-			input->get_h(),
-			input->get_color_model());
+			frame->get_w(),
+			frame->get_h(),
+			frame->get_color_model());
 
 	switch(config.mode)
 	{
 		case DEINTERLACE_NONE:
-			output->copy_from(input);
+//			output->copy_from(input);
 			break;
 		case DEINTERLACE_KEEP:
-			deinterlace_top(input, output, config.dominance);
+			deinterlace_top(frame, frame, config.dominance);
 			break;
 		case DEINTERLACE_AVG:
-			deinterlace_avg(input, output);
+			deinterlace_avg(frame, frame);
 			break;
 		case DEINTERLACE_AVG_1F:
-			deinterlace_avg_top(input, output, config.dominance);
+			deinterlace_avg_top(frame, frame, config.dominance);
 			break;
 		case DEINTERLACE_SWAP:
-			deinterlace_swap(input, output, config.dominance);
+			deinterlace_swap(frame, frame, config.dominance);
 			break;
 		case DEINTERLACE_BOBWEAVE:
 			if (get_source_position()==0)
 				read_frame(temp_prevframe,0, get_source_position(), get_framerate());
 			else 
 				read_frame(temp_prevframe,0, get_source_position()-1, get_framerate());
-			deinterlace_bobweave(input, temp_prevframe, output, config.dominance);
+			deinterlace_bobweave(frame, temp_prevframe, frame, config.dominance);
 			break;
 		case DEINTERLACE_TEMPORALSWAP:
 			if (get_source_position()==0)
 				read_frame(temp_prevframe,0, get_source_position(), get_framerate());
 			else 
 				read_frame(temp_prevframe,0, get_source_position()-1, get_framerate());
-			deinterlace_temporalswap(input, temp_prevframe, output, config.dominance);
+			deinterlace_temporalswap(frame, temp_prevframe, frame, config.dominance);
 			break; 
 	}
 	send_render_gui(&changed_rows);

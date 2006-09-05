@@ -37,7 +37,7 @@ NEW_PICON_MACRO(DissolveMain)
 
 int DissolveMain::process_realtime(VFrame *incoming, VFrame *outgoing)
 {
-	float fade = (float)PluginClient::get_source_position() / 
+	fade = (float)PluginClient::get_source_position() / 
 			PluginClient::get_total_len();
 
 	if(!overlayer) overlayer = new OverlayFrame(get_project_smp() + 1);

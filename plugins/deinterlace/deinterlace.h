@@ -55,7 +55,9 @@ public:
 	PLUGIN_CLASS_MEMBERS(DeInterlaceConfig, DeInterlaceThread)
 	
 // required for all realtime plugins
-	int process_realtime(VFrame *input, VFrame *output);
+	int process_buffer(VFrame *frame,
+		int64_t start_position,
+		double frame_rate);
 	int is_realtime();
 	int hide_gui();
 	void update_gui();

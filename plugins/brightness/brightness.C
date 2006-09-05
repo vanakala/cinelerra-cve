@@ -83,10 +83,16 @@ RAISE_WINDOW_MACRO(BrightnessMain)
 SET_STRING_MACRO(BrightnessMain)
 LOAD_CONFIGURATION_MACRO(BrightnessMain, BrightnessConfig)
 
-int BrightnessMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+int BrightnessMain::process_buffer(VFrame *frame,
+	int64_t start_position,
+	double frame_rate)
 {
 	load_configuration();
 
+	read_frame(frame, 
+		0, 
+		start_position, 
+		frame_rate);
 
 //
 	if(0)
@@ -99,18 +105,12 @@ int BrightnessMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 	if(!engine) engine = new BrightnessEngine(this, PluginClient::smp + 1);
 
-	this->input = input_ptr;
-	this->output = output_ptr;
+	this->input = frame;
+	this->output = frame;
 
 	if(!EQUIV(config.brightness, 0) || !EQUIV(config.contrast, 0))
 	{
 		engine->process_packages();
-	}
-	else
-// Data never processed so copy if necessary
-	if(input_ptr->get_rows()[0] != output_ptr->get_rows()[0])
-	{
-		output_ptr->copy_from(input_ptr);
 	}
 
 	return 0;

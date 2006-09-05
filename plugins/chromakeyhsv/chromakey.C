@@ -668,9 +668,9 @@ void ChromaKeyUnit::process_chromakey(int components,
 			else 
 			if (ABS (h - hue_key) < tolerance_out * 180)
 /* we scale alpha between 1/2 and 1 */
-	    	    ah = 0.5 + ABS (h - hue_key) / tolerance_out / 360;	
-	  else
-	    has_match = false;
+	    	    ah = ABS (h - hue_key) / tolerance_out / 360;	
+			else
+	    	    has_match = false;
 
 // Check if the saturation matches
 			if (has_match)
@@ -681,11 +681,11 @@ void ChromaKeyUnit::process_chromakey(int components,
 			  		as = 0;
 	    		else if ((out_slope != 0) && (s - sat > min_s))
 			  		as = (s - sat - min_s) / (min_s * 2);
-	      else if (s - sat > min_s_out)
-			  		as = 0.5 + (s - sat - min_s_out) / (min_s_out * 2);
-	      else
-		has_match = false;
-	    }
+	    		else if (s - sat > min_s_out)
+			  		as = (s - sat - min_s_out) / (min_s_out * 2);
+	    		else
+			  		has_match = false;
+	    	}
 
 // Check if the value is more than the minimun
 			if (has_match)
@@ -696,26 +696,26 @@ void ChromaKeyUnit::process_chromakey(int components,
 			  		av = 0;
 	    		else if ((out_slope != 0) && (v > min_v))
 			  		av = (v - min_v) / (min_v * 2);
-	      else if (v > min_v_out)
-			  		av = 0.5 + (v - min_v_out) / (min_v_out * 2);
-	      else
-		has_match = false;
-	    }
+	    		else if (v > min_v_out)
+			  		av = (v - min_v_out) / (min_v_out * 2);
+	    		else
+			  		has_match = false;
+	    	}
 
-	  // Check if the value is less than the maximum
-	  if (has_match)
-	    {
-	      if (max_v == 0)
+// Check if the value is less than the maximum
+		  	if (has_match)
+	    	{
+	    	  	if (max_v == 0)
+					avm = 1;
+	    	  	else if (v <= max_v_in)
 					avm = 0;
-	      else if (v <= max_v_in)
-		avm = 0;
-	      else if ((out_slope != 0) && (v < max_v))
+	    	  	else if ((out_slope != 0) && (v < max_v))
 					avm = (v - max_v) / (max_v * 2);
-	      else if (v < max_v_out)
-					avm = 0.5 + (v - max_v_out ) / (max_v_out *2); 
-	      else
-		has_match = false;
-	    }
+	    	  	else if (v < max_v_out)
+					avm = (v - max_v_out) / (max_v_out * 2);
+	    	  	else
+					has_match = false;
+	    	}
 
 	  // If the color is part of the key, update the alpha channel
 	  if (has_match)
@@ -861,28 +861,25 @@ ChromaKeyHSV::~ChromaKeyHSV()
 }
 
 
-int
-ChromaKeyHSV::process_realtime (VFrame * input, VFrame * output)
+int ChromaKeyHSV::process_buffer(VFrame *frame,
+		int64_t start_position,
+		double frame_rate)
 {
-  load_configuration();
-  this->input = input;
-  this->output = output;
+	load_configuration();
+	this->input = frame;
+	this->output = frame;
 
 
+	read_frame(frame, 
+		0, 
+		start_position, 
+		frame_rate);
 
 
-  if (EQUIV (config.tolerance, 0))
-    {
-      if (input->get_rows ()[0] != output->get_rows ()[0])
-	output->copy_from (input);
-    }
-  else
-    {
 	if(!engine) engine = new ChromaKeyServer(this);
 	engine->process_packages();
-    }
 
-  return 0;
+	return 0;
 }
 
 char* ChromaKeyHSV::plugin_title() { return N_("Chroma key (HSV)"); }

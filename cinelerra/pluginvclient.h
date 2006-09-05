@@ -94,6 +94,11 @@ public:
 // Overridden by the user with the commands to run synchronously.
 	virtual int handle_opengl();
 
+// Used by the opengl handlers to get the 
+// arguments to process_buffer.
+// For realtime plugins, they're identical for input and output.
+	VFrame* get_input(int channel = 0);
+	VFrame* get_output(int channel = 0);
 
 // Called by user to allocate the temporary for the current process_buffer.  
 // It may be deleted after the process_buffer to conserve memory.
@@ -101,6 +106,7 @@ public:
 // Called by PluginServer after process_buffer to delete the temp if it's too
 // large.
 	void age_temp();
+	VFrame* get_temp();
 
 // Frame rate relative to EDL
 	double get_project_framerate();

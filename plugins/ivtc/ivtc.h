@@ -63,13 +63,22 @@ public:
 
 	VFrame *temp_frame[2];
 	VFrame *input, *output;
+
+// Automatic IVTC variables
+// Difference between averaged current even lines and original even lines
 	int64_t even_vs_current;
+// Difference between averaged current even lines and previous even lines
 	int64_t even_vs_prev;
+// Difference between averaged current odd lines and original odd lines
 	int64_t odd_vs_current;
+// Difference between averaged current odd lines and previous odd lines
 	int64_t odd_vs_prev;
 
 // Closest combination of fields in previous calculation.
+// If the lowest current combination is too big and the previous strategy
+// was direct copy, copy the previous frame.
 	int64_t previous_min;
+	int previous_strategy;
 	IVTCEngine *engine;
 };
 

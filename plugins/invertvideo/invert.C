@@ -59,7 +59,9 @@ class InvertVideoEffect : public PluginVClient
 public:
 	InvertVideoEffect(PluginServer *server);
 	~InvertVideoEffect();
-	int process_realtime(VFrame *input, VFrame *output);
+	int process_buffer(VFrame *frame,
+		int64_t start_position,
+		double frame_rate);
 	int is_realtime();
 	char* plugin_title();
 	VFrame* new_picon();
@@ -277,10 +279,10 @@ void InvertVideoEffect::read_data(KeyFrame *keyframe)
 
 #define INVERT_MACRO(type, components, max) \
 { \
-	for(int i = 0; i < input->get_h(); i++) \
+	for(int i = 0; i < frame->get_h(); i++) \
 	{ \
-		type *in_row = (type*)input->get_rows()[i]; \
-		type *out_row = (type*)output->get_rows()[i]; \
+		type *in_row = (type*)frame->get_rows()[i]; \
+		type *out_row = (type*)frame->get_rows()[i]; \
  \
 		for(int j = 0; j < w; j++) \
 		{ \
@@ -296,20 +298,23 @@ void InvertVideoEffect::read_data(KeyFrame *keyframe)
 	} \
 }
 
-int InvertVideoEffect::process_realtime(VFrame *input, VFrame *output)
+int InvertVideoEffect::process_buffer(VFrame *frame,
+	int64_t start_position,
+	double frame_rate)
 {
 	load_configuration();
 
-	if(!config.r && !config.g && !config.b && !config.a)
-	{
-		if(input->get_rows()[0] != output->get_rows()[0])
-			output->copy_from(input);
-	}
-	else
-	{
-		int w = input->get_w();
+	read_frame(frame, 
+		0, 
+		start_position, 
+		frame_rate);
 
-		switch(input->get_color_model())
+
+	if(config.r || config.g || config.b || config.a)
+	{
+		int w = frame->get_w();
+
+		switch(frame->get_color_model())
 		{
 			case BC_RGB_FLOAT:
 				INVERT_MACRO(float, 3, 1.0)

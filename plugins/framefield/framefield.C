@@ -33,7 +33,6 @@ public:
 	FrameFieldConfig();
 	int equivalent(FrameFieldConfig &src);
 	int field_dominance;
-	int avg;
 };
 
 
@@ -95,7 +94,6 @@ public:
 	FrameField *plugin;
 	FrameFieldTop *top;
 	FrameFieldBottom *bottom;
-	FrameFieldAvg *avg;
 };
 
 
@@ -150,13 +148,11 @@ REGISTER_PLUGIN(FrameField)
 FrameFieldConfig::FrameFieldConfig()
 {
 	field_dominance = TOP_FIELD_FIRST;
-	avg = 1;
 }
 
 int FrameFieldConfig::equivalent(FrameFieldConfig &src)
 {
-	return src.field_dominance == field_dominance &&
-		src.avg == avg;
+	return src.field_dominance == field_dominance;
 }
 
 
@@ -185,10 +181,9 @@ void FrameFieldWindow::create_objects()
 {
 	int x = 10, y = 10;
 	add_subwindow(top = new FrameFieldTop(plugin, this, x, y));
-	y += 30;
+	y += top->get_h() + 5;
 	add_subwindow(bottom = new FrameFieldBottom(plugin, this, x, y));
-	y += 30;
-	add_subwindow(avg = new FrameFieldAvg(plugin, this, x, y));
+	y += bottom->get_h() + 5;
 	show_window();
 	flush();
 }
@@ -255,26 +250,6 @@ int FrameFieldBottom::handle_event()
 
 
 
-
-FrameFieldAvg::FrameFieldAvg(FrameField *plugin, 
-	FrameFieldWindow *gui, 
-	int x, 
-	int y)
- : BC_CheckBox(x, 
-	y, 
-	plugin->config.avg,
-	_("Average empty rows"))
-{
-	this->plugin = plugin;
-	this->gui = gui;
-}
-
-int FrameFieldAvg::handle_event()
-{
-	plugin->config.avg = get_value();
-	plugin->send_configure_change();
-	return 1;
-}
 
 
 
@@ -381,14 +356,10 @@ int FrameField::process_buffer(VFrame *frame,
 				memcpy(output_rows[i], 
 					src_rows[i], 
 					row_size);
-				if(!config.avg) 
-					memcpy(output_rows[i + 1], 
-						src_rows[i], 
-						row_size);
 			}
 
 // Average empty rows
-			if(config.avg) average_rows(0, frame);
+			/* if(config.avg) */ average_rows(0, frame);
 		}
 		else
 		{
@@ -398,14 +369,10 @@ int FrameField::process_buffer(VFrame *frame,
 				memcpy(output_rows[i + 1], 
 					src_rows[i + 1], 
 					row_size);
-				if(i < frame->get_h() - 2 && !config.avg)
-					memcpy(output_rows[i + 2], 
-						src_rows[i + 1], 
-						row_size);
 			}
 
 // Average empty rows
-			if(config.avg) average_rows(1, frame);
+			/* if(config.avg) */ average_rows(1, frame);
 		}
 	}
 	else
@@ -419,14 +386,10 @@ int FrameField::process_buffer(VFrame *frame,
 				memcpy(output_rows[i + 1], 
 					src_rows[i + 1], 
 					row_size);
-				if(i < frame->get_h() - 2 && !config.avg)
-					memcpy(output_rows[i + 2], 
-						src_rows[i + 1], 
-						row_size);
 			}
 
 // Average empty rows
-			if(config.avg) average_rows(1, frame);
+			/* if(config.avg) */ average_rows(1, frame);
 		}
 		else
 		{
@@ -436,14 +399,10 @@ int FrameField::process_buffer(VFrame *frame,
 				memcpy(output_rows[i], 
 					src_rows[i], 
 					row_size);
-				if(!config.avg) 
-					memcpy(output_rows[i + 1], 
-						src_rows[i], 
-						row_size);
 			}
 
 // Average empty rows
-			if(config.avg) average_rows(0, frame);
+			/* if(config.avg) */ average_rows(0, frame);
 		}
 	}
 
@@ -592,14 +551,12 @@ int FrameField::load_defaults()
 	defaults->load();
 
 	config.field_dominance = defaults->get("DOMINANCE", config.field_dominance);
-	config.avg = defaults->get("AVG", config.avg);
 	return 0;
 }
 
 int FrameField::save_defaults()
 {
 	defaults->update("DOMINANCE", config.field_dominance);
-	defaults->update("AVG", config.avg);
 	defaults->save();
 	return 0;
 }
@@ -612,7 +569,6 @@ void FrameField::save_data(KeyFrame *keyframe)
 	output.set_shared_string(keyframe->data, MESSAGESIZE);
 	output.tag.set_title("FRAME_FIELD");
 	output.tag.set_property("DOMINANCE", config.field_dominance);
-	output.tag.set_property("AVG", config.avg);
 	output.append_tag();
 	output.terminate_string();
 }
@@ -630,7 +586,6 @@ void FrameField::read_data(KeyFrame *keyframe)
 		if(input.tag.title_is("FRAME_FIELD"))
 		{
 			config.field_dominance = input.tag.get_property("DOMINANCE", config.field_dominance);
-			config.avg = input.tag.get_property("AVG", config.avg);
 		}
 	}
 }

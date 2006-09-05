@@ -98,7 +98,9 @@ public:
 	LinearBlurMain(PluginServer *server);
 	~LinearBlurMain();
 
-	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
+	int process_buffer(VFrame *frame,
+		int64_t start_position,
+		double frame_rate);
 	int is_realtime();
 	int load_defaults();
 	int save_defaults();
@@ -115,6 +117,7 @@ public:
 	int **scale_x_table;
 	int table_entries;
 	int need_reconfigure;
+// The accumulation buffer is needed because 8 bits isn't precise enough
 	unsigned char *accum;
 };
 
@@ -263,7 +266,7 @@ int LinearBlurWindow::create_objects()
 	y += 30;
 	add_subwindow(new BC_Title(x, y, _("Steps:")));
 	y += 20;
-	add_subwindow(steps = new LinearBlurSize(plugin, x, y, &plugin->config.steps, 1, 100));
+	add_subwindow(steps = new LinearBlurSize(plugin, x, y, &plugin->config.steps, 1, 200));
 	y += 30;
 	add_subwindow(r = new LinearBlurToggle(plugin, x, y, &plugin->config.r, _("Red")));
 	y += 30;
@@ -397,40 +400,24 @@ void LinearBlurMain::delete_tables()
 	table_entries = 0;
 }
 
-int LinearBlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+int LinearBlurMain::process_buffer(VFrame *frame,
+							int64_t start_position,
+							double frame_rate)
 {
 	need_reconfigure |= load_configuration();
 
-//printf("LinearBlurMain::process_realtime 1 %d\n", config.radius);
-	if(!engine) engine = new LinearBlurEngine(this,
-		get_project_smp() + 1,
-		get_project_smp() + 1);
-	if(!accum) accum = new unsigned char[input_ptr->get_w() * 
-		input_ptr->get_h() *
-		cmodel_components(input_ptr->get_color_model()) *
-		MAX(sizeof(int), sizeof(float))];
-
-	this->input = input_ptr;
-	this->output = output_ptr;
-
-
-	if(input_ptr->get_rows()[0] == output_ptr->get_rows()[0])
-	{
-		if(!temp) temp = new VFrame(0,
-			input_ptr->get_w(),
-			input_ptr->get_h(),
-			input_ptr->get_color_model());
-		temp->copy_from(input_ptr);
-		this->input = temp;
-	}
+	read_frame(frame,
+		0,
+		get_source_position(),
+		get_framerate());
 
 // Generate tables here.  The same table is used by many packages to render
 // each horizontal stripe.  Need to cover the entire output range in  each
 // table to avoid green borders
 	if(need_reconfigure)
 	{
-		int w = input->get_w();
-		int h = input->get_h();
+		int w = frame->get_w();
+		int h = frame->get_h();
 		int x_offset;
 		int y_offset;
 		int angle = config.angle;
@@ -484,19 +471,42 @@ int LinearBlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 			for(int j = 0; j < h; j++)
 			{
 				y_table[j] = j + y;
+				CLAMP(y_table[j], 0, h - 1);
 			}
 			for(int j = 0; j < w; j++)
 			{
 				x_table[j] = j + x;
+				CLAMP(x_table[j], 0, w - 1);
 			}
 		}
 		need_reconfigure = 0;
 	}
 
+
+	if(!engine) engine = new LinearBlurEngine(this,
+		get_project_smp() + 1,
+		get_project_smp() + 1);
+	if(!accum) accum = new unsigned char[frame->get_w() * 
+		frame->get_h() *
+		cmodel_components(frame->get_color_model()) *
+		MAX(sizeof(int), sizeof(float))];
+
+	this->input = frame;
+	this->output = frame;
+
+
+	if(!temp) temp = new VFrame(0,
+		frame->get_w(),
+		frame->get_h(),
+		frame->get_color_model());
+	temp->copy_from(frame);
+	this->input = temp;
+
+
 	bzero(accum, 
-		input_ptr->get_w() * 
-		input_ptr->get_h() * 
-		cmodel_components(input_ptr->get_color_model()) * 
+		frame->get_w() * 
+		frame->get_h() * 
+		cmodel_components(frame->get_color_model()) * 
 		MAX(sizeof(int), sizeof(float)));
 	engine->process_packages();
 	return 0;
@@ -635,57 +645,25 @@ LinearBlurUnit::LinearBlurUnit(LinearBlurEngine *server,
 		int in_y = y_table[j]; \
  \
 /* Blend image */ \
-		if(in_y >= 0 && in_y < h) \
+		TYPE *in_row = (TYPE*)plugin->input->get_rows()[in_y]; \
+		for(int k = 0; k < w; k++) \
 		{ \
-			TYPE *in_row = (TYPE*)plugin->input->get_rows()[in_y]; \
-			for(int k = 0; k < w; k++) \
-			{ \
-				int in_x = x_table[k]; \
+			int in_x = x_table[k]; \
 /* Blend pixel */ \
-				if(in_x >= 0 && in_x < w) \
-				{ \
-					int in_offset = in_x * COMPONENTS; \
-					*out_row++ += in_row[in_offset]; \
-					if(DO_YUV) \
-					{ \
-						*out_row++ += in_row[in_offset + 1]; \
-						*out_row++ += in_row[in_offset + 2]; \
-					} \
-					else \
-					{ \
-						*out_row++ += in_row[in_offset + 1]; \
-						*out_row++ += in_row[in_offset + 2]; \
-					} \
-					if(COMPONENTS == 4) \
-						*out_row++ += in_row[in_offset + 3]; \
-				} \
-/* Blend nothing */ \
-				else \
-				{ \
-					out_row++; \
-					if(DO_YUV) \
-					{ \
-						*out_row++ += chroma_offset; \
-						*out_row++ += chroma_offset; \
-					} \
-					else \
-					{ \
-						out_row += 2; \
-					} \
-					if(COMPONENTS == 4) out_row++; \
-				} \
-			} \
-		} \
-		else \
-		if(DO_YUV) \
-		{ \
-			for(int k = 0; k < w; k++) \
+			int in_offset = in_x * COMPONENTS; \
+			*out_row++ += in_row[in_offset]; \
+			if(DO_YUV) \
 			{ \
-				out_row++; \
-				*out_row++ += chroma_offset; \
-				*out_row++ += chroma_offset; \
-				if(COMPONENTS == 4) out_row++; \
+				*out_row++ += in_row[in_offset + 1]; \
+				*out_row++ += in_row[in_offset + 2]; \
 			} \
+			else \
+			{ \
+				*out_row++ += in_row[in_offset + 1]; \
+				*out_row++ += in_row[in_offset + 2]; \
+			} \
+			if(COMPONENTS == 4) \
+				*out_row++ += in_row[in_offset + 3]; \
 		} \
 	} \
  \

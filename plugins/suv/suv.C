@@ -608,7 +608,7 @@ void SUV::initialize()
 	flush_images();
 
 	title_font = MEDIUMFONT_3D;
-	title_color = WHITE;
+	title_color = 0xbfbfbf;
 	recordgui_fixed_color = YELLOW;
 	recordgui_variable_color = RED;
 
@@ -1081,11 +1081,11 @@ void SUV::get_plugindialog_sizes()
 	plugindialog_module_y = y;
 
 	plugindialog_new_w = plugindialog_shared_x - plugindialog_new_x - 10;
-	plugindialog_new_h = mwindow->session->plugindialog_h - 120;
+	plugindialog_new_h = mwindow->session->plugindialog_h - 100;
 	plugindialog_shared_w = plugindialog_module_x - plugindialog_shared_x - 10;
-	plugindialog_shared_h = mwindow->session->plugindialog_h - 120;
+	plugindialog_shared_h = mwindow->session->plugindialog_h - 100;
 	plugindialog_module_w = mwindow->session->plugindialog_w - plugindialog_module_x - 10;
-	plugindialog_module_h = mwindow->session->plugindialog_h - 120;
+	plugindialog_module_h = mwindow->session->plugindialog_h - 100;
 
 	plugindialog_newattach_x = plugindialog_new_x + 20;
 	plugindialog_newattach_y = plugindialog_new_y + plugindialog_new_h + 10;

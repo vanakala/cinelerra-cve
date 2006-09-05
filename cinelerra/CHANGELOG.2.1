@@ -1,29 +1,49 @@
+Overlay audio effect.  Allows applying compression to the result of a
+6 -> 2 mixdown in realtime.
+
 Compressor can use sum of all channels in addition to highest channel
 and trigger.
 
+Channel position recall based on number of channels.
+
+Audio recording uses another layer of buffers to handle the extremely
+small ALSA buffers better.
+ALSA support migrated to version 1.0.11 and using the dynamic library since
+it is now installed by default.
 
 
 
 
+Filename extension automatically changed when selecting file format.
 
+Toggles for effect on/show.
 
-
+Motion tracking controls width and height for the block and range
+instead of just size. Motion tracking takes the previous keyframe's x
+and y instead of interpolating them.
 
 Channel mapping for the AC3/A52 decoder is fixed for 5.1 channels.
 Liba52 outputs LFE, FL, C, FR, BL, BR but every other library expects 
 C, FL, FR, BL, BR, LFE, which caused errors when the BR channel from 
 liba52 was encoded straight through as LFE.
 
+2 presets for audio mixing positions.  Map each track to a different
+channel and map 5.1 tracks to stereo.
 
 
 Background drawing of tracks for more responsiveness.
 
+Number of channels is no longer set in device configuration but totally
+dependant on project settings.
 
 Automatic cursor hiding when video is playing back.
 
 Fullscreen video in compositor window, recording monitor.  Lots of new
 menu options in the compositor popup.
 
+A floating point boundary condition in Linearize was fixed, defeating
+the color glitches that would show up many steps later in floating
+point images.
 
 Smarter timebar drawing.
 
@@ -32,9 +52,23 @@ Tabs instead of pulldown menu for changing preferences dialogs.
 Keyframes->Straighten curves: straightens the bezier curves if more than one
 curve keyframe is in the highlighted area.
 
+W and H may be swapped by a single button in the project settings.
+
 MPEG-2 decoding directly from unencrypted Blu-Ray disks.
 
 Option to match project frame rate in asset popup.
+Asset info gives bitrate of actual MPEG stream instead of table of
+contents file.
+
+TOC rebuilt if source MPG file changes date.
+
+Antialiased fonts for the interface.
+
+Colorbalance ranges changed to more easily support white balancing.
+
+Histogram shows the output of the RGB transfer in the value plot,
+because the value transfer is applied after the RGB transfer.
+ - Histogram has split output
 
 Limited DVD subtitle support.  Requires starting playback before the
 subtitle appears.  The number of subtitle tracks are given in the asset
@@ -44,12 +78,20 @@ info dialog for MPEG video files.
 
 
 
+The line doubling options in Frames to Fields and Freezeframe were
+removed to simplify things.  Use deinterlace after freezeframe.  Frames
+to Fields always averages lines.
+
 Rounding error in picon drawing for long timelines fixed.
 
 Handy error dialog pops up showing errors that would previously only
 appear on the console.
 
+Gradient in floating point doesn't stair step anymore.
+Gradient with changing alpha works when colormodel doesn't have alpha.
 
+Chromakey with hue/saturation/value is back, in addition to the color
+cube method and difference key.
 
 
 For overlaying, divide behavior is the same as the Gimp.

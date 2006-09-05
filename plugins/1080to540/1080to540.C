@@ -1,4 +1,4 @@
-#include "1080to480.h"
+#include "1080to540.h"
 #include "clip.h"
 #include "bchash.h"
 #include "filexml.h"
@@ -18,28 +18,28 @@
 #include <string.h>
 
 
-REGISTER_PLUGIN(_1080to480Main)
+REGISTER_PLUGIN(_1080to540Main)
 
 
 
 
-_1080to480Config::_1080to480Config()
+_1080to540Config::_1080to540Config()
 {
 	first_field = 0;
 }
 
-int _1080to480Config::equivalent(_1080to480Config &that)
+int _1080to540Config::equivalent(_1080to540Config &that)
 {
 	return first_field == that.first_field;
 }
 
-void _1080to480Config::copy_from(_1080to480Config &that)
+void _1080to540Config::copy_from(_1080to540Config &that)
 {
 	first_field = that.first_field;
 }
 
-void _1080to480Config::interpolate(_1080to480Config &prev, 
-	_1080to480Config &next, 
+void _1080to540Config::interpolate(_1080to540Config &prev, 
+	_1080to540Config &next, 
 	long prev_frame, 
 	long next_frame, 
 	long current_frame)
@@ -51,7 +51,7 @@ void _1080to480Config::interpolate(_1080to480Config &prev,
 
 
 
-_1080to480Window::_1080to480Window(_1080to480Main *client, int x, int y)
+_1080to540Window::_1080to540Window(_1080to540Main *client, int x, int y)
  : BC_Window(client->gui_string, 
  	x, 
 	y, 
@@ -67,26 +67,26 @@ _1080to480Window::_1080to480Window(_1080to480Main *client, int x, int y)
 }
 
 
-_1080to480Window::~_1080to480Window()
+_1080to540Window::~_1080to540Window()
 {
 }
 
-int _1080to480Window::create_objects()
+int _1080to540Window::create_objects()
 {
 	int x = 10, y = 10;
 
-	add_tool(odd_first = new _1080to480Option(client, this, 1, x, y, _("Odd field first")));
+	add_tool(odd_first = new _1080to540Option(client, this, 1, x, y, _("Odd field first")));
 	y += 25;
-	add_tool(even_first = new _1080to480Option(client, this, 0, x, y, _("Even field first")));
+	add_tool(even_first = new _1080to540Option(client, this, 0, x, y, _("Even field first")));
 
 	show_window();
 	flush();
 	return 0;
 }
 
-WINDOW_CLOSE_EVENT(_1080to480Window)
+WINDOW_CLOSE_EVENT(_1080to540Window)
 
-int _1080to480Window::set_first_field(int first_field, int send_event)
+int _1080to540Window::set_first_field(int first_field, int send_event)
 {
 	odd_first->update(first_field == 1);
 	even_first->update(first_field == 0);
@@ -103,8 +103,8 @@ int _1080to480Window::set_first_field(int first_field, int send_event)
 
 
 
-_1080to480Option::_1080to480Option(_1080to480Main *client, 
-		_1080to480Window *window, 
+_1080to540Option::_1080to540Option(_1080to540Main *client, 
+		_1080to540Window *window, 
 		int output, 
 		int x, 
 		int y, 
@@ -119,7 +119,7 @@ _1080to480Option::_1080to480Option(_1080to480Main *client,
 	this->output = output;
 }
 
-int _1080to480Option::handle_event()
+int _1080to540Option::handle_event()
 {
 	window->set_first_field(output, 1);
 	return 1;
@@ -127,7 +127,7 @@ int _1080to480Option::handle_event()
 
 
 
-PLUGIN_THREAD_OBJECT(_1080to480Main, _1080to480Thread, _1080to480Window)
+PLUGIN_THREAD_OBJECT(_1080to540Main, _1080to540Thread, _1080to540Window)
 
 
 
@@ -135,34 +135,34 @@ PLUGIN_THREAD_OBJECT(_1080to480Main, _1080to480Thread, _1080to480Window)
 
 
 
-_1080to480Main::_1080to480Main(PluginServer *server)
+_1080to540Main::_1080to540Main(PluginServer *server)
  : PluginVClient(server)
 {
 	PLUGIN_CONSTRUCTOR_MACRO
 	temp = 0;
 }
 
-_1080to480Main::~_1080to480Main()
+_1080to540Main::~_1080to540Main()
 {
 	PLUGIN_DESTRUCTOR_MACRO
 	if(temp) delete temp;
 }
 
-char* _1080to480Main::plugin_title() { return N_("1080 to 480"); }
-int _1080to480Main::is_realtime() { return 1; }
+char* _1080to540Main::plugin_title() { return N_("1080 to 540"); }
+int _1080to540Main::is_realtime() { return 1; }
 
-SHOW_GUI_MACRO(_1080to480Main, _1080to480Thread)
-RAISE_WINDOW_MACRO(_1080to480Main)
-SET_STRING_MACRO(_1080to480Main)
-NEW_PICON_MACRO(_1080to480Main)
-LOAD_CONFIGURATION_MACRO(_1080to480Main, _1080to480Config)
+SHOW_GUI_MACRO(_1080to540Main, _1080to540Thread)
+RAISE_WINDOW_MACRO(_1080to540Main)
+SET_STRING_MACRO(_1080to540Main)
+NEW_PICON_MACRO(_1080to540Main)
+LOAD_CONFIGURATION_MACRO(_1080to540Main, _1080to540Config)
 
 
 #define TEMP_W 854
-#define TEMP_H 480
-#define OUT_ROWS 240
+#define TEMP_H 540
+#define OUT_ROWS 270
 
-void _1080to480Main::reduce_field(VFrame *output, VFrame *input, int src_field, int dst_field)
+void _1080to540Main::reduce_field(VFrame *output, VFrame *input, int src_field, int dst_field)
 {
 	int w = input->get_w();
 	int h = input->get_h();
@@ -173,7 +173,7 @@ void _1080to480Main::reduce_field(VFrame *output, VFrame *input, int src_field, 
 #define REDUCE_MACRO(type, temp, components) \
 for(int i = 0; i < OUT_ROWS; i++) \
 { \
-	int in_number1 = dst_field * 2 + src_field + (int)(i * 9 / 4) * 2; \
+	int in_number1 = dst_field * 2 + src_field + (int)(i * 2) * 2; \
 	int in_number2 = in_number1 + 2; \
 	int in_number3 = in_number2 + 2; \
 	int in_number4 = in_number3 + 2; \
@@ -228,7 +228,7 @@ for(int i = 0; i < OUT_ROWS; i++) \
 
 }
 
-int _1080to480Main::process_realtime(VFrame *input, VFrame *output)
+int _1080to540Main::process_realtime(VFrame *input, VFrame *output)
 {
 	load_configuration();
 	if(!temp)
@@ -249,10 +249,10 @@ int _1080to480Main::process_realtime(VFrame *input, VFrame *output)
 }
 
 
-int _1080to480Main::load_defaults()
+int _1080to540Main::load_defaults()
 {
 	char directory[BCTEXTLEN], string[BCTEXTLEN];
-	sprintf(directory, "%s1080to480.rc", BCASTDIR);
+	sprintf(directory, "%s1080to540.rc", BCASTDIR);
 	
 	defaults = new BC_Hash(directory);
 	defaults->load();
@@ -261,38 +261,38 @@ int _1080to480Main::load_defaults()
 }
 
 
-int _1080to480Main::save_defaults()
+int _1080to540Main::save_defaults()
 {
 	defaults->update("FIRST_FIELD", config.first_field);
 	defaults->save();
 	return 0;
 }
 
-void _1080to480Main::save_data(KeyFrame *keyframe)
+void _1080to540Main::save_data(KeyFrame *keyframe)
 {
 	FileXML output;
 	output.set_shared_string(keyframe->data, MESSAGESIZE);
-	output.tag.set_title("1080TO480");
+	output.tag.set_title("1080TO540");
 	output.tag.set_property("FIRST_FIELD", config.first_field);
 	output.append_tag();
 	output.terminate_string();
 }
 
-void _1080to480Main::read_data(KeyFrame *keyframe)
+void _1080to540Main::read_data(KeyFrame *keyframe)
 {
 	FileXML input;
 	input.set_shared_string(keyframe->data, strlen(keyframe->data));
 
 	while(!input.read_tag())
 	{
-		if(input.tag.title_is("1080TO480"))
+		if(input.tag.title_is("1080TO540"))
 		{
 			config.first_field = input.tag.get_property("FIRST_FIELD", config.first_field);
 		}
 	}
 }
 
-void _1080to480Main::update_gui()
+void _1080to540Main::update_gui()
 {
 	if(thread) 
 	{

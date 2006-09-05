@@ -16,7 +16,9 @@ public:
 	HistogramMain(PluginServer *server);
 	~HistogramMain();
 
-	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
+	int process_buffer(VFrame *frame,
+		int64_t start_position,
+		double frame_rate);
 	int is_realtime();
 	int load_defaults();
 	int save_defaults();
@@ -27,17 +29,19 @@ public:
 
 	PLUGIN_CLASS_MEMBERS(HistogramConfig, HistogramThread)
 
-// Convert input to linear output
+// Interpolate quantized transfer table to linear output
 	float calculate_linear(float input, int mode, int do_value);
 	float calculate_smooth(float input, int subscript);
 // Convert input to smoothed output by looking up in smooth table.
 	float calculate_curve(float input);
 // Calculate automatic settings
 	void calculate_automatic(VFrame *data);
-// Calculate histogram
-	void calculate_histogram(VFrame *data);
+// Calculate histogram.
+// Value is only calculated for preview.
+	void calculate_histogram(VFrame *data, int do_value);
 // Calculate the linear, smoothed, lookup curves
 	void tabulate_curve(int subscript, int use_value);
+
 
 
 
@@ -47,6 +51,8 @@ public:
 	int *lookup[HISTOGRAM_MODES];
 	float *smoothed[HISTOGRAM_MODES];
 	float *linear[HISTOGRAM_MODES];
+// No value applied to this
+	int *preview_lookup[HISTOGRAM_MODES];
 	int *accum[HISTOGRAM_MODES];
 // Input point being dragged or edited
 	int current_point;
@@ -81,7 +87,7 @@ public:
 	HistogramEngine(HistogramMain *plugin, 
 		int total_clients, 
 		int total_packages);
-	void process_packages(int operation, VFrame *data);
+	void process_packages(int operation, VFrame *data, int do_value);
 	void init_packages();
 	LoadClient* new_client();
 	LoadPackage* new_package();
@@ -96,6 +102,7 @@ public:
 		APPLY
 	};
 	VFrame *data;
+	int do_value;
 };
 
 

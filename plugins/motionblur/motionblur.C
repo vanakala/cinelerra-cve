@@ -379,7 +379,8 @@ int MotionBlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	int x_offset;
 	int y_offset;
 
-	float zradius = (float)(zd * config.radius / 4 + 1);
+	float fradius = config.radius * 0.5;
+	float zradius = (float)(zd * fradius / 4 + 1);
 	float center_x = w/2;
 	float center_y = h/2;
 
@@ -390,8 +391,8 @@ int MotionBlurMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 	int steps = config.steps ? config.steps : 1;
 
-	x_offset = (int)(xd * config.radius);
-	y_offset = (int)(yd * config.radius);
+	x_offset = (int)(xd * fradius);
+	y_offset = (int)(yd * fradius);
 
     min_w = w * zradius;
     min_h = h * zradius;

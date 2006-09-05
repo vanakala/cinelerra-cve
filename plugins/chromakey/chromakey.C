@@ -521,22 +521,28 @@ ChromaKey::ChromaKey(PluginServer *server)
 ChromaKey::~ChromaKey()
 {
 	PLUGIN_DESTRUCTOR_MACRO
-	if(engine) delete engine;
+	delete engine;
 }
 
 
-int ChromaKey::process_realtime(VFrame *input, VFrame *output)
+int ChromaKey::process_buffer(VFrame *frame,
+		int64_t start_position,
+		double frame_rate)
 {
 SET_TRACE
 
 	load_configuration();
-	this->input = input;
-	this->output = output;
+	this->input = frame;
+	this->output = frame;
+
+	read_frame(frame, 
+		0, 
+		start_position, 
+		frame_rate);
 
 	if(EQUIV(config.threshold, 0))
 	{
-		if(input->get_rows()[0] != output->get_rows()[0])
-			output->copy_from(input);
+		return 1;
 	}
 	else
 	{
@@ -545,7 +551,7 @@ SET_TRACE
 	}
 SET_TRACE
 
-	return 0;
+	return 1;
 }
 
 char* ChromaKey::plugin_title() { return N_("Chroma key"); }

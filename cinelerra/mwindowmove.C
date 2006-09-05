@@ -407,6 +407,7 @@ int MWindow::next_label(int shift_down)
 			edl->local_session->set_selectionstart(
 				edl->local_session->get_selectionend(1));
 
+		update_plugin_guis();
 		if(edl->local_session->get_selectionend(1) >= 
 			(double)edl->local_session->view_start *
 			edl->local_session->zoom_sample /
@@ -425,7 +426,6 @@ int MWindow::next_label(int shift_down)
 		}
 		else
 		{
-			update_plugin_guis();
 			gui->patchbay->update();
 			gui->timebar->update();
 			gui->cursor->hide(0);
@@ -454,6 +454,7 @@ int MWindow::prev_label(int shift_down)
 		if(!shift_down) 
 			edl->local_session->set_selectionend(edl->local_session->get_selectionstart(1));
 
+		update_plugin_guis();
 // Scroll the display
 		if(edl->local_session->get_selectionstart(1) >= edl->local_session->view_start *
 			edl->local_session->zoom_sample /
@@ -474,7 +475,6 @@ int MWindow::prev_label(int shift_down)
 		else
 // Don't scroll the display
 		{
-			update_plugin_guis();
 			gui->patchbay->update();
 			gui->timebar->update();
 			gui->cursor->hide(0);
@@ -500,6 +500,7 @@ int MWindow::prev_label(int shift_down)
 int MWindow::next_edit_handle(int shift_down)
 {
 	double position = edl->local_session->get_selectionend(1);
+	Units::fix_double(&position);
 	double new_position = INFINITY;
 // Test for edit handles after cursor position
 	for (Track *track = edl->tracks->first; track; track = track->next)
@@ -509,6 +510,7 @@ int MWindow::next_edit_handle(int shift_down)
 			for (Edit *edit = track->edits->first; edit; edit = edit->next)
 			{
 				double edit_end = track->from_units(edit->startproject + edit->length);
+				Units::fix_double(&edit_end);
 				if (edit_end > position && edit_end < new_position)
 					new_position = edit_end;
 			}
@@ -524,6 +526,7 @@ printf("MWindow::next_edit_handle %d\n", shift_down);
 			edl->local_session->set_selectionstart(
 				edl->local_session->get_selectionend(1));
 
+		update_plugin_guis();
 		if(edl->local_session->get_selectionend(1) >= 
 			(double)edl->local_session->view_start *
 			edl->local_session->zoom_sample /
@@ -542,7 +545,6 @@ printf("MWindow::next_edit_handle %d\n", shift_down);
 		}
 		else
 		{
-			update_plugin_guis();
 			gui->patchbay->update();
 			gui->timebar->update();
 			gui->cursor->hide(0);
@@ -564,6 +566,7 @@ int MWindow::prev_edit_handle(int shift_down)
 {
 	double position = edl->local_session->get_selectionstart(1);
 	double new_position = -1;
+	Units::fix_double(&position);
 // Test for edit handles before cursor position
 	for (Track *track = edl->tracks->first; track; track = track->next)
 	{
@@ -572,6 +575,7 @@ int MWindow::prev_edit_handle(int shift_down)
 			for (Edit *edit = track->edits->first; edit; edit = edit->next)
 			{
 				double edit_end = track->from_units(edit->startproject);
+				Units::fix_double(&edit_end);
 				if (edit_end < position && edit_end > new_position)
 					new_position = edit_end;
 			}
@@ -586,6 +590,7 @@ printf("MWindow::next_edit_handle %d\n", shift_down);
 		if(!shift_down) 
 			edl->local_session->set_selectionend(edl->local_session->get_selectionstart(1));
 
+		update_plugin_guis();
 // Scroll the display
 		if(edl->local_session->get_selectionstart(1) >= edl->local_session->view_start *
 			edl->local_session->zoom_sample /
@@ -606,7 +611,6 @@ printf("MWindow::next_edit_handle %d\n", shift_down);
 		else
 // Don't scroll the display
 		{
-			update_plugin_guis();
 			gui->patchbay->update();
 			gui->timebar->update();
 			gui->cursor->hide(0);

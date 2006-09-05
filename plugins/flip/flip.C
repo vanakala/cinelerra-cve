@@ -95,8 +95,8 @@ int FlipMain::is_realtime() { return 1; }
 { \
 	type **input_rows, **output_rows; \
 	type *input_row, *output_row; \
-	input_rows = ((type**)input_ptr->get_rows()); \
-	output_rows = ((type**)output_ptr->get_rows()); \
+	input_rows = ((type**)frame->get_rows()); \
+	output_rows = ((type**)frame->get_rows()); \
  \
 	if(config.flip_vertical) \
 	{ \
@@ -129,14 +129,23 @@ int FlipMain::is_realtime() { return 1; }
 	} \
 }
 
-int FlipMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+int FlipMain::process_buffer(VFrame *frame,
+		int64_t start_position,
+		double frame_rate)
 {
 	int i, j, k, l;
-	int w = input_ptr->get_w();
-	int h = input_ptr->get_h();
-	int colormodel = input_ptr->get_color_model();
+	int w = frame->get_w();
+	int h = frame->get_h();
+	int colormodel = frame->get_color_model();
 
 	load_configuration();
+
+	read_frame(frame,
+		0,
+		get_source_position(),
+		get_framerate());
+
+
 	switch(colormodel)
 	{
 		case BC_RGB888:

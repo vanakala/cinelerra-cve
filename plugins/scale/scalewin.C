@@ -76,6 +76,7 @@ ScaleWidth::ScaleWidth(ScaleWin *win,
 //printf("ScaleWidth::ScaleWidth %f\n", client->config.w);
 	this->client = client;
 	this->win = win;
+	set_increment(0.1);
 }
 
 ScaleWidth::~ScaleWidth()
@@ -112,6 +113,7 @@ ScaleHeight::ScaleHeight(ScaleWin *win, ScaleMain *client, int x, int y)
 {
 	this->client = client;
 	this->win = win;
+	set_increment(0.1);
 }
 ScaleHeight::~ScaleHeight()
 {

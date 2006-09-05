@@ -45,10 +45,12 @@ public:
 	ColorBalanceSlider(ColorBalanceMain *client, float *output, int x, int y);
 	~ColorBalanceSlider();
 	int handle_event();
+	char* get_caption();
 
 	ColorBalanceMain *client;
 	float *output;
     float old_value;
+	char string[BCTEXTLEN];
 };
 
 class ColorBalancePreserve : public BC_CheckBox

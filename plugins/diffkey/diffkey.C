@@ -425,6 +425,10 @@ int DiffKey::process_buffer(VFrame **frame,
 }
 
 
+#define DIFFKEY_VARS(plugin) \
+	float threshold = plugin->config.threshold / 100; \
+	float pad = plugin->config.slope / 100; \
+	float threshold_pad = threshold + pad; \
 
 
 
@@ -492,9 +496,6 @@ void DiffKeyClient::process_package(LoadPackage *ptr)
 
 #define DIFFKEY_MACRO(type, components, max, chroma_offset) \
 { \
-	float threshold = plugin->config.threshold / 100; \
-	float run = plugin->config.slope / 100; \
-	float threshold_run = threshold + run; \
  \
 	for(int i = pkg->row1; i < pkg->row2; i++) \
 	{ \
@@ -549,12 +550,12 @@ void DiffKeyClient::process_package(LoadPackage *ptr)
 /* Phased out if below or above range */ \
 				if(top_value < min_v) \
 				{ \
-					if(min_v - top_value < run) \
-						a = (min_v - top_value) / run; \
+					if(min_v - top_value < pad) \
+						a = (min_v - top_value) / pad; \
 				} \
 				else \
-				if(top_value - max_v < run) \
-					a = (top_value - max_v) / run; \
+				if(top_value - max_v < pad) \
+					a = (top_value - max_v) / pad; \
 			} \
 			else \
 /* Use color cube */ \
@@ -571,28 +572,6 @@ void DiffKeyClient::process_package(LoadPackage *ptr)
 				bottom_g -= (float)chroma_offset / max; \
 				bottom_b -= (float)chroma_offset / max; \
  \
-/* Convert pixel values to RGB float */ \
- 				if(chroma_offset) \
-				{ \
-					float y = bottom_r; \
-					float u = bottom_g; \
-					float v = bottom_b; \
-					YUV::yuv_to_rgb_f(bottom_r, \
-						bottom_g, \
-						bottom_b, \
-						y, \
-						u, \
-						v); \
-					y = top_r; \
-					u = top_g; \
-					v = top_b; \
-					YUV::yuv_to_rgb_f(top_r, \
-						top_g, \
-						top_b, \
-						y, \
-						u, \
-						v); \
-				} \
  \
 				float difference = sqrt(SQR(top_r - bottom_r) +  \
 					SQR(top_g - bottom_g) + \
@@ -603,9 +582,9 @@ void DiffKeyClient::process_package(LoadPackage *ptr)
 					a = 0; \
 				} \
 				else \
-				if(difference < threshold_run) \
+				if(difference < threshold_pad) \
 				{ \
-					a = (difference - threshold) / run; \
+					a = (difference - threshold) / pad; \
 				} \
 			} \
  \
@@ -627,7 +606,7 @@ void DiffKeyClient::process_package(LoadPackage *ptr)
 	} \
 }
 
-
+	DIFFKEY_VARS(plugin)
 
 	switch(plugin->top_frame->get_color_model())
 	{

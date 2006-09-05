@@ -25,26 +25,27 @@ int HSV::rgb_to_hsv(float r, float g, float b, float &h, float &s, float &v)
 	delta = max - min;
 
 	if(max != 0 && delta != 0)
-        s = delta / max;               // s
+    {
+	    s = delta / max;               // s
+
+		if(r == max)
+        	h = (g - b) / delta;         // between yellow & magenta
+		else 
+		if(g == max)
+        	h = 2 + (b - r) / delta;     // between cyan & yellow
+		else
+        	h = 4 + (r - g) / delta;     // between magenta & cyan
+
+		h *= 60;                               // degrees
+		if(h < 0)
+        	h += 360;
+	}
 	else 
 	{
         // r = g = b = 0                // s = 0, v is undefined
         s = 0;
         h = -1;
-        return 0;
 	}
-
-	if(r == max)
-        h = (g - b) / delta;         // between yellow & magenta
-	else 
-	if(g == max)
-        h = 2 + (b - r) / delta;     // between cyan & yellow
-	else
-        h = 4 + (r - g) / delta;     // between magenta & cyan
-
-	h *= 60;                               // degrees
-	if(h < 0)
-        h += 360;
 	
 	return 0;
 }

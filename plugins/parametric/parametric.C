@@ -508,23 +508,30 @@ void ParametricWindow::update_canvas()
 	{
 		int freq = Freq::tofreq(i * TOTALFREQS / canvas->get_w());
 		int index = freq * WINDOW_SIZE / 2 / niquist;
-		double magnitude = plugin->envelope[index];
-		int y2 = canvas->get_h() * 3 / 4;
-
-		if(magnitude > 1)
+		if(freq < niquist)
 		{
-			y2 -= (int)(DB::todb(magnitude) * 
-				canvas->get_h() * 
-				3 / 
-				4 / 
-				15);
+			double magnitude = plugin->envelope[index];
+				int y2 = canvas->get_h() * 3 / 4;
+
+				if(magnitude > 1)
+			{
+					y2 -= (int)(DB::todb(magnitude) * 
+					canvas->get_h() * 
+					3 / 
+					4 / 
+					15);
+				}
+			else
+			{
+					y2 += (int)((1 - magnitude) * canvas->get_h() / 4);
+				}
+				if(i > 0) canvas->draw_line(i - 1, y1, i, y2);
+				y1 = y2;
 		}
 		else
 		{
-			y2 += (int)((1 - magnitude) * canvas->get_h() / 4);
+			canvas->draw_line(i - 1, y1, i, y1);
 		}
-		if(i > 0) canvas->draw_line(i - 1, y1, i, y2);
-		y1 = y2;
 	}
 
 

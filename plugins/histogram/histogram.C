@@ -51,6 +51,7 @@ HistogramMain::HistogramMain(PluginServer *server)
 		smoothed[i] = 0;
 		linear[i] = 0;
 		accum[i] = 0;
+		preview_lookup[i] = 0;
 	}
 	current_point = -1;
 	mode = HISTOGRAM_VALUE;
@@ -68,6 +69,7 @@ HistogramMain::~HistogramMain()
 		delete [] smoothed[i];
 		delete [] linear[i];
 		delete [] accum[i];
+		delete [] preview_lookup[i];
 	}
 	delete engine;
 }
@@ -91,17 +93,46 @@ void HistogramMain::render_gui(void *data)
 {
 	if(thread)
 	{
-		calculate_histogram((VFrame*)data);
+SET_TRACE
+// Process just the RGB values to determine the automatic points or
+// all the points if manual
+		if(!config.automatic)
+		{
+// Generate curves for value histogram
+// Lock out changes to curves
+			thread->window->lock_window("HistogramMain::render_gui 1");
+			tabulate_curve(HISTOGRAM_RED, 0);
+			tabulate_curve(HISTOGRAM_GREEN, 0);
+			tabulate_curve(HISTOGRAM_BLUE, 0);
+			thread->window->unlock_window();
+		}
+
+		calculate_histogram((VFrame*)data, !config.automatic);
+
+SET_TRACE
 
 		if(config.automatic)
 		{
 SET_TRACE
 			calculate_automatic((VFrame*)data);
 
+SET_TRACE
+// Generate curves for value histogram
+// Lock out changes to curves
+			thread->window->lock_window("HistogramMain::render_gui 1");
+			tabulate_curve(HISTOGRAM_RED, 0);
+			tabulate_curve(HISTOGRAM_GREEN, 0);
+			tabulate_curve(HISTOGRAM_BLUE, 0);
+			thread->window->unlock_window();
+
+SET_TRACE
+// Need a second pass to get the luminance values.
+			calculate_histogram((VFrame*)data, 1);
+SET_TRACE
 		}
 
 SET_TRACE
-		thread->window->lock_window("HistogramMain::render_gui");
+		thread->window->lock_window("HistogramMain::render_gui 2");
 		thread->window->update_canvas();
 		if(config.automatic)
 		{
@@ -172,6 +203,7 @@ int HistogramMain::load_defaults()
 	mode = defaults->get("MODE", mode);
 	CLAMP(mode, 0, HISTOGRAM_MODES - 1);
 	config.threshold = defaults->get("THRESHOLD", config.threshold);
+	config.plot = defaults->get("PLOT", config.plot);
 	config.split = defaults->get("SPLIT", config.split);
 	config.boundaries();
 	return 0;
@@ -214,6 +246,7 @@ int HistogramMain::save_defaults()
 	defaults->update("AUTOMATIC", config.automatic);
 	defaults->update("MODE", mode);
 	defaults->update("THRESHOLD", config.threshold);
+	defaults->update("PLOT", config.plot);
 	defaults->update("SPLIT", config.split);
 	defaults->save();
 	return 0;
@@ -243,6 +276,7 @@ void HistogramMain::save_data(KeyFrame *keyframe)
 
 	output.tag.set_property("AUTOMATIC", config.automatic);
 	output.tag.set_property("THRESHOLD", config.threshold);
+	output.tag.set_property("PLOT", config.plot);
 	output.tag.set_property("SPLIT", config.split);
 	output.append_tag();
 	output.append_newline();
@@ -312,6 +346,7 @@ void HistogramMain::read_data(KeyFrame *keyframe)
 				}
 				config.automatic = input.tag.get_property("AUTOMATIC", config.automatic);
 				config.threshold = input.tag.get_property("THRESHOLD", config.threshold);
+				config.plot = input.tag.get_property("PLOT", config.plot);
 				config.split = input.tag.get_property("SPLIT", config.split);
 			}
 			else
@@ -358,17 +393,17 @@ float HistogramMain::calculate_linear(float input,
 	int done = 0;
 	float output;
 
-	if(input < 0)
-	{
-		output = 0;
-		done = 1;
-	}
-
-	if(input > 1)
-	{
-		output = 1;
-		done = 1;
-	}
+// 	if(input < 0)
+// 	{
+// 		output = 0;
+// 		done = 1;
+// 	}
+// 
+// 	if(input > 1)
+// 	{
+// 		output = 1;
+// 		done = 1;
+// 	}
 
 	if(!done)
 	{
@@ -464,7 +499,7 @@ float HistogramMain::calculate_smooth(float input, int subscript)
 }
 
 
-void HistogramMain::calculate_histogram(VFrame *data)
+void HistogramMain::calculate_histogram(VFrame *data, int do_value)
 {
 
 	if(!engine) engine = new HistogramEngine(this,
@@ -477,7 +512,7 @@ void HistogramMain::calculate_histogram(VFrame *data)
 			accum[i] = new int[HISTOGRAM_SLOTS];
 	}
 
-	engine->process_packages(HistogramEngine::HISTOGRAM, data);
+	engine->process_packages(HistogramEngine::HISTOGRAM, data, do_value);
 
 	for(int i = 0; i < engine->get_total_clients(); i++)
 	{
@@ -514,8 +549,8 @@ void HistogramMain::calculate_histogram(VFrame *data)
 
 void HistogramMain::calculate_automatic(VFrame *data)
 {
-	calculate_histogram(data);
-	config.reset_points();
+	calculate_histogram(data, 0);
+	config.reset_points(1);
 
 // Do each channel
 	for(int i = 0; i < 3; i++)
@@ -562,26 +597,28 @@ void HistogramMain::calculate_automatic(VFrame *data)
 
 
 
-int HistogramMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
+int HistogramMain::process_buffer(VFrame *frame,
+	int64_t start_position,
+	double frame_rate)
 {
 SET_TRACE
 	int need_reconfigure = load_configuration();
 
 
 SET_TRACE
+	read_frame(frame, 
+		0, 
+		start_position, 
+		frame_rate);
 
 	if(!engine) engine = new HistogramEngine(this,
 		get_project_smp() + 1,
 		get_project_smp() + 1);
-	this->input = input_ptr;
-	this->output = output_ptr;
+	this->input = frame;
+	this->output = frame;
 
-	send_render_gui(input_ptr);
-
-	if(input_ptr->get_rows()[0] != output_ptr->get_rows()[0])
-	{
-		output_ptr->copy_from(input_ptr);
-	}
+// Always plot to set the curves if automatic
+	if(config.plot || config.automatic) send_render_gui(frame);
 
 SET_TRACE
 // Generate tables here.  The same table is used by many packages to render
@@ -601,7 +638,7 @@ SET_TRACE
 		}
 SET_TRACE
 
-// Generate transfer tables for integer colormodels.
+// Generate transfer tables with value function for integer colormodels.
 		for(int i = 0; i < 3; i++)
 			tabulate_curve(i, 1);
 SET_TRACE
@@ -610,7 +647,7 @@ SET_TRACE
 
 
 // Apply histogram
-	engine->process_packages(HistogramEngine::APPLY, input);
+	engine->process_packages(HistogramEngine::APPLY, input, 0);
 
 SET_TRACE
 
@@ -626,6 +663,9 @@ void HistogramMain::tabulate_curve(int subscript, int use_value)
 		smoothed[subscript] = new float[HISTOGRAM_SLOTS];
 	if(!linear[subscript])
 		linear[subscript] = new float[HISTOGRAM_SLOTS];
+	if(!preview_lookup[subscript])
+		preview_lookup[subscript] = new int[HISTOGRAM_SLOTS];
+
 
 	float *current_smooth = smoothed[subscript];
 	float *current_linear = linear[subscript];
@@ -648,8 +688,9 @@ void HistogramMain::tabulate_curve(int subscript, int use_value)
 	{
 //		current_smooth[i] = current_linear[i] * 0.001 +
 //			prev * 0.999;
+//		prev = current_smooth[i];
+
 		current_smooth[i] = current_linear[i];
-		prev = current_smooth[i];
 	}
 
 // Generate lookup tables for integer colormodels
@@ -671,8 +712,15 @@ void HistogramMain::tabulate_curve(int subscript, int use_value)
 				break;
 		}
 	}
-}
 
+// Lookup table for preview only used for GUI
+	if(!use_value)
+	{
+		for(i = 0; i < 0x10000; i++)
+			preview_lookup[subscript][i] = 
+				(int)(calculate_smooth((float)i / 0xffff, subscript) * 0xffff);
+	}
+}
 
 
 
@@ -714,6 +762,8 @@ void HistogramUnit::process_package(LoadPackage *package)
 
 	if(server->operation == HistogramEngine::HISTOGRAM)
 	{
+		int do_value = server->do_value;
+
 
 
 #define HISTOGRAM_HEAD(type) \
@@ -725,21 +775,32 @@ void HistogramUnit::process_package(LoadPackage *package)
 		{
 
 #define HISTOGRAM_TAIL(components) \
-/*			v = (r * 76 + g * 150 + b * 29) >> 8; */ \
-			v = MAX(r, g); \
-			v = MAX(v, b); \
+/* Value takes the maximum of the output RGB values */ \
+			if(do_value) \
+			{ \
+				CLAMP(r, 0, HISTOGRAM_SLOTS - 1); \
+				CLAMP(g, 0, HISTOGRAM_SLOTS - 1); \
+				CLAMP(b, 0, HISTOGRAM_SLOTS - 1); \
+				r_out = lookup_r[r]; \
+				g_out = lookup_g[g]; \
+				b_out = lookup_b[b]; \
+/*				v = (r * 76 + g * 150 + b * 29) >> 8; */ \
+				v = MAX(r_out, g_out); \
+				v = MAX(v, b_out); \
+				v += -HISTOGRAM_MIN * 0xffff / 100; \
+				CLAMP(v, 0, HISTOGRAM_SLOTS - 1); \
+				accum_v[v]++; \
+			} \
+ \
 			r += -HISTOGRAM_MIN * 0xffff / 100; \
 			g += -HISTOGRAM_MIN * 0xffff / 100; \
 			b += -HISTOGRAM_MIN * 0xffff / 100; \
-			v += -HISTOGRAM_MIN * 0xffff / 100; \
-			CLAMP(r, 0, HISTOGRAM_SLOTS); \
-			CLAMP(g, 0, HISTOGRAM_SLOTS); \
-			CLAMP(b, 0, HISTOGRAM_SLOTS); \
-			CLAMP(v, 0, HISTOGRAM_SLOTS); \
+			CLAMP(r, 0, HISTOGRAM_SLOTS - 1); \
+			CLAMP(g, 0, HISTOGRAM_SLOTS - 1); \
+			CLAMP(b, 0, HISTOGRAM_SLOTS - 1); \
 			accum_r[r]++; \
 			accum_g[g]++; \
 			accum_b[b]++; \
-			accum_v[v]++; \
 			row += components; \
 		} \
 	} \
@@ -755,7 +816,11 @@ void HistogramUnit::process_package(LoadPackage *package)
 		int *accum_g = accum[HISTOGRAM_GREEN];
 		int *accum_b = accum[HISTOGRAM_BLUE];
 		int *accum_v = accum[HISTOGRAM_VALUE];
-		int r, g, b, a, y, u, v;
+		int32_t r, g, b, a, y, u, v;
+		int r_out, g_out, b_out;
+		int *lookup_r = plugin->preview_lookup[HISTOGRAM_RED];
+		int *lookup_g = plugin->preview_lookup[HISTOGRAM_GREEN];
+		int *lookup_b = plugin->preview_lookup[HISTOGRAM_BLUE];
 
 		switch(data->get_color_model())
 		{
@@ -1036,10 +1101,11 @@ LoadPackage* HistogramEngine::new_package()
 	return new HistogramPackage;
 }
 
-void HistogramEngine::process_packages(int operation, VFrame *data)
+void HistogramEngine::process_packages(int operation, VFrame *data, int do_value)
 {
 	this->data = data;
 	this->operation = operation;
+	this->do_value = do_value;
 	LoadServer::process_packages();
 }
 

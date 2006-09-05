@@ -19,6 +19,12 @@
 
 REGISTER_PLUGIN(MotionMain)
 
+//#undef DEBUG
+
+#ifndef DEBUG
+#define DEBUG
+#endif
+
 static void sort(int *array, int total)
 {
 	int done = 0;
@@ -42,11 +48,14 @@ static void sort(int *array, int total)
 
 MotionConfig::MotionConfig()
 {
-	global_range = 5;
+	global_range_w = 5;
+	global_range_h = 5;
 	rotation_range = 5;
 	block_count = 1;
-	global_block_size = MIN_BLOCK;
-	rotation_block_size = MIN_BLOCK;
+	global_block_w = MIN_BLOCK;
+	global_block_h = MIN_BLOCK;
+	rotation_block_w = MIN_BLOCK;
+	rotation_block_h = MIN_BLOCK;
 	block_x = 50;
 	block_y = 50;
 	global_positions = 256;
@@ -61,28 +70,36 @@ MotionConfig::MotionConfig()
 	mode3 = MotionConfig::TRACK_SINGLE;
 	track_frame = 0;
 	bottom_is_master = 1;
+	horizontal_only = 0;
+	vertical_only = 0;
 }
 
 void MotionConfig::boundaries()
 {
-	CLAMP(global_range, MIN_RADIUS, MAX_RADIUS);
+	CLAMP(global_range_w, MIN_RADIUS, MAX_RADIUS);
+	CLAMP(global_range_h, MIN_RADIUS, MAX_RADIUS);
 	CLAMP(rotation_range, MIN_ROTATION, MAX_ROTATION);
 	CLAMP(block_count, MIN_BLOCKS, MAX_BLOCKS);
-	CLAMP(global_block_size, MIN_BLOCK, MAX_BLOCK);
-	CLAMP(rotation_block_size, MIN_BLOCK, MAX_BLOCK);
+	CLAMP(global_block_w, MIN_BLOCK, MAX_BLOCK);
+	CLAMP(global_block_h, MIN_BLOCK, MAX_BLOCK);
+	CLAMP(rotation_block_w, MIN_BLOCK, MAX_BLOCK);
+	CLAMP(rotation_block_h, MIN_BLOCK, MAX_BLOCK);
 }
 
 int MotionConfig::equivalent(MotionConfig &that)
 {
-	return global_range == that.global_range &&
+	return global_range_w == that.global_range_w &&
+		global_range_h == that.global_range_h &&
 		rotation_range == that.rotation_range &&
 		mode1 == that.mode1 &&
 		global == that.global &&
 		rotate == that.rotate &&
 		draw_vectors == that.draw_vectors &&
 		block_count == that.block_count &&
-		global_block_size == that.global_block_size &&
-		rotation_block_size == that.rotation_block_size &&
+		global_block_w == that.global_block_w &&
+		global_block_h == that.global_block_h &&
+		rotation_block_w == that.rotation_block_w &&
+		rotation_block_h == that.rotation_block_h &&
 		EQUIV(block_x, that.block_x) &&
 		EQUIV(block_y, that.block_y) &&
 		global_positions == that.global_positions &&
@@ -91,12 +108,15 @@ int MotionConfig::equivalent(MotionConfig &that)
 		return_speed == that.return_speed &&
 		mode3 == that.mode3 &&
 		track_frame == that.track_frame &&
-		bottom_is_master == that.bottom_is_master;
+		bottom_is_master == that.bottom_is_master &&
+		horizontal_only == that.horizontal_only &&
+		vertical_only == that.vertical_only;
 }
 
 void MotionConfig::copy_from(MotionConfig &that)
 {
-	global_range = that.global_range;
+	global_range_w = that.global_range_w;
+	global_range_h = that.global_range_h;
 	rotation_range = that.rotation_range;
 	mode1 = that.mode1;
 	global = that.global;
@@ -108,13 +128,17 @@ void MotionConfig::copy_from(MotionConfig &that)
 	block_y = that.block_y;
 	global_positions = that.global_positions;
 	rotate_positions = that.rotate_positions;
-	global_block_size = that.global_block_size;
-	rotation_block_size = that.rotation_block_size;
+	global_block_w = that.global_block_w;
+	global_block_h = that.global_block_h;
+	rotation_block_w = that.rotation_block_w;
+	rotation_block_h = that.rotation_block_h;
 	magnitude = that.magnitude;
 	return_speed = that.return_speed;
 	mode3 = that.mode3;
 	track_frame = that.track_frame;
 	bottom_is_master = that.bottom_is_master;
+	horizontal_only = that.horizontal_only;
+	vertical_only = that.vertical_only;
 }
 
 void MotionConfig::interpolate(MotionConfig &prev, 
@@ -125,9 +149,10 @@ void MotionConfig::interpolate(MotionConfig &prev,
 {
 	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
 	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
-	this->block_x = prev.block_x * prev_scale + next.block_x * next_scale;
-	this->block_y = prev.block_y * prev_scale + next.block_y * next_scale;
-	global_range = prev.global_range;
+	this->block_x = prev.block_x;
+	this->block_y = prev.block_y;
+	global_range_w = prev.global_range_w;
+	global_range_h = prev.global_range_h;
 	rotation_range = prev.rotation_range;
 	mode1 = prev.mode1;
 	global = prev.global;
@@ -137,13 +162,17 @@ void MotionConfig::interpolate(MotionConfig &prev,
 	block_count = prev.block_count;
 	global_positions = prev.global_positions;
 	rotate_positions = prev.rotate_positions;
-	global_block_size = prev.global_block_size;
-	rotation_block_size = prev.rotation_block_size;
+	global_block_w = prev.global_block_w;
+	global_block_h = prev.global_block_h;
+	rotation_block_w = prev.rotation_block_w;
+	rotation_block_h = prev.rotation_block_h;
 	magnitude = prev.magnitude;
 	return_speed = prev.return_speed;
 	mode3 = prev.mode3;
 	track_frame = prev.track_frame;
 	bottom_is_master = prev.bottom_is_master;
+	horizontal_only = prev.horizontal_only;
+	vertical_only = prev.vertical_only;
 }
 
 
@@ -243,8 +272,10 @@ void MotionMain::update_gui()
 			sprintf(string, "%d", config.rotate_positions);
 			thread->window->rotation_search_positions->set_text(string);
 
-			thread->window->global_block_size->update(config.global_block_size);
-			thread->window->rotation_block_size->update(config.rotation_block_size);
+			thread->window->global_block_w->update(config.global_block_w);
+			thread->window->global_block_h->update(config.global_block_h);
+			thread->window->rotation_block_w->update(config.rotation_block_w);
+			thread->window->rotation_block_h->update(config.rotation_block_h);
 			thread->window->block_x->update(config.block_x);
 			thread->window->block_y->update(config.block_y);
 			thread->window->block_x_text->update((float)config.block_x);
@@ -266,6 +297,8 @@ void MotionMain::update_gui()
 				Mode1::to_text(config.mode1));
 			thread->window->mode2->set_text(
 				Mode2::to_text(config.mode2));
+			thread->window->mode3->set_text(
+				Mode3::to_text(config.horizontal_only, config.vertical_only));
 			thread->window->master_layer->set_text(
 				MasterLayer::to_text(config.bottom_is_master));
 
@@ -290,11 +323,14 @@ int MotionMain::load_defaults()
 	config.block_count = defaults->get("BLOCK_COUNT", config.block_count);
 	config.global_positions = defaults->get("GLOBAL_POSITIONS", config.global_positions);
 	config.rotate_positions = defaults->get("ROTATE_POSITIONS", config.rotate_positions);
-	config.global_block_size = defaults->get("GLOBAL_BLOCK_SIZE", config.global_block_size);
-	config.rotation_block_size = defaults->get("ROTATION_BLOCK_SIZE", config.rotation_block_size);
+	config.global_block_w = defaults->get("GLOBAL_BLOCK_W", config.global_block_w);
+	config.global_block_h = defaults->get("GLOBAL_BLOCK_H", config.global_block_h);
+	config.rotation_block_w = defaults->get("ROTATION_BLOCK_W", config.rotation_block_w);
+	config.rotation_block_h = defaults->get("ROTATION_BLOCK_H", config.rotation_block_h);
 	config.block_x = defaults->get("BLOCK_X", config.block_x);
 	config.block_y = defaults->get("BLOCK_Y", config.block_y);
-	config.global_range = defaults->get("GLOBAL_RANGE", config.global_range);
+	config.global_range_w = defaults->get("GLOBAL_RANGE_W", config.global_range_w);
+	config.global_range_h = defaults->get("GLOBAL_RANGE_H", config.global_range_h);
 	config.rotation_range = defaults->get("ROTATION_RANGE", config.rotation_range);
 	config.magnitude = defaults->get("MAGNITUDE", config.magnitude);
 	config.return_speed = defaults->get("RETURN_SPEED", config.return_speed);
@@ -306,6 +342,8 @@ int MotionMain::load_defaults()
 	config.mode3 = defaults->get("MODE3", config.mode3);
 	config.track_frame = defaults->get("TRACK_FRAME", config.track_frame);
 	config.bottom_is_master = defaults->get("BOTTOM_IS_MASTER", config.bottom_is_master);
+	config.horizontal_only = defaults->get("HORIZONTAL_ONLY", config.horizontal_only);
+	config.vertical_only = defaults->get("VERTICAL_ONLY", config.vertical_only);
 	config.boundaries();
 	return 0;
 }
@@ -316,11 +354,14 @@ int MotionMain::save_defaults()
 	defaults->update("BLOCK_COUNT", config.block_count);
 	defaults->update("GLOBAL_POSITIONS", config.global_positions);
 	defaults->update("ROTATE_POSITIONS", config.rotate_positions);
-	defaults->update("GLOBAL_BLOCK_SIZE", config.global_block_size);
-	defaults->update("ROTATION_BLOCK_SIZE", config.rotation_block_size);
+	defaults->update("GLOBAL_BLOCK_W", config.global_block_w);
+	defaults->update("GLOBAL_BLOCK_H", config.global_block_h);
+	defaults->update("ROTATION_BLOCK_W", config.rotation_block_w);
+	defaults->update("ROTATION_BLOCK_H", config.rotation_block_h);
 	defaults->update("BLOCK_X", config.block_x);
 	defaults->update("BLOCK_Y", config.block_y);
-	defaults->update("GLOBAL_RANGE", config.global_range);
+	defaults->update("GLOBAL_RANGE_W", config.global_range_w);
+	defaults->update("GLOBAL_RANGE_H", config.global_range_h);
 	defaults->update("ROTATION_RANGE", config.rotation_range);
 	defaults->update("MAGNITUDE", config.magnitude);
 	defaults->update("RETURN_SPEED", config.return_speed);
@@ -332,6 +373,8 @@ int MotionMain::save_defaults()
 	defaults->update("MODE3", config.mode3);
 	defaults->update("TRACK_FRAME", config.track_frame);
 	defaults->update("BOTTOM_IS_MASTER", config.bottom_is_master);
+	defaults->update("HORIZONTAL_ONLY", config.horizontal_only);
+	defaults->update("VERTICAL_ONLY", config.vertical_only);
 	defaults->save();
 	return 0;
 }
@@ -349,11 +392,14 @@ void MotionMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("BLOCK_COUNT", config.block_count);
 	output.tag.set_property("GLOBAL_POSITIONS", config.global_positions);
 	output.tag.set_property("ROTATE_POSITIONS", config.rotate_positions);
-	output.tag.set_property("GLOBAL_BLOCK_SIZE", config.global_block_size);
-	output.tag.set_property("ROTATION_BLOCK_SIZE", config.rotation_block_size);
+	output.tag.set_property("GLOBAL_BLOCK_W", config.global_block_w);
+	output.tag.set_property("GLOBAL_BLOCK_H", config.global_block_h);
+	output.tag.set_property("ROTATION_BLOCK_W", config.rotation_block_w);
+	output.tag.set_property("ROTATION_BLOCK_H", config.rotation_block_h);
 	output.tag.set_property("BLOCK_X", config.block_x);
 	output.tag.set_property("BLOCK_Y", config.block_y);
-	output.tag.set_property("GLOBAL_RANGE", config.global_range);
+	output.tag.set_property("GLOBAL_RANGE_W", config.global_range_w);
+	output.tag.set_property("GLOBAL_RANGE_H", config.global_range_h);
 	output.tag.set_property("ROTATION_RANGE", config.rotation_range);
 	output.tag.set_property("MAGNITUDE", config.magnitude);
 	output.tag.set_property("RETURN_SPEED", config.return_speed);
@@ -365,6 +411,8 @@ void MotionMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("MODE3", config.mode3);
 	output.tag.set_property("TRACK_FRAME", config.track_frame);
 	output.tag.set_property("BOTTOM_IS_MASTER", config.bottom_is_master);
+	output.tag.set_property("HORIZONTAL_ONLY", config.horizontal_only);
+	output.tag.set_property("VERTICAL_ONLY", config.vertical_only);
 	output.append_tag();
 	output.terminate_string();
 }
@@ -388,11 +436,14 @@ void MotionMain::read_data(KeyFrame *keyframe)
 				config.block_count = input.tag.get_property("BLOCK_COUNT", config.block_count);
 				config.global_positions = input.tag.get_property("GLOBAL_POSITIONS", config.global_positions);
 				config.rotate_positions = input.tag.get_property("ROTATE_POSITIONS", config.rotate_positions);
-				config.global_block_size = input.tag.get_property("GLOBAL_BLOCK_SIZE", config.global_block_size);
-				config.rotation_block_size = input.tag.get_property("ROTATION_BLOCK_SIZE", config.rotation_block_size);
+				config.global_block_w = input.tag.get_property("GLOBAL_BLOCK_W", config.global_block_w);
+				config.global_block_h = input.tag.get_property("GLOBAL_BLOCK_H", config.global_block_h);
+				config.rotation_block_w = input.tag.get_property("ROTATION_BLOCK_W", config.rotation_block_w);
+				config.rotation_block_h = input.tag.get_property("ROTATION_BLOCK_H", config.rotation_block_h);
 				config.block_x = input.tag.get_property("BLOCK_X", config.block_x);
 				config.block_y = input.tag.get_property("BLOCK_Y", config.block_y);
-				config.global_range = input.tag.get_property("GLOBAL_RANGE", config.global_range);
+				config.global_range_w = input.tag.get_property("GLOBAL_RANGE_W", config.global_range_w);
+				config.global_range_h = input.tag.get_property("GLOBAL_RANGE_H", config.global_range_h);
 				config.rotation_range = input.tag.get_property("ROTATION_RANGE", config.rotation_range);
 				config.magnitude = input.tag.get_property("MAGNITUDE", config.magnitude);
 				config.return_speed = input.tag.get_property("RETURN_SPEED", config.return_speed);
@@ -404,6 +455,8 @@ void MotionMain::read_data(KeyFrame *keyframe)
 				config.mode3 = input.tag.get_property("MODE3", config.mode3);
 				config.track_frame = input.tag.get_property("TRACK_FRAME", config.track_frame);
 				config.bottom_is_master = input.tag.get_property("BOTTOM_IS_MASTER", config.bottom_is_master);
+				config.horizontal_only = input.tag.get_property("HORIZONTAL_ONLY", config.horizontal_only);
+				config.vertical_only = input.tag.get_property("VERTICAL_ONLY", config.vertical_only);
 			}
 		}
 	}
@@ -463,9 +516,9 @@ void MotionMain::process_global()
 // Clamp accumulation vector
 	if(config.magnitude < 100)
 	{
-		int block_w = (int64_t)config.global_block_size * 
+		int block_w = (int64_t)config.global_block_w * 
 				current_global_ref->get_w() / 100;
-		int block_h = (int64_t)config.global_block_size * 
+		int block_h = (int64_t)config.global_block_h * 
 				current_global_ref->get_h() / 100;
 		int block_x_orig = (int64_t)(config.block_x * 
 			current_global_ref->get_w() / 
@@ -495,10 +548,11 @@ void MotionMain::process_global()
 		CLAMP(total_dy, min_block_y, max_block_y);
 	}
 
+#ifdef DEBUG
 printf("MotionMain::process_global 2 total_dx=%.02f total_dy=%.02f\n", 
 (float)total_dx / OVERSAMPLE,
 (float)total_dy / OVERSAMPLE);
-
+#endif
 
 	if(config.mode3 != MotionConfig::TRACK_SINGLE && !config.rotate)
 	{
@@ -668,8 +722,9 @@ void MotionMain::process_rotation()
 		total_angle = current_angle;
 	}
 
+#ifdef DEBUG
 printf("MotionMain::process_rotation total_angle=%f\n", total_angle);
-
+#endif
 
 
 // Calculate rotation parameters based on requested operation
@@ -782,7 +837,9 @@ int MotionMain::process_buffer(VFrame **frame,
 	h = frame[0]->get_h();
 	
 
+#ifdef DEBUG
 printf("MotionMain::process_buffer 1 start_position=%lld\n", start_position);
+#endif
 
 
 // Calculate the source and destination pointers for each of the operations.
@@ -1036,8 +1093,9 @@ printf("MotionMain::process_buffer 1 start_position=%lld\n", start_position);
 		draw_vectors(frame[target_layer]);
 	}
 
+#ifdef DEBUG
 printf("MotionMain::process_buffer 100\n");
-
+#endif
 	return 0;
 }
 
@@ -1237,14 +1295,14 @@ void MotionMain::draw_vectors(VFrame *frame)
 
 		block_x = global_x1;
 		block_y = global_y1;
-		block_w = config.global_block_size * w / 100;
-		block_h = config.global_block_size * h / 100;
+		block_w = config.global_block_w * w / 100;
+		block_h = config.global_block_h * h / 100;
 		block_x1 = block_x - block_w / 2;
 		block_y1 = block_y - block_h / 2;
 		block_x2 = block_x + block_w / 2;
 		block_y2 = block_y + block_h / 2;
-		search_w = config.global_range * w / 100;
-		search_h = config.global_range * h / 100;
+		search_w = config.global_range_w * w / 100;
+		search_h = config.global_range_h * h / 100;
 		search_x1 = block_x1 - search_w / 2;
 		search_y1 = block_y1 - search_h / 2;
 		search_x2 = block_x2 + search_w / 2;
@@ -1305,8 +1363,8 @@ void MotionMain::draw_vectors(VFrame *frame)
 		block_y = (int64_t)(config.block_y * h / 100);
 	}
 
-	block_w = config.rotation_block_size * w / 100;
-	block_h = config.rotation_block_size * h / 100;
+	block_w = config.rotation_block_w * w / 100;
+	block_h = config.rotation_block_h * h / 100;
 	if(config.rotate)
 	{
 		float angle = total_angle * 2 * M_PI / 360;
@@ -1759,6 +1817,17 @@ void MotionScanUnit::process_package(LoadPackage *package)
 	{
 		int sub_x = pkg->pixel % (OVERSAMPLE * 2 - 1) + 1;
 		int sub_y = pkg->pixel / (OVERSAMPLE * 2 - 1) + 1;
+
+		if(plugin->config.horizontal_only)
+		{
+			sub_y = 0;
+		}
+
+		if(plugin->config.vertical_only)
+		{
+			sub_x = 0;
+		}
+
 		int search_x = pkg->scan_x1 + sub_x / OVERSAMPLE;
 		int search_y = pkg->scan_y1 + sub_y / OVERSAMPLE;
 		sub_x %= OVERSAMPLE;
@@ -1916,10 +1985,10 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 	int h = current_frame->get_h();
 
 // Initial search parameters
-	int scan_w = w * plugin->config.global_range / 100;
-	int scan_h = h * plugin->config.global_range / 100;
-	int block_w = w * plugin->config.global_block_size / 100;
-	int block_h = h * plugin->config.global_block_size / 100;
+	int scan_w = w * plugin->config.global_range_w / 100;
+	int scan_h = h * plugin->config.global_range_h / 100;
+	int block_w = w * plugin->config.global_block_w / 100;
+	int block_h = h * plugin->config.global_block_h / 100;
 
 // Location of block in previous frame
 	block_x1 = (int)(w * plugin->config.block_x / 100 - block_w / 2);
@@ -1996,6 +2065,20 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 			scan_x2 = x_result + scan_w / 2;
 			scan_y2 = y_result + scan_h / 2;
 
+
+
+// Zero out requested values
+			if(plugin->config.horizontal_only)
+			{
+				scan_y1 = block_y1;
+				scan_y2 = block_y1 + 1;
+			}
+			if(plugin->config.vertical_only)
+			{
+				scan_x1 = block_x1;
+				scan_x2 = block_x1 + 1;
+			}
+
 // printf("MotionScan::scan_frame 1 %d %d %d %d %d %d %d %d\n",
 // block_x1,
 // block_y1,
@@ -2040,7 +2123,16 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 // For subpixel, the top row and left column are skipped
 			if(subpixel)
 			{
-				total_pixels = 4 * OVERSAMPLE * OVERSAMPLE - 4 * OVERSAMPLE;
+				if(plugin->config.horizontal_only ||
+					plugin->config.vertical_only)
+				{
+					total_pixels = 4 * OVERSAMPLE * OVERSAMPLE - 4 * OVERSAMPLE;
+				}
+				else
+				{
+					total_pixels = 4 * OVERSAMPLE;
+				}
+
 				total_steps = total_pixels;
 
 				set_package_count(total_steps);
@@ -2054,10 +2146,20 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 					if(pkg->difference1 < min_difference || min_difference == -1)
 					{
 						min_difference = pkg->difference1;
-						x_result = scan_x1 * OVERSAMPLE + 
-							(pkg->pixel % (OVERSAMPLE * 2 - 1)) + 1;
-						y_result = scan_y1 * OVERSAMPLE + 
-							(pkg->pixel / (OVERSAMPLE * 2 - 1)) + 1;
+
+						if(plugin->config.vertical_only)
+							x_result = scan_x1 * OVERSAMPLE;
+						else
+							x_result = scan_x1 * OVERSAMPLE + 
+								(pkg->pixel % (OVERSAMPLE * 2 - 1)) + 1;
+						
+						if(plugin->config.horizontal_only)
+							y_result = scan_y1 * OVERSAMPLE;
+						else
+							y_result = scan_y1 * OVERSAMPLE + 
+								(pkg->pixel / (OVERSAMPLE * 2 - 1)) + 1;
+
+
 // Fill in results
 						dx_result = block_x1 * OVERSAMPLE - x_result;
 						dy_result = block_y1 * OVERSAMPLE - y_result;
@@ -2066,10 +2168,19 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 					if(pkg->difference2 < min_difference)
 					{
 						min_difference = pkg->difference2;
-						x_result = scan_x2 * OVERSAMPLE -
-							((pkg->pixel % (OVERSAMPLE * 2 - 1)) + 1);
-						y_result = scan_y2 * OVERSAMPLE -
-							((pkg->pixel / (OVERSAMPLE * 2 - 1)) + 1);
+
+						if(plugin->config.vertical_only)
+							x_result = scan_x1 * OVERSAMPLE;
+						else
+							x_result = scan_x2 * OVERSAMPLE -
+								((pkg->pixel % (OVERSAMPLE * 2 - 1)) + 1);
+
+						if(plugin->config.horizontal_only)
+							y_result = scan_y1 * OVERSAMPLE;
+						else
+							y_result = scan_y2 * OVERSAMPLE -
+								((pkg->pixel / (OVERSAMPLE * 2 - 1)) + 1);
+
 						dx_result = block_x1 * OVERSAMPLE - x_result;
 						dy_result = block_y1 * OVERSAMPLE - y_result;
 					}
@@ -2188,9 +2299,11 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 		}
 	}
 
+#ifdef DEBUG
 printf("MotionScan::scan_frame 10 dx=%.2f dy=%.2f\n", 
 (float)this->dx_result / OVERSAMPLE,
 (float)this->dy_result / OVERSAMPLE);
+#endif
 }
 
 
@@ -2443,8 +2556,8 @@ float RotateScan::scan_frame(VFrame *previous_frame,
 	this->current_frame = current_frame;
 	int w = current_frame->get_w();
 	int h = current_frame->get_h();
-	int block_w = w * plugin->config.rotation_block_size / 100;
-	int block_h = h * plugin->config.rotation_block_size / 100;
+	int block_w = w * plugin->config.rotation_block_w / 100;
+	int block_h = h * plugin->config.rotation_block_h / 100;
 
 	if(this->block_x - block_w / 2 < 0) block_w = this->block_x * 2;
 	if(this->block_y - block_h / 2 < 0) block_h = this->block_y * 2;
@@ -2531,7 +2644,10 @@ float RotateScan::scan_frame(VFrame *previous_frame,
 	double angle2 = atan((double)(block_h - 1) / (block_w + 1));
 	double min_angle = fabs(angle2 - angle1) / OVERSAMPLE;
 	min_angle = MAX(min_angle, MIN_ANGLE);
+
+#ifdef DEBUG
 printf("RotateScan::scan_frame min_angle=%f\n", min_angle * 360 / 2 / M_PI);
+#endif
 
 	cache.remove_all_objects();
 	if(!skip)
@@ -2590,8 +2706,9 @@ printf("RotateScan::scan_frame min_angle=%f\n", min_angle * 360 / 2 / M_PI);
 		}
 	}
 
+#ifdef DEBUG
 printf("RotateScan::scan_frame 10 angle=%f\n", result);
-
+#endif
 	
 
 

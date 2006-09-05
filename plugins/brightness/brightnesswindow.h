@@ -33,12 +33,15 @@ public:
 class BrightnessSlider : public BC_FSlider
 {
 public:
-	BrightnessSlider(BrightnessMain *client, float *output, int x, int y);
+	BrightnessSlider(BrightnessMain *client, float *output, int x, int y, int is_brightness);
 	~BrightnessSlider();
 	int handle_event();
+	char* get_caption();
 
 	BrightnessMain *client;
 	float *output;
+	int is_brightness;
+	char string[BCTEXTLEN];
 };
 
 class BrightnessLuma : public BC_CheckBox

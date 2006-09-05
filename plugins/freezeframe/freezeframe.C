@@ -80,12 +80,14 @@ int FreezeFrameWindow::create_objects()
 		x, 
 		y,
 		_("Enabled")));
-	y += 30;
-	add_tool(line_double = new FreezeFrameToggle(client, 
-		&client->config.line_double,
-		x, 
-		y,
-		_("Line double")));
+// Try using extra effect for the line double since it doesn't
+// change the overhead.
+// 	y += 30;
+// 	add_tool(line_double = new FreezeFrameToggle(client, 
+// 		&client->config.line_double,
+// 		x, 
+// 		y,
+// 		_("Line double")));
 	show_window();
 	flush();
 	return 0;
@@ -178,7 +180,7 @@ void FreezeFrameMain::update_gui()
 		load_configuration();
 		thread->window->lock_window();
 		thread->window->enabled->update(config.enabled);
-		thread->window->line_double->update(config.line_double);
+//		thread->window->line_double->update(config.line_double);
 		thread->window->unlock_window();
 	}
 }
@@ -319,15 +321,15 @@ int FreezeFrameMain::process_buffer(VFrame *frame,
 
 
 // Line double to support interlacing
-	if(config.line_double && config.enabled)
-	{
-		for(int i = 0; i < frame->get_h() - 1; i += 2)
-		{
-			memcpy(frame->get_rows()[i + 1], 
-				frame->get_rows()[i], 
-				frame->get_bytes_per_line());
-		}
-	}
+// 	if(config.line_double && config.enabled)
+// 	{
+// 		for(int i = 0; i < frame->get_h() - 1; i += 2)
+// 		{
+// 			memcpy(frame->get_rows()[i + 1], 
+// 				frame->get_rows()[i], 
+// 				frame->get_bytes_per_line());
+// 		}
+// 	}
 
 
 

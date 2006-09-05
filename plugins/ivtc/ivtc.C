@@ -34,6 +34,7 @@ IVTCMain::IVTCMain(PluginServer *server)
 	PLUGIN_CONSTRUCTOR_MACRO
 	engine = 0;
 	previous_min = 0x4000000000000000LL;
+	previous_strategy = 0;
 }
 
 IVTCMain::~IVTCMain()
@@ -256,7 +257,8 @@ int IVTCMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	else
 	if(config.pattern == IVTCConfig::AUTOMATIC)
 	{
-// Compare with original rows and with previous rows and averaged rows.
+// Compare averaged rows with original rows and 
+// with previous rows.
 // Take rows which are most similar to the averaged rows.
 // Process frame.
 		engine->process_packages();
@@ -281,33 +283,66 @@ int IVTCMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 		int64_t min;
 		int strategy;
-		if(even_vs_current > even_vs_prev)
+
+
+// First strategy.
+// Even lines from previous frame are more similar to 
+// averaged even lines in current frame.
+// Take even lines from previous frame
+		min = even_vs_prev;
+		strategy = 0;
+
+		if(even_vs_current < min)
 		{
-			min = even_vs_prev;
-			strategy = 0;
-		}
-		else
-		{
+// Even lines from current frame are more similar to averaged
+// even lines in current frame than previous combinations.
+// Take all lines from current frame
 			min = even_vs_current;
 			strategy = 2;
 		}
 
 		if(min > odd_vs_prev)
 		{
+// Odd lines from previous frame are more similar to averaged
+// odd lines in current frame than previous combinations.
+// Take odd lines from previous frame
 			min = odd_vs_prev;
 			strategy = 1;
 		}
 
 		if(min > odd_vs_current)
 		{
+// Odd lines from current frame are more similar to averaged
+// odd lines in current frame than previous combinations.
+// Take odd lines from current frame.
 			min = odd_vs_current;
 			strategy = 2;
 		}
 
+		int confident = 1;
+// Do something if not confident.
+// Sometimes we never get the other field.
+// Currently nothing is done because it doesn't fix the timing.
+		if(min > previous_min * 4 && previous_strategy == 2)
+		{
+			confident = 0;
+//			strategy = 3;
+		}
+// printf("IVTCMain::process_realtime 1: previous_min=%lld min=%lld strategy=%d confident=%d\n",
+// previous_min,
+// min,
+// strategy,
+// confident);
 
 
 
-//strategy = 2;
+// printf("IVTCMain::process_realtime:\n    even_vs_current=%lld\n    even_vs_prev=%lld\n    odd_vs_current=%lld\n    odd_vs_prev=%lld\n    strategy=%d confident=%d\n",
+// even_vs_current,
+// even_vs_prev,
+// odd_vs_current,
+// odd_vs_prev,
+// strategy,
+// strategy == 2 && !use_direct_copy);
 
 		switch(strategy)
 		{
@@ -340,8 +375,25 @@ int IVTCMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 			case 2:
 				output_ptr->copy_from(input_ptr);
 				break;
+			case 3:
+//				output_ptr->copy_from(temp_frame[0]);
+// Deinterlace
+				for(int i = 0; i < input_ptr->get_h(); i++)
+				{
+					if(i & 1)
+						memcpy(output_ptr->get_rows()[i], 
+							input_ptr->get_rows()[i - 1],
+							row_size);
+					else
+						memcpy(output_ptr->get_rows()[i],
+							input_ptr->get_rows()[i],
+							row_size);
+				}
+				break;
 		}
 
+		previous_min = min;
+		previous_strategy = strategy;
 		VFrame *temp = temp_frame[1];
 		temp_frame[1] = temp_frame[0];
 		temp_frame[0] = temp;
@@ -454,11 +506,12 @@ IVTCUnit::IVTCUnit(IVTCEngine *server, IVTCMain *plugin)
 		temp_type prev_difference = 0; \
 		for(int j = 0; j < w; j++) \
 		{ \
-/* Get pixel average */ \
+/* This only compares luminance */ \
+/* Get average of current rows */ \
 			temp_type average = ((temp_type)*input_row1 + *input_row2) / 2; \
-/* Compare row to current */ \
+/* Difference between averaged current rows and original inbetween row */ \
 			current_difference += ABS(average - *current_row); \
-/* Compare row to previous */ \
+/* Difference between averaged current rows and previous inbetween row */ \
 			prev_difference += ABS(average - *prev_row); \
  \
 /* Do RGB channels */ \

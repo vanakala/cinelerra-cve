@@ -307,7 +307,8 @@ void AffineUnit::process_package(LoadPackage *package)
 // Calculate real coords
 	float out_x1, out_y1, out_x2, out_y2, out_x3, out_y3, out_x4, out_y4;
 	if(server->mode == AffineEngine::STRETCH ||
-		server->mode == AffineEngine::PERSPECTIVE)
+		server->mode == AffineEngine::PERSPECTIVE ||
+		server->mode == AffineEngine::ROTATE)
 	{
 		out_x1 = (float)server->x + (float)server->x1 * server->w / 100;
 		out_y1 = (float)server->y + (float)server->y1 * server->h / 100;
@@ -333,7 +334,8 @@ void AffineUnit::process_package(LoadPackage *package)
 
 
 	if(server->mode == AffineEngine::PERSPECTIVE ||
-		server->mode == AffineEngine::SHEER)
+		server->mode == AffineEngine::SHEER ||
+		server->mode == AffineEngine::ROTATE)
 	{
 		AffineMatrix matrix;
 		float temp;
@@ -479,6 +481,15 @@ void AffineUnit::process_package(LoadPackage *package)
 			itx = (int)ttx; \
 			ity = (int)tty; \
  \
+			int row1 = ity - 1; \
+			int row2 = ity; \
+			int row3 = ity + 1; \
+			int row4 = ity + 2; \
+			CLAMP(row1, miny, maxy); \
+			CLAMP(row2, miny, maxy); \
+			CLAMP(row3, miny, maxy); \
+			CLAMP(row4, miny, maxy); \
+ \
 /* Set destination pixels */ \
 			if(!interpolate && x >= server->x && x < server->x + server->w) \
 			{ \
@@ -518,18 +529,10 @@ void AffineUnit::process_package(LoadPackage *package)
 					int col2 = itx; \
 					int col3 = itx + 1; \
 					int col4 = itx + 2; \
-					int row1 = ity - 1; \
-					int row2 = ity; \
-					int row3 = ity + 1; \
-					int row4 = ity + 2; \
 					CLAMP(col1, minx, maxx); \
 					CLAMP(col2, minx, maxx); \
 					CLAMP(col3, minx, maxx); \
 					CLAMP(col4, minx, maxx); \
-					CLAMP(row1, miny, maxy); \
-					CLAMP(row2, miny, maxy); \
-					CLAMP(row3, miny, maxy); \
-					CLAMP(row4, miny, maxy); \
 					int col1_offset = col1 * components; \
 					int col2_offset = col2 * components; \
 					int col3_offset = col3 * components; \
@@ -849,7 +852,7 @@ void AffineEngine::rotate(VFrame *output,
 	this->output = output;
 	this->input = input;
 	this->temp = 0;
-	this->mode = PERSPECTIVE;
+	this->mode = ROTATE;
 	this->forward = 1;
 
 	if(!user_viewport)
