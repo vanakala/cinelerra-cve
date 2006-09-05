@@ -25,6 +25,7 @@
 #include "file.h"
 #include "filesystem.h"
 #include "filexml.h"
+#include "framecache.h"
 #include "gwindow.h"
 #include "gwindowgui.h"
 #include "indexfile.h"
@@ -77,6 +78,7 @@
 #include "vplayback.h"
 #include "vwindowgui.h"
 #include "vwindow.h"
+#include "wavecache.h"
 #include "zoombar.h"
 #include "exportedl.h"
 
@@ -159,6 +161,7 @@ SET_TRACE
 	delete mainprogress;
 	delete audio_cache;             // delete the cache after the assets
 	delete video_cache;             // delete the cache after the assets
+	delete frame_cache;
 	if(gui) delete gui;
 	delete undo;
 	delete preferences;
@@ -633,6 +636,8 @@ void MWindow::init_cache()
 {
 	audio_cache = new CICache(preferences, plugindb);
 	video_cache = new CICache(preferences, plugindb);
+	frame_cache = new FrameCache;
+	wave_cache = new WaveCache;
 }
 
 void MWindow::init_channeldb()
@@ -1505,7 +1510,9 @@ void MWindow::age_caches()
 	do
 	{
 		memory_usage = audio_cache->get_memory_usage(1) +
-			video_cache->get_memory_usage(1);
+			video_cache->get_memory_usage(1) +
+			frame_cache->get_memory_usage() +
+			wave_cache->get_memory_usage();
 
 		if(memory_usage > preferences->cache_size)
 		{
@@ -1513,15 +1520,23 @@ void MWindow::age_caches()
 			int oldest1 = audio_cache->get_oldest();
 			int oldest2 = video_cache->get_oldest();
 			if(oldest2 < oldest1) target = 2;
+			int oldest3 = frame_cache->get_oldest();
+			if(oldest3 < oldest1 && oldest3 < oldest2) target = 3;
+			int oldest4 = wave_cache->get_oldest();
+			if(oldest4 < oldest3 && oldest4 < oldest2 && oldest4 < oldest1) target = 4;
 			switch(target)
 			{
 				case 1: audio_cache->delete_oldest(); break;
 				case 2: video_cache->delete_oldest(); break;
+				case 3: frame_cache->delete_oldest(); break;
+				case 4: wave_cache->delete_oldest(); break;
 			}
 		}
 		prev_memory_usage = memory_usage;
 		memory_usage = audio_cache->get_memory_usage(1) +
-			video_cache->get_memory_usage(1);
+			video_cache->get_memory_usage(1) +
+			frame_cache->get_memory_usage() +
+			wave_cache->get_memory_usage();
 	}while(!result && 
 		prev_memory_usage != memory_usage && 
 		memory_usage > preferences->cache_size);
@@ -1877,6 +1892,8 @@ int MWindow::create_aspect_ratio(float &w, float &h, int width, int height)
 
 void MWindow::reset_caches()
 {
+	frame_cache->remove_all();
+	wave_cache->remove_all();
 	audio_cache->remove_all();
 	video_cache->remove_all();
 	if(cwindow->playback_engine && cwindow->playback_engine->audio_cache)
@@ -1891,6 +1908,8 @@ void MWindow::reset_caches()
 
 void MWindow::remove_asset_from_caches(Asset *asset)
 {
+	frame_cache->remove_asset(asset);
+	wave_cache->remove_asset(asset);
 	audio_cache->delete_entry(asset);
 	video_cache->delete_entry(asset);
 	if(cwindow->playback_engine && cwindow->playback_engine->audio_cache)

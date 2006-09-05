@@ -1,12 +1,14 @@
 #ifndef EDLSESSION_H
 #define EDLSESSION_H
 
+#include "autoconf.inc"
+#include "bcwindowbase.inc"
 #include "bchash.inc"
 #include "edl.inc"
 #include "filexml.inc"
-
-
-
+#include "maxchannels.h"
+#include "playbackconfig.inc"
+#include "recordconfig.inc"
 
 
 // Session shared between all clips
@@ -172,6 +174,8 @@ public:
 	Asset *recording_format;
 // play every frame
 	int video_every_frame;  
+// decode video asynchronously
+	int video_asynchronous;
 	int video_tracks;
 // number of frames to write to disk at a time during video recording.
 	int video_write_length;

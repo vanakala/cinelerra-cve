@@ -667,6 +667,7 @@ int PackageRenderer::direct_frame_copy(EDL *edl,
 				PLAY_FORWARD,
 				video_cache,
 				1,
+				0,
 				0);
 
 

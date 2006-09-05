@@ -1326,8 +1326,8 @@ int ChannelEditEditFine::button_release_event()
 {
 	if(BC_Slider::button_release_event())
 	{
-	thread->new_channel.fine_tune = get_value();
-	thread->set_device();
+		thread->new_channel.fine_tune = get_value();
+		thread->set_device();
 		return 1;
 	}
 	return 0;

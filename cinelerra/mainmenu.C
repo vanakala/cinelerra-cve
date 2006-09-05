@@ -129,6 +129,8 @@ SET_TRACE
 	add_menu(audiomenu = new BC_Menu(_("Audio")));
 	audiomenu->add_item(new AddAudioTrack(mwindow));
 	audiomenu->add_item(new DefaultATransition(mwindow));
+	audiomenu->add_item(new MapAudio1(mwindow));
+	audiomenu->add_item(new MapAudio2(mwindow));
 	audiomenu->add_item(aeffects = new MenuAEffects(mwindow));
 
 	add_menu(videomenu = new BC_Menu(_("Video")));
@@ -821,6 +823,31 @@ DefaultATransition::DefaultATransition(MWindow *mwindow)
 int DefaultATransition::handle_event()
 {
 	mwindow->paste_audio_transition();
+	return 1;
+}
+
+
+MapAudio1::MapAudio1(MWindow *mwindow)
+ : BC_MenuItem(_("Map 1:1"))
+{
+	this->mwindow = mwindow;
+}
+
+int MapAudio1::handle_event()
+{
+	mwindow->map_audio(MWindow::AUDIO_1_TO_1);
+	return 1;
+}
+
+MapAudio2::MapAudio2(MWindow *mwindow)
+ : BC_MenuItem(_("Map 5.1:2"))
+{
+	this->mwindow = mwindow;
+}
+
+int MapAudio2::handle_event()
+{
+	mwindow->map_audio(MWindow::AUDIO_5_1_TO_2);
 	return 1;
 }
 

@@ -224,15 +224,22 @@ int Module::test_plugins()
 void Module::update_transition(int64_t current_position, 
 	int direction)
 {
-	transition = track->get_current_transition(current_position, 
+	transition = track->get_current_transition(current_position,
 		direction,
 		0,
 		0); // position is already nudged in amodule.C and vmodule.C before calling update_transition!
 
-// for situations where we had transition and have no more, we keep the server open:
-// maybe the same transition will follow and we won't need to reinit... (happens a lot while scrubbing over transitions left and right)
-//	if((prev_transition && !transition) ||
-	if ((transition && transition_server && strcmp(transition->title, transition_server->plugin->title)))
+// For situations where we had a transition but not anymore, 
+// keep the server open.
+// Maybe the same transition will follow and we won't need to reinit.
+// (happens a lot while scrubbing over transitions left and right)
+
+
+// If the current transition differs from the previous transition, delete the
+// server.
+	if ((transition && 
+		transition_server && 
+		strcmp(transition->title, transition_server->plugin->title)))
 	{
 		transition_server->close_plugin();
 		delete transition_server;

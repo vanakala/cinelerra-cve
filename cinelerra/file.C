@@ -613,8 +613,11 @@ int File::get_index(char *index_path)
 
 int File::start_audio_thread(int64_t buffer_size, int ring_buffers)
 {
-	audio_thread = new FileThread(this, 1, 0);
-	audio_thread->start_writing(buffer_size, 0, ring_buffers, 0);
+	if(!audio_thread)
+	{
+		audio_thread = new FileThread(this, 1, 0);
+		audio_thread->start_writing(buffer_size, 0, ring_buffers, 0);
+	}
 	return 0;
 }
 
@@ -623,12 +626,26 @@ int File::start_video_thread(int64_t buffer_size,
 	int ring_buffers, 
 	int compressed)
 {
-	video_thread = new FileThread(this, 0, 1);
-	video_thread->start_writing(buffer_size, 
-		color_model, 
-		ring_buffers, 
-		compressed);
+	if(!video_thread)
+	{
+		video_thread = new FileThread(this, 0, 1);
+		video_thread->start_writing(buffer_size, 
+			color_model, 
+			ring_buffers, 
+			compressed);
+	}
 	return 0;
+}
+
+int File::start_video_decode_thread()
+{
+// Currently, CR2 is the only one which won't work asynchronously, so
+// we're not using a virtual function yet.
+	if(!video_thread && asset->format != FILE_CR2)
+	{
+		video_thread = new FileThread(this, 0, 1);
+		video_thread->start_reading();
+	}
 }
 
 int File::stop_audio_thread()
@@ -646,6 +663,7 @@ int File::stop_video_thread()
 {
 	if(video_thread)
 	{
+		video_thread->stop_reading();
 		video_thread->stop_writing();
 		delete video_thread;
 		video_thread = 0;
@@ -653,16 +671,9 @@ int File::stop_video_thread()
 	return 0;
 }
 
-int File::lock_read()
+FileThread* File::get_video_thread()
 {
-//	read_lock.lock();
-	return 0;
-}
-
-int File::unlock_read()
-{
-//	read_lock.unlock();
-	return 0;
+	return video_thread;
 }
 
 int File::set_channel(int channel) 
@@ -676,11 +687,18 @@ int File::set_channel(int channel)
 		return 1;
 }
 
-int File::set_layer(int layer) 
+int File::set_layer(int layer, int is_thread) 
 {
 	if(file && layer < asset->layers)
 	{
-		current_layer = layer;
+		if(!is_thread && video_thread)
+		{
+			video_thread->set_layer(layer);
+		}
+		else
+		{
+			current_layer = layer;
+		}
 		return 0; 
 	}
 	else
@@ -802,7 +820,7 @@ int File::set_audio_position(int64_t position, float base_samplerate)
 	return result;
 }
 
-int File::set_video_position(int64_t position, float base_framerate) 
+int File::set_video_position(int64_t position, float base_framerate, int is_thread) 
 {
 	int result = 0;
 	if(!file) return 0;
@@ -815,10 +833,19 @@ int File::set_video_position(int64_t position, float base_framerate)
 			0.5);
 
 
-	if(current_frame != position && file)
+	if(video_thread && !is_thread)
 	{
-		current_frame = position;
-		result = file->set_video_position(current_frame);
+// Call thread.  Thread calls this again to set the file state.
+		video_thread->set_video_position(position);
+	}
+	else
+	if(current_frame != position)
+	{
+		if(file)
+		{
+			current_frame = position;
+			result = file->set_video_position(current_frame);
+		}
 	}
 
 	return result;
@@ -1010,8 +1037,10 @@ int64_t File::compressed_frame_size()
 
 
 
-int File::read_frame(VFrame *frame)
+int File::read_frame(VFrame *frame, int is_thread)
 {
+	if(video_thread && !is_thread) return video_thread->read_frame(frame);
+
 	if(file)
 	{
 		int supported_colormodel = colormodel_supported(frame->get_color_model());
@@ -1021,6 +1050,7 @@ int File::read_frame(VFrame *frame)
 		if(use_cache &&
 			frame_cache->get_frame(frame,
 				current_frame,
+				current_layer,
 				asset->frame_rate))
 		{
 // Can't advance position if cache used.
@@ -1047,43 +1077,44 @@ int File::read_frame(VFrame *frame)
 			if(!temp_frame)
 			{
 				temp_frame = new VFrame(0,
-							asset->width,
-							asset->height,
-							supported_colormodel);
+					asset->width,
+					asset->height,
+					supported_colormodel);
 			}
-			
+
+			temp_frame->copy_stacks(frame);
 			file->read_frame(temp_frame);
-// FUTURE: convert from YUV planar if cmodel_is_planar(temp_frame)
 			cmodel_transfer(frame->get_rows(), 
-					temp_frame->get_rows(),
-					0,
-					0,
-					0,
-					0,
-					0,
-					0,
-					0, 
-					0, 
-					temp_frame->get_w(), 
-					temp_frame->get_h(),
-					0, 
-					0, 
-					frame->get_w(), 
-					frame->get_h(),
-					temp_frame->get_color_model(), 
-					frame->get_color_model(),
-					0,
-					temp_frame->get_w(),
-					frame->get_w());
+				temp_frame->get_rows(),
+				temp_frame->get_y(),
+				temp_frame->get_u(),
+				temp_frame->get_v(),
+				frame->get_y(),
+				frame->get_u(),
+				frame->get_v(),
+				0, 
+				0, 
+				temp_frame->get_w(), 
+				temp_frame->get_h(),
+				0, 
+				0, 
+				frame->get_w(), 
+				frame->get_h(),
+				temp_frame->get_color_model(), 
+				frame->get_color_model(),
+				0,
+				temp_frame->get_w(),
+				frame->get_w());
 		}
 		else
 		{
-			// Can't advance position here because it needs to be added to cache
+// Can't advance position here because it needs to be added to cache
 			file->read_frame(frame);
 		}
-		
+
 		if(use_cache) frame_cache->put_frame(frame,
 			current_frame,
+			current_layer,
 			asset->frame_rate,
 			1);
 // printf("File::read_frame\n");
@@ -1393,7 +1424,7 @@ int File::get_best_colormodel(Asset *asset, int driver)
 			return FileMOV::get_best_colormodel(asset, driver);
 			break;
 		
-        	case FILE_AVI:
+        case FILE_AVI:
 			return FileMOV::get_best_colormodel(asset, driver);
 			break;
 
@@ -1445,6 +1476,7 @@ int64_t File::get_memory_usage()
 	if(temp_frame) result += temp_frame->get_data_size();
 	if(file) result += file->get_memory_usage();
 	result += frame_cache->get_memory_usage();
+	if(video_thread) result += video_thread->get_memory_usage();
 
 	if(result < MIN_CACHEITEM_SIZE) result = MIN_CACHEITEM_SIZE;
 	return result;

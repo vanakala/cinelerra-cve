@@ -106,6 +106,10 @@ SET_TRACE
 	int use_vconsole = 1;
 	int use_brender = 0;
 	int result = 0;
+	int use_cache = renderengine->command->single_frame();
+	int use_asynchronous = 
+		renderengine->command->realtime && 
+		renderengine->edl->session->video_asynchronous;
 SET_TRACE
 
 // Determine the rendering strategy for this frame.
@@ -142,13 +146,15 @@ SET_TRACE
 					corrected_position--;
 
 // Cache single frames only
-				if(renderengine->command->single_frame())
-					file->set_cache_frames(1);
+				if(use_asynchronous)
+					file->start_video_decode_thread();
+				else
+					file->stop_video_thread();
+				if(use_cache) file->set_cache_frames(1);
 				file->set_video_position(corrected_position, 
 					renderengine->edl->session->frame_rate);
 				file->read_frame(video_out);
-				if(renderengine->command->single_frame())
-					file->set_cache_frames(0);
+				if(use_cache) file->set_cache_frames(0);
 				renderengine->get_vcache()->check_in(asset);
 			}
 SET_TRACE
@@ -161,8 +167,9 @@ SET_TRACE
 				renderengine->command->get_direction(),
 				renderengine->get_vcache(),
 				1,
-				renderengine->command->single_frame());
-						/* Insert timecode */
+				use_cache,
+				use_asynchronous);
+/* Insert timecode */
 			if(renderengine->show_tc)
 				insert_timecode(playable_edit,
 					input_position,

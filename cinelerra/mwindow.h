@@ -17,8 +17,10 @@
 #include "devicedvbinput.inc"
 #include "edit.inc"
 #include "edl.inc"
+#include "exportedl.inc"
 #include "filesystem.inc"
 #include "filexml.inc"
+#include "framecache.inc"
 #include "gwindow.inc"
 #include "levelwindow.inc"
 #include "loadmode.inc"
@@ -58,8 +60,7 @@
 #include "transportque.inc"
 #include "videowindow.inc"
 #include "vwindow.inc"
-#include "bcwindowbase.inc"
-#include "exportedl.inc"
+#include "wavecache.inc"
 
 #include <stdint.h>
 
@@ -227,6 +228,13 @@ public:
 
 // ============================= editing commands ========================
 
+// Map each recordable audio track to the desired pattern
+	void map_audio(int pattern);
+	enum
+	{
+		AUDIO_5_1_TO_2,
+		AUDIO_1_TO_1
+	};
 	void add_audio_track_entry(int above, Track *dst);
 	int add_audio_track(int above, Track *dst);
 	void add_clip_to_edl(EDL *edl);
@@ -246,9 +254,10 @@ public:
 	void concatenate_tracks();
 	void copy();
 	int copy(double start, double end);
-	static int create_aspect_ratio(float &w, float &h, int width, int height);
 	void cut();
 
+// Calculate aspect ratio from pixel counts
+	static int create_aspect_ratio(float &w, float &h, int width, int height);
 // Calculate defaults path
 	static void create_defaults_path(char *string);
 
@@ -395,6 +404,10 @@ public:
 	Assets *assets;
 // CICaches for drawing timeline only
 	CICache *audio_cache, *video_cache;
+// Frame cache for drawing timeline only.
+// Cache drawing doesn't wait for file decoding.
+	FrameCache *frame_cache;
+	WaveCache *wave_cache;
 	Preferences *preferences;
 	PreferencesThread *preferences_thread;
 	MainSession *session;

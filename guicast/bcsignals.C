@@ -318,7 +318,7 @@ void BC_Signals::new_trace(char *text)
 	}
 	else
 	{
-	append_table(&execution_table, strdup(text));
+		append_table(&execution_table, strdup(text));
 	}
 	pthread_mutex_unlock(lock);
 }

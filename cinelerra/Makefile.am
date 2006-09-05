@@ -225,6 +225,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    resample.C \
 		    resizetrackthread.C \
 		    resourcepixmap.C \
+		    resourcethread.C \
 		    samplescroll.C \
 		    savefile.C \
 		    setformat.C \
@@ -285,6 +286,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    vtracking.C \
 		    vwindow.C \
 		    vwindowgui.C \
+		    wavecache.C \
 		    workarounds.C \
                     yuvstream.C \
 		    zoombar.C \
@@ -543,6 +545,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 resample.h \
 		 resizetrackthread.h \
 		 resourcepixmap.h \
+		 resourcethread.h \
 		 samplescroll.h \
 		 savefile.h \
 		 scale.h \
@@ -616,6 +619,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 vwindowgui.h \
 		 vwindow.h \
 		 workarounds.h \
+		 wavecache.h \
                  yuvstream.h \
 		 zoombar.h \
 		 zoompanel.h \

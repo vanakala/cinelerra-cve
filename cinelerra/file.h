@@ -89,8 +89,12 @@ public:
 		int ring_buffers, 
 		int compressed);
 	int stop_video_thread();
-	int lock_read();
-	int unlock_read();
+
+	int start_video_decode_thread();
+
+// Return the thread.
+// Used by functions that read only.
+	FileThread* get_video_thread();
 
 // write any headers and close file
 // ignore_thread is used by SigHandler to break out of the threads.
@@ -147,12 +151,15 @@ public:
 
 
 // set layer for video read
-	int set_layer(int layer);
+// is_thread is used by FileThread::run to prevent recursive lockup.
+	int set_layer(int layer, int is_thread = 0);
 // set position in frames
-	int set_video_position(int64_t position, float base_framerate);
+// is_thread is used by FileThread::run to prevent recursive lockup.
+	int set_video_position(int64_t position, float base_framerate = -1, int is_thread = 0);
 
 // Read frame of video into the argument
-	int read_frame(VFrame *frame);
+// is_thread is used by FileThread::run to prevent recursive lockup.
+	int read_frame(VFrame *frame, int is_thread = 0);
 
 
 // The following involve no extra copies.

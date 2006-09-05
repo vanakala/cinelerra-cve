@@ -109,13 +109,20 @@ void MainCursor::draw(int do_plugintoggles)
 // Draw the cursor in a new location
 void MainCursor::update()
 {
+	int64_t old_pixel1 = pixel1;
+	int64_t old_pixel2 = pixel2;
+
 	if(visible)
 	{
 		hide(0);
-		flash();
 	}
 
 	show(1);
+	if(old_pixel1 != pixel1 || old_pixel2 != pixel2)
+		gui->canvas->flash(old_pixel1, 
+			0, 
+			old_pixel2 - old_pixel1 + 1, 
+			gui->canvas->get_h());
 	flash();
 }
 

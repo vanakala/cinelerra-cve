@@ -24,7 +24,8 @@ public:
 			int direction,
 			CICache *cache,
 			int use_nudge,
-			int use_cache);
+			int use_cache,
+			int use_asynchronous);
 	
 	
 	

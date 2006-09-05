@@ -34,6 +34,9 @@ class VideoDevice;
 #define PLAYBACK_FIREWIRE 13
 #define PLAYBACK_DV1394   15
 #define PLAYBACK_IEC61883   16
+// This is passed to File::get_best_colormodel by FileThread so FileThread can
+// do the colorspace conversion using the shortest path.
+#define PLAYBACK_ASYNCHRONOUS 18
 
 #define PLAYBACK_X11_TITLE  	"X11"
 #define PLAYBACK_X11_XV_TITLE   "X11-XV"

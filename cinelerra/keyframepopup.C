@@ -40,7 +40,7 @@ KeyframePopup::~KeyframePopup()
 
 void KeyframePopup::create_objects()
 {
-	add_item(key_show = new KeyframePopupShow(mwindow, this));
+//	add_item(key_show = new KeyframePopupShow(mwindow, this));
 	add_item(key_delete = new KeyframePopupDelete(mwindow, this));
 	add_item(key_copy = new KeyframePopupCopy(mwindow, this));
 }

@@ -614,15 +614,15 @@ int FileMPEG::create_index()
 // Reopen file from index path instead of asset path.
 	if(!fd)
 	{
-	if(!(fd = mpeg3_open(index_filename, &error)))
-	{
-		return 1;
-	}
-	else
+		if(!(fd = mpeg3_open(index_filename, &error)))
+		{
+			return 1;
+		}
+		else
 			return 0;
 	}
 
-		return 0;
+	return 0;
 }
 
 
@@ -714,6 +714,7 @@ int FileMPEG::get_best_colormodel(Asset *asset, int driver)
 			if(asset->vmpeg_cmodel == MPEG_YUV422) return BC_YUV422P;
 			break;
 		case PLAYBACK_X11_XV:
+		case PLAYBACK_ASYNCHRONOUS:
 			if(asset->vmpeg_cmodel == MPEG_YUV420) return BC_YUV420P;
 			if(asset->vmpeg_cmodel == MPEG_YUV422) return BC_YUV422P;
 			break;

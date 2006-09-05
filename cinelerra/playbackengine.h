@@ -18,7 +18,6 @@
 #include "thread.h"
 #include "bctimer.h"
 #include "transportque.inc"
-#include "videodevice.inc"
 
 class PlaybackEngine : public Thread
 {

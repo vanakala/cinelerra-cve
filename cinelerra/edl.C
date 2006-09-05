@@ -379,26 +379,26 @@ void EDL::copy_assets(EDL *edl)
 void EDL::copy_session(EDL *edl, int session_only)
 {
 	if(!session_only)
-{
-	strcpy(this->project_path, edl->project_path);
-
-	folders.remove_all_objects();
-	for(int i = 0; i < edl->folders.total; i++)
 	{
-		char *new_folder;
-		folders.append(new_folder = new char[strlen(edl->folders.values[i]) + 1]);
-		strcpy(new_folder, edl->folders.values[i]);
-	}
+		strcpy(this->project_path, edl->project_path);
+
+		folders.remove_all_objects();
+		for(int i = 0; i < edl->folders.total; i++)
+		{
+			char *new_folder;
+			folders.append(new_folder = new char[strlen(edl->folders.values[i]) + 1]);
+			strcpy(new_folder, edl->folders.values[i]);
+		}
 	}
 
 	if(!parent_edl)
 	{
 		session->copy(edl->session);
 	}
-	
+
 	if(!session_only)
 	{
-	local_session->copy_from(edl->local_session);
+		local_session->copy_from(edl->local_session);
 	}
 }
 
@@ -530,12 +530,12 @@ int EDL::copy(double start,
 // Don't replicate all assets for every clip.
 // The assets for the clips are probably in the mane EDL.
 		if(!is_clip)
-		copy_assets(start, 
-			end, 
-			file, 
-			all, 
-			plugindb,
-			output_path);
+			copy_assets(start, 
+				end, 
+				file, 
+				all, 
+				plugindb,
+				output_path);
 
 // Clips
 // Don't want this if using clipboard

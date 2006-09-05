@@ -334,6 +334,22 @@ public:
 	MWindow *mwindow;
 };
 
+class MapAudio1 : public BC_MenuItem
+{
+public:
+	MapAudio1(MWindow *mwindow);
+	int handle_event();
+	MWindow *mwindow;
+};
+
+class MapAudio2 : public BC_MenuItem
+{
+public:
+	MapAudio2(MWindow *mwindow);
+	int handle_event();
+	MWindow *mwindow;
+};
+
 // ========================================== video
 
 

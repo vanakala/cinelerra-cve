@@ -85,6 +85,7 @@ int EDLSession::need_rerender(EDLSession *ptr)
 	return (playback_preload != ptr->playback_preload) ||
 		(interpolation_type != ptr->interpolation_type) ||
 		(video_every_frame != ptr->video_every_frame) ||
+		(video_asynchronous != ptr->video_asynchronous) ||
 		(real_time_playback != ptr->real_time_playback) ||
 		(playback_software_position != ptr->playback_software_position) ||
 		(test_playback_edits != ptr->test_playback_edits) ||
@@ -243,7 +244,8 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 		vchannel_y[i] = defaults->get(string, 0);
 	}
 	video_channels = defaults->get("VCHANNELS", 1);
-	video_every_frame = defaults->get("VIDEO_EVERY_FRAME", 0);
+	video_every_frame = defaults->get("VIDEO_EVERY_FRAME", 1);
+	video_asynchronous = defaults->get("VIDEO_ASYNCHRONOUS", 0);
 	video_tracks = defaults->get("VTRACKS", 1);
 	video_write_length = defaults->get("VIDEO_WRITE_LENGTH", 30);
 	view_follows_playback = defaults->get("VIEW_FOLLOWS_PLAYBACK", 1);
@@ -372,6 +374,7 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 	}
 	defaults->update("VCHANNELS", video_channels);
     defaults->update("VIDEO_EVERY_FRAME", video_every_frame);
+    defaults->update("VIDEO_ASYNCHRONOUS", video_asynchronous);
 	defaults->update("VTRACKS", video_tracks);
 	defaults->update("VIDEO_WRITE_LENGTH", video_write_length);
     defaults->update("VIEW_FOLLOWS_PLAYBACK", view_follows_playback);
@@ -773,6 +776,7 @@ int EDLSession::copy(EDLSession *session)
 	video_channels = session->video_channels;
 	*vconfig_in = *session->vconfig_in;
 	video_every_frame = session->video_every_frame;
+	video_asynchronous = session->video_asynchronous;
 	video_tracks = session->video_tracks;
 	video_write_length = session->video_write_length;	
 	view_follows_playback = session->view_follows_playback;

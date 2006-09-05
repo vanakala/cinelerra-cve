@@ -145,8 +145,18 @@ int VModule::import_frame(VFrame *output,
 			// if we hit the end of stream, freeze at last frame
 			uint64_t max_position = source->get_video_length(frame_rate) - 1;
 			if (position > max_position) position = max_position;
-			source->set_video_position(position,
-				frame_rate);
+			int use_cache = renderengine && 
+				renderengine->command->single_frame();
+			int use_asynchronous = !use_cache && 
+				renderengine->command->realtime &&
+				renderengine->edl->session->video_asynchronous;
+
+			if(use_asynchronous)
+				source->start_video_decode_thread();
+			else
+				source->stop_video_thread();
+
+			source->set_video_position(position, frame_rate);
 			source->set_layer(current_edit->channel);
 
 			((VTrack*)track)->calculate_input_transfer(current_edit->asset, 
@@ -252,11 +262,9 @@ int VModule::import_frame(VFrame *output,
 
 // file -> temp
 // Cache for single frame only
-//				if(renderengine && renderengine->command->single_frame())
-					source->set_cache_frames(1);
+				if(use_cache) source->set_cache_frames(1);
 				result = source->read_frame((*input));
-//				if(renderengine && renderengine->command->single_frame())
-					source->set_cache_frames(0);
+				if(use_cache) source->set_cache_frames(0);
 				(*input)->set_opengl_state(VFrame::RAM);
 
 //printf("VModule::import_frame 1 %lld %f\n", input_position, frame_rate);
@@ -350,11 +358,9 @@ int VModule::import_frame(VFrame *output,
 // file -> output
 			{
 // Cache single frames only
-//				if(renderengine && renderengine->command->single_frame())
-					source->set_cache_frames(1);
+				if(use_cache) source->set_cache_frames(1);
 				result = source->read_frame(output);
-//				if(renderengine && renderengine->command->single_frame())
-					source->set_cache_frames(0);
+				if(use_cache) source->set_cache_frames(0);
 				output->set_opengl_state(VFrame::RAM);
 			}
 
@@ -443,7 +449,7 @@ int VModule::render(VFrame *output,
 
 
 // Process transition
-	if(transition)
+	if(transition && transition->on)
 	{
 
 // Get temporary buffer

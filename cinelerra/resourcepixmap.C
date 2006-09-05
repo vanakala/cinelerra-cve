@@ -16,12 +16,14 @@
 #include "language.h"
 #include "localsession.h"
 #include "mwindow.h"
+#include "resourcethread.h"
 #include "resourcepixmap.h"
 #include "theme.h"
 #include "track.h"
 #include "trackcanvas.h"
 #include "vedit.h"
 #include "vframe.h"
+#include "wavecache.h"
 
 
 ResourcePixmap::ResourcePixmap(MWindow *mwindow, 
@@ -76,7 +78,7 @@ void ResourcePixmap::draw_data(Edit *edit,
 	int64_t pixmap_x, 
 	int64_t pixmap_w,
 	int64_t pixmap_h,
-	int force,
+	int mode,
 	int indexes_only)
 {
 // Get new areas to fill in relative to pixmap
@@ -84,7 +86,8 @@ void ResourcePixmap::draw_data(Edit *edit,
 	int refresh_x = 0;
 	int refresh_w = 0;
 
-
+// Ignore if called by resourcethread.
+	if(mode == 3) return;
 
 	int y = 0;
 	if(mwindow->edl->session->show_titles) y += mwindow->theme->get_image("title_bg_data")->get_h();
@@ -123,10 +126,11 @@ void ResourcePixmap::draw_data(Edit *edit,
 
 // Redraw everything
 	if(edit->startsource != this->startsource ||
-		(data_type == TRACK_AUDIO && 
-			edit->asset->sample_rate != source_samplerate) ||
-		(data_type == TRACK_VIDEO && 
-			!EQUIV(edit->asset->frame_rate, source_framerate)) ||
+/* Incremental drawing is not possible with resource thread */
+		(data_type == TRACK_AUDIO /* && 
+			edit->asset->sample_rate != source_samplerate*/ ) ||
+		(data_type == TRACK_VIDEO /* && 
+			!EQUIV(edit->asset->frame_rate, source_framerate) */ ) ||
 		mwindow->edl->session->sample_rate != project_samplerate ||
 		mwindow->edl->session->frame_rate != project_framerate ||
 		mwindow->edl->local_session->zoom_sample != zoom_sample || 
@@ -134,7 +138,7 @@ void ResourcePixmap::draw_data(Edit *edit,
 		this->pixmap_h != pixmap_h ||
 		(data_type == TRACK_AUDIO && 
 			mwindow->edl->local_session->zoom_y != zoom_y) ||
-		force ||
+		(mode == 2) ||
 		need_redraw)
 	{
 // Shouldn't draw at all if zoomed in below index zoom.
@@ -355,7 +359,8 @@ void ResourcePixmap::draw_data(Edit *edit,
 					pixmap_x,
 					pixmap_w,
 					refresh_x, 
-					refresh_w);
+					refresh_w,
+					mode);
 				break;
 		}
 	}
@@ -436,10 +441,10 @@ void ResourcePixmap::draw_audio_resource(Edit *edit, int x, int w)
 		case INDEX_NOTTESTED:
 			return;
 			break;
-// Disabled.  Always draw from index.
-		case INDEX_TOOSMALL:
-			draw_audio_source(edit, x, w);
-			break;
+// Disabled.  All files have an index.
+//		case INDEX_TOOSMALL:
+//			draw_audio_source(edit, x, w);
+//			break;
 		case INDEX_BUILDING:
 		case INDEX_READY:
 		{
@@ -490,7 +495,6 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 	}
 
 	w++;
-	int source_start = (pixmap_x - edit_x + x) * mwindow->edl->local_session->zoom_sample + edit->startsource;
 	double asset_over_session = (double)edit->asset->sample_rate / 
 		mwindow->edl->session->sample_rate;
 	int source_len = w * mwindow->edl->local_session->zoom_sample;
@@ -500,13 +504,15 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 // Single sample zoom
 	if(mwindow->edl->local_session->zoom_sample == 1)
 	{
+		int64_t source_start = (int64_t)(((pixmap_x - edit_x + x) * 
+			mwindow->edl->local_session->zoom_sample + edit->startsource) *
+			asset_over_session);
 		double oldsample, newsample;
 		int total_source_samples = (int)((double)(source_len + 1) * 
 			asset_over_session);
 		double *buffer = new double[total_source_samples];
 
-		source->set_audio_position((int)((double)source_start *
-				asset_over_session), 
+		source->set_audio_position(source_start, 
 			edit->asset->sample_rate);
 		source->set_channel(edit->channel);
 		canvas->set_color(mwindow->theme->audio_color);
@@ -536,146 +542,92 @@ void ResourcePixmap::draw_audio_source(Edit *edit, int x, int w)
 	else
 // Multiple sample zoom
 	{
-		int fragmentsize;
-		int buffersize = fragmentsize = 65536;
-		double *buffer = new double[buffersize + 1];
-		double highsample, lowsample;
-		float sample_of_pixel = 0;
-		int total_source_samples = (int)(source_len * 
-			asset_over_session);
-		double asset_samples_per_pixel = 
-			mwindow->edl->local_session->zoom_sample *
-			asset_over_session;
 		int first_pixel = 1;
 		int prev_y1 = -1;
 		int prev_y2 = -1;
 		int y1;
 		int y2;
-		double x_double = x;
 
-		source->set_audio_position((int)(source_start * asset_over_session), 
-			edit->asset->sample_rate);
-		source->set_channel(edit->channel);
 		canvas->set_color(mwindow->theme->audio_color);
-
-		for(int source_sample = 0; 
-			source_sample < total_source_samples; 
-			source_sample += buffersize)
+// Draw each pixel from the cache
+		while(x < w)
 		{
-			fragmentsize = buffersize;
-			if(total_source_samples - source_sample < buffersize)
-				fragmentsize = total_source_samples - source_sample;
-
-			if(source_sample == 0)
+// Starting sample of pixel relative to asset rate.
+			int64_t source_start = (int64_t)(((pixmap_x - edit_x + x) * 
+				mwindow->edl->local_session->zoom_sample + edit->startsource) *
+				asset_over_session);
+			int64_t source_end = (int64_t)(((pixmap_x - edit_x + x + 1) * 
+				mwindow->edl->local_session->zoom_sample + edit->startsource) *
+				asset_over_session);
+			WaveCacheItem *item = mwindow->wave_cache->get_wave(edit->asset->id,
+					edit->channel,
+					source_start,
+					source_end);
+			if(item)
 			{
-				highsample = buffer[0];
-				lowsample = buffer[0];
-			}
-
-			if(!source->read_samples(buffer, 
-				fragmentsize, 
-				edit->asset->sample_rate))
-			{
-
-
-// Draw samples for this buffer
-				for(int bufferposition = 0; 
-					bufferposition < fragmentsize; 
-					bufferposition++)
+				y1 = (int)(center_pixel - 
+					item->low * mwindow->edl->local_session->zoom_y / 2);
+				y2 = (int)(center_pixel - 
+					item->high * mwindow->edl->local_session->zoom_y / 2);
+				if(first_pixel)
 				{
-// Replicate
-					if(asset_samples_per_pixel < 1)
-					{
-						int x1 = (int)x_double;
-						x_double += (double)1 / asset_samples_per_pixel;
-						int x2 = (int)x_double;
-
-						y1 = (int)(center_pixel - 
-								buffer[bufferposition] * 
-								mwindow->edl->local_session->zoom_y / 
-								2);
-						if(first_pixel)
-						{
-							canvas->draw_line(x1, 
-								y1,
-								x2,
-								y1,
-								this);
-							first_pixel = 0;
-						}
-						else
-							canvas->draw_line(x1, 
-								prev_y1,
-								x2,
-								y1,
-								this);
-						prev_y1 = y1;
-					}
-					else
-					if(asset_samples_per_pixel >= 1 &&
-						sample_of_pixel >= asset_samples_per_pixel)
-					{
-// Draw column and reset
-						y1 = (int)(center_pixel - 
-							highsample * 
-							mwindow->edl->local_session->zoom_y / 
-							2);
-						y2 = (int)(center_pixel - 
-							lowsample * 
-							mwindow->edl->local_session->zoom_y / 
-							2);
-
-						int current_y1;
-						int current_y2;
-						if(first_pixel)
-						{
-							canvas->draw_line(x, 
-								y1,
-								x,
-								y2,
-								this);
-							first_pixel = 0;
-						}
-						else
-							canvas->draw_line(x, 
-								MIN(y1, prev_y2),
-								x,
-								MAX(y2, prev_y1),
-								this);
-						sample_of_pixel -= asset_samples_per_pixel;
-						x++;
-						lowsample = highsample = buffer[bufferposition];
-						prev_y1 = y1;
-						prev_y2 = y2;
-					}
-
-					if(sample_of_pixel >= 1)
-					{
-// update lowsample and highsample
-						if(buffer[bufferposition] < lowsample) 
-							lowsample = buffer[bufferposition];
-						else 
-						if(buffer[bufferposition] > highsample) 
-							highsample = buffer[bufferposition];
-					}
-
-
-					sample_of_pixel++;
+					canvas->draw_line(x, 
+						y1,
+						x,
+						y2,
+						this);
+					first_pixel = 0;
 				}
-
-
-
-
-
+				else
+					canvas->draw_line(x, 
+						MIN(y1, prev_y2),
+						x,
+						MAX(y2, prev_y1),
+						this);
+				prev_y1 = y1;
+				prev_y2 = y2;
+				first_pixel = 0;
+				mwindow->wave_cache->unlock();
+			}
+			else
+			{
+				first_pixel = 1;
+				canvas->resource_thread->add_wave(this,
+					edit->asset,
+					x,
+					edit->channel,
+					source_start,
+					source_end);
 			}
 
-
-			canvas->test_timer();
+			x++;
 		}
-		delete [] buffer;
 	}
 
 	mwindow->audio_cache->check_in(edit->asset);
+}
+
+
+
+void ResourcePixmap::draw_wave(int x, double high, double low)
+{
+	int top_pixel = 0;
+	if(mwindow->edl->session->show_titles) 
+		top_pixel = mwindow->theme->get_image("title_bg_data")->get_h();
+	int center_pixel = mwindow->edl->local_session->zoom_track / 2 + top_pixel;
+	int bottom_pixel = top_pixel + mwindow->edl->local_session->zoom_track;
+	int y1 = (int)(center_pixel - 
+		low * mwindow->edl->local_session->zoom_y / 2);
+	int y2 = (int)(center_pixel - 
+		high * mwindow->edl->local_session->zoom_y / 2);
+	CLAMP(y1, top_pixel, bottom_pixel);
+	CLAMP(y2, top_pixel, bottom_pixel);
+	canvas->set_color(mwindow->theme->audio_color);
+	canvas->draw_line(x, 
+		y1,
+		x,
+		y2,
+		this);
 }
 
 
@@ -703,7 +655,8 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 	int64_t pixmap_x,
 	int64_t pixmap_w,
 	int refresh_x, 
-	int refresh_w)
+	int refresh_w,
+	int mode)
 {
 // pixels spanned by a picon
 	int64_t picon_w = Units::round(edit->picon_w());
@@ -731,100 +684,67 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 	if(frames_per_picon > 1)
 	{
 		int picon = Units::to_int64(
-			(double)(refresh_x + pixmap_x - edit_x) / 
+			(double)((int64_t)refresh_x + pixmap_x - edit_x) / 
 			picon_w);
 		x = picon_w * picon + edit_x - pixmap_x;
 		project_frame = Units::to_int64((double)picon * frames_per_picon);
 	}
 	else
 	{
-		project_frame = Units::to_int64((double)(refresh_x + pixmap_x - edit_x) / 
+		project_frame = Units::to_int64((double)((int64_t)refresh_x + pixmap_x - edit_x) / 
 			frame_w);
 		x = Units::round((double)project_frame * frame_w + edit_x - pixmap_x);
  	}
 
-	File *source = mwindow->video_cache->check_out(edit->asset, mwindow->edl);
-	if(!source) return;
 
+// Draw only cached frames
 	while(x < refresh_x + refresh_w)
 	{
 		int64_t source_frame = project_frame + edit->startsource;
-		source->set_layer(edit->channel);
-		source->set_video_position(source_frame, 
-			mwindow->edl->session->frame_rate);
-
-// Try displaying from source cache
-		FrameCache *frame_cache = source->get_frame_cache();
 		VFrame *picon_frame = 0;
 		int use_cache = 0;
 
-		if((picon_frame = frame_cache->get_frame_ptr(source_frame,
+		if((picon_frame = mwindow->frame_cache->get_frame_ptr(source_frame,
+			edit->channel,
 			mwindow->edl->session->frame_rate,
 			BC_RGB888,
 			picon_w,
-			picon_h)) != 0)
+			picon_h,
+			edit->asset->id)) != 0)
 		{
 			use_cache = 1;
 		}
 		else
-// Display from file and put in cache
 		{
-			if(canvas->temp_picon &&
-				(canvas->temp_picon->get_w() != edit->asset->width ||
-				canvas->temp_picon->get_h() != edit->asset->height))
+// Set picon thread to display from file
+			if(mode != 3)
 			{
-				delete canvas->temp_picon;
-				canvas->temp_picon = 0;
-			}
 
-			if(!canvas->temp_picon)
-			{
-				canvas->temp_picon = new VFrame(0, 
-					edit->asset->width, 
-					edit->asset->height, 
-					BC_RGB888);
+				canvas->resource_thread->add_picon(this, 
+					x, 
+					y, 
+					picon_w,
+					picon_h,
+					mwindow->edl->session->frame_rate,
+					source_frame,
+					edit->channel,
+					edit->asset);
 			}
-
-			source->read_frame(canvas->temp_picon);
-			picon_frame = new VFrame(0, picon_w, picon_h, BC_RGB888);
-			frame_cache->put_frame(picon_frame, 
-				source_frame,
-				mwindow->edl->session->frame_rate,
-				0);
-			cmodel_transfer(picon_frame->get_rows(),
-				canvas->temp_picon->get_rows(),
-				0,
-				0,
-				0,
-				0,
-				0,
-				0,
-				0,
-				0, 
-				canvas->temp_picon->get_w(),
-				canvas->temp_picon->get_h(),
-				0,
-				0,
-				picon_frame->get_w(), 
-				picon_frame->get_h(),
-				BC_RGB888,
-				BC_RGB888,
-				0,
-				canvas->temp_picon->get_bytes_per_line(),
-				picon_frame->get_bytes_per_line());
 		}
 
-		draw_vframe(picon_frame, 
-			x, 
-			y, 
-			picon_w, 
-			picon_h, 
-			0, 
-			0);
+		if(picon_frame)
+			draw_vframe(picon_frame, 
+				x, 
+				y, 
+				picon_w, 
+				picon_h, 
+				0, 
+				0);
 
 
+// Unlock the get_frame_ptr command
 		if(use_cache)
-			frame_cache->unlock();
+			mwindow->frame_cache->unlock();
 		
 		if(frames_per_picon > 1)
 		{
@@ -839,11 +759,6 @@ void ResourcePixmap::draw_video_resource(Edit *edit,
 
 
 		canvas->test_timer();
-	}
-
-	if(source)
-	{
-		mwindow->video_cache->check_in(edit->asset);
 	}
 }
 

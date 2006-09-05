@@ -8,6 +8,24 @@
 #include "vframe.inc"
 
 
+// This allows the file hander to write in the background without 
+// blocking the write commands.
+// Used for recording.
+
+
+// Container for read frames
+class FileThreadFrame
+{
+public:
+	FileThreadFrame();
+	~FileThreadFrame();
+
+// Frame position in native framerate
+	int64_t position;
+	int layer;
+	VFrame *frame;
+};
+
 class FileThread : public Thread
 {
 public:
@@ -35,6 +53,17 @@ public:
 
 
 
+// ================================ reading section ============================
+// Allocate buffers and start loop for reading
+	int start_reading();
+	int stop_reading();
+
+	int read_frame(VFrame *frame);
+// Set native framerate.
+// Called by File::set_video_position.
+	int set_video_position(int64_t position);
+	int set_layer(int layer);
+	int read_buffer();
 	int64_t get_memory_usage();
 
 // write data into next available buffer
@@ -69,8 +98,37 @@ public:
 	int color_model;
 // Whether to use the compressed data in the frame
 	int compressed;
+
+// Mode of operation
+	int is_reading;
+	int is_writing;
+	int done;
+
+// For the reading mode, the thread reads continuously from the given
+// point until stopped.
+// Maximum frames to preload
+#define MAX_READ_FRAMES 4
+// Total number of frames preloaded
+	int total_frames;
+// Allocated frames
+	FileThreadFrame *read_frames[MAX_READ_FRAMES];
+// If the seeking pattern isn't optimal for asynchronous reading, this is
+// set to 1 to stop reading.
+	int disable_read;
+// Thread waits on this if the maximum frames have been read.
+	Condition *read_wait_lock;
+// read_frame waits on this if the thread is running.
+	Condition *user_wait_lock;
 // Lock access to read_frames
 	Mutex *frame_lock;
+// Position of first frame in read_frames.
+// Set by set_video_position and read_frame only.
+// Position is in native framerate.
+	int64_t start_position;
+// Position to read next frame from
+	int64_t read_position;
+// Last layer a frame was read from
+	int layer;
 };
 
 

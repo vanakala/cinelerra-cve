@@ -33,6 +33,7 @@
 #include "patchbay.h"
 #include "tracking.h"
 #include "panautos.h"
+#include "resourcethread.h"
 #include "playbackengine.h"
 #include "playtransport.h"
 #include "plugin.h"
@@ -81,6 +82,7 @@ TrackCanvas::TrackCanvas(MWindow *mwindow, MWindowGUI *gui)
 	temp_picon = 0;
 	resource_timer = new Timer;
 	hourglass_enabled = 0;
+	resource_thread = new ResourceThread(mwindow);
 }
 
 TrackCanvas::~TrackCanvas()
@@ -111,6 +113,7 @@ int TrackCanvas::create_objects()
 	pankeyframe_pixmap = new BC_Pixmap(this, mwindow->theme->pankeyframe_data, PIXMAP_ALPHA);
 	projectorkeyframe_pixmap = new BC_Pixmap(this, mwindow->theme->projectorkeyframe_data, PIXMAP_ALPHA);
 	maskkeyframe_pixmap = new BC_Pixmap(this, mwindow->theme->maskkeyframe_data, PIXMAP_ALPHA);
+	resource_thread->create_objects();
 	draw();
 	update_cursor();
 	flash();
@@ -757,7 +760,7 @@ int64_t TrackCanvas::get_drop_position (int *is_insertion, Edit *moved_edit, int
 
 }
 
-void TrackCanvas::draw(int force, int hide_cursor)
+void TrackCanvas::draw(int mode, int hide_cursor)
 {
 // Swap pixmap layers
  	if(get_w() != background_pixmap->get_w() ||
@@ -771,7 +774,7 @@ void TrackCanvas::draw(int force, int hide_cursor)
 // Cursor doesn't redraw after editing when this isn't called.
 	if(gui->cursor && hide_cursor) gui->cursor->hide();
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h(), background_pixmap);
-	draw_resources(force);
+	draw_resources(mode);
 	draw_overlays();
 }
 
@@ -810,11 +813,14 @@ void TrackCanvas::draw_indexes(Asset *asset)
 	flush();
 }
 
-void TrackCanvas::draw_resources(int force, 
+void TrackCanvas::draw_resources(int mode, 
 	int indexes_only, 
 	Asset *index_asset)
 {
 	if(!mwindow->edl->session->show_assets) return;
+
+	if(mode != 3 && !indexes_only)
+		resource_thread->stop_draw(!indexes_only);
 
 	resource_timer->update();
 
@@ -823,7 +829,7 @@ void TrackCanvas::draw_resources(int force,
 		for(int i = 0; i < resource_pixmaps.total; i++)
 			resource_pixmaps.values[i]->visible--;
 
-	if(force)
+	if(mode == 2)
 		resource_pixmaps.remove_all_objects();
 
 
@@ -889,7 +895,7 @@ void TrackCanvas::draw_resources(int force,
 						pixmap_x, 
 						pixmap_w, 
 						pixmap_h, 
-						force,
+						mode,
 						indexes_only);
 // Resize it if it's smaller
 					if(pixmap_w < pixmap->pixmap_w ||
@@ -921,6 +927,9 @@ void TrackCanvas::draw_resources(int force,
 		stop_hourglass();
 		hourglass_enabled = 0;
 	}
+
+	if(mode != 3 && !indexes_only)
+		resource_thread->start_draw();
 }
 
 ResourcePixmap* TrackCanvas::create_pixmap(Edit *edit, 
@@ -1749,7 +1758,7 @@ void TrackCanvas::draw_plugins()
 							total_w,
 							mwindow->theme->get_image("plugin_bg_data"),
 							0);
-						set_color(WHITE);
+						set_color(get_resources()->default_text_color);
 						set_font(MEDIUMFONT_3D);
 						plugin->calculate_title(string, 0);
 
@@ -2096,7 +2105,7 @@ int TrackCanvas::do_keyframes(int cursor_x,
 							draw, 
 							buttonpress,
 							auto_pixmaps[i],
-							auto_keyframe);
+                            auto_keyframe);
 						break;
 
 					default:
@@ -2842,7 +2851,7 @@ int TrackCanvas::do_float_autos(Track *track,
 		int draw, 
 		int buttonpress,
 		int color,
-		Auto * &auto_instance)
+		Auto* &auto_instance)
 {
 	int result = 0;
 
@@ -3843,7 +3852,7 @@ int TrackCanvas::update_drag_pluginauto(int cursor_x, int cursor_y)
 		PluginAutos *pluginautos = (PluginAutos *)current->autos;
 		PluginSet *pluginset;
 		Plugin *plugin;
-		// figure out the correct pluginset & correct plugin 
+// figure out the correct pluginset & correct plugin 
 		int found = 0;
 		for(int i = 0; i < track->plugin_set.total; i++)
 		{
@@ -3886,7 +3895,7 @@ int TrackCanvas::update_drag_pluginauto(int cursor_x, int cursor_y)
 		if(!shift_down())
 		{
 			mwindow->edl->local_session->set_selectionstart(position_f);
-			mwindow->edl->local_session->set_selectionend(position_f);
+ 			mwindow->edl->local_session->set_selectionend(position_f);
 		}
 		else
 		if(position_f < center_f)
@@ -3999,10 +4008,14 @@ int TrackCanvas::cursor_motion_event()
 		case DRAG_PAN:
 		case DRAG_MASK:
 		case DRAG_MODE:
-		case DRAG_PLUGINKEY:
 			rerender = update_overlay = 
 				update_drag_pluginauto(get_cursor_x(), get_cursor_y());
 			break;
+
+ 		case DRAG_PLUGINKEY:
+ 			rerender = update_overlay = 
+ 				update_drag_pluginauto(get_cursor_x(), get_cursor_y());
+ 			break;
 
 		case SELECT_REGION:
 		{

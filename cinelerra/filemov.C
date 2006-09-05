@@ -247,6 +247,7 @@ void FileMOV::set_frame_start(int64_t offset)
 void FileMOV::asset_to_format()
 {
 	if(!fd) return;
+	char audio_codec[5];
 
 	fix_codecs(asset);
 
@@ -443,6 +444,7 @@ int FileMOV::get_best_colormodel(Asset *asset, int driver)
 			return BC_RGB888;
 			break;
 		case PLAYBACK_X11_XV:
+		case PLAYBACK_ASYNCHRONOUS:
 			if(match4(asset->vcodec, QUICKTIME_YUV420)) return BC_YUV420P;
 			if(match4(asset->vcodec, QUICKTIME_YUV422)) return BC_YUV422;
 			if(match4(asset->vcodec, QUICKTIME_2VUY)) return BC_YUV422;
@@ -499,8 +501,6 @@ int FileMOV::get_best_colormodel(Asset *asset, int driver)
 			if(!strncasecmp(asset->vcodec, QUICKTIME_YUV420, 4)) return BC_YUV422;
 			else
 			if(!strncasecmp(asset->vcodec, QUICKTIME_YUV422, 4)) return BC_YUV422;
-			else
-			if(!strncasecmp(asset->vcodec, QUICKTIME_2VUY, 4)) return BC_YUV422;
 			else
 			if(!strncasecmp(asset->vcodec, QUICKTIME_YUV411, 4)) return BC_YUV411P;
 			else

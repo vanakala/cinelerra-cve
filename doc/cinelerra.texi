@@ -3081,6 +3081,8 @@ attribute.
 * THE PATCHBAY::           Enabling different features on different tracks
 * NUDGING TRACKS::         Move entire tracks horizontally
 * PANNING TRACKS::         Changing the audio output channels
+* AUTOMATIC TRACK PANNING::  Panning tracks to common speaker arrangements
+* STANDARD AUDIO MAPPINGS::  Making audio panning that works on other players.
 * MANIPULATING TRACKS::    Moving whole tracks around
 * TWO SCREEN EDITING::     Using two video windows to edit
 * DRAG AND DROP EDITING::  Dragging objects to edit
@@ -3257,6 +3259,48 @@ speakers are used.
 
 
 
+@node AUTOMATIC TRACK PANNING
+@section AUTOMATIC TRACK PANNING
+
+
+Several convenience functions are provided for automatically setting
+the panning to several common standards.  They are listed in the
+@b{Audio} menu.  These functions only affect audio tracks with
+@b{recording} enabled.
+
+@b{Audio->Map 1:1} - This maps every track to its own channel and wraps
+around when all the channels are allocated.  It's most useful for
+making 2 tracks with 2 channels map to stereo and for making 6 tracks
+with 6 channels map to a 6 channel soundcard.
+
+@b{Audio->Map 5.1:2} - This maps 6 tracks to 2 channels.  The project
+should have 2 channels when using this function.  Go to
+@b{Settings->format} to set the output channels to 2.  This is most
+useful for downmixing 5.1 audio to stereo.
+
+
+
+
+
+@node STANDARD AUDIO MAPPINGS
+@section STANDARD AUDIO MAPPINGS
+
+Although Cinelerra lets you map any audio track to any speaker, there
+are standard mappings you should use to ensure the media can be played
+back elsewhere.  Also, most audio encoders require the audio tracks to
+be mapped to standard speaker numbers or they won't work.
+
+In the @b{channel position} widget @xref{SETTING PROJECT ATTRIBUTES},
+the channels are numbered to correspond to the output tracks they are
+rendered to.  For stereo, the source of channel 1 needs to be the left
+track and the source of channel 2 needs to be the right track.
+
+For 5.1 surround sound, the sources of the 6 channels need to be in the
+order of center, front left, front right, back left, back right, low
+frequency effects.  If the right tracks aren't mapped to the right
+speakers, most audio encoders won't encode the right information if
+they encode anything at all.  The low frequency effects track
+specifically can't store high frequencies in most cases.
 
 
 

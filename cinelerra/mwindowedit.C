@@ -32,6 +32,7 @@
 #include "mtimebar.h"
 #include "mwindowgui.h"
 #include "mwindow.h"
+#include "panauto.h"
 #include "patchbay.h"
 #include "playbackengine.h"
 #include "pluginset.h"
@@ -2148,4 +2149,79 @@ void MWindow::select_point(double position)
 }
 
 
+
+
+void MWindow::map_audio(int pattern)
+{
+	int current_channel = 0;
+	int current_track = 0;
+	for(Track *current = edl->tracks->first; current; current = NEXT)
+	{
+		if(current->data_type == TRACK_AUDIO && 
+			current->record)
+		{
+			Autos *pan_autos = current->automation->autos[AUTOMATION_PAN];
+			PanAuto *pan_auto = (PanAuto*)pan_autos->get_auto_for_editing(-1);
+
+			for(int i = 0; i < MAXCHANNELS; i++)
+			{
+				pan_auto->values[i] = 0.0;
+			}
+
+			if(pattern == MWindow::AUDIO_1_TO_1)
+			{
+				pan_auto->values[current_channel] = 1.0;
+			}
+			else
+			if(pattern == MWindow::AUDIO_5_1_TO_2)
+			{
+				switch(current_track)
+				{
+					case 0:
+						pan_auto->values[0] = 0.5;
+						pan_auto->values[1] = 0.5;
+						break;
+					case 1:
+						pan_auto->values[0] = 1;
+						break;
+					case 2:
+						pan_auto->values[1] = 1;
+						break;
+					case 3:
+						pan_auto->values[0] = 1;
+						break;
+					case 4:
+						pan_auto->values[1] = 1;
+						break;
+					case 5:
+						pan_auto->values[0] = 0.5;
+						pan_auto->values[1] = 0.5;
+						break;
+				}
+			}
+			
+			BC_Pan::calculate_stick_position(edl->session->audio_channels, 
+				edl->session->achannel_positions, 
+				pan_auto->values, 
+				MAX_PAN, 
+				PAN_RADIUS,
+				pan_auto->handle_x,
+				pan_auto->handle_y);
+		
+			current_channel++;
+			current_track++;
+			if(current_channel >= edl->session->audio_channels)
+				current_channel = 0;
+		}
+	}
+	undo->update_undo(_("map 1:1"), LOAD_AUTOMATION, 0);
+	sync_parameters(CHANGE_PARAMS);
+	gui->update(0,
+		1,
+		0,
+		0,
+		1,
+		0,
+		0);
+}
 

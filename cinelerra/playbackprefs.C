@@ -34,6 +34,7 @@ int PlaybackPrefs::create_objects()
 	int x, y, x2;
 	char string[BCTEXTLEN];
 	BC_PopupTextBox *popup;
+	BC_WindowBase *window;
 	BC_Resources *resources = BC_WindowBase::get_resources();
 
 	playback_config = pwindow->thread->edl->session->playback_config;
@@ -53,7 +54,7 @@ SET_TRACE
 
 
 	BC_Title *title1, *title2;
-	add_subwindow(title2 = new BC_Title(x, y, _("Samples to send to console at a time:"), MEDIUMFONT, resources->text_default));
+	add_subwindow(title2 = new BC_Title(x, y, _("Playback buffer size:"), MEDIUMFONT));
 	x2 = MAX(title2->get_w(), title2->get_w()) + 10;
 
 SET_TRACE
@@ -118,13 +119,15 @@ SET_TRACE
 	y += 30;
 
 SET_TRACE
-	add_subwindow(new VideoEveryFrame(pwindow, x, y));
+	add_subwindow(window = new VideoEveryFrame(pwindow, this, x, y));
 
 	add_subwindow(new BC_Title(x + 200, y + 5, _("Framerate achieved:")));
 	add_subwindow(framerate_title = new BC_Title(x + 350, y + 5, _("--"), MEDIUMFONT, RED));
 	draw_framerate();
+	y += window->get_h() + 5;
 
-	y += 35;
+	add_subwindow(asynchronous = new VideoAsynchronous(pwindow, x, y));
+	y += asynchronous->get_h() + 10;
 
 SET_TRACE
  	add_subwindow(new BC_Title(x, y, _("Scaling equation:")));
@@ -149,7 +152,7 @@ SET_TRACE
 
 SET_TRACE
 	y += 35;
-	add_subwindow(new BC_Title(x, y, _("Preload buffer for Quicktime:"), MEDIUMFONT, resources->text_default));
+	add_subwindow(new BC_Title(x, y, _("Preload buffer for Quicktime:"), MEDIUMFONT));
 	sprintf(string, "%d", pwindow->thread->edl->session->playback_preload);
 	PlaybackPreload *preload;
 	add_subwindow(preload = new PlaybackPreload(x + 210, y, pwindow, this, string));
@@ -487,15 +490,50 @@ int PlaybackWhiteBalanceRaw::handle_event()
 
 
 
-VideoEveryFrame::VideoEveryFrame(PreferencesWindow *pwindow, int x, int y)
+VideoAsynchronous::VideoAsynchronous(PreferencesWindow *pwindow, int x, int y)
+ : BC_CheckBox(x, 
+ 	y, 
+	pwindow->thread->edl->session->video_every_frame &&
+		pwindow->thread->edl->session->video_asynchronous, 
+	_("Decode frames asynchronously"))
+{
+	this->pwindow = pwindow;
+	if(!pwindow->thread->edl->session->video_every_frame)
+		disable();
+}
+
+int VideoAsynchronous::handle_event()
+{
+	pwindow->thread->edl->session->video_asynchronous = get_value();
+	return 1;
+}
+
+
+
+
+VideoEveryFrame::VideoEveryFrame(PreferencesWindow *pwindow, 
+	PlaybackPrefs *playback_prefs,
+	int x, 
+	int y)
  : BC_CheckBox(x, y, pwindow->thread->edl->session->video_every_frame, _("Play every frame"))
 {
 	this->pwindow = pwindow;
+	this->playback_prefs = playback_prefs;
 }
 
 int VideoEveryFrame::handle_event()
 {
 	pwindow->thread->edl->session->video_every_frame = get_value();
+	if(!pwindow->thread->edl->session->video_every_frame)
+	{
+		playback_prefs->asynchronous->update(0, 0);
+		playback_prefs->asynchronous->disable();
+	}
+	else
+	{
+		playback_prefs->asynchronous->update(pwindow->thread->edl->session->video_asynchronous, 0);
+		playback_prefs->asynchronous->enable();
+	}
 	return 1;
 }
 

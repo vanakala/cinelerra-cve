@@ -115,7 +115,7 @@ int PerformancePrefs::create_objects()
 		0,
 		1,
 		0,  // Select compressors to be offered
-		0, // Change captions for recording
+		0,  // Prompt for recording options
 		0,  // If nonzero, prompt for insertion strategy
 		1); // Supply file formats for background rendering
 	x = xmargin1;
@@ -365,6 +365,7 @@ PrefsRenderPreroll::PrefsRenderPreroll(PreferencesWindow *pwindow,
 	100)
 {
 	this->pwindow = pwindow;
+	set_increment(0.1);
 }
 PrefsRenderPreroll::~PrefsRenderPreroll()
 {

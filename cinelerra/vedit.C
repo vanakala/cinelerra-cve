@@ -44,7 +44,8 @@ int VEdit::read_frame(VFrame *video_out,
 	int direction,
 	CICache *cache,
 	int use_nudge,
-	int use_cache)
+	int use_cache,
+	int use_asynchronous)
 {
 	File *file = cache->check_out(asset,
 		edl);
@@ -56,13 +57,16 @@ int VEdit::read_frame(VFrame *video_out,
 
 		input_position = (direction == PLAY_FORWARD) ? input_position : (input_position - 1);
 
+		if(use_asynchronous)
+			file->start_video_decode_thread();
+		else
+			file->stop_video_thread();
+
 		file->set_layer(channel);
-
 		file->set_video_position(input_position - startproject + startsource, edl->session->frame_rate);
-
-		file->set_cache_frames(use_cache);
+		if(use_cache) file->set_cache_frames(use_cache);
 		result = file->read_frame(video_out);
-		file->set_cache_frames(0);
+		if(use_cache) file->set_cache_frames(0);
 
 		cache->check_in(asset);
 	}

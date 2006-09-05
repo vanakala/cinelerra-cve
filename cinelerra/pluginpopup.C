@@ -196,6 +196,7 @@ PluginPopupOn::~PluginPopupOn()
 int PluginPopupOn::handle_event()
 {
 	popup->plugin->on = !get_checked();
+	mwindow->gui->update(0, 1, 0, 0, 0, 0, 0);
 	mwindow->restart_brender();
 	mwindow->sync_parameters(CHANGE_EDL);
 	return 1;

@@ -182,7 +182,7 @@ public:
 	SetFormatThread *thread;
 	SetFormatWindow *gui;
 };
-	
+
 class SetFormatWindow : public BC_Window
 {
 public:

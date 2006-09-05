@@ -423,7 +423,7 @@ void SetFormatWindow::create_objects()
 		this, 
 		x + pulldown->get_w() + 5,
 		y - mwindow->theme->setformat_margin));
-
+		
 	y += mwindow->theme->setformat_margin;
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x3, 
 		y, 

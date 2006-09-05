@@ -43,7 +43,7 @@ int Quit::handle_event()
 	{        // quit
 		mwindow->gui->unlock_window();
 		mwindow->interrupt_indexes();
-		mwindow->gui->set_done(0);
+//		mwindow->gui->set_done(0);
 //		BC_WindowBase::get_resources()->synchronous->quit();
 		mwindow->playback_3d->quit();
 		mwindow->gui->lock_window();
@@ -97,7 +97,7 @@ void Quit::run()
 			{
 				mwindow->interrupt_indexes();
 // Last command in program
-				mwindow->gui->set_done(0);
+//				mwindow->gui->set_done(0);
 //				BC_WindowBase::get_resources()->synchronous->quit();
 				mwindow->playback_3d->quit();
 			}
