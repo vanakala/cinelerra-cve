@@ -74,6 +74,7 @@ public:
 	void raise_window();
 	int set_string();
 	int load_configuration();
+	int handle_opengl();
 
 	InvertVideoConfig config;
 	InvertVideoThread *thread;
@@ -307,11 +308,17 @@ int InvertVideoEffect::process_buffer(VFrame *frame,
 	read_frame(frame, 
 		0, 
 		start_position, 
-		frame_rate);
+		frame_rate,
+		get_use_opengl());
 
 
 	if(config.r || config.g || config.b || config.a)
 	{
+		if(get_use_opengl())
+		{
+			run_opengl();
+			return 0;
+		}
 		int w = frame->get_w();
 
 		switch(frame->get_color_model())
@@ -342,6 +349,47 @@ int InvertVideoEffect::process_buffer(VFrame *frame,
 	}
 
 	return 0;
+}
+
+int InvertVideoEffect::handle_opengl()
+{
+#ifdef HAVE_GL
+	static char *invert_frag = 
+		"uniform sampler2D tex;\n"
+		"uniform bool do_r;\n"
+		"uniform bool do_g;\n"
+		"uniform bool do_b;\n"
+		"uniform bool do_a;\n"
+		"void main()\n"
+		"{\n"
+		"	gl_FragColor = texture2D(tex, gl_TexCoord[0].st);\n"
+		"	if(do_r) gl_FragColor.r = 1.0 - gl_FragColor.r;\n"
+		"	if(do_g) gl_FragColor.g = 1.0 - gl_FragColor.g;\n"
+		"	if(do_b) gl_FragColor.b = 1.0 - gl_FragColor.b;\n"
+		"	if(do_a) gl_FragColor.a = 1.0 - gl_FragColor.a;\n"
+		"}\n";
+
+	get_output()->to_texture();
+	get_output()->enable_opengl();
+
+	unsigned int frag_shader = 0;
+	frag_shader = VFrame::make_shader(0,
+		invert_frag,
+		0);
+	glUseProgram(frag_shader);
+	glUniform1i(glGetUniformLocation(frag_shader, "tex"), 0);
+	glUniform1i(glGetUniformLocation(frag_shader, "do_r"), config.r);
+	glUniform1i(glGetUniformLocation(frag_shader, "do_g"), config.g);
+	glUniform1i(glGetUniformLocation(frag_shader, "do_b"), config.b);
+	glUniform1i(glGetUniformLocation(frag_shader, "do_a"), config.a);
+
+
+	VFrame::init_screen(get_output()->get_w(), get_output()->get_h());
+	get_output()->bind_texture(0);
+	get_output()->draw_texture();
+	glUseProgram(0);
+	get_output()->set_opengl_state(VFrame::SCREEN);
+#endif
 }
 
 

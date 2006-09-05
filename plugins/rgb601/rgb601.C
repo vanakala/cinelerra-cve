@@ -289,6 +289,19 @@ int RGB601Main::process_buffer(VFrame *frame,
 {
 	load_configuration();
 
+	read_frame(frame, 
+		0, 
+		start_position, 
+		frame_rate,
+		get_use_opengl());
+
+	if(get_use_opengl() && config.direction)
+	{
+		run_opengl();
+		return 0;
+	}
+	
+
 	create_table(frame);
 
 	if(config.direction == 1)
@@ -299,5 +312,72 @@ int RGB601Main::process_buffer(VFrame *frame,
 
 	return 0;
 }
+
+int RGB601Main::handle_opengl()
+{
+#ifdef HAVE_GL
+	static char *yuv_fwd_frag = 
+		"uniform sampler2D tex;\n"
+		"void main()\n"
+		"{\n"
+		"	gl_FragColor = texture2D(tex, gl_TexCoord[0].st);\n"
+		"	gl_FragColor.r = gl_FragColor.r * 0.8588 + 0.0627;\n"
+		"}\n";
+	static char *yuv_rev_frag = 
+		"uniform sampler2D tex;\n"
+		"void main()\n"
+		"{\n"
+		"	gl_FragColor = texture2D(tex, gl_TexCoord[0].st);\n"
+		"	gl_FragColor.r = gl_FragColor.r * 1.1644 - 0.0627;\n"
+		"}\n";
+	static char *rgb_fwd_frag = 
+		"uniform sampler2D tex;\n"
+		"void main()\n"
+		"{\n"
+		"	gl_FragColor = texture2D(tex, gl_TexCoord[0].st);\n"
+		"	gl_FragColor.rgb = gl_FragColor.rgb * vec3(0.8588, 0.8588, 0.8588) + vec3(0.0627, 0.0627, 0.0627);\n"
+		"}\n";
+	static char *rgb_rev_frag = 
+		"uniform sampler2D tex;\n"
+		"void main()\n"
+		"{\n"
+		"	gl_FragColor = texture2D(tex, gl_TexCoord[0].st);\n"
+		"	gl_FragColor.rgb = gl_FragColor.rgb * vec3(1.1644, 1.1644, 1.1644) - vec3(0.0627, 0.0627, 0.0627);\n"
+		"}\n";
+
+
+	get_output()->to_texture();
+	get_output()->enable_opengl();
+	get_output()->bind_texture(0);
+
+	unsigned int frag_shader = 0;
+	switch(get_output()->get_color_model())
+	{
+		case BC_YUV888:
+		case BC_YUVA8888:
+			frag_shader = VFrame::make_shader(0,
+				config.direction == 1 ? yuv_fwd_frag : yuv_rev_frag,
+				0);
+		break;
+
+		default:
+			frag_shader = VFrame::make_shader(0,
+				config.direction == 1 ? rgb_fwd_frag : rgb_rev_frag,
+				0);
+		break;
+	}
+
+	if(frag_shader)
+	{
+		glUseProgram(frag_shader);
+		glUniform1i(glGetUniformLocation(frag_shader, "tex"), 0);
+	}
+	VFrame::init_screen(get_output()->get_w(), get_output()->get_h());
+	get_output()->draw_texture();
+	glUseProgram(0);
+	get_output()->set_opengl_state(VFrame::SCREEN);
+#endif
+}
+
 
 

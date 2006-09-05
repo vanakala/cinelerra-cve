@@ -43,6 +43,7 @@ public:
 	int load_defaults();
 	int save_defaults();
 	VFrame* new_picon();
+	int handle_opengl();
 
 	void create_table(VFrame *input_ptr);
 	void process(int *table, VFrame *input_ptr, VFrame *output_ptr);

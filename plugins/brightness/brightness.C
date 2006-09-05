@@ -92,11 +92,14 @@ int BrightnessMain::process_buffer(VFrame *frame,
 	read_frame(frame, 
 		0, 
 		start_position, 
-		frame_rate);
+		frame_rate,
+		get_use_opengl());
 
-//
-	if(0)
+
+// Use hardware
+	if(get_use_opengl())
 	{
+		run_opengl();
 		return 0;
 	}
 
@@ -116,6 +119,127 @@ int BrightnessMain::process_buffer(VFrame *frame,
 	return 0;
 }
 
+int BrightnessMain::handle_opengl()
+{
+#ifdef HAVE_GL
+	static char *brightness_yuvluma_frag = 
+		"uniform sampler2D tex;\n"
+		"uniform float brightness;\n"
+		"uniform float contrast;\n"
+		"uniform float offset;\n"
+		"void main()\n"
+		"{\n"
+		"	vec4 yuva = texture2D(tex, gl_TexCoord[0].st);\n"
+		"	yuva.r += brightness;\n"
+		"	yuva.r = yuva.r * contrast + offset;\n"
+		"	gl_FragColor = yuva;\n"
+		"}\n";
+
+	static char *brightness_yuv_frag = 
+		"uniform sampler2D tex;\n"
+		"uniform float brightness;\n"
+		"uniform float contrast;\n"
+		"uniform float offset;\n"
+		"void main()\n"
+		"{\n"
+		"	vec4 yuva = texture2D(tex, gl_TexCoord[0].st);\n"
+		"	yuva.r += brightness;\n"
+		"	yuva.rgb *= vec3(contrast, contrast, contrast);\n"
+		"	yuva.rgb += vec3(offset, offset, offset);\n"
+		"	gl_FragColor = yuva;\n"
+		"}\n";
+
+	static char *brightness_rgb_frag =
+		"uniform sampler2D tex;\n"
+		"uniform float brightness;\n"
+		"uniform float contrast;\n"
+		"uniform float offset;\n"
+		"void main()\n"
+		"{\n"
+		"	vec4 rgba = texture2D(tex, gl_TexCoord[0].st);\n"
+		"	rgba.rgb += vec3(brightness, brightness, brightness);\n"
+		"	rgba.rgb *= vec3(contrast, contrast, contrast);\n"
+		"	rgba.rgb += vec3(offset, offset, offset);\n"
+		"	gl_FragColor = rgba;\n"
+		"}\n";
+
+	static char *brightness_rgbluma_frag =
+		"uniform sampler2D tex;\n"
+		"uniform float brightness;\n"
+		"uniform float contrast;\n"
+		"uniform float offset;\n"
+		"void main()\n"
+		"{\n"
+ 		"	const mat3 yuv_to_rgb_matrix = mat3(\n"
+ 		"		1,       1,        1, \n"
+ 		"		0,       -0.34414, 1.77200, \n"
+ 		"		1.40200, -0.71414, 0);\n"
+ 		"	const mat3 rgb_to_yuv_matrix = mat3(\n"
+ 		"		0.29900, -0.16874, 0.50000, \n"
+ 		"		0.58700, -0.33126, -0.41869, \n"
+ 		"		0.11400, 0.50000,  -0.08131);\n"
+		"	vec4 rgba = texture2D(tex, gl_TexCoord[0].st);\n"
+		"	rgba.rgb = rgb_to_yuv_matrix * rgba.rgb;\n"
+		"	rgba.r += brightness;\n"
+		"	rgba.r = rgba.r * contrast + offset;\n"
+		"	rgba.rgb = yuv_to_rgb_matrix * rgba.rgb;\n"
+		"	gl_FragColor = rgba;\n"
+		"}\n";
+
+	get_output()->to_texture();
+	get_output()->enable_opengl();
+
+	unsigned int shader_id = 0;
+	switch(get_output()->get_color_model())
+	{
+		case BC_YUV888:
+		case BC_YUVA8888:
+			if(config.luma)
+				shader_id = VFrame::make_shader(0,
+					brightness_yuvluma_frag,
+					0);
+			else
+				shader_id = VFrame::make_shader(0,
+					brightness_yuv_frag,
+					0);
+			break;
+		default:
+			if(config.luma)
+				shader_id = VFrame::make_shader(0,
+					brightness_rgbluma_frag,
+					0);
+			else
+				shader_id = VFrame::make_shader(0,
+					brightness_rgb_frag,
+					0);
+			break;
+	}
+
+
+	if(shader_id > 0) 
+	{
+		glUseProgram(shader_id);
+		glUniform1i(glGetUniformLocation(shader_id, "tex"), 0);
+		glUniform1f(glGetUniformLocation(shader_id, "brightness"), config.brightness / 100);
+		float contrast = (config.contrast < 0) ? 
+			(config.contrast + 100) / 100 : 
+			(config.contrast + 25) / 25;
+		glUniform1f(glGetUniformLocation(shader_id, "contrast"), contrast);
+		float offset = 0.5 - contrast / 2;
+		glUniform1f(glGetUniformLocation(shader_id, "offset"), offset);
+	}
+
+	get_output()->init_screen();
+	get_output()->bind_texture(0);
+
+	
+
+	get_output()->draw_texture();
+	glUseProgram(0);
+	get_output()->set_opengl_state(VFrame::SCREEN);
+//printf("BrightnessMain::handle_opengl 100 %x\n", glGetError());
+#endif
+}
 
 
 void BrightnessMain::update_gui()

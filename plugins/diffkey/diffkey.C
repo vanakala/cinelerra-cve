@@ -134,6 +134,7 @@ public:
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
+	int handle_opengl();
 
 
 
@@ -403,16 +404,31 @@ int DiffKey::process_buffer(VFrame **frame,
 // Don't process if only 1 layer.
 	if(get_total_buffers() < 2) 
 	{
-		read_frame(frame[0], 0, start_position, frame_rate);
+		read_frame(frame[0], 
+			0, 
+			start_position, 
+			frame_rate,
+			get_use_opengl());
 		return 0;
 	}
 
 // Read frames from 2 layers
-	read_frame(frame[0], 0, start_position, frame_rate);
-	read_frame(frame[1], 1, start_position, frame_rate);
+	read_frame(frame[0], 
+		0, 
+		start_position, 
+		frame_rate,
+		get_use_opengl());
+	read_frame(frame[1], 
+		1, 
+		start_position, 
+		frame_rate,
+		get_use_opengl());
 
 	top_frame = frame[0];
 	bottom_frame = frame[1];
+
+	if(get_use_opengl())
+		return run_opengl();
 
 	if(!engine)
 	{
@@ -424,12 +440,122 @@ int DiffKey::process_buffer(VFrame **frame,
 	return 0;
 }
 
-
 #define DIFFKEY_VARS(plugin) \
 	float threshold = plugin->config.threshold / 100; \
 	float pad = plugin->config.slope / 100; \
 	float threshold_pad = threshold + pad; \
 
+
+int DiffKey::handle_opengl()
+{
+#ifdef HAVE_GL
+	static char *diffkey_head = 
+		"uniform sampler2D tex_bg;\n"
+		"uniform sampler2D tex_fg;\n"
+		"uniform float threshold;\n"
+		"uniform float pad;\n"
+		"uniform float threshold_pad;\n"
+		"void main()\n"
+		"{\n"
+		"	vec4 foreground = texture2D(tex_fg, gl_TexCoord[0].st);\n"
+		"	vec4 background = texture2D(tex_bg, gl_TexCoord[0].st);\n";
+
+	static char *colorcube = 
+		"	float difference = length(foreground.rgb - background.rgb);\n";
+
+	static char *yuv_value = 
+		"	float difference = abs(foreground.r - background.r);\n";
+
+	static char *rgb_value = 
+		"	float difference = abs(dot(foreground.rgb, vec3(0.29900, 0.58700, 0.11400)) - \n"
+		"						dot(background.rgb, vec3(0.29900, 0.58700, 0.11400)));\n";
+
+	static char *diffkey_tail = 
+		"	vec4 result;\n"
+		"	if(difference < threshold)\n"
+		"		result.a = 0.0;\n"
+		"	else\n"
+		"	if(difference < threshold_pad)\n"
+		"		result.a = (difference - threshold) / pad;\n"
+		"	else\n"
+		"		result.a = 1.0;\n"
+		"	result.rgb = foreground.rgb;\n"
+		"	gl_FragColor = result;\n"
+		"}\n";
+
+
+
+
+
+	top_frame->enable_opengl();
+	top_frame->init_screen();
+
+	top_frame->to_texture();
+	bottom_frame->to_texture();
+
+	top_frame->enable_opengl();
+	top_frame->init_screen();
+
+	unsigned int shader_id = 0;
+	if(config.do_value)
+	{
+		if(cmodel_is_yuv(top_frame->get_color_model()))
+			shader_id = VFrame::make_shader(0, 
+				diffkey_head,
+				yuv_value,
+				diffkey_tail,
+				0);
+		else
+			shader_id = VFrame::make_shader(0, 
+				diffkey_head,
+				rgb_value,
+				diffkey_tail,
+				0);
+	}
+	else
+	{
+			shader_id = VFrame::make_shader(0, 
+				diffkey_head,
+				colorcube,
+				diffkey_tail,
+				0);
+	}
+
+
+
+	DIFFKEY_VARS(this)
+
+	bottom_frame->bind_texture(1);
+	top_frame->bind_texture(0);
+
+	if(shader_id > 0)
+	{
+		glUseProgram(shader_id);
+		glUniform1i(glGetUniformLocation(shader_id, "tex_fg"), 0);
+		glUniform1i(glGetUniformLocation(shader_id, "tex_bg"), 1);
+		glUniform1f(glGetUniformLocation(shader_id, "threshold"), threshold);
+		glUniform1f(glGetUniformLocation(shader_id, "pad"), pad);
+		glUniform1f(glGetUniformLocation(shader_id, "threshold_pad"), threshold_pad);
+	}
+
+	if(cmodel_components(get_output()->get_color_model()) == 3)
+	{
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		top_frame->clear_pbuffer();
+	}
+
+	top_frame->draw_texture();
+	glUseProgram(0);
+	top_frame->set_opengl_state(VFrame::SCREEN);
+// Fastest way to discard output
+	bottom_frame->set_opengl_state(VFrame::TEXTURE);
+	glDisable(GL_BLEND);
+
+
+#endif
+	return 0;
+}
 
 
 

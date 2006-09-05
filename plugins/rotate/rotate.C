@@ -182,6 +182,7 @@ public:
 	int save_defaults();
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
+	int handle_opengl();
 
 	RotateConfig config;
 	AffineEngine *engine;
@@ -718,7 +719,8 @@ int RotateEffect::process_buffer(VFrame *frame,
 		read_frame(frame, 
 			0, 
 			start_position, 
-			frame_rate);
+			frame_rate,
+			get_use_opengl());
 		return 1;
 	}
 
@@ -726,6 +728,16 @@ int RotateEffect::process_buffer(VFrame *frame,
 		PluginClient::smp + 1);
 	engine->set_pivot((int)(config.pivot_x * get_input()->get_w() / 100), 
 		(int)(config.pivot_y * get_input()->get_h() / 100));
+
+	if(get_use_opengl())
+	{
+		read_frame(frame, 
+			0, 
+			start_position, 
+			frame_rate,
+			get_use_opengl());
+		return run_opengl();
+	}
 
 
 // engine->set_viewport(50, 
@@ -741,7 +753,8 @@ int RotateEffect::process_buffer(VFrame *frame,
 	read_frame(temp_frame, 
 		0, 
 		start_position, 
-		frame_rate);
+		frame_rate,
+		get_use_opengl());
 	frame->clear_frame();
 	engine->rotate(frame, 
 		temp_frame, 
@@ -819,5 +832,39 @@ int RotateEffect::process_buffer(VFrame *frame,
 	return 0;
 }
 
+
+
+int RotateEffect::handle_opengl()
+{
+#ifdef HAVE_GL
+	engine->set_opengl(1);
+	engine->rotate(get_output(), 
+		get_output(), 
+		config.angle);
+	engine->set_opengl(0);
+
+	if(config.draw_pivot)
+	{
+		int w = get_output()->get_w();
+		int h = get_output()->get_h();
+		int center_x = (int)(config.pivot_x * w / 100); \
+		int center_y = (int)(config.pivot_y * h / 100); \
+		
+		glDisable(GL_TEXTURE_2D);
+		glColor4f(1.0, 1.0, 1.0, 1.0);
+		glLogicOp(GL_XOR);
+		glEnable(GL_COLOR_LOGIC_OP);
+		glBegin(GL_LINES);
+		glVertex3f(center_x, -h + center_y - CENTER_H / 2, 0.0);
+		glVertex3f(center_x, -h + center_y + CENTER_H / 2, 0.0);
+		glEnd();
+		glBegin(GL_LINES);
+		glVertex3f(center_x - CENTER_W / 2, -h + center_y, 0.0);
+		glVertex3f(center_x + CENTER_W / 2, -h + center_y, 0.0);
+		glEnd();
+		glDisable(GL_COLOR_LOGIC_OP);
+	}
+#endif
+}
 
 

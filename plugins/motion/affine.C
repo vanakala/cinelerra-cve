@@ -1,3 +1,8 @@
+#ifdef HAVE_GL
+#define GL_GLEXT_PROTOTYPES
+#include <GL/gl.h>
+#endif
+
 #include "affine.h"
 #include "clip.h"
 #include "vframe.h"
@@ -333,6 +338,50 @@ void AffineUnit::process_package(LoadPackage *package)
 
 
 
+// Rotation with OpenGL uses a simple quad.
+	if(server->mode == AffineEngine::ROTATE &&
+		server->use_opengl)
+	{
+#ifdef HAVE_GL
+		server->output->to_texture();
+		server->output->enable_opengl();
+		server->output->init_screen();
+		server->output->bind_texture(0);
+		server->output->clear_pbuffer();
+
+		int texture_w = server->output->get_texture_w();
+		int texture_h = server->output->get_texture_h();
+		float output_h = server->output->get_h();
+		float in_x1 = (float)server->x / texture_w;
+		float in_x2 = (float)(server->x + server->w) / texture_w;
+		float in_y1 = (float)server->y / texture_h;
+		float in_y2 = (float)(server->y + server->h) / texture_h;
+
+// printf("%f %f %f %f\n%f,%f %f,%f %f,%f %f,%f\n", in_x1, in_y1, in_x2, in_y2,
+// out_x1, out_y1, out_x2, out_y2, out_x3, out_y3, out_x4, out_y4);
+
+		glBegin(GL_QUADS);
+		glNormal3f(0, 0, 1.0);
+
+		glTexCoord2f(in_x1, in_y1);
+		glVertex3f(out_x1, -output_h+out_y1, 0);
+
+		glTexCoord2f(in_x2, in_y1);
+		glVertex3f(out_x2, -output_h+out_y2, 0);
+
+		glTexCoord2f(in_x2, in_y2);
+		glVertex3f(out_x3, -output_h+out_y3, 0);
+
+		glTexCoord2f(in_x1, in_y2);
+		glVertex3f(out_x4, -output_h+out_y4, 0);
+
+
+		glEnd();
+
+		server->output->set_opengl_state(VFrame::SCREEN);
+#endif
+	}
+	else
 	if(server->mode == AffineEngine::PERSPECTIVE ||
 		server->mode == AffineEngine::SHEER ||
 		server->mode == AffineEngine::ROTATE)
@@ -407,6 +456,85 @@ void AffineUnit::process_package(LoadPackage *package)
 //printf("AffineUnit::process_package 1 y1=%d y2=%d\n", pkg->y1, pkg->y2);
 //printf("AffineUnit::process_package 1 %f %f %f %f\n", dy1, dy2, dy3, dy4);
 //printf("AffineUnit::process_package 2 %d ty1=%d %d ty2=%d %f %f\n", tx1, ty1, tx2, ty2, out_x4, out_y4);
+
+
+		if(server->use_opengl)
+		{
+#ifdef HAVE_GL
+			static char *affine_frag =
+				"uniform sampler2D tex;\n"
+				"uniform mat3 affine_matrix;\n"
+				"uniform vec2 texture_extents;\n"
+				"uniform vec2 image_extents;\n"
+				"uniform vec4 border_color;\n"
+				"void main()\n"
+				"{\n"
+				"	vec2 outcoord = gl_TexCoord[0].st;\n"
+				"	outcoord *= texture_extents;\n"
+				"	mat3 coord_matrix = mat3(\n"
+				"		outcoord.x, outcoord.y, 1.0, \n"
+				"		outcoord.x, outcoord.y, 1.0, \n"
+				"		outcoord.x, outcoord.y, 1.0);\n"
+				"	mat3 incoord_matrix = affine_matrix * coord_matrix;\n"
+				"	vec2 incoord = vec2(incoord_matrix[0][0], incoord_matrix[0][1]);\n"
+				"	incoord /= incoord_matrix[0][2];\n"
+			 	"	incoord /= texture_extents;\n"
+				"	if(incoord.x > image_extents.x || incoord.y > image_extents.y)\n"
+				"		gl_FragColor = border_color;\n"
+				"	else\n"
+			 	"		gl_FragColor = texture2D(tex, incoord);\n"
+				"}\n";
+
+			float affine_matrix[9] = {
+				m.values[0][0], m.values[1][0], m.values[2][0],
+				m.values[0][1], m.values[1][1], m.values[2][1],
+				m.values[0][2], m.values[1][2], m.values[2][2] 
+			};
+
+
+			server->output->to_texture();
+			server->output->enable_opengl();
+			unsigned int frag_shader = VFrame::make_shader(0,
+					affine_frag,
+					0);
+			if(frag_shader > 0)
+			{
+				glUseProgram(frag_shader);
+				glUniform1i(glGetUniformLocation(frag_shader, "tex"), 0);
+				glUniformMatrix3fv(glGetUniformLocation(frag_shader, "affine_matrix"), 
+					1,
+					0,
+					affine_matrix);
+				glUniform2f(glGetUniformLocation(frag_shader, "texture_extents"), 
+					(GLfloat)server->output->get_texture_w(),
+					(GLfloat)server->output->get_texture_h());
+				glUniform2f(glGetUniformLocation(frag_shader, "image_extents"), 
+					(GLfloat)server->output->get_w() / server->output->get_texture_w(),
+					(GLfloat)server->output->get_h() / server->output->get_texture_h());
+				float border_color[] = { 0, 0, 0, 0 };
+				if(cmodel_is_yuv(server->output->get_color_model()))
+				{
+					border_color[1] = 0.5;
+					border_color[2] = 0.5;
+				}
+				glUniform4fv(glGetUniformLocation(frag_shader, "border_color"), 
+					1,
+					(GLfloat*)border_color);
+				server->output->init_screen();
+				server->output->bind_texture(0);
+				glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border_color);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+				glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+				server->output->draw_texture();
+				glUseProgram(0);
+				server->output->set_opengl_state(VFrame::SCREEN);
+			}
+			return;
+#endif
+		}
+
+
+
 
 
 
@@ -691,6 +819,15 @@ void AffineUnit::process_package(LoadPackage *package)
 		float h_f = server->h;
 		float w_f = server->w;
 
+
+
+		if(server->use_opengl)
+		{
+			return;
+		}
+
+
+
 // Projection
 #define DO_STRETCH(type, components) \
 { \
@@ -780,6 +917,7 @@ total_clients, total_packages
 {
 	user_viewport = 0;
 	user_pivot = 0;
+	use_opengl = 0;
 }
 
 void AffineEngine::init_packages()
@@ -839,7 +977,10 @@ void AffineEngine::process(VFrame *output,
 		h = input->get_h();
 	}
 
-	process_packages();
+	if(use_opengl)
+		process_single();
+	else
+		process_packages();
 }
 
 
@@ -917,7 +1058,11 @@ void AffineEngine::rotate(VFrame *output,
 // x4 * w / 100, 
 // y4 * h / 100);
 
-	process_packages();
+	if(use_opengl)
+		process_single();
+	else
+		process_packages();
+//	process_packages();
 }
 
 void AffineEngine::set_viewport(int x, int y, int w, int h)
@@ -927,6 +1072,11 @@ void AffineEngine::set_viewport(int x, int y, int w, int h)
 	this->w = w;
 	this->h = h;
 	user_viewport = 1;
+}
+
+void AffineEngine::set_opengl(int value)
+{
+	this->use_opengl = value;
 }
 
 void AffineEngine::set_pivot(int x, int y)

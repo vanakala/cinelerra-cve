@@ -97,8 +97,16 @@ void LoadClient::run()
 	}
 }
 
+void LoadClient::run_single()
+{
+	if(server->total_packages)
+		process_package(server->packages[0]);
+}
 
-
+void LoadClient::process_package(LoadPackage *package)
+{
+	printf("LoadClient::process_package\n");
+}
 
 
 
@@ -114,6 +122,8 @@ LoadServer::LoadServer(int total_clients, int total_packages)
 	clients = 0;
 	packages = 0;
 	client_lock = new Mutex("LoadServer::client_lock");
+	is_single = 0;
+	single_client = 0;
 }
 
 LoadServer::~LoadServer()
@@ -131,7 +141,9 @@ void LoadServer::delete_clients()
 			delete clients[i];
 		delete [] clients;
 	}
+	if(single_client) delete single_client;
 	clients = 0;
+	single_client = 0;
 }
 
 void LoadServer::delete_packages()
@@ -155,7 +167,7 @@ void LoadServer::set_package_count(int total_packages)
 
 void LoadServer::create_clients()
 {
-	if(!clients)
+	if(!is_single && !clients)
 	{
 		clients = new LoadClient*[total_clients];
 		for(int i = 0; i < total_clients; i++)
@@ -164,6 +176,12 @@ void LoadServer::create_clients()
 			clients[i]->server = this;
 			clients[i]->start();
 		}
+	}
+
+	if(is_single && !single_client)
+	{
+		single_client = new_client();
+		single_client->server = this;
 	}
 }
 
@@ -189,18 +207,21 @@ LoadClient* LoadServer::get_client(int number)
 
 int LoadServer::get_total_packages()
 {
+	if(is_single) return 1;
 	return total_packages;
 }
 
 int LoadServer::get_total_clients()
 {
+	if(is_single) return 1;
 	return total_clients;
 }
 
 void LoadServer::process_packages()
 {
-	if(!clients) create_clients();
-	if(!packages) create_packages();
+	is_single = 0;
+	create_clients();
+	create_packages();
 	
 	
 	
@@ -225,5 +246,15 @@ void LoadServer::process_packages()
 	{
 		clients[i]->completion_lock->lock("LoadServer::process_packages 2");
 	}
+}
+
+void LoadServer::process_single()
+{
+	is_single = 1;
+	create_clients();
+	create_packages();
+	init_packages();
+	current_package = 0;
+	single_client->run_single();
 }
 

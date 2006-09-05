@@ -3,6 +3,9 @@
 #include "bchash.h"
 #include "language.h"
 #include "picon_png.h"
+#include "playback3d.h"
+
+#include "aggregated.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -481,13 +484,22 @@ int ColorBalanceMain::process_buffer(VFrame *frame,
 		need_reconfigure = 0;
 	}
 
+
 	read_frame(frame,
 		0,
 		get_source_position(),
-		get_framerate());
+		get_framerate(),
+		get_use_opengl());
 
-	if(!EQUIV(config.cyan, 0) || !EQUIV(config.magenta, 0) || !EQUIV(config.yellow, 0))
+	if(!EQUIV(config.cyan, 0) || 
+		!EQUIV(config.magenta, 0) || 
+		!EQUIV(config.yellow, 0))
 	{
+		if(get_use_opengl())
+		{
+			return run_opengl();
+		}
+	
 		for(int i = 0; i < total_engines; i++)
 		{
 			engine[i]->start_process_frame(frame, 
@@ -596,9 +608,54 @@ void ColorBalanceMain::read_data(KeyFrame *keyframe)
 	}
 }
 
+int ColorBalanceMain::handle_opengl()
+{
+#ifdef HAVE_GL
 
+	get_output()->to_texture();
+	get_output()->enable_opengl();
 
+	unsigned int shader = 0;
+	char *shader_stack[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+	int current_shader = 0;
+	shader_stack[current_shader++] = colorbalance_get_pixel2;
+	if(cmodel_is_yuv(get_output()->get_color_model()))
+	{
+		if(get_output()->get_params()->get("COLORBALANCE_PRESERVE", (int)0))
+			shader_stack[current_shader++] = colorbalance_yuv_preserve_shader;
+		else
+			shader_stack[current_shader++] = colorbalance_yuv_shader;
+	}
+	else
+		shader_stack[current_shader++] = colorbalance_rgb_shader;
 
+	shader = VFrame::make_shader(0, 
+		shader_stack[0], 
+		shader_stack[1], 
+		shader_stack[2], 
+		shader_stack[3], 
+		shader_stack[4], 
+		shader_stack[5], 
+		shader_stack[6], 
+		shader_stack[7], 
+		0);
+
+	if(shader > 0)
+	{
+		glUseProgram(shader);
+		glUniform1i(glGetUniformLocation(shader, "tex"), 0);
+
+		COLORBALANCE_UNIFORMS(shader);
+
+	}
+
+	get_output()->init_screen();
+	get_output()->bind_texture(0);
+	get_output()->draw_texture();
+	glUseProgram(0);
+	get_output()->set_opengl_state(VFrame::SCREEN);
+#endif
+}
 
 
 

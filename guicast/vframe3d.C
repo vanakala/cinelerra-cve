@@ -49,6 +49,11 @@ int VFrame::get_texture_h()
 }
 
 
+int VFrame::get_texture_components()
+{
+	return texture ? texture->texture_components : 0;
+}
+
 
 
 

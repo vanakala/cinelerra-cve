@@ -42,6 +42,7 @@ public:
 	void read_data(KeyFrame *keyframe);
 	int load_defaults();
 	int save_defaults();
+	int handle_opengl();
 };
 
 

@@ -256,6 +256,7 @@ public:
 	int process_buffer(VFrame *frame,
 		int64_t start_position,
 		double frame_rate);
+	int handle_opengl();
 	int is_realtime();
 	char* plugin_title();
 	VFrame* new_picon();

@@ -357,3 +357,8 @@ void PluginClient::get_projector(float *x, float *y, float *z, int64_t position)
 	server->get_projector(x, y, z, position, direction);
 }
 
+
+int PluginClient::gui_open()
+{
+	return server->gui_open();
+}

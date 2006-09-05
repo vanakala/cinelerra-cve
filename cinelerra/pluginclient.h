@@ -306,6 +306,12 @@ public:
 	int send_configure_change();                            
 
 
+// Called from process_buffer
+// Returns 1 if a GUI is open so OpenGL routines can determine if
+// they can run.
+	int gui_open();
+
+
 
 // Length of source.  For effects it's the plugin length.  For transitions
 // it's the transition length.  Relative to the requested rate.

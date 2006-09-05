@@ -7207,6 +7207,7 @@ out of the group and rename the symbols.
 * VIDEO PLUGINS:: What video effects have to do.
 * TRANSITION PLUGINS:: What transitions have to do.
 * PLUGIN GUI'S WHICH UPDATE DURING PLAYBACK:: How to use currently playing data to draw the GUI.
+* USING OPENGL:: How to use hardware to speed up operations.
 * PLUGIN QUERIES:: How plugins get information about the data to be processed.
 @end menu
 
@@ -8417,6 +8418,257 @@ Do this by using edl_to_local on the keyframe positions.
 
 
 
+@node USING OPENGL
+@section USING OPENGL
+
+
+
+Realtime video plugins support OpenGL.  Using OpenGL to do plugin
+routines can speed up playback greatly since it does most of the work
+in hardware.  Unfortunately, every OpenGL routine needs a software
+counterpart for rendering, doubling the amount of software to
+maintain.  Fortunately, having an OpenGL routine means the software
+version doesn't need to be as optimized as it did when software was the
+only way.
+
+As always, the best way to design a first OpenGL plugin is to copy an
+existing one and alter it.  The @b{Brightness} plugin is a simple
+OpenGL plugin to copy.  There are 3 main points in OpenGL rendering and
+1 point for optimizing OpenGL rendering.
+
+@menu
+* GETTING OPENGL DATA:: Getting video data in a form usable by OpenGL
+* DRAWING USING OPENGL:: The method of drawing video in OpenGL
+* USING SHADERS:: Routines to simplify shader usage
+* AGGREGATING PLUGINS:: Combining OpenGL routines from different plugins into one.
+@end menu
+
+
+
+@node GETTING OPENGL DATA
+@subsection GETTING OPENGL DATA
+
+The first problem is getting OpenGL-enabled plugins to interact with
+software-only plugins.  To solve this, all the information required to
+do OpenGL playback is stored in the VFrame object which is passed to
+@b{process_buffer}.  To support 3D, the VFrame contains a PBuffer and a
+texture, in addition to VFrame's original rows.
+
+In OpenGL mode, VFrame has 3 states corresponding to the location of
+its video data.  The opengl state is recovered by calling
+@b{get_opengl_state} and is set by calling @b{set_opengl_state}.  The
+states are:
+
+@itemize
+
+@item
+
+@b{VFrame::RAM} - This means the video data is stored in the
+traditional row pointers.  It must be loaded into a texture before
+being drawn using OpenGL routines.
+
+@item @b{VFrame::TEXTURE} - The video data is stored in texture
+memory.  It's ready to be drawn using OpenGL routines.
+
+@item @b{VFrame::SCREEN} - The video data is stored in a frame buffer
+in the graphics card.  For plugins, the frame buffer is always a
+PBuffer.  The image on the frame buffer can't be replicated again
+unless it is read back into the texture and the opengl state is reset
+to TEXTURE.  The frame buffer is limited to 8 bits per channel.  If an
+OpenGL effect is used in a floating point project, it only retains 8
+bits.
+
+@end itemize
+
+In the plugin's @b{process_buffer} routine, there is normally a call to
+@b{read_frame} to get data from the previous plugin in the chain. 
+@b{read_frame} takes a new parameter called @b{use_opengl}.  
+
+The plugin passes 1 to @b{use_opengl} if it intends to handle the data
+using OpenGL.  It passes 0 to @b{use_opengl} if it can only handle the
+data using software.  The value of @b{use_opengl} is passed up the
+chain to ensure a plugin which only does software only gets the data in
+the row pointers.  If @b{use_opengl} is 0, the opengl state in VFrame
+is RAM.
+
+The plugin must not only know if it is software-only but if its output
+must be software only.  Call @b{get_use_opengl} to determine if the
+output can be handled by OpenGL.  If @b{get_use_opengl} returns 0, the
+plugin must pass 0 for @b{use_opengl} in @b{read_frame} and do its
+processing in software.  If @b{get_use_opengl} is 1, the plugin can
+decide based on its implementation whether to use OpenGL.
+
+
+The main problem with OpenGL is that all the gl... calls need to be run
+from the same thread.  To work around this, the plugin interface has
+routines for running OpenGL in a common thread.  
+
+
+@b{run_opengl} transfers control to the common OpenGL thread.  This is
+normally called by the plugin in @b{process_buffer} after it calls
+@b{read_frame} and only if @b{get_use_opengl} is 1.
+
+Through a series of indirections, @b{run_opengl} eventually transfers
+control to a virtual function called @b{handle_opengl}. 
+@b{handle_opengl} must be overridden with a function to perform all the
+OpenGL routines.  The contents of @b{handle_opengl} must be enclosed in
+@b{#ifdef HAVE_GL} ... @b{#endif} to allow it to be compiled on systems
+with no graphics support, like render nodes.  The return value of
+@b{handle_opengl} is passed back from @b{run_opengl}.
+
+@b{read_frame} can't be called from inside @b{handle_opengl}.  This
+would create a recursive lockup because it would cause other objects to
+call @b{run_opengl}.
+
+Once inside @b{handle_opengl}, the plugin has full usage of all the
+OpenGL features.  VFrame provides some functions to automate common
+OpenGL sequences.
+
+The VFrame argument to @b{process_buffer} is always available through
+the @b{get_output(int layer)} function.  If the plugin is multichannel,
+the layer argument retrieves a specific layer of the output buffers. 
+The PBuffer of the output buffer is where the OpenGL output must go if
+any processing is done.
+
+
+
+@node DRAWING USING OPENGL
+@subsection DRAWING USING OPENGL
+
+
+The sequence of commands to draw on the output PBuffer stars with
+getting the video in a memory area where it can be recalled for
+drawing:
+
+@example
+get_output()->to_texture();
+get_output()->enable_opengl();
+@end example
+
+@b{to_texture} transfers the OpenGL data from wherever it is to the
+output's texture memory and sets the output state to TEXTURE.
+
+@b{enable_opengl} makes the OpenGL context relative to the output's
+PBuffer.
+
+The next step is to draw the texture with some processing on the
+PBuffer.  The normal sequence of commands to draw a texture is:
+
+@example
+get_output()->init_screen();
+get_output()->bind_texture(0);
+get_output()->draw_texture();
+@end example
+
+@b{VFrame::init_screen} sets the OpenGL frustum and parameters to known
+values.
+
+@b{VFrame::bind_texture(int texture_unit)} binds the texture to the given
+texture unit and enables it.
+
+@b{VFrame::draw_texture()} calls the vertex functions to draw the
+texture normalized to the size of the PBuffer.  Copy this if you want
+custom vertices.
+
+The last step in the handle_opengl routine, after the texture has been
+drawn on the PBuffer, is to set the output's opengl state to SCREEN
+with a call to @b{VFrame::set_opengl_state}.  The plugin should not
+read back the frame buffer into a texture or row pointers if it has no
+further processing.  Plugins should only leave the output in the
+texture or RAM if its location results from normal processing.  They
+should set the opengl state to RAM or TEXTURE if they do.
+
+@b{Colormodels in OpenGL}
+
+The colormodel exposed to OpenGL routines is always floating point
+since that is what OpenGL uses, but it may be YUV or RGB depending on
+the project settings.  If it's YUV, it's offset by 0.5 just like in
+software.  Passing YUV colormodels to plugins was necessary for speed. 
+The other option was to convert YUV to RGB in the first step that
+needed OpenGL.  Every effect and rendering step would have needed a YUV
+to RGB routine.  With the YUV retained, only the final compositing step
+needs a YUV to RGB routine.
+
+
+
+
+
+
+@node USING SHADERS
+@subsection USING SHADERS
+
+Very few effects can do anything useful with just a straight drawing of
+the texture on the PBuffer.  They normally define a shader.  The shader
+is a C program which runs on the graphics card.  Since the graphics
+card is optimized for graphics, it can be much faster than running it
+on the CPU.  
+
+Shaders are written in OpenGL Shading Language.  The shader source code
+is contained in a string.  The normal sequence for using a shader comes
+after a call to @b{enable_opengl}.
+
+@example
+char *shader_source = "...";
+unsigned char shader_id = VFrame::make_shader(0, shader_source, 0);
+glUseProgram(shader_id);
+// Set uniform variables using glUniform commands
+@end example
+
+The compilation and linking step for shaders is encapsulated by the
+VFrame::make_shader command.  It returns a shader_id which can be
+passed to OpenGL functions.  The first and last arguments must always
+by 0.  And arbitrary number of source strings may be put between the
+0's.  The source strings are concatenated by make_shader into one huge
+shader source.  If multiple main functions are in the sources, the main
+functions are renamed and run in order.
+
+There are a number of useful macros for shaders in playback3d.h.  All
+the shaders so far have been fragment shaders.  After the shader is
+initialized, draw the texture starting from @b{init_screen}.  The
+shader program must be disabled with another call to
+@b{glUseProgram(0)} and 0 as the argument.
+
+The shader_id and source code is stored in memory as long as Cinelerra
+runs.  Future calls to make_shader with the same source code run much
+faster.
+
+
+
+
+@node AGGREGATING PLUGINS
+@subsection AGGREGATING PLUGINS
+
+Further speed improvements may be obtained by combining OpenGL routines
+from two plugins into a single handle_opengl function.  This is done
+when @b{Frame to Fields} and @b{RGB to 601} are attached in order. 
+Aggregations of more than two plugins are possible but very hard to get
+working.  Aggregation is useful for OpenGL because each plugin must
+copy the video from a texture to a PBuffer.  In software there was no
+copy operation.
+
+In aggregation, one plugin processes everything from the other plugins
+and the other plugins fall through.  The fall through plugins must copy
+their parameters to the output buffer so they can be detected by the
+processing plugin.
+
+The VFrame used as the output buffer contains a parameter table for
+parameter passing between plugins and it's accessed with
+@b{get_output()->get_params()}.  Parameters are set and retrieved in
+the table with calls to @b{update} and @b{get} just like with defaults.
+
+The fall through plugins must determine if the processor plugin is
+attached with calls to @b{next_effect_is} and @b{prev_effect_is}. 
+These take the name of the processor plugin as a string argument and
+return 1 if the next or previous plugin is the processor plugin.  If
+either returns 1, the fall through plugin must still call @b{read_frame} to
+propogate the data but return after that.
+
+The processor plugin must call @b{next_effect_is} and
+@b{prev_effect_is} to determine if it's aggregated with a fall through
+plugin.  If it is, it must perform the operations of the fall through
+plugin in its OpenGL routine.  The parameters for the the fall through
+plugin should be available by @b{get_output()->get_params()} if the
+fall through plugin set them.
 
 
 

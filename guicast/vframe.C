@@ -6,6 +6,9 @@
 #include "bchash.h"
 #include "bcpbuffer.h"
 #include "bcsignals.h"
+#include "bcsynchronous.h"
+#include "bctexture.h"
+#include "bcwindowbase.h"
 #include "clip.h"
 #include "colormodels.h"
 #include "vframe.h"
@@ -163,6 +166,7 @@ int VFrame::reset_parameters(int do_opengl)
 // By default, anything is going to be done in RAM
 		opengl_state = VFrame::RAM;
 		pbuffer = 0;
+		texture = 0;
 	}
 
 	prev_effects.set_array_delete();
@@ -175,6 +179,9 @@ int VFrame::clear_objects(int do_opengl)
 // Remove texture
 	if(do_opengl)
 	{
+		delete texture;
+		texture = 0;
+
 		delete pbuffer;
 		pbuffer = 0;
 	}
@@ -640,15 +647,14 @@ void VFrame::rotate270()
 
 void VFrame::flip_vert()
 {
+	unsigned char *temp = new unsigned char[bytes_per_line];
 	for(int i = 0, j = h - 1; i < j; i++, j--)
 	{
-		for(int k = 0; k < bytes_per_line; k++)
-		{
-			unsigned char temp = rows[j][k];
-			rows[j][k] = rows[i][k];
-			rows[i][k] = temp;
-		}
+		memcpy(temp, rows[j], bytes_per_line);
+		memcpy(rows[j], rows[i], bytes_per_line);
+		memcpy(rows[i], temp, bytes_per_line);
 	}
+	delete [] temp;
 }
 
 

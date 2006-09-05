@@ -7,6 +7,7 @@
 #include "loadbalance.h"
 #include "picon_png.h"
 #include "plugincolors.h"
+#include "playback3d.h"
 #include "pluginvclient.h"
 #include "vframe.h"
 
@@ -132,7 +133,8 @@ public:
 	int set_string();
 	void raise_window();
 	void update_gui();
-	
+	int handle_opengl();
+
 	HueConfig config;
 	VFrame *input, *output;
 	BC_Hash *defaults;
@@ -542,7 +544,8 @@ int HueEffect::process_buffer(VFrame *frame,
 	read_frame(frame, 
 		0, 
 		start_position, 
-		frame_rate);
+		frame_rate,
+		get_use_opengl());
 	
 
 	this->input = frame;
@@ -553,6 +556,12 @@ int HueEffect::process_buffer(VFrame *frame,
 	}
 	else
 	{
+		if(get_use_opengl())
+		{
+			run_opengl();
+			return 0;
+		}
+
 		if(!engine) engine = new HueEngine(this, PluginClient::smp + 1);
 		
 		engine->process_packages();
@@ -625,6 +634,111 @@ void HueEffect::update_gui()
 		thread->window->unlock_window();
 	}
 }
+
+int HueEffect::handle_opengl()
+{
+#ifdef HAVE_GL
+	static char *yuv_saturation_frag = 
+		"uniform sampler2D tex;\n"
+		"uniform float s_offset;\n"
+		"uniform float v_offset;\n"
+		"void main()\n"
+		"{\n"
+		"	vec4 pixel = texture2D(tex, gl_TexCoord[0].st);\n"
+		"	pixel.r *= v_offset;\n"
+		"	pixel.gb -= vec2(0.5, 0.5);\n"
+		"	pixel.g *= s_offset;\n"
+		"	pixel.b *= s_offset;\n"
+		"	pixel.gb += vec2(0.5, 0.5);\n"
+		"	gl_FragColor = pixel;\n"
+		"}\n";
+
+
+	static char *yuv_frag = 
+		"uniform sampler2D tex;\n"
+		"uniform float h_offset;\n"
+		"uniform float s_offset;\n"
+		"uniform float v_offset;\n"
+		"void main()\n"
+		"{\n"
+		"	vec4 pixel = texture2D(tex, gl_TexCoord[0].st);\n"
+			YUV_TO_RGB_FRAG("pixel")
+			RGB_TO_HSV_FRAG("pixel")
+		"	pixel.r += h_offset;\n"
+		"	pixel.g *= s_offset;\n"
+		"	pixel.b *= v_offset;\n"
+		"	if(pixel.r >= 360.0) pixel.r -= 360.0;\n"
+		"	if(pixel.r < 0.0) pixel.r += 360.0;\n"
+			HSV_TO_RGB_FRAG("pixel")
+			RGB_TO_YUV_FRAG("pixel")
+		"	gl_FragColor = pixel;\n"
+		"}\n";
+
+	static char *rgb_frag = 
+		"uniform sampler2D tex;\n"
+		"uniform float h_offset;\n"
+		"uniform float s_offset;\n"
+		"uniform float v_offset;\n"
+		"void main()\n"
+		"{\n"
+		"	vec4 pixel = texture2D(tex, gl_TexCoord[0].st);\n"
+			RGB_TO_HSV_FRAG("pixel")
+		"	pixel.r += h_offset;\n"
+		"	pixel.g *= s_offset;\n"
+		"	pixel.b *= v_offset;\n"
+		"	if(pixel.r >= 360.0) pixel.r -= 360.0;\n"
+		"	if(pixel.r < 0.0) pixel.r += 360.0;\n"
+			HSV_TO_RGB_FRAG("pixel")
+		"	gl_FragColor = pixel;\n"
+		"}\n";
+
+
+	get_output()->to_texture();
+	get_output()->enable_opengl();
+
+	unsigned int frag_shader = 0;
+	switch(get_output()->get_color_model())
+	{
+		case BC_YUV888:
+		case BC_YUVA8888:
+// This is a lousy approximation but good enough for the masker.
+			if(EQUIV(config.hue, 0))
+				frag_shader = VFrame::make_shader(0,
+					yuv_saturation_frag,
+					0);
+			else
+				frag_shader = VFrame::make_shader(0,
+					yuv_frag,
+					0);
+			break;
+		default:
+			frag_shader = VFrame::make_shader(0,
+				rgb_frag,
+				0);
+			break;
+	}
+
+
+	if(frag_shader > 0) 
+	{
+		glUseProgram(frag_shader);
+		glUniform1i(glGetUniformLocation(frag_shader, "tex"), 0);
+		glUniform1f(glGetUniformLocation(frag_shader, "h_offset"), config.hue);
+		glUniform1f(glGetUniformLocation(frag_shader, "s_offset"), 
+			((float)config.saturation - MINSATURATION) / MAXSATURATION);
+		glUniform1f(glGetUniformLocation(frag_shader, "v_offset"), 
+			((float)config.value - MINVALUE) / MAXVALUE);
+	}
+
+	get_output()->init_screen();
+	get_output()->bind_texture(0);
+	get_output()->draw_texture();
+	glUseProgram(0);
+	get_output()->set_opengl_state(VFrame::SCREEN);
+#endif
+}
+
+
 
 
 

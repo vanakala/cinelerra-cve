@@ -49,6 +49,7 @@ public:
 	int load_defaults();
 	int save_defaults();
 	VFrame* new_picon();
+	int handle_opengl();
 
 
 

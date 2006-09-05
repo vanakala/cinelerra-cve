@@ -76,6 +76,7 @@ public:
 	int load_defaults();
 	int save_defaults();
 	VFrame* new_picon();
+	int handle_opengl();
 
 	int64_t calculate_slider(float in);
 	float calculate_transfer(float in);

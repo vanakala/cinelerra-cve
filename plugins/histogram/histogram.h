@@ -26,6 +26,8 @@ public:
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
 	void render_gui(void *data);
+	int calculate_use_opengl();
+	int handle_opengl();
 
 	PLUGIN_CLASS_MEMBERS(HistogramConfig, HistogramThread)
 

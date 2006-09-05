@@ -77,6 +77,8 @@ public:
 	int load_defaults();
 	int save_defaults();
 	int is_synthesis();
+	int handle_opengl();
+
 
 // Frame to replicate
 	VFrame *first_frame;

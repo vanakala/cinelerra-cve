@@ -1,6 +1,6 @@
 plugin_LTLIBRARIES = radialblur.la
 radialblur_la_LDFLAGS = -module -shared -avoid-version
-radialblur_la_LIBADD =
+radialblur_la_LIBADD = $(top_builddir)/plugins/motion/libaffine.la
 radialblur_la_SOURCES = radialblur.C
 AM_CXXFLAGS = $(LARGEFILE_CFLAGS)
 

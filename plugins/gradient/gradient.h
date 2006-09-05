@@ -225,6 +225,7 @@ public:
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
 	int is_synthesis();
+	int handle_opengl();
 
 	PLUGIN_CLASS_MEMBERS(GradientConfig, GradientThread)
 

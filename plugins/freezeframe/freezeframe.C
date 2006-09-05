@@ -278,10 +278,13 @@ int FreezeFrameMain::process_buffer(VFrame *frame,
 				frame->get_w(), 
 				frame->get_h(),
 				frame->get_color_model());
+printf("FreezeFrameMain::process_buffer 1 %lld\n", first_frame_position);
 		read_frame(first_frame, 
 				0, 
 				first_frame_position,
-				frame_rate);
+				frame_rate,
+				get_use_opengl());
+		if(get_use_opengl()) return run_opengl();
 		frame->copy_from(first_frame);
 	}
 	else
@@ -291,7 +294,8 @@ int FreezeFrameMain::process_buffer(VFrame *frame,
 		read_frame(frame, 
 			0, 
 			start_position,
-			frame_rate);
+			frame_rate,
+			get_use_opengl());
 	}
 	else
 // Just left frozen range
@@ -302,7 +306,8 @@ int FreezeFrameMain::process_buffer(VFrame *frame,
 		read_frame(frame, 
 			0, 
 			start_position,
-			frame_rate);
+			frame_rate,
+			get_use_opengl());
 	}
 	else
 // Still frozen
@@ -314,8 +319,10 @@ int FreezeFrameMain::process_buffer(VFrame *frame,
 			read_frame(first_frame, 
 				0, 
 				first_frame_position,
-				frame_rate);
+				frame_rate,
+				get_use_opengl());
 		}
+		if(get_use_opengl()) return run_opengl();
 		frame->copy_from(first_frame);
 	}
 
@@ -335,4 +342,18 @@ int FreezeFrameMain::process_buffer(VFrame *frame,
 
 	return 0;
 }
+
+int FreezeFrameMain::handle_opengl()
+{
+#ifdef HAVE_GL
+	get_output()->enable_opengl();
+	get_output()->init_screen();
+	first_frame->to_texture();
+	first_frame->bind_texture(0);
+	first_frame->draw_texture();
+	get_output()->set_opengl_state(VFrame::SCREEN);
+#endif
+	return 0;
+}
+
 

@@ -90,6 +90,10 @@ public:
 		double frame_rate,
 		int use_opengl = 0);
 
+
+// User calls this to request an opengl routine to be run synchronously.
+	int run_opengl();
+
 // Called by Playback3D to run opengl commands synchronously.
 // Overridden by the user with the commands to run synchronously.
 	virtual int handle_opengl();

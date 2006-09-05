@@ -607,7 +607,9 @@ int GradientMain::process_buffer(VFrame *frame,
 		read_frame(frame, 
 			0, 
 			start_position, 
-			frame_rate);
+			frame_rate,
+			get_use_opengl());
+	if(get_use_opengl()) return run_opengl();
 
 	int gradient_cmodel = input->get_color_model();
 	if(need_alpha && cmodel_components(gradient_cmodel) == 3)
@@ -813,6 +815,202 @@ void GradientMain::read_data(KeyFrame *keyframe)
 		}
 	}
 }
+
+int GradientMain::handle_opengl()
+{
+#ifdef HAVE_GL
+	char *head_frag =
+		"uniform sampler2D tex;\n"
+		"uniform float half_w;\n"
+		"uniform float half_h;\n"
+		"uniform float center_x;\n"
+		"uniform float center_y;\n"
+		"uniform float half_gradient_size;\n"
+		"uniform float sin_angle;\n"
+		"uniform float cos_angle;\n"
+		"uniform vec4 out_color;\n"
+		"uniform vec4 in_color;\n"
+		"uniform float in_radius;\n"
+		"uniform float out_radius;\n"
+		"uniform float radius_diff;\n"
+		"\n"
+		"void main()\n"
+		"{\n"
+		"	vec2 out_coord = gl_TexCoord[0].st;\n";
+
+	char *linear_shape = 
+		"	vec2 in_coord = vec2(out_coord.x - half_w, half_h - out_coord.y);\n"
+		"	float mag = half_gradient_size - \n"
+		"		(in_coord.x * sin_angle + in_coord.y * cos_angle);\n";
+
+	char *radial_shape =
+		"	vec2 in_coord = vec2(out_coord.x - center_x, out_coord.y - center_y);\n"
+		"	float mag = length(vec2(in_coord.x, in_coord.y));\n";
+
+// No clamp function in NVidia
+	char *linear_rate = 
+		"	mag = min(max(mag, in_radius), out_radius);\n"
+		"	float opacity = (mag - in_radius) / radius_diff;\n";
+
+// NVidia warns about exp, but exp is in the GLSL spec.
+	char *log_rate = 
+		"	mag = max(mag, in_radius);\n"
+		"	float opacity = 1.0 - \n"
+		"		exp(1.0 * -(mag - in_radius) / radius_diff);\n";
+
+	char *square_rate = 
+		"	mag = min(max(mag, in_radius), out_radius);\n"
+		"	float opacity = pow((mag - in_radius) / radius_diff, 2.0);\n"
+		"	opacity = min(opacity, 1.0);\n";
+
+	char *tail_frag = 
+		"	vec4 color = mix(in_color, out_color, opacity);\n"
+		"	vec4 bg_color = texture2D(tex, out_coord);\n"
+		"	gl_FragColor.rgb = mix(bg_color.rgb, color.rgb, color.a);\n"
+		"	gl_FragColor.a = max(bg_color.a, color.a);\n"
+		"}\n";
+
+
+	char *shader_stack[5] = { 0, 0, 0, 0, 0 };
+	shader_stack[0] = head_frag;
+
+	switch(config.shape)
+	{
+		case GradientConfig::LINEAR:
+			shader_stack[1] = linear_shape;
+			break;
+
+		default:
+			shader_stack[1] = radial_shape;
+			break;
+	}
+
+	switch(config.rate)
+	{
+		case GradientConfig::LINEAR:
+			shader_stack[2] = linear_rate;
+			break;
+		case GradientConfig::LOG:
+			shader_stack[2] = log_rate;
+			break;
+		case GradientConfig::SQUARE:
+			shader_stack[2] = square_rate;
+			break;
+	}
+
+	shader_stack[3] = tail_frag;
+// Force frame to create texture without copying to it if full alpha.
+	if(config.in_a >= 0xff &&
+		config.out_a >= 0xff)
+		get_output()->set_opengl_state(VFrame::TEXTURE);
+	get_output()->to_texture();
+	get_output()->enable_opengl();
+	get_output()->init_screen();
+	get_output()->bind_texture(0);
+
+	unsigned int frag = VFrame::make_shader(0, 
+		shader_stack[0], 
+		shader_stack[1], 
+		shader_stack[2], 
+		shader_stack[3], 
+		0);
+
+	if(frag)
+	{
+		glUseProgram(frag);
+		float w = get_output()->get_w();
+		float h = get_output()->get_h();
+		float texture_w = get_output()->get_texture_w();
+		float texture_h = get_output()->get_texture_h();
+		glUniform1i(glGetUniformLocation(frag, "tex"), 0);
+		glUniform1f(glGetUniformLocation(frag, "half_w"), w / 2 / texture_w);
+		glUniform1f(glGetUniformLocation(frag, "half_h"), h / 2 / texture_h);
+		if(config.shape == GradientConfig::LINEAR)
+		{
+			glUniform1f(glGetUniformLocation(frag, "center_x"), 
+				w / 2 / texture_w);
+			glUniform1f(glGetUniformLocation(frag, "center_y"), 
+				h / 2 / texture_h);
+		}
+		else
+		{
+			glUniform1f(glGetUniformLocation(frag, "center_x"), 
+				(float)config.center_x * w / 100 / texture_w);
+			glUniform1f(glGetUniformLocation(frag, "center_y"), 
+				(float)config.center_y * h / 100 / texture_h);
+		}
+		float gradient_size = hypotf(w / texture_w, h / texture_h);
+		glUniform1f(glGetUniformLocation(frag, "half_gradient_size"), 
+			gradient_size / 2);
+		glUniform1f(glGetUniformLocation(frag, "sin_angle"), 
+			sin(config.angle * (M_PI / 180)));
+		glUniform1f(glGetUniformLocation(frag, "cos_angle"), 
+			cos(config.angle * (M_PI / 180)));
+		float in_radius = (float)config.in_radius / 100 * gradient_size;
+		glUniform1f(glGetUniformLocation(frag, "in_radius"), in_radius);
+		float out_radius = (float)config.out_radius / 100 * gradient_size;
+		glUniform1f(glGetUniformLocation(frag, "out_radius"), out_radius);
+		glUniform1f(glGetUniformLocation(frag, "radius_diff"), 
+			out_radius - in_radius);
+
+		switch(get_output()->get_color_model())
+		{
+			case BC_YUV888:
+			case BC_YUVA8888:
+			{
+				float in1, in2, in3, in4;
+				float out1, out2, out3, out4;
+				YUV::rgb_to_yuv_f((float)config.in_r / 0xff,
+					(float)config.in_g / 0xff,
+					(float)config.in_b / 0xff,
+					in1,
+					in2,
+					in3);
+				in4 = (float)config.in_a / 0xff;
+				YUV::rgb_to_yuv_f((float)config.out_r / 0xff,
+					(float)config.out_g / 0xff,
+					(float)config.out_b / 0xff,
+					out1,
+					out2,
+					out3);
+				in2 += 0.5;
+				in3 += 0.5;
+				out2 += 0.5;
+				out3 += 0.5;
+				out4 = (float)config.out_a / 0xff;
+				glUniform4f(glGetUniformLocation(frag, "out_color"), 
+					out1, out2, out3, out4);
+				glUniform4f(glGetUniformLocation(frag, "in_color"), 
+					in1, in2, in3, in4);
+				break;
+			}
+
+			default:
+				glUniform4f(glGetUniformLocation(frag, "out_color"), 
+					(float)config.out_r / 0xff,
+					(float)config.out_g / 0xff,
+					(float)config.out_b / 0xff,
+					(float)config.out_a / 0xff);
+				glUniform4f(glGetUniformLocation(frag, "in_color"), 
+					(float)config.in_r / 0xff,
+					(float)config.in_g / 0xff,
+					(float)config.in_b / 0xff,
+					(float)config.in_a / 0xff);
+				break;
+		}
+	}
+
+	get_output()->draw_texture();
+	glUseProgram(0);
+	get_output()->set_opengl_state(VFrame::SCREEN);
+	
+#endif
+}
+
+
+
+
+
 
 
 

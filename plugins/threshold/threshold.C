@@ -116,10 +116,18 @@ int ThresholdMain::process_buffer(VFrame *frame,
 	double frame_rate)
 {
 	load_configuration();
+
+	int use_opengl = get_use_opengl() &&
+		(!config.plot || !gui_open());
+
 	read_frame(frame,
 		0,
 		get_source_position(),
-		get_framerate());
+		get_framerate(),
+		use_opengl);
+
+	if(use_opengl) return run_opengl();
+
 	send_render_gui(frame);
 
 	if(!threshold_engine)
@@ -213,7 +221,62 @@ void ThresholdMain::calculate_histogram(VFrame *frame)
 	engine->process_packages(frame);
 }
 
+int ThresholdMain::handle_opengl()
+{
+#ifdef HAVE_GL
+	static char *rgb_shader = 
+		"uniform sampler2D tex;\n"
+		"uniform float min;\n"
+		"uniform float max;\n"
+		"void main()\n"
+		"{\n"
+		"	vec4 pixel = texture2D(tex, gl_TexCoord[0].st);\n"
+		"	float v = dot(pixel.rgb, vec3(0.299, 0.587, 0.114));\n"
+		"	if(v >= min && v < max)\n"
+		"		pixel.rgb = vec3(1.0, 1.0, 1.0);\n"
+		"	else\n"
+		"		pixel.rgb = vec3(0.0, 0.0, 0.0);\n"
+		"	gl_FragColor = pixel;\n"
+		"}\n";
 
+	static char *yuv_shader = 
+		"uniform sampler2D tex;\n"
+		"uniform float min;\n"
+		"uniform float max;\n"
+		"void main()\n"
+		"{\n"
+		"	vec4 pixel = texture2D(tex, gl_TexCoord[0].st);\n"
+		"	if(pixel.r >= min && pixel.r < max)\n"
+		"		pixel.rgb = vec3(1.0, 0.5, 0.5);\n"
+		"	else\n"
+		"		pixel.rgb = vec3(0.0, 0.5, 0.5);\n"
+		"	gl_FragColor = pixel;\n"
+		"}\n";
+
+	get_output()->to_texture();
+	get_output()->enable_opengl();
+
+	unsigned int shader = 0;
+	if(cmodel_is_yuv(get_output()->get_color_model()))
+		shader = VFrame::make_shader(0, yuv_shader, 0);
+	else
+		shader = VFrame::make_shader(0, rgb_shader, 0);
+
+	if(shader > 0)
+	{
+		glUseProgram(shader);
+		glUniform1i(glGetUniformLocation(shader, "tex"), 0);
+		glUniform1f(glGetUniformLocation(shader, "min"), config.min);
+		glUniform1f(glGetUniformLocation(shader, "max"), config.max);
+	}
+
+	get_output()->init_screen();
+	get_output()->bind_texture(0);
+	get_output()->draw_texture();
+	glUseProgram(0);
+	get_output()->set_opengl_state(VFrame::SCREEN);
+#endif
+}
 
 
 

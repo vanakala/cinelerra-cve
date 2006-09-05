@@ -9,6 +9,7 @@
 #include "language.h"
 #include "loadbalance.h"
 #include "picon_png.h"
+#include "playback3d.h"
 #include "plugincolors.h"
 #include "pluginvclient.h"
 #include "vframe.h"
@@ -538,7 +539,8 @@ SET_TRACE
 	read_frame(frame, 
 		0, 
 		start_position, 
-		frame_rate);
+		frame_rate,
+		get_use_opengl());
 
 	if(EQUIV(config.threshold, 0))
 	{
@@ -546,6 +548,8 @@ SET_TRACE
 	}
 	else
 	{
+		if(get_use_opengl()) return run_opengl();
+
 		if(!engine) engine = new ChromaKeyServer(this);
 		engine->process_packages();
 	}
@@ -653,6 +657,155 @@ void ChromaKey::update_gui()
 	}
 }
 
+int ChromaKey::handle_opengl()
+{
+#ifdef HAVE_GL
+	OUTER_VARIABLES(this)
+	
+
+
+	static char *uniform_frag =
+		"uniform sampler2D tex;\n"
+		"uniform float min_v;\n"
+		"uniform float max_v;\n"
+		"uniform float run;\n"
+		"uniform float threshold;\n"
+		"uniform float threshold_run;\n"
+		"uniform vec3 key;\n";
+
+	static char *get_yuvvalue_frag =
+		"float get_value(vec4 color)\n"
+		"{\n"
+		"	return abs(color.r);\n"
+		"}\n";
+		
+	static char *get_rgbvalue_frag = 
+		"float get_value(vec4 color)\n"
+		"{\n"
+		"	return dot(color.rgb, vec3(0.29900, 0.58700, 0.11400));\n"
+		"}\n";
+
+	static char *value_frag =
+		"void main()\n"
+		"{\n"
+		"	vec4 color = texture2D(tex, gl_TexCoord[0].st);\n"
+		"	float value = get_value(color);\n"
+		"	float alpha = 1.0;\n"
+		"\n"
+		"	if(value >= min_v && value < max_v)\n"
+		"		alpha = 0.0;\n"
+		"	else\n"
+		"	if(value < min_v)\n"
+		"	{\n"
+		"		if(min_v - value < run)\n"
+		"			alpha = (min_v - value) / run;\n"
+		"	}\n"
+		"	else\n"
+		"	if(value - max_v < run)\n"
+		"		alpha = (value - max_v) / run;\n"
+		"\n"
+		"	gl_FragColor = vec4(color.rgb, alpha);\n"
+		"}\n";
+
+	static char *cube_frag = 
+		"void main()\n"
+		"{\n"
+		"	vec4 color = texture2D(tex, gl_TexCoord[0].st);\n"
+		"	float difference = length(color.rgb - key);\n"
+		"	float alpha = 1.0;\n"
+		"	if(difference < threshold)\n"
+		"		alpha = 0.0;\n"
+		"	else\n"
+		"	if(difference < threshold_run)\n"
+		"		alpha = (difference - threshold) / run;\n"
+		"	gl_FragColor = vec4(color.rgb, min(color.a, alpha));\n"
+		"}\n";
+
+	get_output()->to_texture();
+	get_output()->enable_opengl();
+	get_output()->init_screen();
+	char *shader_stack[] = { 0, 0, 0, 0, 0 };
+	int current_shader = 0;
+
+	shader_stack[current_shader++] = uniform_frag;
+	switch(get_output()->get_color_model())
+	{
+		case BC_YUV888:
+		case BC_YUVA8888:
+			if(config.use_value)
+			{
+				shader_stack[current_shader++] = get_yuvvalue_frag;
+				shader_stack[current_shader++] = value_frag;
+			}
+			else
+			{
+				shader_stack[current_shader++] = cube_frag;
+			}
+			break;
+
+		default:
+			if(config.use_value)
+			{
+				shader_stack[current_shader++] = get_rgbvalue_frag;
+				shader_stack[current_shader++] = value_frag;
+			}
+			else
+			{
+				shader_stack[current_shader++] = cube_frag;
+			}
+			break;
+	}
+SET_TRACE
+
+	unsigned int frag = VFrame::make_shader(0, 
+		shader_stack[0], 
+		shader_stack[1], 
+		shader_stack[2], 
+		shader_stack[3], 
+		0);
+	get_output()->bind_texture(0);
+
+	if(frag)
+	{
+		glUseProgram(frag);
+		glUniform1i(glGetUniformLocation(frag, "tex"), 0);
+		glUniform1f(glGetUniformLocation(frag, "min_v"), min_v);
+		glUniform1f(glGetUniformLocation(frag, "max_v"), max_v);
+		glUniform1f(glGetUniformLocation(frag, "run"), run);
+		glUniform1f(glGetUniformLocation(frag, "threshold"), threshold);
+		glUniform1f(glGetUniformLocation(frag, "threshold_run"), threshold_run);
+		if(get_output()->get_color_model() != BC_YUV888 &&
+			get_output()->get_color_model() != BC_YUVA8888)
+			glUniform3f(glGetUniformLocation(frag, "key"), 
+				r_key, g_key, b_key);
+		else
+			glUniform3f(glGetUniformLocation(frag, "key"), 
+				(float)y_key / 0xff, (float)u_key / 0xff, (float)v_key / 0xff);
+		
+	}
+SET_TRACE
+
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+	if(cmodel_components(get_output()->get_color_model()) == 3)
+	{
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		get_output()->clear_pbuffer();
+	}
+SET_TRACE
+
+	get_output()->draw_texture();
+
+	glUseProgram(0);
+	get_output()->set_opengl_state(VFrame::SCREEN);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glDisable(GL_BLEND);
+SET_TRACE
+#endif
+}
 
 
 

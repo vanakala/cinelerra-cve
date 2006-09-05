@@ -35,9 +35,12 @@ public:
 	LoadClient(LoadServer *server);
 	LoadClient();
 	virtual ~LoadClient();
-	
+
+// Called when run as distributed client
 	void run();
-	virtual void process_package(LoadPackage *package) {};
+// Called when run as a single_client
+	void run_single();
+	virtual void process_package(LoadPackage *package);
 	int get_package_number();
 	LoadServer* get_server();
 
@@ -64,10 +67,16 @@ public:
 	virtual LoadClient* new_client() { return 0; };
 	virtual LoadPackage* new_package() { return 0; };
 
-// User calls this to do an iteration
+// User calls this to do an iteration with the distributed clients
 	void process_packages();
 
+// Use this to do an iteration with one client, in the current thread.
+// The single client is created specifically for this call and deleted in 
+// delete_clients.  This simplifies the porting to OpenGL.
+// total_packages must be > 0.
+	void process_single();
 
+// These values are computed from the value of is_single.
 	int get_total_packages();
 	int get_total_clients();
 	LoadPackage* get_package(int number);
@@ -89,7 +98,9 @@ private:
 	LoadPackage **packages;
 	int total_packages;
 	LoadClient **clients;
+	LoadClient *single_client;
 	int total_clients;
+	int is_single;
 	Mutex *client_lock;
 };
 

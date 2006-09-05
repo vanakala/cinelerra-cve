@@ -235,6 +235,13 @@ int PluginVClient::plugin_process_loop(VFrame **buffers, int64_t &write_length)
 	return result;
 }
 
+
+int PluginVClient::run_opengl()
+{
+	server->run_opengl(this);
+	return 0;
+}
+
 int PluginVClient::handle_opengl()
 {
 	return 0;

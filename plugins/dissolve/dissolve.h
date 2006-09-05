@@ -15,6 +15,7 @@ public:
 
 // required for all realtime plugins
 	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
+	int handle_opengl();
 	int uses_gui();
 	int is_transition();
 	int is_video();

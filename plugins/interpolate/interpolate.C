@@ -2,6 +2,7 @@
 #include "clip.h"
 #include "colormodels.h"
 #include "filexml.h"
+#include "aggregated.h"
 #include "language.h"
 #include "picon_png.h"
 #include "interpolate.h"
@@ -259,7 +260,8 @@ int InterpolatePixelsMain::process_buffer(VFrame *frame,
 	read_frame(frame, 
 		0, 
 		start_position, 
-		frame_rate);
+		frame_rate,
+		get_use_opengl());
 //frame->dump_params();
 
 
@@ -286,6 +288,41 @@ int InterpolatePixelsMain::process_buffer(VFrame *frame,
 // The color values are interpolated in the most basic way.
 // No adaptive algorithm is used.
 
+int InterpolatePixelsMain::handle_opengl()
+{
+printf("InterpolatePixelsMain::handle_opengl\n");
+#ifdef HAVE_GL
+
+
+	get_output()->to_texture();
+	get_output()->enable_opengl();
+
+	unsigned int frag = VFrame::make_shader(0,
+					interpolate_shader,
+					0);
+	if(frag > 0)
+	{
+		glUseProgram(frag);
+		glUniform1i(glGetUniformLocation(frag, "tex"), 0);
+		INTERPOLATE_UNIFORMS(frag)
+	}
+
+
+	get_output()->init_screen();
+	get_output()->bind_texture(0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+	
+
+	get_output()->draw_texture();
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glUseProgram(0);
+	get_output()->set_opengl_state(VFrame::SCREEN);
+
+#endif
+	return 0;
+}
 
 
 

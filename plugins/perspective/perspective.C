@@ -835,17 +835,27 @@ int PerspectiveMain::process_buffer(VFrame *frame,
 		read_frame(frame, 
 			0, 
 			start_position, 
-			frame_rate);
+			frame_rate,
+			get_use_opengl());
 		return 1;
 	}
 
+// Opengl does some funny business with stretching.
+	int use_opengl = get_use_opengl() &&
+		(config.mode == AffineEngine::PERSPECTIVE || 
+		config.mode == AffineEngine::SHEER);
 	read_frame(frame, 
 		0, 
 		start_position, 
-		frame_rate);
+		frame_rate,
+		use_opengl);
 
 	if(!engine) engine = new AffineEngine(get_project_smp() + 1,
 		get_project_smp() + 1);
+
+	if(use_opengl)
+		return run_opengl();
+
 
 
 	this->input = frame;
@@ -1016,7 +1026,27 @@ int PerspectiveMain::process_buffer(VFrame *frame,
 }
 
 
-
+int PerspectiveMain::handle_opengl()
+{
+#ifdef HAVE_GL
+	engine->set_opengl(1);
+	engine->process(get_output(),
+		get_output(),
+		get_output(), 
+		config.mode,
+		config.x1,
+		config.y1,
+		config.x2,
+		config.y2,
+		config.x3,
+		config.y3,
+		config.x4,
+		config.y4,
+		config.forward);
+	engine->set_opengl(0);
+	return 0;
+#endif
+}
 
 
 

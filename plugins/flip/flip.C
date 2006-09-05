@@ -143,8 +143,18 @@ int FlipMain::process_buffer(VFrame *frame,
 	read_frame(frame,
 		0,
 		get_source_position(),
-		get_framerate());
+		get_framerate(),
+		get_use_opengl());
 
+
+
+	if(get_use_opengl()) 
+	{
+		if(config.flip_vertical || config.flip_horizontal)
+			return run_opengl();
+		else
+			return 0;
+	}
 
 	switch(colormodel)
 	{
@@ -270,3 +280,54 @@ int FlipMain::save_defaults()
 	defaults->save();
 	return 0;
 }
+
+int FlipMain::handle_opengl()
+{
+#ifdef HAVE_GL
+	get_output()->to_texture();
+	get_output()->enable_opengl();
+	get_output()->init_screen();
+	get_output()->bind_texture(0);
+
+	if(config.flip_vertical && !config.flip_horizontal)
+	{
+		get_output()->draw_texture(0,
+			0,
+			get_output()->get_w(),
+			get_output()->get_h(),
+			0,
+			get_output()->get_h(),
+			get_output()->get_w(),
+			0);
+	}
+
+	if(config.flip_horizontal && !config.flip_vertical)
+	{
+		get_output()->draw_texture(0,
+			0,
+			get_output()->get_w(),
+			get_output()->get_h(),
+			get_output()->get_w(),
+			0,
+			0,
+			get_output()->get_h());
+	}
+
+	if(config.flip_vertical && config.flip_horizontal)
+	{
+		get_output()->draw_texture(0,
+			0,
+			get_output()->get_w(),
+			get_output()->get_h(),
+			get_output()->get_w(),
+			get_output()->get_h(),
+			0,
+			0);
+	}
+
+	get_output()->set_opengl_state(VFrame::SCREEN);
+#endif
+}
+
+
+

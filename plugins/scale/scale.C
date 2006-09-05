@@ -166,18 +166,20 @@ int ScaleMain::process_buffer(VFrame *frame,
 	
 	input = frame;
 	output = frame;
-	VFrame *input_ptr = frame;
 
 	load_configuration();
 
 	read_frame(frame, 
 		0, 
 		start_position, 
-		frame_rate);
+		frame_rate,
+		get_use_opengl());
 
 // No scaling
 	if(config.w == 1 && config.h == 1)
 		return 0;
+
+	if(get_use_opengl()) return run_opengl();
 
 	VFrame *temp_frame = new_temp(frame->get_w(), 
 			frame->get_h(),
@@ -282,6 +284,37 @@ void ScaleMain::calculate_transfer(VFrame *frame,
 		in_y2 -= (out_y2 - frame->get_h()) / config.h;
 		out_y2 = frame->get_h();
 	}
+}
+
+int ScaleMain::handle_opengl()
+{
+#ifdef HAVE_GL
+	float in_x1, in_x2, in_y1, in_y2, out_x1, out_x2, out_y1, out_y2;
+	calculate_transfer(get_output(),
+		in_x1, 
+		in_x2, 
+		in_y1, 
+		in_y2, 
+		out_x1, 
+		out_x2, 
+		out_y1, 
+		out_y2);
+
+	get_output()->to_texture();
+	get_output()->enable_opengl();
+	get_output()->init_screen();
+	get_output()->clear_pbuffer();
+	get_output()->bind_texture(0);
+	get_output()->draw_texture(in_x1, 
+		in_y1, 
+		in_x2, 
+		in_y2, 
+		out_x1, 
+		out_y1, 
+		out_x2, 
+		out_y2);
+	get_output()->set_opengl_state(VFrame::SCREEN);
+#endif
 }
 
 

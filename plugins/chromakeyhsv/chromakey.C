@@ -9,6 +9,7 @@
 #include "language.h"
 #include "loadbalance.h"
 #include "picon_png.h"
+#include "playback3d.h"
 #include "plugincolors.h"
 #include "pluginvclient.h"
 #include "vframe.h"
@@ -873,7 +874,9 @@ int ChromaKeyHSV::process_buffer(VFrame *frame,
 	read_frame(frame, 
 		0, 
 		start_position, 
-		frame_rate);
+		frame_rate,
+		get_use_opengl());
+	if(get_use_opengl()) return run_opengl();
 
 
 	if(!engine) engine = new ChromaKeyServer(this);
@@ -1034,3 +1037,175 @@ void ChromaKeyHSV::update_gui ()
       thread->window->unlock_window ();
     }
 }
+
+
+
+
+int ChromaKeyHSV::handle_opengl()
+{
+#ifdef HAVE_GL
+// For macro
+	ChromaKeyHSV *plugin = this;
+	OUTER_VARIABLES
+
+	static char *yuv_shader = 
+		"const vec3 black = vec3(0.0, 0.5, 0.5);\n"
+		"\n"
+		"vec4 yuv_to_rgb(vec4 color)\n"
+		"{\n"
+			YUV_TO_RGB_FRAG("color")
+		"	return color;\n"
+		"}\n"
+		"\n"
+		"vec4 rgb_to_yuv(vec4 color)\n"
+		"{\n"
+			RGB_TO_YUV_FRAG("color")
+		"	return color;\n"
+		"}\n";
+
+	static char *rgb_shader = 
+		"const vec3 black = vec3(0.0, 0.0, 0.0);\n"
+		"\n"
+		"vec4 yuv_to_rgb(vec4 color)\n"
+		"{\n"
+		"	return color;\n"
+		"}\n"
+		"vec4 rgb_to_yuv(vec4 color)\n"
+		"{\n"
+		"	return color;\n"
+		"}\n";
+
+	static char *hsv_shader = 
+		"vec4 rgb_to_hsv(vec4 color)\n"
+		"{\n"
+			RGB_TO_HSV_FRAG("color")
+		"	return color;\n"
+		"}\n"
+		"\n"
+		"vec4 hsv_to_rgb(vec4 color)\n"
+		"{\n"
+			HSV_TO_RGB_FRAG("color")
+		"	return color;\n"
+		"}\n"
+		"\n";
+
+	static char *show_rgbmask_shader = 
+		"vec4 show_mask(vec4 color, vec4 color2)\n"
+		"{\n"
+		"	return vec4(1.0, 1.0, 1.0, min(color.a, color2.a));"
+		"}\n";
+
+	static char *show_yuvmask_shader = 
+		"vec4 show_mask(vec4 color, vec4 color2)\n"
+		"{\n"
+		"	return vec4(1.0, 0.5, 0.5, min(color.a, color2.a));"
+		"}\n";
+
+	static char *nomask_shader = 
+		"vec4 show_mask(vec4 color, vec4 color2)\n"
+		"{\n"
+		"	return vec4(color.rgb, min(color.a, color2.a));"
+		"}\n";
+
+	extern unsigned char _binary_chromakey_sl_start[];
+	static char *shader = (char*)_binary_chromakey_sl_start;
+SET_TRACE
+
+	get_output()->to_texture();
+	get_output()->enable_opengl();
+	get_output()->init_screen();
+
+SET_TRACE
+	char *shader_stack[] = { 0, 0, 0, 0, 0 };
+
+SET_TRACE
+	switch(get_output()->get_color_model())
+	{
+		case BC_YUV888:
+		case BC_YUVA8888:
+			shader_stack[0] = yuv_shader;
+			shader_stack[1] = hsv_shader;
+			if(config.show_mask) 
+				shader_stack[2] = show_yuvmask_shader;
+			else
+				shader_stack[2] = nomask_shader;
+			shader_stack[3] = shader;
+			break;
+
+		default:
+			shader_stack[0] = rgb_shader;
+			shader_stack[1] = hsv_shader;
+			if(config.show_mask) 
+				shader_stack[2] = show_rgbmask_shader;
+			else
+				shader_stack[2] = nomask_shader;
+			shader_stack[3] = shader;
+			break;
+	}
+
+
+SET_TRACE
+	unsigned int frag = VFrame::make_shader(0, 
+		shader_stack[0], 
+		shader_stack[1], 
+		shader_stack[2], 
+		shader_stack[3], 
+		0);
+
+SET_TRACE
+	if(frag)
+	{
+		glUseProgram(frag);
+		glUniform1i(glGetUniformLocation(frag, "tex"), 0);
+		glUniform1f(glGetUniformLocation(frag, "red"), red);
+		glUniform1f(glGetUniformLocation(frag, "green"), green);
+		glUniform1f(glGetUniformLocation(frag, "blue"), blue);
+		glUniform1f(glGetUniformLocation(frag, "in_slope"), in_slope);
+		glUniform1f(glGetUniformLocation(frag, "out_slope"), out_slope);
+		glUniform1f(glGetUniformLocation(frag, "tolerance"), tolerance);
+		glUniform1f(glGetUniformLocation(frag, "tolerance_in"), tolerance_in);
+		glUniform1f(glGetUniformLocation(frag, "tolerance_out"), tolerance_out);
+		glUniform1f(glGetUniformLocation(frag, "sat"), sat);
+		glUniform1f(glGetUniformLocation(frag, "min_s"), min_s);
+		glUniform1f(glGetUniformLocation(frag, "min_s_in"), min_s_in);
+		glUniform1f(glGetUniformLocation(frag, "min_s_out"), min_s_out);
+		glUniform1f(glGetUniformLocation(frag, "min_v"), min_v);
+		glUniform1f(glGetUniformLocation(frag, "min_v_in"), min_v_in);
+		glUniform1f(glGetUniformLocation(frag, "min_v_out"), min_v_out);
+		glUniform1f(glGetUniformLocation(frag, "max_v"), max_v);
+		glUniform1f(glGetUniformLocation(frag, "max_v_in"), max_v_in);
+		glUniform1f(glGetUniformLocation(frag, "max_v_out"), max_v_out);
+		glUniform1f(glGetUniformLocation(frag, "spill_threshold"), spill_threshold);
+		glUniform1f(glGetUniformLocation(frag, "spill_amount"), spill_amount);
+		glUniform1f(glGetUniformLocation(frag, "alpha_offset"), alpha_offset);
+		glUniform1f(glGetUniformLocation(frag, "hue_key"), hue_key);
+		glUniform1f(glGetUniformLocation(frag, "saturation_key"), saturation_key);
+		glUniform1f(glGetUniformLocation(frag, "value_key"), value_key);
+	}
+
+SET_TRACE
+
+	get_output()->bind_texture(0);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+
+	if(cmodel_components(get_output()->get_color_model()) == 3)
+	{
+		glEnable(GL_BLEND);
+		glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		get_output()->clear_pbuffer();
+	}
+	get_output()->draw_texture();
+
+SET_TRACE
+	glUseProgram(0);
+	get_output()->set_opengl_state(VFrame::SCREEN);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glDisable(GL_BLEND);
+
+SET_TRACE
+
+#endif
+}
+

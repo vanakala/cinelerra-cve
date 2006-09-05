@@ -14,6 +14,7 @@
 #include "keyframe.h"
 #include "language.h"
 #include "loadbalance.h"
+#include "playback3d.h"
 #include "plugincolors.h"
 #include "vframe.h"
 
@@ -596,6 +597,19 @@ void HistogramMain::calculate_automatic(VFrame *data)
 
 
 
+int HistogramMain::calculate_use_opengl()
+{
+// glHistogram doesn't work.
+	int result = get_use_opengl() &&
+		!config.automatic && 
+		config.points[HISTOGRAM_RED].total() < 3 &&
+		config.points[HISTOGRAM_GREEN].total() < 3 &&
+		config.points[HISTOGRAM_BLUE].total() < 3 &&
+		config.points[HISTOGRAM_VALUE].total() < 3 &&
+		(!config.plot || !gui_open());
+	return result;
+}
+
 
 int HistogramMain::process_buffer(VFrame *frame,
 	int64_t start_position,
@@ -606,10 +620,17 @@ SET_TRACE
 
 
 SET_TRACE
+	int use_opengl = calculate_use_opengl();
+
+//printf("%d\n", use_opengl);
 	read_frame(frame, 
 		0, 
 		start_position, 
-		frame_rate);
+		frame_rate,
+		use_opengl);
+
+// Apply histogram in hardware
+	if(use_opengl) return run_opengl();
 
 	if(!engine) engine = new HistogramEngine(this,
 		get_project_smp() + 1,
@@ -721,6 +742,258 @@ void HistogramMain::tabulate_curve(int subscript, int use_value)
 				(int)(calculate_smooth((float)i / 0xffff, subscript) * 0xffff);
 	}
 }
+
+int HistogramMain::handle_opengl()
+{
+#ifdef HAVE_GL
+	static char *histogram_get_pixel2 =
+		"uniform sampler2D tex;\n"
+		"vec4 histogram_get_pixel()\n"
+		"{\n"
+		"	return texture2D(tex, gl_TexCoord[0].st);\n"
+		"}\n";
+
+	static char *head_frag = 
+		"// first input point\n"
+		"uniform vec2 input_min_r;\n"
+		"uniform vec2 input_min_g;\n"
+		"uniform vec2 input_min_b;\n"
+		"uniform vec2 input_min_v;\n"
+		"// second input point\n"
+		"uniform vec2 input_max_r;\n"
+		"uniform vec2 input_max_g;\n"
+		"uniform vec2 input_max_b;\n"
+		"uniform vec2 input_max_v;\n"
+		"// output points\n"
+		"uniform vec4 output_min;\n"
+		"uniform vec4 output_scale;\n"
+		"void main()\n"
+		"{\n";
+
+	static char *get_rgb_frag =
+		"	vec4 pixel = histogram_get_pixel();\n";
+
+	static char *get_yuv_frag =
+		"	vec4 pixel = histogram_get_pixel();\n"
+			YUV_TO_RGB_FRAG("pixel");
+
+#define APPLY_INPUT_CURVE(PIXEL, INPUT_MIN, INPUT_MAX) \
+		"// apply input curve\n" \
+		"	if(" PIXEL " < 0.0)\n" \
+		"		" PIXEL " = 0.0;\n" \
+		"	else\n" \
+		"	if(" PIXEL " < " INPUT_MIN ".x)\n" \
+		"		" PIXEL " = " PIXEL " * " INPUT_MIN ".y / " INPUT_MIN ".x;\n" \
+		"	else\n" \
+		"	if(" PIXEL " < " INPUT_MAX ".x)\n" \
+		"		" PIXEL " = (" PIXEL " - " INPUT_MIN ".x) * \n" \
+		"			(" INPUT_MAX ".y - " INPUT_MIN ".y) / \n" \
+		"			(" INPUT_MAX ".x - " INPUT_MIN ".x) + \n" \
+		"			" INPUT_MIN ".y;\n" \
+		"	else\n" \
+		"	if(" PIXEL " < 1.0)\n" \
+		"		" PIXEL " = (" PIXEL " - " INPUT_MAX ".x) * \n" \
+		"			(1.0 - " INPUT_MAX ".y) / \n" \
+		"			(1.0 - " INPUT_MAX ".x) + \n" \
+		"			" INPUT_MAX ".y;\n" \
+		"	else\n" \
+		"		" PIXEL " = 1.0;\n"
+
+
+
+	static char *apply_histogram_frag = 
+		APPLY_INPUT_CURVE("pixel.r", "input_min_r", "input_max_r")
+		APPLY_INPUT_CURVE("pixel.g", "input_min_g", "input_max_g")
+		APPLY_INPUT_CURVE("pixel.b", "input_min_b", "input_max_b")
+		"// apply output curve\n"
+		"	pixel.rgb *= output_scale.rgb;\n"
+		"	pixel.rgb += output_min.rgb;\n"
+		APPLY_INPUT_CURVE("pixel.r", "input_min_v", "input_max_v")
+		APPLY_INPUT_CURVE("pixel.g", "input_min_v", "input_max_v")
+		APPLY_INPUT_CURVE("pixel.b", "input_min_v", "input_max_v")
+		"// apply output curve\n"
+		"	pixel.rgb *= vec3(output_scale.a, output_scale.a, output_scale.a);\n"
+		"	pixel.rgb += vec3(output_min.a, output_min.a, output_min.a);\n";
+
+	static char *put_rgb_frag =
+		"	gl_FragColor = pixel;\n"
+		"}\n";
+
+	static char *put_yuv_frag =
+			RGB_TO_YUV_FRAG("pixel")
+		"	gl_FragColor = pixel;\n"
+		"}\n";
+
+
+
+	get_output()->to_texture();
+	get_output()->enable_opengl();
+
+	char *shader_stack[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	int current_shader = 0;
+
+		shader_stack[current_shader++] = histogram_get_pixel2;
+
+	unsigned int shader = 0;
+	switch(get_output()->get_color_model())
+	{
+		case BC_YUV888:
+		case BC_YUVA8888:
+			shader_stack[current_shader++] = head_frag;
+			shader_stack[current_shader++] = get_yuv_frag;
+			shader_stack[current_shader++] = apply_histogram_frag;
+			shader_stack[current_shader++] = put_yuv_frag;
+			break;
+		default:
+			shader_stack[current_shader++] = head_frag;
+			shader_stack[current_shader++] = get_rgb_frag;
+			shader_stack[current_shader++] = apply_histogram_frag;
+			shader_stack[current_shader++] = put_rgb_frag;
+			break;
+	}
+
+	shader = VFrame::make_shader(0,
+		shader_stack[0],
+		shader_stack[1],
+		shader_stack[2],
+		shader_stack[3],
+		shader_stack[4],
+		shader_stack[5],
+		shader_stack[6],
+		shader_stack[7],
+		shader_stack[8],
+		shader_stack[9],
+		shader_stack[10],
+		shader_stack[11],
+		shader_stack[12],
+		shader_stack[13],
+		shader_stack[14],
+		shader_stack[15],
+		0);
+
+	float input_min_r[2] = { 0, 0 };
+	float input_min_g[2] = { 0, 0 };
+	float input_min_b[2] = { 0, 0 };
+	float input_min_v[2] = { 0, 0 };
+	float input_max_r[2] = { 1, 1 };
+	float input_max_g[2] = { 1, 1 };
+	float input_max_b[2] = { 1, 1 };
+	float input_max_v[2] = { 1, 1 };
+	float output_min[4] = { 0, 0, 0, 0 };
+	float output_scale[4] = { 1, 1, 1, 1 };
+
+// Red
+	HistogramPoint *point1, *point2;
+	
+#define CONVERT_POINT(index, input_min, input_max) \
+	point1 = config.points[index].first; \
+	point2 = config.points[index].last; \
+	if(point1) \
+	{ \
+		input_min[0] = point1->x; \
+		input_min[1] = point1->y; \
+		if(point2 != point1) \
+		{ \
+			input_max[0] = point2->x; \
+			input_max[1] = point2->y; \
+		} \
+	}
+
+	CONVERT_POINT(HISTOGRAM_RED, input_min_r, input_max_r);
+	CONVERT_POINT(HISTOGRAM_GREEN, input_min_g, input_max_g);
+	CONVERT_POINT(HISTOGRAM_BLUE, input_min_b, input_max_b);
+	CONVERT_POINT(HISTOGRAM_VALUE, input_min_v, input_max_v);
+
+// printf("min x    min y    max x    max y\n");
+// printf("%f %f %f %f\n", input_min_r[0], input_min_r[1], input_max_r[0], input_max_r[1]);
+// printf("%f %f %f %f\n", input_min_g[0], input_min_g[1], input_max_g[0], input_max_g[1]);
+// printf("%f %f %f %f\n", input_min_b[0], input_min_b[1], input_max_b[0], input_max_b[1]);
+// printf("%f %f %f %f\n", input_min_v[0], input_min_v[1], input_max_v[0], input_max_v[1]);
+
+	for(int i = 0; i < HISTOGRAM_MODES; i++)
+	{
+		output_min[i] = config.output_min[i];
+		output_scale[i] = config.output_max[i] - config.output_min[i];
+	}
+
+	if(shader > 0)
+	{
+		glUseProgram(shader);
+		glUniform1i(glGetUniformLocation(shader, "tex"), 0);
+		glUniform2fv(glGetUniformLocation(shader, "input_min_r"), 1, input_min_r);
+		glUniform2fv(glGetUniformLocation(shader, "input_min_g"), 1, input_min_g);
+		glUniform2fv(glGetUniformLocation(shader, "input_min_b"), 1, input_min_b);
+		glUniform2fv(glGetUniformLocation(shader, "input_min_v"), 1, input_min_v);
+		glUniform2fv(glGetUniformLocation(shader, "input_max_r"), 1, input_max_r);
+		glUniform2fv(glGetUniformLocation(shader, "input_max_g"), 1, input_max_g);
+		glUniform2fv(glGetUniformLocation(shader, "input_max_b"), 1, input_max_b);
+		glUniform2fv(glGetUniformLocation(shader, "input_max_v"), 1, input_max_v);
+		glUniform4fv(glGetUniformLocation(shader, "output_min"), 1, output_min);
+		glUniform4fv(glGetUniformLocation(shader, "output_scale"), 1, output_scale);
+	}
+
+	get_output()->init_screen();
+	get_output()->bind_texture(0);
+
+	glDisable(GL_BLEND);
+
+// Draw the affected half
+	if(config.split)
+	{
+		glBegin(GL_TRIANGLES);
+		glNormal3f(0, 0, 1.0);
+
+		glTexCoord2f(0.0 / get_output()->get_texture_w(), 
+			0.0 / get_output()->get_texture_h());
+		glVertex3f(0.0, -(float)get_output()->get_h(), 0);
+
+
+		glTexCoord2f((float)get_output()->get_w() / get_output()->get_texture_w(), 
+			(float)get_output()->get_h() / get_output()->get_texture_h());
+		glVertex3f((float)get_output()->get_w(), -0.0, 0);
+
+		glTexCoord2f(0.0 / get_output()->get_texture_w(), 
+			(float)get_output()->get_h() / get_output()->get_texture_h());
+		glVertex3f(0.0, -0.0, 0);
+
+
+		glEnd();
+	}
+	else
+	{
+		get_output()->draw_texture();
+	}
+
+	glUseProgram(0);
+
+// Draw the unaffected half
+	if(config.split)
+	{
+		glBegin(GL_TRIANGLES);
+		glNormal3f(0, 0, 1.0);
+
+
+		glTexCoord2f(0.0 / get_output()->get_texture_w(), 
+			0.0 / get_output()->get_texture_h());
+		glVertex3f(0.0, -(float)get_output()->get_h(), 0);
+
+		glTexCoord2f((float)get_output()->get_w() / get_output()->get_texture_w(), 
+			0.0 / get_output()->get_texture_h());
+		glVertex3f((float)get_output()->get_w(), 
+			-(float)get_output()->get_h(), 0);
+
+		glTexCoord2f((float)get_output()->get_w() / get_output()->get_texture_w(), 
+			(float)get_output()->get_h() / get_output()->get_texture_h());
+		glVertex3f((float)get_output()->get_w(), -0.0, 0);
+
+
+ 		glEnd();
+	}
+
+	get_output()->set_opengl_state(VFrame::SCREEN);
+#endif
+}
+
 
 
 

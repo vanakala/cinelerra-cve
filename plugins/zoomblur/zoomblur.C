@@ -94,6 +94,15 @@ public:
 PLUGIN_THREAD_HEADER(ZoomBlurMain, ZoomBlurThread, ZoomBlurWindow)
 
 
+// Output coords for a layer of blurring
+// Used for OpenGL only
+class ZoomBlurLayer
+{
+public:
+	ZoomBlurLayer() {};
+	float x1, y1, x2, y2;
+};
+
 class ZoomBlurMain : public PluginVClient
 {
 public:
@@ -109,6 +118,7 @@ public:
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
+	int handle_opengl();
 
 	PLUGIN_CLASS_MEMBERS(ZoomBlurConfig, ZoomBlurThread)
 
@@ -117,8 +127,10 @@ public:
 	ZoomBlurEngine *engine;
 	int **scale_y_table;
 	int **scale_x_table;
+	ZoomBlurLayer *layer_table;
 	int table_entries;
 	int need_reconfigure;
+// The accumulation buffer is needed because 8 bits isn't precise enough
 	unsigned char *accum;
 };
 
@@ -365,6 +377,7 @@ ZoomBlurMain::ZoomBlurMain(PluginServer *server)
 	engine = 0;
 	scale_x_table = 0;
 	scale_y_table = 0;
+	layer_table = 0;
 	table_entries = 0;
 	accum = 0;
 	need_reconfigure = 1;
@@ -409,8 +422,11 @@ void ZoomBlurMain::delete_tables()
 			delete [] scale_y_table[i];
 		delete [] scale_y_table;
 	}
+
+	delete [] layer_table;
 	scale_x_table = 0;
 	scale_y_table = 0;
+	layer_table = 0;
 	table_entries = 0;
 }
 
@@ -425,7 +441,8 @@ SET_TRACE
 	read_frame(frame,
 		0,
 		get_source_position(),
-		get_framerate());
+		get_framerate(),
+		get_use_opengl());
 
 SET_TRACE
 
@@ -483,14 +500,15 @@ SET_TRACE
 // Dimensions of outermost rectangle
 
 		delete_tables();
-		scale_x_table = new int*[config.steps];
-		scale_y_table = new int*[config.steps];
-		table_entries = config.steps;
+		table_entries = steps;
+		scale_x_table = new int*[steps];
+		scale_y_table = new int*[steps];
+		layer_table = new ZoomBlurLayer[table_entries];
 
 SET_TRACE
-		for(int i = 0; i < config.steps; i++)
+		for(int i = 0; i < steps; i++)
 		{
-			float fraction = (float)i / config.steps;
+			float fraction = (float)i / steps;
 			float inv_fraction = 1.0 - fraction;
 			float out_x1 = min_x1 * fraction + max_x1 * inv_fraction;
 			float out_x2 = min_x2 * fraction + max_x2 * inv_fraction;
@@ -508,6 +526,11 @@ SET_TRACE
 			scale_y_table[i] = y_table = new int[(int)(h + 1)];
 			scale_x_table[i] = x_table = new int[(int)(w + 1)];
 SET_TRACE
+			layer_table[i].x1 = out_x1;
+			layer_table[i].y1 = out_y1;
+			layer_table[i].x2 = out_x2;
+			layer_table[i].y2 = out_y2;
+SET_TRACE
 
 			for(int j = 0; j < h; j++)
 			{
@@ -522,6 +545,9 @@ SET_TRACE
 SET_TRACE
 		need_reconfigure = 0;
 	}
+
+SET_TRACE
+	if(get_use_opengl()) return run_opengl();
 
 SET_TRACE
 
@@ -662,6 +688,128 @@ void ZoomBlurMain::read_data(KeyFrame *keyframe)
 	}
 }
 
+#ifdef HAVE_GL
+static void draw_box(float x1, float y1, float x2, float y2)
+{
+	glBegin(GL_QUADS);
+	glVertex3f(x1, y1, 0.0);
+	glVertex3f(x2, y1, 0.0);
+	glVertex3f(x2, y2, 0.0);
+	glVertex3f(x1, y2, 0.0);
+	glEnd();
+}
+#endif
+
+int ZoomBlurMain::handle_opengl()
+{
+#ifdef HAVE_GL
+	get_output()->to_texture();
+	get_output()->enable_opengl();
+	get_output()->init_screen();
+	get_output()->bind_texture(0);
+
+	int is_yuv = cmodel_is_yuv(get_output()->get_color_model());
+	glClearColor(0.0, 0.0, 0.0, 0.0);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+// Draw unselected channels
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_ONE, GL_ONE);
+	glDrawBuffer(GL_BACK);
+
+	if(!config.r || !config.g || !config.b || !config.a)
+	{
+		glColor4f(config.r ? 0 : 1, 
+			config.g ? 0 : 1, 
+			config.b ? 0 : 1, 
+			config.a ? 0 : 1);
+		get_output()->draw_texture();
+	}
+	glAccum(GL_LOAD, 1.0);
+
+// Blur selected channels
+	float fraction = 1.0 / config.steps;
+	for(int i = 0; i < config.steps; i++)
+	{
+		glClear(GL_COLOR_BUFFER_BIT);
+		glColor4f(config.r ? 1 : 0, 
+			config.g ? 1 : 0, 
+			config.b ? 1 : 0, 
+			config.a ? 1 : 0);
+
+		get_output()->draw_texture(0,
+			0,
+			get_output()->get_w(),
+			get_output()->get_h(),
+			layer_table[i].x1,
+			get_output()->get_h() - layer_table[i].y1,
+			layer_table[i].x2,
+			get_output()->get_h() - layer_table[i].y2,
+			1);
+
+// Fill YUV black
+		glDisable(GL_TEXTURE_2D);
+		if(cmodel_is_yuv(get_output()->get_color_model()))
+		{
+			glColor4f(config.r ? 0.0 : 0, 
+				config.g ? 0.5 : 0, 
+				config.b ? 0.5 : 0, 
+				config.a ? 1.0 : 0);
+			float center_x1 = 0.0;
+			float center_x2 = get_output()->get_w();
+			if(layer_table[i].x1 > 0)
+			{
+				center_x1 = layer_table[i].x1;
+				draw_box(0, 0, layer_table[i].x1, -get_output()->get_h());
+			}
+			if(layer_table[i].x2 < get_output()->get_w())
+			{
+				center_x2 = layer_table[i].x2;
+				draw_box(layer_table[i].x2, 0, get_output()->get_w(), -get_output()->get_h());
+			}
+			if(layer_table[i].y1 > 0)
+			{
+				draw_box(center_x1, 
+					-get_output()->get_h(), 
+					center_x2, 
+					-get_output()->get_h() + layer_table[i].y1);
+			}
+			if(layer_table[i].y2 < get_output()->get_h())
+			{
+				draw_box(center_x1, 
+					-get_output()->get_h() + layer_table[i].y2, 
+					center_x2, 
+					0);
+			}
+		}
+
+
+		glAccum(GL_ACCUM, fraction);
+		glEnable(GL_TEXTURE_2D);
+		glColor4f(config.r ? 1 : 0, 
+			config.g ? 1 : 0, 
+			config.b ? 1 : 0, 
+			config.a ? 1 : 0);
+	}
+
+	glDisable(GL_BLEND);
+	glReadBuffer(GL_BACK);
+	glDisable(GL_TEXTURE_2D);
+	glAccum(GL_RETURN, 1.0);
+
+	glColor4f(1, 1, 1, 1);
+	get_output()->set_opengl_state(VFrame::SCREEN);
+#endif
+}
+
+
+
+
+
+
+
+
+
 
 
 
@@ -747,7 +895,8 @@ ZoomBlurUnit::ZoomBlurUnit(ZoomBlurEngine *server,
 		} \
 	} \
  \
-/* Copy to output */ \
+/* Copy just selected blurred channels to output and combine with original \
+	unblurred channels */ \
 	if(i == plugin->config.steps - 1) \
 	{ \
 		for(int j = pkg->y1; j < pkg->y2; j++) \

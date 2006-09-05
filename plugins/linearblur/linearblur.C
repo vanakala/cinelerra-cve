@@ -92,6 +92,15 @@ public:
 PLUGIN_THREAD_HEADER(LinearBlurMain, LinearBlurThread, LinearBlurWindow)
 
 
+// Output coords for a layer of blurring
+// Used for OpenGL only
+class LinearBlurLayer
+{
+public:
+	LinearBlurLayer() {};
+	int x, y;
+};
+
 class LinearBlurMain : public PluginVClient
 {
 public:
@@ -107,6 +116,7 @@ public:
 	void save_data(KeyFrame *keyframe);
 	void read_data(KeyFrame *keyframe);
 	void update_gui();
+	int handle_opengl();
 
 	PLUGIN_CLASS_MEMBERS(LinearBlurConfig, LinearBlurThread)
 
@@ -115,6 +125,7 @@ public:
 	LinearBlurEngine *engine;
 	int **scale_y_table;
 	int **scale_x_table;
+	LinearBlurLayer *layer_table;
 	int table_entries;
 	int need_reconfigure;
 // The accumulation buffer is needed because 8 bits isn't precise enough
@@ -355,6 +366,7 @@ LinearBlurMain::LinearBlurMain(PluginServer *server)
 	accum = 0;
 	need_reconfigure = 1;
 	temp = 0;
+	layer_table = 0;
 }
 
 LinearBlurMain::~LinearBlurMain()
@@ -395,6 +407,8 @@ void LinearBlurMain::delete_tables()
 			delete [] scale_y_table[i];
 		delete [] scale_y_table;
 	}
+	delete [] layer_table;
+	layer_table = 0;
 	scale_x_table = 0;
 	scale_y_table = 0;
 	table_entries = 0;
@@ -409,7 +423,8 @@ int LinearBlurMain::process_buffer(VFrame *frame,
 	read_frame(frame,
 		0,
 		get_source_position(),
-		get_framerate());
+		get_framerate(),
+		get_use_opengl());
 
 // Generate tables here.  The same table is used by many packages to render
 // each horizontal stripe.  Need to cover the entire output range in  each
@@ -454,6 +469,7 @@ int LinearBlurMain::process_buffer(VFrame *frame,
 		scale_x_table = new int*[config.steps];
 		scale_y_table = new int*[config.steps];
 		table_entries = config.steps;
+		layer_table = new LinearBlurLayer[table_entries];
 
 //printf("LinearBlurMain::process_realtime 1 %d %d %d\n", radius, x_offset, y_offset);
 
@@ -468,6 +484,8 @@ int LinearBlurMain::process_buffer(VFrame *frame,
 			scale_y_table[i] = y_table = new int[h];
 			scale_x_table[i] = x_table = new int[w];
 
+			layer_table[i].x = x;
+			layer_table[i].y = y;
 			for(int j = 0; j < h; j++)
 			{
 				y_table[j] = j + y;
@@ -481,6 +499,8 @@ int LinearBlurMain::process_buffer(VFrame *frame,
 		}
 		need_reconfigure = 0;
 	}
+
+	if(get_use_opengl()) return run_opengl();
 
 
 	if(!engine) engine = new LinearBlurEngine(this,
@@ -612,6 +632,128 @@ void LinearBlurMain::read_data(KeyFrame *keyframe)
 			}
 		}
 	}
+}
+
+#ifdef HAVE_GL
+static void draw_box(float x1, float y1, float x2, float y2)
+{
+	glBegin(GL_QUADS);
+	glVertex3f(x1, y1, 0.0);
+	glVertex3f(x2, y1, 0.0);
+	glVertex3f(x2, y2, 0.0);
+	glVertex3f(x1, y2, 0.0);
+	glEnd();
+}
+#endif
+
+int LinearBlurMain::handle_opengl()
+{
+#ifdef HAVE_GL
+	get_output()->to_texture();
+	get_output()->enable_opengl();
+	get_output()->init_screen();
+	get_output()->bind_texture(0);
+
+	int is_yuv = cmodel_is_yuv(get_output()->get_color_model());
+	glClearColor(0.0, 0.0, 0.0, 0.0);
+	glClear(GL_COLOR_BUFFER_BIT);
+
+// Draw unselected channels
+	glEnable(GL_BLEND);
+	glBlendFunc(GL_ONE, GL_ONE);
+	glDrawBuffer(GL_BACK);
+	if(!config.r || !config.g || !config.b || !config.a)
+	{
+		glColor4f(config.r ? 0 : 1, 
+			config.g ? 0 : 1, 
+			config.b ? 0 : 1, 
+			config.a ? 0 : 1);
+		get_output()->draw_texture();
+	}
+	glAccum(GL_LOAD, 1.0);
+
+// Blur selected channels
+	float fraction = 1.0 / config.steps;
+	for(int i = 0; i < config.steps; i++)
+	{
+		glClear(GL_COLOR_BUFFER_BIT);
+		glColor4f(config.r ? 1 : 0, 
+			config.g ? 1 : 0, 
+			config.b ? 1 : 0, 
+			config.a ? 1 : 0);
+
+		int w = get_output()->get_w();
+		int h = get_output()->get_h();
+		get_output()->draw_texture(0,
+			0,
+			w,
+			h,
+			layer_table[i].x,
+			get_output()->get_h() - layer_table[i].y,
+			layer_table[i].x + w,
+			get_output()->get_h() - layer_table[i].y - h,
+			1);
+
+
+// Fill YUV black
+		glDisable(GL_TEXTURE_2D);
+		if(is_yuv)
+		{
+			glColor4f(config.r ? 0.0 : 0, 
+				config.g ? 0.5 : 0, 
+				config.b ? 0.5 : 0, 
+				config.a ? 1.0 : 0);
+			float center_x1 = 0.0;
+			float center_x2 = get_output()->get_w();
+			float project_x1 = layer_table[i].x;
+			float project_x2 = layer_table[i].x + get_output()->get_w();
+			float project_y1 = layer_table[i].y;
+			float project_y2 = layer_table[i].y + get_output()->get_h();
+			if(project_x1 > 0)
+			{
+				center_x1 = project_x1;
+				draw_box(0, 0, project_x1, -get_output()->get_h());
+			}
+			if(project_x2 < get_output()->get_w())
+			{
+				center_x2 = project_x2;
+				draw_box(project_x2, 0, get_output()->get_w(), -get_output()->get_h());
+			}
+			if(project_y1 > 0)
+			{
+				draw_box(center_x1, 
+					-get_output()->get_h(), 
+					center_x2, 
+					-get_output()->get_h() + project_y1);
+			}
+			if(project_y2 < get_output()->get_h())
+			{
+				draw_box(center_x1, 
+					-get_output()->get_h() + project_y2, 
+					center_x2, 
+					0);
+			}
+		}
+
+
+
+
+		glAccum(GL_ACCUM, fraction);
+		glEnable(GL_TEXTURE_2D);
+		glColor4f(config.r ? 1 : 0, 
+			config.g ? 1 : 0, 
+			config.b ? 1 : 0, 
+			config.a ? 1 : 0);
+	}
+
+	glDisable(GL_BLEND);
+	glDisable(GL_TEXTURE_2D);
+	glReadBuffer(GL_BACK);
+	glAccum(GL_RETURN, 1.0);
+
+	glColor4f(1, 1, 1, 1);
+	get_output()->set_opengl_state(VFrame::SCREEN);
+#endif
 }
 
 
