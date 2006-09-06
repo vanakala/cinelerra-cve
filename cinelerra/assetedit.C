@@ -78,6 +78,7 @@ void AssetEdit::run()
  			if(!asset->equivalent(*new_asset, 1, 1))
  			{
 				mwindow->gui->lock_window();
+				mwindow->remove_asset_from_caches(asset);
 // Omit index status from copy since an index rebuild may have been
 // happening when new_asset was created but not be happening anymore.
 				asset->copy_from(new_asset, 0);

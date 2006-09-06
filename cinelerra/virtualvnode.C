@@ -2,7 +2,6 @@
 #include "automation.h"
 #include "bcsignals.h"
 #include "clip.h"
-#include "edit.h"
 #include "edits.h"
 #include "edl.h"
 #include "edlsession.h"
@@ -97,6 +96,23 @@ int VirtualVNode::read_data(VFrame *output_temp,
 			track->title, 
 			use_opengl);
 
+// If there is a parent module but the parent module has no data source,
+// use our own data source.
+// Current edit in parent track
+	VEdit *parent_edit = 0;
+	if(parent_node && parent_node->track && renderengine)
+	{
+		double edl_rate = renderengine->edl->session->frame_rate;
+		int64_t start_position_project = (int64_t)(start_position *
+			edl_rate /
+			frame_rate + 
+			0.5);
+		parent_edit = (VEdit*)parent_node->track->edits->editof(start_position_project, 
+			renderengine->command->get_direction(),
+			0);
+	}
+
+
 // This is a plugin on parent module with a preceeding effect.
 // Get data from preceeding effect on parent module.
 	if(parent_node && (previous_plugin = parent_node->get_previous_plugin(this)))
@@ -111,7 +127,7 @@ int VirtualVNode::read_data(VFrame *output_temp,
 // The parent module has an edit to read from or the current node
 // has no source to read from.
 // Read data from parent module
-	if(parent_node)
+	if(parent_node && (parent_edit || !real_module))
 	{
 		result = ((VirtualVNode*)parent_node)->read_data(output_temp,
 			start_position,
@@ -119,6 +135,7 @@ int VirtualVNode::read_data(VFrame *output_temp,
 			use_opengl);
 	}
 	else
+	if(real_module)
 	{
 // This is the first node in the tree
 		result = ((VModule*)real_module)->render(output_temp,

@@ -36,6 +36,7 @@
 #include "recordthread.h"
 #include "recordvideo.h"
 #include "recordwindow.h"
+#include "removethread.h"
 #include "mainsession.h"
 #include "sighandler.h"
 #include "testobject.h"
@@ -339,28 +340,6 @@ void Record::source_to_text(char *string, Batch *batch)
 }
 
 
-char* Record::get_channeldb_prefix()
-{
-	char *path = "";
-	switch(mwindow->edl->session->vconfig_in->driver)
-	{
-		case VIDEO4LINUX:
-			path = "channels_v4l";
-			break;
-		case VIDEO4LINUX2:
-			path = "channels_v4l2";
-			break;
-		case VIDEO4LINUX2JPEG:
-			path = "channels_v4l2jpeg";
-			break;
-		case CAPTURE_BUZ:
-			path = "channels_buz";
-			break;
-	}
-
-	return path;
-}
-
 void Record::run()
 {
 	int result = 0, format_error = 0;
@@ -373,7 +352,7 @@ void Record::run()
 	prompt_cancel = 0;
 
 // Determine information about the device.
-	channeldb->load(get_channeldb_prefix());
+	VideoDevice::load_channeldb(channeldb, mwindow->edl->session->vconfig_in);
 	fixed_compression = VideoDevice::is_compressed(
 		mwindow->edl->session->vconfig_in->driver,
 		0,
@@ -417,7 +396,8 @@ void Record::run()
 // 		}
 // 	}while(format_error && !result);
 
-	channeldb->save(get_channeldb_prefix());
+	default_asset->channels = mwindow->edl->session->aconfig_in->channels;
+	VideoDevice::save_channeldb(channeldb, mwindow->edl->session->vconfig_in);
 	save_defaults();
 	mwindow->save_defaults();
 
@@ -549,11 +529,13 @@ SET_TRACE
 			{
 				for(int j = 0; j < batch->assets.total; j++)
 				{
+					Asset *new_asset = batch->assets.values[j];
 					EDL *new_edl = new EDL;
+					mwindow->remove_asset_from_caches(new_asset);
 					new_edl->create_objects();
 					new_edl->copy_session(mwindow->edl);
 					mwindow->asset_to_edl(new_edl, 
-						batch->assets.values[j], 
+						new_asset, 
 						batch->labels);
 					new_edls.append(new_edl);
 				}
@@ -692,8 +674,10 @@ int Record::delete_output_file()
 			sprintf(batch->news, _("Deleting"));
 			record_gui->update_batches();
 
-// Remove it
-			remove(batch->get_current_asset()->path);
+// Remove it from disk
+			mwindow->remove_asset_from_caches(batch->get_current_asset());
+			mwindow->remove_thread->remove_file(batch->get_current_asset()->path);
+//			remove(batch->get_current_asset()->path);
 
 // Update GUI
 			sprintf(batch->news, _("OK"));

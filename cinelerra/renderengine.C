@@ -117,47 +117,14 @@ int RenderEngine::arm_command(TransportCommand *command,
 	AudioOutConfig *aconfig = this->config->aconfig;
 	if(command->realtime)
 	{
-		int device_channels = 0;
-		int edl_channels = 0;
-		if(command->single_frame())
+		if(command->single_frame() && vconfig->driver != PLAYBACK_X11_GL)
 		{
 			vconfig->driver = PLAYBACK_X11;
-			device_channels = 1;
-			edl_channels = command->get_edl()->session->video_channels;
-		}
-		else
-		{
-			device_channels = 1;
-			edl_channels = command->get_edl()->session->video_channels;
-		}
-
-		for(int i = 0; i < MAX_CHANNELS; i++)
-		{
-			vconfig->do_channel[i] = 
-				((i == current_vchannel) && 
-					device_channels &&
-					edl_channels);
-
-// GCC 3.2 optimization error causes do_channel[0] to always be 0 unless
-// we do this.
-Workarounds::clamp(vconfig->do_channel[i], 0, 1);
-
-			if(vconfig->do_channel[i])
-			{
-				current_vchannel++;
-				device_channels--;
-				edl_channels--;
-			}
 		}
 	}
 	else
 	{
 		vconfig->driver = PLAYBACK_X11;
-		for(int i = 0; i < MAX_CHANNELS; i++)
-		{
-			vconfig->do_channel[i] = (i < command->get_edl()->session->video_channels);
-			vconfig->do_channel[i] = (i < command->get_edl()->session->video_channels);
-		}
 	}
 
 
@@ -208,8 +175,7 @@ void RenderEngine::get_duty()
 		do_audio = 1;
 	}
 
-	if(edl->tracks->playable_video_tracks() &&
-		config->vconfig->total_playable_channels())
+	if(edl->tracks->playable_video_tracks())
 	{
 		do_video = 1;
 	}

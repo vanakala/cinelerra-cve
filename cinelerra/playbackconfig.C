@@ -237,7 +237,6 @@ VideoOutConfig::VideoOutConfig()
 	sprintf(lml_out_device, "/dev/mvideo/stream");
 	sprintf(buz_out_device, "/dev/video0");
 	driver = PLAYBACK_X11_XV;
-	for(int i = 0; i < MAX_CHANNELS; i++) do_channel[i] = 0;
 	buz_out_channel = 0;
 	buz_swap_fields = 0;
 	sprintf(x11_host, "");
@@ -316,8 +315,6 @@ void VideoOutConfig::copy_from(VideoOutConfig *src)
 	this->buz_swap_fields = src->buz_swap_fields;
 	strcpy(this->x11_host, src->x11_host);
 	this->x11_use_fields = src->x11_use_fields;
-	for(int i = 0; i < MAX_CHANNELS; i++) 
-		this->do_channel[i] = src->do_channel[i];
 
 	firewire_channel = src->firewire_channel;
 	firewire_port = src->firewire_port;
@@ -425,14 +422,6 @@ int VideoOutConfig::save_defaults(BC_Hash *defaults)
 	sprintf(string, "VDV1394_OUT_SYT");
 	defaults->update(string, dv1394_syt);
 	return 0;
-}
-
-int VideoOutConfig::total_playable_channels()
-{
-	int result = 0;
-	for(int i = 0; i < MAXCHANNELS; i++)
-		if(do_channel[i]) result++;
-	return result;
 }
 
 

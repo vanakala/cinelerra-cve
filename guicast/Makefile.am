@@ -15,7 +15,6 @@ libguicast_la_SOURCES = \
 	bcdragwindow.C \
 	bcfilebox.C \
 	bchash.C \
-	bcipc.C \
 	bclistbox.C \
 	bclistboxitem.C \
 	bcmenu.C \
@@ -94,7 +93,6 @@ noinst_HEADERS = \
 	bcfilebox.inc \
 	bchash.h \
 	bchash.inc \
-	bcipc.h \
 	bclistbox.h \
 	bclistbox.inc \
 	bclistboxitem.h \

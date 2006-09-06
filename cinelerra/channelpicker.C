@@ -6,6 +6,8 @@
 #include "channelpicker.h"
 #include "chantables.h"
 #include "clip.h"
+#include "edl.h"
+#include "edlsession.h"
 #include "keys.h"
 #include "language.h"
 #include "mwindow.h"
@@ -61,6 +63,8 @@ void RecordChannelPicker::handle_channel_edit(int result)
 		record->set_channel(current_channel);
 		record->record_gui->unlock_window();
 		record->save_defaults();
+		VideoDevice::save_channeldb(record->channeldb,
+			mwindow->edl->session->vconfig_in);
 	}
 	else
 	{

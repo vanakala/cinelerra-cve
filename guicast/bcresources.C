@@ -528,7 +528,7 @@ BC_Resources::~BC_Resources()
 int BC_Resources::initialize_display(BC_WindowBase *window)
 {
 // Set up IPC cleanup handlers
-	bc_init_ipc();
+//	bc_init_ipc();
 
 // Test for shm.  Must come before yuv test
 	init_shm(window);
@@ -623,3 +623,13 @@ int BC_Resources::get_id()
 	return result;
 }
 
+
+void BC_Resources::set_signals(BC_Signals *signal_handler)
+{
+	BC_Resources::signal_handler = signal_handler;
+}
+
+BC_Signals* BC_Resources::get_signals()
+{
+	return BC_Resources::signal_handler;
+}

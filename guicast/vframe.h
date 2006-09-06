@@ -5,6 +5,7 @@
 #include "bchash.inc"
 #include "bcpbuffer.inc"
 #include "bctexture.inc"
+#include "bcwindowbase.inc"
 #include "colormodels.h"
 #include "vframe.inc"
 
@@ -110,6 +111,11 @@ public:
 			int out_x1, int out_y1, int out_x2, int out_y2);
 	int get_bytes_per_pixel();
 	long get_bytes_per_line();
+// Return 1 if the buffer is shared.
+	int get_shared();
+
+
+
 	static int calculate_bytes_per_pixel(int colormodel);
 	static long calculate_data_size(int w, 
 		int h, 
@@ -146,6 +152,8 @@ public:
 // Must be called from a synchronous opengl thread after enable_opengl.
 	void to_texture();
 
+// Transfer from PBuffer to RAM.  Only used after Playback3D::overlay_sync
+	void to_ram();
 
 // Transfer contents of current pbuffer to texture, 
 // creating a new texture if necessary.
@@ -195,6 +203,9 @@ public:
 
 // Texture ID
 	int get_texture_id();
+	void set_texture_id(int id);
+// Get window ID the texture is bound to
+	int get_window_id();
 	int get_texture_w();
 	int get_texture_h();
 	int get_texture_components();
@@ -206,6 +217,8 @@ public:
 // Clears the pbuffer with the right values depending on YUV
 	void clear_pbuffer();
 
+// Get the pbuffer
+	BC_PBuffer* get_pbuffer();
 
 // Bind the frame's texture to GL_TEXTURE_2D and enable it.
 // If a texture_unit is supplied, the texture unit is made active

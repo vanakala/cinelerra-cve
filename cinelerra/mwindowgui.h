@@ -39,6 +39,7 @@ public:
 
 // canvas - 1 for incremental drawing of resources
 //          2 for delete and redraw of resources
+//          3 to ignore picon thread
 	void update(int scrollbars,
 		int canvas, 
 		int timebar,

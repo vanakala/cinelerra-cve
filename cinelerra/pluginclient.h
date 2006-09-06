@@ -10,6 +10,7 @@ class PluginClient;
 
 #include "arraylist.h"
 #include "condition.h"
+#include "edlsession.inc"
 #include "keyframe.h"
 #include "mainprogress.inc"
 #include "maxbuffers.h"
@@ -338,7 +339,8 @@ public:
 // the requested rate.
 	int64_t get_source_position();
 
-
+// Get the EDL Session.  May return 0 if the server has no edl.
+	EDLSession* get_edlsession();
 
 
 // Get the direction of the most recent process_buffer

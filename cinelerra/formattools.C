@@ -128,7 +128,7 @@ int FormatTools::create_objects(int &init_x,
 		y, 
 		200, 
 		1, 
-		File::formattostr(plugindb, asset->format)));
+		File::formattostr(asset->format)));
 	x += format_text->get_w();
 	window->add_subwindow(format_button = new FormatFormat(x, 
 		y, 

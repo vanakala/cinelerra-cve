@@ -88,6 +88,7 @@ int New::create_new_project()
 	mwindow->vwindow->playback_engine->interrupt_playback(0);
 
 	mwindow->gui->lock_window();
+	mwindow->reset_caches();
 
 	memcpy(new_edl->session->achannel_positions,
 		&mwindow->preferences->channel_positions[

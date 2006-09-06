@@ -103,8 +103,6 @@ public:
 	void rewind_file();
 // Get the inputs supported by the device
 	ArrayList<Channel*>* get_video_inputs();
-// Don't write to the returned string.
-	char* get_channeldb_prefix();
 
 // Copied to each batch for the files
 	Asset *default_asset;

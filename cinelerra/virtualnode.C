@@ -55,9 +55,10 @@ VirtualNode::~VirtualNode()
 void VirtualNode::dump(int indent)
 {
 	PRINT_INDENT
-	printf("VirtualNode %p title=%s %s\n", 
+	printf("VirtualNode %p title=%s real_module=%p %s\n", 
 		this, 
 		track->title,
+		real_module,
 		is_exit ? "*" : " ");
 	if(real_module)
 	{
@@ -218,7 +219,7 @@ int VirtualNode::attach_virtual_module(Plugin *plugin,
 		Track *track = real_module->track;
 
 // Switch off if circular reference.  This happens if a track is deleted.
-		if(track == this->real_module->track) return 1;
+		if(this->real_module && track == this->real_module->track) return 1;
 
 
 

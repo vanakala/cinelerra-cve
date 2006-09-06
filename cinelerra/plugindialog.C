@@ -92,6 +92,7 @@ void PluginDialogThread::run()
 {
 	int result = 0;
 
+	plugin_type = 0;
  	int x = mwindow->gui->get_abs_cursor_x(1) - mwindow->session->plugindialog_w / 2;
 	int y = mwindow->gui->get_abs_cursor_y(1) - mwindow->session->plugindialog_h / 2;
 
@@ -104,6 +105,25 @@ void PluginDialogThread::run()
 
 
 	window_lock->lock("PluginDialogThread::run 2");
+
+	if(window->selected_available >= 0)
+	{
+		window->attach_new(window->selected_available);
+	}
+	else
+	if(window->selected_shared >= 0)
+	{
+		window->attach_shared(window->selected_shared);
+	}
+	else
+	if(window->selected_modules >= 0)
+	{
+		window->attach_module(window->selected_modules);
+	}
+
+
+
+
 	delete window;
 	window = 0;
 	window_lock->unlock();
@@ -183,12 +203,12 @@ PluginDialog::PluginDialog(MWindow *mwindow,
 {
 	this->mwindow = mwindow;  
 	this->thread = thread;
-	standalone_attach = 0;
-	shared_attach = 0;
-	module_attach = 0;
-	standalone_change = 0;
-	shared_change = 0;
-	module_change = 0;
+//	standalone_attach = 0;
+//	shared_attach = 0;
+//	module_attach = 0;
+//	standalone_change = 0;
+//	shared_change = 0;
+//	module_change = 0;
 	inoutthru = 0;
 }
 
@@ -210,12 +230,12 @@ PluginDialog::~PluginDialog()
 	delete standalone_list;
 	delete shared_list;
 	delete module_list;
-	if(standalone_attach) delete standalone_attach;
-	if(shared_attach) delete shared_attach;
-	if(module_attach) delete module_attach;
-	if(standalone_change) delete standalone_change;
-	if(shared_change) delete shared_change;
-	if(module_change) delete module_change;
+// 	if(standalone_attach) delete standalone_attach;
+// 	if(shared_attach) delete shared_attach;
+// 	if(module_attach) delete module_attach;
+// 	if(standalone_change) delete standalone_change;
+// 	if(shared_change) delete shared_change;
+// 	if(module_change) delete module_change;
 //	delete in;
 //	delete out;
 }
@@ -303,18 +323,18 @@ int PluginDialog::create_objects()
 		mwindow->theme->plugindialog_new_y,
 		mwindow->theme->plugindialog_new_w,
 		mwindow->theme->plugindialog_new_h));
-
-	if(thread->plugin)
-		add_subwindow(standalone_change = new PluginDialogChangeNew(mwindow,
-			this,
-			mwindow->theme->plugindialog_newattach_x,
-			mwindow->theme->plugindialog_newattach_y));
-	else
-		add_subwindow(standalone_attach = new PluginDialogAttachNew(mwindow, 
-			this, 
-			mwindow->theme->plugindialog_newattach_x, 
-			mwindow->theme->plugindialog_newattach_y));
-
+// 
+// 	if(thread->plugin)
+// 		add_subwindow(standalone_change = new PluginDialogChangeNew(mwindow,
+// 			this,
+// 			mwindow->theme->plugindialog_newattach_x,
+// 			mwindow->theme->plugindialog_newattach_y));
+// 	else
+// 		add_subwindow(standalone_attach = new PluginDialogAttachNew(mwindow, 
+// 			this, 
+// 			mwindow->theme->plugindialog_newattach_x, 
+// 			mwindow->theme->plugindialog_newattach_y));
+// 
 
 
 
@@ -331,17 +351,17 @@ int PluginDialog::create_objects()
 		mwindow->theme->plugindialog_shared_y,
 		mwindow->theme->plugindialog_shared_w,
 		mwindow->theme->plugindialog_shared_h));
-	if(thread->plugin)
-      add_subwindow(shared_change = new PluginDialogChangeShared(mwindow,
-         this,
-         mwindow->theme->plugindialog_sharedattach_x,
-         mwindow->theme->plugindialog_sharedattach_y));
-   else
-		add_subwindow(shared_attach = new PluginDialogAttachShared(mwindow, 
-			this, 
-			mwindow->theme->plugindialog_sharedattach_x, 
-			mwindow->theme->plugindialog_sharedattach_y));
-
+// 	if(thread->plugin)
+//       add_subwindow(shared_change = new PluginDialogChangeShared(mwindow,
+//          this,
+//          mwindow->theme->plugindialog_sharedattach_x,
+//          mwindow->theme->plugindialog_sharedattach_y));
+//    else
+// 		add_subwindow(shared_attach = new PluginDialogAttachShared(mwindow, 
+// 			this, 
+// 			mwindow->theme->plugindialog_sharedattach_x, 
+// 			mwindow->theme->plugindialog_sharedattach_y));
+// 
 
 
 
@@ -359,21 +379,23 @@ int PluginDialog::create_objects()
 		mwindow->theme->plugindialog_module_y,
 		mwindow->theme->plugindialog_module_w,
 		mwindow->theme->plugindialog_module_h));
-	if(thread->plugin)
-      add_subwindow(module_change = new PluginDialogChangeModule(mwindow,
-         this,
-         mwindow->theme->plugindialog_moduleattach_x,
-         mwindow->theme->plugindialog_moduleattach_y));
-   else
-		add_subwindow(module_attach = new PluginDialogAttachModule(mwindow, 
-			this, 
-			mwindow->theme->plugindialog_moduleattach_x, 
-			mwindow->theme->plugindialog_moduleattach_y));
+// 	if(thread->plugin)
+//       add_subwindow(module_change = new PluginDialogChangeModule(mwindow,
+//          this,
+//          mwindow->theme->plugindialog_moduleattach_x,
+//          mwindow->theme->plugindialog_moduleattach_y));
+//    else
+// 		add_subwindow(module_attach = new PluginDialogAttachModule(mwindow, 
+// 			this, 
+// 			mwindow->theme->plugindialog_moduleattach_x, 
+// 			mwindow->theme->plugindialog_moduleattach_y));
+// 
 
 
 
 
 
+	add_subwindow(new BC_OKButton(this));
 
 
 	add_subwindow(new BC_CancelButton(this));
@@ -400,12 +422,12 @@ int PluginDialog::resize_event(int w, int h)
 		mwindow->theme->plugindialog_new_y,
 		mwindow->theme->plugindialog_new_w,
 		mwindow->theme->plugindialog_new_h);
-	if(standalone_attach)
-		standalone_attach->reposition_window(mwindow->theme->plugindialog_newattach_x, 
-			mwindow->theme->plugindialog_newattach_y);
-	else
-		standalone_change->reposition_window(mwindow->theme->plugindialog_newattach_x,
-			mwindow->theme->plugindialog_newattach_y);
+// 	if(standalone_attach)
+// 		standalone_attach->reposition_window(mwindow->theme->plugindialog_newattach_x, 
+// 			mwindow->theme->plugindialog_newattach_y);
+// 	else
+// 		standalone_change->reposition_window(mwindow->theme->plugindialog_newattach_x,
+// 			mwindow->theme->plugindialog_newattach_y);
 
 
 
@@ -417,13 +439,13 @@ int PluginDialog::resize_event(int w, int h)
 		mwindow->theme->plugindialog_shared_y,
 		mwindow->theme->plugindialog_shared_w,
 		mwindow->theme->plugindialog_shared_h);
-	if(shared_attach)
-		shared_attach->reposition_window(mwindow->theme->plugindialog_sharedattach_x, 
-			mwindow->theme->plugindialog_sharedattach_y);
-	else
-		shared_change->reposition_window(mwindow->theme->plugindialog_sharedattach_x,
-			mwindow->theme->plugindialog_sharedattach_y);
-
+// 	if(shared_attach)
+// 		shared_attach->reposition_window(mwindow->theme->plugindialog_sharedattach_x, 
+// 			mwindow->theme->plugindialog_sharedattach_y);
+// 	else
+// 		shared_change->reposition_window(mwindow->theme->plugindialog_sharedattach_x,
+// 			mwindow->theme->plugindialog_sharedattach_y);
+// 
 
 
 
@@ -434,12 +456,12 @@ int PluginDialog::resize_event(int w, int h)
 		mwindow->theme->plugindialog_module_y,
 		mwindow->theme->plugindialog_module_w,
 		mwindow->theme->plugindialog_module_h);
-	if(module_attach)
-		module_attach->reposition_window(mwindow->theme->plugindialog_moduleattach_x, 
-			mwindow->theme->plugindialog_moduleattach_y);
-	else
-		module_change->reposition_window(mwindow->theme->plugindialog_moduleattach_x,
-			mwindow->theme->plugindialog_moduleattach_y);
+// 	if(module_attach)
+// 		module_attach->reposition_window(mwindow->theme->plugindialog_moduleattach_x, 
+// 			mwindow->theme->plugindialog_moduleattach_y);
+// 	else
+// 		module_change->reposition_window(mwindow->theme->plugindialog_moduleattach_x,
+// 			mwindow->theme->plugindialog_moduleattach_y);
 	flush();
 }
 
@@ -484,32 +506,32 @@ int PluginDialog::save_settings()
 
 
 
-
-PluginDialogTextBox::PluginDialogTextBox(PluginDialog *dialog, char *text, int x, int y)
- : BC_TextBox(x, y, 200, 1, text) 
-{ 
-	this->dialog = dialog;
-}
-PluginDialogTextBox::~PluginDialogTextBox() 
-{ }
-int PluginDialogTextBox::handle_event() 
-{ }
-
-PluginDialogDetach::PluginDialogDetach(MWindow *mwindow, PluginDialog *dialog, int x, int y)
- : BC_GenericButton(x, y, _("Detach")) 
-{ 
-	this->dialog = dialog; 
-}
-PluginDialogDetach::~PluginDialogDetach() 
-{ }
-int PluginDialogDetach::handle_event() 
-{
-//	dialog->title->update(_("None"));
-	dialog->thread->plugin_type = 0;         // type is none
-	dialog->thread->plugin_title[0] = 0;
-	return 1;
-}
-
+// 
+// PluginDialogTextBox::PluginDialogTextBox(PluginDialog *dialog, char *text, int x, int y)
+//  : BC_TextBox(x, y, 200, 1, text) 
+// { 
+// 	this->dialog = dialog;
+// }
+// PluginDialogTextBox::~PluginDialogTextBox() 
+// { }
+// int PluginDialogTextBox::handle_event() 
+// { }
+// 
+// PluginDialogDetach::PluginDialogDetach(MWindow *mwindow, PluginDialog *dialog, int x, int y)
+//  : BC_GenericButton(x, y, _("Detach")) 
+// { 
+// 	this->dialog = dialog; 
+// }
+// PluginDialogDetach::~PluginDialogDetach() 
+// { }
+// int PluginDialogDetach::handle_event() 
+// {
+// //	dialog->title->update(_("None"));
+// 	dialog->thread->plugin_type = 0;         // type is none
+// 	dialog->thread->plugin_title[0] = 0;
+// 	return 1;
+// }
+// 
 
 
 
@@ -541,8 +563,8 @@ PluginDialogNew::PluginDialogNew(PluginDialog *dialog,
 PluginDialogNew::~PluginDialogNew() { }
 int PluginDialogNew::handle_event() 
 { 
-	dialog->attach_new(get_selection_number(0, 0)); 
-	deactivate();
+// 	dialog->attach_new(get_selection_number(0, 0)); 
+// 	deactivate();
 
 	set_done(0); 
 	return 1;
@@ -550,38 +572,46 @@ int PluginDialogNew::handle_event()
 int PluginDialogNew::selection_changed()
 {
 	dialog->selected_available = get_selection_number(0, 0);
+
+
+	dialog->shared_list->set_all_selected(&dialog->shared_data, 0);
+	dialog->shared_list->draw_items(1);
+	dialog->module_list->set_all_selected(&dialog->module_data, 0);
+	dialog->module_list->draw_items(1);
+	dialog->selected_shared = -1;
+	dialog->selected_modules = -1;
 	return 1;
 }
 
-PluginDialogAttachNew::PluginDialogAttachNew(MWindow *mwindow, PluginDialog *dialog, int x, int y)
- : BC_GenericButton(x, y, _("Attach")) 
-{ 
- 	this->dialog = dialog; 
-}
-PluginDialogAttachNew::~PluginDialogAttachNew() 
-{
-}
-int PluginDialogAttachNew::handle_event() 
-{
-	dialog->attach_new(dialog->selected_available); 
-	set_done(0);
-	return 1;
-}
-
-PluginDialogChangeNew::PluginDialogChangeNew(MWindow *mwindow, PluginDialog *dialog, int x, int y)
- : BC_GenericButton(x, y, _("Change"))
-{
-   this->dialog = dialog;
-}
-PluginDialogChangeNew::~PluginDialogChangeNew()
-{
-}
-int PluginDialogChangeNew::handle_event() 
-{  
-   dialog->attach_new(dialog->selected_available);
-   set_done(0);
-   return 1;
-}
+// PluginDialogAttachNew::PluginDialogAttachNew(MWindow *mwindow, PluginDialog *dialog, int x, int y)
+//  : BC_GenericButton(x, y, _("Attach")) 
+// { 
+//  	this->dialog = dialog; 
+// }
+// PluginDialogAttachNew::~PluginDialogAttachNew() 
+// {
+// }
+// int PluginDialogAttachNew::handle_event() 
+// {
+// 	dialog->attach_new(dialog->selected_available); 
+// 	set_done(0);
+// 	return 1;
+// }
+// 
+// PluginDialogChangeNew::PluginDialogChangeNew(MWindow *mwindow, PluginDialog *dialog, int x, int y)
+//  : BC_GenericButton(x, y, _("Change"))
+// {
+//    this->dialog = dialog;
+// }
+// PluginDialogChangeNew::~PluginDialogChangeNew()
+// {
+// }
+// int PluginDialogChangeNew::handle_event() 
+// {  
+//    dialog->attach_new(dialog->selected_available);
+//    set_done(0);
+//    return 1;
+// }
 
 
 
@@ -610,49 +640,57 @@ PluginDialogShared::PluginDialogShared(PluginDialog *dialog,
 PluginDialogShared::~PluginDialogShared() { }
 int PluginDialogShared::handle_event()
 { 
-	dialog->attach_shared(get_selection_number(0, 0)); 
-	deactivate();
+//	dialog->attach_shared(get_selection_number(0, 0)); 
+//	deactivate();
 	set_done(0); 
 	return 1;
 }
 int PluginDialogShared::selection_changed()
 {
 	dialog->selected_shared = get_selection_number(0, 0);
+
+
+	dialog->standalone_list->set_all_selected(&dialog->standalone_data, 0);
+	dialog->standalone_list->draw_items(1);
+	dialog->module_list->set_all_selected(&dialog->module_data, 0);
+	dialog->module_list->draw_items(1);
+	dialog->selected_available = -1;
+	dialog->selected_modules = -1;
 	return 1;
 }
 
-PluginDialogAttachShared::PluginDialogAttachShared(MWindow *mwindow, 
-	PluginDialog *dialog, 
-	int x,
-	int y)
- : BC_GenericButton(x, y, _("Attach")) 
-{ 
-	this->dialog = dialog; 
-}
-PluginDialogAttachShared::~PluginDialogAttachShared() { }
-int PluginDialogAttachShared::handle_event() 
-{ 
-	dialog->attach_shared(dialog->selected_shared); 
-	set_done(0);
-	return 1;
-}
-
-PluginDialogChangeShared::PluginDialogChangeShared(MWindow *mwindow,
-   PluginDialog *dialog,
-   int x,
-   int y)
- : BC_GenericButton(x, y, _("Change"))
-{
-   this->dialog = dialog;
-}
-PluginDialogChangeShared::~PluginDialogChangeShared() { }
-int PluginDialogChangeShared::handle_event()
-{
-   dialog->attach_shared(dialog->selected_shared);
-   set_done(0);
-   return 1;
-}
-
+// PluginDialogAttachShared::PluginDialogAttachShared(MWindow *mwindow, 
+// 	PluginDialog *dialog, 
+// 	int x,
+// 	int y)
+//  : BC_GenericButton(x, y, _("Attach")) 
+// { 
+// 	this->dialog = dialog; 
+// }
+// PluginDialogAttachShared::~PluginDialogAttachShared() { }
+// int PluginDialogAttachShared::handle_event() 
+// { 
+// 	dialog->attach_shared(dialog->selected_shared); 
+// 	set_done(0);
+// 	return 1;
+// }
+// 
+// PluginDialogChangeShared::PluginDialogChangeShared(MWindow *mwindow,
+//    PluginDialog *dialog,
+//    int x,
+//    int y)
+//  : BC_GenericButton(x, y, _("Change"))
+// {
+//    this->dialog = dialog;
+// }
+// PluginDialogChangeShared::~PluginDialogChangeShared() { }
+// int PluginDialogChangeShared::handle_event()
+// {
+//    dialog->attach_shared(dialog->selected_shared);
+//    set_done(0);
+//    return 1;
+// }
+// 
 
 
 
@@ -683,8 +721,8 @@ PluginDialogModules::PluginDialogModules(PluginDialog *dialog,
 PluginDialogModules::~PluginDialogModules() { }
 int PluginDialogModules::handle_event()
 { 
-	dialog->attach_module(get_selection_number(0, 0)); 
-	deactivate();
+//	dialog->attach_module(get_selection_number(0, 0)); 
+//	deactivate();
 
 	set_done(0); 
 	return 1;
@@ -692,44 +730,50 @@ int PluginDialogModules::handle_event()
 int PluginDialogModules::selection_changed()
 {
 	dialog->selected_modules = get_selection_number(0, 0);
+
+
+	dialog->standalone_list->set_all_selected(&dialog->standalone_data, 0);
+	dialog->standalone_list->draw_items(1);
+	dialog->shared_list->set_all_selected(&dialog->shared_data, 0);
+	dialog->shared_list->draw_items(1);
+	dialog->selected_available = -1;
+	dialog->selected_shared = -1;
 	return 1;
 }
 
 
-PluginDialogAttachModule::PluginDialogAttachModule(MWindow *mwindow, 
-	PluginDialog *dialog, 
-	int x, 
-	int y)
- : BC_GenericButton(x, y, _("Attach")) 
-{ 
-	this->dialog = dialog; 
-}
-PluginDialogAttachModule::~PluginDialogAttachModule() { }
-int PluginDialogAttachModule::handle_event() 
-{ 
-	dialog->attach_module(dialog->selected_modules);
-	set_done(0);
-	return 1;
-}
-
-PluginDialogChangeModule::PluginDialogChangeModule(MWindow *mwindow,
-   PluginDialog *dialog,
-   int x,
-   int y)
- : BC_GenericButton(x, y, _("Change"))
-{
-   this->dialog = dialog;
-}
-PluginDialogChangeModule::~PluginDialogChangeModule() { }
-int PluginDialogChangeModule::handle_event()
-{
-   dialog->attach_module(dialog->selected_modules);
-   set_done(0);
-   return 1;
-}
-
-
-
+// PluginDialogAttachModule::PluginDialogAttachModule(MWindow *mwindow, 
+// 	PluginDialog *dialog, 
+// 	int x, 
+// 	int y)
+//  : BC_GenericButton(x, y, _("Attach")) 
+// { 
+// 	this->dialog = dialog; 
+// }
+// PluginDialogAttachModule::~PluginDialogAttachModule() { }
+// int PluginDialogAttachModule::handle_event() 
+// { 
+// 	dialog->attach_module(dialog->selected_modules);
+// 	set_done(0);
+// 	return 1;
+// }
+// 
+// PluginDialogChangeModule::PluginDialogChangeModule(MWindow *mwindow,
+//    PluginDialog *dialog,
+//    int x,
+//    int y)
+//  : BC_GenericButton(x, y, _("Change"))
+// {
+//    this->dialog = dialog;
+// }
+// PluginDialogChangeModule::~PluginDialogChangeModule() { }
+// int PluginDialogChangeModule::handle_event()
+// {
+//    dialog->attach_module(dialog->selected_modules);
+//    set_done(0);
+//    return 1;
+// }
+// 
 
 
 
@@ -742,85 +786,5 @@ int PluginDialogChangeModule::handle_event()
 
 
 
-PluginDialogIn::PluginDialogIn(PluginDialog *dialog, int setting, int x, int y)
- : BC_CheckBox(x, y, setting, _("Send")) 
-{ 
-	this->dialog = dialog; 
-}
-PluginDialogIn::~PluginDialogIn() { }
-int PluginDialogIn::handle_event() 
-{ 
-//	dialog->thread->in = get_value();
-	return 1;
-}
-int PluginDialogIn::button_press()
-{
-	dialog->inoutthru = 1;
-	dialog->new_value = get_value();
-	return 1;
-}
-int PluginDialogIn::button_release()
-{
-	if(dialog->inoutthru) dialog->inoutthru = 0;
-}
-int PluginDialogIn::cursor_moved_over()
-{
-	if(dialog->inoutthru && get_value() != dialog->new_value)
-	{
-		update(dialog->new_value);
-	}
-}
 
-PluginDialogOut::PluginDialogOut(PluginDialog *dialog, int setting, int x, int y)
- : BC_CheckBox(x, y, setting, _("Receive")) 
-{ 
- 	this->dialog = dialog; 
-}
-PluginDialogOut::~PluginDialogOut() { }
-int PluginDialogOut::handle_event() 
-{ 
-//	dialog->thread->out = get_value();
-	return 1;
-}
-int PluginDialogOut::button_press()
-{
-	dialog->inoutthru = 1;
-	dialog->new_value = get_value();
-	return 1;
-}
-int PluginDialogOut::button_release()
-{
-	if(dialog->inoutthru) dialog->inoutthru = 0;
-}
-int PluginDialogOut::cursor_moved_over()
-{
-	if(dialog->inoutthru && get_value() != dialog->new_value)
-	{
-		update(dialog->new_value);
-	}
-}
 
-PluginDialogThru::PluginDialogThru(PluginDialog *dialog, int setting)
- : BC_CheckBox(300, 350, setting, _("Thru")) 
-{ 
-	this->dialog = dialog; 
-}
-PluginDialogThru::~PluginDialogThru() { }
-int PluginDialogThru::handle_event() { }
-int PluginDialogThru::button_press()
-{
-	dialog->inoutthru = 1;
-	dialog->new_value = get_value();
-	return 1;
-}
-int PluginDialogThru::button_release()
-{
-	if(dialog->inoutthru) dialog->inoutthru = 0;
-}
-int PluginDialogThru::cursor_moved_over()
-{
-	if(dialog->inoutthru && get_value() != dialog->new_value)
-	{
-		update(dialog->new_value);
-	}
-}

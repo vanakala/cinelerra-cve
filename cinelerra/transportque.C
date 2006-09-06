@@ -247,7 +247,7 @@ void TransportCommand::adjust_playback_range()
 TransportQue::TransportQue()
 {
 	input_lock = new Condition(1, "TransportQue::input_lock");
-	output_lock = new Condition(0, "TransportQue::output_lock");
+	output_lock = new Condition(0, "TransportQue::output_lock", 1);
 }
 
 TransportQue::~TransportQue()

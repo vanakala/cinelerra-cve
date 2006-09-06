@@ -952,6 +952,12 @@ MaskEngine::~MaskEngine()
 		delete mask;
 		delete temp_mask;
 	}
+
+	for(int i = 0; i < point_sets.total; i++)
+	{
+		ArrayList<MaskPoint*> *points = point_sets.values[i];
+		points->remove_all_objects();
+	}
 	point_sets.remove_all_objects();
 }
 
@@ -1075,6 +1081,7 @@ SET_TRACE
 				direction);
 			if(!points_equivalent(new_points, point_sets.values[i])) recalculate = 1;
 			new_points->remove_all_objects();
+			delete new_points;
 		}
 	}
 
@@ -1098,6 +1105,12 @@ SET_TRACE
 			temp_mask->clear_frame();
 		else
 			mask->clear_frame();
+
+		for(int i = 0; i < point_sets.total; i++)
+		{
+			ArrayList<MaskPoint*> *points = point_sets.values[i];
+			points->remove_all_objects();
+		}
 		point_sets.remove_all_objects();
 
 		for(int i = 0; 

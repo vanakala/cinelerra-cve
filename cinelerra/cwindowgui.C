@@ -29,6 +29,7 @@
 #include "mwindowgui.h"
 #include "mwindow.h"
 #include "mwindow.h"
+#include "playback3d.h"
 #include "playtransport.h"
 #include "theme.h"
 #include "trackcanvas.h"
@@ -906,7 +907,6 @@ void CWindowCanvas::draw_refresh()
 {
 	if(get_canvas() && !get_canvas()->get_video_on())
 	{
-		get_canvas()->clear_box(0, 0, get_canvas()->get_w(), get_canvas()->get_h());
 
 		if(refresh_frame)
 		{

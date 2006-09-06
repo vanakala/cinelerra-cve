@@ -1153,6 +1153,7 @@ void MWindow::load_assets(ArrayList<Asset*> *new_assets,
 	ArrayList<EDL*> new_edls;
 	for(int i = 0; i < new_assets->total; i++)
 	{
+		remove_asset_from_caches(new_assets->values[i]);
 		EDL *new_edl = new EDL;
 		new_edl->create_objects();
 		new_edl->copy_session(edl);
@@ -1267,11 +1268,17 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 
 
 SET_TRACE
+	double original_length = edl->tracks->total_playable_length();
+SET_TRACE
+	double original_preview_end = edl->local_session->preview_end;
+SET_TRACE
 
 // Delete current project
 	if(load_mode == LOAD_REPLACE ||
 		load_mode == LOAD_REPLACE_CONCATENATE)
 	{
+		reset_caches();
+
 		edl->save_defaults(defaults);
 
 		hide_plugins();
@@ -1297,6 +1304,9 @@ SET_TRACE
 // Insert labels for certain modes constitutively
 		edit_labels = 1;
 		edit_plugins = 1;
+// Force reset of preview
+		original_length = 0;
+		original_preview_end = -1;
 	}
 
 SET_TRACE
@@ -1570,6 +1580,13 @@ SET_TRACE
 SET_TRACE
 // This is already done in load_filenames and everything else that uses paste_edls
 //	update_project(load_mode);
+
+// Fix preview range
+	if(EQUIV(original_length, original_preview_end))
+	{
+		edl->local_session->preview_end = edl->tracks->total_playable_length();
+	}
+
 
 SET_TRACE
 // Start examining next batch of index files

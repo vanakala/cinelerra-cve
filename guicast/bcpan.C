@@ -524,19 +524,48 @@ void BC_Pan::calculate_stick_position(int total_values,
 	int &stick_x,
 	int &stick_y)
 {
-// use highest value as location of stick
-	float highest_value = 0;
-	int angle = 0;
-	int i, j;
+// If 2 channels have positive values, use weighted average
+	int channel1 = -1;
+	int channel2 = -1;
 
-	for(i = 0; i < total_values; i++)
+	for(int i = 0; i < total_values; i++)
 	{
-		if(values[i] > highest_value)
+		if(values[i] > 0.001)
 		{
-			highest_value = values[i];
-			angle = value_positions[i];
+			if(channel1 < 0) channel1 = i;
+			else
+			if(channel2 < 0) channel2 = i;
+			else
+				break;
 		}
 	}
-	rdtoxy(stick_x, stick_y, angle, virtual_r);
+
+	if(channel1 >= 0 && channel2 >= 0)
+	{
+		int x1, y1, x2, y2;
+		rdtoxy(x1, y1, value_positions[channel1], virtual_r);
+		rdtoxy(x2, y2, value_positions[channel2], virtual_r);
+		stick_x = (x1 + x2) / 2;
+		stick_y = (y1 + y2) / 2;
+	}
+	else
+	{
+
+// use highest value as location of stick
+		float highest_value = 0;
+		int angle = 0;
+		int i, j;
+
+		for(i = 0; i < total_values; i++)
+		{
+			if(values[i] > highest_value)
+			{
+				highest_value = values[i];
+				angle = value_positions[i];
+			}
+		}
+		rdtoxy(stick_x, stick_y, angle, virtual_r);
+	}
+
 }
 

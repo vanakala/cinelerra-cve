@@ -155,9 +155,13 @@ int Track::is_synthesis(RenderEngine *renderengine,
 			0);
 		if(plugin)
 		{
-			is_synthesis = plugin->is_synthesis(renderengine, 
-				position, 
-				direction);
+// Assume data from a shared track is synthesized
+			if(plugin->plugin_type == PLUGIN_SHAREDMODULE) 
+				is_synthesis = 1;
+			else
+				is_synthesis = plugin->is_synthesis(renderengine, 
+					position, 
+					direction);
 			if(is_synthesis) break;
 		}
 	}

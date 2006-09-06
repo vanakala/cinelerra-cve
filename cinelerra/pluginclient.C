@@ -358,6 +358,13 @@ void PluginClient::get_projector(float *x, float *y, float *z, int64_t position)
 }
 
 
+EDLSession* PluginClient::get_edlsession()
+{
+	if(server->edl) 
+		return server->edl->session;
+	return 0;
+}
+
 int PluginClient::gui_open()
 {
 	return server->gui_open();

@@ -611,11 +611,6 @@ int Render::render(int test_overwrite,
 // Configure preview monitor
 	VideoOutConfig vconfig;
 	PlaybackConfig *playback_config = new PlaybackConfig;
-	for(int i = 0; i < MAX_CHANNELS; i++)
-	{
-		vconfig.do_channel[i] = (i < command->get_edl()->session->video_channels);
-		playback_config->vconfig->do_channel[i] = (i < command->get_edl()->session->video_channels);
-	}
 
 // Create caches
 	audio_cache = new CICache(preferences, plugindb);
@@ -858,7 +853,6 @@ printf("Render::render 90\n");
 			0,
 			mwindow->edl->session->labels_follow_edits,
 			mwindow->edl->session->plugins_follow_edits);
-		assets->remove_all_objects();
 		delete assets;
 
 

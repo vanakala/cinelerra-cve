@@ -4,6 +4,8 @@
 #include "canvas.inc"
 #include "edl.inc"
 #include "guicast.h"
+#include "maskauto.inc"
+#include "maskautos.inc"
 #include "pluginclient.inc"
 #include "thread.h"
 #include "vdevicebase.h"
@@ -32,9 +34,6 @@ public:
 	int output_visible();
 // After loading the bitmap with a picture, write it
 	int write_buffer(VFrame *result, EDL *edl);
-
-// Closest colormodel the hardware can do for playback
-	int get_best_colormodel(int colormodel);
 // Get best colormodel for recording
 	int get_best_colormodel(Asset *asset);
 
@@ -61,6 +60,12 @@ public:
 
 	void do_fade(VFrame *output_temp, float fade);
 
+// Hardware version of MaskEngine
+	void do_mask(VFrame *output_temp, 
+		int64_t start_position_project,
+		MaskAutos *keyframe_set, 
+		MaskAuto *keyframe,
+		MaskAuto *default_auto);
 
 // The idea is to composite directly in the frame buffer if OpenGL.
 // OpenGL can do all the blending using the frame buffer.
@@ -97,6 +102,14 @@ public:
 // Set the output OpenGL state to TEXTURE.
 	void copy_frame(VFrame *dst, VFrame *src);
 
+private:
+// Closest colormodel the hardware can do for playback.
+// Only used by VDeviceX11::new_output_buffer.  The value from File::get_best_colormodel
+// is passed to this to create the VFrame to which the output is rendered.
+// For OpenGL, it creates the array of row pointers used to upload the video
+// frame to the texture, the texture, and the PBuffer.
+	int get_best_colormodel(int colormodel);
+
 // Bitmap to be written to device
 	BC_Bitmap *bitmap;        
 // Wrapper for bitmap or intermediate buffer for user to write to
@@ -108,6 +121,11 @@ public:
 	ArrayList<int> render_strategies;
 // Canvas for output
 	Canvas *output;
+// Parameters the output texture conforms to, for OpenGL
+// window_id is probably not going to be used
+	int window_id;
+	int texture_w;
+	int texture_h;
 	int color_model;
 	int color_model_selected;
 // Transfer coordinates from the output frame to the canvas 

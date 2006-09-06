@@ -43,6 +43,7 @@
 #include "preferences.inc"
 #include "preferencesthread.inc"
 #include "recordlabel.inc"
+#include "removethread.inc"
 #include "render.inc"
 #include "sharedlocation.inc"
 #include "sighandler.inc"
@@ -396,6 +397,7 @@ public:
 
 
 	Playback3D *playback_3d;
+	RemoveThread *remove_thread;
 
 	SplashGUI *splash_window;
 // Main undo stack

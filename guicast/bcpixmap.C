@@ -1,6 +1,8 @@
 #include "bcbitmap.h"
 #include "bcpixmap.h"
+#include "bcresources.h"
 #include "bcsignals.h"
+#include "bcsynchronous.h"
 #include "bcwindowbase.h"
 #include "vframe.h"
 
@@ -118,8 +120,18 @@ BC_Pixmap::~BC_Pixmap()
 #endif
 		XFreePixmap(top_level->display, alpha_pixmap);
 	}
-}
 
+
+// Have to delete GL objects because pixmaps are deleted during resizes.
+#ifdef HAVE_GL
+	if(BC_WindowBase::get_synchronous() && gl_pixmap)
+	{
+		BC_WindowBase::get_synchronous()->delete_pixmap(parent_window,
+			gl_pixmap,
+			gl_pixmap_context);
+	}
+#endif
+}
 
 
 void BC_Pixmap::reset()
@@ -130,6 +142,10 @@ void BC_Pixmap::reset()
 	alpha_pixmap = 0;
 	opaque_xft_draw = 0;
 	alpha_xft_draw = 0;
+#ifdef HAVE_GL
+	gl_pixmap_context = 0;
+	gl_pixmap = 0;
+#endif
 }
 
 int BC_Pixmap::initialize(BC_WindowBase *parent_window, int w, int h, int mode)
@@ -407,3 +423,89 @@ int BC_Pixmap::use_alpha()
 {
 	return mode == PIXMAP_ALPHA;
 }
+
+
+void BC_Pixmap::enable_opengl()
+{
+printf("BC_Pixmap::enable_opengl called but it doesn't work.\n");
+#ifdef HAVE_GL
+	BC_WindowBase *current_window = BC_WindowBase::get_synchronous()->current_window;
+	if(!gl_pixmap_context)
+	{
+		
+// 		XVisualInfo viproto;
+// 		int nvi;
+// 		viproto.screen = current_window->get_screen();
+// 		static int framebuffer_attributes[] = 
+// 		{
+//         	GLX_RGBA,
+//         	GLX_RED_SIZE, 1,
+//         	GLX_GREEN_SIZE, 1,
+//         	GLX_BLUE_SIZE, 1,
+// 			None
+// 		};
+// 		XVisualInfo *visinfo = glXChooseVisual(current_window->get_display(),
+// 			current_window->get_screen(),
+// 			framebuffer_attributes);
+// printf("BC_Pixmap::enable_opengl 1 %p\n", visinfo->visual);
+// 		gl_pixmap = glXCreateGLXPixmap(current_window->get_display(),
+//             visinfo,
+//             opaque_pixmap);
+// printf("BC_Pixmap::enable_opengl 2 %p\n", gl_pixmap);
+// // This context must be indirect, but because it's indirect, it can't share
+// // ID's with the window context.
+// 		gl_pixmap_context = glXCreateContext(current_window->get_display(),
+// 			visinfo,
+// 			0,
+// 			0);
+// printf("BC_Pixmap::enable_opengl 3 %p\n", gl_pixmap_context);
+
+		static int framebuffer_attributes[] = 
+		{
+        	GLX_RENDER_TYPE, GLX_RGBA_BIT,
+			GLX_DRAWABLE_TYPE, GLX_PIXMAP_BIT,
+			GLX_DOUBLEBUFFER, 0,
+        	GLX_RED_SIZE, 1,
+        	GLX_GREEN_SIZE, 1,
+        	GLX_BLUE_SIZE, 1,
+			None
+		};
+		XVisualInfo *visinfo = 0;
+		int config_result_count = 0;
+		GLXFBConfig *config_result = glXChooseFBConfig(current_window->get_display(), 
+			current_window->get_screen(), 
+			framebuffer_attributes, 
+			&config_result_count);
+		if(config_result)
+		{
+			gl_pixmap = glXCreatePixmap(current_window->get_display(),
+				config_result[0],
+				opaque_pixmap,
+				0);
+
+			visinfo = glXGetVisualFromFBConfig(current_window->get_display(), 
+				config_result[0]);
+		}
+
+// provide window context to share ID's.
+		if(visinfo)
+		{
+			gl_pixmap_context = glXCreateContext(current_window->get_display(),
+					visinfo,
+					0,
+					0);
+		}
+
+		if(config_result) XFree(config_result);
+    	if(visinfo) XFree(visinfo);
+	}
+
+	if(gl_pixmap_context)
+	{
+		glXMakeCurrent(top_level->display,
+			gl_pixmap,
+			gl_pixmap_context);
+	}
+#endif
+}
+

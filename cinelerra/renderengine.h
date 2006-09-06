@@ -32,9 +32,6 @@ public:
 		ChannelDB *channeldb);
 	~RenderEngine();
 
-	int total_playable_channels();
-// Translate sequential to subscript for EDL array
-	int playable_channel_number(int number);
 	void get_duty();
 	void create_render_threads();
 	void arm_render_threads();

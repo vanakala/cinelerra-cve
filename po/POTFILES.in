@@ -124,7 +124,6 @@ guicast/bcfilebox.C
 guicast/bcresources.C
 guicast/bctheme.C
 # guicast/test.C
-plugins/1080to480/1080to480.C
 plugins/720to480/720to480.C
 plugins/aging/aging.C
 plugins/aging/agingwindow.C
@@ -193,7 +192,6 @@ plugins/ivtc/ivtc.h
 plugins/ivtc/ivtcwindow.C
 plugins/level/leveleffect.C
 plugins/linearblur/linearblur.C
-plugins/linearize/linearizewindow.C
 plugins/loopaudio/loopaudio.C
 plugins/loopvideo/loopvideo.C
 plugins/motion/motion.C

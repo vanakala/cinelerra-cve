@@ -32,6 +32,10 @@ void VFrame::set_opengl_state(int value)
 	opengl_state = value;
 }
 
+int VFrame::get_window_id()
+{
+	return texture ? texture->window_id : -1;
+}
 
 int VFrame::get_texture_id()
 {
@@ -161,6 +165,32 @@ void VFrame::to_texture()
 #endif
 }
 
+void VFrame::to_ram()
+{
+#ifdef HAVE_GL
+	switch(opengl_state)
+	{
+// Only pbuffer is supported since this is only called after the 
+// overlay operation onto the pbuffer.
+		case VFrame::SCREEN:
+			if(pbuffer)
+			{
+				enable_opengl();
+printf("VFrame::to_ram %d %d\n", get_w(), get_h());
+				glReadPixels(0, 
+					0, 
+					get_w(), 
+					get_h(), 
+					GL_RGB,
+					GL_UNSIGNED_BYTE,
+					get_rows()[0]);
+				flip_vert();
+			}
+			opengl_state = VFrame::RAM;
+			return;
+	}
+#endif
+}
 
 void VFrame::create_pbuffer()
 {
@@ -197,6 +227,10 @@ void VFrame::enable_opengl()
 	}
 }
 
+BC_PBuffer* VFrame::get_pbuffer()
+{
+	return pbuffer;
+}
 
 
 void VFrame::screen_to_texture(int x, int y, int w, int h)

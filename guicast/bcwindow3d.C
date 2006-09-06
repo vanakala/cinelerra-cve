@@ -67,6 +67,15 @@ void BC_WindowBase::flip_opengl()
 #endif
 }
 
+unsigned int BC_WindowBase::get_shader(char *source, int *got_it)
+{
+	return get_resources()->get_synchronous()->get_shader(source, got_it);
+}
+
+void BC_WindowBase::put_shader(unsigned int handle, char *source)
+{
+	get_resources()->get_synchronous()->put_shader(handle, source);
+}
 
 
 

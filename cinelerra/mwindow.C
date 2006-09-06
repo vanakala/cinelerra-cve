@@ -56,6 +56,7 @@
 #include "preferences.h"
 #include "record.h"
 #include "recordlabel.h"
+#include "removethread.h"
 #include "render.h"
 #include "samplescroll.h"
 #include "sighandler.h"
@@ -1271,6 +1272,8 @@ void MWindow::create_objects(int want_gui,
 
 
 	init_3d();
+	remove_thread = new RemoveThread;
+	remove_thread->create_objects();
 	show_splash();
 
 // For some reason, init_signals must come after show_splash or the signals won't

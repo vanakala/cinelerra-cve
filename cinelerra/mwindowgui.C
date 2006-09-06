@@ -318,12 +318,18 @@ void MWindowGUI::update(int scrollbars,
 		mwindow->edl->local_session->get_selectionstart(1));
 	if(canvas)
 	{
-		this->canvas->draw(canvas == 2);
+		this->canvas->draw(canvas);
 		this->cursor->show();
 		this->canvas->flash();
-		this->canvas->activate();
+// Activate causes the menubar to deactivate.  Don't want this for
+// picon thread.
+		if(canvas != 3) this->canvas->activate();
 	}
 	if(buttonbar) mbuttons->update();
+
+// Can't age if the cache called this to draw missing picons
+	if(canvas != 2 && canvas != 3)
+		mwindow->age_caches();
 }
 
 int MWindowGUI::visible(int64_t x1, int64_t x2, int64_t view_x1, int64_t view_x2)

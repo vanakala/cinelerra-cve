@@ -568,6 +568,7 @@ separate section.
 * COMMON VIDEO DRIVER ATTRIBUTES:: Parameters used by more than one driver.
 * X11::
 * X11-XV::
+* X11-OPENGL::
 * BUZ::
 * RAW 1394 VIDEO PLAYBACK::
 * DV 1394 VIDEO PLAYBACK::
@@ -643,6 +644,39 @@ This was the second big method of video playback in UNIX starting in
 1999.  It converts YUV to RGB in hardware with scaling.  It's the
 preferred playback method but can't handle large frame sizes.  The
 maximum video size for XV is usually 1920x1080.
+
+
+@node X11-OPENGL
+@subsection X11-OPENGL
+
+The most powerful video playback method is OpenGL.  With this driver,
+most effects are done in hardware.  OpenGL allows video sizes up to the
+maximum texture size, which is usually larger than what XV supports,
+depending on the graphics driver.
+
+OpenGL doesn't affect rendering.  It just accelerates playback.  OpenGL
+relies on PBuffers and shaders to do video rendering.  The graphics
+driver must support OpenGL 2 and Cinelerra needs to be explicitely
+compiled with OpenGL 2 support.  This requires compiling it on a system
+with the OpenGL 2 headers.
+
+PBuffers are known to be fickle.  If the graphics card doesn't have
+enough memory or doesn't have the right visuals, PBuffers won't work. 
+Try seeking several frames or restarting Cinelerra if OpenGL doesn't
+work.
+
+Because of OpenGL limitations, X11-OpenGL processes everything in 8 bit
+colormodels, although the difference between YUV and RGB is retained.
+
+The @b{scaling equation} in Preferences is ignored by OpenGL.  OpenGL
+always uses linear scaling.
+
+Project and track sizes need to be multiples of 4 for OpenGL to work.  
+
+To get the most acceleration, OpenGL-enabled effects must be placed
+after software-only effects.  All rendering before the last
+software-only effect is done in software.  The core Cinelerra
+operations like camera and projector are of course OpenGL.
 
 
 
@@ -818,6 +852,18 @@ FRAMERATE ACHIEVED
 The number of frames per second being displayed during playback.  This
 is only updated during playback.
 
+@item DECODE FRAMES ASYNCHRONOUSLY
+
+If you have lots of memory and more than one CPU, this option can
+improve playback performance by decoding video on one CPU as fast as
+possible while dedicating other CPU to displaying video only.  It
+assumes all playback operations are forward and no frames are dropped. 
+Operations involving reverse playback or frame dropping are negatively
+impacted.
+
+Since this option requires enourmous amounts of memory, it may crash if
+the input frames are very large.
+
 
 @item
 
@@ -882,6 +928,36 @@ Info.  The number of subtitle tracks is given at the bottom.
 
 @item 
 
+INTERPOLATE CR2 IMAGES
+
+Enables interpolation of CR2 images.  This is required since the raw
+image in a CR2 file is a bayer pattern.  The interpolation uses dcraw's
+built-in interpolation and is very slow.  This operation can be
+disabled and the @b{Interpolate Pixels} effect used instead for fast
+previewing.
+
+
+@item 
+
+WHITE BALANCE CR2 IMAGES
+
+This enables white balancing for CR2 images if interpolation is also
+enabled.  It uses the camera's matrix which is contained in the CR2
+file.  White balancing is not performed if interpolation is not
+performed because white balancing needs a blending of all 3 primary
+colors. 
+
+Disabling white balancing is useful for operations involving dark frame
+subtraction.  The dark frame and the long exposure need to have the
+same color matrix.
+
+If you disable @b{Interpolate CR2 Images} and use the @b{Interpolate
+Pixels} effect, be aware the @b{Interpolate Pixels} effect always does
+both interpolation and white balancing using the camera's matrix,
+regardless of the settings in Preferences.  Dark frame subtraction
+needs to be performed before @b{Interpolate Pixels}.
+
+@item
 
 
 
@@ -4173,8 +4249,8 @@ RGBA Float.  The 4 channel colormodels are notoriously slower than 3
 channel colormodels, with the slowest being RGBA Float.  Some effects,
 like fade, work around the need for alpha channels while other effects,
 like chromakey, require an alpha channel to do anything, so it's a good
-idea to try the effect without alpha channels before settling on an
-alpha channel and slowing it down.
+idea to try the effect without alpha channels to see if it works before
+settling on an alpha channel and slowing it down.
 
 The YUV colormodels are usually faster than RGB colormodels when using
 compressed footage.  They also destroy fewer colors than RGB
@@ -5293,11 +5369,11 @@ int x_accum, y_accum;
 Next, the section which says something like:
 
 @example
-	switch (code) @{
-  		case REL_X:	mousedev->packet.dx += value; break;
-  		case REL_Y:	mousedev->packet.dy -= value; break;
-  		case REL_WHEEL:	mousedev->packet.dz -= value; break;
-	@}
+switch (code) @{
+	case REL_X:	mousedev->packet.dx += value; break;
+	case REL_Y:	mousedev->packet.dy -= value; break;
+	case REL_WHEEL:	mousedev->packet.dz -= value; break;
+@}
 @end example
 
 must be replaced by
@@ -6241,6 +6317,19 @@ gain up.  This ramping down time is the decay seconds.
 tracks can share one compressor.  How the signal from many tracks is
 interpreted is determined by the trigger type.
 
+The @b{Trigger} trigger type uses the value supplied in the @b{Trigger}
+textbox as the number of the track to use as input for the compressor. 
+This allows a track which isn't even heard to determine the loudness of
+the other tracks.
+
+The @b{Maximum} trigger takes the loudest track and uses it as the
+input for the compressor.
+
+The @b{Total} trigger type adds the signals from all the tracks and
+uses the total as the input for the compressor.  This is the most
+natural sounding compression and is ideal when multiple tracks are
+averaged into single speakers.
+
 
 
 @b{Trigger:} The compressor is a multichannel effect.  Several tracks
@@ -6398,16 +6487,28 @@ disabled regions play through.
 @section HISTOGRAM
 
 
-This shows the number of occurances of each value of a certain color
-channel on a histogram plot.
+This shows the number of occurances of each color on a histogram plot.
 
 It is always performed in floating point RGB regardless of
 the project colorspace.  The histogram has two sets of transfer
 parameters: the input transfer and the output transfer.
 
-The input transfer is defined by a graph on top of the histogram.  The
-horizontal direction corresponds to every possible input color.  The
-vertical direction corresponds to the output color for every input
+4 histograms are possible in the histogram viewer.  The red, green,
+blue histograms show the input histograms for red, green, blue and
+multiply them by an input transfer to get the output red, green, blue. 
+Then the output red, green, blue is scaled by an output transfer.  The
+scaled red, green, blue is converted into a value and plotted on the
+value histogram.  The value histogram thus changes depending on the
+settings for red, green, blue.  The value transfers are applied
+uniformly to R, G, B after their color transfers are applied.
+
+Select which transfer to view by selecting one of the channels on the
+top of the histogram.
+
+
+The input transfer is defined by a graph overlaid on the histogram. 
+The horizontal direction corresponds to every possible input color. 
+The vertical direction corresponds to the output color for every input
 color.  Video entering the histogram is first plotted on the histogram
 plot, then it is translated so output values now equal the output
 values for each input value on the input graph.
@@ -6438,23 +6539,15 @@ gradient's triangles to change it.  It also has textboxes to enter
 values into.
 
 Enable the @b{automatic} toggle to have the histogram calculate an
-automatic input transfer for every frame.  It does this by setting
-minimum and maximum input points to permit only the middle 99% of the
-pixels to pass through.  The number of pixels permitted to pass through
-is set by the @b{Threshold} textbox.  A threshold of 0.99 scales the
-input so 99% of the pixels pass through.  Smaller thresholds permit
-fewer pixels to pass through and make the output look more contrasty.
+automatic input transfer for the red, green, blue but not the value. 
+It does this by scaling the middle 99% of the pixels to take 100% of
+the histogram width.  The number of pixels permitted to pass through is
+set by the @b{Threshold} textbox.  A threshold of 0.99 scales the input
+so 99% of the pixels pass through.  Smaller thresholds permit fewer
+pixels to pass through and make the output look more contrasty.
 
-A different automatic input transfer is applied to the R, G, and B
-channels but not to the value.
-
-The histogram applies a different set of transfers to R, G, B, and
-value.  The value transfers are applied uniformly to R, G, B after
-their discrete transfers are applied.  The histogram displayed for the
-value transfer is the maximum R, G, or B for every pixel.
-
-Select which transfer to view by selecting one of the channels on the
-top of the histogram.
+Automatic input transfer is calculated for the R, G, and B channels but
+not the value.
 
 
 @b{PLOT HISTOGRAM}

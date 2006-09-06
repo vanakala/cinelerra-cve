@@ -133,6 +133,11 @@ long VFrame::get_shm_offset()
 	return shm_offset;
 }
 
+int VFrame::get_shared()
+{
+	return shared;
+}
+
 int VFrame::params_match(int w, int h, int color_model)
 {
 	return (this->w == w &&

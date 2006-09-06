@@ -1,8 +1,10 @@
 #include "aattachmentpoint.h"
+#include "aedit.h"
 #include "amodule.h"
 #include "arender.h"
 #include "atrack.h"
 #include "automation.h"
+#include "edits.h"
 #include "edl.h"
 #include "edlsession.h"
 #include "clip.h"
@@ -80,6 +82,30 @@ int VirtualANode::read_data(double *output_temp,
 {
 	VirtualNode *previous_plugin = 0;
 
+// Current edit in parent track
+	AEdit *parent_edit = 0;
+	if(parent_node && parent_node->track && renderengine)
+	{
+		int64_t edl_rate = renderengine->edl->session->sample_rate;
+		int64_t start_position_project = (int64_t)(start_position *
+			edl_rate /
+			sample_rate + 
+			0.5);
+		parent_edit = (AEdit*)parent_node->track->edits->editof(start_position_project, 
+			renderengine->command->get_direction(),
+			0);
+	}
+
+
+	if(vconsole->debug_tree) 
+		printf("  VirtualANode::read_data position=%lld rate=%lld title=%s parent_node=%p parent_edit=%p\n", 
+				start_position,
+				sample_rate,
+				track->title,
+				parent_node,
+				parent_edit);
+
+
 // This is a plugin on parent module with a preceeding effect.
 // Get data from preceeding effect on parent module.
 	if(parent_node && 
@@ -91,9 +117,11 @@ int VirtualANode::read_data(double *output_temp,
 			sample_rate);
 	}
 	else
-// First plugin on parent module.
+// The current node is the first plugin on parent module.
+// The parent module has an edit to read from or the current node
+// has no source to read from.
 // Read data from parent module
-	if(parent_node)
+	if(parent_node && (parent_edit || !real_module))
 	{
 		((VirtualANode*)parent_node)->read_data(output_temp,
 			start_position,
@@ -101,6 +129,7 @@ int VirtualANode::read_data(double *output_temp,
 			sample_rate);
 	}
 	else
+	if(real_module)
 // This is the first node in the tree
 	{
 		((AModule*)real_module)->render(output_temp,

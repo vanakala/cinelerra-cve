@@ -88,14 +88,16 @@ public:
 	BC_Title *module_title;
 	PluginDialogModules *module_list;
 
-
-	PluginDialogAttachNew *standalone_attach;
-	PluginDialogAttachShared *shared_attach;
-	PluginDialogAttachModule *module_attach;
-
-	PluginDialogChangeNew *standalone_change;
-	PluginDialogChangeShared *shared_change;
-	PluginDialogChangeModule *module_change;
+/*
+ * 
+ * 	PluginDialogAttachNew *standalone_attach;
+ * 	PluginDialogAttachShared *shared_attach;
+ * 	PluginDialogAttachModule *module_attach;
+ * 
+ * 	PluginDialogChangeNew *standalone_change;
+ * 	PluginDialogChangeShared *shared_change;
+ * 	PluginDialogChangeModule *module_change;
+ */
 
 	PluginDialogThru *thru;
 	
@@ -118,45 +120,51 @@ public:
 };
 
 
-class PluginDialogTextBox : public BC_TextBox
-{
-public:
-	PluginDialogTextBox(PluginDialog *dialog, char *text, int x, int y);
-	~PluginDialogTextBox();
+/*
+ * class PluginDialogTextBox : public BC_TextBox
+ * {
+ * public:
+ * 	PluginDialogTextBox(PluginDialog *dialog, char *text, int x, int y);
+ * 	~PluginDialogTextBox();
+ * 
+ * 	int handle_event();
+ * 	PluginDialog *dialog;
+ * };
+ */
 
-	int handle_event();
-	PluginDialog *dialog;
-};
+/*
+ * class PluginDialogDetach : public BC_GenericButton
+ * {
+ * public:
+ * 	PluginDialogDetach(MWindow *mwindow, PluginDialog *dialog, int x, int y);
+ * 	~PluginDialogDetach();
+ * 	
+ * 	int handle_event();
+ * 	PluginDialog *dialog;
+ * };
+ */
 
-class PluginDialogDetach : public BC_GenericButton
-{
-public:
-	PluginDialogDetach(MWindow *mwindow, PluginDialog *dialog, int x, int y);
-	~PluginDialogDetach();
-	
-	int handle_event();
-	PluginDialog *dialog;
-};
-
-class PluginDialogAttachNew : public BC_GenericButton
-{
-public:
-	PluginDialogAttachNew(MWindow *mwindow, PluginDialog *dialog, int x, int y);
-	~PluginDialogAttachNew();
-	
-	int handle_event();
-	PluginDialog *dialog;
-};
-
-class PluginDialogChangeNew : public BC_GenericButton
-{
-public:
-   PluginDialogChangeNew(MWindow *mwindow, PluginDialog *dialog, int x, int y);
-   ~PluginDialogChangeNew();
-
-   int handle_event();
-   PluginDialog *dialog;
-};
+/*
+ * class PluginDialogAttachNew : public BC_GenericButton
+ * {
+ * public:
+ * 	PluginDialogAttachNew(MWindow *mwindow, PluginDialog *dialog, int x, int y);
+ * 	~PluginDialogAttachNew();
+ * 	
+ * 	int handle_event();
+ * 	PluginDialog *dialog;
+ * };
+ * 
+ * class PluginDialogChangeNew : public BC_GenericButton
+ * {
+ * public:
+ *    PluginDialogChangeNew(MWindow *mwindow, PluginDialog *dialog, int x, int y);
+ *    ~PluginDialogChangeNew();
+ * 
+ *    int handle_event();
+ *    PluginDialog *dialog;
+ * };
+ */
 
 
 class PluginDialogNew : public BC_ListBox
@@ -207,85 +215,49 @@ public:
 	PluginDialog *dialog;
 };
 
-class PluginDialogAttachShared : public BC_GenericButton
-{
-public:
-	PluginDialogAttachShared(MWindow *mwindow, PluginDialog *dialog, int x, int y);
-	~PluginDialogAttachShared();
-	
-	int handle_event();
-	PluginDialog *dialog;
-};
+/*
+ * class PluginDialogAttachShared : public BC_GenericButton
+ * {
+ * public:
+ * 	PluginDialogAttachShared(MWindow *mwindow, PluginDialog *dialog, int x, int y);
+ * 	~PluginDialogAttachShared();
+ * 	
+ * 	int handle_event();
+ * 	PluginDialog *dialog;
+ * };
+ * 
+ * class PluginDialogChangeShared : public BC_GenericButton
+ * {
+ * public:
+ *    PluginDialogChangeShared(MWindow *mwindow, PluginDialog *dialog, int x, int y);
+ *    ~PluginDialogChangeShared();
+ * 
+ *    int handle_event();
+ *    PluginDialog *dialog;
+ * };
+ * 
+ * 
+ * class PluginDialogAttachModule : public BC_GenericButton
+ * {
+ * public:
+ * 	PluginDialogAttachModule(MWindow *mwindow, PluginDialog *dialog, int x, int y);
+ * 	~PluginDialogAttachModule();
+ * 	
+ * 	int handle_event();
+ * 	PluginDialog *dialog;
+ * };
+ * 
+ * class PluginDialogChangeModule : public BC_GenericButton
+ * {
+ * public:
+ *    PluginDialogChangeModule(MWindow *mwindow, PluginDialog *dialog, int x, int y);
+ *    ~PluginDialogChangeModule();
+ * 
+ *    int handle_event();
+ *    PluginDialog *dialog;
+ * }
+ */
 
-class PluginDialogChangeShared : public BC_GenericButton
-{
-public:
-   PluginDialogChangeShared(MWindow *mwindow, PluginDialog *dialog, int x, int y);
-   ~PluginDialogChangeShared();
 
-   int handle_event();
-   PluginDialog *dialog;
-};
-
-
-class PluginDialogAttachModule : public BC_GenericButton
-{
-public:
-	PluginDialogAttachModule(MWindow *mwindow, PluginDialog *dialog, int x, int y);
-	~PluginDialogAttachModule();
-	
-	int handle_event();
-	PluginDialog *dialog;
-};
-
-class PluginDialogChangeModule : public BC_GenericButton
-{
-public:
-   PluginDialogChangeModule(MWindow *mwindow, PluginDialog *dialog, int x, int y);
-   ~PluginDialogChangeModule();
-
-   int handle_event();
-   PluginDialog *dialog;
-};
-
-
-class PluginDialogIn : public BC_CheckBox
-{
-public:
-	PluginDialogIn(PluginDialog *dialog, int setting, int x, int y);
-	~PluginDialogIn();
-	
-	int button_press();
-	int button_release();
-	int cursor_moved_over();
-	int handle_event();
-	PluginDialog *dialog;
-};
-
-class PluginDialogOut : public BC_CheckBox
-{
-public:
-	PluginDialogOut(PluginDialog *dialog, int setting, int x, int y);
-	~PluginDialogOut();
-	
-	int button_press();
-	int button_release();
-	int cursor_moved_over();
-	int handle_event();
-	PluginDialog *dialog;
-};
-
-class PluginDialogThru : public BC_CheckBox
-{
-public:
-	PluginDialogThru(PluginDialog *dialog, int setting);
-	~PluginDialogThru();
-	
-	int button_press();
-	int button_release();
-	int cursor_moved_over();
-	int handle_event();
-	PluginDialog *dialog;
-};
 
 #endif

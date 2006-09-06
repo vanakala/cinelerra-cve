@@ -160,7 +160,6 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    menuaeffects.C \
 		    menueffects.C \
 		    menuveffects.C \
-		    messages.C \
 		    meterpanel.C \
 		    module.C \
 		    mtimebar.C \
@@ -218,6 +217,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    recordtransport.C \
 		    recordvideo.C \
 		    recordwindow.C \
+		    removethread.C \
 		    render.C \
 		    renderengine.C \
 		    renderfarm.C \
@@ -287,16 +287,15 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    vwindow.C \
 		    vwindowgui.C \
 		    wavecache.C \
-		    workarounds.C \
                     yuvstream.C \
 		    zoombar.C \
 		    zoompanel.C \
 	$(firewire_SOURCES)
 
-# set the include path found by configure
+# guicast must come first, to pick up correct workarounds.h
 INCLUDES = \
-	-I$(top_srcdir)/quicktime \
 	-I$(top_srcdir)/guicast \
+	-I$(top_srcdir)/quicktime \
 	-I$(top_srcdir)/libmpeg3
 
 AM_CXXFLAGS = \
@@ -537,6 +536,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 recordtransport.h \
 		 recordvideo.h \
 		 recordwindow.h \
+		 removethread.h \
 		 renderengine.h \
 		 renderfarmclient.h \
 		 renderfarmfsserver.h \
@@ -593,7 +593,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 vedits.h \
 		 video1394.h \
 		 videoconfig.h \
-		 videodev2.h \
 		 videodevfix.h \
 		 videodevice.h \
 		 videowindowgui.h \
@@ -618,7 +617,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 vtracking.h \
 		 vwindowgui.h \
 		 vwindow.h \
-		 workarounds.h \
 		 wavecache.h \
                  yuvstream.h \
 		 zoombar.h \

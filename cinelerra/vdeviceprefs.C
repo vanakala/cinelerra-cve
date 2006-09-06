@@ -1,4 +1,5 @@
 #include "bcsignals.h"
+#include "channeldb.h"
 #include "channelpicker.h"
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -44,6 +45,7 @@ VDevicePrefs::~VDevicePrefs()
 {
 	delete_objects();
 	if(menu) delete menu;
+	pwindow->mwindow->channeldb_buz->save("channeldb_buz");
 }
 
 
