@@ -134,22 +134,22 @@ int RecordVideo::cleanup_recording()
 void RecordVideo::get_capture_frame()
 {
 	if(!capture_frame)
-{
-	if(record->fixed_compression)
 	{
-		capture_frame = new VFrame;
-	}
-	else
-	{
-		capture_frame = new VFrame(0, 
-			record->default_asset->width, 
-			record->default_asset->height, 
-			record->vdevice->get_best_colormodel(record->default_asset));
+		if(record->fixed_compression)
+		{
+			capture_frame = new VFrame;
+		}
+		else
+		{
+			capture_frame = new VFrame(0, 
+				record->default_asset->width, 
+				record->default_asset->height, 
+				record->vdevice->get_best_colormodel(record->default_asset));
 //printf("RecordVideo::get_capture_frame %d %d\n", capture_frame->get_w(), capture_frame->get_h());
-	}
-	frame_ptr = new VFrame**[1];
-	frame_ptr[0] = new VFrame*[1];
-	frame_ptr[0][0] = capture_frame;
+		}
+		frame_ptr = new VFrame**[1];
+		frame_ptr[0] = new VFrame*[1];
+		frame_ptr[0][0] = capture_frame;
 	}
 }
 

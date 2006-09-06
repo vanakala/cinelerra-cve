@@ -115,7 +115,7 @@ void TunerServer::main_loop()
 				int bytes_read = read_data(temp, size);
 				error = client->write_int64(bytes_read);
 				if(!error)
-				  error = client->write_socket((char*)temp, bytes_read, RENDERFARM_TIMEOUT);
+					error = client->write_socket((char*)temp, bytes_read);
 				break;
 			}
 

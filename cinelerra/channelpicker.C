@@ -21,12 +21,12 @@
 #include "videodevice.h"
 
 RecordChannelPicker::RecordChannelPicker(MWindow *mwindow, 
-		Record *record,
-		RecordMonitor *record_monitor,
+	Record *record,
+	RecordMonitor *record_monitor,
 	BC_WindowBase *parent_window, 
-		ChannelDB *channeldb, 
-		int x,
-		int y)
+	ChannelDB *channeldb, 
+	int x,
+	int y)
  : ChannelPicker(channeldb, 
 		x,
 		y,
@@ -517,7 +517,7 @@ ChannelButton::ChannelButton(ChannelPicker *channel_picker,
 	int x, 
 	int y)
  : BC_Button(x, 
-	y, 
+ 	y, 
 	channel_picker->get_theme() ? 
 		channel_picker->get_theme()->get_image_set("channel") :
 		0)

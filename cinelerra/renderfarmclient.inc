@@ -5,5 +5,6 @@
 class RenderFarmClient;
 class RenderFarmClientThread;
 class FarmPackageRenderer;
+class RenderFarmWatchdog;
 
 #endif
