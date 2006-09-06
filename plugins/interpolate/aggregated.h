@@ -115,6 +115,11 @@ static char *interpolate_shader =
 "}\n";
 
 
+#define INTERPOLATE_COMPILE(shader_stack, current_shader) \
+{ \
+	shader_stack[current_shader++] = interpolate_shader; \
+}
+
 #define INTERPOLATE_UNIFORMS(frag) \
 { \
 	int x_offset = get_output()->get_params()->get("INTERPOLATEPIXELS_X", (int)0); \

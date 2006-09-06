@@ -22,6 +22,9 @@ class FrameFieldWindow;
 
 
 
+// 601 to RGB expansion is provided as a convenience for OpenGL users since
+// frame bobbing is normally done during playback together with 601 to RGB expansion.
+// It's not optimized for software.
 
 
 class FrameFieldConfig
@@ -135,6 +138,10 @@ public:
 	BC_Texture *src_texture;
 // Signal OpenGL handler a new frame was read.
 	int new_frame;
+// Reading frames at a different rate requires us to store the aggregation
+// state when the frame isn't read.
+	int aggregate_rgb601;
+	int rgb601_direction;
 };
 
 
@@ -283,6 +290,8 @@ FrameField::FrameField(PluginServer *server)
 	src_frame_number = -1;
 	last_frame = -1;
 	src_texture = 0;
+	aggregate_rgb601 = 0;
+	rgb601_direction = 0;
 }
 
 
@@ -714,6 +723,18 @@ int FrameField::handle_opengl()
 			0,
 			get_output()->get_w(),
 			get_output()->get_h());
+
+// Store aggregation state only when reading a frame
+//printf("FrameField::handle_opengl %p\n", get_output());
+//get_output()->dump_stacks();
+		if(prev_effect_is("RGB - 601") ||
+			next_effect_is("RGB - 601"))
+		{
+			aggregate_rgb601 = 1;
+			rgb601_direction = get_output()->get_params()->get("RGB601_DIRECTION", 0);
+		}
+		else
+			aggregate_rgb601 = 0;
 	}
 	else
 	{
@@ -741,7 +762,34 @@ int FrameField::handle_opengl()
 		get_output()->get_color_model());
 
 
-	frag = VFrame::make_shader(0, field_frag, 0);
+	char *shaders[3] = { 0, 0, 0 };
+	shaders[0] = field_frag;
+
+
+// Aggregate with other effect
+//printf("FrameField::handle_opengl %s\n", get_output()->get_next_effect());
+	if(aggregate_rgb601)
+	{
+		if(rgb601_direction == 1)
+		{
+			if(cmodel_is_yuv(get_output()->get_color_model()))
+				shaders[1] = yuv_to_601_frag;
+			else
+				shaders[1] = rgb_to_601_frag;
+		}
+		else
+		if(rgb601_direction == 2)
+		{
+			if(cmodel_is_yuv(get_output()->get_color_model()))
+				shaders[1] = _601_to_yuv_frag;
+			else
+				shaders[1] = _601_to_rgb_frag;
+		}
+	}
+
+
+
+	frag = VFrame::make_shader(0, shaders[0], shaders[1], shaders[2], 0);
 
 
 	if(frag)

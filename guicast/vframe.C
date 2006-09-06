@@ -863,6 +863,23 @@ void VFrame::pop_next_effect()
 		next_effects.remove_object(next_effects.last());
 }
 
+char* VFrame::get_next_effect(int number)
+{
+	if(!next_effects.total) return "";
+	else
+	if(number > next_effects.total - 1) number = next_effects.total - 1;
+
+	return next_effects.values[next_effects.total - number - 1];
+}
+
+char* VFrame::get_prev_effect(int number)
+{
+	if(!prev_effects.total) return "";
+	else
+	if(number > prev_effects.total - 1) number = prev_effects.total - 1;
+
+	return prev_effects.values[prev_effects.total - number - 1];
+}
 
 BC_Hash* VFrame::get_params()
 {

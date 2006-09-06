@@ -74,6 +74,53 @@ Limited DVD subtitle support.  Requires starting playback before the
 subtitle appears.  The number of subtitle tracks are given in the asset
 info dialog for MPEG video files.
 
+Full OpenGL support during playback for compositing and effects. 
+ - Some effects can't be useful and software isn't catching up to hardware.
+ - Requires OpenGL 2.0 drivers which only NVidia supports currently.
+ - Selected effects have been OpenGL enabled but most have not.  
+ - OpenGL allows higher video resolution than Xv can handle.
+ - OpenGL enabled effects must be placed after software-only effects to get the hardware
+acceleration.
+ - The OpenGL routines are not very optimized.  You can get in the code
+and fix that.
+ - Histogram only uses OpenGL if no channel has more than 3 points.
+ - Histogram effects only use OpenGL if the
+ GUI is closed or the histogram plot is disabled.
+ - Certain frame sizes don't work in OpenGL.  If they're not multiples of 4.
+ - Most effect sequences have 8 bit intermediates.
+ - Certain effect sequences don't have 8 bit intermediates.
+ 	- Interpolate Pixels->Linearize->Color Balance->Histogram
+	- Frames to Fields->RGB601
+ - Multichannel effects should set discarded outputs to TEXTURE.
+ - PBuffers are unreliable.  It may take advancing 2 frames or restarting for 
+ 	an OpenGL operation to take effect.
+
+The following effects support OpenGL:
+brightness
+chromakey
+chromakeyhsv
+colorbalance
+deinterlace
+diffkey
+dissolve
+flip
+frames to fields
+freezeframe
+gamma
+gradient
+histogram
+huesaturation
+interpolate Pixels
+invertvideo
+linearblur
+overlay
+perspective
+radialblur
+rgb601
+rotate
+scale
+threshold
+zoomblur
 
 
 

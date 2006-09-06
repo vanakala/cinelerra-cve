@@ -78,6 +78,9 @@ public:
 	VFrame* new_picon();
 	int handle_opengl();
 
+	void get_aggregation(int *aggregate_interpolate);
+
+
 	int64_t calculate_slider(float in);
 	float calculate_transfer(float in);
 

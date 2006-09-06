@@ -243,6 +243,12 @@ public:
 	void pop_prev_effect();
 	void push_next_effect(char *name);
 	void pop_next_effect();
+// These are called by plugins to determine aggregation.
+// They access any member of the stack based on the number argument.
+// next effect 0 is the one that called read_frame most recently.
+// prev effect 0 is the one that filled our call to read_frame.
+	char* get_next_effect(int number = 0);
+	char* get_prev_effect(int number = 0);
 
 // It isn't enough to know the name of the neighboring effects.
 // Relevant configuration parameters must be passed on.

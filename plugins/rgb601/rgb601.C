@@ -289,11 +289,22 @@ int RGB601Main::process_buffer(VFrame *frame,
 {
 	load_configuration();
 
+// Set parameters for aggregation with previous or next effect.
+	frame->get_params()->update("RGB601_DIRECTION", config.direction);
+
 	read_frame(frame, 
 		0, 
 		start_position, 
 		frame_rate,
 		get_use_opengl());
+
+// Deinterlace effects may aggregate this one,
+	if(get_use_opengl() &&
+		(prev_effect_is("Frames to fields") ||
+		next_effect_is("Frames to fields")))
+	{
+		return 0;
+	}
 
 	if(get_use_opengl() && config.direction)
 	{

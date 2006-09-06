@@ -264,6 +264,18 @@ int InterpolatePixelsMain::process_buffer(VFrame *frame,
 		get_use_opengl());
 //frame->dump_params();
 
+	if(get_use_opengl())
+	{
+// Aggregate with gamma
+		if(next_effect_is("Gamma") ||
+			next_effect_is("Histogram") ||
+			next_effect_is("Color Balance"))
+			return 0;
+
+
+		return run_opengl();
+	}
+
 
 	if(get_output()->get_color_model() != BC_RGB_FLOAT &&
 		get_output()->get_color_model() != BC_RGBA_FLOAT)
@@ -297,8 +309,11 @@ printf("InterpolatePixelsMain::handle_opengl\n");
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 
+	char *shader_stack[] = { 0, 0, 0 };
+	int current_shader = 0;
+	INTERPOLATE_COMPILE(shader_stack, current_shader)
 	unsigned int frag = VFrame::make_shader(0,
-					interpolate_shader,
+					shader_stack[0],
 					0);
 	if(frag > 0)
 	{

@@ -1,0 +1,6 @@
+#ifndef HISTOGRAM_AGGREGATED
+#define HISTOGRAM_AGGREGATED
+
+
+
+#endif

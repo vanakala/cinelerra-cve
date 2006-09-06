@@ -45,6 +45,23 @@ static char *colorbalance_yuv_preserve_shader =
 	"	gl_FragColor.r = y;\n"
 	"}\n";
 
+#define COLORBALANCE_COMPILE(shader_stack, current_shader, aggregate_prev) \
+{ \
+	if(aggregate_prev) \
+		shader_stack[current_shader++] = colorbalance_get_pixel1; \
+	else \
+		shader_stack[current_shader++] = colorbalance_get_pixel2; \
+	if(cmodel_is_yuv(get_output()->get_color_model())) \
+	{\
+		if(get_output()->get_params()->get("COLORBALANCE_PRESERVE", (int)0)) \
+			shader_stack[current_shader++] = colorbalance_yuv_preserve_shader; \
+		else \
+			shader_stack[current_shader++] = colorbalance_yuv_shader; \
+	} \
+	else \
+		shader_stack[current_shader++] = colorbalance_rgb_shader; \
+}
+
 #define COLORBALANCE_UNIFORMS(shader) \
 	glUniform3f(glGetUniformLocation(shader, "colorbalance_scale"),  \
 		get_output()->get_params()->get("COLORBALANCE_CYAN", (float)1), \
