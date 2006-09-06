@@ -7,6 +7,7 @@
 
 #include "aggregated.h"
 #include "../interpolate/aggregated.h"
+#include "../gamma/aggregated.h"
 
 #include <stdio.h>
 #include <string.h>
@@ -498,13 +499,16 @@ int ColorBalanceMain::process_buffer(VFrame *frame,
 		get_use_opengl());
 
 	int aggregate_interpolate = 0;
-	get_aggregation(&aggregate_interpolate);
+	int aggregate_gamma = 0;
+	get_aggregation(&aggregate_interpolate,
+		&aggregate_gamma);
 
 	if(!EQUIV(config.cyan, 0) || 
 		!EQUIV(config.magenta, 0) || 
 		!EQUIV(config.yellow, 0) ||
 		(get_use_opengl() &&
-			aggregate_interpolate))
+			(aggregate_interpolate ||
+			aggregate_gamma)))
 	{
 		if(get_use_opengl())
 		{
@@ -622,11 +626,24 @@ void ColorBalanceMain::read_data(KeyFrame *keyframe)
 	}
 }
 
-void ColorBalanceMain::get_aggregation(int *aggregate_interpolate)
+void ColorBalanceMain::get_aggregation(int *aggregate_interpolate,
+	int *aggregate_gamma)
 {
+	if(!strcmp(get_output()->get_prev_effect(1), "Interpolate Pixels") &&
+		!strcmp(get_output()->get_prev_effect(0), "Gamma"))
+	{
+		*aggregate_interpolate = 1;
+		*aggregate_gamma = 1;
+	}
+	else
 	if(!strcmp(get_output()->get_prev_effect(0), "Interpolate Pixels"))
 	{
 		*aggregate_interpolate = 1;
+	}
+	else
+	if(!strcmp(get_output()->get_prev_effect(0), "Gamma"))
+	{
+		*aggregate_gamma = 1;
 	}
 }
 
@@ -641,16 +658,21 @@ int ColorBalanceMain::handle_opengl()
 	char *shader_stack[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 	int current_shader = 0;
 	int aggregate_interpolate = 0;
+	int aggregate_gamma = 0;
 
-	get_aggregation(&aggregate_interpolate);
+	get_aggregation(&aggregate_interpolate,
+		&aggregate_gamma);
 
-printf("ColorBalanceMain::handle_opengl %d\n", aggregate_interpolate);
+printf("ColorBalanceMain::handle_opengl %d %d\n", aggregate_interpolate, aggregate_gamma);
 	if(aggregate_interpolate)
 		INTERPOLATE_COMPILE(shader_stack, current_shader)
 
+	if(aggregate_gamma)
+		GAMMA_COMPILE(shader_stack, current_shader, aggregate_interpolate)
+
 	COLORBALANCE_COMPILE(shader_stack, 
 		current_shader, 
-		aggregate_interpolate)
+		aggregate_gamma || aggregate_interpolate)
 
 	shader = VFrame::make_shader(0, 
 		shader_stack[0], 
@@ -669,6 +691,7 @@ printf("ColorBalanceMain::handle_opengl %d\n", aggregate_interpolate);
 		glUniform1i(glGetUniformLocation(shader, "tex"), 0);
 
 		if(aggregate_interpolate) INTERPOLATE_UNIFORMS(shader);
+		if(aggregate_gamma) GAMMA_UNIFORMS(shader);
 
 		COLORBALANCE_UNIFORMS(shader);
 

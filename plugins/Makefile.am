@@ -42,6 +42,7 @@ SUBDIRS= \
 	freeverb \
 	freezeframe \
 	gain \
+	gamma \
 	gradient \
 	histogram \
 	holo \
@@ -55,6 +56,8 @@ SUBDIRS= \
 	ivtc \
 	level \
 	linearblur \
+	liveaudio \
+	livevideo \
 	loopaudio \
 	loopvideo \
 	motion \
@@ -62,6 +65,7 @@ SUBDIRS= \
 	normalize \
 	oilpainting \
 	overlay \
+	overlayaudio \
 	parametric \
 	perspective \
 	pitch \

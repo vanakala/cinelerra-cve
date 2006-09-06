@@ -6153,6 +6153,8 @@ utilize fully by mere experimentation.
 * INVERSE TELECINE::  How to convert pulled down frames to progressive frames.
 * INTERPOLATE VIDEO:: How to create the illusion of higher framerates.
 * LINEARIZE::         Fix gamma in raw camera images
+* LIVE AUDIO::        Pass audio from the soundcard directly to the timeline.
+* LIVE VIDEO::        Pass video from the capture card directly to the timeline.
 * LOOP::              How to loop regions of the timeline.
 * MOTION::            The art of motion tracking.
 * REFRAMERT::         Changing the number of frames in a sequence.
@@ -6647,6 +6649,88 @@ apply the new value.
 
 
 
+@node LIVE AUDIO
+@section LIVE AUDIO
+
+This effect reads audio directly from the soundcard input.  It replaces
+any audio on the track so it's normally applied to an empty track. 
+
+
+To use Live Audio, highlight a horizontal region of an audio track or
+define in and out points.  Then drop the Live Audio effect into it. 
+Create extra tracks and attach shared copies of the first Live Audio
+effect to the other tracks to have extra channels recorded.
+
+Live Audio uses the sound driver selected in
+@b{Settings->Preferences->Playback->Audio Out} for recording, but
+unlike recording it uses the @b{playback buffer size} as the recording
+buffer size and it uses the @b{project sample rate} as the sampling
+rate.
+
+These settings are critical since some sound drivers can't record in
+the same sized buffer they play back in.  Live audio has been most
+reliable when ALSA is the recording driver and the playback fragment
+size is 2048.
+
+Drop other effects after Live Audio to process soundcard input in
+realtime.  
+
+Now the bad news.  With live audio there is no readahead so effects
+like compressor will either delay if they have readahead enabled or
+playback will underrun.  
+
+Another problem is sometimes the recording clock on the soundcard is
+slightly slower than the playback clock.  The recording eventually
+falls behind and playback sounds choppy.
+
+Finally, live audio doesn't work in reverse.
+
+
+
+
+
+@node LIVE VIDEO
+@section LIVE VIDEO
+
+This effect reads video directly from the capture card input.  It
+replaces any video on the track so it's normally applied to an empty
+track.  The configuration for the capture card is taken from the
+recording preferences.  Go to @b{Settings->Preferences->Recording} to
+set up the capture card.
+
+Go to the @b{Video In} section where it says @b{Record driver}.  It
+must be set to either @b{Video4Linux2} or @b{IEC 61883}.  Other video
+drivers haven't been tested with Live Video and probably won't work.
+
+For live video, the selection for @b{File Format} and @b{Video} needs
+to be set to a format the timeline can use.  The file format must be
+@b{Quicktime for Linux} and video recording must be enabled for it. 
+Click on the wrench @image{wrench} to set the video compression.
+
+The video compression depends on the recording driver.  For the
+@b{Video4Linux2} recording driver, the compression must be @b{Motion
+JPEG A}.  For the @b{IEC 61883} driver, the compression must be
+@b{DV}.  This gets the driver to generate output in a colormodel that
+the timeline can use.
+
+Some cards provide color and channel settings.  Live video takes the
+color settings from the values set in the @b{Video In} window.  Go to
+@b{File->Record} to bring up the recording interface and the Video In
+window.  Values set in the @b{Video in} window are used by @b{Live
+Video}.  Any channels the capture card supports need to be configured
+in the @b{Video in} interface since the same channels are used by the
+@b{Live Video} effect.
+
+With the video recording configured, highlight a horizontal region of a
+video track or define in and out points.  Then drop the Live Video
+effect into it.  Drop other effects after Live Video to process the
+live video in realtime.  For best results, you should use OpenGL and a
+video card which supports GL shading language.  Go to
+@b{Settings->Preferences->Playback->Video Out} to enable the OpenGL
+driver.
+
+Only one Live Video effect can exist at any time on the timeline.  It
+can't be shared by more than one track.
 
 
 
