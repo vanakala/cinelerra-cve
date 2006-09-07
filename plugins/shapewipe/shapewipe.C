@@ -367,7 +367,7 @@ int ShapeWipeMain::read_pattern_image(int new_frame_width, int new_frame_height)
 
 	if (!png_ptr)
 	{
-		return 1;
+	return 1;
 	}
 
 	/* Tell libpng we already checked the first 8 bytes */
@@ -410,9 +410,9 @@ int ShapeWipeMain::read_pattern_image(int new_frame_width, int new_frame_height)
 	if (bit_depth < 8) png_set_packing(png_ptr);
 
 	/* Convert to grayscale */
-	if (color_type == PNG_COLOR_TYPE_RGB
-		|| color_type == PNG_COLOR_TYPE_RGB_ALPHA)
-		png_set_rgb_to_gray_fixed(png_ptr, 1, -1, -1);
+	if (color_type == PNG_COLOR_TYPE_RGB || 
+		color_type == PNG_COLOR_TYPE_RGB_ALPHA)
+	png_set_rgb_to_gray_fixed(png_ptr, 1, -1, -1);
 
 	/* Allocate memory to hold the original png image */
 	image = (png_bytep*)malloc(sizeof(png_bytep)*height);

@@ -818,7 +818,6 @@ void TitleTranslateUnit::process_package(LoadPackage *package)
 	r_in = (plugin->config.color & 0xff0000) >> 16;
 	g_in = (plugin->config.color & 0xff00) >> 8;
 	b_in = plugin->config.color & 0xff;
-
 	switch(plugin->output->get_color_model())
 	{
 		case BC_RGB888:
@@ -964,7 +963,7 @@ void TitleTranslate::init_packages()
 
 //printf("TitleTranslate::init_packages 1\n");
 
-	
+
 	out_y1 = out_y1_int;
 	out_y2 = out_y2_int;
 	out_x1 = out_x1_int;
@@ -1094,7 +1093,7 @@ void TitleMain::build_fonts()
 			char *out_ptr;
 
 // Get current directory
-
+			
 			if(string[0] == '/')
 			{
 				out_ptr = current_dir;
@@ -1468,7 +1467,7 @@ int TitleMain::get_char_advance(int current, int next)
 	else
 		kerning.x = 0;
 //printf("TitleMain::get_char_advance 2 %d %d\n", result, kerning.x);
-	
+
 	return result + (kerning.x >> 6);
 }
 
@@ -1480,11 +1479,9 @@ void TitleMain::draw_glyphs()
 	int total_packages = 0;
 	iconv_t cd;
 	cd = iconv_open ("UCS-4", config.encoding);
-
-
 	if (cd == (iconv_t) -1)
 	{
-/* Something went wrong.  */
+			/* Something went wrong.  */
 		fprintf (stderr, _("Iconv conversion from %s to Unicode UCS-4 not available\n"),config.encoding);
 	};
 
@@ -1493,27 +1490,24 @@ void TitleMain::draw_glyphs()
 		FT_ULong char_code;	
 		int c = config.text[i];
 		int exists = 0;
-
-/* if iconv is working ok for current encoding */
+		/* if iconv is working ok for current encoding */
 		if (cd != (iconv_t) -1)
 		{
 
 			size_t inbytes,outbytes;
 			char inbuf;
 			char *inp = (char*)&inbuf, *outp = (char *)&char_code;
-
+			
 			inbuf = (char)c;
 			inbytes = 1;
 			outbytes = 4;
 	
 			iconv (cd, &inp, &inbytes, &outp, &outbytes);
 #if     __BYTE_ORDER == __LITTLE_ENDIAN
-			char_code = bswap_32(char_code);
+				char_code = bswap_32(char_code);
 #endif                          /* Big endian.  */
 
-		}
-		else 
-		{
+		} else {
 			char_code = c;
 		}
 
@@ -1555,7 +1549,6 @@ void TitleMain::get_total_extents()
 	int row_start = 0;
 	text_len = strlen(config.text);
 	if(!char_positions) char_positions = new title_char_position_t[text_len];
-	
 	text_rows = 0;
 	text_w = 0;
 	ascent = 0;
@@ -1659,7 +1652,7 @@ int TitleMain::draw_mask()
 	if(config.motion_strategy == BOTTOM_TO_TOP)
 	{
 // printf("TitleMain::draw_mask 1 %d %lld %lld %lld\n", 
-//	config.motion_strategy,
+// 	config.motion_strategy,
 // 	get_source_position(), 
 // 	get_source_start(),
 // 	config.prev_keyframe_position);
@@ -1767,6 +1760,7 @@ int TitleMain::draw_mask()
 	text_x1 += config.x;
 
 
+//printf("TitleMain::draw_mask %d %d\n", visible_row1, visible_row2);
 	visible_char1 = visible_char2 = 0;
 	int got_char1 = 0;
 	for(int i = 0; i < text_len; i++)
@@ -1815,22 +1809,29 @@ int TitleMain::draw_mask()
 		need_redraw = 1;
 	}
 
+//printf("TitleMain::draw_mask %d %d\n", text_w, visible_rows * get_char_height());
 
 
+//printf("TitleMain::draw_mask 1\n");
 // Draw on text mask if different
 	if(old_visible_row1 != visible_row1 ||
 		old_visible_row2 != visible_row2 ||
 		need_redraw)
 	{
+//printf("TitleMain::draw_mask 2\n");
 		text_mask->clear_frame();
 		text_mask_stroke->clear_frame();
 
 
+//printf("TitleMain::draw_mask 2\n");
 		if(!title_engine)
 			title_engine = new TitleEngine(this, PluginClient::smp + 1);
+//printf("TitleMain::draw_mask 2\n");
 
 		title_engine->set_package_count(visible_char2 - visible_char1);
+//printf("TitleMain::draw_mask 2\n");
 		title_engine->process_packages();
+//printf("TitleMain::draw_mask 3\n");
 	}
 
 	return 0;
@@ -1840,11 +1841,11 @@ int TitleMain::draw_mask()
 void TitleMain::overlay_mask()
 {
 
+//printf("TitleMain::overlay_mask 1\n");
 	alpha = 0x100;
 	if(!EQUIV(config.fade_in, 0))
 	{
-		int fade_len = (int)(config.fade_in * 
-			PluginVClient::project_frame_rate);
+		int fade_len = (int)(config.fade_in * PluginVClient::project_frame_rate);
 		int fade_position = get_source_position() - 
 			config.prev_keyframe_position;
 
@@ -1856,10 +1857,10 @@ void TitleMain::overlay_mask()
 				fade_len + 0.5);
 		}
 	}
+//printf("TitleMain::overlay_mask 1\n");
 
 	if(!EQUIV(config.fade_out, 0))
 	{
-
 		int fade_len = (int)(config.fade_out * 
 			PluginVClient::project_frame_rate);
 		int fade_position = config.next_keyframe_position - 
@@ -1873,6 +1874,7 @@ void TitleMain::overlay_mask()
 				fade_len + 0.5);
 		}
 	}
+//printf("TitleMain::overlay_mask 1\n");
 
 	if(config.dropshadow)
 	{
@@ -1895,6 +1897,7 @@ void TitleMain::overlay_mask()
 		mask_y1 -= config.dropshadow;
 		mask_y2 -= config.dropshadow;
 	}
+//printf("TitleMain::overlay_mask 1\n");
 
 	if(text_x1 < input->get_w() && text_x1 + text_w > 0 &&
 		mask_y1 < input->get_h() && mask_y2 > 0)
@@ -1914,6 +1917,7 @@ void TitleMain::overlay_mask()
 			this->text_mask = tmp_text_mask;
 		}
 	}
+//printf("TitleMain::overlay_mask 200\n");
 }
 
 void TitleMain::clear_glyphs()
@@ -1956,6 +1960,7 @@ int TitleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	output = output_ptr;
 
 	need_reconfigure |= load_configuration();
+//printf("TitleMain::process_realtime 1\n");
 
 
 // Always synthesize text and redraw it for timecode
@@ -1986,7 +1991,7 @@ int TitleMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	if(!strlen(config.text)) return 0;
 	if(!strlen(config.encoding)) strcpy(config.encoding, DEFAULT_ENCODING);
 
-//printf("TitleMain::process_realtime 4\n");
+//printf("TitleMain::process_realtime 10\n");
 
 // Handle reconfiguration
 	if(need_reconfigure)

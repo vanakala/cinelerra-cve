@@ -61,8 +61,8 @@ int ZoomBar::create_objects()
 
 #define DEFAULT_TEXT "000.00 to 000.00"
 	add_subwindow(auto_zoom_text = new ZoomTextBox(
-		mwindow,
-  	        this,
+		mwindow, 
+		this, 
 		x, 
 		y,
 		DEFAULT_TEXT));

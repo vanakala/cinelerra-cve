@@ -74,7 +74,6 @@ DeInterlaceMain::~DeInterlaceMain()
 	PLUGIN_DESTRUCTOR_MACRO
 	if(temp) delete temp;
 	if(temp_prevframe) delete temp_prevframe;
-	
 }
 
 char* DeInterlaceMain::plugin_title() { return N_("Deinterlace"); }
@@ -501,6 +500,7 @@ int DeInterlaceMain::process_buffer(VFrame *frame,
 {
 	changed_rows = frame->get_h();
 	load_configuration();
+
 
 	read_frame(frame, 
 		0, 

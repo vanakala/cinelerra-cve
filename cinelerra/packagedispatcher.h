@@ -41,7 +41,7 @@ public:
 	int get_total_packages();
 	int64_t get_progress_max();
 	int packages_are_done();
-	
+
 private:
 	EDL *edl;
 	int64_t audio_position;
@@ -69,7 +69,6 @@ private:
 
 	PackagingEngine *packaging_engine;
 };
-
 
 
 #endif

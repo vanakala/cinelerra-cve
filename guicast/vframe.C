@@ -43,7 +43,6 @@ VFrame::VFrame(unsigned char *png_data)
 	reset_parameters(1);
 	params = new BC_Hash;
 	read_png(png_data);
-//printf("VFrame::VFrame 2\n");
 }
 
 VFrame::VFrame(VFrame &frame)

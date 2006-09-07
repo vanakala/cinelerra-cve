@@ -219,7 +219,6 @@ int AModule::render(double *buffer,
 				{
 					int result = 0;
 
-					source->set_channel(playable_edit->channel);
 
 					result = source->set_audio_position(start_project - 
 							edit_startproject + 
@@ -230,6 +229,9 @@ int AModule::render(double *buffer,
 // 						"source=%p playable_edit=%p edl=%p edlsession=%p sample_rate=%d\n",
 // 						start_project, playable_edit->startproject, playable_edit->startsource, 
 // 						source, playable_edit, get_edl(), get_edl()->session, get_edl()->session->sample_rate);
+
+					source->set_channel(playable_edit->channel);
+
 					source->read_samples(buffer + buffer_offset, 
 						fragment_len,
 						sample_rate);
@@ -297,8 +299,6 @@ int AModule::render(double *buffer,
 						{
 							int result = 0;
 
-							source->set_channel(previous_edit->channel);
-
 							result = source->set_audio_position(start_project - 
 									previous_startproject + 
 									previous_startsource, 
@@ -314,6 +314,9 @@ int AModule::render(double *buffer,
 // 								get_edl(), 
 // 								get_edl()->session, 
 // 								get_edl()->session->sample_rate);
+
+							source->set_channel(previous_edit->channel);
+
 							source->read_samples(transition_temp, 
 								transition_fragment_len,
 								sample_rate);

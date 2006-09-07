@@ -60,7 +60,6 @@ public:
 };
 
 
-
 class PitchEngine : public CrossfadeFFT
 {
 public:

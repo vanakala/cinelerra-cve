@@ -8,7 +8,7 @@
 
 @titlepage
 @center @title Secrets of Cinelerra
-@subtitle Version 2.0.0
+@subtitle Version 2.1.0
 @author Heroine Virtual Ltd.
 @page
 Copyright @copyright{} 2006 Heroine Virtual Ltd.

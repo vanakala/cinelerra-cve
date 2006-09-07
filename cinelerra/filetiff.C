@@ -175,7 +175,7 @@ int FileTIFF::read_frame_header(char *path)
 
 //printf("FileTIFF::read_frame_header %d %d %d\n", bitspersample, components, asset->tiff_cmodel);
 	TIFFClose(stream);
-	
+
 	asset->interlace_mode = BC_ILACE_MODE_NOTINTERLACED;
 
 	return result;
@@ -350,6 +350,7 @@ int FileTIFF::read_frame(VFrame *output, VFrame *input)
 			}
 		}
 	}
+
 	TIFFClose(stream);
 	delete unit;
 

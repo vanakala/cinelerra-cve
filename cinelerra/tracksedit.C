@@ -310,7 +310,7 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 							&temp_autoconf);
 	*/
 
-			
+
 				} else
 				if (behaviour == 1)
 				// ONLY edit is moved, all other edits stay where they are
@@ -334,9 +334,6 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 					result->length = source_length;
 					delete temp_edit;
 				}
-					
-
-					
 				source_track->optimize();
 				dest_track->optimize();
 			}

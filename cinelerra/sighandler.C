@@ -2,6 +2,7 @@
 #include "file.h"
 #include "sighandler.h"
 
+
 SigHandler::SigHandler()
  : BC_Signals()
 {
@@ -48,6 +49,7 @@ void SigHandler::pull_file(File *file)
 	printf("SigHandler::pull_file: file %s not on table.\n",
 		file->asset->path);
 }
+
 
 
 

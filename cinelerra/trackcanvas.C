@@ -253,12 +253,10 @@ int TrackCanvas::drag_motion()
 
 	if (mwindow->session->current_operation == DRAG_ASSET ||
 	  mwindow->session->current_operation == DRAG_EDIT)
-
 	{
 		redraw = 1;
 	}
 
-//printf("TrackCanvas::drag_motion 2 %p\n", mwindow->session->track_highlighted);
 	if(redraw)
 	{
 		lock_window("TrackCanvas::drag_motion");
@@ -266,6 +264,7 @@ int TrackCanvas::drag_motion()
 		flash();
 		unlock_window();
 	}
+
 	return 0;
 }
 
@@ -1121,12 +1120,11 @@ void TrackCanvas::draw_paste_destination()
 				{
 					if(asset && current_atrack < asset->channels)
 					{
-					
 						w = Units::to_int64((double)asset->audio_length /
 							asset->sample_rate *
 							mwindow->edl->session->sample_rate / 
 							mwindow->edl->local_session->zoom_sample);
-						
+
 					// FIXME: more obvious, get_drop_position should be called only ONCE - for highlighted track
 						int64_t asset_length;
 						// we use video if we are over video and audio if we are over audio
@@ -1163,7 +1161,7 @@ void TrackCanvas::draw_paste_destination()
 							mwindow->edl->local_session->zoom_sample);
 //printf("draw_paste_destination %d\n", x);
 						int64_t asset_length = mwindow->session->track_highlighted->to_units((double)clip->tracks->total_length(), 0);
-				
+
 						position = mwindow->session->track_highlighted->from_units(get_drop_position(&insertion, NULL, asset_length));
 						if (position < 0) 
 							w = -1;
@@ -1195,7 +1193,6 @@ void TrackCanvas::draw_paste_destination()
 								current_aedit++;
 								draw_box = 1;
 							}
-
 						}
 					}
 				}
@@ -1220,7 +1217,7 @@ void TrackCanvas::draw_paste_destination()
 							mwindow->edl->local_session->zoom_sample);
 						int64_t asset_length = mwindow->session->track_highlighted->to_units((double)video_length / 
 							asset->frame_rate, 0);
-				
+
 						position = mwindow->session->track_highlighted->from_units(get_drop_position(&insertion, NULL, asset_length));
 						if (position < 0) 
 							w = -1;
@@ -1237,7 +1234,7 @@ void TrackCanvas::draw_paste_destination()
 							mwindow->edl->session->sample_rate / 
 							mwindow->edl->local_session->zoom_sample);
 						int64_t asset_length = mwindow->session->track_highlighted->to_units((double)clip->tracks->total_length(), 0);
-				
+
 						position = mwindow->session->track_highlighted->from_units(get_drop_position(&insertion, NULL, asset_length));
 						if (position < 0) 
 							w = -1;
@@ -1272,7 +1269,6 @@ void TrackCanvas::draw_paste_destination()
 								draw_box = 1;
 							}
 						}
-
 					}
 				}
 
@@ -1292,8 +1288,6 @@ void TrackCanvas::draw_paste_destination()
 						draw_highlight_insertion(x, y, w, h);
 					else
 						draw_highlight_rectangle(x, y, w, h);
-					
-
 				}
 			}
 		}
@@ -1481,6 +1475,7 @@ void TrackCanvas::draw_highlighting()
 {
 	int64_t x, y, w, h;
 	int draw_box = 0;
+
 
 
 
@@ -2095,8 +2090,8 @@ int TrackCanvas::do_keyframes(int cursor_x,
 			{
 				switch(i)
 				{
-					case AUTOMATION_PAN:
 					case AUTOMATION_MODE:
+					case AUTOMATION_PAN:
 					case AUTOMATION_MASK:
 						result = do_autos(track, 
 							automation->autos[i],
@@ -4457,7 +4452,7 @@ int TrackCanvas::do_edit_handles(int cursor_x,
 		{
 			position = edit_result->track->from_units(edit_result->startproject + edit_result->length);
 			new_cursor = RIGHT_CURSOR;
-		};
+		}
 
 // Reposition cursor
 		if(button_press)
@@ -4702,7 +4697,7 @@ int TrackCanvas::do_edits(int cursor_x,
 							(double)mwindow->edl->local_session->view_start * 
 							mwindow->edl->local_session->zoom_sample /
 							mwindow->edl->session->sample_rate;
-						
+
 						drag_popup = new BC_DragWindow(gui, 
 							mwindow->theme->get_image("clip_icon"), 
 							get_abs_cursor_x(0) - mwindow->theme->get_image("clip_icon")->get_w() / 2,
@@ -4831,7 +4826,7 @@ int TrackCanvas::do_plugins(int cursor_x,
 						if (server) 
 						{
 							VFrame *frame = server->picon;
-//printf("TrackCanvas::test_plugins 7\n");
+
 							drag_popup = new BC_DragWindow(gui, 
 								frame, 
 								get_abs_cursor_x(0) - frame->get_w() / 2,

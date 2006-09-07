@@ -450,7 +450,6 @@ void BlondTheme::initialize()
 
 
 
-
 	out_point = new_image_set(5,
 		"out_up.png", 
 		"out_hi.png", 
@@ -658,7 +657,6 @@ void BlondTheme::get_mwindow_sizes(MWindowGUI *gui, int w, int h)
 	mcanvas_y = patchbay_y;
 	mcanvas_w = w - patchbay_w - BC_ScrollBar::get_span(SCROLL_VERT);
 	mcanvas_h = patchbay_h;
-
 	mhscroll_x = 0;
 	mhscroll_y = mzoom_y - BC_ScrollBar::get_span(SCROLL_HORIZ);
 	mhscroll_w = w - BC_ScrollBar::get_span(SCROLL_VERT);
@@ -672,7 +670,6 @@ void BlondTheme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 {
 	if(cwindow_controls)
 	{
-SET_TRACE
 		ccomposite_x = 0;
 		ccomposite_y = 5;
 		ccomposite_w = get_image("cpanel_bg")->get_w();
@@ -700,11 +697,9 @@ SET_TRACE
 			cmeter_x = mwindow->session->cwindow_w;
 			ccanvas_w = cmeter_x - ccanvas_x;
 		}
-SET_TRACE
 	}
 	else
 	{
-SET_TRACE
 		ccomposite_x = -get_image("cpanel_bg")->get_w();
 		ccomposite_y = 0;
 		ccomposite_w = get_image("cpanel_bg")->get_w();
@@ -723,10 +718,8 @@ SET_TRACE
 		cmeter_x = mwindow->session->cwindow_w;
 		cstatus_x = mwindow->session->cwindow_w;
 		cstatus_y = mwindow->session->cwindow_h;
-SET_TRACE
 	}
 
-SET_TRACE
 
 	czoom_x = ctransport_x + PlayTransport::get_transport_width(mwindow) + 20;
 	czoom_y = ctransport_y + 5;
@@ -747,14 +740,12 @@ SET_TRACE
 	ctime_y = ctransport_y;
 	cdest_x = czoom_x;
 	cdest_y = czoom_y + 30;
-SET_TRACE
 }
 
 
 
 void BlondTheme::get_recordgui_sizes(RecordGUI *gui, int w, int h)
 {
-	
 }
 
 void BlondTheme::get_rmonitor_sizes(int do_audio, 
@@ -811,8 +802,7 @@ void BlondTheme::get_vwindow_sizes(VWindowGUI *gui)
 	vedit_x = 10;
 	vedit_y = vslider_y + BC_Slider::get_span(0);
 	vtransport_x = 10;
-	vtransport_y = mwindow->session->vwindow_h - 
-		get_image_set("autokeyframe")[0]->get_h();
+	vtransport_y = mwindow->session->vwindow_h - get_image_set("autokeyframe")[0]->get_h();
 	vtime_x = 380;
 	vtime_y = vedit_y + 10;
 	vtime_w = 125;

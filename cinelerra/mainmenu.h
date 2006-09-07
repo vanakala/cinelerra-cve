@@ -68,9 +68,10 @@ public:
 	MenuAEffects *aeffects;
 	MenuVEffects *veffects;
 
-        Load *load_file;
+	Load *load_file;
 	BC_RecentList *recent_load;
 	LoadPrevious *load[TOTAL_LOADS];
+
 
 	RecordMenuItem *record;
 	RenderItem *render;

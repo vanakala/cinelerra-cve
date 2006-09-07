@@ -87,7 +87,7 @@ int PackageDispatcher::create_packages(MWindow *mwindow,
 	}
 	else
 	if(strategy == SINGLE_PASS_FARM)
-	{	
+	{
 		packaging_engine = File::new_packaging_engine(default_asset);
 		packaging_engine->create_packages_single_farm(
 					edl,
@@ -360,7 +360,6 @@ int64_t PackageDispatcher::get_progress_max()
 				default_asset->sample_rate);
 }
 
-
 int PackageDispatcher::get_total_packages()
 {
 	return total_allocated;
@@ -372,5 +371,3 @@ int PackageDispatcher::packages_are_done()
 		return packaging_engine->packages_are_done();
 	return 0;
 }
-
-

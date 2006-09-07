@@ -17,8 +17,7 @@
 #include <sys/time.h>
 #include <time.h>
 #include "cmodel_permutation.h"
-              
-              
+
 
 
 

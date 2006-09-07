@@ -243,13 +243,6 @@ void Asset::copy_format(Asset *asset, int do_index)
 	vorbis_min_bitrate = asset->vorbis_min_bitrate;
 	vorbis_bitrate = asset->vorbis_bitrate;
 	vorbis_max_bitrate = asset->vorbis_max_bitrate;
-	
-	theora_fix_bitrate = asset->theora_fix_bitrate;
-	theora_bitrate = asset->theora_bitrate;
-	theora_quality = asset->theora_quality;
-	theora_sharpness = asset->theora_sharpness;
-	theora_keyframe_frequency = asset->theora_keyframe_frequency;
-	theora_keyframe_force_frequency = asset->theora_keyframe_frequency;
 
 	
 	theora_fix_bitrate = asset->theora_fix_bitrate;

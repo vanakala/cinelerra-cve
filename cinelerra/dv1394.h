@@ -1,7 +1,7 @@
 /*
  * dv1394.h - DV input/output over IEEE 1394 on OHCI chips
  *   Copyright (C)2001 Daniel Maas <dmaas@dcine.com>
- *     receive by Dan Dennedy <dan@dennedy.org>
+ *     receive, proc_fs by Dan Dennedy <dan@dennedy.org>
  *
  * based on:
  *   video1394.h - driver for OHCI 1394 boards
@@ -64,7 +64,7 @@
 
 	   ioctl(fd, DV1394_INIT, &init);
 
-	   while (1) {
+	   while(1) {
 	          read( <a raw DV file>, buf, DV1394_NTSC_FRAME_SIZE );
 		  write( <the dv1394 FD>, buf, DV1394_NTSC_FRAME_SIZE );
            }
@@ -96,7 +96,7 @@
 
          frame 0   frame 1   frame 2   frame 3
 
-	*--------------------------------------*
+        *--------------------------------------*
         | CLEAR   | DV data | DV data | CLEAR  |
         *--------------------------------------*
                    <ACTIVE> 
@@ -114,10 +114,10 @@
    If you called DV1394_GET_STATUS at this instant, you would
    receive the following values:
    
-                  n_frames          = 4
-		  active_frame      = 1
-		  first_clear_frame = 3
-		  n_clear_frames    = 2
+          n_frames          = 4
+          active_frame      = 1
+          first_clear_frame = 3
+          n_clear_frames    = 2
 
    At this point, you should write new DV data into frame 3 and optionally
    frame 0. Then call DV1394_SUBMIT_FRAMES to inform the device that

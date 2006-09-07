@@ -54,7 +54,7 @@ int RecordWindow::create_objects()
 					1, 
 					1, 
 					1,
-					record->fixed_compression,
+					/* record->fixed_compression */ 0,
 					1,
 					0,
 					0);

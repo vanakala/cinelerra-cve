@@ -43,7 +43,7 @@ int FormatTools::create_objects(int &init_x,
 						int prompt_video,
 						int prompt_audio_channels,
 						int prompt_video_compression,
-						int lock_compressor,
+						char *locked_compressor,
 						int recording,
 						int *strategy,
 						int brender)
@@ -51,7 +51,7 @@ int FormatTools::create_objects(int &init_x,
 	int x = init_x;
 	int y = init_y;
 
-	this->lock_compressor = lock_compressor;
+	this->locked_compressor = locked_compressor;
 	this->recording = recording;
 	this->use_brender = brender;
 	this->do_audio = do_audio;
@@ -192,7 +192,7 @@ int FormatTools::create_objects(int &init_x,
 
 //printf("FormatTools::create_objects 10\n");
 		y += 10;
-		vparams_thread = new FormatVThread(this, lock_compressor);
+		vparams_thread = new FormatVThread(this);
 	}
 
 //printf("FormatTools::create_objects 11\n");
@@ -225,7 +225,7 @@ void FormatTools::update_driver(int driver)
 				format_text->update(_("MPEG transport stream"));
 				asset->format = FILE_MPEG;
 			}
-			lock_compressor = 0;
+			locked_compressor = 0;
 			audio_switch->update(1);
 			video_switch->update(1);
 			break;
@@ -240,6 +240,7 @@ void FormatTools::update_driver(int driver)
 			}
 			else
 				format_text->update(File::formattostr(asset->format));
+			locked_compressor = QUICKTIME_DVSD;
 			strcpy(asset->vcodec, QUICKTIME_DVSD);
 			audio_switch->update(asset->audio_data);
 			video_switch->update(asset->video_data);
@@ -255,12 +256,14 @@ void FormatTools::update_driver(int driver)
 			}
 			else
 				format_text->update(File::formattostr(asset->format));
+			locked_compressor = QUICKTIME_MJPA;
 			audio_switch->update(asset->audio_data);
 			video_switch->update(asset->video_data);
 			break;
 
 		default:
 			format_text->update(File::formattostr(asset->format));
+			locked_compressor = 0;
 			audio_switch->update(asset->audio_data);
 			video_switch->update(asset->video_data);
 			break;
@@ -497,17 +500,15 @@ FormatAThread::~FormatAThread()
 
 void FormatAThread::run()
 {
-	file->get_options(format, 1, 0,	0);
+	file->get_options(format, 1, 0);
 }
 
 
 
 
-FormatVThread::FormatVThread(FormatTools *format, 
-	int lock_compressor)
+FormatVThread::FormatVThread(FormatTools *format)
  : Thread()
 {
-	this->lock_compressor = lock_compressor;
 	this->format = format;
 	file = new File;
 }
@@ -519,7 +520,7 @@ FormatVThread::~FormatVThread()
 
 void FormatVThread::run()
 {
-	file->get_options(format, 0, 1, lock_compressor);
+	file->get_options(format, 0, 1);
 }
 
 FormatPathText::FormatPathText(int x, int y, FormatTools *format)
@@ -606,8 +607,7 @@ int FormatFormat::handle_event()
 				(format->mwindow->defaults);
 
 			// update the render window to match
-			format->format_text->
-				update(get_selection(0, 0)->get_text());
+			format->format_text->update(get_selection(0, 0)->get_text());
 			format->update_extension();
 			format->path_textbox->update(format->asset->path);
 			format->pipe_status->set_status(format->asset);

@@ -45,7 +45,7 @@ public:
 		BC_WindowBase* &format_window,
 		int audio_options,
 		int video_options,
-		int lock_compressor);
+		char *locked_compressor);
 	static int check_sig(Asset *asset);
 
 	int open_file(int rd, int wr);
@@ -227,7 +227,7 @@ class MOVConfigVideo : public BC_Window
 public:
 	MOVConfigVideo(BC_WindowBase *parent_window, 
 		Asset *asset, 
-		int lock_compressor);
+		char *locked_compressor);
 	~MOVConfigVideo();
 
 	int create_objects();
@@ -241,7 +241,7 @@ public:
 	BC_WindowBase *parent_window;
 	Asset *asset;
 	int param_x, param_y;
-	int lock_compressor;
+	char *locked_compressor;
 	
 	BC_ISlider *jpeg_quality;
 	BC_Title *jpeg_quality_title;

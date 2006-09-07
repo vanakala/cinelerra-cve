@@ -117,15 +117,18 @@ BrowseButtonWindow::BrowseButtonWindow(MWindow *mwindow,
 	char *caption, 
 	int want_directory)
  : BC_FileBox(button->x - 
-	      BC_WindowBase::get_resources()->filebox_w / 2, 
-	      button->y - BC_WindowBase::get_resources()->filebox_h / 2,
-	      init_directory, title, caption,
-	      // Set to 1 to get hidden files. 
-	      want_directory,
-	      // Want only directories
-	      want_directory,
-	      0,
-	      mwindow->theme->browse_pad)
+ 		BC_WindowBase::get_resources()->filebox_w / 2, 
+ 	button->y - 
+		BC_WindowBase::get_resources()->filebox_h / 2,
+	init_directory,
+	title,
+	caption,
+// Set to 1 to get hidden files. 
+	want_directory,
+// Want only directories
+	want_directory,
+	0,
+	mwindow->theme->browse_pad)
 {
 }
 

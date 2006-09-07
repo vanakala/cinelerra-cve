@@ -554,7 +554,6 @@ void ColorBalanceMain::update_gui()
 
 
 
-
 int ColorBalanceMain::load_defaults()
 {
 	char directory[1024], string[1024];

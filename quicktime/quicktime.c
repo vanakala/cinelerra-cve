@@ -1378,3 +1378,4 @@ int quicktime_release()
 {
 	return QUICKTIME_RELEASE;
 }
+

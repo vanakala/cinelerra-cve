@@ -380,7 +380,6 @@ void cmodel_transfer(unsigned char **output_rows,
  * in_w, 
  * in_h);
  */
-//	printf("in: %i, out: %i\n", in_colormodel, out_colormodel);
 
 
 #define PERMUTATION_VALUES \

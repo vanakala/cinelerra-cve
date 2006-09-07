@@ -186,11 +186,9 @@ void NewSvgButton::run()
 	int result;
 //printf("NewSvgButton::run 1\n");
 	char directory[1024], filename[1024];
-
-
-
 	sprintf(directory, "~");
 	client->defaults->get("DIRECTORY", directory);
+
 	result = 1;
 // Loop until file is chosen
 	do{

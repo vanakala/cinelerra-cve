@@ -571,7 +571,7 @@ void FileAVI::get_parameters(BC_WindowBase *parent_window,
 		BC_WindowBase* &format_window,
 		int audio_options,
 		int video_options,
-		int lock_compressor)
+		char *locked_compressor)
 {
 	if(audio_options)
 	{
@@ -587,7 +587,7 @@ void FileAVI::get_parameters(BC_WindowBase *parent_window,
 //printf("FileAVI::get_parameters 1\n");
 		AVIConfigVideo *window = new AVIConfigVideo(parent_window,
 			asset,
-			lock_compressor);
+			locked_compressor);
 		format_window = window;
 		window->create_objects();
 		window->run_window();
@@ -852,7 +852,7 @@ int AVIACodecList::handle_event()
 
 AVIConfigVideo::AVIConfigVideo(BC_WindowBase *parent_window, 
 		Asset *asset, 
-		int lock_compressor)
+		char *locked_compressor)
  : BC_Window(PROGRAM_NAME ": Video Compression",
  	parent_window->get_abs_cursor_x(1),
  	parent_window->get_abs_cursor_y(1),
@@ -861,7 +861,7 @@ AVIConfigVideo::AVIConfigVideo(BC_WindowBase *parent_window,
 {
 	this->parent_window = parent_window;
 	this->asset = asset;
-	this->lock_compressor = lock_compressor;
+	this->locked_compressor = locked_compressor;
 	reset();
 }
 

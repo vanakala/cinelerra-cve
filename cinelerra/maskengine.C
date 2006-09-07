@@ -1,6 +1,6 @@
 #include "bcsignals.h"
-#include "clip.h"
 #include "condition.h"
+#include "clip.h"
 #include "maskauto.h"
 #include "maskautos.h"
 #include "maskengine.h"
@@ -70,6 +70,19 @@ MaskUnit::~MaskUnit()
 #ifndef SQR
 #define SQR(x) ((x) * (x))
 #endif
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -374,7 +387,7 @@ void MaskUnit::do_feather(VFrame *output,
 		case BC_A16:
 			DO_FEATHER(uint16_t, 0xffff);
 			break;
-
+		
 		case BC_A_FLOAT:
 			DO_FEATHER(float, 1.0f);
 			break;
@@ -388,23 +401,28 @@ void MaskUnit::do_feather(VFrame *output,
 void MaskUnit::process_package(LoadPackage *package)
 {
 	MaskPackage *ptr = (MaskPackage*)package;
-	
+
 	int start_row = SHRT_MIN;         // part for which mask exists
 	int end_row;
 	if(engine->recalculate)
 	{
 		VFrame *mask;
-//printf("MaskUnit::process_package 1 %d\n", get_package_number());
 		if(engine->feather > 0) 
 			mask = engine->temp_mask;
 		else
 			mask = engine->mask;
 
+SET_TRACE
+// Generated oversampling frame
 		int mask_w = mask->get_w();
 		int mask_h = mask->get_h();
 		int mask_color_model = mask->get_color_model();
 		int oversampled_package_w = mask_w * OVERSAMPLE;
 		int oversampled_package_h = (ptr->row2 - ptr->row1) * OVERSAMPLE;
+//printf("MaskUnit::process_package 1\n");
+
+SET_TRACE
+
 		int local_first_nonempty_rowspan = SHRT_MIN;
 		int local_last_nonempty_rowspan = SHRT_MIN;
 
@@ -424,16 +442,18 @@ void MaskUnit::process_package(LoadPackage *package)
 				row_spans[i][1] = NUM_SPANS;
 			}
 		}
-		
+
+SET_TRACE
 //printf("MaskUnit::process_package 1 %d\n", engine->point_sets.total);
-		
+
+SET_TRACE
 
 // Draw bezier curves onto span buffer
 //struct timeval start_time;
 //gettimeofday(&start_time, 0);
 
 		for(int k = 0; k < engine->point_sets.total; k++)
-		{		
+		{
 			int old_x, old_y;
 			old_x = SHRT_MIN; // sentinel
 			ArrayList<MaskPoint*> *points = engine->point_sets.values[k];
@@ -661,9 +681,7 @@ void MaskUnit::process_package(LoadPackage *package)
 						}
 					}
 				}
-				
-			}					
-			
+			}
 		}
 		engine->protect_data.lock();
 		if (local_first_nonempty_rowspan < engine->first_nonempty_rowspan)
@@ -1026,6 +1044,11 @@ void MaskEngine::do_mask(VFrame *output,
 
 	switch(output->get_color_model())
 	{
+		case BC_RGB_FLOAT:
+		case BC_RGBA_FLOAT:
+			new_color_model = BC_A_FLOAT;
+			break;
+
 		case BC_RGB888:
 		case BC_RGBA8888:
 		case BC_YUV888:
@@ -1038,11 +1061,6 @@ void MaskEngine::do_mask(VFrame *output,
 		case BC_YUV161616:
 		case BC_YUVA16161616:
 			new_color_model = BC_A16;
-			break;
-
-		case BC_RGB_FLOAT:
-		case BC_RGBA_FLOAT:
-			new_color_model = BC_A_FLOAT;
 			break;
 	}
 
@@ -1141,7 +1159,6 @@ SET_TRACE
 SET_TRACE
 
 
-//printf("MaskEngine::do_mask 6\n");
 }
 
 void MaskEngine::init_packages()
@@ -1156,6 +1173,7 @@ SET_TRACE
 		last_nonempty_rowspan = SHRT_MIN;
 		first_nonempty_rowspan = SHRT_MAX;
 	}
+SET_TRACE
 // Always a multiple of 2 packages exist
 	for(int i = 0; i < get_total_packages(); i++)
 	{

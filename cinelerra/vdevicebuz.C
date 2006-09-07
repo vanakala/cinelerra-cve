@@ -441,7 +441,7 @@ int VDeviceBUZ::read_buffer(VFrame *frame)
 // Get buffer from thread
 	char *buffer = 0;
 	int buffer_size = 0;
-	if (input_thread)
+	if(input_thread) 
 		input_thread->get_buffer(&buffer, &buffer_size);
 
 	if(buffer)

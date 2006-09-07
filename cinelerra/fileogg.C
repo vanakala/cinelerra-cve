@@ -1,8 +1,7 @@
-	
-#include "clip.h"
 #include "asset.h"
 #include "bcsignals.h"
 #include "byteorder.h"
+#include "clip.h"
 #include "edit.h"
 #include "file.h"
 #include "fileogg.h"
@@ -145,7 +144,8 @@ static int take_page_out_autoadvance(FILE *in, sync_window_t *sw, ogg_page *og)
 		if (ret > 0)
 		{
 //		printf("fpa: %lli\n", sw->file_pagepos);
-			sw->file_pagepos += og->header_len + og->body_len; // advance 'virtual' position
+// advance 'virtual' position
+			sw->file_pagepos += og->header_len + og->body_len; 
 //		printf("ret2: %i %i\n",ret, og->header_len + og->body_len); 
 			return ret;
 		}
@@ -165,7 +165,7 @@ static int take_page_out_autoadvance(FILE *in, sync_window_t *sw, ogg_page *og)
 			}
 		}
 	}
-	
+	return 1;
 }
 
 

@@ -398,7 +398,7 @@ public:
 
 	Playback3D *playback_3d;
 	RemoveThread *remove_thread;
-
+	
 	SplashGUI *splash_window;
 // Main undo stack
 	MainUndo *undo;
@@ -446,7 +446,7 @@ public:
 
 
 	BatchRenderThread *batch_render;
-	Render *render; 
+	Render *render;
 
  	ExportEDL *exportedl;
 

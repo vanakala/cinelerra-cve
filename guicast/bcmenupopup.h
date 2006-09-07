@@ -14,7 +14,6 @@
 
 // A window that contains a menu.
 
-class BC_MenuPopup;
 
 class BC_MenuPopup
 {

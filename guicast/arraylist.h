@@ -1,10 +1,10 @@
 #ifndef ARRAYLIST_H
 #define ARRAYLIST_H
 
+// designed for lists of track numbers
+
 #include <stdio.h>
 #include <stdlib.h>
-
-// designed for lists of track numbers
 
 #define ARRAYLIST_REMOVEOBJECT_DELETE 0
 #define ARRAYLIST_REMOVEOBJECT_DELETEARRAY 1

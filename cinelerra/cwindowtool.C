@@ -1693,7 +1693,6 @@ CWindowMaskValue::~CWindowMaskValue()
 
 int CWindowMaskValue::handle_event()
 {
-
 	MaskAuto *keyframe;
 	Track *track;
 	MaskPoint *point;

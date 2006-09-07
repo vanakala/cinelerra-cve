@@ -183,9 +183,8 @@ Edit* Edits::insert_new_edit(int64_t position)
 //printf("Edits::insert_new_edit 1\n");
 	Edit *new_edit;
 	current = split_edit(position);
-	
-//printf("Edits::insert_new_edit 1\n");
 
+//printf("Edits::insert_new_edit 1\n");
 	if (current->length == 0) // when creating a split we got 0-length edit, just use it!
 		new_edit = current;
 	else      // we need to insert 
@@ -195,7 +194,7 @@ Edit* Edits::insert_new_edit(int64_t position)
 		insert_after(current, new_edit);
 	}
 //printf("Edits::insert_new_edit 1\n");
- 	new_edit->startproject = position;
+	new_edit->startproject = position;
 //printf("Edits::insert_new_edit 2\n");
 	return new_edit;
 }
@@ -238,11 +237,13 @@ Edit* Edits::split_edit(int64_t position)
 	Edit *new_edit = create_edit();
 	insert_after(edit, new_edit);
 	if (edit)  // if we have actually split the edit, do the funky stuff!
-	{	
+	{
 		new_edit->copy_from(edit);
 		new_edit->length = new_edit->startproject + new_edit->length - position;
 		edit->length = position - edit->startproject;
 		new_edit->startsource += edit->length;
+
+
 // Decide what to do with the transition
 		if(edit->length && edit->transition)
 		{
@@ -257,8 +258,6 @@ Edit* Edits::split_edit(int64_t position)
 	} else
 		new_edit->length = 0;
 	new_edit->startproject = position;
-
-
 	return new_edit;
 }
 

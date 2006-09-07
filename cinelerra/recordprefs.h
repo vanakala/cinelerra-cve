@@ -143,13 +143,13 @@ class RecordFrameRateText : public BC_TextBox
 
 class RecordChannels : public BC_TumbleTextBox
 {
-	public:
-		RecordChannels(PreferencesWindow *pwindow, 
-			       BC_SubWindow *gui, 
-			       int x, 
-			       int y);
-		int handle_event();
-		PreferencesWindow *pwindow;
+public:
+	RecordChannels(PreferencesWindow *pwindow, 
+		BC_SubWindow *gui, 
+		int x, 
+		int y);
+	int handle_event();
+	PreferencesWindow *pwindow;
 };
 
 class StillImageUseDuration : public BC_CheckBox

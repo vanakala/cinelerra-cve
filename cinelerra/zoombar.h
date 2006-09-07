@@ -1,8 +1,6 @@
 #ifndef ZOOMBAR_H
 #define ZOOMBAR_H
 
-class ZoomTextBox;
-
 class FromTextBox;
 class LengthTextBox;
 class ToTextBox;
@@ -12,7 +10,7 @@ class SampleZoomPanel;
 class AmpZoomPanel;
 class TrackZoomPanel;
 class AutoZoom;
-
+class ZoomTextBox;
 
 #include "guicast.h"
 #include "mwindow.inc"
@@ -90,11 +88,6 @@ public:
 	ZoomBar *zoombar;
 };
 
-
-
-
-
-
 class ZoomTextBox : public BC_TextBox
 {
 public:
@@ -103,6 +96,11 @@ public:
 	MWindow *mwindow;
 	ZoomBar *zoombar;
 };
+
+
+
+
+
 
 
 

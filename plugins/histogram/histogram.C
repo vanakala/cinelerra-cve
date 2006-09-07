@@ -1122,7 +1122,6 @@ void HistogramUnit::process_package(LoadPackage *package)
 		int do_value = server->do_value;
 
 
-
 #define HISTOGRAM_HEAD(type) \
 { \
 	for(int i = pkg->start; i < pkg->end; i++) \

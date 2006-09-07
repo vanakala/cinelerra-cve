@@ -248,7 +248,7 @@ typedef int LADSPA_PortRangeHintDescriptor;
    value for the port that is sensible as a default. For instance,
    this value is suitable for use as an initial value in a user
    interface or as a value the host might assign to a control port
-   when the user has not provided one. Defaults are encoded using a
+   when the user has not provided one. BC_Hash are encoded using a
    mask so only one default may be specified for a port. Some of the
    hints make use of lower and upper bounds, in which case the
    relevant bound or bounds must be available and

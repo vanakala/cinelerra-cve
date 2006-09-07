@@ -278,7 +278,7 @@ void PluginSet::paste_keyframes(int64_t start,
 				else
 				{
 					default_keyframe = 0;
-					file->read_text_until("/KEYFRAME", data, MESSAGESIZE);
+					file->read_text_until("/KEYFRAME", data, MESSAGESIZE);				
 				
 				}
 
@@ -449,7 +449,7 @@ void PluginSet::load(FileXML *file, uint32_t load_flags)
 // Current plugin being amended
 	Plugin *plugin = (Plugin*)first;
 	int64_t startproject = 0;
-	loaded_length = 0;
+
 	record = file->tag.get_property("RECORD", record);
 	do{
 		result = file->read_tag();

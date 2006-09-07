@@ -318,13 +318,13 @@ BC_Resources::BC_Resources()
 		new VFrame(pot_dn_png)
 	};
 
- #include "images/progress_up_png.h"
- #include "images/progress_hi_png.h"
- 	static VFrame* default_progress_images[] = 
- 	{
- 		new VFrame(progress_up_png),
- 		new VFrame(progress_hi_png)
- 	};
+#include "images/progress_up_png.h"
+#include "images/progress_hi_png.h"
+	static VFrame* default_progress_images[] = 
+	{
+		new VFrame(progress_up_png),
+		new VFrame(progress_hi_png)
+	};
 
 	pan_data = 0;
 	pan_text_color = YELLOW;
@@ -484,6 +484,7 @@ BC_Resources::BC_Resources()
 	filebox_sortorder = BC_ListBox::SORT_ASCENDING;
 	dirbox_sortcolumn = 0;
 	dirbox_sortorder = BC_ListBox::SORT_ASCENDING;
+
 
 	pot_images = default_pot_images;
 	pot_offset = 2;

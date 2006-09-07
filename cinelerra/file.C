@@ -110,10 +110,9 @@ void File::close_window()
 	}
 }
 
-int File::get_options(FormatTools *format, 
-		      int audio_options, 
-		      int video_options,
-		      int lock_compressor)
+int File::get_options(FormatTools *format,  
+	int audio_options,
+	int video_options)
 {
 	BC_WindowBase *parent_window = format->window;
 	ArrayList<PluginServer*> *plugindb = format->plugindb;
@@ -154,7 +153,7 @@ int File::get_options(FormatTools *format,
 				format_window, 
 				audio_options, 
 				video_options,
-				lock_compressor);
+				format->locked_compressor);
 			break;
 		case FILE_AMPEG:
 		case FILE_VMPEG:
@@ -170,7 +169,7 @@ int File::get_options(FormatTools *format,
 				format_window, 
 				audio_options, 
 				video_options,
-				lock_compressor);
+				format->locked_compressor);
 			break;
 		case FILE_AVI_LAVTOOLS:
 		case FILE_AVI_ARNE2:
@@ -181,7 +180,7 @@ int File::get_options(FormatTools *format,
 				format_window, 
 				audio_options, 
 				video_options,
-				lock_compressor);
+				format->locked_compressor);
 			break;
 		case FILE_JPEG:
 		case FILE_JPEG_LIST:

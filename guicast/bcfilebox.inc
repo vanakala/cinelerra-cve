@@ -22,6 +22,7 @@ class BC_FileBox;
 #define FILEBOX_SIZE_TEXT _("Size")
 #define FILEBOX_DATE_TEXT _("Date")
 #define FILEBOX_EXTENSION_TEXT _("Ext.")
+
 #define FILEBOX_HISTORY_SIZE 16
 
 #endif

@@ -195,6 +195,7 @@ void quicktime_import_avi(quicktime_t *file)
 //printf("quicktime_import_avi 1\n");
 /* Convert idx1 to keyframes and load offsets and sizes */
 
+
 // This is a check from mplayer that gives us the right strategy
 // for calculating real offset.
 // is_odml is not currently set anywhere, but when we will support
@@ -206,7 +207,7 @@ void quicktime_import_avi(quicktime_t *file)
 	{
 
 		if((idx1->table[0].offset < first_riff->movi.atom.start + 4 ||
-        		idx1->table[1].offset < first_riff->movi.atom.start + 4) && 
+        		idx1->table[1].offset < first_riff->movi.atom.start + 4) &&
         	!file->is_odml)
         	index_format = 1;
     	else 

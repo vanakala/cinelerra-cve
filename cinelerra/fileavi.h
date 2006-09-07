@@ -29,7 +29,7 @@ public:
 		BC_WindowBase* &format_window,
 		int audio_options,
 		int video_options,
-		int lock_compressor);
+		char *locked_compressor);
 
 	int get_best_colormodel(int driver, int colormodel);
 	int open_file(int rd, int wr);
@@ -166,7 +166,7 @@ class AVIConfigVideo : public BC_Window
 public:
 	AVIConfigVideo(BC_WindowBase *parent_window, 
 		Asset *asset, 
-		int lock_compressor);
+		char *locked_compressor);
 	~AVIConfigVideo();
 
 	static int calculate_w(int format);
@@ -189,7 +189,7 @@ public:
 	ArrayList<BC_ListBoxItem*> attribute_items[2];
 	BC_WindowBase *parent_window;
 	Asset *asset;
-	int lock_compressor;
+	char *locked_compressor;
 	char string[BCTEXTLEN];
 };
 

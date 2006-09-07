@@ -530,6 +530,7 @@ int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
 	output->get_canvas()->lock_window("VDeviceX11::write_buffer 1");
 
 
+//printf("VDeviceX11::write_buffer %d\n", output->get_canvas()->get_video_on());
 	output->get_transfers(edl, 
 		output_x1, 
 		output_y1, 

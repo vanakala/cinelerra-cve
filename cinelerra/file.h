@@ -36,8 +36,7 @@ public:
 // The dither parameter is carried over from recording, where dither is done at the device.
 	int get_options(FormatTools *format, 
 		int audio_options,
-		int video_options,
-		int lock_compressor);
+		int video_options);
 
 	int raise_window();
 // Close parameter window

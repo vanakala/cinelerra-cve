@@ -288,7 +288,7 @@ private:
 	int *column_width;
 // Calculated based on directory or regular file searching
 	int columns;
-	
+
 	char new_folder_title[BCTEXTLEN];
 	BC_NewFolderThread *newfolder_thread;
 	BC_DeleteThread *delete_thread;

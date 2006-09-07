@@ -69,7 +69,6 @@ public:
 	virtual int write_compressed_frame(VFrame *buffers) { return 0; };
 	virtual int64_t compressed_frame_size() { return 0; };
 // Doubles are used to allow resampling
-
 	virtual int read_samples(double *buffer, int64_t len) { return 0; };
 
 

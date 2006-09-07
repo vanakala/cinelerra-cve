@@ -13,6 +13,7 @@ class DeInterlaceMain;
 
 
 #define THRESHOLD_SCALAR 1000
+
 enum
 {
 	DEINTERLACE_NONE,
@@ -27,8 +28,6 @@ enum
 class DeInterlaceConfig
 {
 public:
-
-
 	DeInterlaceConfig();
 
 	int equivalent(DeInterlaceConfig &that);
@@ -54,6 +53,7 @@ public:
 
 	PLUGIN_CLASS_MEMBERS(DeInterlaceConfig, DeInterlaceThread)
 	
+
 // required for all realtime plugins
 	int process_buffer(VFrame *frame,
 		int64_t start_position,

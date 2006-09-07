@@ -39,7 +39,7 @@ public:
 						int prompt_video,  // Include checkbox for video
 						int prompt_audio_channels,
 						int prompt_video_compression,
-						int lock_compressor,  // Select compressors to be offered
+						char *locked_compressor,  // Select compressors to be offered
 						int recording, // Change captions for recording
 						int *strategy,  // If nonzero, prompt for insertion strategy
 						int brender); // Supply file formats for background rendering
@@ -91,7 +91,7 @@ public:
 
 	ArrayList<PluginServer*> *plugindb;
 	MWindow *mwindow;
-	int lock_compressor;
+	char *locked_compressor;
 	int recording;
 	int use_brender;
 	int do_audio;
@@ -164,14 +164,13 @@ public:
 class FormatVThread : public Thread
 {
 public:
-	FormatVThread(FormatTools *format, int lock_compressor);
+	FormatVThread(FormatTools *format);
 	~FormatVThread();
 	
 	void run();
 
 	FormatTools *format;
 	File *file;
-	int lock_compressor;
 };
 
 class FormatAudio : public BC_CheckBox

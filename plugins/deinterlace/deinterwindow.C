@@ -162,13 +162,13 @@ DeInterlaceOption::~DeInterlaceOption()
 }
 int DeInterlaceOption::handle_event()
 {
-	window->set_mode(output, 0); 
+	window->set_mode(output, 0);
 	return 1;
 }
 
 
 DeInterlaceAdaptive::DeInterlaceAdaptive(DeInterlaceMain *client, int x, int y)
- : BC_CheckBox(x, y, client->config.adaptive, _("Adaptive") )
+ : BC_CheckBox(x, y, client->config.adaptive, _("Adaptive"))
 {
 	this->client = client;
 }

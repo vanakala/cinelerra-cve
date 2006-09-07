@@ -1,12 +1,7 @@
 Big bugs
 ----------------
-Master node framerate not displaying.
-If region in VWindow and CWindow is 100% it should follow the timeline length.
-Hitting space rapidly locks up recording sometimes.
-Drawing cache not cleared after recording.
+Node framerates not displaying.
 Drag effect before timeline is finished drawing after a load -> lockup
-Test 0 for loop video.
-Overlay doesn't handle different sized tracks
 Quicktime mp3 needs standards check
 Importing assets of the same name but different resolutions crashes because the
 formats aren't updated.
@@ -15,8 +10,15 @@ Undo doesn't restore project title from previous load.
  - New file can be saved under old filename if undo is used.
  - Current title changes in save function and could not be restored in redo.
 Load a sound file.  Change the file on the disk.  Crash on exit.
-Drop effect on empty track and cut.  Effect GUI not closed.
-Can't redo last operation in many places.
+Batch filename not saved from recording dialog if cancelled.
+fix AC3 gain problem.
+TOC progress sometimes doesn't automatically close if not updated at least once.
+Labels always edited when concatenating new files to existing tracks.
+Need to paste silence when pasting segment from a silent part of a track.
+Slow undo updating if many still frames.
+Change asset path, CPlayback never returns to redraw the frame.
+First toggle between playback window and fullscreen sometimes crashes.
+Cursor position is wrong during looped playback
 
 
 
@@ -25,26 +27,72 @@ Can't redo last operation in many places.
 
 Big Features
 ----------------
+undo menu showing previous 20 steps to undo
+Picons instead of pulldown menu for load dialog.
+Common service for audio and video drivers.
+Documentation:
+ - recording interface
+ - section on creating a new project in which channels are described
+ - Channels must be encoded as C, FL, FR, BL, BR, LFE for MPEG-4 audio and AC3.
+
+Digital TV
+	- make tuner part of executable and access through render client
+	- combined tuner driver
+	- automatic scan with selection of first video and audio PID's
+	- user selects PID's in the channel edit dialog
+	- available PID's are updated in realtime
+	- software preview of video and audio.  Maybe decoded in the record driver.
+
+@item
+
+CHANNELS
+
+The number of channels Cinelerra should set the device for.  Regardless
+of the number of channels in the project, the number of channels set
+here will be written to the device.  When this is set to 2 and the
+project has 1 channel you'll hear sound through the left speaker and
+not centered as expected for a monaural project.  When this is set to 1
+and the project has 2 channels you'll hear the left channel centered
+and not 2 channels mixed together.
+
+@item
+CHANNELS
+
+The number of channels Cinelerra should set the device for.  Regardless
+of the number of channels in the record operation, the number of
+channels set here will be read from the device.  When this is set to 2
+and the record operation has 1 channel you'll record the left speaker
+and not a mix of the left and right speakers as expected for a monaural
+project.  When this is set to 1 and the project has 2 channels you'll
+record the left and right channels mixed into the left speaker and not
+1 channel spead across two speakers.
+
+
+
+ruler and angle measurement tool
+rendering, playback, record settings bound to EDL.
+histogram parade - either toggle, different plugin, or plugin replacement
+filebox history should be alphabetical but still deleted based on age
+editing in place
+Apply motion tracking to another effect or mask.
+ - currently involves matchmoving an alpha multiply track
+4 point motion tracking
 Denoise from mjpeg tools.
  - yuvdeinterlace
-
 Check for output asset being used in project before rendering.
-Mpeg stream splice utility
- - uses the first track
- - requires all edits to be the same MPEG format, 
- 	same sample rate, 
-	same resolution
- - remember to convert to asset frame rate
-Networked audio for long buffer recording.
- - connect to Cinelerra client
-Special asset for live audio.
-IDAC
+Extended MPEG video support
+ - need accurate beginning and ending frames
+ - 1: direct copy of MPEG video frames
+ - 2: multiplexer settings under audio
+ - 3: support program stream using mplex and fifos
+ - support transport stream using makets and fifos for mplex when it supports it
+ - encode AC3 audio only with video.  6 channel support
+
 Time average with median.
 Remove unused resources function.
 Session management
 Signal handling for non interactive rendering.
 Sound level using readahead buffer.
-hide cursor when over video output
 Asset searches.
 Asset organization in subfolders.
 Field based reverse video.
@@ -56,12 +104,6 @@ Zoom transition
 
 
 
-Small Features
------------------
-left and right arrow in track title
-
-
-
 
 
 
@@ -69,10 +111,6 @@ left and right arrow in track title
 Not going to happen
 ---------------------
 Hide controls in Record Monitor
-Time domain pitch shift
-File sequence testing.
-Drag plugin handle should only affect plugins with matching handles.
-Independant record options for plugin sets.
 
 
 
@@ -86,18 +124,11 @@ Not reproducible
 Quit freezes when background rendering is on.
  - No quit during slow effect with background rendering.
  - Not reproducible.
-Delete track which is being shared causes crash.
- - not reproducible
-Crash during failure to open output file for rendering.
 
 
 
 
 
-Close out of RecordGUI before firewire signal starts -> crash
-Lockup of APatchPan if GUI is updated after every event and pan keyframes are visible.
-Plugin server locks up in sync_parameters when show plugin keyframes is on.
-Effect tweeking locks up if the time taken to render it is really long.
 
 
 
@@ -106,22 +137,8 @@ Effect tweeking locks up if the time taken to render it is really long.
 
 B
 -----------
-Advancemame/scale2x filter
-Moving icons in AWindow should reorder the contents in memory.
-Changes_made not set after tweek.
-Video playback not turned off after rendering.
-Effects from audacity.
-Shift matching surrounding keyframes.
-Popup in CWindow and VWindow to set maximum preview size.
-Shared effect resolution when pasting to different tracks than source EDL.
 Doesn't support window managers with user placement of windows.
-Compressor stops after 30 minutes.
-Compressor non-functional.
 Remember Asset list position.
-More crash recovery in record.
-Lockup during channel change using RecordMonitor and BUZ driver.
-Ignore frames which return errors when monitoring recording.
-Either audio or video plays back in Microsoft Media Player but not both.
 
 
 
@@ -133,4 +150,3 @@ Either audio or video plays back in Microsoft Media Player but not both.
 On hold
 --------------
 Paste non realtime plugins leading to a dialog box.
-Elimination of Audio and Video menus.

@@ -63,7 +63,7 @@ public:
 	int insert_timecode(Edit* &playable_edit,
 		int64_t position,
 		VFrame *output);
-	
+
 	int64_t tounits(double position, int round);
 	double fromunits(int64_t position);
 

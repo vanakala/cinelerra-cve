@@ -38,10 +38,7 @@ PitchEngine::PitchEngine(TimeStretch *plugin)
 	input_size = 0;
 	input_allocated = 0;
 	current_output_sample = -100000000000LL;
-
-	
 	temp = 0;
-
 }
 
 PitchEngine::~PitchEngine()
@@ -55,9 +52,6 @@ PitchEngine::~PitchEngine()
 	delete [] anal_magn;
 	delete [] anal_freq;
 }
-
-
-
 
 int PitchEngine::read_samples(int64_t output_sample, 
 	int samples, 

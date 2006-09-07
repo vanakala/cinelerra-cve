@@ -363,9 +363,13 @@ int LoadPrevious::handle_event()
 	mwindow->undo->update_undo(_("load previous"), LOAD_ALL);
 	mwindow->save_backup();
 	mwindow->session->changes_made = 0;
-
 	return 1;
 }
+
+
+
+
+
 
 
 void LoadPrevious::run()

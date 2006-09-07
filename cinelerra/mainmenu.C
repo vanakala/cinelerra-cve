@@ -286,22 +286,32 @@ int MainMenu::init_veffects(BC_Hash *defaults)
 
 int MainMenu::init_loads(BC_Hash *defaults)
 {
+//printf("MainMenu::init_loads 1\n");
+//printf("MainMenu::init_loads 1\n");
 	char string[BCTEXTLEN], path[BCTEXTLEN], filename[BCTEXTLEN];
+//printf("MainMenu::init_loads 1\n");
 	FileSystem dir;
 	
 	recent_load->load_items();
 
 	int total_loads = recent_load->items.total;
+//printf("MainMenu::init_loads 2\n");
 	if(total_loads > 0) filemenu->add_item(new BC_MenuItem("-"));
 
 	for(int i = 0; i < total_loads; i++)
 	{
 		char *path = recent_load->items.values[i]->get_text();
+
 		filemenu->add_item(load[i] = new LoadPrevious(mwindow));
+//printf("MainMenu::init_loads 5\n");
 		dir.extract_name(filename, path, 0);
+//printf("MainMenu::init_loads 6\n");
 		load[i]->set_text(filename);
+//printf("MainMenu::init_loads 7\n");
 		load[i]->set_path(path);
+//printf("MainMenu::init_loads 8\n");
 	}
+//printf("MainMenu::init_loads 9\n");
 	return 0;
 }
 

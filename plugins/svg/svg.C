@@ -360,7 +360,6 @@ int SvgMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 // 	out_y1, 
 // 	out_x2, 
 // 	out_y2);
-
 		output->copy_from(input);
 		overlayer->overlay(output, 
 			temp_frame,

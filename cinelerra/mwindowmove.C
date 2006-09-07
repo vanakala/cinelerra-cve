@@ -35,7 +35,6 @@ int MWindow::expand_sample(double fixed_sample)
 	{
 		if(edl->local_session->zoom_sample < 0x100000)
 		{
-
 			int64_t new_zoom_sample = edl->local_session->zoom_sample * 2;
 			int64_t view_start;
 			if (fixed_sample < 0)
@@ -49,7 +48,7 @@ int MWindow::expand_sample(double fixed_sample)
 					edl->session->sample_rate /
 					new_zoom_sample);
 			}
-			
+
 			zoom_sample(new_zoom_sample, view_start);
 		}
 	}
