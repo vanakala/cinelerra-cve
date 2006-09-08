@@ -3,6 +3,10 @@
 
 #include <X11/Xlib.h>
 
+#if defined(HAVE_CONFIG_H)
+#include "config.h"
+#endif
+
 #ifdef HAVE_XFT
 #include <X11/Xft/Xft.h>
 #endif
