@@ -151,6 +151,7 @@ mode_add.png \
 mode_divide.png \
 modekeyframe.png \
 mode_multiply.png \
+mode_max.png \
 mode_normal.png \
 mode_replace.png \
 mode_subtract.png \
@@ -239,6 +240,7 @@ statusbar_cancel_up.png \
 statusbar_left.png \
 statusbar_right.png \
 stop.png \
+swap_extents.png \
 text.png \
 timebar_bg.png \
 timebar_brender.png \
@@ -337,6 +339,7 @@ EXTRA_DIST = \
 	patch.xcf.bz2 \
 	resource.xcf.bz2 \
 	statusbar.xcf.bz2 \
+	swapextents.xcf.bz2 \
 	transport.xcf.bz2 \
 	transportbuttons.xcf.bz2 \
 	transports.xcf.bz2

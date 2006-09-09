@@ -92,6 +92,7 @@ void BlondTheme::initialize()
 	resources->menu_title_text    = 0x000000;
 	resources->popup_title_text   = 0x000000;
 	resources->menu_item_text     = 0x000000;
+
 	resources->generic_button_margin = 15;
 	resources->pot_needle_color = resources->text_default;
 	resources->pot_offset = 1;
@@ -121,7 +122,7 @@ void BlondTheme::initialize()
 
 	resources->dirbox_margin = 50;
 	resources->filebox_margin = 101;
-	resources->file_color      = 0x000000;
+	resources->file_color = 0x000000;
 	resources->directory_color = 0x0000ff;
 
 
@@ -156,6 +157,7 @@ void BlondTheme::initialize()
 		"fileboxbutton_up.png",
 		"fileboxbutton_hi.png",
 		"fileboxbutton_dn.png");
+
 
 	resources->filebox_descend_images = new_button("openfolder.png",
 		"generic_up.png", 
@@ -314,6 +316,11 @@ void BlondTheme::initialize()
 	new_button("prevtip.png", "tipbutton_up.png", "tipbutton_hi.png", "tipbutton_dn.png", "prev_tip");
 	new_button("nexttip.png", "tipbutton_up.png", "tipbutton_hi.png", "tipbutton_dn.png", "next_tip");
 	new_button("closetip.png", "tipbutton_up.png", "tipbutton_hi.png", "tipbutton_dn.png", "close_tip");
+	new_button("swap_extents.png",
+		"editpanel_up.png",
+		"editpanel_hi.png",
+		"editpanel_dn.png",
+		"swap_extents");
 
 
 // Record windows
@@ -331,12 +338,12 @@ void BlondTheme::initialize()
 	preferencesoptions_x = 5;
 	preferencesoptions_y = 40;
 
-
 // MWindow
 	message_normal = resources->text_default;
 	audio_color = BLACK;
 	mtransport_margin = 11;
 	toggle_margin = 11;
+
 	new_image("mbutton_bg", "mbutton_bg.png");
 	new_image("mbutton_blue", "mbutton_blue.png");
 	new_image("timebar_bg", "timebar_bg.png");
@@ -359,6 +366,7 @@ void BlondTheme::initialize()
 	new_image("mode_normal", "mode_normal.png");
 	new_image("mode_replace", "mode_replace.png");
 	new_image("mode_subtract", "mode_subtract.png");
+	new_image("mode_max", "mode_max.png");
 
 // CWindow
 	new_image("cpanel_bg", "cpanel_bg.png");
@@ -374,6 +382,7 @@ void BlondTheme::initialize()
 
 	new_image("new_bg", "new_bg.png");
 	new_image("setformat_bg", "setformat_bg2.png");
+
 
 	timebar_view_data = new_image("timebar_view.png");
 
@@ -395,6 +404,7 @@ void BlondTheme::initialize()
 
 	loadfile_pad = 52;
 	browse_pad = 20;
+
 
 	new_image_set("playpatch_data", 
 		5,
@@ -447,6 +457,7 @@ void BlondTheme::initialize()
 	build_icons();
 	build_bg_data();
 	build_overlays();
+
 
 
 
@@ -511,6 +522,7 @@ void BlondTheme::initialize()
 	new_button("top_justify.png", editpanel_up, editpanel_hi, editpanel_dn, "top_justify");
 	new_button("undo.png", editpanel_up, editpanel_hi, editpanel_dn, "undo");
 	new_button("wrench.png", editpanel_up, editpanel_hi, editpanel_dn, "wrench");
+
 
 #define TRANSPORT_LEFT_IMAGES  "transport_left_up.png", "transport_left_hi.png", "transport_left_dn.png"
 #define TRANSPORT_CENTER_IMAGES  "transport_center_up.png", "transport_center_hi.png", "transport_center_dn.png"
@@ -617,30 +629,24 @@ void BlondTheme::get_mwindow_sizes(MWindowGUI *gui, int w, int h)
 	mbuttons_y = gui->mainmenu->get_h() + 1;
 	mbuttons_w = w;
 	mbuttons_h = get_image("mbutton_bg")->get_h();
-
 	mclock_x = 10;
 	mclock_y = mbuttons_y - 1 + mbuttons_h + CWINDOW_METER_MARGIN;
 	mclock_w = get_image("clock_bg")->get_w() - 40;
 	mclock_h = get_image("clock_bg")->get_h();
-
 	mtimebar_x = get_image("patchbay_bg")->get_w();
 	mtimebar_y = mbuttons_y - 1 + mbuttons_h;
 	mtimebar_w = w - mtimebar_x;
 	mtimebar_h = get_image("timebar_bg")->get_h();
-
 	mzoom_h =  get_image("zoombar_left")->get_h();
 	mzoom_x = 0;
 	mzoom_y = h - get_image("statusbar_left")->get_h() - mzoom_h;
 	mzoom_w = w;
-
 	mstatus_x = 0;
 	mstatus_y = mzoom_y + mzoom_h;
 	mstatus_w = w;
 	mstatus_h = h - mstatus_y;
-
 	mstatus_message_x = 10;
 	mstatus_message_y = 5;
-
 	mstatus_progress_w = 230;
 	mstatus_progress_x = mstatus_w - statusbar_cancel_data[0]->get_w() - 2*3 - mstatus_progress_w;
 	mstatus_progress_y = mstatus_h/2 - BC_WindowBase::get_resources()->progress_images[0]->get_h()/2;
@@ -652,7 +658,6 @@ void BlondTheme::get_mwindow_sizes(MWindowGUI *gui, int w, int h)
 	patchbay_y = mtimebar_y + mtimebar_h;
 	patchbay_w = get_image("patchbay_bg")->get_w();
 	patchbay_h = mzoom_y - patchbay_y - BC_ScrollBar::get_span(SCROLL_HORIZ);
-
 	mcanvas_x = patchbay_x + patchbay_w;
 	mcanvas_y = patchbay_y;
 	mcanvas_w = w - patchbay_w - BC_ScrollBar::get_span(SCROLL_VERT);
@@ -660,7 +665,6 @@ void BlondTheme::get_mwindow_sizes(MWindowGUI *gui, int w, int h)
 	mhscroll_x = 0;
 	mhscroll_y = mzoom_y - BC_ScrollBar::get_span(SCROLL_HORIZ);
 	mhscroll_w = w - BC_ScrollBar::get_span(SCROLL_VERT);
-
 	mvscroll_x = mcanvas_x + mcanvas_w;
 	mvscroll_y = mcanvas_y;
 	mvscroll_h = mcanvas_h;
@@ -670,6 +674,7 @@ void BlondTheme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 {
 	if(cwindow_controls)
 	{
+SET_TRACE
 		ccomposite_x = 0;
 		ccomposite_y = 5;
 		ccomposite_w = get_image("cpanel_bg")->get_w();
@@ -697,9 +702,11 @@ void BlondTheme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 			cmeter_x = mwindow->session->cwindow_w;
 			ccanvas_w = cmeter_x - ccanvas_x;
 		}
+SET_TRACE
 	}
 	else
 	{
+SET_TRACE
 		ccomposite_x = -get_image("cpanel_bg")->get_w();
 		ccomposite_y = 0;
 		ccomposite_w = get_image("cpanel_bg")->get_w();
@@ -718,8 +725,10 @@ void BlondTheme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 		cmeter_x = mwindow->session->cwindow_w;
 		cstatus_x = mwindow->session->cwindow_w;
 		cstatus_y = mwindow->session->cwindow_h;
+SET_TRACE
 	}
 
+SET_TRACE
 
 	czoom_x = ctransport_x + PlayTransport::get_transport_width(mwindow) + 20;
 	czoom_y = ctransport_y + 5;
@@ -740,12 +749,14 @@ void BlondTheme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 	ctime_y = ctransport_y;
 	cdest_x = czoom_x;
 	cdest_y = czoom_y + 30;
+SET_TRACE
 }
 
 
 
 void BlondTheme::get_recordgui_sizes(RecordGUI *gui, int w, int h)
 {
+	
 }
 
 void BlondTheme::get_rmonitor_sizes(int do_audio, 
@@ -802,7 +813,8 @@ void BlondTheme::get_vwindow_sizes(VWindowGUI *gui)
 	vedit_x = 10;
 	vedit_y = vslider_y + BC_Slider::get_span(0);
 	vtransport_x = 10;
-	vtransport_y = mwindow->session->vwindow_h - get_image_set("autokeyframe")[0]->get_h();
+	vtransport_y = mwindow->session->vwindow_h - 
+		get_image_set("autokeyframe")[0]->get_h();
 	vtime_x = 380;
 	vtime_y = vedit_y + 10;
 	vtime_w = 125;
@@ -918,20 +930,19 @@ void BlondTheme::draw_rmonitor_bg(RecordMonitorGUI *gui)
 void BlondTheme::draw_mwindow_bg(MWindowGUI *gui)
 {
 // Button bar
-
 #define MBUTTONS_RIGHTEDGE 857
-  gui->draw_3segmenth(mbuttons_x, 
-		      mbuttons_y,
-		      MBUTTONS_RIGHTEDGE, 
-		      mbuttons_x,
-		      MBUTTONS_RIGHTEDGE,
-		      get_image("mbutton_bg"),
-		      0);
+	gui->draw_3segmenth(mbuttons_x, 
+		mbuttons_y, 
+		MBUTTONS_RIGHTEDGE, 
+		mbuttons_x,
+		MBUTTONS_RIGHTEDGE,
+		get_image("mbutton_bg"),
+		0);
 
-  gui->draw_3segmenth(mbuttons_x + MBUTTONS_RIGHTEDGE, 
-		      mbuttons_y, 
-		      mwindow->session->mwindow_w, 
-		      get_image("mbutton_blue"));
+	gui->draw_3segmenth(mbuttons_x + MBUTTONS_RIGHTEDGE, 
+		mbuttons_y, 
+		mwindow->session->mwindow_w, 
+		get_image("mbutton_blue"));
 
 
 	gui->draw_vframe(get_image("panel_divider"),
@@ -970,21 +981,21 @@ void BlondTheme::draw_mwindow_bg(MWindowGUI *gui)
 // Zoombar
 #define ZOOMBAR_CENTER 888
 	gui->draw_3segmenth(mzoom_x, 
-			    mzoom_y,
-			    ZOOMBAR_CENTER, 
-			    get_image("zoombar_left"));
+		mzoom_y,
+		ZOOMBAR_CENTER, 
+		get_image("zoombar_left"));
 	if(mzoom_w > ZOOMBAR_CENTER)
 		gui->draw_3segmenth(mzoom_x + ZOOMBAR_CENTER, 
-				    mzoom_y, 
-				    mzoom_w - ZOOMBAR_CENTER, 
-				    get_image("zoombar_right"));
+			mzoom_y, 
+			mzoom_w - ZOOMBAR_CENTER, 
+			get_image("zoombar_right"));
 
 
 // Status
 	gui->draw_3segmenth(mstatus_x, 
-			    mstatus_y,
-			    ZOOMBAR_CENTER, 
-			    get_image("statusbar_left"));
+		mstatus_y,
+		ZOOMBAR_CENTER, 
+		get_image("statusbar_left"));
 
 	if(mstatus_w > ZOOMBAR_CENTER)
 	  gui->draw_3segmenth(mstatus_x + ZOOMBAR_CENTER, 
