@@ -339,7 +339,7 @@ EXTRA_DIST = \
 	patch.xcf.bz2 \
 	resource.xcf.bz2 \
 	statusbar.xcf.bz2 \
-	swapextents.xcf.bz2 \
+	swap_extents.xcf.bz2 \
 	transport.xcf.bz2 \
 	transportbuttons.xcf.bz2 \
 	transports.xcf.bz2
