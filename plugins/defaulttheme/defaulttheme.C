@@ -225,17 +225,17 @@ void BlondTheme::initialize()
 	resources->tumble_data = new_image_set(4,
 		"tumble_up.png",
 		"tumble_hi.png",
-		"tumble_botdn.png",
-		"tumble_topdn.png");
+		"tumble_bottom.png",
+		"tumble_top.png");
 	resources->listbox_button = new_image_set(4,
 		"listbox_button_up.png",
 		"listbox_button_hi.png",
 		"listbox_button_dn.png",
 		"listbox_button_disabled.png"); // probably need to make this for the suv theme
 	resources->listbox_column = new_image_set(3,
-		"listbox_column_up.png",
-		"listbox_column_hi.png",
-		"listbox_column_dn.png");
+		"column_up.png",
+		"column_hi.png",
+		"column_dn.png");
 	resources->listbox_expand = new_image_set(5,
 		"listbox_expandup.png",
 		"listbox_expanduphi.png",
@@ -261,16 +261,16 @@ void BlondTheme::initialize()
 
 	resources->checkbox_images = new_image_set(5,
 		"checkbox_up.png",
-		"checkbox_uphi.png",
+		"checkbox_hi.png",
 		"checkbox_checked.png",
-		"checkbox_down.png",
+		"checkbox_dn.png",
 		"checkbox_checkedhi.png");
 
 	resources->radial_images = new_image_set(5,
 		"radial_up.png",
-		"radial_uphi.png",
+		"radial_hi.png",
 		"radial_checked.png",
-		"radial_down.png",
+		"radial_dn.png",
 		"radial_checkedhi.png");
 
 	resources->xmeter_images = new_image_set(6, 
@@ -289,28 +289,28 @@ void BlondTheme::initialize()
 		"ymeter_over.png");
 
 	resources->hscroll_data = new_image_set(10,
-			"hscroll_center_up.png",
-			"hscroll_center_hi.png",
-			"hscroll_center_dn.png",
-			"hscroll_bg.png",
-			"hscroll_back_up.png",
-			"hscroll_back_hi.png",
-			"hscroll_back_dn.png",
-			"hscroll_fwd_up.png",
-			"hscroll_fwd_hi.png",
-			"hscroll_fwd_dn.png");
+			"hscroll_handle_up.png",
+			"hscroll_handle_hi.png",
+			"hscroll_handle_dn.png",
+			"hscroll_handle_bg.png",
+			"hscroll_left_up.png",
+			"hscroll_left_hi.png",
+			"hscroll_left_dn.png",
+			"hscroll_right_up.png",
+			"hscroll_right_hi.png",
+			"hscroll_right_dn.png");
 
 	resources->vscroll_data = new_image_set(10,
-			"vscroll_center_up.png",
-			"vscroll_center_hi.png",
-			"vscroll_center_dn.png",
-			"vscroll_bg.png",
-			"vscroll_back_up.png",
-			"vscroll_back_hi.png",
-			"vscroll_back_dn.png",
-			"vscroll_fwd_up.png",
-			"vscroll_fwd_hi.png",
-			"vscroll_fwd_dn.png");
+			"vscroll_handle_up.png",
+			"vscroll_handle_hi.png",
+			"vscroll_handle_dn.png",
+			"vscroll_handle_bg.png",
+			"vscroll_left_up.png",
+			"vscroll_left_hi.png",
+			"vscroll_left_dn.png",
+			"vscroll_right_up.png",
+			"vscroll_right_hi.png",
+			"vscroll_right_dn.png");
 
 
 	new_button("prevtip.png", "tipbutton_up.png", "tipbutton_hi.png", "tipbutton_dn.png", "prev_tip");
@@ -357,7 +357,7 @@ void BlondTheme::initialize()
 	new_image("statusbar_right","statusbar_right.png");
 
 	new_image_set("zoombar_menu", 3, "generic_up.png", "generic_hi.png", "generic_dn.png");
-	new_image_set("zoombar_tumbler", 4, "tumble_up.png", "tumble_hi.png", "tumble_botdn.png", "tumble_topdn.png");
+	new_image_set("zoombar_tumbler", 4, "tumble_up.png", "tumble_hi.png", "tumble_bottom.png", "tumble_top.png");
 
 	new_image_set("mode_popup", 3, "generic_up.png", "generic_hi.png", "generic_dn.png");
 	new_image("mode_add", "mode_add.png");
@@ -437,6 +437,7 @@ void BlondTheme::initialize()
 		"drawpatch_checked.png",
 		"drawpatch_dn.png",
 		"drawpatch_checkedhi.png");
+
 
 	new_image_set("mutepatch_data", 
 		5,
@@ -623,9 +624,9 @@ void BlondTheme::initialize()
 	//labels
  	resources->label_images = new_image_set(5,
   		"radial_up.png", 
-  		"radial_uphi.png", 
+  		"radial_hi.png", 
   		"radial_checked.png", 
-  		"radial_down.png", 
+  		"radial_dn.png", 
   		"radial_checkedhi.png");
 
 	/*	resources->type_to_icon = new_image_set(5,
@@ -702,7 +703,8 @@ SET_TRACE
 		cedit_x = 10;
 		cedit_y = cslider_y + 17;
 		ctransport_x = 10;
-		ctransport_y = mwindow->session->cwindow_h - get_image_set("autokeyframe")[0]->get_h();
+		ctransport_y = mwindow->session->cwindow_h - 
+			get_image_set("autokeyframe")[0]->get_h();
 		ccanvas_x = ccomposite_x + ccomposite_w;
 		ccanvas_y = 0;
 		ccanvas_h = ccomposite_h;
