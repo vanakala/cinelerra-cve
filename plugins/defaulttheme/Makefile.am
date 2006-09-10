@@ -19,6 +19,7 @@ EXTRA_DIST = \
 	hscroll2.xcf.bz2 \
 	mwindow.xcf.bz2 \
 	mwindow2.xcf.bz2 \
+	preferencesbutton.xcf.bz2 \
 	recordgui.xcf.bz2 \
 	recordmonitor.xcf.bz2 \
 	scrollbar.xcf.bz2 \

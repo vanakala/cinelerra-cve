@@ -196,6 +196,11 @@ pot_dn.png \
 pot_hi.png \
 pot_up.png \
 preferences_bg.png \
+preferencesbutton_dn.png \
+preferencesbutton_dnhi.png \
+preferencesbutton_dnlo.png \
+preferencesbutton_up.png \
+preferencesbutton_uphi.png \
 prevlabel.png \
 prevtip.png \
 progress_bg.png \
