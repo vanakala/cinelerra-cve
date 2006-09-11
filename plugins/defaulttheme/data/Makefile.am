@@ -189,6 +189,12 @@ playpatch_hi.png \
 playpatch_up.png \
 play.png \
 plugin_bg.png \
+pluginbutton_dn.png \
+pluginbutton_hi.png \
+pluginbutton_selecthi.png \
+pluginbutton_select.png \
+plugin_on.png \
+plugin_show.png \
 pot_dn.png \
 pot_hi.png \
 pot_up.png \
@@ -339,6 +345,7 @@ EXTRA_DIST = \
 	listbox_button.xcf.bz2 \
 	over_button.xcf.bz2 \
 	patch.xcf.bz2 \
+	pluginbutton.xcf.bz2 \
 	resource.xcf.bz2 \
 	statusbar.xcf.bz2 \
 	swap_extents.xcf.bz2 \

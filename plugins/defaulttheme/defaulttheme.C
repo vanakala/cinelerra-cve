@@ -331,6 +331,7 @@ void BlondTheme::initialize()
 	rmonitor_meters = new_image("recordmonitor_meters.png");
 
 
+	preferences_category_overlap = 0;
 	preferencescategory_x = 5;
 	preferencescategory_y = 5;
 	preferencestitle_x = 5;
@@ -367,6 +368,22 @@ void BlondTheme::initialize()
 	new_image("mode_replace", "mode_replace.png");
 	new_image("mode_subtract", "mode_subtract.png");
 	new_image("mode_max", "mode_max.png");
+
+	new_toggle("plugin_on.png", 
+		"pluginbutton_hi.png", 
+		"pluginbutton_hi.png", 
+		"pluginbutton_select.png", 
+		"pluginbutton_dn.png", 
+		"pluginbutton_selecthi.png", 
+		"plugin_on");
+
+	new_toggle("plugin_show.png", 
+		"plugin_show.png", 
+		"pluginbutton_hi.png", 
+		"pluginbutton_select.png", 
+		"pluginbutton_dn.png", 
+		"pluginbutton_selecthi.png", 
+		"plugin_show");
 
 // CWindow
 	new_image("cpanel_bg", "cpanel_bg.png");
