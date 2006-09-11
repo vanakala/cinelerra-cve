@@ -93,6 +93,7 @@ noinst_HEADERS = \
 	bcfilebox.inc \
 	bchash.h \
 	bchash.inc \
+	bcipc.h \
 	bclistbox.h \
 	bclistbox.inc \
 	bclistboxitem.h \
@@ -144,8 +145,8 @@ noinst_HEADERS = \
 	bcsynchronous.inc \
 	bctextbox.h \
 	bctextbox.inc \
-	bctextbox.h \
-	bctextbox.inc \
+	bctexture.h \
+	bctexture.inc \
 	bctheme.h \
 	bctheme.inc \
 	bctimer.h \

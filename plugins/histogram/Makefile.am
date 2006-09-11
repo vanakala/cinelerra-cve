@@ -8,6 +8,7 @@ INCLUDES = -I$(top_srcdir)/guicast -I$(top_srcdir)/cinelerra -I$(top_srcdir)/qui
 LIBTOOL = $(SHELL) $(top_builddir)/libtool $(LTCXX_FLAGS)
 
 noinst_HEADERS = \
+	aggregated.h \
 	histogram.h histogramconfig.h histogramwindow.h \
 	histogram.inc histogramconfig.inc histogramwindow.inc \
 	max_picon_png.h mid_picon_png.h min_picon_png.h picon_png.h 
