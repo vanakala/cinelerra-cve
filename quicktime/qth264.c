@@ -138,7 +138,11 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 		x264_param_t default_params;
 		x264_param_default(&default_params);
 // Reset quantizer if fixed bitrate
+#if X264_BUILD < 48
 		if(codec->param.rc.b_cbr)
+#else
+		if(codec->param.rc.i_rc_method == X264_RC_ABR)
+#endif
 		{
 			codec->param.rc.i_qp_constant = default_params.rc.i_qp_constant;
 			codec->param.rc.i_qp_min = default_params.rc.i_qp_min;
@@ -471,7 +475,11 @@ static int set_parameter(quicktime_t *file,
 		}
 		else
 		if(!strcasecmp(key, "h264_fix_bitrate"))
+#if X264_BUILD < 48
 			codec->param.rc.b_cbr = (*(int*)value) / 1000;
+#else
+			codec->param.rc.i_bitrate = (*(int*)value) / 1000;
+#endif
 	}
 }
 

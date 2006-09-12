@@ -135,8 +135,13 @@ X264_init(AVCodecContext *avctx)
     x4->params.i_keyint_max = avctx->gop_size;
     x4->params.rc.i_bitrate = avctx->bit_rate / 1000;
     x4->params.rc.i_vbv_buffer_size = avctx->rc_buffer_size / 1000;
-    if(avctx->rc_buffer_size)
+    if(avctx->rc_buffer_size) {
+#if X264_BUILD < 48
         x4->params.rc.b_cbr = 1;
+#else
+        x4->params.rc.i_rc_method = X264_RC_ABR;
+#endif
+    }
     x4->params.i_bframe = avctx->max_b_frames;
     x4->params.b_cabac = avctx->coder_type == FF_CODER_TYPE_AC;
 
