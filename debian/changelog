@@ -1,3 +1,9 @@
+hvirtual (1:2.1.0-svn20060912) unstable; urgency=low
+
+  * SVN of 2006-09-12, non-debug build, merge with Adam's 2.1 version
+
+ -- Debian User <ga@kutxa.homeunix.org>  Tue, 12 Sep 2006 12:58:37 +0200
+
 hvirtual (1:2.0.0) unstable; urgency=low
 
   * 2.0
