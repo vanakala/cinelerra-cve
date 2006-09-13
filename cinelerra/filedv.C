@@ -517,9 +517,9 @@ TRACE("FileDV::write_samples 240")
 			for(int a = 0; a < asset->channels; a++)
 			{
 				memcpy(tmp_buf[a], audio_sample_buffer[a] + audio_sample_buffer_start,
-					copy_size);
+					copy_size * sizeof(int16_t));
 				memcpy(tmp_buf[a] + copy_size, audio_sample_buffer[a],
-					samples - copy_size);
+					(samples - copy_size) * sizeof(int16_t));
 			}
 TRACE("FileDV::write_samples 250")
 			// Encode the audio into the frame
