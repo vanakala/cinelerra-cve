@@ -460,7 +460,7 @@ SET_TRACE
 // Force monitor to quit without resuming
 		if(monitor_engine->record_video) 
 			monitor_engine->record_video->batch_done = 1;
-		else
+		else if (monitor_engine->record_audio)
 			monitor_engine->record_audio->batch_done = 1;
 
 SET_TRACE

@@ -137,7 +137,7 @@ int RecordThread::pause_recording()
 	{
 		record_video->batch_done = 1;
 	}
-	else
+	else if (record->default_asset->audio_data)
 	{
 		record_audio->batch_done = 1;
 	}
@@ -167,7 +167,7 @@ int RecordThread::resume_recording()
 	{
 		record_video->batch_done = 0;
 	}
-	else
+	else if (record_audio)
 	{
 		record_audio->batch_done = 0;
 	}
