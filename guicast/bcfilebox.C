@@ -803,8 +803,8 @@ int BC_FileBox::create_tables()
 		list_column[column_of_type(FILEBOX_DATE)].append(new_item);
 
 // Extension entry
-		if(!want_directory)
-		{
+//		if(!want_directory)
+//		{
 			if(!is_dir)
 			{
 				extract_extension(string, file_item->name);
@@ -815,7 +815,7 @@ int BC_FileBox::create_tables()
 				new_item = new BC_ListBoxItem("", get_resources()->directory_color);
 			}
 			list_column[column_of_type(FILEBOX_EXTENSION)].append(new_item);
-		}
+//		}
 	}
 
 	return 0;
