@@ -65,14 +65,14 @@ DeInterlaceMain::DeInterlaceMain(PluginServer *server)
  : PluginVClient(server)
 {
 	PLUGIN_CONSTRUCTOR_MACRO
-	temp = 0;
+//	temp = 0;
 	temp_prevframe=0;
 }
 
 DeInterlaceMain::~DeInterlaceMain()
 {
 	PLUGIN_DESTRUCTOR_MACRO
-	if(temp) delete temp;
+//	if(temp) delete temp;
 	if(temp_prevframe) delete temp_prevframe;
 }
 
