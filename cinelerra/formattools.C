@@ -22,17 +22,31 @@ FormatTools::FormatTools(MWindow *mwindow,
 	this->asset = asset;
 	this->plugindb = mwindow->plugindb;
 
+	aparams_button = 0;
+	vparams_button = 0;
 	aparams_thread = 0;
 	vparams_thread = 0;
+	channels_tumbler = 0;
 	path_textbox = 0;
 	path_button = 0;
+	path_recent = 0;
+	pipe_status = 0;
 	w = 0;
 }
 
 FormatTools::~FormatTools()
 {
-	delete aparams_thread;
-	delete vparams_thread;
+	delete pipe_status;
+	delete path_recent;
+	delete path_button;
+	delete path_textbox;
+	delete format_button;
+
+	if(aparams_button) delete aparams_button;
+	if(vparams_button) delete vparams_button;
+	if(aparams_thread) delete aparams_thread;
+	if(vparams_thread) delete vparams_thread;
+	if(channels_tumbler) delete channels_tumbler;
 }
 
 int FormatTools::create_objects(int &init_x, 
@@ -609,10 +623,13 @@ int FormatFormat::handle_event()
 			// update the render window to match
 			format->format_text->update(get_selection(0, 0)->get_text());
 			format->update_extension();
-			format->path_textbox->update(format->asset->path);
-			format->pipe_status->set_status(format->asset);
-			format->path_recent->load_items
-				(FILE_FORMAT_PREFIX(format->asset->format));
+			if (format->path_textbox)
+				format->path_textbox->update(format->asset->path);
+			if (format->pipe_status)
+				format->pipe_status->set_status(format->asset);
+			if (format->path_recent)
+				format->path_recent->load_items
+					(FILE_FORMAT_PREFIX(format->asset->format));
 		}
 	}
 	return 1;
