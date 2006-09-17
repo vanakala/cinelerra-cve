@@ -1,3 +1,13 @@
+----------------------------
+Library Requirements:
+----------------------------
+
+Whilst the official version of Cinelerra (Cinelerra-HV) contain a
+custom Makefile, and includes many of the libraries in it, the
+community version (Cinelerra-CV) is designed to to customly define the
+Makefile specific for your system and use libraries that are / can be
+installed into your system as shared libraries.
+
 You need automake version 1.7 to build.  1.4 won't work!
 Autoconf 2.57 is also required to build.
 
@@ -43,3 +53,25 @@ The others are maybe part of your distrib. If they aren't,
 you can find most of them on ftp://ftp.nerim.net/debian-marillat/
 and the rest on http://www.kiberpipa.org/~minmax/cinelerra/builds/
 (if not, please complain to cinelerra@skolelinux.no!)
+
+----------------------------
+Compiler flags:
+----------------------------
+
+Note that there are some compiler flags that may optimise the
+build for your specific architecture.  Some common examples are:
+
+
+Pentium-M:
+
+./configure --prefix=/usr --enable-x86 --enable-mmx --enable-freetype2 \
+ CFLAGS='-O3 -pipe -fomit-frame-pointer -funroll-all-loops -falign-loops=2 \
+         -falign-jumps=2 -falign-functions=2 -ffast-math \
+         -march=pentium-m -mfpmath=sse,387 -mmmx -msse'
+
+Pentium 4: (include sth D, etc)
+
+
+AMD 64:
+
+

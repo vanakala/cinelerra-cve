@@ -103,7 +103,7 @@ mpeg3_release());
 );
 	draw_text(x, y, credits);
 
-	y = 450;
+	y = get_h() - 135;
 
 	set_font(LARGEFONT);
 	draw_text(x, y, "License:");

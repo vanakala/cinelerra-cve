@@ -38,7 +38,7 @@
 
 
 #define WIDTH 750
-#define HEIGHT 730
+#define HEIGHT 780
 
 
 PreferencesMenuitem::PreferencesMenuitem(MWindow *mwindow)
