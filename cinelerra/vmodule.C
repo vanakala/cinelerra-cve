@@ -147,7 +147,7 @@ int VModule::import_frame(VFrame *output,
 			if (position > max_position) position = max_position;
 			int use_cache = renderengine && 
 				renderengine->command->single_frame();
-			int use_asynchronous = !use_cache && 
+			int use_asynchronous = !use_cache && renderengine &&
 				renderengine->command->realtime &&
 				renderengine->edl->session->video_asynchronous;
 
