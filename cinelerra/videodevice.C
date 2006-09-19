@@ -7,6 +7,7 @@
 #include "chantables.h"
 #include "file.inc"
 #include "mutex.h"
+#include "mwindow.h"
 #include "picture.h"
 #include "playbackconfig.h"
 #include "playbackengine.h"
