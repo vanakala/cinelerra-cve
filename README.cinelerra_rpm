@@ -1,4 +1,17 @@
-Feb 5, 2006  K Brosius <cobra@compuserve.com>
+Sep 18, 2006  K Brosius <cobra@compuserve.com>
+
+Cinelerra 2.1
+===============
+
+No major changes in the build, except for package support for a build
+with and without OpenGL.  For the packages I've built, they are built
+against the current NVidia driver (8774) on SUSE 9.2.  Descriptions
+remain the same as for Cinelerra 2.0 except for the inclusion
+of "opengl" in the name if opengl support is built in.
+
+I don't believe a OpenGL binary will run without some OpenGL library installed
+and without the NVidia driver and a card that supports OpenGL 2.0,
+reports seem to be it won't work anyway.
 
 
 Cinelerra 2.0

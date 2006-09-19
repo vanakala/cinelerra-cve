@@ -1,10 +1,19 @@
 # This is not relocatable
 %define prefix /usr
 
+# macros
+%define with_OPENGL 0
+
+%{?_with_opengl: %{expand: %%global with_OPENGL 1}}
+
 Summary: Cinelerra CVS
 Name: cinelerra
 #Version: 1.2.0.cvs.cobra
+%if %{with_OPENGL}
+Version: @VERSION@.CV.svn.%{build_nick}.opengl
+%else
 Version: @VERSION@.CV.svn.%{build_nick}
+%endif
 Release: %(date '+%Y%m%d')
 License: GPL
 Group: X11
@@ -16,9 +25,17 @@ Source0: %{name}-@VERSION@.tar.gz
 #BuildRoot: %{_tmppath}/%{name}-1.2.0-%{release}-buildroot
 BuildRoot: %{_tmppath}/%{name}-@VERSION@-%{release}-buildroot
 Requires: mjpegtools >= 1.6.3
+Provides: cinelerra
 
 %description
+%if %{with_OPENGL}
 Cinelerra unofficial cvs package
+build options: --with opengl
+%else
+Cinelerra unofficial cvs package
+without OpenGL support
+build options: 
+%endif
 
 %prep
 # %setup -q
@@ -26,7 +43,11 @@ Cinelerra unofficial cvs package
 %setup -n %{name}-@VERSION@
 
 %build
+%if %{with_OPENGL}
+./configure --prefix=%{prefix} --enable-freetype2 --enable-opengl
+%else
 ./configure --prefix=%{prefix} --enable-freetype2
+%endif
 #./configure
 %{__make} %{?_smp_mflags} %{?mflags}
 
@@ -85,6 +106,11 @@ rm -rf $RPM_BUILD_ROOT
 %{prefix}/share/applications/cinelerra.desktop
 %{prefix}/share/pixmaps/cinelerra.xpm
 
+
+%changelog
+* Thu Sep 14 2006 Kevin Brosius <cobra@compuserve.com> - 2.1.0.cvs.cobra-date
+- First package with merged Cinelerra 2.1
+- svn r888
 
 %changelog
 * Thu Jun 1 2006 Kevin Brosius <cobra@compuserve.com> - 2.0.0.cvs.cobra-date
