@@ -11,3 +11,4 @@ dist-hook:
 	-rm -rf $(distdir)/debian/CVS
 	-rm -rf $(distdir)/debian/patches/CVS
 	-rm -rf $(distdir)/doc/CVS
+	-find $(distdir) -type d -name .svn -exec rm -rf {} \; -prune
