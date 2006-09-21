@@ -1,5 +1,4 @@
 #include "aboutprefs.h"
-#include "builddate.h"
 #include "language.h"
 #include "libmpeg3.h"
 #include "mwindow.h"
@@ -43,16 +42,18 @@ int AboutPrefs::create_objects()
 
 	y += get_text_height(LARGEFONT);
 	char license2[BCTEXTLEN];
-	sprintf(license2, "%s%s%s", 
+	sprintf(license2, "%s%s%s%s%s", 
 		_("(C) 2006 Heroine Virtual Ltd.\n\n"),
-		_("Build date: "), 
+		_("SVN Version: "),
+		SVNVERSION,
+		_("\nBuild date: "), 
 		BUILDDATE);
 	set_font(MEDIUMFONT);
 	draw_text(x, y, license2);
 
 
 
-	y += get_text_height(MEDIUMFONT) * 3;
+	y += get_text_height(MEDIUMFONT) * 4;
 
 	char versions[BCTEXTLEN];
 	sprintf(versions, 

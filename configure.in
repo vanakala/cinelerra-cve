@@ -362,7 +362,6 @@ AC_SUBST(OBJCOPYARCH, $ocarch)
 
 ############## END of .png TO .o CONVERSION
 
-AC_SUBST(BUILDDATE, `date`)
 
 AC_OUTPUT(Makefile cinelerra-cvs-current.spec po/Makefile.in \
 	m4/Makefile \
@@ -374,7 +373,6 @@ AC_OUTPUT(Makefile cinelerra-cvs-current.spec po/Makefile.in \
 	quicktime/ffmpeg/libavcodec/i386/Makefile \
 					mpeg2enc/Makefile toolame-02l/Makefile \
 					guicast/Makefile cinelerra/Makefile \
-	cinelerra/builddate.h \
 	cinelerra/data/Makefile \
 	mplexlo/Makefile \
 					plugins/colors/Makefile \

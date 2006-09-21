@@ -1,3 +1,6 @@
+BUILDDATE=`date`
+SVNVERSION=`svnversion $(top_srcdir)`
+
 SUBDIRS = data
 
 bin_PROGRAMS = cinelerra
@@ -306,7 +309,9 @@ AM_CXXFLAGS = \
 	$(MJPEG_CFLAGS) \
 	$(OPENEXR_CFLAGS) \
 	$(LIBDV_CFLAGS) \
-	-DPLUGIN_DIR=\"$(plugindir)\"
+	-DPLUGIN_DIR=\"$(plugindir)\" \
+	-DSVNVERSION="\"$(SVNVERSION)\"" \
+	-DBUILDDATE="\"$(BUILDDATE)\""
 
 AM_LDFLAGS = -export-dynamic
 
@@ -352,7 +357,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 bitspopup.h \
 		 brender.h \
 		 browsebutton.h \
-		 builddate.h \
 		 buz.h \
 		 byteorder.h \
 		 byteorderpopup.h \

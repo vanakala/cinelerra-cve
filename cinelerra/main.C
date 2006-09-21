@@ -1,7 +1,6 @@
 #include "arraylist.h"
 #include "batchrender.h"
 #include "bcsignals.h"
-#include "builddate.h"
 #include "edl.h"
 #include "filexml.h"
 #include "filesystem.h"
@@ -180,6 +179,7 @@ int main(int argc, char *argv[])
 		PROGRAM_NAME " " 
 		CINELERRA_VERSION " " 
 		BUILDDATE 
+		" SVN Version " SVNVERSION
 		" (C)2006 Heroine Virtual Ltd.\n\n"
 
 PROGRAM_NAME " is free software, covered by the GNU General Public License,\n"
