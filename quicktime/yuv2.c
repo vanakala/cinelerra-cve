@@ -142,6 +142,7 @@ static void initialize(quicktime_video_map_t *vtrack, quicktime_yuv2_codec_t *co
 		codec->work_buffer = malloc(codec->bytes_per_line *
 								codec->coded_h);
 		codec->initialized = 1;
+		codec->rows = malloc(height * sizeof(*(codec->rows)));
          }
 }
 
