@@ -1,5 +1,5 @@
-BUILDDATE=`date`
-SVNVERSION=`svnversion $(top_srcdir)`
+BUILDDATE=$(shell date)
+SVNVERSION=$(shell svnversion $(top_srcdir))
 
 SUBDIRS = data
 
