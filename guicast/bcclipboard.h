@@ -26,8 +26,14 @@ public:
 	int to_clipboard(char *data, long len, int clipboard_num);
 	int from_clipboard(char *data, long maxlen, int clipboard_num);
 
+private:
+	void handle_selectionrequest(XSelectionRequestEvent *request);
+	int handle_request_string(XSelectionRequestEvent *request);
+	int handle_request_targets(XSelectionRequestEvent *request);
+
 	Display *in_display, *out_display;
 	Atom completion_atom, primary, secondary;
+	Atom targets_atom;
 	Window in_win, out_win;
 	char *data[2];
 	long length[2];
