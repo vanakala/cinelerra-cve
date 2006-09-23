@@ -312,6 +312,7 @@ public:
 	void set_boundaries(float min, float max);
 	void set_precision(int precision);
 	void set_increment(float value);
+	void set_log_floatincrement(int value);
 
 	friend class BC_TumbleTextBoxText;
 	friend class BC_TumbleTextBoxTumble;
@@ -323,6 +324,7 @@ private:
 	int use_float;
 	int precision;
 	float increment;
+	int log_floatincrement;
 	BC_TumbleTextBoxText *textbox;
 	BC_Tumbler *tumbler;
 	BC_WindowBase *parent_window;

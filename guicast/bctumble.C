@@ -2,6 +2,7 @@
 #include "bcresources.h"
 #include "bctextbox.h"
 #include "bctumble.h"
+#include "math.h"
 
 
 #define TUMBLE_UP 0
@@ -298,6 +299,7 @@ BC_FTumbler::BC_FTumbler(BC_TextBox *textbox,
 	this->min = min;
 	this->max = max;
 	this->increment = 1.0;
+	this->log_floatincrement = 0;
 }
 
 BC_FTumbler::~BC_FTumbler()
@@ -307,7 +309,14 @@ BC_FTumbler::~BC_FTumbler()
 int BC_FTumbler::handle_up_event()
 {
 	float value = atof(textbox->get_text());
-	value += increment;
+	if (log_floatincrement) {
+		// round off to to current precision (i.e. 250 -> 200)
+		float cp = floor(log(value)/log(10) + 0.0001);
+		value = floor((value/pow(10,cp))+ 0.0001)*pow(10,cp);
+		value += pow(10,cp);
+	}
+	else
+		value += increment;
 	if(value > max) value = max;
 	textbox->update(value);
 	textbox->handle_event();
@@ -317,7 +326,16 @@ int BC_FTumbler::handle_up_event()
 int BC_FTumbler::handle_down_event()
 {
 	float value = atof(textbox->get_text());
-	value -= increment;
+	if (log_floatincrement) {
+		// round off to to current precision (i.e. 250 -> 200)
+		float cp = floor(log(value)/log(10));
+		value = floor(value/pow(10,cp))*pow(10,cp);
+		// Need to make it so that: [.001 .01 .1 1 10 100] => [.0001 .001 .01 .1 1 10]
+		cp = floor(log(value)/log(10)-.01);
+		value -= pow(10,cp);
+	}
+	else
+		value -= increment;
 	if(value < min) value = min;
 	textbox->update(value);
 	textbox->handle_event();
@@ -335,3 +353,7 @@ void BC_FTumbler::set_increment(float value)
 	this->increment = value;
 }
 
+void BC_FTumbler::set_log_floatincrement(int value)
+{
+	this->log_floatincrement = value;
+}

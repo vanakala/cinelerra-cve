@@ -1957,6 +1957,7 @@ BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window,
 	use_float = 0;
 	precision = 4;
 	increment = 1;
+	log_floatincrement = 0;
 }
 
 BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window, 
@@ -1978,6 +1979,7 @@ BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window,
 	use_float = 0;
 	precision = 4;
 	increment = 1;
+	log_floatincrement = 0;
 }
 
 BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window, 
@@ -1999,6 +2001,7 @@ BC_TumbleTextBox::BC_TumbleTextBox(BC_WindowBase *parent_window,
 	use_float = 1;
 	precision = 4;
 	increment = 1;
+	log_floatincrement = 0;
 }
 
 BC_TumbleTextBox::~BC_TumbleTextBox()
@@ -2021,6 +2024,7 @@ void BC_TumbleTextBox::reset()
 	textbox = 0;
 	tumbler = 0;
 	increment = 1.0;
+	log_floatincrement = 0;
 }
 
 void BC_TumbleTextBox::set_precision(int precision)
@@ -2032,6 +2036,12 @@ void BC_TumbleTextBox::set_increment(float value)
 {
 	this->increment = value;
 	if(tumbler) tumbler->set_increment(value);
+}
+
+void BC_TumbleTextBox::set_log_floatincrement(int value)
+{
+	this->log_floatincrement = value;
+	if(tumbler) tumbler->set_log_floatincrement(value);
 }
 
 int BC_TumbleTextBox::create_objects()
@@ -2072,6 +2082,7 @@ int BC_TumbleTextBox::create_objects()
 			y));
 
 	tumbler->set_increment(increment);
+	tumbler->set_log_floatincrement(log_floatincrement);
 	return 0;
 }
 

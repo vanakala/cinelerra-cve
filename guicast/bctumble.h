@@ -25,6 +25,7 @@ public:
 	virtual void set_boundaries(int64_t min, int64_t max) {};
 	virtual void set_boundaries(float min, float max) {};
 	virtual void set_increment(float value) {};
+	virtual void set_log_floatincrement(int value) {};
 
 private:
 	int draw_face();
@@ -61,9 +62,11 @@ public:
 	int handle_down_event();
 	void set_boundaries(float min, float max);
 	void set_increment(float value);
+	void set_log_floatincrement(int value);
 
 	float min, max;
 	float increment;
+	int log_floatincrement;
 	BC_TextBox *textbox;
 };
 

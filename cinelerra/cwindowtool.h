@@ -72,7 +72,7 @@ public:
 class CWindowCoord : public BC_TumbleTextBox
 {
 public:
-	CWindowCoord(CWindowToolGUI *gui, int x, int y, float value);
+	CWindowCoord(CWindowToolGUI *gui, int x, int y, float value, int logincrement);
 	CWindowCoord(CWindowToolGUI *gui, int x, int y, int value);
 
 // Calls the window's handle_event
