@@ -1,4 +1,5 @@
 #include "bcmenubar.h"
+#include "bcmenuitem.h"
 #include "bcmenupopup.h"
 #include "bcpixmap.h"
 #include "bcpopupmenu.h"
@@ -339,6 +340,36 @@ int BC_PopupMenu::button_press_event()
 		draw_title();
 		return 1;
 	}
+
+	// Scrolling section
+	if (is_event_win() 
+		&& (get_buttonpress() == 4 || get_buttonpress() == 5) 
+		&& menu_popup->total_menuitems() > 1
+	) 
+	{ 
+		int theval = -1;
+		for (int i = 0; i < menu_popup->total_menuitems(); i++) {
+			if (!strcmp(menu_popup->menu_items.values[i]->get_text(),get_text())) {
+				theval=i; 
+				break;
+			}
+		}
+
+		if (theval == -1)                  theval=0;
+		else if (get_buttonpress() == 4)   theval--;
+		else if (get_buttonpress() == 5)   theval++;
+
+		if (theval < 0)
+			theval=0;
+		if (theval >= menu_popup->total_menuitems()) 
+			theval = menu_popup->total_menuitems() - 1;
+
+		BC_MenuItem *tmp = menu_popup->menu_items.values[theval];
+		set_text(tmp->get_text());
+ 		if (!tmp->handle_event())
+			this->handle_event();
+	}
+
 
 	if(popup_down)
 	{
