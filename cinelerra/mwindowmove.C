@@ -182,7 +182,7 @@ void MWindow::fit_autos(int doall)
 	
 	if (doall) {
 		forstart = 0;
-		forstart = AUTOGROUPTYPE_COUNT;
+		forend   = AUTOGROUPTYPE_COUNT;
 	}
 
 	for (int i = forstart; i < forend; i++)

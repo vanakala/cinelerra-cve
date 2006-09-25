@@ -2590,10 +2590,9 @@ void TrackCanvas::synchronize_autos(float change,
 			
 			keyframe->value += change;
 			keyframe->position = fauto->position;
-			if(skip->data_type == TRACK_AUDIO)
-				CLAMP(keyframe->value, INFINITYGAIN, MAX_AUDIO_FADE);
-			else
-				CLAMP(keyframe->value, 0, MAX_VIDEO_FADE);
+			CLAMP(keyframe->value, 
+			      mwindow->edl->local_session->automation_mins[keyframe->autos->autogrouptype],
+			      mwindow->edl->local_session->automation_maxs[keyframe->autos->autogrouptype]);
 			keyframe->control_out_position = fauto->control_out_position;
 			keyframe->control_in_position = fauto->control_in_position;
 			keyframe->control_out_value = fauto->control_out_value;

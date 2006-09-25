@@ -32,7 +32,7 @@ enum
 
 // These must match the following arrays:
 // xml_autogrouptypes_* in localsession.C
-// autogrouptypes_* in automation_statics.h
+// autogrouptypes_fixedrange in automation.C
 enum
 {
 	AUTOGROUPTYPE_AUDIO_FADE,
