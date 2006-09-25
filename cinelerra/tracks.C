@@ -116,7 +116,8 @@ void Tracks::get_affected_edits(ArrayList<Edit*> *drag_edits, double position, T
 void Tracks::get_automation_extents(float *min, 
 	float *max,
 	double start,
-	double end)
+	double end,
+	int autogrouptype)
 {
 	*min = 0;
 	*max = 0;
@@ -129,7 +130,8 @@ void Tracks::get_automation_extents(float *min,
 				max,
 				&coords_undefined,
 				current->to_units(start, 1),
-				current->to_units(end, 1));
+				current->to_units(end, 1),
+				autogrouptype);
 		}
 	}
 }

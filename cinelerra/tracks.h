@@ -44,7 +44,8 @@ public:
 	void get_automation_extents(float *min, 
 		float *max,
 		double start,
-		double end);
+		double end,
+		int autogrouptype);
 
 	void equivalent_output(Tracks *tracks, double *result);
 

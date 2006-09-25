@@ -1,3 +1,4 @@
+#include "automation.h"
 #include "clip.h"
 #include "cplayback.h"
 #include "cwindow.h"
@@ -157,7 +158,7 @@ void MWindow::fit_selection()
 }
 
 
-void MWindow::fit_autos()
+void MWindow::fit_autos(int doall)
 {
 	float min = 0, max = 0;
 	double start, end;
@@ -176,23 +177,51 @@ void MWindow::fit_autos()
 		end = edl->local_session->get_selectionend(1);
 	}
 
-// Adjust min and max
-	edl->tracks->get_automation_extents(&min, &max, start, end);
-//printf("MWindow::fit_autos %f %f\n", min, max);
-
-// Pad
-	float range = max - min;
-// No automation visible
-	if(range < 0.001)
-	{
-		min -= 1;
-		max += 1;
+	int forstart = edl->local_session->zoombar_showautotype;
+	int forend   = edl->local_session->zoombar_showautotype + 1;
+	
+	if (doall) {
+		forstart = 0;
+		forstart = AUTOGROUPTYPE_COUNT;
 	}
-	float pad = range * 0.33;
-	min -= pad;
-	max += pad;
-	edl->local_session->automation_min = min;
-	edl->local_session->automation_max = max;
+
+	for (int i = forstart; i < forend; i++)
+	{
+// Adjust min and max
+		edl->tracks->get_automation_extents(&min, &max, start, end, i);
+//printf("MWindow::fit_autos %d %f %f results in ", i, min, max);
+
+		float range = max - min;
+		switch (i) 
+		{
+		case AUTOGROUPTYPE_AUDIO_FADE:
+		case AUTOGROUPTYPE_VIDEO_FADE:
+			if (range < 0.1) {
+				min = MIN(min, edl->local_session->automation_mins[i]);
+				max = MAX(max, edl->local_session->automation_maxs[i]);
+			}
+			break;
+		case AUTOGROUPTYPE_ZOOM:
+			if (range < 0.001) {
+				min = floor(min*50)/100;
+				max = floor(max*200)/100;
+			}
+			break;
+		case AUTOGROUPTYPE_X:
+		case AUTOGROUPTYPE_Y:
+			if (range < 5) {
+				min = floor((min+max)/2) - 50;
+				max = floor((min+max)/2) + 50;
+			}
+			break;
+		}
+//printf("%f %f\n", min, max);
+		if (!Automation::autogrouptypes_fixedrange[i]) 
+		{
+			edl->local_session->automation_mins[i] = min;
+			edl->local_session->automation_maxs[i] = max;
+		}
+	}
 
 // Show range in zoombar
 	gui->zoombar->update();

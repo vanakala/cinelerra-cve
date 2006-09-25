@@ -132,7 +132,7 @@ public:
 // Fit selected time to horizontal display range
 	void fit_selection();
 // Fit selected autos to the vertical display range
-	void fit_autos();
+	void fit_autos(int doall);
 	void change_currentautorange(int autogrouptype, int increment, int changemax);
 	void expand_autos(int changeall, int domin, int domax);
 	void shrink_autos(int changeall, int domin, int domax);

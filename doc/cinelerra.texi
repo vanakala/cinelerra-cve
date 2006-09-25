@@ -8899,12 +8899,15 @@ Right arrow      Move right*
 Left arrow       Move left*
 Up arrow         Zoom out*
 Down arrow       Zoom in*
-Ctrl Up          Expand waveform amplitude
-Ctrl Dn          Shrink waveform amplitude
+Ctrl Up          Expand current curve amplitude
+Ctrl Dn          Shrink current curve amplitude
+Ctrl Alt Up      Expand all curve amplitude
+Ctrl Alt Dn      Shrink all curve amplitude
 Alt Up           Expand curve amplitude
 Alt Dn           Shrink curve amplitude
 f                Fit time displayed to selection
-Alt f            Fit curve amplitude to highlighted section of curves
+Alt f            Fit current curve amplitude to highlighted section of curves
+Ctrl Alt f       Fit all curve amplitudes to highlighted section of curves
 Alt Left         Move left one edit
 Alt Right        Move right one edit
 Page Up          Move up*

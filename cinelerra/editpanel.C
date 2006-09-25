@@ -974,16 +974,21 @@ EditFitAutos::~EditFitAutos()
 }
 int EditFitAutos::keypress_event()
 {
-	if(alt_down() && get_keypress() == 'f') 
+	if(!ctrl_down() && alt_down() && get_keypress() == 'f') 
 	{
-		handle_event();
+		mwindow->fit_autos(0);
+		return 1;
+	}
+	if(ctrl_down() && alt_down() && get_keypress() == 'f') 
+	{
+		mwindow->fit_autos(1);
 		return 1;
 	}
 	return 0;
 }
 int EditFitAutos::handle_event()
 {
-	mwindow->fit_autos();
+	mwindow->fit_autos(0);
 	return 1;
 }
 

@@ -12,6 +12,18 @@
 #include "transportque.inc"
 
 
+int Automation::autogrouptypes_fixedrange[] =
+{
+	0,
+	0,
+	0,
+	0,
+	0,
+	1
+};
+
+
+
 Automation::Automation(EDL *edl, Track *track)
 {
 	this->edl = edl;
@@ -314,13 +326,15 @@ void Automation::get_extents(float *min,
 	float *max,
 	int *coords_undefined,
 	int64_t unit_start,
-	int64_t unit_end)
+	int64_t unit_end,
+	int autogrouptype)
 {
 	for(int i = 0; i < AUTOMATION_TOTAL; i++)
 	{
 		if(autos[i] && edl->session->auto_conf->autos[i])
 		{
-			autos[i]->get_extents(min, max, coords_undefined, unit_start, unit_end);
+			if (autos[i]->autogrouptype == autogrouptype)
+				autos[i]->get_extents(min, max, coords_undefined, unit_start, unit_end);
 		}
 	}
 }

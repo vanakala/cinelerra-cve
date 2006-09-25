@@ -77,8 +77,6 @@ public:
 // Vertical automation scale
 	float automation_mins[6];
 	float automation_maxs[6];
-	float automation_min;
-	float automation_max;
 	int zoombar_showautotype;
 
 // Eye dropper

@@ -1,4 +1,4 @@
-#include "automation.inc"
+#include "automation.h"
 #include "clip.h"
 #include "bchash.h"
 #include "edl.h"
@@ -26,15 +26,6 @@ static char *xml_autogrouptypes_titlesmin[] =
 	"AUTOGROUPTYPE_INT255_MIN"
 };
 
-static int xml_autogrouptypes_save[] =
-{
-	1,
-	1,
-	1,
-	1,
-	1,
-	0
-};
 
 LocalSession::LocalSession(EDL *edl)
 {
@@ -74,8 +65,6 @@ LocalSession::LocalSession(EDL *edl)
 	automation_mins[AUTOGROUPTYPE_INT255] = 0;
 	automation_maxs[AUTOGROUPTYPE_INT255] = 255;
 
-	automation_min = -10;
-	automation_max = 10;
 	zoombar_showautotype = AUTOGROUPTYPE_AUDIO_FADE;
 	red = green = blue = 0;
 }
@@ -109,8 +98,6 @@ void LocalSession::copy_from(LocalSession *that)
 		automation_mins[i] = that->automation_mins[i];
 		automation_maxs[i] = that->automation_maxs[i];
 	}
-	automation_min = that->automation_min;
-	automation_max = that->automation_max;
 	blue = that->blue;
 }
 
@@ -148,7 +135,7 @@ void LocalSession::save_xml(FileXML *file, double start)
 	file->tag.set_property("BLUE", blue);
 
 	for (int i = 0; i < AUTOGROUPTYPE_COUNT; i++) {
-		if (xml_autogrouptypes_save[i]) {
+		if (!Automation::autogrouptypes_fixedrange[i]) {
 			file->tag.set_property(xml_autogrouptypes_titlesmin[i],automation_mins[i]);
 			file->tag.set_property(xml_autogrouptypes_titlesmax[i],automation_maxs[i]);
 		}
@@ -199,7 +186,7 @@ void LocalSession::load_xml(FileXML *file, unsigned long load_flags)
 		blue = file->tag.get_property("BLUE", blue);
 
 		for (int i = 0; i < AUTOGROUPTYPE_COUNT; i++) {
-			if (xml_autogrouptypes_save[i]) {
+			if (!Automation::autogrouptypes_fixedrange[i]) {
 				automation_mins[i] = file->tag.get_property(xml_autogrouptypes_titlesmin[i],automation_mins[i]);
 				automation_maxs[i] = file->tag.get_property(xml_autogrouptypes_titlesmax[i],automation_maxs[i]);
 			}
@@ -246,7 +233,7 @@ int LocalSession::load_defaults(BC_Hash *defaults)
 	blue = defaults->get("BLUE", 0.0);
 
 	for (int i = 0; i < AUTOGROUPTYPE_COUNT; i++) {
-		if (xml_autogrouptypes_save[i]) {
+		if (!Automation::autogrouptypes_fixedrange[i]) {
 			automation_mins[i] = defaults->get(xml_autogrouptypes_titlesmin[i], automation_mins[i]);
 			automation_maxs[i] = defaults->get(xml_autogrouptypes_titlesmax[i], automation_maxs[i]);
 		}
@@ -272,7 +259,7 @@ int LocalSession::save_defaults(BC_Hash *defaults)
 	defaults->update("BLUE", blue);
 
 	for (int i = 0; i < AUTOGROUPTYPE_COUNT; i++) {
-		if (xml_autogrouptypes_save[i]) {
+		if (!Automation::autogrouptypes_fixedrange[i]) {
 			defaults->update(xml_autogrouptypes_titlesmin[i], automation_mins[i]);
 			defaults->update(xml_autogrouptypes_titlesmax[i], automation_maxs[i]);
 		}

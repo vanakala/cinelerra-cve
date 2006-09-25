@@ -16,6 +16,7 @@
 class Automation
 {
 public:
+	static int autogrouptypes_fixedrange[];
 	Automation(EDL *edl, Track *track);
 	virtual ~Automation();
 
@@ -75,7 +76,8 @@ public:
 		float *max,
 		int *coords_undefined,
 		int64_t unit_start,
-		int64_t unit_end);
+		int64_t unit_end,
+		int autogrouptype);
 
 
 
