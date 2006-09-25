@@ -140,7 +140,7 @@ void ZoomBar::update_autozoom()
 	switch (mwindow->edl->local_session->zoombar_showautotype) {
 	case AUTOGROUPTYPE_AUDIO_FADE:
 	case AUTOGROUPTYPE_VIDEO_FADE:
-		sprintf(string, "%0.02f to %0.02f\n", 
+		sprintf(string, "%0.01f to %0.01f\n", 
 			mwindow->edl->local_session->automation_mins[mwindow->edl->local_session->zoombar_showautotype],
 			mwindow->edl->local_session->automation_maxs[mwindow->edl->local_session->zoombar_showautotype]);
 		break;

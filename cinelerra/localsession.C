@@ -6,8 +6,35 @@
 #include "localsession.h"
 
 
+static char *xml_autogrouptypes_titlesmax[] = 
+{
+	"AUTOGROUPTYPE_AUDIO_FADE_MAX",
+	"AUTOGROUPTYPE_VIDEO_FADE_MAX",
+	"AUTOGROUPTYPE_ZOOM_MAX",
+	"AUTOGROUPTYPE_X_MAX",
+	"AUTOGROUPTYPE_Y_MAX",
+	"AUTOGROUPTYPE_INT255_MAX"
+};
 
+static char *xml_autogrouptypes_titlesmin[] = 
+{
+	"AUTOGROUPTYPE_AUDIO_FADE_MIN",
+	"AUTOGROUPTYPE_VIDEO_FADE_MIN",
+	"AUTOGROUPTYPE_ZOOM_MIN",
+	"AUTOGROUPTYPE_X_MIN",
+	"AUTOGROUPTYPE_Y_MIN",
+	"AUTOGROUPTYPE_INT255_MIN"
+};
 
+static int xml_autogrouptypes_save[] =
+{
+	1,
+	1,
+	1,
+	1,
+	1,
+	0
+};
 
 LocalSession::LocalSession(EDL *edl)
 {
@@ -119,15 +146,13 @@ void LocalSession::save_xml(FileXML *file, double start)
 	file->tag.set_property("RED", red);
 	file->tag.set_property("GREEN", green);
 	file->tag.set_property("BLUE", blue);
-	char tmp[20];
+
 	for (int i = 0; i < AUTOGROUPTYPE_COUNT; i++) {
-		sprintf(tmp,"AUTOGROUPTYPE%02d_MINS",i);
-		file->tag.set_property(tmp,automation_mins[i]);
-		sprintf(tmp,"AUTOGROUPTYPE%02d_MAXS",i);
-		file->tag.set_property(tmp,automation_maxs[i]);
+		if (xml_autogrouptypes_save[i]) {
+			file->tag.set_property(xml_autogrouptypes_titlesmin[i],automation_mins[i]);
+			file->tag.set_property(xml_autogrouptypes_titlesmax[i],automation_maxs[i]);
+		}
 	}
-	file->tag.set_property("AUTOMATION_MIN", automation_min);
-	file->tag.set_property("AUTOMATION_MAX", automation_max);
 	file->append_tag();
 	file->tag.set_title("/LOCALSESSION");
 	file->append_tag();
@@ -172,15 +197,13 @@ void LocalSession::load_xml(FileXML *file, unsigned long load_flags)
 		red = file->tag.get_property("RED", red);
 		green = file->tag.get_property("GREEN", green);
 		blue = file->tag.get_property("BLUE", blue);
-		char tmp[20];
+
 		for (int i = 0; i < AUTOGROUPTYPE_COUNT; i++) {
-			sprintf(tmp,"AUTOGROUPTYPE%02d_MINS",i);
-			automation_mins[i] = file->tag.get_property(tmp,automation_mins[i]);
-			sprintf(tmp,"AUTOGROUPTYPE%02d_MAXS",i);
-			automation_maxs[i] = file->tag.get_property(tmp,automation_maxs[i]);
+			if (xml_autogrouptypes_save[i]) {
+				automation_mins[i] = file->tag.get_property(xml_autogrouptypes_titlesmin[i],automation_mins[i]);
+				automation_maxs[i] = file->tag.get_property(xml_autogrouptypes_titlesmax[i],automation_maxs[i]);
+			}
 		}
-		automation_min = file->tag.get_property("AUTOMATION_MIN", automation_min);
-		automation_max = file->tag.get_property("AUTOMATION_MAX", automation_max);
 	}
 
 
@@ -221,15 +244,14 @@ int LocalSession::load_defaults(BC_Hash *defaults)
 	red = defaults->get("RED", 0.0);
 	green = defaults->get("GREEN", 0.0);
 	blue = defaults->get("BLUE", 0.0);
-	char tmp[20];
+
 	for (int i = 0; i < AUTOGROUPTYPE_COUNT; i++) {
-		sprintf(tmp,"AUTOGROUPTYPE%02d_MINS",i);
-		automation_mins[i] = defaults->get(tmp, automation_mins[i]);
-		sprintf(tmp,"AUTOGROUPTYPE%02d_MAXS",i);
-		automation_maxs[i] = defaults->get(tmp, automation_maxs[i]);
+		if (xml_autogrouptypes_save[i]) {
+			automation_mins[i] = defaults->get(xml_autogrouptypes_titlesmin[i], automation_mins[i]);
+			automation_maxs[i] = defaults->get(xml_autogrouptypes_titlesmax[i], automation_maxs[i]);
+		}
 	}
-	automation_min = defaults->get("AUTOMATION_MIN", automation_min);
-	automation_max = defaults->get("AUTOMATION_MAX", automation_max);
+
 	return 0;
 }
 
@@ -248,16 +270,14 @@ int LocalSession::save_defaults(BC_Hash *defaults)
 	defaults->update("RED", red);
 	defaults->update("GREEN", green);
 	defaults->update("BLUE", blue);
-	char tmp[20];
+
 	for (int i = 0; i < AUTOGROUPTYPE_COUNT; i++) {
-		sprintf(tmp,"AUTOGROUPTYPE%02d_MINS",i);
-		defaults->update(tmp, automation_mins[i]);
-		sprintf(tmp,"AUTOGROUPTYPE%02d_MAXS",i);
-		defaults->update(tmp, automation_maxs[i]);
+		if (xml_autogrouptypes_save[i]) {
+			defaults->update(xml_autogrouptypes_titlesmin[i], automation_mins[i]);
+			defaults->update(xml_autogrouptypes_titlesmax[i], automation_maxs[i]);
+		}
 	}
 
-	defaults->update("AUTOMATION_MIN", automation_min);
-	defaults->update("AUTOMATION_MAX", automation_max);
 	return 0;
 }
 

@@ -29,6 +29,9 @@ enum
 
 
 // Automation group types (used by the gui to control the ranges)
+
+// These must match the following arrays:
+// xml_autogrouptypes_* in localsession.C
 enum
 {
 	AUTOGROUPTYPE_AUDIO_FADE,
