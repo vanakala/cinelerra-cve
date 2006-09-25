@@ -171,7 +171,7 @@ int BC_FileBoxDirectoryText::handle_event()
 	char *path;
 	path = get_text();
 	// is a directory, change directories
-	if(!filebox->fs->is_dir(path))
+	if(filebox->fs->is_dir(path))
 	{
 		filebox->fs->change_dir(path);
 		filebox->refresh();
