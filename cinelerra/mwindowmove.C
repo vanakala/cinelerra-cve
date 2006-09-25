@@ -203,29 +203,99 @@ void MWindow::fit_autos()
 }
 
 
-void MWindow::expand_autos()
+void MWindow::change_currentautorange(int autogrouptype, int increment, int changemax) {
+	float val;
+	if (changemax) {
+		val = edl->local_session->automation_maxs[autogrouptype];
+	} else {
+		val = edl->local_session->automation_mins[autogrouptype];
+	}
+
+	if (increment) 
+	{
+		switch (autogrouptype) {
+		case AUTOGROUPTYPE_AUDIO_FADE:
+			val += 2;
+			break;
+		case AUTOGROUPTYPE_VIDEO_FADE:
+			val += 1;
+			if (val < 0) val = 0;
+			break;
+		case AUTOGROUPTYPE_ZOOM:
+			if (val == 0) 
+				val = 0.001;
+			else 
+				val = val*2;
+			break;
+		case AUTOGROUPTYPE_X:
+		case AUTOGROUPTYPE_Y:
+			val = floor(val + 5);
+			break;
+		}
+	} 
+	else 
+	{ // decrement
+		switch (autogrouptype) {
+		case AUTOGROUPTYPE_AUDIO_FADE:
+			val -= 2;
+			break;
+		case AUTOGROUPTYPE_VIDEO_FADE:
+			val -= 1;
+			if (val < 0) val = 0;
+			break;
+		case AUTOGROUPTYPE_ZOOM:
+			if (val > 0) val = val/2;
+			if (val < 0) val = 0;
+			break;
+		case AUTOGROUPTYPE_X:
+		case AUTOGROUPTYPE_Y:
+			val = floor(val-5);
+			break;
+		}
+	}
+
+
+	if (changemax) {
+		if (val > edl->local_session->automation_mins[autogrouptype])
+			edl->local_session->automation_maxs[autogrouptype] = val;
+	}
+	else
+	{
+		if (val < edl->local_session->automation_maxs[autogrouptype])
+			edl->local_session->automation_mins[autogrouptype] = val;
+	}
+}
+
+
+void MWindow::expand_autos(int changeall, int domin, int domax)
 {
-	float range = edl->local_session->automation_max - 
-		edl->local_session->automation_min;
-	float center = range / 2 + 
-		edl->local_session->automation_min;
-	if(EQUIV(range, 0)) range = 0.002;
-	edl->local_session->automation_min = center - range;
-	edl->local_session->automation_max = center + range;
+	if (changeall)
+		for (int i = 0; i < AUTOGROUPTYPE_COUNT; i++) {
+			if (domin) change_currentautorange(i, 1, 0);
+			if (domax) change_currentautorange(i, 1, 1);
+		}
+	else
+	{
+		if (domin) change_currentautorange(edl->local_session->zoombar_showautotype, 1, 0);
+		if (domax) change_currentautorange(edl->local_session->zoombar_showautotype, 1, 1);
+	}
 	gui->zoombar->update_autozoom();
 	gui->canvas->draw_overlays();
 	gui->canvas->flash();
 }
 
-void MWindow::shrink_autos()
+void MWindow::shrink_autos(int changeall, int domin, int domax)
 {
-	float range = edl->local_session->automation_max - 
-		edl->local_session->automation_min;
-	float center = range / 2 + 
-		edl->local_session->automation_min;
-	float new_range = range / 4;
-	edl->local_session->automation_min = center - new_range;
-	edl->local_session->automation_max = center + new_range;
+	if (changeall)
+		for (int i = 0; i < AUTOGROUPTYPE_COUNT; i++) {
+			if (domin) change_currentautorange(i, 0, 0);
+			if (domax) change_currentautorange(i, 0, 1);
+		}
+	else
+	{
+		if (domin) change_currentautorange(edl->local_session->zoombar_showautotype, 0, 0);
+		if (domax) change_currentautorange(edl->local_session->zoombar_showautotype, 0, 1);
+	}
 	gui->zoombar->update_autozoom();
 	gui->canvas->draw_overlays();
 	gui->canvas->flash();

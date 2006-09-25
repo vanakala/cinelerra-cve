@@ -133,8 +133,9 @@ public:
 	void fit_selection();
 // Fit selected autos to the vertical display range
 	void fit_autos();
-	void expand_autos();
-	void shrink_autos();
+	void change_currentautorange(int autogrouptype, int increment, int changemax);
+	void expand_autos(int changeall, int domin, int domax);
+	void shrink_autos(int changeall, int domin, int domax);
 // move the window to include the cursor
 	void find_cursor();
 // Append a plugindb with pointers to the master plugindb

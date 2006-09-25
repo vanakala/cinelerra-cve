@@ -83,11 +83,12 @@ public:
 class AutoZoom : public BC_Tumbler
 {
 public:
-	AutoZoom(MWindow *mwindow, ZoomBar *zoombar, int x, int y);
+	AutoZoom(MWindow *mwindow, ZoomBar *zoombar, int x, int y, int changemax);
 	int handle_up_event();
 	int handle_down_event();
 	MWindow *mwindow;
 	ZoomBar *zoombar;
+	int changemax;
 };
 
 

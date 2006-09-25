@@ -63,6 +63,8 @@ int ZoomBar::create_objects()
 	auto_type->create_objects();
 	x += auto_type->get_w() + 10;
 #define DEFAULT_TEXT "000.00 to 000.00"
+	add_subwindow(auto_zoom = new AutoZoom(mwindow, this, x, y, 0));
+	x += auto_zoom->get_w();
 	add_subwindow(auto_zoom_text = new ZoomTextBox(
 		mwindow, 
 		this, 
@@ -70,7 +72,7 @@ int ZoomBar::create_objects()
 		y,
 		DEFAULT_TEXT));
 	x += auto_zoom_text->get_w() + 5;
-	add_subwindow(auto_zoom = new AutoZoom(mwindow, this, x, y));
+	add_subwindow(auto_zoom = new AutoZoom(mwindow, this, x, y, 1));
 	update_autozoom();
 	x += auto_zoom->get_w() + 5;
 
@@ -384,24 +386,33 @@ int TrackZoomPanel::handle_event()
 
 
 
-AutoZoom::AutoZoom(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
+AutoZoom::AutoZoom(MWindow *mwindow, ZoomBar *zoombar, int x, int y, int changemax)
  : BC_Tumbler(x,
  	y,
  	mwindow->theme->get_image_set("zoombar_tumbler"))
 {
 	this->mwindow = mwindow;
 	this->zoombar = zoombar;
+	this->changemax = changemax;
 }
 
 int AutoZoom::handle_up_event()
 {
-	mwindow->expand_autos();
+	mwindow->change_currentautorange(mwindow->edl->local_session->zoombar_showautotype,1,changemax);
+
+	mwindow->gui->zoombar->update_autozoom();
+	mwindow->gui->canvas->draw_overlays();
+	mwindow->gui->canvas->flash();
 	return 1;
 }
 
 int AutoZoom::handle_down_event()
 {
-	mwindow->shrink_autos();
+	mwindow->change_currentautorange(mwindow->edl->local_session->zoombar_showautotype,0,changemax);
+
+	mwindow->gui->zoombar->update_autozoom();
+	mwindow->gui->canvas->draw_overlays();
+	mwindow->gui->canvas->flash();
 	return 1;
 }
 
@@ -472,69 +483,24 @@ ZoomTextBox::ZoomTextBox(MWindow *mwindow, ZoomBar *zoombar, int x, int y, char 
 
 int ZoomTextBox::button_press_event()
 {
-	float val;
-
 	if (!(get_buttonpress() == 4 || get_buttonpress() == 5)) {
 		BC_TextBox::button_press_event();
 		return 0;
 	}
 	if (!is_event_win()) return 0;
 
+	int changemax = 1;
 	if (get_relative_cursor_x() < get_w()/2)
-		val = mwindow->edl->local_session->automation_mins[mwindow->edl->local_session->zoombar_showautotype];
-	else
-		val = mwindow->edl->local_session->automation_maxs[mwindow->edl->local_session->zoombar_showautotype];
-	
-	if (get_buttonpress() == 5) {
-		switch (mwindow->edl->local_session->zoombar_showautotype) {
-		case AUTOGROUPTYPE_AUDIO_FADE:
-			val -= 2;
-			break;
-		case AUTOGROUPTYPE_VIDEO_FADE:
-			val -= 1;
-			if (val < 0) val = 0;
-			break;
-		case AUTOGROUPTYPE_ZOOM:
-			if (val > 0) val = val/2;
-			if (val < 0) val = 0;
-			break;
-		case AUTOGROUPTYPE_X:
-		case AUTOGROUPTYPE_Y:
-			val = floor(val-5);
-			break;
-		}
-	}
-	
-	if (get_buttonpress() == 4) {
-		switch (mwindow->edl->local_session->zoombar_showautotype) {
-		case AUTOGROUPTYPE_AUDIO_FADE:
-			val += 2;
-			break;
-		case AUTOGROUPTYPE_VIDEO_FADE:
-			val += 1;
-			if (val < 0) val = 0;
-			break;
-		case AUTOGROUPTYPE_ZOOM:
-			if (val == 0) 
-				val = 0.001;
-			else 
-				val = val*2;
-			break;
-		case AUTOGROUPTYPE_X:
-		case AUTOGROUPTYPE_Y:
-			val = floor(val + 5);
-			break;
-		}
-	}
-	
-	if (get_relative_cursor_x() < get_w()/2) {
-		if (val < mwindow->edl->local_session->automation_maxs[mwindow->edl->local_session->zoombar_showautotype])
-			mwindow->edl->local_session->automation_mins[mwindow->edl->local_session->zoombar_showautotype] = val;
-	}
-	else
-		if (val > mwindow->edl->local_session->automation_mins[mwindow->edl->local_session->zoombar_showautotype])
-			mwindow->edl->local_session->automation_maxs[mwindow->edl->local_session->zoombar_showautotype] = val;
-	
+		changemax = 0;
+
+	// increment
+	if (get_buttonpress() == 4)
+		mwindow->change_currentautorange(mwindow->edl->local_session->zoombar_showautotype, 1, changemax);
+
+	// decrement
+	if (get_buttonpress() == 5)
+		mwindow->change_currentautorange(mwindow->edl->local_session->zoombar_showautotype, 0, changemax);
+
 	mwindow->gui->zoombar->update_autozoom();
 	mwindow->gui->canvas->draw_overlays();
 	mwindow->gui->canvas->flash();

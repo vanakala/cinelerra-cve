@@ -503,15 +503,21 @@ int MWindowGUI::keypress_event()
 				break;
 
 			case UP:
-				if(ctrl_down())
+				if(ctrl_down() && !alt_down())
 				{
 					mwindow->expand_y();
 					result = 1;
 				}
 				else
-				if(alt_down())
+				if(!ctrl_down() && alt_down())
 				{
-					mwindow->expand_autos();
+					mwindow->expand_autos(0,1,1);
+					result = 1;
+				}
+				else
+				if(ctrl_down() && alt_down())
+				{
+					mwindow->expand_autos(1,1,1);
 					result = 1;
 				}
 				else
@@ -522,15 +528,21 @@ int MWindowGUI::keypress_event()
 				break;
 
 			case DOWN:
-				if(ctrl_down())
+				if(ctrl_down() && !alt_down())
 				{
 					mwindow->zoom_in_y();
 					result = 1;
 				}
 				else
-				if(alt_down())
+				if(!ctrl_down() && alt_down())
 				{
-					mwindow->shrink_autos();
+					mwindow->shrink_autos(0,1,1);
+					result = 1;
+				}
+				else
+				if(ctrl_down() && alt_down())
+				{
+					mwindow->shrink_autos(1,1,1);
 					result = 1;
 				}
 				else
