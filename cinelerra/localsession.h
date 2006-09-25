@@ -7,7 +7,6 @@
 #include "filexml.inc"
 
 
-
 // Unique session for every EDL
 
 class LocalSession
@@ -76,8 +75,11 @@ public:
 // Track zoom
 	int64_t zoom_track;
 // Vertical automation scale
+	float automation_mins[6];
+	float automation_maxs[6];
 	float automation_min;
 	float automation_max;
+	int zoombar_showautotype;
 
 // Eye dropper
 	float red, green, blue;

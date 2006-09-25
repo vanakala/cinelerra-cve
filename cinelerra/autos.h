@@ -78,6 +78,8 @@ public:
 // exist.
 	Auto *default_auto;
 
+	int autoidx;
+	int autogrouptype;
 	int type;
 
 

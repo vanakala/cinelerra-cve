@@ -10,6 +10,7 @@ class SampleZoomPanel;
 class AmpZoomPanel;
 class TrackZoomPanel;
 class AutoZoom;
+class AutoTypeMenu;
 class ZoomTextBox;
 
 #include "guicast.h"
@@ -41,6 +42,7 @@ public:
 	AmpZoomPanel *amp_zoom;
 	TrackZoomPanel *track_zoom;
 	AutoZoom *auto_zoom;
+	AutoTypeMenu *auto_type;
 	ZoomTextBox *auto_zoom_text;
 
 	BC_Title *zoom_value, *playback_value;
@@ -88,10 +90,28 @@ public:
 	ZoomBar *zoombar;
 };
 
+
+class AutoTypeMenu : public BC_PopupMenu
+{
+public:
+	AutoTypeMenu(MWindow *mwindow,
+		     ZoomBar *zoombar,
+		     int x, 
+		     int y);
+	void create_objects();
+	static char* to_text(int shape);
+	static int from_text(char *text);
+	int handle_event();
+	MWindow *mwindow;
+	ZoomBar *zoombar;
+};
+
+
 class ZoomTextBox : public BC_TextBox
 {
 public:
 	ZoomTextBox(MWindow *mwindow, ZoomBar *zoombar, int x, int y, char *text);
+	int button_press_event();
 	int handle_event();
 	MWindow *mwindow;
 	ZoomBar *zoombar;

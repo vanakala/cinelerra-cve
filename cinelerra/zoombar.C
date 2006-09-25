@@ -59,6 +59,9 @@ int ZoomBar::create_objects()
 	track_zoom->create_objects();
 	x += track_zoom->get_w() + 10;
 
+	add_subwindow(auto_type = new AutoTypeMenu(mwindow, this, x, y));
+	auto_type->create_objects();
+	x += auto_type->get_w() + 10;
 #define DEFAULT_TEXT "000.00 to 000.00"
 	add_subwindow(auto_zoom_text = new ZoomTextBox(
 		mwindow, 
@@ -134,9 +137,25 @@ int ZoomBar::draw()
 void ZoomBar::update_autozoom()
 {
 	char string[BCTEXTLEN];
-	sprintf(string, "%0.02f to %0.02f\n", 
-		mwindow->edl->local_session->automation_min, 
-		mwindow->edl->local_session->automation_max);
+	switch (mwindow->edl->local_session->zoombar_showautotype) {
+	case AUTOGROUPTYPE_AUDIO_FADE:
+	case AUTOGROUPTYPE_VIDEO_FADE:
+		sprintf(string, "%0.02f to %0.02f\n", 
+			mwindow->edl->local_session->automation_mins[mwindow->edl->local_session->zoombar_showautotype],
+			mwindow->edl->local_session->automation_maxs[mwindow->edl->local_session->zoombar_showautotype]);
+		break;
+	case AUTOGROUPTYPE_ZOOM:
+		sprintf(string, "%0.03f to %0.03f\n", 
+			mwindow->edl->local_session->automation_mins[mwindow->edl->local_session->zoombar_showautotype],
+			mwindow->edl->local_session->automation_maxs[mwindow->edl->local_session->zoombar_showautotype]);
+		break;
+	case AUTOGROUPTYPE_X:
+	case AUTOGROUPTYPE_Y:
+		sprintf(string, "%0.0f to %.0f\n", 
+			mwindow->edl->local_session->automation_mins[mwindow->edl->local_session->zoombar_showautotype],
+			mwindow->edl->local_session->automation_maxs[mwindow->edl->local_session->zoombar_showautotype]);
+		break;
+	}
 	auto_zoom_text->update(string);
 }
 
@@ -388,6 +407,62 @@ int AutoZoom::handle_down_event()
 
 
 
+AutoTypeMenu::AutoTypeMenu(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
+	: BC_PopupMenu(x, y, 120,to_text(mwindow->edl->local_session->zoombar_showautotype), 1)
+{
+	this->mwindow = mwindow;
+	this->zoombar = zoombar;
+}
+
+void AutoTypeMenu::create_objects()
+{
+	add_item(new BC_MenuItem(to_text(AUTOGROUPTYPE_AUDIO_FADE)));
+	add_item(new BC_MenuItem(to_text(AUTOGROUPTYPE_VIDEO_FADE)));
+	add_item(new BC_MenuItem(to_text(AUTOGROUPTYPE_ZOOM)));
+	add_item(new BC_MenuItem(to_text(AUTOGROUPTYPE_X)));
+	add_item(new BC_MenuItem(to_text(AUTOGROUPTYPE_Y)));
+}
+
+char* AutoTypeMenu::to_text(int mode)
+{
+	switch(mode)
+	{
+	case AUTOGROUPTYPE_AUDIO_FADE:
+		return _("Audio Fade:");
+	case AUTOGROUPTYPE_VIDEO_FADE:
+		return _("Video Fade:");
+	case AUTOGROUPTYPE_ZOOM:
+		return _("Zoom:");
+	case AUTOGROUPTYPE_X:
+		return _("X:");
+	case AUTOGROUPTYPE_Y:
+		return _("Y:");
+	default:
+		return _("??");
+	}
+}
+
+int AutoTypeMenu::from_text(char *text)
+{
+	if(!strcmp(text, to_text(AUTOGROUPTYPE_AUDIO_FADE)))
+		return AUTOGROUPTYPE_AUDIO_FADE;
+	if(!strcmp(text, to_text(AUTOGROUPTYPE_VIDEO_FADE)))
+		return AUTOGROUPTYPE_VIDEO_FADE;
+	if(!strcmp(text, to_text(AUTOGROUPTYPE_ZOOM)))
+		return AUTOGROUPTYPE_ZOOM;
+	if(!strcmp(text, to_text(AUTOGROUPTYPE_X)))
+		return AUTOGROUPTYPE_X;
+	if(!strcmp(text, to_text(AUTOGROUPTYPE_Y)))
+		return AUTOGROUPTYPE_Y;
+}
+
+int AutoTypeMenu::handle_event()
+{
+	mwindow->edl->local_session->zoombar_showautotype = from_text(this->get_text());
+	this->zoombar->update_autozoom();
+}
+
+
 ZoomTextBox::ZoomTextBox(MWindow *mwindow, ZoomBar *zoombar, int x, int y, char *text)
  : BC_TextBox(x, y, 130, 1, text)
 {
@@ -395,17 +470,94 @@ ZoomTextBox::ZoomTextBox(MWindow *mwindow, ZoomBar *zoombar, int x, int y, char 
 	this->zoombar = zoombar;
 }
 
+int ZoomTextBox::button_press_event()
+{
+	float val;
+
+	if (!(get_buttonpress() == 4 || get_buttonpress() == 5)) {
+		BC_TextBox::button_press_event();
+		return 0;
+	}
+	if (!is_event_win()) return 0;
+
+	if (get_relative_cursor_x() < get_w()/2)
+		val = mwindow->edl->local_session->automation_mins[mwindow->edl->local_session->zoombar_showautotype];
+	else
+		val = mwindow->edl->local_session->automation_maxs[mwindow->edl->local_session->zoombar_showautotype];
+	
+	if (get_buttonpress() == 5) {
+		switch (mwindow->edl->local_session->zoombar_showautotype) {
+		case AUTOGROUPTYPE_AUDIO_FADE:
+			val -= 2;
+			break;
+		case AUTOGROUPTYPE_VIDEO_FADE:
+			val -= 1;
+			if (val < 0) val = 0;
+			break;
+		case AUTOGROUPTYPE_ZOOM:
+			if (val > 0) val = val/2;
+			if (val < 0) val = 0;
+			break;
+		case AUTOGROUPTYPE_X:
+		case AUTOGROUPTYPE_Y:
+			val = floor(val-5);
+			break;
+		}
+	}
+	
+	if (get_buttonpress() == 4) {
+		switch (mwindow->edl->local_session->zoombar_showautotype) {
+		case AUTOGROUPTYPE_AUDIO_FADE:
+			val += 2;
+			break;
+		case AUTOGROUPTYPE_VIDEO_FADE:
+			val += 1;
+			if (val < 0) val = 0;
+			break;
+		case AUTOGROUPTYPE_ZOOM:
+			if (val == 0) 
+				val = 0.001;
+			else 
+				val = val*2;
+			break;
+		case AUTOGROUPTYPE_X:
+		case AUTOGROUPTYPE_Y:
+			val = floor(val + 5);
+			break;
+		}
+	}
+	
+	if (get_relative_cursor_x() < get_w()/2) {
+		if (val < mwindow->edl->local_session->automation_maxs[mwindow->edl->local_session->zoombar_showautotype])
+			mwindow->edl->local_session->automation_mins[mwindow->edl->local_session->zoombar_showautotype] = val;
+	}
+	else
+		if (val > mwindow->edl->local_session->automation_mins[mwindow->edl->local_session->zoombar_showautotype])
+			mwindow->edl->local_session->automation_maxs[mwindow->edl->local_session->zoombar_showautotype] = val;
+	
+	mwindow->gui->zoombar->update_autozoom();
+	mwindow->gui->canvas->draw_overlays();
+	mwindow->gui->canvas->flash();
+	return 1;
+}
+
 int ZoomTextBox::handle_event()
 {
 	float min, max;
 	if (sscanf(this->get_text(),"%f to%f",&min, &max) == 2)
-		if (max > min) {
-			mwindow->edl->local_session->automation_min = min;
-			mwindow->edl->local_session->automation_max = max;
+		if (
+			max > min
+			&& ( mwindow->edl->local_session->zoombar_showautotype != AUTOGROUPTYPE_ZOOM
+			     || (max >= 0.000 && min >= 0.000) )
+			) 
+		{
+			mwindow->edl->local_session->automation_mins[mwindow->edl->local_session->zoombar_showautotype] = min;
+			mwindow->edl->local_session->automation_maxs[mwindow->edl->local_session->zoombar_showautotype] = max;
 			mwindow->gui->zoombar->update_autozoom();
 			mwindow->gui->canvas->draw_overlays();
 			mwindow->gui->canvas->flash();
 		}
+	// TODO: Make the text turn red when it's a bad range..
 	return 0;
 }
 

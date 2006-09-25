@@ -27,6 +27,21 @@ enum
 };
 
 
+
+// Automation group types (used by the gui to control the ranges)
+enum
+{
+	AUTOGROUPTYPE_AUDIO_FADE,
+	AUTOGROUPTYPE_VIDEO_FADE,
+	AUTOGROUPTYPE_ZOOM,
+	AUTOGROUPTYPE_X,
+	AUTOGROUPTYPE_Y,
+	AUTOGROUPTYPE_INT255,
+	AUTOGROUPTYPE_COUNT
+};
+
+
+
 // Automation types
 enum
 {

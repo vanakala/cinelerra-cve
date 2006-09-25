@@ -2107,6 +2107,9 @@ int TrackCanvas::do_keyframes(int cursor_x,
 						switch(autos->get_type())
 						{
 							case AUTOMATION_TYPE_FLOAT:
+							{
+								Automation *dummy = new Automation(0,track);
+								int autogrouptype = dummy->autogrouptype(i,track);
 								result = do_float_autos(track, 
 									autos,
 									cursor_x, 
@@ -2114,8 +2117,10 @@ int TrackCanvas::do_keyframes(int cursor_x,
 									draw, 
 									buttonpress, 
 									auto_colors[i],
-									auto_keyframe);
-								break;
+									auto_keyframe,
+									autogrouptype);
+							}
+							break;
 
 							case AUTOMATION_TYPE_INT:
 								result = do_toggle_autos(track, 
@@ -2484,7 +2489,8 @@ void TrackCanvas::draw_floatline(int center_pixel,
 	int y1,
 	int x2,
 	int y2,
-	int color)
+	int color,
+	int autogrouptype)
 {
 // Solve bezier equation for either every pixel or a certain large number of
 // points.
@@ -2500,8 +2506,8 @@ void TrackCanvas::draw_floatline(int center_pixel,
 	int prev_y;
 // Call by reference fails for some reason here
 	FloatAuto *previous1 = previous, *next1 = next;
-	float automation_min = mwindow->edl->local_session->automation_min;
-	float automation_max = mwindow->edl->local_session->automation_max;
+	float automation_min = mwindow->edl->local_session->automation_mins[autogrouptype];
+	float automation_max = mwindow->edl->local_session->automation_maxs[autogrouptype];
 	float automation_range = automation_max - automation_min;
 
 	for(int x = x1; x < x2; x++)
@@ -2619,13 +2625,14 @@ int TrackCanvas::test_floatline(int center_pixel,
 		int x2,
 		int cursor_x, 
 		int cursor_y, 
-		int buttonpress)
+		int buttonpress,
+		int autogrouptype)
 {
 	int result = 0;
 
 
-	float automation_min = mwindow->edl->local_session->automation_min;
-	float automation_max = mwindow->edl->local_session->automation_max;
+	float automation_min = mwindow->edl->local_session->automation_mins[autogrouptype];
+	float automation_max = mwindow->edl->local_session->automation_maxs[autogrouptype];
 	float automation_range = automation_max - automation_min;
 	int64_t position = (int64_t)(unit_start + cursor_x * zoom_units);
 // Call by reference fails for some reason here
@@ -2759,7 +2766,8 @@ void TrackCanvas::calculate_viewport(Track *track,
 
 float TrackCanvas::percentage_to_value(float percentage, 
 	int is_toggle,
-	Auto *reference)
+	Auto *reference,
+	int autogrouptype)
 {
 	float result;
 	if(is_toggle)
@@ -2771,8 +2779,8 @@ float TrackCanvas::percentage_to_value(float percentage,
 	}
 	else
 	{
-		float automation_min = mwindow->edl->local_session->automation_min;
-		float automation_max = mwindow->edl->local_session->automation_max;
+		float automation_min = mwindow->edl->local_session->automation_mins[autogrouptype];
+		float automation_max = mwindow->edl->local_session->automation_maxs[autogrouptype];
 		float automation_range = automation_max - automation_min;
 
 		result = percentage * automation_range + automation_min;
@@ -2795,10 +2803,11 @@ void TrackCanvas::calculate_auto_position(double *x,
 	Auto *current,
 	double unit_start,
 	double zoom_units,
-	double yscale)
+	double yscale,
+	int autogrouptype)
 {
-	float automation_min = mwindow->edl->local_session->automation_min;
-	float automation_max = mwindow->edl->local_session->automation_max;
+	float automation_min = mwindow->edl->local_session->automation_mins[autogrouptype];
+	float automation_max = mwindow->edl->local_session->automation_maxs[autogrouptype];
 	float automation_range = automation_max - automation_min;
 	FloatAuto *ptr = (FloatAuto*)current;
 	*x = (double)(ptr->position - unit_start) / zoom_units;
@@ -2846,7 +2855,8 @@ int TrackCanvas::do_float_autos(Track *track,
 		int draw, 
 		int buttonpress,
 		int color,
-		Auto* &auto_instance)
+		Auto* &auto_instance,
+		int autogrouptype)
 {
 	int result = 0;
 
@@ -2897,7 +2907,8 @@ int TrackCanvas::do_float_autos(Track *track,
 			current,
 			unit_start,
 			zoom_units,
-			yscale);
+			yscale,
+			autogrouptype);
 		current = NEXT;
 	}
 	else
@@ -2914,7 +2925,8 @@ int TrackCanvas::do_float_autos(Track *track,
 				current,
 				unit_start,
 				zoom_units,
-				yscale);
+				yscale,
+				autogrouptype);
 			ax = 0;
 		}
 		else
@@ -2944,7 +2956,8 @@ int TrackCanvas::do_float_autos(Track *track,
 				current,
 				unit_start,
 				zoom_units,
-				yscale);
+				yscale,
+				autogrouptype);
 		}
 		else
 		{
@@ -3040,7 +3053,8 @@ int TrackCanvas::do_float_autos(Track *track,
 						(int)ax2 - HANDLE_W / 2,
 						cursor_x, 
 						cursor_y, 
-						buttonpress);
+						buttonpress,
+						autogrouptype);
 				}
 			}
 		}
@@ -3056,7 +3070,8 @@ int TrackCanvas::do_float_autos(Track *track,
 				(int)ay, 
 				(int)ax2, 
 				(int)ay2,
-				color);
+				color,
+				autogrouptype);
 
 
 
@@ -3104,7 +3119,8 @@ int TrackCanvas::do_float_autos(Track *track,
 					(int)ax2,
 					cursor_x, 
 					cursor_y, 
-					buttonpress);
+					buttonpress,
+					autogrouptype);
 			}
 		}
 		else
@@ -3119,7 +3135,8 @@ int TrackCanvas::do_float_autos(Track *track,
 				(int)ay, 
 				(int)ax2, 
 				(int)ay2,
-				color);
+				color,
+				autogrouptype);
 	}
 
 
@@ -3661,10 +3678,11 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 				double distance1;
 				double value2;
 				double distance2;
-				value = percentage_to_value(percentage, 0, 0);
 
 				if(current->previous)
 				{
+					int autogrouptype = current->previous->autos->autogrouptype;
+					value = percentage_to_value(percentage, 0, 0, autogrouptype);
 					value1 = ((FloatAuto*)current->previous)->value;
 					distance1 = fabs(value - value1);
 					current->value = value1;
@@ -3672,6 +3690,8 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 
 				if(current->next)
 				{
+					int autogrouptype = current->next->autos->autogrouptype;
+					value = percentage_to_value(percentage, 0, 0, autogrouptype);
 					value2 = ((FloatAuto*)current->next)->value;
 					distance2 = fabs(value - value2);
 					if(!current->previous || distance2 < distance1)
@@ -3687,7 +3707,10 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 				value = current->value;
 			}
 			else
-				value = percentage_to_value(percentage, 0, 0);
+			{
+				int autogrouptype = current->autos->autogrouptype;
+				value = percentage_to_value(percentage, 0, 0, autogrouptype);
+			}
 
 			if(value != old_value || position != current->position)
 			{
@@ -3711,7 +3734,9 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 
 // In control
 		case 1:
-			value = percentage_to_value(percentage, 0, current);
+		{
+			int autogrouptype = current->autos->autogrouptype;
+			value = percentage_to_value(percentage, 0, current, autogrouptype);
 			position = MIN(0, position);
 			if(value != current->control_in_value || 
 				position != current->control_in_position)
@@ -3731,11 +3756,14 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 				sprintf(string, "%s, %.2f", string2, current->control_in_value);
 				gui->show_message(string);
 			}
+		}
 			break;
 
 // Out control
 		case 2:
-			value = percentage_to_value(percentage, 0, current);
+		{
+			int autogrouptype = current->autos->autogrouptype;
+			value = percentage_to_value(percentage, 0, current, autogrouptype);
 			position = MAX(0, position);
 			if(value != current->control_out_value || 
 				position != current->control_out_position)
@@ -3758,6 +3786,7 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 					((FloatAuto*)current)->control_out_value);
 				gui->show_message(string);
 			}
+		}
 			break;
 	}
 
@@ -3769,8 +3798,7 @@ int TrackCanvas::update_drag_toggleauto(int cursor_x, int cursor_y)
 	IntAuto *current = (IntAuto*)mwindow->session->drag_auto;
 
 	UPDATE_DRAG_HEAD(1);
-
-	int value = (int)percentage_to_value(percentage, 1, 0);
+	int value = (int)percentage_to_value(percentage, 1, 0, AUTOGROUPTYPE_INT255);
 
 	if(value != current->value || position != current->position)
 	{

@@ -112,7 +112,8 @@ public:
 		int ay,
 		int ax2,
 		int ay2,
-		int color);
+		int color,
+		int autogrouptype);
 	int test_floatline(int center_pixel, 
 		FloatAutos *autos,
 		double unit_start,
@@ -122,7 +123,8 @@ public:
 		int x2,
 		int cursor_x, 
 		int cursor_y, 
-		int buttonpress);
+		int buttonpress,
+		int autogrouptype);
 	void draw_toggleline(int center_pixel, 
 		int ax,
 		int ay,
@@ -153,7 +155,8 @@ public:
 		int draw, 
 		int buttonpress,
 		int color,
-        Auto * &auto_instance);
+		Auto * &auto_instance,
+		int autogrouptype);
 	int do_toggle_autos(Track *track, 
 		Autos *autos, 
 		int cursor_x, 
@@ -195,7 +198,8 @@ public:
 //     the result is made relative to the value in reference.
 	float percentage_to_value(float percentage, 
 		int is_toggle,
-		Auto *reference);
+		Auto *reference,
+		int autogrouptype);
 
 // Get x and y of a FloatAuto relative to center_pixel
 	void calculate_auto_position(double *x, 
@@ -207,7 +211,8 @@ public:
 		Auto *current,
 		double unit_start,
 		double zoom_units,
-		double yscale);
+		double yscale,
+		int autogrouptype);
 	void synchronize_autos(float change, Track *skip, FloatAuto *fauto, int fill_gangs);
 
 

@@ -58,6 +58,13 @@ int VAutomation::create_objects()
 // 	autos[AUTOMATION_NUDGE] = new FloatAutos(edl, track, 0.0);
 // 	autos[AUTOMATION_NUDGE]->create_objects();
 
+	for(int i = 0; i < AUTOMATION_TOTAL; i++)
+		if (autos[i]) 
+		{
+			autos[i]->autoidx = i;
+			autos[i]->autogrouptype = autogrouptype(i, autos[i]->track);
+		}
+
 	return 0;
 }
 

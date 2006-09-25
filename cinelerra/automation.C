@@ -27,10 +27,42 @@ Automation::~Automation()
 	}
 }
 
+int Automation::autogrouptype(int autoidx, Track *track)
+{
+	int autogrouptype = -1;
+	switch (autoidx) 
+	{
+		case AUTOMATION_CAMERA_X:
+		case AUTOMATION_PROJECTOR_X:
+			autogrouptype = AUTOGROUPTYPE_X;
+			break;
+		case AUTOMATION_CAMERA_Y:
+		case AUTOMATION_PROJECTOR_Y:
+			autogrouptype = AUTOGROUPTYPE_Y;
+			break;
+		case AUTOMATION_CAMERA_Z:
+		case AUTOMATION_PROJECTOR_Z:
+			autogrouptype = AUTOGROUPTYPE_ZOOM;
+			break;
+		case AUTOMATION_FADE:
+			if (track->data_type == TRACK_AUDIO)
+				autogrouptype = AUTOGROUPTYPE_AUDIO_FADE;
+			else
+				autogrouptype = AUTOGROUPTYPE_VIDEO_FADE;
+			break;
+		case AUTOMATION_MUTE:
+			autogrouptype = AUTOGROUPTYPE_INT255;
+			break;
+	}
+	return (autogrouptype);
+}
+
 int Automation::create_objects()
 {
 	autos[AUTOMATION_MUTE] = new IntAutos(edl, track, 0);
 	autos[AUTOMATION_MUTE]->create_objects();
+	autos[AUTOMATION_MUTE]->autoidx = AUTOMATION_MUTE; 
+	autos[AUTOMATION_MUTE]->autogrouptype = AUTOGROUPTYPE_INT255;
 	return 0;
 }
 

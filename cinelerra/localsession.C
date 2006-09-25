@@ -1,3 +1,4 @@
+#include "automation.inc"
 #include "clip.h"
 #include "bchash.h"
 #include "edl.h"
@@ -27,8 +28,28 @@ LocalSession::LocalSession(EDL *edl)
 	zoom_track = 0;
 	view_start = 0;
 	track_start = 0;
+
+	automation_mins[AUTOGROUPTYPE_AUDIO_FADE] = -80;
+	automation_maxs[AUTOGROUPTYPE_AUDIO_FADE] = 6;
+
+	automation_mins[AUTOGROUPTYPE_VIDEO_FADE] = 0;
+	automation_maxs[AUTOGROUPTYPE_VIDEO_FADE] = 100;
+
+	automation_mins[AUTOGROUPTYPE_ZOOM] = 0.001;
+	automation_maxs[AUTOGROUPTYPE_ZOOM] = 4;
+
+	automation_mins[AUTOGROUPTYPE_X] = -100;
+	automation_maxs[AUTOGROUPTYPE_X] = 100;
+
+	automation_mins[AUTOGROUPTYPE_Y] = -100;
+	automation_maxs[AUTOGROUPTYPE_Y] = 100;
+
+	automation_mins[AUTOGROUPTYPE_INT255] = 0;
+	automation_maxs[AUTOGROUPTYPE_INT255] = 255;
+
 	automation_min = -10;
 	automation_max = 10;
+	zoombar_showautotype = AUTOGROUPTYPE_AUDIO_FADE;
 	red = green = blue = 0;
 }
 
@@ -57,6 +78,10 @@ void LocalSession::copy_from(LocalSession *that)
 	preview_end = that->preview_end;
 	red = that->red;
 	green = that->green;
+	for (int i = 0; i < AUTOGROUPTYPE_COUNT; i++) {
+		automation_mins[i] = that->automation_mins[i];
+		automation_maxs[i] = that->automation_maxs[i];
+	}
 	automation_min = that->automation_min;
 	automation_max = that->automation_max;
 	blue = that->blue;
@@ -94,6 +119,13 @@ void LocalSession::save_xml(FileXML *file, double start)
 	file->tag.set_property("RED", red);
 	file->tag.set_property("GREEN", green);
 	file->tag.set_property("BLUE", blue);
+	char tmp[20];
+	for (int i = 0; i < AUTOGROUPTYPE_COUNT; i++) {
+		sprintf(tmp,"AUTOGROUPTYPE%02d_MINS",i);
+		file->tag.set_property(tmp,automation_mins[i]);
+		sprintf(tmp,"AUTOGROUPTYPE%02d_MAXS",i);
+		file->tag.set_property(tmp,automation_maxs[i]);
+	}
 	file->tag.set_property("AUTOMATION_MIN", automation_min);
 	file->tag.set_property("AUTOMATION_MAX", automation_max);
 	file->append_tag();
@@ -140,6 +172,13 @@ void LocalSession::load_xml(FileXML *file, unsigned long load_flags)
 		red = file->tag.get_property("RED", red);
 		green = file->tag.get_property("GREEN", green);
 		blue = file->tag.get_property("BLUE", blue);
+		char tmp[20];
+		for (int i = 0; i < AUTOGROUPTYPE_COUNT; i++) {
+			sprintf(tmp,"AUTOGROUPTYPE%02d_MINS",i);
+			automation_mins[i] = file->tag.get_property(tmp,automation_mins[i]);
+			sprintf(tmp,"AUTOGROUPTYPE%02d_MAXS",i);
+			automation_maxs[i] = file->tag.get_property(tmp,automation_maxs[i]);
+		}
 		automation_min = file->tag.get_property("AUTOMATION_MIN", automation_min);
 		automation_max = file->tag.get_property("AUTOMATION_MAX", automation_max);
 	}
@@ -182,6 +221,13 @@ int LocalSession::load_defaults(BC_Hash *defaults)
 	red = defaults->get("RED", 0.0);
 	green = defaults->get("GREEN", 0.0);
 	blue = defaults->get("BLUE", 0.0);
+	char tmp[20];
+	for (int i = 0; i < AUTOGROUPTYPE_COUNT; i++) {
+		sprintf(tmp,"AUTOGROUPTYPE%02d_MINS",i);
+		automation_mins[i] = defaults->get(tmp, automation_mins[i]);
+		sprintf(tmp,"AUTOGROUPTYPE%02d_MAXS",i);
+		automation_maxs[i] = defaults->get(tmp, automation_maxs[i]);
+	}
 	automation_min = defaults->get("AUTOMATION_MIN", automation_min);
 	automation_max = defaults->get("AUTOMATION_MAX", automation_max);
 	return 0;
@@ -202,6 +248,14 @@ int LocalSession::save_defaults(BC_Hash *defaults)
 	defaults->update("RED", red);
 	defaults->update("GREEN", green);
 	defaults->update("BLUE", blue);
+	char tmp[20];
+	for (int i = 0; i < AUTOGROUPTYPE_COUNT; i++) {
+		sprintf(tmp,"AUTOGROUPTYPE%02d_MINS",i);
+		defaults->update(tmp, automation_mins[i]);
+		sprintf(tmp,"AUTOGROUPTYPE%02d_MAXS",i);
+		defaults->update(tmp, automation_maxs[i]);
+	}
+
 	defaults->update("AUTOMATION_MIN", automation_min);
 	defaults->update("AUTOMATION_MAX", automation_max);
 	return 0;

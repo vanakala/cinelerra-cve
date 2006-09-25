@@ -19,6 +19,7 @@ public:
 	Automation(EDL *edl, Track *track);
 	virtual ~Automation();
 
+	int autogrouptype(int autoidx, Track *track);
 	virtual int create_objects();
 	void equivalent_output(Automation *automation, int64_t *result);
 	virtual Automation& operator=(Automation& automation);

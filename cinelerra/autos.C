@@ -16,6 +16,8 @@ Autos::Autos(EDL *edl, Track *track)
 	this->edl = edl;
 	this->track = track;
 	type = -1;
+	autoidx = -1;
+	autogrouptype = -1;
 }
 
 
