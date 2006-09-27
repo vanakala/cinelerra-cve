@@ -9,6 +9,7 @@
 #include "mainsession.h"
 #include "mtimebar.h"
 #include "preferences.h"
+#include "patchbay.h"
 #include "theme.h"
 #include "trackcanvas.h"
 #include "tracks.h"
@@ -402,6 +403,7 @@ int AutoZoom::handle_up_event()
 
 	mwindow->gui->zoombar->update_autozoom();
 	mwindow->gui->canvas->draw_overlays();
+	mwindow->gui->patchbay->update();
 	mwindow->gui->canvas->flash();
 	return 1;
 }
@@ -412,6 +414,7 @@ int AutoZoom::handle_down_event()
 
 	mwindow->gui->zoombar->update_autozoom();
 	mwindow->gui->canvas->draw_overlays();
+	mwindow->gui->patchbay->update();
 	mwindow->gui->canvas->flash();
 	return 1;
 }
@@ -503,6 +506,7 @@ int ZoomTextBox::button_press_event()
 
 	mwindow->gui->zoombar->update_autozoom();
 	mwindow->gui->canvas->draw_overlays();
+	mwindow->gui->patchbay->update();
 	mwindow->gui->canvas->flash();
 	return 1;
 }
@@ -521,6 +525,7 @@ int ZoomTextBox::handle_event()
 			mwindow->edl->local_session->automation_maxs[mwindow->edl->local_session->zoombar_showautotype] = max;
 			mwindow->gui->zoombar->update_autozoom();
 			mwindow->gui->canvas->draw_overlays();
+			mwindow->gui->patchbay->update();
 			mwindow->gui->canvas->flash();
 		}
 	// TODO: Make the text turn red when it's a bad range..

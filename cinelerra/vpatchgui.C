@@ -91,7 +91,10 @@ int VPatchGUI::update(int x, int y)
 				PLAY_FORWARD, 
 				previous, 
 				next);
-			fade->update(value);
+			fade->update(fade->get_w(),
+				     value, 
+				     mwindow->edl->local_session->automation_mins[AUTOGROUPTYPE_VIDEO_FADE],
+				     mwindow->edl->local_session->automation_maxs[AUTOGROUPTYPE_VIDEO_FADE]);
 //			fade->update((int)fade->get_keyframe(mwindow, this)->value);
 		}
 	}
@@ -164,8 +167,8 @@ VFadePatch::VFadePatch(MWindow *mwindow, VPatchGUI *patch, int x, int y, int w)
 			0,
 			w, 
 			w, 
-			0, 
-			MAX_VIDEO_FADE, 
+			mwindow->edl->local_session->automation_mins[AUTOGROUPTYPE_VIDEO_FADE],
+			mwindow->edl->local_session->automation_maxs[AUTOGROUPTYPE_VIDEO_FADE], 
 			(int64_t)get_keyframe(mwindow, patch)->value)
 {
 	this->mwindow = mwindow;

@@ -310,6 +310,7 @@ void MWindow::expand_autos(int changeall, int domin, int domax)
 	}
 	gui->zoombar->update_autozoom();
 	gui->canvas->draw_overlays();
+	gui->patchbay->update();
 	gui->canvas->flash();
 }
 
@@ -327,6 +328,7 @@ void MWindow::shrink_autos(int changeall, int domin, int domax)
 	}
 	gui->zoombar->update_autozoom();
 	gui->canvas->draw_overlays();
+	gui->patchbay->update();
 	gui->canvas->flash();
 }
 

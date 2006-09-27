@@ -99,7 +99,10 @@ int APatchGUI::update(int x, int y)
 				PLAY_FORWARD, 
 				previous, 
 				next);
-			fade->update(value);
+			fade->update(fade->get_w(),
+				     value, 
+				     mwindow->edl->local_session->automation_mins[AUTOGROUPTYPE_AUDIO_FADE],
+				     mwindow->edl->local_session->automation_maxs[AUTOGROUPTYPE_AUDIO_FADE]);
 		}
 	}
 	else
@@ -203,8 +206,8 @@ AFadePatch::AFadePatch(MWindow *mwindow, APatchGUI *patch, int x, int y, int w)
 			0, 
 			w, 
 			w, 
-			(float)INFINITYGAIN, 
-			(float)MAX_AUDIO_FADE, 
+			mwindow->edl->local_session->automation_mins[AUTOGROUPTYPE_AUDIO_FADE], 
+			mwindow->edl->local_session->automation_maxs[AUTOGROUPTYPE_AUDIO_FADE], 
 			get_keyframe(mwindow, patch)->value)
 {
 	this->mwindow = mwindow;

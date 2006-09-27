@@ -478,10 +478,13 @@ void PatchBay::synchronize_faders(float change, int data_type, Track *skip)
 
 			keyframe->value += change;
 			if(data_type == TRACK_AUDIO)
-				CLAMP(keyframe->value, INFINITYGAIN, MAX_AUDIO_FADE);
+				CLAMP(keyframe->value, 
+				      mwindow->edl->local_session->automation_mins[AUTOGROUPTYPE_AUDIO_FADE],
+				      mwindow->edl->local_session->automation_maxs[AUTOGROUPTYPE_AUDIO_FADE]);
 			else
-				CLAMP(keyframe->value, 0, MAX_VIDEO_FADE);
-
+				CLAMP(keyframe->value, 
+				      mwindow->edl->local_session->automation_mins[AUTOGROUPTYPE_VIDEO_FADE],
+				      mwindow->edl->local_session->automation_maxs[AUTOGROUPTYPE_VIDEO_FADE]);
 
 			PatchGUI *patch = get_patch_of(current);
 			if(patch) patch->update(patch->x, patch->y);
