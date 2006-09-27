@@ -219,7 +219,7 @@ void VideoInConfig::copy_from(VideoInConfig *src)
 
 
 
-	strcmp(dvb_in_host, src->dvb_in_host);
+	strcpy(dvb_in_host, src->dvb_in_host);
 	dvb_in_port = src->dvb_in_port;
 	dvb_in_number = src->dvb_in_number;
 
