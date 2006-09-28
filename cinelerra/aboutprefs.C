@@ -5,6 +5,7 @@
 #include "quicktime.h"
 #include "theme.h"
 #include "vframe.h"
+#include "versioninfo.h"
 
 
 
@@ -42,10 +43,9 @@ int AboutPrefs::create_objects()
 
 	y += get_text_height(LARGEFONT);
 	char license2[BCTEXTLEN];
-	sprintf(license2, "%s%s%s%s%s", 
+	sprintf(license2, "%s%s%s%s", 
 		_("(C) 2006 Heroine Virtual Ltd.\n\n"),
-		_("SVN Version: "),
-		SVNVERSION,
+		REPOABOUTPREFTXT,
 		_("\nBuild date: "), 
 		BUILDDATE);
 	set_font(MEDIUMFONT);

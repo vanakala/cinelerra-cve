@@ -1,5 +1,33 @@
 BUILDDATE=$(shell date)
-SVNVERSION=$(shell svnversion $(top_srcdir))
+
+if BUILDINFO_RECOMPILE
+BUILDINFO_NONRC_S=
+
+main.o: versioninfo
+aboutprefs.o: versioninfo
+
+versioninfo:
+else
+BUILDINFO_NONRC_S=[unsure]
+
+versioninfo.h:
+endif
+	echo '#define BUILDDATE "$(BUILDDATE)"' > versioninfo.h
+
+if BUILDINFO_GIT
+GITVERSION=$(shell if [ -d $(top_srcdir)/.git ]; then cd $(top_srcdir); git rev-parse HEAD; else echo "unknown"; fi)
+	echo '#define REPOMAINTXT " GIT::$(GITVERSION) $(BUILDINFO_NONRC_S) (C) 2006 Heroine Virtual Ltd.\nCompiled on $(BUILDDATE)"' >> versioninfo.h
+	echo '#define REPOABOUTPREFTXT "Git SHA-1: $(GITVERSION)"' >> versioninfo.h
+else
+if BUILDINFO_SVN
+SVNVERSION=$(shell if [ -d $(top_srcdir)/.svn ]; then svnversion $(top_srcdir); else echo "unknown"; fi)
+	echo '#define REPOMAINTXT      " SVN $(SVNVERSION) $(BUILDINFO_NONRC_S) (C) 2006 Heroine Virtual Ltd.\nCompiled on $(BUILDDATE)"' >> versioninfo.h
+	echo '#define REPOABOUTPREFTXT "SVN Version: $(SVNVERSION) $(BUILDINFO_NONRC_S)"' >> versioninfo.h
+else # (no repository)
+	echo '#define REPOMAINTXT      "(C) 2006 Heroine Virtual Ltd.\nCompiled on $(BUILDDATE)"' >> versioninfo.h
+	echo '#define REPOABOUTPREFTXT ""' >> versioninfo.h
+endif
+endif
 
 SUBDIRS = data
 
@@ -309,9 +337,7 @@ AM_CXXFLAGS = \
 	$(MJPEG_CFLAGS) \
 	$(OPENEXR_CFLAGS) \
 	$(LIBDV_CFLAGS) \
-	-DPLUGIN_DIR=\"$(plugindir)\" \
-	-DSVNVERSION="\"$(SVNVERSION)\"" \
-	-DBUILDDATE="\"$(BUILDDATE)\""
+	-DPLUGIN_DIR=\"$(plugindir)\"
 
 AM_LDFLAGS = -export-dynamic
 

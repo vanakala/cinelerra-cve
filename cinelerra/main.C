@@ -14,6 +14,7 @@
 #include "pluginserver.h"
 #include "preferences.h"
 #include "renderfarmclient.h"
+#include "versioninfo.h"
 
 #include <locale.h>
 #include <stdlib.h>
@@ -178,9 +179,8 @@ int main(int argc, char *argv[])
 	fprintf(stderr, 
 		PROGRAM_NAME " " 
 		CINELERRA_VERSION " " 
-		BUILDDATE 
-		" SVN Version " SVNVERSION
-		" (C)2006 Heroine Virtual Ltd.\n\n"
+		REPOMAINTXT
+		"\n\n"
 
 PROGRAM_NAME " is free software, covered by the GNU General Public License,\n"
 "and you are welcome to change it and/or distribute copies of it under\n"
