@@ -10,6 +10,9 @@ versioninfo:
 else
 BUILDINFO_NONRC_S=[unsure]
 
+main.o: versioninfo.h
+aboutprefs.o: versioninfo.h
+
 versioninfo.h:
 endif
 	echo '#define BUILDDATE "$(BUILDDATE)"' > versioninfo.h
