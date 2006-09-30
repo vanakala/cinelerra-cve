@@ -2514,6 +2514,7 @@ void TrackCanvas::draw_floatline(int center_pixel,
 	{
 		int64_t position = (int64_t)(unit_start + x * zoom_units);
 		float value = autos->get_value(position, PLAY_FORWARD, previous1, next1);
+		AUTOMATIONCLAMPS(value, autogrouptype);
 
 		int y = center_pixel + 
 			(int)(((value - automation_min) / automation_range - 0.5) * -yscale);
@@ -2637,6 +2638,7 @@ int TrackCanvas::test_floatline(int center_pixel,
 // Call by reference fails for some reason here
 	FloatAuto *previous = 0, *next = 0;
 	float value = autos->get_value(position, PLAY_FORWARD, previous, next);
+	AUTOMATIONCLAMPS(value,autogrouptype);
 	int y = center_pixel + 
 		(int)(((value - automation_min) / automation_range - 0.5) * -yscale);
 

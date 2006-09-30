@@ -325,7 +325,7 @@ int VirtualVNode::render_fade(VFrame *output,
 		next);
 
 
-//	CLAMP(intercept, 0, 100);
+	CLAMP(intercept, 0, 100);
 
 
 // Can't use overlay here because overlayer blends the frame with itself.

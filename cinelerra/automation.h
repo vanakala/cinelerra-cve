@@ -13,6 +13,21 @@
 
 #include <stdint.h>
 
+// Match the clipping at per cinelerra/virtualanode.C which contains:
+//  if(fade_value <= INFINITYGAIN) fade_value = 0;
+//  in reality, this should be matched to a user-defined minimum in the preferences
+#define AUTOMATIONCLAMPS(value, autogrouptype)				\
+	if (autogrouptype == AUTOGROUPTYPE_AUDIO_FADE && value <= INFINITYGAIN) \
+		value = INFINITYGAIN;					\
+	if (autogrouptype == AUTOGROUPTYPE_VIDEO_FADE)			\
+		CLAMP(value, 0, 100);					\
+	if (autogrouptype == AUTOGROUPTYPE_ZOOM && value < 0)		\
+		value = 0;
+
+#define AUTOMATIONVIEWCLAMPS(value, autogrouptype)			\
+	if (autogrouptype == AUTOGROUPTYPE_ZOOM && value < 0)		\
+		value = 0;
+		
 class Automation
 {
 public:

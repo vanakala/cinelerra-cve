@@ -248,7 +248,6 @@ void MWindow::change_currentautorange(int autogrouptype, int increment, int chan
 			break;
 		case AUTOGROUPTYPE_VIDEO_FADE:
 			val += 1;
-			if (val < 0) val = 0;
 			break;
 		case AUTOGROUPTYPE_ZOOM:
 			if (val == 0) 
@@ -270,11 +269,9 @@ void MWindow::change_currentautorange(int autogrouptype, int increment, int chan
 			break;
 		case AUTOGROUPTYPE_VIDEO_FADE:
 			val -= 1;
-			if (val < 0) val = 0;
 			break;
 		case AUTOGROUPTYPE_ZOOM:
 			if (val > 0) val = val/2;
-			if (val < 0) val = 0;
 			break;
 		case AUTOGROUPTYPE_X:
 		case AUTOGROUPTYPE_Y:
@@ -283,6 +280,7 @@ void MWindow::change_currentautorange(int autogrouptype, int increment, int chan
 		}
 	}
 
+	AUTOMATIONVIEWCLAMPS(val, autogrouptype);
 
 	if (changemax) {
 		if (val > edl->local_session->automation_mins[autogrouptype])

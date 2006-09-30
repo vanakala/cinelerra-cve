@@ -515,11 +515,10 @@ int ZoomTextBox::handle_event()
 {
 	float min, max;
 	if (sscanf(this->get_text(),"%f to%f",&min, &max) == 2)
-		if (
-			max > min
-			&& ( mwindow->edl->local_session->zoombar_showautotype != AUTOGROUPTYPE_ZOOM
-			     || (max >= 0.000 && min >= 0.000) )
-			) 
+	{
+		AUTOMATIONVIEWCLAMPS(min, mwindow->edl->local_session->zoombar_showautotype);
+		AUTOMATIONVIEWCLAMPS(max, mwindow->edl->local_session->zoombar_showautotype);
+		if (max > min) 
 		{
 			mwindow->edl->local_session->automation_mins[mwindow->edl->local_session->zoombar_showautotype] = min;
 			mwindow->edl->local_session->automation_maxs[mwindow->edl->local_session->zoombar_showautotype] = max;
@@ -528,6 +527,7 @@ int ZoomTextBox::handle_event()
 			mwindow->gui->patchbay->update();
 			mwindow->gui->canvas->flash();
 		}
+	}
 	// TODO: Make the text turn red when it's a bad range..
 	return 0;
 }
