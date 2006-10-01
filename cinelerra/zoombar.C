@@ -48,16 +48,22 @@ int ZoomBar::create_objects()
 	sample_zoom->set_menu_images(mwindow->theme->get_image_set("zoombar_menu", 0));
 	sample_zoom->set_tumbler_images(mwindow->theme->get_image_set("zoombar_tumbler", 0));
 	sample_zoom->create_objects();
+	sample_zoom->zoom_text->set_tooltip(_("Duration visible in the timeline"));
+	sample_zoom->zoom_tumbler->set_tooltip(_("Duration visible in the timeline"));
 	x += sample_zoom->get_w();
 	amp_zoom = new AmpZoomPanel(mwindow, this, x, y);
 	amp_zoom->set_menu_images(mwindow->theme->get_image_set("zoombar_menu", 0));
 	amp_zoom->set_tumbler_images(mwindow->theme->get_image_set("zoombar_tumbler", 0));
 	amp_zoom->create_objects();
+	amp_zoom->zoom_text->set_tooltip(_("Audio waveform scale"));
+	amp_zoom->zoom_tumbler->set_tooltip(_("Audio waveform scale"));
 	x += amp_zoom->get_w();
 	track_zoom = new TrackZoomPanel(mwindow, this, x, y);
 	track_zoom->set_menu_images(mwindow->theme->get_image_set("zoombar_menu", 0));
 	track_zoom->set_tumbler_images(mwindow->theme->get_image_set("zoombar_tumbler", 0));
 	track_zoom->create_objects();
+	track_zoom->zoom_text->set_tooltip(_("Height of tracks in the timeline"));
+	track_zoom->zoom_tumbler->set_tooltip(_("Height of tracks in the timeline"));
 	x += track_zoom->get_w() + 10;
 
 	add_subwindow(auto_type = new AutoTypeMenu(mwindow, this, x, y));
@@ -395,6 +401,10 @@ AutoZoom::AutoZoom(MWindow *mwindow, ZoomBar *zoombar, int x, int y, int changem
 	this->mwindow = mwindow;
 	this->zoombar = zoombar;
 	this->changemax = changemax;
+	if (changemax)
+		set_tooltip(_("Automation range maximum"));
+	else
+		set_tooltip(_("Automation range minimum"));
 }
 
 int AutoZoom::handle_up_event()
@@ -426,6 +436,7 @@ AutoTypeMenu::AutoTypeMenu(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->zoombar = zoombar;
+	set_tooltip(_("Automation Type"));
 }
 
 void AutoTypeMenu::create_objects()
@@ -482,6 +493,7 @@ ZoomTextBox::ZoomTextBox(MWindow *mwindow, ZoomBar *zoombar, int x, int y, char 
 {
 	this->mwindow = mwindow;
 	this->zoombar = zoombar;
+	set_tooltip(_("Automation range"));
 }
 
 int ZoomTextBox::button_press_event()
@@ -541,6 +553,7 @@ FromTextBox::FromTextBox(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->zoombar = zoombar;
+	set_tooltip(_("Selection start time"));
 }
 
 int FromTextBox::handle_event()
@@ -578,6 +591,7 @@ LengthTextBox::LengthTextBox(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->zoombar = zoombar;
+	set_tooltip(_("Selection length"));
 }
 
 int LengthTextBox::handle_event()
@@ -611,6 +625,7 @@ ToTextBox::ToTextBox(MWindow *mwindow, ZoomBar *zoombar, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->zoombar = zoombar;
+	set_tooltip(_("Selection end time"));
 }
 
 int ToTextBox::handle_event()
