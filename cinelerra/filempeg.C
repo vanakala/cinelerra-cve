@@ -174,20 +174,16 @@ SET_TRACE
 			char string[BCTEXTLEN];
 			if(error == MPEG3_INVALID_TOC_VERSION)
 			{
-				sprintf(string, 
-					"Couldn't open %s because it has an invalid table of contents version.\n"
+				eprintf("Couldn't open %s because it has an invalid table of contents version.\n"
 					"Rebuild the table of contents with mpeg3toc.",
 					asset->path);
-				MainError::show_error(string);
 			}
 			else
 			if(error == MPEG3_TOC_DATE_MISMATCH)
 			{
-				sprintf(string, 
-					"Couldn't open %s because the table of contents date differs from the source date.\n"
+				eprintf("Couldn't open %s because the table of contents date differs from the source date.\n"
 					"Rebuild the table of contents with mpeg3toc.",
 					asset->path);
-				MainError::show_error(string);
 			}
 			result = 1;
 		}
@@ -347,7 +343,7 @@ SET_TRACE
 			}
 			if(aspect_ratio_code < 0)
 			{
-				printf("FileMPEG::open_file: Unsupported aspect ratio %f\n", asset->aspect_ratio);
+				eprintf("Unsupported aspect ratio %f\n", asset->aspect_ratio);
 				aspect_ratio_code = 2;
 			}
 			sprintf(string, " -a %d", aspect_ratio_code);
@@ -371,7 +367,7 @@ SET_TRACE
 			if(frame_rate_code < 0)
 			{
 				frame_rate_code = 4;
-				printf("FileMPEG::open_file: Unsupported frame rate %f\n", asset->frame_rate);
+				eprintf("Unsupported frame rate %f\n", asset->frame_rate);
 			}
 			sprintf(string, " -F %d", frame_rate_code);
 			strcat(mjpeg_command, string);
@@ -414,10 +410,10 @@ SET_TRACE
 
 
 
-			printf("FileMPEG::open_file: Running %s\n", mjpeg_command);
+			eprintf("Running %s\n", mjpeg_command);
 			if(!(mjpeg_out = popen(mjpeg_command, "w")))
 			{
-				perror("FileMPEG::open_file");
+				eprintf("Error while opening \"%s\" for writing. \n%m\n", mjpeg_command);
 			}
 
 			video_out = new FileMPEGVideo(this);
@@ -464,14 +460,14 @@ SET_TRACE
 				asset->channels);
 			if((result = lame_init_params(lame_global)) < 0)
 			{
-				printf(_("encode: lame_init_params returned %d\n"), result);
+				eprintf(_("encode: lame_init_params returned %d\n"), result);
 				lame_close(lame_global);
 				lame_global = 0;
 			}
 			else
 			if(!(lame_fd = fopen(asset->path, "w")))
 			{
-				perror("FileMPEG::open_file");
+				eprintf("Error while opening \"%s\" for writing. \n%m\n", asset->path);
 				lame_close(lame_global);
 				lame_global = 0;
 				result = 1;
@@ -479,7 +475,7 @@ SET_TRACE
 		}
 		else
 		{
-			printf("FileMPEG::open_file: ampeg_derivative=%d\n", asset->ampeg_derivative);
+			eprintf("ampeg_derivative=%d\n", asset->ampeg_derivative);
 			result = 1;
 		}
 	}
@@ -489,7 +485,7 @@ SET_TRACE
 	{
 		if(!(dvb_out = fopen(asset->path, "w")))
 		{
-			perror("FileMPEG::open_file");
+			eprintf("Error while opening \"%s\" for writing. \n%m\n", asset->path);
 			result = 1;
 		}
 		
@@ -947,7 +943,7 @@ int FileMPEG::write_samples(double **buffer, int64_t len)
 			{
 				result = !fwrite(real_output, 1, bytes, lame_fd);
 				if(result)
-					perror("FileMPEG::write_samples");
+					eprintf("Error while writing samples");
 			}
 			else
 				result = 0;

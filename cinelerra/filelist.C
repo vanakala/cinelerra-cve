@@ -9,6 +9,7 @@
 #include "render.h"
 #include "renderfarmfsserver.inc"
 #include "vframe.h"
+#include "mainerror.h"
 
 #include <ctype.h>
 #include <errno.h>
@@ -268,7 +269,7 @@ int FileList::read_frame(VFrame *frame)
 
 		if(!(in = fopen(string, "rb")))
 		{
-			fprintf(stderr, "FileList::read_frame %s: %s\n", string, strerror(errno));
+			eprintf("Error while opening \"%s\" for reading. \n%m\n", string);
 		}
 		else
 		{
@@ -332,7 +333,7 @@ int FileList::read_frame(VFrame *frame)
 			}
 			else
 			{
-				fprintf(stderr, "FileList::read_frame %s: %s\n", asset->path, strerror(errno));
+				eprintf("Error while opening \"%s\" for reading. \n%m\n", asset->path);
 				result = 1;
 			}
 		}
@@ -406,7 +407,7 @@ int FileList::write_frames(VFrame ***frames, int len)
 				}
 				else
 				{
-					printf("FileList::write_frames %s: %s\n", path, strerror(errno));
+					eprintf("Error while opening \"%s\" for writing. \n%m\n", asset->path);
 					return_value++;
 				}
 			}
@@ -580,9 +581,7 @@ void FrameWriterUnit::process_package(LoadPackage *package)
 //printf("FrameWriterUnit::process_package 2 %s\n", ptr->path);
 	if(!(file = fopen(ptr->path, "wb")))
 	{
-		printf("FrameWriterUnit::process_package %s: %s\n",
-			ptr->path,
-			strerror(errno));
+		eprintf("Error while opening \"%s\" for writing. \n%m\n", ptr->path);
 		return;
 	}
 //printf("FrameWriterUnit::process_package 3");

@@ -12,6 +12,11 @@
 
 // Once created, it accumulates errors in a listbox until it's closed.
 
+// Macro to enable the simplest possible error output
+//#define eprintf(format, ...) {char error_string[1024]; sprintf(sprintf(error_string, "%s: " format, __PRETTY_FUNCTION__, ## __VA_ARGS__); MainError::show_error(error_string); }
+// We have to use longer version if we want to gettext error messages
+#define eprintf(...) {char error_string[1024]; 	sprintf(error_string, "%s: ", __PRETTY_FUNCTION__); sprintf(error_string + strlen(error_string), __VA_ARGS__); MainError::show_error(error_string); }
+
 
 
 class MainErrorGUI : public BC_Window

@@ -7,6 +7,7 @@
 #include "vframe.h"
 #include "edit.h"
 #include "quicktime.h"
+#include "mainerror.h"
 
 #include <ctype.h>
 #include <stdlib.h>
@@ -46,7 +47,7 @@ int FileYUV::open_file(int should_read, int should_write)
 		asset->width = stream->get_width();
 		asset->height = stream->get_height();
 		if (asset->width * asset->height <= 0) {
-			printf("illegal frame size '%d x %d'\n", 
+			eprintf("illegal frame size '%d x %d'\n", 
 			       asset->width, asset->height);
 			return 1;
 		}

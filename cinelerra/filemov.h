@@ -76,6 +76,8 @@ public:
 
 // Fix codec to what AVI or MOV support
 	static void fix_codecs(Asset *asset);
+// Check if resolutions match the DV codec when used
+	int check_codec_params(Asset *asset);
 
 // set programme timecode
 	void set_frame_start(int64_t offset);

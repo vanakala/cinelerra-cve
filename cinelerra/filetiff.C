@@ -5,6 +5,7 @@
 #include "interlacemodes.h"
 #include "language.h"
 #include "vframe.h"
+#include "mainerror.h"
 
 #include <stdint.h>
 #include <string.h>
@@ -127,14 +128,14 @@ int FileTIFF::read_frame_header(char *path)
 
 	if(!(stream = TIFFOpen(path, "rb")))
 	{
-		fprintf(stderr, "FileTIFF::read_frame_header failed from %s\n", asset->path);
+		eprintf("Error while opening \"%s\" for reading. \n%m\n", asset->path);
 		return 1;
 	}
 
 	char *ptr = 0;
 	TIFFGetField(stream, TIFFTAG_MODEL, &ptr);
 //printf("FileTIFF::read_frame_header 1 %s\n", ptr);
-	if(ptr && !strcmp(ptr, "Canon EOS-1DS"))
+	if(ptr && !strcmp(ptr, "Canon EOS-1DS"))       // FIXME: Does this have a purpose?
 	{
 		printf("FileTIFF::read_frame_header: got a %s.\n",
 			ptr);

@@ -6,8 +6,7 @@
 
 #include "bcsignals.h"
 #include "filexml.h"
-
-
+#include "mainerror.h"
 
 
 // Precision in base 10
@@ -265,9 +264,8 @@ int FileXML::write_to_file(char *filename)
 // Position may have been rewound after storing so we use a strlen
 		if(!fwrite(string, strlen(string), 1, out) && strlen(string))
 		{
-			fprintf(stderr, "FileXML::write_to_file 1 \"%s\": %s\n",
-				filename,
-				strerror(errno));
+			eprintf("Error while writing to \"%s\": %m\n",
+				filename);
 			fclose(out);
 			return 1;
 		}
@@ -277,9 +275,7 @@ int FileXML::write_to_file(char *filename)
 	}
 	else
 	{
-		fprintf(stderr, "FileXML::write_to_file 2 \"%s\": %s\n",
-			filename,
-			strerror(errno));
+		eprintf("Error while opening \"%s\" for writing. \n%m\n", filename);
 		return 1;
 	}
 	fclose(out);
@@ -297,9 +293,8 @@ int FileXML::write_to_file(FILE *file)
 	}
 	else
 	{
-		fprintf(stderr, "FileXML::write_to_file \"%s\": %s\n",
-			filename,
-			strerror(errno));
+		eprintf("Error while writing to \"%s\": %m\n",
+			filename);
 		return 1;
 	}
 	return 0;
@@ -324,9 +319,7 @@ int FileXML::read_from_file(char *filename, int ignore_error)
 	else
 	{
 		if(!ignore_error) 
-			fprintf(stderr, "FileXML::read_from_file \"%s\" %s\n",
-				filename,
-				strerror(errno));
+			eprintf("Error while opening \"%s\" for reading. \n%m\n", filename);
 		return 1;
 	}
 	fclose(in);

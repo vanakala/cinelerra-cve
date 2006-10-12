@@ -5,6 +5,7 @@
 #include "language.h"
 #include "mwindow.inc"
 #include "vframe.h"
+#include "mainerror.h"
 
 #include <string.h>
 #include <unistd.h>
@@ -194,7 +195,7 @@ int FileTGA::read_frame_header(char *path)
 
 	if(!(stream = fopen(path, "rb")))
 	{
-		perror("FileTGA::read_frame_header");
+		eprintf("Error while opening \"%s\" for reading. \n%m\n", asset->path);
 		return 1;
 	}
 

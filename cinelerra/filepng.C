@@ -8,6 +8,7 @@
 #include "quicktime.h"
 #include "vframe.h"
 #include "videodevice.inc"
+#include "mainerror.h"
 
 #include <png.h>
 
@@ -127,7 +128,7 @@ int FilePNG::read_frame_header(char *path)
 
 	if(!(stream = fopen(path, "rb")))
 	{
-		perror("FilePNG::read_frame_header");
+		eprintf("Error while opening \"%s\" for reading. \n%m\n", asset->path);
 		return 1;
 	}
 

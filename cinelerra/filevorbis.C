@@ -6,6 +6,7 @@
 #include "guicast.h"
 #include "language.h"
 #include "mwindow.inc"
+#include "mainerror.h"
 
 #include <errno.h>
 #include <stdio.h>
@@ -100,7 +101,7 @@ int FileVorbis::open_file(int rd, int wr)
 //printf("FileVorbis::open_file 1\n");
 		if(!(fd = fopen(asset->path, "rb")))
 		{
-			printf("FileVorbis::open_file %s: %s\n", asset->path, strerror(errno));
+			eprintf("Error while opening \"%s\" for reading. \n%m\n", asset->path);
 			result = 1;
 		}
 		else
@@ -108,7 +109,7 @@ int FileVorbis::open_file(int rd, int wr)
 //printf("FileVorbis::open_file 2 %p %p\n", fd, vf);
 			if(ov_open(fd, &vf, NULL, 0) < 0)
 			{
-				printf(_("FileVorbis::open_file %s: invalid bitstream.\n"), asset->path);
+				eprintf("Invalid bitstream in %s\n", asset->path);
 				result = 1;
 			}
 			else
@@ -134,7 +135,7 @@ int FileVorbis::open_file(int rd, int wr)
 	{
 		if(!(fd = fopen(asset->path, "wb")))
 		{
-			printf("FileVorbis::open_file %s: %s\n", asset->path, strerror(errno));
+			eprintf("Error while opening \"%s\" for writing. \n%m\n", asset->path);
 			result = 1;
 		}
 		else
@@ -302,7 +303,7 @@ int FileVorbis::read_samples(double *buffer, int64_t len)
 
 	if(len > 0x100000)
 	{
-		printf("FileVorbis::read_samples max samples=%d\n", HISTORY_MAX);
+		eprintf("FileVorbis::read_samples max samples=%d\n", HISTORY_MAX);
 		return 1;
 	}
 
@@ -419,7 +420,7 @@ int FileVorbis::read_samples_float(float *buffer, int64_t len)
 
 	if(len > 0x100000)
 	{
-		printf("FileVorbis::read_samples max samples=%d\n", HISTORY_MAX);
+		eprintf("FileVorbis::read_samples max samples=%d\n", HISTORY_MAX);
 		return 1;
 	}
 

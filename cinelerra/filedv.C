@@ -14,6 +14,9 @@
 #include "vframe.h"
 #include "videodevice.inc"
 #include "cmodel_permutation.h"
+#include "mainerror.h"
+
+
 
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -164,27 +167,24 @@ TRACE("FileDV::open_file 20")
 		if (!(asset->height == 576 && asset->width == 720 && asset->frame_rate == 25) &&
 		    !(asset->height == 480 && asset->width == 720 && (asset->frame_rate >= 29.96 && asset->frame_rate <= 29.98)))
 		{
-			printf("Resolution not supported for dv: %ix%i framerate: %f\n", asset->width, asset->height, asset->frame_rate); 
+			eprintf("Raw DV format does not support following resolution: %ix%i framerate: %f\nAllowed resolutions are 720x576 25fps (PAL) and 720x480 29.97fps (NTSC)\n", asset->width, asset->height, asset->frame_rate);
 			if (asset->height == 480 && asset->width == 720 && asset->frame_rate == 30)
 			{
-				printf("Suggestion: Proper frame rate for NTSC DV is 29.97\n");
+				eprintf("Suggestion: Proper frame rate for NTSC DV is 29.97 fps, not 30 fps\n");
 			}
 			return 1;	
 		}   
 		if (!(asset->channels == 2 && (asset->sample_rate == 48000 || asset->sample_rate == 44100)) &&
 		    !((asset->channels == 4 || asset->channels == 2) && asset->sample_rate == 32000))
 		{
-			printf("Audio configuration not supported for dv: channels: %i, sample rate: %i\n", asset->channels, asset->sample_rate); 
-			return 1;	
+			eprintf("Raw DV format does not support following audio configuration : %i channels at sample rate: %iHz\n", asset->channels, asset->sample_rate);
+			return 1;
 		}   
 		  
-		
-		    
-		    
 
 		if((stream = fopen(asset->path, "w+b")) == 0)
 		{
-			perror(_("FileDV::open_file rdwr"));
+			eprintf("Error while opening \"%s\" for writing. \n%m\n", asset->path);
 			return 1;
 		}
 		
@@ -226,7 +226,7 @@ TRACE("FileDV::open_file 40")
 
 		if((stream = fopen(asset->path, "rb")) == 0)
 		{
-			perror(_("FileDV::open_file rd"));
+			eprintf("Error while opening \"%s\" for reading. \n%m\n", asset->path);
 			return 1;
 		}
 
@@ -461,7 +461,7 @@ int FileDV::write_samples(double **buffer, int64_t len)
 {
 	if(audio_samples_copy(buffer, len) != 0)
 	{
-		fprintf(stderr, "ERROR: Unable to store sample for FileDV::write_samples\n");
+		eprintf("Unable to store sample");
 		return 1;	
 	}
 	video_position_lock->lock("FileDV::write_samples");
@@ -488,14 +488,15 @@ TRACE("FileDV::write_samples 220")
 		stream_lock->lock("FileDV::write_samples 10");
 		if(fseeko(stream, (off_t) audio_frames_written * output_size, SEEK_SET) != 0)
 		{
-			fprintf(stderr, "ERROR: Unable to set audio write position to %lli\n", (off_t) audio_frames_written * output_size);
+			eprintf("Unable to set audio write position to %lli\n", (off_t) audio_frames_written * output_size);
+
 			stream_lock->unlock();
 			return 1;
 		}
 		
 		if(fread(audio_buffer, output_size, 1, stream) != 1)
 		{
-			fprintf(stderr, "ERROR: Unable to read from file\n");
+			eprintf("Unable to read from audio buffer file\n");
 			stream_lock->unlock();
 			return 1;
 		}
@@ -526,7 +527,7 @@ TRACE("FileDV::write_samples 250")
 			if(dv_encode_full_audio(audio_encoder, tmp_buf, asset->channels,
 				asset->sample_rate, audio_buffer) < 0)
 			{
-				fprintf(stderr, "ERROR: unable to encode audio frame %d\n", audio_frames_written);
+				eprintf("ERROR: unable to encode audio frame %d\n", audio_frames_written);
 			}
 		}
 		else
@@ -538,7 +539,8 @@ TRACE("FileDV::write_samples 260")
 			if(dv_encode_full_audio(audio_encoder, tmp_buf2,
 				asset->channels, asset->sample_rate, audio_buffer) < 0)
 			{
-				fprintf(stderr, "ERROR: unable to encode audio frame %d\n", audio_frames_written);
+				eprintf("ERROR: unable to encode audio frame %d\n", audio_frames_written);
+				
 			}
 			delete[] tmp_buf2;
 		}		
@@ -548,14 +550,14 @@ TRACE("FileDV::write_samples 270")
 		stream_lock->lock("FileDV::write_samples 20");
 		if(fseeko(stream, (off_t) audio_frames_written * output_size, SEEK_SET) != 0)
 		{
-			fprintf(stderr, "ERROR: Unable to relocate for audio write to %lli\n", (off_t) audio_frames_written * output_size);
+			eprintf("ERROR: Unable to relocate for audio write to %lli\n", (off_t) audio_frames_written * output_size);
 			stream_lock->unlock();
 			return 1;
 		}
 		
 		if(fwrite(audio_buffer, output_size, 1, stream) != 1)
 		{
-			fprintf(stderr, "ERROR: Unable to write audio\n");
+			eprintf("Unable to write audio to audio buffer\n");
 			stream_lock->unlock();
 			return 1;
 		}
@@ -653,11 +655,11 @@ int FileDV::write_frames(VFrame ***frames, int len)
 		stream_lock->lock("FileDV::write_frames");
 		if(fseeko(stream, (off_t) video_position * output_size, SEEK_SET) != 0)
 		{
-			fprintf(stderr, "FileDV::write_frames: Unable to seek file to %lli\n", (off_t)(video_position * output_size));
+			eprintf("Unable to seek file to %lli\n", (off_t)(video_position * output_size));
 		}
 		if(fwrite(video_buffer, output_size, 1, stream) < 1)
 		{
-			fprintf(stderr, "FileDV::write_frames: Unable to write video data.\n");		
+			eprintf("Unable to write video data to video buffer");
 		}
 		stream_lock->unlock();
 		
@@ -676,7 +678,7 @@ int FileDV::read_compressed_frame(VFrame *buffer)
 
 	if (fseeko(stream, (off_t) video_position * output_size, SEEK_SET))
 	{
-		fprintf(stderr, "FileDV::read_compressed_frame: Unable to seek file to %lli\n", (off_t)(video_position * output_size));
+		eprintf("Unable to seek file to %lli\n", (off_t)(video_position * output_size));
 	}
 	result = fread(buffer->get_data(), output_size, 1, stream);
 	video_position++;
@@ -693,7 +695,7 @@ int FileDV::write_compressed_frame(VFrame *buffer)
 
 	if (fseeko(stream, (off_t) video_position * output_size, SEEK_SET))
 	{
-		fprintf(stderr, "FileDV::read_compressed_frame: Unable to seek file to %lli", (off_t)(video_position * output_size));
+		eprintf("Unable to seek file to %lli\n", (off_t)(video_position * output_size));
 	}
 	result = fwrite(buffer->get_data(), buffer->get_compressed_size(), 1, stream);
 	video_position++;
@@ -757,7 +759,7 @@ int FileDV::read_samples(double *buffer, int64_t len)
 		
 		if(dv_decode_full_audio(decoder, audio_buffer, out_buffer) < 0)
 		{
-			fprintf(stderr, "Error decoding audio frame %d\n", frame_count - 1);
+			eprintf("Error decoding audio frame %d\n", frame_count - 1);
 		}
 
 		int end = dv_get_num_samples(decoder);
@@ -796,7 +798,7 @@ TRACE("FileDV::read_frame 10")
 	stream_lock->lock("FileDV::read_frame");
 	if(fseeko(stream, (off_t) video_position * output_size, SEEK_SET) < 0)
 	{
-		fprintf(stderr, "FileDV::read_frame: Unable to seek file to %lli", (off_t)(video_position * output_size));
+		eprintf("Unable to seek file to %lli", (off_t)(video_position * output_size));
 		stream_lock->unlock();
 		return 1;
 	}

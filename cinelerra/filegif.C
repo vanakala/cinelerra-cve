@@ -67,7 +67,7 @@ int FileGIF::read_header()
 
 	if(!(stream = GIFOpen(asset->path, "r")))
 	{
-		perror("FileGIF::read_header");
+		eprintf("Error while opening \"%s\" for reading. \n%m\n", asset->path);
 		return 1;
 	}
 	
@@ -98,7 +98,7 @@ int FileGIF::read_raw()
 
 		if(!(stream = GIFOpen(asset->path, "r")))
 		{
-			perror("FileGIF::read_raw");
+			eprintf("Error while opening \"%s\" for writing. \n%m\n", asset->path);
 			return 1;
 		}
 

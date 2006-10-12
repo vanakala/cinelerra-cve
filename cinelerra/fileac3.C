@@ -3,7 +3,7 @@
 #include "fileac3.h"
 #include "language.h"
 #include "mwindow.inc"
-
+#include "mainerror.h"
 
 
 
@@ -68,8 +68,7 @@ int FileAC3::open_file(int rd, int wr)
 		codec = avcodec_find_encoder(CODEC_ID_AC3);
 		if(!codec)
 		{
-			fprintf(stderr, 
-				"FileAC3::open_file codec not found.\n");
+			eprintf("codec not found.\n");
 			return 1;
 		}
 		codec_context = avcodec_alloc_context();
@@ -78,14 +77,13 @@ int FileAC3::open_file(int rd, int wr)
 		codec_context->channels = asset->channels;
 		if(avcodec_open(codec_context, codec))
 		{
-			fprintf(stderr, 
-				"FileAC3::open_file failed to open codec.\n");
+			eprintf("failed to open codec.\n");
 			return 1;
 		}
 
 		if(!(fd = fopen(asset->path, "w")))
 		{
-			perror("FileAC3::open_file");
+			eprintf("Error while opening \"%s\" for writing. \n%m\n", asset->path);
 			return 1;
 		}
 	}
@@ -93,7 +91,7 @@ int FileAC3::open_file(int rd, int wr)
 	{
 		if(!(fd = fopen(asset->path, "r")))
 		{
-			perror("FileAC3::open_file");
+			eprintf("Error while opening \"%s\" for reading. \n%m\n", asset->path);
 			return 1;
 		}
 	}
@@ -210,7 +208,7 @@ int FileAC3::write_samples(double **buffer, int64_t len)
 	int bytes_written = fwrite(temp_compressed, 1, output_size, fd);
 	if(bytes_written < output_size)
 	{
-		perror("FileAC3::write_samples");
+		eprintf("Error while writing samples. \n%m\n");
 		return 1;
 	}
 	return 0;

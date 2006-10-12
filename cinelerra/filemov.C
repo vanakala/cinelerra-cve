@@ -12,6 +12,7 @@
 #include "mwindow.inc"
 #include "vframe.h"
 #include "videodevice.inc"
+#include "mainerror.h"
 
 #include <unistd.h>
 #include <libdv/dv.h>
@@ -148,6 +149,24 @@ void FileMOV::fix_codecs(Asset *asset)
 	}
 }
 
+
+int FileMOV::check_codec_params(Asset *asset)
+{
+	if(!strcasecmp(asset->vcodec, QUICKTIME_DV) ||
+	   !strcasecmp(asset->vcodec, QUICKTIME_DVSD) ||
+	   !strcasecmp(asset->vcodec, QUICKTIME_DVCP))
+	{
+
+		if (!(asset->height == 576 && asset->width == 720) &&
+		    !(asset->height == 480 && asset->width == 720))
+		{
+			eprintf("DV in Quicktime container does not support following resolution: %ix%i\nAllowed resolutions are 720x576 (PAL) and 720x480 (NTSC)\n", asset->width, asset->height);
+			return 1;
+		}
+	}
+	return 0;
+}
+
 int FileMOV::check_sig(Asset *asset)
 {
 	return quicktime_check_sig(asset->path);
@@ -181,7 +200,7 @@ int FileMOV::open_file(int rd, int wr)
 
 	if(!(fd = quicktime_open(asset->path, rd, wr)))
 	{
-		printf(_("FileMOV::open_file %s: No such file or directory\n"), asset->path);
+		eprintf("Error while opening file \"%s\". \n%m\n", asset->path);
 		return 1;
 	}
 
@@ -189,8 +208,12 @@ int FileMOV::open_file(int rd, int wr)
 
 	if(rd) format_to_asset();
 
-	if(wr) asset_to_format();
-
+	if(wr) 
+	{
+		asset_to_format();
+		if (check_codec_params(asset))
+			return 1;
+	}
 // Set decoding parameter
 	quicktime_set_parameter(fd, "divx_use_deblocking", &asset->divx_use_deblocking);
 
@@ -818,7 +841,9 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 							i);
 					}
 					else
-						printf("FileMOV::write_frames data_size=%d\n", data_size);
+					{
+						eprintf("data_size=%d\n", data_size);
+					}
 				}
 				else
 					result = quicktime_write_frame(fd,
@@ -982,7 +1007,7 @@ int FileMOV::read_frame(VFrame *frame)
 			row_pointers[2] = frame->get_v();
 
 			quicktime_set_cmodel(fd, frame->get_color_model());
-			quicktime_decode_video(fd, 
+			result = quicktime_decode_video(fd, 
 				row_pointers,
 				file->current_layer);
 		}
@@ -996,6 +1021,10 @@ int FileMOV::read_frame(VFrame *frame)
 				file->current_layer);
 //for(int i = 0; i < 10000; i++) frame->get_rows()[0][i] = 0xff;
 			break;
+	}
+	if (result)
+	{
+		eprintf("quicktime_read_frame/quicktime_decode_video failed, result:\n");
 	}
 
 
@@ -1091,7 +1120,7 @@ int FileMOV::read_samples(double *buffer, int64_t len)
 //printf("FileMOV::read_samples 3 %ld %ld\n", file->current_sample, quicktime_audio_position(fd, 0));
 		if(quicktime_decode_audio(fd, 0, temp_float[0], len, file->current_channel))
 		{
-			printf("FileMOV::read_samples: quicktime_decode_audio failed\n");
+			eprintf("quicktime_decode_audio failed\n");
 			return 1;
 		}
 		else
