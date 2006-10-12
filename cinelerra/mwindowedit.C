@@ -590,7 +590,8 @@ void MWindow::insert(double position,
 		0, 
 		position,
 		edit_labels,
-		edit_plugins);
+		edit_plugins,
+		0); // overwrite
 // if(vwindow->edl)
 // printf("MWindow::insert 5 %f %f\n", 
 // vwindow->edl->local_session->in_point,
@@ -1092,7 +1093,7 @@ void MWindow::paste()
 
 }
 
-int MWindow::paste_assets(double position, Track *dest_track)
+int MWindow::paste_assets(double position, Track *dest_track, int overwrite)
 {
 	int result = 0;
 
@@ -1107,7 +1108,8 @@ int MWindow::paste_assets(double position, Track *dest_track)
 			dest_track, 
 			0,
 			edl->session->labels_follow_edits, 
-			edl->session->plugins_follow_edits);
+			edl->session->plugins_follow_edits,
+			overwrite);
 		result = 1;
 	}
 
@@ -1119,7 +1121,8 @@ int MWindow::paste_assets(double position, Track *dest_track)
 			dest_track,
 			position, 
 			edl->session->labels_follow_edits, 
-			edl->session->plugins_follow_edits);
+			edl->session->plugins_follow_edits,
+			overwrite); // o
 		result = 1;
 	}
 
@@ -1145,7 +1148,8 @@ void MWindow::load_assets(ArrayList<Asset*> *new_assets,
 	Track *first_track,
 	RecordLabels *labels,
 	int edit_labels,
-	int edit_plugins)
+	int edit_plugins,
+	int overwrite)
 {
 //printf("MWindow::load_assets 1\n");
 	if(position < 0) position = edl->local_session->get_selectionstart();
@@ -1177,7 +1181,8 @@ void MWindow::load_assets(ArrayList<Asset*> *new_assets,
 		first_track,
 		position,
 		edit_labels,
-		edit_plugins);
+		edit_plugins,
+		overwrite);
 //printf("MWindow::load_assets 4\n");
 
 
@@ -1258,7 +1263,8 @@ int MWindow::paste_edls(ArrayList<EDL*> *new_edls,
 	Track *first_track,
 	double current_position,
 	int edit_labels,
-	int edit_plugins)
+	int edit_plugins,
+	int overwrite)
 {
 
 	ArrayList<Track*> destination_tracks;
@@ -1530,6 +1536,15 @@ SET_TRACE
 							paste_position[destination_track] += new_track->get_length();
 							break;
 					}
+					if (overwrite)
+						track->clear(current_position, 
+								current_position + new_track->get_length(), 
+								1, // edit edits
+								edit_labels,
+								edit_plugins, 
+								1, // convert units
+								0); // trim edits
+
 
 					track->insert_track(new_track, 
 						current_position, 

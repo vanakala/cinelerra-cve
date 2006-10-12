@@ -58,7 +58,8 @@ void AssetPopup::paste_assets()
 
 	gui->collect_assets();
 	mwindow->paste_assets(mwindow->edl->local_session->get_selectionstart(1), 
-		mwindow->edl->tracks->first);
+		mwindow->edl->tracks->first,
+		0);   // do not overwrite
 
 	gui->unlock_window();
 	mwindow->gui->unlock_window();

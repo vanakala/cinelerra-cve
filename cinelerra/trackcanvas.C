@@ -538,14 +538,15 @@ int TrackCanvas::drag_stop()
 				double position_f = mwindow->session->track_highlighted->from_units(position);
 				Track *track = mwindow->session->track_highlighted;
 
-				if (!insertion)
-				{
-					// FIXME, we should create an mwindow/EDL method that overwrites, without clearing the keyframes and autos
-					// Unfortunately, this is _a lot_ of work to do right
-					mwindow->edl->tracks->clear(position_f, 
-						position_f + asset_length_float, 0);
-				}
-				mwindow->paste_assets(position_f, track);
+//				if (!insertion)
+//				{
+//					// FIXME, we should create an mwindow/EDL method that overwrites, without clearing the keyframes and autos
+//					// Unfortunately, this is _a lot_ of work to do right
+//					printf("Problematic insertion\n");
+//					mwindow->edl->tracks->clear(position_f, 
+//						position_f + asset_length_float, 0);
+//				}
+				mwindow->paste_assets(position_f, track, !insertion);
 				result = 1;    // need to be one no matter what, since we have track highlited so we have to cleanup....
 			}
 			break;

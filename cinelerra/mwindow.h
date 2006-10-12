@@ -109,7 +109,7 @@ public:
 // Takes the drag vectors from MainSession and
 // pastes either assets or clips depending on which is full.
 // Returns 1 if the vectors were full
-	int paste_assets(double position, Track *dest_track);
+	int paste_assets(double position, Track *dest_track, int overwrite);
 	
 // Insert the assets at a point in the EDL.  Called by menueffects,
 // render, and CWindow drop but recording calls paste_edls directly for
@@ -120,13 +120,15 @@ public:
 		Track *first_track /* = 0 */,
 		RecordLabels *labels /* = 0 */,
 		int edit_labels,
-		int edit_plugins);
+		int edit_plugins,
+		int overwrite);
 	int paste_edls(ArrayList<EDL*> *new_edls, 
 		int load_mode, 
 		Track *first_track /* = 0 */,
 		double current_position /* = -1 */,
 		int edit_labels,
-		int edit_plugins);
+		int edit_plugins,
+		int overwrite);
 // Reset everything for a load
 	void update_project(int load_mode);
 // Fit selected time to horizontal display range

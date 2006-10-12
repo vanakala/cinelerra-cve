@@ -556,7 +556,8 @@ SET_TRACE
 				0,
 				-1,
 				mwindow->edl->session->labels_follow_edits,
-				mwindow->edl->session->plugins_follow_edits);
+				mwindow->edl->session->plugins_follow_edits,
+				0); // overwrite
 //printf("Record::run 7\n");
 
 			new_edls.remove_all_objects();

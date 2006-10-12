@@ -1088,7 +1088,8 @@ SET_TRACE
 			0,
 			-1,
 			edl->session->labels_follow_edits, 
-			edl->session->plugins_follow_edits);
+			edl->session->plugins_follow_edits,
+			0); // overwrite
 	}
 
 
