@@ -5,7 +5,7 @@ Maintainer: Cinelerra non-official mailing list <cinelerra@skolelinux.no>
 Standards-Version: 3.5.9
 Build-Depends: debhelper (>> 4), automake1.8, dpatch (>= 1.11),
  libasound2-dev (>= 1.0.4), libdv4-dev (>= 1.0.0), libavcodeccvs51-dev, 
- libxvidcore4-dev, liblame-dev (>= 3.92), libvorbis-dev (>= 1.0.0),
+ liblame-dev (>= 3.92), libvorbis-dev (>= 1.0.0),
  libogg-dev (>= 1.1.2), libtool (>= 1.5), liba52-0.7.4-dev (>= 0.7.4), 
  libtheora-dev (>=0.0.0.alpha4) | libtheora-mmx-dev (>=0.0.0.alpha4),
  libpng12-dev (>= 1.2.5), libjpeg62-dev (>= 6b), libtiff4-dev (>= 3.6.0),
@@ -16,7 +16,7 @@ Build-Depends: debhelper (>> 4), automake1.8, dpatch (>= 1.11),
  libopenexr-dev (>= 1.1.1), libxxf86vm-dev (>=6.8.2), fftw3-dev,
  libsndfile1-dev, libiec61883-dev (>= 1.0.0), libx264-dev,
  libfaac-dev (>= 1.24), libx11-dev, libxext-dev, libxft-dev,
- libxv-dev, libxvmc-dev, libxxf86vm-dev, fftw3-dev
+ libxv-dev, libxxf86vm-dev, fftw3-dev
 
 Package: cinelerra
 Section: graphics
