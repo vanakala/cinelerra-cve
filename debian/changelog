@@ -1,4 +1,4 @@
-hvirtual (1:2.1.0-svn20060912) unstable; urgency=low
+hvirtual (1:2.1.0-1svn20060912) unstable; urgency=low
 
   * SVN of 2006-09-12, non-debug build, merge with Adam's 2.1 version
 
