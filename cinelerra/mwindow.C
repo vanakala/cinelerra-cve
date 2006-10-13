@@ -1252,11 +1252,10 @@ void MWindow::init_shm()
 	fd = 0;
 	if(result < 0x7fffffff)
 	{
-		char string[BCTEXTLEN];
-		sprintf(string, "MWindow::init_shm: /proc/sys/kernel/shmmax is 0x%llx.\n"
-			"It should be at least 0x7fffffff for Cinelerra.\n",
+		eprintf("WARNING: /proc/sys/kernel/shmmax is 0x%llx, which is too low.\n"
+			"Before running Cinelerra do the following as root:\n"
+			"echo \"0x7fffffff\" > /proc/sys/kernel/shmmax\n",
 			result);
-		MainError::show_error(string);
 	}
 }
 
