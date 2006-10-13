@@ -27,6 +27,7 @@ Edits::Edits(EDL *edl, Track *track, Edit *default_edit)
 	this->track = track;
 
 	List<Edit>::List<Edit>();
+	default_edit->edl = edl;
 	default_edit->track = track;
 	default_edit->startproject = 0;
 	default_edit->length = LAST_VIRTUAL_LENGTH;
