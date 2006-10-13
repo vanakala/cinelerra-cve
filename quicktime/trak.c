@@ -417,22 +417,25 @@ int64_t quicktime_sample_range_size(quicktime_trak_t *trak,
 	long chunk_sample, 
 	long sample)
 {
-	quicktime_stsz_table_t *table = trak->mdia.minf.stbl.stsz.table;
 	int64_t i, total;
-
-	if(trak->mdia.minf.stbl.stsz.sample_size)
-	{
-/* assume audio */
-		return quicktime_samples_to_bytes(trak, sample - chunk_sample);
-	}
+	/* LQT: For audio, quicktime_sample_rage_size makes no sense */
+	if(trak->mdia.minf.is_audio)
+		return 0;
 	else
 	{
-/* video or vbr audio */
-		for(i = chunk_sample, total = 0; 
-			i < sample && i < trak->mdia.minf.stbl.stsz.total_entries; 
-			i++)
+		/* All frames have the same size */
+		if(trak->mdia.minf.stbl.stsz.sample_size)
 		{
-			total += trak->mdia.minf.stbl.stsz.table[i].size;
+			total = (sample - chunk_sample) *
+			trak->mdia.minf.stbl.stsz.sample_size;
+		}
+		/* probably video */
+		else
+		{
+			for(i = chunk_sample, total = 0; i < sample; i++)
+			{
+				total += trak->mdia.minf.stbl.stsz.table[i].size;
+			}
 		}
 	}
 	return total;
