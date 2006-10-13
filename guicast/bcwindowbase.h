@@ -559,8 +559,6 @@ private:
 	int get_screen();
 	virtual int initialize();
 	int get_atoms();
-// Create custom atoms to be used for async messages between windows
-	virtual int create_custom_xatoms();
 // Function to overload to recieve customly defined atoms
 	virtual int recieve_custom_xatoms(xatom_event *event); 
 	

@@ -473,6 +473,7 @@ SET_TRACE
 //printf("AWindowGUI::create_objects 2\n");
 
 SET_TRACE
+	create_custom_xatoms();
 
 	return 0;
 }

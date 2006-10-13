@@ -147,7 +147,7 @@ public:
 	int allow_iconlisting;
 	
 // Create custom atoms to be used for async messages between windows
-	virtual int create_custom_xatoms();
+	int create_custom_xatoms();
 // Function to overload to recieve customly defined atoms
 	virtual int recieve_custom_xatoms(xatom_event *event); 
 	

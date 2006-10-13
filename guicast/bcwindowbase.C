@@ -1494,10 +1494,6 @@ int BC_WindowBase::arm_repeat(int64_t duration)
 	return 0;
 }
 
-int BC_WindowBase::create_custom_xatoms()
-{
-	return 0;
-}
 int BC_WindowBase::recieve_custom_xatoms(xatom_event *event)
 {
 	return 0;
@@ -1534,7 +1530,6 @@ int BC_WindowBase::get_atoms()
 	DelWinXAtom =   create_xatom("WM_DELETE_WINDOW");
 	if(ProtoXAtom = create_xatom("WM_PROTOCOLS"))
 		XChangeProperty(display, win, ProtoXAtom, XA_ATOM, 32, PropModeReplace, (unsigned char *)&DelWinXAtom, True);
-	create_custom_xatoms();
 	return 0;
 	
 }
