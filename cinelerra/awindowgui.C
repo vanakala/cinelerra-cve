@@ -584,6 +584,36 @@ int AWindowGUI::keypress_event()
 	return 0;
 }
 
+
+
+int AWindowGUI::create_custom_xatoms()
+{
+	UpdateAssetsXAtom = create_xatom("CWINDOWGUI_UPDATE_ASSETS");
+	return 0;
+}
+int AWindowGUI::recieve_custom_xatoms(xatom_event *event)
+{
+	if (event->message_type == UpdateAssetsXAtom)
+	{
+		update_assets();
+		return 1;
+	} else
+	return 0;
+}
+
+void AWindowGUI::async_update_assets()
+{
+	xatom_event event;
+	event.message_type = UpdateAssetsXAtom;
+	send_custom_xatom(&event);
+}
+
+
+
+
+
+
+
 void AWindowGUI::update_folder_list()
 {
 //printf("AWindowGUI::update_folder_list 1\n");
@@ -1139,7 +1169,7 @@ int AWindowFolders::selection_changed()
 		strcpy(mwindow->edl->session->current_folder, picon->get_text());
 //printf("AWindowFolders::selection_changed 1\n");
 		gui->asset_list->draw_background();
-		gui->update_assets();
+		gui->async_update_assets();
 	}
 	return 1;
 }

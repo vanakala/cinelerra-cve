@@ -79,7 +79,7 @@ public:
 	int translation_event();
 	int close_event();
 	int keypress_event();
-	void update_assets();
+	void async_update_assets();     // Sends update asset event
 	void sort_assets();
 	void reposition_objects();
 	int current_folder_number();
@@ -145,10 +145,21 @@ public:
 	VFrame *temp_picon;
 
 	int allow_iconlisting;
+	
+// Create custom atoms to be used for async messages between windows
+	virtual int create_custom_xatoms();
+// Function to overload to recieve customly defined atoms
+	virtual int recieve_custom_xatoms(xatom_event *event); 
+	
+	
+	
 private:
 	void update_folder_list();
 	void update_asset_list();
 	void filter_displayed_assets();
+	Atom UpdateAssetsXAtom;
+	void update_assets();
+
 };
 
 class AWindowAssets : public BC_ListBox

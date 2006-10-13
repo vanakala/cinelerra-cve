@@ -46,7 +46,7 @@ void LabelEdit::run()
 		window->create_objects();
 		int result = window->run_window();
 		delete window;
-		if (awindow) awindow->gui->update_assets();
+		if (awindow) awindow->gui->async_update_assets();
 	}
 }
 

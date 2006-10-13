@@ -82,6 +82,25 @@
 //typedef void* GLXContext;
 #endif
 
+
+// Struct for async event marshalling, the same as XClientMessageEvent currently, but can be changed if we change toolkit ever
+// it is defined here so we don't use X headers in /cinelerra
+typedef struct {
+	int type;			/* ClientMessage */
+	unsigned long serial;		/* # of last request processed by server */
+	Bool send_event;		/* true if this came from a SendEvent request */
+	Display *display;		/* Display the event was read from */
+	Window window;
+	Atom message_type;
+	int format;
+	union {
+		char b[20];
+		short s[10];
+		long l[5];
+	} data;
+} xatom_event;
+
+
 class BC_ResizeCall
 {
 public:
@@ -540,6 +559,11 @@ private:
 	int get_screen();
 	virtual int initialize();
 	int get_atoms();
+// Create custom atoms to be used for async messages between windows
+	virtual int create_custom_xatoms();
+// Function to overload to recieve customly defined atoms
+	virtual int recieve_custom_xatoms(xatom_event *event); 
+	
 	void init_cursors();
 	int init_colors();
 	int init_window_shape();
@@ -807,6 +831,11 @@ private:
 	Timer *cursor_timer;
 // unique ID of window.
 	int id;
+
+protected:
+	Atom create_xatom(char *atom_name);
+	int send_custom_xatom(xatom_event *event); 
+
 };
 
 

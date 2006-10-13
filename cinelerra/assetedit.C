@@ -108,9 +108,7 @@ void AssetEdit::run()
 				mwindow->gui->unlock_window();
 
 
-				mwindow->awindow->gui->lock_window();
-				mwindow->awindow->gui->update_assets();
-				mwindow->awindow->gui->unlock_window();
+				mwindow->awindow->gui->async_update_assets();
 
 				mwindow->restart_brender();
 				mwindow->sync_parameters(CHANGE_ALL);

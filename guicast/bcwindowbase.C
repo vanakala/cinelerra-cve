@@ -723,6 +723,9 @@ int BC_WindowBase::dispatch_event()
 			if(ptr->message_type == SetDoneXAtom)
 			{
 				done = 1;
+			} else
+			{ // We currently use X marshalling for xatom events, we can switch to something else later
+				recieve_custom_xatoms((xatom_event *)ptr);
 			}
 			break;
 
@@ -1470,6 +1473,7 @@ int BC_WindowBase::unset_all_repeaters()
 // 	return top_level->next_repeat_id++;
 // }
 
+
 int BC_WindowBase::arm_repeat(int64_t duration)
 {
 	XEvent *event = new XEvent;
@@ -1490,15 +1494,51 @@ int BC_WindowBase::arm_repeat(int64_t duration)
 	return 0;
 }
 
-int BC_WindowBase::get_atoms()
+int BC_WindowBase::create_custom_xatoms()
 {
-	SetDoneXAtom =  XInternAtom(display, "BC_REPEAT_EVENT", False);
-	RepeaterXAtom = XInternAtom(display, "BC_CLOSE_EVENT", False);
-	DelWinXAtom =   XInternAtom(display, "WM_DELETE_WINDOW", False);
-	if(ProtoXAtom = XInternAtom(display, "WM_PROTOCOLS", False))
-		XChangeProperty(display, win, ProtoXAtom, XA_ATOM, 32, PropModeReplace, (unsigned char *)&DelWinXAtom, True);
 	return 0;
 }
+int BC_WindowBase::recieve_custom_xatoms(xatom_event *event)
+{
+	return 0;
+}
+
+int BC_WindowBase::send_custom_xatom(xatom_event *event)
+{
+	XEvent *myevent = new XEvent;
+	XClientMessageEvent *ptr = (XClientMessageEvent*)myevent;
+	ptr->type = ClientMessage;
+	ptr->message_type = event->message_type;
+	ptr->format = event->format;
+	ptr->data.l[0] = event->data.l[0];
+	ptr->data.l[1] = event->data.l[1];
+	ptr->data.l[2] = event->data.l[2];
+	ptr->data.l[3] = event->data.l[3];
+	ptr->data.l[4] = event->data.l[4];
+
+	put_event(myevent);
+	return 0;
+}
+
+
+
+Atom BC_WindowBase::create_xatom(char *atom_name)
+{
+	return XInternAtom(display, atom_name, False);
+}
+
+int BC_WindowBase::get_atoms()
+{
+	SetDoneXAtom =  create_xatom("BC_REPEAT_EVENT");
+	RepeaterXAtom = create_xatom("BC_CLOSE_EVENT");
+	DelWinXAtom =   create_xatom("WM_DELETE_WINDOW");
+	if(ProtoXAtom = create_xatom("WM_PROTOCOLS"))
+		XChangeProperty(display, win, ProtoXAtom, XA_ATOM, 32, PropModeReplace, (unsigned char *)&DelWinXAtom, True);
+	create_custom_xatoms();
+	return 0;
+	
+}
+
 
 void BC_WindowBase::init_cursors()
 {
