@@ -992,7 +992,7 @@ int FileMOV::read_frame(VFrame *frame)
 				file->current_frame, 
 				file->current_layer) == file->current_frame));
 //printf("FileMOV::read_frame 1 %lld %d\n", file->current_frame, frame->get_keyframe());
-			result = quicktime_read_frame(fd, 
+			result = !quicktime_read_frame(fd, 
 				frame->get_data(), 
 				file->current_layer);
 			break;
