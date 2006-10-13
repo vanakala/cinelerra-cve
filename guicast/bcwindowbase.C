@@ -688,7 +688,6 @@ int BC_WindowBase::dispatch_event()
 	switch(event->type)
 	{
 		case ClientMessage:
-			get_key_masks(event);
 // Clear the resize buffer
 			if(resize_events) dispatch_resize_event(last_resize_w, last_resize_h);
 // Clear the motion buffer since this can clear the window
