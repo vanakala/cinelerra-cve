@@ -195,9 +195,12 @@ void quicktime_atom_write_footer(quicktime_t *file, quicktime_atom_t *atom)
 	{
 		quicktime_set_position(file, atom->start - 4);
 		quicktime_write_int32_le(file, atom->end - atom->start);
+		atom->size = atom->end - atom->start;
 	}
 	else
 	{
+		// We should calculate atom->size here also...  it is used in trak.c FIXME
+		// I don't know internals of the quicktime to know what is proper calculation - with or wirhout header?
 		if(atom->use_64)
 		{
 			quicktime_set_position(file, atom->start + 8);
@@ -210,7 +213,6 @@ void quicktime_atom_write_footer(quicktime_t *file, quicktime_atom_t *atom)
 			quicktime_write_int32(file, atom->end - atom->start);
 		}
 	}
-
 	quicktime_set_position(file, atom->end);
 }
 

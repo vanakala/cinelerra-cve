@@ -195,7 +195,7 @@ void quicktime_init_strl(quicktime_t *file,
 
 
 	quicktime_atom_write_header(file, &junk_atom, "JUNK");
-	for(i = 0; i < JUNK_SIZE; i += 4)
+	for(i = 0; i < strl->padding_size; i += 4)
 		quicktime_write_int32_le(file, 0);
 	quicktime_atom_write_footer(file, &junk_atom);
 

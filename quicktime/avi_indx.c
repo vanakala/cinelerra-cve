@@ -106,12 +106,11 @@ void quicktime_finalize_indx(quicktime_t *file)
 
 /* Rewrite JUNK less indx size and indx header size */
 		junk_size = strl->padding_size - indx->atom.size - 8;
-/*
- * 		quicktime_atom_write_header(file, &junk_atom, "JUNK");
- * 		for(j = 0; j < junk_size; j += 4)
- * 			quicktime_write_int32_le(file, 0);
- * 		quicktime_atom_write_footer(file, &junk_atom);
- */
+  		quicktime_atom_write_header(file, &junk_atom, "JUNK");
+  		for(j = 0; j < junk_size; j += 4)
+  			quicktime_write_int32_le(file, 0);
+  		quicktime_atom_write_footer(file, &junk_atom);
+ 
 	}
 }
 
