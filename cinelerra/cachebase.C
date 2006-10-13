@@ -19,7 +19,7 @@ CacheItemBase::CacheItemBase()
 
 CacheItemBase::~CacheItemBase()
 {
-	delete [] path;
+	free(path); // path was allocated with strdup in FramceCache::put_frame()
 }
 
 
