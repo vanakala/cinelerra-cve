@@ -680,7 +680,7 @@ long BC_Bitmap::get_y_offset()
 
 long BC_Bitmap::get_u_offset()
 {
-	if(xv_image[0])
+	if(xv_image[0] && xv_image[current_ringbuffer]->num_planes > 1)
 		return xv_image[current_ringbuffer]->offsets[2];
 	else
 		return 0;
@@ -688,7 +688,7 @@ long BC_Bitmap::get_u_offset()
 
 long BC_Bitmap::get_v_offset()
 {
-	if(xv_image[0])
+	if(xv_image[0] && xv_image[current_ringbuffer]->num_planes > 1)
 		return xv_image[current_ringbuffer]->offsets[1];
 	else
 		return 0;
