@@ -41,7 +41,7 @@ LocalSession::LocalSession(EDL *edl)
 	loop_playback = 0;
 	loop_start = 0;
 	loop_end = 0;
-	zoom_sample = 0;
+	zoom_sample = 16384;
 	zoom_y = 0;
 	zoom_track = 0;
 	view_start = 0;
@@ -225,7 +225,7 @@ int LocalSession::load_defaults(BC_Hash *defaults)
 	selectionend = defaults->get("SELECTIONEND", selectionend);
 //	track_start = defaults->get("TRACK_START", 0);
 //	view_start = defaults->get("VIEW_START", 0);
-	zoom_sample = defaults->get("ZOOM_SAMPLE", 1);
+	zoom_sample = defaults->get("ZOOM_SAMPLE", 16384);
 	zoom_y = defaults->get("ZOOMY", 64);
 	zoom_track = defaults->get("ZOOM_TRACK", 64);
 	red = defaults->get("RED", 0.0);
