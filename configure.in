@@ -349,15 +349,30 @@ AC_CHECK_LIB(mp3lame,lame_init,[libmp3lame=yes],,[$XIPH_LIBS])
 ############## OpenGL
 AH_TEMPLATE(HAVE_GL, [Define to 1 if OpenGL 2.0 is available.])
 AC_ARG_ENABLE(opengl,
-	AC_HELP_STRING([--enable-opengl],
-		[enables hardware accelerated rendering (requires OpenGL 2.0)]),
-	if test "x$enableval" = "xyes"; then
-		AC_DEFINE(HAVE_GL)
-		OPENGL_LIBS="-lGLU -lGL"
-		enable_opengl=ok
-	else
-		enable_opengl=no
-	fi, enable_opengl=no)
+	AC_HELP_STRING([--disable-opengl],
+		[disables hardware accelerated rendering (default=autodetect, requires OpenGL 2.0)]),
+	[ enable_opengl=$enableval ],
+	[ enable_opengl=yes ])
+if test "x$enableval" = "xyes"; then
+	AC_CHECK_LIB([GL], [glUseProgram],
+		[OPENGL_LIBS="-lGL"; libGL=yes],
+# On SUSE 10.1, NVidia places the OpenGL 2.0 capable library in /usr/X11R6/lib
+# but it doesn't place a libGL.so there, so the linker won't pick it up
+# we have to use the explicit libGL.so.1 path.
+		save_LIBS="$LIBS"
+		LIBS="/usr/X11R6/lib/libGL.so.1"
+		AC_MSG_CHECKING(for glUseProgram in /usr/X11R6/lib/libGL.so.1)
+		AC_TRY_LINK([],[extern int glUseProgram(); glUseProgram();],
+			[OPENGL_LIBS="/usr/X11R6/lib/libGL.so.1"; libGL=yes],[libGL=no])
+		AC_MSG_RESULT([$libGL])
+		LIBS="$save_LIBS"
+	)
+fi
+if test "x$libGL" = "xyes"; then
+	enable_opengl=ok
+	OPENGL_LIBS="-lGLU $OPENGL_LIBS"
+	AC_DEFINE(HAVE_GL)
+fi
 AC_SUBST(OPENGL_LIBS)
 # END OpenGL
 
@@ -525,8 +540,9 @@ ORPT(enable_firewire,Firewire,--disable-firewire,
 	RPT(librom1394,librom1394 libraries)
 	RPT(librom1394h,librom1394 headers)
 )
-if test "x$enable_opengl" = "xok"; then status=enabled; else status=disabled; fi
-echo "Hardware acceleration using OpenGL 2.0 is $status"
+ORPT(enable_opengl,Hardware acceleration using OpenGL 2.0,--disable-opengl,
+	RPT(libGL,OpenGL 2.0 libraries)
+)
 
 if test "x$mandatory" = "xno"; then
 	echo
