@@ -1848,8 +1848,10 @@ void MWindow::update_project(int load_mode)
 		vwindow->update(1);
 	}
 
+	cwindow->gui->lock_window("Mwindow::update_project");
 	cwindow->gui->slider->set_position();
 	cwindow->gui->timebar->update(1, 1);
+	cwindow->gui->unlock_window();
 	cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
 		CHANGE_ALL,
 		edl,
