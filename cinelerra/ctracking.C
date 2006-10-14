@@ -134,7 +134,7 @@ void CTracking::update_tracker(double position)
 	if(!updated_scroll)
 	{
 		mwindow->gui->cursor->update();
-		mwindow->gui->zoombar->update();
+		mwindow->gui->zoombar->update_clocks();   // we just need to update clocks, not everything
 
 
 		mwindow->gui->canvas->flash();
