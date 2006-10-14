@@ -49,6 +49,7 @@ VWindowGUI::VWindowGUI(MWindow *mwindow, VWindow *vwindow)
 {
 	this->mwindow = mwindow;
 	this->vwindow = vwindow;
+	strcpy(loaded_title, "");
 }
 
 VWindowGUI::~VWindowGUI()
@@ -65,7 +66,7 @@ void VWindowGUI::change_source(EDL *edl, char *title)
 		sprintf(string, PROGRAM_NAME ": %s", title);
 	else
 		sprintf(string, PROGRAM_NAME);
-
+	strcpy(loaded_title, title);
 	lock_window("VWindowGUI::change_source");
 	slider->set_position();
 	timebar->update();
@@ -628,6 +629,16 @@ void VWindowEditing::to_clip()
 		new_edl->create_objects();
 		new_edl->load_xml(mwindow->plugindb, &file, LOAD_ALL);
 		sprintf(new_edl->local_session->clip_title, _("Clip %d"), mwindow->session->clip_number++);
+		char string[BCTEXTLEN];
+		Units::totext(string, 
+				end - start, 
+				edl->session->time_format, 
+				edl->session->sample_rate, 
+				edl->session->frame_rate,
+				edl->session->frames_per_foot);
+
+		sprintf(new_edl->local_session->clip_notes, _("%s\n Created from:\n%s"), string, vwindow->gui->loaded_title);
+
 		new_edl->local_session->set_selectionstart(0);
 		new_edl->local_session->set_selectionend(0);
 

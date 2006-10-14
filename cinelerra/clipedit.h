@@ -46,6 +46,7 @@ public:
 	int create_it;
 	MWindow *mwindow;
 	ClipEdit *thread;
+	BC_TextBox *titlebox;
 };
 
 

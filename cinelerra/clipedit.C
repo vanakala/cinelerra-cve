@@ -10,7 +10,8 @@
 #include "mwindowgui.h"
 #include "vwindow.h"
 #include "vwindowgui.h"
-
+#include "errorbox.h"
+#include "tracks.h"
 
 
 
@@ -70,9 +71,41 @@ void ClipEdit::run()
 
 
 		ClipEditWindow *window = new ClipEditWindow(mwindow, this);
+
 		window->create_objects();
-		int result = window->run_window();
-		
+
+		int  name_ok_or_cancel = 0;
+		int result;
+		while (!name_ok_or_cancel)
+		{ 
+			result = window->run_window();
+			if (result)
+				name_ok_or_cancel = 1;
+			else
+			{
+				// Check if clip name is unique
+				name_ok_or_cancel = 1;
+				for (int i = 0; i < mwindow->edl->clips.total; i++)
+				{
+					if (!strcasecmp(clip->local_session->clip_title,
+						mwindow->edl->clips.values[i]->local_session->clip_title) &&
+						(create_it || strcasecmp(clip->local_session->clip_title,
+						original->local_session->clip_title)))
+					
+						name_ok_or_cancel = 0;
+				}
+				if (!name_ok_or_cancel)
+				{
+					ErrorBox error(PROGRAM_NAME ": Error", 
+						mwindow->gui->get_abs_cursor_x(1), 
+						mwindow->gui->get_abs_cursor_y(1));
+					error.create_objects(_("A clip with that name already exists."));
+					error.run_window();
+					window->titlebox->activate();
+				}
+			}
+		}
+
 		if(!result)
 		{
 			EDL *new_edl = 0;
@@ -148,7 +181,6 @@ void ClipEditWindow::create_objects()
 	int x = 10, y = 10;
 	int x1 = x;
 	BC_TextBox *textbox;
-	BC_TextBox *titlebox;
 	BC_Title *title;
 
 	add_subwindow(title = new BC_Title(x1, y, _("Title:")));
