@@ -210,6 +210,7 @@ public:
 	SetFrameRateTextBox *frame_rate;
 	BC_TextBox *color_model;
 	ScaleAspectAuto *auto_aspect;
+	InterlacemodePulldown *interlace_pulldown;
 };
 
 	

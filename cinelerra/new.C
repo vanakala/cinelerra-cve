@@ -362,7 +362,7 @@ int NewWindow::create_objects()
 	// --------------------
 	add_subwindow(new BC_Title(x, y, _("Interlace mode:")));
 	add_subwindow(textbox = new BC_TextBox(x + 100, y, 140, 1, ""));
-	add_subwindow(new InterlacemodePulldown(mwindow, 
+	add_subwindow(interlace_pulldown = new InterlacemodePulldown(mwindow, 
 		textbox, 
 		&new_edl->session->interlace_mode,
 		(ArrayList<BC_ListBoxItem*>*)&mwindow->interlace_project_modes,
@@ -392,6 +392,7 @@ int NewWindow::update()
 	output_h_text->update((int64_t)new_edl->session->output_h);
 	aspect_w_text->update((float)new_edl->session->aspect_w);
 	aspect_h_text->update((float)new_edl->session->aspect_h);
+	interlace_pulldown->update(new_edl->session->interlace_mode);
 	return 0;
 }
 
@@ -866,6 +867,14 @@ char* InterlacemodePulldown::interlacemode_to_text()
 	ilacemode_to_text(this->string,*output_value);
 	return (this->string);
 }
+
+int InterlacemodePulldown::update(int interlace_mode)
+{
+	*output_value = interlace_mode;
+	output_text->update(interlacemode_to_text());
+	return 1;
+}
+
 
 NewAspectAuto::NewAspectAuto(NewWindow *nwindow, int x, int y)
  : BC_CheckBox(x, y, nwindow->new_thread->auto_aspect, _("Auto aspect ratio"))

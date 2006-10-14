@@ -194,6 +194,7 @@ void SetFormatThread::update()
 
 	window->aspect_w->update(new_settings->session->aspect_w);
 	window->aspect_h->update(new_settings->session->aspect_h);
+	window->interlace_pulldown->update(new_settings->session->interlace_mode);
 
 	window->canvas->draw();
 }
@@ -495,7 +496,7 @@ void SetFormatWindow::create_objects()
 		140, 
 		1, 
 		""));
-	add_subwindow(new InterlacemodePulldown(mwindow, 
+	add_subwindow(interlace_pulldown = new InterlacemodePulldown(mwindow, 
 		textbox,
 		&(thread->new_settings->session->interlace_mode),
 		(ArrayList<BC_ListBoxItem*>*)&mwindow->interlace_project_modes,

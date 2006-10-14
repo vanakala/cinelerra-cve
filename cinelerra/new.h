@@ -14,6 +14,7 @@
 class NewThread;
 class NewWindow;
 class NewPresets;
+class InterlacemodePulldown;
 
 class New : public BC_MenuItem
 {
@@ -73,6 +74,7 @@ public:
 	BC_TextBox *frame_rate;
 	BC_TextBox *aspect_w_text, *aspect_h_text;
 	BC_TextBox *output_w_text, *output_h_text;
+	InterlacemodePulldown *interlace_pulldown;
 	NewPresets *format_presets;
 };
 
@@ -332,6 +334,7 @@ public:
 				int y);
 	int handle_event();
 	char* interlacemode_to_text();
+	int update(int value);
 	MWindow *mwindow;
 	BC_TextBox *output_text;
 	int *output_value;
