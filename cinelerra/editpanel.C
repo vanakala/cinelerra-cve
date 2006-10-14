@@ -967,7 +967,7 @@ EditFitAutos::EditFitAutos(MWindow *mwindow, EditPanel *panel, int x, int y)
 {
 	this->mwindow = mwindow;
 	this->panel = panel;
-	set_tooltip(_("Fit autos to display ( Alt + f )"));
+	set_tooltip(_("Fit all autos to display ( Alt + f )"));
 }
 EditFitAutos::~EditFitAutos()
 {
@@ -976,19 +976,19 @@ int EditFitAutos::keypress_event()
 {
 	if(!ctrl_down() && alt_down() && get_keypress() == 'f') 
 	{
-		mwindow->fit_autos(0);
+		mwindow->fit_autos(1);
 		return 1;
 	}
 	if(ctrl_down() && alt_down() && get_keypress() == 'f') 
 	{
-		mwindow->fit_autos(1);
+		mwindow->fit_autos(0);
 		return 1;
 	}
 	return 0;
 }
 int EditFitAutos::handle_event()
 {
-	mwindow->fit_autos(0);
+	mwindow->fit_autos(1);
 	return 1;
 }
 

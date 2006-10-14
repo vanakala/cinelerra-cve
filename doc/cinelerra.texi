@@ -8906,8 +8906,8 @@ Ctrl Alt Dn      Shrink all curve amplitude
 Alt Up           Expand curve amplitude
 Alt Dn           Shrink curve amplitude
 f                Fit time displayed to selection
-Alt f            Fit current curve amplitude to highlighted section of curves
-Ctrl Alt f       Fit all curve amplitudes to highlighted section of curves
+Alt f            Make the range of all the automation types  fit the maximum and minimum range of the current highlighted selection
+Ctrl Alt f       Make the range of the currently selected automation type fit the maximum and minimum range of the current highlighted selection
 Alt Left         Move left one edit
 Alt Right        Move right one edit
 Page Up          Move up*
