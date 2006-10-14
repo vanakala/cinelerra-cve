@@ -10,7 +10,19 @@ BC_WindowEvents::BC_WindowEvents(BC_WindowBase *window)
 
 BC_WindowEvents::~BC_WindowEvents()
 {
+// First set done, then send dummy event through XSendEvent to unlock the loop in ::run()
 	done = 1;
+	XEvent event;
+	XClientMessageEvent *ptr = (XClientMessageEvent*)&event;
+	event.type = ClientMessage;
+	ptr->message_type = XInternAtom(window->display, "DUMMY_XATOM", False);
+	ptr->format = 32;
+	XSendEvent(window->display, 
+		window->win, 
+		0, 
+		0, 
+		&event);
+	window->flush();
 	Thread::join();
 }
 

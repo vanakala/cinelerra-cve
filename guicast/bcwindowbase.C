@@ -2677,7 +2677,6 @@ void BC_WindowBase::set_done(int return_value)
 	if(window_type != MAIN_WINDOW)
 		top_level->set_done(return_value);
 	else
-	if(event_thread)
 	{
 		XEvent *event = new XEvent;
 		XClientMessageEvent *ptr = (XClientMessageEvent*)event;
@@ -2691,15 +2690,10 @@ void BC_WindowBase::set_done(int return_value)
 // asynchronous with XNextEvent.
 // This causes BC_WindowEvents to forward a copy of the event to run_window where 
 // it is deleted.
-		event_thread->done = 1;
-		XSendEvent(display, 
-			win, 
-			0, 
-			0, 
-			event);
-		flush();
+
+// Deletion of event_thread is done at the end of BC_WindowBase::run_window() - by calling the destructor
 		put_event(event);
-	}
+	} 
 }
 
 int BC_WindowBase::get_w()
