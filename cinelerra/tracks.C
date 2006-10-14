@@ -129,7 +129,7 @@ void Tracks::get_automation_extents(float *min,
 			current->automation->get_extents(min,
 				max,
 				&coords_undefined,
-				current->to_units(start, 1),
+				current->to_units(start, 0),
 				current->to_units(end, 1),
 				autogrouptype);
 		}

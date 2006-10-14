@@ -527,7 +527,7 @@ int TrackCanvas::drag_stop()
 					printf("DRAG_ASSET error: Asset dropped, but both drag_clips and drag_assets total is zero\n");
 				}
 			
-				asset_length_units = mwindow->session->track_highlighted->to_units(asset_length_float, 0);
+				asset_length_units = mwindow->session->track_highlighted->to_units(asset_length_float, 1);
 				position = get_drop_position (&insertion, NULL, asset_length_units);
 				if (position == -1)
 				{
@@ -1140,10 +1140,10 @@ void TrackCanvas::draw_paste_destination()
 								else	
 									video_length = 1.0 / mwindow->edl->session->frame_rate ; 
 							}
-							asset_length = mwindow->session->track_highlighted->to_units(video_length / asset->frame_rate, 0);
+							asset_length = mwindow->session->track_highlighted->to_units(video_length / asset->frame_rate, 1);
 						}
 						else
-							asset_length = mwindow->session->track_highlighted->to_units(asset->audio_length / asset->sample_rate, 0);
+							asset_length = mwindow->session->track_highlighted->to_units(asset->audio_length / asset->sample_rate, 1);
 
 						position = mwindow->session->track_highlighted->from_units(get_drop_position(&insertion, NULL, asset_length));
 						if (position < 0) 
@@ -1161,7 +1161,7 @@ void TrackCanvas::draw_paste_destination()
 							mwindow->edl->session->sample_rate / 
 							mwindow->edl->local_session->zoom_sample);
 //printf("draw_paste_destination %d\n", x);
-						int64_t asset_length = mwindow->session->track_highlighted->to_units((double)clip->tracks->total_length(), 0);
+						int64_t asset_length = mwindow->session->track_highlighted->to_units((double)clip->tracks->total_length(), 1);
 
 						position = mwindow->session->track_highlighted->from_units(get_drop_position(&insertion, NULL, asset_length));
 						if (position < 0) 
@@ -1217,7 +1217,7 @@ void TrackCanvas::draw_paste_destination()
 							mwindow->edl->session->sample_rate /
 							mwindow->edl->local_session->zoom_sample);
 						int64_t asset_length = mwindow->session->track_highlighted->to_units((double)video_length / 
-							asset->frame_rate, 0);
+							asset->frame_rate, 1);
 
 						position = mwindow->session->track_highlighted->from_units(get_drop_position(&insertion, NULL, asset_length));
 						if (position < 0) 
@@ -1234,7 +1234,7 @@ void TrackCanvas::draw_paste_destination()
 						w = Units::to_int64(clip->tracks->total_length() *
 							mwindow->edl->session->sample_rate / 
 							mwindow->edl->local_session->zoom_sample);
-						int64_t asset_length = mwindow->session->track_highlighted->to_units((double)clip->tracks->total_length(), 0);
+						int64_t asset_length = mwindow->session->track_highlighted->to_units((double)clip->tracks->total_length(), 1);
 
 						position = mwindow->session->track_highlighted->from_units(get_drop_position(&insertion, NULL, asset_length));
 						if (position < 0) 

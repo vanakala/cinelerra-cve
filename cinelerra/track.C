@@ -456,7 +456,7 @@ Plugin* Track::insert_effect(char *title,
 			{
 				plugin = plugin_set->insert_plugin(title, 
 					to_units(start, 0), 
-					to_units(length, 0),
+					to_units(length, 1),
 					plugin_type, 
 					shared_location,
 					default_keyframe,
@@ -486,7 +486,7 @@ Plugin* Track::insert_effect(char *title,
 
 		plugin = plugin_set->insert_plugin(title, 
 			to_units(start, 0), 
-			to_units(length, 0),
+			to_units(length, 1),
 			plugin_type, 
 			shared_location,
 			default_keyframe,
@@ -577,7 +577,7 @@ void Track::shift_keyframes(double position, double length, int convert_units)
 	if(convert_units)
 	{
 		position = to_units(position, 0);
-		length = to_units(length, 0);
+		length = to_units(length, 1);
 	}
 
 	automation->paste_silence(Units::to_int64(position), 
@@ -590,7 +590,7 @@ void Track::shift_effects(double position, double length, int convert_units)
 	if(convert_units)
 	{
 		position = to_units(position, 0);
-		length = to_units(length, 0);
+		length = to_units(length, 1);
 	}
 
 	for(int i = 0; i < plugin_set.total; i++)
@@ -886,7 +886,7 @@ int Track::copy_automation(double selectionstart,
 	int autos_only)
 {
 	int64_t start = to_units(selectionstart, 0);
-	int64_t end = to_units(selectionend, 0);
+	int64_t end = to_units(selectionend, 1);
 
 	file->tag.set_title("TRACK");
 // Video or audio
@@ -945,7 +945,7 @@ int Track::paste_automation(double selectionstart,
 
 	total_length *= scale;
 	start = to_units(selectionstart, 0);
-	length = to_units(total_length, 0);
+	length = to_units(total_length, 1);
 	result = 0;
 //printf("Track::paste_automation 1\n");
 
@@ -992,7 +992,7 @@ void Track::clear_automation(double selectionstart,
 	int default_only)
 {
 	int64_t start = to_units(selectionstart, 0);
-	int64_t end = to_units(selectionend, 0);
+	int64_t end = to_units(selectionend, 1);
 
 	automation->clear(start, end, edl->session->auto_conf, 0);
 
@@ -1010,7 +1010,7 @@ void Track::straighten_automation(double selectionstart,
 	double selectionend)
 {
 	int64_t start = to_units(selectionstart, 0);
-	int64_t end = to_units(selectionend, 0);
+	int64_t end = to_units(selectionend, 1);
 
 	automation->straighten(start, end, edl->session->auto_conf);
 }
@@ -1091,7 +1091,7 @@ int Track::copy_assets(double start,
 	int i, result = 0;
 
 	start = to_units(start, 0);
-	end = to_units(end, 0);
+	end = to_units(end, 1);
 
 	Edit *current = edits->editof((int64_t)start, PLAY_FORWARD, 0);
 
@@ -1133,7 +1133,7 @@ int Track::clear(double start,
 	if(convert_units)
 	{
 		start = to_units(start, 0);
-		end = to_units(end, 0);
+		end = to_units(end, 1);
 	}
 
 	if(edit_edits)
