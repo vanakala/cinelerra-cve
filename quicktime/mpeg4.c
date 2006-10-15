@@ -698,7 +698,8 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 			context->flags |= CODEC_FLAG_H263P_UMV;
 			context->flags |= CODEC_FLAG_AC_PRED;
 
-			
+// All the forbidden settings can be extracted from libavcodec/mpegvideo.c of ffmpeg...
+ 			
 // Copyed from ffmpeg's mpegvideo.c... set 4MV only where it is supported
 			if(codec->ffmpeg_id == CODEC_ID_MPEG4 ||
 			   codec->ffmpeg_id == CODEC_ID_H263 ||
@@ -708,7 +709,12 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 // Not compatible with Win
 //			context->flags |= CODEC_FLAG_QPEL;
 
-			if(file->cpus > 1)
+			if(file->cpus > 1 && 
+				(codec->ffmpeg_id == CODEC_ID_MPEG4 ||
+			         codec->ffmpeg_id == CODEC_ID_MPEG1VIDEO ||
+			         codec->ffmpeg_id == CODEC_ID_MPEG2VIDEO ||
+			         codec->ffmpeg_id == CODEC_ID_H263P || 
+			         codec->ffmpeg_id == CODEC_FLAG_H263P_SLICE_STRUCT))
 			{
 				avcodec_thread_init(context, file->cpus);
 				context->thread_count = file->cpus;
