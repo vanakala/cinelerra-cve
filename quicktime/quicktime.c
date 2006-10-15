@@ -543,6 +543,8 @@ int quicktime_track_channels(quicktime_t *file, int track)
 	return 0;
 }
 
+/* Input is absolute channel number in stream, output is quicktime_track in which the channel resides and quicktime_channel relative to the track */
+
 int quicktime_channel_location(quicktime_t *file, int *quicktime_track, int *quicktime_channel, int channel)
 {
 	int current_channel = 0, current_track = 0;

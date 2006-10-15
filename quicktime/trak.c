@@ -414,13 +414,16 @@ int quicktime_chunk_bytes(quicktime_t *file,
 }
 
 int64_t quicktime_sample_range_size(quicktime_trak_t *trak, 
-	long chunk_sample, 
-	long sample)
+	int64_t chunk_sample, 
+	int64_t sample)
 {
 	int64_t i, total;
-	/* LQT: For audio, quicktime_sample_rage_size makes no sense */
+	/* For PCM audio quicktime_sample_rage_size MAKES SENSE */
 	if(trak->mdia.minf.is_audio)
-		return 0;
+	{
+// sample_size is in bits, so we divide by 8 at the end
+		return (sample - chunk_sample) *trak->mdia.minf.stbl.stsd.table[0].sample_size*trak->mdia.minf.stbl.stsd.table[0].channels/8;
+	}
 	else
 	{
 		/* All frames have the same size */
@@ -443,7 +446,7 @@ int64_t quicktime_sample_range_size(quicktime_trak_t *trak,
 
 int64_t quicktime_sample_to_offset(quicktime_t *file, 
 	quicktime_trak_t *trak, 
-	long sample)
+	int64_t sample)
 {
 	int64_t chunk, chunk_sample, chunk_offset1, chunk_offset2;
 

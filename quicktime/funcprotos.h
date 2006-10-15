@@ -305,7 +305,7 @@ int quicktime_chunk_bytes(quicktime_t *file,
 
 
 /* total bytes between the two samples */
-int64_t quicktime_sample_range_size(quicktime_trak_t *trak, long chunk_sample, long sample);
+int64_t quicktime_sample_range_size(quicktime_trak_t *trak, int64_t chunk_sample, int64_t sample);
 
 
 int quicktime_chunk_of_sample(int64_t *chunk_sample, 
@@ -316,7 +316,7 @@ int quicktime_chunk_of_sample(int64_t *chunk_sample,
 
 
 /* converting between mdat offsets to samples */
-int64_t quicktime_sample_to_offset(quicktime_t *file, quicktime_trak_t *trak, long sample);
+int64_t quicktime_sample_to_offset(quicktime_t *file, quicktime_trak_t *trak, int64_t sample);
 long quicktime_offset_to_sample(quicktime_trak_t *trak, int64_t offset);
 quicktime_trak_t* quicktime_add_trak(quicktime_t *file);
 
