@@ -62,10 +62,10 @@ void quicktime_init_hdrl(quicktime_t *file, quicktime_hdrl_t *hdrl)
 // avih
 	quicktime_atom_write_header(file, &avih_atom, "avih");
 
+// Acutally use the proper data and formula for calculating period of one frame, previous was wrong
 	if(file->total_vtracks)
    		quicktime_write_int32_le(file, 
-			(uint32_t)(1000000 / 
-			quicktime_frame_rate(file, 0)));
+			(uint32_t)((double)1000000 * quicktime_frame_rate_d(file, 0) / quicktime_frame_rate_n(file,0)));
     else
 		quicktime_write_int32_le(file, 0);
 
@@ -173,18 +173,42 @@ void quicktime_finalize_hdrl(quicktime_t *file, quicktime_hdrl_t *hdrl)
 			quicktime_set_position(file, strl->length_offset);
 			length = quicktime_track_samples(file, trak);
 			quicktime_write_int32_le(file, length);
+			
+// dwScale and dwRate as per MSDN - http://msdn.microsoft.com/library/default.asp?url=/library/en-us/wcemultimedia5/html/wce50conAVIStreamHeaders.asp			
 			quicktime_set_position(file, strl->samples_per_chunk_offset);
-
+			int wav_id = ((quicktime_codec_t*)(file->atracks[0].codec))->wav_id;
 			samples_per_chunk = quicktime_avg_chunk_samples(file, trak);
-			quicktime_write_int32_le(file, 
-				samples_per_chunk);
-			quicktime_write_int32_le(file, 
-				samples_per_chunk *
-				trak->mdia.minf.stbl.stsd.table[0].sample_rate);
-
+			if (wav_id = 0x01) 
+			{ // for uncompressed - as per avi_strl.c, which has accurate comment that we should tread compressed and uncompressed differently
+			  // we could also multiply both by samples_per_chunk... but then we would be screwed because of overflow!
+				quicktime_write_int32_le(file, 
+					1);
+				quicktime_write_int32_le(file, 
+					trak->mdia.minf.stbl.stsd.table[0].sample_rate);
+			} else
+			{
+				quicktime_write_int32_le(file, 
+					samples_per_chunk);
+				quicktime_write_int32_le(file, 
+					trak->mdia.minf.stbl.stsd.table[0].sample_rate);
+			}
 			quicktime_set_position(file, strl->sample_size_offset);
-			quicktime_write_int32_le(file, 
-				trak->mdia.minf.stbl.stsd.table[0].sample_size);
+
+// dwSampleSize as per MSDN
+			if (wav_id == 0x1)
+			{
+// as per http://www.virtualdub.org/blog/pivot/entry.php?id=27, many programs ignore this value
+// sample_size in quicktime is in bytes... so we must divide by 8
+				quicktime_write_int32_le(file, 
+					trak->mdia.minf.stbl.stsd.table[0].channels * trak->mdia.minf.stbl.stsd.table[0].sample_size / 8);
+			}
+			else
+			{
+// This can be codec specific...
+// FIXME: This has to be zero for _all_ VBR encodings, and other values are used for specific encodings
+				quicktime_write_int32_le(file,
+					trak->mdia.minf.stbl.stsd.table[0].sample_size);
+			}
 		}
 	}
 
