@@ -4990,9 +4990,10 @@ int TrackCanvas::button_press_event()
 
 		int update_overlay = 0, update_cursor = 0, rerender = 0;
 
-		if (get_buttonpress() == 1 && get_double_click())
+		if (get_buttonpress() == 1 && get_double_click() && shift_down())
 		{
 			rerender = start_selection(position, 1);
+			update_cursor = 1;
 		} else
 		if(get_buttonpress() == 4)
 		{
