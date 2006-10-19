@@ -130,9 +130,22 @@ void TrackCanvas::resize_event()
 
 int TrackCanvas::keypress_event()
 {
+/* we also recieve shift press and shift release */
 	int result = 0;
+	if (get_keypress() == 65505) // Shift - both press and release
+ 	{
+		int old_cursor = get_cursor();
+		int new_cursor = old_cursor;
+		if ((shift_down()) && old_cursor == ARROW_CURSOR)
+			new_cursor = IBEAM_CURSOR;
+		else
+		if (old_cursor == IBEAM_CURSOR)
+			new_cursor = ARROW_CURSOR;
 
-
+		if (new_cursor != old_cursor)
+			set_cursor(new_cursor);
+		result = 1;
+	}
 	return result;
 }
 
@@ -780,11 +793,10 @@ void TrackCanvas::draw(int mode, int hide_cursor)
 
 void TrackCanvas::update_cursor()
 {
-	switch(mwindow->edl->session->editing_mode)
-	{
-		case EDITING_ARROW: set_cursor(ARROW_CURSOR); break;
-		case EDITING_IBEAM: set_cursor(IBEAM_CURSOR); break;
-	}
+	if (shift_down())
+		set_cursor(IBEAM_CURSOR);
+	else
+		set_cursor(ARROW_CURSOR);
 }
 
 
@@ -3962,11 +3974,10 @@ int TrackCanvas::cursor_motion_event()
 	result = 0;
 
 // Default cursor
-	switch(mwindow->edl->session->editing_mode)
-	{
-		case EDITING_ARROW: new_cursor = ARROW_CURSOR; break;
-		case EDITING_IBEAM: new_cursor = IBEAM_CURSOR; break;
-	}
+	if (shift_down())
+		new_cursor = IBEAM_CURSOR;
+	else
+		new_cursor = ARROW_CURSOR;
 
 	switch(mwindow->session->current_operation)
 	{
@@ -4697,7 +4708,7 @@ int TrackCanvas::do_edits(int cursor_x,
 				else
 				if(drag_start && track->record)
 				{
-					if(mwindow->edl->session->editing_mode == EDITING_ARROW)
+					if(!shift_down())
 					{
 // Need to create drag window
 						mwindow->session->current_operation = DRAG_EDIT;
@@ -4831,7 +4842,7 @@ int TrackCanvas::do_plugins(int cursor_x,
 // Move plugin
 		if(drag_start && plugin->track->record)
 		{
-			if(mwindow->edl->session->editing_mode == EDITING_ARROW)
+			if(!shift_down())
 			{
 				if(plugin->track->data_type == TRACK_AUDIO)
 					mwindow->session->current_operation = DRAG_AEFFECT_COPY;
@@ -4970,7 +4981,6 @@ int TrackCanvas::button_press_event()
 		{
 			activate();
 		}
-
 		if(get_buttonpress() == 1)
 		{
 			gui->unlock_window();
@@ -4980,6 +4990,10 @@ int TrackCanvas::button_press_event()
 
 		int update_overlay = 0, update_cursor = 0, rerender = 0;
 
+		if (get_buttonpress() == 1 && get_double_click())
+		{
+			rerender = start_selection(position, 1);
+		} else
 		if(get_buttonpress() == 4)
 		{
 			if(shift_down())
@@ -4998,11 +5012,9 @@ int TrackCanvas::button_press_event()
 			result = 1;
 		}
 		else
-		switch(mwindow->edl->session->editing_mode)
+		if (!shift_down())
 		{
 // Test handles and resource boundaries and highlight a track
-			case EDITING_ARROW:
-			{
 				Edit *edit;
 				int handle;
 				if(mwindow->edl->session->auto_conf->transitions && 
@@ -5012,7 +5024,6 @@ int TrackCanvas::button_press_event()
 						new_cursor, 
 						update_cursor))
 				{
-					break;
 				}
 				else
 				if(do_keyframes(cursor_x, 
@@ -5023,7 +5034,6 @@ int TrackCanvas::button_press_event()
 					update_cursor,
 					rerender))
 				{
-					break;
 				}
 				else
 // Test edit boundaries
@@ -5033,7 +5043,6 @@ int TrackCanvas::button_press_event()
 					new_cursor, 
 					update_cursor))
 				{
-					break;
 				}
 				else
 // Test plugin boundaries
@@ -5043,34 +5052,27 @@ int TrackCanvas::button_press_event()
 					new_cursor, 
 					update_cursor))
 				{
-					break;
 				}
 				else
 				if(do_edits(cursor_x, cursor_y, 1, 0, update_cursor, rerender, new_cursor, update_cursor))
 				{
-					break;
 				}
 				else
 				if(do_plugins(cursor_x, cursor_y, 0, 1, update_cursor, rerender))
 				{
-					break;
 				}
 				else
 				if(test_resources(cursor_x, cursor_y))
 				{
-					break;
 				}
 				else
 				if(do_tracks(cursor_x, cursor_y, 1))
 				{
-					break;
 				}
-				break;
-			}
+		} else
+		{
 
 // Test handles only and select a region
-			case EDITING_IBEAM:
-			{
 //printf("TrackCanvas::button_press_event %d\n", position);
 
 				if(mwindow->edl->session->auto_conf->transitions && 
@@ -5080,7 +5082,6 @@ int TrackCanvas::button_press_event()
 						new_cursor, 
 						update_cursor))
 				{
-					break;
 				}
 				else
 				if(do_keyframes(cursor_x, 
@@ -5092,7 +5093,6 @@ int TrackCanvas::button_press_event()
 					rerender))
 				{
 					update_overlay = 1;
-					break;
 				}
 				else
 // Test edit boundaries
@@ -5102,7 +5102,6 @@ int TrackCanvas::button_press_event()
 					new_cursor, 
 					update_cursor))
 				{
-					break;
 				}
 				else
 // Test plugin boundaries
@@ -5112,7 +5111,6 @@ int TrackCanvas::button_press_event()
 					new_cursor, 
 					update_cursor))
 				{
-					break;
 				}
 				else
 				if(do_edits(cursor_x, 
@@ -5124,7 +5122,6 @@ int TrackCanvas::button_press_event()
 					new_cursor, 
 					update_cursor))
 				{
-					break;
 				}
 				else
 				if(do_plugins(cursor_x, 
@@ -5134,12 +5131,10 @@ int TrackCanvas::button_press_event()
 					update_cursor, 
 					rerender))
 				{
-					break;
 				}
 				else
 				if(do_tracks(cursor_x, cursor_y, 1))
 				{
-					break;
 				}
 // Highlight selection
 				else
@@ -5151,8 +5146,6 @@ SET_TRACE
 					update_cursor = 1;
 				}
 
-				break;
-			}
 		}
 
 
@@ -5193,14 +5186,14 @@ SET_TRACE
 	return result;
 }
 
-int TrackCanvas::start_selection(double position)
+int TrackCanvas::start_selection(double position, int set_position)
 {
 	int rerender = 0;
 	position = mwindow->edl->align_to_frame(position, 0);
 
 
 // Extend a border
-	if(shift_down())
+	if(!set_position)
 	{
 		double midpoint = (mwindow->edl->local_session->get_selectionstart(1) + 
 			mwindow->edl->local_session->get_selectionend(1)) / 2;

@@ -124,8 +124,6 @@ MainEditing::MainEditing(MWindow *mwindow, MButtons *mbuttons, int x, int y)
 		mbuttons, 
 		x, 
 		y,
-		mwindow->edl->session->editing_mode,
-		1,
 		1,
 		0, 
 		0, 

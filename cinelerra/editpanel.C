@@ -31,8 +31,6 @@ EditPanel::EditPanel(MWindow *mwindow,
 	BC_WindowBase *subwindow,
 	int x, 
 	int y, 
-	int editing_mode, 
-	int use_editing_mode,
 	int use_keyframe, 
 	int use_splice,   // Extra buttons
 	int use_overwrite,
@@ -48,8 +46,6 @@ EditPanel::EditPanel(MWindow *mwindow,
 	int is_mwindow,
 	int use_cut)
 {
-	this->editing_mode = editing_mode;
-	this->use_editing_mode = use_editing_mode;
 	this->use_keyframe = use_keyframe;
 	this->use_splice = use_splice;
 	this->use_overwrite = use_overwrite;
@@ -70,8 +66,6 @@ EditPanel::EditPanel(MWindow *mwindow,
 	this->x = x;
 	this->y = y;
 	this->meter_panel = 0;
-	arrow = 0;
-	ibeam = 0;
 	keyframe = 0;
 	fit = 0;
 	fit_autos = 0;
@@ -89,21 +83,12 @@ void EditPanel::set_meters(MeterPanel *meter_panel)
 
 void EditPanel::update()
 {
-	int new_editing_mode = mwindow->edl->session->editing_mode;
-	if(arrow) arrow->update(new_editing_mode == EDITING_ARROW);
-	if(ibeam) ibeam->update(new_editing_mode == EDITING_IBEAM);
 	if(keyframe) keyframe->update(mwindow->edl->session->auto_keyframes);
 	subwindow->flush();
 }
 
 void EditPanel::delete_buttons()
 {
-	if(use_editing_mode)
-	{
-		if(arrow) delete arrow;
-		if(ibeam) delete ibeam;
-	}
-	
 	if(use_keyframe)
 		delete keyframe;
 
@@ -144,19 +129,11 @@ void EditPanel::create_buttons()
 
 
 SET_TRACE
-	if(use_editing_mode)
-	{
-		subwindow->add_subwindow(arrow = new ArrowButton(mwindow, this, x1, y1));
-		x1 += arrow->get_w();
-		subwindow->add_subwindow(ibeam = new IBeamButton(mwindow, this, x1, y1));
-		x1 += ibeam->get_w();
-	}
-
 	if(use_keyframe)
 	{
 		subwindow->add_subwindow(keyframe = new KeyFrameButton(mwindow, x1, y1));
 		x1 += keyframe->get_w();
-		x1 += mwindow->theme->toggle_margin;
+//		x1 += mwindow->theme->toggle_margin;
 	}
 
 // Mandatory
@@ -320,19 +297,11 @@ void EditPanel::reposition_buttons(int x, int y)
 	this->y = y;
 	x1 = x, y1 = y;
 
-	if(use_editing_mode)
-	{
-		arrow->reposition_window(x1, y1);
-		x1 += arrow->get_w();
-		ibeam->reposition_window(x1, y1);
-		x1 += ibeam->get_w();
-	}
-
 	if(use_keyframe)
 	{
 		keyframe->reposition_window(x1, y1);
 		x1 += keyframe->get_w();
-		x1 += mwindow->theme->toggle_margin;
+//		x1 += mwindow->theme->toggle_margin;
 	}
 
 	inpoint->reposition_window(x1, y1);
@@ -1003,55 +972,6 @@ int EditFitAutos::handle_event()
 
 
 
-
-ArrowButton::ArrowButton(MWindow *mwindow, EditPanel *panel, int x, int y)
- : BC_Toggle(x, 
- 	y, 
-	mwindow->theme->get_image_set("arrow"),
-	mwindow->edl->session->editing_mode == EDITING_ARROW,
-	"",
-	0,
-	0,
-	0)
-{
-	this->mwindow = mwindow;
-	this->panel = panel;
-	set_tooltip(_("Drag and drop editing mode"));
-}
-
-int ArrowButton::handle_event()
-{
-	update(1);
-	panel->ibeam->update(0);
-	mwindow->set_editing_mode(EDITING_ARROW);
-// Nothing after this
-	return 1;
-}
-
-
-IBeamButton::IBeamButton(MWindow *mwindow, EditPanel *panel, int x, int y)
- : BC_Toggle(x, 
- 	y, 
-	mwindow->theme->get_image_set("ibeam"),
-	mwindow->edl->session->editing_mode == EDITING_IBEAM,
-	"",
-	0,
-	0,
-	0)
-{
-	this->mwindow = mwindow;
-	this->panel = panel;
-	set_tooltip(_("Cut and paste editing mode"));
-}
-
-int IBeamButton::handle_event()
-{
-	update(1);
-	panel->arrow->update(0);
-	mwindow->set_editing_mode(EDITING_IBEAM);
-// Nothing after this
-	return 1;
-}
 
 KeyFrameButton::KeyFrameButton(MWindow *mwindow, int x, int y)
  : BC_Toggle(x, 

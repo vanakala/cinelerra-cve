@@ -363,7 +363,7 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 
 		attr.event_mask = DEFAULT_EVENT_MASKS |
 			StructureNotifyMask | 
-			KeyPressMask;
+			KeyPressMask | KeyReleaseMask;
 
 		attr.background_pixel = get_color(this->bg_color);
 		attr.colormap = cmap;
@@ -459,7 +459,7 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 			CWCursor;
 
 		attr.event_mask = DEFAULT_EVENT_MASKS |
-			KeyPressMask;
+			KeyPressMask | KeyReleaseMask;
 
 		if(this->bg_color == -1)
 			this->bg_color = resources.get_bg_color();
@@ -854,6 +854,24 @@ int BC_WindowBase::dispatch_event()
 
 			translation_count++;
 			break;
+		case KeyRelease:
+			get_key_masks(event);
+  			keys_return[0] = 0;
+  			XLookupString((XKeyEvent*)event, keys_return, 1, &keysym, 0);
+
+// printf("BC_WindowBase::dispatch_event 2 %llx\n", 
+// event->xkey.state);
+// block out control keys
+
+			// We want to get shift notifications
+			if (keysym == 65505) {
+				shift_mask = 0;
+				key_pressed = keysym;
+			} else
+				break;
+			result = dispatch_keypress_event();
+			
+			break;
 
 		case KeyPress:
 			get_key_masks(event);
@@ -863,12 +881,20 @@ int BC_WindowBase::dispatch_event()
 // printf("BC_WindowBase::dispatch_event 2 %llx\n", 
 // event->xkey.state);
 // block out control keys
+
+			// We want to get shift notifications
+			key_pressed = 0;
+			if (keysym == 65505) {
+				shift_mask = 1;
+				key_pressed = keysym;
+			}
+			else
 			if(keysym > 0xffe0 && keysym < 0xffff) break;
 
 
 			if(test_keypress) printf("BC_WindowBase::dispatch_event %x\n", keysym);
 
-
+			if (!key_pressed)
   			switch(keysym)
 			{
 // block out extra keys

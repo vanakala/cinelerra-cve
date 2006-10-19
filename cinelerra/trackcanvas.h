@@ -283,7 +283,7 @@ public:
 	int repeat_event(int64_t duration);
 	void start_dragscroll();
 	void stop_dragscroll();
-	int start_selection(double position);
+	int start_selection(double position, int set_position = 0);
 	int drag_motion();
 	int drag_stop();
 	int64_t get_drop_position (int *is_insertion, Edit *moved_edit, int64_t moved_edit_length);
