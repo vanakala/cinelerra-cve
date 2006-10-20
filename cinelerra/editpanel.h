@@ -294,6 +294,24 @@ public:
 };
 
 
+class ArrowButton : public BC_Toggle
+{
+public:
+	ArrowButton(MWindow *mwindow, EditPanel *panel, int x, int y);
+	int handle_event();
+	MWindow *mwindow;
+	EditPanel *panel;
+};
+
+class IBeamButton : public BC_Toggle
+{
+public:
+	IBeamButton(MWindow *mwindow, EditPanel *panel, int x, int y);
+	int handle_event();
+	MWindow *mwindow;
+	EditPanel *panel;
+};
+
 class KeyFrameButton : public BC_Toggle
 {
 public:
@@ -310,6 +328,8 @@ public:
 		BC_WindowBase *subwindow,
 		int x, 
 		int y, 
+		int editing_mode,   // From edl.inc
+		int use_editing_mode,
 		int use_keyframe, 
 		int use_splice,   // Extra buttons
 		int use_overwrite,
@@ -349,7 +369,9 @@ public:
 	BC_WindowBase *subwindow;
 	MeterPanel *meter_panel;
 
+	int use_editing_mode;
 	int use_keyframe;
+	int editing_mode;
 	int use_splice;
 	int use_overwrite;
 	int use_lift;
@@ -386,6 +408,8 @@ public:
 	EditUndo *undo;
 	EditRedo *redo;
 	MeterShow *meters;
+	ArrowButton *arrow;
+	IBeamButton *ibeam;
 	KeyFrameButton *keyframe;
 };
 

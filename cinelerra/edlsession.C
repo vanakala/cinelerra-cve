@@ -181,6 +181,7 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	edit_handle_mode[0] = defaults->get("EDIT_HANDLE_MODE0", MOVE_ALL_EDITS);
 	edit_handle_mode[1] = defaults->get("EDIT_HANDLE_MODE1", MOVE_ONE_EDIT);
 	edit_handle_mode[2] = defaults->get("EDIT_HANDLE_MODE2", MOVE_NO_EDITS);
+	editing_mode = defaults->get("EDITING_MODE", EDITING_IBEAM);
 	enable_duplex = defaults->get("ENABLE_DUPLEX", 1);
 	folderlist_format = defaults->get("FOLDERLIST_FORMAT", FOLDERS_ICONS);
 	frame_rate = defaults->get("FRAMERATE", (double)30000.0/1001);
@@ -312,6 +313,7 @@ int EDLSession::save_defaults(BC_Hash *defaults)
     defaults->update("EDIT_HANDLE_MODE0", edit_handle_mode[0]);
     defaults->update("EDIT_HANDLE_MODE1", edit_handle_mode[1]);
     defaults->update("EDIT_HANDLE_MODE2", edit_handle_mode[2]);
+	defaults->update("EDITING_MODE", editing_mode);
 	defaults->update("ENABLE_DUPLEX", enable_duplex);
     defaults->update("FOLDERLIST_FORMAT", folderlist_format);
 	defaults->update("FRAMERATE", frame_rate);
@@ -516,6 +518,7 @@ int EDLSession::load_xml(FileXML *file,
 		file->tag.get_property("DEFAULT_ATRANSITION", default_atransition);
 		file->tag.get_property("DEFAULT_VTRANSITION", default_vtransition);
 		default_transition_length = file->tag.get_property("DEFAULT_TRANSITION_LENGTH", default_transition_length);
+		editing_mode = file->tag.get_property("EDITING_MODE", editing_mode);
 		folderlist_format = file->tag.get_property("FOLDERLIST_FORMAT", folderlist_format);
 		highlighted_track = file->tag.get_property("HIGHLIGHTED_TRACK", 0);
 		labels_follow_edits = file->tag.get_property("LABELS_FOLLOW_EDITS", labels_follow_edits);
@@ -579,6 +582,7 @@ int EDLSession::save_xml(FileXML *file)
 	file->tag.set_property("DEFAULT_ATRANSITION", default_atransition);
 	file->tag.set_property("DEFAULT_VTRANSITION", default_vtransition);
 	file->tag.set_property("DEFAULT_TRANSITION_LENGTH", default_transition_length);
+	file->tag.set_property("EDITING_MODE", editing_mode);
 	file->tag.set_property("FOLDERLIST_FORMAT", folderlist_format);
 	file->tag.set_property("HIGHLIGHTED_TRACK", highlighted_track);
 	file->tag.set_property("LABELS_FOLLOW_EDITS", labels_follow_edits);
@@ -716,6 +720,7 @@ int EDLSession::copy(EDLSession *session)
 	edit_handle_mode[0] = session->edit_handle_mode[0];
 	edit_handle_mode[1] = session->edit_handle_mode[1];
 	edit_handle_mode[2] = session->edit_handle_mode[2];
+	editing_mode = session->editing_mode;
 	enable_duplex = session->enable_duplex;
 	folderlist_format = session->folderlist_format;
 	frame_rate = session->frame_rate;

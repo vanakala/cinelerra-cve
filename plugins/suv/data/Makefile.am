@@ -23,6 +23,12 @@ PNGS = \
 	apply_dn.png \
 	apply_hi.png \
 	apply_up.png \
+	arrow.png \
+	arrow_checked.png \
+	arrow_checkedhi.png \
+	arrow_dn.png \
+	arrow_hi.png \
+	arrow_up.png \
 	asset_append_dn.png \
 	asset_append_hi.png \
 	asset_append_up.png \
@@ -233,6 +239,12 @@ PNGS = \
 	hslider_fg_dn.png \
 	hslider_fg_hi.png \
 	hslider_fg_up.png \
+	ibeam.png \
+	ibeam_checked.png \
+	ibeam_checkedhi.png \
+	ibeam_dn.png \
+	ibeam_hi.png \
+	ibeam_up.png \
 	icons.png \
 	in_checked.png \
 	in_checkedhi.png \

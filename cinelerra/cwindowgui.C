@@ -612,6 +612,8 @@ CWindowEditing::CWindowEditing(MWindow *mwindow, CWindow *cwindow)
 		cwindow->gui, 
 		mwindow->theme->cedit_x, 
 		mwindow->theme->cedit_y,
+		mwindow->edl->session->editing_mode, 
+		0,
 		1,
 		0, 
 		0,

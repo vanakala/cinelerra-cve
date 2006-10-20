@@ -451,6 +451,8 @@ VWindowEditing::VWindowEditing(MWindow *mwindow, VWindow *vwindow)
 		vwindow->gui, 
 		mwindow->theme->vedit_x, 
 		mwindow->theme->vedit_y,
+		EDITING_ARROW, 
+		0,
 		0,
 		1, 
 		1,

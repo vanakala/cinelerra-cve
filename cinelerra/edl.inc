@@ -16,6 +16,12 @@ class EDL;
 #define LOAD_SESSION	0x00000100
 
 
+#define EDITING_MODES 2
+
+// Editing modes
+#define EDITING_ARROW 0
+#define EDITING_IBEAM 1
+
 
 
 #define EDIT_HANDLE_MODES 3

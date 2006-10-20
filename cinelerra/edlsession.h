@@ -100,6 +100,8 @@ public:
 	double default_transition_length;
 // Edit mode to use for each mouse button
 	int edit_handle_mode[3];           
+// Editing mode
+	int editing_mode;
 	EDL *edl;
 	int enable_duplex;
 // AWindow format

@@ -351,6 +351,8 @@ public:
 	void remove_assets_from_disk();
 	void resize_track(Track *track, int w, int h);
 	void set_auto_keyframes(int value);
+// Update the editing mode
+	int set_editing_mode(int new_editing_mode);
 	void set_inpoint(int is_mwindow);
 	void set_outpoint(int is_mwindow);
 	void splice(EDL *source);
