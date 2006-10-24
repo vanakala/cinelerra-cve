@@ -487,26 +487,30 @@ int AssetEditWindow::create_objects()
 			asset->sample_rate,
 			asset->frame_rate);
 		
-		tc[1] = '\0';
-		tc[4] = '\0';
-		tc[7] = '\0';
+		char *tc_hours = tc;
+		char *tc_minutes = strchr(tc, ':') + 1;
+		*(tc_minutes - 1) = 0;
+		char *tc_seconds = strchr(tc_minutes, ':') + 1;
+		*(tc_seconds - 1) = 0;
+		char *tc_rest = strchr(tc_seconds, ':') + 1;
+		*(tc_rest - 1) = 0;
 		
-		add_subwindow(new AssetEditTCStartTextBox(this, atoi(tc), x, y,
+		add_subwindow(new AssetEditTCStartTextBox(this, atoi(tc_hours), x, y,
 			(int) (asset->frame_rate * 60 * 60)));
 		x += 30;
 		add_subwindow(new BC_Title(x, y, ":"));
 		x += 10;
-		add_subwindow(new AssetEditTCStartTextBox(this, atoi(tc + 2), x, y,
+		add_subwindow(new AssetEditTCStartTextBox(this, atoi(tc_minutes), x, y,
 			(int) (asset->frame_rate * 60)));
 		x += 30;
 		add_subwindow(new BC_Title(x, y, ":"));
 		x += 10;
-		add_subwindow(new AssetEditTCStartTextBox(this, atoi(tc + 5), x, y,
+		add_subwindow(new AssetEditTCStartTextBox(this, atoi(tc_seconds), x, y,
 			(int) (asset->frame_rate)));
 		x += 30;
 		add_subwindow(new BC_Title(x, y, ":"));
 		x += 10;
-		add_subwindow(new AssetEditTCStartTextBox(this, atoi(tc + 8), x, y, 1));
+		add_subwindow(new AssetEditTCStartTextBox(this, atoi(tc_rest), x, y, 1));
 
 
 		y += 30;
