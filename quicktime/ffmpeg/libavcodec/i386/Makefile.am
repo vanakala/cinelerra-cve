@@ -13,7 +13,7 @@ AM_CFLAGS = \
 	$(CPU_CFLAGS) \
 	-DHAVE_MMX $(SSE_FLAGS) \
 	-O3 -prefer-non-pic \
-	-D_GNU_SOURCE -DHAVE_AV_CONFIG_H -I$(srcdir)/../..
+	-D_GNU_SOURCE -DHAVE_AV_CONFIG_H -I$(srcdir)/../.. -I../..
 
 libavcodeci386_la_SOURCES = \
 	fdct_mmx.c cputest.c \

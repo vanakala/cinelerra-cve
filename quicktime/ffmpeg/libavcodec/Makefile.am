@@ -8,6 +8,11 @@ MM_FLAGS += -DHAVE_BUILTIN_VECTOR
 endif
 endif
 
+if TARGET_ARCH_POWERPC
+MM_DIR = ppc
+MM_LIB = ppc/libavcodecppc.la
+endif
+
 SUBDIRS = $(MM_DIR)
 
 noinst_LTLIBRARIES = libavcodec.la
@@ -17,7 +22,7 @@ AM_CFLAGS = \
 	$(CPU_CFLAGS) \
 	$(XIPH_CFLAGS) \
 	$(MM_FLAGS) \
-	-D_GNU_SOURCE -DHAVE_AV_CONFIG_H -I$(srcdir)/..
+	-D_GNU_SOURCE -DHAVE_AV_CONFIG_H -I$(srcdir)/.. -I..
 
 libavcodec_la_LIBADD = $(MM_LIB)
 #CFLAGS=$(OPTFLAGS) -DHAVE_AV_CONFIG_H -I.. -D_FILE_OFFSET_BITS=64 -D_LARGEFILE_SOURCE -D_GNU_SOURCE $(AMR_CFLAGS)

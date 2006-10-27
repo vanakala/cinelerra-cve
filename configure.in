@@ -288,6 +288,24 @@ AC_ARG_ENABLE(altivec,
 		[ enable_altivec=$enableval ],
 		[ enable_altivec=no ])
 
+############# FFMPEG  CONFIGURE (this generates avconfig.h)
+echo --- FFMPEG CONFIGURATION SECTION --------------
+ff_conf_args=" "
+
+# Where altivec is not present
+if test "x$enable_altivec" = "xno"; then
+	ff_conf_args="$ff_conf_args --disable-altivec"
+fi
+
+srcdir_c=$(readlink -f $srcdir)
+mkdir -p quicktime/ffmpeg/ > /dev/null 2>&1
+cd quicktime/ffmpeg/
+echo quicktime/ffmpeg/configure $ff_conf_args
+$srcdir_c/quicktime/ffmpeg/configure $ff_conf_args
+cd ../../
+echo --------------------------------------------------
+############# END FFMPEG CONFIGURE (this generates avconfig.h)
+
 enable_mmx=no
 enable_3dnow=no
 enable_powerpc=no
@@ -406,6 +424,7 @@ AC_OUTPUT(Makefile cinelerra-cvs-current.spec po/Makefile.in \
 	quicktime/ffmpeg/Makefile \
 	quicktime/ffmpeg/libavcodec/Makefile \
 	quicktime/ffmpeg/libavcodec/i386/Makefile \
+	quicktime/ffmpeg/libavcodec/ppc/Makefile \
 					mpeg2enc/Makefile toolame-02l/Makefile \
 					guicast/Makefile cinelerra/Makefile \
 	cinelerra/data/Makefile \

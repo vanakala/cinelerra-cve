@@ -3,6 +3,9 @@
 # ffmpeg configure script (c) 2000, 2001, 2002 Fabrice Bellard
 #
 
+# This configure script has been hacked for cinelerra's own purposes!
+# search for the 'cinelerra' strings to observe these hacks.
+
 if test x"$1" = x"-h" -o x"$1" = x"--help" ; then
 cat << EOF
 
@@ -1217,7 +1220,8 @@ else
 echo "License: GPL"
 fi
 
-echo "Creating config.mak and config.h"
+# CINELERRA - This script makes avconfig.h directly!
+echo "creating avconfig.mak and avconfig.h"
 
 date >> config.log
 echo "   $0 $FFMPEG_CONFIGURATION" >> config.log
@@ -1621,12 +1625,13 @@ if test "$source_path_used" = "yes" ; then
     FILES="Makefile libavformat/Makefile libavcodec/Makefile \
           libavcodec/libpostproc/Makefile tests/Makefile vhook/Makefile \
           doc/Makefile doc/texi2pod.pl"
-    for dir in $DIRS ; do
-            mkdir -p $dir
-    done
-    for f in $FILES ; do
-        ln -sf "$source_path/$f" $f
-    done
+# CINELERRA - commented to avoid creating directories...
+#    for dir in $DIRS ; do
+#            mkdir -p $dir
+#    done
+#    for f in $FILES ; do
+#        ln -sf "$source_path/$f" $f
+#    done
     echo "SRC_PATH=$source_path" >> config.mak
 else
     echo "SRC_PATH='$source_path'" >> config.mak
@@ -1677,11 +1682,12 @@ for codec in $CODEC_LIST ; do
     echo "CONFIG_`echo $codec | tr a-z A-Z`=yes" >> config.mak
 done
 
-diff $TMPH config.h >/dev/null 2>&1
+# CINELERRA - This script makes avconfig.h directly!
+diff $TMPH avconfig.h >/dev/null 2>&1
 if test $? -ne 0 ; then
-	mv -f $TMPH config.h
+	mv -f $TMPH avconfig.h
 else
-	echo "config.h is unchanged"
+	echo "avconfig.h is unchanged"
 fi
 
 rm -f $TMPO $TMPC $TMPE $TMPS $TMPH
@@ -1690,12 +1696,17 @@ rm -f $TMPO $TMPC $TMPE $TMPS $TMPH
 # build pkg-config files libavcodec.pc, libavformat.pc and libpostproc.pc 
 
 lavc_build=`grep '#define LIBAVCODEC_BUILD' "$source_path/libavcodec/avcodec.h" | sed 's/[^0-9]//g'`
-lavf_build=`grep '#define LIBAVFORMAT_BUILD' "$source_path/libavformat/avformat.h" | sed 's/[^0-9]//g'`
+# CINELERRA: libavformat directory not actually in the Cinelerra repo
+#lavf_build=`grep '#define LIBAVFORMAT_BUILD' "$source_path/libavformat/avformat.h" | sed 's/[^0-9]//g'`
 
 requires=
 test "$libogg" = "yes" && requires="$requires ogg >= 1.1"
 test "$vorbis" = "yes" && requires="$requires vorbis"
 test "$theora" = "yes" && requires="$requires theora"
+
+# CINELERRA: 
+# BEGIN COMMENTING OUT THE .pc FILES
+if test 1 -eq 0 ; then
 
 # libavcodec.pc
 cat <<EOF >libavcodec.pc
@@ -1790,3 +1801,6 @@ Conflicts:
 Libs: \${libdir}/${LIBPREF}postproc${LIBSUF}
 Cflags: -I\${includedir}
 EOF
+
+fi
+# END COMMENTING OUT THE .pc FILES
