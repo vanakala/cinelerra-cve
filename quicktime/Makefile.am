@@ -1,4 +1,4 @@
-SUBDIRS = encore50 ffmpeg
+SUBDIRS = encore50 @FFMPEG_FOLDER@
 
 
 lib_LTLIBRARIES = libquicktimehv.la
@@ -10,12 +10,12 @@ AM_CFLAGS = \
 	$(MJPEG_CFLAGS) \
 	$(LIBDV_CFLAGS) \
 	-DENCORE_INCLUDE=\"encore50/encore.h\" \
-	-I$(srcdir)/ffmpeg/libavcodec
+	@FFMPEG_CFLAGS@
 
 libquicktimehv_la_LDFLAGS = -version-info 1:0:0 -release 1.6.0 -Wl,--no-undefined 
 
 libquicktimehv_la_LIBADD = \
-	ffmpeg/libavcodec/libavcodec.la \
+	@FFMPEG_LIBS@ \
 	$(XIPH_LIBS) \
 	-lmp3lame \
 	$(FAAD_LIBS) \

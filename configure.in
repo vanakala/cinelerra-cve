@@ -9,6 +9,7 @@ AM_INIT_AUTOMAKE
 AC_CONFIG_HEADER(config.h)
 AM_GNU_GETTEXT([external])
 AM_GNU_GETTEXT_VERSION(0.12.1)
+AM_PROG_AS
 
 AC_LANG_CPLUSPLUS
 AC_LANG_C
@@ -288,27 +289,52 @@ AC_ARG_ENABLE(altivec,
 		[ enable_altivec=$enableval ],
 		[ enable_altivec=no ])
 
-############# FFMPEG  CONFIGURE (this generates avconfig.h)
+############ external ffmpeg
+AC_ARG_WITH([external-ffmpeg], AC_HELP_STRING([--with-external-ffmpeg], [use external ffmpeg library]))
+
+if test "x$with_external_ffmpeg" = "xyes"; then
+     PKG_CHECK_MODULES([FFMPEG], [libavcodec libpostproc])
+     FFMPEG_FOLDER=""
+     FFMPEG_EXTERNALTEXT="Internal ffmpeg"
+else
+     FFMPEG_FOLDER=ffmpeg
+     FFMPEG_CFLAGS="-I$(srcdir)/ffmpeg/libavcodec"
+     FFMPEG_LIBS="ffmpeg/libavcodec/libavcodec.la"
+     FFMPEG_EXTERNALTEXT="External ffmpeg"
+fi
+
+AC_SUBST(FFMPEG_FOLDER)
+AC_SUBST(FFMPEG_CFLAGS)
+AC_SUBST(FFMPEG_LIBS)
+AC_SUBST(FFMPEG_EXTERNALTEXT)
+############# END external ffmpeg
+
+############# run ffmpeg configure to generates avconfig.h
 echo --- FFMPEG CONFIGURATION SECTION --------------
-ff_conf_args=" "
+if test "x$with_external_ffmpeg" = "xyes"; then
+	echo Using external ffmpeg - no configuration needed
+else
+	ff_conf_args=" "
 
-if test "x$enable_mmx" = "xno"; then
-	ff_conf_args="$ff_conf_args --disable-mmx"
+	if test "x$enable_mmx" = "xno"; then
+		ff_conf_args="$ff_conf_args --disable-mmx"
+	fi
+
+	# Where altivec is not present
+	if test "x$enable_altivec" = "xno"; then
+		ff_conf_args="$ff_conf_args --disable-altivec"
+	fi
+
+
+	srcdir_c=$(readlink -f $srcdir)
+	mkdir -p quicktime/ffmpeg/ > /dev/null 2>&1
+	cd quicktime/ffmpeg/
+	echo quicktime/ffmpeg/configure $ff_conf_args
+	$srcdir_c/quicktime/ffmpeg/configure $ff_conf_args
+	cd ../../
 fi
-
-# Where altivec is not present
-if test "x$enable_altivec" = "xno"; then
-	ff_conf_args="$ff_conf_args --disable-altivec"
-fi
-
-srcdir_c=$(readlink -f $srcdir)
-mkdir -p quicktime/ffmpeg/ > /dev/null 2>&1
-cd quicktime/ffmpeg/
-echo quicktime/ffmpeg/configure $ff_conf_args
-$srcdir_c/quicktime/ffmpeg/configure $ff_conf_args
-cd ../../
 echo --------------------------------------------------
-############# END FFMPEG CONFIGURE (this generates avconfig.h)
+############# END run ffmpeg configure to generates avconfig.h
 
 enable_mmx=no
 enable_3dnow=no

@@ -57,11 +57,12 @@ int AboutPrefs::create_objects()
 
 	char versions[BCTEXTLEN];
 	sprintf(versions, 
-_("Quicktime version %d.%d.%d\n"
+_("Quicktime version %d.%d.%d (%s)\n"
 "Libmpeg3 version %d.%d.%d\n"),
 quicktime_major(),
 quicktime_minor(),
 quicktime_release(),
+FFMPEG_EXTERNALTEXT,
 mpeg3_major(),
 mpeg3_minor(),
 mpeg3_release());
