@@ -292,6 +292,10 @@ AC_ARG_ENABLE(altivec,
 echo --- FFMPEG CONFIGURATION SECTION --------------
 ff_conf_args=" "
 
+if test "x$enable_mmx" = "xno"; then
+	ff_conf_args="$ff_conf_args --disable-mmx"
+fi
+
 # Where altivec is not present
 if test "x$enable_altivec" = "xno"; then
 	ff_conf_args="$ff_conf_args --disable-altivec"
