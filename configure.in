@@ -245,7 +245,7 @@ AM_CONDITIONAL(BUILDINFO_SVN, test "x$BUILDINFO_repository" = "xsvn")
 AM_CONDITIONAL(BUILDINFO_RECOMPILE, test "x$BUILDINFO_recompile" = "xyes")
 
 echo removing cinelerra/versioninfo.h to force a re-build
-rm cinelerra/versioninfo.h > /dev/null 2>&1
+rm -f cinelerra/versioninfo.h > /dev/null 2>&1
 
 ############# END BUILDINFO display, (for displaying version / date)
 
@@ -298,7 +298,7 @@ if test "x$with_external_ffmpeg" = "xyes"; then
      FFMPEG_EXTERNALTEXT="External ffmpeg"
 else
      FFMPEG_FOLDER=ffmpeg
-     FFMPEG_CFLAGS="-I$(srcdir)/ffmpeg/libavcodec"
+     FFMPEG_CFLAGS="-I\$(srcdir)/ffmpeg/libavcodec"
      FFMPEG_LIBS="ffmpeg/libavcodec/libavcodec.la"
      FFMPEG_EXTERNALTEXT="Internal ffmpeg"
 fi
