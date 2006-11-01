@@ -3,6 +3,7 @@
 #include "assets.h"
 #include "bchash.h"
 #include "bcsignals.h"
+#include "clip.h"
 #include "edl.h"
 #include "file.h"
 #include "filesystem.h"
@@ -1198,6 +1199,21 @@ int Asset::update_path(char *new_path)
 {
 	strcpy(path, new_path);
 	return 0;
+}
+
+double Asset::total_length_framealigned(double fps) 
+{
+	if (video_data && audio_data) {
+		double aud = floor(( (double)audio_length / sample_rate) * fps) / fps;
+		double vid = floor(( (double)video_length / frame_rate) * fps) / fps;
+		return MIN(aud,vid);
+	}
+	
+	if (audio_data)
+		return (double)audio_length / sample_rate;
+	
+	if (video_data)
+		return (double)video_length / frame_rate;
 }
 
 void Asset::update_index(Asset *asset)

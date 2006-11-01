@@ -653,6 +653,22 @@ void Tracks::paste_audio_transition(PluginServer *server)
 	}
 }
 
+void Tracks::loaded_lengths_to_tracklengths(int includerecordtracks)
+{
+	Track *current_track;
+	
+	for(current_track = first; 
+	    current_track; 
+	    current_track = current_track->next)
+	{
+		if(current_track->record || includerecordtracks) 
+		{
+// Reset the loaded_length value. (the last edit should always be a silence going to infinityish)
+			current_track->edits->loaded_length = current_track->edits->last->startproject;
+		}
+	}
+}
+
 void Tracks::paste_automation(double selectionstart, 
 	FileXML *file,
 	int default_only)

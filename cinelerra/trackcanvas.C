@@ -1097,6 +1097,67 @@ void TrackCanvas::draw_paste_destination()
 			mwindow->session->drag_clips->total)
 			clip = mwindow->session->drag_clips->values[0];
 
+// 'Align cursor of frame' lengths calculations
+		double paste_audio_length, paste_video_length;
+		int64_t asset_length;
+		double desta_position = 0;
+		double destv_position = 0;
+
+		if (asset)
+		{
+			double asset_length_ac = asset->total_length_framealigned(mwindow->edl->session->frame_rate);
+			if (mwindow->edl->session->cursor_on_frames)
+			{
+				paste_video_length = paste_audio_length = asset_length_ac;
+			} 
+			else 
+			{
+				paste_audio_length = (double)asset->audio_length / asset->sample_rate;
+				paste_video_length = (double)asset->video_length / asset->frame_rate;
+			}
+
+			// Images have length -1 (they are a single image!!)
+			if (asset->video_data && asset->video_length < 0)
+			{
+				if(mwindow->edl->session->si_useduration)
+					paste_video_length = mwindow->edl->session->si_duration / asset->frame_rate;
+				else	
+					paste_video_length = 1.0 / asset->frame_rate;  // bit confused!! (this is 1 frame)
+			}
+
+			int64_t asset_length = 0;
+
+			if(asset->audio_data)
+			{
+				// we use video if we are over video and audio if we are over audio
+				if(asset->video_data && mwindow->session->track_highlighted->data_type == TRACK_VIDEO)
+					asset_length = mwindow->session->track_highlighted->to_units(paste_video_length, 1);
+				else
+					asset_length = mwindow->session->track_highlighted->to_units(paste_audio_length, 1);
+
+				desta_position = mwindow->session->track_highlighted->from_units(get_drop_position(&insertion, NULL, asset_length));
+			}
+
+			if(asset->video_data)
+			{
+				asset_length = mwindow->session->track_highlighted->to_units((double)paste_video_length, 1);
+				destv_position = mwindow->session->track_highlighted->from_units(get_drop_position(&insertion, NULL, asset_length));
+			}
+		}
+
+		if(clip)
+		{
+			if(mwindow->edl->session->cursor_on_frames)
+				paste_audio_length = paste_video_length = clip->tracks->total_length_framealigned(mwindow->edl->session->frame_rate);
+			else
+				paste_audio_length = paste_video_length = clip->tracks->total_length();
+
+			int64_t asset_length;
+
+			asset_length   = mwindow->session->track_highlighted->to_units((double)clip->tracks->total_length(), 1);
+			desta_position = mwindow->session->track_highlighted->from_units(get_drop_position(&insertion, NULL, asset_length));
+		}
+
 // Get destination track
 		for(Track *dest = mwindow->session->track_highlighted; 
 			dest; 
@@ -1119,51 +1180,14 @@ void TrackCanvas::draw_paste_destination()
 
 				if(dest->data_type == TRACK_AUDIO)
 				{
-					if(asset && current_atrack < asset->channels)
+					if( (asset && current_atrack < asset->channels)
+				|| (clip  && current_atrack < clip->tracks->total_audio_tracks()) )
 					{
-						w = Units::to_int64((double)asset->audio_length /
-							asset->sample_rate *
+						w = Units::to_int64(paste_audio_length *
 							mwindow->edl->session->sample_rate / 
 							mwindow->edl->local_session->zoom_sample);
 
-					// FIXME: more obvious, get_drop_position should be called only ONCE - for highlighted track
-						int64_t asset_length;
-						// we use video if we are over video and audio if we are over audio
-						if (asset->video_data && mwindow->session->track_highlighted->data_type == TRACK_VIDEO)
-						{
-							// Images have length -1
-							double video_length = asset->video_length;
-							if (video_length < 0)
-							{
-								if(mwindow->edl->session->si_useduration)
-									video_length = mwindow->edl->session->si_duration;
-								else	
-									video_length = 1.0 / mwindow->edl->session->frame_rate ; 
-							}
-							asset_length = mwindow->session->track_highlighted->to_units(video_length / asset->frame_rate, 1);
-						}
-						else
-							asset_length = mwindow->session->track_highlighted->to_units(asset->audio_length / asset->sample_rate, 1);
-
-						position = mwindow->session->track_highlighted->from_units(get_drop_position(&insertion, NULL, asset_length));
-						if (position < 0) 
-							w = -1;
-						else
-						{
-							current_atrack++;
-							draw_box = 1;
-						}
-					}
-					else
-					if(clip && current_atrack < clip->tracks->total_audio_tracks())
-					{
-						w = Units::to_int64((double)clip->tracks->total_length() *
-							mwindow->edl->session->sample_rate / 
-							mwindow->edl->local_session->zoom_sample);
-//printf("draw_paste_destination %d\n", x);
-						int64_t asset_length = mwindow->session->track_highlighted->to_units((double)clip->tracks->total_length(), 1);
-
-						position = mwindow->session->track_highlighted->from_units(get_drop_position(&insertion, NULL, asset_length));
+						position = desta_position;
 						if (position < 0) 
 							w = -1;
 						else
@@ -1201,42 +1225,15 @@ void TrackCanvas::draw_paste_destination()
 				if(dest->data_type == TRACK_VIDEO)
 				{
 //printf("draw_paste_destination 1\n");
-					if(asset && current_vtrack < asset->layers)
+					if( (asset && current_vtrack < asset->layers)
+					|| (clip && current_vtrack < clip->tracks->total_video_tracks()) )
 					{
 						// Images have length -1
-						double video_length = asset->video_length;
-						if (video_length < 0)
-						{
-							if(mwindow->edl->session->si_useduration)
-								video_length = mwindow->edl->session->si_duration;
-							else	
-								video_length = 1.0 / mwindow->edl->session->frame_rate ; 
-						}
-						w = Units::to_int64((double)video_length / 
-							asset->frame_rate *
+						w = Units::to_int64((double)paste_video_length *
 							mwindow->edl->session->sample_rate /
 							mwindow->edl->local_session->zoom_sample);
-						int64_t asset_length = mwindow->session->track_highlighted->to_units((double)video_length / 
-							asset->frame_rate, 1);
 
-						position = mwindow->session->track_highlighted->from_units(get_drop_position(&insertion, NULL, asset_length));
-						if (position < 0) 
-							w = -1;
-						else
-						{
-							current_vtrack++;
-							draw_box = 1;
-						}
-					}
-					else
-					if(clip && current_vtrack < clip->tracks->total_video_tracks())
-					{
-						w = Units::to_int64(clip->tracks->total_length() *
-							mwindow->edl->session->sample_rate / 
-							mwindow->edl->local_session->zoom_sample);
-						int64_t asset_length = mwindow->session->track_highlighted->to_units((double)clip->tracks->total_length(), 1);
-
-						position = mwindow->session->track_highlighted->from_units(get_drop_position(&insertion, NULL, asset_length));
+						position = destv_position;
 						if (position < 0) 
 							w = -1;
 						else

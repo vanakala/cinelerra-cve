@@ -1810,6 +1810,13 @@ int MWindow::asset_to_edl(EDL *new_edl,
 	new_edl->insert_asset(new_asset, 0, 0, labels);
 //printf("MWindow::asset_to_edl 3\n");
 
+// Align cursor on frames:: clip the new_edl to the minimum of the last joint frame.
+	if(edl->session->cursor_on_frames)
+	{
+		double edl_length = new_edl->tracks->total_length_framealigned(edl->session->frame_rate);
+		new_edl->tracks->clear(edl_length, new_edl->tracks->total_length() + 100, 1);
+		new_edl->tracks->loaded_lengths_to_tracklengths(1);
+	}
 
 
 

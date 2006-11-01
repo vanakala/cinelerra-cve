@@ -67,7 +67,9 @@ public:
 	int total_video_tracks();
 // return the longest track in all the tracks in seconds
  	double total_length();
+ 	double total_audio_length();
  	double total_video_length();
+	double total_length_framealigned(double fps);
 // Update y pixels after a zoom
 	void update_y_pixels(Theme *theme);
 // Total number of tracks where the following toggles are selected
@@ -160,6 +162,7 @@ public:
 		int default_only,
 		int autos_only);
 	int copy_default_keyframe(FileXML *file);
+	void loaded_lengths_to_tracklengths(int includerecordtracks);
 	void paste_automation(double selectionstart, 
 		FileXML *xml,
 		int default_only);

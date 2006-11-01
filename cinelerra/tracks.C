@@ -1,6 +1,7 @@
 #include "atrack.h"
 #include "automation.h"
 #include "cursor.h"
+#include "clip.h"
 #include "bchash.h"
 #include "edit.h"
 #include "edits.h"
@@ -442,6 +443,17 @@ double Tracks::total_length()
 	return total; 
 }
 
+double Tracks::total_audio_length() 
+{
+	double total = 0;
+	for(Track *current = first; current; current = NEXT)
+	{
+		if(current->data_type == TRACK_AUDIO &&
+			current->get_length() > total) total = current->get_length();
+	}
+	return total; 
+}
+
 double Tracks::total_video_length() 
 {
 	double total = 0;
@@ -453,6 +465,19 @@ double Tracks::total_video_length()
 	return total; 
 }
 
+double Tracks::total_length_framealigned(double fps)
+{
+	if (total_audio_tracks() && total_video_tracks())
+		return MIN(floor(total_audio_length() * fps), floor(total_video_length() * fps)) / fps;
+
+	if (total_audio_tracks())
+		return floor(total_audio_length() * fps) / fps;
+
+	if (total_video_tracks())
+		return floor(total_video_length() * fps) / fps;
+
+	return 0;
+}
 
 void Tracks::translate_camera(float offset_x, float offset_y)
 {
