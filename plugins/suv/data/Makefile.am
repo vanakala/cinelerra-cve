@@ -215,6 +215,7 @@ PNGS = \
 	generic_hi.png \
 	generic_up.png \
 	generickeyframe.png \
+	goto.png \
 	heroine_bg.png \
 	heroine_icon.png \
 	hscroll_back_dn.png \

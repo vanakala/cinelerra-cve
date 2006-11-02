@@ -657,7 +657,7 @@ int EditToClip::keypress_event()
 }
 
 EditManualGoto::EditManualGoto(MWindow *mwindow, EditPanel *panel, int x, int y)
- : BC_Button(x, y, mwindow->theme->get_image_set("toclip"))
+ : BC_Button(x, y, mwindow->theme->get_image_set("goto"))
 {
 	this->mwindow = mwindow;
 	this->panel = panel;

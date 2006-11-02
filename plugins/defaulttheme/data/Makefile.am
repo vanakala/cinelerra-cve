@@ -91,6 +91,7 @@ gangpatch_up.png \
 generic_dn.png \
 generic_hi.png \
 generic_up.png \
+goto.png \
 heroine_icon.png \
 hscroll_handle_bg.png \
 hscroll_handle_dn.png \
