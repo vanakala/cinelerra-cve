@@ -1050,7 +1050,7 @@ LabelsFollowEdits::LabelsFollowEdits(MWindow *mwindow)
 int LabelsFollowEdits::handle_event()
 {
 	set_checked(get_checked() ^ 1);
-	mwindow->edl->session->labels_follow_edits = get_checked(); 
+	mwindow->set_labels_follow_edits(get_checked());
 }
 
 

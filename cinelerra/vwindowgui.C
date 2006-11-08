@@ -462,6 +462,7 @@ VWindowEditing::VWindowEditing(MWindow *mwindow, VWindow *vwindow)
 		0,
 		0,
 		0,
+		0, // locklabels
 		1,
 		1,
 		1,

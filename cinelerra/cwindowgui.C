@@ -623,6 +623,7 @@ CWindowEditing::CWindowEditing(MWindow *mwindow, CWindow *cwindow)
 		1,
 		1,
 		0,
+		0, // locklabels
 		1,
 		1,
 		1,

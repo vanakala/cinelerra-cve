@@ -339,8 +339,8 @@ void SUV::initialize()
 // MWindow
 	message_normal = resources->text_default;
 	audio_color = GREEN;
-	mtransport_margin = 30;
-	toggle_margin = 30;
+	mtransport_margin = 10;
+	toggle_margin = 10;
 
 	new_image("mbutton_bg", "mbutton_bg.png");
 	new_image("timebar_bg", "timebar_bg_flat.png");
@@ -586,6 +586,13 @@ void SUV::initialize()
 	new_toggle("autokeyframe.png", transport_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "autokeyframe");
 	new_toggle("ibeam.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "ibeam");
 	new_toggle("show_meters.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "meters");
+	new_toggle("blank30x30.png", 
+		   new_image("locklabels_locked.png"),
+		   new_image("locklabels_lockedhi.png"),
+		   new_image("locklabels_unlocked.png"),
+		   new_image("locklabels_dn.png"), // can't have seperate down for each!!??
+		   new_image("locklabels_unlockedhi.png"),
+		   "locklabels");
 
 	VFrame *cpanel_up = new_image("cpanel_up.png");
 	VFrame *cpanel_hi = new_image("cpanel_hi.png");
@@ -932,12 +939,23 @@ void SUV::draw_mwindow_bg(MWindowGUI *gui)
 		mwindow->session->mwindow_w, 
 		get_image("mbutton_bg"));
 
-	gui->draw_vframe(get_image("panel_divider"),
-		mbuttons_x + 238,
-		mbuttons_y - 1);
+	int pdw = get_image("panel_divider")->get_w();
+	int x = mbuttons_x;
+	x += 9 * get_image("play")->get_w();
+	x += mtransport_margin;                                       // the control buttons
 
 	gui->draw_vframe(get_image("panel_divider"),
-		mbuttons_x + 337,
+		x - toggle_margin / 2 - pdw / 2 + 2,
+		mbuttons_y - 1);
+	x += 2 * get_image("arrow")->get_w() + toggle_margin;           // the mode buttons
+
+	gui->draw_vframe(get_image("panel_divider"),
+		x - toggle_margin / 2 - pdw / 2 + 2,
+		mbuttons_y - 1);
+
+	x += 2 * get_image("autokeyframe")->get_w() + toggle_margin;    // the state toggle buttons
+	gui->draw_vframe(get_image("panel_divider"),
+		x - toggle_margin / 2 - pdw / 2 + 2,
 		mbuttons_y - 1);
 
 // Clock

@@ -611,6 +611,13 @@ void BlondTheme::initialize()
 	VFrame *cpanel_dn = new_image("editpanel_dn.png");
 	VFrame *cpanel_checked = new_image("editpanel_checked.png");
 	VFrame *cpanel_checkedhi = new_image("editpanel_checkedhi.png");
+	new_toggle("blank30x30.png", 
+		   new_image("locklabels_locked.png"),
+		   new_image("locklabels_lockedhi.png"),
+		   new_image("locklabels_unlocked.png"),
+		   new_image("locklabels_dn.png"), // can't have seperate down for each!!??
+		   new_image("locklabels_unlockedhi.png"),
+		   "locklabels");
 
 
 	new_toggle("camera.png", cpanel_up, cpanel_hi, cpanel_checked, cpanel_dn, cpanel_checkedhi, "camera");
@@ -967,27 +974,44 @@ void BlondTheme::draw_rmonitor_bg(RecordMonitorGUI *gui)
 void BlondTheme::draw_mwindow_bg(MWindowGUI *gui)
 {
 // Button bar
-#define MBUTTONS_RIGHTEDGE 857
+	int mbuttons_rightedge = mbuttons_x
+		+ get_image("end")->get_w() + 7 * get_image("play")->get_w() + get_image("end")->get_w()
+		+ mtransport_margin
+		+ 2 * get_image("arrow")->get_w()
+		+ toggle_margin 
+		+ 2 * get_image("autokeyframe")->get_w()
+		+ toggle_margin 
+		+ (14 + 1) * get_image("goto")->get_w() + 5; // I don't know why + 1!!
 	gui->draw_3segmenth(mbuttons_x, 
 		mbuttons_y, 
-		MBUTTONS_RIGHTEDGE, 
+		mbuttons_rightedge, 
 		mbuttons_x,
-		MBUTTONS_RIGHTEDGE,
+		mbuttons_rightedge,
 		get_image("mbutton_bg"),
 		0);
 
-	gui->draw_3segmenth(mbuttons_x + MBUTTONS_RIGHTEDGE, 
+	gui->draw_3segmenth(mbuttons_x + mbuttons_rightedge, 
 		mbuttons_y, 
 		mwindow->session->mwindow_w, 
 		get_image("mbutton_blue"));
 
+	int pdw = get_image("panel_divider")->get_w();
+	int x = mbuttons_x;
+	x += get_image("end")->get_w() + 7 * get_image("play")->get_w() + get_image("end")->get_w();
+	x += mtransport_margin;                                       // the control buttons
 
 	gui->draw_vframe(get_image("panel_divider"),
-		mbuttons_x + 294,
+		x - toggle_margin / 2 - pdw / 2 + 2,
+		mbuttons_y - 1);
+	x += 2 * get_image("arrow")->get_w() + toggle_margin;           // the mode buttons
+
+	gui->draw_vframe(get_image("panel_divider"),
+		x - toggle_margin / 2 - pdw / 2 + 2,
 		mbuttons_y - 1);
 
+	x += 2 * get_image("autokeyframe")->get_w() + toggle_margin;    // the state toggle buttons
 	gui->draw_vframe(get_image("panel_divider"),
-		mbuttons_x + 395,
+		x - toggle_margin / 2 - pdw / 2 + 2,
 		mbuttons_y - 1);
 
 // Clock

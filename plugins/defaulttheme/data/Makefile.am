@@ -20,6 +20,7 @@ batchstart_up.png \
 batchstop_dn.png \
 batchstop_hi.png \
 batchstop_up.png \
+blank30x30.png \
 bottom_justify.png \
 camerakeyframe.png \
 camera.png \
@@ -138,6 +139,11 @@ listbox_expanddn.png \
 listbox_expanduphi.png \
 listbox_expandup.png \
 listbox_up.png \
+locklabels_dn.png \
+locklabels_locked.png \
+locklabels_lockedhi.png \
+locklabels_unlocked.png \
+locklabels_unlockedhi.png \
 magnify.png \
 maskkeyframe.png \
 mask.png \
@@ -344,6 +350,7 @@ EXTRA_DIST = \
 	keyframe.xcf.bz2 \
 	label.xcf.bz2 \
 	listbox_button.xcf.bz2 \
+	locklabels.xcf.bz2 \
 	over_button.xcf.bz2 \
 	patch.xcf.bz2 \
 	pluginbutton.xcf.bz2 \

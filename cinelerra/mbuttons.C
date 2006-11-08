@@ -135,6 +135,7 @@ MainEditing::MainEditing(MWindow *mwindow, MButtons *mbuttons, int x, int y)
 		1,
 		1,
 		1,
+		1, // locklabels
 		1,
 		1,
 		0,

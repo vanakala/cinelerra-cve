@@ -1496,6 +1496,15 @@ int MWindow::set_editing_mode(int new_editing_mode)
 	return 0;
 }
 
+void MWindow::set_labels_follow_edits(int value)
+{
+	gui->lock_window("MWindow::set_labels_follow_edits");
+	edl->session->labels_follow_edits = value;
+	gui->mbuttons->edit_panel->locklabels->update(value);
+	gui->mainmenu->labels_follow_edits->set_checked(value);
+	gui->flush();
+	gui->unlock_window();
+}
 
 void MWindow::sync_parameters(int change_type)
 {

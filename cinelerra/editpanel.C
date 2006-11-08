@@ -42,6 +42,7 @@ EditPanel::EditPanel(MWindow *mwindow,
 	int use_paste, 
 	int use_undo,
 	int use_fit,
+	int use_locklabels,
 	int use_labels,
 	int use_toclip,
 	int use_meters,
@@ -62,6 +63,7 @@ EditPanel::EditPanel(MWindow *mwindow,
 	this->subwindow = subwindow;
 	this->use_fit = use_fit;
 	this->use_labels = use_labels;
+	this->use_locklabels = use_locklabels;
 	this->use_toclip = use_toclip;
 	this->use_meters = use_meters;
 	this->is_mwindow = is_mwindow;
@@ -75,6 +77,7 @@ EditPanel::EditPanel(MWindow *mwindow,
 	keyframe = 0;
 	fit = 0;
 	fit_autos = 0;
+	locklabels = 0;
 }
 
 EditPanel::~EditPanel()
@@ -93,6 +96,7 @@ void EditPanel::update()
 	if(arrow) arrow->update(new_editing_mode == EDITING_ARROW);
 	if(ibeam) ibeam->update(new_editing_mode == EDITING_IBEAM);
 	if(keyframe) keyframe->update(mwindow->edl->session->auto_keyframes);
+	if(locklabels) locklabels->set_value(mwindow->edl->session->labels_follow_edits);
 	subwindow->flush();
 }
 
@@ -107,6 +111,8 @@ void EditPanel::delete_buttons()
 	if(use_keyframe)
 		delete keyframe;
 
+	if(use_locklabels)
+		delete locklabels;
 
 	if(inpoint) delete inpoint;
 	if(outpoint) delete outpoint;
@@ -150,14 +156,24 @@ SET_TRACE
 		x1 += arrow->get_w();
 		subwindow->add_subwindow(ibeam = new IBeamButton(mwindow, this, x1, y1));
 		x1 += ibeam->get_w();
+		x1 += mwindow->theme->toggle_margin;
 	}
 
 	if(use_keyframe)
 	{
 		subwindow->add_subwindow(keyframe = new KeyFrameButton(mwindow, x1, y1));
 		x1 += keyframe->get_w();
-		x1 += mwindow->theme->toggle_margin;
 	}
+
+	if(use_locklabels)
+	{
+		subwindow->add_subwindow(locklabels = new LockLabelsButton(mwindow, 
+			x1, 
+			y1));
+		x1 += locklabels->get_w();
+	}
+	if(use_keyframe || use_locklabels)
+		x1 += mwindow->theme->toggle_margin;
 
 // Mandatory
 	subwindow->add_subwindow(inpoint = new EditInPoint(mwindow, this, x1, y1));
@@ -326,14 +342,23 @@ void EditPanel::reposition_buttons(int x, int y)
 		x1 += arrow->get_w();
 		ibeam->reposition_window(x1, y1);
 		x1 += ibeam->get_w();
+		x1 += mwindow->theme->toggle_margin;
 	}
 
 	if(use_keyframe)
 	{
 		keyframe->reposition_window(x1, y1);
 		x1 += keyframe->get_w();
-		x1 += mwindow->theme->toggle_margin;
 	}
+
+	if(use_locklabels)
+	{
+		locklabels->reposition_window(x1,y1);
+		x1 += locklabels->get_w();
+	}
+
+	if(use_keyframe || use_locklabels)
+		x1 += mwindow->theme->toggle_margin;
 
 	inpoint->reposition_window(x1, y1);
 	x1 += inpoint->get_w();
@@ -1073,4 +1098,24 @@ int KeyFrameButton::handle_event()
 	return 1;
 }
 
+
+LockLabelsButton::LockLabelsButton(MWindow *mwindow, int x, int y)
+ : BC_Toggle(x, 
+ 	y, 
+	mwindow->theme->get_image_set("locklabels"),
+	mwindow->edl->session->labels_follow_edits,
+	"",
+	0,
+	0,
+	0)
+{
+	this->mwindow = mwindow;
+	set_tooltip(_("Lock labels from moving"));
+}
+
+int LockLabelsButton::handle_event()
+{
+	mwindow->set_labels_follow_edits(get_value());
+	return 1;
+}
 

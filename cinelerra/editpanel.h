@@ -320,6 +320,14 @@ public:
 	MWindow *mwindow;
 };
 
+class LockLabelsButton : public BC_Toggle
+{
+public:
+	LockLabelsButton(MWindow *mwindow, int x, int y);
+	int handle_event();
+	MWindow *mwindow;
+};
+
 
 class EditPanel
 {
@@ -339,6 +347,7 @@ public:
 		int use_paste, 
 		int use_undo,
 		int use_fit, 
+		int use_locklabels,
 		int use_labels,
 		int use_toclip,
 		int use_meters,
@@ -380,6 +389,7 @@ public:
 	int use_undo;
 	int use_fit;
 	int use_copy;
+	int use_locklabels;
 	int use_labels;
 	int use_toclip;
 	int use_meters;
@@ -411,6 +421,7 @@ public:
 	ArrowButton *arrow;
 	IBeamButton *ibeam;
 	KeyFrameButton *keyframe;
+	LockLabelsButton *locklabels;
 };
 
 #endif

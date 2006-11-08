@@ -72,6 +72,7 @@ PNGS = \
 	batchstop_dn.png \
 	batchstop_hi.png \
 	batchstop_up.png \
+	blank30x30.png \
 	bottom_justify.png \
 	calibrate_dn.png \
 	calibrate_hi.png \
@@ -278,6 +279,11 @@ PNGS = \
 	listbox_button.png \
 	listbox_dn.png \
 	listbox_up.png \
+	locklabels_dn.png \
+	locklabels_locked.png \
+	locklabels_lockedhi.png \
+	locklabels_unlocked.png \
+	locklabels_unlockedhi.png \
 	magnify.png \
 	magnify_checked.png \
 	magnify_checkedhi.png \
@@ -595,6 +601,7 @@ EXTRA_DIST = \
 	$(PNGS) \
 	buttonbar.xcf.bz2 \
 	editpanel.xcf.bz2 \
+	locklabels.xcf.bz2 \
 	mainwindow.xcf.bz2 \
 	menu.xcf.bz2 \
 	new.xcf.bz2 \
