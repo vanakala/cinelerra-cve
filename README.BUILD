@@ -33,7 +33,16 @@ with these. If you want to use another, don't mail me if it doesn't work.
 
 Some of them are part of every distribution (if they aren't in yours, change
 you distrib. Not joking):
+        - a52dec
 	- alsa libs (>= 0.9)
+        - faac
+        - faad2
+        - fftw
+        - lame
+        - libavc1394
+        - libiec61883
+        - libraw1394
+        - libsndfile
 	- libvorbis (1.0)
 	- libogg (1.0)
 	- libpng
@@ -41,6 +50,9 @@ you distrib. Not joking):
 	- libtiff
 	- libesd (esound = 0.2.28)
 	- libfreetype (>=2.1.4)
+        - mjpegtools
+        - OpenEXR
+        - x264
 	- xlib-dev
 	- gettext
 
