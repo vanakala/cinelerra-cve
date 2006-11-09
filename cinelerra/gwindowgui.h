@@ -7,11 +7,19 @@
 
 class GWindowToggle;
 
-#define ASSETS 0
-#define TITLES 1
-#define TRANSITIONS 2
-#define PLUGIN_AUTOS 3
-#define OTHER_TOGGLES 4
+enum {
+	NONAUTOTOGGLES_ASSETS,
+	NONAUTOTOGGLES_TITLES,
+	NONAUTOTOGGLES_TRANSITIONS,
+	NONAUTOTOGGLES_PLUGIN_AUTOS,
+	NONAUTOTOGGLES_COUNT
+};
+
+struct toggleinfo
+{
+	int isauto;
+	int ref;
+};
 
 class GWindowGUI : public BC_Window
 {
@@ -26,8 +34,7 @@ public:
 	void update_mwindow();
 
 	MWindow *mwindow;
-	GWindowToggle *other[OTHER_TOGGLES];
-	GWindowToggle *auto_toggle[AUTOMATION_TOTAL];
+	GWindowToggle *toggles[NONAUTOTOGGLES_COUNT + AUTOMATION_TOTAL];
 };
 
 class GWindowToggle : public BC_CheckBox
@@ -37,18 +44,15 @@ public:
 		GWindowGUI *gui, 
 		int x, 
 		int y, 
-		int subscript,
-		int other, 
-		char *text);
+		toggleinfo toggleinf);
 	int handle_event();
 	void update();
 
-	static int* get_main_value(MWindow *mwindow, int subscript, int other);
+	static int* get_main_value(MWindow *mwindow, toggleinfo toggleinf);
 
 	MWindow *mwindow;
 	GWindowGUI *gui;
-	int subscript;
-	int other;
+	toggleinfo toggleinf;
 };
 
 #endif

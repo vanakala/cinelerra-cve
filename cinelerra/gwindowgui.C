@@ -4,6 +4,7 @@
 #include "edl.h"
 #include "edlsession.h"
 #include "gwindowgui.h"
+#include "language.h"
 #include "mainmenu.h"
 #include "mainsession.h"
 #include "mwindow.h"
@@ -17,7 +18,7 @@
 GWindowGUI::GWindowGUI(MWindow *mwindow,
 	int w,
 	int h)
- : BC_Window(PROGRAM_NAME ": Overlays",
+ : BC_Window(PROGRAM_NAME N_(": Overlays"),
  	mwindow->session->gwindow_x, 
     mwindow->session->gwindow_y, 
     w, 
@@ -31,28 +32,47 @@ GWindowGUI::GWindowGUI(MWindow *mwindow,
 	this->mwindow = mwindow;
 }
 
-static char *other_text[OTHER_TOGGLES] =
+static char *other_text[NONAUTOTOGGLES_COUNT] =
 {
-	"Assets",
-	"Titles",
-	"Transitions",
-	"Plugin Autos"
+	N_("Assets"),
+	N_("Titles"),
+	N_("Transitions"),
+	N_("Plugin Autos")
 };
 
 static char *auto_text[] = 
 {
-	"Mute",
-	"Camera X",
-	"Camera Y",
-	"Camera Z",
-	"Projector X",
-	"Projector Y",
-	"Projector Z",
-	"Fade",
-	"Pan",
-	"Mode",
-	"Mask",
-	"Nudge"
+	N_("Mute"),
+	N_("Camera X"),
+	N_("Camera Y"),
+	N_("Camera Z"),
+	N_("Projector X"),
+	N_("Projector Y"),
+	N_("Projector Z"),
+	N_("Fade"),
+	N_("Pan"),
+	N_("Mode"),
+	N_("Mask"),
+	N_("Nudge")
+};
+
+static toggleinfo toggle_order[] = 
+{
+	{0, NONAUTOTOGGLES_ASSETS},
+	{0, NONAUTOTOGGLES_TITLES},
+	{0, NONAUTOTOGGLES_TRANSITIONS},
+	{1, AUTOMATION_FADE},
+	{1, AUTOMATION_MUTE},
+	{1, AUTOMATION_MODE},
+	{1, AUTOMATION_PAN},
+	{0, NONAUTOTOGGLES_PLUGIN_AUTOS},
+	{1, AUTOMATION_MASK},
+	{1, AUTOMATION_CAMERA_X},
+	{1, AUTOMATION_CAMERA_Y},
+	{1, AUTOMATION_CAMERA_Z},
+	{1, AUTOMATION_PROJECTOR_X},
+	{1, AUTOMATION_PROJECTOR_Y},
+	{1, AUTOMATION_PROJECTOR_Z},
 };
 
 void GWindowGUI::calculate_extents(BC_WindowBase *gui, int *w, int *h)
@@ -61,7 +81,7 @@ void GWindowGUI::calculate_extents(BC_WindowBase *gui, int *w, int *h)
 	int current_w, current_h;
 	*w = 10;
 	*h = 10;
-	for(int i = 0; i < OTHER_TOGGLES; i++)
+	for(int i = 0; i < NONAUTOTOGGLES_COUNT + AUTOMATION_TOTAL; i++)
 	{
 		BC_Toggle::calculate_extents(gui, 
 			BC_WindowBase::get_resources()->checkbox_images,
@@ -75,29 +95,11 @@ void GWindowGUI::calculate_extents(BC_WindowBase *gui, int *w, int *h)
 			&temp5, 
 			&temp6,
 			&temp7, 
-			other_text[i]);
+			toggle_order[i].isauto ? auto_text[toggle_order[i].ref] : other_text[toggle_order[i].ref]);
 		*w = MAX(current_w, *w);
 		*h += current_h + 5;
 	}
 
-	for(int i = 0; i < AUTOMATION_TOTAL; i++)
-	{
-		BC_Toggle::calculate_extents(gui, 
-			BC_WindowBase::get_resources()->checkbox_images,
-			0,
-			&temp1,
-			&current_w,
-			&current_h,
-			&temp2,
-			&temp3,
-			&temp4,
-			&temp5, 
-			&temp6,
-			&temp7, 
-			auto_text[i]);
-		*w = MAX(current_w, *w);
-		*h += current_h + 5;
-	}
 	*h += 10;
 	*w += 20;
 }
@@ -109,28 +111,14 @@ void GWindowGUI::create_objects()
 	int x = 10, y = 10;
 
 
-	for(int i = 0; i < OTHER_TOGGLES; i++)
+	for(int i = 0; i < NONAUTOTOGGLES_COUNT + AUTOMATION_TOTAL; i++)
 	{
-		add_tool(other[i] = new GWindowToggle(mwindow, 
+		add_tool(toggles[i] = new GWindowToggle(mwindow, 
 			this, 
 			x, 
 			y, 
-			-1,
-			i, 
-			other_text[i]));
-		y += other[i]->get_h() + 5;
-	}
-
-	for(int i = 0; i < AUTOMATION_TOTAL; i++)
-	{
-		add_tool(auto_toggle[i] = new GWindowToggle(mwindow, 
-			this, 
-			x, 
-			y, 
-			i,
-			-1, 
-			auto_text[i]));
-		y += auto_toggle[i]->get_h() + 5;
+			toggle_order[i]));
+		y += toggles[i]->get_h() + 5;
 	}
 }
 
@@ -145,14 +133,9 @@ void GWindowGUI::update_toggles(int use_lock)
 {
 	if(use_lock) lock_window("GWindowGUI::update_toggles");
 
-	for(int i = 0; i < OTHER_TOGGLES; i++)
+	for(int i = 0; i < NONAUTOTOGGLES_COUNT + AUTOMATION_TOTAL; i++)
 	{
-		other[i]->update();
-	}
-
-	for(int i = 0; i < AUTOMATION_TOTAL; i++)
-	{
-		auto_toggle[i]->update();
+		toggles[i]->update();
 	}
 
 	if(use_lock) unlock_window();
@@ -205,40 +188,37 @@ GWindowToggle::GWindowToggle(MWindow *mwindow,
 	GWindowGUI *gui, 
 	int x, 
 	int y, 
-	int subscript, 
-	int other,
-	char *text)
+	toggleinfo toggleinf)
  : BC_CheckBox(x, 
  	y, 
-	*get_main_value(mwindow, subscript, other), 
-	text)
+	*get_main_value(mwindow, toggleinf), 
+        toggleinf.isauto ? auto_text[toggleinf.ref] : other_text[toggleinf.ref])
 {
 	this->mwindow = mwindow;
 	this->gui = gui;
-	this->subscript = subscript;
-	this->other = other;
+	this->toggleinf = toggleinf;
 }
 
 int GWindowToggle::handle_event()
 {
-	*get_main_value(mwindow, subscript, other) = get_value();
+	*get_main_value(mwindow, toggleinf) = get_value();
 	gui->update_mwindow();
 
 
 // Update stuff in MWindow
 	unlock_window();
 	mwindow->gui->lock_window("GWindowToggle::handle_event");
-	if(subscript >= 0)
+	if(toggleinf.isauto)
 	{
 		mwindow->gui->canvas->draw_overlays();
 		mwindow->gui->canvas->flash();
 	}
 	else
 	{
-		switch(other)
+		switch(toggleinf.ref)
 		{
-			case ASSETS:
-			case TITLES:
+			case NONAUTOTOGGLES_ASSETS:
+			case NONAUTOTOGGLES_TITLES:
 				mwindow->gui->update(1,
 					1,
 					0,
@@ -248,8 +228,8 @@ int GWindowToggle::handle_event()
 					0);
 				break;
 
-			case TRANSITIONS:
-			case PLUGIN_AUTOS:
+			case NONAUTOTOGGLES_TRANSITIONS:
+			case NONAUTOTOGGLES_PLUGIN_AUTOS:
 				mwindow->gui->canvas->draw_overlays();
 				mwindow->gui->canvas->flash();
 				break;
@@ -262,26 +242,26 @@ int GWindowToggle::handle_event()
 	return 1;
 }
 
-int* GWindowToggle::get_main_value(MWindow *mwindow, int subscript, int other)
+int* GWindowToggle::get_main_value(MWindow *mwindow, toggleinfo toggleinf)
 {
-	if(subscript >= 0)
+	if(toggleinf.isauto)
 	{
-		return &mwindow->edl->session->auto_conf->autos[subscript];
+		return &mwindow->edl->session->auto_conf->autos[toggleinf.ref];
 	}
 	else
 	{
-		switch(other)
+		switch(toggleinf.ref)
 		{
-			case ASSETS:
+			case NONAUTOTOGGLES_ASSETS:
 				return &mwindow->edl->session->show_assets;
 				break;
-			case TITLES:
+			case NONAUTOTOGGLES_TITLES:
 				return &mwindow->edl->session->show_titles;
 				break;
-			case TRANSITIONS:
+			case NONAUTOTOGGLES_TRANSITIONS:
 				return &mwindow->edl->session->auto_conf->transitions;
 				break;
-			case PLUGIN_AUTOS:
+			case NONAUTOTOGGLES_PLUGIN_AUTOS:
 				return &mwindow->edl->session->auto_conf->plugins;
 				break;
 		}
@@ -290,7 +270,7 @@ int* GWindowToggle::get_main_value(MWindow *mwindow, int subscript, int other)
 
 void GWindowToggle::update()
 {
-	set_value(*get_main_value(mwindow, subscript, other));
+	set_value(*get_main_value(mwindow, toggleinf));
 }
 
 
