@@ -9,8 +9,8 @@ endif
 endif
 
 if TARGET_ARCH_POWERPC
-MM_DIR = ppc
-MM_LIB = ppc/libavcodecppc.la
+MM_DIR += ppc
+MM_LIB += ppc/libavcodecppc.la
 endif
 
 SUBDIRS = $(MM_DIR)
