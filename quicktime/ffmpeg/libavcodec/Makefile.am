@@ -6,12 +6,16 @@ MM_FLAGS = -DHAVE_MMX
 if TARGET_BUILTIN_VECTOR
 MM_FLAGS += -DHAVE_BUILTIN_VECTOR
 endif
-endif
+
+else
 
 if TARGET_ARCH_POWERPC
-MM_DIR += ppc
-MM_LIB += ppc/libavcodecppc.la
+MM_DIR = ppc
+MM_LIB = ppc/libavcodecppc.la
 endif
+
+endif
+
 
 SUBDIRS = $(MM_DIR)
 
