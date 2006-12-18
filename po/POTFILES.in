@@ -30,6 +30,7 @@ cinelerra/dcoffset.C
 cinelerra/deleteallindexes.C
 cinelerra/editpanel.C
 cinelerra/editpopup.C
+cinelerra/exportedl.C
 # cinelerra/featheredits.C
 cinelerra/file.C
 cinelerra/file.inc
@@ -124,6 +125,7 @@ guicast/bcfilebox.C
 guicast/bcresources.C
 guicast/bctheme.C
 # guicast/test.C
+plugins/1080to540/1080to540.C
 plugins/720to480/720to480.C
 plugins/aging/aging.C
 plugins/aging/agingwindow.C
@@ -131,8 +133,8 @@ plugins/bandslide/bandslide.C
 plugins/bandwipe/bandwipe.C
 plugins/blur/blur.C
 plugins/blur/blurwindow.C
-# plugins/blurzoom/blurzoom.C
-# plugins/blurzoom/blurzoomwindow.C
+plugins/blurzoom/blurzoom.C
+plugins/blurzoom/blurzoomwindow.C
 plugins/brightness/brightness.C
 plugins/brightness/brightnesswindow.C
 plugins/burn/burn.C
@@ -154,6 +156,7 @@ plugins/delayvideo/delayvideo.C
 plugins/denoise/denoise.C
 plugins/denoisefft/denoisefft.C
 plugins/denoisemjpeg/denoisemjpeg.C
+plugins/denoisevideo/denoisevideo.C
 plugins/denoiseseltempavg/seltempavg.C
 plugins/denoiseseltempavg/seltempavgwindow.C
 plugins/denoisevideo/denoisevideo.C
@@ -180,7 +183,7 @@ plugins/holo/holo.C
 plugins/holo/holowindow.C
 plugins/huesaturation/huesaturation.C
 # plugins/huesaturation/huewindow.C
-# plugins/interpolate/interpolate.C
+plugins/interpolate/interpolate.C
 plugins/interpolatevideo/interpolatevideo.C
 plugins/interpolateall/interpolateall.C
 plugins/invertaudio/invert.C
@@ -206,8 +209,8 @@ plugins/perspective/perspective.C
 plugins/pitch/pitch.C
 plugins/polar/polar.C
 # plugins/polar/polarwindow.C
-# plugins/quark/quark.C
-# plugins/quark/quarkwindow.C
+plugins/quark/quark.C
+plugins/quark/quarkwindow.C
 plugins/radialblur/radialblur.C
 plugins/reframe/reframe.C
 plugins/reframert/reframert.C
@@ -222,6 +225,8 @@ plugins/rotate/rotate.C
 # plugins/rotate/rotatewindow.C
 plugins/scale/scale.C
 plugins/scale/scalewin.C
+plugins/timeavg/timeavg.C
+plugins/timeavg/timeavgwindow.C
 plugins/shapewipe/shapewipe.C
 plugins/sharpen/sharpen.C
 plugins/sharpen/sharpenwindow.C
@@ -233,6 +238,7 @@ plugins/svg/svgwin.C
 plugins/swapchannels/swapchannels.C
 plugins/synthesizer/synthesizer.C
 plugins/threshold/threshold.C
+plugins/threshold/thresholdwindow.C
 plugins/timeavg/timeavg.C
 plugins/timeavg/timeavgwindow.C
 plugins/timefront/timefront.C
@@ -251,3 +257,5 @@ plugins/wipe/wipe.C
 plugins/yuv/yuv.C
 # plugins/yuv/yuvwindow.C
 plugins/zoomblur/zoomblur.C
+plugins/livevideo/livevideo.C
+plugins/motionblur/motionblur.C
