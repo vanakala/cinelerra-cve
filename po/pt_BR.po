@@ -9,8 +9,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cinelerra 2.0\n"
 "Report-Msgid-Bugs-To: cinelerra@skolelinux.no\n"
-"POT-Creation-Date: 2006-11-19 12:13-0200\n"
-"PO-Revision-Date: 2006-11-19 21:33+0000\n"
+"POT-Creation-Date: 2006-11-19 21:33+0000\n"
+"PO-Revision-Date: 2006-12-23 12:36-0200\n"
 "Last-Translator: Rafael Diniz <rafael@riseup.net>\n"
 "Language-Team: EstudioLivre <estudiolivre@lists.riseup.net>\n"
 "MIME-Version: 1.0\n"
@@ -157,7 +157,7 @@ msgid "Compression:"
 msgstr "Compressão:"
 
 #: cinelerra/assetedit.C:260 cinelerra/fileformat.C:52 cinelerra/new.C:256
-#: cinelerra/setformat.C:346
+#: cinelerra/setformat.C:346 plugins/livevideo/livevideo.C:209
 msgid "Channels:"
 msgstr "Canais:"
 
@@ -1092,6 +1092,43 @@ msgstr "Título do usuário..."
 msgid "User title"
 msgstr "Título do usuário"
 
+#: cinelerra/exportedl.C:81
+#, c-format
+msgid "Warning: chopping the reel name to eight characters!\n"
+msgstr "Atenção: limitando o nome do carretel para oito caracteres!\n"
+
+#: cinelerra/exportedl.C:228
+msgid "Export EDL..."
+msgstr "Exportar EDK..."
+
+#: cinelerra/exportedl.C:329
+msgid "No."
+msgstr "Não."
+
+#: cinelerra/exportedl.C:330
+msgid "Track name"
+msgstr "Nome da Trilha"
+
+#: cinelerra/exportedl.C:369
+msgid "Select a file to export to:"
+msgstr "Selecione um arquivo para exportar para:"
+
+#: cinelerra/exportedl.C:388 cinelerra/formattools.C:120
+msgid "Output to file"
+msgstr "Dar saída para arquivo"
+
+#: cinelerra/exportedl.C:389 cinelerra/formattools.C:121
+msgid "Select a file to write to:"
+msgstr "Selecionar um arquivo para onde escrever:"
+
+#: cinelerra/exportedl.C:394
+msgid "Select track to be exported:"
+msgstr "Selecione uma trilha para ser exportada:"
+
+#: cinelerra/exportedl.C:424
+msgid "Currently only CMX 3600 format is supported"
+msgstr "Somente o formato CMX 3600 é suportado"
+
 #: cinelerra/file.C:251
 msgid "This format doesn't support audio."
 msgstr "Este formato não suporta áudio."
@@ -1705,14 +1742,6 @@ msgstr "Áudio de DAT"
 #: cinelerra/formatpresets.C:241
 msgid "Presets:"
 msgstr "Pré-configurações:"
-
-#: cinelerra/formattools.C:120
-msgid "Output to file"
-msgstr "Dar saída para arquivo"
-
-#: cinelerra/formattools.C:121
-msgid "Select a file to write to:"
-msgstr "Selecionar um arquivo para onde escrever:"
 
 #: cinelerra/formattools.C:139 cinelerra/recordprefs.C:44
 msgid "File Format:"
@@ -3950,13 +3979,18 @@ msgstr "Tema::get_image: %s não encontrado.\n"
 msgid "BC_Theme::check_used: Images aren't used.\n"
 msgstr "BC_Theme::check_used: Imagens não foram usadas.\n"
 
-#: plugins/720to480/720to480.C:56 plugins/ivtc/ivtcwindow.C:107
+#: plugins/1080to540/1080to540.C:78 plugins/720to480/720to480.C:56
+#: plugins/ivtc/ivtcwindow.C:107
 msgid "Odd field first"
 msgstr "Campo ímpar primeiro"
 
-#: plugins/720to480/720to480.C:58
+#: plugins/1080to540/1080to540.C:80 plugins/720to480/720to480.C:58
 msgid "Even field first"
 msgstr "Campo par primeiro"
+
+#: plugins/1080to540/1080to540.C:151
+msgid "1080 to 540"
+msgstr "1080 para 540"
 
 #: plugins/720to480/720to480.C:174
 msgid "720 to 480"
@@ -4051,6 +4085,18 @@ msgstr "Desfocar verde"
 #: plugins/blur/blurwindow.C:163
 msgid "Blur blue"
 msgstr "Desfocar azul"
+
+#: plugins/blurzoom/blurzoom.C:59
+msgid "RadioacTV"
+msgstr "RadioacTV"
+
+#: plugins/blurzoom/blurzoomwindow.C:67
+msgid ""
+"RadioacTV from EffectTV\n"
+"Copyright (C) 2001 FUKUCHI Kentarou"
+msgstr ""
+"RadioacTV de EffectTV\n"
+"Copyright (C) 2001 FUKUCHI Kentarou"
 
 #: plugins/brightness/brightness.C:77 plugins/brightness/brightnesswindow.C:32
 msgid "Brightness/Contrast"
@@ -4508,6 +4554,14 @@ msgstr "Atrasar quadros:"
 msgid "Denoise video2"
 msgstr "Depurar vídeo2"
 
+#: plugins/denoisevideo/denoisevideo.C:171
+msgid "Frames to accumulate:"
+msgstr "Quadros para acumular:"
+
+#: plugins/denoisevideo/denoisevideo.C:324
+msgid "Denoise video"
+msgstr "Depurar vídeo"
+
 #: plugins/denoiseseltempavg/seltempavg.C:100
 msgid "Selective Temporal Averaging"
 msgstr "Média Temporal Seletiva"
@@ -4592,14 +4646,6 @@ msgstr "Desabilitar subtração"
 #: plugins/denoiseseltempavg/seltempavgwindow.C:333
 msgid "This Frame is a start of a section"
 msgstr "Este quadro é o início de uma sessão"
-
-#: plugins/denoisevideo/denoisevideo.C:171
-msgid "Frames to accumulate:"
-msgstr "Quadros para acumular:"
-
-#: plugins/denoisevideo/denoisevideo.C:324
-msgid "Denoise video"
-msgstr "Depurar vídeo"
 
 #: plugins/despike/despike.C:36
 msgid "Despike"
@@ -4791,6 +4837,7 @@ msgid "Automatic"
 msgstr "Automático"
 
 #: plugins/histogram/histogramwindow.C:774
+#: plugins/threshold/thresholdwindow.C:79
 msgid "Plot histogram"
 msgstr "Histograma Plot"
 
@@ -4817,6 +4864,18 @@ msgstr "Saturação:"
 #: plugins/huesaturation/huesaturation.C:572
 msgid "Hue saturation"
 msgstr "Saturação de tons"
+
+#: plugins/interpolate/interpolate.C:82
+msgid "X Offset:"
+msgstr "Deslocamento X:"
+
+#: plugins/interpolate/interpolate.C:88
+msgid "Y Offset:"
+msgstr "Deslocamento Y:"
+
+#: plugins/interpolate/interpolate.C:158
+msgid "Interpolate Pixels"
+msgstr "Interpolar Pontos"
 
 #: plugins/interpolatevideo/interpolatevideo.C:305
 msgid "Use keyframes as input"
@@ -4901,12 +4960,12 @@ msgstr "Nível de som RMS (dB):"
 msgid "SoundLevel"
 msgstr "Nível do Som"
 
-#: plugins/linearblur/linearblur.C:270
+#: plugins/linearblur/linearblur.C:270 plugins/motionblur/motionblur.C:236
 msgid "Length:"
 msgstr "Comprimento:"
 
 #: plugins/linearblur/linearblur.C:278 plugins/radialblur/radialblur.C:273
-#: plugins/zoomblur/zoomblur.C:288
+#: plugins/zoomblur/zoomblur.C:288 plugins/motionblur/motionblur.C:240
 msgid "Steps:"
 msgstr "Passos:"
 
@@ -5076,7 +5135,8 @@ msgstr "Savar coordenadas no /tmp"
 msgid "Load coords from /tmp"
 msgstr "Carregar coordenadas do /tmp"
 
-#: plugins/motion/motionwindow.C:982 plugins/sharpen/sharpenwindow.C:109
+#: plugins/motion/motionwindow.C:982 plugins/quark/quarkwindow.C:135
+#: plugins/sharpen/sharpenwindow.C:109
 msgid "Horizontal only"
 msgstr "Horizontal somente"
 
@@ -5205,6 +5265,22 @@ msgstr "Profundidade:"
 #: plugins/polar/polar.C:280
 msgid "Polar"
 msgstr "Polar"
+
+#: plugins/quark/quark.C:42
+msgid "Quark"
+msgstr "Quark"
+
+#: plugins/quark/quarkwindow.C:66 plugins/sharpen/sharpenwindow.C:40
+msgid "Sharpness"
+msgstr "Agudeza"
+
+#: plugins/quark/quarkwindow.C:117 plugins/sharpen/sharpenwindow.C:91
+msgid "Interlace"
+msgstr "Entrelaçar"
+
+#: plugins/quark/quarkwindow.C:152 plugins/sharpen/sharpenwindow.C:126
+msgid "Luminance only"
+msgstr "Luminescência somente"
 
 #: plugins/radialblur/radialblur.C:369
 msgid "Radial Blur"
@@ -5351,6 +5427,18 @@ msgstr "Escala Y:"
 msgid "Constrain ratio"
 msgstr "Razão de limite"
 
+#: plugins/timeavg/timeavg.C:90
+msgid "Time Average"
+msgstr "Média de tempo"
+
+#: plugins/timeavg/timeavgwindow.C:93
+msgid "Accumulate"
+msgstr "Acumular"
+
+#: plugins/timeavg/timeavgwindow.C:137
+msgid "Inclusive Or"
+msgstr "Inclusivo Ou"
+
 #: plugins/shapewipe/shapewipe.C:25
 msgid "White to Black"
 msgstr "Branco para Preto"
@@ -5386,18 +5474,6 @@ msgstr "Formar Varredura"
 #: plugins/sharpen/sharpen.C:100
 msgid "Sharpen"
 msgstr "Aguçar"
-
-#: plugins/sharpen/sharpenwindow.C:40
-msgid "Sharpness"
-msgstr "Agudeza"
-
-#: plugins/sharpen/sharpenwindow.C:91
-msgid "Interlace"
-msgstr "Entrelaçar"
-
-#: plugins/sharpen/sharpenwindow.C:126
-msgid "Luminance only"
-msgstr "Luminescência somente"
 
 #: plugins/shiftinterlace/shiftinterlace.C:185
 msgid "Odd offset:"
@@ -5632,17 +5708,13 @@ msgstr "Fibonnacci"
 msgid "Prime"
 msgstr "Prima"
 
-#: plugins/timeavg/timeavg.C:90
-msgid "Time Average"
-msgstr "Média de tempo"
+#: plugins/threshold/thresholdwindow.C:316
+msgid "Min:"
+msgstr "Min:"
 
-#: plugins/timeavg/timeavgwindow.C:93
-msgid "Accumulate"
-msgstr "Acumular"
-
-#: plugins/timeavg/timeavgwindow.C:137
-msgid "Inclusive Or"
-msgstr "Inclusivo Ou"
+#: plugins/threshold/thresholdwindow.C:327
+msgid "Max:"
+msgstr "Max:"
 
 #: plugins/timefront/timefront.C:140
 msgid "Type:"
@@ -5909,3 +5981,10 @@ msgstr "YUV"
 msgid "Zoom Blur"
 msgstr "Desfoque de Aproximação"
 
+#: plugins/livevideo/livevideo.C:542
+msgid "Live Video"
+msgstr "Video ao Vivo"
+
+#: plugins/motionblur/motionblur.C:301
+msgid "Motion Blur"
+msgstr "Desfocar Movimentação"
