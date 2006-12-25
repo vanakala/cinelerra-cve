@@ -160,8 +160,6 @@ int Asset::init_values()
 	pipe[0] = 0;
 	use_pipe = 0;
 
-	strcpy(prefix, "");
-
 	reset_timecode();
 
 	return 0;
@@ -307,9 +305,6 @@ void Asset::copy_format(Asset *asset, int do_index)
 
 	strcpy(pipe, asset->pipe);
 	use_pipe = asset->use_pipe;
-
-	// FUTURE: should this be here or in copy_from()?
-	strcpy(prefix, asset->prefix);
 
 	strcpy(reel_name, asset->reel_name);
 	reel_number = asset->reel_number;
@@ -938,9 +933,6 @@ void Asset::load_defaults(BC_Hash *defaults,
 		byte_order = GET_DEFAULT("BYTE_ORDER", 1);
 	}
 
-	// NOTE: this should never be saved
-	strcpy(this->prefix, prefix ? prefix : "");
-
 	ampeg_bitrate = GET_DEFAULT("AMPEG_BITRATE", ampeg_bitrate);
 	ampeg_derivative = GET_DEFAULT("AMPEG_DERIVATIVE", ampeg_derivative);
 
@@ -1032,24 +1024,7 @@ void Asset::load_defaults(BC_Hash *defaults,
 	tcstart = GET_DEFAULT("TCSTART", tcstart);
 	tcend = GET_DEFAULT("TCEND", tcend);
 	tcformat = GET_DEFAULT("TCFORMAT", tcformat);
-
-	load_format_defaults(defaults);
 }
-
-// FUTURE: put more of the format specific variables in here
-void Asset::load_format_defaults(BC_Hash *defaults) {
-	char temp[BCTEXTLEN];
-	char string[BCTEXTLEN];
-	if (! format) return;
-
-	// NOTE: old value is used if no init value set before GET_DEFAULT 
-
-	// override the defaults with those for this format
-	sprintf(temp, "FORMAT_%s_PATH", FILE_FORMAT_PREFIX(format));
-	sprintf(path, "");
-	GET_DEFAULT(temp, path);
-}
-	
 
 void Asset::save_defaults(BC_Hash *defaults, 
 	char *prefix,
@@ -1172,20 +1147,14 @@ void Asset::save_defaults(BC_Hash *defaults,
 	UPDATE_DEFAULT("TCSTART", tcstart);
 	UPDATE_DEFAULT("TCEND", tcend);
 	UPDATE_DEFAULT("TCFORMAT", tcformat);
-
-	save_format_defaults(defaults);
 }
 
 
-// FUTURE: put more of the format specific variables in here
-void Asset::save_format_defaults(BC_Hash *defaults) {
-	char temp[BCTEXTLEN];
-	char string[BCTEXTLEN];
-	if (! format) return;
 
-	sprintf(temp, "FORMAT_%s_PATH", FILE_FORMAT_PREFIX(format));
-	UPDATE_DEFAULT(temp, path);
-}
+
+
+
+
 
 
 int Asset::update_path(char *new_path)

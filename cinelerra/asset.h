@@ -63,9 +63,8 @@ public:
 		int do_bits);
 	char* construct_param(char *param, char *prefix, char *return_value);
 
-// defaults which are specific to format used	
-	void load_format_defaults(BC_Hash *defaults);
-	void save_format_defaults(BC_Hash *defaults);
+
+
 
 // Executed during index building only
 	void update_index(Asset *asset);
@@ -109,9 +108,6 @@ public:
 // Pipe command
 	char pipe[BCTEXTLEN];
 	int use_pipe;
-
-// Prefix used to generate this asset
-	char prefix[BCTEXTLEN];
 
 // Folder in resource manager
 	char folder[BCTEXTLEN];
