@@ -1023,6 +1023,10 @@ void Asset::load_defaults(BC_Hash *defaults,
 	tiff_cmodel = GET_DEFAULT("TIFF_CMODEL", tiff_cmodel);
 	tiff_compression = GET_DEFAULT("TIFF_COMPRESSION", tiff_compression);
 
+	// this extra 'FORMAT_' prefix is just here for legacy reasons
+	use_pipe = GET_DEFAULT("FORMAT_YUV_USE_PIPE", use_pipe);
+	GET_DEFAULT("FORMAT_YUV_PIPE", pipe);
+
 	GET_DEFAULT("REEL_NAME", reel_name);
 	reel_number = GET_DEFAULT("REEL_NUMBER", reel_number);
 	tcstart = GET_DEFAULT("TCSTART", tcstart);
@@ -1041,14 +1045,6 @@ void Asset::load_format_defaults(BC_Hash *defaults) {
 	// NOTE: old value is used if no init value set before GET_DEFAULT 
 
 	// override the defaults with those for this format
-	sprintf(temp, "FORMAT_%s_USE_PIPE", FILE_FORMAT_PREFIX(format));
-	use_pipe = 0;  
-	use_pipe = GET_DEFAULT(temp, use_pipe);
-
-	sprintf(temp, "FORMAT_%s_PIPE", FILE_FORMAT_PREFIX(format));
-	sprintf(pipe, "");
-	GET_DEFAULT(temp, pipe);
-
 	sprintf(temp, "FORMAT_%s_PATH", FILE_FORMAT_PREFIX(format));
 	sprintf(path, "");
 	GET_DEFAULT(temp, path);
@@ -1158,6 +1154,9 @@ void Asset::save_defaults(BC_Hash *defaults,
 		UPDATE_DEFAULT("EXR_COMPRESSION", exr_compression);
 		UPDATE_DEFAULT("TIFF_CMODEL", tiff_cmodel);
 		UPDATE_DEFAULT("TIFF_COMPRESSION", tiff_compression);
+
+		UPDATE_DEFAULT("FORMAT_YUV_USE_PIPE", use_pipe);
+		UPDATE_DEFAULT("FORMAT_YUV_PIPE", pipe);
 	}
 
 	if(do_bits)
@@ -1183,12 +1182,6 @@ void Asset::save_format_defaults(BC_Hash *defaults) {
 	char temp[BCTEXTLEN];
 	char string[BCTEXTLEN];
 	if (! format) return;
-
-	sprintf(temp, "FORMAT_%s_USE_PIPE", FILE_FORMAT_PREFIX(format));
-	UPDATE_DEFAULT(temp, use_pipe);
-
-	sprintf(temp, "FORMAT_%s_PIPE", FILE_FORMAT_PREFIX(format));
-	UPDATE_DEFAULT(temp, pipe);
 
 	sprintf(temp, "FORMAT_%s_PATH", FILE_FORMAT_PREFIX(format));
 	UPDATE_DEFAULT(temp, path);
