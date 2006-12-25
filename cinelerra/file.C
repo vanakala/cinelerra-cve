@@ -1575,6 +1575,7 @@ char* File::get_tag(int format)
 		case FILE_AMPEG:        return "mp3";
 		case FILE_AU:           return "au";
 		case FILE_AVI:          return "avi";
+		case FILE_RAWDV:        return "dv";
 		case FILE_EXR:          return "exr";
 		case FILE_EXR_LIST:     return "exr";
 		case FILE_JPEG:         return "jpg";
@@ -1591,6 +1592,7 @@ char* File::get_tag(int format)
 		case FILE_VMPEG:        return "m2v";
 		case FILE_VORBIS:       return "ogg";
 		case FILE_WAV:          return "wav";
+		case FILE_YUV:          return "m2v";
 	}
 	return 0;
 }
