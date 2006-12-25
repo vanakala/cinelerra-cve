@@ -271,7 +271,7 @@ double YUVStream::get_aspect_ratio() {
 					    get_height());
 	y4m_ratio_t aspect_ratio =  mpeg_framerate(code);
 	if (aspect_ratio.d == 0) return 0;
-	return (double) aspect_ratio.n / (double) aspect_ratio.n;
+	return (double) aspect_ratio.n / (double) aspect_ratio.d;
 }		
 void YUVStream::set_aspect_ratio(double aspect_ratio) {
 	y4m_ratio_t ratio;
