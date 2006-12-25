@@ -9,7 +9,6 @@
 #include "file.inc"
 #include "formatpopup.h"
 #include "mwindow.inc"
-#include "pipe.inc"
 
 class FormatAParams;
 class FormatVParams;
@@ -73,7 +72,6 @@ public:
 	BrowseButton *path_button;
 	FormatPathText *path_textbox;
 	BC_RecentList *path_recent;
-	PipeStatus *pipe_status;
 	BC_Title *format_title;
 	FormatFormat *format_button;
 	BC_TextBox *format_text;

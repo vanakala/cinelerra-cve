@@ -30,13 +30,11 @@ FormatTools::FormatTools(MWindow *mwindow,
 	path_textbox = 0;
 	path_button = 0;
 	path_recent = 0;
-	pipe_status = 0;
 	w = 0;
 }
 
 FormatTools::~FormatTools()
 {
-	delete pipe_status;
 	delete path_recent;
 	delete path_button;
 	delete path_textbox;
@@ -124,12 +122,6 @@ int FormatTools::create_objects(int &init_x,
 // Set w for user.
 		w = x + path_button->get_w() + 5;
 		x -= 305;
-
-		y += 25;
-
-		pipe_status = new PipeStatus(x, y, "");
-		window->add_subwindow(pipe_status);
-		pipe_status->set_status(asset);
 
 		y += 35;
 	}
@@ -625,8 +617,6 @@ int FormatFormat::handle_event()
 			format->update_extension();
 			if (format->path_textbox)
 				format->path_textbox->update(format->asset->path);
-			if (format->pipe_status)
-				format->pipe_status->set_status(format->asset);
 			if (format->path_recent)
 				format->path_recent->load_items
 					(FILE_FORMAT_PREFIX(format->asset->format));

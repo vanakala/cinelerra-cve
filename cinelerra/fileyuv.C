@@ -251,9 +251,7 @@ void FileYUV::get_parameters(BC_WindowBase *parent_window,
 		asset->use_pipe = config->pipe_config->checkbox->get_value();
 		// update the path textbox in the render window
 		format->path_textbox->update(asset->path);
-		// set the pipe status in the render window
-		format->pipe_status->set_status(asset);
-		// and add the new path and pipe to the defaults list
+		// add the new path and pipe to the defaults list
 		const char *prefix = FILE_FORMAT_PREFIX(asset->format);
 		config->path_recent->add_item(prefix, asset->path);
 		config->pipe_config->recent->add_item(prefix, asset->pipe);

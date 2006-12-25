@@ -178,24 +178,6 @@ int PipeCheckBox::handle_event() {
 	else textbox->disable();
 }
 
-PipeStatus::PipeStatus(int x, int y, char *default_string) 
-	: BC_Title(x, y, default_string)
-{
-	this->default_string = default_string;
-}
-int PipeStatus::set_status(Asset *asset) {
-	if (! asset->use_pipe || ! asset->pipe || ! *(asset->pipe)) {
-		set_color(BLACK);
-		sprintf(status, default_string);
-	}
-	else {
-		set_color(RED);
-		sprintf(status, "| %s", asset->pipe);
-	}
-
-	update(status);
-}
-
 
 
 PipePreset::PipePreset(int x, int y, char *title, PipeConfig *config)

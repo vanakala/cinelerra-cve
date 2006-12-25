@@ -59,16 +59,6 @@ class PipeConfig {
 	Asset *asset;
 };
 
-class PipeStatus : public BC_Title
-{
- public:
-	PipeStatus(int x, int y, char *default_string);
-	int set_status(Asset *asset);
- private:
-	char *default_string;
-	char status[BCTEXTLEN];
-};
-
 
 class PipePreset : public BC_PopupMenu
 {
