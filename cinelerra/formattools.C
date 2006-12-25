@@ -598,25 +598,10 @@ int FormatFormat::handle_event()
 		int new_format = File::strtoformat(format->plugindb, get_selection(0, 0)->get_text());
 		if(new_format != format->asset->format)
 		{
-			// save the state of the old format
-			format->asset->save_format_defaults
-				(format->mwindow->defaults);
-
-			// close the configure window if open
-			format->close_format_windows();
-
-			// change to the new format
 			format->asset->format = new_format;
-
-			// load the state for the new format
-			format->asset->load_format_defaults
-				(format->mwindow->defaults);
-
-			// update the render window to match
 			format->format_text->update(get_selection(0, 0)->get_text());
 			format->update_extension();
-			if (format->path_textbox)
-				format->path_textbox->update(format->asset->path);
+			format->close_format_windows();
 			if (format->path_recent)
 				format->path_recent->load_items
 					(FILE_FORMAT_PREFIX(format->asset->format));
