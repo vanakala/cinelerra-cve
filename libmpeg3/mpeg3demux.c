@@ -401,8 +401,6 @@ static int get_pes_packet(mpeg3_demuxer_t *demuxer)
 	else
 	if(demuxer->stream_id == MPEG3_PRIVATE_STREAM_2)
 	{
-/* Dump private data! */
-		fprintf(stderr, "stream_id == MPEG3_PRIVATE_STREAM_2\n");
 		packet_skip(demuxer, demuxer->raw_size - demuxer->raw_offset);
 		return 0;
 	}
