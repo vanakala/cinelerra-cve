@@ -155,6 +155,9 @@ PKG_CHECK_MODULES(PNG,libpng,[libpng=yes],:)
 AC_CHECK_HEADER(jpeglib.h,[libjpegh=yes])
 AC_CHECK_LIB(jpeg,jpeg_start_decompress,[libjpeg=yes])
 
+AC_CHECK_HEADER(tiffio.h,[libtiffh=yes])
+AC_CHECK_LIB(tiff,TIFFOpen,[libtiff=yes])
+
 AC_ARG_ENABLE(freetype2,
 	AC_HELP_STRING([--enable-freetype2],[enables freetype2 usage (default is use pkg-config detection)]),
 	[ 
@@ -551,6 +554,8 @@ RPT(libdv,libdv)
 RPT(libpng,libpng)
 RPT(libjpeg,libjpeg libraries)
 RPT(libjpegh,libjpeg headers)
+RPT(libtiff,libtiff libraries)
+RPT(libtiffh,libtiff headers)
 RPT(freetype2,FreeType 2)
 RPT(libx264,libx264 libraries)
 RPT(libx264h,libx264 headers)
