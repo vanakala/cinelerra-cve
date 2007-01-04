@@ -116,8 +116,12 @@ void ZoomBar::resize_event()
 		mwindow->theme->mzoom_h);
 
 	draw_top_background(get_parent(), 0, 0, get_w(), get_h());
-// 	int x = 3, y = 1;
-// 	sample_zoom->reposition_window(x, y);
+ 	int x = 3, y = 1;
+	if (sample_zoom) delete sample_zoom;
+	sample_zoom = new SampleZoomPanel(mwindow, this, x, y);
+	sample_zoom->set_menu_images(mwindow->theme->get_image_set("zoombar_menu", 0));
+	sample_zoom->set_tumbler_images(mwindow->theme->get_image_set("zoombar_tumbler", 0));
+	sample_zoom->create_objects();
 // 	x += sample_zoom->get_w();
 // 	amp_zoom->reposition_window(x, y);
 // 	x += amp_zoom->get_w();
