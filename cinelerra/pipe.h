@@ -29,47 +29,4 @@ class Pipe {
 	FILE *file;
 };
 
-
-class PipeCheckBox : public BC_CheckBox 
-{
- public:
-	PipeCheckBox(int x, int y, int value, BC_TextBox *textbox);
-	int handle_event();
-
- private: 
-	BC_TextBox *textbox;
-};
-	
-
-class PipeConfig {
- public:
-	PipeConfig(BC_WindowBase *window, BC_Hash *defaults, Asset *asset);
-	// NOTE: Default destructor should destroy all subwindows
-
-	int create_objects(int x, int y, int textbox_width, int format);
-
-	// NOTE: these are public so caller can check final values
-	PipeCheckBox *checkbox;
-	BC_TextBox *textbox;
-	BC_RecentList *recent;
-	
- private:
-	BC_WindowBase *window;
-	BC_Hash *defaults;
-	Asset *asset;
-};
-
-
-class PipePreset : public BC_PopupMenu
-{
- public:
-	PipePreset(int x, int y, char *title, PipeConfig *config);
-	int handle_event();
-	
- private: 
-	PipeConfig *config;
-	char *title;
-};
-	
-	
 #endif /* PIPE_H */

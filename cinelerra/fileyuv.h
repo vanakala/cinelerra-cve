@@ -8,6 +8,9 @@
 #include "formattools.h"
 #include "ffmpeg.h"
 
+class PipeCheckBox;
+class PipePreset;
+
 class FileYUV : public FileBase
 {
  public:
@@ -58,9 +61,34 @@ class YUVConfigVideo : public BC_Window
 	BC_Hash *defaults;
 	BC_TextBox *path_textbox;
 	BC_RecentList *path_recent;
-	PipeConfig *pipe_config;
+	PipeCheckBox  *pipe_checkbox;
+	BC_TextBox    *pipe_textbox;
+	BC_RecentList *pipe_recent;
 	PipePreset *mpeg2enc;
 	PipePreset *ffmpeg;
+};
+
+
+class PipeCheckBox : public BC_CheckBox 
+{
+ public:
+	PipeCheckBox(int x, int y, int value);
+	int handle_event();
+	BC_TextBox *textbox;
+};
+
+
+
+class PipePreset : public BC_PopupMenu
+{
+ public:
+	PipePreset(int x, int y, char *title, BC_TextBox *textbox, BC_CheckBox *checkbox);
+	int handle_event();
+	
+ private: 
+	BC_TextBox *pipe_textbox;
+	BC_CheckBox *pipe_checkbox;
+	char *title;
 };
 
 
