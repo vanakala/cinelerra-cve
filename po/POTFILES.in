@@ -45,6 +45,7 @@ cinelerra/filesndfile.C
 cinelerra/filetga.C
 cinelerra/filetiff.C
 cinelerra/filevorbis.C
+cinelerra/fileyuv.C
 # cinelerra/flipbook.C
 cinelerra/formatcheck.C
 cinelerra/formatpopup.C

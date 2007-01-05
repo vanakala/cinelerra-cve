@@ -1,16 +1,15 @@
 # Tradução para Português Brasileiro do Cinelerra
-# Copyright (C) 2005 Heroine Warrior Inc.
+# Copyright (C) 2006 Heroine Warrior Inc.
 # This file is distributed under the same license as the cinelerra package.
-# Estudio Livre <estudiolivre@lists.riseup.net> (2005)
-# Rafael Diniz <rafael@riseup.net> (2005)
+# Rafael Diniz <rafael@riseup.net> (2006)
 #
 #
 msgid ""
 msgstr ""
-"Project-Id-Version: cinelerra 2.0\n"
+"Project-Id-Version: cinelerra 2.1\n"
 "Report-Msgid-Bugs-To: cinelerra@skolelinux.no\n"
-"POT-Creation-Date: 2006-11-19 21:33+0000\n"
-"PO-Revision-Date: 2006-12-23 12:36-0200\n"
+"POT-Creation-Date: 2007-01-05 17:32-0200\n"
+"PO-Revision-Date: 2007-01-05 17:32-0200\n"
 "Last-Translator: Rafael Diniz <rafael@riseup.net>\n"
 "Language-Team: EstudioLivre <estudiolivre@lists.riseup.net>\n"
 "MIME-Version: 1.0\n"
@@ -146,7 +145,7 @@ msgstr "Bytes:"
 msgid "Bitrate (bits/sec):"
 msgstr "Razão de bits (bits/seg):"
 
-#: cinelerra/assetedit.C:243 cinelerra/formattools.C:156
+#: cinelerra/assetedit.C:243 cinelerra/formattools.C:148
 msgid "Audio:"
 msgstr "Áudio:"
 
@@ -191,7 +190,7 @@ msgstr "Valores não possuem sinal"
 msgid "Values are signed"
 msgstr "Valores possuem sinal"
 
-#: cinelerra/assetedit.C:381 cinelerra/formattools.C:188
+#: cinelerra/assetedit.C:381 cinelerra/formattools.C:180
 msgid "Video:"
 msgstr "Video:"
 
@@ -866,14 +865,14 @@ msgid "H:"
 msgstr "A:"
 
 #: cinelerra/cwindowtool.C:532 cinelerra/cwindowtool.C:972
-#: cinelerra/cwindowtool.C:1803 cinelerra/zoombar.C:462
+#: cinelerra/cwindowtool.C:1803 cinelerra/zoombar.C:466
 #: plugins/radialblur/radialblur.C:261 plugins/titler/titlewindow.C:203
 #: plugins/zoomblur/zoomblur.C:276
 msgid "X:"
 msgstr "X:"
 
 #: cinelerra/cwindowtool.C:541 cinelerra/cwindowtool.C:981
-#: cinelerra/cwindowtool.C:1811 cinelerra/zoombar.C:464
+#: cinelerra/cwindowtool.C:1811 cinelerra/zoombar.C:468
 #: plugins/perspective/perspective.C:137 plugins/radialblur/radialblur.C:265
 #: plugins/titler/titlewindow.C:208 plugins/yuv/yuv.C:172
 #: plugins/zoomblur/zoomblur.C:280
@@ -1113,11 +1112,11 @@ msgstr "Nome da Trilha"
 msgid "Select a file to export to:"
 msgstr "Selecione um arquivo para exportar para:"
 
-#: cinelerra/exportedl.C:388 cinelerra/formattools.C:120
+#: cinelerra/exportedl.C:388 cinelerra/formattools.C:118
 msgid "Output to file"
 msgstr "Dar saída para arquivo"
 
-#: cinelerra/exportedl.C:389 cinelerra/formattools.C:121
+#: cinelerra/exportedl.C:389 cinelerra/formattools.C:119
 msgid "Select a file to write to:"
 msgstr "Selecionar um arquivo para onde escrever:"
 
@@ -1667,6 +1666,26 @@ msgstr "RGB descomprimido"
 msgid "RGBA uncompressed"
 msgstr "RGBA descomprimido"
 
+#: cinelerra/fileyuv.C:376
+msgid "Output Path:"
+msgstr "Caminho de Saída:"
+
+#: cinelerra/fileyuv.C:384
+msgid "Use Pipe:"
+msgstr "Usar Pipe:"
+
+#: cinelerra/fileyuv.C:395
+msgid "Stream Header:"
+msgstr "Cabeçalho do Stream:"
+
+#: cinelerra/fileyuv.C:399
+msgid "Interlacing:"
+msgstr "Entrelaçamento:"
+
+#: cinelerra/fileyuv.C:406
+msgid "Pipe Presets:"
+msgstr "Pré-configurações do Pipe:"
+
 #: cinelerra/formatcheck.C:31
 msgid "The format you selected doesn't support video."
 msgstr "O formato que você escolheu não suporta vídeo."
@@ -1743,43 +1762,43 @@ msgstr "Áudio de DAT"
 msgid "Presets:"
 msgstr "Pré-configurações:"
 
-#: cinelerra/formattools.C:139 cinelerra/recordprefs.C:44
+#: cinelerra/formattools.C:131 cinelerra/recordprefs.C:44
 msgid "File Format:"
 msgstr "Formato do Arquivo:"
 
-#: cinelerra/formattools.C:239
+#: cinelerra/formattools.C:231
 msgid "MPEG transport stream"
 msgstr "Faixa de transporte do MPEG"
 
-#: cinelerra/formattools.C:478
+#: cinelerra/formattools.C:470
 msgid "Configure audio compression"
 msgstr "Configurar compressão do áudio"
 
-#: cinelerra/formattools.C:492
+#: cinelerra/formattools.C:484
 msgid "Configure video compression"
 msgstr "Configurar compressão do vídeo"
 
-#: cinelerra/formattools.C:561
+#: cinelerra/formattools.C:553
 msgid "Record audio tracks"
 msgstr "Gravar trilhas de áudio"
 
-#: cinelerra/formattools.C:561
+#: cinelerra/formattools.C:553
 msgid "Render audio tracks"
 msgstr "Renderizar trilhas de áudio"
 
-#: cinelerra/formattools.C:576
+#: cinelerra/formattools.C:568
 msgid "Record video tracks"
 msgstr "Gravar trilhas de vídeo"
 
-#: cinelerra/formattools.C:576
+#: cinelerra/formattools.C:568
 msgid "Render video tracks"
 msgstr "Renderizar trilhas de vídeo"
 
-#: cinelerra/formattools.C:655
+#: cinelerra/formattools.C:630
 msgid "Overwrite project with output"
 msgstr "Sobrescrever projeto com saída"
 
-#: cinelerra/formattools.C:673
+#: cinelerra/formattools.C:648
 msgid "Create new file at each label"
 msgstr "Criar um arquivo novo a cada marcador"
 
@@ -3830,47 +3849,47 @@ msgstr "Escala da forma de onda do áudio"
 msgid "Height of tracks in the timeline"
 msgstr "Altura das trilhas na linha do tempo"
 
-#: cinelerra/zoombar.C:405
+#: cinelerra/zoombar.C:409
 msgid "Automation range maximum"
 msgstr "Abrangência máxima da automação"
 
-#: cinelerra/zoombar.C:407
+#: cinelerra/zoombar.C:411
 msgid "Automation range minimum"
 msgstr "Abrangência mínima da automação"
 
-#: cinelerra/zoombar.C:439
+#: cinelerra/zoombar.C:443
 msgid "Automation Type"
 msgstr "Tipo de automação"
 
-#: cinelerra/zoombar.C:456
+#: cinelerra/zoombar.C:460
 msgid "Audio Fade:"
 msgstr "Fade de Áudio:"
 
-#: cinelerra/zoombar.C:458
+#: cinelerra/zoombar.C:462
 msgid "Video Fade:"
 msgstr "Fade de Vídeo:"
 
-#: cinelerra/zoombar.C:460
+#: cinelerra/zoombar.C:464
 msgid "Zoom:"
 msgstr "Aproximação:"
 
-#: cinelerra/zoombar.C:466
+#: cinelerra/zoombar.C:470
 msgid "??"
 msgstr "??"
 
-#: cinelerra/zoombar.C:496
+#: cinelerra/zoombar.C:500
 msgid "Automation range"
 msgstr "Abrangência da Automação"
 
-#: cinelerra/zoombar.C:556
+#: cinelerra/zoombar.C:560
 msgid "Selection start time"
 msgstr "Tempo de início da seleção"
 
-#: cinelerra/zoombar.C:594
+#: cinelerra/zoombar.C:598
 msgid "Selection length"
 msgstr "Duração da seleção"
 
-#: cinelerra/zoombar.C:628
+#: cinelerra/zoombar.C:632
 msgid "Selection end time"
 msgstr "Tempo de término da seleção"
 
