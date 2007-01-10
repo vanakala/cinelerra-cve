@@ -6,7 +6,7 @@
 #include "file.inc"
 
 #ifdef DV_USE_FFMPEG
-#include "ffmpeg/libavcodec/avcodec.h"
+#include <avcodec.h>
 #endif
 
 #include <libdv/dv.h>

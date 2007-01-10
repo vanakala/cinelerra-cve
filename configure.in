@@ -302,7 +302,7 @@ if test "x$with_external_ffmpeg" = "xyes"; then
      FFMPEG_EXTERNALTEXT="External ffmpeg"
 else
      FFMPEG_FOLDER=ffmpeg
-     FFMPEG_CFLAGS="-I\$(srcdir)/ffmpeg/libavcodec"
+     FFMPEG_CFLAGS="-I\$(top_srcdir)/quicktime/ffmpeg/libavcodec"
      FFMPEG_LIBS="ffmpeg/libavcodec/libavcodec.la"
      FFMPEG_EXTERNALTEXT="Internal ffmpeg"
 fi

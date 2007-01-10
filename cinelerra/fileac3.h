@@ -2,7 +2,7 @@
 #define FILEAC3_H
 
 
-#include "ffmpeg/libavcodec/avcodec.h"
+#include <avcodec.h>
 #include "filebase.h"
 #include <stdio.h>
 
