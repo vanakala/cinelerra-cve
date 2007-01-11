@@ -1,0 +1,44 @@
+Ceci est le manuel de Cinelerra CV.
+
+Vous pouvez le redistribuer et/ou le modifier selon les termes de la licence
+GNU GPL, telle que publiée par la Free Software Foundation; que ce soit en
+version 2 de cette licence, ou (selon votre choix) toute version ultérieure.
+
+Il est basé sur "Secrets of Cinelerra", un excellent manuel écrit par Heroine
+Virtual Ltd. Le contenu du Wiki d'Alex Ferrer a été ajouté par Nicolas
+Maufrais, qui travailla sur le fichier original cinelerra.texi afin de pouvoir
+générer des manuels à la présentation agréable.
+
+Pour récupérer les sources du manuel:
+cg-clone git://scm.pipapo.org/cinelerra-nicolasm
+
+Responsables de la documentation Cinelerra-CV :
+Anglais : Nicolas Maufrais (coordinateur) - e.conti@gmx.net
+Français : Jean-Luc Coulon
+
+Pour fabriquer les manuels aux formats PDF, HTML et TXT, exécuter:
+./make_manuals.sh <code langue>
+Exemple: ./make_manuals.sh fr
+
+Dépendance: texinfo doit etre installé sur votre ordinateur.
+
+Le manuel peut aussi être converti en Docbook, mais vous aurez besoin de la
+version CVS de Texinfo pour le faire. La version "stable" de Texinfo ne peut
+pas produire des fichiers Docbook corrects. Si vous avez le binaire CVS de
+makeinfo installé sur votre ordinateur, vous pouvez décommenter les lignes
+adéquates dans make_manuals.sh. Ceci va générer un fichier Docbook
+cinelerra.xml qui pourra être ouvert par yelp.
+ATTENTION: Ne désinstallez pas votre version stable de texinfo. Si vous voulez
+visualiser le manuel dans yelp, téléchargez les sources de texinfo CVS et
+construisez les binaires. Voici ce que vous devez faire:
+$ cvs -z3 -d:pserver:anonymous@cvs.savannah.gnu.org:/sources/texinfo co texinfo
+$ cd texinfo
+$ ./autogen.sh
+$ ./configure --enable-maintainer-mode
+$ make
+
+Vous pouvez alors voir apparaître des erreurs de compilation. Ne vous en
+inquiétez pas. Ne lancez *PAS* l'installation de makeinfo CVS. Tout ce dont
+vous avez besoin est le binaire CVS de makeinfo, qui se trouve dans le
+répertoire makeinfo. Renommez-le en makeinfo_cvs par exemple et copiez-le dans
+votre path.

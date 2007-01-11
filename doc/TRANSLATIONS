@@ -1,0 +1,34 @@
+Here is some information about the manual translation process. It is intended
+to be read by the maintainers of the Cinelerra CV manual in other languages
+than English.
+
+- To start a new translation, contact the Cinelerra CV documentation
+  maintainer: Nicolas MAUFRAIS - Email: e.conti@gmx.net
+- Fetch the latest manual edition using the procedure described in the manual,
+  section "Introduction", subsection "About this manual".
+- Translate the texinfo file cinelerra_cv_manual_en.texi, and rename it to
+  cinelerra_cv_manual_xx.texi, "xx" being the two-letter ISO-639 code of the
+  language you translate the manual to.
+- Copy the manual_images_en folder, and rename it to manual_images_xx
+- Change the images location in cinelerra_cv_manual_xx.texi, in order to point
+  to the images contained in manual_images_xx
+- Avoid changing the texinfo commands as much as possible. If you need some
+  information about texinfo, get its excellent manual at www.gnu.org
+- Keep as is the edition number of the English manual you fetched.
+- Test everything works fine by running make_manuals.sh <language code>
+- When you have finished, send everything to the Cinelerra CV documentation
+  maintainer.
+
+The translated manual will then be put into the Cinelerra CV documentation
+repository and uploaded to the Cinelerra CV website.
+
+While you translate the manual, chances are that a new edition of the English
+manual is released. To keep track of the changes in the git repository, you can
+use the gitk GUI. To easily find differences between each edition, we recommend
+you use meld.
+
+As regards to the images, some of them contain English text. You can edit
+pictures in the manual_images_<country code> folder. Please also put in there
+the .xcf Gimp files, in addition to the png images. That will ease work on
+those pictures in the future. Keeping in English the name of the pictures is
+recommended.

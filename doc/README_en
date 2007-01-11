@@ -1,0 +1,36 @@
+This is the Cinelerra CV Manual.
+
+You may redistribute it and/or modify it under the terms of the GNU General
+Public License, as published by the Free Software Foundation; either version 2
+of the License, or (at your option) any later version.
+
+It is based on "Secrets of Cinelerra", an excellent manual written by Heroine
+Virtual Ltd. Alex Ferrer's TWiki contents was put in by Nicolas Maufrais, who
+worked on the original cinelerra.texi file in order to generate nice manuals.
+
+To fetch the manual sources:
+cg-clone git://scm.pipapo.org/cinelerra-nicolasm
+
+To make the manuals in PDF, HTML and TXT formats, just execute:
+./make_manuals.sh <language code>
+Example: ./make_manuals.sh en
+
+Dependency: texinfo has to be installed on your computer.
+
+The manual can also be converted to Docbook, but you need the CVS version of
+texinfo to do so. The "stable" version of Texinfo cannot produce a correct
+Docbook file. If you have the binary of the CVS version of makeinfo available
+on your computer, you can uncomment the corresponding lines in make_manuals.sh
+That will produce a Docbook cinelerra.xml file which can be opened by yelp.
+CAUTION: Do not deinstall your current stable version of texinfo. If you want
+to look at the manual in yelp, just download the texinfo CVS sources and make
+the binaries. Here is what you should do:
+$ cvs -z3 -d:pserver:anonymous@cvs.savannah.gnu.org:/sources/texinfo co texinfo
+$ cd texinfo
+$ ./autogen.sh
+$ ./configure --enable-maintainer-mode
+$ make
+
+You will get compilation errors. Do not worry about that. Do *NOT* proceed to
+the makeinfo CVS install. All you need is the makeinfo binary, which is in the
+makeinfo folder.  Rename it to makeinfo_cvs for example and copy it your path.
