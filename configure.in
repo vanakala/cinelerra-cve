@@ -237,16 +237,20 @@ AM_CONDITIONAL(HAVE_FIREWIRE,test "x$enable_firewire" = "xok")
 AC_ARG_WITH(buildinfo,
           AC_HELP_STRING(
 	  	  [--with-buildinfo],
-		  [includes revision information in the 'About' box; allowed values: svn, git; add /recompile to force rebuild on each make invocation]),
+		  [includes revision information in the 'About' box; allowed values: svn, git; add /recompile to force rebuild on each make invocation, or cust/"Custom string" for packagers]),
 	[ buildinfo=$withval],
 	[ buildinfo="none" ])
 AC_SUBST(buildinfo)
 
 BUILDINFO_repository=$(echo $buildinfo | sed 's=/recompile==')
 BUILDINFO_recompile=$(echo $buildinfo | sed 's=.*/recompile=yes=')
+BUILDINFO_custom=$(echo $buildinfo | sed 's=cust.*=yes=')
+BUILDINFO_CUSTOM_TAG=$(echo $buildinfo | sed 's=cust/==')
+AC_SUBST(BUILDINFO_CUSTOM_TAG)
 AM_CONDITIONAL(BUILDINFO_GIT, test "x$BUILDINFO_repository" = "xgit")
 AM_CONDITIONAL(BUILDINFO_SVN, test "x$BUILDINFO_repository" = "xsvn")
 AM_CONDITIONAL(BUILDINFO_RECOMPILE, test "x$BUILDINFO_recompile" = "xyes")
+AM_CONDITIONAL(BUILDINFO_CUST, test "x$BUILDINFO_custom" = "xyes")
 
 echo removing cinelerra/versioninfo.h to force a re-build
 rm -f cinelerra/versioninfo.h > /dev/null 2>&1

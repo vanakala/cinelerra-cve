@@ -88,3 +88,19 @@ Pentium 4: (include sth D, etc)
 AMD 64:
 
 
+----------------------------
+configure flags:
+----------------------------
+
+For stamping builds:
+  --with-buildinfo=svn
+  --with-buildinfo=git
+     stamp the About dialog and version info with svn/git version,
+     [unsure] flag, and build date
+--with-buildinfo=svn/recompile
+--with-buildinfo=git/recompile
+     as above, but pull the version from svn/git every time make is run.
+--with-buildinfo=cust/"SVN r980 SUSE"
+     Use a custom string to take the about dialog and version info,
+     for pacakgers who use 'make dist' and run configure on the resulting
+     tar file.

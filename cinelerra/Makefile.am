@@ -28,9 +28,19 @@ SVNVERSION=$(shell if [ -d $(top_srcdir)/.svn ]; then svnversion $(top_srcdir); 
 	echo '#define REPOMAINTXT      " SVN $(SVNVERSION) $(BUILDINFO_NONRC_S) (C) 2006 Heroine Virtual Ltd.\n@FFMPEG_EXTERNALTEXT@\nCompiled on $(BUILDDATE)"' >> versioninfo.h
 	echo '#define REPOABOUTPREFTXT "SVN Version: $(SVNVERSION) $(BUILDINFO_NONRC_S)"' >> versioninfo.h
 
+else
+if BUILDINFO_CUST
+
+	echo '#define REPOMAINTXT      " $(BUILDINFO_CUSTOM_TAG) (C) 2006 Heroine Virtual Ltd.\n@FFMPEG_EXTERNALTEXT@\nCompiled on $(BUILDDATE)"' >> versioninfo.h
+	echo '#define REPOABOUTPREFTXT "$(BUILDINFO_CUSTOM_TAG)"' >> versioninfo.h
+
+
 else # (no repository)
+
+
 	echo '#define REPOMAINTXT      "(C) 2006 Heroine Virtual Ltd.\nCompiled on $(BUILDDATE)"' >> versioninfo.h
 	echo '#define REPOABOUTPREFTXT ""' >> versioninfo.h
+endif
 endif
 endif
 	echo '#define FFMPEG_EXTERNALTEXT "@FFMPEG_EXTERNALTEXT@"' >> versioninfo.h
