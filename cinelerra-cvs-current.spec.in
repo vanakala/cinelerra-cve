@@ -6,25 +6,38 @@
 
 %{?_with_opengl: %{expand: %%global with_OPENGL 1}}
 
-Summary: Cinelerra CVS
+Summary: Cinelerra CV
 Name: cinelerra
-#Version: 1.2.0.cvs.cobra
+Version: @VERSION@.cv981
 %if %{with_OPENGL}
-Version: @VERSION@.CV.svn.%{build_nick}.opengl
+##Version: @VERSION@.CV.svn.%{build_nick}.opengl
+Release: %{build_nick}.%(date '+%Y%m%d').opengl
 %else
-Version: @VERSION@.CV.svn.%{build_nick}
+##Version: @VERSION@.CV.svn.%{build_nick}
+Release: %{build_nick}.%(date '+%Y%m%d')
 %endif
-Release: %(date '+%Y%m%d')
+##Release: %(date '+%Y%m%d')
 License: GPL
-Group: X11
+Group: Productivity/Multimedia/Video/Editors and Convertors
 URL: http://cvs.cinelerra.org
-#Source0: %{name}-%{version}.tar.gz
-#Source0: %{name}-1.2.0.tar.gz
 Source0: %{name}-@VERSION@.tar.gz
-#BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-buildroot
-#BuildRoot: %{_tmppath}/%{name}-1.2.0-%{release}-buildroot
 BuildRoot: %{_tmppath}/%{name}-@VERSION@-%{release}-buildroot
 Requires: mjpegtools >= 1.6.3
+
+%if %suse_version > 1000
+BuildRequires: xorg-x11 xorg-x11-devel mjpegtools >= 1.6.3 mjpegtools-devel
+BuildRequires: alsa-devel libogg-devel
+BuildRequires: libvorbis-devel libtheora-devel OpenEXR-devel libdv-devel
+BuildRequires: libpng-devel libjpeg-devel mjpegtools-devel fftw3-devel a52dec
+BuildRequires: faad2-devel faac libiec61883-devel esound-devel lame
+BuildRequires: e2fsprogs-devel libsndfile-devel nasm gcc gcc-c++ libtiff-devel
+
+# libpng-devel-32bit libjpeg-devel-32bit e2fsprogs-devel-32bit
+# libtiff-devel-32bit
+# non-suse repo
+BuildRequires: x264-devel
+%endif
+
 Provides: cinelerra
 
 %description
@@ -34,33 +47,29 @@ build options: --with opengl
 %else
 Cinelerra unofficial cvs package
 without OpenGL support
-build options: 
+build options: [none]
 %endif
 
 %prep
-# %setup -q
-# %setup -n cinelerra-1.2.0
 %setup -n %{name}-@VERSION@
 
 %build
 %if %{with_OPENGL}
-./configure --prefix=%{prefix} --enable-freetype2 --enable-opengl
+./configure --prefix=%{prefix} --libdir=%_libdir --with-plugindir=%{_libdir}/cinelerra --enable-freetype2 --with-buildinfo=cust/"SVN r981 SUSE" --enable-opengl
 %else
-./configure --prefix=%{prefix} --enable-freetype2
+./configure --prefix=%{prefix} --libdir=%_libdir --with-plugindir=%{_libdir}/cinelerra --enable-freetype2 --with-buildinfo=cust/"SVN r981 SUSE"
 %endif
-#./configure
 %{__make} %{?_smp_mflags} %{?mflags}
 
 %install
 rm -rf $RPM_BUILD_ROOT
-make prefix=$RPM_BUILD_ROOT%{prefix} install
+make DESTDIR=$RPM_BUILD_ROOT install
 # rename the mpeg3 utils so they can be installed alongside SuSE native versions
 ( cd $RPM_BUILD_ROOT%{prefix}/bin
   mv mpeg3toc mpeg3toc.hv
   mv mpeg3cat mpeg3cat.hv
   mv mpeg3dump mpeg3dump.hv
-#  cd $RPM_BUILD_ROOT%{prefix}/lib
-  ln -s /usr/bin/mpeg2enc $RPM_BUILD_ROOT%{prefix}/lib/cinelerra/mpeg2enc.plugin
+  ln -s /usr/bin/mpeg2enc $RPM_BUILD_ROOT%{_libdir}/cinelerra/mpeg2enc.plugin
 )
 
 %clean
@@ -82,23 +91,23 @@ rm -rf $RPM_BUILD_ROOT
 %{prefix}/bin/mpeg3dump.hv
 %{prefix}/bin/mpeg3toc.hv
 %{prefix}/bin/mpeg3cat.hv
-#%{prefix}/lib/*
+
 %{prefix}/share/locale/*
 %exclude %{prefix}/include/*
 
-%{prefix}/lib/cinelerra/*.so
-%{prefix}/lib/cinelerra/mpeg2enc.plugin
-%{prefix}/lib/cinelerra/shapewipe/*
+%{_libdir}/cinelerra/*.so
+%{_libdir}/cinelerra/mpeg2enc.plugin
+%{_libdir}/cinelerra/shapewipe/*
 
 # remove below for no static libs
-# %exclude %{prefix}/lib/cinelerra/*.a
-%exclude %{prefix}/lib/cinelerra/*.la
+# %exclude %{_libdir}/lib/cinelerra/*.a
+%exclude %{_libdir}/cinelerra/*.la
 
-%{prefix}/lib/cinelerra/fonts/*
+%{_libdir}/cinelerra/fonts/*
 
-%{prefix}/lib/libguicast*
-%{prefix}/lib/libmpeg3hv*
-%{prefix}/lib/libquicktimehv*
+%{_libdir}/libguicast*
+%{_libdir}/libmpeg3hv*
+%{_libdir}/libquicktimehv*
 # missing in 2.0
 #%{prefix}/lib/libsndfilehv*
 #%{prefix}/lib/pkgconfig*
@@ -108,6 +117,15 @@ rm -rf $RPM_BUILD_ROOT
 
 
 %changelog
+* Fri Jan 19 2007 Kevin Brosius <cobra@compuserve.com> - 2.1.cv981-cobra-date
+- svn r981
+- Update for 64bit SUSE builds
+- Change versioning to more closely match SUSE package guidelines and packman
+
+
+* Fri Nov 24 2006 Kevin Brosius <cobra@compuserve.com> - 2.1.0.cvs.cobra-date
+- svn r958
+
 * Thu Sep 14 2006 Kevin Brosius <cobra@compuserve.com> - 2.1.0.cvs.cobra-date
 - First package with merged Cinelerra 2.1
 - svn r888
