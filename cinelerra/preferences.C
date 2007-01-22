@@ -244,10 +244,10 @@ int Preferences::load_defaults(BC_Hash *defaults)
 
 	sprintf(global_plugin_dir, PLUGIN_DIR);
 //	defaults->get("GLOBAL_PLUGIN_DIR", global_plugin_dir);
-//	if(getenv("GLOBAL_PLUGIN_DIR"))
-//	{
-//		strcpy(global_plugin_dir, getenv("GLOBAL_PLUGIN_DIR"));
-//	}
+	if(getenv("GLOBAL_PLUGIN_DIR"))
+	{
+		strcpy(global_plugin_dir, getenv("GLOBAL_PLUGIN_DIR"));
+	}
 
 	strcpy(theme, DEFAULT_THEME);
 	defaults->get("THEME", theme);
