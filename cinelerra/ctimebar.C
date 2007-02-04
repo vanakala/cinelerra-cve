@@ -102,6 +102,7 @@ void CTimeBar::select_label(double position)
 		1,
 		0);
 	mwindow->gui->unlock_window();
+	mwindow->update_plugin_guis();
 //printf("CTimeBar::select_label 2\n");
 }
 

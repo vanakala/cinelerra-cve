@@ -10,6 +10,7 @@
 #include "mtimebar.h"
 #include "mwindowgui.h"
 #include "mwindow.h"
+#include "patchbay.h"
 #include "preferences.h"
 #include "theme.h"
 #include "trackcanvas.h"
@@ -430,11 +431,13 @@ void MTimeBar::select_label(double position)
 	}
 
 // Que the CWindow
-	mwindow->cwindow->update(1, 0, 0);
+	mwindow->cwindow->update(1, 0, 0, 0, 1);
 	mwindow->gui->cursor->hide(0);
 	mwindow->gui->cursor->draw(1);
 	mwindow->gui->canvas->activate();
 	mwindow->gui->zoombar->update();
+	mwindow->gui->patchbay->update();
+	mwindow->update_plugin_guis();
 	update_highlights();
 	mwindow->gui->canvas->flash();
 }

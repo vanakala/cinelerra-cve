@@ -2151,6 +2151,7 @@ int TrackCanvas::do_keyframes(int cursor_x,
 									1);
 							mwindow->session->current_operation = pre_auto_operations[i];
 							update_drag_caption();
+							rerender = 1;
 							}
 							else
 							{
@@ -4119,6 +4120,8 @@ int TrackCanvas::cursor_motion_event()
 				if(do_edit_handles(get_cursor_x(), 
 					get_cursor_y(), 
 					0, 
+					rerender,
+					update_overlay,
 					new_cursor,
 					update_cursor))
 				{
@@ -4129,6 +4132,8 @@ int TrackCanvas::cursor_motion_event()
 				if(do_plugin_handles(get_cursor_x(), 
 					get_cursor_y(), 
 					0, 
+					rerender,
+					update_overlay,
 					new_cursor,
 					update_cursor))
 				{
@@ -4421,6 +4426,8 @@ int TrackCanvas::button_release_event()
 int TrackCanvas::do_edit_handles(int cursor_x, 
 	int cursor_y, 
 	int button_press, 
+	int &rerender,
+	int &update_overlay,
 	int &new_cursor,
 	int &update_cursor)
 {
@@ -4493,20 +4500,8 @@ int TrackCanvas::do_edit_handles(int cursor_x,
 			mwindow->session->drag_origin_y = get_cursor_y();
 			mwindow->session->drag_start = position;
 
-			int rerender = start_selection(position);
-			if(rerender)
-			{
-				gui->unlock_window();
-				mwindow->cwindow->update(1, 0, 0);
-				gui->lock_window("TrackCanvas::do_edit_handles");
-			}
-			gui->timebar->update_highlights();
-			gui->zoombar->update();
-			gui->cursor->hide(0);
-			gui->cursor->draw(1);
-			draw_overlays();
-			flash();
-			flush();
+			rerender = start_selection(position);
+			update_overlay = 1;
 		}
 	}
 
@@ -4516,6 +4511,8 @@ int TrackCanvas::do_edit_handles(int cursor_x,
 int TrackCanvas::do_plugin_handles(int cursor_x, 
 	int cursor_y, 
 	int button_press,
+	int &rerender,
+	int &update_overlay,
 	int &new_cursor,
 	int &update_cursor)
 {
@@ -4590,20 +4587,8 @@ int TrackCanvas::do_plugin_handles(int cursor_x,
 			mwindow->session->drag_origin_y = get_cursor_y();
 			mwindow->session->drag_start = position;
 
-			int rerender = start_selection(position);
-			if(rerender) 
-			{
-				gui->unlock_window();
-				mwindow->cwindow->update(1, 0, 0);
-				gui->lock_window("TrackCanvas::do_plugin_handles");
-			}
-			gui->timebar->update_highlights();
-			gui->zoombar->update();
-			gui->cursor->hide(0);
-			gui->cursor->draw(1);
-			draw_overlays();
-			flash();
-			flush();
+			rerender = start_selection(position);
+			update_overlay = 1;
 		}
 	}
 	
@@ -5027,6 +5012,8 @@ int TrackCanvas::button_press_event()
 				if(do_edit_handles(cursor_x, 
 					cursor_y, 
 					1, 
+					rerender,
+					update_overlay,
 					new_cursor, 
 					update_cursor))
 				{
@@ -5037,6 +5024,8 @@ int TrackCanvas::button_press_event()
 				if(do_plugin_handles(cursor_x, 
 					cursor_y, 
 					1, 
+					rerender,
+					update_overlay,
 					new_cursor, 
 					update_cursor))
 				{
@@ -5096,6 +5085,8 @@ int TrackCanvas::button_press_event()
 				if(do_edit_handles(cursor_x, 
 					cursor_y, 
 					1, 
+					rerender,
+					update_overlay,
 					new_cursor, 
 					update_cursor))
 				{
@@ -5106,6 +5097,8 @@ int TrackCanvas::button_press_event()
 				if(do_plugin_handles(cursor_x, 
 					cursor_y, 
 					1, 
+					rerender,
+					update_overlay,
 					new_cursor, 
 					update_cursor))
 				{

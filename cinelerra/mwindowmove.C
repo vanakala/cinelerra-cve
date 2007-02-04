@@ -417,7 +417,7 @@ int MWindow::goto_end()
 	gui->cursor->update();
 	gui->canvas->activate();
 	gui->zoombar->update();
-	cwindow->update(1, 0, 0, 0, 0);
+	cwindow->update(1, 0, 0, 0, 1);
 	return 0;
 }
 
@@ -444,7 +444,7 @@ int MWindow::goto_start()
 	gui->cursor->update();
 	gui->canvas->activate();
 	gui->zoombar->update();
-	cwindow->update(1, 0, 0, 0, 0);
+	cwindow->update(1, 0, 0, 0, 1);
 	return 0;
 }
 
@@ -506,6 +506,7 @@ int MWindow::next_label(int shift_down)
 				edl->local_session->get_selectionend(1));
 
 		update_plugin_guis();
+		gui->patchbay->update();
 		if(edl->local_session->get_selectionend(1) >= 
 			(double)edl->local_session->view_start *
 			edl->local_session->zoom_sample /
@@ -520,19 +521,17 @@ int MWindow::next_label(int shift_down)
 				edl->local_session->zoom_sample - 
 				gui->canvas->get_w() / 
 				2));
-			cwindow->update(1, 0, 0, 0, 0);
 		}
 		else
 		{
-			gui->patchbay->update();
 			gui->timebar->update();
 			gui->cursor->hide(0);
 			gui->cursor->draw(1);
 			gui->zoombar->update();
 			gui->canvas->flash();
 			gui->flush();
-			cwindow->update(1, 0, 0);
 		}
+		cwindow->update(1, 0, 0, 0, 1);
 	}
 	else
 	{
@@ -553,6 +552,7 @@ int MWindow::prev_label(int shift_down)
 			edl->local_session->set_selectionend(edl->local_session->get_selectionstart(1));
 
 		update_plugin_guis();
+		gui->patchbay->update();
 // Scroll the display
 		if(edl->local_session->get_selectionstart(1) >= edl->local_session->view_start *
 			edl->local_session->zoom_sample /
@@ -568,20 +568,18 @@ int MWindow::prev_label(int shift_down)
 				edl->local_session->zoom_sample - 
 				gui->canvas->get_w() / 
 				2));
-			cwindow->update(1, 0, 0, 0, 0);
 		}
 		else
 // Don't scroll the display
 		{
-			gui->patchbay->update();
 			gui->timebar->update();
 			gui->cursor->hide(0);
 			gui->cursor->draw(1);
 			gui->zoombar->update();
 			gui->canvas->flash();
 			gui->flush();
-			cwindow->update(1, 0, 0);
 		}
+		cwindow->update(1, 0, 0, 0, 1);
 	}
 	else
 	{
@@ -625,6 +623,7 @@ printf("MWindow::next_edit_handle %d\n", shift_down);
 				edl->local_session->get_selectionend(1));
 
 		update_plugin_guis();
+		gui->patchbay->update();
 		if(edl->local_session->get_selectionend(1) >= 
 			(double)edl->local_session->view_start *
 			edl->local_session->zoom_sample /
@@ -639,19 +638,17 @@ printf("MWindow::next_edit_handle %d\n", shift_down);
 				edl->local_session->zoom_sample - 
 				gui->canvas->get_w() / 
 				2));
-			cwindow->update(1, 0, 0, 0, 0);
 		}
 		else
 		{
-			gui->patchbay->update();
 			gui->timebar->update();
 			gui->cursor->hide(0);
 			gui->cursor->draw(1);
 			gui->zoombar->update();
 			gui->canvas->flash();
 			gui->flush();
-			cwindow->update(1, 0, 0);
 		}
+		cwindow->update(1, 0, 0, 0, 1);
 	}
 	else
 	{
@@ -689,6 +686,7 @@ printf("MWindow::next_edit_handle %d\n", shift_down);
 			edl->local_session->set_selectionend(edl->local_session->get_selectionstart(1));
 
 		update_plugin_guis();
+		gui->patchbay->update();
 // Scroll the display
 		if(edl->local_session->get_selectionstart(1) >= edl->local_session->view_start *
 			edl->local_session->zoom_sample /
@@ -704,20 +702,18 @@ printf("MWindow::next_edit_handle %d\n", shift_down);
 				edl->local_session->zoom_sample - 
 				gui->canvas->get_w() / 
 				2));
-			cwindow->update(1, 0, 0, 0, 0);
 		}
 		else
 // Don't scroll the display
 		{
-			gui->patchbay->update();
 			gui->timebar->update();
 			gui->cursor->hide(0);
 			gui->cursor->draw(1);
 			gui->zoombar->update();
 			gui->canvas->flash();
 			gui->flush();
-			cwindow->update(1, 0, 0);
 		}
+		cwindow->update(1, 0, 0, 0, 1);
 	}
 	else
 	{
