@@ -77,6 +77,7 @@ PackageRenderer::~PackageRenderer()
 	delete audio_cache;
 	delete video_cache;
 	delete vconfig;
+	delete aconfig;
 }
 
 // PackageRenderer::initialize happens only once for every node when doing rendering session

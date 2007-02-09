@@ -2117,6 +2117,7 @@ int TrackCanvas::do_keyframes(int cursor_x,
 									auto_colors[i],
 									auto_keyframe,
 									autogrouptype);
+								delete dummy;
 							}
 							break;
 

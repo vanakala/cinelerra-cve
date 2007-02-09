@@ -62,6 +62,10 @@ FileOGG::~FileOGG()
 			vorbis_info_clear(&tf->vi);
 			vorbis_comment_clear(&tf->vc);
 		}
+		if (tf->vpage)
+			free(tf->vpage);
+		if (tf->apage)
+			free(tf->apage);
 		delete tf;
 	}
 	if (temp_frame) delete temp_frame;
