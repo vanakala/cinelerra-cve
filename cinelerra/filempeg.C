@@ -523,13 +523,16 @@ int FileMPEG::create_index()
 
 	sprintf(ptr, ".toc");
 
-	int need_toc = 1;
+	mpeg3_t *fd_toc;
+
 
 // Test existing copy of TOC
-	if((fd = mpeg3_open(index_filename, &error)))
-		need_toc = 0;
-
-	if(need_toc)
+	mpeg3_close(fd);     // Always free old fd
+	if((fd_toc = mpeg3_open(index_filename, &error)))
+	{
+// Just exchange old fd 
+		fd = fd_toc;
+	} else
 	{
 // Create progress window.
 // This gets around the fact that MWindowGUI is locked.
@@ -596,26 +599,10 @@ int FileMPEG::create_index()
 			remove(index_filename);
 			return 1;
 		}
-		else
-// Fix date to date of source if success
-		{
-		}
-
-		if(fd) mpeg3_close(fd);
-		fd = 0;
-	}
-
-
 
 // Reopen file from index path instead of asset path.
-	if(!fd)
-	{
 		if(!(fd = mpeg3_open(index_filename, &error)))
-		{
 			return 1;
-		}
-		else
-			return 0;
 	}
 
 	return 0;
