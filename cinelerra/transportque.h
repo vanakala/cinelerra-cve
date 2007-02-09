@@ -23,7 +23,11 @@ public:
 	void set_playback_range(EDL *edl = 0, int use_inout = 0);
 
 // Adjust playback range with in/out points for rendering
-	void adjust_playback_range();
+	void playback_range_adjust_inout();
+// Set playback range to in/out points for rendering
+	void playback_range_inout();
+// Set playback range to whole project for rendering
+	void playback_range_project();
 
 	int single_frame();
 	EDL* get_edl();

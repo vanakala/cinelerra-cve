@@ -208,26 +208,33 @@ void TransportCommand::set_playback_range(EDL *edl, int use_inout)
 
 }
 
-void TransportCommand::adjust_playback_range()
+void TransportCommand::playback_range_adjust_inout()
 {
-
-
 	if(edl->local_session->inpoint_valid() ||
 		edl->local_session->outpoint_valid())
 	{
-		if(edl->local_session->inpoint_valid())
-			start_position = edl->local_session->get_inpoint();
-		else
-			start_position = 0;
-
-		if(edl->local_session->outpoint_valid())
-			end_position = edl->local_session->get_outpoint();
-		else
-			end_position = edl->tracks->total_playable_length();
+		playback_range_inout();
 	}
 }
 
+void TransportCommand::playback_range_inout()
+{
+	if(edl->local_session->inpoint_valid())
+		start_position = edl->local_session->get_inpoint();
+	else
+		start_position = 0;
 
+	if(edl->local_session->outpoint_valid())
+		end_position = edl->local_session->get_outpoint();
+	else
+		end_position = edl->tracks->total_playable_length();
+}
+
+void TransportCommand::playback_range_project()
+{
+	start_position = 0;
+	end_position = edl->tracks->total_playable_length();
+}
 
 
 

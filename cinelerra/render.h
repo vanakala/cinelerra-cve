@@ -30,6 +30,8 @@
 #include "track.inc"
 #include "transportque.inc"
 #include "vframe.inc"
+#include "renderprofiles.inc"
+
 
 class RenderItem : public BC_MenuItem
 {
@@ -100,10 +102,12 @@ public:
 	int render(int test_overwrite, 
 		Asset *asset,
 		EDL *edl,
-		int strategy);
+		int strategy,
+		int range_type);
 
 	int load_defaults(Asset *asset);
 	int save_defaults(Asset *asset);
+	int load_profile(int profile_slot, Asset *asset);
 // force asset parameters regardless of window
 // This should be integrated into the Asset Class.
 	static int check_asset(EDL *edl, Asset &asset); 
@@ -160,6 +164,7 @@ public:
 // For use in non interactive mode
 	ArrayList<PluginServer*> *plugindb;
 	int strategy;
+	int range_type;
 // Total selection to render in seconds
 	double total_start, total_end;
 // External Render farm checks this every frame.
@@ -192,6 +197,34 @@ public:
 
 class RenderToTracks;
 
+
+class RenderRangeProject : public BC_Radial
+{
+public:
+	RenderRangeProject(RenderWindow *rwindow, int value, int x, int y);
+	int handle_event();
+	RenderWindow *rwindow;
+};
+
+class RenderRangeSelection : public BC_Radial
+{
+public:
+	RenderRangeSelection(RenderWindow *rwindow, int value, int x, int y);
+	int handle_event();
+	RenderWindow *rwindow;
+};
+
+
+class RenderRangeInOut : public BC_Radial
+{
+public:
+	RenderRangeInOut(RenderWindow *rwindow, int value, int x, int y);
+	int handle_event();
+	RenderWindow *rwindow;
+};
+
+
+
 class RenderWindow : public BC_Window
 {
 public:
@@ -199,8 +232,15 @@ public:
 	~RenderWindow();
 
 	int create_objects();
+	void update_range_type(int range_type);
+	int load_profile(int profile_slot);
+	
+	RenderRangeProject *rangeproject;
+	RenderRangeSelection *rangeselection;
+	RenderRangeInOut *rangeinout;
 
-
+	RenderProfile *renderprofile;
+	
 	LoadMode *loadmode;
 	FormatTools *format_tools;
 

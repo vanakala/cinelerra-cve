@@ -269,6 +269,7 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    renderengine.C \
 		    renderfarm.C \
 		    renderfarmclient.C \
+		    renderprofiles.C \
 		    resample.C \
 		    resizetrackthread.C \
 		    resourcepixmap.C \
@@ -590,6 +591,7 @@ noinst_HEADERS = aattachmentpoint.h \
 		 renderfarm.h \
 		 render.h \
 		 resample.h \
+		 renderprofiles.h \
 		 resizetrackthread.h \
 		 resourcepixmap.h \
 		 resourcethread.h \

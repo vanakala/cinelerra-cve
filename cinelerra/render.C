@@ -49,6 +49,7 @@
 #include "vframe.h"
 #include "videoconfig.h"
 #include "vrender.h"
+#include "renderprofiles.h"
 
 #include <ctype.h>
 #include <string.h>
@@ -219,6 +220,7 @@ Render::Render(MWindow *mwindow)
 	counter_lock = new Mutex("Render::counter_lock");
 	completion = new Condition(0, "Render::completion");
 	progress_timer = new Timer;
+	range_type = RANGE_BACKCOMPAT;
 }
 
 Render::~Render()
@@ -363,7 +365,7 @@ printf("Render::run 9\n");
 		mwindow->save_defaults();
 printf("Render::run 10\n");
 
-		if(!result) render(1, asset, mwindow->edl, strategy);
+		if(!result) render(1, asset, mwindow->edl, strategy, range_type);
 printf("Render::run 11\n");
 
 		Garbage::delete_object(asset);
@@ -396,7 +398,7 @@ printf("Render::run 12\n");
 				edl->load_xml(plugindb, file, LOAD_ALL);
 
 				check_asset(edl, *job->asset);
-				render(0, job->asset, edl, job->strategy);
+				render(0, job->asset, edl, job->strategy, RANGE_BACKCOMPAT);
 
 				delete edl;
 				delete file;
@@ -562,7 +564,8 @@ void Render::stop_progress()
 int Render::render(int test_overwrite, 
 	Asset *asset,
 	EDL *edl,
-	int strategy)
+	int strategy,
+	int range_type)
 {
 	char string[BCTEXTLEN];
 // Total length in seconds
@@ -601,10 +604,25 @@ int Render::render(int test_overwrite,
 	command->command = NORMAL_FWD;
 	command->get_edl()->copy_all(edl);
 	command->change_type = CHANGE_ALL;
+	if (range_type == RANGE_BACKCOMPAT)
+	{
 // Get highlighted playback range
-	command->set_playback_range();
+		command->set_playback_range();
 // Adjust playback range with in/out points
-	command->adjust_playback_range();
+		command->playback_range_adjust_inout();
+	} else
+	if (range_type == RANGE_PROJECT)
+	{
+		command->playback_range_project();
+	} else
+	if (range_type == RANGE_SELECTION)
+	{
+		command->set_playback_range();
+	} else
+	if (range_type == RANGE_INOUT)
+	{
+		command->playback_range_inout();
+	}
 	packages = new PackageDispatcher;
 
 
@@ -985,6 +1003,7 @@ int Render::load_defaults(Asset *asset)
 {
 	strategy = mwindow->defaults->get("RENDER_STRATEGY", SINGLE_PASS);
 	load_mode = mwindow->defaults->get("RENDER_LOADMODE", LOAD_NEW_TRACKS);
+	range_type = mwindow->defaults->get("RENDER_RANGE_TYPE", RANGE_PROJECT);
 
 
 	asset->load_defaults(mwindow->defaults, 
@@ -999,10 +1018,38 @@ int Render::load_defaults(Asset *asset)
 	return 0;
 }
 
+int Render::load_profile(int profile_slot, Asset *asset)
+{
+	char string_name[100];
+	sprintf(string_name, "RENDER_%i_STRATEGY", profile_slot);
+	strategy = mwindow->defaults->get(string_name, SINGLE_PASS);
+// Load mode is not part of the profile
+//	printf(string_name, "RENDER_%i_LOADMODE", profile_slot);
+//	load_mode = mwindow->defaults->get(string_name, LOAD_NEW_TRACKS);
+	sprintf(string_name, "RENDER_%i_RANGE_TYPE", profile_slot);
+	range_type = mwindow->defaults->get(string_name, RANGE_PROJECT);
+
+
+	sprintf(string_name, "RENDER_%i_", profile_slot);
+	asset->load_defaults(mwindow->defaults, 
+		string_name, 
+		1,
+		1,
+		1,
+		1,
+		1);
+
+
+	return 0;
+}
+
+
+
 int Render::save_defaults(Asset *asset)
 {
 	mwindow->defaults->update("RENDER_STRATEGY", strategy);
 	mwindow->defaults->update("RENDER_LOADMODE", load_mode);
+	mwindow->defaults->update("RENDER_RANGE_TYPE", range_type);
 
 
 
@@ -1022,7 +1069,7 @@ int Render::save_defaults(Asset *asset)
 
 
 #define WIDTH 410
-#define HEIGHT 360
+#define HEIGHT 455
 
 
 RenderWindow::RenderWindow(MWindow *mwindow, Render *render, Asset *asset)
@@ -1046,6 +1093,14 @@ RenderWindow::~RenderWindow()
 {
 	delete format_tools;
 	delete loadmode;
+}
+
+
+int RenderWindow::load_profile(int profile_slot)
+{
+	render->load_profile(profile_slot, asset);
+	update_range_type(render->range_type);
+	format_tools->update(asset, &render->strategy);
 }
 
 
@@ -1076,12 +1131,83 @@ int RenderWindow::create_objects()
 		0,
 		&render->strategy,
 		0);
+	add_subwindow(new BC_Title(x, 
+		y, 
+			_("Render range:")));
 
+	x += 110;
+	add_subwindow(rangeproject = new RenderRangeProject(this, 
+		render->range_type == RANGE_PROJECT, 
+		x, 
+		y));
+	y += 20;
+	add_subwindow(rangeselection = new RenderRangeSelection(this, 
+		render->range_type == RANGE_SELECTION, 
+		x, 
+		y));
+	y += 20;
+	add_subwindow(rangeinout = new RenderRangeInOut(this, 
+		render->range_type == RANGE_INOUT, 
+		x, 
+		y));
+	y += 30;
+	x = 5;
+
+	renderprofile = new RenderProfile(mwindow, this, x, y, 1);
+	renderprofile->create_objects();
+	y += 70;
 	loadmode = new LoadMode(mwindow, this, x, y, &render->load_mode, 1);
 	loadmode->create_objects();
+
+
 
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
 	show_window();
 	return 0;
 }
+
+void RenderWindow::update_range_type(int range_type)
+{
+	render->range_type = range_type;
+	rangeproject->update(range_type == RANGE_PROJECT);
+	rangeselection->update(range_type == RANGE_SELECTION);
+	rangeinout->update(range_type == RANGE_INOUT);
+}
+
+
+RenderRangeProject::RenderRangeProject(RenderWindow *rwindow, int value, int x, int y)
+ : BC_Radial(x, y, value, _("Project"))
+{
+	this->rwindow = rwindow;
+}
+int RenderRangeProject::handle_event()
+{
+	rwindow->update_range_type(RANGE_PROJECT);
+	return 1;
+}
+
+RenderRangeSelection::RenderRangeSelection(RenderWindow *rwindow, int value, int x, int y)
+ : BC_Radial(x, y, value, _("Selection"))
+{
+	this->rwindow = rwindow;
+}
+int RenderRangeSelection::handle_event()
+{
+	rwindow->update_range_type(RANGE_SELECTION);
+	return 1;
+}
+
+
+RenderRangeInOut::RenderRangeInOut(RenderWindow *rwindow, int value, int x, int y)
+ : BC_Radial(x, y, value, _("In/Out Points"))
+{
+	this->rwindow = rwindow;
+}
+int RenderRangeInOut::handle_event()
+{
+	rwindow->update_range_type(RANGE_INOUT);
+	return 1;
+}
+
+

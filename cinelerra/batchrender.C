@@ -447,7 +447,7 @@ void BatchRenderThread::calculate_dest_paths(ArrayList<char*> *paths,
 				LOAD_ALL);
 			command->change_type = CHANGE_ALL;
 			command->set_playback_range();
-			command->adjust_playback_range();
+			command->playback_range_adjust_inout();
 
 // Create test packages
 			packages->create_packages(mwindow,
