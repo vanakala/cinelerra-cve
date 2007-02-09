@@ -26,6 +26,7 @@ public:
 		int64_t current_frame);
 	double scale;
 	int stretch;
+	int interp;
 };
 
 
@@ -64,6 +65,18 @@ public:
 	ReframeRTWindow *gui;
 };
 
+class ReframeRTInterpolate : public BC_CheckBox
+{
+public:
+	ReframeRTInterpolate(ReframeRT *plugin,
+		ReframeRTWindow *gui,
+		int x,
+		int y);
+	int handle_event();
+	ReframeRT *plugin;
+	ReframeRTWindow *gui;
+};
+
 class ReframeRTWindow : public BC_Window
 {
 public:
@@ -75,6 +88,7 @@ public:
 	ReframeRTScale *scale;
 	ReframeRTStretch *stretch;
 	ReframeRTDownsample *downsample;
+	ReframeRTInterpolate *interpolate;
 };
 
 PLUGIN_THREAD_HEADER(ReframeRT, ReframeRTThread, ReframeRTWindow)
@@ -113,18 +127,21 @@ ReframeRTConfig::ReframeRTConfig()
 {
 	scale = 1.0;
 	stretch = 0;
+	interp = 0;
 }
 
 int ReframeRTConfig::equivalent(ReframeRTConfig &src)
 {
 	return fabs(scale - src.scale) < 0.0001 &&
-		stretch == src.stretch;
+		stretch == src.stretch &&
+		interp == src.interp;
 }
 
 void ReframeRTConfig::copy_from(ReframeRTConfig &src)
 {
 	this->scale = src.scale;
 	this->stretch = src.stretch;
+	this->interp = src.interp;
 }
 
 void ReframeRTConfig::interpolate(ReframeRTConfig &prev, 
@@ -133,12 +150,19 @@ void ReframeRTConfig::interpolate(ReframeRTConfig &prev,
 	int64_t next_frame, 
 	int64_t current_frame)
 {
-//	double next_scale = (double)(current_frame - prev_frame) / (next_frame - prev_frame);
-//	double prev_scale = (double)(next_frame - current_frame) / (next_frame - prev_frame);
-
-//	this->scale = prev.scale * prev_scale + next.scale * next_scale;
-	this->scale = prev.scale;
+	this->interp = prev.interp;
 	this->stretch = prev.stretch;
+
+	if (this->interp && prev_frame != next_frame)
+	{
+		// for interpolation, this is (for now) a simple linear slope to the next keyframe.
+		double slope = (next.scale - prev.scale) / (next_frame - prev_frame);
+		this->scale = (slope * (current_frame - prev_frame)) + prev.scale;
+	}
+	else
+	{
+		this->scale = prev.scale;
+	}
 }
 
 void ReframeRTConfig::boundaries()
@@ -191,6 +215,11 @@ void ReframeRTWindow::create_objects()
 		y));
 	y += 30;
 	add_subwindow(downsample = new ReframeRTDownsample(plugin, 
+		this,
+		x, 
+		y));
+	y += 30;
+	add_subwindow(interpolate = new ReframeRTInterpolate(plugin,
 		this,
 		x, 
 		y));
@@ -268,7 +297,23 @@ int ReframeRTDownsample::handle_event()
 	return 1;
 }
 
+ReframeRTInterpolate::ReframeRTInterpolate(ReframeRT *plugin,
+	ReframeRTWindow *gui,
+	int x,
+	int y)
+ : BC_CheckBox(x, y, 0, _("Interpolate"))
+{
+	this->plugin = plugin;
+	this->gui = gui;
+}
 
+int ReframeRTInterpolate::handle_event()
+{
+	plugin->config.interp = get_value();
+	gui->interpolate->update(get_value());
+	plugin->send_configure_change();
+	return 1;
+}
 
 
 
@@ -305,6 +350,7 @@ int ReframeRT::process_buffer(VFrame *frame,
 		double frame_rate)
 {
 	int64_t input_frame = get_source_start();
+	ReframeRTConfig prev_config, next_config;
 	KeyFrame *tmp_keyframe, *next_keyframe = get_prev_keyframe(get_source_start());
 	int64_t tmp_position, next_position;
 	int64_t segment_len;
@@ -328,19 +374,26 @@ int ReframeRT::process_buffer(VFrame *frame,
 		tmp_position = edl_to_local(tmp_keyframe->position);
 		next_position = edl_to_local(next_keyframe->position);
 
-		read_data(tmp_keyframe);
-
 		is_current_keyframe =
 			next_position > start_position // the next keyframe is after the current position
 			|| next_keyframe->position == tmp_keyframe->position // there are no more keyframes
 			|| !next_keyframe->position; // there are no keyframes at all
 
 		if (is_current_keyframe)
-			next_position = start_position;
+			segment_len = start_position - tmp_position;
+		else
+			segment_len = next_position - tmp_position;
 
-		segment_len = next_position - tmp_position;
+		read_data(next_keyframe);
+		next_config.copy_from(config);
+		read_data(tmp_keyframe);
+		prev_config.copy_from(config);
+		config.interpolate(prev_config, next_config, tmp_position, next_position, tmp_position + segment_len);
 
-		input_frame += (int64_t)(segment_len * config.scale);
+		// the area under the curve is the number of frames to advance
+		// as long as interpolate() uses a linear slope we can use geometry to determine this
+		// if interpolate() changes to use a curve then this needs use (possibly) the definite integral
+		input_frame += (int64_t)(segment_len * ((prev_config.scale + config.scale) / 2));
 	} while (!is_current_keyframe);
 
 	// Change rate
@@ -373,6 +426,7 @@ int ReframeRT::load_defaults()
 
 	config.scale = defaults->get("SCALE", config.scale);
 	config.stretch = defaults->get("STRETCH", config.stretch);
+	config.interp = defaults->get("INTERPOLATE", config.interp);
 	return 0;
 }
 
@@ -380,6 +434,7 @@ int ReframeRT::save_defaults()
 {
 	defaults->update("SCALE", config.scale);
 	defaults->update("STRETCH", config.stretch);
+	defaults->update("INTERPOLATE", config.interp);
 	defaults->save();
 	return 0;
 }
@@ -393,6 +448,7 @@ void ReframeRT::save_data(KeyFrame *keyframe)
 	output.tag.set_title("REFRAMERT");
 	output.tag.set_property("SCALE", config.scale);
 	output.tag.set_property("STRETCH", config.stretch);
+	output.tag.set_property("INTERPOLATE", config.interp);
 	output.append_tag();
 	output.terminate_string();
 }
@@ -411,6 +467,7 @@ void ReframeRT::read_data(KeyFrame *keyframe)
 		{
 			config.scale = input.tag.get_property("SCALE", config.scale);
 			config.stretch = input.tag.get_property("STRETCH", config.stretch);
+			config.interp = input.tag.get_property("INTERPOLATE", config.interp);
 		}
 	}
 }
@@ -427,6 +484,7 @@ void ReframeRT::update_gui()
 			thread->window->scale->update((float)config.scale);
 			thread->window->stretch->update(config.stretch);
 			thread->window->downsample->update(!config.stretch);
+			thread->window->interpolate->update(config.interp);
 			thread->window->unlock_window();
 		}
 	}
