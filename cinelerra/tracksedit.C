@@ -370,27 +370,8 @@ void Tracks::move_effect(Plugin *plugin,
 	else
 // Create a new plugin set
 	{
-		double length = 0;
-		double start = 0;
-		if(edl->local_session->get_selectionend() > 
-			edl->local_session->get_selectionstart())
-		{
-			start = edl->local_session->get_selectionstart();
-			length = edl->local_session->get_selectionend() - 
-				start;
-		}
-		else
-		if(dest_track->get_length() > 0)
-		{
-			start = 0;
-			length = dest_track->get_length();
-		}
-		else
-		{
-			start = 0;
-			length = dest_track->from_units(plugin->length);
-		}
-
+		double start = dest_track->from_units(dest_position);
+		double length = dest_track->from_units(plugin->length);
 
 		result = dest_track->insert_effect("", 
 				&plugin->shared_location, 
@@ -399,8 +380,8 @@ void Tracks::move_effect(Plugin *plugin,
 				start,
 				length,
 				plugin->plugin_type);
-	}
 
+	}
 
 
 	result->copy_from(plugin);

@@ -377,18 +377,6 @@ int TrackCanvas::drag_stop()
 				mwindow->session->current_operation = NO_OPERATION;
 
 // Insert shared plugin in source
-				if(mwindow->session->track_highlighted != mwindow->session->drag_plugin->track &&
-					!mwindow->session->plugin_highlighted &&
-					!mwindow->session->pluginset_highlighted)
-				{
-// Move plugin if different startproject
-					mwindow->move_effect(mwindow->session->drag_plugin,
-						0,
-						mwindow->session->track_highlighted,
-						0);
-					result = 1;
-				}
-				else
 // Move source to different location
 				if(mwindow->session->pluginset_highlighted)
 				{
