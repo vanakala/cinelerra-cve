@@ -237,13 +237,18 @@ void Module::update_transition(int64_t current_position,
 
 // If the current transition differs from the previous transition, delete the
 // server.
-	if ((transition && 
-		transition_server && 
-		strcmp(transition->title, transition_server->plugin->title)))
+	if (transition && 
+		transition_server)
 	{
-		transition_server->close_plugin();
-		delete transition_server;
-		transition_server = 0;
+		if (strcmp(transition->title, transition_server->plugin->title))
+		{
+			transition_server->close_plugin();
+			delete transition_server;
+			transition_server = 0;
+		} else
+		{
+			transition_server->plugin = transition;
+		}
 	}
 
 	if(transition && !transition_server)
