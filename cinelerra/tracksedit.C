@@ -280,7 +280,7 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 					Edit *dest_edit = dest_track->edits->shift(position_i, 
 						source_length);
 					Edit *result = dest_track->edits->insert_before(dest_edit, 
-						new Edit(edl, dest_track));
+						dest_track->edits->create_edit());
 					result->copy_from(source_edit);
 					result->startproject = position_i;
 					result->length = source_length;
@@ -316,7 +316,7 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 				// ONLY edit is moved, all other edits stay where they are
 				{
 					// Copy edit to temp, delete the edit, insert the edit
-					Edit *temp_edit = new Edit(edl, dest_track); 
+					Edit *temp_edit = dest_track->edits->create_edit(); 
 					temp_edit->copy_from(source_edit);
 					// we call the edits directly since we do not want to move keyframes or anything else
 					source_track->edits->clear(source_startproject, 
@@ -328,7 +328,7 @@ void Tracks::move_edits(ArrayList<Edit*> *edits,
 						position_i + source_length);
 					Edit *dest_edit = dest_track->edits->shift(position_i,  source_length);
 					Edit *result = dest_track->edits->insert_before(dest_edit, 
-						new Edit(edl, dest_track));
+						dest_track->edits->create_edit());
 					result->copy_from(temp_edit);
 					result->startproject = position_i;
 					result->length = source_length;
