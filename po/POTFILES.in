@@ -100,6 +100,7 @@ cinelerra/recordwindow.C
 cinelerra/render.C
 cinelerra/renderfarm.C
 cinelerra/renderfarmclient.C
+cinelerra/renderprofiles.C
 cinelerra/resizetrackthread.C
 cinelerra/resourcepixmap.C
 cinelerra/savefile.C
