@@ -675,6 +675,7 @@ VWindowSlider::VWindowSlider(MWindow *mwindow,
 	this->vwindow = vwindow;
 	this->gui = gui;
 	set_precision(0.00001);
+	set_pagination(1.0, 10.0);
 }
 
 VWindowSlider::~VWindowSlider()

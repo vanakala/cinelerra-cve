@@ -44,6 +44,8 @@ public:
 	int deactivate();
 	virtual int increase_value() { return 0; };
 	virtual int decrease_value() { return 0; };
+	virtual int increase_value_big() { return 0; };
+	virtual int decrease_value_big() { return 0; };
 	virtual char* get_caption() { return caption; };
 
 private:
@@ -100,6 +102,8 @@ public:
 	int64_t get_length();
 	int increase_value();
 	int decrease_value();
+	int increase_value_big();
+	int decrease_value_big();
 	virtual int handle_event();
 	virtual char* get_caption();
 
@@ -133,8 +137,11 @@ public:
 	float get_length();
 	virtual int increase_value();
 	virtual int decrease_value();
+	virtual int increase_value_big();
+	virtual int decrease_value_big();
 	virtual char* get_caption();
 	void set_precision(float value);
+	void set_pagination(float small_change, float big_change);
 
 private:
 	int value_to_pixel();
@@ -142,6 +149,7 @@ private:
 	int update_selection(int cursor_x, int cursor_y);
 	float minvalue, maxvalue, value;
 	float precision;
+	float small_change, big_change;
 };
 
 class BC_PercentageSlider : public BC_FSlider
@@ -158,8 +166,6 @@ public:
 			int use_caption = 0,
 			VFrame **data = 0);
 
-	virtual int increase_value();
-	virtual int decrease_value();
 	char* get_caption();
 private:
 };
