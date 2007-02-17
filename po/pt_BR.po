@@ -9,7 +9,7 @@ msgstr ""
 "Project-Id-Version: cinelerra 2.1\n"
 "Report-Msgid-Bugs-To: cinelerra@skolelinux.no\n"
 "POT-Creation-Date: 2007-01-05 17:32-0200\n"
-"PO-Revision-Date: 2007-01-05 17:32-0200\n"
+"PO-Revision-Date: 2007-02-17 01:56-0200\n"
 "Last-Translator: Rafael Diniz <rafael@riseup.net>\n"
 "Language-Team: EstudioLivre <estudiolivre@lists.riseup.net>\n"
 "MIME-Version: 1.0\n"
@@ -832,15 +832,15 @@ msgstr "Mostrar regiões seguras"
 msgid "insert assets"
 msgstr "inserir recursos"
 
-#: cinelerra/cwindowgui.C:1508 cinelerra/cwindowgui.C:2727
+#: cinelerra/cwindowgui.C:1509 cinelerra/cwindowgui.C:2728
 msgid "mask point"
 msgstr "ponto da máscara"
 
-#: cinelerra/cwindowgui.C:2716
+#: cinelerra/cwindowgui.C:2717
 msgid "camera"
 msgstr "câmera"
 
-#: cinelerra/cwindowgui.C:2720
+#: cinelerra/cwindowgui.C:2721
 msgid "projector"
 msgstr "projetor"
 
@@ -1091,40 +1091,40 @@ msgstr "Título do usuário..."
 msgid "User title"
 msgstr "Título do usuário"
 
-#: cinelerra/exportedl.C:81
+#: cinelerra/exportedl.C:87
 #, c-format
 msgid "Warning: chopping the reel name to eight characters!\n"
 msgstr "Atenção: limitando o nome do carretel para oito caracteres!\n"
 
-#: cinelerra/exportedl.C:228
+#: cinelerra/exportedl.C:234
 msgid "Export EDL..."
 msgstr "Exportar EDK..."
 
-#: cinelerra/exportedl.C:329
+#: cinelerra/exportedl.C:335
 msgid "No."
 msgstr "Não."
 
-#: cinelerra/exportedl.C:330
+#: cinelerra/exportedl.C:336
 msgid "Track name"
 msgstr "Nome da Trilha"
 
-#: cinelerra/exportedl.C:369
+#: cinelerra/exportedl.C:375
 msgid "Select a file to export to:"
 msgstr "Selecione um arquivo para exportar para:"
 
-#: cinelerra/exportedl.C:388 cinelerra/formattools.C:118
+#: cinelerra/exportedl.C:394 cinelerra/formattools.C:118
 msgid "Output to file"
 msgstr "Dar saída para arquivo"
 
-#: cinelerra/exportedl.C:389 cinelerra/formattools.C:119
+#: cinelerra/exportedl.C:395 cinelerra/formattools.C:119
 msgid "Select a file to write to:"
 msgstr "Selecionar um arquivo para onde escrever:"
 
-#: cinelerra/exportedl.C:394
+#: cinelerra/exportedl.C:400
 msgid "Select track to be exported:"
 msgstr "Selecione uma trilha para ser exportada:"
 
-#: cinelerra/exportedl.C:424
+#: cinelerra/exportedl.C:430
 msgid "Currently only CMX 3600 format is supported"
 msgstr "Somente o formato CMX 3600 é suportado"
 
@@ -1439,7 +1439,7 @@ msgid "Dither"
 msgstr "Dither"
 
 #: cinelerra/filemov.C:1482 cinelerra/filemov.C:1533 cinelerra/filemov.C:1830
-#: cinelerra/filemov.C:1863 cinelerra/filemov.C:1917 cinelerra/filempeg.C:1746
+#: cinelerra/filemov.C:1863 cinelerra/filemov.C:1917 cinelerra/filempeg.C:1733
 msgid "Bitrate:"
 msgstr "Taxa de Bits:"
 
@@ -1463,7 +1463,7 @@ msgstr "Taxa de Bits Máx:"
 msgid "Quantization Quality (%):"
 msgstr "Qualidade da Quantização (%):"
 
-#: cinelerra/filemov.C:1842 cinelerra/filemov.C:1883 cinelerra/filempeg.C:1752
+#: cinelerra/filemov.C:1842 cinelerra/filemov.C:1883 cinelerra/filempeg.C:1739
 msgid "Quantization:"
 msgstr "Quantização:"
 
@@ -1520,125 +1520,125 @@ msgstr "Fixar quantização"
 msgid "encode: lame_init_params returned %d\n"
 msgstr "encode: lame_init_params retornou %d\n"
 
-#: cinelerra/filempeg.C:1468 cinelerra/filempeg.C:1663
+#: cinelerra/filempeg.C:1455 cinelerra/filempeg.C:1650
 msgid "No options for MPEG transport stream."
 msgstr "Sem opções para transporte da faixa de MPEG"
 
-#: cinelerra/filempeg.C:1473
+#: cinelerra/filempeg.C:1460
 msgid "Layer:"
 msgstr "Camada:"
 
-#: cinelerra/filempeg.C:1478
+#: cinelerra/filempeg.C:1465
 msgid "Kbits per second:"
 msgstr "Kbits por segundo"
 
-#: cinelerra/filempeg.C:1535 cinelerra/filempeg.C:1543
+#: cinelerra/filempeg.C:1522 cinelerra/filempeg.C:1530
 msgid "II"
 msgstr "II"
 
-#: cinelerra/filempeg.C:1539
+#: cinelerra/filempeg.C:1526
 msgid "III"
 msgstr "III"
 
-#: cinelerra/filempeg.C:1667 cinelerra/new.C:353 cinelerra/setformat.C:449
+#: cinelerra/filempeg.C:1654 cinelerra/new.C:353 cinelerra/setformat.C:449
 msgid "Color model:"
 msgstr "Modelo de cor:"
 
-#: cinelerra/filempeg.C:1733
+#: cinelerra/filempeg.C:1720
 msgid "Format Preset:"
 msgstr "Pré-configuração do Formato:"
 
-#: cinelerra/filempeg.C:1740
+#: cinelerra/filempeg.C:1727
 msgid "Derivative:"
 msgstr "Derivativo:"
 
-#: cinelerra/filempeg.C:1759
+#: cinelerra/filempeg.C:1746
 msgid "I frame distance:"
 msgstr "Distância do quadro I:"
 
-#: cinelerra/filempeg.C:1767
+#: cinelerra/filempeg.C:1754
 msgid "P frame distance:"
 msgstr "Distância do quadro P:"
 
-#: cinelerra/filempeg.C:1773 plugins/deinterlace/deinterwindow.C:97
+#: cinelerra/filempeg.C:1760 plugins/deinterlace/deinterwindow.C:97
 #: plugins/deinterlace/deinterwindow.C:103 plugins/fieldframe/fieldframe.C:225
 #: plugins/framefield/framefield.C:247
 msgid "Bottom field first"
 msgstr "Campo de baixo primeiro"
 
-#: cinelerra/filempeg.C:1777
+#: cinelerra/filempeg.C:1764
 msgid "Progressive frames"
 msgstr "Quadros progressivos"
 
-#: cinelerra/filempeg.C:1779 plugins/denoise/denoise.C:117
+#: cinelerra/filempeg.C:1766 plugins/denoise/denoise.C:117
 msgid "Denoise"
 msgstr "Depurador"
 
-#: cinelerra/filempeg.C:1781
+#: cinelerra/filempeg.C:1768
 msgid "Sequence start codes in every GOP"
 msgstr "Seqüência inicia códigos a cada Grupo de Imagens (GOP)"
 
-#: cinelerra/filempeg.C:1830 cinelerra/filempeg.C:1838
+#: cinelerra/filempeg.C:1817 cinelerra/filempeg.C:1825
 msgid "MPEG-1"
 msgstr "MPEG-1"
 
-#: cinelerra/filempeg.C:1834
+#: cinelerra/filempeg.C:1821
 msgid "MPEG-2"
 msgstr "MPEG-2"
 
-#: cinelerra/filempeg.C:1887 cinelerra/filempeg.C:1897
+#: cinelerra/filempeg.C:1874 cinelerra/filempeg.C:1884
 msgid "Generic MPEG-1"
 msgstr "MPEG-1 Genérico"
 
-#: cinelerra/filempeg.C:1888
+#: cinelerra/filempeg.C:1875
 msgid "standard VCD"
 msgstr "VCD padrão"
 
-#: cinelerra/filempeg.C:1889
+#: cinelerra/filempeg.C:1876
 msgid "user VCD"
 msgstr "VCD usuário"
 
-#: cinelerra/filempeg.C:1890
+#: cinelerra/filempeg.C:1877
 msgid "Generic MPEG-2"
 msgstr "MPEG-2 genérico"
 
-#: cinelerra/filempeg.C:1891
+#: cinelerra/filempeg.C:1878
 msgid "standard SVCD"
 msgstr "SVCD padrão"
 
-#: cinelerra/filempeg.C:1892
+#: cinelerra/filempeg.C:1879
 msgid "user SVCD"
 msgstr "SVCD usuário"
 
-#: cinelerra/filempeg.C:1893
+#: cinelerra/filempeg.C:1880
 msgid "VCD Still sequence"
 msgstr "Sequência de estáticos em VCD"
 
-#: cinelerra/filempeg.C:1894
+#: cinelerra/filempeg.C:1881
 msgid "SVCD Still sequence"
 msgstr "Sequência de estáticos em till do SVCD"
 
-#: cinelerra/filempeg.C:1895
+#: cinelerra/filempeg.C:1882
 msgid "DVD NAV"
 msgstr "DVD NAV"
 
-#: cinelerra/filempeg.C:1896
+#: cinelerra/filempeg.C:1883
 msgid "DVD"
 msgstr "DVD"
 
-#: cinelerra/filempeg.C:1947 cinelerra/filevorbis.C:592
+#: cinelerra/filempeg.C:1934 cinelerra/filevorbis.C:592
 msgid "Fixed bitrate"
 msgstr "Bitrate fixo"
 
-#: cinelerra/filempeg.C:1961
+#: cinelerra/filempeg.C:1948
 msgid "Fixed quantization"
 msgstr "Quantização fixa"
 
-#: cinelerra/filempeg.C:2064 cinelerra/filempeg.C:2072
+#: cinelerra/filempeg.C:2051 cinelerra/filempeg.C:2059
 msgid "YUV 4:2:0"
 msgstr "YUV 4:2:0"
 
-#: cinelerra/filempeg.C:2068
+#: cinelerra/filempeg.C:2055
 msgid "YUV 4:2:2"
 msgstr "YUV 4:2:2"
 
@@ -2415,7 +2415,7 @@ msgstr "Nenhum efeito selecionado."
 msgid "No selected range to process."
 msgstr "Nenhuma abrangência selecionada para processar"
 
-#: cinelerra/menueffects.C:433 cinelerra/packagerenderer.C:153
+#: cinelerra/menueffects.C:433 cinelerra/packagerenderer.C:154
 #: cinelerra/savefile.C:82
 #, c-format
 msgid "Couldn't open %s"
@@ -2425,11 +2425,11 @@ msgstr "Não pode abrir %s"
 msgid "Select an effect"
 msgstr "Selecione um efeito"
 
-#: cinelerra/menueffects.C:594 cinelerra/render.C:1060
+#: cinelerra/menueffects.C:594 cinelerra/render.C:1115
 msgid "Select the first file to render to:"
 msgstr "Selecione o primeiro arquivo para renderizar para:"
 
-#: cinelerra/menueffects.C:595 cinelerra/render.C:1061
+#: cinelerra/menueffects.C:595 cinelerra/render.C:1116
 msgid "Select a file to render to:"
 msgstr "Selecione um arquivo para renderizar para:"
 
@@ -2751,7 +2751,7 @@ msgid "Untitled"
 msgstr "Sem Título"
 
 #: cinelerra/patchbay.C:304 cinelerra/patchgui.C:594
-#: cinelerra/trackcanvas.C:4379
+#: cinelerra/trackcanvas.C:4373
 msgid "keyframe"
 msgstr "keyframe"
 
@@ -3430,39 +3430,55 @@ msgstr "Avanço rápido"
 msgid "Seek to end of recording"
 msgstr "Buscar final da gravação"
 
-#: cinelerra/render.C:59
+#: cinelerra/render.C:60
 msgid "Render..."
 msgstr "Renderizar..."
 
-#: cinelerra/render.C:530
+#: cinelerra/render.C:532
 #, c-format
 msgid "Rendering %s..."
 msgstr "Renderizando %s..."
 
-#: cinelerra/render.C:533
+#: cinelerra/render.C:535
 msgid "Rendering..."
 msgstr "Renderizando..."
 
-#: cinelerra/render.C:551
+#: cinelerra/render.C:553
 #, c-format
 msgid "Rendering took %s"
 msgstr "A renderização levou %s"
 
-#: cinelerra/render.C:683
+#: cinelerra/render.C:701
 msgid "Starting render farm"
 msgstr "Iniciando fazenda de renderização"
 
-#: cinelerra/render.C:711
+#: cinelerra/render.C:729
 msgid "Failed to start render farm"
 msgstr "Falha ao iniciar fazenda de renderização"
 
-#: cinelerra/render.C:813
+#: cinelerra/render.C:831
 msgid "Error rendering data."
 msgstr "Erro renderizando dados."
 
-#: cinelerra/render.C:861
+#: cinelerra/render.C:879
 msgid "render"
 msgstr "render"
+
+#: cinelerra/render.C:1136
+msgid "Render range:"
+msgstr "Treicho de Renderização:"
+
+#: cinelerra/render.C:1180
+msgid "Project"
+msgstr "Projeto"
+
+#: cinelerra/render.C:1191
+msgid "Selection"
+msgstr "Seleção"
+
+#: cinelerra/render.C:1203
+msgid "In/Out Points"
+msgstr "Pontos de E/S"
 
 #: cinelerra/renderfarm.C:149
 msgid "RenderFarmServerThread::start_loop: socket\n"
@@ -3480,7 +3496,7 @@ msgstr "RenderFarmServerThread::start_loop: socket"
 #: cinelerra/renderfarm.C:204
 #, c-format
 msgid "RenderFarmServerThread::open_client: unknown host %s.\n"
-msgstr "RenderFarmServerThread::start_loop: host desconhecido %s.\n"
+msgstr "RenderFarmServerThread::open_client: host desconhecido %s.\n"
 
 #: cinelerra/renderfarm.C:442
 #, c-format
@@ -3494,16 +3510,16 @@ msgstr "RenderFarmClient::main_loop: socket"
 #: cinelerra/renderfarmclient.C:97
 #, c-format
 msgid "RenderFarmClient::main_loop: bind port %d: %s"
-msgstr "RenderFarmClient::main_loop: bind port %d: %s"
+msgstr "RenderFarmClient::main_loop: escutando porta %d: %s"
 
 #: cinelerra/renderfarmclient.C:122
 #, c-format
 msgid "RenderFarmClient::main_loop: bind path %s: %s\n"
-msgstr "RenderFarmClient::main_loop: bind path %s: %s\n"
+msgstr "RenderFarmClient::main_loop: escutando caminho %s: %s\n"
 
 #: cinelerra/renderfarmclient.C:135
 msgid "RenderFarmClient::main_loop: listen"
-msgstr "RenderFarmClient::main_loop: ouvir"
+msgstr "RenderFarmClient::main_loop: escutar"
 
 #: cinelerra/renderfarmclient.C:151 cinelerra/renderfarmclient.C:170
 msgid "RenderFarmClient::main_loop: accept"
@@ -3513,6 +3529,22 @@ msgstr "RenderFarmClient::main_loop: aceitar"
 #, c-format
 msgid "RenderFarmClientThread::run: Session finished.\n"
 msgstr "RenderFarmClientThread::run: Sessão terminada.\n"
+
+#: cinelerra/renderprofiles.C:71
+msgid "RenderProfile:"
+msgstr "PerfilRenderização:"
+
+#: cinelerra/renderprofiles.C:75
+msgid "Render profile:"
+msgstr "Perfil de Renderização"
+
+#: cinelerra/renderprofiles.C:227
+msgid "Save profile"
+msgstr "Salvar perfil"
+
+#: cinelerra/renderprofiles.C:266
+msgid "Delete profile"
+msgstr "Apagar perfil"
 
 #: cinelerra/resizetrackthread.C:77
 msgid ""
@@ -3728,7 +3760,7 @@ msgstr "Próxima dica"
 msgid "Previous tip"
 msgstr "Dica anterior"
 
-#: cinelerra/trackcanvas.C:4396
+#: cinelerra/trackcanvas.C:4390
 msgid "select"
 msgstr "selecionar"
 
@@ -4710,7 +4742,7 @@ msgstr "Deslocamento horizontal"
 msgid "Vertical offset"
 msgstr "Deslocamento vertical"
 
-#: plugins/downsample/downsample.C:402 plugins/reframert/reframert.C:257
+#: plugins/downsample/downsample.C:402 plugins/reframert/reframert.C:286
 msgid "Downsample"
 msgstr "Reduzir amostragem"
 
@@ -4902,6 +4934,7 @@ msgstr "Usar quadros-chave como entrada"
 
 #: plugins/interpolatevideo/interpolatevideo.C:518
 #: plugins/interpolateall/interpolateall.C:76
+#: plugins/reframert/reframert.C:304
 msgid "Interpolate"
 msgstr "Interpolar"
 
@@ -5257,7 +5290,7 @@ msgstr "Perspectiva"
 msgid "Sheer"
 msgstr "Desvio"
 
-#: plugins/perspective/perspective.C:167 plugins/reframert/reframert.C:238
+#: plugins/perspective/perspective.C:167 plugins/reframert/reframert.C:267
 msgid "Stretch"
 msgstr "Esticamento"
 
@@ -5313,11 +5346,11 @@ msgstr "Mudar taxa de quadros"
 msgid "Scale factor:"
 msgstr "Fator de escala:"
 
-#: plugins/reframert/reframert.C:179
+#: plugins/reframert/reframert.C:203
 msgid "Scale by amount:"
 msgstr "Escala por amostragem:"
 
-#: plugins/reframert/reframert.C:288
+#: plugins/reframert/reframert.C:333
 msgid "ReframeRT"
 msgstr "Mudar taxa de quadros - RT"
 

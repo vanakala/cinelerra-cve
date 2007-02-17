@@ -1,0 +1,43 @@
+Este é o manual do Cinelerra CV.
+
+Você pode redistribuir e/ou modificar sob os termos da Licensa Pública Geral
+GNU, como publicada pela Fundação do Software Livre - FSF; na versão 2 da 
+Licensa, ou (à sua escolha) em qualquer versão posterior.
+
+Ele é baseado no "Secrets of Cinelerra", um excelente manual escrito por
+Heroine Virtual Ltd. O conteúdo do TWiki de Alex Ferrer foi adicionado por
+Nicolas Maufrais, que foi quem trabalhou na versão original do arquivo
+cinelerra.texi com o propósito de gerar um manual legal.
+
+Para baixar o fonte do manual:
+cg-clone git://scm.pipapo.org/cinelerra-nicolasm
+
+Responsáveis pela documentação Cinelerra-CV :
+Inglês: Nicolas Maufrais (coordinateur) - e.conti@gmx.net
+Francês: Jean-Luc Coulon
+
+Para gerar o manual nos formatos PDF, HTML e TXT, execute:
+./make_manuals.sh <código da língua>
+Exemplo: ./make_manuals.sh en
+
+Dependência: texinfo deve estar instalado no seu computador.
+
+O manual pode também ser convertido para Docbook, mas você precisa da versão
+do CVS do texinfo para fazer isso. A versão "estável" do Texinfo não produz
+um arquivo Docbook correto. Se você tem um executável da versão CVS do 
+makeinfo disponível no seu computador, você pode descomentar as linhas
+correspondentes no make_manuals.sh. Isto irá produzir um arquivo cinelerra.xml 
+em Docbook que pode ser aberto pelo yelp.
+PERIGO: Não desinstale sua versão estável do texinfo. Se você quer olhar o 
+manual no yelp, baixe o fonte do texinfo e construa os executáveis. Aqui
+está oque você deve fazer:
+$ cvs -z3 -d:pserver:anonymous@cvs.savannah.gnu.org:/sources/texinfo co texinfo
+$ cd texinfo
+$ ./autogen.sh
+$ ./configure --enable-maintainer-mode
+$ make
+
+Você irá receber erros de compilação. Não se preocupe com eles. *NÃO* prossiga 
+com a instalação do makeinfo do CVS. Tudo oque você precisa é do executável
+do makeinfo, que fica no diretório makeinfo. Renomeie-o para makeinfo_cvs, por 
+exemplo e copie-o para o seu path.
