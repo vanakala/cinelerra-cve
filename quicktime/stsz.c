@@ -142,7 +142,7 @@ void quicktime_update_stsz(quicktime_stsz_t *stsz,
 	{
 		if(sample >= stsz->entries_allocated)
 		{
-			stsz->entries_allocated = sample * 2;
+			stsz->entries_allocated = (sample + 1) * 2;
 //printf("quicktime_update_stsz 1 %d %d\n", sample, sample_size);
 			stsz->table = (quicktime_stsz_table_t *)realloc(stsz->table,
 				sizeof(quicktime_stsz_table_t) * stsz->entries_allocated);

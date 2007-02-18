@@ -123,7 +123,7 @@ int quicktime_update_stsc(quicktime_stsc_t *stsc, long chunk, long samples)
 
 	if(chunk > stsc->entries_allocated)
 	{
-		stsc->entries_allocated = chunk * 2;
+		stsc->entries_allocated = (chunk + 1) * 2;
 		stsc->table =(quicktime_stsc_table_t*)realloc(stsc->table, sizeof(quicktime_stsc_table_t) * stsc->entries_allocated);
 	}
 
