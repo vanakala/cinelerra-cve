@@ -452,7 +452,7 @@ SET_TRACE
 		if(asset->ampeg_derivative == 3)
 		{
 			lame_global = lame_init();
-			lame_set_brate(lame_global, asset->ampeg_bitrate / 1000);
+			lame_set_brate(lame_global, asset->ampeg_bitrate);
 			lame_set_quality(lame_global, 0);
 			lame_set_in_samplerate(lame_global, 
 				asset->sample_rate);
