@@ -148,7 +148,7 @@ int InterfacePrefs::create_objects()
 	add_subwindow(thumbnails = new ViewThumbnails(x, y, pwindow));
 
 	y += 35;
-	add_subwindow(new BC_Title(x, y, _("Clicking on in/out points does what:")));
+	add_subwindow(new BC_Title(x, y, _("Dragging edit boundaries does what:")));
 	y += 25;
 	add_subwindow(new BC_Title(x, y, _("Button 1:")));
 	
