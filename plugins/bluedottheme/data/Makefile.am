@@ -7,6 +7,7 @@ about_bg.png \
 antenna.png \
 arrow.png \
 autokeyframe.png \
+bar.png \
 batchcancel_dn.png \
 batchcancel_hi.png \
 batchcancel_up.png \
@@ -36,6 +37,7 @@ black_e.png \
 black_f.png \
 black_period.png \
 black_space.png \
+blank30x30.png \
 bottom_justify.png \
 camera.png \
 camerakeyframe.png \
@@ -54,12 +56,15 @@ checkbox_uphi.png \
 clearinpoint.png \
 clearoutpoint.png \
 clip_icon.png \
+closetip.png \
 cmeter_bg.png \
 configure.png \
 copy.png \
 cpanel_bg.png \
 crop.png \
 cut.png \
+cwindow_active.png \
+cwindow_inactive.png \
 default_bg.png \
 drawpatch_checked.png \
 drawpatch_checkedhi.png \
@@ -72,14 +77,21 @@ editpanel_checkedhi.png \
 editpanel_dn.png \
 editpanel_hi.png \
 editpanel_up.png \
+editpanelW_up.png \
+editpanelW_dn.png \
+editpanelW_hi.png \
 end.png \
 expandpatch_checked.png \
 expandpatch_checkedhi.png \
 expandpatch_dn.png \
 expandpatch_hi.png \
 expandpatch_up.png \
+eyedrop.png \
 fastfwd.png \
 fastrev.png \
+file_delete_dn.png \
+file_delete_up.png \
+file_delete_uphi.png \
 file_column.png \
 file_film.png \
 file_folder.png \
@@ -89,6 +101,12 @@ file_icons_uphi.png \
 file_newfolder_dn.png \
 file_newfolder_up.png \
 file_newfolder_uphi.png \
+file_openfolder_dn.png \
+file_openfolder_up.png \
+file_openfolder_uphi.png \
+file_reload_dn.png \
+file_reload_up.png \
+file_reload_uphi.png \
 file_sound.png \
 file_text_dn.png \
 file_text_up.png \
@@ -98,10 +116,11 @@ file_updir_dn.png \
 file_updir_up.png \
 file_updir_uphi.png \
 fit.png \
+fitautos.png \
 framefwd.png \
 framerev.png \
-gangpatch_checked.png \
 gangpatch_checkedhi.png \
+gangpatch_checked.png \
 gangpatch_dn.png \
 gangpatch_hi.png \
 gangpatch_up.png \
@@ -109,6 +128,7 @@ generic_dn.png \
 generic_hi.png \
 generic_up.png \
 generickeyframe.png \
+goto.png \
 heroine_icon.png \
 hscroll_back_dn.png \
 hscroll_back_hi.png \
@@ -127,8 +147,8 @@ hslider_fg_dn.png \
 hslider_fg_hi.png \
 hslider_fg_up.png \
 ibeam.png \
-in_checked.png \
 in_checkedhi.png \
+in_checked.png \
 in_dn.png \
 in_hi.png \
 in_up.png \
@@ -143,8 +163,8 @@ label.png \
 label_checked.png \
 label_checkedhi.png \
 labeltoggle_dn.png \
-labeltoggle_up.png \
 labeltoggle_uphi.png \
+labeltoggle_up.png \
 left_justify.png \
 list_bg.png \
 listbox_button.png \
@@ -152,9 +172,9 @@ listbox_button_dn.png \
 listbox_button_disabled.png \
 listbox_button_hi.png \
 listbox_button_up.png \
-listbox_column_dn.png \
-listbox_column_hi.png \
-listbox_column_up.png \
+column_dn.png \
+column_hi.png \
+column_up.png \
 listbox_dn.png \
 listbox_expandchecked.png \
 listbox_expandcheckedhi.png \
@@ -162,7 +182,13 @@ listbox_expanddn.png \
 listbox_expandup.png \
 listbox_expanduphi.png \
 listbox_up.png \
+locklabels_dn.png \
+locklabels_locked.png \
+locklabels_lockedhi.png \
+locklabels_unlocked.png \
+locklabels_unlockedhi.png \
 magnify.png \
+magnifyS.png \
 mask.png \
 maskkeyframe.png \
 mbutton_left.png \
@@ -170,6 +196,11 @@ mbutton_right.png \
 mclock.png \
 middle_justify.png \
 modekeyframe.png \
+mode_max.png \
+mode_multiply.png \
+mode_normal.png \
+mode_replace.png \
+mode_subtract.png \
 mtimebar.png \
 mutepatch_checked.png \
 mutepatch_checkedhi.png \
@@ -178,6 +209,7 @@ mutepatch_hi.png \
 mutepatch_up.png \
 new_bg.png \
 nextlabel.png \
+nexttip.png \
 ok.png \
 out_checked.png \
 out_checkedhi.png \
@@ -197,6 +229,7 @@ pan_popup.png \
 pan_stick.png \
 pan_stick_small.png \
 pan_up.png \
+panel_divider.png \
 pankeyframe.png \
 paste.png \
 patchbay_bg.png \
@@ -209,8 +242,23 @@ playpatch_hi.png \
 playpatch_up.png \
 plugin.png \
 plugin_bg.png \
+pluginbutton_dn.png \
+pluginbutton_hi.png \
+pluginbutton_select.png \
+pluginbutton_selecthi.png \
+plugin_on.png \
+plugin_show.png \
+pot_dn.png \
+pot_hi.png \
+pot_up.png \
 preferences_bg.png \
+preferencesbutton_dn.png \
+preferencesbutton_dnhi.png \
+preferencesbutton_dnlo.png \
+preferencesbutton_up.png \
+preferencesbutton_uphi.png \
 prevlabel.png \
+prevtip.png \
 progress_bg.png \
 progress_hi.png \
 projector.png \
@@ -263,21 +311,31 @@ statusbar_left.png \
 statusbar_right.png \
 stop.png \
 stoprec.png \
+swap_extents.png \
 timebar_bg.png \
 timebar_brender.png \
 timebar_view.png \
+tipbutton_dn.png \
+tipbutton_hi.png \
+tipbutton_up.png \
 title_bg.png \
 titlesafe.png \
 toclip.png \
 toolwindow.png \
 top_justify.png \
 tracks_bg.png \
-transportdn.png \
-transporthi.png \
-transportup.png \
-tumble_botdn.png \
+transport_left_dn.png \
+transport_center_dn.png \
+transport_right_dn.png \
+transport_left_hi.png \
+transport_center_hi.png \
+transport_right_hi.png \
+transport_left_up.png \
+transport_center_up.png \
+transport_right_up.png \
+tumble_bottom.png \
 tumble_hi.png \
-tumble_topdn.png \
+tumble_top.png \
 tumble_up.png \
 undo.png \
 vbuttons_left.png \
@@ -325,4 +383,6 @@ bluedottheme.data: $(PNGS)
 clean-local:
 	rm -f bluedottheme.data
 
-EXTRA_DIST = $(PNGS)
+EXTRA_DIST = \
+$(PNGS) \
+locklabels.xcf.bz2

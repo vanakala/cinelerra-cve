@@ -1,3 +1,4 @@
+#include "bcsignals.h"
 #include "clip.h"
 #include "cwindowgui.h"
 #include "bluedottheme.h"
@@ -23,6 +24,8 @@
 #include "zoombar.h"
 
 
+#define BGREY	0xc0c0e0		//MEGEY with a shade of blue
+#define DDBLUE	0x000050		//Dark blue with the shade of grey
 
 
 PluginClient* new_plugin(PluginServer *server)
@@ -77,6 +80,152 @@ BlueDotTheme::~BlueDotTheme()
 void BlueDotTheme::initialize()
 {
 	BC_Resources *resources = BC_WindowBase::get_resources();
+
+//	about_bg = new_image("about_bg.png");
+
+
+	// COPIED FROM DEFAULT THEME 1>>
+	resources->text_default = 0x000000;
+	resources->text_background = 0xffffff;
+		//listbox borders
+	resources->text_border1 = 0x4a484a; // (top outer)
+	resources->text_border2 = 0x000000; // (top inner)
+	resources->text_border3 = 0xacaeac; // (bottom inner)
+	resources->text_border4 = 0xffffff; // (bottom outer)
+	resources->text_inactive_highlight = 0xacacac;
+	resources->text_highlight = BGREY;
+	// COPIED FROM DEFAULT THEME <<1
+
+	resources->bg_color = FGGREY;			//bg of windows (where no pics...
+	// COPIED FROM DEFAULT THEME 2>>
+	resources->default_text_color = 0x000000;
+	resources->menu_title_text    = 0x000000;
+	resources->popup_title_text   = 0x000000;
+	// COPIED FROM DEFAULT THEME <<2
+	resources->menu_item_text = BLACK;
+
+	// COPIED FROM DEFAULT THEME 3>>
+	resources->generic_button_margin = 15;		//Length of buttons and color tabs
+	resources->pot_needle_color = resources->text_default;
+	resources->pot_offset = 0;
+	resources->progress_text = resources->text_default;
+	// COPIED FROM DEFAULT THEME <<3
+	resources->meter_font = SMALLFONT;  //Specific to BD
+	resources->meter_font_color = BLACK;
+	resources->meter_title_w = 20;  //Specific to BD
+	resources->meter_3d = 0;   //Specific to BD
+
+	resources->menu_light = FTGREY; 	//menu
+	resources->menu_highlighted = BGREY;		//NMBLUE
+	resources->menu_down = BGREY;
+	resources->menu_up = FGGREY;
+	resources->menu_shadow = FTGREY;
+
+	// MIHA: COPIED FROM DEFAULT THEME M1>>
+	resources->popupmenu_margin = 10;          // ugly
+	resources->popupmenu_triangle_margin = 15; // ugly
+	// MIHA: COPIED FROM DEFAULT THEME M1<<
+
+
+	// COPIED FROM DEFAULT THEME 4>>
+	resources->listbox_title_color = 0x000000;
+
+	resources->listbox_title_margin = 0;
+	resources->listbox_title_hotspot = 5;  // No. of pixels around the borders to allow dragging
+	resources->listbox_border1 = 0x4a484a; // (top outer)
+	resources->listbox_border2 = 0x000000; // (top inner)
+	resources->listbox_border3 = 0xffe200; // (bottom inner)
+	resources->listbox_border4 = 0xffffff; // (bottom outer)
+	resources->listbox_highlighted = 0xeee6ee;
+	resources->listbox_inactive = 0xffffffff; // (background)
+	resources->listbox_bg = new_image("list_bg.png"); //NOT COPIED!
+	resources->listbox_text = 0x000000;
+	resources->listbox_selected = BGREY;
+
+	resources->dirbox_margin = 50;
+	resources->filebox_margin = 101;
+	resources->file_color = 0x000000;
+	resources->directory_color = DKBLUE;
+	// COPIED FROM DEFAULT THEME <<4
+	resources->menu_highlighted_fontcolor = DDBLUE;    //Specific to BD
+
+
+//There are differences here, but we won't change until the end.	
+//Specific to BD
+	resources->filebox_icons_images = new_image_set(3,
+		"file_icons_up.png",
+		"file_icons_uphi.png",
+		"file_icons_dn.png");
+
+	resources->filebox_text_images = new_image_set(3,
+		"file_text_up.png",
+		"file_text_uphi.png",
+		"file_text_dn.png");
+
+	resources->filebox_newfolder_images = new_image_set(3,
+		"file_newfolder_up.png",
+		"file_newfolder_uphi.png",
+		"file_newfolder_dn.png");
+
+	resources->filebox_updir_images = new_image_set(3,
+		"file_updir_up.png",
+		"file_updir_uphi.png",
+		"file_updir_dn.png");
+
+	resources->filebox_delete_images = new_image_set(3,
+		"file_delete_up.png",
+		"file_delete_uphi.png",
+		"file_delete_dn.png");
+
+	resources->filebox_reload_images = new_image_set(3,
+		"file_reload_up.png",
+		"file_reload_uphi.png",
+		"file_reload_dn.png");
+
+
+	resources->filebox_descend_images = new_image_set(3,
+		"file_openfolder_up.png",
+		"file_openfolder_uphi.png", 
+		"file_openfolder_dn.png");
+//Specific to BD
+
+	resources->usethis_button_images = 
+		resources->ok_images = new_button("ok.png",
+		"generic_up.png", 
+		"generic_hi.png", 
+		"generic_dn.png");
+
+	new_button("ok.png",
+		"generic_up.png", 
+		"generic_hi.png", 
+		"generic_dn.png",
+		"new_ok_images");
+
+	resources->cancel_images = new_button("cancel.png",
+		"generic_up.png", 
+		"generic_hi.png", 
+		"generic_dn.png");
+
+	new_button("cancel.png",
+		"generic_up.png", 
+		"generic_hi.png", 
+		"generic_dn.png",
+		"new_cancel_images");
+
+	resources->bar_data = new_image("bar", "bar.png");
+
+
+	resources->min_menu_w = 0;
+	resources->menu_popup_bg = 0;  // if (0) use menu_light, menu_up, menu_shadow
+	resources->menu_item_bg = 0;   // if (0) use menu_light, menu_highlighted, menu_down, menu_shadow
+	resources->menu_bar_bg = 0;    // if (0) use menu_light, menu_shadow, and height of MEDIUMFONT + 8
+	resources->menu_title_bg =  0; // if (0) use menu_light, menu_highlighted, menu_down, menu_shadow
+
+
+	resources->popupmenu_images = 0; // if (0) get_resources()->use generic_button_images
+
+	resources->toggle_highlight_bg = 0; // if (0) "Draw a plain box" as per bctoggle.C
+
 	resources->generic_button_images = new_image_set(3, 
 			"generic_up.png", 
 			"generic_hi.png", 
@@ -101,23 +250,23 @@ void BlueDotTheme::initialize()
 	resources->tumble_data = new_image_set(4,
 		"tumble_up.png",
 		"tumble_hi.png",
-		"tumble_botdn.png",
-		"tumble_topdn.png");
+		"tumble_bottom.png",
+		"tumble_top.png");
 	resources->listbox_button = new_image_set(4,
 		"listbox_button_up.png",
 		"listbox_button_hi.png",
 		"listbox_button_dn.png",
-		"listbox_button_disabled.png");
+		"listbox_button_disabled.png"); // probably need to make this for the suv theme
 	resources->listbox_column = new_image_set(3,
-		"listbox_column_up.png",
-		"listbox_column_hi.png",
-		"listbox_column_dn.png");
+		"column_up.png",
+		"column_hi.png",
+		"column_dn.png");
 	resources->listbox_expand = new_image_set(5,
 		"listbox_expandup.png",
 		"listbox_expanduphi.png",
 		"listbox_expandchecked.png",
 		"listbox_expanddn.png",
-        	"listbox_expandcheckedhi.png");
+		"listbox_expandcheckedhi.png");
 	resources->listbox_up = new_image("listbox_up.png");
 	resources->listbox_dn = new_image("listbox_dn.png");
 	resources->pan_data = new_image_set(7,
@@ -130,6 +279,24 @@ void BlueDotTheme::initialize()
 			"pan_stick_small.png");
 	resources->pan_text_color = WHITE;
 
+	resources->pot_images = new_image_set(3,
+		"pot_up.png",
+		"pot_hi.png",
+		"pot_dn.png");   //Graphic Copied from default. Improve!!
+
+	resources->checkbox_images = new_image_set(5,
+		"checkbox_up.png",
+		"checkbox_uphi.png",
+		"checkbox_checked.png",
+		"checkbox_down.png",
+		"checkbox_checkedhi.png");
+
+	resources->radial_images = new_image_set(5,
+		"radial_up.png",
+		"radial_uphi.png",
+		"radial_checked.png",
+		"radial_down.png",
+		"radial_checkedhi.png");
 
 	resources->xmeter_images = new_image_set(6, 
 		"xmeter_normal.png",
@@ -137,7 +304,7 @@ void BlueDotTheme::initialize()
 		"xmeter_red.png",
 		"xmeter_yellow.png",
 		"xmeter_normal.png",
-		"xmeter_over.png");			
+		"xmeter_over.png");
 	resources->ymeter_images = new_image_set(6, 
 		"ymeter_normal.png",
 		"ymeter_green.png",
@@ -170,16 +337,17 @@ void BlueDotTheme::initialize()
 			"vscroll_fwd_hi.png",
 			"vscroll_fwd_dn.png");
 
-	resources->ok_images = new_button("ok.png", 
-			"generic_up.png",
-			"generic_hi.png",
-			"generic_dn.png");
-
-	resources->cancel_images = new_button("cancel.png", 
-			"generic_up.png",
-			"generic_hi.png",
-			"generic_dn.png");
-
+//Graphic Copied from default. Improve!!
+//To make this work better, it may be neccessary to replace new_button with new_image_set
+	new_button("prevtip.png", "tipbutton_up.png", "tipbutton_hi.png", "tipbutton_dn.png", "prev_tip");
+	new_button("nexttip.png", "tipbutton_up.png", "tipbutton_hi.png", "tipbutton_dn.png", "next_tip");
+	new_button("closetip.png", "tipbutton_up.png", "tipbutton_hi.png", "tipbutton_dn.png", "close_tip");
+	new_button("swap_extents.png",
+		"editpanel_up.png",
+		"editpanel_hi.png",
+		"editpanel_dn.png",
+		"swap_extents");
+//swap_extents.png not copied
 
 // Record windows
 	rgui_batch = new_image("recordgui_batch.png");
@@ -189,39 +357,89 @@ void BlueDotTheme::initialize()
 	rmonitor_meters = new_image("recordmonitor_meters.png");
 
 
+//COPY START >>
+	preferences_category_overlap = 0;
+	preferencescategory_x = 5;
+	preferencescategory_y = 5;
+	preferencestitle_x = 5;
+	preferencestitle_y = 10;
+	preferencesoptions_x = 5;
+	preferencesoptions_y = 0;
+//COPY END<<
+
 // MWindow
-	mbutton_left = new_image("mbutton_left.png");
-	mbutton_right = new_image("mbutton_right.png");
-	timebar_bg_data = new_image("timebar_bg.png");
-	timebar_brender_data = new_image("timebar_brender.png");
-	clock_bg = new_image("mclock.png");
-	patchbay_bg = new_image("patchbay_bg.png");
-	tracks_bg = new_image("tracks_bg.png");
-	zoombar_left = new_image("zoombar_left.png");
-	zoombar_right = new_image("zoombar_right.png");
-	statusbar_left = new_image("statusbar_left.png");
-	statusbar_right = new_image("statusbar_right.png");
+//COPY START >>
+	message_normal = resources->text_default;
+	audio_color = BLACK;
+	mtransport_margin = 11;
+	toggle_margin = 11;
+//COPY END >>
+
+	new_image("mbutton_left","mbutton_left.png");
+	new_image("mbutton_right","mbutton_right.png");
+	new_image("timebar_bg", "timebar_bg.png");
+	new_image("timebar_brender", "timebar_brender.png");
+	new_image("clock_bg", "mclock.png");
+	new_image("patchbay_bg", "patchbay_bg.png");
+	new_image("tracks_bg","tracks_bg.png");
+	new_image("zoombar_left","zoombar_left.png");
+	new_image("zoombar_right","zoombar_right.png");
+	new_image("statusbar_left","statusbar_left.png");
+	new_image("statusbar_right","statusbar_right.png");
+
+	//Here an improvement may be needed
+	new_image_set("zoombar_menu", 3, "generic_up.png", "generic_hi.png", "generic_dn.png");
+	new_image_set("zoombar_tumbler", 4, "tumble_up.png", "tumble_hi.png", "tumble_bottom.png", "tumble_top.png");
+
+//Graphic Copied from default. Improve!!	
+	new_image_set("mode_popup", 3, "generic_up.png", "generic_hi.png", "generic_dn.png");
+	new_image("mode_add", "mode_add.png");
+	new_image("mode_divide", "mode_divide.png");
+	new_image("mode_multiply", "mode_multiply.png");
+	new_image("mode_normal", "mode_normal.png");
+	new_image("mode_replace", "mode_replace.png");
+	new_image("mode_subtract", "mode_subtract.png");
+	new_image("mode_max", "mode_max.png");
+
+//Graphic Copied from default. Improve!!	
+	new_toggle("plugin_on.png", 
+		"pluginbutton_hi.png", 
+		"pluginbutton_hi.png", 
+		"pluginbutton_select.png", 
+		"pluginbutton_dn.png", 
+		"pluginbutton_selecthi.png", 
+		"plugin_on");
+
+//Graphic Copied from default. Improve!!
+	new_toggle("plugin_show.png", 
+		"plugin_show.png", 
+		"pluginbutton_hi.png", 
+		"pluginbutton_select.png", 
+		"pluginbutton_dn.png", 
+		"pluginbutton_selecthi.png", 
+		"plugin_show");
 
 // CWindow
-	cpanel_bg = new_image("cpanel_bg.png");
-	cbuttons_left = new_image("cbuttons_left.png");
-	cbuttons_right = new_image("cbuttons_right.png");
-	cmeter_bg = new_image("cmeter_bg.png");
+	new_image("cpanel_bg", "cpanel_bg.png");
+	new_image("cbuttons_left", "cbuttons_left.png");
+	new_image("cbuttons_right", "cbuttons_right.png");
+	new_image("cmeter_bg", "cmeter_bg.png");
 
 // VWindow
-	vbuttons_left = new_image("vbuttons_left.png");
-	vbuttons_right = new_image("vbuttons_right.png");
-	vmeter_bg = new_image("vmeter_bg.png");
+	new_image("vbuttons_left", "vbuttons_left.png");
+	new_image("vbuttons_right","vbuttons_right.png");
+	new_image("vmeter_bg","vmeter_bg.png");
 
-	preferences_bg = new_image("preferences_bg.png");
+	new_image("preferences_bg", "preferences_bg.png");
 
 
-	new_bg = new_image("new_bg.png");
-	setformat_bg = new_image("setformat_bg2.png");
+	new_image("new_bg", "new_bg.png");
+	new_image("setformat_bg", "setformat_bg2.png");
 
 
 	timebar_view_data = new_image("timebar_view.png");
 
+// x, y of Format dialog box
 	setformat_w = 600;
 	setformat_h = 560;
 	setformat_x1 = 15;
@@ -241,17 +459,63 @@ void BlueDotTheme::initialize()
 	loadfile_pad = 70;
 	browse_pad = 20;
 
+//This buttons miss a bit. May need to be improved
+	new_image_set("playpatch_data", 
+		5,
+		"playpatch_up.png",
+		"playpatch_hi.png",
+		"playpatch_checked.png",
+		"playpatch_dn.png",
+		"playpatch_checkedhi.png");
+
+	new_image_set("recordpatch_data", 
+		5,
+		"recordpatch_up.png",
+		"recordpatch_hi.png",
+		"recordpatch_checked.png",
+		"recordpatch_dn.png",
+		"recordpatch_checkedhi.png");
+
+	new_image_set("gangpatch_data", 
+		5,
+		"gangpatch_up.png",
+		"gangpatch_hi.png",
+		"gangpatch_checked.png",
+		"gangpatch_dn.png",
+		"gangpatch_checkedhi.png");
+
+	new_image_set("drawpatch_data", 
+		5,
+		"drawpatch_up.png",
+		"drawpatch_hi.png",
+		"drawpatch_checked.png",
+		"drawpatch_dn.png",
+		"drawpatch_checkedhi.png");
 
 
+	new_image_set("mutepatch_data", 
+		5,
+		"mutepatch_up.png",
+		"mutepatch_hi.png",
+		"mutepatch_checked.png",
+		"mutepatch_dn.png",
+		"mutepatch_checkedhi.png");
 
+	new_image_set("expandpatch_data", 
+		5,
+		"expandpatch_up.png",
+		"expandpatch_hi.png",
+		"expandpatch_checked.png",
+		"expandpatch_dn.png",
+		"expandpatch_checkedhi.png");
 
 	build_icons();
 	build_bg_data();
-	build_patches();
 	build_overlays();
 
 
 
+//Graphic Copied from default. Improve!! -> See outpoint.png/inpoint.png
 	out_point = new_image_set(5,
 		"out_up.png", 
 		"out_hi.png", 
@@ -265,6 +529,7 @@ void BlueDotTheme::initialize()
 		"in_dn.png", 
 		"in_checkedhi.png");
 
+//Graphic Copied from default. Improve!! -> see label.png
 	label_toggle = new_image_set(5,
 		"labeltoggle_up.png", 
 		"labeltoggle_uphi.png", 
@@ -278,39 +543,73 @@ void BlueDotTheme::initialize()
 		"statusbar_cancel_hi.png",
 		"statusbar_cancel_dn.png");
 
-
+//Graphic Copied from default. Improve!! -> make transparent edges
 	VFrame *editpanel_up = new_image("editpanel_up.png");
 	VFrame *editpanel_hi = new_image("editpanel_hi.png");
 	VFrame *editpanel_dn = new_image("editpanel_dn.png");
 	VFrame *editpanel_checked = new_image("editpanel_checked.png");
 	VFrame *editpanel_checkedhi = new_image("editpanel_checkedhi.png");
 
-	bottom_justify = new_button("bottom_justify.png", editpanel_up, editpanel_hi, editpanel_dn);
-	center_justify = new_button("center_justify.png", editpanel_up, editpanel_hi, editpanel_dn);
-	channel_data = new_button("channel.png", editpanel_up, editpanel_hi, editpanel_dn);
-	copy_data = new_button("copy.png", editpanel_up, editpanel_hi, editpanel_dn);
-	cut_data = new_button("cut.png", editpanel_up, editpanel_hi, editpanel_dn);
-	fit_data = new_button("fit.png", editpanel_up, editpanel_hi, editpanel_dn);
-	in_data = new_button("inpoint.png", editpanel_up, editpanel_hi, editpanel_dn);
-	indelete_data = new_button("clearinpoint.png", editpanel_up, editpanel_hi, editpanel_dn);
-	labelbutton_data = new_button("label.png", editpanel_up, editpanel_hi, editpanel_dn);
-	left_justify = new_button("left_justify.png", editpanel_up, editpanel_hi, editpanel_dn);
-	magnify_button_data = new_button("magnify.png", editpanel_up, editpanel_hi, editpanel_dn);
-	middle_justify = new_button("middle_justify.png", editpanel_up, editpanel_hi, editpanel_dn);
-	nextlabel_data = new_button("nextlabel.png", editpanel_up, editpanel_hi, editpanel_dn);
-	out_data = new_button("outpoint.png", editpanel_up, editpanel_hi, editpanel_dn);
-	outdelete_data = new_button("clearoutpoint.png", editpanel_up, editpanel_hi, editpanel_dn);
+//Graphic Copied from default. Improve!!
+	new_image("panel_divider", "panel_divider.png");
+	new_button("bottom_justify.png", editpanel_up, editpanel_hi, editpanel_dn, "bottom_justify");
+	new_button("center_justify.png", editpanel_up, editpanel_hi, editpanel_dn, "center_justify");
+	new_button("channel.png", editpanel_up, editpanel_hi, editpanel_dn, "channel");
+
+
+	new_button("copy.png", editpanel_up, editpanel_hi, editpanel_dn, "copy");
+	new_button("cut.png", editpanel_up, editpanel_hi, editpanel_dn, "cut");
+	new_button("fit.png", editpanel_up, editpanel_hi, editpanel_dn, "fit");
+	new_button("fitautos.png", editpanel_up, editpanel_hi, editpanel_dn, "fitautos");
+	new_button("inpoint.png", editpanel_up, editpanel_hi, editpanel_dn, "inbutton");
+//	indelete_data = new_button("clearinpoint.png", editpanel_up, editpanel_hi, editpanel_dn);   //Specific to BD 
+	new_button("label.png", editpanel_up, editpanel_hi, editpanel_dn, "labelbutton");
+	new_button("left_justify.png", editpanel_up, editpanel_hi, editpanel_dn, "left_justify");
+	new_button("magnifyS.png", "editpanelW_up.png", "editpanelW_hi.png", "editpanelW_dn.png", "magnify_button");
+	new_button("middle_justify.png", editpanel_up, editpanel_hi, editpanel_dn, "middle_justify");
+	new_button("nextlabel.png", editpanel_up, editpanel_hi, editpanel_dn, "nextlabel");
+	new_button("outpoint.png", editpanel_up, editpanel_hi, editpanel_dn, "outbutton");
+//	outdelete_data = new_button("clearoutpoint.png", editpanel_up, editpanel_hi, editpanel_dn);   //Specific to BD
 	over_button = new_button("over.png", editpanel_up, editpanel_hi, editpanel_dn);
 	overwrite_data = new_button("overwrite.png", editpanel_up, editpanel_hi, editpanel_dn);
-	paste_data = new_button("paste.png", editpanel_up, editpanel_hi, editpanel_dn);
-	prevlabel_data = new_button("prevlabel.png", editpanel_up, editpanel_hi, editpanel_dn);
-	redo_data = new_button("redo.png", editpanel_up, editpanel_hi, editpanel_dn);
-	right_justify = new_button("right_justify.png", editpanel_up, editpanel_hi, editpanel_dn);
+	new_button("paste.png", editpanel_up, editpanel_hi, editpanel_dn, "paste");
+	new_button("prevlabel.png", editpanel_up, editpanel_hi, editpanel_dn, "prevlabel");
+	new_button("redo.png", editpanel_up, editpanel_hi, editpanel_dn, "redo");
+	new_button("right_justify.png", editpanel_up, editpanel_hi, editpanel_dn, "right_justify");
 	splice_data = new_button("splice.png", editpanel_up, editpanel_hi, editpanel_dn);
-	toclip_data = new_button("toclip.png", editpanel_up, editpanel_hi, editpanel_dn);
-	top_justify = new_button("top_justify.png", editpanel_up, editpanel_hi, editpanel_dn);
-	undo_data = new_button("undo.png", editpanel_up, editpanel_hi, editpanel_dn);
-	wrench_data = new_button("wrench.png", editpanel_up, editpanel_hi, editpanel_dn);
+	new_button("toclip.png", editpanel_up, editpanel_hi, editpanel_dn, "toclip");
+	new_button("goto.png", editpanel_up, editpanel_hi, editpanel_dn, "goto");
+	new_button("top_justify.png", editpanel_up, editpanel_hi, editpanel_dn, "top_justify");
+	new_button("undo.png", editpanel_up, editpanel_hi, editpanel_dn, "undo");
+	new_button("wrench.png", "editpanelW_up.png", "editpanelW_hi.png", "editpanelW_dn.png", "wrench");
+
+//Make transparent borders
+#define TRANSPORT_LEFT_IMAGES  "transport_left_up.png", "transport_left_hi.png", "transport_left_dn.png"
+#define TRANSPORT_CENTER_IMAGES  "transport_center_up.png", "transport_center_hi.png", "transport_center_dn.png"
+#define TRANSPORT_RIGHT_IMAGES  "transport_right_up.png", "transport_right_hi.png", "transport_right_dn.png"
+//	build_transport(duplex_data, get_image_data("duplex.png"), transport_bg, 1);    //Specific to BD
+	new_button("end.png", TRANSPORT_RIGHT_IMAGES, "end");
+	new_button("fastfwd.png",TRANSPORT_CENTER_IMAGES, "fastfwd");
+	new_button("fastrev.png",TRANSPORT_CENTER_IMAGES, "fastrev");
+	new_button("play.png",TRANSPORT_CENTER_IMAGES, "play");
+	new_button("framefwd.png", TRANSPORT_CENTER_IMAGES, "framefwd");
+	new_button("framerev.png", TRANSPORT_CENTER_IMAGES, "framerev");
+//Graphic Copied from default. Improve!!	
+	new_button("pause.png", TRANSPORT_CENTER_IMAGES, "pause");
+	new_button("record.png", TRANSPORT_CENTER_IMAGES, "record");
+//Graphic Copied from default. Improve!!
+	new_button("singleframe.png", TRANSPORT_CENTER_IMAGES, "recframe");
+	new_button("reverse.png", TRANSPORT_CENTER_IMAGES, "reverse");
+	new_button("rewind.png", TRANSPORT_LEFT_IMAGES, "rewind");
+	new_button("stop.png", TRANSPORT_CENTER_IMAGES, "stop");
+	new_button("stoprec.png", TRANSPORT_RIGHT_IMAGES, "stoprec");
+
+
+
+// CWindow icons
+//Graphic Copied from default. Improve!!
+	new_image("cwindow_inactive", "cwindow_inactive.png");
+	new_image("cwindow_active", "cwindow_active.png");
 
 
 	new_image_set("batch_render_start",
@@ -329,46 +628,75 @@ void BlueDotTheme::initialize()
 		"batchcancel_hi.png",
 		"batchcancel_dn.png");
 
-	arrow_data = new_toggle("arrow.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
-	autokeyframe_data = new_toggle("autokeyframe.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
-	camera_data = new_toggle("camera.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
-	crop_data = new_toggle("crop.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
-	ibeam_data = new_toggle("ibeam.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
-	magnify_data = new_toggle("magnify.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
-	mask_data = new_toggle("mask.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
-	proj_data = new_toggle("projector.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
-	protect_data = new_toggle("protect.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
-	show_meters = new_toggle("show_meters.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
-	titlesafe_data = new_toggle("titlesafe.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
-	tool_data = new_toggle("toolwindow.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi);
+// MIHA: COPIED FROM DEFAULT THEME M2>>
+//Graphic Copied from default. Improve!!
+	new_image_set("category_button",
+		3,
+		"preferencesbutton_dn.png",
+		"preferencesbutton_dnhi.png",
+		"preferencesbutton_dnlo.png");
+
+	new_image_set("category_button_checked",
+		3,
+		"preferencesbutton_up.png",
+		"preferencesbutton_uphi.png",
+		"preferencesbutton_dnlo.png");
+// MIHA: COPIED FROM DEFAULT THEME M2<<
 
 
+	new_toggle("arrow.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "arrow");
+	new_toggle("autokeyframe.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "autokeyframe");
+	new_toggle("ibeam.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "ibeam");
+	new_toggle("show_meters.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi, "meters");
+	new_toggle("blank30x30.png", 
+		   new_image("locklabels_locked.png"),
+		   new_image("locklabels_lockedhi.png"),
+		   new_image("locklabels_unlocked.png"),
+		   new_image("locklabels_dn.png"), // can't have seperate down for each!!??
+		   new_image("locklabels_unlockedhi.png"),
+		   "locklabels");
+
+// MIHA: COPIED FROM DEFAULT THEME M3>>
+//Is that necessary??
+	VFrame *cpanel_up = new_image("editpanel_up.png");
+	VFrame *cpanel_hi = new_image("editpanel_hi.png");
+	VFrame *cpanel_dn = new_image("editpanel_dn.png");
+	VFrame *cpanel_checked = new_image("editpanel_checked.png");
+	VFrame *cpanel_checkedhi = new_image("editpanel_checkedhi.png");
+
+	new_toggle("camera.png", cpanel_up, cpanel_hi, cpanel_checked, cpanel_dn, cpanel_checkedhi, "camera");
+	new_toggle("crop.png", cpanel_up, cpanel_hi, cpanel_checked, cpanel_dn, cpanel_checkedhi, "crop");
+	new_toggle("eyedrop.png", cpanel_up, cpanel_hi, cpanel_checked, cpanel_dn, cpanel_checkedhi, "eyedrop");
+	new_toggle("magnify.png", cpanel_up, cpanel_hi, cpanel_checked, cpanel_dn, cpanel_checkedhi, "magnify");
+	new_toggle("mask.png", cpanel_up, cpanel_hi, cpanel_checked, cpanel_dn, cpanel_checkedhi, "mask");
+	new_toggle("projector.png", cpanel_up, cpanel_hi, cpanel_checked, cpanel_dn, cpanel_checkedhi, "projector");
+	new_toggle("protect.png", cpanel_up, cpanel_hi, cpanel_checked, cpanel_dn, cpanel_checkedhi, "protect");
+	new_toggle("titlesafe.png", cpanel_up, cpanel_hi, cpanel_checked, cpanel_dn, cpanel_checkedhi, "titlesafe");
+	new_toggle("toolwindow.png", cpanel_up, cpanel_hi, cpanel_checked, cpanel_dn, cpanel_checkedhi, "tool");
+
+// MIHA: COPIED FROM DEFAULT THEME M3<<
+
+// Maybe we can live without the commented part
+// MIHA: Commented out in favor of default version M4>>
+//	new_toggle("camera.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi,"camera");
+//	new_toggle("crop.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi,"crop");
+//	new_toggle("eyedrop.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi,"eyedrop");
+//	new_toggle("magnify.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi,"magnify");
+//	new_toggle("mask.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi,"mask");
+//	new_toggle("projector.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi,"projector");
+//	new_toggle("protect.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi,"protect");
+//	new_toggle("titlesafe.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi,"titlesafe");
+//	new_toggle("toolwindow.png", editpanel_up, editpanel_hi, editpanel_checked, editpanel_dn, editpanel_checkedhi,"tool");
+// MIHA: Commented out in favor of default version M4<<
 
 
-	static VFrame **transport_bg = new_image_set(3,
-		"transportup.png", 
-		"transporthi.png", 
-		"transportdn.png");
-	build_transport(duplex_data, get_image_data("duplex.png"), transport_bg, 1);
-	build_transport(end_data, get_image_data("end.png"), transport_bg, 2);
-	build_transport(fastfwd_data, get_image_data("fastfwd.png"), transport_bg, 1);
-	build_transport(fastrev_data, get_image_data("fastrev.png"), transport_bg, 1);
-	build_transport(forward_data, get_image_data("play.png"), transport_bg, 1);
-	build_transport(framefwd_data, get_image_data("framefwd.png"), transport_bg, 1);
-	build_transport(framerev_data, get_image_data("framerev.png"), transport_bg, 1);
-	build_transport(pause_data, get_image_data("pause.png"), transport_bg, 1);
-	build_transport(rec_data, get_image_data("record.png"), transport_bg, 1);
-	build_transport(recframe_data, get_image_data("singleframe.png"), transport_bg, 1);
-	build_transport(reverse_data, get_image_data("reverse.png"), transport_bg, 1);
-	build_transport(rewind_data, get_image_data("rewind.png"), transport_bg, 0);
-	build_transport(stop_data, get_image_data("stop.png"), transport_bg, 1);
-	build_transport(stoprec_data, get_image_data("stoprec.png"), transport_bg, 2);
 	flush_images();
 
 	title_font = MEDIUMFONT;
 	title_color = BLACK;
 	recordgui_fixed_color = BLACK;
 	recordgui_variable_color = RED;
+	resources->medium_font = N_("-*-helvetica-medium-r-normal-*-14-*");
 
 	channel_position_color = MEYELLOW;
 	resources->meter_title_w = 25;
@@ -376,28 +704,11 @@ void BlueDotTheme::initialize()
 	// (asset) edit info text color
 	edit_font_color = BLACK;
 
-	//bgcolor
-	resources->bg_color = FGGREY;
-
-	//menu
-	resources->menu_light = FTGREY;
-	resources->menu_highlighted = MNBLUE;
-	resources->menu_down = FGGREY;
-	resources->menu_up = FGGREY;
-	resources->menu_shadow = FTGREY;
-	resources->medium_font = N_("-*-helvetica-medium-r-normal-*-14-*");
-	
-	resources->menu_item_text = BLACK;
-	resources->menu_highlighted_fontcolor = WHITE;
-
-	//meter
-	resources->meter_font = SMALLFONT;
-	resources->meter_font_color = BLACK;
-	resources->meter_3d = 0;
-
+//Specific to BD
 	//clock
 	resources->draw_clock_background = 0;
 
+//Specific to BD
 	//buttons
 	resources->button_highlighted = LTGREY;
 	resources->button_uphighlighted = DKGREY;
@@ -406,25 +717,9 @@ void BlueDotTheme::initialize()
 	resources->button_shadow = DKGREY;
 	resources->button_down = MDGREY;
 
+//Specific to BD
 	//listbox
-	resources->listboxitemselected_color = ORANGE;
 
-	//checkbox
- 	resources->checkbox_images = new_image_set(5,
-  		"checkbox_up.png", 
-  		"checkbox_uphi.png", 
-  		"checkbox_checked.png", 
-  		"checkbox_down.png", 
-  		"checkbox_checkedhi.png");
-
-	//radiobox
- 	resources->radial_images = new_image_set(5,
-  		"radial_up.png", 
-  		"radial_uphi.png", 
-  		"radial_checked.png", 
-  		"radial_down.png", 
-  		"radial_checkedhi.png");
-	
 	//labels
  	resources->label_images = new_image_set(5,
   		"radial_up.png", 
@@ -433,114 +728,117 @@ void BlueDotTheme::initialize()
   		"radial_down.png", 
   		"radial_checkedhi.png");
 
-	//filebox
-  	resources->filebox_text_images = new_image_set(3,
-  		"file_text_up.png", 
-  		"file_text_uphi.png", 
-  		"file_text_dn.png");
-  	resources->filebox_icons_images = new_image_set(3,
-  		"file_icons_up.png", 
-  		"file_icons_uphi.png", 
-  		"file_icons_dn.png");
-  	resources->filebox_updir_images = new_image_set(3,
-  		"file_updir_up.png", 
-  		"file_updir_uphi.png", 
-  		"file_updir_dn.png");
-  	resources->filebox_newfolder_images = new_image_set(3,
-  		"file_newfolder_up.png", 
-  		"file_newfolder_uphi.png", 
-  		"file_newfolder_dn.png");
+	/*	resources->type_to_icon = new_image_set(5,
+            "file_folder.png",
+	        "file_unknown.png",
+          	"file_film.png",
+	        "file_sound.png",
+	        "file_column.png"); 
+   */
 
-	resources->type_to_icon = new_image_set(5,
-  		"file_folder.png",
-  		"file_unknown.png",
-  		"file_film.png",
-  		"file_sound.png",
-  		"file_column.png");
-
-
-
-	resources->meter_font = SMALLFONT;
-	resources->meter_font_color = BLACK;
-	resources->meter_title_w = 20;
-	resources->meter_3d = 0;
-
-
+//Specific to BD
 	resources->audiovideo_color = DKGREY;
 
-	//listbox
-	resources->listbox_bg = new_image("list_bg.png");
-
+//Specific to BD - Copied from Blonde, replace letters
 	//clock font
 	resources->medium_7segment =  new_image_set(20,
   		"black_0.png", "black_1.png",  "black_2.png",  "black_3.png",  "black_4.png",  "black_5.png",  "black_6.png",  "black_7.png",  "black_8.png",  "black_9.png",  "black_colon.png",    "black_period.png",    "black_a.png",  "black_b.png",  "black_c.png",  "black_d.png",  "black_e.png",  "black_f.png",  "black_space.png",  "black_dash.png");      
 
+//Specific to BD
 	//tooltip
 	resources->tooltip_bg_color = 0xfff7e3;
 }
 
-
+//CWINDOW is probalby ComposerWindow, V=ViewerWindow
 #define CWINDOW_METER_MARGIN 5
 #define VWINDOW_METER_MARGIN 5
 
+//Specific to BD
 void BlueDotTheme::get_mwindow_sizes(MWindowGUI *gui, int w, int h)
 {
+// Position of menu buttons (start, stop, ff, etc.)
 	mbuttons_x = 0;
 	mbuttons_y = gui->mainmenu->get_h();
 	mbuttons_w = w;
-	mbuttons_h = mbutton_left->get_h();
-	mclock_x = 20;
-	mclock_y = mbuttons_y + mbuttons_h + CWINDOW_METER_MARGIN + 2;
-	mclock_w = clock_bg->get_w() - 72;
-	mclock_h = clock_bg->get_h() ;
-	mtimebar_x = patchbay_bg->get_w();
+	mbuttons_h = get_image("mbutton_left")->get_h();
+	mclock_x = 20;		//x position of digits in clock window
+	mclock_y = mbuttons_y + 1 + mbuttons_h + CWINDOW_METER_MARGIN;
+	mclock_w = get_image("clock_bg")->get_w() - 72;
+	mclock_h = get_image("clock_bg")->get_h();
+
+//Time bar - coordinates and dimensions
+	mtimebar_x = get_image("patchbay_bg")->get_w();
 	mtimebar_y = mbuttons_y + mbuttons_h;
 	mtimebar_w = w - mtimebar_x;
-	mtimebar_h = timebar_bg_data->get_h();
+	mtimebar_h = get_image("timebar_bg")->get_h();
+
+// Zooming tracks - just above the status bar
+	mzoom_h =  get_image("zoombar_left")->get_h();
+	mzoom_x = 0;
+	mzoom_y = h - get_image("statusbar_left")->get_h() - mzoom_h;
+	mzoom_w = w;
+
+// Status bar at the very bottom of the screen.
 	mstatus_x = 0;
-	mstatus_y = h - statusbar_left->get_h();
+//	mstatus_y = mzoom_y + mzoom_h;
+	mstatus_y = mzoom_y + mzoom_h;
 	mstatus_w = w;
-	mstatus_h = statusbar_left->get_h();
+	mstatus_h = h - mstatus_y;
 	mstatus_message_x = 10;
-	mstatus_message_y = 5;
+	mstatus_message_y = 8;
+	mstatus_progress_w = 230;
 	mstatus_progress_x = mstatus_w - statusbar_cancel_data[0]->get_w() - 240;
 	mstatus_progress_y = mstatus_h - BC_WindowBase::get_resources()->progress_images[0]->get_h();
-	mstatus_progress_w = 230;
+
+//Specific to BD
 	mstatus_cancel_x = mstatus_w - statusbar_cancel_data[0]->get_w();
 	mstatus_cancel_y = mstatus_h - statusbar_cancel_data[0]->get_h();
-	mzoom_x = 0;
-	mzoom_y = mstatus_y - zoombar_left->get_h();
-	mzoom_h = zoombar_left->get_h();
-	mzoom_w = w;
+
+//This is Patch Bay - on the left side of the tracks.
 	patchbay_x = 0;
 	patchbay_y = mtimebar_y + mtimebar_h;
-	patchbay_w = patchbay_bg->get_w();
-	patchbay_h = mzoom_y - patchbay_y;
+	patchbay_w = get_image("patchbay_bg")->get_w();
+	patchbay_h = mzoom_y - patchbay_y - BC_ScrollBar::get_span(SCROLL_HORIZ);
+
+//Canvas where audio and video tracks are
 	mcanvas_x = patchbay_x + patchbay_w;
 	mcanvas_y = mtimebar_y + mtimebar_h;
-	mcanvas_w = w - patchbay_w;
+	mcanvas_w = w - patchbay_w - BC_ScrollBar::get_span(SCROLL_VERT);
 	mcanvas_h = patchbay_h;
+//COPIED START
+	mhscroll_x = 0;
+	mhscroll_y = mzoom_y - BC_ScrollBar::get_span(SCROLL_HORIZ);
+	mhscroll_w = w - BC_ScrollBar::get_span(SCROLL_VERT);
+	mvscroll_x = mcanvas_x + mcanvas_w;
+	mvscroll_y = mcanvas_y;
+	mvscroll_h = mcanvas_h;
+//COPIED END
 }
 
 void BlueDotTheme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 {
 	if(cwindow_controls)
 	{
+SET_TRACE
 		ccomposite_x = 0;
 		ccomposite_y = 5;
-		ccomposite_w = cpanel_bg->get_w();
-		ccomposite_h = mwindow->session->cwindow_h - cbuttons_left->get_h();
+		ccomposite_w = get_image("cpanel_bg")->get_w();
+		ccomposite_h = mwindow->session->cwindow_h - 
+			get_image("cbuttons_left")->get_h();
 		cslider_x = 5;
 		cslider_y = ccomposite_h + 23;
 		cedit_x = 10;
 		cedit_y = cslider_y + 17;
 		ctransport_x = 10;
-		ctransport_y = mwindow->session->cwindow_h - autokeyframe_data[0]->get_h();
+		ctransport_y = mwindow->session->cwindow_h - 
+			get_image_set("autokeyframe")[0]->get_h();
 		ccanvas_x = ccomposite_x + ccomposite_w;
 		ccanvas_y = 0;
 		ccanvas_h = ccomposite_h;
-
-
+//COPIED START
+		cstatus_x = 453;
+		cstatus_y = mwindow->session->cwindow_h - 66;
+//COPIED END
 		if(mwindow->edl->session->cwindow_meter)
 		{
 			cmeter_x = mwindow->session->cwindow_w - MeterPanel::get_meters_width(mwindow->edl->session->audio_channels, 
@@ -552,13 +850,15 @@ void BlueDotTheme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 			cmeter_x = mwindow->session->cwindow_w;
 			ccanvas_w = cmeter_x - ccanvas_x;
 		}
+SET_TRACE
 	}
 	else
 	{
-		ccomposite_x = -cpanel_bg->get_w();
+SET_TRACE
+		ccomposite_x = -get_image("cpanel_bg")->get_w();
 		ccomposite_y = 0;
-		ccomposite_w = cpanel_bg->get_w();
-		ccomposite_h = mwindow->session->cwindow_h - cbuttons_left->get_h();
+		ccomposite_w = get_image("cpanel_bg")->get_w();
+		ccomposite_h = mwindow->session->cwindow_h - get_image("cbuttons_left")->get_h();
 
 		cslider_x = 5;
 		cslider_y = mwindow->session->cwindow_h;
@@ -571,8 +871,14 @@ void BlueDotTheme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 		ccanvas_w = mwindow->session->cwindow_w;
 		ccanvas_h = mwindow->session->cwindow_h;
 		cmeter_x = mwindow->session->cwindow_w;
+//COPIED START
+		cstatus_x = mwindow->session->cwindow_w;
+		cstatus_y = mwindow->session->cwindow_h;
+//COPIED END
+SET_TRACE
 	}
 
+SET_TRACE
 
 	czoom_x = ctransport_x + PlayTransport::get_transport_width(mwindow) + 20;
 	czoom_y = ctransport_y + 5;
@@ -581,6 +887,7 @@ void BlueDotTheme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 	cmeter_y = 5;
 	cmeter_h = mwindow->session->cwindow_h - cmeter_y;
 
+//Specific to BD
 	cslider_w = ccanvas_x + ccanvas_w - cslider_x;
 	ctimebar_x = ccanvas_x;
 	ctimebar_y = ccanvas_y + ccanvas_h;
@@ -593,39 +900,37 @@ void BlueDotTheme::get_cwindow_sizes(CWindowGUI *gui, int cwindow_controls)
 	ctime_y = ctransport_y;
 	cdest_x = czoom_x;
 	cdest_y = czoom_y + 30;
+SET_TRACE
 }
 
 
 
 void BlueDotTheme::get_recordgui_sizes(RecordGUI *gui, int w, int h)
 {
-	recordgui_status_x = 10;
-	recordgui_status_y = 10;
-	recordgui_status_x2 = 160;
-	recordgui_batch_x = 310;
-	recordgui_batch_y = 10;
-	recordgui_batchcaption_x = recordgui_batch_x + 110;
-
-
-	recordgui_transport_x = recordgui_batch_x;
-	recordgui_transport_y = recordgui_batch_y + 150;
-
-	recordgui_buttons_x = recordgui_batch_x - 50;
-	recordgui_buttons_y = recordgui_transport_y + 40;
-	recordgui_options_x = recordgui_buttons_x;
-	recordgui_options_y = recordgui_buttons_y + 35;
-
-	recordgui_batches_x = 10;
-	recordgui_batches_y = 270;
-	recordgui_batches_w = w - 20;
-	recordgui_batches_h = h - recordgui_batches_y - 70;
-	recordgui_loadmode_x = w / 2 - loadmode_w / 2;
-	recordgui_loadmode_y = h - 60;
-
-	recordgui_controls_x = 10;
-	recordgui_controls_y = h - 40;
+	
 }
 
+// COPIED START--------
+void BlueDotTheme::get_rmonitor_sizes(int do_audio, 
+	int do_video,
+	int do_channel,
+	int do_interlace,
+	int do_avc,
+	int audio_channels)
+{
+	Theme::get_rmonitor_sizes(do_audio, 
+		do_video,
+		do_channel,
+		do_interlace,
+		do_avc,
+		audio_channels);
+	if(!do_video && do_audio)
+	{
+		rmonitor_meter_y -= 30;
+		rmonitor_meter_h += 30;
+	}
+}
+// COPIED END--------
 
 
 void BlueDotTheme::get_vwindow_sizes(VWindowGUI *gui)
@@ -634,7 +939,7 @@ void BlueDotTheme::get_vwindow_sizes(VWindowGUI *gui)
 	vmeter_h = mwindow->session->vwindow_h - cmeter_y;
 	vcanvas_x = 0;
 	vcanvas_y = 0;
-	vcanvas_h = mwindow->session->vwindow_h - vbuttons_left->get_h();
+	vcanvas_h = mwindow->session->vwindow_h - get_image("vbuttons_left")->get_h();
 
 	if(mwindow->edl->session->vwindow_meter)
 	{
@@ -655,15 +960,17 @@ void BlueDotTheme::get_vwindow_sizes(VWindowGUI *gui)
 	vtimebar_w = vcanvas_w;
 	vtimebar_h = 16;
 
+//Specific to BD
 	vslider_x = 10;
 	vslider_y = vtimebar_y + 25;
 	vslider_w = vtimebar_w - vslider_x;
 	vedit_x = 10;
 	vedit_y = vslider_y + 17;
 	vtransport_x = 10;
-	vtransport_y = mwindow->session->vwindow_h - autokeyframe_data[0]->get_h();
-	vtime_x = 333;
-	vtime_y = vedit_y + 8;
+	vtransport_y = mwindow->session->vwindow_h - 
+		get_image_set("autokeyframe")[0]->get_h();
+	vtime_x = 373;
+	vtime_y = vedit_y + 7;
 	vtime_w = 100;
 
 
@@ -681,12 +988,12 @@ void BlueDotTheme::get_vwindow_sizes(VWindowGUI *gui)
 
 void BlueDotTheme::build_icons()
 {
-	mwindow_icon = new VFrame(get_image_data("heroine_icon.png"));
-	vwindow_icon = new VFrame(get_image_data("heroine_icon.png"));
-	cwindow_icon = new VFrame(get_image_data("heroine_icon.png"));
-	awindow_icon = new VFrame(get_image_data("heroine_icon.png"));
-	record_icon = new VFrame(get_image_data("heroine_icon.png"));
-	clip_icon = new VFrame(get_image_data("clip_icon.png"));
+	new_image("mwindow_icon", "heroine_icon.png");
+	new_image("vwindow_icon", "heroine_icon.png");
+	new_image("cwindow_icon", "heroine_icon.png");
+	new_image("awindow_icon", "heroine_icon.png");
+	new_image("record_icon", "heroine_icon.png");
+	new_image("clip_icon", "clip_icon.png");
 }
 
 
@@ -698,38 +1005,20 @@ void BlueDotTheme::build_bg_data()
 	channel_position_data = new VFrame(get_image_data("channel_position.png"));
 
 // Track bitmaps
-	resource1024_bg_data = new VFrame(get_image_data("resource1024.png"));
-	resource512_bg_data = new VFrame(get_image_data("resource512.png"));
-	resource256_bg_data = new VFrame(get_image_data("resource256.png"));
-	resource128_bg_data = new VFrame(get_image_data("resource128.png"));
-	resource64_bg_data = new VFrame(get_image_data("resource64.png"));
-	resource32_bg_data = new VFrame(get_image_data("resource32.png"));
-	plugin_bg_data = new VFrame(get_image_data("plugin_bg.png"));
-	title_bg_data = new VFrame(get_image_data("title_bg.png"));
-	vtimebar_bg_data = new VFrame(get_image_data("vwindow_timebar.png"));
+	new_image("resource1024", "resource1024.png");
+	new_image("resource512", "resource512.png");
+	new_image("resource256", "resource256.png");
+	new_image("resource128", "resource128.png");
+	new_image("resource64", "resource64.png");
+	new_image("resource32", "resource32.png");
+//Graphic Copied from default. Improve!!
+	new_image("plugin_bg_data", "plugin_bg.png");
+	new_image("title_bg_data", "title_bg.png");
+	new_image("vtimebar_bg_data", "vwindow_timebar.png");
 }
 
 
-void BlueDotTheme::build_patches()
-{
-	static VFrame *default_drawpatch_data[] = { new VFrame(get_image_data("drawpatch_up.png")), new VFrame(get_image_data("drawpatch_hi.png")), new VFrame(get_image_data("drawpatch_checked.png")), new VFrame(get_image_data("drawpatch_dn.png")), new VFrame(get_image_data("drawpatch_checkedhi.png")) };
-	static VFrame *default_expandpatch_data[] = { new VFrame(get_image_data("expandpatch_up.png")), new VFrame(get_image_data("expandpatch_hi.png")), new VFrame(get_image_data("expandpatch_checked.png")), new VFrame(get_image_data("expandpatch_dn.png")), new VFrame(get_image_data("expandpatch_checkedhi.png")) };
-	static VFrame *default_gangpatch_data[] = { new VFrame(get_image_data("gangpatch_up.png")), new VFrame(get_image_data("gangpatch_hi.png")), new VFrame(get_image_data("gangpatch_checked.png")), new VFrame(get_image_data("gangpatch_dn.png")), new VFrame(get_image_data("gangpatch_checkedhi.png")) };
-	static VFrame *default_mutepatch_data[] = { new VFrame(get_image_data("mutepatch_up.png")), new VFrame(get_image_data("mutepatch_hi.png")), new VFrame(get_image_data("mutepatch_checked.png")), new VFrame(get_image_data("mutepatch_dn.png")), new VFrame(get_image_data("mutepatch_checkedhi.png")) };
-	static VFrame *default_patchbay_bg = new VFrame(get_image_data("patchbay_bg.png"));
-	static VFrame *default_playpatch_data[] = { new VFrame(get_image_data("playpatch_up.png")), new VFrame(get_image_data("playpatch_hi.png")), new VFrame(get_image_data("playpatch_checked.png")), new VFrame(get_image_data("playpatch_dn.png")), new VFrame(get_image_data("playpatch_checkedhi.png")) };
-	static VFrame *default_recordpatch_data[] = { new VFrame(get_image_data("recordpatch_up.png")), new VFrame(get_image_data("recordpatch_hi.png")), new VFrame(get_image_data("recordpatch_checked.png")), new VFrame(get_image_data("recordpatch_dn.png")), new VFrame(get_image_data("recordpatch_checkedhi.png")) };
-
-
-	drawpatch_data = default_drawpatch_data;
-	expandpatch_data = default_expandpatch_data;
-	gangpatch_data = default_gangpatch_data;
-	mutepatch_data = default_mutepatch_data;
-	patchbay_bg = default_patchbay_bg;
-	playpatch_data = default_playpatch_data;
-	recordpatch_data = default_recordpatch_data;
-}
-
+//Graphic Copied from default. Improve!!  -- use your imagination
 void BlueDotTheme::build_overlays()
 {
 	keyframe_data = new VFrame(get_image_data("keyframe3.png"));
@@ -750,159 +1039,192 @@ void BlueDotTheme::build_overlays()
 
 void BlueDotTheme::draw_rwindow_bg(RecordGUI *gui)
 {
-	int y;
-	int margin = 50;
-	int margin2 = 80;
-	gui->draw_9segment(recordgui_batch_x - margin,
-		0,
-		mwindow->session->rwindow_w - recordgui_status_x + margin,
-		recordgui_buttons_y,
-		rgui_batch);
-	gui->draw_3segmenth(recordgui_options_x - margin2,
-		recordgui_buttons_y - 5,
-		mwindow->session->rwindow_w - recordgui_options_x + margin2,
-		rgui_controls);
-	y = recordgui_buttons_y - 5 + rgui_controls->get_h();
-	gui->draw_9segment(0,
-		y,
-		mwindow->session->rwindow_w,
-		mwindow->session->rwindow_h - y,
-		rgui_list);
+// 	int y;
+// 	int margin = 50;
+// 	int margin2 = 80;
+// 	gui->draw_9segment(recordgui_batch_x - margin,
+// 		0,
+// 		mwindow->session->rwindow_w - recordgui_status_x + margin,
+// 		recordgui_buttons_y,
+// 		rgui_batch);
+// 	gui->draw_3segmenth(recordgui_options_x - margin2,
+// 		recordgui_buttons_y - 5,
+// 		mwindow->session->rwindow_w - recordgui_options_x + margin2,
+// 		rgui_controls);
+// 	y = recordgui_buttons_y - 5 + rgui_controls->get_h();
+// 	gui->draw_9segment(0,
+// 		y,
+// 		mwindow->session->rwindow_w,
+// 		mwindow->session->rwindow_h - y,
+// 		rgui_list);
 }
 
 void BlueDotTheme::draw_rmonitor_bg(RecordMonitorGUI *gui)
 {
-	int margin = 45;
-	int panel_w = 300;
-	int x = rmonitor_meter_x - margin;
-	int w = mwindow->session->rmonitor_w - x;
-	if(w < rmonitor_meters->get_w()) w = rmonitor_meters->get_w();
-	gui->clear_box(0, 
-		0, 
-		mwindow->session->rmonitor_w, 
-		mwindow->session->rmonitor_h);
-	gui->draw_9segment(x,
-		0,
-		w,
-		mwindow->session->rmonitor_h,
-		rmonitor_meters);
+// 	int margin = 45;
+// 	int panel_w = 300;
+// 	int x = rmonitor_meter_x - margin;
+// 	int w = mwindow->session->rmonitor_w - x;
+// 	if(w < rmonitor_meters->get_w()) w = rmonitor_meters->get_w();
+// 	gui->clear_box(0, 
+// 		0, 
+// 		mwindow->session->rmonitor_w, 
+// 		mwindow->session->rmonitor_h);
+// 	gui->draw_9segment(x,
+// 		0,
+// 		w,
+// 		mwindow->session->rmonitor_h,
+// 		rmonitor_meters);
 }
 
 
 
 
 
-
+//Specific to BD
 void BlueDotTheme::draw_mwindow_bg(MWindowGUI *gui)
 {
-// Button bar
+// Button bar (not menu bar)
+#define MBUTTONS_RIGHTEDGE 290 + 11 + 2*30 + 11 + 2*30 + 11 + 14*30
 	gui->draw_3segmenth(mbuttons_x, 
 		mbuttons_y, 
-		750, 
-		mbutton_left);
-	gui->draw_3segmenth(mbuttons_x + 750, 
+		MBUTTONS_RIGHTEDGE, 
+		get_image("mbutton_left"),
+		0);
+	gui->draw_3segmenth(mbuttons_x + MBUTTONS_RIGHTEDGE, 
 		mbuttons_y, 
 		mbuttons_w - 500, 
-		mbutton_right);
+		get_image("mbutton_right"));
 
-// Clock
+// MIHA: COPIED FROM DEFAULT THEME M6>>
+	gui->draw_vframe(get_image("panel_divider"),
+		mbuttons_x + 290 + 5,
+		mbuttons_y - 1);
+
+	gui->draw_vframe(get_image("panel_divider"),
+		mbuttons_x + 290 + 11 + 30 * 2 + 5,
+		mbuttons_y - 1);
+
+	gui->draw_vframe(get_image("panel_divider"),
+		mbuttons_x + 290 + 11 +  30 * 2 + 11 + 30 * 2 + 5,
+		mbuttons_y - 1);
+
+
+// MIHA: COPIED FROM DEFAULT THEME M6<<
+
+//Specific to BD
+// Clock (here the background of the clock is drawn)
 	gui->draw_3segmenth(0, 
-		mbuttons_y + mbutton_left->get_h(),
-		patchbay_bg->get_w(), 
-		clock_bg);
+		mbuttons_y + get_image("mbutton_left")->get_h(),
+		get_image("patchbay_bg")->get_w(), 
+		get_image("clock_bg"));
 
+//Specific to BD
 // Patchbay
 	gui->draw_3segmentv(patchbay_x, 
 		patchbay_y, 
-		patchbay_h + 10, 
-		patchbay_bg);
+		patchbay_h, 
+		get_image("patchbay_bg"));
 
-// Track canvas
+//patchbay_h + 10, 
+
+
+//Specific to BD
+//Drawing of Track's canvas
 	gui->draw_9segment(mcanvas_x, 
 		mcanvas_y, 
 		mcanvas_w, 
-		patchbay_h + 10, 
-		tracks_bg);
+		patchbay_h + 26, 
+		get_image("tracks_bg"));
+//patchbay_h + 10, 
 
 // Timebar
 	gui->draw_3segmenth(mtimebar_x, 
 		mtimebar_y, 
 		mtimebar_w, 
-		timebar_bg_data);
+		get_image("timebar_bg"));
 
+//Specific to BD
 // Zoombar
-	int zoombar_center = 710;
+#define ZOOMBAR_CENTER 1100
 	gui->draw_3segmenth(mzoom_x, 
 		mzoom_y,
-		zoombar_center, 
-		zoombar_left);
-	if(mzoom_w > zoombar_center)
-		gui->draw_3segmenth(mzoom_x + zoombar_center, 
+		ZOOMBAR_CENTER, 
+		get_image("zoombar_left"));
+	if(mzoom_w > ZOOMBAR_CENTER)
+		gui->draw_3segmenth(mzoom_x + ZOOMBAR_CENTER, 
 			mzoom_y, 
-			mzoom_w - zoombar_center, 
-			zoombar_right);
+			mzoom_w - ZOOMBAR_CENTER, 
+			get_image("zoombar_right"));
+
 
 // Status
 	gui->draw_3segmenth(mstatus_x, 
 		mstatus_y,
-		zoombar_center, 
-		statusbar_left);
+		ZOOMBAR_CENTER, 
+		get_image("statusbar_left"));
 
-	if(mstatus_w > zoombar_center)
-		gui->draw_3segmenth(mstatus_x + zoombar_center, 
-			mstatus_y,
-			mstatus_w - zoombar_center, 
-			statusbar_right);
+	if(mstatus_w > ZOOMBAR_CENTER)
+	  gui->draw_3segmenth(mstatus_x + ZOOMBAR_CENTER, 
+			      mstatus_y,
+			      mstatus_w - ZOOMBAR_CENTER, 
+			      get_image("statusbar_right"));
+
 }
 
 void BlueDotTheme::draw_cwindow_bg(CWindowGUI *gui)
 {
+//Specific to BD
 	const int button_division = 530;
-	gui->draw_3segmentv(0, 0, ccomposite_h, cpanel_bg);
-	gui->draw_3segmenth(0, ccomposite_h, button_division, cbuttons_left);
+	gui->draw_3segmentv(0, 0, ccomposite_h, get_image("cpanel_bg"));
+	gui->draw_3segmenth(0, ccomposite_h, button_division, get_image("cbuttons_left"));
 	if(mwindow->edl->session->cwindow_meter)
 	{
 		gui->draw_3segmenth(button_division, 
 			ccomposite_h, 
 			cmeter_x - CWINDOW_METER_MARGIN - button_division, 
-			cbuttons_right);
+			get_image("cbuttons_right"));
 		gui->draw_9segment(cmeter_x - CWINDOW_METER_MARGIN, 
 			0, 
 			mwindow->session->cwindow_w - cmeter_x + CWINDOW_METER_MARGIN, 
 			mwindow->session->cwindow_h, 
-			cmeter_bg);
+			get_image("cmeter_bg"));
 	}
 	else
 	{
 		gui->draw_3segmenth(button_division, 
 			ccomposite_h, 
 			cmeter_x - CWINDOW_METER_MARGIN - button_division + 100, 
-			cbuttons_right);
+			get_image("cbuttons_right"));
 	}
 }
 
 void BlueDotTheme::draw_vwindow_bg(VWindowGUI *gui)
 {
-	const int button_division = 495;
-	gui->draw_3segmenth(0, vcanvas_h, button_division, vbuttons_left);
+//Specific to BD
+	const int button_division = 535;
+	gui->draw_3segmenth(0, 
+		vcanvas_h, 
+		button_division, 
+		get_image("vbuttons_left"));
 	if(mwindow->edl->session->vwindow_meter)
 	{
 		gui->draw_3segmenth(button_division, 
 			vcanvas_h, 
 			vmeter_x - VWINDOW_METER_MARGIN - button_division, 
-			vbuttons_right);
+			get_image("vbuttons_right"));
 		gui->draw_9segment(vmeter_x - VWINDOW_METER_MARGIN,
 			0,
 			mwindow->session->vwindow_w - vmeter_x + VWINDOW_METER_MARGIN, 
 			mwindow->session->vwindow_h, 
-			vmeter_bg);
+			get_image("vmeter_bg"));
 	}
 	else
 	{
 		gui->draw_3segmenth(button_division, 
 			vcanvas_h, 
 			vmeter_x - VWINDOW_METER_MARGIN - button_division + 100, 
-			vbuttons_right);
+			get_image("vbuttons_right"));
 	}
 }
 
@@ -910,10 +1232,10 @@ void BlueDotTheme::get_preferences_sizes()
 {
 }
 
-
+//Specific to BD
 void BlueDotTheme::draw_preferences_bg(PreferencesWindow *gui)
 {
-	gui->draw_9segment(0, 0, gui->get_w(), gui->get_h() - 40, preferences_bg);
+	gui->draw_9segment(0, 0, gui->get_w(), gui->get_h() - 40, get_image("preferences_bg"));
 }
 
 void BlueDotTheme::get_new_sizes(NewWindow *gui)
@@ -922,14 +1244,13 @@ void BlueDotTheme::get_new_sizes(NewWindow *gui)
 
 void BlueDotTheme::draw_new_bg(NewWindow *gui)
 {
-	gui->draw_vframe(new_bg, 0, 0);
+	gui->draw_vframe(get_image("new_bg"), 0, 0);
 }
 
 void BlueDotTheme::draw_setformat_bg(SetFormatWindow *gui)
 {
-	gui->draw_vframe(setformat_bg, 0, 0);
+	gui->draw_vframe(get_image("setformat_bg"), 0, 0);
 }
-
 
 
 
