@@ -17,7 +17,7 @@ PluginClient* new_plugin(PluginServer *server)
 
 
 ResampleFraction::ResampleFraction(ResampleEffect *plugin, int x, int y)
- : BC_TextBox(x, y, 100, 1, (float)plugin->scale)
+ : BC_TextBox(x, y, 100, 1, (float)plugin->scale, 1, MEDIUMFONT, 6)
 {
 	this->plugin = plugin;
 }
