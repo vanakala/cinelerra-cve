@@ -22,7 +22,7 @@ libquicktimehv_la_LIBADD = \
 	-lfaac \
 	encore50/libencore.la \
 	$(top_builddir)/libmpeg3/libmpeg3hv.la \
-	-lx264 \
+	$(LIBX264_LIBS) \
 	$(LIBDV_LIBS) \
 	-ljpeg -lpng \
 	-lz -lpthread -lm
