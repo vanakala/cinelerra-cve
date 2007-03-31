@@ -9,7 +9,7 @@ libmpeg3_video_la_SOURCES = getpicture.c headers.c idct.c macroblocks.c mmxtest.
 	subtitle.c \
 	vlc.c
 
-if USEMMX
+if USEMMX32
 libmpeg3_video_la_SOURCES += mmxidct.S reconmmx.s
 else
 libmpeg3_video_la_SOURCES +=

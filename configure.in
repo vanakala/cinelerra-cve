@@ -303,10 +303,19 @@ i586 | i686)
 
 	if test "x$enable_mmx" = "xyes"; then
 		CPU_CFLAGS="-DHAVE_MMX -DUSE_MMX $CPU_CFLAGS" # -D_MMX_ doesn't work
+		enable_mmx32=yes
 	fi
 	if test "x$enable_3dnow" = "xyes"; then
 		CPU_CFLAGS="-DHAVE_3Dnow $CPU_CFLAGS" # -DUSE_3DNOW --> don't use, not compilin
 	fi
+;;
+x86_64)
+	test "x$enable_mmx" = "xauto" && enable_mmx=yes
+	CPU_CFLAGS="-DX86_CPU $CPU_CFLAGS"
+	if test "x$enable_mmx" = "xyes"; then
+		CPU_CFLAGS="-DHAVE_MMX -DUSE_MMX $CPU_CFLAGS"
+
+        fi
 ;;
 powerpc)
 	CPU_CFLAGS="-mcpu=powerpc $CPU_CFLAGS"
@@ -319,6 +328,7 @@ esac
 test "x$enable_mmx" = "xauto" && enable_mmx=no
 
 AM_CONDITIONAL(USEMMX, test "x$enable_mmx" = "xyes")
+AM_CONDITIONAL(USEMMX32, test "x$enable_mmx32" = "xyes")
 AM_CONDITIONAL(TARGET_BUILTIN_VECTOR,test "x$enable_mmx" = "xyes")
 AM_CONDITIONAL(USE3DNOW, test "x$enable_3dnow" = "xyes")
 AM_CONDITIONAL(TARGET_ARCH_POWERPC, test "x$target_cpu" = "xpowerpc")
