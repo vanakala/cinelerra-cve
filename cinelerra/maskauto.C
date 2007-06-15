@@ -150,7 +150,7 @@ void SubMask::copy(FileXML *file)
 			file->append_tag();
 			char string[BCTEXTLEN];
 //printf("SubMask::copy 1 %p %d %p\n", this, i, points.values[i]);
-			sprintf(string, "%.6e, %.6e, %.6e, %.6e, %.6e, %.6e", 
+			sprintf(string, "%.7g, %.7g, %.7g, %.7g, %.7g, %.7g",
 				points.values[i]->x, 
 				points.values[i]->y, 
 				points.values[i]->control_x1, 
