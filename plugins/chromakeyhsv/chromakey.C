@@ -965,6 +965,8 @@ ChromaKeyHSV::save_data (KeyFrame * keyframe)
   output.tag.set_property ("SPILL_AMOUNT", config.spill_amount);
   output.tag.set_property ("SHOW_MASK", config.show_mask);
   output.append_tag ();
+  output.tag.set_title ("/CHROMAKEY_HSV");
+  output.append_tag ();
   output.terminate_string ();
 }
 

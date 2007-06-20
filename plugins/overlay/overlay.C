@@ -748,6 +748,8 @@ void Overlay::save_data(KeyFrame *keyframe)
 	output.tag.set_property("DIRECTION", config.direction);
 	output.tag.set_property("OUTPUT_LAYER", config.output_layer);
 	output.append_tag();
+	output.tag.set_title("/OVERLAY");
+	output.append_tag();
 	output.terminate_string();
 }
 

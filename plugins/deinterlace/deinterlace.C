@@ -614,6 +614,8 @@ void DeInterlaceMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("ADAPTIVE", config.adaptive);
 	output.tag.set_property("THRESHOLD", config.threshold);
 	output.append_tag();
+	output.tag.set_title("/DEINTERLACE");
+	output.append_tag();
 	output.terminate_string();
 }
 

@@ -362,6 +362,8 @@ void OilEffect::save_data(KeyFrame *keyframe)
 	output.tag.set_property("RADIUS", config.radius);
 	output.tag.set_property("USE_INTENSITY", config.use_intensity);
 	output.append_tag();
+	output.tag.set_title("/OIL_PAINTING");
+	output.append_tag();
 	output.terminate_string();
 }
 

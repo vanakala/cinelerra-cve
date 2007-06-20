@@ -683,9 +683,13 @@ void ParametricEQ::save_data(KeyFrame *keyframe)
 		output.tag.set_property("MAGNITUDE", config.band[i].magnitude);
 		output.tag.set_property("MODE", config.band[i].mode);
 		output.append_tag();
+		output.tag.set_title("/BAND");
+		output.append_tag();
 		output.append_newline();
 	}
 
+	output.tag.set_title("/PARAMETRICEQ");
+	output.append_tag();
 	output.terminate_string();
 }
 

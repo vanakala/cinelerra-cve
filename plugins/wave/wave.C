@@ -521,6 +521,8 @@ void WaveEffect::save_data(KeyFrame *keyframe)
 	output.tag.set_property("PHASE", config.phase);
 	output.tag.set_property("WAVELENGTH", config.wavelength);
 	output.append_tag();
+	output.tag.set_title("/WAVE");
+	output.append_tag();
 	output.terminate_string();
 }
 

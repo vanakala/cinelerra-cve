@@ -450,6 +450,8 @@ void ReframeRT::save_data(KeyFrame *keyframe)
 	output.tag.set_property("STRETCH", config.stretch);
 	output.tag.set_property("INTERPOLATE", config.interp);
 	output.append_tag();
+	output.tag.set_title("/REFRAMERT");
+	output.append_tag();
 	output.terminate_string();
 }
 

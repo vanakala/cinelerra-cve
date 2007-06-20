@@ -428,6 +428,8 @@ void WhirlEffect::save_data(KeyFrame *keyframe)
 	output.tag.set_property("PINCH", config.pinch);
 	output.tag.set_property("RADIUS", config.radius);
 	output.append_tag();
+	output.tag.set_title("/WHIRL");
+	output.append_tag();
 	output.terminate_string();
 // data is now in *text
 }

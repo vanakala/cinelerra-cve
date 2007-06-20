@@ -150,6 +150,8 @@ void UnsharpMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("AMOUNT", config.amount);
 	output.tag.set_property("THRESHOLD", config.threshold);
 	output.append_tag();
+	output.tag.set_title("/UNSHARP");
+	output.append_tag();
 	output.terminate_string();
 }
 

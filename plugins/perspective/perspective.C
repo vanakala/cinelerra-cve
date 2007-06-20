@@ -704,6 +704,8 @@ void PerspectiveMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("WINDOW_W", config.window_w);
 	output.tag.set_property("WINDOW_H", config.window_h);
 	output.append_tag();
+	output.tag.set_title("/PERSPECTIVE");
+	output.append_tag();
 	output.terminate_string();
 }
 

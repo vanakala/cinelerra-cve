@@ -606,6 +606,8 @@ void HueEffect::save_data(KeyFrame *keyframe)
 	output.tag.set_property("SATURATION", config.saturation);
 	output.tag.set_property("VALUE", config.value);
 	output.append_tag();
+	output.tag.set_title("/HUESATURATION");
+	output.append_tag();
 	output.terminate_string();
 }
 void HueEffect::read_data(KeyFrame *keyframe)

@@ -164,17 +164,20 @@ int Labels::copy(double start, double end, FileXML *xml)
 	xml->append_newline();
 
 	Label *current;
-	sprintf(string, xml_tag);
-	string[strlen(string) - 1] = 0;
+	sprintf(string, "/%s", xml_tag);
+	string[strlen(string) - 1] = 0; // remove trailing "S" on "LABELS" giving "LABEL"
 	for(current = label_of(start); 
 		current && current->position <= end; 
 		current = NEXT)
 	{
-		xml->tag.set_title(string);
+		xml->tag.set_title(string+1); // skip the "/" for opening tag
 		xml->tag.set_property("TIME", (double)current->position - start);
 		xml->tag.set_property("TEXTSTR", current->textstr);
 //printf("Labels::copy %f\n", current->position - start);
 		xml->append_tag();
+		xml->tag.set_title(string); // closing tag
+		xml->append_tag();
+		xml->append_newline();
 	}
 	
 	sprintf(string, "/%s", xml_tag);
@@ -217,6 +220,7 @@ printf("Labels::operator= 1\n");
 
 
 int Labels::save(FileXML *xml)
+// Note: Normally the saving of Labels is done by Labels::copy()
 {
 	xml->tag.set_title("LABELS");
 	xml->append_tag();
@@ -230,6 +234,9 @@ int Labels::save(FileXML *xml)
 		xml->tag.set_property("TIME", (double)current->position);
 		xml->tag.set_property("TEXTSTR", current->textstr);
 		xml->append_tag();
+		xml->tag.set_title("/LABEL");
+		xml->append_tag();
+		xml->append_newline();
 	}
 	
 	xml->append_newline();

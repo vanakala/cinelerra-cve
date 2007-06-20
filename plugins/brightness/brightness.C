@@ -295,6 +295,8 @@ void BrightnessMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("LUMA",  config.luma);
 //printf("BrightnessMain::save_data %d\n", config.luma);
 	output.append_tag();
+	output.tag.set_title("/BRIGHTNESS");
+	output.append_tag();
 	output.terminate_string();
 }
 

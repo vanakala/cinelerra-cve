@@ -95,6 +95,8 @@ void RGB601Main::save_data(KeyFrame *keyframe)
 	output.tag.set_title("RGB601");
 	output.tag.set_property("DIRECTION", config.direction);
 	output.append_tag();
+	output.tag.set_title("/RGB601");
+	output.append_tag();
 	output.terminate_string();
 }
 

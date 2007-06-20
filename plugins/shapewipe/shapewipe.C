@@ -301,6 +301,8 @@ void ShapeWipeMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("PRESERVE_ASPECT", preserve_aspect);
 	output.tag.set_property("FILENAME", filename);
 	output.append_tag();
+	output.tag.set_title("/SHAPEWIPE");
+	output.append_tag();
 	output.terminate_string();
 }
 

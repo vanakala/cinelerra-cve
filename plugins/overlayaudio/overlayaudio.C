@@ -249,6 +249,8 @@ void OverlayAudio::save_data(KeyFrame *keyframe)
 	output.tag.set_title("OVERLAY");
 	output.tag.set_property("OUTPUT", config.output_track);
 	output.append_tag();
+	output.tag.set_title("/OVERLAY");
+	output.append_tag();
 	output.append_newline();
 	output.terminate_string();
 }

@@ -760,6 +760,8 @@ void TimeAvgMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("PARANOID", config.paranoid);
 	output.tag.set_property("NOSUBTRACT", config.nosubtract);
 	output.append_tag();
+	output.tag.set_title("/TIME_AVERAGE");
+	output.append_tag();
 	output.terminate_string();
 }
 

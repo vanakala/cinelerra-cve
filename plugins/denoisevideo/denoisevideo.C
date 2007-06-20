@@ -394,6 +394,8 @@ void DenoiseVideo::save_data(KeyFrame *keyframe)
 	output.tag.set_property("DO_B", config.do_b);
 	output.tag.set_property("DO_A", config.do_a);
 	output.append_tag();
+	output.tag.set_title("/DENOISE_VIDEO");
+	output.append_tag();
 	output.terminate_string();
 }
 

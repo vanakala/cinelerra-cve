@@ -116,6 +116,8 @@ void IVTCMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("AUTO_THRESHOLD", config.auto_threshold);
 	output.tag.set_property("PATTERN", config.pattern);
 	output.append_tag();
+	output.tag.set_title("/IVTC");
+	output.append_tag();
 	output.terminate_string();
 }
 

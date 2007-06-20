@@ -798,6 +798,8 @@ void Decimate::save_data(KeyFrame *keyframe)
 //	output.tag.set_property("AVERAGED_FRAMES", config.averaged_frames);
 //	output.tag.set_property("LEAST_DIFFERENCE", config.least_difference);
 	output.append_tag();
+	output.tag.set_title("/DECIMATE");
+	output.append_tag();
 	output.terminate_string();
 }
 

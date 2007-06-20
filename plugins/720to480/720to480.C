@@ -350,6 +350,8 @@ void _720to480Main::save_data(KeyFrame *keyframe)
 	output.tag.set_property("FIRST_FIELD", config.first_field);
 	output.tag.set_property("DIRECTION", config.direction);
 	output.append_tag();
+	output.tag.set_title("/720TO480");
+	output.append_tag();
 	output.terminate_string();
 }
 

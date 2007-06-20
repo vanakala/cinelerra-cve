@@ -1150,6 +1150,8 @@ void TimeFrontMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("INVERT", config.invert);
 	output.tag.set_property("SHOW_GRAYSCALE", config.show_grayscale);
 	output.append_tag();
+	output.tag.set_title("/TIMEFRONT");
+	output.append_tag();
 	output.terminate_string();
 }
 

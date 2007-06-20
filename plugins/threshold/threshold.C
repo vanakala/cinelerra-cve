@@ -167,6 +167,8 @@ void ThresholdMain::save_data(KeyFrame *keyframe)
 	file.tag.set_property("MAX", config.max);
 	file.tag.set_property("PLOT", config.plot);
 	file.append_tag();
+	file.tag.set_title("/THRESHOLD");
+	file.append_tag();
 	file.terminate_string();
 }
 

@@ -216,6 +216,8 @@ void BandWipeMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("BANDS", bands);
 	output.tag.set_property("DIRECTION", direction);
 	output.append_tag();
+	output.tag.set_title("/BANDWIPE");
+	output.append_tag();
 	output.terminate_string();
 }
 

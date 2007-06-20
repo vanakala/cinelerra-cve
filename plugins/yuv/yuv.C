@@ -263,6 +263,8 @@ void YUVEffect::save_data(KeyFrame *keyframe)
 	output.tag.set_property("U", config.u);
 	output.tag.set_property("V", config.v);
 	output.append_tag();
+	output.tag.set_title("/YUV");
+	output.append_tag();
 	output.terminate_string();
 }
 

@@ -308,6 +308,8 @@ void ShiftInterlaceMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("ODD_OFFSET", config.odd_offset);
 	output.tag.set_property("EVEN_OFFSET", config.even_offset);
 	output.append_tag();
+	output.tag.set_title("/SHIFTINTERLACE");
+	output.append_tag();
 	output.append_newline();
 	output.terminate_string();
 // data is now in *text

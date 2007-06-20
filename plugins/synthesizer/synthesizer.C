@@ -157,6 +157,8 @@ void Synth::save_data(KeyFrame *keyframe)
 		config.oscillator_config.values[i]->save_data(&output);
 	}
 
+	output.tag.set_title("/SYNTH");
+	output.append_tag();
 	output.terminate_string();
 // data is now in *text
 }

@@ -175,6 +175,8 @@ void IrisSquareMain::save_data(KeyFrame *keyframe)
 	output.tag.set_title("IRISSQUARE");
 	output.tag.set_property("DIRECTION", direction);
 	output.append_tag();
+	output.tag.set_title("/IRISSQUARE");
+	output.append_tag();
 	output.terminate_string();
 }
 

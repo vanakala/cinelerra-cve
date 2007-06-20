@@ -184,6 +184,8 @@ void SvgMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("OUT_H", config.out_h);
 	output.tag.set_property("SVG_FILE", config.svg_file);
 	output.append_tag();
+	output.tag.set_title("/SVG");
+	output.append_tag();
 
 	output.terminate_string();
 // data is now in *text

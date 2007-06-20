@@ -153,6 +153,8 @@ void TranslateMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("OUT_W", config.out_w);
 	output.tag.set_property("OUT_H", config.out_h);
 	output.append_tag();
+	output.tag.set_title("/TRANSLATE");
+	output.append_tag();
 
 	output.terminate_string();
 // data is now in *text

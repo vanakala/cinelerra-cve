@@ -612,6 +612,8 @@ void ChromaKey::save_data(KeyFrame *keyframe)
 	output.tag.set_property("SLOPE", config.slope);
 	output.tag.set_property("USE_VALUE", config.use_value);
 	output.append_tag();
+	output.tag.set_title("/CHROMAKEY");
+	output.append_tag();
 	output.terminate_string();
 }
 

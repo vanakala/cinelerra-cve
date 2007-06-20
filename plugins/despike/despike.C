@@ -112,6 +112,8 @@ void Despike::save_data(KeyFrame *keyframe)
 	output.tag.set_property("LEVEL", config.level);
 	output.tag.set_property("SLOPE", config.slope);
 	output.append_tag();
+	output.tag.set_title("/DESPIKE");
+	output.append_tag();
 	output.append_newline();
 	output.terminate_string();
 }

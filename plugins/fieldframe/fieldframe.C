@@ -378,6 +378,8 @@ void FieldFrame::save_data(KeyFrame *keyframe)
 	output.tag.set_property("DOMINANCE", config.field_dominance);
 	output.tag.set_property("FIRST_FRAME", config.first_frame);
 	output.append_tag();
+	output.tag.set_title("/FIELD_FRAME");
+	output.append_tag();
 	output.terminate_string();
 }
 

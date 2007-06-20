@@ -856,6 +856,8 @@ void SelTempAvgMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("MASK_BV", config.mask_BV);
 
 	output.append_tag();
+	output.tag.set_title("/SELECTIVE_TEMPORAL_AVERAGE");
+	output.append_tag();
 	output.terminate_string();
 }
 

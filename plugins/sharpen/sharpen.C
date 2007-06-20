@@ -227,11 +227,15 @@ void SharpenMain::save_data(KeyFrame *keyframe)
 	{
 		output.tag.set_title("INTERLACE");
 		output.append_tag();
+		output.tag.set_title("/INTERLACE");
+		output.append_tag();
 	}
 
 	if(config.horizontal)
 	{
 		output.tag.set_title("HORIZONTAL");
+		output.append_tag();
+		output.tag.set_title("/HORIZONTAL");
 		output.append_tag();
 	}
 
@@ -239,7 +243,11 @@ void SharpenMain::save_data(KeyFrame *keyframe)
 	{
 		output.tag.set_title("LUMINANCE");
 		output.append_tag();
+		output.tag.set_title("/LUMINANCE");
+		output.append_tag();
 	}
+	output.tag.set_title("/SHARPNESS");
+	output.append_tag();
 	output.terminate_string();
 }
 

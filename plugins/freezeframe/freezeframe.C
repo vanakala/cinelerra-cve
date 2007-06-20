@@ -197,12 +197,18 @@ void FreezeFrameMain::save_data(KeyFrame *keyframe)
 	{
 		output.tag.set_title("ENABLED");
 		output.append_tag();
+		output.tag.set_title("/ENABLED");
+		output.append_tag();
 	}
 	if(config.line_double)
 	{
 		output.tag.set_title("LINE_DOUBLE");
 		output.append_tag();
+		output.tag.set_title("/LINE_DOUBLE");
+		output.append_tag();
 	}
+	output.tag.set_title("/FREEZEFRAME");
+	output.append_tag();
 	output.terminate_string();
 // data is now in *text
 }

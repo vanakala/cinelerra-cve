@@ -275,6 +275,8 @@ void _1080to540Main::save_data(KeyFrame *keyframe)
 	output.tag.set_title("1080TO540");
 	output.tag.set_property("FIRST_FIELD", config.first_field);
 	output.append_tag();
+	output.tag.set_title("/1080TO540");
+	output.append_tag();
 	output.terminate_string();
 }
 

@@ -510,6 +510,8 @@ void DownSampleMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("B", config.b);
 	output.tag.set_property("A", config.a);
 	output.append_tag();
+	output.tag.set_title("/DOWNSAMPLE");
+	output.append_tag();
 	output.terminate_string();
 }
 

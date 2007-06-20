@@ -777,6 +777,8 @@ void GradientMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("CENTER_X", config.center_x);
 	output.tag.set_property("CENTER_Y", config.center_y);
 	output.append_tag();
+	output.tag.set_title("/GRADIENT");
+	output.append_tag();
 	output.terminate_string();
 }
 

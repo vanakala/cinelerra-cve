@@ -317,6 +317,8 @@ void Reverb::save_data(KeyFrame *keyframe)
 	output.tag.set_property("LOWPASS2", config.lowpass2);
 //printf("Reverb::save_data config.ref_level2 %f\n", config.ref_level2);
 	output.append_tag();
+	output.tag.set_title("/REVERB");
+	output.append_tag();
 	output.append_newline();
 //printf("Reverb::save_data 1\n");
 	

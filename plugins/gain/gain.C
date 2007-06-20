@@ -122,6 +122,8 @@ void Gain::save_data(KeyFrame *keyframe)
 	output.tag.set_title("GAIN");
 	output.tag.set_property("LEVEL", config.level);
 	output.append_tag();
+	output.tag.set_title("/GAIN");
+	output.append_tag();
 	output.append_newline();
 	output.terminate_string();
 }

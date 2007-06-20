@@ -590,6 +590,8 @@ void LiveVideo::save_data(KeyFrame *keyframe)
 	output.tag.set_title("LIVEVIDEO");
 	output.tag.set_property("CHANNEL", config.channel);
 	output.append_tag();
+	output.tag.set_title("/LIVEVIDEO");
+	output.append_tag();
 	output.terminate_string();
 }
 

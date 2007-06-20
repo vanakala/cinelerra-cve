@@ -218,6 +218,8 @@ void InterpolatePixelsMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("X", config.x);
 	output.tag.set_property("Y", config.y);
 	output.append_tag();
+	output.tag.set_title("/INTERPOLATEPIXELS");
+	output.append_tag();
 	output.terminate_string();
 }
 

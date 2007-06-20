@@ -654,6 +654,8 @@ void InterpolateVideo::save_data(KeyFrame *keyframe)
 	output.tag.set_property("INPUT_RATE", config.input_rate);
 	output.tag.set_property("USE_KEYFRAMES", config.use_keyframes);
 	output.append_tag();
+	output.tag.set_title("/INTERPOLATEVIDEO");
+	output.append_tag();
 	output.terminate_string();
 }
 

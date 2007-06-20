@@ -242,6 +242,8 @@ void SwapMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("BLUE", config.blue);
 	output.tag.set_property("ALPHA", config.alpha);
 	output.append_tag();
+	output.tag.set_title("/SWAPCHANNELS");
+	output.append_tag();
 	output.append_newline();
 	output.terminate_string();
 // data is now in *text

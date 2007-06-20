@@ -215,6 +215,8 @@ void SoundLevelEffect::save_data(KeyFrame *keyframe)
 	output.tag.set_title("SOUNDLEVEL");
 	output.tag.set_property("DURATION", config.duration);
 	output.append_tag();
+	output.tag.set_title("/SOUNDLEVEL");
+	output.append_tag();
 	output.append_newline();
 
 	output.terminate_string();

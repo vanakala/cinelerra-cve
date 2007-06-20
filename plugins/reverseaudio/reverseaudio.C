@@ -323,6 +323,8 @@ void ReverseAudio::save_data(KeyFrame *keyframe)
 	output.tag.set_title("REVERSEAUDIO");
 	output.tag.set_property("ENABLED", config.enabled);
 	output.append_tag();
+	output.tag.set_title("/REVERSEAUDIO");
+	output.append_tag();
 	output.terminate_string();
 }
 

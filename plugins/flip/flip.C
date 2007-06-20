@@ -219,13 +219,19 @@ void FlipMain::save_data(KeyFrame *keyframe)
 	{
 		output.tag.set_title("VERTICAL");
 		output.append_tag();
+		output.tag.set_title("/VERTICAL");
+		output.append_tag();
 	}
 
 	if(config.flip_horizontal)
 	{	
 		output.tag.set_title("HORIZONTAL");
 		output.append_tag();
+		output.tag.set_title("/HORIZONTAL");
+		output.append_tag();
 	}
+	output.tag.set_title("/FLIP");
+	output.append_tag();
 	output.terminate_string();
 // data is now in *text
 }
