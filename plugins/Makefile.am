@@ -74,6 +74,7 @@ SUBDIRS= \
 	radialblur \
 	reframe \
 	reframert \
+	reroute \
 	resample \
 	reverb \
 	reverseaudio \
