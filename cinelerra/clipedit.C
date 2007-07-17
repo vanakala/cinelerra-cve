@@ -186,6 +186,10 @@ void ClipEditWindow::create_objects()
 	add_subwindow(title = new BC_Title(x1, y, _("Title:")));
 	y += title->get_h() + 5;
 	add_subwindow(titlebox = new ClipEditTitle(this, x1, y, get_w() - x1 * 2));
+
+	int end = strlen(titlebox->get_text());
+	titlebox->set_selection(0, end, end);
+
 	y += titlebox->get_h() + 10;
 	add_subwindow(title = new BC_Title(x1, y, _("Comments:")));
 	y += title->get_h() + 5;
