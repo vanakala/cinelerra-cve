@@ -471,6 +471,10 @@ int MWindowGUI::keypress_event()
 	{
 		switch(get_keypress())
 		{
+			case 'e':
+				mwindow->toggle_editing_mode();
+				result = 1;
+				break;
 			case LEFT:
 				if(!ctrl_down()) 
 				{ 
