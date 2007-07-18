@@ -4955,6 +4955,8 @@ int TrackCanvas::button_press_event()
 		{
 			if(shift_down())
 				mwindow->expand_sample();
+			else if(ctrl_down())
+				mwindow->move_left(get_w()/ 10);
 			else
 				mwindow->move_up(get_h() / 10);
 			result = 1;
@@ -4964,6 +4966,8 @@ int TrackCanvas::button_press_event()
 		{
 			if(shift_down())
 				mwindow->zoom_in_sample();
+			else if(ctrl_down())
+				mwindow->move_right(get_w() / 10);
 			else
 				mwindow->move_down(get_h() / 10);
 			result = 1;
