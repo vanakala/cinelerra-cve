@@ -1062,27 +1062,28 @@ void Playback3D::do_mask(Canvas *canvas,
 
 
 #ifdef HAVE_GL
+struct Vertex : ListItem<Vertex>
+{
+	GLdouble c[3];
+};
+// this list is only used from the main thread, no locking needed
+// this must be a list so that pointers to allocated entries remain valid
+// when new entries are added
+static List<Vertex> *vertex_cache = 0;
+
 static void combine_callback(GLdouble coords[3], 
 	GLdouble *vertex_data[4],
 	GLfloat weight[4], 
 	GLdouble **dataOut)
 {
-	GLdouble *vertex;
+// can't use malloc here; GLU doesn't delete the memory for us!
+	Vertex* vertex = vertex_cache->append();
+	vertex->c[0] = coords[0];
+	vertex->c[1] = coords[1];
+	vertex->c[2] = coords[2];
+// we don't need to interpolate anything
 
-	vertex = (GLdouble *) malloc(6 * sizeof(GLdouble));
-	vertex[0] = coords[0];
-	vertex[1] = coords[1];
-	vertex[2] = coords[2];
-
-	for (int i = 3; i < 6; i++)
-	{
-		vertex[i] = weight[0] * vertex_data[0][i] +
-			weight[1] * vertex_data[1][i] +
-			weight[2] * vertex_data[2][i] +
-			weight[3] * vertex_data[3][i];
-	}
-
-	*dataOut = vertex;
+	*dataOut = &vertex->c[0];
 }
 #endif
 
@@ -1150,6 +1151,8 @@ void Playback3D::do_mask_sync(Playback3DCommand *command)
 		gluTessCallback(tesselator, GLU_TESS_BEGIN, (GLvoid (*) ( )) &glBegin);
 		gluTessCallback(tesselator, GLU_TESS_END, (GLvoid (*) ( )) &glEnd);
 		gluTessCallback(tesselator, GLU_TESS_COMBINE, (GLvoid (*) ( ))&combine_callback);
+
+		vertex_cache = new List<Vertex>;
 
 
 // Draw every submask as a new polygon
@@ -1246,6 +1249,10 @@ void Playback3D::do_mask_sync(Playback3DCommand *command)
 		glEndList();
  		glCallList(display_list);
  		glDeleteLists(display_list, 1);
+		gluDeleteTess(tesselator);
+
+		delete vertex_cache;
+		vertex_cache = 0;
 
 		glColor4f(1, 1, 1, 1);
 

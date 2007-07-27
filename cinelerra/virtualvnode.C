@@ -10,6 +10,8 @@
 #include "floatautos.h"
 #include "intauto.h"
 #include "intautos.h"
+#include "maskauto.h"
+#include "maskautos.h"
 #include "maskengine.h"
 #include "mwindow.h"
 #include "module.h"
@@ -48,11 +50,13 @@ VirtualVNode::VirtualVNode(RenderEngine *renderengine,
 {
 	VRender *vrender = ((VirtualVConsole*)vconsole)->vrender;
 	fader = new FadeEngine(renderengine->preferences->processors);
+	masker = new MaskEngine(renderengine->preferences->processors);
 }
 
 VirtualVNode::~VirtualVNode()
 {
 	delete fader;
+	delete masker;
 }
 
 VirtualNode* VirtualVNode::create_module(Plugin *real_plugin, 
@@ -252,14 +256,7 @@ int VirtualVNode::render_as_module(VFrame *video_out,
 				track->automation->autos[AUTOMATION_FADE],
 				direction);
 
-// Apply mask to output
-	((VModule *)real_module)->masker->do_mask(output_temp, 
-		start_position,
-		frame_rate,
-		edl_rate,
-		(MaskAutos*)track->automation->autos[AUTOMATION_MASK], 
-		direction,
-		0);      // we are not before plugins
+	render_mask(output_temp, start_position_project, frame_rate, use_opengl);
 
 
 // overlay on the final output
@@ -343,6 +340,70 @@ int VirtualVNode::render_fade(VFrame *output,
 
 	return 0;
 }
+
+
+
+void VirtualVNode::render_mask(VFrame *output_temp,
+	int64_t start_position_project,
+	double frame_rate,
+	int use_opengl)
+{
+	MaskAutos *keyframe_set = 
+		(MaskAutos*)track->automation->autos[AUTOMATION_MASK];
+
+	Auto *current = 0;
+	MaskAuto *default_auto = (MaskAuto*)keyframe_set->default_auto;
+	MaskAuto *keyframe = (MaskAuto*)keyframe_set->get_prev_auto(start_position_project, 
+		PLAY_FORWARD,
+		current);
+
+	int total_points = 0;
+	for(int i = 0; i < keyframe->masks.total; i++)
+	{
+		SubMask *mask = keyframe->get_submask(i);
+		int submask_points = mask->points.total;
+		if(submask_points > 1) total_points += submask_points;
+	}
+
+//printf("VirtualVNode::render_mask 1 %d %d\n", total_points, keyframe->value);
+// Ignore certain masks
+	if(total_points <= 2 || 
+		(keyframe->value == 0 && default_auto->mode == MASK_SUBTRACT_ALPHA))
+	{
+		return;
+	}
+
+// Fake certain masks
+	if(keyframe->value == 0 && default_auto->mode == MASK_MULTIPLY_ALPHA)
+	{
+		output_temp->clear_frame();
+		return;
+	}
+
+	if(((VirtualVConsole*)vconsole)->use_opengl)
+	{
+		((VDeviceX11*)((VirtualVConsole*)vconsole)->get_vdriver())->do_mask(
+			output_temp, 
+			start_position_project,
+			keyframe_set, 
+			keyframe,
+			default_auto);
+	}
+	else
+	{
+// Revert to software
+		int direction = renderengine->command->get_direction();
+		double edl_rate = renderengine->edl->session->frame_rate;
+		masker->do_mask(output_temp, 
+			start_position_project,
+			frame_rate,
+			edl_rate,
+			keyframe_set, 
+			direction,
+			0);
+	}
+}
+
 
 // Start of input fragment in project if forward.  End of input fragment if reverse.
 int VirtualVNode::render_projector(VFrame *input,

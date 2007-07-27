@@ -68,9 +68,11 @@ private:
 
 	void render_mask(VFrame *output_temp,
 		int64_t start_position_project,
+		double frame_rate,
 		int use_opengl);
 
 	FadeEngine *fader;
+	MaskEngine *masker;
 };
 
 
