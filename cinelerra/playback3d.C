@@ -1183,13 +1183,9 @@ void Playback3D::do_mask_sync(Playback3DCommand *command)
 					points->values[0] : 
 					points->values[i + 1];
 
-#ifndef SQR
-#define SQR(x) ((x) * (x))
-#endif
 
-// This is very slow.
 				float x, y;
-				int segments = (int)(sqrt(SQR(point1->x - point2->x) + SQR(point1->y - point2->y)));
+				int segments = 0;
 				if(point1->control_x2 == 0 &&
 					point1->control_y2 == 0 &&
 					point2->control_x1 == 0 &&
@@ -1205,24 +1201,52 @@ void Playback3D::do_mask_sync(Playback3DCommand *command)
 				float x3 = point2->x;
 				float y3 = point2->y;
 
+				// forward differencing bezier curves implementation taken from GPL code at
+				// http://cvs.sourceforge.net/viewcvs.py/guliverkli/guliverkli/src/subtitles/Rasterizer.cpp?rev=1.3
+
+				float cx3, cx2, cx1, cx0, cy3, cy2, cy1, cy0;
+
+				// [-1 +3 -3 +1]
+				// [+3 -6 +3  0]
+				// [-3 +3  0  0]
+				// [+1  0  0  0]
+
+				cx3 = -  x0 + 3*x1 - 3*x2 + x3;
+				cx2 =  3*x0 - 6*x1 + 3*x2;
+				cx1 = -3*x0 + 3*x1;
+				cx0 =    x0;
+
+				cy3 = -  y0 + 3*y1 - 3*y2 + y3;
+				cy2 =  3*y0 - 6*y1 + 3*y2;
+				cy1 = -3*y0 + 3*y1;
+				cy0 =    y0;
+
+				// This equation is from Graphics Gems I.
+				//
+				// The idea is that since we're approximating a cubic curve with lines,
+				// any error we incur is due to the curvature of the line, which we can
+				// estimate by calculating the maximum acceleration of the curve.  For
+				// a cubic, the acceleration (second derivative) is a line, meaning that
+				// the absolute maximum acceleration must occur at either the beginning
+				// (|c2|) or the end (|c2+c3|).  Our bounds here are a little more
+				// conservative than that, but that's okay.
+				if (segments == 0)
+				{
+					float maxaccel1 = fabs(2*cy2) + fabs(6*cy3);
+					float maxaccel2 = fabs(2*cx2) + fabs(6*cx3);
+
+					float maxaccel = maxaccel1 > maxaccel2 ? maxaccel1 : maxaccel2;
+					float h = 1.0;
+
+					if(maxaccel > 8.0) h = sqrt((8.0) / maxaccel);
+					segments = int(1/h);
+				}
+
 				for(int j = 0; j <= segments; j++)
 				{
 					float t = (float)j / segments;
-					float tpow2 = t * t;
-					float tpow3 = t * t * t;
-					float invt = 1 - t;
-					float invtpow2 = invt * invt;
-					float invtpow3 = invt * invt * invt;
-
-					x = (        invtpow3 * x0
-						+ 3 * t     * invtpow2 * x1
-						+ 3 * tpow2 * invt     * x2 
-						+     tpow3            * x3);
-					y = (        invtpow3 * y0 
-						+ 3 * t     * invtpow2 * y1
-						+ 3 * tpow2 * invt     * y2 
-						+     tpow3            * y3);
-
+					x = cx0 + t*(cx1 + t*(cx2 + t*cx3));
+					y = cy0 + t*(cy1 + t*(cy2 + t*cy3));
 
 					if(j > 0 || first_point)
 					{
