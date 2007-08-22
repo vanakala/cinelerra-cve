@@ -7,12 +7,19 @@ else
 SSE_FLAGS =
 endif
 
+#Cinelerra arch build adjustment
+if FFMPEG_ARCH_32BIT
+FFMPEG_PIC_PREF = -prefer-non-pic
+else
+FFMPEG_PIC_PREF =
+endif
+
 # special options needed due to scarcity of registers
 AM_CFLAGS = \
 	$(LARGEFILE_CFLAGS) \
 	$(CPU_CFLAGS) \
 	-DHAVE_MMX $(SSE_FLAGS) \
-	-O3 -prefer-non-pic \
+	-O3 $(FFMPEG_PIC_PREF) \
 	-D_GNU_SOURCE -DHAVE_AV_CONFIG_H -I$(srcdir)/../.. -I../..
 
 libavcodeci386_la_SOURCES = \

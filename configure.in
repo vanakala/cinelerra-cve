@@ -301,6 +301,8 @@ i586 | i686)
 
 	CPU_CFLAGS="-DX86_CPU $CPU_CFLAGS"
 
+	ffmpeg_32bit=yes
+
 	if test "x$enable_mmx" = "xyes"; then
 		CPU_CFLAGS="-DHAVE_MMX -DUSE_MMX $CPU_CFLAGS" # -D_MMX_ doesn't work
 		enable_mmx32=yes
@@ -333,6 +335,7 @@ AM_CONDITIONAL(TARGET_BUILTIN_VECTOR,test "x$enable_mmx" = "xyes")
 AM_CONDITIONAL(USE3DNOW, test "x$enable_3dnow" = "xyes")
 AM_CONDITIONAL(TARGET_ARCH_POWERPC, test "x$target_cpu" = "xpowerpc")
 AM_CONDITIONAL(TARGET_ALTIVEC, test "x$enable_altivec" = "xyes")
+AM_CONDITIONAL(FFMPEG_ARCH_32BIT, test "x$ffmpeg_32bit" = "xyes")
 AC_SUBST(LIBDECORE_LIBADD)
 AC_SUBST(CPU_CFLAGS)
 
