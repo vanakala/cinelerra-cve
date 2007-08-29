@@ -203,8 +203,7 @@ int FileOGG::open_file(int rd, int wr)
 	if (!tf)
 	{
 		tf = new theoraframes_info_t;
-		tf->audiosync = 0;
-		tf->videosync = 0;
+		memset(tf, 0, sizeof(*tf));
 	}
 
 
