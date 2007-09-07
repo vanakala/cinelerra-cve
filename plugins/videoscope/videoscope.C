@@ -587,33 +587,7 @@ static void draw_point(unsigned char **rows,
 					s, \
 					v); \
  \
-/* Calculate waveform */ \
-			if(!use_yuv) intensity = v; \
-			intensity = (intensity - FLOAT_MIN) / (FLOAT_MAX - FLOAT_MIN) * \
-				waveform_h; \
-			int y = waveform_h - (int)intensity; \
-			int x = j * waveform_w / w; \
-			if(x >= 0 && x < waveform_w && y >= 0 && y < waveform_h) \
-				draw_point(waveform_rows, \
-					waveform_cmodel, \
-					x, \
-					y, \
-					0xff, \
-					0xff, \
-					0xff); \
- \
-/* Calculate vectorscope */ \
-			float adjacent = cos(h / 360 * 2 * M_PI); \
-			float opposite = sin(h / 360 * 2 * M_PI); \
-			x = (int)(vector_w / 2 +  \
-				adjacent * (s - FLOAT_MIN) / (FLOAT_MAX - FLOAT_MIN) * radius); \
- \
-			y = (int)(vector_h / 2 -  \
-				opposite * (s - FLOAT_MIN) / (FLOAT_MAX - FLOAT_MIN) * radius); \
- \
- \
-			CLAMP(x, 0, vector_w - 1); \
-			CLAMP(y, 0, vector_h - 1); \
+/* Calculate RGB, used in both waveform and vectorscope. */ \
 			if(sizeof(type) == 2) \
 			{ \
 				r /= 256; \
@@ -627,7 +601,38 @@ static void draw_point(unsigned char **rows,
 				g = CLIP(g, 0, 1) * 0xff; \
 				b = CLIP(b, 0, 1) * 0xff; \
 			} \
+/* Brighten & decrease contrast so low levels are visible against black. */ \
+                        r = ((208 * r) + (256 * 48))/256; \
+                        g = ((208 * g) + (256 * 48))/256; \
+                        b = ((208 * b) + (256 * 48))/256; \
  \
+/* Calculate waveform */ \
+			if(!use_yuv) intensity = v; \
+			intensity = (intensity - FLOAT_MIN) / (FLOAT_MAX - FLOAT_MIN) * \
+				waveform_h; \
+			int y = waveform_h - (int)intensity; \
+			int x = j * waveform_w / w; \
+			if(x >= 0 && x < waveform_w && y >= 0 && y < waveform_h) \
+				draw_point(waveform_rows, \
+					waveform_cmodel, \
+					x, \
+					y, \
+					(int)r, \
+					(int)g, \
+					(int)b); \
+ \
+/* Calculate vectorscope */ \
+			float adjacent = cos(h / 360 * 2 * M_PI); \
+			float opposite = sin(h / 360 * 2 * M_PI); \
+			x = (int)(vector_w / 2 +  \
+				adjacent * (s - FLOAT_MIN) / (FLOAT_MAX - FLOAT_MIN) * radius); \
+ \
+			y = (int)(vector_h / 2 -  \
+				opposite * (s - FLOAT_MIN) / (FLOAT_MAX - FLOAT_MIN) * radius); \
+ \
+ \
+			CLAMP(x, 0, vector_w - 1); \
+			CLAMP(y, 0, vector_h - 1); \
 			draw_point(vector_rows, \
 				vector_cmodel, \
 				x, \
