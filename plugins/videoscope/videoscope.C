@@ -25,10 +25,18 @@ const int   WAVEFORM_DIVISIONS    = 12;
 const int   VECTORSCOPE_DIVISIONS = 12;
 const int   RGB_MIN = 48;
 
-const int WIDGET_HSPACE = 20;
-const int WIDGET_HEIGHT = 25;
+// Waveform and Vectorscope layout
+const char LABEL_WIDTH_SAMPLE[] = "100 ";
+const int H_SPACE =  5;
+const int V_INSET = 10;
+
+// Widget layout
+const char WIDGET_HSPACE_SAMPLE[] = "    ";
 const int WIDGET_VSPACE = 3;
 
+// Define to display outlines around waveform and vectorscope.
+// Useful for debugging window resize.
+//#define DEBUG_PLACEMENT
 
 
 // Vectorscope HSV axes and labels
@@ -48,11 +56,6 @@ Vectorscope_HSV_axes[] =
 		{ 300, "Mg", MDPURPLE },
 	};
 const int Vectorscope_HSV_axes_count = sizeof(Vectorscope_HSV_axes) / sizeof(struct Vectorscope_HSV_axes);
-
-
-// Define to display outlines around waveform and vectorscope.
-// Useful for debugging window resize.
-//#define DEBUG_PLACEMENT
 
 
 
@@ -182,6 +185,8 @@ public:
 	~VideoScopeWindow();
 
 	void calculate_sizes(int w, int h);
+	int get_label_width();
+	int get_widget_area_height();
 	void create_objects();
 	int close_event();
 	int resize_event(int w, int h);
@@ -191,7 +196,6 @@ public:
 	VideoScopeEffect *plugin;
 	VideoScopeWaveform *waveform;
 	VideoScopeVectorscope *vectorscope;
-	BC_Title                *limits_title;
 	VideoScopeShow709Limits *show_709_limits;
 	VideoScopeShow601Limits *show_601_limits;
 	VideoScopeShowIRELimits *show_IRE_limits;
@@ -357,20 +361,38 @@ VideoScopeGraduation::VideoScopeGraduation()
 
 void VideoScopeWindow::calculate_sizes(int w, int h)
 {
-	// Waveform is a rectangle in left half of window
-	wave_x = 30;
-	wave_y = 10;
-	wave_w = w / 2 - 5 - wave_x;
-	wave_h = h - 20 - wave_y;
+	const int w_midpoint = w / 2;
+	const int label_width = get_label_width();
+
+	// Waveform is a rectangle in left half of window.
+	// Labels are outside the Waveform widget.
+	wave_x = label_width + H_SPACE;
+	wave_y = V_INSET;
+	wave_w = w_midpoint - H_SPACE - wave_x;
+	wave_h = h - V_INSET - wave_y;
 
 	// Vectorscope is square and centered in right half of window
-	int max_width  = w / 2 - 40;
-	int max_height = h - 20;
-	int square = MIN(max_width, max_height);
-	vector_x = w / 2 + 10 + (w / 2 - 10 - square) / 2;
+	// Labels are outside the Vectorscope widget.
+	const int vec_max_width  = w_midpoint - H_SPACE - label_width;
+	const int vec_max_height = h - 2 * V_INSET;
+	const int square = MIN(vec_max_width, vec_max_height);
+	vector_x = w_midpoint + label_width + (w_midpoint - square- H_SPACE - label_width) / 2;
 	vector_y = (h - square) / 2;
 	vector_w = square;
 	vector_h = square;
+}
+
+int VideoScopeWindow::get_label_width()
+{
+	return get_text_width(SMALLFONT, (char *) LABEL_WIDTH_SAMPLE);
+}
+
+int VideoScopeWindow::get_widget_area_height()
+{
+	// Don't know how to get the widget height before it's drawn, so
+	// instead use twice the font height as the height for where the
+	// widgets are drawn.
+	return 2 * get_text_height(MEDIUMFONT, (char *) WIDGET_HSPACE_SAMPLE);
 }
 
 void VideoScopeWindow::create_objects()
@@ -379,21 +401,21 @@ void VideoScopeWindow::create_objects()
 	int h = get_h();
 
 // Widgets
-	int x = WIDGET_HSPACE;
-	int y = h - WIDGET_HEIGHT - WIDGET_VSPACE;
+	const int widget_hspace = get_text_width(MEDIUMFONT, (char *) WIDGET_HSPACE_SAMPLE);
+	const int widget_height = get_widget_area_height();
+	int x = widget_hspace;
+	int y = h - widget_height + WIDGET_VSPACE;
 	set_color(get_resources()->get_bg_color());
-	draw_box(0, y - WIDGET_VSPACE, w, WIDGET_HEIGHT + 2 * WIDGET_VSPACE);
-	add_subwindow(limits_title = new BC_Title(x, y, _("Limits:")));
-	x += limits_title->get_w() + WIDGET_HSPACE;
+	draw_box(0, h - widget_height, w, widget_height);
 	add_subwindow(show_709_limits = new VideoScopeShow709Limits(plugin, x, y));
-	x += show_709_limits->get_w() + WIDGET_HSPACE;
+	x += show_709_limits->get_w() + widget_hspace;
 	add_subwindow(show_601_limits = new VideoScopeShow601Limits(plugin, x, y));
-	x += show_601_limits->get_w() + WIDGET_HSPACE;
+	x += show_601_limits->get_w() + widget_hspace;
 	add_subwindow(show_IRE_limits = new VideoScopeShowIRELimits(plugin, x, y));
-	x += show_IRE_limits->get_w() + WIDGET_HSPACE;
+	x += show_IRE_limits->get_w() + widget_hspace;
 	add_subwindow(draw_lines_inverse = new VideoScopeDrawLinesInverse(plugin, x, y));
 
-	calculate_sizes(w, h - (WIDGET_HEIGHT + 2 * WIDGET_VSPACE));
+	calculate_sizes(w, h - widget_height - WIDGET_VSPACE);
 
 	add_subwindow(waveform = new VideoScopeWaveform(plugin, 
 		wave_x, 
@@ -422,21 +444,21 @@ WINDOW_CLOSE_EVENT(VideoScopeWindow)
 
 int VideoScopeWindow::resize_event(int w, int h)
 {
+	const int widget_height = get_widget_area_height();
 
 	clear_box(0, 0, w, h);
 	plugin->w = w;
 	plugin->h = h;
-	calculate_sizes(w, h - (WIDGET_HEIGHT + 2 * WIDGET_VSPACE));
+	calculate_sizes(w, h - widget_height - WIDGET_VSPACE);
 	waveform->reposition_window(wave_x, wave_y, wave_w, wave_h);
 	vectorscope->reposition_window(vector_x, vector_y, vector_w, vector_h);
 	waveform->clear_box(0, 0, wave_w, wave_h);
 	vectorscope->clear_box(0, 0, vector_w, vector_h);
 	allocate_bitmaps();
 
-	int y = h - WIDGET_HEIGHT - WIDGET_VSPACE;
+	int y = h - widget_height + WIDGET_VSPACE;
 	set_color(get_resources()->get_bg_color());
-	draw_box(0, y - WIDGET_VSPACE, w, WIDGET_HEIGHT + 2 * WIDGET_VSPACE);
-	limits_title->reposition(limits_title->get_x(), y);
+	draw_box(0, h - widget_height, w, widget_height);
 	show_709_limits->reposition_window(show_709_limits->get_x(), y);
 	show_601_limits->reposition_window(show_601_limits->get_x(), y);
 	show_IRE_limits->reposition_window(show_IRE_limits->get_x(), y);
@@ -532,10 +554,11 @@ void VideoScopeVectorscope::calculate_graduations()
 
 		// Draw color axis label halfway between outer circle and
 		// edge of bitmap. Color axis labels are within the
-		// rectangular vectorscope region that is redrawn with each
+		// rectangular vectorscope region, and are redrawn with each
 		// frame.
 
 		polar_to_cartesian(hue, 1 + (FLOAT_MAX - 1) / 2, radius, axes[i].text_x, axes[i].text_y);
+		axes[i].text_x -= get_text_width(color_axis_font, const_cast<char *>(Vectorscope_HSV_axes[i].label)) / 2;
 		axes[i].text_y += ascent_half;
 	}
 }
@@ -545,10 +568,11 @@ void VideoScopeWindow::draw_labels()
 	set_color(LTGREY);
 	set_font(SMALLFONT);
 	const int sm_text_ascent_half = get_text_ascent(SMALLFONT) / 2;
+	const int label_width_half = get_label_width() / 2;
 
 // Waveform labels
 	if (waveform) {
-		const int text_x  = wave_x - 20;
+		const int text_x  = wave_x - label_width_half;
 		for (int i = 0; i < VideoScopeWaveform::NUM_GRADS; ++i)
 			draw_center_text(text_x,
 					 waveform->grads[i].y + wave_y + sm_text_ascent_half,
@@ -558,7 +582,7 @@ void VideoScopeWindow::draw_labels()
 
 // Vectorscope labels
 	if (vectorscope) {
-		const int text_x = vector_x - 10;
+		const int text_x = vector_x - label_width_half;
 		for (int i = 0; i < VideoScopeVectorscope::NUM_GRADS; ++i)
 			draw_center_text(text_x,
 					 vectorscope->grads[i].y + vector_y + sm_text_ascent_half,
@@ -566,6 +590,11 @@ void VideoScopeWindow::draw_labels()
 	}
 
 #ifdef DEBUG_PLACEMENT
+	set_color(GREEN);
+	draw_rectangle(wave_x - 2 * label_width_half, wave_y - sm_text_ascent_half,
+		       2 * label_width_half, wave_h + 2 * sm_text_ascent_half);
+	draw_rectangle(vector_x - 2 * label_width_half, vector_y,
+		       2 * label_width_half, vector_h);
 	set_color(BLUE);
 	waveform->draw_rectangle(0, 0, wave_w, wave_h);
 	set_color(RED);
@@ -610,7 +639,7 @@ void VideoScopeWaveform::draw_graduations()
 void VideoScopeVectorscope::draw_graduations()
 {
 	set_color(MDGREY);
-	const int diameter = get_w();  // diameter; vector_w == vector_h
+	const int diameter = get_h();  // diameter; vector_w == vector_h
 	for (int i = 0; i < NUM_GRADS; ++i)
 	{
 		int top_left     = grads[i].y;
@@ -627,7 +656,16 @@ void VideoScopeVectorscope::draw_graduations()
 			  axes[i].x2, axes[i].y2);
 
 		set_color(Vectorscope_HSV_axes[i].color);
-		draw_center_text(axes[i].text_x, axes[i].text_y, const_cast<char *>(Vectorscope_HSV_axes[i].label));
+		draw_text(axes[i].text_x, axes[i].text_y, const_cast<char *>(Vectorscope_HSV_axes[i].label));
+
+#ifdef DEBUG_PLACEMENT
+		int label_w = get_text_width(color_axis_font, const_cast<char *>(Vectorscope_HSV_axes[i].label));
+		int label_a = get_text_ascent(color_axis_font);
+		int label_d = get_text_descent(color_axis_font);
+		draw_rectangle(axes[i].text_x,
+			       axes[i].text_y - label_a,
+			       label_w, label_a + label_d);
+#endif // DEBUG_PLACEMENT
 	}
 }
 
@@ -975,7 +1013,7 @@ void VideoScopeUnit::render_data(LoadPackage *package)
 	int vector_w = window->vector_bitmap->get_w();
 	int vector_cmodel = window->vector_bitmap->get_color_model();
 	unsigned char **vector_rows = window->vector_bitmap->get_row_pointers();
-	float radius = vector_w / 2.0;
+	float radius = vector_h / 2.0;
 
 	for(int i = pkg->row1; i < pkg->row2; i++)
 	{
