@@ -514,9 +514,9 @@ static void draw_point(unsigned char **rows,
 		case BC_BGR8888:
 		{
 			unsigned char *pixel = rows[y] + x * 4;
-			pixel[0] = r;
+			pixel[0] = b;
 			pixel[1] = g;
-			pixel[2] = b;
+			pixel[2] = r;
 			break;
 		}
 		case BC_BGR888:
