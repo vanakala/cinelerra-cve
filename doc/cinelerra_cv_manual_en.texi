@@ -5889,9 +5889,25 @@ or the reverse.
 @subsection RGB-601
 @cindex RGB-601
 
-FIXME
-
 @image{manual_images_en/rgb601,12.5mm}
+
+For analog video or MPEG (including DVD) output, the maximum range for
+R,G,B is [16, 235] (8-bit). For YUV, the maximum range for intensity
+(Y) is [16, 235] (8-bit). This range corresponds to gray levels from
+6% to 92%. When rendering, values outside of these ranges will be
+clipped to these limits.
+
+To render to MPEG, add the RGB-601 effect to all video tracks where
+material uses the full intensity scale (0-100%), and enable @b{RGB ->
+601 compression}. Consider adding the Videoscope effect after RGB-601
+to see how RGB-601 affects your dynamic range. @xref{Videoscope}.
+
+(To preview how your rendered MPEG would look @i{without} RGB-to-601
+compression, instead enable @b{601 -> RGB expansion} -- you will
+observe a noticable contrast increase.)
+
+Although RGB-601 will reduce contrast in your video tracks, the
+contrast will be restored during MPEG playback.
 
 @c cincvdoc_node_number_207
 @node Radial blur
@@ -6369,12 +6385,13 @@ controls:
 The maximum pixel range for HDTV or sRGB is [0, 255]. This range
 corresponds with levels 0% and 100%.
 
-@item @b{MPEG or Analog video (ITU-R BT.601)} @*
-If you are producing an analog video or MPEG, the maximum pixel range
-for RGB is [16, 235], with the middle level at 128. For gray values,
-this range corresponds with levels 6% and 92%. @xref{RGB-601}.
+@item @b{MPEG or analog video (ITU-R BT.601)} @*
+For analog video or MPEG (including DVD), the maximum range for RGB is
+[16, 235] (8-bit). For YUV, the maximum range for intensity (Y) is
+[16, 235] (8-bit). This range corresponds to gray levels from 6% to
+92%. @xref{RGB-601}.
 
-@item @b{NTSC Television broadcast} @*
+@item @b{NTSC television broadcast} @*
 If you are producing a video for NTSC television broadcast, keep the
 intensity between 7.5% and 100%. The minimum black value which can be
 broadcast is IRE 7.5% (indicated by the ``7.5'' level), and values
