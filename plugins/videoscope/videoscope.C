@@ -14,6 +14,7 @@
 #include <math.h>
 #include <stdint.h>
 #include <string.h>
+#include <assert.h>
 
 
 
@@ -22,6 +23,31 @@
 #define FLOAT_MAX 1.1
 #define WAVEFORM_DIVISIONS 12
 #define VECTORSCOPE_DIVISIONS 12
+
+
+// Vectorscope HSV axes and labels
+const struct Vectorscope_HSV_axes
+{
+	float  hue;   // angle, degrees
+	char   label[4];
+	int    color; // label color
+}
+Vectorscope_HSV_axes[] =
+	{
+		{   0, "R",  RED      },
+		{  60, "Yl", YELLOW   },
+		{ 120, "G",  GREEN    },
+		{ 180, "Cy", LTCYAN   },
+		{ 240, "B",  BLUE     },
+		{ 300, "Mg", MDPURPLE },
+	};
+const int Vectorscope_HSV_axes_count = sizeof(Vectorscope_HSV_axes) / sizeof(struct Vectorscope_HSV_axes);
+
+
+// Define to display outlines around waveform and vectorscope.
+// Useful for debugging window resize.
+//#define DEBUG_PLACEMENT
+
 
 
 class VideoScopeEffect;
@@ -34,6 +60,20 @@ public:
 	VideoScopeConfig();
 };
 
+class VideoScopeGraduation
+{
+// One VideoScopeGraduation represents one line (or circle) and associated
+// label. We use arrays of VideoScopeGraduations.
+public:
+	typedef enum { LEFT, RIGHT } side_t;
+	VideoScopeGraduation();
+	void set(const char * label, int y, side_t side = LEFT);
+
+	char    label[4];   // Maximum label size is 3 characters
+	int     y;
+	side_t  side;
+};
+
 class VideoScopeWaveform : public BC_SubWindow
 {
 public:
@@ -43,6 +83,13 @@ public:
 		int w,
 		int h);
 	VideoScopeEffect *plugin;
+
+	void calculate_graduations();
+	void draw_graduations();
+
+	// All standard divisions + the one at the end + 7.5% line
+	static const int NUM_GRADS = WAVEFORM_DIVISIONS + 2;
+	VideoScopeGraduation  grads[NUM_GRADS];
 };
 
 
@@ -55,6 +102,20 @@ public:
 		int w,
 		int h);
 	VideoScopeEffect *plugin;
+
+	void calculate_graduations();
+	void draw_graduations();
+
+	// Draw only every other division.
+	static const int NUM_GRADS = VECTORSCOPE_DIVISIONS / 2;
+	VideoScopeGraduation  grads[NUM_GRADS];
+
+private:
+	int color_axis_font;
+	struct {
+		int x1, y1, x2, y2;
+		int text_x, text_y;
+	} axes[Vectorscope_HSV_axes_count];
 };
 
 class VideoScopeWindow : public BC_Window
@@ -68,7 +129,7 @@ public:
 	int close_event();
 	int resize_event(int w, int h);
 	void allocate_bitmaps();
-	void draw_overlays();
+	void draw_labels();
 
 	VideoScopeEffect *plugin;
 	VideoScopeWaveform *waveform;
@@ -188,9 +249,6 @@ VideoScopeVectorscope::VideoScopeVectorscope(VideoScopeEffect *plugin,
 
 
 
-
-
-
 VideoScopeWindow::VideoScopeWindow(VideoScopeEffect *plugin, 
 	int x, 
 	int y)
@@ -213,21 +271,31 @@ VideoScopeWindow::VideoScopeWindow(VideoScopeEffect *plugin,
 
 VideoScopeWindow::~VideoScopeWindow()
 {
-
 	if(waveform_bitmap) delete waveform_bitmap;
 	if(vector_bitmap) delete vector_bitmap;
 }
 
+VideoScopeGraduation::VideoScopeGraduation()
+{
+	bzero(label, sizeof(label));
+}
+
 void VideoScopeWindow::calculate_sizes(int w, int h)
 {
+	// Waveform is a rectangle in left half of window
 	wave_x = 30;
 	wave_y = 10;
 	wave_w = w / 2 - 5 - wave_x;
 	wave_h = h - 20 - wave_y;
-	vector_x = w / 2 + 30;
-	vector_y = 10;
-	vector_w = w - 10 - vector_x;
-	vector_h = h - 10 - vector_y;
+
+	// Vectorscope is square and centered in right half of window
+	int max_width  = w / 2 - 40;
+	int max_height = h - 20;
+	int square = MIN(max_width, max_height);
+	vector_x = w / 2 + 10 + (w / 2 - 10 - square) / 2;
+	vector_y = (h - square) / 2;
+	vector_w = square;
+	vector_h = square;
 }
 
 void VideoScopeWindow::create_objects()
@@ -245,7 +313,12 @@ void VideoScopeWindow::create_objects()
 		vector_w, 
 		vector_h));
 	allocate_bitmaps();
-	draw_overlays();
+
+	waveform->calculate_graduations();
+	vectorscope->calculate_graduations();
+	waveform->draw_graduations();
+	vectorscope->draw_graduations();
+	draw_labels();
 
 	show_window();
 	flush();
@@ -266,7 +339,13 @@ int VideoScopeWindow::resize_event(int w, int h)
 	waveform->clear_box(0, 0, wave_w, wave_h);
 	vectorscope->clear_box(0, 0, wave_w, wave_h);
 	allocate_bitmaps();
-	draw_overlays();
+
+	waveform->calculate_graduations();
+	vectorscope->calculate_graduations();
+	waveform->draw_graduations();
+	vectorscope->draw_graduations();
+	draw_labels();
+
 	flash();
 
 	return 1;
@@ -281,60 +360,157 @@ void VideoScopeWindow::allocate_bitmaps()
 	vector_bitmap = new_bitmap(vector_w, vector_h);
 }
 
-void VideoScopeWindow::draw_overlays()
+// Convert polar to cartesian for vectorscope.
+// Hue is angle (degrees), Saturation is distance from center [0, 1].
+// Value (intensity) is not plotted.
+static void polar_to_cartesian(float h,
+			       float s,
+			       float radius,
+			       int & x,
+			       int & y)
 {
-	set_color(GREEN);
-	set_font(SMALLFONT);
+	float adjacent = cos(h / 360 * 2 * M_PI);
+	float opposite = sin(h / 360 * 2 * M_PI);
+	float r = (s - FLOAT_MIN) / (FLOAT_MAX - FLOAT_MIN) * radius;
+	x = (int)roundf(radius + adjacent * r);
+	y = (int)roundf(radius - opposite * r);
+}
 
-// Waveform overlay
+// Calculate graduations based on current window size.
+void VideoScopeWaveform::calculate_graduations()
+{
+	int height = get_h();
+
 	for(int i = 0; i <= WAVEFORM_DIVISIONS; i++)
 	{
-		int y = wave_h * i / WAVEFORM_DIVISIONS;
-		int text_y = y + wave_y + get_text_ascent(SMALLFONT) / 2;
-		int x = wave_x - 20;
+		int y = height * i / WAVEFORM_DIVISIONS;
 		char string[BCTEXTLEN];
 		sprintf(string, "%d", 
-			(int)((FLOAT_MAX - 
+			(int)round((FLOAT_MAX - 
 			i * (FLOAT_MAX - FLOAT_MIN) / WAVEFORM_DIVISIONS) * 100));
-		draw_text(x, text_y, string);
-
-		waveform->draw_line(0, 
-			CLAMP(y, 0, waveform->get_h() - 1), 
-			wave_w, 
-			CLAMP(y, 0, waveform->get_h() - 1));
-//waveform->draw_rectangle(0, 0, wave_w, wave_h);
+		grads[i].set(string, CLAMP(y, 0, height - 1));
 	}
+	// 7.5% SMPTE minimum black. Draw text on right side (no room on left).
+	grads[WAVEFORM_DIVISIONS + 1].set("7.5", (int)round(height * (FLOAT_MAX - 0.075) / (FLOAT_MAX - FLOAT_MIN)), VideoScopeGraduation::RIGHT);
+}
 
-
-
-// Vectorscope overlay
-	int radius = MIN(vector_w / 2, vector_h / 2);
-	for(int i = 1; i <= VECTORSCOPE_DIVISIONS - 1; i += 2)
+// Calculate graduations based on current window size.
+void VideoScopeVectorscope::calculate_graduations()
+{
+	// graduations/labels
+	const int radius = get_h() / 2;	// vector_w == vector_h
+	for(int i = 1, g = 0; i <= VECTORSCOPE_DIVISIONS - 1; i += 2)
 	{
-		int x = vector_w / 2 - radius * i / VECTORSCOPE_DIVISIONS;
-		int y = vector_h / 2 - radius * i / VECTORSCOPE_DIVISIONS;
-		int text_x = vector_x - 20;
-		int text_y = y + vector_y + get_text_ascent(SMALLFONT) / 2;
-		int w = radius * i / VECTORSCOPE_DIVISIONS * 2;
-		int h = radius * i / VECTORSCOPE_DIVISIONS * 2;
+		int y = radius - radius * i / VECTORSCOPE_DIVISIONS;
 		char string[BCTEXTLEN];
-		
 		sprintf(string, "%d", 
-			(int)((FLOAT_MIN + 
+			(int)round((FLOAT_MIN + 
 				(FLOAT_MAX - FLOAT_MIN) / VECTORSCOPE_DIVISIONS * i) * 100));
-		draw_text(text_x, text_y, string);
-		vectorscope->draw_circle(x, y, w, h);
-//vectorscope->draw_rectangle(0, 0, vector_w, vector_h);
+		grads[g++].set(string, y);
 	}
-// 	vectorscope->draw_circle(vector_w / 2 - radius, 
-// 		vector_h / 2 - radius, 
-// 		radius * 2, 
-// 		radius * 2);
-	set_font(MEDIUMFONT);
 
+	// color axes
+	color_axis_font = radius > 200 ? MEDIUMFONT : SMALLFONT;
+	const int ascent_half = get_text_ascent(color_axis_font) / 2;
+	for (int i = 0;  i < Vectorscope_HSV_axes_count; ++i)
+	{
+		const float hue = Vectorscope_HSV_axes[i].hue;
+		polar_to_cartesian(hue, 0, radius, axes[i].x1, axes[i].y1);
+		polar_to_cartesian(hue, 1, radius, axes[i].x2, axes[i].y2);
+
+		// Draw color axis label halfway between outer circle and
+		// edge of bitmap. Color axis labels are within the
+		// rectangular vectorscope region that is redrawn with each
+		// frame.
+
+		polar_to_cartesian(hue, 1 + (FLOAT_MAX - 1) / 2, radius, axes[i].text_x, axes[i].text_y);
+		axes[i].text_y += ascent_half;
+	}
+}
+
+void VideoScopeWindow::draw_labels()
+{
+	set_color(LTGREY);
+	set_font(SMALLFONT);
+	const int sm_text_ascent_half = get_text_ascent(SMALLFONT) / 2;
+
+// Waveform labels
+	if (waveform) {
+		const int text_x_left  = wave_x - 20;
+		const int text_x_right = wave_x + wave_w + 15;
+		for (int i = 0; i < VideoScopeWaveform::NUM_GRADS; ++i)
+			draw_center_text((waveform->grads[i].side == VideoScopeGraduation::LEFT) ? text_x_left : text_x_right,
+					 waveform->grads[i].y + wave_y + sm_text_ascent_half,
+					 waveform->grads[i].label);
+			
+	}
+
+// Vectorscope labels
+	if (vectorscope) {
+		const int text_x = vector_x - 10;
+		for (int i = 0; i < VideoScopeVectorscope::NUM_GRADS; ++i)
+			// Always on left (ignore side)
+			draw_center_text(text_x,
+					 vectorscope->grads[i].y + vector_y + sm_text_ascent_half,
+					 vectorscope->grads[i].label);
+	}
+
+#ifdef DEBUG_PLACEMENT
+	set_color(BLUE);
+	waveform->draw_rectangle(0, 0, wave_w, wave_h);
+	set_color(RED);
+	vectorscope->draw_rectangle(0, 0, vector_w, vector_h);
+#endif // DEBUG_PLACEMENT
+
+	set_font(MEDIUMFONT);
 	waveform->flash();
 	vectorscope->flash();
 	flush();
+}
+
+// Draws horizontal lines in waveform bitmap.
+void VideoScopeWaveform::draw_graduations()
+{
+	set_color(MDGREY);
+	const int w = get_w();
+	const int h = get_h();
+	for (int i = 0; i < NUM_GRADS; ++i)
+	{
+		int y = grads[i].y;
+		draw_line(0, y, w, y);
+	}
+}
+
+void VideoScopeVectorscope::draw_graduations()
+{
+	set_color(MDGREY);
+	const int diameter = get_w();  // diameter; vector_w == vector_h
+	for (int i = 0; i < NUM_GRADS; ++i)
+	{
+		int top_left     = grads[i].y;
+		int width_height = diameter - 2 * top_left;
+		draw_circle(top_left, top_left, width_height, width_height);
+	}
+
+	// RGB+CYM axes and labels.
+	set_font(color_axis_font);
+	for (int i = 0;  i < Vectorscope_HSV_axes_count; ++i)
+	{
+		set_color(MDGREY);
+		draw_line(axes[i].x1, axes[i].y1,
+			  axes[i].x2, axes[i].y2);
+
+		set_color(Vectorscope_HSV_axes[i].color);
+		draw_center_text(axes[i].text_x, axes[i].text_y, const_cast<char *>(Vectorscope_HSV_axes[i].label));
+	}
+}
+
+void VideoScopeGraduation::set(const char * label, int y, side_t side)
+{
+	assert(strlen(label) <= 3);
+	strcpy(this->label, label);
+	this->y    = y;
+	this->side = side;
 }
 
 
@@ -467,7 +643,10 @@ void VideoScopeEffect::render_gui(void *input)
 			0);
 
 
-		window->draw_overlays();
+		window->waveform->draw_graduations();
+		window->vectorscope->draw_graduations();
+		window->waveform->flash();
+		window->vectorscope->flash();
 
 
 		window->unlock_window();
@@ -622,15 +801,7 @@ static void draw_point(unsigned char **rows,
 					(int)b); \
  \
 /* Calculate vectorscope */ \
-			float adjacent = cos(h / 360 * 2 * M_PI); \
-			float opposite = sin(h / 360 * 2 * M_PI); \
-			x = (int)(vector_w / 2 +  \
-				adjacent * (s - FLOAT_MIN) / (FLOAT_MAX - FLOAT_MIN) * radius); \
- \
-			y = (int)(vector_h / 2 -  \
-				opposite * (s - FLOAT_MIN) / (FLOAT_MAX - FLOAT_MIN) * radius); \
- \
- \
+			polar_to_cartesian(h, s, radius, x, y); \
 			CLAMP(x, 0, vector_w - 1); \
 			CLAMP(y, 0, vector_h - 1); \
 			draw_point(vector_rows, \
