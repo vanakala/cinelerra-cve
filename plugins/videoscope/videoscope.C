@@ -25,6 +25,11 @@ const int   WAVEFORM_DIVISIONS    = 12;
 const int   VECTORSCOPE_DIVISIONS = 12;
 const int   RGB_MIN = 48;
 
+const int WIDGET_HSPACE = 20;
+const int WIDGET_HEIGHT = 25;
+const int WIDGET_VSPACE = 3;
+
+
 
 // Vectorscope HSV axes and labels
 const struct Vectorscope_HSV_axes
@@ -59,6 +64,12 @@ class VideoScopeConfig
 {
 public:
 	VideoScopeConfig();
+	void reset();
+
+	int show_709_limits;   // ITU-R BT.709: HDTV and sRGB
+	int show_601_limits;   // ITU-R BT.601: Analog video and MPEG
+	int show_IRE_limits;   // Black = 7.5%
+	int draw_lines_inverse;
 };
 
 class VideoScopeGraduation
@@ -66,13 +77,11 @@ class VideoScopeGraduation
 // One VideoScopeGraduation represents one line (or circle) and associated
 // label. We use arrays of VideoScopeGraduations.
 public:
-	typedef enum { LEFT, RIGHT } side_t;
 	VideoScopeGraduation();
-	void set(const char * label, int y, side_t side = LEFT);
+	void set(const char * label, int y);
 
 	char    label[4];   // Maximum label size is 3 characters
 	int     y;
-	side_t  side;
 };
 
 class VideoScopeWaveform : public BC_SubWindow
@@ -87,10 +96,17 @@ public:
 
 	void calculate_graduations();
 	void draw_graduations();
+	void redraw();
 
-	// All standard divisions + the one at the end + 7.5% line
-	static const int NUM_GRADS = WAVEFORM_DIVISIONS + 2;
+	// All standard divisions + the one more at the end
+	static const int NUM_GRADS = WAVEFORM_DIVISIONS + 1;
 	VideoScopeGraduation  grads[NUM_GRADS];
+
+	// Special limit lines are not always drawn, so they are separate.
+	// They don't get labels (too crowded).
+	int  limit_IRE_black;  // IRE 7.5%
+	int  limit_601_white;  // ITU-R B.601 235 = 92.2%
+	int  limit_601_black;  // ITU-R B.601  16 =  6.3%
 };
 
 
@@ -119,6 +135,46 @@ private:
 	} axes[Vectorscope_HSV_axes_count];
 };
 
+class VideoScopeShow709Limits : public BC_CheckBox
+{
+public:
+	VideoScopeShow709Limits(VideoScopeEffect *plugin,
+		int x,
+		int y);
+	int handle_event();
+	VideoScopeEffect *plugin;
+};
+
+class VideoScopeShow601Limits : public BC_CheckBox
+{
+public:
+	VideoScopeShow601Limits(VideoScopeEffect *plugin,
+		int x,
+		int y);
+	int handle_event();
+	VideoScopeEffect *plugin;
+};
+
+class VideoScopeShowIRELimits : public BC_CheckBox
+{
+public:
+	VideoScopeShowIRELimits(VideoScopeEffect *plugin,
+		int x,
+		int y);
+	int handle_event();
+	VideoScopeEffect *plugin;
+};
+
+class VideoScopeDrawLinesInverse : public BC_CheckBox
+{
+public:
+	VideoScopeDrawLinesInverse(VideoScopeEffect *plugin,
+		int x,
+		int y);
+	int handle_event();
+	VideoScopeEffect *plugin;
+};
+
 class VideoScopeWindow : public BC_Window
 {
 public:
@@ -135,6 +191,11 @@ public:
 	VideoScopeEffect *plugin;
 	VideoScopeWaveform *waveform;
 	VideoScopeVectorscope *vectorscope;
+	BC_Title                *limits_title;
+	VideoScopeShow709Limits *show_709_limits;
+	VideoScopeShow601Limits *show_601_limits;
+	VideoScopeShowIRELimits *show_IRE_limits;
+	VideoScopeDrawLinesInverse *draw_lines_inverse;
 	BC_Bitmap *waveform_bitmap;
 	BC_Bitmap *vector_bitmap;
 
@@ -191,6 +252,8 @@ public:
 	VFrame* new_picon();
 	int load_defaults();
 	int save_defaults();
+	void save_data(KeyFrame *keyframe);
+	void read_data(KeyFrame *keyframe);
 	int show_gui();
 	int set_string();
 	void raise_window();
@@ -219,9 +282,16 @@ public:
 
 VideoScopeConfig::VideoScopeConfig()
 {
+	reset();
 }
 
-
+void VideoScopeConfig::reset()
+{
+	show_709_limits    = 0;
+	show_601_limits    = 0;
+	show_IRE_limits    = 0;
+	draw_lines_inverse = 0;
+}
 
 
 
@@ -305,7 +375,25 @@ void VideoScopeWindow::calculate_sizes(int w, int h)
 
 void VideoScopeWindow::create_objects()
 {
-	calculate_sizes(get_w(), get_h());
+	int w = get_w();
+	int h = get_h();
+
+// Widgets
+	int x = WIDGET_HSPACE;
+	int y = h - WIDGET_HEIGHT - WIDGET_VSPACE;
+	set_color(get_resources()->get_bg_color());
+	draw_box(0, y - WIDGET_VSPACE, w, WIDGET_HEIGHT + 2 * WIDGET_VSPACE);
+	add_subwindow(limits_title = new BC_Title(x, y, _("Limits:")));
+	x += limits_title->get_w() + WIDGET_HSPACE;
+	add_subwindow(show_709_limits = new VideoScopeShow709Limits(plugin, x, y));
+	x += show_709_limits->get_w() + WIDGET_HSPACE;
+	add_subwindow(show_601_limits = new VideoScopeShow601Limits(plugin, x, y));
+	x += show_601_limits->get_w() + WIDGET_HSPACE;
+	add_subwindow(show_IRE_limits = new VideoScopeShowIRELimits(plugin, x, y));
+	x += show_IRE_limits->get_w() + WIDGET_HSPACE;
+	add_subwindow(draw_lines_inverse = new VideoScopeDrawLinesInverse(plugin, x, y));
+
+	calculate_sizes(w, h - (WIDGET_HEIGHT + 2 * WIDGET_VSPACE));
 
 	add_subwindow(waveform = new VideoScopeWaveform(plugin, 
 		wave_x, 
@@ -338,12 +426,21 @@ int VideoScopeWindow::resize_event(int w, int h)
 	clear_box(0, 0, w, h);
 	plugin->w = w;
 	plugin->h = h;
-	calculate_sizes(w, h);
+	calculate_sizes(w, h - (WIDGET_HEIGHT + 2 * WIDGET_VSPACE));
 	waveform->reposition_window(wave_x, wave_y, wave_w, wave_h);
 	vectorscope->reposition_window(vector_x, vector_y, vector_w, vector_h);
 	waveform->clear_box(0, 0, wave_w, wave_h);
 	vectorscope->clear_box(0, 0, wave_w, wave_h);
 	allocate_bitmaps();
+
+	int y = h - WIDGET_HEIGHT - WIDGET_VSPACE;
+	set_color(get_resources()->get_bg_color());
+	draw_box(0, y - WIDGET_VSPACE, w, WIDGET_HEIGHT + 2 * WIDGET_VSPACE);
+	limits_title->reposition(limits_title->get_x(), y);
+	show_709_limits->reposition_window(show_709_limits->get_x(), y);
+	show_601_limits->reposition_window(show_601_limits->get_x(), y);
+	show_IRE_limits->reposition_window(show_IRE_limits->get_x(), y);
+	draw_lines_inverse->reposition_window(draw_lines_inverse->get_x(), y);
 
 	waveform->calculate_graduations();
 	vectorscope->calculate_graduations();
@@ -354,6 +451,13 @@ int VideoScopeWindow::resize_event(int w, int h)
 	flash();
 
 	return 1;
+}
+
+void VideoScopeWaveform::redraw()
+{
+	clear_box(0, 0, get_w(), get_h());
+	draw_graduations();
+	flash();
 }
 
 void VideoScopeWindow::allocate_bitmaps()
@@ -395,8 +499,11 @@ void VideoScopeWaveform::calculate_graduations()
 			i * (FLOAT_MAX - FLOAT_MIN) / WAVEFORM_DIVISIONS) * 100));
 		grads[i].set(string, CLAMP(y, 0, height - 1));
 	}
-	// 7.5% SMPTE minimum black. Draw text on right side (no room on left).
-	grads[WAVEFORM_DIVISIONS + 1].set("7.5", (int)round(height * (FLOAT_MAX - 0.075) / (FLOAT_MAX - FLOAT_MIN)), VideoScopeGraduation::RIGHT);
+
+	// Special limits.
+	limit_IRE_black = (int)round(height * (FLOAT_MAX - 0.075) / (FLOAT_MAX - FLOAT_MIN));
+	limit_601_white = (int)round(height * (FLOAT_MAX - 235.0/255.0) / (FLOAT_MAX - FLOAT_MIN));
+	limit_601_black = (int)round(height * (FLOAT_MAX -  16.0/255.0) / (FLOAT_MAX - FLOAT_MIN));
 }
 
 // Calculate graduations based on current window size.
@@ -441,10 +548,9 @@ void VideoScopeWindow::draw_labels()
 
 // Waveform labels
 	if (waveform) {
-		const int text_x_left  = wave_x - 20;
-		const int text_x_right = wave_x + wave_w + 15;
+		const int text_x  = wave_x - 20;
 		for (int i = 0; i < VideoScopeWaveform::NUM_GRADS; ++i)
-			draw_center_text((waveform->grads[i].side == VideoScopeGraduation::LEFT) ? text_x_left : text_x_right,
+			draw_center_text(text_x,
 					 waveform->grads[i].y + wave_y + sm_text_ascent_half,
 					 waveform->grads[i].label);
 			
@@ -454,7 +560,6 @@ void VideoScopeWindow::draw_labels()
 	if (vectorscope) {
 		const int text_x = vector_x - 10;
 		for (int i = 0; i < VideoScopeVectorscope::NUM_GRADS; ++i)
-			// Always on left (ignore side)
 			draw_center_text(text_x,
 					 vectorscope->grads[i].y + vector_y + sm_text_ascent_half,
 					 vectorscope->grads[i].label);
@@ -476,14 +581,30 @@ void VideoScopeWindow::draw_labels()
 // Draws horizontal lines in waveform bitmap.
 void VideoScopeWaveform::draw_graduations()
 {
-	set_color(MDGREY);
+	VideoScopeConfig &config = plugin->config;
+	if (config.draw_lines_inverse)  set_inverse();
 	const int w = get_w();
 	const int h = get_h();
 	for (int i = 0; i < NUM_GRADS; ++i)
 	{
+		// 1 & 11 correspond to 100% & 0%.
+		set_color((config.show_709_limits && (i == 1 || i == 11))
+			  ? WHITE : MDGREY);
 		int y = grads[i].y;
 		draw_line(0, y, w, y);
 	}
+	if (config.show_601_limits)
+	{
+		set_color(WHITE);
+		draw_line(0, limit_601_white, w, limit_601_white);
+		draw_line(0, limit_601_black, w, limit_601_black);
+	}
+	if (config.show_IRE_limits)
+	{
+		set_color(WHITE);
+		draw_line(0, limit_IRE_black, w, limit_IRE_black);
+	}
+	if (config.draw_lines_inverse)  set_opaque();
 }
 
 void VideoScopeVectorscope::draw_graduations()
@@ -510,13 +631,85 @@ void VideoScopeVectorscope::draw_graduations()
 	}
 }
 
-void VideoScopeGraduation::set(const char * label, int y, side_t side)
+void VideoScopeGraduation::set(const char * label, int y)
 {
 	assert(strlen(label) <= 3);
 	strcpy(this->label, label);
 	this->y    = y;
-	this->side = side;
 }
+
+
+
+
+
+
+
+
+
+VideoScopeShow709Limits::VideoScopeShow709Limits(VideoScopeEffect *plugin,
+		int x,
+		int y)
+ : BC_CheckBox(x, y, plugin->config.show_709_limits, _("HDTV"))
+{
+	this->plugin = plugin;
+ 	set_tooltip("Indicate ITU-R BT.709 limits. Use when rendering to HDTV and sRGB.");
+}
+
+int VideoScopeShow709Limits::handle_event()
+{
+	plugin->config.show_709_limits = get_value();
+	plugin->thread->window->waveform->redraw();
+	return 1;
+}
+
+VideoScopeShow601Limits::VideoScopeShow601Limits(VideoScopeEffect *plugin,
+		int x,
+		int y)
+ : BC_CheckBox(x, y, plugin->config.show_601_limits, _("MPEG"))
+{
+	this->plugin = plugin;
+ 	set_tooltip("Indicate ITU-R BT.601 limits. Use when rendering to analog video and MPEG.");
+}
+
+int VideoScopeShow601Limits::handle_event()
+{
+	plugin->config.show_601_limits = get_value();
+	plugin->thread->window->waveform->redraw();
+	return 1;
+}
+
+VideoScopeShowIRELimits::VideoScopeShowIRELimits(VideoScopeEffect *plugin,
+		int x,
+		int y)
+ : BC_CheckBox(x, y, plugin->config.show_IRE_limits, _("NTSC"))
+{
+	this->plugin = plugin;
+ 	set_tooltip("Indicate IRE 7.5% black level.");
+}
+
+int VideoScopeShowIRELimits::handle_event()
+{
+	plugin->config.show_IRE_limits = get_value();
+	plugin->thread->window->waveform->redraw();
+	return 1;
+}
+
+VideoScopeDrawLinesInverse::VideoScopeDrawLinesInverse(VideoScopeEffect *plugin,
+		int x,
+		int y)
+ : BC_CheckBox(x, y, plugin->config.draw_lines_inverse, _("Inverse"))
+{
+	this->plugin = plugin;
+ 	set_tooltip("Draw graduation lines so points underneath are visible");
+}
+
+int VideoScopeDrawLinesInverse::handle_event()
+{
+	plugin->config.draw_lines_inverse = get_value();
+	plugin->thread->window->waveform->redraw();
+	return 1;
+}
+
 
 
 
@@ -584,6 +777,11 @@ int VideoScopeEffect::load_defaults()
 
 	w = defaults->get("W", w);
 	h = defaults->get("H", h);
+	config.show_709_limits = defaults->get("SHOW_709_LIMITS", config.show_709_limits);
+	config.show_601_limits = defaults->get("SHOW_601_LIMITS", config.show_601_limits);
+	config.show_IRE_limits = defaults->get("SHOW_IRE_LIMITS", config.show_IRE_limits);
+	config.draw_lines_inverse = defaults->get("DRAW_LINES_INVERSE", config.draw_lines_inverse);
+
 	return 0;
 }
 
@@ -591,8 +789,45 @@ int VideoScopeEffect::save_defaults()
 {
 	defaults->update("W", w);
 	defaults->update("H", h);
+	defaults->update("SHOW_709_LIMITS",    config.show_709_limits);
+	defaults->update("SHOW_601_LIMITS",    config.show_601_limits);
+	defaults->update("SHOW_IRE_LIMITS",    config.show_IRE_limits);
+	defaults->update("DRAW_LINES_INVERSE", config.draw_lines_inverse);
 	defaults->save();
 	return 0;
+}
+
+void VideoScopeEffect::save_data(KeyFrame *keyframe)
+{
+	FileXML file;
+	file.set_shared_string(keyframe->data, MESSAGESIZE);
+	file.tag.set_title("VIDEOSCOPE");
+	file.tag.set_property("SHOW_709_LIMITS",    config.show_709_limits);
+	file.tag.set_property("SHOW_601_LIMITS",    config.show_601_limits);
+	file.tag.set_property("SHOW_IRE_LIMITS",    config.show_IRE_limits);
+	file.tag.set_property("DRAW_LINES_INVERSE", config.draw_lines_inverse);
+	file.append_tag();
+	file.tag.set_title("/VIDEOSCOPE");
+	file.append_tag();
+	file.terminate_string();
+}
+
+void VideoScopeEffect::read_data(KeyFrame *keyframe)
+{
+	FileXML file;
+	file.set_shared_string(keyframe->data, strlen(keyframe->data));
+	int result = 0;
+	while(!result)
+	{
+		result = file.read_tag();
+		if(!result)
+		{
+			config.show_709_limits = file.tag.get_property("SHOW_709_LIMITS", config.show_709_limits);
+			config.show_601_limits = file.tag.get_property("SHOW_601_LIMITS", config.show_601_limits);
+			config.show_IRE_limits = file.tag.get_property("SHOW_IRE_LIMITS", config.show_IRE_limits);
+			config.draw_lines_inverse = file.tag.get_property("DRAW_LINES_INVERSE", config.draw_lines_inverse);
+		}
+	}
 }
 
 int VideoScopeEffect::process_realtime(VFrame *input, VFrame *output)
