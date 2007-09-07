@@ -6294,82 +6294,121 @@ lightening will be applied.
 @cindex Videoscope
 
 @menu
-* The waveform scope::
-* The vectorscope::
+* The Waveform Scope::
+* The Vectorscope::
 @end menu
 
 @image{manual_images_en/videoscope,12.5mm}
 
-The videoscope is a tool that digitally represents levels of light and color on
-a calibrated screen.  It is useful because the human eye is not specialized to
-match precise level of light and color, but to detect differences between
-lights and colors.
-
-The Videoscope can be used in conjunction with other Cinelerra plugins such as
-YUV, HUE, Brightness, Histogram to accurately correct video for contrast,
-clarity, conformance (normalize various videos shot under different light
-settings) or for cinematic purposes.
+The Videoscope summarizes intensity and color on a calibrated display.
+The Videoscope can be used in conjunction with other Cinelerra plugins
+such as YUV, HUE, Brightness, Color Balance or Histogram to accurately
+correct video for contrast, clarity, conformance (to normalize various
+videos shot under different light settings), or for cinematic
+purposes. The human eye is not specialized to match precise level of
+light and color, but Videoscope is.
 
 Some thought is being given to having a video scope for recording.
 Unfortunately, this would require a lot of variations of the video scope for
 all the different video drivers.
 
-The Videoscope contains two displays: the @b{waveforme scope} and the
-@b{vectorscope}
+The Videoscope contains two displays: the @b{Waveform Scope} and the
+@b{Vectorscope}.
 
 @c cincvdoc_node_number_226
-@node The waveform scope
-@subsubsection The waveform scope
-@cindex Waveform scope
+@node The Waveform Scope
+@subsubsection The Waveform Scope
+@cindex Waveform Scope
 
-Screen labeled vertically from bottom to top bottom or 0% is maximum Black Top
-or 100% is maximum White.  Divides the source video on vertical columns of
-pixels, then each pixel on the column is metered, and plotted on corresponding
-vertical scale the waveform scope according to its light intensity value.
+The Waveform Scope displays image intensity (luminance) versus image X
+position. The Waveform Scope appears on the left side of the
+Videoscope window.
 
-A pixel on the bottom of the scope indicates for full black, a pixel on the top
-(100%) of the scope is full white.
+The display is calibrated vertically from 0% intensity (black) at the
+bottom up to 100% intensity at the top. Each column of pixels in the
+image corresponds to one column of pixels in the Waveform Scope.
 
-The image shows a stair step set of lines on scope, indicating the matching
-levels of luminance on the test image bars.  Multiple levels on the same column
-are represented by multiple lines on the scope.
+@center @image{manual_images_en/videoscope_waveform_bars,64mm}
+
+The color bar test image is plotted in the waveform display as a stair
+step set of lines. In this example, the waveform display and the test
+image are aligned to show that each stair step corresponds with one
+color bar.
+
+The waveform display shows the white bar at the 75% level because the
+colors in the test image are 75% values. The white bar has the highest
+luminance because it contains all color components. In more complex
+images, multiple levels in the same column are represented with
+multiple pixels on the scope.
 
 The Waveform scope helps correct image light levels for contrast range or for
 conforming light levels on various scenes originally shot on different light
 settings.
 
-Adjusting light levels.  (adjusting luminance) *Insert the xxx videoeffect on
-your track, right click, Show Insert the videoscope effect on the track.  (make
-sure that it is placed below the xx effect, so it can see the result of the xxx
-effect.  If it is not, rightclick and move it down to make it so) rightclick,
-show.
+Adjusting light levels (adjusting luminance):
+@enumerate 1
+@item Insert the Brightness/Contrast, YUV, or another video adjustment effect
+on your track.
+@item Insert the Videoscope effect on the track below. Make sure that it is
+placed below so it can see the adjustment effect's results. If it is not,
+right-click and move it down.
+@item Show both the effect and Videoscope.
+@item Adjust the effect while observing the waveform to match the desired
+light level.
+@end enumerate
 
-Looking at the luminance levels shown on the waveform, adjust the xxx control
-to match the desired level of light for your image.
+If you are looking for maximum contrast range, adjust the
+Brightness/Contrast levels to align the darkest point on the scope
+with the 0% level and the brightest portion with 100%. Anything above
+100% is over saturated. Limits which may be highlighted with checkbox
+controls:
 
-If you are looking for best contrast range, adjust the xxx level on the plugin
-to align the darkest point on the scope on the 0% scale and the whitest portion
-of interest on the 100%.  Anything above 100% is over saturated.
+@itemize @bullet
+
+@item @b{HDTV or sRGB (ITU-R BT.709)} @*
+The maximum pixel range for HDTV or sRGB is [0, 255]. This range
+corresponds with levels 0% and 100%.
+
+@item @b{MPEG or Analog video (ITU-R BT.601)} @*
+If you are producing an analog video or MPEG, the maximum pixel range
+for RGB is [16, 235], with the middle level at 128. For gray values,
+this range corresponds with levels 6% and 92%. @xref{RGB-601}.
+
+@item @b{NTSC Television broadcast} @*
+If you are producing a video for NTSC television broadcast, keep the
+intensity between 7.5% and 100%. The minimum black value which can be
+broadcast is IRE 7.5% (indicated by the ``7.5'' level), and values
+below this level are no darker.
+
+@end itemize
 
 @c cincvdoc_node_number_227
-@node The vectorscope
-@subsubsection The vectorscope
+@node The Vectorscope
+@subsubsection The Vectorscope
 @cindex Vectorscope
 
-The Vectorscope is used to monitor color.  The screen represents a color wheel
-where pixel color value is plotted on the radius of a line moving away from the
-center, the smallest radius indicates full white and the outer circles
-indicating highest values of intensity.
+The Vectorscope displays color and color saturation. Each pixel in the
+source image is drawn as a point on the color wheel. The distance from
+the center is the color saturation. Gray values are close to the
+center, and high saturation values are near the perimeter.
 
-Color hue is also plotted, represented by the angle in degrees on the color
-wheel, representing different hue colors.
+The Vectorscope is used with other plugins to correct color, adjust image
+tint, and apply other effects for cinematic effects, image correction, or to
+conform images to look the same.
 
-The Vectorscope can used along other plugins to correct color, adjust image
-tint, and apply other effects for cinematic effects, image correction or to
-conform separate screens to look the same.
+@center @image{manual_images_en/videoscope_vectorscope_color_correct,169mm}
 
-The vectorscope can also be used to monitor that the video output can be
-properly displayed on various monitors.  Any points along the inner radius will
+In this example, the top image is white balanced. Vectorscope shows
+many pixels in the yellow region and few in the white region. To
+remove the yellow tint, the Color Balance effect is used to first
+shift the vectorscope plot towards magenta (Mg), and then towards
+blue (B) until the region previously near the center surrounds the
+center. In the bottom image, yellow highlights have become white
+highlights (arrows). Note that the corresponding features in waveform
+also appear whiter (arrows).
+
+The Vectorscope can also be used to verify that the video output will
+display properly on various monitors.  Any points along the inner radius will
 be displayed as pure white and any points above the 100% radius, will probably
 not be correctly displayed on the screen.
 
