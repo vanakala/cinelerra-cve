@@ -239,6 +239,9 @@ void ThresholdMain::update_gui()
 			thread->window->update_low_color();
 			thread->window->update_mid_color();
 			thread->window->update_high_color();
+			thread->window->low_color_thread->update_gui(config.low_color.getRGB(), config.low_color.a);
+			thread->window->mid_color_thread->update_gui(config.mid_color.getRGB(), config.mid_color.a);
+			thread->window->high_color_thread->update_gui(config.high_color.getRGB(), config.high_color.a);
 		}
 		thread->window->unlock_window();
 	}
