@@ -372,28 +372,28 @@ void ThresholdUnit::process_package(LoadPackage *package)
 			r = (in_row[0] << 8) | in_row[0];
 			g = (in_row[1] << 8) | in_row[1];
 			b = (in_row[2] << 8) | in_row[2];
-			THRESHOLD_TAIL(3, 0xff, 0xff, 0xff, 0xff, 0x0, 0x0, 0x0, 0x0);
+			THRESHOLD_TAIL(3, 0xff, 0xff, 0xff, 0xff, 0x0, 0x0, 0x0, 0xff);
 			break;
 		case BC_RGB_FLOAT:
 			THRESHOLD_HEAD(float)
 			r = (int)(in_row[0] * 0xffff);
 			g = (int)(in_row[1] * 0xffff);
 			b = (int)(in_row[2] * 0xffff);
-			THRESHOLD_TAIL(3, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 0.0);
+			THRESHOLD_TAIL(3, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1.0);
 			break;
 		case BC_RGBA8888:
 			THRESHOLD_HEAD(unsigned char)
 			r = (in_row[0] << 8) | in_row[0];
 			g = (in_row[1] << 8) | in_row[1];
 			b = (in_row[2] << 8) | in_row[2];
-			THRESHOLD_TAIL(4, 0xff, 0xff, 0xff, 0xff, 0x0, 0x0, 0x0, 0x0);
+			THRESHOLD_TAIL(4, 0xff, 0xff, 0xff, 0xff, 0x0, 0x0, 0x0, 0xff);
 			break;
 		case BC_RGBA_FLOAT:
 			THRESHOLD_HEAD(float)
 			r = (int)(in_row[0] * 0xffff);
 			g = (int)(in_row[1] * 0xffff);
 			b = (int)(in_row[2] * 0xffff);
-			THRESHOLD_TAIL(4, 1.0, 1.0, 1.0, 1.0, 0, 0, 0, 0);
+			THRESHOLD_TAIL(4, 1.0, 1.0, 1.0, 1.0, 0, 0, 0, 1.0);
 			break;
 		case BC_YUV888:
 			THRESHOLD_HEAD(unsigned char)
@@ -401,7 +401,7 @@ void ThresholdUnit::process_package(LoadPackage *package)
 			u = (in_row[1] << 8) | in_row[1];
 			v = (in_row[2] << 8) | in_row[2];
 			server->yuv->yuv_to_rgb_16(r, g, b, y, u, v);
-			THRESHOLD_TAIL(3, 0xff, 0x80, 0x80, 0xff, 0x0, 0x80, 0x80, 0x0)
+			THRESHOLD_TAIL(3, 0xff, 0x80, 0x80, 0xff, 0x0, 0x80, 0x80, 0xff)
 			break;
 		case BC_YUVA8888:
 			THRESHOLD_HEAD(unsigned char)
@@ -409,7 +409,7 @@ void ThresholdUnit::process_package(LoadPackage *package)
 			u = (in_row[1] << 8) | in_row[1];
 			v = (in_row[2] << 8) | in_row[2];
 			server->yuv->yuv_to_rgb_16(r, g, b, y, u, v);
-			THRESHOLD_TAIL(4, 0xff, 0x80, 0x80, 0xff, 0x0, 0x80, 0x80, 0x0)
+			THRESHOLD_TAIL(4, 0xff, 0x80, 0x80, 0xff, 0x0, 0x80, 0x80, 0xff)
 			break;
 		case BC_YUV161616:
 			THRESHOLD_HEAD(uint16_t)
@@ -417,7 +417,7 @@ void ThresholdUnit::process_package(LoadPackage *package)
 			u = in_row[1];
 			v = in_row[2];
 			server->yuv->yuv_to_rgb_16(r, g, b, y, u, v);
-			THRESHOLD_TAIL(3, 0xffff, 0x8000, 0x8000, 0xffff, 0x0, 0x8000, 0x8000, 0x0)
+			THRESHOLD_TAIL(3, 0xffff, 0x8000, 0x8000, 0xffff, 0x0, 0x8000, 0x8000, 0xffff)
 			break;
 		case BC_YUVA16161616:
 			THRESHOLD_HEAD(uint16_t)
@@ -425,7 +425,7 @@ void ThresholdUnit::process_package(LoadPackage *package)
 			u = in_row[1];
 			v = in_row[2];
 			server->yuv->yuv_to_rgb_16(r, g, b, y, u, v);
-			THRESHOLD_TAIL(4, 0xffff, 0x8000, 0x8000, 0xffff, 0x0, 0x8000, 0x8000, 0x0)
+			THRESHOLD_TAIL(4, 0xffff, 0x8000, 0x8000, 0xffff, 0x0, 0x8000, 0x8000, 0xffff)
 			break;
 	}
 }
