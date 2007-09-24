@@ -4,6 +4,8 @@
 #include "threshold.h"
 #include "thresholdwindow.h"
 
+#define COLOR_W 100
+#define COLOR_H 30
 
 
 
@@ -283,7 +285,118 @@ void ThresholdCanvas::draw()
 
 
 
+ThresholdLowColorButton::ThresholdLowColorButton(ThresholdMain *plugin, ThresholdWindow *window, int x, int y)
+ : BC_GenericButton(x, y, _("Low Color"))
+{
+	this->plugin = plugin;
+	this->window = window;
+}
 
+int ThresholdLowColorButton::handle_event()
+{
+	RGBA & color = plugin->config.low_color;
+	window->low_color_thread->start_window(
+		color.getRGB(),
+		color.a);
+	return 1;
+}
+
+
+
+
+
+ThresholdMidColorButton::ThresholdMidColorButton(ThresholdMain *plugin, ThresholdWindow *window, int x, int y)
+ : BC_GenericButton(x, y, _("Mid Color"))
+{
+	this->plugin = plugin;
+	this->window = window;
+}
+
+int ThresholdMidColorButton::handle_event()
+{
+	RGBA & color = plugin->config.mid_color;
+	window->mid_color_thread->start_window(
+		color.getRGB(),
+		color.a);
+	return 1;
+}
+
+
+
+
+
+ThresholdHighColorButton::ThresholdHighColorButton(ThresholdMain *plugin, ThresholdWindow *window, int x, int y)
+ : BC_GenericButton(x, y, _("High Color"))
+{
+	this->plugin = plugin;
+	this->window = window;
+}
+
+int ThresholdHighColorButton::handle_event()
+{
+	RGBA & color = plugin->config.high_color;
+	window->high_color_thread->start_window(
+		color.getRGB(),
+		color.a);
+	return 1;
+}
+
+
+
+
+
+ThresholdLowColorThread::ThresholdLowColorThread(ThresholdMain *plugin, ThresholdWindow *window)
+ : ColorThread(1, _("Low color"))
+{
+	this->plugin = plugin;
+	this->window = window;
+}
+
+int ThresholdLowColorThread::handle_new_color(int output, int alpha)
+{
+	plugin->config.low_color.set(output, alpha);
+	window->update_low_color();
+	window->flush();
+	plugin->send_configure_change();
+}
+
+
+
+
+
+ThresholdMidColorThread::ThresholdMidColorThread(ThresholdMain *plugin, ThresholdWindow *window)
+ : ColorThread(1, _("Mid color"))
+{
+	this->plugin = plugin;
+	this->window = window;
+}
+
+int ThresholdMidColorThread::handle_new_color(int output, int alpha)
+{
+	plugin->config.mid_color.set(output, alpha);
+	window->update_mid_color();
+	window->flush();
+	plugin->send_configure_change();
+}
+
+
+
+
+
+ThresholdHighColorThread::ThresholdHighColorThread(ThresholdMain *plugin, ThresholdWindow *window)
+ : ColorThread(1, _("High color"))
+{
+	this->plugin = plugin;
+	this->window = window;
+}
+
+int ThresholdHighColorThread::handle_new_color(int output, int alpha)
+{
+	plugin->config.high_color.set(output, alpha);
+	window->update_high_color();
+	window->flush();
+	plugin->send_configure_change();
+}
 
 
 
@@ -291,9 +404,19 @@ void ThresholdCanvas::draw()
 
 
 ThresholdWindow::ThresholdWindow(ThresholdMain *plugin, int x, int y)
-: BC_Window(plugin->gui_string, x, y, 440, 350, 440, 350, 0, 1)
+: BC_Window(plugin->gui_string, x, y, 450, 450, 450, 450, 0, 1)
 {
 	this->plugin = plugin;
+	this->min = 0;
+	this->max = 0;
+	this->canvas = 0;
+	this->plot = 0;
+	this->low_color = 0;
+	this->mid_color = 0;
+	this->high_color = 0;
+	this->low_color_thread = 0;
+	this->mid_color_thread = 0;
+	this->high_color_thread = 0;
 }
 
 ThresholdWindow::~ThresholdWindow()
@@ -302,19 +425,41 @@ ThresholdWindow::~ThresholdWindow()
 
 int ThresholdWindow::create_objects()
 {
-	int x1 = 10, x = 10;
+	int x = 10;
 	int y = 10;
 	add_subwindow(canvas = new ThresholdCanvas(plugin,
 		this,
 		x,
 		y,
 		get_w() - x - 10,
-		get_h() - 100));
+		get_h() - 160));
 	canvas->draw();
 	y += canvas->get_h() + 10;
 
-	add_subwindow(new BC_Title(x, y, _("Min:")));
-	x += 50;
+	add_subwindow(plot = new ThresholdPlot(plugin, x, y));
+	y += plot->get_h() + 10;
+
+
+	add_subwindow(low_color = new ThresholdLowColorButton(plugin, this, x, y));
+	low_color_x = x + 10;
+	low_color_y = y + low_color->get_h() + 10;
+	x += low_color->get_w() + 10;
+
+	add_subwindow(mid_color = new ThresholdMidColorButton(plugin, this, x, y));
+	mid_color_x = x + 10;
+	mid_color_y = y + mid_color->get_h() + 10;
+	x += mid_color->get_w() + 10;
+
+	add_subwindow(high_color = new ThresholdHighColorButton(plugin, this, x, y));
+	high_color_x = x + 10;
+	high_color_y = y + high_color->get_h() + 10;
+
+	y += low_color->get_h() + COLOR_H + 10 + 10;
+
+	x = 30;
+	BC_Title * min_title;
+	add_subwindow(min_title = new BC_Title(x, y, _("Min:")));
+	x += min_title->get_w() + 10;
 	min = new ThresholdMin(plugin,
 		this,
 		x,
@@ -323,9 +468,11 @@ int ThresholdWindow::create_objects()
 	min->create_objects();
 	min->set_increment(0.1);
 
-	x += 200;
-	add_subwindow(new BC_Title(x, y, _("Max:")));
-	x += 50;
+
+	x = mid_color->get_x() + mid_color->get_w() / 2;
+	BC_Title * max_title;
+	add_subwindow(max_title = new BC_Title(x, y, _("Max:")));
+	x += max_title->get_w() + 10;
 	max = new ThresholdMax(plugin,
 		this,
 		x,
@@ -334,16 +481,41 @@ int ThresholdWindow::create_objects()
 	max->create_objects();
 	max->set_increment(0.1);
 
-	y += max->get_h();
-	x = x1;
 
-	add_subwindow(plot = new ThresholdPlot(plugin, x, y));
+	low_color_thread  = new ThresholdLowColorThread(plugin, this);
+	mid_color_thread  = new ThresholdMidColorThread(plugin, this);
+	high_color_thread = new ThresholdHighColorThread(plugin, this);
+	update_low_color();
+	update_mid_color();
+	update_high_color();
 
 	show_window(1);
 }
 
-WINDOW_CLOSE_EVENT(ThresholdWindow)
+void ThresholdWindow::update_low_color()
+{
+	set_color(plugin->config.low_color.getRGB());
+	draw_box(low_color_x, low_color_y, COLOR_W, COLOR_H);
+	flash(low_color_x, low_color_y, COLOR_W, COLOR_H);
+}
 
+void ThresholdWindow::update_mid_color()
+{
+	set_color(plugin->config.mid_color.getRGB());
+	draw_box(mid_color_x, mid_color_y, COLOR_W, COLOR_H);
+	flash(mid_color_x, mid_color_y, COLOR_W, COLOR_H);
+}
+
+void ThresholdWindow::update_high_color()
+{
+	set_color(plugin->config.high_color.getRGB());
+	draw_box(high_color_x, high_color_y, COLOR_W, COLOR_H);
+	flash(high_color_x, high_color_y, COLOR_W, COLOR_H);
+}
+
+
+
+WINDOW_CLOSE_EVENT(ThresholdWindow)
 
 
 

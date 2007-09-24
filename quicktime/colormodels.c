@@ -522,6 +522,26 @@ int cmodel_is_yuv(int colormodel)
 	}
 }
 
+int cmodel_has_alpha(int colormodel)
+{
+	switch(colormodel)
+	{
+		case BC_A8:
+		case BC_A16:
+		case BC_A_FLOAT:
+		case BC_RGBA8888:
+		case BC_RGBA16161616:
+		case BC_YUVA8888:
+		case BC_YUVA16161616:
+		case BC_RGBA_FLOAT:
+			return 1;
+			break;
+
+		default:
+			return 0;
+			break;
+	}
+}
 
 
 

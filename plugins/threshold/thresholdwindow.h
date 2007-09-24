@@ -1,6 +1,7 @@
 #ifndef THRESHOLDWINDOW_H
 #define THRESHOLDWINDOW_H
 
+#include "colorpicker.h"
 #include "guicast.h"
 #include "pluginvclient.h"
 #include "threshold.inc"
@@ -42,6 +43,60 @@ public:
 	ThresholdMain *plugin;
 };
 
+class ThresholdLowColorButton : public BC_GenericButton
+{
+public:
+	ThresholdLowColorButton(ThresholdMain *plugin, ThresholdWindow *window, int x, int y);
+	int handle_event();
+	ThresholdMain *plugin;
+	ThresholdWindow *window;
+};
+
+class ThresholdMidColorButton : public BC_GenericButton
+{
+public:
+	ThresholdMidColorButton(ThresholdMain *plugin, ThresholdWindow *window, int x, int y);
+	int handle_event();
+	ThresholdMain *plugin;
+	ThresholdWindow *window;
+};
+
+class ThresholdHighColorButton : public BC_GenericButton
+{
+public:
+	ThresholdHighColorButton(ThresholdMain *plugin, ThresholdWindow *window, int x, int y);
+	int handle_event();
+	ThresholdMain *plugin;
+	ThresholdWindow *window;
+};
+
+class ThresholdLowColorThread : public ColorThread
+{
+public:
+	ThresholdLowColorThread(ThresholdMain *plugin, ThresholdWindow *window);
+	virtual int handle_new_color(int output, int alpha);
+	ThresholdMain *plugin;
+	ThresholdWindow *window;
+};
+
+class ThresholdMidColorThread : public ColorThread
+{
+public:
+	ThresholdMidColorThread(ThresholdMain *plugin, ThresholdWindow *window);
+	virtual int handle_new_color(int output, int alpha);
+	ThresholdMain *plugin;
+	ThresholdWindow *window;
+};
+
+class ThresholdHighColorThread : public ColorThread
+{
+public:
+	ThresholdHighColorThread(ThresholdMain *plugin, ThresholdWindow *window);
+	virtual int handle_new_color(int output, int alpha);
+	ThresholdMain *plugin;
+	ThresholdWindow *window;
+};
+
 class ThresholdCanvas : public BC_SubWindow
 {
 public:
@@ -77,12 +132,25 @@ public:
 	
 	int create_objects();
 	int close_event();
+	void update_low_color();
+	void update_mid_color();
+	void update_high_color();
 
 	ThresholdMain *plugin;
 	ThresholdMin *min;
 	ThresholdMax *max;
 	ThresholdCanvas *canvas;
 	ThresholdPlot *plot;
+	ThresholdLowColorButton  *low_color;
+	ThresholdMidColorButton  *mid_color;
+	ThresholdHighColorButton *high_color;
+	ThresholdLowColorThread  *low_color_thread;
+	ThresholdMidColorThread  *mid_color_thread;
+	ThresholdHighColorThread *high_color_thread;
+
+	int low_color_x,  low_color_y;
+	int mid_color_x,  mid_color_y;
+	int high_color_x, high_color_y;
 };
 
 PLUGIN_THREAD_HEADER(ThresholdMain, ThresholdThread, ThresholdWindow)

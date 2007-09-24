@@ -111,6 +111,7 @@ int cmodel_calculate_datasize(int w, int h, int bytes_per_line, int color_model)
 int cmodel_calculate_max(int colormodel);
 int cmodel_components(int colormodel);
 int cmodel_is_yuv(int colormodel);
+int cmodel_has_alpha(int colormodel);
 
 // Tell when to use plane arguments or row pointer arguments to functions
 int cmodel_is_planar(int color_model);
