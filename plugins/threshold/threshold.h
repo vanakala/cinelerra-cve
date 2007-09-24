@@ -91,7 +91,6 @@ public:
 	LoadClient* new_client();
 	LoadPackage* new_package();
 
-	YUV *yuv;
 	ThresholdMain *plugin;
 	VFrame *data;
 };
