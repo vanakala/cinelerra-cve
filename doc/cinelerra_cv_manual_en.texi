@@ -6114,13 +6114,18 @@ FIXME
 
 @image{manual_images_en/threshold,12.5mm}
 
-Threshold converts the image to pure luminance.  Then luminance values below
-and above the threshold range are converted to black and luminance values
-inside the threshold range are converted to white.  The threshold window shows
-a histogram of luminance values for the current frame.  Click dragging inside
-the histogram creates a range to convert to white.  @b{SHIFT-clicking} extends
-one border of this range.  Values for the threshold range can also be specified
-in the text boxes.
+Threshold converts the image to pure luminance, and replaces pixels
+with one of three colors based on the luminance. Pixels with luminance
+values in the low range are replaced with black, pixels in the middle
+range are replaced with white, and pixels in the high range are
+replaced with black. Color and alpha for each range are configurable
+and interpolate according to keyframes.
+
+The threshold window shows a histogram of luminance values for the
+current frame. Click dragging inside the histogram creates a range to
+convert to white. @b{SHIFT-clicking} extends one border of this range.
+Values for the threshold range can also be specified in the text
+boxes.
 
 This effect is basically a primitive luminance key.  A second track above the
 track with the threshold effect can be multiplied, resulting in only the parts
