@@ -324,116 +324,107 @@ ThresholdUnit::ThresholdUnit(ThresholdEngine *server)
 	this->server = server;
 }
 
+// Coerces pixel component to int.
+static inline int get_component(unsigned char v)
+{
+	return (v << 8) | v;
+}
+
+static inline int get_component(float v)
+{
+	return (int)(v * 0xffff);
+}
+
+static inline int get_component(uint16_t v)
+{
+	return v;
+}
+
+template<typename TYPE, int COMPONENTS, bool USE_YUV>
+void ThresholdUnit::render_data(LoadPackage *package, TYPE value_max, TYPE value_mid)
+{
+	const ThresholdPackage *pkg = (ThresholdPackage*)package;
+	VFrame *data = server->data;
+	const int min = (int)(server->plugin->config.min * 0xffff);
+	const int max = (int)(server->plugin->config.max * 0xffff);
+	const int w = server->data->get_w();
+	const int h = server->data->get_h();
+
+	for(int i = pkg->start; i < pkg->end; i++)
+	{
+		TYPE *in_row = (TYPE*)data->get_rows()[i];
+		TYPE *out_row = in_row;
+		for(int j = 0; j < w; j++)
+		{
+			if (USE_YUV)
+			{
+				const int y = get_component(in_row[0]);
+				if(y >= min && y < max)
+					*out_row++ = value_max;
+				else
+					*out_row++ = 0;
+				*out_row++ = value_mid;
+				*out_row++ = value_mid;
+			}
+			else
+			{
+				const int r = get_component(in_row[0]);
+				const int g = get_component(in_row[1]);
+				const int b = get_component(in_row[2]);
+				const int y = (r * 76 + g * 150 + b * 29) >> 8;
+				if(y >= min && y < max)
+				{
+					*out_row++ = value_max;
+					*out_row++ = value_max;
+					*out_row++ = value_max;
+				}
+				else
+				{
+					*out_row++ = 0;
+					*out_row++ = 0;
+					*out_row++ = 0;
+				}
+			}
+			if(COMPONENTS == 4) *out_row++ = value_max;
+			in_row += COMPONENTS;
+		}
+	}
+}
+
 void ThresholdUnit::process_package(LoadPackage *package)
 {
-	ThresholdPackage *pkg = (ThresholdPackage*)package;
-	VFrame *data = server->data;
-	int min = (int)(server->plugin->config.min * 0xffff);
-	int max = (int)(server->plugin->config.max * 0xffff);
-	int r, g, b, a, y, u, v;
-	int w = server->data->get_w();
-	int h = server->data->get_h();
-
-#define THRESHOLD_HEAD(type) \
-{ \
-	for(int i = pkg->start; i < pkg->end; i++) \
-	{ \
-		type *in_row = (type*)data->get_rows()[i]; \
-		type *out_row = in_row; \
-		for(int j = 0; j < w; j++) \
-		{
-
-#define THRESHOLD_TAIL_RGB(components, r_on, g_on, b_on, a_on, r_off, g_off, b_off, a_off) \
-			v = (r * 76 + g * 150 + b * 29) >> 8; \
-			if(v >= min && v < max) \
-			{ \
-				*out_row++ = r_on; \
-				*out_row++ = g_on; \
-				*out_row++ = b_on; \
-				if(components == 4) *out_row++ = a_on; \
-			} \
-			else \
-			{ \
-				*out_row++ = r_off; \
-				*out_row++ = g_off; \
-				*out_row++ = b_off; \
-				if(components == 4) *out_row++ = a_off; \
-			} \
-			in_row += components; \
-		} \
-	} \
-}
-
-#define THRESHOLD_TAIL_YUV(components, y_on, u_on, v_on, a_on, y_off, u_off, v_off, a_off) \
-			if(y >= min && y < max) \
-			{ \
-				*out_row++ = y_on; \
-				*out_row++ = u_on; \
-				*out_row++ = v_on; \
-				if(components == 4) *out_row++ = a_on; \
-			} \
-			else \
-			{ \
-				*out_row++ = y_off; \
-				*out_row++ = u_off; \
-				*out_row++ = v_off; \
-				if(components == 4) *out_row++ = a_off; \
-			} \
-			in_row += components; \
-		} \
-	} \
-}
-
-
-	switch(data->get_color_model())
+	switch(server->data->get_color_model())
 	{
 		case BC_RGB888:
-			THRESHOLD_HEAD(unsigned char)
-			r = (in_row[0] << 8) | in_row[0];
-			g = (in_row[1] << 8) | in_row[1];
-			b = (in_row[2] << 8) | in_row[2];
-			THRESHOLD_TAIL_RGB(3, 0xff, 0xff, 0xff, 0xff, 0x0, 0x0, 0x0, 0xff);
+			render_data<unsigned char, 3, false>(package, 0xff, 0x80);
 			break;
+
 		case BC_RGB_FLOAT:
-			THRESHOLD_HEAD(float)
-			r = (int)(in_row[0] * 0xffff);
-			g = (int)(in_row[1] * 0xffff);
-			b = (int)(in_row[2] * 0xffff);
-			THRESHOLD_TAIL_RGB(3, 1.0, 1.0, 1.0, 1.0, 0.0, 0.0, 0.0, 1.0);
+			render_data<float, 3, false>(package, 1.0, 0.5);
 			break;
+
 		case BC_RGBA8888:
-			THRESHOLD_HEAD(unsigned char)
-			r = (in_row[0] << 8) | in_row[0];
-			g = (in_row[1] << 8) | in_row[1];
-			b = (in_row[2] << 8) | in_row[2];
-			THRESHOLD_TAIL_RGB(4, 0xff, 0xff, 0xff, 0xff, 0x0, 0x0, 0x0, 0xff);
+			render_data<unsigned char, 4, false>(package, 0xff, 0x80);
 			break;
+
 		case BC_RGBA_FLOAT:
-			THRESHOLD_HEAD(float)
-			r = (int)(in_row[0] * 0xffff);
-			g = (int)(in_row[1] * 0xffff);
-			b = (int)(in_row[2] * 0xffff);
-			THRESHOLD_TAIL_RGB(4, 1.0, 1.0, 1.0, 1.0, 0, 0, 0, 1.0);
+			render_data<float, 4, false>(package, 1.0, 0.5);
 			break;
+
 		case BC_YUV888:
-			THRESHOLD_HEAD(unsigned char)
-			y = (in_row[0] << 8) | in_row[0];
-			THRESHOLD_TAIL_YUV(3, 0xff, 0x80, 0x80, 0xff, 0x0, 0x80, 0x80, 0xff)
+			render_data<unsigned char, 3, true>(package, 0xff, 0x80);
 			break;
+
 		case BC_YUVA8888:
-			THRESHOLD_HEAD(unsigned char)
-			y = (in_row[0] << 8) | in_row[0];
-			THRESHOLD_TAIL_YUV(4, 0xff, 0x80, 0x80, 0xff, 0x0, 0x80, 0x80, 0xff)
+			render_data<unsigned char, 4, true>(package, 0xff, 0x80);
 			break;
+
 		case BC_YUV161616:
-			THRESHOLD_HEAD(uint16_t)
-			y = in_row[0];
-			THRESHOLD_TAIL_YUV(3, 0xffff, 0x8000, 0x8000, 0xffff, 0x0, 0x8000, 0x8000, 0xffff)
+			render_data<uint16_t, 3, true>(package, 0xffff, 0x8000);
 			break;
+
 		case BC_YUVA16161616:
-			THRESHOLD_HEAD(uint16_t)
-			y = in_row[0];
-			THRESHOLD_TAIL_YUV(4, 0xffff, 0x8000, 0x8000, 0xffff, 0x0, 0x8000, 0x8000, 0xffff)
+			render_data<uint16_t, 4, true>(package, 0xffff, 0x8000);
 			break;
 	}
 }

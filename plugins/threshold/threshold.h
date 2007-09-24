@@ -77,6 +77,9 @@ public:
 	void process_package(LoadPackage *package);
 	
 	ThresholdEngine *server;
+private:
+	template<typename TYPE, int COMPONENTS, bool USE_YUV>
+	void render_data(LoadPackage *package, TYPE value_max, TYPE value_mid);
 };
 
 
