@@ -11,7 +11,7 @@
 ################################################################################
 
 # We determine the languages the manual is available in
-for available_language in `ls | grep "^cinelerra_cv_manual_..\.texi$" | sed "s+.*_++g" | sed "s+\..*++g"`;
+for available_language in `ls | grep "^cinelerra_cv_manual_.*\.texi$" | sed "s+cinelerra_cv_manual_++g" | sed "s+\.texi++g"`;
 do
 	available_languages_list="${available_language} ${available_languages_list}"
 done
@@ -40,7 +40,7 @@ then
 	# We determine the shell name
 	shell_name=`basename $0`
 	# We print the shell syntax
-	echo "Syntax: ${shell_name} <two-letter ISO-639 language code>"
+	echo "Syntax: ${shell_name} <language code>"
 	# We print the available languages codes
 	echo "Available languages codes: ${available_languages_list}"
 	exit 1
@@ -73,7 +73,7 @@ makeinfo_cvs=/usr/local/bin/makeinfo_cvs
 if [ -x ${makeinfo_cvs} ]
 then
 	echo "------- Making DocBook manual (${language}) -------"
-	${makeinfo_cvs} --docbook --no-number-sections --no-warn cinelerra_cv_manual_${language}.texi
+	${makeinfo_cvs} --docbook --no-number-sections --no-warn cinelerra_cv_manual_${language}.texi -o cinelerra_cv_manual_${language}.xml
 	First_line_to_delete=`cat cinelerra_cv_manual_${language}.xml | grep -n "<chapter label=\"\" xreflabel=\"Cinelerra CV Manual\" id=\"Top\">" | sed "+s+:.*++g"`
 	if [ -n "${First_line_to_delete}" ]
 	then

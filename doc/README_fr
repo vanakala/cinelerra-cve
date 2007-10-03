@@ -10,7 +10,7 @@ Maufrais, qui travailla sur le fichier original cinelerra.texi afin de pouvoir
 générer des manuels à la présentation agréable.
 
 Pour récupérer les sources du manuel:
-cg-clone git://scm.pipapo.org/cinelerra-nicolasm
+cg-clone git://scm.pipapo.org/cinelerra/nicolasm
 
 Responsables de la documentation Cinelerra-CV :
 Anglais : Nicolas Maufrais (coordinateur) - e.conti@gmx.net

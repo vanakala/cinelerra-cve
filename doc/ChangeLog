@@ -1,0 +1,1586 @@
+
+2007-09-27 Raffaella Traniello
+
+     * 1.49.EN 
+
+	Chapter 14 Realtime Effects
+
+	Included changes from the following svn commits:
+	r1027: Updated Videoscope doc. Added 2 images (manual_images_intl). Patch by Craig Lawson.
+	r1028: Documentation for RGB-601 effect. Patch by Craig Lawson.
+	r1033: Update Threshold documentation. Patch by Craig Lawson.
+
+
+2007-09-04  Raffaella Traniello
+
+    * 1.48.EN 
+     
+    Chapter 1: Introduction
+    - Updated edition number
+    
+    Chapter 2: Installation
+    -Added Vales' repo for Ubuntu Feisty 64bit with no OpenGL.
+    - Changed order of packages (best working first)
+    
+    Chapter 5: Loading and saving files
+    - Moved Images sequence after Still Images.
+    . Added index words to Images sequence.
+    - Added subsubsections (FIXME) also for WAV, PCM, AIFF, AC3 audio (nodes 359, 360, 361, 362)
+    - Added clarifications in Still images.
+    - Heavily modified the content of Images sequence.
+    
+    Chapter 7: Editing
+    - Minor changes in Drag and Drop editing.
+    
+    Chapter 20: Rendering
+    - Added details for newbies in the "Authoring a DVD" and "Burning a DVD" section
+    - Added changes and descriptions in "Batch Rendering" as written by David McNab (aum in DokuWiki).
+    
+
+2007-08-26 Raffaella Traniello   
+
+    * 1.47.EN - 1.46.pt_BR 
+    
+    * 1.47.EN
+    
+    Chapter 1: Introduction
+    - Updated edition number
+    - Removed Main Actor from the list of recommended software since maintenance and distribution have been discontinued (see http://www.mainconcept.com/site/consumer-products-4/mainactor-v5-15/information-16.html)
+    - Removed Moxy from the list of recommended software(No longer being developed - see http://www.linuxartist.org/video-anim.html)
+    - Added Avidemux and Kdenlive (and relative links)
+    - Added node 358: HOWTOs
+    - Added two howto on creating fancy titles (by David McNab and Gustavo Iniguez Goya).
+    - Added an howto on Chromakey (HSV) plugin (by Jerome Cornet)
+    
+    Chapter 2: Installation
+    - Minor changes
+    - Added "or 60Mb for a read-only checkout" in Usual Compilation Process (by gray-DokuWiki) 
+    - Minor changes in Arch Linux
+    - Ubuntu repos: added Core Duo Intel64 as AMD64 compatible
+    - Added packages list for compilation in Debian (by mcarter-Dokuwiki)
+    
+    Chapter 5: Loading and saving files
+    - Improved the description of changing paths from absolute to relative and viceversa
+    - Added description of repair of broken media linkage from the GUI.
+    - Added @cindex Paths
+    
+    Chapter 7: Editing
+    - minor changes
+    - Added @index Three points editing to Two screen editing
+    
+    Chapter 14: Realtime effects
+    - Added hints for animating titles and keyframes support.
+    
+   
+    * 1.46.pt_BR
+    
+    - Updated to ed. 1.46 (by Flavio Soares)
+    
+    
+2007-08-08 Raffaella Traniello  
+
+    * 1.46.EN  -  make_wiki.sh
+    
+    * 1.46.EN
+    
+    Chapter 1: Introduction
+    - Updated edition number
+    
+    Chapter 2: Installation
+    - Added instructions for Arch Linux - by gour
+    
+    - Split Chapter 6 Program Window in two:
+      6. Program Window
+      7. Editing
+    - Renamed subsections to sections (in Editing)
+    
+    * make_wiki.sh
+    
+    - Corrected the make_wiki script to fit the new number of pages.
+      Replaced
+      rm cinelerra_cv_${language}_24.txt
+      with
+      rm cinelerra_cv_${language}_25.txt
+
+
+2007-08-07 Raffaella Traniello  
+
+    * 1.45.EN
+    
+    Chapter 1: Introduction
+    - Updated edition number
+    
+    Chapter 2: Installation
+    - Added node 357 for ArchLinux (FIXME)
+    - Inserted content for ArkLinux (by Herman Robak, ML)
+
+
+2007-08-07 Raffaella Traniello  
+
+    * 1.44.EN 
+      
+    Chapter 1: Introduction
+    - Updated edition number
+    - Added a link to a French Tutorial on Cin HV by Laurent Bellegarde
+    - Added a link to a French Wiki about Open Source video editing
+    - Added a link to a screencast about screencast with Cin by Scott Frase
+    
+    Chapter 2: Installation
+    - Added node 89 (number recycled from the last deleted node) for ArkLinux (FIXME)
+    - Moved Live CDs node in the firts place for distributions
+    
+    Chapter 4: Project attributes
+    - Added description of image (Channel position widget)
+    
+    Chapter 5: Loading and saving files
+    - Added details to the description of the different insertion strategies.
+    
+    Chapter 6:
+    - Replaced redundant description of the track popup menu with a link to sect
+    - Minor changes
+    
+    Chapter 23: Keyboard shortcut
+    - Added details to some descriptions
+    
+
+2007-07-29 Raffaella Traniello  
+
+    * 1.43.EN 
+       
+    Chapter 1: Introduction
+    
+    - Updated edition number
+    - Added detailed description of video tutorials
+    - Added a miscellaneous link: Colour specification and image coding
+    - Minor changes
+    
+    Chapter 6: Program window
+    
+    - Added details to the description of curve zoom (The zoom panel) updating it to r908 changes
+    - Added details, examples and references to Play track, Mute track, Faders (the patchbay) updating it to r908 changes
+    - Replaced 'in/out points' with 'edit boundaries' (Trimming)
+    - Minor changes
+    
+    Chapter 7: Compositor Windo  
+
+- Added a note about OpenGL mask renderer (see bug 418)
+    
+    Chapter 20: Tips
+    
+    - Added the option for kernel.shmmax = 2147483647 (Freeing more shared memory)
+    
+    
+2007-07-22 Raffaella Traniello  
+  
+    * 1.42.EN
+    
+    Chapter 1: Introduction
+    - Updated edition number
+    
+    Chapter 2: Installation
+    - Minor changes
+    - Removed instructions for installing translated .po files (moved to ch.3)
+    
+    Chapter 3: Configuration
+    - Environment variables: added instructions for installing translated .po files.
+    - Video out: replaced audio track(s) with video track(s)
+    
+    Chapter 6: Program window
+    - Minor changes
+    - Editing: added horizontal scrolling by mouse wheel + CTRL
+    - Deleted node 89. Merged subsection Video tracks and audio tracks in subsection Audio and video tracks.
+    
+
+2007-07-19 Raffaella Traniello  
+ 
+    * 1.41.EN 
+    
+    Chapter 1: Introduction
+    
+    - Updated edition number
+    - Added a miscellaneous link: Quick Guide to Digital Video Resolution and Aspect Ratio Conversions
+    
+    Chapter 6: Program window
+    
+    - Minor changes
+    - Using labels: Reordered content
+    - Track navigation: added scrolling by mouse wheel
+    - Editing modes: added the shortcut 'e' to toggle between modes
+    
+    Chapter 13: Realtime effects
+
+    - Added node 356: Reroute
+    - Added a brief description of the new plugin and a FIXME (the icon is still missing)
+    
+    Chapter 23: Keyboard shortcuts
+    
+    - Added 'e': Toggle between Drag-and-Drop and Cut-and-Paste editing modes
+
+
+2007-07-11 Raffaella Traniello  
+
+    * 1.40.EN 
+    
+    - Impoved formatting: textwidth=80
+    - Minor changes
+    
+    Chapter 1: Introduction
+    
+    - Added Cillian de Ròiste among the contributors
+    - Minor changes
+    
+    - Impoved formatting: textwidth=80
+    - Minor changes
+    
+
+2007-07-07 Raffaella Traniello  
+
+    * 1.39.EN 
+  
+    Chapter 2: Installation
+    - Reordered content in the Ubuntu section
+    - Added node 354: Ubuntu packages repositories (subsection)
+    - Added node 355: Instructions for Ubuntu packages installation (subsection)
+    - Added links to two tutorials on compilation on Ubuntu
+
+
+2007-07-06 Raffaella Traniello  
+
+    * 1.38.EN 
+
+    Merged DokuWiki changes
+    
+    Chapter 17: Keyframing
+    - Introduction: Tweaked the language a little. By cillian
+
+
+2007-06-22 Raffaella Traniello  
+
+    * 1.37.EN (Ed 1.33d) 
+    
+    Chapter 1: Introduction
+    - Added Cinelerra Video tutorial #3 by The source
+    Chapter 2: Installation
+    - Minor changes in Ubuntu
+
+
+2007-06-21 Raffaella Traniello  
+
+    * 1.36.EN (Ed 1.33c)
+
+    Merged last changes made on Dokuwiki Chapter 3 between 03/04/07 and 21/06/07
+    
+    Chapter 1: Introduction
+    - Changed from Edition 1.32 to 1.33
+    Chapter 3: Configuration
+    - Added LANGUAGE as an environment variable to be set for changing language. By cillian
+
+
+2007-06-21 Raffaella Traniello  
+
+    * 1.35.EN (Ed 1.33b)
+
+    Merged the changes made on Dokuwiki Chapters 13,17 between 03/04/07 and 21/06/07
+    Chapter 1: Introduction
+    - Added Hermann Vosseler in the contributors list.
+    Chapter 13: Realtime effects
+    - Description and typical usage scenario for "Frames to fields". By ichthyostega.
+    - Descritpion for the gradient plugin. By ichthyostega.
+    - Details on the parameters of the HSV plugin. By ichthyostega.
+    - Correction: Descriptions of "interpolate pixels" belongs to the "interpolate video" effect. By ichthyostega.
+    - Descritpion for the overlay video plugin. By ichthyostega.
+    - A warning for usage of Translate effect on interlaced footage. By ichthyostega.
+    - Correction of Unsharp Effect description: bring in the well known name "unsharp mask", because it's not just softening or blurring... By  ichthyostega.
+    Chapter 17: Keyframing
+    - Added a note about deleting ganged keyframes. By raffa.
+
+
+2007-06-21 Raffaella Traniello  
+
+    * 1.34.EN (Ed 1.33a)
+
+    Merged the changes made in Dokuwiki Chapter 2 between 03/04/07 and 21/06/07
+    
+    Chapter 2: Installation
+    - Note that library headers are required. Change Xfree86 to X.org. By anagogue
+    - Described the –with-buildinfo=svn/recompile option. By raffa
+    - Put info about 64bits build. By casainho
+    - Added vale's Feisty package. By raffa
+    - Added muzzol's Feisty package. By cillian
+    - Added a link to a nice howto about dependencies for compiling on Fedora Core 6. By sfrase6
+    - Added a link to a nice how to for installing vale's Ubuntu AMD64 Feisty package.
+
+
+2007-06-02 Raffaella Traniello  
+
+    * 1.33.EN 
+
+    Various minor changes and:
+    Chapter 2
+    Usual compilation process: Added information about Subversion; reordered content.
+    Debian Binaries: Added Valentina Messeri name.
+    Ubuntu: Added Ubuntu Feisty packages by Jure Cuhalev.
+    Live CD: Added x-evian.
+    Chapter 3
+    Interface: Replaced "in/out points" with "edit boundaries".
+    Chapter 5
+    Loading files: Added a more descriptive sentence.
+    Saving files: Reordered content. Added information about how to move files keeping the media linkage.
+    Chapter 6
+    Added a node (352): The zoom panel; reordered content.
+    Added a node (353): Editing modes; redordered content.
+    Chapter 13
+    Title: Added the input limit of 1023 characters.
+    Chapter 17
+    Renamed Keyframes to Keyframing. Ordered content and added concept explanation in the introduction.
+
+2007-04-03  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* 1.32.EN
+	  - Apply changes made by Agiofws (Cinelerra CV Wiki user "agiofws",
+	    change made on the 2007/04/03 22:29): "there was ONE "f" missing in
+	    9th line"
+
+2007-04-03  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* 1.31.EN
+	  - Apply changes made by Sean M. Pappalardo (Cinelerra CV Wiki user
+	    "pegasus", change made on the 2007/03/21 04:36): "Added new Debian
+	    source for AMD64 binaries"
+
+2007-03-19  Nicolas Maufrais  <e.conti@gmx.net>
+	
+	* 1.30.EN
+	  - Replace "Jack Crossfire" (which is a pseudonym) by "Adam Williams".
+	    Adam Williams is the real name of the main developper of Cinelerra.
+
+2007-03-14  Nicolas Maufrais  <e.conti@gmx.net>
+	
+	* 1.24.pt_BR
+	  - Minor changes in texinfo commands
+
+2007-03-14  Nicolas Maufrais  <e.conti@gmx.net>
+	
+	* README_pt
+	  - Add this file, which was already in the SVN repository.
+
+2007-03-14  Nicolas Maufrais  <e.conti@gmx.net>
+	
+	* 1.24.pt_BR
+	  - Add the translation from English to Brazilian Portuguese (pt_BR)
+	    done by Flavio fREITAS and Wille MARCEL. Thanks to both of them!
+	* make_manuals.sh
+	  - Changes by Nicolas Maufrais to accept non-ISO language codes. We
+	    now use the locale language codes, as used in GNU/Linux.
+
+2007-03-13  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* 1.29.EN
+	  - Apply changes made by Sean M. Pappalardo (Cinelerra CV Wiki user
+	    "pegasus", change made on the 2007/03/07 19:34) in the "Title"
+	    node.
+
+2007-03-13  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* 1.28.EN
+	  - Add new information written by Sean M. Pappalardo (Cinelerra CV
+	    Wiki user "pegasus", change made on the 2007/03/07 18:09) in the
+	    "Translate" node" (that node was marked as "FIXME")
+	  - Add new contributors names (Graham Evans and Sean Pappalardo) in
+	    the contributors list.
+
+2007-03-13  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* 1.27.EN
+	  - Apply change made by Sean M. Pappalardo (Cinelerra CV Wiki user
+	    "pegasus", change made on the 2007/03/07 17:37) in the "Still
+	    images size" node. Remove the Apt source for Athlon64 (optimized)
+	    since the link is down.
+
+2007-03-13  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* 1.26.EN
+	  - Apply change made by Graham Evans (Cinelerra CV Wiki change made by
+	    user "gray" on the 2007/02/25 13:07) in the shell script contained
+	    in the "Still images size" node.
+
+2007-03-09  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* 1.25.EN
+	  - Apply changes made by Raffaella TRANIELLO (see below for details)
+	  - Changes and new information in the "Ubuntu" node about Ubuntu 6.06
+	    Dapper Drake
+	  - Minor change in the "Live CDs" node
+	  - Rename node "Common sound driver attributes" to "Sound driver
+	    attributes" 
+	  - Changes in the "Sound driver attributes" node
+	  - Rename node "Common video driver attributes" to "Video driver
+	    attributes"
+	  - Rename node "Samples to send to console" to " "Playback buffer
+	    size"
+	  - Changes in node "Audio in"
+	  - Item "Samples to write at a time" renamed to "Samples to write to
+	    disk at a time" in the "Audio in" node
+	  - Add an xref to "Video drivers" in the "Record driver" item of the
+	    "Video in" node
+	  - Rename item "Replace node" to "Apply changes" in the "Renderfarm"
+	    node
+	  - Move information about "Time representation" in the "Interface"
+	    node
+	  - Rename item "Delete all indexes" to "Delete existing indexes" in
+	    the "Interface" node
+	  - Rename item "Clicking in/out points does what" to "Dragging edit
+	    boundaries does what" in the "Interface" node
+	  - Add an xref to "Trimming" in the "Dragging edit boundaries does
+	    what" item of the "Interface" node
+	  - Move the "Channels" item in the "Audio attributes" node
+	  - Minor change in the "Channels positions" of the "Audio attributes"
+	    node
+	  - Add an xref to "Panning tracks" in the "Audio attributes" node
+	  - Add an xref to "The track popup menu" in the "Video attributes"
+	    node
+	  - Minor changes in the "Video attributes" node
+	  - Add new information in the "Images sequence" node
+	  - Changes in the "Loading still images" node
+	  - Add new information in the "Tip" at the end of "The in/out points"
+	    node
+	  - Changes in the "Splice" item of the "Two screen editing" node
+	  - Add new information in the "Drag and drop editing" node
+	  - Rename node "Dragging in and out points does not work" to "Dragging
+	    edit boundaries does not work"
+	  - Minor changes in the "Dragging edit boundaries does not work" node
+
+2007-02-21  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* 1.24.EN
+	  - Apply changes made by Mikko Huhtala in the "Fedora" node (Cinelerra
+	    CV Wiki change made by user "mhuhtala" on the 2007/02/13 19:25)
+	* 1.24.FR
+	  - Up-to-date with 1.24.EN.
+
+2007-02-06  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* 1.23.EN
+	  - Apply changes made by Raffaella Traniello (see below for details)
+	  - Rename node "Knoppix" to "Live CD"
+	  - Add more information in the "Live CD" node
+	  - Add some text about the error message "/proc/sys/kernel/shmmax is
+	    0x2000000, which is too low" in the "Running Cinelerra" node
+	  - Minor changes about languages in the "Environment variables" node
+	  - Minor changes in the "Video out" node, about the Scaling Equation
+	  - Changes and additionnal information in the "Drag and drop editing"
+	    node
+	  - Additionnal information in the "Freeing more shared memory" node
+	  - Add a new node "Playback does not stop"
+	* 1.23.FR
+	  - Up-to-date with 1.23.EN.
+
+2007-02-03  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* manual_images_en and manual_images_fr
+	  - Move identical images which are located in manual_images_en and
+	    manual_images_fr to manual_images_intl
+	* manual_images_intl
+	  - new folder
+	* 1.22.EN
+	  - Take into account the new location of images which are now in
+            manual_images_intl instead of manual_images_en
+	* 1.22.FR
+	  - Take into account the new location of images which are now in
+            manual_images_intl instead of manual_images_fr
+	  - Up-to-date with 1.22.EN.
+	* make_wiki.sh
+	  - Change to take into account the fact that images are not *only* in
+	    manual_images_${language} but manual_images_intl too.
+
+2007-02-02  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* 1.21.EN
+	  - Node "Ladspa effects": Add an screenshot (ladspa_effects.png) of
+	    Ladspa effects in the audio folder, and some additionnal
+	    information about LADSPA_PATH.
+	* 1.21.FR
+	  - Up-to-date with 1.21.EN.
+	* Changelog
+	  - Replace 2008 by 2007. We're in 2007, right? ;-)
+
+2007-01-31  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* 1.20.EN
+	  - Change FSF mail address. It changed some time ago but was not updated
+	    on all pages of the www.gnu.org website.
+	* 1.20.FR
+	  - Up-to-date with 1.20.EN.
+	* LICENCE_en
+	  - Update FSF mail address
+
+2007-01-31  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* 1.19.EN
+	  - Rename the "Mandrake" node to "Mandriva" and add information about
+	    installing Cinelerra on Mandriva.
+	* 1.19.FR
+	  - Up-to-date with 1.19.EN.
+
+2007-01-31  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* 1.18.EN
+	  - Delete the "Redhat" node, and replace it with a "Fedora" node,
+	    which contains the explanations written by Mikko Huhtala in the
+	    Cinelerra-CV wiki (2007/01/31).
+	  - Add Mikko Huhtala in the list of contributors.
+	* 1.18.FR
+	  - Up-to-date with 1.18.EN.
+
+2007-01-31  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* 1.17.EN
+	  - Add the following subtitle on the cover page: "Non-linear video
+	    editor for GNU/Linux"
+	* 1.17.FR
+	  - Up-to-date with 1.17.EN.
+
+2007-01-31  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* 1.16.EN
+	  - Move the following nodes one level up in the "Rendering files chapter"
+	    - Rendering videos for the internet
+	    - Quicktime for GNU/Linux compatibility chart
+	    - Making a DVD
+	* 1.16.FR
+	  - Up-to-date with 1.16.EN.
+
+2007-01-30  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* 1.15.EN
+	  - Add a node "Adding subtitles".
+	* 1.15.FR
+	  - Up-to-date with 1.15.EN.
+
+2007-01-30  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* 1.14.EN
+	  - Add a node "HDV 1080i editing using proxy files", by Marcin Kostur
+	    (Cinelerra-CV wiki username: marcinkostur).
+	* 1.14.FR
+	  - Up-to-date with 1.14.EN.
+
+2007-01-29  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* 1.13.EN
+	  - Add more information in the "Freeing more shared memory" node. By
+	    Raffaella Traniello.
+	* 1.13.FR
+	  - Up-to-date with 1.13.EN.
+
+2007-01-29  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* 1.12.EN
+	  - Add a link to the "Editing Media shortcuts" node, in the "Editing"
+	    node. To do so, new nodes have been defined in the "Keyboard
+	    shortcuts" chapter. Link suggested by Raffaella Traniello.
+	* 1.12.FR
+	  - Up-to-date with 1.12.EN.
+
+2007-01-28  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* 1.11.EN
+	  - Add information about installing Cinelerra on Ubuntu. By Raffaella
+	    Traniello
+	* 1.11.FR
+	  - Up-to-date with 1.11.EN.
+
+2007-01-28  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* 1.10.EN
+	  - Change "Adam Crossfire" to "Jack Crossfire". Suggested by Raffaella
+	    Traniello
+	* 1.10.FR
+	  - Up-to-date with 1.10.EN.
+
+2007-01-22  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* 1.09.EN
+	  - Change the syntax recommended for yuvscaler in the "Rendering to
+	    mpeg2" node.
+	* 1.09.FR
+	  - Up-to-date with 1.09.EN.
+
+2007-01-22  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* 1.08.EN
+	  - Wiki: 2007/01/20 21:53 by terje (Terje J. Hanssen): "Installation
+	    on openSUSE 10.1 and 10.2"
+	    (english_manual/cinelerra_cv_en_2.1169326407)
+	* 1.08.FR
+	  - Up-to-date with 1.08.EN.
+
+2007-01-22  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* 1.07.EN
+	  - Wiki: 2007/01/20 20:13 by sebbothebutcher (Joseph L.): "Added information about
+	    installing Cinelerra-CV on Gentoo" (english_manual/cinelerra_cv_en_2.1169320413) node.
+	* 1.07.FR
+	  - Up-to-date with 1.07.EN.
+
+2007-01-20  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* 1.06.EN
+	  - Add a link to the MPEG2 FAQ page, in the "Miscellaneous links"
+	    node.
+	  - Raffaella Traniello -> Add informatino about draging media on the
+	    timeline, in the "Drag and drop editing" node.
+	* 1.06.FR
+	  - Up-to-date with 1.06.EN.
+
+2007-01-18  Nicolas Maufrais  <e.conti@gmx.net>
+	
+	* 1.05.EN
+	  - Apply changes made by Raffaella Traniello in the wiki, which
+	    weren't applied in the last edition.
+	  - Add information about mpeg2enc's option "-K tmpgenc" in the
+	    "Rendering to mpeg2" node.
+	* 1.05.FR
+	  - Up-to-date with 1.05.EN.
+
+2007-01-18  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* 1.04.EN
+	  - Move the small paragraph about tovid inside the "Making a DVD menu"
+	    node.
+	  - Add a small note about QDVDAuthor being more usable now than it was
+	    some time ago.
+	  - Add a double space at the end of some sentences.
+	  - Remove space before @* at the end of some sentences.
+	  - Describe how to log make's output in a file, in the node "Usual
+	    compilation process" node
+	  - Remove node "Installing an RPM" since HV does not provide RPM
+	    anymore.
+	  - Add a node "Miscellaneous links".
+	  - Replace input_file.flv by output_file.flv in the command
+	    recommended in the "Encoding a video in FLV format for the
+	    internet" node
+	  - Add a new paragraph about keyframes and the title video effect,
+	    added by Raffaella Traniello in the wiki
+	    (english_manual/cinelerra_cv_en_13.txt · Last modified: 2007/01/16
+	    23:52 by raffa)
+	  - Modify some contents in the "Two screen editing" node, modified by
+	    Raffaella Traniello in the wiki
+	    (english_manual/cinelerra_cv_en_6.txt · Last modified: 2007/01/18
+	    14:37 by raffa)
+	* 1.04.FR
+	  - Up-to-date with 1.04.EN.
+	  - Replace "ficher" by "fichier" (="file")
+	  - Add space before some ":"
+	* TRANSLATIONS file
+	  - Minor change concerning .xcf images
+
+2007-01-16  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* 1.03.EN
+	  - Add the last name (Germani) of the person who wrote the Cinelerra
+	    Tutorial in Portuguese.
+	* 1.03.FR
+	  - Up-to-date with 1.03.EN
+	  - Correct a mistake in the caption below the
+	    "manual_images_fr/vpatches" picture.
+	* Add .xcf files for the images, in both manual_images_en and manual_images_fr.
+	  Now, the text is on different Gimp layers than the background. That needed
+	  some work, but now it's now possible to translate the text in the images.
+	  - Added images
+	    manual_images_en/apatches.xcf
+	    manual_images_en/camera_concept.xcf
+	    manual_images_en/cleaning1.xcf
+	    manual_images_en/composite_mask_value.xcf
+	    manual_images_en/compositing_pipeline2.xcf
+	    manual_images_en/compositing_pipeline.xcf
+	    manual_images_en/compositor_feather.xcf
+	    manual_images_en/compositor_mask_bezier.xcf
+	    manual_images_en/compositor_mask_drag.xcf
+	    manual_images_en/compositor_mask_mode.xcf
+	    manual_images_en/compositor_mask_translate.xcf
+	    manual_images_en/compress.xcf
+	    manual_images_en/effect_wave_before_after.xcf
+	    manual_images_en/projector_concept.xcf
+	    manual_images_en/recording.xcf
+	    manual_images_en/temporary_explained.xcf
+	    manual_images_en/timebarslider.xcf
+	    manual_images_en/track_attributes.xcf
+	    manual_images_en/transport_panel.xcf
+	    manual_images_en/viewport_sizes.xcf
+	    manual_images_en/vpatches.xcf
+	    manual_images_en/zoompanel.xcf
+	    manual_images_fr/apatches.xcf
+	    manual_images_fr/camera_concept.xcf
+	    manual_images_fr/cleaning1.xcf
+	    manual_images_fr/composite_mask_value.xcf
+	    manual_images_fr/compositing_pipeline2.xcf
+	    manual_images_fr/compositing_pipeline.xcf
+	    manual_images_fr/compositor_feather.xcf
+	    manual_images_fr/compositor_mask_bezier.xcf
+	    manual_images_fr/compositor_mask_drag.xcf
+	    manual_images_fr/compositor_mask_mode.xcf
+	    manual_images_fr/compositor_mask_translate.xcf
+	    manual_images_fr/compress.xcf
+	    manual_images_fr/effect_wave_before_after.xcf
+	    manual_images_fr/projector_concept.xcf
+	    manual_images_fr/recording.xcf
+	    manual_images_fr/temporary_explained.xcf
+	    manual_images_fr/timebarslider.xcf
+	    manual_images_fr/track_attributes.xcf
+	    manual_images_fr/transport_panel.xcf
+	    manual_images_fr/viewport_sizes.xcf
+	    manual_images_fr/vpatches.xcf
+	    manual_images_fr/zoompanel.xcf
+	  - Modified images
+	    manual_images_en/apatches.png
+	    manual_images_en/camera_concept.png
+	    manual_images_en/cleaning1.png
+	    manual_images_en/composite_mask_value.png
+	    manual_images_en/compositing_pipeline2.png
+	    manual_images_en/compositing_pipeline.png
+	    manual_images_en/compositor_feather.png
+	    manual_images_en/compositor_mask_bezier.png
+	    manual_images_en/compositor_mask_drag.png
+	    manual_images_en/compositor_mask_mode.png
+	    manual_images_en/compositor_mask_translate.png
+	    manual_images_en/compress.png
+	    manual_images_en/effect_wave_before_after.png
+	    manual_images_en/projector_concept.png
+	    manual_images_en/recording.png
+	    manual_images_en/temporary_explained.png
+	    manual_images_en/timebarslider.png
+	    manual_images_en/track_attributes.png
+	    manual_images_en/transport_panel.png
+	    manual_images_en/viewport_sizes.png
+	    manual_images_en/vpatches.png
+	    manual_images_en/zoompanel.png
+	    manual_images_fr/apatches.png
+	    manual_images_fr/camera_concept.png
+	    manual_images_fr/cleaning1.png
+	    manual_images_fr/composite_mask_value.png
+	    manual_images_fr/compositing_pipeline2.png
+	    manual_images_fr/compositing_pipeline.png
+	    manual_images_fr/compositor_feather.png
+	    manual_images_fr/compositor_mask_bezier.png
+	    manual_images_fr/compositor_mask_drag.png
+	    manual_images_fr/compositor_mask_mode.png
+	    manual_images_fr/compositor_mask_translate.png
+	    manual_images_fr/compress.png
+	    manual_images_fr/effect_wave_before_after.png
+	    manual_images_fr/projector_concept.png
+	    manual_images_fr/recording.png
+	    manual_images_fr/temporary_explained.png
+	    manual_images_fr/timebarslider.png
+	    manual_images_fr/track_attributes.png
+	    manual_images_fr/transport_panel.png
+	    manual_images_fr/viewport_sizes.png
+	    manual_images_fr/vpatches.png
+	    manual_images_fr/zoompanel.png
+
+2007-01-15  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* 1.02.EN
+	  - Remove image manual_images_en/track_attributes in node "Supported
+	    file formats". That image was not at the right place.
+	  - Add information in the "Loading other formats" node to explain how
+	    to identify any video s codecs and container (using mplayer -identify xyz)
+	  - Add a link to Scott Frase s "Beginner s Guide to Exporting Video
+	    from Cinelerra", in the tutorials node, as suggested by Scott in his
+	    mail to the mailing-list (Date: Mon, 15 Jan 2007 15:25:30 +0000)
+	  - Add links to 2 tutorials ("Capturando e editando video usando Software Livre"
+	    and "Tutorial Cinelerra") as suggested by Rafael Diniz in his mail
+	    to the mailing-list (Date: Sat, 13 Jan 2007 02:31:46 -0200)
+	  - Add a link to www.100fps.com in the tutorials node. It is an
+	    interesting page about deinterlacing, suggested by Raffaella Traniello.
+	  - Add a link in the "Tutorials" node to "Edicion de video bajo
+	    GNU/Linux (Cinelerra)", in Spanish, by Gustavo Iniguez Goya
+	  - Add a link in the Ubuntu node to the following page
+	    www.kiberpipa.org/~gandalf/blog/?p=65
+	* 1.02.FR
+	  - Up-to-date with 1.02.EN
+	* ChangeLog
+	  - Some formatting changes.
+	  - Pierre Dumuid s name was cutted by mistake (too fast cut/copy/paste
+	    operations!). It is now fixed.
+
+2007-01-12  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Add initial changes in the ChangeLog file
+
+2007-01-12  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* 1.01.EN
+	  - Changes in the "Loading other formats" node (modified recommended
+	    command lines to convert a video).
+	  - Add a sentence about mplex errors, in the "Rendering to mpeg2" node
+	    (recommendation increase the quantizer).
+	  - Rename the node "Rendering to Quicktime4linux to re-encode using
+	    mencoder" to "Rendering videos for the internet"
+	  - Add a node "Quicktime for GNU/Linux compatibility chart"
+	  - Add node "Encoding a video in MPEG4 format for the internet"
+	  - Add node "Encoding a video in FLV format for the internet"
+	* 1.01.FR
+	  - Up-to-date with 1.01.EN
+	* Add ChangeLog
+
+2007-01-11  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Edition 1.00 since
+	  - the English manual is now available and editable in the new
+	    Cinelerra-CV wiki
+	  - this edition was commited into the SVN (hvirtual/docs)
+	* 1.00.EN
+	  - Add a link to the new Cinelerra-CV wiki
+	  - Change git address of the manual repository, following
+	    repositories renaming made by Christian Thaeter
+	* 1.00.FR
+	  - Up-to-date with 1.00.EN
+	  - Change perms of gpl_fr.texi to 644
+
+2007-01-10  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* 0.84.EN
+	  - Scott FRASE proof-read 1/4th of the manual. Thanks for the
+	    good work, Scott!
+	  - Add list of years after copyright on 3rd page.
+	  - More "GNU-compliant" GPL notice on 3rd page.
+	  - Remove italics in the list of tutorials (node "Tutorials").
+	    When using italics in that case, the wiki page does not
+	    display correctly (probably a dokuwiki bug)
+	* 0.84.FR
+	  - Up-to-date with 0.84.EN
+	  - Delete a paragraph in node "A propos de ce manuel" which was in
+	    double
+	  - GPL translated to French (add file gpl_fr.texi) even if only the
+	    English version is "official".
+	    Having such an important section of a French manual written in
+	    English
+	    a) cannot be understood by non English speaking people
+	    b) is not respectful toward such readers
+	    The official English version of the GPL in available in the
+	    LICENCE_en file anyway.
+	    The translated licence was taken from the GNU website.
+
+2007-01-07  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* 0.83.EN
+	  - Remove a small paragraph about <post> commands in the
+	    "Authoring a DVD" node (duplicate of the paragraph above).
+	  - Correct an English mistake in the "Making a DVD menu" node.
+	* 0.83.FR
+	  - No change excepted for the edition number, which is increased to be
+	    the same than the English manual one s.
+
+2007-01-04  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Edition 0.81.EN (and Edition 0.81.FR)
+	  - Add the name of Adam Crossfire just before Heroine Virtual Ltd in
+	    the "About this manual" node.
+	  - Change the location of commands @documentlanguage and
+	    @documentencoding.
+	  - Reformulate the credit to Karl Berry. The GNU project team is now
+	    credited too.
+	  - Remove space(s) at the end of a few lines.
+	  - Add "Ubuntu" and "Redhat" nodes. No contents for the moment.
+	  - Make sure "GNU/" is always written before the word "Linux".
+	  - Remove some @cindex commands.
+	  - Rename the node "Panning & zooming still images" to "Panning and
+	    zooming still images"
+	  - Add a "Tutorials" node.
+	* Edition 0.81.FR
+	  - Up-to-date with edition 0.81.EN.
+	* TRANSLATIONS
+	  - Add information about gitk and meld
+	  - Add information about the images
+
+2007-01-03  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* make_manuals.sh - automatically build the XML manual if the
+	  (specified) makeinfo CVS binary is installed
+	* make_wiki.sh - minor change (2007 copyright year)
+
+2007-01-01  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Edition 0.80.FR
+	  - Up-to-date with 0.80.EN
+
+2007-01-01  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Edition 0.80.EN
+	  - Jim Scott - proof-reads the 2nd part of the manual. Thanks Jim!
+
+2006-12-29  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Edition 0.79.FR
+	  - Up-to-date with 0.79.EN
+
+2006-12-29  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Edition 0.79.EN
+	  - Replace @itemize @minus by @itemize @bullet. @minus does not look
+	    great in the wiki
+
+2006-12-29  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Edition 0.78.FR
+	  - Up-to-date with 0.78.EN
+
+2006-12-29  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Edition 0.78.EN
+	  - Do not put images in itemize list, in the "Output size" node.  The
+	    reason being the contents being not properly displayed in the wiki.
+	  - replace some @code commands by @verbatim in the "Assorted X tweeks"
+	    node (better wiki display)
+
+2006-12-29  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* README_en - minor changes
+	* README_fr - minor changes
+	* TRANSLATIONS - minor changes
+	* make_wiki.sh - minor changes
+
+2006-12-28  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Edition 0.77.FR
+	  - Add @. for sentences which finish with a capital letter.
+	  - Minor changes
+	  - Add a missing paragraph in node "Les pistes vid¿o"
+	  - Move a paragraph in node "Le montage ¿ deux ¿crans"
+	  - Add missing cincvdoc_node_number_128 tag
+	  - Up-to-date with 0.77.EN
+
+2006-12-28  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Edition 0.77.EN
+	  - @end itemize was not in a line of its own, in the "Motion" node.
+	    Fixed.
+	  - @documentencoding ISO-8859-1 for completeness
+
+2006-12-28  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* make_wiki.sh & make_manuals.sh - minor changes
+
+2006-12-27  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Edition 0.76.FR
+	  - Up-to-date with 0.76.EN
+	* Edition 0.76.EN
+	  - Add cincvdoc_node_number_...  comments above each node. Will be
+	    used by the contextual help sytem.
+
+2006-12-27  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Edition 0.75.FR
+	  - Up-to-date with 0.75.EN
+
+2006-12-27  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Edition 0.75.EN
+	  - Joe Friedrichsen - proof-read the last part of the manual. Thanks Joe.
+
+2006-12-27  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Edition 0.74.EN
+	  - Add Cinelerra-CV documentation maintainers names
+	  - Minor changes
+
+2006-12-23  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Add README_fr
+
+2006-12-23  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Add manual_images_fr dir, which contains images for the French manual
+
+2006-12-23  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Jean-Luc Coulon - French Cinelerra manual
+	* Updated texinfo.tex file, which allows accented characters in node
+	  names (needed for translated manuals)
+	* IMPORTANT - The French manual is not finished yet (60% proof-read)
+	  Thanks to Karl Berry for the updated texinfo.tex file
+
+2006-12-23  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Edition 0.73
+	  - Put the last sentence (code) in the "Improving Zoran video" node in
+	    @verbatim
+	  - In the "Realtime plugins", put some text in @b instead of @code
+	  - Put some code between @verbatim instead of @code in the "Drawing
+	    using OpenGL" node
+	  - Put the shell script to resize images in the "Still images size"
+	    between @verbatim since it did not display properly in the wiki
+	    otherwise
+	  - More @cindex defined
+	  - The following images are now smaller - cin_motion_set_output1.png,
+	    compress.png, format.png, asset_info.png, render_window.png,
+	    resources_video_transitions.png, resources_audio_effects.png,
+	    load.png, viewer.png, sound_level_meters_window.png
+	    They were too large for the html page.
+	  - Add Scott Frase in the list of contributors
+	  - Updated texinfo.tex
+
+2006-12-12  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Edition 0.72
+	  - Replace fixme by FIXME - %s/^fixme/FIXME/g
+
+2006-12-12  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Add make_wiki.sh
+	  This shell script converts texinfo files into wiki pages
+
+2006-12-12  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Edition 0.71
+	  - Replace a ton of @code by @verbatim to get a better wiki output
+
+2006-12-12  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Edition 0.70
+	  - In the "Audio attributes" node, I had to move an image and some
+	    paragraphs out of an @itemize. Leaving these in the @itemize would
+	    mess the wiki page
+
+2006-12-12  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Edition 0.69
+	  - Had to remove an @itemize in "The processing object" node. Keeping
+	    it would mess the wiki page
+
+2006-12-12  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* make_manuals.sh - minor changes
+
+2006-12-12  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Edition 0.68
+	  - Add a small paragraph about DVD-RW formatting
+	  - Put the command xine (to play a DVD) in @command{} instead of @b{}
+	  - Jean-Luc Coulon - fixe a typo (read instead of red) in the
+	    "Compositor keyframes" node
+	  - Jean-Luc Coulon - Remove reference to Moxy in the "About Cinelerra"
+	    node. The Moxy project is dead
+	  - Change a sentence saying journaling are immune to power failures
+	    (change suggested by Jean-Luc Coulon)
+
+2006-12-11  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Edition 0.67
+	  - Add syntax examples for y4mshift, yuvscaler, yuvdenoise and
+	    yuvmedianfilter, in the "Making a DVD" node.
+	  - Add subsubsections in "Making a DVD" - Making a DVD menu, Authoring
+	    a DVD, Burning a DVD
+
+2006-12-10  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Edition 0.66
+	  - Change a sentence in the "Loading multiple files" node.
+	  - Rename "Image sequence" to "images sequence"
+
+2006-12-10  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Edition 0.65
+	  - Move the "Panning & zooming still images" to the "Tips" chapter
+
+2006-12-08  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* README_en - change make_manuals.sh explanation, since that tools
+	  syntax changed
+
+2006-12-08  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Edition 0.64
+	  - Raffaella Traniello - Change "@b{SHIFT-clicking} on an in/out point
+	    extends the highlighted region to that point." to
+	    "@b{SHIFT-clicking} on an in/out point highlights the region
+	    between the insertion point and that in/out point."
+	  - Raffaella Traniello - Change "@kbd{SHIFT-CTRL-LEFT} extends the
+	    highlighted region to the previous label." to
+	    "@kbd{SHIFT-CTRL-LEFT} highlights the region between the insertion
+	    point and the previous label."
+	  - Raffaella Traniello - Change "@kbd{SHIFT-CTRL-RIGHT} extends the
+	    highlighted region to the next label." to "@kbd{SHIFT-CTRL-RIGHT}
+	    highlights the region between the insertion point and the next
+	    label."
+	  - Raffaella Traniello - 2 changes in the "Drag and drop editing" node
+
+2006-12-08  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Edition 0.63
+	  - Remove a (too large) @enumerate in node "Motion tracking in
+	    action". Formatting change only - the text is not modified
+
+2006-12-07  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* make_manuals.sh - multi-languages support
+
+2006-12-07  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Add the TRANSLATIONS file
+
+2006-12-07  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Rename LICENCE to LICENCE_en (English)
+
+2006-12-07  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Change in README_en - remove cg-update which does not work
+
+2006-12-07  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Remove the audio denoise effect text
+
+2006-12-06  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Edition 0.61
+	  - Replace some @code{} by @verbatim, to get the "**" to be displayed
+	    correctly in the wiki
+
+2006-12-06  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Edition 0.60
+	  - Add Channels item in Recording->audio in
+
+2006-12-06  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Edition 0.59
+	  - RENAME cinelerra_cv_manual.texi TO cinelerra_cv_manual_en.texi
+	  - RENAME images TO manual_images_en
+	  - RENAME gpl.texi TO gpl_en.texi
+	  - RENAME README TO README_en
+	  - Add a reference to the GPL licence in make_manuals.sh
+	  - Replace some @example by @verbatim, since @example tags are not
+	    displayed correctly in the (future) wiki
+	  - Change the name of the directory containing the image, in order to
+	    include "_en", for English
+	  - Change the name of the gpl.texi file to gpl_en.texi, for English
+	  - Add some comments for translators, concerning the GPL translation
+	  - Replace "The Cinelerra package contains Cinelerra and most of the
+	    libraries needed to run it..." by "This is the general contents of
+	    all Cinelerra packages" in the "Installation" node. Fix suggested
+	    by Jean-Luc Coulon.
+	  - Fix the "Video drivers" node intro. Fix suggested by Jean-Luc
+	    Coulon.
+	  - Remove explanation about updating the manual sources on a local
+	    computer, using cg-update
+
+2006-12-05  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Edition 0.58
+	  - Formatting fix in node "Making a DVD"
+	  - New formatting changes in the plugins node
+	  - Correct a wrong reference in Compositing
+	  - Replace @example by @code, since blank lines are inserted before
+	    and after @example commands. That produces ugly html output.
+	  - Replace "Then make like Win 2000 and reboot" by "Then reboot"
+	  - Add an @itemize in node "Speeding up the hard drive"
+	  - Add the word "option" which was missing in one sentence of the
+	    "Install Cinelerra CV" paragraph
+	  - Reformat the notes located in the "Usual compilation process" node
+	  - Move information regarding .po files not being installed when
+	    specifying a prefix different from the default
+	  - Add an xref to "Usual compilation process" in "Environment
+	    variables"
+	  - Subsubsub-sectionning of the "Still images" node
+	  - Remove images/slider.png
+
+2006-12-04  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Edition 0.57
+	  - Formatting changes
+	  - Add a Tracking stabilization in action node
+	  - Add pt_BR - Brazilian Portuguese in Environment variables (thanks
+	    Rafael)
+
+2006-12-03  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Edition 0.56
+	  - Add images/locklabels_unlocked.png
+	  - Add information about labels, written by Raffaella Traniello
+
+2006-12-02  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Edition 0.55
+	  - Remove the -j 3 option of make in the node Compiling Cinelerra with
+	    debugging symbols
+
+2006-12-02  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Edition 0.54
+	  - And in the Reporting Bugs node an xref to Compiling with debugging
+	    symbols
+
+2006-12-01  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Edition 0.53
+	  - Add information about imported image scaling
+	  - A ton of formatting changes to get better plaintext and html
+	    outputs
+
+2006-11-29  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Edition 0.52
+	  - Add explanation about how to download the manual sources
+	  - Distinguish between compiling Cinelerra CV "the normal way" and
+	    compiling with debugging symbols
+	  - Add information about how to install .po files when specifying a
+	    prefix!=/usr/local when compiling
+	  - Move a note about transitions in section Using transitions
+	  - Add information about dvgrab options
+	  - Add information about mjpegtools which can be used to reduce noise
+	    when rendering
+
+2006-11-28  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Add some information about transitions
+
+2006-11-28  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Add a Reporting Bugs section
+
+2006-11-26  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Change the recommendation about bitrate when using mpeg2enc - average
+	  bitrate should be 10% lower than the bitrate defined with the -b
+	  option -> not 20% lower
+
+2006-11-26  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Remove a lot of @sp 1 to get a better looking html manual
+
+2006-11-26  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Add space between bitrate and format
+
+2006-11-26  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Change two mpeg2enc options (bitrate and radius) in the node Making a
+	  DVD
+
+2006-11-23  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Add a note about copying/pasting keyframes
+
+2006-11-22  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Add information about Translating Cinelerra written by Rafael Diniz
+
+2006-11-22  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Increase the rev number and do some small formatting changes in the
+	  selective temporal averaging subsection
+
+2006-11-21  Pierre Marc Dumuid  <pierre.dumuid@adelaide.edu.au>
+
+	* Selective Temporal Averaging documented
+
+2006-11-21  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Add a node about video screen capture
+
+2006-11-18  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Add information about compiling Cinelerra from SVN sources. Taken
+	  from the README.BUILD file recently added in the SVN repo
+
+2006-11-18  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Add screenshots for the wave effect
+
+2006-11-18  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Add a note in the masks node, about automatic keyframes
+
+2006-11-18  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* make sure all the temp files are deleted before building the pdf
+	  manual
+
+2006-11-18  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Correct a wrong URL in the manual
+	* Add a commented line in make_manuals.sh to make a split html manual
+
+2006-11-17  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Rename cinelerra.texi to cinelerra_cv_manual.texi
+
+2006-11-17  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Add LICENCE file
+	* cinelerra.texi
+	  - Structure change in the Project attributes chapter
+	  - Do not use a node anymore for "New in 2.6.5" (Zoran)
+	  - Resize some images
+	  - Add edition and version numbers
+	  - Add comments about paper size
+	  - Remove changes history at the beginning of the file
+
+2006-11-16  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Add a screenshot of the sound level meters window
+	* Add double-spaces after the end of two sentences
+
+2006-11-16  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Add a Suse node in Installation
+	* Update information about installing Cinelerra on Debian
+
+2006-11-16  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* cinelerra.texi - correct an xref command
+
+2006-11-16  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* README - add information regarding makeinfo CVS
+
+2006-11-16  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* cinelerra.texi - STRUCTURE MODIFIED
+	* make_manuals.sh - Add the --no-headers option for text output
+
+2006-11-16  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Remove some unused images from the images folder
+	* cinelerra.texi - change some images size
+
+2006-11-15  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* cinelerra.texi - some changes to get a better Docbook output
+
+2006-11-15  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* make_manuals.sh - comment DocBook make
+
+2006-11-15  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* cinelerra.texi
+	  - Correct the image displayed for Center vertical justify button (it
+	    should be button_justify_centerV)
+	  - Add a list of other contributors (>=5 contributions on Alex s
+	    TWiki)
+	  - Remove blank lines before and after @sp 1 to obtain a better
+	    looking plaintext output
+	  - Add @ifnotplaintext and @end ifnotplaintext commands to do not
+	    display the index in plaintext output
+	  - Keep only 1 size argument in the @image commands
+	  - Insert non-breakable space in the Debian sources lists
+	* make_manuals.sh - Now generate a text manual
+	* README - New file
+
+2006-11-15  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* make_manuals.sh - fix uncommented lines
+
+2006-11-15  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* make_manuals.sh - add some commands to get ride of the blank page
+	  untitle Cinelerra CV Manual in the Docbook output
+
+2006-11-14  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* cinelerra.texi - change the magnify image size, since magnify.png is
+	  updated
+	* images/magnify.png - new image
+
+2006-11-14  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Add the render_window.png image
+
+2006-11-14  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Modify the make_manuals.sh script, adding a (commented) call to
+	  makeinfo_cvs
+	* Correct a node problem in cinelerra.texi
+
+2006-11-14  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* TWIKI -> CV MANUAL MERGE FINISHED !!!
+	* Add some info regarding still images, from twiki
+	* Add the video_disolve_icon.png image from twiki
+	* Add some info regarding the dissolve video transition, from twiki
+	* Add some @ifnotxxx commands to do not display a note regarding
+	  duplex-printing in any other output than PDF
+	* Add some faqs from twiki
+	* Add some info regarding rendering, from twiki
+	* Add some info regarding capturing, from twiki
+	* Add the following images from twiki - cin_timeline_eff_clip,
+	  cin_motion_win, cin_comp_action_small, cin_motion_track,
+	  cin_comp_first_setup_small, cin_motion_set_output1
+	* Add some info regarding video motion, from twiki
+	* Replace some @itemize commands by @enumerate
+	* Add a blank line between @center @image and @center @b{} to get a
+	  cleaner docbook output
+	* Add a MacOSX node (some contents to put in it later)
+
+2006-11-13  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Add some @ifnotdocbook commands in order to do not display the index
+	  in the .xml output
+
+2006-11-13  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Made some changes to get a better xml output for yelp
+
+2006-11-13  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Do not build the docbook anymore. We will wait till the changes
+	  related to the texinfo->docbook conversion process in the CVS version
+	  of texinfo are put into the stable release of texinfo (that fixes the
+	  problems)
+
+2006-11-13  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Reorganize the introduction chapter
+	* Add information regarding Cinelerra CV vs HV Cinelerra, taken from
+	  the cvs.cinelerra.org website
+	* Add the load.png image from twiki
+	* Add some info regarding loading of files, from twiki
+	* Add nodes "Loading files from the command prompt" and "Filtering
+	  Files By File Extension", from twiki
+	* Add the camera_concept.png image from twiki
+	* Add some info regarding Compositing camera, from twiki
+	* Add the viewport_drag.png image from twiki
+	* Add the compositor_campro_tool.png image from twiki
+	* Add the following images from twiki - button_justify_left.png,
+	  button_justify_centerH.png, button_justify_right.png,
+	  button_justify_top.png, button_justify_top.png,
+	  button_justify_bottom.png
+	* Add the projector_concept.png image from twiki
+	* Add the projector_screen.png image from twiki
+	* Add some info regarding Compositing projector, from twiki
+	* Add some info regarding Loading other formats, from twiki
+	* Add the following images from twiki - compositor_mask1.png,
+	  compositor_mask_drag.png, compositor_mask_bezier.png
+	  compositor_mask_translate.png, mask_dialog.png
+	  compositor_mask_mode.png, composite_mask_value.png
+	  compositor_feather.png
+	* Add some info regarding masks, from twiki
+	* Add the slider.png image from twiki
+	* Add some info regarding merging projects, from twiki
+	* Add the asset_info.png image from twiki
+	* Add some info regarding the asset info window, from twiki
+	* Add a @finalout command before @titlepage, to avoid printing of ugly
+	  black rectangle beside lines containing overfull hbox
+	* Add the format.png image from twiki
+	* Add some info regarding the track size, from twiki
+	* Add the following images from twiki - resize_track.png,
+	  compositor_output_equal.png, compositor_output_small.png
+	* Add some info regarding the output size, from twiki
+	* Add the following images from twiki - output_small.png,
+	  output_large.png
+	* Add some info regarding the videoscope, from twiki
+	* Reformatting
+
+2006-11-12  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* New workaround to get the lists appear correctly in yelp (another
+	  makeinfo bug)
+
+2006-11-12  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Correct a mistake in make_manuals.sh - @ was missing before cindex,
+	  resulting in the cindex lines being displayed in yelp
+
+2006-11-12  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Modify make_manuals.sh in order to generate a docbook file which can
+	  be opened with yelp. This is a workaround for a bug in makeinfo
+
+2006-11-10  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Put twiki html pages still to merge into the manual for people
+	  wishing to help me with the merge process
+
+2006-11-10  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Correct a sentence in the Blur node
+	* Add a blank line in node Time average
+	* Add version and update date of the manual
+	* Add a footnote for the scrub work, from twiki
+	* Add the resources_video_transitions.png image from twiki
+	* Add info about time lapse in the reframert node, from twiki
+	* Add some info regarding the resample effect, from twiki
+	* Add some info regarding the in/out points, from twiki
+	* Add some info regarding Software requirements, from twiki
+	* Wrap long lines
+	* Rename node "Compiling from Scratch" to "Compiling Cinelerra CV"
+	* Replace the "Compiling Cinelerra CV" node contents with Cinelerra
+	* Community Version specific information
+	* Add some info regarding the compositing tool, from twiki
+	* Add the temporary_explained.png image from twiki
+	* Add some info into the camera and projector from twiki
+	* Add the compositor_crop_tool.png and compositor_crop.png images from
+	  twiki
+	* Add some info into the cropping node from twiki
+
+2006-11-09  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* With that new texinfo.tex file, converting the png images to pdf is
+	  not necessary anymore. Thanks go to Karl Berry, maintainer of GNU
+	  texinfo. The make_manuals.sh is changed accordingly
+
+2006-11-08  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Add info from twiki pages - zoom panel, blur effect, Color balance,
+	  delay video, denoise video, HolographicTV, Invert video, Linear blur,
+	  Radial blur, zooming on the compositor to any size other that 100%,
+	  configuration, insertion point, drag and drop editing mode, Debian,
+	  Knoppix, Mandrake, Slackware, background rendering, Hardware
+	  requirements, Gentoo.
+	* Delete one line of comments for the viewer node.
+	* Add images from the twiki - program_insertion_point.png,
+	  program_highlight.png, drag_to_program.png, drop_before.png,
+	  drag_track.png, drop_concept.png, drop_after.png,
+	  drop_transition.png.
+	* Add a Getting help node.
+	* Remove 2 commented lines in make_manuals.sh
+
+2006-11-08  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Import the new cinelerra.texi file
+
+2006-11-08  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Add the gpl.texi which will be inclued in the new cinelerra.texi
+	  file. It contains the GPL licence
+
+2006-11-08  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Remove the cinelerra.html file, which will now be automatically made
+	  with the make_manuals.sh command
+
+2006-11-08  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Remove the manual.sdw, which is now useless since the "source file"
+	  of the manual is cinelerra.texi
+
+
+2006-11-08  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Remove the whatsnew_2_1.html which is almost empty
+
+2006-11-08  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Remove the following files which are outdated - configuration.html
+	  current.html doc_2000.html doc_2002.html history.html index.html
+	  installation.html press
+
+2006-11-08  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Updated png images (alpha channel removed) and added new png images
+
+2006-11-07  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* a script to make the manuals
+
+2006-11-07  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Moved the original images to the /images dir
+
+2006-11-07  Nicolas Maufrais  <e.conti@gmx.net>
+
+	* Initial commit

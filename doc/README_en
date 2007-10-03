@@ -9,11 +9,7 @@ Virtual Ltd. Alex Ferrer's TWiki contents was put in by Nicolas Maufrais, who
 worked on the original cinelerra.texi file in order to generate nice manuals.
 
 To fetch the manual sources:
-cg-clone git://scm.pipapo.org/cinelerra-nicolasm
-
-Maintainers of the Cinelerra-CV documentation :
-English : Nicolas Maufrais (Coodinator) - e.conti@gmx.net
-French : Jean-Luc Coulon
+cg-clone git://scm.pipapo.org/cinelerra/nicolasm
 
 To make the manuals in PDF, HTML and TXT formats, just execute:
 ./make_manuals.sh <language code>

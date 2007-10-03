@@ -15,6 +15,9 @@ than English.
 - Avoid changing the texinfo commands as much as possible. If you need some
   information about texinfo, get its excellent manual at www.gnu.org
 - Keep as is the edition number of the English manual you fetched.
+- Images which contain text are available in .xcf (Gimp) format. Use those to
+  convert the text and save them in .png format, using a level 7 compression
+  (in Gimp).  Please do not rename the images filenames.
 - Test everything works fine by running make_manuals.sh <language code>
 - When you have finished, send everything to the Cinelerra CV documentation
   maintainer.
@@ -27,8 +30,3 @@ manual is released. To keep track of the changes in the git repository, you can
 use the gitk GUI. To easily find differences between each edition, we recommend
 you use meld.
 
-As regards to the images, some of them contain English text. You can edit
-pictures in the manual_images_<country code> folder. Please also put in there
-the .xcf Gimp files, in addition to the png images. That will ease work on
-those pictures in the future. Keeping in English the name of the pictures is
-recommended.

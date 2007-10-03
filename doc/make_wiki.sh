@@ -73,18 +73,17 @@ do
 	# We remove some lines at the start and beginning of the wiki page
         cat ${original_doku_page} | head -n `expr ${nb_lines_original_doku_page} - 6` | tail -n `expr ${nb_lines_original_doku_page} - 10` > ${temp_doku_page}
 	# We put in the URL of the images.
-	cat ${temp_doku_page} | sed "+s+{{\.\.\/\.\/manual_images_${language}\/+{{http:\/\/cvs.cinelerra.org\/docs\/manual_images_${language}\/+g" | grep -v "^| \[\[#SEC" | sed "+s+\[\[cinelerra_cv_${language}_\([0-9]*\)\.html.SEC[0-9]*.\([^\]]*\)+\[\[english_manual:cinelerra_cv_en_\1\\#\2+g" > ${original_doku_page}
+	cat ${temp_doku_page} | sed "+s+{{\.\.\/\.\/manual_images_\([^/]*\)\/+{{http:\/\/cvs.cinelerra.org\/docs\/manual_images_\1\/+g" | grep -v "^| \[\[#SEC" | sed "+s+\[\[cinelerra_cv_${language}_\([0-9]*\)\.html.SEC[0-9]*.\([^\]]*\)+\[\[english_manual:cinelerra_cv_en_\1\\#\2+g" > ${original_doku_page}
 	# Some characters are not displayed properly in the wiki page. We have to replace them
 	cat ${original_doku_page} | sed "+s+&gt;+>+g" | sed "+s+\&amp;+\&+g" | sed "+s+&lt;+<+g" > ${final_doku_page}
 	# We remove the temporary files
 	rm ${original_doku_page} ${temp_doku_page} ${html_page}
 done
 
-rm cinelerra_cv_${language}_24.txt
+rm cinelerra_cv_${language}_25.txt
 rm cinelerra_cv_${language}_abt.txt
 rm cinelerra_cv_${language}_fot.txt
 rm cinelerra_cv_${language}.txt
 rm cinelerra_cv_${language}_toc.txt
 
 cd ..
-tar cvf - cinelerra_cv_${language} | gzip -9c > cinelerra_cv_${language}.tgz
