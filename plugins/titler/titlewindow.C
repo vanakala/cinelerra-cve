@@ -449,6 +449,7 @@ void TitleWindow::update()
 #endif
 	size->update(client->config.size);
 	encoding->update(client->config.encoding);
+	timecode->update(client->config.timecode);
 	timecodeformat->update(client->config.timecodeformat);
 	motion->update(TitleMain::motion_to_text(client->config.motion_strategy));
 	loop->update(client->config.loop);
