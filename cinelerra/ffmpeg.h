@@ -1,7 +1,9 @@
 #ifndef FFMPEG_H
 #define FFMPEG_H
 
+extern "C" {
 #include <avcodec.h>
+};
 
 #include "asset.h"
 #include "guicast.h"

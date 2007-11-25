@@ -1,8 +1,10 @@
 #ifndef FILEAC3_H
 #define FILEAC3_H
 
-
+extern "C" {
 #include <avcodec.h>
+};
+
 #include "filebase.h"
 #include <stdio.h>
 
