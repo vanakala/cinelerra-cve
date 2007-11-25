@@ -1845,33 +1845,26 @@ void TitleMain::overlay_mask()
 	alpha = 0x100;
 	if(!EQUIV(config.fade_in, 0))
 	{
-		int fade_len = (int)(config.fade_in * PluginVClient::project_frame_rate);
-		int fade_position = get_source_position() - 
-			config.prev_keyframe_position;
+		int fade_len = lroundf(config.fade_in * PluginVClient::project_frame_rate);
+		int fade_position = get_source_position() - config.prev_keyframe_position;
 
 
 		if(fade_position >= 0 && fade_position < fade_len)
 		{
-			alpha = (int)((float)0x100 * 
-				fade_position /
-				fade_len + 0.5);
+			alpha = lroundf(256.0f * fade_position / fade_len);
 		}
 	}
 //printf("TitleMain::overlay_mask 1\n");
 
 	if(!EQUIV(config.fade_out, 0))
 	{
-		int fade_len = (int)(config.fade_out * 
-			PluginVClient::project_frame_rate);
-		int fade_position = config.next_keyframe_position - 
-			get_source_position();
+		int fade_len = lroundf(config.fade_out * PluginVClient::project_frame_rate);
+		int fade_position = config.next_keyframe_position - get_source_position();
 
 
-		if(fade_position > 0 && fade_position < fade_len)
+		if(fade_position >= 0 && fade_position < fade_len)
 		{
-			alpha = (int)((float)0x100 *
-				fade_position /
-				fade_len + 0.5);
+			alpha = lroundf(256.0f * fade_position / fade_len);
 		}
 	}
 //printf("TitleMain::overlay_mask 1\n");
