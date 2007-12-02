@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cinelerra 2.1\n"
 "Report-Msgid-Bugs-To: cinelerra@skolelinux.no\n"
-"POT-Creation-Date: 2007-04-06 09:19-0300\n"
-"PO-Revision-Date: 2007-02-17 01:56-0200\n"
+"POT-Creation-Date: 2007-12-02 02:52-0200\n"
+"PO-Revision-Date: 2007-12-02 02:52-0200\n"
 "Last-Translator: Rafael Diniz <rafael@riseup.net>\n"
 "Language-Team: EstudioLivre <estudiolivre@lists.riseup.net>\n"
 "MIME-Version: 1.0\n"
@@ -427,7 +427,7 @@ msgstr "Desconhecido"
 msgid "Enabled"
 msgstr "Ativado"
 
-#: cinelerra/batchrender.C:32 plugins/compressor/compressor.C:1045
+#: cinelerra/batchrender.C:32 plugins/compressor/compressor.C:1047
 msgid "Output"
 msgstr "Saída"
 
@@ -484,7 +484,7 @@ msgstr "Novo"
 
 #: cinelerra/batchrender.C:991 cinelerra/channeledit.C:578
 #: cinelerra/cwindowtool.C:1448 cinelerra/recordgui.C:1005
-#: plugins/synthesizer/synthesizer.C:886
+#: plugins/synthesizer/synthesizer.C:888
 msgid "Delete"
 msgstr "Apagar"
 
@@ -659,6 +659,7 @@ msgid "PAL_NEWZEALAND"
 msgstr "PAL_NOVAZELÂNDIA"
 
 #: cinelerra/channeledit.C:147 cinelerra/formatpresets.C:42
+#: plugins/videoscope/videoscope.C:722
 msgid "NTSC"
 msgstr "NTSC"
 
@@ -766,7 +767,7 @@ msgstr "Editar canais"
 msgid "A clip with that name already exists."
 msgstr "Um recorte com este nome já existe."
 
-#: cinelerra/clipedit.C:190
+#: cinelerra/clipedit.C:194
 msgid "Comments:"
 msgstr "Comentários:"
 
@@ -1202,7 +1203,7 @@ msgstr "JPEG"
 msgid "Quicktime for Linux"
 msgstr "Quicktime para Linux"
 
-#: cinelerra/file.inc:99
+#: cinelerra/file.inc:99 plugins/videoscope/videoscope.C:706
 msgid "MPEG"
 msgstr "MPEG"
 
@@ -2256,8 +2257,8 @@ msgstr "Cortar"
 msgid "Copy"
 msgstr "Copiar"
 
-#: cinelerra/mainmenu.C:717 plugins/compressor/compressor.C:1383
-#: plugins/synthesizer/synthesizer.C:957
+#: cinelerra/mainmenu.C:717 plugins/compressor/compressor.C:1385
+#: plugins/synthesizer/synthesizer.C:959
 msgid "Clear"
 msgstr "Limpar"
 
@@ -2483,16 +2484,16 @@ msgstr "carregar"
 msgid "Initializing GUI"
 msgstr "Iniciando GUI"
 
-#: cinelerra/mwindow.C:1920
+#: cinelerra/mwindow.C:1930
 #, c-format
 msgid "Couldn't open %s for writing."
 msgstr "Não se pode abrir %s para escrita."
 
-#: cinelerra/mwindow.C:2009
+#: cinelerra/mwindow.C:2019
 msgid "remove assets"
 msgstr "remover recursos"
 
-#: cinelerra/mwindow.C:2167
+#: cinelerra/mwindow.C:2177
 #, c-format
 msgid "Using %s."
 msgstr "Usando %s."
@@ -3560,12 +3561,12 @@ msgid "Size:"
 msgstr "Tamanho:"
 
 #: cinelerra/resizetrackthread.C:119 cinelerra/resizetrackthread.C:145
-#: plugins/compressor/compressor.C:916
+#: plugins/compressor/compressor.C:918
 msgid "x"
 msgstr "x"
 
-#: cinelerra/resizetrackthread.C:138 plugins/pitch/pitch.C:378
-#: plugins/timestretch/timestretch.C:494
+#: cinelerra/resizetrackthread.C:138 plugins/pitch/pitch.C:380
+#: plugins/timestretch/timestretch.C:496
 msgid "Scale:"
 msgstr "Escala:"
 
@@ -3596,7 +3597,7 @@ msgstr "escrito \"%s\" %dC"
 msgid "Save as..."
 msgstr "Salvar como..."
 
-#: cinelerra/savefile.C:184 plugins/reverb/reverb.C:396
+#: cinelerra/savefile.C:184 plugins/reverb/reverb.C:398
 #, c-format
 msgid "Couldn't open %s."
 msgstr "Impossível abrir %s."
@@ -4241,7 +4242,7 @@ msgid "Threshold:"
 msgstr "Entrada:"
 
 #: plugins/chromakey/chromakey.C:171 plugins/chromakeyhsv/chromakey.C:279
-#: plugins/titler/titlewindow.C:584
+#: plugins/titler/titlewindow.C:585
 msgid "Color..."
 msgstr "Cor..."
 
@@ -4335,8 +4336,8 @@ msgstr "Ciano"
 #: plugins/colors/colorpicker.C:170 plugins/denoisevideo/denoisevideo.C:179
 #: plugins/downsample/downsample.C:295 plugins/histogram/histogramwindow.C:61
 #: plugins/linearblur/linearblur.C:282 plugins/radialblur/radialblur.C:277
-#: plugins/swapchannels/swapchannels.C:427
-#: plugins/swapchannels/swapchannels.C:452 plugins/zoomblur/zoomblur.C:292
+#: plugins/swapchannels/swapchannels.C:429
+#: plugins/swapchannels/swapchannels.C:454 plugins/zoomblur/zoomblur.C:292
 msgid "Red"
 msgstr "Vermelho"
 
@@ -4348,8 +4349,8 @@ msgstr "Lilás"
 #: plugins/colors/colorpicker.C:176 plugins/denoisevideo/denoisevideo.C:181
 #: plugins/downsample/downsample.C:301 plugins/histogram/histogramwindow.C:67
 #: plugins/linearblur/linearblur.C:284 plugins/radialblur/radialblur.C:279
-#: plugins/swapchannels/swapchannels.C:430
-#: plugins/swapchannels/swapchannels.C:453 plugins/zoomblur/zoomblur.C:294
+#: plugins/swapchannels/swapchannels.C:432
+#: plugins/swapchannels/swapchannels.C:455 plugins/zoomblur/zoomblur.C:294
 msgid "Green"
 msgstr "Verde"
 
@@ -4361,8 +4362,8 @@ msgstr "Amarelo"
 #: plugins/colors/colorpicker.C:182 plugins/denoisevideo/denoisevideo.C:183
 #: plugins/downsample/downsample.C:307 plugins/histogram/histogramwindow.C:73
 #: plugins/linearblur/linearblur.C:286 plugins/radialblur/radialblur.C:281
-#: plugins/swapchannels/swapchannels.C:433
-#: plugins/swapchannels/swapchannels.C:454 plugins/zoomblur/zoomblur.C:296
+#: plugins/swapchannels/swapchannels.C:435
+#: plugins/swapchannels/swapchannels.C:456 plugins/zoomblur/zoomblur.C:296
 msgid "Blue"
 msgstr "Azul"
 
@@ -4402,8 +4403,8 @@ msgstr "Valor"
 
 #: plugins/colors/colorpicker.C:190 plugins/denoisevideo/denoisevideo.C:185
 #: plugins/downsample/downsample.C:313 plugins/linearblur/linearblur.C:288
-#: plugins/radialblur/radialblur.C:283 plugins/swapchannels/swapchannels.C:436
-#: plugins/swapchannels/swapchannels.C:455 plugins/zoomblur/zoomblur.C:298
+#: plugins/radialblur/radialblur.C:283 plugins/swapchannels/swapchannels.C:438
+#: plugins/swapchannels/swapchannels.C:457 plugins/zoomblur/zoomblur.C:298
 msgid "Alpha"
 msgstr "Alfa"
 
@@ -4411,35 +4412,35 @@ msgstr "Alfa"
 msgid "Compressor"
 msgstr "Compressor"
 
-#: plugins/compressor/compressor.C:889
+#: plugins/compressor/compressor.C:891
 msgid "Reaction secs:"
 msgstr "Segundos para reação:"
 
-#: plugins/compressor/compressor.C:893
+#: plugins/compressor/compressor.C:895
 msgid "Decay secs:"
 msgstr "Segundos para declínio:"
 
-#: plugins/compressor/compressor.C:897
+#: plugins/compressor/compressor.C:899
 msgid "Trigger Type:"
 msgstr "Tipo de Gatilho:"
 
-#: plugins/compressor/compressor.C:902
+#: plugins/compressor/compressor.C:904
 msgid "Trigger:"
 msgstr "Gatilho:"
 
-#: plugins/compressor/compressor.C:912
+#: plugins/compressor/compressor.C:914
 msgid "Point:"
 msgstr "Ponto:"
 
-#: plugins/compressor/compressor.C:1046
+#: plugins/compressor/compressor.C:1048
 msgid "Input level"
 msgstr "Nível de entrada"
 
-#: plugins/compressor/compressor.C:1048
+#: plugins/compressor/compressor.C:1050
 msgid "Input"
 msgstr "Entrada"
 
-#: plugins/compressor/compressor.C:1400
+#: plugins/compressor/compressor.C:1402
 msgid "Smooth only"
 msgstr "Suavizar apenas"
 
@@ -4492,7 +4493,7 @@ msgstr "Média de campos de cima"
 msgid "Top field first"
 msgstr "Campo do topo primeiro"
 
-#: plugins/deinterlace/deinterwindow.C:123 plugins/threshold/threshold.C:93
+#: plugins/deinterlace/deinterwindow.C:123 plugins/threshold/threshold.C:117
 msgid "Threshold"
 msgstr "Entrada:"
 
@@ -4537,7 +4538,7 @@ msgstr "Não fazer nada"
 msgid "Delay audio"
 msgstr "Atrasar áudio"
 
-#: plugins/delayaudio/delayaudio.C:292 plugins/delayvideo/delayvideo.C:76
+#: plugins/delayaudio/delayaudio.C:294 plugins/delayvideo/delayvideo.C:76
 msgid "Delay seconds:"
 msgstr "Segundos de atraso:"
 
@@ -4545,7 +4546,7 @@ msgstr "Segundos de atraso:"
 msgid "Delay Video"
 msgstr "Atrasar Vídeo"
 
-#: plugins/denoise/denoise.C:783 plugins/gain/gainwindow.C:39
+#: plugins/denoise/denoise.C:785 plugins/gain/gainwindow.C:39
 #: plugins/spectrogram/spectrogram.C:99
 msgid "Level:"
 msgstr "Nível:"
@@ -4841,8 +4842,8 @@ msgstr "Radial"
 msgid "Log"
 msgstr "Registro"
 
-#: plugins/gradient/gradient.C:392 plugins/synthesizer/synthesizer.C:739
-#: plugins/synthesizer/synthesizer.C:992 plugins/timefront/timefront.C:503
+#: plugins/gradient/gradient.C:392 plugins/synthesizer/synthesizer.C:741
+#: plugins/synthesizer/synthesizer.C:994 plugins/timefront/timefront.C:503
 #, c-format
 msgid "Square"
 msgstr "Quadrado"
@@ -4889,7 +4890,7 @@ msgid "Automatic"
 msgstr "Automático"
 
 #: plugins/histogram/histogramwindow.C:774
-#: plugins/threshold/thresholdwindow.C:79
+#: plugins/threshold/thresholdwindow.C:81
 msgid "Plot histogram"
 msgstr "Trama do Histograma"
 
@@ -4964,8 +4965,8 @@ msgid "Invert Video"
 msgstr "Inverter Vídeo"
 
 #: plugins/invertvideo/invertwindow.C:21
-#: plugins/synthesizer/synthesizer.C:1258
-#: plugins/synthesizer/synthesizer.C:1305
+#: plugins/synthesizer/synthesizer.C:1260
+#: plugins/synthesizer/synthesizer.C:1307
 msgid "Invert"
 msgstr "Inverter"
 
@@ -5147,12 +5148,12 @@ msgid "Previous frame same block"
 msgstr "Quadro anterior mesmo bloco"
 
 #: plugins/motion/motionwindow.C:781 plugins/motion/motionwindow.C:787
-#: plugins/overlay/overlay.C:208 plugins/titler/titlewindow.C:891
+#: plugins/overlay/overlay.C:208 plugins/titler/titlewindow.C:892
 msgid "Top"
 msgstr "Topo"
 
 #: plugins/motion/motionwindow.C:787 plugins/overlay/overlay.C:209
-#: plugins/titler/titlewindow.C:919
+#: plugins/titler/titlewindow.C:920
 msgid "Bottom"
 msgstr "Base"
 
@@ -5201,7 +5202,7 @@ msgstr "Vertical somente"
 msgid "Both"
 msgstr "Ambos"
 
-#: plugins/normalize/normalize.C:37 plugins/synthesizer/synthesizer.C:1178
+#: plugins/normalize/normalize.C:37 plugins/synthesizer/synthesizer.C:1180
 msgid "Normalize"
 msgstr "Normalizar"
 
@@ -5266,12 +5267,12 @@ msgstr "Freq"
 msgid "Qual"
 msgstr "Qual"
 
-#: plugins/parametric/parametric.C:361 plugins/synthesizer/synthesizer.C:556
-#: plugins/synthesizer/synthesizer.C:614
+#: plugins/parametric/parametric.C:361 plugins/synthesizer/synthesizer.C:558
+#: plugins/synthesizer/synthesizer.C:616
 msgid "Level"
 msgstr "Nível"
 
-#: plugins/parametric/parametric.C:371 plugins/synthesizer/synthesizer.C:605
+#: plugins/parametric/parametric.C:371 plugins/synthesizer/synthesizer.C:607
 msgid "Wetness:"
 msgstr "Umidade:"
 
@@ -5363,7 +5364,7 @@ msgstr "Refazer amostragem"
 msgid "Heroine College Concert Hall"
 msgstr "Saguão de Concertos do Colégio de Heroína"
 
-#: plugins/reverb/reverb.C:430
+#: plugins/reverb/reverb.C:432
 #, c-format
 msgid "Couldn't save %s."
 msgstr "Impossível salvar %s."
@@ -5540,12 +5541,12 @@ msgstr "Deslocamento par:"
 msgid "ShiftInterlace"
 msgstr "Mudar Entrelaçamento"
 
-#: plugins/slide/slide.C:32 plugins/titler/titlewindow.C:847
+#: plugins/slide/slide.C:32 plugins/titler/titlewindow.C:848
 #: plugins/wipe/wipe.C:29
 msgid "Left"
 msgstr "Esquerda"
 
-#: plugins/slide/slide.C:54 plugins/titler/titlewindow.C:875
+#: plugins/slide/slide.C:54 plugins/titler/titlewindow.C:876
 #: plugins/wipe/wipe.C:51
 msgid "Right"
 msgstr "Direita"
@@ -5562,17 +5563,17 @@ msgstr "Espectrograma"
 msgid "SVG via Inkscape"
 msgstr "SVG via Inkscape"
 
-#: plugins/svg/svg.C:258
+#: plugins/svg/svg.C:260
 #, c-format
 msgid "Running command %s\n"
 msgstr "Executando o comando %s\n"
 
-#: plugins/svg/svg.C:264
+#: plugins/svg/svg.C:266
 #, c-format
 msgid "Export of %s to %s failed\n"
 msgstr "Exportação de %s para %s falhou\n"
 
-#: plugins/svg/svg.C:278
+#: plugins/svg/svg.C:280
 #, c-format
 msgid ""
 "The file %s that was generated from %s is not in RAWC format. Try to delete "
@@ -5581,7 +5582,7 @@ msgstr ""
 "O arquivo %s que foi gerado de %s não está no formato RAWC. Tente apagar "
 "todos os arquivos *.raw.\n"
 
-#: plugins/svg/svg.C:285
+#: plugins/svg/svg.C:287
 #, c-format
 msgid ""
 "Unsupported version of RAWC file %s. This means your Inkscape uses newer "
@@ -5652,13 +5653,13 @@ msgstr "-> Azul"
 msgid "-> Alpha"
 msgstr "-> Alfa"
 
-#: plugins/swapchannels/swapchannels.C:439
-#: plugins/swapchannels/swapchannels.C:456
+#: plugins/swapchannels/swapchannels.C:441
+#: plugins/swapchannels/swapchannels.C:458
 msgid "0%"
 msgstr "0%"
 
-#: plugins/swapchannels/swapchannels.C:442
-#: plugins/swapchannels/swapchannels.C:457
+#: plugins/swapchannels/swapchannels.C:444
+#: plugins/swapchannels/swapchannels.C:459
 msgid "100%"
 msgstr "100%"
 
@@ -5666,106 +5667,130 @@ msgstr "100%"
 msgid "Synthesizer"
 msgstr "Sintetizador"
 
-#: plugins/synthesizer/synthesizer.C:557 plugins/synthesizer/synthesizer.C:616
+#: plugins/synthesizer/synthesizer.C:559 plugins/synthesizer/synthesizer.C:618
 msgid "Phase"
 msgstr "Fase"
 
-#: plugins/synthesizer/synthesizer.C:558 plugins/synthesizer/synthesizer.C:618
+#: plugins/synthesizer/synthesizer.C:560 plugins/synthesizer/synthesizer.C:620
 msgid "Harmonic"
 msgstr "Harmônico"
 
-#: plugins/synthesizer/synthesizer.C:579
+#: plugins/synthesizer/synthesizer.C:581
 msgid "Waveform"
 msgstr "Forma da Onda"
 
-#: plugins/synthesizer/synthesizer.C:581
+#: plugins/synthesizer/synthesizer.C:583
 msgid "Wave Function"
 msgstr "Função da Onda:"
 
-#: plugins/synthesizer/synthesizer.C:596
+#: plugins/synthesizer/synthesizer.C:598
 msgid "Base Frequency:"
 msgstr "Freqüência Fundamental"
 
-#: plugins/synthesizer/synthesizer.C:736
+#: plugins/synthesizer/synthesizer.C:738
 #, c-format
 msgid "DC"
 msgstr "DC"
 
-#: plugins/synthesizer/synthesizer.C:737 plugins/synthesizer/synthesizer.C:990
-#: plugins/synthesizer/synthesizer.C:1279
-#: plugins/synthesizer/synthesizer.C:1346
+#: plugins/synthesizer/synthesizer.C:739 plugins/synthesizer/synthesizer.C:992
+#: plugins/synthesizer/synthesizer.C:1281
+#: plugins/synthesizer/synthesizer.C:1348
 #, c-format
 msgid "Sine"
 msgstr "Seno"
 
-#: plugins/synthesizer/synthesizer.C:738 plugins/synthesizer/synthesizer.C:991
+#: plugins/synthesizer/synthesizer.C:740 plugins/synthesizer/synthesizer.C:993
 #, c-format
 msgid "Sawtooth"
 msgstr "Serrilhada"
 
-#: plugins/synthesizer/synthesizer.C:740 plugins/synthesizer/synthesizer.C:993
+#: plugins/synthesizer/synthesizer.C:742 plugins/synthesizer/synthesizer.C:995
 #, c-format
 msgid "Triangle"
 msgstr "Triangular"
 
-#: plugins/synthesizer/synthesizer.C:741 plugins/synthesizer/synthesizer.C:994
+#: plugins/synthesizer/synthesizer.C:743 plugins/synthesizer/synthesizer.C:996
 #, c-format
 msgid "Pulse"
 msgstr "Pulso"
 
-#: plugins/synthesizer/synthesizer.C:742 plugins/synthesizer/synthesizer.C:995
+#: plugins/synthesizer/synthesizer.C:744 plugins/synthesizer/synthesizer.C:997
 #, c-format
 msgid "Noise"
 msgstr "Ruído"
 
-#: plugins/synthesizer/synthesizer.C:865
+#: plugins/synthesizer/synthesizer.C:867
 msgid "Add"
 msgstr "Adicionar"
 
-#: plugins/synthesizer/synthesizer.C:1137
-#: plugins/synthesizer/synthesizer.C:1326
+#: plugins/synthesizer/synthesizer.C:1139
+#: plugins/synthesizer/synthesizer.C:1328
 msgid "Zero"
 msgstr "Zero"
 
-#: plugins/synthesizer/synthesizer.C:1158
+#: plugins/synthesizer/synthesizer.C:1160
 msgid "Maximum"
 msgstr "Máximo"
 
-#: plugins/synthesizer/synthesizer.C:1214
+#: plugins/synthesizer/synthesizer.C:1216
 msgid "Slope"
 msgstr "Gradiência"
 
-#: plugins/synthesizer/synthesizer.C:1237
-#: plugins/synthesizer/synthesizer.C:1369
-#: plugins/synthesizer/synthesizer.C:1394
+#: plugins/synthesizer/synthesizer.C:1239
+#: plugins/synthesizer/synthesizer.C:1371
+#: plugins/synthesizer/synthesizer.C:1396
 msgid "Random"
 msgstr "Aleatória"
 
-#: plugins/synthesizer/synthesizer.C:1415
+#: plugins/synthesizer/synthesizer.C:1417
 msgid "Enumerate"
 msgstr "Enumerar"
 
-#: plugins/synthesizer/synthesizer.C:1435
+#: plugins/synthesizer/synthesizer.C:1437
 msgid "Even"
 msgstr "Par"
 
-#: plugins/synthesizer/synthesizer.C:1458
+#: plugins/synthesizer/synthesizer.C:1460
 msgid "Odd"
 msgstr "Ímpar"
 
-#: plugins/synthesizer/synthesizer.C:1476
+#: plugins/synthesizer/synthesizer.C:1478
 msgid "Fibonnacci"
 msgstr "Fibonnacci"
 
-#: plugins/synthesizer/synthesizer.C:1500
+#: plugins/synthesizer/synthesizer.C:1502
 msgid "Prime"
 msgstr "Prima"
 
-#: plugins/threshold/thresholdwindow.C:316
+#: plugins/threshold/thresholdwindow.C:289
+msgid "Low Color"
+msgstr "Cor Baixa"
+
+#: plugins/threshold/thresholdwindow.C:309
+msgid "Mid Color"
+msgstr "Cor Média"
+
+#: plugins/threshold/thresholdwindow.C:329
+msgid "High Color"
+msgstr "Cor Alta:"
+
+#: plugins/threshold/thresholdwindow.C:349
+msgid "Low color"
+msgstr "Cor baixa"
+
+#: plugins/threshold/thresholdwindow.C:368
+msgid "Mid color"
+msgstr "Cor média"
+
+#: plugins/threshold/thresholdwindow.C:387
+msgid "High color"
+msgstr "Cor alta"
+
+#: plugins/threshold/thresholdwindow.C:461
 msgid "Min:"
 msgstr "Mín:"
 
-#: plugins/threshold/thresholdwindow.C:327
+#: plugins/threshold/thresholdwindow.C:474
 msgid "Max:"
 msgstr "Máx:"
 
@@ -5838,23 +5863,23 @@ msgstr "TitleMain::load_freetype_face %s falhou.\n"
 msgid "Iconv conversion from %s to Unicode UCS-4 not available\n"
 msgstr "Conversão Iconv de %s para Unicode UCS-4 não disponível\n"
 
-#: plugins/titler/title.C:1933
+#: plugins/titler/title.C:1926
 msgid "No motion"
 msgstr "Sem movimento"
 
-#: plugins/titler/title.C:1934
+#: plugins/titler/title.C:1927
 msgid "Bottom to top"
 msgstr "Base para topo"
 
-#: plugins/titler/title.C:1935
+#: plugins/titler/title.C:1928
 msgid "Top to bottom"
 msgstr "Topo para base"
 
-#: plugins/titler/title.C:1936
+#: plugins/titler/title.C:1929
 msgid "Right to left"
 msgstr "Direita para esquerda"
 
-#: plugins/titler/title.C:1937
+#: plugins/titler/title.C:1930
 msgid "Left to right"
 msgstr "Esquerda para direita"
 
@@ -5902,35 +5927,35 @@ msgstr "Largura da linha de saída"
 msgid "Text:"
 msgstr "Texto:"
 
-#: plugins/titler/titlewindow.C:488
+#: plugins/titler/titlewindow.C:489
 msgid "Bold"
 msgstr "Negrito"
 
-#: plugins/titler/titlewindow.C:502
+#: plugins/titler/titlewindow.C:503
 msgid "Italic"
 msgstr "Itálico"
 
-#: plugins/titler/titlewindow.C:515
+#: plugins/titler/titlewindow.C:516
 msgid "Outline"
 msgstr "Contorno"
 
-#: plugins/titler/titlewindow.C:596
+#: plugins/titler/titlewindow.C:597
 msgid "Outline color..."
 msgstr "Cor de contorno"
 
-#: plugins/titler/titlewindow.C:629
+#: plugins/titler/titlewindow.C:630
 msgid "Loop"
 msgstr "Loop"
 
-#: plugins/titler/titlewindow.C:641
+#: plugins/titler/titlewindow.C:642
 msgid "Stamp timecode"
 msgstr "Estampar código de tempo"
 
-#: plugins/titler/titlewindow.C:861
+#: plugins/titler/titlewindow.C:862
 msgid "Center"
 msgstr "Centralizado"
 
-#: plugins/titler/titlewindow.C:905
+#: plugins/titler/titlewindow.C:906
 msgid "Mid"
 msgstr "Meio"
 
@@ -5970,7 +5995,15 @@ msgstr "Desaguçar"
 msgid "Amount:"
 msgstr "Quantidade:"
 
-#: plugins/videoscope/videoscope.C:378
+#: plugins/videoscope/videoscope.C:690
+msgid "HDTV"
+msgstr "HDTV"
+
+#: plugins/videoscope/videoscope.C:738
+msgid "Inverse"
+msgstr "Inverso"
+
+#: plugins/videoscope/videoscope.C:790
 msgid "VideoScope"
 msgstr "Escopo do Vídeo"
 
