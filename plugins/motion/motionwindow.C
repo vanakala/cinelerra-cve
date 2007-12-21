@@ -17,9 +17,9 @@ MotionWindow::MotionWindow(MotionMain *plugin, int x, int y)
  : BC_Window(plugin->gui_string, 
  	x,
 	y,
-	600, 
+	610, 
 	650, 
-	600,
+	610,
 	650,
 	0, 
 	1)
@@ -172,6 +172,12 @@ int MotionWindow::create_objects()
 		this,
 		x + track_single->get_w() + title->get_w() + 20, 
 		y));
+	xpmd = x + track_single->get_w() + title->get_w() + 20 + track_frame_number->get_w();
+	add_subwindow(addtrackedframeoffset = new AddTrackedFrameOffset(plugin,
+		this,
+		xpmd,
+		y));
+
 
 	y += 20;
 	add_subwindow(track_previous = new TrackPreviousFrame(plugin, 
@@ -235,6 +241,7 @@ void MotionWindow::update_mode()
 	vectors->update(plugin->config.draw_vectors);
 	global->update(plugin->config.global);
 	rotate->update(plugin->config.rotate);
+	addtrackedframeoffset->update(plugin->config.addtrackedframeoffset);
 }
 
 
@@ -457,6 +464,25 @@ int MotionReturnSpeed::handle_event()
 
 
 
+AddTrackedFrameOffset::AddTrackedFrameOffset(MotionMain *plugin, 
+	MotionWindow *gui,
+	int x, 
+	int y)
+ : BC_CheckBox(x, 
+ 	y, 
+	plugin->config.addtrackedframeoffset,
+	_("Add (loaded) offset from tracked frame"))
+{
+	this->plugin = plugin;
+	this->gui = gui;
+}
+
+int AddTrackedFrameOffset::handle_event()
+{
+	plugin->config.addtrackedframeoffset = get_value();
+	plugin->send_configure_change();
+	return 1;
+}
 
 
 MotionGlobal::MotionGlobal(MotionMain *plugin, 

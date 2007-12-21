@@ -84,6 +84,7 @@ public:
 	int vertical_only;
 	int global;
 	int rotate;
+	int addtrackedframeoffset;
 // Track or stabilize, single pixel, scan only, or nothing
 	int mode1;
 // Recalculate, no calculate, save, or load coordinates from disk

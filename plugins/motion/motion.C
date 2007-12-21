@@ -65,6 +65,7 @@ MotionConfig::MotionConfig()
 	mode1 = STABILIZE;
 	global = 1;
 	rotate = 1;
+	addtrackedframeoffset = 0;
 	mode2 = NO_CALCULATE;
 	draw_vectors = 1;
 	mode3 = MotionConfig::TRACK_SINGLE;
@@ -94,6 +95,7 @@ int MotionConfig::equivalent(MotionConfig &that)
 		mode1 == that.mode1 &&
 		global == that.global &&
 		rotate == that.rotate &&
+		addtrackedframeoffset == that.addtrackedframeoffset &&
 		draw_vectors == that.draw_vectors &&
 		block_count == that.block_count &&
 		global_block_w == that.global_block_w &&
@@ -121,6 +123,7 @@ void MotionConfig::copy_from(MotionConfig &that)
 	mode1 = that.mode1;
 	global = that.global;
 	rotate = that.rotate;
+	addtrackedframeoffset = that.addtrackedframeoffset;
 	mode2 = that.mode2;
 	draw_vectors = that.draw_vectors;
 	block_count = that.block_count;
@@ -157,6 +160,7 @@ void MotionConfig::interpolate(MotionConfig &prev,
 	mode1 = prev.mode1;
 	global = prev.global;
 	rotate = prev.rotate;
+	addtrackedframeoffset = prev.addtrackedframeoffset;
 	mode2 = prev.mode2;
 	draw_vectors = prev.draw_vectors;
 	block_count = prev.block_count;
@@ -406,6 +410,7 @@ void MotionMain::save_data(KeyFrame *keyframe)
 	output.tag.set_property("MODE1", config.mode1);
 	output.tag.set_property("GLOBAL", config.global);
 	output.tag.set_property("ROTATE", config.rotate);
+	output.tag.set_property("ADDTRACKEDFRAMEOFFSET", config.addtrackedframeoffset);
 	output.tag.set_property("MODE2", config.mode2);
 	output.tag.set_property("DRAW_VECTORS", config.draw_vectors);
 	output.tag.set_property("MODE3", config.mode3);
@@ -452,6 +457,7 @@ void MotionMain::read_data(KeyFrame *keyframe)
 				config.mode1 = input.tag.get_property("MODE1", config.mode1);
 				config.global = input.tag.get_property("GLOBAL", config.global);
 				config.rotate = input.tag.get_property("ROTATE", config.rotate);
+				config.addtrackedframeoffset = input.tag.get_property("ADDTRACKEDFRAMEOFFSET", config.addtrackedframeoffset);
 				config.mode2 = input.tag.get_property("MODE2", config.mode2);
 				config.draw_vectors = input.tag.get_property("DRAW_VECTORS", config.draw_vectors);
 				config.mode3 = input.tag.get_property("MODE3", config.mode3);
@@ -2271,6 +2277,25 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 
 		dx_result *= -1;
 		dy_result *= -1;
+
+		// Add offsets from the "tracked single frame"
+		if (plugin->config.addtrackedframeoffset) {
+		  int tf_dx_result, tf_dy_result;
+		  char string[BCTEXTLEN];
+		  sprintf(string, "%s%06d", MOTION_FILE, plugin->config.track_frame);
+		  FILE *input = fopen(string, "r");
+		  if(input)
+		    {
+		      fscanf(input, 
+			     "%d %d", 
+			     &tf_dx_result,
+			     &tf_dy_result);
+		      dx_result += tf_dx_result;
+		      dy_result += tf_dy_result;
+		      fclose(input);
+		    }
+		}
+
 	}
 
 
