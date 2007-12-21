@@ -172,10 +172,9 @@ int MotionWindow::create_objects()
 		this,
 		x + track_single->get_w() + title->get_w() + 20, 
 		y));
-	xpmd = x + track_single->get_w() + title->get_w() + 20 + track_frame_number->get_w();
 	add_subwindow(addtrackedframeoffset = new AddTrackedFrameOffset(plugin,
 		this,
-		xpmd,
+		x + track_single->get_w() + title->get_w() + 20 + track_frame_number->get_w(),
 		y));
 
 
