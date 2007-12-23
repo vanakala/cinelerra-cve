@@ -63,7 +63,8 @@ int mpeg3io_open_file(mpeg3_fs_t *fs)
 //printf("mpeg3io_open_file 1 %s\n", fs->path);
 	if(!(fs->fd = fopen64(fs->path, "rb")))
 	{
-		perror("mpeg3io_open_file");
+		if (fs->path) fprintf(stderr,"[mpeg3io_open_file] Error opening file '%s': ",fs->path);
+		perror("");
 		return 1;
 	}
 
