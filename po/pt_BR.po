@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: cinelerra 2.1\n"
 "Report-Msgid-Bugs-To: cinelerra@skolelinux.no\n"
-"POT-Creation-Date: 2007-12-02 02:52-0200\n"
+"POT-Creation-Date: 2007-12-26 20:14-0200\n"
 "PO-Revision-Date: 2007-12-02 02:52-0200\n"
 "Last-Translator: Rafael Diniz <rafael@riseup.net>\n"
 "Language-Team: EstudioLivre <estudiolivre@lists.riseup.net>\n"
@@ -4529,8 +4529,8 @@ msgstr "Troca espacial do campo"
 msgid "Temporal field swap"
 msgstr "Troca temporal do campo"
 
-#: plugins/deinterlace/deinterwindow.C:269 plugins/motion/motionwindow.C:837
-#: plugins/motion/motionwindow.C:857
+#: plugins/deinterlace/deinterwindow.C:269 plugins/motion/motionwindow.C:862
+#: plugins/motion/motionwindow.C:882
 msgid "Do Nothing"
 msgstr "Não fazer nada"
 
@@ -5043,7 +5043,7 @@ msgstr "Quadros para repetir:"
 msgid "Loop video"
 msgstr "Vídeo em loop"
 
-#: plugins/motion/motion.C:245
+#: plugins/motion/motion.C:249
 msgid "Motion"
 msgstr "Moção"
 
@@ -5111,94 +5111,98 @@ msgstr "Velocidade gradual:"
 msgid "Frame number:"
 msgstr "Número do Quadro"
 
-#: plugins/motion/motionwindow.C:190
+#: plugins/motion/motionwindow.C:195
 msgid "Master layer:"
 msgstr "Camada Mestre:"
 
-#: plugins/motion/motionwindow.C:199
+#: plugins/motion/motionwindow.C:204
 msgid "Action:"
 msgstr "Ação:"
 
-#: plugins/motion/motionwindow.C:210
+#: plugins/motion/motionwindow.C:215
 msgid "Calculation:"
 msgstr "Cálculo:"
 
-#: plugins/motion/motionwindow.C:469
+#: plugins/motion/motionwindow.C:473
+msgid "Add (loaded) offset from tracked frame"
+msgstr "Adicionar deslocamento (carregado) de quadro rastreado"
+
+#: plugins/motion/motionwindow.C:494
 msgid "Track translation"
 msgstr "Translação da Trilha"
 
-#: plugins/motion/motionwindow.C:489
+#: plugins/motion/motionwindow.C:514
 msgid "Track rotation"
 msgstr "Rotação da Trilha"
 
-#: plugins/motion/motionwindow.C:624
+#: plugins/motion/motionwindow.C:649
 msgid "Draw vectors"
 msgstr "Desenhar vetores"
 
-#: plugins/motion/motionwindow.C:651
+#: plugins/motion/motionwindow.C:676
 msgid "Track single frame"
 msgstr "Rastrear quadro único"
 
-#: plugins/motion/motionwindow.C:705
+#: plugins/motion/motionwindow.C:730
 msgid "Track previous frame"
 msgstr "Rastrear quadro anterior"
 
-#: plugins/motion/motionwindow.C:734
+#: plugins/motion/motionwindow.C:759
 msgid "Previous frame same block"
 msgstr "Quadro anterior mesmo bloco"
 
-#: plugins/motion/motionwindow.C:781 plugins/motion/motionwindow.C:787
+#: plugins/motion/motionwindow.C:806 plugins/motion/motionwindow.C:812
 #: plugins/overlay/overlay.C:208 plugins/titler/titlewindow.C:892
 msgid "Top"
 msgstr "Topo"
 
-#: plugins/motion/motionwindow.C:787 plugins/overlay/overlay.C:209
+#: plugins/motion/motionwindow.C:812 plugins/overlay/overlay.C:209
 #: plugins/titler/titlewindow.C:920
 msgid "Bottom"
 msgstr "Base"
 
-#: plugins/motion/motionwindow.C:833 plugins/motion/motionwindow.C:845
+#: plugins/motion/motionwindow.C:858 plugins/motion/motionwindow.C:870
 msgid "Track Subpixel"
 msgstr "Rastrear Subpixel"
 
-#: plugins/motion/motionwindow.C:834 plugins/motion/motionwindow.C:848
+#: plugins/motion/motionwindow.C:859 plugins/motion/motionwindow.C:873
 msgid "Track Pixel"
 msgstr "Rastrear Pixel"
 
-#: plugins/motion/motionwindow.C:835 plugins/motion/motionwindow.C:851
+#: plugins/motion/motionwindow.C:860 plugins/motion/motionwindow.C:876
 msgid "Stabilize Subpixel"
 msgstr "Estabilizar Subpixel"
 
-#: plugins/motion/motionwindow.C:836 plugins/motion/motionwindow.C:854
+#: plugins/motion/motionwindow.C:861 plugins/motion/motionwindow.C:879
 msgid "Stabilize Pixel"
 msgstr "Estabilizar Pixel"
 
-#: plugins/motion/motionwindow.C:904 plugins/motion/motionwindow.C:915
+#: plugins/motion/motionwindow.C:929 plugins/motion/motionwindow.C:940
 msgid "Don't Calculate"
 msgstr "Não Calcular"
 
-#: plugins/motion/motionwindow.C:905 plugins/motion/motionwindow.C:918
+#: plugins/motion/motionwindow.C:930 plugins/motion/motionwindow.C:943
 msgid "Recalculate"
 msgstr "Recalcular"
 
-#: plugins/motion/motionwindow.C:906 plugins/motion/motionwindow.C:921
+#: plugins/motion/motionwindow.C:931 plugins/motion/motionwindow.C:946
 msgid "Save coords to /tmp"
 msgstr "Savar coordenadas no /tmp"
 
-#: plugins/motion/motionwindow.C:907 plugins/motion/motionwindow.C:924
+#: plugins/motion/motionwindow.C:932 plugins/motion/motionwindow.C:949
 msgid "Load coords from /tmp"
 msgstr "Carregar coordenadas do /tmp"
 
-#: plugins/motion/motionwindow.C:982 plugins/quark/quarkwindow.C:135
+#: plugins/motion/motionwindow.C:1007 plugins/quark/quarkwindow.C:135
 #: plugins/sharpen/sharpenwindow.C:109
 msgid "Horizontal only"
 msgstr "Horizontal somente"
 
-#: plugins/motion/motionwindow.C:983
+#: plugins/motion/motionwindow.C:1008
 msgid "Vertical only"
 msgstr "Vertical somente"
 
-#: plugins/motion/motionwindow.C:984
+#: plugins/motion/motionwindow.C:1009
 msgid "Both"
 msgstr "Ambos"
 
@@ -5531,7 +5535,7 @@ msgstr "Aguçar"
 
 #: plugins/shiftinterlace/shiftinterlace.C:185
 msgid "Odd offset:"
-msgstr "Deslocamente ímpar:"
+msgstr "Deslocamento ímpar:"
 
 #: plugins/shiftinterlace/shiftinterlace.C:188
 msgid "Even offset:"
