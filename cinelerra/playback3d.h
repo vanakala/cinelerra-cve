@@ -225,7 +225,7 @@ public:
 // output - passed when rendering refresh frame.  If 0, the canvas is cleared.
 	void clear_output(Canvas *canvas, VFrame *output);
 
-	void do_fade(Canvas *canvas, VFrame *fade, float fade);
+	void do_fade(Canvas *canvas, VFrame *frame, float fade);
 
 	void do_mask(Canvas *canvas,
 		VFrame *output, 
