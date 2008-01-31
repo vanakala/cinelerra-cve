@@ -324,11 +324,7 @@ void SetFormatWindow::create_objects()
 		_("Audio"), 
 		LARGEFONT));
 	y = mwindow->theme->setformat_y3;
-	add_subwindow(new BC_Title(mwindow->theme->setformat_x1, 
-		y,
-		_("Samplerate:")));
-
-	y += mwindow->theme->setformat_margin;
+	
 	add_subwindow(new BC_Title(mwindow->theme->setformat_x1, 
 		y,
 		_("Samplerate:")));
