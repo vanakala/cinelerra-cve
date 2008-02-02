@@ -1,4 +1,4 @@
-﻿#include "bcsignals.h"
+#include "bcsignals.h"
 #include "file.inc"
 #include "formatpopup.h"
 #include "language.h"
@@ -11,7 +11,7 @@ FormatPopup::FormatPopup(ArrayList<PluginServer*> *plugindb,
 	int y,
 	int use_brender)
  : BC_ListBox(x, 
-	y, 
+ 	y, 
 	200, 
 	200,
 	LISTBOX_TEXT,
@@ -33,8 +33,7 @@ int FormatPopup::create_objects()
 	{
 		format_items.append(new BC_ListBoxItem(_(AC3_NAME)));
 		format_items.append(new BC_ListBoxItem(_(AIFF_NAME)));
-		format_items.append(new BC_ListBoxItem(_(EXR_NAME)));
-		format_items.append(new BC_ListBoxItem(_(EXR_LIST_NAME)));
+		format_items.append(new BC_ListBoxItem(_(AU_NAME)));
 		format_items.append(new BC_ListBoxItem(_(JPEG_NAME)));
 	}
 
@@ -43,11 +42,17 @@ int FormatPopup::create_objects()
 	if(!use_brender)
 	{
 		format_items.append(new BC_ListBoxItem(_(AVI_NAME)));
+		format_items.append(new BC_ListBoxItem(_(EXR_NAME)));
+		format_items.append(new BC_ListBoxItem(_(EXR_LIST_NAME)));
+		format_items.append(new BC_ListBoxItem(_(YUV_NAME)));
 		format_items.append(new BC_ListBoxItem(_(WAV_NAME)));
+		format_items.append(new BC_ListBoxItem(_(MOV_NAME)));
+		format_items.append(new BC_ListBoxItem(_(RAWDV_NAME)));
 		format_items.append(new BC_ListBoxItem(_(AMPEG_NAME)));
 		format_items.append(new BC_ListBoxItem(_(VMPEG_NAME)));
-		format_items.append(new BC_ListBoxItem(_(OGG_NAME)));
 		format_items.append(new BC_ListBoxItem(_(VORBIS_NAME)));
+		format_items.append(new BC_ListBoxItem(_(OGG_NAME)));
+		format_items.append(new BC_ListBoxItem(_(PCM_NAME)));
 		format_items.append(new BC_ListBoxItem(_(PNG_NAME)));
 	}
 
@@ -55,10 +60,6 @@ int FormatPopup::create_objects()
 
 	if(!use_brender)
 	{
-		format_items.append(new BC_ListBoxItem(_(MOV_NAME)));
-		format_items.append(new BC_ListBoxItem(_(RAWDV_NAME)));
-		format_items.append(new BC_ListBoxItem(_(PCM_NAME)));
-		format_items.append(new BC_ListBoxItem(_(AU_NAME))); 
 		format_items.append(new BC_ListBoxItem(_(TGA_NAME)));
 	}
 
@@ -70,11 +71,6 @@ int FormatPopup::create_objects()
 	}
 
 	format_items.append(new BC_ListBoxItem(_(TIFF_LIST_NAME)));
-
-	if(!use_brender)
-	{
-		format_items.append(new BC_ListBoxItem(_(YUV_NAME)));
-	}
 	update(&format_items,
 		0,
 		0,
