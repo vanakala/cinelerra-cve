@@ -488,19 +488,8 @@ int AWindowGUI::resize_event(int w, int h)
 	mwindow->theme->get_awindow_sizes(this);
 	mwindow->theme->draw_awindow_bg(this);
 
-	asset_list->reposition_window(mwindow->theme->alist_x, 
-    	mwindow->theme->alist_y, 
-    	mwindow->theme->alist_w, 
-    	mwindow->theme->alist_h);
-	divider->reposition_window(mwindow->theme->adivider_x,
-		mwindow->theme->adivider_y,
-		mwindow->theme->adivider_w,
-		mwindow->theme->adivider_h);
-	folder_list->reposition_window(mwindow->theme->afolders_x, 
-    	mwindow->theme->afolders_y, 
-    	mwindow->theme->afolders_w, 
-    	mwindow->theme->afolders_h);
-	
+	reposition_objects();
+
 	int x = mwindow->theme->abuttons_x;
 	int y = mwindow->theme->abuttons_y;
 
@@ -537,19 +526,34 @@ int AWindowGUI::translation_event()
 
 void AWindowGUI::reposition_objects()
 {
-	mwindow->theme->get_awindow_sizes(this);
-	asset_list->reposition_window(mwindow->theme->alist_x, 
-    	mwindow->theme->alist_y, 
-    	mwindow->theme->alist_w, 
-    	mwindow->theme->alist_h);
-	divider->reposition_window(mwindow->theme->adivider_x,
+	int wmax = mwindow->session->awindow_w-mwindow->theme->adivider_w;
+	int x = mwindow->theme->afolders_x;
+	int w = mwindow->theme->afolders_w;
+	if (w > wmax)
+		w = wmax;
+	if (w <= 0)
+		w = 1;
+	folder_list->reposition_window(x, mwindow->theme->afolders_y,
+		w, mwindow->theme->afolders_h);
+	x = mwindow->theme->adivider_x;
+	if (x > wmax)
+		x = wmax;
+	if (x < 0)
+		x = 0;
+	divider->reposition_window(x,
 		mwindow->theme->adivider_y,
 		mwindow->theme->adivider_w,
 		mwindow->theme->adivider_h);
-	folder_list->reposition_window(mwindow->theme->afolders_x, 
-    	mwindow->theme->afolders_y, 
-    	mwindow->theme->afolders_w, 
-    	mwindow->theme->afolders_h);
+	int x2 = mwindow->theme->alist_x;
+	if (x2 < x+mwindow->theme->adivider_w)
+		x2 = x+mwindow->theme->adivider_w;
+	w = mwindow->theme->alist_w;
+	if (w > wmax)
+		w = wmax;
+	if (w <= 0)
+		w = 1;
+	asset_list->reposition_window(x2, mwindow->theme->alist_y,
+		w, mwindow->theme->alist_h);
 	flush();
 }
 
@@ -1116,6 +1120,7 @@ int AWindowDivider::cursor_motion_event()
 	if(mwindow->session->current_operation == DRAG_PARTITION)
 	{
 		mwindow->session->afolders_w = gui->get_relative_cursor_x();
+		mwindow->theme->get_awindow_sizes(gui);
 		gui->reposition_objects();
 	}
 	return 0;
