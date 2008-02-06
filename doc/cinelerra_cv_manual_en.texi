@@ -9850,21 +9850,6 @@ with mplex.
 @subsection Other issues
 @cindex HDV 1080i editing, other issues
 
-There are some problems with GOP cache in Cinelerra 2.1 which were not in the
-2.0 version. Many MPEG2 or MPEG4 files can not be played properly.  The HDV
-MPEG-2 playback is also affected.  Here is a quick solution to disable GOP
-caching.
-
-In @file{libmpeg3/video/seek.c}, at line #357, replace:
-
-@verbatim
-mpeg3video_drop_frames(video, frame_number - video->framenum, 1);
-@end verbatim
-by
-@verbatim
-mpeg3video_drop_frames(video, frame_number - video->framenum, 0);
-@end verbatim
-
 When playing MJPEG files, the dissolve transistion does not work properly in
 RGBA or YUVA modes but it works fine in RGB or YUV.
 

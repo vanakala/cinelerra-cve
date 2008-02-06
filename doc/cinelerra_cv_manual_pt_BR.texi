@@ -6326,18 +6326,6 @@ Renderize o com como um arquivo AC3, e multiplexe o vídeo e o áudio com o mplex.
 @subsection Outras questões
 @cindex Edição HDV 1080i, outras questões
 
-Há alguns problemas com o cache do GOP no Cinelerra 2.1 que não havia na versão 2.0. Vários arquivos MPEG2 ou MPEG4não conseguem ser reproduzidos devidamente. A reprodução do HDV MPEG-2 também fica afetada. Aqui está uma solução para desabilitar o caching de GOP.
-
-Em @file{libmpeg3/video/seek.c}, na linha #357, substitua:
-
-@verbatim
-mpeg3video_drop_frames(video, frame_number - video->framenum, 1);
-@end verbatim
-por
-@verbatim
-mpeg3video_drop_frames(video, frame_number - video->framenum, 0);
-@end verbatim
-
 Quando reproduzindo arquivos MJPEG, a transição Dissolver não funciona adequadamente nos modos RGBA ou YUVA, mas ela funciona bem em RGB ou YUV.
 
 @c cincvdoc_node_number_350

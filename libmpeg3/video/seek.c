@@ -354,7 +354,7 @@ int mpeg3video_seek(mpeg3video_t *video)
 						video->repeat_count = 0;
 
 // Read up to current frame
-						mpeg3video_drop_frames(video, frame_number - video->framenum, 1);
+						mpeg3video_drop_frames(video, frame_number - video->framenum, 0);
 						break;
 					}
 				}

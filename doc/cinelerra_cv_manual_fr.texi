@@ -10027,21 +10027,6 @@ mplex.
 @subsection Autres problèmes
 @cindex Edition HDV 1080i, autres problèmes
 
-Il y a quelques problèmes de cache de GOP avec Cinelerra 2.1, qui n'étaient pas
-là dans la version 2.0.  Certains fichiers MPEG2 ou MPEG4 ne peuvent pas être
-joués correctement.  La lecture HDV peut aussi s'en trouver affectée.  Voici
-une solution rapide pour désactiver le cache du GOP.
-
-Dans @file{libmpeg3/video/seek.c}, à la ligne 357, @w{remplacez :}
-
-@verbatim
-mpeg3video_drop_frames(video, frame_number - video->framenum, 1);
-@end verbatim
-par
-@verbatim
-mpeg3video_drop_frames(video, frame_number - video->framenum, 0);
-@end verbatim
-
 Lors de la lecture de fichiers MJPEG, l'effet de fondu enchaîné peut ne pas
 fonctionner correctement dans les modes RGBA ou YUVA, mais fonctionne bien dans
 les modes RGB ou YUV.
