@@ -271,7 +271,7 @@ int AudioALSA::open_input()
 	translate_name(pcm_name, device->in_config->alsa_in_device);
 //printf("AudioALSA::open_input %s\n", pcm_name);
 
-	err = snd_pcm_open(&dsp_in, pcm_name, stream, open_mode);
+	err = snd_pcm_open(&dsp_in, device->in_config->alsa_in_device, stream, open_mode);
 
 	if(err < 0)
 	{
@@ -300,7 +300,7 @@ int AudioALSA::open_output()
 
 	translate_name(pcm_name, device->out_config->alsa_out_device);
 
-	err = snd_pcm_open(&dsp_out, pcm_name, stream, open_mode);
+	err = snd_pcm_open(&dsp_out, device->out_config->alsa_out_device, stream, open_mode);
 
 	if(err < 0)
 	{
