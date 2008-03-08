@@ -15,7 +15,7 @@
 @documentencoding ISO-8859-1
 @settitle Cinelerra CV Manual
 @afourpaper
-@set EDITION 1.49.EN
+@set EDITION 1.55.EN
 @set VERSION 2.1
 
 @finalout
@@ -129,6 +129,12 @@ retouch many generations of footage, which makes Cinelerra very complex.
 Consumers should consider other tools such as Avidemux (@uref{http://www.avidemux.org/}), 
 Kino (@uref{http://kinodv.org/}) or Kdenlive (@uref{http://kdenlive.org/}).
 
+Quote from Miro's Wiki (@uref{http://www.mitvwiki.org/Cinelerra}):@*
+"The key difference between Cinelerra and many of the commercial editors is that 
+Cinelerra hides much less from the user, exposing much of the inner workings to 
+direct interaction. This can be harder to use, but does make it tremendously powerful,
+and for some operations blistering fast."
+
 @c cincvdoc_node_number_4
 @node The two versions of Cinelerra
 @section The two versions of Cinelerra
@@ -201,29 +207,41 @@ combined the original "Secrets of Cinelerra" with the contents from Alex @sc{Fer
 Wiki into a unified document.
 
 Cinelerra-CV documentation maintainers:@*
-English: Nicolas @sc{Maufrais} (coordinator)@*
-French: Jean-Luc @sc{Coulon}
+English: Nicolas @sc{Maufrais} (coordinator), Raffaella @sc{Traniello}
+(apprentice sorcerer)@*
+
+Manual translators:
+French: Jean-Luc @sc{Coulon}@*
+Brazilian Portuguese: Flavio @sc{Soares} (maintainer), Willie @sc{Marcel}@*
+Spanish: Alberto @sc{Ramallo}, Gustavo I@~niguez @sc{Goya} (chapter 17 -
+Keyframes)@*
+Basque: I@~naki Larra@~naga @sc{Murgoitio} "Dooteo".
+
 
 Other contributors: Alexandre @sc{Bourget}, Kevin @sc{Brosius}, Carlos @sc{Davila}, 
 Cillian @sc{de Roiste}, Rafael @sc{Diniz}, Pierre @sc{Dumuid}, Mike @sc{Edwards}, 
-Martin @sc{Ellison}, Graham @sc{Evans}, Scott @sc{Frase}, Joe @sc{Friedrichsen}, 
-Gus Gus, Terje @sc{Hanssen}, Mikko @sc{Huhtala}, Ben @sc{Jorden}, Nathan @sc{Kidd}, 
-Marcin @sc{Kostur}, Joseph @sc{L.}, Valentina @sc{Messeri}, Sean @sc{Pappalardo},
-Herman @sc{Robak}, Dana @sc{Rogers}, Jim @sc{Scott}, Andraz @sc{Tori}, Raffaella
-@sc{Traniello}, Hermann @sc{Vosseler}
+Martin @sc{Ellison}, Graham @sc{Evans}, Alex @sc{Ferrer}, Scott @sc{Frase}, Joe
+@sc{Friedrichsen}, gour, Gus Gus, Terje @sc{Hanssen}, Mikko @sc{Huhtala}, Ben @sc{Jorden}, 
+Nathan @sc{Kidd}, Marcin @sc{Kostur}, Joseph @sc{L.}, David @sc{McNab}, Valentina @sc{Messeri}, 
+Sean @sc{Pappalardo}, Paolo @sc{Rampino}, Herman @sc{Robak}, Dana @sc{Rogers}, Jim @sc{Scott}, Andraz @sc{Tori}, 
+Raffaella @sc{Traniello}, Hermann @sc{Vosseler}, Norval @sc{Watson}.
 
 Thanks to the GNU project team, and particularly to Karl @sc{Berry}, maintainer
 of GNU Texinfo, for the precious help he gave us during the elaboration of this
 manual.
 
-@itemize
-@item To fetch the manual sources, install cogito and git-core on your computer 
-and run:@*
-@command{cg-clone git://scm.pipapo.org/cinelerra/nicolasm}
-@item You can participate on editing this manual by making changes in the
+The sources of the manuals are Texinfo files. They are in the same SVN repository 
+as Cinelerra's source code (hvirtual/doc folder). They can be converted in many 
+formats. The doc/README_en file contains instructions for building the manual in 
+PDF, HTML (single page) HTML (one page per chapter, in a folder), plain TXT, TXT 
+in DokuWiki sintax (one file per chapter, in a folder), Docbook.
+
+You can participate on editing this manual by making changes in the
 Cinelerra-CV wiki:@*
 @uref{http://cvs.cinelerra.org/docs/wiki/doku.php}
-@end itemize
+
+If you would like to translate this manual in your language, see the doc/TRANSLATIONS 
+file and contact the Cinelerra CV Community.
 
 @ifnotplaintext
 @ifnothtml
@@ -281,6 +299,9 @@ by Laurent @sc{Bellegarde}@*
 @uref{https://docs.indymedia.org/view/Sysadmin/Cinelerra}
 @item @b{Tutorial Cinelerra}, in Portuguese, by Leo @sc{Germani}@*
 @uref{http://www.estudiolivre.org/tiki-index.php?page=Cinelerra}
+@item @b{Cinelerra is very easy}, Introduction to Cinelerra, for beginners, by
+Paolo @sc{Rampino} @*
+@uref{http://project.akirad.net/node/12}
 @end itemize
 
 @c cincvdoc_node_number_358
@@ -303,6 +324,15 @@ David @sc{McNab}@*
 I@~niguez @sc{Goya} - how to add effects to titles. With downloadable sample
 projects.@* 
 @uref{http://kutxa.homeunix.org/bloga/2007/08/13/crear-titulos-diferentes-con-cinelerra/#more-246}
+@item @b{SimAV's HOWTOs}, by Simeon @sc{Volkel} - How to create a picture in picture 
+effect, How to create overlays, How to change theme.@*
+@uref{http://g-raffa.eu/SimAV/}
+@item @b{Tips for Transcoding Cinelerra Compatible Video with FFmpeg,
+MEncoder}, by Alexander @sc{Grundner} @*
+@uref{http://www.alexandergrundner.com/2007/07/19/tips-for-transcoding-cinelerra-compatible-video-with-ffmpeg-mencoder}
+@item @b{FFMPEG compatibility} - HOWTO produce videos that can be played in common 
+proprietary multimedia players@*
+@uref{http://ffmpeg.mplayerhq.hu/compat.html}
 @end itemize
 
 @c cincvdoc_node_number_10
@@ -312,6 +342,8 @@ projects.@*
 
 Miscellaneous links:
 @itemize @bullet
+@item @b{Interlacing}@*
+@uref{http://neuron2.net/LVG/interlacing.html}
 @item @b{What is Deinterlacing? Facts, solutions, examples}@*
 @uref{http://www.100fps.com}
 @item @b{MPEG-2 FAQ}@*
@@ -322,9 +354,16 @@ Miscellaneous links:
 @uref{http://lipas.uwasa.fi/~f76998/video/conversion}
 @item @b{Colour specification and image coding}@*
 @uref{http://www.poynton.com/notes/colour_and_gamma/ColorFAQ.html}
+@item @b{DVD Video} - about DVD structure @*
+@uref{http://wlug.org.nz/DVDVideo}
+@item @b{Creating DVD videos on Linux and Unix} - an excellent high level overview of 
+DVD authoring in general on Linux @*
+@uref{http://womble.decadent.org.uk/talks/dvd-ukuug06/dvd-talk-ukuug06-paper.html}
 @item @b{lprod - Libre Production} a French Wiki full of resources for Open
 Source video editing, especially for Cinelerra HV (among them an Ubuntu package)@*
 @uref{http://fr.lprod.org/wiki/doku.php}
+@item @b{Cinelerra CV Glossary} for newbies@*
+@uref{http://g-raffa.eu/Cinelerra/cin_glossary.html}
 @end itemize
 
 @c cincvdoc_node_number_7
@@ -525,8 +564,11 @@ If you wish to log the make output in order to search for errors, this command
 can be used:@*
 @command{make 2>&1 | tee logfile}
 
-@item Finally, install Cinelerra CV:@*
+@item Install Cinelerra CV:@*
 @command{sudo make install}
+
+@item Finally run as root (for first time compilation only):@*
+@command{ldconfig}
 @end enumerate
 
 @b{Notes:}
@@ -537,11 +579,11 @@ to add the @option{-j 3} option to make in order to benefit from the available
 CPUs.
 @item @b{For x86 CPUs only}:@*
 You probably want to enable MMX support.  To do that, run @command{./configure}
-with the @option{--enable-mmx} option.  If you do that, you may have to use the
+with the @option{--enable-mmx32} option.  If you do that, you may have to use the
 @option{--without-pic} option too, otherwise, compilation may fail.
 @item @b{For Pentium-M:}@*
 Here are some useful compiler flags:@*
-@command{./configure --prefix=/usr --enable-x86 --enable-mmx --enable-freetype2
+@command{./configure --prefix=/usr --enable-x86 --enable-mmx32 --enable-freetype2
 --with-buildinfo=svn/recompile CFLAGS='-O3 -pipe -fomit-frame-pointer
 -funroll-all-loops -falign-loops=2 -falign-jumps=2 -falign-functions=2
 -ffast-math -march=pentium-m -mfpmath=sse,387 -mmmx -msse'}
@@ -640,10 +682,14 @@ manager - @uref{http://www.dynebolic.org}
 @item @b{x-evian} - Debian based live CD for multimedia creations -
 @uref{http://x-evian.org}
 @item @b{Mediainlinux} - Knoppix based  - @uref{http://www.mediainlinux.org/}
+@item @b{Musix} - Knoppix based live CD for audio production, graphic design and 
+video editing  - @uref{http://musix.org.ar}
 @item @b{pho} (garbure) - dedicated to video editing -
 @uref{http://garbure.org/pho/}   
 @item @b{Slo-Tech} - based on Debian and Morphix -
 @uref{http://linux.slo-tech.com}
+@item @b{ArtistX} - Debian based live CD, Gnome or KDE. For multimedia
+productions - @uref{http://artistx.org}
 @end itemize
 
 @c cincvdoc_node_number_357
@@ -704,6 +750,17 @@ Valentina @sc{Messeri} built also
 @command{@w{deb http://giss.tv/~vale/debian64/ ./}}
 @end itemize
 
+Christian @sc{Marillat} makes binary Debian packages, built from the unofficial SVN 
+releases, for stable, testing and unstable.
+@itemize @bullet
+@item @b{Apt source for amd64, hppa, i386, ia64, powerpc (not optimized):}@*
+@command{@w{deb http://www.debian-multimedia.org BRANCH main}}
+@end itemize	
+
+@b{Note:} BRANCH = stable, testing or unstable@*
+@b{Note:} Install @b{debian-multimedia-keyring} to add in your keyring Marillat's
+gpg-key.
+
 @b{Note:} If Cinelerra produces the following error:@*
 @command{cinelerra: relocation error: /usr/lib/libavcodec.so.0.4.8: undefined symbol: 
 faacDecOpen}@*
@@ -733,7 +790,7 @@ that you wouldn't have them installed by default, so you will probably need them
 
 @b{Extra Debian packages}
 
-These are devleopment packages which are "non-standard", and you'll almost certainly have to install them if 
+These are development packages which are "non-standard", and you'll almost certainly have to install them if 
 you want to compile Cinelerra:
 
 @itemize @bullet
@@ -766,13 +823,6 @@ repositories.  You should add in your @file{/etc/apt/sources.list} the following
 line, which is Christian Marillat's repository:@*
 @command{deb http://www.debian-multimedia.org/ sid main}
 
-In order to use the mirror you need to add in your gpg keyring Marillat's
-gpg-key:@*
-@command{gpg --keyserver hkp://wwwkeys.eu.pgp.net --recv-keys 1F41B907}@*
-@command{gpg --armor --export 1F41B907 | sudo apt-key add -}@*
-If you do not use sudo, do the following under root:@*
-@command{gpg --armor --export 1F41B907 | apt-key add -}
-
 You will need to apt-get install the following packages:
 
 @itemize @bullet
@@ -795,11 +845,90 @@ You will need to apt-get install the following packages:
 @subsection Ubuntu packages repositories
 @cindex Ubuntu packages repositories
 
+@b{For Ubuntu 8.04 Hardy Heron:}
+
+@itemize @bullet
+
+@item for all x86 (full working on 32 and 64 bits), by Paolo @sc{Rampino}:
+@verbatim
+deb http://repository.akirad.net akirad-hardy main
+@end verbatim
+
+Installation notes:@*
+- To add this repository in your sources list use the following terminal
+  command:@*
+@command{sudo wget http://repository.akirad.net/dists/hardy.list -O
+/etc/apt/sources.list.d/akirad.list}@*
+-Installations from this repository need an authentication key. Add it by 
+  typing the following command in your terminal:@*
+@command{wget -q http://repository.akirad.net/dists/akirad.key -O- | sudo
+apt-key add -}@*
+- Cinelerra package is available in 5 variants:@*
+cinelerra (x86 and x86_64 without opengl 2.0 video card)@*
+cinelerra-generic (all x86 and x86_64 with opengl 2.0 video card)@*
+cinelerra-k7 (amd32 without opengl 2.0 video card)@*
+cinelerra-k7gl (amd32 with opengl 2.0 video card)@*
+cinelerra-k8 (amd k8 optimized with opengl 2.0 video card)@*
+- Cinelerra must be set to work with PulseAudio. Open Cinelerra and go 
+to Settings->Preferences->Playback->Audio Driver. Select ESound and set the
+following parameters:@*
+Server:@*
+Port: 7007@*
+- These packages set shmmax to 0x7fffffff and add non-English language support
+  for Cinelerra.@*
+- Please, report any package bug to akir4d at gmail dot com
+@end itemize
+
+@b{For Ubuntu 7.10 Gutsy Gibbon:}
+
+@itemize @bullet
+
+@item for all x86 (full working on 32 and 64 bits), by Paolo @sc{Rampino}:
+@verbatim
+deb http://repository.akirad.net akirad-gutsy main
+@end verbatim
+
+Installation notes:@*
+- To add this repository in your sources list use the following terminal
+  command:@*
+@command{sudo wget http://repository.akirad.net/dists/gutsy.list -O
+/etc/apt/sources.list.d/akirad.list}@*
+-Installations from this repository need an authentication key. Add it by 
+  typing the following command in your terminal:@*
+@command{wget -q http://repository.akirad.net/dists/akirad.key -O- | sudo
+apt-key add -}@*
+- Cinelerra package is available in 5 variants:@*
+cinelerra (all x86 and x86_64 without opengl 2.0 video card)@*
+cinelerra-generic (all x86 and x86_64 with opengl 2.0 video card)@*
+cinelerra-k7 (all amd32 without opengl 2.0 video card)@*
+cinelerra-k7gl (all amd32 with opengl 2.0 video card)@*
+cinelerra-k8 (all amd64 with opengl 2.0 video card)@*
+- These packages set shmmax to 0x7fffffff and add Cinelerra non-English language 
+  support on Ubuntu.@*
+- Please, report any package bug to akir4d at gmail dot com
+  
+@item for i386 (not working on amd 32 bits), by Valentina @sc{Messeri}:
+@verbatim
+deb http://giss.tv/~vale/ubuntu32 ./
+@end verbatim
+
+@item for AMD64 (and also Core Duo Intel64), by Valentina @sc{Messeri}:
+@verbatim
+deb http://giss.tv/~vale/ubuntu64 ./
+@end verbatim
+
+Note:@*
+- If your package manager complains that it does not have the right version of 
+libfaac (1.25) you can install:@*
+@uref{http://www.debian-multimedia.org/dists/stable/main/binary-amd64/package/libfaac0.php}
+
+@end itemize
+
 @b{For Ubuntu 7.04 Feisty Fawn:}
 
 @itemize @bullet
 
-@item optimised for UbuntuStudio, with OpenGL, by Valentina @sc{Messeri}:
+@item for i386, optimised for UbuntuStudio, with OpenGL, by Valentina @sc{Messeri}:
 @verbatim
 deb http://giss.tv/~vale/ubuntuopengl/ ./
 @end verbatim
@@ -809,7 +938,7 @@ deb http://giss.tv/~vale/ubuntuopengl/ ./
 deb http://giss.tv/~vale/ubuntu64 ./
 @end verbatim
 
-@item for 64 bits, with OpenGL disabled, by Valentina @sc{Messeri}:
+@item for AMD64, with OpenGL disabled, by Valentina @sc{Messeri}:
 @verbatim
 deb http://giss.tv/~vale/ubuntu64NOopengl/ ./
 @end verbatim
@@ -932,13 +1061,19 @@ installing the problematic library with the same method from the same webpage.
 @item Installation of Ubunty Feisty AMD64 Cinelerra package:@*
 @uref{https://help.ubuntu.com/community/CinelerraOnFeistyAMD64}
 
+@item Compilation from source code on Ubuntu 7.10 Gutsy Gibbon (for beginners):@*
+@uref{http://www.g-raffa.eu/Cinelerra/cin_compilation.html}
+
+@item Compilation from source code on Ubuntu 7.10 Gutsy Gibbon:@*
+@uref{http://lab.dyne.org/cinelerra/Gutsy}
+
 @item Compilation from source code on Ubuntu 6.10 Edgy Eft:@*
 @uref{http://www.ubuntuforums.org/showthread.php?t=320701&highlight=cinelerra}
 
 @item Compilation from source code on Ubuntu Breezy:@*
 @uref{http://placide.home.sapo.pt/cinelerra02.html}
 
-@item Compilation from source code on Ubuntu Dapper Drake (for beginners, in 
+@item Compilation from source code on Ubuntu (for beginners, in 
 Italian):@*
 @uref{https://faberlibertatis.org/wiki/Cinelerra_CV_su_Ubuntu}
 @end itemize
@@ -952,19 +1087,27 @@ Installation for Gentoo GNU/Linux is very straight forward. Simply type:
 @verbatim
 emerge cinelerra-cvs
 @end verbatim
-as root and it should install and run with no problems.  Note that you may need
-to put cinelerra in your @file{/etc/portage/package.keywords} file in order to
-use it:
+as root and it should install and run without any problems.  Note that you may need
+to put cinelerra-cvs in your @file{/etc/portage/package.keywords} file in order to
+unmask it:
 @verbatim
-echo "=media-video/cinelerra-cvs-20061020" >> /etc/portage/package.keywords
+echo "=media-video/cinelerra-cvs ~x86" >> /etc/portage/package.keywords
 @end verbatim
 
 See @uref{http://www.gentoo.org/doc/en/handbook/handbook-x86.xml?part=3&chap=3} 
-for details. 
+for details. If you are running on an architecture other than x86 e.g. amd64, you 
+will need to replace ~x86 with the relevant architecture e.g. ~amd64.
 
-@b{Note:} The Gentoo ebuild media-video/cinelerra-cvs-20061020 has no editing
-modes icons.  @xref{Editing modes}, for more
-information.
+You may also want to adjust the USE flags. First run @*
+@verbatim
+emerge -av cinelerra-cvs
+@end verbatim
+to see what flags are available and then add the relevant ones to 
+@file{/etc/portage/package.use}: @*
+@verbatim
+echo "media-video/cinelerra-cvs ieee1394" >> /etc/portage/package.use 
+@end verbatim
+This would enable support for firewire devices.
 
 @c cincvdoc_node_number_326
 @node Fedora
@@ -976,6 +1119,9 @@ Cinelerra is included in the Freshrpms repository at
 Freshrpms is to include the repository in the @b{yum} configuration. Also make
 sure that the Fedora Extras repository is enabled.  This is the case by default
 on Fedora 5 and 6, and Core and Extras are merged into one on Fedora 7.
+
+For Fedora 8 see
+@uref{http://kernelreloaded.blog385.com/index.php/archives/install-cinelerra-on-fedora-8/}
 
 On Fedora 6, as the user root do:
 @verbatim
@@ -1157,6 +1303,20 @@ Available languages are:
 @item pt_BR - Brazilian Portuguese
 @item it_IT - Italian
 @end itemize
+
+If your distribution has only UTF-8 support (like Ubuntu), first you must create
+the language charset with this command:@*
+@command{localedef -c -i (language_prefix) -f (your ISO-8859 variant)
+(language_prefix).(your ISO-8859 variant)}@*
+This is an example for Italian language:@*
+@command{localedef -c -i it_IT -f ISO-8859-15 it_IT.ISO-8859-15}
+
+Then you can run cinelerra with this command:@*
+@command{env LANG=$(echo $LANG | sed -e s/UTF-8/(your ISO-8859 variant)/g)
+cinelerra}@*
+This is an example for Italian language:@*
+@command{env LANG=$(echo $LANG | sed -e s/UTF-8/ISO-8859-15/g) cinelerra}
+
 In some cases (e.g. if you compiled Cinelerra specifying a @option{--prefix=} option different from @file{/usr/local}) the translated .po files are not installed. If you can't run Cinelerra in your chosen language, try running the following commands before changing the LANG and LANGUAGE environment variables:@*
 @command{cd hvirtual}@*
 @command{./configure prefix=/usr}@*
@@ -2361,8 +2521,13 @@ frame of the video. No table of contents is created. @xref{Images sequence}.
 @cindex Still images size
 
 Imported images always stay at their original size.  Therefore,
-you have to take into account the aspect ratio of your video in Cinelerra and
-rescale your pictures before importing them in Cinelerra.@*
+you may need to scale your pictures before importing them in Cinelerra.@*
+For resizing your picture to fit the project size you can use Imagemagick 
+(@uref{http://www.imagemagick.org/script/index.php})@*   
+Example:@* 
+@command{convert inputfile.jpg -resize 720x576 outputfile.jpg}@*
+
+You have to take into account the aspect ratio of your video. 
 For example, PAL images aspect ratio is 4/3, but 720x576 is 5/4.  For your
 imported images to be displayed correctly, you have to rescale their horizontal
 size:@*
@@ -2370,11 +2535,14 @@ new horizontal size=@math{(5 / 4) / (4 / 3)} x original horizontal size@*
 For PAL videos, you have to multiply the horizontal size of the pictures you
 want to import by a factor of 0.9375.@*
 Here is a small shell script which, when ran from a folder containing jpg
-images, resize those images and put the new images in a @file{resized} folder:
+images, resize those images and put the new images in a @file{resized} folder:@*
+Note: Make sure you have installed Imagemagick which provides the functions 
+'identify' and 'convert' used in the script.
+
 @verbatim
 #/bin/sh
 mkdir resized
-for element in `ls . | grep jpg`;
+for element in `ls . | grep -i '\.jpe*g$\'`;
 do
     size=`identify ${element}`
     width=`echo ${size} | sed '+s+.*JPEG ++' | sed '+s+x.*++'`
@@ -2385,8 +2553,9 @@ done
 @end verbatim
 
 When the size of your image is different from the size of your project, but the
-ratio is the same, you might want to keep the image on a separate track and adjust the display 
-of it with the camera zoom. @xref{The camera and projector}.
+ratio is the same, you might want to keep the image at its original size, to
+load it on a dedicated track and adjust the display of it with the camera zoom.
+@xref{The camera and projector}.
 
 @c cincvdoc_node_number_69
 @node Open EXR images
@@ -2536,10 +2705,20 @@ or something similar.  Then load @file{dvd.toc}.
 @node MPEG 1 audio
 @subsection MPEG 1 audio
 @cindex MPEG 1 audio
+@cindex .mp2
+@cindex .mp3
 
-These are .mp2 and .mp3 files.  If the files are encoded using a fixed bitrate, 
-they can be loaded directly with no table of contents.  Variable bitrate streams 
-need to have a table of contents created with mpeg3toc.
+MPEG 1 audio files have .mp2 and .mp3  extension. If the files are encoded using a 
+fixed bitrate, they can be loaded directly on Cinelerra. Otherwise a table of 
+contents (TOC) needs to be created and loaded as resources in place of the audio file. 
+If you know your audio stream has variable bitrate or if you see Cinelerra can't 
+seek and playback your file properly, you must create the TOC using mpeg3toc.@* 
+Here is an example of command:@*
+@command{mpeg3toc -v /path/to/myfile.mp3 myfile.toc} @*
+@file{myfile.toc} is the Table of Contents that can be loaded as resource.@* 
+The path should be absolute unless you plan to always keep your .xml in the same 
+directory as the filename. For renderfarms the filesystem prefix should be / and the 
+movie directory mounted under the same directory on each node. 
 
 @c cincvdoc_node_number_75
 @node Ogg Theora/Vorbis
@@ -2759,8 +2938,12 @@ operation, Cinelerra saves the current project to a backup in
 @file{$HOME/.bcast/backup.xml}.  In the event of a crash, the first thing you should do
 after restarting Cinelerra is select @b{File->Load backup} in order to load the backup.
 This will start Cinelerra at the point in your editing operations directly before the program
-crashed.  It is important after a crash to restart Cinelerra
-without performing any editing operations as you will overwrite the backup.
+crashed. @*
+It is important after a crash to restart Cinelerra without performing any editing operations 
+as you will overwrite the backup.@*
+Note that the backup.xml file is always an only file, also 
+when you are working with two instances of Cinelerra open at the same time. 
+In this case, the last operation made in whatever instance will overwrite the backup.
 
 @c cincvdoc_node_number_84
 @node Saving project files
@@ -2809,9 +2992,11 @@ It must be said that since an XML file is a text file, you can always repair bro
 media linkage by editing the XML file in a text editor. For every media you 
 moved, search for the old path and replace it with the new one. Don't forget to 
 make a backup copy of your XML file before doing any editing!@*
-You can replace the path of every asset also within the program, by entering the
-new location in the @b{Asset info} window. To open this window, right click on
-the asset in the Resources window and choose @b{Info...} in the popup menu.
+You can replace the path of every asset whose source file you moved also within the 
+program, by entering the new location in the @b{Asset info} window. 
+To open this window, right click on the asset in the Resources window and choose 
+@b{Info...} in the popup menu. Directly type the path in the first field of the
+dialog or click on the magnifier on the right to browse your files.
 Operating from the GUI is convenient only when a very small number of changes is needed.
 
 XML files are useful in saving the current state of Cinelerra before retiring 
@@ -2959,9 +3144,12 @@ timeline.
 Changing the @b{sample zoom} causes the unit of time displayed in the timeline to change size.  It
 allows you to view your media all the way from individual frames to the
 entire length of your project.  The higher the setting, the more frames you can see per
-screen. .@*
+screen. The sample zoom value is not an absolute reference for the unit of time since 
+it refers to the duration visible on the timeline and thus changes also as you modify 
+the length of the program window horizontally.@*
 Use the @kbd{UP} and @kbd{DOWN} arrows to change the sample zoom by a power of two.@*
- @b{If your mouse has a wheel and it works in X11, mouseover the tumblers and use the wheel to zoom in and out.}
+If your mouse has a wheel and it works in X11, mouse over the tumblers and use the 
+wheel to zoom in and out.
 
 @cindex Amplitude
 The @b{amplitude} only affects audio.  It determines how large the waveform appears.@*
@@ -3099,6 +3287,8 @@ drop mode, the highlighted area overrides the in/out points.  If a highlighted
 area and in/out points are set, the highlighted area is affected by editing 
 operations and the in/out points are ignored.  If no region is highlighted, 
 the in/out points are used.
+To avoid confusion, it is better to use either highlighting or in/out points but 
+not both simultaneously.
 
 Normally, in/out points do not affect the playback region.  The in/out points
 determine the playback region only if you hold down @key{CTRL} while issuing a
@@ -3108,9 +3298,18 @@ To set in/out points, go to the timebar and position the insertion point
 somewhere.  Select the @image{manual_images_intl/in_point_button,5mm} @b{in point button}.
 Move the insertion point to a position after the in point and click the
 @image{manual_images_intl/out_point_button,5mm} @b{out point button}.
+Instead of using the button bar, you can use the @key{[} and @key{]} keys to
+toggle in/out points.
 
 @center @image{manual_images_intl/inout_points,160mm}
 @center @b{Timebar with in/out points set}.
+
+If you set the insertion point somewhere else while in/out points already exist, when 
+you click the in/out buttons the existing points will be repositioned.
+
+If you click on in/out points while a region is highlighted, the insertion point
+will be ignored and in/out points will be set at the beginning and at
+the end of the highlighted area.
 
 If you select either the in point or the out point, the insertion point will jump to
 that location.  After selecting an in point, if you click the @b{in point button}
@@ -3123,21 +3322,9 @@ click will set a new point or reposition an old one at the insertion point; the
 second click will delete it.  Obviously this trick does not work if the in point 
 or the out point is already set at insertion point.
 
-If you select a region somewhere else while in/out points already exist, 
-the existing points will be repositioned when you click the in/out buttons.
-
 @key{SHIFT}-clicking on an in/out point highlights the region between the
 insertion point and that in/out point.  If a region is already highlighted, it
 extends the highlighted region up to that in/out point.
-
-Instead of using the button bar, you can use the @key{[} and @key{]} keys to
-toggle in/out points.
-
-In both cut and paste editing mode and drag and drop editing mode, in/out
-points override the highlighted area.  If a highlighted area and in/out points
-are set, the highlighted area affects playback while the in/out points affect
-editing operations.  To avoid confusion, it is better to use either highlighting
-or in/out points but not both simultaneously.
 
 The insertion point and the in/out points allow you to define an affected
 region, but they do not let you jump to exact points on the timeline very easily.
@@ -3164,14 +3351,20 @@ Labels can reposition the insertion point when they are selected but they can
 also be traversed with the @image{manual_images_intl/label_traversal,15mm} @b{label
 traversal} buttons.  When a label is out of view, the label traversal buttons
 reposition the timeline so the label is visible.  There are keyboard shortcuts
-for label traversal, too.
+for label traversal, too. 
 
 @b{CTRL-LEFT} repositions the insertion point on the previous label.
 
 @b{CTRL-RIGHT} repositions the insertion point on the next label.
 
-With label traversal you can quickly seek back and forth on the timeline but you 
-can also select regions.
+With label traversal you can quickly seek back and forth on the timeline.
+
+The @b{Label} tab of the resources window lists the timestamp of every label.
+You can edit the label list and add a title for every item using the popup menu.
+To open the @b{Label info} dialog right click on the label icon in the Resources 
+window or directly on the label symbol on the timebar.
+
+With labels you can also select regions.
 
 @b{SHIFT-CTRL-LEFT} highlights the region between the insertion point and the
 previous label.
@@ -3351,7 +3544,11 @@ format.
 @item @b{Mute track}@*
 Causes the output to be thrown away once the track is completely
 rendered.  This happens whether or not @b{play track} is on. For example if you
-mute all the video tracks, the rendered media file will have a blank video track. 
+mute all the video tracks, the rendered media file will have a blank video
+track.@*
+Mute track is represented on the timeline with a blue line. Go to @b{View ->
+Mute} to make it show. It is a keyframable attribute, but Mute track keyframing 
+is a toggle and it has, unlike curves, only two values: on or off.@*
 If a track is part of a shared track effect, the output of the track with the
 shared track effect is overlaid on the final output even though it is routed back 
 to another track (the shared track). 
@@ -3361,6 +3558,7 @@ is not present. @xref{Realtime effect types}.
 
 @cindex Fader
 @item @b{Fader}@*
+Fade values are represented on the timeline with a white curve that is keyframable.
 All tracks have a fader, but the units of each fader depend on whether it is
 audio or video.@*
 Audio fade values are in dB. They represent relative levels, where 0 is 
@@ -3666,21 +3864,17 @@ Lengthening the duration visible in the timeline by changing the sample zoom in
 the zoom panel will reduce the size of the white rectangle, making a precise 
 insertion possible. 
 
-You can also drag multiple files from the resource window.  Either draw a box
-around the files, use @key{SHIFT}, or use @key{CTRL} when selecting files.
-When you drop the files in the timeline, they are concatenated.  The behavior
-of @key{SHIFT} and @key{CTRL} changes depending on if the resources are in text
-or icons.
-
-To display the resources as text or icons, right click inside the media list.
-Select either @b{display icons} or @b{display text} to change the list format.
-
-When displaying text in the resource window @b{SHIFT-clicking} on media files
-extends the number of highlighted selections.  @b{CTRL-clicking} on media files
-in text mode selects additional files one at a time.
-
-When displaying icons in the resource window @b{SHIFT-clicking} or
-@b{CTRL-clicking} selects media files one at a time.
+You can also drag multiple files from the resource window. When dropped in the
+timeline they are concatenated.@*
+The way of selecting multiple files to drag changes depending on if the resources 
+are displayed as text or as icons. To change the display mode right click inside 
+the media list and select either @b{Display icons} or @b{Display text}.@*
+When displaying text in the resource window @key{CTRL-clicking} on media files 
+selects additional files one at a time; @key{SHIFT-clicking} on media files extends 
+the number of highlighted selections.@* 
+When displaying icons in the resource window @key{SHIFT-clicking} or
+@key{CTRL-clicking} selects media files one at a time; drawing a box around the 
+files selects contiguous files.
 
 In addition to dragging media files, if you create clips and open the @b{clip}
 folder you can drag clips on the timeline.
@@ -3688,10 +3882,11 @@ folder you can drag clips on the timeline.
 In the timeline there is further dragging functionality.  Dragging edits around
 the timeline allows you to sort music playlists, sort movie scenes, and give
 better NAB demos but not much else. To enable the dragging functionality of
-the timeline, select the arrow toggle @image{manual_images_intl/arrow,2.67mm}.@*
+the timeline, select the arrow toggle @image{manual_images_intl/arrow,2.67mm} on
+the control bar.@*
 
 
-@center Select a track with various scenes.
+@center Arm a track with various scenes.
 
 @center @image{manual_images_intl/drop_before}
 
@@ -3712,32 +3907,32 @@ the timeline, select the arrow toggle @image{manual_images_intl/arrow,2.67mm}.@*
 @center This is how the finished sequence looks.
 
 If more than one track is armed, Cinelerra will drag any edits which start on
-the same position as the edit the cursor is currently over.  In other words,
+the same position as the edit the mouse pointer is currently over.  In other words,
 you can drag and drop a group of edits.  Cinelerra recognises as a group the
 edits of different armed tracks that have aligned beginnings, regardless of 
 whether they have the same source or aligned ends.
 
 When you drag and drop edits within the timeline:@*
-If you drop an edit when bow ties >< are shown, the clip will be cut and pasted
+If you drop an edit when bow ties >< are shown, that edit will be cut and pasted
 starting at the edit boundary indicated by the centre of the bow tie ><.
 Following edits on the same track will move.@*
-If you drop an edit when there are no bow ties >< shown, the original clip will
+If you drop an edit when there are no bow ties >< shown, the original edit will
 be muted and pasted where you dropped it.  No edits will move.  A silence will
 appear in place of the original edit.@*
 If you have more armed tracks on the timeline than in the asset you are
 dragging, only the following edits of the tracks affected by the drag and drop
 operation will move to the right. This will cause loss of synchronization. To
-restore it, disarm the affected tracks, highlight the just dropped edit and
-paste silence over it (@b{Edit Menu} -> @b{Paste Silence}).
+restore it, disarm the tracks affected by the drag and drop operation, highlight the just dropped edit and
+paste silence over it (@b{Edit} -> @b{Paste Silence}).
 
 In Drag and Drop editing mode you can't drag and drop labels.  They will be
-always locked to the timebar, even with the "Edit labels" option enabled.
-Still, with the "Edit labels" option enabled, if a selected area of a resource
+always locked to the timebar, even with the @b{Edit labels} option enabled.
+Still, with the @b{Edit labels} option enabled, if a selected area of a resource
 is spliced from the Viewer to the timeline in a position before labels, these
 labels will be pushed to the right for the length of the selected area.
 
 With in/out points you can perform Cut and Paste operations in Drag and Drop
-mode as well as in Cut and Paste mode.  Go to the Edit Menu to view the list
+mode as well as in Cut and Paste mode.  Go to the @b{Edit} Menu to view the list
 and the keyboard shortcuts.
 
 @c cincvdoc_node_number_104
@@ -3746,10 +3941,10 @@ and the keyboard shortcuts.
 @cindex Cut and paste editing
 @cindex Editing, cut and paste
 
-This is the traditional method of editing in audio editors.  In the case of
-Cinelerra, you either need to start a second instance of Cinelerra and copy from
-one instance to the other, copy from different tracks in the same instance, or load a
-media file into the Viewer and copy from there.
+This is the traditional method of editing in audio editors.@*
+In the case of Cinelerra, you can copy edits in the same track, copy from different 
+tracks in the same instance, start a second instance of Cinelerra and copy from
+one instance to the other or load a media file into the Viewer and copy from there.
 
 Load some files onto the timeline.  To perform cut and paste editing select the
 @image{manual_images_intl/ibeam,1.67mm} i-beam toggle.  Select a region of the 
@@ -3764,8 +3959,49 @@ overridden by the in/out points for clipboard operations.  Thus, with in/out
 points you can perform cut and paste in drag and drop mode as well as cut and
 paste mode.
 
-There are other operations you can do. Go to the Edit Menu to view the list and
-the keyboard shortcuts.
+Most editing operations are listed in the @b{Edit} Menu. Some of them have a button 
+on the program control toolbar and a keyboard shortcut.
+
+@itemize @bullet 
+@item @b{Cut} x - Delete the selected area and hold it on the clipboard for future
+pasting.  
+@item @b{Copy} c - Copy the selected area and hold it on the clipboard for future
+pasting. 
+@item @b{Paste} v - Paste the material held in the clipboard 
+@item @b{Clear} Del - Clear the selected area. If the insertion point is over an edit 
+boundary and the edits on each side of the edit boundary are the same resource, the 
+edits are combined into one edit comprised by the resource. The start of this one 
+edit is the start of the first edit and the end of this one edit is the end of the 
+second edit. This either results in the edit expanding or shrinking. 
+@item @b{Paste Silence} Shift+Space - Paste blank audio/video for the length of the selected
+area. Following edits will be pushed to the right.  
+@item @b{Mute Region} m - Overwrite blank audio/video on the selected area. Following 
+edits don't move.  
+@item @b{Trim Selection} - Delete everything but the selected region  
+@item @b{Select All} a - Select the whole timeline
+@end itemize
+
+Other editing operations:
+
+@itemize @bullet
+@item @b{Copy&Mute} cm - Mute the selected area and hold it on the clipboard for future 
+pasting.  
+@item @b{Overwrite} - To perform overwriting within the timeline paste on a selected 
+region (highlighted or between in/out points). The selected region will be overwritten. 
+If the clip pasted from the clipboard is shorter than the selected region, the selected 
+region will be shrunk. Following edits will move. If the clip pasted from the clipboard 
+is longer than the selected region, the selected region will be overwritten with 
+the first part of the clip and the remaining part of the clip will be written after 
+the overwriting. Following edits will move. Alternatively, overwrite from the Viewer. 
+@xref{Two screen editing}. 
+@item @b{Concatenate} - Go to @b{Tracks} -> @b{Concatenate tracks}. This operation 
+copies all the assets of every disarmed but playable track and concatenates it by 
+pasting those assets at the end of the first set of armed tracks. They are pasted 
+one after the other, keeping the same order they have on the stack. @xref{Manipulating tracks}.
+@item @b{Split} - Cinelerra can't spit an edit in two. To insert a transition in the 
+middle of an edit delete a single frame. To insert a clip in the middle of an edit 
+splice from the Viewer. @xref{Two screen editing}.
+@end itemize
 
 In Cut and Paste editing mode you can edit labels as well. By enabling @b{Edit
 labels} in the Settings Menu, or by disabling the @b{Lock labels from moving
@@ -3777,25 +4013,14 @@ same part of another waveform.  The start and stop points of the cut are
 identical in each waveform and might be offset slightly, while the wave data is
 different.  It would be very hard to highlight one waveform to cut it and
 highlight the second waveform to paste it without changing the relative start
-and stop positions.
-
+and stop positions.@*
 One option for simplifying this is to open a second copy of Cinelerra, cutting
 and pasting to transport media between the two copies.  This way two
-highlighted regions can exist simultaneously.
-
+highlighted regions can exist simultaneously.@*
 Another option is to set in/out points for the source region of the source
 waveform and set labels for the destination region of the destination waveform.
 Perform a cut, clear the in/out points, select the region between the labels,
 and perform a paste.
-
-A final operation in cut and paste editing is the @b{edit->clear} operation.
-If a region is highlighted or in/out points exist, the affected region is
-cleared by @b{edit->clear}.  But if the insertion point is over an edit
-boundary and the edits on each side of the edit boundary are the same resource,
-the edits are combined into one edit comprised by the resource.  The start of
-this one edit is the start of the first edit and the end of this one edit is
-the end of the second edit.  This either results in the edit expanding or
-shrinking.
 
 @c cincvdoc_node_number_105
 @node Trimming
@@ -4356,32 +4581,42 @@ numeric entry.
 @subsection Cropping
 @cindex Cropping
 
-Cropping changes the value of the output dimensions and the projector to reduce
-the visible picture area.  Enable the @image{manual_images_intl/crop,4.33mm} crop toggle
-and the @image{manual_images_intl/toolwindow,2.67mm} tool window in the @b{compositing
+Cropping reduces the visible picture area of the whole project.@*
+It changes the values of the output dimensions (width and height in pixels) 
+and the X Y values of the projector in a single operation. @*
+Since it changes project settings it affects all the tracks for their
+entire duration and it is not keyframable.
+
+Enable the @image{manual_images_intl/crop,4.33mm} crop toggle and the 
+@image{manual_images_intl/toolwindow,2.67mm} tool window in the @b{compositor
 window} to display the @b{Crop control dialog box}.
 
 @center @image{manual_images_intl/compositor_crop_tool,60mm}
 @center @b{Crop control dialog box}
 
 Click-drag anywhere in the video to define the crop area.  This draws a
-rectangle over the video.  Click-drag anywhere in the video to start a new
-rectangle.  Click-drag over any corner of the rectangle to reposition the
-corner.
+rectangle over the video. @*
 
 @center @image{manual_images_intl/compositor_crop}
 @center @b{Crop area defined}
 
-@b{ALT-click} in the cropping rectangle to translate the rectangle to any
-position without resizing it.
-
-The tool window allows text entry of the coordinates and executes the cropping
-operation.  When the rectangle is positioned, hit the @b{do it} button in the
-tool window to execute the cropping operation.
-
-@b{Note:} The X1,Y1 & X2,Y2 coordinates on the crop control dialog allows text
-entry of the top left and bottom right coordinates that define the crop
+Click-drag anywhere in the video to start a new rectangle.  @*
+Click-drag over any corner of the rectangle to reposition the corner.@*
+ALT-click in the cropping rectangle to translate the rectangle to any
+position without resizing it.@*
+The crop control dialog allows also text entry of the top left coordinates
+(X1,Y1) and bottom right coordinates (X2,Y2) that define the crop
 rectangle.
+
+When the rectangle is positioned, hit the @b{Do it} button in the crop control 
+dialog to execute the cropping operation: the portion of the image outside
+the rectangle will be cut off and the projector will make the output fit the
+canvas.@*
+The @b{Set Format} window will show the new project Width and Height values.@*
+The projector tool window will show the new X Y values.@*
+Track size will remain unchanged.@*
+To undo the cropping enter the original project dimensions in the @b{Set Format}
+window and click on @b{Reset projector} in the popup menu of the compositor.
 
 @c cincvdoc_node_number_126
 @node Safe regions
@@ -6943,36 +7178,29 @@ Gimp and compositing them, the Titler allows you to add text from within
 Cinelerra.
 
 The titler has standard options for @b{font, size, and style}.  The best font
-is a generic, normal font like Arial in a large size. 
-
+is a generic, normal font like Arial in a large size. @*
 The titler also has options you will only find in moving pictures.  The
 @b{Justify} operation justifies the text relative to the entire frame.  Once
 justified, the @b{X and Y} offset is applied.  This allows text to be justified
-while at the same time letting you push it within the title safe region.
-
+while at the same time letting you push it within the title safe region.@*
 The @b{motion type} scrolls the text in any of the four directions.  When using
 this, the text may disappear.  Make sure the speed is set to a reasonably high 
 value (try 150) and move the insertion point along the timeline until the text 
-is far enough along the animation to reappear.  The text scrolls on and scrolls off.
-
+is far enough along the animation to reappear.  The text scrolls on and scrolls
+off.@*
 Setting @b{loop} causes the text to scroll completely off and repeat.  Without
-@b{loop} the text scrolls off and never reappears.
-
+@b{loop} the text scrolls off and never reappears.@*
 The speed of the animation is determined by @b{speed}, in pixels per second.  
-Set it higher to speed up the animation.
-
+Set it higher to speed up the animation.@*
 @b{Drop shadow} draws a black copy of the text to the bottom right of the
 original text.  This is useful when drawing text over changing video to keep
-the border always visible.
-
+the border always visible.@*
 In addition to the scrolling, @b{Fade in/Fade out} are a second type of
-animation.  If the fade seconds are 0, no fading is done.
-
+animation.  If the fade seconds are 0, no fading is done.@*
 @b{Color} picks the color to draw the text in.  Usually white is the only
-practical color.
-
+practical color.@*
 @b{Stamp timecode} replaces the text with the current position on the timeline
-in seconds and frames.
+in seconds and frames.@*
 
 Text options can only be applied to all the text as a whole. If you want your
 title text formatted with a mixture of fonts, sizes, styles, alignments etc. you
@@ -6994,6 +7222,11 @@ To create special effects for your title you can place it on a dedicated track
 and insert other realtime video effects just under the title effect or/and use
 camera and projector. Thanks to keyframing you can animate your title and make it 
 change position, size, colour, transparency, texture, shape over time.
+
+For improving playback performances of titles with effects, you can reduce the size 
+of the dedicated track. Right click on the track and select @b{Resize track...}. 
+Enter the smallest resolution that still keeps the title visible. For moving your title
+use the compositor projector.
 
 To included graphical elements like logos, you may want to import your title as
 a PNG image (alpha channel transparency is possible), move it with camera
@@ -7447,9 +7680,11 @@ Transitions may only apply to the matching track type.  Transitions under
 @b{audio transitions} can only apply to audio tracks.  Transitions under
 @b{video transitions} can only apply to video tracks.
 
-Load a video file and cut a section from the center so the edit point is
-visible on the timeline.  Go the resource window and click on the @b{Video
-transitions} folder.  Drag a transition from the transition list onto the
+Load two video files. Alternatively load a single video file and cut away a section 
+from the center so that you make two edits out of a single file. Make sure the
+edit boundary between the two edits is visible on the timeline.@*
+Go to the Resource window and click on the @b{Video transitions} folder.  
+Drag a transition from the transition list onto the
 second video edit on the timeline.  A box highlights over where the transition
 will appear.  Releasing it over the second edit applies the transition between
 the first and second edit.
@@ -7457,19 +7692,19 @@ the first and second edit.
 @center @image{manual_images_intl/drop_transition}
 @center @b{Dragging a dissolve transition to the timeline}
 
-You can now scrub@footnote{Scrubbing refers to moving backwards and forwards in
-time across a video or audio clip.} over the transition with the transport
-controls and watch the output in the @b{Compositor window}.  Scrubbing with the
-insertion point does not normally show transitions because the transition
-durations are usually too short.
+You can now scrub over the transition with the transport
+controls and watch the output in the @b{Compositor window}.  
 
 @cindex Detach Transitions
 @cindex Edit Transitions
 Once the transition is in place, it can be edited similarly to an effect.  Move
 the pointer over the transition and right click to bring up the transition
-menu.  The @b{show} option brings up specific parameters for the transition in
-question if there are any.  The @b{length} option adjusts the length of the
-transition in seconds.  Once these two parameters are set, they are applied to
+menu. @*
+The @b{show} option brings up specific parameters for the transition in
+question if any.@*
+The @b{length} option adjusts the length of the
+transition in seconds.@*
+Once these two parameters are set, they are applied to
 future transitions until they are changed again.  Finally, the @b{detach}
 option removes the transition from the timeline.
 
@@ -7478,39 +7713,36 @@ window can be really slow and tiring.  Fortunately, once you drag a transition
 from the Resource window, the @b{U} and @b{u} keys will paste the same
 transition.  The @b{U} key pastes the last video transition and the @b{u} key
 pastes the last audio transition on all the recordable tracks.  If the
-insertion point or in point is over an edit, the beginning of the edit is
+insertion point or the in point is over an edit, the beginning of the edit is
 covered by the transition.
+
+Transitions make two edits overlap for a certain amount of time. Some consumer 
+single track applications literally move backward the second edit to make it partially 
+overlay the first edit. This behavior is not possible on multitrack editors where the 
+synchrony among track is vital. Cinelerra don't move edits during transitions. Instead 
+it uses spare frames from the source file to lengthen the first edit enough to make it 
+overlap the second edit for the duration of the transition.@* 
+The exact point in time when the transition takes effect is the beginning of the second edit. 
+The transition lasts a set amount of time into the second edit. For example, if you set a 
+duration of 1 second for a dissolve transition, it @b{will not} start at the last 0.5 
+second of the first edit and continue 0.5 second into the second edit. In fact, it will 
+start exactly at the beginning of the second edit and last for 1 second into
+that second edit.@* 
+On the timeline a brown bar over the transition symbol visually represents the position and 
+the duration of the transition.@* 
+The most important consequence of this behavior is that the first asset needs to have enough 
+spare data after the end boundary to fill the transition into the second edit. Spare data 
+duration should be equal or greater than the length of the transition effect set
+in the @b{Length} parameter of the transition popup menu.@*  
+If the last frame shown on the timeline is the last frame of the source file Cinelerra will 
+lengthen the first edit using the last frame only, with the unpleasant result of having the
+first edit freezing into the transition.
 
 It should be noted that when playing transitions from the timeline to hardware
 accelerated video device, the hardware acceleration will usually be turned off
 momentarily during the transition and on after the transition in order to
 render the transition.  Using an un-accelerated video device for the entire
 timeline normally removes the disturbance.
-
-@b{Important:} The exact point in time when the transition takes effect is not
-straightforward.  It starts when the second edit begins and lasts a certain
-amount of time into the second edit.  Therefore, the first asset needs to have
-enough data after the edit point to fill the transition into the second edit.
-
-For example, the dissolve transition starts at the exact position where it is
-located on the timeline.  If you set a duration of 1 second for a dissolve
-transition, it @b{will not} start 0.5 second before the transition and continue
-0.5 second after that point.  In fact, it will start exactly where the
-transition is located on the timeline, and last for 1 second from that
-position.
-
-It is a common error to put a dissolve transition just after the last frame of
-an asset.  Let's imagine a dissolve transition is put between asset A and asset
-B, just after the last frame of asset A.
-
-Since the dissolve effect starts exactly at the position where it is located,
-there is no more frames from asset A to display when the dissolve transition
-starts.  Therefore, there is no other choice for Cinelerra than freezing the
-last frame of asset A and dissolving it with asset B.
-
-You have to make sure there is enough frames of asset A to be displayed when
-the dissolve transition starts.  The duration of those frames should be equal
-or greater than the length of the transition effect.
 
 @c cincvdoc_node_number_240
 @node Dissolve video transition
@@ -8446,11 +8678,11 @@ wide audience over the internet.
 
 @b{First pass:}
 @verbatim
-ffmpeg -i movie.mov -b 430 -s 320x240 -aspect 4:3 -pass 1 -ar 22050 movie.flv
+ffmpeg -i movie.mov -b 430k -s 320x240 -aspect 4:3 -pass 1 -ar 22050 movie.flv
 @end verbatim
 @b{Second pass:}
 @verbatim
-ffmpeg -i movie.mov -b 430 -s 320x240 -aspect 4:3 -pass 2 -ar 22050 movie.flv
+ffmpeg -i movie.mov -b 430k -s 320x240 -aspect 4:3 -pass 2 -ar 22050 movie.flv
 @end verbatim
 
 Pay attention to the output file extension.  Ffmpeg uses it to determine the
@@ -8463,6 +8695,16 @@ can be used to insert that information:
 @verbatim
 cat input_file.flv | flvtool2 -U stdin output_file.flv
 @end verbatim
+
+There are a number of options for embedding the flv file in a web page. 
+You can use ming or flv2swf to create an swf file. @*
+@uref{http://klaus.geekserver.net/flash/streaming.html} has detailed instructions 
+for ming and @uref{http://search.cpan.org/~clotho/FLV-Info-0.17/bin/flv2swf} 
+can be installed with cpan> install FLV::ToSWF. Or you can use the Creative Commons 
+Non-Commercial licenced JW FLV Player
+@uref{http://www.jeroenwijering.com/?item=JW_FLV_Player}, or the Apache Licenced 
+FlowPlayer @uref{http://flowplayer.org}. Both of these allow you to use the flv 
+as created above, and have controls for stopping and playing the movie etc.
 
 @c cincvdoc_node_number_328
 @node Quicktime for GNU/Linux compatibility chart
@@ -8505,17 +8747,44 @@ different than its compatibility with files rendered from an HDV project.
 @cindex Rendering to mpeg2
 @cindex Mpeg2, rendering to
 
-Here is a method to export mpeg2 video and make a single chapter DVD@.  This
-method allows you to precisely set the encoding option you want and produces an
+@menu
+* yuv4mpeg pipe through mpeg2enc::
+* yuv4mpeg pipe through ffmpeg::
+@end menu
+
+Here is a method to export mpeg2 video for DVD.
+This method allows you to precisely set the encoding option you want and produces an
 mpeg2 file which is 100% compatible with all DVD standalone players.
+For how to make a DVD from the output @xref{Authoring a DVD}.
+
+Audio and video are rendered seperately and combined later in a procedure external 
+to Cinelerra. @*
+@b{Audio} is rendered into @b{.ac3}, and @b{video} is rendered into a
+@b{yuv4mpeg stream} which is piped through either @b{mpeg2enc} or @b{ffmpeg} into a 
+@b{.m2v} file. Both variants are described in detail below. 
+
+(Apparently depending on footage and player engine, one or the other variant may 
+produce better results. Check out which one works best for you by rendering a short 
+test edit of a few seconds length, authoring to DVD according to the sections below, 
+and playing it in your cheapest standalone player to really see wether it is foolproof 
+or displays errors.) 
+	 
+In both cases, make sure you properly defined your Cinelerra project format before 
+rendering your video (menu @b{Settings->Format...}), preferably even before loading 
+any raw footage. @*
+@b{TV standards:}@*
+@b{PAL} is 720x576 at 25 frames per second, @*
+@b{NTSC} is 720x480 at 29.97 frames per second.
+
+@c cincvdoc_node_number_363
+@node yuv4mpeg pipe through mpeg2enc
+@subsubsection yuv4mpeg pipe through mpeg2enc
+@cindex yuv4mpeg pipe through mpeg2enc
+@cindex mpeg2enc, yuv4mpeg pipe
 
 The mplex program from @b{mjpegtools} must be installed.  The mjpegtools
 package is built in the hvirtual distribution and the mplex utility may be
 extracted from there.
-
-First, make sure you properly defined your cinelerra project format before
-rendering your video (menu @b{Settings->Format}).  PAL is 720x576 at 25 frames
-per second, and NTSC is 720x480 at 29.97 frames per second.
 
 @enumerate 1
 @item Create a script @file{~/cine_render.sh}
@@ -8525,7 +8794,7 @@ per second, and NTSC is 720x480 at 29.97 frames per second.
 -b 8600 -f 8 -o $1}
 @item Put the execute permissions on that file:
 @command{chmod 777 ~/cine_render.sh}
-@item Open cinelerra, and select the part of the video you want to render with
+@item Within Cinelerra, and select the part of the project you want to render with
 the [ and ] points
 @item Press @kbd{SHIFT-R}
 @item Select the @b{YUV4MPEG Stream} file format
@@ -8578,6 +8847,59 @@ Please read the mjpegtools'manual and subscribe to its mailing-list for more
 information.
 @end itemize
 
+@c cincvdoc_node_number_364
+@node yuv4mpeg pipe through ffmpeg
+@subsubsection yuv4mpeg pipe through ffmpeg
+@cindex yuv4mpeg pipe through ffmpeg
+
+@enumerate 1
+@item Select @b{File->Render...} or press @key{SHIFT-R}. The render dialog pops up. 
+@item In the render dialog, you have the choice to render 1. the entire project, or 
+2. the highlighted selection, or 3. from In-point "[" to Out-point "]".
+@item Make sure the @b{Insertion strategy} is "Create new resources only".
+@item Select the @b{AC3} audio output file format.
+@item Specify the audio output file name and path (example:
+@command{your-movie.ac3}).
+@item Select @b{Render audio tracks} and deselect @b{Render video tracks}.
+@item Click on the wrench next to "Audio:". A new dialog "Cinelerra: Audio Compression" 
+pops up.
+@item Set the bitrate to @b{128 kbps} (or leave it there).
+@item Click OK, the compression dialog disappears.
+@item In the render dialog, click OK, the dialogu disappears. Audio is rendered. 
+Rendering audio is much faster than rendering video but might still take some seconds. 
+Watch the progress bar in the main window's lower right corner.
+@item Again, press @key{SHIFT-R}. The render dialog pops up again.
+@item Select the @b{YUV4MPEG Stream} file format.
+@item Specify the video output file name and path (example:
+@command{your-movie.m2v}).
+@item Deselect @b{Render audio tracks} and select @b{Render video tracks}.
+@item Click on the wrench next to "Video:". A new dialog window "Cinelerra: YUV4MPEG 
+stream" pops up. The first textbox should already contain the output filename and path 
+you had specified in the render dialog.
+@item Select "Use Pipe:".
+@item Fill the following command line into the second textbox: @*
+@command{ffmpeg -f yuv4mpegpipe -i - -y -target dvd -flags +ilme+ildct %}
+@item Click OK in the yuv4mpeg dialog and in the render dialog to render video output.
+@item The resulting .m2v can be further processed together with the .ac3 audio with 
+the following shell command, producing a dvd-compatible mpeg stream:@*
+@command{ffmpeg -i your-movie.ac3 -i your-movie.m2v -target dvd -flags
++ilme+ildct your-movie.mpg} (Yes, the stream is sent through ffmpeg a second time.)
+@end enumerate
+
+Note on ffmpeg command line options:@*
+@command{-i} tells ffmpeg to read from standard input (in our pipe, this means from 
+Cinelerra's render stream).@*
+The @command{-y} option allows to overwrite existing target files (of course, it is 
+safer to omit this, but then you must make sure to rename or delete previous results 
+each time you want to render a new version).@*
+The @command{+ilme+ildct} flags are for proper interlacing, bottom fields first, tested 
+with PAL footage. Some Cinelerra versions suggest a similar command line in the ffmpeg 
+pipe presets for DVD, however with erroneous syntax of the interlacing flags or 
+without the flags.
+
+Before proceeding to put your rendered mpeg2 data on DVD, you might want to watch and 
+check your-movie.mpg in mplayer or xine/kaffeine.
+			
 @c cincvdoc_node_number_265
 @node Making a DVD menu
 @subsection Making a DVD menu
@@ -8900,6 +9222,7 @@ uses.
 * Panning and zooming still images::
 * HDV 1080i editing using proxy files::
 * Adding subtitles::
+* Creating DVD video from Lower Quality Footage::
 @end menu
 
 @c cincvdoc_node_number_270
@@ -9674,6 +9997,9 @@ There are some existing localizations for cinelerra:
 @item @b{SL} - Slovenian
 @end itemize
 
+If your distribution has only UTF-8 support (like Ubuntu), you must create
+the language charset first. @xref{Environment variables}.
+
 @c cincvdoc_node_number_290
 @node Updating an existing translation
 @subsection Updating an existing translation
@@ -9780,6 +10106,10 @@ and press @b{Play} on the camcorder.  You should not run any heavy ressources
 consuming task on your computer since the lack of caching in test-mpeg2 causes
 framedrops.
 
+New version of dvgrab seems to support HDV. Minimal example:@*
+Syntax:@*
+@command{dvgrab -format mpeg2 myclip}
+
 @c cincvdoc_node_number_345
 @node Using TOC and WAV files
 @subsection Using TOC and WAV files
@@ -9829,6 +10159,8 @@ Cinelerra "Save", some problem can occur.  Sometimes the tags are not closed,
 ACODEC contains some \001 characters.  Edit the file manually or use the
 following command:@*
 @command{cat temp001.xml| tr -d `\001` > /tmp/1 ; mv /tmp/1 temp001.xml}
+
+Update: Recent version of Cinelerra seems to produce valid XML.
 
 @c cincvdoc_node_number_348
 @node Rendering the HDV project
@@ -9912,6 +10244,119 @@ is an example.  Adapt the options to your needs:@*
 -lavcopts vcodec=mpeg4:vhq:vbitrate=1000 -oac mp3lame -lameopts br=256:vol=1
 -ffourcc DIVX -o <converted_video.avi>}
 @end itemize
+
+@c cincvdoc_node_number_365
+@node Creating DVD video from Lower Quality Footage
+@section Creating DVD video from Lower Quality Footage
+@cindex Creating DVD video from Lower Quality Footage
+
+This section is for those who want to create PAL or NTSC DVD-format videos, using 
+lower quality source footage such as that sourced on the net, or from cheap cameras 
+such as SD-cams.
+
+Typically, SD cameras produce progressive footage at framerates of 10-30fps at 
+frame sizes like 640x480. Footage sourced online can have framerates as slow as 8fps 
+and frame sizes as small as 320x240.
+
+This section outlines a recipe for making the most of this limited quality footage, 
+and minimising any further quality losses.@*
+The steps we will follow are:
+@enumerate 1
+@item Up-sample the frame size
+@item Convert to yuv4mpeg format
+@item Up-sample the framerate with motion interpolation
+@item Import into Cinelerra without loss
+@item Interlace appropriately before DVD export
+@end enumerate
+
+This technique requires that you have ffmpeg, mjpegtools and yuvmotionfps installed. 
+You will likely already have ffmpeg and mjpegtools installed on your system. If not, 
+you can get them from your distro feeds. But will need to get yourself a copy of 
+yuvmotionfps from: @uref{http://jcornet.free.fr/linux/yuvmotionfps.html}. 
+yuvmotionfps is a great "poor man's" free/opensource equivalent of the 'Twixtor' 
+plugin on Adobe Premiere.
+
+We will perform steps 1-3 with 2 shell commands, and create temporary .yuv and .wav 
+files ready to import into Cinelerra. Note too that we're assuming you want to 
+create a PAL-DVD project, which is 25fps interlaced, 720x576 framesize. 
+Convert these figures below to the NTSC framerate and framesize if you are creating 
+an NTSC-DVD project.
+
+Assume you have your source footage in the file @file{myfootage.avi}
+
+The shell command to separate out the audio is:@*
+@command{ffmpeg -i myfootage.avi -f wav myfootage.wav}@*
+
+The shell command to separate out the video, upsample the framesize and
+framerate is:@*
+@command{ffmpeg -i myfootage.avi -s 720x576 -f yuv4mpegpipe -vcodec pgmyuv - |
+yuvmotionfps -r 50:1 > myfootage.yuv}
+
+After executing both these commands, you should have separated audio and video files
+ready for Cinelerra.
+
+Now, make sure that in your Cinelerra project options, you have set the framerate to 
+50fps. This is crucial, otherwise you will get a quality loss and jerky motion after 
+rendering. (The sad thing is that this quality loss may not even show until you have 
+mastered your DVD and are playing it to others - embarrassing). But with your project 
+framerate at 50fps, you should be able to avoid this.
+
+Now, import your new separated and converted video and audio files into Cinelerra. 
+Apply effects as needed, such as colour corrections, zooms etc. Step through the 
+frames, and verify that you see motion change with every frame. If you've got this, 
+then you're on track.
+
+Now, when you're ready to render, add one last effect to your video, and make sure 
+this effect sits at the bottom of your effect stack. Select the entire duration of 
+your video, and add the @b{Fields to frames} effect. Your footage is sitting within 
+Cinelerra as 50fps progressive, and this effect will correctly convert it to 25fps 
+interlaced. I'd suggest setting @b{Bottom fields first} initially, and changing 
+this later if it doesn't play properly on your DVD player.
+	
+To render, I'd suggest you use the recipe on the Crazed Mule Productions
+website:
+@uref{http://crazedmuleproductions.blogspot.com/2007/06/beginners-guide-to-exporting-video-from.html#dvd}
+But, contrary to this recipe, leave in the @command{-ilme -ildct} options. 
+Depending on your ffmpeg version, you may need to change this to @command{-flags
++ilme+ildct}
+
+After this, you should end up with video that plays on a wide variety of consumer 
+DVD players with good, flicker-free motion.
+	
+@b{Tweaking}
+
+Here are some ideas for tweaks, in case you're getting less than perfect
+results:@*
+
+@itemize @bullet
+@item When initially separating audio/video with the ffmpeg command, cut out the frame 
+size upsampling - remove the @command{-s 720x576} option - perform the size upsampling 
+within Cinelerra using the camera/projector settings.
+@item In the final @b{Fields to frames} effect, switch between @b{Top fields
+first} and @b{Bottom fields first}
+@item Disable the @b{Fields to frames} effect in Cinelerra, and delay the reinterlacing 
+to the render stage. Get the alternative version of yuvdeinterlace from
+@uref{http://silicontrip.net/~mark/lavtools/}, and when rendering, put:
+@command{yuvdeinterlace -i -t |} before the @command{ffmpeg...} part of the yuv4mpegpipe 
+shell command
+@item If the motion looks weird, try different settings in the yuvmotionfps
+command - do @command{yuvmotionfps -h} and look at the various options.
+@end itemize
+
+@b{Warning}
+
+Before you release your DVD to anyone important, make sure to try it on as many 
+consumer DVD appliances and TVs as possible. You don't want to release a DVD into 
+the wild - for sale etc - and have it look like crap on your customer's TV. Even if 
+it looks good on your DVD player and TV, and those of your friends, there could be 
+some appliances out there that handle it badly.
+	
+@b{Conclusion}
+
+With a small amount of experimentation, you should be able to import lower-quality 
+video into Cinelerra, process it and render out to DVD-quality video and end up with 
+the best overall quality that will look as good as possible on the greatest possible 
+range of DVD players and TVs. Good luck!
 
 @c cincvdoc_node_number_293
 @node Troubleshooting

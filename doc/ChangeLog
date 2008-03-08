@@ -1,11 +1,166 @@
+2008-03-08 raffa <raffaella.traniello@livecom.it>
+    
+    * 1.55.EN
+    Chapter 1: Introduction
+    - Updated edition number
+    - Fixed typo (FFMPEG)
+    - Fixed broken links
+    
+    Chapter 2: Installation
+    - Added link to Fedora
+    - Fixed broken links
+    - Added Ubuntu Hardy packages
+    
+    Chapter 5: Loading and saving files
+    - Note on backup.xml with two instances open
+    
+    Chapter 14: Realtime effects
+    - Added title performance tip
+    - Fixed formatting
+    
+    Chapter 16: Transitions
+    - Removed footnote, moved content to the glossary.
+    - Rewritten most of the content.
+
+    
+2008-02-16 raffa <raffaella.traniello@livecom.it>
+    
+    * 1.54.EN
+    Chapter 1: Introduction
+    - Updated edition number
+    - Added a quote form Miro's Wiki about Cinelerra
+    - Added Norval Watson among the contributors
+    - Added Tutorial by Akirad and Howto on transcoding (by cillian)
+    - Added FFMPEG compatibility Howto and miscellaneous links on Interlacing and DVD-Video
+    
+    Chapter 5: Loading and saving files
+    - Modified script for resizing images (note by Helge Nert, ML)
+    - Added descriptions of Imagemagick resizing
+    - Added details to the MPEG1 audio section
+    
+    Chapter 20: Rendering Files
+    - Changed ffmpeg bitrate from -b 430 to -b 430k (by norv)
+    
+    Chapter 21: Tips
+    - Removed description of issues fixed by r1052 (by j6t)
+    
+
+2008-02-09 raffa <raffaella.traniello@livecom.it>
+    
+    Update doc/texinfo.tex to the latest release (04.02.08)
+    
+   
+2008-01-28 raffa <raffaella.traniello@livecom.it>
+    
+    * 1.53.EN
+    Chapter 1: Introduction
+    - Updated edition number
+    
+    Chapter 2: Installation
+    - Improved Ubuntu package description
+    
+    
+2008-01-06 raffa <raffaella.traniello@livecom.it>
+    
+    * 1.52.EN
+    Chapter 1: Introduction
+    - Updated edition number
+    - Added Iñaki Larrañaga Murgoitio “Dooteo” as Basque translator.
+    - Added Paolo Rampino in the contributors' list
+    - Added a reference to doc/TRANSLATIONS for translators
+    - Pointed to doc/README_en for instructions for building the manual in other formats
+    - Pointed to SVN to get the manual sources.
+    - Added a tutorial and a miscellany link
+    
+    Chapter 2: Installation
+    - Added ldconfig in the commands for compilation
+    - Fixed typo mmx32
+    - Added ArtistX live CD (by cillian)
+    - Added Musix live CD
+    - Added Ubuntu Gutsy repos by Paolo Rampino (by cillian and akirad)
+    - Added details about libfaac version for ubuntu 64 (by cillian)
+    - Added 2 Howtos for compilation in Ubuntu Gutsy
+    - Minor changes
+    
+    Chapter 3: Configuration
+    - How to localize Cinelerra on distributions with only UTF-8 support (by Paolo Rampino)
+    
+    Chapter 6: Program Window
+    - Added a note about sample zoom
+    - Added details about the label info dialog
+    - Added notes on patchbay attributes Mute track and Fader
+    - Reordered content (selection of multiple files)
+    - Added a list of editing operations
+    - Minor changes
+    
+    Chapter 21: Tips
+    - Note about creating charset for localizing Cinelerra on distributions with only UTF-8 support (by Paolo Rampino)
+    - Added node 365 about creating DVD video from Lower Quality Footage (by aum)
+    
+    
+2008-01-06 raffa <raffaella.traniello@livecom.it>
+    
+    * doc/TRANSLATIONS - Update
+    Added details to the translation process.
+    Set the Cinelerra CV community as reference for translators.
+       
+    * README_EN Updated
+    Added details in the description of the building of the Manuals from texinfo to all the available formats.
+    
+
+2007-11-04 raffa <raffaella.traniello@livecom.it>
+    
+    * 1.51.EN
+
+    Chapter 1: Introduction
+    - Updated edition number
+    - Reordered and updated the list of contributors
+    - Deleted cogito from the list of application needed to fetch the manual sources
+    - Replaced out of date command for fetching manual sources with FIXME
+    
+    Chapter 2: Installation
+    - Rescued forgotten changes about Gentoo installation made by Cillian on Dokuwiki
+    - Added Ubuntu Gutsy repos by Valentina Messeri
+    
+    Chapter 5: Saving project files
+    - Added details to for fixing media linkage via GUI.
+    
+    Chapter 6: Program Window
+    - Deleted contradictory informations about in/out points and highlighted areas.
+    - Added notes on setting in/out points on highlighted areas.
+    
+    Chapter 8: Compositor window
+    - Added details about cropping and reordered content
+    
+
+2007-10-07 raffa <raffaella.traniello@livecom.it>
+    
+    * 1.50.EN
+
+    Updated edition number
+    
+    Chapter 2: Installation    
+    - Change mmx to mmx32 for 32 bit Pentiums (by karrak)
+    - Add Marillat repository and delete obsolete information (by cosmo)
+    
+    Chapter 6: Program window    
+    - Added description of the Label tab of the Resources window
+    
+    Chapter 20: Rendering files
+    - Adding information on converting flv file to swf and more detail on using flv movie players (by cillian)
+    - Added subsubsection yuv4mpeg pipe through mpeg2enc (node 363) (by kurts-film)
+    - Added subsubsection yuv4mpeg pipe through ffmpeg (node 364) (by kurts-film)
+    
+    Chapter 21: Tips
+    - Added notes on HDV (new dvgrab HDV support and valid XML in recent version of Cinelerra) (by Marcin Kostur)
+    
 
 2007-09-27 Raffaella Traniello
 
      * 1.49.EN 
 
 	Chapter 14 Realtime Effects
-
-	Included changes from the following svn commits:
+	- Included changes from the following svn commits:
 	r1027: Updated Videoscope doc. Added 2 images (manual_images_intl). Patch by Craig Lawson.
 	r1028: Documentation for RGB-601 effect. Patch by Craig Lawson.
 	r1033: Update Threshold documentation. Patch by Craig Lawson.

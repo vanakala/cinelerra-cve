@@ -8,14 +8,27 @@ It is based on "Secrets of Cinelerra", an excellent manual written by Heroine
 Virtual Ltd. Alex Ferrer's TWiki contents was put in by Nicolas Maufrais, who
 worked on the original cinelerra.texi file in order to generate nice manuals.
 
-To fetch the manual sources:
-cg-clone git://scm.pipapo.org/cinelerra/nicolasm
+The manual sources are shipped with Cinelerra's source code. They are Texinfo 
+files and can be easily converted to other formats.
 
-To make the manuals in PDF, HTML and TXT formats, just execute:
-./make_manuals.sh <language code>
-Example: ./make_manuals.sh en
+To make the manuals in PDF, HTML (single page) HTML (one page per chapter, in a 
+folder) and TXT formats just execute the script make_manuals.sh followed by the 
+language code.
 
-Dependency: texinfo has to be installed on your computer.
+Example for converting the English manual:
+	$ cd hvirtual/doc
+	$ ./make_manuals.sh en
+
+To get a folder with one file per chapter in DokuWiki sintax, type: 	
+	$ cd hvirtual/doc
+	$ ./make_wiki.sh en
+
+Dependencies: 
+To build the Manuals the following applications have to be installed on your computer:
+texinfo
+TeX (for Debian or Ubuntu: tetex-bin and tetex-base)
+texi2html
+html2wiki (HTML::WikiConverter, for Ubuntu: is called libhtml-wikiconverter-perl)
 
 The manual can also be converted to Docbook, but you need the CVS version of
 texinfo to do so. The "stable" version of Texinfo cannot produce a correct
