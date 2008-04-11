@@ -1,9 +1,17 @@
 #include <string.h>
 
+#ifdef HAVE_SWSCALER
+extern "C" {
+#include <swscale.h>
+}
+#endif
+
+
 #include "filebase.h"
 #include "quicktime.h"
 #include "ffmpeg.h"
 #include "guicast.h"
+
 
 FFMPEG::FFMPEG(Asset *asset) {
 	this->asset = asset;
@@ -139,23 +147,49 @@ int FFMPEG::convert_cmodel(VFrame *frame_in,  VFrame *frame_out) {
 		color_model_to_pix_fmt(frame_in->get_color_model());
 	PixelFormat pix_fmt_out = 
 		color_model_to_pix_fmt(frame_out->get_color_model());
-
+#ifdef HAVE_SWSCALER
+	// We need a context for swscale
+	struct SwsContext *convert_ctx;
+#endif
 	// do conversion within libavcodec if possible
 	if (pix_fmt_in != PIX_FMT_NB && pix_fmt_out != PIX_FMT_NB) {
 		// set up a temporary pictures from frame_in and frame_out
 		AVPicture picture_in, picture_out;
 		init_picture_from_frame(&picture_in, frame_in);
 		init_picture_from_frame(&picture_out, frame_out);
-
-		int result = img_convert(&picture_out,
-					 pix_fmt_out,
-					 &picture_in,
-					 pix_fmt_in,
-					 frame_in->get_w(),
-					 frame_out->get_h());
+		int result;
+#ifndef HAVE_SWSCALER
+		result = img_convert(&picture_out,
+				     pix_fmt_out,
+				     &picture_in,
+				     pix_fmt_in,
+				     frame_in->get_w(),
+				     frame_out->get_h());
 		if (result) {
 			printf("FFMPEG::convert_cmodel img_convert() failed\n");
 		}
+#else
+		convert_ctx = sws_getContext(frame_in->get_w(), frame_in->get_h(),pix_fmt_in,
+				frame_out->get_w(),frame_out->get_h(),pix_fmt_out,
+				SWS_BICUBIC, NULL, NULL, NULL);
+
+		if(convert_ctx == NULL){
+			printf("FFMPEG::convert_cmodel : swscale context initialization failed\n");
+			return 1;
+		}
+
+		result = sws_scale(convert_ctx, 
+				picture_in.data, picture_in.linesize,
+				frame_in->get_w(), frame_in->get_h(),
+				picture_out.data, picture_out.linesize);
+
+	
+		sws_freeContext(convert_ctx);
+
+		if(result){
+			printf("FFMPEG::convert_cmodel sws_scale() failed\n");
+		}
+#endif
 		return result;
 	}
 
@@ -207,19 +241,47 @@ int FFMPEG::convert_cmodel(AVPicture *picture_in, PixelFormat pix_fmt_in,
 	int cmodel_out = frame_out->get_color_model();
 	PixelFormat pix_fmt_out = color_model_to_pix_fmt(cmodel_out);
 
+#ifdef HAVE_SWSCALER
+	// We need a context for swscale
+	struct SwsContext *convert_ctx;
+#endif
+	int result;
+#ifndef HAVE_SWSCALER
 	// do conversion within libavcodec if possible
 	if (pix_fmt_out != PIX_FMT_NB) {
-		int result = img_convert(&picture_out,
-					 pix_fmt_out,
-					 picture_in,
-					 pix_fmt_in,
-					 width_in,
-					 height_in);
+		result = img_convert(&picture_out,
+				     pix_fmt_out,
+				     picture_in,
+				     pix_fmt_in,
+				     width_in,
+				     height_in);
 		if (result) {
 			printf("FFMPEG::convert_cmodel img_convert() failed\n");
 		}
 		return result;
 	}
+#else
+	convert_ctx = sws_getContext(width_in, height_in,pix_fmt_in,
+				     frame_out->get_w(),frame_out->get_h(),pix_fmt_out,
+				     SWS_BICUBIC, NULL, NULL, NULL);
+
+	if(convert_ctx == NULL){
+	  printf("FFMPEG::convert_cmodel : swscale context initialization failed\n");
+	  return 1;
+	}
+
+	result = sws_scale(convert_ctx, 
+			   picture_in->data, picture_in->linesize,
+			   width_in, height_in,
+			   picture_out.data, picture_out.linesize);
+
+	
+		sws_freeContext(convert_ctx);
+
+		if(result){
+			printf("FFMPEG::convert_cmodel sws_scale() failed\n");
+		}
+#endif
 	
 	// make an intermediate temp frame only if necessary
 	int cmodel_in = pix_fmt_to_color_model(pix_fmt_in);

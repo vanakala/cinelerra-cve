@@ -3,7 +3,7 @@
 
 extern "C" {
 #include <avcodec.h>
-};
+}
 
 #include "asset.h"
 #include "guicast.h"

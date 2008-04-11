@@ -345,8 +345,29 @@ AC_SUBST(CPU_CFLAGS)
 AC_ARG_WITH([external-ffmpeg], AC_HELP_STRING([--with-external-ffmpeg], [use external ffmpeg library]))
 
 if test "x$with_external_ffmpeg" = "xyes"; then
-     PKG_CHECK_MODULES([FFMPEG], [libavcodec libpostproc])
+     PKG_CHECK_MODULES([FFMPEG_TEMP], [libavcodec libpostproc])
      FFMPEG_FOLDER=""
+     FFMPEG_EXTERNALTEXT="External ffmpeg"
+		   
+     dnl --------------------------------------------------------------
+     dnl check if libavcodec contains img_convert
+     dnl if not, that means that libswscale is compiled in
+     
+     AC_MSG_CHECKING(for ffmpeg swscale support)
+     saved_LIBS="$LIBS"
+     LIBS="$saved_LIBS $FFMPEG_TEMP_LIBS"
+     AC_TRY_LINK([#include <libavcodec/avcodec.h>],
+		 [img_convert(0, 0, 0,0,0,0)],
+		 enable_ffmpeg_swscale=no,enable_ffmpeg_swscale=yes)
+     LIBS="$saved_LIBS"
+     AC_MSG_RESULT($enable_ffmpeg_swscale)
+     if test x"$enable_ffmpeg_swscale" = xyes; then
+	     dnl AC_DEFINE(HAVE_SWSCALER)
+	     PKG_CHECK_MODULES([FFMPEG], [libavcodec libpostproc libswscale])
+	     FFMPEG_CFLAGS="$FFMPEG_CFLAGS -I/usr/include/libavcodec -I/usr/include/libswscale -DHAVE_SWSCALER"
+     else
+	     PKG_CHECK_MODULES([FFMPEG], [libavcodec libpostproc])
+     fi
      FFMPEG_EXTERNALTEXT="External ffmpeg"
 else
      FFMPEG_FOLDER=ffmpeg
