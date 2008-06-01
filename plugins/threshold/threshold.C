@@ -461,13 +461,13 @@ static TYPE scale_to_range(int v)
 }
 
 template<>
-static inline float scale_to_range(int v)
+inline float scale_to_range(int v)
 {
 	return (float) v / 0xff;
 }
 
 template<>
-static inline uint16_t scale_to_range(int v)
+inline uint16_t scale_to_range(int v)
 {
 	return v << 8 | v;
 }
