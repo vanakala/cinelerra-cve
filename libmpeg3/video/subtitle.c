@@ -2,6 +2,7 @@
 #include "mpeg3protos.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 static unsigned char get_nibble(unsigned char **ptr, int *nibble)
 {

@@ -17,6 +17,7 @@
 
 #include <stdlib.h>
 #include <stdint.h>
+#include <string.h>
 
 #ifndef HAVE_STDINT_H
 #define HAVE_STDINT_H

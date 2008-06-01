@@ -29,6 +29,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include "colormodels.h"
 #include "config.h"
 #include "global.h"
