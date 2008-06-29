@@ -20,10 +20,8 @@ AC_DISABLE_STATIC
 AC_PROG_LIBTOOL
 
 # hack for libtool 1.5 -- this is ugly and probably wrong, but works
-if test `libtool --version | grep ltmain.sh | cut -b 25-27` = "1.5"; then
-   LTC_FLAGS="--tag=CC"
-   LTCXX_FLAGS="--tag=CXX"
-fi
+LTC_FLAGS="--tag=CC"
+LTCXX_FLAGS="--tag=CXX"
 AC_SUBST(LTC_FLAGS)
 AC_SUBST(LTCXX_FLAGS)
 
