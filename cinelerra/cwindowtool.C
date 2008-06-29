@@ -1736,8 +1736,10 @@ int CWindowMaskBeforePlugins::handle_event()
 		point,
 		1);
 
-	keyframe->apply_before_plugins = get_value();
-	gui->update_preview();
+	if (keyframe) {
+		keyframe->apply_before_plugins = get_value();
+		gui->update_preview();
+	}
 	return 1;
 }
 
