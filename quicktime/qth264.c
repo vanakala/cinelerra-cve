@@ -506,6 +506,9 @@ static quicktime_h264_codec_t* init_common(quicktime_video_map_t *vtrack,
 
 	codec = (quicktime_h264_codec_t*)codec_base->priv;
 	x264_param_default(&codec->param);
+#if X264_BUILD >= 48
+	codec->param.rc.i_rc_method = X264_RC_CQP;
+#endif
 
 
 	return codec;
