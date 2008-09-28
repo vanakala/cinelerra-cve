@@ -671,7 +671,11 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 
         	context->b_quant_factor = 1.25;
         	context->b_quant_offset = 1.25;
+#if LIBAVCODEC_VERSION_INT < ((52<<16)+(0<<8)+0)
 			context->error_resilience = FF_ER_CAREFUL;
+#else
+			context->error_recognition = FF_ER_CAREFUL;
+#endif
 			context->error_concealment = 3;
 			context->frame_skip_cmp = FF_CMP_DCTMAX;
 			context->ildct_cmp = FF_CMP_VSAD;
