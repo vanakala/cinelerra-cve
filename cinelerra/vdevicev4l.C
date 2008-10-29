@@ -142,7 +142,7 @@ int VDeviceV4L::v4l_init()
 
 		capture_frame_number = 0;
 
-		if((long)capture_buffer < 0)
+		if(capture_buffer == MAP_FAILED)
 		{
 // Use read instead.
 			perror("VDeviceV4L::v4l_init mmap");
