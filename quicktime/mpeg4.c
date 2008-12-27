@@ -1272,6 +1272,15 @@ void quicktime_init_codec_xvid(quicktime_video_map_t *vtrack)
     result->ffmpeg_id = CODEC_ID_MPEG4;
 }
 
+void quicktime_init_codec_dnxhd(quicktime_video_map_t *vtrack)
+{
+    quicktime_mpeg4_codec_t *result = init_common(vtrack,
+        QUICKTIME_DNXHD,
+        "DNXHD",
+        "DNXHD");
+    result->ffmpeg_id = CODEC_ID_DNXHD;
+}
+
 // field based MPEG-4
 void quicktime_init_codec_hv60(quicktime_video_map_t *vtrack)
 {

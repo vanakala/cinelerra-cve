@@ -111,6 +111,7 @@ enum CodecID {
     CODEC_ID_AASC,
     CODEC_ID_INDEO2,
     CODEC_ID_FRAPS,
+    CODEC_ID_DNXHD,
 
     /* various pcm "codecs" */
     CODEC_ID_PCM_S16LE= 0x10000,

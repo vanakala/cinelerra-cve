@@ -23,6 +23,7 @@ extern "C" {
 #define QUICKTIME_MP42 "MP42"
 #define QUICKTIME_DIVX "DIVX"
 #define QUICKTIME_XVID "XVID"
+#define QUICKTIME_DNXHD "AVdn"
 #define QUICKTIME_MP4V "mp4v"
 
 #define QUICKTIME_H264 "avc1"

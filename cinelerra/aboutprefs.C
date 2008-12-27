@@ -101,6 +101,7 @@ mpeg3_release());
 "Mark Taraba\n"
 "Andraz Tori\n"
 "Jonas Wulff\n"
+"David Arendt\n"
 
 );
 	draw_text(x, y, credits);
