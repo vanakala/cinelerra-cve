@@ -6,6 +6,7 @@
 #include "mutex.h"
 #include "pluginaclient.h"
 #include "vframe.inc"
+#include <vector>
 
 
 
@@ -97,16 +98,11 @@ public:
 
 
 	void load_configuration();
-	void reset();
-	void reconfigure();
 	void update_gui();
 
 
 
-	double *buffer;
-	int64_t allocation;
-	int64_t input_start;
-	int need_reconfigure;
+	std::vector<double> buffer;
 	DelayAudioThread *thread;
 	BC_Hash *defaults;
 	DelayAudioConfig config;

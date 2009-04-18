@@ -5,7 +5,7 @@
 #include "filexml.h"
 #include "picon_png.h"
 #include "vframe.h"
-
+#include <algorithm>
 #include <string.h>
 
 #include <libintl.h>
@@ -21,9 +21,10 @@ PluginClient* new_plugin(PluginServer *server)
 
 
 DelayAudio::DelayAudio(PluginServer *server)
- : PluginAClient(server)
+ : PluginAClient(server),
+	thread(0),
+	defaults(0)
 {
-	reset();
 	load_defaults();
 }
 
@@ -38,8 +39,6 @@ DelayAudio::~DelayAudio()
 
 	save_defaults();
 	delete defaults;
-	
-	if(buffer) delete [] buffer;
 }
 
 
@@ -53,27 +52,12 @@ char* DelayAudio::plugin_title() { return N_("Delay audio"); }
 int DelayAudio::is_realtime() { return 1; }
 
 
-void DelayAudio::reset()
-{
-	need_reconfigure = 1;
-	buffer = 0;
-	thread = 0;
-}
-
 void DelayAudio::load_configuration()
 {
 	KeyFrame *prev_keyframe;
 	prev_keyframe = get_prev_keyframe(get_source_position());
 	
-	DelayAudioConfig old_config;
-	old_config.copy_from(config);
  	read_data(prev_keyframe);
-
- 	if(!old_config.equivalent(config))
- 	{
-// Reconfigure
-		need_reconfigure = 1;
-	}
 }
 
 int DelayAudio::load_defaults()
@@ -131,53 +115,49 @@ void DelayAudio::save_data(KeyFrame *keyframe)
 	output.terminate_string();
 }
 
-void DelayAudio::reconfigure()
-{
-	input_start = (int64_t)(config.length * PluginAClient::project_sample_rate + 0.5);
-	int64_t new_allocation = input_start + PluginClient::in_buffer_size;
-	double *new_buffer = new double[new_allocation];
-	bzero(new_buffer, sizeof(double) * new_allocation);
-
-// printf("DelayAudio::reconfigure %f %d %d %d\n", 
-// config.length, 
-// PluginAClient::project_sample_rate, 
-// PluginClient::in_buffer_size,
-// new_allocation);
-// 
-
-
-	if(buffer)
-	{
-		int size = MIN(new_allocation, allocation);
-
-		memcpy(new_buffer, 
-			buffer, 
-			(size - PluginClient::in_buffer_size) * sizeof(double));
-		delete [] buffer;
-	}
-
-	allocation = new_allocation;
-	buffer = new_buffer;
-	allocation = new_allocation;
-	need_reconfigure = 0;
-}
-
 int DelayAudio::process_realtime(int64_t size, double *input_ptr, double *output_ptr)
 {
 	load_configuration();
-	if(need_reconfigure) reconfigure();
+	int64_t num_delayed = int64_t(config.length * PluginAClient::project_sample_rate + 0.5);
 
 // printf("DelayAudio::process_realtime %d %d\n",
 // input_start, size);
 
+	// Examples:
+	//     buffer  size   num_delayed
+	// A:    2       5        2        short delay
+	// B:   10       5       10        long delay
+	// C:    1       5       10        long delay, beginning
+	// D:    1       5        2        short delay, beginning
+	// E:   10       5        2        short delay after long delay
 
+	int64_t num_silence = num_delayed - buffer.size();
+	if (size < num_silence)
+		num_silence = size;
 
-	memcpy(buffer + input_start, input_ptr, size * sizeof(double));
-	memcpy(output_ptr, buffer, size * sizeof(double));
+	// Ex num_silence ==  A: 0, B: 0, C: 5, D: 1, E: -8
 
-	for(int i = size, j = 0; i < allocation; i++, j++)
+	buffer.insert(buffer.end(), input_ptr, input_ptr + size);
+
+	// Ex buffer.size() ==  A: 7, B: 15, C: 6, D: 6, E: 15
+
+	if (num_silence > 0)
 	{
-		buffer[j] = buffer[i];
+		output_ptr = std::fill_n(output_ptr, num_silence, 0.0);
+		size -= num_silence;
+	}
+	// Ex size ==  A: 5, B: 5, C: 0, D: 4, E: 5
+
+	if (buffer.size() >= num_delayed + size)
+	{
+		std::vector<double>::iterator from = buffer.end() - (num_delayed + size);
+		// usually, from == buffer.begin(); but if the delay has just been
+		// reduced compared to the previous frame, then we drop samples
+
+		// Ex from points to idx A: 0, B: 0, C: n/a, D: 0, E: 8
+
+		std::copy(from, from + size, output_ptr);
+		buffer.erase(buffer.begin(), from + size);
 	}
 
 	return 0;
