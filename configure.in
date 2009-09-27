@@ -269,7 +269,7 @@ AC_ARG_ENABLE(css,
 
 ############## libx264
 LIBX264_LIBS=""
-AC_CHECK_LIB(x264, x264_encoder_open,
+AC_CHECK_LIB(x264, x264_encoder_close,
 	[libx264=yes LIBX264_LIBS=-lx264],,-lpthread -lm)
 if test "x$with_pic" = "xyes"; then
 	AC_CHECK_LIB(x264_pic, x264_encoder_open,
