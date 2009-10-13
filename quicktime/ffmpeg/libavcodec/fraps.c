@@ -1,36 +1,41 @@
 /*
  * Fraps FPS1 decoder
  * Copyright (c) 2005 Roine Gustafsson
+ * Copyright (c) 2006 Konstantin Shishkov
  *
- * This library is free software; you can redistribute it and/or
+ * This file is part of FFmpeg.
+ *
+ * FFmpeg is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful,
+ * FFmpeg is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * License along with FFmpeg; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
- 
+
 /**
  * @file fraps.c
  * Lossless Fraps 'FPS1' decoder
  * @author Roine Gustafsson <roine at users sf net>
- * 
- * Only decodes version 0 and 1 files.
+ * @author Konstantin Shishkov
+ *
  * Codec algorithm for version 0 is taken from Transcode <www.transcoding.org>
  *
- * Version 2 files, which are the most commonly found Fraps files, cannot be
- * decoded yet.
+ * Version 2 files support by Konstantin Shishkov
  */
- 
+
 #include "avcodec.h"
+#include "bitstream.h"
+#include "huffman.h"
+#include "bytestream.h"
+#include "dsputil.h"
 
 #define FPS_TAG MKTAG('F', 'P', 'S', 'x')
 
@@ -40,6 +45,8 @@
 typedef struct FrapsContext{
     AVCodecContext *avctx;
     AVFrame frame;
+    uint8_t *tmpbuf;
+    DSPContext dsp;
 } FrapsContext;
 
 
@@ -48,20 +55,69 @@ typedef struct FrapsContext{
  * @param avctx codec context
  * @return 0 on success or negative if fails
  */
-static int decode_init(AVCodecContext *avctx)
+static av_cold int decode_init(AVCodecContext *avctx)
 {
     FrapsContext * const s = avctx->priv_data;
 
     avctx->coded_frame = (AVFrame*)&s->frame;
-    avctx->has_b_frames = 0;
     avctx->pix_fmt= PIX_FMT_NONE; /* set in decode_frame */
 
     s->avctx = avctx;
-    s->frame.data[0] = NULL;    
+    s->frame.data[0] = NULL;
+    s->tmpbuf = NULL;
+
+    dsputil_init(&s->dsp, avctx);
 
     return 0;
 }
 
+/**
+ * Comparator - our nodes should ascend by count
+ * but with preserved symbol order
+ */
+static int huff_cmp(const void *va, const void *vb){
+    const Node *a = va, *b = vb;
+    return (a->count - b->count)*256 + a->sym - b->sym;
+}
+
+/**
+ * decode Fraps v2 packed plane
+ */
+static int fraps2_decode_plane(FrapsContext *s, uint8_t *dst, int stride, int w,
+                               int h, const uint8_t *src, int size, int Uoff,
+                               const int step)
+{
+    int i, j;
+    GetBitContext gb;
+    VLC vlc;
+    Node nodes[512];
+
+    for(i = 0; i < 256; i++)
+        nodes[i].count = bytestream_get_le32(&src);
+    size -= 1024;
+    if (ff_huff_build_tree(s->avctx, &vlc, 256, nodes, huff_cmp,
+                           FF_HUFFMAN_FLAG_ZERO_COUNT) < 0)
+        return -1;
+    /* we have built Huffman table and are ready to decode plane */
+
+    /* convert bits so they may be used by standard bitreader */
+    s->dsp.bswap_buf((uint32_t *)s->tmpbuf, (const uint32_t *)src, size >> 2);
+
+    init_get_bits(&gb, s->tmpbuf, size * 8);
+    for(j = 0; j < h; j++){
+        for(i = 0; i < w*step; i += step){
+            dst[i] = get_vlc2(&gb, vlc.table, 9, 3);
+            /* lines are stored as deltas between previous lines
+             * and we need to add 0x80 to the first lines of chroma planes
+             */
+            if(j) dst[i] += dst[i - stride];
+            else if(Uoff) dst[i] += 0x80;
+        }
+        dst += stride;
+    }
+    free_vlc(&vlc);
+    return 0;
+}
 
 /**
  * decode a frame
@@ -72,9 +128,9 @@ static int decode_init(AVCodecContext *avctx)
  * @param buf_size size of input data frame
  * @return number of consumed bytes on success or negative if decode fails
  */
-static int decode_frame(AVCodecContext *avctx, 
+static int decode_frame(AVCodecContext *avctx,
                         void *data, int *data_size,
-                        uint8_t *buf, int buf_size)
+                        const uint8_t *buf, int buf_size)
 {
     FrapsContext * const s = avctx->priv_data;
     AVFrame *frame = data;
@@ -82,59 +138,61 @@ static int decode_frame(AVCodecContext *avctx,
     uint32_t header;
     unsigned int version,header_size;
     unsigned int x, y;
-    uint32_t *buf32;
+    const uint32_t *buf32;
     uint32_t *luma1,*luma2,*cb,*cr;
+    uint32_t offs[4];
+    int i, is_chroma, planes;
 
 
-    header = LE_32(buf);
+    header = AV_RL32(buf);
     version = header & 0xff;
     header_size = (header & (1<<30))? 8 : 4; /* bit 30 means pad to 8 bytes */
 
-    if (version > 1) {
-        av_log(avctx, AV_LOG_ERROR, 
+    if (version > 2 && version != 4 && version != 5) {
+        av_log(avctx, AV_LOG_ERROR,
                "This file is encoded with Fraps version %d. " \
-               "This codec can only decode version 0 and 1.\n", version);
+               "This codec can only decode version 0, 1, 2 and 4.\n", version);
         return -1;
     }
 
     buf+=4;
     if (header_size == 8)
         buf+=4;
-        
+
     switch(version) {
     case 0:
     default:
         /* Fraps v0 is a reordered YUV420 */
         avctx->pix_fmt = PIX_FMT_YUV420P;
 
-        if ( (buf_size != avctx->width*avctx->height*3/2+header_size) && 
+        if ( (buf_size != avctx->width*avctx->height*3/2+header_size) &&
              (buf_size != header_size) ) {
             av_log(avctx, AV_LOG_ERROR,
-                   "Invalid frame length %d (should be %d)\n", 
+                   "Invalid frame length %d (should be %d)\n",
                    buf_size, avctx->width*avctx->height*3/2+header_size);
             return -1;
         }
-        
+
         if (( (avctx->width % 8) != 0) || ( (avctx->height % 2) != 0 )) {
-            av_log(avctx, AV_LOG_ERROR, "Invalid frame size %dx%d\n", 
+            av_log(avctx, AV_LOG_ERROR, "Invalid frame size %dx%d\n",
                    avctx->width, avctx->height);
             return -1;
         }
 
-        f->reference = 1; 
-        f->buffer_hints = FF_BUFFER_HINTS_VALID | 
-                          FF_BUFFER_HINTS_PRESERVE | 
+        f->reference = 1;
+        f->buffer_hints = FF_BUFFER_HINTS_VALID |
+                          FF_BUFFER_HINTS_PRESERVE |
                           FF_BUFFER_HINTS_REUSABLE;
         if (avctx->reget_buffer(avctx, f)) {
             av_log(avctx, AV_LOG_ERROR, "reget_buffer() failed\n");
             return -1;
-        }        
+        }
         /* bit 31 means same as previous pic */
-        f->pict_type = (header & (1<<31))? FF_P_TYPE : FF_I_TYPE; 
+        f->pict_type = (header & (1<<31))? FF_P_TYPE : FF_I_TYPE;
         f->key_frame = f->pict_type == FF_I_TYPE;
 
-        if (f->pict_type == FF_I_TYPE) { 
-            buf32=(uint32_t*)buf;
+        if (f->pict_type == FF_I_TYPE) {
+            buf32=(const uint32_t*)buf;
             for(y=0; y<avctx->height/2; y++){
                 luma1=(uint32_t*)&f->data[0][ y*2*f->linesize[0] ];
                 luma2=(uint32_t*)&f->data[0][ (y*2+1)*f->linesize[0] ];
@@ -156,9 +214,9 @@ static int decode_frame(AVCodecContext *avctx,
         /* Fraps v1 is an upside-down BGR24 */
         avctx->pix_fmt = PIX_FMT_BGR24;
 
-        if ( (buf_size != avctx->width*avctx->height*3+header_size) && 
+        if ( (buf_size != avctx->width*avctx->height*3+header_size) &&
              (buf_size != header_size) ) {
-            av_log(avctx, AV_LOG_ERROR, 
+            av_log(avctx, AV_LOG_ERROR,
                    "Invalid frame length %d (should be %d)\n",
                    buf_size, avctx->width*avctx->height*3+header_size);
             return -1;
@@ -185,30 +243,91 @@ static int decode_frame(AVCodecContext *avctx,
         break;
 
     case 2:
+    case 4:
         /**
-         * Fraps v2 sub-header description. All numbers are little-endian:
-         * (this is all guesswork)
-         *
-         *       0:     DWORD 'FPSx'
-         *       4:     DWORD 0x00000010   unknown, perhaps flags
-         *       8:     DWORD off_2        offset to plane 2
-         *      12:     DWORD off_3        offset to plane 3
-         *      16: 256xDWORD freqtbl_1    frequency table for plane 1
-         *    1040:           plane_1
-         *     ...
-         *   off_2: 256xDWORD freqtbl_2    frequency table for plane 2
-         *                    plane_2
-         *    ...
-         *   off_3: 256xDWORD freqtbl_3    frequency table for plane 3
-         *                    plane_3
+         * Fraps v2 is Huffman-coded YUV420 planes
+         * Fraps v4 is virtually the same
          */
-        if ((BE_32(buf) != FPS_TAG)||(buf_size < (3*1024 + 8))) {
+        avctx->pix_fmt = PIX_FMT_YUV420P;
+        planes = 3;
+        f->reference = 1;
+        f->buffer_hints = FF_BUFFER_HINTS_VALID |
+                          FF_BUFFER_HINTS_PRESERVE |
+                          FF_BUFFER_HINTS_REUSABLE;
+        if (avctx->reget_buffer(avctx, f)) {
+            av_log(avctx, AV_LOG_ERROR, "reget_buffer() failed\n");
+            return -1;
+        }
+        /* skip frame */
+        if(buf_size == 8) {
+            f->pict_type = FF_P_TYPE;
+            f->key_frame = 0;
+            break;
+        }
+        f->pict_type = FF_I_TYPE;
+        f->key_frame = 1;
+        if ((AV_RL32(buf) != FPS_TAG)||(buf_size < (planes*1024 + 24))) {
             av_log(avctx, AV_LOG_ERROR, "Fraps: error in data stream\n");
             return -1;
         }
-
-        /* NOT FINISHED */
-
+        for(i = 0; i < planes; i++) {
+            offs[i] = AV_RL32(buf + 4 + i * 4);
+            if(offs[i] >= buf_size || (i && offs[i] <= offs[i - 1] + 1024)) {
+                av_log(avctx, AV_LOG_ERROR, "Fraps: plane %i offset is out of bounds\n", i);
+                return -1;
+            }
+        }
+        offs[planes] = buf_size;
+        for(i = 0; i < planes; i++){
+            is_chroma = !!i;
+            s->tmpbuf = av_realloc(s->tmpbuf, offs[i + 1] - offs[i] - 1024 + FF_INPUT_BUFFER_PADDING_SIZE);
+            if(fraps2_decode_plane(s, f->data[i], f->linesize[i], avctx->width >> is_chroma,
+                    avctx->height >> is_chroma, buf + offs[i], offs[i + 1] - offs[i], is_chroma, 1) < 0) {
+                av_log(avctx, AV_LOG_ERROR, "Error decoding plane %i\n", i);
+                return -1;
+            }
+        }
+        break;
+    case 5:
+        /* Virtually the same as version 4, but is for RGB24 */
+        avctx->pix_fmt = PIX_FMT_BGR24;
+        planes = 3;
+        f->reference = 1;
+        f->buffer_hints = FF_BUFFER_HINTS_VALID |
+                          FF_BUFFER_HINTS_PRESERVE |
+                          FF_BUFFER_HINTS_REUSABLE;
+        if (avctx->reget_buffer(avctx, f)) {
+            av_log(avctx, AV_LOG_ERROR, "reget_buffer() failed\n");
+            return -1;
+        }
+        /* skip frame */
+        if(buf_size == 8) {
+            f->pict_type = FF_P_TYPE;
+            f->key_frame = 0;
+            break;
+        }
+        f->pict_type = FF_I_TYPE;
+        f->key_frame = 1;
+        if ((AV_RL32(buf) != FPS_TAG)||(buf_size < (planes*1024 + 24))) {
+            av_log(avctx, AV_LOG_ERROR, "Fraps: error in data stream\n");
+            return -1;
+        }
+        for(i = 0; i < planes; i++) {
+            offs[i] = AV_RL32(buf + 4 + i * 4);
+            if(offs[i] >= buf_size || (i && offs[i] <= offs[i - 1] + 1024)) {
+                av_log(avctx, AV_LOG_ERROR, "Fraps: plane %i offset is out of bounds\n", i);
+                return -1;
+            }
+        }
+        offs[planes] = buf_size;
+        for(i = 0; i < planes; i++){
+            s->tmpbuf = av_realloc(s->tmpbuf, offs[i + 1] - offs[i] - 1024 + FF_INPUT_BUFFER_PADDING_SIZE);
+            if(fraps2_decode_plane(s, f->data[0] + i + (f->linesize[0] * (avctx->height - 1)), -f->linesize[0],
+                    avctx->width, avctx->height, buf + offs[i], offs[i + 1] - offs[i], 1, 3) < 0) {
+                av_log(avctx, AV_LOG_ERROR, "Error decoding plane %i\n", i);
+                return -1;
+            }
+        }
         break;
     }
 
@@ -224,13 +343,14 @@ static int decode_frame(AVCodecContext *avctx,
  * @param avctx codec context
  * @return 0 on success or negative if fails
  */
-static int decode_end(AVCodecContext *avctx)
+static av_cold int decode_end(AVCodecContext *avctx)
 {
     FrapsContext *s = (FrapsContext*)avctx->priv_data;
 
     if (s->frame.data[0])
         avctx->release_buffer(avctx, &s->frame);
 
+    av_freep(&s->tmpbuf);
     return 0;
 }
 
@@ -245,4 +365,5 @@ AVCodec fraps_decoder = {
     decode_end,
     decode_frame,
     CODEC_CAP_DR1,
+    .long_name = "Fraps",
 };

@@ -679,6 +679,7 @@ cinelerra_LDADD = \
 	$(top_builddir)/quicktime/libquicktimehv.la \
 	$(top_builddir)/guicast/libguicast.la \
 	$(top_builddir)/libmpeg3/libmpeg3hv.la \
+	@FFMPEG_LIBS@ \
 	$(XIPH_LIBS) \
 	$(A52DEC_LIBS) \
 	$(OPENEXR_LIBS) \

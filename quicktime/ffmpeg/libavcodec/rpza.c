@@ -2,20 +2,21 @@
  * Quicktime Video (RPZA) Video Decoder
  * Copyright (C) 2003 the ffmpeg project
  *
- * This library is free software; you can redistribute it and/or
+ * This file is part of FFmpeg.
+ *
+ * FFmpeg is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful,
+ * FFmpeg is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * License along with FFmpeg; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 /**
@@ -38,17 +39,14 @@
 #include <string.h>
 #include <unistd.h>
 
-#include "common.h"
 #include "avcodec.h"
-#include "dsputil.h"
 
 typedef struct RpzaContext {
 
     AVCodecContext *avctx;
-    DSPContext dsp;
     AVFrame frame;
 
-    unsigned char *buf;
+    const unsigned char *buf;
     int size;
 
 } RpzaContext;
@@ -96,7 +94,7 @@ static void rpza_decode_stream(RpzaContext *s)
             s->buf[stream_ptr]);
 
     /* Get chunk size, ingnoring first byte */
-    chunk_size = BE_32(&s->buf[stream_ptr]) & 0x00FFFFFF;
+    chunk_size = AV_RB32(&s->buf[stream_ptr]) & 0x00FFFFFF;
     stream_ptr += 4;
 
     /* If length mismatch use size from MOV file and try to decode anyway */
@@ -119,8 +117,8 @@ static void rpza_decode_stream(RpzaContext *s)
             colorA = (opcode << 8) | (s->buf[stream_ptr++]);
             opcode = 0;
             if ((s->buf[stream_ptr] & 0x80) != 0) {
-                /* Must behave as opcode 110xxxxx, using colorA computed 
-                 * above. Use fake opcode 0x20 to enter switch block at 
+                /* Must behave as opcode 110xxxxx, using colorA computed
+                 * above. Use fake opcode 0x20 to enter switch block at
                  * the right place */
                 opcode = 0x20;
                 n_blocks = 1;
@@ -138,7 +136,7 @@ static void rpza_decode_stream(RpzaContext *s)
 
         /* Fill blocks with one color */
         case 0xa0:
-            colorA = BE_16 (&s->buf[stream_ptr]);
+            colorA = AV_RB16 (&s->buf[stream_ptr]);
             stream_ptr += 2;
             while (n_blocks--) {
                 block_ptr = row_ptr + pixel_ptr;
@@ -155,10 +153,10 @@ static void rpza_decode_stream(RpzaContext *s)
 
         /* Fill blocks with 4 colors */
         case 0xc0:
-            colorA = BE_16 (&s->buf[stream_ptr]);
+            colorA = AV_RB16 (&s->buf[stream_ptr]);
             stream_ptr += 2;
         case 0x20:
-            colorB = BE_16 (&s->buf[stream_ptr]);
+            colorB = AV_RB16 (&s->buf[stream_ptr]);
             stream_ptr += 2;
 
             /* sort out the colors */
@@ -207,7 +205,7 @@ static void rpza_decode_stream(RpzaContext *s)
                 for (pixel_x = 0; pixel_x < 4; pixel_x++){
                     /* We already have color of upper left pixel */
                     if ((pixel_y != 0) || (pixel_x !=0)) {
-                        colorA = BE_16 (&s->buf[stream_ptr]);
+                        colorA = AV_RB16 (&s->buf[stream_ptr]);
                         stream_ptr += 2;
                     }
                     pixels[block_ptr] = colorA;
@@ -228,14 +226,12 @@ static void rpza_decode_stream(RpzaContext *s)
     }
 }
 
-static int rpza_decode_init(AVCodecContext *avctx)
+static av_cold int rpza_decode_init(AVCodecContext *avctx)
 {
-    RpzaContext *s = (RpzaContext *)avctx->priv_data;
+    RpzaContext *s = avctx->priv_data;
 
     s->avctx = avctx;
     avctx->pix_fmt = PIX_FMT_RGB555;
-    avctx->has_b_frames = 0;
-    dsputil_init(&s->dsp, avctx);
 
     s->frame.data[0] = NULL;
 
@@ -244,9 +240,9 @@ static int rpza_decode_init(AVCodecContext *avctx)
 
 static int rpza_decode_frame(AVCodecContext *avctx,
                              void *data, int *data_size,
-                             uint8_t *buf, int buf_size)
+                             const uint8_t *buf, int buf_size)
 {
-    RpzaContext *s = (RpzaContext *)avctx->priv_data;
+    RpzaContext *s = avctx->priv_data;
 
     s->buf = buf;
     s->size = buf_size;
@@ -267,9 +263,9 @@ static int rpza_decode_frame(AVCodecContext *avctx,
     return buf_size;
 }
 
-static int rpza_decode_end(AVCodecContext *avctx)
+static av_cold int rpza_decode_end(AVCodecContext *avctx)
 {
-    RpzaContext *s = (RpzaContext *)avctx->priv_data;
+    RpzaContext *s = avctx->priv_data;
 
     if (s->frame.data[0])
         avctx->release_buffer(avctx, &s->frame);
@@ -287,4 +283,5 @@ AVCodec rpza_decoder = {
     rpza_decode_end,
     rpza_decode_frame,
     CODEC_CAP_DR1,
+    .long_name = "QuickTime video (RPZA)",
 };

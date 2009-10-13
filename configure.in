@@ -369,8 +369,9 @@ if test "x$with_external_ffmpeg" = "xyes"; then
      FFMPEG_EXTERNALTEXT="External ffmpeg"
 else
      FFMPEG_FOLDER=ffmpeg
-     FFMPEG_CFLAGS="-I\$(top_srcdir)/quicktime/ffmpeg/libavcodec"
-     FFMPEG_LIBS="ffmpeg/libavcodec/libavcodec.la"
+     FFMPEG_CFLAGS="-I\$(top_srcdir)/quicktime/ffmpeg"
+     FFMPEG_LIBS="-L\$(top_builddir)/quicktime/ffmpeg/libavcodec -lavcodec-cinelerra \
+		-L\$(top_builddir)/quicktime/ffmpeg/libavutil -lavutil-cinelerra"
      FFMPEG_EXTERNALTEXT="Internal ffmpeg"
 fi
 
@@ -385,7 +386,8 @@ echo --- FFMPEG CONFIGURATION SECTION --------------
 if test "x$with_external_ffmpeg" = "xyes"; then
 	echo Using external ffmpeg - no configuration needed
 else
-	ff_conf_args=" "
+	ff_conf_args="--disable-ffmpeg --disable-ffserver --disable-ffplay \
+		--disable-static --enable-shared --build-suffix=-cinelerra"
 
 	if test "x$enable_mmx" = "xno"; then
 		ff_conf_args="$ff_conf_args --disable-mmx"
@@ -485,10 +487,6 @@ AC_OUTPUT(Makefile cinelerra-cvs-current.spec po/Makefile.in \
 					libmpeg3/Makefile libmpeg3/video/Makefile libmpeg3/audio/Makefile \
 					quicktime/Makefile \
 					quicktime/encore50/Makefile \
-	quicktime/ffmpeg/Makefile \
-	quicktime/ffmpeg/libavcodec/Makefile \
-	quicktime/ffmpeg/libavcodec/i386/Makefile \
-	quicktime/ffmpeg/libavcodec/ppc/Makefile \
 					mpeg2enc/Makefile toolame-02l/Makefile \
 					guicast/Makefile cinelerra/Makefile \
 	cinelerra/data/Makefile \
