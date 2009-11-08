@@ -2,19 +2,21 @@
  * Assorted DPCM codecs
  * Copyright (c) 2003 The ffmpeg Project.
  *
- * This library is free software; you can redistribute it and/or
+ * This file is part of FFmpeg.
+ *
+ * FFmpeg is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful,
+ * FFmpeg is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * License along with FFmpeg; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 /**
@@ -41,11 +43,9 @@ typedef struct DPCMContext {
     int channels;
     short roq_square_array[256];
     long sample[2];//for SOL_DPCM
-    int *sol_table;//for SOL_DPCM
+    const int *sol_table;//for SOL_DPCM
 } DPCMContext;
 
-#define SATURATE_S16(x)  if (x < -32768) x = -32768; \
-  else if (x > 32767) x = 32767;
 #define SE_16BIT(x)  if (x & 0x8000) x -= 0x10000;
 
 static int interplay_delta_table[] = {
@@ -84,15 +84,15 @@ static int interplay_delta_table[] = {
 
 };
 
-static int sol_table_old[16] =
+static const int sol_table_old[16] =
     { 0x0,  0x1,  0x2 , 0x3,  0x6,  0xA,  0xF, 0x15,
     -0x15, -0xF, -0xA, -0x6, -0x3, -0x2, -0x1, 0x0};
 
-static int sol_table_new[16] =
+static const int sol_table_new[16] =
     { 0x0,  0x1,  0x2,  0x3,  0x6,  0xA,  0xF,  0x15,
       0x0, -0x1, -0x2, -0x3, -0x6, -0xA, -0xF, -0x15};
-    
-static int sol_table_16[128] = {
+
+static const int sol_table_16[128] = {
     0x000, 0x008, 0x010, 0x020, 0x030, 0x040, 0x050, 0x060, 0x070, 0x080,
     0x090, 0x0A0, 0x0B0, 0x0C0, 0x0D0, 0x0E0, 0x0F0, 0x100, 0x110, 0x120,
     0x130, 0x140, 0x150, 0x160, 0x170, 0x180, 0x190, 0x1A0, 0x1B0, 0x1C0,
@@ -110,7 +110,7 @@ static int sol_table_16[128] = {
 
 
 
-static int dpcm_decode_init(AVCodecContext *avctx)
+static av_cold int dpcm_decode_init(AVCodecContext *avctx)
 {
     DPCMContext *s = avctx->priv_data;
     int i;
@@ -130,7 +130,7 @@ static int dpcm_decode_init(AVCodecContext *avctx)
         }
         break;
 
-        
+
     case CODEC_ID_SOL_DPCM:
         switch(avctx->codec_tag){
         case 1:
@@ -149,7 +149,7 @@ static int dpcm_decode_init(AVCodecContext *avctx)
             return -1;
         }
         break;
-     
+
     default:
         break;
     }
@@ -159,7 +159,7 @@ static int dpcm_decode_init(AVCodecContext *avctx)
 
 static int dpcm_decode_frame(AVCodecContext *avctx,
                              void *data, int *data_size,
-                             uint8_t *buf, int buf_size)
+                             const uint8_t *buf, int buf_size)
 {
     DPCMContext *s = avctx->priv_data;
     int in, out = 0;
@@ -173,11 +173,15 @@ static int dpcm_decode_frame(AVCodecContext *avctx,
     if (!buf_size)
         return 0;
 
+    // almost every DPCM variant expands one byte of data into two
+    if(*data_size/2 < buf_size)
+        return -1;
+
     switch(avctx->codec->id) {
 
     case CODEC_ID_ROQ_DPCM:
         if (s->channels == 1)
-            predictor[0] = LE_16(&buf[6]);
+            predictor[0] = AV_RL16(&buf[6]);
         else {
             predictor[0] = buf[7] << 8;
             predictor[1] = buf[6] << 8;
@@ -188,7 +192,7 @@ static int dpcm_decode_frame(AVCodecContext *avctx,
         /* decode the samples */
         for (in = 8, out = 0; in < buf_size; in++, out++) {
             predictor[channel_number] += s->roq_square_array[buf[in]];
-            SATURATE_S16(predictor[channel_number]);
+            predictor[channel_number] = av_clip_int16(predictor[channel_number]);
             output_samples[out] = predictor[channel_number];
 
             /* toggle channel */
@@ -198,12 +202,12 @@ static int dpcm_decode_frame(AVCodecContext *avctx,
 
     case CODEC_ID_INTERPLAY_DPCM:
         in = 6;  /* skip over the stream mask and stream length */
-        predictor[0] = LE_16(&buf[in]);
+        predictor[0] = AV_RL16(&buf[in]);
         in += 2;
         SE_16BIT(predictor[0])
         output_samples[out++] = predictor[0];
         if (s->channels == 2) {
-            predictor[1] = LE_16(&buf[in]);
+            predictor[1] = AV_RL16(&buf[in]);
             in += 2;
             SE_16BIT(predictor[1])
             output_samples[out++] = predictor[1];
@@ -211,7 +215,7 @@ static int dpcm_decode_frame(AVCodecContext *avctx,
 
         while (in < buf_size) {
             predictor[channel_number] += interplay_delta_table[buf[in++]];
-            SATURATE_S16(predictor[channel_number]);
+            predictor[channel_number] = av_clip_int16(predictor[channel_number]);
             output_samples[out++] = predictor[channel_number];
 
             /* toggle channel */
@@ -223,11 +227,11 @@ static int dpcm_decode_frame(AVCodecContext *avctx,
     case CODEC_ID_XAN_DPCM:
         in = 0;
         shift[0] = shift[1] = 4;
-        predictor[0] = LE_16(&buf[in]);
+        predictor[0] = AV_RL16(&buf[in]);
         in += 2;
         SE_16BIT(predictor[0]);
         if (s->channels == 2) {
-            predictor[1] = LE_16(&buf[in]);
+            predictor[1] = AV_RL16(&buf[in]);
             in += 2;
             SE_16BIT(predictor[1]);
         }
@@ -246,7 +250,7 @@ static int dpcm_decode_frame(AVCodecContext *avctx,
             diff >>= shift[channel_number];
             predictor[channel_number] += diff;
 
-            SATURATE_S16(predictor[channel_number]);
+            predictor[channel_number] = av_clip_int16(predictor[channel_number]);
             output_samples[out++] = predictor[channel_number];
 
             /* toggle channel */
@@ -256,6 +260,8 @@ static int dpcm_decode_frame(AVCodecContext *avctx,
     case CODEC_ID_SOL_DPCM:
         in = 0;
         if (avctx->codec_tag != 3) {
+            if(*data_size/4 < buf_size)
+                return -1;
             while (in < buf_size) {
                 int n1, n2;
                 n1 = (buf[in] >> 4) & 0xF;
@@ -275,7 +281,7 @@ static int dpcm_decode_frame(AVCodecContext *avctx,
                 n = buf[in++];
                 if (n & 0x80) s->sample[channel_number] -= s->sol_table[n & 0x7F];
                 else s->sample[channel_number] += s->sol_table[n & 0x7F];
-                SATURATE_S16(s->sample[channel_number]);
+                s->sample[channel_number] = av_clip_int16(s->sample[channel_number]);
                 output_samples[out++] = s->sample[channel_number];
                 /* toggle channel */
                 channel_number ^= s->channels - 1;
@@ -288,46 +294,20 @@ static int dpcm_decode_frame(AVCodecContext *avctx,
     return buf_size;
 }
 
-AVCodec roq_dpcm_decoder = {
-    "roq_dpcm",
-    CODEC_TYPE_AUDIO,
-    CODEC_ID_ROQ_DPCM,
-    sizeof(DPCMContext),
-    dpcm_decode_init,
-    NULL,
-    NULL,
-    dpcm_decode_frame,
+#define DPCM_DECODER(id, name, long_name_)      \
+AVCodec name ## _decoder = {                    \
+    #name,                                      \
+    CODEC_TYPE_AUDIO,                           \
+    id,                                         \
+    sizeof(DPCMContext),                        \
+    dpcm_decode_init,                           \
+    NULL,                                       \
+    NULL,                                       \
+    dpcm_decode_frame,                          \
+    .long_name = long_name_,                    \
 };
 
-AVCodec interplay_dpcm_decoder = {
-    "interplay_dpcm",
-    CODEC_TYPE_AUDIO,
-    CODEC_ID_INTERPLAY_DPCM,
-    sizeof(DPCMContext),
-    dpcm_decode_init,
-    NULL,
-    NULL,
-    dpcm_decode_frame,
-};
-
-AVCodec xan_dpcm_decoder = {
-    "xan_dpcm",
-    CODEC_TYPE_AUDIO,
-    CODEC_ID_XAN_DPCM,
-    sizeof(DPCMContext),
-    dpcm_decode_init,
-    NULL,
-    NULL,
-    dpcm_decode_frame,
-};
-
-AVCodec sol_dpcm_decoder = {
-    "sol_dpcm",
-    CODEC_TYPE_AUDIO,
-    CODEC_ID_SOL_DPCM,
-    sizeof(DPCMContext),
-    dpcm_decode_init,
-    NULL,
-    NULL,
-    dpcm_decode_frame,
-};
+DPCM_DECODER(CODEC_ID_INTERPLAY_DPCM, interplay_dpcm, "Interplay DPCM");
+DPCM_DECODER(CODEC_ID_ROQ_DPCM, roq_dpcm, "id RoQ DPCM");
+DPCM_DECODER(CODEC_ID_SOL_DPCM, sol_dpcm, "Sol DPCM");
+DPCM_DECODER(CODEC_ID_XAN_DPCM, xan_dpcm, "Xan DPCM");

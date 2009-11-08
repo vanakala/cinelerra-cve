@@ -2,20 +2,21 @@
  * TechSmith Camtasia decoder
  * Copyright (c) 2004 Konstantin Shishkov
  *
- * This library is free software; you can redistribute it and/or
+ * This file is part of FFmpeg.
+ *
+ * FFmpeg is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful,
+ * FFmpeg is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * License along with FFmpeg; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 /**
@@ -37,7 +38,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "common.h"
 #include "avcodec.h"
 
 #ifdef CONFIG_ZLIB
@@ -71,13 +71,15 @@ typedef struct TsccContext {
  *              and enhanced to bigger color depths
  *
  */
- 
+
 static int decode_rle(CamtasiaContext *c, unsigned int srcsize)
 {
     unsigned char *src = c->decomp_buf;
     unsigned char *output, *output_end;
     int p1, p2, line=c->height, pos=0, i;
-    
+    uint16_t pix16;
+    uint32_t pix32;
+
     output = c->pic.data[0] + (c->height - 1) * c->pic.linesize[0];
     output_end = c->pic.data[0] + (c->height) * c->pic.linesize[0];
     while(src < c->decomp_buf + srcsize) {
@@ -107,30 +109,46 @@ static int decode_rle(CamtasiaContext *c, unsigned int srcsize)
                 src += p2 * (c->bpp / 8);
                 continue;
             }
-            for(i = 0; i < p2 * (c->bpp / 8); i++) {
-                *output++ = *src++;
+            if ((c->bpp == 8) || (c->bpp == 24)) {
+                for(i = 0; i < p2 * (c->bpp / 8); i++) {
+                    *output++ = *src++;
+                }
+                // RLE8 copy is actually padded - and runs are not!
+                if(c->bpp == 8 && (p2 & 1)) {
+                    src++;
+                }
+            } else if (c->bpp == 16) {
+                for(i = 0; i < p2; i++) {
+                    pix16 = AV_RL16(src);
+                    src += 2;
+                    *(uint16_t*)output = pix16;
+                    output += 2;
+                }
+            } else if (c->bpp == 32) {
+                for(i = 0; i < p2; i++) {
+                    pix32 = AV_RL32(src);
+                    src += 4;
+                    *(uint32_t*)output = pix32;
+                    output += 4;
+                }
             }
-	    // RLE8 copy is actually padded - and runs are not!
-	    if(c->bpp == 8 && (p2 & 1)) {
-		src++;
-	    }
             pos += p2;
         } else { //Run of pixels
             int pix[4]; //original pixel
             switch(c->bpp){
             case  8: pix[0] = *src++;
                      break;
-            case 16: pix[0] = *src++;
-                     pix[1] = *src++;
+            case 16: pix16 = AV_RL16(src);
+                     src += 2;
+                     *(uint16_t*)pix = pix16;
                      break;
             case 24: pix[0] = *src++;
                      pix[1] = *src++;
                      pix[2] = *src++;
                      break;
-            case 32: pix[0] = *src++;
-                     pix[1] = *src++;
-                     pix[2] = *src++;
-                     pix[3] = *src++;
+            case 32: pix32 = AV_RL32(src);
+                     src += 4;
+                     *(uint32_t*)pix = pix32;
                      break;
             }
             if (output + p1 * (c->bpp / 8) > output_end)
@@ -139,25 +157,23 @@ static int decode_rle(CamtasiaContext *c, unsigned int srcsize)
                 switch(c->bpp){
                 case  8: *output++ = pix[0];
                          break;
-                case 16: *output++ = pix[0];
-                         *output++ = pix[1];
+                case 16: *(uint16_t*)output = pix16;
+                         output += 2;
                          break;
                 case 24: *output++ = pix[0];
                          *output++ = pix[1];
                          *output++ = pix[2];
                          break;
-                case 32: *output++ = pix[0];
-                         *output++ = pix[1];
-                         *output++ = pix[2];
-                         *output++ = pix[3];
+                case 32: *(uint32_t*)output = pix32;
+                         output += 4;
                          break;
                 }
             }
             pos += p1;
         }
     }
-    
-    av_log(c->avctx, AV_LOG_ERROR, "Camtasia warning: no End-of-picture code\n");        
+
+    av_log(c->avctx, AV_LOG_ERROR, "Camtasia warning: no End-of-picture code\n");
     return 1;
 }
 
@@ -166,10 +182,10 @@ static int decode_rle(CamtasiaContext *c, unsigned int srcsize)
  * Decode a frame
  *
  */
-static int decode_frame(AVCodecContext *avctx, void *data, int *data_size, uint8_t *buf, int buf_size)
+static int decode_frame(AVCodecContext *avctx, void *data, int *data_size, const uint8_t *buf, int buf_size)
 {
-    CamtasiaContext * const c = (CamtasiaContext *)avctx->priv_data;
-    unsigned char *encoded = (unsigned char *)buf;
+    CamtasiaContext * const c = avctx->priv_data;
+    const unsigned char *encoded = buf;
     unsigned char *outptr;
 #ifdef CONFIG_ZLIB
     int zret; // Zlib return code
@@ -208,7 +224,7 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *data_size, uint8
 
     if(zret != Z_DATA_ERROR)
         decode_rle(c, c->zstream.avail_out);
-    
+
     /* make the palette available on the way out */
     if (c->avctx->pix_fmt == PIX_FMT_PAL8) {
         memcpy(c->pic.data[1], c->avctx->palctrl->palette, AVPALETTE_SIZE);
@@ -237,24 +253,23 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *data_size, uint8
  * Init tscc decoder
  *
  */
-static int decode_init(AVCodecContext *avctx)
+static av_cold int decode_init(AVCodecContext *avctx)
 {
-    CamtasiaContext * const c = (CamtasiaContext *)avctx->priv_data;
+    CamtasiaContext * const c = avctx->priv_data;
     int zret; // Zlib return code
 
     c->avctx = avctx;
-    avctx->has_b_frames = 0;
 
     c->pic.data[0] = NULL;
     c->height = avctx->height;
 
-    if (avcodec_check_dimensions(avctx, avctx->height, avctx->width) < 0) {
+    if (avcodec_check_dimensions(avctx, avctx->width, avctx->height) < 0) {
         return 1;
     }
 
 #ifdef CONFIG_ZLIB
     // Needed if zlib unused or init aborted before inflateInit
-    memset(&(c->zstream), 0, sizeof(z_stream)); 
+    memset(&(c->zstream), 0, sizeof(z_stream));
 #else
     av_log(avctx, AV_LOG_ERROR, "Zlib support not compiled.\n");
     return 1;
@@ -265,9 +280,9 @@ static int decode_init(AVCodecContext *avctx)
     case 24:
              avctx->pix_fmt = PIX_FMT_BGR24;
              break;
-    case 32: avctx->pix_fmt = PIX_FMT_RGBA32; break;
+    case 32: avctx->pix_fmt = PIX_FMT_RGB32; break;
     default: av_log(avctx, AV_LOG_ERROR, "Camtasia error: unknown depth %i bpp\n", avctx->bits_per_sample);
-             return -1;             
+             return -1;
     }
     c->bpp = avctx->bits_per_sample;
     c->decomp_size = (avctx->width * c->bpp + (avctx->width + 254) / 255 + 2) * avctx->height + 2;//RLE in the 'best' case
@@ -279,7 +294,7 @@ static int decode_init(AVCodecContext *avctx)
             return 1;
         }
     }
-  
+
 #ifdef CONFIG_ZLIB
     c->zstream.zalloc = Z_NULL;
     c->zstream.zfree = Z_NULL;
@@ -301,9 +316,9 @@ static int decode_init(AVCodecContext *avctx)
  * Uninit tscc decoder
  *
  */
-static int decode_end(AVCodecContext *avctx)
+static av_cold int decode_end(AVCodecContext *avctx)
 {
-    CamtasiaContext * const c = (CamtasiaContext *)avctx->priv_data;
+    CamtasiaContext * const c = avctx->priv_data;
 
     av_freep(&c->decomp_buf);
 
@@ -326,5 +341,6 @@ AVCodec tscc_decoder = {
         decode_end,
         decode_frame,
         CODEC_CAP_DR1,
+        .long_name = "TechSmith Screen Capture Codec",
 };
 

@@ -1,4 +1,4 @@
-#include "avcodec.h"
+#include "libavcodec/avcodec.h"
 #include "funcprotos.h"
 #include "quicktime.h"
 #include <string.h>

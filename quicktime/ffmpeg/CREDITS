@@ -1,6 +1,7 @@
 This file contains the name of the people who have contributed to
 FFmpeg. The names are sorted alphabetically by last name.
 
+DÃ©nes Balatoni
 Michel Bardiaux
 Fabrice Bellard
 Patrice Bensoussan
@@ -9,6 +10,7 @@ BERO
 Mario Brito
 Ronald Bultje
 Maarten Daniels
+Reimar Doeffinger
 Tim Ferguson
 Brian Foley
 Arpad Gereoffy
@@ -17,23 +19,31 @@ Vladimir Gneushev
 Roine Gustafsson
 David Hammerton
 Wolfgang Hesseler
+Marc Hoffman
 Falk Hueffner
+Steven Johnson
 Zdenek Kabelac
 Robin Kay
 Todd Kirby
 Nick Kurshev
-Loïc Le Loarer
+Benjamin Larsson
+LoÃ¯c Le Loarer
+Daniel Maas
 Mike Melanson
 Loren Merritt
 Jeff Muizelaar
 Michael Niedermayer
-François Revol
-Måns Rullgård
+FranÃ§ois Revol
+Peter Ross
+MÃ¥ns RullgÃ¥rd
 Roman Shaposhnik
+Oded Shimon
 Dieter Shirley
 Konstantin Shishkov
 Juan J. Sierralta
 Ewald Snel
+Sascha Sommer
 Leon van Stuivenberg
 Roberto Togni
 Lionel Ulmer
+Reynaldo Verdejo

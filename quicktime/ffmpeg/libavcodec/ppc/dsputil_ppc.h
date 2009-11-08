@@ -1,40 +1,31 @@
 /*
  * Copyright (c) 2003-2004 Romain Dolbeau <romain@dolbeau.org>
  *
- * This library is free software; you can redistribute it and/or
+ * This file is part of FFmpeg.
+ *
+ * FFmpeg is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful,
+ * FFmpeg is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * License along with FFmpeg; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
-#ifndef _DSPUTIL_PPC_
-#define _DSPUTIL_PPC_
+#ifndef FFMPEG_DSPUTIL_PPC_H
+#define FFMPEG_DSPUTIL_PPC_H
 
-#ifdef CONFIG_DARWIN
-/* The Apple assembler shipped w/ gcc-3.3 knows about DCBZL, previous assemblers don't
-   We assume here that the Darwin GCC is from Apple.... */
-#if (__GNUC__ * 100 + __GNUC_MINOR__ < 303)
-#define NO_DCBZL
-#endif
-#else /* CONFIG_DARWIN */
-/* I don't think any non-Apple assembler knows about DCBZL */
-#define NO_DCBZL
-#endif /* CONFIG_DARWIN */
-
-#ifdef POWERPC_PERFORMANCE_REPORT
+#ifdef CONFIG_POWERPC_PERF
 void powerpc_display_perf_report(void);
 /* the 604* have 2, the G3* have 4, the G4s have 6,
    and the G5 are completely different (they MUST use
-   POWERPC_MODE_64BITS, and let's hope all future 64 bis PPC
+   HAVE_PPC64, and let's hope all future 64 bis PPC
    will use the same PMCs... */
 #define POWERPC_NUM_PMC_ENABLED 6
 /* if you add to the enum below, also add to the perfname array
@@ -77,7 +68,7 @@ enum powerpc_data_index {
 };
 extern unsigned long long perfdata[POWERPC_NUM_PMC_ENABLED][powerpc_perf_total][powerpc_data_total];
 
-#ifndef POWERPC_MODE_64BITS
+#ifndef HAVE_PPC64
 #define POWERP_PMC_DATATYPE unsigned long
 #define POWERPC_GET_PMC1(a) asm volatile("mfspr %0, 937" : "=r" (a))
 #define POWERPC_GET_PMC2(a) asm volatile("mfspr %0, 938" : "=r" (a))
@@ -95,7 +86,7 @@ extern unsigned long long perfdata[POWERPC_NUM_PMC_ENABLED][powerpc_perf_total][
 #define POWERPC_GET_PMC5(a) do {} while (0)
 #define POWERPC_GET_PMC6(a) do {} while (0)
 #endif
-#else /* POWERPC_MODE_64BITS */
+#else /* HAVE_PPC64 */
 #define POWERP_PMC_DATATYPE unsigned long long
 #define POWERPC_GET_PMC1(a) asm volatile("mfspr %0, 771" : "=r" (a))
 #define POWERPC_GET_PMC2(a) asm volatile("mfspr %0, 772" : "=r" (a))
@@ -113,11 +104,11 @@ extern unsigned long long perfdata[POWERPC_NUM_PMC_ENABLED][powerpc_perf_total][
 #define POWERPC_GET_PMC5(a) do {} while (0)
 #define POWERPC_GET_PMC6(a) do {} while (0)
 #endif
-#endif /* POWERPC_MODE_64BITS */
-#define POWERPC_PERF_DECLARE(a, cond)				\
-  POWERP_PMC_DATATYPE						\
-    pmc_start[POWERPC_NUM_PMC_ENABLED],				\
-    pmc_stop[POWERPC_NUM_PMC_ENABLED],				\
+#endif /* HAVE_PPC64 */
+#define POWERPC_PERF_DECLARE(a, cond)   \
+  POWERP_PMC_DATATYPE                   \
+    pmc_start[POWERPC_NUM_PMC_ENABLED], \
+    pmc_stop[POWERPC_NUM_PMC_ENABLED],  \
     pmc_loop_index;
 #define POWERPC_PERF_START_COUNT(a, cond) do { \
   POWERPC_GET_PMC6(pmc_start[5]); \
@@ -141,8 +132,8 @@ extern unsigned long long perfdata[POWERPC_NUM_PMC_ENABLED][powerpc_perf_total][
         pmc_loop_index++)         \
     {                             \
       if (pmc_stop[pmc_loop_index] >= pmc_start[pmc_loop_index])  \
-	{							  \
-        POWERP_PMC_DATATYPE diff =				  \
+        {                                                         \
+        POWERP_PMC_DATATYPE diff =                                \
           pmc_stop[pmc_loop_index] - pmc_start[pmc_loop_index];   \
         if (diff < perfdata[pmc_loop_index][a][powerpc_data_min]) \
           perfdata[pmc_loop_index][a][powerpc_data_min] = diff;   \
@@ -154,11 +145,11 @@ extern unsigned long long perfdata[POWERPC_NUM_PMC_ENABLED][powerpc_perf_total][
     }                             \
   }                               \
 } while (0)
-#else /* POWERPC_PERFORMANCE_REPORT */
+#else /* CONFIG_POWERPC_PERF */
 // those are needed to avoid empty statements.
 #define POWERPC_PERF_DECLARE(a, cond)        int altivec_placeholder __attribute__ ((unused))
 #define POWERPC_PERF_START_COUNT(a, cond)    do {} while (0)
 #define POWERPC_PERF_STOP_COUNT(a, cond)     do {} while (0)
-#endif /* POWERPC_PERFORMANCE_REPORT */
+#endif /* CONFIG_POWERPC_PERF */
 
-#endif /*  _DSPUTIL_PPC_ */
+#endif /*  FFMPEG_DSPUTIL_PPC_H */

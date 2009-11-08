@@ -1,23 +1,24 @@
 /*
- * Indel Indeo 2 codec
+ * Intel Indeo 2 codec
  * Copyright (c) 2005 Konstantin Shishkov
  *
- * This library is free software; you can redistribute it and/or
+ * This file is part of FFmpeg.
+ *
+ * FFmpeg is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful,
+ * FFmpeg is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
+ * License along with FFmpeg; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
- 
+
 /**
  * @file indeo2.c
  * Intel Indeo 2 decoder.
@@ -51,7 +52,7 @@ static int ir2_decode_plane(Ir2Context *ctx, int width, int height, uint8_t *dst
     int out = 0;
     int c;
     int t;
-    
+
     if(width&1)
         return -1;
 
@@ -70,7 +71,7 @@ static int ir2_decode_plane(Ir2Context *ctx, int width, int height, uint8_t *dst
         }
     }
     dst += stride;
-    
+
     for (j = 1; j < height; j++){
         out = 0;
         while (out < width){
@@ -85,11 +86,11 @@ static int ir2_decode_plane(Ir2Context *ctx, int width, int height, uint8_t *dst
                 }
             } else { /* add two deltas from table */
                 t = dst[out - stride] + (table[c * 2] - 128);
-                t= clip_uint8(t);
+                t= av_clip_uint8(t);
                 dst[out] = t;
                 out++;
                 t = dst[out - stride] + (table[(c * 2) + 1] - 128);
-                t= clip_uint8(t);
+                t= av_clip_uint8(t);
                 dst[out] = t;
                 out++;
             }
@@ -119,11 +120,11 @@ static int ir2_decode_plane_inter(Ir2Context *ctx, int width, int height, uint8_
                 out += c * 2;
             } else { /* add two deltas from table */
                 t = dst[out] + (((table[c * 2] - 128)*3) >> 2);
-                t= clip_uint8(t);
+                t= av_clip_uint8(t);
                 dst[out] = t;
                 out++;
                 t = dst[out] + (((table[(c * 2) + 1] - 128)*3) >> 2);
-                t= clip_uint8(t);
+                t= av_clip_uint8(t);
                 dst[out] = t;
                 out++;
             }
@@ -133,15 +134,14 @@ static int ir2_decode_plane_inter(Ir2Context *ctx, int width, int height, uint8_
     return 0;
 }
 
-static int ir2_decode_frame(AVCodecContext *avctx, 
+static int ir2_decode_frame(AVCodecContext *avctx,
                         void *data, int *data_size,
-                        uint8_t *buf, int buf_size)
+                        const uint8_t *buf, int buf_size)
 {
     Ir2Context * const s = avctx->priv_data;
     AVFrame *picture = data;
     AVFrame * const p= (AVFrame*)&s->picture;
     int start;
-    int i;
 
     if(p->data[0])
         avctx->release_buffer(avctx, p);
@@ -154,9 +154,9 @@ static int ir2_decode_frame(AVCodecContext *avctx,
     }
 
     s->decode_delta = buf[18];
-    
+
     /* decide whether frame uses deltas or not */
-#ifndef ALT_BITSTREAM_READER_LE  
+#ifndef ALT_BITSTREAM_READER_LE
     for (i = 0; i < buf_size; i++)
         buf[i] = ff_reverse[buf[i]];
 #endif
@@ -188,22 +188,24 @@ static int ir2_decode_frame(AVCodecContext *avctx,
     return buf_size;
 }
 
-static int ir2_decode_init(AVCodecContext *avctx){
+static av_cold int ir2_decode_init(AVCodecContext *avctx){
     Ir2Context * const ic = avctx->priv_data;
 
     ic->avctx = avctx;
 
     avctx->pix_fmt= PIX_FMT_YUV410P;
-    
+
     if (!ir2_vlc.table)
+#ifdef ALT_BITSTREAM_READER_LE
         init_vlc(&ir2_vlc, CODE_VLC_BITS, IR2_CODES,
                  &ir2_codes[0][1], 4, 2,
-#ifdef ALT_BITSTREAM_READER_LE
-                 &ir2_codes[0][0], 4, 2, INIT_VLC_USE_STATIC | INIT_VLC_LE);    
+                 &ir2_codes[0][0], 4, 2, INIT_VLC_USE_STATIC | INIT_VLC_LE);
 #else
-                 &ir2_codes[0][0], 4, 2, INIT_VLC_USE_STATIC);    
+        init_vlc(&ir2_vlc, CODE_VLC_BITS, IR2_CODES,
+                 &ir2_codes[0][1], 4, 2,
+                 &ir2_codes[0][0], 4, 2, INIT_VLC_USE_STATIC);
 #endif
-                 
+
     return 0;
 }
 
@@ -217,4 +219,5 @@ AVCodec indeo2_decoder = {
     NULL,
     ir2_decode_frame,
     CODEC_CAP_DR1,
+    .long_name = "Intel Indeo 2",
 };

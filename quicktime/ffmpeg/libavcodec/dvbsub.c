@@ -2,21 +2,25 @@
  * DVB subtitle encoding for ffmpeg
  * Copyright (c) 2005 Fabrice Bellard.
  *
- * This library is free software; you can redistribute it and/or
+ * This file is part of FFmpeg.
+ *
+ * FFmpeg is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful,
+ * FFmpeg is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * License along with FFmpeg; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 #include "avcodec.h"
+#include "bytestream.h"
+#include "colorspace.h"
 
 typedef struct DVBSubtitleContext {
     int hide_state;
@@ -44,12 +48,12 @@ static void dvb_encode_rle2(uint8_t **pq,
     int x, y, len, x1, v, color;
 
     q = *pq;
-    
+
     for(y = 0; y < h; y++) {
         *q++ = 0x10;
         bitbuf = 0;
         bitcnt = 6;
-        
+
         x = 0;
         while (x < w) {
             x1 = x;
@@ -132,12 +136,12 @@ static void dvb_encode_rle4(uint8_t **pq,
     int x, y, len, x1, v, color;
 
     q = *pq;
-    
+
     for(y = 0; y < h; y++) {
         *q++ = 0x11;
         bitbuf = 0;
         bitcnt = 4;
-        
+
         x = 0;
         while (x < w) {
             x1 = x;
@@ -190,32 +194,7 @@ static void dvb_encode_rle4(uint8_t **pq,
     *pq = q;
 }
 
-#define SCALEBITS 10
-#define ONE_HALF  (1 << (SCALEBITS - 1))
-#define FIX(x)	  ((int) ((x) * (1<<SCALEBITS) + 0.5))
-
-#define RGB_TO_Y_CCIR(r, g, b) \
-((FIX(0.29900*219.0/255.0) * (r) + FIX(0.58700*219.0/255.0) * (g) + \
-  FIX(0.11400*219.0/255.0) * (b) + (ONE_HALF + (16 << SCALEBITS))) >> SCALEBITS)
-
-#define RGB_TO_U_CCIR(r1, g1, b1, shift)\
-(((- FIX(0.16874*224.0/255.0) * r1 - FIX(0.33126*224.0/255.0) * g1 +         \
-     FIX(0.50000*224.0/255.0) * b1 + (ONE_HALF << shift) - 1) >> (SCALEBITS + shift)) + 128)
-
-#define RGB_TO_V_CCIR(r1, g1, b1, shift)\
-(((FIX(0.50000*224.0/255.0) * r1 - FIX(0.41869*224.0/255.0) * g1 -           \
-   FIX(0.08131*224.0/255.0) * b1 + (ONE_HALF << shift) - 1) >> (SCALEBITS + shift)) + 128)
-
-static inline void putbe16(uint8_t **pq, uint16_t v)
-{
-    uint8_t *q;
-    q = *pq;
-    *q++ = v >> 8;
-    *q++ = v;
-    *pq = q;
-}
-
-static int encode_dvb_subtitles(DVBSubtitleContext *s, 
+static int encode_dvb_subtitles(DVBSubtitleContext *s,
                                 uint8_t *outbuf, AVSubtitle *h)
 {
     uint8_t *q, *pseg_len;
@@ -235,7 +214,7 @@ static int encode_dvb_subtitles(DVBSubtitleContext *s,
 
     *q++ = 0x0f; /* sync_byte */
     *q++ = 0x10; /* segment_type */
-    putbe16(&q, page_id);
+    bytestream_put_be16(&q, page_id);
     pseg_len = q;
     q += 2; /* segment length */
     *q++ = 30; /* page_timeout (seconds) */
@@ -244,16 +223,16 @@ static int encode_dvb_subtitles(DVBSubtitleContext *s,
     else
         page_state = 2; /* mode change */
     /* page_version = 0 + page_state */
-    *q++ = s->object_version | (page_state << 2) | 3; 
+    *q++ = s->object_version | (page_state << 2) | 3;
 
     for (region_id = 0; region_id < h->num_rects; region_id++) {
         *q++ = region_id;
         *q++ = 0xff; /* reserved */
-        putbe16(&q, h->rects[region_id].x); /* left pos */
-        putbe16(&q, h->rects[region_id].y); /* top pos */
+        bytestream_put_be16(&q, h->rects[region_id].x); /* left pos */
+        bytestream_put_be16(&q, h->rects[region_id].y); /* top pos */
     }
 
-    putbe16(&pseg_len, q - pseg_len - 2);
+    bytestream_put_be16(&pseg_len, q - pseg_len - 2);
 
     if (!s->hide_state) {
         for (clut_id = 0; clut_id < h->num_rects; clut_id++) {
@@ -272,7 +251,7 @@ static int encode_dvb_subtitles(DVBSubtitleContext *s,
 
             *q++ = 0x0f; /* sync byte */
             *q++ = 0x12; /* CLUT definition segment */
-            putbe16(&q, page_id);
+            bytestream_put_be16(&q, page_id);
             pseg_len = q;
             q += 2; /* segment length */
             *q++ = clut_id;
@@ -295,14 +274,14 @@ static int encode_dvb_subtitles(DVBSubtitleContext *s,
                 }
             }
 
-            putbe16(&pseg_len, q - pseg_len - 2);
+            bytestream_put_be16(&pseg_len, q - pseg_len - 2);
         }
     }
 
     for (region_id = 0; region_id < h->num_rects; region_id++) {
 
         /* region composition segment */
-        
+
         if (h->rects[region_id].nb_colors <= 4) {
             /* 2 bpp, some decoders do not support it correctly */
             bpp_index = 0;
@@ -315,38 +294,38 @@ static int encode_dvb_subtitles(DVBSubtitleContext *s,
 
         *q++ = 0x0f; /* sync_byte */
         *q++ = 0x11; /* segment_type */
-        putbe16(&q, page_id);
+        bytestream_put_be16(&q, page_id);
         pseg_len = q;
         q += 2; /* segment length */
         *q++ = region_id;
         *q++ = (s->object_version << 4) | (0 << 3) | 0x07; /* version , no fill */
-        putbe16(&q, h->rects[region_id].w); /* region width */
-        putbe16(&q, h->rects[region_id].h); /* region height */
+        bytestream_put_be16(&q, h->rects[region_id].w); /* region width */
+        bytestream_put_be16(&q, h->rects[region_id].h); /* region height */
         *q++ = ((1 + bpp_index) << 5) | ((1 + bpp_index) << 2) | 0x03;
         *q++ = region_id; /* clut_id == region_id */
         *q++ = 0; /* 8 bit fill colors */
         *q++ = 0x03; /* 4 bit and 2 bit fill colors */
 
         if (!s->hide_state) {
-            putbe16(&q, region_id); /* object_id == region_id */
+            bytestream_put_be16(&q, region_id); /* object_id == region_id */
             *q++ = (0 << 6) | (0 << 4);
             *q++ = 0;
             *q++ = 0xf0;
             *q++ = 0;
         }
 
-        putbe16(&pseg_len, q - pseg_len - 2);
+        bytestream_put_be16(&pseg_len, q - pseg_len - 2);
     }
 
     if (!s->hide_state) {
-        
+
         for (object_id = 0; object_id < h->num_rects; object_id++) {
             /* Object Data segment */
 
-            if (h->rects[region_id].nb_colors <= 4) {
+            if (h->rects[object_id].nb_colors <= 4) {
                 /* 2 bpp, some decoders do not support it correctly */
                 bpp_index = 0;
-            } else if (h->rects[region_id].nb_colors <= 16) {
+            } else if (h->rects[object_id].nb_colors <= 16) {
                 /* 4 bpp, standard encoding */
                 bpp_index = 1;
             } else {
@@ -355,11 +334,11 @@ static int encode_dvb_subtitles(DVBSubtitleContext *s,
 
             *q++ = 0x0f; /* sync byte */
             *q++ = 0x13;
-            putbe16(&q, page_id);
+            bytestream_put_be16(&q, page_id);
             pseg_len = q;
             q += 2; /* segment length */
 
-            putbe16(&q, object_id);
+            bytestream_put_be16(&q, object_id);
             *q++ = (s->object_version << 4) | (0 << 2) | (0 << 1) | 1; /* version = 0,
                                                                        onject_coding_method,
                                                                        non_modifying_color_flag */
@@ -386,11 +365,11 @@ static int encode_dvb_subtitles(DVBSubtitleContext *s,
                                     h->rects[object_id].w * 2, h->rects[object_id].w,
                                     h->rects[object_id].h >> 1);
 
-                putbe16(&ptop_field_len, bottom_ptr - top_ptr);
-                putbe16(&pbottom_field_len, q - bottom_ptr);
+                bytestream_put_be16(&ptop_field_len, bottom_ptr - top_ptr);
+                bytestream_put_be16(&pbottom_field_len, q - bottom_ptr);
             }
 
-            putbe16(&pseg_len, q - pseg_len - 2);
+            bytestream_put_be16(&pseg_len, q - pseg_len - 2);
         }
     }
 
@@ -398,27 +377,17 @@ static int encode_dvb_subtitles(DVBSubtitleContext *s,
 
     *q++ = 0x0f; /* sync_byte */
     *q++ = 0x80; /* segment_type */
-    putbe16(&q, page_id);
+    bytestream_put_be16(&q, page_id);
     pseg_len = q;
     q += 2; /* segment length */
 
-    putbe16(&pseg_len, q - pseg_len - 2);
+    bytestream_put_be16(&pseg_len, q - pseg_len - 2);
 
     *q++ = 0xff; /* end of PES data */
 
     s->object_version = (s->object_version + 1) & 0xf;
     s->hide_state = !s->hide_state;
     return q - outbuf;
-}
-
-static int dvbsub_init_decoder(AVCodecContext *avctx)
-{
-    return 0;
-}
-
-static int dvbsub_close_decoder(AVCodecContext *avctx)
-{
-    return 0;
 }
 
 static int dvbsub_encode(AVCodecContext *avctx,
@@ -437,7 +406,7 @@ AVCodec dvbsub_encoder = {
     CODEC_TYPE_SUBTITLE,
     CODEC_ID_DVB_SUBTITLE,
     sizeof(DVBSubtitleContext),
-    dvbsub_init_decoder,
+    NULL,
     dvbsub_encode,
-    dvbsub_close_decoder,
+    .long_name = "DVB subtitles",
 };

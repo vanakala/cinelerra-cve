@@ -2,19 +2,21 @@
  * MDCT/IMDCT transforms
  * Copyright (c) 2002 Fabrice Bellard.
  *
- * This library is free software; you can redistribute it and/or
+ * This file is part of FFmpeg.
+ *
+ * FFmpeg is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful,
+ * FFmpeg is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * License along with FFmpeg; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 #include "dsputil.h"
 
@@ -23,13 +25,36 @@
  * MDCT/IMDCT transforms.
  */
 
+// Generate a Kaiser-Bessel Derived Window.
+#define BESSEL_I0_ITER 50 // default: 50 iterations of Bessel I0 approximation
+void ff_kbd_window_init(float *window, float alpha, int n)
+{
+   int i, j;
+   double sum = 0.0, bessel, tmp;
+   double local_window[n];
+   double alpha2 = (alpha * M_PI / n) * (alpha * M_PI / n);
+
+   for (i = 0; i < n; i++) {
+       tmp = i * (n - i) * alpha2;
+       bessel = 1.0;
+       for (j = BESSEL_I0_ITER; j > 0; j--)
+           bessel = bessel * tmp / (j * j) + 1;
+       sum += bessel;
+       local_window[i] = sum;
+   }
+
+   sum++;
+   for (i = 0; i < n; i++)
+       window[i] = sqrt(local_window[i] / sum);
+}
+
 /**
  * init MDCT or IMDCT computation.
  */
 int ff_mdct_init(MDCTContext *s, int nbits, int inverse)
 {
     int n, n4, i;
-    float alpha;
+    double alpha;
 
     memset(s, 0, sizeof(*s));
     n = 1 << nbits;
@@ -60,10 +85,10 @@ int ff_mdct_init(MDCTContext *s, int nbits, int inverse)
 /* complex multiplication: p = a * b */
 #define CMUL(pre, pim, are, aim, bre, bim) \
 {\
-    float _are = (are);\
-    float _aim = (aim);\
-    float _bre = (bre);\
-    float _bim = (bim);\
+    double _are = (are);\
+    double _aim = (aim);\
+    double _bre = (bre);\
+    double _bim = (bim);\
     (pre) = _are * _bre - _aim * _bim;\
     (pim) = _are * _bim + _aim * _bre;\
 }
@@ -74,7 +99,7 @@ int ff_mdct_init(MDCTContext *s, int nbits, int inverse)
  * @param input N/2 samples
  * @param tmp N/2 samples
  */
-void ff_imdct_calc(MDCTContext *s, FFTSample *output, 
+void ff_imdct_calc(MDCTContext *s, FFTSample *output,
                    const FFTSample *input, FFTSample *tmp)
 {
     int k, n8, n4, n2, n, j;
@@ -126,7 +151,7 @@ void ff_imdct_calc(MDCTContext *s, FFTSample *output,
  * @param out N/2 samples
  * @param tmp temporary storage of N/2 samples
  */
-void ff_mdct_calc(MDCTContext *s, FFTSample *out, 
+void ff_mdct_calc(MDCTContext *s, FFTSample *out,
                   const FFTSample *input, FFTSample *tmp)
 {
     int i, j, n, n8, n4, n2, n3;
@@ -156,7 +181,7 @@ void ff_mdct_calc(MDCTContext *s, FFTSample *out,
     }
 
     ff_fft_calc(&s->fft, x);
-  
+
     /* post rotation */
     for(i=0;i<n4;i++) {
         re = x[i].re;

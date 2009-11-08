@@ -2,26 +2,28 @@
  * MACE decoder
  * Copyright (c) 2002 Laszlo Torok <torokl@alpha.dfmk.hu>
  *
- * This library is free software; you can redistribute it and/or
+ * This file is part of FFmpeg.
+ *
+ * FFmpeg is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
  * License as published by the Free Software Foundation; either
- * version 2 of the License, or (at your option) any later version.
+ * version 2.1 of the License, or (at your option) any later version.
  *
- * This library is distributed in the hope that it will be useful,
+ * FFmpeg is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
  * Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
+ * License along with FFmpeg; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
 /**
  * @file mace.c
  * MACE decoder.
  */
- 
+
 #include "avcodec.h"
 
 /*
@@ -261,7 +263,7 @@ static void chomp3(MACEContext *ctx,
 
 /* /// "Exp1to3()" */
 static void Exp1to3(MACEContext *ctx,
-             uint8_t *inBuffer,
+             const uint8_t *inBuffer,
              void *outBuffer,
              uint32_t cnt,
              uint32_t numChannels,
@@ -345,7 +347,7 @@ static void chomp6(MACEContext *ctx,
 
 /* /// "Exp1to6()" */
 static void Exp1to6(MACEContext *ctx,
-             uint8_t *inBuffer,
+             const uint8_t *inBuffer,
              void *outBuffer,
              uint32_t cnt,
              uint32_t numChannels,
@@ -390,7 +392,7 @@ static void Exp1to6(MACEContext *ctx,
 }
 /* \\\ */
 
-static int mace_decode_init(AVCodecContext * avctx)
+static av_cold int mace_decode_init(AVCodecContext * avctx)
 {
     if (avctx->channels > 2)
         return -1;
@@ -399,7 +401,7 @@ static int mace_decode_init(AVCodecContext * avctx)
 
 static int mace_decode_frame(AVCodecContext *avctx,
                             void *data, int *data_size,
-                            uint8_t *buf, int buf_size)
+                            const uint8_t *buf, int buf_size)
 {
     short *samples;
     MACEContext *c = avctx->priv_data;
@@ -407,21 +409,17 @@ static int mace_decode_frame(AVCodecContext *avctx,
     samples = (short *)data;
     switch (avctx->codec->id) {
     case CODEC_ID_MACE3:
-#ifdef DEBUG
-puts("mace_decode_frame[3]()");
-#endif
-        Exp1to3(c, buf, samples, buf_size / 2, avctx->channels, 1);
+        dprintf(avctx, "mace_decode_frame[3]()");
+        Exp1to3(c, buf, samples, buf_size / 2 / avctx->channels, avctx->channels, 1);
         if (avctx->channels == 2)
-            Exp1to3(c, buf, samples+1, buf_size / 2, 2, 2);
+            Exp1to3(c, buf, samples+1, buf_size / 2 / 2, 2, 2);
         *data_size = 2 * 3 * buf_size;
         break;
     case CODEC_ID_MACE6:
-#ifdef DEBUG
-puts("mace_decode_frame[6]()");
-#endif
-        Exp1to6(c, buf, samples, buf_size, avctx->channels, 1);
+        dprintf(avctx, "mace_decode_frame[6]()");
+        Exp1to6(c, buf, samples, buf_size / avctx->channels, avctx->channels, 1);
         if (avctx->channels == 2)
-            Exp1to6(c, buf, samples+1, buf_size, 2, 2);
+            Exp1to6(c, buf, samples+1, buf_size / 2, 2, 2);
         *data_size = 2 * 6 * buf_size;
         break;
     default:
@@ -439,6 +437,7 @@ AVCodec mace3_decoder = {
     NULL,
     NULL,
     mace_decode_frame,
+    .long_name = "MACE (Macintosh Audio Compression/Expansion) 3:1",
 };
 
 AVCodec mace6_decoder = {
@@ -450,5 +449,6 @@ AVCodec mace6_decoder = {
     NULL,
     NULL,
     mace_decode_frame,
+    .long_name = "MACE (Macintosh Audio Compression/Expansion) 6:1",
 };
 

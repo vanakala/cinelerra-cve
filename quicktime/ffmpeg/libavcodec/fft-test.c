@@ -1,3 +1,23 @@
+/*
+ * (c) 2002 Fabrice Bellard
+ *
+ * This file is part of FFmpeg.
+ *
+ * FFmpeg is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * FFmpeg is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with FFmpeg; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ */
+
 /**
  * @file fft-test.c
  * FFT and MDCT tests.
@@ -7,6 +27,11 @@
 #include <math.h>
 #include <unistd.h>
 #include <sys/time.h>
+#include <stdlib.h>
+#include <string.h>
+
+#undef exit
+#undef random
 
 int mm_flags;
 
@@ -25,7 +50,7 @@ FFTComplex *exptab;
 void fft_ref_init(int nbits, int inverse)
 {
     int n, i;
-    float c1, s1, alpha;
+    double c1, s1, alpha;
 
     n = 1 << nbits;
     exptab = av_malloc((n / 2) * sizeof(FFTComplex));
@@ -44,7 +69,7 @@ void fft_ref_init(int nbits, int inverse)
 void fft_ref(FFTComplex *tabr, FFTComplex *tab, int nbits)
 {
     int n, i, j, k, n2;
-    float tmp_re, tmp_im, s, c;
+    double tmp_re, tmp_im, s, c;
     FFTComplex *q;
 
     n = 1 << nbits;
@@ -70,10 +95,11 @@ void fft_ref(FFTComplex *tabr, FFTComplex *tab, int nbits)
     }
 }
 
-void imdct_ref(float *out, float *in, int n)
+void imdct_ref(float *out, float *in, int nbits)
 {
+    int n = 1<<nbits;
     int k, i, a;
-    float sum, f;
+    double sum, f;
 
     for(i=0;i<n;i++) {
         sum = 0;
@@ -87,10 +113,11 @@ void imdct_ref(float *out, float *in, int n)
 }
 
 /* NOTE: no normalisation by 1 / N is done */
-void mdct_ref(float *output, float *input, int n)
+void mdct_ref(float *output, float *input, int nbits)
 {
+    int n = 1<<nbits;
     int k, i;
-    float a, s;
+    double a, s;
 
     /* do it by hand */
     for(k=0;k<n/2;k++) {
@@ -119,13 +146,19 @@ int64_t gettime(void)
 void check_diff(float *tab1, float *tab2, int n)
 {
     int i;
+    double max= 0;
+    double error= 0;
 
     for(i=0;i<n;i++) {
-        if (fabsf(tab1[i] - tab2[i]) >= 1e-3) {
-            av_log(NULL, AV_LOG_ERROR, "ERROR %d: %f %f\n", 
+        double e= fabsf(tab1[i] - tab2[i]);
+        if (e >= 1e-3) {
+            av_log(NULL, AV_LOG_ERROR, "ERROR %d: %f %f\n",
                    i, tab1[i], tab2[i]);
         }
+        error+= e*e;
+        if(e>max) max= e;
     }
+    av_log(NULL, AV_LOG_INFO, "max:%f e:%g\n", max, sqrt(error)/n);
 }
 
 
@@ -215,12 +248,12 @@ int main(int argc, char **argv)
 
     if (do_mdct) {
         if (do_inverse) {
-            imdct_ref((float *)tab_ref, (float *)tab1, fft_size);
+            imdct_ref((float *)tab_ref, (float *)tab1, fft_nbits);
             ff_imdct_calc(m, tab2, (float *)tab1, tabtmp);
             check_diff((float *)tab_ref, tab2, fft_size);
         } else {
-            mdct_ref((float *)tab_ref, (float *)tab1, fft_size);
-            
+            mdct_ref((float *)tab_ref, (float *)tab1, fft_nbits);
+
             ff_mdct_calc(m, tab2, (float *)tab1, tabtmp);
 
             check_diff((float *)tab_ref, tab2, fft_size / 2);
@@ -229,7 +262,7 @@ int main(int argc, char **argv)
         memcpy(tab, tab1, fft_size * sizeof(FFTComplex));
         ff_fft_permute(s, tab);
         ff_fft_calc(s, tab);
-        
+
         fft_ref(tab_ref, tab1, fft_nbits);
         check_diff((float *)tab_ref, (float *)tab, fft_size * 2);
     }
@@ -262,12 +295,12 @@ int main(int argc, char **argv)
                 break;
             nb_its *= 2;
         }
-        av_log(NULL, AV_LOG_INFO,"time: %0.1f us/transform [total time=%0.2f s its=%d]\n", 
-               (double)duration / nb_its, 
+        av_log(NULL, AV_LOG_INFO,"time: %0.1f us/transform [total time=%0.2f s its=%d]\n",
+               (double)duration / nb_its,
                (double)duration / 1000000.0,
                nb_its);
     }
-    
+
     if (do_mdct) {
         ff_mdct_end(m);
     } else {

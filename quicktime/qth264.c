@@ -1,4 +1,4 @@
-#include "avcodec.h"
+#include "libavcodec/avcodec.h"
 #include "colormodels.h"
 #include "funcprotos.h"
 #include <pthread.h>
