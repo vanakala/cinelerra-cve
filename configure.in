@@ -402,8 +402,10 @@ else
 	srcdir_c=$(readlink -f $srcdir)
 	mkdir -p quicktime/ffmpeg/ > /dev/null 2>&1
 	cd quicktime/ffmpeg/
-	echo quicktime/ffmpeg/configure $ff_conf_args
-	$srcdir_c/quicktime/ffmpeg/configure $ff_conf_args
+	echo quicktime/ffmpeg/configure $ff_conf_args \
+		--prefix="$acl_final_prefix"
+	$srcdir_c/quicktime/ffmpeg/configure $ff_conf_args \
+		--prefix="$acl_final_prefix"
 	cd ../../
 fi
 echo --------------------------------------------------
