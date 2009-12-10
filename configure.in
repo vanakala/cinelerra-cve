@@ -399,14 +399,22 @@ else
 	fi
 
 
-	srcdir_c=$(readlink -f $srcdir)
-	mkdir -p quicktime/ffmpeg/ > /dev/null 2>&1
+	srcdir_c=$(readlink -f $srcdir) &&
+	mkdir -p quicktime/ffmpeg/ &&
+	(
 	cd quicktime/ffmpeg/
-	echo quicktime/ffmpeg/configure $ff_conf_args \
-		--prefix="$acl_final_prefix"
-	$srcdir_c/quicktime/ffmpeg/configure $ff_conf_args \
-		--prefix="$acl_final_prefix"
-	cd ../../
+	# if --libdir was not set, then it expands to '$exec_prefix/lib'
+	# if --exec-prefix was not set, then it expands to NONE
+	# this makes sure $libdir is expanded to a useful value
+	if test "x$exec_prefix" = xNONE; then
+		exec_prefix=$acl_final_prefix
+	fi
+	cmd="quicktime/ffmpeg/configure \$ff_conf_args \
+		--prefix=\"\$acl_final_prefix\" \
+		--libdir=\"$libdir\" --shlibdir=\"$libdir\""
+	eval echo $cmd
+	eval \$srcdir_c/$cmd
+	)
 fi
 echo --------------------------------------------------
 ############# END run ffmpeg configure to generates avconfig.h
