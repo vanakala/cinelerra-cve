@@ -585,7 +585,7 @@ int VDeviceBUZ::open_input_core(Channel *channel)
 		PROT_READ, 
 		MAP_SHARED, 
 		jvideo_fd, 
-		0)) <= 0)
+		0)) == MAP_FAILED)
 		perror("VDeviceBUZ::open_input mmap");
 
 
@@ -655,7 +655,7 @@ int VDeviceBUZ::open_output_core(Channel *channel)
 		PROT_READ | PROT_WRITE, 
 		MAP_SHARED, 
 		jvideo_fd, 
-		0)) <= 0)
+		0)) == MAP_FAILED)
 		perror("VDeviceBUZ::open_output mmap");
 
 	if(ioctl(jvideo_fd, BUZIOC_G_PARAMS, &bparm) < 0)
