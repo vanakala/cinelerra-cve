@@ -16,3 +16,5 @@ Makefile.in
 /missing
 /stamp-h
 /stamp-h1
+cinelerra-cvs-current.spec
+*.data
