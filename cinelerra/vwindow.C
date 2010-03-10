@@ -305,6 +305,7 @@ void VWindow::update_position(int change_type,
 			gui->slider->set_position();
 		}
 
+		gui->timebar->update();
 		playback_engine->que->send_command(CURRENT_FRAME, 
 			change_type,
 			edl,

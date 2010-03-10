@@ -539,14 +539,12 @@ void VWindowEditing::prev_label()
 			edl->local_session->set_selectionstart(0);
 			edl->local_session->set_selectionend(0);
 			vwindow->update_position(CHANGE_NONE, 0, 1);
-			vwindow->gui->timebar->update();
 		}
 		else
 		{
 			edl->local_session->set_selectionstart(current->position);
 			edl->local_session->set_selectionend(current->position);
 			vwindow->update_position(CHANGE_NONE, 0, 1);
-			vwindow->gui->timebar->update();
 		}
 	}
 }
@@ -566,7 +564,6 @@ void VWindowEditing::next_label()
 			edl->local_session->set_selectionstart(position);
 			edl->local_session->set_selectionend(position);
 			vwindow->update_position(CHANGE_NONE, 0, 1);
-			vwindow->gui->timebar->update();
 		}
 		else
 		{
@@ -575,7 +572,6 @@ void VWindowEditing::next_label()
 			edl->local_session->set_selectionstart(current->position);
 			edl->local_session->set_selectionend(current->position);
 			vwindow->update_position(CHANGE_NONE, 0, 1);
-			vwindow->gui->timebar->update();
 		}
 	}
 }
@@ -691,7 +687,6 @@ int VWindowSlider::handle_event()
 	vwindow->playback_engine->interrupt_playback(1);
 
 	vwindow->update_position(CHANGE_NONE, 1, 0);
-	gui->timebar->update();
 	return 1;
 }
 
@@ -1100,7 +1095,6 @@ int VWindowInPoint::handle_event()
 
 		edl->local_session->set_selectionstart(position);
 		edl->local_session->set_selectionend(position);
-		gui->timebar->update();
 
 // Que the VWindow
 		mwindow->vwindow->update_position(CHANGE_NONE, 0, 1);
@@ -1133,7 +1127,6 @@ int VWindowOutPoint::handle_event()
 
 		edl->local_session->set_selectionstart(position);
 		edl->local_session->set_selectionend(position);
-		gui->timebar->update();
 
 // Que the VWindow
 		mwindow->vwindow->update_position(CHANGE_NONE, 0, 1);
