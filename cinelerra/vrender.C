@@ -162,9 +162,6 @@ SET_TRACE
 				renderengine->edl);
 			if(file)
 			{
-				int64_t corrected_position = current_position;
-				if(renderengine->command->get_direction() == PLAY_REVERSE)
-					corrected_position--;
 
 // Cache single frames only
 				if(use_asynchronous)
@@ -172,7 +169,7 @@ SET_TRACE
 				else
 					file->stop_video_thread();
 				if(use_cache) file->set_cache_frames(1);
-				file->set_video_position(corrected_position, 
+				file->set_video_position(current_position, 
 					renderengine->edl->session->frame_rate);
 				file->read_frame(video_out);
 				if(use_cache) file->set_cache_frames(0);
