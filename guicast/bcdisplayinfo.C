@@ -27,6 +27,8 @@
 #include <X11/Xutil.h>
 #include <unistd.h>
 
+#define TEST_X 100
+#define TEST_Y 100
 #define TEST_SIZE 128
 #define TEST_SIZE2 164
 #define TEST_SIZE3 196
@@ -119,14 +121,13 @@ void BC_DisplayInfo::test_window(int &x_out,
 	XSync(display, 0);
 
 	XEvent event;
-	int last_w = 0;
-	int last_h = 0;
+	int last_w = TEST_SIZE;
+	int last_h = TEST_SIZE;
 	int state = 0;
 
 	do
 	{
 		XNextEvent(display, &event);
-//printf("BC_DisplayInfo::test_window 1 event=%d %d\n", event.type, XPending(display));
 		if(event.type == ConfigureNotify && event.xany.window == win)
 		{
 // Get creation repositioning
@@ -149,16 +150,8 @@ void BC_DisplayInfo::test_window(int &x_out,
 				x_out2 = MAX(event.xconfigure.x + event.xconfigure.border_width - x_in, x_out2);
 				y_out2 = MAX(event.xconfigure.y + event.xconfigure.border_width - y_in, y_out2);
 			}
-// printf("BC_DisplayInfo::test_window 2 state=%d x_out=%d y_out=%d x_in=%d y_in=%d w=%d h=%d\n",
-// state,
-// event.xconfigure.x + event.xconfigure.border_width, 
-// event.xconfigure.y + event.xconfigure.border_width, 
-// x_in, 
-// y_in, 
-// event.xconfigure.width, 
-// event.xconfigure.height);
 		}
- 	}while(state != 3);
+	}while(state != 2);
 
 	XDestroyWindow(display, win);
 	XFlush(display);
@@ -166,9 +159,8 @@ void BC_DisplayInfo::test_window(int &x_out,
 
 	x_out = MAX(0, x_out);
 	y_out = MAX(0, y_out);
-	x_out = MIN(x_out, 30);
-	y_out = MIN(y_out, 30);
-//printf("BC_DisplayInfo::test_window 2\n");
+	x_out = MIN(x_out, 60);
+	y_out = MIN(y_out, 60);
 }
 
 void BC_DisplayInfo::init_borders()
@@ -180,15 +172,10 @@ void BC_DisplayInfo::init_borders()
 			top_border, 
 			auto_reposition_x, 
 			auto_reposition_y, 
-			0, 
-			0);
+			TEST_X, 
+			TEST_Y);
 		right_border = left_border;
 		bottom_border = left_border;
-// printf("BC_DisplayInfo::init_borders border=%d %d auto=%d %d\n", 
-// left_border, 
-// top_border, 
-// auto_reposition_x, 
-// auto_reposition_y);
 	}
 }
 
