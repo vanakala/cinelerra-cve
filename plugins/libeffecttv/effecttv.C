@@ -156,7 +156,7 @@ void EffectTV::frame_to_effecttv(VFrame *frame, uint32_t *tmp)
 				output_row[0] = (row[j * sizeof(uint32_t)] & 0xff0000) >> 8; \
 				output_row[1] = row[j * sizeof(uint32_t)] & 0xff00; \
 				output_row[2] = (row[j * sizeof(uint32_t)] & 0xff) << 8; \
-				if(components == 4) output_row[3] = 0xffff; \
+				if(components == 4) output_row[3] = (type)0xffff; \
 			} \
 			output_row += components; \
 			row++; \
