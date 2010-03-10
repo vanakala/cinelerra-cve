@@ -284,8 +284,28 @@ const char* TransportCommand::commandstr(int cmd)
 // Debug
 void TransportCommand::dump_command()
 {
-    printf("=== Command dump: '%s' (realtime=%d)\n", commandstr(), realtime);
-    printf("    playback %f; positions start=%f, end=%f\n", playbackstart, start_position, end_position);
+	const char *tps;
+	printf("=== Command dump: '%s' (realtime=%d)\n", commandstr(), realtime);
+	printf("    playback %f; positions start=%f, end=%f\n", playbackstart, start_position, end_position);
+	switch(change_type)
+	{
+	case CHANGE_ALL:
+		tps = "All";
+		break;
+	case CHANGE_EDL:
+		tps = "EDL";
+		break;
+	case CHANGE_PARAMS:
+		tps = "Param";
+		break;
+	case CHANGE_NONE:
+		tps = "None";
+		break;
+	default:
+		tps = "Unknown";
+		break;
+	}
+	printf("    change_type %s, edl: %p\n", tps, edl);
 }
 
 
