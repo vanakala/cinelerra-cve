@@ -40,18 +40,6 @@
 #define TRACE_MEMORY
 
 
-// Need to use structs to avoid the memory manager.
-// One of these tables is created every time someone locks a lock.
-// After successfully locking, the table is flagged as being the owner of the lock.
-// In the unlock function, the table flagged as the owner of the lock is deleted.
-typedef struct 
-{
-	void *ptr;
-	char *title;
-	char *location;
-	int is_owner;
-	int id;
-} bc_locktrace_t;
 
 class BC_Signals
 {
@@ -82,8 +70,19 @@ public:
 
 #ifdef TRACE_LOCKS
 
+// Lock types
+#define LOCKTYPE_UNKN  'U'
+#define LOCKTYPE_COND  'C'
+#define LOCKTYPE_MUTEX 'M'
+#define LOCKTYPE_SEMA  'S'
+#define LOCKTYPE_XWIN  'X'
+
 // Before user acquires
-#define SET_LOCK(ptr, title, location) int table_id = BC_Signals::set_lock(ptr, title, location);
+#define SET_LOCK(ptr, title, location) int table_id = BC_Signals::set_lock(ptr, title, location, LOCKTYPE_UNKN);
+#define SET_CLOCK(ptr, title, location) int table_id = BC_Signals::set_lock(ptr, title, location, LOCKTYPE_COND);
+#define SET_MLOCK(ptr, title, location) int table_id = BC_Signals::set_lock(ptr, title, location, LOCKTYPE_MUTEX);
+#define SET_SLOCK(ptr, title, location) int table_id = BC_Signals::set_lock(ptr, title, location, LOCKTYPE_SEMA);
+#define SET_XLOCK(ptr, title, location) int table_id = BC_Signals::set_lock(ptr, title, location, LOCKTYPE_XWIN);
 // After successful acquisition of a mutex, the table is flagged
 #define SET_LOCK2 BC_Signals::set_lock2(table_id);
 // After successful acquisition of a condition, the table is removed because
@@ -134,14 +133,12 @@ public:
 #define UNSET_TEMP BC_Signals::unset_temp
 
 // Temporary files
-	static void delete_temps();
-	static void set_temp(char *string);
-	static void unset_temp(char *string);
+        static void delete_temps();
+        static void set_temp(const char *string);
+        static void unset_temp(const char *string);
 
 
-
-
-	static int set_lock(void *ptr, char *title, char *location);
+	static int set_lock(void *ptr, const char *title, const char *location, int type);
 	static void set_lock2(int table_id);
 	static void set_lock2_condition(int table_id);
 	static void unset_lock2(int table_id);
@@ -149,13 +146,13 @@ public:
 // Used in lock destructors so takes away all references
 	static void unset_all_locks(void *ptr);
 
-	static void new_trace(char *text);
+	static void new_trace(const char *text);
 	static void new_trace(const char *file, const char *function, int line);
 	static void delete_traces();
 
 	static void enable_memory();
 	static void disable_memory();
-	static void set_buffer(int size, void *ptr, char* location);
+	static void set_buffer(int size, void *ptr, const char* location);
 // This one returns 1 if the buffer wasn't found.
 	static int unset_buffer(void *ptr);
 
@@ -164,7 +161,7 @@ public:
 	static void dump_buffers();
 
 // Convert signum to text
-	static char* sig_to_str(int number);
+	static const char* sig_to_str(int number);
 
 	static BC_Signals *global_signals;
 };

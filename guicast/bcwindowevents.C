@@ -72,7 +72,7 @@ void BC_WindowEvents::run()
 //	in lock_window check wheather BC_WindowEvents is in XNextEvent and it is send custom xevent to break out of the loop and make sure lock is not taken again if lock_window() is waiting on it
 // 3. Send custom events from previous point through _separate_ xwindows display connection since XSendEvent would need to be protected by XLockDisplay which obviously can't be
 
-		window->lock_window();
+		window->lock_window("BC_Windowevents::run");
 		while (XPending(window->display))
 		{
 			event = new XEvent;

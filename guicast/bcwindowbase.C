@@ -184,6 +184,7 @@ BC_WindowBase::~BC_WindowBase()
 	common_events.remove_all_objects();
 	delete event_lock;
 	delete event_condition;
+	delete windowmutex;
 
 	UNSET_ALL_LOCKS(this)
 }
@@ -257,6 +258,7 @@ int BC_WindowBase::initialize()
 #ifdef HAVE_GL
 	gl_win_context = 0;
 #endif
+	windowmutex = new Mutex("BC_Windowbase::windowmx", 1);
 
 	return 0;
 }
@@ -2661,10 +2663,10 @@ int BC_WindowBase::lock_window(char *location)
 	else
 	if(top_level)
 	{
-		SET_LOCK(this, title, location);
-		XLockDisplay(top_level->display);
+		SET_XLOCK(this, title, location);
+		top_level->windowmutex->lock(location);
 		SET_LOCK2
-		top_level->window_lock = 1;
+		top_level->window_lock++;
 	}
 	else
 	{
@@ -2683,8 +2685,9 @@ int BC_WindowBase::unlock_window()
 	if(top_level)
 	{
 		UNSET_LOCK(this);
-		top_level->window_lock = 0;
-		XUnlockDisplay(top_level->display);
+		if(--top_level->window_lock < 0)
+		    top_level->window_lock = 0;
+		top_level->windowmutex->unlock();
 	}
 	else
 	{

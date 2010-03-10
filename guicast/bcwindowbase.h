@@ -37,6 +37,7 @@
 
 #define TOOLTIP_MARGIN 2
 #define BC_INFINITY 65536
+#define CHKWLCK(win, nm) {printf("Winlock %d at %s\n", win->window_lock, nm);}
 
 #include "arraylist.h"
 #include "bcbar.inc"
@@ -850,11 +851,11 @@ private:
 	Timer *cursor_timer;
 // unique ID of window.
 	int id;
+	Mutex *windowmutex;
 
 protected:
 	Atom create_xatom(char *atom_name);
-	int send_custom_xatom(xatom_event *event); 
-
+	int send_custom_xatom(xatom_event *event);
 };
 
 

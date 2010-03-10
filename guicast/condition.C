@@ -28,7 +28,7 @@
 #include <stdio.h>
 #include <sys/time.h>
 
-Condition::Condition(int init_value, char *title, int is_binary)
+Condition::Condition(int init_value, const char *title, int is_binary)
 {
 	this->is_binary = is_binary;
 	this->title = title;
@@ -50,17 +50,20 @@ void Condition::reset()
 {
     pthread_cond_destroy(&cond);
     pthread_mutex_destroy(&mutex);
+#ifndef NO_GUICAST
+	UNSET_ALL_LOCKS(this);
+#endif
 	pthread_mutex_init(&mutex, 0);
 	pthread_cond_init(&cond, NULL);
 	value = init_value;
 }
 
-void Condition::lock(char *location)
+void Condition::lock(const char *location)
 {
-#ifndef NO_GUICAST
-	SET_LOCK(this, title, location);
-#endif
     pthread_mutex_lock(&mutex);
+#ifndef NO_GUICAST
+	SET_CLOCK(this, title, location);
+#endif
     while(value <= 0) pthread_cond_wait(&cond, &mutex);
 #ifndef NO_GUICAST
 	UNSET_LOCK2
@@ -74,11 +77,8 @@ void Condition::lock(char *location)
 
 void Condition::unlock()
 {
-// The lock trace is created and removed by the acquirer
-//#ifndef NO_GUICAST
-//	UNSET_LOCK(this);
-//#endif
     pthread_mutex_lock(&mutex);
+// The lock trace is created and removed by the acquirer
     if(is_binary)
 		value = 1;
 	else
@@ -87,16 +87,16 @@ void Condition::unlock()
     pthread_mutex_unlock(&mutex);
 }
 
-int Condition::timed_lock(int microseconds, char *location)
+int Condition::timed_lock(int microseconds, const char *location)
 {
     struct timeval now;
     struct timespec timeout;
     int result = 0;
 
-#ifndef NO_GUICAST
-	SET_LOCK(this, title, location);
-#endif
     pthread_mutex_lock(&mutex);
+#ifndef NO_GUICAST
+	SET_CLOCK(this, title, location);
+#endif
     gettimeofday(&now, 0);
     timeout.tv_sec = now.tv_sec + microseconds / 1000000;
     timeout.tv_nsec = now.tv_usec * 1000 + (microseconds % 1000000) * 1000;
@@ -105,21 +105,18 @@ int Condition::timed_lock(int microseconds, char *location)
 	{
 		result = pthread_cond_timedwait(&cond, &mutex, &timeout);
     }
+#ifndef NO_GUICAST
+		UNSET_LOCK2
+#endif
 
     if(result == ETIMEDOUT) 
 	{
 //printf("Condition::timed_lock 1 %s %s\n", title, location);
-#ifndef NO_GUICAST
-		UNSET_LOCK2
-#endif
 		result = 1;
     } 
 	else 
 	{
 //printf("Condition::timed_lock 2 %s %s\n", title, location);
-#ifndef NO_GUICAST
-		UNSET_LOCK2
-#endif
 		if(is_binary)
 			value = 0;
 		else

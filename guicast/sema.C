@@ -41,7 +41,7 @@ Sema::~Sema()
 
 void Sema::lock(char *location)
 {
-	SET_LOCK(this, title, location);
+	SET_SLOCK(this, title, location);
 	sem_wait(&sem);
 	SET_LOCK2
 }

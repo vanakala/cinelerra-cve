@@ -63,7 +63,7 @@ int Mutex::lock(char *location)
 
 
 #ifndef NO_GUICAST
-	SET_LOCK(this, title, location);
+	SET_MLOCK(this, title, location);
 #endif
 	if(pthread_mutex_lock(&mutex)) perror("Mutex::lock");
 
