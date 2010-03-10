@@ -339,30 +339,23 @@ void Render::run()
 	if(mode == Render::INTERACTIVE)
 	{
 // Fix the asset for rendering
-printf("Render::run 1\n");
+
 		Asset *asset = new Asset;
 		load_defaults(asset);
-printf("Render::run 2\n");
 		check_asset(mwindow->edl, *asset);
-printf("Render::run 3\n");
 
 // Get format from user
 		if(!result)
 		{
-printf("Render::run 4\n");
 			do
 			{
 				format_error = 0;
 				result = 0;
 
 				{
-printf("Render::run 5\n");
 					RenderWindow window(mwindow, this, asset);
-printf("Render::run 6\n");
 					window.create_objects();
-printf("Render::run 7\n");
 					result = window.run_window();
-printf("Render::run 8\n");
 					if (! result) {
 						// add to recentlist only on OK
 						window.format_tools->path_recent->add_item(FILE_FORMAT_PREFIX(asset->format), asset->path);
@@ -371,26 +364,19 @@ printf("Render::run 8\n");
 
 				if(!result)
 				{
-printf("Render::run 8.1\n");
 // Check the asset format for errors.
 					FormatCheck format_check(asset);
-printf("Render::run 8.2\n");
 					format_error = format_check.check_format();
-printf("Render::run 8.3\n");
 				}
 			}while(format_error && !result);
 		}
-printf("Render::run 9\n");
 
 		save_defaults(asset);
 		mwindow->save_defaults();
-printf("Render::run 10\n");
 
 		if(!result) render(1, asset, mwindow->edl, strategy, range_type);
-printf("Render::run 11\n");
 
 		Garbage::delete_object(asset);
-printf("Render::run 12\n");
 	}
 	else
 	if(mode == Render::BATCH)
@@ -454,7 +440,6 @@ printf("Render::run 12\n");
 			mwindow->batch_render->update_done(-1, 0, 0);
 		}
 	}
-printf("Render::run 100\n");
 }
 
 
@@ -825,7 +810,6 @@ int Render::render(int test_overwrite,
 
 
 
-printf("Render::run: Session finished.\n");
 
 
 
@@ -837,7 +821,6 @@ printf("Render::run: Session finished.\n");
 			result |= packages->packages_are_done();
 		}
 
-printf("Render::render 90\n");
 
 // Notify of error
 		if(result && 
@@ -862,7 +845,6 @@ printf("Render::render 90\n");
 // Delete the progress box
 		stop_progress();
 
-//printf("Render::render 100\n");
 
 
 
@@ -919,7 +901,6 @@ printf("Render::render 90\n");
 		mwindow->gui->unlock_window();
 	}
 
-//printf("Render::render 110\n");
 // Need to restart because brender always stops before render.
 	if(mwindow)
 		mwindow->restart_brender();
@@ -932,7 +913,6 @@ printf("Render::render 90\n");
 	delete packages;
 	in_progress = 0;
 	completion->unlock();
-//printf("Render::render 120\n");
 
 	return result;
 }
