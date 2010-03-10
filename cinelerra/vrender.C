@@ -413,8 +413,8 @@ void VRender::run()
 
 
 	while(!done && 
-		!renderengine->video->interrupt && 
-		!last_playback)
+		!renderengine->video->interrupt)
+//		&& !last_playback)
 	{
 // Perform the most time consuming part of frame decompression now.
 // Want the condition before, since only 1 frame is rendered 
@@ -431,7 +431,7 @@ SET_TRACE
 		process_buffer(current_position);
 SET_TRACE
 
-		if(renderengine->command->single_frame())
+		if(renderengine->command->single_frame() || last_playback)
 		{
 			flash_output();
 			frame_step = 1;
@@ -566,6 +566,8 @@ SET_TRACE
 			framerate_counter = 0;
 			framerate_timer.update();
 		}
+if(last_playback)
+    printf("VRender::run last_playback = 1, done =%d\n", done);
 	}
 
 SET_TRACE

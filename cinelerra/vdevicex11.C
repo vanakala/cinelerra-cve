@@ -178,23 +178,23 @@ int VDeviceX11::close_all()
 		else
 			output->refresh_frame->copy_from(output_frame);
 
-// // Update the status bug
-// 		if(!device->single_frame)
-// 		{
-// 			output->stop_video();
-// 		}
-// 		else
-// 		{
-// 			output->stop_single();
-// 		}
+// Update the status bug
+ 		if(!device->single_frame)
+ 		{
+ 			output->stop_video();
+ 		}
+ 		else
+ 		{
+ 			output->stop_single();
+ 		}
 
 // Draw the first refresh with new frame.
 // Doesn't work if video and openGL because OpenGL doesn't have 
 // the output buffer for video.
 // Not necessary for any case if we mandate a frame advance after
 // every stop.
-		if(/* device->out_config->driver != PLAYBACK_X11_GL || 
-			*/ device->single_frame)
+		/* if( device->out_config->driver != PLAYBACK_X11_GL || 
+			 device->single_frame) */
 			output->draw_refresh();
 	}
 
@@ -214,25 +214,11 @@ int VDeviceX11::close_all()
 	}
 
 	if(capture_bitmap) delete capture_bitmap;
-
 	if(output)
 	{
-	
-// Update the status bug
-		if(!device->single_frame)
-		{
-			output->stop_video();
-		}
-		else
-		{
-			output->stop_single();
-		}
-
 		output->get_canvas()->unlock_window();
 		output->unlock_canvas();
 	}
-
-
 	reset_parameters();
 	return 0;
 }
