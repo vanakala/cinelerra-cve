@@ -276,7 +276,7 @@ char* Units::totext(char *text,
 		case TIME_FEET_FRAMES:
 			frame = to_int64(seconds * frame_rate);
 			feet = (int64_t)(frame / frames_per_foot);
-			sprintf(text, "%05ld-%02ld", 
+			sprintf(text, "%05lld-%02lld", 
 				feet, 
 				(int64_t)(frame - feet * frames_per_foot));
 			return text;
