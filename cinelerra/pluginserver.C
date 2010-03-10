@@ -343,7 +343,7 @@ void PluginServer::client_side_close()
 	else
 	if(prompt)
 	{
-		prompt->lock_window();
+		prompt->lock_window("PluginServer::client_side_close");
 		prompt->set_done(1);
 		prompt->unlock_window();
 	}
@@ -520,7 +520,7 @@ void PluginServer::render_gui(void *data, int size)
 
 MainProgressBar* PluginServer::start_progress(char *string, int64_t length)
 {
-	mwindow->gui->lock_window();
+	mwindow->gui->lock_window("PluginServer::start_progress");
 	MainProgressBar *result = mwindow->mainprogress->start_progress(string, length);
 	mwindow->gui->unlock_window();
 	return result;

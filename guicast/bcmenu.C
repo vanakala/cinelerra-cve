@@ -219,6 +219,7 @@ int BC_Menu::activate_menu()
 	int new_x, new_y, top_w, top_h;
 	if(menu_bar)
 	{
+		top_level->lock_window("BC_Menu::activate_menu");
 		XTranslateCoordinates(top_level->display, 
 			menu_bar->win, 
 			top_level->rootwin, 
@@ -227,6 +228,7 @@ int BC_Menu::activate_menu()
 			&new_x, 
 			&new_y, 
 			&tempwin);
+		top_level->unlock_window();
 		menu_popup->activate_menu(new_x, new_y, w, h, 0, 1);
 	}
 	else

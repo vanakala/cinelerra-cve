@@ -81,6 +81,8 @@ int BC_DragWindow::get_init_x(BC_WindowBase *parent_window, int icon_x)
 {
 	int output_x, temp = 0;
 	Window tempwin;
+	
+	parent_window->top_level->lock_window("BC_DragWindow::get_init_x");
 	XTranslateCoordinates(parent_window->top_level->display, 
 		parent_window->win, 
 		parent_window->top_level->rootwin, 
@@ -89,6 +91,7 @@ int BC_DragWindow::get_init_x(BC_WindowBase *parent_window, int icon_x)
 		&output_x, 
 		&temp, 
 		&tempwin);
+	parent_window->top_level->unlock_window();
 	return output_x;
 }
 
@@ -96,6 +99,8 @@ int BC_DragWindow::get_init_y(BC_WindowBase *parent_window, int icon_y)
 {
 	int output_y, temp = 0;
 	Window tempwin;
+
+	parent_window->top_level->lock_window("BC_DragWindow::get_init_y");
 	XTranslateCoordinates(parent_window->top_level->display, 
 		parent_window->win, 
 		parent_window->top_level->rootwin, 
@@ -104,6 +109,7 @@ int BC_DragWindow::get_init_y(BC_WindowBase *parent_window, int icon_y)
 		&temp, 
 		&output_y, 
 		&tempwin);
+	parent_window->top_level->unlock_window();
 	return output_y;
 }
 

@@ -572,7 +572,7 @@ void Render::stop_progress()
 		delete progress;
 
 		sprintf(string2, _("Rendering took %s"), string);
-		mwindow->gui->lock_window("");
+		mwindow->gui->lock_window("Render::stop_progress");
 		mwindow->gui->show_message(string2);
 		mwindow->gui->stop_hourglass();
 		mwindow->gui->unlock_window();

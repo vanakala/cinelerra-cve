@@ -155,9 +155,7 @@ int RecordEngine::run_script(FileXML *script)
 			else
 			if(script->tag.title_is("start_recording"))
 			{
-				gui->unlock_window();
 				start_saving();
-				gui->lock_window();
 			}
 			else
 			if(script->tag.title_is("set_monitor_video"))
@@ -490,7 +488,7 @@ int RecordEngine::close_output_devices()
 
 int RecordEngine::lock_window()
 {
-	gui->lock_window();
+	gui->lock_window("RecordEngine::lock_window");
 }
 
 int RecordEngine::unlock_window()

@@ -253,16 +253,12 @@ int CWindowToolGUI::close_event()
 	hide_window();
 	flush();
 	mwindow->edl->session->tool_window = 0;
-	unlock_window();
-
-
 
 	thread->gui->lock_window("CWindowToolGUI::close_event");
 	thread->gui->composite_panel->set_operation(mwindow->edl->session->cwindow_operation);
 	thread->gui->flush();
 	thread->gui->unlock_window();
 
-	lock_window("CWindowToolGUI::close_event");
 	return 1;
 }
 

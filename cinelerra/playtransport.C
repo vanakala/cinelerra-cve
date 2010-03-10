@@ -211,7 +211,6 @@ int PlayTransport::keypress_event()
 	{
 		use_inout = 1;
 	}
-	subwindow->unlock_window();
 
 
 	switch(subwindow->get_keypress())
@@ -240,8 +239,6 @@ int PlayTransport::keypress_event()
 			subwindow->unlock_window();
 			break;
 	}
-
-	subwindow->lock_window("PlayTransport::keypress_event 5");
 
 	return result;
 }
@@ -419,7 +416,7 @@ int RewindButton::handle_event()
 {
 //	unlock_window();
 	transport->goto_start();
-//	lock_window();
+//	lock_window("RewindButton::handle_event");
 	return 1;
 }
 
@@ -430,9 +427,7 @@ FastReverseButton::FastReverseButton(MWindow *mwindow, PlayTransport *transport,
 }
 int FastReverseButton::handle_event() 
 {
-	unlock_window();
 	transport->handle_transport(FAST_REWIND, 0, ctrl_down());
-	lock_window("FastReverseButton::handle_event");
 	return 1;
 }
 
@@ -445,9 +440,7 @@ ReverseButton::ReverseButton(MWindow *mwindow, PlayTransport *transport, int x, 
 }
 int ReverseButton::handle_event()
 {
-	unlock_window();
 	transport->handle_transport(NORMAL_REWIND, 0, ctrl_down());
-	lock_window("ReverseButton::handle_event");
 	return 1;
 }
 
@@ -460,9 +453,7 @@ FrameReverseButton::FrameReverseButton(MWindow *mwindow, PlayTransport *transpor
 }
 int FrameReverseButton::handle_event()
 {
-	unlock_window();
 	transport->handle_transport(SINGLE_FRAME_REWIND, 0, ctrl_down());
-	lock_window("FrameReverseButton::handle_event");
 	return 1;
 }
 
@@ -475,9 +466,7 @@ PlayButton::PlayButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
 }
 int PlayButton::handle_event()
 {
-	unlock_window();
 	transport->handle_transport(NORMAL_FWD, 0, ctrl_down());
-	lock_window("PlayButton::handle_event");
 	return 1;
 }
 
@@ -492,9 +481,7 @@ FramePlayButton::FramePlayButton(MWindow *mwindow, PlayTransport *transport, int
 }
 int FramePlayButton::handle_event()
 {
-	unlock_window();
 	transport->handle_transport(SINGLE_FRAME_FWD, 0, ctrl_down());
-	lock_window("FramePlayButton::handle_event");
 	return 1;
 }
 
@@ -507,9 +494,7 @@ FastPlayButton::FastPlayButton(MWindow *mwindow, PlayTransport *transport, int x
 }
 int FastPlayButton::handle_event() 
 {
-	unlock_window();
 	transport->handle_transport(FAST_FWD, 0, ctrl_down());
-	lock_window("FastPlayButton::handle_event");
 	return 1;
 }
 
@@ -533,8 +518,6 @@ StopButton::StopButton(MWindow *mwindow, PlayTransport *transport, int x, int y)
 }
 int StopButton::handle_event()
 {
-	unlock_window();
 	transport->handle_transport(STOP, 0, 0);
-	lock_window("StopButton::handle_event");
 	return 1;
 }

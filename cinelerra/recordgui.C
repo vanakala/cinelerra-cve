@@ -835,8 +835,6 @@ int RecordGUIMonitorVideo::handle_event()
 	record->monitor_video = get_value();
 	if(record->monitor_video)
 	{
-		unlock_window();
-
 
 		record->record_monitor->window->lock_window("RecordGUIMonitorVideo::handle_event");
 		record->record_monitor->window->show_window();
@@ -844,7 +842,6 @@ int RecordGUIMonitorVideo::handle_event()
 		record->record_monitor->window->flush();
 		record->record_monitor->window->unlock_window();
 
-		lock_window("RecordGUIMonitorVideo::handle_event");
 		record->video_window_open = 1;
 	}
 	return 1;
@@ -863,17 +860,12 @@ int RecordGUIMonitorAudio::handle_event()
 	record->monitor_audio = get_value();
 	if(record->monitor_audio)
 	{
-		unlock_window();
-
-
 		record->record_monitor->window->lock_window("RecordGUIMonitorAudio::handle_event");
 		record->record_monitor->window->show_window();
 		record->record_monitor->window->raise_window();
 		record->record_monitor->window->flush();
 		record->record_monitor->window->unlock_window();
 
-
-		lock_window("RecordGUIMonitorVideo::handle_event");
 		record->video_window_open = 1;
 	}
 	return 1;
@@ -1046,9 +1038,7 @@ RecordGUIStartBatches::RecordGUIStartBatches(MWindow *mwindow, Record *record, i
 }
 int RecordGUIStartBatches::handle_event()
 {
-	unlock_window();
 	record->start_recording(0, CONTEXT_BATCH);
-	lock_window("RecordGUIStartBatches::handle_event");
 	return 1;
 }
 

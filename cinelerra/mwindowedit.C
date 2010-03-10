@@ -1320,13 +1320,7 @@ SET_TRACE
 
 		gui->mainmenu->update_toggles(0);
 
-
-		gui->unlock_window();
-
 		gwindow->gui->update_toggles(1);
-
-		gui->lock_window("MWindow::paste_edls");
-
 
 // Insert labels for certain modes constitutively
 		edit_labels = 1;
@@ -1732,8 +1726,6 @@ void MWindow::paste_video_transition()
 void MWindow::redo_entry(BC_WindowBase *calling_window_gui)
 {
 
-	calling_window_gui->unlock_window();
-
 	cwindow->playback_engine->que->send_command(STOP,
 		CHANGE_NONE, 
 		0,
@@ -1747,8 +1739,8 @@ void MWindow::redo_entry(BC_WindowBase *calling_window_gui)
 
 
 	cwindow->gui->lock_window("MWindow::redo_entry");
-	vwindow->gui->lock_window("MWindow::undo_entry 2");
-	gui->lock_window();
+	vwindow->gui->lock_window("MWindow::redo_entry 2");
+	gui->lock_window("MWindow::redo_entry 3");
 
 	undo->redo(); 
 
@@ -1759,12 +1751,9 @@ void MWindow::redo_entry(BC_WindowBase *calling_window_gui)
 	gui->update(1, 2, 1, 1, 1, 1, 1);
 	cwindow->update(1, 1, 1, 1, 1);
 
-	if (calling_window_gui != cwindow->gui) 
-		cwindow->gui->unlock_window();
-	if (calling_window_gui != gui)
-		gui->unlock_window();
-	if (calling_window_gui != vwindow->gui)
-		vwindow->gui->unlock_window();
+	cwindow->gui->unlock_window();
+	gui->unlock_window();
+	vwindow->gui->unlock_window();
 
 	cwindow->playback_engine->que->send_command(CURRENT_FRAME, 
 	    		   CHANGE_ALL,
@@ -2130,7 +2119,6 @@ void MWindow::undo_entry(BC_WindowBase *calling_window_gui)
 //		gui->unlock_window();
 //	else
 //		cwindow->gui->unlock_window();
-	calling_window_gui->unlock_window();
 
 	cwindow->playback_engine->que->send_command(STOP,
 		CHANGE_NONE, 
@@ -2160,12 +2148,9 @@ void MWindow::undo_entry(BC_WindowBase *calling_window_gui)
 //		cwindow->gui->unlock_window();
 //	else
 //		gui->unlock_window();
-	if (calling_window_gui != cwindow->gui) 
-		cwindow->gui->unlock_window();
-	if (calling_window_gui != gui)
-		gui->unlock_window();
-	if (calling_window_gui != vwindow->gui)
-		vwindow->gui->unlock_window();
+	cwindow->gui->unlock_window();
+	gui->unlock_window();
+	vwindow->gui->unlock_window();
 	
 
 	awindow->gui->async_update_assets();

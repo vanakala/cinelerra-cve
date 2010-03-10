@@ -501,9 +501,7 @@ int MWindowGUI::keypress_event()
 				{ 
 					if (alt_down())
 					{
-						unlock_window();
 						mbuttons->transport->handle_transport(STOP, 1, 0, 0);
-						lock_window("MWindowGUI::keypress_event 1");
 						mwindow->prev_edit_handle(shift_down());
 					}
 					else
@@ -516,9 +514,7 @@ int MWindowGUI::keypress_event()
 				{ 
 					if (alt_down())
 					{
-						unlock_window();
 						mbuttons->transport->handle_transport(STOP, 1, 0, 0);
-						lock_window("MWindowGUI::keypress_event 2");
 						mwindow->next_edit_handle(shift_down());
 					}
 					else
@@ -690,9 +686,7 @@ int MWindowGUI::keypress_event()
 						1,
 						0,
 						1);
-				unlock_window();
 				mwindow->cwindow->update(0, 1, 1);
-				lock_window("TrackCanvas::keypress_event 3");
 
 				result = 1;
 				break;

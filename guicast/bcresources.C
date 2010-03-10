@@ -566,6 +566,7 @@ int BC_Resources::init_shm(BC_WindowBase *window)
 	if(!XShmQueryExtension(window->display)) use_shm = 0;
 	else
 	{
+		window->lock_window("BC_Resources::init_shm");
 		XShmSegmentInfo test_shm;
 		XImage *test_image;
 		unsigned char *data;
@@ -581,6 +582,7 @@ int BC_Resources::init_shm(BC_WindowBase *window)
 		if(BC_Resources::error) use_shm = 0;
 		XDestroyImage(test_image);
 		shmdt(test_shm.shmaddr);
+		window->unlock_window();
 	}
 //	XSetErrorHandler(0);
 	return 0;

@@ -52,9 +52,7 @@ ChannelEditThread::ChannelEditThread(ChannelPicker *channel_picker,
 }
 ChannelEditThread::~ChannelEditThread()
 {
-	channel_picker->get_subwindow()->unlock_window();
 	delete scan_thread;
-	channel_picker->get_subwindow()->lock_window("ChannelEditThread::~ChannelEditThread");
 	delete new_channels;
 	delete completion;
 }
@@ -365,9 +363,7 @@ void ChannelEditWindow::scan_confirm()
 {
 	channel_picker->load_scan_defaults(&thread->scan_params);
 	if(!scan_confirm_thread) scan_confirm_thread = new ConfirmScanThread(this);
-	unlock_window();
 	scan_confirm_thread->start();
-	lock_window("ChannelEditWindow::scan_confirm");
 }
 
 void ChannelEditWindow::scan()
@@ -968,7 +964,7 @@ SET_TRACE
 	if(!result)
 	{
 		output_channel->copy_settings(&new_channel);
-		window->lock_window();
+		window->lock_window("ChannelEditEditThread::run 1");
 		window->update_list(output_channel);
 		window->unlock_window();
 	}
@@ -977,7 +973,7 @@ SET_TRACE
 // Discard channel.
 		if(!editing)
 		{
-			window->lock_window();
+			window->lock_window("ChannelEditEditThread::run 2");
 			window->delete_channel(output_channel);
 			window->unlock_window();
 		}

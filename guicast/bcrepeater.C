@@ -63,7 +63,7 @@ void BC_Repeater::initialize()
 
 int BC_Repeater::start_repeating()
 {
-//printf("BC_Repeater::start_repeating 1 %d\n", delay);
+// printf("Repeater %s start %d\n", top_level->title, delay);
 	repeating++;
 	if(repeating == 1)
 	{
@@ -76,6 +76,7 @@ int BC_Repeater::start_repeating()
 int BC_Repeater::stop_repeating()
 {
 // Recursive calling happens when mouse wheel is used.
+// printf("Repeater %s stop %d\n", top_level->title, delay);
 	if(repeating > 0)
 	{
 		repeating--;
@@ -128,26 +129,21 @@ void BC_Repeater::run()
 			continue;
 		}
 
-// Wait for window to become available.
-		top_level->lock_window("BC_Repeater::run");
-
 // Test exit conditions
 		if(interrupted)
 		{
 			repeat_lock->unlock();
-			top_level->unlock_window();
 			return;
 		}
 		if(repeating <= 0)
 		{
 			repeat_lock->unlock();
-			top_level->unlock_window();
 			continue;
 		}
 
 // Stick event into queue
+// printf("101 Repeater %s delay %ld\n", top_level->title, delay);
 		top_level->arm_repeat(delay);
-		top_level->unlock_window();
 		next_delay = delay - timer.get_difference();
 		if(next_delay <= 0) next_delay = 0;
 

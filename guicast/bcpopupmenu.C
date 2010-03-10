@@ -276,6 +276,7 @@ int BC_PopupMenu::activate_menu()
 
 		top_level->deactivate();
 		top_level->active_popup_menu = this;
+		top_level->lock_window("BC_PopupMenu::activate_menu");
 		if(!use_title)
 		{
 			x = top_level->get_abs_cursor_x(0) - get_w();
@@ -307,6 +308,7 @@ int BC_PopupMenu::activate_menu()
 		else
 			menu_popup->activate_menu(x, y, w, h, 0, 1);
 		popup_down = 1;
+		top_level->unlock_window();
 		if(use_title) draw_title();
 	}
 	return 0;

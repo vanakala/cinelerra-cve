@@ -62,12 +62,10 @@ int Quit::handle_event()
 	}
 	else 
 	{        // quit
-		mwindow->gui->unlock_window();
 		mwindow->interrupt_indexes();
 //		mwindow->gui->set_done(0);
 //		BC_WindowBase::get_resources()->synchronous->quit();
 		mwindow->playback_3d->quit();
-		mwindow->gui->lock_window();
 	}
 	return 0;
 }

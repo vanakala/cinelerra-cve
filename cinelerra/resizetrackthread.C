@@ -49,7 +49,7 @@ ResizeTrackThread::~ResizeTrackThread()
 {
 	if(window)
 	{
-		window->lock_window();
+		window->lock_window("ResizeTrackThread:Destructor");
 		window->set_done(1);
 		window->unlock_window();
 	}

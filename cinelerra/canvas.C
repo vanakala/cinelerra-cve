@@ -834,24 +834,19 @@ int Canvas::button_press_event_base(BC_WindowBase *caller)
 
 int Canvas::keypress_event(BC_WindowBase *caller)
 {
-	int caller_is_canvas = (caller == get_canvas());
 	if(caller->get_keypress() == 'f')
 	{
-		caller->unlock_window();
 		if(get_fullscreen())
 			stop_fullscreen();
 		else
 			start_fullscreen();
-		if(!caller_is_canvas) caller->lock_window("Canvas::keypress_event 1");
 		return 1;
 	}
 	else
 	if(caller->get_keypress() == ESC)
 	{
-		caller->unlock_window();
 		if(get_fullscreen())
 			stop_fullscreen();
-		if(!caller_is_canvas) caller->lock_window("Canvas::keypress_event 2");
 		return 1;
 	}
 	return 0;
@@ -1059,9 +1054,7 @@ int CanvasSubWindowItem::handle_event()
 {
 // It isn't a problem to delete the canvas from in here because the event
 // dispatcher is the canvas subwindow.
-	canvas->subwindow->unlock_window();
 	canvas->stop_fullscreen();
-	canvas->subwindow->lock_window("CanvasSubWindowItem::handle_event");
 	return 1;
 }
 
@@ -1219,9 +1212,7 @@ CanvasFullScreenItem::CanvasFullScreenItem(Canvas *canvas)
 }
 int CanvasFullScreenItem::handle_event()
 {
-	canvas->subwindow->unlock_window();
 	canvas->start_fullscreen();
-	canvas->subwindow->lock_window("CanvasFullScreenItem::handle_event");
 	return 1;
 }
 

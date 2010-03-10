@@ -175,7 +175,7 @@ int VideoWindow::update(BC_Bitmap *frame)
 {
 	if(gui)
 	{
-		gui->lock_window();
+		gui->lock_window("VideoWindow::update");
 //		gui->canvas->draw_bitmap(frame, 1);
 		gui->unlock_window();
 	}

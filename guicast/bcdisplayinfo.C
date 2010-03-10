@@ -208,10 +208,6 @@ void BC_DisplayInfo::init_window(char *display_name, int show_error)
 {
 	if(display_name && display_name[0] == 0) display_name = NULL;
 	
-// This function must be the first Xlib
-// function a multi-threaded program calls
-	XInitThreads();
-
 	if((display = XOpenDisplay(display_name)) == NULL)
 	{
 		if(show_error)

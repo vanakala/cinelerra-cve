@@ -392,9 +392,7 @@ BC_FileBoxDelete::BC_FileBoxDelete(int x, int y, BC_FileBox *filebox)
 }
 int BC_FileBoxDelete::handle_event()
 {
-	filebox->unlock_window();
 	filebox->delete_thread->start();
-	filebox->lock_window("BC_FileBoxDelete::handle_event");
 	return 1;
 }
 

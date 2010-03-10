@@ -604,7 +604,6 @@ int RecordMonitorGUI::close_event()
 	thread->record->monitor_video = 0;
 	thread->record->monitor_audio = 0;
 	thread->record->video_window_open = 0;
-	unlock_window();
 
 	record->record_gui->lock_window("RecordMonitorGUI::close_event");
 	if(record->record_gui->monitor_video) record->record_gui->monitor_video->update(0);
@@ -612,8 +611,6 @@ int RecordMonitorGUI::close_event()
 	record->record_gui->flush();
 	record->record_gui->unlock_window();
 
-
-	lock_window("RecordMonitorGUI::close_event");
 	hide_window();
 	return 0;
 }

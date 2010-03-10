@@ -1881,8 +1881,11 @@ void MWindow::update_project(int load_mode)
 
 
 	gui->update(1, 1, 1, 1, 1, 1, 1);
-
+//printf("MWindow::update_project: gui updated\n");
+	cwindow->gui->lock_window("Mwindow::update_project 1");
 	cwindow->update(0, 0, 1, 1, 1);
+	cwindow->gui->unlock_window();
+//printf("MWindow::update_project: cwindow gui updated\n");
 
 
 	if(load_mode == LOAD_REPLACE ||
@@ -1894,8 +1897,9 @@ void MWindow::update_project(int load_mode)
 	{
 		vwindow->update(1);
 	}
+//printf("MWindow::update_project: vwindow gui updated\n");
 
-	cwindow->gui->lock_window("Mwindow::update_project");
+	cwindow->gui->lock_window("Mwindow::update_project 2");
 	cwindow->gui->slider->set_position();
 	cwindow->gui->timebar->update(1, 1);
 	cwindow->gui->unlock_window();
@@ -1905,6 +1909,8 @@ void MWindow::update_project(int load_mode)
 		1);
 
 	awindow->gui->async_update_assets();
+//printf("MWindow::update_project: awindow gui updated\n");
+
 	gui->flush();
 }
 

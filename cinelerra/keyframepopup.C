@@ -91,7 +91,7 @@ int KeyframePopup::update(Automation *automation, Autos *autos, Auto *auto_keyfr
 	{
 		mwindow->edl->local_session->set_selectionstart(new_position);
 		mwindow->edl->local_session->set_selectionend(new_position);
-		mwindow->gui->lock_window();
+		mwindow->gui->lock_window("KeyframePopup::update");
 		mwindow->gui->update(1, 1, 1, 1, 1, 1, 0);	
 		mwindow->gui->unlock_window();
 	}
@@ -151,7 +151,7 @@ int KeyframePopupShow::handle_event()
 	{
 /*
 
-		mwindow->cwindow->gui->lock_window();
+		mwindow->cwindow->gui->lock_window("KeyframePopupShow::handle_event");
 		int show_window = 1;
 		if (popup->keyframe_autos == (Autos *)popup->keyframe_automation->projector_autos ||
 		   popup->keyframe_autos == (Autos *)popup->keyframe_automation->pzoom_autos)
@@ -341,7 +341,7 @@ int KeyframePopupCopy::handle_event()
 		file.append_newline();
 		file.terminate_string();
 
-		mwindow->gui->lock_window();
+		mwindow->gui->lock_window("KeyframePopupCopy::handle_event");
 		mwindow->gui->get_clipboard()->to_clipboard(file.string, 
 			strlen(file.string), 
 			SECONDARY_SELECTION);

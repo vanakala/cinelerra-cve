@@ -440,6 +440,7 @@ int BC_Bitmap::write_drawable(Drawable &pixmap,
 		int dest_h, 
 		int dont_wait)
 {
+    top_level->lock_window("BC_Bitmap::write_drawable");
 //printf("BC_Bitmap::write_drawable 1 %p %d\n", this, current_ringbuffer);fflush(stdout);
     if(use_shm)
 	{
@@ -519,7 +520,7 @@ int BC_Bitmap::write_drawable(Drawable &pixmap,
 			dest_w, 
 			dest_h);
 	}
-
+	top_level->unlock_window();
 //printf("BC_Bitmap %d\n", current_ringbuffer);
 	current_ringbuffer++;
 	if(current_ringbuffer >= ring_buffers) current_ringbuffer = 0;

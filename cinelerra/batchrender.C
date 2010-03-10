@@ -1038,7 +1038,7 @@ BatchRenderSaveList::~BatchRenderSaveList()
 	startup_lock->lock("BatchRenderSaveList::~BrowseButton");
 	if(gui)
 	{
-		gui->lock_window();
+		gui->lock_window("BatchRenderSaveList::destructor");
 		gui->set_done(1);
 		gui->unlock_window();
 	}
@@ -1053,7 +1053,7 @@ int BatchRenderSaveList::handle_event()
 	{
 		if(gui)
 		{
-			gui->lock_window();
+			gui->lock_window("BatchRenderSaveList::handle_event");
 			gui->raise_window();
 			gui->unlock_window();
 		}
@@ -1125,7 +1125,7 @@ BatchRenderLoadList::~BatchRenderLoadList()
 	startup_lock->lock("BatchRenderLoadList::~BrowseButton");
 	if(gui)
 	{
-		gui->lock_window();
+		gui->lock_window("BatchRenderLoadList:destructor");
 		gui->set_done(1);
 		gui->unlock_window();
 	}
@@ -1140,7 +1140,7 @@ int BatchRenderLoadList::handle_event()
 	{
 		if(gui)
 		{
-			gui->lock_window();
+			gui->lock_window("BatchRenderLoadList::handle_event");
 			gui->raise_window();
 			gui->unlock_window();
 		}
@@ -1319,9 +1319,7 @@ BatchRenderStop::BatchRenderStop(BatchRenderThread *thread,
 
 int BatchRenderStop::handle_event()
 {
-	unlock_window();
 	thread->stop_rendering();
-	lock_window("BatchRenderStop::handle_event");
 	return 1;
 }
 
@@ -1338,9 +1336,7 @@ BatchRenderCancel::BatchRenderCancel(BatchRenderThread *thread,
 
 int BatchRenderCancel::handle_event()
 {
-	unlock_window();
 	thread->stop_rendering();
-	lock_window("BatchRenderCancel::handle_event");
 	thread->gui->set_done(1);
 	return 1;
 }
@@ -1349,9 +1345,7 @@ int BatchRenderCancel::keypress_event()
 {
 	if(get_keypress() == ESC) 
 	{
-		unlock_window();
 		thread->stop_rendering();
-		lock_window("BatchRenderCancel::keypress_event");
 		thread->gui->set_done(1);
 		return 1;
 	}

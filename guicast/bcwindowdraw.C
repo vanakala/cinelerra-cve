@@ -706,6 +706,8 @@ void BC_WindowBase::draw_top_tiles(BC_WindowBase *parent_window, int x, int y, i
 {
 	Window tempwin;
 	int origin_x, origin_y;
+
+	top_level->lock_window("BC_WindowBase::draw_top_tiles");
 	XTranslateCoordinates(top_level->display, 
 			parent_window->win, 
 			win, 
@@ -714,7 +716,7 @@ void BC_WindowBase::draw_top_tiles(BC_WindowBase *parent_window, int x, int y, i
 			&origin_x, 
 			&origin_y, 
 			&tempwin);
-
+	top_level->unlock_window();
 	draw_tiles(parent_window->bg_pixmap, 
 		origin_x,
 		origin_y,
@@ -734,6 +736,7 @@ void BC_WindowBase::draw_top_background(BC_WindowBase *parent_window,
 	Window tempwin;
 	int top_x, top_y;
 
+	top_level->lock_window("BC_WindowBase::draw_top_background");
 	XTranslateCoordinates(top_level->display, 
 			win, 
 			parent_window->win, 
@@ -742,6 +745,7 @@ void BC_WindowBase::draw_top_background(BC_WindowBase *parent_window,
 			&top_x, 
 			&top_y, 
 			&tempwin);
+	top_level->unlock_window();
 
 	XCopyArea(top_level->display, 
 		parent_window->pixmap->opaque_pixmap, 

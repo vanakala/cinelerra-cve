@@ -427,18 +427,14 @@ int CWindowGUI::keypress_event()
 			result = 1;
 			break;
 		case 'f':
-			unlock_window();
 			if(mwindow->session->cwindow_fullscreen)
 				canvas->stop_fullscreen();
 			else
 				canvas->start_fullscreen();
-			lock_window("CWindowGUI::keypress_event 1");
 			break;
 		case ESC:
-			unlock_window();
 			if(mwindow->session->cwindow_fullscreen)
 				canvas->stop_fullscreen();
-			lock_window("CWindowGUI::keypress_event 2");
 			break;
 		case LEFT:
 			if(!ctrl_down()) 
@@ -446,14 +442,12 @@ int CWindowGUI::keypress_event()
 				if (alt_down())
 				{
 					int shift_down = this->shift_down();
-					unlock_window();
 					mwindow->gui->mbuttons->transport->handle_transport(STOP, 1, 0, 0);
 
 					mwindow->gui->lock_window("CWindowGUI::keypress_event 2");
 					mwindow->prev_edit_handle(shift_down);
 					mwindow->gui->unlock_window();
 
-					lock_window("CWindowGUI::keypress_event 1");
 				}
 				else
 				{
@@ -468,14 +462,12 @@ int CWindowGUI::keypress_event()
 				if (alt_down())
 				{
 					int shift_down = this->shift_down();
-					unlock_window();
 					mwindow->gui->mbuttons->transport->handle_transport(STOP, 1, 0, 0);
 
 					mwindow->gui->lock_window("CWindowGUI::keypress_event 2");
 					mwindow->next_edit_handle(shift_down);
 					mwindow->gui->unlock_window();
 
-					lock_window("CWindowGUI::keypress_event 2");
 				}
 				else
 					mwindow->move_right(); 
@@ -566,7 +558,6 @@ int CWindowGUI::drag_stop()
 	{
 		if(mwindow->session->drag_assets->total)
 		{
-			mwindow->gui->lock_window("CWindowGUI::drag_stop 1");
 			mwindow->clear(0);
 			mwindow->load_assets(mwindow->session->drag_assets, 
 				mwindow->edl->local_session->get_selectionstart(), 
@@ -580,7 +571,6 @@ int CWindowGUI::drag_stop()
 
 		if(mwindow->session->drag_clips->total)
 		{
-			mwindow->gui->lock_window("CWindowGUI::drag_stop 2");
 			mwindow->clear(0);
 			mwindow->paste_edls(mwindow->session->drag_clips, 
 				LOAD_PASTE, 
@@ -598,7 +588,6 @@ int CWindowGUI::drag_stop()
 			mwindow->restart_brender();
 			mwindow->gui->update(1, 1, 1, 1, 0, 1, 0);
 			mwindow->undo->update_undo(_("insert assets"), LOAD_ALL);
-			mwindow->gui->unlock_window();
 			mwindow->sync_parameters(LOAD_ALL);
 		}
 	}
@@ -754,9 +743,7 @@ CWindowSlider::~CWindowSlider()
 
 int CWindowSlider::handle_event()
 {
-	unlock_window();
 	cwindow->playback_engine->interrupt_playback(1);
-	lock_window("CWindowSlider::handle_event 1");
 	
 	mwindow->gui->lock_window("CWindowSlider::handle_event 2");
 	mwindow->select_point((double)get_value());
@@ -785,17 +772,13 @@ void CWindowSlider::set_position()
 
 int CWindowSlider::increase_value()
 {
-	unlock_window();
 	cwindow->gui->transport->handle_transport(SINGLE_FRAME_FWD);
-	lock_window("CWindowSlider::increase_value");
 	return 1;
 }
 
 int CWindowSlider::decrease_value()
 {
-	unlock_window();
 	cwindow->gui->transport->handle_transport(SINGLE_FRAME_REWIND);
-	lock_window("CWindowSlider::decrease_value");
 	return 1;
 }
 
@@ -842,26 +825,21 @@ EDL* CWindowTransport::get_edl()
 
 void CWindowTransport::goto_start()
 {
-	gui->unlock_window();
 	handle_transport(REWIND, 1);
 
 	mwindow->gui->lock_window("CWindowTransport::goto_start 1");
 	mwindow->goto_start();
 	mwindow->gui->unlock_window();
 
-	gui->lock_window("CWindowTransport::goto_start 2");
 }
 
 void CWindowTransport::goto_end()
 {
-	gui->unlock_window();
 	handle_transport(GOTO_END, 1);
 
 	mwindow->gui->lock_window("CWindowTransport::goto_end 1");
 	mwindow->goto_end();
 	mwindow->gui->unlock_window();
-
-	gui->lock_window("CWindowTransport::goto_end 2");
 }
 
 

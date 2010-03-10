@@ -293,18 +293,14 @@ void PatchGUI::toggle_behavior(int type,
 	switch(type)
 	{
 		case Tracks::PLAY:
-			mwindow->gui->unlock_window();
 			mwindow->restart_brender();
 			mwindow->sync_parameters(CHANGE_EDL);
-			mwindow->gui->lock_window("PatchGUI::toggle_behavior 1");
 			mwindow->undo->update_undo(_("play patch"), LOAD_PATCHES);
 			break;
 
 		case Tracks::MUTE:
-			mwindow->gui->unlock_window();
 			mwindow->restart_brender();
 			mwindow->sync_parameters(CHANGE_PARAMS);
-			mwindow->gui->lock_window("PatchGUI::toggle_behavior 2");
 			mwindow->undo->update_undo(_("mute patch"), LOAD_PATCHES);
 			break;
 
@@ -762,11 +758,9 @@ void NudgePatch::set_value(int64_t value)
 
 	mwindow->undo->update_undo("nudge", LOAD_AUTOMATION, this);
 
-	mwindow->gui->unlock_window();
 	if(patch->track->data_type == TRACK_VIDEO)
 		mwindow->restart_brender();
 	mwindow->sync_parameters(CHANGE_PARAMS);
-	mwindow->gui->lock_window("NudgePatch::handle_event 2");
 
 	mwindow->session->changes_made = 1;
 }

@@ -40,7 +40,7 @@ BC_DialogThread::~BC_DialogThread()
 	startup_lock->lock("BC_DialogThread::~BC_DialogThread");
 	if(gui)
 	{
-		gui->lock_window();
+		gui->lock_window("BC_DialogThread::Destructor");
 		gui->set_done(1);
 		gui->unlock_window();
 	}

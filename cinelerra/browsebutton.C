@@ -59,7 +59,7 @@ BrowseButton::~BrowseButton()
 	startup_lock->lock("BrowseButton::~BrowseButton");
 	if(gui)
 	{
-		gui->lock_window();
+		gui->lock_window("BrowseButton::destructor");
 		gui->set_done(1);
 		gui->unlock_window();
 	}
@@ -74,7 +74,7 @@ int BrowseButton::handle_event()
 	{
 		if(gui)
 		{
-			gui->lock_window();
+			gui->lock_window("BrowseButton::handle_event");
 			gui->raise_window();
 			gui->unlock_window();
 		}

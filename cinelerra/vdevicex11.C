@@ -548,7 +548,6 @@ int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
 
 	int i = 0;
 	output->lock_canvas("VDeviceX11::write_buffer");
-	output->get_canvas()->lock_window("VDeviceX11::write_buffer 1");
 
 
 //printf("VDeviceX11::write_buffer %d\n", output->get_canvas()->get_video_on());
@@ -661,7 +660,6 @@ int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
 		if(output->get_canvas()->get_video_on())
 		{
 // Draw output frame directly.  Not used for compositing.
-			output->get_canvas()->unlock_window();
 			output->unlock_canvas();
 			output->mwindow->playback_3d->write_buffer(output, 
 				output_frame,
@@ -675,7 +673,6 @@ int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
 				canvas_y2,
 				is_cleared);
 			is_cleared = 0;
-			output->lock_canvas("VDeviceX11::write_buffer 2");
 			output->get_canvas()->lock_window("VDeviceX11::write_buffer 2");
 		}
 	}
@@ -710,7 +707,6 @@ int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
 	}
 
 
-	output->get_canvas()->unlock_window();
 	output->unlock_canvas();
 	return 0;
 }

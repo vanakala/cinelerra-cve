@@ -238,6 +238,8 @@ int BC_MenuPopup::activate_menu(int x,
 
 // Coords are relative to the main window
 	if(top_window_coords)
+	{
+		top_level->lock_window("BC_MenuPopup::activate_menu");
 		XTranslateCoordinates(top_level->display, 
 			top_level->win, 
 			top_level->rootwin, 
@@ -246,6 +248,8 @@ int BC_MenuPopup::activate_menu(int x,
 			&new_x, 
 			&new_y, 
 			&tempwin);
+		top_level->unlock_window();
+	} 
 	else
 // Coords are absolute
 	{

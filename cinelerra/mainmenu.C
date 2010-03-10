@@ -228,7 +228,7 @@ int MainMenu::load_defaults(BC_Hash *defaults)
 
 void MainMenu::update_toggles(int use_lock)
 {
-	if(use_lock) lock_window("MainMenu::update_toggles");
+	if(use_lock) mwindow->gui->lock_window("MainMenu::update_toggles");
 	labels_follow_edits->set_checked(mwindow->edl->session->labels_follow_edits);
 	plugins_follow_edits->set_checked(mwindow->edl->session->plugins_follow_edits);
 	cursor_on_frames->set_checked(mwindow->edl->session->cursor_on_frames);

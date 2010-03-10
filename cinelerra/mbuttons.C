@@ -125,18 +125,14 @@ MainTransport::MainTransport(MWindow *mwindow, MButtons *mbuttons, int x, int y)
 
 void MainTransport::goto_start()
 {
-	mwindow->gui->unlock_window();
 	handle_transport(REWIND, 1);
-	mwindow->gui->lock_window();
 	mwindow->goto_start();
 }
 
 
 void MainTransport::goto_end()
 {
-	mwindow->gui->unlock_window();
 	handle_transport(GOTO_END, 1);
-	mwindow->gui->lock_window();
 	mwindow->goto_end();
 }
 

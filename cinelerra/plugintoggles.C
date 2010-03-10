@@ -53,10 +53,8 @@ void PluginOn::update(int x, int y, Plugin *plugin)
 int PluginOn::handle_event()
 {
 	plugin->on = get_value();
-	unlock_window();
 	mwindow->restart_brender();
 	mwindow->sync_parameters(CHANGE_EDL);
-	lock_window("PluginOn::handle_event");
 	return 1;
 }
 
@@ -89,12 +87,10 @@ void PluginShow::update(int x, int y, Plugin *plugin)
 
 int PluginShow::handle_event()
 {
-	unlock_window();
 	if(get_value()) 
 		mwindow->show_plugin(plugin);
 	else
 		mwindow->hide_plugin(plugin, 1);
-	lock_window("PluginShow::handle_event");
 	return 1;
 }
 

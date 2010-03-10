@@ -215,7 +215,7 @@ void SaveAs::run()
 	{
 		char string[BCTEXTLEN];
 		sprintf(string, _("\"%s\" %dC written"), filename, strlen(file.string));
-		mwindow->gui->lock_window();
+		mwindow->gui->lock_window("SaveAs::run");
 		mwindow->gui->show_message(string);
 		mwindow->gui->unlock_window();
 	}

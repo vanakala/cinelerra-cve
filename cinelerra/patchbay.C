@@ -269,10 +269,8 @@ int PatchBay::cursor_motion_event()
 							if(track->play != new_status)
 							{
 								track->play = new_status;
-								mwindow->gui->unlock_window();
 								mwindow->restart_brender();
 								mwindow->sync_parameters(CHANGE_EDL);
-								mwindow->gui->lock_window();
 								update_gui = 1;
 							}
 							break;
@@ -324,10 +322,8 @@ int PatchBay::cursor_motion_event()
 
 								mwindow->undo->update_undo(_("keyframe"), LOAD_AUTOMATION);
 
-								mwindow->gui->unlock_window();
 								mwindow->restart_brender();
 								mwindow->sync_parameters(CHANGE_PARAMS);
-								mwindow->gui->lock_window();
 
 								if(mwindow->edl->session->auto_conf->autos[AUTOMATION_MUTE])
 								{

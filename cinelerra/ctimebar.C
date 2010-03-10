@@ -82,9 +82,7 @@ void CTimeBar::select_label(double position)
 {
 	EDL *edl = mwindow->edl;
 
-	gui->unlock_window();
 	mwindow->gui->mbuttons->transport->handle_transport(STOP, 1, 0, 0);
-	gui->lock_window();
 
 	position = mwindow->edl->align_to_frame(position, 1);
 
@@ -112,7 +110,7 @@ void CTimeBar::select_label(double position)
 
 //printf("CTimeBar::select_label 1\n");
 
-	mwindow->gui->lock_window();
+	mwindow->gui->lock_window("CTimeBar::select_label");
 	mwindow->gui->cursor->hide(0);
 	mwindow->gui->cursor->draw(1);
 	mwindow->gui->update(0,

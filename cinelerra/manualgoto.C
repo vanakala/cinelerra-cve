@@ -89,7 +89,7 @@ void ManualGoto::run()
 	while (!done) 
 	{
 		result = gotowindow->run_window();
-		gotowindow->lock_window();
+		gotowindow->lock_window("ManualGoto::run");
 		gotowindow->hide_window();		
 		gotowindow->unlock_window();
 
@@ -123,7 +123,7 @@ void ManualGoto::run()
 				{
 					mwindow->edl->local_session->set_selectionstart(new_position);
 					mwindow->edl->local_session->set_selectionend(new_position);
-					mwindow->gui->lock_window();
+					mwindow->gui->lock_window("ManualGoto::run 1");
 					mwindow->find_cursor();
 					mwindow->gui->update(1, 1, 1, 1, 1, 1, 0);	
 					mwindow->gui->unlock_window();
@@ -156,7 +156,7 @@ void ManualGoto::run()
 				{
 					vwindow->get_edl()->local_session->set_selectionstart(new_position);
 					vwindow->get_edl()->local_session->set_selectionend(new_position);
-					vwindow->gui->lock_window();
+					vwindow->gui->lock_window("ManualGoto::run 2");
 					vwindow->update_position(CHANGE_NONE, 0, 1);			
 					vwindow->gui->unlock_window();
 				}
@@ -189,7 +189,7 @@ ManualGotoWindow::~ManualGotoWindow()
 
 void ManualGotoWindow::reset_data(double position)
 {
-	lock_window();
+	lock_window("ManualGotoWindow::reset_data");
 	reposition_window(
 			mwindow->gui->get_abs_cursor_x(1) - 250 / 2,
 			mwindow->gui->get_abs_cursor_y(1) - 80 / 2);

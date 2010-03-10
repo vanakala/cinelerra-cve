@@ -110,10 +110,8 @@ void MainUndo::push_undo_item(UndoStackItem *item)
 	capture_state();
 
 	mwindow->session->changes_made = 1;
-   mwindow->gui->lock_window("MainUndo::update_undo_before");
    mwindow->gui->mainmenu->undo->update_caption(item->description);
    mwindow->gui->mainmenu->redo->update_caption("");
-   mwindow->gui->unlock_window();
 }
 
 void MainUndo::capture_state()

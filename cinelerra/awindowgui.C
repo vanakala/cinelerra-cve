@@ -582,13 +582,11 @@ int AWindowGUI::close_event()
 {
 	hide_window();
 	mwindow->session->show_awindow = 0;
-	unlock_window();
 
 	mwindow->gui->lock_window("AWindowGUI::close_event");
 	mwindow->gui->mainmenu->show_awindow->set_checked(0);
 	mwindow->gui->unlock_window();
 
-	lock_window("AWindowGUI::close_event");
 	mwindow->save_defaults();
 	return 1;
 }

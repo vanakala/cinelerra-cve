@@ -96,8 +96,6 @@ void CWindow::hide_window()
 {
 	gui->hide_window();
 	gui->mwindow->session->show_cwindow = 0;
-// Unlock in case MWindow is waiting for it.
-	gui->unlock_window();
 
 	gui->tool_panel->hide_tool();
 
@@ -105,8 +103,6 @@ void CWindow::hide_window()
 	mwindow->gui->mainmenu->show_cwindow->set_checked(0);
 	mwindow->gui->unlock_window();
 	mwindow->save_defaults();
-
-	gui->lock_window("CWindow::hide_window");
 }
 
 
@@ -226,7 +222,6 @@ void CWindow::update(int position,
 			1);
 	}
 
-	gui->lock_window("CWindow::update 2");
 
 
 // Create tool window
@@ -267,14 +262,6 @@ void CWindow::update(int position,
 			mwindow->theme->ccanvas_y,
 			mwindow->theme->ccanvas_w,
 			mwindow->theme->ccanvas_h);
-
-
-
-
-	gui->unlock_window();
-
-
-
 
 }
 

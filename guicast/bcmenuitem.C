@@ -135,6 +135,7 @@ int BC_MenuItem::activate_submenu()
 	if(menu_popup->popup && submenu && !submenu->popup)
 	{
 		Window tempwin;
+		top_level->lock_window("BC_MenuItem::activate_submenu");
 		XTranslateCoordinates(top_level->display, 
 			menu_popup->get_popup()->win, 
 			top_level->rootwin, 
@@ -143,6 +144,7 @@ int BC_MenuItem::activate_submenu()
 			&new_x, 
 			&new_y, 
 			&tempwin);
+		top_level->unlock_window();
 		submenu->activate_menu(new_x + 5, new_y, menu_popup->w - 10, h, 0, 0);
 		highlighted = 1;
 	}
@@ -196,6 +198,7 @@ int BC_MenuItem::dispatch_button_release(int &redraw)
 
 	if(!result)
 	{
+		top_level->lock_window("BC_MenuItem::dispatch_button_release");
 		XTranslateCoordinates(top_level->display, 
 			top_level->event_win, 
 			menu_popup->get_popup()->win, 
@@ -204,7 +207,7 @@ int BC_MenuItem::dispatch_button_release(int &redraw)
 			&cursor_x, 
 			&cursor_y, 
 			&tempwin);
-
+		top_level->unlock_window();
 		if(cursor_x >= 0 && cursor_x < menu_popup->get_w() &&
 			cursor_y >= y && cursor_y < y + h)
 		{

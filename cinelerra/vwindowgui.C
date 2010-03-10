@@ -88,18 +88,15 @@ void VWindowGUI::change_source(EDL *edl, char *title)
 	else
 		sprintf(string, PROGRAM_NAME);
 	strcpy(loaded_title, title);
-	lock_window("VWindowGUI::change_source");
 	slider->set_position();
 	timebar->update();
 	set_title(string);
-	unlock_window();
 }
 
 
 // Get source list from master EDL
 void VWindowGUI::update_sources(char *title)
 {
-	lock_window("VWindowGUI::update_sources");
 
 //printf("VWindowGUI::update_sources 1\n");
 	sources.remove_all_objects();
@@ -156,7 +153,6 @@ void VWindowGUI::update_sources(char *title)
 
 //	source->update_list(&sources);
 //	source->update(title);
-	unlock_window();
 }
 
 int VWindowGUI::create_objects()
@@ -290,14 +286,11 @@ int VWindowGUI::close_event()
 {
 	hide_window();
 	mwindow->session->show_vwindow = 0;
-	unlock_window();
-	
 	
 	mwindow->gui->lock_window("VWindowGUI::close_event");
 	mwindow->gui->mainmenu->show_vwindow->set_checked(0);
 	mwindow->gui->unlock_window();
 
-	lock_window("VWindowGUI::close_event");
 	mwindow->save_defaults();
 	return 1;
 }
@@ -319,18 +312,14 @@ int VWindowGUI::keypress_event()
 			mwindow->redo_entry(this);
 			break;
 		case 'f':
-			unlock_window();
 			if(mwindow->session->vwindow_fullscreen)
 				canvas->stop_fullscreen();
 			else
 				canvas->start_fullscreen();
-			lock_window("VWindowGUI::keypress_event 1");
 			break;
 		case ESC:
-			unlock_window();
 			if(mwindow->session->vwindow_fullscreen)
 				canvas->stop_fullscreen();
-			lock_window("VWindowGUI::keypress_event 2");
 			break;
 	}
 	if(!result) result = transport->keypress_event();
@@ -539,9 +528,7 @@ void VWindowEditing::prev_label()
 	if(vwindow->get_edl())
 	{
 		EDL *edl = vwindow->get_edl();
-		vwindow->gui->unlock_window();
 		vwindow->playback_engine->interrupt_playback(1);
-		vwindow->gui->lock_window("VWindowEditing::prev_label");
 
 		Label *current = edl->labels->prev_label(
 			edl->local_session->get_selectionstart(1));
@@ -573,9 +560,7 @@ void VWindowEditing::next_label()
 			edl->local_session->get_selectionstart(1));
 		if(!current)
 		{
-			vwindow->gui->unlock_window();
 			vwindow->playback_engine->interrupt_playback(1);
-			vwindow->gui->lock_window("VWindowEditing::next_label 1");
 
 			double position = edl->tracks->total_length();
 			edl->local_session->set_selectionstart(position);
@@ -585,9 +570,7 @@ void VWindowEditing::next_label()
 		}
 		else
 		{
-			vwindow->gui->unlock_window();
 			vwindow->playback_engine->interrupt_playback(1);
-			vwindow->gui->lock_window("VWindowEditing::next_label 2");
 
 			edl->local_session->set_selectionstart(current->position);
 			edl->local_session->set_selectionend(current->position);
@@ -705,9 +688,7 @@ VWindowSlider::~VWindowSlider()
 
 int VWindowSlider::handle_event()
 {
-	unlock_window();
 	vwindow->playback_engine->interrupt_playback(1);
-	lock_window("VWindowSlider::handle_event");
 
 	vwindow->update_position(CHANGE_NONE, 1, 0);
 	gui->timebar->update();
@@ -790,17 +771,13 @@ EDL* VWindowTransport::get_edl()
 
 void VWindowTransport::goto_start()
 {
-	gui->unlock_window();
 	handle_transport(REWIND, 1);
-	gui->lock_window("VWindowTransport::goto_start");
 	gui->vwindow->goto_start();
 }
 
 void VWindowTransport::goto_end()
 {
-	gui->unlock_window();
 	handle_transport(GOTO_END, 1);
-	gui->lock_window("VWindowTransport::goto_end");
 	gui->vwindow->goto_end();
 }
 
@@ -857,6 +834,7 @@ void VWindowCanvas::draw_refresh()
 	if(!get_canvas()->get_video_on()) get_canvas()->clear_box(0, 0, get_canvas()->get_w(), get_canvas()->get_h());
 	if(!get_canvas()->get_video_on() && refresh_frame && edl)
 	{
+
 		float in_x1, in_y1, in_x2, in_y2;
 		float out_x1, out_y1, out_x2, out_y2;
 		get_transfers(edl, 

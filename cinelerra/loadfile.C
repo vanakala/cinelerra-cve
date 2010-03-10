@@ -166,10 +166,8 @@ void LoadFileThread::run()
 	overwrite_reel = 0;
 
 	mwindow->interrupt_indexes();
-	mwindow->gui->lock_window("LoadFileThread::run");
 	result = mwindow->load_filenames(&path_list, load_mode, 0, reel_name, reel_number, overwrite_reel);
 	mwindow->gui->mainmenu->add_load(path_list.values[0]);
-	mwindow->gui->unlock_window();
 	path_list.remove_all_objects();
 
 

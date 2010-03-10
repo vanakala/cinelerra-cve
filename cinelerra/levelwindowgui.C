@@ -95,7 +95,7 @@ int LevelWindowGUI::close_event()
 {
 	hide_window();
 	mwindow->session->show_lwindow = 0;
-	mwindow->gui->lock_window();
+	mwindow->gui->lock_window("LevelWindowGUI::close_event");
 	mwindow->gui->mainmenu->show_lwindow->set_checked(0);
 	mwindow->gui->unlock_window();
 	mwindow->save_defaults();

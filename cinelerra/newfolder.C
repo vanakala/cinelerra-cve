@@ -107,7 +107,7 @@ int NewFolderThread::interrupt()
 	change_lock.lock("NewFolderThread::interrupt");
 	if(active)
 	{
-		window->lock_window();
+		window->lock_window("NewFolderThread::interrupt");
 		window->set_done(1);
 		window->unlock_window();
 	}

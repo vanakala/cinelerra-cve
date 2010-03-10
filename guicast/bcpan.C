@@ -236,6 +236,7 @@ int BC_Pan::activate(int popup_x, int popup_y)
 	Window tempwin;
 
 	active = 0;
+	top_level->lock_window("BC_Pan::activate");
 	if (popup_x < 0 || popup_y < 0)
 	{
 		XTranslateCoordinates(top_level->display, 
@@ -246,7 +247,6 @@ int BC_Pan::activate(int popup_x, int popup_y)
 			&x, 
 			&y, 
 			&tempwin);
-
 		x -= (images[PAN_POPUP]->get_w() - get_w()) / 2;
 		y -= (images[PAN_POPUP]->get_h() - get_h()) / 2;
 		if (x < 0) x = 0;
@@ -264,6 +264,7 @@ int BC_Pan::activate(int popup_x, int popup_y)
 		y -= images[PAN_POPUP]->get_h() / 2;
 		if (x < 0) x = 0;
 	}
+	top_level->unlock_window();
 	
 	
 	if (popup) delete popup;

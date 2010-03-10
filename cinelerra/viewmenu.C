@@ -53,9 +53,7 @@ int ShowAssets::handle_event()
 		1, 
 		0,
 		0);
-	mwindow->gui->unlock_window();
 	mwindow->gwindow->gui->update_toggles(1);
-	mwindow->gui->lock_window("ShowAssets::handle_event");
 	return 1;
 }
 
@@ -80,9 +78,7 @@ int ShowTitles::handle_event()
 		1, 
 		0,
 		0);
-	mwindow->gui->unlock_window();
 	mwindow->gwindow->gui->update_toggles(1);
-	mwindow->gui->lock_window("ShowTitles::handle_event");
 	return 1;
 }
 
@@ -101,9 +97,7 @@ int ShowTransitions::handle_event()
 	mwindow->gui->canvas->draw_overlays();
 	mwindow->gui->canvas->flash();
 //	mwindow->gui->mainmenu->draw_items();
-	mwindow->gui->unlock_window();
 	mwindow->gwindow->gui->update_toggles(1);
-	mwindow->gui->lock_window("ShowTransitions::handle_event");
 	return 1;
 }
 
@@ -129,9 +123,7 @@ int ShowAutomation::handle_event()
 	mwindow->gui->canvas->draw_overlays();
 	mwindow->gui->canvas->flash();
 //	mwindow->gui->mainmenu->draw_items();
-	mwindow->gui->unlock_window();
 	mwindow->gwindow->gui->update_toggles(1);
-	mwindow->gui->lock_window("ShowAutomation::handle_event");
 	return 1;
 }
 
@@ -155,9 +147,7 @@ int PluginAutomation::handle_event()
 	mwindow->gui->canvas->draw_overlays();
 	mwindow->gui->canvas->flash();
 //	mwindow->gui->mainmenu->draw_items();
-	mwindow->gui->unlock_window();
 	mwindow->gwindow->gui->update_toggles(1);
-	mwindow->gui->lock_window("PluginAutomation::handle_event");
 	return 1;
 }
 

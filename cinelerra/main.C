@@ -103,6 +103,8 @@ int main(int argc, char *argv[])
 
 
 
+
+
 	bindtextdomain (PACKAGE, LOCALEDIR);
 	textdomain (PACKAGE);
 	setlocale (LC_MESSAGES, "");
@@ -272,6 +274,11 @@ PROGRAM_NAME " is free software, covered by the GNU General Public License,\n"
 
 		case DO_GUI:
 		{
+	                setlinebuf(stdout);
+// This function must be the first Xlib
+// function a multi-threaded program calls
+	                if(XInitThreads())
+	                        printf("XinitThreads done OK\n");
 			MWindow mwindow;
 			mwindow.create_objects(1, 
 				!filenames.total,

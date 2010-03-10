@@ -63,7 +63,7 @@ void FeatherEdits::run()
 
 	if(!result)
 	{
-		mwindow->gui->lock_window();
+		mwindow->gui->lock_window("FeatherEdits::run");
 //		mwindow->undo->update_undo_edits(_("Feather"), 0);
 		
 		mwindow->feather_edits(feather_samples, audio, video);

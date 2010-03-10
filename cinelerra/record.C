@@ -475,8 +475,6 @@ SET_TRACE
 		window_lock->unlock();
 
 		result = record_gui->run_window();
-// Must unlock to stop operation
-		record_gui->unlock_window();
 
 // Force monitor to quit without resuming
 		if(monitor_engine->record_video) 

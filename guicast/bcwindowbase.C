@@ -334,11 +334,6 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 		top_level = this;
 		parent_window = this;
 
-// This function must be the first Xlib
-// function a multi-threaded program calls
-		XInitThreads();
-
-
 // get the display connection
 		display = init_display(display_name);
 //		event_display = init_display(display_name);
@@ -367,7 +362,6 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 		if(resources.use_shm < 0) resources.initialize_display(this);
 		x_correction = get_resources()->get_left_border();
 		y_correction = get_resources()->get_top_border();
-
 		if(this->bg_color == -1)
 			this->bg_color = resources.get_bg_color();
 
@@ -686,14 +680,11 @@ int BC_WindowBase::dispatch_event()
 	{
 //		XNextEvent(display, event);
 		event = get_event();
-// Lock out window deletions
-		lock_window("BC_WindowBase::dispatch_event 1");
 //		get_key_masks(event);
 	}
 	else
 // Handle compressed events
 	{
-		lock_window("BC_WindowBase::dispatch_event 2");
 		if(resize_events)
 			dispatch_resize_event(last_resize_w, last_resize_h);
 		else
@@ -703,7 +694,6 @@ int BC_WindowBase::dispatch_event()
 		if(translation_events)
 			dispatch_translation_event();
 
-		unlock_window();
 		return 0;
 	}
 
@@ -832,6 +822,7 @@ int BC_WindowBase::dispatch_event()
 			break;
 
 		case ConfigureNotify:
+                        lock_window("BC_WindowBase::dispatch_event Cfgnt");
 			get_key_masks(event);
 			XTranslateCoordinates(top_level->display, 
 				top_level->win, 
@@ -843,7 +834,7 @@ int BC_WindowBase::dispatch_event()
 				&tempwin);
 			last_resize_w = event->xconfigure.width;
 			last_resize_h = event->xconfigure.height;
-
+                        unlock_window();
 			cancel_resize = 0;
 			cancel_translation = 0;
 
@@ -979,7 +970,6 @@ int BC_WindowBase::dispatch_event()
 	}
 //printf("100 %s %p %d\n", title, event, event->type);
 
-	unlock_window();
 	if(event) delete event;
 	return 0;
 }
@@ -1384,6 +1374,7 @@ int BC_WindowBase::show_tooltip(int w, int h)
 		w += TOOLTIP_MARGIN * 2;
 		h += TOOLTIP_MARGIN * 2;
 
+               lock_window("BC_WindowBase::show_tooltip");
 		XTranslateCoordinates(top_level->display, 
 				win, 
 				top_level->rootwin, 
@@ -1392,6 +1383,7 @@ int BC_WindowBase::show_tooltip(int w, int h)
 				&x, 
 				&y, 
 				&tempwin);
+		unlock_window();
 		tooltip_popup = new BC_Popup(top_level, 
 					x,
 					y,
@@ -2646,7 +2638,9 @@ void BC_WindowBase::flush()
 
 void BC_WindowBase::sync_display()
 {
+	lock_window("BC_WindowBase::sync_display");
 	XSync(top_level->display, False);
+	unlock_window();
 }
 
 int BC_WindowBase::get_window_lock()
@@ -2951,6 +2945,7 @@ int BC_WindowBase::get_relative_cursor_x()
 	unsigned int temp_mask;
 	Window temp_win;
 
+        lock_window("BC_WindowBase::get_relative_cursor_x");
 	XQueryPointer(top_level->display, 
 	   top_level->win, 
 	   &temp_win, 
@@ -2969,7 +2964,7 @@ int BC_WindowBase::get_relative_cursor_x()
 			&x, 
 			&y, 
 			&temp_win);
-
+	unlock_window();
 	return x;
 }
 
@@ -2979,6 +2974,7 @@ int BC_WindowBase::get_relative_cursor_y()
 	unsigned int temp_mask;
 	Window temp_win;
 
+	lock_window("BC_WindowBase::get_relative_cursor_y");
 	XQueryPointer(top_level->display, 
 	   top_level->win, 
 	   &temp_win, 
@@ -2997,7 +2993,7 @@ int BC_WindowBase::get_relative_cursor_y()
 			&x, 
 			&y, 
 			&temp_win);
-
+	unlock_window();
 	return y;
 }
 
@@ -3343,6 +3339,7 @@ int BC_WindowBase::get_toggle_drag()
 
 int BC_WindowBase::set_icon(VFrame *data)
 {
+	top_level->lock_window("BC_WindowBase::set_icon");
 	if(icon_pixmap) delete icon_pixmap;
 	icon_pixmap = new BC_Pixmap(top_level, 
 		data, 
@@ -3371,6 +3368,7 @@ int BC_WindowBase::set_icon(VFrame *data)
 
 	XSetWMHints(top_level->display, top_level->win, &wm_hints);
 	XSync(top_level->display, 0);
+	top_level->unlock_window();
 	return 0;
 }
 
@@ -3440,6 +3438,7 @@ void BC_WindowBase::translate_coordinates(Window src_w,
 	}
 	else
 	{
+		lock_window("BC_WindowBase::translate_coordinates");
 		XTranslateCoordinates(top_level->display, 
 			src_w, 
 			dest_w, 
@@ -3448,6 +3447,7 @@ void BC_WindowBase::translate_coordinates(Window src_w,
 			dest_x_return, 
 			dest_y_return,
 			&tempwin);
+		unlock_window();
 //printf("BC_WindowBase::translate_coordinates 1 %lld\n", timer.get_difference());
 	}
 }
@@ -3550,7 +3550,7 @@ XEvent* BC_WindowBase::get_event()
 	XEvent *result = 0;
 	while(!done && !result)
 	{
-		event_condition->lock("BC_WindowBase::get_event");
+	        event_condition->lock("BC_WindowBase::get_event");
 		event_lock->lock("BC_WindowBase::get_event");
 
 		if(common_events.total && !done)

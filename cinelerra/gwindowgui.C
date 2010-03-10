@@ -145,9 +145,7 @@ void GWindowGUI::create_objects()
 
 void GWindowGUI::update_mwindow()
 {
-	unlock_window();
 	mwindow->gui->mainmenu->update_toggles(1);
-	lock_window("GWindowGUI::update_mwindow");
 }
 
 void GWindowGUI::update_toggles(int use_lock)
@@ -173,13 +171,11 @@ int GWindowGUI::close_event()
 {
 	hide_window();
 	mwindow->session->show_gwindow = 0;
-	unlock_window();
 
 	mwindow->gui->lock_window("GWindowGUI::close_event");
 	mwindow->gui->mainmenu->show_gwindow->set_checked(0);
 	mwindow->gui->unlock_window();
 
-	lock_window("GWindowGUI::close_event");
 	mwindow->save_defaults();
 	return 1;
 }
@@ -227,7 +223,6 @@ int GWindowToggle::handle_event()
 
 
 // Update stuff in MWindow
-	unlock_window();
 	mwindow->gui->lock_window("GWindowToggle::handle_event");
 	if(toggleinf.isauto)
 	{
@@ -258,7 +253,6 @@ int GWindowToggle::handle_event()
 	}
 
 	mwindow->gui->unlock_window();
-	lock_window("GWindowToggle::handle_event");
 
 	return 1;
 }

@@ -130,15 +130,11 @@ int RecordTransport::keypress_event()
 		{
 			case IS_RECORDING:
 			case IS_PREVIEWING:
-				window->unlock_window();
 				record->stop_operation(1);
-				window->lock_window("RecordTransport::keypress_event 1");
 				break;
 
 			default:
-				window->unlock_window();
 				record->start_recording(0, CONTEXT_INTERACTIVE);
-				window->lock_window("RecordTransport::keypress_event 2");
 				break;
 		}
 //printf("RecordTransport::keypress_event 2\n");
@@ -162,9 +158,7 @@ RecordGUIRec::~RecordGUIRec()
 
 int RecordGUIRec::handle_event()
 {
-	unlock_window();
 	record->start_recording(0, CONTEXT_INTERACTIVE);
-	lock_window("RecordGUIRec::handle_event");
 	return 1;
 }
 
@@ -186,9 +180,7 @@ RecordGUIRecFrame::~RecordGUIRecFrame()
 
 int RecordGUIRecFrame::handle_event()
 {
-	unlock_window();
 	record->start_recording(0, CONTEXT_SINGLEFRAME);
-	lock_window("RecordGUIRecFrame::handle_event");
 	return 1;
 }
 
@@ -210,9 +202,7 @@ RecordGUIPlay::~RecordGUIPlay()
 
 int RecordGUIPlay::handle_event()
 {
-	unlock_window();
 //	engine->start_preview();
-	lock_window();
 	return 1;
 }
 
@@ -235,9 +225,7 @@ RecordGUIStop::~RecordGUIStop()
 
 int RecordGUIStop::handle_event()
 {
-	unlock_window();
 	record->stop_operation(1);
-	lock_window("RecordGUIStop::handle_event");
 	return 1;
 }
 
