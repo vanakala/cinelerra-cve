@@ -207,7 +207,6 @@ void TransportCommand::set_playback_range(EDL *edl, int use_inout)
 			break;
 	}
 
-
 	if(use_inout)
 	{
 		if(edl->local_session->inpoint_valid())
@@ -226,7 +225,6 @@ void TransportCommand::set_playback_range(EDL *edl, int use_inout)
 			playbackstart = end_position;
 			break;
 	}
-
 }
 
 void TransportCommand::playback_range_adjust_inout()
@@ -257,19 +255,38 @@ void TransportCommand::playback_range_project()
 	end_position = edl->tracks->total_playable_length();
 }
 
+// Debug
+const char* TransportCommand::commandstr(int cmd)
+{
+	static const char* cmdmemo[] = {
+		"None", 		// 0
+		"Frame Forward", 	// 1
+		"Normal Forward", 	// 2
+		"Fast Forward", 	// 3
+		"Frame Rewind", 	// 4
+		"Normal Rewind", 	// 5
+		"Fast Rewind", 		// 6
+		"Stop", 		// 7
+		"Pause", 		// 8
+		"Slow Forward", 	// 9
+		"Slow Rewind", 		// 10
+		"Rewind", 		// 11
+		"Goto End",		// 12
+		"Current Frame"		// 13
+	};
+	if(cmd == -1)
+		cmd = command;
+	if(cmd < 0 || cmd >= (sizeof(cmdmemo)/sizeof(const char *)))
+		return "Unknown";
+	return cmdmemo[cmd];
+}
 
-
-
-
-
-
-
-
-
-
-
-
-
+// Debug
+void TransportCommand::dump_command()
+{
+    printf("=== Command dump: '%s' (realtime=%d)\n", commandstr(), realtime);
+    printf("    playback %f; positions start=%f, end=%f\n", playbackstart, start_position, end_position);
+}
 
 
 TransportQue::TransportQue()

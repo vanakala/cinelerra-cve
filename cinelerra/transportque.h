@@ -54,6 +54,8 @@ public:
 	EDL* get_edl();
 	void delete_edl();
 	void new_edl();
+	const char* commandstr(int cmd = -1);
+	void dump_command();
 
 	int command;
 	int change_type;
