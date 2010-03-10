@@ -226,14 +226,11 @@ int RenderEngine::get_output_h()
 	return edl->session->output_h;
 }
 
-int RenderEngine::brender_available(int position, int direction)
+int RenderEngine::brender_available(int position)
 {
 	if(playback_engine)
 	{
-		int64_t corrected_position = position;
-		if(direction == PLAY_REVERSE)
-			corrected_position--;
-		return playback_engine->brender_available(corrected_position);
+		return playback_engine->brender_available(position);
 	}
 	else
 		return 0;
@@ -556,21 +553,21 @@ void RenderEngine::run()
 	{
 		playback_engine->tracking_position = playback_engine->get_tracking_position();
 	}
-
 	close_output();
 
 // Fix the tracking position
 	if(playback_engine)
 	{
-		if(command->command == CURRENT_FRAME)
+		if(command->single_frame())
 		{
-//printf("RenderEngine::run 4.1 %d\n", playback_engine->tracking_position);
 			playback_engine->tracking_position = command->playbackstart;
+			if(command->command != CURRENT_FRAME){
+    			    playback_engine->stop_tracking();
+			}
 		}
 		else
 		{
 // Make sure transport doesn't issue a pause command next
-//printf("RenderEngine::run 4.1 %d\n", playback_engine->tracking_position);
 			if(!interrupted)
 			{
 				if(do_audio)
@@ -585,7 +582,6 @@ void RenderEngine::run()
 							command->get_edl()->session->frame_rate;
 				}
 			}
-
 			if(!interrupted) playback_engine->command->command = STOP;
 			playback_engine->stop_tracking();
 

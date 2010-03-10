@@ -113,7 +113,6 @@ int VirtualANode::read_data(double *output_temp,
 			sample_rate + 
 			0.5);
 		parent_edit = (AEdit*)parent_node->track->edits->editof(start_position_project, 
-			renderengine->command->get_direction(),
 			0);
 	}
 

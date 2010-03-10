@@ -1114,7 +1114,7 @@ int Track::copy_assets(double start,
 	start = to_units(start, 0);
 	end = to_units(end, 1);
 
-	Edit *current = edits->editof((int64_t)start, PLAY_FORWARD, 0);
+	Edit *current = edits->editof((int64_t)start, 0);
 
 // Search all edits
 	while(current && current->startproject < end)
@@ -1300,10 +1300,10 @@ void Track::change_modules(int old_location, int new_location, int do_swap)
 }
 
 
-int Track::playable_edit(int64_t position, int direction)
+int Track::playable_edit(int64_t position)
 {
 	int result = 0;
-	if(direction == PLAY_REVERSE) position--;
+
 	for(Edit *current = edits->first; current && !result; current = NEXT)
 	{
 		if(current->startproject <= position && 

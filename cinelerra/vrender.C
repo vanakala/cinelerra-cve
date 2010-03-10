@@ -218,8 +218,7 @@ int VRender::get_use_vconsole(Edit* &playable_edit,
 
 
 // Background rendering completed
-	if((use_brender = renderengine->brender_available(position, 
-		renderengine->command->get_direction())) != 0) 
+	if((use_brender = renderengine->brender_available(position)) != 0) 
 		return 0;
 
 
@@ -235,9 +234,8 @@ int VRender::get_use_vconsole(Edit* &playable_edit,
 		1))
 		return 1;
 
-	playable_edit = playable_track->edits->editof(position, 
-		renderengine->command->get_direction(),
-		1);
+	playable_edit = playable_track->edits->editof(position, 1);
+
 // No edit at current location
 	if(!playable_edit) return 1;
 

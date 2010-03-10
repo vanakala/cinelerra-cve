@@ -415,11 +415,14 @@ void PlaybackEngine::run()
 			default:
 				last_command = command->command;
 				is_playing_back = 1;
- 				if(command->command == SINGLE_FRAME_FWD ||
-					command->command == SINGLE_FRAME_REWIND)
-				{
- 					command->playbackstart = get_tracking_position();
-				}
+
+				double frame_len = 1.0 / command->get_edl()->session->frame_rate;
+				if(command->command == SINGLE_FRAME_FWD)
+					command->playbackstart = get_tracking_position() + frame_len;
+				if(command->command == SINGLE_FRAME_REWIND)
+					command->playbackstart = get_tracking_position() - frame_len;
+				if(command->playbackstart < 0.0)
+					command->playbackstart = 0.0;
 
 				perform_change();
 				arm_render_engine();

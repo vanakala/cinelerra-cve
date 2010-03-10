@@ -75,9 +75,6 @@ int VEdit::read_frame(VFrame *video_out,
 
 	if(file)
 	{
-
-		input_position = (direction == PLAY_FORWARD) ? input_position : (input_position - 1);
-
 		if(use_asynchronous)
 			file->start_video_decode_thread();
 		else

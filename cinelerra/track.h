@@ -347,7 +347,7 @@ public:
 	int need_edit(Edit *current, int test_transitions);
 // If the edit under position is playable.
 // Used by PlayableTracks::is_playable.
-	int playable_edit(int64_t position, int direction);
+	int playable_edit(int64_t position);
 
 // ===================================== for handles, titles, etc
 

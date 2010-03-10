@@ -112,7 +112,7 @@ public:
 
 // ==================================== accounting
 
-	Edit* editof(int64_t position, int direction, int use_nudge);
+	Edit* editof(int64_t position, int use_nudge);
 // Return an edit if position is over an edit and the edit has a source file
 	Edit* get_playable_edit(int64_t position, int use_nudge);
 //	int64_t total_length();

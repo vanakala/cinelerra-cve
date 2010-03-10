@@ -133,7 +133,6 @@ int VirtualVNode::read_data(VFrame *output_temp,
 			frame_rate + 
 			0.5);
 		parent_edit = (VEdit*)parent_node->track->edits->editof(start_position_project, 
-			renderengine->command->get_direction(),
 			0);
 	}
 

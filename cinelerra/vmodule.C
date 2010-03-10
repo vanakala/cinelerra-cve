@@ -443,7 +443,6 @@ int VModule::render(VFrame *output,
 		direction);
 
 	VEdit* current_edit = (VEdit*)track->edits->editof(start_position_project, 
-		direction,
 		0);
 	VEdit* previous_edit = 0;
 

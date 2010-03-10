@@ -94,7 +94,7 @@ int PlayableTracks::is_playable(Track *current_track,
 	if(result)
 	{
 // Test for playable edit
-		if(!current_track->playable_edit(position, direction))
+		if(!current_track->playable_edit(position))
 		{
 // Test for playable effect
 			if(!current_track->is_synthesis(renderengine,
