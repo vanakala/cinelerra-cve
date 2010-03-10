@@ -1893,10 +1893,6 @@ void MWindow::update_project(int load_mode)
 	{
 		vwindow->change_source();
 	}
-	else
-	{
-		vwindow->update(1);
-	}
 //printf("MWindow::update_project: vwindow gui updated\n");
 
 	cwindow->gui->lock_window("Mwindow::update_project 2");

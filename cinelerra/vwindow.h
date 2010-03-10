@@ -58,7 +58,6 @@ public:
 	EDL* get_edl();
 // Returns last argument of change_source or 0 if it was an EDL
 	Asset* get_asset();
-	void update(int do_timebar);
 		
 	void update_position(int change_type = CHANGE_NONE,
 		int use_slider = 1,

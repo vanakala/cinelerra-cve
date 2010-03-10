@@ -286,12 +286,6 @@ void VWindow::goto_end()
 	}
 }
 
-void VWindow::update(int do_timebar)
-{
-	if(do_timebar)
-		gui->timebar->update();
-}
-
 void VWindow::update_position(int change_type, 
 	int use_slider, 
 	int update_slider)
