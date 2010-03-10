@@ -258,8 +258,7 @@ void PlayTransport::goto_end()
 
 void PlayTransport::handle_transport(int command, 
 	int wait_tracking,
-	int use_inout,
-	int update_refresh)
+	int use_inout)
 {
 	if(!get_edl()) return;
 
@@ -323,18 +322,9 @@ void PlayTransport::handle_transport(int command,
 
 // Commands that stop
 		case STOP:
-			do_stop = 1;
-			break;
-
 		case REWIND:
 		case GOTO_END:
-			engine->que->send_command(STOP,
-				CHANGE_NONE, 
-				0,
-				0,
-				0,
-				0);
-			engine->interrupt_playback(wait_tracking);
+			do_stop = 1;
 			break;
 	}
 
@@ -347,22 +337,6 @@ void PlayTransport::handle_transport(int command,
 			0,
 			0);
 		engine->interrupt_playback(wait_tracking);
-// This is necessary to get an OpenGL output buffer
-// printf("PlayTransport::handle_transport 2 update_refresh=%d prev_command=%d prev_direction=%d\n", 
-// update_refresh, prev_command, prev_direction);
-		if(!prev_single_frame && 
-			update_refresh &&
-			prev_command != STOP &&
-			prev_command != COMMAND_NONE)
-		{
-			engine->que->send_command(
-				(prev_direction == PLAY_FORWARD) ? SINGLE_FRAME_REWIND : SINGLE_FRAME_FWD,
-				CHANGE_NONE, 
-				get_edl(),
-				1,
-				0,
-				0);
-		}
 	}
 }
 

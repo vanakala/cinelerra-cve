@@ -442,7 +442,7 @@ int CWindowGUI::keypress_event()
 				if (alt_down())
 				{
 					int shift_down = this->shift_down();
-					mwindow->gui->mbuttons->transport->handle_transport(STOP, 1, 0, 0);
+					mwindow->gui->mbuttons->transport->handle_transport(STOP, 1, 0);
 
 					mwindow->gui->lock_window("CWindowGUI::keypress_event 2");
 					mwindow->prev_edit_handle(shift_down);
@@ -462,7 +462,7 @@ int CWindowGUI::keypress_event()
 				if (alt_down())
 				{
 					int shift_down = this->shift_down();
-					mwindow->gui->mbuttons->transport->handle_transport(STOP, 1, 0, 0);
+					mwindow->gui->mbuttons->transport->handle_transport(STOP, 1, 0);
 
 					mwindow->gui->lock_window("CWindowGUI::keypress_event 2");
 					mwindow->next_edit_handle(shift_down);

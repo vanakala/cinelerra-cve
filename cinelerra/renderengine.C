@@ -552,7 +552,9 @@ void RenderEngine::run()
 	if(interrupted)
 	{
 		playback_engine->tracking_position = playback_engine->get_tracking_position();
+printf("RenderEngine::run - interrupted\n");
 	}
+printf("RenderEngine::run - closing_output\n");
 	close_output();
 
 // Fix the tracking position
@@ -582,11 +584,12 @@ void RenderEngine::run()
 							command->get_edl()->session->frame_rate;
 				}
 			}
-			if(!interrupted) playback_engine->command->command = STOP;
 			playback_engine->stop_tracking();
 
 		}
 		playback_engine->is_playing_back = 0;
+printf("RenderEngine::run:corrected tracking_position %f\n", 
+    playback_engine->tracking_position);
 	}
 
 	input_lock->unlock();

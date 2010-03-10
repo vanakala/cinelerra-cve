@@ -501,7 +501,7 @@ int MWindowGUI::keypress_event()
 				{ 
 					if (alt_down())
 					{
-						mbuttons->transport->handle_transport(STOP, 1, 0, 0);
+						mbuttons->transport->handle_transport(STOP, 1, 0);
 						mwindow->prev_edit_handle(shift_down());
 					}
 					else
@@ -514,7 +514,7 @@ int MWindowGUI::keypress_event()
 				{ 
 					if (alt_down())
 					{
-						mbuttons->transport->handle_transport(STOP, 1, 0, 0);
+						mbuttons->transport->handle_transport(STOP, 1, 0);
 						mwindow->next_edit_handle(shift_down());
 					}
 					else

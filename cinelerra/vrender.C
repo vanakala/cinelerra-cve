@@ -412,8 +412,8 @@ void VRender::run()
 	start_lock->unlock();
 
 
-	while(!done && 
-		!renderengine->video->interrupt)
+	while(!done)
+//		!renderengine->video->interrupt
 //		&& !last_playback)
 	{
 // Perform the most time consuming part of frame decompression now.
@@ -430,8 +430,8 @@ void VRender::run()
 SET_TRACE
 		process_buffer(current_position);
 SET_TRACE
-
-		if(renderengine->command->single_frame() || last_playback)
+		if(last_playback || renderengine->video->interrupt 
+		    || renderengine->command->single_frame())
 		{
 			flash_output();
 			frame_step = 1;

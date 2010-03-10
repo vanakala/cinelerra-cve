@@ -77,7 +77,7 @@ void VTimeBar::select_label(double position)
 
 	if(edl)
 	{
-		gui->transport->handle_transport(STOP, 1, 0, 0);
+		gui->transport->handle_transport(STOP, 1, 0);
 
 		position = mwindow->edl->align_to_frame(position, 1);
 
