@@ -67,8 +67,7 @@ void VTracking::update_tracker(double position)
 							asset->sample_rate));
 
 // This is going to boost the latency but we need to update the timebar
-	vwindow->gui->timebar->draw_range();
-	vwindow->gui->timebar->flash();
+	vwindow->gui->timebar->update();
 
 	vwindow->gui->unlock_window();
 
