@@ -3,6 +3,7 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <limits.h>
 
 static unsigned char get_nibble(unsigned char **ptr, int *nibble)
 {
@@ -27,6 +28,7 @@ int decompress_subtitle(mpeg3_t *file, mpeg3_subtitle_t *subtitle)
 	unsigned char *end = subtitle->data + subtitle->size;
 	int even_offset = 0;
 	int odd_offset = 0;
+	unsigned char *data_start = ptr;
 
 /* packet size */
 	ptr += 2;
@@ -37,7 +39,6 @@ int decompress_subtitle(mpeg3_t *file, mpeg3_subtitle_t *subtitle)
 	int data_size = (*ptr++) << 8;
 	data_size |= *ptr++;
 
-	unsigned char *data_start = ptr;
 	if(ptr + data_size > end) return 1;
 
 /* Advance to control sequences */
@@ -48,8 +49,8 @@ int decompress_subtitle(mpeg3_t *file, mpeg3_subtitle_t *subtitle)
 	subtitle->palette[2] = 0x02;
 	subtitle->palette[3] = 0x03;
 
-	subtitle->alpha[0] = 0xff;
-	subtitle->alpha[1] = 0x00;
+	subtitle->alpha[0] = 0x08;
+	subtitle->alpha[1] = 0xff;
 	subtitle->alpha[2] = 0x40;
 	subtitle->alpha[3] = 0xc0;
 
@@ -82,11 +83,12 @@ int decompress_subtitle(mpeg3_t *file, mpeg3_subtitle_t *subtitle)
 			{
 				case 0x00:
 					subtitle->force = 1;
+					subtitle->start_time = date;
+					subtitle->stop_time = INT_MAX;
 					break;
 
 				case 0x01:
 					subtitle->start_time = date;
-//printf("decompress_subtitle %d\n", subtitle->start_time);
 					break;
 
 				case 0x02:
@@ -96,22 +98,20 @@ int decompress_subtitle(mpeg3_t *file, mpeg3_subtitle_t *subtitle)
 				case 0x03:
 /* Entry in palette of each color */
 					if(ptr + 4 > end) return 1;
-					subtitle->palette[0] = (*ptr) >> 4;
-					subtitle->palette[1] = (*ptr++) & 0xf;
-					subtitle->palette[2] = (*ptr) >> 4;
-					subtitle->palette[3] = (*ptr++) & 0xf;
-//printf("subtitle palette %d %d %d %d\n", subtitle->palette[0], subtitle->palette[1], subtitle->palette[2], subtitle->palette[3]);
+					subtitle->palette[3] = (*ptr) >> 4;
+					subtitle->palette[2] = (*ptr++) & 0xf;
+					subtitle->palette[1] = (*ptr) >> 4;
+					subtitle->palette[0] = (*ptr++) & 0xf;
 					break;
 
 				case 0x04:
 /* Alpha corresponding to each color */
 					if(ptr + 4 > end) return 1;
-					subtitle->alpha[0] = ((*ptr) >> 4) * 255 / 15;
-					subtitle->alpha[1] = ((*ptr) & 0xf) * 255 / 15;
-					subtitle->alpha[2] = ((*ptr++) >> 4) * 255 / 15;
-					subtitle->alpha[3] = ((*ptr++) & 0xf) * 255 / 15;
+					subtitle->alpha[3] = ((*ptr) >> 4) * 255 / 15;
+					subtitle->alpha[2] = ((*ptr++) & 0xf) * 255 / 15;
+					subtitle->alpha[1] = ((*ptr) >> 4) * 255 / 15;
+					subtitle->alpha[0] = ((*ptr++) & 0xf) * 255 / 15;
 					got_alpha = 1;
-//printf("subtitle alpha %d %d %d %d\n", subtitle->alpha[0], subtitle->alpha[1], subtitle->alpha[2], subtitle->alpha[3]);
 					break;
 
 				case 0x05:
@@ -158,7 +158,6 @@ int decompress_subtitle(mpeg3_t *file, mpeg3_subtitle_t *subtitle)
 					if(ptr + 4 > end) return 1;
 					even_offset = (ptr[0] << 8) | (ptr[1]);
 					odd_offset = (ptr[2] << 8) | (ptr[3]);
-//printf("decompress_subtitle 30 even=0x%x odd=0x%x\n", even_offset, odd_offset);
 					ptr += 4;
 					break;
 
@@ -175,7 +174,6 @@ int decompress_subtitle(mpeg3_t *file, mpeg3_subtitle_t *subtitle)
 	}
 
 
-
 /* Allocate image buffer */
 	subtitle->image_y = (unsigned char*)calloc(1, subtitle->w * subtitle->h + subtitle->w);
 	subtitle->image_u = (unsigned char*)calloc(1, subtitle->w * subtitle->h / 4 + subtitle->w);
@@ -185,27 +183,10 @@ int decompress_subtitle(mpeg3_t *file, mpeg3_subtitle_t *subtitle)
 /* Decode image */
 	int current_nibble = 0;
 	int x = 0, y = 0, field = 0;
-	ptr = data_start;
-	int first_pixel = 1;
+	ptr = data_start + even_offset;
 
-	while(ptr < end && y < subtitle->h + 1 && x < subtitle->w)
+	while(ptr < end && y < subtitle->h + 1)
 	{
-// Start new field based on offset, not total lines
-		if(ptr - data_start >= odd_offset - 4 && 
-			field == 0)
-		{
-			field = 1;
-			y = 1;
-			x = 0;
-
-			if(current_nibble)
-			{
-				ptr++;
-				current_nibble = 0;
-			}
-		}
-
-
 		unsigned int code = get_nibble(&ptr, &current_nibble);
 		if(code < 0x4 && ptr < end)
 		{
@@ -219,28 +200,22 @@ int decompress_subtitle(mpeg3_t *file, mpeg3_subtitle_t *subtitle)
 /* carriage return */
 					if(code < 0x4 && ptr < end)
 						code |= (subtitle->w - x) << 2;
+					if(current_nibble)
+					{
+					    ptr++;
+					    current_nibble = 0;
+					}
 				}
 			}
 		}
 
 		int color = (code & 0x3);
 		int len = code >> 2;
-		if(len > subtitle->w - x)
-			len = subtitle->w - x;
 
 		int y_color = file->palette[subtitle->palette[color] * 4];
 		int u_color = file->palette[subtitle->palette[color] * 4 + 1];
 		int v_color = file->palette[subtitle->palette[color] * 4 + 2];
 		int a_color = subtitle->alpha[color];
-
-// The alpha seems to be arbitrary.  Assume the top left pixel is always 
-// transparent.
-		if(first_pixel)
-		{
-			subtitle->alpha[color] = 0x0;
-			a_color = 0x0;
-			first_pixel = 0;
-		}
 
 /*
  * printf("0x%02x 0x%02x 0x%02x\n", 
@@ -259,48 +234,23 @@ int decompress_subtitle(mpeg3_t *file, mpeg3_subtitle_t *subtitle)
 					subtitle->image_v[y / 2 * subtitle->w / 2 + x / 2] = v_color;
 				}
 				subtitle->image_a[y * subtitle->w + x] = a_color;
-				x++;
+				if(++x >= subtitle->w)
+				{
+					x = 0;
+					y += 2;
+					if(y >= subtitle->h && !field)
+					{
+						y = 1;
+						field = 1;
+						ptr = data_start + odd_offset;
+						current_nibble = 0;
+					    break;
+					}
+				}
 			}
 		}
 
-		if(x >= subtitle->w)
-		{
-			x = 0;
-			y += 2;
-
-/* Byte alignment */
-			if(current_nibble)
-			{
-				ptr++;
-				current_nibble = 0;
-			}
-
-// Start new field based on total lines, not offset
-			if(y >= subtitle->h)
-			{
-				y = subtitle->h - 1;
-/*
- * 				if(!field)
- * 				{
- * 					y = 1;
- * 					field = 1;
- * 				}
- */
-			}
-		}
 	}
-
-/*
- * printf("decompress_subtitle coords: %d,%d - %d,%d size: %d,%d start_time=%d end_time=%d\n", 
- * subtitle->x1, 
- * subtitle->y1, 
- * subtitle->x2, 
- * subtitle->y2,
- * subtitle->w,
- * subtitle->h,
- * subtitle->start_time,
- * subtitle->stop_time);
- */
 	return 0;
 }
 
@@ -381,8 +331,6 @@ void mpeg3_decode_subtitle(mpeg3video_t *video)
 				mpeg3_subtitle_t *subtitle = strack->subtitles[i];
 				if(!subtitle->active)
 				{
-/* Exclude object from future activation */
-					subtitle->active = 1;
 
 /* Decompress subtitle */
 					if(decompress_subtitle(file, subtitle))
@@ -392,6 +340,22 @@ void mpeg3_decode_subtitle(mpeg3video_t *video)
 						i--;
 						continue;
 					}
+/* New subtitle was forced - remove previous forced subtitle */
+					if(subtitle->force)
+					{
+					    int j, k = 0;
+					    for(j = 0; j < i; j++)
+					    {
+						if(strack->subtitles[j]->active &&
+						    strack->subtitles[j]->force)
+						{
+							mpeg3_pop_subtitle(strack, j, 1);
+							i--;
+						}
+					    }
+					}
+/* Exclude object from future activation */
+					subtitle->active = 1;
 				}
 
 
@@ -445,10 +409,6 @@ void mpeg3_decode_subtitle(mpeg3video_t *video)
 			}
 		}
 	}
-
-
-
-
 }
 
 

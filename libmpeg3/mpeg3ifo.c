@@ -281,22 +281,10 @@ static int program_map(mpeg3_t *file, char *pgc, unsigned char **ptr)
 	{
 		for(i = 0; i < 16; i++)
 		{
-			int r = (int)*(*ptr)++;
-			int g = (int)*(*ptr)++;
-			int b = (int)*(*ptr)++;
 			(*ptr)++;
-
-			int y = (int)(0.29900 * r  + 0.58700 * g  + 0.11400 * b);
-			int u = (int)(-0.16874 * r + -0.33126 * g + 0.50000 * b + 0x80);
-			int v = (int)(0.50000 * r  + -0.41869 * g + -0.08131 * b + 0x80);
-			CLAMP(y, 0, 0xff);
-			CLAMP(u, 0, 0xff);
-			CLAMP(v, 0, 0xff);
-
-			file->palette[i * 4] = y;
-			file->palette[i * 4 + 1] = u;
-			file->palette[i * 4 + 2] = v;
-//printf("color %02d: 0x%02x 0x%02x 0x%02x\n", i, y, u, v);
+			file->palette[i * 4] = *(*ptr)++;
+			file->palette[i * 4 + 1] = *(*ptr)++;
+			file->palette[i * 4 + 2] = *(*ptr)++;
 		}
 
 		file->have_palette = 1;
