@@ -65,17 +65,18 @@ public:
 	void reset_data(double position);
 	double get_entered_position_sec();
 	void set_entered_position_sec(double position);
-
+	int split_timestr(char *timestr);
 
 
 // Use this copy of the pointer in ManualGoto since multiple windows are possible	
 	BC_Title *signtitle;
-	ManualGotoNumber *boxhours;
-	ManualGotoNumber *boxminutes;
-	ManualGotoNumber *boxseconds;
-	ManualGotoNumber *boxmsec;
+	ManualGotoNumber *boxes[5];
+	int numboxes;
 	MWindow *mwindow;
 	ManualGoto *thread;
+	int timeformat;
+	char timestring[64];
+	char *timeparts[5];
 };
 
 
@@ -83,13 +84,13 @@ public:
 class ManualGotoNumber : public BC_TextBox
 {
 public:
-	ManualGotoNumber(ManualGotoWindow *window, int x, int y, int w, int min_num, int max_num, int chars);
+	ManualGotoNumber(ManualGotoWindow *window, int x, int y, int w, int chars);
 	int handle_event();
 	ManualGotoWindow *window;
 	int keypress_event();
 	int activate();
 	int deactivate();
-	void reshape_update(int64_t number);
+	void reshape_update(char *nums);
 	
 	int min_num;
 	int max_num;
