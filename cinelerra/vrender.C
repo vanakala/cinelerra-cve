@@ -187,11 +187,6 @@ SET_TRACE
 				1,
 				use_cache,
 				use_asynchronous);
-/* Insert timecode */
-			if(renderengine->show_tc)
-				insert_timecode(playable_edit,
-					input_position,
-					video_out);
 		}
 	}
 	else
@@ -255,91 +250,6 @@ int VRender::get_use_vconsole(Edit* &playable_edit,
 // If we get here the frame is going to be directly copied.  Whether it is
 // decompressed in hardware depends on the colormodel.
 	return 0;
-}
-
-
-int VRender::insert_timecode(Edit* &playable_edit,
-			int64_t position,
-			VFrame *output)
-{
-	EDLSession *session = renderengine->edl->session;
-	/* Create a vframe with TC and SRC timecode in white
-	 * with a black border */
-	VFrame *input = new VFrame(0,
-								output->get_w(),
-								MIN(output->get_h(), 50),
-								output->get_color_model(),
-								output->get_bytes_per_line());
-	char etc[12];
-	char srctc[12];
-	int src_position = 0;
-
-TRACE("VRender::insert_timecode 10")
-
-	/* Edited TC */
-	Units::totext(etc,
-		(renderengine->vrender->current_position +
-			session->get_frame_offset()) / session->frame_rate,
-		session->time_format,
-		session->sample_rate,
-		session->frame_rate,
-		session->frames_per_foot);
-
-TRACE("VRender::insert_timecode 20")
-
-	if(playable_edit)
-	{
-TRACE("VRender::insert_timecode 30")
-		src_position = renderengine->vrender->current_position -
-			playable_edit->startproject +
-			playable_edit->startsource +
-			playable_edit->asset->tcstart;
-TRACE("VRender::insert_timecode 40")
-		Units::totext(srctc,
-			src_position / playable_edit->asset->frame_rate,
-			session->time_format,
-			session->sample_rate,
-			playable_edit->asset->frame_rate,
-			session->frames_per_foot);
-	}
-	else
-	{
-TRACE("VRender::insert_timecode 50")
-		Units::totext(srctc,
-			0.0,
-//			(renderengine->vrender->current_position - position) / session->frame_rate,
-			session->time_format,
-			session->sample_rate,
-			session->frame_rate,
-			session->frames_per_foot);
-	}
-TRACE("VRender::insert_timecode 60")
-
-//printf("re position %i position %i\n", 
-//	renderengine->vrender->current_position, position);
-//printf("SRC %s   TC %s\n", srctc, etc);
-
-	/* Insert the timecode data onto the input frame */
-	
-	
-
-/*
-	vrender->overlayer->overlay(output, 
-		input,
-		input->x, 
-		input->y, 
-		input->width, 
-		input->height,
-		output->x, 
-		output->y, 
-		output->width, 
-		output->height, 
-		1,
-		TRANSFER_REPLACE, 
-		renderengine->edl->session->interpolation_type);
-*/
-	delete(input);
-UNTRACE
 }
 
 
@@ -568,8 +478,8 @@ SET_TRACE
 				framerate_timer.update();
 			}
 		}
-if(last_playback)
-    printf("VRender::run last_playback = 1, done =%d\n", done);
+//if(last_playback)
+//    printf("VRender::run last_playback = 1, done =%d\n", done);
 	}
 
 SET_TRACE

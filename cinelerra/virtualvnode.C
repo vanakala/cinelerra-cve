@@ -307,12 +307,6 @@ int VirtualVNode::render_as_module(VFrame *video_out,
 //printf("VirtualVNode::render_as_module\n");
 //output_temp->dump_stacks();
 
-	Edit *edit = 0;
-	if(renderengine->show_tc)
-		renderengine->vrender->insert_timecode(edit,
-			start_position,
-			output_temp);
-
 	return 0;
 }
 

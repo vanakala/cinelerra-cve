@@ -79,8 +79,6 @@ RenderEngine::RenderEngine(PlaybackEngine *playback_engine,
 		mwindow = playback_engine->mwindow;
 	else
 		mwindow = 0;
-	show_tc = 0;
-
 
 	input_lock = new Condition(1, "RenderEngine::input_lock");
 	start_lock = new Condition(1, "RenderEngine::start_lock");
@@ -550,7 +548,7 @@ void RenderEngine::run()
 
 	interrupt_lock->lock("RenderEngine::run");
 
-printf("RenderEngine::run - closing_output\n");
+//printf("RenderEngine::run - closing_output\n");
 	close_output();
 
 // Fix the tracking position
@@ -584,8 +582,8 @@ printf("RenderEngine::run - closing_output\n");
 
 		}
 		playback_engine->is_playing_back = 0;
-printf("RenderEngine::run:corrected tracking_position %f\n", 
-    playback_engine->tracking_position);
+//printf("RenderEngine::run:corrected tracking_position %f\n", 
+//    playback_engine->tracking_position);
 	}
 
 	input_lock->unlock();

@@ -120,9 +120,6 @@ public:
 // Lock out interrupts before and after renderengine is active
 	Mutex *interrupt_lock;
 
-// Show the timecode on the video
-	int show_tc;
-
 	int done;
 	AudioDevice *audio;
 	VideoDevice *video;
