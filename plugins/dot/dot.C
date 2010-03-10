@@ -283,7 +283,7 @@ DotClient::DotClient(DotServer *server)
 			output[0] = (pattern & 0xff0000) >> 8; \
 			output[1] = chroma_offset; \
 			output[2] = chroma_offset; \
-			if(components > 3) output[3] = 0xffff; \
+			if(components > 3) output[3] = (type)0xffff; \
 		} \
 		else \
 		{ \
@@ -308,7 +308,7 @@ DotClient::DotClient(DotServer *server)
 			output[0] = (pattern & 0xff0000) >> 8; \
 			output[1] = (pattern & 0xff00); \
 			output[2] = (pattern & 0xff) << 8; \
-			if(components > 3) output[3] = 0xffff; \
+			if(components > 3) output[3] = (type)0xffff; \
 		} \
 		else \
 		{ \
