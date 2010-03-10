@@ -81,6 +81,7 @@ VWindowGUI::~VWindowGUI()
 
 void VWindowGUI::change_source(EDL *edl, char *title)
 {
+printf("VWindowGUI::change_source\n");
 	update_sources(title);
 	char string[BCTEXTLEN];
 	if(title[0]) 
@@ -668,7 +669,7 @@ VWindowSlider::VWindowSlider(MWindow *mwindow,
 			pixels, 
 			pixels, 
 			0, 
-			1, 
+			0, 
 			0)
 {
 	this->mwindow = mwindow;
@@ -708,6 +709,8 @@ void VWindowSlider::set_position()
 			edl->local_session->preview_start, 
 			edl->local_session->preview_end);
 	}
+	else
+		update(0, 0, 0, 0);
 }
 
 
@@ -819,6 +822,8 @@ void VWindowCanvas::zoom_resize_window(float percentage)
 void VWindowCanvas::close_source()
 {
 	mwindow->vwindow->remove_source();
+	gui->clock->update(0);
+	draw_refresh();
 }
 
 

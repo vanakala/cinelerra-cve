@@ -766,7 +766,10 @@ BC_PercentageSlider::BC_PercentageSlider(int x,
 
 char* BC_PercentageSlider::get_caption()
 {
-	sprintf(caption, "%.0f%%", floor((value - minvalue) / (maxvalue - minvalue) * 100));
+	double val = 0;
+	if(maxvalue > minvalue)
+	    val = floor((value - minvalue) / (maxvalue - minvalue) * 100);
+	sprintf(caption, "%.0f%%", val);
 	return caption;
 }
 
