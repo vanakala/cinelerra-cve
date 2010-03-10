@@ -426,8 +426,8 @@ int VideoDevice::close_all()
 	{
 		if(output_base)
 		{
-			output_base->close_all();
 			delete output_base;
+			output_base = 0;
 		}
 	}
 
