@@ -483,6 +483,8 @@ void RenderEngine::interrupt_playback()
 		video->interrupt_playback();
 //printf("RenderEngine::interrupt_playback 4 %p\n", this);
 	}
+	if(playback_engine)
+	    playback_engine->stop_tracking();
 	interrupt_lock->unlock();
 }
 
@@ -548,12 +550,6 @@ void RenderEngine::run()
 
 	interrupt_lock->lock("RenderEngine::run");
 
-
-	if(interrupted)
-	{
-		playback_engine->tracking_position = playback_engine->get_tracking_position();
-printf("RenderEngine::run - interrupted\n");
-	}
 printf("RenderEngine::run - closing_output\n");
 	close_output();
 
@@ -583,8 +579,8 @@ printf("RenderEngine::run - closing_output\n");
 						(double)vrender->current_position / 
 							command->get_edl()->session->frame_rate;
 				}
+			    playback_engine->stop_tracking();
 			}
-			playback_engine->stop_tracking();
 
 		}
 		playback_engine->is_playing_back = 0;

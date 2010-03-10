@@ -550,21 +550,23 @@ SET_TRACE
 
 // Update tracking.
 		if(renderengine->command->realtime &&
-			renderengine->playback_engine &&
-			renderengine->command->command != CURRENT_FRAME)
+			!renderengine->video->interrupt)
 		{
-			renderengine->playback_engine->update_tracking(fromunits(current_position));
-		}
+			if(renderengine->playback_engine &&
+				renderengine->command->command != CURRENT_FRAME)
+			{
+				renderengine->playback_engine->update_tracking(fromunits(current_position));
+			}
 
 // Calculate the framerate counter
-		framerate_counter++;
-		if(framerate_counter >= renderengine->edl->session->frame_rate && 
-			renderengine->command->realtime)
-		{
-			renderengine->update_framerate((float)framerate_counter / 
-				((float)framerate_timer.get_difference() / 1000));
-			framerate_counter = 0;
-			framerate_timer.update();
+			framerate_counter++;
+			if(framerate_counter >= renderengine->edl->session->frame_rate)
+			{
+				renderengine->update_framerate((float)framerate_counter / 
+					((float)framerate_timer.get_difference() / 1000));
+				framerate_counter = 0;
+				framerate_timer.update();
+			}
 		}
 if(last_playback)
     printf("VRender::run last_playback = 1, done =%d\n", done);
