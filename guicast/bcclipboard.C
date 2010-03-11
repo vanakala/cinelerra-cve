@@ -98,7 +98,6 @@ void BC_Clipboard::run()
 		XNextEvent(out_display, &event);
 //printf("BC_Clipboard::run 2 %d\n", event.type);					
 
-		XLockDisplay(out_display);
 		switch(event.type)
 		{
 // Termination signal
@@ -123,13 +122,13 @@ void BC_Clipboard::run()
 				if(data[1]) data[1][0] = 0;
 				break;
 		}
-		XUnlockDisplay(out_display);
 	}
 }
 
 void BC_Clipboard::handle_selectionrequest(XSelectionRequestEvent *request)
 {
 	int success = 0;
+	XLockDisplay(out_display);
 	if (request->target == XA_STRING)
 		success = handle_request_string(request);
 	else if (request->target == targets_atom)
@@ -148,6 +147,7 @@ void BC_Clipboard::handle_selectionrequest(XSelectionRequestEvent *request)
 
 	XSendEvent(out_display, request->requestor, 0, 0, &reply);
 	XFlush(out_display);
+	XUnlockDisplay(out_display);
 //printf("SelectionRequest\n");
 }
 
