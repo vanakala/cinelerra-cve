@@ -328,7 +328,6 @@ int mpeg3video_seek(mpeg3video_t *video)
 
 						mpeg3bits_seek_byte(vstream, byte);
 
-printf("mpeg3video_seek: frame %d offset %#llx\n", video->framenum, byte);
 						video->repeat_count = 0;
 
 // Why it must be such?

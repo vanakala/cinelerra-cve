@@ -397,103 +397,11 @@ mpeg3video_t* mpeg3video_new(mpeg3_t *file,
 
 		if(!result)
 		{
-			int hour, minute, second, frame;
-			int gop_found;
-
 			mpeg3video_initdecoder(video);
 			video->decoder_initted = 1;
 			track->width = video->horizontal_size;
 			track->height = video->vertical_size;
 			track->frame_rate = video->frame_rate;
-
-/* Try to get the length of the file from GOP's */
-			if(!track->keyframes)
-			{
-				if(file->is_video_stream)
-				{
-/* Load the first GOP */
-					mpeg3_rewind_video(video);
-					result = mpeg3video_next_code(bitstream, 
-						MPEG3_GOP_START_CODE);
-					if(!result) mpeg3bits_getbits(bitstream, 32);
-					if(!result) result = mpeg3video_getgophdr(video);
-
-					hour = video->gop_timecode.hour;
-					minute = video->gop_timecode.minute;
-					second = video->gop_timecode.second;
-					frame = video->gop_timecode.frame;
-
-					video->first_frame = gop_to_frame(video, &video->gop_timecode);
-
-/*
- * 			video->first_frame = (long)(hour * 3600 * video->frame_rate + 
- * 				minute * 60 * video->frame_rate +
- * 				second * video->frame_rate +
- * 				frame);
- */
-
-/* GOPs are supposed to have 16 frames */
-
-					video->frames_per_gop = 16;
-
-/* Read the last GOP in the file by seeking backward. */
-					mpeg3demux_seek_byte(demuxer, 
-						mpeg3demux_movie_size(demuxer));
-					mpeg3demux_start_reverse(demuxer);
-					result = mpeg3video_prev_code(demuxer, 
-						MPEG3_GOP_START_CODE);
-					mpeg3demux_start_forward(demuxer);
-
-
-
-					mpeg3bits_reset(bitstream);
-					mpeg3bits_getbits(bitstream, 8);
-					if(!result) result = mpeg3video_getgophdr(video);
-
-					hour = video->gop_timecode.hour;
-					minute = video->gop_timecode.minute;
-					second = video->gop_timecode.second;
-					frame = video->gop_timecode.frame;
-
-					video->last_frame = gop_to_frame(video, &video->gop_timecode);
-
-/*
- * 			video->last_frame = (long)((double)hour * 3600 * video->frame_rate + 
- * 				minute * 60 * video->frame_rate +
- * 				second * video->frame_rate +
- * 				frame);
- */
-
-//printf("mpeg3video_new 3 %p\n", video);
-
-/* Count number of frames to end */
-					while(!result)
-					{
-						result = mpeg3video_next_code(bitstream, MPEG3_PICTURE_START_CODE);
-						if(!result)
-						{
-							mpeg3bits_getbyte_noptr(bitstream);
-							video->last_frame++;
-						}
-					}
-
-					track->total_frames = video->last_frame - video->first_frame + 1;
-//printf("mpeg3video_new 3 %ld\n", track->total_frames);
-					mpeg3_rewind_video(video);
-				}
-				else
-// Try to get the length of the file from the multiplexing.
-// Need a table of contents
-				{
-/*
- * 				video->first_frame = 0;
- * 				track->total_frames = video->last_frame = 
- * 					(long)(mpeg3demux_length(video->vstream->demuxer) * 
- * 						video->frame_rate);
- * 				video->first_frame = 0;
- */
-				}
-			}
 
 			video->maxframe = track->total_frames;
 			video->repeat_count = 0;
@@ -506,7 +414,6 @@ mpeg3video_t* mpeg3video_new(mpeg3_t *file,
 			video = 0;
 		}
 	}
-
 	return video;
 }
 

@@ -920,8 +920,6 @@ typedef struct
 	int has_gops; /* Some streams have no GOPs so try sequence start codes instead */
 
 /* These are only available from elementary streams. */
-	int frames_per_gop;       /* Frames per GOP after the first GOP. */
-	int first_gop_frames;     /* Frames in the first GOP. */
 	int first_frame;     /* Number of first frame stored in timecode */
 	int last_frame;      /* Last frame in file */
 
