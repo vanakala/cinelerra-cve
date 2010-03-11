@@ -321,18 +321,18 @@ int mpeg3video_seek(mpeg3video_t *video)
 						int frame;
 						int64_t byte;
 
-// Go 2 I-frames before current position
 						byte = track->keyframes[i].offset;
 
-						video->framenum = track->keyframes[i].number;
-
+						frame = track->keyframes[i].number;
+						video->framenum = frame;
 						mpeg3bits_seek_byte(vstream, byte);
 
 						video->repeat_count = 0;
 
-// Why it must be such?
 						mpeg3video_read_frame_backend(video);
-						video->framenum--;
+// Forget previos refframes
+						mpeg3video_match_refframes(video); 
+						video->framenum = frame;
 
 // Read up to current frame
 						mpeg3video_drop_frames(video, frame_number - video->framenum, 0);

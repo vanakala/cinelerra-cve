@@ -1861,10 +1861,10 @@ int mpeg3_read_prev_packet(mpeg3_demuxer_t *demuxer)
 /* Transport stream or elementary stream case */
 		if(file->packet_size > 0)
 		{
-printf("mpeg3_read_prev_packet 1 result=%d title=%d tell=%llx program_byte=%llx\n", result, demuxer->current_title, mpeg3io_tell(title->fs), demuxer->program_byte);
+// printf("mpeg3_read_prev_packet 1 result=%d title=%d tell=%llx program_byte=%llx\n", result, demuxer->current_title, mpeg3io_tell(title->fs), demuxer->program_byte);
 			demuxer->program_byte -= file->packet_size;
 			result = mpeg3_seek_phys(demuxer);
-printf("mpeg3_read_prev_packet 100 result=%d title=%d tell=%llx program_byte=%llx\n", result, demuxer->current_title, mpeg3io_tell(title->fs), demuxer->program_byte);
+// printf("mpeg3_read_prev_packet 100 result=%d title=%d tell=%llx program_byte=%llx\n", result, demuxer->current_title, mpeg3io_tell(title->fs), demuxer->program_byte);
 		}
 		else
 		{
