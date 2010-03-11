@@ -53,7 +53,6 @@ libguicast_la_SOURCES = \
 	bcwindow3d.C \
 	bcwindowbase.C \
 	bcwindowdraw.C \
-	bcwindowevents.C \
 	condition.C \
 	debug.h \
         error.h \
@@ -161,8 +160,6 @@ noinst_HEADERS = \
 	bcwidgetgrid.inc \
 	bcwindowbase.h \
 	bcwindowbase.inc \
-	bcwindowevents.h \
-	bcwindowevents.inc \
 	bcwindow.h \
 	bcwindow.inc \
 	clip.h \
