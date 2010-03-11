@@ -851,7 +851,6 @@ private:
 	Timer *cursor_timer;
 // unique ID of window.
 	int id;
-	Mutex *windowmutex;
 
 protected:
 	Atom create_xatom(char *atom_name);
