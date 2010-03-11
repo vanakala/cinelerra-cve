@@ -137,8 +137,7 @@ void CTracking::update_tracker(double position)
 	cwindow->gui->slider->update(position);
 
 // This is going to boost the latency but we need to update the timebar
-	cwindow->gui->timebar->draw_range();
-	cwindow->gui->timebar->flash();
+	cwindow->gui->timebar->update();
 	cwindow->gui->unlock_window();
 
 // Update mwindow cursor
