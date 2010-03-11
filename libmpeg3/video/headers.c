@@ -25,7 +25,7 @@ int mpeg3video_getseqhdr(mpeg3video_t *video)
 	vbv_buffer_size = mpeg3bits_getbits(video->vstream, 10);
 	constrained_parameters_flag = mpeg3bits_getbit_noptr(video->vstream);
 	video->frame_rate = mpeg3_frame_rate_table[video->framerate_code];
-
+	video->aspect_ratio = mpeg3_aspect_ratio_table[aspect_ratio];
  	load_intra_quantizer_matrix = mpeg3bits_getbit_noptr(video->vstream);
  	if(load_intra_quantizer_matrix)
 	{

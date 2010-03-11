@@ -69,6 +69,16 @@ double mpeg3_frame_rate_table[16] =
   0,
 };
 
+double mpeg3_aspect_ratio_table[16] = {
+  0,
+  (double)1.0,
+  (double)4.0/3.0,
+  (double)16.0/9.0,
+  (double)2.21,
+  0,0,0,
+  0,0,0,0,0,0,0,0
+};
+
 int mpeg3video_initdecoder(mpeg3video_t *video)
 {
 	int blk_cnt_tab[3] = {6, 8, 12};
@@ -402,6 +412,7 @@ mpeg3video_t* mpeg3video_new(mpeg3_t *file,
 			track->width = video->horizontal_size;
 			track->height = video->vertical_size;
 			track->frame_rate = video->frame_rate;
+			track->aspect_ratio = video->aspect_ratio;
 
 			video->maxframe = track->total_frames;
 			video->repeat_count = 0;

@@ -766,6 +766,7 @@ extern unsigned char mpeg3_default_intra_quantizer_matrix[64];
 
 /* Frame rate table must agree with the one in the encoder */
 extern double mpeg3_frame_rate_table[16];
+extern double mpeg3_aspect_ratio_table[16];
 
 /* non-linear quantization coefficient table */
 extern unsigned char mpeg3_non_linear_mquant_table[32];
@@ -922,6 +923,7 @@ typedef struct
 /* These are only available from elementary streams. */
 	int first_frame;     /* Number of first frame stored in timecode */
 	int last_frame;      /* Last frame in file */
+	double aspect_ratio;
 
 /* ================================= Compression variables ===================== */
 /* Malloced frame buffers.  2 refframes are swapped in and out. */
