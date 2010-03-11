@@ -781,30 +781,31 @@ int mpeg3video_read_yuvframe_ptr(mpeg3video_t *video,
 			video->frame_seek = ++frame_number;
 	}
 	else
+	{
 // Only decode if it's a different frame
-	if(video->frame_seek < 0 || 
-		video->last_number < 0 ||
-		video->frame_seek != video->last_number)
-	{
-		if(!result) result = mpeg3video_seek(video);
-		if(!result) result = mpeg3video_read_frame_backend(video, 0);
+		if(video->frame_seek < 0 || 
+			video->last_number < 0 ||
+			video->frame_seek != video->last_number)
+		{
+			if(!result) result = mpeg3video_seek(video);
+			if(!result) result = mpeg3video_read_frame_backend(video, 0);
 
+		}
+		else
+		{
+			video->framenum = video->frame_seek + 1;
+			video->last_number = video->frame_seek;
+			video->frame_seek = -1;
+
+		}
+
+    		if(video->output_src[0])
+    		{
+        		*y_output = (char*)video->output_src[0];
+        		*u_output = (char*)video->output_src[1];
+        		*v_output = (char*)video->output_src[2];
+    		}
 	}
-	else
-	{
-		video->framenum = video->frame_seek + 1;
-		video->last_number = video->frame_seek;
-		video->frame_seek = -1;
-
-	}
-
-        if(video->output_src[0])
-        {
-        	*y_output = (char*)video->output_src[0];
-        	*u_output = (char*)video->output_src[1];
-        	*v_output = (char*)video->output_src[2];
-        }
-
 	video->want_yvu = 0;
 // Caching not used if byte seek
 	video->byte_seek = -1;
