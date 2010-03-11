@@ -88,8 +88,8 @@ void mpeg3_delete_subtitle(mpeg3_subtitle_t *subtitle);
 void mpeg3_append_subtitle(mpeg3_strack_t *strack, mpeg3_subtitle_t *subtitle);
 /* Get the first subtitle in the track which is not currently being drawn. */
 mpeg3_subtitle_t* mpeg3_get_subtitle(mpeg3_strack_t *strack);
-/* Remove the pointer and delete the first subtitle from the track. */
-void mpeg3_pop_subtitle(mpeg3_strack_t *strack, int number, int delete_it);
+/* Remove the pointer and delete subtitle number from the track. */
+void mpeg3_pop_subtitle(mpeg3_strack_t *strack, int number);
 /* Remove all subtitles from track. */
 void mpeg3_pop_all_subtitles(mpeg3_strack_t *strack);
 /* Remove all subtitles from all buffers */

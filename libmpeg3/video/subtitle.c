@@ -42,7 +42,7 @@ int decompress_subtitle(mpeg3_t *file, mpeg3_subtitle_t *subtitle)
 	if(ptr + data_size > end) return 1;
 
 /* Advance to control sequences */
-	ptr += data_size - 2;
+	ptr += data_size - 4;
 
 	subtitle->palette[0] = 0x00;
 	subtitle->palette[1] = 0x01;
@@ -64,8 +64,10 @@ int decompress_subtitle(mpeg3_t *file, mpeg3_subtitle_t *subtitle)
 
 /* Date */
 		if(ptr + 2 > end) break;
-		int date = (*ptr++) << 8;
-		date |= *ptr++;
+		i = (*ptr++) << 8;
+		i |= *ptr++;
+		
+		double date = ((double)(i << 10)) / 90000 + subtitle->ptstime; 
 
 /* Offset of next control sequence */
 		if(ptr + 2 > end) break;
@@ -84,7 +86,6 @@ int decompress_subtitle(mpeg3_t *file, mpeg3_subtitle_t *subtitle)
 				case 0x00:
 					subtitle->force = 1;
 					subtitle->start_time = date;
-					subtitle->stop_time = INT_MAX;
 					break;
 
 				case 0x01:
@@ -117,15 +118,6 @@ int decompress_subtitle(mpeg3_t *file, mpeg3_subtitle_t *subtitle)
 				case 0x05:
 /* Extent of image on screen */
 					if(ptr + 6 > end) return 1;
-/*
- * printf("decompress_subtitle 10 %02x %02x %02x %02x %02x %02x\n",
- * ptr[0],
- * ptr[1],
- * ptr[2],
- * ptr[3],
- * ptr[4],
- * ptr[5]);
- */
 					subtitle->x1 = (*ptr++) << 4;
 					subtitle->x1 |= (*ptr) >> 4;
 					subtitle->x2 = ((*ptr++) & 0xf) << 8;
@@ -138,13 +130,7 @@ int decompress_subtitle(mpeg3_t *file, mpeg3_subtitle_t *subtitle)
 					subtitle->y2++;
 					subtitle->w = subtitle->x2 - subtitle->x1;
 					subtitle->h = subtitle->y2 - subtitle->y1;
-/*
- * printf("decompress_subtitle 20 x1=%d x2=%d y1=%d y2=%d\n", 
- * subtitle->x1, 
- * subtitle->x2, 
- * subtitle->y1, 
- * subtitle->y2);
- */
+
 					CLAMP(subtitle->w, 1, 2048);
 					CLAMP(subtitle->h, 1, 2048);
 					CLAMP(subtitle->x1, 0, 2048);
@@ -249,7 +235,6 @@ int decompress_subtitle(mpeg3_t *file, mpeg3_subtitle_t *subtitle)
 				}
 			}
 		}
-
 	}
 	return 0;
 }
@@ -307,104 +292,154 @@ void overlay_subtitle(mpeg3video_t *video, mpeg3_subtitle_t *subtitle)
 
 void mpeg3_decode_subtitle(mpeg3video_t *video)
 {
-/* Test demuxer for subtitle */
 	mpeg3_vtrack_t *vtrack  = (mpeg3_vtrack_t*)video->track;
 	mpeg3_t *file = (mpeg3_t*)video->file;
+	double frame_time;
+	mpeg3_subtitle_t *subtitle, *minsubt;
+	double lo_time, hi_time, oneframe;
+	int i, j;
+	mpeg3_strack_t *strack;
 
-/* Clear subtitles from inactive subtitle tracks */
-	int i;
-	for(i = 0; i < mpeg3_subtitle_tracks(file); i++)
-	{
-		if(i != file->subtitle_track)
-			mpeg3_pop_all_subtitles(mpeg3_get_strack(file, i));
-	}
+
+	frame_time = (video->framenum + 1) / video->frame_rate;
+	lo_time = hi_time = frame_time;
+	oneframe = 1.0 / video->frame_rate;
 
 	if(file->subtitle_track >= 0 &&
 		file->subtitle_track < mpeg3_subtitle_tracks(file))
 	{
-		mpeg3_strack_t *strack = mpeg3_get_strack(file, file->subtitle_track);
+		strack = mpeg3_get_strack(file, file->subtitle_track);
+		minsubt = NULL;
 		int total = 0;
 		if(strack)
 		{
 			for(i = 0; i < strack->total_subtitles; i++)
 			{
-				mpeg3_subtitle_t *subtitle = strack->subtitles[i];
-				if(!subtitle->active)
+				subtitle = strack->subtitles[i];
+				if(!subtitle->image_y)
 				{
-
-/* Decompress subtitle */
 					if(decompress_subtitle(file, subtitle))
 					{
-/* Remove subtitle if failed */
-						mpeg3_pop_subtitle(strack, i, 1);
+						mpeg3_pop_subtitle(strack, i);
 						i--;
 						continue;
 					}
-/* New subtitle was forced - remove previous forced subtitle */
-					if(subtitle->force)
-					{
-					    int j, k = 0;
-					    for(j = 0; j < i; j++)
-					    {
-						if(strack->subtitles[j]->active &&
-						    strack->subtitles[j]->force)
-						{
-							mpeg3_pop_subtitle(strack, j, 1);
-							i--;
-						}
-					    }
-					}
-/* Exclude object from future activation */
-					subtitle->active = 1;
 				}
-
-
-
-/* Test start and end time of subtitle */
-				if(subtitle->stop_time > 0)
+				if(subtitle->start_time < frame_time)
 				{
-/* Copy video to temporary */
-					if(!total)
+					if(subtitle->stop_time > frame_time)
+						subtitle->active = 1;
+					else 
 					{
-						if(!video->subtitle_frame[0])
+						subtitle->active = 0;
+/* Assume subtitle is active until next subtitle if it has no stop time */
+						if(subtitle->stop_time == 0)
 						{
-							video->subtitle_frame[0] = malloc(
-								video->coded_picture_width * 
-								video->coded_picture_height + 8);
-							video->subtitle_frame[1] = malloc(
-								video->chrom_width * 
-								video->chrom_height + 8);
-							video->subtitle_frame[2] = malloc(
-								video->chrom_width * 
-								video->chrom_height + 8);
+							if(minsubt)
+							{
+								if(minsubt->start_time < subtitle->start_time)
+								    minsubt = subtitle;
+							} 
+							else
+								minsubt = subtitle;
 						}
-
-						memcpy(video->subtitle_frame[0],
-							video->output_src[0],
-							video->coded_picture_width * video->coded_picture_height);
-						memcpy(video->subtitle_frame[1],
-							video->output_src[1],
-							video->chrom_width * video->chrom_height);
-						memcpy(video->subtitle_frame[2],
-							video->output_src[2],
-							video->chrom_width * video->chrom_height);
-
-						video->output_src[0] = video->subtitle_frame[0];
-						video->output_src[1] = video->subtitle_frame[1];
-						video->output_src[2] = video->subtitle_frame[2];
 					}
-					total++;
+				} 
+				else
+					subtitle->active = 0;
+				
+				if(subtitle->start_time < lo_time)
+				    lo_time = subtitle->start_time;
+				if(subtitle->start_time > hi_time)
+				    hi_time = subtitle->start_time;
+			}
+			if(minsubt)
+				minsubt->active = 1;
+			for(i = 0; i < strack->total_subtitles; i++)
+			{
+				subtitle = strack->subtitles[i];
+/* Copy video to temporary */
+				if(subtitle->active)
+				{
+					if(!video->subtitle_frame[0])
+					{
+						video->subtitle_frame[0] = malloc(
+							video->coded_picture_width * 
+							video->coded_picture_height + 8);
+						video->subtitle_frame[1] = malloc(
+							video->chrom_width * 
+							video->chrom_height + 8);
+						video->subtitle_frame[2] = malloc(
+							video->chrom_width * 
+							video->chrom_height + 8);
+					}
 
+					memcpy(video->subtitle_frame[0],
+						video->output_src[0],
+						video->coded_picture_width * video->coded_picture_height);
+					memcpy(video->subtitle_frame[1],
+						video->output_src[1],
+						video->chrom_width * video->chrom_height);
+					memcpy(video->subtitle_frame[2],
+						video->output_src[2],
+						video->chrom_width * video->chrom_height);
 
+					video->output_src[0] = video->subtitle_frame[0];
+					video->output_src[1] = video->subtitle_frame[1];
+					video->output_src[2] = video->subtitle_frame[2];
 /* Overlay subtitle on video */
 					overlay_subtitle(video, subtitle);
-					subtitle->stop_time -= (int)(100.0 / video->frame_rate);
 				}
-
-				if(subtitle->stop_time <= 0)
+				
+			}
+/* Remove subtitle too far away */
+			if(strack->total_subtitles > MPEG3_MAX_SUBTITLES)
+			{
+			
+				lo_time += oneframe;
+				hi_time -= oneframe;
+				for(i = 0; i < strack->total_subtitles; i++)
 				{
-					mpeg3_pop_subtitle(strack, i, 1);
-					i--;
+					subtitle = strack->subtitles[i];
+					if(!subtitle->active)
+					{
+						if(subtitle->start_time <= lo_time || subtitle->start_time >= hi_time)
+						{
+				    		    mpeg3_pop_subtitle(strack, i);
+						    break;
+						}
+					}
+				}
+			}
+		}
+	}
+
+/* Remove one subtitle from every inactive track */
+	for(i = 0; i < mpeg3_subtitle_tracks(file); i++)
+	{
+		if(i != file->subtitle_track)
+		{
+			strack = mpeg3_get_strack(file, i);
+
+			if(strack->total_subtitles > MPEG3_MAX_SUBTITLES)
+			{
+				lo_time = hi_time = frame_time;
+				for(j = 0; j < strack->total_subtitles; j++)
+				{
+					subtitle = strack->subtitles[j];
+					if(subtitle->start_time < lo_time)
+						lo_time = subtitle->start_time;
+					if(subtitle->start_time > hi_time)
+						hi_time = subtitle->start_time;
+				}
+				for(j = 0; j < strack->total_subtitles; j++)
+				{
+					subtitle = strack->subtitles[i];
+					if(subtitle->start_time <= lo_time || subtitle->start_time >= hi_time)
+					{
+				    		mpeg3_pop_subtitle(strack, j);
+						break;
+					}
 				}
 			}
 		}

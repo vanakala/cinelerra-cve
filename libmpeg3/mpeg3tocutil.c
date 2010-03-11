@@ -928,7 +928,7 @@ static void handle_subtitle(mpeg3_t *file)
 
 
 /* Remove from buffer */
-			mpeg3_pop_subtitle(strack, 0, 1);
+			mpeg3_pop_subtitle(strack, 0);
 		}
 	}
 }

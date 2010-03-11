@@ -116,6 +116,17 @@ void mpeg3_append_subtitle_offset(mpeg3_strack_t *dst, int64_t program_offset)
 void mpeg3_append_subtitle(mpeg3_strack_t *strack, mpeg3_subtitle_t *subtitle)
 {
 	int new_total = strack->total_subtitles + 1;
+	int i;
+	
+/* check duplicate based on offset */
+	for(i = 0; i < strack->total_subtitles; i++)
+	{
+		if(strack->subtitles[i]->offset == subtitle->offset)
+		{
+			mpeg3_delete_subtitle(subtitle);
+			return;
+		}
+	}
 	if(new_total >= strack->allocated_subtitles)
 	{
 		int new_allocated = MAX(new_total, strack->allocated_subtitles * 2);
@@ -136,17 +147,16 @@ void mpeg3_append_subtitle(mpeg3_strack_t *strack, mpeg3_subtitle_t *subtitle)
 
 	strack->subtitles[strack->total_subtitles++] = subtitle;
 
-
-	while(strack->total_subtitles > MPEG3_MAX_SUBTITLES)
-		mpeg3_pop_subtitle(strack, 0, 1);
+	while(strack->total_subtitles > 2 * MPEG3_MAX_SUBTITLES)
+		mpeg3_pop_subtitle(strack, 0);
 }
 
-void mpeg3_pop_subtitle(mpeg3_strack_t *strack, int number, int delete_it)
+void mpeg3_pop_subtitle(mpeg3_strack_t *strack, int number)
 {
 	int i;
 	if(strack->total_subtitles)
 	{
-		if(delete_it) mpeg3_delete_subtitle(strack->subtitles[number]);
+		mpeg3_delete_subtitle(strack->subtitles[number]);
 		for(i = number; i < strack->total_subtitles - 1; i++)
 			strack->subtitles[i] = strack->subtitles[i + 1];
 		strack->total_subtitles--;

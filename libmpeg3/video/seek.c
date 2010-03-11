@@ -227,11 +227,6 @@ int mpeg3video_seek(mpeg3video_t *video)
 		video->byte_seek = -1;
 		mpeg3demux_seek_byte(demuxer, byte);
 
-
-// Clear subtitles
-		mpeg3_reset_subtitles(file);
-
-
 // Rewind 2 I-frames
 		if(byte > 0)
 		{
@@ -300,9 +295,6 @@ int mpeg3video_seek(mpeg3video_t *video)
 /* Seek to a frame */
 	if(video->frame_seek >= 0)
 	{
-// Clear subtitles
-		mpeg3_reset_subtitles(file);
-
 
 		frame_number = video->frame_seek;
 		video->frame_seek = -1;

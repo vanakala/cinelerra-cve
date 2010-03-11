@@ -874,74 +874,32 @@ static void handle_subtitle(mpeg3_t *file,
 /* Allocate memory */
 	if(!subtitle->data)
 	{
-		subtitle->data = malloc(bytes);
+		int length = mpeg3io_read_int16(title->fs);
+		if(subtitle->data = malloc(length))
+		    subtitle->length = length;
+		subtitle->data[0] = length >> 8;
+		subtitle->data[1] = length & 0xff;
+		subtitle->size = 2;
+		bytes -= 2;
+		subtitle->ptstime = demuxer->time;
 	}
-	else
-	{
-		subtitle->data = realloc(subtitle->data, 
-			subtitle->size + bytes);
+
+	if(subtitle->size + bytes <= subtitle->length){
+	    mpeg3io_read_data(subtitle->data + subtitle->size, 
+		    bytes, 
+		    title->fs);
+	    subtitle->size += bytes;
 	}
 
-/* Add data to latest subtitle packet. */
-	mpeg3io_read_data(subtitle->data + subtitle->size, 
-		bytes, 
-		title->fs);
-
-/*
- * static FILE *test = 0;
- * if(!test) test = fopen("/tmp/debug", "w");
- * if(stream_id == 0x20) fwrite(subtitle->data + subtitle->size, pes_packet_length, 1, test);
- * fflush(test);
- */
-	subtitle->size += bytes;
-
-/* Assume complete subtitle object has been loaded and align it in the buffer */
-	for(i = 0; i < subtitle->size - 1; i++)
-	{
-/* Assume next two bytes are size of the subtitle */
-		unsigned char *ptr = subtitle->data + i;
-		int packet_size = (ptr[0] << 8) | (ptr[1]);
-
-/* i is the first byte of a subtitle packet and the packet is complete */
-		if(i + packet_size <= subtitle->size &&
-			*(ptr + packet_size - 1) == 0xff)
-		{
-
-
-/* Move trailing data to a new object */
-/* This just crashed and we don't think it's supposed to happen. */
-/*
- * 			if(i + packet_size < subtitle->size)
- * 			{
- * 				mpeg3_subtitle_t *subtitle2 = new_subtitle(demuxer, 
- * 					subtitle->id, 
- * 					demuxer->program_byte);
- * 				subtitle2->size = subtitle->size - i - packet_size;
- * 				subtitle2->data = malloc(subtitle2->size);
- * 				memcpy(subtitle2->data, subtitle->data + i + packet_size, subtitle2->size);
- * printf("mpeg3demux handle_subtitle: 2 subtitles in packet subtitle2->size=%d\n", subtitle2->size);
- * 			}
- */
-
+	if(subtitle->size == subtitle->length){
 /* Move packet to subtitle track */
-			memcpy(subtitle->data, subtitle->data + i, packet_size);
-			subtitle->size = packet_size;
-			subtitle->done = 1;
+		subtitle->done = 1;
 
-			remove_subtitle_ptr(demuxer, subtitle);
-			mpeg3_strack_t *strack = mpeg3_create_strack(file, subtitle->id);
-			mpeg3_append_subtitle(strack, subtitle);
-			demuxer->got_subtitle = 1;
-/*
- * printf("handle_subtitle: id=0x%x pid=%x size=%d offset=0x%llx table_size=%d\n", 
- * subtitle->id, 
- * demuxer->pid,
- * subtitle->size, 
- * subtitle->offset,
- * demuxer->total_subtitles);
- */
-			break;
-		}
+		remove_subtitle_ptr(demuxer, subtitle);
+		mpeg3_strack_t *strack = mpeg3_create_strack(file, subtitle->id);
+		mpeg3_append_subtitle(strack, subtitle);
+		demuxer->got_subtitle = 1;
+
 	}
 }
 

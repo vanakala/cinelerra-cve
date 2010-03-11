@@ -269,9 +269,13 @@ typedef struct
 	unsigned char *data;
 /* number of bytes of data */
 	int size;
+/* Length of allocated data buffre */
+	int length;
 /* Number of stream starting at 0x20 */
 	int id;
 	int done;
+/* Subtitle basetime */
+	double ptstime;
 /* Program offset of start of subtitle */
 	int64_t offset;
 
@@ -288,10 +292,10 @@ typedef struct
 	int h;
 /* Force display */
 	int force;
-/* Time after detection of subtitle to display it in 1/100sec */
-	int start_time;
-/* Time after detection of subtitle to hide it in 1/100sec */
-	int stop_time;
+/* Time after detection of subtitle to display it in secs */
+	double start_time;
+/* Time after detection of subtitle to hide it in secs */
+	double stop_time;
 /* Indexes in the main palette */
 	int palette[4];
 	int alpha[4];
