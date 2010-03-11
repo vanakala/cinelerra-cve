@@ -197,7 +197,7 @@ int InterfacePrefs::create_objects()
 			&(pwindow->thread->edl->session->edit_handle_mode[2])));
 	text->create_objects();
 
-	y += 40;
+	y += 35;
 	int x1 = x;
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x, y + 5, _("Min DB for meter:")));
@@ -212,7 +212,7 @@ int InterfacePrefs::create_objects()
 	add_subwindow(max_db = new MeterMaxDB(pwindow, string, x, y));
 
 	x = x1;
-	y += 20;
+	y += 25;
 	ViewTheme *theme;
 	add_subwindow(new BC_Title(x, y, _("Theme:")));
 	x += 60;

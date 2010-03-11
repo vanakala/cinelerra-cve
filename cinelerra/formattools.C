@@ -83,6 +83,7 @@ int FormatTools::create_objects(int &init_x,
 {
 	int x = init_x;
 	int y = init_y;
+	int ylev = init_y;
 
 	this->locked_compressor = locked_compressor;
 	this->recording = recording;
@@ -175,6 +176,7 @@ int FormatTools::create_objects(int &init_x,
 			window->add_subwindow(audio_switch = new FormatAudio(x, y, this, asset->audio_data));
 		}
 		x = init_x;
+		ylev = y;
 		y += aparams_button->get_h() + 20;
 
 // Audio channels only used for recording.
@@ -196,7 +198,10 @@ int FormatTools::create_objects(int &init_x,
 //printf("FormatTools::create_objects 7\n");
 	if(do_video)
 	{
-
+		if(do_audio){
+			x += 370;
+			y = ylev;
+		}
 //printf("FormatTools::create_objects 8\n");
 		window->add_subwindow(video_title = new BC_Title(x, y, _("Video:"), LARGEFONT,  BC_WindowBase::get_resources()->audiovideo_color));
 		x += 80;

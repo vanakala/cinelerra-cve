@@ -133,7 +133,8 @@ int RecordPrefs::create_objects()
 	RecordChannels *channels = new RecordChannels(pwindow, this, x2, y + 60);
 	channels->create_objects();
 
-	y += 90;
+	y += 60;
+	x += 380;
 
 
 	add_subwindow(new RecordRealTime(mwindow, 
@@ -141,7 +142,7 @@ int RecordPrefs::create_objects()
 		x, 
 		y, 
 		pwindow->thread->edl->session->real_time_record));
-	y += 45;
+	y += 40;
 	x = 5;
 
 
@@ -214,20 +215,22 @@ int RecordPrefs::create_objects()
 	add_subwindow(textbox = new RecordFrameRate(pwindow, x, y));
 	x += 75;
 	add_subwindow(new FrameRatePulldown(mwindow, textbox, x, y));
-	y += 45;
+	y += 40;
 	x = 5;
-	
-	add_subwindow(new BC_Title(x, y, _("Images"), LARGEFONT, BLACK));
+
+	add_subwindow(new BC_Bar(5, y,  get_w() - 10));
+	y += 5;
+
+	add_subwindow(new BC_Title(x, y, _("Images"), LARGEFONT, resources->text_default));
 	y += 25;
 	add_subwindow(new StillImageUseDuration(pwindow, 
 		pwindow->thread->edl->session->si_useduration, 
 		x, 
 		y));
 	x += 260;
-	y += 5;
 	add_subwindow(new StillImageDuration(pwindow, x, y));
 	x += 80;
-	y += 5;
+	y += 3;
 	add_subwindow(new BC_Title(x, y, _("Seconds")));
 	y += 30;
 

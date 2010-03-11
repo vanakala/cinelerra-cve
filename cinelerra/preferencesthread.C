@@ -59,7 +59,7 @@
 
 
 #define WIDTH 750
-#define HEIGHT 780
+#define HEIGHT 690
 
 
 PreferencesMenuitem::PreferencesMenuitem(MWindow *mwindow)
@@ -358,7 +358,7 @@ int PreferencesWindow::create_objects()
 	BC_Button *button;
 
 
-
+	set_icon(mwindow->theme->get_image("mwindow_icon"));
 	mwindow->theme->draw_preferences_bg(this);
 	flash();
 

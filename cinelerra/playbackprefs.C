@@ -208,7 +208,6 @@ SET_TRACE
 		y,
 		pwindow,
 		this));
-	y += white_balance_raw->get_h() + 10;
 	if(!pwindow->thread->edl->session->interpolate_raw) 
 		white_balance_raw->disable();
 
@@ -216,7 +215,8 @@ SET_TRACE
 SET_TRACE
 //	y += 30;
 //	add_subwindow(new PlaybackDeblock(pwindow, 10, y));
-
+	x2 = x;
+	x += 370;
 	add_subwindow(new BC_Title(x, y, _("Timecode offset:"), MEDIUMFONT, BLACK));
 	sprintf(string, "%d", pwindow->thread->edl->session->timecode_offset[3]);
 	add_subwindow(new TimecodeOffset(x + 120, y, pwindow, this, string, 3));
@@ -229,8 +229,8 @@ SET_TRACE
 	add_subwindow(new BC_Title(x + 232, y, _(":"), MEDIUMFONT, BLACK));
 	sprintf(string, "%d", pwindow->thread->edl->session->timecode_offset[0]);
 	add_subwindow(new TimecodeOffset(x + 240, y, pwindow, this, string, 0));
-
-	y += 35;
+	x = x2;
+	y += white_balance_raw->get_h() + 10;
 	add_subwindow(vdevice_title = new BC_Title(x, y, _("Video Driver:")));
 	video_device = new VDevicePrefs(x + vdevice_title->get_w() + 10, 
 		y, 

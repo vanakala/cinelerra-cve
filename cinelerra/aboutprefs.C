@@ -105,7 +105,7 @@ mpeg3_release());
 "Karl Bielefeldt\n"
 "Kevin Brosius\n"
 "Jean-Luc Coulon\n"
-"Jean-Michel POURE\n"
+"Jean-Michel Poure\n"
 "Jerome Cornet\n"
 "Pierre Marc Dumuid\n"
 "Alex Ferrer\n"
@@ -117,15 +117,18 @@ mpeg3_release());
 "Eric Seigne\n"
 "Joe Stewart\n"
 "Dan Streetman\n"
-"Gustavo Iñiguez\n"
+);
+	draw_text(x, y, credits);
+	sprintf(credits,
+"Gustavo I\361iguez\n"
 "Johannes Sixt\n"
 "Mark Taraba\n"
 "Andraz Tori\n"
 "Jonas Wulff\n"
 "David Arendt\n"
-
+"Einar R\374nkaru\n"
 );
-	draw_text(x, y, credits);
+	draw_text(x + 180, y, credits);
 
 	y = get_h() - 135;
 
