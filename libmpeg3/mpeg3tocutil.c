@@ -174,7 +174,6 @@ const int debug = 0;
 	{
 // Get section type
 		int section_type = read_int32(buffer, &position);
-//printf("section_type=%d position=%x\n", section_type, position);
 		switch(section_type)
 		{
 			case FILE_TYPE_PROGRAM:
@@ -277,37 +276,6 @@ const int debug = 0;
 								(unsigned char*)index->index_data[j], 
 								sizeof(float) * index->index_size * 2);
 						}
-					}
-				}
-				break;
-
-			case VTRACK_COUNT:
-				*vtracks_return = read_int32(buffer, &position);
-				file->frame_offsets = calloc(sizeof(int64_t*), *vtracks_return);
-				file->total_frame_offsets = calloc(sizeof(int), *vtracks_return);
-				file->keyframe_numbers = calloc(sizeof(int64_t*), *vtracks_return);
-				file->total_keyframe_numbers = calloc(sizeof(int), *vtracks_return);
-				file->video_eof = calloc(sizeof(int64_t), *vtracks_return);
-				for(i = 0; i < *vtracks_return; i++)
-				{
-					file->video_eof[i] = read_int64(buffer, &position);
-					file->total_frame_offsets[i] = read_int32(buffer, &position);
-					file->frame_offsets[i] = malloc(file->total_frame_offsets[i] * sizeof(int64_t));
-if(debug) printf("mpeg3_read_toc 62 %d %d %lld\n", 
-file->total_frame_offsets[i], position, buffer_size);
-					for(j = 0; j < file->total_frame_offsets[i]; j++)
-					{
-						file->frame_offsets[i][j] = read_int64(buffer, &position);
-//printf("frame %llx\n", file->frame_offsets[i][j]);
-					}
-
-if(debug) printf("mpeg3_read_toc 64\n");
-
-					file->total_keyframe_numbers[i] = read_int32(buffer, &position);
-					file->keyframe_numbers[i] = malloc(file->total_keyframe_numbers[i] * sizeof(int64_t));
-					for(j = 0; j < file->total_keyframe_numbers[i]; j++)
-					{
-						file->keyframe_numbers[i][j] = read_int64(buffer, &position);
 					}
 				}
 				break;
@@ -468,6 +436,27 @@ if(debug) printf("mpeg3_read_toc 30\n");
 				}
 				file->have_palette = 1;
 				break;
+			case IFRAME_OFFS:
+			    *vtracks_return = read_int32(buffer, &position);
+			    file->total_keyframes = calloc(sizeof(int64_t),
+				*vtracks_return);
+			    file->total_frames = malloc(sizeof(int *) * *vtracks_return);
+			    file->video_eof = calloc(sizeof(int64_t), *vtracks_return);
+			    file->keyframes = malloc(sizeof(mpeg3keyframe_t *) * *vtracks_return);
+			    
+			    for(i = 0; i < *vtracks_return; i++)
+			    {
+				    file->video_eof[i] = read_int64(buffer, &position);
+				    file->total_frames[i] = read_int32(buffer, &position);
+				    file->total_keyframes[i] = read_int32(buffer, &position);
+				    file->keyframes[i] = malloc(file->total_keyframes[i] * sizeof(mpeg3keyframe_t));
+				    for(j = 0; j < file->total_keyframes[i]; j++)
+				    {
+					    file->keyframes[i][j].number = read_int64(buffer, &position);
+					    file->keyframes[i][j].offset = read_int64(buffer, &position);
+				    }
+			    }
+			    break;
 		}
 	}
 
@@ -860,19 +849,6 @@ static int handle_video(mpeg3_t *file,
 				}
 				else
 				{
-/*
- * // Shift out data from before frame
- * 					vtrack->demuxer->data_position++;
- * 					mpeg3demux_shift_data(vtrack->demuxer, vtrack->demuxer->data_position);
- * 
- * // Reset pointer
- * 					ptr = &vtrack->demuxer->data_buffer[
- * 						vtrack->demuxer->data_position];
- * 					code = (ptr[0] << 24) | (ptr[1] << 16) | (ptr[2] << 8) | (ptr[3]);
- * 					ptr += 4;
- * 
- * 					vtrack->prev_frame_offset = -1;
- */
 					break;
 				}
 			}
@@ -885,13 +861,10 @@ static int handle_video(mpeg3_t *file,
 		else
 		{
 			vtrack->demuxer->data_position++;
-//			code <<= 8;
-//			code |= *ptr++;
 			ptr = &vtrack->demuxer->data_buffer[vtrack->demuxer->data_position];
 			code = (ptr[0] << 24) | (ptr[1] << 16) | (ptr[2] << 8) | (ptr[3]);  
 		}
 	}
-//printf("handle_video 20\n");
 	vtrack->demuxer->data_position -= 4;
 	mpeg3demux_shift_data(vtrack->demuxer, vtrack->demuxer->data_position);
 
@@ -941,26 +914,11 @@ int mpeg3_do_toc(mpeg3_t *file, int64_t *bytes_processed)
 
 	start_byte = mpeg3demux_tell_byte(file->demuxer);
 
-//printf("mpeg3_do_toc 1\n");
 	int result = mpeg3_read_next_packet(file->demuxer);
-//printf("mpeg3_do_toc 10\n");
 
 // Determine program interleaving for current packet.
 	int program = mpeg3demux_tell_program(file->demuxer);
 
-
-/*
- * if(start_byte > 0x1b0000 &&
- * start_byte < 0x1c0000)
- * printf("mpeg3_do_toc 1 start_byte=%llx custum_id=%x got_audio=%d got_video=%d audio_size=%d video_size=%d data_size=%d\n", 
- * start_byte, 
- * file->demuxer->custom_id,
- * file->demuxer->got_audio, 
- * file->demuxer->got_video,
- * file->demuxer->audio_size,
- * file->demuxer->video_size,
- * file->demuxer->data_size);
- */
 
 // Only handle program 0
 	if(program == 0)
@@ -1046,8 +1004,8 @@ int mpeg3_do_toc(mpeg3_t *file, int64_t *bytes_processed)
 				if(vtrack->pid == custom_id)
 				{
 // Update a video track
-					handle_video(file, vtrack);
 					vtrack->prev_offset = start_byte;
+					handle_video(file, vtrack);
 					got_it = 1;
 					break;
 				}
@@ -1071,9 +1029,9 @@ int mpeg3_do_toc(mpeg3_t *file, int64_t *bytes_processed)
 				{
 					file->total_vstreams++;
 // Create table entry for frame 0
-					mpeg3_append_frame(vtrack, start_byte, 1);
-					handle_video(file, vtrack);
 					vtrack->prev_offset = start_byte;
+					vtrack->prev_frame_offset = -1;
+					handle_video(file, vtrack);
 				}
 			}
 		}
@@ -1273,6 +1231,7 @@ void mpeg3_stop_toc(mpeg3_t *file)
 // Sample offsets
 		for(i = 0; i < atrack->total_sample_offsets; i++)
 		{
+//printf("Audio sample %d offset %#llx\n", i, atrack->sample_offsets[i]);
 			PUT_INT64(atrack->sample_offsets[i]);
 		}
 
@@ -1282,6 +1241,7 @@ void mpeg3_stop_toc(mpeg3_t *file)
 		{
 			PUT_INT32(index->index_size);
 			PUT_INT32(index->index_zoom);
+
 			for(k = 0; k < atrack->channels; k++)
 			{
 				fwrite(index->index_data[k], 
@@ -1296,33 +1256,6 @@ void mpeg3_stop_toc(mpeg3_t *file)
 			PUT_INT32(1);
 		}
 	}
-
-
-
-
-
-	PUT_INT32(VTRACK_COUNT);
-	PUT_INT32(file->total_vstreams);
-
-// Video streams
-	for(j = 0; j < file->total_vstreams; j++)
-	{
-		mpeg3_vtrack_t *vtrack = file->vtrack[j];
-		PUT_INT64(vtrack->video_eof);
-		PUT_INT32(vtrack->total_frame_offsets);
-		for(i = 0; i < vtrack->total_frame_offsets; i++)
-		{
-			PUT_INT64(vtrack->frame_offsets[i]);
-		}
-
-		PUT_INT32(vtrack->total_keyframe_numbers);
-		for(i = 0; i < vtrack->total_keyframe_numbers; i++)
-		{
-			PUT_INT64(vtrack->keyframe_numbers[i]);
-		}
-	}
-
-
 
 
 	PUT_INT32(STRACK_COUNT);
@@ -1348,9 +1281,23 @@ void mpeg3_stop_toc(mpeg3_t *file)
 	}
 
 
+	
+	PUT_INT32(IFRAME_OFFS);
+	PUT_INT32(file->total_vstreams);
+// Video streams
+	for(j = 0; j < file->total_vstreams; j++)
+	{
+		mpeg3_vtrack_t *vtrack = file->vtrack[j];
+		PUT_INT64(vtrack->video_eof);
+		PUT_INT32(vtrack->total_frames);
+		PUT_INT32(vtrack->total_keyframes);
+		for(i = 0; i < vtrack->total_keyframes; i++)
+		{
+			PUT_INT64(vtrack->keyframes[i].number);
+			PUT_INT64(vtrack->keyframes[i].offset);
+		}
+	}
 	fclose(file->toc_fd);
-
-
 	mpeg3_delete(file);
 }
 
@@ -1395,7 +1342,7 @@ float* mpeg3_index_data(mpeg3_t *file, int track, int channel)
 
 int mpeg3_has_toc(mpeg3_t *file)
 {
-	if(file->frame_offsets || file->sample_offsets) return 1;
+	if(file->sample_offsets || file->keyframes) return 1;
 	return 0;
 }
 

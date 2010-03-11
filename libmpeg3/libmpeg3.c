@@ -98,20 +98,17 @@ if(debug) printf("mpeg3_delete 3\n");
 	mpeg3_delete_demuxer(file->demuxer);
 
 if(debug) printf("mpeg3_delete 4\n");
-	if(file->frame_offsets)
+	
+	if(file->keyframes)
 	{
 		for(i = 0; i < file->total_vstreams; i++)
-		{
-			free(file->frame_offsets[i]);
-			free(file->keyframe_numbers[i]);
-		}
-
-if(debug) printf("mpeg3_delete 5\n");
-		free(file->frame_offsets);
-		free(file->keyframe_numbers);
-		free(file->total_frame_offsets);
-		free(file->total_keyframe_numbers);
+			free(file->keyframes[i]);
+		free(file->keyframes);
+		free(file->total_frames);
+		free(file->video_eof);
+		free(file->total_keyframes);
 	}
+	
 
 if(debug) printf("mpeg3_delete 6\n");
 	if(file->sample_offsets)
@@ -913,7 +910,6 @@ int mpeg3_read_frame(mpeg3_t *file,
 		file->vtrack[stream]->current_position++;
 	}
 
-//printf("mpeg3_read_frame 2 %d\n", file->vtrack[stream]->current_position);
 	return result;
 }
 
@@ -944,7 +940,6 @@ int mpeg3_read_yuvframe(mpeg3_t *file,
 		file->last_stream_read = stream;
 		file->vtrack[stream]->current_position++;
 	}
-//printf("mpeg3_read_yuvframe 100\n");
 	return result;
 }
 

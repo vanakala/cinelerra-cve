@@ -22,13 +22,12 @@ mpeg3_vtrack_t* mpeg3_new_vtrack(mpeg3_t *file,
 	new_vtrack->pid = custom_id;
 
 // Copy pointers
-	if(file->frame_offsets)
+	if(file->keyframes)
 	{
-		new_vtrack->frame_offsets = file->frame_offsets[number];
-		new_vtrack->total_frame_offsets = file->total_frame_offsets[number];
-		new_vtrack->keyframe_numbers = file->keyframe_numbers[number];
-		new_vtrack->total_keyframe_numbers = file->total_keyframe_numbers[number];
 		new_vtrack->demuxer->stream_end = file->video_eof[number];
+		new_vtrack->keyframes = file->keyframes[number];
+		new_vtrack->total_keyframes = file->total_keyframes[number];
+		new_vtrack->total_frames = file->total_frames[number];
 	}
 
 /* Get information about the track here. */
@@ -52,8 +51,7 @@ int mpeg3_delete_vtrack(mpeg3_t *file, mpeg3_vtrack_t *vtrack)
 	if(vtrack->demuxer) mpeg3_delete_demuxer(vtrack->demuxer);
 	if(vtrack->private_offsets)
 	{
-		if(vtrack->frame_offsets) free(vtrack->frame_offsets);
-		if(vtrack->keyframe_numbers) free(vtrack->keyframe_numbers);
+		if(vtrack->keyframes) free(vtrack->keyframes);
 	}
 	mpeg3_delete_cache(vtrack->frame_cache);
 
@@ -70,39 +68,21 @@ int mpeg3_delete_vtrack(mpeg3_t *file, mpeg3_vtrack_t *vtrack)
 static int last_keyframe = 0;
 void mpeg3_append_frame(mpeg3_vtrack_t *vtrack, int64_t offset, int is_keyframe)
 {
-	if(vtrack->total_frame_offsets >= vtrack->frame_offsets_allocated)
-	{
-		vtrack->frame_offsets_allocated = 
-			MAX(vtrack->total_frame_offsets * 2, 1024);
-		vtrack->frame_offsets = realloc(vtrack->frame_offsets,
-			sizeof(int64_t) * vtrack->frame_offsets_allocated);
-	}
-
-	vtrack->frame_offsets[vtrack->total_frame_offsets++] = offset;
+	vtrack->total_frames++;
 
 	if(is_keyframe)
 	{
-		if(vtrack->total_keyframe_numbers >= vtrack->keyframe_numbers_allocated)
+		if(vtrack->total_keyframes >= vtrack->keyframes_allocated)
 		{
-			vtrack->keyframe_numbers_allocated = 
-				MAX(vtrack->total_keyframe_numbers * 2, 1024);
-			vtrack->keyframe_numbers = realloc(vtrack->keyframe_numbers,
-				sizeof(int64_t) * vtrack->keyframe_numbers_allocated);
+			vtrack->keyframes_allocated = 
+			    MAX(vtrack->total_keyframes * 2, 1024);
+			vtrack->keyframes = realloc(vtrack->keyframes,
+			    sizeof(mpeg3keyframe_t) * vtrack->keyframes_allocated);
 		}
-
-// Because the frame offsets are for the frame
-// after, this needs to take off one frame.
-		int corrected_frame = vtrack->total_frame_offsets - 2;
-		if(corrected_frame < 0) corrected_frame = 0;
-		vtrack->keyframe_numbers[vtrack->total_keyframe_numbers++] = 
-			corrected_frame;
+		vtrack->keyframes[vtrack->total_keyframes].offset = offset;
+		vtrack->keyframes[vtrack->total_keyframes++].number = 
+		    vtrack->total_frames - 1;
 	}
 
 	vtrack->private_offsets = 1;
 }
-
-
-
-
-
-

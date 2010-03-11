@@ -132,21 +132,11 @@ int main(int argc, char *argv[])
 			
 			if(print_offsets)
 			{
-				fprintf(stderr, "total_frame_offsets=%d\n", file->vtrack[i]->total_frame_offsets);
-				for(j = 0; j < file->vtrack[i]->total_frame_offsets; j++)
+				fprintf(stderr, "total_frames = %d total_keyframes %d\n", file->vtrack[i]->total_frames, file->vtrack[i]->total_keyframes);
+				for(j = 0; j < file->vtrack[i]->total_keyframes; j++)
 				{
-					fprintf(stderr, "%d=%llx ", j, file->vtrack[i]->frame_offsets[j]);
-					if(j > 0 && !(j % 8)) fprintf(stderr, "\n");
+					fprintf(stderr, "%08d %#08x\n", file->vtrack[i]->keyframes[j].number, file->vtrack[i]->keyframes[j].offset);
 				}
-				fprintf(stderr, "\n");
-
-				fprintf(stderr, "total_keyframe_numbers=%d\n", file->vtrack[i]->total_keyframe_numbers);
-				for(j = 0; j < file->vtrack[i]->total_keyframe_numbers; j++)
-				{
-					fprintf(stderr, "%lld ", file->vtrack[i]->keyframe_numbers[j]);
-					if(j > 0 && !(j % 8)) fprintf(stderr, "\n");
-				}
-				fprintf(stderr, "\n");
 			}
 		}
 

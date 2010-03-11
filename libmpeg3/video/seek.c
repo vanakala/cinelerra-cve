@@ -194,8 +194,8 @@ int mpeg3_rewind_video(mpeg3video_t *video)
 	mpeg3_vtrack_t *track = video->track;
 	mpeg3_bits_t *vstream = video->vstream;
 
-	if(track->frame_offsets)
-		mpeg3bits_seek_byte(vstream, track->frame_offsets[0]);
+	if(track->keyframes)
+		mpeg3bits_seek_byte(vstream, track->keyframes[0].offset);
 	else
 		mpeg3bits_seek_byte(vstream, 0);
 
@@ -306,7 +306,7 @@ int mpeg3video_seek(mpeg3video_t *video)
 /* Seek to I frame in table of contents. */
 /* Determine time between seek position and previous subtitle. */
 /* Subtract time difference from subtitle display time. */
-		if(track->frame_offsets)
+		if(track->keyframes)
 		{
 			mpeg3_reset_cache(track->frame_cache);
 
@@ -314,33 +314,26 @@ int mpeg3video_seek(mpeg3video_t *video)
 				frame_number - video->framenum > MPEG3_SEEK_THRESHOLD))
 			{
 				int i;
-				for(i = track->total_keyframe_numbers - 1; i >= 0; i--)
+				for(i = track->total_keyframes - 1; i >= 0; i--)
 				{
-					if(track->keyframe_numbers[i] <= frame_number)
+					if(track->keyframes[i].number <= frame_number)
 					{
 						int frame;
 						int64_t byte;
 
 // Go 2 I-frames before current position
-						if(i > 0) i--;
-						frame = track->keyframe_numbers[i];
-						if(frame == 0)
-							byte = 0;
-						else
-							byte = track->frame_offsets[frame];
+						byte = track->keyframes[i].offset;
 
-						video->framenum = track->keyframe_numbers[i];
+						video->framenum = track->keyframes[i].number;
 
 						mpeg3bits_seek_byte(vstream, byte);
 
-
-// Get first 2 I-frames
-						video->framenum--;
-						if(byte == 0)
-							mpeg3video_get_firstframe(video);
-
-					
+printf("mpeg3video_seek: frame %d offset %#llx\n", video->framenum, byte);
 						video->repeat_count = 0;
+
+// Why it must be such?
+						mpeg3video_read_frame_backend(video);
+						video->framenum--;
 
 // Read up to current frame
 						mpeg3video_drop_frames(video, frame_number - video->framenum, 0);

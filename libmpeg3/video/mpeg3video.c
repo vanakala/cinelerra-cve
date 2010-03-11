@@ -407,7 +407,7 @@ mpeg3video_t* mpeg3video_new(mpeg3_t *file,
 			track->frame_rate = video->frame_rate;
 
 /* Try to get the length of the file from GOP's */
-			if(!track->frame_offsets)
+			if(!track->keyframes)
 			{
 				if(file->is_video_stream)
 				{
@@ -494,13 +494,6 @@ mpeg3video_t* mpeg3video_new(mpeg3_t *file,
  */
 				}
 			}
-			else
-// Get length from table of contents
-			{
-				track->total_frames = track->total_frame_offsets;
-			}
-
-
 
 			video->maxframe = track->total_frames;
 			video->repeat_count = 0;

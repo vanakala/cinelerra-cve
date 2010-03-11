@@ -14,7 +14,7 @@
 
 #define MPEG3_MAJOR   1
 #define MPEG3_MINOR   7
-#define MPEG3_RELEASE 0
+#define MPEG3_RELEASE 5
 
 #define RENDERFARM_FS_PREFIX "vfs://"
 
@@ -23,7 +23,7 @@
 
 #define MPEG3_TOC_PREFIX                 0x544f4320
 // This decreases with every new version
-#define MPEG3_TOC_VERSION                0x000000fa
+#define MPEG3_TOC_VERSION                0x000010fa
 #define MPEG3_ID3_PREFIX                 0x494433
 #define MPEG3_IFO_PREFIX                 0x44564456
 #define MPEG3_IO_SIZE                    0x100000     /* Bytes read by mpeg3io at a time */
@@ -71,7 +71,7 @@
 /* Minimum amount of data required to read an audio packet in streaming mode. */
 #define MPEG3_AUDIO_STREAM_SIZE          0x1000 
 /* Minimum amount of data required to read a video header in streaming mode. */
-#define MPEG3_VIDEO_STREAM_SIZE          0x1000 
+#define MPEG3_VIDEO_STREAM_SIZE          0x40
 #define MPEG3_LITTLE_ENDIAN              ((*(uint32_t*)"x\0\0\0") & 0x000000ff)
 /* Number of samples in audio history */
 #define MPEG3_AUDIO_HISTORY              0x100000 
@@ -107,6 +107,7 @@
 #define TITLE_PATH 0xc
 #define IFO_PALETTE 0xd
 #define FILE_INFO 0xe
+#define IFRAME_OFFS 0xf
 
 // Combine the pid and the stream id into one unit
 #define CUSTOM_ID(pid, stream_id) (((pid << 8) | stream_id) & 0xffff)
@@ -977,8 +978,11 @@ typedef struct
 
 
 
-
-
+typedef struct
+{
+    int64_t number;
+    int64_t offset;
+}mpeg3keyframe_t;
 
 
 
@@ -1004,13 +1008,10 @@ typedef struct
 
 /* Pointer to master table of contents when the TOC is read. */
 /* Pointer to private table when the TOC is being created */
-/* Stores the absolute byte of each frame */
-	int64_t *frame_offsets;
-	int total_frame_offsets;
-	int frame_offsets_allocated;
-	int64_t *keyframe_numbers;
-	int total_keyframe_numbers;
-	int keyframe_numbers_allocated;
+/* Keyframe number and offset */
+	mpeg3keyframe_t *keyframes;  
+	int total_keyframes;
+	int keyframes_allocated;
 /* Starting byte of previous packet for making TOC */
 	int64_t prev_offset;
 /* Starting byte of previous packet when the start code was found. */
@@ -1078,15 +1079,14 @@ typedef struct
 	mpeg3_strack_t *strack[MPEG3_MAX_STREAMS];
 
 /* Table of contents storage */
-	int64_t **frame_offsets;
 	int64_t **sample_offsets;
-	int64_t **keyframe_numbers;
 	int64_t *video_eof;
 	int64_t *audio_eof;
-	int *total_frame_offsets;
 	int *total_sample_offsets;
 	int64_t *total_samples;
-	int *total_keyframe_numbers;
+	mpeg3keyframe_t **keyframes;
+	int *total_keyframes;
+	int *total_frames;	
 /* Handles changes in channel count after the start of a stream */
 	int *channel_counts;
 /* Indexes for audio tracks */
