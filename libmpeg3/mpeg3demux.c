@@ -1164,7 +1164,7 @@ static int get_program_pes_packet(mpeg3_demuxer_t *demuxer, unsigned int header)
 
 
 
-			if(pts > 0) demuxer->pes_audio_time = (double)pts / 60000;
+			if(pts > 0) demuxer->pes_audio_time = (double)pts / 90000;
 
 
 			if(demuxer->custom_id == demuxer->astream && 
@@ -1271,7 +1271,7 @@ static int get_program_pes_packet(mpeg3_demuxer_t *demuxer, unsigned int header)
 
 // Picks up bogus data if (& 0xf) or (& 0x7f)
 			demuxer->stream_id = mpeg3io_next_char(title->fs);
-			if(pts > 0) demuxer->pes_audio_time = (double)pts / 60000;
+			if(pts > 0) demuxer->pes_audio_time = (double)pts / 90000;
 
 			demuxer->got_audio = 1;
 			demuxer->custom_id = demuxer->stream_id;
