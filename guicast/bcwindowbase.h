@@ -72,7 +72,6 @@
 #include "bcwidgetgrid.inc"
 #include "bcwindow.inc"
 #include "bcwindowbase.inc"
-#include "bcwindowevents.inc"
 #include "condition.inc"
 #include "bchash.inc"
 #include "linklist.h"
@@ -620,13 +619,6 @@ private:
 // delete all repeater opjects for a close
 	int unset_all_repeaters();
 
-// Block and get event from common events.
-	XEvent* get_event();
-// Return number of events in table.
-	int get_event_count();
-// Put event in common events.
-	void put_event(XEvent *event);
-
 // Recursive event dispatchers
 	int dispatch_resize_event(int w, int h);
 	int dispatch_focus_in();
@@ -777,8 +769,6 @@ private:
 	Colormap cmap;
 // Display for all synchronous operations
 	Display *display;
-// Display to send events on
-	Display *event_display;
  	Window win;
 #ifdef HAVE_GL
 // The first context to be created and the one whose texture id 
@@ -836,16 +826,6 @@ private:
    int vm_switched;
    XF86VidModeModeInfo orig_modeline;
 #endif
-
-// Common events coming from X server and repeater.
-	ArrayList<XEvent*> common_events;
-// Locks for common events
-// Locking order:
-// 1) event_condition
-// 2) event_lock
-	Mutex *event_lock;
-	Condition *event_condition;
-	BC_WindowEvents *event_thread;
 	int is_deleting;
 // Hide cursor when video is enabled
 	Timer *cursor_timer;

@@ -629,6 +629,7 @@ void AWindowGUI::async_update_assets()
 {
 	xatom_event event;
 	event.message_type = UpdateAssetsXAtom;
+	event.format = 32;
 	send_custom_xatom(&event);
 }
 

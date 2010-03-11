@@ -34,7 +34,6 @@
 #include "bctimer.h"
 #include "bcwidgetgrid.h"
 #include "bcwindowbase.h"
-#include "bcwindowevents.h"
 #include "colormodels.h"
 #include "colors.h"
 #include "condition.h"
@@ -181,9 +180,6 @@ BC_WindowBase::~BC_WindowBase()
 #endif
 
 	resize_history.remove_all_objects();
-	common_events.remove_all_objects();
-	delete event_lock;
-	delete event_condition;
 
 	UNSET_ALL_LOCKS(this)
 }
@@ -249,11 +245,7 @@ int BC_WindowBase::initialize()
 	largefont_xft = 0;
 	mediumfont_xft = 0;
 	smallfont_xft = 0;
-// Need these right away since put_event is called before run_window sometimes.
-	event_lock = new Mutex("BC_WindowBase::event_lock");
-	event_condition = new Condition(0, "BC_WindowBase::event_condition");
 	cursor_timer = new Timer;
-	event_thread = 0;
 #ifdef HAVE_GL
 	gl_win_context = 0;
 #endif
@@ -334,7 +326,6 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 
 // get the display connection
 		display = init_display(display_name);
-//		event_display = init_display(display_name);
 
 // Fudge window placement
 		root_w = get_root_w(1, 0);
@@ -619,10 +610,6 @@ int BC_WindowBase::run_window()
 		set_repeat(get_resources()->tooltip_delay);
 	}
 
-// Start X server events
-	event_thread = new BC_WindowEvents(this);
-	event_thread->start();
-
 // Start common events
 	while(!done)
 	{
@@ -631,10 +618,6 @@ int BC_WindowBase::run_window()
 
 	unset_all_repeaters();
 	hide_tooltip();
-	delete event_thread;
-	event_thread = 0;
-	event_condition->reset();
-	common_events.remove_all_objects();
 	done = 0;
 
 	return return_value;
@@ -660,7 +643,7 @@ int BC_WindowBase::get_key_masks(XEvent *event)
 
 int BC_WindowBase::dispatch_event()
 {
-	XEvent *event = 0;
+	XEvent event;
     Window tempwin;
   	KeySym keysym;
   	char keys_return[2];
@@ -673,11 +656,10 @@ int BC_WindowBase::dispatch_event()
 
 // If an event is waiting get it, otherwise
 // wait for next event only if there are no compressed events.
-	if(get_event_count() || 
+	if(XPending(display) ||
 		(!motion_events && !resize_events && !translation_events))
 	{
-//		XNextEvent(display, event);
-		event = get_event();
+		XNextEvent(display, &event);
 //		get_key_masks(event);
 	}
 	else
@@ -695,8 +677,8 @@ int BC_WindowBase::dispatch_event()
 		return 0;
 	}
 
-//printf("1 %s %p %d\n", title, event, event->type);
-	switch(event->type)
+//printf("BC_WindowBase::dispatch_event %s %d\n", title, event.type);
+	switch(event.type)
 	{
 		case ClientMessage:
 // Clear the resize buffer
@@ -707,7 +689,7 @@ int BC_WindowBase::dispatch_event()
 				dispatch_motion_event();
 			}
 
-			ptr = (XClientMessageEvent*)event;
+			ptr = (XClientMessageEvent*)&event;
 
 
         	if(ptr->message_type == ProtoXAtom && 
@@ -758,16 +740,16 @@ int BC_WindowBase::dispatch_event()
 			break;
 
 		case ButtonPress:
-			get_key_masks(event);
-			cursor_x = event->xbutton.x;
-			cursor_y = event->xbutton.y;
-			button_number = event->xbutton.button;
-			event_win = event->xany.window;
+			get_key_masks(&event);
+			cursor_x = event.xbutton.x;
+			cursor_y = event.xbutton.y;
+			button_number = event.xbutton.button;
+			event_win = event.xany.window;
 			if (button_number != 4 && button_number != 5)
 	  			button_down = 1;
-			button_pressed = event->xbutton.button;
+			button_pressed = event.xbutton.button;
 			button_time1 = button_time2;
-			button_time2 = event->xbutton.time;
+			button_time2 = event.xbutton.time;
 			drag_x = cursor_x;
 			drag_y = cursor_y;
 			drag_win = event_win;
@@ -789,9 +771,9 @@ int BC_WindowBase::dispatch_event()
 			break;
 
 		case ButtonRelease:
-			get_key_masks(event);
-			button_number = event->xbutton.button;
-			event_win = event->xany.window;
+			get_key_masks(&event);
+			button_number = event.xbutton.button;
+			event_win = event.xany.window;
 			if (button_number != 4 && button_number != 5) 
 				button_down = 0;
 
@@ -800,28 +782,28 @@ int BC_WindowBase::dispatch_event()
 			break;
 
 		case Expose:
-			event_win = event->xany.window;
+			event_win = event.xany.window;
 			dispatch_expose_event();
 			break;
 
 		case MotionNotify:
-			get_key_masks(event);
+			get_key_masks(&event);
 // Dispatch previous motion event if this is a subsequent motion from a different window
-			if(motion_events && last_motion_win != event->xany.window)
+			if(motion_events && last_motion_win != event.xany.window)
 			{
 				dispatch_motion_event();
 			}
 
 // Buffer the current motion
 			motion_events = 1;
-			last_motion_x = event->xmotion.x;
-			last_motion_y = event->xmotion.y;
-			last_motion_win = event->xany.window;
+			last_motion_x = event.xmotion.x;
+			last_motion_y = event.xmotion.y;
+			last_motion_win = event.xany.window;
 			break;
 
 		case ConfigureNotify:
                         lock_window("BC_WindowBase::dispatch_event Cfgnt");
-			get_key_masks(event);
+			get_key_masks(&event);
 			XTranslateCoordinates(top_level->display, 
 				top_level->win, 
 				top_level->rootwin, 
@@ -830,8 +812,8 @@ int BC_WindowBase::dispatch_event()
 				&last_translate_x, 
 				&last_translate_y, 
 				&tempwin);
-			last_resize_w = event->xconfigure.width;
-			last_resize_h = event->xconfigure.height;
+			last_resize_w = event.xconfigure.width;
+			last_resize_h = event.xconfigure.height;
                         unlock_window();
 			cancel_resize = 0;
 			cancel_translation = 0;
@@ -868,9 +850,9 @@ int BC_WindowBase::dispatch_event()
 			break;
 
 		case KeyPress:
-			get_key_masks(event);
+			get_key_masks(&event);
   			keys_return[0] = 0;
-  			XLookupString((XKeyEvent*)event, keys_return, 1, &keysym, 0);
+  			XLookupString((XKeyEvent*)&event, keys_return, 1, &keysym, 0);
 
 // printf("BC_WindowBase::dispatch_event 2 %llx\n", 
 // event->xkey.state);
@@ -955,20 +937,19 @@ int BC_WindowBase::dispatch_event()
 			break;
 
 		case LeaveNotify:
-			event_win = event->xany.window;
+			event_win = event.xany.window;
 			dispatch_cursor_leave();
 			break;
 
 		case EnterNotify:
-			event_win = event->xany.window;
-			cursor_x = event->xcrossing.x;
-			cursor_y = event->xcrossing.y;
+			event_win = event.xany.window;
+			cursor_x = event.xcrossing.x;
+			cursor_y = event.xcrossing.y;
 			dispatch_cursor_enter();
 			break;
 	}
 //printf("100 %s %p %d\n", title, event, event->type);
 
-	if(event) delete event;
 	return 0;
 }
 
@@ -1488,21 +1469,20 @@ int BC_WindowBase::unset_all_repeaters()
 
 int BC_WindowBase::arm_repeat(int64_t duration)
 {
-	XEvent *event = new XEvent;
-	XClientMessageEvent *ptr = (XClientMessageEvent*)event;
+	XEvent event;
+	XClientMessageEvent *ptr = (XClientMessageEvent*)&event;
 	ptr->type = ClientMessage;
 	ptr->message_type = RepeaterXAtom;
 	ptr->format = 32;
 	ptr->data.l[0] = duration;
 
 // Couldn't use XSendEvent since it locked up randomly.
-	put_event(event);
-// 	XSendEvent(top_level->event_display, 
-// 		top_level->win, 
-// 		0, 
-// 		0, 
-// 		event);
-// 	flush();
+ 	XSendEvent(top_level->display, 
+ 		top_level->win, 
+ 		0, 
+ 		0, 
+ 		&event);
+ 	flush();
 	return 0;
 }
 
@@ -1513,8 +1493,8 @@ int BC_WindowBase::recieve_custom_xatoms(xatom_event *event)
 
 int BC_WindowBase::send_custom_xatom(xatom_event *event)
 {
-	XEvent *myevent = new XEvent;
-	XClientMessageEvent *ptr = (XClientMessageEvent*)myevent;
+	XEvent myevent;
+	XClientMessageEvent *ptr = (XClientMessageEvent*)&myevent;
 	ptr->type = ClientMessage;
 	ptr->message_type = event->message_type;
 	ptr->format = event->format;
@@ -1524,7 +1504,12 @@ int BC_WindowBase::send_custom_xatom(xatom_event *event)
 	ptr->data.l[3] = event->data.l[3];
 	ptr->data.l[4] = event->data.l[4];
 
-	put_event(myevent);
+ 	XSendEvent(top_level->display, 
+ 		top_level->win, 
+ 		0, 
+ 		0, 
+ 		&myevent);
+	flush();
 	return 0;
 }
 
@@ -2707,9 +2692,12 @@ void BC_WindowBase::set_done(int return_value)
 // This causes BC_WindowEvents to forward a copy of the event to run_window where 
 // it is deleted.
 
-// Deletion of event_thread is done at the end of BC_WindowBase::run_window() - by calling the destructor
-		put_event(event);
-	} 
+    		XSendEvent(display,
+            	    win,
+            	    0,
+            	    0,
+            	    event);
+ 	} 
 }
 
 int BC_WindowBase::get_w()
@@ -3517,58 +3505,6 @@ void BC_WindowBase::restore_vm()
 
 #endif
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-int BC_WindowBase::get_event_count()
-{
-	event_lock->lock("BC_WindowBase::get_event_count");
-	int result = common_events.total;
-	event_lock->unlock();
-	return result;
-}
-
-XEvent* BC_WindowBase::get_event()
-{
-	XEvent *result = 0;
-	while(!done && !result)
-	{
-	        event_condition->lock("BC_WindowBase::get_event");
-		event_lock->lock("BC_WindowBase::get_event");
-
-		if(common_events.total && !done)
-		{
-			result = common_events.values[0];
-			common_events.remove_number(0);
-		}
-
-		event_lock->unlock();
-	}
-	return result;
-}
-
-void BC_WindowBase::put_event(XEvent *event)
-{
-	event_lock->lock("BC_WindowBase::put_event");
-	common_events.append(event);
-	event_lock->unlock();
-	event_condition->unlock();
-}
 
 int BC_WindowBase::get_id()
 {
