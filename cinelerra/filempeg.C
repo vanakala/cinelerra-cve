@@ -247,7 +247,6 @@ SET_TRACE
 					asset->frame_rate = mpeg3_frame_rate(fd, 0);
 
 // Enable subtitles
-//printf("FileMPEG::open %d\n", file->playback_subtitle);
 				if(file->playback_subtitle >= 0)
 					mpeg3_show_subtitle(fd, file->playback_subtitle);
 			}
@@ -1207,7 +1206,7 @@ SET_TRACE
 						src_cmodel, 
 						frame->get_color_model(),
 						0, 
-						asset->width,
+						(asset->width + 15) & ~15,
 						frame->get_w());
 				}
 			}
