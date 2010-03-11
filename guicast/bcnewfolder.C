@@ -127,9 +127,7 @@ int BC_NewFolderThread::interrupt()
 	change_lock->lock("BC_NewFolderThread::interrupt");
 	if(window)
 	{
-		window->lock_window("BC_NewFolderThread::interrupt");
 		window->set_done(1);
-		window->unlock_window();
 	}
 
 	change_lock->unlock();
