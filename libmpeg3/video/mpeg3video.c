@@ -310,7 +310,6 @@ int mpeg3video_read_frame_backend(mpeg3video_t *video, int skip_bframes)
 // subsequent P frame are interlaced to make the keyframe.
 
 
-
 //printf("mpeg3video_read_frame_backend 10\n");
 
 // Composite subtitles
@@ -790,12 +789,6 @@ int mpeg3video_read_yuvframe_ptr(mpeg3video_t *video,
 		if(!result) result = mpeg3video_seek(video);
 		if(!result) result = mpeg3video_read_frame_backend(video, 0);
 
-        if(video->output_src[0])
-        {
-            *y_output = (char*)video->output_src[0];
-            *u_output = (char*)video->output_src[1];
-            *v_output = (char*)video->output_src[2];
-        }
 	}
 	else
 	{
@@ -803,14 +796,14 @@ int mpeg3video_read_yuvframe_ptr(mpeg3video_t *video,
 		video->last_number = video->frame_seek;
 		video->frame_seek = -1;
 
-        if(video->output_src[0])
-        {
-            *y_output = (char*)video->output_src[0];
-            *u_output = (char*)video->output_src[1];
-            *v_output = (char*)video->output_src[2];
-        }
 	}
 
+        if(video->output_src[0])
+        {
+        	*y_output = (char*)video->output_src[0];
+        	*u_output = (char*)video->output_src[1];
+        	*v_output = (char*)video->output_src[2];
+        }
 
 	video->want_yvu = 0;
 // Caching not used if byte seek

@@ -323,26 +323,23 @@ int mpeg3video_seek(mpeg3video_t *video)
 
 // Go 2 I-frames before current position
 						if(i > 0) i--;
-
 						frame = track->keyframe_numbers[i];
 						if(frame == 0)
-							byte = track->frame_offsets[0];
+							byte = 0;
 						else
 							byte = track->frame_offsets[frame];
+
 						video->framenum = track->keyframe_numbers[i];
 
 						mpeg3bits_seek_byte(vstream, byte);
 
 
 // Get first 2 I-frames
+						video->framenum--;
 						if(byte == 0)
-						{
 							mpeg3video_get_firstframe(video);
-							mpeg3video_read_frame_backend(video, 0);
-						}
 
 					
-
 						video->repeat_count = 0;
 
 // Read up to current frame
