@@ -31,14 +31,16 @@ int main(int argc, char *argv[])
 	int audio_track = 0;
 /* Print cell offsets */
 	int print_offsets = 0;
-	int print_pids = 1;
+	int print_pids = 0;
 
 	outfile[0] = 0;
 	if(argc < 2)
 	{
 		printf(
-"Dump information or extract audio to a 24 bit pcm file.\n"
-"Example: dump -a0 outputfile.pcm take1.vob\n"
+"Usage: mpeg3dump [-o] [-p] [-a0 outputfile.pcm] take1.vob\n"
+"    -d - print offsets\n"
+"    -p - print pids\n"
+"    -a0 outputfile.pcm - extract audio to a 24 bit pcm file.\n"
 		);
 		exit(1);
 	}
@@ -71,6 +73,15 @@ int main(int argc, char *argv[])
 				fprintf(stderr, "%s exists.\n", outfile);
 				exit(1);
 			}
+			continue;
+		}
+		if(!strncmp(argv[i], "-o", 2)){
+			print_offsets = 1;
+			continue;
+		}
+		if(!strncmp(argv[i], "-p", 2)){
+			print_pids = 1;
+			continue;
 		}
 	}
 
@@ -92,11 +103,11 @@ int main(int argc, char *argv[])
 	{
 
 // Audio streams
-		fprintf(stderr, "total_astreams=%d\n", mpeg3_total_astreams(file));
+		printf("total_astreams=%d\n", mpeg3_total_astreams(file));
 
 		for(i = 0; i < mpeg3_total_astreams(file); i++)
 		{
-			fprintf(stderr, "  Stream 0x%04x: channels=%d rate=%d samples=%ld format=%s\n", 
+			printf("  Stream 0x%04x: channels=%d rate=%d samples=%ld format=%s\n", 
 				file->atrack[i]->demuxer->astream, 
 				mpeg3_audio_channels(file, i), 
 				mpeg3_sample_rate(file, i),
@@ -105,24 +116,24 @@ int main(int argc, char *argv[])
 			
 			if(print_offsets)
 			{
-				fprintf(stderr, "total_sample_offsets=%d\n", file->atrack[i]->total_sample_offsets);
+				printf("total_sample_offsets=%d\n", file->atrack[i]->total_sample_offsets);
 				for(j = 0; j < file->atrack[i]->total_sample_offsets; j++)
 				{
-					fprintf(stderr, "%llx ", file->atrack[i]->sample_offsets[j]);
-					if(j > 0 && !(j % 8)) fprintf(stderr, "\n");
+					printf("%llx ", file->atrack[i]->sample_offsets[j]);
+					if(j > 0 && !(j % 8)) printf("\n");
 				}
-				fprintf(stderr, "\n");
+				printf("\n");
 			}
 		}
 
 
 
 // Video streams
-		fprintf(stderr, "total_vstreams=%d\n", mpeg3_total_vstreams(file));
+		printf("total_vstreams=%d\n", mpeg3_total_vstreams(file));
 
 		for(i = 0; i < mpeg3_total_vstreams(file); i++)
 		{
-			fprintf(stderr, "  Stream 0x%04x: w=%d h=%d framerate=%0.3f frames=%ld coding=%s\n", 
+			printf("  Stream 0x%04x: w=%d h=%d framerate=%0.3f frames=%ld coding=%s\n", 
 				file->vtrack[i]->demuxer->vstream, 
 				mpeg3_video_width(file, i), 
 				mpeg3_video_height(file, i), 
@@ -132,10 +143,10 @@ int main(int argc, char *argv[])
 			
 			if(print_offsets)
 			{
-				fprintf(stderr, "total_frames = %d total_keyframes %d\n", file->vtrack[i]->total_frames, file->vtrack[i]->total_keyframes);
+				printf("total_frames = %d total_keyframes %d\n", file->vtrack[i]->total_frames, file->vtrack[i]->total_keyframes);
 				for(j = 0; j < file->vtrack[i]->total_keyframes; j++)
 				{
-					fprintf(stderr, "%08d %#08x\n", file->vtrack[i]->keyframes[j].number, file->vtrack[i]->keyframes[j].offset);
+					printf("%08lld %#08llx\n", file->vtrack[i]->keyframes[j].number, file->vtrack[i]->keyframes[j].offset);
 				}
 			}
 		}
@@ -153,16 +164,17 @@ int main(int argc, char *argv[])
 				for(j = 0; j < strack->total_offsets; j++)
 				{
 					printf("%llx ", strack->offsets[j]);
+					if(j > 0 && !(j % 8)) printf("\n");
 				}
 				printf("\n");
 			}
 		}
 
 // Titles
-		fprintf(stderr, "total_titles=%d\n", file->demuxer->total_titles);
+		printf("total_titles=%d\n", file->demuxer->total_titles);
 		for(i = 0; i < file->demuxer->total_titles; i++)
 		{
-			fprintf(stderr, "  Title path=%s total_bytes=%llx cell_table_size=%d\n", 
+			printf("  Title path=%s total_bytes=%llx cell_table_size=%d\n", 
 				file->demuxer->titles[i]->fs->path,
 				file->demuxer->titles[i]->total_bytes, 
 				file->demuxer->titles[i]->cell_table_size);
@@ -170,7 +182,7 @@ int main(int argc, char *argv[])
 			if(print_offsets)
 			{
 				for(j = 0; j < file->demuxer->titles[i]->cell_table_size; j++)
-					fprintf(stderr, "    Cell: %llx-%llx %llx-%llx program=%d\n", 
+					printf("    Cell: %llx-%llx %llx-%llx program=%d\n", 
 						file->demuxer->titles[i]->cell_table[j].program_start, 
 						file->demuxer->titles[i]->cell_table[j].program_end,
 						file->demuxer->titles[i]->cell_table[j].title_start, 
@@ -178,8 +190,14 @@ int main(int argc, char *argv[])
 						file->demuxer->titles[i]->cell_table[j].program);
 			}
 		}
-
-
+// Palette
+		printf("Palette\n");
+		for(i = 0; i < 16; i++){
+			printf("  %2d.", i);
+			for(j = 0; j < 4; j++)
+				printf(" %02x", file->palette[i * 4 + j]);
+			printf("\n");
+		}
 
 // Pids
 		if(print_pids)
