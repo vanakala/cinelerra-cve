@@ -134,19 +134,6 @@ int FileMPEG::check_sig(Asset *asset)
 	return mpeg3_check_sig(asset->path);
 }
 
-void FileMPEG::get_info(Asset *asset, int64_t *bytes, int *stracks)
-{
-	mpeg3_t *fd;
-
-	int error = 0;
-	if((fd = mpeg3_open(asset->path, &error)))
-	{
-		*bytes = mpeg3_get_bytes(fd);
-		*stracks = mpeg3_subtitle_tracks(fd);
-		mpeg3_close(fd);
-	}
-	return;
-}
 
 int FileMPEG::reset_parameters_derived()
 {
@@ -235,17 +222,41 @@ SET_TRACE
 			asset->video_data = mpeg3_has_video(fd);
 			if(asset->video_data)
 			{
+				int i;
 				asset->layers = mpeg3_total_vstreams(fd);
 				asset->width = mpeg3_video_width(fd, 0);
 				asset->height = mpeg3_video_height(fd, 0);
-				asset->interlace_mode = BC_ILACE_MODE_UNDETECTED; // TODO: (to do this, start at hvirtualcvs/libmpeg3/headers.c 
-				                                                  //        and find out how to decode info from the header)
+				asset->interlace_mode = BC_ILACE_MODE_UNDETECTED; 
+				if((i = mpeg3_video_interlacemode(fd, 0)) >= 0)
+				{
+					switch(i)
+					{
+					    case MPEG3_PROGRESSIVE:
+						i = BC_ILACE_MODE_NOTINTERLACED;
+						break;
+					    case MPEG3_BOTTOMFIRST:
+						i = BC_ILACE_MODE_BOTTOM_FIRST;
+						break;
+					    case MPEG3_TOPFIRST:
+						i = BC_ILACE_MODE_TOP_FIRST;
+						break;
+					    default:
+						i = BC_ILACE_MODE_UNDETECTED;
+						break;
+					}
+					asset->interlace_mode = i;
+				}    				
 				asset->video_length = mpeg3_video_frames(fd, 0);
 				asset->vmpeg_cmodel = 
 					(mpeg3_colormodel(fd, 0) == MPEG3_YUV422P) ? MPEG_YUV422 : MPEG_YUV420;
 				if(!asset->frame_rate)
 					asset->frame_rate = mpeg3_frame_rate(fd, 0);
+				if(asset->aspect_ratio < 0)
+					asset->aspect_ratio = mpeg3_aspect_ratio(fd, 0);
 
+				asset->file_length = mpeg3_get_bytes(fd);
+				asset->subtitles = mpeg3_subtitle_tracks(fd);
+		
 // Enable subtitles
 				if(file->playback_subtitle >= 0)
 					mpeg3_show_subtitle(fd, file->playback_subtitle);
@@ -511,8 +522,6 @@ SET_TRACE
 		
 	}
 
-
-//asset->dump();
 SET_TRACE
 	return result;
 }

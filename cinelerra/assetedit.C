@@ -88,7 +88,6 @@ void AssetEdit::run()
 		new_asset = new Asset(asset->path);
 		*new_asset = *asset;
 		int result = 0;
-
 		window = new AssetEditWindow(mwindow, this);
 		window->create_objects();
 		window->raise_window();
@@ -154,7 +153,7 @@ AssetEditWindow::AssetEditWindow(MWindow *mwindow, AssetEdit *asset_edit)
  	mwindow->gui->get_abs_cursor_x(1) - 400 / 2, 
 	mwindow->gui->get_abs_cursor_y(1) - 550 / 2, 
 	400, 
-	660,
+	680,
 	400,
 	560,
 	0,
@@ -217,12 +216,11 @@ int AssetEditWindow::create_objects()
 	y += 20;
 
 	int64_t bytes = 1;
-	int subtitle_tracks = 0;
 	if(asset->format == FILE_MPEG &&
 		asset->video_data)
 	{
-// Get length from TOC
-		FileMPEG::get_info(asset, &bytes, &subtitle_tracks);
+
+		bytes = asset->file_length;
 	}
 	else
 	{
@@ -427,16 +425,24 @@ int AssetEditWindow::create_objects()
 		
 		y += 30;
 		x = x1;
-		add_subwindow(new BC_Title(x, y, _("Width:")));
+		add_subwindow(new BC_Title(x, y, "Size:"));
 		x = x2;
-		sprintf(string, "%d", asset->width);
+		sprintf(string, "%d x %d", asset->width, asset->height);
 		add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
 		
 		y += vmargin;
+		if(asset->aspect_ratio > 0){
+			x = x1;
+			add_subwindow(new BC_Title(x, y, "Aspect:"));
+			x = x2;
+			sprintf(string, "%2.3f", asset->aspect_ratio);
+			add_subwindow(title = new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
+			y += title->get_h() + 5;
+		}
 		x = x1;
-		add_subwindow(new BC_Title(x, y, _("Height:")));
+		add_subwindow(new BC_Title(x, y, "Length:"));
 		x = x2;
-		sprintf(string, "%d", asset->height);
+		sprintf(string, "%lld", asset->video_length);
 		add_subwindow(title = new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
 		y += title->get_h() + 5;
 
@@ -445,7 +451,7 @@ int AssetEditWindow::create_objects()
 			x = x1;
 			add_subwindow(new BC_Title(x, y, _("Subtitle tracks:")));
 			x = x2;
-			sprintf(string, "%d", subtitle_tracks);
+			sprintf(string, "%d", asset->subtitles);
 			add_subwindow(title = new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
 			y += title->get_h() + 5;
 		}

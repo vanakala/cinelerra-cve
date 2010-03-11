@@ -219,6 +219,7 @@ void Asset::copy_location(Asset *asset)
 {
 	strcpy(this->path, asset->path);
 	strcpy(this->folder, asset->folder);
+	file_length = asset->file_length;
 }
 
 void Asset::copy_format(Asset *asset, int do_index)
@@ -250,7 +251,8 @@ void Asset::copy_format(Asset *asset, int do_index)
 	height = asset->height;
 	strcpy(vcodec, asset->vcodec);
 	strcpy(acodec, asset->acodec);
-
+	subtitles = asset->subtitles;
+ 
 	this->audio_length = asset->audio_length;
 	this->video_length = asset->video_length;
 
@@ -1252,17 +1254,21 @@ int Asset::set_timecode(char *tc, int format, int end)
 int Asset::dump()
 {
 	printf("  asset::dump\n");
-	printf("   %p %s\n", this, path);
+	printf("   this=%p %s\n", this, path);
 	printf("   index_status %d\n", index_status);
-	printf("   format %d\n", format);
-	printf("   audio_data %d channels %d samplerate %d bits %d byte_order %d signed %d header %d dither %d acodec %c%c%c%c\n",
-		audio_data, channels, sample_rate, bits, byte_order, signed_, header, dither, acodec[0], acodec[1], acodec[2], acodec[3]);
-	printf("   audio_length %lld\n", audio_length);
+	printf("   file format %s, length %lld\n", File::formattostr(format), file_length);
+	printf("   audio_data %d channels %d samplerate %d bits %d byte_order %d\n",
+		audio_data, channels, sample_rate, bits, byte_order);
+	printf("      signed %d header %d dither %d acodec %c%c%c%c length %lld\n",
+		signed_, header, dither, acodec[0], acodec[1], acodec[2], acodec[3], audio_length);
+
 	char string[BCTEXTLEN];
 	ilacemode_to_xmltext(string, interlace_mode);
-	printf("   video_data %d layers %d framerate %f width %d height %d vcodec %c%c%c%c aspect_ratio %f interlace_mode %s\n",
-	       video_data, layers, frame_rate, width, height, vcodec[0], vcodec[1], vcodec[2], vcodec[3], aspect_ratio, string);
-	printf("   video_length %lld \n", video_length);
+	printf("   video_data %d layers %d framerate %f width %d height %d\n",
+	       video_data, layers, frame_rate, width, height);
+	printf("      vcodec %c%c%c%c aspect_ratio %f interlace_mode %s\n",
+	      vcodec[0], vcodec[1], vcodec[2], vcodec[3], aspect_ratio, string);
+	printf("      length %lld subtitles %d\n", video_length, subtitles);
 	printf("   reel_name %s reel_number %i tcstart %d tcend %d tcf %d\n",
 		reel_name, reel_number, tcstart, tcend, tcformat);
 	

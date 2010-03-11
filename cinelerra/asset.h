@@ -125,6 +125,7 @@ public:
 
 // Path to file
 	char path[BCTEXTLEN];
+	int64_t file_length;
 
 // Pipe command
 	char pipe[BCTEXTLEN];
@@ -166,6 +167,8 @@ public:
 	int video_data;       
 	int layers;
 	double frame_rate;
+// number of mpeg2 subtitles
+	int subtitles;
 
 // Timecode information. User setable, in case of errors in source
 	char reel_name[BCTEXTLEN];
