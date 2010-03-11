@@ -35,9 +35,8 @@ dnl Check for Video4Linux2
 AH_TEMPLATE(HAVE_VIDEO4LINUX2, [Define to 1 if Video4Linux2 is available.])
 AC_CHECK_HEADER([linux/videodev2.h], 
 	[AC_CHECK_MEMBER(struct v4l2_buffer.index, [AC_DEFINE(HAVE_VIDEO4LINUX2)], [],
-  		[#include <linux/time.h>
-#include <linux/videodev2.h>])],
-	[],[#include <linux/time.h>] )
+		[#include <linux/videodev2.h>])],
+	[],[] )
 
 ############## SPECIAL DIRECTORIES
 AC_ARG_WITH(plugindir,
