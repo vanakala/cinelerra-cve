@@ -29,6 +29,10 @@ extern "C" {
 #define MPEG3_YUV420P 12
 #define MPEG3_YUV422P 13
 
+/* Intelace modes */
+#define MPEG3_PROGRESSIVE  0
+#define MPEG3_TOPFIRST     1
+#define MPEG3_BOTTOMFIRST  2
 
 /* Error codes for the error_return variable */
 #define MPEG3_UNDEFINED_ERROR 1
@@ -108,6 +112,7 @@ int mpeg3_video_width(mpeg3_t *file, int stream);
 int mpeg3_video_height(mpeg3_t *file, int stream);
 float mpeg3_aspect_ratio(mpeg3_t *file, int stream); /* aspect ratio.  0 if none */
 double mpeg3_frame_rate(mpeg3_t *file, int stream);  /* Frames/sec */
+int mpeg3_video_interlacemode(mpeg3_t *file, int stream);
 
 
 /* Total length.   */

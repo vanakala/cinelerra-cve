@@ -704,6 +704,20 @@ long mpeg3_video_frames(mpeg3_t *file,
 	return -1;
 }
 
+int mpeg3_video_interlacemode(mpeg3_t *file,
+		int stream)
+{
+	if(file->total_vstreams > stream)
+	{
+		if(file->vtrack[stream]->video->prog_seq)
+		    return MPEG3_PROGRESSIVE;
+		if(file->vtrack[stream]->video->topfirst)
+		    return MPEG3_TOPFIRST;
+		return MPEG3_BOTTOMFIRST;
+	}
+	return -1;
+}
+
 long mpeg3_get_frame(mpeg3_t *file,
 		int stream)
 {
