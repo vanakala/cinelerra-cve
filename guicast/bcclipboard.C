@@ -81,7 +81,7 @@ int BC_Clipboard::stop_clipboard()
 	ptr->message_type = completion_atom;
 	ptr->format = 32;
 	XSendEvent(out_display, out_win, 0, 0, &event);
-	XFlush(out_display);
+	XSync(out_display, False);
 	Thread::join();
 	return 0;
 }
