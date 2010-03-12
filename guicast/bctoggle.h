@@ -35,7 +35,7 @@ public:
 	BC_Toggle(int x, int y, 
 		VFrame **data,
 		int value, 
-		char *caption = "",
+		const char *caption = "",
 		int bottom_justify = 0,
 		int font = MEDIUMFONT,
 		int color = -1);

@@ -58,7 +58,7 @@ BC_Resources* BC_Theme::get_resources()
 
 
 // These create single images for storage in the image_sets table.
-VFrame* BC_Theme::new_image(char *title, char *path)
+VFrame* BC_Theme::new_image(const char *title, char *path)
 {
 	VFrame *existing_image = title[0] ? get_image(title, 0) : 0;
 	if(existing_image) return existing_image;
@@ -77,7 +77,7 @@ VFrame* BC_Theme::new_image(char *path)
 
 
 // These create image sets which are stored in the image_sets table.
-VFrame** BC_Theme::new_image_set(char *title, int total, va_list *args)
+VFrame** BC_Theme::new_image_set(const char *title, int total, va_list *args)
 {
 	VFrame **existing_image_set = title[0] ? get_image_set(title, 0) : 0;
 	if(existing_image_set) return existing_image_set;
@@ -111,7 +111,7 @@ VFrame** BC_Theme::new_image_set_images(char *title, int total, ...)
 	return result->data;
 }
 
-VFrame** BC_Theme::new_image_set(char *title, int total, ...)
+VFrame** BC_Theme::new_image_set(const char *title, int total, ...)
 {
 	va_list list;
 	va_start(list, total);
@@ -131,7 +131,7 @@ VFrame** BC_Theme::new_image_set(int total, ...)
 	return result;
 }
 
-VFrame* BC_Theme::get_image(char *title, int use_default)
+VFrame* BC_Theme::get_image(const char *title, int use_default)
 {
 	for(int i = 0; i < image_sets.total; i++)
 	{
@@ -158,7 +158,7 @@ VFrame* BC_Theme::get_image(char *title, int use_default)
 	return 0;
 }
 
-VFrame** BC_Theme::get_image_set(char *title, int use_default)
+VFrame** BC_Theme::get_image_set(const char *title, int use_default)
 {
 	for(int i = 0; i < image_sets.total; i++)
 	{
@@ -192,7 +192,7 @@ VFrame** BC_Theme::get_image_set(char *title, int use_default)
 	return 0;
 }
 
-BC_ThemeSet* BC_Theme::get_image_set_object(char *title)
+BC_ThemeSet* BC_Theme::get_image_set_object(const char *title)
 {
 	for(int i = 0; i < image_sets.total; i++)
 	{
@@ -500,7 +500,7 @@ return;
 
 
 
-BC_ThemeSet::BC_ThemeSet(int total, int is_reference, char *title)
+BC_ThemeSet::BC_ThemeSet(int total, int is_reference, const char *title)
 {
 	this->total = total;
 	this->title = new char[strlen(title) + 1];

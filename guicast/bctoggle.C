@@ -34,7 +34,7 @@
 BC_Toggle::BC_Toggle(int x, int y, 
 		VFrame **data, 
 		int value, 
-		char *caption,
+		const char *caption,
 		int bottom_justify, 
 		int font,
 		int color)

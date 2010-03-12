@@ -82,8 +82,8 @@ public:
 // If the title already exists in the table, the existing entry is returned.
 // These create image sets which are stored in the set table.
 // Takes comma delimited char* pointers to filenames.
-	VFrame** new_image_set(char *title, int total, va_list *args);
-	VFrame** new_image_set(char *title, int total, ...);
+	VFrame** new_image_set(const char *title, int total, va_list *args);
+	VFrame** new_image_set(const char *title, int total, ...);
 	VFrame** new_image_set(int total, ...);
 // Creates an image set from VFrame pointers.
 // The images are considered not references and deleted with the image set.
@@ -91,14 +91,14 @@ public:
 	VFrame** new_image_set_images(char *title, int total, ...);
 
 // Decompresses image and puts on images table before returning it.
-	VFrame* new_image(char *title, char *path);
+	VFrame* new_image(const char *title, char *path);
 	VFrame* new_image(char *path);
 
 
 // These retrieve images based on case sensitive title
-	VFrame* get_image(char *title, int use_default = 1);
-	VFrame** get_image_set(char *title, int use_default = 1);
-	BC_ThemeSet* get_image_set_object(char *title);
+	VFrame* get_image(const char *title, int use_default = 1);
+	VFrame** get_image_set(const char *title, int use_default = 1);
+	BC_ThemeSet* get_image_set_object(const char *title);
 
 // Loads compressed data into temporary
 	unsigned char* get_image_data(char *title);
@@ -133,7 +133,7 @@ class BC_ThemeSet
 {
 public:
 // Set is_reference if the images are going to be created by new_image
-	BC_ThemeSet(int total, int is_reference, char *title);
+	BC_ThemeSet(int total, int is_reference, const char *title);
 	~BC_ThemeSet();
 
 	VFrame **data;
