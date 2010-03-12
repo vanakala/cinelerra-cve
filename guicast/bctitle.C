@@ -27,7 +27,7 @@
 
 BC_Title::BC_Title(int x, 
 		int y, 
-		char *text, 
+		const char *text, 
 		int font, 
 		int color, 
 		int centered,

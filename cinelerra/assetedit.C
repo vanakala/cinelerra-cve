@@ -697,7 +697,7 @@ int AssetEditILaceautofixoption::handle_event()
 }
 
 
-AssetEditILacemode::AssetEditILacemode(AssetEditWindow *fwindow, char *text, int thedefault, int x, int y, int w)
+AssetEditILacemode::AssetEditILacemode(AssetEditWindow *fwindow, const char *text, int thedefault, int x, int y, int w)
  : BC_TextBox(x, y, w, 1, text)
 {
 	this->fwindow = fwindow;
@@ -751,7 +751,8 @@ char* AssetEditInterlacemodePulldown::interlacemode_to_text()
 	return (this->string);
 }
 
-AssetEditILacefixmethod::AssetEditILacefixmethod(AssetEditWindow *fwindow, char *text, int thedefault, int x, int y, int w)
+AssetEditILacefixmethod::AssetEditILacefixmethod(AssetEditWindow *fwindow, 
+	const char *text, int thedefault, int x, int y, int w)
  : BC_TextBox(x, y, w, 1, text)
 {
 	this->fwindow = fwindow;
@@ -845,7 +846,9 @@ int AssetEditPathText::handle_event()
 	return 1;
 }
 
-AssetEditPath::AssetEditPath(MWindow *mwindow, AssetEditWindow *fwindow, BC_TextBox *textbox, int y, char *text, char *window_title, char *window_caption)
+AssetEditPath::AssetEditPath(MWindow *mwindow, AssetEditWindow *fwindow, 
+    BC_TextBox *textbox, int y, const char *text, 
+    const char *window_title, const char *window_caption)
  : BrowseButton(mwindow, fwindow, textbox, 310, y, text, window_title, window_caption, 0) 
 { 
 	this->fwindow = fwindow; 

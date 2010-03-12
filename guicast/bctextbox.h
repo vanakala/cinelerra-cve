@@ -39,7 +39,7 @@ public:
 		int y, 
 		int w, 
 		int rows, 
-		char *text, 
+		const char *text, 
 		int has_border = 1, 
 		int font = MEDIUMFONT);
 	BC_TextBox(int x, 

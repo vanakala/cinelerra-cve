@@ -200,9 +200,9 @@ class BC_FileBox : public BC_Window
 public:
 	BC_FileBox(int x, 
 		int y,
-		char *init_path,
-		char *title,
-		char *caption,
+		const char *init_path,
+		const char *title,
+		const char *caption,
 // Set to 1 to get hidden files. 
 		int show_all_files = 0,
 // Want only directories

@@ -31,7 +31,7 @@ class BC_Title : public BC_SubWindow
 public:
 	BC_Title(int x, 
 		int y, 
-		char *text, 
+		const char *text, 
 		int font = MEDIUMFONT, 
 		int color = -1, 
 		int centered = 0,

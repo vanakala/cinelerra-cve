@@ -419,9 +419,9 @@ int BC_FileBoxReload::handle_event()
 
 BC_FileBox::BC_FileBox(int x, 
 		int y, 
-		char *init_path,
-		char *title,
-		char *caption,
+		const char *init_path,
+		const char *title,
+		const char *caption,
 		int show_all_files,
 		int want_directory,
 		int multiple_files,

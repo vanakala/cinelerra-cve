@@ -82,8 +82,8 @@ public:
 		int do_path,
 		int do_data_types,
 		int do_bits);
-	char* construct_param(char *param, char *prefix, char *return_value);
-
+	char* construct_param(const char *param, const char *prefix, 
+		char *return_value);
 
 
 
@@ -110,7 +110,7 @@ public:
 // It is a "" if; complete names should be used.
 	int write(FileXML *file, 
 		int include_index, 
-		char *output_path);
+		const char *output_path);
 // Write the index data and asset info.  Used by IndexThread.
 	int write_index(char *path, int data_bytes);
 

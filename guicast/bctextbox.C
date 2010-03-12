@@ -44,7 +44,7 @@ BC_TextBox::BC_TextBox(int x,
 	int y, 
 	int w, 
 	int rows, 
-	char *text, 
+	const char *text, 
 	int has_border, 
 	int font)
  : BC_SubWindow(x, y, w, 0, -1)

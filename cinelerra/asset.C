@@ -714,7 +714,7 @@ int Asset::write_index(char *path, int data_bytes)
 
 int Asset::write(FileXML *file, 
 	int include_index, 
-	char *output_path)
+	const char *output_path)
 {
 	char new_path[BCTEXTLEN];
 	char asset_directory[BCTEXTLEN];
@@ -901,7 +901,7 @@ int Asset::write_index(FileXML *file)
 
 
 
-char* Asset::construct_param(char *param, char *prefix, char *return_value)
+char* Asset::construct_param(const char *param, const char *prefix, char *return_value)
 {
 	if(prefix)
 		sprintf(return_value, "%s%s", prefix, param);
@@ -1269,7 +1269,7 @@ int Asset::dump()
 	printf("      vcodec %c%c%c%c aspect_ratio %f interlace_mode %s\n",
 	      vcodec[0], vcodec[1], vcodec[2], vcodec[3], aspect_ratio, string);
 	printf("      length %lld subtitles %d\n", video_length, subtitles);
-	printf("   reel_name %s reel_number %i tcstart %d tcend %d tcf %d\n",
+	printf("   reel_name %s reel_number %i tcstart %lld tcend %lld tcf %d\n",
 		reel_name, reel_number, tcstart, tcend, tcformat);
 	
 	return 0;

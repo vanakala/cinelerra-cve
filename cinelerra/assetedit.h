@@ -88,9 +88,9 @@ public:
 		AssetEditWindow *fwindow, 
 		BC_TextBox *textbox, 
 		int y, 
-		char *text, 
-		char *window_title = _(PROGRAM_NAME " Path"), 
-		char *window_caption = _("Select a file"));
+		const char *text, 
+		const char *window_title = _(PROGRAM_NAME " Path"), 
+		const char *window_caption = _("Select a file"));
 	~AssetEditPath();
 	
 	AssetEditWindow *fwindow;
@@ -183,7 +183,8 @@ public:
 class AssetEditILacemode : public BC_TextBox
 {
 public:
-	AssetEditILacemode(AssetEditWindow *fwindow, char *text, int thedefault, int x, int y, int w);
+	AssetEditILacemode(AssetEditWindow *fwindow, const char *text, 
+		int thedefault, int x, int y, int w);
 	int handle_event();
 	int thedefault;	
 	AssetEditWindow *fwindow;
@@ -212,8 +213,8 @@ private:
 class AssetEditILacefixmethod : public BC_TextBox
 {
 public:
-	AssetEditILacefixmethod(AssetEditWindow *fwindow, char *text, int thedefault, int x, int y, int w);
-	
+	AssetEditILacefixmethod(AssetEditWindow *fwindow, 
+		const char *text, int thedefault, int x, int y, int w);
 	int handle_event();
 	int thedefault;
 	AssetEditWindow *fwindow;

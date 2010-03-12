@@ -37,9 +37,9 @@ public:
 		BC_TextBox *textbox, 
 		int x, 
 		int y, 
-		char *init_directory, 
-		char *title, 
-		char *caption, 
+		const char *init_directory, 
+		const char *title, 
+		const char *caption, 
 		int want_directory = 0,
 		const char *recent_prefix = NULL);
 	~BrowseButton();
@@ -48,9 +48,9 @@ public:
 	void run();
 	int want_directory;
 	char result[1024];
-	char *title;
-	char *caption;
-	char *init_directory;
+	const char *title;
+	const char *caption;
+	const char *init_directory;
 	BC_TextBox *textbox;
 	MWindow *mwindow;
 	BC_WindowBase *parent_window;
@@ -66,9 +66,9 @@ public:
 	BrowseButtonWindow(MWindow *mwindow,
 		BrowseButton *button,
 		BC_WindowBase *parent_window, 
-		char *init_directory, 
-		char *title, 
-		char *caption, 
+		const char *init_directory, 
+		const char *title, 
+		const char *caption, 
 		int want_directory);
 	~BrowseButtonWindow();
 };
