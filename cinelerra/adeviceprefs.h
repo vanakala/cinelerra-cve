@@ -123,7 +123,7 @@ public:
 class ADriverItem : public BC_MenuItem
 {
 public:
-	ADriverItem(ADriverMenu *popup, char *text, int driver);
+	ADriverItem(ADriverMenu *popup, const char *text, int driver);
 	~ADriverItem();
 	int handle_event();
 	ADriverMenu *popup;

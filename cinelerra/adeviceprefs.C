@@ -607,7 +607,7 @@ char* ADriverMenu::adriver_to_string(int driver)
 	return string;
 }
 
-ADriverItem::ADriverItem(ADriverMenu *popup, char *text, int driver)
+ADriverItem::ADriverItem(ADriverMenu *popup, const char *text, int driver)
  : BC_MenuItem(text)
 {
 	this->popup = popup;

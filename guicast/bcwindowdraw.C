@@ -102,7 +102,7 @@ void BC_WindowBase::clear_box(int x, int y, int w, int h, BC_Pixmap *pixmap)
 
 void BC_WindowBase::draw_text(int x, 
 	int y, 
-	char *text, 
+	const char *text, 
 	int length, 
 	BC_Pixmap *pixmap)
 {

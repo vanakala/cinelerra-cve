@@ -34,7 +34,7 @@
 class BC_MenuItem
 {
 public:
-	BC_MenuItem(char *text, char *hotkey_text = "", int hotkey = 0);
+	BC_MenuItem(const char *text, const char *hotkey_text = "", int hotkey = 0);
 	virtual ~BC_MenuItem();
 
 	friend class BC_MenuPopup;
@@ -43,11 +43,11 @@ public:
 	int add_submenu(BC_SubMenu *submenu);
 	int set_checked(int value);
 	int get_checked();
-	void set_text(char *text);
+	void set_text(const char *text);
 	char* get_text();
 	void set_icon(BC_Pixmap *icon);
 	BC_Pixmap* get_icon();
-	void set_hotkey_text(char *text);
+	void set_hotkey_text(const char *text);
 	int set_shift(int value = 1);
 	int set_alt(int value = 1);
 

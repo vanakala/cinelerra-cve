@@ -130,13 +130,13 @@ public:
 	BC_CheckBox(int x, 
 		int y, 
 		int value, 
-		char *caption = "", 
+		const char *caption = "", 
 		int font = MEDIUMFONT,
 		int color = -1);
 	BC_CheckBox(int x, 
 		int y, 
 		int *value, 
-		char *caption = "", 
+		const char *caption = "", 
 		int font = MEDIUMFONT,
 		int color = -1);
 	virtual int handle_event();
