@@ -28,10 +28,10 @@
 class Mutex
 {
 public:
-	Mutex(char *title = 0, int recursive = 0);
+	Mutex(const char *title = 0, int recursive = 0);
 	~Mutex();
 
-	int lock(char *location = 0);
+	int lock(const char *location = 0);
 	int unlock();
 // Calls pthread_mutex_trylock, whose effect depends on library version.
 	int trylock();
@@ -49,7 +49,7 @@ public:
 // Lock the variables for recursive locking.
 	pthread_mutex_t recursive_lock;
 	pthread_mutex_t mutex;
-	char *title;
+	const char *title;
 };
 
 

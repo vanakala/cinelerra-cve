@@ -24,7 +24,7 @@
 #endif
 #include "mutex.h"
 
-Mutex::Mutex(char *title, int recursive)
+Mutex::Mutex(const char *title, int recursive)
 {
 	this->title = title;
 	pthread_mutexattr_t attr;
@@ -46,7 +46,7 @@ Mutex::~Mutex()
 #endif
 }
 	
-int Mutex::lock(char *location)
+int Mutex::lock(const char *location)
 {
 // Test recursive owner and give up if we already own it
 	if(recursive)

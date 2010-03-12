@@ -236,7 +236,7 @@ public:
 	void flush();
 	void sync_display();
 // Lock out other threads
-	int lock_window(char *location = 0);
+	int lock_window(const char *location = 0);
 	int unlock_window();
 	int get_window_lock();
 
