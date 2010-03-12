@@ -104,7 +104,7 @@ int main(int argc, char *argv[])
 			int64_t elapsed_seconds = current_time.tv_sec - start_time.tv_sec;
 			int64_t total_seconds = elapsed_seconds * total_bytes / bytes_processed;
 			int64_t eta = total_seconds - elapsed_seconds;
-			fprintf(stderr, "%lld%% ETA: %dm%ds        \r", 
+			fprintf(stderr, "%lld%% ETA: %lldm%02llds        \r", 
 				bytes_processed * 100 / total_bytes,
 				eta / 60,
 				eta % 60);
@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
 	int64_t elapsed = current_time.tv_sec - start_time.tv_sec;
 	if(verbose)
 	{
-		fprintf(stderr, "%dm%ds elapsed           \n", 
+		fprintf(stderr, "%lldm%02llds elapsed           \n", 
 			elapsed / 60,
 			elapsed % 60);
 	}
