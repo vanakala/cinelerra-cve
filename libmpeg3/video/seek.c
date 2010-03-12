@@ -194,9 +194,10 @@ int mpeg3_rewind_video(mpeg3video_t *video)
 	mpeg3_vtrack_t *track = video->track;
 	mpeg3_bits_t *vstream = video->vstream;
 
-	if(track->keyframes)
+	if(track->keyframes){
 		mpeg3bits_seek_byte(vstream, track->keyframes[0].offset);
-	else
+		video->framenum = track->keyframes[0].number;
+	} else
 		mpeg3bits_seek_byte(vstream, 0);
 
 	return 0;
@@ -226,7 +227,7 @@ int mpeg3video_seek(mpeg3video_t *video)
 		byte = video->byte_seek;
 		video->byte_seek = -1;
 		mpeg3demux_seek_byte(demuxer, byte);
-
+printf("mpeg3video_seek: byte: %#llx\n", byte);
 // Rewind 2 I-frames
 		if(byte > 0)
 		{
@@ -296,12 +297,10 @@ int mpeg3video_seek(mpeg3video_t *video)
 	if(video->frame_seek >= 0)
 	{
 
-		frame_number = video->frame_seek;
+		frame_number = video->frame_seek + video->baseframe;
 		video->frame_seek = -1;
-		if(frame_number < 0) frame_number = 0;
 		if(frame_number > video->maxframe) frame_number = video->maxframe;
 
-//printf("mpeg3video_seek 1 %ld %ld\n", frame_number, video->framenum);
 
 /* Seek to I frame in table of contents. */
 /* Determine time between seek position and previous subtitle. */

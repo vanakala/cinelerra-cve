@@ -60,17 +60,24 @@ int mpeg3_delete_atrack(mpeg3_t *file, mpeg3_atrack_t *atrack)
 	return 0;
 }
 
-void mpeg3_append_samples(mpeg3_atrack_t *atrack, int64_t offset)
+void mpeg3_append_samples(mpeg3_atrack_t *atrack, int flush)
 {
+	if(!flush && atrack->track_samples - atrack->toc_samples < (MPEG3_AUDIO_CHUNKSIZE/2))
+		return;
+
+	atrack->toc_samples = atrack->track_samples;
 	if(atrack->total_sample_offsets >= atrack->sample_offsets_allocated)
 	{
 		atrack->sample_offsets_allocated = 
 			MAX(atrack->total_sample_offsets * 2, 1024);
 		atrack->sample_offsets = realloc(atrack->sample_offsets,
-			sizeof(int64_t) * atrack->sample_offsets_allocated);
+			sizeof(mpeg3tocitem_t) * atrack->sample_offsets_allocated);
 	}
-	atrack->sample_offsets[atrack->total_sample_offsets++] =
-		offset;
+	atrack->sample_offsets[atrack->total_sample_offsets].number =
+		atrack->track_samples;
+	atrack->sample_offsets[atrack->total_sample_offsets].offset =
+		atrack->pkt_offset;
+	atrack->total_sample_offsets++;
 	atrack->private_offsets = 1;
 }
 

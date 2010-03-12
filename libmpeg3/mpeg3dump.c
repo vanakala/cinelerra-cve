@@ -38,7 +38,7 @@ int main(int argc, char *argv[])
 	{
 		printf(
 "Usage: mpeg3dump [-o] [-p] [-a0 outputfile.pcm] take1.vob\n"
-"    -d - print offsets\n"
+"    -o - print offsets\n"
 "    -p - print pids\n"
 "    -a0 outputfile.pcm - extract audio to a 24 bit pcm file.\n"
 		);
@@ -119,8 +119,7 @@ int main(int argc, char *argv[])
 				printf("total_sample_offsets=%d\n", file->atrack[i]->total_sample_offsets);
 				for(j = 0; j < file->atrack[i]->total_sample_offsets; j++)
 				{
-					printf("%llx ", file->atrack[i]->sample_offsets[j]);
-					if(j > 0 && !(j % 8)) printf("\n");
+					printf("%08lld %#08llx\n", file->atrack[i]->sample_offsets[j].number, file->atrack[i]->sample_offsets[j].offset);
 				}
 				printf("\n");
 			}

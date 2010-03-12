@@ -77,7 +77,7 @@ void mpeg3_append_frame(mpeg3_vtrack_t *vtrack, int64_t offset, int is_keyframe)
 			vtrack->keyframes_allocated = 
 			    MAX(vtrack->total_keyframes * 2, 1024);
 			vtrack->keyframes = realloc(vtrack->keyframes,
-			    sizeof(mpeg3keyframe_t) * vtrack->keyframes_allocated);
+			    sizeof(mpeg3tocitem_t) * vtrack->keyframes_allocated);
 		}
 		vtrack->keyframes[vtrack->total_keyframes].offset = offset;
 		vtrack->keyframes[vtrack->total_keyframes++].number = 

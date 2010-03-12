@@ -23,7 +23,7 @@
 
 #define MPEG3_TOC_PREFIX                 0x544f4320
 // This decreases with every new version
-#define MPEG3_TOC_VERSION                0x000010fa
+#define MPEG3_TOC_VERSION                0x000011fa
 #define MPEG3_ID3_PREFIX                 0x494433
 #define MPEG3_IFO_PREFIX                 0x44564456
 #define MPEG3_IO_SIZE                    0x100000     /* Bytes read by mpeg3io at a time */
@@ -625,6 +625,14 @@ typedef struct
 	int framesize;
 } mpeg3_pcm_t;
 
+// Item in TOC
+typedef struct
+{
+    int64_t number;
+    int64_t offset;
+}mpeg3tocitem_t;
+
+
 
 
 
@@ -719,7 +727,7 @@ typedef struct
 /* Pointer to master table of contents when the TOC is read. */
 /* Pointer to private table when the TOC is being created */
 /* Stores the absolute byte of each audio chunk */
-	int64_t *sample_offsets;
+	mpeg3tocitem_t *sample_offsets;
 	int total_sample_offsets;
 	int sample_offsets_allocated;
 /* If this sample offset table must be deleted by the track */
@@ -730,8 +738,11 @@ typedef struct
 
 
 
-/* Starting byte of previous packet for making TOC */
-	int64_t prev_offset;
+/* Starting byte of packet for making TOC */
+	int64_t pkt_offset;
+	int64_t toc_samples;
+/* Decoded samples for doc */
+	int64_t track_samples;
 
 } mpeg3_atrack_t;
 
@@ -910,6 +921,7 @@ typedef struct
 	pthread_mutex_t test_lock;
 
 	int blockreadsize;
+	int baseframe;        /* Number of first keyframe */
 	int maxframe;         /* Max value of frame num to read */
 	int64_t byte_seek;   /* Perform absolute byte seek before the next frame is read */
 	int frame_seek;        /* Perform a frame seek before the next frame is read */
@@ -978,13 +990,6 @@ typedef struct
 
 
 
-typedef struct
-{
-    int64_t number;
-    int64_t offset;
-}mpeg3keyframe_t;
-
-
 
 
 
@@ -1009,7 +1014,7 @@ typedef struct
 /* Pointer to master table of contents when the TOC is read. */
 /* Pointer to private table when the TOC is being created */
 /* Keyframe number and offset */
-	mpeg3keyframe_t *keyframes;  
+	mpeg3tocitem_t *keyframes;  
 	int total_keyframes;
 	int keyframes_allocated;
 /* Starting byte of previous packet for making TOC */
@@ -1067,6 +1072,8 @@ typedef struct
 {
 /* Store entry path here */
 	mpeg3_fs_t *fs;
+/* Nothing before this point */
+	int64_t	base_offset;
 /* Master title tables copied to all tracks */
 	mpeg3_demuxer_t *demuxer;        
 
@@ -1079,12 +1086,12 @@ typedef struct
 	mpeg3_strack_t *strack[MPEG3_MAX_STREAMS];
 
 /* Table of contents storage */
-	int64_t **sample_offsets;
+	mpeg3tocitem_t **sample_offsets;
 	int64_t *video_eof;
 	int64_t *audio_eof;
 	int *total_sample_offsets;
 	int64_t *total_samples;
-	mpeg3keyframe_t **keyframes;
+	mpeg3tocitem_t **keyframes;
 	int *total_keyframes;
 	int *total_frames;	
 /* Handles changes in channel count after the start of a stream */

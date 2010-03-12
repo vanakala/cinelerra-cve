@@ -24,7 +24,8 @@ static int rewind_audio(mpeg3audio_t *audio)
 {
 	mpeg3_atrack_t *track = audio->track;
 	if(track->sample_offsets)
-		mpeg3demux_seek_byte(track->demuxer, track->sample_offsets[0]);
+		mpeg3demux_seek_byte(track->demuxer, 
+			track->sample_offsets[0].offset);
 	else
 		mpeg3demux_seek_byte(track->demuxer, 0);
 	return 0;
@@ -274,7 +275,6 @@ static int read_frame(mpeg3audio_t *audio, int render)
 					audio->framesize,
 					temp_output,
 					render);
-//printf("read_frame %d\n", samples);
 				break;
 
 			case AUDIO_MPEG:
@@ -313,7 +313,6 @@ static int read_frame(mpeg3audio_t *audio, int render)
 		}
 	}
 
-
 	audio->output_size += samples;
 
 // Liba52 is not reentrant
@@ -324,7 +323,7 @@ static int read_frame(mpeg3audio_t *audio, int render)
 
 
 // Shift demuxer data
-	if(!file->seekable) 
+	if(!file->seekable && samples) 
 		mpeg3demux_shift_data(track->demuxer, track->demuxer->data_position);
 
 	return samples;
@@ -546,14 +545,6 @@ static int seek(mpeg3audio_t *audio)
 	if(audio->sample_seek >= 0)
 	{
 
-/*
- * printf(__FUNCTION__ " 1 %d %d %d %d\n", 
- * audio->sample_seek, 
- * track->current_position,
- * audio->output_position, 
- * audio->output_position + audio->output_size);
- */
-
 /* Don't do anything if the destination is inside the sample buffer */
 		if(audio->sample_seek >= audio->output_position &&
 			audio->sample_seek <= audio->output_position + audio->output_size)
@@ -566,16 +557,18 @@ static int seek(mpeg3audio_t *audio)
 		{
 			int index;
 			int64_t byte;
-
-			index = audio->sample_seek / MPEG3_AUDIO_CHUNKSIZE;
-			if(index >= track->total_sample_offsets) index = track->total_sample_offsets - 1;
-			byte = track->sample_offsets[index];
-
-			mpeg3demux_seek_byte(demuxer, byte);
-
-			audio->output_position = index * MPEG3_AUDIO_CHUNKSIZE;
-			audio->output_size = 0;
-			seeked = 1;
+			int i;
+			
+			for(i = track->total_sample_offsets - 1; i >= 0; i--){
+				if(track->sample_offsets[i].number <= audio->sample_seek){
+					byte = track->sample_offsets[i].offset;
+					mpeg3demux_seek_byte(demuxer, byte);
+					audio->output_position = track->sample_offsets[i].number;
+					audio->output_size = 0;
+					seeked = 1;
+					break;
+				}
+			}
 		}
 		else
 		if(!file->is_audio_stream)
@@ -798,13 +791,12 @@ int mpeg3audio_decode_audio(mpeg3audio_t *audio,
 	mpeg3_atrack_t *track = audio->track;
 	int i, j, k;
 	int try = 0;
-/* Always render since now the TOC contains index files. */
-	int render = 1;
 	long new_size;
-
+	int dpos;
+	int samples;
 
 /* Minimum amount of data must be present for streaming mode */
-	if(!file->seekable && 
+	if(!file->seekable && !file->toc_fd &&
 		track->demuxer->data_size < MPEG3_AUDIO_STREAM_SIZE) return 1;
 
 
@@ -852,21 +844,19 @@ int mpeg3audio_decode_audio(mpeg3audio_t *audio,
 	{
 		if(audio->output_position + audio->output_size >= 
 			track->current_position + len ||
-			try >= 256 ||
 			mpeg3demux_eof(track->demuxer)) break;
 
-
-
-		if(!file->seekable && 
+		if(!file->seekable && !file->toc_fd &&
 			track->demuxer->data_size < 
 			MPEG3_AUDIO_STREAM_SIZE) break;
 
-		int samples = read_frame(audio, render);
-
-		if(!samples)
-			try++;
-		else
-			try = 0;
+		dpos = track->demuxer->data_position;
+		samples = read_frame(audio, 1);
+		track->track_samples += samples;
+		if(!samples){
+			track->demuxer->data_position = dpos;
+			break;
+		}
 	}
 
 

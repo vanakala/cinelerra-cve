@@ -50,7 +50,7 @@ mpeg3_atrack_t* mpeg3_new_atrack(mpeg3_t *file,
 	int number);
 int mpeg3_delete_atrack(mpeg3_t *file, mpeg3_atrack_t *atrack);
 
-void mpeg3_append_samples(mpeg3_atrack_t *atrack, int64_t offset);
+void mpeg3_append_samples(mpeg3_atrack_t *atrack, int flush);
 
 
 /* These return 1 on failure and 0 on success */

@@ -7,6 +7,7 @@
 #include <string.h>
 #include <sys/stat.h>
 
+int64_t base_offs;
 
 
 #define PUT_INT32(x) \
@@ -253,10 +254,11 @@ const int debug = 0;
 					file->total_samples[i] = read_int64(buffer, &position);
 
 					if(file->total_samples[i] < 1) file->total_samples[i] = 1;
-					file->sample_offsets[i] = malloc(file->total_sample_offsets[i] * sizeof(int64_t));
+					file->sample_offsets[i] = malloc(file->total_sample_offsets[i] * sizeof(mpeg3tocitem_t));
 					for(j = 0; j < file->total_sample_offsets[i]; j++)
 					{
-						file->sample_offsets[i][j] = read_int64(buffer, &position);
+						file->sample_offsets[i][j].number = read_int64(buffer, &position);
+						file->sample_offsets[i][j].offset = read_int64(buffer, &position);
 					}
 
 					mpeg3_index_t *index = file->indexes[i] = mpeg3_new_index();
@@ -442,19 +444,20 @@ if(debug) printf("mpeg3_read_toc 30\n");
 				*vtracks_return);
 			    file->total_frames = malloc(sizeof(int *) * *vtracks_return);
 			    file->video_eof = calloc(sizeof(int64_t), *vtracks_return);
-			    file->keyframes = malloc(sizeof(mpeg3keyframe_t *) * *vtracks_return);
+			    file->keyframes = malloc(sizeof(mpeg3tocitem_t *) * *vtracks_return);
 			    
 			    for(i = 0; i < *vtracks_return; i++)
 			    {
 				    file->video_eof[i] = read_int64(buffer, &position);
 				    file->total_frames[i] = read_int32(buffer, &position);
 				    file->total_keyframes[i] = read_int32(buffer, &position);
-				    file->keyframes[i] = malloc(file->total_keyframes[i] * sizeof(mpeg3keyframe_t));
+				    file->keyframes[i] = malloc(file->total_keyframes[i] * sizeof(mpeg3tocitem_t));
 				    for(j = 0; j < file->total_keyframes[i]; j++)
 				    {
 					    file->keyframes[i][j].number = read_int64(buffer, &position);
 					    file->keyframes[i][j].offset = read_int64(buffer, &position);
 				    }
+				    file->total_frames[i] -= file->keyframes[i][0].number;
 			    }
 			    break;
 		}
@@ -482,7 +485,7 @@ if(debug) printf("mpeg3_read_toc 100\n");
 }
 
 
-mpeg3_t* mpeg3_start_toc(char *path, char *toc_path, int64_t *total_bytes)
+static mpeg3_t* mpeg3_start_toc_exec(char *path, char *toc_path, int64_t *total_bytes)
 {
 	*total_bytes = 0;
 	mpeg3_t *file = mpeg3_new(path);
@@ -526,7 +529,7 @@ mpeg3_t* mpeg3_start_toc(char *path, char *toc_path, int64_t *total_bytes)
 		title = file->demuxer->titles[0] = mpeg3_new_title(file, file->fs->path);
 		file->demuxer->total_titles = 1;
 		mpeg3demux_open_title(file->demuxer, 0);
-		title->total_bytes = mpeg3io_total_bytes(title->fs);
+		title->total_bytes = mpeg3io_total_bytes(title->fs) - base_offs;
 		title->start_byte = 0;
 		title->end_byte = title->total_bytes;
 		mpeg3_new_cell(title, 
@@ -537,14 +540,41 @@ mpeg3_t* mpeg3_start_toc(char *path, char *toc_path, int64_t *total_bytes)
 			0);
 	}
 
-//	mpeg3demux_seek_byte(file->demuxer, 0x1734e4800LL);
-	mpeg3demux_seek_byte(file->demuxer, 0);
+	mpeg3demux_seek_byte(file->demuxer, base_offs);
 	file->demuxer->read_all = 1;
+	file->base_offset = base_offs;
+	base_offs = 0;
 	*total_bytes = mpeg3demux_movie_size(file->demuxer);
 
-//*total_bytes = 500000000;
 	return file;
 }
+
+mpeg3_t* mpeg3_start_toc(char *path, char *toc_path, int64_t *total_bytes)
+{
+	mpeg3_t *file;
+	int64_t bytes;
+	int i;
+
+	file = mpeg3_start_toc_exec(path, toc_path, total_bytes);
+	if(file->is_program_stream){
+		for(;;){
+			mpeg3_do_toc(file, &bytes);
+			for(i = 0; i < file->total_vstreams; i++){
+				if(file->vtrack[i]->total_keyframes){
+					if(file->vtrack[i]->keyframes[0].number){
+						base_offs = file->vtrack[i]->keyframes[0].offset;
+						fclose(file->toc_fd);
+						mpeg3io_close_file(file->fs);
+						mpeg3_delete(file);
+						file = mpeg3_start_toc_exec(path, toc_path, total_bytes);
+					}
+					return file;
+				}
+			}
+		}
+	}
+}
+
 
 void mpeg3_set_index_bytes(mpeg3_t *file, int64_t bytes)
 {
@@ -701,12 +731,6 @@ int mpeg3_update_index(mpeg3_t *file,
 
 // Shift audio buffer
 		mpeg3_shift_audio(atrack->audio, fragment);
-
-
-// Create new toc entry
-		mpeg3_append_samples(atrack, atrack->prev_offset);
-		
-
 		atrack->current_position += fragment;
 	}
 
@@ -729,7 +753,6 @@ static int handle_audio(mpeg3_t *file,
 
 // Assume last packet of stream
 	atrack->audio_eof = mpeg3demux_tell_byte(file->demuxer);
-
 // Append demuxed data to track buffer
 	if(file->demuxer->audio_size)
 		mpeg3demux_append_data(atrack->demuxer,
@@ -740,25 +763,6 @@ static int handle_audio(mpeg3_t *file,
 		mpeg3demux_append_data(atrack->demuxer,
 			file->demuxer->data_buffer,
 			file->demuxer->data_size);
-
-/*
- * if(file->demuxer->pid == 0x1100) printf("handle_audio %p %d %d\n", 
- * file->demuxer->pid,
- * file->demuxer->audio_size, 
- * file->demuxer->data_size);
- */
-
-/*
- * if(atrack->pid == 0x1100)
- * {
- * static FILE *test = 0;
- * if(!test) test = fopen("/hmov/test.ac3", "w");
- * fwrite(file->demuxer->audio_buffer,
- * file->demuxer->audio_size,
- * 1,
- * test);
- * }
- */
 
 // Decode samples
 	mpeg3audio_decode_audio(atrack->audio, 
@@ -947,14 +951,11 @@ int mpeg3_do_toc(mpeg3_t *file, int64_t *bytes_processed)
 				mpeg3_atrack_t *atrack = file->atrack[i];
 				if(custom_id == atrack->pid)
 				{
-/*
- * printf("mpeg3_do_toc 2 offset=0x%llx pid=0x%x\n", 
- * start_byte, 
- * atrack->pid);
- */
 // Update an audio track
+					atrack->pkt_offset = start_byte;
+					mpeg3_append_samples(atrack, 0);
 					handle_audio(file, i);
-					atrack->prev_offset = start_byte;
+
 					got_it = 1;
 					break;
 				}
@@ -983,10 +984,10 @@ int mpeg3_do_toc(mpeg3_t *file, int64_t *bytes_processed)
 
 
 					file->total_astreams++;
+					atrack->pkt_offset = start_byte;
 // Make the first offset correspond to the start of the first packet.
-					mpeg3_append_samples(atrack, start_byte);
+					mpeg3_append_samples(atrack, 1);
 					handle_audio(file, file->total_astreams - 1);
-					atrack->prev_offset = start_byte;
 				}
 			}
 
@@ -1056,7 +1057,7 @@ void mpeg3_stop_toc(mpeg3_t *file)
 	for(i = 0; i < file->total_astreams; i++)
 	{
 		mpeg3_atrack_t *atrack = file->atrack[i];
-		mpeg3_append_samples(atrack, atrack->prev_offset);
+		mpeg3_append_samples(atrack, 1);
 	}
 
 // Flush audio indexes
@@ -1232,7 +1233,8 @@ void mpeg3_stop_toc(mpeg3_t *file)
 		for(i = 0; i < atrack->total_sample_offsets; i++)
 		{
 //printf("Audio sample %d offset %#llx\n", i, atrack->sample_offsets[i]);
-			PUT_INT64(atrack->sample_offsets[i]);
+			PUT_INT64(atrack->sample_offsets[i].number);
+			PUT_INT64(atrack->sample_offsets[i].offset);
 		}
 
 // Index

@@ -413,8 +413,9 @@ mpeg3video_t* mpeg3video_new(mpeg3_t *file,
 			track->height = video->vertical_size;
 			track->frame_rate = video->frame_rate;
 			track->aspect_ratio = video->aspect_ratio;
-
-			video->maxframe = track->total_frames;
+			if(track->keyframes)
+				video->baseframe = track->keyframes[0].number;
+			video->maxframe = track->total_frames + video->baseframe;
 			video->repeat_count = 0;
 			mpeg3_rewind_video(video);
 			mpeg3video_get_firstframe(video);
