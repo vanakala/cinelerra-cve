@@ -23,7 +23,7 @@
 #include "bcwindowbase.h"
 #include <string.h>
 
-BC_Clipboard::BC_Clipboard(char *display_name) : Thread()
+BC_Clipboard::BC_Clipboard(const char *display_name) : Thread()
 {
 	Thread::set_synchronous(1);
 

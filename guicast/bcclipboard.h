@@ -37,7 +37,7 @@
 class BC_Clipboard : public Thread
 {
 public:
-	BC_Clipboard(char *display_name);
+	BC_Clipboard(const char *display_name);
 	~BC_Clipboard();
 
 	int start_clipboard();
