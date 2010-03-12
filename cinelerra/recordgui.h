@@ -131,7 +131,7 @@ public:
 	RecordGUIMonitorAudio *monitor_audio;
 	RecordStartoverThread *startover_thread;
 	EndRecordThread *interrupt_thread;
-	static char *batch_titles[BATCH_COLUMNS];
+	static const char *batch_titles[BATCH_COLUMNS];
 	int column_widths[BATCH_COLUMNS];
 	LoadMode *load_mode;
 	int flash_color;

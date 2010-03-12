@@ -195,7 +195,7 @@ void BC_TextBox::set_selection(int char1, int char2, int ibeam)
 	draw();
 }
 
-int BC_TextBox::update(char *text)
+int BC_TextBox::update(const char *text)
 {
 //printf("BC_TextBox::update 1 %d %s %s\n", strcmp(text, this->text), text, this->text);
 	int text_len = strlen(text);

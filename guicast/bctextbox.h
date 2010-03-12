@@ -71,7 +71,7 @@ public:
 // Whenever the position of the text changes
 	virtual int motion_event() { return 0; };
 	void set_selection(int char1, int char2, int ibeam);
-	int update(char *text);
+	int update(const char *text);
 	int update(int64_t value);
 	int update(float value);
 	void disable();

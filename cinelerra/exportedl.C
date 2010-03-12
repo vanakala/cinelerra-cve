@@ -351,7 +351,7 @@ void ExportEDL::run()
 #define WIDTH 410
 #define HEIGHT 400
 
-static char *list_titles[] = 
+static const char *list_titles[] = 
 {
 	N_("No."),
 	N_("Track name")

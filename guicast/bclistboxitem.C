@@ -39,7 +39,7 @@ BC_ListBoxItem::BC_ListBoxItem()
 	selectable = 1;
 }
 
-BC_ListBoxItem::BC_ListBoxItem(char *text, 
+BC_ListBoxItem::BC_ListBoxItem(const char *text, 
 	BC_Pixmap *icon, 
 	int color)
 {
@@ -54,7 +54,7 @@ BC_ListBoxItem::BC_ListBoxItem(char *text,
 	selectable = 1;
 }
 
-BC_ListBoxItem::BC_ListBoxItem(char *text, int color)
+BC_ListBoxItem::BC_ListBoxItem(const char *text, int color)
 {
 	initialize();
 

@@ -276,7 +276,7 @@ private:
 	void create_listbox(int x, int y, int mode);
 // Get the icon number for a listbox
 	BC_Pixmap* get_icon(char *path, int is_dir);
-	static char* columntype_to_text(int type);
+	const char* columntype_to_text(int type);
 // Get the column whose type matches type.
 	int column_of_type(int type);
 
@@ -302,7 +302,7 @@ private:
 	int sort_column;
 	int sort_order;
 
-	char *column_titles[FILEBOX_COLUMNS];
+	const char *column_titles[FILEBOX_COLUMNS];
 	ArrayList<BC_ListBoxItem*> filter_list;
 	ArrayList<BC_ListBoxItem*> *list_column;
 	int *column_type;

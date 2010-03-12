@@ -263,7 +263,7 @@ void PerformancePrefs::generate_node_list()
 	}
 }
 
-static char *titles[] = 
+static const char *titles[] = 
 {
 	N_("On"),
 	N_("Hostname"),

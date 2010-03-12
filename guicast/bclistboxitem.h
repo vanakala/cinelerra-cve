@@ -35,9 +35,9 @@ class BC_ListBoxItem
 public:
 	BC_ListBoxItem();
 // New items
-	BC_ListBoxItem(char *text, 
+	BC_ListBoxItem(const char *text, 
 		int color = -1);
-	BC_ListBoxItem(char *text, 
+	BC_ListBoxItem(const char *text, 
 		BC_Pixmap *icon, 
 		int color = -1);
 	

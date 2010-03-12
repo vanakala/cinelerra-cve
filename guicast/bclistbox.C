@@ -331,7 +331,7 @@ BC_ListBox::BC_ListBox(int x,
 	int h,
 	int display_format,
 	ArrayList<BC_ListBoxItem*> *data,
-	char **column_titles,
+	const char **column_titles,
 	int *column_width,
 	int columns,
 	int yposition,
@@ -1470,7 +1470,7 @@ void BC_ListBox::delete_columns()
 }
 
 // Need to copy titles so EDL can change
-void BC_ListBox::set_columns(char **column_titles, 
+void BC_ListBox::set_columns(const char **column_titles, 
 	int *column_width, 
 	int columns)
 {
@@ -1509,7 +1509,7 @@ void BC_ListBox::set_columns(char **column_titles,
 
 
 int BC_ListBox::update(ArrayList<BC_ListBoxItem*> *data,
-	char **column_titles,
+	const char **column_titles,
 	int *column_widths,
 	int columns,
 	int xposition,

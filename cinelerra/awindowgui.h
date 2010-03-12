@@ -147,7 +147,7 @@ public:
 // Currently displayed assets + comments
 	ArrayList<BC_ListBoxItem*> displayed_assets[2];
 
-	char *asset_titles[ASSET_COLUMNS];
+	const char *asset_titles[ASSET_COLUMNS];
 
 // Persistent icons
 	BC_Pixmap *folder_icon;

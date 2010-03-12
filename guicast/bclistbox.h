@@ -106,7 +106,7 @@ public:
 		int h,
 		int display_format,                   // Display text list or icons
 		ArrayList<BC_ListBoxItem*> *data = 0, // Each column has an ArrayList of BC_ListBoxItems.
-		char **column_titles = 0,             // Titles for columns.  Set to 0 for no titles
+		const char **column_titles = 0,       // Titles for columns.  Set to 0 for no titles
 		int *column_width = 0,                // width of each column
 		int columns = 1,                      // Total columns.  Only 1 in icon mode
 		int yposition = 0,                    // Pixel of top of window.
@@ -201,7 +201,7 @@ public:
 
 // change the contents
 	int update(ArrayList<BC_ListBoxItem*> *data,
-						char **column_titles,
+						const char **column_titles,
 						int *column_widths,
 						int columns,
 						int xposition = 0,
@@ -317,7 +317,7 @@ public:
 
 private:
 	void delete_columns();
-	void set_columns(char **column_titles, 
+	void set_columns(const char **column_titles, 
 		int *column_widths, 
 		int columns);
 // Draw the button for a popup listbox

@@ -47,7 +47,7 @@
 
 
 
-static char *list_titles[] = 
+static const char *list_titles[] = 
 {
 	N_("Enabled"), 
 	N_("Output"),

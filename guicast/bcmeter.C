@@ -250,7 +250,7 @@ void BC_Meter::get_divisions()
 					METER_MARGIN * 2) * 
 					(current - min) /
 					(max - min);
-				sprintf(string, "%d", labs(current));
+				sprintf(string, "%ld", labs(current));
 				new_string = new char[strlen(string) + 1];
 				strcpy(new_string, string);
 				db_titles.append(new_string);

@@ -791,7 +791,7 @@ int BC_FileBox::create_tables()
 // Date entry
 		if(!is_dir || 1)
 		{
-			static char *month_text[13] = 
+			static const char *month_text[13] = 
 			{
 				"Null",
 				"Jan",
@@ -875,7 +875,7 @@ BC_Pixmap* BC_FileBox::get_icon(char *path, int is_dir)
 	return icons[icon_type];
 }
 
-char* BC_FileBox::columntype_to_text(int type)
+const char* BC_FileBox::columntype_to_text(int type)
 {
 	switch(type)
 	{

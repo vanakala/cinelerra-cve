@@ -87,7 +87,7 @@ TRACE("RecordGUI::~RecordGUI 2");
 }
 
 
-char* RecordGUI::batch_titles[] = 
+const char* RecordGUI::batch_titles[] = 
 {
 	N_("On"),
 	N_("Path"),
