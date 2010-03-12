@@ -63,7 +63,7 @@ PluginDialogThread::~PluginDialogThread()
 
 void PluginDialogThread::start_window(Track *track,
 	Plugin *plugin, 
-	char *title)
+	const char *title)
 {
 	if(Thread::running())
 	{
@@ -104,7 +104,7 @@ void PluginDialogThread::start_window(Track *track,
 }
 
 
-int PluginDialogThread::set_dialog(Transition *transition, char *title)
+int PluginDialogThread::set_dialog(Transition *transition, const char *title)
 {
 	return 0;
 }
@@ -208,7 +208,7 @@ void PluginDialogThread::run()
 
 PluginDialog::PluginDialog(MWindow *mwindow, 
 	PluginDialogThread *thread, 
-	char *window_title,
+	const char *window_title,
 	int x,
 	int y)
  : BC_Window(window_title, 

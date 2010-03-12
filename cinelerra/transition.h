@@ -58,7 +58,7 @@ public:
 class Transition : public Plugin
 {
 public:
-	Transition(EDL *edl, Edit *edit, char *title, long unit_length);
+	Transition(EDL *edl, Edit *edit, const char *title, long unit_length);
 
 	Edit *edit;
 

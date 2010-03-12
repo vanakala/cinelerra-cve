@@ -50,7 +50,7 @@ int DeleteAllIndexes::handle_event()
 	start(); 
 }
 
-static int test_filter(char *string, char *filter)
+static int test_filter(const char *string, const char *filter)
 {
 	return (strlen(string) > strlen(filter) &&
 			!strcmp(string + strlen(string) - strlen(filter), filter));
@@ -65,8 +65,8 @@ void DeleteAllIndexes::run()
 	dir.update(pwindow->thread->preferences->index_directory);
 	dir.complete_path(string1);
 // prepare filter
-	char *filter1 = ".idx";
-	char *filter2 = ".toc";
+	const char *filter1 = ".idx";
+	const char *filter2 = ".toc";
 
 //	pwindow->disable_window();
 	sprintf(string, _("Delete all indexes in %s?"), string1);

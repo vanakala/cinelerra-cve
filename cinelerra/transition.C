@@ -83,7 +83,7 @@ void PasteTransition::run()
 
 
 
-Transition::Transition(EDL *edl, Edit *edit, char *title, long unit_length)
+Transition::Transition(EDL *edl, Edit *edit, const char *title, long unit_length)
  : Plugin(edl, (PluginSet*)edit->edits, title)
 {
 	this->edit = edit;

@@ -24,7 +24,7 @@
 #include "filexml.h"
 
 
-static char *xml_titles[] = 
+static const char *xml_titles[] = 
 {
 	"SHOW_MUTE",
 	"SHOW_CAMERA_X",

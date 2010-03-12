@@ -225,7 +225,7 @@ void CWindowTool::update_values()
 
 CWindowToolGUI::CWindowToolGUI(MWindow *mwindow, 
 	CWindowTool *thread, 
-	char *title,
+	const char *title,
 	int w, 
 	int h)
  : BC_Window(title,
@@ -1384,7 +1384,7 @@ CWindowMaskMode::CWindowMaskMode(MWindow *mwindow,
 	CWindowToolGUI *gui, 
 	int x, 
 	int y,
-	char *text)
+	const char *text)
  : BC_PopupMenu(x,
  	y,
 	200,
@@ -1401,7 +1401,7 @@ void CWindowMaskMode::create_objects()
 	add_item(new BC_MenuItem(mode_to_text(MASK_SUBTRACT_ALPHA)));
 }
 
-char* CWindowMaskMode::mode_to_text(int mode)
+const char* CWindowMaskMode::mode_to_text(int mode)
 {
 	switch(mode)
 	{
@@ -1417,7 +1417,7 @@ char* CWindowMaskMode::mode_to_text(int mode)
 	return _("Subtract alpha");
 }
 
-int CWindowMaskMode::text_to_mode(char *text)
+int CWindowMaskMode::text_to_mode(const char *text)
 {
 	if(!strcasecmp(text, _("Multiply alpha")))
 		return MASK_MULTIPLY_ALPHA;

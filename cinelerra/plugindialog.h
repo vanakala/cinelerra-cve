@@ -56,8 +56,8 @@ public:
 // Set up parameters for a transition menu.
 	void start_window(Track *track,
 		Plugin *plugin, 
-		char *title);
-	int set_dialog(Transition *transition, char *title);
+		const char *title);
+	int set_dialog(Transition *transition, const char *title);
 	void run();
 
 
@@ -89,7 +89,7 @@ class PluginDialog : public BC_Window
 public:
 	PluginDialog(MWindow *mwindow, 
 		PluginDialogThread *thread, 
-		char *title,
+		const char *title,
 		int x,
 		int y);
 	~PluginDialog();
