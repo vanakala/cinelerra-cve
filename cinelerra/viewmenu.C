@@ -35,7 +35,7 @@
 
 
 
-ShowAssets::ShowAssets(MWindow *mwindow, char *hotkey)
+ShowAssets::ShowAssets(MWindow *mwindow, const char *hotkey)
  : BC_MenuItem(_("Show assets"), hotkey, hotkey[0])
 {
 	this->mwindow = mwindow; 
@@ -60,7 +60,7 @@ int ShowAssets::handle_event()
 
 
 
-ShowTitles::ShowTitles(MWindow *mwindow, char *hotkey)
+ShowTitles::ShowTitles(MWindow *mwindow, const char *hotkey)
  : BC_MenuItem(_("Show titles"), hotkey, hotkey[0])
 {
 	this->mwindow = mwindow; 
@@ -84,7 +84,7 @@ int ShowTitles::handle_event()
 
 
 
-ShowTransitions::ShowTransitions(MWindow *mwindow, char *hotkey)
+ShowTransitions::ShowTransitions(MWindow *mwindow, const char *hotkey)
  : BC_MenuItem(_("Show transitions"), hotkey, hotkey[0])
 { 
 	this->mwindow = mwindow; 
@@ -106,8 +106,8 @@ int ShowTransitions::handle_event()
 
 
 ShowAutomation::ShowAutomation(MWindow *mwindow, 
-	char *text,
-	char *hotkey,
+	const char *text,
+	const char *hotkey,
 	int subscript)
  : BC_MenuItem(text, hotkey, hotkey[0])
 {
@@ -134,7 +134,7 @@ void ShowAutomation::update_toggle()
 
 
 
-PluginAutomation::PluginAutomation(MWindow *mwindow, char *hotkey)
+PluginAutomation::PluginAutomation(MWindow *mwindow, const char *hotkey)
  : BC_MenuItem(_("Plugin Autos"), hotkey, hotkey[0]) 
 { 
 	this->mwindow = mwindow; 

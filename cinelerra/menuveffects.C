@@ -115,12 +115,12 @@ int64_t MenuVEffectThread::to_units(double position, int round)
 	return 0;
 }
 
-int MenuVEffectThread::fix_menu(char *title)
+int MenuVEffectThread::fix_menu(const char *title)
 {
 	mwindow->gui->mainmenu->add_veffect(title); 
 }
 
-MenuVEffectItem::MenuVEffectItem(MenuVEffects *menueffect, char *string)
+MenuVEffectItem::MenuVEffectItem(MenuVEffects *menueffect, const char *string)
  : MenuEffectItem(menueffect, string)
 {
 }

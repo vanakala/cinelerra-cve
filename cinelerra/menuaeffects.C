@@ -110,14 +110,14 @@ int64_t MenuAEffectThread::to_units(double position, int round)
 	return 0;
 }
 
-int MenuAEffectThread::fix_menu(char *title)
+int MenuAEffectThread::fix_menu(const char *title)
 {
 	mwindow->gui->mainmenu->add_aeffect(title); 
 }
 
 
 
-MenuAEffectItem::MenuAEffectItem(MenuAEffects *menueffect, char *string)
+MenuAEffectItem::MenuAEffectItem(MenuAEffects *menueffect, const char *string)
  : MenuEffectItem(menueffect, string)
 {
 }

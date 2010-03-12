@@ -47,7 +47,7 @@ class BC_RecentList : public BC_ListBox
 
 	int handle_event();
 	int load_items(const char *prefix = NULL);
-	int add_item(const char *prefix, char *text);
+	int add_item(const char *prefix, const char *text);
 	
 	ArrayList<BC_ListBoxItem*> items;
  private: 

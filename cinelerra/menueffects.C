@@ -73,7 +73,7 @@ int MenuEffects::handle_event()
 
 
 
-MenuEffectPacket::MenuEffectPacket(char *path, int64_t start, int64_t end)
+MenuEffectPacket::MenuEffectPacket(const char *path, int64_t start, int64_t end)
 {
 	this->start = start;
 	this->end = end;
@@ -103,7 +103,7 @@ MenuEffectThread::~MenuEffectThread()
 
 
 
-int MenuEffectThread::set_title(char *title)
+int MenuEffectThread::set_title(const char *title)
 {
 	strcpy(this->title, title);
 }
@@ -539,7 +539,7 @@ void MenuEffectThread::run()
 
 
 
-MenuEffectItem::MenuEffectItem(MenuEffects *menueffect, char *string)
+MenuEffectItem::MenuEffectItem(MenuEffects *menueffect, const char *string)
  : BC_MenuItem(string)
 {
 	this->menueffect = menueffect; 

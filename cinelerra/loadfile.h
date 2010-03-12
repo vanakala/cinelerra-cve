@@ -132,7 +132,7 @@ public:
 class LocateFileWindow : public BC_FileBox
 {
 public:
-	LocateFileWindow(MWindow *mwindow, char *init_directory, char *old_filename);
+	LocateFileWindow(MWindow *mwindow, const char *init_directory, const char *old_filename);
 	~LocateFileWindow();
 	MWindow *mwindow;
 };
@@ -144,7 +144,7 @@ public:
 	int handle_event();
 	void run();
 	
-	int set_path(char *path);
+	int set_path(const char *path);
 	
 	MWindow *mwindow;
 	Load *loadfile;

@@ -29,7 +29,7 @@
 class ShowAssets : public BC_MenuItem
 {
 public:
-	ShowAssets(MWindow *mwindow, char *hotkey);
+	ShowAssets(MWindow *mwindow, const char *hotkey);
 	int handle_event();
 	MWindow *mwindow;
 };
@@ -38,7 +38,7 @@ public:
 class ShowTitles : public BC_MenuItem
 {
 public:
-	ShowTitles(MWindow *mwindow, char *hotkey);
+	ShowTitles(MWindow *mwindow, const char *hotkey);
 	int handle_event();
 	MWindow *mwindow;
 };
@@ -46,7 +46,7 @@ public:
 class ShowTransitions : public BC_MenuItem
 {
 public:
-	ShowTransitions(MWindow *mwindow, char *hotkey);
+	ShowTransitions(MWindow *mwindow, const char *hotkey);
 	int handle_event();
 	MWindow *mwindow;
 };
@@ -54,7 +54,7 @@ public:
 class PluginAutomation : public BC_MenuItem
 {
 public:
-	PluginAutomation(MWindow *mwindow, char *hotkey);
+	PluginAutomation(MWindow *mwindow, const char *hotkey);
 	int handle_event();
 	MWindow *mwindow;
 };
@@ -63,8 +63,8 @@ class ShowAutomation : public BC_MenuItem
 {
 public:
 	ShowAutomation(MWindow *mwindow, 
-		char *text,
-		char *hotkey,
+		const char *text,
+		const char *hotkey,
 		int subscript);
 	int handle_event();
 	void update_toggle();

@@ -364,7 +364,7 @@ int MainMenu::save_veffects(BC_Hash *defaults)
 
 // =================================== add most recent
 
-int MainMenu::add_aeffect(char *title)
+int MainMenu::add_aeffect(const char *title)
 {
 // add bar for first effect
 	if(total_aeffects == 0)
@@ -405,7 +405,7 @@ int MainMenu::add_aeffect(char *title)
 	return 0;
 }
 
-int MainMenu::add_veffect(char *title)
+int MainMenu::add_veffect(const char *title)
 {
 // add bar for first effect
 	if(total_veffects == 0)
@@ -446,7 +446,7 @@ int MainMenu::add_veffect(char *title)
 	return 0;
 }
 
-int MainMenu::add_load(char *new_path)
+int MainMenu::add_load(const char *new_path)
 {
 	char filename[BCTEXTLEN];
 	FileSystem dir;
@@ -549,7 +549,7 @@ int Undo::handle_event()
 	mwindow->undo_entry(mwindow->gui);
 	return 1;
 }
-int Undo::update_caption(char *new_caption)
+int Undo::update_caption(const char *new_caption)
 {
 	char string[1024];
 	sprintf(string, _("Undo %s"), new_caption);
@@ -569,7 +569,7 @@ int Redo::handle_event()
 
 	return 1;
 }
-int Redo::update_caption(char *new_caption)
+int Redo::update_caption(const char *new_caption)
 {
 	char string[1024];
 	sprintf(string, _("Redo %s"), new_caption);

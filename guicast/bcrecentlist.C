@@ -103,7 +103,7 @@ int BC_RecentList::load_items(const char *prefix) {
 }	
 
 
-int BC_RecentList::add_item(const char *prefix, char *text) {
+int BC_RecentList::add_item(const char *prefix, const char *text) {
 
 	if (! prefix) prefix = "ANY";
 	

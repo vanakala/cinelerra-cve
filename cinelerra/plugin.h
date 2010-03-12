@@ -48,13 +48,13 @@ public:
 // Plugin which belongs to a transition.
 	Plugin(EDL *edl, 
 		Track *track, 
-		char *title);
+		const char *title);
 // Called by  PluginSet::create_edit, PluginSet::insert_edit_after.
 // Plugin can't take a track because it would get the edits pointer from 
 // the track instead of the plugin set.
 	Plugin(EDL *edl, 
 		PluginSet *plugin_set, 
-		char *title);
+		const char *title);
 	virtual ~Plugin();
 
 	virtual Plugin& operator=(Plugin& edit);

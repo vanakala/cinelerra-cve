@@ -53,7 +53,7 @@ public:
 class MenuEffectPacket
 {
 public:
-	MenuEffectPacket(char *path, int64_t start, int64_t end);
+	MenuEffectPacket(const char *path, int64_t start, int64_t end);
 	~MenuEffectPacket();
 
 // Path of output without remote prefix
@@ -71,13 +71,13 @@ public:
 	virtual ~MenuEffectThread();
 
 	void run();
-	int set_title(char *text);  // set the effect to be run by a menuitem
+	int set_title(const char *text);  // set the effect to be run by a menuitem
 	virtual int get_recordable_tracks(Asset *asset) { return 0; };
 	virtual int get_derived_attributes(Asset *asset, BC_Hash *defaults) { return 0; };
 	virtual int save_derived_attributes(Asset *asset, BC_Hash *defaults) { return 0; };
 	virtual PluginArray* create_plugin_array() { return 0; };
 	virtual int64_t to_units(double position, int round) { return 0; };
-	virtual int fix_menu(char *title) {};
+	virtual int fix_menu(const char *title) {};
 	int test_existence(Asset *asset);
 
 	MWindow *mwindow;
@@ -90,7 +90,7 @@ public:
 class MenuEffectItem : public BC_MenuItem
 {
 public:
-	MenuEffectItem(MenuEffects *menueffect, char *string);
+	MenuEffectItem(MenuEffects *menueffect, const char *string);
 	virtual ~MenuEffectItem() {};
 	int handle_event();
 	MenuEffects *menueffect;

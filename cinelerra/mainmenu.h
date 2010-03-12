@@ -67,16 +67,16 @@ public:
 	int save_defaults(BC_Hash *defaults);
 
 // most recent loads
-	int add_load(char *path);
+	int add_load(const char *path);
 	int init_loads(BC_Hash *defaults);
 
 // most recent effects
 	int init_aeffects(BC_Hash *defaults);
 	int save_aeffects(BC_Hash *defaults);
-	int add_aeffect(char *title);
+	int add_aeffect(const char *title);
 	int init_veffects(BC_Hash *defaults);
 	int save_veffects(BC_Hash *defaults);
-	int add_veffect(char *title);
+	int add_veffect(const char *title);
 
 	int quit();
 // show only one of these at a time
@@ -139,7 +139,7 @@ class Undo : public BC_MenuItem
 public:
 	Undo(MWindow *mwindow);
 	int handle_event();
-	int update_caption(char *new_caption = "");
+	int update_caption(const char *new_caption = "");
 	MWindow *mwindow;
 };
 
@@ -182,7 +182,7 @@ class Redo : public BC_MenuItem
 public:
 	Redo(MWindow *mwindow);
 	int handle_event();
-	int update_caption(char *new_caption = "");
+	int update_caption(const char *new_caption = "");
 	MWindow *mwindow;
 };
 

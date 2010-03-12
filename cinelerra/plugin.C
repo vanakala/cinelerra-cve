@@ -40,7 +40,7 @@
 
 Plugin::Plugin(EDL *edl, 
 		Track *track, 
-		char *title)
+		const char *title)
  : Edit(edl, track)
 {
 	this->track = track;
@@ -56,7 +56,7 @@ Plugin::Plugin(EDL *edl,
 }
 
 
-Plugin::Plugin(EDL *edl, PluginSet *plugin_set, char *title)
+Plugin::Plugin(EDL *edl, PluginSet *plugin_set, const char *title)
  : Edit(edl, plugin_set)
 {
 	this->track = plugin_set->track;

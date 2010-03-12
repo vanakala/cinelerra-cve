@@ -822,7 +822,7 @@ void MWindow::set_brender_start()
 int MWindow::load_filenames(ArrayList<char*> *filenames, 
 	int load_mode,
 	int update_filename,
-	char *reel_name,
+	const char *reel_name,
 	int reel_number,
 	int overwrite_reel)
 {

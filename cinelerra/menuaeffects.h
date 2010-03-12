@@ -47,14 +47,14 @@ public:
 	int save_derived_attributes(Asset *asset, BC_Hash *defaults);
 	PluginArray* create_plugin_array();
 	int64_t to_units(double position, int round);
-	int fix_menu(char *title);
+	int fix_menu(const char *title);
 };
 
 
 class MenuAEffectItem : public MenuEffectItem
 {
 public:
-	MenuAEffectItem(MenuAEffects *menueffect, char *string);
+	MenuAEffectItem(MenuAEffects *menueffect, const char *string);
 };
 
 

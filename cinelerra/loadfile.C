@@ -335,8 +335,8 @@ int ResourcesOnly::handle_event()
 
 
 LocateFileWindow::LocateFileWindow(MWindow *mwindow, 
-	char *init_directory, 
-	char *old_filename)
+	const char *init_directory, 
+	const char *old_filename)
  : BC_FileBox(mwindow->gui->get_abs_cursor_x(1),
  		mwindow->gui->get_abs_cursor_y(1), 
 		init_directory, 
@@ -396,7 +396,7 @@ void LoadPrevious::run()
 //	loadfile->mwindow->load(path, loadfile->append);
 }
 
-int LoadPrevious::set_path(char *path)
+int LoadPrevious::set_path(const char *path)
 {
 	strcpy(this->path, path);
 }
