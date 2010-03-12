@@ -888,7 +888,7 @@ void VFrame::pop_next_effect()
 		next_effects.remove_object(next_effects.last());
 }
 
-char* VFrame::get_next_effect(int number)
+const char* VFrame::get_next_effect(int number)
 {
 	if(!next_effects.total) return "";
 	else
@@ -897,7 +897,7 @@ char* VFrame::get_next_effect(int number)
 	return next_effects.values[next_effects.total - number - 1];
 }
 
-char* VFrame::get_prev_effect(int number)
+const char* VFrame::get_prev_effect(int number)
 {
 	if(!prev_effects.total) return "";
 	else

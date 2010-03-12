@@ -281,8 +281,8 @@ public:
 // They access any member of the stack based on the number argument.
 // next effect 0 is the one that called read_frame most recently.
 // prev effect 0 is the one that filled our call to read_frame.
-	char* get_next_effect(int number = 0);
-	char* get_prev_effect(int number = 0);
+	const char* get_next_effect(int number = 0);
+	const char* get_prev_effect(int number = 0);
 
 // It isn't enough to know the name of the neighboring effects.
 // Relevant configuration parameters must be passed on.
