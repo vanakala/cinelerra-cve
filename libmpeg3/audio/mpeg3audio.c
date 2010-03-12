@@ -4,6 +4,7 @@
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include <alloca.h>
 
 
 
@@ -255,7 +256,7 @@ static int read_frame(mpeg3audio_t *audio, int render)
 
 	if(render)
 	{
-		temp_output = malloc(sizeof(float*) * track->channels);
+		temp_output = alloca(sizeof(float*) * track->channels);
 		for(i = 0; i < track->channels; i++)
 		{
 			temp_output[i] = audio->output[i] + audio->output_size;
@@ -314,10 +315,6 @@ static int read_frame(mpeg3audio_t *audio, int render)
 
 
 	audio->output_size += samples;
-	if(render)
-	{
-		free(temp_output);
-	}
 
 // Liba52 is not reentrant
 	if(track->format == AUDIO_AC3)
