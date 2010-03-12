@@ -41,28 +41,26 @@ public:
 
 	int read_tag(char *input, long &position, long length);
 
-	int title_is(char *title);        // test against title and return 1 if they match
+	int title_is(const char *title);  // test against title and return 1 if they match
 	char *get_title();
 	int get_title(char *value);
-	int test_property(char *property, char *value);
-	char *get_property_text(int number);
+	int test_property(const char *property, char *value);
+	const char *get_property_text(int number);
 	int get_property_int(int number);
 	float get_property_float(int number);
-	char *get_property(char *property);
-	char* get_property(char *property, char *value);
-	int32_t get_property(char *property, int32_t default_);
-	int64_t get_property(char *property, int64_t default_);
-//	int get_property(char *property, int default_);
-	float get_property(char *property, float default_);
-	double get_property(char *property, double default_);
+	char *get_property(const char *property);
+	char* get_property(const char *property, char *value);
+	int32_t get_property(const char *property, int32_t default_);
+	int64_t get_property(const char *property, int64_t default_);
+	float get_property(const char *property, float default_);
+	double get_property(const char *property, double default_);
 
-	int set_title(char *text);       // set the title field
-	int set_property(char *text, char *value);
-	int set_property(char *text, int32_t value);
-	int set_property(char *text, int64_t value);
-//	int set_property(char *text, int value);
-	int set_property(char *text, float value);
-	int set_property(char *text, double value);
+	int set_title(const char *text);       // set the title field
+	int set_property(const char *text, const char *value);
+	int set_property(const char *text, int32_t value);
+	int set_property(const char *text, int64_t value);
+	int set_property(const char *text, float value);
+	int set_property(const char *text, double value);
 	int write_tag();
 
 	char tag_title[MAX_TITLE];       // title of this tag
@@ -89,22 +87,24 @@ public:
 	int terminate_string();         // append the terminal 0
 	int append_newline();       // append a newline to string
 	int append_tag();           // append tag object
-	int append_text(char *text);
+	int append_text(const char *text);
 // add generic text to the string
-	int append_text(char *text, long len);        
+	int append_text(const char *text, long len);        
 // add generic text to the string which contains <>& characters
  	int encode_text(char *text);      
 
 // Text array is dynamically allocated and deleted when FileXML is deleted
 	char* read_text();         // read text, put it in *output, and return it
-	int read_text_until(char *tag_end, char *output, int max_len);     // store text in output until the tag is reached
+	int read_text_until(const char *tag_end, 
+		char *output, int max_len);     // store text in output until the tag is reached
 	int read_tag();          // read next tag from file, ignoring any text, and put it in tag
 	// return 1 on failure
 
-	int write_to_file(char *filename);           // write the file to disk
+	int write_to_file(const char *filename);  // write the file to disk
 	int write_to_file(FILE *file);           // write the file to disk
-	int read_from_file(char *filename, int ignore_error = 0);          // read an entire file from disk
-	int read_from_string(char *string);          // read from a string
+	int read_from_file(const char *filename, 
+		int ignore_error = 0);          // read an entire file from disk
+	int read_from_string(const char *string);   // read from a string
 
 	int reallocate_string(long new_available);     // change size of string to accomodate new output
 	int set_shared_string(char *shared_string, long available);    // force writing to a message buffer
