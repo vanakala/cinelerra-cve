@@ -81,7 +81,7 @@ AssetPicon::AssetPicon(MWindow *mwindow,
 
 AssetPicon::AssetPicon(MWindow *mwindow, 
 	AWindowGUI *gui, 
-	char *folder)
+	const char *folder)
  : BC_ListBoxItem(folder, gui->folder_icon)
 {
 	reset();

@@ -125,7 +125,7 @@ void Automation::copy_from(Automation *automation)
 }
 
 // These must match the enumerations
-static char *xml_titles[] = 
+static const char *xml_titles[] = 
 {
 	"MUTEAUTOS",
 	"CAMERA_X",

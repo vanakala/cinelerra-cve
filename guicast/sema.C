@@ -25,7 +25,7 @@
 
 
 
-Sema::Sema(int init_value, char *title)
+Sema::Sema(int init_value, const char *title)
 {
 	sem_init(&sem, 0, init_value);
 	this->title = title;
@@ -39,7 +39,7 @@ Sema::~Sema()
 }
 
 
-void Sema::lock(char *location)
+void Sema::lock(const char *location)
 {
 	SET_SLOCK(this, title, location);
 	sem_wait(&sem);

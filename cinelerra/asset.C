@@ -914,7 +914,7 @@ char* Asset::construct_param(const char *param, const char *prefix, char *return
 #define GET_DEFAULT(x, y) defaults->get(construct_param(x, prefix, string), y);
 
 void Asset::load_defaults(BC_Hash *defaults, 
-	char *prefix, 
+	const char *prefix, 
 	int do_format,
 	int do_compression,
 	int do_path,
@@ -1050,7 +1050,7 @@ void Asset::load_defaults(BC_Hash *defaults,
 }
 
 void Asset::save_defaults(BC_Hash *defaults, 
-	char *prefix,
+	const char *prefix,
 	int do_format,
 	int do_compression,
 	int do_path,

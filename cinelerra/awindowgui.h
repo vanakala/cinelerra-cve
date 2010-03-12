@@ -61,7 +61,7 @@ public:
 	AssetPicon(MWindow *mwindow, AWindowGUI *gui, EDL *edl);
 	AssetPicon(MWindow *mwindow, AWindowGUI *gui, PluginServer *plugin);
 	AssetPicon(MWindow *mwindow, AWindowGUI *gui, Label *plugin);
-	AssetPicon(MWindow *mwindow, AWindowGUI *gui, char *folder);
+	AssetPicon(MWindow *mwindow, AWindowGUI *gui, const char *folder);
 	virtual ~AssetPicon();
 
 	void create_objects();
