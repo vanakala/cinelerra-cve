@@ -262,7 +262,7 @@ int BC_WindowBase::initialize()
 			
 
 int BC_WindowBase::create_window(BC_WindowBase *parent_window,
-				char *title, 
+				const char *title, 
 				int x,
 				int y,
 				int w, 
@@ -310,7 +310,7 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 	this->parent_window = parent_window;
 	this->bg_pixmap = bg_pixmap;
 	this->allow_resize = allow_resize;
-	strcpy(this->title, _(title));
+	strcpy(this->title, title);
 	if(bg_pixmap) shared_bg_pixmap = 1;
 
 	if(parent_window) top_level = parent_window->top_level;
@@ -422,11 +422,9 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 			Atom ClientLeaderXAtom;
 			if (XGroupLeader == 0)
 				XGroupLeader = win;
-			char *instance_name = "cinelerra";
-			char *class_name = "Cinelerra";
 			XClassHint *class_hints = XAllocClassHint(); 
-			class_hints->res_name = instance_name;
-			class_hints->res_class = class_name;
+			class_hints->res_name = (char*)"cinelerra";
+			class_hints->res_class = (char*)"Cinelerra";
 			XSetClassHint(top_level->display, win, class_hints);
 			XFree(class_hints);
 			ClientLeaderXAtom = XInternAtom(display, "WM_CLIENT_LEADER", True);
@@ -860,7 +858,7 @@ int BC_WindowBase::dispatch_event()
 			if(keysym > 0xffe0 && keysym < 0xffff) break;
 
 
-			if(test_keypress) printf("BC_WindowBase::dispatch_event %x\n", keysym);
+			if(test_keypress) printf("BC_WindowBase::dispatch_event %x\n", (unsigned int)keysym);
 
 
   			switch(keysym)
@@ -1412,7 +1410,7 @@ int BC_WindowBase::set_repeat(int64_t duration)
 {
 	if(duration <= 0)
 	{
-		printf("BC_WindowBase::set_repeat duration=%d\n", duration);
+		printf("BC_WindowBase::set_repeat duration=%lld\n", duration);
 		return 0;
 	}
 	if(window_type != MAIN_WINDOW) return top_level->set_repeat(duration);
@@ -1515,7 +1513,7 @@ int BC_WindowBase::send_custom_xatom(xatom_event *event)
 
 
 
-Atom BC_WindowBase::create_xatom(char *atom_name)
+Atom BC_WindowBase::create_xatom(const char *atom_name)
 {
 	return XInternAtom(display, atom_name, False);
 }

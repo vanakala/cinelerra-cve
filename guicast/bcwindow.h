@@ -27,7 +27,7 @@
 class BC_Window : public BC_WindowBase
 {
 public:
-	BC_Window(char *title, 
+	BC_Window(const char *title, 
 				int x,
 				int y,
 				int w, 

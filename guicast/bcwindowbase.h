@@ -558,7 +558,7 @@ public:
 private:
 // Create a window
 	virtual int create_window(BC_WindowBase *parent_window,
-				char *title, 
+				const char *title, 
 				int x,
 				int y,
 				int w, 
@@ -833,7 +833,7 @@ private:
 	int id;
 
 protected:
-	Atom create_xatom(char *atom_name);
+	Atom create_xatom(const char *atom_name);
 	int send_custom_xatom(xatom_event *event);
 };
 

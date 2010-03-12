@@ -24,7 +24,7 @@
 
 
 
-BC_Window::BC_Window(char *title, 
+BC_Window::BC_Window(const char *title, 
 				int x,
 				int y,
 				int w, 
