@@ -236,7 +236,7 @@ void ArrayList<TYPE>::remove_object_number(int number)
 		remove_number(number);
 	}
 	else
-		fprintf(stderr, "ArrayList<TYPE>::remove_object_number: number %d out of range %s.\n", number, total);
+		fprintf(stderr, "ArrayList<TYPE>::remove_object_number: number %d out of range %d.\n", number, total);
 }
 
 

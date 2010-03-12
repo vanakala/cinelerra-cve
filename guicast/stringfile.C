@@ -50,13 +50,19 @@ StringFile::StringFile(char *filename)
 		fseek(in, 0, SEEK_SET);
 		string = new char[length + 5];
 
-		fread(string, length, 1, in);
-		for(int i = 0; i < 5; i++) string[length + i] = 0;
+		if(fread(string, length, 1, in) == 1)
+			for(int i = 0; i < 5; i++) string[length + i] = 0;
+		else
+		{
+			delete [] string;
+			fclose(in);
+			goto nofile;
+		}
 		fclose(in);
 	}
 	else
 	{
-		//printf("File not found: %s\n", filename);
+nofile:
 		length = 0;
 		available = 1;
 		string = new char[1];
@@ -230,7 +236,7 @@ int StringFile::writeline(char *arg1, int indent)
 	}
 	
 	for(i = 0; i < indent; i++, pointer++) string[pointer] = ' ';
-	sprintf(&string[pointer], arg1);
+	strcpy(&string[pointer], arg1);
 	pointer += strlen(arg1);
 	return 0;
 }

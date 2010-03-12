@@ -463,7 +463,7 @@ int64_t BC_ISlider::get_length()
 
 char* BC_ISlider::get_caption()
 {
-	sprintf(caption, "%ld", value);
+	sprintf(caption, "%lld", value);
 	return caption;
 }
 

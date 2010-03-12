@@ -101,8 +101,10 @@ int FileItem::set_name(char *name)
 FileSystem::FileSystem()
 {
 	reset_parameters();
-	getcwd(current_dir, BCTEXTLEN);
-	
+	if(getcwd(current_dir, BCTEXTLEN) == 0){
+		perror("get current working directory");
+		abort();
+	}
 }
 
 FileSystem::~FileSystem()
