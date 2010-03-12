@@ -37,7 +37,7 @@ class ZoomTumbler;
 class ZoomHash
 {
 public:
-	ZoomHash(double value, char *text);
+	ZoomHash(double value, const char *text);
 	~ZoomHash();
 
 	double value;
@@ -74,11 +74,11 @@ public:
 	int create_objects();
 	double get_value();
 	char* get_text();
-	void set_text(char *text);
+	void set_text(const char *text);
 	char* value_to_text(double value, int use_table = 1);
-	double text_to_zoom(char *text, int use_table = 1);
+	double text_to_zoom(const char *text, int use_table = 1);
 	void update(double value);
-	void update(char *value);
+	void update(const char *value);
 	void reposition_window(int x, int y);
 // Set images to be used
 	void set_menu_images(VFrame **data);

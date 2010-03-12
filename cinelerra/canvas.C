@@ -92,7 +92,7 @@ void Canvas::reset()
 	cursor_inside = 0;
 }
 
-void Canvas::lock_canvas(char *location)
+void Canvas::lock_canvas(const char *location)
 {
 	canvas_lock->lock(location);
 }

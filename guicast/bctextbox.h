@@ -127,7 +127,7 @@ private:
 	void copy_selection(int clipboard_num);
 	void paste_selection(int clipboard_num);
 	void delete_selection(int letter1, int letter2, int text_len);
-	void insert_text(char *string);
+	void insert_text(const char *string);
 // Reformat text according to separators.
 // ibeam_left causes the ibeam to move left.
 	void do_separators(int ibeam_left);
@@ -183,13 +183,13 @@ public:
 		int y, 
 		int w,
 		int rows,
-		char *default_text);
+		const char *default_text);
 	virtual ~BC_ScrollTextBox();
 	void create_objects();
 	virtual int handle_event();
 	
 	char* get_text();
-	void update(char *text);
+	void update(const char *text);
 	void reposition_window(int x, int y, int w, int rows);
 	int get_x();
 	int get_y();
@@ -204,7 +204,7 @@ private:
 	BC_ScrollTextBoxText *text;
 	BC_ScrollTextBoxYScroll *yscroll;
 	BC_WindowBase *parent_window;
-	char *default_text;
+	const char *default_text;
 	int x, y, w, rows;
 };
 
@@ -238,7 +238,7 @@ class BC_PopupTextBox : public BC_RelocatableWidget
 public:
 	BC_PopupTextBox(BC_WindowBase *parent_window, 
 		ArrayList<BC_ListBoxItem*> *list_items,
-		char *default_text,
+		const char *default_text,
 		int x, 
 		int y, 
 		int text_w,
@@ -252,7 +252,7 @@ public:
 	int get_y();
 	int get_w();
 	int get_h();
-	void update(char *text);
+	void update(const char *text);
 	void update_list(ArrayList<BC_ListBoxItem*> *data);
 	int  reposition_widget(int x, int y, int w = -1, int h = -1);
 	void reposition_window(int x, int y);
@@ -262,7 +262,7 @@ public:
 
 private:
 	int x, y, text_w, list_h;
-	char *default_text;
+	const char *default_text;
 	ArrayList<BC_ListBoxItem*> *list_items;
 	BC_PopupTextBoxText *textbox;
 	BC_PopupTextBoxList *listbox;
@@ -320,7 +320,7 @@ public:
 	void reset();
 	virtual int handle_event();
 	char* get_text();
-	int update(char *value);
+	int update(const char *value);
 	int update(int64_t value);
 	int update(float value);
 	int get_x();

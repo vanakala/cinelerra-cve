@@ -31,7 +31,7 @@
 #include "zoompanel.h"
 
 
-ZoomHash::ZoomHash(double value, char *text)
+ZoomHash::ZoomHash(double value, const char *text)
 {
 	this->value = value;
 	this->text = new char[strlen(text) + 1];
@@ -195,7 +195,7 @@ char* ZoomPanel::get_text()
 	return zoom_text->get_text();
 }
 
-void ZoomPanel::set_text(char *text)
+void ZoomPanel::set_text(const char *text)
 {
 	zoom_text->set_text(text);
 }
@@ -206,7 +206,7 @@ void ZoomPanel::update(double value)
 	zoom_text->set_text(value_to_text(value));
 }
 
-void ZoomPanel::update(char *value)
+void ZoomPanel::update(const char *value)
 {
 	zoom_text->set_text(value);
 }
@@ -257,7 +257,7 @@ char* ZoomPanel::value_to_text(double value, int use_table)
 	return string;
 }
 
-double ZoomPanel::text_to_zoom(char *text, int use_table)
+double ZoomPanel::text_to_zoom(const char *text, int use_table)
 {
 	if(use_table)
 	{

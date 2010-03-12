@@ -150,7 +150,7 @@ public:
 // Information about the batch being edited
 	Batch* get_editing_batch();
 	char* current_mode();
-	char* current_source();
+	const char* current_source();
 	int get_current_channel();
 	int get_editing_channel();
 	void get_current_time(double &seconds, int &day);

@@ -126,14 +126,14 @@ class Units
 public:
 	Units() {};
 
-	static int timeformat_totype(char *tcf);
+	static int timeformat_totype(const char *tcf);
 
 // No rounding.
 	static float toframes(int64_t samples, int sample_rate, float framerate);
 // Round up if > .5
 	static int64_t toframes_round(int64_t samples, int sample_rate, float framerate);
 	static double fix_framerate(double value);
-	static double atoframerate(char *text);
+	static double atoframerate(const char *text);
 
 
 // Punctuate with commas
@@ -160,13 +160,13 @@ public:
 				float frame_rate = 0, 
 				float frames_per_foot = 0);    
 // convert time to samples
-	static int64_t fromtext(char *text, 
+	static int64_t fromtext(const char *text, 
 				int samplerate, 
 				int time_format, 
 				float frame_rate, 
 				float frames_per_foot);
 // Convert text to seconds
-	static double text_to_seconds(char *text, 
+	static double text_to_seconds(const char *text, 
 				int samplerate, 
 				int time_format, 
 				float frame_rate, 

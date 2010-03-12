@@ -31,14 +31,14 @@
 class BC_ProgressBox : public Thread
 {
 public:
-	BC_ProgressBox(int x, int y, char *text, int64_t length);
+	BC_ProgressBox(int x, int y, const char *text, int64_t length);
 	virtual ~BC_ProgressBox();
 	
 	friend class BC_ProgressWindow;
 
 	void run();
 	int update(int64_t position, int lock_it);    // return 1 if cancelled
-	int update_title(char *title, int lock_it);
+	int update_title(const char *title, int lock_it);
 	int update_length(int64_t length, int lock_it);
 	int is_cancelled();      // return 1 if cancelled
 	int stop_progress();
@@ -60,9 +60,9 @@ public:
 	BC_ProgressWindow(int x, int y);
 	virtual ~BC_ProgressWindow();
 
-	int create_objects(char *text, int64_t length);
+	int create_objects(const char *text, int64_t length);
 
-	char *text;
+	const char *text;
 	BC_ProgressBar *bar;
 	BC_Title *caption;
 };

@@ -297,7 +297,7 @@ char* Units::totext(char *text,
 	return totext(text, (double)samples / samplerate, time_format, samplerate, frame_rate, frames_per_foot);
 }    
 
-int64_t Units::fromtext(char *text, 
+int64_t Units::fromtext(const char *text, 
 			int samplerate, 
 			int time_format, 
 			float frame_rate,
@@ -414,7 +414,7 @@ int64_t Units::fromtext(char *text,
 	return 0;
 }
 
-double Units::text_to_seconds(char *text, 
+double Units::text_to_seconds(const char *text, 
 				int samplerate, 
 				int time_format, 
 				float frame_rate, 
@@ -430,7 +430,7 @@ double Units::text_to_seconds(char *text,
 
 
 
-int Units::timeformat_totype(char *tcf) {
+int Units::timeformat_totype(const char *tcf) {
 	if (!strcmp(tcf,TIME_SECONDS__STR)) return(TIME_SECONDS);
 	if (!strcmp(tcf,TIME_HMS__STR)) return(TIME_HMS);
 	if (!strcmp(tcf,TIME_HMS2__STR)) return(TIME_HMS2);
@@ -471,7 +471,7 @@ double Units::fix_framerate(double value)
 	return value;
 }
 
-double Units::atoframerate(char *text)
+double Units::atoframerate(const char *text)
 {
 	double result = atof(text);
 	return fix_framerate(result);

@@ -28,7 +28,7 @@
 #include "bcwindow.h"
 #include "vframe.h"
 
-BC_ProgressBox::BC_ProgressBox(int x, int y, char *text, int64_t length)
+BC_ProgressBox::BC_ProgressBox(int x, int y, const char *text, int64_t length)
  : Thread()
 {
 	set_synchronous(1);
@@ -68,7 +68,7 @@ int BC_ProgressBox::update(int64_t position, int lock_it)
 	return cancelled;
 }
 
-int BC_ProgressBox::update_title(char *title, int lock_it)
+int BC_ProgressBox::update_title(const char *title, int lock_it)
 {
 	if(lock_it) pwindow->lock_window("BC_ProgressBox::update_title");
 	pwindow->caption->update(title);
@@ -125,7 +125,7 @@ BC_ProgressWindow::~BC_ProgressWindow()
 {
 }
 
-int BC_ProgressWindow::create_objects(char *text, int64_t length)
+int BC_ProgressWindow::create_objects(const char *text, int64_t length)
 {
 	int x = 10, y = 10;
 

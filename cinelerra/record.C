@@ -922,7 +922,7 @@ double Record::current_display_position()
 	return 0;
 }
 
-char* Record::current_source()
+const char* Record::current_source()
 {
 	return get_current_batch()->get_source_text();
 }

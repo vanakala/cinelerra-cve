@@ -41,7 +41,7 @@ public:
 	static char* mode_to_text(int record_mode);
 	static int text_to_mode(char *text);
 	Asset* get_current_asset();
-	char* get_source_text();
+	const char* get_source_text();
 	Channel* get_current_channel_struct();
 	void calculate_news();
 	void create_default_path();

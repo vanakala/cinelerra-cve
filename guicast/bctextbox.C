@@ -1247,7 +1247,7 @@ void BC_TextBox::delete_selection(int letter1, int letter2, int text_len)
 	do_separators(1);
 }
 
-void BC_TextBox::insert_text(char *string)
+void BC_TextBox::insert_text(const char *string)
 {
 	int i, j, text_len, string_len;
 
@@ -1561,7 +1561,7 @@ BC_ScrollTextBox::BC_ScrollTextBox(BC_WindowBase *parent_window,
 	int y, 
 	int w,
 	int rows,
-	char *default_text)
+	const char *default_text)
 {
 	this->parent_window = parent_window;
 	this->x = x;
@@ -1619,7 +1619,7 @@ char* BC_ScrollTextBox::get_text()
 	return text->get_text();
 }
 
-void BC_ScrollTextBox::update(char *text)
+void BC_ScrollTextBox::update(const char *text)
 {
 	this->text->update(text);
 	yscroll->update_length(this->text->get_text_rows(),
@@ -1778,7 +1778,7 @@ int BC_PopupTextBoxList::handle_event()
 
 BC_PopupTextBox::BC_PopupTextBox(BC_WindowBase *parent_window, 
 		ArrayList<BC_ListBoxItem*> *list_items,
-		char *default_text,
+		const char *default_text,
 		int x, 
 		int y, 
 		int text_w,
@@ -1812,7 +1812,7 @@ int BC_PopupTextBox::create_objects()
 	return 0;
 }
 
-void BC_PopupTextBox::update(char *text)
+void BC_PopupTextBox::update(const char *text)
 {
 	textbox->update(text);
 }
@@ -2112,7 +2112,7 @@ char* BC_TumbleTextBox::get_text()
 	return textbox->get_text();
 }
 
-int BC_TumbleTextBox::update(char *value)
+int BC_TumbleTextBox::update(const char *value)
 {
 	textbox->update(value);
 	return 0;
