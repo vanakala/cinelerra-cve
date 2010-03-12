@@ -220,7 +220,7 @@ void MWindow::create_defaults_path(char *string)
 	strcat(string, "Cinelerra_rc");
 }
 
-void MWindow::init_defaults(BC_Hash* &defaults, char *config_path)
+void MWindow::init_defaults(BC_Hash* &defaults, const char *config_path)
 {
 	char path[BCTEXTLEN];
 // Use user supplied path
@@ -459,7 +459,7 @@ void MWindow::create_plugindb(int do_audio,
 	}
 }
 
-PluginServer* MWindow::scan_plugindb(char *title,
+PluginServer* MWindow::scan_plugindb(const char *title,
 		int data_type)
 {
 	if(data_type < 0)
@@ -1186,7 +1186,7 @@ SET_TRACE
 
 
 
-void MWindow::test_plugins(EDL *new_edl, char *path)
+void MWindow::test_plugins(EDL *new_edl, const char *path)
 {
 	char string[BCTEXTLEN];
 // Do a check weather plugins exist
@@ -2208,7 +2208,7 @@ void MWindow::time_format_common()
 }
 
 
-int MWindow::set_filename(char *filename)
+int MWindow::set_filename(const char *filename)
 {
 	strcpy(session->filename, filename);
 	if(gui)

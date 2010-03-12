@@ -37,7 +37,7 @@ ChannelDB::~ChannelDB()
 	channels.remove_all_objects();
 }
 
-char* ChannelDB::prefix_to_path(char *path, char *prefix)
+char* ChannelDB::prefix_to_path(char *path, const char *prefix)
 {
 	FileSystem fs;
 	char directory[BCTEXTLEN];
@@ -47,7 +47,7 @@ char* ChannelDB::prefix_to_path(char *path, char *prefix)
 	return path;
 }
 
-void ChannelDB::load(char *prefix)
+void ChannelDB::load(const char *prefix)
 {
 	FileXML file;
 	char path[BCTEXTLEN];
@@ -71,7 +71,7 @@ void ChannelDB::load(char *prefix)
 	}
 }
 
-void ChannelDB::save(char *prefix)
+void ChannelDB::save(const char *prefix)
 {
 	char path[BCTEXTLEN];
 	FileXML file;

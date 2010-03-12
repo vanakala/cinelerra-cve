@@ -345,7 +345,7 @@ int EDL::load_xml(ArrayList<PluginServer*> *plugindb,
 // The string is not terminated in this call.
 int EDL::save_xml(ArrayList<PluginServer*> *plugindb,
 	FileXML *file, 
-	char *output_path,
+	const char *output_path,
 	int is_clip,
 	int is_vwindow)
 {
@@ -428,7 +428,7 @@ int EDL::copy_assets(double start,
 	FileXML *file, 
 	int all, 
 	ArrayList<PluginServer*> *plugindb,
-	char *output_path)
+	const char *output_path)
 {
 	ArrayList<Asset*> asset_list;
 	Track* current;
@@ -485,7 +485,7 @@ int EDL::copy(double start,
 	int is_vwindow,
 	FileXML *file, 
 	ArrayList<PluginServer*> *plugindb, 
-	char *output_path,
+	const char *output_path,
 	int rewind_it)
 {
 //printf("EDL::copy 1\n");
@@ -700,7 +700,7 @@ double EDL::equivalent_output(EDL *edl)
 }
 
 
-void EDL::set_project_path(char *path)
+void EDL::set_project_path(const char *path)
 {
 	strcpy(this->project_path, path);
 }
@@ -1205,7 +1205,7 @@ double EDL::align_to_frame(double position, int round)
 }
 
 
-void EDL::new_folder(char *folder)
+void EDL::new_folder(const char *folder)
 {
 	for(int i = 0; i < folders.total; i++)
 	{
@@ -1217,7 +1217,7 @@ void EDL::new_folder(char *folder)
 	strcpy(new_folder, folder);
 }
 
-void EDL::delete_folder(char *folder)
+void EDL::delete_folder(const char *folder)
 {
 	int i;
 	for(i = 0; i < folders.total; i++)

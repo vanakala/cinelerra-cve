@@ -525,7 +525,7 @@ int Tracks::copy(double start,
 	double end, 
 	int all, 
 	FileXML *file, 
-	char *output_path)
+	const char *output_path)
 {
 // nothing selected
 	if(start == end && !all) return 1;

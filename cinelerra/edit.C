@@ -81,7 +81,7 @@ void Edit::reset()
 	user_title[0] = 0;
 }
 
-int Edit::copy(int64_t start, int64_t end, FileXML *file, char *output_path)
+int Edit::copy(int64_t start, int64_t end, FileXML *file, const char *output_path)
 {
 // variables
 //printf("Edit::copy 1\n");
@@ -188,7 +188,7 @@ int64_t Edit::get_source_end(int64_t default_)
 	return default_;
 }
 
-void Edit::insert_transition(char *title)
+void Edit::insert_transition(const char *title)
 {
 //printf("Edit::insert_transition this=%p title=%p title=%s\n", this, title, title);
 	transition = new Transition(edl, 

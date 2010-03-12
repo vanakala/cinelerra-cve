@@ -31,8 +31,8 @@ public:
 	ChannelDB();
 	~ChannelDB();
 	
-	void load(char *prefix);
-	void save(char *prefix);
+	void load(const char *prefix);
+	void save(const char *prefix);
 	void copy_from(ChannelDB *src);
 	void clear();
 	Channel* get(int number);
@@ -41,7 +41,7 @@ public:
 	void remove_number(int number);
 	void set(int number, Channel *ptr);
 
-	char* prefix_to_path(char *path, char *prefix);
+	char* prefix_to_path(char *path, const char *prefix);
 
 	ArrayList<Channel*> channels;
 };

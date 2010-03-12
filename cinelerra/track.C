@@ -432,7 +432,7 @@ void Track::insert_plugin_set(Track *track, double position)
 }
 
 
-Plugin* Track::insert_effect(char *title, 
+Plugin* Track::insert_effect(const char *title, 
 		SharedLocation *shared_location, 
 		KeyFrame *default_keyframe,
 		PluginSet *plugin_set,
@@ -1042,7 +1042,7 @@ void Track::straighten_automation(double selectionstart,
 int Track::copy(double start, 
 	double end, 
 	FileXML *file, 
-	char *output_path)
+	const char *output_path)
 {
 // Use a copy of the selection in converted units
 // So copy_automation doesn't reconvert.

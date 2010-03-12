@@ -62,7 +62,7 @@ public:
 	int picon_h();
 	double frame_w();
 	double frames_per_picon();
-	int copy(int64_t start, int64_t end, FileXML *xml, char *output_path);
+	int copy(int64_t start, int64_t end, FileXML *xml, const char *output_path);
 // When inherited by a plugin need to resample keyframes
 	virtual void resample(double old_rate, double new_rate) {};
 
@@ -97,7 +97,7 @@ public:
 		int edit_plugins,
 		Edits *trim_edits);
 
-	void insert_transition(char  *title);
+	void insert_transition(const char  *title);
 	void detach_transition();
 // Determine if silence depending on existance of asset or plugin title
 	virtual int silence();

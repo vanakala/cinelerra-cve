@@ -110,7 +110,7 @@ public:
 
 	int load_defaults();
 	int save_defaults();
-	int set_filename(char *filename);
+	int set_filename(const char *filename);
 // Total vertical pixels in timeline
 	int get_tracks_height();
 // Total horizontal pixels in timeline
@@ -169,7 +169,7 @@ public:
 		int is_theme,
 		ArrayList<PluginServer*> &plugindb);
 // Find the plugin whose title matches title and return it
-	PluginServer* scan_plugindb(char *title,
+	PluginServer* scan_plugindb(const char *title,
 		int data_type);
 	void dump_plugins();
 
@@ -187,7 +187,7 @@ public:
 	
 
 // Print out plugins which are referenced in the EDL but not loaded.
-	void test_plugins(EDL *new_edl, char *path);
+	void test_plugins(EDL *new_edl, const char *path);
 
 	int interrupt_indexes();  // Stop index building
 
@@ -286,7 +286,7 @@ public:
 // Calculate defaults path
 	static void create_defaults_path(char *string);
 
-	void delete_folder(char *folder);
+	void delete_folder(const char *folder);
 	void delete_inpoint();
 	void delete_outpoint();    
 
@@ -314,7 +314,7 @@ public:
 
 // This is called multiple times by the above functions.
 // It can't sync parameters.
-	void insert_effect(char *title, 
+	void insert_effect(const char *title, 
 		SharedLocation *shared_location, 
 		Track *track,
 		PluginSet *plugin_set,
@@ -340,7 +340,7 @@ public:
 	void move_track_up(Track *track);
 	void move_tracks_up();
 	void mute_selection();
-	void new_folder(char *new_folder);
+	void new_folder(const char *new_folder);
 	void overwrite(EDL *source);
 // For clipboard commands
 	void paste();
@@ -527,7 +527,7 @@ public:
 
 	void init_error();
 	static void init_defaults(BC_Hash* &defaults, 
-		char *config_path);
+		const char *config_path);
 	void init_edl();
 	void init_awindow();
 	void init_gwindow();

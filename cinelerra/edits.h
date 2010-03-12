@@ -62,8 +62,8 @@ public:
 	virtual Edit* create_edit() { return 0; };
 // Insert a 0 length edit at the position
 	Edit* insert_new_edit(int64_t sample);
-	int save(FileXML *xml, char *output_path);
-	int copy(int64_t start, int64_t end, FileXML *xml, char *output_path);
+	int save(FileXML *xml, const char *output_path);
+	int copy(int64_t start, int64_t end, FileXML *xml, const char *output_path);
 // Clear region of edits
 	virtual void clear(int64_t start, int64_t end);
 // Clear edits and plugins for a handle modification

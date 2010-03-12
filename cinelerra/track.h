@@ -90,7 +90,7 @@ public:
 		double length, 
 		double position, 
 		int track_number);
-	Plugin* insert_effect(char *title, 
+	Plugin* insert_effect(const char *title, 
 		SharedLocation *shared_location, 
 		KeyFrame *keyframe,
 		PluginSet *plugin_set,
@@ -227,7 +227,7 @@ public:
 	int copy(double start, 
 		double end, 
 		FileXML *file, 
-		char *output_path = "");
+		const char *output_path = "");
 	int copy_assets(double start, 
 		double end, 
 		ArrayList<Asset*> *asset_list);

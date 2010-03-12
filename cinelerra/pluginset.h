@@ -79,7 +79,7 @@ public:
 	int optimize();
 
 // Insert a new plugin
-	Plugin* insert_plugin(char *title, 
+	Plugin* insert_plugin(const char *title, 
 		int64_t unit_position, 
 		int64_t unit_length,
 		int plugin_type,

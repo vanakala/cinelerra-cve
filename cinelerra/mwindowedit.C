@@ -693,7 +693,7 @@ void MWindow::insert_effects_cwindow(Track *dest_track)
 
 
 
-void MWindow::insert_effect(char *title, 
+void MWindow::insert_effect(const char *title, 
 	SharedLocation *shared_location, 
 	Track *track,
 	PluginSet *plugin_set,
@@ -2162,14 +2162,14 @@ void MWindow::undo_entry(BC_WindowBase *calling_window_gui)
 
 
 
-void MWindow::new_folder(char *new_folder)
+void MWindow::new_folder(const char *new_folder)
 {
 	edl->new_folder(new_folder);
 	undo->update_undo(_("new folder"), LOAD_ALL);
 	awindow->gui->async_update_assets();
 }
 
-void MWindow::delete_folder(char *folder)
+void MWindow::delete_folder(const char *folder)
 {
 //	undo->update_undo(_("delete folder"), LOAD_ALL);
 }

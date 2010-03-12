@@ -158,7 +158,7 @@ public:
 		double end, 
 		int all, 
 		FileXML *file, 
-		char *output_path = "");
+		const char *output_path = "");
 
 
 

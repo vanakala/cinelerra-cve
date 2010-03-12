@@ -136,7 +136,7 @@ void PluginSet::synchronize_params(PluginSet *plugin_set)
 	}
 }
 
-Plugin* PluginSet::insert_plugin(char *title, 
+Plugin* PluginSet::insert_plugin(const char *title, 
 	int64_t unit_position, 
 	int64_t unit_length,
 	int plugin_type,
