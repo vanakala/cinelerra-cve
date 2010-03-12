@@ -142,7 +142,7 @@ public:
 
 // separator strings for BC_TextBox::set_separators
 // Returns 0 if the format has no separators.
-	static char* format_to_separators(int time_format);
+	static const char* format_to_separators(int time_format);
 
 	static int64_t tosamples(float frames, int sample_rate, float framerate);
 // give text representation as time

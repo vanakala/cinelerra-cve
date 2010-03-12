@@ -112,7 +112,7 @@ public:
 // Table of separators to skip.  Used by time textboxes
 // The separator format is "0000:0000".  Things not alnum are considered
 // separators.  The alnums are replaced by user text.
-	void set_separators(char *separators);
+	void set_separators(const char *separators);
 
 // 1 - selects text, -1 - deselects, 0 - do nothing
 // in all cases it returns text_selected after the operation
@@ -166,7 +166,7 @@ private:
 	Timer *skip_cursor;
 // Used for custom formatting text boxes
 	int last_keypress;
-	char *separators;
+	const char *separators;
 };
 
 

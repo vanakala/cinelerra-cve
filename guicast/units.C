@@ -254,22 +254,22 @@ char* Units::totext(char *text,
 					60 + 
 					second) + 
 				0.0000001);   
-			sprintf(text, "%01d:%02d:%02d:%02ld", hour, minute, second, frame);
+			sprintf(text, "%01d:%02d:%02d:%02lld", hour, minute, second, frame);
 			return text;
 		}
 			break;
 			
 		case TIME_SAMPLES:
-  			sprintf(text, "%09ld", to_int64(seconds * sample_rate));
+			sprintf(text, "%09lld", to_int64(seconds * sample_rate));
 			break;
 		
 		case TIME_SAMPLES_HEX:
-  			sprintf(text, "%08x", to_int64(seconds * sample_rate));
+  			sprintf(text, "%08llx", to_int64(seconds * sample_rate));
 			break;
 		
 		case TIME_FRAMES:
 			frame = to_int64(seconds * frame_rate);
-			sprintf(text, "%06ld", frame);
+			sprintf(text, "%06lld", frame);
 			return text;
 			break;
 		
@@ -385,7 +385,7 @@ int64_t Units::fromtext(char *text,
 			break;
 		
 		case TIME_SAMPLES_HEX:
-			sscanf(text, "%x", &total_samples);
+			sscanf(text, "%llx", &total_samples);
 			return total_samples;
 		
 		case TIME_FRAMES:
@@ -656,7 +656,7 @@ uint64_t Units::ptr_to_int64(void *ptr)
 	return result;
 }
 
-char* Units::format_to_separators(int time_format)
+const char* Units::format_to_separators(int time_format)
 {
 	switch(time_format)
 	{

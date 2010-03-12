@@ -40,7 +40,7 @@ int BC_DisplayInfo::auto_reposition_x = -1;
 int BC_DisplayInfo::auto_reposition_y = -1;
 
 
-BC_DisplayInfo::BC_DisplayInfo(char *display_name, int show_error)
+BC_DisplayInfo::BC_DisplayInfo(const char *display_name, int show_error)
 {
 	init_window(display_name, show_error);
 }
@@ -204,7 +204,7 @@ int BC_DisplayInfo::get_bottom_border()
 	return bottom_border;
 }
 
-void BC_DisplayInfo::init_window(char *display_name, int show_error)
+void BC_DisplayInfo::init_window(const char *display_name, int show_error)
 {
 	if(display_name && display_name[0] == 0) display_name = NULL;
 	

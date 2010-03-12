@@ -1536,7 +1536,7 @@ void BC_TextBox::set_ibeam_letter(int number, int redraw)
 	}
 }
 
-void BC_TextBox::set_separators(char *separators)
+void BC_TextBox::set_separators(const char *separators)
 {
 	this->separators = separators;
 }

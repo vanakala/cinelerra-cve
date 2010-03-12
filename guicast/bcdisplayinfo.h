@@ -29,7 +29,7 @@
 class BC_DisplayInfo
 {
 public:
-	BC_DisplayInfo(char *display_name = "", int show_error = 1);
+	BC_DisplayInfo(const char *display_name = "", int show_error = 1);
 	~BC_DisplayInfo();
 	
 	friend class BC_WindowBase;
@@ -49,7 +49,7 @@ public:
 
 private:
 	void init_borders();
-	void init_window(char *display_name, int show_error);
+	void init_window(const char *display_name, int show_error);
 	Display* display;
 	Window rootwin;
 	Visual *vis;
