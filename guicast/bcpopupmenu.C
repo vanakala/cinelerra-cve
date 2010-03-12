@@ -44,7 +44,7 @@
 BC_PopupMenu::BC_PopupMenu(int x, 
 		int y, 
 		int w, 
-		char *text, 
+		const char *text, 
 		int use_title,
 		VFrame **data,
 		int margin)
@@ -71,7 +71,7 @@ BC_PopupMenu::BC_PopupMenu(int x,
 
 BC_PopupMenu::BC_PopupMenu(int x, 
 		int y, 
-		char *text, 
+		const char *text, 
 		int use_title,
 		VFrame **data)
  : BC_SubWindow(x, y, w, -1, -1)
@@ -104,7 +104,7 @@ char* BC_PopupMenu::get_text()
 	return text;
 }
 
-void BC_PopupMenu::set_text(char *text)
+void BC_PopupMenu::set_text(const char *text)
 {
 	if(use_title)
 	{
