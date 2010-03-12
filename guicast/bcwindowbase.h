@@ -295,8 +295,8 @@ public:
 	BC_Pixmap* get_bg_pixmap();
 	int get_text_ascent(int font);
 	int get_text_descent(int font);
-	int get_text_height(int font, char *text = 0);
-	int get_text_width(int font, char *text, int length = -1);
+	int get_text_height(int font, const char *text = 0);
+	int get_text_width(int font, const char *text, int length = -1);
 	BC_Clipboard* get_clipboard();
 	void set_dragging(int value);
 	int set_w(int w);
@@ -349,7 +349,7 @@ public:
 	void draw_text(int x, int y, const char *text, int length = -1, BC_Pixmap *pixmap = 0);
 	void draw_xft_text(int x, 
 		int y, 
-		char *text, 
+		const char *text, 
 		int length, 
 		BC_Pixmap *pixmap,
 		int x2,
@@ -357,7 +357,7 @@ public:
 		int y2,
 		int j,
 		int i);
-	void draw_center_text(int x, int y, char *text, int length = -1);
+	void draw_center_text(int x, int y, const char *text, int length = -1);
 	void draw_line(int x1, int y1, int x2, int y2, BC_Pixmap *pixmap = 0);
 	void draw_polygon(ArrayList<int> *x, ArrayList<int> *y, BC_Pixmap *pixmap = 0);
 	void draw_rectangle(int x, int y, int w, int h);
@@ -467,7 +467,7 @@ public:
 	void set_inverse();
 	void set_background(VFrame *bitmap);
 // Change the window title.  The title is translated internally.
-	void set_title(char *text);
+	void set_title(const char *text);
 	char* get_title();
 	void start_video();
 	void stop_video();
@@ -508,7 +508,7 @@ public:
 		int src_w = 0, 
 		int src_h = 0, 
 		BC_Pixmap *pixmap = 0);
-	void draw_border(char *text, int x, int y, int w, int h);
+	void draw_border(const char *text, int x, int y, int w, int h);
 // Draw a region of the background
 	void draw_top_background(BC_WindowBase *parent_window, int x, int y, int w, int h, BC_Pixmap *pixmap = 0);
 	void draw_top_tiles(BC_WindowBase *parent_window, int x, int y, int w, int h);
@@ -591,7 +591,7 @@ private:
 	int create_color(int color);
 	int create_shared_colors();
 // Get width of a single line.  Used by get_text_width
-	int get_single_text_width(int font, char *text, int length);
+	int get_single_text_width(int font, const char *text, int length);
 	int allocate_color_table();
 	int init_gc();
 	int init_fonts();

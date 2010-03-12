@@ -2244,7 +2244,7 @@ XFontSet BC_WindowBase::get_curr_fontset(void)
 	return 0;
 }
 
-int BC_WindowBase::get_single_text_width(int font, char *text, int length)
+int BC_WindowBase::get_single_text_width(int font, const char *text, int length)
 {
 #ifdef HAVE_XFT
 	if(get_resources()->use_xft && get_xft_struct(font))
@@ -2280,7 +2280,7 @@ int BC_WindowBase::get_single_text_width(int font, char *text, int length)
 	}
 }
 
-int BC_WindowBase::get_text_width(int font, char *text, int length)
+int BC_WindowBase::get_text_width(int font, const char *text, int length)
 {
 	int i, j, w = 0, line_w = 0;
 	if(length < 0) length = strlen(text);
@@ -2380,7 +2380,7 @@ int BC_WindowBase::get_text_descent(int font)
 	}
 }
 
-int BC_WindowBase::get_text_height(int font, char *text)
+int BC_WindowBase::get_text_height(int font, const char *text)
 {
 	if(!text) return get_text_ascent(font) + get_text_descent(font);
 
@@ -3299,7 +3299,7 @@ void BC_WindowBase::set_background(VFrame *bitmap)
 	draw_background(0, 0, w, h);
 }
 
-void BC_WindowBase::set_title(char *text)
+void BC_WindowBase::set_title(const char *text)
 {
 	XSetStandardProperties(top_level->display, top_level->win, text, text, None, 0, 0, 0); 
 	strcpy(this->title, _(text));

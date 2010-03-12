@@ -83,7 +83,7 @@ int BC_Title::reposition(int x, int y)
 }
 
 
-int BC_Title::update(char *text)
+int BC_Title::update(const char *text)
 {
 	int new_w, new_h;
 
@@ -161,14 +161,14 @@ int BC_Title::draw()
 	return 0;
 }
 
-int BC_Title::calculate_w(BC_WindowBase *gui, char *text, int font)
+int BC_Title::calculate_w(BC_WindowBase *gui, const char *text, int font)
 {
 	int temp_w, temp_h;
 	get_size(gui, font, text, 0, temp_w, temp_h);
 	return temp_w;
 }
 
-int BC_Title::calculate_h(BC_WindowBase *gui, char *text, int font)
+int BC_Title::calculate_h(BC_WindowBase *gui, const char *text, int font)
 {
 	int temp_w, temp_h;
 	get_size(gui, font, text, 0, temp_w, temp_h);
@@ -177,7 +177,7 @@ int BC_Title::calculate_h(BC_WindowBase *gui, char *text, int font)
 
 
 
-void BC_Title::get_size(BC_WindowBase *gui, int font, char *text, int fixed_w, int &w, int &h)
+void BC_Title::get_size(BC_WindowBase *gui, int font, const char *text, int fixed_w, int &w, int &h)
 {
 	int i, j, x, y, line_w = 0;
 	w = 0;
