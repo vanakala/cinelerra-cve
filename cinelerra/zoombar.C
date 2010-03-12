@@ -513,7 +513,7 @@ int AutoTypeMenu::handle_event()
 }
 
 
-ZoomTextBox::ZoomTextBox(MWindow *mwindow, ZoomBar *zoombar, int x, int y, char *text)
+ZoomTextBox::ZoomTextBox(MWindow *mwindow, ZoomBar *zoombar, int x, int y, const char *text)
  : BC_TextBox(x, y, 130, 1, text)
 {
 	this->mwindow = mwindow;

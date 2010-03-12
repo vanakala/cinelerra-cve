@@ -279,9 +279,9 @@ VDeviceBase* VideoDevice::new_device_base()
 	return 0;
 }
 
-static char* get_channeldb_path(VideoInConfig *vconfig_in)
+static const char* get_channeldb_path(VideoInConfig *vconfig_in)
 {
-	char *path = "";
+	const char *path = "";
 	switch(vconfig_in->driver)
 	{
 		case VIDEO4LINUX:
@@ -367,7 +367,7 @@ void VideoDevice::fix_asset(Asset *asset, int driver)
 }
 
 
-char* VideoDevice::drivertostr(int driver)
+const char* VideoDevice::drivertostr(int driver)
 {
 	switch(driver)
 	{

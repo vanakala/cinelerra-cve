@@ -123,7 +123,7 @@ public:
 
 // Return codec to store on disk if compressed
 	void fix_asset(Asset *asset, int driver);
-	static char* drivertostr(int driver);
+	static const char* drivertostr(int driver);
 // Get the best colormodel for recording given the file format.
 // Must be called between open_input and read_buffer.
 	int get_best_colormodel(Asset *asset);

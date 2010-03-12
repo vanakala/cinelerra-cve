@@ -132,7 +132,7 @@ public:
 class ZoomTextBox : public BC_TextBox
 {
 public:
-	ZoomTextBox(MWindow *mwindow, ZoomBar *zoombar, int x, int y, char *text);
+	ZoomTextBox(MWindow *mwindow, ZoomBar *zoombar, int x, int y, const char *text);
 	int button_press_event();
 	int handle_event();
 	MWindow *mwindow;

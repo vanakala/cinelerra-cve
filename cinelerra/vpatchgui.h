@@ -69,7 +69,7 @@ public:
 
 	int handle_event();
 	int create_objects();         // add initial items
-	static char* mode_to_text(int mode);
+	static const char* mode_to_text(int mode);
 	static IntAuto* get_keyframe(MWindow *mwindow, VPatchGUI *patch);
 	void update(int mode);
 
@@ -81,7 +81,7 @@ public:
 class VModePatchItem : public BC_MenuItem
 {
 public:
-	VModePatchItem(VModePatch *popup, char *text, int mode);
+	VModePatchItem(VModePatch *popup, const char *text, int mode);
 
 	int handle_event();
 	VModePatch *popup;

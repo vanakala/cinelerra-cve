@@ -273,9 +273,9 @@ public:
 // Push and pop are only called from Cinelerra internals, so
 // if an object calls read_frame with a temporary, the stack before and after
 // the temporary is lost.
-	void push_prev_effect(char *name);
+	void push_prev_effect(const char *name);
 	void pop_prev_effect();
-	void push_next_effect(char *name);
+	void push_next_effect(const char *name);
 	void pop_next_effect();
 // These are called by plugins to determine aggregation.
 // They access any member of the stack based on the number argument.
