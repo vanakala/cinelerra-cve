@@ -53,7 +53,7 @@ public:
 	virtual float get_percentage() { return 0; };
 	virtual int percentage_to_value(float percentage) { return 0; };
 	virtual int handle_event() { return 0; };
-	virtual char* get_caption() { return ""; };
+	virtual const char* get_caption() { return ""; };
 	virtual int increase_value() { return 0; };
 	virtual int decrease_value() { return 0; };
 	void set_use_caption(int value);
@@ -99,7 +99,7 @@ public:
 		VFrame **data = 0);
 	~BC_FPot();
 
-	char* get_caption();
+	const char* get_caption();
 	int increase_value();
 	int decrease_value();
 	float get_percentage();
@@ -125,7 +125,7 @@ public:
 		VFrame **data = 0);
 	~BC_IPot();
 
-	char* get_caption();
+	const char* get_caption();
 	int increase_value();
 	int decrease_value();
 	float get_percentage();
@@ -147,7 +147,7 @@ public:
 		VFrame **data = 0);
 	~BC_QPot();
 
-	char* get_caption();
+	const char* get_caption();
 	int increase_value();
 	int decrease_value();
 	float get_percentage();
@@ -173,7 +173,7 @@ public:
 		VFrame **data = 0);
 	~BC_PercentagePot();
 
-	char* get_caption();
+	const char* get_caption();
 	int increase_value();
 	int decrease_value();
 	float get_percentage();

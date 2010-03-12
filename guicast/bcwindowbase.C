@@ -1395,7 +1395,7 @@ int BC_WindowBase::hide_tooltip()
 	return 0;
 }
 
-int BC_WindowBase::set_tooltip(char *text)
+int BC_WindowBase::set_tooltip(const char *text)
 {
 	strcpy(this->tooltip_text, text);
 // Update existing tooltip if it is visible

@@ -537,7 +537,7 @@ public:
 	int set_repeat(int64_t duration);
 // Stop a repeat event from being dispatched.
 	int unset_repeat(int64_t duration);
-	int set_tooltip(char *text);
+	int set_tooltip(const char *text);
 	int show_tooltip(int w = -1, int h = -1);
 	int hide_tooltip();
 	int set_icon(VFrame *data);

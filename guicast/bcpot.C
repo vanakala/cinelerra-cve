@@ -434,7 +434,7 @@ void BC_FPot::set_precision(float value)
 	this->precision = value;
 }
 
-char*  BC_FPot::get_caption()
+const char*  BC_FPot::get_caption()
 {
 	sprintf(caption, "%.2f", value);
 	return caption;
@@ -521,9 +521,9 @@ int BC_IPot::decrease_value()
 	return 0;
 }
 
-char*  BC_IPot::get_caption()
+const char*  BC_IPot::get_caption()
 {
-	sprintf(caption, "%ld", value);
+	sprintf(caption, "%lld", value);
 	return caption;
 }
 
@@ -603,9 +603,9 @@ int BC_QPot::decrease_value()
 	return 0;
 }
 
-char*  BC_QPot::get_caption()
+const char*  BC_QPot::get_caption()
 {
-	sprintf(caption, "%ld", Freq::tofreq(value));
+	sprintf(caption, "%d", Freq::tofreq(value));
 	return caption;
 }
 
@@ -676,7 +676,7 @@ int BC_PercentagePot::decrease_value()
 	return 0;
 }
 
-char*  BC_PercentagePot::get_caption()
+const char*  BC_PercentagePot::get_caption()
 {
 	sprintf(caption, "%d%%", (int)(get_percentage() * 100 + 0.5));
 	return caption;
