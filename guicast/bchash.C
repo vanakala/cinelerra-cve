@@ -141,7 +141,7 @@ int BC_Hash::save_string(char* &string)
 
 
 
-int32_t BC_Hash::get(char *name, int32_t default_)
+int32_t BC_Hash::get(const char *name, int32_t default_)
 {
 	for(int i = 0; i < total; i++)
 	{
@@ -153,7 +153,7 @@ int32_t BC_Hash::get(char *name, int32_t default_)
 	return default_;  // failed
 }
 
-int64_t BC_Hash::get(char *name, int64_t default_)
+int64_t BC_Hash::get(const char *name, int64_t default_)
 {
 	int64_t result = default_;
 	for(int i = 0; i < total; i++)
@@ -167,7 +167,7 @@ int64_t BC_Hash::get(char *name, int64_t default_)
 	return result;
 }
 
-double BC_Hash::get(char *name, double default_)
+double BC_Hash::get(const char *name, double default_)
 {
 	for(int i = 0; i < total; i++)
 	{
@@ -179,7 +179,7 @@ double BC_Hash::get(char *name, double default_)
 	return default_;  // failed
 }
 
-float BC_Hash::get(char *name, float default_)
+float BC_Hash::get(const char *name, float default_)
 {
 	for(int i = 0; i < total; i++)
 	{
@@ -191,7 +191,7 @@ float BC_Hash::get(char *name, float default_)
 	return default_;  // failed
 }
 
-char* BC_Hash::get(char *name, char *default_)
+char* BC_Hash::get(const char *name, char *default_)
 {
 	for(int i = 0; i < total; i++)
 	{
@@ -204,35 +204,35 @@ char* BC_Hash::get(char *name, char *default_)
 	return default_;  // failed
 }
 
-int BC_Hash::update(char *name, double value) // update a value if it exists
+int BC_Hash::update(const char *name, double value) // update a value if it exists
 {
 	char string[1024];
 	sprintf(string, "%.16e", value);
 	return update(name, string);
 }
 
-int BC_Hash::update(char *name, float value) // update a value if it exists
+int BC_Hash::update(const char *name, float value) // update a value if it exists
 {
 	char string[1024];
 	sprintf(string, "%.6e", value);
 	return update(name, string);
 }
 
-int32_t BC_Hash::update(char *name, int32_t value) // update a value if it exists
+int32_t BC_Hash::update(const char *name, int32_t value) // update a value if it exists
 {
 	char string[1024];
 	sprintf(string, "%d", value);
 	return update(name, string);
 }
 
-int BC_Hash::update(char *name, int64_t value) // update a value if it exists
+int BC_Hash::update(const char *name, int64_t value) // update a value if it exists
 {
 	char string[1024];
 	sprintf(string, "%lld", value);
 	return update(name, string);
 }
 
-int BC_Hash::update(char *name, char *value)
+int BC_Hash::update(const char *name, const char *value)
 {
 	for(int i = 0; i < total; i++)
 	{
