@@ -41,7 +41,7 @@
 
 typedef struct
 {
-	char *suffix;
+	const char *suffix;
 	int icon_type;
 } suffix_to_type_t;
 
@@ -287,26 +287,26 @@ public:
 
 
 // fonts
-	static char *large_font;
-	static char *medium_font;
-	static char *small_font;
+	static const char *large_font;
+	static const char *medium_font;
+	static const char *small_font;
 // Backup of fonts in case the first choices don't exist
-	static char *large_font2;
-	static char *medium_font2;
-	static char *small_font2;
+	static const char *large_font2;
+	static const char *medium_font2;
+	static const char *small_font2;
 
-	static char *large_fontset;
-	static char *medium_fontset;
-	static char *small_fontset;
+	static const char *large_fontset;
+	static const char *medium_fontset;
+	static const char *small_fontset;
 
-	static char *large_font_xft;
-	static char *medium_font_xft;
-	static char *small_font_xft;
+	static const char *large_font_xft;
+	static const char *medium_font_xft;
+	static const char *small_font_xft;
 
 // Backup of fonts in case the first choices don't exist
-	static char *large_font_xft2;
-	static char *medium_font_xft2;
-	static char *small_font_xft2;
+	static const char *large_font_xft2;
+	static const char *medium_font_xft2;
+	static const char *small_font_xft2;
 
 	VFrame **medium_7segment;
 
