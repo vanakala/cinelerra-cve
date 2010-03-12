@@ -362,7 +362,7 @@ int FileOGG::open_file(int rd, int wr)
 			}
 
 			vorbis_comment_init (&tf->vc); // comment is cleared lateron 
-			vorbis_comment_add_tag (&tf->vc, "ENCODER", PACKAGE_STRING);
+			vorbis_comment_add_tag (&tf->vc, (char*)"ENCODER", (char*)PACKAGE_STRING);
 			/* set up the analysis state and auxiliary encoding storage */
 			vorbis_analysis_init (&tf->vd, &tf->vi);
 			vorbis_block_init (&tf->vd, &tf->vb);
@@ -387,7 +387,7 @@ int FileOGG::open_file(int rd, int wr)
 
 			/* create the remaining theora headers */
 			theora_comment_init (&tf->tc);
-			theora_comment_add_tag (&tf->tc, "ENCODER", PACKAGE_STRING);
+			theora_comment_add_tag (&tf->tc, (char*)"ENCODER", (char*)PACKAGE_STRING);
 			theora_encode_comment (&tf->tc, &tf->op);
 			ogg_stream_packetin (&tf->to, &tf->op);
 			theora_comment_clear(&tf->tc);

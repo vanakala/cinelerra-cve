@@ -1304,12 +1304,12 @@ int FileMPEG::read_samples_float(float *buffer, int64_t len)
 
 
 
-char* FileMPEG::strtocompression(char *string)
+const char* FileMPEG::strtocompression(const char *string)
 {
 	return "";
 }
 
-char* FileMPEG::compressiontostr(char *string)
+const char* FileMPEG::compressiontostr(const char *string)
 {
 	return "";
 }

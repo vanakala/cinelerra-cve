@@ -68,14 +68,14 @@ public:
 
 
 // Display error message to command line or GUI, depending on what exists.
-	static void show_error(char *string);
+	static void show_error(const char *string);
 
 
 private:
-	void show_error_local(char *string);
+	void show_error_local(const char *string);
 
 // Split errors into multiple lines based on carriage returns.
-	void append_error(char *string);
+	void append_error(const char *string);
 
 
 	MWindow *mwindow;

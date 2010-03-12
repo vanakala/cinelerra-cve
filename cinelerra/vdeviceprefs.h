@@ -137,7 +137,7 @@ public:
 class VDeviceCheckBox : public BC_CheckBox
 {
 public:
-	VDeviceCheckBox(int x, int y, int *output, char *text);
+	VDeviceCheckBox(int x, int y, int *output, const char *text);
 
 	int handle_event();
 	int *output;
@@ -154,7 +154,7 @@ public:
 		int *output);
 	~VDriverMenu();
 	
-	char* driver_to_string(int driver);
+	const char* driver_to_string(int driver);
 	int create_objects();
 	
 	VDevicePrefs *device_prefs;
@@ -167,7 +167,7 @@ public:
 class VDriverItem : public BC_MenuItem
 {
 public:
-	VDriverItem(VDriverMenu *popup, char *text, int driver);
+	VDriverItem(VDriverMenu *popup, const char *text, int driver);
 	~VDriverItem();
 	
 	int handle_event();

@@ -41,7 +41,7 @@ class Pipe {
 	int fd;
  private:
 	int substitute() ;
- 	int open(char *mode) ;
+ 	int open(const char *mode) ;
 	
 	char sub_char;
 	char *sub_str;

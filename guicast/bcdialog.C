@@ -51,7 +51,7 @@ BC_DialogThread::~BC_DialogThread()
 	delete window_lock;
 }
 
-void BC_DialogThread::lock_window(char *location)
+void BC_DialogThread::lock_window(const char *location)
 {
 	window_lock->lock(location);
 }

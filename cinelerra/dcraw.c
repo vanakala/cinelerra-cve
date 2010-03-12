@@ -6243,7 +6243,7 @@ void CLASS write_psd (FILE *ofp)
 }
 
 // CINELERRA
-int CLASS dcraw_main (int argc, char **argv)
+int CLASS dcraw_main (int argc, const char **argv)
 {
 // CINELERRA
 // Globals must be reset

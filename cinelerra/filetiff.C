@@ -98,7 +98,7 @@ int FileTIFF::check_sig(Asset *asset)
 	return 0;
 }
 
-char* FileTIFF::compression_to_str(int value)
+const char* FileTIFF::compression_to_str(int value)
 {
 	switch(value)
 	{
@@ -113,7 +113,7 @@ char* FileTIFF::compression_to_str(int value)
 	}
 }
 
-char* FileTIFF::cmodel_to_str(int value)
+const char* FileTIFF::cmodel_to_str(int value)
 {
 	switch(value)
 	{
@@ -142,7 +142,7 @@ int FileTIFF::can_copy_from(Edit *edit, int64_t position)
 
 
 
-int FileTIFF::read_frame_header(char *path)
+int FileTIFF::read_frame_header(const char *path)
 {
 	TIFF *stream;
 	int result = 0;

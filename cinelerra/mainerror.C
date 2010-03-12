@@ -139,9 +139,9 @@ BC_Window* MainError::new_gui()
 	return gui;
 }
 
-void MainError::append_error(char *string)
+void MainError::append_error(const char *string)
 {
-	char *in_ptr = string;
+	const char *in_ptr = string;
 	char string2[BCTEXTLEN];
 	int first_line = 1;
 	while(*in_ptr)
@@ -171,7 +171,7 @@ void MainError::append_error(char *string)
 	}
 }
 
-void MainError::show_error_local(char *string)
+void MainError::show_error_local(const char *string)
 {
 SET_TRACE
 // assume user won't get to closing the GUI here
@@ -215,7 +215,7 @@ SET_TRACE
 }
 
 
-void MainError::show_error(char *string)
+void MainError::show_error(const char *string)
 {
 	if(main_error)
 		main_error->show_error_local(string);

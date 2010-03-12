@@ -58,8 +58,8 @@ public:
 		PXR24
 	};
 
-	static char* compression_to_str(int compression);
-	static int str_to_compression(char *string);
+	static const char* compression_to_str(int compression);
+	static int str_to_compression(const char *string);
 	static int compression_to_exr(int compression);
 
 	int native_cmodel;

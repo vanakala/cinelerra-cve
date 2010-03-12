@@ -130,7 +130,7 @@ N_("RGBA uncompressed")
 #define TGA_RGB_NAME "RGB uncompressed"
 #define TGA_RGBA_NAME "RGBA uncompressed"
 
-char* FileTGA::compression_to_str(char *compression)
+const char* FileTGA::compression_to_str(const char *compression)
 {
 	if(!strcasecmp(compression, TGA_RGB_RLE)) return _(TGA_RGB_RLE_NAME);
 	if(!strcasecmp(compression, TGA_RGBA_RLE)) return _(TGA_RGBA_RLE_NAME);
@@ -139,7 +139,7 @@ char* FileTGA::compression_to_str(char *compression)
 	return TGA_RGB_NAME;
 }
 
-char* FileTGA::str_to_compression(char *string)
+const char* FileTGA::str_to_compression(const char *string)
 {
 	if(!strcasecmp(compression_to_str(TGA_RGB_RLE), string)) return TGA_RGB_RLE;
 	if(!strcasecmp(compression_to_str(TGA_RGBA_RLE), string)) return TGA_RGBA_RLE;

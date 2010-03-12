@@ -265,7 +265,7 @@ long quicktime_decode_video(quicktime_t *file,
 	return result;
 }
 
-void quicktime_set_parameter(quicktime_t *file, char *key, void *value)
+void quicktime_set_parameter(quicktime_t *file, const char *key, void *value)
 {
 	int i;
 	for(i = 0; i < file->total_vtracks; i++)

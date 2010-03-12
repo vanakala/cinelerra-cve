@@ -43,7 +43,7 @@ public:
 
 	void create_objects();
 	FormatPresetItem* find_preset(EDL *edl);
-	char* get_preset_text(EDL *edl);
+	const char* get_preset_text(EDL *edl);
 
 // New preset selected
 	virtual int handle_event();

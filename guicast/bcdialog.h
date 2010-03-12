@@ -55,7 +55,7 @@ public:
 	BC_Window* get_gui();
 
 // Called by user to access the gui pointer
-	void lock_window(char *location);
+	void lock_window(const char *location);
 	void unlock_window();
 
 private:

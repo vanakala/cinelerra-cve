@@ -459,69 +459,70 @@ VDriverMenu::~VDriverMenu()
 {
 }
 
-char* VDriverMenu::driver_to_string(int driver)
+const char* VDriverMenu::driver_to_string(int driver)
 {
+	const char *sp;
 	switch(driver)
 	{
 		case VIDEO4LINUX:
-			sprintf(string, VIDEO4LINUX_TITLE);
+			sp = VIDEO4LINUX_TITLE;
 			break;
 		case VIDEO4LINUX2:
-			sprintf(string, VIDEO4LINUX2_TITLE);
+			sp = VIDEO4LINUX2_TITLE;
 			break;
 		case VIDEO4LINUX2JPEG:
-			sprintf(string, VIDEO4LINUX2JPEG_TITLE);
+			sp = VIDEO4LINUX2JPEG_TITLE;
 			break;
 		case SCREENCAPTURE:
-			sprintf(string, SCREENCAPTURE_TITLE);
+			sp = SCREENCAPTURE_TITLE;
 			break;
 		case CAPTURE_BUZ:
-			sprintf(string, CAPTURE_BUZ_TITLE);
+			sp = CAPTURE_BUZ_TITLE;
 			break;
 		case CAPTURE_LML:
-			sprintf(string, CAPTURE_LML_TITLE);
+			sp = CAPTURE_LML_TITLE;
 			break;
 #ifdef HAVE_FIREWIRE
 		case CAPTURE_FIREWIRE:
-			sprintf(string, CAPTURE_FIREWIRE_TITLE);
+			sp = CAPTURE_FIREWIRE_TITLE;
 			break;
 		case CAPTURE_IEC61883:
-			sprintf(string, CAPTURE_IEC61883_TITLE);
+			sp = string, CAPTURE_IEC61883_TITLE;
 			break;
 #endif
 		case CAPTURE_DVB:
-			sprintf(string, CAPTURE_DVB_TITLE);
+			sp = CAPTURE_DVB_TITLE;
 			break;
 		case PLAYBACK_X11:
-			sprintf(string, PLAYBACK_X11_TITLE);
+			sp = PLAYBACK_X11_TITLE;
 			break;
 		case PLAYBACK_X11_XV:
-			sprintf(string, PLAYBACK_X11_XV_TITLE);
+			sp = PLAYBACK_X11_XV_TITLE;
 			break;
 		case PLAYBACK_X11_GL:
-			sprintf(string, PLAYBACK_X11_GL_TITLE);
+			sp = PLAYBACK_X11_GL_TITLE;
 			break;
 		case PLAYBACK_LML:
-			sprintf(string, PLAYBACK_LML_TITLE);
+			sp = PLAYBACK_LML_TITLE;
 			break;
 		case PLAYBACK_BUZ:
-			sprintf(string, PLAYBACK_BUZ_TITLE);
+			sp = PLAYBACK_BUZ_TITLE;
 			break;
 #ifdef HAVE_FIREWIRE
 		case PLAYBACK_FIREWIRE:
-			sprintf(string, PLAYBACK_FIREWIRE_TITLE);
+			sp = PLAYBACK_FIREWIRE_TITLE;
 			break;
 		case PLAYBACK_DV1394:
-			sprintf(string, PLAYBACK_DV1394_TITLE);
+			sp = PLAYBACK_DV1394_TITLE;
 			break;
 		case PLAYBACK_IEC61883:
-			sprintf(string, PLAYBACK_IEC61883_TITLE);
+			sp = PLAYBACK_IEC61883_TITLE;
 			break;
 #endif
 		default:
-			sprintf(string, "");
+			sp = "";
 	}
-	return string;
+	return sp;
 }
 
 int VDriverMenu::create_objects()
@@ -559,7 +560,7 @@ int VDriverMenu::create_objects()
 }
 
 
-VDriverItem::VDriverItem(VDriverMenu *popup, char *text, int driver)
+VDriverItem::VDriverItem(VDriverMenu *popup, const char *text, int driver)
  : BC_MenuItem(text)
 {
 	this->popup = popup;
@@ -636,7 +637,7 @@ int VDeviceIntBox::handle_event()
 
 
 
-VDeviceCheckBox::VDeviceCheckBox(int x, int y, int *output, char *text)
+VDeviceCheckBox::VDeviceCheckBox(int x, int y, int *output, const char *text)
  : BC_CheckBox(x, y, *output, text)
 {
 	this->output = output;

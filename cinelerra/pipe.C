@@ -111,7 +111,7 @@ int Pipe::substitute()
 	
 	
 
-int Pipe::open(char *mode) 
+int Pipe::open(const char *mode) 
 {
 	if (file) close();
 

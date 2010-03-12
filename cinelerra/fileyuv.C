@@ -468,7 +468,7 @@ int PipeCheckBox::handle_event()
 }
 
 
-PipePreset::PipePreset(int x, int y, char *title, BC_TextBox *textbox, BC_CheckBox *checkbox)
+PipePreset::PipePreset(int x, int y, const char *title, BC_TextBox *textbox, BC_CheckBox *checkbox)
 	: BC_PopupMenu(x, y, 150, title)
 {
 	this->pipe_textbox = textbox;

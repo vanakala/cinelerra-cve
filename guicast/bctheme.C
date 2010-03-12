@@ -58,7 +58,7 @@ BC_Resources* BC_Theme::get_resources()
 
 
 // These create single images for storage in the image_sets table.
-VFrame* BC_Theme::new_image(const char *title, char *path)
+VFrame* BC_Theme::new_image(const char *title, const char *path)
 {
 	VFrame *existing_image = title[0] ? get_image(title, 0) : 0;
 	if(existing_image) return existing_image;
@@ -69,7 +69,7 @@ VFrame* BC_Theme::new_image(const char *title, char *path)
 	return result->data[0];
 }
 
-VFrame* BC_Theme::new_image(char *path)
+VFrame* BC_Theme::new_image(const char *path)
 {
 	return new_image("", path);
 }
@@ -92,7 +92,7 @@ VFrame** BC_Theme::new_image_set(const char *title, int total, va_list *args)
 	return result->data;
 }
 
-VFrame** BC_Theme::new_image_set_images(char *title, int total, ...)
+VFrame** BC_Theme::new_image_set_images(const char *title, int total, ...)
 {
 	va_list list;
 	va_start(list, total);
@@ -214,11 +214,11 @@ BC_ThemeSet* BC_Theme::get_image_set_object(const char *title)
 
 
 
-VFrame** BC_Theme::new_button(char *overlay_path, 
-	char *up_path, 
-	char *hi_path, 
-	char *dn_path,
-	char *title)
+VFrame** BC_Theme::new_button(const char *overlay_path, 
+	const char *up_path, 
+	const char *hi_path, 
+	const char *dn_path,
+	const char *title)
 {
 	VFrame default_data(get_image_data(overlay_path));
 	BC_ThemeSet *result = new BC_ThemeSet(3, 1, title ? title : (char*)"");
@@ -235,12 +235,12 @@ VFrame** BC_Theme::new_button(char *overlay_path,
 }
 
 
-VFrame** BC_Theme::new_button4(char *overlay_path, 
-	char *up_path, 
-	char *hi_path, 
-	char *dn_path,
-	char *disabled_path,
-	char *title)
+VFrame** BC_Theme::new_button4(const char *overlay_path, 
+	const char *up_path, 
+	const char *hi_path, 
+	const char *dn_path,
+	const char *disabled_path,
+	const char *title)
 {
 	VFrame default_data(get_image_data(overlay_path));
 	BC_ThemeSet *result = new BC_ThemeSet(4, 1, title ? title : (char*)"");
@@ -258,11 +258,11 @@ VFrame** BC_Theme::new_button4(char *overlay_path,
 }
 
 
-VFrame** BC_Theme::new_button(char *overlay_path, 
+VFrame** BC_Theme::new_button(const char *overlay_path, 
 	VFrame *up,
 	VFrame *hi,
 	VFrame *dn,
-	char *title)
+	const char *title)
 {
 	VFrame default_data(get_image_data(overlay_path));
 	BC_ThemeSet *result = new BC_ThemeSet(3, 0, title ? title : (char*)"");
@@ -277,13 +277,13 @@ VFrame** BC_Theme::new_button(char *overlay_path,
 }
 
 
-VFrame** BC_Theme::new_toggle(char *overlay_path, 
-	char *up_path,
-	char *hi_path,
-	char *checked_path,
-	char *dn_path,
-	char *checkedhi_path,
-	char *title)
+VFrame** BC_Theme::new_toggle(const char *overlay_path, 
+	const char *up_path,
+	const char *hi_path,
+	const char *checked_path,
+	const char *dn_path,
+	const char *checkedhi_path,
+	const char *title)
 {
 	VFrame default_data(get_image_data(overlay_path));
 	BC_ThemeSet *result = new BC_ThemeSet(5, 1, title ? title : (char*)"");
@@ -299,13 +299,13 @@ VFrame** BC_Theme::new_toggle(char *overlay_path,
 	return result->data;
 }
 
-VFrame** BC_Theme::new_toggle(char *overlay_path, 
+VFrame** BC_Theme::new_toggle(const char *overlay_path, 
 	VFrame *up,
 	VFrame *hi,
 	VFrame *checked,
 	VFrame *dn,
 	VFrame *checkedhi,
-	char *title)
+	const char *title)
 {
 	VFrame default_data(get_image_data(overlay_path));
 	BC_ThemeSet *result = new BC_ThemeSet(5, 0, title ? title : (char*)"");
@@ -441,7 +441,7 @@ void BC_Theme::set_data(unsigned char *ptr)
 	}
 }
 
-unsigned char* BC_Theme::get_image_data(char *title)
+unsigned char* BC_Theme::get_image_data(const char *title)
 {
 	if(!data_ptr)
 	{

@@ -198,9 +198,9 @@ public:
 	void generate_attributelist();
 	void update_attribute(int recursive);
 // Get text associated with current attribute
-	char* get_current_attribute_text();
-	char* get_current_attribute_value();
-	void set_current_attribute(char *text);
+	const char* get_current_attribute_text();
+	const char* get_current_attribute_value();
+	void set_current_attribute(const char *text);
 	void reset();
 
 	AVIVCodecList *list;

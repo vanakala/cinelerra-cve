@@ -38,8 +38,8 @@ public:
 		int audio_options,
 		int video_options);
 	int read_frame_header(char *path);
-	static char* compression_to_str(char *compression);
-	static char* str_to_compression(char *string);
+	static const char* compression_to_str(const char *compression);
+	static const char* str_to_compression(const char *string);
 
 	int64_t get_memory_usage();
 // To be used in single frame FileTGA

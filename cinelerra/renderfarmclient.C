@@ -56,9 +56,9 @@
 // The render client waits for connections from the server.
 // Then it starts a thread for each connection.
 RenderFarmClient::RenderFarmClient(int port, 
-	char *deamon_path, 
+	const char *deamon_path, 
 	int nice_value,
-	char *config_path)
+	const char *config_path)
 {
 	this->port = port;
 	this->deamon_path = deamon_path;
@@ -262,7 +262,7 @@ int RenderFarmClientThread::send_request_header(int request,
 	return (write_socket((char*)datagram, 5) != 5);
 }
 
-int RenderFarmClientThread::write_socket(char *data, int len)
+int RenderFarmClientThread::write_socket(const char *data, int len)
 {
 	return write(socket_fd, data, len);
 }
@@ -365,7 +365,7 @@ void RenderFarmClientThread::abort()
 	exit(1);
 }
 
-void RenderFarmClientThread::lock(char *location)
+void RenderFarmClientThread::lock(const char *location)
 {
 	mutex_lock->lock(location);
 }

@@ -38,7 +38,7 @@ extern char dcraw_info[1024];
 extern float **dcraw_data;
 extern int dcraw_alpha;
 extern float dcraw_matrix[9];
-int dcraw_main (int argc, char **argv);
+int dcraw_main (int argc, const char **argv);
 }
 
 
@@ -68,7 +68,7 @@ int FileCR2::check_sig(Asset *asset)
 
 	strcpy(string, asset->path);
 
-	char *argv[4];
+	const char *argv[4];
 	argv[0] = "dcraw";
 	argv[1] = "-i";
 	argv[2] = string;
@@ -86,7 +86,7 @@ int FileCR2::open_file(int rd, int wr)
 	cr2_mutex.lock("FileCR2::check_sig");
 
 	int argc = 3;
-	char *argv[3] = 
+	const char *argv[3] = 
 	{
 		"dcraw",
 		"-i",
@@ -138,7 +138,7 @@ int FileCR2::read_frame(VFrame *frame)
 // frame->dump_stacks();
 // output to stdout
 	int argc = 0;
-	char *argv[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	const char *argv[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	argv[argc++] = "dcraw";
 // write to stdout
 	argv[argc++] = "-c";

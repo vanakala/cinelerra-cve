@@ -280,7 +280,7 @@ void ManualGotoWindow::create_objects()
 {
 	int x = 76, y = 5;
 	int x1 = x;
-	char *htxt;
+	const char *htxt;
 	int i, j, l, max;
 
 	timeformat = mwindow->edl->session->time_format;

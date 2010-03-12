@@ -39,9 +39,9 @@ class RenderFarmClient
 {
 public:
 	RenderFarmClient(int port, 
-		char *deamon_path, 
+		const char *deamon_path, 
 		int nice_value,
-		char *config_path);
+		const char *config_path);
 	~RenderFarmClient();
 	
 	void main_loop();
@@ -55,7 +55,7 @@ public:
 //	RenderFarmClientThread *thread;
 	
 	int port;
-	char *deamon_path;
+	const char *deamon_path;
 // PID to be returned to background render object
 	int this_pid;
 // The plugin paths must be known before any threads are started
@@ -76,7 +76,7 @@ public:
 		int len);
 // These are local functions to handle errors the right way for a client.
 // They simply call the RenderFarmServerThread functions and abort if error.
-	int write_socket(char *data, int len);
+	int write_socket(const char *data, int len);
 	int read_socket(char *data, int len);
 // Return 1 if error
 	int write_int64(int64_t number);
@@ -84,7 +84,7 @@ public:
 	void read_string(char* &string);
 	void abort();
 // Lock access to the socket during complete transactions
-	void lock(char *location);
+	void lock(const char *location);
 	void unlock();
 
 

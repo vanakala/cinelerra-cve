@@ -103,13 +103,13 @@ class PipeCheckBox : public BC_CheckBox
 class PipePreset : public BC_PopupMenu
 {
  public:
-	PipePreset(int x, int y, char *title, BC_TextBox *textbox, BC_CheckBox *checkbox);
+	PipePreset(int x, int y, const char *title, BC_TextBox *textbox, BC_CheckBox *checkbox);
 	int handle_event();
 	
  private: 
 	BC_TextBox *pipe_textbox;
 	BC_CheckBox *pipe_checkbox;
-	char *title;
+	const char *title;
 };
 
 
