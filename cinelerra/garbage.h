@@ -55,7 +55,7 @@
 class GarbageObject
 {
 public:
-	GarbageObject(char *title);
+	GarbageObject(const char *title);
 	virtual ~GarbageObject();
 
 // Called when user begins to use the object.

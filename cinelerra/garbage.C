@@ -28,7 +28,7 @@
 Garbage *Garbage::garbage = 0;
 
 
-GarbageObject::GarbageObject(char *title)
+GarbageObject::GarbageObject(const char *title)
 {
 	Garbage::garbage->add_object(this);
 	users = 0;
