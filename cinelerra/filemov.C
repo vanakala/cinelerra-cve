@@ -130,7 +130,7 @@ void FileMOV::get_parameters(BC_WindowBase *parent_window,
 	BC_WindowBase* &format_window,
 	int audio_options,
 	int video_options,
-	char *locked_compressor)
+	const char *locked_compressor)
 {
 	fix_codecs(asset);
 	if(audio_options)
@@ -1163,7 +1163,7 @@ int FileMOV::read_samples(double *buffer, int64_t len)
 }
 
 
-char* FileMOV::strtocompression(char *string)
+const char* FileMOV::strtocompression(const char *string)
 {
 	if(!strcasecmp(string, _(DIVX_NAME))) return QUICKTIME_DIVX;
 	if(!strcasecmp(string, _(H264_NAME))) return QUICKTIME_H264;
@@ -1203,7 +1203,7 @@ char* FileMOV::strtocompression(char *string)
 	return QUICKTIME_RAW;
 }
 
-char* FileMOV::compressiontostr(char *string)
+const char* FileMOV::compressiontostr(const char *string)
 {
 	if(match4(string, QUICKTIME_H263)) return _(H263_NAME);
 	if(match4(string, QUICKTIME_H264)) return _(H264_NAME);
@@ -1676,7 +1676,7 @@ int MOVConfigAudioPopup::handle_event()
 
 MOVConfigVideo::MOVConfigVideo(BC_WindowBase *parent_window, 
 	Asset *asset, 
-	char *locked_compressor)
+	const char *locked_compressor)
  : BC_Window(PROGRAM_NAME ": Video Compression",
  	parent_window->get_abs_cursor_x(1),
  	parent_window->get_abs_cursor_y(1),
@@ -1838,7 +1838,7 @@ void MOVConfigVideo::update_parameters()
 	reset();
 
 
-	char *vcodec = asset->vcodec;
+	const char *vcodec = asset->vcodec;
 	if(locked_compressor) vcodec = locked_compressor;
 
 

@@ -162,7 +162,7 @@ int FileBase::get_row_pointers(unsigned char *buffer, unsigned char ***pointers,
 	}
 }
 
-int FileBase::match4(char *in, char *out)
+int FileBase::match4(const char *in, const char *out)
 {
 	if(in[0] == out[0] &&
 		in[1] == out[1] &&

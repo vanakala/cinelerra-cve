@@ -66,7 +66,7 @@ public:
 		BC_WindowBase* &format_window,
 		int audio_options,
 		int video_options,
-		char *locked_compressor);
+		const char *locked_compressor);
 	static int check_sig(Asset *asset);
 
 	int open_file(int rd, int wr);
@@ -92,8 +92,8 @@ public:
 	int64_t get_memory_usage();
 	int colormodel_supported(int colormodel);
 	int can_copy_from(Edit *edit, int64_t position); // This file can copy frames directly from the asset
-	static char *strtocompression(char *string);
-	static char *compressiontostr(char *string);
+	static const char *strtocompression(const char *string);
+	static const char *compressiontostr(const char *string);
 
 // Fix codec to what AVI or MOV support
 	static void fix_codecs(Asset *asset);
@@ -250,7 +250,7 @@ class MOVConfigVideo : public BC_Window
 public:
 	MOVConfigVideo(BC_WindowBase *parent_window, 
 		Asset *asset, 
-		char *locked_compressor);
+		const char *locked_compressor);
 	~MOVConfigVideo();
 
 	int create_objects();
@@ -264,7 +264,7 @@ public:
 	BC_WindowBase *parent_window;
 	Asset *asset;
 	int param_x, param_y;
-	char *locked_compressor;
+	const char *locked_compressor;
 	
 	BC_ISlider *jpeg_quality;
 	BC_Title *jpeg_quality_title;

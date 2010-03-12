@@ -36,7 +36,7 @@
 
 
 
-Labels::Labels(EDL *edl, char *xml_tag)
+Labels::Labels(EDL *edl, const char *xml_tag)
  : List<Label>()
 {
 	this->edl = edl;
@@ -516,7 +516,7 @@ Label::Label()
 {
 }
 
-Label::Label(EDL *edl, Labels *labels, double position, char *textstr = 0)
+Label::Label(EDL *edl, Labels *labels, double position, const char *textstr = 0)
  : ListItem<Label>()
 {
 	this->edl = edl;

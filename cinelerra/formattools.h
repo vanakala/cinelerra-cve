@@ -59,7 +59,7 @@ public:
 						int prompt_video,  // Include checkbox for video
 						int prompt_audio_channels,
 						int prompt_video_compression,
-						char *locked_compressor,  // Select compressors to be offered
+						const char *locked_compressor,  // Select compressors to be offered
 						int recording, // Change captions for recording
 						int *strategy,  // If nonzero, prompt for insertion strategy
 						int brender); // Supply file formats for background rendering
@@ -110,7 +110,7 @@ public:
 
 	ArrayList<PluginServer*> *plugindb;
 	MWindow *mwindow;
-	char *locked_compressor;
+	const char *locked_compressor;
 	int recording;
 	int use_brender;
 	int do_audio;

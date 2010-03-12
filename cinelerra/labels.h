@@ -49,7 +49,7 @@ public:
 class Label : public ListItem<Label>
 {
 public:
-	Label(EDL *edl, Labels *labels, double position, char *textstr);
+	Label(EDL *edl, Labels *labels, double position, const char *textstr);
 	Label();
 	~Label();
 
@@ -64,7 +64,7 @@ public:
 class Labels : public List<Label>
 {
 public:
-	Labels(EDL *edl, char *xml_tag);
+	Labels(EDL *edl, const char *xml_tag);
 	virtual ~Labels();
 
 	void dump();
@@ -103,7 +103,7 @@ public:
 	MWindow *mwindow;
 	TimeBar *timebar;
 	EDL *edl;
-	char *xml_tag;
+	const char *xml_tag;
 };
 
 #endif

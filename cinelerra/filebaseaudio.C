@@ -230,7 +230,7 @@ int64_t FileBase::samples_to_raw(char *out_buffer,
 					out_buffer[output_current] += sample; \
 				}
 
-int FileBase::raw_to_samples(float *out_buffer, char *in_buffer, 
+int FileBase::raw_to_samples(float *out_buffer, const char *in_buffer, 
 		int64_t samples, int bits, int channels, int channel, int feather, 
 		float lfeather_len, float lfeather_gain, float lfeather_slope)
 {
@@ -240,9 +240,9 @@ int FileBase::raw_to_samples(float *out_buffer, char *in_buffer,
 	float feather_current;     // input position for feather
 
 	float sample; 
-	char *inbuffer_8;               // point to actual byte being read
+	const char *inbuffer_8;               // point to actual byte being read
 	int16_t *inbuffer_16;
-	char *inbuffer_24;
+	const char *inbuffer_24;
 	int sample_24;                                         
 	float current_gain;
 	int input_frame;                   // amount to advance the input buffer pointer

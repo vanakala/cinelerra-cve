@@ -211,15 +211,15 @@ public:
 	static int supports_video(ArrayList<PluginServer*> *plugindb, char *format);   // returns 1 if the format supports video or audio
 	static int supports_audio(ArrayList<PluginServer*> *plugindb, char *format);
 // Get the extension for the filename
-	static char* get_tag(int format);
+	static const char* get_tag(int format);
 	static int supports_video(int format);   // returns 1 if the format supports video or audio
 	static int supports_audio(int format);
 	static int strtoformat(char *format);
-	static char* formattostr(int format);
+	static const char* formattostr(int format);
 	static int strtoformat(ArrayList<PluginServer*> *plugindb, char *format);
-	static char* formattostr(ArrayList<PluginServer*> *plugindb, int format);
+	static const char* formattostr(ArrayList<PluginServer*> *plugindb, int format);
 	static int strtobits(char *bits);
-	static char* bitstostr(int bits);
+	static const char* bitstostr(int bits);
 	static int str_to_byteorder(char *string);
 	static char* byteorder_to_str(int byte_order);
 	int bytes_per_sample(int bits); // Convert the bit descriptor into a byte count.

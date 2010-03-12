@@ -592,7 +592,7 @@ void FileAVI::get_parameters(BC_WindowBase *parent_window,
 		BC_WindowBase* &format_window,
 		int audio_options,
 		int video_options,
-		char *locked_compressor)
+		const char *locked_compressor)
 {
 	if(audio_options)
 	{
@@ -873,7 +873,7 @@ int AVIACodecList::handle_event()
 
 AVIConfigVideo::AVIConfigVideo(BC_WindowBase *parent_window, 
 		Asset *asset, 
-		char *locked_compressor)
+		const char *locked_compressor)
  : BC_Window(PROGRAM_NAME ": Video Compression",
  	parent_window->get_abs_cursor_x(1),
  	parent_window->get_abs_cursor_y(1),

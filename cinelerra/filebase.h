@@ -64,7 +64,7 @@ public:
 
 
 
-	virtual int get_index(char *index_path) { return 1; };
+	virtual int get_index(const char *index_path) { return 1; };
 	virtual int check_header() { return 0; };  // Test file to see if it is of this type.
 	virtual int reset_parameters_derived() {};
 	virtual int read_header() {};     // WAV files for getting header
@@ -119,7 +119,7 @@ protected:
 							int signed_);
 
 // overwrites the buffer from PCM data depending on feather.
-	int raw_to_samples(float *out_buffer, char *in_buffer, 
+	int raw_to_samples(float *out_buffer, const char *in_buffer, 
 		int64_t samples, int bits, int channels, int channel, int feather, 
 		float lfeather_len, float lfeather_gain, float lfeather_slope);
 
@@ -147,7 +147,7 @@ protected:
 // allocate a buffer for translating video to VFrame
 	int get_video_buffer(unsigned char **buffer, int depth); // video
 	int get_row_pointers(unsigned char *buffer, unsigned char ***pointers, int depth);
-	static int match4(char *in, char *out);   // match 4 bytes for a quicktime type
+	static int match4(const char *in, const char *out);   // match 4 bytes for a quicktime type
 
 	int64_t ima4_samples_to_bytes(int64_t samples, int channels);
 	int64_t ima4_bytes_to_samples(int64_t bytes, int channels);

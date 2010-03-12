@@ -76,7 +76,7 @@ int FormatTools::create_objects(int &init_x,
 						int prompt_video,
 						int prompt_audio_channels,
 						int prompt_video_compression,
-						char *locked_compressor,
+						const char *locked_compressor,
 						int recording,
 						int *strategy,
 						int brender)
@@ -317,7 +317,7 @@ Asset* FormatTools::get_asset()
 
 void FormatTools::update_extension()
 {
-	char *extension = File::get_tag(asset->format);
+	const char *extension = File::get_tag(asset->format);
 	if(extension)
 	{
 		char *ptr = strrchr(asset->path, '.');

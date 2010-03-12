@@ -1231,12 +1231,12 @@ int File::strtoformat(ArrayList<PluginServer*> *plugindb, char *format)
 	return 0;
 }
 
-char* File::formattostr(int format)
+const char* File::formattostr(int format)
 {
 	return formattostr(0, format);
 }
 
-char* File::formattostr(ArrayList<PluginServer*> *plugindb, int format)
+const char* File::formattostr(ArrayList<PluginServer*> *plugindb, int format)
 {
 	switch(format)
 	{
@@ -1350,7 +1350,7 @@ int File::strtobits(char *bits)
 	return BITSLINEAR16;
 }
 
-char* File::bitstostr(int bits)
+const char* File::bitstostr(int bits)
 {
 //printf("File::bitstostr\n");
 	switch(bits)
@@ -1587,7 +1587,7 @@ int File::supports_audio(int format)
 	}
 }
 
-char* File::get_tag(int format)
+const char* File::get_tag(int format)
 {
 	switch(format)
 	{
