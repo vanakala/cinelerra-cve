@@ -160,9 +160,6 @@ public:
 	static void dump_locks();
 	static void dump_buffers();
 
-// Convert signum to text
-	static const char* sig_to_str(int number);
-
 	static BC_Signals *global_signals;
 };
 

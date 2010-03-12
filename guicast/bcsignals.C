@@ -25,7 +25,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
+#include <ucontext.h>
+#include <execinfo.h>
 
 BC_Signals* BC_Signals::global_signals = 0;
 static int signal_done = 0;
@@ -164,30 +165,59 @@ static pthread_mutex_t handler_lock;
 // Don't trace memory until this is true to avoid initialization
 static int trace_memory = 0;
 
+#define BACKTRACE_SIZE 40
+#define SIGHDLR_BUFL   512
+#define NUMBUFLEN 32
 
-static const char* signal_titles[] =
+/*
+ * Convert string to hex
+  */
+static char *tohex(unsigned long val)
 {
-	"NULL",
-	"SIGHUP",
-	"SIGINT",
-	"SIGQUIT",
-	"SIGILL",
-	"SIGTRAP",
-	"SIGABRT",
-	"SIGBUS",
-	"SIGFPE",
-	"SIGKILL",
-	"SIGUSR1",
-	"SIGSEGV",
-	"SIGUSR2",
-	"SIGPIPE",
-	"SIGALRM",
-	"SIGTERM"
-};
+	static char buf[NUMBUFLEN];
+	static const char chb[] = "0123456789abcdef";
+	int n;
+	unsigned long vv;
 
-static void signal_entry(int signum)
+	n = NUMBUFLEN - 1;
+	buf[n] = 0;
+	for(vv = val; vv && n > 0; vv >>= 4)
+		buf[--n] = chb[vv & 0xf];
+	return &buf[n];
+}
+
+/*
+ * Copy string
+ * Returns ptr to end of buffer
+*/
+static char *copystr(char *dst, const char *src)
 {
-	signal(signum, SIG_DFL);
+	const char *p;
+	char *q;
+
+	q = dst;
+	p = src;
+
+	while(*p)
+		*q++ = *p++;
+	*q = 0;
+	return q;
+}
+
+/*
+ * Signal handler
+ * We try not to use 'unsafe' functions
+ */
+static void signal_entry(int signum, siginfo_t *inf, void *ucxt)
+{
+	void *buff[BACKTRACE_SIZE];
+	int numbt;
+	ucontext_t *ucp;
+	char *p;
+	const char *signam;
+	const char *codnam;
+	char msgbuf[SIGHDLR_BUFL];
+	pthread_t cur_tid;
 
 	pthread_mutex_lock(&handler_lock);
 	if(signal_done)
@@ -199,11 +229,133 @@ static void signal_entry(int signum)
 	signal_done = 1;
 	pthread_mutex_unlock(&handler_lock);
 
+	numbt = backtrace(buff, BACKTRACE_SIZE);
+	cur_tid = pthread_self();
+	ucp = (ucontext_t *)ucxt;
+	signam = strsignal(signum);
 
-	printf("signal_entry: got %s my pid=%d\n", 
-		signal_titles[signum],
-		getpid());
-
+	switch(signum){
+	case SIGILL:
+		switch(inf->si_code){
+		case ILL_ILLOPC:
+			codnam = "Illegal opcode";
+			break;
+		case ILL_ILLOPN:
+			codnam = "Illegal operand";
+			break;
+		case ILL_ILLADR:
+			codnam = "Illegal addressing mode";
+			break;
+		case ILL_ILLTRP:
+			codnam = "Illegal trap";
+			break;
+		case ILL_PRVOPC:
+			codnam = "Privileged opcode";
+			break;
+		case ILL_PRVREG:
+			codnam = "Privileged register";
+			break;
+		case ILL_COPROC:
+			codnam = "Coprocessor error";
+			break;
+		case ILL_BADSTK:
+			codnam = "Internal stack error";
+			break;
+		default:
+			codnam = "Unknown si_code";
+			break;
+		}
+		break;
+	case SIGFPE:
+		switch(inf->si_code){
+		case FPE_INTDIV:
+			codnam = "Integer divide by zero";
+			break;
+		case FPE_INTOVF:
+			codnam = "Integer overflow";
+			break;
+		case FPE_FLTDIV:
+			codnam = "Floating-point divide by zero";
+			break;
+		case FPE_FLTOVF:
+			codnam = "Floating-point overflow";
+			break;
+		case FPE_FLTUND:
+			codnam = "Floating-point underflow";
+			break;
+		case FPE_FLTRES:
+			codnam = "Floating-point inexact result";
+			break;
+		case FPE_FLTINV:
+			codnam = "Floating-point invalid operation";
+			break;
+		case FPE_FLTSUB:
+			codnam = "Subscript out of range";
+			break;
+		default:
+			codnam = "Unknown si_code";
+			break;
+		}
+	case SIGSEGV:
+		switch(inf->si_code){
+		case SEGV_MAPERR:
+			codnam = "Address not mapped to object";
+			break;
+		case SEGV_ACCERR:
+			codnam = "Invalid permissions for mapped object";
+			break;
+		default:
+			codnam = "Unknown si_code";
+			break;
+		}
+		break;
+	case SIGBUS:
+		switch(inf->si_code){
+		case BUS_ADRALN:
+			codnam = "Invalid address alignment";
+			break;
+		case BUS_ADRERR:
+			codnam = "Nonexistent physical address";
+			break;
+		case BUS_OBJERR:
+			codnam = "Object-specific hardware error";
+			break;
+		default:
+			codnam = "Unknown si_code";
+			break;
+		}
+		break;
+	default:
+		codnam = 0;
+		break;
+	}
+	p = copystr(msgbuf, "Got signal '");
+	p = copystr(p, signam);
+	if(codnam){
+		p = copystr(p, "' with code '");
+		p = copystr(p, codnam);
+		p = copystr(p, "'\n");
+		if(write(STDERR_FILENO, msgbuf, p - msgbuf) <= 0)
+			abort();
+		p = copystr(msgbuf, "    pc=0x");
+#if __WORDSIZE == 64
+		p = copystr(p, tohex(ucp->uc_mcontext.gregs[REG_RIP]));
+#else
+		p = copystr(p, tohex(ucp->uc_mcontext.gregs[REG_EIP]));
+#endif
+		p = copystr(p, " addr=0x");
+		p = copystr(p, tohex((unsigned long)inf->si_addr));
+		p = copystr(p, " tid=0x");
+		p = copystr(p, tohex((unsigned long)cur_tid));
+		p = copystr(p, ". Backtrace:\n");
+		if(write(STDERR_FILENO, msgbuf, p - msgbuf) <= 0)
+			abort();
+		backtrace_symbols_fd(buff, numbt, STDERR_FILENO);
+	} else {
+		p = copystr(p, "'\n");
+		if(write(STDERR_FILENO, msgbuf, p - msgbuf) <= 0)
+			abort();
+	}
 	BC_Signals::dump_traces();
 	BC_Signals::dump_locks();
 	BC_Signals::dump_buffers();
@@ -213,13 +365,6 @@ static void signal_entry(int signum)
 	BC_Signals::global_signals->signal_handler(signum);
 
 	abort();
-}
-
-static void signal_entry_recoverable(int signum)
-{
-	printf("signal_entry_recoverable: got %s my pid=%d\n", 
-		signal_titles[signum],
-		getpid());
 }
 
 BC_Signals::BC_Signals()
@@ -255,7 +400,7 @@ void BC_Signals::dump_locks()
 	printf("signal_entry: lock table size=%d\n", lastlockt - &locktable[0]);
 	for(bc_locktrace_t *table = &locktable[0]; table < lastlockt; table++)
 	{
-		printf(" %c%c %6d %lu %p %s - %s\n", 
+		printf(" %c%c %6d %#lx %p %s - %s\n", 
 			table->is_owner ? '*' : ' ',
 			table->ltype,
 			table->id,
@@ -293,29 +438,25 @@ void BC_Signals::initialize()
 
 void BC_Signals::initialize2()
 {
-	signal(SIGHUP, signal_entry);
-	signal(SIGINT, signal_entry);
-	signal(SIGQUIT, signal_entry);
-	// SIGKILL cannot be stopped
-	// signal(SIGKILL, signal_entry);
-	signal(SIGSEGV, signal_entry);
-	signal(SIGTERM, signal_entry);
-	signal(SIGFPE, signal_entry);
-	signal(SIGPIPE, signal_entry_recoverable);
+	struct sigaction nact;
+	nact.sa_flags = SA_SIGINFO | SA_RESETHAND;
+	nact.sa_sigaction = signal_entry;
+	sigemptyset(&nact.sa_mask);
+
+	sigaction(SIGHUP, &nact, NULL);
+	sigaction(SIGINT, &nact, NULL);
+	sigaction(SIGQUIT, &nact, NULL);
+	sigaction(SIGSEGV, &nact, NULL);
+	sigaction(SIGTERM, &nact, NULL);
+	sigaction(SIGFPE, &nact, NULL);
+	sigaction(SIGBUS, &nact, NULL);
+	sigaction(SIGILL, &nact, NULL);
 }
 
 
 void BC_Signals::signal_handler(int signum)
 {
-printf("BC_Signals::signal_handler\n");
-//	exit(0);
 }
-
-const char* BC_Signals::sig_to_str(int number)
-{
-	return signal_titles[number];
-}
-
 
 void BC_Signals::new_trace(const char *text)
 {
