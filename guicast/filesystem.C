@@ -40,8 +40,8 @@ FileItem::FileItem()
 	reset();
 }
 
-FileItem::FileItem(char *path, 
-	char *name, 
+FileItem::FileItem(const char *path, 
+	const char *name, 
 	int is_dir, 
 	int64_t size, 
 	int month, 
@@ -81,7 +81,7 @@ int FileItem::reset()
 	return 0;
 }
 
-int FileItem::set_path(char *path)
+int FileItem::set_path(const char *path)
 {
 	if(this->path) delete [] this->path;
 	this->path = new char[strlen(path) + 1];
@@ -89,7 +89,7 @@ int FileItem::set_path(char *path)
 	return 0;
 }
 
-int FileItem::set_name(char *name)
+int FileItem::set_name(const char *name)
 {
 	if(this->name) delete [] this->name;
 	this->name = new char[strlen(name) + 1];
@@ -392,7 +392,7 @@ int FileSystem::test_filter(FileItem *file)
 }
 
 
-int FileSystem::update(char *new_dir)
+int FileSystem::update(const char *new_dir)
 {
 	DIR *dirstream;
 	struct dirent64 *new_filename;
@@ -487,7 +487,7 @@ int FileSystem::update(char *new_dir)
 // success
 }
 
-int FileSystem::set_filter(char *new_filter)
+int FileSystem::set_filter(const char *new_filter)
 {
 	strcpy(filter, new_filter);
 	return 0;
@@ -520,7 +520,7 @@ int FileSystem::is_dir(const char *path)      // return 0 if the text is a direc
 		return 0;
 }
 
-int FileSystem::create_dir(char *new_dir_)
+int FileSystem::create_dir(const char *new_dir_)
 {
 	char new_dir[BCTEXTLEN];
 	strcpy(new_dir, new_dir_);
@@ -719,7 +719,7 @@ int FileSystem::extract_name(char *out, const char *in, int test_dir)
 	return 0;
 }
 
-int FileSystem::join_names(char *out, char *dir_in, char *name_in)
+int FileSystem::join_names(char *out, const char *dir_in, const char *name_in)
 {
 	strcpy(out, dir_in);
 	int len = strlen(out);
@@ -737,7 +737,7 @@ int FileSystem::join_names(char *out, char *dir_in, char *name_in)
 	return 0;
 }
 
-int64_t FileSystem::get_date(char *filename)
+int64_t FileSystem::get_date(const char *filename)
 {
 	struct stat file_status;
 	bzero(&file_status, sizeof(struct stat));
@@ -745,7 +745,7 @@ int64_t FileSystem::get_date(char *filename)
 	return file_status.st_mtime;
 }
 
-int64_t FileSystem::get_size(char *filename)
+int64_t FileSystem::get_size(const char *filename)
 {
 	struct stat file_status;
 	bzero(&file_status, sizeof(struct stat));
@@ -753,7 +753,7 @@ int64_t FileSystem::get_size(char *filename)
 	return file_status.st_size;
 }
 
-int FileSystem::change_dir(char *new_dir)
+int FileSystem::change_dir(const char *new_dir)
 {
 	char new_dir_full[BCTEXTLEN];
 	
@@ -768,7 +768,7 @@ int FileSystem::change_dir(char *new_dir)
 	return 0;
 }
 
-int FileSystem::set_current_dir(char *new_dir)
+int FileSystem::set_current_dir(const char *new_dir)
 {
 	strcpy(current_dir, new_dir);
 	return 0;
