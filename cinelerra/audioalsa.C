@@ -260,12 +260,8 @@ void AudioALSA::set_params(snd_pcm_t *dsp,
 //printf("AudioALSA::set_params 10 %d %d\n", chunk_size, buffer_size);
 
 	snd_pcm_sw_params_current(dsp, swparams);
-	size_t xfer_align = 1 /* snd_pcm_sw_params_get_xfer_align(swparams) */;
-	unsigned int sleep_min = 0;
-	err = snd_pcm_sw_params_set_sleep_min(dsp, swparams, sleep_min);
 	int n = chunk_size;
 	err = snd_pcm_sw_params_set_avail_min(dsp, swparams, n);
-	err = snd_pcm_sw_params_set_xfer_align(dsp, swparams, xfer_align);
 	if(snd_pcm_sw_params(dsp, swparams) < 0)
 	{
 		printf("AudioALSA::set_params: snd_pcm_sw_params failed\n");
