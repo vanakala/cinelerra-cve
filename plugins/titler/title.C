@@ -2164,10 +2164,12 @@ int TitleMain::load_defaults()
 	if(fd)
 	{
 		fseek(fd, 0, SEEK_END);
-		int64_t len = ftell(fd);
+		long len = ftell(fd);
 		fseek(fd, 0, SEEK_SET);
-		if(fread(config.text, len, 1, fd) < 1)
-			printf("TitleMain::load_defaults - failed to load defaults");
+		if(len && fread(config.text, len, 1, fd) < 1){
+			fprintf(stderr, "TitleMain::load_defaults - failed to load defaults\n");
+			len = 0;
+		}
 		config.text[len] = 0;
 //printf("TitleMain::load_defaults %s\n", config.text);
 		fclose(fd);
