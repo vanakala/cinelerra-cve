@@ -213,7 +213,7 @@ public:
 		int y);
 
 	void create_objects();
-	char* get_preset_text();
+	const char* get_preset_text();
 
 	MWindow *mwindow;
 	SetFormatThread *thread;

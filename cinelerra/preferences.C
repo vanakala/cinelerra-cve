@@ -573,7 +573,7 @@ int Preferences::get_enabled_nodes()
 	return result;
 }
 
-char* Preferences::get_node_hostname(int number)
+const char* Preferences::get_node_hostname(int number)
 {
 	int total = 0;
 	for(int i = 0; i < renderfarm_nodes.total; i++)

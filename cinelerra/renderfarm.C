@@ -157,7 +157,7 @@ RenderFarmServerThread::~RenderFarmServerThread()
 }
 
 
-int RenderFarmServerThread::open_client(char *hostname, int port)
+int RenderFarmServerThread::open_client(const char *hostname, int port)
 {
 	int socket_fd = -1;
 	int result = 0;

@@ -32,7 +32,7 @@
 
 
 // Table of tips of the day
-static char *tips[] = 
+static const char *tips[] = 
 {
 	N_("When configuring slow effects, disable playback for the track.  After configuring it,\n"
 	"re-enable playback to process a single frame."),

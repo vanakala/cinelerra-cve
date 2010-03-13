@@ -63,7 +63,7 @@ public:
 	DayTumbler *day_tumbler;
 	TimeTextBox *time_text;
 	double *output;
-	static char *day_table[TOTAL_DAYS];
+	static const char *day_table[TOTAL_DAYS];
 	int *output_day;
 	double *output_time;
 	int time_format;
@@ -76,12 +76,12 @@ public:
 		int x, 
 		int y, 
 		int w, 
-		char **table, 
+		const char **table, 
 		int table_items,
-		char *text);
+		const char *text);
 	int handle_event();
 	
-	char **table;
+	const char **table;
 	TimeEntry *timeentry;
 	int table_items;
 	int current_item;

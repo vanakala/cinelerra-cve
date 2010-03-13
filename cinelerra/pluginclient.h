@@ -426,7 +426,7 @@ public:
 	int write_frames(int64_t total_frames);  // returns 1 for failure / tells the server that all output channel buffers are ready to go
 	int write_samples(int64_t total_samples);  // returns 1 for failure / tells the server that all output channel buffers are ready to go
 	virtual int plugin_get_parameters();
-	char* get_defaultdir();     // Directory defaults should be stored in
+	const char* get_defaultdir();     // Directory defaults should be stored in
 	void set_interactive();
 
 // Realtime operations.

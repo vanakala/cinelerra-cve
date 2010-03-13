@@ -277,7 +277,7 @@ int PreferencesThread::apply_settings()
 	return 0;
 }
 
-char* PreferencesThread::category_to_text(int category)
+const char* PreferencesThread::category_to_text(int category)
 {
 	switch(category)
 	{
@@ -484,7 +484,7 @@ PreferencesButton::PreferencesButton(MWindow *mwindow,
 	int x, 
 	int y,
 	int category,
-	char *text,
+	const char *text,
 	VFrame **images)
  : BC_GenericButton(x, y, text, images)
 {

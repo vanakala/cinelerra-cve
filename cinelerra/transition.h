@@ -92,7 +92,7 @@ public:
 	int update_display();
 // Update edit after attaching
 	int update_edit(int is_loading);
-	char* default_title();
+	const char* default_title();
 	void dump();
 
 private:

@@ -31,7 +31,7 @@ public:
 	UndoStackItem();
 	virtual ~UndoStackItem();
 
-	void set_description(char *description);
+	void set_description(const char *description);
 	void set_creator(void *creator);
 
 // This function must be overridden in derived objects.

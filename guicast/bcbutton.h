@@ -72,11 +72,11 @@ private:
 class BC_GenericButton : public BC_Button
 {
 public:
-	BC_GenericButton(int x, int y, char *text, VFrame **data = 0);
-	BC_GenericButton(int x, int y, int w, char *text, VFrame **data = 0);
+	BC_GenericButton(int x, int y, const char *text, VFrame **data = 0);
+	BC_GenericButton(int x, int y, int w, const char *text, VFrame **data = 0);
 	int set_images(VFrame **data);
 	int draw_face();
-	static int calculate_w(BC_WindowBase *gui, char *text);
+	static int calculate_w(BC_WindowBase *gui, const char *text);
 	static int calculate_h();
 
 private:

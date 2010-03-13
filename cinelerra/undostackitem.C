@@ -35,7 +35,7 @@ UndoStackItem::~UndoStackItem()
 	delete [] description;
 }
 
-void UndoStackItem::set_description(char *description)
+void UndoStackItem::set_description(const char *description)
 {
 	this->description = new char[strlen(description) + 1];
 	strcpy(this->description, description);

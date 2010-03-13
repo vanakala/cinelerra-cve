@@ -60,7 +60,7 @@ public:
 	void sort_nodes();
 	void edit_node(int number, char *new_text, int port, int enabled);
 	int get_enabled_nodes();
-	char* get_node_hostname(int number);
+	const char* get_node_hostname(int number);
 	int get_node_port(int number);
 // Copy frame rates.  Always used where the argument is the renderfarm and this is
 // the master preferences.  This way, the value for master node is properly 

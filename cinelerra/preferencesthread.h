@@ -52,7 +52,7 @@ public:
 
 	int update_framerate();
 	int apply_settings();
-	char* category_to_text(int category);
+	const char* category_to_text(int category);
 	int text_to_category(char *category);
 
 	int current_dialog;
@@ -131,7 +131,7 @@ public:
 		int x, 
 		int y,
 		int category,
-		char *text,
+		const char *text,
 		VFrame **images);
 
 	int handle_event();

@@ -73,7 +73,7 @@ public:
 
 	int get_profile_slot_by_name(char *profile_name);
 	int get_new_profile_slot();
-	int save_to_slot(int profile_slot, char *profile_name);
+	int save_to_slot(int profile_slot, const char *profile_name);
 	
 	BC_Title *title;
 	BC_TextBox *textbox;

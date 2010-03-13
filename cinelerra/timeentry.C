@@ -47,7 +47,7 @@ TimeEntry::~TimeEntry()
 	delete time_text;
 }
 
-char* TimeEntry::day_table[] = 
+const char* TimeEntry::day_table[] = 
 {
 	"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "*"
 };
@@ -182,9 +182,9 @@ DayText::DayText(TimeEntry *timeentry,
 		int x, 
 		int y, 
 		int w, 
-		char **table, 
+		const char **table, 
 		int table_items,
-		char *text)
+		const char *text)
  : BC_TextBox(x, y, w, 1, text)
 {
 	this->timeentry = timeentry;

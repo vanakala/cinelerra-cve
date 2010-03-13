@@ -533,7 +533,7 @@ void SetFormatWindow::create_objects()
 	show_window();
 }
 
-char* SetFormatWindow::get_preset_text()
+const char* SetFormatWindow::get_preset_text()
 {
 	return "";
 }

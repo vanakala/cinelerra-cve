@@ -222,7 +222,7 @@ int Transition::update_display()
 	return 0;
 }
 
-char* Transition::default_title()
+const char* Transition::default_title()
 {
 	return "Transition";
 }

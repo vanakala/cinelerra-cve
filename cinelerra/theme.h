@@ -114,7 +114,7 @@ public:
 	ArrayList<BC_ListBoxItem*> frame_sizes;
 	ArrayList<BC_ListBoxItem*> sample_rates;
 	ArrayList<BC_ListBoxItem*> zoom_values;
-	char *theme_title;
+	const char *theme_title;
 
 // Tools for building widgets
 	void overlay(VFrame *dst, VFrame *src, int in_x1 = -1, int in_x2 = -1);

@@ -638,7 +638,7 @@ void Interlaceautofix::showhideotherwidgets()
 	  }
 }
 
-InterlacefixmethodItem::InterlacefixmethodItem(char *text, int value)
+InterlacefixmethodItem::InterlacefixmethodItem(const char *text, int value)
  : BC_ListBoxItem(text)
 {
 	this->value = value;

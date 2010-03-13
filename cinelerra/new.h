@@ -123,7 +123,7 @@ public:
 class NewATracks : public BC_TextBox
 {
 public:
-	NewATracks(NewWindow *nwindow, char *text, int x, int y);
+	NewATracks(NewWindow *nwindow, const char *text, int x, int y);
 	int handle_event();
 	NewWindow *nwindow;
 };
@@ -140,7 +140,7 @@ public:
 class NewAChannels : public BC_TextBox
 {
 public:
-	NewAChannels(NewWindow *nwindow, char *text, int x, int y);
+	NewAChannels(NewWindow *nwindow, const char *text, int x, int y);
 	int handle_event();
 	NewWindow *nwindow;
 };
@@ -157,7 +157,7 @@ public:
 class NewSampleRate : public BC_TextBox
 {
 public:
-	NewSampleRate(NewWindow *nwindow, char *text, int x, int y);
+	NewSampleRate(NewWindow *nwindow, const char *text, int x, int y);
 	int handle_event();
 	NewWindow *nwindow;
 };
@@ -182,7 +182,7 @@ public:
 class NewVTracks : public BC_TextBox
 {
 public:
-	NewVTracks(NewWindow *nwindow, char *text, int x, int y);
+	NewVTracks(NewWindow *nwindow, const char *text, int x, int y);
 	int handle_event();
 	NewWindow *nwindow;
 };
@@ -199,7 +199,7 @@ public:
 class NewVChannels : public BC_TextBox
 {
 public:
-	NewVChannels(NewWindow *nwindow, char *text, int x, int y);
+	NewVChannels(NewWindow *nwindow, const char *text, int x, int y);
 	int handle_event();
 	NewWindow *nwindow;
 };
@@ -216,7 +216,7 @@ public:
 class NewFrameRate : public BC_TextBox
 {
 public:
-	NewFrameRate(NewWindow *nwindow, char *text, int x, int y);
+	NewFrameRate(NewWindow *nwindow, const char *text, int x, int y);
 	int handle_event();
 	NewWindow *nwindow;
 };
@@ -288,7 +288,7 @@ public:
 class NewAspectW : public BC_TextBox
 {
 public:
-	NewAspectW(NewWindow *nwindow, char *text, int x, int y);
+	NewAspectW(NewWindow *nwindow, const char *text, int x, int y);
 	int handle_event();
 	NewWindow *nwindow;
 };
@@ -296,7 +296,7 @@ public:
 class NewAspectH : public BC_TextBox
 {
 public:
-	NewAspectH(NewWindow *nwindow, char *text, int x, int y);
+	NewAspectH(NewWindow *nwindow, const char *text, int x, int y);
 	int handle_event();
 	NewWindow *nwindow;
 };
@@ -318,7 +318,7 @@ public:
 class ColormodelItem : public BC_ListBoxItem
 {
 public:
-	ColormodelItem(char *text, int value);
+	ColormodelItem(const char *text, int value);
 	int value;
 };
 
@@ -331,7 +331,7 @@ public:
 		int x, 
 		int y);
 	int handle_event();
-	char* colormodel_to_text();
+	const char* colormodel_to_text();
 	MWindow *mwindow;
 	BC_TextBox *output_text;
 	int *output_value;
@@ -340,7 +340,7 @@ public:
 class InterlacemodeItem : public BC_ListBoxItem
 {
 public:
-	InterlacemodeItem(char *text, int value);
+	InterlacemodeItem(const char *text, int value);
 	int value;
 };
 
@@ -366,7 +366,7 @@ private:
 class InterlacefixmethodItem : public BC_ListBoxItem
 {
 public:
-	InterlacefixmethodItem(char *text, int value);
+	InterlacefixmethodItem(const char *text, int value);
 	int value;
 };
 

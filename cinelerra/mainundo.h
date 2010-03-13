@@ -45,13 +45,13 @@ public:
    // be populated before calling this function.
    void push_undo_item(UndoStackItem *item);
 
-	void update_undo(char *description, 
+	void update_undo(const char *description, 
 		uint32_t load_flags, 
 		void *creator = 0,
 		int changes_made = 1);
 
 // alternatively, call this one after the change
-	void push_state(char *description, uint32_t load_flags, void* creator);
+	void push_state(const char *description, uint32_t load_flags, void* creator);
 
 // Used in undo and redo to reset the creators in all the records.
 	void reset_creators();
@@ -70,7 +70,7 @@ private:
 
 	void capture_state();
 	void prune_undo();
-	bool ignore_push(char *description, uint32_t load_flags, void* creator);
+	bool ignore_push(const char *description, uint32_t load_flags, void* creator);
 
 	friend class MainUndoStackItem;
 };

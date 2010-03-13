@@ -332,7 +332,7 @@ int PluginClient::get_project_smp()
 	return smp;
 }
 
-char* PluginClient::get_defaultdir()
+const char* PluginClient::get_defaultdir()
 {
 	return BCASTDIR;
 }
