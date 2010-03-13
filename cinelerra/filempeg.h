@@ -102,7 +102,6 @@ public:
 
 
 private:
-	void to_streamchannel(int channel, int &stream_out, int &channel_out);
 	int reset_parameters_derived();
 // File descriptor for decoder
 	mpeg3_t *fd;

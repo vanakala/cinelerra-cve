@@ -527,14 +527,18 @@ int Asset::read_audio(FileXML *file)
 {
 	if(file->tag.title_is("AUDIO")) audio_data = 1;
 	channels = file->tag.get_property("CHANNELS", 2);
+
 // This is loaded from the index file after the EDL but this 
 // should be overridable in the EDL.
-	if(!sample_rate) sample_rate = file->tag.get_property("RATE", 44100);
+	if(!sample_rate) 
+		sample_rate = file->tag.get_property("RATE", 44100);
+
 	bits = file->tag.get_property("BITS", 16);
 	byte_order = file->tag.get_property("BYTE_ORDER", 1);
 	signed_ = file->tag.get_property("SIGNED", 1);
 	header = file->tag.get_property("HEADER", 0);
 	dither = file->tag.get_property("DITHER", 0);
+	current_astream = file->tag.get_property("ASTREAM", 0);
 
 	audio_length = file->tag.get_property("AUDIO_LENGTH", 0);
 
@@ -553,16 +557,11 @@ int Asset::read_video(FileXML *file)
 	char string[BCTEXTLEN];
 
 	if(file->tag.title_is("VIDEO")) video_data = 1;
-	height = file->tag.get_property("HEIGHT", height);
-	width = file->tag.get_property("WIDTH", width);
-	layers = file->tag.get_property("LAYERS", layers);
+
 // This is loaded from the index file after the EDL but this 
 // should be overridable in the EDL.
-	if(!frame_rate) frame_rate = file->tag.get_property("FRAMERATE", frame_rate);
-	vcodec[0] = 0;
-	file->tag.get_property("VCODEC", vcodec);
-
-	video_length = file->tag.get_property("VIDEO_LENGTH", 0);
+	if(!frame_rate) 
+		frame_rate = file->tag.get_property("FRAMERATE", frame_rate);
 
 	interlace_autofixoption = file->tag.get_property("INTERLACE_AUTOFIX",0);
 
@@ -577,6 +576,8 @@ int Asset::read_video(FileXML *file)
 	tcstart = file->tag.get_property("TCSTART", tcstart);
 	tcend = file->tag.get_property("TCEND", tcend);
 	tcformat = file->tag.get_property("TCFORMAT", tcformat);
+
+	active_subtitle = file->tag.get_property("SUBTITLE", -1);
 
 	return 0;
 }
@@ -750,12 +751,19 @@ int Asset::write_audio(FileXML *file)
 // Necessary for PCM audio
 	file->tag.set_property("CHANNELS", channels);
 	file->tag.set_property("RATE", sample_rate);
-	file->tag.set_property("BITS", bits);
-	file->tag.set_property("BYTE_ORDER", byte_order);
-	file->tag.set_property("SIGNED", signed_);
-	file->tag.set_property("HEADER", header);
-	file->tag.set_property("DITHER", dither);
+	if(bits)
+		file->tag.set_property("BITS", bits);
+	if(byte_order)
+		file->tag.set_property("BYTE_ORDER", byte_order);
+	if(signed_)
+		file->tag.set_property("SIGNED", signed_);
+	if(header)
+		file->tag.set_property("HEADER", header);
+	if(dither)
+		file->tag.set_property("DITHER", dither);
 	file->tag.set_property("AUDIO_LENGTH", audio_length);
+	if(current_astream)
+		file->tag.set_property("ASTREAM", current_astream);
 
 	file->append_tag();
 	if(audio_data)
@@ -775,14 +783,11 @@ int Asset::write_video(FileXML *file)
 		file->tag.set_title("VIDEO");
 	else
 		file->tag.set_title("VIDEO_OMIT");
-	file->tag.set_property("HEIGHT", height);
-	file->tag.set_property("WIDTH", width);
-	file->tag.set_property("LAYERS", layers);
-	file->tag.set_property("FRAMERATE", frame_rate);
-	if(vcodec[0])
-		file->tag.set_property("VCODEC", vcodec);
 
-	file->tag.set_property("VIDEO_LENGTH", video_length);
+	file->tag.set_property("FRAMERATE", frame_rate);
+
+	if(active_subtitle >= 0)
+		file->tag.set_property("SUBTITLE", active_subtitle);
 
 	file->tag.set_property("INTERLACE_AUTOFIX", interlace_autofixoption);
 
@@ -794,10 +799,15 @@ int Asset::write_video(FileXML *file)
 
 
 	file->tag.set_property("REEL_NAME", reel_name);
-	file->tag.set_property("REEL_NUMBER", reel_number);
-	file->tag.set_property("TCSTART", tcstart);
-	file->tag.set_property("TCEND", tcend);
-	file->tag.set_property("TCFORMAT", tcformat);
+
+	if(reel_number)
+		file->tag.set_property("REEL_NUMBER", reel_number);
+	if(tcstart)
+		file->tag.set_property("TCSTART", tcstart);
+	if(tcend)
+		file->tag.set_property("TCEND", tcend);
+	if(tcformat)
+		file->tag.set_property("TCFORMAT", tcformat);
 
 	file->append_tag();
 	if(video_data)

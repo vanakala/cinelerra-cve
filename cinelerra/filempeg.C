@@ -210,11 +210,10 @@ SET_TRACE
 			if(asset->audio_data)
 			{
 				asset->astreams = mpeg3_total_astreams(fd);
-				asset->channels = 0;
+				asset->channels = mpeg3_audio_channels(fd, 0);
 				for(int i = 0; i < asset->astreams; i++)
 				{
 					asset->astream_channels[i] = mpeg3_audio_channels(fd, i);
-					asset->channels += mpeg3_audio_channels(fd, i);
 				}
 				if(!asset->sample_rate)
 					asset->sample_rate = mpeg3_sample_rate(fd, 0);
@@ -828,25 +827,6 @@ int FileMPEG::can_copy_from(Edit *edit, int64_t position)
 
 int FileMPEG::set_audio_position(int64_t sample)
 {
-#if 0
-	if(!fd) return 1;
-	
-	int channel, stream;
-	to_streamchannel(file->current_channel, stream, channel);
-
-//printf("FileMPEG::set_audio_position %d %d %d\n", sample, mpeg3_get_sample(fd, stream), last_sample);
-	if(sample != mpeg3_get_sample(fd, stream) &&
-		sample != last_sample)
-	{
-		if(sample >= 0 && sample < asset->audio_length)
-		{
-//printf("FileMPEG::set_audio_position seeking stream %d\n", sample);
-			return mpeg3_set_sample(fd, sample, stream);
-		}
-		else
-			return 1;
-	}
-#endif
 	return 0;
 }
 
@@ -1229,43 +1209,23 @@ SET_TRACE
 	return result;
 }
 
-
-void FileMPEG::to_streamchannel(int channel, int &stream_out, int &channel_out)
-{
-	for(stream_out = 0, channel_out = file->current_channel; 
-		stream_out < mpeg3_total_astreams(fd) && 
-			channel_out >= mpeg3_audio_channels(fd, stream_out);
-		channel_out -= mpeg3_audio_channels(fd, stream_out), stream_out++)
-	;
-}
-
 int FileMPEG::read_samples(double *buffer, int64_t len)
 {
-	if(!fd) return 0;
-	if(len < 0) return 0;
+	if(!fd || len < 0) return 0;
 
 // This is directed to a FileMPEGBuffer
 	float *temp_float = new float[len];
-// Translate pure channel to a stream and a channel in the mpeg stream
-	int stream, channel;
-	to_streamchannel(file->current_channel, stream, channel);
-	
-	
-	
-//printf("FileMPEG::read_samples 1 current_sample=%ld len=%ld channel=%d\n", file->current_sample, len, channel);
 
 	mpeg3_set_sample(fd, 
 		file->current_sample,
-		stream);
+		asset->current_astream);
 	mpeg3_read_audio(fd, 
 		temp_float,      /* Pointer to pre-allocated buffer of floats */
 		0,      /* Pointer to pre-allocated buffer of int16's */
-		channel,          /* Channel to decode */
+		file->current_channel,          /* Channel to decode */
 		len,         /* Number of samples to decode */
-		stream);          /* Stream containing the channel */
+		asset->current_astream);    /* Stream containing the channel */
 
-
-//	last_sample = file->current_sample;
 	for(int i = 0; i < len; i++) buffer[i] = temp_float[i];
 
 	delete [] temp_float;
@@ -1279,29 +1239,18 @@ int FileMPEG::prefer_samples_float()
 
 int FileMPEG::read_samples_float(float *buffer, int64_t len)
 {
-	if(!fd) return 0;
-
-// Translate pure channel to a stream and a channel in the mpeg stream
-	int stream, channel;
-	to_streamchannel(file->current_channel, stream, channel);
-	
-	
-//printf("FileMPEG::read_samples 1 current_sample=%ld len=%ld channel=%d\n", file->current_sample, len, channel);
+	if(!fd || len < 0) return 0;
 
 	mpeg3_set_sample(fd, 
 		file->current_sample,
-		stream);
+		asset->current_astream);
 	mpeg3_read_audio(fd, 
 		buffer,      	/* Pointer to pre-allocated buffer of floats */
 		0,		/* Pointer to pre-allocated buffer of int16's */
-		channel,          /* Channel to decode */
+		file->current_channel,          /* Channel to decode */
 		len,         /* Number of samples to decode */
-		stream);          /* Stream containing the channel */
+		asset->current_astream);          /* Stream containing the channel */
 
-
-//	last_sample = file->current_sample;
-
-//printf("FileMPEG::read_samples 100\n");
 	return 0;
 }
 
