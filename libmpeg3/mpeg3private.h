@@ -121,6 +121,9 @@
 #define MIN(a, b) ((a) < (b) ? (a) : (b))
 #endif
 
+typedef struct mpeg3file mpeg3_t;
+typedef struct mpeg3atrack mpeg3_atrack_t;
+typedef struct mpeg3video mpeg3video_t;
 
 // CSS
 
@@ -195,9 +198,10 @@ typedef struct
 	int program;
 } mpeg3_cell_t;
 
+
 typedef struct
 {
-	void *file;
+	mpeg3_t *file;
 	mpeg3_fs_t *fs;
 /* Total bytes in title file.  Critical for seeking and length. */
 	int64_t total_bytes;
@@ -261,7 +265,7 @@ typedef struct
 typedef struct
 {
 /* mpeg3_t */
-	void* file;
+	mpeg3_t* file;
 /* One unparsed packet.  MPEG3_RAW_SIZE allocated since we don't know the packet size */
 	unsigned char *raw_data;
 /* Offset in raw_data of read pointer */
@@ -400,7 +404,7 @@ typedef struct
 	uint32_t bfr;  /* bfr = buffer for bits */
 	int bit_number;   /* position of pointer in bfr */
 	int bfr_size;    /* number of bits in bfr.  Should always be a multiple of 8 */
-	void *file;    /* Mpeg2 file */
+	mpeg3_t *file;    /* Mpeg2 file */
 	mpeg3_demuxer_t *demuxer;   /* Mpeg2 demuxer */
 /* If the input ptr is true, data is read from it instead of the demuxer. */
 	unsigned char *input_ptr;
@@ -546,8 +550,8 @@ struct al_table
 
 typedef struct
 {
-	void* file;
-	void* track;
+	mpeg3_t *file;
+	mpeg3_atrack_t *track;
 
 	mpeg3_ac3_t *ac3_decoder;
 	mpeg3_layer_t *layer_decoder;
@@ -598,7 +602,7 @@ typedef struct
 
 
 
-typedef struct
+struct mpeg3atrack
 {
 	int channels;
 	int sample_rate;
@@ -629,7 +633,7 @@ typedef struct
 /* Decoded samples for doc */
 	int64_t track_samples;
 
-} mpeg3_atrack_t;
+};
 
 
 
@@ -711,10 +715,11 @@ typedef struct
 	int done;           /* Signal for slice decoder to skip */
 } mpeg3_slice_buffer_t;
 
+
 /* Each slice decoder */
 typedef struct
 {
-	void *video;     /* mpeg3video_t */
+	mpeg3video_t *video;
 	mpeg3_slice_buffer_t *slice_buffer;
 
 	int thread_number;      /* Number of this thread */
@@ -757,11 +762,12 @@ typedef struct
 	int allocation;
 } mpeg3_cache_t;
 
+typedef struct mpeg3vtrack mpeg3_vtrack_t;
 
-typedef struct
+struct mpeg3video
 {
-	void* file;
-	void* track;
+	mpeg3_t *file;
+	mpeg3_vtrack_t *track;
 
 /* ================================= Seeking variables ========================= */
 	mpeg3_bits_t *vstream;
@@ -844,10 +850,10 @@ typedef struct
 
 /* Subtitling frame */
 	unsigned char *subtitle_frame[3];
-} mpeg3video_t;
+};
 
 
-typedef struct
+struct mpeg3vtrack
 {
 	int width;
 	int height;
@@ -881,7 +887,7 @@ typedef struct
 
 /* If these tables must be deleted by the track */
 	int private_offsets;
-} mpeg3_vtrack_t;
+};
 
 
 
@@ -908,7 +914,7 @@ typedef struct
 
 
 // Whole thing
-typedef struct
+struct mpeg3file
 {
 /* Store entry path here */
 	mpeg3_fs_t *fs;
@@ -989,7 +995,7 @@ typedef struct
 /* Date of source file index was created from. */
 /* Used to compare DVD source file to table of contents source. */
 	int64_t source_date;
-} mpeg3_t;
+};
 
 
 
