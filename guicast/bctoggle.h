@@ -62,7 +62,7 @@ public:
 		int *text_y, 
 		int *text_w,
 		int *text_h, 
-		char *caption);
+		const char *caption);
 
 	int initialize();
 	int set_images(VFrame **data);
@@ -119,7 +119,7 @@ public:
 	BC_Radial(int x, 
 		int y, 
 		int value, 
-		char *caption = "", 
+		const char *caption = "", 
 		int font = MEDIUMFONT,
 		int color = -1);
 };

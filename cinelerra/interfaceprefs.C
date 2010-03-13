@@ -222,7 +222,7 @@ int InterfacePrefs::create_objects()
 	return 0;
 }
 
-char* InterfacePrefs::behavior_to_text(int mode)
+const char* InterfacePrefs::behavior_to_text(int mode)
 {
 	switch(mode)
 	{
@@ -290,7 +290,7 @@ InterfacePrefs::~InterfacePrefs()
 IndexPathText::IndexPathText(int x, 
 	int y, 
 	PreferencesWindow *pwindow, 
-	char *text)
+	const char *text)
  : BC_TextBox(x, y, 240, 1, text)
 {
 	this->pwindow = pwindow; 
@@ -309,7 +309,7 @@ int IndexPathText::handle_event()
 IndexSize::IndexSize(int x, 
 	int y, 
 	PreferencesWindow *pwindow, 
-	char *text)
+	const char *text)
  : BC_TextBox(x, y, 100, 1, text)
 { 
 	this->pwindow = pwindow; 
@@ -331,7 +331,7 @@ int IndexSize::handle_event()
 IndexCount::IndexCount(int x, 
 	int y, 
 	PreferencesWindow *pwindow, 
-	char *text)
+	const char *text)
  : BC_TextBox(x, y, 100, 1, text)
 { 
 	this->pwindow = pwindow; 
@@ -428,7 +428,7 @@ int TimeFormatFeet::handle_event()
 	tfwindow->update(TIME_FEET_FRAMES);
 }
 
-TimeFormatFeetSetting::TimeFormatFeetSetting(PreferencesWindow *pwindow, int x, int y, char *string)
+TimeFormatFeetSetting::TimeFormatFeetSetting(PreferencesWindow *pwindow, int x, int y, const char *string)
  : BC_TextBox(x, y, 90, 1, string)
 { this->pwindow = pwindow; }
 
@@ -444,7 +444,7 @@ int TimeFormatFeetSetting::handle_event()
 
 ViewBehaviourText::ViewBehaviourText(int x, 
 	int y, 
-	char *text, 
+	const char *text, 
 	PreferencesWindow *pwindow, 
 	int *output)
  : BC_PopupMenu(x, y, 200, text)
@@ -471,7 +471,7 @@ int ViewBehaviourText::create_objects()
 }
 
 
-ViewBehaviourItem::ViewBehaviourItem(ViewBehaviourText *popup, char *text, int behaviour)
+ViewBehaviourItem::ViewBehaviourItem(ViewBehaviourText *popup, const char *text, int behaviour)
  : BC_MenuItem(text)
 {
 	this->popup = popup;
@@ -491,7 +491,7 @@ int ViewBehaviourItem::handle_event()
 
 
 
-MeterMinDB::MeterMinDB(PreferencesWindow *pwindow, char *text, int x, int y)
+MeterMinDB::MeterMinDB(PreferencesWindow *pwindow, const char *text, int x, int y)
  : BC_TextBox(x, y, 50, 1, text)
 { 
 	this->pwindow = pwindow; 
@@ -507,7 +507,7 @@ int MeterMinDB::handle_event()
 
 
 
-MeterMaxDB::MeterMaxDB(PreferencesWindow *pwindow, char *text, int x, int y)
+MeterMaxDB::MeterMaxDB(PreferencesWindow *pwindow, const char *text, int x, int y)
  : BC_TextBox(x, y, 50, 1, text)
 { 
 	this->pwindow = pwindow; 
@@ -524,7 +524,7 @@ int MeterMaxDB::handle_event()
 
 
 
-MeterVUDB::MeterVUDB(PreferencesWindow *pwindow, char *text, int y)
+MeterVUDB::MeterVUDB(PreferencesWindow *pwindow, const char *text, int y)
  : BC_Radial(145, y, pwindow->thread->edl->session->meter_format == METER_DB, text)
 { 
 	this->pwindow = pwindow; 
@@ -538,7 +538,7 @@ int MeterVUDB::handle_event()
 	return 1;
 }
 
-MeterVUInt::MeterVUInt(PreferencesWindow *pwindow, char *text, int y)
+MeterVUInt::MeterVUInt(PreferencesWindow *pwindow, const char *text, int y)
  : BC_Radial(205, y, pwindow->thread->edl->session->meter_format == METER_INT, text)
 { 
 	this->pwindow = pwindow; 
@@ -589,7 +589,7 @@ int ViewTheme::handle_event()
 
 
 
-ViewThemeItem::ViewThemeItem(ViewTheme *popup, char *text)
+ViewThemeItem::ViewThemeItem(ViewTheme *popup, const char *text)
  : BC_MenuItem(text)
 {
 	this->popup = popup;

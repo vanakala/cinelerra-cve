@@ -53,7 +53,7 @@ GWindowGUI::GWindowGUI(MWindow *mwindow,
 	this->mwindow = mwindow;
 }
 
-static char *other_text[NONAUTOTOGGLES_COUNT] =
+static const char *other_text[NONAUTOTOGGLES_COUNT] =
 {
 	N_("Assets"),
 	N_("Titles"),
@@ -61,7 +61,7 @@ static char *other_text[NONAUTOTOGGLES_COUNT] =
 	N_("Plugin Autos")
 };
 
-static char *auto_text[] = 
+static const char *auto_text[] = 
 {
 	N_("Mute"),
 	N_("Camera X"),

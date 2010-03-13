@@ -54,7 +54,7 @@ public:
 	int create_objects();
 // must delete each derived class
 	int update(int new_value);
-	char* behavior_to_text(int mode);
+	const char* behavior_to_text(int mode);
 
 	BrowseButton *ipath;
 	IndexSize *isize;
@@ -82,7 +82,7 @@ public:
 class IndexPathText : public BC_TextBox
 {
 public:
-	IndexPathText(int x, int y, PreferencesWindow *pwindow, char *text);
+	IndexPathText(int x, int y, PreferencesWindow *pwindow, const char *text);
 	~IndexPathText();
 	int handle_event();
 	PreferencesWindow *pwindow;
@@ -91,7 +91,7 @@ public:
 class IndexSize : public BC_TextBox
 {
 public:
-	IndexSize(int x, int y, PreferencesWindow *pwindow, char *text);
+	IndexSize(int x, int y, PreferencesWindow *pwindow, const char *text);
 	int handle_event();
 	PreferencesWindow *pwindow;
 };
@@ -100,7 +100,7 @@ public:
 class IndexCount : public BC_TextBox
 {
 public:
-	IndexCount(int x, int y, PreferencesWindow *pwindow, char *text);
+	IndexCount(int x, int y, PreferencesWindow *pwindow, const char *text);
 	int handle_event();
 	PreferencesWindow *pwindow;
 };
@@ -171,7 +171,7 @@ public:
 class TimeFormatFeetSetting : public BC_TextBox
 {
 public:
-	TimeFormatFeetSetting(PreferencesWindow *pwindow, int x, int y, char *string);
+	TimeFormatFeetSetting(PreferencesWindow *pwindow, int x, int y, const char *string);
 	int handle_event();
 	PreferencesWindow *pwindow;
 };
@@ -181,7 +181,7 @@ public:
 class MeterMinDB : public BC_TextBox
 {
 public:
-	MeterMinDB(PreferencesWindow *pwindow, char *text, int x, int y);
+	MeterMinDB(PreferencesWindow *pwindow, const char *text, int x, int y);
 	int handle_event();
 	PreferencesWindow *pwindow;
 };
@@ -190,7 +190,7 @@ public:
 class MeterMaxDB : public BC_TextBox
 {
 public:
-	MeterMaxDB(PreferencesWindow *pwindow, char *text, int x, int y);
+	MeterMaxDB(PreferencesWindow *pwindow, const char *text, int x, int y);
 	int handle_event();
 	PreferencesWindow *pwindow;
 };
@@ -198,7 +198,7 @@ public:
 class MeterVUDB : public BC_Radial
 {
 public:
-	MeterVUDB(PreferencesWindow *pwindow, char *text, int y);
+	MeterVUDB(PreferencesWindow *pwindow, const char *text, int y);
 	int handle_event();
 //	MeterVUInt *vu_int;
 	PreferencesWindow *pwindow;
@@ -207,7 +207,7 @@ public:
 class MeterVUInt : public BC_Radial
 {
 public:
-	MeterVUInt(PreferencesWindow *pwindow, char *text, int y);
+	MeterVUInt(PreferencesWindow *pwindow, const char *text, int y);
 	int handle_event();
 	MeterVUDB *vu_db;
 	PreferencesWindow *pwindow;
@@ -218,7 +218,7 @@ class ViewBehaviourText : public BC_PopupMenu
 public:
 	ViewBehaviourText(int x, 
 		int y, 
-		char *text, 
+		const char *text, 
 		PreferencesWindow *pwindow, 
 		int *output);
 	~ViewBehaviourText();
@@ -232,7 +232,7 @@ public:
 class ViewBehaviourItem : public BC_MenuItem
 {
 public:
-	ViewBehaviourItem(ViewBehaviourText *popup, char *text, int behaviour);
+	ViewBehaviourItem(ViewBehaviourText *popup, const char *text, int behaviour);
 	~ViewBehaviourItem();
 
 	int handle_event();
@@ -263,7 +263,7 @@ public:
 class ViewThemeItem : public BC_MenuItem
 {
 public:
-	ViewThemeItem(ViewTheme *popup, char *text);
+	ViewThemeItem(ViewTheme *popup, const char *text);
 	int handle_event();
 	ViewTheme *popup;
 };

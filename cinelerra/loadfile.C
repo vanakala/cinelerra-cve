@@ -94,7 +94,7 @@ void LoadFileThread::run()
 	ArrayList<char*> path_list;
 	path_list.set_array_delete();
 	char default_path[BCTEXTLEN];
-	char *reel_name = 0;
+	const char *reel_name = 0;
 	int reel_number = 0;
 	int overwrite_reel = 0;
 	
