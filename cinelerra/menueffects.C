@@ -593,6 +593,8 @@ int MenuEffectWindow::create_objects()
 {
 	int x, y;
 	result = -1;
+
+	set_icon(mwindow->theme->get_image("mwindow_icon"));
 	mwindow->theme->get_menueffect_sizes(plugin_list ? 1 : 0);
 
 // only add the list if needed

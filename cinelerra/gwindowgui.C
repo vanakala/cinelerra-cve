@@ -31,7 +31,7 @@
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "trackcanvas.h"
-
+#include "theme.h"
 
 
 
@@ -131,7 +131,7 @@ void GWindowGUI::create_objects()
 {
 	int x = 10, y = 10;
 
-
+	set_icon(mwindow->theme->get_image("mwindow_icon"));
 	for(int i = 0; i < NONAUTOTOGGLES_COUNT + AUTOMATION_TOTAL; i++)
 	{
 		add_tool(toggles[i] = new GWindowToggle(mwindow, 

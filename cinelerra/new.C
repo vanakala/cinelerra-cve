@@ -245,6 +245,7 @@ int NewWindow::create_objects()
 	int x = 10, y = 10, x1, y1;
 	BC_TextBox *textbox;
 
+	set_icon(mwindow->theme->get_image("mwindow_icon"));
 	mwindow->theme->draw_new_bg(this);
 
 	add_subwindow(new BC_Title(x, y, _("Parameters for the new project:")));

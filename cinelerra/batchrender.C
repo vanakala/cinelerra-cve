@@ -679,6 +679,7 @@ void BatchRenderGUI::create_objects()
 	int y1 = y;
 	int y2;
 
+	set_icon(mwindow->theme->get_image("mwindow_icon"));
 // output file
 	add_subwindow(output_path_title = new BC_Title(x1, y, _("Output path:")));
 	y += 20;

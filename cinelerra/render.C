@@ -1109,6 +1109,8 @@ int RenderWindow::load_profile(int profile_slot)
 int RenderWindow::create_objects()
 {
 	int x = 5, y = 5;
+
+	set_icon(mwindow->theme->get_image("mwindow_icon"));
 	add_subwindow(new BC_Title(x, 
 		y, 
 		(char*)((render->strategy == FILE_PER_LABEL || 

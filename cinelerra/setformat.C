@@ -326,8 +326,9 @@ void SetFormatWindow::create_objects()
 	BC_TextBox *textbox;
 	BC_Title *title;
 
-	mwindow->theme->draw_setformat_bg(this);
 
+	mwindow->theme->draw_setformat_bg(this);
+	set_icon(mwindow->theme->get_image("mwindow_icon"));
 
 
 	presets = new SetFormatPresets(mwindow, 

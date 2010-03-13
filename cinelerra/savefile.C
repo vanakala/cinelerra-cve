@@ -34,6 +34,7 @@
 #include "playback3d.h"
 #include "savefile.h"
 #include "mainsession.h"
+#include "theme.h"
 
 #include <string.h>
 
@@ -244,6 +245,7 @@ SaveFileWindow::SaveFileWindow(MWindow *mwindow, char *init_directory)
 	_("Enter a filename to save as"))
 { 
 	this->mwindow = mwindow; 
+	set_icon(mwindow->theme->get_image("mwindow_icon"));
 }
 
 SaveFileWindow::~SaveFileWindow() {}

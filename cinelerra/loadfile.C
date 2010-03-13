@@ -219,6 +219,7 @@ int LoadFileWindow::create_objects()
 
 	int x = get_w() / 2 - 200;
 	int y = get_cancel_button()->get_y() - 50;
+	set_icon(mwindow->theme->get_image("mwindow_icon"));
 	loadmode = new LoadMode(mwindow, this, x, y, &thread->load_mode, 0);
 	loadmode->create_objects();
 

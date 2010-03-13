@@ -39,6 +39,7 @@
 #include "exportedl.h"
 #include "tracks.h"
 #include "transition.h"
+#include "theme.h"
 
 #include <libintl.h>
 #define _(String) gettext(String)
@@ -391,6 +392,8 @@ ExportEDLWindow::~ExportEDLWindow()
 int ExportEDLWindow::create_objects()
 {
 	int x = 5, y = 5;
+
+	set_icon(mwindow->theme->get_image("mwindow_icon"));
 	add_subwindow(new BC_Title(x, 
 		y, 
 			_("Select a file to export to:")));
