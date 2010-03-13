@@ -109,8 +109,8 @@ public:
 	int create_objects();
 	int reposition();
 	int close_threads();
-	char *get_source_name(Channel *channel);  // Get the name of the source for a channel
-	char *current_channel_name();    // Get the name of the current channel of the device
+	const char *get_source_name(Channel *channel);  // Get the name of the source for a channel
+	const char *current_channel_name();    // Get the name of the current channel of the device
 	int channel_up();
 	int channel_down();
 

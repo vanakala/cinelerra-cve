@@ -24,14 +24,14 @@
 
 typedef struct
 {
-	char *name;
+	const char *name;
 	int   freq;
 } CHANLIST;
 
 
 typedef struct 
 {
-    char             *name;
+    const char		*name;
     CHANLIST 		 *list;
     int               count;
 } CHANLISTS;

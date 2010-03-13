@@ -27,7 +27,7 @@
 #include "localsession.h"
 
 
-static char *xml_autogrouptypes_titlesmax[] = 
+static const char *xml_autogrouptypes_titlesmax[] = 
 {
 	"AUTOGROUPTYPE_AUDIO_FADE_MAX",
 	"AUTOGROUPTYPE_VIDEO_FADE_MAX",
@@ -37,7 +37,7 @@ static char *xml_autogrouptypes_titlesmax[] =
 	"AUTOGROUPTYPE_INT255_MAX"
 };
 
-static char *xml_autogrouptypes_titlesmin[] = 
+static const char *xml_autogrouptypes_titlesmin[] = 
 {
 	"AUTOGROUPTYPE_AUDIO_FADE_MIN",
 	"AUTOGROUPTYPE_VIDEO_FADE_MIN",
