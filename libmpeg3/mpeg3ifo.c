@@ -522,7 +522,7 @@ static void cellplayinfo(mpeg3_t *file, ifo_t *ifo, mpeg3ifo_celltable_t *cells)
 // Skip CLUT
 // Skip PGC commands
 // Program map
-		if(program_map(file, cell_hdr_start, &cell_hdr))
+		if(program_map(file, cell_hdr_start, (unsigned char **)&cell_hdr))
 			;
 
 // Cell Positions

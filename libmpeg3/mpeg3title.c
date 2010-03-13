@@ -186,7 +186,7 @@ int mpeg3demux_print_cells(mpeg3_title_t *title, FILE *output)
 		{
 			cell = &title->cell_table[i];
 
-			fprintf(output, "REGION: %llx-%llx %llx-%llx %f %f %d\n",
+			fprintf(output, "REGION: %llx-%llx %llx-%llx %d\n",
 				cell->program_start,
 				cell->program_end,
 				cell->title_start,

@@ -18,9 +18,8 @@ int mpeg3_mmx_test()
 		return 0;
 	}
 	
-	while(!feof(proc))
+	while(fgets(string, MPEG3_STRLEN, proc))
 	{
-		fgets(string, MPEG3_STRLEN, proc);
 /* Got the flags line */
 		if(!strncasecmp(string, "flags", 5))
 		{

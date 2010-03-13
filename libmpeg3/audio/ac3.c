@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <a52dec/a52.h>
 #include "mpeg3private.h"
@@ -91,7 +92,7 @@ int mpeg3_ac3_header(mpeg3_ac3_t *audio, unsigned char *header)
 				audio->channels += 2;
 				break;
 			default:
-				printf("mpeg3_ac3_header: unknown channel code: %p\n", audio->flags & A52_CHANNEL_MASK);
+				printf("mpeg3_ac3_header: unknown channel code: %x\n", audio->flags & A52_CHANNEL_MASK);
 				break;
 		}
 	}
