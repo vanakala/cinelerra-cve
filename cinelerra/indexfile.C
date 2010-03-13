@@ -510,13 +510,13 @@ int IndexFile::draw_index(ResourcePixmap *pixmap, Edit *edit, int x, int w)
 			if(startfile + length_read > file_length)
 				length_read = file_length - startfile;
 
-			if(fread(buffer, length_read + sizeof(float), 1, file) < 1)
+			if(fread(buffer, length_read, 1, file) < 1)
 				fprintf(stderr, "IndexFile::draw_index - read error\n");
 		}
 
 		if(length_read < lengthfile)
 			for(i = length_read / sizeof(float); 
-				i < lengthfile / sizeof(float); 
+				i < lengthindex;
 				i++)
 				buffer[i] = 0;
 	}
