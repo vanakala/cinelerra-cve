@@ -193,12 +193,13 @@ int mpeg3_rewind_video(mpeg3video_t *video)
 {
 	mpeg3_vtrack_t *track = video->track;
 	mpeg3_bits_t *vstream = video->vstream;
+	mpeg3_t *file = video->file;
 
 	if(track->keyframes){
 		mpeg3bits_seek_byte(vstream, track->keyframes[0].offset);
 		video->framenum = track->keyframes[0].number;
 	} else
-		mpeg3bits_seek_byte(vstream, 0);
+		mpeg3bits_seek_byte(vstream, file->base_offset);
 
 	return 0;
 }

@@ -22,12 +22,16 @@ static void toc_error()
 
 static int rewind_audio(mpeg3audio_t *audio)
 {
+	mpeg3_t *file = (mpeg3_t *)audio->file;
 	mpeg3_atrack_t *track = audio->track;
+
 	if(track->sample_offsets)
 		mpeg3demux_seek_byte(track->demuxer, 
 			track->sample_offsets[0].offset);
 	else
-		mpeg3demux_seek_byte(track->demuxer, 0);
+		mpeg3demux_seek_byte(track->demuxer, file->base_offset);
+	audio->output_size = 0;
+	audio->output_position = 0;
 	return 0;
 }
 
@@ -72,11 +76,6 @@ static int read_header(mpeg3audio_t *audio)
 				else
 					break;
 
-/*
- * printf("read_header 100 offset=%llx got_it=%d\n", 
- * mpeg3demux_tell_byte(track->demuxer),
- * got_it);
- */
 			}while(!result && !got_it && try < 0x10000);
 
 
@@ -459,7 +458,6 @@ mpeg3audio_t* mpeg3audio_new(mpeg3_t *file,
 	if(file->seekable)
 		if(calculate_format(file, track)) result = 1;
 
-//printf("mpeg3audio_new %lld\n", mpeg3demux_tell_byte(track->demuxer));
 /* get stream parameters */
 	if(!result && file->seekable)
 	{
@@ -484,7 +482,6 @@ mpeg3audio_t* mpeg3audio_new(mpeg3_t *file,
 
 
 		result = read_header(audio);
-//printf("mpeg3audio_new 1 %d\n", result);
 	}
 
 
@@ -591,7 +588,6 @@ static int seek(mpeg3audio_t *audio)
 			int64_t byte = (int64_t)((double)audio->sample_seek / 
 				track->total_samples * 
 				mpeg3demux_movie_size(demuxer));
-//printf(__FUNCTION__ " 5\n");
 
 			mpeg3demux_seek_byte(demuxer, byte);
 	   		audio->output_position = audio->sample_seek;
@@ -604,19 +600,6 @@ static int seek(mpeg3audio_t *audio)
 	if(audio->byte_seek >= 0)
 	{
 		mpeg3demux_seek_byte(demuxer, audio->byte_seek);
-
-// Scan for pts if we're the first to seek.
-/*
- * 		if(file->percentage_pts < 0)
- * 		{
- * 			file->percentage_pts = mpeg3demux_scan_pts(demuxer);
- * 		}
- * 		else
- * 		{
- * 			mpeg3demux_goto_pts(demuxer, file->percentage_pts);
- * 		}
- */
-
 	   	audio->output_position = 0;
 		audio->output_size = 0;
 		seeked = 1;

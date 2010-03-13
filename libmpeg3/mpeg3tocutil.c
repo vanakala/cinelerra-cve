@@ -461,6 +461,8 @@ if(debug) printf("mpeg3_read_toc 30\n");
 				    }
 				    file->total_frames[i] -= file->keyframes[i][0].number;
 			    }
+			    if(file->keyframes && file->keyframes[0])
+				    file->base_offset = file->keyframes[0][0].offset;
 			    break;
 		}
 	}
@@ -531,7 +533,7 @@ static mpeg3_t* mpeg3_start_toc_exec(char *path, char *toc_path, int64_t *total_
 		title = file->demuxer->titles[0] = mpeg3_new_title(file, file->fs->path);
 		file->demuxer->total_titles = 1;
 		mpeg3demux_open_title(file->demuxer, 0);
-		title->total_bytes = mpeg3io_total_bytes(title->fs) - base_offs;
+		title->total_bytes = mpeg3io_total_bytes(title->fs);
 		title->start_byte = 0;
 		title->end_byte = title->total_bytes;
 		mpeg3_new_cell(title, 
@@ -546,7 +548,7 @@ static mpeg3_t* mpeg3_start_toc_exec(char *path, char *toc_path, int64_t *total_
 	file->demuxer->read_all = 1;
 	file->base_offset = base_offs;
 	base_offs = 0;
-	*total_bytes = mpeg3demux_movie_size(file->demuxer);
+	*total_bytes = mpeg3io_total_bytes(file->fs);
 
 	return file;
 }
@@ -1046,10 +1048,9 @@ int mpeg3_do_toc(mpeg3_t *file, int64_t *bytes_processed)
 		}
 	}
 
-
 // Make user value independant of data type in packet
 	*bytes_processed = mpeg3demux_tell_byte(demuxer);
-//printf("mpeg3_do_toc 1000 %llx\n", *bytes_processed);
+	return 0;
 }
 
 
