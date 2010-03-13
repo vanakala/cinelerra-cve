@@ -448,6 +448,7 @@ typedef struct
 	int pes_packets;
 	double pes_audio_time;  /* Presentation Time stamps */
 	double pes_video_time;  /* Presentation Time stamps */
+	double pes_subpc_time;  /* Presentation Time stamps */
 /* Cause the stream parameters to be dumped in human readable format */
 	int dump;
 } mpeg3_demuxer_t;

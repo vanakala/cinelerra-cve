@@ -881,7 +881,7 @@ static void handle_subtitle(mpeg3_t *file,
 		subtitle->data[1] = length & 0xff;
 		subtitle->size = 2;
 		bytes -= 2;
-		subtitle->ptstime = demuxer->time;
+		subtitle->ptstime = demuxer->pes_subpc_time;
 	}
 
 	if(subtitle->size + bytes <= subtitle->length){
@@ -1218,26 +1218,28 @@ static int get_program_pes_packet(mpeg3_demuxer_t *demuxer, unsigned int header)
     			mpeg3io_seek_relative(title->fs, pes_packet_length);
     		}
     	}
-    	else
-		if((demuxer->stream_id == 0xbd || demuxer->stream_id == 0xbf) && 
+    	else if((demuxer->stream_id == 0xbd || demuxer->stream_id == 0xbf) && 
 			mpeg3io_next_char(title->fs) != 0xff &&
 			((mpeg3io_next_char(title->fs) & 0xf0) == 0x20))
 		{
 /* DVD subtitle data */
+		int stream_id = demuxer->stream_id = mpeg3io_read_char(title->fs);
+		pes_packet_length -= mpeg3io_tell(title->fs) - pes_packet_start;
+		if(demuxer->do_video || demuxer->read_all)
+		{
 			mpeg3_subtitle_t *subtitle = 0;
-			int stream_id = demuxer->stream_id = mpeg3io_read_char(title->fs);
 			subtitle = new_subtitle(demuxer, 
 				stream_id, 
 				demuxer->program_byte);
-
-/* Get data length */
-			pes_packet_length -= mpeg3io_tell(title->fs) - pes_packet_start;
+			if(pts > 0) 
+				demuxer->pes_subpc_time = (double)pts / 90000;
 
 			handle_subtitle(file, demuxer, subtitle, pes_packet_length);
-//printf("mpeg3_demux id=0x%02x size=%d total_size=%d\n", stream_id, pes_packet_length, subtitle->size);
-
 		}
 		else
+/* Skip subpicture if video is not decoded */
+			mpeg3io_seek_relative(title->fs, pes_packet_length);
+		} else
 		if((demuxer->stream_id == 0xbd || demuxer->stream_id == 0xbf) && 
 			mpeg3io_next_char(title->fs) != 0xff &&
 			((mpeg3io_next_char(title->fs) & 0xf0) == 0x80))

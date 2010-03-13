@@ -301,7 +301,7 @@ void mpeg3_decode_subtitle(mpeg3video_t *video)
 	mpeg3_strack_t *strack;
 
 
-	frame_time = (video->framenum + 1) / video->frame_rate;
+	frame_time = vtrack->demuxer->pes_video_time;
 	lo_time = hi_time = frame_time;
 	oneframe = 1.0 / video->frame_rate;
 
@@ -325,7 +325,7 @@ void mpeg3_decode_subtitle(mpeg3video_t *video)
 						continue;
 					}
 				}
-				if(subtitle->start_time < frame_time)
+				if(subtitle->start_time <= frame_time)
 				{
 					if(subtitle->stop_time > frame_time)
 						subtitle->active = 1;
