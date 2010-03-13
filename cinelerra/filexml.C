@@ -332,10 +332,17 @@ int FileXML::read_from_file(const char *filename, int ignore_error)
 		int new_length = ftell(in);
 		fseek(in, 0, SEEK_SET);
 		reallocate_string(new_length + 1);
-		fread(string, new_length, 1, in);
-		string[new_length] = 0;
 		position = 0;
-		length = new_length;
+		if(fread(string, new_length, 1, in))
+		{
+			string[new_length] = 0;
+			length = new_length;
+		}
+		else
+		{
+			string[0] = 0;
+			length = 0;
+		}
 	}
 	else
 	{

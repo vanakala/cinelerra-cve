@@ -229,7 +229,8 @@ ushort CLASS sget2 (uchar *s)
 ushort CLASS get2()
 {
   uchar str[2] = { 0xff,0xff };
-  fread (str, 1, 2, ifp);
+  if(fread (str, 1, 2, ifp) < 1)
+    perror("dcraw:get2");
   return sget2(str);
 }
 
@@ -245,7 +246,8 @@ int CLASS sget4 (uchar *s)
 int CLASS get4()
 {
   uchar str[4] = { 0xff,0xff,0xff,0xff };
-  fread (str, 1, 4, ifp);
+  if(fread (str, 1, 4, ifp) < 1)
+    perror("dcraw:get4");
   return sget4(str);
 }
 
@@ -284,7 +286,8 @@ double CLASS getreal (int type)
 
 void CLASS read_shorts (ushort *pixel, int count)
 {
-  fread (pixel, 2, count, ifp);
+  if(fread (pixel, 2, count, ifp) != count)
+    fprintf(stderr, "Unexpected end of file\n");
   if ((order == 0x4949) == (ntohs(0x1234) == 0x1234))
     swab (pixel, pixel, count*2);
 }
@@ -415,7 +418,8 @@ void CLASS canon_600_load_raw()
 
   for (irow=row=0; irow < height; irow++)
   {
-    fread (data, 1120, 1, ifp);
+    if(fread (data, 1120, 1, ifp) < 1)
+	fprintf(stderr, "Unexpected end of file\n");
     for (dp=data, pix=pixel; dp < data+1120; dp+=10, pix+=8)
     {
       pix[0] = (dp[0] << 2) + (dp[1] >> 6    );
@@ -454,7 +458,8 @@ void CLASS canon_a5_load_raw()
   int row, col;
 
   for (row=0; row < height; row++) {
-    fread (data, raw_width * 10 / 8, 1, ifp);
+    if(fread (data, raw_width * 10 / 8, 1, ifp) < 1)
+	printf("Unexpected end of file\n");
     for (dp=data, pix=pixel; pix < pixel+raw_width; dp+=10, pix+=8)
     {
       pix[0] = (dp[1] << 2) + (dp[0] >> 6);
@@ -633,7 +638,8 @@ int CLASS canon_has_lowbits()
   int ret=1, i;
 
   fseek (ifp, 0, SEEK_SET);
-  fread (test, 1, sizeof test, ifp);
+  if(fread (test, 1, sizeof test, ifp) < 1)
+	fprintf(stderr, "Unexpected end of file\n");
   for (i=540; i < sizeof test - 1; i++)
     if (test[i] == 0xff) {
       if (test[i+1]) return 1;
@@ -735,14 +741,17 @@ int CLASS ljpeg_start (struct jhead *jh, int info_only)
   for (i=0; i < 4; i++)
     jh->huff[i] = free_decode;
   jh->restart = INT_MAX;
-  fread (data, 2, 1, ifp);
+  if(fread (data, 2, 1, ifp) < 1)
+    fprintf(stderr, "Unexpected end of file\n");
   if (data[1] != 0xd8) return 0;
   do {
-    fread (data, 2, 2, ifp);
+    if(fread (data, 2, 2, ifp))
+	fprintf(stderr, "Unexpected end of file\n");
     tag =  data[0] << 8 | data[1];
     len = (data[2] << 8 | data[3]) - 2;
     if (tag <= 0xff00) return 0;
-    fread (data, 1, len, ifp);
+    if(fread (data, 1, len, ifp) < 1)
+	fprintf(stderr, "Unexpected end of file\n");
     switch (tag) {
       case 0xffc0:
       case 0xffc3:
@@ -1001,7 +1010,8 @@ int CLASS nikon_is_compressed()
   if (strcmp(model,"D100"))
     return 1;
   fseek (ifp, data_offset, SEEK_SET);
-  fread (test, 1, 256, ifp);
+  if(fread (test, 1, 256, ifp) != 256)
+    return 1;
   for (i=15; i < 256; i+=16)
     if (test[i]) return 1;
   return 0;
@@ -1035,7 +1045,8 @@ int CLASS nikon_e2100()
 
   fseek (ifp, 0, SEEK_SET);
   for (i=0; i < 1024; i++) {
-    fread (t, 1, 12, ifp);
+    if(fread (t, 1, 12, ifp) < 1)
+	return 0;
     if (((t[2] & t[4] & t[7] & t[9]) >> 4
 	& t[1] & t[6] & t[8] & t[11] & 3) != 3)
       return 0;

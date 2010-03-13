@@ -66,7 +66,10 @@ RenderFarmClient::RenderFarmClient(int port,
 	signals->initialize();
 
 	this_pid = getpid();
-	nice(nice_value);
+
+// For now ignore possible negative nice return values
+	if(nice(nice_value) < 0)
+		perror("RenderFarmClient::RenderFarmClient - nice");
 
 
 	MWindow::init_defaults(boot_defaults, config_path);

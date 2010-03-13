@@ -1275,7 +1275,12 @@ void MWindow::init_shm()
 	}
 
 	int64_t result = 0;
-	fscanf(fd, "%lld", &result);
+	if(fscanf(fd, "%lld", &result) != 1)
+	{
+		MainError::show_error("MWindow::init_shm: couldn't resd /proc/sys/kernel/shmmax.\n");
+		fclose(fd);
+		return;
+	}
 	fclose(fd);
 	fd = 0;
 	if(result < 0x7fffffff)

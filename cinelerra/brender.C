@@ -147,7 +147,8 @@ void BRender::run()
 	fd = fopen("/proc/self/cmdline", "r");
 	if(fd)
 	{
-		fread(string, 1, BCTEXTLEN, fd);
+		if(fread(string, 1, BCTEXTLEN, fd) <= 0)
+			perror("BRender::fork_background: can't read /proc/self/cmdline.\n");
 		fclose(fd);
 	}
 	else

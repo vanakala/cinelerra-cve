@@ -67,14 +67,15 @@ int FileVorbis::check_sig(Asset *asset)
 {
 // FILEVORBIS DECODING IS DISABLED
 	return 0;
+	int l;
 	FILE *fd = fopen(asset->path, "rb");
 	OggVorbis_File vf;
 
 // Test for Quicktime since OGG misinterprets it
 	fseek(fd, 4, SEEK_SET);
 	char data[4];
-	fread(data, 4, 1, fd);
-	if(data[0] == 'm' &&
+	l = fread(data, 4, 1, fd);
+	if(l && data[0] == 'm' &&
 		data[1] == 'd' &&
 		data[2] == 'a' &&
 		data[3] == 't')

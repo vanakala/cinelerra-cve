@@ -213,8 +213,9 @@ int FileList::read_list_header()
 // Get information about the frames
 		do
 		{
-			fgets(string, BCTEXTLEN, stream);
-		}while(!feof(stream) && (string[0] == '#' || string[0] == ' ' || isalpha(string[0])));
+			if(fgets(string, BCTEXTLEN, stream) == NULL)
+				break;
+		}while(string[0] == '#' || string[0] == ' ' || isalpha(string[0]));
 
 // Don't want a user configured frame rate to get destroyed
 		if(asset->frame_rate == 0)
@@ -222,14 +223,16 @@ int FileList::read_list_header()
 
 		do
 		{
-			fgets(string, BCTEXTLEN, stream);
-		}while(!feof(stream) && (string[0] == '#' || string[0] == ' '));
+			if(fgets(string, BCTEXTLEN, stream) == NULL)
+				break;
+		}while(string[0] == '#' || string[0] == ' ');
 		asset->width = atol(string);
 
 		do
 		{
-			fgets(string, BCTEXTLEN, stream);
-		}while(!feof(stream) && (string[0] == '#' || string[0] == ' '));
+			if(fgets(string, BCTEXTLEN, stream) == NULL)
+				break;
+		}while(string[0] == '#' || string[0] == ' ');
 		asset->height = atol(string);
 
 		asset->interlace_mode = BC_ILACE_MODE_UNDETECTED;  // May be good to store the info in the list?
@@ -240,8 +243,8 @@ int FileList::read_list_header()
 // Get all the paths
 		while(!feof(stream))
 		{
-			fgets(string, BCTEXTLEN, stream);
-			if(strlen(string) && string[0] != '#' && string[0] != ' ' && !feof(stream))
+			if(fgets(string, BCTEXTLEN, stream) &&
+				strlen(string) && string[0] != '#' && string[0] != ' ' && !feof(stream))
 			{
 				string[strlen(string) - 1] = 0;
 				path_list.append(new_entry = new char[strlen(string) + 1]);
@@ -262,6 +265,9 @@ int FileList::read_list_header()
 int FileList::read_frame(VFrame *frame)
 {
 	int result = 0;
+	FILE *fp;
+	char string[BCTEXTLEN];
+
 	if(file->current_frame < 0 || 
 		(asset->use_header && file->current_frame >= path_list.total &&
 			asset->format == list_type))
@@ -269,7 +275,6 @@ int FileList::read_frame(VFrame *frame)
 
 	if(asset->format == list_type)
 	{
-		char string[BCTEXTLEN];
 		char *path;
 		if(asset->use_header)
 		{
@@ -279,8 +284,6 @@ int FileList::read_frame(VFrame *frame)
 		{
 			path = calculate_path(file->current_frame, string);
 		}
-		FILE *in;
-
 
 // Fix path for VFS
 		if(!strncmp(asset->path, RENDERFARM_FS_PREFIX, strlen(RENDERFARM_FS_PREFIX)))
@@ -288,7 +291,7 @@ int FileList::read_frame(VFrame *frame)
 		else
 			strcpy(string, path);
 
-		if(!(in = fopen(string, "rb")))
+		if(!(fp = fopen(string, "rb")))
 		{
 			eprintf("Error while opening \"%s\" for reading. \n%m\n", string);
 		}
@@ -302,18 +305,20 @@ int FileList::read_frame(VFrame *frame)
 				case BC_COMPRESSED:
 					frame->allocate_compressed_data(ostat.st_size);
 					frame->set_compressed_size(ostat.st_size);
-					fread(frame->get_data(), ostat.st_size, 1, in);
+					if(fread(frame->get_data(), ostat.st_size, 1, fp) < 1)
+						goto emptyfile;
 					break;
 				default:
 					data->allocate_compressed_data(ostat.st_size);
 					data->set_compressed_size(ostat.st_size);
-					fread(data->get_data(), ostat.st_size, 1, in);
+					if(fread(data->get_data(), ostat.st_size, 1, fp) < 1)
+						goto emptyfile;
 					result = read_frame(frame, data);
 					break;
 			}
 
 
-			fclose(in);
+			fclose(fp);
 		}
 	}
 	else
@@ -324,9 +329,8 @@ int FileList::read_frame(VFrame *frame)
 		{
 			if(temp) delete temp;
 			temp = 0;
-		
-			FILE *fd = fopen(asset->path, "rb");
-			if(fd)
+			strcpy(string, asset->path);
+			if(fp = fopen(asset->path, "rb"))
 			{
 				struct stat ostat;
 				stat(asset->path, &ostat);
@@ -336,12 +340,14 @@ int FileList::read_frame(VFrame *frame)
 					case BC_COMPRESSED:
 						frame->allocate_compressed_data(ostat.st_size);
 						frame->set_compressed_size(ostat.st_size);
-						fread(frame->get_data(), ostat.st_size, 1, fd);
+						if(fread(frame->get_data(), ostat.st_size, 1, fp) < 1)
+							goto emptyfile;
 						break;
 					default:
 						data->allocate_compressed_data(ostat.st_size);
 						data->set_compressed_size(ostat.st_size);
-						fread(data->get_data(), ostat.st_size, 1, fd);
+						if(fread(data->get_data(), ostat.st_size, 1, fp) < 1)
+							goto emptyfile;
 						temp = new VFrame(0, 
 							asset->width, 
 							asset->height, 
@@ -350,7 +356,7 @@ int FileList::read_frame(VFrame *frame)
 						break;
 				}
 
-				fclose(fd);
+				fclose(fp);
 			}
 			else
 			{
@@ -400,6 +406,10 @@ int FileList::read_frame(VFrame *frame)
 
 
 	return result;
+emptyfile:
+	fclose(fp);
+	eprintf("Error while opening \"%s\" for reading. \n%m\n", asset->path);
+	return 1;
 }
 
 int FileList::write_frames(VFrame ***frames, int len)

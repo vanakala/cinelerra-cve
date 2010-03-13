@@ -1323,7 +1323,11 @@ int FileOGG::check_sig(Asset *asset)
 	fseek(fd, 0, SEEK_SET);
 	char data[4];
 
-	fread(data, 4, 1, fd);
+	if(fread(data, 4, 1, fd) < 1)
+	{
+		fclose(fd);
+		return 0;
+	}
 
 	if(data[0] == 'O' &&
 		data[1] == 'g' &&

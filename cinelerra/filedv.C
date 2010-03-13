@@ -264,8 +264,8 @@ TRACE("FileDV::open_file 50")
 		// by reading the greatest possible frame size, we ensure we get all the
 		// data. libdv will determine if it's PAL or NTSC, and input and output
 		// buffers get allocated accordingly.
-		fread(temp, DV1394_PAL_FRAME_SIZE, 1, stream);
-
+		if(fread(temp, DV1394_PAL_FRAME_SIZE, 1, stream) <= 0)
+			fprintf(stderr,"FileDV::open_file: empty file?\n");
 TRACE("FileDV::open_file 60")
 
 		if(decoder) dv_decoder_free(decoder);
@@ -341,13 +341,14 @@ UNTRACE
 int FileDV::check_sig(Asset *asset)
 {
 	unsigned char temp[3];
+	int l;
 	FILE *t_stream = fopen(asset->path, "rb");
 
-	fread(&temp, 3, 1, t_stream);
+	l = fread(&temp, 3, 1, t_stream);
 
 	fclose(t_stream);
 	
-	if(temp[0] == 0x1f &&
+	if(l && temp[0] == 0x1f &&
 			temp[1] == 0x07 &&
 			temp[2] == 0x00)
 		return 1;
@@ -823,7 +824,12 @@ TRACE("FileDV::read_frame 10")
 		stream_lock->unlock();
 		return 1;
 	}
-	fread(video_buffer, output_size, 1, stream);
+	if(fread(video_buffer, output_size, 1, stream) < 1)
+	{
+		eprintf("Unable to read file at %lli", (off_t)(video_position * output_size));
+		stream_lock->unlock();
+		return 1;
+	}
 	stream_lock->unlock();
 	video_position++;
 	

@@ -356,13 +356,15 @@ int File::open_file(Preferences *preferences,
 			FILE *stream;
 			if(!(stream = fopen(this->asset->path, "rb")))
 			{
-// file not found
-				return 1;
+				return FILE_NOT_FOUND;
 			}
 
 			char test[16];
-			fread(test, 16, 1, stream);
-
+			if(fread(test, 16, 1, stream) < 1)
+			{
+				fclose(stream);
+				return FILE_NOT_FOUND;
+			}
 			if(FileDV::check_sig(this->asset))
 			{
 // libdv

@@ -283,13 +283,14 @@ void FileYUV::get_parameters(BC_WindowBase *parent_window,
 
 int FileYUV::check_sig(Asset *asset)
 {
-	char temp[9];
+	char temp[16];
+	int l;
         FILE *f = fopen(asset->path, "rb");
 
         // check for starting with "YUV4MPEG2"
-        fread(&temp, 9, 1, f);
+        l = fread(&temp, 9, 1, f);
         fclose(f);
-	if (strncmp(temp, "YUV4MPEG2", 9) == 0) return 1;
+	if (l && strncmp(temp, "YUV4MPEG2", 9) == 0) return 1;
 
         return 0;
 }

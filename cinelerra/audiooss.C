@@ -84,7 +84,8 @@ void OSSThread::run()
 
 
 			Thread::enable_cancel();
-			write(fd, data, bytes);
+			if(write(fd, data, bytes) != bytes)
+				fprintf(stderr, "OSSThread::run - write error\n");
 			Thread::disable_cancel();
 
 

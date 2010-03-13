@@ -58,6 +58,7 @@ int FileTGA::check_sig(Asset *asset)
 
 // Test file extension
 	int result = 0;
+	int l;
 	char *ext = strrchr(asset->path, '.');
 
 	if(ext)
@@ -81,9 +82,9 @@ int FileTGA::check_sig(Asset *asset)
 		else
 		{
 			char test[16];
-			fread(test, 16, 1, stream);
+			l = fread(test, 16, 1, stream);
 			fclose(stream);
-			if(test[0] == 'T' && test[1] == 'G' && test[2] == 'A' && 
+			if(l && test[0] == 'T' && test[1] == 'G' && test[2] == 'A' && 
 				test[3] == 'L' && test[4] == 'I' && test[5] == 'S' && 
 				test[6] == 'T')
 			{
@@ -221,8 +222,11 @@ int FileTGA::read_frame_header(char *path)
 	}
 
 	unsigned char header[HEADERSIZE];
-	fread(header, HEADERSIZE, 1, stream);
+	if(fread(header, HEADERSIZE, 1, stream) < 1)
+		result = 1;
 	fclose(stream);
+
+	if(result) return 1;
 
 	asset->width = header[12] | (header[13] << 8);
 	asset->height = header[14] | (header[15] << 8);

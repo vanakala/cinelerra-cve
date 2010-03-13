@@ -64,14 +64,15 @@ void FileTIFF::get_parameters(BC_WindowBase *parent_window,
 
 int FileTIFF::check_sig(Asset *asset)
 {
+	int l;
 	FILE *stream = fopen(asset->path, "rb");
 
 	if(stream)
 	{
 		char test[10];
-		fread(test, 10, 1, stream);
+		l = fread(test, 10, 1, stream);
 		fclose(stream);
-
+		if(l < 1) return 0;
 		if(test[0] == 'I' && test[1] == 'I')
 		{
 			return 1;

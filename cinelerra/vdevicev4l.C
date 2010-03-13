@@ -554,7 +554,11 @@ SET_TRACE
 	}
 	else
 	{
-		read(input_fd, capture_buffer, capture_params.size);
+		if(read(input_fd, capture_buffer, capture_params.size) != capture_params.size)
+		{
+			fprintf(stderr, "VDeviceV4L::read_buffer - read failed\n");
+			return 1;
+		}
 	}
 	got_first_frame = 1;
 SET_TRACE
