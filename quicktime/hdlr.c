@@ -61,7 +61,7 @@ void quicktime_hdlr_dump(quicktime_hdlr_t *hdlr)
 {
 	printf("   handler reference (hdlr)\n");
 	printf("    version %d\n", hdlr->version);
-	printf("    flags %d\n", hdlr->flags);
+	printf("    flags %ld\n", hdlr->flags);
 	printf("    component_type %c%c%c%c\n", hdlr->component_type[0], hdlr->component_type[1], hdlr->component_type[2], hdlr->component_type[3]);
 	printf("    component_subtype %c%c%c%c\n", hdlr->component_subtype[0], hdlr->component_subtype[1], hdlr->component_subtype[2], hdlr->component_subtype[3]);
 	printf("    component_name %s\n", hdlr->component_name);

@@ -81,8 +81,8 @@ void quicktime_stsd_dump(void *minf_ptr, quicktime_stsd_t *stsd)
 	int i;
 	printf("     sample description\n");
 	printf("      version %d\n", stsd->version);
-	printf("      flags %d\n", stsd->flags);
-	printf("      total_entries %d\n", stsd->total_entries);
+	printf("      flags %ld\n", stsd->flags);
+	printf("      total_entries %ld\n", stsd->total_entries);
 	
 	for(i = 0; i < stsd->total_entries; i++)
 	{

@@ -1186,8 +1186,8 @@ int quicktime_dump(quicktime_t *file)
 {
 	printf("quicktime_dump\n");
 	printf("movie data\n");
-	printf(" size %ld\n", file->mdat.atom.size);
-	printf(" start %ld\n", file->mdat.atom.start);
+	printf(" size %lld\n", file->mdat.atom.size);
+	printf(" start %lld\n", file->mdat.atom.start);
 	quicktime_moov_dump(&(file->moov));
 	return 0;
 }

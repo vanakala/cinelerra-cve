@@ -83,7 +83,7 @@ void quicktime_id_to_codec(char *result, int id)
 			memcpy(result, QUICKTIME_WMA, 4);
 			break;
 		default:
-			printf("quicktime_id_to_codec: unknown audio id: %p\n", id);
+			printf("quicktime_id_to_codec: unknown audio id: %x\n", id);
 			break;
 	}
 }

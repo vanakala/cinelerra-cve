@@ -53,11 +53,11 @@ void quicktime_stsc_dump(quicktime_stsc_t *stsc)
 	int i;
 	printf("     sample to chunk\n");
 	printf("      version %d\n", stsc->version);
-	printf("      flags %d\n", stsc->flags);
-	printf("      total_entries %d\n", stsc->total_entries);
+	printf("      flags %ld\n", stsc->flags);
+	printf("      total_entries %ld\n", stsc->total_entries);
 	for(i = 0; i < stsc->total_entries; i++)
 	{
-		printf("       chunk %d samples %x id %d\n", 
+		printf("       chunk %ld samples %lx id %ld\n", 
 			stsc->table[i].chunk, stsc->table[i].samples, stsc->table[i].id);
 	}
 }

@@ -33,8 +33,8 @@ void quicktime_tkhd_dump(quicktime_tkhd_t *tkhd)
 	printf("  track header\n");
 	printf("   version %d\n", tkhd->version);
 	printf("   flags %ld\n", tkhd->flags);
-	printf("   creation_time %u\n", tkhd->creation_time);
-	printf("   modification_time %u\n", tkhd->modification_time);
+	printf("   creation_time %lu\n", tkhd->creation_time);
+	printf("   modification_time %lu\n", tkhd->modification_time);
 	printf("   track_id %d\n", tkhd->track_id);
 	printf("   reserved1 %ld\n", tkhd->reserved1);
 	printf("   duration %ld\n", tkhd->duration);
@@ -42,7 +42,7 @@ void quicktime_tkhd_dump(quicktime_tkhd_t *tkhd)
 	printf("   layer %d\n", tkhd->layer);
 	printf("   alternate_group %d\n", tkhd->alternate_group);
 	printf("   volume %f\n", tkhd->volume);
-	printf("   reserved3 %d\n", tkhd->reserved3);
+	printf("   reserved3 %ld\n", tkhd->reserved3);
 	quicktime_matrix_dump(&(tkhd->matrix));
 	printf("   track_width %f\n", tkhd->track_width);
 	printf("   track_height %f\n", tkhd->track_height);

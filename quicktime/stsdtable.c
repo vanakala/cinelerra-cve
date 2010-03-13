@@ -419,7 +419,7 @@ void quicktime_stsd_video_dump(quicktime_stsd_table_t *table)
 	printf("       height %d\n", table->height);
 	printf("       dpi_horizontal %f\n", table->dpi_horizontal);
 	printf("       dpi_vertical %f\n", table->dpi_vertical);
-	printf("       data_size %ld\n", table->data_size);
+	printf("       data_size %lld\n", table->data_size);
 	printf("       frames_per_sample %d\n", table->frames_per_sample);
 	printf("       compressor_name %s\n", table->compressor_name);
 	printf("       depth %d\n", table->depth);

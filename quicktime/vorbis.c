@@ -216,7 +216,7 @@ static int decode(quicktime_t *file,
 
 
 	if(samples > OUTPUT_ALLOCATION)
-		printf("vorbis.c decode: can't read more than %p samples at a time.\n", OUTPUT_ALLOCATION);
+		printf("vorbis.c decode: can't read more than %d samples at a time.\n", OUTPUT_ALLOCATION);
 
 
 

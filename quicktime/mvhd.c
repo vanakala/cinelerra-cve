@@ -36,8 +36,8 @@ void quicktime_mvhd_dump(quicktime_mvhd_t *mvhd)
 	printf(" movie header\n");
 	printf("  version %d\n", mvhd->version);
 	printf("  flags %ld\n", mvhd->flags);
-	printf("  creation_time %u\n", mvhd->creation_time);
-	printf("  modification_time %u\n", mvhd->modification_time);
+	printf("  creation_time %lu\n", mvhd->creation_time);
+	printf("  modification_time %lu\n", mvhd->modification_time);
 	printf("  time_scale %ld\n", mvhd->time_scale);
 	printf("  duration %ld\n", mvhd->duration);
 	printf("  preferred_rate %f\n", mvhd->preferred_rate);

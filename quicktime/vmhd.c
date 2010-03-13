@@ -28,7 +28,7 @@ void quicktime_vmhd_dump(quicktime_vmhd_t *vmhd)
 {
 	printf("    video media header\n");
 	printf("     version %d\n", vmhd->version);
-	printf("     flags %d\n", vmhd->flags);
+	printf("     flags %ld\n", vmhd->flags);
 	printf("     graphics_mode %d\n", vmhd->graphics_mode);
 	printf("     opcolor %d %d %d\n", vmhd->opcolor[0], vmhd->opcolor[1], vmhd->opcolor[2]);
 }

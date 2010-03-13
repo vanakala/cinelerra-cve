@@ -55,15 +55,15 @@ void quicktime_stsz_dump(quicktime_stsz_t *stsz)
 	int i;
 	printf("     sample size\n");
 	printf("      version %d\n", stsz->version);
-	printf("      flags %d\n", stsz->flags);
-	printf("      sample_size %d\n", stsz->sample_size);
-	printf("      total_entries %d\n", stsz->total_entries);
+	printf("      flags %ld\n", stsz->flags);
+	printf("      sample_size %lld\n", stsz->sample_size);
+	printf("      total_entries %ld\n", stsz->total_entries);
 	
 	if(!stsz->sample_size)
 	{
 		for(i = 0; i < stsz->total_entries; i++)
 		{
-			printf("       sample_size %x\n", stsz->table[i].size);
+			printf("       sample_size %llx\n", stsz->table[i].size);
 		}
 	}
 }

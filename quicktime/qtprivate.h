@@ -800,7 +800,7 @@ typedef struct
 
 	int (*set_parameter)(quicktime_t *file, 
 		int track, 
-		char *key, 
+		const char *key, 
 		void *value);
 	void (*flush)(quicktime_t *file, 
 		int track);

@@ -25,7 +25,7 @@ void quicktime_stss_dump(quicktime_stss_t *stss)
 	int i;
 	printf("     sync sample\n");
 	printf("      version %d\n", stss->version);
-	printf("      flags %d\n", stss->flags);
+	printf("      flags %ld\n", stss->flags);
 	printf("      total_entries %d\n", stss->total_entries);
 	for(i = 0; i < stss->total_entries; i++)
 	{

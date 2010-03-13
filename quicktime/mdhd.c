@@ -51,12 +51,12 @@ void quicktime_mdhd_dump(quicktime_mdhd_t *mdhd)
 {
 	printf("   media header\n");
 	printf("    version %d\n", mdhd->version);
-	printf("    flags %d\n", mdhd->flags);
-	printf("    creation_time %u\n", mdhd->creation_time);
-	printf("    modification_time %u\n", mdhd->modification_time);
+	printf("    flags %ld\n", mdhd->flags);
+	printf("    creation_time %lu\n", mdhd->creation_time);
+	printf("    modification_time %lu\n", mdhd->modification_time);
 	printf("    time_scale %d\n", mdhd->time_scale);
-	printf("    duration %d\n", mdhd->duration);
-	printf("    language %d\n", mdhd->language);
+	printf("    duration %ld\n", mdhd->duration);
+	printf("    language %ld\n", mdhd->language);
 	printf("    quality %d\n", mdhd->quality);
 }
 

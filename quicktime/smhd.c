@@ -20,7 +20,7 @@ void quicktime_smhd_dump(quicktime_smhd_t *smhd)
 {
 	printf("    sound media header\n");
 	printf("     version %d\n", smhd->version);
-	printf("     flags %d\n", smhd->flags);
+	printf("     flags %ld\n", smhd->flags);
 	printf("     balance %d\n", smhd->balance);
 	printf("     reserved %d\n", smhd->reserved);
 }

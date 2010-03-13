@@ -64,7 +64,7 @@ static int limit_samples(int samples)
 	if(samples > MAX_VBR_BUFFER)
 	{
 		fprintf(stderr, 
-			"quicktime_align_vbr: can't decode more than %p samples at a time.\n",
+			"quicktime_align_vbr: can't decode more than %d samples at a time.\n",
 			MAX_VBR_BUFFER);
 		return 1;
 	}

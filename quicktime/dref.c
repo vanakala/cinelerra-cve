@@ -51,7 +51,7 @@ void quicktime_dref_table_dump(quicktime_dref_table_t *table)
 	printf("      data reference table (dref)\n");
 	printf("       type %c%c%c%c\n", table->type[0], table->type[1], table->type[2], table->type[3]);
 	printf("       version %d\n", table->version);
-	printf("       flags %d\n", table->flags);
+	printf("       flags %ld\n", table->flags);
 	printf("       data %s\n", table->data_reference);
 }
 
@@ -92,7 +92,7 @@ void quicktime_dref_dump(quicktime_dref_t *dref)
 	
 	printf("     data reference (dref)\n");
 	printf("      version %d\n", dref->version);
-	printf("      flags %d\n", dref->flags);
+	printf("      flags %ld\n", dref->flags);
 	for(i = 0; i < dref->total_entries; i++)
 	{
 		quicktime_dref_table_dump(&(dref->table[i]));

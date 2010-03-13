@@ -210,7 +210,7 @@ printf("decode 2 %x %llx %llx\n", chunk_size, chunk_offset, chunk_offset + chunk
 		else
 		{
 			if(codec->output_size * sample_size + bytes_decoded > codec->output_allocated * sample_size)
-				printf("decode: FYI: bytes_decoded=%d is greater than output_allocated=%d\n",
+				printf("decode: FYI: bytes_decoded=%ld is greater than output_allocated=%ld\n",
 					codec->output_size * sample_size + bytes_decoded,
 					codec->output_allocated);
 			codec->output_size += bytes_decoded / sample_size;
