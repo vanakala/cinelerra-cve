@@ -325,8 +325,10 @@ return;
   /*********************************/
 
   fseek (musicin, 0, SEEK_SET);
-  fread (wave_header_buffer, 1, 40, musicin);
-
+  if(fread (wave_header_buffer, 1, 40, musicin) < 1){
+    fprintf(stderr, "Failed to read wave file header\n");
+    exit(1);
+  }
   if (wave_header_buffer[8] == 'W' && wave_header_buffer[9] == 'A'
       && wave_header_buffer[10] == 'V' && wave_header_buffer[11] == 'E') {
     fprintf (stderr, "Parsing Wave File Header\n");
