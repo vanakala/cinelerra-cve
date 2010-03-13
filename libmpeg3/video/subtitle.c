@@ -66,7 +66,7 @@ int decompress_subtitle(mpeg3_t *file, mpeg3_subtitle_t *subtitle)
 		if(ptr + 2 > end) break;
 		i = (*ptr++) << 8;
 		i |= *ptr++;
-		
+
 		double date = ((double)(i << 10)) / 90000 + subtitle->ptstime; 
 
 /* Offset of next control sequence */
@@ -83,77 +83,76 @@ int decompress_subtitle(mpeg3_t *file, mpeg3_subtitle_t *subtitle)
 
 			switch(type)
 			{
-				case 0x00:
-					subtitle->force = 1;
-					subtitle->start_time = date;
-					break;
+			case 0x00:
+				subtitle->force = 1;
+				subtitle->start_time = date;
+				break;
 
-				case 0x01:
-					subtitle->start_time = date;
-					break;
+			case 0x01:
+				subtitle->start_time = date;
+				break;
 
-				case 0x02:
-					subtitle->stop_time = date;
-					break;
+			case 0x02:
+				subtitle->stop_time = date;
+				break;
 
-				case 0x03:
+			case 0x03:
 /* Entry in palette of each color */
-					if(ptr + 4 > end) return 1;
-					subtitle->palette[3] = (*ptr) >> 4;
-					subtitle->palette[2] = (*ptr++) & 0xf;
-					subtitle->palette[1] = (*ptr) >> 4;
-					subtitle->palette[0] = (*ptr++) & 0xf;
-					break;
+				if(ptr + 4 > end) return 1;
+				subtitle->palette[3] = (*ptr) >> 4;
+				subtitle->palette[2] = (*ptr++) & 0xf;
+				subtitle->palette[1] = (*ptr) >> 4;
+				subtitle->palette[0] = (*ptr++) & 0xf;
+				break;
 
-				case 0x04:
+			case 0x04:
 /* Alpha corresponding to each color */
-					if(ptr + 4 > end) return 1;
-					subtitle->alpha[3] = ((*ptr) >> 4) * 255 / 15;
-					subtitle->alpha[2] = ((*ptr++) & 0xf) * 255 / 15;
-					subtitle->alpha[1] = ((*ptr) >> 4) * 255 / 15;
-					subtitle->alpha[0] = ((*ptr++) & 0xf) * 255 / 15;
-					got_alpha = 1;
-					break;
+				if(ptr + 4 > end) return 1;
+				subtitle->alpha[3] = ((*ptr) >> 4) * 255 / 15;
+				subtitle->alpha[2] = ((*ptr++) & 0xf) * 255 / 15;
+				subtitle->alpha[1] = ((*ptr) >> 4) * 255 / 15;
+				subtitle->alpha[0] = ((*ptr++) & 0xf) * 255 / 15;
+				got_alpha = 1;
+				break;
 
-				case 0x05:
+			case 0x05:
 /* Extent of image on screen */
-					if(ptr + 6 > end) return 1;
-					subtitle->x1 = (*ptr++) << 4;
-					subtitle->x1 |= (*ptr) >> 4;
-					subtitle->x2 = ((*ptr++) & 0xf) << 8;
-					subtitle->x2 |= *ptr++;
-					subtitle->y1 = (*ptr++) << 4;
-					subtitle->y1 |= (*ptr) >> 4;
-					subtitle->y2 = ((*ptr++) & 0xf) << 8;
-					subtitle->y2 |= *ptr++;
-					subtitle->x2++;
-					subtitle->y2++;
-					subtitle->w = subtitle->x2 - subtitle->x1;
-					subtitle->h = subtitle->y2 - subtitle->y1;
+				if(ptr + 6 > end) return 1;
+				subtitle->x1 = (*ptr++) << 4;
+				subtitle->x1 |= (*ptr) >> 4;
+				subtitle->x2 = ((*ptr++) & 0xf) << 8;
+				subtitle->x2 |= *ptr++;
+				subtitle->y1 = (*ptr++) << 4;
+				subtitle->y1 |= (*ptr) >> 4;
+				subtitle->y2 = ((*ptr++) & 0xf) << 8;
+				subtitle->y2 |= *ptr++;
+				subtitle->x2++;
+				subtitle->y2++;
+				subtitle->w = subtitle->x2 - subtitle->x1;
+				subtitle->h = subtitle->y2 - subtitle->y1;
 
-					CLAMP(subtitle->w, 1, 2048);
-					CLAMP(subtitle->h, 1, 2048);
-					CLAMP(subtitle->x1, 0, 2048);
-					CLAMP(subtitle->x2, 0, 2048);
-					CLAMP(subtitle->y1, 0, 2048);
-					CLAMP(subtitle->y2, 0, 2048);
-					break;
+				CLAMP(subtitle->w, 1, 2048);
+				CLAMP(subtitle->h, 1, 2048);
+				CLAMP(subtitle->x1, 0, 2048);
+				CLAMP(subtitle->x2, 0, 2048);
+				CLAMP(subtitle->y1, 0, 2048);
+				CLAMP(subtitle->y2, 0, 2048);
+				break;
 
-				case 0x06:
+			case 0x06:
 /* offsets of even and odd field in compressed data */
-					if(ptr + 4 > end) return 1;
-					even_offset = (ptr[0] << 8) | (ptr[1]);
-					odd_offset = (ptr[2] << 8) | (ptr[3]);
-					ptr += 4;
-					break;
+				if(ptr + 4 > end) return 1;
+				even_offset = (ptr[0] << 8) | (ptr[1]);
+				odd_offset = (ptr[2] << 8) | (ptr[3]);
+				ptr += 4;
+				break;
 
-				case 0xff:
-					done = 1;
-					break;
+			case 0xff:
+				done = 1;
+				break;
 
-				default:
-//					printf("unknown type %02x\n", type);
-					break;
+			default:
+				break;
 			}
 		}
 
@@ -203,12 +202,6 @@ int decompress_subtitle(mpeg3_t *file, mpeg3_subtitle_t *subtitle)
 		int v_color = file->palette[subtitle->palette[color] * 4 + 2];
 		int a_color = subtitle->alpha[color];
 
-/*
- * printf("0x%02x 0x%02x 0x%02x\n", 
- * y_color,
- * u_color,
- * v_color);
- */
 		if(y < subtitle->h)
 		{
 			for(i = 0; i < len; i++)
@@ -230,7 +223,7 @@ int decompress_subtitle(mpeg3_t *file, mpeg3_subtitle_t *subtitle)
 						field = 1;
 						ptr = data_start + odd_offset;
 						current_nibble = 0;
-					    break;
+						break;
 					}
 				}
 			}
@@ -238,8 +231,6 @@ int decompress_subtitle(mpeg3_t *file, mpeg3_subtitle_t *subtitle)
 	}
 	return 0;
 }
-
-
 
 
 void overlay_subtitle(mpeg3video_t *video, mpeg3_subtitle_t *subtitle)
@@ -338,20 +329,20 @@ void mpeg3_decode_subtitle(mpeg3video_t *video)
 							if(minsubt)
 							{
 								if(minsubt->start_time < subtitle->start_time)
-								    minsubt = subtitle;
+									minsubt = subtitle;
 							} 
 							else
 								minsubt = subtitle;
 						}
 					}
-				} 
+				}
 				else
 					subtitle->active = 0;
-				
+	
 				if(subtitle->start_time < lo_time)
-				    lo_time = subtitle->start_time;
+					lo_time = subtitle->start_time;
 				if(subtitle->start_time > hi_time)
-				    hi_time = subtitle->start_time;
+					hi_time = subtitle->start_time;
 			}
 			if(minsubt)
 				minsubt->active = 1;
@@ -437,7 +428,7 @@ void mpeg3_decode_subtitle(mpeg3video_t *video)
 					subtitle = strack->subtitles[i];
 					if(subtitle->start_time <= lo_time || subtitle->start_time >= hi_time)
 					{
-				    		mpeg3_pop_subtitle(strack, j);
+						mpeg3_pop_subtitle(strack, j);
 						break;
 					}
 				}
@@ -445,8 +436,3 @@ void mpeg3_decode_subtitle(mpeg3video_t *video)
 		}
 	}
 }
-
-
-
-
-

@@ -84,12 +84,12 @@ static unsigned char mpeg3_601_to_rgb[256];
 		b_l = (y_l + video->cb_to_b[*cb_in]) >> 16;
 
 #define DITHER_TAIL \
-    	if(w & 1) \
+		if(w & 1) \
 		{ \
-        	cr_in++; \
-        	cb_in++; \
-    	} \
-    }
+		cr_in++; \
+		cb_in++; \
+		} \
+	}
 
 
 #define STORE_PIXEL_BGR888 \
@@ -307,26 +307,7 @@ void memcpy_fast(unsigned char *output, unsigned char *input, long len)
 {
 	int i, len2;
 /* 8 byte alignment */
-/*
- * 	if(!((long)input & 0x7))
- * 	{
- * 		len2 = len >> 4;
- * 		for(i = 0; i < len2; )
- * 		{
- * 			((int64_t*)output)[i] = ((int64_t*)input)[i];
- * 			i++;
- * 			((int64_t*)output)[i] = ((int64_t*)input)[i];
- * 			i++;
- * 		}
- * 
- * 		for(i *= 16; i < len; i++)
- * 		{
- * 			output[i] = input[i];
- * 		}
- * 	}
- * 	else
- */
-		memcpy(output, input, len);
+	memcpy(output, input, len);
 }
 
 int mpeg3video_init_output()
@@ -377,15 +358,6 @@ int mpeg3video_present_frame(mpeg3video_t *video)
 			offset0 = video->coded_picture_width * video->in_y;
 			offset1 = video->chrom_width * (int)((float)video->in_y / chroma_denominator + 0.5);
 
-printf("mpeg3video_present_frame 1\n");
-/*
- * 			if(video->in_y > 0)
- * 			{
- * 				offset[1] += video->chrom_width / 2;
- * 				size[1] += video->chrom_width / 2;
- * 			}
- */
-
 			memcpy(video->y_output, src[0] + offset0, size0);
 			memcpy(video->u_output, src[1] + offset1, size1);
 			memcpy(video->v_output, src[2] + offset1, size1);
@@ -393,7 +365,6 @@ printf("mpeg3video_present_frame 1\n");
 		else
 /* One block per row */
 		{
-//printf("mpeg3video_present_frame 2 %d %d %d\n", video->in_w, video->coded_picture_width, video->chrom_width);
 			int row_span = video->in_w;
 			int row_span0;
 			int row_span1;
@@ -407,7 +378,7 @@ printf("mpeg3video_present_frame 1\n");
 			size1 = (video->in_w >> 1);
 			offset0 = video->coded_picture_width * video->in_y;
 			offset1 = video->chrom_width * video->in_y / chroma_denominator;
-	
+
 			for(i = 0; i < video->in_h; i++)
 			{
 				memcpy(video->y_output + i * row_span0, 
@@ -440,7 +411,6 @@ printf("mpeg3video_present_frame 1\n");
 							(video->horizontal_size >> 1));
 					}
 				}
-				
 
 				if(chroma_denominator == 1 || (i % 2))
 					offset1 += video->chrom_width;
@@ -452,47 +422,47 @@ printf("mpeg3video_present_frame 1\n");
 
 /* Want RGB buffer */
 /* Copy the frame to the output with YUV to RGB conversion */
-  	if(video->prog_seq)
+	if(video->prog_seq)
 	{
-    	if(video->chroma_format != CHROMA444)
+		if(video->chroma_format != CHROMA444)
 		{
-    		mpeg3video_ditherframe(video, src, video->output_rows);
-    	}
-    	else
-    	  	mpeg3video_ditherframe444(video, src);
-  	}
+		mpeg3video_ditherframe(video, src, video->output_rows);
+		}
+		else
+			mpeg3video_ditherframe444(video, src);
+	}
 	else
 	{
-   		if((video->pict_struct == FRAME_PICTURE && video->topfirst) || 
+		if((video->pict_struct == FRAME_PICTURE && video->topfirst) || 
 			video->pict_struct == BOTTOM_FIELD)
 		{
 /* top field first */
-    		if(video->chroma_format != CHROMA444)
+			if(video->chroma_format != CHROMA444)
 			{
-        		mpeg3video_dithertop(video, src);
-        		mpeg3video_ditherbot(video, src);
-    		}
-    		else 
+				mpeg3video_dithertop(video, src);
+				mpeg3video_ditherbot(video, src);
+			}
+			else 
 			{
-        		mpeg3video_dithertop444(video, src);
-        		mpeg3video_ditherbot444(video, src);
-    		}
-    	}
-    	else 
+				mpeg3video_dithertop444(video, src);
+				mpeg3video_ditherbot444(video, src);
+			}
+		}
+		else
 		{
 /* bottom field first */
-    		if(video->chroma_format != CHROMA444)
+			if(video->chroma_format != CHROMA444)
 			{
-        		mpeg3video_ditherbot(video, src);
-        		mpeg3video_dithertop(video, src);
-    		}
-    		else 
+				mpeg3video_ditherbot(video, src);
+				mpeg3video_dithertop(video, src);
+			}
+			else 
 			{
-        		mpeg3video_ditherbot444(video, src);
-        		mpeg3video_dithertop444(video, src);
-    		}
-    	}
-  	}
+				mpeg3video_ditherbot444(video, src);
+				mpeg3video_dithertop444(video, src);
+		}
+		}
+	}
 	return 0;
 }
 

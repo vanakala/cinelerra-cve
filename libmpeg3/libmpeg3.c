@@ -180,7 +180,7 @@ int mpeg3_check_sig(char *path)
 		{
 /* Test file extension. */
 			if(strncasecmp(ext, ".ifo", 4) && 
-            	strncasecmp(ext, ".mp2", 4) && 
+				strncasecmp(ext, ".mp2", 4) && 
 				strncasecmp(ext, ".mp3", 4) &&
 				strncasecmp(ext, ".m1v", 4) &&
 				strncasecmp(ext, ".m2v", 4) &&
@@ -198,13 +198,6 @@ int mpeg3_check_sig(char *path)
 	mpeg3_delete_fs(fs);
 	return result;
 }
-
-
-
-
-
-
-
 
 
 
@@ -291,7 +284,7 @@ int mpeg3_get_file_type(mpeg3_t *file,
 	if(old_file) file->is_bd = old_file->is_bd;
 
 /* TOC  */
-	if(is_toc(bits))   
+	if(is_toc(bits))
 	{
 /* Table of contents for another title set */
 		if(!old_file)
@@ -314,47 +307,42 @@ int mpeg3_get_file_type(mpeg3_t *file,
 	}
 	else
 /* IFO file */
-    if(is_ifo(bits))
-    {
-    	if(!old_file)
+	if(is_ifo(bits))
+	{
+		if(!old_file)
 		{
 			file->is_program_stream = 1;
 			if(mpeg3_read_ifo(file, 0))
-        	{
+			{
 				mpeg3io_close_file(file->fs);
 				return 1;
-        	}
+			}
 		}
 		file->is_ifo_file = 1;
 		mpeg3io_close_file(file->fs);
-    }
-    else
-	if(is_bd(bits, bits2))
+	}
+	else if(is_bd(bits, bits2))
 	{
 		file->is_bd = 1;
 		file->is_transport_stream = 1;
 	}
-	else
-	if(is_transport(bits))
+	else if(is_transport(bits))
 	{
 /* Transport stream */
 		file->is_transport_stream = 1;
 	}
-	else
-	if(is_program(bits))
+	else if(is_program(bits))
 	{
 /* Program stream */
 /* Determine packet size empirically */
 		file->is_program_stream = 1;
 	}
-	else
-	if(is_mpeg_audio(bits))
+	else if(is_mpeg_audio(bits))
 	{
 /* MPEG Audio only */
 		file->is_audio_stream = 1;
 	}
-	else
-	if(is_mpeg_video(bits))
+	else if(is_mpeg_video(bits))
 	{
 /* Video only */
 		file->is_video_stream = 1;
@@ -370,16 +358,6 @@ int mpeg3_get_file_type(mpeg3_t *file,
 		fprintf(stderr, "mpeg3_get_file_type: not a readable stream.\n");
 		return 1;
 	}
-
-/*
- * printf("mpeg3_get_file_type 2 %p %d %d %d %d\n", 
- * old_file, 
- * file->is_transport_stream, 
- * file->is_program_stream, 
- * file->is_video_stream, 
- * file->is_audio_stream);
- */
-
 
 	file->packet_size = calculate_packet_size(file->is_transport_stream,
 		file->is_program_stream,
@@ -429,9 +407,6 @@ mpeg3_t* mpeg3_open_copy(char *path, mpeg3_t *old_file, int *error_return)
 	}
 
 
-
-
-
 /* =============================== Create the title objects ========================= */
 	if((*error_return = mpeg3_get_file_type(file, 
 		old_file,
@@ -441,16 +416,6 @@ mpeg3_t* mpeg3_open_copy(char *path, mpeg3_t *old_file, int *error_return)
 		mpeg3_delete(file);
 		return 0;
 	}
-
-
-
-
-
-
-
-
-
-
 
 /* Create titles */
 /* Copy data from an old file */
@@ -470,17 +435,6 @@ mpeg3_t* mpeg3_open_copy(char *path, mpeg3_t *old_file, int *error_return)
 	{
 		mpeg3_create_title(file->demuxer, 0);
 	}
-
-
-
-
-
-
-
-
-
-
-
 
 
 /* Generate tracks */
@@ -518,32 +472,25 @@ mpeg3_t* mpeg3_open_copy(char *path, mpeg3_t *old_file, int *error_return)
 			}
 		}
 	}
-	else
-	if(file->is_video_stream)
+	else if(file->is_video_stream)
 	{
 /* Create video tracks */
 		file->vtrack[0] = mpeg3_new_vtrack(file, 
-			-1, 
-			file->demuxer, 
+			-1,
+			file->demuxer,
 			0);
 		if(file->vtrack[0]) file->total_vstreams++;
 	}
-	else
-	if(file->is_audio_stream)
+	else if(file->is_audio_stream)
 	{
 /* Create audio tracks */
-
-		file->atrack[0] = mpeg3_new_atrack(file, 
-			-1, 
-			AUDIO_UNKNOWN, 
+		file->atrack[0] = mpeg3_new_atrack(file,
+			-1,
+			AUDIO_UNKNOWN,
 			file->demuxer,
 			0);
 		if(file->atrack[0]) file->total_astreams++;
 	}
-
-
-
-
 
 	mpeg3io_close_file(file->fs);
 
@@ -611,7 +558,6 @@ int mpeg3_set_sample(mpeg3_t *file,
 {
 	if(file->total_astreams)
 	{
-//printf(__FUNCTION__ " 1 %d %d\n", file->atrack[stream]->current_position, sample);
 		file->atrack[stream]->current_position = sample;
 		mpeg3audio_seek_sample(file->atrack[stream]->audio, sample);
 		return 0;
@@ -699,9 +645,9 @@ int mpeg3_video_interlacemode(mpeg3_t *file,
 	if(file->total_vstreams > stream)
 	{
 		if(file->vtrack[stream]->video->prog_seq)
-		    return MPEG3_PROGRESSIVE;
+			return MPEG3_PROGRESSIVE;
 		if(file->vtrack[stream]->video->topfirst)
-		    return MPEG3_TOPFIRST;
+			return MPEG3_TOPFIRST;
 		return MPEG3_BOTTOMFIRST;
 	}
 	return -1;
@@ -747,17 +693,6 @@ int mpeg3_seek_byte(mpeg3_t *file, int64_t byte)
 
 	return 0;
 }
-
-/*
- * double mpeg3_get_percentage_pts(mpeg3_t *file)
- * {
- * 	return file->percentage_pts;
- * }
- * 
- * void mpeg3_set_percentage_pts(mpeg3_t *file, double pts)
- * {
- * }
- */
 
 
 int mpeg3_previous_frame(mpeg3_t *file, int stream)
@@ -894,7 +829,6 @@ int mpeg3_read_frame(mpeg3_t *file,
 		int stream)
 {
 	int result = -1;
-//printf("mpeg3_read_frame 1 %d\n", file->vtrack[stream]->current_position);
 
 	if(file->total_vstreams)
 	{
@@ -907,7 +841,6 @@ int mpeg3_read_frame(mpeg3_t *file,
 					out_w,
 					out_h,
 					color_model);
-//printf(__FUNCTION__ " 2\n");
 		file->last_type_read = 2;
 		file->last_stream_read = stream;
 		file->vtrack[stream]->current_position++;
@@ -928,7 +861,6 @@ int mpeg3_read_yuvframe(mpeg3_t *file,
 {
 	int result = -1;
 
-//printf("mpeg3_read_yuvframe 1\n");
 	if(file->total_vstreams)
 	{
 		result = mpeg3video_read_yuvframe(file->vtrack[stream]->video, 
@@ -1052,7 +984,6 @@ int mpeg3_read_video_chunk(mpeg3_t *file,
 	}
 	return result;
 }
-
 
 
 int64_t mpeg3_memory_usage(mpeg3_t *file)

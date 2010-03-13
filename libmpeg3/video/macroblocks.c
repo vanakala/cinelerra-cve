@@ -9,44 +9,43 @@ int mpeg3video_get_macroblock_address(mpeg3_slice_t *slice)
 	int code, val = 0;
 	mpeg3_slice_buffer_t *slice_buffer = slice->slice_buffer;
 
-  	while((code = mpeg3slice_showbits(slice_buffer, 11)) < 24)
+	while((code = mpeg3slice_showbits(slice_buffer, 11)) < 24)
 	{
 /* Is not macroblock_stuffing */
-    	if(code != 15)
-		{     
+		if(code != 15)
+		{
 /* Is macroblock_escape */
-      		if(code == 8)
+			if(code == 8)
 			{
-        		val += 33;
-      		}
-      		else 
+				val += 33;
+			}
+			else
 			{
-/*        		fprintf(stderr, "mpeg3video_get_macroblock_address: invalid macroblock_address_increment code\n"); */
-        		slice->fault = 1;
-        		return 1;
-      		}
-    	}
+				slice->fault = 1;
+				return 1;
+			}
+		}
 
-    	mpeg3slice_flushbits(slice_buffer, 11);
-  	}
+		mpeg3slice_flushbits(slice_buffer, 11);
+	}
 
-  	if(code >= 1024)
+	if(code >= 1024)
 	{
-    	mpeg3slice_flushbit(slice_buffer);
-    	return val + 1;
-  	}
+		mpeg3slice_flushbit(slice_buffer);
+		return val + 1;
+	}
 
-  	if(code >= 128)
+	if(code >= 128)
 	{
-    	code >>= 6;
-    	mpeg3slice_flushbits(slice_buffer, mpeg3_MBAtab1[code].len);
-    	return val + mpeg3_MBAtab1[code].val;
-  	}
+		code >>= 6;
+		mpeg3slice_flushbits(slice_buffer, mpeg3_MBAtab1[code].len);
+		return val + mpeg3_MBAtab1[code].val;
+	}
 
-  	code -= 24;
-  	mpeg3slice_flushbits(slice_buffer, mpeg3_MBAtab2[code].len);
+	code -= 24;
+	mpeg3slice_flushbits(slice_buffer, mpeg3_MBAtab2[code].len);
 
-  	return val + mpeg3_MBAtab2[code].val;
+	return val + mpeg3_MBAtab2[code].val;
 }
 
 /* macroblock_type for pictures with spatial scalability */
@@ -54,64 +53,59 @@ int mpeg3video_get_macroblock_address(mpeg3_slice_t *slice)
 static inline int mpeg3video_getsp_imb_type(mpeg3_slice_t *slice)
 {
 	mpeg3_slice_buffer_t *slice_buffer = slice->slice_buffer;
-  	unsigned int code = mpeg3slice_showbits(slice_buffer, 4);
+	unsigned int code = mpeg3slice_showbits(slice_buffer, 4);
 	if(!code)
 	{
-/*    	fprintf(stderr,"mpeg3video_getsp_imb_type: invalid macroblock_type code\n"); */
-    	slice->fault = 1;
-    	return 0;
-  	}
+		slice->fault = 1;
+		return 0;
+	}
 
-  	mpeg3slice_flushbits(slice_buffer, mpeg3_spIMBtab[code].len);
-  	return mpeg3_spIMBtab[code].val;
+	mpeg3slice_flushbits(slice_buffer, mpeg3_spIMBtab[code].len);
+	return mpeg3_spIMBtab[code].val;
 }
 
 static inline int mpeg3video_getsp_pmb_type(mpeg3_slice_t *slice)
 {
 	mpeg3_slice_buffer_t *slice_buffer = slice->slice_buffer;
-  	int code = mpeg3slice_showbits(slice_buffer, 7);
+	int code = mpeg3slice_showbits(slice_buffer, 7);
 	if(code < 2)
 	{
-/*    	fprintf(stderr,"mpeg3video_getsp_pmb_type: invalid macroblock_type code\n"); */
-    	slice->fault = 1;
-    	return 0;
-  	}
+		slice->fault = 1;
+		return 0;
+	}
 
-  	if(code >= 16)
+	if(code >= 16)
 	{
-    	code >>= 3;
-    	mpeg3slice_flushbits(slice_buffer, mpeg3_spPMBtab0[code].len);
+		code >>= 3;
+		mpeg3slice_flushbits(slice_buffer, mpeg3_spPMBtab0[code].len);
 
-    	return mpeg3_spPMBtab0[code].val;
-  	}
+		return mpeg3_spPMBtab0[code].val;
+	}
 
-  	mpeg3slice_flushbits(slice_buffer, mpeg3_spPMBtab1[code].len);
-  	return mpeg3_spPMBtab1[code].val;
+		mpeg3slice_flushbits(slice_buffer, mpeg3_spPMBtab1[code].len);
+		return mpeg3_spPMBtab1[code].val;
 }
 
 static inline int mpeg3video_getsp_bmb_type(mpeg3_slice_t *slice)
 {
-  	mpeg3_VLCtab_t *p;
+	mpeg3_VLCtab_t *p;
 	mpeg3_slice_buffer_t *slice_buffer = slice->slice_buffer;
-  	int code = mpeg3slice_showbits9(slice_buffer);
+	int code = mpeg3slice_showbits9(slice_buffer);
 
-  	if(code >= 64) 
+	if(code >= 64) 
 		p = &mpeg3_spBMBtab0[(code >> 5) - 2];
-  	else 
-	if(code >= 16) 
+	else if(code >= 16) 
 		p = &mpeg3_spBMBtab1[(code >> 2) - 4];
-  	else 
-	if(code >= 8)  
+	else if(code >= 8)
 		p = &mpeg3_spBMBtab2[code - 8];
-  	else 
+	else
 	{
-/*    	fprintf(stderr,"mpeg3video_getsp_bmb_type: invalid macroblock_type code\n"); */
-    	slice->fault = 1;
-    	return 0;
-  	}
+		slice->fault = 1;
+		return 0;
+	}
 
-  	mpeg3slice_flushbits(slice_buffer, p->len);
-  	return p->val;
+	mpeg3slice_flushbits(slice_buffer, p->len);
+	return p->val;
 }
 
 static inline int mpeg3video_get_imb_type(mpeg3_slice_t *slice)
@@ -119,91 +113,86 @@ static inline int mpeg3video_get_imb_type(mpeg3_slice_t *slice)
 	mpeg3_slice_buffer_t *slice_buffer = slice->slice_buffer;
 	if(mpeg3slice_getbit(slice_buffer))
 	{
-    	return 1;
-  	}
+		return 1;
+	}
 
-  	if(!mpeg3slice_getbit(slice_buffer))
+	if(!mpeg3slice_getbit(slice_buffer))
 	{
-/*    	fprintf(stderr,"mpeg3video_get_imb_type: invalid macroblock_type code\n"); */
-    	slice->fault = 1;
-  	}
+		slice->fault = 1;
+	}
 
-  	return 17;
+	return 17;
 }
 
 static inline int mpeg3video_get_pmb_type(mpeg3_slice_t *slice)
 {
-  	int code;
+	int code;
 	mpeg3_slice_buffer_t *slice_buffer = slice->slice_buffer;
 
-  	if((code = mpeg3slice_showbits(slice_buffer, 6)) >= 8)
+	if((code = mpeg3slice_showbits(slice_buffer, 6)) >= 8)
 	{
-    	code >>= 3;
-    	mpeg3slice_flushbits(slice_buffer, mpeg3_PMBtab0[code].len);
-    	return mpeg3_PMBtab0[code].val;
-  	}
+		code >>= 3;
+		mpeg3slice_flushbits(slice_buffer, mpeg3_PMBtab0[code].len);
+		return mpeg3_PMBtab0[code].val;
+	}
 
-  	if(code == 0)
+	if(code == 0)
 	{
-/*    	fprintf(stderr,"mpeg3video_get_pmb_type: invalid macroblock_type code\n"); */
-    	slice->fault = 1;
-    	return 0;
-  	}
+		slice->fault = 1;
+		return 0;
+	}
 
-  	mpeg3slice_flushbits(slice_buffer, mpeg3_PMBtab1[code].len);
-  	return mpeg3_PMBtab1[code].val;
+	mpeg3slice_flushbits(slice_buffer, mpeg3_PMBtab1[code].len);
+	return mpeg3_PMBtab1[code].val;
 }
 
 static inline int mpeg3video_get_bmb_type(mpeg3_slice_t *slice)
 {
-  	int code;
+	int code;
 	mpeg3_slice_buffer_t *slice_buffer = slice->slice_buffer;
 
-  	if((code = mpeg3slice_showbits(slice_buffer, 6)) >= 8)
+	if((code = mpeg3slice_showbits(slice_buffer, 6)) >= 8)
 	{
-    	code >>= 2;
-    	mpeg3slice_flushbits(slice_buffer, mpeg3_BMBtab0[code].len);
-    	return mpeg3_BMBtab0[code].val;
-  	}
+		code >>= 2;
+		mpeg3slice_flushbits(slice_buffer, mpeg3_BMBtab0[code].len);
+		return mpeg3_BMBtab0[code].val;
+	}
 
-  	if(code == 0)
+	if(code == 0)
 	{
-/*    	fprintf(stderr,"mpeg3video_get_bmb_type: invalid macroblock_type code\n"); */
-    	slice->fault = 1;
-    	return 0;
-  	}
+		slice->fault = 1;
+		return 0;
+	}
 
-  	mpeg3slice_flushbits(slice_buffer, mpeg3_BMBtab1[code].len);
+	mpeg3slice_flushbits(slice_buffer, mpeg3_BMBtab1[code].len);
 
 	return mpeg3_BMBtab1[code].val;
 }
 
 static inline int mpeg3video_get_dmb_type(mpeg3_slice_t *slice)
 {
-  	if(!mpeg3slice_getbit(slice->slice_buffer))
+	if(!mpeg3slice_getbit(slice->slice_buffer))
 	{
-/*    	fprintf(stderr,"mpeg3video_get_dmb_type: invalid macroblock_type code\n"); */
-    	slice->fault=1;
-  	}
+		slice->fault=1;
+	}
 
-  	return 1;
+	return 1;
 }
 
 
 static inline int mpeg3video_get_snrmb_type(mpeg3_slice_t *slice)
 {
 	mpeg3_slice_buffer_t *slice_buffer = slice->slice_buffer;
-    int code = mpeg3slice_showbits(slice_buffer, 3);
+	int code = mpeg3slice_showbits(slice_buffer, 3);
 
-    if(code == 0)
-    {
-/*      fprintf(stderr,"mpeg3video_get_snrmb_type: invalid macroblock_type code\n"); */
-        slice->fault = 1;
-        return 0;
-    }
+	if(code == 0)
+	{
+		slice->fault = 1;
+		return 0;
+	}
 
-    mpeg3slice_flushbits(slice_buffer, mpeg3_SNRMBtab[code].len);
-    return mpeg3_SNRMBtab[code].val;
+	mpeg3slice_flushbits(slice_buffer, mpeg3_SNRMBtab[code].len);
+	return mpeg3_SNRMBtab[code].val;
 }
 
 int mpeg3video_get_mb_type(mpeg3_slice_t *slice, mpeg3video_t *video)
@@ -214,20 +203,23 @@ int mpeg3video_get_mb_type(mpeg3_slice_t *slice, mpeg3video_t *video)
 	}
 	else
 	{
-    	switch(video->pict_type)
+		switch(video->pict_type)
 		{
-    		case I_TYPE: return video->pict_scal ? mpeg3video_getsp_imb_type(slice) : mpeg3video_get_imb_type(slice);
-    		case P_TYPE: return video->pict_scal ? mpeg3video_getsp_pmb_type(slice) : mpeg3video_get_pmb_type(slice);
-    		case B_TYPE: return video->pict_scal ? mpeg3video_getsp_bmb_type(slice) : mpeg3video_get_bmb_type(slice);
-    		case D_TYPE: return mpeg3video_get_dmb_type(slice);
-    		default: 
-				/*fprintf(stderr, "mpeg3video_getmbtype: unknown coding type\n"); */
-				break;
+		case I_TYPE: 
+			return video->pict_scal ? mpeg3video_getsp_imb_type(slice) : mpeg3video_get_imb_type(slice);
+		case P_TYPE: 
+			return video->pict_scal ? mpeg3video_getsp_pmb_type(slice) : mpeg3video_get_pmb_type(slice);
+		case B_TYPE: 
+			return video->pict_scal ? mpeg3video_getsp_bmb_type(slice) : mpeg3video_get_bmb_type(slice);
+		case D_TYPE: 
+			return mpeg3video_get_dmb_type(slice);
+		default: 
+			break;
 /* MPEG-1 only, not implemented */
-	  	}
-  	}
+		}
+	}
 
-  	return 0;
+	return 0;
 }
 
 int mpeg3video_macroblock_modes(mpeg3_slice_t *slice, 
@@ -248,75 +240,74 @@ int mpeg3video_macroblock_modes(mpeg3_slice_t *slice,
 	int dct_type;
 	mpeg3_slice_buffer_t *slice_buffer = slice->slice_buffer;
 	static unsigned char stwc_table[3][4]
-    	= { {6,3,7,4}, {2,1,5,4}, {2,5,7,4} };
+		= { {6,3,7,4}, {2,1,5,4}, {2,5,7,4} };
 	static unsigned char stwclass_table[9]
-    	= {0, 1, 2, 1, 1, 2, 3, 3, 4};
+		= {0, 1, 2, 1, 1, 2, 3, 3, 4};
 
 /* get macroblock_type */
-  	mb_type = mpeg3video_get_mb_type(slice, video);
+	mb_type = mpeg3video_get_mb_type(slice, video);
 
-  	if(slice->fault) return 1;
+	if(slice->fault) return 1;
 
 /* get spatial_temporal_weight_code */
-  	if(mb_type & MB_WEIGHT)
-  	{
-    	if(video->stwc_table_index == 0)
-      		stwtype = 4;
-    	else
-    	{
-      		stwcode = mpeg3slice_getbits2(slice_buffer);
-      		stwtype = stwc_table[video->stwc_table_index - 1][stwcode];
-    	}
-  	}
-  	else
-    	stwtype = (mb_type & MB_CLASS4) ? 8 : 0;
+	if(mb_type & MB_WEIGHT)
+	{
+		if(video->stwc_table_index == 0)
+			stwtype = 4;
+		else
+		{
+			stwcode = mpeg3slice_getbits2(slice_buffer);
+			stwtype = stwc_table[video->stwc_table_index - 1][stwcode];
+		}
+	}
+	else
+		stwtype = (mb_type & MB_CLASS4) ? 8 : 0;
 
 /* derive spatial_temporal_weight_class (Table 7-18) */
-  	stwclass = stwclass_table[stwtype];
+	stwclass = stwclass_table[stwtype];
 
 /* get frame/field motion type */
-  	if(mb_type & (MB_FORWARD | MB_BACKWARD))
+	if(mb_type & (MB_FORWARD | MB_BACKWARD))
 	{
-    	if(video->pict_struct == FRAME_PICTURE)
+		if(video->pict_struct == FRAME_PICTURE)
 		{ 
 /* frame_motion_type */
-      		motion_type = video->frame_pred_dct ? MC_FRAME : mpeg3slice_getbits2(slice_buffer);
-    	}
-    	else 
+			motion_type = video->frame_pred_dct ? MC_FRAME : mpeg3slice_getbits2(slice_buffer);
+		}
+		else
 		{ 
 /* field_motion_type */
-      		motion_type = mpeg3slice_getbits2(slice_buffer);
-    	}
-  	}
-  	else 
-	if((mb_type & MB_INTRA) && video->conceal_mv)
-  	{
+			motion_type = mpeg3slice_getbits2(slice_buffer);
+		}
+	}
+	else if((mb_type & MB_INTRA) && video->conceal_mv)
+	{
 /* concealment motion vectors */
-    	motion_type = (video->pict_struct == FRAME_PICTURE) ? MC_FRAME : MC_FIELD;
-  	}
+		motion_type = (video->pict_struct == FRAME_PICTURE) ? MC_FRAME : MC_FIELD;
+	}
 
 /* derive mv_count, mv_format and dmv, (table 6-17, 6-18) */
-  	if(video->pict_struct == FRAME_PICTURE)
-  	{
-    	mv_count = (motion_type == MC_FIELD && stwclass < 2) ? 2 : 1;
-    	mv_format = (motion_type == MC_FRAME) ? MV_FRAME : MV_FIELD;
-  	}
-  	else
-  	{
-    	mv_count = (motion_type == MC_16X8) ? 2 : 1;
-    	mv_format = MV_FIELD;
-  	}
+	if(video->pict_struct == FRAME_PICTURE)
+	{
+		mv_count = (motion_type == MC_FIELD && stwclass < 2) ? 2 : 1;
+		mv_format = (motion_type == MC_FRAME) ? MV_FRAME : MV_FIELD;
+	}
+	else
+	{
+		mv_count = (motion_type == MC_16X8) ? 2 : 1;
+		mv_format = MV_FIELD;
+	}
 
-  	dmv = (motion_type == MC_DMV); /* dual prime */
+	dmv = (motion_type == MC_DMV); /* dual prime */
 
 /* field mv predictions in frame pictures have to be scaled */
-  	mvscale = ((mv_format == MV_FIELD) && (video->pict_struct == FRAME_PICTURE));
+	mvscale = ((mv_format == MV_FIELD) && (video->pict_struct == FRAME_PICTURE));
 
 /* get dct_type (frame DCT / field DCT) */
-  	dct_type = (video->pict_struct == FRAME_PICTURE) && 
-             	(!video->frame_pred_dct) && 
-             	(mb_type & (MB_PATTERN | MB_INTRA)) ? 
-             	mpeg3slice_getbit(slice_buffer) : 0;
+	dct_type = (video->pict_struct == FRAME_PICTURE) && 
+		(!video->frame_pred_dct) && 
+		(mb_type & (MB_PATTERN | MB_INTRA)) ? 
+		mpeg3slice_getbit(slice_buffer) : 0;
 
 /* return values */
 	*pmb_type = mb_type;

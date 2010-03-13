@@ -39,7 +39,7 @@ static int rewind_audio(mpeg3audio_t *audio)
 static int read_header(mpeg3audio_t *audio)
 {
 	int i;
-    int try = 0;
+	int try = 0;
 	int got_it = 0;
 	int result = 0;
 	mpeg3_atrack_t *track = audio->track;
@@ -66,7 +66,6 @@ static int read_header(mpeg3audio_t *audio)
 						mpeg3demux_read_char(track->demuxer);
 					result = mpeg3demux_eof(track->demuxer);
 				}
-//printf("read_header 10 %d\n", mpeg3demux_eof(track->demuxer));
 
 				if(!result)
 				{
@@ -86,7 +85,6 @@ static int read_header(mpeg3audio_t *audio)
 				track->sample_rate = audio->ac3_decoder->samplerate;
 				audio->framesize = audio->ac3_decoder->framesize;
 				if(track->sample_rate <= 0) track->sample_rate = 48000;
-//printf("read_header %d %d %d\n", track->channels, track->sample_rate, audio->framesize);
 			}
 			if(track->sample_rate <= 0) track->sample_rate = 48000;
 			break;
@@ -123,14 +121,6 @@ static int read_header(mpeg3audio_t *audio)
 				{
 					got_it = (mpeg3_layer_header(audio->layer_decoder,
 						audio->packet_buffer) != 0);
-/*
- * printf(__FUNCTION__ " got_it=%d packet=%02x%02x%02x%02x\n",
- * got_it,
- * (unsigned char)audio->packet_buffer[0],
- * (unsigned char)audio->packet_buffer[1],
- * (unsigned char)audio->packet_buffer[2],
- * (unsigned char)audio->packet_buffer[3]);
- */
 				}
 			}while(!result && !got_it && try < 0x10000);
 
@@ -369,8 +359,6 @@ static int get_length(mpeg3audio_t *audio)
 			samples = read_frame(audio, 0);
 		}
 
-//		result = (long)(mpeg3demux_length(track->demuxer) * 
-//			track->sample_rate);
 		result = 0;
 	}
 	else
@@ -415,7 +403,6 @@ int calculate_format(mpeg3_t *file, mpeg3_atrack_t *track)
 			header, 
 			8))
 		{
-//printf("calculate_format %lld\n", mpeg3demux_tell_byte(track->demuxer));
 			if(!mpeg3_ac3_check(header))
 				track->format = AUDIO_AC3;
 			else
@@ -474,12 +461,7 @@ mpeg3audio_t* mpeg3audio_new(mpeg3_t *file,
 				break;
 		}
 
-
-
 		rewind_audio(audio);
-
-
-
 
 		result = read_header(audio);
 	}
@@ -509,22 +491,8 @@ mpeg3audio_t* mpeg3audio_new(mpeg3_t *file,
 		delete_struct(audio);
 		audio = 0;
 	}
-
-
-
-
-
-
-
-
-
 	return audio;
 }
-
-
-
-
-
 
 
 static int seek(mpeg3audio_t *audio)
@@ -574,11 +542,8 @@ static int seek(mpeg3audio_t *audio)
 /* Use demuxer */
 		{
 			toc_error();
-/*
- * 	   		double time_position = (double)audio->sample_seek / track->sample_rate;
- * 			result |= mpeg3demux_seek_time(demuxer, time_position);
- */
-	   		audio->output_position = audio->sample_seek;
+
+			audio->output_position = audio->sample_seek;
 			audio->output_size = 0;
 			seeked = 1;
 		}
@@ -590,7 +555,7 @@ static int seek(mpeg3audio_t *audio)
 				mpeg3demux_movie_size(demuxer));
 
 			mpeg3demux_seek_byte(demuxer, byte);
-	   		audio->output_position = audio->sample_seek;
+			audio->output_position = audio->sample_seek;
 			audio->output_size = 0;
 			seeked = 1;
 		}
@@ -600,7 +565,7 @@ static int seek(mpeg3audio_t *audio)
 	if(audio->byte_seek >= 0)
 	{
 		mpeg3demux_seek_byte(demuxer, audio->byte_seek);
-	   	audio->output_position = 0;
+		audio->output_position = 0;
 		audio->output_size = 0;
 		seeked = 1;
 	}
@@ -620,12 +585,6 @@ static int seek(mpeg3audio_t *audio)
 
 	return 0;
 }
-
-
-
-
-
-
 
 
 
@@ -651,8 +610,7 @@ int mpeg3audio_seek_byte(mpeg3audio_t *audio, int64_t byte)
 int mpeg3audio_seek_sample(mpeg3audio_t *audio, long sample)
 {
 	mpeg3_atrack_t *track = audio->track;
-// Doesn't work for rereading audio during percentage seeking
-//	if(sample > track->total_samples) sample = track->total_samples;
+
 	if(sample < 0) sample = 0;
 	audio->sample_seek = sample;
 	return 0;
@@ -703,48 +661,6 @@ int mpeg3audio_read_raw(mpeg3audio_t *audio,
 			break;
 	}
 	return result;
-
-
-
-
-#if 0
-// This probably doesn't work.
-	result = read_header(audio);
-	switch(track->format)
-	{
-		case AUDIO_AC3:
-/* Just write the AC3 stream */
-			result = mpeg3demux_read_data(track->demuxer, 
-				output, 
-				audio->framesize);
-			*size = audio->framesize;
-//printf("mpeg3audio_read_raw 1 %d\n", audio->framesize);
-			break;
-
-		case AUDIO_MPEG:
-/* Fix the mpeg stream */
-			if(!result)
-			{
-				if(mpeg3demux_read_data(track->demuxer, 
-					output, 
-					audio->framesize))
-					return 1;
-
-				*size += audio->framesize;
-			}
-			break;
-		
-		case AUDIO_PCM:
-			if(mpeg3demux_read_data(track->demuxer, 
-				output, 
-				audio->framesize))
-				return 1;
-			*size = audio->framesize;
-			break;
-	}
-	return result;
-#endif
-
 }
 
 void mpeg3_shift_audio(mpeg3audio_t *audio, int diff)
@@ -908,9 +824,3 @@ int mpeg3audio_decode_audio(mpeg3audio_t *audio,
 	else
 		return 1;
 }
-
-
-
-
-
-

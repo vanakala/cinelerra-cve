@@ -1,10 +1,6 @@
 #ifndef MPEG3PROTOS_H
 #define MPEG3PROTOS_H
 
-
-
-
-
 #ifndef CLAMP
 #define CLAMP(x, y, z) ((x) = ((x) < (y) ? (y) : ((x) > (z) ? (z) : (x))))
 #endif
@@ -25,8 +21,6 @@ int64_t mpeg3io_path_total_bytes(char *path);
 int64_t mpeg3io_get_total_bytes(mpeg3_fs_t *fs);
 
 
-
-
 /* TITLE */
 
 mpeg3_title_t* mpeg3_new_title(mpeg3_t *file, char *path);
@@ -42,7 +36,6 @@ int mpeg3demux_create_title(mpeg3_demuxer_t *demuxer,
 
 
 /* ATRACK */
-
 mpeg3_atrack_t* mpeg3_new_atrack(mpeg3_t *file, 
 	int custom_id, 
 	int is_ac3, 
@@ -51,7 +44,6 @@ mpeg3_atrack_t* mpeg3_new_atrack(mpeg3_t *file,
 int mpeg3_delete_atrack(mpeg3_t *file, mpeg3_atrack_t *atrack);
 
 void mpeg3_append_samples(mpeg3_atrack_t *atrack, int flush);
-
 
 /* These return 1 on failure and 0 on success */
 int mpeg3_next_header();
@@ -96,8 +88,6 @@ void mpeg3_pop_all_subtitles(mpeg3_strack_t *strack);
 void mpeg3_reset_subtitles(mpeg3_t *file);
 
 
-
-
 /* AUDIO */
 mpeg3audio_t* mpeg3audio_new(mpeg3_t *file, 
 	mpeg3_atrack_t *track, 
@@ -107,8 +97,8 @@ int mpeg3audio_delete(mpeg3audio_t *audio);
 /* Decode up to requested number of samples. */
 /* Return 0 on success and 1 on failure. */
 int mpeg3audio_decode_audio(mpeg3audio_t *audio, 
-	float *output_f, 
-	short *output_i, 
+	float *output_f,
+	short *output_i,
 	int channel,
 	int len);
 
@@ -204,16 +194,6 @@ int mpeg3audio_dopcm(mpeg3_pcm_t *audio,
 	int render);
 
 
-
-
-
-
-
-
-
-
-
-
 /* VIDEO */
 mpeg3video_t* mpeg3video_new(mpeg3_t *file, 
 	mpeg3_vtrack_t *track);
@@ -251,16 +231,6 @@ int mpeg3video_drop_frames(mpeg3video_t *video, long frames, int cache_it);
 void mpeg3_decode_subtitle(mpeg3video_t *video);
 
 
-
-
-
-
-
-
-
-
-
-
 /* FRAME CACHING */
 mpeg3_cache_t* mpeg3_new_cache();
 void mpeg3_delete_cache(mpeg3_cache_t *ptr);
@@ -284,15 +254,6 @@ int mpeg3_ceche_has_frame(mpeg3_cache_t *ptr,
 int64_t mpeg3_cache_usage(mpeg3_cache_t *ptr);
 
 
-
-
-
-
-
-
-
-
-
 /* FILESYSTEM */
 
 mpeg3_fs_t* mpeg3_new_fs(char *path);
@@ -302,10 +263,6 @@ int mpeg3io_close_file(mpeg3_fs_t *fs);
 int mpeg3io_seek(mpeg3_fs_t *fs, int64_t byte);
 int mpeg3io_seek_relative(mpeg3_fs_t *fs, int64_t bytes);
 int mpeg3io_read_data(unsigned char *buffer, int64_t bytes, mpeg3_fs_t *fs);
-
-
-
-
 
 
 /* MAIN */
@@ -323,19 +280,7 @@ int mpeg3_get_file_type(mpeg3_t *file,
 int mpeg3_read_toc(mpeg3_t *file, int *atracks_return, int *vtracks_return);
 
 
-
-
-
-
-
-
-
-
-
 /* DEMUXER */
-
-
-
 mpeg3_demuxer_t* mpeg3_new_demuxer(mpeg3_t *file, 
 	int do_audio, 
 	int do_video, 
@@ -422,9 +367,9 @@ unsigned char mpeg3demux_read_prev_char_packet(mpeg3_demuxer_t *demuxer);
 
 #define mpeg3demux_error(demuxer) (((mpeg3_demuxer_t *)(demuxer))->error_flag)
 
+
 static unsigned char mpeg3demux_read_char(mpeg3_demuxer_t *demuxer)
 {
-//printf("mpeg3demux_read_char %lx %lx\n", demuxer->data_position, demuxer->data_size);
 	if(demuxer->data_position < demuxer->data_size)
 	{
 		return demuxer->data_buffer[demuxer->data_position++];
@@ -434,7 +379,6 @@ static unsigned char mpeg3demux_read_char(mpeg3_demuxer_t *demuxer)
 		return mpeg3demux_read_char_packet(demuxer);
 	}
 }
-
 
 
 static unsigned char mpeg3demux_read_prev_char(mpeg3_demuxer_t *demuxer)
@@ -449,18 +393,6 @@ static unsigned char mpeg3demux_read_prev_char(mpeg3_demuxer_t *demuxer)
 	}
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
 // Bitstream
 
 mpeg3_bits_t* mpeg3bits_new_stream(mpeg3_t *file, mpeg3_demuxer_t *demuxer);
@@ -471,16 +403,6 @@ int mpeg3bits_open_title(mpeg3_bits_t* stream, int title);
 int64_t mpeg3bits_tell(mpeg3_bits_t* stream);
 /* Reset bit bucket */
 void mpeg3bits_reset(mpeg3_bits_t *stream);
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -627,22 +549,8 @@ static unsigned int mpeg3bits_showbits_reverse(mpeg3_bits_t* stream, int bits)
 }
 
 
-
-
-
-
-
-
-
 // I/O
 // I/O must be character based so the buffer doesn't get overrun
-
-
-
-
-
-
-
 void mpeg3io_read_buffer(mpeg3_fs_t *fs);
 
 #define mpeg3io_tell(fs) (((mpeg3_fs_t *)(fs))->current_byte)
@@ -734,23 +642,7 @@ static uint16_t mpeg3io_read_int16(mpeg3_fs_t *fs)
 	return result;
 }
 
-
-
-
-
-
-
-
-
 // More bitstream
-
-
-
-
-
-
-
-
 
 #define mpeg3slice_fillbits(buffer, nbits) \
 	while(((mpeg3_slice_buffer_t*)(buffer))->bits_size < (nbits)) \
@@ -886,10 +778,6 @@ static unsigned int mpeg3slice_showbits(mpeg3_slice_buffer_t *slice_buffer, int 
 	mpeg3slice_fillbits(slice_buffer, bits);
 	return (slice_buffer->bits >> (slice_buffer->bits_size - bits)) & (0xffffffff >> (32 - bits));
 }
-
-
-
-
 
 
 #endif

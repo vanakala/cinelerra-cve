@@ -81,7 +81,3 @@ void mpeg3_append_samples(mpeg3_atrack_t *atrack, int flush)
 	atrack->total_sample_offsets++;
 	atrack->private_offsets = 1;
 }
-
-
-
-

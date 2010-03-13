@@ -139,18 +139,18 @@ static int init_layer2(mpeg3_layer_t *audio)
 {
 	static double mulmul[27] = 
 	{
-    	0.0 , -2.0/3.0 , 2.0/3.0 ,
-    	2.0/7.0 , 2.0/15.0 , 2.0/31.0, 2.0/63.0 , 2.0/127.0 , 2.0/255.0 ,
-    	2.0/511.0 , 2.0/1023.0 , 2.0/2047.0 , 2.0/4095.0 , 2.0/8191.0 ,
-    	2.0/16383.0 , 2.0/32767.0 , 2.0/65535.0 ,
-    	-4.0/5.0 , -2.0/5.0 , 2.0/5.0, 4.0/5.0 ,
-    	-8.0/9.0 , -4.0/9.0 , -2.0/9.0 , 2.0/9.0 , 4.0/9.0 , 8.0/9.0 
+		0.0 , -2.0/3.0 , 2.0/3.0 ,
+		2.0/7.0 , 2.0/15.0 , 2.0/31.0, 2.0/63.0 , 2.0/127.0 , 2.0/255.0 ,
+		2.0/511.0 , 2.0/1023.0 , 2.0/2047.0 , 2.0/4095.0 , 2.0/8191.0 ,
+		2.0/16383.0 , 2.0/32767.0 , 2.0/65535.0 ,
+		-4.0/5.0 , -2.0/5.0 , 2.0/5.0, 4.0/5.0 ,
+		-8.0/9.0 , -4.0/9.0 , -2.0/9.0 , 2.0/9.0 , 4.0/9.0 , 8.0/9.0 
 	};
 	static int base[3][9] = 
 	{
-    	{ 1 , 0, 2 , } ,
-    	{ 17, 18, 0 , 19, 20 , } ,
-    	{ 21, 1, 22, 23, 0, 24, 25, 2, 26 } 
+		{ 1 , 0, 2 , } ,
+		{ 17, 18, 0 , 19, 20 , } ,
+		{ 21, 1, 22, 23, 0, 24, 25, 2, 26 } 
 	};
 	static int tablen[3] = { 3, 5, 9 };
 	static int *itable, *tables[3] = {mpeg3_grp_3tab, mpeg3_grp_5tab, mpeg3_grp_9tab};
@@ -159,25 +159,25 @@ static int init_layer2(mpeg3_layer_t *audio)
 
 	for(i = 0; i < 3; i++)
 	{
-    	itable = tables[i];
-    	len = tablen[i];
-    	for(j = 0; j < len; j++)
-    		for(k = 0; k < len; k++)
-        		for(l = 0; l < len; l++)
-        		{
-        			*itable++ = base[i][l];
-        			*itable++ = base[i][k];
-        			*itable++ = base[i][j];
-        		}
+		itable = tables[i];
+		len = tablen[i];
+		for(j = 0; j < len; j++)
+			for(k = 0; k < len; k++)
+				for(l = 0; l < len; l++)
+				{
+					*itable++ = base[i][l];
+					*itable++ = base[i][k];
+					*itable++ = base[i][j];
+				}
 	}
 
 	for(k = 0; k < 27; k++)
 	{
-    	double m = mulmul[k];
-    	table = mpeg3_muls[k];
-    	for(j = 3, i = 0; i < 63; i++, j--)
-    	    *table++ = m * pow(2.0, (double)j / 3.0);
-    	*table++ = 0.0;
+		double m = mulmul[k];
+		table = mpeg3_muls[k];
+		for(j = 3, i = 0; i < 63; i++, j--)
+			*table++ = m * pow(2.0, (double)j / 3.0);
+		*table++ = 0.0;
 	}
 	return 0;
 }
@@ -192,10 +192,10 @@ static int init_layer3(mpeg3_layer_t *audio)
 	audio->mp3_blc[1] = 0;
 
 	for(i = -256; i < 118 + 4; i++)
-	  	mpeg3_gainpow2[i + 256] = pow((double)2.0, -0.25 * (double)(i + 210));
+		mpeg3_gainpow2[i + 256] = pow((double)2.0, -0.25 * (double)(i + 210));
 
 	for(i = 0; i < 8207; i++)
-	    mpeg3_ispow[i] = pow((double)i, (double)4.0 / 3.0);
+		mpeg3_ispow[i] = pow((double)i, (double)4.0 / 3.0);
 
 	for(i = 0; i < 8; i++) 
 	{
@@ -220,12 +220,12 @@ static int init_layer3(mpeg3_layer_t *audio)
 	}
 
 	for(i = 0; i < 9; i++)
-	  	mpeg3_COS9[i] = cos(M_PI / 18.0 * (double)i);
+		mpeg3_COS9[i] = cos(M_PI / 18.0 * (double)i);
 
 	for(i = 0; i < 9; i++)
-	  	mpeg3_tfcos36[i] = 0.5 / cos (M_PI * (double) (i*2+1) / 36.0);
+		mpeg3_tfcos36[i] = 0.5 / cos (M_PI * (double) (i*2+1) / 36.0);
 	for(i = 0; i < 3; i++)
-	  	mpeg3_tfcos12[i] = 0.5 / cos (M_PI * (double) (i*2+1) / 12.0);
+		mpeg3_tfcos12[i] = 0.5 / cos (M_PI * (double) (i*2+1) / 12.0);
 
 	mpeg3_COS6_1 = cos( M_PI / 6.0 * (double) 1);
 	mpeg3_COS6_2 = cos( M_PI / 6.0 * (double) 2);
@@ -241,16 +241,16 @@ static int init_layer3(mpeg3_layer_t *audio)
 	{
 		mpeg3_win[2][i]  = 0.5 * sin(M_PI / 24.0 * (double) (2 * i + 1)) / cos(M_PI * (double)(2 * i + 7) / 24.0);
 		for(j = 0; j < 6; j++)
-    		mpeg3_COS1[i][j] = cos(M_PI / 24.0 * (double) ((2 * i + 7) * (2 * j + 1)));
+		mpeg3_COS1[i][j] = cos(M_PI / 24.0 * (double) ((2 * i + 7) * (2 * j + 1)));
 	}
 
 	for(j = 0; j < 4; j++) 
 	{
 		static int len[4] = {36, 36, 12, 36};
 		for(i = 0; i < len[j]; i += 2)
-    	  	mpeg3_win1[j][i] = + mpeg3_win[j][i];
+			mpeg3_win1[j][i] = + mpeg3_win[j][i];
 		for(i = 1; i < len[j]; i += 2)
-    	  	mpeg3_win1[j][i] = - mpeg3_win[j][i];
+			mpeg3_win1[j][i] = - mpeg3_win[j][i];
 	}
 
 	for(i = 0; i < 16; i++) 
@@ -263,19 +263,19 @@ static int init_layer3(mpeg3_layer_t *audio)
 
 		for(j = 0; j < 2; j++) 
 		{
-    		double base = pow(2.0, -0.25 * (j + 1.0));
-    		double p1 = 1.0,p2 = 1.0;
-    		if(i > 0) 
+			double base = pow(2.0, -0.25 * (j + 1.0));
+			double p1 = 1.0,p2 = 1.0;
+			if(i > 0) 
 			{
-    			if( i & 1 )
-        		  p1 = pow(base, (i + 1.0) * 0.5);
-    			else
-        		  p2 = pow(base, i * 0.5);
-    		}
-    		mpeg3_pow1_1[j][i] = p1;
-    		mpeg3_pow2_1[j][i] = p2;
-    		mpeg3_pow1_2[j][i] = M_SQRT2 * p1;
-    		mpeg3_pow2_2[j][i] = M_SQRT2 * p2;
+				if( i & 1 )
+					p1 = pow(base, (i + 1.0) * 0.5);
+				else
+					p2 = pow(base, i * 0.5);
+			}
+			mpeg3_pow1_1[j][i] = p1;
+			mpeg3_pow2_1[j][i] = p2;
+			mpeg3_pow1_2[j][i] = M_SQRT2 * p1;
+			mpeg3_pow2_2[j][i] = M_SQRT2 * p2;
 		}
 	}
 
@@ -301,28 +301,28 @@ static int init_layer3(mpeg3_layer_t *audio)
 			int l = (*bdf++) >> 1;
 			for(lwin = 0; lwin < 3; lwin++) 
 			{
-    			*mp++ = l;
-    			*mp++ = i + lwin;
-    			*mp++ = lwin;
-    			*mp++ = cb;
+				*mp++ = l;
+				*mp++ = i + lwin;
+				*mp++ = lwin;
+				*mp++ = cb;
 			}
 			i += 6 * l;
 		}
-	 	mpeg3_mapend[j][0] = mp;
+		mpeg3_mapend[j][0] = mp;
 
 		mp = mpeg3_map[j][1] = mpeg3_mapbuf1[j];
 		bdf = bi->shortDiff+0;
 		for(i = 0,cb = 0; cb < 13; cb++) 
 		{
-		    int l = (*bdf++) >> 1;
-		    for(lwin = 0; lwin < 3; lwin++) 
-		    {
-    	    	*mp++ = l;
-    	    	*mp++ = i + lwin;
-    	    	*mp++ = lwin;
-    	    	*mp++ = cb;
-		    }
-		    i += 6 * l;
+			int l = (*bdf++) >> 1;
+			for(lwin = 0; lwin < 3; lwin++) 
+			{
+				*mp++ = l;
+				*mp++ = i + lwin;
+				*mp++ = lwin;
+				*mp++ = cb;
+			}
+			i += 6 * l;
 		}
 		mpeg3_mapend[j][1] = mp;
 
@@ -330,8 +330,8 @@ static int init_layer3(mpeg3_layer_t *audio)
 		bdf = bi->longDiff;
 		for(cb = 0; cb < 22 ; cb++) 
 		{
-		  *mp++ = (*bdf++) >> 1;
-		  *mp++ = cb;
+			*mp++ = (*bdf++) >> 1;
+			*mp++ = cb;
 		}
 		mpeg3_mapend[j][2] = mp;
 	}
@@ -340,15 +340,15 @@ static int init_layer3(mpeg3_layer_t *audio)
 	{
 		for(i = 0; i < 23; i++) 
 		{
-    		mpeg3_longLimit[j][i] = (mpeg3_bandInfo[j].longIdx[i] - 1 + 8) / 18 + 1;
-    		if(mpeg3_longLimit[j][i] > (down_sample_sblimit))
-    			mpeg3_longLimit[j][i] = down_sample_sblimit;
+			mpeg3_longLimit[j][i] = (mpeg3_bandInfo[j].longIdx[i] - 1 + 8) / 18 + 1;
+			if(mpeg3_longLimit[j][i] > (down_sample_sblimit))
+				mpeg3_longLimit[j][i] = down_sample_sblimit;
 		}
 		for(i = 0; i < 14; i++) 
 		{
-    		mpeg3_shortLimit[j][i] = (mpeg3_bandInfo[j].shortIdx[i] - 1) / 18 + 1;
-    		if(mpeg3_shortLimit[j][i] > (down_sample_sblimit) )
-    			mpeg3_shortLimit[j][i] = down_sample_sblimit;
+			mpeg3_shortLimit[j][i] = (mpeg3_bandInfo[j].shortIdx[i] - 1) / 18 + 1;
+			if(mpeg3_shortLimit[j][i] > (down_sample_sblimit) )
+				mpeg3_shortLimit[j][i] = down_sample_sblimit;
 		}
 	}
 
@@ -356,31 +356,31 @@ static int init_layer3(mpeg3_layer_t *audio)
 	{
 		for(j = 0; j < 6; j++) 
 		{
-    		for(k = 0; k < 6; k++) 
+			for(k = 0; k < 6; k++) 
 			{
-    			int n = k + j * 6 + i * 36;
-    			mpeg3_i_slen2[n] = i | (j << 3) | (k << 6) | (3 << 12);
-    		}
+				int n = k + j * 6 + i * 36;
+				mpeg3_i_slen2[n] = i | (j << 3) | (k << 6) | (3 << 12);
+			}
 		}
 	}
 	for(i = 0; i < 4; i++) 
 	{
 		for(j = 0; j < 4; j++) 
 		{
-    		for(k = 0; k < 4; k++) 
+			for(k = 0; k < 4; k++) 
 			{
-    			int n = k + j * 4 + i * 16;
-    			mpeg3_i_slen2[n+180] = i | (j << 3) | (k << 6) | (4 << 12);
-    		}
+				int n = k + j * 4 + i * 16;
+				mpeg3_i_slen2[n+180] = i | (j << 3) | (k << 6) | (4 << 12);
+			}
 		}
 	}
 	for(i = 0; i < 4; i++) 
 	{
 		for(j = 0; j < 3; j++) 
 		{
-    		int n = j + i * 3;
-    		mpeg3_i_slen2[n + 244] = i | (j << 3) | (5 << 12);
-    		mpeg3_n_slen2[n + 500] = i | (j << 3) | (2 << 12) | (1 << 15);
+			int n = j + i * 3;
+			mpeg3_i_slen2[n + 244] = i | (j << 3) | (5 << 12);
+			mpeg3_n_slen2[n + 500] = i | (j << 3) | (2 << 12) | (1 << 15);
 		}
 	}
 
@@ -388,25 +388,25 @@ static int init_layer3(mpeg3_layer_t *audio)
 	{
 		for(j = 0; j < 5; j++) 
 		{
-    		for(k = 0; k < 4; k++) 
+			for(k = 0; k < 4; k++) 
 			{
-    			for(l = 0; l < 4; l++) 
+				for(l = 0; l < 4; l++) 
 				{
-        			int n = l + k * 4 + j * 16 + i * 80;
-        			mpeg3_n_slen2[n] = i | (j << 3) | ( k << 6) | (l << 9) | (0 << 12);
-    			}
-    		}
+					int n = l + k * 4 + j * 16 + i * 80;
+					mpeg3_n_slen2[n] = i | (j << 3) | ( k << 6) | (l << 9) | (0 << 12);
+				}
+			}
 		}
 	}
 	for(i = 0; i < 5; i++) 
 	{
 		for(j = 0; j < 5; j++) 
 		{
-    		for(k = 0; k < 4; k++) 
+			for(k = 0; k < 4; k++)
 			{
-    			int n = k + j * 4 + i * 20;
-    			mpeg3_n_slen2[n + 400] = i | (j << 3) | (k << 6) | (1 << 12);
-    		}
+				int n = k + j * 4 + i * 20;
+				mpeg3_n_slen2[n + 400] = i | (j << 3) | (k << 6) | (1 << 12);
+			}
 		}
 	}
 	return 0;
@@ -418,19 +418,18 @@ int mpeg3_new_decode_tables(mpeg3_layer_t *audio)
 	float *costab;
 	int idx;
 	long scaleval = 1;
-	
-  
+
 	for(i = 0; i < 5; i++)
 	{
-    	kr = 0x10 >> i; 
+		kr = 0x10 >> i; 
 		divv = 0x40 >> i;
-    	costab = mpeg3_pnts[i];
-    	for(k = 0; k < kr; k++)
-    		costab[k] = 1.0 / (2.0 * cos(M_PI * ((double)k * 2.0 + 1.0) / (double)divv));
+		costab = mpeg3_pnts[i];
+		for(k = 0; k < kr; k++)
+			costab[k] = 1.0 / (2.0 * cos(M_PI * ((double)k * 2.0 + 1.0) / (double)divv));
 
 #ifdef USE_3DNOW
-    	for(k = 0; k < kr; k++)
-    		costab[k + kr] = -costab[k];
+		for(k = 0; k < kr; k++)
+			costab[k + kr] = -costab[k];
 #endif
 
 	}
@@ -439,34 +438,34 @@ int mpeg3_new_decode_tables(mpeg3_layer_t *audio)
 	scaleval = -scaleval;
 	for(i = 0, j = 0; i < 256; i++, j++,idx += 32)
 	{
-    	if(idx < 512 + 16)
-    		mpeg3_decwin[idx+16] = mpeg3_decwin[idx] = (double)mpeg3_intwinbase[j] / 65536.0 * (double)scaleval;
+		if(idx < 512 + 16)
+			mpeg3_decwin[idx+16] = mpeg3_decwin[idx] = (double)mpeg3_intwinbase[j] / 65536.0 * (double)scaleval;
 
-    	if(i % 32 == 31)
-    		idx -= 1023;
-    	if(i % 64 == 63)
-    		scaleval = -scaleval;
+		if(i % 32 == 31)
+			idx -= 1023;
+		if(i % 64 == 63)
+			scaleval = -scaleval;
 	}
 
 	for( ; i < 512; i++, j--, idx += 32)
 	{
-    	if(idx < 512 + 16)
-    		mpeg3_decwin[idx + 16] = mpeg3_decwin[idx] = (double)mpeg3_intwinbase[j] / 65536.0 * (double)scaleval;
+		if(idx < 512 + 16)
+			mpeg3_decwin[idx + 16] = mpeg3_decwin[idx] = (double)mpeg3_intwinbase[j] / 65536.0 * (double)scaleval;
 
-    	if(i % 32 == 31)
-    		idx -= 1023;
-    	if(i % 64 == 63)
-    		scaleval = -scaleval;
+		if(i % 32 == 31)
+			idx -= 1023;
+		if(i % 64 == 63)
+			scaleval = -scaleval;
 	}
 
 #ifdef USE_3DNOW
 	if(!param.down_sample) 
 	{
-    	for(i = 0; i < 512 + 32; i++) 
+		for(i = 0; i < 512 + 32; i++) 
 		{
-    		mpeg3_decwin[512 + 31 - i] *= 65536.0; /* allows faster clipping in 3dnow code */
-    		mpeg3_decwin[512 + 32 + i] = mpeg3_decwin[512 + 31 - i];
-    	}
+			mpeg3_decwin[512 + 31 - i] *= 65536.0; /* allows faster clipping in 3dnow code */
+			mpeg3_decwin[512 + 32 + i] = mpeg3_decwin[512 + 31 - i];
+		}
 	}
 #endif
 

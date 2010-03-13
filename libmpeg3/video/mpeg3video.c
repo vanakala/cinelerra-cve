@@ -83,18 +83,18 @@ int mpeg3video_initdecoder(mpeg3video_t *video)
 {
 	int blk_cnt_tab[3] = {6, 8, 12};
 	int cc;
-  	int i;
+	int i;
 	long size[4], padding[2];         /* Size of Y, U, and V buffers */
 
 	if(!video->mpeg2)
 	{
 /* force MPEG-1 parameters */
-    	video->prog_seq = 1;
-    	video->prog_frame = 1;
-    	video->pict_struct = FRAME_PICTURE;
-    	video->frame_pred_dct = 1;
-    	video->chroma_format = CHROMA420;
-    	video->matrix_coefficients = 5;
+		video->prog_seq = 1;
+		video->prog_frame = 1;
+		video->pict_struct = FRAME_PICTURE;
+		video->frame_pred_dct = 1;
+		video->chroma_format = CHROMA420;
+		video->matrix_coefficients = 5;
 	}
 
 /* Get dimensions rounded to nearest multiple of coded macroblocks */
@@ -127,7 +127,7 @@ int mpeg3video_initdecoder(mpeg3video_t *video)
 	video->yuv_buffer[1] = (unsigned char*)calloc(1, (size[0] + padding[0]) + 2 * (size[1] + padding[1]));
 	video->yuv_buffer[2] = (unsigned char*)calloc(1, (size[0] + padding[0]) + 2 * (size[1] + padding[1]));
 
-    if(video->scalable_mode == SC_SPAT)
+	if(video->scalable_mode == SC_SPAT)
 	{
 		video->yuv_buffer[3] = (unsigned char*)calloc(1, size[2] + 2 * size[3]);
 		video->yuv_buffer[4] = (unsigned char*)calloc(1, size[2] + 2 * size[3]);
@@ -151,16 +151,16 @@ int mpeg3video_initdecoder(mpeg3video_t *video)
 	video->oldrefframe[1] = video->yuv_buffer[1] + size[0] + padding[0] + size[1] + padding[1];
 	video->auxframe[1]    = video->yuv_buffer[2] + size[0] + padding[0] + size[1] + padding[1];
 
-    if(video->scalable_mode == SC_SPAT)
+	if(video->scalable_mode == SC_SPAT)
 	{
 /* this assumes lower layer is 4:2:0 */
-		video->llframe0[0] = video->yuv_buffer[3] + padding[0] 				   ;
-		video->llframe1[0] = video->yuv_buffer[4] + padding[0] 				   ;
-		video->llframe0[2] = video->yuv_buffer[3] + padding[1] + size[2]		   ;
-		video->llframe1[2] = video->yuv_buffer[4] + padding[1] + size[2]		   ;
+		video->llframe0[0] = video->yuv_buffer[3] + padding[0];
+		video->llframe1[0] = video->yuv_buffer[4] + padding[0];
+		video->llframe0[2] = video->yuv_buffer[3] + padding[1] + size[2];
+		video->llframe1[2] = video->yuv_buffer[4] + padding[1] + size[2];
 		video->llframe0[1] = video->yuv_buffer[3] + padding[1] + size[2] + size[3];
 		video->llframe1[1] = video->yuv_buffer[4] + padding[1] + size[2] + size[3];
-    }
+	}
 
 /* Initialize the YUV tables for software YUV decoding */
 	video->cr_to_r = malloc(sizeof(long) * 256);
@@ -225,7 +225,6 @@ mpeg3video_t* mpeg3video_allocate_struct(mpeg3_t *file, mpeg3_vtrack_t *track)
 	video->file = file;
 	video->track = track;
 	video->vstream = mpeg3bits_new_stream(file, track->demuxer);
-//printf("mpeg3video_allocate_struct %d\n", mpeg3bits_eof(video->vstream));
 	video->last_number = -1;
 
 /* First frame is all green */
@@ -238,7 +237,6 @@ mpeg3video_t* mpeg3video_allocate_struct(mpeg3_t *file, mpeg3_vtrack_t *track)
 	mpeg3video_init_output();
 
 	pthread_mutexattr_init(&mutex_attr);
-//	pthread_mutexattr_setkind_np(&mutex_attr, PTHREAD_MUTEX_FAST_NP);
 	pthread_mutex_init(&(video->test_lock), &mutex_attr);
 	pthread_mutex_init(&(video->slice_lock), &mutex_attr);
 	return video;
@@ -263,7 +261,6 @@ int mpeg3video_delete_struct(mpeg3video_t *video)
 	for(i = 0; i < video->slice_buffers_initialized; i++)
 		mpeg3_delete_slice_buffer(&(video->slice_buffers[i]));
 
-
 	free(video);
 	return 0;
 }
@@ -277,14 +274,11 @@ int mpeg3video_read_frame_backend(mpeg3video_t *video, int skip_bframes)
 	mpeg3_vtrack_t *track = video->track;
 	mpeg3_t *file = (mpeg3_t*)video->file;
 
-//printf("mpeg3video_read_frame_backend 1\n");
-
 	do
 	{
 		if(mpeg3bits_eof(video->vstream)) result = 1;
 
 		if(!result) result = mpeg3video_get_header(video, 0);
-
 
 /* skip_bframes is the number of bframes we can skip successfully. */
 /* This is in case a skipped B-frame is repeated and the second repeat happens */
@@ -325,15 +319,11 @@ int mpeg3video_read_frame_backend(mpeg3video_t *video, int skip_bframes)
 // Composite subtitles
 	mpeg3_decode_subtitle(video);
 
-
-
-
 	if(!result)
 	{
 		video->last_number = video->framenum;
 		video->framenum++;
 	}
-//printf("mpeg3video_read_frame_backend 100\n");
 
 	return result;
 }
@@ -367,17 +357,16 @@ static long gop_to_frame(mpeg3video_t *video, mpeg3_timecode_t *gop_timecode)
 // Mirror of what mpeg2enc does
 	fps = (int)(video->frame_rate + 0.5);
 
-
 	hour = gop_timecode->hour;
 	minute = gop_timecode->minute;
 	second = gop_timecode->second;
 	frame = gop_timecode->frame;
-	
+
 	result = (long)hour * 60 * 60 * fps + 
 		minute * 60 * fps + 
 		second * fps +
 		frame;
-	
+
 	return result;
 }
 
@@ -474,16 +463,6 @@ int mpeg3video_read_raw(mpeg3video_t *video,
 }
 
 
-
-
-
-
-
-
-
-
-
-
 int mpeg3video_read_frame(mpeg3video_t *video, 
 		unsigned char **output_rows,
 		int in_x, 
@@ -527,7 +506,6 @@ int mpeg3video_read_frame(mpeg3video_t *video,
 		video->x_table = mpeg3video_get_scaletable(video->in_w, video->out_w);
 		video->y_table = mpeg3video_get_scaletable(video->in_h, video->out_h);
 	}
-//printf("mpeg3video_read_frame 1 %d\n", video->framenum);
 
 
 // Recover from cache
@@ -539,7 +517,7 @@ int mpeg3video_read_frame(mpeg3video_t *video,
 		&u, 
 		&v))
 	{
-//printf("mpeg3video_read_frame 1 %d\n", frame_number);
+
 // Swap output data for cache data
 		unsigned char *temp[3];
 		temp[0] = video->output_src[0];
@@ -558,8 +536,7 @@ int mpeg3video_read_frame(mpeg3video_t *video,
 // Advance either framenum or frame_seek
 		if(frame_number == video->framenum)
 			video->framenum = ++frame_number;
-		else
-		if(frame_number == video->frame_seek)
+		else if(frame_number == video->frame_seek)
 			video->frame_seek = ++frame_number;
 	}
 	else
@@ -598,7 +575,6 @@ int mpeg3video_read_yuvframe(mpeg3video_t *video,
 	int result = 0;
 	mpeg3_vtrack_t *track = video->track;
 
-//printf("mpeg3video_read_yuvframe 1 %d\n", video->framenum);
 	video->want_yvu = 1;
 	video->y_output = y_output;
 	video->u_output = u_output;
@@ -618,8 +594,6 @@ int mpeg3video_read_yuvframe(mpeg3video_t *video,
 		int chroma_denominator;
 		int size0, size1;
 
-
-//printf("mpeg3video_read_yuvframe 1 %d\n", frame_number);
 		if(video->chroma_format == CHROMA420)
 			chroma_denominator = 2;
 		else
@@ -656,9 +630,6 @@ int mpeg3video_read_yuvframe(mpeg3video_t *video,
 		if(!result) result = mpeg3video_read_frame_backend(video, 0);
 		if(video->output_src[0]) mpeg3video_present_frame(video);
 	}
-
-
-
 
 	video->want_yvu = 0;
 	video->byte_seek = -1;
@@ -711,17 +682,16 @@ int mpeg3video_read_yuvframe_ptr(mpeg3video_t *video,
 
 		}
 
-    		if(video->output_src[0])
-    		{
-        		*y_output = (char*)video->output_src[0];
-        		*u_output = (char*)video->output_src[1];
-        		*v_output = (char*)video->output_src[2];
-    		}
+		if(video->output_src[0])
+		{
+			*y_output = (char*)video->output_src[0];
+			*u_output = (char*)video->output_src[1];
+			*v_output = (char*)video->output_src[2];
+		}
 	}
 	video->want_yvu = 0;
 // Caching not used if byte seek
 	video->byte_seek = -1;
-
 
 	return result;
 }
@@ -756,9 +726,3 @@ void mpeg3video_dump(mpeg3video_t *video)
 		video->prog_frame,
 		video->pict_struct);
 }
-
-
-
-
-
-

@@ -243,7 +243,6 @@ int main(int argc, char *argv[])
 							minute * 60 * mpeg3_frame_rate(in, stream) +
 							second * mpeg3_frame_rate(in, stream) + 
 							frame);
-/* fprintf(stderr, "old: %02d:%02d:%02d:%02d ", hour, minute, second, frame); */
 /* Write a new time code */
 					hour = (long)((float)(total_frames - 1) / mpeg3_frame_rate(in, stream) / 3600);
 					carry = hour * 3600 * mpeg3_frame_rate(in, stream);
@@ -257,7 +256,6 @@ int main(int argc, char *argv[])
 					buffer[i + 1] = ((code >> 16) & 0x08) | ((minute & 0xf) << 4) | (second >> 3);
 					buffer[i + 2] = ((second & 0x7) << 5) | (frame >> 1);
 					buffer[i + 3] = (code & 0x7f) | ((frame & 0x1) << 7);
-/* fprintf(stderr, "new: %02d:%02d:%02d:%02d\n", hour, minute, second, frame); */
 				}
 
 
@@ -276,13 +274,6 @@ int main(int argc, char *argv[])
 						}
 					}
 				}
-/*
- * fprintf(stderr, "mpeg3cat 5 %02x %02x %02x %02x\n", 
- * 	(buffer + offset)[0], 
- * 	(buffer + offset)[1],
- * 	(buffer + offset)[2], 
- * 	(buffer + offset)[3]);
- */
 
 /* Write the frame */
 				result = !fwrite(buffer + offset, output_size - offset, 1, out);
@@ -383,7 +374,6 @@ int main(int argc, char *argv[])
 /* Terminate output */
 	if(current_output_file > 0 && do_video)
 	{
-/*fprintf(stderr, "\n"); */
 /* Write new end of sequence */
 		buffer[0] = MPEG3_SEQUENCE_END_CODE >> 24;
 		buffer[1] = (MPEG3_SEQUENCE_END_CODE >> 16) & 0xff;

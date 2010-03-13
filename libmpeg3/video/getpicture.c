@@ -8,32 +8,31 @@
 
 int mpeg3video_get_cbp(mpeg3_slice_t *slice)
 {
-  	int code;
+	int code;
 	mpeg3_slice_buffer_t *slice_buffer = slice->slice_buffer;
 
-  	if((code = mpeg3slice_showbits9(slice_buffer)) >= 128)
+	if((code = mpeg3slice_showbits9(slice_buffer)) >= 128)
 	{
-    	code >>= 4;
-    	mpeg3slice_flushbits(slice_buffer, mpeg3_CBPtab0[code].len);
-    	return mpeg3_CBPtab0[code].val;
-  	}
+		code >>= 4;
+		mpeg3slice_flushbits(slice_buffer, mpeg3_CBPtab0[code].len);
+		return mpeg3_CBPtab0[code].val;
+	}
 
-  	if(code >= 8)
+	if(code >= 8)
 	{
-    	code >>= 1;
-    	mpeg3slice_flushbits(slice_buffer, mpeg3_CBPtab1[code].len);
-    	return mpeg3_CBPtab1[code].val;
-  	}
+		code >>= 1;
+		mpeg3slice_flushbits(slice_buffer, mpeg3_CBPtab1[code].len);
+		return mpeg3_CBPtab1[code].val;
+	}
 
-  	if(code < 1)
+	if(code < 1)
 	{
-/*    	fprintf(stderr,"mpeg3video_get_cbp: invalid coded_block_pattern code\n"); */
-    	slice->fault = 1;
-    	return 0;
-  	}
+		slice->fault = 1;
+		return 0;
+	}
 
-  	mpeg3slice_flushbits(slice_buffer, mpeg3_CBPtab2[code].len);
-  	return mpeg3_CBPtab2[code].val;
+	mpeg3slice_flushbits(slice_buffer, mpeg3_CBPtab2[code].len);
+	return mpeg3_CBPtab2[code].val;
 }
 
 
@@ -42,10 +41,7 @@ int mpeg3video_clearblock(mpeg3_slice_t *slice, int comp, int size)
 {
 	slice->sparse[comp] = 1;
 
-/* Compiler error with 2.95 required hard coding the size to 6 */
-
 	bzero(slice->block[comp], sizeof(short) * 64 * size);
-//	memset(slice->block[comp], 0, sizeof(short) * 64 * size);
 	return 0;
 }
 
@@ -57,21 +53,23 @@ static inline int mpeg3video_getdclum(mpeg3_slice_buffer_t *slice_buffer)
 
 	if(code < 31)
 	{
-    	size = mpeg3_DClumtab0[code].val;
-    	mpeg3slice_flushbits(slice_buffer, mpeg3_DClumtab0[code].len);
+		size = mpeg3_DClumtab0[code].val;
+		mpeg3slice_flushbits(slice_buffer, mpeg3_DClumtab0[code].len);
 	}
 	else 
 	{
-    	code = mpeg3slice_showbits9(slice_buffer) - 0x1f0;
-    	size = mpeg3_DClumtab1[code].val;
-    	mpeg3slice_flushbits(slice_buffer, mpeg3_DClumtab1[code].len);
+		code = mpeg3slice_showbits9(slice_buffer) - 0x1f0;
+		size = mpeg3_DClumtab1[code].val;
+		mpeg3slice_flushbits(slice_buffer, mpeg3_DClumtab1[code].len);
 	}
 
-	if(size == 0) val = 0;
+	if(size == 0) 
+		val = 0;
 	else 
 	{
-    	val = mpeg3slice_getbits(slice_buffer, size);
-    	if((val & (1 << (size - 1))) == 0)  val -= (1 << size) - 1;
+		val = mpeg3slice_getbits(slice_buffer, size);
+		if((val & (1 << (size - 1))) == 0)
+			val -= (1 << size) - 1;
 	}
 
 	return val;
@@ -87,21 +85,23 @@ int mpeg3video_getdcchrom(mpeg3_slice_buffer_t *slice_buffer)
 
 	if(code < 31)
 	{
-    	size = mpeg3_DCchromtab0[code].val;
-    	mpeg3slice_flushbits(slice_buffer, mpeg3_DCchromtab0[code].len);
+		size = mpeg3_DCchromtab0[code].val;
+		mpeg3slice_flushbits(slice_buffer, mpeg3_DCchromtab0[code].len);
 	}
-	else 
+	else
 	{
-    	code = mpeg3slice_showbits(slice_buffer, 10) - 0x3e0;
-    	size = mpeg3_DCchromtab1[code].val;
-    	mpeg3slice_flushbits(slice_buffer, mpeg3_DCchromtab1[code].len);
+		code = mpeg3slice_showbits(slice_buffer, 10) - 0x3e0;
+		size = mpeg3_DCchromtab1[code].val;
+		mpeg3slice_flushbits(slice_buffer, mpeg3_DCchromtab1[code].len);
 	}
 
-	if(size == 0) val = 0;
-	else 
+	if(size == 0) 
+		val = 0;
+	else
 	{
-      val = mpeg3slice_getbits(slice_buffer, size);
-      if((val & (1 << (size - 1))) == 0) val -= (1 << size) - 1;
+		val = mpeg3slice_getbits(slice_buffer, size);
+		if((val & (1 << (size - 1))) == 0) 
+			val -= (1 << size) - 1;
 	}
 
 	return val;
@@ -122,89 +122,85 @@ int mpeg3video_getintrablock(mpeg3_slice_t *slice,
 	mpeg3_slice_buffer_t *slice_buffer = slice->slice_buffer;
 
 /* decode DC coefficients */
-  	if(comp < 4)         
-  		bp[0] = (dc_dct_pred[0] += mpeg3video_getdclum(slice_buffer)) << 3;
-  	else 
-  	if(comp == 4)   
-  		bp[0] = (dc_dct_pred[1] += mpeg3video_getdcchrom(slice_buffer)) << 3;
-	else                
-  		bp[0] = (dc_dct_pred[2] += mpeg3video_getdcchrom(slice_buffer)) << 3;
+	if(comp < 4)
+		bp[0] = (dc_dct_pred[0] += mpeg3video_getdclum(slice_buffer)) << 3;
+	else 
+	if(comp == 4)
+		bp[0] = (dc_dct_pred[1] += mpeg3video_getdcchrom(slice_buffer)) << 3;
+	else
+		bp[0] = (dc_dct_pred[2] += mpeg3video_getdcchrom(slice_buffer)) << 3;
 
-  	if(slice->fault) return 1;
+	if(slice->fault) return 1;
 
 /* decode AC coefficients */
-  	for(i = 1; ; i++)
+	for(i = 1; ; i++)
 	{
-    	code = mpeg3slice_showbits16(slice_buffer);
-    	if(code >= 16384)
+		code = mpeg3slice_showbits16(slice_buffer);
+		if(code >= 16384)
 			tab = &mpeg3_DCTtabnext[(code >> 12) - 4];
-    	else 
-		if(code >= 1024) tab = &mpeg3_DCTtab0[(code >> 8) - 4];
-    	else 
-		if(code >= 512) tab = &mpeg3_DCTtab1[(code >> 6) - 8];
-    	else 
-		if(code >= 256) tab = &mpeg3_DCTtab2[(code >> 4) - 16];
-    	else 
-		if(code >= 128) tab = &mpeg3_DCTtab3[(code >> 3) - 16];
-    	else 
-		if(code >= 64) tab = &mpeg3_DCTtab4[(code >> 2) - 16];
-    	else 
-		if(code >= 32) tab = &mpeg3_DCTtab5[(code >> 1) - 16];
-    	else 
-		if(code >= 16) tab = &mpeg3_DCTtab6[code - 16];
-    	else 
-		{
-/*    	  	fprintf(stderr, "mpeg3video_getintrablock: invalid Huffman code\n"); */
-    	  	slice->fault = 1;
-    	  	return 0;
-    	}
-
-    	mpeg3slice_flushbits(slice_buffer, tab->len);
-
-    	if(tab->run == 64) break;  /* end_of_block */
-
-    	if(tab->run == 65)
-		{
-/* escape */
-    		i += mpeg3slice_getbits(slice_buffer, 6);
-
-    		if((val = mpeg3slice_getbits(slice_buffer, 8)) == 0) 
-				val = mpeg3slice_getbits(slice_buffer, 8);
-    		else 
-			if(val == 128)         
-				val = mpeg3slice_getbits(slice_buffer, 8) - 256;
-    		else 
-			if(val > 128)          
-				val -= 256;
-
-    		if((sign = (val < 0)) != 0) val= -val;
-    	}
-    	else 
-		{
-    		i += tab->run;
-    		val = tab->level;
-    		sign = mpeg3slice_getbit(slice_buffer);
-    	}
-
-		if(i < 64)
-	    	j = video->mpeg3_zigzag_scan_table[i];
+		else if(code >= 1024) 
+			tab = &mpeg3_DCTtab0[(code >> 8) - 4];
+		else if(code >= 512) 
+			tab = &mpeg3_DCTtab1[(code >> 6) - 8];
+		else if(code >= 256) 
+			tab = &mpeg3_DCTtab2[(code >> 4) - 16];
+		else if(code >= 128) 
+			tab = &mpeg3_DCTtab3[(code >> 3) - 16];
+		else if(code >= 64) 
+			tab = &mpeg3_DCTtab4[(code >> 2) - 16];
+		else if(code >= 32) 
+			tab = &mpeg3_DCTtab5[(code >> 1) - 16];
+		else if(code >= 16) 
+			tab = &mpeg3_DCTtab6[code - 16];
 		else
 		{
-    	  	slice->fault = 1;
-    	  	return 0;
+			slice->fault = 1;
+			return 0;
 		}
-			
 
-    	val = (val * slice->quant_scale * video->intra_quantizer_matrix[j]) >> 3;
-    	val = (val - 1) | 1;
+		mpeg3slice_flushbits(slice_buffer, tab->len);
 
-    	bp[j] = sign ? -val : val;
+		if(tab->run == 64) break;  /* end_of_block */
+
+		if(tab->run == 65)
+		{
+/* escape */
+			i += mpeg3slice_getbits(slice_buffer, 6);
+
+			if((val = mpeg3slice_getbits(slice_buffer, 8)) == 0) 
+				val = mpeg3slice_getbits(slice_buffer, 8);
+			else if(val == 128)
+				val = mpeg3slice_getbits(slice_buffer, 8) - 256;
+			else if(val > 128) 
+				val -= 256;
+
+			if((sign = (val < 0)) != 0) val= -val;
+		}
+		else
+		{
+			i += tab->run;
+			val = tab->level;
+			sign = mpeg3slice_getbit(slice_buffer);
+		}
+
+		if(i < 64)
+			j = video->mpeg3_zigzag_scan_table[i];
+		else
+		{
+			slice->fault = 1;
+			return 0;
+		}
+
+		val = (val * slice->quant_scale * video->intra_quantizer_matrix[j]) >> 3;
+		val = (val - 1) | 1;
+
+		bp[j] = sign ? -val : val;
 	}
 
 	if(j != 0) 
 	{
 /* not a sparse matrix ! */
-       slice->sparse[comp] = 0;
+		slice->sparse[comp] = 0;
 	}
 	return 0;
 }
@@ -225,75 +221,74 @@ int mpeg3video_getinterblock(mpeg3_slice_t *slice,
 /* decode AC coefficients */
 	for(i = 0; ; i++)
 	{
-    	code = mpeg3slice_showbits16(slice_buffer);
-    	if(code >= 16384)
+		code = mpeg3slice_showbits16(slice_buffer);
+		if(code >= 16384)
 		{
-    	    if(i == 0) 
+			if(i == 0) 
 				tab = &mpeg3_DCTtabfirst[(code >> 12) - 4];
-    	    else      
+			else
 				tab = &mpeg3_DCTtabnext[(code >> 12) - 4];
-    	}
-    	else 
-		if(code >= 1024) tab = &mpeg3_DCTtab0[(code >> 8) - 4];
-    	else 
-		if(code >= 512)  tab = &mpeg3_DCTtab1[(code >> 6) - 8];
-    	else 
-		if(code >= 256)  tab = &mpeg3_DCTtab2[(code >> 4) - 16];
-    	else 
-		if(code >= 128)  tab = &mpeg3_DCTtab3[(code >> 3) - 16];
-    	else 
-		if(code >= 64)   tab = &mpeg3_DCTtab4[(code >> 2) - 16];
-    	else 
-		if(code >= 32)   tab = &mpeg3_DCTtab5[(code >> 1) - 16];
-    	else 
-		if(code >= 16)   tab = &mpeg3_DCTtab6[code - 16];
-    	else 
+		}
+		else if(code >= 1024) 
+			tab = &mpeg3_DCTtab0[(code >> 8) - 4];
+		else if(code >= 512)
+			tab = &mpeg3_DCTtab1[(code >> 6) - 8];
+		else if(code >= 256)
+			tab = &mpeg3_DCTtab2[(code >> 4) - 16];
+		else if(code >= 128)
+			tab = &mpeg3_DCTtab3[(code >> 3) - 16];
+		else if(code >= 64)
+			tab = &mpeg3_DCTtab4[(code >> 2) - 16];
+		else if(code >= 32)
+			tab = &mpeg3_DCTtab5[(code >> 1) - 16];
+		else if(code >= 16)
+			tab = &mpeg3_DCTtab6[code - 16];
+		else
 		{
 // invalid Huffman code
-    		slice->fault = 1;
-    		return 1;
-    	}
+		slice->fault = 1;
+		return 1;
+	}
 
-    	mpeg3slice_flushbits(slice_buffer, tab->len);
+	mpeg3slice_flushbits(slice_buffer, tab->len);
 
 /* end of block */
-    	if(tab->run == 64)
-    	   break;   
+	if(tab->run == 64)
+		break;
 
-    	if(tab->run == 65)
-		{          
+		if(tab->run == 65)
+		{
 /* escape  */
-    		i += mpeg3slice_getbits(slice_buffer, 6);
-    		if((val = mpeg3slice_getbits(slice_buffer, 8)) == 0) 
+			i += mpeg3slice_getbits(slice_buffer, 6);
+			if((val = mpeg3slice_getbits(slice_buffer, 8)) == 0) 
 				val = mpeg3slice_getbits(slice_buffer, 8);
-    		else 
-			if(val == 128)  
+			else if(val == 128)  
 				val = mpeg3slice_getbits(slice_buffer, 8) - 256;
-    		else 
-			if(val > 128) 
+			else if(val > 128) 
 				val -= 256;
 
-    		if((sign = (val < 0)) != 0) val = -val;
-    	}
-    	else 
+			if((sign = (val < 0)) != 0)
+				val = -val;
+		}
+		else
 		{
-    		i += tab->run;
-    		val = tab->level;
-    		sign = mpeg3slice_getbit(slice_buffer);
-    	}
+			i += tab->run;
+			val = tab->level;
+			sign = mpeg3slice_getbit(slice_buffer);
+		}
 
-    	j = video->mpeg3_zigzag_scan_table[i];
+		j = video->mpeg3_zigzag_scan_table[i];
 
-   		val = (((val << 1)+1) * slice->quant_scale * video->non_intra_quantizer_matrix[j]) >> 4;
-   		val = (val - 1) | 1;
+		val = (((val << 1)+1) * slice->quant_scale * video->non_intra_quantizer_matrix[j]) >> 4;
+		val = (val - 1) | 1;
 
-    	bp[j] = sign ? -val : val;
+		bp[j] = sign ? -val : val;
 	}
 
 	if(j != 0) 
 	{
 /* not a sparse matrix ! */
-       slice->sparse[comp] = 0;
+		slice->sparse[comp] = 0;
 	}
 	return 0;
 }
@@ -313,105 +308,101 @@ int mpeg3video_getmpg2intrablock(mpeg3_slice_t *slice,
 	mpeg3_slice_buffer_t *slice_buffer = slice->slice_buffer;
 
 /* with data partitioning, data always goes to base layer */
-  	bp = slice->block[comp];
+	bp = slice->block[comp];
 
-  	qmat = (comp < 4 || video->chroma_format == CHROMA420)
+	qmat = (comp < 4 || video->chroma_format == CHROMA420)
          ? video->intra_quantizer_matrix
          : video->chroma_intra_quantizer_matrix;
 
 /* decode DC coefficients */
-	if(comp < 4)           
+	if(comp < 4)
 		val = (dc_dct_pred[0] += mpeg3video_getdclum(slice_buffer));
-	else 
-	if((comp & 1) == 0) 
+	else if((comp & 1) == 0)
 		val = (dc_dct_pred[1] += mpeg3video_getdcchrom(slice_buffer));
 	else                  
 		val = (dc_dct_pred[2] += mpeg3video_getdcchrom(slice_buffer));
 
-  	if(slice->fault) return 0;
+	if(slice->fault) return 0;
 	bp[0] = val << (3 - video->dc_prec);
 
-  	nc = 0;
+	nc = 0;
 
 /* decode AC coefficients */
-  	for(i = 1; ; i++)
+	for(i = 1; ; i++)
 	{
-    	code = mpeg3slice_showbits16(slice_buffer);
+		code = mpeg3slice_showbits16(slice_buffer);
 
-    	if(code >= 16384 && !video->intravlc)
+		if(code >= 16384 && !video->intravlc)
 			tab = &mpeg3_DCTtabnext[(code >> 12) - 4];
-    	else 
-		if(code >= 1024)
+		else if(code >= 1024)
 		{
-    		if(video->intravlc) 
+			if(video->intravlc) 
 				tab = &mpeg3_DCTtab0a[(code >> 8) - 4];
-    		else 
+			else
 				tab = &mpeg3_DCTtab0[(code >> 8) - 4];
-    	}
-    	else 
-		if(code >= 512)
+		}
+		else if(code >= 512)
 		{
-    		if(video->intravlc)     
-		  	  	tab = &mpeg3_DCTtab1a[(code >> 6) - 8];
-    		else              
+			if(video->intravlc)
+				tab = &mpeg3_DCTtab1a[(code >> 6) - 8];
+			else
 				tab = &mpeg3_DCTtab1[(code >> 6) - 8];
-    	}
-    	else 
-		if(code >= 256) tab = &mpeg3_DCTtab2[(code >> 4) - 16];
-    	else 
-		if(code >= 128) tab = &mpeg3_DCTtab3[(code >> 3) - 16];
-    	else 
-		if(code >= 64)  tab = &mpeg3_DCTtab4[(code >> 2) - 16];
-    	else 
-		if(code >= 32)  tab = &mpeg3_DCTtab5[(code >> 1) - 16];
-    	else 
-		if(code >= 16)  tab = &mpeg3_DCTtab6[code - 16];
-    	else 
+		}
+		else if(code >= 256)
+			tab = &mpeg3_DCTtab2[(code >> 4) - 16];
+		else if(code >= 128) 
+			tab = &mpeg3_DCTtab3[(code >> 3) - 16];
+		else if(code >= 64)
+			tab = &mpeg3_DCTtab4[(code >> 2) - 16];
+		else if(code >= 32)
+			tab = &mpeg3_DCTtab5[(code >> 1) - 16];
+		else if(code >= 16)
+			tab = &mpeg3_DCTtab6[code - 16];
+		else
 		{
-/*    		fprintf(stderr,"mpeg3video_getmpg2intrablock: invalid Huffman code\n"); */
-    		slice->fault = 1;
-    		return 1;
-    	}
+			slice->fault = 1;
+			return 1;
+		}
 
-    	mpeg3slice_flushbits(slice_buffer, tab->len);
+		mpeg3slice_flushbits(slice_buffer, tab->len);
 
 /* end_of_block */
-    	if(tab->run == 64)
-    	   	break; 
+		if(tab->run == 64)
+			break; 
 
-    	if(tab->run == 65)
+		if(tab->run == 65)
 		{
 /* escape */
-    	  	i += mpeg3slice_getbits(slice_buffer, 6);
+			i += mpeg3slice_getbits(slice_buffer, 6);
 
-    	  	val = mpeg3slice_getbits(slice_buffer, 12);
-    	  	if((val & 2047) == 0)
+			val = mpeg3slice_getbits(slice_buffer, 12);
+			if((val & 2047) == 0)
 			{
 // invalid signed_level (escape)
-        		slice->fault = 1;
-        		return 0;
-    	  	}
-    	  	if((sign = (val >= 2048)) != 0) val = 4096 - val;
-    	}
-    	else 
+				slice->fault = 1;
+				return 0;
+			}
+			if((sign = (val >= 2048)) != 0) val = 4096 - val;
+		}
+		else
 		{
-    		i += tab->run;
-    		val = tab->level;
-    		sign = mpeg3slice_getbit(slice_buffer);
-    	}
+			i += tab->run;
+			val = tab->level;
+			sign = mpeg3slice_getbit(slice_buffer);
+		}
 
-    	j = (video->altscan ? video->mpeg3_alternate_scan_table : video->mpeg3_zigzag_scan_table)[i];
+		j = (video->altscan ? video->mpeg3_alternate_scan_table : video->mpeg3_zigzag_scan_table)[i];
 
-   		val = (val * slice->quant_scale * qmat[j]) >> 4;
+		val = (val * slice->quant_scale * qmat[j]) >> 4;
 
-    	bp[j] = sign ? -val : val;
-    	nc++;
+		bp[j] = sign ? -val : val;
+		nc++;
 	}
 
 	if(j != 0)
 	{
 /* not a sparse matrix ! */
-    	 slice->sparse[comp] = 0;
+		slice->sparse[comp] = 0;
 	}
 	return 1;
 }
@@ -431,81 +422,82 @@ int mpeg3video_getmpg2interblock(mpeg3_slice_t *slice,
 	mpeg3_slice_buffer_t *slice_buffer = slice->slice_buffer;
 
 /* with data partitioning, data always goes to base layer */
-  	bp = slice->block[comp];
+	bp = slice->block[comp];
 
-  	qmat = (comp < 4 || video->chroma_format == CHROMA420)
-         ? video->non_intra_quantizer_matrix
-         : video->chroma_non_intra_quantizer_matrix;
+	qmat = (comp < 4 || video->chroma_format == CHROMA420)
+		? video->non_intra_quantizer_matrix
+		: video->chroma_non_intra_quantizer_matrix;
 
-  	nc = 0;
+	nc = 0;
 
 /* decode AC coefficients */
-  	for(i = 0; ; i++)
+	for(i = 0; ; i++)
 	{
-    	code = mpeg3slice_showbits16(slice_buffer);
-    	if(code >= 16384)
+		code = mpeg3slice_showbits16(slice_buffer);
+		if(code >= 16384)
 		{
-    	  if(i == 0) tab = &mpeg3_DCTtabfirst[(code >> 12) - 4];
-    	  else      tab = &mpeg3_DCTtabnext[(code >> 12) - 4];
-    	}
-    	else 
-		if(code >= 1024) tab = &mpeg3_DCTtab0[(code >> 8) - 4];
-    	else 
-		if(code >= 512)  tab = &mpeg3_DCTtab1[(code >> 6) - 8];
-    	else 
-		if(code >= 256)  tab = &mpeg3_DCTtab2[(code >> 4) - 16];
-    	else 
-		if(code >= 128)  tab = &mpeg3_DCTtab3[(code >> 3) - 16];
-    	else 
-		if(code >= 64)   tab = &mpeg3_DCTtab4[(code >> 2) - 16];
-    	else 
-		if(code >= 32)   tab = &mpeg3_DCTtab5[(code >> 1) - 16];
-    	else 
-		if(code >= 16)   tab = &mpeg3_DCTtab6[code - 16];
-    	else 
+			if(i == 0) 
+				tab = &mpeg3_DCTtabfirst[(code >> 12) - 4];
+			else
+				tab = &mpeg3_DCTtabnext[(code >> 12) - 4];
+		}
+		else if(code >= 1024) 
+			tab = &mpeg3_DCTtab0[(code >> 8) - 4];
+		else if(code >= 512)
+			tab = &mpeg3_DCTtab1[(code >> 6) - 8];
+		else if(code >= 256)
+			tab = &mpeg3_DCTtab2[(code >> 4) - 16];
+		else if(code >= 128)
+			tab = &mpeg3_DCTtab3[(code >> 3) - 16];
+		else if(code >= 64)
+			tab = &mpeg3_DCTtab4[(code >> 2) - 16];
+		else if(code >= 32)
+			tab = &mpeg3_DCTtab5[(code >> 1) - 16];
+		else if(code >= 16)
+			tab = &mpeg3_DCTtab6[code - 16];
+		else
 		{
 // invalid Huffman code
-    		slice->fault = 1;
-    		return 0;
-    	}
+			slice->fault = 1;
+			return 0;
+		}
 
-    	mpeg3slice_flushbits(slice_buffer, tab->len);
+		mpeg3slice_flushbits(slice_buffer, tab->len);
 
 /* end_of_block */
-    	if(tab->run == 64)
-       		break;          
+		if(tab->run == 64)
+			break;
 
-    	if(tab->run == 65)
-		{                 
-/* escape */
-    		i += mpeg3slice_getbits(slice_buffer, 6);
-    		val = mpeg3slice_getbits(slice_buffer, 12);
-    		if((val & 2047) == 0)
-			{
-/*        		fprintf(stderr, "mpeg3video_getmpg2interblock: invalid signed_level (escape)\n"); */
-        		slice->fault = 1;
-        		return 1;
-    		}
-    		if((sign = (val >= 2048)) != 0) val = 4096 - val;
-    	}
-    	else 
+		if(tab->run == 65)
 		{
-    		i += tab->run;
-    		val = tab->level;
-    		sign = mpeg3slice_getbit(slice_buffer);
-    	}
+/* escape */
+			i += mpeg3slice_getbits(slice_buffer, 6);
+			val = mpeg3slice_getbits(slice_buffer, 12);
+			if((val & 2047) == 0)
+			{
+				slice->fault = 1;
+				return 1;
+			}
+			if((sign = (val >= 2048)) != 0) val = 4096 - val;
+		}
+		else 
+		{
+			i += tab->run;
+			val = tab->level;
+			sign = mpeg3slice_getbit(slice_buffer);
+		}
 
-    	j = (video->altscan ? video->mpeg3_alternate_scan_table : video->mpeg3_zigzag_scan_table)[i];
+		j = (video->altscan ? video->mpeg3_alternate_scan_table : video->mpeg3_zigzag_scan_table)[i];
 
-   		val = (((val << 1)+1) * slice->quant_scale * qmat[j]) >> 5;
+		val = (((val << 1)+1) * slice->quant_scale * qmat[j]) >> 5;
 
-    	bp[j] = sign ? (-val) : val ;
-    	nc++;
+		bp[j] = sign ? (-val) : val ;
+		nc++;
 	}
 
 	if(j != 0) 
 	{
-      	slice->sparse[comp] = 0;
+		slice->sparse[comp] = 0;
 	}
 	return 0;
 }
@@ -565,8 +557,6 @@ int mpeg3video_get_macroblocks(mpeg3video_t *video, int framenum)
 		video->total_slice_buffers++;
 	}
 
-
-
 /* Run the slice decoders */
 	if(video->total_slice_buffers > 0)
 	{
@@ -578,8 +568,7 @@ int mpeg3video_get_macroblocks(mpeg3video_t *video, int framenum)
 				video->slice_decoders[i].buffer_step = 1;
 				video->slice_decoders[i].last_buffer = (video->total_slice_buffers - 1);
 			}
-			else
-			if(i == 1)
+			else if(i == 1)
 			{
 				video->slice_decoders[i].current_buffer = video->total_slice_buffers - 1;
 				video->slice_decoders[i].buffer_step = -1;
@@ -646,7 +635,7 @@ int mpeg3video_getpicture(mpeg3video_t *video, int framenum)
 	if(video->pict_struct == FRAME_PICTURE && video->secondfield)
 	{
 /* recover from illegal number of field pictures */
-    	video->secondfield = 0;
+		video->secondfield = 0;
 	}
 
 	if(!video->mpeg2)
@@ -656,30 +645,30 @@ int mpeg3video_getpicture(mpeg3video_t *video, int framenum)
 
 	mpeg3video_allocate_decoders(video, file->cpus);
 
-  	for(i = 0; i < 3; i++)
+	for(i = 0; i < 3; i++)
 	{
-    	if(video->pict_type == B_TYPE)
+		if(video->pict_type == B_TYPE)
 		{
 			video->newframe[i] = video->auxframe[i];
 		}
-    	else 
+		else
 		{
-    	  	if(!video->secondfield && !video->current_repeat)
+			if(!video->secondfield && !video->current_repeat)
 			{
 /* Swap refframes for I frames */
-        		unsigned char* tmp = video->oldrefframe[i];
-        		video->oldrefframe[i] = video->refframe[i];
-        		video->refframe[i] = tmp;
-    	  	}
+				unsigned char* tmp = video->oldrefframe[i];
+				video->oldrefframe[i] = video->refframe[i];
+				video->refframe[i] = tmp;
+			}
 
-    	 	video->newframe[i] = video->refframe[i];
-    	}
+			video->newframe[i] = video->refframe[i];
+		}
 
-    	if(video->pict_struct == BOTTOM_FIELD)
+		if(video->pict_struct == BOTTOM_FIELD)
 		{
 /* Only used if fields are in different pictures */
-    	    video->newframe[i] += (i == 0) ? 
-				video->coded_picture_width : 
+			video->newframe[i] += (i == 0) ?
+				video->coded_picture_width :
 				video->chrom_width;
 		}
 	}
@@ -693,7 +682,7 @@ int mpeg3video_getpicture(mpeg3video_t *video, int framenum)
 	if(!video->current_repeat)
 		if(!(video->skip_bframes && video->pict_type == B_TYPE) || 
 			(video->repeat_count >= 100 + 100 * video->skip_bframes))
-  			result = mpeg3video_get_macroblocks(video, framenum);
+			result = mpeg3video_get_macroblocks(video, framenum);
 
 /* Set the frame to display */
 	video->output_src[0] = 0;
@@ -701,22 +690,22 @@ int mpeg3video_getpicture(mpeg3video_t *video, int framenum)
 	video->output_src[2] = 0;
 	if(framenum > -1 && !result)
 	{
-    	if(video->pict_struct == FRAME_PICTURE || video->secondfield)
+		if(video->pict_struct == FRAME_PICTURE || video->secondfield)
 		{
-     	  	if(video->pict_type == B_TYPE)
+			if(video->pict_type == B_TYPE)
 			{
 				video->output_src[0] = video->auxframe[0];
 				video->output_src[1] = video->auxframe[1];
 				video->output_src[2] = video->auxframe[2];
 			}
-     	  	else
+			else
 			{
 				video->output_src[0] = video->oldrefframe[0];
 				video->output_src[1] = video->oldrefframe[1];
 				video->output_src[2] = video->oldrefframe[2];
 			}
-    	}
-    	else 
+		}
+		else 
 		{
 			mpeg3video_display_second_field(video);
 		}
@@ -727,7 +716,7 @@ int mpeg3video_getpicture(mpeg3video_t *video, int framenum)
 		video->current_repeat += 100;
 	}
 
-  	if(video->pict_struct != FRAME_PICTURE) 
+	if(video->pict_struct != FRAME_PICTURE) 
 		video->secondfield = !video->secondfield;
 	return result;
 }

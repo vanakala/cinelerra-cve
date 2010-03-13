@@ -54,25 +54,20 @@ int mpeg3audio_dopcm(mpeg3_pcm_t *audio,
 	int bytes_per_sample = audio->bits / 8 * audio->channels;
 	int output_size = (frame_size - PCM_HEADERSIZE) / bytes_per_sample;
 	int i, j;
-//printf("mpeg3audio_dopcm 2 %d\n", frame_size);
 
 	if(render)
 	{
 		for(i = 0; i < audio->channels; i++)
 		{
-//printf("mpeg3audio_dopcm 3\n");
 			float *output_channel = output[i];
-//printf("mpeg3audio_dopcm 4\n");
 			switch(audio->bits)
 			{
 				case 16:
 				{
-//printf("mpeg3audio_dopcm 5\n");
 					unsigned char *input = frame + 
 						PCM_HEADERSIZE + 
 						audio->bits / 8 * i;
 						int16_t sample;
-//printf("mpeg3audio_dopcm 6\n");
 					for(j = 0; j < output_size; j++)
 					{
 						sample = ((int16_t)(input[0])) << 8;
@@ -81,20 +76,11 @@ int mpeg3audio_dopcm(mpeg3_pcm_t *audio,
 						input += bytes_per_sample;
 						output_channel++;
 					}
-//printf("mpeg3audio_dopcm 7\n");
 				}
 					break;
 			}
 		}
 	}
-
-/*
- * printf("mpeg3audio_dopcm 2 %02x%02x%02x%02x\n", 
- * *(unsigned char*)(frame + PCM_HEADERSIZE + 0),
- * *(unsigned char*)(frame + PCM_HEADERSIZE + 1),
- * *(unsigned char*)(frame + PCM_HEADERSIZE + 2),
- * *(unsigned char*)(frame + PCM_HEADERSIZE + 3));
- */
 
 	return output_size;
 }

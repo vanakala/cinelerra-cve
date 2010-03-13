@@ -59,7 +59,6 @@ static inline int mpeg3audio_ac3_exp_unpack_ch(unsigned int type,
 	{
 		if(exps[i] > 124)
 		{
-//			fprintf(stderr, "mpeg3audio_ac3_exp_unpack_ch: Invalid exponent %d\n", exps[i]);
 			return 1;
 		}
 

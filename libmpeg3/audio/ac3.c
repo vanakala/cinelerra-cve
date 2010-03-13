@@ -42,26 +42,20 @@ int mpeg3_ac3_header(mpeg3_ac3_t *audio, unsigned char *header)
 	int result = 0;
 	audio->flags = 0;
 
-//printf("mpeg3_ac3_header %02x%02x%02x%02x%02x%02x%02x%02x\n", header[0], header[1], header[2], header[3], header[4], header[5], header[6], header[7]);
-	result = a52_syncinfo(header, 
+	result = a52_syncinfo(header,
 		&audio->flags,
-        &audio->samplerate, 
+		&audio->samplerate,
 		&audio->bitrate);
 
 
 	if(result)
 	{
-//printf("%d\n", result);
 		audio->framesize = result;
 		audio->channels = 0;
 
 		if(audio->flags & A52_LFE)
 			audio->channels++;
-/*
- * printf("mpeg3_ac3_header %08x %08x\n", 
- * audio->flags & A52_LFE, 
- * audio->flags & A52_CHANNEL_MASK);
- */
+
 		switch(audio->flags & A52_CHANNEL_MASK)
 		{
 			case A52_CHANNEL:
@@ -96,7 +90,6 @@ int mpeg3_ac3_header(mpeg3_ac3_t *audio, unsigned char *header)
 				break;
 		}
 	}
-//printf("mpeg3_ac3_header 1 %d\n", audio->channels);
 	return result;
 }
 
@@ -111,15 +104,14 @@ int mpeg3audio_doac3(mpeg3_ac3_t *audio,
 	sample_t level = 1;
 	int i, j, k, l;
 
-//printf("mpeg3audio_doac3 1\n");
 	a52_frame(audio->state, 
 		frame, 
 		&audio->flags,
-	   	&level, 
+		&level, 
 		0);
-//printf("mpeg3audio_doac3 2\n");
+
 	a52_dynrng(audio->state, NULL, NULL);
-//printf("mpeg3audio_doac3 3\n");
+
 	for(i = 0; i < 6; i++)
 	{
 		if(!a52_block(audio->state))
@@ -168,6 +160,4 @@ int mpeg3audio_doac3(mpeg3_ac3_t *audio,
 
 	return output_position;
 }
-
-
 

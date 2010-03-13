@@ -117,7 +117,7 @@ void mpeg3_append_subtitle(mpeg3_strack_t *strack, mpeg3_subtitle_t *subtitle)
 {
 	int new_total = strack->total_subtitles + 1;
 	int i;
-	
+
 /* check duplicate based on offset */
 	for(i = 0; i < strack->total_subtitles; i++)
 	{
@@ -132,7 +132,6 @@ void mpeg3_append_subtitle(mpeg3_strack_t *strack, mpeg3_subtitle_t *subtitle)
 		int new_allocated = MAX(new_total, strack->allocated_subtitles * 2);
 		mpeg3_subtitle_t **new_subtitles = malloc(sizeof(mpeg3_subtitle_t*) * new_allocated);
 
-
 		if(strack->subtitles)
 		{
 			memcpy(new_subtitles, 
@@ -140,7 +139,7 @@ void mpeg3_append_subtitle(mpeg3_strack_t *strack, mpeg3_subtitle_t *subtitle)
 				strack->total_subtitles * sizeof(mpeg3_subtitle_t*));
 			free(strack->subtitles);
 		}
-		
+
 		strack->subtitles = new_subtitles;
 		strack->allocated_subtitles = new_allocated;
 	}
@@ -204,5 +203,4 @@ void mpeg3_reset_subtitles(mpeg3_t *file)
 		mpeg3_pop_all_subtitles(file->strack[i]);
 	}
 }
-
 

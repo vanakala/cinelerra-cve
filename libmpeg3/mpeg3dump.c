@@ -93,12 +93,6 @@ int main(int argc, char *argv[])
 	}
 
 
-
-
-
-
-
-
 	if(file)
 	{
 
@@ -126,7 +120,6 @@ int main(int argc, char *argv[])
 		}
 
 
-
 // Video streams
 		printf("total_vstreams=%d\n", mpeg3_total_vstreams(file));
 
@@ -139,7 +132,7 @@ int main(int argc, char *argv[])
 				mpeg3_frame_rate(file, i),
 				mpeg3_video_frames(file, i),
 				mpeg3_colormodel(file, i) == MPEG3_YUV420P ? "420" : "422");
-			
+
 			if(print_offsets)
 			{
 				printf("total_frames = %d total_keyframes %d\n", file->vtrack[i]->total_frames, file->vtrack[i]->total_keyframes);
@@ -219,7 +212,6 @@ int main(int argc, char *argv[])
  			audio_output_f = malloc(BUFSIZE * sizeof(float));
 			audio_output_i = malloc(BUFSIZE * 3 * mpeg3_audio_channels(file, audio_track));
 
-//printf("%d\n", mpeg3_end_of_audio(file, audio_track));
 			while(!mpeg3_end_of_audio(file, audio_track) && !result)
 			{
 				test_32bit_overflow(outfile, &out_counter, &out);
@@ -227,7 +219,7 @@ int main(int argc, char *argv[])
 				for(i = 0; i < mpeg3_audio_channels(file, audio_track); i++)
 				{
 					if(i == 0)
-  						result = mpeg3_read_audio(file, 
+						result = mpeg3_read_audio(file, 
 							audio_output_f, 
 							0, 
 							i, 
@@ -254,39 +246,10 @@ int main(int argc, char *argv[])
 						*output_i++ = (sample & 0xff00) >> 8;
 						*output_i = sample & 0xff;
 					}
-						
 				}
-				
 				result = !fwrite(audio_output_i, BUFSIZE * 3 * mpeg3_audio_channels(file, audio_track), 1, out);
 			}
 		}
-
-/*
- * 		audio_output_i = malloc(BUFSIZE * 2 * mpeg3_audio_channels(file, 0));
- * 		mpeg3_seek_percentage(file, 0.1);
- * 		result = mpeg3_read_audio(file, 0, audio_output_i, 1, BUFSIZE, 0);
- */
-
-/*
- *   		output = malloc(mpeg3_video_width(file, 0) * mpeg3_video_height(file, 0) * 3 + 4);
- *   		output_rows = malloc(sizeof(unsigned char*) * mpeg3_video_height(file, 0));
- *   		for(i = 0; i < mpeg3_video_height(file, 0); i++)
- *   			output_rows[i] = &output[i * mpeg3_video_width(file, 0) * 3];
- * printf("dump 1\n");
- *  		mpeg3_seek_percentage(file, 0.375);
- *  		result = mpeg3_read_frame(file, 
- *  					output_rows, 
- *  					0, 
- *  					0, 
- *  					mpeg3_video_width(file, 0), 
- * 					mpeg3_video_height(file, 0), 
- *  					mpeg3_video_width(file, 0), 
- *  					mpeg3_video_height(file, 0), 
- * 					MPEG3_RGB888, 
- *  					0);
- * printf("dump 2\n");
- */
-
 		mpeg3_close(file);
 	}
 	return 0;

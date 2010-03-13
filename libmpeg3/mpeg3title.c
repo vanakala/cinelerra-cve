@@ -52,7 +52,7 @@ int mpeg3_copy_title(mpeg3_title_t *dst, mpeg3_title_t *src)
 int mpeg3_dump_title(mpeg3_title_t *title)
 {
 	int i;
-	
+
 	printf("mpeg3_dump_title path %s %llx-%llx cell_table_size %d\n", 
 		title->fs->path, 
 		title->start_byte,
@@ -98,8 +98,8 @@ static void extend_cell_table(mpeg3_title_t *title)
 	}
 }
 
-void mpeg3_new_cell(mpeg3_title_t *title, 
-		int64_t program_start, 
+void mpeg3_new_cell(mpeg3_title_t *title,
+		int64_t program_start,
 		int64_t program_end,
 		int64_t title_start,
 		int64_t title_end,
@@ -109,7 +109,7 @@ void mpeg3_new_cell(mpeg3_title_t *title,
 
 	extend_cell_table(title);
 	new_cell = &title->cell_table[title->cell_table_size];
-	
+
 	new_cell->program_start = program_start;
 	new_cell->program_end = program_end;
 	new_cell->title_start = title_start;

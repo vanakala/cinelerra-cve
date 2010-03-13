@@ -39,13 +39,6 @@ int64_t mpeg3io_get_total_bytes(mpeg3_fs_t *fs)
 	stat64(fs->path, &ostat);
 	fs->total_bytes = ostat.st_size;
 	return fs->total_bytes;
-	
-/*
- * 	fseek(fs->fd, 0, SEEK_END);
- * 	fs->total_bytes = ftell(fs->fd);
- * 	fseek(fs->fd, 0, SEEK_SET);
- * 	return fs->total_bytes;
- */
 }
 
 int64_t mpeg3io_path_total_bytes(char *path)
@@ -60,7 +53,6 @@ int mpeg3io_open_file(mpeg3_fs_t *fs)
 /* Need to perform authentication before reading a single byte. */
 	mpeg3_get_keys(fs->css, fs->path);
 
-//printf("mpeg3io_open_file 1 %s\n", fs->path);
 	if(!(fs->fd = fopen64(fs->path, "rb")))
 	{
 		if (fs->path) fprintf(stderr,"[mpeg3io_open_file] Error opening file '%s': ",fs->path);
@@ -91,12 +83,10 @@ int mpeg3io_close_file(mpeg3_fs_t *fs)
 int mpeg3io_read_data(unsigned char *buffer, int64_t bytes, mpeg3_fs_t *fs)
 {
 	int result = 0, i, fragment_size;
-//printf("mpeg3io_read_data 1 %d\n", bytes);
-	
+
 	for(i = 0; bytes > 0 && !result; )
 	{
 		result = mpeg3io_sync_buffer(fs);
-//printf("mpeg3io_read_data 2\n");
 
 		fragment_size = MPEG3_IO_SIZE;
 
@@ -111,23 +101,19 @@ int mpeg3io_read_data(unsigned char *buffer, int64_t bytes, mpeg3_fs_t *fs)
 		fs->current_byte += fragment_size;
 		i += fragment_size;
 		bytes -= fragment_size;
-//printf("mpeg3io_read_data 10 %d\n", bytes);
 	}
 
-//printf("mpeg3io_read_data 100 %d\n", bytes);
 	return (result && bytes);
 }
 
 int mpeg3io_seek(mpeg3_fs_t *fs, int64_t byte)
 {
-//printf("mpeg3io_seek 1 %lld\n", byte);
 	fs->current_byte = byte;
 	return (fs->current_byte < 0) || (fs->current_byte > fs->total_bytes);
 }
 
 int mpeg3io_seek_relative(mpeg3_fs_t *fs, int64_t bytes)
 {
-//printf("mpeg3io_seek_relative 1 %lld\n", bytes);
 	fs->current_byte += bytes;
 	return (fs->current_byte < 0) || (fs->current_byte > fs->total_bytes);
 }
@@ -160,8 +146,6 @@ void mpeg3io_read_buffer(mpeg3_fs_t *fs)
 			memmove(fs->buffer + remainder_start, fs->buffer, remainder);
 		}
 
-
-
 		fseeko64(fs->fd, new_buffer_position, SEEK_SET);
 		if(fread(fs->buffer, 1, remainder_start, fs->fd) < 1)
 		{
@@ -180,27 +164,7 @@ void mpeg3io_read_buffer(mpeg3_fs_t *fs)
 		fs->buffer_offset = 0;
 
 		result = fseeko64(fs->fd, fs->buffer_position, SEEK_SET);
-//printf("mpeg3io_read_buffer 2 %llx %llx\n", fs->buffer_position, ftell(fs->fd));
 		fs->buffer_size = fread(fs->buffer, 1, MPEG3_IO_SIZE, fs->fd);
-
-
-
-/*
- * printf(__FUNCTION__ " 2 result=%d ftell=%llx buffer_position=%llx %02x%02x%02x%02x%02x%02x%02x%02x %02x%02x\n", 
- * result,
- * ftello64(fs->fd),
- * fs->buffer_position,
- * fs->buffer[0x0],
- * fs->buffer[0x1],
- * fs->buffer[0x2],
- * fs->buffer[0x3],
- * fs->buffer[0x4],
- * fs->buffer[0x5],
- * fs->buffer[0x6],
- * fs->buffer[0x7],
- * fs->buffer[0x12],
- * fs->buffer[0x13]);
- */
 	}
 }
 
@@ -219,7 +183,7 @@ void mpeg3io_complete_path(char *complete_path, char *path)
 int mpeg3io_device(char *path, char *device)
 {
 	struct stat64 file_st, device_st;
-    struct mntent *mnt;
+	struct mntent *mnt;
 	FILE *fp;
 
 	if(stat64(path, &file_st) < 0)
@@ -229,7 +193,7 @@ int mpeg3io_device(char *path, char *device)
 	}
 
 	fp = setmntent(MOUNTED, "r");
-    while(fp && (mnt = getmntent(fp)))
+	while(fp && (mnt = getmntent(fp)))
 	{
 		if(stat64(mnt->mnt_fsname, &device_st) < 0) continue;
 		if(device_st.st_rdev == file_st.st_dev)
@@ -272,5 +236,3 @@ void mpeg3io_joinpath(char *title_path, char *directory, char *new_filename)
 {
 	sprintf(title_path, "%s/%s", directory, new_filename);
 }
-
-

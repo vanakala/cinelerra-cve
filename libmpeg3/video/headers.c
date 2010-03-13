@@ -15,7 +15,6 @@ int mpeg3video_getseqhdr(mpeg3video_t *video)
 	int constrained_parameters_flag;
 	int load_intra_quantizer_matrix, load_non_intra_quantizer_matrix;
 
-//printf("mpeg3video_getseqhdr 1\n");
 	video->horizontal_size = mpeg3bits_getbits(video->vstream, 12);
 	video->vertical_size = mpeg3bits_getbits(video->vstream, 12);
 	aspect_ratio = mpeg3bits_getbits(video->vstream, 4);
@@ -26,38 +25,37 @@ int mpeg3video_getseqhdr(mpeg3video_t *video)
 	constrained_parameters_flag = mpeg3bits_getbit_noptr(video->vstream);
 	video->frame_rate = mpeg3_frame_rate_table[video->framerate_code];
 	video->aspect_ratio = mpeg3_aspect_ratio_table[aspect_ratio];
- 	load_intra_quantizer_matrix = mpeg3bits_getbit_noptr(video->vstream);
- 	if(load_intra_quantizer_matrix)
+	load_intra_quantizer_matrix = mpeg3bits_getbit_noptr(video->vstream);
+	if(load_intra_quantizer_matrix)
 	{
-    	for(i = 0; i < 64; i++)
-      		video->intra_quantizer_matrix[video->mpeg3_zigzag_scan_table[i]] = mpeg3bits_getbyte_noptr(video->vstream);
-  	}
-  	else 
+		for(i = 0; i < 64; i++)
+			video->intra_quantizer_matrix[video->mpeg3_zigzag_scan_table[i]] = mpeg3bits_getbyte_noptr(video->vstream);
+	}
+	else 
 	{
-    	for(i = 0; i < 64; i++)
-      		video->intra_quantizer_matrix[i] = mpeg3_default_intra_quantizer_matrix[i];
-  	}
+		for(i = 0; i < 64; i++)
+			video->intra_quantizer_matrix[i] = mpeg3_default_intra_quantizer_matrix[i];
+	}
 
 	load_non_intra_quantizer_matrix = mpeg3bits_getbit_noptr(video->vstream);
 	if(load_non_intra_quantizer_matrix)
 	{
-    	for(i = 0; i < 64; i++)
-      		video->non_intra_quantizer_matrix[video->mpeg3_zigzag_scan_table[i]] = mpeg3bits_getbyte_noptr(video->vstream);
-  	}
-  	else 
+		for(i = 0; i < 64; i++)
+			video->non_intra_quantizer_matrix[video->mpeg3_zigzag_scan_table[i]] = mpeg3bits_getbyte_noptr(video->vstream);
+	}
+	else 
 	{
-    	for(i = 0; i < 64; i++)
-      		video->non_intra_quantizer_matrix[i] = 16;
-  	}
+		for(i = 0; i < 64; i++)
+			video->non_intra_quantizer_matrix[i] = 16;
+	}
 
 /* copy luminance to chrominance matrices */
-  	for(i = 0; i < 64; i++)
+	for(i = 0; i < 64; i++)
 	{
-    	video->chroma_intra_quantizer_matrix[i] = video->intra_quantizer_matrix[i];
-   	 	video->chroma_non_intra_quantizer_matrix[i] = video->non_intra_quantizer_matrix[i];
-  	}
+		video->chroma_intra_quantizer_matrix[i] = video->intra_quantizer_matrix[i];
+		video->chroma_non_intra_quantizer_matrix[i] = video->non_intra_quantizer_matrix[i];
+	}
 
-//printf("mpeg3video_getseqhdr 100\n");
 	return 0;
 }
 
@@ -103,9 +101,9 @@ int mpeg3video_sequence_display_extension(mpeg3video_t *video)
 
 	if(colour_description)
 	{
-    	colour_primaries = mpeg3bits_getbyte_noptr(video->vstream);
-    	transfer_characteristics = mpeg3bits_getbyte_noptr(video->vstream);
-    	video->matrix_coefficients = mpeg3bits_getbyte_noptr(video->vstream);
+		colour_primaries = mpeg3bits_getbyte_noptr(video->vstream);
+		transfer_characteristics = mpeg3bits_getbyte_noptr(video->vstream);
+		video->matrix_coefficients = mpeg3bits_getbyte_noptr(video->vstream);
 	}
 
 	display_horizontal_size = mpeg3bits_getbits(video->vstream, 14);
@@ -127,34 +125,34 @@ int mpeg3video_quant_matrix_extension(mpeg3video_t *video)
 
 	if((load_intra_quantiser_matrix = mpeg3bits_getbit_noptr(video->vstream)) != 0)
 	{
-      	for(i = 0; i < 64; i++)
+		for(i = 0; i < 64; i++)
 		{
-    		video->chroma_intra_quantizer_matrix[video->mpeg3_zigzag_scan_table[i]]
-    			= video->intra_quantizer_matrix[video->mpeg3_zigzag_scan_table[i]]
-    			= mpeg3bits_getbyte_noptr(video->vstream);
-      	}
+			video->chroma_intra_quantizer_matrix[video->mpeg3_zigzag_scan_table[i]]
+				= video->intra_quantizer_matrix[video->mpeg3_zigzag_scan_table[i]]
+				= mpeg3bits_getbyte_noptr(video->vstream);
+		}
 	}
 
 	if((load_non_intra_quantiser_matrix = mpeg3bits_getbit_noptr(video->vstream)) != 0)
 	{
-    	for (i = 0; i < 64; i++)
+		for (i = 0; i < 64; i++)
 		{
-    		video->chroma_non_intra_quantizer_matrix[video->mpeg3_zigzag_scan_table[i]]
-    			= video->non_intra_quantizer_matrix[video->mpeg3_zigzag_scan_table[i]]
-    			= mpeg3bits_getbyte_noptr(video->vstream);
-    	}
+			video->chroma_non_intra_quantizer_matrix[video->mpeg3_zigzag_scan_table[i]]
+				= video->non_intra_quantizer_matrix[video->mpeg3_zigzag_scan_table[i]]
+				= mpeg3bits_getbyte_noptr(video->vstream);
+		}
 	}
 
 	if((load_chroma_intra_quantiser_matrix = mpeg3bits_getbit_noptr(video->vstream)) != 0)
 	{
-    	for(i = 0; i < 64; i++)
-    		video->chroma_intra_quantizer_matrix[video->mpeg3_zigzag_scan_table[i]] = mpeg3bits_getbyte_noptr(video->vstream);
+		for(i = 0; i < 64; i++)
+			video->chroma_intra_quantizer_matrix[video->mpeg3_zigzag_scan_table[i]] = mpeg3bits_getbyte_noptr(video->vstream);
 	}
 
 	if((load_chroma_non_intra_quantiser_matrix = mpeg3bits_getbit_noptr(video->vstream)) != 0)
 	{
-      	for(i = 0; i < 64; i++)
-    		video->chroma_non_intra_quantizer_matrix[video->mpeg3_zigzag_scan_table[i]] = mpeg3bits_getbyte_noptr(video->vstream);
+		for(i = 0; i < 64; i++)
+			video->chroma_non_intra_quantizer_matrix[video->mpeg3_zigzag_scan_table[i]] = mpeg3bits_getbyte_noptr(video->vstream);
 	}
 	return 0;
 }
@@ -171,17 +169,17 @@ int mpeg3video_sequence_scalable_extension(mpeg3video_t *video)
 
 	if(video->scalable_mode == SC_SPAT)
 	{
-    	video->llw = mpeg3bits_getbits(video->vstream, 14); /* lower_layer_prediction_horizontal_size */
-    	mpeg3bits_getbit_noptr(video->vstream);
-    	video->llh = mpeg3bits_getbits(video->vstream, 14); /* lower_layer_prediction_vertical_size */
-    	video->hm = mpeg3bits_getbits(video->vstream, 5);
-    	video->hn = mpeg3bits_getbits(video->vstream, 5);
-    	video->vm = mpeg3bits_getbits(video->vstream, 5);
-    	video->vn = mpeg3bits_getbits(video->vstream, 5);
+		video->llw = mpeg3bits_getbits(video->vstream, 14); /* lower_layer_prediction_horizontal_size */
+		mpeg3bits_getbit_noptr(video->vstream);
+		video->llh = mpeg3bits_getbits(video->vstream, 14); /* lower_layer_prediction_vertical_size */
+		video->hm = mpeg3bits_getbits(video->vstream, 5);
+		video->hn = mpeg3bits_getbits(video->vstream, 5);
+		video->vm = mpeg3bits_getbits(video->vstream, 5);
+		video->vn = mpeg3bits_getbits(video->vstream, 5);
 	}
 
 	if(video->scalable_mode == SC_TEMP)
-      	fprintf(stderr, "mpeg3video_sequence_scalable_extension: temporal scalability not implemented\n");
+		fprintf(stderr, "mpeg3video_sequence_scalable_extension: temporal scalability not implemented\n");
 	return 0;
 }
 
@@ -194,22 +192,17 @@ int mpeg3video_picture_display_extension(mpeg3video_t *video)
 	short frame_centre_horizontal_offset[3];
 	short frame_centre_vertical_offset[3];
 
-
-
 	if(video->prog_seq || video->pict_struct != FRAME_PICTURE)
 		n = 1;
 	else 
 		n = video->repeatfirst ? 3 : 2;
 
-
-
-
 	for(i = 0; i < n; i++)
 	{
-    	frame_centre_horizontal_offset[i] = (short)mpeg3bits_getbits(video->vstream, 16);
-    	mpeg3bits_getbit_noptr(video->vstream);
-    	frame_centre_vertical_offset[i] = (short)mpeg3bits_getbits(video->vstream, 16);
-    	mpeg3bits_getbit_noptr(video->vstream);
+		frame_centre_horizontal_offset[i] = (short)mpeg3bits_getbits(video->vstream, 16);
+		mpeg3bits_getbit_noptr(video->vstream);
+		frame_centre_vertical_offset[i] = (short)mpeg3bits_getbits(video->vstream, 16);
+		mpeg3bits_getbit_noptr(video->vstream);
 	}
 	return 0;
 }
@@ -235,9 +228,7 @@ int mpeg3video_picture_coding_extension(mpeg3video_t *video)
 	video->intravlc = mpeg3bits_getbit_noptr(video->vstream);
 	video->altscan = mpeg3bits_getbit_noptr(video->vstream);
 
-
 	video->repeatfirst = mpeg3bits_getbit_noptr(video->vstream);
-
 
 	chroma_420_type = mpeg3bits_getbit_noptr(video->vstream);
 	video->prog_frame = mpeg3bits_getbit_noptr(video->vstream);
@@ -248,16 +239,6 @@ int mpeg3video_picture_coding_extension(mpeg3video_t *video)
 
 	video->current_repeat = 0;
 
-/*
- * printf("%d %d %d %d\n", 
- * video->prog_seq ? 1 : 0, 
- * video->prog_frame ? 1 : 0, 
- * video->topfirst ? 1 : 0, 
- * video->repeatfirst ? 1 : 0);
- */
-
-
-
 	if(video->repeatfirst)
 	{
 		if(video->prog_seq)
@@ -267,8 +248,7 @@ int mpeg3video_picture_coding_extension(mpeg3video_t *video)
 			else
 				video->repeat_count += 100;
 		}
-		else
-		if(video->prog_frame)
+		else if(video->prog_frame)
 		{
 			video->repeat_count += 50;
 		}
@@ -278,11 +258,11 @@ int mpeg3video_picture_coding_extension(mpeg3video_t *video)
 
 	if(composite_display_flag)
 	{
-    	v_axis = mpeg3bits_getbit_noptr(video->vstream);
-    	video->field_sequence = mpeg3bits_getbits(video->vstream, 3);
-    	sub_carrier = mpeg3bits_getbit_noptr(video->vstream);
-    	burst_amplitude = mpeg3bits_getbits(video->vstream, 7);
-    	sub_carrier_phase = mpeg3bits_getbyte_noptr(video->vstream);
+		v_axis = mpeg3bits_getbit_noptr(video->vstream);
+		video->field_sequence = mpeg3bits_getbits(video->vstream, 3);
+		sub_carrier = mpeg3bits_getbit_noptr(video->vstream);
+		burst_amplitude = mpeg3bits_getbits(video->vstream, 7);
+		sub_carrier_phase = mpeg3bits_getbyte_noptr(video->vstream);
 	}
 	return 0;
 }
@@ -316,7 +296,7 @@ int mpeg3video_picture_spatial_scalable_extension(mpeg3video_t *video)
 
 int mpeg3video_picture_temporal_scalable_extension(mpeg3video_t *video)
 {
-  	fprintf(stderr, "mpeg3video_picture_temporal_scalable_extension: temporal scalability not supported\n");
+	fprintf(stderr, "mpeg3video_picture_temporal_scalable_extension: temporal scalability not supported\n");
 	return 0;
 }
 
@@ -325,56 +305,49 @@ int mpeg3video_picture_temporal_scalable_extension(mpeg3video_t *video)
 
 int mpeg3video_ext_user_data(mpeg3video_t *video)
 {
-  	int code = mpeg3bits_next_startcode(video->vstream);
+	int code = mpeg3bits_next_startcode(video->vstream);
 
-
-  	while((code == MPEG3_EXT_START_CODE || code == MPEG3_USER_START_CODE) &&
+	while((code == MPEG3_EXT_START_CODE || code == MPEG3_USER_START_CODE) &&
 		!mpeg3bits_eof(video->vstream))
 	{
-    	mpeg3bits_refill(video->vstream);
-		
-    	if(code == MPEG3_EXT_START_CODE)
-		{
-      		int ext_id = mpeg3bits_getbits(video->vstream, 4);
-      		switch(ext_id)
-			{
-    			case SEQ_ID:
-					mpeg3video_sequence_extension(video);
-					break;
-    			case DISP_ID:
-					mpeg3video_sequence_display_extension(video);
-					break;
-    			case QUANT_ID:
-					mpeg3video_quant_matrix_extension(video);
-					break;
-    			case SEQSCAL_ID:
-					mpeg3video_sequence_scalable_extension(video);
-					break;
-    			case PANSCAN_ID:
-					mpeg3video_picture_display_extension(video);
-					break;
-    			case CODING_ID:
-					mpeg3video_picture_coding_extension(video);
-					break;
-    			case SPATSCAL_ID:
-					mpeg3video_picture_spatial_scalable_extension(video);
-					break;
-    			case TEMPSCAL_ID:
-					mpeg3video_picture_temporal_scalable_extension(video);
-					break;
-    			default:
-					fprintf(stderr,"mpeg3video_ext_user_data: reserved extension start code ID %d\n", ext_id);
-					break;
-      		}
-   		}
-   		code = mpeg3bits_next_startcode(video->vstream);
-  	}
+		mpeg3bits_refill(video->vstream);
 
-/*
- * printf("mpeg3video_ext_user_data prog_seq=%d prog_frame=%d\n", 
- * video->prog_seq, 
- * video->prog_frame);
- */
+		if(code == MPEG3_EXT_START_CODE)
+		{
+			int ext_id = mpeg3bits_getbits(video->vstream, 4);
+			switch(ext_id)
+			{
+			case SEQ_ID:
+				mpeg3video_sequence_extension(video);
+				break;
+			case DISP_ID:
+				mpeg3video_sequence_display_extension(video);
+				break;
+			case QUANT_ID:
+				mpeg3video_quant_matrix_extension(video);
+				break;
+			case SEQSCAL_ID:
+				mpeg3video_sequence_scalable_extension(video);
+				break;
+			case PANSCAN_ID:
+				mpeg3video_picture_display_extension(video);
+				break;
+			case CODING_ID:
+				mpeg3video_picture_coding_extension(video);
+				break;
+			case SPATSCAL_ID:
+				mpeg3video_picture_spatial_scalable_extension(video);
+				break;
+			case TEMPSCAL_ID:
+				mpeg3video_picture_temporal_scalable_extension(video);
+				break;
+			default:
+				fprintf(stderr,"mpeg3video_ext_user_data: reserved extension start code ID %d\n", ext_id);
+				break;
+			}
+		}
+		code = mpeg3bits_next_startcode(video->vstream);
+	}
 	return 0;
 }
 
@@ -385,7 +358,6 @@ int mpeg3video_getgophdr(mpeg3video_t *video)
 {
 	int drop_flag, closed_gop, broken_link;
 
-//printf("mpeg3video_getgophdr 1\n");
 	video->has_gops = 1;
 	drop_flag = mpeg3bits_getbit_noptr(video->vstream);
 	video->gop_timecode.hour = mpeg3bits_getbits(video->vstream, 5);
@@ -396,11 +368,6 @@ int mpeg3video_getgophdr(mpeg3video_t *video)
 	closed_gop = mpeg3bits_getbit_noptr(video->vstream);
 	broken_link = mpeg3bits_getbit_noptr(video->vstream);
 
-//printf("mpeg3video_getgophdr 100\n");
-/*
- * printf("%d:%d:%d:%d %d %d %d\n", video->gop_timecode.hour, video->gop_timecode.minute, video->gop_timecode.second, video->gop_timecode.frame, 
- *  	drop_flag, closed_gop, broken_link);
- */
 	return mpeg3bits_error(video->vstream);
 }
 
@@ -418,14 +385,14 @@ int mpeg3video_getpicturehdr(mpeg3video_t *video)
 
 	if(video->pict_type == P_TYPE || video->pict_type == B_TYPE)
 	{
-    	video->full_forw = mpeg3bits_getbit_noptr(video->vstream);
-    	video->forw_r_size = mpeg3bits_getbits(video->vstream, 3) - 1;
+		video->full_forw = mpeg3bits_getbit_noptr(video->vstream);
+		video->forw_r_size = mpeg3bits_getbits(video->vstream, 3) - 1;
 	}
 
 	if(video->pict_type == B_TYPE)
 	{
-    	video->full_back = mpeg3bits_getbit_noptr(video->vstream);
-    	video->back_r_size = mpeg3bits_getbits(video->vstream, 3) - 1;
+		video->full_back = mpeg3bits_getbit_noptr(video->vstream);
+		video->back_r_size = mpeg3bits_getbits(video->vstream, 3) - 1;
 	}
 
 /* get extra bit picture */
@@ -467,45 +434,42 @@ int mpeg3video_get_header(mpeg3video_t *video, int dont_repeat)
 	while(1)
 	{
 /* look for startcode */
-    	code = mpeg3bits_next_startcode(vstream);
-
+		code = mpeg3bits_next_startcode(vstream);
 
 		if(mpeg3bits_eof(vstream)) return 1;
 
-
 		if(code != MPEG3_SEQUENCE_END_CODE) mpeg3bits_refill(vstream);
 
-    	switch(code)
+		switch(code)
 		{
-    		case MPEG3_SEQUENCE_START_CODE:
-    			video->found_seqhdr = 1;
-    			mpeg3video_getseqhdr(video);  
-    			mpeg3video_ext_user_data(video);
-    			break;
+		case MPEG3_SEQUENCE_START_CODE:
+			video->found_seqhdr = 1;
+			mpeg3video_getseqhdr(video);  
+			mpeg3video_ext_user_data(video);
+			break;
 
-    		case MPEG3_GOP_START_CODE:
-    			mpeg3video_getgophdr(video);
-    			mpeg3video_ext_user_data(video);
-    			break;
+		case MPEG3_GOP_START_CODE:
+			mpeg3video_getgophdr(video);
+			mpeg3video_ext_user_data(video);
+			break;
 
-    		case MPEG3_PICTURE_START_CODE:
-    			mpeg3video_getpicturehdr(video);
-    			mpeg3video_ext_user_data(video);
-    			if(video->found_seqhdr) return 0;       /* Exit here */
-    			break;
+		case MPEG3_PICTURE_START_CODE:
+			mpeg3video_getpicturehdr(video);
+			mpeg3video_ext_user_data(video);
+			if(video->found_seqhdr) return 0;       /* Exit here */
+			break;
 
-    		case MPEG3_SEQUENCE_END_CODE:
+		case MPEG3_SEQUENCE_END_CODE:
 // Continue until the end
-				mpeg3bits_refill(vstream);
-				break;
+			mpeg3bits_refill(vstream);
+			break;
 
-    		default:
-    			break;
-    	}
- 	}
+		default:
+			break;
+		}
+	}
 
-
- 	return 1;      /* Shouldn't be reached. */
+	return 1;      /* Shouldn't be reached. */
 }
 
 int mpeg3video_ext_bit_info(mpeg3_slice_buffer_t *slice_buffer)
@@ -520,24 +484,22 @@ int mpeg3video_getslicehdr(mpeg3_slice_t *slice, mpeg3video_t *video)
 	int slice_vertical_position_extension, intra_slice;
 	int qs;
 
-  	slice_vertical_position_extension = (video->mpeg2 && video->vertical_size > 2800) ? 
+	slice_vertical_position_extension = (video->mpeg2 && video->vertical_size > 2800) ? 
 		mpeg3slice_getbits(slice->slice_buffer, 3) : 0;
 
-  	if(video->scalable_mode == SC_DP) slice->pri_brk = mpeg3slice_getbits(slice->slice_buffer, 7);
+	if(video->scalable_mode == SC_DP) slice->pri_brk = mpeg3slice_getbits(slice->slice_buffer, 7);
 
-  	qs = mpeg3slice_getbits(slice->slice_buffer, 5);
-  	slice->quant_scale = video->mpeg2 ? (video->qscale_type ? mpeg3_non_linear_mquant_table[qs] : (qs << 1)) : qs;
+	qs = mpeg3slice_getbits(slice->slice_buffer, 5);
+	slice->quant_scale = video->mpeg2 ? (video->qscale_type ? mpeg3_non_linear_mquant_table[qs] : (qs << 1)) : qs;
 
-  	if(mpeg3slice_getbit(slice->slice_buffer))
+	if(mpeg3slice_getbit(slice->slice_buffer))
 	{
-    	intra_slice = mpeg3slice_getbit(slice->slice_buffer);
-    	mpeg3slice_getbits(slice->slice_buffer, 7);
-    	mpeg3video_ext_bit_info(slice->slice_buffer);
-  	}
-  	else 
+		intra_slice = mpeg3slice_getbit(slice->slice_buffer);
+		mpeg3slice_getbits(slice->slice_buffer, 7);
+		mpeg3video_ext_bit_info(slice->slice_buffer);
+	}
+	else 
 		intra_slice = 0;
 
 	return slice_vertical_position_extension;
 }
-
-

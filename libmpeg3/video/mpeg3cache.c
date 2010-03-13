@@ -48,7 +48,6 @@ void mpeg3_cache_put_frame(mpeg3_cache_t *ptr,
 	mpeg3_cacheframe_t *frame = 0;
 	int i;
 
-//printf("mpeg3_put_frame 1\n");
 // Get existing frame
 	for(i = 0; i < ptr->total; i++)
 	{
@@ -65,18 +64,15 @@ void mpeg3_cache_put_frame(mpeg3_cache_t *ptr,
 		if(ptr->total >= ptr->allocation)
 		{
 			int new_allocation = ptr->allocation * 2;
-//printf("mpeg3_put_frame 10 %d\n", new_allocation);
 			if(!new_allocation) new_allocation = 32;
 			ptr->frames = realloc(ptr->frames, 
 				sizeof(mpeg3_cacheframe_t) * new_allocation);
 			bzero(ptr->frames + ptr->total,
 				sizeof(mpeg3_cacheframe_t) * (new_allocation - ptr->allocation));
-//printf("mpeg3_put_frame 20 %d %d %d\n", new_allocation, ptr->allocation, ptr->total);
 			ptr->allocation = new_allocation;
 		}
 
 		frame = &ptr->frames[ptr->total];
-//printf("mpeg3_put_frame 30 %d %p %p %p\n", ptr->total, frame->y, frame->u, frame->v);
 		ptr->total++;
 
 // Memcpy is a lot slower than just dropping the seeking frames.
@@ -92,8 +88,8 @@ void mpeg3_cache_put_frame(mpeg3_cache_t *ptr,
 		if(u)
 		{
 			if(frame->u_size != u_size){
-			    frame->u = realloc(frame->u, u_size);
-			    frame->u_size = u_size;
+				frame->u = realloc(frame->u, u_size);
+				frame->u_size = u_size;
 			}
 			memcpy(frame->u, u, u_size);
 		}
@@ -101,14 +97,13 @@ void mpeg3_cache_put_frame(mpeg3_cache_t *ptr,
 		if(v)
 		{
 			if(frame->v_size != v_size){
-			    frame->v = realloc(frame->v, v_size);
-			    frame->v_size = v_size;
+				frame->v = realloc(frame->v, v_size);
+				frame->v_size = v_size;
 			}
 			memcpy(frame->v, v, v_size);
 		}
 		frame->frame_number = frame_number;
 	}
-//printf("mpeg3_put_frame 100\n");
 }
 
 int mpeg3_cache_get_frame(mpeg3_cache_t *ptr,
@@ -162,6 +157,3 @@ int64_t mpeg3_cache_usage(mpeg3_cache_t *ptr)
 	}
 	return result;
 }
-
-
-

@@ -27,7 +27,6 @@
 #define MPEG3_ID3_PREFIX                 0x494433
 #define MPEG3_IFO_PREFIX                 0x44564456
 #define MPEG3_IO_SIZE                    0x100000     /* Bytes read by mpeg3io at a time */
-//#define MPEG3_IO_SIZE                    0x800          /* Bytes read by mpeg3io at a time */
 #define MPEG3_RIFF_CODE                  0x52494646
 #define MPEG3_PROC_CPUINFO               "/proc/cpuinfo"
 #define MPEG3_RAW_SIZE                   0x100000     /* Largest possible packet */
@@ -61,11 +60,11 @@
 /* or number of incomplete subtitles to buffer in demuxer. */
 #define MPEG3_MAX_SUBTITLES              5
 /* Positive difference before declaring timecodes discontinuous */
-#define MPEG3_CONTIGUOUS_THRESHOLD       10  
+#define MPEG3_CONTIGUOUS_THRESHOLD       10
 /* Minimum number of seconds before interleaving programs */
-#define MPEG3_PROGRAM_THRESHOLD          5   
+#define MPEG3_PROGRAM_THRESHOLD          5
 /* Number of frames difference before absolute seeking */
-#define MPEG3_SEEK_THRESHOLD             16  
+#define MPEG3_SEEK_THRESHOLD             16
 /* Size of chunk of audio in table of contents */
 #define MPEG3_AUDIO_CHUNKSIZE            0x10000 
 /* Minimum amount of data required to read an audio packet in streaming mode. */
@@ -127,10 +126,6 @@
 
 
 
-
-
-
-
 struct mpeg3_block 
 {
 	unsigned char b[5];
@@ -158,32 +153,12 @@ typedef struct
 } mpeg3_css_t;
 
 
-
-
-
-
-
-
-
-
 // I/O
-
-
-
-
-
-
-
-
-
-
 
 /* Filesystem structure */
 /* We buffer in MPEG3_IO_SIZE buffers.  Stream IO would require back */
 /* buffering a buffer since the stream must be rewound for packet headers, */
 /* sequence start codes, format parsing, decryption, and mpeg3cat. */
-
-
 
 typedef struct
 {
@@ -202,19 +177,7 @@ typedef struct
 
 
 
-
-
-
-
-
 // Table of contents
-
-
-
-
-
-
-
 
 // May get rid of time values and rename to a cell offset table.
 // May also get rid of end byte.
@@ -250,20 +213,8 @@ typedef struct
 
 
 
-
-
-
-
-
 /* Subtitle object. */
 /* Created by the demuxer to store subtitles. */
-
-
-
-
-
-
-
 typedef struct
 {
 /* Raw data of subtitle */
@@ -305,22 +256,7 @@ typedef struct
 } mpeg3_subtitle_t;
 
 
-
-
-
-
-
-
 // Demuxer
-
-
-
-
-
-
-
-
-
 
 typedef struct
 {
@@ -365,10 +301,6 @@ typedef struct
 	mpeg3_subtitle_t **subtitles;
 	int total_subtitles;
 
-
-
-
-
 /* What type of data to read. */
 	int do_audio;
 	int do_video;
@@ -390,7 +322,6 @@ typedef struct
 	int total_titles;
 /* Title currently being used */
 	int current_title;
-	
 
 /* Tables of every stream ID encountered */
 	int astream_table[MPEG3_MAX_STREAMS];  /* macro of audio format if audio  */
@@ -440,7 +371,7 @@ typedef struct
 	int vstream;
 /* Multiplexed streams have the audio type */
 /* Format of the audio derived from multiplexing codes */
-	int aformat;      
+	int aformat;
 	int program_association_tables;
 	int table_id;
 	int section_length;
@@ -454,22 +385,7 @@ typedef struct
 } mpeg3_demuxer_t;
 
 
-
-
-
-
-
-
 // Bitstream
-
-
-
-
-
-
-
-
-
 
 //                                    next bit in forward direction
 //                                  next bit in reverse direction |
@@ -491,21 +407,7 @@ typedef struct
 } mpeg3_bits_t;
 
 
-
-
-
-
-
-
-
-
 // Audio
-
-
-
-
-
-
 
 #define AC3_N 512
 
@@ -518,10 +420,10 @@ typedef struct
 #define MPEG3AUDIO_PADDING 1024
 
 /* Values for mode */
-#define MPG_MD_STEREO			0
+#define MPG_MD_STEREO		0
 #define MPG_MD_JOINT_STEREO 	1
 #define MPG_MD_DUAL_CHANNEL 	2
-#define MPG_MD_MONO 			3
+#define MPG_MD_MONO 		3
 
 
 #define MAX_AC3_FRAMESIZE 1920 * 2 + 512
@@ -541,15 +443,11 @@ extern int mpeg3_ac3_samplerates[3];
 #define DELTA_BIT_RESERVED (3)
 
 
-
-
-
 // Layered decoder
 
 typedef struct
 {
 	mpeg3_bits_t *stream;
-
 
 // Layer 3
 	unsigned char *bsbuf, *bsbufold;
@@ -588,14 +486,11 @@ typedef struct
 
 // Layer 2
 	int bitrate_index;
-    struct al_table *alloc;
-    int jsbound;
-    int II_sblimit;
+	struct al_table *alloc;
+	int jsbound;
+	int II_sblimit;
 	unsigned int layer2_scfsi_buf[64];
 } mpeg3_layer_t;
-
-
-
 
 
 // AC3 decoder
@@ -635,10 +530,6 @@ typedef struct
 
 
 
-
-
-
-
 /* IMDCT variables */
 typedef struct
 {
@@ -666,17 +557,17 @@ typedef struct
 	long outscale;
 /* Number of current frame being decoded */
 	int framenum;
-	
+
 /* Size of frame including header */
 	int framesize;
 /* Output from synthesizer in linear floats */
-	float **output;           
+	float **output;
 /* Number of pcm samples in the buffer */
-	int output_size;         
+	int output_size;
 /* Allocated number of samples in output */
-	int output_allocated;    
+	int output_allocated;
 /* Sample position in file of start of output buffer */
-	int output_position;     
+	int output_position;
 
 /* Perform a seek to the sample */
 	int sample_seek;
@@ -689,9 +580,6 @@ typedef struct
 /* Position in packet buffer of next byte to read */
 	int packet_position;
 } mpeg3audio_t;
-
-
-
 
 
 typedef struct
@@ -723,8 +611,6 @@ typedef struct
 /* If we got the header information yet.  Used in streaming mode. */
 	int got_header;
 
-
-
 /* Pointer to master table of contents when the TOC is read. */
 /* Pointer to private table when the TOC is being created */
 /* Stores the absolute byte of each audio chunk */
@@ -737,8 +623,6 @@ typedef struct
 	int64_t audio_eof;
 
 
-
-
 /* Starting byte of packet for making TOC */
 	int64_t pkt_offset;
 	int64_t toc_samples;
@@ -749,23 +633,7 @@ typedef struct
 
 
 
-
-
-
-
-
-
-
 // Video
-
-
-
-
-
-
-
-
-
 
 /* zig-zag scan */
 extern unsigned char mpeg3_zig_zag_scan_nommx[64];
@@ -826,13 +694,6 @@ extern unsigned char mpeg3_non_linear_mquant_table[32];
 
 #define MV_FIELD      0     /* mv_format */
 #define MV_FRAME      1
-
-
-
-
-
-
-
 
 
 
@@ -986,15 +847,6 @@ typedef struct
 } mpeg3video_t;
 
 
-
-
-
-
-
-
-
-
-
 typedef struct
 {
 	int width;
@@ -1011,7 +863,6 @@ typedef struct
 	int total_frames;     /* Total frames in the file */
 	unsigned int pid;
 
-
 /* Pointer to master table of contents when the TOC is read. */
 /* Pointer to private table when the TOC is being created */
 /* Keyframe number and offset */
@@ -1026,18 +877,11 @@ typedef struct
 /* End of stream in table of contents construction */
 	int64_t video_eof;
 
-
 	mpeg3_cache_t *frame_cache;
-
-
 
 /* If these tables must be deleted by the track */
 	int private_offsets;
 } mpeg3_vtrack_t;
-
-
-
-
 
 
 
@@ -1063,11 +907,6 @@ typedef struct
 
 
 
-
-
-
-
-
 // Whole thing
 typedef struct
 {
@@ -1076,7 +915,7 @@ typedef struct
 /* Nothing before this point */
 	int64_t	base_offset;
 /* Master title tables copied to all tracks */
-	mpeg3_demuxer_t *demuxer;        
+	mpeg3_demuxer_t *demuxer;
 
 /* Media specific */
 	int total_astreams;
@@ -1101,7 +940,6 @@ typedef struct
 /* Indexes for audio tracks */
 	mpeg3_index_t **indexes;
 	int total_indexes;
-
 
 /* Number of bytes to devote to the index of a single track in the index */
 /* building process. */
@@ -1152,7 +990,6 @@ typedef struct
 /* Used to compare DVD source file to table of contents source. */
 	int64_t source_date;
 } mpeg3_t;
-
 
 
 

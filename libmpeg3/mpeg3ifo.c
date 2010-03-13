@@ -72,9 +72,9 @@ static int ifo_read(int fd, long pos, long count, unsigned char *data)
 {
 	if((pos = lseek(fd, pos, SEEK_SET)) < 0)
 	{
-    	perror("ifo_read");
-    	return -1;
-    }
+		perror("ifo_read");
+		return -1;
+	}
 
 	return read(fd, data, count); 
 }
@@ -95,7 +95,7 @@ static int ifo_read(int fd, long pos, long count, unsigned char *data)
 
 static int ifo_vts(ifo_t *ifo)
 {
-    if(!strncmp((char*)ifo->data[ID_MAT], "DVDVIDEO-VTS", 12)) 
+	if(!strncmp((char*)ifo->data[ID_MAT], "DVDVIDEO-VTS", 12)) 
 		return 0;
 
 	return -1;
@@ -104,7 +104,7 @@ static int ifo_vts(ifo_t *ifo)
 
 static int ifo_vmg(ifo_t *ifo)
 {
-    if(!strncmp((char*)ifo->data[ID_MAT], "DVDVIDEO-VMG", 12))
+	if(!strncmp((char*)ifo->data[ID_MAT], "DVDVIDEO-VMG", 12))
 		return 0;
 
 	return -1;
@@ -188,16 +188,15 @@ static ifo_t* ifo_open(int fd, long pos)
 	if(!ifo_vts(ifo)) 
 	{
 		ifo_table(ifo, OFF_PTT, ID_PTT);
-    	ifo_table(ifo, OFF_TITLE_PGCI, ID_TITLE_PGCI);
+		ifo_table(ifo, OFF_TITLE_PGCI, ID_TITLE_PGCI);
 		ifo_table(ifo, OFF_MENU_PGCI, ID_MENU_PGCI);
 		ifo_table(ifo, OFF_TMT, ID_TMT);
 		ifo_table(ifo, OFF_MENU_CELL_ADDR, ID_MENU_CELL_ADDR);
 		ifo_table(ifo, OFF_MENU_VOBU_ADDR_MAP, ID_MENU_VOBU_ADDR_MAP);
-    	ifo_table(ifo, OFF_TITLE_CELL_ADDR, ID_TITLE_CELL_ADDR);
+		ifo_table(ifo, OFF_TITLE_CELL_ADDR, ID_TITLE_CELL_ADDR);
 		ifo_table(ifo, OFF_TITLE_VOBU_ADDR_MAP, ID_TITLE_VOBU_ADDR_MAP);
 	} 
-	else 
-	if(!ifo_vmg(ifo)) 
+	else if(!ifo_vmg(ifo)) 
 	{
 		ifo_table(ifo, OFF_VMG_TSP, ID_TSP);
 		ifo_table(ifo, OFF_VMG_MENU_PGCI, ID_MENU_PGCI);
@@ -267,7 +266,7 @@ static int program_map(mpeg3_t *file, char *pgc, unsigned char **ptr)
 	if (!pgc)
 		return -1;
 
-	*ptr += 2;	
+	*ptr += 2;
 	num = **ptr;
 
 	*ptr += 10;
@@ -373,8 +372,6 @@ static void get_ifo_playlist(mpeg3_t *file, mpeg3_demuxer_t *demuxer)
 						0,
 						title->end_byte,
 						0);
-	
-//printf("%s\n", title_path);
 				}
 			}
 		}
@@ -398,12 +395,7 @@ static void get_ifo_playlist(mpeg3_t *file, mpeg3_demuxer_t *demuxer)
 			}
 		}
 	}
-	
-	
 }
-
-
-
 
 // IFO parsing
 static void get_ifo_header(mpeg3_demuxer_t *demuxer, ifo_t *ifo)
@@ -438,27 +430,6 @@ static void get_ifo_header(mpeg3_demuxer_t *demuxer, ifo_t *ifo)
 		{
 			if(demuxer->astream_table[i]) atracks_empirical++;
 		}
-
-// Doesn't detect PCM audio or total number of tracks
-/*
- * 		if(atracks && !atracks_empirical)
- * 			for(i = 0; i < atracks; i++)
- * 			{
- * 				int audio_mode = AUDIO_AC3;
- * 				switch(audio->coding_mode)
- * 				{
- * 					case 0: audio_mode = AUDIO_AC3;  break;
- * 					case 1: audio_mode = AUDIO_MPEG; break;
- * 					case 2: audio_mode = AUDIO_MPEG; break;
- * 					case 3: audio_mode = AUDIO_PCM;  break;
- * 				}
- * 				if(!demuxer->astream_table[i + 0x80]) demuxer->astream_table[i + 0x80] = audio_mode;
- * 			}
- */
-	}
-	else
-	if(!ifo_vmg(ifo))
-	{
 	}
 }
 
@@ -497,7 +468,6 @@ static void cellplayinfo(mpeg3_t *file, ifo_t *ifo, mpeg3ifo_celltable_t *cells)
 	int program_chains = bswap_16(hdr->num);
 	long total_cells;
 
-//printf("cellplayinfo\n");
 	for(j = 0; j < program_chains; j++)
 	{
 // Cell header
@@ -548,8 +518,6 @@ static void cellplayinfo(mpeg3_t *file, ifo_t *ifo, mpeg3ifo_celltable_t *cells)
 					cell->start_byte = start_byte;
 					cell->end_byte = end_byte;
 					cell->cell_type = cell_type;
-//printf("cellplayinfo start: %llx end: %llx type: %x\n", 
-//	(int64_t)cell->start_byte * 0x800, (int64_t)cell->end_byte * 0x800, cell->cell_type);
 				}
 				cell_info += PGCI_CELL_ADDR_LEN;
 			}
@@ -565,7 +533,6 @@ static void celladdresses(ifo_t *ifo, mpeg3ifo_celltable_t *cell_addresses)
 	cell_addr_hdr_t *cell_addr_hdr = (cell_addr_hdr_t*)ptr;
 	ifo_cell_addr_t *cell_addr = (ifo_cell_addr_t*)(ptr + CADDR_HDR_LEN);
 	int done = 0;
-//printf("celladdresses\n");
 
 	if(total_addresses = bswap_32(cell_addr_hdr->len) / sizeof(ifo_cell_addr_t))
 	{
@@ -676,17 +643,8 @@ static void finaltable(mpeg3ifo_celltable_t *final_cells,
 		final_cells->cells[i].end_byte += 2048;
 	}
 
-return;
-// Debug
-	printf("finaltable\n");
-	for(i = 0; i < final_cells->total_cells; i++)
-	{
-		printf(" vob id: %x cell id: %x start: %llx end: %llx program: %x\n", 
-			final_cells->cells[i].vob_id, final_cells->cells[i].cell_id, (int64_t)final_cells->cells[i].start_byte, (int64_t)final_cells->cells[i].end_byte, final_cells->cells[i].program);
-	}
+	return;
 }
-
-
 
 
 /* Read the title information from an ifo */
@@ -699,7 +657,7 @@ int mpeg3_read_ifo(mpeg3_t *file,
 	int current_title = 0, current_cell = 0;
 	int i, j;
 	ifo_t *ifo;
-    int fd = mpeg3io_get_fd(file->fs);
+	int fd = mpeg3io_get_fd(file->fs);
 	int64_t title_start_byte = 0;
 	int result;
 
@@ -772,8 +730,6 @@ int mpeg3_read_ifo(mpeg3_t *file,
 // Clamp length to end of current title
 			if(cell_start + length - title_start_byte > title->total_bytes)
 				length = title->total_bytes - cell_start + title_start_byte;
-
-//printf("%llx %llx %llx %llx\n", cell_end, cell_start, title_start_byte, length);
 
 // Should never fail.  If it does it means the length of the cells and the
 // length of the titles don't match.  The title lengths must match or else

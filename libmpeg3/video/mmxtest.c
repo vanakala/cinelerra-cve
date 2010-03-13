@@ -26,18 +26,18 @@ int mpeg3_mmx_test()
 			char *needle;
 			needle = strstr(string, "mmx");
 			if(!needle)
-            {
-            	fclose(proc);
-            	return 0;
-            }
+			{
+				fclose(proc);
+				return 0;
+			}
 			if(!strncasecmp(needle, "mmx", 3))
-            {
-            	fclose(proc);
-            	return 1;
-            }
+			{
+				fclose(proc);
+				return 1;
+			}
 		}
 	}
-   	fclose(proc);
+	fclose(proc);
 #endif
 
 	return 0;

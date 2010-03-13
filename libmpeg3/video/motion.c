@@ -14,14 +14,13 @@ void mpeg3video_calc_mv(int *pred, int r_size, int motion_code, int motion_r, in
 
 	if(motion_code > 0)
 	{
-    	vec += ((motion_code - 1) << r_size) + motion_r + 1;
-    	if(vec >= lim) vec -= lim + lim;
+		vec += ((motion_code - 1) << r_size) + motion_r + 1;
+		if(vec >= lim) vec -= lim + lim;
 	}
-	else 
-	if(motion_code < 0)
+	else if(motion_code < 0)
 	{
-    	vec -= ((-motion_code - 1) << r_size) + motion_r + 1;
-    	if(vec < -lim) vec += lim + lim;
+		vec -= ((-motion_code - 1) << r_size) + motion_r + 1;
+		if(vec < -lim) vec += lim + lim;
 	}
 	*pred = full_pel_vector ? (vec << 1) : vec;
 }
@@ -39,74 +38,73 @@ void mpeg3video_calc_dmv(mpeg3video_t *video,
 {
 	if(video->pict_struct == FRAME_PICTURE)
 	{
-    	if(video->topfirst)
+		if(video->topfirst)
 		{
 /* vector for prediction of top field from bottom field */
-    		DMV[0][0] = ((mvx  + (mvx>0)) >> 1) + dmvector[0];
-    		DMV[0][1] = ((mvy  + (mvy>0)) >> 1) + dmvector[1] - 1;
+			DMV[0][0] = ((mvx  + (mvx>0)) >> 1) + dmvector[0];
+			DMV[0][1] = ((mvy  + (mvy>0)) >> 1) + dmvector[1] - 1;
 
 /* vector for prediction of bottom field from top field */
-    		DMV[1][0] = ((3 * mvx + (mvx > 0)) >> 1) + dmvector[0];
-    		DMV[1][1] = ((3 * mvy + (mvy > 0)) >> 1) + dmvector[1] + 1;
-    	}
-    	else 
+			DMV[1][0] = ((3 * mvx + (mvx > 0)) >> 1) + dmvector[0];
+			DMV[1][1] = ((3 * mvy + (mvy > 0)) >> 1) + dmvector[1] + 1;
+		}
+		else
 		{
 /* vector for prediction of top field from bottom field */
-    		DMV[0][0] = ((3 * mvx + (mvx>0)) >> 1) + dmvector[0];
-    		DMV[0][1] = ((3 * mvy + (mvy>0)) >> 1) + dmvector[1] - 1;
+			DMV[0][0] = ((3 * mvx + (mvx>0)) >> 1) + dmvector[0];
+			DMV[0][1] = ((3 * mvy + (mvy>0)) >> 1) + dmvector[1] - 1;
 
 /* vector for prediction of bottom field from top field */
-    		DMV[1][0] = ((mvx + (mvx>0)) >> 1) + dmvector[0];
-    		DMV[1][1] = ((mvy + (mvy>0)) >> 1) + dmvector[1] + 1;
-    	}
+			DMV[1][0] = ((mvx + (mvx>0)) >> 1) + dmvector[0];
+			DMV[1][1] = ((mvy + (mvy>0)) >> 1) + dmvector[1] + 1;
+		}
 	}
-	else 
+	else
 	{
 /* vector for prediction from field of opposite 'parity' */
-    	DMV[0][0] = ((mvx + (mvx > 0)) >> 1) + dmvector[0];
-    	DMV[0][1] = ((mvy + (mvy > 0)) >> 1) + dmvector[1];
+		DMV[0][0] = ((mvx + (mvx > 0)) >> 1) + dmvector[0];
+		DMV[0][1] = ((mvy + (mvy > 0)) >> 1) + dmvector[1];
 
 /* correct for vertical field shift */
-    	if(video->pict_struct == TOP_FIELD)
+		if(video->pict_struct == TOP_FIELD)
 			DMV[0][1]--;
-    	else 
+		else 
 			DMV[0][1]++;
 	}
 }
 
 int mpeg3video_get_mv(mpeg3_slice_t *slice)
 {
-  	int code;
+	int code;
 	mpeg3_slice_buffer_t *slice_buffer = slice->slice_buffer;
 
-  	if(mpeg3slice_getbit(slice_buffer))
+	if(mpeg3slice_getbit(slice_buffer))
 	{
-    	return 0;
-  	}
+		return 0;
+	}
 
-  	if((code = mpeg3slice_showbits9(slice_buffer)) >= 64)
+	if((code = mpeg3slice_showbits9(slice_buffer)) >= 64)
 	{
-    	code >>= 6;
-    	mpeg3slice_flushbits(slice_buffer, mpeg3_MVtab0[code].len);
-    	return mpeg3slice_getbit(slice_buffer) ? -mpeg3_MVtab0[code].val : mpeg3_MVtab0[code].val;
-  	}
+		code >>= 6;
+		mpeg3slice_flushbits(slice_buffer, mpeg3_MVtab0[code].len);
+		return mpeg3slice_getbit(slice_buffer) ? -mpeg3_MVtab0[code].val : mpeg3_MVtab0[code].val;
+	}
 
-  	if(code >= 24)
+	if(code >= 24)
 	{
-    	code >>= 3;
-    	mpeg3slice_flushbits(slice_buffer, mpeg3_MVtab1[code].len);
-	    return mpeg3slice_getbit(slice_buffer) ? -mpeg3_MVtab1[code].val : mpeg3_MVtab1[code].val;
-  	}
+		code >>= 3;
+		mpeg3slice_flushbits(slice_buffer, mpeg3_MVtab1[code].len);
+		return mpeg3slice_getbit(slice_buffer) ? -mpeg3_MVtab1[code].val : mpeg3_MVtab1[code].val;
+	}
 
-  	if((code -= 12) < 0)
+	if((code -= 12) < 0)
 	{
-/*    	fprintf(stdout,"mpeg3video_get_mv: invalid motion_vector code\n"); */
-    	slice->fault = 1;
-    	return 1;
-  	}
+		slice->fault = 1;
+		return 1;
+	}
 
-  	mpeg3slice_flushbits(slice_buffer, mpeg3_MVtab2[code].len);
- 	return mpeg3slice_getbit(slice_buffer) ? -mpeg3_MVtab2[code].val : mpeg3_MVtab2[code].val;
+	mpeg3slice_flushbits(slice_buffer, mpeg3_MVtab2[code].len);
+	return mpeg3slice_getbit(slice_buffer) ? -mpeg3_MVtab2[code].val : mpeg3_MVtab2[code].val;
 }
 
 /* get differential motion vector (for dual prime prediction) */
@@ -114,14 +112,14 @@ int mpeg3video_get_mv(mpeg3_slice_t *slice)
 int mpeg3video_get_dmv(mpeg3_slice_t *slice)
 {
 	mpeg3_slice_buffer_t *slice_buffer = slice->slice_buffer;
-  	if(mpeg3slice_getbit(slice_buffer))
+	if(mpeg3slice_getbit(slice_buffer))
 	{
-    	return mpeg3slice_getbit(slice_buffer) ? -1 : 1;
-  	}
-  	else 
+		return mpeg3slice_getbit(slice_buffer) ? -1 : 1;
+	}
+	else 
 	{
-    	return 0;
-  	}
+		return 0;
+	}
 }
 
 
@@ -145,18 +143,18 @@ void mpeg3video_motion_vector(mpeg3_slice_t *slice,
 	if(slice->fault) return;
 	motion_r = (h_r_size != 0 && motion_code != 0) ? mpeg3slice_getbits(slice_buffer, h_r_size) : 0;
 
-  	mpeg3video_calc_mv(&PMV[0], h_r_size, motion_code, motion_r, full_pel_vector);
+	mpeg3video_calc_mv(&PMV[0], h_r_size, motion_code, motion_r, full_pel_vector);
 
-  	if(dmv) dmvector[0] = mpeg3video_get_dmv(slice);
+	if(dmv) dmvector[0] = mpeg3video_get_dmv(slice);
 
-  	motion_code = mpeg3video_get_mv(slice);
-  	if(slice->fault)  return;
-  	motion_r = (v_r_size != 0 && motion_code != 0) ? mpeg3slice_getbits(slice_buffer, v_r_size) : 0;
+	motion_code = mpeg3video_get_mv(slice);
+	if(slice->fault)  return;
+	motion_r = (v_r_size != 0 && motion_code != 0) ? mpeg3slice_getbits(slice_buffer, v_r_size) : 0;
 
 /* DIV 2 */
-  	if(mvscale) PMV[1] >>= 1; 
+	if(mvscale) PMV[1] >>= 1; 
 
-  	mpeg3video_calc_mv(&PMV[1], v_r_size, motion_code, motion_r, full_pel_vector);
+	mpeg3video_calc_mv(&PMV[1], v_r_size, motion_code, motion_r, full_pel_vector);
 
 	if(mvscale) PMV[1] <<= 1;
 	if(dmv) dmvector[1] = mpeg3video_get_dmv(slice);
@@ -184,7 +182,7 @@ int mpeg3video_motion_vectors(mpeg3_slice_t *slice,
 			mv_field_sel[1][s] = mv_field_sel[0][s] = mpeg3slice_getbit(slice_buffer);
 		}
 
-    	mpeg3video_motion_vector(slice, 
+		mpeg3video_motion_vector(slice, 
 			video, 
 			PMV[0][s], 
 			dmvector, 
@@ -193,16 +191,16 @@ int mpeg3video_motion_vectors(mpeg3_slice_t *slice,
 			dmv, 
 			mvscale, 
 			0);
-    	if(slice->fault) return 1;
+		if(slice->fault) return 1;
 
 /* update other motion vector predictors */
-    	PMV[1][s][0] = PMV[0][s][0];
-    	PMV[1][s][1] = PMV[0][s][1];
-  	}
-  	else 
+		PMV[1][s][0] = PMV[0][s][0];
+		PMV[1][s][1] = PMV[0][s][1];
+	}
+	else 
 	{
-    	mv_field_sel[0][s] = mpeg3slice_getbit(slice_buffer);
-    	mpeg3video_motion_vector(slice, 
+		mv_field_sel[0][s] = mpeg3slice_getbit(slice_buffer);
+		mpeg3video_motion_vector(slice, 
 			video, 
 			PMV[0][s], 
 			dmvector, 
@@ -211,10 +209,10 @@ int mpeg3video_motion_vectors(mpeg3_slice_t *slice,
 			dmv, 
 			mvscale, 
 			0);
-    	if(slice->fault) return 1;
+		if(slice->fault) return 1;
 
-    	mv_field_sel[1][s] = mpeg3slice_getbit(slice_buffer);
-    	mpeg3video_motion_vector(slice, 
+		mv_field_sel[1][s] = mpeg3slice_getbit(slice_buffer);
+		mpeg3video_motion_vector(slice, 
 			video, 
 			PMV[1][s], 
 			dmvector, 
@@ -223,7 +221,7 @@ int mpeg3video_motion_vectors(mpeg3_slice_t *slice,
 			dmv, 
 			mvscale, 
 			0);
-    	if(slice->fault) return 1;
-  	}
+		if(slice->fault) return 1;
+	}
 	return 0;
 }
