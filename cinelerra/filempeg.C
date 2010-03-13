@@ -209,14 +209,17 @@ SET_TRACE
 			asset->audio_data = mpeg3_has_audio(fd);
 			if(asset->audio_data)
 			{
+				asset->astreams = mpeg3_total_astreams(fd);
 				asset->channels = 0;
-				for(int i = 0; i < mpeg3_total_astreams(fd); i++)
+				for(int i = 0; i < asset->astreams; i++)
 				{
+					asset->astream_channels[i] = mpeg3_audio_channels(fd, i);
 					asset->channels += mpeg3_audio_channels(fd, i);
 				}
 				if(!asset->sample_rate)
 					asset->sample_rate = mpeg3_sample_rate(fd, 0);
 				asset->audio_length = mpeg3_audio_samples(fd, 0); 
+				strncpy(asset->acodec, mpeg3_audio_format(fd, 0), sizeof(asset->acodec));
 			}
 
 			asset->video_data = mpeg3_has_video(fd);

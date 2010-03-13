@@ -200,6 +200,7 @@ int AssetEditWindow::create_objects()
 	else
 		vmargin = 20;
 
+	set_icon(mwindow->theme->get_image("awindow_icon"));
 	add_subwindow(path_text = new AssetEditPathText(this, y));
 	add_subwindow(path_button = new AssetEditPath(mwindow, 
 		this, 
@@ -263,13 +264,13 @@ int AssetEditWindow::create_objects()
 
 		y += 30;
 
-		if(asset->get_compression_text(1, 0))
+		if(asset->acodec[0])
 		{
-			add_subwindow(new BC_Title(x, y, _("Compression:")));
+			add_subwindow(new BC_Title(x, y, _("Codec:")));
 			x = x2;
 			add_subwindow(new BC_Title(x, 
 				y, 
-				asset->get_compression_text(1, 0), 
+				asset->acodec,
 				MEDIUMFONT, 
 				mwindow->theme->edit_font_color));
 			y += vmargin;
@@ -297,26 +298,42 @@ int AssetEditWindow::create_objects()
 		sprintf(string, "%d", asset->sample_rate);
 
 		x = x2;
-//		if(allow_edits)
-		if(1)
-		{
-			BC_TextBox *textbox;
-			add_subwindow(textbox = new AssetEditRate(this, string, x, y));
-			x += textbox->get_w();
-			add_subwindow(new SampleRatePulldown(mwindow, textbox, x, y));
-		}
-		else
-		{
-			add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
-		}
+		BC_TextBox *textbox;
+		add_subwindow(textbox = new AssetEditRate(this, string, x, y));
+		x += textbox->get_w();
+		add_subwindow(new SampleRatePulldown(mwindow, textbox, x, y));
 
 		y += 30;
 		x = x1;
-
-		add_subwindow(new BC_Title(x, y, _("Bits:")));
-		x = x2;
-		if(allow_edits)
+		if(asset->astreams)
 		{
+			add_subwindow(new BC_Title(x, y, _("Audio stream:")));
+			sprintf(string, "%3d (%d)",
+				asset->current_astream, 
+				asset->astream_channels[asset->current_astream]);
+			if(asset->astreams > 1)
+			{
+				int i;
+				AsseteditSelect *sel;
+				add_subwindow(sel = new AsseteditSelect(x2, y, string, &asset->current_astream));
+				for(i = 0; i < asset->astreams; i++){
+					sprintf(string, "%3d (%d)", i, asset->astream_channels[i]);
+					sel->add_item(new BC_MenuItem(string));
+				}
+				y += 30;
+			}
+			else
+			{
+				add_subwindow(new BC_Title(x2, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
+				y += 20;
+			}
+		}
+
+		x = x1;
+		if(allow_edits)  // pcm-file
+		{
+			add_subwindow(new BC_Title(x, y, _("Bits:")));
+			x = x2;
 			bitspopup = new BitsPopup(this, 
 				x, 
 				y, 
@@ -327,29 +344,23 @@ int AssetEditWindow::create_objects()
 				0,
 				1);
 			bitspopup->create_objects();
-		}
-		else
-			add_subwindow(new BC_Title(x, y, File::bitstostr(asset->bits), MEDIUMFONT, mwindow->theme->edit_font_color));
 
+			x = x1;
+			y += vmargin;
+			add_subwindow(new BC_Title(x, y, _("Header length:")));
+			sprintf(string, "%d", asset->header);
 
-		x = x1;
-		y += vmargin;
-		add_subwindow(new BC_Title(x, y, _("Header length:")));
-		sprintf(string, "%d", asset->header);
+			x = x2;
+			if(allow_edits)
+				add_subwindow(new AssetEditHeader(this, string, x, y));
+			else
+				add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
 
-		x = x2;
-		if(allow_edits)
-			add_subwindow(new AssetEditHeader(this, string, x, y));
-		else
-			add_subwindow(new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
+			y += vmargin;
+			x = x1;
 
-		y += vmargin;
-		x = x1;
+			add_subwindow(new BC_Title(x, y, _("Byte order:")));
 
-		add_subwindow(new BC_Title(x, y, _("Byte order:")));
-
-		if(allow_edits)
-		{
 			x = x2;
 
 			add_subwindow(lohi = new AssetEditByteOrderLOHI(this, 
@@ -362,33 +373,11 @@ int AssetEditWindow::create_objects()
 				x, 
 				y));
 			y += vmargin;
-		}
-		else
-		{
-			x = x2;
-			if(asset->byte_order)
-				add_subwindow(new BC_Title(x, y, _("Lo-Hi"), MEDIUMFONT, mwindow->theme->edit_font_color));
-			else
-				add_subwindow(new BC_Title(x, y, _("Hi-Lo"), MEDIUMFONT, mwindow->theme->edit_font_color));
-			y += vmargin;
-		}
 
-
-		x = x1;
-		if(allow_edits)
-		{
-//			add_subwindow(new BC_Title(x, y, _("Values are signed:")));
+			x = x1;
 			add_subwindow(new AssetEditSigned(this, asset->signed_, x, y));
+			y += 30;
 		}
-		else
-		{
-			if(!asset->signed_ && asset->bits == 8)
-				add_subwindow(new BC_Title(x, y, _("Values are unsigned")));
-			else
-				add_subwindow(new BC_Title(x, y, _("Values are signed")));
-		}
-
-		y += 30;
 	}
 
 	x = x1;
@@ -402,13 +391,13 @@ int AssetEditWindow::create_objects()
 
 		y += 30;
 		x = x1;
-		if(asset->get_compression_text(0,1))
+		if(asset->vcodec[0])
 		{
-			add_subwindow(new BC_Title(x, y, _("Compression:")));
+			add_subwindow(new BC_Title(x, y, _("Codec:")));
 			x = x2;
 			add_subwindow(new BC_Title(x, 
 				y, 
-				asset->get_compression_text(0,1), 
+				asset->vcodec,
 				MEDIUMFONT, 
 				mwindow->theme->edit_font_color));
 			y += vmargin;
@@ -451,9 +440,27 @@ int AssetEditWindow::create_objects()
 			x = x1;
 			add_subwindow(new BC_Title(x, y, _("Subtitle tracks:")));
 			x = x2;
-			sprintf(string, "%d", asset->subtitles);
-			add_subwindow(title = new BC_Title(x, y, string, MEDIUMFONT, mwindow->theme->edit_font_color));
-			y += title->get_h() + 5;
+			if(asset->subtitles > 0)
+			{
+				int i;
+				if(asset->active_subtitle >= 0)
+					sprintf(string, "%3d", asset->active_subtitle);
+				else
+					strcpy(string, "-none-");
+				AsseteditSelect *sel;
+				add_subwindow(sel = new AsseteditSelect(x, y, string, &asset->active_subtitle));
+				sel->add_item(new BC_MenuItem("-none-"));
+				for(i = 0; i < asset->subtitles; i++){
+					sprintf(string, "%3d", i);
+					sel->add_item(new BC_MenuItem(string));
+				}
+				y += 30;
+			}
+			else
+			{
+				add_subwindow(title = new BC_Title(x, y, "0", MEDIUMFONT, mwindow->theme->edit_font_color));
+				y += title->get_h() + 5;
+			}
 		}
 
 		// --------------------
@@ -878,7 +885,7 @@ int AssetEditFormat::handle_event()
 
 
 AssetEditReelName::AssetEditReelName(AssetEditWindow *fwindow, int x, int y)
- : BC_TextBox(x, y, 300, 1, fwindow->asset->reel_name)
+ : BC_TextBox(x, y, 200, 1, fwindow->asset->reel_name)
 {
 	this->fwindow = fwindow;
 }
@@ -935,4 +942,21 @@ int AssetEditTCStartTextBox::handle_event()
 	fwindow->asset->tcstart -= previous * multiplier;
 	fwindow->asset->tcstart += atoi(get_text()) * multiplier;
 	previous = atoi(get_text());
+}
+
+AsseteditSelect::AsseteditSelect(int x, int y, 
+	const char *text, int *output)
+ : BC_PopupMenu(x, y, 100, text)
+{
+	this->output = output;
+}
+
+int AsseteditSelect::handle_event()
+{
+	char *text = get_text();
+	if(*text == '-')
+		*output = -1;
+	else
+		*output = atol(get_text());
+	return 1;
 }

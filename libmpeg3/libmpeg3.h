@@ -69,7 +69,7 @@ int mpeg3_has_audio(mpeg3_t *file);
 int mpeg3_total_astreams(mpeg3_t *file);             /* Number of multiplexed audio streams */
 int mpeg3_audio_channels(mpeg3_t *file, int stream);
 int mpeg3_sample_rate(mpeg3_t *file, int stream);
-char* mpeg3_audio_format(mpeg3_t *file, int stream);
+const char* mpeg3_audio_format(mpeg3_t *file, int stream);
 
 /* Total length obtained from the timecode. */
 /* For DVD files, this is unreliable. */

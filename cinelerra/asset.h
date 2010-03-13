@@ -34,6 +34,10 @@
 
 #include <stdint.h>
 
+// Maximum number of audio streams
+#define MAX_ASTREAMS 64 
+// Maximum length of codecname (mostly fourcc)
+#define MAX_LEN_CODECNAME  64
 // Time code formats
 #define TC_DROPFRAME 0
 #define TC_NONDROPFRAME 1
@@ -63,8 +67,6 @@ public:
 	void copy_index(Asset *asset);
 	int64_t get_index_offset(int channel);
 	int64_t get_index_size(int channel);
-// Get an english description of the compression.  Used by AssetEdit
-	char* get_compression_text(int audio, int video);
 
 // Load and save parameters for a render dialog
 // Used by render, record, menueffects, preferences
@@ -146,8 +148,11 @@ public:
 	int signed_;
 	int header;
 	int dither;
+	int current_astream;
+	int astreams;
+	int astream_channels[MAX_ASTREAMS];
 // String or FourCC describing compression
-	char acodec[BCTEXTLEN];
+	char acodec[MAX_LEN_CODECNAME];
 
 
 	int64_t audio_length;
@@ -169,6 +174,7 @@ public:
 	double frame_rate;
 // number of mpeg2 subtitles
 	int subtitles;
+	int active_subtitle;
 
 // Timecode information. User setable, in case of errors in source
 	char reel_name[BCTEXTLEN];
@@ -179,7 +185,7 @@ public:
 
 	int width, height;
 // String or FourCC describing compression
-	char vcodec[BCTEXTLEN];
+	char vcodec[MAX_LEN_CODECNAME];
 
 // Length in units of asset
 	int64_t video_length;

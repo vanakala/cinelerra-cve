@@ -79,6 +79,9 @@ int Asset::init_values()
 // Has to be unknown for file probing to succeed
 	format = FILE_UNKNOWN;
 	channels = 0;
+	astreams = 0;
+	current_astream = 0;
+	memset(astream_channels, 0, sizeof(astream_channels));
 	sample_rate = 0;
 	bits = 0;
 	byte_order = 0;
@@ -89,6 +92,8 @@ int Asset::init_values()
 	video_data = 0;
 	audio_length = 0;
 	video_length = 0;
+	subtitles = 0;
+	active_subtitle = -1;
 
 	layers = 0;
 	frame_rate = 0;
@@ -229,6 +234,9 @@ void Asset::copy_format(Asset *asset, int do_index)
 	audio_data = asset->audio_data;
 	format = asset->format;
 	channels = asset->channels;
+	astreams = asset->astreams;
+	current_astream = asset->current_astream;
+	memcpy(astream_channels, asset->astream_channels, sizeof(astream_channels));
 	sample_rate = asset->sample_rate;
 	bits = asset->bits;
 	byte_order = asset->byte_order;
@@ -252,6 +260,7 @@ void Asset::copy_format(Asset *asset, int do_index)
 	strcpy(vcodec, asset->vcodec);
 	strcpy(acodec, asset->acodec);
 	subtitles = asset->subtitles;
+	active_subtitle = asset->active_subtitle;
  
 	this->audio_length = asset->audio_length;
 	this->video_length = asset->video_length;
@@ -352,39 +361,6 @@ int64_t Asset::get_index_size(int channel)
 		return 0;
 }
 
-
-char* Asset::get_compression_text(int audio, int video)
-{
-	if(audio)
-	{
-		switch(format)
-		{
-			case FILE_MOV:
-			case FILE_AVI:
-				if(acodec[0])
-					return quicktime_acodec_title(acodec);
-				else
-					return 0;
-				break;
-		}
-	}
-	else
-	if(video)
-	{
-		switch(format)
-		{
-			case FILE_MOV:
-			case FILE_AVI:
-				if(vcodec[0])
-					return quicktime_vcodec_title(vcodec);
-				else
-					return 0;
-				break;
-		}
-	}
-	return 0;
-}
-
 Asset& Asset::operator=(Asset &asset)
 {
 	copy_location(&asset);
@@ -409,6 +385,7 @@ int Asset::equivalent(Asset &asset,
 			signed_ == asset.signed_ && 
 			header == asset.header && 
 			dither == asset.dither &&
+			current_astream == asset.current_astream &&
 			!strcmp(acodec, asset.acodec));
 	}
 
@@ -422,6 +399,7 @@ int Asset::equivalent(Asset &asset,
 			interlace_fixmethod     == asset.interlace_fixmethod &&
 			width == asset.width &&
 			height == asset.height &&
+			active_subtitle == asset.active_subtitle &&
 			!strcmp(vcodec, asset.vcodec) &&
 			strcmp(reel_name, asset.reel_name) == 0 &&
 			reel_number == asset.reel_number &&
@@ -559,20 +537,6 @@ int Asset::read_audio(FileXML *file)
 	dither = file->tag.get_property("DITHER", 0);
 
 	audio_length = file->tag.get_property("AUDIO_LENGTH", 0);
-	acodec[0] = 0;
-	file->tag.get_property("ACODEC", acodec);
-	
-
-
-// 	ampeg_bitrate = file->tag.get_property("AMPEG_BITRATE", ampeg_bitrate);
-// 	ampeg_derivative = file->tag.get_property("AMPEG_DERIVATIVE", ampeg_derivative);
-// 
-// 	vorbis_vbr = file->tag.get_property("VORBIS_VBR", vorbis_vbr);
-// 	vorbis_min_bitrate = file->tag.get_property("VORBIS_MIN_BITRATE", vorbis_min_bitrate);
-// 	vorbis_bitrate = file->tag.get_property("VORBIS_BITRATE", vorbis_bitrate);
-// 	vorbis_max_bitrate = file->tag.get_property("VORBIS_MAX_BITRATE", vorbis_max_bitrate);
-// 
-// 	mp3_bitrate = file->tag.get_property("MP3_BITRATE", mp3_bitrate);
 
 	if(!video_data)
 	{
@@ -791,27 +755,7 @@ int Asset::write_audio(FileXML *file)
 	file->tag.set_property("SIGNED", signed_);
 	file->tag.set_property("HEADER", header);
 	file->tag.set_property("DITHER", dither);
-	if(acodec[0])
-		file->tag.set_property("ACODEC", acodec);
-	
 	file->tag.set_property("AUDIO_LENGTH", audio_length);
-
-
-
-// Rely on defaults operations for these.
-
-// 	file->tag.set_property("AMPEG_BITRATE", ampeg_bitrate);
-// 	file->tag.set_property("AMPEG_DERIVATIVE", ampeg_derivative);
-// 
-// 	file->tag.set_property("VORBIS_VBR", vorbis_vbr);
-// 	file->tag.set_property("VORBIS_MIN_BITRATE", vorbis_min_bitrate);
-// 	file->tag.set_property("VORBIS_BITRATE", vorbis_bitrate);
-// 	file->tag.set_property("VORBIS_MAX_BITRATE", vorbis_max_bitrate);
-// 
-// 	file->tag.set_property("MP3_BITRATE", mp3_bitrate);
-// 
-
-
 
 	file->append_tag();
 	if(audio_data)
@@ -1253,14 +1197,24 @@ int Asset::set_timecode(char *tc, int format, int end)
 
 int Asset::dump()
 {
+	int i;
+
 	printf("  asset::dump\n");
 	printf("   this=%p %s\n", this, path);
 	printf("   index_status %d\n", index_status);
 	printf("   file format %s, length %lld\n", File::formattostr(format), file_length);
 	printf("   audio_data %d channels %d samplerate %d bits %d byte_order %d\n",
 		audio_data, channels, sample_rate, bits, byte_order);
-	printf("      signed %d header %d dither %d acodec %c%c%c%c length %lld\n",
-		signed_, header, dither, acodec[0], acodec[1], acodec[2], acodec[3], audio_length);
+	printf("      no of streams: %d, current %d", astreams, current_astream);
+	if(astreams)
+	{
+		fputs(", channels", stdout);
+		for(i = 0; i < astreams; i++)
+			printf(" %d", astream_channels[i]);
+	}
+	putchar('\n');
+	printf("      signed %d header %d dither %d acodec %s length %lld\n",
+		signed_, header, dither, acodec, audio_length);
 
 	char string[BCTEXTLEN];
 	ilacemode_to_xmltext(string, interlace_mode);
@@ -1268,7 +1222,7 @@ int Asset::dump()
 	       video_data, layers, frame_rate, width, height);
 	printf("      vcodec %c%c%c%c aspect_ratio %f interlace_mode %s\n",
 	      vcodec[0], vcodec[1], vcodec[2], vcodec[3], aspect_ratio, string);
-	printf("      length %lld subtitles %d\n", video_length, subtitles);
+	printf("      length %lld subtitles %d (active %d)\n", video_length, subtitles, active_subtitle);
 	printf("   reel_name %s reel_number %i tcstart %lld tcend %lld tcf %d\n",
 		reel_name, reel_number, tcstart, tcend, tcformat);
 	

@@ -295,4 +295,12 @@ public:
 	int multiplier;
 	int previous;
 };
+
+class AsseteditSelect : public BC_PopupMenu
+{
+public:
+	AsseteditSelect(int x, int y, const char *text, int *output);
+	int handle_event();
+	int *output;
+};
 #endif

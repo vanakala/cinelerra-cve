@@ -573,7 +573,7 @@ long mpeg3_audio_samples(mpeg3_t *file,
 	return -1;
 }
 
-char* mpeg3_audio_format(mpeg3_t *file, int stream)
+const char* mpeg3_audio_format(mpeg3_t *file, int stream)
 {
 	if(stream < file->total_astreams)
 	{
