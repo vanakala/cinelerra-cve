@@ -199,6 +199,12 @@ int mpeg3_read_toc(mpeg3_t *file,
 				position += MPEG3_STRLEN;
 				file->source_date = read_int64(buffer, &position);
 				int64_t current_date = mpeg3_calculate_source_date(string2);
+				if(current_date == -1)
+				{
+					fprintf(stderr, "read_toc: media file unaccessible\n");
+					free(buffer);
+					return MPEG3_UNDEFINED_ERROR;
+				}
 
 				if(current_date != file->source_date)
 				{
@@ -1295,6 +1301,7 @@ int64_t mpeg3_calculate_source_date(char *path)
 {
 	struct stat64 ostat;
 	bzero(&ostat, sizeof(struct stat64));
-	stat64(path, &ostat);
+	if(stat64(path, &ostat) < 0)
+		return -1;
 	return ostat.st_mtime;
 }
