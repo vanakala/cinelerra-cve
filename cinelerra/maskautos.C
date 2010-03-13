@@ -123,13 +123,13 @@ Auto* MaskAutos::new_auto()
 void MaskAutos::dump()
 {
 	printf("	MaskAutos::dump %p\n", this);
-	printf("	Default: position %ld submasks %d\n", 
+	printf("	Default: position %lld submasks %d\n", 
 		default_auto->position, 
 		((MaskAuto*)default_auto)->masks.total);
 	((MaskAuto*)default_auto)->dump();
 	for(Auto* current = first; current; current = NEXT)
 	{
-		printf("	position %ld masks %d\n", 
+		printf("	position %lld masks %d\n", 
 			current->position, 
 			((MaskAuto*)current)->masks.total);
 		((MaskAuto*)current)->dump();

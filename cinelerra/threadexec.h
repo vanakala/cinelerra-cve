@@ -55,7 +55,7 @@ private:
 	int total_arguments;
 	FILE *stdin_fd;
 	Mutex *start_lock;
-	char *command_line;
+	const char *command_line;
 	int pipe_stdin;
 };
 

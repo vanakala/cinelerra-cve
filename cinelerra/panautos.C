@@ -78,11 +78,11 @@ void PanAutos::get_handle(int &handle_x,
 void PanAutos::dump()
 {
 	printf("	PanAutos::dump %p\n", this);
-		printf("	Default: position %ld\n", default_auto->position);
+		printf("	Default: position %lld\n", default_auto->position);
 		((PanAuto*)default_auto)->dump();
 	for(Auto* current = first; current; current = NEXT)
 	{
-		printf("	position %ld\n", current->position);
+		printf("	position %lld\n", current->position);
 		((PanAuto*)current)->dump();
 	}
 }

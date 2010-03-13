@@ -192,7 +192,7 @@ int ExportEDLAsset::export_it()
 
 				if (last_dissolve)
 				{
-					fprintf(fh, "%03d %8s %s %4s %03s", colnum, reel_name, avselect, edittype, cutinfo);
+					fprintf(fh, "%03d %8s %s %4s %3s", colnum, reel_name, avselect, edittype, cutinfo);
 					fprintf(fh, " %s %s", last_sourceout, last_sourceout);
 					fprintf(fh, " %s %s", destinpoint, destinpoint);
 					fprintf(fh,"\n");		
@@ -201,7 +201,7 @@ int ExportEDLAsset::export_it()
 					colnum --;
 				}
 				edittype[0] = 'D';
-				fprintf(fh, "%03d %8s %s %4s %03d", colnum, reel_name, avselect, edittype, edit->transition->length);
+				fprintf(fh, "%03d %8s %s %4s %03lld", colnum, reel_name, avselect, edittype, edit->transition->length);
 				fprintf(fh, " %s %s", sourceinpoint, sourceoutpoint);
 				fprintf(fh, " %s %s", destinpoint, destoutpoint);
 				fprintf(fh,"\n");

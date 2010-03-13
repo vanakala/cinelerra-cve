@@ -1434,7 +1434,7 @@ void RecordStatusThread::run()
 			if(gui->total_dropped_frames != new_dropped_frames)
 			{
 				gui->total_dropped_frames = new_dropped_frames;
-				sprintf(string, "%d\n", gui->total_dropped_frames);
+				sprintf(string, "%ld\n", gui->total_dropped_frames);
 				gui->lock_window("RecordStatusThread::run 1");
 				gui->frames_dropped->update(string);
 				gui->unlock_window();
@@ -1453,7 +1453,7 @@ void RecordStatusThread::run()
 			{
 				char string[1024];
 				gui->total_clipped_samples = new_clipped_samples;
-				sprintf(string, "%d\n", gui->total_clipped_samples);
+				sprintf(string, "%ld\n", gui->total_clipped_samples);
 				gui->lock_window("RecordStatusThread::run 2");
 				gui->samples_clipped->update(string);
 				gui->unlock_window();

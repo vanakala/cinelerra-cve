@@ -536,7 +536,7 @@ int Tracks::dump()
 {
 	for(Track* current = first; current; current = NEXT)
 	{
-		printf("  Track: %x\n", current);
+		printf("  Track: %p\n", current);
 		current->dump();
 		printf("\n");
 	}

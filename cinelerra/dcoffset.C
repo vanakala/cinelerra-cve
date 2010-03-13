@@ -85,7 +85,7 @@ void DC_Offset::run()
 	for(i = 0; i < input_channels; i++) output[i] = dc_offset[i];
 	for(i = 0; i < input_channels; i++)
 	{
-		sprintf(string, "%ld", dc_offset[i]);
+		sprintf(string, "%lld", dc_offset[i]);
 		dc_offset_text[i]->update(string);
 	}
 }

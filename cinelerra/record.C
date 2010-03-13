@@ -353,9 +353,9 @@ void Record::source_to_text(char *string, Batch *batch)
 		case CAPTURE_BUZ:
 		case VIDEO4LINUX2JPEG:
 			if(batch->channel < 0 || batch->channel >= channeldb->size())
-				sprintf(string, _("None"));
+				strcpy(string, _("None"));
 			else
-				sprintf(string, channeldb->get(batch->channel)->title);
+				strcpy(string, channeldb->get(batch->channel)->title);
 			break;
 	}
 }

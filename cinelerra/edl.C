@@ -964,7 +964,7 @@ int EDL::dump()
 	{
 		printf("audio_channels: %d "
 			"audio_tracks: %d \n"
-			"sample_rate: %d\n",
+			"sample_rate: %lld\n",
 			session->audio_channels,
 			session->audio_tracks,
 			session->sample_rate);

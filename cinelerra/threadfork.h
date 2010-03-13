@@ -50,7 +50,7 @@ private:
 	int total_arguments;
 	FILE *stdin_fd;
 	pthread_mutex_t start_lock;
-	char *command_line;
+	const char *command_line;
 	int pipe_stdin;
 };
 

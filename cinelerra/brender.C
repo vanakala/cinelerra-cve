@@ -278,7 +278,7 @@ int BRender::set_video_map(int64_t position, int value)
 	else
 // Obsolete EDL
 	{
-		printf(_("BRender::set_video_map %d: attempt to set beyond end of map %d.\n"),
+		printf(_("BRender::set_video_map %lld: attempt to set beyond end of map %lld.\n"),
 			position,
 			map_size);
 	}

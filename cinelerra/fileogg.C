@@ -1744,7 +1744,7 @@ int FileOGG::read_samples(double *buffer, int64_t len)
 	// now we can be sure our history is correct, just copy it out
 	if (next_sample_position < history_start || next_sample_position + len > history_start + history_size)
 	{
-		eprintf("History not aligned properly \n\tnext_sample_position: %lli, length: %i\n\thistory_start: %lli, length: %i\n", next_sample_position, len, history_start, history_size);
+		eprintf("History not aligned properly \n\tnext_sample_position: %lli, length: %lld\n\thistory_start: %lld, length: %lld\n", next_sample_position, len, history_start, history_size);
 		return 1;
 	}
 	float *input = pcm_history[file->current_channel] + next_sample_position - history_start;

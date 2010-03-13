@@ -863,7 +863,7 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 					}
 					else
 					{
-						eprintf("data_size=%d\n", data_size);
+						eprintf("data_size=%ld\n", data_size);
 					}
 				}
 				else

@@ -163,9 +163,9 @@ void quicktime_set_asf(quicktime_t *file, int value);
 int quicktime_make_streamable(char *in_path, char *out_path);
 
 /* Set various options in the file. */
-void quicktime_set_copyright(quicktime_t *file, char *string);
-void quicktime_set_name(quicktime_t *file, char *string);
-void quicktime_set_info(quicktime_t *file, char *string);
+void quicktime_set_copyright(quicktime_t *file, const char *string);
+void quicktime_set_name(quicktime_t *file, const char *string);
+void quicktime_set_info(quicktime_t *file, const char *string);
 char* quicktime_get_copyright(quicktime_t *file);
 char* quicktime_get_name(quicktime_t *file);
 char* quicktime_get_info(quicktime_t *file);

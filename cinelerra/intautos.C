@@ -134,9 +134,9 @@ void IntAutos::get_extents(float *min,
 
 void IntAutos::dump()
 {
-	printf("	Default %p: position: %ld value: %d\n", default_auto, default_auto->position, ((IntAuto*)default_auto)->value);
+	printf("	Default %p: position: %lld value: %d\n", default_auto, default_auto->position, ((IntAuto*)default_auto)->value);
 	for(Auto* current = first; current; current = NEXT)
 	{
-		printf("	%p position: %ld value: %d\n", current, current->position, ((IntAuto*)current)->value);
+		printf("	%p position: %lld value: %d\n", current, current->position, ((IntAuto*)current)->value);
 	}
 }

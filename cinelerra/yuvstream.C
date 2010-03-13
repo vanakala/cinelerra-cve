@@ -133,7 +133,7 @@ int YUVStream::read_frame_raw(uint8_t *data, long frame_size) {
 	}
 	result = y4m_read(stream_fd, data, frame_size);
 	if (result != Y4M_OK) {
-		printf("y4m_read(%d) failed: %s\n", 
+		printf("y4m_read(%ld) failed: %s\n", 
 		       frame_size, y4m_strerr(result));
 		return 1;
 	}
@@ -162,7 +162,7 @@ int YUVStream::write_frame_raw(uint8_t *data, long frame_size) {
 	}
 	result = y4m_write(stream_fd, data, frame_size);
 	if (result != Y4M_OK) {
-		eprintf("y4m_write(%d) failed: %s\n", 
+		eprintf("y4m_write(%ld) failed: %s\n", 
 		       frame_size, y4m_strerr(result));
 		return 1;
 	}
@@ -212,7 +212,7 @@ int YUVStream::seek_frame(int64_t frame_number) {
 	if (frame_number > frame_count ||
 	    frame_number < 0 ||
 	    frame_index == 0) {
-		eprintf("seek_frame(%d) failed (frame_count=%d)\n", 
+		eprintf("seek_frame(%lld) failed (frame_count=%lld)\n", 
 		       frame_number, frame_count);
 		return 1;
 	}
@@ -220,11 +220,11 @@ int YUVStream::seek_frame(int64_t frame_number) {
 	off_t position = frame_index->values[frame_number];
 	if (position == 0) {
 		// because of header, position should never be zero
-		eprintf("seek_frame(%d): position was zero\n", frame_number);
+		eprintf("seek_frame(%lld): position was zero\n", frame_number);
 	}
 
 	if (lseek(stream_fd, position, SEEK_SET) < 0) {
-		eprintf("lseek(%d) failed: %s\n", position, strerror(errno));
+		eprintf("lseek(%lld) failed: %s\n", position, strerror(errno));
 		return 1;
 	}
 

@@ -136,17 +136,17 @@ int quicktime_make_streamable(char *in_path, char *out_path)
 
 
 
-void quicktime_set_copyright(quicktime_t *file, char *string)
+void quicktime_set_copyright(quicktime_t *file, const char *string)
 {
 	quicktime_set_udta_string(&(file->moov.udta.copyright), &(file->moov.udta.copyright_len), string);
 }
 
-void quicktime_set_name(quicktime_t *file, char *string)
+void quicktime_set_name(quicktime_t *file, const char *string)
 {
 	quicktime_set_udta_string(&(file->moov.udta.name), &(file->moov.udta.name_len), string);
 }
 
-void quicktime_set_info(quicktime_t *file, char *string)
+void quicktime_set_info(quicktime_t *file, const char *string)
 {
 	quicktime_set_udta_string(&(file->moov.udta.info), &(file->moov.udta.info_len), string);
 }

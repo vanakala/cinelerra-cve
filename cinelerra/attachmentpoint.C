@@ -243,7 +243,7 @@ int AttachmentPoint::dump()
 {
 	if(this)
 	{
-		printf("    Attachmentpoint %x virtual_plugins=%d\n", this, new_virtual_plugins.total);
+		printf("    Attachmentpoint %p virtual_plugins=%d\n", this, new_virtual_plugins.total);
 		if(plugin_server) plugin_server->dump();
 	}
 	else

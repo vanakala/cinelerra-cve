@@ -310,7 +310,7 @@ int FFMPEG::convert_cmodel(AVPicture *picture_in, PixelFormat pix_fmt_in,
 	// NOTE: no scaling possible in img_convert() so none possible here
 	if (frame_out->get_w() != width_in ||
 	    frame_out->get_h() != height_in) {
-		printf("scaling from %sx%s to %sx%x not allowed\n",
+		printf("scaling from %dx%d to %dx%d not allowed\n",
 		       width_in, height_in, 
 		       frame_out->get_w(), frame_out->get_h());
 		return 1;
