@@ -544,7 +544,9 @@ static int seek(mpeg3audio_t *audio)
 /* Sample seek was requested */
 	if(audio->sample_seek >= 0)
 	{
-
+/* Use seek correction now */
+		if((audio->sample_seek += audio->seek_correction) < 0)
+			audio->sample_seek = 0;
 /* Don't do anything if the destination is inside the sample buffer */
 		if(audio->sample_seek >= audio->output_position &&
 			audio->sample_seek <= audio->output_position + audio->output_size)
@@ -843,7 +845,7 @@ int mpeg3audio_decode_audio(mpeg3audio_t *audio,
 	while(1)
 	{
 		if(audio->output_position + audio->output_size >= 
-			track->current_position + len ||
+			track->current_position + audio->seek_correction + len ||
 			mpeg3demux_eof(track->demuxer)) break;
 
 		if(!file->seekable && !file->toc_fd &&
@@ -867,11 +869,14 @@ int mpeg3audio_decode_audio(mpeg3audio_t *audio,
 
 	if(output_f)
 	{
-		for(i = 0, j = track->current_position - audio->output_position; 
+		for(i = 0, j = track->current_position - audio->output_position + audio->seek_correction; 
 			i < len && j < audio->output_size; 
 			i++, j++)
 		{
-			output_f[i] = audio->output[channel][j];
+			if(j < 0)
+				output_f[i] = 0;
+			else
+				output_f[i] = audio->output[channel][j];
 		}
 		for( ; i < len; i++)
 		{
@@ -882,15 +887,20 @@ int mpeg3audio_decode_audio(mpeg3audio_t *audio,
 	if(output_i)
 	{
 		int sample;
-		for(i = 0, j = track->current_position - audio->output_position; 
+		for(i = 0, j = track->current_position - audio->output_position + audio->seek_correction; 
 			i < len && j < audio->output_size; 
 			i++, j++)
 		{
-			sample = (int)(audio->output[channel][j] * 32767);
-			if(sample > 32767) sample = 32767;
-			else 
-			if(sample < -32768) sample = -32768;
-
+			if(j < 0)
+				sample = 0;
+			else
+			{
+				sample = (int)(audio->output[channel][j] * 32767);
+				if(sample > 32767) 
+					sample = 32767;
+				else if(sample < -32768) 
+					sample = -32768;
+			}
 			output_i[i] = sample;
 		}
 		for( ; i < len; i++)

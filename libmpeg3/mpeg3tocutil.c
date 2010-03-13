@@ -245,12 +245,14 @@ const int debug = 0;
 				file->audio_eof = calloc(sizeof(int64_t), *atracks_return);
 				file->total_samples = calloc(sizeof(int64_t), *atracks_return);
 				file->indexes = calloc(sizeof(mpeg3_index_t*), *atracks_return);
+				file->seek_corrections = calloc(sizeof(int *), *atracks_return);
 				file->total_indexes = *atracks_return;
 				for(i = 0; i < *atracks_return; i++)
 				{
 					file->audio_eof[i] = read_int64(buffer, &position);
 					file->channel_counts[i] = read_int32(buffer, &position);
 					file->total_sample_offsets[i] = read_int32(buffer, &position);
+					file->seek_corrections[i] = read_int32(buffer, &position);
 					file->total_samples[i] = read_int64(buffer, &position);
 
 					if(file->total_samples[i] < 1) file->total_samples[i] = 1;
@@ -573,6 +575,7 @@ mpeg3_t* mpeg3_start_toc(char *path, char *toc_path, int64_t *total_bytes)
 			}
 		}
 	}
+	return file;
 }
 
 
@@ -915,26 +918,26 @@ int mpeg3_do_toc(mpeg3_t *file, int64_t *bytes_processed)
 	int i, j, k;
 // Starting byte before our packet read
 	int64_t start_byte;
+	mpeg3_demuxer_t *demuxer = file->demuxer;
 
-	start_byte = mpeg3demux_tell_byte(file->demuxer);
+	start_byte = mpeg3demux_tell_byte(demuxer);
 
-	int result = mpeg3_read_next_packet(file->demuxer);
+	int result = mpeg3_read_next_packet(demuxer);
 
 // Determine program interleaving for current packet.
-	int program = mpeg3demux_tell_program(file->demuxer);
+	int program = mpeg3demux_tell_program(demuxer);
 
 
 // Only handle program 0
 	if(program == 0)
 	{
 // Find current PID in tracks.
-		int custom_id = file->demuxer->custom_id;
+		int custom_id = demuxer->custom_id;
 		int got_it = 0;
 
 
-
 // Got subtitle
-		if(file->demuxer->got_subtitle)
+		if(demuxer->got_subtitle)
 		{
 			handle_subtitle(file);
 		}
@@ -942,13 +945,14 @@ int mpeg3_do_toc(mpeg3_t *file, int64_t *bytes_processed)
 
 // In a transport stream the audio or video is determined by the PID.
 // In other streams the data type is determined by stream ID.
-		if(file->demuxer->got_audio || 
+		if(demuxer->got_audio || 
 			file->is_transport_stream ||
 			file->is_audio_stream)
 		{
+			mpeg3_atrack_t *atrack;
 			for(i = 0; i < file->total_astreams && !got_it; i++)
 			{
-				mpeg3_atrack_t *atrack = file->atrack[i];
+				atrack = file->atrack[i];
 				if(custom_id == atrack->pid)
 				{
 // Update an audio track
@@ -961,16 +965,15 @@ int mpeg3_do_toc(mpeg3_t *file, int64_t *bytes_processed)
 				}
 			}
 
-			if(!got_it && ((file->demuxer->got_audio &&
-				file->demuxer->astream_table[custom_id]) ||
+			if(!got_it && ((demuxer->got_audio &&
+				demuxer->astream_table[custom_id]) ||
 				file->is_audio_stream))
 			{
-				mpeg3_atrack_t *atrack = 
-					file->atrack[file->total_astreams] = 
+				atrack = file->atrack[file->total_astreams] = 
 						mpeg3_new_atrack(file, 
 							custom_id, 
-							file->demuxer->astream_table[custom_id], 
-							file->demuxer,
+							demuxer->astream_table[custom_id], 
+							demuxer,
 							file->total_astreams);
 
 				if(atrack)
@@ -990,11 +993,16 @@ int mpeg3_do_toc(mpeg3_t *file, int64_t *bytes_processed)
 					handle_audio(file, file->total_astreams - 1);
 				}
 			}
+// Calculate seek correction
+			if(atrack->audio->seek_correction == 0 
+					&& demuxer->pes_video_time)
+				atrack->audio->seek_correction = 
+					(int)((demuxer->pes_video_time - demuxer->pes_audio_time) * atrack->sample_rate);
 
 		}
 
 
-		if(file->demuxer->got_video || 
+		if(demuxer->got_video || 
 			file->is_transport_stream ||
 			file->is_video_stream)
 		{
@@ -1014,15 +1022,15 @@ int mpeg3_do_toc(mpeg3_t *file, int64_t *bytes_processed)
 
 
 
-			if(!got_it && ((file->demuxer->got_video &&
-				file->demuxer->vstream_table[custom_id]) ||
+			if(!got_it && ((demuxer->got_video &&
+				demuxer->vstream_table[custom_id]) ||
 				file->is_video_stream))
 			{
 				mpeg3_vtrack_t *vtrack = 
 					file->vtrack[file->total_vstreams] = 
 						mpeg3_new_vtrack(file, 
 							custom_id, 
-							file->demuxer, 
+							demuxer, 
 							file->total_vstreams);
 
 // Make the first offset correspond to the start of the first packet.
@@ -1040,7 +1048,7 @@ int mpeg3_do_toc(mpeg3_t *file, int64_t *bytes_processed)
 
 
 // Make user value independant of data type in packet
-	*bytes_processed = mpeg3demux_tell_byte(file->demuxer);
+	*bytes_processed = mpeg3demux_tell_byte(demuxer);
 //printf("mpeg3_do_toc 1000 %llx\n", *bytes_processed);
 }
 
@@ -1227,12 +1235,12 @@ void mpeg3_stop_toc(mpeg3_t *file)
 		PUT_INT64(atrack->audio_eof);
 		PUT_INT32(atrack->channels);
 		PUT_INT32(atrack->total_sample_offsets);
+		PUT_INT32(atrack->audio->seek_correction);
 // Total samples
 		PUT_INT64(atrack->current_position);
 // Sample offsets
 		for(i = 0; i < atrack->total_sample_offsets; i++)
 		{
-//printf("Audio sample %d offset %#llx\n", i, atrack->sample_offsets[i]);
 			PUT_INT64(atrack->sample_offsets[i].number);
 			PUT_INT64(atrack->sample_offsets[i].offset);
 		}

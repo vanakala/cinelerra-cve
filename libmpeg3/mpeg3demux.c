@@ -1077,26 +1077,8 @@ static int get_program_pes_packet(mpeg3_demuxer_t *demuxer, unsigned int header)
 				{
 					printf("pts=%d dts=%d\n", pts, dts);
 				}
-/*
- *         		pts = (mpeg3io_read_char(title->fs) >> 1) & 7;
- *         		pts <<= 15;
- *         		pts |= (mpeg3io_read_int16(title->fs) >> 1);
- *         		pts <<= 15;
- *         		pts |= (mpeg3io_read_int16(title->fs) >> 1);
- */
-
-/*
- *         		dts = (mpeg3io_read_char(title->fs) >> 1) & 7;
- *         		dts <<= 15;
- *         		dts |= (mpeg3io_read_int16(title->fs) >> 1);
- *         		dts <<= 15;
- *         		dts |= (mpeg3io_read_int16(title->fs) >> 1);
- */
         		pes_header_bytes += 10;
     		}
-
-//printf("get_program_pes_packet do_audio=%d do_video=%d pts=%x dts=%x\n", 
-//	demuxer->do_audio, demuxer->do_video, pts, dts);
 
 /* Skip unknown */
         	mpeg3io_seek_relative(title->fs, 
@@ -1204,7 +1186,7 @@ static int get_program_pes_packet(mpeg3_demuxer_t *demuxer, unsigned int header)
 			if(demuxer->vstream == -1) 
 				demuxer->vstream = demuxer->custom_id;
 
-			if(pts > 0) demuxer->pes_video_time = (double)pts / 60000;
+			if(pts > 0) demuxer->pes_video_time = (double)pts / 90000;
 
 
 

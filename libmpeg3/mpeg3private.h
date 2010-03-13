@@ -23,7 +23,7 @@
 
 #define MPEG3_TOC_PREFIX                 0x544f4320
 // This decreases with every new version
-#define MPEG3_TOC_VERSION                0x000011fa
+#define MPEG3_TOC_VERSION                0x000012fa
 #define MPEG3_ID3_PREFIX                 0x494433
 #define MPEG3_IFO_PREFIX                 0x44564456
 #define MPEG3_IO_SIZE                    0x100000     /* Bytes read by mpeg3io at a time */
@@ -1091,6 +1091,7 @@ typedef struct
 	int64_t *audio_eof;
 	int *total_sample_offsets;
 	int64_t *total_samples;
+	int *seek_corrections;
 	mpeg3tocitem_t **keyframes;
 	int *total_keyframes;
 	int *total_frames;	

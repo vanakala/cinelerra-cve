@@ -43,7 +43,8 @@ mpeg3_atrack_t* mpeg3_new_atrack(mpeg3_t *file,
 /* Failed */
 		mpeg3_delete_atrack(file, new_atrack);
 		new_atrack = 0;
-	}
+	} else if(file->seek_corrections)
+		new_atrack->audio->seek_correction = file->seek_corrections[number];
 
 	return new_atrack;
 }
