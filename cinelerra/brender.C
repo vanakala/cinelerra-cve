@@ -577,16 +577,6 @@ void BRenderThread::start()
 			command->edl->session->frame_rate);
 		if(end_frame < start_frame) end_frame = start_frame;
 
-
-printf("BRenderThread::start 1 map=%d equivalent=%d brender_start=%d result=%d end=%d\n", 
-last_contiguous, 
-last_good, 
-brender_start, 
-start_frame,
-end_frame);
-
-//sleep(1);
-
 		brender->allocate_map(brender_start, start_frame, end_frame);
 //sleep(1);
 //printf("BRenderThread::start 2\n");

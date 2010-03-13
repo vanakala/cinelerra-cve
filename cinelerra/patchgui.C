@@ -337,7 +337,7 @@ char* PatchGUI::calculate_nudge_text(int *changed)
 	}
 	else
 	{
-		sprintf(string_return, "%d", track->nudge);
+		sprintf(string_return, "%lld", track->nudge);
 		if(changed && nudge && atoi(nudge->get_text()) - atoi(string_return) != 0)
 			*changed = 1;
 	}

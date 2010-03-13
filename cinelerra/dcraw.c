@@ -99,7 +99,8 @@ float dcraw_matrix[9];
 
 FILE *ifp;
 short order;
-char *ifname, make[64], model[72], model2[64], *meta_data, cdesc[5];
+const char *ifname;
+char make[64], model[72], model2[64], *meta_data, cdesc[5];
 float flash_used, canon_ev, iso_speed, shutter, aperture, focal_len;
 time_t timestamp;
 unsigned shot_order, kodak_cbpp, filters;
@@ -1065,7 +1066,8 @@ int CLASS nikon_3700()
   uchar tail[952];
 
   fseek (ifp, -sizeof tail, SEEK_END);
-  fread (tail, 1, sizeof tail, ifp);
+  if(fread (tail, 1, sizeof tail, ifp) < 1)
+	return -1;
   for (i=0; i < sizeof tail; i++)
     sum[(i>>2) & 1] += tail[i];
   if (sum[1] > 4*sum[0]) return 2;
@@ -1081,7 +1083,8 @@ int CLASS minolta_z2()
   char tail[424];
 
   fseek (ifp, -sizeof tail, SEEK_END);
-  fread (tail, 1, sizeof tail, ifp);
+  if(fread (tail, 1, sizeof tail, ifp) < 1)
+	return -1;
   for (i=0; i < sizeof tail; i++)
     if (tail[i]) return 1;
   return 0;
@@ -1115,7 +1118,8 @@ void CLASS nikon_e2100_load_raw()
       fseek (ifp, ((width==1616) << 13) - (-ftell(ifp) & -2048), SEEK_SET);
       row = 1;
     }
-    fread (data, 1, width*3/2, ifp);
+    if(fread (data, 1, width*3/2, ifp) < 1)
+	return;
     for (dp=data, pix=pixel; pix < pixel+width; dp+=12, pix+=8) {
       pix[0] = (dp[2] >> 4) + (dp[ 3] << 4);
       pix[1] = (dp[2] << 8) +  dp[ 1];
@@ -1161,9 +1165,11 @@ void CLASS jpeg_thumb (FILE *tfp)
 {
   char *thumb = malloc (thumb_length);
   merror (thumb, "jpeg_thumb()");
-  fread  (thumb, 1, thumb_length, ifp);
-  thumb[0] = 0xff;
-  fwrite (thumb, 1, thumb_length, tfp);
+  if(fread  (thumb, 1, thumb_length, ifp)){
+    thumb[0] = 0xff;
+    if(fwrite (thumb, 1, thumb_length, tfp) < 1)
+	fprintf(stderr, "Error writing jpeg_thumb\n");
+  }
   free (thumb);
 }
 
@@ -1172,8 +1178,8 @@ void CLASS ppm_thumb (FILE *tfp)
   char *thumb = malloc (thumb_length);
   merror (thumb, "ppm_thumb()");
   fprintf (tfp, "P6\n%d %d\n255\n", thumb_width, thumb_height);
-  fread  (thumb, 1, thumb_length, ifp);
-  fwrite (thumb, 1, thumb_length, tfp);
+  if(fread  (thumb, 1, thumb_length, ifp))
+    fwrite (thumb, 1, thumb_length, tfp);
   free (thumb);
 }
 
@@ -1186,9 +1192,10 @@ void CLASS layer_thumb (FILE *tfp)
   merror (thumb, "layer_thumb()");
   fprintf (tfp, "P%d\n%d %d\n255\n",
 	5 + (thumb_misc >> 6), thumb_width, thumb_height);
-  fread (thumb, thumb_length, colors, ifp);
-  for (i=0; i < thumb_length; i++)
-    FORCC putc (thumb[i+thumb_length*c], tfp);
+  if(fread (thumb, thumb_length, colors, ifp)){
+    for (i=0; i < thumb_length; i++)
+      FORCC putc (thumb[i+thumb_length*c], tfp);
+  }
   free (thumb);
 }
 
@@ -1431,7 +1438,8 @@ void CLASS olympus_e300_load_raw()
   merror (data, "olympus_e300_load_raw()");
   pixel = (ushort *) (data + dwide);
   for (row=0; row < height; row++) {
-    fread (data, 1, dwide, ifp);
+    if(fread (data, 1, dwide, ifp) < 1)
+	break;
     for (dp=data, pix=pixel; pix < pixel+raw_width; dp+=3, pix+=2) {
       if (((dp-data) & 15) == 15) dp++;
       pix[0] = dp[1] << 8 | dp[0];
@@ -1467,7 +1475,8 @@ void CLASS minolta_rd175_load_raw()
   unsigned irow, box, row, col;
 
   for (irow=0; irow < 1481; irow++) {
-    fread (pixel, 1, 768, ifp);
+    if(fread (pixel, 1, 768, ifp) < 1)
+	break;
     box = irow / 82;
     row = irow % 82 * 12 + ((box < 12) ? box | 1 : (box-12)*2);
     switch (irow) {
@@ -1497,7 +1506,8 @@ void CLASS eight_bit_load_raw()
   pixel = calloc (raw_width, sizeof *pixel);
   merror (pixel, "eight_bit_load_raw()");
   for (row=0; row < height; row++) {
-    fread (pixel, 1, raw_width, ifp);
+    if(fread (pixel, 1, raw_width, ifp) < 1)
+	break;
     for (col=0; col < width; col++)
       BAYER(row,col) = pixel[col];
   }
@@ -1512,7 +1522,8 @@ void CLASS casio_qv5700_load_raw()
   int row, col;
 
   for (row=0; row < height; row++) {
-    fread (data, 1, 3232, ifp);
+    if(fread (data, 1, 3232, ifp) < 1)
+	break;
     for (dp=data, pix=pixel; dp < data+3220; dp+=5, pix+=4) {
       pix[0] = (dp[0] << 2) + (dp[1] >> 6);
       pix[1] = (dp[1] << 4) + (dp[2] >> 4);
@@ -1737,7 +1748,8 @@ void CLASS kodak_dc120_load_raw()
   int row, shift, col;
 
   for (row=0; row < height; row++) {
-    fread (pixel, 848, 1, ifp);
+    if(fread (pixel, 848, 1, ifp) < 1)
+	break;
     shift = row * mul[row & 3] + add[row & 3];
     for (col=0; col < width; col++)
       BAYER(row,col) = (ushort) pixel[(col + shift) % 848];
@@ -1755,7 +1767,8 @@ void CLASS kodak_easy_load_raw()
   pixel = calloc (raw_width, sizeof *pixel);
   merror (pixel, "kodak_easy_load_raw()");
   for (row=0; row < height; row++) {
-    fread (pixel, 1, raw_width, ifp);
+    if(fread (pixel, 1, raw_width, ifp) < 1)
+	break;
     for (col=0; col < raw_width; col++) {
       icol = col - left_margin;
       if (icol < width)
@@ -1914,7 +1927,8 @@ void CLASS sony_load_raw()
   order = 0x4d4d;
   key = get4();
   fseek (ifp, 164600, SEEK_SET);
-  fread (head, 1, 40, ifp);
+  if(fread (head, 1, 40, ifp) != 40)
+    return;
   sony_decrypt ((void *) head, 10, 1, key);
   for (i=26; i-- > 22; )
     key = key << 8 | head[i];
@@ -1922,7 +1936,8 @@ void CLASS sony_load_raw()
   pixel = calloc (raw_width, sizeof *pixel);
   merror (pixel, "sony_load_raw()");
   for (row=0; row < height; row++) {
-    fread (pixel, 2, raw_width, ifp);
+    if(fread (pixel, 2, raw_width, ifp) < 1)
+	break;
     sony_decrypt ((void *) pixel, raw_width/2, !row, key);
     for (col=9; col < left_margin; col++)
       black += ntohs(pixel[col]);
@@ -2123,7 +2138,8 @@ void CLASS foveon_thumb (FILE *tfp)
     buf = malloc (bwide);
     merror (buf, "foveon_thumb()");
     for (row=0; row < thumb_height; row++) {
-      fread  (buf, 1, bwide, ifp);
+      if(fread  (buf, 1, bwide, ifp) < 1)
+        break;
       fwrite (buf, 3, thumb_width, tfp);
     }
     free (buf);
@@ -2154,7 +2170,8 @@ void CLASS foveon_load_camf()
 
   fseek (ifp, meta_offset, SEEK_SET);
   key = get4();
-  fread (meta_data, 1, meta_length, ifp);
+  if(fread (meta_data, 1, meta_length, ifp) < 1)
+    return;
   for (i=0; i < meta_length; i++) {
     key = (key * 1597 + 51749) % 244944;
     val = key * (INT64) 301593171 >> 24;
@@ -3493,7 +3510,8 @@ void CLASS parse_makernote (int base)
    its own byte-order!), or it might just be a table.
  */
   sorder = order;
-  fread (buf, 1, 10, ifp);
+  if(fread (buf, 1, 10, ifp) < 1)
+    return;
   if (!strncmp (buf,"KC"  ,2) ||	/* these aren't TIFF format */
       !strncmp (buf,"KDK" ,3) ||
       !strncmp (buf,"MLY" ,3) ||
@@ -3587,7 +3605,8 @@ void CLASS parse_makernote (int base)
       }
       if (ver97 >> 8 == 2) {
 	if (ver97 != 0x205) fseek (ifp, 280, SEEK_CUR);
-	fread (buf97, 324, 1, ifp);
+	if(fread (buf97, 324, 1, ifp) < 1)
+	  return;
       }
     }
     if (tag == 0xa7 && ver97 >> 8 == 2) {
@@ -3671,8 +3690,10 @@ void CLASS get_timestamp (int reversed)
   str[19] = 0;
   if (reversed)
     for (i=19; i--; ) str[i] = fgetc(ifp);
-  else
-    fread (str, 19, 1, ifp);
+  else {
+    if(fread (str, 19, 1, ifp) < 1)
+      return;
+  }
   if (sscanf (str, "%d:%d:%d %d:%d:%d", &t.tm_year, &t.tm_mon,
 	&t.tm_mday, &t.tm_hour, &t.tm_min, &t.tm_sec) != 6)
     return;
@@ -3719,10 +3740,10 @@ void CLASS parse_mos (int offset)
 
   fseek (ifp, offset, SEEK_SET);
   while (1) {
-    fread (data, 1, 8, ifp);
+    if(fread (data, 1, 8, ifp) < 1) break;
     if (strcmp(data,"PKTS")) break;
     if (!make[0]) strcpy(make,"Leaf");
-    fread (data, 1, 40, ifp);
+    if(fread (data, 1, 40, ifp) < 1) break;
     skip = get4();
     from = ftell(ifp);
     if (!strcmp(data,"JPEG_preview_data")) {
@@ -3734,26 +3755,26 @@ void CLASS parse_mos (int offset)
       profile_length = skip;
     }
     if (!strcmp(data,"CaptProf_serial_number")) {
-      fread (data, 1, 40, ifp);
+      if(fread (data, 1, 40, ifp) < 1) break;
       for (i=0; i < sizeof mod / sizeof *mod; i++)
 	if (data[0] == mod[i][0] && data[1] == toupper(mod[i][1]))
 	  sprintf (model, "%s %d", mod[i], atoi(data+2));
     }
     if (!strcmp(data,"CaptProf_number_of_planes"))
-      fscanf (ifp, "%d", &planes);
+      if(fscanf (ifp, "%d", &planes) != 1) break;
     if (!strcmp(data,"CaptProf_raw_data_rotation"))
-      fscanf (ifp, "%d", &flip);
+      if(fscanf (ifp, "%d", &flip) != 1) break;
     if (!strcmp(data,"CaptProf_mosaic_pattern"))
       FORC4 {
-	fscanf (ifp, "%d", &i);
+	if(fscanf (ifp, "%d", &i) != 1) break;
 	if (i == 1) frot = c ^ (c >> 1);
       }
     if (!strcmp(data,"ImgProf_rotation_angle")) {
-      fscanf (ifp, "%d", &i);
+      if(fscanf (ifp, "%d", &i) != 1) break;
       flip = i - flip;
     }
     if (!strcmp(data,"NeutObj_neutrals")) {
-      FORC4 fscanf (ifp, "%d", neut+c);
+      FORC4 if(fscanf (ifp, "%d", neut+c) != 1) break;
       FORC3 cam_mul[c] = (float) neut[0] / neut[c+1];
     }
     parse_mos (from);
@@ -3815,10 +3836,10 @@ int CLASS parse_tiff_ifd (int base, int level)
 	tiff_ifd[ifd].phint = get2();
 	break;
       case 271:				/* Make */
-	fgets (make, 64, ifp);
+	if(fgets (make, 64, ifp) == NULL) return 1;
 	break;
       case 272:				/* Model */
-	fgets (model, 64, ifp);
+	if(fgets (model, 64, ifp) == NULL) return 1;
 	break;
       case 273:				/* StripOffset */
       case 513:
@@ -3845,7 +3866,7 @@ int CLASS parse_tiff_ifd (int base, int level)
 	tiff_ifd[ifd].bytes = get4();
 	break;
       case 305:				/* Software */
-	fgets (software, 64, ifp);
+	if(fgets (software, 64, ifp) == NULL) return 1;
 	if (!strncmp(software,"Adobe",5) ||
 	    !strncmp(software,"Bibble",6) ||
 	    !strcmp (software,"Digital Photo Professional"))
@@ -3876,12 +3897,12 @@ int CLASS parse_tiff_ifd (int base, int level)
 	FORC4 cam_mul[c ^ (c < 2)] = get2();
 	break;
       case 33405:			/* Model2 */
-	fgets (model2, 64, ifp);
+	if(fgets (model2, 64, ifp) == NULL) return 1;
 	break;
       case 33422:			/* CFAPattern */
       case 64777:			/* Kodak P-series */
 	if ((plen=len) > 16) plen = 16;
-	fread (cfa_pat, 1, plen, ifp);
+	if(fread (cfa_pat, 1, plen, ifp) < 1) return 1;
 	for (colors=cfa=i=0; i < plen; i++) {
 	  colors += !(cfa & (1 << cfa_pat[i]));
 	  cfa |= 1 << cfa_pat[i];
@@ -3934,7 +3955,7 @@ int CLASS parse_tiff_ifd (int base, int level)
       case 50454:			/* Sinar tag */
       case 50455:
 	if (!(cbuf = malloc(len))) break;
-	fread (cbuf, 1, len, ifp);
+	if(fread (cbuf, 1, len, ifp) < 1) return 1;
 	for (cp = cbuf-1; cp && cp < cbuf+len; cp = strchr(cp,'\n'))
 	  if (!strncmp (++cp,"Neutral ",8))
 	    sscanf (cp+8, "%f %f %f", cam_mul, cam_mul+1, cam_mul+2);
@@ -3946,7 +3967,7 @@ int CLASS parse_tiff_ifd (int base, int level)
       case 50710:			/* CFAPlaneColor */
 	if (len > 4) len = 4;
 	colors = len;
-	fread (cfa_pc, 1, colors, ifp);
+	if(fread (cfa_pc, 1, colors, ifp) < 1) return 1;
 guess_cfa_pc:
 	FORCC tab[cfa_pc[c]] = c;
 	cdesc[c] = 0;
@@ -4033,7 +4054,7 @@ guess_cfa_pc:
   }
   if (sony_length && (buf = malloc(sony_length))) {
     fseek (ifp, sony_offset, SEEK_SET);
-    fread (buf, sony_length, 1, ifp);
+    if(fread (buf, sony_length, 1, ifp) < 1) return 1;
     sony_decrypt (buf, sony_length/4, 1, sony_key);
     sfp = ifp;
     if ((ifp = tmpfile())) {
@@ -4189,7 +4210,8 @@ void CLASS parse_minolta()
  */
 void CLASS parse_external_jpeg()
 {
-  char *file, *ext, *jname, *jfile, *jext;
+  const char *file;
+  char *ext, *jname, *jfile, *jext;
   FILE *save=ifp;
 
   ext  = strrchr (ifname, '.');
@@ -4282,9 +4304,9 @@ void CLASS parse_ciff (int offset, int length)
     save = ftell(ifp);
     if (type == 0x080a) {		/* Get the camera make and model */
       fseek (ifp, aoff, SEEK_SET);
-      fread (make, 64, 1, ifp);
+      if(fread (make, 64, 1, ifp) < 1) return;
       fseek (ifp, aoff+strlen(make)+1, SEEK_SET);
-      fread (model, 64, 1, ifp);
+      if(fread (model, 64, 1, ifp) < 1) return;
     }
     if (type == 0x102a) {		/* Exposure info */
       fseek (ifp, aoff+4, SEEK_SET);
@@ -4389,7 +4411,7 @@ void CLASS parse_rollei()
 
   fseek (ifp, 0, SEEK_SET);
   do {
-    fgets (line, 128, ifp);
+    if(fgets (line, 128, ifp) == NULL) return;
     if ((val = strchr(line,'=')))
       *val++ = 0;
     else
@@ -4460,7 +4482,7 @@ void CLASS parse_phase_one (int base)
       case 0x21c:  strip_offset  = data+base;	break;
       case 0x301:
 	model[63] = 0;
-	fread (model, 1, 63, ifp);
+	if(fread (model, 1, 63, ifp) < 1) return;
 	if ((cp = strstr(model," camera"))) *cp = 0;
     }
     fseek (ifp, save, SEEK_SET);
@@ -4541,7 +4563,7 @@ void CLASS parse_riff()
   struct tm t;
 
   order = 0x4949;
-  fread (tag, 4, 1, ifp);
+  if(fread (tag, 4, 1, ifp) < 1) return;
   size = get4();
   if (!memcmp(tag,"RIFF",4) || !memcmp(tag,"LIST",4)) {
     end = ftell(ifp) + size;
@@ -4549,7 +4571,7 @@ void CLASS parse_riff()
     while (ftell(ifp) < end)
       parse_riff();
   } else if (!memcmp(tag,"IDIT",4) && size < 64) {
-    fread (date, 64, 1, ifp);
+    if(fread (date, 64, 1, ifp) < 1) return;
     date[size] = 0;
     if (sscanf (date, "%*s %s %d %d:%d:%d %d", month, &t.tm_mday,
 	&t.tm_hour, &t.tm_min, &t.tm_sec, &t.tm_year) == 6) {
@@ -4968,9 +4990,9 @@ short CLASS guess_byte_order (int words)
   int t=2, msb;
   double diff, sum[2] = {0,0};
 
-  fread (test[0], 2, 2, ifp);
+  if(fread (test[0], 2, 2, ifp) < 1) return 0;
   for (words-=2; words--; ) {
-    fread (test[t], 2, 1, ifp);
+    if(fread (test[t], 2, 1, ifp) < 1) return 0;
     for (msb=0; msb < 2; msb++) {
       diff = (test[t^2][msb] << 8 | test[t^2][!msb])
 	   - (test[t  ][msb] << 8 | test[t  ][!msb]);
@@ -5063,7 +5085,7 @@ void CLASS identify()
   order = get2();
   hlen = get4();
   fseek (ifp, 0, SEEK_SET);
-  fread (head, 1, 32, ifp);
+  if(fread (head, 1, 32, ifp) < 1) return;
   fseek (ifp, 0, SEEK_END);
   fsize = ftell(ifp);
   if ((cp = (char *) memmem (head, 32, "MMMM", 4)) ||

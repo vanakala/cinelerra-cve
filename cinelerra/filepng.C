@@ -46,6 +46,7 @@ FilePNG::~FilePNG()
 
 int FilePNG::check_sig(Asset *asset)
 {
+	int l;
 	FILE *stream = fopen(asset->path, "rb");
 
 	if(stream)
@@ -53,9 +54,9 @@ int FilePNG::check_sig(Asset *asset)
 
 //printf("FilePNG::check_sig 1\n");
 		char test[16];
-		fread(test, 16, 1, stream);
+		l = fread(test, 16, 1, stream);
 		fclose(stream);
-
+		if (l) return 0;
 		if(png_check_sig((unsigned char*)test, 8))
 		{
 //printf("FilePNG::check_sig 1\n");

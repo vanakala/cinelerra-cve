@@ -105,8 +105,10 @@ int FileList::open_file(int rd, int wr)
 			if(stream)
 			{
 				char string[BCTEXTLEN];
-				fread(string, strlen(list_prefix), 1, stream);
+				if(fread(string, strlen(list_prefix), 1, stream) < 1)
+					result = 1;
 				fclose(stream);
+				if(result) return 1;
 
 				if(!strncasecmp(string, list_prefix, strlen(list_prefix)))
 				{

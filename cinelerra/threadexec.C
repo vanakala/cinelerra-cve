@@ -135,7 +135,11 @@ void ThreadExec::run()
 
 	if(pipe_stdin)
 	{
-		pipe(filedes);
+		if(pipe(filedes) < 0)
+		{
+			perror("ThreadExec::run - pipe");
+			abort();
+		}
 		stdin_fd = fdopen(filedes[1], "w");
 	}
 
