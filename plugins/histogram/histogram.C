@@ -100,7 +100,7 @@ HistogramMain::~HistogramMain()
 	delete engine;
 }
 
-char* HistogramMain::plugin_title() { return N_("Histogram"); }
+const char* HistogramMain::plugin_title() { return N_("Histogram"); }
 int HistogramMain::is_realtime() { return 1; }
 
 
@@ -774,20 +774,20 @@ int HistogramMain::handle_opengl()
 {
 #ifdef HAVE_GL
 // Functions to get pixel from either previous effect or texture
-	static char *histogram_get_pixel1 =
+	static const char *histogram_get_pixel1 =
 		"vec4 histogram_get_pixel()\n"
 		"{\n"
 		"	return gl_FragColor;\n"
 		"}\n";
 
-	static char *histogram_get_pixel2 =
+	static const char *histogram_get_pixel2 =
 		"uniform sampler2D tex;\n"
 		"vec4 histogram_get_pixel()\n"
 		"{\n"
 		"	return texture2D(tex, gl_TexCoord[0].st);\n"
 		"}\n";
 
-	static char *head_frag = 
+	static const char *head_frag = 
 		"// first input point\n"
 		"uniform vec2 input_min_r;\n"
 		"uniform vec2 input_min_g;\n"
@@ -804,10 +804,10 @@ int HistogramMain::handle_opengl()
 		"void main()\n"
 		"{\n";
 
-	static char *get_rgb_frag =
+	static const char *get_rgb_frag =
 		"	vec4 pixel = histogram_get_pixel();\n";
 
-	static char *get_yuv_frag =
+	static const char *get_yuv_frag =
 		"	vec4 pixel = histogram_get_pixel();\n"
 			YUV_TO_RGB_FRAG("pixel");
 
@@ -835,7 +835,7 @@ int HistogramMain::handle_opengl()
 
 
 
-	static char *apply_histogram_frag = 
+	static const char *apply_histogram_frag = 
 		APPLY_INPUT_CURVE("pixel.r", "input_min_r", "input_max_r")
 		APPLY_INPUT_CURVE("pixel.g", "input_min_g", "input_max_g")
 		APPLY_INPUT_CURVE("pixel.b", "input_min_b", "input_max_b")
@@ -849,11 +849,11 @@ int HistogramMain::handle_opengl()
 		"	pixel.rgb *= vec3(output_scale.a, output_scale.a, output_scale.a);\n"
 		"	pixel.rgb += vec3(output_min.a, output_min.a, output_min.a);\n";
 
-	static char *put_rgb_frag =
+	static const char *put_rgb_frag =
 		"	gl_FragColor = pixel;\n"
 		"}\n";
 
-	static char *put_yuv_frag =
+	static const char *put_yuv_frag =
 			RGB_TO_YUV_FRAG("pixel")
 		"	gl_FragColor = pixel;\n"
 		"}\n";
@@ -863,7 +863,7 @@ int HistogramMain::handle_opengl()
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 
-	char *shader_stack[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+	const char *shader_stack[] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
 	int current_shader = 0;
 	int aggregate_interpolation = 0;
 	int aggregate_gamma = 0;

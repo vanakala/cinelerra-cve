@@ -69,7 +69,7 @@ BlueDotThemeMain::~BlueDotThemeMain()
 {
 }
 
-char* BlueDotThemeMain::plugin_title()
+const char* BlueDotThemeMain::plugin_title()
 {
 	return "Blue Dot";
 }

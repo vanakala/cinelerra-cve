@@ -96,7 +96,7 @@ Reverb::~Reverb()
 	}
 }
 
-char* Reverb::plugin_title() { return N_("Heroine College Concert Hall"); }
+const char* Reverb::plugin_title() { return N_("Heroine College Concert Hall"); }
 int Reverb::is_realtime() { return 1; }
 int Reverb::is_multichannel() { return 1; }
 int Reverb::is_synthesis() { return 1; }
@@ -394,7 +394,7 @@ void Reverb::update_gui()
 
 
 
-int Reverb::load_from_file(char *path)
+int Reverb::load_from_file(const char *path)
 {
 	FILE *in;
 	int result = 0;
@@ -406,13 +406,15 @@ int Reverb::load_from_file(char *path)
 		fseek(in, 0, SEEK_END);
 		length = ftell(in);
 		fseek(in, 0, SEEK_SET);
-		fread(string, length, 1, in);
+		if(fread(string, length, 1, in) != 1)
+			goto openfail;
 		fclose(in);
 //		read_data(string);
 	}
 	else
 	{
-		perror("fopen:");
+openfail:
+		perror("Reverb::load_from_file");
 // failed
 		ErrorBox errorbox("");
 		char string[1024];
@@ -425,7 +427,7 @@ int Reverb::load_from_file(char *path)
 	return result;
 }
 
-int Reverb::save_to_file(char *path)
+int Reverb::save_to_file(const char *path)
 {
 	FILE *out;
 	int result = 0;
@@ -597,7 +599,7 @@ void ReverbConfig::interpolate(ReverbConfig &prev,
 
 void ReverbConfig::dump()
 {
-	printf("ReverbConfig::dump %f %d %f %f %d %d %d %d\n", 
+	printf("ReverbConfig::dump %f %lld %f %f %lld %lld %lld %lld\n", 
 	level_init,
 	delay_init, 
 	ref_level1, 

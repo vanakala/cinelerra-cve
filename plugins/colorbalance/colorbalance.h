@@ -86,7 +86,7 @@ public:
 		int64_t start_position,
 		double frame_rate);
 	int is_realtime();
-	char* plugin_title();
+	const char* plugin_title();
 	int show_gui();
 	void update_gui();
 	void raise_window();

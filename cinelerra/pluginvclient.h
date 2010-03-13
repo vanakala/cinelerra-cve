@@ -128,8 +128,8 @@ public:
 // For aggregation, this does case sensitive compares with the
 // the stack in the frame object.
 // Only possible for video because VFrame stores the effect stacks.
-	int next_effect_is(char *title);
-	int prev_effect_is(char *title);
+	int next_effect_is(const char *title);
+	int prev_effect_is(const char *title);
 
 // Called by user to allocate the temporary for the current process_buffer.  
 // It may be deleted after the process_buffer to conserve memory.

@@ -81,7 +81,7 @@ public:
 	~YUVEffect();
 	int process_realtime(VFrame *input, VFrame *output);
 	int is_realtime();
-	char* plugin_title();
+	const char* plugin_title();
 	VFrame* new_picon();
 	int load_defaults();
 	int save_defaults();
@@ -231,7 +231,7 @@ YUVEffect::~YUVEffect()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-char* YUVEffect::plugin_title() { return N_("YUV"); }
+const char* YUVEffect::plugin_title() { return N_("YUV"); }
 int YUVEffect::is_realtime() { return 1; } 
 
 

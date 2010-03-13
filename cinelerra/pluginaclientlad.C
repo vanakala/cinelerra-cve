@@ -561,9 +561,9 @@ int PluginAClientLAD::get_outchannels()
 }
 
 
-char* PluginAClientLAD::plugin_title()
+const char* PluginAClientLAD::plugin_title()
 {
-	return (char*)server->lad_descriptor->Name;
+	return (const char*)server->lad_descriptor->Name;
 }
 
 int PluginAClientLAD::uses_gui()
@@ -590,7 +590,7 @@ void PluginAClientLAD::update_gui()
 {
 }
 
-char* PluginAClientLAD::lad_to_string(char *string, char *input)
+char* PluginAClientLAD::lad_to_string(char *string, const char *input)
 {
 	strcpy(string, input);
 	for(int j = 0; j < strlen(string); j++)
@@ -602,7 +602,7 @@ char* PluginAClientLAD::lad_to_string(char *string, char *input)
 	return string;
 }
 
-char* PluginAClientLAD::lad_to_upper(char *string, char *input)
+char* PluginAClientLAD::lad_to_upper(char *string, const char *input)
 {
 	lad_to_string(string, input);
 	for(int j = 0; j < strlen(string); j++)

@@ -102,7 +102,7 @@ UnsharpMain::~UnsharpMain()
 	delete engine;
 }
 
-char* UnsharpMain::plugin_title() { return N_("Unsharp"); }
+const char* UnsharpMain::plugin_title() { return N_("Unsharp"); }
 int UnsharpMain::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(UnsharpMain)

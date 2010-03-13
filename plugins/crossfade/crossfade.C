@@ -43,7 +43,7 @@ CrossfadeMain::~CrossfadeMain()
 {
 }
 
-char* CrossfadeMain::plugin_title() { return N_("Crossfade"); }
+const char* CrossfadeMain::plugin_title() { return N_("Crossfade"); }
 int CrossfadeMain::is_transition() { return 1; }
 int CrossfadeMain::uses_gui() { return 0; }
 

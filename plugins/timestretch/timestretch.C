@@ -336,7 +336,7 @@ TimeStretch::~TimeStretch()
 
 	
 	
-char* TimeStretch::plugin_title() { return N_("Time stretch"); }
+const char* TimeStretch::plugin_title() { return N_("Time stretch"); }
 int TimeStretch::is_realtime() { return 1; }
 
 void TimeStretch::read_data(KeyFrame *keyframe)

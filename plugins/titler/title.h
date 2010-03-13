@@ -334,7 +334,7 @@ public:
 	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
 	int is_realtime();
 	int is_synthesis();
-	char* plugin_title();
+	const char* plugin_title();
 	int show_gui();
 	void raise_window();
 	void update_gui();
@@ -362,7 +362,7 @@ public:
 	void clear_glyphs();
 	int load_freetype_face(FT_Library &freetype_library,
 		FT_Face &freetype_face,
-		char *path);
+		const char *path);
 
 
 

@@ -103,7 +103,7 @@ ResampleEffect::~ResampleEffect()
 	delete defaults;
 }
 
-char* ResampleEffect::plugin_title() { return N_("Resample"); }
+const char* ResampleEffect::plugin_title() { return N_("Resample"); }
 
 VFrame* ResampleEffect::new_picon()
 {

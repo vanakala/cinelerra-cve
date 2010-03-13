@@ -267,7 +267,7 @@ MotionMain::~MotionMain()
 	delete rotate_target_dst;
 }
 
-char* MotionMain::plugin_title() { return N_("Motion"); }
+const char* MotionMain::plugin_title() { return N_("Motion"); }
 int MotionMain::is_realtime() { return 1; }
 int MotionMain::is_multichannel() { return 1; }
 
@@ -2050,14 +2050,15 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 		{
 // Load result from disk
 			char string[BCTEXTLEN];
-			sprintf(string, "%s%06d", MOTION_FILE, plugin->get_source_position());
+			sprintf(string, "%s%06d", MOTION_FILE, (int)plugin->get_source_position());
 			FILE *input = fopen(string, "r");
 			if(input)
 			{
-				fscanf(input, 
-					"%d %d", 
-					&dx_result,
-					&dy_result);
+				if(fscanf(input, "%d %d", &dx_result, &dy_result) != 2)
+				{
+					dx_result = 0;
+					dy_result = 0;
+				}
 				fclose(input);
 				skip = 1;
 			}
@@ -2303,14 +2304,12 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 		if (plugin->config.addtrackedframeoffset) {
 		  int tf_dx_result, tf_dy_result;
 		  char string[BCTEXTLEN];
-		  sprintf(string, "%s%06d", MOTION_FILE, plugin->config.track_frame);
+		  sprintf(string, "%s%06d", MOTION_FILE, (int)plugin->config.track_frame);
 		  FILE *input = fopen(string, "r");
 		  if(input)
 		    {
-		      fscanf(input, 
-			     "%d %d", 
-			     &tf_dx_result,
-			     &tf_dy_result);
+		      if(fscanf(input, "%d %d", &tf_dx_result, &tf_dy_result) != 2)
+			    tf_dx_result = tf_dy_result = 0;
 		      dx_result += tf_dx_result;
 		      dy_result += tf_dy_result;
 		      fclose(input);
@@ -2331,7 +2330,7 @@ void MotionScan::scan_frame(VFrame *previous_frame,
 		sprintf(string, 
 			"%s%06d", 
 			MOTION_FILE, 
-			plugin->get_source_position());
+			(int)plugin->get_source_position());
 		FILE *output = fopen(string, "w");
 		if(output)
 		{
@@ -2577,11 +2576,12 @@ float RotateScan::scan_frame(VFrame *previous_frame,
 		case MotionConfig::LOAD:
 		{
 			char string[BCTEXTLEN];
-			sprintf(string, "%s%06d", ROTATION_FILE, plugin->get_source_position());
+			sprintf(string, "%s%06d", ROTATION_FILE, (int)plugin->get_source_position());
 			FILE *input = fopen(string, "r");
 			if(input)
 			{
-				fscanf(input, "%f", &result);
+				if(fscanf(input, "%f", &result) != 1)
+					result = 0;
 				fclose(input);
 				skip = 1;
 			}
@@ -2741,7 +2741,7 @@ printf("RotateScan::scan_frame min_angle=%f\n", min_angle * 360 / 2 / M_PI);
 		sprintf(string, 
 			"%s%06d", 
 			ROTATION_FILE, 
-			plugin->get_source_position());
+			(int)plugin->get_source_position());
 		FILE *output = fopen(string, "w");
 		if(output)
 		{

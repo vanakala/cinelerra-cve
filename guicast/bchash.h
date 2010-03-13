@@ -36,7 +36,7 @@ class BC_Hash
 {
 public:
 	BC_Hash();
-	BC_Hash(char *filename);
+	BC_Hash(const char *filename);
 	virtual ~BC_Hash();
 
 	int load();        // load from disk file

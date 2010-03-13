@@ -578,7 +578,7 @@ void FrameField::average_rows(int offset, VFrame *frame)
 
 
 
-char* FrameField::plugin_title() { return N_("Frames to fields"); }
+const char* FrameField::plugin_title() { return N_("Frames to fields"); }
 int FrameField::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(FrameField) 
@@ -669,7 +669,7 @@ void FrameField::update_gui()
 int FrameField::handle_opengl()
 {
 #ifdef HAVE_GL
-	static char *field_frag = 
+	static const char *field_frag = 
 		"uniform sampler2D tex;\n"
 		"uniform float double_line_h;\n"
 		"uniform float y_offset;\n"
@@ -689,25 +689,25 @@ int FrameField::handle_opengl()
 		"		frac);\n"
 		"}\n";
 
-	static char *_601_to_rgb_frag = 
+	static const char *_601_to_rgb_frag = 
 		"void main()\n"
 		"{\n"
 		"	gl_FragColor.rgb = gl_FragColor.rgb * vec3(1.1644, 1.1644, 1.1644) - vec3(0.0627, 0.0627, 0.0627);\n"
 		"}\n";
 
-	static char *_601_to_yuv_frag = 
+	static const char *_601_to_yuv_frag = 
 		"void main()\n"
 		"{\n"
 		"	gl_FragColor.r = gl_FragColor.r * 1.1644 - 0.0627;\n"
 		"}\n";
 
-	static char *rgb_to_601_frag = 
+	static const char *rgb_to_601_frag = 
 		"void main()\n"
 		"{\n"
 		"	gl_FragColor.rgb = gl_FragColor.rgb * vec3(0.8588, 0.8588, 0.8588) + vec3(0.0627, 0.0627, 0.0627);\n"
 		"}\n";
 
-	static char *yuv_to_601_frag = 
+	static const char *yuv_to_601_frag = 
 		"void main()\n"
 		"{\n"
 		"	gl_FragColor.r = gl_FragColor.r * 0.8588 + 0.0627;\n"
@@ -785,7 +785,7 @@ int FrameField::handle_opengl()
 		get_output()->get_color_model());
 
 
-	char *shaders[3] = { 0, 0, 0 };
+	const char *shaders[3] = { 0, 0, 0 };
 	shaders[0] = field_frag;
 
 

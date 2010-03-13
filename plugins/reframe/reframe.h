@@ -60,7 +60,7 @@ public:
 	~ReFrame();
 
 
-	char* plugin_title();
+	const char* plugin_title();
 	VFrame* new_picon();
 	int get_parameters();
 	int load_defaults();  

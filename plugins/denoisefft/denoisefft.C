@@ -326,7 +326,7 @@ void DenoiseFFTEffect::reset()
 }
 
 int DenoiseFFTEffect::is_realtime() { return 1; }
-char* DenoiseFFTEffect::plugin_title() { return N_("DenoiseFFT"); }
+const char* DenoiseFFTEffect::plugin_title() { return N_("DenoiseFFT"); }
 
 
 

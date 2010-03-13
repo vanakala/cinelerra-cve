@@ -126,7 +126,7 @@ public:
 		float &out_y2);
 	int handle_opengl();
 	int is_realtime();
-	char* plugin_title();
+	const char* plugin_title();
 	int show_gui();
 	void raise_window();
 	int set_string();

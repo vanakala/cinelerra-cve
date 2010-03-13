@@ -150,7 +150,7 @@ public:
 	void create_objects();
 	int handle_event();
 	static int text_to_mode(char *text);
-	static char* mode_to_text(int mode);
+	static const char* mode_to_text(int mode);
 
 	int band;
 	ParametricEQ *plugin;

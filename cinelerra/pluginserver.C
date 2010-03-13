@@ -194,14 +194,14 @@ void PluginServer::set_prompt(MenuEffectPrompt *prompt)
 }
 
 
-int PluginServer::set_path(char *path)
+int PluginServer::set_path(const char *path)
 {
 	if(this->path) delete [] this->path;
 	this->path = new char[strlen(path) + 1];
 	strcpy(this->path, path);
 }
 
-void PluginServer::set_title(char *string)
+void PluginServer::set_title(const char *string)
 {
 	if(title) delete [] title;
 	title = new char[strlen(string) + 1];

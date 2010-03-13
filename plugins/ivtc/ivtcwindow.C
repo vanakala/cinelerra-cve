@@ -24,7 +24,7 @@
 #include "language.h"
 
 
-static char *pattern_text[] =
+static const char *pattern_text[] =
 {
 	"A  B  BC  CD  D",
 	"AB  BC  CD  DE  EF",

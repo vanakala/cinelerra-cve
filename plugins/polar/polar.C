@@ -132,7 +132,7 @@ public:
 
 	int process_realtime(VFrame *input, VFrame *output);
 	int is_realtime();
-	char* plugin_title();
+	const char* plugin_title();
 	VFrame* new_picon();
 	int load_configuration();
 	int load_defaults();
@@ -298,7 +298,7 @@ PolarEffect::~PolarEffect()
 
 
 
-char* PolarEffect::plugin_title() { return N_("Polar"); }
+const char* PolarEffect::plugin_title() { return N_("Polar"); }
 int PolarEffect::is_realtime() { return 1; }
 
 

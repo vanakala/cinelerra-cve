@@ -25,26 +25,26 @@
 // Gamma sections performed by other plugins
 
 // Functions to get pixel from either previous effect or texture
-static char *gamma_get_pixel1 =
+static const char *gamma_get_pixel1 =
 	"vec4 gamma_get_pixel()\n"
 	"{\n"
 	"	return gl_FragColor;\n"
 	"}\n";
 
-static char *gamma_get_pixel2 =
+static const char *gamma_get_pixel2 =
 	"uniform sampler2D tex;\n"
 	"vec4 gamma_get_pixel()\n"
 	"{\n"
 	"	return texture2D(tex, gl_TexCoord[0].st);\n"
 	"}\n";
 
-static char *gamma_pow_frag = 
+static const char *gamma_pow_frag = 
 	"float my_pow(float x, float y, float max)\n"
 	"{\n"
 	"	return (x > 0.0) ? pow(x * 2.0 / max, y) : 0.0;\n"
 	"}\n";
 
-static char *gamma_rgb_frag = 
+static const char *gamma_rgb_frag = 
 	"uniform float gamma_scale;\n"
 	"uniform float gamma_gamma;\n"
 	"uniform float gamma_max;\n"
@@ -57,7 +57,7 @@ static char *gamma_rgb_frag =
 	"	gl_FragColor = pixel;\n"
 	"}\n";
 
-static char *gamma_yuv_frag = 
+static const char *gamma_yuv_frag = 
 	"uniform float gamma_scale;\n"
 	"uniform float gamma_gamma;\n"
 	"uniform float gamma_max;\n"

@@ -132,7 +132,7 @@ int PluginClient::is_synthesis() { return 0; }
 int PluginClient::is_realtime() { return 0; }
 int PluginClient::is_fileio() { return 0; }
 int PluginClient::delete_buffer_ptrs() { return 0; }
-char* PluginClient::plugin_title() { return _("Untitled"); }
+const char* PluginClient::plugin_title() { return _("Untitled"); }
 VFrame* PluginClient::new_picon() { return 0; }
 Theme* PluginClient::new_theme() { return 0; }
 

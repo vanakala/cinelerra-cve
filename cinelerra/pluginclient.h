@@ -120,7 +120,7 @@ void thread_class::run() \
 #define PLUGIN_CLASS_MEMBERS(config_name, thread_name) \
 	int load_configuration(); \
 	VFrame* new_picon(); \
-	char* plugin_title(); \
+	const char* plugin_title(); \
 	int show_gui(); \
 	int set_string(); \
 	void raise_window(); \
@@ -246,7 +246,7 @@ public:
 	virtual int is_multichannel();
 	virtual int is_synthesis();
 	virtual int is_transition();
-	virtual char* plugin_title();   // return the title of the plugin
+	virtual const char* plugin_title();   // return the title of the plugin
 	virtual VFrame* new_picon();
 	virtual Theme* new_theme();
 // Get theme being used by Cinelerra currently.  Used by all plugins.

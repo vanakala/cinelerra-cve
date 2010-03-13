@@ -342,7 +342,7 @@ int DenoiseVideo::process_realtime(VFrame *input, VFrame *output)
 }
 
 
-char* DenoiseVideo::plugin_title() { return N_("Denoise video"); }
+const char* DenoiseVideo::plugin_title() { return N_("Denoise video"); }
 int DenoiseVideo::is_realtime() { return 1; }
 
 

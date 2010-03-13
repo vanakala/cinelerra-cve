@@ -579,7 +579,7 @@ SET_TRACE
 	return 1;
 }
 
-char* ChromaKey::plugin_title() { return N_("Chroma key"); }
+const char* ChromaKey::plugin_title() { return N_("Chroma key"); }
 int ChromaKey::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(ChromaKey)
@@ -687,7 +687,7 @@ int ChromaKey::handle_opengl()
 	
 
 
-	static char *uniform_frag =
+	static const char *uniform_frag =
 		"uniform sampler2D tex;\n"
 		"uniform float min_v;\n"
 		"uniform float max_v;\n"
@@ -696,19 +696,19 @@ int ChromaKey::handle_opengl()
 		"uniform float threshold_run;\n"
 		"uniform vec3 key;\n";
 
-	static char *get_yuvvalue_frag =
+	static const char *get_yuvvalue_frag =
 		"float get_value(vec4 color)\n"
 		"{\n"
 		"	return abs(color.r);\n"
 		"}\n";
 		
-	static char *get_rgbvalue_frag = 
+	static const char *get_rgbvalue_frag = 
 		"float get_value(vec4 color)\n"
 		"{\n"
 		"	return dot(color.rgb, vec3(0.29900, 0.58700, 0.11400));\n"
 		"}\n";
 
-	static char *value_frag =
+	static const char *value_frag =
 		"void main()\n"
 		"{\n"
 		"	vec4 color = texture2D(tex, gl_TexCoord[0].st);\n"
@@ -730,7 +730,7 @@ int ChromaKey::handle_opengl()
 		"	gl_FragColor = vec4(color.rgb, alpha);\n"
 		"}\n";
 
-	static char *cube_frag = 
+	static const char *cube_frag = 
 		"void main()\n"
 		"{\n"
 		"	vec4 color = texture2D(tex, gl_TexCoord[0].st);\n"
@@ -747,7 +747,7 @@ int ChromaKey::handle_opengl()
 	get_output()->to_texture();
 	get_output()->enable_opengl();
 	get_output()->init_screen();
-	char *shader_stack[] = { 0, 0, 0, 0, 0 };
+	const char *shader_stack[] = { 0, 0, 0, 0, 0 };
 	int current_shader = 0;
 
 	shader_stack[current_shader++] = uniform_frag;

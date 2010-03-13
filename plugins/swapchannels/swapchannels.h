@@ -76,7 +76,7 @@ public:
 class SwapItem : public BC_MenuItem
 {
 public:
-	SwapItem(SwapMenu *menu, char *title);
+	SwapItem(SwapMenu *menu, const char *title);
 
 	int handle_event();
 
@@ -118,7 +118,7 @@ public:
 	int process_realtime(VFrame *input_ptr, VFrame *output_ptr);
 	int is_realtime();
 	int is_synthesis();
-	char* plugin_title();
+	const char* plugin_title();
 	VFrame* new_picon();
 	int show_gui();
 	void raise_window();
@@ -142,8 +142,8 @@ public:
 
 
 // parameters needed for processor
-	char* output_to_text(int value);
-	int text_to_output(char *text);
+	const char* output_to_text(int value);
+	int text_to_output(const char *text);
 
 	VFrame *temp;
 	SwapConfig config;

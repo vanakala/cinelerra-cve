@@ -486,7 +486,7 @@ void AffineUnit::process_package(LoadPackage *package)
 		if(server->use_opengl)
 		{
 #ifdef HAVE_GL
-			static char *affine_frag =
+			static const char *affine_frag =
 				"uniform sampler2D tex;\n"
 				"uniform mat3 affine_matrix;\n"
 				"uniform vec2 texture_extents;\n"

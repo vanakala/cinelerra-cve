@@ -99,7 +99,7 @@ public:
 	
 
 // required for all non realtime plugins
-	char* plugin_title();
+	const char* plugin_title();
 	int get_parameters();
 	int start_loop();
 	int stop_loop();

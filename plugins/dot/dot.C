@@ -80,7 +80,7 @@ DotMain::~DotMain()
 	}
 }
 
-char* DotMain::plugin_title() { return N_("DotTV"); }
+const char* DotMain::plugin_title() { return N_("DotTV"); }
 int DotMain::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(DotMain)

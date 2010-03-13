@@ -149,7 +149,7 @@ public:
 
 	int process_realtime(VFrame *input, VFrame *output);
 	int is_realtime();
-	char* plugin_title();
+	const char* plugin_title();
 	VFrame* new_picon();
 	int show_gui();
 	void raise_window();
@@ -385,7 +385,7 @@ WhirlEffect::~WhirlEffect()
 
 
 
-char* WhirlEffect::plugin_title() { return N_("Whirl"); }
+const char* WhirlEffect::plugin_title() { return N_("Whirl"); }
 int WhirlEffect::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(WhirlEffect)

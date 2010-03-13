@@ -193,7 +193,7 @@ BandSlideMain::~BandSlideMain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-char* BandSlideMain::plugin_title() { return N_("BandSlide"); }
+const char* BandSlideMain::plugin_title() { return N_("BandSlide"); }
 int BandSlideMain::is_video() { return 1; }
 int BandSlideMain::is_transition() { return 1; }
 int BandSlideMain::uses_gui() { return 1; }

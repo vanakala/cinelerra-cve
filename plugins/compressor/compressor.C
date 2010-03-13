@@ -113,7 +113,7 @@ void CompressorEffect::reset()
 	current_value = 1.0;
 }
 
-char* CompressorEffect::plugin_title() { return N_("Compressor"); }
+const char* CompressorEffect::plugin_title() { return N_("Compressor"); }
 int CompressorEffect::is_realtime() { return 1; }
 int CompressorEffect::is_multichannel() { return 1; }
 
@@ -1375,7 +1375,7 @@ void CompressorInput::create_objects()
 	}
 }
 
-char* CompressorInput::value_to_text(int value)
+const char* CompressorInput::value_to_text(int value)
 {
 	switch(value)
 	{
@@ -1387,7 +1387,7 @@ char* CompressorInput::value_to_text(int value)
 	return "Trigger";
 }
 
-int CompressorInput::text_to_value(char *text)
+int CompressorInput::text_to_value(const char *text)
 {
 	for(int i = 0; i < 3; i++)
 	{

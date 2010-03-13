@@ -189,7 +189,7 @@ public:
 
 	int process_realtime(VFrame *input, VFrame *output);
 	int is_realtime();
-	char* plugin_title();
+	const char* plugin_title();
 	VFrame* new_picon();
 	int load_configuration();
 	int load_defaults();
@@ -471,7 +471,7 @@ WaveEffect::~WaveEffect()
 }
 
 
-char* WaveEffect::plugin_title() { return N_("Wave"); }
+const char* WaveEffect::plugin_title() { return N_("Wave"); }
 int WaveEffect::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(WaveEffect)

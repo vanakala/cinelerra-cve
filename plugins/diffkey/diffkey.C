@@ -343,7 +343,7 @@ SET_STRING_MACRO(DiffKey)
 NEW_PICON_MACRO(DiffKey)
 LOAD_CONFIGURATION_MACRO(DiffKey, DiffKeyConfig)
 
-char* DiffKey::plugin_title() { return N_("Difference key"); }
+const char* DiffKey::plugin_title() { return N_("Difference key"); }
 int DiffKey::is_realtime() { return 1; }
 int DiffKey::is_multichannel() { return 1; }
 
@@ -472,7 +472,7 @@ int DiffKey::process_buffer(VFrame **frame,
 int DiffKey::handle_opengl()
 {
 #ifdef HAVE_GL
-	static char *diffkey_head = 
+	static const char *diffkey_head = 
 		"uniform sampler2D tex_bg;\n"
 		"uniform sampler2D tex_fg;\n"
 		"uniform float threshold;\n"
@@ -483,17 +483,17 @@ int DiffKey::handle_opengl()
 		"	vec4 foreground = texture2D(tex_fg, gl_TexCoord[0].st);\n"
 		"	vec4 background = texture2D(tex_bg, gl_TexCoord[0].st);\n";
 
-	static char *colorcube = 
+	static const char *colorcube = 
 		"	float difference = length(foreground.rgb - background.rgb);\n";
 
-	static char *yuv_value = 
+	static const char *yuv_value = 
 		"	float difference = abs(foreground.r - background.r);\n";
 
-	static char *rgb_value = 
+	static const char *rgb_value = 
 		"	float difference = abs(dot(foreground.rgb, vec3(0.29900, 0.58700, 0.11400)) - \n"
 		"						dot(background.rgb, vec3(0.29900, 0.58700, 0.11400)));\n";
 
-	static char *diffkey_tail = 
+	static const char *diffkey_tail = 
 		"	vec4 result;\n"
 		"	if(difference < threshold)\n"
 		"		result.a = 0.0;\n"

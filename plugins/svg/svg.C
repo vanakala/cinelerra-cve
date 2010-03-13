@@ -141,7 +141,7 @@ SvgMain::~SvgMain()
 	overlayer = 0;
 }
 
-char* SvgMain::plugin_title() { return N_("SVG via Inkscape"); }
+const char* SvgMain::plugin_title() { return N_("SVG via Inkscape"); }
 int SvgMain::is_realtime() { return 1; }
 int SvgMain::is_synthesis() { return 1; }
 
@@ -279,7 +279,10 @@ int SvgMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 			"inkscape --without-gui --cinelerra-export-file=%s %s",
 			filename_raw, config.svg_file);
 		printf(_("Running command %s\n"), command);
-		system(command);
+		if(system(command) < 0) {
+			printf("Failed to execute command\n");
+			return 0;
+		}
 		stat(filename_raw, &st_raw);
 		force_raw_render = 0;
 		fh_raw = open(filename_raw, O_RDWR); // in order for lockf to work it has to be open for writing
@@ -291,7 +294,10 @@ int SvgMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 
 
 	// file exists, ... lock it, mmap it and check time_of_creation
-	lockf(fh_raw, F_LOCK, 0);    // Blocking call - will wait for inkscape to finish!
+	if(lockf(fh_raw, F_LOCK, 0) < 0){    // Blocking call - will wait for inkscape to finish!
+		perror("SvgMain::process_realtime - lock");
+		return 0;
+	}
 	fstat (fh_raw, &st_raw);
 	raw_buffer = (unsigned char *)mmap (NULL, st_raw.st_size, PROT_READ, MAP_SHARED, fh_raw, 0); 
 	raw_data = (struct raw_struct *) raw_buffer;
@@ -299,14 +305,16 @@ int SvgMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	if (strcmp(raw_data->rawc, "RAWC")) 
 	{
 		printf (_("The file %s that was generated from %s is not in RAWC format. Try to delete all *.raw files.\n"), filename_raw, config.svg_file);	
-		lockf(fh_raw, F_ULOCK, 0);
+		if(lockf(fh_raw, F_ULOCK, 0))
+			perror("SvgMain::process_realtime - unlock");
 		close(fh_raw);
 		return (0);
 	}
 	if (raw_data->struct_version > 1) 
 	{
 		printf (_("Unsupported version of RAWC file %s. This means your Inkscape uses newer RAWC format than Cinelerra. Please upgrade Cinelerra.\n"), filename_raw);
-		lockf(fh_raw, F_ULOCK, 0);
+		if(lockf(fh_raw, F_ULOCK, 0))
+			perror("SvgMain::process_realtime - unlock");
 		close(fh_raw);
 		return (0);
 	}
@@ -355,7 +363,8 @@ int SvgMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 	                temp_frame->get_w());
 		delete [] raw_rows;
 		munmap(raw_buffer, st_raw.st_size);
-		lockf(fh_raw, F_ULOCK, 0);
+		if(lockf(fh_raw, F_ULOCK, 0))
+			perror("SvgMain::process_realtime - unlock");
 		close(fh_raw);
 
 

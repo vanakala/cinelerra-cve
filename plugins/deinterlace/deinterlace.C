@@ -97,7 +97,7 @@ DeInterlaceMain::~DeInterlaceMain()
 	if(temp_prevframe) delete temp_prevframe;
 }
 
-char* DeInterlaceMain::plugin_title() { return N_("Deinterlace"); }
+const char* DeInterlaceMain::plugin_title() { return N_("Deinterlace"); }
 int DeInterlaceMain::is_realtime() { return 1; }
 
 

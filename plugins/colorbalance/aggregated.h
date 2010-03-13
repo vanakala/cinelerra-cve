@@ -22,13 +22,13 @@
 #ifndef COLORBALANCE_AGGREGATED
 #define COLORBALANCE_AGGREGATED
 
-static char *colorbalance_get_pixel1 =
+static const char *colorbalance_get_pixel1 =
 	"vec4 colorbalance_get_pixel()\n"
 	"{\n"
 	"	return gl_FragColor;\n"
 	"}\n";
 
-static char *colorbalance_get_pixel2 =
+static const char *colorbalance_get_pixel2 =
 	"uniform sampler2D tex;\n"
 	"vec4 colorbalance_get_pixel()\n"
 	"{\n"
@@ -36,7 +36,7 @@ static char *colorbalance_get_pixel2 =
 	"}\n";
 
 
-static char *colorbalance_rgb_shader = 
+static const char *colorbalance_rgb_shader = 
 	"uniform vec3 colorbalance_scale;\n"
 	"void main()\n"
 	"{\n"
@@ -44,7 +44,7 @@ static char *colorbalance_rgb_shader =
 	"	gl_FragColor.rgb *= colorbalance_scale;\n"
 	"}\n";
 
-static char *colorbalance_yuv_shader = 
+static const char *colorbalance_yuv_shader = 
 	"uniform vec3 colorbalance_scale;\n"
 	"void main()\n"
 	"{\n"
@@ -54,7 +54,7 @@ static char *colorbalance_yuv_shader =
 	RGB_TO_YUV_FRAG("gl_FragColor")
 	"}\n";
 
-static char *colorbalance_yuv_preserve_shader = 
+static const char *colorbalance_yuv_preserve_shader = 
 	"uniform vec3 colorbalance_scale;\n"
 	"void main()\n"
 	"{\n"

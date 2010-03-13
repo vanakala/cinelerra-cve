@@ -29,7 +29,7 @@
 
 #include "mutex.h"
 
-typedef struct fftw_plan_desc {
+struct fftw_plan_desc {
 	int samples;
 	fftw_plan plan_forward;
 	fftw_plan plan_backward;

@@ -38,7 +38,7 @@ public:
 	int process_realtime(int64_t size, double *input_ptr, double *output_ptr);
 	int uses_gui();
 	int is_transition();
-	char* plugin_title();
+	const char* plugin_title();
 	VFrame* new_picon();
 };
 

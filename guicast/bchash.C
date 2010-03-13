@@ -35,7 +35,7 @@ BC_Hash::BC_Hash()
 	values = 0;
 }
 
-BC_Hash::BC_Hash(char *filename)
+BC_Hash::BC_Hash(const char *filename)
 {
 	strcpy(this->filename, filename);
 	total = 0;

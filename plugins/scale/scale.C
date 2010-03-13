@@ -89,7 +89,7 @@ ScaleMain::~ScaleMain()
 	overlayer = 0;
 }
 
-char* ScaleMain::plugin_title() { return N_("Scale"); }
+const char* ScaleMain::plugin_title() { return N_("Scale"); }
 int ScaleMain::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(ScaleMain)

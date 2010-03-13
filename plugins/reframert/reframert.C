@@ -351,7 +351,7 @@ ReframeRT::~ReframeRT()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-char* ReframeRT::plugin_title() { return N_("ReframeRT"); }
+const char* ReframeRT::plugin_title() { return N_("ReframeRT"); }
 int ReframeRT::is_realtime() { return 1; }
 int ReframeRT::is_synthesis() { return 1; }
 

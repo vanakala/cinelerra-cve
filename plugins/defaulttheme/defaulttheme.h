@@ -87,7 +87,7 @@ public:
 	BlondThemeMain(PluginServer *server);
 	~BlondThemeMain();
 	
-	char* plugin_title();
+	const char* plugin_title();
 	Theme* new_theme();
 	
 	BlondTheme *theme;

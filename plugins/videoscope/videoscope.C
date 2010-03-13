@@ -273,7 +273,7 @@ public:
 
 	int process_realtime(VFrame *input, VFrame *output);
 	int is_realtime();
-	char* plugin_title();
+	const char* plugin_title();
 	VFrame* new_picon();
 	int load_defaults();
 	int save_defaults();
@@ -808,7 +808,7 @@ VideoScopeEffect::~VideoScopeEffect()
 
 
 
-char* VideoScopeEffect::plugin_title() { return N_("VideoScope"); }
+const char* VideoScopeEffect::plugin_title() { return N_("VideoScope"); }
 int VideoScopeEffect::is_realtime() { return 1; }
 
 int VideoScopeEffect::load_configuration()

@@ -170,7 +170,7 @@ FreezeFrameMain::~FreezeFrameMain()
 	if(first_frame) delete first_frame;
 }
 
-char* FreezeFrameMain::plugin_title() { return N_("Freeze Frame"); }
+const char* FreezeFrameMain::plugin_title() { return N_("Freeze Frame"); }
 int FreezeFrameMain::is_synthesis() { return 1; }
 int FreezeFrameMain::is_realtime() { return 1; }
 

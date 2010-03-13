@@ -88,7 +88,7 @@ public:
 	void render_stop();
 
 // queries
-	void set_title(char *string);
+	void set_title(const char *string);
 // Generate title for display
 	void generate_display_title(char *string);
 // Get keyframes for configuration.  Position is always relative to EDL rate.
@@ -254,7 +254,7 @@ public:
 	double get_framerate();     // get framerate produced by plugin
 	int get_project_samplerate();            // get samplerate of project data before processing
 	double get_project_framerate();         // get framerate of project data before processing
-	int set_path(char *path);    // required first
+	int set_path(const char *path);    // required first
 // Used by PluginArray and MenuEffects to get user parameters and progress bar.
 // Set pointer to mwindow for opening GUI and reconfiguring EDL.
 	void set_mwindow(MWindow *mwindow);

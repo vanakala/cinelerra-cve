@@ -278,12 +278,12 @@ VFrame* PluginVClient::get_output(int channel)
 	return output[channel];
 }
 
-int PluginVClient::next_effect_is(char *title)
+int PluginVClient::next_effect_is(const char *title)
 {
 	return !strcmp(title, output[0]->get_next_effect());
 }
 
-int PluginVClient::prev_effect_is(char *title)
+int PluginVClient::prev_effect_is(const char *title)
 {
 	return !strcmp(title, output[0]->get_prev_effect());
 }

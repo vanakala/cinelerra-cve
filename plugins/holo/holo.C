@@ -81,7 +81,7 @@ HoloMain::~HoloMain()
 	delete yuv;
 }
 
-char* HoloMain::plugin_title() { return N_("HolographicTV"); }
+const char* HoloMain::plugin_title() { return N_("HolographicTV"); }
 int HoloMain::is_realtime() { return 1; }
 
 VFrame* HoloMain::new_picon()

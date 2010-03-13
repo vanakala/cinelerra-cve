@@ -36,7 +36,7 @@ public:
 	CDRipMain(PluginServer *server);
 	~CDRipMain();
 
-	char* plugin_title();
+	const char* plugin_title();
 	int is_realtime();
 	int is_multichannel();
 	int get_parameters(); 

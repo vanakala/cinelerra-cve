@@ -396,7 +396,7 @@ GammaMain::~GammaMain()
 	delete engine;
 }
 
-char* GammaMain::plugin_title() { return N_("Gamma"); }
+const char* GammaMain::plugin_title() { return N_("Gamma"); }
 int GammaMain::is_realtime() { return 1; }
 
 
@@ -601,7 +601,7 @@ int GammaMain::handle_opengl()
 	get_output()->enable_opengl();
 
 
-	char *shader_stack[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
+	const char *shader_stack[] = { 0, 0, 0, 0, 0, 0, 0, 0 };
 	int current_shader = 0;
 
 

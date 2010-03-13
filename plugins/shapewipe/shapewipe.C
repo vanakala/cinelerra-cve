@@ -270,7 +270,7 @@ ShapeWipeMain::~ShapeWipeMain()
 	PLUGIN_DESTRUCTOR_MACRO
 }
 
-char* ShapeWipeMain::plugin_title() { return N_("Shape Wipe"); }
+const char* ShapeWipeMain::plugin_title() { return N_("Shape Wipe"); }
 int ShapeWipeMain::is_video() { return 1; }
 int ShapeWipeMain::is_transition() { return 1; }
 int ShapeWipeMain::uses_gui() { return 1; }
@@ -377,21 +377,18 @@ int ShapeWipeMain::read_pattern_image(int new_frame_width, int new_frame_height)
 		return 1;
 	}
 
-	fread(header, 1, 8, fp);
+	if(fread(header, 1, 8, fp) < 8)
+		goto erret;
 	is_png = !png_sig_cmp(header, 0, 8);
 
 	if (!is_png)
-	{
-		return 1;
-	}
+		goto erret;
 
 	png_ptr = png_create_read_struct(PNG_LIBPNG_VER_STRING,
 		png_voidp_NULL, png_error_ptr_NULL, png_error_ptr_NULL);
 
 	if (!png_ptr)
-	{
-	return 1;
-	}
+		goto erret;
 
 	/* Tell libpng we already checked the first 8 bytes */
 	png_set_sig_bytes(png_ptr, 8);
@@ -400,13 +397,15 @@ int ShapeWipeMain::read_pattern_image(int new_frame_width, int new_frame_height)
 	if (!info_ptr)
 	{
 		png_destroy_read_struct(&png_ptr, png_infopp_NULL, png_infopp_NULL);
-		return 1;
+		goto erret;
 	}
 
 	end_info = png_create_info_struct(png_ptr);
 	if (!end_info)
 	{
 		png_destroy_read_struct(&png_ptr, &info_ptr, png_infopp_NULL);
+erret:
+		fclose(fp);
 		return 1;
 	}
 

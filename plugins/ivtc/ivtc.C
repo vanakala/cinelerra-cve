@@ -30,7 +30,7 @@
 #include <string.h>
 
 
-static char *pattern_text[] = 
+static const char *pattern_text[] = 
 {
 	N_("A  B  BC  CD  D"),
 	N_("AB  BC  CD  DE  EF"),
@@ -72,7 +72,7 @@ IVTCMain::~IVTCMain()
 	}
 }
 
-char* IVTCMain::plugin_title() { return N_("Inverse Telecine"); }
+const char* IVTCMain::plugin_title() { return N_("Inverse Telecine"); }
 int IVTCMain::is_realtime() { return 1; }
 
 

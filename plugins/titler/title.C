@@ -311,7 +311,7 @@ void GlyphUnit::process_package(LoadPackage *package)
 		{
 // carrige return
 			if (glyph->char_code != 10)  
-				printf(_("GlyphUnit::process_package FT_Load_Char failed - char: %i.\n"),
+				printf(_("GlyphUnit::process_package FT_Load_Char failed - char: %li.\n"),
 					glyph->char_code);
 // Prevent a crash here
 			glyph->width = 8;
@@ -1067,7 +1067,7 @@ TitleMain::~TitleMain()
 	if(translate) delete translate;
 }
 
-char* TitleMain::plugin_title() { return N_("Title"); }
+const char* TitleMain::plugin_title() { return N_("Title"); }
 int TitleMain::is_realtime() { return 1; }
 int TitleMain::is_synthesis() { return 1; }
 
@@ -1107,8 +1107,7 @@ void TitleMain::build_fonts()
 		while(!feof(in))
 		{
 			char string[BCTEXTLEN], string2[BCTEXTLEN];
-			fgets(string, BCTEXTLEN, in);
-			if(!strlen(string)) break;
+			if(!fgets(string, BCTEXTLEN, in) || !strlen(string)) break;
 
 			char *in_ptr = string;
 			char *out_ptr;
@@ -1368,7 +1367,7 @@ void TitleMain::build_fonts()
 
 int TitleMain::load_freetype_face(FT_Library &freetype_library,
 	FT_Face &freetype_face,
-	char *path)
+	const char *path)
 {
 //printf("TitleMain::load_freetype_face 1\n");
 	if(!freetype_library) FT_Init_FreeType(&freetype_library);
@@ -1382,7 +1381,7 @@ int TitleMain::load_freetype_face(FT_Library &freetype_library,
 		0,
 		&freetype_face))
 	{
-		fprintf(stderr, _("TitleMain::load_freetype_face %s failed.\n"));
+		fprintf(stderr, _("TitleMain::load_freetype_face %s failed.\n"), path);
 		FT_Done_FreeType(freetype_library);
 		freetype_face = 0;
 		freetype_library = 0;
@@ -2167,7 +2166,8 @@ int TitleMain::load_defaults()
 		fseek(fd, 0, SEEK_END);
 		int64_t len = ftell(fd);
 		fseek(fd, 0, SEEK_SET);
-		fread(config.text, len, 1, fd);
+		if(fread(config.text, len, 1, fd) < 1)
+			printf("TitleMain::load_defaults - failed to load defaults");
 		config.text[len] = 0;
 //printf("TitleMain::load_defaults %s\n", config.text);
 		fclose(fd);

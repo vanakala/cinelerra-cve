@@ -126,7 +126,7 @@ BlurMain::~BlurMain()
 	}
 }
 
-char* BlurMain::plugin_title() { return N_("Blur"); }
+const char* BlurMain::plugin_title() { return N_("Blur"); }
 int BlurMain::is_realtime() { return 1; }
 
 

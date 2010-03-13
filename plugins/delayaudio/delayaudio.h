@@ -103,7 +103,7 @@ public:
 	~DelayAudio();
 
 	VFrame* new_picon();
-	char* plugin_title();
+	const char* plugin_title();
 	int is_realtime();
 	int load_defaults();
 	int save_defaults();

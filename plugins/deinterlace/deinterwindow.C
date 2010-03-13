@@ -200,7 +200,7 @@ int DeInterlaceAdaptive::handle_event()
 	return 1;
 }
 
-DeInterlaceDominanceTop::DeInterlaceDominanceTop(DeInterlaceMain *client, DeInterlaceWindow *window, int x, int y, char * title)
+DeInterlaceDominanceTop::DeInterlaceDominanceTop(DeInterlaceMain *client, DeInterlaceWindow *window, int x, int y, const char * title)
  : BC_Radial(x, y, client->config.dominance, title)
 {
 	this->client = client;
@@ -216,7 +216,7 @@ int DeInterlaceDominanceTop::handle_event()
 }
 
 
-DeInterlaceDominanceBottom::DeInterlaceDominanceBottom(DeInterlaceMain *client, DeInterlaceWindow *window, int x, int y, char * title)
+DeInterlaceDominanceBottom::DeInterlaceDominanceBottom(DeInterlaceMain *client, DeInterlaceWindow *window, int x, int y, const char * title)
  : BC_Radial(x, y, client->config.dominance, title)
 {
 	this->client = client;

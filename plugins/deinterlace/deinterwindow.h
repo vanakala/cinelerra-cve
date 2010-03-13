@@ -88,7 +88,7 @@ public:
 class DeInterlaceDominanceTop : public BC_Radial
 {
 public:
-	DeInterlaceDominanceTop(DeInterlaceMain *client, DeInterlaceWindow *window, int x, int y, char * title);
+	DeInterlaceDominanceTop(DeInterlaceMain *client, DeInterlaceWindow *window, int x, int y, const char * title);
 	int handle_event();
 	DeInterlaceMain *client;
 	DeInterlaceWindow *window;
@@ -97,7 +97,7 @@ public:
 class DeInterlaceDominanceBottom : public BC_Radial
 {
 public:
-	DeInterlaceDominanceBottom(DeInterlaceMain *client, DeInterlaceWindow *window, int x, int y, char * title);
+	DeInterlaceDominanceBottom(DeInterlaceMain *client, DeInterlaceWindow *window, int x, int y, const char * title);
 	int handle_event();
 	DeInterlaceMain *client;
 	DeInterlaceWindow *window;

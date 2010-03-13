@@ -43,7 +43,7 @@ public:
 	{
 		return new VFrame(picon_png);
 	};
-	char* plugin_title()
+	const char* plugin_title()
 	{
 		return  N_("Invert Audio");
 	};

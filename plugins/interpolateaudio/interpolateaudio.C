@@ -49,7 +49,7 @@ public:
 	~InterpolateAudioEffect();
 
 	VFrame* new_picon();
-	char* plugin_title();
+	const char* plugin_title();
 
 	int process_buffer(int64_t size, 
 		double *buffer,
@@ -93,7 +93,7 @@ InterpolateAudioEffect::~InterpolateAudioEffect()
 
 
 
-char* InterpolateAudioEffect::plugin_title()
+const char* InterpolateAudioEffect::plugin_title()
 {
 	return N_("Interpolate");
 }

@@ -91,7 +91,7 @@ public:
 	BlueDotThemeMain(PluginServer *server);
 	~BlueDotThemeMain();
 	
-	char* plugin_title();
+	const char* plugin_title();
 	Theme* new_theme();
 	
 	BlueDotTheme *theme;

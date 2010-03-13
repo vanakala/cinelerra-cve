@@ -157,7 +157,7 @@ public:
 	~FreeverbEffect();
 
 	VFrame* new_picon();
-	char* plugin_title();
+	const char* plugin_title();
 	int show_gui();
 	void raise_window();
 	int set_string();
@@ -489,7 +489,7 @@ RAISE_WINDOW_MACRO(FreeverbEffect)
 SET_STRING_MACRO(FreeverbEffect)
 
 
-char* FreeverbEffect::plugin_title() { return N_("Freeverb"); }
+const char* FreeverbEffect::plugin_title() { return N_("Freeverb"); }
 int FreeverbEffect::is_realtime() { return 1; }
 int FreeverbEffect::is_multichannel() { return 1; }
 

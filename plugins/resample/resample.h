@@ -59,7 +59,7 @@ public:
 	ResampleEffect(PluginServer *server);
 	~ResampleEffect();
 
-	char* plugin_title();
+	const char* plugin_title();
 	int get_parameters();
 	VFrame* new_picon();
 	int start_loop();

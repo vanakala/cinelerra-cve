@@ -24,7 +24,7 @@
 
 // Interpolation sections performed by other plugins
 
-static char *interpolate_shader = 
+static const char *interpolate_shader = 
 "uniform sampler2D tex;\n"
 "uniform vec2 pattern_offset;\n"
 "uniform vec2 pattern_size;\n"

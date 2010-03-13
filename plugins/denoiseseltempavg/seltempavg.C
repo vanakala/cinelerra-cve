@@ -118,7 +118,7 @@ SelTempAvgMain::~SelTempAvgMain()
 	if(history_valid) delete [] history_valid;
 }
 
-char* SelTempAvgMain::plugin_title() { return N_("Selective Temporal Averaging"); }
+const char* SelTempAvgMain::plugin_title() { return N_("Selective Temporal Averaging"); }
 int SelTempAvgMain::is_realtime() { return 1; }
 
 

@@ -161,7 +161,7 @@ int SwapMenu::create_objects()
 
 
 
-SwapItem::SwapItem(SwapMenu *menu, char *title)
+SwapItem::SwapItem(SwapMenu *menu, const char *title)
  : BC_MenuItem(title)
 {
 	this->menu = menu;
@@ -214,7 +214,7 @@ void SwapMain::reset()
 }
 
 
-char* SwapMain::plugin_title()  { return N_("Swap channels"); }
+const char* SwapMain::plugin_title()  { return N_("Swap channels"); }
 int SwapMain::is_synthesis() { return 1; }
 int SwapMain::is_realtime()  { return 1; }
 
@@ -442,7 +442,7 @@ int SwapMain::process_realtime(VFrame *input_ptr, VFrame *output_ptr)
 }
 
 
-char* SwapMain::output_to_text(int value)
+const char* SwapMain::output_to_text(int value)
 {
 	switch(value)
 	{
@@ -470,7 +470,7 @@ char* SwapMain::output_to_text(int value)
 	}
 }
 
-int SwapMain::text_to_output(char *text)
+int SwapMain::text_to_output(const char *text)
 {
 	if(!strcmp(text, _("Red"))) return RED_SRC;
 	if(!strcmp(text, _("Green"))) return GREEN_SRC;

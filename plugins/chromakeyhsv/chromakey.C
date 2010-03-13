@@ -906,7 +906,7 @@ int ChromaKeyHSV::process_buffer(VFrame *frame,
 	return 0;
 }
 
-char* ChromaKeyHSV::plugin_title() { return N_("Chroma key (HSV)"); }
+const char* ChromaKeyHSV::plugin_title() { return N_("Chroma key (HSV)"); }
 int ChromaKeyHSV::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(ChromaKeyHSV)
@@ -1071,7 +1071,7 @@ int ChromaKeyHSV::handle_opengl()
 	ChromaKeyHSV *plugin = this;
 	OUTER_VARIABLES
 
-	static char *yuv_shader = 
+	static const char *yuv_shader = 
 		"const vec3 black = vec3(0.0, 0.5, 0.5);\n"
 		"\n"
 		"vec4 yuv_to_rgb(vec4 color)\n"
@@ -1086,7 +1086,7 @@ int ChromaKeyHSV::handle_opengl()
 		"	return color;\n"
 		"}\n";
 
-	static char *rgb_shader = 
+	static const char *rgb_shader = 
 		"const vec3 black = vec3(0.0, 0.0, 0.0);\n"
 		"\n"
 		"vec4 yuv_to_rgb(vec4 color)\n"
@@ -1098,7 +1098,7 @@ int ChromaKeyHSV::handle_opengl()
 		"	return color;\n"
 		"}\n";
 
-	static char *hsv_shader = 
+	static const char *hsv_shader = 
 		"vec4 rgb_to_hsv(vec4 color)\n"
 		"{\n"
 			RGB_TO_HSV_FRAG("color")
@@ -1112,19 +1112,19 @@ int ChromaKeyHSV::handle_opengl()
 		"}\n"
 		"\n";
 
-	static char *show_rgbmask_shader = 
+	static const char *show_rgbmask_shader = 
 		"vec4 show_mask(vec4 color, vec4 color2)\n"
 		"{\n"
 		"	return vec4(1.0, 1.0, 1.0, min(color.a, color2.a));"
 		"}\n";
 
-	static char *show_yuvmask_shader = 
+	static const char *show_yuvmask_shader = 
 		"vec4 show_mask(vec4 color, vec4 color2)\n"
 		"{\n"
 		"	return vec4(1.0, 0.5, 0.5, min(color.a, color2.a));"
 		"}\n";
 
-	static char *nomask_shader = 
+	static const char *nomask_shader = 
 		"vec4 show_mask(vec4 color, vec4 color2)\n"
 		"{\n"
 		"	return vec4(color.rgb, min(color.a, color2.a));"
@@ -1139,7 +1139,7 @@ SET_TRACE
 	get_output()->init_screen();
 
 SET_TRACE
-	char *shader_stack[] = { 0, 0, 0, 0, 0 };
+	const char *shader_stack[] = { 0, 0, 0, 0, 0 };
 
 SET_TRACE
 	switch(get_output()->get_color_model())

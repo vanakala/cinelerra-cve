@@ -45,7 +45,7 @@ public:
 // required for all non realtime/multichannel plugins
 
 	VFrame* new_picon();
-	char* plugin_title();
+	const char* plugin_title();
 	int is_realtime();
 	int is_multichannel();
 	int get_parameters();

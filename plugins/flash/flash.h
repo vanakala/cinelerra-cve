@@ -38,7 +38,7 @@ public:
 	int uses_gui();
 	int is_transition();
 	int is_video();
-	char* plugin_title();
+	const char* plugin_title();
 	VFrame* new_picon();
 };
 

@@ -143,7 +143,7 @@ public:
 		int64_t start_position,
 		double frame_rate);
 	int is_realtime();
-	char* plugin_title();
+	const char* plugin_title();
 	VFrame* new_picon();
 	int load_configuration();
 	int load_defaults();
@@ -590,7 +590,7 @@ int HueEffect::process_buffer(VFrame *frame,
 	return 0;
 }
 
-char* HueEffect::plugin_title() { return N_("Hue saturation"); }
+const char* HueEffect::plugin_title() { return N_("Hue saturation"); }
 int HueEffect::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(HueEffect)
@@ -661,7 +661,7 @@ void HueEffect::update_gui()
 int HueEffect::handle_opengl()
 {
 #ifdef HAVE_GL
-	static char *yuv_saturation_frag = 
+	static const char *yuv_saturation_frag = 
 		"uniform sampler2D tex;\n"
 		"uniform float s_offset;\n"
 		"uniform float v_offset;\n"
@@ -677,7 +677,7 @@ int HueEffect::handle_opengl()
 		"}\n";
 
 
-	static char *yuv_frag = 
+	static const char *yuv_frag = 
 		"uniform sampler2D tex;\n"
 		"uniform float h_offset;\n"
 		"uniform float s_offset;\n"
@@ -697,7 +697,7 @@ int HueEffect::handle_opengl()
 		"	gl_FragColor = pixel;\n"
 		"}\n";
 
-	static char *rgb_frag = 
+	static const char *rgb_frag = 
 		"uniform sampler2D tex;\n"
 		"uniform float h_offset;\n"
 		"uniform float s_offset;\n"

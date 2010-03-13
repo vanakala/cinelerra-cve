@@ -66,7 +66,7 @@ SUVMain::~SUVMain()
 {
 }
 
-char* SUVMain::plugin_title()
+const char* SUVMain::plugin_title()
 {
 	return "S.U.V.";
 }

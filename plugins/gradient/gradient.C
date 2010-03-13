@@ -595,7 +595,7 @@ GradientMain::~GradientMain()
 	if(overlayer) delete overlayer;
 }
 
-char* GradientMain::plugin_title() { return N_("Gradient"); }
+const char* GradientMain::plugin_title() { return N_("Gradient"); }
 int GradientMain::is_realtime() { return 1; }
 
 
@@ -842,7 +842,7 @@ void GradientMain::read_data(KeyFrame *keyframe)
 int GradientMain::handle_opengl()
 {
 #ifdef HAVE_GL
-	char *head_frag =
+	const char *head_frag =
 		"uniform sampler2D tex;\n"
 		"uniform float half_w;\n"
 		"uniform float half_h;\n"
@@ -861,32 +861,32 @@ int GradientMain::handle_opengl()
 		"{\n"
 		"	vec2 out_coord = gl_TexCoord[0].st;\n";
 
-	char *linear_shape = 
+	const char *linear_shape = 
 		"	vec2 in_coord = vec2(out_coord.x - half_w, half_h - out_coord.y);\n"
 		"	float mag = half_gradient_size - \n"
 		"		(in_coord.x * sin_angle + in_coord.y * cos_angle);\n";
 
-	char *radial_shape =
+	const char *radial_shape =
 		"	vec2 in_coord = vec2(out_coord.x - center_x, out_coord.y - center_y);\n"
 		"	float mag = length(vec2(in_coord.x, in_coord.y));\n";
 
 // No clamp function in NVidia
-	char *linear_rate = 
+	const char *linear_rate = 
 		"	mag = min(max(mag, in_radius), out_radius);\n"
 		"	float opacity = (mag - in_radius) / radius_diff;\n";
 
 // NVidia warns about exp, but exp is in the GLSL spec.
-	char *log_rate = 
+	const char *log_rate = 
 		"	mag = max(mag, in_radius);\n"
 		"	float opacity = 1.0 - \n"
 		"		exp(1.0 * -(mag - in_radius) / radius_diff);\n";
 
-	char *square_rate = 
+	const char *square_rate = 
 		"	mag = min(max(mag, in_radius), out_radius);\n"
 		"	float opacity = pow((mag - in_radius) / radius_diff, 2.0);\n"
 		"	opacity = min(opacity, 1.0);\n";
 
-	char *tail_frag = 
+	const char *tail_frag = 
 		"	vec4 color = mix(in_color, out_color, opacity);\n"
 		"	vec4 bg_color = texture2D(tex, out_coord);\n"
 		"	gl_FragColor.rgb = mix(bg_color.rgb, color.rgb, color.a);\n"
@@ -894,7 +894,7 @@ int GradientMain::handle_opengl()
 		"}\n";
 
 
-	char *shader_stack[5] = { 0, 0, 0, 0, 0 };
+	const char *shader_stack[5] = { 0, 0, 0, 0, 0 };
 	shader_stack[0] = head_frag;
 
 	switch(config.shape)

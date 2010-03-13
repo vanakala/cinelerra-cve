@@ -59,7 +59,7 @@ public:
 	
 	DB db;
 
-	char* plugin_title();
+	const char* plugin_title();
 	VFrame* new_picon();
 	int is_realtime();
 	int process_realtime(int64_t size, double *input_ptr, double *output_ptr);

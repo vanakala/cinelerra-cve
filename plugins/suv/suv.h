@@ -87,7 +87,7 @@ public:
 	SUVMain(PluginServer *server);
 	~SUVMain();
 	
-	char* plugin_title();
+	const char* plugin_title();
 	Theme* new_theme();
 	
 	SUV *theme;

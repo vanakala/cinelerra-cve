@@ -46,7 +46,7 @@ FlashMain::~FlashMain()
 {
 }
 
-char* FlashMain::plugin_title() { return N_("Flash"); }
+const char* FlashMain::plugin_title() { return N_("Flash"); }
 int FlashMain::is_video() { return 1; }
 int FlashMain::is_transition() { return 1; }
 int FlashMain::uses_gui() { return 0; }

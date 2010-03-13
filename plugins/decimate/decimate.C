@@ -137,7 +137,7 @@ public:
 		int64_t start_position,
 		double frame_rate);
 	int is_realtime();
-	char* plugin_title();
+	const char* plugin_title();
 	VFrame* new_picon();
 	int show_gui();
 	int load_configuration();
@@ -761,7 +761,7 @@ int Decimate::process_buffer(VFrame *frame,
 
 
 
-char* Decimate::plugin_title() { return N_("Decimate"); }
+const char* Decimate::plugin_title() { return N_("Decimate"); }
 int Decimate::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(Decimate) 

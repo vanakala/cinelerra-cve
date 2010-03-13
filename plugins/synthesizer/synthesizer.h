@@ -495,7 +495,7 @@ public:
 	int load_configuration();
 	int load_defaults();
 	VFrame* new_picon();
-	char* plugin_title();
+	const char* plugin_title();
 	void read_data(KeyFrame *keyframe);
 	void save_data(KeyFrame *keyframe);
 	int save_defaults();

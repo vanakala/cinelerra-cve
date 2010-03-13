@@ -534,7 +534,7 @@ int InterpolateVideo::is_realtime()
 	return 1;
 }
 
-char* InterpolateVideo::plugin_title()
+const char* InterpolateVideo::plugin_title()
 {
 	return N_("Interpolate");
 }

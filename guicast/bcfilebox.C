@@ -920,7 +920,7 @@ int BC_FileBox::refresh()
 	return 0;
 }
 
-int BC_FileBox::update_filter(char *filter)
+int BC_FileBox::update_filter(const char *filter)
 {
 	fs->set_filter(filter);
 	fs->update(0);

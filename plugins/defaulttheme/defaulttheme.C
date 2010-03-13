@@ -66,7 +66,7 @@ BlondThemeMain::~BlondThemeMain()
 {
 }
 
-char* BlondThemeMain::plugin_title()
+const char* BlondThemeMain::plugin_title()
 {
 	return "Blond-cv";
 }

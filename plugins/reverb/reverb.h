@@ -59,8 +59,8 @@ public:
 	~Reverb();
 
 	void update_gui();
-	int load_from_file(char *data);
-	int save_to_file(char *data);
+	int load_from_file(const char *data);
+	int save_to_file(const char *data);
 	int load_configuration();
 	
 // data for reverb
@@ -83,7 +83,7 @@ public:
 	int is_realtime();
 	int is_synthesis();
 	int is_multichannel();
-	char* plugin_title();
+	const char* plugin_title();
 	int show_gui();
 	int set_string();
 	void save_data(KeyFrame *keyframe);

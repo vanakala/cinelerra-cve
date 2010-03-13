@@ -177,7 +177,7 @@ public:
 		double frame_rate);
 	int handle_opengl();
 	int is_realtime();
-	char* plugin_title();
+	const char* plugin_title();
 	VFrame* new_picon();
 	int load_configuration();
 	int load_defaults();

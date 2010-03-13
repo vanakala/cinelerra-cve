@@ -73,7 +73,7 @@ public:
 		int x, 
 		int y, 
 		int value, 
-		char *string);
+		const char *string);
 	int handle_event();
 
 	RotateEffect *plugin;
@@ -192,7 +192,7 @@ public:
 		int64_t start_position,
 		double frame_rate);
 	int is_realtime();
-	char* plugin_title();
+	const char* plugin_title();
 	VFrame* new_picon();
 	int show_gui();
 	void raise_window();
@@ -294,7 +294,7 @@ RotateToggle::RotateToggle(RotateWindow *window,
 	int x, 
 	int y, 
 	int value, 
-	char *string)
+	const char *string)
  : BC_Radial(x, y, init_value, string)
 {
 	this->value = value;
@@ -626,7 +626,7 @@ RotateEffect::~RotateEffect()
 
 
 
-char* RotateEffect::plugin_title() { return N_("Rotate"); }
+const char* RotateEffect::plugin_title() { return N_("Rotate"); }
 int RotateEffect::is_realtime() { return 1; }
 
 NEW_PICON_MACRO(RotateEffect)
