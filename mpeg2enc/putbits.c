@@ -48,7 +48,7 @@ void slice_initbits(slice_engine_t *engine)
 void slice_testbits(slice_engine_t *engine)
 {
 	int i;
-	printf("slice test size %x outcnt %d outbfr %x\n", engine->slice_size, engine->outcnt, engine->outbfr << engine->outcnt);
+	printf("slice test size %lx outcnt %d outbfr %x\n", engine->slice_size, engine->outcnt, engine->outbfr << engine->outcnt);
 /*
  * 	for(i = 0; i < engine->slice_size; i++)
  * 		printf("%02x ", engine->slice_buffer[i]);

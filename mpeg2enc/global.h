@@ -585,7 +585,7 @@ void motion_estimation _ANSI_ARGS_((pict_data_s *picture,
 	int secondfield, int ipflag));
 
 /* mpeg2enc.c */
-void error _ANSI_ARGS_((char *text));
+void error _ANSI_ARGS_((const char *text));
 
 /* predict.c */
 void predict _ANSI_ARGS_((pict_data_s *picture, 

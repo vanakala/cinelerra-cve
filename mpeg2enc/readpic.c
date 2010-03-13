@@ -174,8 +174,8 @@ static void read_stdin(long number, unsigned char *frame[])
 
 	if(chroma_format == 1) chroma_denominator = 2;
 
-	fread(data, 4, 1, stdin_fd);
-
+	if(fread(data, 4, 1, stdin_fd) < 1)
+		goto read_error;
 // Terminate encoding before processing this frame
 	if(data[0] == 0xff && data[1] == 0xff && data[2] == 0xff && data[3] == 0xff)
 	{
@@ -183,9 +183,13 @@ static void read_stdin(long number, unsigned char *frame[])
 		return;
 	}
 
-	fread(frame[0], width * height, 1, stdin_fd);
-	fread(frame[1], width / 2 * height / chroma_denominator, 1, stdin_fd);
-	fread(frame[2], width / 2 * height / chroma_denominator, 1, stdin_fd);
+	if(fread(frame[0], width * height, 1, stdin_fd) < 1
+	    || fread(frame[1], width / 2 * height / chroma_denominator, 1, stdin_fd) < 1
+	    || fread(frame[2], width / 2 * height / chroma_denominator, 1, stdin_fd) < 1){
+read_error:
+		fprintf(stderr, "Failed to read frame from stdin\n");
+		frames_scaled = 0;
+	}
 }
 
 static void read_buffers(long number, unsigned char *frame[])

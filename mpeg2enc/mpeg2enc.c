@@ -337,10 +337,9 @@ static void init()
 //printf("init 5\n");
 }
 
-void error(text)
-char *text;
+void error(const char *text)
 {
-  fprintf(stderr,text);
+  fputs(text, stderr);
   putc('\n',stderr);
   exit(1);
 }
@@ -355,9 +354,8 @@ int calculate_smp()
 	if(proc = fopen("/proc/cpuinfo", "r"))
 	{
 		char string[1024];
-		while(!feof(proc))
+		while(fgets(string, 1024, proc))
 		{
-			fgets(string, 1024, proc);
 			if(!strncasecmp(string, "processor", 9))
 			{
 				char *ptr = strchr(string, ':');
@@ -741,10 +739,10 @@ INTTOYES(prog_seq));
 		unsigned char data[1024];
 		nframes =                  0x7fffffff;
 		
-		fgets(data, 1024, stdin_fd);
-		horizontal_size =          atol(data);
-		fgets(data, 1024, stdin_fd);
-		vertical_size =            atol(data);
+		if(fgets(data, 1024, stdin_fd))
+			horizontal_size =          atol(data);
+		if(fgets(data, 1024, stdin_fd))
+			vertical_size =            atol(data);
 	}
 	else
 	if(do_buffers)
@@ -823,9 +821,8 @@ INTTOYES(prog_seq));
 	{
 		char data[1024];
 		
-		fgets(data, 1024, stdin_fd);
-		
-		input_frame_rate = atof(data);
+		if(fgets(data, 1024, stdin_fd))
+			input_frame_rate = atof(data);
 	}
 	
 	
@@ -859,7 +856,7 @@ INTTOYES(prog_seq));
 // Show status
 	if(verbose)
 	{
-		printf("Encoding: %s frames %ld\n", out_path, nframes);
+		printf("Encoding: %s frames %d\n", out_path, nframes);
 
     	if(fixed_mquant == 0) 
     		printf("   bitrate %.0f\n", bit_rate);
