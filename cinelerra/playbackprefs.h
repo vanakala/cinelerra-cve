@@ -278,17 +278,5 @@ public:
 	PlaybackPrefs *playback;
 };
 
-class PlaybackSubtitleNumber : public BC_TumbleTextBox
-{
-public:
-	PlaybackSubtitleNumber(int x, 
-		int y, 
-		PreferencesWindow *pwindow, 
-		PlaybackPrefs *playback);
-	int handle_event();
-	PreferencesWindow *pwindow;
-	PlaybackPrefs *playback;
-};
-
 
 #endif

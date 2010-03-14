@@ -79,7 +79,6 @@ EDLSession::EDLSession(EDL *edl)
 	interlace_mode = BC_ILACE_MODE_UNDETECTED;
 	record_speed = 24;
 	decode_subtitles = 0;
-	subtitle_number = 0;
 }
 
 EDLSession::~EDLSession()
@@ -112,7 +111,6 @@ int EDLSession::need_rerender(EDLSession *ptr)
 		(test_playback_edits != ptr->test_playback_edits) ||
 		(playback_buffer != ptr->playback_buffer) ||
 		(decode_subtitles != ptr->decode_subtitles) ||
-		(subtitle_number != ptr->subtitle_number) ||
 		(interpolate_raw != ptr->interpolate_raw) ||
 		(white_balance_raw != ptr->white_balance_raw);
 }
@@ -127,8 +125,7 @@ void EDLSession::equivalent_output(EDLSession *session, double *result)
 		session->interpolate_raw != interpolate_raw ||
 		session->white_balance_raw != white_balance_raw ||
 		session->mpeg4_deblock != mpeg4_deblock ||
-		session->decode_subtitles != decode_subtitles ||
-		session->subtitle_number != subtitle_number)
+		session->decode_subtitles != decode_subtitles)
 		*result = 0;
 
 // If it's before the current brender_start, render extra data.
@@ -272,9 +269,7 @@ int EDLSession::load_defaults(BC_Hash *defaults)
 	view_follows_playback = defaults->get("VIEW_FOLLOWS_PLAYBACK", 1);
 	vwindow_meter = defaults->get("VWINDOW_METER", 1);
 
-
 	decode_subtitles = defaults->get("DECODE_SUBTITLES", decode_subtitles);
-	subtitle_number = defaults->get("SUBTITLE_NUMBER", subtitle_number);
 
 	vwindow_folder[0] = 0;
 	vwindow_source = -1;
@@ -403,7 +398,6 @@ int EDLSession::save_defaults(BC_Hash *defaults)
 	defaults->update("VWINDOW_ZOOM", vwindow_zoom);
 
 	defaults->update("DECODE_SUBTITLES", decode_subtitles);
-	defaults->update("SUBTITLE_NUMBER", subtitle_number);
 
 
 	return 0;
@@ -441,8 +435,6 @@ void EDLSession::boundaries()
 	Workarounds::clamp(crop_y2, 0, output_h);
 	if(brender_start < 0) brender_start = 0.0;
 
-	Workarounds::clamp(subtitle_number, 0, 31);
-	
 // Correct framerates
 	frame_rate = Units::fix_framerate(frame_rate);
 //printf("EDLSession::boundaries 1 %p %p\n", edl->assets, edl->tracks);
@@ -564,7 +556,6 @@ int EDLSession::load_xml(FileXML *file,
 		vwindow_zoom = file->tag.get_property("VWINDOW_ZOOM", vwindow_zoom);
 
 		decode_subtitles = file->tag.get_property("DECODE_SUBTITLES", decode_subtitles);
-		subtitle_number = file->tag.get_property("subtitle_number", subtitle_number);
 		boundaries();
 	}
 	
@@ -629,7 +620,6 @@ int EDLSession::save_xml(FileXML *file)
 
 
 	file->tag.set_property("DECODE_SUBTITLES", decode_subtitles);
-	file->tag.set_property("subtitle_number", subtitle_number);
 
 
 
@@ -806,7 +796,6 @@ int EDLSession::copy(EDLSession *session)
 	vwindow_source = session->vwindow_source;
 	vwindow_zoom = session->vwindow_zoom;
 
-	subtitle_number = session->subtitle_number;
 	decode_subtitles = session->decode_subtitles;
 	
 	return 0;
@@ -825,7 +814,7 @@ void EDLSession::dump()
 {
 	printf("EDLSession::dump\n");
 	printf("    audio_tracks=%d audio_channels=%d sample_rate=%lld\n"
-			"video_tracks=%d frame_rate=%f output_w=%d output_h=%d aspect_w=%f aspect_h=%f decode subtitles=%d subtitle_number=%d\n", 
+			"video_tracks=%d frame_rate=%f output_w=%d output_h=%d aspect_w=%f aspect_h=%f decode subtitles=%d\n", 
 		audio_tracks, 
 		audio_channels, 
 		sample_rate, 
@@ -835,6 +824,5 @@ void EDLSession::dump()
 		output_h, 
 		aspect_w, 
 		aspect_h,
-		decode_subtitles,
-		subtitle_number);
+		decode_subtitles);
 }

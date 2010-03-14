@@ -179,21 +179,14 @@ SET_TRACE
 	add_subwindow(preload = new PlaybackPreload(x + 210, y, pwindow, this, string));
 
 	y += preload->get_h() + 5;
-	add_subwindow(title1 = new BC_Title(x, y, _("DVD Subtitle to display:")));
-	PlaybackSubtitleNumber *subtitle_number;
-	subtitle_number = new PlaybackSubtitleNumber(x + title1->get_w() + 10, 
-		y, 
-		pwindow, 
-		this);
-	subtitle_number->create_objects();
 
 	PlaybackSubtitle *subtitle_toggle;
 	add_subwindow(subtitle_toggle = new PlaybackSubtitle(
-		x + title1->get_w() + 10 + subtitle_number->get_w() + 10, 
+		x,
 		y, 
 		pwindow, 
 		this));
-	y += subtitle_number->get_h();
+	y += subtitle_toggle->get_h();
 
 
 	add_subwindow(interpolate_raw = new PlaybackInterpolateRaw(
@@ -571,7 +564,7 @@ PlaybackSubtitle::PlaybackSubtitle(int x,
  : BC_CheckBox(x, 
  	y, 
 	pwindow->thread->edl->session->decode_subtitles,
-	_("Enable subtitles"))
+	_("Enable DVD subtitles"))
 {
 	this->pwindow = pwindow;
 	this->playback = playback;
@@ -582,38 +575,6 @@ int PlaybackSubtitle::handle_event()
 	pwindow->thread->edl->session->decode_subtitles = get_value();
 	return 1;
 }
-
-
-
-
-
-
-
-
-
-
-PlaybackSubtitleNumber::PlaybackSubtitleNumber(int x, 
-	int y, 
-	PreferencesWindow *pwindow, 
-	PlaybackPrefs *playback)
- : BC_TumbleTextBox(playback,
- 	pwindow->thread->edl->session->subtitle_number,
- 	0,
-	31,
-	x, 
- 	y, 
-	50)
-{
-	this->pwindow = pwindow;
-	this->playback = playback;
-}
-
-int PlaybackSubtitleNumber::handle_event()
-{
-	pwindow->thread->edl->session->subtitle_number = atoi(get_text());
-	return 1;
-}
-
 
 
 

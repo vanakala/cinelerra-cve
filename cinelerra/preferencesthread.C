@@ -258,14 +258,13 @@ int PreferencesThread::apply_settings()
 
 	if(rerender)
 	{
-//printf("PreferencesThread::apply_settings 1\n");
 // This doesn't stop and restart, only reloads the assets before
 // the next play command.
 		mwindow->cwindow->playback_engine->que->send_command(CURRENT_FRAME,
 			CHANGE_ALL,
 			mwindow->edl,
 			1);
-//printf("PreferencesThread::apply_settings 10\n");
+		mwindow->vwindow->change_source();
 	}
 
 	if(redraw_times || redraw_overlays)

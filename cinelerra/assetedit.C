@@ -44,6 +44,7 @@
 #include "interlacemodes.h"
 #include "edl.h"
 #include "edlsession.h"
+#include "vwindow.h"
 
 #include <string.h>
 
@@ -129,6 +130,7 @@ void AssetEdit::run()
 
 
 				mwindow->awindow->gui->async_update_assets();
+				mwindow->vwindow->change_source();
 
 				mwindow->restart_brender();
 				mwindow->sync_parameters(CHANGE_ALL);

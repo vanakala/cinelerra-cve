@@ -81,7 +81,6 @@ VWindowGUI::~VWindowGUI()
 
 void VWindowGUI::change_source(EDL *edl, char *title)
 {
-printf("VWindowGUI::change_source\n");
 	update_sources(title);
 	char string[BCTEXTLEN];
 	if(title[0]) 

@@ -260,8 +260,7 @@ SET_TRACE
 				asset->subtitles = mpeg3_subtitle_tracks(fd);
 		
 // Enable subtitles
-				if(file->playback_subtitle >= 0)
-					mpeg3_show_subtitle(fd, file->playback_subtitle);
+				mpeg3_show_subtitle(fd, file->playback_subtitle);
 			}
 		}
 	}
@@ -834,12 +833,10 @@ int FileMPEG::set_video_position(int64_t x)
 {
 	if(!fd) return 1;
 	if(x >= 0 && x < asset->video_length)
-	{
-//printf("FileMPEG::set_video_position 1 %lld\n", x);
 		mpeg3_set_frame(fd, x, file->current_layer);
-	}
 	else
 		return 1;
+	return 0;
 }
 
 int64_t FileMPEG::get_memory_usage()
