@@ -731,26 +731,25 @@ void BatchRenderGUI::create_objects()
 
 	x = x1;
 
+	int xx1, yy1;
 	y += 45;
 	add_subwindow(new_batch = new BatchRenderNew(thread, 
 		x, 
 		y));
-	x += new_batch->get_w() + 10;
+	xx1 = x + new_batch->get_w() + 40;
+	yy1 = y + new_batch->get_h() + 20;
 
 	add_subwindow(delete_batch = new BatchRenderDelete(thread, 
-		x, 
+		xx1, 
 		y));
-	x += delete_batch->get_w() + 10;
 
 	add_subwindow(savelist_batch = new BatchRenderSaveList(thread, 
 		x, 
-		y));
-	x += savelist_batch->get_w() + 10;
+		yy1));
 
 	add_subwindow(loadlist_batch = new BatchRenderLoadList(thread, 
-		x, 
-		y));
-	x += loadlist_batch->get_w() + 10;
+		xx1, 
+		yy1));
 
 
 	x = x2;
@@ -813,20 +812,16 @@ int BatchRenderGUI::resize_event(int w, int h)
 	x += edl_path_text->get_w();
 	edl_path_browse->reposition_window(x, y);
 
- 	x = x1;
-// 	y += 30;
-// 	status_title->reposition_window(x, y);
-// 	x = x3;
-// 	status_text->reposition_window(x, y);
-// 	x = x1;
-// 	y += 30;
-// 	progress_bar->reposition_window(x, y, w - x - 10);
+	x = x1;
+	y += 45;
 
-	y += 30;
+	int xx, yy;
 	new_batch->reposition_window(x, y);
-	x += new_batch->get_w() + 10;
-	delete_batch->reposition_window(x, y);
-	x += delete_batch->get_w() + 10;
+	xx = x + new_batch->get_w() + 40;
+	yy = y + new_batch->get_h() + 20;
+	delete_batch->reposition_window(xx, y);
+	savelist_batch->reposition_window(x, yy);
+	loadlist_batch->reposition_window(xx, yy);
 
 	x = x2;
 	y = y2;

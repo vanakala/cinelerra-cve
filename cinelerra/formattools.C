@@ -392,7 +392,7 @@ void FormatTools::reposition_window(int &init_x, int &init_y)
 		if(prompt_audio) audio_switch->reposition_window(x, y);
 
 		x = init_x;
-		y += aparams_button->get_h() + 20;
+		y += aparams_button->get_h() + 5;
 		if(prompt_audio_channels)
 		{
 			channels_title->reposition_window(x, y);

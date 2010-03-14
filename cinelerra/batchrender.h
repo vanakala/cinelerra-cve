@@ -295,9 +295,6 @@ public:
 	BrowseButton *edl_path_browse;
 	BatchRenderEDLPath *edl_path_text;
 	BC_Title *edl_path_title;
-//	BC_Title *status_title;
-//	BC_Title *status_text;
-//	BC_ProgressBar *progress_bar;
 	BC_Title *list_title;
 	BatchRenderNew *new_batch;
 	BatchRenderDelete *delete_batch;

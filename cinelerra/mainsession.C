@@ -164,7 +164,7 @@ void MainSession::default_window_positions()
 	rmonitor_w = root_w - rmonitor_x;
 	rmonitor_h = rwindow_h;
 
-	batchrender_w = 540;
+	batchrender_w = 680;
 	batchrender_h = 340;
 	batchrender_x = root_w / 2 - batchrender_w / 2;
 	batchrender_y = root_h / 2 - batchrender_h / 2;
