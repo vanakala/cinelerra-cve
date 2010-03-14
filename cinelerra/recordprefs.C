@@ -82,8 +82,8 @@ int RecordPrefs::create_objects()
 		0,  // Select compressors to be offered
 		1,  // Prompt for recording options
 		0,  // If nonzero, prompt for insertion strategy
-		0); // Supply file formats for background rendering
-
+		0, // Supply file formats for background rendering
+		1); // Horizontal layout
 
 
 

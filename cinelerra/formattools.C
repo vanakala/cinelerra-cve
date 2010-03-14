@@ -79,7 +79,8 @@ int FormatTools::create_objects(int &init_x,
 						const char *locked_compressor,
 						int recording,
 						int *strategy,
-						int brender)
+						int brender,
+						int horizontal_layout)
 {
 	int x = init_x;
 	int y = init_y;
@@ -177,7 +178,7 @@ int FormatTools::create_objects(int &init_x,
 		}
 		x = init_x;
 		ylev = y;
-		y += aparams_button->get_h() + 20;
+		y += aparams_button->get_h() + 5;
 
 // Audio channels only used for recording.
 // 		if(prompt_audio_channels)
@@ -191,18 +192,15 @@ int FormatTools::create_objects(int &init_x,
 // 			x = init_x;
 // 		}
 
-//printf("FormatTools::create_objects 6\n");
 		aparams_thread = new FormatAThread(this);
 	}
 
-//printf("FormatTools::create_objects 7\n");
 	if(do_video)
 	{
-		if(do_audio){
+		if(horizontal_layout && do_audio){
 			x += 370;
 			y = ylev;
 		}
-//printf("FormatTools::create_objects 8\n");
 		window->add_subwindow(video_title = new BC_Title(x, y, _("Video:"), LARGEFONT,  BC_WindowBase::get_resources()->audiovideo_color));
 		x += 80;
 		if(prompt_video_compression)
@@ -211,7 +209,6 @@ int FormatTools::create_objects(int &init_x,
 			x += vparams_button->get_w() + 10;
 		}
 
-//printf("FormatTools::create_objects 9\n");
 		if(prompt_video)
 		{
 			window->add_subwindow(video_switch = new FormatVideo(x, y, this, asset->video_data));
@@ -222,12 +219,9 @@ int FormatTools::create_objects(int &init_x,
 			y += vparams_button->get_h();
 		}
 
-//printf("FormatTools::create_objects 10\n");
 		y += 10;
 		vparams_thread = new FormatVThread(this);
 	}
-
-//printf("FormatTools::create_objects 11\n");
 
 	x = init_x;
 	if(strategy)
@@ -235,8 +229,6 @@ int FormatTools::create_objects(int &init_x,
 		window->add_subwindow(multiple_files = new FormatMultiple(mwindow, x, y, strategy));
 		y += multiple_files->get_h() + 10;
 	}
-
-//printf("FormatTools::create_objects 12\n");
 
 	init_y = y;
 	return 0;

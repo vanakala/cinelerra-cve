@@ -62,7 +62,8 @@ public:
 						const char *locked_compressor,  // Select compressors to be offered
 						int recording, // Change captions for recording
 						int *strategy,  // If nonzero, prompt for insertion strategy
-						int brender); // Supply file formats for background rendering
+						int brender, // Supply file formats for background rendering
+						int horizontal_layout = 0); // audio & video are placed on one line
 // In recording preferences, aspects of the format are locked 
 // depending on the driver used.
 	void update_driver(int driver);

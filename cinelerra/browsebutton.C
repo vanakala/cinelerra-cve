@@ -151,6 +151,7 @@ BrowseButtonWindow::BrowseButtonWindow(MWindow *mwindow,
 	0,
 	mwindow->theme->browse_pad)
 {
+	set_icon(mwindow->theme->get_image("mwindow_icon"));
 }
 
 BrowseButtonWindow::~BrowseButtonWindow() 
