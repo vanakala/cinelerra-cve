@@ -1,6 +1,7 @@
 #include "graphics.h"
 
 #include <string.h>
+#include <stdlib.h>
 
 /* Graphics acceleration routines */
 

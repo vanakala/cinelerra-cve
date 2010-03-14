@@ -352,7 +352,7 @@ static int writes_colormodel(quicktime_t *file,
 
 static int set_parameter(quicktime_t *file, 
 		int track, 
-		char *key, 
+		const char *key,
 		void *value)
 {
 	quicktime_jpeg_codec_t *codec = ((quicktime_codec_t*)file->vtracks[track].codec)->priv;

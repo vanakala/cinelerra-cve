@@ -449,7 +449,7 @@ static int writes_colormodel(quicktime_t *file,
 
 static int set_parameter(quicktime_t *file, 
 		int track, 
-		char *key, 
+		const char *key, 
 		void *value)
 {
 	quicktime_video_map_t *vtrack = &(file->vtracks[track]);

@@ -549,7 +549,7 @@ static int encode(quicktime_t *file, unsigned char **row_pointers, int track)
 
 static int set_parameter(quicktime_t *file,
 	int track,
-	char *key,
+	const char *key,
 	void *value)
 {
 	quicktime_video_map_t *vtrack = &(file->vtracks[track]);

@@ -54,9 +54,9 @@ void quicktime_mdhd_dump(quicktime_mdhd_t *mdhd)
 	printf("    flags %ld\n", mdhd->flags);
 	printf("    creation_time %lu\n", mdhd->creation_time);
 	printf("    modification_time %lu\n", mdhd->modification_time);
-	printf("    time_scale %d\n", mdhd->time_scale);
+	printf("    time_scale %ld\n", mdhd->time_scale);
 	printf("    duration %ld\n", mdhd->duration);
-	printf("    language %ld\n", mdhd->language);
+	printf("    language %d\n", mdhd->language);
 	printf("    quality %d\n", mdhd->quality);
 }
 

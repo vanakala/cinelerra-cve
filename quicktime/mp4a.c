@@ -376,7 +376,7 @@ static void flush(quicktime_t *file, int track)
 
 static int set_parameter(quicktime_t *file, 
 	int track, 
-	char *key, 
+	const char *key, 
 	void *value)
 {
 	quicktime_audio_map_t *atrack = &(file->atracks[track]);
