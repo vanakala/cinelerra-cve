@@ -1,6 +1,6 @@
-#include "../mpeg3demux.h"
-#include "../mpeg3private.h"
-#include "../mpeg3protos.h"
+#include "mpeg3demux.h"
+#include "mpeg3private.h"
+#include "mpeg3protos.h"
 #include "mpeg3video.h"
 
 #include <stdio.h>
@@ -356,7 +356,7 @@ int mpeg3video_ext_user_data(mpeg3video_t *video)
 
 int mpeg3video_getgophdr(mpeg3video_t *video)
 {
-	int drop_flag, closed_gop, broken_link;
+	int drop_flag, broken_link;
 
 	video->has_gops = 1;
 	drop_flag = mpeg3bits_getbit_noptr(video->vstream);
@@ -365,7 +365,7 @@ int mpeg3video_getgophdr(mpeg3video_t *video)
 	mpeg3bits_getbit_noptr(video->vstream);
 	video->gop_timecode.second = mpeg3bits_getbits(video->vstream, 6);
 	video->gop_timecode.frame = mpeg3bits_getbits(video->vstream, 6);
-	closed_gop = mpeg3bits_getbit_noptr(video->vstream);
+	video->closed_gop = mpeg3bits_getbit_noptr(video->vstream);
 	broken_link = mpeg3bits_getbit_noptr(video->vstream);
 
 	return mpeg3bits_error(video->vstream);
@@ -375,11 +375,11 @@ int mpeg3video_getgophdr(mpeg3video_t *video)
 
 int mpeg3video_getpicturehdr(mpeg3video_t *video)
 {
-	int temp_ref, vbv_delay;
+	int vbv_delay;
 
 	video->pict_scal = 0; /* unless overwritten by pict. spat. scal. ext. */
 
-	temp_ref = mpeg3bits_getbits(video->vstream, 10);
+	video->temp_ref = mpeg3bits_getbits(video->vstream, 10);
 	video->pict_type = mpeg3bits_getbits(video->vstream, 3);
 	vbv_delay = mpeg3bits_getbits(video->vstream, 16);
 

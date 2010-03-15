@@ -789,7 +789,6 @@ struct mpeg3video
 	pthread_mutex_t test_lock;
 
 	int blockreadsize;
-	int baseframe;        /* Number of first keyframe */
 	int maxframe;         /* Max value of frame num to read */
 	int64_t byte_seek;   /* Perform absolute byte seek before the next frame is read */
 	int frame_seek;        /* Perform a frame seek before the next frame is read */
@@ -799,6 +798,7 @@ struct mpeg3video
 	int bitrate;
 	mpeg3_timecode_t gop_timecode;     /* Timecode for the last GOP header read. */
 	int has_gops; /* Some streams have no GOPs so try sequence start codes instead */
+	int closed_gop;
 
 /* These are only available from elementary streams. */
 	int first_frame;     /* Number of first frame stored in timecode */
@@ -820,6 +820,7 @@ struct mpeg3video
 	int horizontal_size, vertical_size, mb_width, mb_height;
 	int coded_picture_width,  coded_picture_height;
 	int chroma_format, chrom_width, chrom_height, blk_cnt;
+	int temp_ref;
 	int pict_type;
 	int field_sequence;
 	int forw_r_size, back_r_size, full_forw, full_back;

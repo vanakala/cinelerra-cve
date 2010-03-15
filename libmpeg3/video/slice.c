@@ -1,5 +1,6 @@
 #include "mpeg3private.h"
 #include "mpeg3protos.h"
+#include "mpeg3video.h"
 
 #include <pthread.h>
 #include <stdlib.h>

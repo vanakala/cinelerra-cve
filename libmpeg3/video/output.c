@@ -1,5 +1,9 @@
-#include "../libmpeg3.h"
+#include "libmpeg3.h"
 #include "mpeg3video.h"
+#include "bitstream.h"
+#include "idct.h"
+#include "slice.h"
+#include "timecode.h"
 #include <string.h>
 
 #define CLIP(x)  ((x) >= 0 ? ((x) < 255 ? (x) : 255) : 0)

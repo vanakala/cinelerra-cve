@@ -198,6 +198,7 @@ int mpeg3audio_dopcm(mpeg3_pcm_t *audio,
 mpeg3video_t* mpeg3video_new(mpeg3_t *file, 
 	mpeg3_vtrack_t *track);
 int mpeg3video_delete(mpeg3video_t *video);
+int mpeg3video_set_cpus(mpeg3video_t *, int);
 int mpeg3video_read_frame(mpeg3video_t *video, 
 		unsigned char **output_rows,
 		int in_x, 
@@ -227,7 +228,7 @@ int mpeg3_read_yuvframe(mpeg3_t *file,
 		int in_h,
 		int stream);
 // cache_it - store dropped frames in cache
-int mpeg3video_drop_frames(mpeg3video_t *video, long frames, int cache_it);
+int mpeg3video_drop_frames(mpeg3video_t *video, int frames, int cache_it);
 void mpeg3_decode_subtitle(mpeg3video_t *video);
 
 

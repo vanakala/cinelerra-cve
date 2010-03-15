@@ -1,8 +1,12 @@
-#include "../libmpeg3.h"
-#include "../mpeg3private.h"
-#include "../mpeg3protos.h"
+#include "libmpeg3.h"
+#include "mpeg3private.h"
+#include "mpeg3protos.h"
 #include "mpeg3video.h"
 #include "mpeg3videoprotos.h"
+#include "bitstream.h"
+#include "idct.h"
+#include "slice.h"
+#include "timecode.h"
 #include <pthread.h>
 #include <stdlib.h>
 
@@ -79,7 +83,7 @@ double mpeg3_aspect_ratio_table[16] = {
   0,0,0,0,0,0,0,0
 };
 
-int mpeg3video_initdecoder(mpeg3video_t *video)
+static int mpeg3video_initdecoder(mpeg3video_t *video)
 {
 	int blk_cnt_tab[3] = {6, 8, 12};
 	int cc;
@@ -183,7 +187,7 @@ int mpeg3video_initdecoder(mpeg3video_t *video)
 	return 0;
 }
 
-int mpeg3video_deletedecoder(mpeg3video_t *video)
+static int mpeg3video_deletedecoder(mpeg3video_t *video)
 {
 	int i, padding;
 
@@ -208,7 +212,7 @@ int mpeg3video_deletedecoder(mpeg3video_t *video)
 	return 0;
 }
 
-void mpeg3video_init_scantables(mpeg3video_t *video)
+static void mpeg3video_init_scantables(mpeg3video_t *video)
 {
 	{
 		video->mpeg3_zigzag_scan_table = mpeg3_zig_zag_scan_nommx;
@@ -216,7 +220,7 @@ void mpeg3video_init_scantables(mpeg3video_t *video)
 	}
 }
 
-mpeg3video_t* mpeg3video_allocate_struct(mpeg3_t *file, mpeg3_vtrack_t *track)
+static mpeg3video_t* mpeg3video_allocate_struct(mpeg3_t *file, mpeg3_vtrack_t *track)
 {
 	int i;
 	mpeg3video_t *video = calloc(1, sizeof(mpeg3video_t));
@@ -242,7 +246,7 @@ mpeg3video_t* mpeg3video_allocate_struct(mpeg3_t *file, mpeg3_vtrack_t *track)
 	return video;
 }
 
-int mpeg3video_delete_struct(mpeg3video_t *video)
+static int mpeg3video_delete_struct(mpeg3video_t *video)
 {
 	int i;
 	mpeg3bits_delete_stream(video->vstream);
@@ -286,7 +290,7 @@ int mpeg3video_read_frame_backend(mpeg3video_t *video, int skip_bframes)
 		video->skip_bframes = skip_bframes;
 
 		if(!result)
-			result = mpeg3video_getpicture(video, video->framenum);
+			result = mpeg3video_getpicture(video);
 
 
 		if(video->pict_struct == TOP_FIELD)
@@ -314,8 +318,6 @@ int mpeg3video_read_frame_backend(mpeg3video_t *video, int skip_bframes)
 // subsequent P frame are interlaced to make the keyframe.
 
 
-//printf("mpeg3video_read_frame_backend 10\n");
-
 // Composite subtitles
 	mpeg3_decode_subtitle(video);
 
@@ -328,7 +330,7 @@ int mpeg3video_read_frame_backend(mpeg3video_t *video, int skip_bframes)
 	return result;
 }
 
-int* mpeg3video_get_scaletable(int input_w, int output_w)
+static int *mpeg3video_get_scaletable(int input_w, int output_w)
 {
 	int *result = malloc(sizeof(int) * output_w);
 	float i;
@@ -340,14 +342,6 @@ int* mpeg3video_get_scaletable(int input_w, int output_w)
 	return result;
 }
 
-/* Get the first I frame. */
-int mpeg3video_get_firstframe(mpeg3video_t *video)
-{
-	int result = 0;
-	video->repeat_count = video->current_repeat = 0;
-	result = mpeg3video_read_frame_backend(video, 0);
-	return result;
-}
 
 static long gop_to_frame(mpeg3video_t *video, mpeg3_timecode_t *gop_timecode)
 {
@@ -392,6 +386,7 @@ mpeg3video_t* mpeg3video_new(mpeg3_t *file,
 // Get encoding parameters from stream
 	if(file->seekable)
 	{
+		mpeg3_rewind_video(video);
 		result = mpeg3video_get_header(video, 1);
 
 		if(!result)
@@ -402,12 +397,11 @@ mpeg3video_t* mpeg3video_new(mpeg3_t *file,
 			track->height = video->vertical_size;
 			track->frame_rate = video->frame_rate;
 			track->aspect_ratio = video->aspect_ratio;
-			if(track->keyframes)
-				video->baseframe = track->keyframes[0].number;
-			video->maxframe = track->total_frames + video->baseframe;
+			video->maxframe = track->total_frames;
 			video->repeat_count = 0;
 			mpeg3_rewind_video(video);
-			mpeg3video_get_firstframe(video);
+			mpeg3video_read_frame_backend(video, 0);
+			mpeg3video_match_refframes(video);
 		}
 		else
 		{
@@ -656,30 +650,25 @@ int mpeg3video_read_yuvframe_ptr(mpeg3video_t *video,
 		*u_output = (char*)u;
 		*v_output = (char*)v;
 
-// Advance either framenum or frame_seek
-		if(frame_number == video->framenum)
-			video->framenum = ++frame_number;
-		else
-		if(frame_number == video->frame_seek)
-			video->frame_seek = ++frame_number;
+		video->framenum = ++frame_number;
+		video->frame_seek = -1;
 	}
 	else
 	{
 // Only decode if it's a different frame
-		if(video->frame_seek < 0 || 
-			video->last_number < 0 ||
-			video->frame_seek != video->last_number)
+		if(video->last_number < 0 ||
+			frame_number != video->last_number)
 		{
-			if(!result) result = mpeg3video_seek(video);
+			if(video->frame_seek >= 0) 
+				result = mpeg3video_seek(video);
 			if(!result) result = mpeg3video_read_frame_backend(video, 0);
 
 		}
 		else
 		{
-			video->framenum = video->frame_seek + 1;
-			video->last_number = video->frame_seek;
+			video->framenum = frame_number + 1;
+			video->last_number = frame_number;
 			video->frame_seek = -1;
-
 		}
 
 		if(video->output_src[0])

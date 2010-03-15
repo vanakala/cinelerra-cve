@@ -1,5 +1,5 @@
-#include "../mpeg3private.h"
-#include "../mpeg3protos.h"
+#include "mpeg3private.h"
+#include "mpeg3protos.h"
 #include "mpeg3video.h"
 #include <stdlib.h>
 #include <string.h>
@@ -12,13 +12,11 @@ void mpeg3video_toc_error()
 		"to generate a table of contents and load the table of contents instead.\n");
 }
 
-int mpeg3video_drop_frames(mpeg3video_t *video, long frames, int cache_it)
+int mpeg3video_drop_frames(mpeg3video_t *video, int frames, int cache_it)
 {
 	int result = 0;
-	long frame_number = video->framenum + frames;
+	int frame_number = video->framenum + frames;
 	mpeg3_vtrack_t *track = video->track;
-/* first 3 frames are garbage as proven by printfs in the read_frame calls */
-	int drop_count = 3;
 
 /* Read the selected number of frames and skip b-frames */
 	while(!result && frame_number > video->framenum)
@@ -26,7 +24,7 @@ int mpeg3video_drop_frames(mpeg3video_t *video, long frames, int cache_it)
 		if(cache_it)
 		{
 			result = mpeg3video_read_frame_backend(video, 0);
-			if(video->output_src[0] && drop_count--)
+			if(video->output_src[0])
 			{
 				mpeg3_cache_put_frame(track->frame_cache,
 					video->framenum - 1,
@@ -157,16 +155,13 @@ int mpeg3video_seek_frame(mpeg3video_t *video, long frame)
 
 int mpeg3_rewind_video(mpeg3video_t *video)
 {
-	mpeg3_vtrack_t *track = video->track;
 	mpeg3_bits_t *vstream = video->vstream;
-	mpeg3_t *file = video->file;
 
-	if(track->keyframes){
-		mpeg3bits_seek_byte(vstream, track->keyframes[0].offset);
-		video->framenum = track->keyframes[0].number;
-	} else
-		mpeg3bits_seek_byte(vstream, file->base_offset);
-
+	if(video->track->keyframes)
+		mpeg3bits_seek_byte(vstream, video->track->keyframes[0].offset);
+	else
+		mpeg3bits_seek_byte(vstream, video->file->base_offset);
+	video->last_number = -1;
 	return 0;
 }
 
@@ -181,9 +176,7 @@ int mpeg3video_seek(mpeg3video_t *video)
 	mpeg3_vtrack_t *track = video->track;
 	mpeg3_demuxer_t *demuxer = vstream->demuxer;
 	int64_t byte;
-	long frame_number;
-	int match_refframes = 1;
-
+	int frame_number;
 
 
 /* Must do seeking here so files which don't use video don't seek. */
@@ -247,10 +240,14 @@ int mpeg3video_seek(mpeg3video_t *video)
 	if(video->frame_seek >= 0)
 	{
 
-		frame_number = video->frame_seek + video->baseframe;
+		frame_number = video->frame_seek;
 		video->frame_seek = -1;
-		if(frame_number > video->maxframe) frame_number = video->maxframe;
-
+		if(frame_number > video->maxframe) 
+			frame_number = video->maxframe;
+// Nothing to do: seek to next frame
+		if(video->last_number > 0 && 
+				frame_number == video->last_number + 1)
+			return 0;
 
 /* Seek to I frame in table of contents. */
 		if(track->keyframes)
@@ -261,6 +258,7 @@ int mpeg3video_seek(mpeg3video_t *video)
 				frame_number - video->framenum > MPEG3_SEEK_THRESHOLD))
 			{
 				int i;
+				int gop_open = 1;
 				for(i = track->total_keyframes - 1; i >= 0; i--)
 				{
 					if(track->keyframes[i].number <= frame_number)
@@ -271,15 +269,22 @@ int mpeg3video_seek(mpeg3video_t *video)
 						byte = track->keyframes[i].offset;
 
 						frame = track->keyframes[i].number;
-						video->framenum = frame;
+						video->framenum = frame - 1;
+						video->last_number = -1;
 						mpeg3bits_seek_byte(vstream, byte);
+						mpeg3demux_reset_pts(demuxer);
 
 						video->repeat_count = 0;
 
-						mpeg3video_read_frame_backend(video);
+						mpeg3video_read_frame_backend(video, 0);
+// On open-gop seek one more keyframe back
+						if(gop_open && i && video->closed_gop == 0)
+						{
+							gop_open = 0;
+							continue;
+						}
 // Forget previos refframes
 						mpeg3video_match_refframes(video); 
-						video->framenum = frame;
 
 // Read up to current frame
 						mpeg3video_drop_frames(video, frame_number - video->framenum, 0);
@@ -301,7 +306,6 @@ int mpeg3video_seek(mpeg3video_t *video)
 
 
 
-		mpeg3demux_reset_pts(demuxer);
 	}
 
 	return result;

@@ -76,7 +76,7 @@ static inline int mpeg3video_getdclum(mpeg3_slice_buffer_t *slice_buffer)
 }
 
 
-int mpeg3video_getdcchrom(mpeg3_slice_buffer_t *slice_buffer)
+static int mpeg3video_getdcchrom(mpeg3_slice_buffer_t *slice_buffer)
 {
 	int code, size, val;
 
@@ -504,7 +504,7 @@ int mpeg3video_getmpg2interblock(mpeg3_slice_t *slice,
 
 
 /* decode all macroblocks of the current picture */
-int mpeg3video_get_macroblocks(mpeg3video_t *video, int framenum)
+int mpeg3video_get_macroblocks(mpeg3video_t *video)
 {
 	unsigned int code;
 	mpeg3_slice_buffer_t *slice_buffer; /* Buffer being loaded */
@@ -627,7 +627,7 @@ int mpeg3video_allocate_decoders(mpeg3video_t *video, int decoder_count)
 
 /* decode one frame or field picture */
 
-int mpeg3video_getpicture(mpeg3video_t *video, int framenum)
+int mpeg3video_getpicture(mpeg3video_t *video)
 {
 	int i, result = 0;
 	mpeg3_t *file = video->file;
@@ -682,13 +682,13 @@ int mpeg3video_getpicture(mpeg3video_t *video, int framenum)
 	if(!video->current_repeat)
 		if(!(video->skip_bframes && video->pict_type == B_TYPE) || 
 			(video->repeat_count >= 100 + 100 * video->skip_bframes))
-			result = mpeg3video_get_macroblocks(video, framenum);
+			result = mpeg3video_get_macroblocks(video);
 
 /* Set the frame to display */
 	video->output_src[0] = 0;
 	video->output_src[1] = 0;
 	video->output_src[2] = 0;
-	if(framenum > -1 && !result)
+	if(!result)
 	{
 		if(video->pict_struct == FRAME_PICTURE || video->secondfield)
 		{
