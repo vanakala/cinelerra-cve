@@ -1,0 +1,71 @@
+This file contains information about my branch of Cinelerra 2.1 CV
+To get a copy of the latest version of the branch
+git clone git://git.cinelerra.org/einar/cinelerra.git my_cinelerra
+
+This file describes status of this branch as of March 16, 2010
+
+Contents.
+
+About this branch.
+
+Changes in this branch
+
+Known problems (eg todo list)
+
+
+About this branch
+
+This branch is a try to make Cinelerra more stabile - no hangupps
+no crashes.
+
+Currently this branch is under development. There is no warranty
+that it is usable to create or finish any project. Parts of Cinelerra
+may work, parts not.
+
+This branch is developed and tested on Ubuntu 9.04 x86-32.
+
+Main change in this branch is display locking. This change has hopefully 
+fixed bugs 278, 383, 406, 414, 493, 519 in bugzilla. The change was 
+huge and locking issues are hard to test.
+
+Changes in this branch:
+- subtitle decoding in libmpeg3
+- added defaults into libmpeg3 for subtitle color
+- index generation in libmpeg3
+- improved frame accurate seek in libmpeg3
+- edit_font_color initialization of S.U.V
+- more info in assert info window
+- audio streams and vob subtitle tracks are selectable through asset info
+- removed BC_Windowevents (now 6 threads less)
+- fix of bug 524: 'This is a very standard format mpg 
+    that is completely garbled in this player'
+- fixed most of GCC4.3.3 warnings
+- fixed timebar cursor updating of viewer and compositor
+- trace subsystem was rewritten to static buffers, added backtrace
+    dump on crash
+- composer and viewer always display the frame starting at the time 
+    shown on clock. Frame displayed does not depend on
+    forward/backward direction.
+- goto window honours time format
+- lots of cleanups
+
+Known problems (todo list)
+- OpenGL output does not work (seems locking related)
+- no need to regenerate index when only subtitles are changed
+    in asset edit
+- time format of goto window changes only after restart of program
+- filevorbis is disabled
+- cinerella crashes if video4linux2 size is different from 600x800
+- remove or move to separate directories unused sources
+- implement debugging system
+- test on 64bit system
+
+Bug reporting.
+I am very interested about reports of crashes and hangs.
+To help debug cinelerra, start it from terminal. If cinelerra hangs,
+press Ctrl-C. Copy output to mail and send it to cinelerra ml.
+It will be fine if you can describe setps to reproduce crash or hang 
+of cinelerra.
+
+
+Einar Rünkaru
