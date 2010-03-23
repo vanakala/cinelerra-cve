@@ -105,6 +105,7 @@ typedef struct
 	const char *fname;
 	const char *funct;
 	int line;
+	pthread_t tid;
 } bc_functrace_t;
 
 static bc_functrace_t functable[TOTAL_TRACES];
@@ -414,10 +415,12 @@ void BC_Signals::dump_traces()
 			if(tbl->fname)
 			{
 				if(tbl->funct)
-					printf(" %c %s %s %d\n", c, tbl->fname, tbl->funct,
-						tbl->line);
+					printf(" %c %#lx %s %s %d\n", 
+						c, tbl->tid, tbl->fname, 
+						tbl->funct, tbl->line);
 				else
-				printf(" %c %s\n", c, tbl->fname);
+					printf(" %c %#lx %s\n", 
+						c, tbl->tid, tbl->fname);
 			}
 		}
 	}
@@ -507,6 +510,7 @@ void BC_Signals::new_trace(const char *text)
 	tbl->fname = text;
 	tbl->funct = 0;
 	tbl->line = 0;
+	tbl->tid = pthread_self();
 	pthread_mutex_unlock(&lock);
 }
 
@@ -523,6 +527,7 @@ void BC_Signals::new_trace(const char *file, const char *function, int line)
 	tbl->fname = file;
 	tbl->funct = function;
 	tbl->line = line;
+	tbl->tid = pthread_self();
 	pthread_mutex_unlock(&lock);
 }
 
