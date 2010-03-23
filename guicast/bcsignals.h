@@ -47,7 +47,7 @@ public:
 	BC_Signals();
 	void initialize();
 	void initialize2();
-
+	void initXErrors();
 
 	virtual void signal_handler(int signum);
 

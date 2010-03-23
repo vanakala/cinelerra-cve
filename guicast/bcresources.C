@@ -93,25 +93,6 @@ suffix_to_type_t BC_Resources::suffix_to_type[] =
 BC_Signals* BC_Resources::signal_handler = 0;
 
 
-int BC_Resources::x_error_handler(Display *display, XErrorEvent *event)
-{
-// 	char string[1024];
-// 	XGetErrorText(event->display, event->error_code, string, 1024);
-// 	printf("BC_Resources::x_error_handler: error_code=%d opcode=%d,%d %s\n", 
-// 		event->error_code, 
-// 		event->request_code,
-// 		event->minor_code,
-// 		string);
-
-
-	BC_Resources::error = 1;
-// This bug only happens in 32 bit mode.
-	if(sizeof(long) == 4)
-		BC_WindowBase::get_resources()->use_xft = 0;
-	return 0;
-}
-
-
 
 BC_Resources::BC_Resources()
 {
@@ -561,7 +542,6 @@ int BC_Resources::initialize_display(BC_WindowBase *window)
 int BC_Resources::init_shm(BC_WindowBase *window)
 {
 	use_shm = 1;
-	XSetErrorHandler(BC_Resources::x_error_handler);
 
 	if(!XShmQueryExtension(window->display)) use_shm = 0;
 	else
@@ -584,7 +564,6 @@ int BC_Resources::init_shm(BC_WindowBase *window)
 		shmdt(test_shm.shmaddr);
 		window->unlock_window();
 	}
-//	XSetErrorHandler(0);
 	return 0;
 }
 

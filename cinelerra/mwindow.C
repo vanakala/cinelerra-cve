@@ -738,6 +738,7 @@ void MWindow::init_signals()
 {
 	sighandler = new SigHandler;
 	sighandler->initialize();
+	sighandler->initXErrors();
 ENABLE_BUFFER
 }
 

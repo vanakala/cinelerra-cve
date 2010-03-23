@@ -333,7 +333,6 @@ private:
 // Test for availability of shared memory pixmaps
 	int init_shm(BC_WindowBase *window);
 	void init_sizes(BC_WindowBase *window);
-	static int x_error_handler(Display *display, XErrorEvent *event);
 	BC_DisplayInfo *display_info;
  	VFrame **list_pointers[100];
  	int list_lengths[100];

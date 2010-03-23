@@ -27,13 +27,13 @@
 #include <unistd.h>
 #include <ucontext.h>
 #include <execinfo.h>
+#include <X11/Xlib.h>
+#include <errno.h>
 
 BC_Signals* BC_Signals::global_signals = 0;
 static int signal_done = 0;
 static int table_id = 0;
 
-// Need to use structs to avoid the memory manager.
-// One of these tables is created every time someone locks a lock.
 // After successfully locking, the table is flagged as being the owner of the lock.
 // In the unlock function, the table flagged as the owner of the lock is deleted.
 typedef struct 
@@ -232,7 +232,10 @@ static void signal_entry(int signum, siginfo_t *inf, void *ucxt)
 	numbt = backtrace(buff, BACKTRACE_SIZE);
 	cur_tid = pthread_self();
 	ucp = (ucontext_t *)ucxt;
-	signam = strsignal(signum);
+	if(signum)
+		signam = strsignal(signum);
+	else
+		signam = 0;
 
 	switch(signum){
 	case SIGILL:
@@ -329,33 +332,33 @@ static void signal_entry(int signum, siginfo_t *inf, void *ucxt)
 		codnam = 0;
 		break;
 	}
-	p = copystr(msgbuf, "Got signal '");
-	p = copystr(p, signam);
-	if(codnam){
-		p = copystr(p, "' with code '");
-		p = copystr(p, codnam);
-		p = copystr(p, "'\n");
-		if(write(STDERR_FILENO, msgbuf, p - msgbuf) <= 0)
-			abort();
-		p = copystr(msgbuf, "    pc=0x");
+	if(signam){
+		p = copystr(msgbuf, "Got signal '");
+		p = copystr(p, signam);
+		if(codnam){
+			p = copystr(p, "' with code '");
+			p = copystr(p, codnam);
+			p = copystr(p, "'\n");
+			if(write(STDERR_FILENO, msgbuf, p - msgbuf) <= 0)
+				abort();
+			p = copystr(msgbuf, "    pc=0x");
 #if __WORDSIZE == 64
-		p = copystr(p, tohex(ucp->uc_mcontext.gregs[REG_RIP]));
+			p = copystr(p, tohex(ucp->uc_mcontext.gregs[REG_RIP]));
 #else
-		p = copystr(p, tohex(ucp->uc_mcontext.gregs[REG_EIP]));
+			p = copystr(p, tohex(ucp->uc_mcontext.gregs[REG_EIP]));
 #endif
-		p = copystr(p, " addr=0x");
-		p = copystr(p, tohex((unsigned long)inf->si_addr));
+			p = copystr(p, " addr=0x");
+			p = copystr(p, tohex((unsigned long)inf->si_addr));
+		}
 		p = copystr(p, " tid=0x");
-		p = copystr(p, tohex((unsigned long)cur_tid));
-		p = copystr(p, ". Backtrace:\n");
-		if(write(STDERR_FILENO, msgbuf, p - msgbuf) <= 0)
-			abort();
-		backtrace_symbols_fd(buff, numbt, STDERR_FILENO);
-	} else {
-		p = copystr(p, "'\n");
-		if(write(STDERR_FILENO, msgbuf, p - msgbuf) <= 0)
-			abort();
-	}
+	} else
+		p = copystr(msgbuf, "Thread=0x");
+	p = copystr(p, tohex((unsigned long)cur_tid));
+	p = copystr(p, ". Backtrace:\n");
+	if(write(STDERR_FILENO, msgbuf, p - msgbuf) <= 0)
+		abort();
+	backtrace_symbols_fd(buff, numbt, STDERR_FILENO);
+
 	BC_Signals::dump_traces();
 	BC_Signals::dump_locks();
 	BC_Signals::dump_buffers();
@@ -365,6 +368,33 @@ static void signal_entry(int signum, siginfo_t *inf, void *ucxt)
 	BC_Signals::global_signals->signal_handler(signum);
 
 	abort();
+}
+
+/*
+ * X error handler
+ * consider all errors as fatal now
+ */
+static int xerrorhdlr(Display *display, XErrorEvent *event)
+{
+	char string[1024]; 
+
+	XGetErrorText(event->display, event->error_code, string, 1024); 
+	fprintf(stderr, "X error opcode=%d,%d: '%s'\n",
+		event->request_code,
+		event->minor_code,
+		string);
+	signal_entry(0, NULL, NULL);
+}
+
+/*
+ * XIO error handler
+ */
+static int xioerrhdlr(Display *display)
+{
+	fprintf(stderr, "Fatal X IO error %d (%s) on X server '%s'\n", 
+		errno, strerror(errno), DisplayString(display));
+	fprintf(stderr, "    with %d events remaining\n", QLength(display));
+	signal_entry(0, NULL, NULL);
 }
 
 BC_Signals::BC_Signals()
@@ -451,6 +481,12 @@ void BC_Signals::initialize2()
 	sigaction(SIGFPE, &nact, NULL);
 	sigaction(SIGBUS, &nact, NULL);
 	sigaction(SIGILL, &nact, NULL);
+}
+
+void BC_Signals::initXErrors()
+{
+	XSetErrorHandler(xerrorhdlr);
+	XSetIOErrorHandler(xioerrhdlr);
 }
 
 
