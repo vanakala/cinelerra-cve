@@ -720,7 +720,7 @@ void Playback3D::clear_input(Canvas *canvas, VFrame *frame)
 
 void Playback3D::clear_input_sync(Playback3DCommand *command)
 {
-	command->canvas->lock_canvas("Playback3D::clear_output_sync");
+	command->canvas->lock_canvas("Playback3D::clear_input_sync");
 	if(command->canvas->get_canvas())
 	{
 		command->canvas->get_canvas()->lock_window("Playback3D::clear_output_sync");

@@ -189,13 +189,7 @@ int VDeviceX11::close_all()
  		}
 
 // Draw the first refresh with new frame.
-// Doesn't work if video and openGL because OpenGL doesn't have 
-// the output buffer for video.
-// Not necessary for any case if we mandate a frame advance after
-// every stop.
-		/* if( device->out_config->driver != PLAYBACK_X11_GL || 
-			 device->single_frame) */
-			output->draw_refresh();
+		output->draw_refresh();
 	}
 
 
@@ -659,7 +653,6 @@ int VDeviceX11::write_buffer(VFrame *output_channels, EDL *edl)
 				canvas_y2,
 				is_cleared);
 			is_cleared = 0;
-			output->get_canvas()->lock_window("VDeviceX11::write_buffer 2");
 		}
 	}
 	else
