@@ -535,7 +535,9 @@ int VDriverMenu::create_objects()
 		add_item(new VDriverItem(this, PLAYBACK_X11_TITLE, PLAYBACK_X11));
 		add_item(new VDriverItem(this, PLAYBACK_X11_XV_TITLE, PLAYBACK_X11_XV));
 #ifdef HAVE_GL
-		add_item(new VDriverItem(this, PLAYBACK_X11_GL_TITLE, PLAYBACK_X11_GL));
+// Check runtime glx version. pbuffer needs >= 1.3
+		if(get_opengl_version() >= 103)
+			add_item(new VDriverItem(this, PLAYBACK_X11_GL_TITLE, PLAYBACK_X11_GL));
 #endif
 		add_item(new VDriverItem(this, PLAYBACK_BUZ_TITLE, PLAYBACK_BUZ));
 #ifdef HAVE_FIREWIRE

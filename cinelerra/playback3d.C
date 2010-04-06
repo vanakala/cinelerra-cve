@@ -359,11 +359,11 @@ void Playback3D::copy_from(Canvas *canvas,
 void Playback3D::copy_from_sync(Playback3DCommand *command)
 {
 #ifdef HAVE_GL
-	command->canvas->lock_canvas("Playback3D::draw_refresh_sync");
+	command->canvas->lock_canvas("Playback3D::copy_from_sync");
 	BC_WindowBase *window = command->canvas->get_canvas();
 	if(window)
 	{
-		window->lock_window("Playback3D:draw_refresh_sync");
+		window->lock_window("Playback3D:copy_from_sync");
 		window->enable_opengl();
 
 		if(command->input->get_opengl_state() == VFrame::SCREEN &&
@@ -723,7 +723,7 @@ void Playback3D::clear_input_sync(Playback3DCommand *command)
 	command->canvas->lock_canvas("Playback3D::clear_input_sync");
 	if(command->canvas->get_canvas())
 	{
-		command->canvas->get_canvas()->lock_window("Playback3D::clear_output_sync");
+		command->canvas->get_canvas()->lock_window("Playback3D::clear_input_sync");
 		command->canvas->get_canvas()->enable_opengl();
 		command->frame->enable_opengl();
 		command->frame->clear_pbuffer();
@@ -766,7 +766,7 @@ void Playback3D::do_camera_sync(Playback3DCommand *command)
 	command->canvas->lock_canvas("Playback3D::do_camera_sync");
 	if(command->canvas->get_canvas())
 	{
-		command->canvas->get_canvas()->lock_window("Playback3D::clear_output_sync");
+		command->canvas->get_canvas()->lock_window("Playback3D::do_camera_sync");
 		command->canvas->get_canvas()->enable_opengl();
 
 		command->input->to_texture();
@@ -1419,7 +1419,7 @@ void Playback3D::do_fade(Canvas *canvas, VFrame *frame, float fade)
 void Playback3D::do_fade_sync(Playback3DCommand *command)
 {
 #ifdef HAVE_GL
-	command->canvas->lock_canvas("Playback3D::do_mask_sync");
+	command->canvas->lock_canvas("Playback3D::do_fade_sync");
 	if(command->canvas->get_canvas())
 	{
 		BC_WindowBase *window = command->canvas->get_canvas();
