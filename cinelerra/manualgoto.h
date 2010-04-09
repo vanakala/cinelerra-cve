@@ -46,9 +46,8 @@ public:
 	BC_WindowBase *masterwindow;
 	void open_window();
 
-	ManualGotoWindow *gotowindow;
-	int done;
-
+	double position;
+	VFrame *icon_image;
 };
 
 
@@ -62,7 +61,6 @@ public:
 
 	void create_objects();
 	int activate();
-	void reset_data(double position);
 	double get_entered_position_sec();
 	void set_entered_position_sec(double position);
 	int split_timestr(char *timestr);

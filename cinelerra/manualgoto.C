@@ -38,6 +38,7 @@
 #include "edlsession.h"
 #include "tracks.h"
 #include "units.h"
+#include "theme.h"
 
 #include <ctype.h>
 
@@ -46,23 +47,14 @@ ManualGoto::ManualGoto(MWindow *mwindow, BC_WindowBase *masterwindow)
 {
 	this->mwindow = mwindow;
 	this->masterwindow = masterwindow;
-	gotowindow = 0;
-	done = 0;
 }
 
 ManualGoto::~ManualGoto()
 {
-	done = 1;
-	gotowindow->set_done(1);
-	Thread::join();
-	if (gotowindow)
-		delete gotowindow;
 }
 
 void ManualGoto::open_window()
 {
-
-	double position;
 	if ((masterwindow == (BC_WindowBase *)mwindow->cwindow->gui)||
 	   (masterwindow == (BC_WindowBase *)mwindow->gui->mbuttons))
 	{
@@ -70,71 +62,66 @@ void ManualGoto::open_window()
 		position = mwindow->edl->local_session->get_selectionstart(1);
 		position += mwindow->edl->session->get_frame_offset() / 
 						 mwindow->edl->session->frame_rate;;
+		icon_image = mwindow->theme->get_image("mwindow_icon");
 	}
 	else
 		if (mwindow->vwindow->get_edl())
+		{
 			position = mwindow->vwindow->get_edl()->local_session->get_selectionstart(1);
+			icon_image = mwindow->theme->get_image("vwindow_icon");
+		}
 		else
 			return;
-	if (!gotowindow)
-	{
-		gotowindow = new ManualGotoWindow(mwindow, this);
-		gotowindow->create_objects();
-		gotowindow->reset_data(position);
-		Thread::start();
-	} else
-		gotowindow->reset_data(position);
+	if(!running())
+		start();
 }
 
 void ManualGoto::run()
 {
-	int result = 1;
-	while (!done) 
-	{
-		result = gotowindow->run_window();
-		gotowindow->lock_window("ManualGoto::run");
-		gotowindow->hide_window();		
-		gotowindow->unlock_window();
+	int result;
 
-		if (!done && result == 0) // ok button or return pressed
+	ManualGotoWindow window(mwindow, this);
+	window.create_objects();
+	result = window.run_window();
+
+	if (result == 0) // ok button or return pressed
+	{
+		double new_position = window.get_entered_position_sec();
+		char modifier = window.signtitle->get_text()[0];
+		if ((masterwindow == (BC_WindowBase *)mwindow->cwindow->gui)||
+			(masterwindow == (BC_WindowBase *)mwindow->gui->mbuttons))
 		{
-			double new_position = gotowindow->get_entered_position_sec();
-			char modifier = gotowindow->signtitle->get_text()[0];
-			if ((masterwindow == (BC_WindowBase *)mwindow->cwindow->gui)||
-			   (masterwindow == (BC_WindowBase *)mwindow->gui->mbuttons))
-			
+			// mwindow/cwindow update
+
+			double current_position = mwindow->edl->local_session->get_selectionstart(1);
+			switch (modifier)
 			{
-				// mwindow/cwindow update
-				
-				double current_position = mwindow->edl->local_session->get_selectionstart(1);
-				switch (modifier)
-				{
-					case '+': 
-						new_position += current_position;
-						break;
-					case '-':
-						new_position = current_position - new_position;
-						break;
-					default:
-						break;
-				}		
-				new_position = mwindow->edl->align_to_frame(new_position, 1);
-				new_position -= mwindow->edl->session->get_frame_offset() / mwindow->edl->session->frame_rate;;
-				if (new_position < 0) 
-					new_position = 0;
-				if (current_position != new_position)
-				{
-					mwindow->edl->local_session->set_selectionstart(new_position);
-					mwindow->edl->local_session->set_selectionend(new_position);
-					mwindow->gui->lock_window("ManualGoto::run 1");
-					mwindow->find_cursor();
-					mwindow->gui->update(1, 1, 1, 1, 1, 1, 0);	
-					mwindow->gui->unlock_window();
-					mwindow->cwindow->update(1, 0, 0, 0, 0);			
-				}
-			} else
+				case '+': 
+					new_position += current_position;
+					break;
+				case '-':
+					new_position = current_position - new_position;
+					break;
+				default:
+					break;
+			}
+			new_position = mwindow->edl->align_to_frame(new_position, 1);
+			new_position -= mwindow->edl->session->get_frame_offset() / mwindow->edl->session->frame_rate;;
+			if (new_position < 0) 
+				new_position = 0;
+			if (current_position != new_position)
+			{
+				mwindow->edl->local_session->set_selectionstart(new_position);
+				mwindow->edl->local_session->set_selectionend(new_position);
+				mwindow->gui->lock_window("ManualGoto::run 1");
+				mwindow->find_cursor();
+				mwindow->gui->update(1, 1, 1, 1, 1, 1, 0);
+				mwindow->gui->unlock_window();
+				mwindow->cwindow->update(1, 0, 0, 0, 0);
+			}
+		} else
 			if ((masterwindow == (BC_WindowBase *)mwindow->vwindow->gui) &&
-			    mwindow->vwindow->get_edl())
+				mwindow->vwindow->get_edl())
 			{
 				// vwindow update
 				VWindow *vwindow = mwindow->vwindow;
@@ -164,7 +151,6 @@ void ManualGoto::run()
 					vwindow->gui->unlock_window();
 				}
 			}
-		}		
 	}
 }
 
@@ -184,26 +170,11 @@ ManualGotoWindow::ManualGotoWindow(MWindow *mwindow, ManualGoto *thread)
 {
 	this->mwindow = mwindow;
 	this->thread = thread;
+	numboxes = 0;
 }
 
 ManualGotoWindow::~ManualGotoWindow()
 {
-	int i;
-	for(i = 0; i < numboxes; i++)
-		delete boxes[i];
-}
-
-void ManualGotoWindow::reset_data(double position)
-{
-	lock_window("ManualGotoWindow::reset_data");
-	reposition_window(
-			mwindow->gui->get_abs_cursor_x(1) - 250 / 2,
-			mwindow->gui->get_abs_cursor_y(1) - 80 / 2);
-	set_entered_position_sec(position);
-	signtitle->update("=");
-	activate();
-	show_window();
-	unlock_window();
 }
 
 double ManualGotoWindow::get_entered_position_sec()
@@ -318,6 +289,8 @@ void ManualGotoWindow::create_objects()
 		mwindow->edl->session->frames_per_foot);
 	numboxes = split_timestr(timestring);
 
+	set_icon(thread->icon_image);
+
 	BC_Title *title;
 	add_subwindow(title = new BC_Title(x1 - 2, y, htxt, SMALLFONT));
 	y += title->get_h() + 3;
@@ -332,6 +305,10 @@ void ManualGotoWindow::create_objects()
 
 	add_subwindow(new BC_OKButton(this));
 	add_subwindow(new BC_CancelButton(this));
+
+	set_entered_position_sec(thread->position);
+	activate();
+	show_window();
 }
 
 
@@ -406,7 +383,7 @@ int ManualGotoNumber::keypress_event()
 	    (key == END) ||  (key == HOME) ||
 	    (key == BACKSPACE) || (key == DELETE) ||
 	    (ctrl_down() && (key == 'v' || key == 'V' || key == 'c' || key == 'C' || key == 'x' || key == 'X')))
-	    ok_key = 1;	 
+	    ok_key = 1;
 
 	if (in_textlen >= chars && key >= '0' && key <= '9' && !select_whole_text(0))
 		ok_key = 0;
@@ -428,10 +405,3 @@ int ManualGotoNumber::keypress_event()
 		cycle_textboxes(1);
 	return result;
 }
-
-
-
-
-
-
-
