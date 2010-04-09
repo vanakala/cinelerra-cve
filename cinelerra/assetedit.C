@@ -98,6 +98,8 @@ void AssetEdit::run()
  		{
  			if(!asset->equivalent(*new_asset, 1, 1))
  			{
+ 				int newidx = asset->audio_data
+ 					&& !asset->equivalent(*new_asset, 1, 0);
 				mwindow->gui->lock_window("AssetEdit::run");
 				mwindow->remove_asset_from_caches(asset);
 // Omit index status from copy since an index rebuild may have been
@@ -113,7 +115,7 @@ void AssetEdit::run()
 					0);
 
 // Start index rebuilding
-				if(asset->audio_data)
+				if(newidx)
 				{
 					char source_filename[BCTEXTLEN];
 					char index_filename[BCTEXTLEN];
