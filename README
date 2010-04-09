@@ -2,7 +2,7 @@ This file contains information about my branch of Cinelerra 2.1 CV
 To get a copy of the latest version of the branch
 git clone git://git.cinelerra.org/einar/cinelerra.git my_cinelerra
 
-This file describes status of this branch as of March 16, 2010
+This file describes status of this branch as of April 9, 2010
 
 Contents.
 
@@ -33,6 +33,7 @@ Changes in this branch:
 - added defaults into libmpeg3 for subtitle color
 - index generation in libmpeg3
 - improved frame accurate seek in libmpeg3
+- changed size of Preferences window to fit it on 800 px height
 - edit_font_color initialization of S.U.V
 - more info in assert info window
 - audio streams and vob subtitle tracks are selectable through asset info
@@ -48,12 +49,11 @@ Changes in this branch:
     forward/backward direction.
 - goto window honours time format
 - lots of cleanups
+- OpenGL is enabled while server glx version is >= 1.3
 
 Known problems (todo list)
-- OpenGL output does not work (seems locking related)
 - no need to regenerate index when only subtitles are changed
     in asset edit
-- time format of goto window changes only after restart of program
 - filevorbis is disabled
 - cinerella crashes if video4linux2 size is different from 600x800
 - remove or move to separate directories unused sources
