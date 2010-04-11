@@ -85,11 +85,13 @@ BC_WindowBase::BC_WindowBase()
 BC_WindowBase::~BC_WindowBase()
 {
 #ifdef HAVE_LIBXXF86VM
-   if(window_type == VIDMODE_SCALED_WINDOW && vm_switched)
-   {
-	   restore_vm();   
-   }
+	if(window_type == VIDMODE_SCALED_WINDOW && vm_switched)
+	{
+		restore_vm();   
+	}
 #endif
+	is_deleting = 1;
+	top_level->ignore_win = win;
 
 	hide_tooltip();
 	if(window_type != MAIN_WINDOW)
@@ -103,7 +105,6 @@ BC_WindowBase::~BC_WindowBase()
 
 
 // Delete the subwindows
-	is_deleting = 1;
 	if(subwindows)
 	{
 		while(subwindows->total)
@@ -123,7 +124,6 @@ BC_WindowBase::~BC_WindowBase()
                 }
                 delete widgetgrids;
         }
-		
 
 	delete pixmap;
 
@@ -251,7 +251,7 @@ int BC_WindowBase::initialize()
 #ifdef HAVE_GL
 	gl_win_context = 0;
 #endif
-
+	ignore_win = 0;
 	return 0;
 }
 
@@ -677,7 +677,10 @@ int BC_WindowBase::dispatch_event()
 		return 0;
 	}
 
-//printf("BC_WindowBase::dispatch_event %s %d\n", title, event.type);
+// Ignore events from destroyed window
+	if(top_level->ignore_win == event.xany.window)
+		return 0;
+
 	switch(event.type)
 	{
 		case ClientMessage:
@@ -1029,7 +1032,8 @@ int BC_WindowBase::dispatch_motion_event()
 	{
 		event_win = last_motion_win;
 		motion_events = 0;
-
+		if(event_win == ignore_win)
+			return 0;
 // Test for grab
 		if(get_button_down() && !active_menubar && !active_popup_menu)
 		{
@@ -3416,8 +3420,7 @@ void BC_WindowBase::translate_coordinates(Window src_w,
 		int *dest_y_return)
 {
 	Window tempwin = 0;
-//Timer timer;
-//timer.update();
+
 	if(src_w == dest_w)
 	{
 		*dest_x_return = src_x;
@@ -3435,7 +3438,6 @@ void BC_WindowBase::translate_coordinates(Window src_w,
 			dest_y_return,
 			&tempwin);
 		unlock_window();
-//printf("BC_WindowBase::translate_coordinates 1 %lld\n", timer.get_difference());
 	}
 }
 

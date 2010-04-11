@@ -831,6 +831,8 @@ private:
 	Timer *cursor_timer;
 // unique ID of window.
 	int id;
+// Ignore events from this window
+	Window ignore_win;
 
 protected:
 	Atom create_xatom(const char *atom_name);
