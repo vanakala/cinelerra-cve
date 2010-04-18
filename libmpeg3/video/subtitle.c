@@ -9,12 +9,12 @@ static unsigned char get_nibble(unsigned char **ptr, int *nibble)
 {
 	if(*nibble)
 	{
-		*nibble = !*nibble;
+		*nibble = 0;
 		return (*(*ptr)++) & 0xf;
 	}
 	else
 	{
-		*nibble = !*nibble;
+		*nibble = 1;
 		return (*(*ptr)) >> 4;
 	}
 }
@@ -183,12 +183,13 @@ int decompress_subtitle(mpeg3_t *file, mpeg3_subtitle_t *subtitle)
 				{
 					code = (code << 4) | get_nibble(&ptr, &current_nibble);
 /* carriage return */
-					if(code < 0x4 && ptr < end)
+					if(code < 0x4 && ptr < end){
 						code |= (subtitle->w - x) << 2;
-					if(current_nibble)
-					{
-					    ptr++;
-					    current_nibble = 0;
+						if(current_nibble)
+						{
+							ptr++;
+							current_nibble = 0;
+						}
 					}
 				}
 			}
@@ -196,6 +197,10 @@ int decompress_subtitle(mpeg3_t *file, mpeg3_subtitle_t *subtitle)
 
 		int color = (code & 0x3);
 		int len = code >> 2;
+		if(x + len > subtitle->w){
+			x = 0;
+			y += 2;
+		}
 
 		int y_color = file->palette[subtitle->palette[color] * 4];
 		int u_color = file->palette[subtitle->palette[color] * 4 + 1];
@@ -217,16 +222,16 @@ int decompress_subtitle(mpeg3_t *file, mpeg3_subtitle_t *subtitle)
 				{
 					x = 0;
 					y += 2;
-					if(y >= subtitle->h && !field)
-					{
-						y = 1;
-						field = 1;
-						ptr = data_start + odd_offset;
-						current_nibble = 0;
-						break;
-					}
+					break;
 				}
 			}
+		}
+		if(y >= subtitle->h && !field)
+		{
+			y = 1;
+			field = 1;
+			ptr = data_start + odd_offset;
+			current_nibble = 0;
 		}
 	}
 	return 0;
