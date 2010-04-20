@@ -48,6 +48,7 @@ public:
 
 	double position;
 	VFrame *icon_image;
+	ManualGotoWindow *window;
 };
 
 

@@ -47,6 +47,7 @@ ManualGoto::ManualGoto(MWindow *mwindow, BC_WindowBase *masterwindow)
 {
 	this->mwindow = mwindow;
 	this->masterwindow = masterwindow;
+	window = 0;
 }
 
 ManualGoto::~ManualGoto()
@@ -74,20 +75,22 @@ void ManualGoto::open_window()
 			return;
 	if(!running())
 		start();
+	else if(window)
+		window->raise_window();
 }
 
 void ManualGoto::run()
 {
 	int result;
 
-	ManualGotoWindow window(mwindow, this);
-	window.create_objects();
-	result = window.run_window();
+	window = new ManualGotoWindow(mwindow, this);
+	window->create_objects();
+	result = window->run_window();
 
 	if (result == 0) // ok button or return pressed
 	{
-		double new_position = window.get_entered_position_sec();
-		char modifier = window.signtitle->get_text()[0];
+		double new_position = window->get_entered_position_sec();
+		char modifier = window->signtitle->get_text()[0];
 		if ((masterwindow == (BC_WindowBase *)mwindow->cwindow->gui)||
 			(masterwindow == (BC_WindowBase *)mwindow->gui->mbuttons))
 		{
@@ -152,6 +155,8 @@ void ManualGoto::run()
 				}
 			}
 	}
+	delete window;
+	window = 0;
 }
 
 
