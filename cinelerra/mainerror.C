@@ -26,14 +26,14 @@
 #include "mainsession.h"
 #include "mutex.h"
 #include "mwindow.h"
+#include "theme.h"
 
 #include <string.h>
-
-
+#include <ctype.h>
+#include <stdarg.h>
 
 
 MainError* MainError::main_error = 0;
-
 
 
 
@@ -64,15 +64,12 @@ MainErrorGUI::~MainErrorGUI()
 
 void MainErrorGUI::create_objects()
 {
-SET_TRACE
-
+	set_icon(mwindow->theme->get_image("mwindow_icon"));
 	BC_Button *button;
 	add_subwindow(button = new BC_OKButton(this));
 	int x = 10, y = 10;
-SET_TRACE
 	add_subwindow(title = new BC_Title(x, y, _("The following errors occurred:")));
 	y += title->get_h() + 5;
-SET_TRACE
 	add_subwindow(list = new BC_ListBox(x,
                 y,
                 get_w() - 20,
@@ -87,9 +84,7 @@ SET_TRACE
                 LISTBOX_SINGLE,  // Select one item or multiple items
                 ICON_LEFT,        // Position of icon relative to text of each item
                 0));
-SET_TRACE
 	show_window();
-SET_TRACE
 }
 
 int MainErrorGUI::resize_event(int w, int h)
@@ -173,18 +168,13 @@ void MainError::append_error(const char *string)
 
 void MainError::show_error_local(const char *string)
 {
-SET_TRACE
 // assume user won't get to closing the GUI here
 	lock_window("MainError::show_error_local");
-SET_TRACE
 	if(get_gui())
 	{
-SET_TRACE
 		MainErrorGUI *gui = (MainErrorGUI*)get_gui();
 		gui->lock_window("MainError::show_error_local");
-SET_TRACE
 		append_error(string);
-SET_TRACE
 		gui->list->update(&errors,
 			0,
 			0,
@@ -194,23 +184,16 @@ SET_TRACE
 			gui->list->get_highlighted_item(),  // Flat index of item cursor is over
 			0,     // set all autoplace flags to 1
 			1);
-SET_TRACE
 		gui->unlock_window();
 		unlock_window();
-SET_TRACE
 		start();
-SET_TRACE
 	}
 	else
 	{
 		unlock_window();
-SET_TRACE
 		errors.remove_all_objects();
-SET_TRACE
 		append_error(string);
-SET_TRACE
 		start();
-SET_TRACE
 	}
 }
 
@@ -221,15 +204,122 @@ void MainError::show_error(const char *string)
 		main_error->show_error_local(string);
 	else
 	{
-		printf("%s", string);
+		fprintf(stderr, "ERROR: %s", string);
 		if(string[strlen(string) - 1] != '\n')
-			printf("\n");
+			fputc('\n', stderr);
 	}
 }
 
+const char *MainError::StringBreaker(int font, const char *text, int boxwidth,
+		BC_Window *win)
+{
+	int txlen = strlen(text);
+	int linelen;
+	int w;
+	char *p, *q, *r;
+	static char msgbuf[1024];
 
+	if(win->get_text_width(font, text) < boxwidth)
+		return text;
 
+	p = strncpy(msgbuf, text, sizeof(msgbuf)-1);
 
+	while (*p)
+	{
+		if(q = strchr(p, '\n'))
+		{
+			if(win->get_text_width(font, p, q - p) < boxwidth)
+			{
+				p = ++q;
+				continue;
+			}
+		}
 
+		if(win->get_text_width(font, msgbuf) < boxwidth)
+			return msgbuf;
 
+		r = &msgbuf[txlen];
+		q = p;
+		while(*q)
+		{
+			if(isspace(*q))
+			{
+				if(win->get_text_width(font, p, q - p) > boxwidth)
+				{
+					*r = '\n';
+					p = ++r;
+					break;
+				}
+				else
+					r = q;
+			}
+			q++;
+		}
+	}
+// There was a very long word if we reach here
+	return msgbuf;
+}
+
+void MainError::ErrorBoxMsg(const char *fmt, ...)
+{
+	char bufr[1024];
+	va_list ap;
+
+	va_start(ap, fmt);
+	vsnprintf(bufr, 1024, fmt, ap);
+	va_end(ap);
+	if(main_error)
+	{
+		BC_DisplayInfo display_info;
+		int x = display_info.get_abs_cursor_x();
+		int y = display_info.get_abs_cursor_y();
+
+		MainErrorBox ebox(main_error->mwindow, x, y);
+		ebox.create_objects(bufr);
+		ebox.run_window();
+	}
+	else
+		fprintf(stderr, "ERROR: %s\n", bufr);
+}
+
+void MainError::ErrorMsg(const char *fmt, ...)
+{
+	char bufr[1024];
+	va_list ap;
+
+	va_start(ap, fmt);
+	vsnprintf(bufr, 1024, fmt, ap);
+	va_end(ap);
+	show_error(bufr);
+}
+
+MainErrorBox::MainErrorBox(MWindow *mwindow, int x, int y, int w, int h)
+: BC_Window(PROGRAM_NAME ": Error", x, y, w, h, w, h, 0)
+{
+	set_icon(mwindow->theme->get_image("mwindow_icon"));
+}
+
+MainErrorBox::~MainErrorBox()
+{
+}
+
+int MainErrorBox::create_objects(const char *text)
+{
+	int x, y;
+	BC_Title *title;
+	const char *btext;
+
+	btext = MainError::StringBreaker(MEDIUMFONT, text, get_w() - 30, this);
+
+	add_subwindow(new BC_Title(get_w() / 2,
+		10,
+		btext,
+		MEDIUMFONT,
+		get_resources()->default_text_color,
+		1));
+	x = get_w() / 2 - 30;
+	y = get_h() - 50;
+	add_tool(new BC_OKButton(x, y));
+	return 0;
+}
 

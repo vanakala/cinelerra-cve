@@ -38,6 +38,8 @@
 // We have to use longer version if we want to gettext error messages
 #define eprintf(...) {char error_string[1024]; 	sprintf(error_string, "%s: ", __PRETTY_FUNCTION__); sprintf(error_string + strlen(error_string), __VA_ARGS__); MainError::show_error(error_string); }
 
+#define errormsg(...) MainError::ErrorMsg(__VA_ARGS__)
+#define errorbox(...) MainError::ErrorBoxMsg(__VA_ARGS__)
 
 
 class MainErrorGUI : public BC_Window
@@ -66,10 +68,15 @@ public:
 
 	BC_Window* new_gui();
 
-
 // Display error message to command line or GUI, depending on what exists.
 	static void show_error(const char *string);
-
+// Break line to fit in window
+	static const char *StringBreaker(int font,
+		const char *text, int boxwidth, BC_Window *win);
+// Display error box with message
+	static void ErrorBoxMsg(const char *fmt, ...);
+// Display error message
+	static void ErrorMsg(const char *fmt, ...);
 
 private:
 	void show_error_local(const char *string);
@@ -87,6 +94,16 @@ private:
 };
 
 
+class MainErrorBox : public BC_Window
+{
+public:
+	MainErrorBox(MWindow *mwindow, int x = (int)BC_INFINITY,
+		int y = (int)BC_INFINITY,
+		int w = 400,
+		int h = 120);
+	virtual ~MainErrorBox();
 
+	int create_objects(const char *text);
+};
 
 #endif
