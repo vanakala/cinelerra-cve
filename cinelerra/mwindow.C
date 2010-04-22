@@ -898,12 +898,10 @@ SET_TRACE
 					((new_asset->width % 2) ||
 					(new_asset->height % 2)))
 				{
-					char string[BCTEXTLEN];
-					sprintf(string, "%s's resolution is %dx%d.\nImages with odd dimensions may not decode properly.",
+					errormsg("%s's\nresolution is %dx%d. Images with odd dimensions may not decode properly.",
 						new_asset->path,
 						new_asset->width,
 						new_asset->height);
-					MainError::show_error(string);
 				}
 
 
@@ -1189,7 +1187,6 @@ SET_TRACE
 
 void MWindow::test_plugins(EDL *new_edl, const char *path)
 {
-	char string[BCTEXTLEN];
 // Do a check weather plugins exist
 	for(Track *track = new_edl->tracks->first; track; track = track->next)
 	{
@@ -1214,14 +1211,10 @@ void MWindow::test_plugins(EDL *new_edl, const char *path)
 							plugin_found = 1;
 					}
 					if (!plugin_found) 
-					{
-						sprintf(string, 
-							"The effect '%s' in file '%s' is not part of your installation of Cinelerra.\n"
+						errormsg("The effect '%s' in file '%s' is not part of your installation of Cinelerra.\n"
 							"The project won't be rendered as it was meant and Cinelerra might crash.\n",
-							plugin->title, 
-							path); 
-						MainError::show_error(string);
-					}
+							plugin->title,
+							path);
 				}
 			}
 		}
@@ -1243,14 +1236,10 @@ void MWindow::test_plugins(EDL *new_edl, const char *path)
 						transition_found = 1;
 				}
 				if (!transition_found) 
-				{
-					sprintf(string, 
-						"The transition '%s' in file '%s' is not part of your installation of Cinelerra.\n"
+					errormsg("The transition '%s' in file '%s' is not part of your installation of Cinelerra.\n"
 						"The project won't be rendered as it was meant and Cinelerra might crash.\n",
 						edit->transition->title, 
 						path); 
-					MainError::show_error(string);
-				}
 			}
 		}
 	}
@@ -1271,14 +1260,14 @@ void MWindow::init_shm()
 	fd = fopen("/proc/sys/kernel/shmmax", "r");
 	if(!fd)
 	{
-		MainError::show_error("MWindow::init_shm: couldn't open /proc/sys/kernel/shmmax for reading.\n");
+		errormsg("MWindow::init_shm: couldn't open /proc/sys/kernel/shmmax for reading.\n");
 		return;
 	}
 
 	int64_t result = 0;
 	if(fscanf(fd, "%lld", &result) != 1)
 	{
-		MainError::show_error("MWindow::init_shm: couldn't resd /proc/sys/kernel/shmmax.\n");
+		errormsg("MWindow::init_shm: couldn't read /proc/sys/kernel/shmmax.\n");
 		fclose(fd);
 		return;
 	}
@@ -1286,7 +1275,7 @@ void MWindow::init_shm()
 	fd = 0;
 	if(result < 0x7fffffff)
 	{
-		eprintf("WARNING: /proc/sys/kernel/shmmax is 0x%llx, which is too low.\n"
+		errormsg("WARNING: /proc/sys/kernel/shmmax is 0x%llx, which is too low.\n"
 			"Before running Cinelerra do the following as root:\n"
 			"echo \"0x7fffffff\" > /proc/sys/kernel/shmmax\n",
 			result);
@@ -1299,11 +1288,7 @@ void MWindow::create_objects(int want_gui,
 	int want_new,
 	char *config_path)
 {
-	char string[BCTEXTLEN];
-	FileSystem fs;
 	edl = 0;
-
-
 
 	init_3d();
 	remove_thread = new RemoveThread;
