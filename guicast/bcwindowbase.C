@@ -600,7 +600,6 @@ int BC_WindowBase::run_window()
 	done = 0;
 	return_value = 0;
 
-
 // Events may have been sent before run_window so can't initialize them here.
 
 // Start tooltips
@@ -644,24 +643,20 @@ int BC_WindowBase::get_key_masks(XEvent *event)
 int BC_WindowBase::dispatch_event()
 {
 	XEvent event;
-    Window tempwin;
-  	KeySym keysym;
-  	char keys_return[2];
+	Window tempwin;
+	KeySym keysym;
+	char keys_return[2];
 	int result;
 	XClientMessageEvent *ptr;
 	int temp;
 	int cancel_resize, cancel_translation;
 
 	key_pressed = 0;
-
 // If an event is waiting get it, otherwise
 // wait for next event only if there are no compressed events.
 	if(XPending(display) ||
-		(!motion_events && !resize_events && !translation_events))
-	{
+			(!motion_events && !resize_events && !translation_events))
 		XNextEvent(display, &event);
-//		get_key_masks(event);
-	}
 	else
 // Handle compressed events
 	{
@@ -683,276 +678,240 @@ int BC_WindowBase::dispatch_event()
 
 	switch(event.type)
 	{
-		case ClientMessage:
+	case ClientMessage:
 // Clear the resize buffer
-			if(resize_events) dispatch_resize_event(last_resize_w, last_resize_h);
+		if(resize_events)
+			dispatch_resize_event(last_resize_w, last_resize_h);
 // Clear the motion buffer since this can clear the window
-			if(motion_events)
-			{
-				dispatch_motion_event();
-			}
+		if(motion_events)
+			dispatch_motion_event();
 
-			ptr = (XClientMessageEvent*)&event;
+		ptr = (XClientMessageEvent*)&event;
 
 
-        	if(ptr->message_type == ProtoXAtom && 
-				ptr->data.l[0] == DelWinXAtom)
-        	{
-				close_event();
-			}
-			else
-			if(ptr->message_type == RepeaterXAtom)
-			{
-				dispatch_repeat_event(ptr->data.l[0]);
-// Make sure the repeater still exists.
-// 				for(int i = 0; i < repeaters.total; i++)
-// 				{
-// 					if(repeaters.values[i]->repeat_id == ptr->data.l[0])
-// 					{
-// 						dispatch_repeat_event_master(ptr->data.l[0]);
-// 						break;
-// 					}
-// 				}
-			}
-			else
-			if(ptr->message_type == SetDoneXAtom)
-			{
-				done = 1;
-			} else
-			{ // We currently use X marshalling for xatom events, we can switch to something else later
-				recieve_custom_xatoms((xatom_event *)ptr);
-			}
-			break;
+		if(ptr->message_type == ProtoXAtom && ptr->data.l[0] == DelWinXAtom)
+			close_event();
+		else
+		if(ptr->message_type == RepeaterXAtom)
+			dispatch_repeat_event(ptr->data.l[0]);
+		else
+		if(ptr->message_type == SetDoneXAtom)
+			done = 1;
+		else
+			recieve_custom_xatoms((xatom_event *)ptr);
+		break;
 
-		case FocusIn:
-			has_focus = 1;
-			dispatch_focus_in();
-			break;
+	case FocusIn:
+		has_focus = 1;
+		dispatch_focus_in();
+		break;
 
-		case FocusOut:
-			has_focus = 0;
-			dispatch_focus_out();
-			break;
+	case FocusOut:
+		has_focus = 0;
+		dispatch_focus_out();
+		break;
 
 // Maximized
-		case MapNotify:
-			break;
+	case MapNotify:
+		break;
 
 // Minimized
-		case UnmapNotify:
-			break;
+	case UnmapNotify:
+		break;
 
-		case ButtonPress:
-			get_key_masks(&event);
-			cursor_x = event.xbutton.x;
-			cursor_y = event.xbutton.y;
-			button_number = event.xbutton.button;
-			event_win = event.xany.window;
-			if (button_number != 4 && button_number != 5)
-	  			button_down = 1;
-			button_pressed = event.xbutton.button;
-			button_time1 = button_time2;
-			button_time2 = event.xbutton.time;
-			drag_x = cursor_x;
-			drag_y = cursor_y;
-			drag_win = event_win;
-			drag_x1 = cursor_x - get_resources()->drag_radius;
-			drag_x2 = cursor_x + get_resources()->drag_radius;
-			drag_y1 = cursor_y - get_resources()->drag_radius;
-			drag_y2 = cursor_y + get_resources()->drag_radius;
+	case ButtonPress:
+		get_key_masks(&event);
+		cursor_x = event.xbutton.x;
+		cursor_y = event.xbutton.y;
+		button_number = event.xbutton.button;
+		event_win = event.xany.window;
+		if (button_number != 4 && button_number != 5)
+			button_down = 1;
+		button_pressed = event.xbutton.button;
+		button_time1 = button_time2;
+		button_time2 = event.xbutton.time;
+		drag_x = cursor_x;
+		drag_y = cursor_y;
+		drag_win = event_win;
+		drag_x1 = cursor_x - get_resources()->drag_radius;
+		drag_x2 = cursor_x + get_resources()->drag_radius;
+		drag_y1 = cursor_y - get_resources()->drag_radius;
+		drag_y2 = cursor_y + get_resources()->drag_radius;
 
-			if(button_time2 - button_time1 < resources.double_click)
-			{
+		if(button_time2 - button_time1 < resources.double_click)
+		{
 // Ignore triple clicks
-				double_click = 1; 
-				button_time2 = button_time1 = 0; 
-			}
-			else 
-				double_click = 0;
+			double_click = 1; 
+			button_time2 = button_time1 = 0; 
+		}
+		else
+			double_click = 0;
 
-			dispatch_button_press();
-			break;
+		dispatch_button_press();
+		break;
 
-		case ButtonRelease:
-			get_key_masks(&event);
-			button_number = event.xbutton.button;
-			event_win = event.xany.window;
-			if (button_number != 4 && button_number != 5) 
-				button_down = 0;
+	case ButtonRelease:
+		get_key_masks(&event);
+		button_number = event.xbutton.button;
+		event_win = event.xany.window;
+		if (button_number != 4 && button_number != 5) 
+			button_down = 0;
 
-			dispatch_button_release();
+		dispatch_button_release();
 
-			break;
+		break;
 
-		case Expose:
-			event_win = event.xany.window;
-			dispatch_expose_event();
-			break;
+	case Expose:
+		event_win = event.xany.window;
+		dispatch_expose_event();
+		break;
 
-		case MotionNotify:
-			get_key_masks(&event);
+	case MotionNotify:
+		get_key_masks(&event);
 // Dispatch previous motion event if this is a subsequent motion from a different window
-			if(motion_events && last_motion_win != event.xany.window)
-			{
-				dispatch_motion_event();
-			}
+		if(motion_events && last_motion_win != event.xany.window)
+			dispatch_motion_event();
 
 // Buffer the current motion
-			motion_events = 1;
-			last_motion_x = event.xmotion.x;
-			last_motion_y = event.xmotion.y;
-			last_motion_win = event.xany.window;
-			break;
+		motion_events = 1;
+		last_motion_x = event.xmotion.x;
+		last_motion_y = event.xmotion.y;
+		last_motion_win = event.xany.window;
+		break;
 
-		case ConfigureNotify:
-                        lock_window("BC_WindowBase::dispatch_event Cfgnt");
-			get_key_masks(&event);
-			XTranslateCoordinates(top_level->display, 
-				top_level->win, 
-				top_level->rootwin, 
-				0, 
-				0, 
-				&last_translate_x, 
-				&last_translate_y, 
-				&tempwin);
-			last_resize_w = event.xconfigure.width;
-			last_resize_h = event.xconfigure.height;
-                        unlock_window();
-			cancel_resize = 0;
-			cancel_translation = 0;
+	case ConfigureNotify:
+		lock_window("BC_WindowBase::dispatch_event Cfgnt");
+		get_key_masks(&event);
+		XTranslateCoordinates(top_level->display,
+			top_level->win,
+			top_level->rootwin,
+			0,
+			0,
+			&last_translate_x,
+			&last_translate_y,
+			&tempwin);
+		last_resize_w = event.xconfigure.width;
+		last_resize_h = event.xconfigure.height;
+		unlock_window();
+		cancel_resize = 0;
+		cancel_translation = 0;
 
 // Resize history prevents responses to recursive resize requests
-			for(int i = 0; i < resize_history.total && !cancel_resize; i++)
+		for(int i = 0; i < resize_history.total && !cancel_resize; i++)
+		{
+			if(resize_history.values[i]->w == last_resize_w &&
+				resize_history.values[i]->h == last_resize_h)
 			{
-				if(resize_history.values[i]->w == last_resize_w &&
-					resize_history.values[i]->h == last_resize_h)
-				{
-					delete resize_history.values[i];
-					resize_history.remove_number(i);
-					cancel_resize = 1;
-				}
-			}
-
-			if(last_resize_w == w && last_resize_h == h)
+				delete resize_history.values[i];
+				resize_history.remove_number(i);
 				cancel_resize = 1;
-
-			if(!cancel_resize)
-			{
-				resize_events = 1;
 			}
+		}
 
-			if((last_translate_x == x && last_translate_y == y))
-				cancel_translation = 1;
+		if(last_resize_w == w && last_resize_h == h)
+			cancel_resize = 1;
 
-			if(!cancel_translation)
-			{
-				translation_events = 1;
-			}
+		if(!cancel_resize)
+			resize_events = 1;
 
-			translation_count++;
-			break;
+		if((last_translate_x == x && last_translate_y == y))
+			cancel_translation = 1;
 
-		case KeyPress:
-			get_key_masks(&event);
-  			keys_return[0] = 0;
-  			XLookupString((XKeyEvent*)&event, keys_return, 1, &keysym, 0);
+		if(!cancel_translation)
+			translation_events = 1;
 
-// printf("BC_WindowBase::dispatch_event 2 %llx\n", 
-// event->xkey.state);
+		translation_count++;
+		break;
+
+	case KeyPress:
+		get_key_masks(&event);
+		keys_return[0] = 0;
+		XLookupString((XKeyEvent*)&event, keys_return, 1, &keysym, 0);
+
 // block out control keys
-			if(keysym > 0xffe0 && keysym < 0xffff) break;
+		if(keysym > 0xffe0 && keysym < 0xffff) break;
 
 
-			if(test_keypress) printf("BC_WindowBase::dispatch_event %x\n", (unsigned int)keysym);
-
-
-  			switch(keysym)
-			{
+		switch(keysym)
+		{
 // block out extra keys
-        		case XK_Alt_L:      
-        		case XK_Alt_R:      
-        		case XK_Shift_L:    
-        		case XK_Shift_R:    
-        		case XK_Control_L:  
-        		case XK_Control_R:  
-					key_pressed = 0;         
-					break;
+		case XK_Alt_L:
+		case XK_Alt_R:
+		case XK_Shift_L:
+		case XK_Shift_R:
+		case XK_Control_L:
+		case XK_Control_R:
+			key_pressed = 0;
+			break;
 
 // Translate key codes
-				case XK_Return:     key_pressed = RETURN;    break;
-  	    		case XK_Up:         key_pressed = UP;        break;
-   				case XK_Down:       key_pressed = DOWN;      break;
-   				case XK_Left:       key_pressed = LEFT;      break;
-    			case XK_Right:      key_pressed = RIGHT;     break;
-    			case XK_Next:       key_pressed = PGDN;      break;
-    			case XK_Prior:      key_pressed = PGUP;      break;
-    			case XK_BackSpace:  key_pressed = BACKSPACE; break;
-  	    		case XK_Escape:     key_pressed = ESC;       break;
-  	    		case XK_Tab:
-					if(shift_down())
-						key_pressed = LEFTTAB;
-					else
-						key_pressed = TAB;       
-					break;
-				case XK_ISO_Left_Tab: key_pressed = LEFTTAB; break;
- 				case XK_underscore: key_pressed = '_';       break;
-   	    		case XK_asciitilde: key_pressed = '~';       break;
-				case XK_Delete:     key_pressed = DELETE;    break;
-				case XK_Home:       key_pressed = HOME;      break;
-				case XK_End:        key_pressed = END;       break;
+		case XK_Return:     key_pressed = RETURN;    break;
+		case XK_Up:         key_pressed = UP;        break;
+		case XK_Down:       key_pressed = DOWN;      break;
+		case XK_Left:       key_pressed = LEFT;      break;
+		case XK_Right:      key_pressed = RIGHT;     break;
+		case XK_Next:       key_pressed = PGDN;      break;
+		case XK_Prior:      key_pressed = PGUP;      break;
+		case XK_BackSpace:  key_pressed = BACKSPACE; break;
+		case XK_Escape:     key_pressed = ESC;       break;
+		case XK_Tab:
+			if(shift_down())
+				key_pressed = LEFTTAB;
+			else
+				key_pressed = TAB;
+			break;
+		case XK_ISO_Left_Tab: key_pressed = LEFTTAB; break;
+		case XK_underscore: key_pressed = '_';       break;
+		case XK_asciitilde: key_pressed = '~';       break;
+		case XK_Delete:     key_pressed = DELETE;    break;
+		case XK_Home:       key_pressed = HOME;      break;
+		case XK_End:        key_pressed = END;       break;
 
 // number pad
-				case XK_KP_Enter:       key_pressed = KPENTER;   break;
-				case XK_KP_Add:         key_pressed = KPPLUS;    break;
-				case XK_KP_1:
-				case XK_KP_End:         key_pressed = KP1;       break;
-				case XK_KP_2:
-				case XK_KP_Down:        key_pressed = KP2;       break;
-				case XK_KP_3:
-				case XK_KP_Page_Down:   key_pressed = KP3;       break;
-				case XK_KP_4:
-				case XK_KP_Left:        key_pressed = KP4;       break;
-				case XK_KP_5:
-				case XK_KP_Begin:       key_pressed = KP5;       break;
-				case XK_KP_6:
-				case XK_KP_Right:       key_pressed = KP6;       break;
-				case XK_KP_0:
-				case XK_KP_Insert:      key_pressed = KPINS;     break;
-				case XK_KP_Decimal:
-				case XK_KP_Delete:      key_pressed = KPDEL;     break;
- 	    		default:           
-					//key_pressed = keys_return[0]; 
-					key_pressed = keysym & 0xff;
-					break;
-			}
+		case XK_KP_Enter:       key_pressed = KPENTER;   break;
+		case XK_KP_Add:         key_pressed = KPPLUS;    break;
+		case XK_KP_1:
+		case XK_KP_End:         key_pressed = KP1;       break;
+		case XK_KP_2:
+		case XK_KP_Down:        key_pressed = KP2;       break;
+		case XK_KP_3:
+		case XK_KP_Page_Down:   key_pressed = KP3;       break;
+		case XK_KP_4:
+		case XK_KP_Left:        key_pressed = KP4;       break;
+		case XK_KP_5:
+		case XK_KP_Begin:       key_pressed = KP5;       break;
+		case XK_KP_6:
+		case XK_KP_Right:       key_pressed = KP6;       break;
+		case XK_KP_0:
+		case XK_KP_Insert:      key_pressed = KPINS;     break;
+		case XK_KP_Decimal:
+		case XK_KP_Delete:      key_pressed = KPDEL;     break;
+		default:
+			key_pressed = keysym & 0xff;
+			break;
+		}
 
-//printf("BC_WindowBase::dispatch_event %d %d %x\n", shift_down(), alt_down(), key_pressed);
-			result = dispatch_keypress_event();
+		result = dispatch_keypress_event();
 // Handle some default keypresses
-			if(!result)
-			{
-				if(key_pressed == 'w' ||
-					key_pressed == 'W')
-				{
-					close_event();
-				}
-			}
-			break;
+		if(!result)
+		{
+			if(key_pressed == 'w' || key_pressed == 'W')
+				close_event();
+		}
+		break;
 
-		case LeaveNotify:
-			event_win = event.xany.window;
-			dispatch_cursor_leave();
-			break;
+	case LeaveNotify:
+		event_win = event.xany.window;
+		dispatch_cursor_leave();
+		break;
 
-		case EnterNotify:
-			event_win = event.xany.window;
-			cursor_x = event.xcrossing.x;
-			cursor_y = event.xcrossing.y;
-			dispatch_cursor_enter();
-			break;
+	case EnterNotify:
+		event_win = event.xany.window;
+		cursor_x = event.xcrossing.x;
+		cursor_y = event.xcrossing.y;
+		dispatch_cursor_enter();
+		break;
 	}
-//printf("100 %s %p %d\n", title, event, event->type);
-
 	return 0;
 }
 
@@ -1077,13 +1036,12 @@ int BC_WindowBase::dispatch_keypress_event()
 	int result = 0;
 	if(top_level == this)
 	{
-		if(active_subwindow) result = active_subwindow->dispatch_keypress_event();
+		if(active_subwindow) 
+			result = active_subwindow->dispatch_keypress_event();
 	}
 
 	for(int i = 0; i < subwindows->total && !result; i++)
-	{
 		result = subwindows->values[i]->dispatch_keypress_event();
-	}
 
 	if(!result) result = keypress_event();
 
@@ -1465,28 +1423,21 @@ int BC_WindowBase::unset_all_repeaters()
 	return 0;
 }
 
-// long BC_WindowBase::get_repeat_id()
-// {
-// 	return top_level->next_repeat_id++;
-// }
-
-
 int BC_WindowBase::arm_repeat(int64_t duration)
 {
 	XEvent event;
-	XClientMessageEvent *ptr = (XClientMessageEvent*)&event;
-	ptr->type = ClientMessage;
-	ptr->message_type = RepeaterXAtom;
-	ptr->format = 32;
-	ptr->data.l[0] = duration;
 
-// Couldn't use XSendEvent since it locked up randomly.
- 	XSendEvent(top_level->display, 
- 		top_level->win, 
- 		0, 
- 		0, 
- 		&event);
- 	flush();
+	event.xclient.type = ClientMessage;
+	event.xclient.message_type = RepeaterXAtom;
+	event.xclient.format = 32;
+	event.xclient.data.l[0] = duration;
+
+	XSendEvent(top_level->display, 
+		top_level->win, 
+		0, 
+		0, 
+		&event);
+	flush();
 	return 0;
 }
 
@@ -1498,21 +1449,21 @@ int BC_WindowBase::recieve_custom_xatoms(xatom_event *event)
 int BC_WindowBase::send_custom_xatom(xatom_event *event)
 {
 	XEvent myevent;
-	XClientMessageEvent *ptr = (XClientMessageEvent*)&myevent;
-	ptr->type = ClientMessage;
-	ptr->message_type = event->message_type;
-	ptr->format = event->format;
-	ptr->data.l[0] = event->data.l[0];
-	ptr->data.l[1] = event->data.l[1];
-	ptr->data.l[2] = event->data.l[2];
-	ptr->data.l[3] = event->data.l[3];
-	ptr->data.l[4] = event->data.l[4];
 
- 	XSendEvent(top_level->display, 
- 		top_level->win, 
- 		0, 
- 		0, 
- 		&myevent);
+	myevent.type = ClientMessage;
+	myevent.xclient.message_type = event->message_type;
+	myevent.xclient.format = event->format;
+	myevent.xclient.data.l[0] = event->data.l[0];
+	myevent.xclient.data.l[1] = event->data.l[1];
+	myevent.xclient.data.l[2] = event->data.l[2];
+	myevent.xclient.data.l[3] = event->data.l[3];
+	myevent.xclient.data.l[4] = event->data.l[4];
+
+	XSendEvent(top_level->display, 
+		top_level->win, 
+		0, 
+		0, 
+		&myevent);
 	flush();
 	return 0;
 }
@@ -2683,25 +2634,20 @@ void BC_WindowBase::set_done(int return_value)
 		top_level->set_done(return_value);
 	else
 	{
-		XEvent *event = new XEvent;
-		XClientMessageEvent *ptr = (XClientMessageEvent*)event;
+		XEvent event;
 
-		event->type = ClientMessage;
-		ptr->message_type = SetDoneXAtom;
-		ptr->format = 32;
+		event.type = ClientMessage;
+		event.xclient.message_type = SetDoneXAtom;
+		event.xclient.format = 32;
 		this->return_value = return_value;
 
-// May lock up here because XSendEvent doesn't work too well 
-// asynchronous with XNextEvent.
-// This causes BC_WindowEvents to forward a copy of the event to run_window where 
-// it is deleted.
-
-    		XSendEvent(display,
-            	    win,
-            	    0,
-            	    0,
-            	    event);
- 	} 
+		XSendEvent(display,
+			win,
+			0,
+			0,
+			&event);
+		flush();
+	}
 }
 
 int BC_WindowBase::get_w()

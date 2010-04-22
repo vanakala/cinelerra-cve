@@ -171,7 +171,6 @@ public:
 	friend class BC_Toggle;
 	friend class BC_Tumbler;
 	friend class BC_Window;
-	friend class BC_WindowEvents;
 
 // Main loop
 	int run_window();
