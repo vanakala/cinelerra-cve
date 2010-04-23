@@ -285,7 +285,7 @@ int FileXML::write_to_file(const char *filename)
 // Position may have been rewound after storing so we use a strlen
 		if(!fwrite(string, strlen(string), 1, out) && strlen(string))
 		{
-			eprintf("Error while writing to \"%s\": %m\n",
+			errormsg("Error while writing to \"%s\": %m\n",
 				filename);
 			fclose(out);
 			return 1;
@@ -296,7 +296,7 @@ int FileXML::write_to_file(const char *filename)
 	}
 	else
 	{
-		eprintf("Error while opening \"%s\" for writing. \n%m\n", filename);
+		errormsg("Error while opening \"%s\" for writing. \n%m\n", filename);
 		return 1;
 	}
 	fclose(out);
@@ -314,7 +314,7 @@ int FileXML::write_to_file(FILE *file)
 	}
 	else
 	{
-		eprintf("Error while writing to \"%s\": %m\n",
+		errormsg("Error while writing to \"%s\": %m\n",
 			filename);
 		return 1;
 	}
@@ -347,7 +347,7 @@ int FileXML::read_from_file(const char *filename, int ignore_error)
 	else
 	{
 		if(!ignore_error) 
-			eprintf("Error while opening \"%s\" for reading. \n%m\n", filename);
+			errormsg("Error while opening \"%s\" for reading. \n%m\n", filename);
 		return 1;
 	}
 	fclose(in);

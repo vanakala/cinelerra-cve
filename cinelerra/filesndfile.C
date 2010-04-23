@@ -247,7 +247,7 @@ printf("FileSNDFile::open 10 %p\n", fd);
 	if(!fd) 
 	{
 		result = 1;
-		eprintf("%s", sf_strerror(0));
+		errormsg("%s", sf_strerror(0));
 	}
 
 	return result;
@@ -267,7 +267,7 @@ int FileSndFile::set_audio_position(int64_t sample)
 // Commented out /* && psf->dataoffset */ in sndfile.c: 761
 	if(sf_seek(fd, sample, SEEK_SET) < 0)
 	{
-		eprintf("sf_seek() to sample %lld failed, reason: %s\n", sample, sf_strerror(fd));
+		errormsg("sf_seek() to sample %lld failed, reason: %s\n", sample, sf_strerror(fd));
 		return 1;
 	}
 	return 0;
@@ -280,10 +280,10 @@ int FileSndFile::read_samples(double *buffer, int64_t len)
 //printf("FileSndFile::read_samples %lld %lld\n", file->current_sample, len);
 // Get temp buffer for interleaved channels
 	if(len <= 0 || len > 1000000)
-		eprintf("len=%lld\n", len);
+		errormsg("Illegal length=%lld\n", len);
 
 	if(!buffer)
-		eprintf("buffer=%p\n", buffer);
+		errormsg("Missing buffer=%p\n", buffer);
 
 	if(temp_allocated && temp_allocated < len)
 	{
@@ -301,7 +301,7 @@ int FileSndFile::read_samples(double *buffer, int64_t len)
 	result = !sf_read_double(fd, temp_double, len * asset->channels);
 
 	if(result)
-		eprintf("fd=%p temp_double=%p len=%lld asset=%p asset->channels=%d\n",
+		errormsg("fd=%p temp_double=%p len=%lld asset=%p asset->channels=%d\n",
 			fd, temp_double, len, asset, asset->channels);
 
 // Extract single channel

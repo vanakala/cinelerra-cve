@@ -51,13 +51,13 @@ int YUVStream::open_read(char *path) {
 	stream_fd = open(path, O_RDONLY);
 
 	if (stream_fd < 0) {
-		eprintf("Error while opening \"%s\" for reading. \n%m\n", path);
+		errormsg("Error while opening \"%s\" for reading. \n%m\n", path);
 		return 1;
 	}
 
 	int result = read_header();
 	if (result != Y4M_OK) {
-		eprintf("Bad YUV4MPEG2 header: %s\n", y4m_strerr(result));
+		errormsg("Bad YUV4MPEG2 header: %s\n", y4m_strerr(result));
 		return 1;
 	}
 
@@ -90,7 +90,7 @@ int YUVStream::open_write(char *path, char *pipe) {
 	stream_fd = open(path, O_CREAT|O_WRONLY|O_TRUNC, 0666);
 	if (stream_fd > 0) return 0;
 	
-	eprintf("Error while opening \"%s\" for writing. \n%m\n", path);
+	errormsg("Error while opening \"%s\" for writing. \n%m\n", path);
 	return 1;
 }
 
@@ -111,7 +111,7 @@ int YUVStream::read_frame(uint8_t *yuv[3]) {
 				  &frame_info, yuv);
 	if (result != Y4M_OK) {
 		if (result != Y4M_ERR_EOF) {
-			eprintf("read_frame() failed: %s\n", 
+			errormsg("read_frame() failed: %s\n", 
 			       y4m_strerr(result));
 		}
 		return 1;
@@ -127,7 +127,7 @@ int YUVStream::read_frame_raw(uint8_t *data, long frame_size) {
 	int result = y4m_read_frame_header(stream_fd, &frame_info);
 #endif
 	if (result != Y4M_OK) {
-		eprintf("y4m_read_frame_header() failed: %s\n", 
+		errormsg("y4m_read_frame_header() failed: %s\n", 
 		       y4m_strerr(result));
 		return 1;
 	}
@@ -144,7 +144,7 @@ int YUVStream::write_frame(uint8_t *yuv[3]) {
 	int result = y4m_write_frame(stream_fd, &stream_info, 
 				     &frame_info, yuv);
 	if (result != Y4M_OK) {
-		eprintf("write_frame() failed: %s\n", y4m_strerr(result));
+		errormsg("YUVS write_frame() failed: %s\n", y4m_strerr(result));
 		return 1;
 	}
 	return 0;
@@ -156,13 +156,13 @@ int YUVStream::write_frame_raw(uint8_t *data, long frame_size) {
 	int result = y4m_write_frame_header(stream_fd, &frame_info);
 #endif
 	if (result != Y4M_OK) {
-		eprintf("y4m_write_frame_header() failed: %s\n", 
+		errormsg("y4m_write_frame_header() failed: %s\n", 
 		       y4m_strerr(result));
 		return 1;
 	}
 	result = y4m_write(stream_fd, data, frame_size);
 	if (result != Y4M_OK) {
-		eprintf("y4m_write(%ld) failed: %s\n", 
+		errormsg("y4m_write(%ld) failed: %s\n", 
 		       frame_size, y4m_strerr(result));
 		return 1;
 	}
@@ -212,7 +212,7 @@ int YUVStream::seek_frame(int64_t frame_number) {
 	if (frame_number > frame_count ||
 	    frame_number < 0 ||
 	    frame_index == 0) {
-		eprintf("seek_frame(%lld) failed (frame_count=%lld)\n", 
+		errormsg("seek_frame(%lld) failed (frame_count=%lld)\n", 
 		       frame_number, frame_count);
 		return 1;
 	}
@@ -220,11 +220,11 @@ int YUVStream::seek_frame(int64_t frame_number) {
 	off_t position = frame_index->values[frame_number];
 	if (position == 0) {
 		// because of header, position should never be zero
-		eprintf("seek_frame(%lld): position was zero\n", frame_number);
+		errormsg("seek_frame(%lld): position was zero\n", frame_number);
 	}
 
 	if (lseek(stream_fd, position, SEEK_SET) < 0) {
-		eprintf("lseek(%lld) failed: %s\n", position, strerror(errno));
+		errormsg("lseek(%lld) failed: %s\n", position, strerror(errno));
 		return 1;
 	}
 
@@ -234,7 +234,7 @@ int YUVStream::seek_frame(int64_t frame_number) {
 int YUVStream::read_header() {
 	int result = y4m_read_stream_header(stream_fd, &stream_info);
 	if (result != Y4M_OK) {
-		eprintf("y4m_read_stream_header() failed: %s\n", 
+		errormsg("y4m_read_stream_header() failed: %s\n", 
 		       y4m_strerr(result));
 		return 1;
 	}
@@ -243,7 +243,7 @@ int YUVStream::read_header() {
 int YUVStream::write_header() {
 	int result = y4m_write_stream_header(stream_fd, &stream_info);
 	if (result != Y4M_OK) {
-		eprintf("y4m_write_stream_header() failed: %s\n", 
+		errormsg("y4m_write_stream_header() failed: %s\n", 
 		       y4m_strerr(result));
 		return 1;
 	}

@@ -94,8 +94,7 @@ void ResizeTrackThread::run()
 		(h % 4)) && 
 		mwindow->edl->session->playback_config->vconfig->driver == PLAYBACK_X11_GL)
 	{
-		MainError::show_error(
-			_("This track's dimensions are not multiples of 4 so\n"
+		errormsg(_("This track's dimensions are not multiples of 4 so\n"
 			"it can't be rendered by OpenGL."));
 	}
 }

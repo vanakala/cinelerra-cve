@@ -71,7 +71,7 @@ int FileYUV::open_file(int should_read, int should_write)
 		asset->height = stream->get_height();
 		if (asset->width * asset->height <= 0) 
 		{
-			eprintf("illegal frame size '%d x %d'\n", asset->width, asset->height);
+			errormsg("Illegal frame size '%d x %d'\n", asset->width, asset->height);
 			return 1;
 		}
 		

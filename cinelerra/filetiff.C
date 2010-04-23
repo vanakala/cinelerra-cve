@@ -150,7 +150,7 @@ int FileTIFF::read_frame_header(const char *path)
 
 	if(!(stream = TIFFOpen(path, "rb")))
 	{
-		eprintf("Error while opening \"%s\" for reading. \n%m\n", asset->path);
+		errormsg("Error while opening \"%s\" for reading. \n%m\n", asset->path);
 		return 1;
 	}
 

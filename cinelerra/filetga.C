@@ -217,7 +217,7 @@ int FileTGA::read_frame_header(char *path)
 
 	if(!(stream = fopen(path, "rb")))
 	{
-		eprintf("Error while opening \"%s\" for reading. \n%m\n", asset->path);
+		errormsg("Error while opening \"%s\" for reading. \n%m\n", asset->path);
 		return 1;
 	}
 

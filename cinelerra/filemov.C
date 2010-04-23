@@ -181,7 +181,7 @@ int FileMOV::check_codec_params(Asset *asset)
 		if (!(asset->height == 576 && asset->width == 720) &&
 		    !(asset->height == 480 && asset->width == 720))
 		{
-			eprintf("DV in Quicktime container does not support following resolution: %ix%i\nAllowed resolutions are 720x576 (PAL) and 720x480 (NTSC)\n", asset->width, asset->height);
+			errormsg("DV in Quicktime container does not support following resolution: %ix%i\nAllowed resolutions are 720x576 (PAL) and 720x480 (NTSC)\n", asset->width, asset->height);
 			return 1;
 		}
 	}
@@ -221,7 +221,7 @@ int FileMOV::open_file(int rd, int wr)
 
 	if(!(fd = quicktime_open(asset->path, rd, wr)))
 	{
-		eprintf("Error while opening file \"%s\". \n%m\n", asset->path);
+		errormsg("Error while opening file \"%s\". \n%m\n", asset->path);
 		return 1;
 	}
 
@@ -863,7 +863,7 @@ int FileMOV::write_frames(VFrame ***frames, int len)
 					}
 					else
 					{
-						eprintf("data_size=%ld\n", data_size);
+						errorbox("Illegal mov data_size=%ld\n", data_size);
 					}
 				}
 				else
@@ -1045,7 +1045,7 @@ int FileMOV::read_frame(VFrame *frame)
 	}
 	if (result)
 	{
-		eprintf("quicktime_read_frame/quicktime_decode_video failed, result:\n");
+		errormsg("quicktime_read_frame/quicktime_decode_video failed, result:\n");
 	}
 
 
@@ -1141,7 +1141,7 @@ int FileMOV::read_samples(double *buffer, int64_t len)
 //printf("FileMOV::read_samples 3 %ld %ld\n", file->current_sample, quicktime_audio_position(fd, 0));
 		if(quicktime_decode_audio(fd, 0, temp_float[0], len, file->current_channel))
 		{
-			eprintf("quicktime_decode_audio failed\n");
+			errorbox("quicktime_decode_audio failed\n");
 			return 1;
 		}
 		else

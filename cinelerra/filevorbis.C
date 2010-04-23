@@ -123,7 +123,7 @@ int FileVorbis::open_file(int rd, int wr)
 //printf("FileVorbis::open_file 1\n");
 		if(!(fd = fopen(asset->path, "rb")))
 		{
-			eprintf("Error while opening \"%s\" for reading. \n%m\n", asset->path);
+			errormsg("Error while opening \"%s\" for reading. \n%m\n", asset->path);
 			result = 1;
 		}
 		else
@@ -131,7 +131,7 @@ int FileVorbis::open_file(int rd, int wr)
 //printf("FileVorbis::open_file 2 %p %p\n", fd, vf);
 			if(ov_open(fd, &vf, NULL, 0) < 0)
 			{
-				eprintf("Invalid bitstream in %s\n", asset->path);
+				errormsg("Invalid bitstream in %s\n", asset->path);
 				result = 1;
 			}
 			else
@@ -157,7 +157,7 @@ int FileVorbis::open_file(int rd, int wr)
 	{
 		if(!(fd = fopen(asset->path, "wb")))
 		{
-			eprintf("Error while opening \"%s\" for writing. \n%m\n", asset->path);
+			errormsg("Error while opening \"%s\" for writing. \n%m\n", asset->path);
 			result = 1;
 		}
 		else
@@ -325,7 +325,7 @@ int FileVorbis::read_samples(double *buffer, int64_t len)
 
 	if(len > 0x100000)
 	{
-		eprintf("FileVorbis::read_samples max samples=%d\n", HISTORY_MAX);
+		errormsg("FileVorbis::read_samples max samples=%d\n", HISTORY_MAX);
 		return 1;
 	}
 
@@ -442,7 +442,7 @@ int FileVorbis::read_samples_float(float *buffer, int64_t len)
 
 	if(len > 0x100000)
 	{
-		eprintf("FileVorbis::read_samples max samples=%d\n", HISTORY_MAX);
+		errormsg("FileVorbis::read_samples max samples=%d\n", HISTORY_MAX);
 		return 1;
 	}
 
