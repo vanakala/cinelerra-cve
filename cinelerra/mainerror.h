@@ -31,13 +31,9 @@
 // This is needed for errors which are too verbose to fit in the
 // status bar.
 
-// Once created, it accumulates errors in a listbox until it's closed.
-
-// Macro to enable the simplest possible error output
-//#define eprintf(format, ...) {char error_string[1024]; sprintf(sprintf(error_string, "%s: " format, __PRETTY_FUNCTION__, ## __VA_ARGS__); MainError::show_error(error_string); }
-// We have to use longer version if we want to gettext error messages
-#define eprintf(...) {char error_string[1024]; 	sprintf(error_string, "%s: ", __PRETTY_FUNCTION__); sprintf(error_string + strlen(error_string), __VA_ARGS__); MainError::show_error(error_string); }
-
+// Macros to enable the simplest possible error output
+// Errormsgs are accumulated in a listbox until window is closed.
+// Errorbox creates new window and shows error
 #define errormsg(...) MainError::ErrorMsg(__VA_ARGS__)
 #define errorbox(...) MainError::ErrorBoxMsg(__VA_ARGS__)
 
