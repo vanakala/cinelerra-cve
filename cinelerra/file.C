@@ -25,7 +25,6 @@
 #include "cache.inc"
 #include "condition.h"
 #include "edit.h"
-#include "errorbox.h"
 #include "file.h"
 #include "fileac3.h"
 #include "fileavi.h"
@@ -51,6 +50,7 @@
 #include "formattools.h"
 #include "framecache.h"
 #include "language.h"
+#include "mainerror.h"
 #include "mutex.h"
 #include "pluginserver.h"
 #include "resample.h"
@@ -263,18 +263,11 @@ int File::get_options(FormatTools *format,
 
 	if(!format_window)
 	{
-		ErrorBox *errorbox = new ErrorBox(PROGRAM_NAME ": Error",
-			parent_window->get_abs_cursor_x(1),
-			parent_window->get_abs_cursor_y(1));
-		format_window = errorbox;
-		getting_options = 1;
 		if(audio_options)
-			errorbox->create_objects(_("This format doesn't support audio."));
+			errorbox(_("This format doesn't support audio."));
 		else
 		if(video_options)
-			errorbox->create_objects(_("This format doesn't support video."));
-		errorbox->run_window();
-		delete errorbox;
+			errorbox(_("This format doesn't support video."));
 	}
 
 	getting_options = 0;

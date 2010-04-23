@@ -35,7 +35,7 @@
 #include "edits.h"
 #include "edl.h"
 #include "edlsession.h"
-#include "errorbox.h"
+#include "mainerror.h"
 #include "file.h"
 #include "filesystem.h"
 #include "filexml.h"
@@ -269,14 +269,8 @@ void Render::start_interactive()
 		if (render_window && ! in_progress) {
 			render_window->raise_window();
 		}
-		else {
-			ErrorBox error_box(PROGRAM_NAME ": Error",
-					   mwindow->gui->get_abs_cursor_x(1),
-					   mwindow->gui->get_abs_cursor_y(1));
-			error_box.create_objects("Already rendering");
-			error_box.raise_window();
-			error_box.run_window();
-		}
+		else
+			errorbox("Already rendering");
 	}
 }
 
@@ -291,14 +285,7 @@ void Render::start_batches(ArrayList<BatchRenderJob*> *jobs)
 		Thread::start();
 	}
 	else
-	{
-		ErrorBox error_box(PROGRAM_NAME ": Error",
-			mwindow->gui->get_abs_cursor_x(1),
-			mwindow->gui->get_abs_cursor_y(1));
-		error_box.create_objects("Already rendering");
-		error_box.raise_window();
-		error_box.run_window();
-	}
+		errorbox("Already rendering");
 }
 
 void Render::start_batches(ArrayList<BatchRenderJob*> *jobs,
@@ -823,24 +810,9 @@ int Render::render(int test_overwrite,
 
 
 // Notify of error
-		if(result && 
-			(!progress || !progress->is_cancelled()) &&
-			!batch_cancelled)
-		{
-			if(mwindow)
-			{
-				ErrorBox error_box(PROGRAM_NAME ": Error",
-					mwindow->gui->get_abs_cursor_x(1),
-					mwindow->gui->get_abs_cursor_y(1));
-				error_box.create_objects(_("Error rendering data."));
-				error_box.raise_window();
-				error_box.run_window();
-			}
-			else
-			{
-				printf("Render::render: Error rendering data\n");
-			}
-		}
+		if(result && (!progress || !progress->is_cancelled()) &&
+				!batch_cancelled)
+			errorbox(_("Error rendering data."));
 
 // Delete the progress box
 		stop_progress();

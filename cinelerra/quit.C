@@ -22,7 +22,7 @@
 #include "assets.h"
 #include "mbuttons.h"
 #include "confirmquit.h"
-#include "errorbox.h"
+#include "mainerror.h"
 #include "language.h"
 #include "levelwindow.h"
 #include "levelwindowgui.h"
@@ -76,21 +76,13 @@ void Quit::run()
 // Test execution conditions
 	if(mwindow->gui->mainmenu->record->current_state == RECORD_CAPTURING)
 	{
-		ErrorBox error(PROGRAM_NAME ": Error", 
-			mwindow->gui->get_abs_cursor_x(1), 
-			mwindow->gui->get_abs_cursor_y(1));
-		error.create_objects(_("Can't quit while a recording is in progress."));
-		error.run_window();
+		errorbox(_("Can't quit while a recording is in progress."));
 		return;
 	}
 	else
 	if(mwindow->render->running())
 	{
-		ErrorBox error(PROGRAM_NAME ": Error", 
-			mwindow->gui->get_abs_cursor_x(1), 
-			mwindow->gui->get_abs_cursor_y(1));
-		error.create_objects(_("Can't quit while a render is in progress."));
-		error.run_window();
+		errorbox(_("Can't quit while a render is in progress."));
 		return;
 	}
 

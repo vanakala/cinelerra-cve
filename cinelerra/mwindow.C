@@ -41,7 +41,6 @@
 #include "editpanel.h"
 #include "edl.h"
 #include "edlsession.h"
-#include "errorbox.h"
 #include "fileformat.h"
 #include "file.h"
 #include "filesystem.h"

@@ -21,7 +21,6 @@
 
 #include "edit.h"
 #include "edits.h"
-#include "errorbox.h"
 #include "filexml.h"
 #include "keyframes.h"
 #include "mainundo.h"

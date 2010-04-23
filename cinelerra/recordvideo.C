@@ -26,7 +26,7 @@
 #include "condition.h"
 #include "edl.h"
 #include "edlsession.h"
-#include "errorbox.h"
+#include "mainerror.h"
 #include "file.h"
 #include "filethread.h"
 #include "language.h"
@@ -365,11 +365,7 @@ void RecordVideo::run()
 	{
 		if(!record_thread->monitor)
 		{
-			ErrorBox error_box(PROGRAM_NAME ": Error",
-				mwindow->gui->get_abs_cursor_x(1),
-				mwindow->gui->get_abs_cursor_y(1));
-			error_box.create_objects(_("No space left on disk."));
-			error_box.run_window();
+			errorbox(_("No space left on disk."));
 			batch_done = 1;
 		}
 	}

@@ -31,7 +31,7 @@
 #include "mwindowgui.h"
 #include "vwindow.h"
 #include "vwindowgui.h"
-#include "errorbox.h"
+#include "mainerror.h"
 #include "tracks.h"
 
 
@@ -117,11 +117,7 @@ void ClipEdit::run()
 				}
 				if (!name_ok_or_cancel)
 				{
-					ErrorBox error(PROGRAM_NAME ": Error", 
-						mwindow->gui->get_abs_cursor_x(1), 
-						mwindow->gui->get_abs_cursor_y(1));
-					error.create_objects(_("A clip with that name already exists."));
-					error.run_window();
+					errorbox(_("A clip with that name already exists."));
 					window->titlebox->activate();
 				}
 			}

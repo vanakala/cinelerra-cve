@@ -31,7 +31,7 @@
 #include "edits.h"
 #include "edl.h"
 #include "edlsession.h"
-#include "errorbox.h"
+#include "mainerror.h"
 #include "file.h"
 #include "filesystem.h"
 #include "indexfile.h"
@@ -171,13 +171,7 @@ void PackageRenderer::create_output()
 	if(result && mwindow)
 	{
 // open failed
-		char string[BCTEXTLEN];
-		sprintf(string, _("Couldn't open %s"), asset->path);
-		ErrorBox error(PROGRAM_NAME ": Error",
-			mwindow->gui->get_abs_cursor_x(1),
-			mwindow->gui->get_abs_cursor_y(1));
-		error.create_objects(string);
-		error.run_window();
+		errorbox(_("Couldn't open %s"), asset->path);
 	}
 	else
 	if(mwindow)

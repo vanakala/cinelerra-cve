@@ -22,7 +22,6 @@
 #include "assets.h"
 #include "bchash.h"
 #include "edl.h"
-#include "errorbox.h"
 #include "file.h"
 #include "filesystem.h"
 #include "indexfile.h"

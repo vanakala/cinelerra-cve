@@ -25,7 +25,7 @@
 #include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
-#include "errorbox.h"
+#include "mainerror.h"
 #include "file.h"
 #include "formatcheck.h"
 #include "indexfile.h"
@@ -117,7 +117,6 @@ void MenuEffectThread::run()
 	BC_Hash *defaults = mwindow->defaults;
 	ArrayList<BC_ListBoxItem*> plugin_list;
 	ArrayList<PluginServer*> local_plugindb;
-	char string[1024];
 	int i;
 	int result = 0;
 // Default configuration
@@ -129,10 +128,7 @@ void MenuEffectThread::run()
 // check for recordable tracks
 	if(!get_recordable_tracks(default_asset))
 	{
-		sprintf(string, _("No recordable tracks specified."));
-		ErrorBox error(PROGRAM_NAME ": Error");
-		error.create_objects(string);
-		error.run_window();
+		errorbox(_("No recordable tracks specified."));
 		Garbage::delete_object(default_asset);
 		return;
 	}
@@ -140,10 +136,7 @@ void MenuEffectThread::run()
 // check for plugins
 	if(!plugindb->total)
 	{
-		sprintf(string, _("No plugins available."));
-		ErrorBox error(PROGRAM_NAME ": Error");
-		error.create_objects(string);
-		error.run_window();
+		errorbox(_("No plugins available."));
 		Garbage::delete_object(default_asset);
 		return;
 	}
@@ -241,17 +234,13 @@ void MenuEffectThread::run()
 	if(!result && !strlen(default_asset->path))
 	{
 		result = 1;        // no output path given
-		ErrorBox error(PROGRAM_NAME ": Error");
-		error.create_objects(_("No output file specified."));
-		error.run_window();
+		errorbox(_("No output file specified."));
 	}
 
 	if(!result && plugin_number < 0)
 	{
 		result = 1;        // no output path given
-		ErrorBox error(PROGRAM_NAME ": Error");
-		error.create_objects(_("No effect selected."));
-		error.run_window();
+		errorbox(_("No effect selected."));
 	}
 
 // Configuration for realtime plugins.
@@ -291,9 +280,7 @@ void MenuEffectThread::run()
 	if(!result && total_length <= 0)
 	{
 		result = 1;        // no output path given
-		ErrorBox error(PROGRAM_NAME ": Error");
-		error.create_objects(_("No selected range to process."));
-		error.run_window();
+		errorbox(_("No selected range to process."));
 	}
 
 // ========================= get keyframe from user
@@ -451,10 +438,7 @@ void MenuEffectThread::run()
 				mwindow->edl->session->frame_rate))
 			{
 // open failed
-				sprintf(string, _("Couldn't open %s"), asset->path);
-				ErrorBox error(PROGRAM_NAME ": Error");
-				error.create_objects(string);
-				error.run_window();
+				errorbox(_("Couldn't open %s"), asset->path);
 				result = 1;
 			}
 			else

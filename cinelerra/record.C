@@ -30,7 +30,6 @@
 #include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
-#include "errorbox.h"
 #include "file.h"
 #include "filexml.h"
 #include "filemov.h"

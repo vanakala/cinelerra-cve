@@ -26,7 +26,6 @@
 #include "edits.h"
 #include "edl.h"
 #include "edlsession.h"
-#include "errorbox.h"
 #include "file.h"
 #include "filesystem.h"
 #include "filexml.h"

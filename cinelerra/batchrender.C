@@ -26,7 +26,7 @@
 #include "bchash.h"
 #include "edl.h"
 #include "edlsession.h"
-#include "errorbox.h"
+#include "mainerror.h"
 #include "filesystem.h"
 #include "filexml.h"
 #include "keys.h"
@@ -414,23 +414,11 @@ int BatchRenderThread::test_edl_files()
 			FILE *fd = fopen(jobs.values[i]->edl_path, "r");
 			if(!fd)
 			{
-				char string[BCTEXTLEN];
-				sprintf(string, _("EDL %s not found.\n"), jobs.values[i]->edl_path);
+				errorbox(_("EDL %s not found.\n"), jobs.values[i]->edl_path);
 				if(mwindow)
 				{
-					ErrorBox error_box(PROGRAM_NAME ": Error",
-						mwindow->gui->get_abs_cursor_x(1),
-						mwindow->gui->get_abs_cursor_y(1));
-					error_box.create_objects(string);
-					error_box.run_window();
 					gui->new_batch->enable();
 					gui->delete_batch->enable();
-				}
-				else
-				{
-					fprintf(stderr, 
-						"%s",
-						string);
 				}
 
 				is_rendering = 0;

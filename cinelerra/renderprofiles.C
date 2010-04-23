@@ -27,7 +27,7 @@
 #include "string.h"
 #include "render.h"
 #include "asset.h"
-#include "errorbox.h"
+#include "mainerror.h"
 #include "mwindowgui.h"
 
 #include <libintl.h>
@@ -261,12 +261,7 @@ int SaveRenderProfileButton::handle_event()
 		slot = profile->get_new_profile_slot();
 		if (slot < 0)
 		{
-			ErrorBox error_box(PROGRAM_NAME ": Error",
-					   profile->mwindow->gui->get_abs_cursor_x(1),
-					   profile->mwindow->gui->get_abs_cursor_y(1));
-			error_box.create_objects("Maximum number of render profiles reached");
-			error_box.raise_window();
-			error_box.run_window();
+			errorbox("Maximum number of render profiles reached");
 			return 1;
 		}
 		

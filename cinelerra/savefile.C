@@ -22,7 +22,7 @@
 #include "confirmsave.h"
 #include "bchash.h"
 #include "edl.h"
-#include "errorbox.h"
+#include "mainerror.h"
 #include "file.h"
 #include "filexml.h"
 #include "fileformat.h"
@@ -100,15 +100,8 @@ int Save::handle_event()
 
 		if(file.write_to_file(mwindow->session->filename))
 		{
-			char string2[256];
-			sprintf(string2, _("Couldn't open %s"), mwindow->session->filename);
-			ErrorBox error(PROGRAM_NAME ": Error",
-				mwindow->gui->get_abs_cursor_x(1),
-				mwindow->gui->get_abs_cursor_y(1));
-			error.create_objects(string2);
-			error.raise_window();
-			error.run_window();
-			return 1;		
+			errorbox(_("Couldn't open %s"), mwindow->session->filename);
+			return 1;
 		}
 		else
 		{
@@ -201,16 +194,9 @@ void SaveAs::run()
 
 	if(file.write_to_file(filename))
 	{
-		char string2[256];
 		mwindow->set_filename("");      // update the project name
-		sprintf(string2, _("Couldn't open %s."), filename);
-		ErrorBox error(PROGRAM_NAME ": Error",
-			mwindow->gui->get_abs_cursor_x(1),
-			mwindow->gui->get_abs_cursor_y(1));
-		error.create_objects(string2);
-		error.raise_window();
-		error.run_window();
-		return;		
+		errorbox(_("Couldn't open %s."), filename);
+		return;
 	}
 	else
 	{

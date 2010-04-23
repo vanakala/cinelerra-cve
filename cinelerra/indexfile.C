@@ -28,7 +28,6 @@
 #include "edlsession.h"
 #include "filexml.h"
 #include "filesystem.h"
-#include "errorbox.h"
 #include "file.h"
 #include "indexfile.h"
 #include "indexthread.h"
