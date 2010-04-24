@@ -104,11 +104,8 @@ int Save::handle_event()
 			return 1;
 		}
 		else
-		{
-			char string[BCTEXTLEN];
-			sprintf(string, _("\"%s\" %dC written"), mwindow->session->filename, strlen(file.string));
-			mwindow->gui->show_message(string);
-		}
+			mwindow->gui->show_message(_("\"%s\" %dC written"), mwindow->session->filename, strlen(file.string));
+
 		mwindow->session->changes_made = 0;
 // Last command in program
 //		if(saveas->quit_now) mwindow->gui->set_done(0);
@@ -200,10 +197,8 @@ void SaveAs::run()
 	}
 	else
 	{
-		char string[BCTEXTLEN];
-		sprintf(string, _("\"%s\" %dC written"), filename, strlen(file.string));
 		mwindow->gui->lock_window("SaveAs::run");
-		mwindow->gui->show_message(string);
+		mwindow->gui->show_message(_("\"%s\" %dC written"), filename, strlen(file.string));
 		mwindow->gui->unlock_window();
 	}
 

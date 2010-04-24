@@ -882,8 +882,7 @@ SET_TRACE
 		new_edl->create_objects();
 		new_edl->copy_session(edl);
 
-		sprintf(string, "Loading %s", new_asset->path);
-		gui->show_message(string);
+		gui->show_message("Loading %s", new_asset->path);
 SET_TRACE
 		result = new_file->open_file(preferences, new_asset, 1, 0, 0, 0);
 SET_TRACE
@@ -935,8 +934,7 @@ SET_TRACE
 
 // File not found
 			case FILE_NOT_FOUND:
-				sprintf(string, _("Failed to open %s"), new_asset->path);
-				gui->show_message(string, theme->message_error);
+				errormsg(string, _("Failed to open %s"), new_asset->path);
 				result = 1;
 				break;
 

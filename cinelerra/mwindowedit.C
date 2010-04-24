@@ -1685,9 +1685,7 @@ void MWindow::paste_audio_transition()
 		TRACK_AUDIO);
 	if(!server)
 	{
-		char string[BCTEXTLEN];
-		sprintf(string, _("No default transition %s found."), edl->session->default_atransition);
-		gui->show_message(string);
+		gui->show_message(_("No default transition %s found."), edl->session->default_atransition);
 		return;
 	}
 
@@ -1705,9 +1703,7 @@ void MWindow::paste_video_transition()
 		TRACK_VIDEO);
 	if(!server)
 	{
-		char string[BCTEXTLEN];
-		sprintf(string, _("No default transition %s found."), edl->session->default_vtransition);
-		gui->show_message(string);
+		gui->show_message(_("No default transition %s found."), edl->session->default_vtransition);
 		return;
 	}
 

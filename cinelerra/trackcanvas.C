@@ -3728,15 +3728,14 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 				current->position = position;
 				synchronize_autos(change, current->autos->track, current, 0);
 
-				char string[BCTEXTLEN], string2[BCTEXTLEN];
-				Units::totext(string2, 
+				char string[BCTEXTLEN];
+				Units::totext(string, 
 					current->autos->track->from_units(current->position),
 					mwindow->edl->session->time_format,
 					mwindow->edl->session->sample_rate,
 					mwindow->edl->session->frame_rate,
 					mwindow->edl->session->frames_per_foot);
-				sprintf(string, "%s, %.2f", string2, current->value);
-				gui->show_message(string);
+				gui->show_message("%s, %.2f", string, current->value);
 			}
 			break;
 
@@ -3754,15 +3753,14 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 				current->control_in_position = position;
 				synchronize_autos(0, current->autos->track, current, 0);
 
-				char string[BCTEXTLEN], string2[BCTEXTLEN];
-				Units::totext(string2, 
+				char string[BCTEXTLEN];
+				Units::totext(string, 
 					current->autos->track->from_units(current->control_in_position),
 					mwindow->edl->session->time_format,
 					mwindow->edl->session->sample_rate,
 					mwindow->edl->session->frame_rate,
 					mwindow->edl->session->frames_per_foot);
-				sprintf(string, "%s, %.2f", string2, current->control_in_value);
-				gui->show_message(string);
+				gui->show_message("%s, %.2f", string, current->control_in_value);
 			}
 		}
 			break;
@@ -3781,18 +3779,16 @@ int TrackCanvas::update_drag_floatauto(int cursor_x, int cursor_y)
 				current->control_out_position = position;
 				synchronize_autos(0, current->autos->track, current, 0);
 
-				char string[BCTEXTLEN], string2[BCTEXTLEN];
-				Units::totext(string2, 
+				char string[BCTEXTLEN];
+				Units::totext(string,
 					current->autos->track->from_units(
 						((FloatAuto*)current)->control_out_position),
 					mwindow->edl->session->time_format,
 					mwindow->edl->session->sample_rate,
 					mwindow->edl->session->frame_rate,
 					mwindow->edl->session->frames_per_foot);
-				sprintf(string, "%s, %.2f", 
-					string2, 
+				gui->show_message("%s, %.2f", string, 
 					((FloatAuto*)current)->control_out_value);
-				gui->show_message(string);
 			}
 		}
 			break;
@@ -3814,15 +3810,14 @@ int TrackCanvas::update_drag_toggleauto(int cursor_x, int cursor_y)
 		current->value = value;
 		current->position = position;
 
-		char string[BCTEXTLEN], string2[BCTEXTLEN];
-		Units::totext(string2, 
+		char string[BCTEXTLEN];
+		Units::totext(string,
 			current->autos->track->from_units(current->position),
 			mwindow->edl->session->time_format,
 			mwindow->edl->session->sample_rate,
 			mwindow->edl->session->frame_rate,
 			mwindow->edl->session->frames_per_foot);
-		sprintf(string, "%s, %d", string2, current->value);
-		gui->show_message(string);
+		gui->show_message("%s, %d", string, current->value);
 	}
 
 	return result;

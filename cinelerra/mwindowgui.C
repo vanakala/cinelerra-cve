@@ -55,6 +55,8 @@
 #include "vwindow.h"
 #include "zoombar.h"
 
+#include <stdarg.h>
+
 // the main window uses its own private colormap for video
 MWindowGUI::MWindowGUI(MWindow *mwindow)
  : BC_Window(PROGRAM_NAME ": Program", 
@@ -361,12 +363,17 @@ int MWindowGUI::visible(int64_t x1, int64_t x2, int64_t view_x1, int64_t view_x2
 }
 
 
-int MWindowGUI::show_message(char *message, int color)
+int MWindowGUI::show_message(const char *fmt, ...)
 {
-//printf("MWindowGUI::show_message %s %d\n", message, color);
-	if(color < 0) color = mwindow->theme->message_normal;
-	statusbar->status_text->set_color(color);
-	statusbar->status_text->update(message);
+	char bufr[1024];
+	va_list ap;
+
+	va_start(ap, fmt);
+	vsnprintf(bufr, 1024, fmt, ap);
+	va_end(ap);
+
+	statusbar->status_text->set_color(mwindow->theme->message_normal);
+	statusbar->status_text->update(bufr);
 	return 0;
 }
 

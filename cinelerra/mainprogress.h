@@ -43,7 +43,7 @@ public:
 
 	void stop_progress();
 	int is_cancelled();
-	void update_title(char *string, int default_ = 1);
+	void update_title(const char *string, int default_ = 1);
 	void update_length(int64_t length);
 	int update(int64_t value);
 	void get_time(char *text);

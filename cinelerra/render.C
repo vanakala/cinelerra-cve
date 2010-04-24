@@ -536,16 +536,15 @@ void Render::stop_progress()
 {
 	if(progress)
 	{
-		char string[BCTEXTLEN], string2[BCTEXTLEN];
+		char string[BCTEXTLEN];
 		delete render_progress;
 		progress->get_time(string);
 		elapsed_time = progress->get_time();
 		progress->stop_progress();
 		delete progress;
 
-		sprintf(string2, _("Rendering took %s"), string);
 		mwindow->gui->lock_window("Render::stop_progress");
-		mwindow->gui->show_message(string2);
+		mwindow->gui->show_message(_("Rendering took %s"), string);
 		mwindow->gui->stop_hourglass();
 		mwindow->gui->unlock_window();
 	}
@@ -719,8 +718,7 @@ int Render::render(int test_overwrite,
 				if(mwindow)
 				{
 					mwindow->gui->lock_window("Render::render 2");
-					mwindow->gui->show_message(_("Failed to start render farm"),
-						mwindow->theme->message_error);
+					errorbox(_("Failed to start render farm"));
 					mwindow->gui->stop_hourglass();
 					mwindow->gui->unlock_window();
 				}

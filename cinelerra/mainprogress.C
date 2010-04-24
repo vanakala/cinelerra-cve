@@ -93,7 +93,7 @@ int MainProgressBar::is_cancelled()
 	return 0;
 }
 
-void MainProgressBar::update_title(char *string, int default_)
+void MainProgressBar::update_title(const char *string, int default_)
 {
 	if(default_) strcpy(default_title, string);
 //printf("MainProgressBar::update_title %p %p %s\n", progress_bar, progress_box, string);
