@@ -19,7 +19,9 @@
  * 
  */
 
+#include "keys.h"
 #include "language.h"
+#include "mainerror.h"
 #include "mwindow.h"
 #include "mwindowgui.h"
 #include "question.h"
@@ -31,33 +33,52 @@
 
 QuestionWindow::QuestionWindow(MWindow *mwindow)
  : BC_Window(PROGRAM_NAME ": Question", 
- 	mwindow->gui->get_abs_cursor_x(1) - WIDTH / 2, 
+	mwindow->gui->get_abs_cursor_x(1) - WIDTH / 2, 
 	mwindow->gui->get_abs_cursor_y(1) - HEIGHT / 2, 
 	WIDTH, 
 	HEIGHT)
 {
 	this->mwindow = mwindow;
+	set_icon(mwindow->theme->get_image("mwindow_icon"));
 }
 
 QuestionWindow::~QuestionWindow()
 {
 }
 
-int QuestionWindow::create_objects(char *string, int use_cancel)
+int QuestionWindow::create_objects(const char *string, int use_cancel)
 {
-	int x = 10, y = 10;
-	add_subwindow(new BC_Title(10, 10, string));
-	y += 30;
-	add_subwindow(new QuestionYesButton(mwindow, this, x, y));
-	x += get_w() / 2;
-	add_subwindow(new QuestionNoButton(mwindow, this, x, y));
-	x = get_w() - 100;
-	if(use_cancel) add_subwindow(new BC_CancelButton(x, y));
+	const char *btext;
+	BC_Title *title;
+	const char *yes = _("Yes");
+	const char *no = _("No");
+	const char *cancel = _("Cancel");
+
+	int x, y;
+
+	btext = MainError::StringBreaker(MEDIUMFONT, string, get_w() - 30, this);
+	add_subwindow(new BC_Title(get_w() / 2, 10, string, MEDIUMFONT, 
+		get_resources()->default_text_color, 1));
+	y = get_h() - BC_GenericButton::calculate_h() - 10;
+	add_subwindow(new QuestionYesButton(this, yes, 10, y));
+	if(use_cancel)
+	{
+		x = get_w() / 2 - BC_GenericButton::calculate_w(this, no) / 2;
+		add_subwindow(new QuestionNoButton(this, no, x, y));
+		x = get_w() - BC_GenericButton::calculate_w(this, cancel) - 10;
+		add_subwindow(new QuestionCancelButton(this, cancel, x, y));
+	}
+	else
+	{
+		x = get_w() - BC_GenericButton::calculate_w(this, no) - 10;
+		add_subwindow(new QuestionNoButton(this, no, x, y));
+	}
+
 	return 0;
 }
 
-QuestionYesButton::QuestionYesButton(MWindow *mwindow, QuestionWindow *window, int x, int y)
- : BC_GenericButton(x, y, _("Yes"))
+QuestionYesButton::QuestionYesButton(QuestionWindow *window, const char *label, int x, int y)
+ : BC_GenericButton(x, y, label)
 {
 	this->window = window;
 	set_underline(0);
@@ -66,16 +87,17 @@ QuestionYesButton::QuestionYesButton(MWindow *mwindow, QuestionWindow *window, i
 int QuestionYesButton::handle_event()
 {
 	set_done(2);
+	return 1;
 }
 
 int QuestionYesButton::keypress_event()
 {
-	if(get_keypress() == 'y') { handle_event(); return 1; }
+	if(get_keypress() == 'y') { return handle_event(); }
 	return 0;
 }
 
-QuestionNoButton::QuestionNoButton(MWindow *mwindow, QuestionWindow *window, int x, int y)
- : BC_GenericButton(x, y, _("No"))
+QuestionNoButton::QuestionNoButton(QuestionWindow *window, const char *label, int x, int y)
+ : BC_GenericButton(x, y, label)
 {
 	this->window = window;
 	set_underline(0);
@@ -84,10 +106,30 @@ QuestionNoButton::QuestionNoButton(MWindow *mwindow, QuestionWindow *window, int
 int QuestionNoButton::handle_event()
 {
 	set_done(0);
+	return 1;
 }
 
 int QuestionNoButton::keypress_event()
 {
-	if(get_keypress() == 'n') { handle_event(); return 1; }
+	if(get_keypress() == 'n') { return handle_event(); }
+	return 0;
+}
+
+QuestionCancelButton::QuestionCancelButton(QuestionWindow *window, const char *label, int x, int y)
+ : BC_GenericButton(x, y, label)
+{
+	this->window = window;
+	set_underline(0);
+}
+
+int QuestionCancelButton::handle_event()
+{
+	set_done(1);
+	return 1;
+}
+
+int QuestionCancelButton::keypress_event()
+{
+	if(get_keypress() == ESC) { return handle_event(); }
 	return 0;
 }

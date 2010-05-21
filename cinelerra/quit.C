@@ -21,7 +21,6 @@
 
 #include "assets.h"
 #include "mbuttons.h"
-#include "confirmquit.h"
 #include "mainerror.h"
 #include "language.h"
 #include "levelwindow.h"
@@ -31,6 +30,7 @@
 #include "mwindowgui.h"
 #include "playback3d.h"
 #include "quit.h"
+#include "question.h"
 #include "record.h"
 #include "render.h"
 #include "savefile.h"
@@ -87,19 +87,12 @@ void Quit::run()
 	}
 
 
-//printf("Quit::run 1\n");
-
 // Quit
 	{
-//printf("Quit::run 2\n");
-		ConfirmQuitWindow confirm(mwindow);
-//printf("Quit::run 2\n");
-		confirm.create_objects(_("Save edit list before exiting?"));
-//printf("Quit::run 2\n");
+		QuestionWindow confirm(mwindow);
+		confirm.create_objects(_("Save edit list before exiting?\n( Answering \"No\" will destroy changes )"), 1);
 		result = confirm.run_window();
-//printf("Quit::run 2\n");
 	}
-//printf("Quit::run 3\n");
 
 	switch(result)
 	{
