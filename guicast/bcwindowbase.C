@@ -392,6 +392,10 @@ int BC_WindowBase::create_window(BC_WindowBase *parent_window,
 
 		XGetNormalHints(display, win, &size_hints);
 
+// Clear ignore_win
+		if(top_level->ignore_win == win)
+			top_level->ignore_win = 0;
+
 		size_hints.flags = PSize | PMinSize | PMaxSize;
 		size_hints.width = this->w;
 		size_hints.height = this->h;
@@ -696,7 +700,10 @@ int BC_WindowBase::dispatch_event()
 			dispatch_repeat_event(ptr->data.l[0]);
 		else
 		if(ptr->message_type == SetDoneXAtom)
+		{
+			return_value = ptr->data.l[0];
 			done = 1;
+		} 
 		else
 			recieve_custom_xatoms((xatom_event *)ptr);
 		break;
@@ -1429,6 +1436,8 @@ int BC_WindowBase::arm_repeat(int64_t duration)
 
 	event.xclient.type = ClientMessage;
 	event.xclient.message_type = RepeaterXAtom;
+	event.xclient.display = top_level->display;
+	event.xclient.window = top_level->win;
 	event.xclient.format = 32;
 	event.xclient.data.l[0] = duration;
 
@@ -1451,6 +1460,8 @@ int BC_WindowBase::send_custom_xatom(xatom_event *event)
 	XEvent myevent;
 
 	myevent.type = ClientMessage;
+	myevent.xclient.display = top_level->display;
+	myevent.xclient.window = top_level->win;
 	myevent.xclient.message_type = event->message_type;
 	myevent.xclient.format = event->format;
 	myevent.xclient.data.l[0] = event->data.l[0];
@@ -2637,9 +2648,11 @@ void BC_WindowBase::set_done(int return_value)
 		XEvent event;
 
 		event.type = ClientMessage;
+		event.xclient.display = display;
+		event.xclient.window = win;
 		event.xclient.message_type = SetDoneXAtom;
 		event.xclient.format = 32;
-		this->return_value = return_value;
+		event.xclient.data.l[0] = return_value;
 
 		XSendEvent(display,
 			win,
