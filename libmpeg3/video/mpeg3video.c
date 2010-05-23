@@ -6,7 +6,6 @@
 #include "bitstream.h"
 #include "idct.h"
 #include "slice.h"
-#include "timecode.h"
 #include <pthread.h>
 #include <stdlib.h>
 

@@ -34,7 +34,6 @@ noinst_HEADERS = bitstream.h \
 	mpeg3protos.h \
 	mpeg3title.h \
 	mpeg3vtrack.h \
-	timecode.h \
 	workarounds.h
 	
 

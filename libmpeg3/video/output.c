@@ -3,7 +3,6 @@
 #include "bitstream.h"
 #include "idct.h"
 #include "slice.h"
-#include "timecode.h"
 #include <string.h>
 
 #define CLIP(x)  ((x) >= 0 ? ((x) < 255 ? (x) : 255) : 0)

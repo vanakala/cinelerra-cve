@@ -16,7 +16,6 @@ libmpeg3_video_la_SOURCES +=
 endif
 
 noinst_HEADERS = idct.h \
-	layerdata.h \
 	mpeg3video.h \
 	mpeg3videoprotos.h \
 	slice.h \
