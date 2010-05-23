@@ -44,8 +44,6 @@
 #include "vdevicelml.inc"
 #include "vdevicev4l.inc"
 #include "vdevicex11.inc"
-#include "videoconfig.inc"
-#include "videowindow.inc"
 #ifdef HAVE_FIREWIRE
 #include "audio1394.inc"
 #include "device1394output.inc"

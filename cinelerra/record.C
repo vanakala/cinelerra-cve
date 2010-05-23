@@ -63,7 +63,6 @@
 #include "theme.h"
 #include "timebar.h"
 #include "tracks.h"
-#include "videoconfig.h"
 #include "videodevice.h"
 
 #include <string.h>

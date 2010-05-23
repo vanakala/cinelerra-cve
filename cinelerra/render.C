@@ -68,7 +68,6 @@
 #include "transportque.h"
 #include "vedit.h"
 #include "vframe.h"
-#include "videoconfig.h"
 #include "vrender.h"
 #include "renderprofiles.h"
 

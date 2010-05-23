@@ -112,7 +112,6 @@ cinelerra_SOURCES = aattachmentpoint.C \
 		    chantables.C \
 		    clipedit.C \
 		    commonrender.C \
-		    confirmquit.C \
 		    confirmsave.C \
 		    cpanel.C \
 		    cplayback.C \
@@ -417,7 +416,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 clipedit.h \
 		 commonrender.h \
 		 compresspopup.h \
-		 confirmquit.h \
 		 confirmsave.h \
 		 cpanel.h \
 		 cplayback.h \
@@ -587,7 +585,6 @@ noinst_HEADERS = aattachmentpoint.h \
 		 removethread.h \
 		 renderengine.h \
 		 renderfarmclient.h \
-		 renderfarmfsserver.h \
 		 renderfarm.h \
 		 render.h \
 		 resample.h \
@@ -604,20 +601,17 @@ noinst_HEADERS = aattachmentpoint.h \
 		 sighandler.h \
 		 splashgui.h \
 		 statusbar.h \
-		 testobject.h \
 		 theme.h \
 		 threadexec.h \
 		 threadfork.h \
 		 threadindexer.h \
 		 threadloader.h \
 		 timebar.h \
-		 timebomb.h \
 		 timeentry.h \
 		 tipwindow.h \
 		 trackcanvas.h \
 		 track.h \
 		 tracking.h \
-		 tracklist.h \
 		 trackscroll.h \
 		 tracks.h \
 		 transition.h \
@@ -641,12 +635,8 @@ noinst_HEADERS = aattachmentpoint.h \
 		 vedit.h \
 		 vedits.h \
 		 video1394.h \
-		 videoconfig.h \
 		 videodevfix.h \
 		 videodevice.h \
-		 videowindowgui.h \
-		 videowindow.h \
-		 viewer.h \
 		 viewmenu.h \
 		 virtualaconsole.h \
 		 virtualanode.h \

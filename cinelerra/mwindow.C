@@ -95,7 +95,6 @@
 #include "transportque.h"
 #include "vframe.h"
 #include "videodevice.inc"
-#include "videowindow.h"
 #include "vplayback.h"
 #include "vwindowgui.h"
 #include "vwindow.h"

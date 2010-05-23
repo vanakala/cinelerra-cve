@@ -35,8 +35,6 @@
 #include "render.h"
 #include "savefile.h"
 #include "mainsession.h"
-#include "videowindow.h"
-#include "videowindowgui.h"
 
 
 Quit::Quit(MWindow *mwindow)

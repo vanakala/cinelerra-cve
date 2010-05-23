@@ -32,7 +32,6 @@
 #include "mutex.h"
 #include "preferences.h"
 #include "theme.h"
-#include "videoconfig.h"
 #include "videodevice.inc"
 #include <string.h>
 

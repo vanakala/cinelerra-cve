@@ -45,10 +45,7 @@
 #include "vdevicev4l2.h"
 #include "vdevicev4l2jpeg.h"
 #include "vdevicex11.h"
-#include "videoconfig.h"
 #include "videodevice.h"
-#include "videowindow.h"
-#include "videowindowgui.h"
 #include "vframe.h"
 
 #include <unistd.h>

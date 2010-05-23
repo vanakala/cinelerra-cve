@@ -27,7 +27,6 @@
 #include "iec61883output.h"
 #include "preferences.h"
 #include "recordconfig.h"
-#include "videoconfig.h"
 #include "videodevice.h"
 
 #define SAMPLES_PER_FRAME 2048

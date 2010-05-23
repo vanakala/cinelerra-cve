@@ -35,8 +35,6 @@
 #include "vdevicex11.h"
 #include "vframe.h"
 #include "videodevice.h"
-#include "videowindow.h"
-#include "videowindowgui.h"
 
 #include <string.h>
 #include <unistd.h>

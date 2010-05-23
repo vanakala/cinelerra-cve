@@ -31,7 +31,6 @@
 #include "language.h"
 #include "mwindow.h"
 #include "vdeviceprefs.h"
-#include "videoconfig.h"
 #include "videodevice.inc"
 #include "playbackconfig.h"
 #include "preferences.h"

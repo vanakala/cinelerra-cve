@@ -25,8 +25,6 @@
 #include "mwindow.h"
 #include "mainsession.h"
 #include "tracks.h"
-#include "videowindow.h"
-#include "videowindowgui.h"
 
 
 

@@ -41,7 +41,6 @@
 #include "preferences.h"
 #include "theme.h"
 #include "transportque.h"
-#include "videowindow.h"
 #include "vplayback.h"
 #include "vwindow.h"
 

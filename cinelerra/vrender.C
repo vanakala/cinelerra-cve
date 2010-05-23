@@ -45,7 +45,6 @@
 #include "units.h"
 #include "vedit.h"
 #include "vframe.h"
-#include "videoconfig.h"
 #include "videodevice.h"
 #include "virtualconsole.h"
 #include "virtualvconsole.h"

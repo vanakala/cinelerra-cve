@@ -73,14 +73,12 @@
 #include "thread.h"
 #include "threadloader.inc"
 #include "timebar.inc"
-#include "timebomb.h"
 #include "tipwindow.inc"
 #include "track.inc"
 #include "tracking.inc"
 #include "tracks.inc"
 #include "transition.inc"
 #include "transportque.inc"
-#include "videowindow.inc"
 #include "vwindow.inc"
 #include "wavecache.inc"
 
@@ -556,7 +554,6 @@ public:
 	void delete_plugins();
 // 
 	void clean_indexes();
-//	TimeBomb timebomb;
 	SigHandler *sighandler;
 };
 

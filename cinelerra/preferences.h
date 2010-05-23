@@ -29,7 +29,6 @@
 #include "maxchannels.h"
 #include "mutex.inc"
 #include "preferences.inc"
-#include "videoconfig.inc"
 
 
 class Preferences

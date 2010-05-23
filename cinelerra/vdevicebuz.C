@@ -38,7 +38,6 @@
 #include "strategies.inc"
 #include "vdevicebuz.h"
 #include "vframe.h"
-#include "videoconfig.h"
 #include "videodevice.h"
 
 #include <errno.h>

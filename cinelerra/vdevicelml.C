@@ -28,7 +28,6 @@
 #include "strategies.inc"
 #include "vdevicelml.h"
 #include "vframe.h"
-#include "videoconfig.h"
 #include "videodevice.h"
 
 
