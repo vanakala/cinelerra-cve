@@ -20,7 +20,6 @@
  */
 
 #include <string.h>
-#include "bcipc.h"
 #include "shmemory.h"
 
 

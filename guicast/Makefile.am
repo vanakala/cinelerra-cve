@@ -54,8 +54,6 @@ libguicast_la_SOURCES = \
 	bcwindowbase.C \
 	bcwindowdraw.C \
 	condition.C \
-	debug.h \
-        error.h \
 	errorbox.C \
 	filesystem.C \
 	mutex.C \
@@ -92,7 +90,6 @@ noinst_HEADERS = \
 	bcfilebox.inc \
 	bchash.h \
 	bchash.inc \
-	bcipc.h \
 	bclistbox.h \
 	bclistbox.inc \
 	bclistboxitem.h \
@@ -181,10 +178,8 @@ noinst_HEADERS = \
 	rotateframe.inc \
 	sema.h \
 	sema.inc \
-	sizes.h \
 	stringfile.h \
 	stringfile.inc \
-	testobject.h \
 	thread.h \
 	units.h \
 	vframe.h \

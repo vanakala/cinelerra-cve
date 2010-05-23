@@ -22,8 +22,6 @@
 #ifndef UNITS_H
 #define UNITS_H
 
-#include "sizes.h"
-
 #include <math.h>
 #include <stdint.h>
 #include <stdio.h>

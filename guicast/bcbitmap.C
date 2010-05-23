@@ -20,7 +20,6 @@
  */
 
 #include "bcbitmap.h"
-#include "bcipc.h"
 #include "bcresources.h"
 #include "bcsignals.h"
 #include "bcwindow.h"

@@ -30,7 +30,6 @@
 
 #include "bcwindowbase.inc"
 #include "colors.h"
-#include "sizes.h"
 #include "vframe.inc"
 
 //#define BITMAP_RING 1

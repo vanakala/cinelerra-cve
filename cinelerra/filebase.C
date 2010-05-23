@@ -26,7 +26,6 @@
 #include "file.h"
 #include "filebase.h"
 #include "overlayframe.h"
-#include "sizes.h"
 
 #include <stdlib.h>
 

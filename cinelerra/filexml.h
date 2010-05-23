@@ -22,7 +22,7 @@
 #ifndef FILEXML_H
 #define FILEXML_H
 
-#include "sizes.h"
+#include <sys/types.h>
 #include <stdio.h>
 
 #define MAX_TITLE 1024

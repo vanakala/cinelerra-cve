@@ -59,7 +59,6 @@
 #include "removethread.h"
 #include "mainsession.h"
 #include "sighandler.h"
-#include "testobject.h"
 #include "theme.h"
 #include "timebar.h"
 #include "tracks.h"

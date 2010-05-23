@@ -29,7 +29,6 @@
 #include "labeledit.inc"
 #include "mwindow.inc"
 #include "recordlabel.inc"
-#include "testobject.h"
 #include "timebar.inc"
 #include "vwindowgui.inc"
 

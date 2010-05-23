@@ -23,7 +23,6 @@
 #include "byteorder.h"
 #include "file.h"
 #include "filebase.h"
-#include "sizes.h"
 
 int FileBase::ima4_step[89] = 
 {

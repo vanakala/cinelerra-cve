@@ -24,7 +24,6 @@
 
 #include "arraylist.h"
 #include "bcwindowbase.inc"
-#include "sizes.h"
 
 class FileItem
 {

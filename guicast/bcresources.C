@@ -20,7 +20,6 @@
  */
 
 #include "bcdisplayinfo.h"
-#include "bcipc.h"
 #include "bclistbox.inc"
 #include "bcresources.h"
 #include "bcsignals.h"
@@ -30,6 +29,7 @@
 #include "colormodels.h"
 #include "fonts.h"
 #include "language.h"
+#include "mutex.h"
 #include "vframe.h"
 
 #include <string.h>
