@@ -2,7 +2,7 @@ This file contains information about my branch of Cinelerra 2.1 CV
 To get a copy of the latest version of the branch
 git clone git://git.cinelerra.org/einar/cinelerra.git my_cinelerra
 
-This file describes status of this branch as of April 9, 2010
+This file describes status of this branch as of May 24, 2010
 
 Contents.
 
@@ -50,13 +50,14 @@ Changes in this branch:
 - goto window honours time format
 - lots of cleanups
 - OpenGL is enabled while server glx version is >= 1.3
+- new one-line internal api for error messages (macros errormsg
+    and errorbox)
+- cleanup: removed unused sources from cinelerra, guicast, libmpeg3
 
 Known problems (todo list)
-- no need to regenerate index when only subtitles are changed
-    in asset edit
+- background rendering does not work (images are black, sound distorted)
 - filevorbis is disabled
 - cinerella crashes if video4linux2 size is different from 600x800
-- remove or move to separate directories unused sources
 - implement debugging system
 - test on 64bit system
 
